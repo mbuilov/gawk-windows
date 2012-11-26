@@ -1,15 +1,10 @@
 # what to do under linux to make dl.so
-# Tue Nov 24 15:04:14 EST 1998
-# Sun Aug 26 16:03:58 IDT 2001
-# Sun Apr 28 15:59:57 IDT 2002
-# Mon Jun 21 17:03:37 IDT 2004
-# Fri May 15 15:48:45 IDT 2009
 # Sun Nov 25 21:40:49 IST 2012
 
-gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. spec_array.c
-gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. sparr.c
-gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. bindarr.c
-gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. fileop.c
-ld -o sparr.so -shared sparr.o spec_array.o
-ld -o bindarr.so -shared bindarr.o
-ld -o fileop.so -shared fileop.o
+gcc -fPIC -shared -Wall -DGAWK -DHAVE_CONFIG_H -c -O -g -I.. spec_array.c
+gcc -fPIC -shared -Wall -DGAWK -DHAVE_CONFIG_H -c -O -g -I.. sparr.c
+gcc -fPIC -shared -Wall -DGAWK -DHAVE_CONFIG_H -c -O -g -I.. bindarr.c
+gcc -fPIC -shared -Wall -DGAWK -DHAVE_CONFIG_H -c -O -g -I.. fileop.c
+gcc -o sparr.so -shared sparr.o spec_array.o
+gcc -o bindarr.so -shared bindarr.o
+gcc -o fileop.so -shared fileop.o

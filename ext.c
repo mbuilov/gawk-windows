@@ -223,92 +223,56 @@ make_builtin(const awk_ext_func_t *funcinfo)
 	return true;
 }
 
-#if 0
 /* make_old_builtin --- register name to be called as func with a builtin body */
 
 void
-make_old_builtin(const char *, NODE *(*)(int), int)		/* temporary */
+make_old_builtin(const char *name, NODE *(*func)(int), int count)	/* temporary */
 {
-	NODE *p, *symbol, *f;
-	INSTRUCTION *b, *r;
+	NODE *symbol, *f;
+	INSTRUCTION *b;
 	const char *sp;
-	char *pname;
-	char **vnames = NULL;
-	char c, buf[200];
-	size_t space_needed;
-	int i;
+	char c;
 
 	sp = name;
 	if (sp == NULL || *sp == '\0')
 		fatal(_("extension: missing function name"));
 
 	while ((c = *sp++) != '\0') {
-		if ((sp == &name[1] && c != '_' && ! isalpha((unsigned char) c))
+		if ((sp == & name[1] && c != '_' && ! isalpha((unsigned char) c))
 				|| (sp > &name[1] && ! is_identchar((unsigned char) c)))
-			fatal(_("make_old_builtin: illegal character `%c' in function name `%s'"), c, name);
+			fatal(_("extension: illegal character `%c' in function name `%s'"), c, name);
 	}
 
 	f = lookup(name);
 
 	if (f != NULL) {
 		if (f->type == Node_func) {
-			INSTRUCTION *pc = f->code_ptr;
-			if (pc->opcode != Op_ext_func)	/* user-defined function */
-				fatal(_("extension: can't redefine function `%s'"), name);
-			else {
-				/* multiple extension() calls etc. */ 
-				if (do_lint)
-					lintwarn(_("extension: function `%s' already defined"), name);
-				return;
-			}
+			/* user-defined function */
+			fatal(_("extension: can't redefine function `%s'"), name);
+		} else if (f->type == Node_ext_func) {
+			/* multiple extension() calls etc. */ 
+			if (do_lint)
+				lintwarn(_("extension: function `%s' already defined"), name);
+			return;
 		} else
 			/* variable name etc. */ 
 			fatal(_("extension: function name `%s' previously defined"), name);
 	} else if (check_special(name) >= 0)
 		fatal(_("extension: can't use gawk built-in `%s' as function name"), name); 
-	/* count parameters, create artificial list of param names */
 
 	if (count < 0)
 		fatal(_("make_builtin: negative argument count for function `%s'"),
-					name);
+				name);
 
-	if (count > 0) {
-		sprintf(buf, "p%d", count);
-		space_needed = strlen(buf) + 1;
-		emalloc(vnames, char **, count * sizeof(char  *), "make_builtin");
-		for (i = 0; i < count; i++) {
-			emalloc(pname, char *, space_needed, "make_builtin");
-			sprintf(pname, "p%d", i);
-			vnames[i] = pname;
-		}
-	}
-
-
-	getnode(p);
-	p->type = Node_param_list;
-	p->flags |= FUNC;
-	/* get our own copy for name */
-	p->param = estrdup(name, strlen(name));
-	p->param_cnt = count;
-
-	/* actual source and line numbers set at runtime for these instructions */
-	b = bcalloc(Op_builtin, 1, __LINE__);
+	b = bcalloc(Op_symbol, 1, 0);
 	b->builtin = func;
 	b->expr_count = count;
-	b->nexti = bcalloc(Op_K_return, 1, __LINE__);
-	r = bcalloc(Op_ext_func, 1, __LINE__);
-	r->source_file = __FILE__;
-	r->nexti = b;
 
 	/* NB: extension sub must return something */
 
-	symbol = mk_symbol(Node_func, p);
-	symbol->parmlist = vnames;
-	symbol->code_ptr = r;
-	r->func_body = symbol;
-	(void) install_symbol(p->param, symbol);
+       	symbol = install_symbol(estrdup(name, strlen(name)), Node_old_ext_func);
+	symbol->code_ptr = b;
 }
-#endif
 
 
 /* get_argument --- get the i'th argument of a dynamically linked function */

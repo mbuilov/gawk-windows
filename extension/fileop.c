@@ -49,16 +49,16 @@ do_fread(int nargs)
 	file_t *f;
 	char *rbuf;
 
-	f = file_open("fread", nargs, TRUE);
+	f = file_open("fread", nargs, true);
 
-	arg = get_scalar_argument(2, FALSE);
+	arg = get_scalar_argument(2, false);
 	force_number(arg);
 	rlen = get_number_ui(arg);
 
 	emalloc(rbuf, char *, rlen + 2, "do_fread");
 	if ((count = fread(rbuf, 1, rlen, f->fp)) < rlen) {
 		if (! feof(f->fp))
-			update_ERRNO();
+			update_ERRNO_int(errno);
 	}
 	return make_str_node(rbuf, count, ALREADY_MALLOCED);
 }
@@ -72,14 +72,14 @@ do_fwrite(int nargs)
 	file_t *f;
 	size_t count = 0;
 
-	f = file_open("fwrite", nargs, TRUE);
+	f = file_open("fwrite", nargs, true);
 
-	arg = get_scalar_argument(2, FALSE);
+	arg = get_scalar_argument(2, false);
 	force_string(arg);
 	if (arg->stlen > 0) {
 		count = fwrite(arg->stptr, 1, arg->stlen, f->fp);
 		if (count < arg->stlen)
-			update_ERRNO();
+			update_ERRNO_int(errno);
 	}
 	return make_number(count);
 }
@@ -94,13 +94,13 @@ do_fseek(int nargs)
 	file_t *f;
 	int whence = 0, ret = 0;
 
-	f = file_open("fseek", nargs, TRUE);
+	f = file_open("fseek", nargs, true);
 
-	arg = get_scalar_argument(2, FALSE);
+	arg = get_scalar_argument(2, false);
 	force_number(arg);
 	offset = get_number_si(arg);
 
-	arg = get_scalar_argument(3, FALSE);
+	arg = get_scalar_argument(3, false);
 	force_string(arg);
 	if (strcasecmp(arg->stptr, "SEEK_SET") == 0)
 		whence = SEEK_SET;
@@ -113,7 +113,7 @@ do_fseek(int nargs)
 			(int) arg->stlen, arg->stptr);
 
 	if (fseek(f->fp, offset, whence) < 0) {
-		update_ERRNO();
+		update_ERRNO_int(errno);
 		ret = -1;
 	}
 	return make_number(ret);
@@ -129,12 +129,12 @@ do_ftruncate(int nargs)
 	off_t len;
 	int ret = 0;
 
-	f = file_open("ftruncate", nargs, TRUE);
-	arg = get_scalar_argument(2, FALSE);
+	f = file_open("ftruncate", nargs, true);
+	arg = get_scalar_argument(2, false);
 	force_number(arg);
 	len = (off_t) get_number_si(arg);
 	if (ftruncate(fileno(f->fp), len) < 0) {
-		update_ERRNO();
+		update_ERRNO_int(errno);
 		ret = -1;
 	}
 	return make_number(ret);
@@ -148,12 +148,12 @@ do_unlink(int nargs)
 	NODE *file;
 	int ret = 0;
 
-	file = get_scalar_argument(0, FALSE);
+	file = get_scalar_argument(0, false);
 	force_string(file);
 	if (file->stlen == 0)
 		fatal(_("unlink: filename has empty string value"));
 	if (unlink(file->stptr) < 0) {
-		update_ERRNO();
+		update_ERRNO_int(errno);
 		ret = -1;
 	}
 	return make_number(ret);
@@ -167,11 +167,11 @@ do_flush(int nargs)
 	file_t *f;
 	int status = -1;
 
-	f = file_open("flush", nargs, FALSE);
+	f = file_open("flush", nargs, false);
 	if (f != NULL) {
 		status = fflush(f->fp);
 		if (status != 0)
-			update_ERRNO();
+			update_ERRNO_int(errno);
 	}
 	return make_number(status);
 }
@@ -184,11 +184,11 @@ do_fclose(int nargs)
 	file_t *f;
 	int status = -1;
 
-	f = file_open("fclose", nargs, FALSE);
+	f = file_open("fclose", nargs, false);
 	if (f != NULL) {
 		status = fclose(f->fp);
 		if (status != 0)
-			update_ERRNO();
+			update_ERRNO_int(errno);
 		assert(files == f);
 		files = f->next;
 		efree(f);
@@ -205,18 +205,18 @@ do_filesize(int nargs)
 	struct stat sbuf;
 	AWKNUM d = -1.0;
 
-	file = get_scalar_argument(0, FALSE);
+	file = get_scalar_argument(0, false);
 	force_string(file);
 	if (file->stlen == 0)
 		fatal(_("filesize: filename has empty string value"));
 
 	if (stat(file->stptr, & sbuf) < 0) {
-		update_ERRNO();
+		update_ERRNO_int(errno);
 		goto ferror;
 	}
 	if ((sbuf.st_mode & S_IFMT) != S_IFREG) {
 		errno = EINVAL;
-		update_ERRNO();
+		update_ERRNO_int(errno);
 		goto ferror;
 	}
 	d = sbuf.st_size;
@@ -234,14 +234,14 @@ do_file_exists(int nargs)
 	struct stat sbuf;
 	int ret = 1;
 
-	file = get_scalar_argument(0, FALSE);
+	file = get_scalar_argument(0, false);
 	force_string(file);
 	if (file->stlen == 0)
 		fatal(_("file_exists: filename has empty string value"));
 
 	if (stat(file->stptr, & sbuf) < 0) {
 		if (errno != ENOENT)
-			update_ERRNO();
+			update_ERRNO_int(errno);
 		ret = 0;
 	}
 	return make_number(ret);
@@ -262,9 +262,9 @@ file_open(const char *builtin_name, int nargs, int do_open)
 	if (nargs < 2)
 		cant_happen();
 
-	file = get_scalar_argument(0, FALSE);
+	file = get_scalar_argument(0, false);
 	force_string(file);
-	mode = get_scalar_argument(1, TRUE);
+	mode = get_scalar_argument(1, true);
 	force_string(mode);
 
 	if (file->stlen == 0)
@@ -366,15 +366,15 @@ mode2flags(const char *mode)
 NODE *
 dlload(NODE *tree, void *dl)
 {
-	make_builtin("fseek", do_fseek, 4);
-	make_builtin("fread", do_fread, 3);
-	make_builtin("fwrite", do_fwrite, 3);
-	make_builtin("flush", do_flush, 2);
-	make_builtin("filesize", do_filesize, 1);
-	make_builtin("file_exists", do_file_exists, 1);
-	make_builtin("fclose", do_fclose, 2);
-	make_builtin("ftruncate", do_ftruncate, 3);
-	make_builtin("unlink", do_unlink, 1);
+	make_old_builtin("fseek", do_fseek, 4);
+	make_old_builtin("fread", do_fread, 3);
+	make_old_builtin("fwrite", do_fwrite, 3);
+	make_old_builtin("flush", do_flush, 2);
+	make_old_builtin("filesize", do_filesize, 1);
+	make_old_builtin("file_exists", do_file_exists, 1);
+	make_old_builtin("fclose", do_fclose, 2);
+	make_old_builtin("ftruncate", do_ftruncate, 3);
+	make_old_builtin("unlink", do_unlink, 1);
 	return make_number((AWKNUM) 0);
 }
 

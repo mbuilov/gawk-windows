@@ -10086,6 +10086,10 @@ fi
 
 $as_echo "#define DYNAMIC 1" >>confdefs.h
 
+		if uname | $EGREP -i 'linux|freebsd' > /dev/null
+		then
+			LDFLAGS="$LDFLAGS -export-dynamic"
+		fi
 	fi
 
 fi

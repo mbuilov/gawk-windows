@@ -294,6 +294,7 @@ typedef enum nodevals {
 	Node_param_list,	/* lnode is a variable, rnode is more list */
 	Node_func,		/* lnode is param. list, rnode is body */
 	Node_ext_func,		/* extension function, code_ptr is builtin code */
+	Node_old_ext_func,	/* extension function, code_ptr is builtin code */
 
 	Node_array_ref,		/* array passed by ref as parameter */
 	Node_array_tree,	/* Hashed array tree (HAT) */
@@ -628,6 +629,7 @@ typedef enum opcodeval {
 	Op_builtin,
 	Op_sub_builtin,		/* sub, gsub and gensub */
 	Op_ext_builtin,
+	Op_old_ext_builtin,	/* temporary */
 	Op_in_array,		/* boolean test of membership in array */
 
 	/* function call instruction */
@@ -1284,7 +1286,7 @@ if (val++) \
 if (--val) \
 	memcpy((char *) tag, (const char *) (stack), sizeof(jmp_buf))
 
-#define assoc_length(a)	(*((a)->alength(a, NULL)))->table_size
+#define assoc_length(a)	((*((a)->alength(a, NULL)))->table_size)
 #define assoc_empty(a)	(assoc_length(a) == 0)
 #define assoc_lookup(a, s)	((a)->alookup(a, s))
 

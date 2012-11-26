@@ -901,12 +901,16 @@ arrayfor:
 			break;
 
 		case Op_ext_builtin:
+		case Op_old_ext_builtin:
 		{
 			int arg_count = pc->expr_count;
 			awk_value_t result;
 
 			PUSH_CODE(pc);
-			r = awk_value_to_node(pc->extfunc(arg_count, & result));
+			if (op == Op_ext_builtin)
+				r = awk_value_to_node(pc->extfunc(arg_count, & result));
+			else
+				r = pc->builtin(arg_count);
 			(void) POP_CODE();
 			while (arg_count-- > 0) {
 				t1 = POP();
@@ -1012,7 +1016,7 @@ match_re:
 			}
 
 			if (f == NULL || f->type != Node_func) {
-				if (f->type == Node_ext_func)
+				if (f->type == Node_ext_func || f->type == Node_old_ext_func)
 					fatal(_("cannot (yet) call extension functions indirectly"));
 				else
 					fatal(_("function called indirectly through `%s' does not exist"),
@@ -1032,19 +1036,22 @@ match_re:
 			f = pc->func_body;
 			if (f == NULL) {
 				f = lookup(pc->func_name);
-				if (f == NULL || (f->type != Node_func && f->type != Node_ext_func))
+				if (f == NULL || (f->type != Node_func && f->type != Node_ext_func && f->type != Node_old_ext_func))
 					fatal(_("function `%s' not defined"), pc->func_name);
 				pc->func_body = f;     /* save for next call */
 			}
 
-			if (f->type == Node_ext_func) {
+			if (f->type == Node_ext_func || f->type == Node_old_ext_func) {
 				INSTRUCTION *bc;
 				char *fname = pc->func_name;
 				int arg_count = (pc + 1)->expr_count;
 
 				bc = f->code_ptr;
 				assert(bc->opcode == Op_symbol);
-				pc->opcode = Op_ext_builtin;	/* self modifying code */
+				if (f->type == Node_ext_func)
+					pc->opcode = Op_ext_builtin;	/* self modifying code */
+				else
+					pc->opcode = Op_old_ext_builtin;	/* self modifying code */
 				pc->extfunc = bc->extfunc;
 				pc->expr_count = arg_count;		/* actual argument count */
 				(pc + 1)->func_name = fname;	/* name of the builtin */

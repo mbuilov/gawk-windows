@@ -1,3 +1,15 @@
+2012-11-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (Node_old_ext_func, Op_old_ext_func): New enum values.
+	* configure.ac: Use -export-dynamic if supported for old extension
+	mechanism.
+	* eval.c (nodeytpes): Add Node_old_ext_func.
+	(optypetab): Add Op_old_ext_func.
+	* ext.c (make_old_ext_builtin): "New" function.
+	* interpret.h: Special case Op_old_ext_builtin. Add checks for
+	Node_old_ext_func.
+	* msg.c: Adjust placement of a comment.
+
 2012-05-02         John Haque      <j.eh@mchsi.com>
 
 	* str_array.c (str_copy): Initialize next pointer in the linked list

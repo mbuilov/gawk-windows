@@ -47,7 +47,7 @@ install_array(const char *name)
 		r = install_symbol(estrdup(name, strlen(name)), Node_var_array);
 	switch (r->type) {
 	case Node_var_new:
-		r = force_array(r, FALSE);
+		r = force_array(r, false);
 		/* fall through */
 	case Node_var_array:
 		assoc_clear(r);
@@ -79,7 +79,7 @@ store_SYS(NODE *symbol, NODE *subs, NODE *val, void *data)
 	if (subs != NULL && val != NULL && val->type == Node_val) {
 		force_string(subs);
 		if (strcmp(subs->stptr, "readline") == 0) {
-			sd->load_file = TRUE;
+			sd->load_file = true;
 			unref(sd->filename);
 			sd->filename = dupnode(val);
 		}
@@ -95,7 +95,8 @@ load_READLINE(NODE *symbol, void *data)
 	NODE *file, *tmp;
 	FILE *fp;
 	static char linebuf[BUFSIZ];
-	int i, long_line = FALSE;
+	int i;
+	bool long_line = false;
 
 	if (! sd->load_file)	/* non-existent SYS["readline"] or already loaded */ 
 		return;
@@ -122,7 +123,7 @@ load_READLINE(NODE *symbol, void *data)
 			linebuf[sz - 1] = '\0';
 			sz--;
 			if (long_line) {
-				long_line = FALSE;
+				long_line = false;
 				i--;
 				continue;
 			}
@@ -133,7 +134,7 @@ load_READLINE(NODE *symbol, void *data)
 			if (do_lint)
 				lintwarn(_("file `%s' does not end in newline or line # `%d' is too long"),
 					file->stptr, i);
-			long_line = TRUE;
+			long_line = true;
 		}
 
 		tmp = make_number(i);
@@ -143,7 +144,7 @@ load_READLINE(NODE *symbol, void *data)
 		*lhs = make_string(linebuf, sz);
 	}
 	fclose(fp);
-	sd->load_file = FALSE;	/* don't load this file again */
+	sd->load_file = false;	/* don't load this file again */
 }	
 
 /* dlload --- load this library */

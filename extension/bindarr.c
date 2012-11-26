@@ -203,7 +203,7 @@ do_bind_array(int nargs)
 	array_t *aq;
 	char *aname;
 
-	symbol = get_array_argument(0, FALSE);
+	symbol = get_array_argument(0, false);
 	if (symbol->array_funcs == bind_array_func)
 		fatal(_("bind_array: array `%s' already bound"), array_vname(symbol));
 
@@ -212,7 +212,7 @@ do_bind_array(int nargs)
 	emalloc(aq, array_t *, sizeof(array_t), "do_bind_array");
 	memset(aq, '\0', sizeof(array_t));
 
-	t = get_array_argument(1, FALSE);
+	t = get_array_argument(1, false);
 
 	for (i = 0; i < sizeof(bfn)/sizeof(char *); i++) {
 		NODE *subs, *val, *f;
@@ -265,7 +265,7 @@ do_unbind_array(int nargs)
 	NODE *symbol, *xn, *td;
 	array_t *aq;
 
-	symbol = get_array_argument(0, FALSE);
+	symbol = get_array_argument(0, false);
 	if (symbol->array_funcs != bind_array_func)
 		fatal(_("unbind_array: `%s' is not a bound array"), array_vname(symbol));
 
@@ -341,7 +341,7 @@ call_func(NODE *func, NODE **arg, int arg_count)
 NODE *
 dlload(NODE *obj, void *dl)
 {
-	make_builtin("bind_array", do_bind_array, 2);
-	make_builtin("unbind_array", do_unbind_array, 1);
+	make_old_builtin("bind_array", do_bind_array, 2);
+	make_old_builtin("unbind_array", do_unbind_array, 1);
 	return make_number((AWKNUM) 0);
 }
