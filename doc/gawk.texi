@@ -31255,7 +31255,7 @@ the tools.} create a GNU/Linux shared library:
 
 @example
 $ @kbd{gcc -fPIC -shared -DHAVE_CONFIG_H -c -O -g -I@var{idir} filefuncs.c}
-$ @kbd{ld -o filefuncs.so -shared filefuncs.o -lc}
+$ @kbd{gcc -o filefuncs.so -shared filefuncs.o}
 @end example
 
 Once the library exists, it is loaded by using the @code{@@load} keyword.
