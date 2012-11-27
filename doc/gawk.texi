@@ -16013,12 +16013,22 @@ not available if @option{--posix} has been specified on the
 command line (@pxref{Options}).
 
 @cindex @command{gawk}, @code{fflush()} function in
-@command{gawk} extends the @code{fflush()} function in two ways.  The first
-is to allow no argument at all. In this case, the buffer for the
-standard output is flushed.  The second is to allow the null string
-(@w{@code{""}}) as the argument. In this case, the buffers for
-@emph{all} open output files and pipes are flushed.
-Brian Kernighan's @command{awk} also supports these extensions.
+@command{gawk} extends the @code{fflush()} function, as follows: If there
+is no argument, or if the argument is the null string (@w{@code{""}}),
+@command{gawk} flushes the buffers for @emph{all} open output files
+and pipes.  Brian Kernighan's @command{awk} also works this way.
+
+@quotation NOTE
+Prior to version @strong{FIXME: VERSION}, @command{gawk}
+would flush only the standard output if there was no argument,
+and flush all output files and pipes if the argument was the null
+string. This was changed in order to be compatible with Brian
+Kernighan's @command{awk}, in the hope that standardizing this
+feature in POSIX would then be easier.
+
+You can use @samp{fflush("/dev/stdout")} if you wish to flush
+only the standard output.
+@end quotation
 
 @c @cindex automatic warnings
 @c @cindex warnings, automatic
