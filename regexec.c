@@ -375,7 +375,7 @@ re_search_2_stub (bufp, string1, length1, string2, length2, start, range, regs,
   const char *str;
   int rval;
   int len = length1 + length2;
-  int free_str = 0;
+  char *s = NULL;
 
   if (BE (length1 < 0 || length2 < 0 || stop < 0 || len < length1, 0))
     return -2;
@@ -384,7 +384,7 @@ re_search_2_stub (bufp, string1, length1, string2, length2, start, range, regs,
   if (length2 > 0)
     if (length1 > 0)
       {
-	char *s = re_malloc (char, len);
+	s = re_malloc (char, len);
 
 	if (BE (s == NULL, 0))
 	  return -2;
@@ -395,7 +395,6 @@ re_search_2_stub (bufp, string1, length1, string2, length2, start, range, regs,
 	memcpy (s + length1, string2, length2);
 #endif
 	str = s;
-	free_str = 1;
       }
     else
       str = string2;
@@ -403,8 +402,7 @@ re_search_2_stub (bufp, string1, length1, string2, length2, start, range, regs,
     str = string1;
 
   rval = re_search_stub (bufp, str, len, start, range, stop, regs, ret_len);
-  if (free_str)
-    re_free ((char *) str);
+  re_free (s);
   return rval;
 }
 

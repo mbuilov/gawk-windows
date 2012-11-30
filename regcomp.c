@@ -573,8 +573,12 @@ regerror (errcode, preg, errbuf, errbuf_size)
     {
       if (BE (msg_size > errbuf_size, 0))
 	{
+#if defined HAVE_MEMPCPY || defined _LIBC
+	  *((char *) __mempcpy (errbuf, msg, errbuf_size - 1)) = '\0';
+#else
 	  memcpy (errbuf, msg, errbuf_size - 1);
 	  errbuf[errbuf_size - 1] = 0;
+#endif
 	}
       else
 	memcpy (errbuf, msg, msg_size);
@@ -896,7 +900,7 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
 # endif
 
   /* strcasecmp isn't a standard interface. brute force check */
-#if 0
+#ifndef GAWK
   if (strcasecmp (codeset_name, "UTF-8") == 0
       || strcasecmp (codeset_name, "UTF8") == 0)
     dfa->is_utf8 = 1;
@@ -978,8 +982,12 @@ init_word_char (re_dfa_t *dfa)
     {
       if (sizeof (dfa->word_char[0]) == 8)
 	{
-	  dfa->word_char[0] = UINT64_C (0x03ff000000000000);
-	  dfa->word_char[1] = UINT64_C (0x07fffffe87fffffe);
+          /* The extra temporaries here avoid "implicitly truncated"
+             warnings in the case when this is dead code, i.e. 32-bit.  */
+          const uint64_t wc0 = UINT64_C (0x03ff000000000000);
+          const uint64_t wc1 = UINT64_C (0x07fffffe87fffffe);
+	  dfa->word_char[0] = wc0;
+	  dfa->word_char[1] = wc1;
 	  i = 2;
 	}
       else if (sizeof (dfa->word_char[0]) == 4)
@@ -2679,7 +2687,6 @@ build_range_exp (reg_syntax_t syntax, bitset_t sbcset,
 # endif /* not RE_ENABLE_I18N */
 {
   unsigned int start_ch, end_ch;
-
   /* Equivalence Classes and Character Classes can't be a range start/end.  */
   if (BE (start_elem->type == EQUIV_CLASS || start_elem->type == CHAR_CLASS
 	  || end_elem->type == EQUIV_CLASS || end_elem->type == CHAR_CLASS,
