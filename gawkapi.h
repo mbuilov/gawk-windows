@@ -113,7 +113,10 @@ extern "C" {
 #define awk_const const
 #endif
 
-typedef int awk_bool_t;	/* we don't use <stdbool.h> on purpose */
+typedef enum awk_bool {
+	awk_false = 0,
+	awk_true
+} awk_bool_t;	/* we don't use <stdbool.h> on purpose */
 
 /* The information about input files that input parsers need to know: */
 typedef struct awk_input {

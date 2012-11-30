@@ -171,7 +171,7 @@ static awk_bool_t
 dir_can_take_file(const awk_input_buf_t *iobuf)
 {
 	if (iobuf == NULL)
-		return 0;
+		return awk_false;
 
 	return (iobuf->fd != INVALID_HANDLE && S_ISDIR(iobuf->sbuf.st_mode));
 }
@@ -201,7 +201,7 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 		warning(ext_id, _("dir_take_control_of: opendir/fdopendir failed: %s"),
 				strerror(errno));
 		update_ERRNO_int(errno);
-		return 0;
+		return awk_false;
 	}
 
 	emalloc(the_dir, open_directory_t *, sizeof(open_directory_t), "dir_take_control_of");
@@ -213,7 +213,7 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 	iobuf->get_record = dir_get_record;
 	iobuf->close_func = dir_close;
 
-	return 1;
+	return awk_true;
 }
 
 static awk_input_parser_t readdir_parser = {
@@ -242,7 +242,7 @@ init_readdir()
 	register_input_parser(& readdir_parser2);
 #endif
 
-	return 1;
+	return awk_true;
 }
 
 static awk_ext_func_t func_table[] = {

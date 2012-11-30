@@ -71,8 +71,6 @@ NODE *RLENGTH_node, *RSTART_node, *RS_node, *RT_node, *SUBSEP_node;
 NODE *PREC_node, *ROUNDMODE_node;
 NODE *TEXTDOMAIN_node;
 
-NODE *_r;	/* used as temporary in stack macros */
-
 long NF;
 long NR;
 long FNR;
@@ -86,7 +84,7 @@ char *TEXTDOMAIN;
 /*
  * CONVFMT is a convenience pointer for the current number to string format.
  * We must supply an initial value to avoid recursion problems of
- *	set_CONVFMT -> fmt_index -> r_force_string: gets NULL CONVFMT
+ *	set_CONVFMT -> fmt_index -> force_string: gets NULL CONVFMT
  * Fun, fun, fun, fun.
  */
 char *CONVFMT = "%.6g";

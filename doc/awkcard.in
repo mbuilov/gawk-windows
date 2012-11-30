@@ -316,10 +316,6 @@ Disable common and GNU extensions.\*(CB
 .in +4n
 .TI "\*(FC\-r\*(FR, \*(FC\-\^\-re\-interval\*(FR
 Enable \*(FIinterval expressions\*(FR.
-... in regular
-... expression matching (see \fHRegular
-... Expressions\fP below). Useful if
-... \*(FC\-\^\-traditional\*(FR is specified
 .TI "\*(FC\-S\*(FR, \*(FC\-\^\-sandbox\*(FR
 Disable the \*(FCsystem()\*(FR function,
 input redirection with \*(FCgetline\*(FR,
@@ -551,7 +547,6 @@ variables, each element being the value of
 that variable.
 T}
 \*(CB\*(FCERRNO\fP	T{
-... String describing the error if a
 String error value if a
 \*(FCgetline\*(FR
 redirection or read
@@ -599,11 +594,6 @@ T}
 \*(CB\*(FCLINT\fP	T{
 Provides dynamic control of the \*(FC\-\^\-lint\fP
 option from within an AWK program.
-... When true, \*(GK
-... prints lint warnings.
-... When assigned the string value \*(FC"fatal"\*(FR,
-... lint warnings become fatal errors.
-... Any other true value just prints warnings.
 T}
 \*(CD\*(FCNF\fP	T{
 Number of fields in the current input record.
@@ -1298,10 +1288,15 @@ T}
 \*(FCgetline \*(FIv \*(FC< \*(FIfile\*(FR	Set \*(FIv\fP from next record of \*(FIfile\*(FR.
 \*(FIcmd \*(FC| getline\*(FR	Pipe into \*(FCgetline\*(FR; set \*(FC$0\*(FR, \*(FCNF\*(FR.
 \*(FIcmd \*(FC| getline \*(FIv\*(FR	Pipe into \*(FCgetline\*(FR; set \*(FIv\*(FR.
-\*(CB\*(FIcmd \*(FC|& getline\*(FR	Co-process pipe into \*(FCgetline\*(FR; set \*(FC$0\*(FR, \*(FCNF\*(FR.
+.\" \*(CB\*(FIcmd \*(FC|& getline\*(FR	Co-process pipe into \*(FCgetline\*(FR; set \*(FC$0\*(FR, \*(FCNF\*(FR.
 .TE
 .fi
 .in +.2i
+.ti -.2i
+\*(CB\*(FIcmd \*(FC|& getline\*(FR
+.br
+Co-process pipe into \*(FCgetline\*(FR; set \*(FC$0\*(FR, \*(FCNF\*(FR.
+.br
 .ti -.2i
 \*(FIcmd \*(FC|& getline \*(FIv\*(FR
 .br
@@ -1320,10 +1315,10 @@ execute any \*(FCEND\fP rule(s).
 .br
 Stop processing the current input file.
 The next input record comes from the
-next input file. \*(FCFILENAME\fP \*(CBand
-\*(FCARGIND\fP\*(CD are updated, \*(FCFNR\fP is reset to 1,
-and processing starts over with the first
-pattern in the AWK program. Upon end
+next input file. Update \*(FCFILENAME\fP \*(CBand
+\*(FCARGIND\fP\*(CD, reset \*(FCFNR\fP to 1,
+and start over with the first
+pattern. Upon end
 of input data, execute any \*(FCEND\fP rule(s).
 .in -.2i
 .sp .5
@@ -1332,7 +1327,7 @@ of input data, execute any \*(FCEND\fP rule(s).
 \*(CBUpon an error, \*(FCERRNO\*(FR contains a string describing
 the problem.\*(CX
 .EB "\s+2\f(HBINPUT CONTROL\*(FR\s0"
-
+.sp .6
 .\" --- Output Control
 .ES
 .fi
@@ -1341,9 +1336,9 @@ the problem.\*(CX
 \*(CL\*(FCfflush(\*(FR[\*(FIfile\^\*(FR]\*(FC)\*(FR
 .br
 Flush any buffers associated
-with the open output file or pipe \*(FIfile\*(FR.\*(CD
-\*(CBIf no \*(FIfile\fP, then flush standard output.
-If \*(FIfile\fP is null, then flush all open output files and pipes
+with the open output file or pipe \*(FIfile\*(FR.
+If no \*(FIfile\fP, or if
+\*(FIfile\fP is null, then flush all open output files and pipes
 (\*(GK and \*(NK)\*(CD.
 .ti -.2i
 \*(FCprint\fP
@@ -1390,7 +1385,7 @@ Print data down a pipeline to \*(FIcmd\*(FR.
 Print data down a pipeline to co-process \*(FIcmd\*(FR.\*(CX
 .in -.2i
 .EB "\s+2\f(HBOUTPUT CONTROL\*(FR\s0"
-
+.sp .6
 .\" --- Closing Redirections
 .ES
 .fi
@@ -1506,8 +1501,8 @@ T}
 Precision.
 The meaning of the \*(FIprec\*(FR varies by control letter:
 T}
-  \*(FC%d\*(FR, \*(FC%o\*(FR, \*(FC%i\*(FR,
-  \*(FC%u\*(FR, \*(FC%x\*(FR, \*(FC%X\fP	T{
+  \*(FC%d\*(FR,\|\*(FC%o\*(FR,\|\*(FC%i\fP,	\0
+  \*(FC%u\*(FR,\|\*(FC%x\*(FR,\|\*(FC%X\fP	T{
 The minimum number of digits to print.
 T}
   \*(FC%e\*(FR, \*(FC%E\*(FR, \*(FC%f\*(FR	T{
@@ -1613,7 +1608,7 @@ l lw(2i).
 \*(FCexp(\*(FIexpr\*(FC)\*(FR	The exponential function (\*(FIe \*(FC^ \*(FIx\*(FR).
 \*(FCint(\*(FIexpr\*(FC)\*(FR	Truncate to integer.
 \*(FClog(\*(FIexpr\*(FC)\*(FR	The natural logarithm function (base \*(FIe\^\*(FR).
-\*(FCrand()\fP	A random number between 0 and 1 (0 \(<= \*(FIN\fP < 1).
+\*(FCrand()\fP	A random number \*(FIN\fP such that 0 \(<= \*(FIN\fP < 1.
 \*(FCsin(\*(FIexpr\*(FC)\*(FR	The sine of \*(FIexpr\fP, which is in radians.
 \*(FCsqrt(\*(FIexpr\*(FC)\*(FR	The square root function.
 \&\*(FCsrand(\*(FR[\*(FIexpr\^\*(FR]\*(FC)\*(FR	T{
@@ -1957,9 +1952,6 @@ GCC (the GNU Compiler Collection) works well.
 .in -.2i
 .nf
 .sp .4
-... Host: \*(FCftp.whidbey.net\*(FR
-... File: \*(FC/pub/brennan/mawk1.3.3.tar.gz\fP
-... \*(FChttp://www.skeeve.com/gawk/mawk1.3.3.tar.gz\fP
 Host: \*(FCinvisible-island.net\*(FR
 File: \*(FC/mawk/mawk.tar.gz\fP
 .in +.2i

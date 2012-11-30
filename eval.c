@@ -43,7 +43,6 @@ static Func_post_exec post_execute = NULL;
 
 extern void frame_popped();
 
-NODE *_t;		/* used as a temporary in macros */
 int OFSlen;
 int ORSlen;
 int OFMTidx;

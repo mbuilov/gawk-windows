@@ -79,10 +79,10 @@ revoutput_can_take_file(const awk_output_buf_t *outbuf)
 	awk_value_t value;
 
 	if (outbuf == NULL)
-		return 0;
+		return awk_false;
 
 	if (! sym_lookup("REVOUT", AWK_NUMBER, & value))
-		return 0;
+		return awk_false;
 
 	return (value.num_value != 0);
 }
@@ -97,11 +97,11 @@ static awk_bool_t
 revoutput_take_control_of(awk_output_buf_t *outbuf)
 {
 	if (outbuf == NULL)
-		return 0;
+		return awk_false;
 
 	outbuf->gawk_fwrite = rev_fwrite;
-	outbuf->redirected = 1;
-	return 1;
+	outbuf->redirected = awk_true;
+	return awk_true;
 }
 
 static awk_output_wrapper_t output_wrapper = {
@@ -124,10 +124,10 @@ init_revoutput()
 	if (! sym_update("REVOUT", & value)) {
 		warning(ext_id, _("revoutput: could not initialize REVOUT variable"));
 
-		return 0;
+		return awk_false;
 	}
 
-	return 1;
+	return awk_true;
 }
 
 static awk_ext_func_t func_table[] = {

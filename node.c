@@ -260,21 +260,6 @@ no_malloc:
 	return s;
 }
 
-
-/* r_force_string --- force a value to be a string */
-
-#ifdef GAWKDEBUG
-NODE *
-r_force_string(NODE *s)
-{
-	if ((s->flags & STRCUR) != 0
-		    && (s->stfmt == -1 || s->stfmt == CONVFMTidx)
-	)
-		return s;
-	return format_val(CONVFMT, CONVFMTidx, s);
-}
-#endif
-
 /* r_dupnode --- duplicate a node */
 
 NODE *

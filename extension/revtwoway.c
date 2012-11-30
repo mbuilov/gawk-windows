@@ -280,7 +280,7 @@ revtwoway_take_control_of(const char *name, awk_input_buf_t *inbuf, awk_output_b
 	two_way_proc_data_t *proc_data;
 
 	if (inbuf == NULL || outbuf == NULL)
-		return 0;
+		return awk_false;
 
 	emalloc(proc_data, two_way_proc_data_t *, sizeof(two_way_proc_data_t), "revtwoway_take_control_of");
 	proc_data->in_use = 2;
@@ -304,8 +304,9 @@ revtwoway_take_control_of(const char *name, awk_input_buf_t *inbuf, awk_output_b
 	outbuf->gawk_fflush = rev2way_fflush;
 	outbuf->gawk_ferror = rev2way_ferror;
 	outbuf->gawk_fclose = rev2way_fclose;
-	outbuf->redirected = 1;
-	return 1;
+	outbuf->redirected = awk_true;
+
+	return awk_true;
 }
 
 static awk_two_way_processor_t two_way_processor = {
@@ -324,7 +325,7 @@ init_revtwoway()
 
 	max_fds = getdtablesize();
 
-	return 1;
+	return awk_true;
 }
 
 static awk_ext_func_t func_table[] = {

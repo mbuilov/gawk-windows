@@ -819,7 +819,7 @@ BEGIN {
 
 	create_new_array();
 
-	return 1;
+	return awk_true;
 }
 
 static awk_bool_t (*init_func)(void) = init_testext;

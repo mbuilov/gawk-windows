@@ -178,24 +178,24 @@ write_array(FILE *fp, awk_array_t array)
 
 	if (! flatten_array(array, & flat_array)) {
 		fprintf(stderr, _("write_array: could not flatten array\n"));
-		return 0;
+		return awk_false;
 	}
 
 	count = htonl(flat_array->count);
 	if (fwrite(& count, 1, sizeof(count), fp) != sizeof(count))
-		return 0;
+		return awk_false;
 
 	for (i = 0; i < flat_array->count; i++) {
 		if (! write_elem(fp, & flat_array->elements[i]))
-			return 0;
+			return awk_false;
 	}
 
 	if (! release_flattened_array(array, flat_array)) {
 		fprintf(stderr, _("write_array: could not release flattened array\n"));
-		return 0;
+		return awk_false;
 	}
 
-	return 1;
+	return awk_true;
 }
 
 /* write_elem --- write out a single element */
@@ -208,13 +208,13 @@ write_elem(FILE *fp, awk_element_t *element)
 
 	indexval_len = htonl(element->index.str_value.len);
 	if (fwrite(& indexval_len, 1, sizeof(indexval_len), fp) != sizeof(indexval_len))
-		return 0;
+		return awk_false;
 
 	if (element->index.str_value.len > 0) {
 		write_count = fwrite(element->index.str_value.str,
 				1, element->index.str_value.len, fp);
 		if (write_count != (ssize_t) element->index.str_value.len)
-			return 0;
+			return awk_false;
 	}
 
 	return write_value(fp, & element->value);
@@ -222,7 +222,7 @@ write_elem(FILE *fp, awk_element_t *element)
 
 /* write_value --- write a number or a string or a array */
 
-static int
+static awk_bool_t
 write_value(FILE *fp, awk_value_t *val)
 {
 	uint32_t code, len;
@@ -230,32 +230,32 @@ write_value(FILE *fp, awk_value_t *val)
 	if (val->val_type == AWK_ARRAY) {
 		code = htonl(2);
 		if (fwrite(& code, 1, sizeof(code), fp) != sizeof(code))
-			return 0;
+			return awk_false;
 		return write_array(fp, val->array_cookie);
 	}
 
 	if (val->val_type == AWK_NUMBER) {
 		code = htonl(1);
 		if (fwrite(& code, 1, sizeof(code), fp) != sizeof(code))
-			return 0;
+			return awk_false;
 
 		if (fwrite(& val->num_value, 1, sizeof(val->num_value), fp) != sizeof(val->num_value))
-			return 0;
+			return awk_false;
 	} else {
 		code = 0;
 		if (fwrite(& code, 1, sizeof(code), fp) != sizeof(code))
-			return 0;
+			return awk_false;
 
 		len = htonl(val->str_value.len);
 		if (fwrite(& len, 1, sizeof(len), fp) != sizeof(len))
-			return 0;
+			return awk_false;
 
 		if (fwrite(val->str_value.str, 1, val->str_value.len, fp)
 				!= (ssize_t) val->str_value.len)
-			return 0;
+			return awk_false;
 	}
 
-	return 1;
+	return awk_true;
 }
 
 /* do_reada --- read an array */
@@ -358,9 +358,9 @@ read_array(FILE *fp, awk_array_t array)
 	uint32_t count;
 	awk_element_t new_elem;
 
-	if (fread(& count, 1, sizeof(count), fp) != sizeof(count)) {
-		return 0;
-	}
+	if (fread(& count, 1, sizeof(count), fp) != sizeof(count))
+		return awk_false;
+
 	count = ntohl(count);
 
 	for (i = 0; i < count; i++) {
@@ -368,16 +368,16 @@ read_array(FILE *fp, awk_array_t array)
 			/* add to array */
 			if (! set_array_element_by_elem(array, & new_elem)) {
 				fprintf(stderr, _("read_array: set_array_element failed\n"));
-				return 0;
+				return awk_false;
 			}
 		} else
 			break;
 	}
 
 	if (i != count)
-		return 0;
+		return awk_false;
 
-	return 1;
+	return awk_true;
 }
 
 /* read_elem --- read in a single element */
@@ -391,7 +391,7 @@ read_elem(FILE *fp, awk_element_t *element)
 	ssize_t ret;
 
 	if ((ret = fread(& index_len, 1, sizeof(index_len), fp)) != sizeof(index_len)) {
-		return 0;
+		return awk_false;
 	}
 	index_len = ntohl(index_len);
 
@@ -407,14 +407,14 @@ read_elem(FILE *fp, awk_element_t *element)
 			char *cp = realloc(buffer, index_len);
 
 			if (cp == NULL)
-				return 0;
+				return awk_false;
 
 			buffer = cp;
 			buflen = index_len;
 		}
 
 		if (fread(buffer, 1, index_len, fp) != (ssize_t) index_len) {
-			return 0;
+			return awk_false;
 		}
 		make_const_string(buffer, index_len, & element->index);
 	} else {
@@ -422,9 +422,9 @@ read_elem(FILE *fp, awk_element_t *element)
 	}
 
 	if (! read_value(fp, & element->value))
-		return 0;
+		return awk_false;
 
-	return 1;
+	return awk_true;
 }
 
 /* read_value --- read a number or a string */
@@ -435,15 +435,15 @@ read_value(FILE *fp, awk_value_t *value)
 	uint32_t code, len;
 
 	if (fread(& code, 1, sizeof(code), fp) != sizeof(code))
-		return 0;
+		return awk_false;
 
 	code = ntohl(code);
 
 	if (code == 2) {
 		awk_array_t array = create_array();
 
-		if (read_array(fp, array) != 0)
-			return 0; 
+		if (! read_array(fp, array))
+			return awk_false; 
 
 		/* hook into value */
 		value->val_type = AWK_ARRAY;
@@ -452,14 +452,14 @@ read_value(FILE *fp, awk_value_t *value)
 		double d;
 
 		if (fread(& d, 1, sizeof(d), fp) != sizeof(d))
-			return 0;
+			return awk_false;
 
 		/* hook into value */
 		value->val_type = AWK_NUMBER;
 		value->num_value = d;
 	} else {
 		if (fread(& len, 1, sizeof(len), fp) != sizeof(len)) {
-			return 0;
+			return awk_false;
 		}
 		len = ntohl(len);
 		value->val_type = AWK_STRING;
@@ -469,11 +469,11 @@ read_value(FILE *fp, awk_value_t *value)
 
 		if (fread(value->str_value.str, 1, len, fp) != (ssize_t) len) {
 			free(value->str_value.str);
-			return 0;
+			return awk_false;
 		}
 	}
 
-	return 1;
+	return awk_true;
 }
 
 static awk_ext_func_t func_table[] = {
