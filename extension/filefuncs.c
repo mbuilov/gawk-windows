@@ -475,7 +475,7 @@ fill_error_element(awk_array_t element_array, const int errcode)
 /* fill_default_elements --- fill in stat and path elements */
 
 static void
-fill_default_elements(awk_array_t element_array, const FTSENT *const fentry, int bad_ret)
+fill_default_elements(awk_array_t element_array, const FTSENT *const fentry, awk_bool_t bad_ret)
 {
 	/* full path */
 	fill_path_element(element_array, fentry->fts_path);
@@ -501,12 +501,12 @@ process(FTS *heirarchy, awk_array_t destarray, int seedot)
 	FTSENT *fentry;
 	awk_value_t index, value;
 	awk_array_t element_array, newdir_array, dot_array;
-	int bad_ret = 0;
+	awk_bool_t bad_ret = awk_false;
 
 	/* path is full path,  pathlen is length thereof */
 	/* name is name in directory, namelen is length thereof */
 	while ((fentry = fts_read(heirarchy)) != NULL) {
-		bad_ret = 0;
+		bad_ret = awk_false;
 
 		switch (fentry->fts_info) {
 		case FTS_D:
@@ -542,7 +542,7 @@ process(FTS *heirarchy, awk_array_t destarray, int seedot)
 		case FTS_ERR:
 		case FTS_NS:
 			/* error */
-			bad_ret = 1;
+			bad_ret = awk_true;
 			/* fall through */
 
 		case FTS_NSOK:
