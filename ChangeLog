@@ -1,3 +1,17 @@
+2012-01-30         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Further cleanups of macros in awk.h
+
+	* awk.h (_r, _t): Remove declarations.
+	(unref, m_force_string): Remove macros.
+	(r_unref): Move declaration.
+	(r_force_string): Remove declaration.
+	(DEREF, force_string, force_number, unref): Now inline functions.
+	(POP_STRING, TOP_STRING): Back to macros.
+	* eval.c (_t): Remove definition.
+	* main.c (_r): Remove definition.
+	* node.c (r_force_string): Remove.
+
 2012-11-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_fflush): Make fflush() and fflush("") both

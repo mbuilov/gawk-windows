@@ -1034,9 +1034,6 @@ extern int (*cmp_numbers)(const NODE *, const NODE *);
 typedef int (*Func_pre_exec)(INSTRUCTION **);
 typedef void (*Func_post_exec)(INSTRUCTION *);
 
-extern NODE *_t;	/* used as temporary in macros */
-extern NODE *_r;	/* used as temporary in macros */
-
 extern BLOCK nextfree[];
 extern bool field0_valid;
 
@@ -1157,7 +1154,14 @@ extern STACK_ITEM *stack_top;
 
 #define UPREF(r)	(void) ((r)->valref++)
 
-#define DEREF(r)	( _r = (r), (--_r->valref == 0) ?  r_unref(_r) : (void)0 )
+extern void r_unref(NODE *tmp);
+
+static inline void
+DEREF(NODE *r)
+{
+	if (--r->valref == 0)
+		r_unref(r);
+}
 
 #define POP_NUMBER() force_number(POP_SCALAR())
 #define TOP_NUMBER() force_number(TOP_SCALAR())
@@ -1238,24 +1242,33 @@ extern STACK_ITEM *stack_top;
 
 #define efree(p)	free(p)
 
-#define	force_string(s)	(_t = (s), m_force_string(_t))	
+static inline NODE *
+force_string(NODE *s)
+{
+	if ((s->flags & STRCUR) != 0
+		    && (s->stfmt == -1 || s->stfmt == CONVFMTidx)
+	)
+		return s;
+	return format_val(CONVFMT, CONVFMTidx, s);
+}
 
 #ifdef GAWKDEBUG
 #define unref	r_unref
-#define m_force_string	r_force_string
-extern NODE *r_force_string(NODE *s);
 #define	force_number	str2number
 #else /* not GAWKDEBUG */
 
-#define unref(r)	( _r = (r), (_r == NULL || --_r->valref > 0) ? \
-			(void)0 : r_unref(_r) )
+static inline void
+unref(NODE *r)
+{
+	if (r != NULL && --r->valref <= 0)
+		r_unref(r);
+}
 
-#define	m_force_string(_ts)	(((_ts->flags & STRCUR) && \
-			(_ts->stfmt == -1 || _ts->stfmt == CONVFMTidx)) ? \
-			_ts : format_val(CONVFMT, CONVFMTidx, _ts))
-
-#define force_number(n)	(_t = (n), \
-		(_t->flags & NUMCUR) ? _t : str2number(_t))
+static inline NODE *
+force_number(NODE *n)
+{
+	return (n->flags & NUMCUR) ? n : str2number(n);
+}
 
 #endif /* GAWKDEBUG */
 
@@ -1549,7 +1562,6 @@ extern NODE *r_format_val(const char *format, int index, NODE *s);
 extern NODE *r_dupnode(NODE *n);
 extern NODE *make_str_node(const char *s, size_t len, int flags);
 extern void *more_blocks(int id);
-extern void r_unref(NODE *tmp);
 extern int parse_escape(const char **string_ptr);
 #if MBS_SUPPORT
 extern NODE *str2wstr(NODE *n, size_t **ptr);
@@ -1711,24 +1723,10 @@ TOP_SCALAR()
 }
 
 /* POP_STRING --- pop the string at the top of the stack */
-
-static inline NODE *
-POP_STRING()
-{
-	NODE *s = POP_SCALAR();
-	
-	return m_force_string(s);
-}
+#define POP_STRING()	force_string(POP_SCALAR())
 
 /* TOP_STRING --- get the string at the top of the stack */
-
-static inline NODE *
-TOP_STRING()
-{
-	NODE *s = TOP_SCALAR();
-	
-	return m_force_string(s);
-}
+#define TOP_STRING()	force_string(TOP_SCALAR())
 
 /* in_array --- return pointer to element in array if there */
 
