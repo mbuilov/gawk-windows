@@ -21920,11 +21920,16 @@ that use them.
      in the API data structures unwritable from extension code, while
      allowing `gawk' to use them as it needs to.
 
-`typedef int awk_bool_t;'
-     A simple boolean type. At the moment, the API does not define
-     special "true" and "false" values, although perhaps it should.
+`typedef enum awk_bool {'
 
-`typedef struct {'
+`    awk_false = 0,'
+
+`    awk_true'
+
+`} awk_bool_t;'
+     A simple boolean type.
+
+`typedef struct awk_string {'
 `    char *str;      /* data */'
 `    size_t len;     /* length thereof, in chars */'
 `} awk_string_t;'
@@ -21946,7 +21951,7 @@ that use them.
      This `enum' indicates the type of a value.  It is used in the
      following `struct'.
 
-`typedef struct {'
+`typedef struct awk_value {'
 `    awk_valtype_t   val_type;'
 `    union {'
 `        awk_string_t       s;'
@@ -22166,7 +22171,7 @@ File: gawk.info,  Node: Extension Functions,  Next: Exit Callback Functions,  Up
 
 Extension functions are described by the following record:
 
-     typedef struct {
+     typedef struct awk_ext_func {
          const char *name;
          awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
          size_t num_expected_args;
@@ -22285,11 +22290,11 @@ used for `RT', if any.
    Your extension should package these functions inside an
 `awk_input_parser_t', which looks like this:
 
-     typedef struct input_parser {
+     typedef struct awk_input_parser {
          const char *name;   /* name of parser */
          awk_bool_t (*can_take_file)(const awk_input_buf_t *iobuf);
          awk_bool_t (*take_control_of)(awk_input_buf_t *iobuf);
-         awk_const struct input_parser *awk_const next;    /* for use by gawk */
+         awk_const struct awk_input_parser *awk_const next;    /* for use by gawk */
      } awk_input_parser_t;
 
    The fields are:
@@ -22456,11 +22461,11 @@ an extension to take over the output to a file opened with the `>' or
 
    The output wrapper is very similar to the input parser structure:
 
-     typedef struct output_wrapper {
+     typedef struct awk_output_wrapper {
          const char *name;   /* name of the wrapper */
          awk_bool_t (*can_take_file)(const awk_output_buf_t *outbuf);
          awk_bool_t (*take_control_of)(awk_output_buf_t *outbuf);
-         awk_const struct output_wrapper *awk_const next;  /* for use by gawk */
+         awk_const struct awk_output_wrapper *awk_const next;  /* for use by gawk */
      } awk_output_wrapper_t;
 
    The members are as follows:
@@ -22487,7 +22492,7 @@ an extension to take over the output to a file opened with the `>' or
 
    The `awk_output_buf_t' structure looks like this:
 
-     typedef struct {
+     typedef struct awk_output_buf {
          const char *name;   /* name of output file */
          const char *mode;   /* mode argument to fopen */
          FILE *fp;           /* stdio file pointer */
@@ -22563,13 +22568,13 @@ structures as described earlier.
 
    A two-way processor is represented by the following structure:
 
-     typedef struct two_way_processor {
+     typedef struct awk_two_way_processor {
          const char *name;   /* name of the two-way processor */
          awk_bool_t (*can_take_two_way)(const char *name);
          awk_bool_t (*take_control_of)(const char *name,
                                        awk_input_buf_t *inbuf,
                                        awk_output_buf_t *outbuf);
-         awk_const struct two_way_processor *awk_const next;  /* for use by gawk */
+         awk_const struct awk_two_way_processor *awk_const next;  /* for use by gawk */
      } awk_two_way_processor_t;
 
    The fields are as follows:
@@ -23612,8 +23617,8 @@ in the `gawkapi.h' header file:
      If you need to do some initialization work, you should define a
      function that does it (creates variables, opens files, etc.)  and
      then define the `init_func' pointer to point to your function.
-     The function should return zero (false) upon failure, non-zero
-     (success) if everything goes well.
+     The function should return `awk_false' upon failure, or `awk_true'
+     if everything goes well.
 
      If you don't need to do any initialization, define the pointer and
      initialize it to `NULL'.
@@ -23634,7 +23639,7 @@ standard work. It does the following:
      to load, it prints a warning message but continues on.
 
   3. If the `init_func' pointer is not `NULL', call the function it
-     points to. If it returns non-zero, print a warning message.
+     points to. If it returns `awk_false', print a warning message.
 
   4. If `ext_version' is not `NULL', register the version string with
      `gawk'.
@@ -32167,117 +32172,117 @@ Node: Extension Future Growth878591
 Node: Extension API Description879409
 Node: Extension API Functions Introduction880737
 Node: General Data Types885437
-Ref: General Data Types-Footnote-1891070
-Node: Requesting Values891369
-Ref: table-value-types-returned892100
-Node: Constructor Functions893054
-Node: Registration Functions896050
-Node: Extension Functions896735
-Node: Exit Callback Functions898554
-Node: Extension Version String899797
-Node: Input Parsers900447
-Node: Output Wrappers909026
-Node: Two-way processors913419
-Node: Printing Messages915541
-Ref: Printing Messages-Footnote-1916618
-Node: Updating `ERRNO'916770
-Node: Accessing Parameters917509
-Node: Symbol Table Access918739
-Node: Symbol table by name919251
-Ref: Symbol table by name-Footnote-1921421
-Node: Symbol table by cookie921501
-Ref: Symbol table by cookie-Footnote-1925630
-Node: Cached values925693
-Ref: Cached values-Footnote-1929136
-Node: Array Manipulation929227
-Ref: Array Manipulation-Footnote-1930325
-Node: Array Data Types930364
-Ref: Array Data Types-Footnote-1933067
-Node: Array Functions933159
-Node: Flattening Arrays936925
-Node: Creating Arrays943758
-Node: Extension API Variables948553
-Node: Extension Versioning949189
-Node: Extension API Informational Variables951090
-Node: Extension API Boilerplate952176
-Node: Finding Extensions956010
-Node: Extension Example956557
-Node: Internal File Description957295
-Node: Internal File Ops960983
-Ref: Internal File Ops-Footnote-1972430
-Node: Using Internal File Ops972570
-Ref: Using Internal File Ops-Footnote-1974923
-Node: Extension Samples975189
-Node: Extension Sample File Functions976632
-Node: Extension Sample Fnmatch985105
-Node: Extension Sample Fork986831
-Node: Extension Sample Ord988045
-Node: Extension Sample Readdir988821
-Node: Extension Sample Revout990325
-Node: Extension Sample Rev2way990918
-Node: Extension Sample Read write array991608
-Node: Extension Sample Readfile993491
-Node: Extension Sample API Tests994246
-Node: Extension Sample Time994771
-Node: gawkextlib996078
-Node: Language History998459
-Node: V7/SVR3.1999981
-Node: SVR41002302
-Node: POSIX1003744
-Node: BTL1004752
-Node: POSIX/GNU1005486
-Node: Common Extensions1011021
-Node: Ranges and Locales1012128
-Ref: Ranges and Locales-Footnote-11016746
-Ref: Ranges and Locales-Footnote-21016773
-Ref: Ranges and Locales-Footnote-31017033
-Node: Contributors1017254
-Node: Installation1021550
-Node: Gawk Distribution1022444
-Node: Getting1022928
-Node: Extracting1023754
-Node: Distribution contents1025446
-Node: Unix Installation1030668
-Node: Quick Installation1031285
-Node: Additional Configuration Options1033247
-Node: Configuration Philosophy1034724
-Node: Non-Unix Installation1037066
-Node: PC Installation1037524
-Node: PC Binary Installation1038823
-Node: PC Compiling1040671
-Node: PC Testing1043615
-Node: PC Using1044791
-Node: Cygwin1048976
-Node: MSYS1049976
-Node: VMS Installation1050490
-Node: VMS Compilation1051093
-Ref: VMS Compilation-Footnote-11052100
-Node: VMS Installation Details1052158
-Node: VMS Running1053793
-Node: VMS Old Gawk1055400
-Node: Bugs1055874
-Node: Other Versions1059726
-Node: Notes1065041
-Node: Compatibility Mode1065700
-Node: Additions1066483
-Node: Accessing The Source1067410
-Node: Adding Code1069013
-Node: New Ports1075055
-Node: Derived Files1079190
-Ref: Derived Files-Footnote-11084498
-Ref: Derived Files-Footnote-21084532
-Ref: Derived Files-Footnote-31085132
-Node: Future Extensions1085230
-Node: Implementation Limitations1085811
-Node: Basic Concepts1087038
-Node: Basic High Level1087719
-Ref: figure-general-flow1087990
-Ref: figure-process-flow1088589
-Ref: Basic High Level-Footnote-11091818
-Node: Basic Data Typing1092003
-Node: Glossary1095358
-Node: Copying1120669
-Node: GNU Free Documentation License1158226
-Node: Index1183363
+Ref: General Data Types-Footnote-1891039
+Node: Requesting Values891338
+Ref: table-value-types-returned892069
+Node: Constructor Functions893023
+Node: Registration Functions896019
+Node: Extension Functions896704
+Node: Exit Callback Functions898536
+Node: Extension Version String899779
+Node: Input Parsers900429
+Node: Output Wrappers909016
+Node: Two-way processors913432
+Node: Printing Messages915562
+Ref: Printing Messages-Footnote-1916639
+Node: Updating `ERRNO'916791
+Node: Accessing Parameters917530
+Node: Symbol Table Access918760
+Node: Symbol table by name919272
+Ref: Symbol table by name-Footnote-1921442
+Node: Symbol table by cookie921522
+Ref: Symbol table by cookie-Footnote-1925651
+Node: Cached values925714
+Ref: Cached values-Footnote-1929157
+Node: Array Manipulation929248
+Ref: Array Manipulation-Footnote-1930346
+Node: Array Data Types930385
+Ref: Array Data Types-Footnote-1933088
+Node: Array Functions933180
+Node: Flattening Arrays936946
+Node: Creating Arrays943779
+Node: Extension API Variables948574
+Node: Extension Versioning949210
+Node: Extension API Informational Variables951111
+Node: Extension API Boilerplate952197
+Node: Finding Extensions956028
+Node: Extension Example956575
+Node: Internal File Description957313
+Node: Internal File Ops961001
+Ref: Internal File Ops-Footnote-1972448
+Node: Using Internal File Ops972588
+Ref: Using Internal File Ops-Footnote-1974941
+Node: Extension Samples975207
+Node: Extension Sample File Functions976650
+Node: Extension Sample Fnmatch985123
+Node: Extension Sample Fork986849
+Node: Extension Sample Ord988063
+Node: Extension Sample Readdir988839
+Node: Extension Sample Revout990343
+Node: Extension Sample Rev2way990936
+Node: Extension Sample Read write array991626
+Node: Extension Sample Readfile993509
+Node: Extension Sample API Tests994264
+Node: Extension Sample Time994789
+Node: gawkextlib996096
+Node: Language History998477
+Node: V7/SVR3.1999999
+Node: SVR41002320
+Node: POSIX1003762
+Node: BTL1004770
+Node: POSIX/GNU1005504
+Node: Common Extensions1011039
+Node: Ranges and Locales1012146
+Ref: Ranges and Locales-Footnote-11016764
+Ref: Ranges and Locales-Footnote-21016791
+Ref: Ranges and Locales-Footnote-31017051
+Node: Contributors1017272
+Node: Installation1021568
+Node: Gawk Distribution1022462
+Node: Getting1022946
+Node: Extracting1023772
+Node: Distribution contents1025464
+Node: Unix Installation1030686
+Node: Quick Installation1031303
+Node: Additional Configuration Options1033265
+Node: Configuration Philosophy1034742
+Node: Non-Unix Installation1037084
+Node: PC Installation1037542
+Node: PC Binary Installation1038841
+Node: PC Compiling1040689
+Node: PC Testing1043633
+Node: PC Using1044809
+Node: Cygwin1048994
+Node: MSYS1049994
+Node: VMS Installation1050508
+Node: VMS Compilation1051111
+Ref: VMS Compilation-Footnote-11052118
+Node: VMS Installation Details1052176
+Node: VMS Running1053811
+Node: VMS Old Gawk1055418
+Node: Bugs1055892
+Node: Other Versions1059744
+Node: Notes1065059
+Node: Compatibility Mode1065718
+Node: Additions1066501
+Node: Accessing The Source1067428
+Node: Adding Code1069031
+Node: New Ports1075073
+Node: Derived Files1079208
+Ref: Derived Files-Footnote-11084516
+Ref: Derived Files-Footnote-21084550
+Ref: Derived Files-Footnote-31085150
+Node: Future Extensions1085248
+Node: Implementation Limitations1085829
+Node: Basic Concepts1087056
+Node: Basic High Level1087737
+Ref: figure-general-flow1088008
+Ref: figure-process-flow1088607
+Ref: Basic High Level-Footnote-11091836
+Node: Basic Data Typing1092021
+Node: Glossary1095376
+Node: Copying1120687
+Node: GNU Free Documentation License1158244
+Node: Index1183381
 
 End Tag Table

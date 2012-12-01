@@ -1,4 +1,4 @@
-Sun Aug  5 16:25:58 IDT 2012
+Sat Dec  1 21:53:02 IST 2012
 ============================
 
 If you are reading this, you have retrieved the gawk code base via
@@ -327,3 +327,26 @@ turn, followed by "bzr pull" to sync the branch.
 
 It depends upon if you have pushed the commit or not. Lots of good
 info is at http://stackoverflow.com/questions/927358/git-undo-last-commit .
+
+- What is the difference between using `git rebase' and `git merge' ?
+
+Both of these can be used to bring one branch up to date with respect
+to another.  For example, if you are working on a feature branch based
+off master, and master has since progressed, you can use
+
+	git checkout feature
+	git merge master
+
+or
+
+	git checkout feature
+	git rebase master
+
+In the end, you will have your changes on top of the current version of
+master in the feature branch.
+
+So which to use?  The answer depends on whether your feature branch
+has been pushed up to the Savannah repo or not.
+
+If your branch is completely local to your machine, use `git rebase'.
+Otherwise, use `git merge'.
