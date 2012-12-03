@@ -14747,13 +14747,7 @@ Optional parameters are enclosed in square brackets@w{ ([ ]):}
 @item atan2(@var{y}, @var{x})
 @cindex @code{atan2()} function
 Return the arctangent of @code{@var{y} / @var{x}} in radians.
-You can use @samp{pi = atan2(0, -1)} to retrieve the value of
-@tex
-$\pi$.
-@end tex
-@ifnottex
-pi.
-@end ifnottex
+You can use @samp{pi = atan2(0, -1)} to retrieve the value of @value{PI}.
 
 @item cos(@var{x})
 @cindex @code{cos()} function
@@ -15625,22 +15619,23 @@ through unchanged.  This is illustrated in @ref{table-sub-escapes}.
 @caption{Historical Escape Sequence Processing for @code{sub()} and @code{gsub()}}
 @tex
 \vbox{\bigskip
-% This table has lots of &'s and \'s, so unspecialize them.
+% We need more characters for escape and tab ...
+\catcode`_ = 0
+\catcode`! = 4
+% ... since this table has lots of &'s and \'s, so we unspecialize them.
 \catcode`\& = \other \catcode`\\ = \other
-% But then we need character for escape and tab.
-@catcode`! = 4
-@halign{@hfil#!@qquad@hfil#!@qquad#@hfil@cr
-    You type!@code{sub()} sees!@code{sub()} generates@cr
-@hrulefill!@hrulefill!@hrulefill@cr
-   @code{\&}!       @code{&}!the matched text@cr
-  @code{\\&}!      @code{\&}!a literal @samp{&}@cr
- @code{\\\&}!      @code{\&}!a literal @samp{&}@cr
-@code{\\\\&}!     @code{\\&}!a literal @samp{\&}@cr
-@code{\\\\\&}!     @code{\\&}!a literal @samp{\&}@cr
-@code{\\\\\\&}!     @code{\\\&}!a literal @samp{\\&}@cr
-  @code{\\q}!      @code{\q}!a literal @samp{\q}@cr
+_halign{_hfil#!_qquad_hfil#!_qquad#_hfil_cr
+      You type!@code{sub()} sees!@code{sub()} generates_cr
+_hrulefill!_hrulefill!_hrulefill_cr
+     @code{\&}!       @code{&}!the matched text_cr
+    @code{\\&}!      @code{\&}!a literal @samp{&}_cr
+   @code{\\\&}!      @code{\&}!a literal @samp{&}_cr
+  @code{\\\\&}!     @code{\\&}!a literal @samp{\&}_cr
+ @code{\\\\\&}!     @code{\\&}!a literal @samp{\&}_cr
+@code{\\\\\\&}!    @code{\\\&}!a literal @samp{\\&}_cr
+    @code{\\q}!      @code{\q}!a literal @samp{\q}_cr
 }
-@bigskip}
+_bigskip}
 @end tex
 @ifdocbook
 @multitable @columnfractions .20 .20 .60
@@ -15694,17 +15689,18 @@ as shown in @ref{table-sub-posix-92}.
 @c thanks to Karl Berry for formatting this table
 @tex
 \vbox{\bigskip
-% This table has lots of &'s and \'s, so unspecialize them.
+% We need more characters for escape and tab ...
+\catcode`_ = 0
+\catcode`! = 4
+% ... since this table has lots of &'s and \'s, so we unspecialize them.
 \catcode`\& = \other \catcode`\\ = \other
-% But then we need character for escape and tab.
-@catcode`! = 4
-@halign{@hfil#!@qquad@hfil#!@qquad#@hfil@cr
-    You type!@code{sub()} sees!@code{sub()} generates@cr
-@hrulefill!@hrulefill!@hrulefill@cr
-    @code{&}!       @code{&}!the matched text@cr
-  @code{\\&}!      @code{\&}!a literal @samp{&}@cr
-@code{\\\\&}!     @code{\\&}!a literal @samp{\}, then the matched text@cr
-@code{\\\\\\&}!  @code{\\\&}!a literal @samp{\&}@cr
+_halign{_hfil#!_qquad_hfil#!_qquad#_hfil_cr
+    You type!@code{sub()} sees!@code{sub()} generates_cr
+_hrulefill!_hrulefill!_hrulefill_cr
+    @code{&}!       @code{&}!the matched text_cr
+  @code{\\&}!      @code{\&}!a literal @samp{&}_cr
+@code{\\\\&}!     @code{\\&}!a literal @samp{\}, then the matched text_cr
+@code{\\\\\\&}!  @code{\\\&}!a literal @samp{\&}_cr
 }
 @bigskip}
 @end tex
@@ -15762,20 +15758,21 @@ to produce a @samp{\} preceding the matched text. This is shown in
 @caption{Proposed Rules For @code{sub()} And Backslash}
 @tex
 \vbox{\bigskip
-% This table has lots of &'s and \'s, so unspecialize them.
+% We need more characters for escape and tab ...
+\catcode`_ = 0
+\catcode`! = 4
+% ... since this table has lots of &'s and \'s, so we unspecialize them.
 \catcode`\& = \other \catcode`\\ = \other
-% But then we need character for escape and tab.
-@catcode`! = 4
-@halign{@hfil#!@qquad@hfil#!@qquad#@hfil@cr
-    You type!@code{sub()} sees!@code{sub()} generates@cr
-@hrulefill!@hrulefill!@hrulefill@cr
-@code{\\\\\\&}!     @code{\\\&}!a literal @samp{\&}@cr
-@code{\\\\&}!     @code{\\&}!a literal @samp{\}, followed by the matched text@cr
-  @code{\\&}!      @code{\&}!a literal @samp{&}@cr
-  @code{\\q}!      @code{\q}!a literal @samp{\q}@cr
- @code{\\\\}!      @code{\\}!@code{\\}@cr
+_halign{_hfil#!_qquad_hfil#!_qquad#_hfil_cr
+    You type!@code{sub()} sees!@code{sub()} generates_cr
+_hrulefill!_hrulefill!_hrulefill_cr
+@code{\\\\\\&}!     @code{\\\&}!a literal @samp{\&}_cr
+@code{\\\\&}!     @code{\\&}!a literal @samp{\}, followed by the matched text_cr
+  @code{\\&}!      @code{\&}!a literal @samp{&}_cr
+  @code{\\q}!      @code{\q}!a literal @samp{\q}_cr
+ @code{\\\\}!      @code{\\}!@code{\\}_cr
 }
-@bigskip}
+_bigskip}
 @end tex
 @ifdocbook
 @multitable @columnfractions .20 .20 .60
@@ -15824,20 +15821,21 @@ These rules are presented in @ref{table-posix-sub}.
 @caption{POSIX Rules For @code{sub()} And @code{gsub()}}
 @tex
 \vbox{\bigskip
-% This table has lots of &'s and \'s, so unspecialize them.
+% We need more characters for escape and tab ...
+\catcode`_ = 0
+\catcode`! = 4
+% ... since this table has lots of &'s and \'s, so we unspecialize them.
 \catcode`\& = \other \catcode`\\ = \other
-% But then we need character for escape and tab.
-@catcode`! = 4
-@halign{@hfil#!@qquad@hfil#!@qquad#@hfil@cr
-    You type!@code{sub()} sees!@code{sub()} generates@cr
-@hrulefill!@hrulefill!@hrulefill@cr
-@code{\\\\\\&}!     @code{\\\&}!a literal @samp{\&}@cr
-@code{\\\\&}!     @code{\\&}!a literal @samp{\}, followed by the matched text@cr
-  @code{\\&}!      @code{\&}!a literal @samp{&}@cr
-  @code{\\q}!      @code{\q}!a literal @samp{\q}@cr
- @code{\\\\}!      @code{\\}!@code{\}@cr
+_halign{_hfil#!_qquad_hfil#!_qquad#_hfil_cr
+    You type!@code{sub()} sees!@code{sub()} generates_cr
+_hrulefill!_hrulefill!_hrulefill_cr
+@code{\\\\\\&}!     @code{\\\&}!a literal @samp{\&}_cr
+@code{\\\\&}!     @code{\\&}!a literal @samp{\}, followed by the matched text_cr
+  @code{\\&}!      @code{\&}!a literal @samp{&}_cr
+  @code{\\q}!      @code{\q}!a literal @samp{\q}_cr
+ @code{\\\\}!      @code{\\}!@code{\}_cr
 }
-@bigskip}
+_bigskip}
 @end tex
 @ifdocbook
 @multitable @columnfractions .20 .20 .60
@@ -15872,7 +15870,7 @@ when @option{--posix} is specified (@pxref{Options}). Otherwise,
 it continued to follow the 1996 proposed rules, since
 that had been its behavior for many years.
 
-When @value{PVERSION} 4.0.0, was released, the @command{gawk} maintainer
+When @value{PVERSION} 4.0.0 was released, the @command{gawk} maintainer
 made the POSIX rules the default, breaking well over a decade's worth
 of backwards compatibility.@footnote{This was rather naive of him, despite
 there being a note in this section indicating that the next major version
@@ -15892,21 +15890,22 @@ as shown in @ref{table-gensub-escapes}.
 @caption{Escape Sequence Processing For @code{gensub()}}
 @tex
 \vbox{\bigskip
-% This table has lots of &'s and \'s, so unspecialize them.
+% We need more characters for escape and tab ...
+\catcode`_ = 0
+\catcode`! = 4
+% ... since this table has lots of &'s and \'s, so we unspecialize them.
 \catcode`\& = \other \catcode`\\ = \other
-% But then we need character for escape and tab.
-@catcode`! = 4
-@halign{@hfil#!@qquad@hfil#!@qquad#@hfil@cr
-    You type!@code{gensub()} sees!@code{gensub()} generates@cr
-@hrulefill!@hrulefill!@hrulefill@cr
-      @code{&}!           @code{&}!the matched text@cr
-    @code{\\&}!          @code{\&}!a literal @samp{&}@cr
-   @code{\\\\}!          @code{\\}!a literal @samp{\}@cr
-  @code{\\\\&}!         @code{\\&}!a literal @samp{\}, then the matched text@cr
-@code{\\\\\\&}!        @code{\\\&}!a literal @samp{\&}@cr
-    @code{\\q}!          @code{\q}!a literal @samp{q}@cr
+_halign{_hfil#!_qquad_hfil#!_qquad#_hfil_cr
+    You type!@code{gensub()} sees!@code{gensub()} generates_cr
+_hrulefill!_hrulefill!_hrulefill_cr
+      @code{&}!           @code{&}!the matched text_cr
+    @code{\\&}!          @code{\&}!a literal @samp{&}_cr
+   @code{\\\\}!          @code{\\}!a literal @samp{\}_cr
+  @code{\\\\&}!         @code{\\&}!a literal @samp{\}, then the matched text_cr
+@code{\\\\\\&}!        @code{\\\&}!a literal @samp{\&}_cr
+    @code{\\q}!          @code{\q}!a literal @samp{q}_cr
 }
-@bigskip}
+_bigskip}
 @end tex
 @ifdocbook
 @multitable @columnfractions .20 .20 .60
@@ -28818,11 +28817,13 @@ and to nothing when compiling @command{gawk} itself.  This makes
 certain fields in the API data structures unwritable from extension code,
 while allowing @command{gawk} to use them as it needs to.
 
-@item typedef int awk_bool_t;
-A simple boolean type. At the moment, the API does not define special
-``true'' and ``false'' values, although perhaps it should.
+@item typedef enum awk_bool @{
+@item @ @ @ @ awk_false = 0,
+@item @ @ @ @ awk_true
+@item @} awk_bool_t;
+A simple boolean type.
 
-@item typedef struct @{
+@item typedef struct awk_string @{
 @itemx @ @ @ @ char *str;@ @ @ @ @ @ /* data */
 @itemx @ @ @ @ size_t len;@ @ @ @ @ /* length thereof, in chars */
 @itemx @} awk_string_t;
@@ -28845,7 +28846,7 @@ multibyte encoding.
 This @code{enum} indicates the type of a value.
 It is used in the following @code{struct}.
 
-@item typedef struct @{
+@item typedef struct awk_value @{
 @itemx @ @ @ @ awk_valtype_t   val_type;
 @itemx @ @ @ @ union @{
 @itemx @ @ @ @ @ @ @ @ awk_string_t@ @ @ @ @ @ @ s;
@@ -29091,7 +29092,7 @@ registering parts of your extension with @command{gawk}.
 Extension functions are described by the following record:
 
 @example
-typedef struct @{
+typedef struct awk_ext_func @{
 @ @ @ @ const char *name;
 @ @ @ @ awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
 @ @ @ @ size_t num_expected_args;
@@ -29220,11 +29221,11 @@ Your extension should package these functions inside an
 @code{awk_input_parser_t}, which looks like this:
 
 @example
-typedef struct input_parser @{
+typedef struct awk_input_parser @{
     const char *name;   /* name of parser */
     awk_bool_t (*can_take_file)(const awk_input_buf_t *iobuf);
     awk_bool_t (*take_control_of)(awk_input_buf_t *iobuf);
-    awk_const struct input_parser *awk_const next;    /* for use by gawk */
+    awk_const struct awk_input_parser *awk_const next;    /* for use by gawk */
 @} awk_input_parser_t;
 @end example
 
@@ -29413,11 +29414,11 @@ with the @samp{>} or @samp{>>} operators (@pxref{Redirection}).
 The output wrapper is very similar to the input parser structure:
 
 @example
-typedef struct output_wrapper @{
+typedef struct awk_output_wrapper @{
     const char *name;   /* name of the wrapper */
     awk_bool_t (*can_take_file)(const awk_output_buf_t *outbuf);
     awk_bool_t (*take_control_of)(awk_output_buf_t *outbuf);
-    awk_const struct output_wrapper *awk_const next;  /* for use by gawk */
+    awk_const struct awk_output_wrapper *awk_const next;  /* for use by gawk */
 @} awk_output_wrapper_t;
 @end example
 
@@ -29447,7 +29448,7 @@ This is for use by @command{gawk}.
 The @code{awk_output_buf_t} structure looks like this:
 
 @example
-typedef struct @{
+typedef struct awk_output_buf @{
     const char *name;   /* name of output file */
     const char *mode;   /* mode argument to fopen */
     FILE *fp;           /* stdio file pointer */
@@ -29526,13 +29527,13 @@ as described earlier.
 A two-way processor is represented by the following structure:
 
 @example
-typedef struct two_way_processor @{
+typedef struct awk_two_way_processor @{
     const char *name;   /* name of the two-way processor */
     awk_bool_t (*can_take_two_way)(const char *name);
     awk_bool_t (*take_control_of)(const char *name,
                                   awk_input_buf_t *inbuf,
                                   awk_output_buf_t *outbuf);
-    awk_const struct two_way_processor *awk_const next;  /* for use by gawk */
+    awk_const struct awk_two_way_processor *awk_const next;  /* for use by gawk */
 @} awk_two_way_processor_t;
 @end example
 
@@ -30432,7 +30433,7 @@ static awk_bool_t init_testarray(void)
 @{
     create_new_array();
 
-    return 1;
+    return awk_true;
 @}
 
 static awk_bool_t (*init_func)(void) = init_testarray;
@@ -30650,8 +30651,8 @@ If you need to do some initialization work, you should define a
 function that does it (creates variables, opens files, etc.)
 and then define the @code{init_func} pointer to point to your
 function.
-The function should return zero (false) upon failure, non-zero
-(success) if everything goes well.
+The function should return @code{awk_false} upon failure, or @code{awk_true}
+if everything goes well.
 
 If you don't need to do any initialization, define the pointer and
 initialize it to @code{NULL}.
@@ -30678,7 +30679,7 @@ continues on.
 
 @item
 If the @code{init_func} pointer is not @code{NULL}, call the
-function it points to. If it returns non-zero, print a
+function it points to. If it returns @code{awk_false}, print a
 warning message.
 
 @item

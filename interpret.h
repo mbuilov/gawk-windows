@@ -670,8 +670,6 @@ mod:
 			t1 = force_string(*lhs);
 			t2 = POP_STRING();
 
-			free_wstr(*lhs);
-
 			if (t1 != *lhs) {
 				unref(*lhs);
 				*lhs = dupnode(t1);
@@ -685,6 +683,20 @@ mod:
 				t1->stlen = nlen;
 				t1->stptr[nlen] = '\0';
 				t1->flags &= ~(NUMCUR|NUMBER|NUMINT);
+
+#if MBS_SUPPORT
+				if ((t1->flags & WSTRCUR) != 0 && (t2->flags & WSTRCUR) != 0) {
+					size_t wlen = t1->wstlen + t2->wstlen;
+
+					erealloc(t1->wstptr, wchar_t *,
+							sizeof(wchar_t) * (wlen + 2), "r_interpret");
+					memcpy(t1->wstptr + t1->wstlen, t2->wstptr, t2->wstlen);
+					t1->wstlen = wlen;
+					t1->wstptr[wlen] = L'\0';
+					t1->flags |= WSTRCUR;
+				} else
+					free_wstr(*lhs);
+#endif
 			} else {
 				size_t nlen = t1->stlen + t2->stlen;  
 				char *p;

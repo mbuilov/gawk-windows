@@ -19,12 +19,13 @@ Minor Cleanups and Code Improvements
 	Make GAWKDEBUG pass the test suite.
 
 	API:
-		awk_true and awk_false ???
+		DONE: awk_true and awk_false
 		DONE: Update doc to use gcc -o filefuncs.so -shared filefuncs.o
 			instead of ld ...
+		Have check for name not rely on isalpha, isalnum since the locale could botch that up.
 		??? #if !defined(GAWK) && !defined(GAWK_OMIT_CONVENIENCE_MACROS)
 
-	Make fflush() and fflush("") both flush all files, as in BWK awk.
+	DONE: Make fflush() and fflush("") both flush all files, as in BWK awk.
 
 	?? Add debugger commands to reference card
 
@@ -34,13 +35,14 @@ Minor Cleanups and Code Improvements
 
 	regex.h - remove underscores in param names
 
-	From Andy: Review the following test cases that they work with make diffout.
-	These look suspicious: mmap8k, fmtspcl (the mpfr case), clobber, getlnbuf,
-	rtlenmb, profile1, rand (mpfr case).
+	From Andy: Review the following test cases that they work with
+	make diffout.  These look suspicious: mmap8k, fmtspcl (the mpfr
+	case), clobber, getlnbuf, rtlenmb, profile1, rand (mpfr case).
 
-	Add tests for patches in emails (?? - not sure now what this referred to)
+	Add tests for patches in emails (?? - not sure now what this
+	referred to)
 
-	In gawkapi.c - review switch statements and use of default.
+	DONE: In gawkapi.c - review switch statements and use of default.
 
 	Consider removing use of and/or need for the protos.h file.
 
@@ -80,7 +82,7 @@ Major New Features
 		indirect calls of extension functions
 		indirect through array elements, not just scalar variables
 
-	Rebase and integration of array_iface branch.
+	Integration of array_iface branch.
 
 	Rework management of array index storage. (Partially DONE.)
 
@@ -106,6 +108,9 @@ Things To Think About That May Never Happen
 	Similar for extra parameters in a function call.
 
 	Look at code coverage tools, like S2E: https://s2e.epfl.ch/
+	
+	Try running with diehard: http://www.diehard-software.org,
+	https://github.com/emeryberger/DieHard
 
 	Change from dlopen to using the libltdl library (i.e. lt_dlopen).
 	This may support more platforms.

@@ -51,7 +51,7 @@ extern void  *gawk_cmd;
 extern void   _exit(int);
 static int    vms_usage(int);
 
-static const char *CmdName;	/* "GAWK", "DGAWK", or "PGAWK" */
+static const char *CmdName = "GAWK";
 
 #define ARG_SIZ 250
 union arg_w_prefix {	/* structure used to simplify prepending of "-" */
@@ -80,10 +80,6 @@ vms_gawk()
     int native_dcl = 1,	/* assume true until we know otherwise */
 	short_circ;	/* some options make P1, /commands, /input superfluous */
 
-    CmdName = do_profile ? "PGAWK"
-	      : do_debug ? "DGAWK"
-	      : "GAWK";
-
     /* check "GAWK_P1"--it's required; its presence will tip us off */
     sts = Cli_Present("GAWK_P1");
     if (CondVal(sts) == CondVal(CLI$_SYNTAX)) {
@@ -98,7 +94,7 @@ vms_gawk()
     }
     short_circ = Present("USAGE") || Present("VERSION") || Present("COPYRIGHT");
     if (vmswork(sts))		/* command parsed successfully */
-	v_add_arg(argc = 0, CmdName);	/* save "GAWK|DGAWK|PGAWK" as argv[0] */
+	v_add_arg(argc = 0, CmdName);	/* save "GAWK" as argv[0] */
     else if (CondVal(sts) == CondVal(CLI$_INSFPRM))
 	/* vms_usage() will handle /usage, /version, and /copyright */
 	return short_circ ? vms_usage(0)
@@ -245,7 +241,7 @@ options: /FIELD_SEPARATOR=\"FS_value\" \n\
 	complaint = 0;			/* clean exit */
     } else if (Present("VERSION") || Present("COPYRIGHT")) {
 	/* construct a truncated Unix-style command line to control main() */
-	v_add_arg(argc=0, CmdName);	/* save "GAWK",&c as argv[0] */
+	v_add_arg(argc=0, CmdName);	/* save "GAWK" as argv[0] */
 #if 0
 	v_add_arg(++argc, Present("VERSION") ? "-V" : "-C");
 #else
