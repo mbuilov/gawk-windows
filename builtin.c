@@ -174,24 +174,40 @@ do_fflush(int nargs)
 	int status = 0;
 	const char *file;
 
-	/* fflush() --- flush stdout */
+	/*
+	 * November, 2012.
+	 * It turns out that circa 2002, when BWK 
+	 * added fflush() and fflush("") to his awk, he made both of
+	 * them flush everything.  
+	 *
+	 * Now, with our inside agent getting ready to try to get fflush()
+	 * standardized in POSIX, we are going to make our awk consistent
+	 * with his.  This should not really affect anyone, as flushing
+	 * everything also flushes stdout.
+	 *
+	 * So. Once upon a time:
+	 * 	fflush()	--- flush stdout
+	 * 	fflush("")	--- flush everything
+	 * Now, both calls flush everything.
+	 */
+
+	/* fflush() */
 	if (nargs == 0) {
-		if (output_fp != stdout)
-			(void) fflush(output_fp);
-		status = fflush(stdout);
+		status = flush_io();
 		return make_number((AWKNUM) status);
 	}
 
 	tmp = POP_STRING();
 	file = tmp->stptr;
 
-	/* fflush("") --- flush all */
+	/* fflush("") */
 	if (tmp->stlen == 0) {
 		status = flush_io();
 		DEREF(tmp);
 		return make_number((AWKNUM) status);
 	}
 
+	/* fflush("/some/path") */
 	rp = getredirect(tmp->stptr, tmp->stlen);
 	status = -1;
 	if (rp != NULL) {
