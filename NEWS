@@ -36,7 +36,12 @@ Changes from 4.0.1 to 4.0.2
 
 1. Infrastructure upgrades: Autoconf 2.69, Automake 1.12.4, bison 2.6.5.
 
-2. Various minor bug fixes and documentation updates.
+2. `fflush()', `nextfile', and `delete array' are all now part of POSIX.
+
+3. fflush() behavior changed to match BWK awk and for POSIX - now both
+   fflush() and fflush("") flush all open output redirections.
+
+4. Various minor bug fixes and documentation updates.
  
 Changes from 4.0.0 to 4.0.1
 ---------------------------
