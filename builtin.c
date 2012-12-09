@@ -111,7 +111,7 @@ efwrite(const void *ptr,
 		goto wrerror;
 	if (flush
 	  && ((fp == stdout && output_is_tty)
-	      || (rp != NULL && (rp->flag & RED_NOBUF)))) {
+	      || (rp != NULL && (rp->flag & RED_NOBUF) != 0))) {
 		if (rp != NULL) {
 			rp->output.gawk_fflush(fp, rp->output.opaque);
 			if (rp->output.gawk_ferror(fp, rp->output.opaque))
@@ -220,7 +220,7 @@ do_fflush(int nargs)
 	status = -1;
 	if (rp != NULL) {
 		if ((rp->flag & (RED_WRITE|RED_APPEND)) == 0) {
-			if (rp->flag & RED_PIPE)
+			if ((rp->flag & RED_PIPE) != 0)
 				warning(_("fflush: cannot flush: pipe `%s' opened for reading, not writing"),
 					file);
 			else
@@ -1053,7 +1053,7 @@ check_pos:
 			/* user input that looks numeric is numeric */
 			if ((arg->flags & (MAYBE_NUM|NUMBER)) == MAYBE_NUM)
 				(void) force_number(arg);
-			if (arg->flags & NUMBER) {
+			if ((arg->flags & NUMBER) != 0) {
 				uval = get_number_uj(arg);
 #if MBS_SUPPORT
 				if (gawk_mb_cur_max > 1) {
@@ -2043,7 +2043,7 @@ do_system(int nargs)
 		ret = system(cmd);
 		if (ret != -1)
 			ret = WEXITSTATUS(ret);
-		if ((BINMODE & 1) != 0)
+		if ((BINMODE & BINMODE_INPUT) != 0)
 			os_setbinmode(fileno(stdin), O_BINARY);
 
 		cmd[tmp->stlen] = save;
@@ -2766,7 +2766,7 @@ set_how_many:
 			repllen--;
 			ampersands++;
 		} else if (*scan == '\\') {
-			if (flags & GENSUB) {	/* gensub, behave sanely */
+			if ((flags & GENSUB) != 0) {	/* gensub, behave sanely */
 				if (isdigit((unsigned char) scan[1])) {
 					ampersands++;
 					scan++;
@@ -2959,7 +2959,7 @@ done:
 	}
 
 	/* For a string literal, must not change the original string. */
-	if (flags & LITERAL)
+	if ((flags & LITERAL) != 0)
 		DEREF(t);
 	else if (matches > 0) {
 		unref(*lhs);

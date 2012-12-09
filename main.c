@@ -628,10 +628,10 @@ out:
 	if (preassigns != NULL)
 		efree(preassigns);
 
-	if ((BINMODE & 1) != 0)
+	if ((BINMODE & BINMODE_INPUT) != 0)
 		if (os_setbinmode(fileno(stdin), O_BINARY) == -1)
 			fatal(_("can't set binary mode on stdin (%s)"), strerror(errno));
-	if ((BINMODE & 2) != 0) {
+	if ((BINMODE & BINMODE_OUTPUT) != 0) {
 		if (os_setbinmode(fileno(stdout), O_BINARY) == -1)
 			fatal(_("can't set binary mode on stdout (%s)"), strerror(errno));
 		if (os_setbinmode(fileno(stderr), O_BINARY) == -1)

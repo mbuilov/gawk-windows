@@ -8,6 +8,10 @@ $
 $! 3.1.7:  changed to share code among many common tests, and
 $!	   to put results for test foo into _foo.tmp instead of tmp.
 $!
+$! 4.0.71:  New tests:
+$!	functab1,functab2,functab3,id,incdupe,incdupe2,	incdupe3,include2
+$!	symtab1,symtab2,symtab3,symtab4,symtab5,symtab6
+$!
 $	echo	= "write sys$output"
 $	cmp	= "diff/Output=_NL:/Maximum=1"
 $	igncascmp = "''cmp'/Ignore=Case"
@@ -15,12 +19,10 @@ $	sumslp = "edit/Sum"
 $	rm	= "delete/noConfirm/noLog"
 $	mv	= "rename/New_Vers"
 $	gawk = "$sys$disk:[-]gawk"
-$	pgawk = "$sys$disk:[-]pgawk"
 $	AWKPATH_srcdir = "define/User AWKPATH sys$disk:[]"
 $
 $	listdepth = 0
 $	pipeok = 0
-$	pgawkok = -1
 $	floatmode = -1	! 0: D_float, 1: G_float, 2: IEEE T_float
 $
 $	list = p1+" "+p2+" "+p3+" "+p4+" "+p5+" "+p6+" "+p7+" "+p8
@@ -34,7 +36,7 @@ $all:
 $bigtest:	echo "bigtest..."
 $		! omits "printlang" and "extra"
 $		list = "basic unix_tests gawk_ext vms_tests charset_tests" -
-		  + " machine_tests pgawk_tests"
+		  + " machine_tests"
 $		gosub list_of_tests
 $		return
 $
@@ -98,18 +100,20 @@ $gawk_ext:	echo "gawk_ext... (gawk.extensions)"
 $		list = "aadelete1 aadelete2 aarray1 aasort aasorti" -
 		  + " argtest arraysort backw badargs beginfile1 binmode1" -
 		  + " clos1way charasbytes delsub devfd devfd1 devfd2 dumpvars exit" -
-		  + " fieldwdth fpat1 fpat2 fpat3 fpatnull funlen fsfwfs" -
+		  + " fieldwdth fpat1 fpat2 fpat3 fpatnull funlen functab1" -
+		  + " functab2 functab3 fsfwfs" -
 		  + " fwtest fwtest2 fwtest3" -
 		  + " gensub gensub2 getlndir gnuops2 gnuops3 gnureops" -
-		  + " icasefs icasers igncdym igncfs ignrcase ignrcas2"
+		  + " icasefs id icasers igncdym igncfs ignrcase ignrcas2 incdupe incdupe2 incdupe3"
 $		gosub list_of_tests
-$		list = "indirectcall lint lintold lintwarn match1" -
+$		list = "include2 indirectcall lint lintold lintwarn match1" -
 		  + " match2 match3 manyfiles mbprintf3 mbstr1" -
 		  + " nastyparm next nondec" -
 		  + " nondec2 patsplit posix profile1 procinfs printfbad1" -
-		  + " printfbad2 printfbad3 pty1 regx8bit rebuf reint" -
-		  + " reint2 rsstart1 rsstart2 rsstart3 rstest6 shadow" -
-		  + " sortfor sortu splitarg4 strtonum strftime switch2"
+		  + " printfbad2 printfbad3 profile2 profile3 pty1" -
+		  + " regx8bit rebuf reint reint2 rsstart1 rsstart2 rsstart3 rstest6" -
+		  + " shadow sortfor sortu splitarg4 strtonum strftime switch2" -
+		  + " symtab1 symtab2 symtab3 symtab4 symtab5 symtab6"
 $		gosub list_of_tests
 $		return
 $
@@ -132,16 +136,6 @@ $hardware:
 $machine_tests:	echo "machine_tests..."
 $		! these depend upon the floating point format in use
 $		list = "double1 double2 fmtspcl intformat"
-$		gosub list_of_tests
-$		return
-$
-$ ! pgawk_tests is part of bigtest; profile_tests is a separate subset
-$profile_tests:	echo "profile_tests..."
-$		list = "profile1"
-$		gosub list_of_tests
-$		! fall through to pgawk_tests
-$pgawk_tests:	echo "pgawk_tests..."
-$		list = "profile2 profile3"
 $		gosub list_of_tests
 $		return
 $
@@ -378,15 +372,16 @@ $pty1:
 $	echo "''test': not supported"
 $	return
 $
-$messages:	echo "messages"
+$
+$messages:	echo "''test'"
 $	set noOn
-$	gawk -f messages.awk > out2 >& out3
-$	cmp out1.ok out1.
-$	if $status then  rm out1.;
-$	cmp out2.ok out2.
-$	if $status then  rm out2.;
-$	cmp out3.ok out3.
-$	if $status then  rm out3.;
+$	gawk -f 'test'.awk > _out2 >& _out3
+$	cmp out1.ok _out1.
+$	if $status then  rm _out1.;
+$	cmp out2.ok _out2.
+$	if $status then  rm _out2.;
+$	cmp out3.ok _out3.
+$	if $status then  rm _out3.;
 $	set On
 $	return
 $
@@ -608,6 +603,67 @@ $	cmp intprec.ok _intprec.tmp
 $	if $status then  rm _intprec.tmp;
 $	return
 $
+$incdupe:   echo "''test'"
+$   set noOn
+$   gawk --lint -i inclib -i inclib.awk "BEGIN {print sandwich(""a"", ""b"", ""c"")}" > _'test'.tmp 2>&1
+$   if .not. $status then call exit_code 1 _'test'.tmp
+$   cmp 'test'.ok _'test'.tmp
+$   if $status then rm _'test'.tmp;*
+$   set On
+$   return
+$
+$incdupe2:   echo "''test'"
+$   set noOn
+$   gawk --lint -f inclib -f inclib.awk >_'test'.tmp 2>&1
+$   if .not. $status then call exit_code 1 _'test'.tmp
+$   cmp 'test'.ok _'test'.tmp
+$   if $status then rm _'test'.tmp;*
+$   set On
+$   return
+$
+$incdupe3:   echo "''test'"
+$   gawk --lint -f hello -f hello.awk >_'test'.tmp 2>&1
+$   cmp 'test'.ok _'test'.tmp
+$   if $status then rm _'test'.tmp;*
+$   return
+$
+$include2:   echo "''test'"
+$   gawk -i inclib "BEGIN {print sandwich(""a"", ""b"", ""c"")}" >_'test'.tmp 2>&1
+$   cmp 'test'.ok _'test'.tmp
+$   if $status then rm _'test'.tmp;*
+$   return
+$
+$id:
+$symtab1:
+$symtab2:
+$symtab3:   echo "''test'"
+$   set noOn
+$   gawk -f 'test'.awk  >_'test'.tmp 2>&1
+$   if .not. $status then call exit_code 2 _'test'.tmp
+$   cmp 'test'.ok _'test'.tmp
+$   if $status then rm _'test'.tmp;*
+$   set On
+$   return
+$
+$symtab4:
+$symtab5:   echo "''test'"
+$   set noOn
+$   gawk -f 'test'.awk <'test'.in >_'test'.tmp 2>&1
+$   if .not. $status then call exit_code 2 _'test'.tmp
+$   cmp 'test'.ok _'test'.tmp
+$   if $status then rm _'test'.tmp;*
+$   set On
+$   return
+$
+$symtab6:   echo "''test'"
+$   set noOn
+$   gawk -d__'test'.tmp -f 'test'.awk
+$   pipe search __'test'.tmp "ENVIRON" /match=nand | search sys$pipe "PROCINFO" /match=nand > _'test'.tmp
+$   cmp 'test'.ok _'test'.tmp
+$   if $status then rm _'test'.tmp;*,__'test'.tmp;*
+$   set On
+$   return
+$
 $childin:	echo "childin skipped"
 $	return
 $! note: this `childin' test currently [gawk 3.0.3] fails for vms
@@ -803,7 +859,9 @@ $aadelete1:
 $aadelete2:
 $arrayparm:
 $fnaryscl:
-$match2:
+$functab1:
+$functab2:
+$functab3:
 $nastyparm:
 $opasnslf:
 $opasnidx:
@@ -956,7 +1014,6 @@ $aryprm4:
 $aryprm5:
 $aryprm6:
 $aryprm7:
-$delfunc:
 $dfastress:
 $nfneg:
 $numindex:
@@ -972,8 +1029,9 @@ $	cmp 'test'.ok _'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
 $
-$fnamedat:
-$fnasgnm:
+$   !
+$   ! For tests requiring exit code 2
+$   !
 $	echo "''test'"
 $	set noOn
 $	gawk -f 'test'.awk <'test'.in >_'test'.tmp 2>&1
@@ -991,8 +1049,11 @@ $	cmp exitval2.ok _exitval2.tmp
 $	if $status then  rm _exitval2.tmp;
 $	return
 $
+$delfunc:
 $fcall_exit2:
+$fnamedat:
 $fnarray2:
+$fnasgnm:
 $fnmisc:
 $gsubasgn:
 $unterm:
@@ -1050,6 +1111,7 @@ $
 $fcall_exit:
 $fnarray:
 $funsmnam:
+$match2:
 $paramdup:
 $paramres:
 $parseme:
@@ -1481,62 +1543,45 @@ $	cmp dumpvars.ok _dumpvars.tmp
 $	if $status then  rm _dumpvars.tmp;
 $	return
 $
-$profile1: echo "profile1"
-$ ! this profile test is run with gawk rather than pgawk
+$profile1: echo "''test'"
 $ ! FIXME: for both gawk invocations which pipe output to SORT,
 $ ! two output files get created; the top version has real output
 $ ! but there's also an empty lower version.
-$		oldout = f$search("_profile1.tmp1")
-$	gawk --profile -v "sortcmd=SORT sys$intput: sys$output:" -
+$		oldout = f$search("_''test'.tmp1")
+$	gawk --pretty-print -v "sortcmd=SORT sys$intput: sys$output:" -
 			-f xref.awk dtdgport.awk > _'test'.tmp1
-$		badout = f$search("_profile1.tmp1;-1")
+$		badout = f$search("_''test'.tmp1;-1")
 $		if badout.nes."" .and. badout.nes.oldout then  rm 'badout'
-$		oldout = f$search("_profile1.tmp2")
+$		oldout = f$search("_''test'.tmp2")
 $	gawk -v "sortcmd=SORT sys$intput: sys$output:" -
 			-f awkprof.out dtdgport.awk > _'test'.tmp2
-$		badout = f$search("_profile1.tmp2;-1")
+$		badout = f$search("_''test'.tmp2;-1")
 $		if badout.nes."" .and. badout.nes.oldout then  rm 'badout'
-$	cmp _profile1.tmp1 _profile1.tmp2
-$	if $status then  rm _profile1.tmp%;,awkprof.out;
+$	cmp _'test'.tmp1 _'test'.tmp2
+$	if $status then  rm _'test'.tmp%;,awkprof.out;
 $	return
 $
-$ ! pgawk tests; building pgawk is optional so have to check whether it's here
-$profile2:
-$profile3:
-$	if pgawkok.lt.0
-$	then	f = f$parse(pgawk,".exe;")
-$		! expect first parse to fail due to leading dollar sign
-$		if f.eqs."" then  f = f$parse(f$extract(1,999,pgawk),".exe;")
-$		if f.nes."" then  f = f$search(f)
-$		pgawkok = (f.nes."").and.1		! set to 1 or 0
-$		if .not.pgawkok then -
-			echo "Can't find pgawk.exe so can't run profiling tests."
-$	endif
-$	if pgawkok then  goto do__'test'
-$	echo "''test' skipped"
-$	return
-$
-$do__profile2: echo "profile2"
-$	pgawk -v "sortcmd=SORT sys$input: sys$output:" -
+$profile2:  echo "''test'"
+$	gawk --profile -v "sortcmd=SORT sys$input: sys$output:" -
 			-f xref.awk dtdgport.awk > _NL:
 $	! sed <awkprof.out 1,2d >_profile2.tmp
-$	sumslp awkprof.out /update=sys$input: /output=_profile2.tmp
+$	sumslp awkprof.out /update=sys$input: /output=_'test'.tmp
 -1,2
 /
 $	rm awkprof.out;
-$	cmp profile2.ok _profile2.tmp
-$	if $status then  rm _profile2.tmp;*
+$	cmp 'test'.ok _'test'.tmp
+$	if $status then  rm _'test'.tmp;*
 $	return
 $
-$do__profile3: echo "profile3"
-$	pgawk -f profile3.awk > _NL:
+$profile3: echo "''test'"
+$	gawk --profile -f 'test'.awk > _NL:
 $	! sed <awkprof.out 1,2d >_profile3.tmp
-$	sumslp awkprof.out /update=sys$input: /output=_profile3.tmp
+$	sumslp awkprof.out /update=sys$input: /output=_'test'.tmp
 -1,2
 /
 $	rm awkprof.out;
-$	cmp profile3.ok _profile3.tmp
-$	if $status then  rm _profile3.tmp;*
+$	cmp 'test'.ok _'test'.tmp
+$	if $status then  rm _'test'.tmp;*
 $	return
 $
 $next:	echo "next"

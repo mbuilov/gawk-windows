@@ -930,6 +930,15 @@ struct redirect {
 	awk_output_buf_t output;
 };
 
+/* values for BINMODE, used as bit flags */
+
+enum binmode_values {
+	TEXT_TRANSLATE = 0,	/* usual \r\n ---> \n translation */
+	BINMODE_INPUT = 1,	/* no translation for input files */
+	BINMODE_OUTPUT = 2,	/* no translation for output files */
+	BINMODE_BOTH = 3	/* no translation for either */
+};
+
 /*
  * structure for our source, either a command line string or a source file.
  */
@@ -1219,8 +1228,6 @@ DEREF(NODE *r)
 #define is_mpg_integer(n)	0
 #define iszero(n)		((n)->numbr == 0.0)
 #endif
-
-#define is_identchar(c)		(isalnum(c) || (c) == '_')
 
 #define var_uninitialized(n)	((n)->var_value == Nnull_string)
 

@@ -457,7 +457,7 @@ cint_list(NODE *symbol, NODE *t)
 	/* populate it with index in ascending or descending order */
 
 	for (ja = NHAT, jd = INT32_BIT - 1; ja < INT32_BIT && jd >= NHAT; ) {
-		j = (assoc_kind & ADESC) ? jd-- : ja++;
+		j = (assoc_kind & ADESC) != 0 ? jd-- : ja++;
 		tn = symbol->nodes[j];
 		if (tn == NULL)
 			continue;
@@ -896,7 +896,7 @@ tree_list(NODE *tree, NODE **list, assoc_kind_t assoc_kind)
 		hsize /= 2;
 
 	for (j = 0; j < hsize; j++) {
-		cj = (assoc_kind & ADESC) ? (hsize - 1 - j) : j;
+		cj = (assoc_kind & ADESC) != 0 ? (hsize - 1 - j) : j;
 		tn = tree->nodes[cj];
 		if (tn == NULL)
 			continue;
@@ -1011,7 +1011,7 @@ tree_print(NODE *tree, size_t bi, int indent_level)
 		hsize /= 2;
 	fprintf(output_fp, "%4lu:%s[%4lu:%-4lu]\n",
 			(unsigned long) bi,
-			(tree->flags & HALFHAT) ? "HH" : "H",
+			(tree->flags & HALFHAT) != 0 ? "HH" : "H",
 			(unsigned long) hsize, (unsigned long) tree->table_size);
 
 	for (j = 0; j < hsize; j++) {
@@ -1158,14 +1158,14 @@ leaf_list(NODE *array, NODE **list, assoc_kind_t assoc_kind)
 	static char buf[100];
 
 	for (i = 0; i < size; i++) {
-		ci = (assoc_kind & ADESC) ? (size - 1 - i) : i;
+		ci = (assoc_kind & ADESC) != 0 ? (size - 1 - i) : i;
 		r = array->nodes[ci];
 		if (r == NULL)
 			continue;
 
 		/* index */
 		num = array->array_base + ci;
-		if (assoc_kind & AISTR) {
+		if ((assoc_kind & AISTR) != 0) {
 			sprintf(buf, "%ld", num); 
 			subs = make_string(buf, strlen(buf));
 			subs->numbr = num;
@@ -1177,7 +1177,7 @@ leaf_list(NODE *array, NODE **list, assoc_kind_t assoc_kind)
 		list[k++] = subs;
 
 		/* value */
-		if (assoc_kind & AVALUE) {
+		if ((assoc_kind & AVALUE) != 0) {
 			if (r->type == Node_val) {
 				if ((assoc_kind & AVNUM) != 0)
 					(void) force_number(r);

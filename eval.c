@@ -579,16 +579,16 @@ cmp_nodes(NODE *t1, NODE *t2)
 	if (t1 == t2)
 		return 0;
 
-	if (t1->flags & MAYBE_NUM)
+	if ((t1->flags & MAYBE_NUM) != 0)
 		(void) force_number(t1);
-	if (t2->flags & MAYBE_NUM)
+	if ((t2->flags & MAYBE_NUM) != 0)
 		(void) force_number(t2);
-	if (t1->flags & INTIND)
+	if ((t1->flags & INTIND) != 0)
 		t1 = force_string(t1);
-	if (t2->flags & INTIND)
+	if ((t2->flags & INTIND) != 0)
 		t2 = force_string(t2);
 
-	if ((t1->flags & NUMBER) && (t2->flags & NUMBER))
+	if ((t1->flags & NUMBER) != 0 && (t2->flags & NUMBER) != 0)
 		return cmp_numbers(t1, t2);
 
 	(void) force_string(t1);
@@ -735,15 +735,15 @@ set_BINMODE()
 		lintwarn(_("`BINMODE' is a gawk extension"));
 	}
 	if (do_traditional)
-		BINMODE = 0;
+		BINMODE = TEXT_TRANSLATE;
 	else if ((v->flags & NUMBER) != 0) {
 		(void) force_number(v);
 		BINMODE = get_number_si(v);
 		/* Make sure the value is rational. */
-		if (BINMODE < 0)
-			BINMODE = 0;
-		else if (BINMODE > 3)
-			BINMODE = 3;
+		if (BINMODE < TEXT_TRANSLATE)
+			BINMODE = TEXT_TRANSLATE;
+		else if (BINMODE > BINMODE_BOTH)
+			BINMODE = BINMODE_BOTH;
 	} else if ((v->flags & STRING) != 0) {
 		p = v->stptr;
 
@@ -763,13 +763,13 @@ set_BINMODE()
 				BINMODE = p[0] - '0';
 				break;
 			case 'r':
-				BINMODE = 1;
+				BINMODE = BINMODE_INPUT;
 				break;
 			case 'w':
-				BINMODE = 2;
+				BINMODE = BINMODE_OUTPUT;
 				break;
 			default:
-				BINMODE = 3;
+				BINMODE = BINMODE_BOTH;
 				goto bad_value;
 				break;
 			}
@@ -777,21 +777,21 @@ set_BINMODE()
 		case 2:
 			switch (p[0]) {
 			case 'r':
-				BINMODE = 3;
+				BINMODE = BINMODE_BOTH;
 				if (p[1] != 'w')
 					goto bad_value;
 				break;
 			case 'w':
-				BINMODE = 3;
+				BINMODE = BINMODE_BOTH;
 				if (p[1] != 'r')
 					goto bad_value;
 				break;
+			}
 			break;
 		default:
 	bad_value:
 			lintwarn(_("BINMODE value `%s' is invalid, treated as 3"), p);
 			break;
-			}
 		}
 	} else
 		BINMODE = 3;		/* shouldn't happen */

@@ -37,6 +37,42 @@ extern SRCFILE *srcfiles;
 
 #include <dlfcn.h>
 
+/*
+ * is_letter --- function to check letters
+ *	isalpha() isn't good enough since it can look at the locale.
+ * Underscore counts as a letter in awk identifiers
+ */
+
+static bool
+is_letter(unsigned char c)
+{
+	switch (c) {
+	case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+	case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
+	case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
+	case 's': case 't': case 'u': case 'v': case 'w': case 'x':
+	case 'y': case 'z':
+	case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+	case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
+	case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
+	case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
+	case 'Y': case 'Z':
+	case '_':
+		return true;
+	default:
+		return false;
+	}
+}
+
+/* is_identifier_char --- return true if a character can be used in an identifier */
+
+static bool
+is_identifier_char(unsigned char c)
+{
+	return (is_letter(c) || isdigit(c));
+}
+
+
 #define INIT_FUNC	"dl_load"
 
 /* load_ext --- load an external library */
@@ -184,10 +220,14 @@ make_builtin(const awk_ext_func_t *funcinfo)
 	if (sp == NULL || *sp == '\0')
 		fatal(_("make_builtin: missing function name"));
 
+	if (! is_letter(*sp))
+		return false;
+
+	sp++;
+
 	while ((c = *sp++) != '\0') {
-		if ((sp == &name[1] && c != '_' && ! isalpha((unsigned char) c))
-				|| (sp > &name[1] && ! is_identchar((unsigned char) c)))
-			fatal(_("make_builtin: illegal character `%c' in function name `%s'"), c, name);
+		if (! is_identifier_char(c))
+			return false;
 	}
 
 	f = lookup(name);
@@ -239,7 +279,7 @@ make_old_builtin(const char *name, NODE *(*func)(int), int count)	/* temporary *
 
 	while ((c = *sp++) != '\0') {
 		if ((sp == & name[1] && c != '_' && ! isalpha((unsigned char) c))
-				|| (sp > &name[1] && ! is_identchar((unsigned char) c)))
+				|| (sp > &name[1] && ! is_identifier_char((unsigned char) c)))
 			fatal(_("extension: illegal character `%c' in function name `%s'"), c, name);
 	}
 
