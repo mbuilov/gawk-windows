@@ -183,6 +183,9 @@
 /* Define to 1 if you have the <netinet/in.h> header file. */
 #undef HAVE_NETINET_IN_H
 
+/* Define to 1 if you have the `posix_openpt' function. */
+#undef HAVE_POSIX_OPENPT
+
 /* Define to 1 if you have the `setenv' function. */
 #if defined(__MINGW32__) || defined(__DJGPP__)
 #define HAVE_SETENV 1
@@ -413,7 +416,7 @@
 #define PACKAGE_NAME "GNU Awk"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GNU Awk 4.0.1b"
+#define PACKAGE_STRING "GNU Awk 4.0.1c"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gawk"
@@ -422,7 +425,7 @@
 #define PACKAGE_URL "http://www.gnu.org/software/gawk/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.0.1b"
+#define PACKAGE_VERSION "4.0.1c"
 
 /* Define to 1 if *printf supports %F format */
 #undef PRINTF_HAS_F_FORMAT
@@ -484,7 +487,7 @@
 
 
 /* Version number of package */
-#define VERSION "4.0.1b"
+#define VERSION "4.0.1c"
 
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE
