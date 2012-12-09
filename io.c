@@ -1598,7 +1598,7 @@ two_way_open(const char *str, struct redirect *rp)
 	if (! no_ptys && pty_vs_pipe(str)) {
 		static int initialized = FALSE;
 		static char first_pty_letter;
-#ifdef HAVE_GRANTPT
+#if defined(HAVE_GRANTPT) && ! defined(HAVE_POSIX_OPENPT)
 		static int have_dev_ptmx;
 #endif
 		char slavenam[32];
@@ -1615,7 +1615,7 @@ two_way_open(const char *str, struct redirect *rp)
 
 		if (! initialized) {
 			initialized = TRUE;
-#ifdef HAVE_GRANTPT
+#if defined(HAVE_GRANTPT) && ! defined(HAVE_POSIX_OPENPT)
 			have_dev_ptmx = (stat("/dev/ptmx", &statb) >= 0);
 #endif
 			i = 0;
@@ -1630,8 +1630,13 @@ two_way_open(const char *str, struct redirect *rp)
 		}
 
 #ifdef HAVE_GRANTPT
+#ifdef HAVE_POSIX_OPENPT
+		{
+			master = posix_openpt(O_RDWR|O_NOCTTY);
+#else
 		if (have_dev_ptmx) {
 			master = open("/dev/ptmx", O_RDWR);
+#endif
 			if (master >= 0) {
 				char *tem;
 

@@ -8,6 +8,13 @@
 	* main.c (main): Ditto.
 	* builtin.c (do_system): Ditto.
 
+	Unrelated:
+
+	* configure.ac: Look for posix_openpt
+	* io.c (two_way_open): Use posix_openpt if it's available.
+	Thanks to Christian Weisgerber <naddy@mips.inka.de> for
+	the changes.
+
 2012-12-07         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y (tokentab): `fflush()' is now in POSIX, remove the
