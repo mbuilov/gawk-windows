@@ -486,7 +486,7 @@ int_list(NODE *symbol, NODE *t)
 			for (j = 0; j < b->aicount; j++) {
 				/* index */
 				num = b->ainum[j];
-				if (t->flags & AISTR) {
+				if ((t->flags & AISTR) != 0) {
 					sprintf(buf, "%ld", num); 
 					subs = make_string(buf, strlen(buf));
 					subs->numbr = num;
@@ -498,7 +498,7 @@ int_list(NODE *symbol, NODE *t)
 				list[k++] = subs;
 
 				/* value */
-				if (t->flags & AVALUE) {
+				if ((t->flags & AVALUE) != 0) {
 					r = b->aivalue[j];
 					if (r->type == Node_val) {
 						if ((t->flags & AVNUM) != 0)

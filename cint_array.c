@@ -447,7 +447,7 @@ cint_list(NODE *symbol, NODE *t)
 	/* populate it with index in ascending or descending order */
 
 	for (ja = NHAT, jd = INT32_BIT - 1; ja < INT32_BIT && jd >= NHAT; ) {
-		j = (t->flags & ADESC) ? jd-- : ja++;
+		j = (t->flags & ADESC) != 0 ? jd-- : ja++;
 		tn = symbol->nodes[j];
 		if (tn == NULL)
 			continue;
@@ -885,7 +885,7 @@ tree_list(NODE *tree, NODE **list, unsigned int flags)
 		hsize /= 2;
 
 	for (j = 0; j < hsize; j++) {
-		cj = (flags & ADESC) ? (hsize - 1 - j) : j;
+		cj = (flags & ADESC) != 0 ? (hsize - 1 - j) : j;
 		tn = tree->nodes[cj];
 		if (tn == NULL)
 			continue;
@@ -1000,7 +1000,7 @@ tree_print(NODE *tree, size_t bi, int indent_level)
 		hsize /= 2;
 	fprintf(output_fp, "%4lu:%s[%4lu:%-4lu]\n",
 			(unsigned long) bi,
-			(tree->flags & HALFHAT) ? "HH" : "H",
+			(tree->flags & HALFHAT) != 0 ? "HH" : "H",
 			(unsigned long) hsize, (unsigned long) tree->table_size);
 
 	for (j = 0; j < hsize; j++) {
@@ -1146,14 +1146,14 @@ leaf_list(NODE *array, NODE **list, unsigned int flags)
 	static char buf[100];
 
 	for (i = 0; i < size; i++) {
-		ci = (flags & ADESC) ? (size - 1 - i) : i;
+		ci = (flags & ADESC) != 0 ? (size - 1 - i) : i;
 		r = array->nodes[ci];
 		if (r == NULL)
 			continue;
 
 		/* index */
 		num = array->array_base + ci;
-		if (flags & AISTR) {
+		if ((flags & AISTR) != 0) {
 			sprintf(buf, "%ld", num); 
 			subs = make_string(buf, strlen(buf));
 			subs->numbr = num;
@@ -1165,7 +1165,7 @@ leaf_list(NODE *array, NODE **list, unsigned int flags)
 		list[k++] = subs;
 
 		/* value */
-		if (flags & AVALUE) {
+		if ((flags & AVALUE) != 0) {
 			if (r->type == Node_val) {
 				if ((flags & AVNUM) != 0)
 					(void) force_number(r);

@@ -576,16 +576,16 @@ cmp_nodes(NODE *t1, NODE *t2)
 	if (t1 == t2)
 		return 0;
 
-	if (t1->flags & MAYBE_NUM)
+	if ((t1->flags & MAYBE_NUM) != 0)
 		(void) force_number(t1);
-	if (t2->flags & MAYBE_NUM)
+	if ((t2->flags & MAYBE_NUM) != 0)
 		(void) force_number(t2);
-	if (t1->flags & INTIND)
+	if ((t1->flags & INTIND) != 0)
 		t1 = force_string(t1);
-	if (t2->flags & INTIND)
+	if ((t2->flags & INTIND) != 0)
 		t2 = force_string(t2);
 
-	if ((t1->flags & NUMBER) && (t2->flags & NUMBER))
+	if ((t1->flags & NUMBER) != 0 && (t2->flags & NUMBER) != 0)
 		return cmp_numbers(t1, t2);
 
 	(void) force_string(t1);

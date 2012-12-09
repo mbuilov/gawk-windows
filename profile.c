@@ -428,7 +428,7 @@ cleanup:
 
 		case Op_concat:
  			str = pp_list(pc->expr_count, NULL,
-							(pc->concat_flag & CSUBSEP) ? ", " : op2str(Op_concat));
+							(pc->concat_flag & CSUBSEP) != 0 ? ", " : op2str(Op_concat));
 			pp_push(Op_concat, str, CAN_FREE);
 			break;
 
@@ -498,9 +498,9 @@ cleanup:
 		case Op_sub_builtin:
 		{
 			const char *fname = "sub";
-			if (pc->sub_flags & GSUB)
+			if ((pc->sub_flags & GSUB) != 0)
 				fname = "gsub";
-			else if (pc->sub_flags & GENSUB)
+			else if ((pc->sub_flags & GENSUB) != 0)
 				fname = "gensub";
 			tmp = pp_list(pc->expr_count, "()", ", ");
 			str = pp_concat(fname, tmp, "");

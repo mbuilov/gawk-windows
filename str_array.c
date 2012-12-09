@@ -370,12 +370,12 @@ str_list(NODE *symbol, NODE *t)
 		for (b = symbol->buckets[i]; b != NULL;	b = b->ahnext) {
 			/* index */
 			subs = b->ahname;
-			if (t->flags & AINUM)
+			if ((t->flags & AINUM) != 0)
 				(void) force_number(subs);
 			list[k++] = dupnode(subs);
 
 			/* value */
-			if (t->flags & AVALUE) {
+			if ((t->flags & AVALUE) != 0) {
 				val = b->ahvalue;
 				if (val->type == Node_val) {
 					if ((t->flags & AVNUM) != 0)

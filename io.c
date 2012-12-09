@@ -733,7 +733,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 		 * we've gotten EOF from a child input pipeline, it's
 		 * a good bet that the child has died. So recover it.
 		 */
-		if ((rp->flag & RED_EOF) && redirtype == redirect_pipein) {
+		if ((rp->flag & RED_EOF) != 0 && redirtype == redirect_pipein) {
 			if (rp->pid != -1)
 				wait_any(0);
 		}
@@ -779,7 +779,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 	save_rp = rp;
 
 	while (rp->output.fp == NULL && rp->iop == NULL) {
-		if (! new_rp && rp->flag & RED_EOF) {
+		if (! new_rp && (rp->flag & RED_EOF) != 0) {
 			/*
 			 * Encountered EOF on file or pipe -- must be cleared
 			 * by explicit close() before reading more
@@ -1233,12 +1233,12 @@ flush_io()
 	}
 	for (rp = red_head; rp != NULL; rp = rp->next)
 		/* flush both files and pipes, what the heck */
-		if ((rp->flag & RED_WRITE) && rp->output.fp != NULL) {
+		if ((rp->flag & RED_WRITE) != 0 && rp->output.fp != NULL) {
 			if (rp->output.gawk_fflush(rp->output.fp, rp->output.opaque)) {
-				if (rp->flag  & RED_PIPE)
+				if ((rp->flag & RED_PIPE) != 0)
 					warning(_("pipe flush of `%s' failed (%s)."),
 						rp->value, strerror(errno));
-				else if (rp->flag & RED_TWOWAY)
+				else if ((rp->flag & RED_TWOWAY) != 0)
 					warning(_("co-process flush of pipe to `%s' failed (%s)."),
 						rp->value, strerror(errno));
 				else
@@ -3563,9 +3563,9 @@ pty_vs_pipe(const char *command)
 		return false;
 	val = in_PROCINFO(command, "pty", NULL);
 	if (val) {
-		if (val->flags & MAYBE_NUM)
+		if ((val->flags & MAYBE_NUM) != 0)
 			(void) force_number(val);
-		if (val->flags & NUMBER)
+		if ((val->flags & NUMBER) != 0)
 			return ! iszero(val);
 		else
 			return (val->stlen != 0);

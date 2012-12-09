@@ -3604,28 +3604,28 @@ retry:
 			goto out;
 
 		if (do_lint) {
-			if ((tokentab[mid].flags & GAWKX) && ! (warntab[mid] & GAWKX)) {
+			if ((tokentab[mid].flags & GAWKX) != 0 && (warntab[mid] & GAWKX) == 0) {
 				lintwarn(_("`%s' is a gawk extension"),
 					tokentab[mid].operator);
 				warntab[mid] |= GAWKX;
 			}
-			if ((tokentab[mid].flags & NOT_POSIX) && ! (warntab[mid] & NOT_POSIX)) {
+			if ((tokentab[mid].flags & NOT_POSIX) != 0 && (warntab[mid] & NOT_POSIX) == 0) {
 				lintwarn(_("POSIX does not allow `%s'"),
 					tokentab[mid].operator);
 				warntab[mid] |= NOT_POSIX;
 			}
 		}
-		if (do_lint_old && (tokentab[mid].flags & NOT_OLD)
-				 && ! (warntab[mid] & NOT_OLD)
+		if (do_lint_old && (tokentab[mid].flags & NOT_OLD) != 0
+				 && (warntab[mid] & NOT_OLD) == 0
 		) {
 			warning(_("`%s' is not supported in old awk"),
 					tokentab[mid].operator);
 			warntab[mid] |= NOT_OLD;
 		}
 
-		if (tokentab[mid].flags & BREAK)
+		if ((tokentab[mid].flags & BREAK) != 0)
 			break_allowed++;
-		if (tokentab[mid].flags & CONTINUE)
+		if ((tokentab[mid].flags & CONTINUE) != 0)
 			continue_allowed++;
 
 		switch (class) {

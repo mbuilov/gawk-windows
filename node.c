@@ -50,7 +50,7 @@ r_force_number(NODE *n)
 	unsigned int newflags;
 	extern double strtod();
 
-	if (n->flags & NUMCUR)
+	if ((n->flags & NUMCUR) != 0)
 		return n;
 
 	/* all the conditionals are an attempt to avoid the expensive strtod */
@@ -75,7 +75,7 @@ r_force_number(NODE *n)
 		if (isalpha((unsigned char) *cp)) {
 			return n;
 		} else if (n->stlen == 4 && is_ieee_magic_val(n->stptr)) {
-			if (n->flags & MAYBE_NUM)
+			if ((n->flags & MAYBE_NUM) != 0)
 				n->flags &= ~MAYBE_NUM;
 			n->flags |= NUMBER|NUMCUR;
 			n->numbr = get_ieee_magic_val(n->stptr);
@@ -101,7 +101,7 @@ r_force_number(NODE *n)
 		return n;
 	}
 
-	if (n->flags & MAYBE_NUM) {
+	if ((n->flags & MAYBE_NUM) != 0) {
 		newflags = NUMBER;
 		n->flags &= ~MAYBE_NUM;
 	} else
@@ -245,7 +245,7 @@ r_format_val(const char *format, int index, NODE *s)
 			s->stlen = strlen(sp);
 		}
 		s->stfmt = -1;
-		if (s->flags & INTIND) {
+		if ((s->flags & INTIND) != 0) {
 			s->flags &= ~(INTIND|NUMBER);
 			s->flags |= STRING;
 		}
@@ -374,7 +374,7 @@ make_str_node(const char *s, size_t len, int flags)
 	r->wstlen = 0;
 #endif /* MBS_SUPPORT */
 
-	if (flags & ALREADY_MALLOCED)
+	if ((flags & ALREADY_MALLOCED) != 0)
 		r->stptr = (char *) s;
 	else {
 		emalloc(r->stptr, char *, len + 2, "make_str_node");
@@ -448,7 +448,7 @@ r_unref(NODE *tmp)
 			tmp->valref--;
 			return;
 		}
-		if (tmp->flags & STRCUR)
+		if ((tmp->flags & STRCUR) != 0)
 			efree(tmp->stptr);
 	}
 #else

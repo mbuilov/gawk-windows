@@ -413,7 +413,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 			val->val_type = AWK_NUMBER;
 
 			(void) force_number(node);
-			if (node->flags & NUMCUR) {
+			if ((node->flags & NUMCUR) != 0) {
 				val->num_value = get_number_d(node);
 				ret = true;
 			}
@@ -423,7 +423,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 			val->val_type = AWK_STRING;
 
 			(void) force_string(node);
-			if (node->flags & STRCUR) {
+			if ((node->flags & STRCUR) != 0) {
 				val->str_value.str = node->stptr;
 				val->str_value.len = node->stlen;
 				ret = true;
@@ -431,9 +431,9 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 			break;
 
 		case AWK_SCALAR:
-			if (node->flags & NUMBER) {
+			if ((node->flags & NUMBER) != 0) {
 				val->val_type = AWK_NUMBER;
-			} else if (node->flags & STRING) {
+			} else if ((node->flags & STRING) != 0) {
 				val->val_type = AWK_STRING;
 			} else
 				val->val_type = AWK_UNDEFINED;
@@ -442,11 +442,11 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 
 		case AWK_UNDEFINED:
 			/* return true and actual type for request of undefined */
-			if (node->flags & NUMBER) {
+			if ((node->flags & NUMBER) != 0) {
 				val->val_type = AWK_NUMBER;
 				val->num_value = get_number_d(node);
 				ret = true;
-			} else if (node->flags & STRING) {
+			} else if ((node->flags & STRING) != 0) {
 				val->val_type = AWK_STRING;
 				val->str_value.str = node->stptr;
 				val->str_value.len = node->stlen;

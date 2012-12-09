@@ -349,10 +349,10 @@ mpg_force_number(NODE *n)
 {
 	unsigned int newflags = 0;
 
-	if (is_mpg_number(n) && (n->flags & NUMCUR))
+	if (is_mpg_number(n) && (n->flags & NUMCUR) != 0)
 		return n;
 
-	if (n->flags & MAYBE_NUM) {
+	if ((n->flags & MAYBE_NUM) != 0) {
 		n->flags &= ~MAYBE_NUM;
 		newflags = NUMBER;
 	}
@@ -528,7 +528,7 @@ set_PREC()
 		return;
 
 	val = PREC_node->var_value;
-	if (val->flags & MAYBE_NUM)
+	if ((val->flags & MAYBE_NUM) != 0)
 		force_number(val);
 
 	if ((val->flags & (STRING|NUMBER)) == STRING) {
