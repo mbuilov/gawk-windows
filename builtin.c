@@ -1844,7 +1844,7 @@ do_system(int nargs)
 		ret = system(cmd);
 		if (ret != -1)
 			ret = WEXITSTATUS(ret);
-		if ((BINMODE & 1) != 0)
+		if ((BINMODE & BINMODE_INPUT) != 0)
 			os_setbinmode(fileno(stdin), O_BINARY);
 
 		cmd[tmp->stlen] = save;

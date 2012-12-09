@@ -754,14 +754,14 @@ set_BINMODE()
 		lintwarn(_("`BINMODE' is a gawk extension"));
 	}
 	if (do_traditional)
-		BINMODE = 0;
+		BINMODE = TEXT_TRANSLATE;
 	else if ((BINMODE_node->var_value->flags & NUMBER) != 0) {
 		BINMODE = (int) force_number(BINMODE_node->var_value);
 		/* Make sure the value is rational. */
-		if (BINMODE < 0)
-			BINMODE = 0;
-		else if (BINMODE > 3)
-			BINMODE = 3;
+		if (BINMODE < TEXT_TRANSLATE)
+			BINMODE = TEXT_TRANSLATE;
+		else if (BINMODE > BINMODE_BOTH)
+			BINMODE = BINMODE_BOTH;
 	}
 	else if ((BINMODE_node->var_value->flags & STRING) != 0) {
 		v = BINMODE_node->var_value;
@@ -783,13 +783,13 @@ set_BINMODE()
 				BINMODE = p[0] - '0';
 				break;
 			case 'r':
-				BINMODE = 1;
+				BINMODE = BINMODE_INPUT;
 				break;
 			case 'w':
-				BINMODE = 2;
+				BINMODE = BINMODE_OUTPUT;
 				break;
 			default:
-				BINMODE = 3;
+				BINMODE = BINMODE_BOTH;
 				goto bad_value;
 				break;
 			}
@@ -797,21 +797,21 @@ set_BINMODE()
 		case 2:
 			switch (p[0]) {
 			case 'r':
-				BINMODE = 3;
+				BINMODE = BINMODE_BOTH;
 				if (p[1] != 'w')
 					goto bad_value;
 				break;
 			case 'w':
-				BINMODE = 3;
+				BINMODE = BINMODE_BOTH;
 				if (p[1] != 'r')
 					goto bad_value;
 				break;
+			}
 			break;
 		default:
 	bad_value:
 			lintwarn(_("BINMODE value `%s' is invalid, treated as 3"), p);
 			break;
-			}
 		}
 	}
 	else
