@@ -151,6 +151,8 @@ static inline INSTRUCTION *list_merge(INSTRUCTION *l1, INSTRUCTION *l2);
 extern double fmod(double x, double y);
 
 #define YYSTYPE INSTRUCTION *
+
+#define is_identchar(c)		(isalnum(c) || (c) == '_')
 %}
 
 %token FUNC_CALL NAME REGEXP FILENAME

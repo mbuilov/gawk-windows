@@ -1214,8 +1214,6 @@ DEREF(NODE *r)
 #define iszero(n)		((n)->numbr == 0.0)
 #endif
 
-#define is_identchar(c)		(isalnum(c) || (c) == '_')
-
 #define var_uninitialized(n)	((n)->var_value == Nnull_string)
 
 #define get_lhs(n, r)	 (n)->type == Node_var && ! var_uninitialized(n) ? \

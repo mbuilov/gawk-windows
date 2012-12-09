@@ -28721,7 +28721,7 @@ The following types and/or macros and/or functions are referenced
 in @file{gawkapi.h}.  For correct use, you must therefore include the
 corresponding standard header file @emph{before} including @file{gawkapi.h}:
 
-@multitable {C Entity} {@code{<sys/types.h>}}
+@multitable {@code{memset()}, @code{memcpy()}} {@code{<sys/types.h>}}
 @headitem C Entity @tab Header File
 @item @code{FILE} @tab @code{<stdio.h>}
 @item @code{NULL} @tab @code{<stddef.h>}
@@ -29109,12 +29109,20 @@ The name of the new function.
 @command{awk} level code calls the function by this name.
 This is a regular C string.
 
+Function names must obey the rules for @command{awk}
+identifiers. That is, they must begin with either a letter
+or an underscore, which may be followed by any number of
+letters, digits, and underscores.
+
 @item awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
 This is a pointer to the C function that provides the desired
 functionality.
 The function must fill in the result with either a number
 or a string. @command{awk} takes ownership of any string memory.
 As mentioned earlier, string memory @strong{must} come from @code{malloc()}.
+
+The @code{num_actual_args} argument tells the C function how many
+actual parameters were passed from the calling @command{awk} code.
 
 The function must return the value of @code{result}.
 This is for the convenience of the calling code inside @command{gawk}.
