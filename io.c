@@ -290,12 +290,12 @@ binmode(const char *mode)
 {
 	switch (mode[0]) {
 	case 'r':
-		if ((BINMODE & 1) != 0)
+		if ((BINMODE & BINMODE_INPUT) != 0)
 			mode = "rb";
 		break;
 	case 'w':
 	case 'a':
-		if ((BINMODE & 2) != 0)
+		if ((BINMODE & BINMODE_OUTPUT) != 0)
 			mode = (mode[0] == 'w' ? "wb" : "ab");
 		break;
 	}
@@ -1114,7 +1114,7 @@ close_rp(struct redirect *rp, two_way_close_type how)
 	} else if ((rp->flag & (RED_PIPE|RED_WRITE)) == (RED_PIPE|RED_WRITE)) {
 		/* write to pipe */
 		status = pclose(rp->output.fp);
-		if ((BINMODE & 1) != 0)
+		if ((BINMODE & BINMODE_INPUT) != 0)
 			os_setbinmode(fileno(stdin), O_BINARY);
 
 		rp->output.fp = NULL;
@@ -1697,7 +1697,7 @@ two_way_open(const char *str, struct redirect *rp)
 	if (! no_ptys && pty_vs_pipe(str)) {
 		static bool initialized = false;
 		static char first_pty_letter;
-#ifdef HAVE_GRANTPT
+#if defined(HAVE_GRANTPT) && ! defined(HAVE_POSIX_OPENPT)
 		static int have_dev_ptmx;
 #endif
 		char slavenam[32];
@@ -1714,7 +1714,7 @@ two_way_open(const char *str, struct redirect *rp)
 
 		if (! initialized) {
 			initialized = true;
-#ifdef HAVE_GRANTPT
+#if defined(HAVE_GRANTPT) && ! defined(HAVE_POSIX_OPENPT)
 			have_dev_ptmx = (stat("/dev/ptmx", & statb) >= 0);
 #endif
 			i = 0;
@@ -1729,8 +1729,13 @@ two_way_open(const char *str, struct redirect *rp)
 		}
 
 #ifdef HAVE_GRANTPT
+#ifdef HAVE_POSIX_OPENPT
+		{
+			master = posix_openpt(O_RDWR|O_NOCTTY);
+#else
 		if (have_dev_ptmx) {
 			master = open("/dev/ptmx", O_RDWR);
+#endif
 			if (master >= 0) {
 				char *tem;
 
@@ -2255,7 +2260,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 
 	os_restore_mode(fileno(stdin));
 	current = popen(cmd, binmode("r"));
-	if ((BINMODE & 1) != 0)
+	if ((BINMODE & BINMODE_INPUT) != 0)
 		os_setbinmode(fileno(stdin), O_BINARY);
 	if (current == NULL)
 		return NULL;
