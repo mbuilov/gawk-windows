@@ -12,14 +12,6 @@
 # gawk.exe :
 #	This is the default target.  DEC C has become the default compiler.
 #
-# pgawk.exe :
-#	An alternate version which generates some profiling feedback for
-#	the awk programs it executes.  Included with `make all'.
-#
-# dgawk.exe :
-#	An alternate version which supports debugging.
-#	Included with `make all'.
-#
 # awkgram.c :
 #	If you don't have bison but do have VMS POSIX or DEC/Shell,
 #	change the PARSER and PASERINIT macros to use yacc.  If you don't
@@ -100,14 +92,15 @@ ECHO = write sys$output
 NOOP = continue
 
 # object files
-GAWKOBJ =  eval.obj,profile.obj
-PGAWKOBJ =  eval_p.obj,profile_p.obj
-DGAWKOBJ =  eval_d.obj,profile.obj,command.obj,debug.obj
-AWKOBJ1 =  array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,\
-	field.obj,floatcomp.obj,gawkmisc.obj,getopt.obj,getopt1.obj,\
-	io.obj
-AWKOBJ2 = main.obj,msg.obj,node.obj,random.obj,re.obj,\
-	regex.obj,replace.obj,version.obj
+GAWKOBJ = eval.obj,profile.obj
+AWKOBJ1 = array.obj,awkgram.obj,builtin.obj,cint_array.obj,\
+	command.obj,debug.obj,dfa.obj,ext.obj,field.obj,\
+	floatcomp.obj,gawkapi.obj,gawkmisc.obj,getopt.obj,getopt1.obj
+
+AWKOBJ2 = int_array.obj,io.obj,main.obj,mpfr.obj,msg.obj,node.obj,\
+	random.obj,re.obj,regex.obj,replace.obj,\
+	str_array.obj,symbol.obj,version.obj
+
 AWKOBJS = $(AWKOBJ1),$(AWKOBJ2)
 
 # VMSOBJS
@@ -117,25 +110,6 @@ VMSCODE = vms_misc.obj,vms_popen.obj,vms_fwrite.obj,vms_args.obj,\
 VMSCMD	= gawk_cmd.obj			# built from .cld file
 VMSOBJS = $(VMSCODE),$(VMSCMD)
 
-# primary source files
-AWKSRC = array.c,builtin.c,dfa.c,eval.c,eval_p.c,ext.c,field.c,\
-	floatcomp.c,gawkmisc.c,getopt.c,getopt1.c,io.c,main.c,\
-	msg.c,node.c,profile.c,profile_p.c,random.c,re.c,regcomp.c,\
-	regex.c,regex_internal.c,regexec.c,replace.c,version.c
-
-DBGSRC = eval_d.c,debug.c,command.y,cmd.h
-
-ALLSRC = $(AWKSRC),awkgram.y,awk.h,custom.h,dfa.h,getopt.h,\
-	gettext.h,mbsupport.h,protos.h,random.h
-
-VMSSRC = $(VMSDIR)gawkmisc.vms,$(VMSDIR)vms_misc.c,$(VMSDIR)vms_popen.c,\
-	$(VMSDIR)vms_fwrite.c,$(VMSDIR)vms_args.c,$(VMSDIR)vms_gawk.c,\
-	$(VMSDIR)vms_cli.c
-VMSHDRS = $(VMSDIR)redirect.h,$(VMSDIR)vms.h,$(VMSDIR)fcntl.h,\
-	$(VMSDIR)varargs.h,$(VMSDIR)unixlib.h
-VMSOTHR = $(VMSDIR)descrip.mms,$(VMSDIR)vmsbuild.com,$(VMSDIR)version.com,\
-	$(VMSDIR)gawk.hlp
-
 DOCS= $(DOCDIR)gawk.1,$(DOCDIR)gawk.texi,$(DOCDIR)texinfo.tex
 
 # Release of gawk
@@ -143,30 +117,20 @@ REL=4.0
 PATCHLVL=1
 
 # generic target
-all : gawk,pgawk,dgawk
-	$(NOOP)
+all : gawk
+      @	$(NOOP)
 
 # dummy target to allow building "gawk" in addition to explicit "gawk.exe"
 gawk : gawk.exe
-	$(ECHO) " GAWK "
-pgawk : pgawk.exe
-	$(ECHO) " PGAWK "
-dgawk : dgawk.exe
-	$(ECHO) " DGAWK "
+      @	$(ECHO) "$< is upto date"
 
 # rules to build gawk
 gawk.exe : $(GAWKOBJ) $(AWKOBJS) $(VMSOBJS) gawk.opt
 	$(LINK) $(LINKFLAGS) gawk.opt/options
 
-# rules to build pgawk and dgawk
-pgawk.exe : $(PGAWKOBJ) $(AWKOBJS) $(VMSOBJS) pgawk.opt
-	$(LINK) $(LINKFLAGS) pgawk.opt/options
-dgawk.exe : $(DGAWKOBJ) $(AWKOBJS) $(VMSOBJS) dgawk.opt
-	$(LINK) $(LINKFLAGS) dgawk.opt/options
-
 gawk.opt : $(MAKEFILE)			# create linker options file
-	open/write opt gawk.opt		! ~ 'cat <<close >gawk.opt'
-	write opt "! GAWK -- GNU awk"
+      @	open/write opt gawk.opt		! ~ 'cat <<close >gawk.opt'
+      @	write opt "! GAWK -- GNU awk"
       @ write opt "$(GAWKOBJ)"
       @ write opt "$(AWKOBJ1)"
       @ write opt "$(AWKOBJ2)"
@@ -174,59 +138,52 @@ gawk.opt : $(MAKEFILE)			# create linker options file
       @ write opt "psect_attr=environ,noshr	!extern [noshare] char **"
       @ write opt "stack=48	!preallocate more pages (default is 20)"
       @ write opt "iosegment=128	!ditto (default is 32)"
-	write opt "$(LIBS)"
-	write opt "identification=""V$(REL).$(PATCHLVL)"""
-	close opt
+      @	write opt "$(LIBS)"
+      @	write opt "identification=""V$(REL).$(PATCHLVL)"""
+      @	close opt
 
-pgawk.opt : $(MAKEFILE)			# create linker options file
-	open/write opt pgawk.opt
-	write opt "! PGAWK -- GNU awk w/ run-time profiling"
-      @ write opt "$(PGAWKOBJ)"
-      @ write opt "$(AWKOBJ1)"
-      @ write opt "$(AWKOBJ2)"
-      @ write opt "$(VMSOBJS)"
-      @ write opt "psect_attr=environ,noshr	!extern [noshare] char **"
-      @ write opt "stack=48	!preallocate more pages (default is 20)"
-      @ write opt "iosegment=128	!ditto (default is 32)"
-	write opt "$(LIBS)"
-	write opt "identification=""V$(REL).$(PATCHLVL)"""
-	close opt
+$(VMSCODE)	: awk.h config.h $(VMSDIR)redirect.h $(VMSDIR)vms.h
+$(AWKOBJS)	: awk.h gettext.h mbsupport.h regex.h dfa.h config.h $(VMSDIR)redirect.h
+$(GAWKOBJ)	: awk.h config.h $(VMSDIR)redirect.h
 
-dgawk.opt : $(MAKEFILE)			# create linker options file
-	open/write opt dgawk.opt
-	write opt "! DGAWK -- GNU awk w/ debugging"
-      @ write opt "$(DGAWKOBJ)"
-      @ write opt "$(AWKOBJ1)"
-      @ write opt "$(AWKOBJ2)"
-      @ write opt "$(VMSOBJS)"
-      @ write opt "psect_attr=environ,noshr	!extern [noshare] char **"
-      @ write opt "stack=48	!preallocate more pages (default is 20)"
-      @ write opt "iosegment=128	!ditto (default is 32)"
-	write opt "$(LIBS)"
-	write opt "identification=""V$(REL).$(PATCHLVL)"""
-	close opt
-
+#-----------------------------------------------------------------------------
+# Older versions of MMS have problems handling lower case file names typically
+# found on ODS-5 disks. Fix this by adding explicit dependencies.
+#_____________________________________________________________________________
+array.obj	: array.c
+awkgram.obj	: awkgram.c awk.h
+builtin.obj	: builtin.c floatmagic.h random.h
+cint_array.obj	: cint_array.c
+command.obj	: command.c cmd.h
+debug.obj	: debug.c cmd.h
+dfa.obj		: dfa.c dfa.h
+ext.obj		: ext.c
+eval.obj	: eval.c
+field.obj	: field.c
+floatcomp.obj	: floatcomp.c
+gawkaoi.obj	: gawkapi.c
+gawkmisc.obj	: gawkmisc.c $(VMSDIR)gawkmisc.vms
+getopt.obj	: getopt.c
+getopt1.obj	: getopt1.c
+int_array.obj	: int_array.c
+io.obj		: io.c
+main.obj	: main.c
+msg.obj		: msg.c
+mpfr.obj	: mpfr.c
+node.obj	: node.c
+profile.obj	: profile.c
+random.obj	: random.c random.h
+re.obj		: re.c
+regex.obj	: regex.c regcomp.c regex_internal.c regexec.c regex.h regex_internal.h
+str_array.obj	: str_array.c
+symbol.obj	: symbol.c
+version.obj	: version.c
 vms_misc.obj	: $(VMSDIR)vms_misc.c
 vms_popen.obj	: $(VMSDIR)vms_popen.c
 vms_fwrite.obj	: $(VMSDIR)vms_fwrite.c
 vms_args.obj	: $(VMSDIR)vms_args.c
 vms_gawk.obj	: $(VMSDIR)vms_gawk.c
 vms_cli.obj	: $(VMSDIR)vms_cli.c
-$(VMSCODE)	: awk.h config.h $(VMSDIR)redirect.h $(VMSDIR)vms.h
-
-gawkmisc.obj	: gawkmisc.c $(VMSDIR)gawkmisc.vms
-
-$(AWKOBJS)	: awk.h gettext.h mbsupport.h regex.h dfa.h \
-		  config.h $(VMSDIR)redirect.h
-$(GAWKOBJ)	: awk.h config.h $(VMSDIR)redirect.h
-$(PGAWKOBJ)	: awk.h config.h $(VMSDIR)redirect.h
-$(DGAWKOBJ)	: awk.h config.h $(VMSDIR)redirect.h
-random.obj	: random.h
-builtin.obj	: floatmagic.h random.h
-awkgram.obj	: awkgram.c awk.h
-dfa.obj	: dfa.c dfa.h
-regex.obj : regex.c regcomp.c regex_internal.c regexec.c regex.h regex_internal.h
-command.obj,debug.obj : cmd.h
 replace.obj	: replace.c $(MISSNGD)system.c $(MISSNGD)memcmp.c \
 		  $(MISSNGD)memcpy.c $(MISSNGD)memset.c $(MISSNGD)memmove.c \
 		  $(MISSNGD)strncasecmp.c $(MISSNGD)strerror.c \
@@ -245,6 +202,7 @@ awkgram.c	: awkgram.y	# foo.y :: yacc => y[_]tab.c, bison => foo_tab.c
      @- if f$search("ytab.c")	.nes."" then  rename/new_vers ytab.c  $@
      @- if f$search("y_tab.c")	.nes."" then  rename/new_vers y_tab.c $@
      @- if f$search("awkgram_tab.c").nes."" then  rename/new_vers awkgram_tab.c $@
+
 command.c	: command.y
      @- if f$search("ytab.c")	.nes."" then  delete ytab.c;*
      @- if f$search("y_tab.c")	.nes."" then  delete y_tab.c;*
@@ -262,7 +220,7 @@ $(VMSCMD)	: $(VMSDIR)gawk.cld
 	set command $(CLDFLAGS)/object=$@ $<
 
 # special target for loading the help text into a VMS help library
-install.help	: $(VMS)gawk.hlp
+install.help	: $(VMSDIR)gawk.hlp
 	library/help $(HELPLIB) $< /log
 
 # miscellaneous other targets
@@ -271,13 +229,12 @@ tidy :
       - if f$search("[.*]*.*;-1").nes."" then  purge [.*]
 
 clean :
-      - delete *.obj;*,gawk.opt;*,pgawk.opt;*,dgawk.opt;*
+      - if f$search ("*.obj")    .nes. "" then delete *.obj;*
+      - if f$search ("gawk.opt") .nes. "" then delete gawk.opt;*
 
 spotless : clean tidy
       - if f$search("config.h").nes."" then  rename config.h config.h-old/New
       - if f$search("gawk.exe").nes."" then  delete gawk.exe;*
-      - if f$search("pgawk.exe").nes."" then  delete pgawk.exe;*
-      - if f$search("dgawk.exe").nes."" then  delete dgawk.exe;*
       - if f$search("gawk.dvi").nes."" then  delete gawk.dvi;*
       - if f$search("[.doc]texindex.exe").nes."" then  delete [.doc]texindex.exe;*
 
