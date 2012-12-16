@@ -807,6 +807,12 @@ EXTRA_DIST = \
 	symtab5.ok \
 	symtab6.awk \
 	symtab6.ok \
+	symtab7.awk \
+	symtab7.in \
+	symtab7.ok \
+	symtab8.awk \
+	symtab8.in \
+	symtab8.ok \
 	synerr1.awk \
 	synerr1.ok \
 	synerr2.awk \
@@ -929,7 +935,7 @@ GAWK_EXT_TESTS = \
 	rebuf regx8bit reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
 	strtonum switch2 \
-	symtab1 symtab2 symtab3 symtab4 symtab5 symtab6
+	symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 symtab7 symtab8
 
 EXTRA_TESTS = inftest regtest
 
@@ -1702,6 +1708,12 @@ symtab6:
 	@echo $@
 	@$(AWK) -d__$@ -f $(srcdir)/$@.awk
 	@grep -v '^ENVIRON' __$@ | grep -v '^PROCINFO' > _$@ ; rm __$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+symtab8:
+	@echo $@
+	@$(AWK) -d__$@ -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@
+	@grep -v '^ENVIRON' __$@ | grep -v '^PROCINFO' >> _$@ ; rm __$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:

@@ -1019,6 +1019,12 @@ EXTRA_DIST = \
 	symtab5.ok \
 	symtab6.awk \
 	symtab6.ok \
+	symtab7.awk \
+	symtab7.in \
+	symtab7.ok \
+	symtab8.awk \
+	symtab8.in \
+	symtab8.ok \
 	synerr1.awk \
 	synerr1.ok \
 	synerr2.awk \
@@ -1140,7 +1146,7 @@ GAWK_EXT_TESTS = \
 	rebuf regx8bit reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
 	strtonum switch2 \
-	symtab1 symtab2 symtab3 symtab4 symtab5 symtab6
+	symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 symtab7 symtab8
 
 EXTRA_TESTS = inftest regtest
 INET_TESTS = inetdayu inetdayt inetechu inetecht
@@ -2083,6 +2089,12 @@ symtab6:
 	@echo $@
 	@$(AWK) -d__$@ -f $(srcdir)/$@.awk
 	@grep -v '^ENVIRON' __$@ | grep -v '^PROCINFO' > _$@ ; rm __$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+symtab8:
+	@echo $@
+	@$(AWK) -d__$@ -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@
+	@grep -v '^ENVIRON' __$@ | grep -v '^PROCINFO' >> _$@ ; rm __$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
@@ -3287,6 +3299,11 @@ symtab4:
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 symtab5:
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+symtab7:
 	@echo $@
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
