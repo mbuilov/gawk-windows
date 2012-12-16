@@ -1,4 +1,4 @@
-Sat Nov 24 20:09:56 IST 2012
+Sun Dec 16 18:04:50 IST 2012
 ============================
 
 There were too many files tracking different thoughts and ideas for
@@ -14,24 +14,11 @@ TODO
 
 Minor Cleanups and Code Improvements
 ------------------------------------
-	Fix all *assoc_lookup() = xxx  calls.
-
-	Make GAWKDEBUG pass the test suite.
 
 	API:
-		DONE: awk_true and awk_false
-		DONE: Update doc to use gcc -o filefuncs.so -shared filefuncs.o
-			instead of ld ...
-		DONE: Have check for name not rely on isalpha, isalnum since
-			the locale could botch that up. Also make it not
-			fatal.
 		??? #if !defined(GAWK) && !defined(GAWK_OMIT_CONVENIENCE_MACROS)
 
-	DONE: Make fflush() and fflush("") both flush all files, as in BWK awk.
-
 	?? Add debugger commands to reference card
-
-	FIX regular field splitting to use FPAT algorithm.
 
 	Look at function order within files.
 
@@ -43,8 +30,6 @@ Minor Cleanups and Code Improvements
 
 	Add tests for patches in emails (?? - not sure now what this
 	referred to)
-
-	DONE: In gawkapi.c - review switch statements and use of default.
 
 	Consider removing use of and/or need for the protos.h file.
 
@@ -59,9 +44,9 @@ Minor Cleanups and Code Improvements
 Minor New Features
 ------------------
 
-	Enhance extension/fork.c waitpid to allow the caller to specify the options.
-	And add an optional array argument to wait and waitpid in which to return
-	exit status information.
+	Enhance extension/fork.c waitpid to allow the caller to specify
+	the options.  And add an optional array argument to wait and
+	waitpid in which to return exit status information.
 
 	Consider relaxing the strictness of --posix.
 
@@ -83,8 +68,6 @@ Major New Features
 		indirect calls of built-ins
 		indirect calls of extension functions
 		indirect through array elements, not just scalar variables
-
-	Integration of array_iface branch.
 
 	Rework management of array index storage. (Partially DONE.)
 
@@ -116,6 +99,10 @@ Things To Think About That May Never Happen
 
 	Change from dlopen to using the libltdl library (i.e. lt_dlopen).
 	This may support more platforms.
+
+	FIX regular field splitting to use FPAT algorithm.
+		Note: Looked at this. Not sure it's with the trouble:
+		If it ain't broke...
 
 	Implement namespaces.  Arnold suggested the following in an email:
 	- Extend the definition of an 'identifier' to include "." as a valid character
@@ -179,6 +166,22 @@ Done in 4.1:
 
 	Review all FIXME and TODO comments
 
+	Fix all *assoc_lookup() = xxx  calls.
+
+	Make GAWKDEBUG pass the test suite.
+
+	Make fflush() and fflush("") both flush all files, as in BWK awk.
+
+	In gawkapi.c - review switch statements and use of default.
+
+	API:
+		awk_true and awk_false
+		Update doc to use gcc -o filefuncs.so -shared filefuncs.o
+			instead of ld ...
+		Have check for name not rely on isalpha, isalnum since
+			the locale could botch that up. Also make it not
+			fatal.
+
 Minor New Features
 ------------------
 Done in 4.1:
@@ -189,22 +192,24 @@ Major New Features
 ------------------
 Done in 4.1:
 
-	DONE: Design and implement I/O plugin API.
+	Integration of array_iface branch.
 
-	DONE: Implement designed API for loadable modules
+	Design and implement I/O plugin API.
 
-	DONE: Redo the loadable modules interface from the awk level.
+	Implement designed API for loadable modules
 
-	DONE: xgawk features (@load, -l, others)
+	Redo the loadable modules interface from the awk level.
 
-	DONE: Merge gawk/pgawk/dgawk into one executable
+	xgawk features (@load, -l, others)
 
-	DONE: Merge xmlgawk XML extensions (via source forge project that
+	Merge gawk/pgawk/dgawk into one executable
+
+	Merge xmlgawk XML extensions (via source forge project that
 	      works with new API)
 
-	DONE: Integrate MPFR to provide high precision arithmetic.
+	Integrate MPFR to provide high precision arithmetic.
 
-	DONE: Consider really implementing BWK awk SYMTAB for seeing what
+	Consider really implementing BWK awk SYMTAB for seeing what
 	global variables are defined.
 
 Things To Think About That May Never Happen

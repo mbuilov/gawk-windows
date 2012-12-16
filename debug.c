@@ -1263,7 +1263,9 @@ do_set_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 					array = make_array();
 					array->vname = estrdup(subs->stptr, subs->stlen);
 					array->parent_array = r;
-					*assoc_lookup(r, subs) = array;
+					lhs = assoc_lookup(r, subs);
+					unref(*lhs);
+					*lhs = array;
 					r = array;
 				} else if (value->type != Node_var_array) {
 					d_error(_("attempt to use scalar `%s[\"%s\"]' as array"),
