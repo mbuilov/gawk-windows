@@ -840,12 +840,12 @@ particular records in a file and perform operations upon them.
 * Future Extensions::                   New features that may be implemented
                                         one day.
 * Implementation Limitations::          Some limitations of the implementation.
-* Old Extension Mechansim::             Some compatibility for old extensions.
 * Extension Design::                    Design notes about the extension API.
 * Old Extension Problems::              Problems with the old mechanism.
 * Extension New Mechanism Goals::       Goals for the new mechanism.
 * Extension Other Design Decisions::    Some other design decisions.
 * Extension Future Growth::             Some room for future growth.
+* Old Extension Mechansim::             Some compatibility for old extensions.
 * Basic High Level::                    The high level view.
 * Basic Data Typing::                   A very quick intro to data types.
 @end detailmenu
@@ -34084,8 +34084,8 @@ maintainers of @command{gawk}.  Everything in it applies specifically to
 * Additions::                   Making Additions To @command{gawk}.
 * Future Extensions::           New features that may be implemented one day.
 * Implementation Limitations::  Some limitations of the implementation.
-* Old Extension Mechansim::     Some compatibility for old extensions.
 * Extension Design::            Design notes about the extension API.
+* Old Extension Mechansim::     Some compatibility for old extensions.
 @end menu
 
 @node Compatibility Mode
@@ -34716,42 +34716,6 @@ different limits.
 @item Size of a printf string @tab @code{MAX_INT }
 @end multitable
 
-@node Old Extension Mechansim
-@appendixsec Compatibility For Old Extensions
-
-@ref{Dynamic Extensions}, describes the supported API and mechanisms
-for writing extensions for @command{gawk}.  This API was introduced
-in @strong{FIXME: VERSION}.  However, for many years @command{gawk}
-provided an extension mechanism that required knowledge of @command{gawk}
-internals and that was not as well designed.
-
-In order to provide a transition period, @command{gawk} version
-@strong{FIXME: VERSION} continues to support the original extension mechanism.
-This will be true for the life of exactly one major release.  This support
-will be withdrawn, and removed from the source code, at the next major
-release.
-
-Briefly, original-style extensions should be compiled by including the
-@file{awk.h} header file in the extension source code. Additionally,
-you must define the identifier @samp{GAWK} when building (use
-@samp{-DGAWK} with Unix-style compilers).  Otherwise, the definitions
-in @file{gawkapi.h} will cause conflicts with those in @file{awk.h}
-and your extension will not compile.
-
-Just as in previous versions, you load an old-style extension with the
-@code{extension()} built-in function (which is not otherwise documented).
-This function in turn finds and loads the shared object file containing
-the extension and calls its @code{dl_load()} C routine.
-
-Because original-style and new-style extensions use different initialiation
-routines (@code{dl_load()} versus @code{dlload()}), they may safely
-be installed in the same directory (to be found by @env{AWKLIBPATH})
-without conflict.
-
-The @command{gawk} development team strongly recommends that you
-convert any old extensions that you may have to use the new API
-described in @ref{Dynamic Extensions}.
-
 @node Extension Design
 @appendixsec Extension API Design
 
@@ -34978,6 +34942,42 @@ conflicts.
 
 Of course, as of this writing, no decisions have been made with respect
 to any of the above.
+
+@node Old Extension Mechansim
+@appendixsec Compatibility For Old Extensions
+
+@ref{Dynamic Extensions}, describes the supported API and mechanisms
+for writing extensions for @command{gawk}.  This API was introduced
+in @strong{FIXME: VERSION}.  However, for many years @command{gawk}
+provided an extension mechanism that required knowledge of @command{gawk}
+internals and that was not as well designed.
+
+In order to provide a transition period, @command{gawk} version
+@strong{FIXME: VERSION} continues to support the original extension mechanism.
+This will be true for the life of exactly one major release.  This support
+will be withdrawn, and removed from the source code, at the next major
+release.
+
+Briefly, original-style extensions should be compiled by including the
+@file{awk.h} header file in the extension source code. Additionally,
+you must define the identifier @samp{GAWK} when building (use
+@samp{-DGAWK} with Unix-style compilers).  Otherwise, the definitions
+in @file{gawkapi.h} will cause conflicts with those in @file{awk.h}
+and your extension will not compile.
+
+Just as in previous versions, you load an old-style extension with the
+@code{extension()} built-in function (which is not otherwise documented).
+This function in turn finds and loads the shared object file containing
+the extension and calls its @code{dl_load()} C routine.
+
+Because original-style and new-style extensions use different initialiation
+routines (@code{dl_load()} versus @code{dlload()}), they may safely
+be installed in the same directory (to be found by @env{AWKLIBPATH})
+without conflict.
+
+The @command{gawk} development team strongly recommends that you
+convert any old extensions that you may have to use the new API
+described in @ref{Dynamic Extensions}.
 
 @c ENDOFRANGE impis
 @c ENDOFRANGE gawii

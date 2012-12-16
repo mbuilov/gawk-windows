@@ -632,12 +632,12 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * Future Extensions::                   New features that may be implemented
                                         one day.
 * Implementation Limitations::          Some limitations of the implementation.
-* Old Extension Mechansim::             Some compatibility for old extensions.
 * Extension Design::                    Design notes about the extension API.
 * Old Extension Problems::              Problems with the old mechanism.
 * Extension New Mechanism Goals::       Goals for the new mechanism.
 * Extension Other Design Decisions::    Some other design decisions.
 * Extension Future Growth::             Some room for future growth.
+* Old Extension Mechansim::             Some compatibility for old extensions.
 * Basic High Level::                    The high level view.
 * Basic Data Typing::                   A very quick intro to data types.
 
@@ -26287,8 +26287,8 @@ and maintainers of `gawk'.  Everything in it applies specifically to
 * Additions::                   Making Additions To `gawk'.
 * Future Extensions::           New features that may be implemented one day.
 * Implementation Limitations::  Some limitations of the implementation.
-* Old Extension Mechansim::     Some compatibility for old extensions.
 * Extension Design::            Design notes about the extension API.
+* Old Extension Mechansim::     Some compatibility for old extensions.
 
 
 File: gawk.info,  Node: Compatibility Mode,  Next: Additions,  Up: Notes
@@ -26752,7 +26752,7 @@ Additions::, if you are interested in tackling any of the projects
 listed there.
 
 
-File: gawk.info,  Node: Implementation Limitations,  Next: Old Extension Mechansim,  Prev: Future Extensions,  Up: Notes
+File: gawk.info,  Node: Implementation Limitations,  Next: Extension Design,  Prev: Future Extensions,  Up: Notes
 
 C.4 Some Limitations of the Implementation
 ==========================================
@@ -26783,48 +26783,9 @@ Size of a literal string      `MAX_INT '
 Size of a printf string       `MAX_INT '
 
 
-File: gawk.info,  Node: Old Extension Mechansim,  Next: Extension Design,  Prev: Implementation Limitations,  Up: Notes
+File: gawk.info,  Node: Extension Design,  Next: Old Extension Mechansim,  Prev: Implementation Limitations,  Up: Notes
 
-C.5 Compatibility For Old Extensions
-====================================
-
-*note Dynamic Extensions::, describes the supported API and mechanisms
-for writing extensions for `gawk'.  This API was introduced in *FIXME:
-VERSION*.  However, for many years `gawk' provided an extension
-mechanism that required knowledge of `gawk' internals and that was not
-as well designed.
-
-   In order to provide a transition period, `gawk' version *FIXME:
-VERSION* continues to support the original extension mechanism.  This
-will be true for the life of exactly one major release.  This support
-will be withdrawn, and removed from the source code, at the next major
-release.
-
-   Briefly, original-style extensions should be compiled by including
-the `awk.h' header file in the extension source code. Additionally, you
-must define the identifier `GAWK' when building (use `-DGAWK' with
-Unix-style compilers).  Otherwise, the definitions in `gawkapi.h' will
-cause conflicts with those in `awk.h' and your extension will not
-compile.
-
-   Just as in previous versions, you load an old-style extension with
-the `extension()' built-in function (which is not otherwise documented).
-This function in turn finds and loads the shared object file containing
-the extension and calls its `dl_load()' C routine.
-
-   Because original-style and new-style extensions use different
-initialiation routines (`dl_load()' versus `dlload()'), they may safely
-be installed in the same directory (to be found by `AWKLIBPATH')
-without conflict.
-
-   The `gawk' development team strongly recommends that you convert any
-old extensions that you may have to use the new API described in *note
-Dynamic Extensions::.
-
-
-File: gawk.info,  Node: Extension Design,  Prev: Old Extension Mechansim,  Up: Notes
-
-C.6 Extension API Design
+C.5 Extension API Design
 ========================
 
 This minor node documents the design of the extension API, including a
@@ -26852,7 +26813,7 @@ mechanism was bolted onto the side and was not really thought out.
 
 File: gawk.info,  Node: Old Extension Problems,  Next: Extension New Mechanism Goals,  Up: Extension Design
 
-C.6.1 Problems With The Old Mechanism
+C.5.1 Problems With The Old Mechanism
 -------------------------------------
 
 The old extension mechanism had several problems:
@@ -26888,7 +26849,7 @@ it together.  More information about the `xgawk' project is provided in
 
 File: gawk.info,  Node: Extension New Mechanism Goals,  Next: Extension Other Design Decisions,  Prev: Old Extension Problems,  Up: Extension Design
 
-C.6.2 Goals For A New Mechanism
+C.5.2 Goals For A New Mechanism
 -------------------------------
 
 Some goals for the new API were:
@@ -26973,7 +26934,7 @@ dynamically at runtime is problematic on Windows.
 
 File: gawk.info,  Node: Extension Other Design Decisions,  Next: Extension Future Growth,  Prev: Extension New Mechanism Goals,  Up: Extension Design
 
-C.6.3 Other Design Decisions
+C.5.3 Other Design Decisions
 ----------------------------
 
 As an arbitrary design decision, extensions can read the values of
@@ -27017,7 +26978,7 @@ extensions.
 
 File: gawk.info,  Node: Extension Future Growth,  Prev: Extension Other Design Decisions,  Up: Extension Design
 
-C.6.4 Room For Future Growth
+C.5.4 Room For Future Growth
 ----------------------------
 
 The API can later be expanded, in two ways:
@@ -27034,6 +26995,45 @@ The API can later be expanded, in two ways:
 
    Of course, as of this writing, no decisions have been made with
 respect to any of the above.
+
+
+File: gawk.info,  Node: Old Extension Mechansim,  Prev: Extension Design,  Up: Notes
+
+C.6 Compatibility For Old Extensions
+====================================
+
+*note Dynamic Extensions::, describes the supported API and mechanisms
+for writing extensions for `gawk'.  This API was introduced in *FIXME:
+VERSION*.  However, for many years `gawk' provided an extension
+mechanism that required knowledge of `gawk' internals and that was not
+as well designed.
+
+   In order to provide a transition period, `gawk' version *FIXME:
+VERSION* continues to support the original extension mechanism.  This
+will be true for the life of exactly one major release.  This support
+will be withdrawn, and removed from the source code, at the next major
+release.
+
+   Briefly, original-style extensions should be compiled by including
+the `awk.h' header file in the extension source code. Additionally, you
+must define the identifier `GAWK' when building (use `-DGAWK' with
+Unix-style compilers).  Otherwise, the definitions in `gawkapi.h' will
+cause conflicts with those in `awk.h' and your extension will not
+compile.
+
+   Just as in previous versions, you load an old-style extension with
+the `extension()' built-in function (which is not otherwise documented).
+This function in turn finds and loads the shared object file containing
+the extension and calls its `dl_load()' C routine.
+
+   Because original-style and new-style extensions use different
+initialiation routines (`dl_load()' versus `dlload()'), they may safely
+be installed in the same directory (to be found by `AWKLIBPATH')
+without conflict.
+
+   The `gawk' development team strongly recommends that you convert any
+old extensions that you may have to use the new API described in *note
+Dynamic Extensions::.
 
 
 File: gawk.info,  Node: Basic Concepts,  Next: Glossary,  Prev: Notes,  Up: Top
@@ -32319,23 +32319,23 @@ Ref: Derived Files-Footnote-21076290
 Ref: Derived Files-Footnote-31076890
 Node: Future Extensions1076988
 Node: Implementation Limitations1077569
-Node: Old Extension Mechansim1078828
-Node: Extension Design1080620
-Node: Old Extension Problems1081734
-Ref: Old Extension Problems-Footnote-11083242
-Node: Extension New Mechanism Goals1083299
-Ref: Extension New Mechanism Goals-Footnote-11086658
-Node: Extension Other Design Decisions1086844
-Node: Extension Future Growth1088950
-Node: Basic Concepts1089771
-Node: Basic High Level1090452
-Ref: figure-general-flow1090723
-Ref: figure-process-flow1091322
-Ref: Basic High Level-Footnote-11094551
-Node: Basic Data Typing1094736
-Node: Glossary1098091
-Node: Copying1123402
-Node: GNU Free Documentation License1160959
-Node: Index1186096
+Node: Extension Design1078821
+Node: Old Extension Problems1079970
+Ref: Old Extension Problems-Footnote-11081478
+Node: Extension New Mechanism Goals1081535
+Ref: Extension New Mechanism Goals-Footnote-11084894
+Node: Extension Other Design Decisions1085080
+Node: Extension Future Growth1087186
+Node: Old Extension Mechansim1088007
+Node: Basic Concepts1089764
+Node: Basic High Level1090445
+Ref: figure-general-flow1090716
+Ref: figure-process-flow1091315
+Ref: Basic High Level-Footnote-11094544
+Node: Basic Data Typing1094729
+Node: Glossary1098084
+Node: Copying1123395
+Node: GNU Free Documentation License1160952
+Node: Index1186089
 
 End Tag Table
