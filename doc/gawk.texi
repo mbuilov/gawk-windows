@@ -721,12 +721,7 @@ particular records in a file and perform operations upon them.
                                         with @command{gawk}.
 * Extension Intro::                     What is an extension.
 * Plugin License::                      A note about licensing.
-* Extension Design::                    Design notes about the extension API.
-* Old Extension Problems::              Problems with the old mechanism.
-* Extension New Mechanism Goals::       Goals for the new mechanism.
-* Extension Other Design Decisions::    Some other design decisions.
 * Extension Mechanism Outline::         An outline of how it works.
-* Extension Future Growth::             Some room for future growth.
 * Extension API Description::           A full description of the API.
 * Extension API Functions Introduction:: Introduction to the API functions.
 * General Data Types::                  The data types.
@@ -846,6 +841,11 @@ particular records in a file and perform operations upon them.
                                         one day.
 * Implementation Limitations::          Some limitations of the implementation.
 * Old Extension Mechansim::             Some compatibility for old extensions.
+* Extension Design::                    Design notes about the extension API.
+* Old Extension Problems::              Problems with the old mechanism.
+* Extension New Mechanism Goals::       Goals for the new mechanism.
+* Extension Other Design Decisions::    Some other design decisions.
+* Extension Future Growth::             Some room for future growth.
 * Basic High Level::                    The high level view.
 * Basic Data Typing::                   A very quick intro to data types.
 @end detailmenu
@@ -28263,7 +28263,7 @@ using code written in C or C++.
 If you don't know anything about C programming, you can safely skip this
 @value{CHAPTER}, although you may wish to review the documentation on the
 extensions that come with @command{gawk} (@pxref{Extension Samples}),
-and the @value{SECTION} on the @code{gawkextlib} project (@pxref{gawkextlib}).
+and the information on the @code{gawkextlib} project (@pxref{gawkextlib}).
 The sample extensions are automatically built and installed when
 @command{gawk} is.
 
@@ -28275,7 +28275,7 @@ When @option{--sandbox} is specified, extensions are disabled
 @menu
 * Extension Intro::             What is an extension.
 * Plugin License::              A note about licensing.
-* Extension Design::            Design notes about the extension API.
+* Extension Mechanism Outline:: An outline of how it works.
 * Extension API Description::   A full description of the API.
 * Extension Example::           Example C code for an extension.
 * Extension Samples::           The sample extensions that ship with
@@ -28322,208 +28322,10 @@ the symbol exists in the global scope.  Something like this is enough:
 int plugin_is_GPL_compatible;
 @end example
 
-@node Extension Design
-@section Extension API Design
-
-The first version of extensions for @command{gawk} was developed in
-the mid-1990s and released with @command{gawk} 3.1 in the late 1990s.
-The basic mechanisms and design remained unchanged for close to 15 years,
-until 2012.
-
-The old extension mechanism used data types and functions from
-@command{gawk} itself, with a ``clever hack'' to install extension
-functions.
-
-@command{gawk} included some sample extensions, of which a few were
-really useful.  However, it was clear from the outset that the extension
-mechanism was bolted onto the side and was not really thought out.
-
-@menu
-* Old Extension Problems::           Problems with the old mechanism.
-* Extension New Mechanism Goals::    Goals for the new mechanism.
-* Extension Other Design Decisions:: Some other design decisions.
-* Extension Mechanism Outline::      An outline of how it works.
-* Extension Future Growth::          Some room for future growth.
-@end menu
-
-@node Old Extension Problems
-@subsection Problems With The Old Mechanism
-
-The old extension mechanism had several problems:
-
-@itemize @bullet
-@item
-It depended heavily upon @command{gawk} internals.  Any time the
-@code{NODE} structure@footnote{A critical central data structure
-inside @command{gawk}.} changed, an extension would have to be
-recompiled. Furthermore, to really write extensions required understanding
-something about @command{gawk}'s internal functions.  There was some
-documentation in this @value{DOCUMENT}, but it was quite minimal.
-
-@item
-Being able to call into @command{gawk} from an extension required linker
-facilities that are common on Unix-derived systems but that did
-not work on Windows systems; users wanting extensions on Windows
-had to statically link them into @command{gawk}, even though Windows supports
-dynamic loading of shared objects.
-
-@item
-The API would change occasionally as @command{gawk} changed; no compatibility
-between versions was ever offered or planned for.
-@end itemize
-
-Despite the drawbacks, the @command{xgawk} project developers forked
-@command{gawk} and developed several significant extensions. They also
-enhanced @command{gawk}'s facilities relating to file inclusion and
-shared object access.
-
-A new API was desired for a long time, but only in 2012 did the
-@command{gawk} maintainer and the @command{xgawk} developers finally
-start working on it together.  More information about the @command{xgawk}
-project is provided in @ref{gawkextlib}.
-
-@node Extension New Mechanism Goals
-@subsection Goals For A New Mechanism
-
-Some goals for the new API were:
-
-@itemize @bullet
-@item
-The API should be independent of @command{gawk} internals.  Changes in
-@command{gawk} internals should not be visible to the writer of an
-extension function.
-
-@item
-The API should provide @emph{binary} compatibility across @command{gawk}
-releases as long as the API itself does not change.
-
-@item
-The API should enable extensions written in C to have roughly the
-same ``appearance'' to @command{awk}-level code as @command{awk}
-functions do. This means that extensions should have:
-
-@itemize @minus
-@item
-The ability to access function parameters.
-
-@item
-The ability to turn an undefined parameter into an array (call by reference).
-
-@item
-The ability to create, access and update global variables.
-
-@item
-Easy access to all the elements of an array at once (``array flattening'')
-in order to loop over all the element in an easy fashion for C code.
-
-@item
-The ability to create arrays (including @command{gawk}'s true
-multi-dimensional arrays).
-@end itemize
-@end itemize
-
-Some additional important goals were:
-
-@itemize @bullet
-@item
-The API should use only features in ISO C 90, so that extensions
-can be written using the widest range of C and C++ compilers. The header
-should include the appropriate @samp{#ifdef __cplusplus} and @samp{extern "C"}
-magic so that a C++ compiler could be used.  (If using C++, the runtime
-system has to be smart enough to call any constructors and destructors,
-as @command{gawk} is a C program. As of this writing, this has not been
-tested.)
-
-@item
-The API mechanism should not require access to @command{gawk}'s
-symbols@footnote{The @dfn{symbols} are the variables and functions
-defined inside @command{gawk}.  Access to these symbols by code
-external to @command{gawk} loaded dynamically at runtime is
-problematic on Windows.} by the compile-time or dynamic linker,
-in order to enable creation of extensions that also work on Windows.
-@end itemize
-
-During development, it became clear that there were other features
-that should be available to extensions, which were also subsequently
-provided:
-
-@itemize @bullet
-@item
-Extensions should have the ability to hook into @command{gawk}'s
-I/O redirection mechanism.  In particular, the @command{xgawk}
-developers provided a so-called ``open hook'' to take over reading
-records.  During development, this was generalized to allow
-extensions to hook into input processing, output processing, and
-two-way I/O.
-
-@item
-An extension should be able to provide a ``call back'' function
-to perform clean up actions when @command{gawk} exits.
-
-@item
-An extension should be able to provide a version string so that
-@command{gawk}'s @option{--version} option can provide information
-about extensions as well.
-@end itemize
-
-@node Extension Other Design Decisions
-@subsection Other Design Decisions
-
-As an arbitrary design decision, extensions can read the values of
-built-in variables and arrays (such as @code{ARGV} and @code{FS}), but cannot
-change them, with the exception of @code{PROCINFO}.
-
-The reason for this is to prevent an extension function from affecting
-the flow of an @command{awk} program outside its control.  While a real
-@command{awk} function can do what it likes, that is at the discretion
-of the programmer.  An extension function should provide a service or
-make a C API available for use within @command{awk}, and not mess with
-@code{FS} or @code{ARGC} and @code{ARGV}.
-
-In addition, it becomes easy to start down a slippery slope. How
-much access to @command{gawk} facilities do extensions need?
-Do they need @code{getline}?  What about calling @code{gsub()} or
-compiling regular expressions?  What about calling into @command{awk}
-functions? (@emph{That} would be messy.)
-
-In order to avoid these issues, the @command{gawk} developers chose
-to start with the simplest, most basic features that are still truly useful.
-
-Another decision is that although @command{gawk} provides nice things like
-MPFR, and arrays indexed internally by integers, these features are not
-being brought out to the API in order to keep things simple and close to
-traditional @command{awk} semantics.  (In fact, arrays indexed internally
-by integers are so transparent that they aren't even documented!)
-
-Additionally, all functions in the API check that their pointer
-input parameters are not @code{NULL}. If they are, they return an error.
-(It is a good idea for extension code to verify that
-pointers received from @command{gawk} are not @code{NULL}.
-Such a thing should not happen, but the @command{gawk} developers
-are only human, and they have been known to occasionally make
-mistakes.)
-
-With time, the API will undoubtedly evolve; the @command{gawk} developers
-expect this to be driven by user needs. For now, the current API seems
-to provide a minimal yet powerful set of features for creating extensions.
-
 @node Extension Mechanism Outline
-@subsection At A High Level How It Works
+@section At A High Level How It Works
 
-The requirement to avoid access to @command{gawk}'s symbols is, at first
-glance, a difficult one to meet.
-
-One design, apparently used by Perl and Ruby and maybe others, would
-be to make the mainline @command{gawk} code into a library, with the
-@command{gawk} utility a small C @code{main()} function linked against
-the library.
-
-This seemed like the tail wagging the dog, complicating build and
-installation and making a simple copy of the @command{gawk} executable
-from one system to another (or one place to another on the same
-system!) into a chancy operation.
-
-Pat Rankin suggested the solution that was adopted. Communication between
+Communication between
 @command{gawk} and an extension is two-way.  First, when an extension
 is loaded, it is passed a pointer to a @code{struct} whose fields are
 function pointers.
@@ -28604,28 +28406,6 @@ happen, but we all know how @emph{that} goes.)
 @xref{Extension Versioning}, for details.
 @end itemize
 
-@node Extension Future Growth
-@subsection Room For Future Growth
-
-The API can later be expanded, in two ways:
-
-@itemize @bullet
-@item
-@command{gawk} passes an ``extension id'' into the extension when it
-first loads the extension.  The extension then passes this id back
-to @command{gawk} with each function call.  This mechanism allows
-@command{gawk} to identify the extension calling into it, should it need
-to know.
-
-@item
-Similarly, the extension passes a ``name space'' into @command{gawk}
-when it registers each extension function.  This allows a future
-mechanism for grouping extension functions and possibly avoiding name
-conflicts.
-@end itemize
-
-Of course, as of this writing, no decisions have been made with respect
-to any of the above.
 
 @node Extension API Description
 @section API Description
@@ -30114,7 +29894,7 @@ BEGIN @{
 
 @noindent
 This code creates an array with @code{split()} (@pxref{String Functions})
-and then calls @code{dump_and_delete()}. That function looks up
+and then calls @code{dump_array_and_delete()}. That function looks up
 the array whose name is passed as the first argument, and
 deletes the element at the index passed in the second argument.
 It then prints the return value and checks if the element
@@ -34305,6 +34085,7 @@ maintainers of @command{gawk}.  Everything in it applies specifically to
 * Future Extensions::           New features that may be implemented one day.
 * Implementation Limitations::  Some limitations of the implementation.
 * Old Extension Mechansim::     Some compatibility for old extensions.
+* Extension Design::            Design notes about the extension API.
 @end menu
 
 @node Compatibility Mode
@@ -34797,7 +34578,7 @@ dorking with the configuration machinery.
 @item
 Installing from source is quite easy. It's how the maintainer worked for years
 under Fedora.
-He had @file{/usr/local/bin} at the front of hs @env{PATH} and just did:
+He had @file{/usr/local/bin} at the front of his @env{PATH} and just did:
 
 @example
 wget http://ftp.gnu.org/gnu/@var{package}/@var{package}-@var{x}.@var{y}.@var{z}.tar.gz
@@ -34808,8 +34589,9 @@ make install    # as root
 @end example
 
 @item
-These days the maintainer uses Ubuntu 10.11 which is medium current, but
-he is already doing the above for @command{autoconf} and @command{bison}.
+These days the maintainer uses Ubuntu 12.04 which is medium current, but
+he is already doing the above for @command{autoconf}, @command{automake}
+and @command{bison}.
 
 @ignore
 (C. Rant: Recent Linux versions with GNOME 3 really suck. What
@@ -34917,7 +34699,6 @@ This following table describes limits of @command{gawk} on a Unix-like
 system (although it is variable even then). Other systems may have
 different limits.
 
-@c @multitable {Number of file redirections} {min(number of processes per user, number of open files)}
 @multitable @columnfractions .40 .60
 @headitem Item @tab Limit
 @item Characters in a character class @tab 2^(number of bits per byte)
@@ -34970,6 +34751,233 @@ without conflict.
 The @command{gawk} development team strongly recommends that you
 convert any old extensions that you may have to use the new API
 described in @ref{Dynamic Extensions}.
+
+@node Extension Design
+@appendixsec Extension API Design
+
+This @value{SECTION} documents the design of the extension API,
+including a discussion of some of the history and problems that needed
+to be solved.
+
+The first version of extensions for @command{gawk} was developed in
+the mid-1990s and released with @command{gawk} 3.1 in the late 1990s.
+The basic mechanisms and design remained unchanged for close to 15 years,
+until 2012.
+
+The old extension mechanism used data types and functions from
+@command{gawk} itself, with a ``clever hack'' to install extension
+functions.
+
+@command{gawk} included some sample extensions, of which a few were
+really useful.  However, it was clear from the outset that the extension
+mechanism was bolted onto the side and was not really thought out.
+
+@menu
+* Old Extension Problems::           Problems with the old mechanism.
+* Extension New Mechanism Goals::    Goals for the new mechanism.
+* Extension Other Design Decisions:: Some other design decisions.
+* Extension Future Growth::          Some room for future growth.
+@end menu
+
+@node Old Extension Problems
+@appendixsubsec Problems With The Old Mechanism
+
+The old extension mechanism had several problems:
+
+@itemize @bullet
+@item
+It depended heavily upon @command{gawk} internals.  Any time the
+@code{NODE} structure@footnote{A critical central data structure
+inside @command{gawk}.} changed, an extension would have to be
+recompiled. Furthermore, to really write extensions required understanding
+something about @command{gawk}'s internal functions.  There was some
+documentation in this @value{DOCUMENT}, but it was quite minimal.
+
+@item
+Being able to call into @command{gawk} from an extension required linker
+facilities that are common on Unix-derived systems but that did
+not work on Windows systems; users wanting extensions on Windows
+had to statically link them into @command{gawk}, even though Windows supports
+dynamic loading of shared objects.
+
+@item
+The API would change occasionally as @command{gawk} changed; no compatibility
+between versions was ever offered or planned for.
+@end itemize
+
+Despite the drawbacks, the @command{xgawk} project developers forked
+@command{gawk} and developed several significant extensions. They also
+enhanced @command{gawk}'s facilities relating to file inclusion and
+shared object access.
+
+A new API was desired for a long time, but only in 2012 did the
+@command{gawk} maintainer and the @command{xgawk} developers finally
+start working on it together.  More information about the @command{xgawk}
+project is provided in @ref{gawkextlib}.
+
+@node Extension New Mechanism Goals
+@appendixsubsec Goals For A New Mechanism
+
+Some goals for the new API were:
+
+@itemize @bullet
+@item
+The API should be independent of @command{gawk} internals.  Changes in
+@command{gawk} internals should not be visible to the writer of an
+extension function.
+
+@item
+The API should provide @emph{binary} compatibility across @command{gawk}
+releases as long as the API itself does not change.
+
+@item
+The API should enable extensions written in C to have roughly the
+same ``appearance'' to @command{awk}-level code as @command{awk}
+functions do. This means that extensions should have:
+
+@itemize @minus
+@item
+The ability to access function parameters.
+
+@item
+The ability to turn an undefined parameter into an array (call by reference).
+
+@item
+The ability to create, access and update global variables.
+
+@item
+Easy access to all the elements of an array at once (``array flattening'')
+in order to loop over all the element in an easy fashion for C code.
+
+@item
+The ability to create arrays (including @command{gawk}'s true
+multi-dimensional arrays).
+@end itemize
+@end itemize
+
+Some additional important goals were:
+
+@itemize @bullet
+@item
+The API should use only features in ISO C 90, so that extensions
+can be written using the widest range of C and C++ compilers. The header
+should include the appropriate @samp{#ifdef __cplusplus} and @samp{extern "C"}
+magic so that a C++ compiler could be used.  (If using C++, the runtime
+system has to be smart enough to call any constructors and destructors,
+as @command{gawk} is a C program. As of this writing, this has not been
+tested.)
+
+@item
+The API mechanism should not require access to @command{gawk}'s
+symbols@footnote{The @dfn{symbols} are the variables and functions
+defined inside @command{gawk}.  Access to these symbols by code
+external to @command{gawk} loaded dynamically at runtime is
+problematic on Windows.} by the compile-time or dynamic linker,
+in order to enable creation of extensions that also work on Windows.
+@end itemize
+
+During development, it became clear that there were other features
+that should be available to extensions, which were also subsequently
+provided:
+
+@itemize @bullet
+@item
+Extensions should have the ability to hook into @command{gawk}'s
+I/O redirection mechanism.  In particular, the @command{xgawk}
+developers provided a so-called ``open hook'' to take over reading
+records.  During development, this was generalized to allow
+extensions to hook into input processing, output processing, and
+two-way I/O.
+
+@item
+An extension should be able to provide a ``call back'' function
+to perform clean up actions when @command{gawk} exits.
+
+@item
+An extension should be able to provide a version string so that
+@command{gawk}'s @option{--version} option can provide information
+about extensions as well.
+@end itemize
+
+The requirement to avoid access to @command{gawk}'s symbols is, at first
+glance, a difficult one to meet.
+
+One design, apparently used by Perl and Ruby and maybe others, would
+be to make the mainline @command{gawk} code into a library, with the
+@command{gawk} utility a small C @code{main()} function linked against
+the library.
+
+This seemed like the tail wagging the dog, complicating build and
+installation and making a simple copy of the @command{gawk} executable
+from one system to another (or one place to another on the same
+system!) into a chancy operation.
+
+Pat Rankin suggested the solution that was adopted.
+@xref{Extension Mechanism Outline}, for the details.
+
+@node Extension Other Design Decisions
+@appendixsubsec Other Design Decisions
+
+As an arbitrary design decision, extensions can read the values of
+built-in variables and arrays (such as @code{ARGV} and @code{FS}), but cannot
+change them, with the exception of @code{PROCINFO}.
+
+The reason for this is to prevent an extension function from affecting
+the flow of an @command{awk} program outside its control.  While a real
+@command{awk} function can do what it likes, that is at the discretion
+of the programmer.  An extension function should provide a service or
+make a C API available for use within @command{awk}, and not mess with
+@code{FS} or @code{ARGC} and @code{ARGV}.
+
+In addition, it becomes easy to start down a slippery slope. How
+much access to @command{gawk} facilities do extensions need?
+Do they need @code{getline}?  What about calling @code{gsub()} or
+compiling regular expressions?  What about calling into @command{awk}
+functions? (@emph{That} would be messy.)
+
+In order to avoid these issues, the @command{gawk} developers chose
+to start with the simplest, most basic features that are still truly useful.
+
+Another decision is that although @command{gawk} provides nice things like
+MPFR, and arrays indexed internally by integers, these features are not
+being brought out to the API in order to keep things simple and close to
+traditional @command{awk} semantics.  (In fact, arrays indexed internally
+by integers are so transparent that they aren't even documented!)
+
+Additionally, all functions in the API check that their pointer
+input parameters are not @code{NULL}. If they are, they return an error.
+(It is a good idea for extension code to verify that
+pointers received from @command{gawk} are not @code{NULL}.
+Such a thing should not happen, but the @command{gawk} developers
+are only human, and they have been known to occasionally make
+mistakes.)
+
+With time, the API will undoubtedly evolve; the @command{gawk} developers
+expect this to be driven by user needs. For now, the current API seems
+to provide a minimal yet powerful set of features for creating extensions.
+
+@node Extension Future Growth
+@appendixsubsec Room For Future Growth
+
+The API can later be expanded, in two ways:
+
+@itemize @bullet
+@item
+@command{gawk} passes an ``extension id'' into the extension when it
+first loads the extension.  The extension then passes this id back
+to @command{gawk} with each function call.  This mechanism allows
+@command{gawk} to identify the extension calling into it, should it need
+to know.
+
+@item
+Similarly, the extension passes a ``name space'' into @command{gawk}
+when it registers each extension function.  This allows a future
+mechanism for grouping extension functions and possibly avoiding name
+conflicts.
+@end itemize
+
+Of course, as of this writing, no decisions have been made with respect
+to any of the above.
 
 @c ENDOFRANGE impis
 @c ENDOFRANGE gawii

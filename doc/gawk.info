@@ -513,12 +513,7 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
                                         with `gawk'.
 * Extension Intro::                     What is an extension.
 * Plugin License::                      A note about licensing.
-* Extension Design::                    Design notes about the extension API.
-* Old Extension Problems::              Problems with the old mechanism.
-* Extension New Mechanism Goals::       Goals for the new mechanism.
-* Extension Other Design Decisions::    Some other design decisions.
 * Extension Mechanism Outline::         An outline of how it works.
-* Extension Future Growth::             Some room for future growth.
 * Extension API Description::           A full description of the API.
 * Extension API Functions Introduction:: Introduction to the API functions.
 * General Data Types::                  The data types.
@@ -638,6 +633,11 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
                                         one day.
 * Implementation Limitations::          Some limitations of the implementation.
 * Old Extension Mechansim::             Some compatibility for old extensions.
+* Extension Design::                    Design notes about the extension API.
+* Old Extension Problems::              Problems with the old mechanism.
+* Extension New Mechanism Goals::       Goals for the new mechanism.
+* Extension Other Design Decisions::    Some other design decisions.
+* Extension Future Growth::             Some room for future growth.
 * Basic High Level::                    The high level view.
 * Basic Data Typing::                   A very quick intro to data types.
 
@@ -21369,7 +21369,7 @@ describes how to create extensions using code written in C or C++.
    If you don't know anything about C programming, you can safely skip
 this major node, although you may wish to review the documentation on
 the extensions that come with `gawk' (*note Extension Samples::), and
-the minor node on the `gawkextlib' project (*note gawkextlib::).  The
+the information on the `gawkextlib' project (*note gawkextlib::).  The
 sample extensions are automatically built and installed when `gawk' is.
 
      NOTE: When `--sandbox' is specified, extensions are disabled
@@ -21379,7 +21379,7 @@ sample extensions are automatically built and installed when `gawk' is.
 
 * Extension Intro::             What is an extension.
 * Plugin License::              A note about licensing.
-* Extension Design::            Design notes about the extension API.
+* Extension Mechanism Outline:: An outline of how it works.
 * Extension API Description::   A full description of the API.
 * Extension Example::           Example C code for an extension.
 * Extension Samples::           The sample extensions that ship with
@@ -21413,7 +21413,7 @@ sample extensions included in the `gawk' distribution, and describes
 the `gawkextlib' project.
 
 
-File: gawk.info,  Node: Plugin License,  Next: Extension Design,  Prev: Extension Intro,  Up: Dynamic Extensions
+File: gawk.info,  Node: Plugin License,  Next: Extension Mechanism Outline,  Prev: Extension Intro,  Up: Dynamic Extensions
 
 16.2 Extension Licensing
 ========================
@@ -21430,203 +21430,14 @@ the symbol exists in the global scope.  Something like this is enough:
      int plugin_is_GPL_compatible;
 
 
-File: gawk.info,  Node: Extension Design,  Next: Extension API Description,  Prev: Plugin License,  Up: Dynamic Extensions
+File: gawk.info,  Node: Extension Mechanism Outline,  Next: Extension API Description,  Prev: Plugin License,  Up: Dynamic Extensions
 
-16.3 Extension API Design
-=========================
+16.3 At A High Level How It Works
+=================================
 
-The first version of extensions for `gawk' was developed in the
-mid-1990s and released with `gawk' 3.1 in the late 1990s.  The basic
-mechanisms and design remained unchanged for close to 15 years, until
-2012.
-
-   The old extension mechanism used data types and functions from
-`gawk' itself, with a "clever hack" to install extension functions.
-
-   `gawk' included some sample extensions, of which a few were really
-useful.  However, it was clear from the outset that the extension
-mechanism was bolted onto the side and was not really thought out.
-
-* Menu:
-
-* Old Extension Problems::           Problems with the old mechanism.
-* Extension New Mechanism Goals::    Goals for the new mechanism.
-* Extension Other Design Decisions:: Some other design decisions.
-* Extension Mechanism Outline::      An outline of how it works.
-* Extension Future Growth::          Some room for future growth.
-
-
-File: gawk.info,  Node: Old Extension Problems,  Next: Extension New Mechanism Goals,  Up: Extension Design
-
-16.3.1 Problems With The Old Mechanism
---------------------------------------
-
-The old extension mechanism had several problems:
-
-   * It depended heavily upon `gawk' internals.  Any time the `NODE'
-     structure(1) changed, an extension would have to be recompiled.
-     Furthermore, to really write extensions required understanding
-     something about `gawk''s internal functions.  There was some
-     documentation in this Info file, but it was quite minimal.
-
-   * Being able to call into `gawk' from an extension required linker
-     facilities that are common on Unix-derived systems but that did
-     not work on Windows systems; users wanting extensions on Windows
-     had to statically link them into `gawk', even though Windows
-     supports dynamic loading of shared objects.
-
-   * The API would change occasionally as `gawk' changed; no
-     compatibility between versions was ever offered or planned for.
-
-   Despite the drawbacks, the `xgawk' project developers forked `gawk'
-and developed several significant extensions. They also enhanced
-`gawk''s facilities relating to file inclusion and shared object access.
-
-   A new API was desired for a long time, but only in 2012 did the
-`gawk' maintainer and the `xgawk' developers finally start working on
-it together.  More information about the `xgawk' project is provided in
-*note gawkextlib::.
-
-   ---------- Footnotes ----------
-
-   (1) A critical central data structure inside `gawk'.
-
-
-File: gawk.info,  Node: Extension New Mechanism Goals,  Next: Extension Other Design Decisions,  Prev: Old Extension Problems,  Up: Extension Design
-
-16.3.2 Goals For A New Mechanism
---------------------------------
-
-Some goals for the new API were:
-
-   * The API should be independent of `gawk' internals.  Changes in
-     `gawk' internals should not be visible to the writer of an
-     extension function.
-
-   * The API should provide _binary_ compatibility across `gawk'
-     releases as long as the API itself does not change.
-
-   * The API should enable extensions written in C to have roughly the
-     same "appearance" to `awk'-level code as `awk' functions do. This
-     means that extensions should have:
-
-        - The ability to access function parameters.
-
-        - The ability to turn an undefined parameter into an array
-          (call by reference).
-
-        - The ability to create, access and update global variables.
-
-        - Easy access to all the elements of an array at once ("array
-          flattening") in order to loop over all the element in an easy
-          fashion for C code.
-
-        - The ability to create arrays (including `gawk''s true
-          multi-dimensional arrays).
-
-   Some additional important goals were:
-
-   * The API should use only features in ISO C 90, so that extensions
-     can be written using the widest range of C and C++ compilers. The
-     header should include the appropriate `#ifdef __cplusplus' and
-     `extern "C"' magic so that a C++ compiler could be used.  (If
-     using C++, the runtime system has to be smart enough to call any
-     constructors and destructors, as `gawk' is a C program. As of this
-     writing, this has not been tested.)
-
-   * The API mechanism should not require access to `gawk''s symbols(1)
-     by the compile-time or dynamic linker, in order to enable creation
-     of extensions that also work on Windows.
-
-   During development, it became clear that there were other features
-that should be available to extensions, which were also subsequently
-provided:
-
-   * Extensions should have the ability to hook into `gawk''s I/O
-     redirection mechanism.  In particular, the `xgawk' developers
-     provided a so-called "open hook" to take over reading records.
-     During development, this was generalized to allow extensions to
-     hook into input processing, output processing, and two-way I/O.
-
-   * An extension should be able to provide a "call back" function to
-     perform clean up actions when `gawk' exits.
-
-   * An extension should be able to provide a version string so that
-     `gawk''s `--version' option can provide information about
-     extensions as well.
-
-   ---------- Footnotes ----------
-
-   (1) The "symbols" are the variables and functions defined inside
-`gawk'.  Access to these symbols by code external to `gawk' loaded
-dynamically at runtime is problematic on Windows.
-
-
-File: gawk.info,  Node: Extension Other Design Decisions,  Next: Extension Mechanism Outline,  Prev: Extension New Mechanism Goals,  Up: Extension Design
-
-16.3.3 Other Design Decisions
------------------------------
-
-As an arbitrary design decision, extensions can read the values of
-built-in variables and arrays (such as `ARGV' and `FS'), but cannot
-change them, with the exception of `PROCINFO'.
-
-   The reason for this is to prevent an extension function from
-affecting the flow of an `awk' program outside its control.  While a
-real `awk' function can do what it likes, that is at the discretion of
-the programmer.  An extension function should provide a service or make
-a C API available for use within `awk', and not mess with `FS' or
-`ARGC' and `ARGV'.
-
-   In addition, it becomes easy to start down a slippery slope. How
-much access to `gawk' facilities do extensions need?  Do they need
-`getline'?  What about calling `gsub()' or compiling regular
-expressions?  What about calling into `awk' functions? (_That_ would be
-messy.)
-
-   In order to avoid these issues, the `gawk' developers chose to start
-with the simplest, most basic features that are still truly useful.
-
-   Another decision is that although `gawk' provides nice things like
-MPFR, and arrays indexed internally by integers, these features are not
-being brought out to the API in order to keep things simple and close to
-traditional `awk' semantics.  (In fact, arrays indexed internally by
-integers are so transparent that they aren't even documented!)
-
-   Additionally, all functions in the API check that their pointer
-input parameters are not `NULL'. If they are, they return an error.
-(It is a good idea for extension code to verify that pointers received
-from `gawk' are not `NULL'.  Such a thing should not happen, but the
-`gawk' developers are only human, and they have been known to
-occasionally make mistakes.)
-
-   With time, the API will undoubtedly evolve; the `gawk' developers
-expect this to be driven by user needs. For now, the current API seems
-to provide a minimal yet powerful set of features for creating
-extensions.
-
-
-File: gawk.info,  Node: Extension Mechanism Outline,  Next: Extension Future Growth,  Prev: Extension Other Design Decisions,  Up: Extension Design
-
-16.3.4 At A High Level How It Works
------------------------------------
-
-The requirement to avoid access to `gawk''s symbols is, at first
-glance, a difficult one to meet.
-
-   One design, apparently used by Perl and Ruby and maybe others, would
-be to make the mainline `gawk' code into a library, with the `gawk'
-utility a small C `main()' function linked against the library.
-
-   This seemed like the tail wagging the dog, complicating build and
-installation and making a simple copy of the `gawk' executable from one
-system to another (or one place to another on the same system!) into a
-chancy operation.
-
-   Pat Rankin suggested the solution that was adopted. Communication
-between `gawk' and an extension is two-way.  First, when an extension
-is loaded, it is passed a pointer to a `struct' whose fields are
-function pointers.  This is shown in *note load-extension::.
+Communication between `gawk' and an extension is two-way.  First, when
+an extension is loaded, it is passed a pointer to a `struct' whose
+fields are function pointers.  This is shown in *note load-extension::.
 
                           API
                          Struct
@@ -21723,28 +21534,7 @@ Example::) and also the `testext.c' code for testing the APIs.
      Versioning::, for details.
 
 
-File: gawk.info,  Node: Extension Future Growth,  Prev: Extension Mechanism Outline,  Up: Extension Design
-
-16.3.5 Room For Future Growth
------------------------------
-
-The API can later be expanded, in two ways:
-
-   * `gawk' passes an "extension id" into the extension when it first
-     loads the extension.  The extension then passes this id back to
-     `gawk' with each function call.  This mechanism allows `gawk' to
-     identify the extension calling into it, should it need to know.
-
-   * Similarly, the extension passes a "name space" into `gawk' when it
-     registers each extension function.  This allows a future mechanism
-     for grouping extension functions and possibly avoiding name
-     conflicts.
-
-   Of course, as of this writing, no decisions have been made with
-respect to any of the above.
-
-
-File: gawk.info,  Node: Extension API Description,  Next: Extension Example,  Prev: Extension Design,  Up: Dynamic Extensions
+File: gawk.info,  Node: Extension API Description,  Next: Extension Example,  Prev: Extension Mechanism Outline,  Up: Dynamic Extensions
 
 16.4 API Description
 ====================
@@ -23160,12 +22950,12 @@ as a nice example to show how to use the APIs.
      }
 
 This code creates an array with `split()' (*note String Functions::)
-and then calls `dump_and_delete()'. That function looks up the array
-whose name is passed as the first argument, and deletes the element at
-the index passed in the second argument.  It then prints the return
-value and checks if the element was indeed deleted.  Here is the C code
-that implements `dump_array_and_delete()'. It has been edited slightly
-for presentation.
+and then calls `dump_array_and_delete()'. That function looks up the
+array whose name is passed as the first argument, and deletes the
+element at the index passed in the second argument.  It then prints the
+return value and checks if the element was indeed deleted.  Here is the
+C code that implements `dump_array_and_delete()'. It has been edited
+slightly for presentation.
 
    The first part declares variables, sets up the default return value
 in `result', and checks that the function was called with the correct
@@ -26498,6 +26288,7 @@ and maintainers of `gawk'.  Everything in it applies specifically to
 * Future Extensions::           New features that may be implemented one day.
 * Implementation Limitations::  Some limitations of the implementation.
 * Old Extension Mechansim::     Some compatibility for old extensions.
+* Extension Design::            Design notes about the extension API.
 
 
 File: gawk.info,  Node: Compatibility Mode,  Next: Additions,  Up: Notes
@@ -26887,7 +26678,7 @@ critical, that for any given branch, the above incantation _just works_.
 
        A. Installing from source is quite easy. It's how the maintainer
           worked for years under Fedora.  He had `/usr/local/bin' at
-          the front of hs `PATH' and just did:
+          the front of his `PATH' and just did:
 
                wget http://ftp.gnu.org/gnu/PACKAGE/PACKAGE-X.Y.Z.tar.gz
                tar -xpzvf PACKAGE-X.Y.Z.tar.gz
@@ -26895,9 +26686,9 @@ critical, that for any given branch, the above incantation _just works_.
                ./configure && make && make check
                make install    # as root
 
-       B. These days the maintainer uses Ubuntu 10.11 which is medium
-          current, but he is already doing the above for `autoconf' and
-          `bison'.
+       B. These days the maintainer uses Ubuntu 12.04 which is medium
+          current, but he is already doing the above for `autoconf',
+          `automake' and `bison'.
 
 
 
@@ -26992,7 +26783,7 @@ Size of a literal string      `MAX_INT '
 Size of a printf string       `MAX_INT '
 
 
-File: gawk.info,  Node: Old Extension Mechansim,  Prev: Implementation Limitations,  Up: Notes
+File: gawk.info,  Node: Old Extension Mechansim,  Next: Extension Design,  Prev: Implementation Limitations,  Up: Notes
 
 C.5 Compatibility For Old Extensions
 ====================================
@@ -27029,6 +26820,220 @@ without conflict.
    The `gawk' development team strongly recommends that you convert any
 old extensions that you may have to use the new API described in *note
 Dynamic Extensions::.
+
+
+File: gawk.info,  Node: Extension Design,  Prev: Old Extension Mechansim,  Up: Notes
+
+C.6 Extension API Design
+========================
+
+This minor node documents the design of the extension API, including a
+discussion of some of the history and problems that needed to be solved.
+
+   The first version of extensions for `gawk' was developed in the
+mid-1990s and released with `gawk' 3.1 in the late 1990s.  The basic
+mechanisms and design remained unchanged for close to 15 years, until
+2012.
+
+   The old extension mechanism used data types and functions from
+`gawk' itself, with a "clever hack" to install extension functions.
+
+   `gawk' included some sample extensions, of which a few were really
+useful.  However, it was clear from the outset that the extension
+mechanism was bolted onto the side and was not really thought out.
+
+* Menu:
+
+* Old Extension Problems::           Problems with the old mechanism.
+* Extension New Mechanism Goals::    Goals for the new mechanism.
+* Extension Other Design Decisions:: Some other design decisions.
+* Extension Future Growth::          Some room for future growth.
+
+
+File: gawk.info,  Node: Old Extension Problems,  Next: Extension New Mechanism Goals,  Up: Extension Design
+
+C.6.1 Problems With The Old Mechanism
+-------------------------------------
+
+The old extension mechanism had several problems:
+
+   * It depended heavily upon `gawk' internals.  Any time the `NODE'
+     structure(1) changed, an extension would have to be recompiled.
+     Furthermore, to really write extensions required understanding
+     something about `gawk''s internal functions.  There was some
+     documentation in this Info file, but it was quite minimal.
+
+   * Being able to call into `gawk' from an extension required linker
+     facilities that are common on Unix-derived systems but that did
+     not work on Windows systems; users wanting extensions on Windows
+     had to statically link them into `gawk', even though Windows
+     supports dynamic loading of shared objects.
+
+   * The API would change occasionally as `gawk' changed; no
+     compatibility between versions was ever offered or planned for.
+
+   Despite the drawbacks, the `xgawk' project developers forked `gawk'
+and developed several significant extensions. They also enhanced
+`gawk''s facilities relating to file inclusion and shared object access.
+
+   A new API was desired for a long time, but only in 2012 did the
+`gawk' maintainer and the `xgawk' developers finally start working on
+it together.  More information about the `xgawk' project is provided in
+*note gawkextlib::.
+
+   ---------- Footnotes ----------
+
+   (1) A critical central data structure inside `gawk'.
+
+
+File: gawk.info,  Node: Extension New Mechanism Goals,  Next: Extension Other Design Decisions,  Prev: Old Extension Problems,  Up: Extension Design
+
+C.6.2 Goals For A New Mechanism
+-------------------------------
+
+Some goals for the new API were:
+
+   * The API should be independent of `gawk' internals.  Changes in
+     `gawk' internals should not be visible to the writer of an
+     extension function.
+
+   * The API should provide _binary_ compatibility across `gawk'
+     releases as long as the API itself does not change.
+
+   * The API should enable extensions written in C to have roughly the
+     same "appearance" to `awk'-level code as `awk' functions do. This
+     means that extensions should have:
+
+        - The ability to access function parameters.
+
+        - The ability to turn an undefined parameter into an array
+          (call by reference).
+
+        - The ability to create, access and update global variables.
+
+        - Easy access to all the elements of an array at once ("array
+          flattening") in order to loop over all the element in an easy
+          fashion for C code.
+
+        - The ability to create arrays (including `gawk''s true
+          multi-dimensional arrays).
+
+   Some additional important goals were:
+
+   * The API should use only features in ISO C 90, so that extensions
+     can be written using the widest range of C and C++ compilers. The
+     header should include the appropriate `#ifdef __cplusplus' and
+     `extern "C"' magic so that a C++ compiler could be used.  (If
+     using C++, the runtime system has to be smart enough to call any
+     constructors and destructors, as `gawk' is a C program. As of this
+     writing, this has not been tested.)
+
+   * The API mechanism should not require access to `gawk''s symbols(1)
+     by the compile-time or dynamic linker, in order to enable creation
+     of extensions that also work on Windows.
+
+   During development, it became clear that there were other features
+that should be available to extensions, which were also subsequently
+provided:
+
+   * Extensions should have the ability to hook into `gawk''s I/O
+     redirection mechanism.  In particular, the `xgawk' developers
+     provided a so-called "open hook" to take over reading records.
+     During development, this was generalized to allow extensions to
+     hook into input processing, output processing, and two-way I/O.
+
+   * An extension should be able to provide a "call back" function to
+     perform clean up actions when `gawk' exits.
+
+   * An extension should be able to provide a version string so that
+     `gawk''s `--version' option can provide information about
+     extensions as well.
+
+   The requirement to avoid access to `gawk''s symbols is, at first
+glance, a difficult one to meet.
+
+   One design, apparently used by Perl and Ruby and maybe others, would
+be to make the mainline `gawk' code into a library, with the `gawk'
+utility a small C `main()' function linked against the library.
+
+   This seemed like the tail wagging the dog, complicating build and
+installation and making a simple copy of the `gawk' executable from one
+system to another (or one place to another on the same system!) into a
+chancy operation.
+
+   Pat Rankin suggested the solution that was adopted.  *Note Extension
+Mechanism Outline::, for the details.
+
+   ---------- Footnotes ----------
+
+   (1) The "symbols" are the variables and functions defined inside
+`gawk'.  Access to these symbols by code external to `gawk' loaded
+dynamically at runtime is problematic on Windows.
+
+
+File: gawk.info,  Node: Extension Other Design Decisions,  Next: Extension Future Growth,  Prev: Extension New Mechanism Goals,  Up: Extension Design
+
+C.6.3 Other Design Decisions
+----------------------------
+
+As an arbitrary design decision, extensions can read the values of
+built-in variables and arrays (such as `ARGV' and `FS'), but cannot
+change them, with the exception of `PROCINFO'.
+
+   The reason for this is to prevent an extension function from
+affecting the flow of an `awk' program outside its control.  While a
+real `awk' function can do what it likes, that is at the discretion of
+the programmer.  An extension function should provide a service or make
+a C API available for use within `awk', and not mess with `FS' or
+`ARGC' and `ARGV'.
+
+   In addition, it becomes easy to start down a slippery slope. How
+much access to `gawk' facilities do extensions need?  Do they need
+`getline'?  What about calling `gsub()' or compiling regular
+expressions?  What about calling into `awk' functions? (_That_ would be
+messy.)
+
+   In order to avoid these issues, the `gawk' developers chose to start
+with the simplest, most basic features that are still truly useful.
+
+   Another decision is that although `gawk' provides nice things like
+MPFR, and arrays indexed internally by integers, these features are not
+being brought out to the API in order to keep things simple and close to
+traditional `awk' semantics.  (In fact, arrays indexed internally by
+integers are so transparent that they aren't even documented!)
+
+   Additionally, all functions in the API check that their pointer
+input parameters are not `NULL'. If they are, they return an error.
+(It is a good idea for extension code to verify that pointers received
+from `gawk' are not `NULL'.  Such a thing should not happen, but the
+`gawk' developers are only human, and they have been known to
+occasionally make mistakes.)
+
+   With time, the API will undoubtedly evolve; the `gawk' developers
+expect this to be driven by user needs. For now, the current API seems
+to provide a minimal yet powerful set of features for creating
+extensions.
+
+
+File: gawk.info,  Node: Extension Future Growth,  Prev: Extension Other Design Decisions,  Up: Extension Design
+
+C.6.4 Room For Future Growth
+----------------------------
+
+The API can later be expanded, in two ways:
+
+   * `gawk' passes an "extension id" into the extension when it first
+     loads the extension.  The extension then passes this id back to
+     `gawk' with each function call.  This mechanism allows `gawk' to
+     identify the extension calling into it, should it need to know.
+
+   * Similarly, the extension passes a "name space" into `gawk' when it
+     registers each extension function.  This allows a future mechanism
+     for grouping extension functions and possibly avoiding name
+     conflicts.
+
+   Of course, as of this writing, no decisions have been made with
+respect to any of the above.
 
 
 File: gawk.info,  Node: Basic Concepts,  Next: Glossary,  Prev: Notes,  Up: Top
@@ -32203,134 +32208,134 @@ Node: Exact Arithmetic856101
 Node: Arbitrary Precision Integers859209
 Ref: Arbitrary Precision Integers-Footnote-1862209
 Node: Dynamic Extensions862356
-Node: Extension Intro863742
-Node: Plugin License864950
-Node: Extension Design865624
-Node: Old Extension Problems866695
-Ref: Old Extension Problems-Footnote-1868205
-Node: Extension New Mechanism Goals868262
-Ref: Extension New Mechanism Goals-Footnote-1870974
-Node: Extension Other Design Decisions871160
-Node: Extension Mechanism Outline873272
-Ref: load-extension874297
-Ref: load-new-function875775
-Ref: call-new-function876756
-Node: Extension Future Growth878750
-Node: Extension API Description879568
-Node: Extension API Functions Introduction880896
-Node: General Data Types885674
-Ref: General Data Types-Footnote-1891276
-Node: Requesting Values891575
-Ref: table-value-types-returned892306
-Node: Constructor Functions893260
-Node: Registration Functions896256
-Node: Extension Functions896941
-Node: Exit Callback Functions899115
-Node: Extension Version String900358
-Node: Input Parsers901008
-Node: Output Wrappers909595
-Node: Two-way processors914011
-Node: Printing Messages916141
-Ref: Printing Messages-Footnote-1917218
-Node: Updating `ERRNO'917370
-Node: Accessing Parameters918109
-Node: Symbol Table Access919339
-Node: Symbol table by name919851
-Ref: Symbol table by name-Footnote-1922021
-Node: Symbol table by cookie922101
-Ref: Symbol table by cookie-Footnote-1926230
-Node: Cached values926293
-Ref: Cached values-Footnote-1929736
-Node: Array Manipulation929827
-Ref: Array Manipulation-Footnote-1930925
-Node: Array Data Types930964
-Ref: Array Data Types-Footnote-1933667
-Node: Array Functions933759
-Node: Flattening Arrays937525
-Node: Creating Arrays944358
-Node: Extension API Variables949153
-Node: Extension Versioning949789
-Node: Extension API Informational Variables951690
-Node: Extension API Boilerplate952776
-Node: Finding Extensions956607
-Node: Extension Example957154
-Node: Internal File Description957892
-Node: Internal File Ops961580
-Ref: Internal File Ops-Footnote-1973027
-Node: Using Internal File Ops973167
-Ref: Using Internal File Ops-Footnote-1975520
-Node: Extension Samples975786
-Node: Extension Sample File Functions977229
-Node: Extension Sample Fnmatch985702
-Node: Extension Sample Fork987428
-Node: Extension Sample Ord988642
-Node: Extension Sample Readdir989418
-Node: Extension Sample Revout990922
-Node: Extension Sample Rev2way991515
-Node: Extension Sample Read write array992205
-Node: Extension Sample Readfile994088
-Node: Extension Sample API Tests994843
-Node: Extension Sample Time995368
-Node: gawkextlib996675
-Node: Language History999056
-Node: V7/SVR3.11000578
-Node: SVR41002899
-Node: POSIX1004341
-Node: BTL1005349
-Node: POSIX/GNU1006154
-Node: Common Extensions1011689
-Node: Ranges and Locales1012748
-Ref: Ranges and Locales-Footnote-11017366
-Ref: Ranges and Locales-Footnote-21017393
-Ref: Ranges and Locales-Footnote-31017653
-Node: Contributors1017874
-Node: Installation1022170
-Node: Gawk Distribution1023064
-Node: Getting1023548
-Node: Extracting1024374
-Node: Distribution contents1026066
-Node: Unix Installation1031327
-Node: Quick Installation1031944
-Node: Additional Configuration Options1033906
-Node: Configuration Philosophy1035383
-Node: Non-Unix Installation1037725
-Node: PC Installation1038183
-Node: PC Binary Installation1039482
-Node: PC Compiling1041330
-Node: PC Testing1044274
-Node: PC Using1045450
-Node: Cygwin1049635
-Node: MSYS1050635
-Node: VMS Installation1051149
-Node: VMS Compilation1051752
-Ref: VMS Compilation-Footnote-11052759
-Node: VMS Installation Details1052817
-Node: VMS Running1054452
-Node: VMS Old Gawk1056059
-Node: Bugs1056533
-Node: Other Versions1060385
-Node: Notes1065700
-Node: Compatibility Mode1066430
-Node: Additions1067213
-Node: Accessing The Source1068140
-Node: Adding Code1069743
-Node: New Ports1075785
-Node: Derived Files1079920
-Ref: Derived Files-Footnote-11085228
-Ref: Derived Files-Footnote-21085262
-Ref: Derived Files-Footnote-31085862
-Node: Future Extensions1085960
-Node: Implementation Limitations1086541
-Node: Old Extension Mechansim1087800
-Node: Basic Concepts1089567
-Node: Basic High Level1090248
-Ref: figure-general-flow1090519
-Ref: figure-process-flow1091118
-Ref: Basic High Level-Footnote-11094347
-Node: Basic Data Typing1094532
-Node: Glossary1097887
-Node: Copying1123198
-Node: GNU Free Documentation License1160755
-Node: Index1185892
+Node: Extension Intro863733
+Node: Plugin License864941
+Node: Extension Mechanism Outline865626
+Ref: load-extension866043
+Ref: load-new-function867521
+Ref: call-new-function868502
+Node: Extension API Description870496
+Node: Extension API Functions Introduction871835
+Node: General Data Types876613
+Ref: General Data Types-Footnote-1882215
+Node: Requesting Values882514
+Ref: table-value-types-returned883245
+Node: Constructor Functions884199
+Node: Registration Functions887195
+Node: Extension Functions887880
+Node: Exit Callback Functions890054
+Node: Extension Version String891297
+Node: Input Parsers891947
+Node: Output Wrappers900534
+Node: Two-way processors904950
+Node: Printing Messages907080
+Ref: Printing Messages-Footnote-1908157
+Node: Updating `ERRNO'908309
+Node: Accessing Parameters909048
+Node: Symbol Table Access910278
+Node: Symbol table by name910790
+Ref: Symbol table by name-Footnote-1912960
+Node: Symbol table by cookie913040
+Ref: Symbol table by cookie-Footnote-1917169
+Node: Cached values917232
+Ref: Cached values-Footnote-1920675
+Node: Array Manipulation920766
+Ref: Array Manipulation-Footnote-1921864
+Node: Array Data Types921903
+Ref: Array Data Types-Footnote-1924606
+Node: Array Functions924698
+Node: Flattening Arrays928464
+Node: Creating Arrays935303
+Node: Extension API Variables940098
+Node: Extension Versioning940734
+Node: Extension API Informational Variables942635
+Node: Extension API Boilerplate943721
+Node: Finding Extensions947552
+Node: Extension Example948099
+Node: Internal File Description948837
+Node: Internal File Ops952525
+Ref: Internal File Ops-Footnote-1963972
+Node: Using Internal File Ops964112
+Ref: Using Internal File Ops-Footnote-1966465
+Node: Extension Samples966731
+Node: Extension Sample File Functions968174
+Node: Extension Sample Fnmatch976647
+Node: Extension Sample Fork978373
+Node: Extension Sample Ord979587
+Node: Extension Sample Readdir980363
+Node: Extension Sample Revout981867
+Node: Extension Sample Rev2way982460
+Node: Extension Sample Read write array983150
+Node: Extension Sample Readfile985033
+Node: Extension Sample API Tests985788
+Node: Extension Sample Time986313
+Node: gawkextlib987620
+Node: Language History990001
+Node: V7/SVR3.1991523
+Node: SVR4993844
+Node: POSIX995286
+Node: BTL996294
+Node: POSIX/GNU997099
+Node: Common Extensions1002634
+Node: Ranges and Locales1003693
+Ref: Ranges and Locales-Footnote-11008311
+Ref: Ranges and Locales-Footnote-21008338
+Ref: Ranges and Locales-Footnote-31008598
+Node: Contributors1008819
+Node: Installation1013115
+Node: Gawk Distribution1014009
+Node: Getting1014493
+Node: Extracting1015319
+Node: Distribution contents1017011
+Node: Unix Installation1022272
+Node: Quick Installation1022889
+Node: Additional Configuration Options1024851
+Node: Configuration Philosophy1026328
+Node: Non-Unix Installation1028670
+Node: PC Installation1029128
+Node: PC Binary Installation1030427
+Node: PC Compiling1032275
+Node: PC Testing1035219
+Node: PC Using1036395
+Node: Cygwin1040580
+Node: MSYS1041580
+Node: VMS Installation1042094
+Node: VMS Compilation1042697
+Ref: VMS Compilation-Footnote-11043704
+Node: VMS Installation Details1043762
+Node: VMS Running1045397
+Node: VMS Old Gawk1047004
+Node: Bugs1047478
+Node: Other Versions1051330
+Node: Notes1056645
+Node: Compatibility Mode1057445
+Node: Additions1058228
+Node: Accessing The Source1059155
+Node: Adding Code1060758
+Node: New Ports1066800
+Node: Derived Files1070935
+Ref: Derived Files-Footnote-11076256
+Ref: Derived Files-Footnote-21076290
+Ref: Derived Files-Footnote-31076890
+Node: Future Extensions1076988
+Node: Implementation Limitations1077569
+Node: Old Extension Mechansim1078828
+Node: Extension Design1080620
+Node: Old Extension Problems1081734
+Ref: Old Extension Problems-Footnote-11083242
+Node: Extension New Mechanism Goals1083299
+Ref: Extension New Mechanism Goals-Footnote-11086658
+Node: Extension Other Design Decisions1086844
+Node: Extension Future Growth1088950
+Node: Basic Concepts1089771
+Node: Basic High Level1090452
+Ref: figure-general-flow1090723
+Ref: figure-process-flow1091322
+Ref: Basic High Level-Footnote-11094551
+Node: Basic Data Typing1094736
+Node: Glossary1098091
+Node: Copying1123402
+Node: GNU Free Documentation License1160959
+Node: Index1186096
 
 End Tag Table
