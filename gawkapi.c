@@ -603,6 +603,9 @@ sym_update_real(awk_ext_id_t id,
 	    && (node->type == Node_var || node->type == Node_var_new)) {
 		unref(node->var_value);
 		node->var_value = awk_value_to_node(value);
+		if (node->type == Node_var_new && value->val_type != AWK_UNDEFINED)
+			node->type = Node_var;
+
 		/* let the extension change its own variable */
 		if (is_const)
 			node->var_assign = set_constant;
