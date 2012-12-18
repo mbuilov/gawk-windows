@@ -267,7 +267,7 @@ $zeroe0:
 $! common with 'test'.in
 $	echo "''test'"
 $	gawk -f 'test'.awk 'test'.in >_'test'.tmp
-$	cmp 'test'.ok _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
 $
@@ -336,7 +336,7 @@ $zeroflag:
 $! common without 'test'.in
 $	echo "''test'"
 $	gawk -f 'test'.awk >_'test'.tmp
-$	cmp 'test'.ok _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
 $
@@ -376,11 +376,11 @@ $
 $messages:	echo "''test'"
 $	set noOn
 $	gawk -f 'test'.awk > _out2 >& _out3
-$	cmp out1.ok _out1.
+$	cmp out1.ok sys$disk:[]_out1.
 $	if $status then  rm _out1.;
-$	cmp out2.ok _out2.
+$	cmp out2.ok sys$disk:[]_out2.
 $	if $status then  rm _out2.;
-$	cmp out3.ok _out3.
+$	cmp out3.ok sys$disk:[]_out3.
 $	if $status then  rm _out3.;
 $	set On
 $	return
@@ -389,34 +389,34 @@ $argarray:	echo "argarray"
 $	define/User TEST "test"			!this is useless...
 $	gawk -f argarray.awk ./argarray.in - >_argarray.tmp
 just a test
-$	cmp argarray.ok _argarray.tmp
+$	cmp argarray.ok sys$disk:[]_argarray.tmp
 $	if $status then  rm _argarray.tmp;
 $	return
 $
 $fstabplus:	echo "fstabplus"
 $	gawk -f fstabplus.awk >_fstabplus.tmp
 1		2
-$	cmp fstabplus.ok _fstabplus.tmp
+$	cmp fstabplus.ok sys$disk:[]_fstabplus.tmp
 $	if $status then  rm _fstabplus.tmp;
 $	return
 $
 $longwrds:	echo "longwrds"
 $	gawk -v "SORT=sort sys$input: _longwrds.tmp" -f longwrds.awk longwrds.in >_NL:
-$	cmp longwrds.ok _longwrds.tmp
+$	cmp longwrds.ok sys$disk:[]_longwrds.tmp
 $	if $status then  rm _longwrds.tmp;
 $	return
 $
 $fieldwdth:	echo "fieldwdth"
 $	gawk -v "FIELDWIDTHS=2 3 4" "{ print $2}" >_fieldwdth.tmp
 123456789
-$	cmp fieldwdth.ok _fieldwdth.tmp
+$	cmp fieldwdth.ok sys$disk:[]_fieldwdth.tmp
 $	if $status then  rm _fieldwdth.tmp;
 $	return
 $
 $ignrcase:	echo "ignrcase"
 $	gawk -v "IGNORECASE=1" "{ sub(/y/, """"); print}" >_ignrcase.tmp
 xYz
-$	cmp ignrcase.ok _ignrcase.tmp
+$	cmp ignrcase.ok sys$disk:[]_ignrcase.tmp
 $	if $status then  rm _ignrcase.tmp;
 $	return
 $
@@ -434,7 +434,7 @@ $
 $posix: echo "posix"
 $	gawk -f posix.awk >_posix.tmp
 1:2,3 4
-$	cmp posix.ok _posix.tmp
+$	cmp posix.ok sys$disk:[]_posix.tmp
 $	if $status then  rm _posix.tmp;
 $	return
 $
@@ -469,19 +469,19 @@ $	return
 $
 $compare:	echo "compare"
 $	gawk -f compare.awk 0 1 compare.in >_compare.tmp
-$	cmp compare.ok _compare.tmp
+$	cmp compare.ok sys$disk:[]_compare.tmp
 $	if $status then  rm _compare.tmp;
 $	return
 $
 $rs:		echo "rs"
 $	gawk -v "RS=" "{ print $1, $2}" rs.in >_rs.tmp
-$	cmp rs.ok _rs.tmp
+$	cmp rs.ok sys$disk:[]_rs.tmp
 $	if $status then  rm _rs.tmp;
 $	return
 $
 $fsbs:		echo "fsbs"
 $	gawk -v "FS=\" "{ print $1, $2 }" fsbs.in >_fsbs.tmp
-$	cmp fsbs.ok _fsbs.tmp
+$	cmp fsbs.ok sys$disk:[]_fsbs.tmp
 $	if $status then  rm _fsbs.tmp;
 $	return
 $
@@ -489,14 +489,14 @@ $inftest:	echo "inftest"
 $     !!  echo "This test is very machine specific..."
 $	set noOn
 $	gawk -f inftest.awk >_inftest.tmp
-$     !!  cmp inftest.ok _inftest.tmp	!just care that gawk doesn't crash...
+$     !!  cmp inftest.ok sys$disk:[]_inftest.tmp	!just care that gawk doesn't crash...
 $	if $status then  rm _inftest.tmp;
 $	set On
 $	return
 $
 $getline2:	echo "getline2"
 $	gawk -f getline2.awk getline2.awk getline2.awk >_getline2.tmp
-$	cmp getline2.ok _getline2.tmp
+$	cmp getline2.ok sys$disk:[]_getline2.tmp
 $	if $status then  rm _getline2.tmp;
 $	return
 $
@@ -508,20 +508,20 @@ $	return
 $
 $negexp:	echo "negexp"
 $	gawk "BEGIN { a = -2; print 10^a }" >_negexp.tmp
-$	cmp negexp.ok _negexp.tmp
+$	cmp negexp.ok sys$disk:[]_negexp.tmp
 $	if $status then  rm _negexp.tmp;
 $	return
 $
 $awkpath:	echo "awkpath"
 $	define/User AWK_LIBRARY [],[.lib]
 $	gawk -f awkpath.awk >_awkpath.tmp
-$	cmp awkpath.ok _awkpath.tmp
+$	cmp awkpath.ok sys$disk:[]_awkpath.tmp
 $	if $status then  rm _awkpath.tmp;
 $	return
 $
 $argtest:	echo "argtest"
 $	gawk -f argtest.awk -x -y abc >_argtest.tmp
-$	cmp argtest.ok _argtest.tmp
+$	cmp argtest.ok sys$disk:[]_argtest.tmp
 $	if $status then  rm _argtest.tmp;
 $	return
 $
@@ -530,7 +530,7 @@ $	on error then continue
 $	gawk -f 2>&1 >_badargs.too
 $!	search/Match=Nor _badargs.too "patchlevel" /Output=_badargs.tmp
 $	gawk "/patchlevel/{next}; {gsub(""\"""",""'""); print}" <_badargs.too >_badargs.tmp
-$	cmp badargs.ok _badargs.tmp
+$	cmp badargs.ok sys$disk:[]_badargs.tmp
 $	if $status then  rm _badargs.tmp;,_badargs.too;
 $	return
 $
@@ -539,7 +539,7 @@ $	! This one might fail, depending on the tool used to unpack the
 $	! distribution.  Some will add a final newline if the file lacks one.
 $	AWKPATH_srcdir
 $	gawk --lint -f nonl.awk _NL: >_nonl.tmp 2>&1
-$	cmp nonl.ok _nonl.tmp
+$	cmp nonl.ok sys$disk:[]_nonl.tmp
 $	if $status then  rm _nonl.tmp;
 $	return
 $
@@ -549,14 +549,14 @@ $	AWKPATH_srcdir
 $	gawk --lint -f defref.awk >_defref.tmp 2>&1
 $	if .not.$status then call exit_code 2 _defref.tmp
 $	set On
-$	cmp defref.ok _defref.tmp
+$	cmp defref.ok sys$disk:[]_defref.tmp
 $	if $status then  rm _defref.tmp;
 $	return
 $
 $nofmtch:	echo "nofmtch"
 $	AWKPATH_srcdir
 $	gawk --lint -f nofmtch.awk >_nofmtch.tmp 2>&1
-$	cmp nofmtch.ok _nofmtch.tmp
+$	cmp nofmtch.ok sys$disk:[]_nofmtch.tmp
 $	if $status then  rm _nofmtch.tmp;
 $	return
 $
@@ -578,7 +578,7 @@ $	write ftmp wkd," ",mon," ",day," ",tim," ",tz," ",yr
 $	close ftmp
 $	gawk -v "OUTPUT"=_strftime.tmp -f strftime.awk strftime.in
 $	set noOn
-$	cmp strftime.ok _strftime.tmp
+$	cmp strftime.ok sys$disk:[]_strftime.tmp
 $	if $status then  rm _strftime.tmp;,strftime.ok;*,strftime.in;*
 $	set On
 $	return
@@ -586,20 +586,20 @@ $
 $litoct:	echo "litoct"
 $	gawk --traditional -f litoct.awk >_litoct.tmp
 ab
-$	cmp litoct.ok _litoct.tmp
+$	cmp litoct.ok sys$disk:[]_litoct.tmp
 $	if $status then  rm _litoct.tmp;
 $	return
 $
 $resplit:	echo "resplit"
 $	gawk -- "{ FS = "":""; $0 = $0; print $2 }" >_resplit.tmp
 a:b:c d:e:f
-$	cmp resplit.ok _resplit.tmp
+$	cmp resplit.ok sys$disk:[]_resplit.tmp
 $	if $status then  rm _resplit.tmp;
 $	return
 $
 $intprec:	echo "intprec"
 $	gawk -f intprec.awk >_intprec.tmp 2>&1
-$	cmp intprec.ok _intprec.tmp
+$	cmp intprec.ok sys$disk:[]_intprec.tmp
 $	if $status then  rm _intprec.tmp;
 $	return
 $
@@ -607,7 +607,7 @@ $incdupe:   echo "''test'"
 $   set noOn
 $   gawk --lint -i inclib -i inclib.awk "BEGIN {print sandwich(""a"", ""b"", ""c"")}" > _'test'.tmp 2>&1
 $   if .not. $status then call exit_code 1 _'test'.tmp
-$   cmp 'test'.ok _'test'.tmp
+$   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
 $   return
@@ -616,20 +616,20 @@ $incdupe2:   echo "''test'"
 $   set noOn
 $   gawk --lint -f inclib -f inclib.awk >_'test'.tmp 2>&1
 $   if .not. $status then call exit_code 1 _'test'.tmp
-$   cmp 'test'.ok _'test'.tmp
+$   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
 $   return
 $
 $incdupe3:   echo "''test'"
 $   gawk --lint -f hello -f hello.awk >_'test'.tmp 2>&1
-$   cmp 'test'.ok _'test'.tmp
+$   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   return
 $
 $include2:   echo "''test'"
 $   gawk -i inclib "BEGIN {print sandwich(""a"", ""b"", ""c"")}" >_'test'.tmp 2>&1
-$   cmp 'test'.ok _'test'.tmp
+$   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   return
 $
@@ -640,7 +640,7 @@ $symtab3:   echo "''test'"
 $   set noOn
 $   gawk -f 'test'.awk  >_'test'.tmp 2>&1
 $   if .not. $status then call exit_code 2 _'test'.tmp
-$   cmp 'test'.ok _'test'.tmp
+$   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
 $   return
@@ -650,7 +650,7 @@ $symtab5:   echo "''test'"
 $   set noOn
 $   gawk -f 'test'.awk <'test'.in >_'test'.tmp 2>&1
 $   if .not. $status then call exit_code 2 _'test'.tmp
-$   cmp 'test'.ok _'test'.tmp
+$   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
 $   return
@@ -659,7 +659,7 @@ $symtab6:   echo "''test'"
 $   set noOn
 $   gawk -d__'test'.tmp -f 'test'.awk
 $   pipe search __'test'.tmp "ENVIRON" /match=nand | search sys$pipe "PROCINFO" /match=nand > _'test'.tmp
-$   cmp 'test'.ok _'test'.tmp
+$   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*,__'test'.tmp;*
 $   set On
 $   return
@@ -673,28 +673,28 @@ $	echo "note: type ``hi<return><ctrl/Z>'",-
 $!!	@echo hi | gawk "BEGIN { ""cat"" | getline; print; close(""cat"") }" >_childin.tmp
 $	gawk "BEGIN { ""type sys$input:"" | getline; print; close(""type sys$input:"") }" >_childin.tmp
 hi
-$	cmp childin.ok _childin.tmp
+$	cmp childin.ok sys$disk:[]_childin.tmp
 $	if $status then  rm _childin.tmp;
 $	return
 $
 $noeffect:	echo "noeffect"
 $	AWKPATH_srcdir
 $	gawk --lint -f noeffect.awk >_noeffect.tmp 2>&1
-$	cmp noeffect.ok _noeffect.tmp
+$	cmp noeffect.ok sys$disk:[]_noeffect.tmp
 $	if $status then  rm _noeffect.tmp;
 $	return
 $
 $numsubstr:	echo "numsubstr"
 $	AWKPATH_srcdir
 $	gawk -f numsubstr.awk numsubstr.in >_numsubstr.tmp
-$	cmp numsubstr.ok _numsubstr.tmp
+$	cmp numsubstr.ok sys$disk:[]_numsubstr.tmp
 $	if $status then  rm _numsubstr.tmp;
 $	return
 $
 $prmreuse:	echo "prmreuse"
 $	if f$search("prmreuse.ok").eqs."" then  create prmreuse.ok
 $	gawk -f prmreuse.awk >_prmreuse.tmp
-$	cmp prmreuse.ok _prmreuse.tmp
+$	cmp prmreuse.ok sys$disk:[]_prmreuse.tmp
 $	if $status then  rm _prmreuse.tmp;
 $	return
 $
@@ -704,7 +704,7 @@ $	return
 $!!fflush:	echo "fflush"
 $	! hopelessly Unix-specific
 $!!	@fflush.sh >_fflush.tmp
-$	cmp fflush.ok _fflush.tmp
+$	cmp fflush.ok sys$disk:[]_fflush.tmp
 $	if $status then  rm _fflush.tmp;
 $	return
 $
@@ -713,47 +713,47 @@ $	echo "getlnhd skipped"
 $	return
 $!!getlnhd:	echo "getlnhd"
 $	gawk -f getlnhd.awk >_getlnhd.tmp
-$	cmp getlnhd.ok _getlnhd.tmp
+$	cmp getlnhd.ok sys$disk:[]_getlnhd.tmp
 $	if $status then  rm _getlnhd.tmp;
 $	return
 $
 $tweakfld:	echo "tweakfld"
 $	gawk -f tweakfld.awk tweakfld.in >_tweakfld.tmp
 $	if f$search("errors.cleanup").nes."" then  rm errors.cleanup;*
-$	cmp tweakfld.ok _tweakfld.tmp
+$	cmp tweakfld.ok sys$disk:[]_tweakfld.tmp
 $	if $status then  rm _tweakfld.tmp;
 $	return
 $
 $clsflnam:	echo "clsflnam"
 $	if f$search("clsflnam.ok").eqs."" then  create clsflnam.ok
 $	gawk -f clsflnam.awk clsflnam.in >_clsflnam.tmp 2>&1
-$	cmp clsflnam.ok _clsflnam.tmp
+$	cmp clsflnam.ok sys$disk:[]_clsflnam.tmp
 $	if $status then  rm _clsflnam.tmp;
 $	return
 $
 $mmap8k:	echo "mmap8k"
 $	gawk "{ print }" mmap8k.in >_mmap8k.tmp
-$	cmp mmap8k.in _mmap8k.tmp
+$	cmp mmap8k.in sys$disk:[]_mmap8k.tmp
 $	if $status then  rm _mmap8k.tmp;
 $	return
 $
 $eofsplit:	echo "eofsplit"
 $	if f$search("eofsplit.ok").eqs."" then  create eofsplit.ok
 $	gawk -f eofsplit.awk >_eofsplit.tmp
-$	cmp eofsplit.ok _eofsplit.tmp
+$	cmp eofsplit.ok sys$disk:[]_eofsplit.tmp
 $	if $status then  rm _eofsplit.tmp;
 $	return
 $
 $back89:		echo "back89"
 $	gawk "/a\8b/" back89.in >_back89.tmp
-$	cmp back89.ok _back89.tmp
+$	cmp back89.ok sys$disk:[]_back89.tmp
 $	if $status then  rm _back89.tmp;
 $	return
 $
 $tradanch:	echo "tradanch"
 $	if f$search("tradanch.ok").eqs."" then  create tradanch.ok
 $	gawk --traditional -f tradanch.awk tradanch.in >_tradanch.tmp
-$	cmp tradanch.ok _tradanch.tmp
+$	cmp tradanch.ok sys$disk:[]_tradanch.tmp
 $	if $status then  rm _tradanch.tmp;
 $	return
 $
@@ -761,14 +761,14 @@ $pid:		echo "pid"
 $	pid = f$integer("%x" + f$getjpi("","PID"))
 $	ppid = f$integer("%x" + f$getjpi("","OWNER"))
 $	gawk -v "ok_pid=''pid'" -v "ok_ppid=''ppid'" -f pid.awk >_pid.tmp >& _NL:
-$	cmp pid.ok _pid.tmp
+$	cmp pid.ok sys$disk:[]_pid.tmp
 $	if $status then  rm _pid.tmp;
 $	return
 $
 $strftlng:	echo "strftlng"
 $	define/User TZ "UTC"		!useless
 $	gawk -f strftlng.awk >_strftlng.tmp
-$	cmp strftlng.ok _strftlng.tmp
+$	cmp strftlng.ok sys$disk:[]_strftlng.tmp
 $	if $status then  rm _strftlng.tmp;
 $	return
 $
@@ -776,7 +776,7 @@ $nfldstr:	echo "nfldstr"
 $	if f$search("nfldstr.ok").eqs."" then  create nfldstr.ok
 $	gawk "$1 == 0 { print ""bug"" }" >_nfldstr.tmp
 
-$	cmp nfldstr.ok _nfldstr.tmp
+$	cmp nfldstr.ok sys$disk:[]_nfldstr.tmp
 $	if $status then  rm _nfldstr.tmp;
 $	return
 $
@@ -786,13 +786,13 @@ $!!	@echo A B C D E | tr -d '\12' | $(AWK) '{ print $$NF }' - $(srcdir)/nors.in 
 $!! so just read a line from sys$input instead
 $	gawk "{ print $NF }" - nors.in >_nors.tmp
 A B C D E
-$	cmp nors.ok _nors.tmp
+$	cmp nors.ok sys$disk:[]_nors.tmp
 $	if $status then  rm _nors.tmp;
 $	return
 $
 $reint:		echo "reint"
 $	gawk --re-interval -f reint.awk reint.in >_reint.tmp
-$	cmp reint.ok _reint.tmp
+$	cmp reint.ok sys$disk:[]_reint.tmp
 $	if $status then  rm _reint.tmp;
 $	return
 $
@@ -802,7 +802,7 @@ $	AWKPATH_srcdir
 $	gawk -f noparms.awk >_noparms.tmp 2>&1
 $	if .not.$status then call exit_code 1 _noparms.tmp
 $	set On
-$	cmp noparms.ok _noparms.tmp
+$	cmp noparms.ok sys$disk:[]_noparms.tmp
 $	if $status then  rm _noparms.tmp;
 $	return
 $
@@ -812,7 +812,7 @@ $	define/User test1 []test1.
 $	define/User test2 []test2.
 $	gawk -f pipeio1.awk >_pipeio1.tmp
 $	rm test1.;,test2.;
-$	cmp pipeio1.ok _pipeio1.tmp
+$	cmp pipeio1.ok sys$disk:[]_pipeio1.tmp
 $	if $status then  rm _pipeio1.tmp;
 $	return
 $
@@ -823,15 +823,15 @@ $!!pipeio2:	echo "pipeio2"
 $	cat = "gawk -- {print}"
 $	tr  = "??"	!unfortunately, no trivial substitution available...
 $	gawk -v "SRCDIR=." -f pipeio2.awk >_pipeio2.tmp
-$	cmp pipeio2.ok _pipeio2.tmp
+$	cmp pipeio2.ok sys$disk:[]_pipeio2.tmp
 $	if $status then  rm _pipeio2.tmp;
 $	return
 $
 $clobber:	echo "clobber"
 $	gawk -f clobber.awk >_clobber.tmp
-$	cmp clobber.ok seq.
+$	cmp clobber.ok sys$disk:[]seq.
 $	if $status then  rm seq.;*
-$	cmp clobber.ok _clobber.tmp
+$	cmp clobber.ok sys$disk:[]_clobber.tmp
 $	if $status then  rm _clobber.tmp;
 $	return
 $
@@ -840,7 +840,7 @@ $	set noOn
 $	gawk -f nasty.awk >_nasty.tmp
 $	call fixup_LRL nasty.ok
 $	call fixup_LRL _nasty.tmp "purge"
-$	cmp nasty.ok _nasty.tmp
+$	cmp nasty.ok sys$disk:[]_nasty.tmp
 $	if $status then  rm _nasty.tmp;
 $	set On
 $	return
@@ -850,7 +850,7 @@ $	set noOn
 $	gawk -f nasty2.awk >_nasty2.tmp
 $	call fixup_LRL nasty2.ok
 $	call fixup_LRL _nasty2.tmp "purge"
-$	cmp nasty2.ok _nasty2.tmp
+$	cmp nasty2.ok sys$disk:[]_nasty2.tmp
 $	if $status then  rm _nasty2.tmp;
 $	set On
 $	return
@@ -873,36 +873,36 @@ $	set noOn
 $	gawk -f 'test'.awk >_'test'.tmp 2>&1
 $	if .not.$status then call exit_code 2 _'test'.tmp
 $	set On
-$	cmp 'test'.ok _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
 $
 $arynocls:	echo "arynocls"
 $	gawk -v "INPUT"=arynocls.in -f arynocls.awk >_arynocls.tmp
-$	cmp arynocls.ok _arynocls.tmp
+$	cmp arynocls.ok sys$disk:[]_arynocls.tmp
 $	if $status then  rm _arynocls.tmp;
 $	return
 $
 $getlnbuf:	echo "getlnbuf"
 $	gawk -f getlnbuf.awk getlnbuf.in >_getlnbuf.tmp
 $	gawk -f gtlnbufv.awk getlnbuf.in >_getlnbuf.too
-$	cmp getlnbuf.ok _getlnbuf.tmp
+$	cmp getlnbuf.ok sys$disk:[]_getlnbuf.tmp
 $	if $status then  rm _getlnbuf.tmp;
-$	cmp getlnbuf.ok _getlnbuf.too
+$	cmp getlnbuf.ok sys$disk:[]_getlnbuf.too
 $	if $status then  rm _getlnbuf.too;
 $	return
 $
 $lint:	echo "lint"
 $	AWKPATH_srcdir
 $	gawk -f lint.awk >_lint.tmp 2>&1
-$	cmp lint.ok _lint.tmp
+$	cmp lint.ok sys$disk:[]_lint.tmp
 $	if $status then  rm _lint.tmp;
 $	return
 $
 $lintold:	echo "lintold"
 $	AWKPATH_srcdir
 $	gawk -f lintold.awk --lint-old <lintold.in >_lintold.tmp 2>&1
-$	cmp lintold.ok _lintold.tmp
+$	cmp lintold.ok sys$disk:[]_lintold.tmp
 $	if $status then  rm _lintold.tmp;
 $	return
 $
@@ -910,7 +910,7 @@ $ofmtbig:	echo "ofmtbig"
 $	set noOn
 $	gawk -f ofmtbig.awk ofmtbig.in >_ofmtbig.tmp 2>&1
 $	set On
-$	cmp ofmtbig.ok _ofmtbig.tmp
+$	cmp ofmtbig.ok sys$disk:[]_ofmtbig.tmp
 $	if $status then  rm _ofmtbig.tmp;
 $	return
 $
@@ -948,13 +948,13 @@ $	return
 $
 $redfilnm:	echo "redfilnm"
 $	gawk -f redfilnm.awk srcdir="." redfilnm.in >_redfilnm.tmp
-$	cmp redfilnm.ok _redfilnm.tmp
+$	cmp redfilnm.ok sys$disk:[]_redfilnm.tmp
 $	if $status then  rm _redfilnm.tmp;
 $	return
 $
 $leaddig:	echo "leaddig"
 $	gawk -v "x=2E"  -f leaddig.awk >_leaddig.tmp
-$	cmp leaddig.ok _leaddig.tmp
+$	cmp leaddig.ok sys$disk:[]_leaddig.tmp
 $	if $status then  rm _leaddig.tmp;
 $	return
 $
@@ -963,7 +963,7 @@ $	echo "clos1way: not supported"
 $	return
 $!!clos1way:	echo "clos1way"
 $	gawk -f clos1way.awk >_clos1way.tmp
-$	cmp clos1way.ok _clos1way.tmp
+$	cmp clos1way.ok sys$disk:[]_clos1way.tmp
 $	if $status then  rm _clos1way.tmp;
 $	return
 $
@@ -972,7 +972,7 @@ $	set noOn
 $	AWKPATH_srcdir
 $	gawk --lint -f shadow.awk >_shadow.tmp 2>&1
 $	set On
-$	cmp shadow.ok _shadow.tmp
+$	cmp shadow.ok sys$disk:[]_shadow.tmp
 $	if $status then  rm _shadow.tmp;
 $	return
 $
@@ -982,7 +982,7 @@ $	AWKPATH_srcdir
 $	gawk --lint -f lintwarn.awk >_lintwarn.tmp 2>&1
 $	if .not.$status then call exit_code 1 _lintwarn.tmp
 $	set On
-$	cmp lintwarn.ok _lintwarn.tmp
+$	cmp lintwarn.ok sys$disk:[]_lintwarn.tmp
 $	if $status then  rm _lintwarn.tmp;
 $	return
 $
@@ -993,14 +993,14 @@ $!! the records here are too long for DIFF to handle
 $!! so assume success as long as gawk doesn't crash
 $!!	call fixup_LRL longsub.ok
 $!!	call fixup_LRL _longsub.tmp "purge"
-$!!	cmp longsub.ok _longsub.tmp
+$!!	cmp longsub.ok sys$disk:[]_longsub.tmp
 $	if $status then  rm _longsub.tmp;
 $	set On
 $	return
 $
 $arrayprm3:	echo "arrayprm3"
 $	gawk -f arrayprm3.awk arrayprm3.in >_arrayprm3.tmp
-$	cmp arrayprm3.ok _arrayprm3.tmp
+$	cmp arrayprm3.ok sys$disk:[]_arrayprm3.tmp
 $	if $status then  rm _arrayprm3.tmp;
 $	return
 $
@@ -1025,7 +1025,7 @@ $	set noOn
 $	gawk -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
 $	if .not.$status then call exit_code 2 _'test'.tmp
 $	set On
-$	cmp 'test'.ok _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
 $
@@ -1037,7 +1037,7 @@ $	set noOn
 $	gawk -f 'test'.awk <'test'.in >_'test'.tmp 2>&1
 $	if .not.$status then call exit_code 2 _'test'.tmp
 $	set On
-$	cmp 'test'.ok _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
 $
@@ -1045,7 +1045,7 @@ $exitval2:	echo "exitval2 skipped"
 $	return
 $!!exitval2:	echo "exitval2"
 $	gawk -f exitval2.awk exitval2.in >_exitval2.tmp
-$	cmp exitval2.ok _exitval2.tmp
+$	cmp exitval2.ok sys$disk:[]_exitval2.tmp
 $	if $status then  rm _exitval2.tmp;
 $	return
 $
@@ -1062,7 +1062,7 @@ $	set noOn
 $	gawk -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
 $	if .not.$status then call exit_code 1 _'test'.tmp
 $	set On
-$	cmp 'test'.ok _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
 $
@@ -1070,13 +1070,13 @@ $getline:	echo "getline skipped"
 $	return
 $!!getline:	echo "getline"
 $	gawk -f getline.awk getline.in >_getline.tmp
-$	cmp getline.ok _getline.tmp
+$	cmp getline.ok sys$disk:[]_getline.tmp
 $	if $status then  rm _getline.tmp;
 $	return
 $
 $gsubtst3:	echo "gsubtst3"
 $	gawk --re-interval -f gsubtst3.awk gsubtst3.in >_gsubtst3.tmp
-$	cmp gsubtst3.ok _gsubtst3.tmp
+$	cmp gsubtst3.ok sys$disk:[]_gsubtst3.tmp
 $	if $status then  rm _gsubtst3.tmp;
 $	return
 $
@@ -1088,7 +1088,7 @@ $		oldout = f$search("_iobug1.tmp;")
 $	gawk -f iobug1.awk iobug1.in >_iobug1.tmp
 $		badout = f$search("_iobug1.tmp;-1")
 $		if badout.nes."" .and. badout.nes.oldout then  rm 'badout'
-$	cmp iobug1.ok _iobug1.tmp
+$	cmp iobug1.ok sys$disk:[]_iobug1.tmp
 $	if $status then  rm _iobug1.tmp;
 $	return
 $
@@ -1096,7 +1096,7 @@ $rstest4:	echo "rstest4 skipped"
 $	return
 $!!rstest4:	echo "rstest4"
 $	gawk -f rstest4.awk rstest4.in >_rstest4.tmp
-$	cmp rstest4.ok _rstest4.tmp
+$	cmp rstest4.ok sys$disk:[]_rstest4.tmp
 $	if $status then  rm _rstest4.tmp;
 $	return
 $
@@ -1104,7 +1104,7 @@ $rstest5:	echo "rstest5 skipped"
 $	return
 $!!rstest5:	echo "rstest5"
 $	gawk -f rstest5.awk rstest5.in >_rstest5.tmp
-$	cmp rstest5.ok _rstest5.tmp
+$	cmp rstest5.ok sys$disk:[]_rstest5.tmp
 $	if $status then  rm _rstest5.tmp;
 $	return
 $
@@ -1122,7 +1122,7 @@ $	set noOn
 $	gawk -f 'test'.awk >_'test'.tmp 2>&1
 $	if .not.$status then call exit_code 1 _'test'.tmp
 $	set On
-$	cmp 'test'.ok _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
 $
@@ -1133,7 +1133,7 @@ $uninit5:
 $uninitialized:
 $	echo "''test'"
 $	gawk --lint -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
-$	cmp 'test'.ok _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
 $
@@ -1147,7 +1147,7 @@ $	gawk "{gsub(""file specification syntax error"", ""no such file or directory""
 		_space.tmp >_space.too
 $	rm _space.tmp;
 $	mv _space.too _space.tmp
-$	igncascmp space.ok _space.tmp
+$	igncascmp space.ok sys$disk:[]_space.tmp
 $	if $status then  rm _space.tmp;
 $	return
 $
@@ -1155,7 +1155,7 @@ $posix2008sub:
 $printf0:
 $	echo "''test'"
 $	gawk --posix -f 'test'.awk >_'test'.tmp
-$	cmp 'test'.ok _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
 $
@@ -1174,7 +1174,7 @@ $	pipe -
 	gawk -- "BEGIN {RS = """"; ORS = ""\n\n""}; {print}" | -
 	gawk -- "/^[^a]/; END {print NR}" >_rsnulbig.tmp
 $	set On
-$	cmp rsnulbig.ok _rsnulbig.tmp
+$	cmp rsnulbig.ok sys$disk:[]_rsnulbig.tmp
 $	if $status then  rm _rsnulbig.tmp;
 $	return
 $
@@ -1193,7 +1193,7 @@ $	pipe -
 	gawk -- "BEGIN {RS=""""; ORS=""\n\n"" }; {print}" | -
 	gawk -- "/^[^a]/; END {print NR}" >_rsnulbig2.tmp
 $	set On
-$	cmp rsnulbig2.ok _rsnulbig2.tmp
+$	cmp rsnulbig2.ok sys$disk:[]_rsnulbig2.tmp
 $	if $status then  rm _rsnulbig2.tmp;
 $	return
 $
@@ -1204,7 +1204,7 @@ $widesub3:
 $	echo "''test'"
 $	gosub define_gawklocale
 $	gawk -f 'test'.awk 'test'.in >_'test'.tmp
-$	cmp 'test'.ok _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
 $
@@ -1216,7 +1216,7 @@ $widesub4:
 $	echo "''test'"
 $	gosub define_gawklocale
 $	gawk -f 'test'.awk >_'test'.tmp
-$	cmp 'test'.ok _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
 $
@@ -1224,13 +1224,13 @@ $! This test is somewhat suspect for vms due to exit code manipulation
 $exitval1:	echo "exitval1"
 $	gawk -f exitval1.awk >_exitval1.tmp 2>&1
 $	if $status then  call exit_code 0 _exitval1.tmp
-$	cmp exitval1.ok _exitval1.tmp
+$	cmp exitval1.ok sys$disk:[]_exitval1.tmp
 $	if $status then  rm _exitval1.tmp;
 $	return
 $
 $fsspcoln:	echo "fsspcoln"
 $	gawk -f fsspcoln.awk "FS=[ :]+" fsspcoln.in >_forspcoln.tmp
-$	cmp fsspcoln.ok _forspcoln.tmp
+$	cmp fsspcoln.ok sys$disk:[]_forspcoln.tmp
 $	if $status then  rm _forspcoln.tmp;
 $	return
 $
@@ -1239,13 +1239,13 @@ $	! assume we're running in the test subdirectory; we don't want to
 $	! perform a messy conversion of [] into its file specification
 $	gawk -v "SRCDIR=[-]test.dir" -f getlndir.awk >_getlndir.tmp
 $!	getlndir.ok expects "Is a directory", we see "is a directory"
-$	igncascmp getlndir.ok _getlndir.tmp
+$	igncascmp getlndir.ok sys$disk:[]_getlndir.tmp
 $	if $status then  rm _getlndir.tmp;
 $	return
 $
 $rsstart2:	echo "rsstart2"
 $	gawk -f rsstart2.awk rsstart1.in >_rsstart2.tmp
-$	cmp rsstart2.ok _rsstart2.tmp
+$	cmp rsstart2.ok sys$disk:[]_rsstart2.tmp
 $	if $status then  rm _rsstart2.tmp;
 $	return
 $
@@ -1267,7 +1267,7 @@ $	pipe -
 	gawk -- "FNR <= 10" rsstart1.in | -
 	gawk -f rsstart2.awk >_rsstart3.tmp
 $	set On
-$	cmp rsstart3.ok _rsstart3.tmp
+$	cmp rsstart3.ok sys$disk:[]_rsstart3.tmp
 $	if $status then  rm _rsstart3.tmp;
 $	return
 $
@@ -1298,7 +1298,7 @@ $	gawk -- "FNR==1 {sub(""1"",""0"")}; {print}" _rtlen01.tmp >_rtlen01.too
 $	rm _rtlen01.tmp;
 $	mv _rtlen01.too _rtlen01.tmp
 $   endif
-$	cmp 'f' _'test'.tmp
+$	cmp 'f' sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
 $
@@ -1317,7 +1317,7 @@ $ endsubroutine !do__rtlen01
 $
 $nondec2:	echo "nondec2"
 $	gawk --non-decimal-data -v "a=0x1" -f nondec2.awk >_nondec2.tmp
-$	cmp nondec2.ok _nondec2.tmp
+$	cmp nondec2.ok sys$disk:[]_nondec2.tmp
 $	if $status then  rm _nondec2.tmp;
 $	return
 $
@@ -1334,27 +1334,27 @@ $	gawk "{gsub(""no-such-file"", ""no/such/file""); print}" _nofile.tmp >_nofile.
 $	rm _nofile.tmp;
 $	mv _nofile.too _nofile.tmp
 $!	nofile.ok expects "No such file ...", we see "no such file ..."
-$	igncascmp nofile.ok _nofile.tmp
+$	igncascmp nofile.ok sys$disk:[]_nofile.tmp
 $	if $status then  rm _nofile.tmp;
 $	return
 $
 $binmode1:	echo "binmode1"
 $	gawk -v "BINMODE=3" "BEGIN { print BINMODE }" >_binmode1.tmp
-$	cmp binmode1.ok _binmode1.tmp
+$	cmp binmode1.ok sys$disk:[]_binmode1.tmp
 $	if $status then  rm _binmode1.tmp;
 $	return
 $
 $subi18n:	echo "subi18n"
 $	define/User GAWKLOCALE "en_US.UTF-8"
 $	gawk -f subi18n.awk >_subi18n.tmp
-$	cmp subi18n.ok _subi18n.tmp
+$	cmp subi18n.ok sys$disk:[]_subi18n.tmp
 $	if $status then  rm _subi18n.tmp;
 $	return
 $
 $concat4:	echo "concat4"
 $	define/User GAWKLOCALE "en_US.UTF-8"
 $	gawk -f concat4.awk concat4.in >_concat4.tmp
-$	cmp concat4.ok _concat4.tmp
+$	cmp concat4.ok sys$disk:[]_concat4.tmp
 $	if $status then  rm _concat4.tmp;
 $	return
 $
@@ -1362,7 +1362,7 @@ $devfd:		echo "devfd: not supported"
 $	return
 $!!devfd:	echo "devfd"
 $	gawk 1 /dev/fd/4 /dev/fd/5 4< /devfd.in4 5< devfd.in5 >_devfd.tmp
-$	cmp devfd.ok _devfd.tmp
+$	cmp devfd.ok sys$disk:[]_devfd.tmp
 $	if $status then  rm _devfd.tmp;
 $	return
 $
@@ -1370,7 +1370,7 @@ $devfd1:	echo "devfd1: not supported"
 $	return
 $!!devfd1:	echo "devfd1"
 $	gawk -f devfd1.awk 4< devfd.in1 5< devfd.in2 >_devfd1.tmp
-$	cmp devfd1.ok _devfd1.tmp
+$	cmp devfd1.ok sys$disk:[]_devfd1.tmp
 $	if $status then  rm _devfd1.tmp;
 $	return
 $
@@ -1379,7 +1379,7 @@ $	return
 $!!devfd2:	echo "devfd2"
 $! The program text is the '1' which will print each record. How compact can you get?
 $	gawk 1 /dev/fd/4 /dev/fd/5 4< /devfd.in1 5< devfd.in2 >_devfd2.tmp
-$	cmp devfd2.ok _devfd2.tmp
+$	cmp devfd2.ok sys$disk:[]_devfd2.tmp
 $	if $status then  rm _devfd2.tmp;
 $	return
 $
@@ -1400,21 +1400,21 @@ $	set noOn
 $	gawk -f /dev/null --source "BEGIN {return junk}" >_mixed1.tmp 2>&1
 $	if .not.$status then call exit_code 1 _mixed1.tmp
 $	set On
-$	cmp mixed1.ok _mixed1.tmp
+$	cmp mixed1.ok sys$disk:[]_mixed1.tmp
 $	if $status then  rm _mixed1.tmp;
 $	return
 $
 $mtchi18n:	echo "mtchi18n"
 $	define/User GAWKLOCALE "ru_RU.UTF-8"
 $	gawk -f mtchi18n.awk mtchi18n.in >_mtchi18n.tmp
-$	cmp mtchi18n.ok _mtchi18n.tmp
+$	cmp mtchi18n.ok sys$disk:[]_mtchi18n.tmp
 $	if $status then  rm _mtchi18n.tmp;
 $	return
 $
 $reint2:	echo "reint2"
 $	gosub define_gawklocale
 $	gawk --re-interval -f reint2.awk reint2.in >_reint2.tmp
-$	cmp reint2.ok _reint2.tmp
+$	cmp reint2.ok sys$disk:[]_reint2.tmp
 $	if $status then  rm _reint2.tmp;
 $	return
 $
@@ -1422,7 +1422,7 @@ $localenl:	echo "localenl skipped"
 $	return
 $!!localenl:	echo "localenl"
 $	@localenl.com /Output=_localenl.tmp	! sh ./localenl.sh >tmp.
-$	cmp localenl.ok _localenl.tmp
+$	cmp localenl.ok sys$disk:[]_localenl.tmp
 $	if $status then  rm _localenl.tmp;
 $	return
 $
@@ -1432,7 +1432,7 @@ $!!mbprintf1:	echo "mbprintf1"
 $! Makefile test exports this, but we don't want to impact user's environment
 $	define/User GAWKLOCALE "en_US.UTF-8"
 $	gawk -f mbprintf1.awk mbprintf1.in >_mbprintf1.tmp
-$	cmp mbprintf1.ok _mbprintf1.tmp
+$	cmp mbprintf1.ok sys$disk:[]_mbprintf1.tmp
 $	if $status then  rm _mbprintf1.tmp;
 $	return
 $
@@ -1440,7 +1440,7 @@ $mbprintf2:	echo "mbprintf2"
 $! Makefile test exports this, ...
 $	define/User GAWKLOCALE "ja_JP.UTF-8"
 $	gawk -f mbprintf2.awk >_mbprintf2.tmp
-$	cmp mbprintf2.ok _mbprintf2.tmp
+$	cmp mbprintf2.ok sys$disk:[]_mbprintf2.tmp
 $	if $status then  rm _mbprintf2.tmp;
 $	return
 $
@@ -1448,7 +1448,7 @@ $mbprintf3:	echo "mbprintf3"
 $! Makefile test exports this, ...
 $	define/User GAWKLOCALE "en_US.UTF-8"
 $	gawk -f mbprintf3.awk mbprintf3.in >_mbprintf2.tmp
-$	cmp mbprintf3.ok _mbprintf2.tmp
+$	cmp mbprintf3.ok sys$disk:[]_mbprintf2.tmp
 $	if $status then  rm _mbprintf2.tmp;
 $	return
 $
@@ -1458,14 +1458,14 @@ $!!mbfw1:		echo "mbfw1"
 $! Makefile test exports this, ...
 $	define/User GAWKLOCALE "en_US.UTF-8"
 $	gawk -f mbfw1.awk mbfw1.in >_mbfw1.tmp
-$	cmp mbfw1.ok _mbfw1.tmp
+$	cmp mbfw1.ok sys$disk:[]_mbfw1.tmp
 $	if $status then  rm _mbfw1.tmp;
 $	return
 $
 $gsubtst6:	echo "gsubtst6"
 $	define/User GAWKLOCALE "C"
 $	gawk -f gsubtst6.awk >_gsubtst6.tmp
-$	cmp gsubtst6.ok _gsubtst6.tmp
+$	cmp gsubtst6.ok sys$disk:[]_gsubtst6.tmp
 $	if $status then  rm _gsubtst6.tmp;
 $	return
 $
@@ -1473,7 +1473,7 @@ $mbstr1:	echo "mbstr1"
 $	gosub define_gawklocale
 $	AWKPATH_srcdir
 $	gawk -f mbstr1.awk >_mbstr1.tmp
-$	cmp mbstr1.ok _mbstr1.tmp
+$	cmp mbstr1.ok sys$disk:[]_mbstr1.tmp
 $	if $status then  rm _mbstr1.tmp;
 $	return
 $
@@ -1483,7 +1483,7 @@ $	echo "''test'"
 $	set noOn
 $	gawk --lint -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
 $	set On
-$	cmp 'test'.ok _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then	 rm _'test'.tmp;
 $	return
 $
@@ -1496,7 +1496,7 @@ $	if floatmode.lt.2
 $	then	echo "fmtspcl: not supported"
 $	else	echo "fmtspcl"
 $		gawk -f fmtspcl.awk >_fmtspcl.tmp 2>&1
-$		cmp fmtspcl.ok _fmtspcl.tmp
+$		cmp fmtspcl.ok sys$disk:[]_fmtspcl.tmp
 $		if $status then  rm _fmtspcl.tmp;
 $	endif
 $	return
@@ -1512,7 +1512,7 @@ $	hugeval = huge_'floatmode'
 $	set noOn
 $	gawk -v "HUGEVAL=''hugeval'" -f intformat.awk >_intformat.tmp 2>&1
 $	set On
-$	cmp intformat.ok _intformat.tmp
+$	cmp intformat.ok sys$disk:[]_intformat.tmp
 $	if $status then  rm _intformat.tmp;
 $	return
 $
@@ -1532,14 +1532,14 @@ $	gawk -f - _beginfile1.tmp >_beginfile1.too
   gsub("no-such-file","file"); gsub("Makefile.in","Makefile"); print }
 $	rm _beginfile1.tmp;
 $	mv _beginfile1.too _beginfile1.tmp
-$	igncascmp beginfile1.ok _beginfile1.tmp
+$	igncascmp beginfile1.ok sys$disk:[]_beginfile1.tmp
 $	if $status then  rm _beginfile1.tmp;
 $	return
 $
 $dumpvars: echo "dumpvars"
 $	gawk --dump-variables 1 <dumpvars.in >_NL: 2>&1
 $	mv awkvars.out _dumpvars.tmp
-$	cmp dumpvars.ok _dumpvars.tmp
+$	cmp dumpvars.ok sys$disk:[]_dumpvars.tmp
 $	if $status then  rm _dumpvars.tmp;
 $	return
 $
@@ -1557,7 +1557,7 @@ $	gawk -v "sortcmd=SORT sys$intput: sys$output:" -
 			-f awkprof.out dtdgport.awk > _'test'.tmp2
 $		badout = f$search("_''test'.tmp2;-1")
 $		if badout.nes."" .and. badout.nes.oldout then  rm 'badout'
-$	cmp _'test'.tmp1 _'test'.tmp2
+$	cmp _'test'.tmp1 sys$disk:[]_'test'.tmp2
 $	if $status then  rm _'test'.tmp%;,awkprof.out;
 $	return
 $
@@ -1569,7 +1569,7 @@ $	sumslp awkprof.out /update=sys$input: /output=_'test'.tmp
 -1,2
 /
 $	rm awkprof.out;
-$	cmp 'test'.ok _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;*
 $	return
 $
@@ -1580,7 +1580,7 @@ $	sumslp awkprof.out /update=sys$input: /output=_'test'.tmp
 -1,2
 /
 $	rm awkprof.out;
-$	cmp 'test'.ok _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;*
 $	return
 $
@@ -1593,7 +1593,7 @@ $	gawk "function f() {next}; {f()}; END{f()}" _NL:     >>_next.tmp 2>&1
 $	gawk "function f() {next}; BEGINFILE{f()}" _NL:      >>_next.tmp 2>&1
 $	gawk "function f() {next}; {f()}; ENDFILE{f()}" _NL: >>_next.tmp 2>&1
 $	set On
-$	cmp next.ok _next.tmp
+$	cmp next.ok sys$disk:[]_next.tmp
 $	if $status then  rm _next.tmp;
 $	return
 $
@@ -1609,7 +1609,7 @@ $	endif
 $	set noOn
 $	call/Output=_exit.tmp do__exit
 $	set On
-$	cmp exit.ok _exit.tmp
+$	cmp exit.ok sys$disk:[]_exit.tmp
 $	if $status then  rm _exit.tmp;
 $	return
 $
@@ -1659,7 +1659,7 @@ $	then create vms_cmd.ok
 World!
 $	endif
 $	gawk /Commands="BEGIN { print ""World!"" }" _NL: /Output=_vms_cmd.tmp
-$	cmp vms_cmd.ok _vms_cmd.tmp
+$	cmp vms_cmd.ok sys$disk:[]_vms_cmd.tmp
 $	if $status then  rm _vms_cmd.tmp;
 $	return
 $
@@ -1672,7 +1672,7 @@ $ !	define/User dbg$input sys$command:
 $	gawk -f - >_vms_io1.tmp
 # prior to 3.0.4, gawk crashed doing any redirection after closing stdin
 BEGIN { print "Hello" >"/dev/stdout" }
-$	cmp vms_io1.ok _vms_io1.tmp
+$	cmp vms_io1.ok sys$disk:[]_vms_io1.tmp
 $	if $status then  rm _vms_io1.tmp;
 $	return
 $
@@ -1698,9 +1698,9 @@ $	set noOn
 $ !	define/User dbg$input sys$command:
 $	gawk -- "BEGIN { print ""xyzzy"" >""_vms_io2.vfc"" }" >_vms_io2.tmp 2>&1
 $	set On
-$	cmp _NL: _vms_io2.tmp
+$	cmp _NL: sys$disk:[]_vms_io2.tmp
 $	if $status then  rm _vms_io2.tmp;
-$	cmp vms_io2.ok _vms_io2.vfc
+$	cmp vms_io2.ok sys$disk:[]_vms_io2.vfc
 $	if $status then  rm _vms_io2.vfc;*
 $	return
 $

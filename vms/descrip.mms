@@ -129,7 +129,7 @@ gawk.exe : $(GAWKOBJ) $(AWKOBJS) $(VMSOBJS) gawk.opt
 	$(LINK) $(LINKFLAGS) gawk.opt/options
 
 gawk.opt : $(MAKEFILE)			# create linker options file
-      @	open/write opt gawk.opt		! ~ 'cat <<close >gawk.opt'
+      @	open/write opt sys$disk:[]gawk.opt		! ~ 'cat <<close >gawk.opt'
       @	write opt "! GAWK -- GNU awk"
       @ write opt "$(GAWKOBJ)"
       @ write opt "$(AWKOBJ1)"
@@ -214,7 +214,7 @@ command.c	: command.y
      @- if f$search("command_tab.c").nes."" then  rename/new_vers command_tab.c $@
 
 config.h	: $(VMSDIR)vms-conf.h
-	copy $< $@
+	copy $< sys$disk:[]$@
 
 $(VMSCMD)	: $(VMSDIR)gawk.cld
 	set command $(CLDFLAGS)/object=$@ $<
