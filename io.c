@@ -2877,7 +2877,7 @@ iop_alloc(int fd, const char *name, int errno_val)
 	memset(iop, '\0', sizeof(IOBUF));
 	iop->public.fd = fd;
 	iop->public.name = name;
-	iop->read_func = ( ssize_t(*)() ) read;
+	iop->public.read_func = ( ssize_t(*)() ) read;
 	iop->valid = false;
 	iop->errcode = errno_val;
 
@@ -3343,7 +3343,7 @@ get_a_record(char **out,        /* pointer to pointer to data */
 
         /* fill initial buffer */
 	if (has_no_data(iop) || no_data_left(iop)) {
-		iop->count = iop->read_func(iop->public.fd, iop->buf, iop->readsize);
+		iop->count = iop->public.read_func(iop->public.fd, iop->buf, iop->readsize);
 		if (iop->count == 0) {
 			iop->flag |= IOP_AT_EOF;
 			return EOF;
@@ -3409,7 +3409,7 @@ get_a_record(char **out,        /* pointer to pointer to data */
 		amt_to_read = min(amt_to_read, SSIZE_MAX);
 #endif
 
-		iop->count = iop->read_func(iop->public.fd, iop->dataend, amt_to_read);
+		iop->count = iop->public.read_func(iop->public.fd, iop->dataend, amt_to_read);
 		if (iop->count == -1) {
 			*errcode = errno;
 			iop->flag |= IOP_AT_EOF;
@@ -3705,7 +3705,10 @@ get_read_timeout(IOBUF *iop)
 	} else
 		tmout = read_default_timeout;	/* initialized from env. variable in init_io() */
 
-	iop->read_func = tmout > 0 ? read_with_timeout : ( ssize_t(*)() ) read;
+	/* overwrite read routine only if an extension has not done so */
+	if ((iop->public.read_func == ( ssize_t(*)() ) read) && tmout > 0)
+		iop->public.read_func = read_with_timeout;
+
 	return tmout;
 }
 

@@ -29060,6 +29060,7 @@ typedef struct awk_input @{
     void *opaque;           /* private data for input parsers */
     int (*get_record)(char **out, struct awk_input *iobuf,
                       int *errcode, char **rt_start, size_t *rt_len);
+    ssize_t (*read_func)();
     void (*close_func)(struct awk_input *iobuf);
     struct stat sbuf;       /* stat buf */
 @} awk_input_buf_t;
@@ -29114,6 +29115,12 @@ is not required to use this pointer.
 This function pointer should point to a function that creates the input
 records.  Said function is the core of the input parser.  Its behavior
 is described below.
+
+@item ssize_t (*read_func)();
+This function pointer should point to function that has the
+same behavior as the standard POSIX @code{read()} system call.
+It is an alternative to the @code{get_record} pointer.  Its behavior
+is also described below.
 
 @item void (*close_func)(struct awk_input *iobuf);
 This function pointer should point to a function that does
@@ -29171,6 +29178,25 @@ If an error does occur, the function should return @code{EOF} and set
 does not equal @minus{}1, @command{gawk} automatically updates
 the @code{ERRNO} variable based on the value of @code{*errcode} (e.g.,
 setting @samp{*errcode = errno} should do the right thing).
+
+As an alternative to supplying a function that returns an input record,
+you may instead supply a function that simply reads bytes, and let
+@command{gawk} parse the data into records.  If you do so, the data
+should be returned in the multibyte encoding of the current locale.
+Such a function should follow the same behavior as the @code{read()}
+system call, and you fill in the @code{read_func} pointer with its
+address in the @code{awk_input_buf_t} structure.
+
+By default, @command{gawk} sets the @code{read_func} pointer to
+point to the @code{read()} system call. So your extension need not
+set this field explicitly.
+
+@quotation NOTE
+You must choose one method or the other: either a function that
+returns a record, or one that returns raw data.  In particular,
+if you supply a function to get a record, @command{gawk} will
+call it, and never call the raw read function.
+@end quotation
 
 @command{gawk} ships with a sample extension that reads directories,
 returning records for each entry in the directory (@pxref{Extension

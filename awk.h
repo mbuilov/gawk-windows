@@ -886,12 +886,6 @@ typedef struct iobuf {
 	ssize_t count;          /* amount read last time */
 	size_t scanoff;         /* where we were in the buffer when we had
 				   to regrow/refill */
-	/*
-	 * No argument prototype on read_func. See get_src_buf()
-	 * in awkgram.y.
-	 */
-	ssize_t (*read_func)();
-
 	bool valid;
 	int errcode;
 

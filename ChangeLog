@@ -2,6 +2,12 @@
 
 	* bootstrap.sh: Touch extension/aclocal.m4 also.
 
+	Unrelated: Extend input parser API:
+
+	* awk.h (IOBUF): Remove read_func pointer.
+	* gawkapi.h (awk_input_buf_t): Move it to here.
+	* io.c (iop_alloc, get_a_record, get_read_timeout): Adjust code.
+
 2012-12-18         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.c (sym_update_real): If setting a scalar variable that exists

@@ -152,6 +152,12 @@ typedef struct awk_input {
 			char **rt_start, size_t *rt_len);
 
 	/*
+	 * No argument prototype on read_func to allow for older systems
+	 * whose headers are not up to date.
+	 */
+	ssize_t (*read_func)();
+
+	/*
 	 * The close_func is called to allow the parser to free private data.
 	 * Gawk itself will close the fd unless close_func first sets it to
 	 * INVALID_HANDLE.
