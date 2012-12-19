@@ -410,8 +410,8 @@ main(int argc, char **argv)
 			(void) add_srcfile(SRC_EXTLIB, optarg, srcfiles, NULL, NULL);
 			break;
 
-		case 'L':
 #ifndef NO_LINT
+		case 'L':
 			do_flags |= DO_LINT_ALL;
 			if (optarg != NULL) {
 				if (strcmp(optarg, "fatal") == 0)

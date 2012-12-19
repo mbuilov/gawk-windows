@@ -16,6 +16,12 @@
 	* interpret.h (Op_subscript, Op_subscript_lhs): Ditto.
 	* main.c (update_global_values): Adjust comment.
 
+	Unrelated: Fix --disable-lint so that everything compiles.
+
+	* main.c (main): Move case lable inside ifdef.
+	* awkgram.y (isnoeffect): Add ifdefs around declaration, use,
+	and function body.
+
 2012-12-18         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.c (sym_update_real): If setting a scalar variable that exists
