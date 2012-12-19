@@ -813,6 +813,8 @@ EXTRA_DIST = \
 	symtab8.awk \
 	symtab8.in \
 	symtab8.ok \
+	symtab9.awk \
+	symtab9.ok \
 	synerr1.awk \
 	synerr1.ok \
 	synerr2.awk \
@@ -935,7 +937,8 @@ GAWK_EXT_TESTS = \
 	rebuf regx8bit reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
 	strtonum switch2 \
-	symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 symtab7 symtab8
+	symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 symtab7 \
+	symtab8 symtab9
 
 EXTRA_TESTS = inftest regtest
 

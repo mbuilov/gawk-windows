@@ -686,6 +686,52 @@ out:
 	return result;
 }
 
+/*
+BEGIN {
+	print "line 1" > "testexttmp.txt"
+	print "line 2" > "testexttmp.txt"
+	print "line 3" > "testexttmp.txt"
+	close("testexttmp.txt")
+	ARGV[1] = "testexttmp.txt"
+	ARGC = 2
+	getline
+	getline
+	getline		# now NR should be 3
+#	system("rm testexttmp.txt")
+	ret = test_indirect_vars()	# should get correct value of NR
+	printf("test_indirect_var() return %d\n", ret)
+	delete ARGV[1]
+}
+*/
+
+/* test_indirect_vars --- test that access to NR, NF, get correct vales */
+
+static awk_value_t *
+test_indirect_vars(int nargs, awk_value_t *result)
+{
+	awk_value_t value;
+	char *name = "NR";
+
+	assert(result != NULL);
+	make_number(0.0, result);
+
+	/* system("rm testexttmp.txt") */
+	(void) unlink("testexttmp.txt");
+
+	if (sym_lookup(name, AWK_NUMBER, & value))
+		printf("test_indirect_var: sym_lookup of %s passed\n", name);
+	else {
+		printf("test_indirect_var: sym_lookup of %s failed\n", name);
+		goto out;
+	}
+
+	printf("test_indirect_var: value of NR is %g\n", value.num_value);
+
+	make_number(1.0, result);
+out:
+	return result;
+}
+
 /* fill_in_array --- fill in a new array */
 
 static void
@@ -780,6 +826,7 @@ static awk_ext_func_t func_table[] = {
 	{ "print_do_lint", print_do_lint, 0 },
 	{ "test_scalar", test_scalar, 1 },
 	{ "test_scalar_reserved", test_scalar_reserved, 0 },
+	{ "test_indirect_vars", test_indirect_vars, 0 },
 };
 
 /* init_testext --- additional initialization function */

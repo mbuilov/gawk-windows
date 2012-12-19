@@ -225,6 +225,10 @@ top:
 				}
 				r = t2;
 			} else {
+				/* make sure stuff like NF, NR, are up to date */
+				if (t1 == symbol_table)
+					update_global_values();
+
 				r = *assoc_lookup(t1, t2);
 			}
 			DEREF(t2);
@@ -308,6 +312,7 @@ top:
 			else if (   t1 == symbol_table
 				 && (   (*lhs)->type == Node_var
 				     || (*lhs)->type == Node_var_new)) {
+				update_global_values();		/* make sure stuff like NF, NR, are up to date */
 				(*lhs)->type = Node_var;	/* in case was Node_var_new */
 				lhs = & ((*lhs)->var_value);	/* extra level of indirection */
 			}

@@ -1561,6 +1561,8 @@ save_argv(int argc, char **argv)
 /*
  * update_global_values --- make sure the symbol table has correct values.
  * Called from the grammar before dumping values.
+ *
+ * Also called when accessing through SYMTAB, and from api_sym_lookup().
  */
 
 void

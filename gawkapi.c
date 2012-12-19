@@ -505,6 +505,8 @@ api_sym_lookup(awk_ext_id_t id,
 {
 	NODE *node;
 
+	update_global_values();		/* make sure stuff like NF, NR, are up to date */
+
 	if (   name == NULL
 	    || *name == '\0'
 	    || result == NULL
@@ -531,6 +533,8 @@ api_sym_lookup_scalar(awk_ext_id_t id,
 	    || result == NULL
 	    || node->type != Node_var)
 		return false;
+
+	update_global_values();	/* make sure stuff like NF, NR, are up to date */
 
 	return node_to_awk_value(node, result, wanted);
 }

@@ -8,6 +8,14 @@
 	* gawkapi.h (awk_input_buf_t): Move it to here.
 	* io.c (iop_alloc, get_a_record, get_read_timeout): Adjust code.
 
+	Unrelated: Make sure that variables like NF, NR, FNR are
+	accessable correctly both through SYMTAB and through API.
+
+	* gawkapi.c (api_sym_lookup): Call update_global_values().
+	(api_sym_lookup_scalar): Ditto.
+	* interpret.h (Op_subscript, Op_subscript_lhs): Ditto.
+	* main.c (update_global_values): Adjust comment.
+
 2012-12-18         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.c (sym_update_real): If setting a scalar variable that exists
