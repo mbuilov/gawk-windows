@@ -22,6 +22,14 @@
 	* awkgram.y (isnoeffect): Add ifdefs around declaration, use,
 	and function body.
 
+	Unrelated: Restore building with tcc.
+
+	* awk.h (AFUNC): Move to array.c which is the only place its used.
+	(ainit_ind, atypeof_ind, etc.): New macros for use in array.c
+	* array.c (AFUNC): Change to use F##_ind. Works with tcc and other
+	compilers.
+	* configure.ac: Only add -export-dynamic flag if compiling with gcc.
+
 2012-12-18         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.c (sym_update_real): If setting a scalar variable that exists

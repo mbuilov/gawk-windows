@@ -508,20 +508,28 @@ typedef struct exp_node {
 #define parent_array	sub.nodep.x.extra 
 
 #define ainit		array_funcs[0]
+#define ainit_ind	0
 #define atypeof		array_funcs[1]
+#define atypeof_ind	1
 #define alength		array_funcs[2]
+#define alength_ind	2
 #define alookup 	array_funcs[3]
+#define alookup_ind	3
 #define aexists 	array_funcs[4]
+#define aexists_ind	4
 #define aclear		array_funcs[5]
+#define aclear_ind	5
 #define aremove		array_funcs[6]
+#define aremove_ind	6
 #define alist		array_funcs[7]
+#define alist_ind	7
 #define acopy		array_funcs[8]
+#define acopy_ind	8
 #define adump		array_funcs[9]
+#define adump_ind	9
 #define astore		array_funcs[10]
+#define astore_ind	10
 #define NUM_AFUNCS	11		/* # of entries in array_funcs */
-
-/* array func to index mapping */
-#define AFUNC(F) (& ((NODE *) 0)->F - ((NODE *) 0)->array_funcs)
 
 /* Node_array_ref: */
 #define orig_array lnode

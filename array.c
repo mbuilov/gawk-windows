@@ -53,6 +53,9 @@ static afunc_t null_array_func[] = {
 static afunc_t *array_types[MAX_ATYPE];
 static int num_array_types = 0;
 
+/* array func to index mapping */
+#define AFUNC(F) (F ## _ind)
+
 /* register_array_func --- add routines to handle arrays */
 
 int

@@ -295,7 +295,9 @@ AC_CHECK_HEADER(dlfcn.h,
 	if test "$gawk_have_dlopen" = yes
 	then
 		AC_DEFINE([DYNAMIC], 1, [dynamic loading is possible])
-		if uname | $EGREP -i 'linux|freebsd' > /dev/null
+		# Add -export-dynamic for old extensions. Only works for GCC
+		if test "$GCC" = yes &&
+		   uname | $EGREP -i 'linux|freebsd' > /dev/null
 		then
 			LDFLAGS="$LDFLAGS -export-dynamic"
 		fi

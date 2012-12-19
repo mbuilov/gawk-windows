@@ -10086,7 +10086,9 @@ fi
 
 $as_echo "#define DYNAMIC 1" >>confdefs.h
 
-		if uname | $EGREP -i 'linux|freebsd' > /dev/null
+		# Add -export-dynamic for old extensions. Only works for GCC
+		if test "$GCC" = yes &&
+		   uname | $EGREP -i 'linux|freebsd' > /dev/null
 		then
 			LDFLAGS="$LDFLAGS -export-dynamic"
 		fi
