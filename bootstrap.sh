@@ -3,7 +3,7 @@
 # bootstrap.sh --- touch relevant files to avoid out-of-date issues in
 #		   Git sandboxes
 
-# Copyright (C) 2007, 2009, 2010, 2011 the Free Software Foundation, Inc.
+# Copyright (C) 2007, 2009, 2010, 2011, 2012 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -23,6 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
 touch aclocal.m4
+touch extension/aclocal.m4
 find awklib -type f -print | xargs touch
 sleep 1
 touch configure
