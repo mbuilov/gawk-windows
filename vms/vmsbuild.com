@@ -12,7 +12,7 @@ $!						gawk-bytecode revd, Jan'10
 $!						gawk 4.0.0 revd, May'11
 $!
 $ REL = "4.0"	!release version number
-$ PATCHLVL = "1"
+$ PATCHLVL = "2"
 $!
 $!
 $ CCFLAGS = "/noList"	! "/noOpt/Debug"
