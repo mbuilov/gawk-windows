@@ -152,7 +152,7 @@ BASIC_TESTS = \
 	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl \
 	noparms nors nulrsend numindex numsubstr \
 	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofs1 onlynl opasnidx opasnslf \
-	paramdup paramres paramtyp parse1 parsefld parseme pcntplus \
+	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme pcntplus \
 	posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
 	prt1eval prtoeval \
 	rand range1 rebt8b1 redfilnm regeq regexprange regrange \
@@ -1422,6 +1422,11 @@ paramres:
 
 paramtyp:
 	@echo paramtyp
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+paramuninitglobal:
+	@echo paramuninitglobal
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 

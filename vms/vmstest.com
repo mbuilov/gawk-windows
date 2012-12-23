@@ -68,7 +68,8 @@ $		list = "nfset nlfldsep nlinstr nlstrina noeffect nofile" -
 		  + " nofmtch noloop1 noloop2 nonl noparms nors nulrsend" -
 		  + " numindex numsubstr octsub ofmt ofmtbig ofmtfidl" -
 		  + " ofmta ofmts ofs1 onlynl opasnidx opasnslf paramdup" -
-		  + " paramres paramtyp parse1 parsefld parseme pcntplus" -
+		  + " paramres paramtyp paramuninitglobal parse1 parsefld" -
+		  + " parseme pcntplus" -
 		  + " posix2008sub prdupval prec printf0 printf1 prmarscl"
 $		gosub list_of_tests
 $		list = "prmreuse prt1eval prtoeval rand range1 rebt8b1" -
@@ -319,6 +320,7 @@ $nondec:
 $octsub:
 $ofmta:
 $paramtyp:
+$paramuninitglobal:
 $patsplit:
 $pcntplus:
 $printf1:
