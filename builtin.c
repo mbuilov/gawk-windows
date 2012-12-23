@@ -1582,6 +1582,9 @@ printf_common(int nargs)
 	int i;
 	NODE *r, *tmp;
 
+	if (nargs == 0)
+		fatal(_("[s]printf called with no arguments"));
+
 	assert(nargs <= max_args);
 	for (i = 1; i <= nargs; i++) {
 		tmp = args_array[nargs - i] = POP();

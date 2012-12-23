@@ -113,8 +113,8 @@ VMSOBJS = $(VMSCODE),$(VMSCMD)
 DOCS= $(DOCDIR)gawk.1,$(DOCDIR)gawk.texi,$(DOCDIR)texinfo.tex
 
 # Release of gawk
-REL=4.0
-PATCHLVL=1
+REL=4.1
+PATCHLVL=0
 
 # generic target
 all : gawk
