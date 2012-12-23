@@ -542,6 +542,8 @@ EXTRA_DIST = \
 	paramres.ok \
 	paramtyp.awk \
 	paramtyp.ok \
+	paramuninitglobal.awk \
+	paramuninitglobal.ok \
 	parse1.awk \
 	parse1.in \
 	parse1.ok \
@@ -823,8 +825,8 @@ BASIC_TESTS = \
 	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl \
 	noparms nors nulrsend numindex numsubstr \
 	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofs1 onlynl opasnidx opasnslf \
-	paramdup paramres paramtyp parse1 parsefld parseme pcntplus \
-	posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
+	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
+	pcntplus posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
 	prt1eval prtoeval \
 	rand range1 rebt8b1 redfilnm regeq regexprange regrange \
 	reindops reparse \

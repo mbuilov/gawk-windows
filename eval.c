@@ -1778,8 +1778,13 @@ top:
 							m->vname);
 				isparam = TRUE;
 				save_symbol = m = GET_PARAM(m->param_cnt);
-				if (m->type == Node_array_ref)
+				if (m->type == Node_array_ref) {
+					if (m->orig_array->type == Node_var) {
+						/* gawk 'func f(x) { a = 10; print x; } BEGIN{ f(a) }' */
+						goto uninitialized_scalar;
+					}
 					m = m->orig_array;
+				}
 			}
 				
 			switch (m->type) {
@@ -1795,6 +1800,7 @@ top:
 				break;
 
 			case Node_var_new:
+uninitialized_scalar:
 				m->type = Node_var;
 				m->var_value = Nnull_string;
 				if (do_lint)
