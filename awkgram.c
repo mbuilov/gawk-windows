@@ -4362,7 +4362,7 @@ static const struct token tokentab[] = {
 {"gsub",	Op_sub_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), 0},
 {"if",		Op_K_if,	 LEX_IF,	0,		0},
 {"in",		Op_symbol,	 LEX_IN,	0,		0},
-{"include",  Op_symbol,	 LEX_INCLUDE,	GAWKX,	0},
+{"include",	Op_symbol,	 LEX_INCLUDE,	GAWKX,	0},
 {"index",	Op_builtin,	 LEX_BUILTIN,	A(2),		do_index},
 {"int",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_int},
 {"isarray",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_isarray},
