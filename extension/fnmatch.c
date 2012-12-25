@@ -148,7 +148,7 @@ init_fnmatch(void)
 	awk_array_t new_array;
 	int i;
 
-	if (! sym_constant("FNM_NOMATCH", make_number(FNM_NOMATCH, & value))) {
+	if (! sym_update("FNM_NOMATCH", make_number(FNM_NOMATCH, & value))) {
 		warning(ext_id, _("fnmatch init: could not add FNM_NOMATCH variable"));
 		errors++;
 	}

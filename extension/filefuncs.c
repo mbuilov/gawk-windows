@@ -406,8 +406,8 @@ init_filefuncs(void)
 
 	for (i = 0; opentab[i].name != NULL; i++) {
 		(void) make_number(opentab[i].value, & value);
-		if (! sym_constant(opentab[i].name, & value)) {
-			warning(ext_id, _("fts init: could not create constant %s"),
+		if (! sym_update(opentab[i].name, & value)) {
+			warning(ext_id, _("fts init: could not create variable %s"),
 					opentab[i].name);
 			errors++;
 		}

@@ -29502,17 +29502,6 @@ Changing types (scalar to array or vice versa) of an existing variable
 is @emph{not} allowed, nor may this routine be used to update an array.
 This routine cannot be used to update any of the predefined
 variables (such as @code{ARGC} or @code{NF}).
-
-@item awk_bool_t sym_constant(const char *name, awk_value_t *value);
-Create a variable named by the string @code{name}, which is
-a regular C string, that has the constant value as given by
-@code{value}. @command{awk}-level code cannot change the value of this
-variable.@footnote{There (currently) is no @code{awk}-level feature that
-provides this ability.} The extension may change the value of @code{name}'s
-variable with subsequent calls to this routine, and may also convert
-a variable created by @code{sym_update()} into a constant.  However,
-once a variable becomes a constant, it cannot later be reverted into a
-mutable variable.
 @end table
 
 @node Symbol table by cookie

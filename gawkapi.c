@@ -26,7 +26,6 @@
 #include "awk.h"
 
 static awk_bool_t node_to_awk_value(NODE *node, awk_value_t *result, awk_valtype_t wanted);
-static void set_constant();
 
 /*
  * api_get_argument --- get the count'th paramater, zero-based.
@@ -539,13 +538,12 @@ api_sym_lookup_scalar(awk_ext_id_t id,
 	return node_to_awk_value(node, result, wanted);
 }
 
-/* api_sym_update_real --- update a symbol's value, see gawkapi.h for semantics */
+/* api_sym_update --- update a symbol's value, see gawkapi.h for semantics */
 
 static awk_bool_t
-sym_update_real(awk_ext_id_t id,
+api_sym_update(awk_ext_id_t id,
 		const char *name,
-		awk_value_t *value,
-		bool is_const)
+		awk_value_t *value)
 {
 	NODE *node;
 	NODE *array_node;
@@ -586,8 +584,6 @@ sym_update_real(awk_ext_id_t id,
 			node = install_symbol(estrdup((char *) name, strlen(name)),
 					Node_var);
 			node->var_value = awk_value_to_node(value);
-			if (is_const)
-				node->var_assign = set_constant;
 		}
 
 		return true;
@@ -610,34 +606,10 @@ sym_update_real(awk_ext_id_t id,
 		if (node->type == Node_var_new && value->val_type != AWK_UNDEFINED)
 			node->type = Node_var;
 
-		/* let the extension change its own variable */
-		if (is_const)
-			node->var_assign = set_constant;
-
 		return true;
 	}
 
 	return false;
-}
-
-/* api_sym_update --- update a symbol, non-constant */
-
-static awk_bool_t
-api_sym_update(awk_ext_id_t id,
-		const char *name,
-		awk_value_t *value)
-{
-	return sym_update_real(id, name, value, false);
-}
-
-/* api_sym_update --- update a symbol, constant */
-
-static awk_bool_t
-api_sym_constant(awk_ext_id_t id,
-		const char *name,
-		awk_value_t *value)
-{
-	return sym_update_real(id, name, value, true);
 }
 
 /* api_sym_update_scalar --- update a scalar cookie */
@@ -1117,7 +1089,6 @@ gawk_api_t api_impl = {
 	/* Accessing and installing variables and constants */
 	api_sym_lookup,
 	api_sym_update,
-	api_sym_constant,
 
 	/* Accessing and modifying variables via scalar cookies */
 	api_sym_lookup_scalar,
@@ -1158,14 +1129,6 @@ void
 update_ext_api()
 {
 	api_impl.do_flags[0] = (do_lint ? 1 : 0);
-}
-
-/* set_constant --- prevent awk code from changing a constant */
-
-static void
-set_constant()
-{
-	fatal(_("cannot assign to defined constant"));
 }
 
 /* print_ext_versions --- print the list */

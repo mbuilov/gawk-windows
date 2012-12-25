@@ -1,4 +1,4 @@
-.TH FILEFUNCS 3am "Nov 21 2012" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH FILEFUNCS 3am "Dec 25 2012" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
 filefuncs \- provide some file related functionality to gawk
 .SH SYNOPSIS
@@ -185,7 +185,7 @@ An array of filenames.  The element values are used; the index values are ignore
 .TP
 .B flags
 This should be the bitwise OR of one or more of the following
-predefined constant flag values.  At least one of
+predefined flag values.  At least one of
 .B FTS_LOGICAL
 or
 .B FTS_PHYSICAL
@@ -312,6 +312,12 @@ already provides powerful array sorting facilities.  While an
 interface could have been provided, this felt less natural than
 simply creating a multi-dimensional array to represent the file
 heirarchy and its information.
+.PP
+Nothing prevents AWK code from changing the predefined
+.BI FTS_ xx
+values, but doing so is may cause strange results when
+the changed values are passed to
+.BR fts() .
 .SH BUGS
 There are many more file-related functions for which AWK
 interfaces would be desirable.
