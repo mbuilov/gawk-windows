@@ -1138,8 +1138,10 @@ r_get_lhs(NODE *n, int reference)
 		if (n->orig_array->type == Node_var_array)
 			fatal(_("attempt to use array `%s' in a scalar context"),
 					array_vname(n));
-		n->orig_array->type = Node_var;
-		n->orig_array->var_value = Nnull_string;
+		if (n->orig_array->type != Node_var) {
+			n->orig_array->type = Node_var;
+			n->orig_array->var_value = Nnull_string;
+		}
 		/* fall through */
 	case Node_var_new:
 		n->type = Node_var;
