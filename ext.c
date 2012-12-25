@@ -335,8 +335,15 @@ get_argument(int i)
 	if (t->type == Node_param_list)
 		t = GET_PARAM(t->param_cnt);
 
-	if (t->type == Node_array_ref)
-		t = t->orig_array;
+	if (t->type == Node_array_ref) {
+		if (t->orig_array->type == Node_var) {
+			/* already a scalar, can no longer use it as array */ 
+			t->type = Node_var;
+			t->var_value = Nnull_string;
+			return t;
+		}
+		return t->orig_array; 	/* Node_var_new or Node_var_array */
+	}
 	if (t->type == Node_var)	/* See Case Node_var in setup_frame(), eval.c */
 		return Nnull_string;
 	/* Node_var_new, Node_var_array or Node_val */

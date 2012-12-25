@@ -9,9 +9,15 @@
 	(sym_update_real): Renamed to api_sym_update(). is_const parameter
 	removed and code adjusted.
 
-2012-12-23         Arnold D. Robbins     <arnold@skeeve.com>
+2012-12-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* 4.0.2: Release tar ball made.
+
+2012-12-23         John Haque      <j.eh@mchsi.com>
+
+	* eval.c (r_get_lhs): Node_array_ref. If original is Node_var,
+	don't assign null-string as value.
+	* ext.c (get_argument): Node_array_ref. Check if already a scalar.
 
 2011-12-23         John Haque      <j.eh@mchsi.com>
 
