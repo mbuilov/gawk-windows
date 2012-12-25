@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.0.0h\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2012-12-23 14:16+0200\n"
+"POT-Creation-Date: 2012-12-25 20:40+0200\n"
 "PO-Revision-Date: 2012-01-30 23:52+0100\n"
 "Last-Translator: Jean-Philippe Guérard <jean-philippe.guerard@corbeaunoir."
 "org>\n"
@@ -46,7 +46,7 @@ msgstr "tentative d'utiliser le scalaire « %s » comme tableau"
 
 #: array.c:302 array.c:707 builtin.c:84 builtin.c:1404 builtin.c:1446
 #: builtin.c:1459 builtin.c:1878 builtin.c:1890 eval.c:1135 eval.c:1139
-#: eval.c:1495 eval.c:1818
+#: eval.c:1497 eval.c:1820
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "tentative d'utilisation du tableau « %s » dans un contexte scalaire"
@@ -66,7 +66,7 @@ msgstr "l'indice du tableau « %s » est une chaîne vide"
 msgid "delete: index `%s' not in array `%s'"
 msgstr "delete : l'indice « %s » est absent du tableau « %s »"
 
-#: array.c:734 eval.c:1871
+#: array.c:734 eval.c:1873
 #, c-format
 msgid "attempt to use scalar `%s[\"%.*s\"]' as an array"
 msgstr "tentative d'utiliser le scalaire « %s[\"%.*s\"] » comme tableau"
@@ -235,7 +235,7 @@ msgstr "expression rationnelle à droite d'une comparaison"
 msgid "`getline var' invalid inside `%s' rule"
 msgstr "« getline var » n'est pas valable dans une règle « %s »"
 
-#: awkgram.y:1395 eval.c:2522
+#: awkgram.y:1395 eval.c:2524
 #, c-format
 msgid "`getline' invalid inside `%s' rule"
 msgstr "« getline » n'est pas valable dans une règle « %s »"
@@ -521,11 +521,11 @@ msgstr ""
 "fonction « %s » appelée avec un espace entre son nom\n"
 "et « ( », ou utilisée comme variable ou tableau"
 
-#: awkgram.y:4796 eval.c:2062
+#: awkgram.y:4796 eval.c:2064
 msgid "division by zero attempted"
 msgstr "tentative de division par zéro"
 
-#: awkgram.y:4805 eval.c:2078
+#: awkgram.y:4805 eval.c:2080
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "tentative de division par zéro dans « %% »"
@@ -798,7 +798,7 @@ msgstr "La fonction « system » est interdite en isolement (mode sandbox)"
 msgid "system: received non-string argument"
 msgstr "system : l'argument n'est pas une chaîne"
 
-#: builtin.c:1893 eval.c:1159 eval.c:1795 eval.c:1809
+#: builtin.c:1893 eval.c:1161 eval.c:1797 eval.c:1811
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "référence à une variable non initialisée « %s »"
@@ -1022,107 +1022,107 @@ msgstr "spécification de « %sFMT » erronée « %s »"
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "désactivation de « --lint » en raison d'une affectation à « LINT »"
 
-#: eval.c:1127 eval.c:1777
+#: eval.c:1127 eval.c:1779
 #, c-format
 msgid "can't use function name `%s' as variable or array"
 msgstr "impossible d'utiliser la fonction « %s » comme variable ou tableau"
 
-#: eval.c:1158 eval.c:1794 eval.c:1808
+#: eval.c:1160 eval.c:1796 eval.c:1810
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "référence à un argument non initialisé « %s »"
 
-#: eval.c:1177
+#: eval.c:1179
 msgid "attempt to field reference from non-numeric value"
 msgstr "tentative de référence à un champ via une valeur non numérique"
 
-#: eval.c:1179
+#: eval.c:1181
 msgid "attempt to field reference from null string"
 msgstr "tentative de référence à un champ via une chaîne nulle"
 
-#: eval.c:1185
+#: eval.c:1187
 #, c-format
 msgid "attempt to access field %ld"
 msgstr "tentative d'accès au champ %ld"
 
-#: eval.c:1194
+#: eval.c:1196
 #, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "référence à un champ non initialisé « $%ld »"
 
-#: eval.c:1256
+#: eval.c:1258
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr "la fonction « %s » a été appelée avec trop d'arguments"
 
-#: eval.c:1437
+#: eval.c:1439
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr "unwind_stack: type « %s » inattendu"
 
-#: eval.c:1532
+#: eval.c:1534
 msgid "division by zero attempted in `/='"
 msgstr "tentative de division par zéro dans « /= »"
 
-#: eval.c:1539
+#: eval.c:1541
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "tentative de division par zéro dans « %%= »"
 
-#: eval.c:1882 eval.c:2128
+#: eval.c:1884 eval.c:2130
 #, c-format
 msgid "attempt to use array `%s[\"%.*s\"]' in a scalar context"
 msgstr ""
 "tentative d'utilisation du tableau « %s[\"%.*s\"] » dans un contexte scalaire"
 
-#: eval.c:1913
+#: eval.c:1915
 msgid "assignment used in conditional context"
 msgstr "affectation utilisée dans un contexte conditionnel"
 
-#: eval.c:1917
+#: eval.c:1919
 msgid "statement has no effect"
 msgstr "la déclaration est sans effet"
 
-#: eval.c:2361
+#: eval.c:2363
 #, c-format
 msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
 msgstr "boucle for : la taille du tableau « %s » est passée de %ld à %ld"
 
-#: eval.c:2476
+#: eval.c:2478
 #, c-format
 msgid "function called indirectly through `%s' does not exist"
 msgstr "la fonction indirectement appelée via « %s » n'existe pas"
 
-#: eval.c:2488
+#: eval.c:2490
 #, c-format
 msgid "function `%s' not defined"
 msgstr "fonction « %s » non définie"
 
-#: eval.c:2529
+#: eval.c:2531
 #, c-format
 msgid "non-redirected `getline' invalid inside `%s' rule"
 msgstr "un « getline » non redirigé n'est pas valable dans une règle « %s »"
 
-#: eval.c:2618
+#: eval.c:2620
 #, c-format
 msgid "error reading input file `%s': %s"
 msgstr "erreur lors de la lecture du fichier en entrée « %s » : %s"
 
-#: eval.c:2632
+#: eval.c:2634
 #, c-format
 msgid "`nextfile' cannot be called from a `%s' rule"
 msgstr "« nextfile » ne peut pas être appelé depuis une règle « %s »"
 
-#: eval.c:2679
+#: eval.c:2681
 msgid "`exit' cannot be called in the current context"
 msgstr "« exit » ne peut pas être appelé dans ce contexte"
 
-#: eval.c:2718
+#: eval.c:2720
 #, c-format
 msgid "`next' cannot be called from a `%s' rule"
 msgstr "« next » ne peut pas être appelé depuis une règle « %s »"
 
-#: eval.c:2784
+#: eval.c:2786
 #, c-format
 msgid "Sorry, don't know how to interpret `%s'"
 msgstr "Désolé, je ne sais pas comment interpréter « %s »"
@@ -1192,31 +1192,31 @@ msgstr ""
 msgid "make_builtin: negative argument count for function `%s'"
 msgstr "make_builtin : la fonction « %s » a un nombre négatif d'arguments"
 
-#: ext.c:259
+#: ext.c:266
 #, c-format
 msgid "function `%s' defined to take no more than %d argument(s)"
 msgstr "fonction « %s »  définie comme ayant au maximum« %d » argument(s)"
 
-#: ext.c:262
+#: ext.c:269
 #, c-format
 msgid "function `%s': missing argument #%d"
 msgstr "fonction « %s » : argument #%d manquant"
 
-#: ext.c:279
+#: ext.c:286
 #, c-format
 msgid "function `%s': argument #%d: attempt to use scalar as an array"
 msgstr ""
 "fonction « %s » : argument #%d : tentative d'utilisation d'un scalaire comme "
 "tableau"
 
-#: ext.c:283
+#: ext.c:290
 #, c-format
 msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr ""
 "fonction « %s » : argument #%d : tentative d'utiliser un tableau comme "
 "scalaire"
 
-#: ext.c:296
+#: ext.c:303
 msgid "Operation Not Supported"
 msgstr "Opération non disponible"
 

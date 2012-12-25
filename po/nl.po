@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.0.0h\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2012-12-23 14:16+0200\n"
+"POT-Creation-Date: 2012-12-25 20:40+0200\n"
 "PO-Revision-Date: 2012-01-30 20:40+0100\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
@@ -47,7 +47,7 @@ msgstr "scalair '%s' wordt gebruikt als array"
 
 #: array.c:302 array.c:707 builtin.c:84 builtin.c:1404 builtin.c:1446
 #: builtin.c:1459 builtin.c:1878 builtin.c:1890 eval.c:1135 eval.c:1139
-#: eval.c:1495 eval.c:1818
+#: eval.c:1497 eval.c:1820
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "array '%s' wordt gebruikt in een scalaire context"
@@ -67,7 +67,7 @@ msgstr "index van array '%s' is lege string"
 msgid "delete: index `%s' not in array `%s'"
 msgstr "delete: index '%s' niet in array '%s'"
 
-#: array.c:734 eval.c:1871
+#: array.c:734 eval.c:1873
 #, c-format
 msgid "attempt to use scalar `%s[\"%.*s\"]' as an array"
 msgstr "scalair '%s[\"%.*s\"]' wordt gebruikt als array"
@@ -243,7 +243,7 @@ msgstr "reguliere expressie rechts van vergelijking"
 msgid "`getline var' invalid inside `%s' rule"
 msgstr "'getline var' is ongeldig binnen een '%s'-regel"
 
-#: awkgram.y:1395 eval.c:2522
+#: awkgram.y:1395 eval.c:2524
 #, c-format
 msgid "`getline' invalid inside `%s' rule"
 msgstr "'getline' is ongeldig binnen een '%s'-regel"
@@ -515,11 +515,11 @@ msgstr ""
 "functie '%s' wordt aangeroepen met een spatie tussen naam en '(',\n"
 "of wordt gebruikt als variabele of array"
 
-#: awkgram.y:4796 eval.c:2062
+#: awkgram.y:4796 eval.c:2064
 msgid "division by zero attempted"
 msgstr "deling door nul"
 
-#: awkgram.y:4805 eval.c:2078
+#: awkgram.y:4805 eval.c:2080
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "deling door nul in '%%'"
@@ -787,7 +787,7 @@ msgstr "'system'-functie is niet toegestaan in sandbox-modus"
 msgid "system: received non-string argument"
 msgstr "system: argument is geen string"
 
-#: builtin.c:1893 eval.c:1159 eval.c:1795 eval.c:1809
+#: builtin.c:1893 eval.c:1161 eval.c:1797 eval.c:1811
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "verwijzing naar ongeïnitialiseerde variabele '%s'"
@@ -1004,108 +1004,108 @@ msgstr "onjuiste opgave van '%sFMT': '%s'"
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "'--lint' wordt uitgeschakeld wegens toewijzing aan 'LINT'"
 
-#: eval.c:1127 eval.c:1777
+#: eval.c:1127 eval.c:1779
 #, c-format
 msgid "can't use function name `%s' as variable or array"
 msgstr "kan functienaam '%s' niet als variabele of array gebruiken"
 
-#: eval.c:1158 eval.c:1794 eval.c:1808
+#: eval.c:1160 eval.c:1796 eval.c:1810
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "verwijzing naar ongeïnitialiseerd argument '%s'"
 
-#: eval.c:1177
+#: eval.c:1179
 msgid "attempt to field reference from non-numeric value"
 msgstr "veldverwijzingspoging via een waarde die geen getal is"
 
-#: eval.c:1179
+#: eval.c:1181
 msgid "attempt to field reference from null string"
 msgstr "veldverwijzingspoging via een lege string"
 
-#: eval.c:1185
+#: eval.c:1187
 #, c-format
 msgid "attempt to access field %ld"
 msgstr "toegangspoging tot veld %ld"
 
-#: eval.c:1194
+#: eval.c:1196
 #, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "verwijzing naar ongeïnitialiseerd veld '$%ld'"
 
-#: eval.c:1256
+#: eval.c:1258
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr "functie '%s' aangeroepen met meer argumenten dan gedeclareerd"
 
-#: eval.c:1437
+#: eval.c:1439
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr "unwind_stack(): onverwacht type '%s'"
 
-#: eval.c:1532
+#: eval.c:1534
 msgid "division by zero attempted in `/='"
 msgstr "deling door nul in '/='"
 
-#: eval.c:1539
+#: eval.c:1541
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "deling door nul in '%%='"
 
-#: eval.c:1882 eval.c:2128
+#: eval.c:1884 eval.c:2130
 #, c-format
 msgid "attempt to use array `%s[\"%.*s\"]' in a scalar context"
 msgstr "array '%s[\"%.*s\"]' wordt gebruikt in een scalaire context"
 
-#: eval.c:1913
+#: eval.c:1915
 msgid "assignment used in conditional context"
 msgstr "toewijzing wordt gebruikt in een conditionele context"
 
-#: eval.c:1917
+#: eval.c:1919
 msgid "statement has no effect"
 msgstr "opdracht heeft geen effect"
 
-#: eval.c:2361
+#: eval.c:2363
 #, c-format
 msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
 msgstr ""
 "for: array '%s' veranderde van grootte %ld naar %ld tijdens uitvoer van de "
 "lus"
 
-#: eval.c:2476
+#: eval.c:2478
 #, c-format
 msgid "function called indirectly through `%s' does not exist"
 msgstr "indirect (via '%s') aangeroepen functie bestaat niet"
 
-#: eval.c:2488
+#: eval.c:2490
 #, c-format
 msgid "function `%s' not defined"
 msgstr "functie '%s' is niet gedefinieerd"
 
-#: eval.c:2529
+#: eval.c:2531
 #, c-format
 msgid "non-redirected `getline' invalid inside `%s' rule"
 msgstr "niet-omgeleide 'getline' is ongeldig binnen een '%s'-regel"
 
-#: eval.c:2618
+#: eval.c:2620
 #, c-format
 msgid "error reading input file `%s': %s"
 msgstr "fout tijdens lezen van invoerbestand '%s': %s"
 
-#: eval.c:2632
+#: eval.c:2634
 #, c-format
 msgid "`nextfile' cannot be called from a `%s' rule"
 msgstr "'nextfile' kan niet aangeroepen worden in een '%s'-regel"
 
-#: eval.c:2679
+#: eval.c:2681
 msgid "`exit' cannot be called in the current context"
 msgstr "'exit' kan niet aangeroepen worden in de huidige context"
 
-#: eval.c:2718
+#: eval.c:2720
 #, c-format
 msgid "`next' cannot be called from a `%s' rule"
 msgstr "'next' kan niet aangeroepen worden in een '%s'-regel"
 
-#: eval.c:2784
+#: eval.c:2786
 #, c-format
 msgid "Sorry, don't know how to interpret `%s'"
 msgstr "Kan '%s' niet interpreteren"
@@ -1173,28 +1173,28 @@ msgstr "extension: kan in gawk ingebouwde '%s' niet als functienaam gebruiken"
 msgid "make_builtin: negative argument count for function `%s'"
 msgstr "make_builtin: negatief aantal argumenten voor functie '%s'"
 
-#: ext.c:259
+#: ext.c:266
 #, c-format
 msgid "function `%s' defined to take no more than %d argument(s)"
 msgstr ""
 "functie '%s' is gedefinieerd om niet meer dan %d argument(en) te accepteren"
 
-#: ext.c:262
+#: ext.c:269
 #, c-format
 msgid "function `%s': missing argument #%d"
 msgstr "functie '%s': ontbrekend argument #%d"
 
-#: ext.c:279
+#: ext.c:286
 #, c-format
 msgid "function `%s': argument #%d: attempt to use scalar as an array"
 msgstr "functie '%s': argument #%d: een scalair wordt gebruikt als array"
 
-#: ext.c:283
+#: ext.c:290
 #, c-format
 msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr "functie '%s': argument #%d: een array wordt gebruikt als scalair"
 
-#: ext.c:296
+#: ext.c:303
 msgid "Operation Not Supported"
 msgstr "Actie wordt niet ondersteund"
 

@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.0.0h\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2012-12-23 14:16+0200\n"
+"POT-Creation-Date: 2012-12-25 20:40+0200\n"
 "PO-Revision-Date: 2012-01-30 12:07+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -45,7 +45,7 @@ msgstr "försök att använda skalären \"%s\" som en vektor"
 
 #: array.c:302 array.c:707 builtin.c:84 builtin.c:1404 builtin.c:1446
 #: builtin.c:1459 builtin.c:1878 builtin.c:1890 eval.c:1135 eval.c:1139
-#: eval.c:1495 eval.c:1818
+#: eval.c:1497 eval.c:1820
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "försök att använda vektorn \"%s\" i skalärsammanhang"
@@ -65,7 +65,7 @@ msgstr "index i vektorn \"%s\" är en tom sträng"
 msgid "delete: index `%s' not in array `%s'"
 msgstr "delete: index \"%s\" finns inte i vektorn \"%s\""
 
-#: array.c:734 eval.c:1871
+#: array.c:734 eval.c:1873
 #, c-format
 msgid "attempt to use scalar `%s[\"%.*s\"]' as an array"
 msgstr "försök att använda skalären \"%s[\"%.*s\"]\" som en vektor"
@@ -241,7 +241,7 @@ msgstr "reguljärt uttryck i högerledet av en jämförelse"
 msgid "`getline var' invalid inside `%s' rule"
 msgstr "\"getline var\" är ogiltigt inuti \"%s\"-regel"
 
-#: awkgram.y:1395 eval.c:2522
+#: awkgram.y:1395 eval.c:2524
 #, c-format
 msgid "`getline' invalid inside `%s' rule"
 msgstr "\"getline är ogiltigt inuti \"%s\"-regel"
@@ -522,11 +522,11 @@ msgstr ""
 "funktionen \"%s\" anropad med blanktecken mellan namnet och \"(\",\n"
 "eller använd som variabel eller vektor"
 
-#: awkgram.y:4796 eval.c:2062
+#: awkgram.y:4796 eval.c:2064
 msgid "division by zero attempted"
 msgstr "försökte dividera med noll"
 
-#: awkgram.y:4805 eval.c:2078
+#: awkgram.y:4805 eval.c:2080
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "försökte dividera med noll i \"%%\""
@@ -793,7 +793,7 @@ msgstr "funktionen \"system\" är inte tillåten i sandlådeläge"
 msgid "system: received non-string argument"
 msgstr "system: fick ett argument som inte är en sträng"
 
-#: builtin.c:1893 eval.c:1159 eval.c:1795 eval.c:1809
+#: builtin.c:1893 eval.c:1161 eval.c:1797 eval.c:1811
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "referens till icke initierad variabel \"%s\""
@@ -1010,108 +1010,108 @@ msgstr "felaktig \"%sFMT\"-specifikation \"%s\""
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "slår av \"--lint\" på grund av en tilldelning till \"LINT\""
 
-#: eval.c:1127 eval.c:1777
+#: eval.c:1127 eval.c:1779
 #, c-format
 msgid "can't use function name `%s' as variable or array"
 msgstr "kan inte använda funktionsnamnet \"%s\" som variabel eller vektor"
 
-#: eval.c:1158 eval.c:1794 eval.c:1808
+#: eval.c:1160 eval.c:1796 eval.c:1810
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "referens till icke initierat argument \"%s\""
 
-#: eval.c:1177
+#: eval.c:1179
 msgid "attempt to field reference from non-numeric value"
 msgstr "försök att fältreferera från ickenumeriskt värde"
 
-#: eval.c:1179
+#: eval.c:1181
 msgid "attempt to field reference from null string"
 msgstr "försök till fältreferens från en tom sträng"
 
-#: eval.c:1185
+#: eval.c:1187
 #, c-format
 msgid "attempt to access field %ld"
 msgstr "försök att komma åt fält nummer %ld"
 
-#: eval.c:1194
+#: eval.c:1196
 #, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "referens till icke initierat fält \"$%ld\""
 
-#: eval.c:1256
+#: eval.c:1258
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr "funktionen \"%s\" anropad med fler argument än vad som deklarerats"
 
-#: eval.c:1437
+#: eval.c:1439
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr "unwind_stack: oväntad typ \"%s\""
 
-#: eval.c:1532
+#: eval.c:1534
 msgid "division by zero attempted in `/='"
 msgstr "försökte dividera med noll i \"/=\""
 
-#: eval.c:1539
+#: eval.c:1541
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "försökte dividera med noll i \"%%=\""
 
-#: eval.c:1882 eval.c:2128
+#: eval.c:1884 eval.c:2130
 #, c-format
 msgid "attempt to use array `%s[\"%.*s\"]' in a scalar context"
 msgstr "försök att använda vektorn \"%s[\"%.*s\"]\" i skalärsammanhang"
 
-#: eval.c:1913
+#: eval.c:1915
 msgid "assignment used in conditional context"
 msgstr "tilldelning använt i jämförelsesammanhang"
 
-#: eval.c:1917
+#: eval.c:1919
 msgid "statement has no effect"
 msgstr "kommandot har ingen effekt"
 
-#: eval.c:2361
+#: eval.c:2363
 #, c-format
 msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
 msgstr ""
 "forslinga: vektorn \"%s\" ändrade storlek från %ld till %ld under "
 "slingexekvering"
 
-#: eval.c:2476
+#: eval.c:2478
 #, c-format
 msgid "function called indirectly through `%s' does not exist"
 msgstr "funktionen anropad indirekt genom \"%s\" finns inte"
 
-#: eval.c:2488
+#: eval.c:2490
 #, c-format
 msgid "function `%s' not defined"
 msgstr "funktionen \"%s\" är inte definierad"
 
-#: eval.c:2529
+#: eval.c:2531
 #, c-format
 msgid "non-redirected `getline' invalid inside `%s' rule"
 msgstr "icke omdirigerad \"getline\" odefinierad inuti \"%s\"-regel"
 
-#: eval.c:2618
+#: eval.c:2620
 #, c-format
 msgid "error reading input file `%s': %s"
 msgstr "fel vid läsning av indatafilen \"%s\": %s"
 
-#: eval.c:2632
+#: eval.c:2634
 #, c-format
 msgid "`nextfile' cannot be called from a `%s' rule"
 msgstr "\"nextfile\" kan inte anropas från en \"%s\"-regel"
 
-#: eval.c:2679
+#: eval.c:2681
 msgid "`exit' cannot be called in the current context"
 msgstr "\"exit\" kan inte anropas i det aktuella sammanhanget"
 
-#: eval.c:2718
+#: eval.c:2720
 #, c-format
 msgid "`next' cannot be called from a `%s' rule"
 msgstr "\"next\" kan inte anropas från en \"%s\"-regel"
 
-#: eval.c:2784
+#: eval.c:2786
 #, c-format
 msgid "Sorry, don't know how to interpret `%s'"
 msgstr "Tyvärr, vet inte hur \"%s\" skall tolkas"
@@ -1180,27 +1180,27 @@ msgstr ""
 msgid "make_builtin: negative argument count for function `%s'"
 msgstr "make_builtin: negativt argumentantal för funktionen \"%s\""
 
-#: ext.c:259
+#: ext.c:266
 #, c-format
 msgid "function `%s' defined to take no more than %d argument(s)"
 msgstr "funktionen \"%s\" definierades för att ta maximalt %d argument"
 
-#: ext.c:262
+#: ext.c:269
 #, c-format
 msgid "function `%s': missing argument #%d"
 msgstr "funktionen \"%s\": argument %d saknas"
 
-#: ext.c:279
+#: ext.c:286
 #, c-format
 msgid "function `%s': argument #%d: attempt to use scalar as an array"
 msgstr "funktionen \"%s\": argument %d: försök att använda skalär som vektor"
 
-#: ext.c:283
+#: ext.c:290
 #, c-format
 msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr "funktionen \"%s\": argument %d: försök att använda vektor som skalär"
 
-#: ext.c:296
+#: ext.c:303
 msgid "Operation Not Supported"
 msgstr "Operationen stöds inte"
 

@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.0.0h\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2012-12-23 14:16+0200\n"
+"POT-Creation-Date: 2012-12-25 20:40+0200\n"
 "PO-Revision-Date: 2012-02-06 10:37+0100\n"
 "Last-Translator: Keld Simonsen <keld@keldix.com>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
@@ -47,7 +47,7 @@ msgstr "forsøg på at bruge skalar '%s' som et array"
 
 #: array.c:302 array.c:707 builtin.c:84 builtin.c:1404 builtin.c:1446
 #: builtin.c:1459 builtin.c:1878 builtin.c:1890 eval.c:1135 eval.c:1139
-#: eval.c:1495 eval.c:1818
+#: eval.c:1497 eval.c:1820
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "forsøg på at bruge array '%s' i skalarsammenhæng"
@@ -67,7 +67,7 @@ msgstr "indeks i array '%s' er en tom streng"
 msgid "delete: index `%s' not in array `%s'"
 msgstr "delete: indeks '%s' findes ikke i array '%s'"
 
-#: array.c:734 eval.c:1871
+#: array.c:734 eval.c:1873
 #, c-format
 msgid "attempt to use scalar `%s[\"%.*s\"]' as an array"
 msgstr "forsøg på at bruge skalaren '%s[\"%.*s\"]' som array"
@@ -242,7 +242,7 @@ msgstr "regulært udtryk i højreleddet af en sammenligning"
 msgid "`getline var' invalid inside `%s' rule"
 msgstr "'getline var' ugyldig inden i '%s' regel"
 
-#: awkgram.y:1395 eval.c:2522
+#: awkgram.y:1395 eval.c:2524
 #, c-format
 msgid "`getline' invalid inside `%s' rule"
 msgstr "'getline' ugyldig inden i '%s' regel"
@@ -519,11 +519,11 @@ msgstr ""
 "funktionen '%s' kaldt med blanktegn mellem navnet og '(',\n"
 "eller brugt som en variabel eller et array"
 
-#: awkgram.y:4796 eval.c:2062
+#: awkgram.y:4796 eval.c:2064
 msgid "division by zero attempted"
 msgstr "forsøgte at dividere med nul"
 
-#: awkgram.y:4805 eval.c:2078
+#: awkgram.y:4805 eval.c:2080
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "forsøgte at dividere med nul i '%%'"
@@ -788,7 +788,7 @@ msgstr "'system'-funktion ikke tilladt i sandkasse-tilstand"
 msgid "system: received non-string argument"
 msgstr "system: fik et argument som ikke er en streng"
 
-#: builtin.c:1893 eval.c:1159 eval.c:1795 eval.c:1809
+#: builtin.c:1893 eval.c:1161 eval.c:1797 eval.c:1811
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "reference til ikke-initieret variabel '%s'"
@@ -1007,108 +1007,108 @@ msgstr "forkert '%sFMT'-specifikation '%s'"
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "deaktiverer '--lint' på grund af en tildeling til 'LINT'"
 
-#: eval.c:1127 eval.c:1777
+#: eval.c:1127 eval.c:1779
 #, c-format
 msgid "can't use function name `%s' as variable or array"
 msgstr "kan ikke bruge funktionsnavnet '%s' som variabel eller array"
 
-#: eval.c:1158 eval.c:1794 eval.c:1808
+#: eval.c:1160 eval.c:1796 eval.c:1810
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "reference til ikke-initieret argument '%s'"
 
-#: eval.c:1177
+#: eval.c:1179
 msgid "attempt to field reference from non-numeric value"
 msgstr "forsøg på at referere til et felt fra ikke-numerisk værdi"
 
-#: eval.c:1179
+#: eval.c:1181
 msgid "attempt to field reference from null string"
 msgstr "forsøg på at referere til et felt fra tom streng"
 
-#: eval.c:1185
+#: eval.c:1187
 #, c-format
 msgid "attempt to access field %ld"
 msgstr "forsøg på at få adgang til felt %ld"
 
-#: eval.c:1194
+#: eval.c:1196
 #, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "reference til ikke-initieret felt '$%ld'"
 
-#: eval.c:1256
+#: eval.c:1258
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr "funktionen '%s' kaldt med flere argumenter end deklareret"
 
-#: eval.c:1437
+#: eval.c:1439
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr "unwind_stack: uventet type `%s'"
 
-#: eval.c:1532
+#: eval.c:1534
 msgid "division by zero attempted in `/='"
 msgstr "forsøgte at dividere med nul i '/='"
 
-#: eval.c:1539
+#: eval.c:1541
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "forsøgte at dividere med nul i '%%='"
 
-#: eval.c:1882 eval.c:2128
+#: eval.c:1884 eval.c:2130
 #, c-format
 msgid "attempt to use array `%s[\"%.*s\"]' in a scalar context"
 msgstr "forsøg på at bruge array '%s[\"%.*s\"]' i skalarsammenhæng"
 
-#: eval.c:1913
+#: eval.c:1915
 msgid "assignment used in conditional context"
 msgstr "tildeling brugt i sammenligningsammenhæng"
 
-#: eval.c:1917
+#: eval.c:1919
 msgid "statement has no effect"
 msgstr "kommandoen har ingen effekt"
 
-#: eval.c:2361
+#: eval.c:2363
 #, c-format
 msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
 msgstr ""
 "for-løkke: array '%s' ændrede størrelse fra %ld til %ld under udførelse af "
 "løkken"
 
-#: eval.c:2476
+#: eval.c:2478
 #, c-format
 msgid "function called indirectly through `%s' does not exist"
 msgstr "funktion kaldt indirekte via '%s' eksisterer ikke"
 
-#: eval.c:2488
+#: eval.c:2490
 #, c-format
 msgid "function `%s' not defined"
 msgstr "funktionen '%s' er ikke defineret"
 
-#: eval.c:2529
+#: eval.c:2531
 #, c-format
 msgid "non-redirected `getline' invalid inside `%s' rule"
 msgstr "ikke-omdirigeret 'getline' ugyldig inden i '%s'-regel"
 
-#: eval.c:2618
+#: eval.c:2620
 #, c-format
 msgid "error reading input file `%s': %s"
 msgstr "fejl ved læsning af inddatafilen '%s': %s"
 
-#: eval.c:2632
+#: eval.c:2634
 #, c-format
 msgid "`nextfile' cannot be called from a `%s' rule"
 msgstr "'nextfile' kan ikke kaldes fra en '%s'-regel"
 
-#: eval.c:2679
+#: eval.c:2681
 msgid "`exit' cannot be called in the current context"
 msgstr "'exit' kan ikke kaldes i den aktuelle kontekst"
 
-#: eval.c:2718
+#: eval.c:2720
 #, c-format
 msgid "`next' cannot be called from a `%s' rule"
 msgstr "'next' kan ikke kaldes fra en '%s'-regel"
 
-#: eval.c:2784
+#: eval.c:2786
 #, c-format
 msgid "Sorry, don't know how to interpret `%s'"
 msgstr "Véd desværre ikke hvordan '%s' skal fortolkes"
@@ -1175,29 +1175,29 @@ msgstr "extension: kan ikke bruge gawk's indbyggede '%s' som funktionsnavn"
 msgid "make_builtin: negative argument count for function `%s'"
 msgstr "make_builtin: negativt argumentantal for funktion '%s'"
 
-#: ext.c:259
+#: ext.c:266
 #, c-format
 msgid "function `%s' defined to take no more than %d argument(s)"
 msgstr "funktionen '%s' defineret til at tage ikke mere end %d argumenter"
 
-#: ext.c:262
+#: ext.c:269
 #, c-format
 msgid "function `%s': missing argument #%d"
 msgstr "funktion '%s': mangler argument nummer %d"
 
-#: ext.c:279
+#: ext.c:286
 #, c-format
 msgid "function `%s': argument #%d: attempt to use scalar as an array"
 msgstr ""
 "funktion '%s': argument nummer %d: forsøg på at bruge skalar som et array"
 
-#: ext.c:283
+#: ext.c:290
 #, c-format
 msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr ""
 "funktion '%s': argument nummer %d: forsøg på at bruge array som en skalar"
 
-#: ext.c:296
+#: ext.c:303
 msgid "Operation Not Supported"
 msgstr "Operationen understøttes ikke"
 
