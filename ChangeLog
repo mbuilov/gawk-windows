@@ -1,3 +1,9 @@
+2012-12-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_print, do_printf): Use output_fp as default
+	output for print/printf only if running under the debugger.
+	Otherwise use stdout as Brian, Peter, and Al intended.
+
 2012-12-25         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Remove sym-constant from API after discussions with John

@@ -1650,8 +1650,10 @@ do_printf(int nargs, int redirtype)
 		rp = redirect(redir_exp, redirtype, & errflg);
 		if (rp != NULL)
 			fp = rp->output.fp;
-	} else
+	} else if (do_debug)	/* only the debugger can change the default output */
 		fp = output_fp;
+	else
+		fp = stdout;
 
 	tmp = printf_common(nargs);
 	if (redir_exp != NULL) {
@@ -2076,8 +2078,10 @@ do_print(int nargs, int redirtype)
 		rp = redirect(redir_exp, redirtype, & errflg);
 		if (rp != NULL)
 			fp = rp->output.fp;
-	} else
+	} else if (do_debug)	/* only the debugger can change the default output */
 		fp = output_fp;
+	else
+		fp = stdout;
 
 	for (i = 1; i <= nargs; i++) {
 		tmp = args_array[i] = POP();
