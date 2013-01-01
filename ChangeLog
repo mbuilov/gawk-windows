@@ -1,3 +1,13 @@
+2013-01-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Sync with GLIBC regex files.
+
+	* regex_internal.h (struct re_dfa_t): Remove ifdefs around
+	__libc_lock_define since it's already defined to empty in non-LIBC
+	case.
+	* regexec.c (check_node_accept_bytes): Restore decl with use from
+	GLIBC code since this is LIBC case.
+
 2012-12-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* 4.0.2: Release tar ball made.

@@ -3934,7 +3934,6 @@ check_node_accept_bytes (const re_dfa_t *dfa, int node_idx,
 	  if (cset->nequiv_classes)
 	    {
 	      const unsigned char *cp = pin;
-          int32_t idx;
 	      table = (const int32_t *)
 		_NL_CURRENT (LC_COLLATE, _NL_COLLATE_TABLEMB);
 	      weights = (const unsigned char *)
@@ -3943,7 +3942,7 @@ check_node_accept_bytes (const re_dfa_t *dfa, int node_idx,
 		_NL_CURRENT (LC_COLLATE, _NL_COLLATE_EXTRAMB);
 	      indirect = (const int32_t *)
 		_NL_CURRENT (LC_COLLATE, _NL_COLLATE_INDIRECTMB);
-	      idx = findidx (&cp, elem_len);
+	      int32_t idx = findidx (&cp, elem_len);
 	      if (idx > 0)
 		for (i = 0; i < cset->nequiv_classes; ++i)
 		  {
