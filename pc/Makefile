@@ -72,8 +72,8 @@ MAK = $(MAKE) $(MAKEFILE)
 prefix = c:/gnu
 pkgdatadir = $(prefix)/lib/awk
 #
-# Define the install method. Method 1 is Unix-like (and requires cat,
-# cp, mkdir, sed, and sh); method 2 uses gawk and batch files.
+# Define the install method. Method 1 is Unix-like (and requires cat
+# and cp); method 2 uses gawk and batch files.
 install = 1
 #------------------------------------------------------------------------
 # To work around command-line length problems, this makefile assumes
@@ -287,17 +287,24 @@ install1:
 	echo extproc sh $(prefix)/bin/igawk.cmd > igawk.cmd
 	echo shift >> igawk.cmd
 	cat pc/awklib/igawk >> igawk.cmd
-	sed "s;igawk;$(prefix)/bin/igawk;" pc/awklib/igawk.bat > igawk.bat
-	sh mkinstal.sh $(prefix)/bin
-	sh mkinstal.sh $(pkgdatadir) $(prefix)/man/man1 $(prefix)/info
+	cat pc/awklib/igawk.bat > igawk.bat
+	-mkdir "$(prefix)"
+	-mkdir "$(prefix)/bin"
+	-mkdir "$(prefix)/share"
+	-mkdir "$(prefix)/share/man"
+	-mkdir "$(pkgdatadir)" "$(prefix)/share/man/man1" "$(prefix)/share/info"
 	cp *awk.exe igawk.bat igawk.cmd pc/awklib/igawk $(prefix)/bin
+	cp gawk.exe $(prefix)/bin/awk.exe
 	cp awklib/eg/lib/* pc/awklib/igawk.awk $(pkgdatadir)
-	cp doc/*.1 $(prefix)/man/man1
-	cp doc/gawk.info $(prefix)/info
+	cp doc/*.1 $(prefix)/share/man/man1
+	cp doc/*.info $(prefix)/share/info
 
 # install2 is equivalent to install1, but doesn't require cp, sed, etc.
 install2:
 	gawk -v prefix=$(prefix) -f install.awk
+
+install-strip: install$(install)
+	strip "$(prefix)/bin"/*.exe
 
 clean:
 	rm -rf gawk pgawk dgawk *.exe gawk.map *.o *.obj core a.out $(RSPFILE) $(PRSPFILE) $(DRSPFILE) $(DYN_EXP)

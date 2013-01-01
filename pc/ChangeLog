@@ -1,3 +1,14 @@
+2012-12-28  Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile (install1): Don't require a Unixy shell and Sed.  Don't
+	edit igawk.bat to point to the igawk script in $(prefix)/bin, as
+	that directory should be on PATH when Gawk is installed.  Create
+	$(prefix)/bin/awk.exe, to emulate a symlink created on Unix.
+	Install documentation in $(prefix)/share.  Install gawkinet.info.
+	(install-strip): New target.
+
+	* install.awk: Install documentation in $prefix/share.
+
 2012-12-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* 4.0.2: Release tar ball made.

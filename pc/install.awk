@@ -50,13 +50,13 @@ printf("extproc sh %s/bin/igawk.cmd\nshift\n", prefix) > igawk_cmd
 while (getline < igawk) print $0 > igawk_cmd
 
 # Create igawk.bat for DOS
-printf("@sh %s/bin/igawk %%1 %%2 %%3 %%4 %%5 %%6 %%7 %%8 %%9", prefix) > igawk_bat
+printf("@sh igawk %%1 %%2 %%3 %%4 %%5 %%6 %%7 %%8 %%9", prefix) > igawk_bat
 
 # Do common
 cp(igawk " *awk.exe " prefix "/bin")
-mkinstalldirs(prefix "/lib/awk " prefix "/man/man1 " prefix "/info")
+mkinstalldirs(prefix "/lib/awk " prefix "/share/man/man1 " prefix "/share/info")
 cp("awklib/eg/lib/* pc/awklib/igawk.awk " prefix "/lib/awk");
-cp("doc/*.1 " prefix "/man/man1");
-cp("doc/gawk.info " prefix "/info");
-cp("doc/gawkinet.info " prefix "/info");
+cp("doc/*.1 " prefix "/share/man/man1");
+cp("doc/gawk.info " prefix "/share/info");
+cp("doc/gawkinet.info " prefix "/share/info");
 }
