@@ -771,6 +771,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 		rp->value = str;
 		rp->flag = tflag;
 		init_output_wrapper(& rp->output);
+		rp->output.name = str;
 		rp->iop = NULL;
 		rp->pid = -1;
 		rp->status = 0;
@@ -1673,6 +1674,7 @@ two_way_open(const char *str, struct redirect *rp)
 		os_close_on_exec(fd, str, "socket", "to/from");
 		os_close_on_exec(newfd, str, "socket", "to/from");
 		rp->iop = iop_alloc(newfd, str, 0);
+		rp->output.name = str;
 		find_input_parser(rp->iop);
 		iop_finish(rp->iop);
 		if (! rp->iop->valid) {
@@ -1894,6 +1896,7 @@ two_way_open(const char *str, struct redirect *rp)
 			return false;
 		}
 
+		rp->output.name = str;
 		/*
 		 * Force read and write ends of two-way connection to
 		 * be different fd's so they can be closed independently.
@@ -2059,6 +2062,7 @@ use_pipes:
 	}
 	rp->output.fp = fdopen(ptoc[1], "w");
 	rp->output.mode = "w";
+	rp->output.name = str;
 	if (rp->output.fp == NULL) {
 		iop_close(rp->iop);
 		rp->iop = NULL;
