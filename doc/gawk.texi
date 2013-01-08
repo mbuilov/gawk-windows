@@ -15749,10 +15749,11 @@ epoch.
 In order to make it easier to process such log files and to produce
 useful reports, @command{gawk} provides the following functions for
 working with timestamps.  They are @command{gawk} extensions; they are
-not specified in the POSIX standard, nor are they in any other known
-version of @command{awk}.@footnote{The GNU @command{date} utility can
+not specified in the POSIX standard.@footnote{The GNU @command{date} utility can
 also do many of the things described here.  Its use may be preferable
 for simple time-related operations in shell scripts.}
+However, recent versions
+of @command{mawk} (@pxref{Other Versions}) also support these functions.
 Optional parameters are enclosed in square brackets ([ ]):
 
 @table @code
@@ -27080,6 +27081,7 @@ the three most widely-used freely available versions of @command{awk}
 @item @code{delete} without subscript @tab X @tab X @tab X
 @item @code{length()} of an array @tab X @tab @tab X
 @item @code{BINMODE} variable @tab @tab X @tab X
+@item Time related functions @tab @tab X @tab X
 @end multitable
 
 @node Ranges and Locales
