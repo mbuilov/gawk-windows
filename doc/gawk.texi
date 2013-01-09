@@ -765,6 +765,7 @@ particular records in a file and perform operations upon them.
 * Extension Sample Fnmatch::            An interface to @code{fnmatch()}.
 * Extension Sample Fork::               An interface to @code{fork()} and
                                         other process functions.
+* Extension Sample Inplace::            Enabling in-place file editing.
 * Extension Sample Ord::                Character to value to character
                                         conversions.
 * Extension Sample Readdir::            An interface to @code{readdir()}.
@@ -31156,7 +31157,7 @@ $ @kbd{AWKLIBPATH=$PWD gawk -f testff.awk}
 
 This @value{SECTION} provides brief overviews of the sample extensions
 that come in the @command{gawk} distribution. Some of them are intended
-for production use, such the @code{filefuncs} and @code{readdir} extensions.
+for production use, such the @code{filefuncs}, @code{readdir} and @code{inplace} extensions.
 Others mainly provide example code that shows how to use the extension API.
 
 @menu
@@ -31164,6 +31165,7 @@ Others mainly provide example code that shows how to use the extension API.
 * Extension Sample Fnmatch::          An interface to @code{fnmatch()}.
 * Extension Sample Fork::             An interface to @code{fork()} and other
                                       process functions.
+* Extension Sample Inplace::          Enabling in-place file editing.
 * Extension Sample Ord::              Character to value to character
                                       conversions.
 * Extension Sample Readdir::          An interface to @code{readdir()}.
@@ -31503,6 +31505,59 @@ if ((pid = fork()) == 0)
 else
     print "hello from the parent"
 @end example
+
+@node Extension Sample Inplace
+@subsection Enabling in-place file editing.
+
+The @code{inplace} extension emulates the @command{sed} @option{-i} option.
+It uses the bundled @file{inplace.awk} include file to invoke the extension
+properly:
+
+@example
+@c file eg/lib/inplace.awk
+@group
+# inplace --- load and invoke the inplace extension.
+
+@@load "inplace"
+
+# Please set INPLACE_SUFFIX to make a backup copy.  For example,
+# you may want to set INPLACE_SUFFIX to .bak on the command-line or in a
+# BEGIN block.
+
+BEGINFILE @{
+	inplace_begin(FILENAME, INPLACE_SUFFIX)
+@}
+ENDFILE @{
+	inplace_end(FILENAME, INPLACE_SUFFIX)
+@}
+@end group
+@c endfile
+@end example
+
+For each regular file that is processed, the extension redirects stdout
+to a temporary file configured to have the same owner and permissions.
+After the file has been processed, stdout is restored to its default
+destination.  If @code{INPLACE_SUFFIX} is not an empty string, the
+original file will be linked to a backup filename created by appending
+that suffix.  Finally, the temporary file is renamed to the original filename.
+
+If any error is encountered, the extension issues a fatal error to terminate
+processing immediately without damaging the original file.
+
+Here are a couple of simple examples:
+
+@example
+$ @kbd{gawk -i inplace '@{gsub(/foo/, "bar")@} @{print@}' file1 file2 file3}
+@end example
+
+To keep a backup copy of the original files, try this:
+
+@example
+$ @kbd{gawk -i inplace -vINPLACE_SUFFIX=.bak '@{gsub(/foo/, "bar")@} @{print@}' file1 file2 file3}
+@end example
+
+It is left as an exercise to write a wrapper script that presents an
+interface similar to the @command{sed} @option{-i} option.
 
 @node Extension Sample Ord
 @subsection Character and Numeric values: @code{ord()} and @code{chr()}

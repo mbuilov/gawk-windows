@@ -35,6 +35,7 @@ pkgextension_LTLIBRARIES =	\
 	filefuncs.la	\
 	fnmatch.la	\
 	fork.la		\
+	inplace.la	\
 	ordchr.la	\
 	readdir.la	\
 	readfile.la	\
@@ -59,6 +60,10 @@ fnmatch_la_LIBADD     = $(MY_LIBS)
 fork_la_SOURCES       = fork.c
 fork_la_LDFLAGS       = $(MY_MODULE_FLAGS)
 fork_la_LIBADD        = $(MY_LIBS)
+
+inplace_la_SOURCES    = inplace.c
+inplace_la_LDFLAGS    = $(MY_MODULE_FLAGS)
+inplace_la_LIBADD     = $(MY_LIBS)
 
 ordchr_la_SOURCES     = ordchr.c
 ordchr_la_LDFLAGS     = $(MY_MODULE_FLAGS)
