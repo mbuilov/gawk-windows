@@ -31509,7 +31509,8 @@ else
 @node Extension Sample Inplace
 @subsection Enabling in-place file editing.
 
-The @code{inplace} extension emulates the @command{sed} @option{-i} option.
+The @code{inplace} extension emulates the @command{sed} @option{-i} option
+which performs ``in placed'' editing of each input file.
 It uses the bundled @file{inplace.awk} include file to invoke the extension
 properly:
 
@@ -31520,43 +31521,45 @@ properly:
 
 @@load "inplace"
 
-# Please set INPLACE_SUFFIX to make a backup copy.  For example,
-# you may want to set INPLACE_SUFFIX to .bak on the command-line or in a
-# BEGIN block.
+# Please set INPLACE_SUFFIX to make a backup copy.  For example, you may
+# want to set INPLACE_SUFFIX to .bak on the command line or in a BEGIN rule.
 
 BEGINFILE @{
-	inplace_begin(FILENAME, INPLACE_SUFFIX)
+    inplace_begin(FILENAME, INPLACE_SUFFIX)
 @}
+
 ENDFILE @{
-	inplace_end(FILENAME, INPLACE_SUFFIX)
+    inplace_end(FILENAME, INPLACE_SUFFIX)
 @}
 @end group
 @c endfile
 @end example
 
-For each regular file that is processed, the extension redirects stdout
-to a temporary file configured to have the same owner and permissions.
-After the file has been processed, stdout is restored to its default
-destination.  If @code{INPLACE_SUFFIX} is not an empty string, the
-original file will be linked to a backup filename created by appending
-that suffix.  Finally, the temporary file is renamed to the original filename.
+For each regular file that is processed, the extension redirects
+standard output to a temporary file configured to have the same owner
+and permissions as the original.  After the file has been processed,
+the extension restores standard output to its original destination.
+If @code{INPLACE_SUFFIX} is not an empty string, the original file is
+linked to a backup filename created by appending that suffix.  Finally,
+the temporary file is renamed to the original filename.
 
-If any error is encountered, the extension issues a fatal error to terminate
+If any error occurs, the extension issues a fatal error to terminate
 processing immediately without damaging the original file.
 
-Here are a couple of simple examples:
+Here are some simple examples:
 
 @example
-$ @kbd{gawk -i inplace '@{gsub(/foo/, "bar")@} @{print@}' file1 file2 file3}
+$ @kbd{gawk -i inplace '@{ gsub(/foo/, "bar") @}; @{ print @}' file1 file2 file3}
 @end example
 
 To keep a backup copy of the original files, try this:
 
 @example
-$ @kbd{gawk -i inplace -vINPLACE_SUFFIX=.bak '@{gsub(/foo/, "bar")@} @{print@}' file1 file2 file3}
+$ @kbd{gawk -i inplace -v INPLACE_SUFFIX=.bak '@{ gsub(/foo/, "bar") @}}
+> @kbd{@{ print @}' file1 file2 file3}
 @end example
 
-It is left as an exercise to write a wrapper script that presents an
+We leave it as an exercise to write a wrapper script that presents an
 interface similar to the @command{sed} @option{-i} option.
 
 @node Extension Sample Ord
