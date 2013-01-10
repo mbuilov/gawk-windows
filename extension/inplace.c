@@ -93,7 +93,7 @@ invalid_filename(const awk_string_t *filename)
 static awk_value_t *
 do_inplace_begin(int nargs, awk_value_t *result)
 {
-	awk_value_t filename, suffix;
+	awk_value_t filename;
 	struct stat sbuf;
 	char *p;
 	int fd;
@@ -109,8 +109,10 @@ do_inplace_begin(int nargs, awk_value_t *result)
 	if (! get_argument(0, AWK_STRING, &filename))
 		fatal(ext_id, _("inplace_begin: cannot retrieve 1st argument as a string filename"));
 
-	if (! get_argument(1, AWK_STRING, &suffix))
-		suffix.str_value.str = NULL;
+	/*
+	 * N.B. In the current implementation, the 2nd suffix arg is not used
+	 * in this function.  It is used only in the inplace_end function.
+	 */
 
 	if (invalid_filename(&filename.str_value)) {
 		warning(ext_id, _("inplace_begin: disabling in-place editing for invalid FILENAME `%s'"),

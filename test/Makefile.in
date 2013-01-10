@@ -615,6 +615,22 @@ EXTRA_DIST = \
 	indirectcall.ok \
 	inftest.awk \
 	inftest.ok \
+	inplace.in \
+	inplace.1.in \
+	inplace.2.in \
+	inplace1.ok \
+	inplace1.1.ok \
+	inplace1.2.ok \
+	inplace2.ok \
+	inplace2.1.ok \
+	inplace2.1.bak.ok \
+	inplace2.2.ok \
+	inplace2.2.bak.ok \
+	inplace3.ok \
+	inplace3.1.ok \
+	inplace3.1.bak.ok \
+	inplace3.2.ok \
+	inplace3.2.bak.ok \
 	inputred.awk \
 	inputred.ok \
 	intest.awk \
@@ -1160,8 +1176,8 @@ LOCALE_CHARSET_TESTS = \
 	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
-	fnmatch filefuncs fork fork2 fts ordchr ordchr2 \
-	readdir readfile revout revtwoway rwarray testext time
+	fnmatch filefuncs fork fork2 fts inplace1 inplace2 inplace3 \
+	ordchr ordchr2 readdir readfile revout revtwoway rwarray testext time
 
 
 # List of the tests which should be run with --lint option:
@@ -2055,6 +2071,38 @@ incdupe7::
 	@echo $@
 	@AWKPATH=$(srcdir) $(AWK) --lint -f hello -i inchello >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+inplace1::
+	@echo $@
+	@cp $(srcdir)/inplace.1.in _$@.1
+	@cp $(srcdir)/inplace.2.in _$@.2
+	@AWKPATH=$(srcdir)/../awklib/eg/lib $(AWK) -i inplace 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _$@.1 - _$@.2 < $(srcdir)/inplace.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.1.ok _$@.1 && rm -f _$@.1
+	@-$(CMP) $(srcdir)/$@.2.ok _$@.2 && rm -f _$@.2
+
+inplace2::
+	@echo $@
+	@cp $(srcdir)/inplace.1.in _$@.1
+	@cp $(srcdir)/inplace.2.in _$@.2
+	@AWKPATH=$(srcdir)/../awklib/eg/lib $(AWK) -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _$@.1 - _$@.2 < $(srcdir)/inplace.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.1.ok _$@.1 && rm -f _$@.1
+	@-$(CMP) $(srcdir)/$@.1.bak.ok _$@.1.bak && rm -f _$@.1.bak
+	@-$(CMP) $(srcdir)/$@.2.ok _$@.2 && rm -f _$@.2
+	@-$(CMP) $(srcdir)/$@.2.bak.ok _$@.2.bak && rm -f _$@.2.bak
+
+inplace3::
+	@echo $@
+	@cp $(srcdir)/inplace.1.in _$@.1
+	@cp $(srcdir)/inplace.2.in _$@.2
+	@AWKPATH=$(srcdir)/../awklib/eg/lib $(AWK) -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _$@.1 - _$@.2 < $(srcdir)/inplace.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH=$(srcdir)/../awklib/eg/lib $(AWK) -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "Before"} {gsub(/bar/, "foo"); print} END {print "After"}' _$@.1 - _$@.2 < $(srcdir)/inplace.in >>_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.1.ok _$@.1 && rm -f _$@.1
+	@-$(CMP) $(srcdir)/$@.1.bak.ok _$@.1.bak && rm -f _$@.1.bak
+	@-$(CMP) $(srcdir)/$@.2.ok _$@.2 && rm -f _$@.2
+	@-$(CMP) $(srcdir)/$@.2.bak.ok _$@.2.bak && rm -f _$@.2.bak
 
 testext::
 	@echo $@
