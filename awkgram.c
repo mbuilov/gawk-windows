@@ -4428,7 +4428,7 @@ static const struct token tokentab[] = {
 {"printf",	Op_K_printf,	 LEX_PRINTF,	0,		0,	0},
 {"rand",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0),	do_rand,	MPF(rand)},
 {"return",	Op_K_return,	 LEX_RETURN,	NOT_OLD,	0,	0},
-{"rshift",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_rshift,	MPF(rhift)},
+{"rshift",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_rshift,	MPF(rshift)},
 {"sin",		Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_sin,	MPF(sin)},
 {"split",	Op_builtin,	 LEX_BUILTIN,	A(2)|A(3)|A(4),	do_split,	0},
 {"sprintf",	Op_builtin,	 LEX_BUILTIN,	0,		do_sprintf,	0},

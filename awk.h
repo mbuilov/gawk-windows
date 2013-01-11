@@ -1552,7 +1552,7 @@ extern NODE *do_mpfr_log(int);
 extern NODE *do_mpfr_lshift(int);
 extern NODE *do_mpfr_or(int);
 extern NODE *do_mpfr_rand(int);
-extern NODE *do_mpfr_rhift(int);
+extern NODE *do_mpfr_rshift(int);
 extern NODE *do_mpfr_sin(int);
 extern NODE *do_mpfr_sqrt(int);
 extern NODE *do_mpfr_srand(int);

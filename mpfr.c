@@ -48,17 +48,6 @@ static int mpg_interpret(INSTRUCTION **cp);
 static mpfr_exp_t min_exp = MPFR_EMIN_DEFAULT;
 static mpfr_exp_t max_exp = MPFR_EMAX_DEFAULT;
 
-/* temporaries used in bit ops */
-static NODE *_tz1;
-static NODE *_tz2;
-static mpz_t _mpz1;
-static mpz_t _mpz2;
-static mpz_ptr mpz1;
-static mpz_ptr mpz2;
-
-static NODE *get_bit_ops(const char *op);
-#define free_bit_ops()	(DEREF(_tz1), DEREF(_tz2))
-
 /* temporary MPFR floats used to hold converted GMP integer operands */
 static mpfr_t _mpf_t1;
 static mpfr_t _mpf_t2;
@@ -93,8 +82,6 @@ init_mpfr(mpfr_prec_t prec, const char *rmode)
 	mpz_init(MFNR);
 	do_ieee_fmt = false;
 
-	mpz_init(_mpz1);
-	mpz_init(_mpz2);
 	mpfr_init2(_mpf_t1, PRECISION_MIN);
 	mpfr_init2(_mpf_t2, PRECISION_MIN);
 	mpz_init(mpzval);
@@ -837,181 +824,228 @@ do_mpfr_compl(int nargs)
 	return r;
 }
 
+/* get_intval --- get the (converted) integral operand of a binary function. */
 
-/*
- * get_bit_ops --- get the numeric operands of a binary function.
- *	Returns a copy of the operand if either is inf or nan. Otherwise
- * 	each operand is converted to an integer if necessary, and
- * 	the results are placed in the variables mpz1 and mpz2.
- */
-
-static NODE *
-get_bit_ops(const char *op)
+static mpz_ptr
+get_intval(NODE *t1, int argnum, const char *op)
 {
-	_tz2 = POP_SCALAR();
-	_tz1 = POP_SCALAR();
+	mpz_ptr pz;
 
-	if (do_lint) {
-		if ((_tz1->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("%s: received non-numeric first argument"), op);
-		if ((_tz2->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("%s: received non-numeric second argument"), op);
-	}
+	if (do_lint && (t1->flags & (NUMCUR|NUMBER)) == 0)
+		lintwarn(_("%s: received non-numeric argument #%d"), op, argnum);
 
-	force_number(_tz1);
-	force_number(_tz2);
+	(void) force_number(t1);
 
-	if (is_mpg_float(_tz1)) {
-		mpfr_ptr left = _tz1->mpg_numbr;
+	if (is_mpg_float(t1)) {
+		mpfr_ptr left = t1->mpg_numbr;
 		if (! mpfr_number_p(left)) {
 			/* inf or NaN */
-			NODE *res;
-			res = mpg_float();
-			mpfr_set(res->mpg_numbr, _tz1->mpg_numbr, ROUND_MODE);
-			return res;
+			if (do_lint)
+                       		lintwarn("%s",
+		mpg_fmt(_("%s: argument #%d has invalid value %Rg, using 0"),
+                                	op, argnum, left)
+				);
+
+			emalloc(pz, mpz_ptr, sizeof (mpz_t), "get_intval");
+			mpz_init(pz);
+			return pz;	/* should be freed */
 		}
 
 		if (do_lint) {
 			if (mpfr_sgn(left) < 0)
 				lintwarn("%s",
-			mpg_fmt(_("%s(%Rg, ..): negative values will give strange results"),
-						op, left)
-					);
+		mpg_fmt(_("%s: argument #%d negative value %Rg will give strange results"),
+					op, argnum, left)
+				);
+
 			if (! mpfr_integer_p(left))
 				lintwarn("%s",
-			mpg_fmt(_("%s(%Rg, ..): fractional values will be truncated"),
-						op, left)
-				);
-		}
-		
-		mpfr_get_z(_mpz1, left, MPFR_RNDZ);	/* float to integer conversion */
-		mpz1 = _mpz1;
-	} else {
-		/* (_tz1->flags & MPZN) != 0 */ 
-		mpz1 = _tz1->mpg_i;
-		if (do_lint) {
-			if (mpz_sgn(mpz1) < 0)
-				lintwarn("%s",
-			mpg_fmt(_("%s(%Zd, ..): negative values will give strange results"),
-						op, mpz1)
-					);
-		}
-	}
-
-	if (is_mpg_float(_tz2)) {
-		mpfr_ptr right = _tz2->mpg_numbr;
-		if (! mpfr_number_p(right)) {
-			/* inf or NaN */
-			NODE *res;
-			res = mpg_float();
-			mpfr_set(res->mpg_numbr, _tz2->mpg_numbr, ROUND_MODE);
-			return res;
-		}
-
-		if (do_lint) {
-			if (mpfr_sgn(right) < 0)
-				lintwarn("%s",
-			mpg_fmt(_("%s(.., %Rg): negative values will give strange results"),
-						op, right)
-					);
-			if (! mpfr_integer_p(right))
-				lintwarn("%s",
-			mpg_fmt(_("%s(.., %Rg): fractional values will be truncated"),
-						op, right)
+		mpg_fmt(_("%s: argument #%d fractional value %Rg will be truncated"),
+					op, argnum, left)
 				);
 		}
 
-		mpfr_get_z(_mpz2, right, MPFR_RNDZ);	/* float to integer conversion */
-		mpz2 = _mpz2;
-	} else {
-		/* (_tz2->flags & MPZN) != 0 */ 
-		mpz2 = _tz2->mpg_i;
-		if (do_lint) {
-			if (mpz_sgn(mpz2) < 0)
-				lintwarn("%s",
-			mpg_fmt(_("%s(.., %Zd): negative values will give strange results"),
-						op, mpz2)
-					);
-		}
+		emalloc(pz, mpz_ptr, sizeof (mpz_t), "get_intval");
+		mpz_init(pz);
+		mpfr_get_z(pz, left, MPFR_RNDZ);	/* float to integer conversion */
+		return pz;	/* should be freed */
+	} 
+	/* (t1->flags & MPZN) != 0 */ 
+	pz = t1->mpg_i;
+	if (do_lint) {
+		if (mpz_sgn(pz) < 0)
+			lintwarn("%s",
+	mpg_fmt(_("%s: argument #%d negative value %Zd will give strange results"),
+					op, argnum, pz)
+				);
 	}
-
-	return NULL;
+	return pz;	/* must not be freed */
 }
+
+
+/* free_intval --- free the converted integer value returned by get_intval() */
+
+static inline void
+free_intval(NODE *t, mpz_ptr pz)
+{
+	if ((t->flags & MPZN) == 0) {
+		mpz_clear(pz);
+		efree(pz);
+	}
+}
+
 
 /* do_mpfr_lshift --- perform a << operation */
 
 NODE *
 do_mpfr_lshift(int nargs)
 {
-	NODE *res;
+	NODE *t1, *t2, *res;
 	unsigned long shift;
+	mpz_ptr pz1, pz2;
+ 
+	t2 = POP_SCALAR();
+	t1 = POP_SCALAR();
 
-	if ((res = get_bit_ops("lshift")) == NULL) {
+	pz1 = get_intval(t1, 1, "lshift");
+	pz2 = get_intval(t2, 2, "lshift");
 
-		/*
-		 * mpz_get_ui: If op is too big to fit an unsigned long then just
-		 * the least significant bits that do fit are returned.
-		 * The sign of op is ignored, only the absolute value is used.
-		 */
+	/*
+	 * mpz_get_ui: If op is too big to fit an unsigned long then just
+	 * the least significant bits that do fit are returned.
+	 * The sign of op is ignored, only the absolute value is used.
+	 */
 
-		shift = mpz_get_ui(mpz2);	/* GMP integer => unsigned long conversion */
-		res = mpg_integer();
-		mpz_mul_2exp(res->mpg_i, mpz1, shift);		/* res = mpz1 * 2^shift */
-	}
-	free_bit_ops();
+	shift = mpz_get_ui(pz2);	/* GMP integer => unsigned long conversion */
+	res = mpg_integer();
+	mpz_mul_2exp(res->mpg_i, pz1, shift);		/* res = pz1 * 2^shift */
+
+	free_intval(t1, pz1);
+	free_intval(t2, pz2);
+	DEREF(t2);
+	DEREF(t1);
 	return res;
 }
 
 /* do_mpfr_rshift --- perform a >> operation */
 
 NODE *
-do_mpfr_rhift(int nargs)
+do_mpfr_rshift(int nargs)
 {
-	NODE *res;
+	NODE *t1, *t2, *res;
 	unsigned long shift;
+	mpz_ptr pz1, pz2;
+ 
+	t2 = POP_SCALAR();
+	t1 = POP_SCALAR();
 
-	if ((res = get_bit_ops("rshift")) == NULL) {
-		/*
-		 * mpz_get_ui: If op is too big to fit an unsigned long then just
-		 * the least significant bits that do fit are returned.
-		 * The sign of op is ignored, only the absolute value is used.
-		 */
+	pz1 = get_intval(t1, 1, "rshift");
+	pz2 = get_intval(t2, 2, "rshift");
 
-		shift = mpz_get_ui(mpz2);	/* GMP integer => unsigned long conversion */
-		res = mpg_integer();
-		mpz_fdiv_q_2exp(res->mpg_i, mpz1, shift);	/* res = mpz1 / 2^shift, round towards −inf */
-	}
-	free_bit_ops();
+	/* N.B: See do_mpfp_lshift. */
+	shift = mpz_get_ui(pz2);	/* GMP integer => unsigned long conversion */
+	res = mpg_integer();
+	mpz_fdiv_q_2exp(res->mpg_i, pz1, shift);	/* res = pz1 / 2^shift, round towards −inf */
+
+	free_intval(t1, pz1);
+	free_intval(t2, pz2);
+	DEREF(t2);
+	DEREF(t1);
 	return res;
 }
+
 
 /* do_mpfr_and --- perform an & operation */
 
 NODE *
 do_mpfr_and(int nargs)
 {
-	NODE *res;
+	NODE *t1, *t2, *res;
+	mpz_ptr pz1, pz2;
+	int i;
 
-	if ((res = get_bit_ops("and")) == NULL) {
-		res = mpg_integer();
-		mpz_and(res->mpg_i, mpz1, mpz2);
+	if (nargs < 2)
+		fatal(_("and: called with less than two arguments"));
+
+	t2 = POP_SCALAR();
+	pz2 = get_intval(t2, nargs, "and");
+
+	res = mpg_integer();
+	for (i = 1; i < nargs; i++) {
+		t1 = POP_SCALAR();
+		pz1 = get_intval(t1, nargs - i, "and");
+		mpz_and(res->mpg_i, pz1, pz2);
+		free_intval(t1, pz1);
+		DEREF(t1);
+		if (i == 1) {
+			free_intval(t2, pz2);
+			DEREF(t2);
+		}
+		pz2 = res->mpg_i;
 	}
-	free_bit_ops();
 	return res;
 }
+
 
 /* do_mpfr_or --- perform an | operation */
 
 NODE *
 do_mpfr_or(int nargs)
 {
-	NODE *res;
+	NODE *t1, *t2, *res;
+	mpz_ptr pz1, pz2;
+	int i;
 
-	if ((res = get_bit_ops("or")) == NULL) {
-		res = mpg_integer();
-		mpz_ior(res->mpg_i, mpz1, mpz2);
+	if (nargs < 2)
+		fatal(_("or: called with less than two arguments"));
+
+	t2 = POP_SCALAR();
+	pz2 = get_intval(t2, nargs, "or");
+
+	res = mpg_integer();
+	for (i = 1; i < nargs; i++) {
+		t1 = POP_SCALAR();
+		pz1 = get_intval(t1, nargs - i, "or");
+		mpz_ior(res->mpg_i, pz1, pz2);
+		free_intval(t1, pz1);
+		DEREF(t1);
+		if (i == 1) {
+			free_intval(t2, pz2);
+			DEREF(t2);
+		}
+		pz2 = res->mpg_i;
 	}
-	free_bit_ops();
+	return res;
+}
+
+/* do_mpfr_xor --- perform an ^ operation */
+
+NODE *
+do_mpfr_xor(int nargs)
+{
+	NODE *t1, *t2, *res;
+	mpz_ptr pz1, pz2;
+	int i;
+
+	if (nargs < 2)
+		fatal(_("xor: called with less than two arguments"));
+
+	t2 = POP_SCALAR();
+	pz2 = get_intval(t2, nargs, "xor");
+
+	res = mpg_integer();
+	for (i = 1; i < nargs; i++) {
+		t1 = POP_SCALAR();
+		pz1 = get_intval(t1, nargs - i, "xor");
+		mpz_xor(res->mpg_i, pz1, pz2);
+		free_intval(t1, pz1);
+		DEREF(t1);
+		if (i == 1) {
+			free_intval(t2, pz2);
+			DEREF(t2);
+		}
+		pz2 = res->mpg_i;
+	}
 	return res;
 }
 
@@ -1045,21 +1079,6 @@ do_mpfr_strtonum(int nargs)
 
 	DEREF(tmp);
 	return r;
-}
-
-/* do_mpfr_xor --- perform an ^ operation */
-
-NODE *
-do_mpfr_xor(int nargs)
-{
-	NODE *res;
-
-	if ((res = get_bit_ops("xor")) == NULL) {
-		res = mpg_integer();
-		mpz_xor(res->mpg_i, mpz1, mpz2);
-	}
-	free_bit_ops();
-	return res;
 }
 
 

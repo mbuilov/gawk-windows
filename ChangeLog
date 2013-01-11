@@ -1,3 +1,15 @@
+2013-01-11         John Haque            <j.eh@mchsi.com>
+
+	* awk.h (do_mpfr_rshift): Renamed from do_mpfr_rhift.
+	* awkgram.y (do_mpfr_rshift): Renamed from do_mpfr_rhift.
+	* mpfr.c (_tz1, _tz2, _mpz1, _mpz2, mpz1, mpz2, get_bit_ops, free_bit_ops):
+	Removed.
+	(init_mpfr): Remove calls to mpz_init.
+	(get_intval, free_intval): New functions.
+	(do_mpfr_rshift, do_mpfr_lshift): Rework code.
+	(do_mpfr_and, do_mpfr_or, do_mpfr_xor): Accept two or more arguments to match
+	regular functions.
+
 2013-01-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* bisonfix.awk: Adjust ARGV / ARGC to force reading of standard
