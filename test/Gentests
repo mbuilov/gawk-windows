@@ -48,7 +48,10 @@ BEGIN {
 /^CHECK_MPFR *=/,/[^\\]$/ {
 	gsub(/(^CHECK_MPFR *=|\\$)/,"")
 	for (i = 1; i <= NF; i++)
+	{
 		mpfr[$i]
+printf("adding %s to mpfr\n", $i) > "/dev/stderr"
+	}
 	next
 }
 
@@ -99,14 +102,15 @@ function generate(x,	s)
 	}
 
 	printf "\t@echo $@\n"
-	printf "\t@AWKPATH=$(srcdir) $(AWK) -f $@.awk %s >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@\n", s
 
 	if (x in mpfr) {
 		delete mpfr[x]
+		printf "\t@AWKPATH=$(srcdir) $(AWK) $(AWKFLAGS) -f $@.awk %s >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@\n", s
 		printf "\t@-if test -z \"$$AWKFLAGS\" ; then $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ ; else \\\n"
 		printf "\t$(CMP) $(srcdir)/$@-mpfr.ok _$@ && rm -f _$@ ; \\\n"
 		printf "\tfi\n\n"
 	} else {
+		printf "\t@AWKPATH=$(srcdir) $(AWK) -f $@.awk %s >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@\n", s
 		printf "\t@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@\n\n"
 	}
 }

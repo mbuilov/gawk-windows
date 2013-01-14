@@ -1252,7 +1252,7 @@ fmtspcl.ok: fmtspcl.tok Makefile
 
 fmtspcl: fmtspcl.ok
 	@echo $@
-	@$(AWK) -f $(srcdir)/fmtspcl.awk  --lint >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@$(AWK) $(AWKFLAGS) -f $(srcdir)/fmtspcl.awk  --lint >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-if test -z "$$AWKFLAGS" ; then $(CMP) $@.ok _$@ && rm -f _$@ ; else \
 	$(CMP) $(srcdir)/$@-mpfr.ok _$@ && rm -f _$@ ; \
 	fi
@@ -1597,13 +1597,6 @@ rri1::
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
-
-rand:
-	@echo $@
-	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ ; else \
-	($(CMP) $(srcdir)/$@-mpfr.ok _$@ || $(CMP) $(srcdir)/$@-mpfr1.ok _$@) && rm -f _$@ ; \
-	fi
 
 mpfrieee:
 	@echo $@

@@ -655,6 +655,13 @@ prtoeval:
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+rand:
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) $(AWKFLAGS) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-if test -z "$$AWKFLAGS" ; then $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ ; else \
+	$(CMP) $(srcdir)/$@-mpfr.ok _$@ && rm -f _$@ ; \
+	fi
+
 range1:
 	@echo $@
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -1252,14 +1259,14 @@ fmttest:
 
 fnarydel:
 	@echo $@
-	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH=$(srcdir) $(AWK) $(AWKFLAGS) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-if test -z "$$AWKFLAGS" ; then $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ ; else \
 	$(CMP) $(srcdir)/$@-mpfr.ok _$@ && rm -f _$@ ; \
 	fi
 
 fnparydl:
 	@echo $@
-	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH=$(srcdir) $(AWK) $(AWKFLAGS) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-if test -z "$$AWKFLAGS" ; then $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ ; else \
 	$(CMP) $(srcdir)/$@-mpfr.ok _$@ && rm -f _$@ ; \
 	fi
