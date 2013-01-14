@@ -1757,7 +1757,7 @@ symtab6:
 symtab8:
 	@echo $@
 	@$(AWK) -d__$@ -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@
-	@grep -v '^ENVIRON' __$@ | grep -v '^PROCINFO' >> _$@ ; rm __$@
+	@grep -v '^ENVIRON' __$@ | grep -v '^PROCINFO' | grep -v '^FILENAME' >> _$@ ; rm __$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
