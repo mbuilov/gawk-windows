@@ -1,3 +1,12 @@
+2013-01-15         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (readdir): Try to protect against failure on filesystems
+	lacking type information by invoking readdir.awk before readdir0.awk
+	and passing the results of readdir to readdir0 for inspection.
+	* readdir0.awk: Analyze the results of the readdir extension.
+	If all file types are set to "u", we infer that this filesystem lacks
+	type information.
+
 2013-01-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (rand): Let Gentests create the test.
