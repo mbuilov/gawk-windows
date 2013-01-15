@@ -95,7 +95,6 @@ do_inplace_begin(int nargs, awk_value_t *result)
 {
 	awk_value_t filename;
 	struct stat sbuf;
-	char *p;
 	int fd;
 
 	assert(result != NULL);
