@@ -1,44 +1,72 @@
-.TH REVTWOWAY 3am "Jan 15 2013" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH INPLACE 3am "Jan 15 2013" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
-revtwoway \- Reverse strings sample two-way processor extension
+inplace \- emulate sed/perl/ruby in-place editing
 .SH SYNOPSIS
 .ft CW
-@load "revtwoway"
-.sp
 .nf
-BEGIN {
-    cmd = "/magic/mirror"
-    print "hello, world" |& cmd
-    cmd |& getline result
-    print result
-    close(cmd)
+@load "inplace"
+
+# Please set INPLACE_SUFFIX to make a backup copy.  For example, you may
+# want to set INPLACE_SUFFIX to .bak on the command line or in a BEGIN rule.
+
+BEGINFILE {
+    inplace_begin(FILENAME, INPLACE_SUFFIX)
+}
+
+ENDFILE {
+    inplace_end(FILENAME, INPLACE_SUFFIX)
 }
 .fi
 .ft R
 .SH DESCRIPTION
 The
-.I revtwoway
-extension
-adds a simple two-way processor that reverses the characters
-in each line sent to it for reading back by the AWK program.
-It's main purpose is to show how to write a two-way extension, although
-it may also be mildy amusing.
+.I inplace
+extension adds two functions named
+.B inplace_begin()
+and
+.BR inplace_end() .
+These functions are meant to be invoked from the
+.I inplace.awk
+wrapper (whose contents are displayed above)
+which is installed when
+.I gawk
+is.
+.PP
+By default, each named file on the command line is
+replaced with a new file of the same name whose contents
+are the results of running the AWK program.
+If the user supplies an AWK variable named
+.B INPLACE_SUFFIX
+in a
+.B BEGIN
+rule or on the command line, then the
+.I inplace
+extension concatenates that suffix onto the original
+filename and uses the result as a filename for renaming
+the original.
+... .SH NOTES
 ... .SH BUGS
+.SH EXAMPLE
+.ft CW
+.nf
+gawk -i inplace '\f(CIscript\fP' files ...
+.br
+gawk -i inplace -f \f(CIscriptfile\fP files ...
+.fi
+.ft R
 .SH "SEE ALSO"
 .IR "GAWK: Effective AWK Programming" ,
 .IR filefuncs (3am),
 .IR fnmatch (3am),
 .IR fork (3am),
-.IR inplace (3am),
 .IR ordchr (3am),
 .IR readdir (3am),
 .IR readfile (3am),
 .IR revoutput (3am),
-.IR rwarray (3am),
-.IR time (3am).
+.IR rwarray (3am).
 .SH AUTHOR
-Arnold Robbins,
-.BR arnold@skeeve.com .
+Andrew Schorr,
+.BR schorr@telemetry-investments.com .
 .SH COPYING PERMISSIONS
 Copyright \(co 2012, 2013,
 Free Software Foundation, Inc.
