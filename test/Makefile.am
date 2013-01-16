@@ -1220,7 +1220,7 @@ tweakfld::
 mmap8k::
 	@echo $@
 	@$(AWK) '{ print }' $(srcdir)/mmap8k.in >_$@
-	@-$(CMP) $(srcdir)/mmap8k.in _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/mmap8k.in _$@ && rm -f _$@ || cp $(srcdir)/$@.in $@.ok
 
 tradanch::
 	@echo $@
@@ -1443,7 +1443,7 @@ rtlenmb::
 	@echo $@
 	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
 	$(srcdir)/rtlen.sh >_$@ || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) $(srcdir)/rtlen.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 nondec2::
 	@echo $@
@@ -1563,7 +1563,9 @@ profile1:
 	@echo $@
 	@$(AWK) --pretty-print=ap-$@.out -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > _$@.out1
 	@$(AWK) -f ap-$@.out $(srcdir)/dtdgport.awk > _$@.out2 ; rm ap-$@.out
-	@cmp _$@.out1 _$@.out2 && rm _$@.out[12] || echo EXIT CODE: $$? >>_$@
+	@$(CMP) _$@.out1 _$@.out2 && rm _$@.out[12] || { echo EXIT CODE: $$? >>_$@ ; \
+	cp $(srcdir)/dtdgport.awk > $@.ok ; }
+	
 
 profile2:
 	@echo $@
@@ -1760,7 +1762,9 @@ $(srcdir)/Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
 	$(AWK) -f $(srcdir)/Gentests "$(srcdir)/Makefile.am" $$files > $(srcdir)/Maketests
 
 clean:
-	rm -fr _* core core.* fmtspcl.ok junk strftime.ok test1 test2 seq *~ readfile.ok fork.tmp.* testext.awk fts.ok readdir.ok
+	rm -fr _* core core.* fmtspcl.ok junk strftime.ok test1 test2 \
+	seq *~ readfile.ok fork.tmp.* testext.awk fts.ok readdir.ok \
+	mmap8k.ok profile1.ok
 
 # An attempt to print something that can be grepped for in build logs
 pass-fail:
