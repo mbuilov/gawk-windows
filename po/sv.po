@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.0.0h\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2012-12-25 22:35+0200\n"
+"POT-Creation-Date: 2013-01-16 20:54+0200\n"
 "PO-Revision-Date: 2012-01-30 12:07+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -39,7 +39,7 @@ msgid "attempt to use scalar `%s' as an array"
 msgstr "försök att använda skalären \"%s\" som en vektor"
 
 #: array.c:406 array.c:573 builtin.c:85 builtin.c:1594 builtin.c:1636
-#: builtin.c:1649 builtin.c:2075 builtin.c:2087 eval.c:1121 eval.c:1125
+#: builtin.c:1649 builtin.c:2077 builtin.c:2091 eval.c:1121 eval.c:1125
 #: eval.c:1524
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
@@ -565,7 +565,7 @@ msgstr "index: första argumentet är inte en sträng"
 msgid "index: received non-string second argument"
 msgstr "index: andra argumentet är inte en sträng"
 
-#: builtin.c:483 mpfr.c:770
+#: builtin.c:483 mpfr.c:757
 msgid "int: received non-numeric argument"
 msgstr "int: fick ett ickenumeriskt argument"
 
@@ -692,55 +692,55 @@ msgstr "sqrt: anropad med negativt argument %g"
 msgid "printf: no arguments"
 msgstr "printf: inga argument"
 
-#: builtin.c:1684
+#: builtin.c:1686
 msgid "sqrt: received non-numeric argument"
 msgstr "sqrt: fick ickenumeriskt argument"
 
-#: builtin.c:1688
+#: builtin.c:1690
 #, c-format
 msgid "sqrt: called with negative argument %g"
 msgstr "sqrt: anropad med negativt argument %g"
 
-#: builtin.c:1719
+#: builtin.c:1721
 #, c-format
 msgid "substr: length %g is not >= 1"
 msgstr "substr: längden %g är inte >= 1"
 
-#: builtin.c:1721
+#: builtin.c:1723
 #, c-format
 msgid "substr: length %g is not >= 0"
 msgstr "substr: längden %g är inte >= 0"
 
-#: builtin.c:1728
+#: builtin.c:1730
 #, c-format
 msgid "substr: non-integer length %g will be truncated"
 msgstr "substr: längden %g som inte är ett heltal kommer trunkeras"
 
-#: builtin.c:1733
+#: builtin.c:1735
 #, c-format
 msgid "substr: length %g too big for string indexing, truncating to %g"
 msgstr "substr: längden %g är för stor för strängindexering, trunkeras till %g"
 
-#: builtin.c:1745
+#: builtin.c:1747
 #, c-format
 msgid "substr: start index %g is invalid, using 1"
 msgstr "substr: startindex %g är ogiltigt, använder 1"
 
-#: builtin.c:1750
+#: builtin.c:1752
 #, c-format
 msgid "substr: non-integer start index %g will be truncated"
 msgstr "substr: startindex %g som inte är ett heltal kommer trunkeras"
 
-#: builtin.c:1775
+#: builtin.c:1777
 msgid "substr: source string is zero length"
 msgstr "substr: källsträngen är tom"
 
-#: builtin.c:1791
+#: builtin.c:1793
 #, c-format
 msgid "substr: start index %g is past end of string"
 msgstr "substr: startindex %g är bortom strängens slut"
 
-#: builtin.c:1799
+#: builtin.c:1801
 #, c-format
 msgid ""
 "substr: length %g at start index %g exceeds length of first argument (%lu)"
@@ -748,189 +748,189 @@ msgstr ""
 "substr: längden %g vid startindex %g överskrider det första argumentets "
 "längd (%lu)"
 
-#: builtin.c:1873
+#: builtin.c:1875
 msgid "strftime: format value in PROCINFO[\"strftime\"] has numeric type"
 msgstr "strftime: formatvärde i PROCINFO[\"strftime\"] har numerisk typ"
 
-#: builtin.c:1896
+#: builtin.c:1898
 msgid "strftime: received non-numeric second argument"
 msgstr "strftime: fick ett ickenumeriskt andra argument"
 
-#: builtin.c:1900
+#: builtin.c:1902
 msgid "strftime: second argument less than 0 or too big for time_t"
 msgstr "strftime: andra argimentet mindre än 0 eller för stort för time_t"
 
-#: builtin.c:1907
+#: builtin.c:1909
 msgid "strftime: received non-string first argument"
 msgstr "strftime: fick ett första argument som inte är en sträng"
 
-#: builtin.c:1914
+#: builtin.c:1916
 msgid "strftime: received empty format string"
 msgstr "strftime: fick en tom formatsträng"
 
-#: builtin.c:1980
+#: builtin.c:1982
 msgid "mktime: received non-string argument"
 msgstr "mktime: fick ett argument som inte är en sträng"
 
-#: builtin.c:1997
+#: builtin.c:1999
 msgid "mktime: at least one of the values is out of the default range"
 msgstr "mktime: åtminstone ett av värdena är utanför standardintervallet"
 
-#: builtin.c:2032
+#: builtin.c:2034
 msgid "'system' function not allowed in sandbox mode"
 msgstr "funktionen \"system\" är inte tillåten i sandlådeläge"
 
-#: builtin.c:2037
+#: builtin.c:2039
 msgid "system: received non-string argument"
 msgstr "system: fick ett argument som inte är en sträng"
 
-#: builtin.c:2155
+#: builtin.c:2159
 #, c-format
 msgid "reference to uninitialized field `$%d'"
 msgstr "referens till icke initierat fält \"$%d\""
 
-#: builtin.c:2242
+#: builtin.c:2246
 msgid "tolower: received non-string argument"
 msgstr "tolower: fick ett argument som inte är en sträng"
 
-#: builtin.c:2276
+#: builtin.c:2280
 msgid "toupper: received non-string argument"
 msgstr "toupper: fick ett argument som inte är en sträng"
 
-#: builtin.c:2312 mpfr.c:685
+#: builtin.c:2316 mpfr.c:672
 msgid "atan2: received non-numeric first argument"
 msgstr "atan2: fick ett ickenumeriskt första argument"
 
-#: builtin.c:2314 mpfr.c:687
+#: builtin.c:2318 mpfr.c:674
 msgid "atan2: received non-numeric second argument"
 msgstr "atan2: fick ett ickenumeriskt andra argument"
 
-#: builtin.c:2333
+#: builtin.c:2337
 msgid "sin: received non-numeric argument"
 msgstr "sin: fick ett ickenumeriskt argument"
 
-#: builtin.c:2349
+#: builtin.c:2353
 msgid "cos: received non-numeric argument"
 msgstr "cos: fick ett ickenumeriskt argument"
 
-#: builtin.c:2402 mpfr.c:1137
+#: builtin.c:2406 mpfr.c:1156
 msgid "srand: received non-numeric argument"
 msgstr "srand: fick ett ickenumeriskt argument"
 
-#: builtin.c:2433
+#: builtin.c:2437
 msgid "match: third argument is not an array"
 msgstr "match: tredje argumentet är inte en vektor"
 
-#: builtin.c:2705
+#: builtin.c:2709
 msgid "gensub: third argument of 0 treated as 1"
 msgstr "gensub: nollan i tredje argumentet behandlad som en etta"
 
-#: builtin.c:2998
+#: builtin.c:3002
 msgid "lshift: received non-numeric first argument"
 msgstr "lshift: fick ett ickenumeriskt första argument"
 
-#: builtin.c:3000
+#: builtin.c:3004
 msgid "lshift: received non-numeric second argument"
 msgstr "lshift: fick ett ickenumeriskt andra argument"
 
-#: builtin.c:3006
+#: builtin.c:3010
 #, fuzzy, c-format
 msgid "lshift(%f, %f): negative values will give strange results"
 msgstr "lshift(%lf, %lf): negativa värden kommer ge konstiga resultat"
 
-#: builtin.c:3008
+#: builtin.c:3012
 #, fuzzy, c-format
 msgid "lshift(%f, %f): fractional values will be truncated"
 msgstr "lshift(%lf, %lf): flyttalsvärden kommer trunkeras"
 
-#: builtin.c:3010
+#: builtin.c:3014
 #, fuzzy, c-format
 msgid "lshift(%f, %f): too large shift value will give strange results"
 msgstr "lshift(%lf, %lf): för stora skiftvärden kommer ge konstiga resultat"
 
-#: builtin.c:3035
+#: builtin.c:3039
 msgid "rshift: received non-numeric first argument"
 msgstr "rshift: fick ett ickenumeriskt första argument"
 
-#: builtin.c:3037
+#: builtin.c:3041
 msgid "rshift: received non-numeric second argument"
 msgstr "rshift: fick ett ickenumeriskt andra argument"
 
-#: builtin.c:3043
+#: builtin.c:3047
 #, fuzzy, c-format
 msgid "rshift(%f, %f): negative values will give strange results"
 msgstr "rshift(%lf, %lf): negativa värden kommer ge konstiga resultat"
 
-#: builtin.c:3045
+#: builtin.c:3049
 #, fuzzy, c-format
 msgid "rshift(%f, %f): fractional values will be truncated"
 msgstr "rshift(%lf, %lf): flyttalsvärden kommer trunkeras"
 
-#: builtin.c:3047
+#: builtin.c:3051
 #, fuzzy, c-format
 msgid "rshift(%f, %f): too large shift value will give strange results"
 msgstr "rshift(%lf, %lf): för stora skiftvärden kommer ge konstiga resultat"
 
-#: builtin.c:3072
+#: builtin.c:3076 mpfr.c:968
 #, fuzzy
 msgid "and: called with less than two arguments"
 msgstr "sqrt: anropad med negativt argument %g"
 
-#: builtin.c:3077
+#: builtin.c:3081
 #, fuzzy, c-format
 msgid "and: argument %d is non-numeric"
 msgstr "exp: argumentet %g är inte inom tillåten gräns"
 
-#: builtin.c:3081
+#: builtin.c:3085
 #, fuzzy, c-format
 msgid "and: argument %d negative value %g will give strange results"
 msgstr "and(%lf, %lf): negativa värden kommer ge konstiga resultat"
 
-#: builtin.c:3104
+#: builtin.c:3108 mpfr.c:1000
 #, fuzzy
 msgid "or: called with less than two arguments"
 msgstr "sqrt: anropad med negativt argument %g"
 
-#: builtin.c:3109
+#: builtin.c:3113
 #, fuzzy, c-format
 msgid "or: argument %d is non-numeric"
 msgstr "exp: argumentet %g är inte inom tillåten gräns"
 
-#: builtin.c:3113
+#: builtin.c:3117
 #, fuzzy, c-format
 msgid "or: argument %d negative value %g will give strange results"
 msgstr "compl(%lf): negativa värden kommer ge konstiga resultat"
 
-#: builtin.c:3135
+#: builtin.c:3139 mpfr.c:1031
 #, fuzzy
 msgid "xor: called with less than two arguments"
 msgstr "sqrt: anropad med negativt argument %g"
 
-#: builtin.c:3141
+#: builtin.c:3145
 #, fuzzy, c-format
 msgid "xor: argument %d is non-numeric"
 msgstr "exp: argumentet %g är inte inom tillåten gräns"
 
-#: builtin.c:3145
+#: builtin.c:3149
 #, fuzzy, c-format
 msgid "xor: argument %d negative value %g will give strange results"
 msgstr "xor(%lf, %lf): negativa värden kommer ge konstiga resultat"
 
-#: builtin.c:3170 mpfr.c:800
+#: builtin.c:3174 mpfr.c:787
 msgid "compl: received non-numeric argument"
 msgstr "compl: fick ett ickenumeriskt argument"
 
-#: builtin.c:3176
+#: builtin.c:3180
 #, fuzzy, c-format
 msgid "compl(%f): negative value will give strange results"
 msgstr "compl(%lf): negativa värden kommer ge konstiga resultat"
 
-#: builtin.c:3178
+#: builtin.c:3182
 #, fuzzy, c-format
 msgid "compl(%f): fractional value will be truncated"
 msgstr "compl(%lf): flyttalsvärden kommer trunkeras"
 
-#: builtin.c:3347
+#: builtin.c:3351
 #, c-format
 msgid "dcgettext: `%s' is not a valid locale category"
 msgstr "dcgettext: \"%s\" är inte en giltig lokalkategori"
@@ -2029,27 +2029,27 @@ msgid "extension: can't use gawk built-in `%s' as function name"
 msgstr ""
 "extension: kan inte använda gawks inbyggda \"%s\" som ett funktionsnamn"
 
-#: ext.c:375
+#: ext.c:374
 #, c-format
 msgid "function `%s' defined to take no more than %d argument(s)"
 msgstr "funktionen \"%s\" definierades för att ta maximalt %d argument"
 
-#: ext.c:378
+#: ext.c:377
 #, c-format
 msgid "function `%s': missing argument #%d"
 msgstr "funktionen \"%s\": argument %d saknas"
 
-#: ext.c:395
+#: ext.c:394
 #, c-format
 msgid "function `%s': argument #%d: attempt to use scalar as an array"
 msgstr "funktionen \"%s\": argument %d: försök att använda skalär som vektor"
 
-#: ext.c:399
+#: ext.c:398
 #, c-format
 msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr "funktionen \"%s\": argument %d: försök att använda vektor som skalär"
 
-#: ext.c:413
+#: ext.c:412
 msgid "dynamic loading of library not supported"
 msgstr ""
 
@@ -2535,285 +2535,285 @@ msgstr ""
 msgid "unnecessary mixing of `>' and `>>' for file `%.*s'"
 msgstr "onödig blandning av \">\" och \">>\" för filen \"%.*s\""
 
-#: io.c:807
+#: io.c:808
 #, c-format
 msgid "can't open pipe `%s' for output (%s)"
 msgstr "kan inte öppna röret \"%s\" för utmatning (%s)"
 
-#: io.c:817
+#: io.c:818
 #, c-format
 msgid "can't open pipe `%s' for input (%s)"
 msgstr "kan inte öppna röret \"%s\" för inmatning (%s)"
 
-#: io.c:848
+#: io.c:849
 #, c-format
 msgid "can't open two way pipe `%s' for input/output (%s)"
 msgstr "kan inte öppna tvåvägsröret \"%s\" för in-/utmatning (%s)"
 
-#: io.c:931
+#: io.c:932
 #, c-format
 msgid "can't redirect from `%s' (%s)"
 msgstr "kan inte dirigera om från \"%s\" (%s)"
 
-#: io.c:934
+#: io.c:935
 #, c-format
 msgid "can't redirect to `%s' (%s)"
 msgstr "kan inte dirigera om till \"%s\" (%s)"
 
-#: io.c:985
+#: io.c:986
 msgid ""
 "reached system limit for open files: starting to multiplex file descriptors"
 msgstr ""
 "nådde systembegränsningen för öppna filer: börjar multiplexa fildeskriptorer"
 
-#: io.c:1001
+#: io.c:1002
 #, c-format
 msgid "close of `%s' failed (%s)."
 msgstr "stängning av \"%s\" misslyckades (%s)"
 
-#: io.c:1009
+#: io.c:1010
 msgid "too many pipes or input files open"
 msgstr "för många rör eller indatafiler öppna"
 
-#: io.c:1031
+#: io.c:1032
 msgid "close: second argument must be `to' or `from'"
 msgstr "close: andra argumentet måste vara \"to\" eller \"from\""
 
-#: io.c:1048
+#: io.c:1049
 #, c-format
 msgid "close: `%.*s' is not an open file, pipe or co-process"
 msgstr "close: \"%.*s\" är inte en öppen fil, rör eller koprocess"
 
-#: io.c:1053
+#: io.c:1054
 msgid "close of redirection that was never opened"
 msgstr "stängning av omdirigering som aldrig öppnades"
 
-#: io.c:1150
+#: io.c:1151
 #, c-format
 msgid "close: redirection `%s' not opened with `|&', second argument ignored"
 msgstr ""
 "close: omdirigeringen \"%s\" öppnades inte med \"|&\", andra argumentet "
 "ignorerat"
 
-#: io.c:1167
+#: io.c:1168
 #, c-format
 msgid "failure status (%d) on pipe close of `%s' (%s)"
 msgstr "felstatus (%d) från rörstängning av \"%s\" (%s)"
 
-#: io.c:1170
+#: io.c:1171
 #, c-format
 msgid "failure status (%d) on file close of `%s' (%s)"
 msgstr "felstatus (%d) från filstängning av \"%s\" (%s)"
 
-#: io.c:1190
+#: io.c:1191
 #, c-format
 msgid "no explicit close of socket `%s' provided"
 msgstr "ingen explicit stängning av uttaget \"%s\" tillhandahållen"
 
-#: io.c:1193
+#: io.c:1194
 #, c-format
 msgid "no explicit close of co-process `%s' provided"
 msgstr "ingen explicit stängning av koprocessen \"%s\" tillhandahållen"
 
-#: io.c:1196
+#: io.c:1197
 #, c-format
 msgid "no explicit close of pipe `%s' provided"
 msgstr "ingen explicit stängning av röret \"%s\" tillhandahållen"
 
-#: io.c:1199
+#: io.c:1200
 #, c-format
 msgid "no explicit close of file `%s' provided"
 msgstr "ingen explicit stängning av filen \"%s\" tillhandahållen"
 
-#: io.c:1227 io.c:1282 main.c:845 main.c:882
+#: io.c:1228 io.c:1283 main.c:845 main.c:882
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "fel vid skrivning till standard ut (%s)"
 
-#: io.c:1231 io.c:1287
+#: io.c:1232 io.c:1288
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "fel vid skrivning till standard fel (%s)"
 
-#: io.c:1239
+#: io.c:1240
 #, c-format
 msgid "pipe flush of `%s' failed (%s)."
 msgstr "rörspolning av \"%s\" misslyckades (%s)"
 
-#: io.c:1242
+#: io.c:1243
 #, c-format
 msgid "co-process flush of pipe to `%s' failed (%s)."
 msgstr "koprocesspolning av röret till \"%s\" misslyckades (%s)"
 
-#: io.c:1245
+#: io.c:1246
 #, c-format
 msgid "file flush of `%s' failed (%s)."
 msgstr "filspolning av \"%s\" misslyckades (%s)"
 
-#: io.c:1359
+#: io.c:1360
 #, c-format
 msgid "local port %s invalid in `/inet'"
 msgstr "lokal port %s ogiltig i \"/inet\""
 
-#: io.c:1377
+#: io.c:1378
 #, c-format
 msgid "remote host and port information (%s, %s) invalid"
 msgstr "ogiltig information (%s, %s) för fjärrvärd och fjärrport"
 
-#: io.c:1529
+#: io.c:1530
 #, c-format
 msgid "no (known) protocol supplied in special filename `%s'"
 msgstr ""
 "inget (känt) protokoll tillhandahållet i det speciella filnamnet \"%s\""
 
-#: io.c:1543
+#: io.c:1544
 #, c-format
 msgid "special file name `%s' is incomplete"
 msgstr "speciellt filnamn \"%s\" är ofullständigt"
 
-#: io.c:1560
+#: io.c:1561
 msgid "must supply a remote hostname to `/inet'"
 msgstr "måste tillhandahålla ett fjärrdatornamn till \"/inet\""
 
-#: io.c:1578
+#: io.c:1579
 msgid "must supply a remote port to `/inet'"
 msgstr "måste tillhandahålla en fjärrport till \"/inet\""
 
-#: io.c:1624
+#: io.c:1625
 msgid "TCP/IP communications are not supported"
 msgstr "TCP/IP-kommunikation stöds inte"
 
-#: io.c:1798
+#: io.c:1800
 #, c-format
 msgid "could not open `%s', mode `%s'"
 msgstr "kunde inte öppna \"%s\", läge \"%s\""
 
-#: io.c:1848
+#: io.c:1850
 #, c-format
 msgid "close of master pty failed (%s)"
 msgstr "stängning av huvudpty misslyckades (%s)"
 
-#: io.c:1850 io.c:2025 io.c:2194
+#: io.c:1852 io.c:2028 io.c:2198
 #, c-format
 msgid "close of stdout in child failed (%s)"
 msgstr "stängning av standard ut i barnet misslyckades (%s)"
 
-#: io.c:1853
+#: io.c:1855
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
 msgstr "flyttandet av slavpty till standard ut i barnet misslyckades (dup: %s)"
 
-#: io.c:1855 io.c:2030
+#: io.c:1857 io.c:2033
 #, c-format
 msgid "close of stdin in child failed (%s)"
 msgstr "stängning av standard in i barnet misslyckades (%s)"
 
-#: io.c:1858
+#: io.c:1860
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
 msgstr "flyttandet av slavpty till standard in i barnet misslyckades (dup: %s)"
 
-#: io.c:1860 io.c:1881
+#: io.c:1862 io.c:1883
 #, c-format
 msgid "close of slave pty failed (%s)"
 msgstr "stängning av slavpty misslyckades (%s)"
 
-#: io.c:1966 io.c:2028 io.c:2171 io.c:2197
+#: io.c:1969 io.c:2031 io.c:2175 io.c:2201
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
 msgstr "flyttande av rör till standard ut i barnet misslyckades (dup: %s)"
 
-#: io.c:1973 io.c:2033
+#: io.c:1976 io.c:2036
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
 msgstr "flyttande av rör till standard in i barnet misslyckades (dup: %s)"
 
-#: io.c:1993 io.c:2187
+#: io.c:1996 io.c:2191
 msgid "restoring stdout in parent process failed\n"
 msgstr "återställande av standard ut i förälderprocessen misslyckades\n"
 
-#: io.c:2001
+#: io.c:2004
 msgid "restoring stdin in parent process failed\n"
 msgstr "återställande av standard in i förälderprocessen misslyckades\n"
 
-#: io.c:2036 io.c:2199 io.c:2213
+#: io.c:2039 io.c:2203 io.c:2217
 #, c-format
 msgid "close of pipe failed (%s)"
 msgstr "stängning av röret misslyckades (%s)"
 
-#: io.c:2089
+#: io.c:2093
 msgid "`|&' not supported"
 msgstr "\"|&\" stöds inte"
 
-#: io.c:2156
+#: io.c:2160
 #, c-format
 msgid "cannot open pipe `%s' (%s)"
 msgstr "kan inte öppna röret \"%s\" (%s)"
 
-#: io.c:2207
+#: io.c:2211
 #, c-format
 msgid "cannot create child process for `%s' (fork: %s)"
 msgstr "kan inte skapa barnprocess för \"%s\" (fork: %s)"
 
-#: io.c:2667
+#: io.c:2671
 msgid "register_input_parser: received NULL pointer"
 msgstr ""
 
-#: io.c:2695
+#: io.c:2699
 #, c-format
 msgid "input parser `%s' conflicts with previously installed input parser `%s'"
 msgstr ""
 
-#: io.c:2702
+#: io.c:2706
 #, c-format
 msgid "input parser `%s' failed to open `%s'"
 msgstr ""
 
-#: io.c:2722
+#: io.c:2726
 msgid "register_output_wrapper: received NULL pointer"
 msgstr ""
 
-#: io.c:2750
+#: io.c:2754
 #, c-format
 msgid ""
 "output wrapper `%s' conflicts with previously installed output wrapper `%s'"
 msgstr ""
 
-#: io.c:2757
+#: io.c:2761
 #, c-format
 msgid "output wrapper `%s' failed to open `%s'"
 msgstr ""
 
-#: io.c:2778
+#: io.c:2782
 msgid "register_output_processor: received NULL pointer"
 msgstr ""
 
-#: io.c:2807
+#: io.c:2811
 #, c-format
 msgid ""
 "two-way processor `%s' conflicts with previously installed two-way processor "
 "`%s'"
 msgstr ""
 
-#: io.c:2816
+#: io.c:2820
 #, c-format
 msgid "two way processor `%s' failed to open `%s'"
 msgstr ""
 
-#: io.c:2923
+#: io.c:2927
 #, c-format
 msgid "data file `%s' is empty"
 msgstr "datafilen \"%s\" är tom"
 
-#: io.c:2965 io.c:2973
+#: io.c:2969 io.c:2977
 msgid "could not allocate more input memory"
 msgstr "kunde inte allokera mer indataminne"
 
-#: io.c:3539
+#: io.c:3543
 msgid "multicharacter value of `RS' is a gawk extension"
 msgstr "flerteckensvärdet av \"RS\" är en gawk-utökning"
 
-#: io.c:3628
+#: io.c:3632
 msgid "IPv6 communication is not supported"
 msgstr "IPv6-kommunikation stöds inte"
 
@@ -3156,75 +3156,59 @@ msgstr "ingen föröppnad fd %d"
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "kunde inte föröppna /dev/null för fd %d"
 
-#: mpfr.c:563
+#: mpfr.c:550
 #, fuzzy, c-format
 msgid "PREC value `%.*s' is invalid"
 msgstr "BINMODE-värde \"%s\" är ogiltigt, behandlas som 3"
 
-#: mpfr.c:621
+#: mpfr.c:608
 #, fuzzy, c-format
 msgid "RNDMODE value `%.*s' is invalid"
 msgstr "BINMODE-värde \"%s\" är ogiltigt, behandlas som 3"
 
-#: mpfr.c:711
+#: mpfr.c:698
 #, fuzzy, c-format
 msgid "%s: received non-numeric argument"
 msgstr "cos: fick ett ickenumeriskt argument"
 
-#: mpfr.c:813
+#: mpfr.c:800
 #, fuzzy
 msgid "compl(%Rg): negative value will give strange results"
 msgstr "compl(%lf): negativa värden kommer ge konstiga resultat"
 
-#: mpfr.c:817
+#: mpfr.c:804
 #, fuzzy
 msgid "comp(%Rg): fractional value will be truncated"
 msgstr "compl(%lf): flyttalsvärden kommer trunkeras"
 
-#: mpfr.c:829
+#: mpfr.c:816
 #, fuzzy, c-format
 msgid "cmpl(%Zd): negative values will give strange results"
 msgstr "compl(%lf): negativa värden kommer ge konstiga resultat"
 
-#: mpfr.c:856
+#: mpfr.c:835
 #, fuzzy, c-format
-msgid "%s: received non-numeric first argument"
-msgstr "or: fick ett ickenumeriskt första argument"
+msgid "%s: received non-numeric argument #%d"
+msgstr "cos: fick ett ickenumeriskt argument"
 
-#: mpfr.c:858
-#, fuzzy, c-format
-msgid "%s: received non-numeric second argument"
-msgstr "or: fick ett ickenumeriskt andra argument"
+#: mpfr.c:845
+msgid "%s: argument #%d has invalid value %Rg, using 0"
+msgstr ""
 
-#: mpfr.c:877
+#: mpfr.c:857
 #, fuzzy
-msgid "%s(%Rg, ..): negative values will give strange results"
-msgstr "or(%lf, %lf): negativa värden kommer ge konstiga resultat"
+msgid "%s: argument #%d negative value %Rg will give strange results"
+msgstr "compl(%lf): negativa värden kommer ge konstiga resultat"
 
-#: mpfr.c:882
+#: mpfr.c:863
 #, fuzzy
-msgid "%s(%Rg, ..): fractional values will be truncated"
+msgid "%s: argument #%d fractional value %Rg will be truncated"
 msgstr "or(%lf, %lf): flyttalsvärden kommer trunkeras"
 
-#: mpfr.c:895
+#: mpfr.c:878
 #, fuzzy, c-format
-msgid "%s(%Zd, ..): negative values will give strange results"
-msgstr "or(%lf, %lf): negativa värden kommer ge konstiga resultat"
-
-#: mpfr.c:914
-#, fuzzy
-msgid "%s(.., %Rg): negative values will give strange results"
-msgstr "or(%lf, %lf): negativa värden kommer ge konstiga resultat"
-
-#: mpfr.c:919
-#, fuzzy
-msgid "%s(.., %Rg): fractional values will be truncated"
-msgstr "or(%lf, %lf): flyttalsvärden kommer trunkeras"
-
-#: mpfr.c:932
-#, fuzzy, c-format
-msgid "%s(.., %Zd): negative values will give strange results"
-msgstr "or(%lf, %lf): negativa värden kommer ge konstiga resultat"
+msgid "%s: argument #%d negative value %Zd will give strange results"
+msgstr "compl(%lf): negativa värden kommer ge konstiga resultat"
 
 #: msg.c:61
 #, c-format
@@ -3414,6 +3398,34 @@ msgstr "Inget föregående reguljärt uttryck"
 #: symbol.c:735
 msgid "can not pop main context"
 msgstr ""
+
+#, fuzzy
+#~ msgid "%s: received non-numeric first argument"
+#~ msgstr "or: fick ett ickenumeriskt första argument"
+
+#, fuzzy
+#~ msgid "%s: received non-numeric second argument"
+#~ msgstr "or: fick ett ickenumeriskt andra argument"
+
+#, fuzzy
+#~ msgid "%s(%Rg, ..): negative values will give strange results"
+#~ msgstr "or(%lf, %lf): negativa värden kommer ge konstiga resultat"
+
+#, fuzzy
+#~ msgid "%s(%Rg, ..): fractional values will be truncated"
+#~ msgstr "or(%lf, %lf): flyttalsvärden kommer trunkeras"
+
+#, fuzzy
+#~ msgid "%s(%Zd, ..): negative values will give strange results"
+#~ msgstr "or(%lf, %lf): negativa värden kommer ge konstiga resultat"
+
+#, fuzzy
+#~ msgid "%s(.., %Rg): negative values will give strange results"
+#~ msgstr "or(%lf, %lf): negativa värden kommer ge konstiga resultat"
+
+#, fuzzy
+#~ msgid "%s(.., %Zd): negative values will give strange results"
+#~ msgstr "or(%lf, %lf): negativa värden kommer ge konstiga resultat"
 
 #~ msgid "`%s' is a Bell Labs extension"
 #~ msgstr "\"%s\" är en Bell Labs-utökning"
