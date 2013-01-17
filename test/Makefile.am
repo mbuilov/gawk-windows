@@ -740,6 +740,7 @@ EXTRA_DIST = \
 	rswhite.ok \
 	rtlen.ok \
 	rtlen.sh \
+	rtlenmb.ok \
 	rtlen01.ok \
 	rtlen01.sh \
 	rwarray.awk \
