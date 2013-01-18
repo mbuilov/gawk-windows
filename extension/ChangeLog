@@ -1,3 +1,10 @@
+2013-01-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* readfile.c (do_readfile): Free `text' if read fails. Thanks to
+	cppcheck.
+	* inplace.c (do_inplace_begin): Check chown return value in an if
+	to shut up compiler warning.
+
 2013-01-15         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* inplace.3am: New file.

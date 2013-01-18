@@ -144,7 +144,9 @@ do_inplace_begin(int nargs, awk_value_t *result)
 
 	/* N.B. chown/chmod should be more portable than fchown/fchmod */
 	if (chown(state.tname, sbuf.st_uid, sbuf.st_gid) < 0)
-	   chown(state.tname, -1, sbuf.st_gid);
+		/* checking chown here shuts up the compiler. bleah */
+		if (chown(state.tname, -1, sbuf.st_gid) < 0)
+			;
 	if (chmod(state.tname, sbuf.st_mode) < 0)
 		fatal(ext_id, _("inplace_begin: chmod failed (%s)"),
 			strerror(errno));
