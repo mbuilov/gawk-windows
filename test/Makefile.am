@@ -681,6 +681,8 @@ EXTRA_DIST = \
 	regeq.ok \
 	regexprange.awk \
 	regexprange.ok \
+	reginttrad.awk \
+	reginttrad.ok \
 	regrange.awk \
 	regrange.ok \
 	regtest.sh \
@@ -951,7 +953,7 @@ GAWK_EXT_TESTS = \
 	nastyparm  next nondec nondec2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 procinfs \
 	profile1 profile2 profile3 pty1 \
-	rebuf regx8bit reint reint2 rsstart1 \
+	rebuf regx8bit reginttrad reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
 	strtonum switch2 \
 	symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 symtab7 \
@@ -1743,6 +1745,7 @@ charasbytes:
 	od -c -t x1 | sed -e 's/  */ /g' -e 's/ *$$//' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+
 symtab6:
 	@echo $@
 	@$(AWK) -d__$@ -f $(srcdir)/$@.awk
@@ -1753,6 +1756,11 @@ symtab8:
 	@echo $@
 	@$(AWK) -d__$@ -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@
 	@grep -v '^ENVIRON' __$@ | grep -v '^PROCINFO' | grep -v '^FILENAME' >> _$@ ; rm __$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+reginttrad:
+	@echo $@
+	@$(AWK) --traditional -r -f $@.awk > _$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
