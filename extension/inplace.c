@@ -44,6 +44,10 @@
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
 
+#if ! defined(S_ISREG) && defined(S_IFREG)
+#define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#endif
+
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
 static const char *ext_version = "inplace extension: version 1.0";
