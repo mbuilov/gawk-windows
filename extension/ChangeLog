@@ -1,7 +1,15 @@
 2013-01-22         Arnold D. Robbins     <arnold@skeeve.com>
 
-	* gawkfts.c (S_ISREG): Define macro if not defined. Portability.
-	* inplace.c (S_ISREG): Ditto.
+	Improve portability. We hope.
+
+	* gawkfts.c (S_ISREG): Define macro if not defined.
+	(_BSD_SOURCE): Define for use with c99 compiler driver.
+	* inplace.c (S_ISREG): Define macro if not defined.
+	(_XOPEN_SOURCE, _XOPEN_SOURCE_EXTENDED): Define for use with c99
+	compiler driver.
+	* filefuncs.c (_BSD_SOURCE): Define for use with c99 compiler driver.
+	* readfile.c (_BSD_SOURCE): Define for use with c99 compiler driver.
+	* revtwoway.c (_BSD_SOURCE): Define for use with c99 compiler driver.
 
 2013-01-18         Arnold D. Robbins     <arnold@skeeve.com>
 

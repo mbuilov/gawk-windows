@@ -27,6 +27,9 @@
 #include <config.h>
 #endif
 
+#define _XOPEN_SOURCE
+#define _XOPEN_SOURCE_EXTENDED
+
 #include <stdio.h>
 #include <assert.h>
 #include <errno.h>
