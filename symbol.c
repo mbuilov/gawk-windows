@@ -376,13 +376,20 @@ get_symbols(SYMBOL_TYPE what, int sort)
 	long max;
 	NODE *the_table;
 
+	/*
+	 * assoc_list() returns an array with two elements per awk array
+	 * element. Elements i and i+1 in the C array represent the key
+	 * and value of element j in the awk array. Thus the loops use += 2
+	 * to go through the awk array.
+	 */
+
 	if (what == FUNCTION) {
 		count = func_count;
 		the_table = func_table;
 
 		max = the_table->table_size * 2;
 		list = assoc_list(the_table, "@unsorted", ASORTI);
-		emalloc(table, NODE **, (count + 1) * sizeof(NODE *), "symbol_list");
+		emalloc(table, NODE **, (count + 1) * sizeof(NODE *), "get_symbols");
 
 		for (i = j = 0; i < max; i += 2) {
 			r = list[i+1];
@@ -391,6 +398,7 @@ get_symbols(SYMBOL_TYPE what, int sort)
 			assert(r->type == Node_func);
 			table[j++] = r;
 		}
+		count = j;
 	} else {	/* what == VARIABLE */
 		the_table = symbol_table;
 		count = var_count;
@@ -399,7 +407,7 @@ get_symbols(SYMBOL_TYPE what, int sort)
 
 		max = the_table->table_size * 2;
 		list = assoc_list(the_table, "@unsorted", ASORTI);
-		emalloc(table, NODE **, (count + 1) * sizeof(NODE *), "symbol_list");
+		emalloc(table, NODE **, (count + 1) * sizeof(NODE *), "get_symbols");
 
 		for (i = j = 0; i < max; i += 2) {
 			r = list[i+1];
@@ -407,6 +415,7 @@ get_symbols(SYMBOL_TYPE what, int sort)
 				continue;
 			table[j++] = r;
 		}
+		count = j;
 	}
 
 	efree(list);
