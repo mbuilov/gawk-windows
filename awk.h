@@ -1647,7 +1647,7 @@ extern void pop_context();
 extern int in_main_context();
 extern void free_context(AWK_CONTEXT *ctxt, bool keep_globals);
 extern NODE **variable_list();
-extern NODE **function_list(int sort);
+extern NODE **function_list(bool sort);
 extern void print_vars(NODE **table, Func_print print_func, FILE *fp);
 
 /* floatcomp.c */

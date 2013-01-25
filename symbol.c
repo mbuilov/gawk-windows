@@ -366,13 +366,13 @@ typedef enum { FUNCTION = 1, VARIABLE } SYMBOL_TYPE;
 /* get_symbols --- return a list of optionally sorted symbols */
  
 static NODE **
-get_symbols(SYMBOL_TYPE what, int sort)
+get_symbols(SYMBOL_TYPE what, bool sort)
 {
 	int i;
 	NODE **table;
 	NODE **list;
 	NODE *r;
-	long j, count = 0;
+	long count = 0;
 	long max;
 	NODE *the_table;
 
@@ -384,38 +384,34 @@ get_symbols(SYMBOL_TYPE what, int sort)
 	 */
 
 	if (what == FUNCTION) {
-		count = func_count;
 		the_table = func_table;
-
 		max = the_table->table_size * 2;
-		list = assoc_list(the_table, "@unsorted", ASORTI);
-		emalloc(table, NODE **, (count + 1) * sizeof(NODE *), "get_symbols");
 
-		for (i = j = 0; i < max; i += 2) {
+		list = assoc_list(the_table, "@unsorted", ASORTI);
+		emalloc(table, NODE **, (func_count + 1) * sizeof(NODE *), "get_symbols");
+
+		for (i = count = 0; i < max; i += 2) {
 			r = list[i+1];
 			if (r->type == Node_ext_func)
 				continue;
 			assert(r->type == Node_func);
-			table[j++] = r;
+			table[count++] = r;
 		}
-		count = j;
 	} else {	/* what == VARIABLE */
-		the_table = symbol_table;
-		count = var_count;
-
 		update_global_values();
 
+		the_table = symbol_table;
 		max = the_table->table_size * 2;
-		list = assoc_list(the_table, "@unsorted", ASORTI);
-		emalloc(table, NODE **, (count + 1) * sizeof(NODE *), "get_symbols");
 
-		for (i = j = 0; i < max; i += 2) {
+		list = assoc_list(the_table, "@unsorted", ASORTI);
+		emalloc(table, NODE **, (var_count + 1) * sizeof(NODE *), "get_symbols");
+
+		for (i = count = 0; i < max; i += 2) {
 			r = list[i+1];
 			if (r->type == Node_val)	/* non-variable in SYMTAB */
 				continue;
-			table[j++] = r;
+			table[count++] = r;
 		}
-		count = j;
 	}
 
 	efree(list);
@@ -438,7 +434,7 @@ variable_list()
 /* function_list --- list of functions */
 
 NODE **
-function_list(int sort)
+function_list(bool sort)
 {
 	return get_symbols(FUNCTION, sort);
 }
