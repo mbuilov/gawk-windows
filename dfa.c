@@ -480,6 +480,7 @@ static void regexp (void);
     (sizeof (t) == 1 ? xzalloc (n) : xcalloc (n, sizeof (t)))
 
 #define CALLOC(p, n) do { (p) = XCALLOC (n, *(p)); } while (0)
+#undef MALLOC	/* Irix defines this */
 #define MALLOC(p, n) do { (p) = XNMALLOC (n, *(p)); } while (0)
 #define REALLOC(p, n) do {(p) = xnrealloc (p, n, sizeof (*(p))); } while (0)
 

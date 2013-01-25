@@ -117,6 +117,7 @@ gawk_OBJECTS = $(am_gawk_OBJECTS)
 gawk_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
 gawk_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -458,7 +459,7 @@ base_sources = \
 gawk_SOURCES = $(base_sources)
 
 # Get extra libs as needed, Automake will supply LIBINTL and SOCKET_LIBS.
-LDADD = $(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS) @LIBREADLINE@ @LIBMPFR@
+LDADD = $(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS) $(LIBREADLINE) $(LIBMPFR)
 
 # stuff for compiling gawk/pgawk
 DEFPATH = '".$(PATH_SEPARATOR)$(pkgdatadir)"'

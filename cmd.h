@@ -38,7 +38,7 @@ extern int gprintf(FILE *fp, const char *format, ...);
 extern jmp_buf pager_quit_tag;
 extern bool pager_quit_tag_valid;
 
-extern int output_is_tty;
+extern bool output_is_tty;
 extern int input_fd;
 extern bool input_from_tty;
 extern FILE *out_fp;

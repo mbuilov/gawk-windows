@@ -46,7 +46,7 @@ static char **check_params(char *fname, int pcount, INSTRUCTION *list);
 static int install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist);
 static NODE *mk_rexp(INSTRUCTION *exp);
 static void param_sanity(INSTRUCTION *arglist);
-static int parms_shadow(INSTRUCTION *pc, int *shadow);
+static int parms_shadow(INSTRUCTION *pc, bool *shadow);
 #ifndef NO_LINT
 static int isnoeffect(OPCODE type);
 #endif
@@ -3994,7 +3994,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 /* parms_shadow --- check if parameters shadow globals */
 
 static int
-parms_shadow(INSTRUCTION *pc, int *shadow)
+parms_shadow(INSTRUCTION *pc, bool *shadow)
 {
 	int pcount, i;
 	bool ret = false;
