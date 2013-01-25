@@ -1,5 +1,5 @@
 dnl Check for readline and dependencies
-dnl Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+dnl Copyright (C) 2004, 2005, 2013 Free Software Foundation, Inc.
 dnl
 dnl This file is free software, distributed under the terms of the GNU
 dnl General Public License.  As a special exception to the GNU General
@@ -9,8 +9,14 @@ dnl the same distribution terms as the rest of that program.
 dnl
 dnl Defines HAVE_LIBREADLINE to 1 if a working readline setup is
 dnl found, and sets @LIBREADLINE@ to the necessary libraries.
+dnl
+dnl Based upon GNUPG_CHECK_READLINE.  Many more years into the
+dnl twenty-first century, it is not enough to link a test program
+dnl with the readline library. On several systems, if readline is
+dnl not linked with the curses / termcap / whatever libraries, the
+dnl problem is only discovered at run time.  Isn't that special?
 
-AC_DEFUN([GNUPG_CHECK_READLINE],
+AC_DEFUN([GAWK_CHECK_READLINE],
 [
   AC_ARG_WITH([readline],
      AC_HELP_STRING([--with-readline=DIR],
@@ -30,19 +36,31 @@ AC_DEFUN([GNUPG_CHECK_READLINE],
 
         AC_MSG_CHECKING([whether readline via \"$_combo\" is present and sane])
 
-        AC_LINK_IFELSE([
-	AC_LANG_PROGRAM([
-#include <stdio.h>
+	AC_TRY_RUN(
+dnl source program:
+AC_LANG_SOURCE([[#include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-],[
-rl_completion_func_t *completer;
-add_history("foobar");
-rl_catch_signals=0;
-rl_inhibit_completion=0;
-rl_attempted_completion_function=NULL;
-rl_completion_matches(NULL,NULL);
-])],_found_readline=yes,_found_readline=no)
+
+int main(int argc, char **argv)
+{
+	int fd;
+	char *line;
+
+	close(0);
+	close(1);
+	fd = open("/dev/null", 2);	/* should get fd 0 */
+	dup(fd);
+	line = readline("giveittome> ");
+
+	printf("got <%s>\n", line);
+	return 0;
+}]]),
+dnl action if true:
+            [_found_readline=yes],
+dnl action if false:
+            [_found_readline=no],
+	)
 
         AC_MSG_RESULT([$_found_readline])
 

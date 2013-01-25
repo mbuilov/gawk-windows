@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk], 4.0.72, bug-gawk@gnu.org, gawk)
+AC_INIT([GNU Awk], 4.0.73, bug-gawk@gnu.org, gawk)
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -347,7 +347,7 @@ dnl check for sockets
 GAWK_AC_LIB_SOCKETS
 
 dnl check for readline support
-GNUPG_CHECK_READLINE
+GAWK_CHECK_READLINE
 
 dnl check for mpfr support
 GNUPG_CHECK_MPFR
