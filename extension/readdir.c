@@ -50,6 +50,8 @@
 #error Cannot compile the dirent extension on this system!
 #endif
 
+#include "gawkdirfd.h"
+
 #include "gawkapi.h"
 
 #include "gettext.h"

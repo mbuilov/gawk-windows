@@ -23,10 +23,12 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk Bundled Extensions], 4.0.70, bug-gawk@gnu.org, gawk-extensions)
+AC_INIT([GNU Awk Bundled Extensions], 4.0.73, bug-gawk@gnu.org, gawk-extensions)
 
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
+
+AC_USE_SYSTEM_EXTENSIONS
 
 INSTALL="$ac_aux_dir/install-sh -c"
 export INSTALL
@@ -35,6 +37,7 @@ AM_INIT_AUTOMAKE([-Wall -Werror])
 
 AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION([0.18.1])
+
 
 AM_PROG_AR
 AC_SYS_LARGEFILE
@@ -50,7 +53,7 @@ then
 fi
 
 AC_MSG_CHECKING([for special development options])
-if test -f $srcdir/.developing
+if test -f $srcdir/../.developing
 then
 	if test "$GCC" = yes
 	then
@@ -65,6 +68,9 @@ AC_CHECK_HEADERS(dirent.h fnmatch.h time.h sys/time.h sys/select.h)
 
 AC_CHECK_FUNCS(fdopendir fnmatch gettimeofday \
 		getdtablesize nanosleep select GetSystemTimeAsFileTime)
+
+GAWK_FUNC_DIRFD
+GAWK_PREREQ_DIRFD
 
 dnl checks for compiler characteristics
 AC_C_INLINE
