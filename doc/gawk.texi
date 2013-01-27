@@ -17611,6 +17611,11 @@ BEGIN @{
 @}
 @end example
 
+In this example, the first call to @code{foo()} generates
+a fatal error, so @command{gawk} will not report the second
+error. If you comment out that call, though, then @command{gawk}
+will report the second error.
+
 Usually, such things aren't a big issue, but it's worth
 being aware of them.
 @c ENDOFRANGE udfunc
