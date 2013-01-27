@@ -1210,6 +1210,8 @@ AWKPROG = ../gawk$(EXEEXT)
 # Default for VALGRIND is empty unless overridden by a command-line argument.
 # This protects against cruft in the environment.
 VALGRIND = 
+@TEST_MPFR_FALSE@CHECKMPFR = 
+@TEST_MPFR_TRUE@CHECKMPFR = mpfr-msg-start   mpfr-tests             mpfr-msg-end
 all: all-am
 
 .SUFFIXES:
@@ -1404,7 +1406,8 @@ check:	msg \
 	extend-msg-start gawk-extensions extend-msg-end \
 	machine-msg-start machine-tests machine-msg-end \
 	charset-msg-start charset-tests charset-msg-end \
-	shlib-msg-start  shlib-tests     shlib-msg-end
+	shlib-msg-start  shlib-tests     shlib-msg-end \
+	$(CHECKMPFR)
 	@$(MAKE) pass-fail
 
 basic:	$(BASIC_TESTS)
@@ -1476,6 +1479,12 @@ shlib-msg-start:
 
 shlib-msg-end:
 	@echo "======== Done with shared library tests ========"
+
+mpfr-msg-start:
+	@echo "======== Starting MPFR tests ========"
+
+mpfr-msg-end:
+	@echo "======== Done with MPFR tests ========"
 
 lc_num1:
 	@echo $@

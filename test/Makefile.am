@@ -1011,6 +1011,12 @@ VALGRIND =
 # And we set AWKLIBPATH to find the extension libraries we built.
 AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} AWKLIBPATH=../extension/.libs $(VALGRIND) $(AWKPROG)
 
+if TEST_MPFR
+CHECKMPFR = mpfr-msg-start   mpfr-tests             mpfr-msg-end
+else
+CHECKMPFR = 
+endif
+
 # Message stuff is to make it a little easier to follow.
 # Make the pass-fail last and dependent on others to avoid
 # spurious errors if `make -j' in effect.
@@ -1021,7 +1027,8 @@ check:	msg \
 	extend-msg-start gawk-extensions extend-msg-end \
 	machine-msg-start machine-tests machine-msg-end \
 	charset-msg-start charset-tests charset-msg-end \
-	shlib-msg-start  shlib-tests     shlib-msg-end
+	shlib-msg-start  shlib-tests     shlib-msg-end \
+	$(CHECKMPFR)
 	@$(MAKE) pass-fail
 
 basic:	$(BASIC_TESTS)
@@ -1093,6 +1100,12 @@ shlib-msg-start:
 
 shlib-msg-end:
 	@echo "======== Done with shared library tests ========"
+
+mpfr-msg-start:
+	@echo "======== Starting MPFR tests ========"
+
+mpfr-msg-end:
+	@echo "======== Done with MPFR tests ========"
 
 
 lc_num1:

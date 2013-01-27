@@ -351,6 +351,7 @@ GAWK_CHECK_READLINE
 
 dnl check for mpfr support
 GNUPG_CHECK_MPFR
+AM_CONDITIONAL([TEST_MPFR], [test -n "$LIBMPFR"])
 
 dnl checks for structure members
 AC_STRUCT_ST_BLKSIZE
