@@ -495,6 +495,19 @@ EXTRA_DIST = \
 	minusstr.ok \
 	mixed1.ok \
 	mmap8k.in \
+	mpfrbigint.awk \
+	mpfrbigint.ok \
+	mpfrexprange.awk \
+	mpfrexprange.ok \
+	mpfrieee.awk \
+	mpfrieee.ok \
+	mpfrnr.awk \
+	mpfrnr.in \
+	mpfrnr.ok \
+	mpfrrnd.awk \
+	mpfrrnd.ok \
+	mpfrsort.awk \
+	mpfrsort.ok \
 	mtchi18n.awk \
 	mtchi18n.in \
 	mtchi18n.ok \
@@ -1773,7 +1786,7 @@ symtab8:
 
 reginttrad:
 	@echo $@
-	@$(AWK) --traditional -r -f $@.awk > _$@
+	@$(AWK) --traditional -r -f $(srcdir)/$@.awk > _$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
