@@ -955,7 +955,7 @@ GAWK_EXT_TESTS = \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
 	clos1way delsub devfd devfd1 devfd2 dumpvars exit \
 	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
-	functab1 functab2 functab3 functab4 \
+	functab1 functab2 functab3 \
 	fwtest fwtest2 fwtest3 \
 	gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcase \
@@ -985,7 +985,7 @@ LOCALE_CHARSET_TESTS = \
 	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
-	fnmatch filefuncs fork fork2 fts inplace1 inplace2 inplace3 \
+	fnmatch filefuncs fork fork2 fts functab4 inplace1 inplace2 inplace3 \
 	ordchr ordchr2 readdir readfile revout revtwoway rwarray testext time
 
 # List of the tests which should be run with --lint option:
