@@ -1024,12 +1024,6 @@ VALGRIND =
 # And we set AWKLIBPATH to find the extension libraries we built.
 AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} AWKLIBPATH=../extension/.libs $(VALGRIND) $(AWKPROG)
 
-if TEST_MPFR
-CHECKMPFR = mpfr-msg-start   mpfr-tests             mpfr-msg-end
-else
-CHECKMPFR = 
-endif
-
 # Message stuff is to make it a little easier to follow.
 # Make the pass-fail last and dependent on others to avoid
 # spurious errors if `make -j' in effect.
@@ -1041,7 +1035,7 @@ check:	msg \
 	machine-msg-start machine-tests machine-msg-end \
 	charset-msg-start charset-tests charset-msg-end \
 	shlib-msg-start  shlib-tests     shlib-msg-end \
-	$(CHECKMPFR)
+	mpfr-msg-start   mpfr-tests      mpfr-msg-end
 	@$(MAKE) pass-fail
 
 basic:	$(BASIC_TESTS)
@@ -1058,7 +1052,11 @@ inet:	inetmesg $(INET_TESTS)
 
 machine-tests: $(MACHINE_TESTS)
 
-mpfr-tests: $(MPFR_TESTS)
+mpfr-tests:
+	@if $(AWK) --version | $(AWK) '/MPFR/ { exit 1 }' ; then \
+	echo MPFR tests not supported on this system ; \
+	else $(MAKE) $(MPFR_TESTS) ; \
+	fi
 
 shlib-tests:
 	@if grep 'DYNAMIC 1' $(top_builddir)/config.h > /dev/null ; then \

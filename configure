@@ -630,8 +630,6 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 subdirs
 GAWKLIBEXT
-TEST_MPFR_FALSE
-TEST_MPFR_TRUE
 LIBMPFR
 LIBREADLINE
 SOCKET_LIBS
@@ -10489,14 +10487,6 @@ $as_echo "#define HAVE_MPFR 1" >>confdefs.h
      unset _found_mpfr
   fi
 
- if test -n "$LIBMPFR"; then
-  TEST_MPFR_TRUE=
-  TEST_MPFR_FALSE='#'
-else
-  TEST_MPFR_TRUE='#'
-  TEST_MPFR_FALSE=
-fi
-
 
 ac_fn_c_check_member "$LINENO" "struct stat" "st_blksize" "ac_cv_member_struct_stat_st_blksize" "$ac_includes_default"
 if test "x$ac_cv_member_struct_stat_st_blksize" = xyes; then :
@@ -11031,10 +11021,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${TEST_MPFR_TRUE}" && test -z "${TEST_MPFR_FALSE}"; then
-  as_fn_error $? "conditional \"TEST_MPFR\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

@@ -1223,8 +1223,6 @@ AWKPROG = ../gawk$(EXEEXT)
 # Default for VALGRIND is empty unless overridden by a command-line argument.
 # This protects against cruft in the environment.
 VALGRIND = 
-@TEST_MPFR_FALSE@CHECKMPFR = 
-@TEST_MPFR_TRUE@CHECKMPFR = mpfr-msg-start   mpfr-tests             mpfr-msg-end
 all: all-am
 
 .SUFFIXES:
@@ -1420,7 +1418,7 @@ check:	msg \
 	machine-msg-start machine-tests machine-msg-end \
 	charset-msg-start charset-tests charset-msg-end \
 	shlib-msg-start  shlib-tests     shlib-msg-end \
-	$(CHECKMPFR)
+	mpfr-msg-start   mpfr-tests      mpfr-msg-end
 	@$(MAKE) pass-fail
 
 basic:	$(BASIC_TESTS)
@@ -1437,7 +1435,11 @@ inet:	inetmesg $(INET_TESTS)
 
 machine-tests: $(MACHINE_TESTS)
 
-mpfr-tests: $(MPFR_TESTS)
+mpfr-tests:
+	@if $(AWK) --version | $(AWK) '/MPFR/ { exit 1 }' ; then \
+	echo MPFR tests not supported on this system ; \
+	else $(MAKE) $(MPFR_TESTS) ; \
+	fi
 
 shlib-tests:
 	@if grep 'DYNAMIC 1' $(top_builddir)/config.h > /dev/null ; then \
