@@ -1059,9 +1059,9 @@ mpfr-tests:
 	fi
 
 shlib-tests:
-	@if grep 'DYNAMIC 1' $(top_builddir)/config.h > /dev/null ; then \
-	$(MAKE) shlib-real-tests ; \
-	else echo shlib tests not supported on this system ; \
+	@if $(AWK) --version | $(AWK) '/API/ { exit 1 }' ; then \
+	echo shlib tests not supported on this system ; \
+	else $(MAKE) shlib-real-tests ; \
 	fi
 
 shlib-real-tests: $(SHLIB_TESTS)

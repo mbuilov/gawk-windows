@@ -1426,6 +1426,9 @@ static void
 version()
 {
 	printf("%s", version_string);
+#ifdef DYNAMIC
+	printf(", API: %d.%d", GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION);
+#endif
 #ifdef HAVE_MPFR
 	printf(" (GNU MPFR %s, GNU MP %s)", mpfr_get_version(), gmp_version);
 #endif
