@@ -60,6 +60,8 @@ dnl action if true:
             [_found_readline=yes],
 dnl action if false:
             [_found_readline=no],
+dnl action if cross compiling:
+            [_found_readline=no]
 	)
 
         AC_MSG_RESULT([$_found_readline])
