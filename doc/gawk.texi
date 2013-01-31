@@ -9585,18 +9585,19 @@ Here are some examples indicating the difference in behavior,
 on a GNU/Linux system:
 
 @example
+$ @kbd{export POSIXLY_CORRECT=1}                        @ii{Force POSIX behavior}
 $ @kbd{gawk 'BEGIN @{ printf "%g\n", 3.1415927 @}'}
 @print{} 3.14159
-$ @kbd{LC_ALL=en_DK gawk 'BEGIN @{ printf "%g\n", 3.1415927 @}'}
+$ @kbd{LC_ALL=en_DK.utf-8 gawk 'BEGIN @{ printf "%g\n", 3.1415927 @}'}
 @print{} 3,14159
 $ @kbd{echo 4,321 | gawk '@{ print $1 + 1 @}'}
 @print{} 5
-$ @kbd{echo 4,321 | LC_ALL=en_DK gawk '@{ print $1 + 1 @}'}
+$ @kbd{echo 4,321 | LC_ALL=en_DK.utf-8 gawk '@{ print $1 + 1 @}'}
 @print{} 5,321
 @end example
 
 @noindent
-The @samp{en_DK} locale is for English in Denmark, where the comma acts as
+The @samp{en_DK.utf-8} locale is for English in Denmark, where the comma acts as
 the decimal point separator.  In the normal @code{"C"} locale, @command{gawk}
 treats @samp{4,321} as @samp{4}, while in the Danish locale, it's treated
 as the full number, 4.321.
@@ -9609,7 +9610,7 @@ decimal point character.  You can use the @option{--use-lc-numeric}
 option (@pxref{Options}) to force @command{gawk} to use the locale's
 decimal point character.  (@command{gawk} also uses the locale's decimal
 point character when in POSIX mode, either via @option{--posix}, or the
-@env{POSIXLY_CORRECT} environment variable.)
+@env{POSIXLY_CORRECT} environment variable, as shown previously.)
 
 @ref{table-locale-affects} describes the cases in which the locale's decimal
 point character is used and when a period is used. Some of these
@@ -15704,7 +15705,7 @@ _hrulefill!_hrulefill!_hrulefill_cr
 @code{\\\\&}!     @code{\\&}!a literal @samp{\}, then the matched text_cr
 @code{\\\\\\&}!  @code{\\\&}!a literal @samp{\&}_cr
 }
-@bigskip}
+_bigskip}
 @end tex
 @ifdocbook
 @multitable @columnfractions .20 .20 .60
