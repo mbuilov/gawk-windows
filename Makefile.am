@@ -41,7 +41,6 @@ EXTRA_DIST = \
 	NEWS \
 	NEWS.0 \
 	POSIX.STD \
-	PROBLEMS \
 	README_d \
 	bisonfix.awk \
 	config.guess \
