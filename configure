@@ -638,6 +638,8 @@ LTLIBSIGSEGV
 LIBSIGSEGV
 HAVE_LIBSIGSEGV
 LIBOBJS
+TEST_CROSS_COMPILE_FALSE
+TEST_CROSS_COMPILE_TRUE
 POSUB
 LTLIBINTL
 LIBINTL
@@ -8375,6 +8377,15 @@ done
 
 fi
 
+ if test "x$build_alias" != "x$host_alias"; then
+  TEST_CROSS_COMPILE_TRUE=
+  TEST_CROSS_COMPILE_FALSE='#'
+else
+  TEST_CROSS_COMPILE_TRUE='#'
+  TEST_CROSS_COMPILE_FALSE=
+fi
+
+
 ac_fn_c_check_type "$LINENO" "pid_t" "ac_cv_type_pid_t" "$ac_includes_default"
 if test "x$ac_cv_type_pid_t" = xyes; then :
 
@@ -11019,6 +11030,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${TEST_CROSS_COMPILE_TRUE}" && test -z "${TEST_CROSS_COMPILE_FALSE}"; then
+  as_fn_error $? "conditional \"TEST_CROSS_COMPILE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

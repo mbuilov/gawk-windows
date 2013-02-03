@@ -156,6 +156,9 @@ else
 	AC_CHECK_HEADERS(strings.h)
 fi
 
+dnl Check cross compiling
+AM_CONDITIONAL([TEST_CROSS_COMPILE], [test "x$build_alias" != "x$host_alias"])
+
 dnl checks for typedefs
 AC_TYPE_PID_T
 AC_TYPE_SIGNAL

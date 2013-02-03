@@ -26,7 +26,12 @@
 EXTRA_DIST = ChangeLog ChangeLog.0 extract.awk eg $(srcdir)/stamp-eg
 # With some locales, the script extract.awk fails.
 # So we fix the locale to some sensible value.
+
+if TEST_CROSS_COMPILE
+AWKPROG = LC_ALL=C LANG=C awk$(EXEEXT)
+else
 AWKPROG = LC_ALL=C LANG=C $(abs_top_builddir)/gawk$(EXEEXT)
+endif
 
 # Get config.h from the build directory and custom.h from the source directory.
 AM_CPPFLAGS = -I$(top_builddir) -I$(top_srcdir)
