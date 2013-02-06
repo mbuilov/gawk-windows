@@ -201,7 +201,7 @@ main(int argc, char **argv)
 	/*
 	 * The + on the front tells GNU getopt not to rearrange argv.
 	 */
-	const char *optlist = "+F:f:v:W;m:bcCd::D::e:E:gh:i:l:L:nNo::Op::MPrStVY";
+	const char *optlist = "+F:f:v:W;bcCd::D::e:E:gh:i:l:L:nNo::Op::MPrStVY";
 	bool stopped_early = false;
 	int old_optind;
 	int i;
@@ -346,20 +346,6 @@ main(int argc, char **argv)
 
 		case 'v':
 			add_preassign(PRE_ASSIGN, optarg);
-			break;
-
-		case 'm':
-			/*
-			 * BWK awk extension.
-			 *	-mf nnn		set # fields, gawk ignores
-			 *	-mr nnn		set record length, ditto
-			 *
-			 * As of at least 10/2007, BWK awk also ignores it.
-			 */
-			if (do_lint)
-				lintwarn(_("`-m[fr]' option irrelevant in gawk"));
-			if (optarg[0] != 'r' && optarg[0] != 'f')
-				warning(_("-m option usage: `-m[fr] nnn'"));
 			break;
 
 		case 'b':
