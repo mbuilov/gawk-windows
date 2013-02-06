@@ -22,8 +22,6 @@
 
 #include <config.h>
 
-#include "dfa.h"
-
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -44,6 +42,8 @@
 #else
 #include "missing_d/gawkbool.h"
 #endif /* HAVE_STDBOOL_H */
+
+#include "dfa.h"
 
 
 #define STREQ(a, b) (strcmp (a, b) == 0)

@@ -1,4 +1,4 @@
-2013-02-04         Arnold D. Robbins     <arnold@skeeve.com>
+2013-01-31         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regcomp.c, regex.c, regex_internal.c, regexec.c: Update
 	copyright years to sync with GLIBC.
@@ -10,6 +10,12 @@
 	(check_matching): Pass minimum needed length.
 	(clean_state_log_if_needed): Likewise.
 	(get_subexp): Likewise.`
+
+2013-01-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Include "dfa.h" which includes regex.h after limits.h
+	so that RE_DUP_MAX gets the correct value. Especially needed on
+	OpenVMS. Thanks to Anders Wallin.
 
 2013-01-31         Arnold D. Robbins     <arnold@skeeve.com>
 
