@@ -1392,10 +1392,7 @@ printf_common(int nargs)
 	int i;
 	NODE *r, *tmp;
 
-	if (nargs == 0)
-		fatal(_("[s]printf called with no arguments"));
-
-	assert(nargs <= max_args);
+	assert(nargs > 0 && nargs <= max_args);
 	for (i = 1; i <= nargs; i++) {
 		tmp = args_array[nargs - i] = POP();
 		if (tmp->type == Node_var_array) {
@@ -1418,6 +1415,10 @@ NODE *
 do_sprintf(int nargs)
 {
 	NODE *r;
+
+	if (nargs == 0)
+		fatal(_("sprintf: no arguments"));
+
 	r = printf_common(nargs);
 	if (r == NULL)
 		gawk_exit(EXIT_FATAL);
