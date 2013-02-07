@@ -1,6 +1,6 @@
 # Makefile for GNU Awk test suite.
 #
-# Copyright (C) 1988-2012 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2013 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -152,8 +152,8 @@ BASIC_TESTS = \
 	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl \
 	noparms nors nulrsend numindex numsubstr \
 	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofs1 onlynl opasnidx opasnslf \
-	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme pcntplus \
-	posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
+	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
+	pcntplus posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
 	prt1eval prtoeval \
 	rand range1 rebt8b1 redfilnm regeq regexprange regrange \
 	reindops reparse \
@@ -183,7 +183,7 @@ GAWK_EXT_TESTS = \
 	nastyparm  next nondec nondec2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 procinfs \
 	profile1 profile2 profile3 pty1 \
-	rebuf regx8bit reint reint2 rsstart1 \
+	rebuf regx8bit reginttrad reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
 	strtonum switch2
 
@@ -857,6 +857,11 @@ charasbytes:
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH=$(srcdir) $(AWK) -b -v BINMODE=2 -f $@.awk $(srcdir)/$@.in | \
 	od -c -t x1 | sed -e 's/  */ /g' -e 's/ *$$//' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+reginttrad:
+	@echo $@
+	@$(AWK) --traditional -r -f $@.awk > _$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
