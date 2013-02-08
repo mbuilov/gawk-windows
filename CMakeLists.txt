@@ -270,8 +270,7 @@ set (GAWK_SOURCES ${GAWK_SOURCES}
 add_executable (gawk ${GAWK_SOURCES})
 target_link_libraries (gawk m ${EXTRA_LIBS})
 
-if(${CMAKE_CROSSCOMPILING} STREQUAL "TRUE")
-else()
+if(NOT ${CMAKE_CROSSCOMPILING} STREQUAL "TRUE")
   add_subdirectory(test)
   add_subdirectory(doc)
 endif()

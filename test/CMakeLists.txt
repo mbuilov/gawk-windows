@@ -24,3 +24,11 @@
 
 ## process this file with CMake to produce Makefile
 
+add_custom_target(check)
+add_custom_command(
+  TARGET check
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMAND ${CMAKE_BINARY_DIR}/gawk -f addcomma.awk  < addcomma.in > _addcomma 2>&1 || echo EXIT CODE: $$? >>_$@
+  COMMAND cmp addcomma.ok _addcomma && rm -f _addcomma
+)
+
