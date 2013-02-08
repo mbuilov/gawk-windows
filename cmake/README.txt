@@ -19,7 +19,20 @@ should do this, read
   ./gawk --version
 Notice that this git-checkout allows you to read the source code,
 track the cmake branch and get updates. You will not be able to
-commit anything. http://savannah.gnu.org/maintenance/UsingGit
+commit anything.
+
+- How can I use git to contribute source code ?
+You need an account at Savannah. Read this to understand the first steps:
+  http://savannah.gnu.org/maintenance/UsingGit
+  README.git
+Use your account there to register your public ssh key at Savannah.
+Then you are ready to checkout. Remember that (when cloning) you are
+setting up your own local repository and make sure you configure it
+properly.
+  git clone ssh://my_account_name@git.sv.gnu.org/srv/git/gawk.git
+  git config --global user.name "first-name last-name"
+  git config --global user.email First.Last@email.com
+  git config --global color.ui auto
 
 - What is the current status of the cmake branch ?
 It has just begun, pre-alpha, unclear if it will ever be taken up
