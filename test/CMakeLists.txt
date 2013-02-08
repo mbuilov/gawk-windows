@@ -24,11 +24,9 @@
 
 ## process this file with CMake to produce Makefile
 
-add_custom_target(check)
-add_custom_command(
-  TARGET check
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMAND ${CMAKE_BINARY_DIR}/gawk -f addcomma.awk  < addcomma.in > _addcomma 2>&1 || echo EXIT CODE: $$? >>_$@
-  COMMAND cmp addcomma.ok _addcomma && rm -f _addcomma
-)
+set(BASIC_TESTS addcomma anchgsub arrayparm arrayprm2 arrayprm3 arrayref arrymem1 arryref2 arryref3 arryref4 arryref5)
+
+foreach(testcase ${BASIC_TESTS})
+  add_test(${testcase} ${CMAKE_SOURCE_DIR}/cmake/basictest ${CMAKE_BINARY_DIR}/gawk ${testcase} )
+endforeach(testcase)
 

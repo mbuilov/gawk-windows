@@ -271,6 +271,7 @@ add_executable (gawk ${GAWK_SOURCES})
 target_link_libraries (gawk m ${EXTRA_LIBS})
 
 if(NOT ${CMAKE_CROSSCOMPILING} STREQUAL "TRUE")
+  enable_testing()
   add_subdirectory(test)
   add_subdirectory(doc)
 endif()
