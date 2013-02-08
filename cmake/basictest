@@ -1,0 +1,11 @@
+#!/bin/sh
+
+TESTHOME=$(dirname ${0})/../test
+if test -r ${TESTHOME}/${2}.in
+then
+  $1 -f ${TESTHOME}/${2}.awk  < ${TESTHOME}/${2}.in > ${TESTHOME}/_${2} 2>&1 || echo EXIT CODE: $? >> ${TESTHOME}/_${2}
+else
+  $1 -f ${TESTHOME}/${2}.awk                        > ${TESTHOME}/_${2} 2>&1 || echo EXIT CODE: $? >> ${TESTHOME}/_${2}
+fi
+cmp ${TESTHOME}/${2}.ok ${TESTHOME}/_${2} && rm -f ${TESTHOME}/_${2}
+
