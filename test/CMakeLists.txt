@@ -24,9 +24,16 @@
 
 ## process this file with CMake to produce Makefile
 
-set(BASIC_TESTS addcomma anchgsub arrayparm arrayprm2 arrayprm3 arrayref arrymem1 arryref2 arryref3 arryref4 arryref5)
+execute_process(
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+  COMMAND awk /:$/ Maketests
+  OUTPUT_VARIABLE BASIC_TESTS
+)
 
-foreach(testcase ${BASIC_TESTS})
+string(REGEX REPLACE "Gt-dummy:\n" "" BASIC_TESTS ${BASIC_TESTS})
+string(REGEX REPLACE ":" "" BASIC_TESTS ${BASIC_TESTS})
+string(REGEX REPLACE "\n" ";" BASIC_TESTS ${BASIC_TESTS})
+foreach(testcase ${BASIC_TESTS} )
   add_test(${testcase} ${CMAKE_SOURCE_DIR}/cmake/basictest ${CMAKE_BINARY_DIR}/gawk ${testcase} )
 endforeach(testcase)
 
