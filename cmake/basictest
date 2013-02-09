@@ -2,6 +2,7 @@
 
 TESTHOME=$(dirname ${0})/../test
 export AWKPATH=${TESTHOME}
+export LANG=C
 if test -r ${TESTHOME}/${2}.in
 then
   $1 -f ${2}.awk  < ${TESTHOME}/${2}.in > ${TESTHOME}/_${2} 2>&1 || echo EXIT CODE: $? >> ${TESTHOME}/_${2}

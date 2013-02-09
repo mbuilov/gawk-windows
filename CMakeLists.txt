@@ -89,7 +89,7 @@ STRING( REGEX REPLACE ".*([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" GAWK_MAJOR_VERSION 
 STRING( REGEX REPLACE ".*[0-9]+\\.([0-9]+)\\.[0-9]+.*" "\\1" GAWK_MINOR_VERSION "${GAWK_AUTOMAKE_LINE_VERSION}") 
 STRING( REGEX REPLACE ".*[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" GAWK_BUGFIX_VERSION "${GAWK_AUTOMAKE_LINE_VERSION}") 
 
-add_definitions(-D GAWK)
+add_definitions(-DGAWK)
 set(GAWK_VERSION "${GAWK_MAJOR_VERSION}.${GAWK_MINOR_VERSION}.${GAWK_BUGFIX_VERSION}")
 add_definitions(-D VERSION=\\"${GAWK_VERSION}\\")
 add_definitions(-D PACKAGE=\\"gawk\\")
@@ -269,6 +269,9 @@ set (GAWK_SOURCES ${GAWK_SOURCES}
 
 add_executable (gawk ${GAWK_SOURCES})
 target_link_libraries (gawk m ${EXTRA_LIBS})
+
+# Beware: before building the extension, -DGAWK gets undefined.
+add_subdirectory(extension)
 
 if(NOT ${CMAKE_CROSSCOMPILING} STREQUAL "TRUE")
   enable_testing()
