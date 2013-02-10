@@ -31,9 +31,21 @@ execute_process(
 )
 
 string(REGEX REPLACE "Gt-dummy:\n" "" BASIC_TESTS ${BASIC_TESTS})
-string(REGEX REPLACE ":" "" BASIC_TESTS ${BASIC_TESTS})
-string(REGEX REPLACE "\n" ";" BASIC_TESTS ${BASIC_TESTS})
+string(REGEX REPLACE ":\n" ";"        BASIC_TESTS ${BASIC_TESTS})
 foreach(testcase ${BASIC_TESTS} )
-  add_test(${testcase} ${CMAKE_SOURCE_DIR}/cmake/basictest ${CMAKE_BINARY_DIR}/gawk ${testcase} )
+  set(options "")
+  if(${testcase} STREQUAL lintold)
+    set(options "--lint-old")
+  endif()
+  if(${testcase} STREQUAL defref   OR ${testcase} STREQUAL fmtspcl  OR
+     ${testcase} STREQUAL lintwarn OR ${testcase} STREQUAL noeffect OR
+     ${testcase} STREQUAL nofmtch  OR ${testcase} STREQUAL shadow   OR
+     ${testcase} STREQUAL uninit2  OR ${testcase} STREQUAL uninit3  OR
+     ${testcase} STREQUAL uninit4  OR ${testcase} STREQUAL uninit5  OR
+     ${testcase} STREQUAL uninitialized)
+    set(options "--lint")
+  endif()
+
+  add_test(${testcase} ${CMAKE_SOURCE_DIR}/cmake/basictest ${CMAKE_BINARY_DIR}/gawk ${testcase}  ${options} )
 endforeach(testcase)
 

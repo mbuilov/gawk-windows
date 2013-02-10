@@ -6,9 +6,9 @@ export AWKLIBPATH=${TESTHOME}/../build/extension/
 export LANG=C
 if test -r ${TESTHOME}/${2}.in
 then
-  $1 -f ${2}.awk  < ${TESTHOME}/${2}.in > ${TESTHOME}/_${2} 2>&1 || echo EXIT CODE: $? >> ${TESTHOME}/_${2}
+  $1 $3 -f ${2}.awk  < ${TESTHOME}/${2}.in > ${TESTHOME}/_${2} 2>&1 || echo EXIT CODE: $? >> ${TESTHOME}/_${2}
 else
-  $1 -f ${2}.awk                        > ${TESTHOME}/_${2} 2>&1 || echo EXIT CODE: $? >> ${TESTHOME}/_${2}
+  $1 $3 -f ${2}.awk                        > ${TESTHOME}/_${2} 2>&1 || echo EXIT CODE: $? >> ${TESTHOME}/_${2}
 fi
 cmp ${TESTHOME}/${2}.ok ${TESTHOME}/_${2} && rm -f ${TESTHOME}/_${2}
 
