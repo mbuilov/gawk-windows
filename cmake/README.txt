@@ -17,6 +17,7 @@ should do this, read
   cmake ..
   make
   ./gawk --version
+  make test
 Notice that this git-checkout allows you to read the source code,
 track the cmake branch and get updates. You will not be able to
 commit anything.

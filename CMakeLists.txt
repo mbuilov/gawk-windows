@@ -99,8 +99,10 @@ add_definitions(-D PACKAGE_URL=\\"http://www.gnu.org/software/gawk/\\")
 add_definitions(-D PACKAGE_VERSION=\\"${GAWK_VERSION}\\")
 add_definitions(-D DEFPATH=\\"${CMAKE_BINARY_DIR}/awk\\")
 add_definitions(-D DEFLIBPATH=\\"${CMAKE_BINARY_DIR}/lib\\")
-#add_definitions(-D EXTLIB_SUFFIX=\\"lib\\")
-add_definitions(-D SHLIBEXT=\\".so\\")
+#DefineFunctionIfAvailable(dlopen DYNAMIC)
+DefineHFileIfAvailable(dlfcn.h DYNAMIC)
+#add_definitions(-D SHLIBEXT=\\"${CMAKE_SHARED_LIBRARY_SUFFIX}\\")
+add_definitions(-D SHLIBEXT=\\"so\\")
 DefineTypeIfAvailable("unsigned int" SIZEOF_UNSIGNED_INT)
 DefineTypeIfAvailable("unsigned long" SIZEOF_UNSIGNED_LONG)
 #/* Define to 1 if *printf supports %F format */
@@ -224,6 +226,10 @@ DefineLibraryIfAvailable(c    socket      "" HAVE_SOCKETS)
 if (${HAVE_MPFR})
   set (EXTRA_LIBS ${EXTRA_LIBS} mpfr gmp)
 endif ()
+if (${DYNAMIC})
+  set (EXTRA_LIBS ${EXTRA_LIBS} ${CMAKE_DL_LIBS} )
+endif ()
+
 
 include_directories(${CMAKE_SOURCE_DIR})
 
