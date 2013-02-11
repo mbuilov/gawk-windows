@@ -126,9 +126,19 @@ DefineHFileIfAvailable(stdlib.h HAVE_STDLIB_H)
 DefineHFileIfAvailable(unistd.h HAVE_UNISTD_H)
 DefineFunctionIfAvailable(gettext HAVE_GETTEXT)
 DefineFunctionIfAvailable(dcgettext HAVE_DCGETTEXT)
+  FIND_PACKAGE(Gettext REQUIRED)
+#  FIND_PACKAGE(XGettext REQUIRED)
+#  FIND_PACKAGE(Iconv REQUIRED)
+  FIND_PATH(INTL_INCLUDE_DIR libintl.h PATHS /usr/include /usr/local/include)
+  FIND_LIBRARY(INTL_LIBRARIES intl c PATHS /usr/lib/ /usr/local/lib)
 DefineSymbolIfAvailable("CODESET" "langinfo.h" HAVE_LANGINFO_CODESET)
 DefineSymbolIfAvailable("LC_MESSAGES" "locale.h" HAVE_LC_MESSAGES)
 DefineTypeIfAvailable("_Bool" HAVE__BOOL)
+if (${HAVE_GETTEXT} AND  ${HAVE_DCGETTEXT} AND ${HAVE_LANGINFO_CODESET} AND ${HAVE_LC_MESSAGES})
+  add_definitions(-D LOCALEDIR=\\"/usr/share/locale\\")
+  add_definitions(-D ENABLE_NLS)
+  ADD_SUBDIRECTORY( po )
+endif()
 DefineHFileIfAvailable(stdbool.h HAVE_STDBOOL_H)
 DefineHFileIfAvailable(sys/wait.h HAVE_SYS_WAIT_H)
 DefineHFileIfAvailable(arpa/inet.h HAVE_ARPA_INET_H)
@@ -261,7 +271,6 @@ endif()
 
 set (GAWK_SOURCES ${GAWK_SOURCES}
   array.c
-  awkgram.c
   builtin.c 
   cint_array.c 
   command.c
