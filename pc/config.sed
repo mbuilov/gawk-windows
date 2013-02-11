@@ -26,6 +26,10 @@
 /configh\.in/a\
 /* pc/config.h.  Generated automatically by pc/config.sed.  */
 
+/^#undef DYNAMIC$\c
+#ifdef _WIN32\
+#define DYNAMIC 1\
+#endif
 s/^#undef GETPGRP_VOID *$/#define GETPGRP_VOID 1/
 s/^#undef GETGROUPS_T *$/#define GETGROUPS_T gid_t/
 /^#undef GETPGRP_VOID$/c\

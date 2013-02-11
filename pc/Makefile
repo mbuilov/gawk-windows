@@ -68,6 +68,9 @@ MAK = $(MAKE) $(MAKEFILE)
 #prefix =
 prefix = c:/gnu
 pkgdatadir = $(prefix)/lib/awk
+pkgextensiondir = $(prefix)/lib/gawk
+DEFLIBPATH = "\"$(pkgextensiondir)\""
+SHLIBEXT = "\"dll\""
 #
 # Define the install method. Method 1 is Unix-like (and requires cat
 # and cp); method 2 uses gawk and batch files.
@@ -183,13 +186,14 @@ BIND = EMPTY
 PBIND = EMPTY
 EMPTY=
 
-CFLAGS = $(CF) -DGAWK -I. -DHAVE_CONFIG_H
+CFLAGS = $(CF) -DGAWK -I. -DHAVE_CONFIG_H -DDEFLIBPATH=$(DEFLIBPATH) -DSHLIBEXT=$(SHLIBEXT)
 
 # object files
 AWKOBJS1  = array$O builtin$O eval$O field$O floatcomp$O gawkmisc$O io$O main$O
 AWKOBJS2  = ext$O msg$O node$O profile$O re$O replace$O version$O symbol$O
 AWKOBJS3  = debug$O cint_array$O int_array$O mpfr$O str_array$O command$O
-AWKOBJS = $(AWKOBJS1) $(AWKOBJS2) $(AWKOBJS3)
+AWKOBJS4  = gawkapi$O
+AWKOBJS = $(AWKOBJS1) $(AWKOBJS2) $(AWKOBJS3) $(AWKOBJS4)
 
 ALLOBJS = $(AWKOBJS) awkgram$O getid$O $(OBJ)
 
