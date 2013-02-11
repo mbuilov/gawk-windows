@@ -217,6 +217,21 @@ DefineFunctionIfAvailable(mbrtowc HAVE_MBRTOWC)
 add_definitions(-D HAVE_STRINGIZE)
 add_definitions(-D _Noreturn=)
 
+find_package(BISON REQUIRED)
+if (${BISON_FOUND} STREQUAL "TRUE")
+  BISON_TARGET(awkgram awkgram.y ${CMAKE_SOURCE_DIR}/awkgram.c)
+endif()
+#http://www.cmake.org/cmake/help/v2.8.10/cmake.html#module:FindGettext
+find_package(Gettext REQUIRED)
+if (GETTEXT_FOUND STREQUAL "TRUE")
+  include_directories(${GETTEXT_INCLUDE_DIR})
+else ()
+  message( FATAL_ERROR "Gettext not found" )
+endif()
+find_package(LATEX)
+include(GNUInstallDirs)
+include(GetPrerequisites)
+
 set (EXTRA_LIBS "")
 
 DefineLibraryIfAvailable(m    sin         "" HAVE_LIBM)
@@ -273,7 +288,7 @@ set (GAWK_SOURCES ${GAWK_SOURCES}
   version.c 
 )
 
-add_executable (gawk ${GAWK_SOURCES})
+add_executable (gawk ${GAWK_SOURCES} ${BISON_awkgram_OUTPUTS})
 target_link_libraries (gawk m ${EXTRA_LIBS})
 set(CPACK_PACKAGING_INSTALL_PREFIX /usr)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/gawk DESTINATION bin)
@@ -284,7 +299,9 @@ add_subdirectory(extension)
 if(NOT ${CMAKE_CROSSCOMPILING} STREQUAL "TRUE")
   enable_testing()
   add_subdirectory(test)
-  add_subdirectory(doc)
+  if (${LATEX_COMPILER})
+    add_subdirectory(doc)
+  endif()
 endif()
 
 include(InstallRequiredSystemLibraries)
