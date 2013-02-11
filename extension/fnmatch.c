@@ -45,9 +45,16 @@
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
 
-#ifdef HAVE_FNMATCH_H
 #define _GNU_SOURCE	1	/* use GNU extensions if they're there */
+#ifdef HAVE_FNMATCH_H
 #include <fnmatch.h>
+#else
+#include "../missing_d/fnmatch.h"	/* version that comes with gawk */
+#endif
+
+#ifndef HAVE_FNMATCH
+#include "../missing_d/fnmatch.c"	/* ditto */
+#define HAVE_FNMATCH
 #endif
 
 /* Provide GNU extensions as no-ops if not defined */
