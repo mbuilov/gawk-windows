@@ -21,20 +21,21 @@
 
 BEGIN { sfile = ARGV[1] ; ARGV[1] = "-" ; ARGC = 2 }
 
-/^#if.*\\$/ {
-	line = $0
-	sub(/\\$/, "", line)
-	getline line2
-	while (line2 ~ /\\$/) {
-		line = line line2
-		sub(/\\$/, "", line)
-		getline line2
-	}
-	line = line line2
-	sub(/\\$/, "", line)
-	print line
-	next
-}
+# 2/2013: Comment this out to see if any system still needs it.
+# /^#if.*\\$/ {
+# 	line = $0
+# 	sub(/\\$/, "", line)
+# 	getline line2
+# 	while (line2 ~ /\\$/) {
+# 		line = line line2
+# 		sub(/\\$/, "", line)
+# 		getline line2
+# 	}
+# 	line = line line2
+# 	sub(/\\$/, "", line)
+# 	print line
+# 	next
+# }
 
 /^#line.*y\.tab\.c/	{ sub(/y.tab/, sfile) }
 
