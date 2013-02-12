@@ -61,6 +61,9 @@ int plugin_is_GPL_compatible;
 #if defined(HAVE_NANOSLEEP) && defined(HAVE_TIME_H)
 #include <time.h>
 #endif
+#if defined(HAVE_GETSYSTEMTIMEASFILETIME)
+#include <windows.h>
+#endif
 
 /*
  * Returns time since 1/1/1970 UTC as a floating point value; should
@@ -160,10 +163,17 @@ do_sleep(int nargs, awk_value_t *result)
 			/* probably interrupted */
 			update_ERRNO_int(errno);
 	}
+#elif defined(HAVE_GETSYSTEMTIMEASFILETIME)
+	{
+		DWORD milliseconds = secs * 1000;
+
+		Sleep (milliseconds);
+		rc = 0;
+	}
 #else
 	/* no way to sleep on this platform */
 	rc = -1;
-	update_ERRNO_str(_("sleep: not supported on this platform"));
+	update_ERRNO_string(_("sleep: not supported on this platform"));
 #endif
 
 	return make_number(rc, result);

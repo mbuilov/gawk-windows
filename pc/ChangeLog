@@ -1,3 +1,17 @@
+2013-02-09  Eli Zaretskii  <eliz@gnu.org>
+
+	* gawkmisc.pc (dlopen, dlerror, dlclose, dlsym) [DYNAMIC]: New
+	functions for _WIN32 build.
+
+	* dlfcn.h: New file.
+
+	* Makefile (pkgextensiondir, DEFLIBPATH, SHLIBEXT): New variables.
+	(AWKOBJS4): New sub-list of object files; add gawkapi$O.
+	(ALLOBJS): Include AWKOBJS4.
+	(CFLAGS): Add -DDEFLIBPATH=$(DEFLIBPATH) -DSHLIBEXT=$(SHLIBEXT).
+
+	* config.sed (DYNAMIC): Define for _WIN32 build.
+
 2013-02-07   Scott Deifik  <scottd.mail@sbcglobal.net>
 
 	* Makefile.tst: Sync with mainline.

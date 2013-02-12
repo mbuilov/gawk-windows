@@ -55,6 +55,26 @@
 #include "gawkfts.h"
 #include "stack.h"
 
+#ifndef S_IFLNK
+#define lstat stat
+#define S_ISLNK(s) 0
+#define readlink(f,b,bs) (-1)
+#endif
+
+#ifdef _WIN32
+#define S_IRGRP S_IRUSR
+#define S_IWGRP S_IWUSR
+#define S_IXGRP S_IXUSR
+#define S_IROTH S_IRUSR
+#define S_IWOTH S_IWUSR
+#define S_IXOTH S_IXUSR
+#define S_ISUID 0
+#define S_ISGID 0
+#define S_ISVTX 0
+#define major(s) (s)
+#define minor(s) (0)
+#endif
+
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
 static awk_bool_t init_filefuncs(void);
@@ -288,7 +308,11 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 	array_set_numeric(array, "uid", sbuf->st_uid);
 	array_set_numeric(array, "gid", sbuf->st_gid);
 	array_set_numeric(array, "size", sbuf->st_size);
+#ifdef _WIN32
+	array_set_numeric(array, "blocks", sbuf->st_size / 4096);
+#else
 	array_set_numeric(array, "blocks", sbuf->st_blocks);
+#endif
 	array_set_numeric(array, "atime", sbuf->st_atime);
 	array_set_numeric(array, "mtime", sbuf->st_mtime);
 	array_set_numeric(array, "ctime", sbuf->st_ctime);
@@ -391,6 +415,7 @@ init_filefuncs(void)
 	int i;
 	awk_value_t value;
 
+#ifndef _WIN32
 	/* at least right now, only FTS needs initializing */
 	static struct flagtab {
 		const char *name;
@@ -414,8 +439,11 @@ init_filefuncs(void)
 			errors++;
 		}
 	}
+#endif
 	return errors == 0;
 }
+
+#ifndef _WIN32
 
 static int fts_errors = 0;
 
@@ -719,11 +747,14 @@ out:
 
 	return make_number(ret, result);
 }
+#endif	/* !_WIN32 */
 
 static awk_ext_func_t func_table[] = {
 	{ "chdir",	do_chdir, 1 },
 	{ "stat",	do_stat, 2 },
+#ifndef _WIN32
 	{ "fts",	do_fts, 3 },
+#endif
 };
 
 
