@@ -1,3 +1,9 @@
+2013-02-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* bisonfix.awk: Comment out code for fixing contined #if
+	statements. It is likely not needed anymore. Leave it there in
+	case I'm wrong.
+
 2013-02-06         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (printf_common): Move nargs > 0 check into assert.
@@ -7,6 +13,10 @@
 
 	* main.c (main): Remove undocumented -m option which was for
 	compatibility with BWK awk. His awk dropped it back in 2007.
+
+2013-02-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Add Automake test for cross compiling.
 
 2013-01-31         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -21,25 +31,16 @@
 	(clean_state_log_if_needed): Likewise.
 	(get_subexp): Likewise.`
 
-<<<<<<< HEAD
-2013-02-03         Arnold D. Robbins     <arnold@skeeve.com>
-
-	* configure.ac: Add Automake test for cross compiling.
-
-=======
->>>>>>> gawk-4.0-stable
 2013-01-31         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Include "dfa.h" which includes regex.h after limits.h
 	so that RE_DUP_MAX gets the correct value. Especially needed on
 	OpenVMS. Thanks to Anders Wallin.
-<<<<<<< HEAD
+
 	* main.c (version): Print out API version numbers if DYNAMIC.
 	Helpful also for knowing if to run the shlib tests.
 
 	* configure: Regenerated after change in m4/readline.m4.
-=======
->>>>>>> gawk-4.0-stable
 
 2013-01-31         Arnold D. Robbins     <arnold@skeeve.com>
 
