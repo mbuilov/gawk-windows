@@ -35,8 +35,6 @@ ENDMACRO(BuildExtension)
 
 BuildExtension(filefuncs filefuncs.c stack.c gawkfts.c)
 
-DefineFunctionIfAvailable(fnmatch HAVE_FNMATCH)
-DefineHFileIfAvailable(fnmatch.h HAVE_FNMATCH_H)
 if (${HAVE_FNMATCH} AND ${HAVE_FNMATCH_H})
   BuildExtension(fnmatch fnmatch.c)
 else()
@@ -44,10 +42,11 @@ else()
 endif()
 
 BuildExtension(fork fork.c)
+
 BuildExtension(inplace inplace.c)
+
 BuildExtension(ordchr ordchr.c)
 
-DefineHFileIfAvailable(dirent.h HAVE_DIRENT_H)
 if (${HAVE_DIRENT_H})
   BuildExtension(readdir readdir.c)
 else()
@@ -55,9 +54,9 @@ else()
 endif()
 
 BuildExtension(readfile readfile.c)
+
 BuildExtension(revoutput revoutput.c)
 
-DefineFunctionIfAvailable(getdtablesize HAVE_GETDTABLESIZE)
 if (${HAVE_GETDTABLESIZE})
   BuildExtension(revtwoway revtwoway.c)
 else()
@@ -66,12 +65,6 @@ endif()
 
 BuildExtension(rwarray rwarray.c)
 
-DefineFunctionIfAvailable(select HAVE_SELECT)
-DefineFunctionIfAvailable(gettimeofday HAVE_GETTIMEOFDAY)
-DefineHFileIfAvailable(sys/select.h HAVE_SYS_SELECT_H)
-DefineFunctionIfAvailable(nanosleep HAVE_NANOSLEEP)
-DefineHFileIfAvailable(time.h HAVE_TIME_H)
-DefineFunctionIfAvailable(GetSystemTimeAsFileTime HAVE_GETSYSTEMTIMEASFILETIME)
 BuildExtension(time time.c)
 
 BuildExtension(testext testext.c)

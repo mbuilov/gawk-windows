@@ -29,26 +29,7 @@ project (gawk C)
 
 include(cmake/configure.cmake)
 
-find_package(BISON REQUIRED)
-if (${BISON_FOUND} STREQUAL "TRUE")
-  BISON_TARGET(awkgram awkgram.y ${CMAKE_SOURCE_DIR}/awkgram.c)
-endif()
-#http://www.cmake.org/cmake/help/v2.8.10/cmake.html#module:FindGettext
-find_package(Gettext REQUIRED)
-if (GETTEXT_FOUND STREQUAL "TRUE")
-  include_directories(${GETTEXT_INCLUDE_DIR})
-else ()
-  message( FATAL_ERROR "Gettext not found" )
-endif()
-find_package(LATEX)
-include(GNUInstallDirs)
-include(GetPrerequisites)
-
 set (EXTRA_LIBS "")
-
-DefineLibraryIfAvailable(m    sin         "" HAVE_LIBM)
-DefineLibraryIfAvailable(mpfr mpfr_add_si "" HAVE_MPFR)
-DefineLibraryIfAvailable(c    socket      "" HAVE_SOCKETS)
 
 if (${HAVE_MPFR})
   set (EXTRA_LIBS ${EXTRA_LIBS} mpfr gmp)
@@ -56,7 +37,6 @@ endif ()
 if (${DYNAMIC})
   set (EXTRA_LIBS ${EXTRA_LIBS} ${CMAKE_DL_LIBS} )
 endif ()
-
 
 include_directories(${CMAKE_SOURCE_DIR})
 

@@ -237,3 +237,37 @@ DefineFunctionIfAvailable(mbrtowc HAVE_MBRTOWC)
 add_definitions(-D HAVE_STRINGIZE)
 add_definitions(-D _Noreturn=)
 
+find_package(BISON REQUIRED)
+if (${BISON_FOUND} STREQUAL "TRUE")
+  BISON_TARGET(awkgram awkgram.y ${CMAKE_SOURCE_DIR}/awkgram.c)
+endif()
+
+#http://www.cmake.org/cmake/help/v2.8.10/cmake.html#module:FindGettext
+find_package(Gettext REQUIRED)
+if (GETTEXT_FOUND STREQUAL "TRUE")
+  include_directories(${GETTEXT_INCLUDE_DIR})
+else ()
+  message( FATAL_ERROR "Gettext not found" )
+endif()
+
+find_package(LATEX)
+include(GNUInstallDirs)
+include(GetPrerequisites)
+
+# For some unknown reason the defines for the extension
+# are written into config.h only if they are implemented
+# here and not in extension/CMakeLists.txt.
+DefineLibraryIfAvailable(m    sin         "" HAVE_LIBM)
+DefineLibraryIfAvailable(mpfr mpfr_add_si "" HAVE_MPFR)
+DefineLibraryIfAvailable(c    socket      "" HAVE_SOCKETS)
+DefineFunctionIfAvailable(fnmatch HAVE_FNMATCH)
+DefineHFileIfAvailable(fnmatch.h HAVE_FNMATCH_H)
+DefineHFileIfAvailable(dirent.h HAVE_DIRENT_H)
+DefineFunctionIfAvailable(getdtablesize HAVE_GETDTABLESIZE)
+DefineFunctionIfAvailable(select HAVE_SELECT)
+DefineFunctionIfAvailable(gettimeofday HAVE_GETTIMEOFDAY)
+DefineHFileIfAvailable(sys/select.h HAVE_SYS_SELECT_H)
+DefineFunctionIfAvailable(nanosleep HAVE_NANOSLEEP)
+DefineHFileIfAvailable(time.h HAVE_TIME_H)
+DefineFunctionIfAvailable(GetSystemTimeAsFileTime HAVE_GETSYSTEMTIMEASFILETIME)
+
