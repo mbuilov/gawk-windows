@@ -24,6 +24,18 @@
 
 ## process this file with CMake to produce Makefile
 
+option (USE_CONFIG_H          "Generate a file config.h for inclusion into C source code" OFF)
+if (USE_CONFIG_H)
+  file( WRITE config.h "/* all settings defined by CMake. */\n\n" )
+  ADD_DEFINITIONS (-D HAVE_CONFIG_H)
+  # Configure a header file to pass some of the CMake settings
+  # to the source code
+  # http://www.cmake.org/cmake/help/v2.8.8/cmake.html#command:configure_file
+  # CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h IMMEDIATE )
+else()
+  file( WRITE config.h "/* empty file, all settings defined by CMake. */" )
+endif()
+
 include(CheckIncludeFiles)
 include(CheckIncludeFile)
 include(CheckSymbolExists)
@@ -32,53 +44,47 @@ include(CheckLibraryExists)
 include(CheckTypeSize)
 include(CheckStructHasMember)
 
+MACRO(DefineConfigH feature)
+#  message(STATUS feature=${feature}=${${feature}})
+  if (${feature})
+    if (${USE_CONFIG_H} STREQUAL ON)
+      FILE( APPEND config.h "#define ${feature} ${${feature}}\n")
+    else()
+      #ADD_DEFINITIONS (-D ${feature})
+      ADD_DEFINITIONS (-D${feature}=${${feature}})
+    endif ()
+  endif ()
+ENDMACRO(DefineConfigH)
+
 MACRO(DefineFunctionIfAvailable func feature)
   check_function_exists("${func}" "${feature}")
-  IF (${feature})
-    ADD_DEFINITIONS (-D ${feature})
-  ENDIF ()
+  DefineConfigH(${feature})
 ENDMACRO(DefineFunctionIfAvailable)
 
 MACRO(DefineHFileIfAvailable hfile feature)
   check_include_file("${hfile}" "${feature}")
-  IF (${feature})
-    ADD_DEFINITIONS (-D ${feature})
-  ENDIF ()
+  DefineConfigH(${feature})
 ENDMACRO(DefineHFileIfAvailable)
 
 MACRO(DefineTypeIfAvailable type feature)
   check_type_size("${type}" "${feature}")
-  IF (${feature})
-    ADD_DEFINITIONS (-D ${feature}=${${feature}})
-  ENDIF ()
+  DefineConfigH(${feature})
 ENDMACRO(DefineTypeIfAvailable)
 
 MACRO(DefineSymbolIfAvailable symbol hfile feature)
   check_symbol_exists("${symbol}" "${hfile}" "${feature}")
-  IF (${feature})
-    ADD_DEFINITIONS (-D ${feature})
-  ENDIF ()
+  DefineConfigH(${feature})
 ENDMACRO(DefineSymbolIfAvailable)
 
 MACRO(DefineStructHasMemberIfAvailable struct member hfile feature)
   check_struct_has_member("${struct}" "${member}" "${hfile}" "${feature}")
-  IF (${feature})
-    ADD_DEFINITIONS (-D ${feature})
-  ENDIF ()
+  DefineConfigH(${feature})
 ENDMACRO(DefineStructHasMemberIfAvailable)
 
 MACRO(DefineLibraryIfAvailable lib func location feature)
   check_library_exists("${lib}" "${func}" "${location}" "${feature}")
-  IF (${feature})
-    ADD_DEFINITIONS (-D ${feature})
-  ENDIF ()
+  DefineConfigH(${feature})
 ENDMACRO(DefineLibraryIfAvailable)
-
-file( WRITE config.h "/* empty file, all settings defined by CMake. */" )
-# Configure a header file to pass some of the CMake settings
-# to the source code
-# http://www.cmake.org/cmake/help/v2.8.8/cmake.html#command:configure_file
-# CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h IMMEDIATE )
 
 FILE( READ  configure.ac CONFIG_AUTOMAKE )
 STRING( REGEX MATCH "AC_INIT\\(\\[GNU Awk\\], ([0-9]+\\.[0-9]+\\.[0-9]+)" GAWK_AUTOMAKE_LINE_VERSION "${CONFIG_AUTOMAKE}") 
