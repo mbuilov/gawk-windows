@@ -41,7 +41,6 @@ if (DVIPS_CONVERTER)
     COMMAND dvips -o gawkinet.ps gawkinet.dvi
   )
   if (PS2PDF_CONVERTER)
-    message(STATUS "Converting .ps to .pdf")
     add_custom_command(
       TARGET doc
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
