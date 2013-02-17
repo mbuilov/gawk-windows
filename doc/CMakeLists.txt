@@ -31,11 +31,25 @@ add_custom_command(
   COMMAND texi2dvi  --clean gawkinet.texi gawk.texi
   COMMAND groff -man gawk.1 > gawk.1.ps
   COMMAND groff -man igawk.1 > igawk.1.ps
-  COMMAND ps2pdf gawk.1.ps gawk.1.pdf
-  COMMAND ps2pdf igawk.1.ps igawk.1.pdf
-  COMMAND dvips -o gawk.ps gawk.dvi
-  COMMAND dvips -o gawkinet.ps gawkinet.dvi
-  COMMAND ps2pdf gawk.1.ps gawk.1.pdf
-  COMMAND ps2pdf gawkinet.ps gawkinet.pdf
 )
+
+if (DVIPS_CONVERTER)
+  add_custom_command(
+    TARGET doc
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND dvips -o gawk.ps gawk.dvi
+    COMMAND dvips -o gawkinet.ps gawkinet.dvi
+  )
+  if (PS2PDF_CONVERTER)
+    message(STATUS "Converting .ps to .pdf")
+    add_custom_command(
+      TARGET doc
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      COMMAND ps2pdf gawk.1.ps gawk.1.pdf
+      COMMAND ps2pdf igawk.1.ps igawk.1.pdf
+      COMMAND ps2pdf gawk.1.ps gawk.1.pdf
+      COMMAND ps2pdf gawkinet.ps gawkinet.pdf
+    )
+  endif()
+endif()
 
