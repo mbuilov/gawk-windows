@@ -12,7 +12,7 @@ SET(CMAKE_RC_COMPILER /usr/bin/i686-w64-mingw32-windres)
 
 # here is the target environment located
 # Settings for Ubuntu 12.04.1 LTS
-SET(CMAKE_FIND_ROOT_PATH  /usr/i686-w64-mingw32 /usr/i686-w64-mingw32/include)
+SET(CMAKE_FIND_ROOT_PATH  /usr/i686-w64-mingw32)
 
 # adjust the default behaviour of the FIND_XXX() commands:
 # search headers and libraries in the target environment, search 

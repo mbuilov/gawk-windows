@@ -10,7 +10,7 @@ SET(CMAKE_C_COMPILER /usr/bin/gcc)
 
 # here is the target environment located
 # Settings for Ubuntu 12.04.1 LTS
-SET(CMAKE_FIND_ROOT_PATH  /usr/include)
+SET(CMAKE_FIND_ROOT_PATH  /usr/)
 
 # adjust the default behaviour of the FIND_XXX() commands:
 # search headers and libraries in the target environment, search 
