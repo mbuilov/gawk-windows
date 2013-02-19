@@ -40,10 +40,14 @@ endif ()
 
 include_directories(${CMAKE_SOURCE_DIR})
 
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+if(WIN32 OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+  #DefineConfigHValue(NO_MBSSUPPORT 1)
+  DefineConfigHValue(WEOF EOF)
+  DefineConfigHValue(HAVE_USLEEP 1)
+  #DefineConfigHValue(__STDC__ 1)
   # awk.h changed
   # pc/gawkmisc.pc:605 execvp raus
-  set (GAWK_SOURCES ${GAWK_SOURCES} regex.c pc/getid.c)
+  set (GAWK_SOURCES ${GAWK_SOURCES} regex.c pc/getid.c pc/gawkmisc.pc)
   add_definitions(-D HAVE_WINT_T)
   add_definitions(-D HAVE_ISWUPPER)
   add_definitions(-D HAVE_SETENV)
@@ -81,13 +85,13 @@ set (GAWK_SOURCES ${GAWK_SOURCES}
 
 add_executable (gawk ${GAWK_SOURCES} ${BISON_awkgram_OUTPUTS})
 target_link_libraries (gawk m ${EXTRA_LIBS})
-install(PROGRAMS ${CMAKE_BINARY_DIR}/gawk DESTINATION bin)
+install(PROGRAMS ${CMAKE_BINARY_DIR}/gawk${CMAKE_EXECUTABLE_SUFFIX} DESTINATION bin)
 
 if (CMAKE_HOST_UNIX)
-  # Beware: before building the extension, -DGAWK gets undefined.
-  add_subdirectory(extension)
-
   if(NOT ${CMAKE_CROSSCOMPILING} STREQUAL "TRUE")
+    # Beware: before building the extension, -DGAWK gets undefined.
+    add_subdirectory(extension)
+
     enable_testing()
     add_subdirectory(test)
     if (LATEX_COMPILER)
