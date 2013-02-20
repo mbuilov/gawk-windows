@@ -41,18 +41,14 @@ endif ()
 include_directories(${CMAKE_SOURCE_DIR})
 
 if(WIN32 OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-  #DefineConfigHValue(NO_MBSSUPPORT 1)
+  DefineConfigHValue(HAVE_WCTYPE_T 1)
   DefineConfigHValue(WEOF EOF)
   DefineConfigHValue(HAVE_USLEEP 1)
-  #DefineConfigHValue(__STDC__ 1)
-  # awk.h changed
-  # pc/gawkmisc.pc:605 execvp raus
+  DefineConfigHValue(HAVE_WINT_T 1)
+  DefineConfigHValue(HAVE_ISWUPPER 1)
+  DefineConfigHValue(HAVE_SETENV 1)
+  DefineConfigHValue(STDC_HEADERS 1)
   set (GAWK_SOURCES ${GAWK_SOURCES} regex.c pc/getid.c pc/gawkmisc.pc)
-  add_definitions(-D HAVE_WINT_T)
-  add_definitions(-D HAVE_ISWUPPER)
-  add_definitions(-D HAVE_SETENV)
-  add_definitions(-D MB_CUR_MAX)
-  add_definitions(-D STDC_HEADERS)
 endif()
 
 set (GAWK_SOURCES ${GAWK_SOURCES}
