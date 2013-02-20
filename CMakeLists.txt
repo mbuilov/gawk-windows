@@ -41,6 +41,10 @@ endif ()
 include_directories(${CMAKE_SOURCE_DIR})
 
 if(WIN32 OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+  # This is enough to build with MinGW cross-compiler on OpenSuSE 12.2.
+  # On Ubuntu 12.04 patches to gawk's source code are needed:
+  #  - insert #include <windows.h> at the top of awk.h
+  #  - remove function execvp from pc/gawkmisc.pc
   DefineConfigHValue(HAVE_WCTYPE_T 1)
   DefineConfigHValue(WEOF EOF)
   DefineConfigHValue(HAVE_USLEEP 1)
