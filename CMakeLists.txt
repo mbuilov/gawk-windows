@@ -84,10 +84,10 @@ target_link_libraries (gawk m ${EXTRA_LIBS})
 install(PROGRAMS ${CMAKE_BINARY_DIR}/gawk${CMAKE_EXECUTABLE_SUFFIX} DESTINATION bin)
 
 if (CMAKE_HOST_UNIX)
-  if(NOT ${CMAKE_CROSSCOMPILING} STREQUAL "TRUE")
-    # Beware: before building the extension, -DGAWK gets undefined.
-    add_subdirectory(extension)
+  # Beware: before building the extension, -DGAWK gets undefined.
+  add_subdirectory(extension)
 
+  if(NOT ${CMAKE_CROSSCOMPILING} STREQUAL "TRUE")
     enable_testing()
     add_subdirectory(test)
     if (LATEX_COMPILER)
