@@ -7,8 +7,10 @@ should do this, read
 
   Why the KDE project switched to CMake -- and how 
   http://lwn.net/Articles/188693/
+  Escape from GNU Autohell!
+  http://www.shlomifish.org/open-source/anti/autohell
 
-- How can I get gawk compiled with CMake as fast as possible ?
+- How can I get GNU Awk compiled with CMake as fast as possible ?
   git clone git://git.savannah.gnu.org/gawk.git
   cd gawk
   git checkout cmake
@@ -54,4 +56,13 @@ Proceed in the same way as explained above for native compilation,
 but use a different build directory. When using CMake, do this:
   cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchain_mingw32.cmake ..
 Write a new Toolchain file for your cross-compiler and use it.
+
+- How can I build an installable file ?
+Use "make package". The exact kind of installable file depends on your
+operating system and defaults to TGZ.
+
+- Can I build an executable that runs on any Win32 platform ?
+It is possible to build for the target Win32, but only with cross-compilers
+on certain platforms. You need a MinGW cross-compiler and the NSIS package
+builder.
 
