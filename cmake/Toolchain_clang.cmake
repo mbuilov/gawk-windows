@@ -8,7 +8,7 @@ SET(CMAKE_SYSTEM_NAME Clang)
 SET(CMAKE_C_COMPILER /usr/bin/clang)
 
 # here is the target environment located
-SET(CMAKE_FIND_ROOT_PATH  /usr/)
+SET(CMAKE_FIND_ROOT_PATH  /usr/lib64/clang/3.1)
 
 # adjust the default behaviour of the FIND_XXX() commands:
 # search headers and libraries in the target environment, search 
