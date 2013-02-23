@@ -2,7 +2,7 @@
 # http://www.cmake.org/Wiki/CMake_Cross_Compiling#The_toolchain_file
 
 # the name of the target operating system
-SET(CMAKE_SYSTEM_NAME Clang)
+SET(CMAKE_SYSTEM_NAME Generic)
 
 # which compilers to use for C and C++
 SET(CMAKE_C_COMPILER /usr/bin/clang)
