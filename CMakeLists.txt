@@ -94,10 +94,9 @@ if (CMAKE_HOST_UNIX)
   if(NOT ${CMAKE_CROSSCOMPILING} STREQUAL "TRUE")
     enable_testing()
     add_subdirectory(test)
-    if (LATEX_COMPILER)
-      add_subdirectory(doc)
-    endif()
   endif()
+
+  add_subdirectory(doc)
 
   include(InstallRequiredSystemLibraries)
   set(CPACK_PACKAGING_INSTALL_PREFIX /usr)

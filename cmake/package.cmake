@@ -37,7 +37,7 @@ set(CPACK_PACKAGE_CONTACT "bug-gawk@gnu.org")
 
 IF (WIN32)
   SET(CPACK_GENERATOR "NSIS")
-  set(CPACK_NSIS_INSTALL_ROOT "C:/Programs")
+  set(CPACK_NSIS_INSTALL_ROOT "C:")
   set(CPACK_NSIS_MENU_LINKS "http://www.gnu.org/software/gawk" "GNU Awk")
   set(CPACK_NSIS_MUI_ICON    "${CMAKE_SOURCE_DIR}/cmake/auk.ico")
   set(CPACK_NSIS_MUI_UNIICON "${CMAKE_SOURCE_DIR}/cmake/auk.ico")
