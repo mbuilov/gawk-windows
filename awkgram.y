@@ -1220,11 +1220,23 @@ expression_list
 	| error
 	  { $$ = NULL; }
 	| expression_list error
-	  { $$ = NULL; }
+	  {
+		/*
+		 * Returning the expression list instead of NULL lets
+		 * snode get a list of arguments that it can count.
+		 */
+		$$ = $1;
+	  }
 	| expression_list error exp
-	  { $$ = NULL; }
+	  {
+		/* Ditto */
+		$$ = mk_expression_list($1, $3);
+	  }
 	| expression_list comma error
-	  { $$ = NULL; }
+	  {
+		/* Ditto */
+		$$ = $1;
+	  }
 	;
 
 /* Expressions, not including the comma operator.  */
