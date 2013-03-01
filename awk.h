@@ -1065,6 +1065,8 @@ extern bool field0_valid;
 
 extern int do_flags;
 
+extern SRCFILE *srcfiles; /* source files */
+
 enum do_flag_values {
 	DO_LINT_INVALID	= 0x0001,	/* only warn about invalid */
 	DO_LINT_ALL	= 0x0002,	/* warn about all things */
