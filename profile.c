@@ -927,6 +927,27 @@ dump_and_exit(int signum)
 	final_exit(EXIT_FAILURE);
 }
 
+/* print_lib_list --- print a list of all libraries loaded */
+
+static void
+print_lib_list(FILE *prof_fp)
+{
+	SRCFILE *s;
+	static bool printed_header = false;
+
+
+	for (s = srcfiles->next; s != srcfiles; s = s->next) {
+		if (s->stype == SRC_EXTLIB) {
+			if (! printed_header) {
+				printed_header = true;
+				fprintf(prof_fp, _("\t# Loaded extensions (-l and/or @load)\n\n"));
+			}
+			fprintf(prof_fp, "\t@load \"%s\"\n", s->src);
+		}
+	}
+	if (printed_header)	/* we found some */
+		printf("\n");
+}
 
 /* dump_prog --- dump the program */
 
@@ -943,6 +964,7 @@ dump_prog(INSTRUCTION *code)
 	(void) time(& now);
 	/* \n on purpose, with \n in ctime() output */
 	fprintf(prof_fp, _("\t# gawk profile, created %s\n"), ctime(& now));
+	print_lib_list(prof_fp);
 	pprint(code, NULL, false);
 }
 

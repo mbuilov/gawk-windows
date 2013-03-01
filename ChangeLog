@@ -1,3 +1,17 @@
+2013-02-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Cause profiling / pretty printing to include a list of
+	loaded extensions. Thanks to Hermann Peifer for the bug report.
+
+	* awk.h (srcfiles): Add declaration.
+	* profile.c (print_lib_list): New function.
+	(dump_prog): Call it.
+
+2013-02-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* parse.y (expression_list): In case of error return the list
+	instead of NULL so that snode gets something it can count.
+
 2013-02-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* bisonfix.awk: Comment out code for fixing contined #if
