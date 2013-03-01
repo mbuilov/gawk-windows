@@ -1,9 +1,17 @@
 2013-03-01         Arnold D. Robbins     <arnold@skeeve.com>
 
+	Don't build extensions if API isn't supported:
+
 	* Makefile.am (SUBDIRS): Move extension directory to last in case
 	building the extensions is not supported.
 	* configure.ac: Add check for MirBSD and don't even try to run the
 	checks for DYNAMIC if so.
+
+	Check for systems (MirBSD) where libc doesn't understand not
+	to use UTF-8 for LC_ALL=C.
+
+	* configure.ac (LIBC_IS_BORKED): AC_DEFINE if needed.
+	* regcomp.c (init_dfa): Change logic as needed if LIBC_IS_BORKED.
 
 2013-02-28         Arnold D. Robbins     <arnold@skeeve.com>
 
