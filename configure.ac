@@ -287,6 +287,11 @@ AC_FUNC_MBRTOWC
 
 dnl check for dynamic linking
 dnl This is known to be very primitive
+dnl On MirBSD (and probably other systems), don't even try.
+case `uname` in
+MirBSD | MirOS)
+	: ;;
+*)
 AC_CHECK_HEADER(dlfcn.h,
 	[
 	# Check this separately. Some systems have dlopen
@@ -306,6 +311,8 @@ AC_CHECK_HEADER(dlfcn.h,
 		fi
 	fi
 ])
+	;;
+esac
 
 dnl check for how to use getpgrp
 dnl have to hardwire it for VMS POSIX. Sigh.

@@ -111,3 +111,15 @@ dist_man_MANS = \
 
 # gettext requires this
 SUBDIRS =
+
+# This is an ugly hack, initially for MirBSD but probably needed for other
+# systems. If gawk doesn't have the API built in, don't try to build the
+# extensions.
+check-recursive all-recursive: check-for-shared-lib-support
+
+check-for-shared-lib-support:
+	@if ../gawk$(EXEEXT) --version | sed 1q | grep API > /dev/null; \
+	then	: do nothing ; \
+	else	echo Building the extensions is not supported on this platform ; \
+		exit 1; \
+	fi

@@ -10026,6 +10026,10 @@ $as_echo "#define HAVE_MBRTOWC 1" >>confdefs.h
   fi
 
 
+case `uname` in
+MirBSD | MirOS)
+	: ;;
+*)
 ac_fn_c_check_header_mongrel "$LINENO" "dlfcn.h" "ac_cv_header_dlfcn_h" "$ac_includes_default"
 if test "x$ac_cv_header_dlfcn_h" = xyes; then :
 
@@ -10108,6 +10112,8 @@ $as_echo "#define DYNAMIC 1" >>confdefs.h
 fi
 
 
+	;;
+esac
 
 case `(uname) 2> /dev/null` in
 *VMS*|*BeOS*|*OS/2*|*MS-DOS*)

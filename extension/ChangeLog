@@ -1,3 +1,10 @@
+2013-02-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (check-recursive, all-recursive): Make dependant upon
+	check-for-shared-lib-support.
+	(check-for-shared-lib-support): New target. If gawk doesn't have the
+	API built-in, don't try to build.
+
 2013-02-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* fnmatch.c: Pull in versions of C routine from missing_d
