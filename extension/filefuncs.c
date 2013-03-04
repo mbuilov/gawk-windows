@@ -309,7 +309,7 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 	array_set_numeric(array, "gid", sbuf->st_gid);
 	array_set_numeric(array, "size", sbuf->st_size);
 #ifdef _WIN32
-	array_set_numeric(array, "blocks", sbuf->st_size / 4096);
+	array_set_numeric(array, "blocks", (sbuf->st_size + 4095) / 4096);
 #else
 	array_set_numeric(array, "blocks", sbuf->st_blocks);
 #endif
