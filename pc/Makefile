@@ -220,6 +220,8 @@ gawk.exe:: $(GAWKOBJS) $(RSP)
 $(RSPFILE) : $(GAWKOBJS)
 	echo $(AWKOBJS1)$P > $@
 	echo $(AWKOBJS2)$P >> $@
+	echo $(AWKOBJS3)$P >> $@
+	echo $(AWKOBJS4)$P >> $@
 	echo awkgram$O getid$O $(OBJ) $(LIBOBJS)$P >> $@
 
 # Notes to dependencies:
