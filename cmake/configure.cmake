@@ -97,8 +97,8 @@ STRING( REGEX REPLACE ".*([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" GAWK_MAJOR_VERSION 
 STRING( REGEX REPLACE ".*[0-9]+\\.([0-9]+)\\.[0-9]+.*" "\\1" GAWK_MINOR_VERSION "${GAWK_AUTOMAKE_LINE_VERSION}") 
 STRING( REGEX REPLACE ".*[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" GAWK_BUGFIX_VERSION "${GAWK_AUTOMAKE_LINE_VERSION}") 
 
-# The definition for GAWK cannot be passed in config.he because
-# the extensions will fail to build.
+# The definition of the symbol GAWK cannot be passed in config.h
+# because the extensions will fail to build.
 add_definitions(-DGAWK)
 DefineConfigHValue(GAWK_VERSION "${GAWK_MAJOR_VERSION}.${GAWK_MINOR_VERSION}.${GAWK_BUGFIX_VERSION}")
 DefineConfigHValue(VERSION \\"${GAWK_VERSION}\\")
@@ -111,11 +111,11 @@ DefineConfigHValue(DEFPATH \\"${CMAKE_BINARY_DIR}/awk\\")
 DefineConfigHValue(DEFLIBPATH \\"${CMAKE_BINARY_DIR}/lib\\")
 if (CMAKE_DL_LIBS)
   message(STATUS "Found CMAKE_DL_LIBS:${CMAKE_DL_LIBS}")
-  DefineConfigHValue(DYNAMIC 1)
 else()
   message(STATUS "Found no CMAKE_DL_LIBS")
 endif()
 if (CMAKE_SHARED_LIBRARY_SUFFIX)
+  DefineConfigHValue(DYNAMIC 1)
   STRING( REGEX REPLACE "^(\\.)([a-zA-Z0-9])" "\\2" SHLIBEXT "${CMAKE_SHARED_LIBRARY_SUFFIX}") 
   DefineConfigHValue(SHLIBEXT \\"${SHLIBEXT}\\")
   message(STATUS "Found SHLIBEXT: ${SHLIBEXT}")
@@ -267,7 +267,7 @@ if (CMAKE_HOST_UNIX)
   include(GetPrerequisites)
 endif()
 
-# For some unknown reason the defines for the extension
+# For some unknown reason the defines for the extensions
 # are written into config.h only if they are implemented
 # here and not in extension/CMakeLists.txt.
 DefineLibraryIfAvailable(m    sin         "" HAVE_LIBM)
