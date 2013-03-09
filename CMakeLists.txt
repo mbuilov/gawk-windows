@@ -52,7 +52,13 @@ if(WIN32 OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
   DefineConfigHValue(HAVE_ISWUPPER 1)
   DefineConfigHValue(HAVE_SETENV 1)
   DefineConfigHValue(STDC_HEADERS 1)
-  set (GAWK_SOURCES ${GAWK_SOURCES} regex.c pc/getid.c pc/gawkmisc.pc)
+  # TODO: Eli Zaretskii remined me that the generated
+  # settings in config.h should be the same as those in
+  # pc/config.h. With these settings and DYNAMIC=1
+  # it looks like functions in dynamic libs (extensions) can
+  # be invoked on Windows.
+  set (GAWK_SOURCES ${GAWK_SOURCES} regex.c pc/getid.c pc/gawkmisc.pc pc/popen.c)
+  include_directories(${CMAKE_SOURCE_DIR}/pc)
 endif()
 
 set (GAWK_SOURCES ${GAWK_SOURCES}
