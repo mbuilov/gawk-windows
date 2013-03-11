@@ -26,7 +26,7 @@
 /configh\.in/a\
 /* pc/config.h.  Generated automatically by pc/config.sed.  */
 
-/^#undef DYNAMIC$\c
+/^#undef DYNAMIC$/c\
 #ifdef _WIN32\
 #define DYNAMIC 1\
 #endif
@@ -271,6 +271,13 @@ $a\
 \
 #ifndef __DJGPP__\
 #define HAVE_POPEN_H 1\
+#endif\
+\
+#if defined(__DJGPP__)\
+typedef unsigned int uint32_t;\
+typedef int int32_t;\
+#define INT32_MAX INT_MAX\
+#define INT32_MIN INT_MIN\
 #endif\
 \
 #if defined(__EMX__)\
