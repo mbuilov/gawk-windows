@@ -559,8 +559,22 @@ again:
 
 		if (*sp == '[')
 			count++;
-		else if (*sp == ']')
-			count--;
+		/*
+		 * ] as first char after open [ is skipped
+		 * \] is skipped
+		 * [^]] is skipped
+		 */
+		if (*sp == ']' && sp > sp2) {
+			 if (sp[-1] != '['
+			     && sp[-1] != '\\')
+				 ;
+			 else if ((sp - sp2) >= 2
+				  && sp[-1] == '^' && sp[-2] == '[')
+				 ;
+			 else
+				count--;
+		}
+
 		if (*sp == '-' && do_lint && ! range_warned && count == 1
 		    && sp[-1] != '[' && sp[1] != ']'
 		    && ! isdigit((unsigned char) sp[-1]) && ! isdigit((unsigned char) sp[1])
