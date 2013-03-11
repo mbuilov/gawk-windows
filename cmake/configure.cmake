@@ -248,12 +248,17 @@ DefineFunctionIfAvailable(mbrtowc HAVE_MBRTOWC)
 add_definitions(-D HAVE_STRINGIZE)
 add_definitions(-D _Noreturn=)
 
-if (CMAKE_HOST_UNIX)
-  find_package(BISON REQUIRED)
-  if (${BISON_FOUND} STREQUAL "TRUE")
-    BISON_TARGET(awkgram awkgram.y ${CMAKE_SOURCE_DIR}/awkgram.c)
-  endif()
+find_package(BISON QUIET)
+# If there is a bison installed on this platform,
+if (${BISON_FOUND} STREQUAL "TRUE")
+  # then let bison generate awkgram.c.
+  BISON_TARGET(awkgram awkgram.y ${CMAKE_SOURCE_DIR}/awkgram.c)
+else()
+  # otherwise use the existing awkgram.c.
+  set(BISON_awkgram_OUTPUTS ${CMAKE_SOURCE_DIR}/awkgram.c)
+endif()
 
+if (CMAKE_HOST_UNIX)
   #http://www.cmake.org/cmake/help/v2.8.10/cmake.html#module:FindGettext
   find_package(Gettext REQUIRED)
   if (GETTEXT_FOUND STREQUAL "TRUE")
