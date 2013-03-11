@@ -134,6 +134,9 @@ EXTRA_DIST = \
 	clsflnam.awk \
 	clsflnam.in \
 	clsflnam.ok \
+	colonwarn.awk \
+	colonwarn.in \
+	colonwarn.ok \
 	compare.awk \
 	compare.in \
 	compare.ok \
@@ -953,7 +956,7 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
-	clos1way delsub devfd devfd1 devfd2 dumpvars exit \
+	colonwarn clos1way delsub devfd devfd1 devfd2 dumpvars exit \
 	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 \
 	fwtest fwtest2 fwtest3 \
@@ -1785,6 +1788,13 @@ symtab8:
 reginttrad:
 	@echo $@
 	@$(AWK) --traditional -r -f $(srcdir)/$@.awk > _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+colonwarn:
+	@echo $@
+	@for i in 1 2 3 ; \
+	do $(AWK) -f $(srcdir)/$@.awk $$i < $(srcdir)/$@.in ; \
+	done > _$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
