@@ -1,4 +1,4 @@
-   Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011, 2012, 2013 Free Software Foundation, Inc.
    
    Copying and distribution of this file, with or without modification,
    are permitted in any medium without royalty provided the copyright
@@ -13,23 +13,40 @@ Changes from 4.0.2 to 4.1
 	  list of commands to run first.
 	* Use -o to do pretty-printing only.
 	* Use -p to do profiling.
+   This consierably reduces gawk's "footprint" and eases the documentation
+   burden as well.
 
-2. The new -l option is used for loading dynamic extensions.
+2. The new -l option (from xgawk) is used for loading dynamic extensions.
 
-3. The new -i option is used for loading awk library files.
+3. The new -i option (from xgawk) is used for loading awk library files.
+   This differs from -f in that the first non-option argument is treated
+   as a script.
 
-4. Gawk now supports high precision arithmetic with MPFR.
+4. Gawk now supports high precision arithmetic with MPFR.  The default is
+   still double precision, but setting PREC changes things, or using
+   the -M / --bignum options.  This support is not compiled in if the MPFR
+   library is not available.
 
-5. A number of facilities from xgawk have been merged in!
+5. The dynamic extension interface has been completely redone!  There is
+   now a defined API for C extensions to use.  A C extension acts like
+   a function written in awk, except that it cannot do everything that awk
+   code can. However, this allows interfacing to any facility that is
+   available from C.  This is a major development, see the doc.
 
-6. The dynamic extension interface has been completely redone! See the doc.
+   This support is not compiled in if dynamic loading of shared libraries
+   is not supported.
 
-7. The and(), or() and xor() functions now take any number of arguments,
+   The old extension mechanism is still supported for compatiblity, but
+   it will be removed at the next major release.
+
+6. The and(), or() and xor() functions now take any number of arguments,
    with a minimum of two.
 
-8. New arrays: SYMTAB, FUNCTAB, and PROCINFO["identifiers"]. See the manual.
+7. New arrays: SYMTAB, FUNCTAB, and PROCINFO["identifiers"]. SYMTAB allows
+   indirect access to any defined variable or array; it is possible to
+   "walk" the symbol table, if that should be necessary.
 
-9. Support for building gawk with a cross compiler has been improved.
+8. Support for building gawk with a cross compiler has been improved.
 
 Changes from 4.0.1 to 4.0.2
 ---------------------------
