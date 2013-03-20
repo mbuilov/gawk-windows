@@ -115,6 +115,9 @@ SUBDIRS =
 # This is an ugly hack, initially for MirBSD but probably needed for other
 # systems. If gawk doesn't have the API built in, don't try to build the
 # extensions.
+#
+# Given the workaround in configure, this isn't strictly necessary, but
+# we're leaving it in, in case of some other system needing it.
 check-recursive all-recursive: check-for-shared-lib-support
 
 check-for-shared-lib-support:

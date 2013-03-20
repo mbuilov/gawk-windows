@@ -1,3 +1,14 @@
+2013-03-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	For systems where libc is borked (MirBSD, maybe others).
+
+	* dfa.c: Force use of gawk_mb_cur_max instead of MB_CUR_MAX and make
+	mbrtowc a macro that always fails.
+	(using_utf8): Force utf8 to be 0 if libc borked and gawk_mb_cur_max
+	is one.
+	* main.c (main): If libc is borked and LC_ALL or LANG exist in the
+	environment and are set to "C" or "c", force gawk_mb_cur_max to one.
+
 2013-03-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* re.c (check_bracket_exp): Make handling of embedded ] in

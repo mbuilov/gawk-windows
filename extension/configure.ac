@@ -78,4 +78,15 @@ AC_C_INLINE
 AC_CONFIG_HEADERS([config.h:configh.in])
 
 AC_CONFIG_FILES(Makefile)
+AC_OUTPUT_COMMANDS([
+case `uname` in
+MirBSD | MirOS)
+	cat << \EOF > Makefile
+all dist check clean distclean install uninstall distcheck:
+	@exit 0
+EOF
+	;;
+*)
+esac
+])dnl
 AC_OUTPUT

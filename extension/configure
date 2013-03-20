@@ -14031,6 +14031,7 @@ ac_config_headers="$ac_config_headers config.h:configh.in"
 
 ac_config_files="$ac_config_files Makefile"
 
+ac_config_commands="$ac_config_commands default-1"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -15034,6 +15035,7 @@ fi
 
 
 
+
 _ACEOF
 
 cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
@@ -15047,6 +15049,7 @@ do
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h:configh.in" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "default-1") CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -16477,6 +16480,17 @@ fi
     (rm -f "$ofile" && cp "$cfgfile" "$ofile" && rm -f "$cfgfile")
   chmod +x "$ofile"
 
+ ;;
+    "default-1":C)
+case `uname` in
+MirBSD | MirOS)
+	cat << \EOF > Makefile
+all dist check clean distclean install uninstall distcheck:
+	@exit 0
+EOF
+	;;
+*)
+esac
  ;;
 
   esac
