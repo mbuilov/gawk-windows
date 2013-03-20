@@ -11,7 +11,7 @@ cp $infile $out	# set up default
 
 for locale in ja_JP.EUC-JP ja_JP.eucJP
 do
-	if locale -a | grep $locale > /dev/null
+	if locale -a 2>/dev/null | grep $locale > /dev/null
 	then
 		LANG=$locale
 		LC_ALL=$locale
