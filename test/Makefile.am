@@ -1765,6 +1765,10 @@ readdir:
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 fts:
+	@if [ "`uname`" = IRIX ];  then \
+	echo This test may fail on IRIX systems when run on an NFS filesystem.; \
+	echo If it does, try rerunning on an xfs filesystem. ; \
+	fi
 	@echo $@
 	@$(AWK) -f $(srcdir)/fts.awk
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@

@@ -1,4 +1,3 @@
-FNM_NOMATCH = 1
 "LEADING_DIR" is an element in FNM
 "CASEFOLD" is an element in FNM
 "NOESCAPE" is an element in FNM
@@ -6,4 +5,4 @@ FNM_NOMATCH = 1
 "PATHNAME" is an element in FNM
 "FILE_NAME" is an element in FNM
 fnmatch("*.a", "foo.a", 0)  = 0
-fnmatch("*.a", "foo.c", 0) = 1
+fnmatch("*.a", "foo.c", 0) == FNM_NOMATCH
