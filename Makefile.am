@@ -67,15 +67,13 @@ distcleancheck_listfiles = \
 # The order to do things in.
 # Build explicitly in "." in order to build gawk first, so
 # that `make check' without a prior `make' works.
-#
-# Put 'extension' last, in case building the extensions is not supported.
 SUBDIRS = \
 	. \
 	awklib \
 	doc \
 	po \
-	test \
-	extension
+	extension \
+	test
 
 # what to make and install
 bin_PROGRAMS = gawk
