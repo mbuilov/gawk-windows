@@ -3,6 +3,10 @@
 	* Makefile.am (SUBDIRS): Move extension back into the middle of
 	the list so that `make check' without a prior `make' works.
 
+	Unrelated:
+
+	* main.c (main): Move env_lc into ifdef for LIBC_IS_BORKED.
+
 2013-03-20         Arnold D. Robbins     <arnold@skeeve.com>
 
 	For systems where libc is borked (MirBSD, maybe others).

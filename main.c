@@ -210,7 +210,6 @@ main(int argc, char **argv)
 	char *extra_stack;
 	int have_srcfile = 0;
 	SRCFILE *s;
-	const char *env_lc;
 
 	/* do these checks early */
 	if (getenv("TIDYMEM") != NULL)
@@ -263,11 +262,15 @@ main(int argc, char **argv)
 	gawk_mb_cur_max = MB_CUR_MAX;
 	/* Without MBS_SUPPORT, gawk_mb_cur_max is 1. */
 #ifdef LIBC_IS_BORKED
+{
+	const char *env_lc;
+
 	env_lc = getenv("LC_ALL");
 	if (env_lc == NULL)
 		env_lc = getenv("LANG");
 	if (env_lc != NULL && env_lc[1] == '\0' && tolower(env_lc[0]) == 'c')
 		gawk_mb_cur_max = 1;
+}
 #endif
 
 	/* init the cache for checking bytes if they're characters */
