@@ -20,7 +20,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH January, 2013
+@set UPDATE-MONTH April, 2013
 @set VERSION 4.0
 @set PATCHLEVEL 2
 
@@ -1007,7 +1007,7 @@ The GNU implementation of @command{awk} is called @command{gawk}; if you
 invoke it with the proper options or environment variables
 (@pxref{Options}), it is fully
 compatible with
-the POSIX@footnote{The 2008 POSIX standard can be found online at
+the POSIX@footnote{The 2008 POSIX standard is online at
 @url{http://www.opengroup.org/onlinepubs/9699919799/}.}
 specification of the @command{awk} language
 and with the Unix version of @command{awk} maintained
@@ -1101,7 +1101,8 @@ has been removed.)
 @unnumberedsec History of @command{awk} and @command{gawk}
 @cindex recipe for a programming language
 @cindex programming language, recipe for
-@center Recipe For A Programming Language
+@cartouche
+@center @b{Recipe For A Programming Language}
 
 @multitable {2 parts} {1 part  @code{egrep}} {1 part  @code{snobol}}
 @item @tab 1 part  @code{egrep} @tab 1 part  @code{snobol}
@@ -1115,6 +1116,7 @@ Document minimally and release.
 After eight years, add another part @code{egrep} and two
 more parts C.  Document very well and release.
 @end quotation
+@end cartouche
 
 @cindex Aho, Alfred
 @cindex Weinberger, Peter
@@ -1597,9 +1599,12 @@ the title @cite{The GNU Awk User's Guide}.
 
 This edition maintains the basic structure of the previous editions.
 For Edition 4.0, the content has been thoroughly reviewed
-and updated. All references to versions prior to 4.0 have been
+and updated. All references to @command{gawk} versions prior to 4.0 have been
 removed.
 Of significant note for this edition is @ref{Debugger}.
+
+For edition 4.1, the content has been reorganized into parts,
+and the major new addition is @ref{Dynamic Extensions}.
 
 @cite{@value{TITLE}} will undoubtedly continue to evolve.
 An electronic version
@@ -1730,32 +1735,39 @@ significant editorial help for this @value{DOCUMENT} for the
 
 @cindex Beebe, Nelson
 @cindex Buening, Andreas
+@cindex Collado, Manuel
 @cindex Colombo, Antonio
 @cindex Davies, Stephen
 @cindex Deifik, Scott
-@cindex DuBois, John
+@cindex Demaille, Akim
 @cindex Hankerson, Darrel
 @cindex Haque, John
 @cindex Jaegermann, Michal
 @cindex Kahrs, J@"urgen
 @cindex Kasal, Stepan
+@cindex Malmberg, John
 @cindex Pitts, Dave
+@cindex Ramey, Chet
 @cindex Rankin, Pat
 @cindex Schorr, Andrew
 @cindex Vinschen, Corinna
 @cindex Wallin, Anders
 @cindex Zaretskii, Eli
+
 Dr.@: Nelson Beebe,
 Andreas Buening,
+Dr.@: Manuel Collado,
 Antonio Colombo,
 Stephen Davies,
 Scott Deifik,
-John H. DuBois III,
+Akim Demaille,
 Darrel Hankerson,
 Michal Jaegermann,
 J@"urgen Kahrs,
-Dave Pitts,
 Stepan Kasal,
+John Malmberg,
+Dave Pitts,
+Chet Ramey,
 Pat Rankin,
 Andrew Schorr,
 Corinna Vinschen,
@@ -1768,14 +1780,44 @@ help, @command{gawk} would not be nearly the fine program it is today.  It
 has been and continues to be a pleasure working with this team of fine
 people.
 
-John Haque contributed the modifications to convert @command{gawk}
-into a byte-code interpreter, including the debugger, and the
-additional modifications for support of arbitrary precision arithmetic.
+Notable code and documentation contributions were made by the
+following people:
+
+@itemize @bullet
+@item
+John Haque made the followoing contributions:
+
+@itemize @minus
+@item
+The modifications to convert @command{gawk}
+into a byte-code interpreter, including the debugger.
+
+@item
+The additional modifications for support of arbitrary precision arithmetic.
+
+@item
+The initial text of
+@ref{Arbitrary Precision Arithmetic}.
+
+@item
+The work to merge the three versions of @command{gawk}
+into one, for the 4.1 release.
+@end itemize
+
+@item
 Stephen Davies
 contributed to the effort to bring the byte-code changes into the mainstream
 code base. 
+
+@item
 Efraim Yawitz contributed the initial text of @ref{Debugger}.
-John Haque contributed the initial text of @ref{Arbitrary Precision Arithmetic}.
+
+@item
+The development of the extension API first released with
+@command{gawk} 4.1 was driven primarily by
+Arnold Robbins and Andrew Schorr, with notable contributions from
+the rest of the development team.
+@end itemize
 
 @cindex Kernighan, Brian
 I would like to thank Brian Kernighan for invaluable assistance during the
@@ -1801,7 +1843,7 @@ take advantage of those opportunities.
 Arnold Robbins @*
 Nof Ayalon @*
 ISRAEL @*
-March, 2011
+April, 2013
 
 @iftex
 @part Part I:@* The @command{awk} Language
@@ -3177,9 +3219,9 @@ your program.  This option is very
 similar to the @option{-f} option, but there are two important differences.
 First, when @option{-i} is used, the program source will not be loaded if it has
 been previously loaded, whereas the @option{-f} will always load the file.
-Second, because this option is intended to be used with code libraries, the
-@command{awk} command does not recognize such files as constituting main program
-input.  Thus, after processing an @option{-i} argument, we still expect to
+Second, because this option is intended to be used with code libraries,
+@command{gawk} does not recognize such files as constituting main program
+input.  Thus, after processing an @option{-i} argument, @command{gawk} still expects to
 find the main source code via the @option{-f} option or on the command-line.
 
 @item -v @var{var}=@var{val}
@@ -3855,6 +3897,8 @@ with the @option{-l} option rather than for source files.  If the library
 is not found, the path is searched again after adding the appropriate
 shared library suffix for the platform.  For example, on GNU/Linux systems,
 the suffix @samp{.so} is used.
+The search path specified is also used for libraries loaded via the
+@samp{@@load} keyword (@pxref{Loading Shared Libraries}).
 
 @node Other Environment Variables
 @subsection Other Environment Variables
@@ -4099,6 +4143,9 @@ $ @kbd{gawk -lordchr 'BEGIN @{print chr(65)@}'}
 For command-line usage, the @option{-l} option is more convenient,
 but @samp{@@load} is useful for embedding inside an @command{awk} source file
 that requires access to a shared library.
+
+@ref{Dynamic Extensions}, describes how to write extensions (in C or C++)
+that can be loaded with either @samp{@@load} or the @option{-l} option.
 
 @node Obsolete
 @section Obsolete Options and/or Features
