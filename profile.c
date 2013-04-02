@@ -935,7 +935,6 @@ print_lib_list(FILE *prof_fp)
 	SRCFILE *s;
 	static bool printed_header = false;
 
-
 	for (s = srcfiles->next; s != srcfiles; s = s->next) {
 		if (s->stype == SRC_EXTLIB) {
 			if (! printed_header) {
@@ -946,7 +945,7 @@ print_lib_list(FILE *prof_fp)
 		}
 	}
 	if (printed_header)	/* we found some */
-		printf("\n");
+		fprintf(prof_fp, "\n");
 }
 
 /* dump_prog --- dump the program */
