@@ -7562,7 +7562,7 @@ in the @code{PROCINFO} array:
 PROCINFO["input_name", "READ_TIMEOUT"] = @var{timeout in milliseconds}
 @end example
 
-When set, this will cause @command{gawk} to time out and return failure
+When set, this causes @command{gawk} to time out and return failure
 if no data is available to read within the specified timeout period.
 For example, a TCP client can decide to give up on receiving
 any response from the server after a certain amount of time:
@@ -8807,7 +8807,7 @@ to confusing results.
 
 Finally, using the @code{close()} function on a @value{FN} of the
 form @code{"/dev/fd/@var{N}"}, for file descriptor numbers
-above two, will actually close the given file descriptor.
+above two, does actually close the given file descriptor.
 
 The @file{/dev/stdin}, @file{/dev/stdout}, and @file{/dev/stderr}
 special files are also recognized internally by several other
@@ -37476,3 +37476,4 @@ Suggestions:
 %	1. Standardize the error messages from the functions and programs
 %	   in the two sample code chapters.
 %	2. Nuke the BBS stuff and use something that won't be obsolete
+%	3. Turn the advanced notes into sidebars by using @cartouche
