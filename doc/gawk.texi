@@ -9663,7 +9663,7 @@ point, so the default behavior was restored to use a period as the
 decimal point character.  You can use the @option{--use-lc-numeric}
 option (@pxref{Options}) to force @command{gawk} to use the locale's
 decimal point character.  (@command{gawk} also uses the locale's decimal
-point character when in POSIX mode, either via @option{--posix}, or the
+point character when in POSIX mode, either via @w{@option{--posix}}, or the
 @env{POSIXLY_CORRECT} environment variable, as shown previously.)
 
 @ref{table-locale-affects} describes the cases in which the locale's decimal
@@ -10185,7 +10185,7 @@ For maximum portability, do not use the @samp{**=} operator.
 There is a syntactic ambiguity between the @code{/=} assignment
 operator and regexp constants whose first character is an @samp{=}.
 @value{DARKCORNER}
-This is most notable in commercial @command{awk} versions.
+This is most notable in some commercial @command{awk} versions.
 For example:
 
 @example
@@ -12602,7 +12602,7 @@ any @code{ENDFILE} rules are executed except in the case as
 mentioned below,
 @code{ARGIND} is incremented,
 and
-any @code{BEGINFILE} rules are executed
+any @code{BEGINFILE} rules are executed.
 (@code{ARGIND} hasn't been introduced yet. @xref{Built-in Variables}.)
 
 With @command{gawk}, @code{nextfile} is useful inside a @code{BEGINFILE}
@@ -13298,9 +13298,20 @@ to test for these elements
 
 @cindex @command{gawk}, @code{PROCINFO} array in
 @cindex @code{PROCINFO} array
-The @code{PROCINFO} array is also used to cause coprocesses
+The @code{PROCINFO} array has the following additional uses:
+
+@itemize @bullet
+@item
+It may be
+used to cause coprocesses
 to communicate over pseudo-ttys instead of through two-way pipes;
 this is discussed further in @ref{Two-way I/O}.
+
+@item
+It may be used to provide a timeout when reading from any
+open input file, pipe, or coprocess.
+@xref{Read Timeout}, for more information.
+@end itemize
 
 This array is a @command{gawk} extension.
 In other @command{awk} implementations,
