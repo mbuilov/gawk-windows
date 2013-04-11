@@ -14019,7 +14019,7 @@ and will vary from one version of @command{awk} to the next.
 
 Often, though, you may wish to do something simple, such as
 ``traverse the array by comparing the indices in ascending order,''
-or ``traverse the array by on comparing the values in descending order.''
+or ``traverse the array by comparing the values in descending order.''
 @command{gawk} provides two mechanisms which give you this control.
 
 @itemize @bullet
@@ -14029,7 +14029,7 @@ We describe this now.
 
 @item
 Set @code{PROCINFO["sorted_in"]} to the name of a user-defined function
-to be used for comparison of array elements. This advanced feature
+to use for comparison of array elements. This advanced feature
 is described later, in @ref{Array Sorting}.
 @end itemize
 
@@ -14095,8 +14095,7 @@ Subarrays, if present, come out first.
 
 The array traversal order is determined before the @code{for} loop
 starts to run. Changing @code{PROCINFO["sorted_in"]} in the loop body
-will not affect the loop.
-
+does not affect the loop.
 For example:
 
 @example
@@ -14678,7 +14677,7 @@ for (i in a) @{
 @end example
 
 @noindent
-@xref{Walking Arrays}, for a user-defined function that will ``walk'' an
+@xref{Walking Arrays}, for a user-defined function that ``walks'' an
 arbitrarily-dimensioned array of arrays.
 
 Recall that a reference to an uninitialized array element yields a value
@@ -35965,6 +35964,11 @@ A pattern is an arbitrary conditional expression against which input is
 tested.  If the condition is satisfied, the pattern is said to @dfn{match}
 the input record.  A typical pattern might compare the input record against
 a regular expression. (@xref{Pattern Overview}.)
+
+@item PEBKAC
+A descriptive acronym for describing possibly the most frequent
+source of computer usage problems. (Problem Exists Between
+Keyboard And Chair.)
 
 @item POSIX
 The name for a series of standards
