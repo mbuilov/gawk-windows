@@ -13665,7 +13665,7 @@ A contiguous array of four elements might look like the following example,
 conceptually, if the element values are 8, @code{"foo"},
 @code{""}, and 30:
 
-@c @strong{FIXME: NEXT ED:} Use real images here
+@c @strong{FIXME: NEXT ED:} Use real images here, and an @float
 @iftex
 @c from Karl Berry, much thanks for the help.
 @tex
@@ -17551,8 +17551,9 @@ If @option{--lint} is specified
 
 @cindex portability, @code{next} statement in user-defined functions
 Some @command{awk} implementations generate a runtime
-error if you use the @code{next} statement
-(@pxref{Next Statement})
+error if you use either the @code{next} statement
+or the @code{nextfile} statement
+(@pxref{Next Statement}, also @pxref{Nextfile Statement})
 inside a user-defined function.
 @command{gawk} does not have this limitation.
 @c ENDOFRANGE fudc
@@ -20475,6 +20476,16 @@ $ @kbd{gawk -f walk_array.awk}
 @print{} a[2][2] = 22
 @print{} a[3] = 3
 @end example
+
+Walking an array and processing each element is a general-purpose
+operation.  You might want to consider generalizing the @code{walk_array()}
+function by adding an additional parameter named @code{process}.
+
+Then, inside the loop, instead of simply printing the array element's
+index and value, use the indirect function call syntax
+(@pxref{Indirect Calls}) on @code{process}, passing it the index
+and the value.
+
 
 @c ENDOFRANGE libfgdata
 @c ENDOFRANGE flibgdata
