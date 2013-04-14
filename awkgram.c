@@ -6901,17 +6901,18 @@ check_funcs()
  
 	for (i = 0; i < HASHSIZE; i++) {
 		for (fp = ftable[i]; fp != NULL; fp = fp->next) {
-			if (fp->defined == 0 && ! fp->extension) {
 #ifdef REALLYMEAN
-				/* making this the default breaks old code. sigh. */
+			/* making this the default breaks old code. sigh. */
+			if (fp->defined == 0 && ! fp->extension) {
 				error(
 		_("function `%s' called but never defined"), fp->name);
 				errcount++;
+			}
 #else
+			if (do_lint && fp->defined == 0 && ! fp->extension)
 				lintwarn(
 		_("function `%s' called but never defined"), fp->name);
 #endif
-			}
 
 			if (do_lint && fp->used == 0 && ! fp->extension) {
 				lintwarn(_("function `%s' defined but never called directly"),
