@@ -174,7 +174,7 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
-	clos1way delsub devfd devfd1 devfd2 dumpvars exit \
+	colonwarn clos1way delsub devfd devfd1 devfd2 dumpvars exit \
 	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 \
 	fwtest fwtest2 fwtest3 \
@@ -983,12 +983,20 @@ testext::
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ testext.awk
 
 readdir:
+	@if [ "`uname`" = Linux ] && [ "`stat -f . 2>/dev/null | awk 'NR == 2 { print $$NF }'`" = nfs ];  then \
+	echo This test may fail on GNU/Linux systems when run on an NFS filesystem.; \
+	echo If it does, try rerunning on an ext'[234]' filesystem. ; \
+	fi
 	@echo $@
 	@$(AWK) -f $(srcdir)/readdir.awk $(top_srcdir) > _$@
-	@ls -fli $(top_srcdir) | sed 1d | $(AWK) -f $(srcdir)/readdir0.awk -v extout=_$@ > $@.ok
+	@ls -afli $(top_srcdir) | sed 1d | $(AWK) -f $(srcdir)/readdir0.awk -v extout=_$@ > $@.ok
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 fts:
+	@if [ "`uname`" = IRIX ];  then \
+	echo This test may fail on IRIX systems when run on an NFS filesystem.; \
+	echo If it does, try rerunning on an xfs filesystem. ; \
+	fi
 	@echo $@
 	@$(AWK) -f $(srcdir)/fts.awk
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
@@ -1018,6 +1026,13 @@ symtab8:
 reginttrad:
 	@echo $@
 	@$(AWK) --traditional -r -f $(srcdir)/$@.awk > _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+colonwarn:
+	@echo $@
+	@for i in 1 2 3 ; \
+	do $(AWK) -f $(srcdir)/$@.awk $$i < $(srcdir)/$@.in ; \
+	done > _$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
