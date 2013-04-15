@@ -1741,7 +1741,6 @@ significant editorial help for this @value{DOCUMENT} for the
 @cindex Deifik, Scott
 @cindex Demaille, Akim
 @cindex Hankerson, Darrel
-@cindex Haque, John
 @cindex Jaegermann, Michal
 @cindex Kahrs, J@"urgen
 @cindex Kasal, Stepan
@@ -1780,50 +1779,14 @@ help, @command{gawk} would not be nearly the fine program it is today.  It
 has been and continues to be a pleasure working with this team of fine
 people.
 
-Notable code and documentation contributions were made by the
-following people:
-
-@itemize @bullet
-@item
-John Haque made the followoing contributions:
-
-@itemize @minus
-@item
-The modifications to convert @command{gawk}
-into a byte-code interpreter, including the debugger.
-
-@item
-The additional modifications for support of arbitrary precision arithmetic.
-
-@item
-The initial text of
-@ref{Arbitrary Precision Arithmetic}.
-
-@item
-The work to merge the three versions of @command{gawk}
-into one, for the 4.1 release.
-@end itemize
-
-@item
-Stephen Davies
-contributed to the effort to bring the byte-code changes into the mainstream
-code base. 
-
-@item
-Efraim Yawitz contributed the initial text of @ref{Debugger}.
-
-@item
-The development of the extension API first released with
-@command{gawk} 4.1 was driven primarily by
-Arnold Robbins and Andrew Schorr, with notable contributions from
-the rest of the development team.
-@end itemize
+Notable code and documentation contributions were made by
+a number of people. @xref{Contributors}, for the full list.
 
 @cindex Kernighan, Brian
 I would like to thank Brian Kernighan for invaluable assistance during the
 testing and debugging of @command{gawk}, and for ongoing
 help and advice in clarifying numerous points about the language.
- We could not have done nearly as good a job on either @command{gawk}
+We could not have done nearly as good a job on either @command{gawk}
 or its documentation without his help.
 
 @cindex Robbins, Miriam
@@ -27177,7 +27140,7 @@ the general attributes of computer arithmetic, along with how
 this can influence what you see when running @command{awk} programs.
 This discussion applies to all versions of @command{awk}.
 
-Then the @value{CHAPTER} moves on to @dfn{arbitrary precision
+The @value{CHAPTER} then moves on to describe @dfn{arbitrary precision
 arithmetic}, a feature which is specific to @command{gawk}.
 
 @menu
@@ -31610,10 +31573,10 @@ else
 @end example
 
 @node Extension Sample Inplace
-@subsection Enabling in-place file editing.
+@subsection Enabling In-Place File Editing
 
-The @code{inplace} extension emulates the @command{sed} @option{-i} option
-which performs ``in placed'' editing of each input file.
+The @code{inplace} extension emulates GNU @command{sed}'s @option{-i} option
+which performs ``in place'' editing of each input file.
 It uses the bundled @file{inplace.awk} include file to invoke the extension
 properly:
 
@@ -31663,7 +31626,7 @@ $ @kbd{gawk -i inplace -v INPLACE_SUFFIX=.bak '@{ gsub(/foo/, "bar") @}}
 @end example
 
 We leave it as an exercise to write a wrapper script that presents an
-interface similar to the @command{sed} @option{-i} option.
+interface similar to @samp{sed -i}.
 
 @node Extension Sample Ord
 @subsection Character and Numeric values: @code{ord()} and @code{chr()}
@@ -32219,6 +32182,24 @@ More complete documentation of many of the previously undocumented
 features of the language.
 @end itemize
 
+In 2012, a number of extensions that had been commonly available for
+many years were finally added to POSIX. They are:
+
+@itemize @bullet
+@item
+The @code{fflush()} built-in function for flushing buffered output
+(@pxref{I/O Functions}).
+
+@item
+The @code{nextfile} statement
+(@pxref{Nextfile Statement}).
+
+@item
+The ability to delete all of an array at once with @samp{delete @var{array}}
+(@pxref{Delete}).
+
+@end itemize
+
 @xref{Common Extensions}, for a list of common extensions
 not permitted by the POSIX standard.
 
@@ -32255,7 +32236,6 @@ The use of @code{func} as an abbreviation for @code{function}
 @item
 The @code{fflush()} built-in function for flushing buffered output
 (@pxref{I/O Functions}).
-As of December 2012, this function is now standardized by POSIX.
 
 @ignore
 @item
@@ -32604,6 +32584,7 @@ the three most widely-used freely available versions of @command{awk}
 @item @file{/dev/stdout} special file @tab X @tab X @tab X
 @item @file{/dev/stderr} special file @tab X @tab X @tab X
 @item @code{**} and @code{**=} operators @tab X @tab @tab X
+@item @code{fflush()} function @tab X @tab X @tab X
 @item @code{func} keyword @tab X @tab @tab X
 @item @code{nextfile} statement @tab X @tab X @tab X
 @item @code{delete} without subscript @tab X @tab X @tab X
@@ -32711,6 +32692,7 @@ to implementors to implement ranges in whatever way they choose.
 The @command{gawk} maintainer chose to apply the pre-POSIX meaning in all
 cases: the default regexp matching; with @option{--traditional}, and with
 @option{--posix}; in all cases, @command{gawk} remains POSIX compliant.
+
 @node Contributors
 @appendixsec Major Contributors to @command{gawk}
 @cindex @command{gawk}, list of contributors to
@@ -32903,15 +32885,38 @@ Patrick T.J.@: McPhee contributed the code for dynamic loading in Windows32
 environments.
 (This is no longer supported)
 
+
 @item
 @cindex Haque, John
-John Haque
-reworked the @command{gawk} internals to use a byte-code engine,
-providing the @command{gawk} debugger for @command{awk} programs.
+John Haque made the following contributions:
+
+@itemize @minus
+@item
+The modifications to convert @command{gawk}
+into a byte-code interpreter, including the debugger.
+
+@item
+The additional modifications for support of arbitrary precision arithmetic.
+
+@item
+The initial text of
+@ref{Arbitrary Precision Arithmetic}.
+
+@item
+The work to merge the three versions of @command{gawk}
+into one, for the 4.1 release.
+@end itemize
 
 @item
 @cindex Yawitz, Efraim
 Efraim Yawitz contributed the original text for @ref{Debugger}.
+
+@item
+@cindex Schorr, Andrew
+The development of the extension API first released with
+@command{gawk} 4.1 was driven primarily by
+Arnold Robbins and Andrew Schorr, with notable contributions from
+the rest of the development team.
 
 @item
 @cindex Robbins, Arnold
@@ -34239,6 +34244,14 @@ This is an embeddable @command{awk} interpreter derived from
 @command{mawk}. For more information see
 @uref{http://repo.hu/projects/libmawk/}.
 
+@item @code{pawk}
+@cindex @code{pawk}, @command{awk}-like facilities for Python
+This is a Python module that claims to bring @command{awk}-like
+features to Python. See @uref{https://github.com/alecthomas/pawk}
+for more information. (This is not related to Nelson Beebe's
+modified version of Brian Kernighan's @command{awk},
+described earlier.)
+
 @item @w{QSE Awk}
 @cindex QSE Awk
 @cindex source code, QSE Awk
@@ -34253,12 +34266,6 @@ under the GPL. It has a large number of extensions over standard
 @command{awk} and may not be 100% syntactically compatible with it.
 See @uref{http://www.quiktrim.org/QTawk.html} for more information,
 including the manual and a download link.
-
-@item @code{pawk}
-@cindex @code{pawk}, @command{awk}-like facilities for Python
-This is a Python module that claims to bring @command{awk}-like
-features to Python. See @uref{https://github.com/alecthomas/pawk}
-for more information.
 
 @end table
 @c ENDOFRANGE gligawk
@@ -34364,17 +34371,10 @@ Once you have made changes, you can use @samp{git diff} to produce a
 patch, and send that to the @command{gawk} maintainer; see @ref{Bugs},
 for how to do that.
 
-Finally, if you cannot install Git (e.g., if it hasn't been ported
-yet to your operating system), you can use the Git--CVS gateway
-to check out a copy using CVS, as follows:
-
-@example
-cvs -d:pserver:anonymous@@pserver.git.sv.gnu.org:/gawk.git co -d gawk master
-@end example
-
-Note that this gateway is flakey; you may have better luck using
-a more modern version control system like Bazaar, that has a Git
-plug-in for working with Git repositories.
+Once upon a time there was Git--CVS gateway for use by people who could
+not install Git. However, this gateway no longer works, so you may have
+better luck using a more modern version control system like Bazaar,
+that has a Git plug-in for working with Git repositories.
 
 @node Adding Code
 @appendixsubsec Adding New Features
@@ -34477,7 +34477,7 @@ of @code{switch} statements, instead of just the
 plain pointer or character value.
 
 @item
-Use @code{true}, @code{false} for @code{bool} values,
+Use @code{true} and @code{false} for @code{bool} values,
 the @code{NULL} symbolic constant for pointer values,
 and the character constant @code{'\0'} where appropriate, instead of @code{1}
 and @code{0}.
@@ -35146,12 +35146,12 @@ to any of the above.
 
 @ref{Dynamic Extensions}, describes the supported API and mechanisms
 for writing extensions for @command{gawk}.  This API was introduced
-in @strong{FIXME: VERSION}.  However, for many years @command{gawk}
+in @value{PVERSION} 4.1.  However, for many years @command{gawk}
 provided an extension mechanism that required knowledge of @command{gawk}
 internals and that was not as well designed.
 
-In order to provide a transition period, @command{gawk} version
-@strong{FIXME: VERSION} continues to support the original extension mechanism.
+In order to provide a transition period, @command{gawk} @value{PVERSION}
+4.1 continues to support the original extension mechanism.
 This will be true for the life of exactly one major release.  This support
 will be withdrawn, and removed from the source code, at the next major
 release.
@@ -36002,7 +36002,7 @@ the input record.  A typical pattern might compare the input record against
 a regular expression. (@xref{Pattern Overview}.)
 
 @item PEBKAC
-A descriptive acronym for describing possibly the most frequent
+An acronym describing what is possibly the most frequent
 source of computer usage problems. (Problem Exists Between
 Keyboard And Chair.)
 
