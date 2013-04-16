@@ -16,37 +16,43 @@ Changes from 4.0.2 to 4.1
    This considerably reduces gawk's "footprint" and eases the documentation
    burden as well.
 
-2. The new -l option (from xgawk) is used for loading dynamic extensions.
+2. Gawk now supports high precision arithmetic with MPFR.  The default is
+   still double precision, but setting PREC changes things, or using
+   the -M / --bignum options.  This support is not compiled in if the MPFR
+   library is not available.
 
 3. The new -i option (from xgawk) is used for loading awk library files.
    This differs from -f in that the first non-option argument is treated
    as a script.
 
-4. Gawk now supports high precision arithmetic with MPFR.  The default is
-   still double precision, but setting PREC changes things, or using
-   the -M / --bignum options.  This support is not compiled in if the MPFR
-   library is not available.
+4. The new -l option (from xgawk) is used for loading dynamic extensions.
 
 5. The dynamic extension interface has been completely redone!  There is
    now a defined API for C extensions to use.  A C extension acts like
    a function written in awk, except that it cannot do everything that awk
    code can. However, this allows interfacing to any facility that is
-   available from C.  This is a major development, see the doc.
+   available from C.  This is a major development, see the doc, which has
+   a nice shiny new chapter describing everything.
 
    This support is not compiled in if dynamic loading of shared libraries
    is not supported.
 
    The old extension mechanism is still supported for compatiblity, but
-   it will be removed at the next major release.
+   it will most definitely be removed at the next major release.
 
-6. The and(), or() and xor() functions now take any number of arguments,
+6. The "inplace" extension, built using the new facility, can be used to
+   simulate the GNU "sed -i" feature.
+
+7. The and(), or() and xor() functions now take any number of arguments,
    with a minimum of two.
 
-7. New arrays: SYMTAB, FUNCTAB, and PROCINFO["identifiers"]. SYMTAB allows
+8. New arrays: SYMTAB, FUNCTAB, and PROCINFO["identifiers"]. SYMTAB allows
    indirect access to any defined variable or array; it is possible to
    "walk" the symbol table, if that should be necessary.
 
-8. Support for building gawk with a cross compiler has been improved.
+9. Support for building gawk with a cross compiler has been improved.
+
+10. Infrastructure upgrades: bison 2.7.1, gettext 0.18.2.1, automake 1.13.1.
 
 Changes from 4.0.1 to 4.0.2
 ---------------------------
