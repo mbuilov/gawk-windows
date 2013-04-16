@@ -1,4 +1,4 @@
-Tue Feb 12 19:51:04 IST 2013
+Tue Apr 16 11:08:26 IDT 2013
 ============================
 
 There were too many files tracking different thoughts and ideas for
@@ -24,15 +24,7 @@ Minor Cleanups and Code Improvements
 
 	regex.h - remove underscores in param names
 
-	Add tests for patches in emails (?? - not sure now what this
-	referred to)
-
 	Consider removing use of and/or need for the protos.h file.
-
-	Consider moving var_value info into Node_var itself
-	to reduce memory usage.
-
-	Add macros for working with flags instead of using & and | directly.
 
 	Review the bash source script for working with shared libraries in
 	order to nuke the use of libtool.
@@ -53,6 +45,7 @@ Minor New Features
 
 Major New Features
 ------------------
+
 	Think about how to generalize indirect access. Manuel Collado
 	suggests things like
 
@@ -82,18 +75,19 @@ Major New Features
 
 Things To Think About That May Never Happen
 -------------------------------------------
-	?? Scope IDs for IPv6 addresses ??
-
-	??? Gnulib
 
 	Consider making shadowed variables a warning and not
 	a fatal warning when --lint=fatal.
 
 	Similar for extra parameters in a function call.
 
+	?? Scope IDs for IPv6 addresses ??
+
+	??? Gnulib
+
 	Look at code coverage tools, like S2E: https://s2e.epfl.ch/
 	
-	Try running with diehard: http://www.diehard-software.org,
+	Try running with diehard. See http://www.diehard-software.org,
 	https://github.com/emeryberger/DieHard
 
 	Change from dlopen to using the libltdl library (i.e. lt_dlopen).
@@ -211,11 +205,15 @@ Done in 4.1:
 	Consider really implementing BWK awk SYMTAB for seeing what
 	global variables are defined.
 
-Things To Think About That May Never Happen
--------------------------------------------
-
 Things That We Decided We Will Never Do
 ---------------------------------------
+
+	Consider moving var_value info into Node_var itself to reduce
+	memory usage. This would break all uses of get_lhs in the
+	code. It's too sweeping a change.
+
+	Add macros for working with flags instead of using & and |
+	directly.
 
 Code Review
 -----------
