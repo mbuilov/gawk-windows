@@ -40,7 +40,7 @@ then
 fi
 
 AC_PREREQ(2.69)
-AM_INIT_AUTOMAKE([1.12 dist-xz])
+AM_INIT_AUTOMAKE([1.13 dist-xz])
 
 AC_CONFIG_MACRO_DIR([m4])
 
