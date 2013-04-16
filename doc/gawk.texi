@@ -297,10 +297,10 @@ particular records in a file and perform operations upon them.
 * Library Functions::              A Library of @command{awk} Functions.
 * Sample Programs::                Many @command{awk} programs with complete
                                    explanations.
-* Internationalization::           Getting @command{gawk} to speak your
-                                   language.
 * Advanced Features::              Stuff for advanced users, specific to
                                    @command{gawk}.
+* Internationalization::           Getting @command{gawk} to speak your
+                                   language.
 * Debugger::                       The @code{gawk} debugger.
 * Arbitrary Precision Arithmetic:: Arbitrary precision arithmetic with
                                    @command{gawk}.
@@ -1321,16 +1321,16 @@ solving real problems.
 Part III focuses on features specific to @command{gawk}.
 It contains the following chapters:
 
-@ref{Internationalization},
-describes special features in @command{gawk} for translating program
-messages into different languages at runtime.
-
 @ref{Advanced Features},
 describes a number of @command{gawk}-specific advanced features.
 Of particular note
 are the abilities to have two-way communications with another process,
 perform TCP/IP networking, and
 profile your @command{awk} programs.
+
+@ref{Internationalization},
+describes special features in @command{gawk} for translating program
+messages into different languages at runtime.
 
 @ref{Debugger}, describes the @command{awk} debugger.
 
@@ -23946,10 +23946,10 @@ It contains the following chapters:
 
 @itemize @bullet
 @item
-@ref{Internationalization}.
+@ref{Advanced Features}.
 
 @item
-@ref{Advanced Features}.
+@ref{Internationalization}.
 
 @item
 @ref{Debugger}.
@@ -23961,795 +23961,6 @@ It contains the following chapters:
 @ref{Dynamic Extensions}.
 @end ifdocbook
 @end ignore
-
-@node Internationalization
-@chapter Internationalization with @command{gawk}
-
-Once upon a time, computer makers
-wrote software that worked only in English.
-Eventually, hardware and software vendors noticed that if their
-systems worked in the native languages of non-English-speaking
-countries, they were able to sell more systems.
-As a result, internationalization and localization
-of programs and software systems became a common practice.
-
-@c STARTOFRANGE inloc
-@cindex internationalization, localization
-@cindex @command{gawk}, internationalization and, See internationalization
-@cindex internationalization, localization, @command{gawk} and
-For many years, the ability to provide internationalization
-was largely restricted to programs written in C and C++.
-This @value{CHAPTER} describes the underlying library @command{gawk}
-uses for internationalization, as well as how
-@command{gawk} makes internationalization
-features available at the @command{awk} program level.
-Having internationalization available at the @command{awk} level
-gives software developers additional flexibility---they are no
-longer forced to write in C or C++ when internationalization is
-a requirement.
-
-@menu
-* I18N and L10N::               Internationalization and Localization.
-* Explaining gettext::          How GNU @code{gettext} works.
-* Programmer i18n::             Features for the programmer.
-* Translator i18n::             Features for the translator.
-* I18N Example::                A simple i18n example.
-* Gawk I18N::                   @command{gawk} is also internationalized.
-@end menu
-
-@node I18N and L10N
-@section Internationalization and Localization
-
-@cindex internationalization
-@cindex localization, See internationalization@comma{} localization
-@cindex localization
-@dfn{Internationalization} means writing (or modifying) a program once,
-in such a way that it can use multiple languages without requiring
-further source-code changes.
-@dfn{Localization} means providing the data necessary for an
-internationalized program to work in a particular language.
-Most typically, these terms refer to features such as the language
-used for printing error messages, the language used to read
-responses, and information related to how numerical and
-monetary values are printed and read.
-
-@node Explaining gettext
-@section GNU @code{gettext}
-
-@cindex internationalizing a program
-@c STARTOFRANGE gettex
-@cindex @code{gettext} library
-The facilities in GNU @code{gettext} focus on messages; strings printed
-by a program, either directly or via formatting with @code{printf} or
-@code{sprintf()}.@footnote{For some operating systems, the @command{gawk}
-port doesn't support GNU @code{gettext}.
-Therefore, these features are not available
-if you are using one of those operating systems. Sorry.}
-
-@cindex portability, @code{gettext} library and
-When using GNU @code{gettext}, each application has its own
-@dfn{text domain}.  This is a unique name, such as @samp{kpilot} or @samp{gawk},
-that identifies the application.
-A complete application may have multiple components---programs written
-in C or C++, as well as scripts written in @command{sh} or @command{awk}.
-All of the components use the same text domain.
-
-To make the discussion concrete, assume we're writing an application
-named @command{guide}.  Internationalization consists of the
-following steps, in this order:
-
-@enumerate
-@item
-The programmer goes
-through the source for all of @command{guide}'s components
-and marks each string that is a candidate for translation.
-For example, @code{"`-F': option required"} is a good candidate for translation.
-A table with strings of option names is not (e.g., @command{gawk}'s
-@option{--profile} option should remain the same, no matter what the local
-language).
-
-@cindex @code{textdomain()} function (C library)
-@item
-The programmer indicates the application's text domain
-(@code{"guide"}) to the @code{gettext} library,
-by calling the @code{textdomain()} function.
-
-@cindex @code{.pot} files
-@cindex files, @code{.pot}
-@cindex portable object template files
-@cindex files, portable object template
-@item
-Messages from the application are extracted from the source code and
-collected into a portable object template file (@file{guide.pot}),
-which lists the strings and their translations.
-The translations are initially empty.
-The original (usually English) messages serve as the key for
-lookup of the translations.
-
-@cindex @code{.po} files
-@cindex files, @code{.po}
-@cindex portable object files
-@cindex files, portable object
-@item
-For each language with a translator, @file{guide.pot}
-is copied to a portable object file (@code{.po})
-and translations are created and shipped with the application.
-For example, there might be a @file{fr.po} for a French translation.
-
-@cindex @code{.mo} files
-@cindex files, @code{.mo}
-@cindex message object files
-@cindex files, message object
-@item
-Each language's @file{.po} file is converted into a binary
-message object (@file{.mo}) file.
-A message object file contains the original messages and their
-translations in a binary format that allows fast lookup of translations
-at runtime.
-
-@item
-When @command{guide} is built and installed, the binary translation files
-are installed in a standard place.
-
-@cindex @code{bindtextdomain()} function (C library)
-@item
-For testing and development, it is possible to tell @code{gettext}
-to use @file{.mo} files in a different directory than the standard
-one by using the @code{bindtextdomain()} function.
-
-@cindex @code{.mo} files, specifying directory of
-@cindex files, @code{.mo}, specifying directory of
-@cindex message object files, specifying directory of
-@cindex files, message object, specifying directory of
-@item
-At runtime, @command{guide} looks up each string via a call
-to @code{gettext()}.  The returned string is the translated string
-if available, or the original string if not.
-
-@item
-If necessary, it is possible to access messages from a different
-text domain than the one belonging to the application, without
-having to switch the application's default text domain back
-and forth.
-@end enumerate
-
-@cindex @code{gettext()} function (C library)
-In C (or C++), the string marking and dynamic translation lookup
-are accomplished by wrapping each string in a call to @code{gettext()}:
-
-@example
-printf("%s", gettext("Don't Panic!\n"));
-@end example
-
-The tools that extract messages from source code pull out all
-strings enclosed in calls to @code{gettext()}.
-
-@cindex @code{_} (underscore), @code{_} C macro
-@cindex underscore (@code{_}), @code{_} C macro
-The GNU @code{gettext} developers, recognizing that typing
-@samp{gettext(@dots{})} over and over again is both painful and ugly to look
-at, use the macro @samp{_} (an underscore) to make things easier:
-
-@example
-/* In the standard header file: */
-#define _(str) gettext(str)
-
-/* In the program text: */
-printf("%s", _("Don't Panic!\n"));
-@end example
-
-@cindex internationalization, localization, locale categories
-@cindex @code{gettext} library, locale categories
-@cindex locale categories
-@noindent
-This reduces the typing overhead to just three extra characters per string
-and is considerably easier to read as well.
-
-There are locale @dfn{categories}
-for different types of locale-related information.
-The defined locale categories that @code{gettext} knows about are:
-
-@table @code
-@cindex @code{LC_MESSAGES} locale category
-@item LC_MESSAGES
-Text messages.  This is the default category for @code{gettext}
-operations, but it is possible to supply a different one explicitly,
-if necessary.  (It is almost never necessary to supply a different category.)
-
-@cindex sorting characters in different languages
-@cindex @code{LC_COLLATE} locale category
-@item LC_COLLATE
-Text-collation information; i.e., how different characters
-and/or groups of characters sort in a given language.
-
-@cindex @code{LC_CTYPE} locale category
-@item LC_CTYPE
-Character-type information (alphabetic, digit, upper- or lowercase, and
-so on).
-This information is accessed via the
-POSIX character classes in regular expressions,
-such as @code{/[[:alnum:]]/}
-(@pxref{Regexp Operators}).
-
-@cindex monetary information, localization
-@cindex currency symbols, localization
-@cindex @code{LC_MONETARY} locale category
-@item LC_MONETARY
-Monetary information, such as the currency symbol, and whether the
-symbol goes before or after a number.
-
-@cindex @code{LC_NUMERIC} locale category
-@item LC_NUMERIC
-Numeric information, such as which characters to use for the decimal
-point and the thousands separator.@footnote{Americans
-use a comma every three decimal places and a period for the decimal
-point, while many Europeans do exactly the opposite:
-1,234.56 versus 1.234,56.}
-
-@cindex @code{LC_RESPONSE} locale category
-@item LC_RESPONSE
-Response information, such as how ``yes'' and ``no'' appear in the
-local language, and possibly other information as well.
-
-@cindex time, localization and
-@cindex dates, information related to@comma{} localization
-@cindex @code{LC_TIME} locale category
-@item LC_TIME
-Time- and date-related information, such as 12- or 24-hour clock, month printed
-before or after the day in a date, local month abbreviations, and so on.
-
-@cindex @code{LC_ALL} locale category
-@item LC_ALL
-All of the above.  (Not too useful in the context of @code{gettext}.)
-@end table
-@c ENDOFRANGE gettex
-
-@node Programmer i18n
-@section Internationalizing @command{awk} Programs
-@c STARTOFRANGE inap
-@cindex @command{awk} programs, internationalizing
-
-@command{gawk} provides the following variables and functions for
-internationalization:
-
-@table @code
-@cindex @code{TEXTDOMAIN} variable
-@item TEXTDOMAIN
-This variable indicates the application's text domain.
-For compatibility with GNU @code{gettext}, the default
-value is @code{"messages"}.
-
-@cindex internationalization, localization, marked strings
-@cindex strings, for localization
-@item _"your message here"
-String constants marked with a leading underscore
-are candidates for translation at runtime.
-String constants without a leading underscore are not translated.
-
-@cindex @code{dcgettext()} function (@command{gawk})
-@item dcgettext(@var{string} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
-Return the translation of @var{string} in
-text domain @var{domain} for locale category @var{category}.
-The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
-The default value for @var{category} is @code{"LC_MESSAGES"}.
-
-If you supply a value for @var{category}, it must be a string equal to
-one of the known locale categories described in
-@ifnotinfo
-the previous @value{SECTION}.
-@end ifnotinfo
-@ifinfo
-@ref{Explaining gettext}.
-@end ifinfo
-You must also supply a text domain.  Use @code{TEXTDOMAIN} if
-you want to use the current domain.
-
-@quotation CAUTION
-The order of arguments to the @command{awk} version
-of the @code{dcgettext()} function is purposely different from the order for
-the C version.  The @command{awk} version's order was
-chosen to be simple and to allow for reasonable @command{awk}-style
-default arguments.
-@end quotation
-
-@cindex @code{dcngettext()} function (@command{gawk})
-@item dcngettext(@var{string1}, @var{string2}, @var{number} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
-Return the plural form used for @var{number} of the
-translation of @var{string1} and @var{string2} in text domain
-@var{domain} for locale category @var{category}. @var{string1} is the
-English singular variant of a message, and @var{string2} the English plural
-variant of the same message.
-The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
-The default value for @var{category} is @code{"LC_MESSAGES"}.
-
-The same remarks about argument order as for the @code{dcgettext()} function apply.
-
-@cindex @code{.mo} files, specifying directory of
-@cindex files, @code{.mo}, specifying directory of
-@cindex message object files, specifying directory of
-@cindex files, message object, specifying directory of
-@cindex @code{bindtextdomain()} function (@command{gawk})
-@item bindtextdomain(@var{directory} @r{[}, @var{domain}@r{]})
-Change the directory in which
-@code{gettext} looks for @file{.mo} files, in case they
-will not or cannot be placed in the standard locations
-(e.g., during testing).
-Return the directory in which @var{domain} is ``bound.''
-
-The default @var{domain} is the value of @code{TEXTDOMAIN}.
-If @var{directory} is the null string (@code{""}), then
-@code{bindtextdomain()} returns the current binding for the
-given @var{domain}.
-@end table
-
-To use these facilities in your @command{awk} program, follow the steps
-outlined in
-@ifnotinfo
-the previous @value{SECTION},
-@end ifnotinfo
-@ifinfo
-@ref{Explaining gettext},
-@end ifinfo
-like so:
-
-@enumerate
-@cindex @code{BEGIN} pattern, @code{TEXTDOMAIN} variable and
-@cindex @code{TEXTDOMAIN} variable, @code{BEGIN} pattern and
-@item
-Set the variable @code{TEXTDOMAIN} to the text domain of
-your program.  This is best done in a @code{BEGIN} rule
-(@pxref{BEGIN/END}),
-or it can also be done via the @option{-v} command-line
-option (@pxref{Options}):
-
-@example
-BEGIN @{
-    TEXTDOMAIN = "guide"
-    @dots{}
-@}
-@end example
-
-@cindex @code{_} (underscore), translatable string
-@cindex underscore (@code{_}), translatable string
-@item
-Mark all translatable strings with a leading underscore (@samp{_})
-character.  It @emph{must} be adjacent to the opening
-quote of the string.  For example:
-
-@example
-print _"hello, world"
-x = _"you goofed"
-printf(_"Number of users is %d\n", nusers)
-@end example
-
-@item
-If you are creating strings dynamically, you can
-still translate them, using the @code{dcgettext()}
-built-in function:
-
-@example
-message = nusers " users logged in"
-message = dcgettext(message, "adminprog")
-print message
-@end example
-
-Here, the call to @code{dcgettext()} supplies a different
-text domain (@code{"adminprog"}) in which to find the
-message, but it uses the default @code{"LC_MESSAGES"} category.
-
-@cindex @code{LC_MESSAGES} locale category, @code{bindtextdomain()} function (@command{gawk})
-@item
-During development, you might want to put the @file{.mo}
-file in a private directory for testing.  This is done
-with the @code{bindtextdomain()} built-in function:
-
-@example
-BEGIN @{
-   TEXTDOMAIN = "guide"   # our text domain
-   if (Testing) @{
-       # where to find our files
-       bindtextdomain("testdir")
-       # joe is in charge of adminprog
-       bindtextdomain("../joe/testdir", "adminprog")
-   @}
-   @dots{}
-@}
-@end example
-
-@end enumerate
-
-@xref{I18N Example},
-for an example program showing the steps to create
-and use translations from @command{awk}.
-
-@node Translator i18n
-@section Translating @command{awk} Programs
-
-@cindex @code{.po} files
-@cindex files, @code{.po}
-@cindex portable object files
-@cindex files, portable object
-Once a program's translatable strings have been marked, they must
-be extracted to create the initial @file{.po} file.
-As part of translation, it is often helpful to rearrange the order
-in which arguments to @code{printf} are output.
-
-@command{gawk}'s @option{--gen-pot} command-line option extracts
-the messages and is discussed next.
-After that, @code{printf}'s ability to
-rearrange the order for @code{printf} arguments at runtime
-is covered.
-
-@menu
-* String Extraction::           Extracting marked strings.
-* Printf Ordering::             Rearranging @code{printf} arguments.
-* I18N Portability::            @command{awk}-level portability issues.
-@end menu
-
-@node String Extraction
-@subsection Extracting Marked Strings
-@cindex strings, extracting
-@cindex marked strings@comma{} extracting
-@cindex @code{--gen-pot} option
-@cindex command-line options, string extraction
-@cindex string extraction (internationalization)
-@cindex marked string extraction (internationalization)
-@cindex extraction, of marked strings (internationalization)
-
-@cindex @code{--gen-pot} option
-Once your @command{awk} program is working, and all the strings have
-been marked and you've set (and perhaps bound) the text domain,
-it is time to produce translations.
-First, use the @option{--gen-pot} command-line option to create
-the initial @file{.pot} file:
-
-@example
-$ @kbd{gawk --gen-pot -f guide.awk > guide.pot}
-@end example
-
-@cindex @code{xgettext} utility
-When run with @option{--gen-pot}, @command{gawk} does not execute your
-program.  Instead, it parses it as usual and prints all marked strings
-to standard output in the format of a GNU @code{gettext} Portable Object
-file.  Also included in the output are any constant strings that
-appear as the first argument to @code{dcgettext()} or as the first and
-second argument to @code{dcngettext()}.@footnote{The
-@command{xgettext} utility that comes with GNU
-@code{gettext} can handle @file{.awk} files.}
-@xref{I18N Example},
-for the full list of steps to go through to create and test
-translations for @command{guide}.
-
-@node Printf Ordering
-@subsection Rearranging @code{printf} Arguments
-
-@cindex @code{printf} statement, positional specifiers
-@cindex positional specifiers, @code{printf} statement
-Format strings for @code{printf} and @code{sprintf()}
-(@pxref{Printf})
-present a special problem for translation.
-Consider the following:@footnote{This example is borrowed
-from the GNU @code{gettext} manual.}
-
-@c line broken here only for smallbook format
-@example
-printf(_"String `%s' has %d characters\n",
-          string, length(string)))
-@end example
-
-A possible German translation for this might be:
-
-@example
-"%d Zeichen lang ist die Zeichenkette `%s'\n"
-@end example
-
-The problem should be obvious: the order of the format
-specifications is different from the original!
-Even though @code{gettext()} can return the translated string
-at runtime,
-it cannot change the argument order in the call to @code{printf}.
-
-To solve this problem, @code{printf} format specifiers may have
-an additional optional element, which we call a @dfn{positional specifier}.
-For example:
-
-@example
-"%2$d Zeichen lang ist die Zeichenkette `%1$s'\n"
-@end example
-
-Here, the positional specifier consists of an integer count, which indicates which
-argument to use, and a @samp{$}. Counts are one-based, and the
-format string itself is @emph{not} included.  Thus, in the following
-example, @samp{string} is the first argument and @samp{length(string)} is the second:
-
-@example
-$ @kbd{gawk 'BEGIN @{}
->     @kbd{string = "Dont Panic"}
->     @kbd{printf _"%2$d characters live in \"%1$s\"\n",}
->                         @kbd{string, length(string)}
-> @kbd{@}'}
-@print{} 10 characters live in "Dont Panic"
-@end example
-
-If present, positional specifiers come first in the format specification,
-before the flags, the field width, and/or the precision.
-
-Positional specifiers can be used with the dynamic field width and
-precision capability:
-
-@example
-$ @kbd{gawk 'BEGIN @{}
->    @kbd{printf("%*.*s\n", 10, 20, "hello")}
->    @kbd{printf("%3$*2$.*1$s\n", 20, 10, "hello")}
-> @kbd{@}'}
-@print{}      hello
-@print{}      hello
-@end example
-
-@quotation NOTE
-When using @samp{*} with a positional specifier, the @samp{*}
-comes first, then the integer position, and then the @samp{$}.
-This is somewhat counterintuitive.
-@end quotation
-
-@cindex @code{printf} statement, positional specifiers, mixing with regular formats
-@cindex positional specifiers, @code{printf} statement, mixing with regular formats
-@cindex format specifiers, mixing regular with positional specifiers
-@command{gawk} does not allow you to mix regular format specifiers
-and those with positional specifiers in the same string:
-
-@example
-$ @kbd{gawk 'BEGIN @{ printf _"%d %3$s\n", 1, 2, "hi" @}'}
-@error{} gawk: cmd. line:1: fatal: must use `count$' on all formats or none
-@end example
-
-@quotation NOTE
-There are some pathological cases that @command{gawk} may fail to
-diagnose.  In such cases, the output may not be what you expect.
-It's still a bad idea to try mixing them, even if @command{gawk}
-doesn't detect it.
-@end quotation
-
-Although positional specifiers can be used directly in @command{awk} programs,
-their primary purpose is to help in producing correct translations of
-format strings into languages different from the one in which the program
-is first written.
-
-@node I18N Portability
-@subsection @command{awk} Portability Issues
-
-@cindex portability, internationalization and
-@cindex internationalization, localization, portability and
-@command{gawk}'s internationalization features were purposely chosen to
-have as little impact as possible on the portability of @command{awk}
-programs that use them to other versions of @command{awk}.
-Consider this program:
-
-@example
-BEGIN @{
-    TEXTDOMAIN = "guide"
-    if (Test_Guide)   # set with -v
-        bindtextdomain("/test/guide/messages")
-    print _"don't panic!"
-@}
-@end example
-
-@noindent
-As written, it won't work on other versions of @command{awk}.
-However, it is actually almost portable, requiring very little
-change:
-
-@itemize @bullet
-@cindex @code{TEXTDOMAIN} variable, portability and
-@item
-Assignments to @code{TEXTDOMAIN} won't have any effect,
-since @code{TEXTDOMAIN} is not special in other @command{awk} implementations.
-
-@item
-Non-GNU versions of @command{awk} treat marked strings
-as the concatenation of a variable named @code{_} with the string
-following it.@footnote{This is good fodder for an ``Obfuscated
-@command{awk}'' contest.} Typically, the variable @code{_} has
-the null string (@code{""}) as its value, leaving the original string constant as
-the result.
-
-@item
-By defining ``dummy'' functions to replace @code{dcgettext()}, @code{dcngettext()}
-and @code{bindtextdomain()}, the @command{awk} program can be made to run, but
-all the messages are output in the original language.
-For example:
-
-@cindex @code{bindtextdomain()} function (@command{gawk}), portability and
-@cindex @code{dcgettext()} function (@command{gawk}), portability and
-@cindex @code{dcngettext()} function (@command{gawk}), portability and
-@example
-@c file eg/lib/libintl.awk
-function bindtextdomain(dir, domain)
-@{
-    return dir
-@}
-
-function dcgettext(string, domain, category)
-@{
-    return string
-@}
-
-function dcngettext(string1, string2, number, domain, category)
-@{
-    return (number == 1 ? string1 : string2)
-@}
-@c endfile
-@end example
-
-@item
-The use of positional specifications in @code{printf} or
-@code{sprintf()} is @emph{not} portable.
-To support @code{gettext()} at the C level, many systems' C versions of
-@code{sprintf()} do support positional specifiers.  But it works only if
-enough arguments are supplied in the function call.  Many versions of
-@command{awk} pass @code{printf} formats and arguments unchanged to the
-underlying C library version of @code{sprintf()}, but only one format and
-argument at a time.  What happens if a positional specification is
-used is anybody's guess.
-However, since the positional specifications are primarily for use in
-@emph{translated} format strings, and since non-GNU @command{awk}s never
-retrieve the translated string, this should not be a problem in practice.
-@end itemize
-@c ENDOFRANGE inap
-
-@node I18N Example
-@section A Simple Internationalization Example
-
-Now let's look at a step-by-step example of how to internationalize and
-localize a simple @command{awk} program, using @file{guide.awk} as our
-original source:
-
-@example
-@c file eg/prog/guide.awk
-BEGIN @{
-    TEXTDOMAIN = "guide"
-    bindtextdomain(".")  # for testing
-    print _"Don't Panic"
-    print _"The Answer Is", 42
-    print "Pardon me, Zaphod who?"
-@}
-@c endfile
-@end example
-
-@noindent
-Run @samp{gawk --gen-pot} to create the @file{.pot} file:
-
-@example
-$ @kbd{gawk --gen-pot -f guide.awk > guide.pot}
-@end example
-
-@noindent
-This produces:
-
-@example
-@c file eg/data/guide.po
-#: guide.awk:4
-msgid "Don't Panic"
-msgstr ""
-
-#: guide.awk:5
-msgid "The Answer Is"
-msgstr ""
-
-@c endfile
-@end example
-
-This original portable object template file is saved and reused for each language
-into which the application is translated.  The @code{msgid}
-is the original string and the @code{msgstr} is the translation.
-
-@quotation NOTE
-Strings not marked with a leading underscore do not
-appear in the @file{guide.pot} file.
-@end quotation
-
-Next, the messages must be translated.
-Here is a translation to a hypothetical dialect of English,
-called ``Mellow'':@footnote{Perhaps it would be better if it were
-called ``Hippy.'' Ah, well.}
-
-@example
-@group
-$ cp guide.pot guide-mellow.po
-@var{Add translations to} guide-mellow.po @dots{}
-@end group
-@end example
-
-@noindent
-Following are the translations:
-
-@example
-@c file eg/data/guide-mellow.po
-#: guide.awk:4
-msgid "Don't Panic"
-msgstr "Hey man, relax!"
-
-#: guide.awk:5
-msgid "The Answer Is"
-msgstr "Like, the scoop is"
-
-@c endfile
-@end example
-
-@cindex Linux
-@cindex GNU/Linux
-The next step is to make the directory to hold the binary message object
-file and then to create the @file{guide.mo} file.
-The directory layout shown here is standard for GNU @code{gettext} on
-GNU/Linux systems.  Other versions of @code{gettext} may use a different
-layout:
-
-@example
-$ @kbd{mkdir en_US en_US/LC_MESSAGES}
-@end example
-
-@cindex @code{.po} files, converting to @code{.mo}
-@cindex files, @code{.po}, converting to @code{.mo}
-@cindex @code{.mo} files, converting from @code{.po}
-@cindex files, @code{.mo}, converting from @code{.po}
-@cindex portable object files, converting to message object files
-@cindex files, portable object, converting to message object files
-@cindex message object files, converting from portable object files
-@cindex files, message object, converting from portable object files
-@cindex @command{msgfmt} utility
-The @command{msgfmt} utility does the conversion from human-readable
-@file{.po} file to machine-readable @file{.mo} file.
-By default, @command{msgfmt} creates a file named @file{messages}.
-This file must be renamed and placed in the proper directory so that
-@command{gawk} can find it:
-
-@example
-$ @kbd{msgfmt guide-mellow.po}
-$ @kbd{mv messages en_US/LC_MESSAGES/guide.mo}
-@end example
-
-Finally, we run the program to test it:
-
-@example
-$ @kbd{gawk -f guide.awk}
-@print{} Hey man, relax!
-@print{} Like, the scoop is 42
-@print{} Pardon me, Zaphod who?
-@end example
-
-If the three replacement functions for @code{dcgettext()}, @code{dcngettext()}
-and @code{bindtextdomain()}
-(@pxref{I18N Portability})
-are in a file named @file{libintl.awk},
-then we can run @file{guide.awk} unchanged as follows:
-
-@example
-$ @kbd{gawk --posix -f guide.awk -f libintl.awk}
-@print{} Don't Panic
-@print{} The Answer Is 42
-@print{} Pardon me, Zaphod who?
-@end example
-
-@node Gawk I18N
-@section @command{gawk} Can Speak Your Language
-
-@command{gawk} itself has been internationalized
-using the GNU @code{gettext} package.
-(GNU @code{gettext} is described in
-complete detail in
-@ifinfo
-@inforef{Top, , GNU @code{gettext} utilities, gettext, GNU gettext tools}.)
-@end ifinfo
-@ifnotinfo
-@cite{GNU gettext tools}.)
-@end ifnotinfo
-As of this writing, the latest version of GNU @code{gettext} is
-@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.18.2.1.tar.gz, @value{PVERSION} 0.18.2.1}.
-
-If a translation of @command{gawk}'s messages exists,
-then @command{gawk} produces usage messages, warnings,
-and fatal errors in the local language.
-@c ENDOFRANGE inloc
 
 @node Advanced Features
 @chapter Advanced Features of @command{gawk}
@@ -25863,6 +25074,795 @@ When called this way, @command{gawk} ``pretty prints'' the program into
 @c ENDOFRANGE gawadv
 @c ENDOFRANGE awkp
 @c ENDOFRANGE proawk
+
+@node Internationalization
+@chapter Internationalization with @command{gawk}
+
+Once upon a time, computer makers
+wrote software that worked only in English.
+Eventually, hardware and software vendors noticed that if their
+systems worked in the native languages of non-English-speaking
+countries, they were able to sell more systems.
+As a result, internationalization and localization
+of programs and software systems became a common practice.
+
+@c STARTOFRANGE inloc
+@cindex internationalization, localization
+@cindex @command{gawk}, internationalization and, See internationalization
+@cindex internationalization, localization, @command{gawk} and
+For many years, the ability to provide internationalization
+was largely restricted to programs written in C and C++.
+This @value{CHAPTER} describes the underlying library @command{gawk}
+uses for internationalization, as well as how
+@command{gawk} makes internationalization
+features available at the @command{awk} program level.
+Having internationalization available at the @command{awk} level
+gives software developers additional flexibility---they are no
+longer forced to write in C or C++ when internationalization is
+a requirement.
+
+@menu
+* I18N and L10N::               Internationalization and Localization.
+* Explaining gettext::          How GNU @code{gettext} works.
+* Programmer i18n::             Features for the programmer.
+* Translator i18n::             Features for the translator.
+* I18N Example::                A simple i18n example.
+* Gawk I18N::                   @command{gawk} is also internationalized.
+@end menu
+
+@node I18N and L10N
+@section Internationalization and Localization
+
+@cindex internationalization
+@cindex localization, See internationalization@comma{} localization
+@cindex localization
+@dfn{Internationalization} means writing (or modifying) a program once,
+in such a way that it can use multiple languages without requiring
+further source-code changes.
+@dfn{Localization} means providing the data necessary for an
+internationalized program to work in a particular language.
+Most typically, these terms refer to features such as the language
+used for printing error messages, the language used to read
+responses, and information related to how numerical and
+monetary values are printed and read.
+
+@node Explaining gettext
+@section GNU @code{gettext}
+
+@cindex internationalizing a program
+@c STARTOFRANGE gettex
+@cindex @code{gettext} library
+The facilities in GNU @code{gettext} focus on messages; strings printed
+by a program, either directly or via formatting with @code{printf} or
+@code{sprintf()}.@footnote{For some operating systems, the @command{gawk}
+port doesn't support GNU @code{gettext}.
+Therefore, these features are not available
+if you are using one of those operating systems. Sorry.}
+
+@cindex portability, @code{gettext} library and
+When using GNU @code{gettext}, each application has its own
+@dfn{text domain}.  This is a unique name, such as @samp{kpilot} or @samp{gawk},
+that identifies the application.
+A complete application may have multiple components---programs written
+in C or C++, as well as scripts written in @command{sh} or @command{awk}.
+All of the components use the same text domain.
+
+To make the discussion concrete, assume we're writing an application
+named @command{guide}.  Internationalization consists of the
+following steps, in this order:
+
+@enumerate
+@item
+The programmer goes
+through the source for all of @command{guide}'s components
+and marks each string that is a candidate for translation.
+For example, @code{"`-F': option required"} is a good candidate for translation.
+A table with strings of option names is not (e.g., @command{gawk}'s
+@option{--profile} option should remain the same, no matter what the local
+language).
+
+@cindex @code{textdomain()} function (C library)
+@item
+The programmer indicates the application's text domain
+(@code{"guide"}) to the @code{gettext} library,
+by calling the @code{textdomain()} function.
+
+@cindex @code{.pot} files
+@cindex files, @code{.pot}
+@cindex portable object template files
+@cindex files, portable object template
+@item
+Messages from the application are extracted from the source code and
+collected into a portable object template file (@file{guide.pot}),
+which lists the strings and their translations.
+The translations are initially empty.
+The original (usually English) messages serve as the key for
+lookup of the translations.
+
+@cindex @code{.po} files
+@cindex files, @code{.po}
+@cindex portable object files
+@cindex files, portable object
+@item
+For each language with a translator, @file{guide.pot}
+is copied to a portable object file (@code{.po})
+and translations are created and shipped with the application.
+For example, there might be a @file{fr.po} for a French translation.
+
+@cindex @code{.mo} files
+@cindex files, @code{.mo}
+@cindex message object files
+@cindex files, message object
+@item
+Each language's @file{.po} file is converted into a binary
+message object (@file{.mo}) file.
+A message object file contains the original messages and their
+translations in a binary format that allows fast lookup of translations
+at runtime.
+
+@item
+When @command{guide} is built and installed, the binary translation files
+are installed in a standard place.
+
+@cindex @code{bindtextdomain()} function (C library)
+@item
+For testing and development, it is possible to tell @code{gettext}
+to use @file{.mo} files in a different directory than the standard
+one by using the @code{bindtextdomain()} function.
+
+@cindex @code{.mo} files, specifying directory of
+@cindex files, @code{.mo}, specifying directory of
+@cindex message object files, specifying directory of
+@cindex files, message object, specifying directory of
+@item
+At runtime, @command{guide} looks up each string via a call
+to @code{gettext()}.  The returned string is the translated string
+if available, or the original string if not.
+
+@item
+If necessary, it is possible to access messages from a different
+text domain than the one belonging to the application, without
+having to switch the application's default text domain back
+and forth.
+@end enumerate
+
+@cindex @code{gettext()} function (C library)
+In C (or C++), the string marking and dynamic translation lookup
+are accomplished by wrapping each string in a call to @code{gettext()}:
+
+@example
+printf("%s", gettext("Don't Panic!\n"));
+@end example
+
+The tools that extract messages from source code pull out all
+strings enclosed in calls to @code{gettext()}.
+
+@cindex @code{_} (underscore), @code{_} C macro
+@cindex underscore (@code{_}), @code{_} C macro
+The GNU @code{gettext} developers, recognizing that typing
+@samp{gettext(@dots{})} over and over again is both painful and ugly to look
+at, use the macro @samp{_} (an underscore) to make things easier:
+
+@example
+/* In the standard header file: */
+#define _(str) gettext(str)
+
+/* In the program text: */
+printf("%s", _("Don't Panic!\n"));
+@end example
+
+@cindex internationalization, localization, locale categories
+@cindex @code{gettext} library, locale categories
+@cindex locale categories
+@noindent
+This reduces the typing overhead to just three extra characters per string
+and is considerably easier to read as well.
+
+There are locale @dfn{categories}
+for different types of locale-related information.
+The defined locale categories that @code{gettext} knows about are:
+
+@table @code
+@cindex @code{LC_MESSAGES} locale category
+@item LC_MESSAGES
+Text messages.  This is the default category for @code{gettext}
+operations, but it is possible to supply a different one explicitly,
+if necessary.  (It is almost never necessary to supply a different category.)
+
+@cindex sorting characters in different languages
+@cindex @code{LC_COLLATE} locale category
+@item LC_COLLATE
+Text-collation information; i.e., how different characters
+and/or groups of characters sort in a given language.
+
+@cindex @code{LC_CTYPE} locale category
+@item LC_CTYPE
+Character-type information (alphabetic, digit, upper- or lowercase, and
+so on).
+This information is accessed via the
+POSIX character classes in regular expressions,
+such as @code{/[[:alnum:]]/}
+(@pxref{Regexp Operators}).
+
+@cindex monetary information, localization
+@cindex currency symbols, localization
+@cindex @code{LC_MONETARY} locale category
+@item LC_MONETARY
+Monetary information, such as the currency symbol, and whether the
+symbol goes before or after a number.
+
+@cindex @code{LC_NUMERIC} locale category
+@item LC_NUMERIC
+Numeric information, such as which characters to use for the decimal
+point and the thousands separator.@footnote{Americans
+use a comma every three decimal places and a period for the decimal
+point, while many Europeans do exactly the opposite:
+1,234.56 versus 1.234,56.}
+
+@cindex @code{LC_RESPONSE} locale category
+@item LC_RESPONSE
+Response information, such as how ``yes'' and ``no'' appear in the
+local language, and possibly other information as well.
+
+@cindex time, localization and
+@cindex dates, information related to@comma{} localization
+@cindex @code{LC_TIME} locale category
+@item LC_TIME
+Time- and date-related information, such as 12- or 24-hour clock, month printed
+before or after the day in a date, local month abbreviations, and so on.
+
+@cindex @code{LC_ALL} locale category
+@item LC_ALL
+All of the above.  (Not too useful in the context of @code{gettext}.)
+@end table
+@c ENDOFRANGE gettex
+
+@node Programmer i18n
+@section Internationalizing @command{awk} Programs
+@c STARTOFRANGE inap
+@cindex @command{awk} programs, internationalizing
+
+@command{gawk} provides the following variables and functions for
+internationalization:
+
+@table @code
+@cindex @code{TEXTDOMAIN} variable
+@item TEXTDOMAIN
+This variable indicates the application's text domain.
+For compatibility with GNU @code{gettext}, the default
+value is @code{"messages"}.
+
+@cindex internationalization, localization, marked strings
+@cindex strings, for localization
+@item _"your message here"
+String constants marked with a leading underscore
+are candidates for translation at runtime.
+String constants without a leading underscore are not translated.
+
+@cindex @code{dcgettext()} function (@command{gawk})
+@item dcgettext(@var{string} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
+Return the translation of @var{string} in
+text domain @var{domain} for locale category @var{category}.
+The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
+The default value for @var{category} is @code{"LC_MESSAGES"}.
+
+If you supply a value for @var{category}, it must be a string equal to
+one of the known locale categories described in
+@ifnotinfo
+the previous @value{SECTION}.
+@end ifnotinfo
+@ifinfo
+@ref{Explaining gettext}.
+@end ifinfo
+You must also supply a text domain.  Use @code{TEXTDOMAIN} if
+you want to use the current domain.
+
+@quotation CAUTION
+The order of arguments to the @command{awk} version
+of the @code{dcgettext()} function is purposely different from the order for
+the C version.  The @command{awk} version's order was
+chosen to be simple and to allow for reasonable @command{awk}-style
+default arguments.
+@end quotation
+
+@cindex @code{dcngettext()} function (@command{gawk})
+@item dcngettext(@var{string1}, @var{string2}, @var{number} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
+Return the plural form used for @var{number} of the
+translation of @var{string1} and @var{string2} in text domain
+@var{domain} for locale category @var{category}. @var{string1} is the
+English singular variant of a message, and @var{string2} the English plural
+variant of the same message.
+The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
+The default value for @var{category} is @code{"LC_MESSAGES"}.
+
+The same remarks about argument order as for the @code{dcgettext()} function apply.
+
+@cindex @code{.mo} files, specifying directory of
+@cindex files, @code{.mo}, specifying directory of
+@cindex message object files, specifying directory of
+@cindex files, message object, specifying directory of
+@cindex @code{bindtextdomain()} function (@command{gawk})
+@item bindtextdomain(@var{directory} @r{[}, @var{domain}@r{]})
+Change the directory in which
+@code{gettext} looks for @file{.mo} files, in case they
+will not or cannot be placed in the standard locations
+(e.g., during testing).
+Return the directory in which @var{domain} is ``bound.''
+
+The default @var{domain} is the value of @code{TEXTDOMAIN}.
+If @var{directory} is the null string (@code{""}), then
+@code{bindtextdomain()} returns the current binding for the
+given @var{domain}.
+@end table
+
+To use these facilities in your @command{awk} program, follow the steps
+outlined in
+@ifnotinfo
+the previous @value{SECTION},
+@end ifnotinfo
+@ifinfo
+@ref{Explaining gettext},
+@end ifinfo
+like so:
+
+@enumerate
+@cindex @code{BEGIN} pattern, @code{TEXTDOMAIN} variable and
+@cindex @code{TEXTDOMAIN} variable, @code{BEGIN} pattern and
+@item
+Set the variable @code{TEXTDOMAIN} to the text domain of
+your program.  This is best done in a @code{BEGIN} rule
+(@pxref{BEGIN/END}),
+or it can also be done via the @option{-v} command-line
+option (@pxref{Options}):
+
+@example
+BEGIN @{
+    TEXTDOMAIN = "guide"
+    @dots{}
+@}
+@end example
+
+@cindex @code{_} (underscore), translatable string
+@cindex underscore (@code{_}), translatable string
+@item
+Mark all translatable strings with a leading underscore (@samp{_})
+character.  It @emph{must} be adjacent to the opening
+quote of the string.  For example:
+
+@example
+print _"hello, world"
+x = _"you goofed"
+printf(_"Number of users is %d\n", nusers)
+@end example
+
+@item
+If you are creating strings dynamically, you can
+still translate them, using the @code{dcgettext()}
+built-in function:
+
+@example
+message = nusers " users logged in"
+message = dcgettext(message, "adminprog")
+print message
+@end example
+
+Here, the call to @code{dcgettext()} supplies a different
+text domain (@code{"adminprog"}) in which to find the
+message, but it uses the default @code{"LC_MESSAGES"} category.
+
+@cindex @code{LC_MESSAGES} locale category, @code{bindtextdomain()} function (@command{gawk})
+@item
+During development, you might want to put the @file{.mo}
+file in a private directory for testing.  This is done
+with the @code{bindtextdomain()} built-in function:
+
+@example
+BEGIN @{
+   TEXTDOMAIN = "guide"   # our text domain
+   if (Testing) @{
+       # where to find our files
+       bindtextdomain("testdir")
+       # joe is in charge of adminprog
+       bindtextdomain("../joe/testdir", "adminprog")
+   @}
+   @dots{}
+@}
+@end example
+
+@end enumerate
+
+@xref{I18N Example},
+for an example program showing the steps to create
+and use translations from @command{awk}.
+
+@node Translator i18n
+@section Translating @command{awk} Programs
+
+@cindex @code{.po} files
+@cindex files, @code{.po}
+@cindex portable object files
+@cindex files, portable object
+Once a program's translatable strings have been marked, they must
+be extracted to create the initial @file{.po} file.
+As part of translation, it is often helpful to rearrange the order
+in which arguments to @code{printf} are output.
+
+@command{gawk}'s @option{--gen-pot} command-line option extracts
+the messages and is discussed next.
+After that, @code{printf}'s ability to
+rearrange the order for @code{printf} arguments at runtime
+is covered.
+
+@menu
+* String Extraction::           Extracting marked strings.
+* Printf Ordering::             Rearranging @code{printf} arguments.
+* I18N Portability::            @command{awk}-level portability issues.
+@end menu
+
+@node String Extraction
+@subsection Extracting Marked Strings
+@cindex strings, extracting
+@cindex marked strings@comma{} extracting
+@cindex @code{--gen-pot} option
+@cindex command-line options, string extraction
+@cindex string extraction (internationalization)
+@cindex marked string extraction (internationalization)
+@cindex extraction, of marked strings (internationalization)
+
+@cindex @code{--gen-pot} option
+Once your @command{awk} program is working, and all the strings have
+been marked and you've set (and perhaps bound) the text domain,
+it is time to produce translations.
+First, use the @option{--gen-pot} command-line option to create
+the initial @file{.pot} file:
+
+@example
+$ @kbd{gawk --gen-pot -f guide.awk > guide.pot}
+@end example
+
+@cindex @code{xgettext} utility
+When run with @option{--gen-pot}, @command{gawk} does not execute your
+program.  Instead, it parses it as usual and prints all marked strings
+to standard output in the format of a GNU @code{gettext} Portable Object
+file.  Also included in the output are any constant strings that
+appear as the first argument to @code{dcgettext()} or as the first and
+second argument to @code{dcngettext()}.@footnote{The
+@command{xgettext} utility that comes with GNU
+@code{gettext} can handle @file{.awk} files.}
+@xref{I18N Example},
+for the full list of steps to go through to create and test
+translations for @command{guide}.
+
+@node Printf Ordering
+@subsection Rearranging @code{printf} Arguments
+
+@cindex @code{printf} statement, positional specifiers
+@cindex positional specifiers, @code{printf} statement
+Format strings for @code{printf} and @code{sprintf()}
+(@pxref{Printf})
+present a special problem for translation.
+Consider the following:@footnote{This example is borrowed
+from the GNU @code{gettext} manual.}
+
+@c line broken here only for smallbook format
+@example
+printf(_"String `%s' has %d characters\n",
+          string, length(string)))
+@end example
+
+A possible German translation for this might be:
+
+@example
+"%d Zeichen lang ist die Zeichenkette `%s'\n"
+@end example
+
+The problem should be obvious: the order of the format
+specifications is different from the original!
+Even though @code{gettext()} can return the translated string
+at runtime,
+it cannot change the argument order in the call to @code{printf}.
+
+To solve this problem, @code{printf} format specifiers may have
+an additional optional element, which we call a @dfn{positional specifier}.
+For example:
+
+@example
+"%2$d Zeichen lang ist die Zeichenkette `%1$s'\n"
+@end example
+
+Here, the positional specifier consists of an integer count, which indicates which
+argument to use, and a @samp{$}. Counts are one-based, and the
+format string itself is @emph{not} included.  Thus, in the following
+example, @samp{string} is the first argument and @samp{length(string)} is the second:
+
+@example
+$ @kbd{gawk 'BEGIN @{}
+>     @kbd{string = "Dont Panic"}
+>     @kbd{printf _"%2$d characters live in \"%1$s\"\n",}
+>                         @kbd{string, length(string)}
+> @kbd{@}'}
+@print{} 10 characters live in "Dont Panic"
+@end example
+
+If present, positional specifiers come first in the format specification,
+before the flags, the field width, and/or the precision.
+
+Positional specifiers can be used with the dynamic field width and
+precision capability:
+
+@example
+$ @kbd{gawk 'BEGIN @{}
+>    @kbd{printf("%*.*s\n", 10, 20, "hello")}
+>    @kbd{printf("%3$*2$.*1$s\n", 20, 10, "hello")}
+> @kbd{@}'}
+@print{}      hello
+@print{}      hello
+@end example
+
+@quotation NOTE
+When using @samp{*} with a positional specifier, the @samp{*}
+comes first, then the integer position, and then the @samp{$}.
+This is somewhat counterintuitive.
+@end quotation
+
+@cindex @code{printf} statement, positional specifiers, mixing with regular formats
+@cindex positional specifiers, @code{printf} statement, mixing with regular formats
+@cindex format specifiers, mixing regular with positional specifiers
+@command{gawk} does not allow you to mix regular format specifiers
+and those with positional specifiers in the same string:
+
+@example
+$ @kbd{gawk 'BEGIN @{ printf _"%d %3$s\n", 1, 2, "hi" @}'}
+@error{} gawk: cmd. line:1: fatal: must use `count$' on all formats or none
+@end example
+
+@quotation NOTE
+There are some pathological cases that @command{gawk} may fail to
+diagnose.  In such cases, the output may not be what you expect.
+It's still a bad idea to try mixing them, even if @command{gawk}
+doesn't detect it.
+@end quotation
+
+Although positional specifiers can be used directly in @command{awk} programs,
+their primary purpose is to help in producing correct translations of
+format strings into languages different from the one in which the program
+is first written.
+
+@node I18N Portability
+@subsection @command{awk} Portability Issues
+
+@cindex portability, internationalization and
+@cindex internationalization, localization, portability and
+@command{gawk}'s internationalization features were purposely chosen to
+have as little impact as possible on the portability of @command{awk}
+programs that use them to other versions of @command{awk}.
+Consider this program:
+
+@example
+BEGIN @{
+    TEXTDOMAIN = "guide"
+    if (Test_Guide)   # set with -v
+        bindtextdomain("/test/guide/messages")
+    print _"don't panic!"
+@}
+@end example
+
+@noindent
+As written, it won't work on other versions of @command{awk}.
+However, it is actually almost portable, requiring very little
+change:
+
+@itemize @bullet
+@cindex @code{TEXTDOMAIN} variable, portability and
+@item
+Assignments to @code{TEXTDOMAIN} won't have any effect,
+since @code{TEXTDOMAIN} is not special in other @command{awk} implementations.
+
+@item
+Non-GNU versions of @command{awk} treat marked strings
+as the concatenation of a variable named @code{_} with the string
+following it.@footnote{This is good fodder for an ``Obfuscated
+@command{awk}'' contest.} Typically, the variable @code{_} has
+the null string (@code{""}) as its value, leaving the original string constant as
+the result.
+
+@item
+By defining ``dummy'' functions to replace @code{dcgettext()}, @code{dcngettext()}
+and @code{bindtextdomain()}, the @command{awk} program can be made to run, but
+all the messages are output in the original language.
+For example:
+
+@cindex @code{bindtextdomain()} function (@command{gawk}), portability and
+@cindex @code{dcgettext()} function (@command{gawk}), portability and
+@cindex @code{dcngettext()} function (@command{gawk}), portability and
+@example
+@c file eg/lib/libintl.awk
+function bindtextdomain(dir, domain)
+@{
+    return dir
+@}
+
+function dcgettext(string, domain, category)
+@{
+    return string
+@}
+
+function dcngettext(string1, string2, number, domain, category)
+@{
+    return (number == 1 ? string1 : string2)
+@}
+@c endfile
+@end example
+
+@item
+The use of positional specifications in @code{printf} or
+@code{sprintf()} is @emph{not} portable.
+To support @code{gettext()} at the C level, many systems' C versions of
+@code{sprintf()} do support positional specifiers.  But it works only if
+enough arguments are supplied in the function call.  Many versions of
+@command{awk} pass @code{printf} formats and arguments unchanged to the
+underlying C library version of @code{sprintf()}, but only one format and
+argument at a time.  What happens if a positional specification is
+used is anybody's guess.
+However, since the positional specifications are primarily for use in
+@emph{translated} format strings, and since non-GNU @command{awk}s never
+retrieve the translated string, this should not be a problem in practice.
+@end itemize
+@c ENDOFRANGE inap
+
+@node I18N Example
+@section A Simple Internationalization Example
+
+Now let's look at a step-by-step example of how to internationalize and
+localize a simple @command{awk} program, using @file{guide.awk} as our
+original source:
+
+@example
+@c file eg/prog/guide.awk
+BEGIN @{
+    TEXTDOMAIN = "guide"
+    bindtextdomain(".")  # for testing
+    print _"Don't Panic"
+    print _"The Answer Is", 42
+    print "Pardon me, Zaphod who?"
+@}
+@c endfile
+@end example
+
+@noindent
+Run @samp{gawk --gen-pot} to create the @file{.pot} file:
+
+@example
+$ @kbd{gawk --gen-pot -f guide.awk > guide.pot}
+@end example
+
+@noindent
+This produces:
+
+@example
+@c file eg/data/guide.po
+#: guide.awk:4
+msgid "Don't Panic"
+msgstr ""
+
+#: guide.awk:5
+msgid "The Answer Is"
+msgstr ""
+
+@c endfile
+@end example
+
+This original portable object template file is saved and reused for each language
+into which the application is translated.  The @code{msgid}
+is the original string and the @code{msgstr} is the translation.
+
+@quotation NOTE
+Strings not marked with a leading underscore do not
+appear in the @file{guide.pot} file.
+@end quotation
+
+Next, the messages must be translated.
+Here is a translation to a hypothetical dialect of English,
+called ``Mellow'':@footnote{Perhaps it would be better if it were
+called ``Hippy.'' Ah, well.}
+
+@example
+@group
+$ cp guide.pot guide-mellow.po
+@var{Add translations to} guide-mellow.po @dots{}
+@end group
+@end example
+
+@noindent
+Following are the translations:
+
+@example
+@c file eg/data/guide-mellow.po
+#: guide.awk:4
+msgid "Don't Panic"
+msgstr "Hey man, relax!"
+
+#: guide.awk:5
+msgid "The Answer Is"
+msgstr "Like, the scoop is"
+
+@c endfile
+@end example
+
+@cindex Linux
+@cindex GNU/Linux
+The next step is to make the directory to hold the binary message object
+file and then to create the @file{guide.mo} file.
+The directory layout shown here is standard for GNU @code{gettext} on
+GNU/Linux systems.  Other versions of @code{gettext} may use a different
+layout:
+
+@example
+$ @kbd{mkdir en_US en_US/LC_MESSAGES}
+@end example
+
+@cindex @code{.po} files, converting to @code{.mo}
+@cindex files, @code{.po}, converting to @code{.mo}
+@cindex @code{.mo} files, converting from @code{.po}
+@cindex files, @code{.mo}, converting from @code{.po}
+@cindex portable object files, converting to message object files
+@cindex files, portable object, converting to message object files
+@cindex message object files, converting from portable object files
+@cindex files, message object, converting from portable object files
+@cindex @command{msgfmt} utility
+The @command{msgfmt} utility does the conversion from human-readable
+@file{.po} file to machine-readable @file{.mo} file.
+By default, @command{msgfmt} creates a file named @file{messages}.
+This file must be renamed and placed in the proper directory so that
+@command{gawk} can find it:
+
+@example
+$ @kbd{msgfmt guide-mellow.po}
+$ @kbd{mv messages en_US/LC_MESSAGES/guide.mo}
+@end example
+
+Finally, we run the program to test it:
+
+@example
+$ @kbd{gawk -f guide.awk}
+@print{} Hey man, relax!
+@print{} Like, the scoop is 42
+@print{} Pardon me, Zaphod who?
+@end example
+
+If the three replacement functions for @code{dcgettext()}, @code{dcngettext()}
+and @code{bindtextdomain()}
+(@pxref{I18N Portability})
+are in a file named @file{libintl.awk},
+then we can run @file{guide.awk} unchanged as follows:
+
+@example
+$ @kbd{gawk --posix -f guide.awk -f libintl.awk}
+@print{} Don't Panic
+@print{} The Answer Is 42
+@print{} Pardon me, Zaphod who?
+@end example
+
+@node Gawk I18N
+@section @command{gawk} Can Speak Your Language
+
+@command{gawk} itself has been internationalized
+using the GNU @code{gettext} package.
+(GNU @code{gettext} is described in
+complete detail in
+@ifinfo
+@inforef{Top, , GNU @code{gettext} utilities, gettext, GNU gettext tools}.)
+@end ifinfo
+@ifnotinfo
+@cite{GNU gettext tools}.)
+@end ifnotinfo
+As of this writing, the latest version of GNU @code{gettext} is
+@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.18.2.1.tar.gz, @value{PVERSION} 0.18.2.1}.
+
+If a translation of @command{gawk}'s messages exists,
+then @command{gawk} produces usage messages, warnings,
+and fatal errors in the local language.
+@c ENDOFRANGE inloc
 
 @c The original text for this chapter was contributed by Efraim Yawitz.
 @c FIXME: Add more indexing.

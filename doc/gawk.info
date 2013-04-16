@@ -90,10 +90,10 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * Library Functions::              A Library of `awk' Functions.
 * Sample Programs::                Many `awk' programs with complete
                                    explanations.
-* Internationalization::           Getting `gawk' to speak your
-                                   language.
 * Advanced Features::              Stuff for advanced users, specific to
                                    `gawk'.
+* Internationalization::           Getting `gawk' to speak your
+                                   language.
 * Debugger::                       The `gawk' debugger.
 * Arbitrary Precision Arithmetic:: Arbitrary precision arithmetic with
                                    `gawk'.
@@ -997,13 +997,13 @@ problems.
    Part III focuses on features specific to `gawk'.  It contains the
 following chapters:
 
-   *note Internationalization::, describes special features in `gawk'
-for translating program messages into different languages at runtime.
-
    *note Advanced Features::, describes a number of `gawk'-specific
 advanced features.  Of particular note are the abilities to have
 two-way communications with another process, perform TCP/IP networking,
 and profile your `awk' programs.
+
+   *note Internationalization::, describes special features in `gawk'
+for translating program messages into different languages at runtime.
 
    *note Debugger::, describes the `awk' debugger.
 
@@ -15242,7 +15242,7 @@ user-defined function that expects to receive and index and a value,
 and then processes the element.
 
 
-File: gawk.info,  Node: Sample Programs,  Next: Internationalization,  Prev: Library Functions,  Up: Top
+File: gawk.info,  Node: Sample Programs,  Next: Advanced Features,  Prev: Library Functions,  Up: Top
 
 11 Practical `awk' Programs
 ***************************
@@ -17861,589 +17861,9 @@ supplies the following copyright terms:
    We leave it to you to determine what the program does.
 
 
-File: gawk.info,  Node: Internationalization,  Next: Advanced Features,  Prev: Sample Programs,  Up: Top
+File: gawk.info,  Node: Advanced Features,  Next: Internationalization,  Prev: Sample Programs,  Up: Top
 
-12 Internationalization with `gawk'
-***********************************
-
-Once upon a time, computer makers wrote software that worked only in
-English.  Eventually, hardware and software vendors noticed that if
-their systems worked in the native languages of non-English-speaking
-countries, they were able to sell more systems.  As a result,
-internationalization and localization of programs and software systems
-became a common practice.
-
-   For many years, the ability to provide internationalization was
-largely restricted to programs written in C and C++.  This major node
-describes the underlying library `gawk' uses for internationalization,
-as well as how `gawk' makes internationalization features available at
-the `awk' program level.  Having internationalization available at the
-`awk' level gives software developers additional flexibility--they are
-no longer forced to write in C or C++ when internationalization is a
-requirement.
-
-* Menu:
-
-* I18N and L10N::               Internationalization and Localization.
-* Explaining gettext::          How GNU `gettext' works.
-* Programmer i18n::             Features for the programmer.
-* Translator i18n::             Features for the translator.
-* I18N Example::                A simple i18n example.
-* Gawk I18N::                   `gawk' is also internationalized.
-
-
-File: gawk.info,  Node: I18N and L10N,  Next: Explaining gettext,  Up: Internationalization
-
-12.1 Internationalization and Localization
-==========================================
-
-"Internationalization" means writing (or modifying) a program once, in
-such a way that it can use multiple languages without requiring further
-source-code changes.  "Localization" means providing the data necessary
-for an internationalized program to work in a particular language.
-Most typically, these terms refer to features such as the language used
-for printing error messages, the language used to read responses, and
-information related to how numerical and monetary values are printed
-and read.
-
-
-File: gawk.info,  Node: Explaining gettext,  Next: Programmer i18n,  Prev: I18N and L10N,  Up: Internationalization
-
-12.2 GNU `gettext'
-==================
-
-The facilities in GNU `gettext' focus on messages; strings printed by a
-program, either directly or via formatting with `printf' or
-`sprintf()'.(1)
-
-   When using GNU `gettext', each application has its own "text
-domain".  This is a unique name, such as `kpilot' or `gawk', that
-identifies the application.  A complete application may have multiple
-components--programs written in C or C++, as well as scripts written in
-`sh' or `awk'.  All of the components use the same text domain.
-
-   To make the discussion concrete, assume we're writing an application
-named `guide'.  Internationalization consists of the following steps,
-in this order:
-
-  1. The programmer goes through the source for all of `guide''s
-     components and marks each string that is a candidate for
-     translation.  For example, `"`-F': option required"' is a good
-     candidate for translation.  A table with strings of option names
-     is not (e.g., `gawk''s `--profile' option should remain the same,
-     no matter what the local language).
-
-  2. The programmer indicates the application's text domain (`"guide"')
-     to the `gettext' library, by calling the `textdomain()' function.
-
-  3. Messages from the application are extracted from the source code
-     and collected into a portable object template file (`guide.pot'),
-     which lists the strings and their translations.  The translations
-     are initially empty.  The original (usually English) messages
-     serve as the key for lookup of the translations.
-
-  4. For each language with a translator, `guide.pot' is copied to a
-     portable object file (`.po') and translations are created and
-     shipped with the application.  For example, there might be a
-     `fr.po' for a French translation.
-
-  5. Each language's `.po' file is converted into a binary message
-     object (`.mo') file.  A message object file contains the original
-     messages and their translations in a binary format that allows
-     fast lookup of translations at runtime.
-
-  6. When `guide' is built and installed, the binary translation files
-     are installed in a standard place.
-
-  7. For testing and development, it is possible to tell `gettext' to
-     use `.mo' files in a different directory than the standard one by
-     using the `bindtextdomain()' function.
-
-  8. At runtime, `guide' looks up each string via a call to
-     `gettext()'.  The returned string is the translated string if
-     available, or the original string if not.
-
-  9. If necessary, it is possible to access messages from a different
-     text domain than the one belonging to the application, without
-     having to switch the application's default text domain back and
-     forth.
-
-   In C (or C++), the string marking and dynamic translation lookup are
-accomplished by wrapping each string in a call to `gettext()':
-
-     printf("%s", gettext("Don't Panic!\n"));
-
-   The tools that extract messages from source code pull out all
-strings enclosed in calls to `gettext()'.
-
-   The GNU `gettext' developers, recognizing that typing `gettext(...)'
-over and over again is both painful and ugly to look at, use the macro
-`_' (an underscore) to make things easier:
-
-     /* In the standard header file: */
-     #define _(str) gettext(str)
-
-     /* In the program text: */
-     printf("%s", _("Don't Panic!\n"));
-
-This reduces the typing overhead to just three extra characters per
-string and is considerably easier to read as well.
-
-   There are locale "categories" for different types of locale-related
-information.  The defined locale categories that `gettext' knows about
-are:
-
-`LC_MESSAGES'
-     Text messages.  This is the default category for `gettext'
-     operations, but it is possible to supply a different one
-     explicitly, if necessary.  (It is almost never necessary to supply
-     a different category.)
-
-`LC_COLLATE'
-     Text-collation information; i.e., how different characters and/or
-     groups of characters sort in a given language.
-
-`LC_CTYPE'
-     Character-type information (alphabetic, digit, upper- or
-     lowercase, and so on).  This information is accessed via the POSIX
-     character classes in regular expressions, such as `/[[:alnum:]]/'
-     (*note Regexp Operators::).
-
-`LC_MONETARY'
-     Monetary information, such as the currency symbol, and whether the
-     symbol goes before or after a number.
-
-`LC_NUMERIC'
-     Numeric information, such as which characters to use for the
-     decimal point and the thousands separator.(2)
-
-`LC_RESPONSE'
-     Response information, such as how "yes" and "no" appear in the
-     local language, and possibly other information as well.
-
-`LC_TIME'
-     Time- and date-related information, such as 12- or 24-hour clock,
-     month printed before or after the day in a date, local month
-     abbreviations, and so on.
-
-`LC_ALL'
-     All of the above.  (Not too useful in the context of `gettext'.)
-
-   ---------- Footnotes ----------
-
-   (1) For some operating systems, the `gawk' port doesn't support GNU
-`gettext'.  Therefore, these features are not available if you are
-using one of those operating systems. Sorry.
-
-   (2) Americans use a comma every three decimal places and a period
-for the decimal point, while many Europeans do exactly the opposite:
-1,234.56 versus 1.234,56.
-
-
-File: gawk.info,  Node: Programmer i18n,  Next: Translator i18n,  Prev: Explaining gettext,  Up: Internationalization
-
-12.3 Internationalizing `awk' Programs
-======================================
-
-`gawk' provides the following variables and functions for
-internationalization:
-
-`TEXTDOMAIN'
-     This variable indicates the application's text domain.  For
-     compatibility with GNU `gettext', the default value is
-     `"messages"'.
-
-`_"your message here"'
-     String constants marked with a leading underscore are candidates
-     for translation at runtime.  String constants without a leading
-     underscore are not translated.
-
-`dcgettext(STRING [, DOMAIN [, CATEGORY]])'
-     Return the translation of STRING in text domain DOMAIN for locale
-     category CATEGORY.  The default value for DOMAIN is the current
-     value of `TEXTDOMAIN'.  The default value for CATEGORY is
-     `"LC_MESSAGES"'.
-
-     If you supply a value for CATEGORY, it must be a string equal to
-     one of the known locale categories described in *note Explaining
-     gettext::.  You must also supply a text domain.  Use `TEXTDOMAIN'
-     if you want to use the current domain.
-
-          CAUTION: The order of arguments to the `awk' version of the
-          `dcgettext()' function is purposely different from the order
-          for the C version.  The `awk' version's order was chosen to
-          be simple and to allow for reasonable `awk'-style default
-          arguments.
-
-`dcngettext(STRING1, STRING2, NUMBER [, DOMAIN [, CATEGORY]])'
-     Return the plural form used for NUMBER of the translation of
-     STRING1 and STRING2 in text domain DOMAIN for locale category
-     CATEGORY. STRING1 is the English singular variant of a message,
-     and STRING2 the English plural variant of the same message.  The
-     default value for DOMAIN is the current value of `TEXTDOMAIN'.
-     The default value for CATEGORY is `"LC_MESSAGES"'.
-
-     The same remarks about argument order as for the `dcgettext()'
-     function apply.
-
-`bindtextdomain(DIRECTORY [, DOMAIN])'
-     Change the directory in which `gettext' looks for `.mo' files, in
-     case they will not or cannot be placed in the standard locations
-     (e.g., during testing).  Return the directory in which DOMAIN is
-     "bound."
-
-     The default DOMAIN is the value of `TEXTDOMAIN'.  If DIRECTORY is
-     the null string (`""'), then `bindtextdomain()' returns the
-     current binding for the given DOMAIN.
-
-   To use these facilities in your `awk' program, follow the steps
-outlined in *note Explaining gettext::, like so:
-
-  1. Set the variable `TEXTDOMAIN' to the text domain of your program.
-     This is best done in a `BEGIN' rule (*note BEGIN/END::), or it can
-     also be done via the `-v' command-line option (*note Options::):
-
-          BEGIN {
-              TEXTDOMAIN = "guide"
-              ...
-          }
-
-  2. Mark all translatable strings with a leading underscore (`_')
-     character.  It _must_ be adjacent to the opening quote of the
-     string.  For example:
-
-          print _"hello, world"
-          x = _"you goofed"
-          printf(_"Number of users is %d\n", nusers)
-
-  3. If you are creating strings dynamically, you can still translate
-     them, using the `dcgettext()' built-in function:
-
-          message = nusers " users logged in"
-          message = dcgettext(message, "adminprog")
-          print message
-
-     Here, the call to `dcgettext()' supplies a different text domain
-     (`"adminprog"') in which to find the message, but it uses the
-     default `"LC_MESSAGES"' category.
-
-  4. During development, you might want to put the `.mo' file in a
-     private directory for testing.  This is done with the
-     `bindtextdomain()' built-in function:
-
-          BEGIN {
-             TEXTDOMAIN = "guide"   # our text domain
-             if (Testing) {
-                 # where to find our files
-                 bindtextdomain("testdir")
-                 # joe is in charge of adminprog
-                 bindtextdomain("../joe/testdir", "adminprog")
-             }
-             ...
-          }
-
-
-   *Note I18N Example::, for an example program showing the steps to
-create and use translations from `awk'.
-
-
-File: gawk.info,  Node: Translator i18n,  Next: I18N Example,  Prev: Programmer i18n,  Up: Internationalization
-
-12.4 Translating `awk' Programs
-===============================
-
-Once a program's translatable strings have been marked, they must be
-extracted to create the initial `.po' file.  As part of translation, it
-is often helpful to rearrange the order in which arguments to `printf'
-are output.
-
-   `gawk''s `--gen-pot' command-line option extracts the messages and
-is discussed next.  After that, `printf''s ability to rearrange the
-order for `printf' arguments at runtime is covered.
-
-* Menu:
-
-* String Extraction::           Extracting marked strings.
-* Printf Ordering::             Rearranging `printf' arguments.
-* I18N Portability::            `awk'-level portability issues.
-
-
-File: gawk.info,  Node: String Extraction,  Next: Printf Ordering,  Up: Translator i18n
-
-12.4.1 Extracting Marked Strings
---------------------------------
-
-Once your `awk' program is working, and all the strings have been
-marked and you've set (and perhaps bound) the text domain, it is time
-to produce translations.  First, use the `--gen-pot' command-line
-option to create the initial `.pot' file:
-
-     $ gawk --gen-pot -f guide.awk > guide.pot
-
-   When run with `--gen-pot', `gawk' does not execute your program.
-Instead, it parses it as usual and prints all marked strings to
-standard output in the format of a GNU `gettext' Portable Object file.
-Also included in the output are any constant strings that appear as the
-first argument to `dcgettext()' or as the first and second argument to
-`dcngettext()'.(1) *Note I18N Example::, for the full list of steps to
-go through to create and test translations for `guide'.
-
-   ---------- Footnotes ----------
-
-   (1) The `xgettext' utility that comes with GNU `gettext' can handle
-`.awk' files.
-
-
-File: gawk.info,  Node: Printf Ordering,  Next: I18N Portability,  Prev: String Extraction,  Up: Translator i18n
-
-12.4.2 Rearranging `printf' Arguments
--------------------------------------
-
-Format strings for `printf' and `sprintf()' (*note Printf::) present a
-special problem for translation.  Consider the following:(1)
-
-     printf(_"String `%s' has %d characters\n",
-               string, length(string)))
-
-   A possible German translation for this might be:
-
-     "%d Zeichen lang ist die Zeichenkette `%s'\n"
-
-   The problem should be obvious: the order of the format
-specifications is different from the original!  Even though `gettext()'
-can return the translated string at runtime, it cannot change the
-argument order in the call to `printf'.
-
-   To solve this problem, `printf' format specifiers may have an
-additional optional element, which we call a "positional specifier".
-For example:
-
-     "%2$d Zeichen lang ist die Zeichenkette `%1$s'\n"
-
-   Here, the positional specifier consists of an integer count, which
-indicates which argument to use, and a `$'. Counts are one-based, and
-the format string itself is _not_ included.  Thus, in the following
-example, `string' is the first argument and `length(string)' is the
-second:
-
-     $ gawk 'BEGIN {
-     >     string = "Dont Panic"
-     >     printf _"%2$d characters live in \"%1$s\"\n",
-     >                         string, length(string)
-     > }'
-     -| 10 characters live in "Dont Panic"
-
-   If present, positional specifiers come first in the format
-specification, before the flags, the field width, and/or the precision.
-
-   Positional specifiers can be used with the dynamic field width and
-precision capability:
-
-     $ gawk 'BEGIN {
-     >    printf("%*.*s\n", 10, 20, "hello")
-     >    printf("%3$*2$.*1$s\n", 20, 10, "hello")
-     > }'
-     -|      hello
-     -|      hello
-
-     NOTE: When using `*' with a positional specifier, the `*' comes
-     first, then the integer position, and then the `$'.  This is
-     somewhat counterintuitive.
-
-   `gawk' does not allow you to mix regular format specifiers and those
-with positional specifiers in the same string:
-
-     $ gawk 'BEGIN { printf _"%d %3$s\n", 1, 2, "hi" }'
-     error--> gawk: cmd. line:1: fatal: must use `count$' on all formats or none
-
-     NOTE: There are some pathological cases that `gawk' may fail to
-     diagnose.  In such cases, the output may not be what you expect.
-     It's still a bad idea to try mixing them, even if `gawk' doesn't
-     detect it.
-
-   Although positional specifiers can be used directly in `awk'
-programs, their primary purpose is to help in producing correct
-translations of format strings into languages different from the one in
-which the program is first written.
-
-   ---------- Footnotes ----------
-
-   (1) This example is borrowed from the GNU `gettext' manual.
-
-
-File: gawk.info,  Node: I18N Portability,  Prev: Printf Ordering,  Up: Translator i18n
-
-12.4.3 `awk' Portability Issues
--------------------------------
-
-`gawk''s internationalization features were purposely chosen to have as
-little impact as possible on the portability of `awk' programs that use
-them to other versions of `awk'.  Consider this program:
-
-     BEGIN {
-         TEXTDOMAIN = "guide"
-         if (Test_Guide)   # set with -v
-             bindtextdomain("/test/guide/messages")
-         print _"don't panic!"
-     }
-
-As written, it won't work on other versions of `awk'.  However, it is
-actually almost portable, requiring very little change:
-
-   * Assignments to `TEXTDOMAIN' won't have any effect, since
-     `TEXTDOMAIN' is not special in other `awk' implementations.
-
-   * Non-GNU versions of `awk' treat marked strings as the
-     concatenation of a variable named `_' with the string following
-     it.(1) Typically, the variable `_' has the null string (`""') as
-     its value, leaving the original string constant as the result.
-
-   * By defining "dummy" functions to replace `dcgettext()',
-     `dcngettext()' and `bindtextdomain()', the `awk' program can be
-     made to run, but all the messages are output in the original
-     language.  For example:
-
-          function bindtextdomain(dir, domain)
-          {
-              return dir
-          }
-
-          function dcgettext(string, domain, category)
-          {
-              return string
-          }
-
-          function dcngettext(string1, string2, number, domain, category)
-          {
-              return (number == 1 ? string1 : string2)
-          }
-
-   * The use of positional specifications in `printf' or `sprintf()' is
-     _not_ portable.  To support `gettext()' at the C level, many
-     systems' C versions of `sprintf()' do support positional
-     specifiers.  But it works only if enough arguments are supplied in
-     the function call.  Many versions of `awk' pass `printf' formats
-     and arguments unchanged to the underlying C library version of
-     `sprintf()', but only one format and argument at a time.  What
-     happens if a positional specification is used is anybody's guess.
-     However, since the positional specifications are primarily for use
-     in _translated_ format strings, and since non-GNU `awk's never
-     retrieve the translated string, this should not be a problem in
-     practice.
-
-   ---------- Footnotes ----------
-
-   (1) This is good fodder for an "Obfuscated `awk'" contest.
-
-
-File: gawk.info,  Node: I18N Example,  Next: Gawk I18N,  Prev: Translator i18n,  Up: Internationalization
-
-12.5 A Simple Internationalization Example
-==========================================
-
-Now let's look at a step-by-step example of how to internationalize and
-localize a simple `awk' program, using `guide.awk' as our original
-source:
-
-     BEGIN {
-         TEXTDOMAIN = "guide"
-         bindtextdomain(".")  # for testing
-         print _"Don't Panic"
-         print _"The Answer Is", 42
-         print "Pardon me, Zaphod who?"
-     }
-
-Run `gawk --gen-pot' to create the `.pot' file:
-
-     $ gawk --gen-pot -f guide.awk > guide.pot
-
-This produces:
-
-     #: guide.awk:4
-     msgid "Don't Panic"
-     msgstr ""
-
-     #: guide.awk:5
-     msgid "The Answer Is"
-     msgstr ""
-
-   This original portable object template file is saved and reused for
-each language into which the application is translated.  The `msgid' is
-the original string and the `msgstr' is the translation.
-
-     NOTE: Strings not marked with a leading underscore do not appear
-     in the `guide.pot' file.
-
-   Next, the messages must be translated.  Here is a translation to a
-hypothetical dialect of English, called "Mellow":(1)
-
-     $ cp guide.pot guide-mellow.po
-     ADD TRANSLATIONS TO guide-mellow.po ...
-
-Following are the translations:
-
-     #: guide.awk:4
-     msgid "Don't Panic"
-     msgstr "Hey man, relax!"
-
-     #: guide.awk:5
-     msgid "The Answer Is"
-     msgstr "Like, the scoop is"
-
-   The next step is to make the directory to hold the binary message
-object file and then to create the `guide.mo' file.  The directory
-layout shown here is standard for GNU `gettext' on GNU/Linux systems.
-Other versions of `gettext' may use a different layout:
-
-     $ mkdir en_US en_US/LC_MESSAGES
-
-   The `msgfmt' utility does the conversion from human-readable `.po'
-file to machine-readable `.mo' file.  By default, `msgfmt' creates a
-file named `messages'.  This file must be renamed and placed in the
-proper directory so that `gawk' can find it:
-
-     $ msgfmt guide-mellow.po
-     $ mv messages en_US/LC_MESSAGES/guide.mo
-
-   Finally, we run the program to test it:
-
-     $ gawk -f guide.awk
-     -| Hey man, relax!
-     -| Like, the scoop is 42
-     -| Pardon me, Zaphod who?
-
-   If the three replacement functions for `dcgettext()', `dcngettext()'
-and `bindtextdomain()' (*note I18N Portability::) are in a file named
-`libintl.awk', then we can run `guide.awk' unchanged as follows:
-
-     $ gawk --posix -f guide.awk -f libintl.awk
-     -| Don't Panic
-     -| The Answer Is 42
-     -| Pardon me, Zaphod who?
-
-   ---------- Footnotes ----------
-
-   (1) Perhaps it would be better if it were called "Hippy." Ah, well.
-
-
-File: gawk.info,  Node: Gawk I18N,  Prev: I18N Example,  Up: Internationalization
-
-12.6 `gawk' Can Speak Your Language
-===================================
-
-`gawk' itself has been internationalized using the GNU `gettext'
-package.  (GNU `gettext' is described in complete detail in *note (GNU
-`gettext' utilities)Top:: gettext, GNU gettext tools.)  As of this
-writing, the latest version of GNU `gettext' is version 0.18.2.1
-(ftp://ftp.gnu.org/gnu/gettext/gettext-0.18.2.1.tar.gz).
-
-   If a translation of `gawk''s messages exists, then `gawk' produces
-usage messages, warnings, and fatal errors in the local language.
-
-
-File: gawk.info,  Node: Advanced Features,  Next: Debugger,  Prev: Internationalization,  Up: Top
-
-13 Advanced Features of `gawk'
+12 Advanced Features of `gawk'
 ******************************
 
      Write documentation as if whoever reads it is a violent psychopath
@@ -18488,7 +17908,7 @@ own:
 
 File: gawk.info,  Node: Nondecimal Data,  Next: Array Sorting,  Up: Advanced Features
 
-13.1 Allowing Nondecimal Input Data
+12.1 Allowing Nondecimal Input Data
 ===================================
 
 If you run `gawk' with the `--non-decimal-data' option, you can have
@@ -18530,7 +17950,7 @@ request it.
 
 File: gawk.info,  Node: Array Sorting,  Next: Two-way I/O,  Prev: Nondecimal Data,  Up: Advanced Features
 
-13.2 Controlling Array Traversal and Array Sorting
+12.2 Controlling Array Traversal and Array Sorting
 ==================================================
 
 `gawk' lets you control the order in which a `for (i in array)' loop
@@ -18549,7 +17969,7 @@ to order the elements during sorting.
 
 File: gawk.info,  Node: Controlling Array Traversal,  Next: Array Sorting Functions,  Up: Array Sorting
 
-13.2.1 Controlling Array Traversal
+12.2.1 Controlling Array Traversal
 ----------------------------------
 
 By default, the order in which a `for (i in array)' loop scans an array
@@ -18780,7 +18200,7 @@ the default.
 
 File: gawk.info,  Node: Array Sorting Functions,  Prev: Controlling Array Traversal,  Up: Array Sorting
 
-13.2.2 Sorting Array Values and Indices with `gawk'
+12.2.2 Sorting Array Values and Indices with `gawk'
 ---------------------------------------------------
 
 In most `awk' implementations, sorting an array requires writing a
@@ -18875,7 +18295,7 @@ extensions, they are not available in that case.
 
 File: gawk.info,  Node: Two-way I/O,  Next: TCP/IP Networking,  Prev: Array Sorting,  Up: Advanced Features
 
-13.3 Two-Way Communications with Another Process
+12.3 Two-Way Communications with Another Process
 ================================================
 
      From: brennan@whidbey.com (Mike Brennan)
@@ -19010,7 +18430,7 @@ regular pipes.
 
 File: gawk.info,  Node: TCP/IP Networking,  Next: Profiling,  Prev: Two-way I/O,  Up: Advanced Features
 
-13.4 Using `gawk' for Network Programming
+12.4 Using `gawk' for Network Programming
 =========================================
 
      `EMISTERED':
@@ -19087,7 +18507,7 @@ examples.
 
 File: gawk.info,  Node: Profiling,  Prev: TCP/IP Networking,  Up: Advanced Features
 
-13.5 Profiling Your `awk' Programs
+12.5 Profiling Your `awk' Programs
 ==================================
 
 You may produce execution traces of your `awk' programs.  This is done
@@ -19303,7 +18723,587 @@ called this way, `gawk' "pretty prints" the program into `awkprof.out',
 without any execution counts.
 
 
-File: gawk.info,  Node: Debugger,  Next: Arbitrary Precision Arithmetic,  Prev: Advanced Features,  Up: Top
+File: gawk.info,  Node: Internationalization,  Next: Debugger,  Prev: Advanced Features,  Up: Top
+
+13 Internationalization with `gawk'
+***********************************
+
+Once upon a time, computer makers wrote software that worked only in
+English.  Eventually, hardware and software vendors noticed that if
+their systems worked in the native languages of non-English-speaking
+countries, they were able to sell more systems.  As a result,
+internationalization and localization of programs and software systems
+became a common practice.
+
+   For many years, the ability to provide internationalization was
+largely restricted to programs written in C and C++.  This major node
+describes the underlying library `gawk' uses for internationalization,
+as well as how `gawk' makes internationalization features available at
+the `awk' program level.  Having internationalization available at the
+`awk' level gives software developers additional flexibility--they are
+no longer forced to write in C or C++ when internationalization is a
+requirement.
+
+* Menu:
+
+* I18N and L10N::               Internationalization and Localization.
+* Explaining gettext::          How GNU `gettext' works.
+* Programmer i18n::             Features for the programmer.
+* Translator i18n::             Features for the translator.
+* I18N Example::                A simple i18n example.
+* Gawk I18N::                   `gawk' is also internationalized.
+
+
+File: gawk.info,  Node: I18N and L10N,  Next: Explaining gettext,  Up: Internationalization
+
+13.1 Internationalization and Localization
+==========================================
+
+"Internationalization" means writing (or modifying) a program once, in
+such a way that it can use multiple languages without requiring further
+source-code changes.  "Localization" means providing the data necessary
+for an internationalized program to work in a particular language.
+Most typically, these terms refer to features such as the language used
+for printing error messages, the language used to read responses, and
+information related to how numerical and monetary values are printed
+and read.
+
+
+File: gawk.info,  Node: Explaining gettext,  Next: Programmer i18n,  Prev: I18N and L10N,  Up: Internationalization
+
+13.2 GNU `gettext'
+==================
+
+The facilities in GNU `gettext' focus on messages; strings printed by a
+program, either directly or via formatting with `printf' or
+`sprintf()'.(1)
+
+   When using GNU `gettext', each application has its own "text
+domain".  This is a unique name, such as `kpilot' or `gawk', that
+identifies the application.  A complete application may have multiple
+components--programs written in C or C++, as well as scripts written in
+`sh' or `awk'.  All of the components use the same text domain.
+
+   To make the discussion concrete, assume we're writing an application
+named `guide'.  Internationalization consists of the following steps,
+in this order:
+
+  1. The programmer goes through the source for all of `guide''s
+     components and marks each string that is a candidate for
+     translation.  For example, `"`-F': option required"' is a good
+     candidate for translation.  A table with strings of option names
+     is not (e.g., `gawk''s `--profile' option should remain the same,
+     no matter what the local language).
+
+  2. The programmer indicates the application's text domain (`"guide"')
+     to the `gettext' library, by calling the `textdomain()' function.
+
+  3. Messages from the application are extracted from the source code
+     and collected into a portable object template file (`guide.pot'),
+     which lists the strings and their translations.  The translations
+     are initially empty.  The original (usually English) messages
+     serve as the key for lookup of the translations.
+
+  4. For each language with a translator, `guide.pot' is copied to a
+     portable object file (`.po') and translations are created and
+     shipped with the application.  For example, there might be a
+     `fr.po' for a French translation.
+
+  5. Each language's `.po' file is converted into a binary message
+     object (`.mo') file.  A message object file contains the original
+     messages and their translations in a binary format that allows
+     fast lookup of translations at runtime.
+
+  6. When `guide' is built and installed, the binary translation files
+     are installed in a standard place.
+
+  7. For testing and development, it is possible to tell `gettext' to
+     use `.mo' files in a different directory than the standard one by
+     using the `bindtextdomain()' function.
+
+  8. At runtime, `guide' looks up each string via a call to
+     `gettext()'.  The returned string is the translated string if
+     available, or the original string if not.
+
+  9. If necessary, it is possible to access messages from a different
+     text domain than the one belonging to the application, without
+     having to switch the application's default text domain back and
+     forth.
+
+   In C (or C++), the string marking and dynamic translation lookup are
+accomplished by wrapping each string in a call to `gettext()':
+
+     printf("%s", gettext("Don't Panic!\n"));
+
+   The tools that extract messages from source code pull out all
+strings enclosed in calls to `gettext()'.
+
+   The GNU `gettext' developers, recognizing that typing `gettext(...)'
+over and over again is both painful and ugly to look at, use the macro
+`_' (an underscore) to make things easier:
+
+     /* In the standard header file: */
+     #define _(str) gettext(str)
+
+     /* In the program text: */
+     printf("%s", _("Don't Panic!\n"));
+
+This reduces the typing overhead to just three extra characters per
+string and is considerably easier to read as well.
+
+   There are locale "categories" for different types of locale-related
+information.  The defined locale categories that `gettext' knows about
+are:
+
+`LC_MESSAGES'
+     Text messages.  This is the default category for `gettext'
+     operations, but it is possible to supply a different one
+     explicitly, if necessary.  (It is almost never necessary to supply
+     a different category.)
+
+`LC_COLLATE'
+     Text-collation information; i.e., how different characters and/or
+     groups of characters sort in a given language.
+
+`LC_CTYPE'
+     Character-type information (alphabetic, digit, upper- or
+     lowercase, and so on).  This information is accessed via the POSIX
+     character classes in regular expressions, such as `/[[:alnum:]]/'
+     (*note Regexp Operators::).
+
+`LC_MONETARY'
+     Monetary information, such as the currency symbol, and whether the
+     symbol goes before or after a number.
+
+`LC_NUMERIC'
+     Numeric information, such as which characters to use for the
+     decimal point and the thousands separator.(2)
+
+`LC_RESPONSE'
+     Response information, such as how "yes" and "no" appear in the
+     local language, and possibly other information as well.
+
+`LC_TIME'
+     Time- and date-related information, such as 12- or 24-hour clock,
+     month printed before or after the day in a date, local month
+     abbreviations, and so on.
+
+`LC_ALL'
+     All of the above.  (Not too useful in the context of `gettext'.)
+
+   ---------- Footnotes ----------
+
+   (1) For some operating systems, the `gawk' port doesn't support GNU
+`gettext'.  Therefore, these features are not available if you are
+using one of those operating systems. Sorry.
+
+   (2) Americans use a comma every three decimal places and a period
+for the decimal point, while many Europeans do exactly the opposite:
+1,234.56 versus 1.234,56.
+
+
+File: gawk.info,  Node: Programmer i18n,  Next: Translator i18n,  Prev: Explaining gettext,  Up: Internationalization
+
+13.3 Internationalizing `awk' Programs
+======================================
+
+`gawk' provides the following variables and functions for
+internationalization:
+
+`TEXTDOMAIN'
+     This variable indicates the application's text domain.  For
+     compatibility with GNU `gettext', the default value is
+     `"messages"'.
+
+`_"your message here"'
+     String constants marked with a leading underscore are candidates
+     for translation at runtime.  String constants without a leading
+     underscore are not translated.
+
+`dcgettext(STRING [, DOMAIN [, CATEGORY]])'
+     Return the translation of STRING in text domain DOMAIN for locale
+     category CATEGORY.  The default value for DOMAIN is the current
+     value of `TEXTDOMAIN'.  The default value for CATEGORY is
+     `"LC_MESSAGES"'.
+
+     If you supply a value for CATEGORY, it must be a string equal to
+     one of the known locale categories described in *note Explaining
+     gettext::.  You must also supply a text domain.  Use `TEXTDOMAIN'
+     if you want to use the current domain.
+
+          CAUTION: The order of arguments to the `awk' version of the
+          `dcgettext()' function is purposely different from the order
+          for the C version.  The `awk' version's order was chosen to
+          be simple and to allow for reasonable `awk'-style default
+          arguments.
+
+`dcngettext(STRING1, STRING2, NUMBER [, DOMAIN [, CATEGORY]])'
+     Return the plural form used for NUMBER of the translation of
+     STRING1 and STRING2 in text domain DOMAIN for locale category
+     CATEGORY. STRING1 is the English singular variant of a message,
+     and STRING2 the English plural variant of the same message.  The
+     default value for DOMAIN is the current value of `TEXTDOMAIN'.
+     The default value for CATEGORY is `"LC_MESSAGES"'.
+
+     The same remarks about argument order as for the `dcgettext()'
+     function apply.
+
+`bindtextdomain(DIRECTORY [, DOMAIN])'
+     Change the directory in which `gettext' looks for `.mo' files, in
+     case they will not or cannot be placed in the standard locations
+     (e.g., during testing).  Return the directory in which DOMAIN is
+     "bound."
+
+     The default DOMAIN is the value of `TEXTDOMAIN'.  If DIRECTORY is
+     the null string (`""'), then `bindtextdomain()' returns the
+     current binding for the given DOMAIN.
+
+   To use these facilities in your `awk' program, follow the steps
+outlined in *note Explaining gettext::, like so:
+
+  1. Set the variable `TEXTDOMAIN' to the text domain of your program.
+     This is best done in a `BEGIN' rule (*note BEGIN/END::), or it can
+     also be done via the `-v' command-line option (*note Options::):
+
+          BEGIN {
+              TEXTDOMAIN = "guide"
+              ...
+          }
+
+  2. Mark all translatable strings with a leading underscore (`_')
+     character.  It _must_ be adjacent to the opening quote of the
+     string.  For example:
+
+          print _"hello, world"
+          x = _"you goofed"
+          printf(_"Number of users is %d\n", nusers)
+
+  3. If you are creating strings dynamically, you can still translate
+     them, using the `dcgettext()' built-in function:
+
+          message = nusers " users logged in"
+          message = dcgettext(message, "adminprog")
+          print message
+
+     Here, the call to `dcgettext()' supplies a different text domain
+     (`"adminprog"') in which to find the message, but it uses the
+     default `"LC_MESSAGES"' category.
+
+  4. During development, you might want to put the `.mo' file in a
+     private directory for testing.  This is done with the
+     `bindtextdomain()' built-in function:
+
+          BEGIN {
+             TEXTDOMAIN = "guide"   # our text domain
+             if (Testing) {
+                 # where to find our files
+                 bindtextdomain("testdir")
+                 # joe is in charge of adminprog
+                 bindtextdomain("../joe/testdir", "adminprog")
+             }
+             ...
+          }
+
+
+   *Note I18N Example::, for an example program showing the steps to
+create and use translations from `awk'.
+
+
+File: gawk.info,  Node: Translator i18n,  Next: I18N Example,  Prev: Programmer i18n,  Up: Internationalization
+
+13.4 Translating `awk' Programs
+===============================
+
+Once a program's translatable strings have been marked, they must be
+extracted to create the initial `.po' file.  As part of translation, it
+is often helpful to rearrange the order in which arguments to `printf'
+are output.
+
+   `gawk''s `--gen-pot' command-line option extracts the messages and
+is discussed next.  After that, `printf''s ability to rearrange the
+order for `printf' arguments at runtime is covered.
+
+* Menu:
+
+* String Extraction::           Extracting marked strings.
+* Printf Ordering::             Rearranging `printf' arguments.
+* I18N Portability::            `awk'-level portability issues.
+
+
+File: gawk.info,  Node: String Extraction,  Next: Printf Ordering,  Up: Translator i18n
+
+13.4.1 Extracting Marked Strings
+--------------------------------
+
+Once your `awk' program is working, and all the strings have been
+marked and you've set (and perhaps bound) the text domain, it is time
+to produce translations.  First, use the `--gen-pot' command-line
+option to create the initial `.pot' file:
+
+     $ gawk --gen-pot -f guide.awk > guide.pot
+
+   When run with `--gen-pot', `gawk' does not execute your program.
+Instead, it parses it as usual and prints all marked strings to
+standard output in the format of a GNU `gettext' Portable Object file.
+Also included in the output are any constant strings that appear as the
+first argument to `dcgettext()' or as the first and second argument to
+`dcngettext()'.(1) *Note I18N Example::, for the full list of steps to
+go through to create and test translations for `guide'.
+
+   ---------- Footnotes ----------
+
+   (1) The `xgettext' utility that comes with GNU `gettext' can handle
+`.awk' files.
+
+
+File: gawk.info,  Node: Printf Ordering,  Next: I18N Portability,  Prev: String Extraction,  Up: Translator i18n
+
+13.4.2 Rearranging `printf' Arguments
+-------------------------------------
+
+Format strings for `printf' and `sprintf()' (*note Printf::) present a
+special problem for translation.  Consider the following:(1)
+
+     printf(_"String `%s' has %d characters\n",
+               string, length(string)))
+
+   A possible German translation for this might be:
+
+     "%d Zeichen lang ist die Zeichenkette `%s'\n"
+
+   The problem should be obvious: the order of the format
+specifications is different from the original!  Even though `gettext()'
+can return the translated string at runtime, it cannot change the
+argument order in the call to `printf'.
+
+   To solve this problem, `printf' format specifiers may have an
+additional optional element, which we call a "positional specifier".
+For example:
+
+     "%2$d Zeichen lang ist die Zeichenkette `%1$s'\n"
+
+   Here, the positional specifier consists of an integer count, which
+indicates which argument to use, and a `$'. Counts are one-based, and
+the format string itself is _not_ included.  Thus, in the following
+example, `string' is the first argument and `length(string)' is the
+second:
+
+     $ gawk 'BEGIN {
+     >     string = "Dont Panic"
+     >     printf _"%2$d characters live in \"%1$s\"\n",
+     >                         string, length(string)
+     > }'
+     -| 10 characters live in "Dont Panic"
+
+   If present, positional specifiers come first in the format
+specification, before the flags, the field width, and/or the precision.
+
+   Positional specifiers can be used with the dynamic field width and
+precision capability:
+
+     $ gawk 'BEGIN {
+     >    printf("%*.*s\n", 10, 20, "hello")
+     >    printf("%3$*2$.*1$s\n", 20, 10, "hello")
+     > }'
+     -|      hello
+     -|      hello
+
+     NOTE: When using `*' with a positional specifier, the `*' comes
+     first, then the integer position, and then the `$'.  This is
+     somewhat counterintuitive.
+
+   `gawk' does not allow you to mix regular format specifiers and those
+with positional specifiers in the same string:
+
+     $ gawk 'BEGIN { printf _"%d %3$s\n", 1, 2, "hi" }'
+     error--> gawk: cmd. line:1: fatal: must use `count$' on all formats or none
+
+     NOTE: There are some pathological cases that `gawk' may fail to
+     diagnose.  In such cases, the output may not be what you expect.
+     It's still a bad idea to try mixing them, even if `gawk' doesn't
+     detect it.
+
+   Although positional specifiers can be used directly in `awk'
+programs, their primary purpose is to help in producing correct
+translations of format strings into languages different from the one in
+which the program is first written.
+
+   ---------- Footnotes ----------
+
+   (1) This example is borrowed from the GNU `gettext' manual.
+
+
+File: gawk.info,  Node: I18N Portability,  Prev: Printf Ordering,  Up: Translator i18n
+
+13.4.3 `awk' Portability Issues
+-------------------------------
+
+`gawk''s internationalization features were purposely chosen to have as
+little impact as possible on the portability of `awk' programs that use
+them to other versions of `awk'.  Consider this program:
+
+     BEGIN {
+         TEXTDOMAIN = "guide"
+         if (Test_Guide)   # set with -v
+             bindtextdomain("/test/guide/messages")
+         print _"don't panic!"
+     }
+
+As written, it won't work on other versions of `awk'.  However, it is
+actually almost portable, requiring very little change:
+
+   * Assignments to `TEXTDOMAIN' won't have any effect, since
+     `TEXTDOMAIN' is not special in other `awk' implementations.
+
+   * Non-GNU versions of `awk' treat marked strings as the
+     concatenation of a variable named `_' with the string following
+     it.(1) Typically, the variable `_' has the null string (`""') as
+     its value, leaving the original string constant as the result.
+
+   * By defining "dummy" functions to replace `dcgettext()',
+     `dcngettext()' and `bindtextdomain()', the `awk' program can be
+     made to run, but all the messages are output in the original
+     language.  For example:
+
+          function bindtextdomain(dir, domain)
+          {
+              return dir
+          }
+
+          function dcgettext(string, domain, category)
+          {
+              return string
+          }
+
+          function dcngettext(string1, string2, number, domain, category)
+          {
+              return (number == 1 ? string1 : string2)
+          }
+
+   * The use of positional specifications in `printf' or `sprintf()' is
+     _not_ portable.  To support `gettext()' at the C level, many
+     systems' C versions of `sprintf()' do support positional
+     specifiers.  But it works only if enough arguments are supplied in
+     the function call.  Many versions of `awk' pass `printf' formats
+     and arguments unchanged to the underlying C library version of
+     `sprintf()', but only one format and argument at a time.  What
+     happens if a positional specification is used is anybody's guess.
+     However, since the positional specifications are primarily for use
+     in _translated_ format strings, and since non-GNU `awk's never
+     retrieve the translated string, this should not be a problem in
+     practice.
+
+   ---------- Footnotes ----------
+
+   (1) This is good fodder for an "Obfuscated `awk'" contest.
+
+
+File: gawk.info,  Node: I18N Example,  Next: Gawk I18N,  Prev: Translator i18n,  Up: Internationalization
+
+13.5 A Simple Internationalization Example
+==========================================
+
+Now let's look at a step-by-step example of how to internationalize and
+localize a simple `awk' program, using `guide.awk' as our original
+source:
+
+     BEGIN {
+         TEXTDOMAIN = "guide"
+         bindtextdomain(".")  # for testing
+         print _"Don't Panic"
+         print _"The Answer Is", 42
+         print "Pardon me, Zaphod who?"
+     }
+
+Run `gawk --gen-pot' to create the `.pot' file:
+
+     $ gawk --gen-pot -f guide.awk > guide.pot
+
+This produces:
+
+     #: guide.awk:4
+     msgid "Don't Panic"
+     msgstr ""
+
+     #: guide.awk:5
+     msgid "The Answer Is"
+     msgstr ""
+
+   This original portable object template file is saved and reused for
+each language into which the application is translated.  The `msgid' is
+the original string and the `msgstr' is the translation.
+
+     NOTE: Strings not marked with a leading underscore do not appear
+     in the `guide.pot' file.
+
+   Next, the messages must be translated.  Here is a translation to a
+hypothetical dialect of English, called "Mellow":(1)
+
+     $ cp guide.pot guide-mellow.po
+     ADD TRANSLATIONS TO guide-mellow.po ...
+
+Following are the translations:
+
+     #: guide.awk:4
+     msgid "Don't Panic"
+     msgstr "Hey man, relax!"
+
+     #: guide.awk:5
+     msgid "The Answer Is"
+     msgstr "Like, the scoop is"
+
+   The next step is to make the directory to hold the binary message
+object file and then to create the `guide.mo' file.  The directory
+layout shown here is standard for GNU `gettext' on GNU/Linux systems.
+Other versions of `gettext' may use a different layout:
+
+     $ mkdir en_US en_US/LC_MESSAGES
+
+   The `msgfmt' utility does the conversion from human-readable `.po'
+file to machine-readable `.mo' file.  By default, `msgfmt' creates a
+file named `messages'.  This file must be renamed and placed in the
+proper directory so that `gawk' can find it:
+
+     $ msgfmt guide-mellow.po
+     $ mv messages en_US/LC_MESSAGES/guide.mo
+
+   Finally, we run the program to test it:
+
+     $ gawk -f guide.awk
+     -| Hey man, relax!
+     -| Like, the scoop is 42
+     -| Pardon me, Zaphod who?
+
+   If the three replacement functions for `dcgettext()', `dcngettext()'
+and `bindtextdomain()' (*note I18N Portability::) are in a file named
+`libintl.awk', then we can run `guide.awk' unchanged as follows:
+
+     $ gawk --posix -f guide.awk -f libintl.awk
+     -| Don't Panic
+     -| The Answer Is 42
+     -| Pardon me, Zaphod who?
+
+   ---------- Footnotes ----------
+
+   (1) Perhaps it would be better if it were called "Hippy." Ah, well.
+
+
+File: gawk.info,  Node: Gawk I18N,  Prev: I18N Example,  Up: Internationalization
+
+13.6 `gawk' Can Speak Your Language
+===================================
+
+`gawk' itself has been internationalized using the GNU `gettext'
+package.  (GNU `gettext' is described in complete detail in *note (GNU
+`gettext' utilities)Top:: gettext, GNU gettext tools.)  As of this
+writing, the latest version of GNU `gettext' is version 0.18.2.1
+(ftp://ftp.gnu.org/gnu/gettext/gettext-0.18.2.1.tar.gz).
+
+   If a translation of `gawk''s messages exists, then `gawk' produces
+usage messages, warnings, and fatal errors in the local language.
+
+
+File: gawk.info,  Node: Debugger,  Next: Arbitrary Precision Arithmetic,  Prev: Internationalization,  Up: Top
 
 14 Debugging `awk' Programs
 ***************************
@@ -32254,65 +32254,65 @@ Ref: Passwd Functions-Footnote-1619614
 Node: Group Functions619702
 Node: Walking Arrays627786
 Node: Sample Programs629923
-Node: Running Examples630600
-Node: Clones631328
-Node: Cut Program632552
-Node: Egrep Program642397
-Ref: Egrep Program-Footnote-1650170
-Node: Id Program650280
-Node: Split Program653896
-Ref: Split Program-Footnote-1657415
-Node: Tee Program657543
-Node: Uniq Program660346
-Node: Wc Program667775
-Ref: Wc Program-Footnote-1672041
-Ref: Wc Program-Footnote-2672241
-Node: Miscellaneous Programs672333
-Node: Dupword Program673521
-Node: Alarm Program675552
-Node: Translate Program680301
-Ref: Translate Program-Footnote-1684688
-Ref: Translate Program-Footnote-2684916
-Node: Labels Program685050
-Ref: Labels Program-Footnote-1688421
-Node: Word Sorting688505
-Node: History Sorting692389
-Node: Extract Program694228
-Ref: Extract Program-Footnote-1701729
-Node: Simple Sed701857
-Node: Igawk Program704919
-Ref: Igawk Program-Footnote-1720076
-Ref: Igawk Program-Footnote-2720277
-Node: Anagram Program720415
-Node: Signature Program723483
-Node: Internationalization724583
-Node: I18N and L10N726015
-Node: Explaining gettext726701
-Ref: Explaining gettext-Footnote-1731767
-Ref: Explaining gettext-Footnote-2731951
-Node: Programmer i18n732116
-Node: Translator i18n736316
-Node: String Extraction737109
-Ref: String Extraction-Footnote-1738070
-Node: Printf Ordering738156
-Ref: Printf Ordering-Footnote-1740940
-Node: I18N Portability741004
-Ref: I18N Portability-Footnote-1743453
-Node: I18N Example743516
-Ref: I18N Example-Footnote-1746151
-Node: Gawk I18N746223
-Node: Advanced Features746844
-Node: Nondecimal Data748719
-Node: Array Sorting750302
-Node: Controlling Array Traversal750999
-Node: Array Sorting Functions759237
-Ref: Array Sorting Functions-Footnote-1762911
-Ref: Array Sorting Functions-Footnote-2763004
-Node: Two-way I/O763198
-Ref: Two-way I/O-Footnote-1768630
-Node: TCP/IP Networking768700
-Node: Profiling771544
-Node: Debugger778999
+Node: Running Examples630597
+Node: Clones631325
+Node: Cut Program632549
+Node: Egrep Program642394
+Ref: Egrep Program-Footnote-1650167
+Node: Id Program650277
+Node: Split Program653893
+Ref: Split Program-Footnote-1657412
+Node: Tee Program657540
+Node: Uniq Program660343
+Node: Wc Program667772
+Ref: Wc Program-Footnote-1672038
+Ref: Wc Program-Footnote-2672238
+Node: Miscellaneous Programs672330
+Node: Dupword Program673518
+Node: Alarm Program675549
+Node: Translate Program680298
+Ref: Translate Program-Footnote-1684685
+Ref: Translate Program-Footnote-2684913
+Node: Labels Program685047
+Ref: Labels Program-Footnote-1688418
+Node: Word Sorting688502
+Node: History Sorting692386
+Node: Extract Program694225
+Ref: Extract Program-Footnote-1701726
+Node: Simple Sed701854
+Node: Igawk Program704916
+Ref: Igawk Program-Footnote-1720073
+Ref: Igawk Program-Footnote-2720274
+Node: Anagram Program720412
+Node: Signature Program723480
+Node: Advanced Features724580
+Node: Nondecimal Data726462
+Node: Array Sorting728045
+Node: Controlling Array Traversal728742
+Node: Array Sorting Functions736980
+Ref: Array Sorting Functions-Footnote-1740654
+Ref: Array Sorting Functions-Footnote-2740747
+Node: Two-way I/O740941
+Ref: Two-way I/O-Footnote-1746373
+Node: TCP/IP Networking746443
+Node: Profiling749287
+Node: Internationalization756742
+Node: I18N and L10N758167
+Node: Explaining gettext758853
+Ref: Explaining gettext-Footnote-1763919
+Ref: Explaining gettext-Footnote-2764103
+Node: Programmer i18n764268
+Node: Translator i18n768468
+Node: String Extraction769261
+Ref: String Extraction-Footnote-1770222
+Node: Printf Ordering770308
+Ref: Printf Ordering-Footnote-1773092
+Node: I18N Portability773156
+Ref: I18N Portability-Footnote-1775605
+Node: I18N Example775668
+Ref: I18N Example-Footnote-1778303
+Node: Gawk I18N778375
+Node: Debugger778996
 Node: Debugging779967
 Node: Debugging Concepts780400
 Node: Debugging Terms782256
