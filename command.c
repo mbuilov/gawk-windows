@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 2.7.  */
+/* A Bison parser, made by GNU Bison 2.7.12-4996.  */
 
 /* Bison implementation for Yacc-like parsers in C
    
-      Copyright (C) 1984, 1989-1990, 2000-2012 Free Software Foundation, Inc.
+      Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "2.7"
+#define YYBISON_VERSION "2.7.12-4996"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -358,12 +358,21 @@ typedef short int yytype_int16;
 # endif
 #endif
 
+#ifndef __attribute__
+/* This feature is available in gcc versions 2.5 and later.  */
+# if (! defined __GNUC__ || __GNUC__ < 2 \
+      || (__GNUC__ == 2 && __GNUC_MINOR__ < 5))
+#  define __attribute__(Spec) /* empty */
+# endif
+#endif
+
 /* Suppress unused-variable warnings by "using" E.  */
 #if ! defined lint || defined __GNUC__
 # define YYUSE(E) ((void) (E))
 #else
 # define YYUSE(E) /* empty */
 #endif
+
 
 /* Identity function, used to suppress warnings about constant conditions.  */
 #ifndef lint
@@ -1024,11 +1033,7 @@ yy_symbol_value_print (yyoutput, yytype, yyvaluep)
 # else
   YYUSE (yyoutput);
 # endif
-  switch (yytype)
-    {
-      default:
-        break;
-    }
+  YYUSE (yytype);
 }
 
 
@@ -1418,12 +1423,7 @@ yydestruct (yymsg, yytype, yyvaluep)
     yymsg = "Deleting";
   YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
 
-  switch (yytype)
-    {
-
-      default:
-        break;
-    }
+  YYUSE (yytype);
 }
 
 
@@ -1707,7 +1707,7 @@ yyreduce:
   switch (yyn)
     {
         case 3:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 109 "command.y"
     {
 		cmd_idx = -1;
@@ -1726,7 +1726,7 @@ yyreduce:
     break;
 
   case 5:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 128 "command.y"
     {
 		if (errcount == 0 && cmd_idx >= 0) {
@@ -1780,7 +1780,7 @@ yyreduce:
     break;
 
   case 6:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 178 "command.y"
     {
 		yyerrok;
@@ -1788,13 +1788,13 @@ yyreduce:
     break;
 
   case 22:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 212 "command.y"
     { want_nodeval = true; }
     break;
 
   case 23:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 217 "command.y"
     {
 		if (errcount == 0) {
@@ -1814,7 +1814,7 @@ yyreduce:
     break;
 
   case 24:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 236 "command.y"
     {
 		(yyval) = append_statement(arg_list, (char *) start_EVAL);
@@ -1826,13 +1826,13 @@ yyreduce:
     break;
 
   case 25:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 243 "command.y"
     { (yyval) = append_statement((yyvsp[(1) - (2)]), lexptr_begin); }
     break;
 
   case 26:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 244 "command.y"
     {
 		(yyval) = (yyvsp[(3) - (4)]);
@@ -1840,7 +1840,7 @@ yyreduce:
     break;
 
   case 27:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 251 "command.y"
     {
 		arg_list = append_statement((yyvsp[(2) - (3)]), (char *) end_EVAL);
@@ -1860,7 +1860,7 @@ yyreduce:
     break;
 
   case 28:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 267 "command.y"
     {
 		NODE *n;
@@ -1875,7 +1875,7 @@ yyreduce:
     break;
 
   case 34:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 286 "command.y"
     {
 		if (cmdtab[cmd_idx].class == D_FRAME
@@ -1885,7 +1885,7 @@ yyreduce:
     break;
 
   case 35:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 292 "command.y"
     {
 		int idx = find_argument((yyvsp[(2) - (2)]));
@@ -1901,43 +1901,43 @@ yyreduce:
     break;
 
   case 38:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 305 "command.y"
     { want_nodeval = true; }
     break;
 
   case 40:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 306 "command.y"
     { want_nodeval = true; }
     break;
 
   case 46:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 311 "command.y"
     { want_nodeval = true; }
     break;
 
   case 49:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 313 "command.y"
     { want_nodeval = true; }
     break;
 
   case 51:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 314 "command.y"
     { want_nodeval = true; }
     break;
 
   case 53:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 315 "command.y"
     { want_nodeval = true; }
     break;
 
   case 57:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 319 "command.y"
     {
 		if (in_cmd_src((yyvsp[(2) - (2)])->a_string))
@@ -1946,7 +1946,7 @@ yyreduce:
     break;
 
   case 58:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 324 "command.y"
     {
 		if (! input_from_tty)
@@ -1955,7 +1955,7 @@ yyreduce:
     break;
 
   case 59:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 329 "command.y"
     {
 		int type = 0;
@@ -1985,7 +1985,7 @@ yyreduce:
     break;
 
   case 60:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 355 "command.y"
     {
 		if (! in_commands)
@@ -1999,7 +1999,7 @@ yyreduce:
     break;
 
   case 61:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 365 "command.y"
     {
 		if (! in_commands)
@@ -2008,7 +2008,7 @@ yyreduce:
     break;
 
   case 62:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 370 "command.y"
     {
 		int idx = find_argument((yyvsp[(2) - (2)]));
@@ -2024,13 +2024,13 @@ yyreduce:
     break;
 
   case 63:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 381 "command.y"
     { want_nodeval = true; }
     break;
 
   case 64:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 382 "command.y"
     {
 		int type;
@@ -2042,7 +2042,7 @@ yyreduce:
     break;
 
   case 65:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 390 "command.y"
     {
 		if (in_commands) {
@@ -2057,7 +2057,7 @@ yyreduce:
     break;
 
   case 66:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 404 "command.y"
     {
 		if ((yyvsp[(1) - (1)]) != NULL) {
@@ -2071,37 +2071,37 @@ yyreduce:
     break;
 
   case 68:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 418 "command.y"
     {	(yyval) = NULL; }
     break;
 
   case 69:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 423 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 74:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 432 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 75:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 437 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 77:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 440 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 78:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 445 "command.y"
     {
 		NODE *n;
@@ -2112,13 +2112,13 @@ yyreduce:
     break;
 
   case 79:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 455 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 80:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 457 "command.y"
     {
 		if (find_option((yyvsp[(1) - (1)])->a_string) < 0)
@@ -2127,7 +2127,7 @@ yyreduce:
     break;
 
   case 81:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 462 "command.y"
     {
 		if (find_option((yyvsp[(1) - (3)])->a_string) < 0)
@@ -2136,7 +2136,7 @@ yyreduce:
     break;
 
   case 82:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 470 "command.y"
     {
 		NODE *n;
@@ -2153,49 +2153,49 @@ yyreduce:
     break;
 
   case 83:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 486 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 88:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 495 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 89:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 496 "command.y"
     { want_nodeval = true; }
     break;
 
   case 92:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 498 "command.y"
     { want_nodeval = true; }
     break;
 
   case 95:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 504 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 97:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 510 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 99:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 516 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 104:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 528 "command.y"
     {
 		int idx = find_argument((yyvsp[(1) - (2)]));
@@ -2211,7 +2211,7 @@ yyreduce:
     break;
 
   case 106:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 544 "command.y"
     {
 		(yyvsp[(2) - (2)])->type = D_array;	/* dump all items */
@@ -2220,7 +2220,7 @@ yyreduce:
     break;
 
   case 107:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 549 "command.y"
     {
 		(yyvsp[(2) - (3)])->type = D_array;
@@ -2229,19 +2229,19 @@ yyreduce:
     break;
 
   case 117:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 575 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 118:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 577 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 119:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 579 "command.y"
     {
 		CMDARG *a;
@@ -2252,7 +2252,7 @@ yyreduce:
     break;
 
   case 126:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 595 "command.y"
     {
 		if ((yyvsp[(1) - (3)])->a_int > (yyvsp[(3) - (3)])->a_int)
@@ -2265,25 +2265,25 @@ yyreduce:
     break;
 
   case 127:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 607 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 134:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 621 "command.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 135:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 623 "command.y"
     { (yyval) = (yyvsp[(1) - (3)]); }
     break;
 
   case 137:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 629 "command.y"
     {
 		CMDARG *a;
@@ -2302,19 +2302,19 @@ yyreduce:
     break;
 
   case 139:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 648 "command.y"
     { (yyval) = (yyvsp[(1) - (1)]); num_dim = 1; }
     break;
 
   case 140:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 650 "command.y"
     {	(yyval) = (yyvsp[(1) - (2)]); num_dim++; }
     break;
 
   case 142:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 656 "command.y"
     {
 		NODE *n = (yyvsp[(2) - (2)])->a_node;
@@ -2327,7 +2327,7 @@ yyreduce:
     break;
 
   case 143:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 665 "command.y"
     {
 		/* a_string is array name, a_count is dimension count */
@@ -2338,13 +2338,13 @@ yyreduce:
     break;
 
   case 144:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 675 "command.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 145:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 677 "command.y"
     { 
 		NODE *n = (yyvsp[(2) - (2)])->a_node;
@@ -2355,7 +2355,7 @@ yyreduce:
     break;
 
   case 146:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 684 "command.y"
     { 
 		NODE *n = (yyvsp[(2) - (2)])->a_node;
@@ -2368,31 +2368,31 @@ yyreduce:
     break;
 
   case 147:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 696 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 148:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 698 "command.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 149:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 703 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 150:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 705 "command.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 151:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 710 "command.y"
     {
 		if ((yyvsp[(1) - (1)])->a_int == 0)
@@ -2402,7 +2402,7 @@ yyreduce:
     break;
 
   case 152:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 716 "command.y"
     {
 		if ((yyvsp[(2) - (2)])->a_int == 0)
@@ -2412,19 +2412,19 @@ yyreduce:
     break;
 
   case 153:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 725 "command.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 154:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 727 "command.y"
     { (yyval) = (yyvsp[(2) - (2)]); }
     break;
 
   case 155:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 729 "command.y"
     {
 		(yyvsp[(2) - (2)])->a_int = - (yyvsp[(2) - (2)])->a_int;
@@ -2433,7 +2433,7 @@ yyreduce:
     break;
 
   case 156:
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 737 "command.y"
     {
 		if (lexptr_begin != NULL) {
@@ -2446,7 +2446,7 @@ yyreduce:
     break;
 
 
-/* Line 1792 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 2451 "command.c"
       default: break;
     }
@@ -2678,7 +2678,7 @@ yyreturn:
 }
 
 
-/* Line 2055 of yacc.c  */
+/* Line 2050 of yacc.c  */
 #line 747 "command.y"
 
 
