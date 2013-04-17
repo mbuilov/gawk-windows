@@ -78,10 +78,10 @@ postscript: gawk.ps gawkinet.ps gawk.1.ps igawk.1.ps $(AWKCARD)
 pdf: postscript gawk.pdf gawkinet.pdf awkcard.pdf gawk.1.pdf igawk.1.pdf
 
 gawk.ps: gawk.dvi
-	dvips -o gawk.ps gawk.dvi
+	TEXINPUTS=$(srcdir): dvips -o gawk.ps gawk.dvi
 
 gawkinet.ps: gawkinet.dvi
-	dvips -o gawkinet.ps gawkinet.dvi
+	TEXINPUTS=$(srcdir): dvips -o gawkinet.ps gawkinet.dvi
 
 gawk.1.ps: gawk.1
 	-groff -man $(srcdir)/gawk.1 > gawk.1.ps
