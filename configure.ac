@@ -129,17 +129,6 @@ dnl Set the programming language for checks. Fortunately,
 dnl this only needs to be set once, since everything is in C.
 AC_LANG([C])
 
-dnl Cygwin doesn't like to get libs with full paths
-dnl since that overrides linking against DLLs.
-case `(uname) 2> /dev/null` in
-*CYGWIN*)
-	with_libiconv_prefix=no
-	with_libintl_prefix=no
-	;;
-*)
-	;;
-esac
-
 dnl initialize GNU gettext
 AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION([0.18.1])
