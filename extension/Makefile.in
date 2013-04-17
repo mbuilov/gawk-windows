@@ -502,7 +502,7 @@ pkgextension_LTLIBRARIES = \
 
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 # on Cygwin, gettext requires that we link with -lintl 
-MY_LIBS = $(LIBINTL)
+MY_LIBS = $(LTLIBINTL)
 filefuncs_la_SOURCES = filefuncs.c stack.h stack.c gawkfts.h \
 			gawkfts.c gawkdirfd.h
 
