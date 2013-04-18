@@ -294,7 +294,7 @@ AC_CHECK_HEADER(dlfcn.h,
 	# in libc. Notably freebsd and cygwin.
 	# HP-NSK has it in zrldsrl
 	AC_SEARCH_LIBS(dlopen, dl zrldsrl, gawk_have_dlopen=yes, gawk_have_dlopen=no)
-	# Only do DYNAMIC if we have the lip. z/OS (some versions) have
+	# Only do DYNAMIC if we have the lib. z/OS (some versions) have
 	# the header but not the lib, apparently
 	if test "$gawk_have_dlopen" = yes
 	then
