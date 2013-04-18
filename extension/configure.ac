@@ -80,7 +80,7 @@ AC_CONFIG_HEADERS([config.h:configh.in])
 AC_CONFIG_FILES(Makefile)
 AC_OUTPUT_COMMANDS([
 case `uname` in
-MirBSD | MirOS)
+MirBSD | MirOS | "OS/390")
 	cat << \EOF > Makefile
 all dist check clean distclean install uninstall distcheck:
 	@exit 0
