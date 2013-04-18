@@ -1,5 +1,5 @@
 # Italian messages for GNU Awk
-# Copyright (C) 2002-2012 Free Software Foundation, Inc.
+# Copyright (C) 2002-2013 Free Software Foundation, Inc.
 # Antonio Colombo <azc100@gmail.com>.
 #
 msgid ""
@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: GNU Awk 4.0.73, API: 0.0\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
 "POT-Creation-Date: 2013-04-17 20:54+0300\n"
-"PO-Revision-Date: 2013-02-10 21:35+0100\n"
+"PO-Revision-Date: 2013-04-18 12:36+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian <it@li.org>\n"
 "Language: it\n"
@@ -677,13 +677,12 @@ msgid "too many arguments supplied for format string"
 msgstr "troppi argomenti specificati per questa stringa di `format'"
 
 #: builtin.c:1610
-#, fuzzy
 msgid "sprintf: no arguments"
-msgstr "printf: mancano argomenti"
+msgstr "sprintf: nessun argomento"
 
 #: builtin.c:1633 builtin.c:1644
 msgid "printf: no arguments"
-msgstr "printf: mancano argomenti"
+msgstr "printf: nessun argomento"
 
 #: builtin.c:1687
 msgid "sqrt: received non-numeric argument"
@@ -771,9 +770,8 @@ msgid "mktime: at least one of the values is out of the default range"
 msgstr "mktime: almeno un valore è fuori dall'intervallo di default"
 
 #: builtin.c:2035
-#, fuzzy
 msgid "'system' function not allowed in sandbox mode"
-msgstr "la funzione `system' non è consentita in modo `sandbox'"
+msgstr "funzione 'system' non consentita in modo `sandbox'"
 
 #: builtin.c:2040
 msgid "system: received non-string argument"
@@ -1125,11 +1123,10 @@ msgstr ""
 "display|watch."
 
 #: command.y:855
-#, fuzzy
 msgid "list [-|+|[filename:]lineno|function|range] - list specified line(s)."
 msgstr ""
-"list [-|+|[nome-file:]num.linea|funzione|intervallo] - elenca riga/he "
-"specificata/e."
+"list [-|+|[nome-file:]num_linea|funzione|intervallo] - elenca riga/he "
+"richiesta/e."
 
 #: command.y:857
 msgid "next [COUNT] - step program, proceeding through subroutine calls."
@@ -1709,9 +1706,9 @@ msgid "Will ignore next %ld crossings of breakpoint %d.\n"
 msgstr "Prossimi %ld passaggi dal breakpoint %d ignorati.\n"
 
 #: debug.c:3187
-#, fuzzy, c-format
+#, c-format
 msgid "'finish' not meaningful in the outermost frame main()\n"
-msgstr "`finish' non significativo nell'elemento iniziale main()\n"
+msgstr "'finish' non significativo nell'elemento iniziale main()\n"
 
 #: debug.c:3192
 #, c-format
@@ -1719,9 +1716,9 @@ msgid "Run till return from "
 msgstr "Esegui fino al ritorno da "
 
 #: debug.c:3235
-#, fuzzy, c-format
+#, c-format
 msgid "'return' not meaningful in the outermost frame main()\n"
-msgstr "`return' non significativo nell'elemento iniziale main()\n"
+msgstr "'return' non significativo nell'elemento iniziale main()\n"
 
 #: debug.c:3349
 #, c-format
@@ -2209,89 +2206,92 @@ msgstr "wait: chiamata con troppi argomenti"
 
 #: extension/inplace.c:110
 msgid "inplace_begin: in-place editing already active"
-msgstr ""
+msgstr "inplace_begin: modifica in-place già attiva"
 
 #: extension/inplace.c:113 extension/inplace.c:187
 #, c-format
 msgid "inplace_begin: expects 2 arguments but called with %d"
-msgstr ""
+msgstr "inplace_begin: 2 argumenti richiesti, ma chiamata con %d"
 
 #: extension/inplace.c:116
 msgid "inplace_begin: cannot retrieve 1st argument as a string filename"
 msgstr ""
+"inplace_begin: non riesco a trovare il 1° argomento come stringa nome-file"
 
 #: extension/inplace.c:124
 #, c-format
 msgid "inplace_begin: disabling in-place editing for invalid FILENAME `%s'"
 msgstr ""
+"inplace_begin: modifica in-place disabilitato, FILENAME non valido `%s'"
 
 #: extension/inplace.c:131
-#, fuzzy, c-format
+#, c-format
 msgid "inplace_begin: Cannot stat `%s' (%s)"
-msgstr "load_ext: non riesco ad aprire libreria `%s' (%s)\n"
+msgstr "inplace_begin: Non riesco a trovare `%s' (%s)"
 
 #: extension/inplace.c:138
-#, fuzzy, c-format
+#, c-format
 msgid "inplace_begin: `%s' is not a regular file"
-msgstr "`%s' non è una variabile scalare"
+msgstr "inplace_begin: `%s' non è un file regolare"
 
 #: extension/inplace.c:149
 #, c-format
 msgid "inplace_begin: mkstemp(`%s') failed (%s)"
-msgstr ""
+msgstr "inplace_begin: mkstemp(`%s') non riuscita (%s)"
 
 #: extension/inplace.c:158
-#, fuzzy, c-format
+#, c-format
 msgid "inplace_begin: chmod failed (%s)"
-msgstr "%s: `close' non riuscita (%s)"
+msgstr "inplace_begin: chmod non riuscita (%s)"
 
 #: extension/inplace.c:165
 #, c-format
 msgid "inplace_begin: dup(stdout) failed (%s)"
-msgstr ""
+msgstr "inplace_begin: dup(stdout) non riuscita (%s)"
 
 #: extension/inplace.c:168
 #, c-format
 msgid "inplace_begin: dup2(%d, stdout) failed (%s)"
-msgstr ""
+msgstr "inplace_begin: dup2(%d, stdout) non riuscita (%s)"
 
 #: extension/inplace.c:171
-#, fuzzy, c-format
+#, c-format
 msgid "inplace_begin: close(%d) failed (%s)"
-msgstr "%s: `close' non riuscita (%s)"
+msgstr "inplace_begin: close(%d) non riuscita (%s)"
 
 #: extension/inplace.c:190
 msgid "inplace_end: cannot retrieve 1st argument as a string filename"
 msgstr ""
+"inplace_end: non riesco a trovare il 1° argomento come stringa nome-file"
 
 #: extension/inplace.c:197
 msgid "inplace_end: in-place editing not active"
-msgstr ""
+msgstr "inplace_end: modifica in-place non attiva"
 
 #: extension/inplace.c:203
 #, c-format
 msgid "inplace_end: dup2(%d, stdout) failed (%s)"
-msgstr ""
+msgstr "inplace_end: dup2(%d, stdout) non riuscita (%s)"
 
 #: extension/inplace.c:206
-#, fuzzy, c-format
+#, c-format
 msgid "inplace_end: close(%d) failed (%s)"
-msgstr "%s: `close' non riuscita (%s)"
+msgstr "inplace_end: close(%d) non riuscita (%s)"
 
 #: extension/inplace.c:210
 #, c-format
 msgid "inplace_end: fsetpos(stdout) failed (%s)"
-msgstr ""
+msgstr "inplace_end: fsetpos(stdout) non riuscita (%s)"
 
 #: extension/inplace.c:223
-#, fuzzy, c-format
+#, c-format
 msgid "inplace_end: link(`%s', `%s') failed (%s)"
-msgstr "scaricamento di `pipe' `%s' fallita (%s)."
+msgstr "inplace_end: link(`%s', `%s') non riuscita (%s)"
 
 #: extension/inplace.c:229
-#, fuzzy, c-format
+#, c-format
 msgid "inplace_end: rename(`%s', `%s') failed (%s)"
-msgstr "chiusura di fd %d (`%s') fallita (%s)"
+msgstr "inplace_end: rename(`%s', `%s') non riuscito (%s)"
 
 #: extension/ordchr.c:69
 msgid "ord: called with too many arguments"
@@ -2320,7 +2320,7 @@ msgstr "chr: chiamata con argomento/i non corretto/i"
 #: extension/readdir.c:203
 #, c-format
 msgid "dir_take_control_of: opendir/fdopendir failed: %s"
-msgstr ""
+msgstr "dir_take_control_of: opendir/fdopendir non riuscita: %s"
 
 #: extension/readfile.c:84
 msgid "readfile: called with too many arguments"
@@ -2587,7 +2587,7 @@ msgstr "non riesco ad aprire file `%s' in lettura (%s)"
 #: io.c:590
 #, c-format
 msgid "close of fd %d (`%s') failed (%s)"
-msgstr "chiusura di fd %d (`%s') fallita (%s)"
+msgstr "chiusura di fd %d (`%s') non riuscita (%s)"
 
 #: io.c:666
 msgid "redirection not allowed in sandbox mode"
@@ -2651,7 +2651,7 @@ msgstr ""
 #: io.c:1002
 #, c-format
 msgid "close of `%s' failed (%s)."
-msgstr "chiusura di `%s' fallita (%s)."
+msgstr "chiusura di `%s' non riuscita (%s)."
 
 #: io.c:1010
 msgid "too many pipes or input files open"
@@ -2718,17 +2718,17 @@ msgstr "errore scrivendo 'standard error' (%s)"
 #: io.c:1240
 #, c-format
 msgid "pipe flush of `%s' failed (%s)."
-msgstr "scaricamento di `pipe' `%s' fallita (%s)."
+msgstr "scaricamento di `pipe' `%s' non riuscito (%s)."
 
 #: io.c:1243
 #, c-format
 msgid "co-process flush of pipe to `%s' failed (%s)."
-msgstr "scaricamento da co-processo di `pipe' a `%s' fallita (%s)."
+msgstr "scaricamento da co-processo di `pipe' a `%s' non riuscito (%s)."
 
 #: io.c:1246
 #, c-format
 msgid "file flush of `%s' failed (%s)."
-msgstr "scaricamento di file `%s' fallita (%s)."
+msgstr "scaricamento di file `%s' non riuscito (%s)."
 
 #: io.c:1360
 #, c-format
@@ -2770,59 +2770,61 @@ msgstr "non riesco ad aprire `%s', modo `%s'"
 #: io.c:1850
 #, c-format
 msgid "close of master pty failed (%s)"
-msgstr "fallita chiusura di `pty' principale (%s)"
+msgstr "close di `pty' principale non riuscita (%s)"
 
 #: io.c:1852 io.c:2028 io.c:2198
 #, c-format
 msgid "close of stdout in child failed (%s)"
-msgstr "fallita chiusura di `stdout' nel processo-figlio (%s)"
+msgstr "close di `stdout' nel processo-figlio non riuscita (%s)"
 
 #: io.c:1855
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
 msgstr ""
-"fallito trasferimento di `pty' secondaria a `stdout' nel processo-figlio "
-"(dup: %s)"
+"trasferimento di `pty' secondaria a `stdout' nel processo-figlio non "
+"riuscita (dup: %s)"
 
 #: io.c:1857 io.c:2033
 #, c-format
 msgid "close of stdin in child failed (%s)"
-msgstr "fallita chiusura di `stdin' nel processo-figlio (%s)"
+msgstr "close di `stdin' nel processo-figlio non riuscita (%s)"
 
 #: io.c:1860
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
 msgstr ""
-"fallito trasferimento di `pty' secondaria a `stdin' nel processo-figlio "
+"trasferimento di 'pty' secondaria a 'stdin' nel processo-figlio non riuscito "
 "(dup: %s)"
 
 #: io.c:1862 io.c:1883
 #, c-format
 msgid "close of slave pty failed (%s)"
-msgstr "fallita chiusura di `pty' secondaria (%s)"
+msgstr "close di 'pty' secondaria non riuscita (%s)"
 
 #: io.c:1969 io.c:2031 io.c:2175 io.c:2201
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
-msgstr "fallito passaggio di `pipe' a `stdout' nel processo-figlio (dup: %s)"
+msgstr ""
+"passaggio di `pipe' a `stdout' nel processo-figlio non riuscito (dup: %s)"
 
 #: io.c:1976 io.c:2036
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
-msgstr "fallito passaggio di pipe a `stdin' nel processo-figlio (dup: %s)"
+msgstr ""
+"passaggio di pipe a `stdin' nel processo-figlio  non riuscito (dup: %s)"
 
 #: io.c:1996 io.c:2191
 msgid "restoring stdout in parent process failed\n"
-msgstr "fallito ripristino di `stdout' nel processo-padre\n"
+msgstr "ripristino di `stdout' nel processo-padre non riuscito\n"
 
 #: io.c:2004
 msgid "restoring stdin in parent process failed\n"
-msgstr "fallito ripristino di `stdin' nel processo-padre\n"
+msgstr "ripristino di `stdin' nel processo-padre non riuscito\n"
 
 #: io.c:2039 io.c:2203 io.c:2217
 #, c-format
 msgid "close of pipe failed (%s)"
-msgstr "fallita chiusura di `pipe' (%s)"
+msgstr "close di 'pipe' non riuscita (%s)"
 
 #: io.c:2093
 msgid "`|&' not supported"
@@ -3381,6 +3383,8 @@ msgid ""
 "\t# Loaded extensions (-l and/or @load)\n"
 "\n"
 msgstr ""
+"\t# Estensioni caricate (-l e/o @load)\n"
+"\n"
 
 #: profile.c:965
 #, c-format
@@ -3479,12 +3483,3 @@ msgstr "Nessuna espressione regolare precedente"
 #: symbol.c:740
 msgid "can not pop main context"
 msgstr "non posso salire più in alto nello stack"
-
-#~ msgid "[s]printf called with no arguments"
-#~ msgstr "[s]printf chiamata senza argomenti"
-
-#~ msgid "`-m[fr]' option irrelevant in gawk"
-#~ msgstr "`-m[fr]' opzione irrilevante per gawk"
-
-#~ msgid "-m option usage: `-m[fr] nnn'"
-#~ msgstr "-m uso opzione: `-m[fr] nnn'"
