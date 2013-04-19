@@ -1024,7 +1024,8 @@ VALGRIND =
 
 #
 # And we set AWKLIBPATH to find the extension libraries we built.
-AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} AWKLIBPATH=../extension/.libs $(VALGRIND) $(AWKPROG)
+LOCALES = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C}
+AWK = $(LOCALES) AWKLIBPATH=../extension/.libs $(VALGRIND) $(AWKPROG)
 
 # Message stuff is to make it a little easier to follow.
 # Make the pass-fail last and dependent on others to avoid
@@ -1615,7 +1616,7 @@ posix2008sub:
 
 next:
 	@echo $@
-	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
+	@-$(LOCALES) AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
 	@-LC_ALL=C $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 exit:
