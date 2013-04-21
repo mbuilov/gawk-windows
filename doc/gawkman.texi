@@ -654,17 +654,6 @@ particular records in a file and perform operations upon them.
 * Anagram Program::                     Finding anagrams from a dictionary.
 * Signature Program::                   People do amazing things with too much
                                         time on their hands.
-* I18N and L10N::                       Internationalization and Localization.
-* Explaining gettext::                  How GNU @code{gettext} works.
-* Programmer i18n::                     Features for the programmer.
-* Translator i18n::                     Features for the translator.
-* String Extraction::                   Extracting marked strings.
-* Printf Ordering::                     Rearranging @code{printf} arguments.
-* I18N Portability::                    @command{awk}-level portability
-                                        issues.
-* I18N Example::                        A simple i18n example.
-* Gawk I18N::                           @command{gawk} is also
-                                        internationalized.
 * Nondecimal Data::                     Allowing nondecimal input data.
 * Array Sorting::                       Facilities for controlling array
                                         traversal and sorting arrays.
@@ -676,6 +665,17 @@ particular records in a file and perform operations upon them.
 * TCP/IP Networking::                   Using @command{gawk} for network
                                         programming.
 * Profiling::                           Profiling your @command{awk} programs.
+* I18N and L10N::                       Internationalization and Localization.
+* Explaining gettext::                  How GNU @code{gettext} works.
+* Programmer i18n::                     Features for the programmer.
+* Translator i18n::                     Features for the translator.
+* String Extraction::                   Extracting marked strings.
+* Printf Ordering::                     Rearranging @code{printf} arguments.
+* I18N Portability::                    @command{awk}-level portability
+                                        issues.
+* I18N Example::                        A simple i18n example.
+* Gawk I18N::                           @command{gawk} is also
+                                        internationalized.
 * Debugging::                           Introduction to @command{gawk}
                                         debugger.
 * Debugging Concepts::                  Debugging in General.
@@ -736,7 +736,7 @@ particular records in a file and perform operations upon them.
 * Output Wrappers::                     Registering an output wrapper.
 * Two-way processors::                  Registering a two-way processor.
 * Printing Messages::                   Functions for printing messages.
-* Updating @code{ERRNO}::                      Functions for updating @code{ERRNO}.
+* Updating @code{ERRNO}::               Functions for updating @code{ERRNO}.
 * Accessing Parameters::                Functions for accessing parameters.
 * Symbol Table Access::                 Functions for accessing global
                                         variables.
@@ -840,13 +840,14 @@ particular records in a file and perform operations upon them.
                                         @command{git} repository.
 * Future Extensions::                   New features that may be implemented
                                         one day.
-* Implementation Limitations::          Some limitations of the implementation.
+* Implementation Limitations::          Some limitations of the
+                                        implementation.
 * Extension Design::                    Design notes about the extension API.
 * Old Extension Problems::              Problems with the old mechanism.
 * Extension New Mechanism Goals::       Goals for the new mechanism.
 * Extension Other Design Decisions::    Some other design decisions.
 * Extension Future Growth::             Some room for future growth.
-* Old Extension Mechansim::             Some compatibility for old extensions.
+* Old Extension Mechanism::             Some compatibility for old extensions.
 * Basic High Level::                    The high level view.
 * Basic Data Typing::                   A very quick intro to data types.
 @end detailmenu
@@ -1723,7 +1724,7 @@ The intrepid members of the GNITS mailing list, and most notably Ulrich
 Drepper, provided invaluable help and feedback for the design of the
 internationalization features.
 
-Chuck Toporek, Mary Sheehan, and Claire Coutier of O'Reilly & Associates contributed
+Chuck Toporek, Mary Sheehan, and Claire Cloutier of O'Reilly & Associates contributed
 significant editorial help for this @value{DOCUMENT} for the
 3.1 release of @command{gawk}.
 @end quotation
@@ -5310,7 +5311,6 @@ Using regexp constants is better form; it shows clearly that you
 intend a regexp match.
 @end itemize
 
-@c fakenode --- for prepinfo
 @sidebar Using @code{\n} in Bracket Expressions of Dynamic Regexps
 @cindex regular expressions, dynamic, with embedded newlines
 @cindex newlines, in dynamic regexps
@@ -9223,7 +9223,6 @@ If @command{gawk} is in compatibility mode
 (@pxref{Options}),
 they are not available.
 
-@c fakenode --- for prepinfo
 @sidebar A Constant's Base Does Not Affect Its Value
 
 Once a numeric constant has
@@ -27496,7 +27495,6 @@ around on your screen.
 Numerical programming is an extensive area; if you need to develop
 sophisticated numerical algorithms then @command{gawk} may not be
 the ideal tool, and this documentation may not be sufficient.
-@c FIXME: JOHN: Do you want to cite some actual books?
 It might require digesting a book or two to really internalize how to compute
 with ideal accuracy and precision,
 and the result often depends on the particular application.
@@ -28487,7 +28485,7 @@ This (rather large) @value{SECTION} describes the API in detail.
 * Registration Functions::               Functions to register things with
                                          @command{gawk}.
 * Printing Messages::                    Functions for printing messages.
-* Updating @code{ERRNO}::                       Functions for updating @code{ERRNO}.
+* Updating @code{ERRNO}::                Functions for updating @code{ERRNO}.
 * Accessing Parameters::                 Functions for accessing parameters.
 * Symbol Table Access::                  Functions for accessing global
                                          variables.
@@ -34276,7 +34274,7 @@ maintainers of @command{gawk}.  Everything in it applies specifically to
 * Future Extensions::           New features that may be implemented one day.
 * Implementation Limitations::  Some limitations of the implementation.
 * Extension Design::            Design notes about the extension API.
-* Old Extension Mechansim::     Some compatibility for old extensions.
+* Old Extension Mechanism::     Some compatibility for old extensions.
 @end menu
 
 @node Compatibility Mode
@@ -35127,7 +35125,7 @@ conflicts.
 Of course, as of this writing, no decisions have been made with respect
 to any of the above.
 
-@node Old Extension Mechansim
+@node Old Extension Mechanism
 @appendixsec Compatibility For Old Extensions
 
 @ref{Dynamic Extensions}, describes the supported API and mechanisms
@@ -35154,7 +35152,7 @@ Just as in previous versions, you load an old-style extension with the
 This function in turn finds and loads the shared object file containing
 the extension and calls its @code{dl_load()} C routine.
 
-Because original-style and new-style extensions use different initialiation
+Because original-style and new-style extensions use different initialization
 routines (@code{dl_load()} versus @code{dlload()}), they may safely
 be installed in the same directory (to be found by @env{AWKLIBPATH})
 without conflict.
