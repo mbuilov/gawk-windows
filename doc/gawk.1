@@ -1,6 +1,5 @@
 .ds PX \s-1POSIX\s+1
 .ds UX \s-1UNIX\s+1
-.ds AN \s-1ANSI\s+1
 .ds GN \s-1GNU\s+1
 .ds AK \s-1AWK\s+1
 .ds EP \fIGAWK: Effective AWK Programming\fP
@@ -14,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Dec 07 2012" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Apr 23 2012" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -60,7 +59,7 @@ and
 .B ARGV
 pre-defined \*(AK variables.
 .PP
-When 
+When
 .I gawk
 is invoked with the
 .B \-\^\-profile
@@ -107,7 +106,7 @@ next command line argument.
 Long options may be abbreviated, as long as the abbreviation
 remains unique.
 .PP
-Additionally, each long option has a corresponding short
+Additionally, every long option has a corresponding short
 option, so that the option's functionality may be used from
 within
 .B #!
@@ -158,7 +157,7 @@ to the variable
 before execution of the program begins.
 Such variable values are available to the
 .B BEGIN
-block of an \*(AK program.
+rule of an \*(AK program.
 .TP
 .PD 0
 .B \-b
@@ -171,6 +170,7 @@ process strings as multibyte characters.
 The
 .B "\-\^\-posix"
 option overrides this one.
+.bp
 .TP
 .PD 0
 .B \-c
@@ -234,7 +234,7 @@ Enable debugging of \*(AK programs.
 By default, the debugger reads commands interactively from the terminal.
 The optional
 .IR file
-argument can be used to specify a file with a list
+argument specifies a file with a list
 of commands for the debugger to execute non-interactively.
 .TP
 .PD 0
@@ -304,8 +304,10 @@ Load an awk source library.
 This searches for the library using the
 .B AWKPATH
 environment variable.  If the initial search fails, another attempt will
-be made after appending the ".awk" suffix.  The file will be loaded only
-once (i.e. duplicates are eliminated), and the code does not constitute
+be made after appending the
+.B \&.awk
+suffix.  The file will be loaded only
+once (i.e., duplicates are eliminated), and the code does not constitute
 the main program source.
 .TP
 .PD 0
@@ -347,7 +349,7 @@ actually invalid are issued. (This is not fully implemented yet.)
 Force arbitrary precision arithmetic on numbers. This option has
 no effect if
 .I gawk
-is not compiled to use the GNU MPFR and MP libraries. 
+is not compiled to use the GNU MPFR and MP libraries.
 .TP
 .PD 0
 .B \-n
@@ -415,12 +417,12 @@ elimination for recursive functions. The
 maintainer hopes to add additional optimizations over time.
 .TP
 .PD 0
-\fB\-p\fR[\fIprof_file\fR]
+\fB\-p\fR[\fIprof-file\fR]
 .TP
 .PD
-\fB\-\^\-profile\fR[\fB=\fIprof_file\fR]
+\fB\-\^\-profile\fR[\fB=\fIprof-file\fR]
 Start a profiling session, and send the profiling data to
-.IR prof_file .
+.IR prof-file .
 The default is
 .BR awkprof.out .
 The profile contains execution counts of each statement in the program
@@ -487,7 +489,7 @@ and
 .I egrep
 consistent with each other.
 They are enabled by default, but this option remains for use with
-.BR \-\^-traditional .
+.BR \-\^\-traditional .
 .TP
 .PD 0
 .BI \-S
@@ -500,7 +502,7 @@ in sandbox mode, disabling the
 .B system()
 function, input redirection with
 .BR getline ,
-output redirection with 
+output redirection with
 .BR print " and " printf ,
 and loading dynamic extensions.
 Command execution (through pipelines) is also disabled.
@@ -513,7 +515,7 @@ This effectively blocks a script from accessing local resources
 .PD
 .B \-\^\-lint\-old
 Provide warnings about constructs that are
-not portable to the original version of Unix
+not portable to the original version of \*(UX
 .IR awk .
 .TP
 .PD 0
@@ -547,6 +549,10 @@ options are passed on to the \*(AK program in the
 .B ARGV
 array for processing.  This is particularly useful for running \*(AK
 programs via the \*(lq#!\*(rq executable interpreter mechanism.
+.PP
+For \*(PX compatibility, the
+.B \-W
+option may be used, followed by the name of a long option.
 .SH AWK PROGRAM EXECUTION
 .PP
 An \*(AK program consists of a sequence of pattern-action statements
@@ -586,13 +592,16 @@ functions with command line programs.
 In addition, lines beginning with
 .B @include
 may be used to include other source files into your program,
-making library use even easier.
+making library use even easier.  This is equivalent
+to using the
+.B \-i
+option.
 .PP
 Lines beginning with
 .B @load
 may be used to load shared libraries into your program.  This is equivalent
 to using the
-.B \-l 
+.B \-l
 option.
 .PP
 The environment variable
@@ -611,6 +620,17 @@ If a file name given to the
 .B \-f
 option contains a \*(lq/\*(rq character, no path search is performed.
 .PP
+The environment variable
+.B AWKLIBPATH
+specifies a search path to use when finding source files named with
+the
+.B \-l
+option.  If this variable does not exist, the default path is
+\fB".:/usr/local/lib/gawk"\fR.
+(The actual directory may vary, depending upon how
+.I gawk
+was built and installed.)
+.PP
 .I Gawk
 executes \*(AK programs in the following order.
 First,
@@ -624,7 +644,7 @@ Then,
 .I gawk
 executes the code in the
 .B BEGIN
-block(s) (if any),
+rule(s) (if any),
 and then proceeds to read
 each file named in the
 .B ARGV
@@ -642,7 +662,7 @@ will be assigned the value
 .IR val .
 (This happens after any
 .B BEGIN
-block(s) have been run.)
+rule(s) have been run.)
 Command line variable assignment
 is most useful for dynamically assigning values to the variables
 \*(AK uses to control how input is broken into fields and records.
@@ -673,16 +693,17 @@ For each record in the input,
 tests to see if it matches any
 .I pattern
 in the \*(AK program.
-For each pattern that the record matches, the associated
-.I action
-is executed.
+For each pattern that the record matches,
+.I gawk
+executes the associated
+.IR action .
 The patterns are tested in the order they occur in the program.
 .PP
 Finally, after all the input is exhausted,
 .I gawk
 executes the code in the
 .B END
-block(s) (if any).
+rule(s) (if any).
 .SS Command Line Directories
 .PP
 According to POSIX, files named on the
@@ -710,6 +731,10 @@ first used.  Their values are either floating-point numbers or strings,
 or both,
 depending upon how they are used.  \*(AK also has one dimensional
 arrays; arrays with multiple dimensions may be simulated.
+.I Gawk
+provides true arrays of arrays; see
+.BR Arrays ,
+below.
 Several pre-defined variables are set as a program
 runs; these are described as needed and summarized below.
 .SS Records
@@ -799,7 +824,7 @@ or
 overrides the use of
 .BR FPAT .
 .PP
-Each field in the input record may be referenced by its position,
+Each field in the input record may be referenced by its position:
 .BR $1 ,
 .BR $2 ,
 and so on.
@@ -821,14 +846,14 @@ The variable
 .B NF
 is set to the total number of fields in the input record.
 .PP
-References to non-existent fields (i.e. fields after
+References to non-existent fields (i.e., fields after
 .BR $NF )
 produce the null-string.  However, assigning to a non-existent field
 (e.g.,
 .BR "$(NF+2) = 5" )
 increases the value of
 .BR NF ,
-creates any intervening fields with the null string as their value, and
+creates any intervening fields with the null string as their values, and
 causes the value of
 .B $0
 to be recomputed, with the fields being separated by the value of
@@ -891,7 +916,7 @@ The conversion format for numbers, \fB"%.6g"\fR, by default.
 An array containing the values of the current environment.
 The array is indexed by the environment variables, each element being
 the value of that variable (e.g., \fBENVIRON["HOME"]\fP might be
-.BR /home/arnold ).
+\fB"/home/arnold"\fR).
 Changing this array does not affect the environment seen by programs which
 .I gawk
 spawns via redirection or the
@@ -931,7 +956,7 @@ However,
 .B FILENAME
 is undefined inside the
 .B BEGIN
-block
+rule
 (unless set by
 .BR getline ).
 .TP
@@ -958,11 +983,11 @@ The input field separator, a space by default.  See
 above.
 .TP
 .B FUNCTAB
-An array whose indices are the names of all the user-defined
+An array whose indices and corresponding values
+are the names of all the user-defined
 or extension functions in the program.
 .BR NOTE :
-The array values cannot currently be used.
-Also, you may not use the
+You may not use the
 .B delete
 statment with the
 .B FUNCTAB
@@ -1063,7 +1088,7 @@ The following elements are guaranteed to be available:
 .RS
 .TP \w'\fBPROCINFO["version"]\fR'u+1n
 \fBPROCINFO["egid"]\fP
-the value of the
+The value of the
 .IR getegid (2)
 system call.
 .TP
@@ -1072,7 +1097,7 @@ The default time format string for
 .BR strftime() .
 .TP
 \fBPROCINFO["euid"]\fP
-the value of the
+The value of the
 .IR geteuid (2)
 system call.
 .TP
@@ -1089,7 +1114,13 @@ is in effect.
 .TP
 \fBPROCINFO["identifiers"]\fP
 A subarray, indexed by the names of all identifiers used in the
-text of the AWK program.  For each identifier, the value of the element is one of the following:
+text of the AWK program.
+The values indicate what
+.I gawk
+knows about the identifiers after it has finished parsing the program; they are
+.I not
+updated while the program runs.
+For each identifier, the value of the element is one of the following:
 .RS
 .TP
 \fB"array"\fR
@@ -1110,28 +1141,23 @@ doesn't know yet).
 \fB"user"\fR
 The identifier is a user-defined function.
 .RE
-The values indicate what
-.I gawk
-knows about the identifiers after it has finished parsing the program; they are
-.I not
-updated while the program runs.
 .TP
 \fBPROCINFO["gid"]\fP
-the value of the
+The value of the
 .IR getgid (2)
 system call.
 .TP
 \fBPROCINFO["pgrpid"]\fP
-the process group ID of the current process.
+The process group ID of the current process.
 .TP
 \fBPROCINFO["pid"]\fP
-the process ID of the current process.
+The process ID of the current process.
 .TP
 \fBPROCINFO["ppid"]\fP
-the parent process ID of the current process.
+The parent process ID of the current process.
 .TP
 \fBPROCINFO["uid"]\fP
-the value of the
+The value of the
 .IR getuid (2)
 system call.
 .TP
@@ -1157,11 +1183,11 @@ and
 \fB"@unsorted"\fR.
 The value can also be the name of any comparison function defined
 as follows:
-.PP
-.RS
+.sp
+.in +5m
 \fBfunction cmp_func(i1, v1, i2, v2)\fR
-.RE
-.PP
+.in -5m
+.sp
 where
 .I i1
 and
@@ -1176,7 +1202,7 @@ It should return a number less than, equal to, or greater than 0,
 depending on how the elements of the array are to be ordered.
 .TP
 \fBPROCINFO["input", "READ_TIMEOUT"]\fP
-specifies the timeout in milliseconds for reading data from
+The timeout in milliseconds for reading data from
 .IR input ,
 where
 .I input
@@ -1184,22 +1210,30 @@ is a redirection string or a filename. A value of zero or
 less than zero means no timeout.
 .TP
 \fBPROCINFO["mpfr_version"]\fP
-the version of the GNU MPFR library used for arbitrary precision
+The version of the GNU MPFR library used for arbitrary precision
 number support in
+.IR gawk .
+This entry is not present if MPFR support is not compiled into
 .IR gawk .
 .TP
 \fBPROCINFO["gmp_version"]\fP
-the version of the GNU MP library used for arbitrary precision
+The version of the GNU MP library used for arbitrary precision
 number support in
+.IR gawk .
+This entry is not present if MPFR support is not compiled into
 .IR gawk .
 .TP
 \fBPROCINFO["prec_max"]\fP
-the maximum precision supported by the GNU MPFR library for
+The maximum precision supported by the GNU MPFR library for
 arbitrary precision floating-point numbers.
+This entry is not present if MPFR support is not compiled into
+.IR gawk .
 .TP
 \fBPROCINFO["prec_min"]\fP
-the minimum precision allowed by the GNU MPFR library for
+The minimum precision allowed by the GNU MPFR library for
 arbitrary precision floating-point numbers.
+This entry is not present if MPFR support is not compiled into
+.IR gawk .
 .TP
 \fBPROCINFO["version"]\fP
 the version of
@@ -1248,15 +1282,17 @@ elements, by default \fB"\e034"\fR.
 An array whose indices are the names of all currently defined
 global variables and arrays in the program.  The array may be used
 for indirect access to read or write the value of a variable:
-.PP
-.RS
+.sp
 .ft B
+.nf
+.in +5m
 foo = 5
 SYMTAB["foo"] = 4
 print foo    # prints 4
+.fi
 .ft R
-.RE
-.PP
+.in -5m
+.sp
 The
 .B isarray()
 function may be used to test if an element in
@@ -1296,7 +1332,7 @@ x[i, j, k] = "hello, world\en"
 assigns the string \fB"hello, world\en"\fR to the element of the array
 .B x
 which is indexed by the string \fB"A\e034B\e034C"\fR.  All arrays in \*(AK
-are associative, i.e. indexed by string values.
+are associative, i.e., indexed by string values.
 .PP
 The special operator
 .B in
@@ -1333,6 +1369,7 @@ just by specifying the array name without a subscript.
 supports true multidimensional arrays. It does not require that
 such arrays be ``rectangular'' as in C or C++.
 For example:
+.sp
 .RS
 .ft B
 .nf
@@ -1469,7 +1506,7 @@ vertical tab.
 The character represented by the string of hexadecimal digits following
 the
 .BR \ex .
-As in \*(AN C, all following hexadecimal digits are considered part of
+As in ISO C, all following hexadecimal digits are considered part of
 the escape sequence.
 (This feature should tell us something about language design by committee.)
 E.g., \fB"\ex1B"\fR is the \s-1ASCII\s+1 \s-1ESC\s+1 (escape) character.
@@ -1568,10 +1605,10 @@ The action parts of all
 patterns are merged as if all the statements had
 been written in a single
 .B BEGIN
-block.  They are executed before any
+rule.  They are executed before any
 of the input is read.  Similarly, all the
 .B END
-blocks are merged,
+rules are merged,
 and executed when all the input is exhausted (or when an
 .B exit
 statement is executed).
@@ -1918,7 +1955,7 @@ matches a literal
 .BR w ).
 .TP
 .B \-\^\-traditional
-Traditional Unix
+Traditional \*(UX
 .I awk
 regular expressions are matched.  The \*(GN operators
 are not special, and interval expressions are not available.
@@ -2122,7 +2159,7 @@ Stop processing the current input record.  The next input record
 is read and processing starts over with the first pattern in the
 \*(AK program.  If the end of the input data is reached, the
 .B END
-block(s), if any, are executed.
+rule(s), if any, are executed.
 .TP
 .B "nextfile"
 Stop processing the current input file.  The next input record read
@@ -2135,7 +2172,7 @@ are updated,
 is reset to 1, and processing starts over with the first pattern in the
 \*(AK program. If the end of the input data is reached, the
 .B END
-block(s), if any, are executed.
+rule(s), if any, are executed.
 .TP
 .B print
 Print the current record.
@@ -2415,7 +2452,7 @@ The dynamic
 .I width
 and
 .I prec
-capabilities of the \*(AN C
+capabilities of the ISO C
 .B printf()
 routines are supported.
 A
@@ -2843,7 +2880,7 @@ and trailing whitespace goes into the extra array element
 .IR seps[n] ,
 where
 .I n
-is the return value of 
+is the return value of
 .IR "split(s, a, r, seps)" .
 Splitting behaves identically to field splitting, described above.
 .TP
@@ -2991,7 +3028,7 @@ The default format is available in
 .BR PROCINFO["strftime"] .
 See the specification for the
 .B strftime()
-function in \*(AN C for the format conversions that are
+function in ISO C for the format conversions that are
 guaranteed to be available.
 .TP
 .B systime()
@@ -3053,7 +3090,7 @@ For full details, see \*(EP.
 Specify the directory where
 .I gawk
 looks for the
-.B \&.mo
+.B \&.gmo
 files, in case they
 will not or cannot be placed in the ``standard'' locations
 (e.g., during testing).
@@ -3278,7 +3315,7 @@ BEGIN { TEXTDOMAIN = "myprog" }
 This allows
 .I gawk
 to find the
-.B \&.mo
+.B \&.gmo
 file associated with your program.
 Without this step,
 .I gawk
@@ -3306,7 +3343,7 @@ file for your program.
 .TP
 5.
 Provide appropriate translations, and build and install the corresponding
-.B \&.mo
+.B \&.gmo
 files.
 .PP
 The internationalization features are described in full detail in \*(EP.
@@ -3328,12 +3365,12 @@ The book indicates that command line variable assignment happens when
 .I awk
 would otherwise open the argument as a file, which is after the
 .B BEGIN
-block is executed.  However, in earlier implementations, when such an
+rule is executed.  However, in earlier implementations, when such an
 assignment appeared before any file names, the assignment would happen
 .I before
 the
 .B BEGIN
-block was run.  Applications came to depend on this \*(lqfeature.\*(rq
+rule was run.  Applications came to depend on this \*(lqfeature.\*(rq
 When
 .I awk
 was changed to match its documentation, the
@@ -3378,7 +3415,7 @@ and fed back into the Bell Laboratories version); the
 .B tolower()
 and
 .B toupper()
-built-in functions (from the Bell Laboratories version); and the \*(AN C conversion specifications in
+built-in functions (from the Bell Laboratories version); and the ISO C conversion specifications in
 .B printf
 (done first in the Bell Laboratories version).
 .SH HISTORICAL FEATURES
@@ -3441,7 +3478,7 @@ environment variable is not special.
 .\" POSIX and language recognition issues
 .TP
 \(bu
-There is no facility for doing file inclusion 
+There is no facility for doing file inclusion
 .RI ( gawk 's
 .B @include
 mechanism).
@@ -3920,3 +3957,5 @@ Permission is granted to copy and distribute translations of this
 manual page into another language, under the above conditions for
 modified versions, except that this permission notice may be stated in
 a translation approved by the Foundation.
+.\" ---------------
+.\" Unix / UX -> BWK
