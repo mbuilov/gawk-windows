@@ -13241,6 +13241,19 @@ The maximum precision supported by MPFR.
 The minimum precision required by MPFR.
 @end table
 
+The following additional elements in the array are available to provide
+information about the version of the extension API, if your version
+of @command{gawk} supports dynamic loading of extension functions
+(@pxref{Dynamic Extensions}):
+
+@table @code
+@item PROCINFO["api_major"]
+The major version of the extension API.
+
+@item PROCINFO["api_minor"]
+The minor version of the extension API.
+@end table
+
 On some systems, there may be elements in the array, @code{"group1"}
 through @code{"group@var{N}"} for some @var{N}. @var{N} is the number of
 supplementary groups that the process has.  Use the @code{in} operator

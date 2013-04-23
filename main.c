@@ -1129,6 +1129,11 @@ load_procinfo()
 	update_PROCINFO_num("prec_min", MPFR_PREC_MIN);
 #endif
 
+#ifdef DYNAMIC
+	update_PROCINFO_num("api_major", GAWK_API_MAJOR_VERSION);
+	update_PROCINFO_num("api_minor", GAWK_API_MINOR_VERSION);
+#endif
+
 #ifdef GETPGRP_VOID
 #define getpgrp_arg() /* nothing */
 #else
