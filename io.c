@@ -2304,7 +2304,7 @@ gawk_pclose(struct redirect *rp)
 
 #endif	/* PIPES_SIMULATED */
 
-/* do_getline --- read in a line, into var and with redirection */
+/* do_getline_redir --- read in a line, into var and with redirection */
 
 NODE *
 do_getline_redir(int into_variable, enum redirval redirtype)
