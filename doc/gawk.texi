@@ -7423,7 +7423,7 @@ write a program that does handle multiple comments on the line.
 @end ignore
 
 This form of the @code{getline} command sets @code{NF},
-@code{NR}, @code{FNR}, and the value of @code{$0}.
+@code{NR}, @code{FNR}, @code{RT}, and the value of @code{$0}.
 
 @quotation NOTE
 The new value of @code{$0} is used to test
@@ -7480,7 +7480,8 @@ free
 @end example
 
 The @code{getline} command used in this way sets only the variables
-@code{NR} and @code{FNR} (and of course, @var{var}).  The record is not
+@code{NR}, @code{FNR} and @code{RT} (and of course, @var{var}).
+The record is not
 split into fields, so the values of the fields (including @code{$0}) and
 the value of @code{NF} do not change.
 
@@ -7515,6 +7516,7 @@ Because the main input stream is not used, the values of @code{NR} and
 @code{FNR} are not changed. However, the record it reads is split into fields in
 the normal manner, so the values of @code{$0} and the other fields are
 changed, resulting in a new value of @code{NF}.
+@code{RT} is also set.
 
 @cindex POSIX @command{awk}, @code{<} operator and
 @c Thanks to Paul Eggert for initial wording here
@@ -7653,6 +7655,7 @@ depending upon who is logged in on your system.)
 This variation of @code{getline} splits the record into fields, sets the
 value of @code{NF}, and recomputes the value of @code{$0}.  The values of
 @code{NR} and @code{FNR} are not changed.
+@code{RT} is set.
 
 @cindex POSIX @command{awk}, @code{|} I/O operator and
 @c Thanks to Paul Eggert for initial wording here
@@ -7742,7 +7745,7 @@ The values of @code{NR} and
 because the main input stream is not used.
 However, the record is split into fields in
 the normal manner, thus changing the values of @code{$0}, of the other fields,
-and of @code{NF}.
+and of @code{NF} and @code{RT}.
 
 Coprocesses are an advanced feature. They are discussed here only because
 this is the @value{SECTION} on @code{getline}.
@@ -7760,6 +7763,7 @@ and into the variable @var{var}.
 In this version of @code{getline}, none of the built-in variables are
 changed and the record is not split into fields.  The only variable
 changed is @var{var}.
+However, @code{RT} is set.
 
 @ifinfo
 Coprocesses are an advanced feature. They are discussed here only because
@@ -7866,14 +7870,14 @@ Note: for each variant, @command{gawk} sets the @code{RT} built-in variable.
 @caption{@code{getline} Variants and What They Set}
 @multitable @columnfractions .33 .38 .27
 @headitem Variant @tab Effect @tab Standard / Extension
-@item @code{getline} @tab Sets @code{$0}, @code{NF}, @code{FNR}, and @code{NR} @tab Standard
-@item @code{getline} @var{var} @tab Sets @var{var}, @code{FNR}, and @code{NR} @tab Standard
-@item @code{getline <} @var{file} @tab Sets @code{$0} and @code{NF} @tab Standard
-@item @code{getline @var{var} < @var{file}} @tab Sets @var{var} @tab Standard
-@item @var{command} @code{| getline} @tab Sets @code{$0} and @code{NF} @tab Standard
-@item @var{command} @code{| getline} @var{var} @tab Sets @var{var} @tab Standard
-@item @var{command} @code{|& getline} @tab Sets @code{$0} and @code{NF} @tab Extension
-@item @var{command} @code{|& getline} @var{var} @tab Sets @var{var} @tab Extension
+@item @code{getline} @tab Sets @code{$0}, @code{NF}, @code{FNR}, @code{NR}, and @code{RT} @tab Standard
+@item @code{getline} @var{var} @tab Sets @var{var}, @code{FNR}, @code{NR}, and @code{RT} @tab Standard
+@item @code{getline <} @var{file} @tab Sets @code{$0}, @code{NF}, and @code{RT} @tab Standard
+@item @code{getline @var{var} < @var{file}} @tab Sets @var{var} and @code{RT} @tab Standard
+@item @var{command} @code{| getline} @tab Sets @code{$0}, @code{NF}, and @code{RT} @tab Standard
+@item @var{command} @code{| getline} @var{var} @tab Sets @var{var} and @code{RT} @tab Standard
+@item @var{command} @code{|& getline} @tab Sets @code{$0}, @code{NF}, and @code{RT} @tab Extension
+@item @var{command} @code{|& getline} @var{var} @tab Sets @var{var} and @code{RT} @tab Extension
 @end multitable
 @end float
 @c ENDOFRANGE getl
