@@ -20,11 +20,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
 BEGIN {
-	print "% *****************************************************"
-	print "% * DO NOT MODIFY THIS FILE!!!!                       *"
-	print "% * It was generated from gawkman.texi by sidebar.awk *"
-	print "% * Edit gawkman.texi instead.                        *"
-	print "% *****************************************************"
+	print "% ****************************************************"
+	print "% * DO NOT MODIFY THIS FILE!!!!                      *"
+	print "% * It was generated from gawktexi.in by sidebar.awk *"
+	print "% * Edit gawktexi.in instead.                        *"
+	print "% ****************************************************"
 }
 
 /^@sidebar/ {
