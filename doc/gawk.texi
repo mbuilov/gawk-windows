@@ -4,6 +4,7 @@
 % * Edit gawkman.texi instead.                        *
 % *****************************************************
 \input texinfo   @c -*-texinfo-*-
+@c vim: filetype=texinfo
 @c %**start of header (This is for running Texinfo on a region.)
 @setfilename gawk.info
 @settitle The GNU Awk User's Guide
@@ -35820,7 +35821,7 @@ functions.
 
 @command{gawk} included some sample extensions, of which a few were
 really useful.  However, it was clear from the outset that the extension
-mechanism was bolted onto the side and was not really thought out.
+mechanism was bolted onto the side and was not really well thought out.
 
 @menu
 * Old Extension Problems::           Problems with the old mechanism.
@@ -35881,7 +35882,7 @@ The API should provide @emph{binary} compatibility across @command{gawk}
 releases as long as the API itself does not change.
 
 @item
-The API should enable extensions written in C to have roughly the
+The API should enable extensions written in C or C++ to have roughly the
 same ``appearance'' to @command{awk}-level code as @command{awk}
 functions do. This means that extensions should have:
 
@@ -36021,7 +36022,7 @@ to know.
 
 @item
 Similarly, the extension passes a ``name space'' into @command{gawk}
-when it registers each extension function.  This allows a future
+when it registers each extension function.  This accommodates a possible future
 mechanism for grouping extension functions and possibly avoiding name
 conflicts.
 @end itemize
