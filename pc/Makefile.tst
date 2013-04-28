@@ -124,6 +124,7 @@ export GREP_OPTIONS=
 srcdir = .
 abs_srcdir = .
 abs_builddir = .
+top_srcdir = $(srcdir)/..
 
 # Get rid of core files when cleaning and generated .ok file
 CLEANFILES = core core.* fmtspcl.ok
@@ -977,7 +978,7 @@ inplace3::
 
 testext::
 	@echo $@
-	@$(AWK) '/^(@load|BEGIN)/,/^}/' $(top_srcdir)/extension/testext.c > testext.awk
+	@$(AWK) ' /^(@load|BEGIN)/,/^}/' $(top_srcdir)/extension/testext.c > testext.awk
 	@$(AWK) -f testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ testext.awk
 
