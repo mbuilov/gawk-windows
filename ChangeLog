@@ -1,3 +1,9 @@
+2013-04-28  Eli Zaretskii  <eliz@gnu.org>
+
+	* io.c (redirect): Remove the HACK that called close_one when
+	errno was zero in the MinGW build.  This prevents failure in
+	several tests in the test suite, e.g., closebad.
+
 2013-04-28         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* bootstrap.sh: Fix a comment.
