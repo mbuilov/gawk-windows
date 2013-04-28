@@ -4,7 +4,7 @@
  */
 
 /*
- * Copyright (C) 2012
+ * Copyright (C) 2012, 2013
  * the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the

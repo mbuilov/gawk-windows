@@ -1,3 +1,34 @@
+2013-04-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (LOCALES): New variable split out from AWK.
+	(AWK): Adjust.
+	(next): Add LOCALES to the test so that it will pass everywhere.
+	Thanks to Juergen Kahrs for the report.
+
+2013-04-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am: Prettify the lists of tests.
+	(GENTESTS_UNUSED): Bring the list up to date.
+
+2013-03-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (readdir): Add a check for GNU/Linux and NFS directory
+	and issue a warning if so.
+	(fts): Ditto for IRIX - can't check for NFS so just print the message.
+	(fnmatch.awk, fnmatch.ok): Improve portability.
+
+2013-03-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (readdir): Add -a to ls options. -f does not
+	automatically mean -a on all systems.
+	* jarebug.sh: Send error output of locale to /dev/null in case
+	it doesn't exist.
+
+2013-03-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (colonwarn): New test.
+	* colonwarn.awk, colonwarn.in, colonwarn.ok: New files.
+
 2013-02-26         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* parseme.ok: Update after change in grammar. Now with new and

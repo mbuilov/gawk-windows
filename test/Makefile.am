@@ -134,6 +134,9 @@ EXTRA_DIST = \
 	clsflnam.awk \
 	clsflnam.in \
 	clsflnam.ok \
+	colonwarn.awk \
+	colonwarn.in \
+	colonwarn.ok \
 	compare.awk \
 	compare.in \
 	compare.ok \
@@ -935,9 +938,8 @@ BASIC_TESTS = \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
 	pcntplus posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
 	prt1eval prtoeval \
-	rand range1 rebt8b1 redfilnm regeq regexprange regrange \
-	reindops reparse \
-	resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
+	rand range1 rebt8b1 redfilnm regeq regexprange regrange reindops \
+	reparse resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin sortempty splitargv splitarr splitdef \
 	splitvar splitwht strcat1 strnum1 strtod subamp subi18n \
@@ -953,24 +955,22 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
-	clos1way delsub devfd devfd1 devfd2 dumpvars exit \
+	colonwarn clos1way delsub devfd devfd1 devfd2 dumpvars exit \
 	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
-	functab1 functab2 functab3 \
-	fwtest fwtest2 fwtest3 \
+	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
 	gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcase \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
 	include include2 indirectcall \
-	lint  lintold lintwarn \
+	lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
-	nastyparm  next nondec nondec2 \
+	nastyparm next nondec nondec2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 procinfs \
 	profile1 profile2 profile3 pty1 \
 	rebuf regx8bit reginttrad reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
-	strtonum switch2 \
-	symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 symtab7 \
-	symtab8 symtab9
+	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
+	symtab7 symtab8 symtab9
 
 EXTRA_TESTS = inftest regtest
 
@@ -1005,7 +1005,9 @@ CHECK_MPFR = \
 	rand fnarydel fnparydl
 
 # List of the files that appear in manual tests or are for reserve testing:
-GENTESTS_UNUSED = Makefile.in gtlnbufv.awk printfloat.awk inclib.awk hello.awk
+GENTESTS_UNUSED = Makefile.in dtdgport.awk gtlnbufv.awk hello.awk \
+	inchello.awk inclib.awk inplace.1.in inplace.2.in inplace.in \
+	longdbl.awk longdbl.in printfloat.awk readdir0.awk xref.awk
 
 CMP = cmp
 AWKPROG = ../gawk$(EXEEXT)
@@ -1022,7 +1024,8 @@ VALGRIND =
 
 #
 # And we set AWKLIBPATH to find the extension libraries we built.
-AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} AWKLIBPATH=../extension/.libs $(VALGRIND) $(AWKPROG)
+LOCALES = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C}
+AWK = $(LOCALES) AWKLIBPATH=../extension/.libs $(VALGRIND) $(AWKPROG)
 
 # Message stuff is to make it a little easier to follow.
 # Make the pass-fail last and dependent on others to avoid
@@ -1613,7 +1616,7 @@ posix2008sub:
 
 next:
 	@echo $@
-	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
+	@-$(LOCALES) AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
 	@-LC_ALL=C $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 exit:
@@ -1752,12 +1755,20 @@ testext::
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ testext.awk
 
 readdir:
+	@if [ "`uname`" = Linux ] && [ "`stat -f . 2>/dev/null | awk 'NR == 2 { print $$NF }'`" = nfs ];  then \
+	echo This test may fail on GNU/Linux systems when run on an NFS filesystem.; \
+	echo If it does, try rerunning on an ext'[234]' filesystem. ; \
+	fi
 	@echo $@
 	@$(AWK) -f $(srcdir)/readdir.awk $(top_srcdir) > _$@
-	@ls -fli $(top_srcdir) | sed 1d | $(AWK) -f $(srcdir)/readdir0.awk -v extout=_$@ > $@.ok
+	@ls -afli $(top_srcdir) | sed 1d | $(AWK) -f $(srcdir)/readdir0.awk -v extout=_$@ > $@.ok
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 fts:
+	@if [ "`uname`" = IRIX ];  then \
+	echo This test may fail on IRIX systems when run on an NFS filesystem.; \
+	echo If it does, try rerunning on an xfs filesystem. ; \
+	fi
 	@echo $@
 	@$(AWK) -f $(srcdir)/fts.awk
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
@@ -1785,6 +1796,13 @@ symtab8:
 reginttrad:
 	@echo $@
 	@$(AWK) --traditional -r -f $(srcdir)/$@.awk > _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+colonwarn:
+	@echo $@
+	@for i in 1 2 3 ; \
+	do $(AWK) -f $(srcdir)/$@.awk $$i < $(srcdir)/$@.in ; \
+	done > _$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:

@@ -1,7 +1,48 @@
+2013-04-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Update copyright.
+	For z/OS: If uname output is OS/390, just blast the Makefile,
+	same as for MirBSD.
+
+2013-04-17         Corinna Vinschen      <vinschen@redhat.com>
+
+	* Makefile.am (MY_LIBS): Use $(LTLIBINTL) since we use libtool,
+	not LIBINTL.
+
+2013-04-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c, fnmatch.c, fork.c, ordchr.c, readdir.c, readfile.c,
+	revoutput.c, revtwoway.c, rwarray.c, rwarray0.c, stack.c, stack.h,
+	testext.c, time.c: Update copyright year.
+
+	Update to automake 1.13.1:
+
+	* configure, Makefile.in, aclocal.m4: Regenerated.
+
+2013-03-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkdirfd.h: Improve test for doing own dirfd function. Needed
+	for IRIX.
+
+2013-03-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Add AC_OUTPUT_COMMANDS that drops in a do-nothing
+	Makefile for MirBSD, since the extensions can't be built on MirBSD.
+	* configure: Regenerated.
+	* Makefile.am (check-for-shared-lib-support): Update comment some.
+	* gawkfts.c (MAX): Provide for systems that don't (Solaris).
+
 2013-03-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* filefuncs.c (fill_stat_array): Adjust computation for block
 	count for WIN32 systems after consultation with Eli Zaretskii.
+
+2013-02-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (check-recursive, all-recursive): Make dependant upon
+	check-for-shared-lib-support.
+	(check-for-shared-lib-support): New target. If gawk doesn't have the
+	API built-in, don't try to build.
 
 2013-02-11         Arnold D. Robbins     <arnold@skeeve.com>
 

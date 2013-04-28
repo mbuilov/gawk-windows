@@ -12,10 +12,15 @@ $! 4.0.71:  New tests:
 $!	functab1,functab2,functab3,id,incdupe,incdupe2,	incdupe3,include2
 $!	symtab1,symtab2,symtab3,symtab4,symtab5,symtab6
 $!
+$! 4.0.75:  New  tests
+$!	basic:	rri1,getline5,incdupe4,incdupe5,incdupe6,incdupe7
+$!	ext:	colonwarn,reginttrad,symtab7,symtab8,symtab9
+$
 $	echo	= "write sys$output"
 $	cmp	= "diff/Output=_NL:/Maximum=1"
+$	delsym  = "delete/symbol/local/nolog"
 $	igncascmp = "''cmp'/Ignore=Case"
-$	sumslp = "edit/Sum"
+$	sumslp  = "edit/Sum"
 $	rm	= "delete/noConfirm/noLog"
 $	mv	= "rename/New_Vers"
 $	gawk = "$sys$disk:[-]gawk"
@@ -75,7 +80,7 @@ $		list = "nfset nlfldsep nlinstr nlstrina noeffect nofile" -
 		  + " posix2008sub prdupval prec printf0 printf1 prmarscl"
 $		gosub list_of_tests
 $		list = "prmreuse prt1eval prtoeval rand range1 rebt8b1" -
-		  + " redfilnm regeq regexprange regrange reindops reparse resplit rs rsnul1nl" -
+		  + " redfilnm regeq regexprange regrange reindops reparse resplit rri1 rs rsnul1nl" -
 		  + " rsnulbig rsnulbig2 rstest1 rstest2 rstest3 rstest4" -
 		  + " rstest5 rswhite scalar sclforin sclifin sortempty" -
 		  + " splitargv splitarr splitdef splitvar splitwht" -
@@ -100,21 +105,22 @@ $gnu:
 $gawk_ext:	echo "gawk_ext... (gawk.extensions)"
 $		list = "aadelete1 aadelete2 aarray1 aasort aasorti" -
 		  + " argtest arraysort backw badargs beginfile1 binmode1" -
-		  + " clos1way charasbytes delsub devfd devfd1 devfd2 dumpvars exit" -
+		  + " colonwarn clos1way charasbytes delsub devfd devfd1 devfd2 dumpvars exit" -
 		  + " fieldwdth fpat1 fpat2 fpat3 fpatnull funlen functab1" -
 		  + " functab2 functab3 fsfwfs" -
 		  + " fwtest fwtest2 fwtest3" -
 		  + " gensub gensub2 getlndir gnuops2 gnuops3 gnureops" -
-		  + " icasefs id icasers igncdym igncfs ignrcase ignrcas2 incdupe incdupe2 incdupe3"
+		  + " icasefs id icasers igncdym igncfs ignrcase ignrcas2" -
+		  + " incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7"
 $		gosub list_of_tests
 $		list = "include2 indirectcall lint lintold lintwarn match1" -
 		  + " match2 match3 manyfiles mbprintf3 mbstr1" -
 		  + " nastyparm next nondec" -
 		  + " nondec2 patsplit posix profile1 procinfs printfbad1" -
 		  + " printfbad2 printfbad3 profile2 profile3 pty1" -
-		  + " regx8bit rebuf reint reint2 rsstart1 rsstart2 rsstart3 rstest6" -
+		  + " regx8bit rebuf reginttrad reint reint2 rsstart1 rsstart2 rsstart3 rstest6" -
 		  + " shadow sortfor sortu splitarg4 strtonum strftime switch2" -
-		  + " symtab1 symtab2 symtab3 symtab4 symtab5 symtab6"
+		  + " symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9"
 $		gosub list_of_tests
 $		return
 $
@@ -289,8 +295,6 @@ $convfmt:
 $delargv:
 $delarprm:
 $delsub:
-$!!double1:
-$!!double2:
 $dynlj:
 $fnarydel:
 $fnparydl:
@@ -342,12 +346,37 @@ $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
 $
+$colonwarn:	echo "''test'"
+$	gawk -f 'test'.awk 1 < 'test'.in > _'test'.tmp
+$	gawk -f 'test'.awk 2 < 'test'.in > _'test'_2.tmp
+$	gawk -f 'test'.awk 3 < 'test'.in > _'test'_3.tmp
+$	append _'test'_2.tmp,_'test'_3.tmp _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp;1
+$	if $status then  rm _'test'*.tmp;*
+$	return
+$
 $double1:
 $double2:
-$getline5:
 $lc_num1:
 $mbprintf1:
 $	echo "''test' skipped"
+$	return
+$
+$getline5:	echo "''test'"
+$	! Use of echo and rm inside the awk script makes it necessary
+$	! for some temporary redefinitions. The VMS gawk.exe also creates
+$	! multiple output files. Only the first contains the data.
+$	old_echo = echo
+$	old_rm = rm
+$	echo = "pipe write sys$output"
+$	rm = "!"
+$	gawk -f 'test'.awk > _'test'.tmp
+$	echo = old_echo
+$	rm   = old_rm
+$	delsym old_echo
+$	delsym old_rm
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp;1
+$	if $status then  rm _'test'.tmp;*,f.;*
 $	return
 $
 $msg:
@@ -629,6 +658,42 @@ $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   return
 $
+$incdupe4:   echo "''test'"
+$   set NoOn
+$   gawk --lint -f hello -i hello.awk >_'test'.tmp 2>&1
+$   if .not. $status then call exit_code 2 _'test'.tmp
+$   cmp 'test'.ok sys$disk:[]_'test'.tmp
+$   if $status then rm _'test'.tmp;*
+$   set On
+$   return
+$
+$incdupe5:   echo "''test'"
+$   set NoOn
+$   gawk --lint -i hello -f hello.awk >_'test'.tmp 2>&1
+$   if .not. $status then call exit_code 2 _'test'.tmp
+$   cmp 'test'.ok sys$disk:[]_'test'.tmp
+$   if $status then rm _'test'.tmp;*
+$   set On
+$   return
+$
+$incdupe6:   echo "''test'"
+$   set NoOn
+$   gawk --lint -i inchello -f hello.awk >_'test'.tmp 2>&1
+$   if .not. $status then call exit_code 2 _'test'.tmp
+$   cmp 'test'.ok sys$disk:[]_'test'.tmp
+$   if $status then rm _'test'.tmp;*
+$   set On
+$   return
+$
+$incdupe7:   echo "''test'"
+$   set NoOn
+$   gawk --lint -f hello -i inchello >_'test'.tmp 2>&1
+$   if .not. $status then call exit_code 2 _'test'.tmp
+$   cmp 'test'.ok sys$disk:[]_'test'.tmp
+$   if $status then rm _'test'.tmp;*
+$   set On
+$   return
+$
 $include2:   echo "''test'"
 $   gawk -i inclib "BEGIN {print sandwich(""a"", ""b"", ""c"")}" >_'test'.tmp 2>&1
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
@@ -648,7 +713,8 @@ $   set On
 $   return
 $
 $symtab4:
-$symtab5:   echo "''test'"
+$symtab5:
+$symtab7:   echo "''test'"
 $   set noOn
 $   gawk -f 'test'.awk <'test'.in >_'test'.tmp 2>&1
 $   if .not. $status then call exit_code 2 _'test'.tmp
@@ -660,23 +726,46 @@ $
 $symtab6:   echo "''test'"
 $   set noOn
 $   gawk -d__'test'.tmp -f 'test'.awk
-$   pipe search __'test'.tmp "ENVIRON" /match=nand | search sys$pipe "PROCINFO" /match=nand > _'test'.tmp
+$   pipe search __'test'.tmp "ENVIRON","PROCINFO" /match=nor > _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*,__'test'.tmp;*
 $   set On
 $   return
 $
-$childin:	echo "childin skipped"
-$	return
-$! note: this `childin' test currently [gawk 3.0.3] fails for vms
-$!!childin:	echo "childin"
-$	echo "note: type ``hi<return><ctrl/Z>'",-
-	     "' if testing appears to hang in `childin'"
-$!!	@echo hi | gawk "BEGIN { ""cat"" | getline; print; close(""cat"") }" >_childin.tmp
-$	gawk "BEGIN { ""type sys$input:"" | getline; print; close(""type sys$input:"") }" >_childin.tmp
-hi
-$	cmp childin.ok sys$disk:[]_childin.tmp
-$	if $status then  rm _childin.tmp;
+$symtab8:   echo "''test'"
+$   set noOn
+$   gawk -d__'test'.tmp -f 'test'.awk 'test'.in > _'test'.tmp
+$   pipe search __'test'.tmp "ENVIRON","PROCINFO","FILENAME" /match=nor > ___'test'.tmp
+$   convert/append ___'test'.tmp _'test'.tmp
+$   cmp 'test'.ok sys$disk:[]_'test'.tmp
+$   if $status then rm _'test'.tmp;*,__'test'.tmp;*,___'test'.tmp;*
+$   set On
+$   return
+$
+$!-----------------------------------------------------------------------------------
+$! This awk script performs some cleanup by doing "system (rm testit.txt)". This is
+$! good for Unix but a pain for VMS as we must specify version number when deleting
+$! a file. The workaround is to define "rm" as a VMS comment and deleting the file
+$! outside of the awk script.
+$! Additionally each awk "system" call results in a new version of the output file.
+$! so we need to compensate for that as well.
+$!-----------------------------------------------------------------------------------
+$symtab9:   echo "''test'"
+$   old_rm = rm			! Remember old definition of rm
+$   rm = "!"			! Redefine rm to something harmless
+$   gawk -f 'test'.awk  >_'test'.tmp
+$   rm = old_rm			! Restore old value
+$   delsym old_rm
+$   cmp 'test'.ok sys$disk:[]_'test'.tmp;-0	! -0 is the lowest version
+$   if $status then rm _'test'.tmp;*,testit.txt;*
+$   return
+$
+$childin:	echo "''test'"
+$	cat = "type sys$input"
+$	gawk -f 'test'.awk < 'test'.in > _'test'.tmp
+$	delsym cat
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
 $	return
 $
 $noeffect:	echo "noeffect"
@@ -757,6 +846,12 @@ $	if f$search("tradanch.ok").eqs."" then  create tradanch.ok
 $	gawk --traditional -f tradanch.awk tradanch.in >_tradanch.tmp
 $	cmp tradanch.ok sys$disk:[]_tradanch.tmp
 $	if $status then  rm _tradanch.tmp;
+$	return
+$
+$reginttrad:	echo "''test'"
+$	gawk --traditional -r -f 'test'.awk >_'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
 $	return
 $
 $pid:		echo "pid"
@@ -1346,18 +1441,19 @@ $	cmp binmode1.ok sys$disk:[]_binmode1.tmp
 $	if $status then  rm _binmode1.tmp;
 $	return
 $
-$subi18n:	echo "subi18n"
+$subi18n:	echo "''test'"
 $	define/User GAWKLOCALE "en_US.UTF-8"
-$	gawk -f subi18n.awk >_subi18n.tmp
-$	cmp subi18n.ok sys$disk:[]_subi18n.tmp
-$	if $status then  rm _subi18n.tmp;
+$	gawk -f 'test'.awk > _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
 $	return
 $
-$concat4:	echo "concat4"
+$rri1:
+$concat4:	echo "''test'"
 $	define/User GAWKLOCALE "en_US.UTF-8"
-$	gawk -f concat4.awk concat4.in >_concat4.tmp
-$	cmp concat4.ok sys$disk:[]_concat4.tmp
-$	if $status then  rm _concat4.tmp;
+$	gawk -f 'test'.awk 'test'.in > _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
 $	return
 $
 $devfd:		echo "devfd: not supported"

@@ -408,6 +408,9 @@
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
 
+/* libc is broken for regex handling */
+#undef LIBC_IS_BORKED
+
 /* disable lint checks */
 #undef NO_LINT
 
@@ -421,7 +424,7 @@
 #define PACKAGE_NAME "GNU Awk"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GNU Awk 4.0.73"
+#define PACKAGE_STRING "GNU Awk 4.0.76"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gawk"
@@ -430,7 +433,7 @@
 #define PACKAGE_URL "http://www.gnu.org/software/gawk/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.0.73"
+#define PACKAGE_VERSION "4.0.76"
 
 /* Define to 1 if *printf supports %F format */
 #undef PRINTF_HAS_F_FORMAT
@@ -492,7 +495,7 @@
 
 
 /* Version number of package */
-#define VERSION "4.0.73"
+#define VERSION "4.0.76"
 
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE

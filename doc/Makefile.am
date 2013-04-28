@@ -36,6 +36,7 @@ EXTRA_DIST = ChangeLog ChangeLog.0 README.card ad.block setter.outline \
 	api-figure2.png api-figure2.txt \
 	api-figure3.eps api-figure3.fig api-figure3.pdf \
 	api-figure3.png api-figure3.txt \
+	gawktexi.in sidebar.awk \
 	general-program.eps general-program.fig general-program.pdf \
 	general-program.png general-program.txt \
 	process-flow.eps process-flow.fig process-flow.pdf \
@@ -69,15 +70,18 @@ AWKCARD = awkcard.ps
 # to ensure that awkcard.tr is processed by tbl.
 #AWKCARD = awkcard.nc
 
+gawk.texi: $(srcdir)/gawktexi.in $(srcdir)/sidebar.awk
+	awk -f $(srcdir)/sidebar.awk < $(srcdir)/gawktexi.in > gawk.texi
+
 postscript: gawk.ps gawkinet.ps gawk.1.ps igawk.1.ps $(AWKCARD)
 
 pdf: postscript gawk.pdf gawkinet.pdf awkcard.pdf gawk.1.pdf igawk.1.pdf
 
 gawk.ps: gawk.dvi
-	dvips -o gawk.ps gawk.dvi
+	TEXINPUTS=$(srcdir): dvips -o gawk.ps gawk.dvi
 
 gawkinet.ps: gawkinet.dvi
-	dvips -o gawkinet.ps gawkinet.dvi
+	TEXINPUTS=$(srcdir): dvips -o gawkinet.ps gawkinet.dvi
 
 gawk.1.ps: gawk.1
 	-groff -man $(srcdir)/gawk.1 > gawk.1.ps

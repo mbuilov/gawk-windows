@@ -1,5 +1,5 @@
 /* dfa.c - deterministic extended regexp routines for GNU
-   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2012 Free Software
+   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2013 Free Software
    Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -65,8 +65,8 @@
 #include "mbsupport.h"          /* defines MBS_SUPPORT to 1 or 0, as appropriate */
 #if MBS_SUPPORT
 /* We can handle multibyte strings. */
-#include <wchar.h>
-#include <wctype.h>
+# include <wchar.h>
+# include <wctype.h>
 #endif
 
 #ifdef GAWK
@@ -91,6 +91,14 @@ is_blank (int c)
    return (c == ' ' || c == '\t');
 }
 #endif /* GAWK */
+
+#ifdef LIBC_IS_BORKED
+extern int gawk_mb_cur_max;
+#undef MB_CUR_MAX
+#define MB_CUR_MAX gawk_mb_cur_max
+#undef mbrtowc
+#define mbrtowc(a, b, c, d) (-1)
+#endif
 
 /* HPUX, define those as macros in sys/param.h */
 #ifdef setbit
@@ -793,6 +801,10 @@ using_utf8 (void)
       utf8 = (STREQ (nl_langinfo (CODESET), "UTF-8"));
 #else
       utf8 = 0;
+#endif
+#ifdef LIBC_IS_BORKED
+      if (gawk_mb_cur_max == 1)
+	utf8 = 0;
 #endif
     }
 

@@ -21,7 +21,7 @@
 
 #include <config.h>
 
-#if !defined(HAVE_DIRFD) && !defined(HAVE_DECL_DIRFD)
+#if !defined(HAVE_DIRFD) && (!defined(HAVE_DECL_DIRFD) || HAVE_DECL_DIRFD == 0)
 int
 dirfd (DIR *dir_p)
 {

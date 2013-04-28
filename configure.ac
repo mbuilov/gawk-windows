@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk], 4.0.73, bug-gawk@gnu.org, gawk)
+AC_INIT([GNU Awk], 4.0.76, bug-gawk@gnu.org, gawk)
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -40,7 +40,7 @@ then
 fi
 
 AC_PREREQ(2.69)
-AM_INIT_AUTOMAKE([1.12 dist-xz])
+AM_INIT_AUTOMAKE([1.13 dist-xz])
 
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -118,20 +118,16 @@ dnl	need -D_SYSV3 for ISC
 	CFLAGS="$CFLAGS -D_SYSV3"
 fi
 
+dnl check for systems where libc is borked for regex handling
+case `uname` in
+MirBSD | MirOS)
+	AC_DEFINE([LIBC_IS_BORKED], 1, [libc is broken for regex handling])
+	;;
+esac
+
 dnl Set the programming language for checks. Fortunately,
 dnl this only needs to be set once, since everything is in C.
 AC_LANG([C])
-
-dnl Cygwin doesn't like to get libs with full paths
-dnl since that overrides linking against DLLs.
-case `(uname) 2> /dev/null` in
-*CYGWIN*)
-	with_libiconv_prefix=no
-	with_libintl_prefix=no
-	;;
-*)
-	;;
-esac
 
 dnl initialize GNU gettext
 AM_GNU_GETTEXT([external])
@@ -287,13 +283,18 @@ AC_FUNC_MBRTOWC
 
 dnl check for dynamic linking
 dnl This is known to be very primitive
+dnl On MirBSD (and probably other systems), don't even try.
+case `uname` in
+MirBSD | MirOS)
+	: ;;
+*)
 AC_CHECK_HEADER(dlfcn.h,
 	[
 	# Check this separately. Some systems have dlopen
 	# in libc. Notably freebsd and cygwin.
 	# HP-NSK has it in zrldsrl
 	AC_SEARCH_LIBS(dlopen, dl zrldsrl, gawk_have_dlopen=yes, gawk_have_dlopen=no)
-	# Only do DYNAMIC if we have the lip. z/OS (some versions) have
+	# Only do DYNAMIC if we have the lib. z/OS (some versions) have
 	# the header but not the lib, apparently
 	if test "$gawk_have_dlopen" = yes
 	then
@@ -306,6 +307,8 @@ AC_CHECK_HEADER(dlfcn.h,
 		fi
 	fi
 ])
+	;;
+esac
 
 dnl check for how to use getpgrp
 dnl have to hardwire it for VMS POSIX. Sigh.

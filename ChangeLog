@@ -1,3 +1,104 @@
+2013-04-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* bootstrap.sh: Fix a comment.
+
+2013-04-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (do_getline_redir): Fix the leading comment.
+
+2013-04-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c (load_procinfo): Add PROCINFO entries for API major
+	and minor versions.
+
+2013-04-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* missing: Update from Automake 1.13.1.
+
+2013-04-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Fix a typo.
+
+2013-04-17         Corinna Vinschen      <vinschen@redhat.com>
+
+	* configure.ac: Remove special casing for cygwin for libiconv
+	and libintl.
+
+2013-04-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* bootstrap.sh: Touch gawk.texi too. Update copyright.
+
+2013-04-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.c: Regenerated from bison 2.7.1.
+	* command.c: Ditto.
+	* dfa.h, dfa.c: Minor edits to sync with GNU grep.
+	* gettext.h: Sync with gettext 0.18.2.1.
+	* random.h: Remove obsolete __P macro and use. Update copyright year.
+	* Makefile.am, array.c, builtin.c, cint_array.c, cmd.h, debug.c,
+	eval.c, ext.c, field.c, gawkapi.c, gawkapi.h, gettext.h, int_array.c,
+	interpret.h, msg.c, node.c, profile.c, re.c, replace.c, str_array.c,
+	symbol.c: Update copyright year.
+
+	Update to automake 1.13.1:
+
+	* configure.ac (AM_INIT_AUTOMAKE): Update version.
+	* configure, Makefile.in, aclocal.m4, awklib/Makefile.in,
+	doc/Makefile.in, test/Makefile.in: Regenerated.
+
+	* getopt.c, getopt.h, getopt1.c, getopt_int.h: Sync with GLIBC.
+
+2013-04-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (check_funcs): Fix logic of test for called but
+	not defined warning. Thanks to Scott Deifik for the bug report.
+
+2013-04-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (print_lib_list): Send final newline to prof_fp
+	instead of stdout.  Thanks to Hermann Peifer for the bug report.
+
+2013-03-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (SUBDIRS): Move extension back into the middle of
+	the list so that `make check' without a prior `make' works.
+
+	Unrelated:
+
+	* main.c (main): Move env_lc into ifdef for LIBC_IS_BORKED.
+
+2013-03-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	For systems where libc is borked (MirBSD, maybe others).
+
+	* dfa.c: Force use of gawk_mb_cur_max instead of MB_CUR_MAX and make
+	mbrtowc a macro that always fails.
+	(using_utf8): Force utf8 to be 0 if libc borked and gawk_mb_cur_max
+	is one.
+	* main.c (main): If libc is borked and LC_ALL or LANG exist in the
+	environment and are set to "C" or "c", force gawk_mb_cur_max to one.
+
+2013-03-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* re.c (check_bracket_exp): Make handling of embedded ] in
+	regexp smarter. Thanks to Ed Morton <mortoneccc@comcast.net>
+	for reporting the bug.
+
+2013-03-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Don't build extensions if API isn't supported:
+
+	* Makefile.am (SUBDIRS): Move extension directory to last in case
+	building the extensions is not supported.
+	* configure.ac: Add check for MirBSD and don't even try to run the
+	checks for DYNAMIC if so.
+
+	Check for systems (MirBSD) where libc doesn't understand not
+	to use UTF-8 for LC_ALL=C.
+
+	* configure.ac (LIBC_IS_BORKED): AC_DEFINE if needed.
+	* regcomp.c (init_dfa): Change logic as needed if LIBC_IS_BORKED.
+
 2013-02-28         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Cause profiling / pretty printing to include a list of
@@ -9,7 +110,7 @@
 
 2013-02-26         Arnold D. Robbins     <arnold@skeeve.com>
 
-	* parse.y (expression_list): In case of error return the list
+	* awkgram.y (expression_list): In case of error return the list
 	instead of NULL so that snode gets something it can count.
 
 2013-02-12         Arnold D. Robbins     <arnold@skeeve.com>

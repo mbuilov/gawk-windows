@@ -7,7 +7,7 @@
  */
 
 /*
- * Copyright (C) 1995 - 2001, 2003-2012 the Free Software Foundation, Inc.
+ * Copyright (C) 1995 - 2001, 2003-2013 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -149,7 +149,7 @@ do_ext(int nargs)
 	return ret;
 }
 
-/* load_ext --- load an external library */
+/* load_old_ext --- load an external library */
 
 NODE *
 load_old_ext(SRCFILE *s, const char *init_func, const char *fini_func, NODE *obj)

@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1996, 2001, 2004, 2005 the Free Software Foundation, Inc.
+ * Copyright (C) 1996, 2001, 2004, 2005, 2013 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -40,11 +40,4 @@ typedef          long gawk_int32_t;
 #define uint32_t gawk_uint32_t
 #define int32_t  gawk_int32_t
 
-#ifdef __STDC__
-#undef __P
-#define __P(s) s
-#else
-#define __P(s) ()
-#endif
-
-extern long random __P((void));
+extern long random (void);

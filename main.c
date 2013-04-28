@@ -261,6 +261,17 @@ main(int argc, char **argv)
 	 */
 	gawk_mb_cur_max = MB_CUR_MAX;
 	/* Without MBS_SUPPORT, gawk_mb_cur_max is 1. */
+#ifdef LIBC_IS_BORKED
+{
+	const char *env_lc;
+
+	env_lc = getenv("LC_ALL");
+	if (env_lc == NULL)
+		env_lc = getenv("LANG");
+	if (env_lc != NULL && env_lc[1] == '\0' && tolower(env_lc[0]) == 'c')
+		gawk_mb_cur_max = 1;
+}
+#endif
 
 	/* init the cache for checking bytes if they're characters */
 	init_btowc_cache();
@@ -1116,6 +1127,11 @@ load_procinfo()
 	update_PROCINFO_str("gmp_version", name);
 	update_PROCINFO_num("prec_max", MPFR_PREC_MAX);
 	update_PROCINFO_num("prec_min", MPFR_PREC_MIN);
+#endif
+
+#ifdef DYNAMIC
+	update_PROCINFO_num("api_major", GAWK_API_MAJOR_VERSION);
+	update_PROCINFO_num("api_minor", GAWK_API_MINOR_VERSION);
 #endif
 
 #ifdef GETPGRP_VOID

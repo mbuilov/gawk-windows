@@ -2,8 +2,7 @@
    NOTE: getopt is part of the C library, so if you don't know what
    "Keep this file name-space clean" means, talk to drepper@gnu.org
    before changing it!
-   Copyright (C) 1987-1996,1998-2004,2008,2009,2010,2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1987-2013 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -614,19 +613,19 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 		  fputc_unlocked ('\n', fp);
 
 		  if (__builtin_expect (fclose (fp) != EOF, 1))
-		{
-		  _IO_flockfile (stderr);
+		    {
+		      _IO_flockfile (stderr);
 
-		  int old_flags2 = ((_IO_FILE *) stderr)->_flags2;
-		  ((_IO_FILE *) stderr)->_flags2 |= _IO_FLAGS2_NOTCANCEL;
+		      int old_flags2 = ((_IO_FILE *) stderr)->_flags2;
+		      ((_IO_FILE *) stderr)->_flags2 |= _IO_FLAGS2_NOTCANCEL;
 
-		  __fxprintf (NULL, "%s", buf);
+		      __fxprintf (NULL, "%s", buf);
 
-		  ((_IO_FILE *) stderr)->_flags2 = old_flags2;
-		  _IO_funlockfile (stderr);
+		      ((_IO_FILE *) stderr)->_flags2 = old_flags2;
+		      _IO_funlockfile (stderr);
 
-		  free (buf);
-		}
+		      free (buf);
+		    }
 		}
 #else
 	      fprintf (stderr,
@@ -1106,8 +1105,8 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 	  }
 
       no_longs:
-	  d->__nextchar = NULL;
-	  return 'W';	/* Let the application handle it.   */
+	d->__nextchar = NULL;
+	return 'W';	/* Let the application handle it.   */
       }
     if (temp[1] == ':')
       {
