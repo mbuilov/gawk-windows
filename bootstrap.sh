@@ -34,7 +34,7 @@ touch extension/configh.in
 sleep 1
 touch test/Maketests
 find . -name Makefile.in -print | xargs touch
-touch doc/gawk.texi	# make later than gawkman.texi
+touch doc/gawk.texi	# make later than gawktexi.in
 sleep 1
 touch doc/*.info
 touch po/*.gmo
