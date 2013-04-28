@@ -57,6 +57,7 @@ if(WIN32 OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
   # pc/config.h. With these settings and DYNAMIC=1
   # it looks like functions in dynamic libs (extensions) can
   # be invoked on Windows.
+  DefineConfigHValue(HAVE_GETSYSTEMTIMEASFILETIME 1)
   set (GAWK_SOURCES ${GAWK_SOURCES} regex.c pc/getid.c pc/gawkmisc.pc pc/popen.c)
   include_directories(${CMAKE_SOURCE_DIR}/pc)
 endif()
@@ -93,18 +94,11 @@ add_executable (gawk ${GAWK_SOURCES} ${BISON_awkgram_OUTPUTS})
 target_link_libraries (gawk m ${EXTRA_LIBS})
 install(PROGRAMS ${CMAKE_BINARY_DIR}/gawk${CMAKE_EXECUTABLE_SUFFIX} DESTINATION bin)
 
-if (CMAKE_HOST_UNIX)
-  # Beware: before building the extension, -DGAWK gets undefined.
-  add_subdirectory(extension)
-
-  if(NOT ${CMAKE_CROSSCOMPILING} STREQUAL "TRUE")
-    enable_testing()
-    add_subdirectory(test)
-  endif()
-
-  add_subdirectory(doc)
-
-  include(InstallRequiredSystemLibraries)
-  set(CPACK_PACKAGING_INSTALL_PREFIX /usr)
-  include(cmake/package.cmake)
-endif()
+# Beware: before building the extension, -DGAWK gets undefined.
+add_subdirectory(extension)
+enable_testing()
+add_subdirectory(test)
+add_subdirectory(doc)
+include(InstallRequiredSystemLibraries)
+set(CPACK_PACKAGING_INSTALL_PREFIX /usr)
+include(cmake/package.cmake)

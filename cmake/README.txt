@@ -62,7 +62,20 @@ Use "make package". The exact kind of installable file depends on your
 operating system and defaults to TGZ.
 
 - Can I build an executable that runs on any Win32 platform ?
-It is possible to build for the target Win32, but only with cross-compilers
-on certain platforms. You need a MinGW cross-compiler and the NSIS package
-builder.
+Yes, there are two ways of doing this.
+In both cases you need a MinGW compiler and the NSIS package builder
+installed on the host that shall do the build.
+  http://sourceforge.net/projects/mingw
+  http://sourceforge.net/projects/nsis
+When installed properly, the NSIS tool can even build an installer file
+(a single .exe file that unpacks, registers and installs the gawk executable
+and several other files).
+1. way: native build on a Win32 platform 
+   http://www.cmake.org/cmake/help/runningcmake.html
+   After clicking "Configure" select the MinGW option with the default native compiler
+   In the build directory, the command "mingw32-make" will build the gawk.exe
+   The command "mingw32-make package" will build installer file
+2. way: build with cross-compiler on a Linux platform like Ubuntu 12.04 LTS
+   Proceed as describe above for cross-compilers.
+   The command "make ; make package" will build gawk.exe and the installer file
 

@@ -30,8 +30,8 @@ execute_process(
   OUTPUT_VARIABLE BASIC_TESTS
 )
 
-string(REGEX REPLACE "Gt-dummy:\n" "" BASIC_TESTS ${BASIC_TESTS})
-string(REGEX REPLACE ":\n" ";"        BASIC_TESTS ${BASIC_TESTS})
+string(REGEX REPLACE "Gt-dummy:\n" "" BASIC_TESTS "${BASIC_TESTS}")
+string(REGEX REPLACE ":\n" ";"        BASIC_TESTS "${BASIC_TESTS}")
 foreach(testcase ${BASIC_TESTS} )
   set(options "")
   if(${testcase} STREQUAL lintold)
