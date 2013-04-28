@@ -237,9 +237,12 @@ check:	msg \
 	extend-msg-start gawk-extensions extend-msg-end \
 	machine-msg-start machine-tests machine-msg-end \
 	charset-msg-start charset-tests charset-msg-end \
-	shlib-msg-start  shlib-tests     shlib-msg-end \
+	shlib-msg-start \
 	mpfr-msg-start   mpfr-tests      mpfr-msg-end \
 	pass-fail
+
+# Removed from 'check': shlib-tests     shlib-msg-end
+# FIXME: add back when the extensions are built by default.
 
 basic:	$(BASIC_TESTS)
 
