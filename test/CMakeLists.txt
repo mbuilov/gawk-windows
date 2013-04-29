@@ -24,6 +24,10 @@
 
 ## process this file with CMake to produce Makefile
 
+if(WIN32)
+  set(SHELL_PREFIX "C:\\MinGW\\msys\\1.0\\bin\\sh")
+endif()
+
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/Maketests BASIC_TESTS)
 string(REGEX REPLACE "^Gt-dummy:\n"   "" BASIC_TESTS "${BASIC_TESTS}")
 string(REGEX MATCHALL "[a-zA-Z0-9_]+:\n" BASIC_TESTS "${BASIC_TESTS}")
@@ -42,6 +46,6 @@ foreach(testcase ${BASIC_TESTS} )
     set(options "--lint")
   endif()
 
-  add_test(${testcase} ${CMAKE_SOURCE_DIR}/cmake/basictest ${CMAKE_BINARY_DIR}/gawk ${testcase}  ${options} )
+  add_test(${testcase} ${SHELL_PREFIX} ${CMAKE_SOURCE_DIR}/cmake/basictest ${CMAKE_BINARY_DIR}/gawk ${testcase}  ${options} )
 endforeach(testcase)
 

@@ -1,5 +1,6 @@
 #!/bin/sh
 
+export PATH=$PATH:/c/MinGW/msys/1.0/bin
 TESTHOME=$(dirname ${0})/../test
 export AWKPATH=${TESTHOME}
 export AWKLIBPATH=${TESTHOME}/../build/extension/
@@ -10,5 +11,13 @@ then
 else
   $1 $3 -f ${2}.awk                        > ${TESTHOME}/_${2} 2>&1 || echo EXIT CODE: $? >> ${TESTHOME}/_${2}
 fi
-cmp ${TESTHOME}/${2}.ok ${TESTHOME}/_${2} && rm -f ${TESTHOME}/_${2}
+# Is this shell running in a native MinGW shell (MSYS) ?
+if test -n "$COMSPEC"; then
+  # Ignore all differences in white space.
+  COMPARE="diff -w"
+else
+  # This is a shell running in Unix environment.
+  COMPARE="cmp"
+fi
+${COMPARE} ${TESTHOME}/${2}.ok ${TESTHOME}/_${2} && rm -f ${TESTHOME}/_${2}
 
