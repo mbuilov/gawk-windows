@@ -902,10 +902,6 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			/* too many files open -- close one and try again */
 			if (errno == EMFILE || errno == ENFILE)
 				close_one();
-#if defined __MINGW32__
-			else if (errno == 0)    /* HACK! */
-				close_one();
-#endif
 #ifdef VMS
 			/* Alpha/VMS V7.1's C RTL is returning this instead
 			   of EMFILE (haven't tried other post-V6.2 systems) */

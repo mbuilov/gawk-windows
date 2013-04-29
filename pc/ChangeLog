@@ -1,3 +1,21 @@
+2013-04-29  Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile.tst (mpfr-tests, shlib-tests, rsnulbig, rsnulbig2):
+	Insert a space between ' and the following / to prevent MSYS Bash
+	from interpreting that as a Unix-style file name.
+
+2013-04-28  Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile.tst (top_srcdir): Define.  This avoids failure in a few
+	tests that use this variable.
+	(testext): Prepend a space before the /regexp/ argument, to
+	prevent MSYS Bash mistaking this for an absolute file name that
+	needs to be converted to the Windows D:/foo/bar form, which fails
+	the test.
+	(check): Remove the shlib tests from 'check', so that they are not
+	run by default, because the extensions are not yet built
+	automatically.
+
 2013-04-22   Scott Deifik  <scottd.mail@sbcglobal.net>
 
 	* Makefile.tst: Sync with mainline.
