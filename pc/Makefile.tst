@@ -259,13 +259,13 @@ inet:	inetmesg $(INET_TESTS)
 machine-tests: $(MACHINE_TESTS)
 
 mpfr-tests:
-	@if $(AWK) --version | $(AWK) '/MPFR/ { exit 1 }' ; then \
+	@if $(AWK) --version | $(AWK) ' /MPFR/ { exit 1 }' ; then \
 	echo MPFR tests not supported on this system ; \
 	else $(MAKE) $(MPFR_TESTS) ; \
 	fi
 
 shlib-tests:
-	@if $(AWK) --version | $(AWK) '/API/ { exit 1 }' ; then \
+	@if $(AWK) --version | $(AWK) ' /API/ { exit 1 }' ; then \
 	echo shlib tests not supported on this system ; \
 	else $(MAKE) shlib-real-tests ; \
 	fi
@@ -593,7 +593,7 @@ rsnulbig::
 	@ : Suppose that block size for pipe is at most 128kB:
 	@$(AWK) 'BEGIN { for (i = 1; i <= 128*64+1; i++) print "abcdefgh123456\n" }' 2>&1 | \
 	$(AWK) 'BEGIN { RS = ""; ORS = "\n\n" }; { print }' 2>&1 | \
-	$(AWK) '/^[^a]/; END{ print NR }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	$(AWK) ' /^[^a]/; END{ print NR }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 rsnulbig2::
@@ -601,7 +601,7 @@ rsnulbig2::
 	@$(AWK) 'BEGIN { ORS = ""; n = "\n"; for (i = 1; i <= 10; i++) n = (n n); \
 		for (i = 1; i <= 128; i++) print n; print "abc\n" }' 2>&1 | \
 		$(AWK) 'BEGIN { RS = ""; ORS = "\n\n" };{ print }' 2>&1 | \
-		$(AWK) '/^[^a]/; END { print NR }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+		$(AWK) ' /^[^a]/; END { print NR }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 wideidx::
