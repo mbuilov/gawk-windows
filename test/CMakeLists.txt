@@ -24,14 +24,10 @@
 
 ## process this file with CMake to produce Makefile
 
-execute_process(
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-  COMMAND awk /:$/ Maketests
-  OUTPUT_VARIABLE BASIC_TESTS
-)
-
-string(REGEX REPLACE "Gt-dummy:\n" "" BASIC_TESTS "${BASIC_TESTS}")
-string(REGEX REPLACE ":\n" ";"        BASIC_TESTS "${BASIC_TESTS}")
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/Maketests BASIC_TESTS)
+string(REGEX REPLACE "^Gt-dummy:\n"   "" BASIC_TESTS "${BASIC_TESTS}")
+string(REGEX MATCHALL "[a-zA-Z0-9_]+:\n" BASIC_TESTS "${BASIC_TESTS}")
+string(REGEX REPLACE ":\n"            "" BASIC_TESTS "${BASIC_TESTS}")
 foreach(testcase ${BASIC_TESTS} )
   set(options "")
   if(${testcase} STREQUAL lintold)
