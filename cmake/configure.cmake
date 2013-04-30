@@ -189,20 +189,12 @@ DefineTypeIfAvailable("long long int" HAVE_LONG_LONG_INT)
 DefineTypeIfAvailable("unsigned long long int" HAVE_UNSIGNED_LONG_LONG_INT)
 DefineTypeIfAvailable(intmax_t INTMAX_T)
 DefineTypeIfAvailable(uintmax_t UINTMAX_T)
-
-# Some of these dont work, maybe CheckCSourceCompiles would be better.
 DefineTypeIfAvailable("time_t" TIME_T_IN_SYS_TYPES_H)
-DefineTypeIfAvailable("wctype_t" WCTYPE_T)
-# Detection of wint_t works but in an unsatisfying way.
-DefineIfSourceCompiles(
-     "#include \"wchar.h\"
-     static void testcb(wint_t w) { }
-     int main() {
-        wint_t w = 0;
-        testcb(w);
-        return 0;
-     }"
-     HAVE_WINT_T)
+SET(CMAKE_EXTRA_INCLUDE_FILES wctype.h)
+DefineTypeIfAvailable("wctype_t" HAVE_WCTYPE_T)
+DefineTypeIfAvailable("wint_t" HAVE_WINT_T)
+SET(CMAKE_EXTRA_INCLUDE_FILES)
+
 DefineStructHasMemberIfAvailable("struct sockaddr_storage" ss_family sys/socket.h HAVE_SOCKADDR_STORAGE)
 DefineStructHasMemberIfAvailable("struct stat" st_blksize sys/stat.h HAVE_STRUCT_STAT_ST_BLKSIZE)
 DefineStructHasMemberIfAvailable("struct stat" st_blksize sys/stat.h HAVE_ST_BLKSIZE)
