@@ -43,6 +43,7 @@ include(CheckFunctionExists)
 include(CheckLibraryExists)
 include(CheckTypeSize)
 include(CheckStructHasMember)
+INCLUDE(CheckCSourceCompiles)
 
 MACRO(DefineConfigH feature)
 #  message(STATUS feature=${feature}=${${feature}})
@@ -90,6 +91,11 @@ MACRO(DefineLibraryIfAvailable lib func location feature)
   check_library_exists("${lib}" "${func}" "${location}" "${feature}")
   DefineConfigH(${feature})
 ENDMACRO(DefineLibraryIfAvailable)
+
+MACRO(DefineIfSourceCompiles source feature)
+  check_c_source_compiles( "${source}" "${feature}")
+  DefineConfigH(${feature})
+ENDMACRO(DefineIfSourceCompiles)
 
 FILE( READ  configure.ac CONFIG_AUTOMAKE )
 STRING( REGEX MATCH "AC_INIT\\(\\[GNU Awk\\], ([0-9]+\\.[0-9]+\\.[0-9]+)" GAWK_AUTOMAKE_LINE_VERSION "${CONFIG_AUTOMAKE}") 
@@ -187,8 +193,16 @@ DefineTypeIfAvailable(uintmax_t UINTMAX_T)
 # Some of these dont work, maybe CheckCSourceCompiles would be better.
 DefineTypeIfAvailable("time_t" TIME_T_IN_SYS_TYPES_H)
 DefineTypeIfAvailable("wctype_t" WCTYPE_T)
-#add_definitions(-D WINT_T)
-DefineTypeIfAvailable("wint_t"   WINT_T)
+# Detection of wint_t works but in an unsatisfying way.
+DefineIfSourceCompiles(
+     "#include \"wchar.h\"
+     static void testcb(wint_t w) { }
+     int main() {
+        wint_t w = 0;
+        testcb(w);
+        return 0;
+     }"
+     HAVE_WINT_T)
 DefineStructHasMemberIfAvailable("struct sockaddr_storage" ss_family sys/socket.h HAVE_SOCKADDR_STORAGE)
 DefineStructHasMemberIfAvailable("struct stat" st_blksize sys/stat.h HAVE_STRUCT_STAT_ST_BLKSIZE)
 DefineStructHasMemberIfAvailable("struct stat" st_blksize sys/stat.h HAVE_ST_BLKSIZE)
