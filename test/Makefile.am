@@ -1793,6 +1793,12 @@ symtab8:
 	@grep -v '^ENVIRON' __$@ | grep -v '^PROCINFO' | grep -v '^FILENAME' >> _$@ ; rm __$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+symtab9:
+	@echo $@
+	@$(AWK) -f $(srcdir)/$@.awk >_$@
+	@rm -f testit.txt
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
 reginttrad:
 	@echo $@
 	@$(AWK) --traditional -r -f $(srcdir)/$@.awk > _$@
