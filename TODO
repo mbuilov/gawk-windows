@@ -1,4 +1,4 @@
-Tue Apr 16 11:08:26 IDT 2013
+Thu May  2 22:37:09 IDT 2013
 ============================
 
 There were too many files tracking different thoughts and ideas for
@@ -29,12 +29,19 @@ Minor Cleanups and Code Improvements
 	Review the bash source script for working with shared libraries in
 	order to nuke the use of libtool.
 
+	In test/Makefile.am and generation scripts, quote $(srcdir) etc.
+	for windows or other systems with spaces in path names. Fun.
+
 Minor New Features
 ------------------
 
 	Enhance extension/fork.c waitpid to allow the caller to specify
 	the options.  And add an optional array argument to wait and
 	waitpid in which to return exit status information.
+
+	Make index("foo", /foo/) fatal ala BWK awk.
+
+	Add a readfile() function in awk from mail.
 
 	Consider relaxing the strictness of --posix.
 
