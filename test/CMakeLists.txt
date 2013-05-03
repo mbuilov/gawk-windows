@@ -46,9 +46,8 @@ foreach(testgroup ${ALL_GROUPS} )
     set(suffix  "")
     if(${testcase} STREQUAL lintold)
       set(options "--lint-old")
-      add_test(${testcase} ${SHELL_PREFIX} ${CMAKE_SOURCE_DIR}/cmake/basictest ${CMAKE_BINARY_DIR}/gawk ${testcase}  ${options} )
-    endif()
-    if(${testcase} STREQUAL defref     OR ${testcase} STREQUAL fmtspcl       OR
+    elseif(
+       ${testcase} STREQUAL defref     OR ${testcase} STREQUAL fmtspcl       OR
        ${testcase} STREQUAL lintwarn   OR ${testcase} STREQUAL noeffect      OR
        ${testcase} STREQUAL nofmtch    OR ${testcase} STREQUAL shadow        OR
        ${testcase} STREQUAL uninit2    OR ${testcase} STREQUAL uninit3       OR
@@ -67,45 +66,45 @@ foreach(testgroup ${ALL_GROUPS} )
       set(suffix  "_HANGS")
     # These are the test cases that fail.
     # Some of them may reveal genuine bugs.
-    # Most of them need fail because they need to be invoked with a special parameter.
+    # Most of them fail because they need to be invoked with a special parameter.
     elseif(
        ${testcase} STREQUAL argarray   OR ${testcase} STREQUAL argtest       OR
-       ${testcase} STREQUAL arynocls   OR ${testcase} STREQUAL _awkpath      OR
-       ${testcase} STREQUAL badargs    OR ${testcase} STREQUAL _beginfile2   OR
-       ${testcase} STREQUAL binmode1   OR ${testcase} STREQUAL _charasbytes  OR
-       ${testcase} STREQUAL colonwarn  OR ${testcase} STREQUAL _compare      OR
-       ${testcase} STREQUAL devfd      OR ${testcase} STREQUAL _devfd1       OR
-       ${testcase} STREQUAL devfd2     OR ${testcase} STREQUAL _dumpvars     OR
-       ${testcase} STREQUAL exit       OR ${testcase} STREQUAL _exitval1     OR
-       ${testcase} STREQUAL fflush     OR ${testcase} STREQUAL _fmtspcl      OR
-       ${testcase} STREQUAL fsspcoln   OR ${testcase} STREQUAL _fts          OR
-       ${testcase} STREQUAL gsubtst3   OR ${testcase} STREQUAL _incdupe      OR
-       ${testcase} STREQUAL incdupe2   OR ${testcase} STREQUAL _incdupe3     OR
-       ${testcase} STREQUAL incdupe4   OR ${testcase} STREQUAL _incdupe5     OR
-       ${testcase} STREQUAL incdupe6   OR ${testcase} STREQUAL _incdupe7     OR
-       ${testcase} STREQUAL include2   OR ${testcase} STREQUAL _inetdayt     OR
-       ${testcase} STREQUAL inetdayu   OR ${testcase} STREQUAL _inetecht     OR
-       ${testcase} STREQUAL inetechu   OR ${testcase} STREQUAL _inftest      OR
-       ${testcase} STREQUAL inplace1   OR ${testcase} STREQUAL _inplace2     OR
-       ${testcase} STREQUAL inplace3   OR ${testcase} STREQUAL _jarebug      OR
-       ${testcase} STREQUAL leaddig    OR ${testcase} STREQUAL _localenl     OR
-       ${testcase} STREQUAL mbfw1      OR ${testcase} STREQUAL _mbprintf1    OR
-       ${testcase} STREQUAL messages   OR ${testcase} STREQUAL _mmap8k       OR
-       ${testcase} STREQUAL mpfrbigint OR ${testcase} STREQUAL _mpfrexprange OR
-       ${testcase} STREQUAL mpfrnr     OR ${testcase} STREQUAL _mpfrrnd      OR
-       ${testcase} STREQUAL next       OR ${testcase} STREQUAL _nofile       OR
-       ${testcase} STREQUAL nondec2    OR ${testcase} STREQUAL _nors         OR
-       ${testcase} STREQUAL ordchr2    OR ${testcase} STREQUAL _pid          OR
-       ${testcase} STREQUAL pipeio2    OR ${testcase} STREQUAL _posix2008sub OR
-       ${testcase} STREQUAL printf0    OR ${testcase} STREQUAL _printfbad2   OR
-       ${testcase} STREQUAL profile1   OR ${testcase} STREQUAL _profile2     OR
-       ${testcase} STREQUAL profile3   OR ${testcase} STREQUAL _readfile     OR
-       ${testcase} STREQUAL redfilnm   OR ${testcase} STREQUAL _regtest      OR
-       ${testcase} STREQUAL rsnulbig   OR ${testcase} STREQUAL _rsnulbig2    OR
-       ${testcase} STREQUAL rsstart3   OR ${testcase} STREQUAL _rtlen        OR
-       ${testcase} STREQUAL rtlen01    OR ${testcase} STREQUAL _rtlenmb      OR
-       ${testcase} STREQUAL space      OR ${testcase} STREQUAL _strftlng     OR
-       ${testcase} STREQUAL symtab6    OR ${testcase} STREQUAL _symtab8      OR
+       ${testcase} STREQUAL arynocls   OR ${testcase} STREQUAL awkpath       OR
+       ${testcase} STREQUAL badargs    OR ${testcase} STREQUAL beginfile2    OR
+       ${testcase} STREQUAL binmode1   OR ${testcase} STREQUAL charasbytes   OR
+       ${testcase} STREQUAL colonwarn  OR ${testcase} STREQUAL compare       OR
+       ${testcase} STREQUAL devfd      OR ${testcase} STREQUAL devfd1        OR
+       ${testcase} STREQUAL devfd2     OR ${testcase} STREQUAL dumpvars      OR
+       ${testcase} STREQUAL exit       OR ${testcase} STREQUAL exitval1      OR
+       ${testcase} STREQUAL fflush     OR ${testcase} STREQUAL fmtspcl       OR
+       ${testcase} STREQUAL fsspcoln   OR ${testcase} STREQUAL fts           OR
+       ${testcase} STREQUAL gsubtst3   OR ${testcase} STREQUAL incdupe       OR
+       ${testcase} STREQUAL incdupe2   OR ${testcase} STREQUAL incdupe3      OR
+       ${testcase} STREQUAL incdupe4   OR ${testcase} STREQUAL incdupe5      OR
+       ${testcase} STREQUAL incdupe6   OR ${testcase} STREQUAL incdupe7      OR
+       ${testcase} STREQUAL include2   OR ${testcase} STREQUAL inetdayt      OR
+       ${testcase} STREQUAL inetdayu   OR ${testcase} STREQUAL inetecht      OR
+       ${testcase} STREQUAL inetechu   OR ${testcase} STREQUAL inftest       OR
+       ${testcase} STREQUAL inplace1   OR ${testcase} STREQUAL inplace2      OR
+       ${testcase} STREQUAL inplace3   OR ${testcase} STREQUAL jarebug       OR
+       ${testcase} STREQUAL leaddig    OR ${testcase} STREQUAL localenl      OR
+       ${testcase} STREQUAL mbfw1      OR ${testcase} STREQUAL mbprintf1     OR
+       ${testcase} STREQUAL messages   OR ${testcase} STREQUAL mmap8k        OR
+       ${testcase} STREQUAL mpfrbigint OR ${testcase} STREQUAL mpfrexprange  OR
+       ${testcase} STREQUAL mpfrnr     OR ${testcase} STREQUAL mpfrrnd       OR
+       ${testcase} STREQUAL next       OR ${testcase} STREQUAL nofile        OR
+       ${testcase} STREQUAL nondec2    OR ${testcase} STREQUAL nors          OR
+       ${testcase} STREQUAL ordchr2    OR ${testcase} STREQUAL pid           OR
+       ${testcase} STREQUAL pipeio2    OR ${testcase} STREQUAL posix2008sub  OR
+       ${testcase} STREQUAL printf0    OR ${testcase} STREQUAL printfbad2    OR
+       ${testcase} STREQUAL profile1   OR ${testcase} STREQUAL profile2      OR
+       ${testcase} STREQUAL profile3   OR ${testcase} STREQUAL readfile      OR
+       ${testcase} STREQUAL redfilnm   OR ${testcase} STREQUAL regtest       OR
+       ${testcase} STREQUAL rsnulbig   OR ${testcase} STREQUAL rsnulbig2     OR
+       ${testcase} STREQUAL rsstart3   OR ${testcase} STREQUAL rtlen         OR
+       ${testcase} STREQUAL rtlen01    OR ${testcase} STREQUAL rtlenmb       OR
+       ${testcase} STREQUAL space      OR ${testcase} STREQUAL strftlng      OR
+       ${testcase} STREQUAL symtab6    OR ${testcase} STREQUAL symtab8       OR
        ${testcase} STREQUAL testext
       )
       set(suffix  "_FAILS")
