@@ -180,7 +180,7 @@
 #define HAVE_MKTIME 1
 
 /* Define to 1 if you have fully functional mpfr and gmp libraries. */
-#undef HAVE_MPFR
+/* #undef HAVE_MPFR */
 
 /* Define to 1 if you have the <netdb.h> header file. */
 #undef HAVE_NETDB_H
