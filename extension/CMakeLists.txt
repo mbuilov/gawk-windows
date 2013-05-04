@@ -27,7 +27,7 @@
 remove_definitions(-DGAWK)
 
 MACRO(BuildExtension name sources)
-  add_library (${name} MODULE ${sources})
+  add_library (${name} MODULE ${sources} ${ARGN})
   target_link_libraries(${name})
   set_target_properties(${name} PROPERTIES PREFIX "")
   install(PROGRAMS ${CMAKE_BINARY_DIR}/extension/${name}${CMAKE_SHARED_LIBRARY_SUFFIX} DESTINATION lib)

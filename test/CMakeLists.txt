@@ -60,8 +60,7 @@ foreach(testgroup ${ALL_GROUPS} )
        ${testcase} STREQUAL getline2   OR ${testcase} STREQUAL litoct        OR
        ${testcase} STREQUAL nonl       OR ${testcase} STREQUAL poundbang     OR
        ${testcase} STREQUAL beginfile1 OR ${testcase} STREQUAL manyfiles     OR
-       ${testcase} STREQUAL rsstart2   OR ${testcase} STREQUAL strftime      OR
-       ${testcase} STREQUAL readdir
+       ${testcase} STREQUAL rsstart2   OR ${testcase} STREQUAL strftime
       )
       set(file_suffix  "_HANGS")
     # These are the test cases that fail.
@@ -77,7 +76,7 @@ foreach(testgroup ${ALL_GROUPS} )
        ${testcase} STREQUAL devfd2     OR ${testcase} STREQUAL dumpvars      OR
        ${testcase} STREQUAL exit       OR ${testcase} STREQUAL exitval1      OR
        ${testcase} STREQUAL fflush     OR ${testcase} STREQUAL fmtspcl       OR
-       ${testcase} STREQUAL fsspcoln   OR ${testcase} STREQUAL fts           OR
+       ${testcase} STREQUAL fsspcoln   OR
        ${testcase} STREQUAL gsubtst3   OR ${testcase} STREQUAL incdupe       OR
        ${testcase} STREQUAL incdupe2   OR ${testcase} STREQUAL incdupe3      OR
        ${testcase} STREQUAL incdupe4   OR ${testcase} STREQUAL incdupe5      OR
@@ -85,8 +84,7 @@ foreach(testgroup ${ALL_GROUPS} )
        ${testcase} STREQUAL include2   OR ${testcase} STREQUAL inetdayt      OR
        ${testcase} STREQUAL inetdayu   OR ${testcase} STREQUAL inetecht      OR
        ${testcase} STREQUAL inetechu   OR ${testcase} STREQUAL inftest       OR
-       ${testcase} STREQUAL inplace1   OR ${testcase} STREQUAL inplace2      OR
-       ${testcase} STREQUAL inplace3   OR ${testcase} STREQUAL jarebug       OR
+       ${testcase} STREQUAL jarebug    OR
        ${testcase} STREQUAL leaddig    OR ${testcase} STREQUAL localenl      OR
        ${testcase} STREQUAL mbfw1      OR ${testcase} STREQUAL mbprintf1     OR
        ${testcase} STREQUAL messages   OR ${testcase} STREQUAL mmap8k        OR
@@ -94,11 +92,11 @@ foreach(testgroup ${ALL_GROUPS} )
        ${testcase} STREQUAL mpfrnr     OR ${testcase} STREQUAL mpfrrnd       OR
        ${testcase} STREQUAL next       OR ${testcase} STREQUAL nofile        OR
        ${testcase} STREQUAL nondec2    OR ${testcase} STREQUAL nors          OR
-       ${testcase} STREQUAL ordchr2    OR ${testcase} STREQUAL pid           OR
+       ${testcase} STREQUAL pid           OR
        ${testcase} STREQUAL pipeio2    OR ${testcase} STREQUAL posix2008sub  OR
        ${testcase} STREQUAL printf0    OR ${testcase} STREQUAL printfbad2    OR
        ${testcase} STREQUAL profile1   OR ${testcase} STREQUAL profile2      OR
-       ${testcase} STREQUAL profile3   OR ${testcase} STREQUAL readfile      OR
+       ${testcase} STREQUAL profile3   OR
        ${testcase} STREQUAL redfilnm   OR ${testcase} STREQUAL regtest       OR
        ${testcase} STREQUAL rsnulbig   OR ${testcase} STREQUAL rsnulbig2     OR
        ${testcase} STREQUAL rsstart3   OR ${testcase} STREQUAL rtlen         OR

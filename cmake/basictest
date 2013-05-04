@@ -10,9 +10,10 @@ export PATH=$PATH:/c/MinGW/msys/1.0/bin
 export GAWKEXE=$1
 export TESTCASE=$2
 export OPTION=$3
-TESTHOME=$(dirname ${0})/../test
-export AWKPATH=${TESTHOME}
-export AWKLIBPATH=$(dirname ${GAWKEXE})/extension/
+TOPSRCDIR=$(dirname ${0})/..
+SRCDIR=${TOPSRCDIR}/test
+export AWKPATH=${SRCDIR}
+export AWKLIBPATH=$(dirname ${GAWKEXE})extension/
 export LANG=C
 # Is this shell running in a native MinGW shell (MSYS) ?
 if test -n "$COMSPEC"; then
@@ -25,10 +26,73 @@ fi
 
 # Each test case that cannot be handle in the "standard way" shall
 # be implemented as a function here.
+
+function inplace1() {
+  cp ${SRCDIR}/inplace.1.in _${TESTCASE}.1
+  cp ${SRCDIR}/inplace.2.in _${TESTCASE}.2
+  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $$? >>_${TESTCASE}
+  ${COMPARE}  ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+  ${COMPARE}  ${SRCDIR}/${TESTCASE}.1.ok _${TESTCASE}.1 && rm -f _${TESTCASE}.1
+  ${COMPARE}  ${SRCDIR}/${TESTCASE}.2.ok _${TESTCASE}.2 && rm -f _${TESTCASE}.2
+}
+
+function inplace2() {
+  cp ${SRCDIR}/inplace.1.in _${TESTCASE}.1
+  cp ${SRCDIR}/inplace.2.in _${TESTCASE}.2
+  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $$? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.1.ok _${TESTCASE}.1 && rm -f _${TESTCASE}.1
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.1.bak.ok _${TESTCASE}.1.bak && rm -f _${TESTCASE}.1.bak
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.2.ok _${TESTCASE}.2 && rm -f _${TESTCASE}.2
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.2.bak.ok _${TESTCASE}.2.bak && rm -f _${TESTCASE}.2.bak
+}
+
+function inplace3() {
+  cp ${SRCDIR}/inplace.1.in _${TESTCASE}.1
+  cp ${SRCDIR}/inplace.2.in _${TESTCASE}.2
+  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $$? >>_${TESTCASE}
+  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "Before"} {gsub(/bar/, "foo"); print} END {print "After"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >>_${TESTCASE} 2>&1 || echo EXIT CODE: $$? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.1.ok _${TESTCASE}.1 && rm -f _${TESTCASE}.1
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.1.bak.ok _${TESTCASE}.1.bak && rm -f _${TESTCASE}.1.bak
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.2.ok _${TESTCASE}.2 && rm -f _${TESTCASE}.2
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.2.bak.ok _${TESTCASE}.2.bak && rm -f _${TESTCASE}.2.bak
+}
+
 function testext() {
-  $GAWKEXE '/^(@load|BEGIN)/,/^}/' ${TESTHOME}/../extension/testext.c > testext.awk
-  $GAWKEXE -f ${TESTCASE}.awk  > ${TESTHOME}/_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> ${TESTHOME}/_${TESTCASE}
+  $GAWKEXE ' /^(@load|BEGIN)/,/^}/' ${SRCDIR}/../extension/testext.c > testext.awk
+  $GAWKEXE -f ${TESTCASE}.awk  > ${SRCDIR}/_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> ${SRCDIR}/_${TESTCASE}
   rm -f testext.awk
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE}
+}
+
+function readdir() {
+  if [ "`uname`" = Linux ] && [ "`stat -f . 2>/dev/null | awk 'NR == 2 { print $$NF }'`" = nfs ];  then
+    echo This test may fail on GNU/Linux systems when run on an NFS filesystem.;
+    echo If it does, try rerunning on an ext'[234]' filesystem. ;
+  fi
+  $GAWKEXE -f ${TESTCASE}.awk ${SRCDIR}/.. > ${SRCDIR}/_${TESTCASE} 2>&1
+  ls -afli ${TOPSRCDIR} | sed 1d | $GAWKEXE -f ${SRCDIR}/readdir0.awk -v extout=${SRCDIR}/_${TESTCASE} > ${SRCDIR}/${TESTCASE}.ok
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE}
+}
+
+function ordchr2() {
+  $GAWKEXE -l ordchr 'BEGIN {print chr(ord("z"))}' >_${TESTCASE} 2>&1 || echo EXIT CODE: $$? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function readfile() {
+  $GAWKEXE -l readfile 'BEGIN {printf "%s", readfile("Makefile")}' >_${TESTCASE} 2>&1 || echo EXIT CODE: $$? >>_${TESTCASE}
+  ${COMPARE} Makefile _${TESTCASE} && rm -f _${TESTCASE} || cp -p Makefile ${TESTCASE}.ok
+}
+
+function fts() {
+  if [ "`uname`" = IRIX ];  then \
+    echo This test may fail on IRIX systems when run on an NFS filesystem.; \
+    echo If it does, try rerunning on an xfs filesystem. ; \
+  fi
+  ( cd ${SRCDIR} ; $GAWKEXE -f ${TESTCASE}.awk )
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE}
 }
 
 # Is this test case implemented as a function ?
@@ -36,13 +100,15 @@ if [ "$( type -t $TESTCASE )" = "function" ]
 then
   $TESTCASE
 # If no function exists, then treat the test case in standard way.
-elif test -r ${TESTHOME}/${TESTCASE}.in
+elif test -r ${SRCDIR}/${TESTCASE}.in
 # Any existing .in file will be redirected to standard input.
 then
-  $GAWKEXE ${OPTION} -f ${TESTCASE}.awk  < ${TESTHOME}/${TESTCASE}.in > ${TESTHOME}/_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> ${TESTHOME}/_${TESTCASE}
+  $GAWKEXE ${OPTION} -f ${TESTCASE}.awk  < ${SRCDIR}/${TESTCASE}.in > ${SRCDIR}/_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> ${SRCDIR}/_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE}
 else
-  $GAWKEXE ${OPTION} -f ${TESTCASE}.awk                        > ${TESTHOME}/_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> ${TESTHOME}/_${TESTCASE}
+  $GAWKEXE ${OPTION} -f ${TESTCASE}.awk                        > ${SRCDIR}/_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> ${SRCDIR}/_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE}
 fi
 # Compare the actual output with the expected (correct) output.
-${COMPARE} ${TESTHOME}/${TESTCASE}.ok ${TESTHOME}/_${TESTCASE} && rm -f ${TESTHOME}/_${TESTCASE}
+#${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE}
 
