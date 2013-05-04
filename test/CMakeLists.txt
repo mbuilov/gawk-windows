@@ -43,11 +43,11 @@ foreach(testgroup ${ALL_GROUPS} )
   # Some test cases are special, treat them accordingly.
   foreach(testcase ${ONE_GROUP} )
     set(options "")
-    set(suffix  "")
+    set(file_suffix  "")
     if(${testcase} STREQUAL lintold)
       set(options "--lint-old")
     elseif(
-       ${testcase} STREQUAL defref     OR ${testcase} STREQUAL fmtspcl       OR
+       ${testcase} STREQUAL defref     OR
        ${testcase} STREQUAL lintwarn   OR ${testcase} STREQUAL noeffect      OR
        ${testcase} STREQUAL nofmtch    OR ${testcase} STREQUAL shadow        OR
        ${testcase} STREQUAL uninit2    OR ${testcase} STREQUAL uninit3       OR
@@ -63,7 +63,7 @@ foreach(testgroup ${ALL_GROUPS} )
        ${testcase} STREQUAL rsstart2   OR ${testcase} STREQUAL strftime      OR
        ${testcase} STREQUAL readdir
       )
-      set(suffix  "_HANGS")
+      set(file_suffix  "_HANGS")
     # These are the test cases that fail.
     # Some of them may reveal genuine bugs.
     # Most of them fail because they need to be invoked with a special parameter.
@@ -104,13 +104,16 @@ foreach(testgroup ${ALL_GROUPS} )
        ${testcase} STREQUAL rsstart3   OR ${testcase} STREQUAL rtlen         OR
        ${testcase} STREQUAL rtlen01    OR ${testcase} STREQUAL rtlenmb       OR
        ${testcase} STREQUAL space      OR ${testcase} STREQUAL strftlng      OR
-       ${testcase} STREQUAL symtab6    OR ${testcase} STREQUAL symtab8       OR
-       ${testcase} STREQUAL testext
+       ${testcase} STREQUAL symtab6    OR ${testcase} STREQUAL symtab8
       )
-      set(suffix  "_FAILS")
+      set(file_suffix  "_FAILS")
     endif()
 
-    add_test(${testcase} ${SHELL_PREFIX} ${CMAKE_SOURCE_DIR}/cmake/basictest ${CMAKE_BINARY_DIR}/gawk ${testcase}${suffix}  ${options} )
+    if ("${file_suffix}" STREQUAL "")
+      add_test("${testgroup}.${testcase}" ${SHELL_PREFIX} ${CMAKE_SOURCE_DIR}/cmake/basictest ${CMAKE_BINARY_DIR}/gawk ${testcase}${file_suffix}  ${options} )
+    else()
+      message(STATUS "Skipping test case ${testgroup}.${testcase}")
+    endif()
   endforeach(testcase)
 
 endforeach(testgroup)
