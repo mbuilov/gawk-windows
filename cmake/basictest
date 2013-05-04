@@ -13,7 +13,7 @@ export OPTION=$3
 TOPSRCDIR=$(dirname ${0})/..
 SRCDIR=${TOPSRCDIR}/test
 export AWKPATH=${SRCDIR}
-export AWKLIBPATH=$(dirname ${GAWKEXE})extension/
+export AWKLIBPATH=$(dirname ${GAWKEXE})/extension/
 export LANG=C
 # Is this shell running in a native MinGW shell (MSYS) ?
 if test -n "$COMSPEC"; then
@@ -26,6 +26,59 @@ fi
 
 # Each test case that cannot be handle in the "standard way" shall
 # be implemented as a function here.
+
+function getline2() {
+  $GAWKEXE -f ${SRCDIR}/getline2.awk ${SRCDIR}/getline2.awk ${SRCDIR}/getline2.awk >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function litoct() {
+  echo ab | $GAWKEXE --traditional -f ${SRCDIR}/litoct.awk >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function nonl() {
+  AWKPATH=${SRCDIR} $GAWKEXE --lint -f nonl.awk /dev/null >_${TESTCASE} 2>&1
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function poundbang() {
+# The original poundbang test case looks a bit non-deterministic.
+# This is a shortened version.
+  sed "s;/tmp/gawk;$GAWKEXE;" < ${SRCDIR}/poundbang.awk > ./_pbd.awk
+  chmod +x ./_pbd.awk
+  ./_pbd.awk ${SRCDIR}/poundbang.awk > _`basename ${TESTCASE}` ;
+  ${COMPARE} ${SRCDIR}/poundbang.awk _`basename ${TESTCASE}` && rm -f _`basename ${TESTCASE}` _pbd.awk
+}
+
+function beginfile1() {
+  AWKPATH=${SRCDIR} $GAWKEXE -f ${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.awk . ./no/such/file Makefile  >_${TESTCASE} 2>&1 || echo EXIT CODE: $$? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function manyfiles() {
+  rm -rf junk
+  mkdir junk
+  $GAWKEXE 'BEGIN { for (i = 1; i <= 1030; i++) print i, i}' >_${TESTCASE}
+  $GAWKEXE -f ${SRCDIR}/manyfiles.awk _${TESTCASE} _${TESTCASE}
+  wc -l junk/* | $GAWKEXE '$1 != 2' | wc -l | sed "s/  *//g" > _${TESTCASE}
+  rm -rf junk
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function rsstart2() {
+  $GAWKEXE -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/rsstart1.in >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function strftime() {
+  echo This test could fail on slow machines or on a minute boundary,
+  echo so if it does, double check the actual results:
+  GAWKLOCALE=C; export GAWKLOCALE
+  TZ=GMT0; export TZ
+  (LC_ALL=C date) | $GAWKEXE -v OUTPUT=_${TESTCASE} -f ${SRCDIR}/strftime.awk
+  ${COMPARE} strftime.ok _${TESTCASE} && rm -f _${TESTCASE} strftime.ok || exit 0
+}
 
 function inplace1() {
   cp ${SRCDIR}/inplace.1.in _${TESTCASE}.1
@@ -73,7 +126,7 @@ function readdir() {
   fi
   $GAWKEXE -f ${TESTCASE}.awk ${SRCDIR}/.. > ${SRCDIR}/_${TESTCASE} 2>&1
   ls -afli ${TOPSRCDIR} | sed 1d | $GAWKEXE -f ${SRCDIR}/readdir0.awk -v extout=${SRCDIR}/_${TESTCASE} > ${SRCDIR}/${TESTCASE}.ok
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE} ${SRCDIR}/${TESTCASE}.ok
 }
 
 function ordchr2() {
@@ -92,7 +145,7 @@ function fts() {
     echo If it does, try rerunning on an xfs filesystem. ; \
   fi
   ( cd ${SRCDIR} ; $GAWKEXE -f ${TESTCASE}.awk )
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE} ${SRCDIR}/${TESTCASE}.ok
 }
 
 # Is this test case implemented as a function ?

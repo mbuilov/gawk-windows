@@ -54,15 +54,6 @@ foreach(testgroup ${ALL_GROUPS} )
        ${testcase} STREQUAL uninit4    OR ${testcase} STREQUAL uninit5       OR
        ${testcase} STREQUAL uninitialized)
       set(options "--lint")
-    # Check for test cases that cause a "hang" in test case execution.
-    # Each of them has to be analysed until all of them disappear from this list.
-    elseif(
-       ${testcase} STREQUAL getline2   OR ${testcase} STREQUAL litoct        OR
-       ${testcase} STREQUAL nonl       OR ${testcase} STREQUAL poundbang     OR
-       ${testcase} STREQUAL beginfile1 OR ${testcase} STREQUAL manyfiles     OR
-       ${testcase} STREQUAL rsstart2   OR ${testcase} STREQUAL strftime
-      )
-      set(file_suffix  "_HANGS")
     # These are the test cases that fail.
     # Some of them may reveal genuine bugs.
     # Most of them fail because they need to be invoked with a special parameter.
