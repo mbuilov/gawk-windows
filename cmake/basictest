@@ -64,6 +64,11 @@ function poundbang() {
   ${COMPARE} ${SRCDIR}/poundbang.awk _`basename ${TESTCASE}` && rm -f _`basename ${TESTCASE}` _pbd.awk
 }
 
+function localenl() {
+  ${SRCDIR}/${TESTCASE}.sh >_${TESTCASE} 2>/dev/null
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
 function mbprintf1() {
         GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE
         $GAWKEXE -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> _${TESTCASE}
@@ -173,6 +178,24 @@ function fts() {
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE} ${SRCDIR}/${TESTCASE}.ok
 }
 
+function fflush() {
+  ${SRCDIR}/fflush.sh >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function pid() {
+  AWKPATH=${SRCDIR} AWK=$GAWKEXE ${SHELL} ${SRCDIR}/pid.sh $$ > _`basename ${TESTCASE}` ; :
+  ${COMPARE} ${SRCDIR}/pid.ok _`basename ${TESTCASE}` && rm -f _`basename ${TESTCASE}`
+}
+
+function strftlng() {
+  TZ=UTC; export TZ; $GAWKEXE -f ${SRCDIR}/strftlng.awk >_${TESTCASE}
+  if ${COMPARE} ${SRCDIR}/strftlng.ok _${TESTCASE} >/dev/null 2>&1 ; then : ; else \
+  TZ=UTC0; export TZ; $GAWKEXE -f ${SRCDIR}/strftlng.awk >_${TESTCASE} ; \
+  fi
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
 function fmtspcl() {
   $GAWKEXE -v "sd=${SRCDIR}" 'BEGIN {pnan = sprintf("%g",sqrt(-1)); nnan = sprintf("%g",-sqrt(-1)); pinf = sprintf("%g",-log(0)); ninf = sprintf("%g",log(0))} {sub(/positive_nan/,pnan); sub(/negative_nan/,nnan); sub(/positive_infinity/,pinf); sub(/negative_infinity/,ninf); sub(/fmtspcl/,(sd"/fmtspcl")); print}' < ${SRCDIR}/fmtspcl.tok > ${TESTCASE}.ok 2>/dev/null
   $GAWKEXE  $AWKFLAGS -f ${SRCDIR}/fmtspcl.awk  --lint >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
@@ -181,6 +204,11 @@ function fmtspcl() {
   else
     ${COMPARE} ${SRCDIR}/${TESTCASE}-mpfr.ok _${TESTCASE} && rm -f _${TESTCASE}
   fi
+}
+
+function pipeio2() {
+  $GAWKEXE -v SRCDIR=${SRCDIR} -f ${SRCDIR}/pipeio2.awk >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
 function inetechu() {
@@ -205,6 +233,11 @@ function inetdayt() {
   "/inet/tcp/0/127.0.0.1/13" |& getline; print $0}'
 }
 
+function space() {
+  $GAWKEXE -f ' ' ${SRCDIR}/space.awk >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
 function mpfrexprange() {
   $GAWKEXE -M -vPREC=53 -f ${SRCDIR}/${TESTCASE}.awk > _${TESTCASE} 2>&1
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
@@ -227,6 +260,16 @@ function mpfrbigint() {
 
 function jarebug() {
   ${SRCDIR}/${TESTCASE}.sh "$GAWKEXE" "${SRCDIR}/${TESTCASE}.awk" "${SRCDIR}/${TESTCASE}.in" "_${TESTCASE}"
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function rtlen() {
+  ${SRCDIR}/${TESTCASE}.sh >_${TESTCASE} || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function rtlen01() {
+  ${SRCDIR}/${TESTCASE}.sh >_${TESTCASE} || echo EXIT CODE: $? >>_${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 

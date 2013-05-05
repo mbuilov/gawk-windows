@@ -66,27 +66,24 @@ foreach(testgroup ${ALL_GROUPS} )
        ${testcase} STREQUAL devfd      OR ${testcase} STREQUAL devfd1        OR
        ${testcase} STREQUAL devfd2     OR ${testcase} STREQUAL dumpvars      OR
        ${testcase} STREQUAL exit       OR ${testcase} STREQUAL exitval1      OR
-       ${testcase} STREQUAL fflush     OR ${testcase} STREQUAL fmtspcl       OR
+       ${testcase} STREQUAL fmtspcl    OR
        ${testcase} STREQUAL fsspcoln   OR
        ${testcase} STREQUAL gsubtst3   OR ${testcase} STREQUAL incdupe       OR
        ${testcase} STREQUAL incdupe2   OR ${testcase} STREQUAL incdupe3      OR
        ${testcase} STREQUAL incdupe4   OR ${testcase} STREQUAL incdupe5      OR
        ${testcase} STREQUAL incdupe6   OR ${testcase} STREQUAL incdupe7      OR
        ${testcase} STREQUAL include2   OR
-       ${testcase} STREQUAL leaddig    OR ${testcase} STREQUAL localenl      OR
+       ${testcase} STREQUAL leaddig    OR
        ${testcase} STREQUAL messages   OR ${testcase} STREQUAL mmap8k        OR
        ${testcase} STREQUAL next       OR ${testcase} STREQUAL nofile        OR
        ${testcase} STREQUAL nondec2    OR ${testcase} STREQUAL nors          OR
-       ${testcase} STREQUAL pid        OR
-       ${testcase} STREQUAL pipeio2    OR ${testcase} STREQUAL posix2008sub  OR
+       ${testcase} STREQUAL posix2008sub  OR
        ${testcase} STREQUAL printf0    OR ${testcase} STREQUAL printfbad2    OR
        ${testcase} STREQUAL profile1   OR ${testcase} STREQUAL profile2      OR
        ${testcase} STREQUAL profile3   OR
        ${testcase} STREQUAL redfilnm   OR
        ${testcase} STREQUAL rsnulbig   OR ${testcase} STREQUAL rsnulbig2     OR
-       ${testcase} STREQUAL rsstart3   OR ${testcase} STREQUAL rtlen         OR
-       ${testcase} STREQUAL rtlen01    OR
-       ${testcase} STREQUAL space      OR ${testcase} STREQUAL strftlng      OR
+       ${testcase} STREQUAL rsstart3   OR
        ${testcase} STREQUAL symtab6    OR ${testcase} STREQUAL symtab8
       )
       set(file_suffix  "_FAILS")
