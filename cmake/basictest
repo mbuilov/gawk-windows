@@ -52,7 +52,7 @@ function poundbang() {
 }
 
 function beginfile1() {
-  AWKPATH=${SRCDIR} $GAWKEXE -f ${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.awk . ./no/such/file Makefile  >_${TESTCASE} 2>&1 || echo EXIT CODE: $$? >>_${TESTCASE}
+  AWKPATH=${SRCDIR} $GAWKEXE -f ${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.awk . ./no/such/file Makefile  >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
@@ -83,7 +83,7 @@ function strftime() {
 function inplace1() {
   cp ${SRCDIR}/inplace.1.in _${TESTCASE}.1
   cp ${SRCDIR}/inplace.2.in _${TESTCASE}.2
-  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $$? >>_${TESTCASE}
+  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
   ${COMPARE}  ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
   ${COMPARE}  ${SRCDIR}/${TESTCASE}.1.ok _${TESTCASE}.1 && rm -f _${TESTCASE}.1
   ${COMPARE}  ${SRCDIR}/${TESTCASE}.2.ok _${TESTCASE}.2 && rm -f _${TESTCASE}.2
@@ -92,7 +92,7 @@ function inplace1() {
 function inplace2() {
   cp ${SRCDIR}/inplace.1.in _${TESTCASE}.1
   cp ${SRCDIR}/inplace.2.in _${TESTCASE}.2
-  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $$? >>_${TESTCASE}
+  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.1.ok _${TESTCASE}.1 && rm -f _${TESTCASE}.1
   ${COMPARE} ${SRCDIR}/${TESTCASE}.1.bak.ok _${TESTCASE}.1.bak && rm -f _${TESTCASE}.1.bak
@@ -103,8 +103,8 @@ function inplace2() {
 function inplace3() {
   cp ${SRCDIR}/inplace.1.in _${TESTCASE}.1
   cp ${SRCDIR}/inplace.2.in _${TESTCASE}.2
-  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $$? >>_${TESTCASE}
-  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "Before"} {gsub(/bar/, "foo"); print} END {print "After"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >>_${TESTCASE} 2>&1 || echo EXIT CODE: $$? >>_${TESTCASE}
+  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "Before"} {gsub(/bar/, "foo"); print} END {print "After"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >>_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.1.ok _${TESTCASE}.1 && rm -f _${TESTCASE}.1
   ${COMPARE} ${SRCDIR}/${TESTCASE}.1.bak.ok _${TESTCASE}.1.bak && rm -f _${TESTCASE}.1.bak
@@ -120,7 +120,7 @@ function testext() {
 }
 
 function readdir() {
-  if [ "`uname`" = Linux ] && [ "`stat -f . 2>/dev/null | awk 'NR == 2 { print $$NF }'`" = nfs ];  then
+  if [ "`uname`" = Linux ] && [ "`stat -f . 2>/dev/null | awk 'NR == 2 { print $NF }'`" = nfs ];  then
     echo This test may fail on GNU/Linux systems when run on an NFS filesystem.;
     echo If it does, try rerunning on an ext'[234]' filesystem. ;
   fi
@@ -130,12 +130,12 @@ function readdir() {
 }
 
 function ordchr2() {
-  $GAWKEXE -l ordchr 'BEGIN {print chr(ord("z"))}' >_${TESTCASE} 2>&1 || echo EXIT CODE: $$? >>_${TESTCASE}
+  $GAWKEXE -l ordchr 'BEGIN {print chr(ord("z"))}' >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
 function readfile() {
-  $GAWKEXE -l readfile 'BEGIN {printf "%s", readfile("Makefile")}' >_${TESTCASE} 2>&1 || echo EXIT CODE: $$? >>_${TESTCASE}
+  $GAWKEXE -l readfile 'BEGIN {printf "%s", readfile("Makefile")}' >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
   ${COMPARE} Makefile _${TESTCASE} && rm -f _${TESTCASE} || cp -p Makefile ${TESTCASE}.ok
 }
 
@@ -146,6 +146,36 @@ function fts() {
   fi
   ( cd ${SRCDIR} ; $GAWKEXE -f ${TESTCASE}.awk )
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE} ${SRCDIR}/${TESTCASE}.ok
+}
+
+function fmtspcl() {
+  $GAWKEXE -v "sd=${SRCDIR}" 'BEGIN {pnan = sprintf("%g",sqrt(-1)); nnan = sprintf("%g",-sqrt(-1)); pinf = sprintf("%g",-log(0)); ninf = sprintf("%g",log(0))} {sub(/positive_nan/,pnan); sub(/negative_nan/,nnan); sub(/positive_infinity/,pinf); sub(/negative_infinity/,ninf); sub(/fmtspcl/,(sd"/fmtspcl")); print}' < ${SRCDIR}/fmtspcl.tok > ${TESTCASE}.ok 2>/dev/null
+  $GAWKEXE  $AWKFLAGS -f ${SRCDIR}/fmtspcl.awk  --lint >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  if test -z "$AWKFLAGS" ; then
+    ${COMPARE} ${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+  else
+    ${COMPARE} ${SRCDIR}/${TESTCASE}-mpfr.ok _${TESTCASE} && rm -f _${TESTCASE}
+  fi
+}
+
+function mpfrexprange() {
+  $GAWKEXE -M -vPREC=53 -f ${SRCDIR}/${TESTCASE}.awk > _${TESTCASE} 2>&1
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function mpfrrnd() {
+  $GAWKEXE -M -vPREC=53 -f ${SRCDIR}/${TESTCASE}.awk > _${TESTCASE} 2>&1
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function mpfrnr() {
+  $GAWKEXE -M -vPREC=113 -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in > _${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function mpfrbigint() {
+  $GAWKEXE -M -f ${SRCDIR}/${TESTCASE}.awk > _${TESTCASE} 2>&1
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
 # Is this test case implemented as a function ?

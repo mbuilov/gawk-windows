@@ -47,7 +47,7 @@ foreach(testgroup ${ALL_GROUPS} )
     if(${testcase} STREQUAL lintold)
       set(options "--lint-old")
     elseif(
-       ${testcase} STREQUAL defref     OR
+       ${testcase} STREQUAL defref     OR ${testcase} STREQUAL fmtspcl       OR
        ${testcase} STREQUAL lintwarn   OR ${testcase} STREQUAL noeffect      OR
        ${testcase} STREQUAL nofmtch    OR ${testcase} STREQUAL shadow        OR
        ${testcase} STREQUAL uninit2    OR ${testcase} STREQUAL uninit3       OR
@@ -79,11 +79,9 @@ foreach(testgroup ${ALL_GROUPS} )
        ${testcase} STREQUAL leaddig    OR ${testcase} STREQUAL localenl      OR
        ${testcase} STREQUAL mbfw1      OR ${testcase} STREQUAL mbprintf1     OR
        ${testcase} STREQUAL messages   OR ${testcase} STREQUAL mmap8k        OR
-       ${testcase} STREQUAL mpfrbigint OR ${testcase} STREQUAL mpfrexprange  OR
-       ${testcase} STREQUAL mpfrnr     OR ${testcase} STREQUAL mpfrrnd       OR
        ${testcase} STREQUAL next       OR ${testcase} STREQUAL nofile        OR
        ${testcase} STREQUAL nondec2    OR ${testcase} STREQUAL nors          OR
-       ${testcase} STREQUAL pid           OR
+       ${testcase} STREQUAL pid        OR
        ${testcase} STREQUAL pipeio2    OR ${testcase} STREQUAL posix2008sub  OR
        ${testcase} STREQUAL printf0    OR ${testcase} STREQUAL printfbad2    OR
        ${testcase} STREQUAL profile1   OR ${testcase} STREQUAL profile2      OR
