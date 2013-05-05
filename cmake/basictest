@@ -27,6 +27,19 @@ fi
 # Each test case that cannot be handle in the "standard way" shall
 # be implemented as a function here.
 
+function regtest() {
+  echo 'Some of the output from regtest is very system specific, do not'
+  echo 'be distressed if your output differs from that distributed.'
+  echo 'Manual inspection is called for.'
+  AWK=$GAWKEXE ${SRCDIR}/regtest.sh
+}
+
+function inftest() {
+  echo This test is very machine specific...
+  $GAWKEXE -f ${SRCDIR}/inftest.awk | sed "s/inf/Inf/g" >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
 function getline2() {
   $GAWKEXE -f ${SRCDIR}/getline2.awk ${SRCDIR}/getline2.awk ${SRCDIR}/getline2.awk >_${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
@@ -156,6 +169,28 @@ function fmtspcl() {
   else
     ${COMPARE} ${SRCDIR}/${TESTCASE}-mpfr.ok _${TESTCASE} && rm -f _${TESTCASE}
   fi
+}
+
+function inetechu() {
+  echo This test is for establishing UDP connections
+  $GAWKEXE 'BEGIN {print "" |& "/inet/udp/0/127.0.0.1/9"}'
+}
+
+function inetecht() {
+  echo This test is for establishing TCP connections
+  $GAWKEXE 'BEGIN {print "" |& "/inet/tcp/0/127.0.0.1/9"}'
+}
+
+function inetdayu() {
+  echo This test is for bidirectional UDP transmission
+  $GAWKEXE 'BEGIN { print "" |& "/inet/udp/0/127.0.0.1/13"; \
+  "/inet/udp/0/127.0.0.1/13" |& getline; print $0}'
+}
+
+function inetdayt() {
+  echo This test is for bidirectional TCP transmission
+  $GAWKEXE 'BEGIN { print "" |& "/inet/tcp/0/127.0.0.1/13"; \
+  "/inet/tcp/0/127.0.0.1/13" |& getline; print $0}'
 }
 
 function mpfrexprange() {

@@ -72,9 +72,7 @@ foreach(testgroup ${ALL_GROUPS} )
        ${testcase} STREQUAL incdupe2   OR ${testcase} STREQUAL incdupe3      OR
        ${testcase} STREQUAL incdupe4   OR ${testcase} STREQUAL incdupe5      OR
        ${testcase} STREQUAL incdupe6   OR ${testcase} STREQUAL incdupe7      OR
-       ${testcase} STREQUAL include2   OR ${testcase} STREQUAL inetdayt      OR
-       ${testcase} STREQUAL inetdayu   OR ${testcase} STREQUAL inetecht      OR
-       ${testcase} STREQUAL inetechu   OR ${testcase} STREQUAL inftest       OR
+       ${testcase} STREQUAL include2   OR
        ${testcase} STREQUAL jarebug    OR
        ${testcase} STREQUAL leaddig    OR ${testcase} STREQUAL localenl      OR
        ${testcase} STREQUAL mbfw1      OR ${testcase} STREQUAL mbprintf1     OR
@@ -86,7 +84,7 @@ foreach(testgroup ${ALL_GROUPS} )
        ${testcase} STREQUAL printf0    OR ${testcase} STREQUAL printfbad2    OR
        ${testcase} STREQUAL profile1   OR ${testcase} STREQUAL profile2      OR
        ${testcase} STREQUAL profile3   OR
-       ${testcase} STREQUAL redfilnm   OR ${testcase} STREQUAL regtest       OR
+       ${testcase} STREQUAL redfilnm   OR
        ${testcase} STREQUAL rsnulbig   OR ${testcase} STREQUAL rsnulbig2     OR
        ${testcase} STREQUAL rsstart3   OR ${testcase} STREQUAL rtlen         OR
        ${testcase} STREQUAL rtlen01    OR ${testcase} STREQUAL rtlenmb       OR
