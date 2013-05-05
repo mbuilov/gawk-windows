@@ -64,6 +64,18 @@ function poundbang() {
   ${COMPARE} ${SRCDIR}/poundbang.awk _`basename ${TESTCASE}` && rm -f _`basename ${TESTCASE}` _pbd.awk
 }
 
+function mbprintf1() {
+        GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE
+        $GAWKEXE -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> _${TESTCASE}
+        ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function mbfw1() {
+        GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE
+        $GAWKEXE -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> _${TESTCASE}
+        ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
 function beginfile1() {
   AWKPATH=${SRCDIR} $GAWKEXE -f ${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.awk . ./no/such/file Makefile  >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
@@ -210,6 +222,17 @@ function mpfrnr() {
 
 function mpfrbigint() {
   $GAWKEXE -M -f ${SRCDIR}/${TESTCASE}.awk > _${TESTCASE} 2>&1
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function jarebug() {
+  ${SRCDIR}/${TESTCASE}.sh "$GAWKEXE" "${SRCDIR}/${TESTCASE}.awk" "${SRCDIR}/${TESTCASE}.in" "_${TESTCASE}"
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function rtlenmb() {
+  GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE
+  ${SRCDIR}/rtlen.sh >_${TESTCASE} || echo EXIT CODE: $? >>_${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 

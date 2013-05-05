@@ -73,9 +73,7 @@ foreach(testgroup ${ALL_GROUPS} )
        ${testcase} STREQUAL incdupe4   OR ${testcase} STREQUAL incdupe5      OR
        ${testcase} STREQUAL incdupe6   OR ${testcase} STREQUAL incdupe7      OR
        ${testcase} STREQUAL include2   OR
-       ${testcase} STREQUAL jarebug    OR
        ${testcase} STREQUAL leaddig    OR ${testcase} STREQUAL localenl      OR
-       ${testcase} STREQUAL mbfw1      OR ${testcase} STREQUAL mbprintf1     OR
        ${testcase} STREQUAL messages   OR ${testcase} STREQUAL mmap8k        OR
        ${testcase} STREQUAL next       OR ${testcase} STREQUAL nofile        OR
        ${testcase} STREQUAL nondec2    OR ${testcase} STREQUAL nors          OR
@@ -87,7 +85,7 @@ foreach(testgroup ${ALL_GROUPS} )
        ${testcase} STREQUAL redfilnm   OR
        ${testcase} STREQUAL rsnulbig   OR ${testcase} STREQUAL rsnulbig2     OR
        ${testcase} STREQUAL rsstart3   OR ${testcase} STREQUAL rtlen         OR
-       ${testcase} STREQUAL rtlen01    OR ${testcase} STREQUAL rtlenmb       OR
+       ${testcase} STREQUAL rtlen01    OR
        ${testcase} STREQUAL space      OR ${testcase} STREQUAL strftlng      OR
        ${testcase} STREQUAL symtab6    OR ${testcase} STREQUAL symtab8
       )
