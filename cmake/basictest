@@ -19,9 +19,11 @@ export LANG=C
 if test -n "$COMSPEC"; then
   # Ignore all differences in white space.
   COMPARE="diff -w"
+  PATH_SEPARATOR="\\"
 else
   # This is a shell running in Unix environment.
   COMPARE="cmp"
+  PATH_SEPARATOR="/"
 fi
 
 # Each test case that cannot be handle in the "standard way" shall
@@ -34,6 +36,11 @@ function regtest() {
   AWK=$GAWKEXE ${SRCDIR}/regtest.sh
 }
 
+function compare() {
+  $GAWKEXE -f ${SRCDIR}/compare.awk 0 1 ${SRCDIR}/compare.in >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
 function inftest() {
   echo This test is very machine specific...
   $GAWKEXE -f ${SRCDIR}/inftest.awk | sed "s/inf/Inf/g" >_${TESTCASE}
@@ -42,6 +49,11 @@ function inftest() {
 
 function getline2() {
   $GAWKEXE -f ${SRCDIR}/getline2.awk ${SRCDIR}/getline2.awk ${SRCDIR}/getline2.awk >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function awkpath() {
+  AWKPATH="${SRCDIR}$(PATH_SEPARATOR)/lib" $GAWKEXE -f awkpath.awk >_${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
@@ -63,6 +75,25 @@ function poundbang() {
   ./_pbd.awk ${SRCDIR}/poundbang.awk > _`basename ${TESTCASE}` ;
   ${COMPARE} ${SRCDIR}/poundbang.awk _`basename ${TESTCASE}` && rm -f _`basename ${TESTCASE}` _pbd.awk
 }
+
+function messages() {
+  $GAWKEXE -f ${SRCDIR}/messages.awk >_out2 2>_out3
+  ${COMPARE} ${SRCDIR}/out1.ok _out1 && ${COMPARE} ${SRCDIR}/out2.ok _out2 && ${COMPARE} ${SRCDIR}/out3.ok _out3 && rm -f _out1 _out2 _out3
+}
+
+function argarray() {
+  case ${SRCDIR} in
+  .)      : ;;
+  *)      cp ${SRCDIR}/argarray.in . ;;
+  esac
+  TEST=test echo just a test | $GAWKEXE -f ${SRCDIR}/argarray.awk ./argarray.in - >_${TESTCASE}
+  case ${SRCDIR} in
+  .)      : ;;
+  *)      rm -f ./argarray.in ;;
+        esac
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
 
 function localenl() {
   ${SRCDIR}/${TESTCASE}.sh >_${TESTCASE} 2>/dev/null
@@ -93,6 +124,16 @@ function manyfiles() {
   $GAWKEXE -f ${SRCDIR}/manyfiles.awk _${TESTCASE} _${TESTCASE}
   wc -l junk/* | $GAWKEXE '$1 != 2' | wc -l | sed "s/  *//g" > _${TESTCASE}
   rm -rf junk
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function exitval1() {
+  $GAWKEXE -f ${SRCDIR}/exitval1.awk >_${TESTCASE} 2>&1; echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function fsspcoln() {
+  $GAWKEXE -f ${SRCDIR}/${TESTCASE}.awk 'FS=[ :]+' ${SRCDIR}/${TESTCASE}.in >_${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
@@ -183,6 +224,11 @@ function fflush() {
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
+function mmap8k() {
+  $GAWKEXE '{ print }' ${SRCDIR}/mmap8k.in >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/mmap8k.in _${TESTCASE} && rm -f _${TESTCASE} || cp ${SRCDIR}/${TESTCASE}.in ${TESTCASE}.ok
+}
+
 function pid() {
   AWKPATH=${SRCDIR} AWK=$GAWKEXE ${SHELL} ${SRCDIR}/pid.sh $$ > _`basename ${TESTCASE}` ; :
   ${COMPARE} ${SRCDIR}/pid.ok _`basename ${TESTCASE}` && rm -f _`basename ${TESTCASE}`
@@ -193,6 +239,11 @@ function strftlng() {
   if ${COMPARE} ${SRCDIR}/strftlng.ok _${TESTCASE} >/dev/null 2>&1 ; then : ; else \
   TZ=UTC0; export TZ; $GAWKEXE -f ${SRCDIR}/strftlng.awk >_${TESTCASE} ; \
   fi
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function nors() {
+  echo A B C D E | tr -d '\12\15' | $GAWKEXE '{ print $NF }' - ${SRCDIR}/nors.in > _${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
@@ -208,6 +259,11 @@ function fmtspcl() {
 
 function pipeio2() {
   $GAWKEXE -v SRCDIR=${SRCDIR} -f ${SRCDIR}/pipeio2.awk >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function arynocls() {
+  AWKPATH=${SRCDIR} $GAWKEXE -v INPUT=${SRCDIR}/arynocls.in -f arynocls.awk >_${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
@@ -233,8 +289,49 @@ function inetdayt() {
   "/inet/tcp/0/127.0.0.1/13" |& getline; print $0}'
 }
 
+function redfilnm() {
+  $GAWKEXE -f ${SRCDIR}/redfilnm.awk srcdir=${SRCDIR} ${SRCDIR}/redfilnm.in >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function leaddig() {
+  $GAWKEXE -v x=2E  -f ${SRCDIR}/leaddig.awk >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function gsubtst3() {
+  $GAWKEXE --re-interval -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
 function space() {
   $GAWKEXE -f ' ' ${SRCDIR}/space.awk >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function rsnulbig() {
+  # Suppose that block size for pipe is at most 128kB:
+  $GAWKEXE 'BEGIN { for (i = 1; i <= 128*64+1; i++) print "abcdefgh123456\n" }' 2>&1 | \
+  $GAWKEXE 'BEGIN { RS = ""; ORS = "\n\n" }; { print }' 2>&1 | \
+  $GAWKEXE '/^[^a]/; END{ print NR }' >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function rsnulbig2() {
+  $GAWKEXE 'BEGIN { ORS = ""; n = "\n"; for (i = 1; i <= 10; i++) n = (n n); \
+    for (i = 1; i <= 128; i++) print n; print "abc\n" }' 2>&1 | \
+    $GAWKEXE 'BEGIN { RS = ""; ORS = "\n\n" };{ print }' 2>&1 | \
+    $GAWKEXE '/^[^a]/; END { print NR }' >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function printf0() {
+  $GAWKEXE --posix -f ${SRCDIR}/${TESTCASE}.awk >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function posix2008sub() {
+  $GAWKEXE --posix -f ${SRCDIR}/${TESTCASE}.awk > _${TESTCASE} 2>&1
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
@@ -276,6 +373,11 @@ function rtlen01() {
 function rtlenmb() {
   GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE
   ${SRCDIR}/rtlen.sh >_${TESTCASE} || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function nofile() {
+  $GAWKEXE '{}' no/such/file >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 

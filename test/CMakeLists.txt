@@ -58,31 +58,24 @@ foreach(testgroup ${ALL_GROUPS} )
     # Some of them may reveal genuine bugs.
     # Most of them fail because they need to be invoked with a special parameter.
     elseif(
-       ${testcase} STREQUAL argarray   OR ${testcase} STREQUAL argtest       OR
-       ${testcase} STREQUAL arynocls   OR ${testcase} STREQUAL awkpath       OR
+       ${testcase} STREQUAL argtest    OR
        ${testcase} STREQUAL badargs    OR ${testcase} STREQUAL beginfile2    OR
        ${testcase} STREQUAL binmode1   OR ${testcase} STREQUAL charasbytes   OR
-       ${testcase} STREQUAL colonwarn  OR ${testcase} STREQUAL compare       OR
+       ${testcase} STREQUAL colonwarn  OR
        ${testcase} STREQUAL devfd      OR ${testcase} STREQUAL devfd1        OR
        ${testcase} STREQUAL devfd2     OR ${testcase} STREQUAL dumpvars      OR
-       ${testcase} STREQUAL exit       OR ${testcase} STREQUAL exitval1      OR
+       ${testcase} STREQUAL exit       OR
        ${testcase} STREQUAL fmtspcl    OR
-       ${testcase} STREQUAL fsspcoln   OR
-       ${testcase} STREQUAL gsubtst3   OR ${testcase} STREQUAL incdupe       OR
+       ${testcase} STREQUAL incdupe    OR
        ${testcase} STREQUAL incdupe2   OR ${testcase} STREQUAL incdupe3      OR
        ${testcase} STREQUAL incdupe4   OR ${testcase} STREQUAL incdupe5      OR
        ${testcase} STREQUAL incdupe6   OR ${testcase} STREQUAL incdupe7      OR
        ${testcase} STREQUAL include2   OR
-       ${testcase} STREQUAL leaddig    OR
-       ${testcase} STREQUAL messages   OR ${testcase} STREQUAL mmap8k        OR
-       ${testcase} STREQUAL next       OR ${testcase} STREQUAL nofile        OR
-       ${testcase} STREQUAL nondec2    OR ${testcase} STREQUAL nors          OR
-       ${testcase} STREQUAL posix2008sub  OR
-       ${testcase} STREQUAL printf0    OR ${testcase} STREQUAL printfbad2    OR
+       ${testcase} STREQUAL next       OR
+       ${testcase} STREQUAL nondec2    OR
+       ${testcase} STREQUAL printfbad2 OR
        ${testcase} STREQUAL profile1   OR ${testcase} STREQUAL profile2      OR
        ${testcase} STREQUAL profile3   OR
-       ${testcase} STREQUAL redfilnm   OR
-       ${testcase} STREQUAL rsnulbig   OR ${testcase} STREQUAL rsnulbig2     OR
        ${testcase} STREQUAL rsstart3   OR
        ${testcase} STREQUAL symtab6    OR ${testcase} STREQUAL symtab8
       )
