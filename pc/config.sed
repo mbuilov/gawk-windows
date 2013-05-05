@@ -108,6 +108,8 @@ s/^#undef HAVE_MEMSET *$/#define HAVE_MEMSET 1/
 #define HAVE_MKSTEMP 1\
 #endif
 s/^#undef HAVE_MKTIME *$/#define HAVE_MKTIME 1/
+/^#undef HAVE_MPFR *$/c\
+/* #undef HAVE_MPFR */
 /^#undef HAVE_SETENV *$/c\
 #if defined(__MINGW32__) || defined(__DJGPP__)\
 #define HAVE_SETENV 1\
