@@ -43,7 +43,6 @@ foreach(testgroup ${ALL_GROUPS} )
   # Some test cases are special, treat them accordingly.
   foreach(testcase ${ONE_GROUP} )
     set(options "")
-    set(file_suffix  "")
     if(${testcase} STREQUAL lintold)
       set(options "--lint-old")
     elseif(
@@ -55,12 +54,7 @@ foreach(testgroup ${ALL_GROUPS} )
        ${testcase} STREQUAL uninitialized)
       set(options "--lint")
     endif()
-
-    if ("${file_suffix}" STREQUAL "")
-      add_test("${testgroup}.${testcase}" ${SHELL_PREFIX} ${CMAKE_SOURCE_DIR}/cmake/basictest ${CMAKE_BINARY_DIR}/gawk ${testcase}${file_suffix}  ${options} )
-    else()
-      message(STATUS "Skipping test case ${testgroup}.${testcase}")
-    endif()
+    add_test("${testgroup}.${testcase}" ${SHELL_PREFIX} ${CMAKE_SOURCE_DIR}/cmake/basictest ${CMAKE_BINARY_DIR}/gawk ${testcase}${file_suffix}  ${options} )
   endforeach(testcase)
 
 endforeach(testgroup)

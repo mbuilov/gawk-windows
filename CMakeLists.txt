@@ -47,6 +47,7 @@ if(WIN32 OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
   #  - insert #include <windows.h> at the top of awk.h
   #  - remove function execvp from pc/gawkmisc.pc
   DefineConfigHValue(HAVE_SETENV 1)
+  DefineConfigHValue(HAVE_USLEEP 1)
   DefineConfigHValue(STDC_HEADERS 1)
   DefineConfigHValue(HAVE_STRINGIZE 1)
   # TODO: Eli Zaretskii remined me that the generated
