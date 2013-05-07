@@ -107,12 +107,14 @@ function localenl() {
 
 function mbprintf1() {
   GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE
+  LANG=en_US.UTF-8
   $GAWKEXE -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> _${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
 function mbfw1() {
   GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE
+  LANG=en_US.UTF-8
   $GAWKEXE -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> _${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
