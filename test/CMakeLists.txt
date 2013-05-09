@@ -40,21 +40,7 @@ foreach(testgroup ${ALL_GROUPS} )
   string(REGEX REPLACE "[\\\n\t]"                          "" ONE_GROUP "${ONE_GROUP}")
   string(REGEX REPLACE " "                                ";" ONE_GROUP "${ONE_GROUP}")
   # Use each name of a test case to start a script that executes the test case.
-  # Some test cases are special, treat them accordingly.
   foreach(testcase ${ONE_GROUP} )
-    set(options "")
-    if(${testcase} STREQUAL lintold)
-      set(options "--lint-old")
-    elseif(
-       ${testcase} STREQUAL defref     OR ${testcase} STREQUAL fmtspcl       OR
-       ${testcase} STREQUAL lintwarn   OR ${testcase} STREQUAL noeffect      OR
-       ${testcase} STREQUAL nofmtch    OR ${testcase} STREQUAL shadow        OR
-       ${testcase} STREQUAL uninit2    OR ${testcase} STREQUAL uninit3       OR
-       ${testcase} STREQUAL uninit4    OR ${testcase} STREQUAL uninit5       OR
-       ${testcase} STREQUAL uninitialized)
-      set(options "--lint")
-    endif()
-    add_test("${testgroup}.${testcase}" ${SHELL_PREFIX} ${CMAKE_SOURCE_DIR}/cmake/basictest ${CMAKE_BINARY_DIR}/gawk ${testcase}${file_suffix}  ${options} )
+    add_test("${testgroup}.${testcase}" ${SHELL_PREFIX} ${CMAKE_SOURCE_DIR}/cmake/basictest ${CMAKE_BINARY_DIR}/gawk ${testcase}${file_suffix} )
   endforeach(testcase)
-
 endforeach(testgroup)

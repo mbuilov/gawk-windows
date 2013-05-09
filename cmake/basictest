@@ -9,7 +9,6 @@ set -x
 export PATH=$PATH:/c/MinGW/msys/1.0/bin
 export GAWKEXE=$1
 export TESTCASE=$2
-export OPTION=$3
 TOPSRCDIR=$(dirname ${0})/..
 SRCDIR=${TOPSRCDIR}/test
 export AWKPATH=${SRCDIR}
@@ -26,8 +25,42 @@ else
   PATH_SEPARATOR="/"
 fi
 
+# This is the central function for executing a standard test case.
+# Many of the more specialized test cases rely on this function.
+function simple_test_case() {
+  local options=$1      # options passed to the gawk executable
+  local parameters=$2   # parameters passed to the test case script
+  cd ${SRCDIR}
+  if test -r ${TESTCASE}.in
+  # Any existing .in file will be redirected to standard input.
+  # The output redirection must be bound to the test script, otherwise
+  # the "set -x" logging would mix with the test case output.
+  then
+    ${pregawk} $GAWKEXE ${options} -f ${TESTCASE}.awk ${parameters} < ${TESTCASE}.in ${postgawk} > _${TESTCASE} 2>&1
+  else
+    ${pregawk} $GAWKEXE ${options} -f ${TESTCASE}.awk ${parameters}                  ${postgawk} > _${TESTCASE} 2>&1
+  fi || echo EXIT CODE: $? >> _${TESTCASE}
+  # Compare the expected (correct) output with the actual output.
+  ${COMPARE} ${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+  # If the comparison succeeds then remove the actual output.
+  # Else leave the actual output file untouched for later analysis.
+}
+
 # Each test case that cannot be handle in the "standard way" shall
 # be implemented as a function here.
+
+function lintold()        { simple_test_case "--lint-old" "" ; }
+function defref()         { simple_test_case "--lint"     "" ; }
+function fmtspcl()        { simple_test_case "--lint"     "" ; }
+function lintwarn()       { simple_test_case "--lint"     "" ; }
+function noeffect()       { simple_test_case "--lint"     "" ; }
+function nofmtch()        { simple_test_case "--lint"     "" ; }
+function shadow()         { simple_test_case "--lint"     "" ; }
+function uninit2()        { simple_test_case "--lint"     "" ; }
+function uninit3()        { simple_test_case "--lint"     "" ; }
+function uninit4()        { simple_test_case "--lint"     "" ; }
+function uninit5()        { simple_test_case "--lint"     "" ; }
+function uninitialized()  { simple_test_case "--lint"     "" ; }
 
 function regtest() {
   echo 'Some of the output from regtest is very system specific, do not'
@@ -36,10 +69,7 @@ function regtest() {
   AWK=$GAWKEXE ${SRCDIR}/regtest.sh
 }
 
-function compare() {
-  $GAWKEXE -f ${SRCDIR}/compare.awk 0 1 ${SRCDIR}/compare.in >_${TESTCASE}
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
-}
+function compare() { simple_test_case "" "0 1" ; }
 
 function inftest() {
   echo This test is very machine specific...
@@ -47,30 +77,21 @@ function inftest() {
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
-function getline2() {
-  $GAWKEXE -f ${SRCDIR}/getline2.awk ${SRCDIR}/getline2.awk ${SRCDIR}/getline2.awk >_${TESTCASE}
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
-}
+function getline2() { simple_test_case "" "getline2.awk getline2.awk" ; }
 
 function awkpath() {
   AWKPATH="${SRCDIR}$(PATH_SEPARATOR)/lib" $GAWKEXE -f awkpath.awk >_${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
-function argtest() {
-  $GAWKEXE -f ${SRCDIR}/argtest.awk -x -y abc >_${TESTCASE}
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
-}
+function argtest() { simple_test_case "" "-x -y abc" ; }
 
 function badargs() {
   $GAWKEXE -f 2>&1 | grep -v patchlevel >_${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
-function nonl() {
-  AWKPATH=${SRCDIR} $GAWKEXE --lint -f nonl.awk /dev/null >_${TESTCASE} 2>&1
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
-}
+function nonl() { simple_test_case "--lint" "/dev/null" ; }
 
 function poundbang() {
 # The original poundbang test case looks a bit non-deterministic.
@@ -286,8 +307,7 @@ function fts() {
     echo This test may fail on IRIX systems when run on an NFS filesystem.; \
     echo If it does, try rerunning on an xfs filesystem. ; \
   fi
-  ( cd ${SRCDIR} ; $GAWKEXE -f ${TESTCASE}.awk )
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE} ${SRCDIR}/${TESTCASE}.ok
+  simple_test_case ""  "" 
 }
 
 function charasbytes() {
@@ -337,8 +357,8 @@ function mmap8k() {
 }
 
 function pid() {
-  AWKPATH=${SRCDIR} AWK=$GAWKEXE ${SHELL} ${SRCDIR}/pid.sh $$ > _`basename ${TESTCASE}` ; :
-  ${COMPARE} ${SRCDIR}/pid.ok _`basename ${TESTCASE}` && rm -f _`basename ${TESTCASE}`
+  AWKPATH=${SRCDIR} AWK=$GAWKEXE ${SHELL} ${SRCDIR}/pid.sh $$ > _${TESTCASE} ; :
+  ${COMPARE} ${SRCDIR}/pid.ok _`basename ${TESTCASE}` && rm -f _${TESTCASE}
 }
 
 function strftlng() {
@@ -364,10 +384,7 @@ function fmtspcl() {
   fi
 }
 
-function pipeio2() {
-  $GAWKEXE -v SRCDIR=${SRCDIR} -f ${SRCDIR}/pipeio2.awk >_${TESTCASE}
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
-}
+function pipeio2() { simple_test_case "-v SRCDIR=${SRCDIR}" "" ; }
 
 function arynocls() {
   AWKPATH=${SRCDIR} $GAWKEXE -v INPUT=${SRCDIR}/arynocls.in -f arynocls.awk >_${TESTCASE}
@@ -396,15 +413,9 @@ function inetdayt() {
   "/inet/tcp/0/127.0.0.1/13" |& getline; print $0}'
 }
 
-function redfilnm() {
-  $GAWKEXE -f ${SRCDIR}/redfilnm.awk srcdir=${SRCDIR} ${SRCDIR}/redfilnm.in >_${TESTCASE}
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
-}
+function redfilnm() { simple_test_case "" "srcdir=${SRCDIR}" ; }
 
-function leaddig() {
-  $GAWKEXE -v x=2E  -f ${SRCDIR}/leaddig.awk >_${TESTCASE}
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
-}
+function leaddig() { simple_test_case "-v x=2E" "" ; }
 
 function gsubtst3() {
   $GAWKEXE --re-interval -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in >_${TESTCASE}
@@ -432,10 +443,7 @@ function rsnulbig2() {
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
-function printf0() {
-  $GAWKEXE --posix -f ${SRCDIR}/${TESTCASE}.awk >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
-}
+function printf0() { simple_test_case "--posix" "" ; }
 
 function profile1() {
   $GAWKEXE --pretty-print=ap-${TESTCASE}.out -f ${SRCDIR}/xref.awk ${SRCDIR}/dtdgport.awk > _${TESTCASE}.out1
@@ -471,25 +479,10 @@ function exit() {
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
-function mpfrexprange() {
-  $GAWKEXE -M -vPREC=53 -f ${SRCDIR}/${TESTCASE}.awk > _${TESTCASE} 2>&1
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
-}
-
-function mpfrrnd() {
-  $GAWKEXE -M -vPREC=53 -f ${SRCDIR}/${TESTCASE}.awk > _${TESTCASE} 2>&1
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
-}
-
-function mpfrnr() {
-  $GAWKEXE -M -vPREC=113 -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in > _${TESTCASE}
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
-}
-
-function mpfrbigint() {
-  $GAWKEXE -M -f ${SRCDIR}/${TESTCASE}.awk > _${TESTCASE} 2>&1
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
-}
+function mpfrexprange() { simple_test_case "-M -vPREC=53 " "" ; }
+function mpfrrnd()      { simple_test_case "-M -vPREC=53 " "" ; }
+function mpfrnr()       { simple_test_case "-M -vPREC=113" "" ; }
+function mpfrbigint()   { simple_test_case "-M           " "" ; }
 
 function jarebug() {
   ${SRCDIR}/${TESTCASE}.sh "$GAWKEXE" "${SRCDIR}/${TESTCASE}.awk" "${SRCDIR}/${TESTCASE}.in" "_${TESTCASE}"
@@ -512,10 +505,7 @@ function rtlenmb() {
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
-function nondec2() {
-  $GAWKEXE --non-decimal-data -v a=0x1 -f ${SRCDIR}/${TESTCASE}.awk >_${TESTCASE}
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
-}
+function nondec2()      { simple_test_case "--non-decimal-data -v a=0x1"     "" ; }
 
 function nofile() {
   $GAWKEXE '{}' no/such/file >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
@@ -538,22 +528,12 @@ function devfd2() {
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
-
 # Is this test case implemented as a function ?
 if [ "$( type -t $TESTCASE )" = "function" ]
 then
   $TESTCASE
-# If no function exists, then treat the test case in standard way.
-elif test -r ${SRCDIR}/${TESTCASE}.in
-# Any existing .in file will be redirected to standard input.
-then
-  $GAWKEXE ${OPTION} -f ${TESTCASE}.awk  < ${SRCDIR}/${TESTCASE}.in > ${SRCDIR}/_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> ${SRCDIR}/_${TESTCASE}
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE}
 else
-  $GAWKEXE ${OPTION} -f ${TESTCASE}.awk                        > ${SRCDIR}/_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> ${SRCDIR}/_${TESTCASE}
-  # Compare the expected (correct) output with the actual output.
-  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE}
-  # If the comparison succeeds then remove the actual output.
-  # Else leave the actual output file untouched for later analysis.
+  # If no function exists, then treat the test case in standard way.
+  simple_test_case "" "" 
 fi
 
