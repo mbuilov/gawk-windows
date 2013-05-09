@@ -15767,6 +15767,8 @@ $ @kbd{awk 'BEGIN @{ print index("peanut", "an") @}'}
 If @var{find} is not found, @code{index()} returns zero.
 (Remember that string indices in @command{awk} start at one.)
 
+It is a fatal error to use a regexp constant for @var{find}.
+
 @item length(@r{[}@var{string}@r{]})
 @cindex @code{length()} function
 Return the number of characters in @var{string}.  If

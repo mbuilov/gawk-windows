@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Apr 24 2013" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "May 09 2013" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -2790,6 +2790,8 @@ or 0 if
 .I t
 is not present.
 (This implies that character indices start at one.)
+It is a fatal error to use a regexp constant for
+.IR t .
 .TP
 \fBlength(\fR[\fIs\fR]\fB)
 Return the length of the string
