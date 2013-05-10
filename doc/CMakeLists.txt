@@ -24,59 +24,54 @@
 
 ## process this file with CMake to produce Makefile
 
+add_custom_target(doc)
 if (LATEX_COMPILER)
-  add_custom_target(doc)
   add_custom_command(
     TARGET doc
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND texi2dvi  --clean gawkinet.texi gawk.texi
-    COMMAND groff -man gawk.1 > gawk.1.ps
-    COMMAND groff -man igawk.1 > igawk.1.ps
+    COMMAND echo Compiling to .dvi for gawkinet.texi
+    COMMAND texi2dvi  -q --clean gawkinet.texi gawk.texi
+    COMMAND echo Compiling to .ps for gawk.1 and igawk.1
+    COMMAND groff -z -man gawk.1 > gawk.1.ps
+    COMMAND groff -z -man igawk.1 > igawk.1.ps
   )
 
   if (DVIPS_CONVERTER)
     add_custom_command(
       TARGET doc
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      COMMAND dvips -o gawk.ps gawk.dvi
-      COMMAND dvips -o gawkinet.ps gawkinet.dvi
+      COMMAND echo Compiling to .ps for gawk.dvi, gawk.ps and gawkinet.dvi
+      COMMAND dvips -q -o gawk.ps gawk.dvi
+      COMMAND dvips -q -o gawkinet.ps gawkinet.dvi
     )
     if (PS2PDF_CONVERTER)
       add_custom_command(
         TARGET doc
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMAND ps2pdf gawk.1.ps gawk.1.pdf
-        COMMAND ps2pdf igawk.1.ps igawk.1.pdf
-        COMMAND ps2pdf gawk.ps gawk.pdf
-        COMMAND ps2pdf gawkinet.ps gawkinet.pdf
+        COMMAND echo Compiling to .pdf for gawk.1.ps, igawk.1.ps, gawk.ps and gawkinet.ps
+        COMMAND ps2pdf -q gawk.1.ps gawk.1.pdf
+        COMMAND ps2pdf -q igawk.1.ps igawk.1.pdf
+        COMMAND ps2pdf -q gawk.ps gawk.pdf
+        COMMAND ps2pdf -q gawkinet.ps gawkinet.pdf
       )
+      install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/gawk.1.pdf DESTINATION doc)
+      install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/igawk.1.pdf DESTINATION doc)
+      install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/gawk.pdf DESTINATION doc)
+      install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/gawkinet.pdf DESTINATION doc)
     else()
       message(WARNING "Found no PS2PDF_CONVERTER; no doc will be generated")
+      install(CODE "MESSAGE(\"doc generated only in .ps files\")")
     endif()
   else()
     message(WARNING "Found no DVIPS_CONVERTER; no doc will be generated")
+    install(CODE "MESSAGE(\"doc generated only in .dvi files and man pages in .ps files\")")
   endif()
 else()
   message(WARNING "Found no LATEX_COMPILER; no doc will be generated")
+  add_custom_command(
+    TARGET doc
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND echo no doc generated because of missing LATEX_COMPILER
+  )
 endif()
 
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/gawk.1.pdf)
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/gawk.1.pdf DESTINATION doc)
-else()
-  message(STATUS "No file gawk.1.pdf will be built into package")
-endif()
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/igawk.1.pdf)
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/igawk.1.pdf DESTINATION doc)
-else()
-  message(STATUS "No file igawk.1.pdf will be built into package")
-endif()
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/gawk.pdf)
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/gawk.pdf DESTINATION doc)
-else()
-  message(STATUS "No file gawk.pdf will be built into package")
-endif()
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/gawkinet.pdf)
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/gawkinet.pdf DESTINATION doc)
-else()
-  message(STATUS "No file gawkinet.pdf will be built into package")
-endif()
