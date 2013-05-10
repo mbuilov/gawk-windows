@@ -29,7 +29,7 @@ if (LATEX_COMPILER)
   add_custom_command(
     TARGET doc
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND echo Compiling to .dvi for gawkinet.texi
+    COMMAND echo Compiling to .dvi for gawk.texi and gawkinet.texi
     COMMAND texi2dvi  -q --clean gawkinet.texi gawk.texi
     COMMAND echo Compiling to .ps for gawk.1 and igawk.1
     COMMAND groff -z -man gawk.1 > gawk.1.ps
@@ -40,7 +40,7 @@ if (LATEX_COMPILER)
     add_custom_command(
       TARGET doc
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      COMMAND echo Compiling to .ps for gawk.dvi, gawk.ps and gawkinet.dvi
+      COMMAND echo Compiling to .ps for gawk.dvi and gawkinet.dvi
       COMMAND dvips -q -o gawk.ps gawk.dvi
       COMMAND dvips -q -o gawkinet.ps gawkinet.dvi
     )
