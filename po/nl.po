@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.0.75\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2013-04-27 22:36+0300\n"
+"POT-Creation-Date: 2013-05-09 16:05+0300\n"
 "PO-Revision-Date: 2013-04-25 21:49+0200\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
@@ -431,70 +431,75 @@ msgstr "dcgettext(_\"...\") is onjuist: verwijder het liggende streepje"
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
 msgstr "dcngettext(_\"...\") is onjuist: verwijder het liggende streepje"
 
-#: awkgram.y:4039
+#: awkgram.y:3992
+#, fuzzy
+msgid "index: regexp constant as second argument is not allowed"
+msgstr "index: tweede argument is geen string"
+
+#: awkgram.y:4045
 #, c-format
 msgid "function `%s': parameter `%s' shadows global variable"
 msgstr "functie '%s': parameter '%s' schaduwt een globale variabele"
 
-#: awkgram.y:4096 debug.c:4021 debug.c:4064 debug.c:5189
+#: awkgram.y:4102 debug.c:4021 debug.c:4064 debug.c:5189
 #, c-format
 msgid "could not open `%s' for writing (%s)"
 msgstr "kan '%s' niet openen om te schrijven (%s)"
 
-#: awkgram.y:4097
+#: awkgram.y:4103
 msgid "sending variable list to standard error"
 msgstr "variabelenlijst gaat naar standaardfoutuitvoer"
 
-#: awkgram.y:4105
+#: awkgram.y:4111
 #, c-format
 msgid "%s: close failed (%s)"
 msgstr "%s: sluiten is mislukt (%s)"
 
-#: awkgram.y:4130
+#: awkgram.y:4136
 msgid "shadow_funcs() called twice!"
 msgstr "shadow_funcs() twee keer aangeroepen!"
 
-#: awkgram.y:4138
+#: awkgram.y:4144
 msgid "there were shadowed variables."
 msgstr "er waren geschaduwde variabelen."
 
-#: awkgram.y:4209
+#: awkgram.y:4215
 #, c-format
 msgid "function name `%s' previously defined"
 msgstr "functienaam '%s' is al eerder gedefinieerd"
 
-#: awkgram.y:4255
+#: awkgram.y:4261
 #, c-format
 msgid "function `%s': can't use function name as parameter name"
 msgstr "functie '%s': kan functienaam niet als parameternaam gebruiken"
 
-#: awkgram.y:4258
+#: awkgram.y:4264
 #, c-format
 msgid "function `%s': can't use special variable `%s' as a function parameter"
 msgstr ""
 "functie '%s': kan speciale variabele '%s' niet als functieparameter gebruiken"
 
-#: awkgram.y:4266
+#: awkgram.y:4272
 #, c-format
 msgid "function `%s': parameter #%d, `%s', duplicates parameter #%d"
 msgstr "functie '%s': parameter #%d, '%s', dupliceert parameter #%d"
 
-#: awkgram.y:4360 awkgram.y:4366
+#: awkgram.y:4366 awkgram.y:4372
 #, c-format
 msgid "function `%s' called but never defined"
 msgstr "functie '%s' wordt aangeroepen maar is nergens gedefinieerd"
 
-#: awkgram.y:4370
+#: awkgram.y:4376
 #, c-format
 msgid "function `%s' defined but never called directly"
 msgstr "functie '%s' is gedefinieerd maar wordt nergens direct aangeroepen"
 
-#: awkgram.y:4402
+#: awkgram.y:4408
 #, c-format
 msgid "regexp constant for parameter #%d yields boolean value"
 msgstr "regexp-constante als parameter #%d levert booleanwaarde op"
 
-#: awkgram.y:4461
+#: awkgram.y:4467
 #, c-format
 msgid ""
 "function `%s' called with space between name and `(',\n"
@@ -503,11 +508,11 @@ msgstr ""
 "functie '%s' wordt aangeroepen met een spatie tussen naam en '(',\n"
 "of wordt gebruikt als variabele of array"
 
-#: awkgram.y:4697
+#: awkgram.y:4703
 msgid "division by zero attempted"
 msgstr "deling door nul"
 
-#: awkgram.y:4706
+#: awkgram.y:4712
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "deling door nul in '%%'"
@@ -2599,275 +2604,275 @@ msgstr "kan pijp '%s' niet openen voor invoer (%s)"
 msgid "can't open two way pipe `%s' for input/output (%s)"
 msgstr "kan tweerichtings-pijp '%s' niet openen voor in- en uitvoer (%s)"
 
-#: io.c:932
+#: io.c:928
 #, c-format
 msgid "can't redirect from `%s' (%s)"
 msgstr "kan niet omleiden van '%s' (%s)"
 
-#: io.c:935
+#: io.c:931
 #, c-format
 msgid "can't redirect to `%s' (%s)"
 msgstr "kan niet omleiden naar '%s' (%s)"
 
-#: io.c:986
+#: io.c:982
 msgid ""
 "reached system limit for open files: starting to multiplex file descriptors"
 msgstr ""
 "systeemgrens voor aantal open bestanden is bereikt: begonnen met multiplexen"
 
-#: io.c:1002
+#: io.c:998
 #, c-format
 msgid "close of `%s' failed (%s)."
 msgstr "sluiten van '%s' is mislukt (%s)"
 
-#: io.c:1010
+#: io.c:1006
 msgid "too many pipes or input files open"
 msgstr "te veel pijpen of invoerbestanden geopend"
 
-#: io.c:1032
+#: io.c:1028
 msgid "close: second argument must be `to' or `from'"
 msgstr "close: tweede argument moet 'to' of 'from' zijn"
 
-#: io.c:1049
+#: io.c:1045
 #, c-format
 msgid "close: `%.*s' is not an open file, pipe or co-process"
 msgstr "close: '%.*s' is geen open bestand, pijp, of co-proces"
 
-#: io.c:1054
+#: io.c:1050
 msgid "close of redirection that was never opened"
 msgstr "sluiten van een nooit-geopende omleiding"
 
-#: io.c:1151
+#: io.c:1147
 #, c-format
 msgid "close: redirection `%s' not opened with `|&', second argument ignored"
 msgstr ""
 "close: omleiding '%s' is niet geopend met '|&'; tweede argument wordt "
 "genegeerd"
 
-#: io.c:1168
+#: io.c:1164
 #, c-format
 msgid "failure status (%d) on pipe close of `%s' (%s)"
 msgstr "afsluitwaarde %d bij mislukte sluiting van pijp '%s' (%s)"
 
-#: io.c:1171
+#: io.c:1167
 #, c-format
 msgid "failure status (%d) on file close of `%s' (%s)"
 msgstr "afsluitwaarde %d bij mislukte sluiting van bestand '%s' (%s)"
 
-#: io.c:1191
+#: io.c:1187
 #, c-format
 msgid "no explicit close of socket `%s' provided"
 msgstr "geen expliciete sluiting van socket '%s' aangegeven"
 
-#: io.c:1194
+#: io.c:1190
 #, c-format
 msgid "no explicit close of co-process `%s' provided"
 msgstr "geen expliciete sluiting van co-proces '%s' aangegeven"
 
-#: io.c:1197
+#: io.c:1193
 #, c-format
 msgid "no explicit close of pipe `%s' provided"
 msgstr "geen expliciete sluiting van pijp '%s' aangegeven"
 
-#: io.c:1200
+#: io.c:1196
 #, c-format
 msgid "no explicit close of file `%s' provided"
 msgstr "geen expliciete sluiting van bestand '%s' aangegeven"
 
-#: io.c:1228 io.c:1283 main.c:842 main.c:879
+#: io.c:1224 io.c:1279 main.c:842 main.c:879
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "fout tijdens schrijven van standaarduitvoer (%s)"
 
-#: io.c:1232 io.c:1288
+#: io.c:1228 io.c:1284
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "fout tijdens schrijven van standaardfoutuitvoer (%s)"
 
-#: io.c:1240
+#: io.c:1236
 #, c-format
 msgid "pipe flush of `%s' failed (%s)."
 msgstr "leegmaken van pijp '%s' is mislukt (%s)"
 
-#: io.c:1243
+#: io.c:1239
 #, c-format
 msgid "co-process flush of pipe to `%s' failed (%s)."
 msgstr "leegmaken door co-proces van pijp naar '%s' is mislukt (%s)"
 
-#: io.c:1246
+#: io.c:1242
 #, c-format
 msgid "file flush of `%s' failed (%s)."
 msgstr "leegmaken van bestand '%s' is mislukt (%s)"
 
-#: io.c:1360
+#: io.c:1356
 #, c-format
 msgid "local port %s invalid in `/inet'"
 msgstr "lokale poort %s is ongeldig in '/inet'"
 
-#: io.c:1378
+#: io.c:1374
 #, c-format
 msgid "remote host and port information (%s, %s) invalid"
 msgstr "host- en poortinformatie (%s, %s) zijn ongeldig"
 
-#: io.c:1530
+#: io.c:1526
 #, c-format
 msgid "no (known) protocol supplied in special filename `%s'"
 msgstr "geen (bekend) protocol aangegeven in speciale bestandsnaam '%s'"
 
-#: io.c:1544
+#: io.c:1540
 #, c-format
 msgid "special file name `%s' is incomplete"
 msgstr "speciale bestandsnaam '%s' is onvolledig"
 
-#: io.c:1561
+#: io.c:1557
 msgid "must supply a remote hostname to `/inet'"
 msgstr "'/inet' heeft een gindse hostnaam nodig"
 
-#: io.c:1579
+#: io.c:1575
 msgid "must supply a remote port to `/inet'"
 msgstr "'/inet' heeft een gindse poort nodig"
 
-#: io.c:1625
+#: io.c:1621
 msgid "TCP/IP communications are not supported"
 msgstr "TCP/IP-communicatie wordt niet ondersteund"
 
-#: io.c:1800
+#: io.c:1796
 #, c-format
 msgid "could not open `%s', mode `%s'"
 msgstr "kan '%s' niet openen -- modus '%s'"
 
-#: io.c:1850
+#: io.c:1846
 #, c-format
 msgid "close of master pty failed (%s)"
 msgstr "kan meester-pty van dochterproces niet sluiten (%s)"
 
-#: io.c:1852 io.c:2028 io.c:2198
+#: io.c:1848 io.c:2024 io.c:2194
 #, c-format
 msgid "close of stdout in child failed (%s)"
 msgstr "kan standaarduitvoer van dochterproces niet sluiten (%s)"
 
-#: io.c:1855
+#: io.c:1851
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
 msgstr ""
 "kan slaaf-pty niet overzetten naar standaarduitvoer van dochterproces (dup: "
 "%s)"
 
-#: io.c:1857 io.c:2033
+#: io.c:1853 io.c:2029
 #, c-format
 msgid "close of stdin in child failed (%s)"
 msgstr "kan standaardinvoer van dochterproces niet sluiten (%s)"
 
-#: io.c:1860
+#: io.c:1856
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
 msgstr ""
 "kan slaaf-pty niet overzetten naar standaardinvoer van dochterproces (dup: "
 "%s)"
 
-#: io.c:1862 io.c:1883
+#: io.c:1858 io.c:1879
 #, c-format
 msgid "close of slave pty failed (%s)"
 msgstr "kan slaaf-pty niet sluiten (%s)"
 
-#: io.c:1969 io.c:2031 io.c:2175 io.c:2201
+#: io.c:1965 io.c:2027 io.c:2171 io.c:2197
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
 msgstr ""
 "kan pijp niet overzetten naar standaarduitvoer van dochterproces (dup: %s)"
 
-#: io.c:1976 io.c:2036
+#: io.c:1972 io.c:2032
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
 msgstr ""
 "kan pijp niet overzetten naar standaardinvoer van dochterproces (dup: %s)"
 
-#: io.c:1996 io.c:2191
+#: io.c:1992 io.c:2187
 msgid "restoring stdout in parent process failed\n"
 msgstr "kan standaarduitvoer van ouderproces niet herstellen\n"
 
-#: io.c:2004
+#: io.c:2000
 msgid "restoring stdin in parent process failed\n"
 msgstr "kan standaardinvoer van ouderproces niet herstellen\n"
 
-#: io.c:2039 io.c:2203 io.c:2217
+#: io.c:2035 io.c:2199 io.c:2213
 #, c-format
 msgid "close of pipe failed (%s)"
 msgstr "kan pijp niet sluiten (%s)"
 
-#: io.c:2093
+#: io.c:2089
 msgid "`|&' not supported"
 msgstr "'|&' wordt niet ondersteund"
 
-#: io.c:2160
+#: io.c:2156
 #, c-format
 msgid "cannot open pipe `%s' (%s)"
 msgstr "kan pijp '%s' niet openen (%s)"
 
-#: io.c:2211
+#: io.c:2207
 #, c-format
 msgid "cannot create child process for `%s' (fork: %s)"
 msgstr "kan voor '%s' geen dochterproces starten (fork: %s)"
 
-#: io.c:2671
+#: io.c:2667
 msgid "register_input_parser: received NULL pointer"
 msgstr "register_input_parser(): NULL-pointer gekregen"
 
-#: io.c:2699
+#: io.c:2695
 #, c-format
 msgid "input parser `%s' conflicts with previously installed input parser `%s'"
 msgstr ""
 
-#: io.c:2706
+#: io.c:2702
 #, c-format
 msgid "input parser `%s' failed to open `%s'"
 msgstr ""
 
-#: io.c:2726
+#: io.c:2722
 msgid "register_output_wrapper: received NULL pointer"
 msgstr "register_output_wrapper(): NULL-pointer gekregen"
 
-#: io.c:2754
+#: io.c:2750
 #, c-format
 msgid ""
 "output wrapper `%s' conflicts with previously installed output wrapper `%s'"
 msgstr ""
 
-#: io.c:2761
+#: io.c:2757
 #, c-format
 msgid "output wrapper `%s' failed to open `%s'"
 msgstr ""
 
-#: io.c:2782
+#: io.c:2778
 msgid "register_output_processor: received NULL pointer"
 msgstr "register_output_processor(): NULL-pointer gekregen"
 
-#: io.c:2811
+#: io.c:2807
 #, c-format
 msgid ""
 "two-way processor `%s' conflicts with previously installed two-way processor "
 "`%s'"
 msgstr ""
 
-#: io.c:2820
+#: io.c:2816
 #, c-format
 msgid "two way processor `%s' failed to open `%s'"
 msgstr ""
 
-#: io.c:2927
+#: io.c:2923
 #, c-format
 msgid "data file `%s' is empty"
 msgstr "databestand '%s' is leeg"
 
-#: io.c:2969 io.c:2977
+#: io.c:2965 io.c:2973
 msgid "could not allocate more input memory"
 msgstr "kan geen extra invoergeheugen meer toewijzen"
 
-#: io.c:3543
+#: io.c:3539
 msgid "multicharacter value of `RS' is a gawk extension"
 msgstr "een 'RS' van meerdere tekens is een gawk-uitbreiding"
 
-#: io.c:3632
+#: io.c:3628
 msgid "IPv6 communication is not supported"
 msgstr "IPv6-communicatie wordt niet ondersteund"
 

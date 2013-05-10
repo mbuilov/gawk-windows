@@ -263,7 +263,7 @@ typedef struct awk_two_way_processor {
 
 /* Current version of the API. */
 enum {
-	GAWK_API_MAJOR_VERSION = 0,
+	GAWK_API_MAJOR_VERSION = 1,
 	GAWK_API_MINOR_VERSION = 0
 };
 

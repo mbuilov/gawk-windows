@@ -3985,6 +3985,12 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 				ip->opcode = Op_push_array;
 		}
 	}
+	else if (r->builtin == do_index) {
+		arg = subn->nexti->lasti->nexti;	/* 2nd arg list */
+		ip = arg->lasti;
+		if (ip->opcode == Op_match_rec)
+			fatal(_("index: regexp constant as second argument is not allowed"));
+	}
 #ifdef ARRAYDEBUG
 	else if (r->builtin == do_adump) {
 		ip = subn->nexti->lasti;

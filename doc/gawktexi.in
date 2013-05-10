@@ -21,15 +21,15 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH April, 2013
-@set VERSION 4.0
-@set PATCHLEVEL 2
+@set UPDATE-MONTH May, 2013
+@set VERSION 4.1
+@set PATCHLEVEL 0
 
 @set FSF
 
 @set TITLE GAWK: Effective AWK Programming
 @set SUBTITLE A User's Guide for GNU Awk
-@set EDITION 4
+@set EDITION 4.1
 
 @iftex
 @set DOCUMENT book
@@ -1336,7 +1336,7 @@ describes advanced arithmetic facilities provided by
 @command{gawk}.
 
 @ref{Dynamic Extensions}, describes how to add new variables and
-functions to @command{gawk} by writing extensions in C.
+functions to @command{gawk} by writing extensions in C or C++.
 
 Part IV provides the appendices, the Glossary, and two licenses that cover
 the @command{gawk} source code and this @value{DOCUMENT}, respectively.
@@ -1363,14 +1363,10 @@ and some possible future directions for @command{gawk} development.
 @ref{Basic Concepts},
 provides some very cursory background material for those who
 are completely unfamiliar with computer programming.
-Also centralized there is a discussion of some of the issues
-surrounding floating-point numbers.
 
-The
-@ref{Glossary},
-defines most, if not all, the significant terms used
-throughout the book.
-If you find terms that you aren't familiar with, try looking them up here.
+The @ref{Glossary}, defines most, if not all, the significant terms used
+throughout the book.  If you find terms that you aren't familiar with,
+try looking them up here.
 
 @ref{Copying}, and
 @ref{GNU Free Documentation License},
@@ -1598,10 +1594,11 @@ This edition maintains the basic structure of the previous editions.
 For Edition 4.0, the content has been thoroughly reviewed
 and updated. All references to @command{gawk} versions prior to 4.0 have been
 removed.
-Of significant note for this edition is @ref{Debugger}.
+Of significant note for this edition was @ref{Debugger}.
 
-For edition 4.1, the content has been reorganized into parts,
-and the major new addition is @ref{Dynamic Extensions}.
+For edition @value{EDITION}, the content has been reorganized into parts,
+and the major new additions are @ref{Arbitrary Precision Arithmetic},
+and @ref{Dynamic Extensions}.
 
 @cite{@value{TITLE}} will undoubtedly continue to evolve.
 An electronic version
@@ -1803,7 +1800,7 @@ take advantage of those opportunities.
 Arnold Robbins @*
 Nof Ayalon @*
 ISRAEL @*
-April, 2013
+May, 2013
 
 @iftex
 @part Part I:@* The @command{awk} Language
@@ -2116,10 +2113,8 @@ affect the execution of the @command{awk} program but it does make
 @subsection Executable @command{awk} Programs
 @cindex @command{awk} programs
 @cindex @code{#} (number sign), @code{#!} (executable scripts)
-@cindex number sign (@code{#}), @code{#!} (executable scripts)
 @cindex Unix, @command{awk} scripts and
-@cindex @code{#} (number sign), @code{#!} (executable scripts), portability issues with
-@cindex number sign (@code{#}), @code{#!} (executable scripts), portability issues with
+@cindex number sign (@code{#}), @code{#!} (executable scripts)
 
 Once you have learned @command{awk}, you may want to write self-contained
 @command{awk} scripts, using the @samp{#!} script mechanism.  You can do
@@ -3443,7 +3438,6 @@ when parsing numeric input data (@pxref{Locales}).
 @itemx --pretty-print@r{[}=@var{file}@r{]}
 @cindex @code{-o} option
 @cindex @code{--pretty-print} option
-@cindex @command{awk} enabling
 Enable pretty-printing of @command{awk} programs.
 By default, output program is created in a file named @file{awkprof.out}.
 The optional @var{file} argument allows you to specify a different
@@ -3582,7 +3576,7 @@ character (@code{"\t"}).  This is true only for @option{--traditional} and not
 for @option{--posix}
 (@pxref{Field Separators}).
 
-@cindex @code{-f} option, on command line
+@cindex @code{-f} option, multiple uses
 The @option{-f} option may be used more than once on the command line.
 If it is, @command{awk} reads its program source from all of the named files, as
 if they had been concatenated together into one big file.  This is
@@ -4576,8 +4570,8 @@ matches the character @samp{$}.
 
 @cindex regular expressions, anchors in
 @cindex Texinfo, chapter beginnings in files
-@cindex @code{^} (caret)
-@cindex caret (@code{^})
+@cindex @code{^} (caret), regexp operator
+@cindex caret (@code{^}), regexp operator
 @item ^
 This matches the beginning of a string.  For example, @samp{^@@chapter}
 matches @samp{@@chapter} at the beginning of a string and can be used
@@ -5271,10 +5265,10 @@ on the right.  This is true of any string-valued expression (such as
 @end quotation
 
 @cindex regexp constants, slashes vs.@: quotes
-@cindex @code{\} (backslash), regexp constants
-@cindex backslash (@code{\}), regexp constants
-@cindex @code{"} (double quote), regexp constants
-@cindex double quote (@code{"}), regexp constants
+@cindex @code{\} (backslash), in regexp constants
+@cindex backslash (@code{\}), in regexp constants
+@cindex @code{"} (double quote), in regexp constants
+@cindex double quote (@code{"}), in regexp constants
 What difference does it make if the string is
 scanned twice? The answer has to do with escape sequences, and particularly
 with backslashes.  To get a backslash into a regular expression inside a
@@ -6312,8 +6306,8 @@ awk -F\\\\ '@dots{}' files @dots{}
 @end example
 
 @noindent
-@cindex @code{\} (backslash), as field separators
-@cindex backslash (@code{\}), as field separators
+@cindex @code{\} (backslash), as field separator
+@cindex backslash (@code{\}), as field separator
 Because @samp{\} is used for quoting in the shell, @command{awk} sees
 @samp{-F\\}.  Then @command{awk} processes the @samp{\\} for escape
 characters (@pxref{Escape Sequences}), finally yielding
@@ -8997,8 +8991,8 @@ which discusses it in more detail and gives an example.
 
 @sidebar Using @code{close()}'s Return Value
 @cindex dark corner, @code{close()} function
-@cindex @code{close()} function, return values
-@cindex return values@comma{} @code{close()} function
+@cindex @code{close()} function, return value
+@cindex return value@comma{} @code{close()} function
 @cindex differences in @command{awk} and @command{gawk}, @code{close()} function
 @cindex Unix @command{awk}, @code{close()} function and
 
@@ -9437,7 +9431,7 @@ Such an assignment has the following form:
 @var{variable}=@var{text}
 @end example
 
-@cindex @code{-v} option, variables@comma{} assigning
+@cindex @code{-v} option
 @noindent
 With it, a variable is set either at the beginning of the
 @command{awk} run or in between input files.
@@ -9589,11 +9583,13 @@ locales, use the period character (@samp{.}) as the decimal point.
 However, many (if not most) European and non-English locales use the comma
 (@samp{,}) as the decimal point character.
 
+@cindex dark corner, locale's decimal point character
 The POSIX standard says that @command{awk} always uses the period as the decimal
 point when reading the @command{awk} program source code, and for command-line
 variable assignments (@pxref{Other Arguments}).
 However, when interpreting input data, for @code{print} and @code{printf} output,
 and for number to string conversion, the local decimal point character is used.
+@value{DARKCORNER}.
 Here are some examples indicating the difference in behavior,
 on a GNU/Linux system:
 
@@ -9697,16 +9693,10 @@ $ @kbd{awk '@{ sum = $2 + $3 + $4 ; avg = sum / 3}
 @print{} Chris 84.3333
 @end example
 
-The following list provides the arithmetic operators in @command{awk}, in order from
-the highest precedence to the lowest:
+The following list provides the arithmetic operators in @command{awk},
+in order from the highest precedence to the lowest:
 
 @table @code
-@item - @var{x}
-Negation.
-
-@item + @var{x}
-Unary plus; the expression is converted to a number.
-
 @cindex common extensions, @code{**} operator
 @cindex extensions, common@comma{} @code{**} operator
 @cindex POSIX @command{awk}, arithmetic operators and
@@ -9715,6 +9705,12 @@ Unary plus; the expression is converted to a number.
 Exponentiation; @var{x} raised to the @var{y} power.  @samp{2 ^ 3} has
 the value eight; the character sequence @samp{**} is equivalent to
 @samp{^}. @value{COMMONEXT}
+
+@item - @var{x}
+Negation.
+
+@item + @var{x}
+Unary plus; the expression is converted to a number.
 
 @item @var{x} * @var{y}
 Multiplication.
@@ -10135,7 +10131,7 @@ For maximum portability, do not use the @samp{**=} operator.
 @c derived from email from  "Nelson H. F. Beebe" <beebe@math.utah.edu>
 @c Date: Mon, 1 Sep 1997 13:38:35 -0600 (MDT)
 
-@cindex dark corner
+@cindex dark corner, @code{/=} operator vs. @code{/=@dots{}/} regexp constant
 @cindex ambiguity, syntactic: @code{/=} operator vs. @code{/=@dots{}/} regexp constant
 @cindex syntactic ambiguity: @code{/=} operator vs. @code{/=@dots{}/} regexp constant
 @cindex @code{/=} operator vs. @code{/=@dots{}/} regexp constant
@@ -10182,8 +10178,8 @@ the increment operators add no power to the @command{awk} language; however, the
 are convenient abbreviations for very common operations.
 
 @cindex side effects
-@cindex @code{+} (plus sign), @code{++} (decrement/increment operators)
-@cindex plus sign (@code{+}), @code{++} (decrement/increment operators)
+@cindex @code{+} (plus sign), @code{++} operator
+@cindex plus sign (@code{+}), @code{++} operator
 @cindex side effects, decrement/increment operators
 The operator used for adding one is written @samp{++}.  It can be used to increment
 a variable either before or after taking its value.
@@ -10342,7 +10338,7 @@ BEGIN @{
 @}
 @end example
 
-@cindex dark corner
+@cindex dark corner, @code{"0"} is actually true
 There is a surprising consequence of the ``nonzero or non-null'' rule:
 the string constant @code{"0"} is actually true, because it is non-null.
 @value{DARKCORNER}
@@ -11099,8 +11095,8 @@ Field reference.
 
 @cindex @code{+} (plus sign), @code{++} operator
 @cindex plus sign (@code{+}), @code{++} operator
-@cindex @code{-} (hyphen), @code{--} (decrement/increment) operator
-@cindex hyphen (@code{-}), @code{--} (decrement/increment) operators
+@cindex @code{-} (hyphen), @code{--} operator
+@cindex hyphen (@code{-}), @code{--} operator
 @item ++ --
 Increment, decrement.
 
@@ -11694,6 +11690,7 @@ are not valid in an @code{END} rule, since all the input has been read.
 @subsection The @code{BEGINFILE} and @code{ENDFILE} Special Patterns
 @cindex @code{BEGINFILE} pattern
 @cindex @code{ENDFILE} pattern
+@cindex differences in @command{awk} and @command{gawk}, @code{BEGINFILE}/@code{ENDFILE} patterns
 
 This @value{SECTION} describes a @command{gawk}-specific feature.
 
@@ -11707,7 +11704,7 @@ The body of the @code{BEGINFILE} rules is executed just before
 @command{gawk} reads the first record from a file.  @code{FILENAME}
 is set to the name of the current file, and @code{FNR} is set to zero.
 
-The @code{BEGINFILE} rule provides you the opportunity for two tasks
+The @code{BEGINFILE} rule provides you the opportunity to accomplish two tasks
 that would otherwise be difficult or impossible to perform:
 
 @itemize @bullet
@@ -12525,10 +12522,7 @@ first rule in the program.
 @node Nextfile Statement
 @subsection The @code{nextfile} Statement
 @cindex @code{nextfile} statement
-@cindex differences in @command{awk} and @command{gawk}, @code{next}/@code{nextfile} statements
 
-@cindex common extensions, @code{nextfile} statement
-@cindex extensions, common@comma{} @code{nextfile} statement
 The @code{nextfile} statement
 is similar to the @code{next} statement.
 However, instead of abandoning processing of the current record, the
@@ -13788,7 +13782,7 @@ if it didn't exist before!
 @end quotation
 
 @c @cindex arrays, @code{in} operator and
-@cindex @code{in} operator, arrays and
+@cindex @code{in} operator
 To determine whether an element exists in an array at a certain index, use
 the following expression:
 
@@ -13927,12 +13921,12 @@ for (@var{var} in @var{array})
 @end example
 
 @noindent
-@cindex @code{in} operator, arrays and
+@cindex @code{in} operator
 This loop executes @var{body} once for each index in @var{array} that the
 program has previously used, with the variable @var{var} set to that index.
 
 @cindex arrays, @code{for} statement and
-@cindex @code{for} statement, in arrays
+@cindex @code{for} statement, looping over arrays
 The following program uses this form of the @code{for} statement.  The
 first rule scans the input records and notes which words appear (at
 least once) in the input, by storing a one into the array @code{used} with
@@ -15106,6 +15100,8 @@ $ @kbd{awk 'BEGIN @{ print index("peanut", "an") @}'}
 If @var{find} is not found, @code{index()} returns zero.
 (Remember that string indices in @command{awk} start at one.)
 
+It is a fatal error to use a regexp constant for @var{find}.
+
 @item length(@r{[}@var{string}@r{]})
 @cindex @code{length()} function
 Return the number of characters in @var{string}.  If
@@ -15281,7 +15277,7 @@ The @var{array} argument to @code{match()} is a
 using a third argument is a fatal error.
 
 @item patsplit(@var{string}, @var{array} @r{[}, @var{fieldpat} @r{[}, @var{seps} @r{]} @r{]}) #
-@cindex @code{patsplit()} function
+@cindex @code{patsplit()} function (@command{gawk})
 Divide
 @var{string} into pieces defined by @var{fieldpat}
 and store the pieces in @var{array} and the separator strings in the
@@ -16020,13 +16016,10 @@ which discusses this feature in more detail and gives an example.
 
 @item fflush(@r{[}@var{filename}@r{]})
 @cindex @code{fflush()} function
-@cindex common extensions, @code{fflush()} function
-@cindex extensions, common@comma{} @code{fflush()} function
 Flush any buffered output associated with @var{filename}, which is either a
 file opened for writing or a shell command for redirecting output to
 a pipe or coprocess.
 
-@cindex portability, @code{fflush()} function and
 @cindex buffers, flushing
 @cindex output, buffering
 Many utility programs @dfn{buffer} their output; i.e., they save information
@@ -24033,7 +24026,7 @@ discusses the ability to dynamically add new built-in functions to
 @node Nondecimal Data
 @section Allowing Nondecimal Input Data
 @cindex @code{--non-decimal-data} option
-@cindex advanced features, @command{gawk}, nondecimal input data
+@cindex advanced features, nondecimal input data
 @cindex input, data@comma{} nondecimal
 @cindex constants, nondecimal
 
@@ -24516,7 +24509,7 @@ Mike Brennan
 @c brennan@@whidbey.com
 @end smallexample
 
-@cindex advanced features, @command{gawk}, processes@comma{} communicating with
+@cindex advanced features, processes@comma{} communicating with
 @cindex processes, two-way communications with
 It is often useful to be able to
 send data to a separate program for
@@ -24666,7 +24659,7 @@ using regular pipes.
 
 @node TCP/IP Networking
 @section Using @command{gawk} for Network Programming
-@cindex advanced features, @command{gawk}, network programming
+@cindex advanced features, network programming
 @cindex networks, programming
 @c STARTOFRANGE tcpip
 @cindex TCP/IP
@@ -24777,7 +24770,6 @@ extensive examples.
 @cindex @command{awk} programs, profiling
 @c STARTOFRANGE proawk
 @cindex profiling @command{awk} programs
-@cindex profiling @command{gawk}
 @cindex @code{awkprof.out} file
 @cindex files, @code{awkprof.out}
 
@@ -24972,6 +24964,7 @@ the target of a redirection isn't a scalar, it gets parenthesized.
 @item
 @command{gawk} supplies leading comments in
 front of the @code{BEGIN} and @code{END} rules,
+the @code{BEGINFILE} and @code{ENDFILE} rules,
 the pattern/action rules, and the functions.
 
 @end itemize
@@ -25191,13 +25184,13 @@ is copied to a portable object file (@code{.po})
 and translations are created and shipped with the application.
 For example, there might be a @file{fr.po} for a French translation.
 
-@cindex @code{.mo} files
-@cindex files, @code{.mo}
+@cindex @code{.gmo} files
+@cindex files, @code{.gmo}
 @cindex message object files
 @cindex files, message object
 @item
 Each language's @file{.po} file is converted into a binary
-message object (@file{.mo}) file.
+message object (@file{.gmo}) file.
 A message object file contains the original messages and their
 translations in a binary format that allows fast lookup of translations
 at runtime.
@@ -25209,11 +25202,11 @@ are installed in a standard place.
 @cindex @code{bindtextdomain()} function (C library)
 @item
 For testing and development, it is possible to tell @code{gettext}
-to use @file{.mo} files in a different directory than the standard
+to use @file{.gmo} files in a different directory than the standard
 one by using the @code{bindtextdomain()} function.
 
-@cindex @code{.mo} files, specifying directory of
-@cindex files, @code{.mo}, specifying directory of
+@cindex @code{.gmo} files, specifying directory of
+@cindex files, @code{.gmo}, specifying directory of
 @cindex message object files, specifying directory of
 @cindex files, message object, specifying directory of
 @item
@@ -25239,8 +25232,8 @@ printf("%s", gettext("Don't Panic!\n"));
 The tools that extract messages from source code pull out all
 strings enclosed in calls to @code{gettext()}.
 
-@cindex @code{_} (underscore), @code{_} C macro
-@cindex underscore (@code{_}), @code{_} C macro
+@cindex @code{_} (underscore), C macro
+@cindex underscore (@code{_}), C macro
 The GNU @code{gettext} developers, recognizing that typing
 @samp{gettext(@dots{})} over and over again is both painful and ugly to look
 at, use the macro @samp{_} (an underscore) to make things easier:
@@ -25379,14 +25372,14 @@ The default value for @var{category} is @code{"LC_MESSAGES"}.
 
 The same remarks about argument order as for the @code{dcgettext()} function apply.
 
-@cindex @code{.mo} files, specifying directory of
-@cindex files, @code{.mo}, specifying directory of
+@cindex @code{.gmo} files, specifying directory of
+@cindex files, @code{.gmo}, specifying directory of
 @cindex message object files, specifying directory of
 @cindex files, message object, specifying directory of
 @cindex @code{bindtextdomain()} function (@command{gawk})
 @item bindtextdomain(@var{directory} @r{[}, @var{domain}@r{]})
 Change the directory in which
-@code{gettext} looks for @file{.mo} files, in case they
+@code{gettext} looks for @file{.gmo} files, in case they
 will not or cannot be placed in the standard locations
 (e.g., during testing).
 Return the directory in which @var{domain} is ``bound.''
@@ -25454,7 +25447,7 @@ message, but it uses the default @code{"LC_MESSAGES"} category.
 
 @cindex @code{LC_MESSAGES} locale category, @code{bindtextdomain()} function (@command{gawk})
 @item
-During development, you might want to put the @file{.mo}
+During development, you might want to put the @file{.gmo}
 file in a private directory for testing.  This is done
 with the @code{bindtextdomain()} built-in function:
 
@@ -25794,7 +25787,7 @@ msgstr "Like, the scoop is"
 @cindex Linux
 @cindex GNU/Linux
 The next step is to make the directory to hold the binary message object
-file and then to create the @file{guide.mo} file.
+file and then to create the @file{guide.gmo} file.
 The directory layout shown here is standard for GNU @code{gettext} on
 GNU/Linux systems.  Other versions of @code{gettext} may use a different
 layout:
@@ -25803,24 +25796,24 @@ layout:
 $ @kbd{mkdir en_US en_US/LC_MESSAGES}
 @end example
 
-@cindex @code{.po} files, converting to @code{.mo}
-@cindex files, @code{.po}, converting to @code{.mo}
-@cindex @code{.mo} files, converting from @code{.po}
-@cindex files, @code{.mo}, converting from @code{.po}
+@cindex @code{.po} files, converting to @code{.gmo}
+@cindex files, @code{.po}, converting to @code{.gmo}
+@cindex @code{.gmo} files, converting from @code{.po}
+@cindex files, @code{.gmo}, converting from @code{.po}
 @cindex portable object files, converting to message object files
 @cindex files, portable object, converting to message object files
 @cindex message object files, converting from portable object files
 @cindex files, message object, converting from portable object files
 @cindex @command{msgfmt} utility
 The @command{msgfmt} utility does the conversion from human-readable
-@file{.po} file to machine-readable @file{.mo} file.
+@file{.po} file to machine-readable @file{.gmo} file.
 By default, @command{msgfmt} creates a file named @file{messages}.
 This file must be renamed and placed in the proper directory so that
 @command{gawk} can find it:
 
 @example
 $ @kbd{msgfmt guide-mellow.po}
-$ @kbd{mv messages en_US/LC_MESSAGES/guide.mo}
+$ @kbd{mv messages en_US/LC_MESSAGES/guide.gmo}
 @end example
 
 Finally, we run the program to test it:
@@ -30824,7 +30817,7 @@ static const char *ext_version = "filefuncs extension: version 1.0";
 int plugin_is_GPL_compatible;
 @end example
 
-@cindex programming conventions, @command{gawk} internals
+@cindex programming conventions, @command{gawk} extensions
 By convention, for an @command{awk} function @code{foo()}, the C function
 that implements it is called @code{do_foo()}.  The function should have
 two arguments: the first is an @code{int} usually called @code{nargs},
@@ -31127,7 +31120,6 @@ earlier.  When done, return the result from @code{fill_stat_array()}:
 @}
 @end example
 
-@cindex programming conventions, @command{gawk} internals
 Finally, it's necessary to provide the ``glue'' that loads the
 new function(s) into @command{gawk}.
 
@@ -31288,12 +31280,14 @@ The usage is:
 @item @@load "filefuncs"
 This is how you load the extension.
 
+@cindex @code{chdir} extension function
 @item result = chdir("/some/directory")
 The @code{chdir()} function is a direct hook to the @code{chdir()}
 system call to change the current directory.  It returns zero
 upon success or less than zero upon error.  In the latter case it updates
 @code{ERRNO}.
 
+@cindex @code{stat} extension function
 @item result = stat("/some/path", statdata [, follow])
 The @code{stat()} function provides a hook into the
 @code{stat()} system call.
@@ -31383,6 +31377,7 @@ or
 Not all systems support all file types.
 @end multitable
 
+@cindex @code{fts} extension function
 @item flags = or(FTS_PHYSICAL, ...)
 @itemx result = fts(pathlist, flags, filedata)
 Walk the file trees provided in @code{pathlist} and fill in the
@@ -31503,6 +31498,7 @@ See @file{test/fts.awk} in the @command{gawk} distribution for an example.
 @node Extension Sample Fnmatch
 @subsection Interface To @code{fnmatch()}
 
+@cindex @code{fnmatch} extension function
 This extension provides an interface to the C library
 @code{fnmatch()} function.  The usage is:
 
@@ -31575,6 +31571,7 @@ The @code{fork} extension adds three functions, as follows.
 @item @@load "fork"
 This is how you load the extension.
 
+@cindex @code{fork} extension function
 @item pid = fork()
 This function creates a new process. The return value is the zero in the
 child and the process-id number of the child in the parent, or @minus{}1
@@ -31582,11 +31579,13 @@ upon error. In the latter case, @code{ERRNO} indicates the problem.
 In the child, @code{PROCINFO["pid"]} and @code{PROCINFO["ppid"]} are
 updated to reflect the correct values.
 
+@cindex @code{waitpid} extension function
 @item ret = waitpid(pid)
 This function takes a numeric argument, which is the process-id to
 wait for. The return value is that of the
 @code{waitpid()} system call.
 
+@cindex @code{wait} extension function
 @item ret = wait()
 This function waits for the first child to die.
 The return value is that of the
@@ -31609,6 +31608,7 @@ else
 @node Extension Sample Inplace
 @subsection Enabling In-Place File Editing
 
+@cindex @code{inplace} extension
 The @code{inplace} extension emulates GNU @command{sed}'s @option{-i} option
 which performs ``in place'' editing of each input file.
 It uses the bundled @file{inplace.awk} include file to invoke the extension
@@ -31672,9 +31672,11 @@ The @code{ordchr} extension adds two functions, named
 @item @@load "ordchr"
 This is how you load the extension.
 
+@cindex @code{ord} extension function
 @item number = ord(string)
 Return the numeric value of the first character in @code{string}.
 
+@cindex @code{chr} extension function
 @item char = chr(number)
 Return a string whose first character is that represented by @code{number}.
 @end table
@@ -31695,6 +31697,7 @@ printf("The string value of 65 is %s\n", chr(65))
 The @code{readdir} extension adds an input parser for directories.
 The usage is as follows:
 
+@cindex @code{readdir} extension
 @example
 @@load "readdir"
 @end example
@@ -31748,6 +31751,7 @@ the characters in each output line.  It's main purpose is to show how to
 write an output wrapper, although it may be mildly amusing for the unwary.
 Here is an example:
 
+@cindex @code{revoutput} extension
 @example
 @@load "revoutput"
 
@@ -31769,6 +31773,7 @@ the @command{awk} program.  It's main purpose is to show how to write
 a two-way processor, although it may also be mildly amusing.
 The following example shows how to use it:
 
+@cindex @code{revtwoway} extension
 @example
 @@load "revtwoway"
 
@@ -31788,12 +31793,14 @@ The @code{rwarray} extension adds two functions,
 named @code{writea()} and @code{reada()}, as follows:
 
 @table @code
+@cindex @code{writea} extension function
 @item ret = writea(file, array)
 This function takes a string argument, which is the name of the file
 to which dump the array, and the array itself as the second argument.
 @code{writea()} understands multidimensional arrays.  It returns one on
 success, or zero upon failure.
 
+@cindex @code{reada} extension function
 @item ret = reada(file, array)
 @code{reada()} is the inverse of @code{writea()};
 it reads the file named as its first argument, filling in
@@ -31836,6 +31843,7 @@ named @code{readfile()}:
 @item @@load "readfile"
 This is how you load the extension.
 
+@cindex @code{readfile} extension function
 @item result = readfile("/some/path")
 The argument is the name of the file to read.  The return value is a
 string containing the entire contents of the requested file.  Upon error,
@@ -31856,6 +31864,7 @@ if (contents == "" && ERRNO != "") @{
 
 @node Extension Sample API Tests
 @subsection API Tests
+@cindex @code{testext} extension
 
 The @code{testext} extension exercises parts of the extension API that
 are not tested by the other samples.  The @file{extension/testext.c}
@@ -31867,9 +31876,6 @@ for more information.
 @node Extension Sample Time
 @subsection Extension Time Functions
 
-@cindex time
-@cindex sleep
-
 These functions can be used either by invoking @command{gawk}
 with a command-line argument of @samp{-l time} or by
 inserting @samp{@@load "time"} in your script.
@@ -31878,7 +31884,7 @@ inserting @samp{@@load "time"} in your script.
 @item @@load "time"
 This is how you load the extension.
 
-@cindex @code{gettimeofday} time extension function
+@cindex @code{gettimeofday} extension function
 @item the_time = gettimeofday()
 Return the time in seconds that has elapsed since 1970-01-01 UTC as a
 floating point value.  If the time is unavailable on this platform, return
@@ -31888,7 +31894,7 @@ If the standard C @code{gettimeofday()} system call is available on this
 platform, then it simply returns the value.  Otherwise, if on Windows,
 it tries to use @code{GetSystemTimeAsFileTime()}.
 
-@cindex @code{sleep} time extension function
+@cindex @code{sleep} extension function
 @item result = sleep(@var{seconds})
 Attempt to sleep for @var{seconds} seconds.  If @var{seconds} is negative,
 or the attempt to sleep fails, return @minus{}1 and set @code{ERRNO}.
@@ -31901,6 +31907,7 @@ tries to use @code{nanosleep()} or @code{select()} to implement the delay.
 @node gawkextlib
 @section The @code{gawkextlib} Project
 
+@cindex @code{gawkextlib} project
 The @uref{http://sourceforge.net/projects/gawkextlib/, @code{gawkextlib}}
 project provides a number of @command{gawk} extensions, including one for
 processing XML files.  This is the evolution of the original @command{xgawk}
@@ -31937,6 +31944,7 @@ code control system.  The command is as follows:
 git clone git://git.code.sf.net/p/gawkextlib/code gawkextlib-code
 @end example
 
+@cindex Expat XML parser library
 You will need to have the @uref{http://expat.sourceforge.net, Expat}
 XML parser library installed in order to build and use the XML extension.
 
@@ -32613,6 +32621,8 @@ Prestandard VAX C compiler for VAX/VMS
 @node Common Extensions
 @appendixsec Common Extensions Summary
 
+@cindex extensions, Brian Kernighan's @command{awk}
+@cindex extensions, @command{mawk}
 This @value{SECTION} summarizes the common extensions supported
 by @command{gawk}, Brian Kernighan's @command{awk}, and @command{mawk},
 the three most widely-used freely available versions of @command{awk}
@@ -32635,6 +32645,10 @@ the three most widely-used freely available versions of @command{awk}
 @item @code{BINMODE} variable @tab @tab X @tab X
 @item Time related functions @tab @tab X @tab X
 @end multitable
+
+(Technically speaking, as of late 2012, @code{fflush()}, @samp{delete @var{array}},
+and @code{nextfile} are no longer extensions, since they have been added
+to POSIX.)
 
 @node Ranges and Locales
 @appendixsec Regexp Ranges and Locales: A Long Sad Story
@@ -32868,7 +32882,7 @@ the various PC platforms.
 Christos Zoulas
 provided the @code{extension()}
 built-in function for dynamically adding new modules.
-(This was removed at @command{gawk} 4.1.)
+(This was obsoleted at @command{gawk} 4.1.)
 
 @item
 @cindex Kahrs, J@"urgen
@@ -32928,7 +32942,6 @@ Patrick T.J.@: McPhee contributed the code for dynamic loading in Windows32
 environments.
 (This is no longer supported)
 
-
 @item
 @cindex Haque, John
 John Haque made the following contributions:
@@ -32948,6 +32961,9 @@ The initial text of
 @item
 The work to merge the three versions of @command{gawk}
 into one, for the 4.1 release.
+
+@item
+Improved array internals for arrays indexed by integers.
 @end itemize
 
 @item
@@ -33667,7 +33683,7 @@ at least the @samp{|&} operator.
 @cindex @command{gawk}, MS-Windows version of
 @cindex @code{;} (semicolon), @code{AWKPATH} variable and
 @cindex semicolon (@code{;}), @code{AWKPATH} variable and
-@cindex @code{AWKPATH} environment variable
+@cindex @env{AWKPATH} environment variable
 The MS-DOS and MS-Windows versions of @command{gawk} search for
 program files as described in @ref{AWKPATH Variable}.  However,
 semicolons (rather than colons) separate elements in the @env{AWKPATH}
@@ -34144,8 +34160,7 @@ This @value{SECTION} briefly describes where to get them:
 @cindex Kernighan, Brian
 @cindex source code, Brian Kernighan's @command{awk}
 @cindex @command{awk}, versions of, See Also Brian Kernighan's @command{awk}
-@cindex extensions, Brian Kernighan's @command{awk}
-@cindex Brian Kernighan's @command{awk}, extensions
+@cindex Brian Kernighan's @command{awk}
 @item Unix @command{awk}
 Brian Kernighan, one of the original designers of Unix @command{awk},
 has made his implementation of
@@ -36031,8 +36046,7 @@ to indicate their base.  Thus, @code{013} is 11 (one times 8 plus 3).
 @xref{Nondecimal-numbers}.
 
 @cindex P1003.1 POSIX standard
-@cindex P1003.2 POSIX standard
-@item P1003.1, P1003.2
+@item P1003.1
 See ``POSIX.''
 
 @item Pattern
@@ -36051,7 +36065,6 @@ Keyboard And Chair.)
 
 @item POSIX
 The name for a series of standards
-@c being developed by the IEEE
 that specify a Portable Operating System interface.  The ``IX'' denotes
 the Unix heritage of these standards.  The main standard of interest for
 @command{awk} users is

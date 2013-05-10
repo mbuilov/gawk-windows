@@ -259,12 +259,20 @@ inet:	inetmesg $(INET_TESTS)
 machine-tests: $(MACHINE_TESTS)
 
 mpfr-tests:
+#	@if $(AWK) --version | $(AWK) '/MPFR/ { exit 1 }' ; then \
+#	echo MPFR tests not supported on this system ; \
+#	else $(MAKE) $(MPFR_TESTS) ; \
+#	fi
 	@if $(AWK) --version | $(AWK) ' /MPFR/ { exit 1 }' ; then \
 	echo MPFR tests not supported on this system ; \
 	else $(MAKE) $(MPFR_TESTS) ; \
 	fi
 
 shlib-tests:
+#	@if $(AWK) --version | $(AWK) '/API/ { exit 1 }' ; then \
+#	echo shlib tests not supported on this system ; \
+#	else $(MAKE) shlib-real-tests ; \
+#	fi
 	@if $(AWK) --version | $(AWK) ' /API/ { exit 1 }' ; then \
 	echo shlib tests not supported on this system ; \
 	else $(MAKE) shlib-real-tests ; \
@@ -591,6 +599,9 @@ printf0::
 rsnulbig::
 	@echo $@
 	@ : Suppose that block size for pipe is at most 128kB:
+#	@$(AWK) 'BEGIN { for (i = 1; i <= 128*64+1; i++) print "abcdefgh123456\n" }' 2>&1 | \
+#	$(AWK) 'BEGIN { RS = ""; ORS = "\n\n" }; { print }' 2>&1 | \
+#	$(AWK) '/^[^a]/; END{ print NR }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@$(AWK) 'BEGIN { for (i = 1; i <= 128*64+1; i++) print "abcdefgh123456\n" }' 2>&1 | \
 	$(AWK) 'BEGIN { RS = ""; ORS = "\n\n" }; { print }' 2>&1 | \
 	$(AWK) ' /^[^a]/; END{ print NR }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -598,6 +609,10 @@ rsnulbig::
 
 rsnulbig2::
 	@echo $@
+#	@$(AWK) 'BEGIN { ORS = ""; n = "\n"; for (i = 1; i <= 10; i++) n = (n n); \
+#		for (i = 1; i <= 128; i++) print n; print "abc\n" }' 2>&1 | \
+#		$(AWK) 'BEGIN { RS = ""; ORS = "\n\n" };{ print }' 2>&1 | \
+#		$(AWK) '/^[^a]/; END { print NR }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@$(AWK) 'BEGIN { ORS = ""; n = "\n"; for (i = 1; i <= 10; i++) n = (n n); \
 		for (i = 1; i <= 128; i++) print n; print "abc\n" }' 2>&1 | \
 		$(AWK) 'BEGIN { RS = ""; ORS = "\n\n" };{ print }' 2>&1 | \
@@ -845,7 +860,7 @@ posix2008sub:
 
 next:
 	@echo $@
-	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
+	@-$(LOCALES) AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
 	@-LC_ALL=C $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 exit:
@@ -981,6 +996,7 @@ inplace3::
 
 testext::
 	@echo $@
+#	@$(AWK) '/^(@load|BEGIN)/,/^}/' $(top_srcdir)/extension/testext.c > testext.awk
 	@$(AWK) ' /^(@load|BEGIN)/,/^}/' $(top_srcdir)/extension/testext.c > testext.awk
 	@$(AWK) -f testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ testext.awk
@@ -1024,6 +1040,12 @@ symtab8:
 	@echo $@
 	@$(AWK) -d__$@ -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@
 	@grep -v '^ENVIRON' __$@ | grep -v '^PROCINFO' | grep -v '^FILENAME' >> _$@ ; rm __$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+symtab9:
+	@echo $@
+	@$(AWK) -f $(srcdir)/$@.awk >_$@
+	@rm -f testit.txt
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 reginttrad:
@@ -2265,11 +2287,6 @@ symtab5:
 symtab7:
 	@echo $@
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
-
-symtab9:
-	@echo $@
-	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 double1:

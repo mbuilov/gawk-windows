@@ -11,5 +11,9 @@ BEGIN {
 		getline
 
 	printf "NR should be 3, is %d\n", SYMTAB["NR"]
-	system("rm testit.txt")
+
+	# Can't do this here. Windows doesn't let you remove a file that
+	# is still open. Moving it to END won't help either, since the file
+	# (correctly) remain open until after the END finishes.
+	# system("rm testit.txt")
 }

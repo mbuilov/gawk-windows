@@ -180,7 +180,7 @@
 #define HAVE_MKTIME 1
 
 /* Define to 1 if you have fully functional mpfr and gmp libraries. */
-#undef HAVE_MPFR
+/* #undef HAVE_MPFR */
 
 /* Define to 1 if you have the <netdb.h> header file. */
 #undef HAVE_NETDB_H
@@ -424,7 +424,7 @@
 #define PACKAGE_NAME "GNU Awk"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GNU Awk 4.0.76"
+#define PACKAGE_STRING "GNU Awk 4.1.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gawk"
@@ -433,7 +433,7 @@
 #define PACKAGE_URL "http://www.gnu.org/software/gawk/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.0.76"
+#define PACKAGE_VERSION "4.1.0"
 
 /* Define to 1 if *printf supports %F format */
 #undef PRINTF_HAS_F_FORMAT
@@ -495,7 +495,7 @@
 
 
 /* Version number of package */
-#define VERSION "4.0.76"
+#define VERSION "4.1.0"
 
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE

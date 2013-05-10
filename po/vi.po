@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk-4.0.75\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2013-04-27 22:36+0300\n"
+"POT-Creation-Date: 2013-05-09 16:05+0300\n"
 "PO-Revision-Date: 2013-04-24 08:11+0700\n"
 "Last-Translator: Trần Ngọc Quân <vnwildman@gmail.com>\n"
 "Language-Team: Vietnamese <translation-team-vi@lists.sourceforge.net>\n"
@@ -448,69 +448,74 @@ msgstr "dùng “dcgettext(_\"...\")” không đúng: hãy gỡ bỏ gạch dư
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
 msgstr "dùng “dcgettext(_\"...\")” không đúng: hãy gỡ bỏ gạch dưới nằm trước"
 
-#: awkgram.y:4039
+#: awkgram.y:3992
+#, fuzzy
+msgid "index: regexp constant as second argument is not allowed"
+msgstr "index: (chỉ mục) đã nhận đối số thứ hai không phải là chuỗi"
+
+#: awkgram.y:4045
 #, c-format
 msgid "function `%s': parameter `%s' shadows global variable"
 msgstr "hàm “%s”: tham số “%s” che biến toàn cục"
 
-#: awkgram.y:4096 debug.c:4021 debug.c:4064 debug.c:5189
+#: awkgram.y:4102 debug.c:4021 debug.c:4064 debug.c:5189
 #, c-format
 msgid "could not open `%s' for writing (%s)"
 msgstr "không mở được “%s” để ghi (%s)"
 
-#: awkgram.y:4097
+#: awkgram.y:4103
 msgid "sending variable list to standard error"
 msgstr "đang gởi danh sách biến tới thiết bị lỗi chuẩn"
 
-#: awkgram.y:4105
+#: awkgram.y:4111
 #, c-format
 msgid "%s: close failed (%s)"
 msgstr "%s: lỗi đóng (%s)"
 
-#: awkgram.y:4130
+#: awkgram.y:4136
 msgid "shadow_funcs() called twice!"
 msgstr "shadow_funcs() (hàm bóng) được gọi hai lần!"
 
-#: awkgram.y:4138
+#: awkgram.y:4144
 msgid "there were shadowed variables."
 msgstr "có biến bị bóng."
 
-#: awkgram.y:4209
+#: awkgram.y:4215
 #, c-format
 msgid "function name `%s' previously defined"
 msgstr "tên hàm “%s” trước đây đã được định nghĩa rồi"
 
-#: awkgram.y:4255
+#: awkgram.y:4261
 #, c-format
 msgid "function `%s': can't use function name as parameter name"
 msgstr "hàm “%s”: không thể dùng tên hàm như là tên tham số"
 
-#: awkgram.y:4258
+#: awkgram.y:4264
 #, c-format
 msgid "function `%s': can't use special variable `%s' as a function parameter"
 msgstr "hàm “%s”: không thể dùng biến đặc biệt “%s” như là tham số hàm"
 
-#: awkgram.y:4266
+#: awkgram.y:4272
 #, c-format
 msgid "function `%s': parameter #%d, `%s', duplicates parameter #%d"
 msgstr "hàm “%s”: tham số “#%d”, “%s”, nhân đôi tham số “#%d”"
 
-#: awkgram.y:4360 awkgram.y:4366
+#: awkgram.y:4366 awkgram.y:4372
 #, c-format
 msgid "function `%s' called but never defined"
 msgstr "hàm “%s” được gọi nhưng mà chưa xác định"
 
-#: awkgram.y:4370
+#: awkgram.y:4376
 #, c-format
 msgid "function `%s' defined but never called directly"
 msgstr "hàm “%s” được định nghĩa nhưng mà chưa được gọi trực tiếp bao giờ"
 
-#: awkgram.y:4402
+#: awkgram.y:4408
 #, c-format
 msgid "regexp constant for parameter #%d yields boolean value"
 msgstr "hằng biểu thức chính quy cho tham số “#%d” làm giá trị luận lý (bun)"
 
-#: awkgram.y:4461
+#: awkgram.y:4467
 #, c-format
 msgid ""
 "function `%s' called with space between name and `(',\n"
@@ -519,11 +524,11 @@ msgstr ""
 "hàm “%s” được gọi với dấu cách nằm giữa tên và “(”\n"
 "hoặc được dùng như là biến hay mảng"
 
-#: awkgram.y:4697
+#: awkgram.y:4703
 msgid "division by zero attempted"
 msgstr "cố gắng chia cho số không"
 
-#: awkgram.y:4706
+#: awkgram.y:4712
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "thử chia cho không trong “%%”"
@@ -2639,257 +2644,257 @@ msgstr "không thể mở ống dẫn “%s” để nhập (%s)"
 msgid "can't open two way pipe `%s' for input/output (%s)"
 msgstr "không thể mở ống dẫn hai chiều “%s” để nhập/xuất (%s)"
 
-#: io.c:932
+#: io.c:928
 #, c-format
 msgid "can't redirect from `%s' (%s)"
 msgstr "không thể chuyển hướng từ “%s” (%s)"
 
-#: io.c:935
+#: io.c:931
 #, c-format
 msgid "can't redirect to `%s' (%s)"
 msgstr "không thể chuyển hướng đến “%s” (%s)"
 
-#: io.c:986
+#: io.c:982
 msgid ""
 "reached system limit for open files: starting to multiplex file descriptors"
 msgstr ""
 "đã tới giới hạn hệ thống về tập tin được mở nên bắt đầu phối hợp nhiều dòng "
 "điều mô tả tập tin"
 
-#: io.c:1002
+#: io.c:998
 #, c-format
 msgid "close of `%s' failed (%s)."
 msgstr "lỗi đóng “%s” (%s)"
 
-#: io.c:1010
+#: io.c:1006
 msgid "too many pipes or input files open"
 msgstr "quá nhiều ống dẫn hay tập tin nhập được mở"
 
-#: io.c:1032
+#: io.c:1028
 msgid "close: second argument must be `to' or `from'"
 msgstr "close: (đóng) đối số thứ hai phải là “to” (đến) hay “from” (từ)"
 
-#: io.c:1049
+#: io.c:1045
 #, c-format
 msgid "close: `%.*s' is not an open file, pipe or co-process"
 msgstr ""
 "close: (đóng) “%.*s” không phải là tập tin, ống dẫn hay đồng tiến trình đã "
 "được mở"
 
-#: io.c:1054
+#: io.c:1050
 msgid "close of redirection that was never opened"
 msgstr "đóng một chuyển hướng mà nó chưa từng được mở"
 
-#: io.c:1151
+#: io.c:1147
 #, c-format
 msgid "close: redirection `%s' not opened with `|&', second argument ignored"
 msgstr ""
 "close: chuyển hướng “%s” không được mở bởi “|&” nên đối số thứ hai bị bỏ qua"
 
-#: io.c:1168
+#: io.c:1164
 #, c-format
 msgid "failure status (%d) on pipe close of `%s' (%s)"
 msgstr "trạng thái thất bại (%d) khi đóng ống dẫn “%s” (%s)"
 
-#: io.c:1171
+#: io.c:1167
 #, c-format
 msgid "failure status (%d) on file close of `%s' (%s)"
 msgstr "trạng thái thất bại (%d) khi đóng tập tin “%s” (%s)"
 
-#: io.c:1191
+#: io.c:1187
 #, c-format
 msgid "no explicit close of socket `%s' provided"
 msgstr "không cung cấp lệnh đóng ổ cắm “%s” rõ ràng"
 
-#: io.c:1194
+#: io.c:1190
 #, c-format
 msgid "no explicit close of co-process `%s' provided"
 msgstr "không cung cấp lệnh đóng đồng tiến trình “%s” rõ ràng"
 
-#: io.c:1197
+#: io.c:1193
 #, c-format
 msgid "no explicit close of pipe `%s' provided"
 msgstr "không cung cấp lệnh đóng đường ống dẫn lệnh “%s” rõ ràng"
 
-#: io.c:1200
+#: io.c:1196
 #, c-format
 msgid "no explicit close of file `%s' provided"
 msgstr "không cung cấp lệnh đóng tập tin “%s” rõ ràng"
 
-#: io.c:1228 io.c:1283 main.c:842 main.c:879
+#: io.c:1224 io.c:1279 main.c:842 main.c:879
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "gặp lỗi khi ghi đầu ra tiêu chuẩn (%s)"
 
-#: io.c:1232 io.c:1288
+#: io.c:1228 io.c:1284
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "gặp lỗi khi ghi thiết bị lỗi chuẩn (%s)"
 
-#: io.c:1240
+#: io.c:1236
 #, c-format
 msgid "pipe flush of `%s' failed (%s)."
 msgstr "lỗi xoá sạch ống dẫn “%s” (%s)"
 
-#: io.c:1243
+#: io.c:1239
 #, c-format
 msgid "co-process flush of pipe to `%s' failed (%s)."
 msgstr "lỗi xoá sạch ống dẫn đồng tiến trình đến “%s” (%s)"
 
-#: io.c:1246
+#: io.c:1242
 #, c-format
 msgid "file flush of `%s' failed (%s)."
 msgstr "lỗi xoá sạch tập tin “%s” (%s)"
 
-#: io.c:1360
+#: io.c:1356
 #, c-format
 msgid "local port %s invalid in `/inet'"
 msgstr "cổng cục bộ %s không hợp lệ trong “/inet”"
 
-#: io.c:1378
+#: io.c:1374
 #, c-format
 msgid "remote host and port information (%s, %s) invalid"
 msgstr "thông tin về máy/cổng ở xa (%s, %s) không phải hợp lệ"
 
-#: io.c:1530
+#: io.c:1526
 #, c-format
 msgid "no (known) protocol supplied in special filename `%s'"
 msgstr "trong tên tập tin đặc biệt “%s” không cung cấp giao thức (đã biết) nào"
 
-#: io.c:1544
+#: io.c:1540
 #, c-format
 msgid "special file name `%s' is incomplete"
 msgstr "tên tập tin đặc biệt “%s” chưa xong"
 
-#: io.c:1561
+#: io.c:1557
 msgid "must supply a remote hostname to `/inet'"
 msgstr "phải cung cấp một tên máy chủ cho </inet>"
 
-#: io.c:1579
+#: io.c:1575
 msgid "must supply a remote port to `/inet'"
 msgstr "phải cung cấp một cổng máy chủ cho </inet>"
 
-#: io.c:1625
+#: io.c:1621
 msgid "TCP/IP communications are not supported"
 msgstr "truyền thông TCP/IP không được hỗ trợ"
 
-#: io.c:1800
+#: io.c:1796
 #, c-format
 msgid "could not open `%s', mode `%s'"
 msgstr "không mở được “%s”, chế độ “%s”"
 
-#: io.c:1850
+#: io.c:1846
 #, c-format
 msgid "close of master pty failed (%s)"
 msgstr "lỗi đóng pty (tài sản?) chính (%s)"
 
-#: io.c:1852 io.c:2028 io.c:2198
+#: io.c:1848 io.c:2024 io.c:2194
 #, c-format
 msgid "close of stdout in child failed (%s)"
 msgstr "lỗi đóng thiết bị xuất chuẩn trong tiến trình con (%s)"
 
-#: io.c:1855
+#: io.c:1851
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
 msgstr ""
 "gặp lỗi khi di chuyển pty phụ thuộc đến thiết bị xuất chuẩn trong con "
 "(trùng: %s)"
 
-#: io.c:1857 io.c:2033
+#: io.c:1853 io.c:2029
 #, c-format
 msgid "close of stdin in child failed (%s)"
 msgstr "lỗi đóng thiết bị nhập chuẩn trong tiến trình con (%s)"
 
-#: io.c:1860
+#: io.c:1856
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
 msgstr ""
 "lỗi di chuyển pty (tài sản?) phụ tới thiết bị nhập chuẩn trong điều con "
 "(nhân đôi: %s)"
 
-#: io.c:1862 io.c:1883
+#: io.c:1858 io.c:1879
 #, c-format
 msgid "close of slave pty failed (%s)"
 msgstr "đóng pty phụ thuộc gặp lỗi (%s)"
 
-#: io.c:1969 io.c:2031 io.c:2175 io.c:2201
+#: io.c:1965 io.c:2027 io.c:2171 io.c:2197
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
 msgstr ""
 "lỗi di chuyển ống dẫn đến thiết bị xuất chuẩn trong tiến trình con (dup "
 "(nhân đôi): %s)"
 
-#: io.c:1976 io.c:2036
+#: io.c:1972 io.c:2032
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
 msgstr ""
 "lỗi di chuyển ống dẫn đến thiết bị nhập chuẩn trong tiến trình con (dup "
 "(nhân đôi): %s)"
 
-#: io.c:1996 io.c:2191
+#: io.c:1992 io.c:2187
 msgid "restoring stdout in parent process failed\n"
 msgstr "phục hồi đầu ra tiêu chuẩn trong tiến trình mẹ gặp lỗi\n"
 
-#: io.c:2004
+#: io.c:2000
 msgid "restoring stdin in parent process failed\n"
 msgstr "phục hồi đầu vào tiêu chuẩn trong tiến trình mẹ gặp lỗi\n"
 
-#: io.c:2039 io.c:2203 io.c:2217
+#: io.c:2035 io.c:2199 io.c:2213
 #, c-format
 msgid "close of pipe failed (%s)"
 msgstr "đóng ống dẫn gặp lỗi (%s)"
 
-#: io.c:2093
+#: io.c:2089
 msgid "`|&' not supported"
 msgstr "“|&” không được hỗ trợ"
 
-#: io.c:2160
+#: io.c:2156
 #, c-format
 msgid "cannot open pipe `%s' (%s)"
 msgstr "không thể mở ống dẫn “%s” (%s)"
 
-#: io.c:2211
+#: io.c:2207
 #, c-format
 msgid "cannot create child process for `%s' (fork: %s)"
 msgstr "không thể tạo tiến trình con cho “%s” (fork: %s)"
 
-#: io.c:2671
+#: io.c:2667
 msgid "register_input_parser: received NULL pointer"
 msgstr "register_input_parser: nhận được con trỏ NULL"
 
-#: io.c:2699
+#: io.c:2695
 #, c-format
 msgid "input parser `%s' conflicts with previously installed input parser `%s'"
 msgstr ""
 "bộ phân tích đầu vào “%s” xung đột với bộ phân tích đầu vào được cài đặt "
 "trước đó “%s”"
 
-#: io.c:2706
+#: io.c:2702
 #, c-format
 msgid "input parser `%s' failed to open `%s'"
 msgstr "bộ phân tích đầu vào “%s” gặp lỗi khi mở “%s”"
 
-#: io.c:2726
+#: io.c:2722
 msgid "register_output_wrapper: received NULL pointer"
 msgstr "register_output_wrapper: nhận được con trỏ NULL"
 
-#: io.c:2754
+#: io.c:2750
 #, c-format
 msgid ""
 "output wrapper `%s' conflicts with previously installed output wrapper `%s'"
 msgstr ""
 "bộ bao kết xuất “%s” xung đột với bộ bao kết xuất được cài đặt trước đó “%s”"
 
-#: io.c:2761
+#: io.c:2757
 #, c-format
 msgid "output wrapper `%s' failed to open `%s'"
 msgstr "bộ bao kết xuất “%s” gặp lỗi khi mở “%s”"
 
-#: io.c:2782
+#: io.c:2778
 msgid "register_output_processor: received NULL pointer"
 msgstr "register_output_processor: nhận được con trỏ NULL"
 
-#: io.c:2811
+#: io.c:2807
 #, c-format
 msgid ""
 "two-way processor `%s' conflicts with previously installed two-way processor "
@@ -2898,25 +2903,25 @@ msgstr ""
 "bộ xử lý hai hướng “%s” xung đột với bộ xử lý hai hướng đã được cài đặt "
 "trước đó “%s”"
 
-#: io.c:2820
+#: io.c:2816
 #, c-format
 msgid "two way processor `%s' failed to open `%s'"
 msgstr "bộ xử lý hai hướng “%s” gặp lỗi khi mở “%s”"
 
-#: io.c:2927
+#: io.c:2923
 #, c-format
 msgid "data file `%s' is empty"
 msgstr "tập tin dữ liệu “%s” là rỗng"
 
-#: io.c:2969 io.c:2977
+#: io.c:2965 io.c:2973
 msgid "could not allocate more input memory"
 msgstr "không thể cấp phát bộ nhớ nhập thêm nữa"
 
-#: io.c:3543
+#: io.c:3539
 msgid "multicharacter value of `RS' is a gawk extension"
 msgstr "giá trị đa ký tự của “RS” là phần mở rộng gawk"
 
-#: io.c:3632
+#: io.c:3628
 msgid "IPv6 communication is not supported"
 msgstr "Truyền thông trên IPv6 không được hỗ trợ"
 
