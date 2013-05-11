@@ -88,8 +88,8 @@ See http://cmake.org/Wiki/CMake/Testing_With_CTest#Simple_Testing
   make
   make test          # run all test cases
   ctest -N           # list all test cases but don't run them
-  ctest -R BASIC     # run all test case belonging to group BASIC
-  ctest -R MPFR      # run all test case belonging to group MPFR
+  ctest -R BASIC     # run all test cases belonging to group BASIC
+  ctest -R MPFR      # run all test cases belonging to group MPFR
   ctest -E SHLIB.filefunc # run all tests, except the SHLIB.filefunc test case
 Remember that running test cases is possible only after a native build.
 

@@ -41,13 +41,15 @@ foreach(testgroup ${ALL_GROUPS} )
   string(REGEX REPLACE " "                                ";" ONE_GROUP "${ONE_GROUP}")
   # Use each name of a test case to start a script that executes the test case.
   foreach(testcase ${ONE_GROUP} )
-    add_test("${testgroup}.${testcase}" ${SHELL_PREFIX} ${CMAKE_SOURCE_DIR}/cmake/basictest ${CMAKE_BINARY_DIR}/gawk ${testcase}${file_suffix} )
+    add_test("${testgroup}.${testcase}" ${SHELL_PREFIX} ${CMAKE_SOURCE_DIR}/cmake/basictest ${CMAKE_BINARY_DIR}/gawk${CMAKE_EXECUTABLE_SUFFIX} ${testcase}${file_suffix} )
   endforeach(testcase)
 endforeach(testgroup)
 
 # Create an empty configuration file for customizing test execution.
 set(CTestCustom ${CMAKE_BINARY_DIR}/CTestCustom.cmake)
 file(WRITE  ${CTestCustom} "# DO NOT EDIT, THIS FILE WILL BE OVERWRITTEN\n" )
+# Test case SHLIB.filefuncs needs the gawk exe in source directory.
+file(APPEND ${CTestCustom} "file(COPY ${CMAKE_BINARY_DIR}/gawk${CMAKE_EXECUTABLE_SUFFIX} DESTINATION  ${CMAKE_SOURCE_DIR})\n")
 # Exclude test cases from execution that make no sense on a certain platform.
 file(APPEND ${CTestCustom} "set(CTEST_CUSTOM_TESTS_IGNORE\n")
 if(WIN32)
