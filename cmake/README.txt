@@ -79,3 +79,17 @@ and several other files).
    Proceed as describe above for cross-compilers.
    The command "make ; make package" will build gawk.exe and the installer file
 
+- How can I run test cases ?
+You can run all the test cases that are defined in test/Makefile.am.
+These test case scripts were not changed, but the way they are invoked has
+been adapted to CMake habits.
+See http://cmake.org/Wiki/CMake/Testing_With_CTest#Simple_Testing
+  cmake ..
+  make
+  make test          # run all test cases
+  ctest -N           # list all test cases but don't run them
+  ctest -R BASIC     # run all test case belonging to group BASIC
+  ctest -R MPFR      # run all test case belonging to group MPFR
+  ctest -E SHLIB.filefunc # run all tests, except the SHLIB.filefunc test case
+Remember that running test cases is possible only after a native build.
+
