@@ -312,7 +312,7 @@ function fts() {
 
 function charasbytes() {
   [ -z "$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-  AWKPATH=${SRCDIR} $GAWKEXE -b -f ${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in | \
+  AWKPATH=${SRCDIR} $GAWKEXE -b -v BINMODE=2 -f ${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in | \
   od -c -t x1 | sed -e 's/  */ /g' -e 's/ *$//' >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
@@ -416,6 +416,7 @@ function inetdayt() {
 function redfilnm() { simple_test_case "" "srcdir=${SRCDIR}" ; }
 
 function leaddig() { simple_test_case "-v x=2E" "" ; }
+function longwrds() { simple_test_case "-vSORT=sort" "" ; }
 
 function gsubtst3() {
   $GAWKEXE --re-interval -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in >_${TESTCASE}
