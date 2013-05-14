@@ -113,6 +113,10 @@ extern "C" {
 #define awk_const const
 #endif
 
+/* This is for fake directory file descriptors on systems that don't
+   allow to open() a directory.  */
+#define FAKE_FD_VALUE 42
+
 typedef enum awk_bool {
 	awk_false = 0,
 	awk_true

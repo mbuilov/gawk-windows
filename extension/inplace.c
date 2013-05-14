@@ -51,6 +51,20 @@
 #define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #endif
 
+#ifdef __MINGW32__
+# define chown(x,y,z)  (0)
+# define link(f1,f2)   rename(f1,f2)
+int
+mkstemp (char *template)
+{
+  char *tmp_fname = _mktemp (template);
+
+  if (tmp_fname)
+    return _open (tmp_fname, O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
+  return -1;
+}
+#endif
+
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
 static const char *ext_version = "inplace extension: version 1.0";
@@ -224,6 +238,10 @@ do_inplace_end(int nargs, awk_value_t *result)
 				filename.str_value.str, bakname, strerror(errno));
 		free(bakname);
 	}
+
+#ifdef __MINGW32__
+	unlink(filename.str_value.str);
+#endif
 
 	if (rename(state.tname, filename.str_value.str) < 0)
 		fatal(ext_id, _("inplace_end: rename(`%s', `%s') failed (%s)"),

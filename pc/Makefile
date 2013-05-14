@@ -263,6 +263,7 @@ alloca$O:	alloca.c
 
 
 install: install$(install)
+	-$(MAKE) -C extension install-extensions
 
 install1:
 	echo extproc sh $(prefix)/bin/igawk.cmd > igawk.cmd
@@ -286,6 +287,7 @@ install2:
 
 install-strip: install$(install)
 	strip "$(prefix)/bin"/*.exe
+	-$(MAKE) -C extension $@
 
 clean:
 	-rm -rf gawk *.exe gawk.map *.o *.obj core a.out $(RSPFILE) $(PRSPFILE) $(DRSPFILE) $(DYN_EXP)

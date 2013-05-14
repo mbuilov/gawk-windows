@@ -1,0 +1,75 @@
+# extension/Makefile for the MinGW build
+#
+# Copyright (C) 2013 Free Software Foundation, Inc.
+
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+prefix = c:/gnu
+pkgdatadir = $(prefix)/lib/awk
+pkgextensiondir = $(prefix)/lib/gawk
+includedir = $(prefix)/include
+libdir = $(prefix)/lib
+datadir = $(prefix)/share
+pkgdatadir = $(datadir)/gawk-extensions
+pkgincludedir = $(includedir)/gawk-extensions
+pkglibdir = $(libdir)/gawk-extensions
+pkglibexecdir = $(libexecdir)/gawk-extensions
+
+SOEXT = dll
+SIMPLE_EXTENSIONS = inplace.$(SOEXT) ordchr.$(SOEXT) readfile.$(SOEXT)\
+ revoutput.$(SOEXT) revtwoway.$(SOEXT) testext.$(SOEXT)
+ALL_EXTENSIONS = filefuncs.$(SOEXT) fnmatch.$(SOEXT) inplace.$(SOEXT)\
+ ordchr.$(SOEXT) readdir.$(SOEXT) readfile.$(SOEXT) revoutput.$(SOEXT)\
+ revtwoway.$(SOEXT) rwarray.$(SOEXT) testext.$(SOEXT) time.$(SOEXT)
+
+extensions: $(ALL_EXTENSIONS)
+
+fnmatch.$(SOEXT): fnmatch.c
+	gcc -I.. -I../missing_d -DHAVE_FNMATCH_H -shared -gdwarf-2 -g3 -o $@ fnmatch.c
+
+readdir.$(SOEXT): readdir.c gawkdirfd.h
+	gcc -I.. -DHAVE_DIRENT_H -shared -gdwarf-2 -g3 -o $@ readdir.c
+
+rwarray.$(SOEXT): rwarray.c
+	gcc -I.. -shared -gdwarf-2 -g3 -o $@ rwarray.c -lws2_32
+
+filefuncs.$(SOEXT): filefuncs.c stack.c stack.h gawkfts.h
+	gcc -I.. -shared -gdwarf-2 -g3 -o $@ filefuncs.c stack.c
+
+time.$(SOEXT): time.c
+	gcc -DHAVE_GETSYSTEMTIMEASFILETIME -I.. -shared -gdwarf-2 -g3 -o $@ time.c
+
+$(SIMPLE_EXTENSIONS):
+	gcc -I.. -shared -gdwarf-2 -g3 -o $@ $(@:.$(SOEXT)=.c)
+
+$(ALL_EXTENSIONS): ../gawkapi.h ../gettext.h
+
+inplace.$(SOEXT): inplace.c
+ordchr.$(SOEXT): ordchr.c
+readfile.$(SOEXT): readfile.c
+revoutput.$(SOEXT): revoutput.c
+rwarray.$(SOEXT): rwarray.c
+testext.$(SOEXT): testext.c
+time.$(SOEXT): time.c
+
+# This must not be called 'install' because there's a file INSTALL,
+# and case-insensitive filesystems will gladly accept it.
+install-extensions:
+	-mkdir "$(pkgextensiondir)"
+	cp *.$(SOEXT) "$(pkgextensiondir)"
+	-mkdir "$(prefix)/share/man/man3"
+	cp *.3am "$(prefix)/share/man/man3"
+
+install-strip: install-extensions
+	strip --strip-unneeded "$(pkgextensiondir)"/*.$(SOEXT)
+
+clean:
+	-rm -f *.$(SOEXT)
+

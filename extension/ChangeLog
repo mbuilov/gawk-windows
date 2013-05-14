@@ -1,3 +1,33 @@
+2013-05-14  Eli Zaretskii  <eliz@gnu.org>
+
+	* rwarray.c [__MINGW32__]: Include winsock2.h instead of
+	arpa/inet.h.
+
+	* readdir.c [__MINGW32__]: Include windows.h.
+	Include gawkapi.h before gawkdirfd.h, since the former defines
+	FAKE_FD_VALUE needed by the latter.
+	(ftype): Accept an additional argument, the directory that is
+	being read.  Callers changed.
+	[!DT_BLK]: Produce the file's type by calling 'stat' on it, if the
+	dirent structure doesn't provide that.
+	(get_inode): New function, to produce inode values on MS-Windows.
+	(dir_get_record): Use it.
+
+	* inplace.c (chown, link) [__MINGW32__]: Redirect to existing
+	library functions.
+	(mkstemp) [__MINGW32__]: New function, for MinGW, which doesn't
+	have it in its library.
+	(do_inplace_end) [__MINGW32__]: Remove the old file before
+	renaming the new, since 'rename' on Windows cannot overwrite
+	existing files.
+
+	* gawkdirfd.h (ENOTSUP): Define to ENOSYS if not already defined.
+	(DIR_TO_FD): If not defined yet, define to FAKE_FD_VALUE.
+
+	* filefuncs.c (get_inode) [_WIN32]: New function, produces the
+	file index used on Windows as its inode.
+	(fill_stat_array) [_WIN32]: Use it.
+
 2013-05-09         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* 4.1.0: Release tar ball made.

@@ -60,11 +60,16 @@
 SHELL = /bin/sh
 
 # Point to gawk
-AWK = ../gawk.exe
+AWK = AWKLIBPATH=../extension ../gawk.exe
 # Also point to gawk but for DOS commands needing backslashes.  We need
 # the forward slash version too or 'arrayparam' fails.
 AWK2 = '..\gawk.exe'
 AWKPROG = ../gawk.exe
+# Point $(LS) to a version of ls.exe that reports true Windows file
+# index numbers, because this is what the readdir test expects.
+# Otherwise, the readdir test will fail.  (The MSYS ls.exe doesn't
+# report full index values.)
+LS = ls.exe
 
 # Define PGAWK
 PGAWK = ../gawk.exe -p
@@ -100,12 +105,13 @@ CP = cp
 #CP = : && command -c copy
 #CP  = command.com /c copy
 
-MV = cmd.exe /c ren
+#MV = cmd.exe /c ren
+MV = mv
 
-#MKDIR = mkdir
+MKDIR = mkdir
 #MKDIR = gmkdir
 #MKDIR = : && command -c mkdir
-MKDIR  = command.com /c mkdir
+#MKDIR  = command.com /c mkdir
 
 # Set your unix-style date function here
 #DATE = date
@@ -237,12 +243,9 @@ check:	msg \
 	extend-msg-start gawk-extensions extend-msg-end \
 	machine-msg-start machine-tests machine-msg-end \
 	charset-msg-start charset-tests charset-msg-end \
-	shlib-msg-start \
+	shlib-msg-start shlib-tests     shlib-msg-end \
 	mpfr-msg-start   mpfr-tests      mpfr-msg-end \
 	pass-fail
-
-# Removed from 'check': shlib-tests     shlib-msg-end
-# FIXME: add back when the extensions are built by default.
 
 basic:	$(BASIC_TESTS)
 
@@ -1007,17 +1010,15 @@ readdir:
 	echo If it does, try rerunning on an ext'[234]' filesystem. ; \
 	fi
 	@echo $@
+	@echo This test may fail if $(LS) does not report full Windows file index as the inode
 	@$(AWK) -f $(srcdir)/readdir.awk $(top_srcdir) > _$@
-	@ls -afli $(top_srcdir) | sed 1d | $(AWK) -f $(srcdir)/readdir0.awk -v extout=_$@ > $@.ok
+	@$(LS) -afli $(top_srcdir) | sed 1d | $(AWK) -f $(srcdir)/readdir0.awk -v extout=_$@ > $@.ok
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 fts:
-	@if [ "`uname`" = IRIX ];  then \
-	echo This test may fail on IRIX systems when run on an NFS filesystem.; \
-	echo If it does, try rerunning on an xfs filesystem. ; \
-	fi
 	@echo $@
-	@$(AWK) -f $(srcdir)/fts.awk
+	@echo Expect $@ to fail with MinGW because function 'fts' is not defined.
+	@-$(AWK) -f $(srcdir)/fts.awk
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 charasbytes:
@@ -2362,11 +2363,13 @@ filefuncs:
 
 fork:
 	@echo $@
+	@echo Expect $@ to fail with MinGW because fork.dll is not available
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 fork2:
 	@echo $@
+	@echo Expect $@ to fail with MinGW because fork.dll is not available
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 

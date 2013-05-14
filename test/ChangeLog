@@ -1,3 +1,12 @@
+2013-05-14  Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile.in (mpfr-tests, shlib-tests): Add a blank character
+	between ' and /FOO/ in Gawk command lines, for the benefit of
+	testing under MSYS Bash.
+
+	* filefuncs.awk (BEGIN): Call 'stat' on gawkapi.o, not on gawk,
+	which does not exist on systems that produce gawk.exe.
+
 2013-05-09         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* 4.1.0: Release tar ball made.

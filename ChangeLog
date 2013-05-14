@@ -1,3 +1,15 @@
+2013-05-14  Eli Zaretskii  <eliz@gnu.org>
+
+	* io.c (devopen) [__EMX__ || __MINGW32__]: Produce EISDIR on MinGW
+	when an attempt to open() a directory fails.
+	(two_way_open) [__EMX__ || __MINGW32__]: When trying to open() a
+	directory fails with EISDIR, assign FAKE_FD_VALUE to the file
+	descriptor and attributes of a directory to its mode bits.  This
+	is needed to support the readdir extension.
+
+	* gawkapi.h (FAKE_FD_VALUE): New macro, used in io.h and in
+	extension/gawkdirfd.h.
+
 2013-05-09         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* 4.1.0: Release tar ball made.

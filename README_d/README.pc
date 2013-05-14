@@ -28,7 +28,8 @@ Copy the files in the `pc' directory (EXCEPT for `ChangeLog') to the
 directory with the rest of the gawk sources.  (The subdirectories of 
 `pc' need not be copied.)  The Makefile contains a configuration 
 section with comments, and may need to be edited in order to work
-with your make utility.
+with your make utility.  If you are building with MinGW, copy the
+file Makefile.ext to extension/Makefile.
 
 The "prefix" line in the Makefile is used during the install of gawk
 (and in building igawk.bat and igawk.cmd). Since the libraries for
@@ -39,6 +40,10 @@ The makefile contains a number of targets for building various DOS and
 OS/2 versions.  A list of targets will be printed if the make command is
 given without a target.  As an example, to build gawk using the djgpp
 tools, enter "make djgpp".
+
+For the MinGW build, after you build in the top-level directory, chdir
+to the extension subdirectory and say "make" there to build the
+extensions.
 
 
 Testing and installing gawk
@@ -54,9 +59,11 @@ and batch files. See the configuration section of the makefile.
 
 The file test/Makefile will need some editing (especially for DOS). A
 sample makefile with comments appears in pc/Makefile.tst, and can be
-used to modify test/Makefile for your platform.  In addition, some
-files in the test directory may need to have their end-of-line markers
-converted, as described in Makefile.tst.
+used to modify test/Makefile for your platform.  For starters, just
+copy pc/Makefile.tst to test/Makefile, then walk through the variables
+defined at the beginning and change them as appropriate for your
+setup.  In addition, some files in the test directory may need to have
+their end-of-line markers converted, as described in Makefile.tst.
 
 As with building gawk, the OS, shell, and long filename issues come into
 play when testing, too.  If you are testing gawk on a LFN aware system with

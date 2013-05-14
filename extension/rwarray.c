@@ -39,7 +39,11 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef __MINGW32__
+#include <winsock2.h>
+#else
 #include <arpa/inet.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 

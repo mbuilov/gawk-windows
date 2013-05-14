@@ -1625,9 +1625,10 @@ devopen(const char *name, const char *mode)
 strictopen:
 	if (openfd == INVALID_HANDLE)
 		openfd = open(name, flag, 0666);
-#ifdef __EMX__
+#if defined(__EMX__) || defined(__MINGW32__)
 	if (openfd == INVALID_HANDLE && errno == EACCES) {
-		/* on OS/2 directory access via open() is not permitted */
+		/* On OS/2 and Windows directory access via open() is
+		   not permitted.  */
 		struct stat buf;
 
 		if (stat(name, & buf) == 0 && S_ISDIR(buf.st_mode))
@@ -2883,6 +2884,12 @@ iop_alloc(int fd, const char *name, int errno_val)
 
 	if (fd != INVALID_HANDLE)
 		fstat(fd, & iop->public.sbuf);
+#if defined(__EMX__) || defined(__MINGW32__)
+	else if (errno_val == EISDIR) {
+		iop->public.sbuf.st_mode = (_S_IFDIR | _S_IRWXU);
+		iop->public.fd = FAKE_FD_VALUE;
+	}
+#endif
 
 	return iop;
 }
