@@ -73,6 +73,29 @@
 #define S_ISVTX 0
 #define major(s) (s)
 #define minor(s) (0)
+
+#include <windows.h>
+
+/* get_inode --- get the inode of a file */
+static long long
+get_inode(const char *fname)
+{
+	HANDLE fh;
+	BY_HANDLE_FILE_INFORMATION info;
+
+	fh = CreateFile(fname, 0, 0, NULL, OPEN_EXISTING,
+			FILE_FLAG_BACKUP_SEMANTICS, NULL);
+	if (fh == INVALID_HANDLE_VALUE)
+		return 0;
+	if (GetFileInformationByHandle(fh, &info)) {
+		long long inode = info.nFileIndexHigh;
+
+		inode <<= 32;
+		inode += info.nFileIndexLow;
+		return inode;
+	}
+	return 0;
+}
 #endif
 
 static const gawk_api_t *api;	/* for convenience macros to work */
@@ -302,7 +325,11 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 	/* fill in the array */
 	array_set(array, "name", make_const_string(name, strlen(name), & tmp));
 	array_set_numeric(array, "dev", sbuf->st_dev);
+#ifdef _WIN32
+	array_set_numeric(array, "ino", (double)get_inode (name));
+#else
 	array_set_numeric(array, "ino", sbuf->st_ino);
+#endif
 	array_set_numeric(array, "mode", sbuf->st_mode);
 	array_set_numeric(array, "nlink", sbuf->st_nlink);
 	array_set_numeric(array, "uid", sbuf->st_uid);
@@ -326,6 +353,8 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 
 #ifdef HAVE_ST_BLKSIZE
 	array_set_numeric(array, "blksize", sbuf->st_blksize);
+#elif defined(_WIN32)
+	array_set_numeric(array, "blksize", 4096);
 #endif /* HAVE_ST_BLKSIZE */
 
 	pmode = format_mode(sbuf->st_mode);

@@ -21,6 +21,14 @@
 
 #include <config.h>
 
+#ifndef ENOTSUP
+# define ENOTSUP ENOSYS
+#endif
+
+#ifndef DIR_TO_FD
+# define DIR_TO_FD(d) (FAKE_FD_VALUE)
+#endif
+
 #if !defined(HAVE_DIRFD) && (!defined(HAVE_DECL_DIRFD) || HAVE_DECL_DIRFD == 0)
 int
 dirfd (DIR *dir_p)

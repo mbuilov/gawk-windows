@@ -126,7 +126,7 @@ function set_charlist(    field, i, j, f, g, t,
     nfields = j - 1
 }
 {
-    if (by_fields && suppress && index($0, FS) != 0)
+    if (by_fields && suppress && index($0, FS) == 0)
         next
 
     for (i = 1; i <= nfields; i++) {

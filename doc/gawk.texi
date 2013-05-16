@@ -21710,7 +21710,7 @@ written out between the fields:
 @example
 @c file eg/prog/cut.awk
 @{
-    if (by_fields && suppress && index($0, FS) != 0)
+    if (by_fields && suppress && index($0, FS) == 0)
         next
 
     for (i = 1; i <= nfields; i++) @{
@@ -32824,7 +32824,14 @@ cd .../path/to/gawkextlib-code
                                       @ii{You may have to run this command twice}
 ./configure --with-gawk=/tmp/newgawk  @ii{Configure, point at ``installed'' gawk}
 make && make check                    @ii{Build and check that all is OK}
+make install                          @ii{Install the extensions}
 @end example
+
+If you have installed @command{gawk} in the standard way, then you
+will likely not need the @option{--with-gawk} option when configuring
+@code{gawkextlib}.  You may also need to use the @command{sudo} utility
+to install both @command{gawk} and @code{gawkextlib}, depending upon
+how your system works.
 
 If you write an extension that you wish to share with other
 @command{gawk} users, please consider doing so through the

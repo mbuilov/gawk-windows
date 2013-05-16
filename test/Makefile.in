@@ -1453,14 +1453,18 @@ inet:	inetmesg $(INET_TESTS)
 
 machine-tests: $(MACHINE_TESTS)
 
+# The blank between ' and /MPFR/ is for running tests on Windows under
+# MSYS, which thinks /MPFR is a Unix-style file name and converts it
+# to Windows format, butchering it in the process.  Likewise for /API/
+# in the next shlib-tests.
 mpfr-tests:
-	@if $(AWK) --version | $(AWK) '/MPFR/ { exit 1 }' ; then \
+	@if $(AWK) --version | $(AWK) ' /MPFR/ { exit 1 }' ; then \
 	echo MPFR tests not supported on this system ; \
 	else $(MAKE) $(MPFR_TESTS) ; \
 	fi
 
 shlib-tests:
-	@if $(AWK) --version | $(AWK) '/API/ { exit 1 }' ; then \
+	@if $(AWK) --version | $(AWK) ' /API/ { exit 1 }' ; then \
 	echo shlib tests not supported on this system ; \
 	else $(MAKE) shlib-real-tests ; \
 	fi

@@ -1114,7 +1114,8 @@ info: info-recursive
 info-am:
 
 install-data-am: install-man install-pkgextensionLTLIBRARIES
-
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-recursive
 
 install-dvi-am:
@@ -1165,7 +1166,8 @@ uninstall-am: uninstall-man uninstall-pkgextensionLTLIBRARIES
 
 uninstall-man: uninstall-man3
 
-.MAKE: $(am__recursive_targets) all install-am install-strip
+.MAKE: $(am__recursive_targets) all install-am install-data-am \
+	install-strip
 
 .PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am \
 	am--refresh check check-am clean clean-cscope clean-generic \
@@ -1176,17 +1178,22 @@ uninstall-man: uninstall-man3
 	distclean-hdr distclean-libtool distclean-tags distcleancheck \
 	distdir distuninstallcheck dvi dvi-am html html-am info \
 	info-am install install-am install-data install-data-am \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
-	install-man install-man3 install-pdf install-pdf-am \
-	install-pkgextensionLTLIBRARIES install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-man uninstall-man3 \
-	uninstall-pkgextensionLTLIBRARIES
+	install-data-hook install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-man3 install-pdf \
+	install-pdf-am install-pkgextensionLTLIBRARIES install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am uninstall-man \
+	uninstall-man3 uninstall-pkgextensionLTLIBRARIES
 
+
+install-data-hook:
+	for i in $(pkgextension_LTLIBRARIES) ; do \
+		$(RM) $(pkgextensiondir)/$$i ; \
+	done
 
 # This is an ugly hack, initially for MirBSD but probably needed for other
 # systems. If gawk doesn't have the API built in, don't try to build the

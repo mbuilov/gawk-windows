@@ -15551,7 +15551,7 @@ the next field also has data, then the separator character is written
 out between the fields:
 
      {
-         if (by_fields && suppress && index($0, FS) != 0)
+         if (by_fields && suppress && index($0, FS) == 0)
              next
 
          for (i = 1; i <= nfields; i++) {
@@ -24753,6 +24753,12 @@ follows.  First, build and install `gawk':
                                            You may have to run this command twice
      ./configure --with-gawk=/tmp/newgawk  Configure, point at "installed" gawk
      make && make check                    Build and check that all is OK
+     make install                          Install the extensions
+
+   If you have installed `gawk' in the standard way, then you will
+likely not need the `--with-gawk' option when configuring `gawkextlib'.
+You may also need to use the `sudo' utility to install both `gawk' and
+`gawkextlib', depending upon how your system works.
 
    If you write an extension that you wish to share with other `gawk'
 users, please consider doing so through the `gawkextlib' project.  See
@@ -32497,72 +32503,72 @@ Node: Extension Sample Readfile990564
 Node: Extension Sample API Tests991382
 Node: Extension Sample Time991907
 Node: gawkextlib993271
-Node: Language History995702
-Node: V7/SVR3.1997224
-Node: SVR4999545
-Node: POSIX1000987
-Node: BTL1002373
-Node: POSIX/GNU1003107
-Node: Common Extensions1008642
-Node: Ranges and Locales1009948
-Ref: Ranges and Locales-Footnote-11014566
-Ref: Ranges and Locales-Footnote-21014593
-Ref: Ranges and Locales-Footnote-31014853
-Node: Contributors1015074
-Node: Installation1019953
-Node: Gawk Distribution1020847
-Node: Getting1021331
-Node: Extracting1022157
-Node: Distribution contents1023849
-Node: Unix Installation1029110
-Node: Quick Installation1029727
-Node: Additional Configuration Options1031689
-Node: Configuration Philosophy1033166
-Node: Non-Unix Installation1035508
-Node: PC Installation1035966
-Node: PC Binary Installation1037265
-Node: PC Compiling1039113
-Node: PC Testing1042057
-Node: PC Using1043233
-Node: Cygwin1047418
-Node: MSYS1048418
-Node: VMS Installation1048932
-Node: VMS Compilation1049535
-Ref: VMS Compilation-Footnote-11050542
-Node: VMS Installation Details1050600
-Node: VMS Running1052235
-Node: VMS Old Gawk1053842
-Node: Bugs1054316
-Node: Other Versions1058168
-Node: Notes1063769
-Node: Compatibility Mode1064569
-Node: Additions1065352
-Node: Accessing The Source1066279
-Node: Adding Code1067719
-Node: New Ports1073764
-Node: Derived Files1077899
-Ref: Derived Files-Footnote-11083220
-Ref: Derived Files-Footnote-21083254
-Ref: Derived Files-Footnote-31083854
-Node: Future Extensions1083952
-Node: Implementation Limitations1084533
-Node: Extension Design1085785
-Node: Old Extension Problems1086939
-Ref: Old Extension Problems-Footnote-11088447
-Node: Extension New Mechanism Goals1088504
-Ref: Extension New Mechanism Goals-Footnote-11091870
-Node: Extension Other Design Decisions1092056
-Node: Extension Future Growth1094162
-Node: Old Extension Mechanism1094998
-Node: Basic Concepts1096738
-Node: Basic High Level1097419
-Ref: figure-general-flow1097690
-Ref: figure-process-flow1098289
-Ref: Basic High Level-Footnote-11101518
-Node: Basic Data Typing1101703
-Node: Glossary1105058
-Node: Copying1130520
-Node: GNU Free Documentation License1168077
-Node: Index1193214
+Node: Language History996031
+Node: V7/SVR3.1997553
+Node: SVR4999874
+Node: POSIX1001316
+Node: BTL1002702
+Node: POSIX/GNU1003436
+Node: Common Extensions1008971
+Node: Ranges and Locales1010277
+Ref: Ranges and Locales-Footnote-11014895
+Ref: Ranges and Locales-Footnote-21014922
+Ref: Ranges and Locales-Footnote-31015182
+Node: Contributors1015403
+Node: Installation1020282
+Node: Gawk Distribution1021176
+Node: Getting1021660
+Node: Extracting1022486
+Node: Distribution contents1024178
+Node: Unix Installation1029439
+Node: Quick Installation1030056
+Node: Additional Configuration Options1032018
+Node: Configuration Philosophy1033495
+Node: Non-Unix Installation1035837
+Node: PC Installation1036295
+Node: PC Binary Installation1037594
+Node: PC Compiling1039442
+Node: PC Testing1042386
+Node: PC Using1043562
+Node: Cygwin1047747
+Node: MSYS1048747
+Node: VMS Installation1049261
+Node: VMS Compilation1049864
+Ref: VMS Compilation-Footnote-11050871
+Node: VMS Installation Details1050929
+Node: VMS Running1052564
+Node: VMS Old Gawk1054171
+Node: Bugs1054645
+Node: Other Versions1058497
+Node: Notes1064098
+Node: Compatibility Mode1064898
+Node: Additions1065681
+Node: Accessing The Source1066608
+Node: Adding Code1068048
+Node: New Ports1074093
+Node: Derived Files1078228
+Ref: Derived Files-Footnote-11083549
+Ref: Derived Files-Footnote-21083583
+Ref: Derived Files-Footnote-31084183
+Node: Future Extensions1084281
+Node: Implementation Limitations1084862
+Node: Extension Design1086114
+Node: Old Extension Problems1087268
+Ref: Old Extension Problems-Footnote-11088776
+Node: Extension New Mechanism Goals1088833
+Ref: Extension New Mechanism Goals-Footnote-11092199
+Node: Extension Other Design Decisions1092385
+Node: Extension Future Growth1094491
+Node: Old Extension Mechanism1095327
+Node: Basic Concepts1097067
+Node: Basic High Level1097748
+Ref: figure-general-flow1098019
+Ref: figure-process-flow1098618
+Ref: Basic High Level-Footnote-11101847
+Node: Basic Data Typing1102032
+Node: Glossary1105387
+Node: Copying1130849
+Node: GNU Free Documentation License1168406
+Node: Index1193543
 
 End Tag Table
