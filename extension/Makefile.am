@@ -98,6 +98,11 @@ testext_la_SOURCES    = testext.c
 testext_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 testext_la_LIBADD     = $(MY_LIBS)
 
+install-data-hook:
+	for i in $(pkgextension_LTLIBRARIES) ; do \
+		$(RM) $(pkgextensiondir)/$$i ; \
+	done
+
 EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
 	ChangeLog.0 \
