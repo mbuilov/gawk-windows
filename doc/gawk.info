@@ -15551,7 +15551,7 @@ the next field also has data, then the separator character is written
 out between the fields:
 
      {
-         if (by_fields && suppress && index($0, FS) != 0)
+         if (by_fields && suppress && index($0, FS) == 0)
              next
 
          for (i = 1; i <= nfields; i++) {

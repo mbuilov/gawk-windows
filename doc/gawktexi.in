@@ -20859,7 +20859,7 @@ written out between the fields:
 @example
 @c file eg/prog/cut.awk
 @{
-    if (by_fields && suppress && index($0, FS) != 0)
+    if (by_fields && suppress && index($0, FS) == 0)
         next
 
     for (i = 1; i <= nfields; i++) @{
