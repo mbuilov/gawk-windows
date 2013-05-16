@@ -38,6 +38,8 @@ AM_INIT_AUTOMAKE([-Wall -Werror])
 AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION([0.18.1])
 
+dnl checks for structure members
+AC_STRUCT_ST_BLKSIZE
 
 AM_PROG_AR
 AC_SYS_LARGEFILE
