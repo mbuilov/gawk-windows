@@ -1,0 +1,61 @@
+#!/bin/sh
+
+# TODO
+# Check all dependencies first, then build the target.
+# Each target shall be implemented as one function.
+
+if test $# -lt 1; then
+  echo "  $0: Incorrect number ($#) of parameters passed: $*"
+fi
+OUTFILE=$1
+if test $OUTFILE = gawk.texi; then
+  INFILE=gawktexi.in
+  COMMAND="awk -f sidebar.awk < gawktexi.in > gawk.texi"
+elif test $OUTFILE = gawk.dvi; then
+  INFILE=gawk.texi
+  COMMAND="texi2dvi  -q --clean gawk.texi"
+elif test $OUTFILE = gawkinet.dvi; then
+  INFILE=gawkinet.texi
+  COMMAND="texi2dvi  -q --clean gawkinet.texi"
+elif test $OUTFILE = gawk.1.ps; then
+  INFILE=gawk.1
+  COMMAND="groff -z -man gawk.1 > gawk.1.ps"
+elif test $OUTFILE = igawk.1.ps; then
+  INFILE=igawk.1
+  COMMAND="groff -z -man igawk.1 > igawk.1.ps"
+elif test $OUTFILE = gawk.1.pdf; then
+  INFILE=gawk.1.ps
+  COMMAND="ps2pdf -q gawk.1.ps gawk.1.pdf"
+elif test $OUTFILE = igawk.1.pdf; then
+  INFILE=igawk.1.ps
+  COMMAND="ps2pdf -q igawk.1.ps igawk.1.pdf"
+elif test $OUTFILE = gawk.ps; then
+  INFILE=gawk.dvi
+  COMMAND="dvips -q -o gawk.ps gawk.dvi"
+elif test $OUTFILE = gawkinet.ps; then
+  INFILE=gawkinet.dvi
+  COMMAND="dvips -q -o gawkinet.ps gawkinet.dvi"
+elif test $OUTFILE = gawk.pdf; then
+  INFILE=gawk.ps
+  COMMAND="ps2pdf -q gawk.ps gawk.pdf"
+elif test $OUTFILE = gawkinet.pdf; then
+  INFILE=gawkinet.ps
+  COMMAND="ps2pdf -q gawkinet.ps gawkinet.pdf"
+else
+  echo "  unknwon target $OUTFILE"
+  exit 1
+fi
+
+if ! test -r "$INFILE"; then
+  echo " $0: Cannot read input file $INFILE"
+  exit 1
+fi
+
+if test -f "$OUTFILE"; then
+  if test "$INFILE" -ot "$OUTFILE" ; then
+    printf "  Target %15s is up-to-date\n" $OUTFILE
+    exit 0
+  fi
+fi
+echo "  Generating $OUTFILE from $INFILE"
+echo $COMMAND | sh
