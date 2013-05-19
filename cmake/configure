@@ -26,20 +26,18 @@ if [ -f CMakeLists.txt ] ; then
   exit 1
 fi
 
-if ! [ -f ../CMakeLists.txt ] ; then
-  echo "The directory above your current working directory does not contain a file CMakeLists.txt."
-  echo "This script will run only if you are one level below the source directory."
-  exit 1
-fi
-
 # TODO: Evaluate all the options and translate the options into CMake variables.
 CC=$( which cc )
 PREFIX=""
+SRCDIR=".."
+WHINY=""
 
 for p in $@
 do
   if [ ${p:0:3} = "CC=" ]; then CC=${p:3}; fi
   if [ ${p:0:9} = "--prefix=" ]; then PREFIX=-DCMAKE_INSTALL_PREFIX=${p:9}; fi
+  if [ ${p:0:9} = "--srcdir=" ]; then SRCDIR=${p:9}; fi
+  if [ ${p:0:26} = "--with-whiny-user-strftime" ]; then WHINY=-DUSE_INCLUDED_STRFTIME=1; fi
 done
 CC=$( which $CC )
 
@@ -51,7 +49,10 @@ rm -f Toolchain.cmake
   echo "set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)"
 ) > Toolchain.cmake
 
-# TODO: Allow the build directory to be in other places.
-# A parameter is needed to pass the value.
-cmake ${PREFIX} -DCMAKE_TOOLCHAIN_FILE=Toolchain.cmake ..
+if ! [ -f ${SRCDIR}/CMakeLists.txt ] ; then
+  echo "The source directory (${SRCDIR}) does not contain a file CMakeLists.txt."
+  exit 1
+fi
+
+cmake ${PREFIX} ${WHINY} -DCMAKE_TOOLCHAIN_FILE=Toolchain.cmake ${SRCDIR}
 
