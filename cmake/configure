@@ -34,6 +34,15 @@ fi
 
 # TODO: Evaluate all the options and translate the options into CMake variables.
 CC=$( which cc )
+PREFIX=""
+
+for p in $@
+do
+  if [ ${p:0:3} = "CC=" ]; then CC=${p:3}; fi
+  if [ ${p:0:9} = "--prefix=" ]; then PREFIX=-DCMAKE_INSTALL_PREFIX=${p:9}; fi
+done
+CC=$( which $CC )
+
 rm -f Toolchain.cmake
 (
   echo "set(CMAKE_C_COMPILER $CC)"
@@ -44,5 +53,5 @@ rm -f Toolchain.cmake
 
 # TODO: Allow the build directory to be in other places.
 # A parameter is needed to pass the value.
-cmake -DCMAKE_TOOLCHAIN_FILE=Toolchain.cmake ..
+cmake ${PREFIX} -DCMAKE_TOOLCHAIN_FILE=Toolchain.cmake ..
 
