@@ -4,6 +4,7 @@
 # All remaining parameters are dependencies (file names).
 if [ $# -lt 1 ] ; then
   echo "  $0: Incorrect number ($#) of parameters passed: $*"
+  exit 1
 fi
 OUTFILE=$1
 shift 1
@@ -81,7 +82,7 @@ function BuildTarget()
   if [ -f "$OUTFILE" ] ; then
     if [ "$INFILE" -ot "$OUTFILE" ] ; then
       #printf "  Target %15s is up-to-date\n" $OUTFILE
-      exit 0
+      COMMAND=""
     fi
   fi
   #echo "  Generating $OUTFILE from $INFILE"
@@ -94,7 +95,6 @@ for dep in $INFILES
 do
   #echo $OUTFILE depends on $dep
   BuildTarget $dep
-  :
 done
 BuildTarget $OUTFILE
 

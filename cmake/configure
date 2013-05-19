@@ -1,0 +1,19 @@
+# On 2013-05-14 Arnold wrote in an e-mail:
+
+# <QUOTE)
+# I think that using CMake would be more palatable if there is also a simple
+# configure wrapper that can be used by people who build distributions. This would
+# mean things like
+# 
+# 	configure CC=XXXX   # XXXX in { gcc, clang, tcc } or native platform cc
+# 	configure --prefix=/path/to/install
+# 
+# And the few other current configure options like --with-whiny-user-strftime,
+# --disable-nls, etc.  I don't know if we need all the standard configure options,
+# but I do want the ones I've added in configure.ac.
+# </QUOTE)
+
+# Anyone using this script still needs an out-of-source build directory.
+# This script should first check if it was invoked from outside the source directory.
+# Then it shall evaluate all the options and translate the options into CMake variables.
+# Finally the script shall invoke CMake.
