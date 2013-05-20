@@ -152,6 +152,10 @@
 #define INCREMENT_REC(X)	X++
 #endif
 
+/* This is for fake directory file descriptors on systems that don't
+   allow to open() a directory.  */
+#define FAKE_FD_VALUE 42
+
 typedef enum { CLOSE_ALL, CLOSE_TO, CLOSE_FROM } two_way_close_type;
 
 /* Several macros to make the code a bit clearer. */
