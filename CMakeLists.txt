@@ -53,6 +53,9 @@ if(WIN32 OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
   DefineConfigHValue(HAVE_USLEEP 1)
   DefineConfigHValue(STDC_HEADERS 1)
   DefineConfigHValue(HAVE_STRINGIZE 1)
+  include_directories(${CMAKE_SOURCE_DIR}/missing_d)
+  DefineConfigHValue(HAVE_MKSTEMP 1)
+  set (EXTRA_LIBS ${EXTRA_LIBS} ws2_32)
   # TODO: Eli Zaretskii remined me that the generated
   # settings in config.h should be the same as those in
   # pc/config.h. With these settings and DYNAMIC=1

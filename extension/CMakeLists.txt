@@ -24,11 +24,12 @@
 
 ## process this file with CMake to produce Makefile
 
+# Remove the definition of GAWK because of gawkapi.h.
 remove_definitions(-DGAWK)
 
 MACRO(BuildExtension name sources)
   add_library (${name} MODULE ${sources} ${ARGN})
-  target_link_libraries(${name})
+  target_link_libraries(${name} ${EXTRA_LIBS})
   set_target_properties(${name} PROPERTIES PREFIX "")
   install(PROGRAMS ${CMAKE_BINARY_DIR}/extension/${name}${CMAKE_SHARED_LIBRARY_SUFFIX} DESTINATION lib)
 ENDMACRO(BuildExtension)
@@ -39,7 +40,7 @@ else()
   message(STATUS "extension filefuncs cannot be built because HAVE_STRUCT_STAT_ST_BLKSIZE is missing")
 endif()
 
-if (${HAVE_FNMATCH} AND ${HAVE_FNMATCH_H})
+if (HAVE_FNMATCH AND HAVE_FNMATCH_H)
   BuildExtension(fnmatch fnmatch.c)
 else()
   message(STATUS "extension fnmatch cannot be built because function fnmatch or fnmatch.h is missing")
@@ -75,11 +76,7 @@ else()
   message(STATUS "extension revtwoway cannot be built because function getdtablesize is missing")
 endif()
 
-if (${HAVE_ARPA_INET_H})
-  BuildExtension(rwarray rwarray.c)
-else()
-  message(STATUS "extension rwarray cannot be built because HAVE_ARPA_INET_H is missing")
-endif()
+BuildExtension(rwarray rwarray.c)
 
 BuildExtension(time time.c)
 
