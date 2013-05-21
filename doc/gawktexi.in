@@ -33366,6 +33366,15 @@ check the files in the @file{README_d} directory to see if you've
 found a known problem.  If the failure is not described there,
 please send in a bug report (@pxref{Bugs}).
 
+Of course, once you've built @command{gawk}, it is likely that you will
+wish to install it.  To do so, you need to run the command @samp{make
+check}, as a user with the appropriate permissions.  How to do this
+varies by system, but on many systems you can use the @command{sudo}
+command to do so.  The command then becomes @samp{sudo make install}. It
+is likely that you will be asked for your password, and you will have
+to have been set up previously as a user who is allowed to run the
+@command{sudo} command.
+
 @node Additional Configuration Options
 @appendixsubsec Additional Configuration Options
 @cindex @command{gawk}, configuring, options
