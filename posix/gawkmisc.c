@@ -127,7 +127,7 @@ optimal_bufsize(int fd, struct stat *stb)
 	 * guess. We use stdio's BUFSIZ, since that is what it was
 	 * meant for in the first place.
 	 */
-#ifdef HAVE_ST_BLKSIZE
+#ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
 #define DEFBLKSIZE	(stb->st_blksize > 0 ? stb->st_blksize : BUFSIZ)
 #else
 #define DEFBLKSIZE	BUFSIZ

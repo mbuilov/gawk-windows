@@ -359,7 +359,7 @@ dnl check for mpfr support
 GNUPG_CHECK_MPFR
 
 dnl checks for structure members
-AC_STRUCT_ST_BLKSIZE
+AC_CHECK_MEMBERS([struct stat.st_blksize])
 AC_HEADER_TIME
 AC_STRUCT_TM
 AC_STRUCT_TIMEZONE

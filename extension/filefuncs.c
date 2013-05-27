@@ -351,11 +351,11 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 		array_set_numeric(array, "minor", minor(sbuf->st_rdev));
 	}
 
-#ifdef HAVE_ST_BLKSIZE
+#ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
 	array_set_numeric(array, "blksize", sbuf->st_blksize);
 #elif defined(_WIN32)
 	array_set_numeric(array, "blksize", 4096);
-#endif /* HAVE_ST_BLKSIZE */
+#endif /* HAVE_STRUCT_STAT_ST_BLKSIZE */
 
 	pmode = format_mode(sbuf->st_mode);
 	array_set(array, "pmode", make_const_string(pmode, strlen(pmode), & tmp));

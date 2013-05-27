@@ -31856,9 +31856,9 @@ certain members and/or the type of the file. It then returns zero,
 for success:
 
 @example
-#ifdef HAVE_ST_BLKSIZE
+#ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
     array_set_numeric(array, "blksize", sbuf->st_blksize);
-#endif /* HAVE_ST_BLKSIZE */
+#endif /* HAVE_STRUCT_STAT_ST_BLKSIZE */
 
     pmode = format_mode(sbuf->st_mode);
     array_set(array, "pmode", make_const_string(pmode, strlen(pmode),
@@ -34300,7 +34300,7 @@ they can be correctly included, what (supposedly) standard functions
 are actually available in your C libraries, and various miscellaneous
 facts about your operating system.  For example, there may not be an
 @code{st_blksize} element in the @code{stat} structure.  In this case,
-@samp{HAVE_ST_BLKSIZE} is undefined.
+@samp{HAVE_STRUCT_STAT_ST_BLKSIZE} is undefined.
 
 @cindex @code{custom.h} file
 It is possible for your C compiler to lie to @command{configure}. It may

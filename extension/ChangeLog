@@ -1,3 +1,10 @@
+2013-05-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac (AC_STRUCT_ST_BLKSIZE): Replaced with call to
+	AC_CHECK_MEMBERS.
+	* filefuncs.c (fill_stat_array): Change test from ifdef
+	HAVE_ST_BLKSIZE to HAVE_STRUCT_STAT_ST_BLKSIZE.
+
 2013-05-20         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkdirfd.h [FAKE_FD_VALUE]: Copied here from ../gawkapi.h.
