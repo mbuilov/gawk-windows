@@ -1196,6 +1196,11 @@ pp_string(const char *in_str, size_t len, int delim)
 		if (delim != '/' && *str == delim) {
 			*obufout++ = '\\';
 			*obufout++ = delim;
+		} else if (*str == '\0') {
+			*obufout++ = '\\';
+			*obufout++ = '0';
+			*obufout++ = '0';
+			*obufout++ = '0';
 		} else if ((cp = strchr(escapes, *str)) != NULL) {
 			i = cp - escapes;
 			*obufout++ = '\\';

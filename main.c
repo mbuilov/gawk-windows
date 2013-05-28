@@ -722,6 +722,9 @@ out:
 
 	if (do_debug)
 		debug_prog(code_block);
+	else if (do_pretty_print && ! do_debug && getenv("GAWK_NO_PP_RUN") != NULL)
+		/* hack to run pretty printer only. need a better solution */
+		;
 	else
 		interpret(code_block);
 
