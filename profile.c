@@ -443,7 +443,7 @@ cleanup:
 			array = t1->pp_str;
 			if (pc->expr_count > 0) {
 				char *sub;
-				sub = pp_list(pc->expr_count, NULL, ", ");
+				sub = pp_list(pc->expr_count, NULL, pc->expr_count > 1 ? "][" : ", ");
 				fprintf(prof_fp, "%s %s[%s]", op2str(Op_K_delete), array, sub);
 				efree(sub);
 			} else 				
