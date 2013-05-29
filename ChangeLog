@@ -1,3 +1,12 @@
+2013-05-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pp_group3): Renamed from pp_concat. Change all calls.
+	(is_binary): Change return type to bool.
+	(is_scalar): New function.
+	(pp_concat): New function to handle concatenation operator better.
+	(pprint): Call it at case Op_concat.
+	General: Add leading comments as needed.
+
 2013-05-28         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* main.c (main): Add minor hack to not run code if pretty printing
