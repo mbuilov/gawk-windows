@@ -1,3 +1,10 @@
+2013-05-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Add <sys/param.h> header check.
+	* filefuncs.c: Include <sys/param.h> if there.
+	(device_blocksize): New function.
+	(fill_stat_array): Call it.
+
 2013-05-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac (AC_STRUCT_ST_BLKSIZE): Replaced with call to

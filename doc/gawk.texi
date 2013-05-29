@@ -31597,6 +31597,15 @@ filesystem.
 @item "symlink"
 The file is a symbolic link.
 @end table
+
+@c 5/2013: Thanks to Corinna Vinschen for this information.
+@item "devbsize"
+The size of a block for the element indexed by @code{"blocks"}.
+This information is derived from either the @code{DEV_BSIZE}
+constant defined in @code{<sys/param.h>} on most systems,
+or the @code{S_BLKSIZE} constant in @code{<sys/stat.h>} on BSD systems.
+For some other systems, @dfn{a priori} knowledge is used to provide
+a value. Where no value can be determined, it defaults to 512.
 @end table
 
 Several additional elements may be present depending upon the operating

@@ -45,6 +45,9 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif /* HAVE_SYS_PARAM_H */
 
 #include "gawkapi.h"
 
@@ -265,6 +268,31 @@ read_symlink(const char *fname, size_t bufsize, ssize_t *linksize)
 	return NULL;
 }
 
+
+/* device_blocksize --- try to figure out units of st_blocks */
+
+static int
+device_blocksize()
+{
+	/* some of this derived from GNULIB stat-size.h */
+#if defined(DEV_BSIZE)
+	/* <sys/param.h>, most systems */
+	return DEV_BSIZE;
+#elif defined(S_BLKSIZE)
+	/* <sys/stat.h>, BSD systems */
+	return S_BLKSIZE;
+#elif defined hpux || defined __hpux__ || defined __hpux
+	return 1024;
+#elif defined _AIX && defined _I386
+	/* AIX PS/2 counts st_blocks in 4K units.  */
+	return 4 * 1024;
+#elif defined __MINGW32__
+	return 1024;
+#else
+	return 512;
+#endif
+}
+
 /* array_set --- set an array element */
 
 static void
@@ -356,6 +384,9 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 #elif defined(_WIN32)
 	array_set_numeric(array, "blksize", 4096);
 #endif /* HAVE_STRUCT_STAT_ST_BLKSIZE */
+
+	/* the size of a block for st_blocks */
+	array_set_numeric(array, "devbsize", device_blocksize());
 
 	pmode = format_mode(sbuf->st_mode);
 	array_set(array, "pmode", make_const_string(pmode, strlen(pmode), & tmp));

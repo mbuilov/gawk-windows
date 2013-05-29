@@ -23659,6 +23659,14 @@ appropriate information:
     `"symlink"'
           The file is a symbolic link.
 
+`"devbsize"'
+     The size of a block for the element indexed by `"blocks"'.  This
+     information is derived from either the `DEV_BSIZE' constant
+     defined in `<sys/param.h>' on most systems, or the `S_BLKSIZE'
+     constant in `<sys/stat.h>' on BSD systems.  For some other
+     systems, "a priori" knowledge is used to provide a value. Where no
+     value can be determined, it defaults to 512.
+
    Several additional elements may be present depending upon the
 operating system and the type of the file.  You can test for them in
 your `awk' program by using the `in' operator (*note Reference to
@@ -32493,90 +32501,90 @@ Node: Extension API Boilerplate947271
 Node: Finding Extensions951075
 Node: Extension Example951635
 Node: Internal File Description952366
-Node: Internal File Ops956054
-Ref: Internal File Ops-Footnote-1967562
-Node: Using Internal File Ops967702
-Ref: Using Internal File Ops-Footnote-1970055
-Node: Extension Samples970321
-Node: Extension Sample File Functions971845
-Node: Extension Sample Fnmatch980332
-Node: Extension Sample Fork982058
-Node: Extension Sample Inplace983276
-Node: Extension Sample Ord985054
-Node: Extension Sample Readdir985890
-Node: Extension Sample Revout987422
-Node: Extension Sample Rev2way988015
-Node: Extension Sample Read write array988705
-Node: Extension Sample Readfile990588
-Node: Extension Sample API Tests991406
-Node: Extension Sample Time991931
-Node: gawkextlib993295
-Node: Language History996055
-Node: V7/SVR3.1997577
-Node: SVR4999898
-Node: POSIX1001340
-Node: BTL1002726
-Node: POSIX/GNU1003460
-Node: Common Extensions1008995
-Node: Ranges and Locales1010301
-Ref: Ranges and Locales-Footnote-11014919
-Ref: Ranges and Locales-Footnote-21014946
-Ref: Ranges and Locales-Footnote-31015206
-Node: Contributors1015427
-Node: Installation1020306
-Node: Gawk Distribution1021200
-Node: Getting1021684
-Node: Extracting1022510
-Node: Distribution contents1024202
-Node: Unix Installation1029463
-Node: Quick Installation1030080
-Node: Additional Configuration Options1032524
-Node: Configuration Philosophy1034001
-Node: Non-Unix Installation1036355
-Node: PC Installation1036813
-Node: PC Binary Installation1038112
-Node: PC Compiling1039960
-Node: PC Testing1042904
-Node: PC Using1044080
-Node: Cygwin1048265
-Node: MSYS1049265
-Node: VMS Installation1049779
-Node: VMS Compilation1050382
-Ref: VMS Compilation-Footnote-11051389
-Node: VMS Installation Details1051447
-Node: VMS Running1053082
-Node: VMS Old Gawk1054689
-Node: Bugs1055163
-Node: Other Versions1059015
-Node: Notes1064616
-Node: Compatibility Mode1065416
-Node: Additions1066199
-Node: Accessing The Source1067126
-Node: Adding Code1068566
-Node: New Ports1074611
-Node: Derived Files1078746
-Ref: Derived Files-Footnote-11084067
-Ref: Derived Files-Footnote-21084101
-Ref: Derived Files-Footnote-31084701
-Node: Future Extensions1084799
-Node: Implementation Limitations1085380
-Node: Extension Design1086632
-Node: Old Extension Problems1087786
-Ref: Old Extension Problems-Footnote-11089294
-Node: Extension New Mechanism Goals1089351
-Ref: Extension New Mechanism Goals-Footnote-11092717
-Node: Extension Other Design Decisions1092903
-Node: Extension Future Growth1095009
-Node: Old Extension Mechanism1095845
-Node: Basic Concepts1097585
-Node: Basic High Level1098266
-Ref: figure-general-flow1098537
-Ref: figure-process-flow1099136
-Ref: Basic High Level-Footnote-11102365
-Node: Basic Data Typing1102550
-Node: Glossary1105905
-Node: Copying1131367
-Node: GNU Free Documentation License1168924
-Node: Index1194061
+Node: Internal File Ops956457
+Ref: Internal File Ops-Footnote-1967965
+Node: Using Internal File Ops968105
+Ref: Using Internal File Ops-Footnote-1970458
+Node: Extension Samples970724
+Node: Extension Sample File Functions972248
+Node: Extension Sample Fnmatch980735
+Node: Extension Sample Fork982461
+Node: Extension Sample Inplace983679
+Node: Extension Sample Ord985457
+Node: Extension Sample Readdir986293
+Node: Extension Sample Revout987825
+Node: Extension Sample Rev2way988418
+Node: Extension Sample Read write array989108
+Node: Extension Sample Readfile990991
+Node: Extension Sample API Tests991809
+Node: Extension Sample Time992334
+Node: gawkextlib993698
+Node: Language History996458
+Node: V7/SVR3.1997980
+Node: SVR41000301
+Node: POSIX1001743
+Node: BTL1003129
+Node: POSIX/GNU1003863
+Node: Common Extensions1009398
+Node: Ranges and Locales1010704
+Ref: Ranges and Locales-Footnote-11015322
+Ref: Ranges and Locales-Footnote-21015349
+Ref: Ranges and Locales-Footnote-31015609
+Node: Contributors1015830
+Node: Installation1020709
+Node: Gawk Distribution1021603
+Node: Getting1022087
+Node: Extracting1022913
+Node: Distribution contents1024605
+Node: Unix Installation1029866
+Node: Quick Installation1030483
+Node: Additional Configuration Options1032927
+Node: Configuration Philosophy1034404
+Node: Non-Unix Installation1036758
+Node: PC Installation1037216
+Node: PC Binary Installation1038515
+Node: PC Compiling1040363
+Node: PC Testing1043307
+Node: PC Using1044483
+Node: Cygwin1048668
+Node: MSYS1049668
+Node: VMS Installation1050182
+Node: VMS Compilation1050785
+Ref: VMS Compilation-Footnote-11051792
+Node: VMS Installation Details1051850
+Node: VMS Running1053485
+Node: VMS Old Gawk1055092
+Node: Bugs1055566
+Node: Other Versions1059418
+Node: Notes1065019
+Node: Compatibility Mode1065819
+Node: Additions1066602
+Node: Accessing The Source1067529
+Node: Adding Code1068969
+Node: New Ports1075014
+Node: Derived Files1079149
+Ref: Derived Files-Footnote-11084470
+Ref: Derived Files-Footnote-21084504
+Ref: Derived Files-Footnote-31085104
+Node: Future Extensions1085202
+Node: Implementation Limitations1085783
+Node: Extension Design1087035
+Node: Old Extension Problems1088189
+Ref: Old Extension Problems-Footnote-11089697
+Node: Extension New Mechanism Goals1089754
+Ref: Extension New Mechanism Goals-Footnote-11093120
+Node: Extension Other Design Decisions1093306
+Node: Extension Future Growth1095412
+Node: Old Extension Mechanism1096248
+Node: Basic Concepts1097988
+Node: Basic High Level1098669
+Ref: figure-general-flow1098940
+Ref: figure-process-flow1099539
+Ref: Basic High Level-Footnote-11102768
+Node: Basic Data Typing1102953
+Node: Glossary1106308
+Node: Copying1131770
+Node: GNU Free Documentation License1169327
+Node: Index1194464
 
 End Tag Table
