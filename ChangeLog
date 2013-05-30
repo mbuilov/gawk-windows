@@ -1,3 +1,11 @@
+2013-05-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pprint): For Op_in_array, parenthesize subscript if
+	the precedence is lower. E.g.:  (c = tolower(foo)) in ARRAY.
+	(prec_level): Merge cases for precedence of 5.
+	(parenthesize): Simplify, as in 3.1.8. Avoids stuff like
+	`(x == 1 && (z ==2 && (q == 4 && w == 7)))'.
+
 2013-05-29         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* profile.c (pp_group3): Renamed from pp_concat. Change all calls.

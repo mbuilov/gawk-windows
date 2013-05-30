@@ -470,6 +470,9 @@ cleanup:
 				efree(sub);
 			} else {
 				t2 = pp_pop();
+				if (prec_level(t2->type) < prec_level(Op_in_array)) {
+						pp_parenthesize(t2);
+				}
 				sub = t2->pp_str;
 				str = pp_group3(sub, op2str(Op_in_array), array);
 				pp_free(t2);
@@ -1041,8 +1044,6 @@ prec_level(int type)
 		return 6;
 
 	case Op_less:
-		return 5;
-
 	case Op_in_array:
 		return 5;
 
@@ -1168,7 +1169,7 @@ pp_parenthesize(NODE *sp)
 	sp->flags |= CAN_FREE;
 }
 
-/* parenthesize --- parenthesize two nodes */
+/* parenthesize --- parenthesize two nodes relative to parent node type */
 
 static void
 parenthesize(int type, NODE *left, NODE *right)
@@ -1177,15 +1178,10 @@ parenthesize(int type, NODE *left, NODE *right)
 	int lprec = prec_level(left->type);
 	int prec = prec_level(type);
 
-	if (prec > lprec) {
-		if (is_binary(left->type))		/* (a - b) * c */
-			pp_parenthesize(left);
-		if (prec >= rprec && is_binary(right->type))	/* (a - b) * (c - d) */
-			pp_parenthesize(right);
-	} else {
-		if (prec >= rprec && is_binary(right->type)) /* a - b - (c - d) */
-			pp_parenthesize(right);
-	}
+	if (lprec < prec)
+		pp_parenthesize(left);
+	if (rprec < prec)
+		pp_parenthesize(right);
 }
 
 /* pp_string --- pretty format a string or regex constant */
