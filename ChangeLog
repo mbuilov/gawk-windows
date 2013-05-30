@@ -1,10 +1,18 @@
 2013-05-30         Arnold D. Robbins     <arnold@skeeve.com>
 
+	More profiling fixes:
+
 	* profile.c (pprint): For Op_in_array, parenthesize subscript if
 	the precedence is lower. E.g.:  (c = tolower(foo)) in ARRAY.
 	(prec_level): Merge cases for precedence of 5.
 	(parenthesize): Simplify, as in 3.1.8. Avoids stuff like
 	`(x == 1 && (z ==2 && (q == 4 && w == 7)))'.
+
+	Unrelated:
+
+	* io.c (iop_finish): fstat the fd before closing it to avoid
+	errors on some operating systems. Thanks to Eli Zaretskii
+	for the report.
 
 2013-05-29         Arnold D. Robbins     <arnold@skeeve.com>
 

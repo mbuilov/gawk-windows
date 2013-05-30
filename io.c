@@ -2912,8 +2912,18 @@ iop_finish(IOBUF *iop)
 			if (isdir)
 				iop->errcode = EISDIR;
 			else {
+				struct stat sbuf;
+
 				iop->errcode = EIO;
-				(void) close(iop->public.fd);
+				/*
+				 * Extensions can supply values that are not
+				 * INVALID_HANDLE but that are also not real
+				 * file descriptors. So check the fd before
+				 * trying to close it, which avoids errors
+				 * on some operating systems.
+				 */
+				if (fstat(iop->public.fd, & sbuf) == 0)
+					(void) close(iop->public.fd);
 				iop->public.fd = INVALID_HANDLE;
 			}
 			/*
