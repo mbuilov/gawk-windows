@@ -39,7 +39,7 @@ AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION([0.18.1])
 
 dnl checks for structure members
-AC_STRUCT_ST_BLKSIZE
+AC_CHECK_MEMBERS([struct stat.st_blksize])
 
 AM_PROG_AR
 AC_SYS_LARGEFILE
@@ -66,7 +66,7 @@ else
 	AC_MSG_RESULT([no])
 fi
 
-AC_CHECK_HEADERS(dirent.h fnmatch.h time.h sys/time.h sys/select.h)
+AC_CHECK_HEADERS(dirent.h fnmatch.h time.h sys/time.h sys/select.h sys/param.h)
 
 AC_CHECK_FUNCS(fdopendir fnmatch gettimeofday \
 		getdtablesize nanosleep select GetSystemTimeAsFileTime)

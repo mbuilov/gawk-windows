@@ -3,6 +3,11 @@
 #include <io.h>
 #include <string.h>
 #include <process.h>
+#include <errno.h>
+#include "popen.h"
+#undef popen
+#undef pclose
+#undef system
 
 #ifndef _NFILE
 #define _NFILE 40
@@ -25,6 +30,9 @@ static struct {
  */
 
 #if defined(__MINGW32__)
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
 static int
 unixshell(char *p)
@@ -127,13 +135,75 @@ os_system(const char *cmd)
   unlink_and_free(cmd1);
   return(i);
 }
+
+#ifndef PIPES_SIMULATED
+int
+kill (int pid, int sig)
+{
+  HANDLE ph;
+  int retval = 0;
+
+  /* We only support SIGKILL.  */
+  if (sig != SIGKILL)
+    {
+      errno = ENOSYS;
+      return -1;
+    }
+
+  ph = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+  if (ph)
+    {
+      BOOL status = TerminateProcess(ph, -1);
+
+      if (!status)
+	{
+	  errno = EPERM;
+	  retval = -1;
+	}
+    }
+  else
+    {
+      /* If we cannot open the process, it means we eaither aren't
+	 allowed to (e.g., a process of another user), or such a
+	 process doesn't exist.  */
+      switch (GetLastError ())
+	{
+	  case ERROR_ACCESS_DENIED:
+	    errno = EPERM;
+	    break;
+	  default:
+	    errno = ESRCH;
+	    break;
+	}
+      retval = -1;
+    }
+  CloseHandle (ph);
+  return retval;
+}
+
+char *
+quote_cmd(const char *cmd)
+{
+  char *quoted;
+
+  /* The command will be invoked via cmd.exe, whose behavior wrt
+     quoted commands is to remove the first and the last quote
+     characters, and leave the rest (including any quote characters
+     inside the outer pair) intact.  */
+  quoted = malloc(strlen (cmd) + 2 + 1);
+  sprintf(quoted, "\"%s\"", cmd);
+
+  return quoted;
+}
+#endif
+
 #else  /* !__MINGW32__ */
 #define os_system(cmd) system(cmd)
 #endif
 
 
 FILE *
-os_popen(const char *command, char *mode )
+os_popen(const char *command, const char *mode )
 {
     FILE *current;
     char *name;

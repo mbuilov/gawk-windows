@@ -668,6 +668,10 @@ EXTRA_DIST = \
 	profile2.ok \
 	profile3.awk \
 	profile3.ok \
+	profile4.awk \
+	profile4.ok \
+	profile5.awk \
+	profile5.ok \
 	prt1eval.awk \
 	prt1eval.ok \
 	prtoeval.awk \
@@ -966,7 +970,7 @@ GAWK_EXT_TESTS = \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm next nondec nondec2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 procinfs \
-	profile1 profile2 profile3 pty1 \
+	profile1 profile2 profile3 profile4 profile5 pty1 \
 	rebuf regx8bit reginttrad reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
@@ -1055,14 +1059,18 @@ inet:	inetmesg $(INET_TESTS)
 
 machine-tests: $(MACHINE_TESTS)
 
+# The blank between ' and /MPFR/ is for running tests on Windows under
+# MSYS, which thinks /MPFR is a Unix-style file name and converts it
+# to Windows format, butchering it in the process.  Likewise for /API/
+# in the next shlib-tests.
 mpfr-tests:
-	@if $(AWK) --version | $(AWK) '/MPFR/ { exit 1 }' ; then \
+	@if $(AWK) --version | $(AWK) ' /MPFR/ { exit 1 }' ; then \
 	echo MPFR tests not supported on this system ; \
 	else $(MAKE) $(MPFR_TESTS) ; \
 	fi
 
 shlib-tests:
-	@if $(AWK) --version | $(AWK) '/API/ { exit 1 }' ; then \
+	@if $(AWK) --version | $(AWK) ' /API/ { exit 1 }' ; then \
 	echo shlib tests not supported on this system ; \
 	else $(MAKE) shlib-real-tests ; \
 	fi
@@ -1606,6 +1614,18 @@ profile2:
 profile3:
 	@echo $@
 	@$(AWK) --profile=ap-$@.out -f $(srcdir)/$@.awk > /dev/null
+	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+profile4:
+	@echo $@
+	@GAWK_NO_PP_RUN=1 $(AWK) --profile=ap-$@.out -f $(srcdir)/$@.awk > /dev/null
+	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+profile5:
+	@echo $@
+	@GAWK_NO_PP_RUN=1 $(AWK) --profile=ap-$@.out -f $(srcdir)/$@.awk > /dev/null
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 

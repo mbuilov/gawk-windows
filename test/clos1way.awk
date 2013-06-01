@@ -1,5 +1,5 @@
 BEGIN {
-	command = "LC_ALL=C sort"
+	command = "sort"
 
 	n = split("abcdefghijklmnopqrstuvwxyz", a, "")
 	for (i = n; i > 0; i--) {

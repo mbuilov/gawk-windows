@@ -1,3 +1,32 @@
+2013-06-01  Eli Zaretskii  <eliz@gnu.org>
+
+	* filefuncs.c [_WIN32]: Define WIN32_LEAN_AND_MEAN before
+	including windows.h.
+
+	* readdir.c [__MINGW32__]: Define WIN32_LEAN_AND_MEAN before
+	including windows.h.
+
+	* filefuncs.c [HAVE_GETSYSTEMTIMEASFILETIME]: Define
+	WIN32_LEAN_AND_MEAN before including windows.h.
+
+2013-05-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Add <sys/param.h> header check.
+	* filefuncs.c: Include <sys/param.h> if there.
+	(device_blocksize): New function.
+	(fill_stat_array): Call it.
+
+2013-05-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac (AC_STRUCT_ST_BLKSIZE): Replaced with call to
+	AC_CHECK_MEMBERS.
+	* filefuncs.c (fill_stat_array): Change test from ifdef
+	HAVE_ST_BLKSIZE to HAVE_STRUCT_STAT_ST_BLKSIZE.
+
+2013-05-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkdirfd.h [FAKE_FD_VALUE]: Copied here from ../gawkapi.h.
+
 2013-05-16         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* Makefile.am (install-data-hook): Remove .la files installed by

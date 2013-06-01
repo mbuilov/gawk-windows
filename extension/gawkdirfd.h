@@ -39,3 +39,7 @@ dirfd (DIR *dir_p)
   return fd;
 }
 #endif /* HAVE_DIRFD */
+
+/* This is for fake directory file descriptors on systems that don't
+   allow to open() a directory.  */
+#define FAKE_FD_VALUE 42

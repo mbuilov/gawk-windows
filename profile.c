@@ -29,8 +29,10 @@ static void pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header);
 static void pp_parenthesize(NODE *n);
 static void parenthesize(int type, NODE *left, NODE *right);
 static char *pp_list(int nargs, const char *paren, const char *delim);
-static char *pp_concat(const char *s1, const char *s2, const char *s3);
-static int is_binary(int type);
+static char *pp_group3(const char *s1, const char *s2, const char *s3);
+static char *pp_concat(int nargs);
+static bool is_binary(int type);
+static bool is_scalar(int type);
 static int prec_level(int type);
 static void pp_push(int type, char *s, int flag);
 static NODE *pp_pop(void);
@@ -43,7 +45,6 @@ const char *redir2str(int redirtype);
 
 #define DONT_FREE 1
 #define CAN_FREE  2
-
 
 static RETSIGTYPE dump_and_exit(int signum) ATTRIBUTE_NORETURN;
 static RETSIGTYPE just_dump(int signum);
@@ -127,6 +128,8 @@ indent_out(void)
 	assert(indent_level >= 0);
 }
 
+/* pp_push --- push a pretty printed string onto the stack */
+
 static void
 pp_push(int type, char *s, int flag)
 {
@@ -140,6 +143,8 @@ pp_push(int type, char *s, int flag)
 	pp_stack = n;
 }
 
+/* pp_pop --- pop a pretty printed string off the stack */
+
 static NODE *
 pp_pop()
 {
@@ -149,6 +154,8 @@ pp_pop()
 	return n;
 }
 
+/* pp_free --- release a pretty printed node */
+
 static void
 pp_free(NODE *n)
 {
@@ -157,9 +164,7 @@ pp_free(NODE *n)
 	freenode(n);
 }
 
-/*
- * pprint --- pretty print a program segment
- */
+/* pprint --- pretty print a program segment */
 
 static void
 pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
@@ -234,7 +239,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 				str = pp_string(m->stptr, m->stlen, '"');
 				if ((m->flags & INTLSTR) != 0) {
 					char *tmp = str;
-					str = pp_concat("_", tmp, "");
+					str = pp_group3("_", tmp, "");
 					efree(tmp);
 				}
 				pp_push(pc->opcode, str, CAN_FREE);
@@ -291,7 +296,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 			case Op_assign_concat:
 				t2 = pp_pop(); /* l.h.s. */
 				t1 = pp_pop();
-				tmp = pp_concat(t2->pp_str, op2str(Op_concat), t1->pp_str);
+				tmp = pp_group3(t2->pp_str, op2str(Op_concat), t1->pp_str);
 				fprintf(prof_fp, "%s%s%s", t2->pp_str, op2str(Op_assign), tmp);
 				efree(tmp);
 cleanup:
@@ -311,7 +316,7 @@ cleanup:
 		case Op_subscript:
 			tmp = pp_list(pc->sub_count, op2str(pc->opcode), ", ");
 			t1 = pp_pop();
-			str = pp_concat(t1->pp_str, tmp, "");
+			str = pp_group3(t1->pp_str, tmp, "");
 			efree(tmp);
 			pp_free(t1);
 			pp_push(pc->opcode, str, CAN_FREE);
@@ -323,7 +328,7 @@ cleanup:
 			t2 = pp_pop();
 			t1 = pp_pop();
 			parenthesize(pc->opcode, t1, t2);
-			str = pp_concat(t1->pp_str, op2str(pc->opcode), t2->pp_str);
+			str = pp_group3(t1->pp_str, op2str(pc->opcode), t2->pp_str);
 			pp_free(t1);
 			pp_free(t2);
 			pp_push(pc->opcode, str, CAN_FREE);
@@ -345,7 +350,7 @@ cleanup:
 				tmp = pp_number(m);
 			else
 				tmp = pp_string(m->stptr, m->stlen, '"');
-			str = pp_concat(t1->pp_str, op2str(pc->opcode), tmp);
+			str = pp_group3(t1->pp_str, op2str(pc->opcode), tmp);
 			efree(tmp);
 			pp_free(t1);
 			pp_push(pc->opcode, str, CAN_FREE);
@@ -366,7 +371,7 @@ cleanup:
 			t2 = pp_pop();
 			t1 = pp_pop();
 			parenthesize(pc->opcode, t1, t2);
-			str = pp_concat(t1->pp_str, op2str(pc->opcode), t2->pp_str);
+			str = pp_group3(t1->pp_str, op2str(pc->opcode), t2->pp_str);
 			pp_free(t1);
 			pp_free(t2);
 			pp_push(pc->opcode, str, CAN_FREE);
@@ -378,9 +383,9 @@ cleanup:
 		case Op_postdecrement:
 			t1 = pp_pop();
 			if (pc->opcode == Op_preincrement || pc->opcode == Op_predecrement)
-				str = pp_concat(op2str(pc->opcode), t1->pp_str, "");
+				str = pp_group3(op2str(pc->opcode), t1->pp_str, "");
 			else
-				str = pp_concat(t1->pp_str, op2str(pc->opcode), "");
+				str = pp_group3(t1->pp_str, op2str(pc->opcode), "");
 			pp_free(t1);
 			pp_push(pc->opcode, str, CAN_FREE);
 			break;
@@ -394,7 +399,7 @@ cleanup:
 				pp_parenthesize(t1);
 
 			/* optypes table (eval.c) includes space after ! */
-			str = pp_concat(op2str(pc->opcode), t1->pp_str, "");
+			str = pp_group3(op2str(pc->opcode), t1->pp_str, "");
 			pp_free(t1);
 			pp_push(pc->opcode, str, CAN_FREE);
 			break;
@@ -408,7 +413,7 @@ cleanup:
 		case Op_assign_exp:
 			t2 = pp_pop(); /* l.h.s. */
 			t1 = pp_pop();
-			str = pp_concat(t2->pp_str, op2str(pc->opcode), t1->pp_str);
+			str = pp_group3(t2->pp_str, op2str(pc->opcode), t1->pp_str);
 			pp_free(t2);
 			pp_free(t1);
 			pp_push(pc->opcode, str, CAN_FREE);
@@ -427,8 +432,7 @@ cleanup:
 			break; 
 
 		case Op_concat:
- 			str = pp_list(pc->expr_count, NULL,
-							(pc->concat_flag & CSUBSEP) != 0 ? ", " : op2str(Op_concat));
+			str = pp_concat(pc->expr_count);
 			pp_push(Op_concat, str, CAN_FREE);
 			break;
 
@@ -439,7 +443,7 @@ cleanup:
 			array = t1->pp_str;
 			if (pc->expr_count > 0) {
 				char *sub;
-				sub = pp_list(pc->expr_count, NULL, ", ");
+				sub = pp_list(pc->expr_count, NULL, pc->expr_count > 1 ? "][" : ", ");
 				fprintf(prof_fp, "%s %s[%s]", op2str(Op_K_delete), array, sub);
 				efree(sub);
 			} else 				
@@ -462,12 +466,15 @@ cleanup:
 			array = t1->pp_str;
 			if (pc->expr_count > 1) {
 				sub = pp_list(pc->expr_count, "()", ", ");
-				str = pp_concat(sub, op2str(Op_in_array), array);
+				str = pp_group3(sub, op2str(Op_in_array), array);
 				efree(sub);
 			} else {
 				t2 = pp_pop();
+				if (prec_level(t2->type) < prec_level(Op_in_array)) {
+						pp_parenthesize(t2);
+				}
 				sub = t2->pp_str;
-				str = pp_concat(sub, op2str(Op_in_array), array);
+				str = pp_group3(sub, op2str(Op_in_array), array);
 				pp_free(t2);
 			}
 			pp_free(t1);
@@ -504,7 +511,7 @@ cleanup:
 			else if ((pc->sub_flags & GENSUB) != 0)
 				fname = "gensub";
 			tmp = pp_list(pc->expr_count, "()", ", ");
-			str = pp_concat(fname, tmp, "");
+			str = pp_group3(fname, tmp, "");
 			efree(tmp);
 			pp_push(Op_sub_builtin, str, CAN_FREE);
 		}
@@ -521,10 +528,10 @@ cleanup:
 			if (fname != NULL) {
 				if (pc->expr_count > 0) {
 					tmp = pp_list(pc->expr_count, "()", ", ");
-					str = pp_concat(fname, tmp, "");
+					str = pp_group3(fname, tmp, "");
 					efree(tmp);
 				} else
-					str = pp_concat(fname, "()", "");
+					str = pp_group3(fname, "()", "");
 				pp_push(Op_builtin, str, CAN_FREE);
 			} else
 				fatal(_("internal error: builtin with null fname"));
@@ -535,7 +542,7 @@ cleanup:
 		case Op_K_printf:
 		case Op_K_print_rec:
 			if (pc->opcode == Op_K_print_rec)
-				tmp = pp_concat(" ", op2str(Op_field_spec), "0");
+				tmp = pp_group3(" ", op2str(Op_field_spec), "0");
 			else if (pc->redir_type != 0)
 				tmp = pp_list(pc->expr_count, "()", ", ");
 			else {
@@ -585,12 +592,12 @@ cleanup:
 				if (is_binary(t2->type))
 					pp_parenthesize(t2);
 				txt = t2->pp_str;
-				str = pp_concat(txt, op2str(pc->opcode), restr);
+				str = pp_group3(txt, op2str(pc->opcode), restr);
 				pp_free(t2);
 			} else {
 				NODE *re = m->re_exp;
 				restr = pp_string(re->stptr, re->stlen, '/');
-				str = pp_concat(txt, op2str(pc->opcode), restr);
+				str = pp_group3(txt, op2str(pc->opcode), restr);
 				efree(restr);
 			}
 			pp_free(t1);
@@ -602,10 +609,10 @@ cleanup:
 		case Op_K_getline_redir:
 			if (pc->into_var) {
 				t1 = pp_pop();
-				tmp = pp_concat(op2str(Op_K_getline), " ", t1->pp_str);
+				tmp = pp_group3(op2str(Op_K_getline), " ", t1->pp_str);
 				pp_free(t1);
 			} else
-				tmp = pp_concat(op2str(Op_K_getline), "", "");
+				tmp = pp_group3(op2str(Op_K_getline), "", "");
 
 			if (pc->redir_type != 0) {
 				int before = (pc->redir_type == redirect_pipein
@@ -615,9 +622,9 @@ cleanup:
 				if (is_binary(t2->type))
 					pp_parenthesize(t2);
 				if (before)
-					str = pp_concat(t2->pp_str, redir2str(pc->redir_type), tmp);
+					str = pp_group3(t2->pp_str, redir2str(pc->redir_type), tmp);
 				else
-					str = pp_concat(tmp, redir2str(pc->redir_type), t2->pp_str);
+					str = pp_group3(tmp, redir2str(pc->redir_type), t2->pp_str);
 				efree(tmp);
 				pp_free(t2);
 			} else
@@ -639,10 +646,10 @@ cleanup:
 			pcount = (pc + 1)->expr_count;
 			if (pcount > 0) {
 				tmp = pp_list(pcount, "()", ", ");
-				str = pp_concat(pre, fname, tmp);
+				str = pp_group3(pre, fname, tmp);
 				efree(tmp);
 			} else
-				str = pp_concat(pre, fname, "()");
+				str = pp_group3(pre, fname, "()");
 			if (pc->opcode == Op_indirect_func_call) {
 				t1 = pp_pop();	/* indirect var */
 				pp_free(t1);
@@ -682,7 +689,7 @@ cleanup:
 			pprint(ip->condpair_left->nexti, ip->condpair_right, false);
 			t2 = pp_pop();
 			t1 = pp_pop();
-			str = pp_concat(t1->pp_str, ", ", t2->pp_str);
+			str = pp_group3(t1->pp_str, ", ", t2->pp_str);
 			pp_free(t1);
 			pp_free(t2);
 			pp_push(Op_line_range, str, CAN_FREE);
@@ -1037,8 +1044,6 @@ prec_level(int type)
 		return 6;
 
 	case Op_less:
-		return 5;
-
 	case Op_in_array:
 		return 5;
 
@@ -1065,7 +1070,40 @@ prec_level(int type)
 	}
 }
 
-static int
+/* is_scalar --- return true if scalar, false otherwise */
+
+static bool
+is_scalar(int type)
+{
+	switch (type) {
+	case Op_push_lhs:
+	case Op_push_param:
+	case Op_push_array:
+	case Op_push:
+	case Op_push_i:
+	case Op_push_re:
+	case Op_subscript:
+	case Op_subscript_lhs:
+	case Op_func_call:
+	case Op_builtin:
+	case Op_field_spec:
+	case Op_field_spec_lhs:
+	case Op_preincrement:
+	case Op_predecrement:
+	case Op_postincrement:
+	case Op_postdecrement:
+	case Op_unary_minus:
+	case Op_not:
+		return true;
+
+	default:
+		return false;
+	}
+}
+
+/* is_binary --- return true if type represents a binary operator */
+
+static bool
 is_binary(int type)
 {
 	switch (type) {
@@ -1111,7 +1149,7 @@ is_binary(int type)
 	}
 }
 
-/* parenthesize --- parenthesize an expression in stack */
+/* pp_parenthesize --- parenthesize an expression in stack */
 
 static void
 pp_parenthesize(NODE *sp)
@@ -1131,6 +1169,8 @@ pp_parenthesize(NODE *sp)
 	sp->flags |= CAN_FREE;
 }
 
+/* parenthesize --- parenthesize two nodes relative to parent node type */
+
 static void
 parenthesize(int type, NODE *left, NODE *right)
 {
@@ -1138,15 +1178,10 @@ parenthesize(int type, NODE *left, NODE *right)
 	int lprec = prec_level(left->type);
 	int prec = prec_level(type);
 
-	if (prec > lprec) {
-		if (is_binary(left->type))		/* (a - b) * c */
-			pp_parenthesize(left);
-		if (prec >= rprec && is_binary(right->type))	/* (a - b) * (c - d) */
-			pp_parenthesize(right);
-	} else {
-		if (prec >= rprec && is_binary(right->type)) /* a - b - (c - d) */
-			pp_parenthesize(right);
-	}
+	if (lprec < prec)
+		pp_parenthesize(left);
+	if (rprec < prec)
+		pp_parenthesize(right);
 }
 
 /* pp_string --- pretty format a string or regex constant */
@@ -1183,7 +1218,7 @@ pp_string(const char *in_str, size_t len, int delim)
 		obufout = obuf + olen; \
 		ofre += osiz; \
 		osiz *= 2; \
-} ofre -= (l)
+	} ofre -= (l)
 
 	osiz = len + 3 + 2; 	/* initial size; 3 for delim + terminating null */
 	emalloc(obuf, char *, osiz, "pp_string");
@@ -1196,6 +1231,11 @@ pp_string(const char *in_str, size_t len, int delim)
 		if (delim != '/' && *str == delim) {
 			*obufout++ = '\\';
 			*obufout++ = delim;
+		} else if (*str == '\0') {
+			*obufout++ = '\\';
+			*obufout++ = '0';
+			*obufout++ = '0';
+			*obufout++ = '0';
 		} else if ((cp = strchr(escapes, *str)) != NULL) {
 			i = cp - escapes;
 			*obufout++ = '\\';
@@ -1253,6 +1293,8 @@ pp_node(NODE *n)
 	return pp_string(n->stptr, n->stlen, '"');
 }
 
+/* pp_list --- pretty print a list, with surrounding characters and separator */
+
 static NODE **pp_args = NULL;
 static int npp_args;
 
@@ -1308,8 +1350,88 @@ pp_list(int nargs, const char *paren, const char *delim)
 	return str;					
 }
 
+/* pp_concat --- handle concatenation and correct parenthesizing of expressions */
+
 static char *
-pp_concat(const char *s1, const char *s2, const char *s3)
+pp_concat(int nargs)
+{
+	NODE *r;
+ 	char *str, *s;
+	size_t len;
+	static const size_t delimlen = 1;	/* " " */
+	int i;
+	int pl_l, pl_r;
+
+	if (pp_args == NULL) {
+		npp_args = nargs;
+		emalloc(pp_args, NODE **, (nargs + 2) * sizeof(NODE *), "pp_concat");
+	} else if (nargs > npp_args) {
+		npp_args = nargs;
+		erealloc(pp_args, NODE **, (nargs + 2) * sizeof(NODE *), "pp_concat");
+	}
+
+	/*
+	 * items are on the stack in reverse order that they
+	 * will be printed to pop them off backwards.
+	 */
+
+	len = -delimlen;
+	for (i = nargs; i >= 1; i--) {
+		r = pp_args[i] = pp_pop();
+		len += r->pp_len + delimlen + 2;
+	}
+
+	emalloc(str, char *, len + 1, "pp_concat");
+	s = str;
+
+	/* now copy in */
+	for (i = 1; i < nargs; i++) {
+		r = pp_args[i];
+
+		pl_l = prec_level(pp_args[i]->type);
+		pl_r = prec_level(pp_args[i+1]->type);
+
+		if (is_scalar(pp_args[i]->type) && is_scalar(pp_args[i+1]->type)) {
+			memcpy(s, r->pp_str, r->pp_len);
+			s += r->pp_len;
+		} else if (pl_l <= pl_r || is_scalar(pp_args[i+1]->type)) {
+			*s++ = '(';
+			memcpy(s, r->pp_str, r->pp_len);
+			s += r->pp_len;
+			*s++ = ')';
+		} else {
+			memcpy(s, r->pp_str, r->pp_len);
+			s += r->pp_len;
+		}
+		pp_free(r);
+
+		if (i < nargs) {
+			*s++ = ' ';
+		}
+	}
+	
+	pl_l = prec_level(pp_args[nargs-1]->type);
+	pl_r = prec_level(pp_args[nargs]->type);
+	r = pp_args[nargs];
+	if (pl_l >= pl_r && ! is_scalar(pp_args[nargs]->type)) {
+		*s++ = '(';
+		memcpy(s, r->pp_str, r->pp_len);
+		s += r->pp_len;
+		*s++ = ')';
+	} else {
+		memcpy(s, r->pp_str, r->pp_len);
+		s += r->pp_len;
+	}
+	pp_free(r);
+
+	*s = '\0';
+	return str;					
+}
+
+/* pp_group3 --- string together up to 3 strings */
+
+static char *
+pp_group3(const char *s1, const char *s2, const char *s3)
 {
 	size_t len1, len2, len3, l;
 	char *str, *s;
@@ -1318,7 +1440,7 @@ pp_concat(const char *s1, const char *s2, const char *s3)
 	len2 = strlen(s2);
 	len3 = strlen(s3);
 	l = len1 + len2 + len3 + 2;
-	emalloc(str, char *, l, "pp_concat");
+	emalloc(str, char *, l, "pp_group3");
 	s = str;
 	if (len1 > 0) {
 		memcpy(s, s1, len1);
@@ -1389,5 +1511,3 @@ redir2str(int redirtype)
 		fatal(_("redir2str: unknown redirection type %d"), redirtype);
 	return redirtab[redirtype];
 }
-
-	

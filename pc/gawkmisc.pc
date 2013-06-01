@@ -42,6 +42,24 @@ static char* _os2_unixroot(const char *path);
 static const char* _os2_unixroot_path(const char *path);
 #endif
 
+#ifdef __MINGW32__
+#ifdef HAVE_SOCKETS
+#include <socket.h>
+
+#undef socket
+#undef setsockopt
+#undef bind
+#undef connect
+#undef listen
+#undef accept
+#undef recvfrom
+#undef shutdown
+#endif
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 /* gawk_name --- pull out the "gawk" part from how the OS called us */
 
 char *
@@ -205,15 +223,19 @@ os_close_on_exec(fd, name, what, dir)
 int fd;
 const char *name, *what, *dir;
 {
-#if ! defined(_MSC_VER) && ! defined(__MINGW32__)
-# if (defined(__DJGPP__) && (__DJGPP__ > 2 || __DJGPP_MINOR__ >= 4)) || defined __EMX__
+#if (defined(__DJGPP__) && (__DJGPP__ > 2 || __DJGPP_MINOR__ >= 4)) || defined __EMX__
 	if (fd <= 2)	/* sanity */
 		return;
 
 	if (fcntl(fd, F_SETFD, 1) < 0)
 		warning("%s %s `%s': could not set close-on-exec: %s",
 			what, dir, name, strerror(errno));
-# endif
+#endif
+#ifdef __MINGW32__
+	HANDLE fh = (HANDLE)_get_osfhandle(fd);
+
+	if (fh && fh != INVALID_HANDLE_VALUE)
+		SetHandleInformation(fh, HANDLE_FLAG_INHERIT, 0);
 #endif
 }
 
@@ -562,8 +584,6 @@ unsetenv (const char *name)
   return setenv (name, "", 1);
 }
 
-#include <windows.h>
-
 int
 usleep(unsigned int usec)
 {
@@ -693,7 +713,152 @@ dlsym (void *handle, const char *name)
 
   return (void *)addr;
 }
-#endif
+#endif	/* DYNAMIC */
+
+#ifdef HAVE_SOCKETS
+
+void
+init_sockets(void)
+{
+  WSADATA  winsockData;
+  int errcode;
+
+  if ((errcode = WSAStartup (0x101, &winsockData)) != 0
+      || winsockData.wVersion != 0x101)
+    fatal(_("cannot start Winsock (%d)"), errcode);
+}
+
+int
+socket_to_fd(SOCKET s)
+{
+  return (s == INVALID_SOCKET
+	  ? INVALID_HANDLE
+	  : _open_osfhandle (s, O_BINARY | O_NOINHERIT));
+}
+
+int
+w32_socket(int family, int type, int protocol)
+{
+  /* We need to use WSASocket rather than socket, since the latter
+     creates overlapped sockets that cannot be used in file I/O
+     APIs.  */
+  SOCKET s = WSASocket (family, type, protocol, NULL, 0, 0);
+
+  if (s == INVALID_SOCKET)
+    {
+      switch (WSAGetLastError ())
+	{
+	  case WSAEMFILE:
+	    errno = EMFILE;
+	    break;
+	  case WSANOTINITIALISED:
+	  case WSAENETDOWN:
+	    errno = EACCES;
+	    break;
+	  case WSAENOBUFS:
+	    errno = ENOMEM;
+	    break;
+	  case WSAEFAULT:
+	    errno = EFAULT;
+	    break;
+	  default:
+	    errno = EINVAL;
+	    break;
+	}
+    }
+
+  return socket_to_fd (s);
+}
+
+int
+w32_setsockopt (int fd, int level, int optname, const char *optval, int optlen)
+{
+  SOCKET s = FD_TO_SOCKET (fd);
+
+  return setsockopt (s, level, optname, optval, optlen);
+}
+
+int
+w32_bind (int fd, const struct sockaddr *name, int namelen)
+{
+  SOCKET s = FD_TO_SOCKET (fd);
+
+  return bind (s, name, namelen);
+}
+
+int
+w32_connect (int fd, const struct sockaddr *name, int namelen)
+{
+  SOCKET s = FD_TO_SOCKET (fd);
+
+  return connect (s, name, namelen);
+}
+
+int
+w32_listen (int fd, int backlog)
+{
+  SOCKET s = FD_TO_SOCKET (fd);
+
+  return listen (s, backlog);
+}
+
+int
+w32_accept (int fd, struct sockaddr *addr, int *addrlen)
+{
+  SOCKET s = FD_TO_SOCKET (fd);
+
+  return socket_to_fd (accept (s, addr, addrlen));
+}
+
+SOCKET
+valid_socket (int fd)
+{
+  SOCKET s = FD_TO_SOCKET (fd);
+  int ov, ol = 4;
+
+  if (s == INVALID_SOCKET
+      || (getsockopt (s, SOL_SOCKET, SO_TYPE, (char *)&ov, &ol) == SOCKET_ERROR
+	  && WSAGetLastError() == WSAENOTSOCK))
+    return (SOCKET)0;
+  return s;
+}
+
+int
+w32_closesocket (int fd)
+{
+  SOCKET s = valid_socket (fd);
+  int res1, res2 = 0;
+
+  if (!s && fd == FAKE_FD_VALUE)
+    return 0;
+
+  res1 = close (fd);
+  if (s)
+    res2 = closesocket (s);
+
+  if (res1 == -1 || res2 == SOCKET_ERROR)
+    return -1;
+  return 0;
+}
+
+int
+w32_recvfrom (int fd, char *buf, int len, int flags,
+	      struct sockaddr *from, int *fromlen)
+{
+  SOCKET s = FD_TO_SOCKET (fd);
+
+  return recvfrom (s, buf, len, flags, from, fromlen);
+}
+
+int
+w32_shutdown (int fd, int how)
+{
+  SOCKET s = FD_TO_SOCKET (fd);
+
+  return shutdown (s, how);
+}
+
+#endif	/* HAVE_SOCKETS */
 
 #endif	/* __MINGW32__ */
 
