@@ -297,6 +297,7 @@ function incdupe7() {
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
 
+# TODO: The compare operation passes even when there are diffs.
 function readfile() {
   $GAWKEXE -l readfile 'BEGIN {printf "%s", readfile("Makefile")}' >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
   ${COMPARE} Makefile _${TESTCASE} && rm -f _${TESTCASE} || cp -p Makefile ${TESTCASE}.ok
@@ -461,6 +462,18 @@ function profile2() {
 
 function profile3() {
   $GAWKEXE --profile=ap-${TESTCASE}.out -f ${SRCDIR}/${TESTCASE}.awk > /dev/null
+  sed 1,2d < ap-${TESTCASE}.out > _${TESTCASE}; rm ap-${TESTCASE}.out
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function profile4() {
+  GAWK_NO_PP_RUN=1 $GAWKEXE --profile=ap-${TESTCASE}.out -f ${SRCDIR}/${TESTCASE}.awk > /dev/null
+  sed 1,2d < ap-${TESTCASE}.out > _${TESTCASE}; rm ap-${TESTCASE}.out
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function profile5() {
+  GAWK_NO_PP_RUN=1 $GAWKEXE --profile=ap-${TESTCASE}.out -f ${SRCDIR}/${TESTCASE}.awk > /dev/null
   sed 1,2d < ap-${TESTCASE}.out > _${TESTCASE}; rm ap-${TESTCASE}.out
   ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
 }
