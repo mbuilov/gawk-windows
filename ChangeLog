@@ -1,3 +1,36 @@
+2013-06-01  Eli Zaretskii  <eliz@gnu.org>
+
+	* io.c (SHUT_RD) [SD_RECEIVE]: Define to SD_RECEIVE.
+	(SHUT_WR) [SD_SEND]: Define to SD_SEND.
+	(SHUT_RDWR) [SD_BOTH]: Define to SD_BOTH.
+	(FD_TO_SOCKET, closemaybesocket) [!FD_TO_SOCKET]: New macros.
+	(SOCKET_TO_FD, SOCKET) [!SOCKET_TO_FD]: New macros.
+	(PIPES_SIMULATED): Define only for DJGPP.
+	(pipe) [__MINGW32__]: Define to call _pipe, unless PIPES_SIMULATED
+	is defined.
+	(init_io) [HAVE_SOCKETS]: Call init_sockets.
+	(iop_close, socketopen): Call closemaybesocket instead of close.
+	(redirect) [__MINGW32__]: Call wait_any with a non-zero argument.
+	(devopen) [__EMX__ || __MINGW32__]: Don't call stat on network
+	pseudo-filenames.
+	(two_way_open) [HAVE_SOCKETS]: Switch input and output to binary
+	mode if appropriate.
+	(two_way_open) [!PIPES_SIMULATED]: Use the __EMX__ code for MinGW
+	as well.
+	[__MINGW32__] Call spawnl to invoke $ComSpec and pass it a
+	suitably quoted command line.
+	(two_way_open) [__MINGW32__]: Wait only for a specified process
+	ID.  If successful, update the exit status of the exited process.
+	Don't use signals that are undefined on MinGW.
+	(two_way_open) [!PIPES_SIMULATED]: Use the __EMX__ code for MinGW
+	as well.
+	(min): Define only if not already defined.
+	(read_with_timeout) [__MINGW32__]: Allow reading from sockets with
+	timeout.
+	(gawk_fclose) [__MINGW32__]: Close the underlying socket as well.
+
+	* getopt.c: Include stdlib.h for MinGW as well.
+
 2013-05-30         Arnold D. Robbins     <arnold@skeeve.com>
 
 	More profiling fixes:

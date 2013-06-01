@@ -158,28 +158,29 @@ LMINGW32 = $(CC) $(LF) -o $@ $(GAWKOBJS) $(LF2)
 mingw32:
 	$(MAK) all \
 	CC=gcc O=.o CF="-D__USE_MINGW_ANSI_STDIO -O2 -gdwarf-2 -g3" \
-	OBJ=popen.o LNK=LMINGW32 LF="-gdwarf-2 -g3" LF2=-lmsvcp60 RSP=
+	OBJ=popen.o LNK=LMINGW32 LF="-gdwarf-2 -g3" \
+        LF2="-lws2_32 -lmsvcp60" RSP=
 
 mingw32-readline:
 	$(MAK) all \
 	CC=gcc O=.o \
 	CF="-D__USE_MINGW_ANSI_STDIO -DHAVE_LIBREADLINE -O2 -gdwarf-2 -g3" \
 	OBJ=popen.o LNK=LMINGW32 LF="-gdwarf-2 -g3" \
-	LF2="-lreadline -lmsvcp60 -Wl,--enable-auto-import" RSP=
+	LF2="-lreadline -lws2_32 -lmsvcp60 -Wl,--enable-auto-import" RSP=
 
 mingw32-mpfr:
 	$(MAK) all \
 	CC=gcc O=.o \
 	CF="-D__USE_MINGW_ANSI_STDIO -DHAVE_MPFR -O2 -gdwarf-2 -g3" \
 	OBJ=popen.o LNK=LMINGW32 LF="-gdwarf-2 -g3" \
-	LF2="-lmpfr -lgmp -lmsvcp60 -Wl,--enable-auto-import" RSP=
+	LF2="-lmpfr -lgmp -lws2_32 -lmsvcp60 -Wl,--enable-auto-import" RSP=
 
 mingw32-readline-mpfr:
 	$(MAK) all \
 	CC=gcc O=.o \
 	CF="-D__USE_MINGW_ANSI_STDIO -DHAVE_LIBREADLINE -DHAVE_MPFR -O2 -gdwarf-2 -g3" \
 	OBJ=popen.o LNK=LMINGW32 LF="-gdwarf-2 -g3" \
-	LF2="-lmpfr -lgmp -lreadline -lmsvcp60 -Wl,--enable-auto-import" RSP=
+	LF2="-lmpfr -lgmp -lreadline -lws2_32 -lmsvcp60 -Wl,--enable-auto-import" RSP=
 
 # Define BIND for BINDless compiles, otherwise $($(BIND)) may break.
 BIND = EMPTY
@@ -242,11 +243,11 @@ command$O debug$O:	cmd.h
 
 dfa$O:		xalloc.h
 
-gawkmisc$O:	pc/gawkmisc.pc
+gawkmisc$O:	pc/gawkmisc.pc socket.h
 
 getopt$O getopt1$O :	getopt_int.h
 
-io$O:		popen.h
+io$O:		popen.h socket.h in.h
 
 regex$O:	regcomp.c regexec.c regex_internal.h
 
@@ -261,6 +262,7 @@ awkgram.c:	awkgram.y
 
 alloca$O:	alloca.c
 
+popen$O:	popen.h
 
 install: install$(install)
 	-$(MAKE) -C extension install-extensions

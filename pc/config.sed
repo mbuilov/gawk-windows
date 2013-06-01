@@ -48,6 +48,10 @@ s/^#undef HAVE_ATEXIT *$/#define HAVE_ATEXIT 1/
 #endif
 s/^#undef HAVE_FCNTL_H *$/#define HAVE_FCNTL_H 1/
 s/^#undef HAVE_FMOD *$/#define HAVE_FMOD 1/
+/^#undef HAVE_GETADDRINFO *$/c\
+#ifdef __MINGW32__\
+#define HAVE_GETADDRINFO 1\
+#endif
 /^#undef HAVE_INTMAX_T *$/c\
 #ifdef __MINGW32__\
 #define HAVE_INTMAX_T 1\
@@ -121,6 +125,14 @@ s/^#undef HAVE_MKTIME *$/#define HAVE_MKTIME 1/
 /^#undef HAVE_SNPRINTF *$/c\
 #ifdef __MINGW32__\
 #define HAVE_SNPRINTF 1\
+#endif
+/^#undef HAVE_SOCKADDR_STORAGE *$/c\
+#ifdef __MINGW32__\
+#define HAVE_SOCKADDR_STORAGE 1\
+#endif
+/^#undef HAVE_SOCKETS *$/c\
+#ifdef __MINGW32__\
+#define HAVE_SOCKETS 1\
 #endif
 s/^#undef HAVE_STDARG_H *$/#define HAVE_STDARG_H 1/
 /^#undef HAVE_STDDEF_H *$/c\

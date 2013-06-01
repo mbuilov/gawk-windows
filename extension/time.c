@@ -62,6 +62,7 @@ int plugin_is_GPL_compatible;
 #include <time.h>
 #endif
 #if defined(HAVE_GETSYSTEMTIMEASFILETIME)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 

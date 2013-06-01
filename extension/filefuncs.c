@@ -77,6 +77,7 @@
 #define major(s) (s)
 #define minor(s) (0)
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 /* get_inode --- get the inode of a file */

@@ -1,3 +1,45 @@
+2013-06-01  Eli Zaretskii  <eliz@gnu.org>
+
+	* popen.h (SIGKILL) [__MINGW32__]: Define.
+	(kill, quote_cmd): New prototypes.
+
+	* popen.c: Include popen.h and errno.h.
+	(popen, pclose, system): Undefine macros.
+	(WIN32_LEAN_AND_MEAN) [__MINGW32__]: Define and include windows.h.
+	(kill, quote_cmd) [!PIPES_SIMULATED]: New functions.
+	(os_popen): Make the function definition match its prototype
+	exactly.
+
+	* gawkmisc.pc [HAVE_SOCKETS]: Include socket.h and windows.h.
+	(socket, setsockopt, bind, connect, listen, accept, recvfrom)
+	(shutdown): Undefine macros.
+	(os_close_on_exec) [__MINGW32__]: Non-trivial implementation.
+	(init_sockets, socket_to_fd, w32_socket, w32_setsockopt)
+	(w32_bind, w32_connect, w32_listen, w32_accept, valid_socket)
+	(w32_closesocket, w32_recvfrom, w32_shutdown) [HAVE_SOCKETS]: New
+	functions for MinGW, emulate Posix sockets specified by file
+	descriptors.
+
+	* config.h (HAVE_GETADDRINFO, HAVE_SOCKADDR_STORAGE)
+	(HAVE_SOCKETS) [__MINGW32__]: Define.
+
+	* config.sed (HAVE_GETADDRINFO, HAVE_SOCKADDR_STORAGE)
+	(HAVE_SOCKETS) [__MINGW32__]: Define.
+
+	* Makefile.tst (fmtspcl): Announce expected failure only if not
+	built with MPFR.
+	(inetecht, inetdayt): For MinGW, warn about time-outs.
+	(beginfile1, clos1way, getlndir): Announce expected failure only
+	with DJGPP.
+	(exit): Describe the failure on MinGW.
+	(readdir): Explain why test might fail with bad ls.exe.
+
+	* Makefile (mingw32, mingw32-readline, mingw32-mpfr)
+	(mingw32-readline-mpfr): Add -lws2_32 to the link flags.
+	(gawkmisc$O): Depend on socket.h.
+	(io$O): Depend on socket.h and in.h.
+	(popen$O): New dependency.
+
 2013-05-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* config.h: Remove obsolete HAVE_ST_BLKSIZE.

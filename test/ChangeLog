@@ -1,3 +1,15 @@
+2013-06-01  Eli Zaretskii  <eliz@gnu.org>
+
+	* clos1way.awk: Don't use features of Posix shells, to allow this
+	test to work on Windows.
+
+	* beginfile2.sh: Leave one blank between the left quote and the
+	following slash.  Use non-absolute name for a non-existent file.
+	This is to avoid breakage on Windows due to MSYS transformation of
+	Posix style /foo/bar absolute file names.
+
+	* beginfile2.ok: Adapt to changes in beginfile2.sh.
+
 2013-05-30         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (profile4, profile5): New tests.

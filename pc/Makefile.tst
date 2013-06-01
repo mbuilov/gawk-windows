@@ -60,7 +60,7 @@
 SHELL = /bin/sh
 
 # Point to gawk
-AWK = AWKLIBPATH=../extension ../gawk.exe
+AWK = AWKLIBPATH=../extension $(AWKPROG)
 # Also point to gawk but for DOS commands needing backslashes.  We need
 # the forward slash version too or 'arrayparam' fails.
 AWK2 = '..\gawk.exe'
@@ -500,7 +500,7 @@ fmtspcl.ok: fmtspcl.tok
 
 fmtspcl: fmtspcl.ok
 	@echo $@
-	@echo Expect $@ to fail with MinGW
+	@echo Expect $@ to fail on MinGW if not built with MPFR
 	@$(AWK) $(AWKFLAGS) -f $(srcdir)/fmtspcl.awk  --lint >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-if test -z "$$AWKFLAGS" ; then $(CMP) $@.ok _$@ && rm -f _$@ ; else \
 	$(CMP) $(srcdir)/$@-mpfr.ok _$@ && rm -f _$@ ; \
@@ -553,6 +553,7 @@ inetechu::
 
 inetecht::
 	@echo Expect inetecht to fail with DJGPP.
+	@echo Expect inetecht to time out with MinGW after 20 sec.
 	@echo This test is for establishing TCP connections
 #	@$(AWK) 'BEGIN {print "" |& "/inet/tcp/0/127.0.0.1/9"}'
 	@-$(AWK) 'BEGIN {print "" |& "/inet/tcp/0/127.0.0.1/9"}'
@@ -567,6 +568,7 @@ inetdayu::
 
 inetdayt::
 	@echo Expect inetdayt to fail with DJGPP.
+	@echo Expect inetdayt to time out with MinGW after 41 sec.
 	@echo This test is for bidirectional TCP transmission
 #	@$(AWK) 'BEGIN { print "" |& "/inet/tcp/0/127.0.0.1/13"; \
 #	"/inet/tcp/0/127.0.0.1/13" |& getline; print $0}'
@@ -820,7 +822,7 @@ printfbad2: printfbad2.ok
 
 beginfile1::
 	@echo $@
-	@echo Expect beginfile1 to fail with DJGPP and MinGW
+	@echo Expect beginfile1 to fail with DJGPP
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk $(srcdir)/$@.awk . ./no/such/file Makefile  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -868,7 +870,7 @@ next:
 
 exit:
 	@echo $@
-	@echo Expect exit to fail with MinGW
+	@echo Expect exit to fail with MinGW due to null vs nul difference
 	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -1010,7 +1012,7 @@ readdir:
 	echo If it does, try rerunning on an ext'[234]' filesystem. ; \
 	fi
 	@echo $@
-	@echo This test may fail if $(LS) does not report full Windows file index as the inode
+	@echo This test may fail on MinGW if $(LS) does not report full Windows file index as the inode
 	@$(AWK) -f $(srcdir)/readdir.awk $(top_srcdir) > _$@
 	@$(LS) -afli $(top_srcdir) | sed 1d | $(AWK) -f $(srcdir)/readdir0.awk -v extout=_$@ > $@.ok
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
@@ -1998,8 +2000,8 @@ backw:
 
 clos1way:
 	@echo $@
-	@echo Expect clos1way to fail with DJGPP and MinGW.
-	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@echo Expect clos1way to fail with DJGPP.
+	@AWKPATH=$(srcdir) LC_ALL=C $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 delsub:
@@ -2084,7 +2086,7 @@ gensub2:
 
 getlndir:
 	@echo $@
-	@echo Expect getlndir to fail with DJGPP and MinGW.
+	@echo Expect getlndir to fail with DJGPP.
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 

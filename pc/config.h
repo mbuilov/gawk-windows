@@ -59,7 +59,9 @@
 #define HAVE_FMOD 1
 
 /* have getaddrinfo */
-#undef HAVE_GETADDRINFO
+#ifdef __MINGW32__
+#define HAVE_GETADDRINFO 1
+#endif
 
 /* Define to 1 if you have the `getgrent' function. */
 #undef HAVE_GETGRENT
@@ -210,10 +212,14 @@
 #endif
 
 /* newer systems define this type here */
-#undef HAVE_SOCKADDR_STORAGE
+#ifdef __MINGW32__
+#define HAVE_SOCKADDR_STORAGE 1
+#endif
 
 /* we have sockets on this system */
-#undef HAVE_SOCKETS
+#ifdef __MINGW32__
+#define HAVE_SOCKETS 1
+#endif
 
 /* Define to 1 if you have the <stdarg.h> header file. */
 #define HAVE_STDARG_H 1

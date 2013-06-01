@@ -57,11 +57,12 @@
 
 /* This needs to come after some library #include
    to get __GNU_LIBRARY__ defined.  */
-#if defined (__GNU_LIBRARY__) || defined (__CYGWIN__) || defined(__DJGPP__) || defined(__APPLE__)
+#if defined (__GNU_LIBRARY__) || defined (__CYGWIN__) || defined(__DJGPP__) || defined(__APPLE__) || defined(__MINGW32__)
 /* Don't include stdlib.h for
  * non-GNU C libraries
  * non-Cygwin
  * non-DJGPP
+ * non-MinGW
  * because some of them contain conflicting prototypes for getopt.  */
 # include <stdlib.h>
 # include <unistd.h>
