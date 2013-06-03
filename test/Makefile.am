@@ -192,6 +192,8 @@ EXTRA_DIST = \
 	eofsplit.ok \
 	exit.ok \
 	exit.sh \
+	exit2.awk \
+	exit2.ok \
 	exitval1.awk \
 	exitval1.ok \
 	exitval2.awk \
@@ -924,7 +926,7 @@ BASIC_TESTS = \
 	childin clobber closebad clsflnam compare compare2 concat1 concat2 \
 	concat3 concat4 convfmt \
 	datanonl defref delargv delarpm2 delarprm delfunc dfastress dynlj \
-	eofsplit exitval1 exitval2 \
+	eofsplit exit2 exitval1 exitval2 \
 	fcall_exit fcall_exit2 fldchg fldchgnf fnamedat fnarray fnarray2 \
 	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsrs fsspcoln \
 	fstabplus funsemnl funsmnam funstack \

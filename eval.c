@@ -1462,7 +1462,13 @@ unwind_stack(long n)
 			freenode(r);
 			break;
 		default:
-			if (in_main_context())
+			/*
+			 * Check `exiting' and don't produce an error for
+			 * cases like:
+			 *	func     _fn0() { exit }
+			 *	BEGIN { ARRAY[_fn0()] }
+			 */
+			if (in_main_context() && ! exiting)
 				fatal(_("unwind_stack: unexpected type `%s'"),
 						nodetype2str(r->type));
 			/* else 
