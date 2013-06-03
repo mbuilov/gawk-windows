@@ -13744,8 +13744,12 @@ current record. @xref{Changing Fields}.
 @item FUNCTAB #
 An array whose indices and corresponding values are the names of all
 the user-defined or extension functions in the program.
-@strong{NOTE}: You may not use the @code{delete} statement with the
-@code{FUNCTAB} array.
+
+@quotation NOTE
+Attempting to use the @code{delete} statement with the @code{FUNCTAB}
+array will cause a fatal error.  Any attempt to assign to an element of
+the @code{FUNCTAB} array will also cause a fatal error.
+@end quotation
 
 @cindex @code{NR} variable
 @item NR
