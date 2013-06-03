@@ -715,19 +715,21 @@ dlsym (void *handle, const char *name)
 }
 #endif	/* DYNAMIC */
 
-#ifdef HAVE_SOCKETS
 
 void
 init_sockets(void)
 {
+#ifdef HAVE_SOCKETS
   WSADATA  winsockData;
   int errcode;
 
   if ((errcode = WSAStartup (0x101, &winsockData)) != 0
       || winsockData.wVersion != 0x101)
     fatal(_("cannot start Winsock (%d)"), errcode);
+#endif
 }
 
+#ifdef HAVE_SOCKETS
 int
 socket_to_fd(SOCKET s)
 {

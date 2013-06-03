@@ -294,10 +294,9 @@ init_io()
 {
 	long tmout;
 
-#ifdef HAVE_SOCKETS
 	/* Only MinGW has a non-trivial implementation of this.  */
 	init_sockets();
-#endif
+
 	/*
 	 * N.B.: all these hacks are to minimize the effect
 	 * on programs that do not care about timeout.

@@ -1508,6 +1508,7 @@ extern int ispath(const char *file);
 extern int isdirpunct(int c);
 
 /* io.c */
+extern void init_sockets(void);
 extern void init_io(void);
 extern void register_input_parser(awk_input_parser_t *input_parser);
 extern void register_output_wrapper(awk_output_wrapper_t *wrapper);
