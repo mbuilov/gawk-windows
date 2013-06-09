@@ -2996,8 +2996,6 @@ iop_finish(IOBUF *iop)
 			if (isdir)
 				iop->errcode = EISDIR;
 			else {
-				struct stat sbuf;
-
 				iop->errcode = EIO;
 				/*
 				 * Extensions can supply values that are not
@@ -3005,8 +3003,10 @@ iop_finish(IOBUF *iop)
 				 * file descriptors. So check the fd before
 				 * trying to close it, which avoids errors
 				 * on some operating systems.
+				 *
+				 * The fcntl call works for Windows, too.
 				 */
-				if (fstat(iop->public.fd, & sbuf) == 0)
+				if (fcntl(iop->public.fd, F_GETFL) >= 0)
 					(void) close(iop->public.fd);
 				iop->public.fd = INVALID_HANDLE;
 			}
