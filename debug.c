@@ -519,6 +519,9 @@ print_lines(char *src, int start_line, int nlines)
 		return -1;
 	}
 
+	/* set binary mode so that byte offset calculations will be right */
+	os_setbinmode(s->fd, O_BINARY);
+
 	if (fstat(s->fd, &sbuf) == 0 && s->mtime < sbuf.st_mtime) {
 		fprintf(out_fp, _("WARNING: source file `%s' modified since program compilation.\n"),
 				src);
@@ -534,6 +537,7 @@ print_lines(char *src, int start_line, int nlines)
 					src, strerror(errno));
 			return -1;
 		}
+		os_setbinmode(s->fd, O_BINARY);
 	}
 
 	if (s->line_offset == NULL && find_lines(s) != 0)
