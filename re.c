@@ -555,8 +555,6 @@ again:
 		goto done;
 
 	for (count++, sp++; *sp != '\0'; sp++) {
-		static bool range_warned = false;
-
 		if (*sp == '[')
 			count++;
 		/*
@@ -575,14 +573,6 @@ again:
 				count--;
 		}
 
-		if (*sp == '-' && do_lint && ! range_warned && count == 1
-		    && sp[-1] != '[' && sp[1] != ']'
-		    && ! isdigit((unsigned char) sp[-1]) && ! isdigit((unsigned char) sp[1])
-		    && ! (sp[-2] == '[' && sp[-1] == '^')) {
-			range_warned = true;
-			warning(_("range of the form `[%c-%c]' is locale dependent"),
-					sp[-1], sp[1]);
-		}
 		if (count == 0) {
 			sp++;	/* skip past ']' */
 			break;
