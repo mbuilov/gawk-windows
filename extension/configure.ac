@@ -66,7 +66,8 @@ else
 	AC_MSG_RESULT([no])
 fi
 
-AC_CHECK_HEADERS(dirent.h fnmatch.h time.h sys/time.h sys/select.h sys/param.h)
+AC_HEADER_MAJOR
+AC_CHECK_HEADERS(dirent.h fnmatch.h limits.h time.h sys/time.h sys/select.h sys/param.h)
 
 AC_CHECK_FUNCS(fdopendir fnmatch gettimeofday \
 		getdtablesize nanosleep select GetSystemTimeAsFileTime)

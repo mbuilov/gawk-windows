@@ -44,6 +44,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
+
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
 #else

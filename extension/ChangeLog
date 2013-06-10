@@ -1,3 +1,13 @@
+2013-06-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac (AC_HEADER_MAJOR): New macro added.
+	Add check for limits.h header.
+	* filefuncs.c: Add the right stuff to get the major/minor macros.
+	* readdir.c: Add include of limits.h appropriately wrapped.
+
+	Thanks to ICHII Takashi <ichii386@schweetheart.jp> for the reports
+	and pointers.
+
 2013-06-01  Eli Zaretskii  <eliz@gnu.org>
 
 	* filefuncs.c [_WIN32]: Define WIN32_LEAN_AND_MEAN before

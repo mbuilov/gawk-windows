@@ -45,9 +45,16 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
+
+#ifdef MAJOR_IN_MKDEV
+#include <sys/mkdev.h>
+#elif defined(MAJOR_IN_SYSMACROS)
+#include <sys/sysmacros.h>
+#endif
 
 #include "gawkapi.h"
 
