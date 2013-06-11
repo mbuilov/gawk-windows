@@ -2731,11 +2731,18 @@ find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
 int
 srcopen(SRCFILE *s)
 {
+	int fd = INVALID_HANDLE;
+
 	if (s->stype == SRC_STDIN)
-		return fileno(stdin);
-	if (s->stype == SRC_FILE || s->stype == SRC_INC)
-		return devopen(s->fullpath, "r");
-	return INVALID_HANDLE;
+		fd = fileno(stdin);
+	else if (s->stype == SRC_FILE || s->stype == SRC_INC)
+		fd = devopen(s->fullpath, "r");
+
+	/* set binary mode so that debugger byte offset calculations will be right */
+	if (fd != INVALID_HANDLE)
+		os_setbinmode(fd, O_BINARY);
+
+	return fd;
 }
 
 /* input parsers, mainly for use by extension functions */
