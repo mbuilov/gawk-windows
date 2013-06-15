@@ -116,6 +116,10 @@
 #define ENFILE EMFILE
 #endif
 
+#if defined(VMS)
+#define closemaybesocket(fd)	close(fd)
+#endif
+
 #ifdef HAVE_SOCKETS
 
 #ifndef SHUT_RD
@@ -3013,7 +3017,9 @@ iop_finish(IOBUF *iop)
 				 *
 				 * The fcntl call works for Windows, too.
 				 */
+#if defined(F_GETFL)
 				if (fcntl(iop->public.fd, F_GETFL) >= 0)
+#endif
 					(void) close(iop->public.fd);
 				iop->public.fd = INVALID_HANDLE;
 			}
