@@ -16921,6 +16921,19 @@ that traverses every element of a true multidimensional array
 Return a true value if @var{x} is an array. Otherwise return false.
 @end table
 
+@code{isarray()} is meant for use in two circumstances. The first is when
+traversing a multidimensional array: you can test if an element is itself
+an array or not.  The second is inside the body of a user-defined function
+(not discussed yet; @pxref{User-defined}), to test if a paramater is an
+array or not.
+
+Note, however, that using @code{isarray()} at the global level to test 
+variables makes no sense. Since you are the one writing the program, you
+are supposed to know if your variables are arrays or not. And in fact,
+due to the way @command{gawk} works, if you pass the name of a variable
+that has not been previously used to @code{isarray()}, @command{gawk}
+will end up turning it into a scalar.
+
 @node I18N Functions
 @subsection String-Translation Functions
 @cindex @command{gawk}, string-translation functions
