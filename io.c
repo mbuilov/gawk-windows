@@ -76,10 +76,6 @@
 #include <netdb.h>
 #endif /* HAVE_NETDB_H */
 
-#if defined(HAVE_POPEN_H)
-#include "popen.h"
-#endif
-
 #ifndef HAVE_GETADDRINFO
 #include "missing_d/getaddrinfo.h"
 #endif
@@ -106,6 +102,10 @@
 
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
+#endif
+
+#if defined(HAVE_POPEN_H)
+#include "popen.h"
 #endif
 
 #ifdef __EMX__

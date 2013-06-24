@@ -1,3 +1,10 @@
+2013-06-24  Eli Zaretskii  <eliz@gnu.org>
+
+	* io.c: Move #include "popen.h" out of the HAVE_SOCKETS condition,
+	as this is needed for non-sockets builds as well.  See
+	http://lists.gnu.org/archive/html/bug-gawk/2013-06/msg00014.html
+	for the details of the problem this caused.
+
 2013-06-15         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c: Add ifdefs for VMS so that it will compile again.
