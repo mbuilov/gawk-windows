@@ -2226,6 +2226,11 @@ colonwarn:
 	do $(AWK) -f $(srcdir)/$@.awk $$i < $(srcdir)/$@.in ; \
 	done > _$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+clos1way:
+	@echo $@
+	@AWKPATH=$(srcdir) LC_ALL=C $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
 addcomma:
@@ -3158,11 +3163,6 @@ arraysort:
 backw:
 	@echo $@
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
-
-clos1way:
-	@echo $@
-	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 delsub:

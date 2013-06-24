@@ -1833,6 +1833,11 @@ colonwarn:
 	done > _$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+clos1way:
+	@echo $@
+	@AWKPATH=$(srcdir) LC_ALL=C $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
 # Targets generated for other tests:
 include Maketests
 
