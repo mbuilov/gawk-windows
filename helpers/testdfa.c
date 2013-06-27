@@ -732,6 +732,7 @@ char casetable[] = {
 
 #undef C
 
+#ifdef GREP_DFA	/* not needed for gawk */
 /* xalloc.h -- malloc with out-of-memory checking
 
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
@@ -1069,3 +1070,4 @@ xmemdup (T const *p, size_t s)
 
 
 #endif /* !XALLOC_H_ */
+#endif /* GREP_DFA */
