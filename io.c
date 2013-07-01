@@ -686,10 +686,9 @@ redflags2str(int flags)
 /* redirect --- Redirection for printf and print commands */
 
 struct redirect *
-redirect(NODE *redir_exp, int redirtype, int *errflg)
+redirect_string(char *str, size_t explen, int not_string, int redirtype, int *errflg)
 {
 	struct redirect *rp;
-	char *str;
 	int tflag = 0;
 	int outflag = 0;
 	const char *direction = "to";
@@ -736,18 +735,16 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 	default:
 		cant_happen();
 	}
-	if (do_lint && (redir_exp->flags & STRCUR) == 0)
+	if (do_lint && not_string)
 		lintwarn(_("expression in `%s' redirection only has numeric value"),
 			what);
-	redir_exp = force_string(redir_exp);
-	str = redir_exp->stptr;
 
 	if (str == NULL || *str == '\0')
 		fatal(_("expression for `%s' redirection has null string value"),
 			what);
 
-	if (do_lint && (strncmp(str, "0", redir_exp->stlen) == 0
-			|| strncmp(str, "1", redir_exp->stlen) == 0))
+	if (do_lint && (strncmp(str, "0", explen) == 0
+			|| strncmp(str, "1", explen) == 0))
 		lintwarn(_("filename `%s' for `%s' redirection may be result of logical expression"),
 				str, what);
 
@@ -785,8 +782,8 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 #endif /* PIPES_SIMULATED */
 
 		/* now check for a match */
-		if (strlen(rp->value) == redir_exp->stlen
-		    && memcmp(rp->value, str, redir_exp->stlen) == 0
+		if (strlen(rp->value) == explen
+		    && memcmp(rp->value, str, explen) == 0
 		    && ((rp->flag & ~(RED_NOBUF|RED_EOF|RED_PTY)) == tflag
 			|| (outflag != 0
 			    && (rp->flag & (RED_FILE|RED_WRITE)) == outflag))) {
@@ -797,22 +794,24 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			if (do_lint && rpflag != newflag)
 				lintwarn(
 		_("unnecessary mixing of `>' and `>>' for file `%.*s'"),
-					(int) redir_exp->stlen, rp->value);
+					(int) explen, rp->value);
 
 			break;
 		}
 	}
 
 	if (rp == NULL) {
+		char *newstr;
 		new_rp = true;
 		if (save_rp != NULL) {
 			rp = save_rp;
 			efree(rp->value);
 		} else
 			emalloc(rp, struct redirect *, sizeof(struct redirect), "redirect");
-		emalloc(str, char *, redir_exp->stlen + 1, "redirect");
-		memcpy(str, redir_exp->stptr, redir_exp->stlen);
-		str[redir_exp->stlen] = '\0';
+		emalloc(newstr, char *, explen + 1, "redirect");
+		memcpy(newstr, str, explen);
+		newstr[explen] = '\0';
+		str = newstr;
 		rp->value = str;
 		rp->flag = tflag;
 		init_output_wrapper(& rp->output);
@@ -996,6 +995,15 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 	}
 	save_rp = NULL;
 	return rp;
+}
+
+struct redirect *
+redirect(NODE *redir_exp, int redirtype, int *errflg)
+{
+	int not_string = ((redir_exp->flags & STRCUR) == 0);
+	redir_exp = force_string(redir_exp);
+	return redirect_string(redir_exp->stptr, redir_exp->stlen, not_string,
+				redirtype, errflg);
 }
 
 /* getredirect --- find the struct redirect for this file or pipe */

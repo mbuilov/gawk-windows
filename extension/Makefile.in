@@ -203,6 +203,12 @@ rwarray_la_OBJECTS = $(am_rwarray_la_OBJECTS)
 rwarray_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(rwarray_la_LDFLAGS) $(LDFLAGS) -o $@
+select_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_select_la_OBJECTS = select.lo
+select_la_OBJECTS = $(am_select_la_OBJECTS)
+select_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(select_la_LDFLAGS) $(LDFLAGS) -o $@
 testext_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
 am_testext_la_OBJECTS = testext.lo
 testext_la_OBJECTS = $(am_testext_la_OBJECTS)
@@ -253,12 +259,14 @@ SOURCES = $(filefuncs_la_SOURCES) $(fnmatch_la_SOURCES) \
 	$(fork_la_SOURCES) $(inplace_la_SOURCES) $(ordchr_la_SOURCES) \
 	$(readdir_la_SOURCES) $(readfile_la_SOURCES) \
 	$(revoutput_la_SOURCES) $(revtwoway_la_SOURCES) \
-	$(rwarray_la_SOURCES) $(testext_la_SOURCES) $(time_la_SOURCES)
+	$(rwarray_la_SOURCES) $(select_la_SOURCES) \
+	$(testext_la_SOURCES) $(time_la_SOURCES)
 DIST_SOURCES = $(filefuncs_la_SOURCES) $(fnmatch_la_SOURCES) \
 	$(fork_la_SOURCES) $(inplace_la_SOURCES) $(ordchr_la_SOURCES) \
 	$(readdir_la_SOURCES) $(readfile_la_SOURCES) \
 	$(revoutput_la_SOURCES) $(revtwoway_la_SOURCES) \
-	$(rwarray_la_SOURCES) $(testext_la_SOURCES) $(time_la_SOURCES)
+	$(rwarray_la_SOURCES) $(select_la_SOURCES) \
+	$(testext_la_SOURCES) $(time_la_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
 	ctags-recursive dvi-recursive html-recursive info-recursive \
 	install-data-recursive install-dvi-recursive \
@@ -497,6 +505,7 @@ pkgextension_LTLIBRARIES = \
 	revoutput.la	\
 	revtwoway.la	\
 	rwarray.la	\
+	select.la	\
 	testext.la	\
 	time.la
 
@@ -520,6 +529,9 @@ inplace_la_LIBADD = $(MY_LIBS)
 ordchr_la_SOURCES = ordchr.c
 ordchr_la_LDFLAGS = $(MY_MODULE_FLAGS)
 ordchr_la_LIBADD = $(MY_LIBS)
+select_la_SOURCES = select.c
+select_la_LDFLAGS = $(MY_MODULE_FLAGS)
+select_la_LIBADD = $(MY_LIBS)
 readdir_la_SOURCES = readdir.c gawkdirfd.h
 readdir_la_LDFLAGS = $(MY_MODULE_FLAGS)
 readdir_la_LIBADD = $(MY_LIBS)
@@ -664,6 +676,8 @@ revtwoway.la: $(revtwoway_la_OBJECTS) $(revtwoway_la_DEPENDENCIES) $(EXTRA_revtw
 	$(AM_V_CCLD)$(revtwoway_la_LINK) -rpath $(pkgextensiondir) $(revtwoway_la_OBJECTS) $(revtwoway_la_LIBADD) $(LIBS)
 rwarray.la: $(rwarray_la_OBJECTS) $(rwarray_la_DEPENDENCIES) $(EXTRA_rwarray_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(rwarray_la_LINK) -rpath $(pkgextensiondir) $(rwarray_la_OBJECTS) $(rwarray_la_LIBADD) $(LIBS)
+select.la: $(select_la_OBJECTS) $(select_la_DEPENDENCIES) $(EXTRA_select_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(select_la_LINK) -rpath $(pkgextensiondir) $(select_la_OBJECTS) $(select_la_LIBADD) $(LIBS)
 testext.la: $(testext_la_OBJECTS) $(testext_la_DEPENDENCIES) $(EXTRA_testext_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(testext_la_LINK) -rpath $(pkgextensiondir) $(testext_la_OBJECTS) $(testext_la_LIBADD) $(LIBS)
 time.la: $(time_la_OBJECTS) $(time_la_DEPENDENCIES) $(EXTRA_time_la_DEPENDENCIES) 
@@ -686,6 +700,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/revoutput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/revtwoway.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rwarray.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/select.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testext.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time.Plo@am__quote@

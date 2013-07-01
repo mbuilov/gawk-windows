@@ -264,7 +264,7 @@ typedef struct awk_two_way_processor {
 /* Current version of the API. */
 enum {
 	GAWK_API_MAJOR_VERSION = 1,
-	GAWK_API_MINOR_VERSION = 0
+	GAWK_API_MINOR_VERSION = 1
 };
 
 /* A number of typedefs related to different types of values. */
@@ -665,6 +665,27 @@ typedef struct gawk_api {
 	awk_bool_t (*api_release_flattened_array)(awk_ext_id_t id,
 			awk_array_t a_cookie,
 			awk_flat_array_t *data);
+
+	/*
+	 * Look up a currently open file.  If the name is NULL, it returns
+	 * data for the currently open input file corresponding to FILENAME.
+	 * If the file is not found, it returns NULL.
+	 */
+	const awk_input_buf_t *(*api_lookup_file)(awk_ext_id_t id,
+							const char *name,
+							size_t name_len);
+	/*
+	 * Look up a file.  If the name is NULL, it returns
+	 * data for the currently open input file corresponding to FILENAME.
+	 * If the file is not already open, it tries to open it.
+	 * The "filetype" argument should be one of:
+	 *    ">", ">>", "<", "|>", "|<", and "|&"
+	 */
+	const awk_input_buf_t *(*api_get_file)(awk_ext_id_t id,
+						const char *name,
+						size_t name_len,
+						const char *filetype,
+						size_t typelen);
 } gawk_api_t;
 
 #ifndef GAWK	/* these are not for the gawk code itself! */
@@ -741,6 +762,12 @@ typedef struct gawk_api {
 
 #define release_value(value) \
 	(api->api_release_value(ext_id, value))
+
+#define lookup_file(name, namelen) \
+	(api->api_lookup_file(ext_id, name, namelen))
+
+#define get_file(name, namelen, filetype, typelen) \
+	(api->api_get_file(ext_id, name, namelen, filetype, typelen))
 
 #define register_ext_version(version) \
 	(api->api_register_ext_version(ext_id, version))

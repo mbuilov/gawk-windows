@@ -42,6 +42,7 @@ pkgextension_LTLIBRARIES =	\
 	revoutput.la	\
 	revtwoway.la	\
 	rwarray.la	\
+	select.la	\
 	testext.la	\
 	time.la
 
@@ -69,6 +70,10 @@ inplace_la_LIBADD     = $(MY_LIBS)
 ordchr_la_SOURCES     = ordchr.c
 ordchr_la_LDFLAGS     = $(MY_MODULE_FLAGS)
 ordchr_la_LIBADD      = $(MY_LIBS)
+
+select_la_SOURCES     = select.c
+select_la_LDFLAGS     = $(MY_MODULE_FLAGS)
+select_la_LIBADD      = $(MY_LIBS)
 
 readdir_la_SOURCES    = readdir.c gawkdirfd.h
 readdir_la_LDFLAGS    = $(MY_MODULE_FLAGS)

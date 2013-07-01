@@ -1,3 +1,20 @@
+2013-06-30         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+	* awk.h (redirect_string): Declare new function that provides API access
+	to the redirection mechanism.
+	* gawkapi.h (GAWK_API_MINOR_VERSION): Bump from 0 to 1 since 2 new
+	hooks were added to the api.
+	(gawk_api_t): Add 2 new functions api_lookup_file and api_get_file.
+	(lookup_file, get_file): New macros to wrap the new API functions.
+	* gawkapi.c (curfile): Declare this extern, since it is needed
+	by lookup_file and get_flie.
+	(api_lookup_file): Find an open file using curfile or getredirect().
+	(api_get_file): Find or open a file using curfile or redirect_string().
+	(api_impl): Add api_lookup_file and api_get_file.
+	* io.c (redirect_string): Renamed from redirect and changed arguments
+	to take a string instead of a 'NODE *'.  This allows it to be called
+	through the API's new get_file hook.
+	(redirect): Now implemented by calling redirect_string backend function.
+
 2013-06-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y: Minor whitespace cleanup, remove redundant ifdef.

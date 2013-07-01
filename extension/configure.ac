@@ -67,10 +67,12 @@ else
 fi
 
 AC_HEADER_MAJOR
-AC_CHECK_HEADERS(dirent.h fnmatch.h limits.h time.h sys/time.h sys/select.h sys/param.h)
+AC_CHECK_HEADERS(dirent.h fnmatch.h limits.h time.h sys/time.h sys/select.h \
+		sys/param.h signal.h)
 
 AC_CHECK_FUNCS(fdopendir fnmatch gettimeofday \
-		getdtablesize nanosleep select GetSystemTimeAsFileTime)
+		getdtablesize nanosleep select sigaction \
+		GetSystemTimeAsFileTime)
 
 GAWK_FUNC_DIRFD
 GAWK_PREREQ_DIRFD

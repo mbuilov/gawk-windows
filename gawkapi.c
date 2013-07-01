@@ -25,6 +25,8 @@
 
 #include "awk.h"
 
+extern IOBUF *curfile;	/* required by api_lookup_file and api_get_file */
+
 static awk_bool_t node_to_awk_value(NODE *node, awk_value_t *result, awk_valtype_t wanted);
 
 /*
@@ -1028,6 +1030,84 @@ api_release_value(awk_ext_id_t id, awk_value_cookie_t value)
 	return true;
 }
 
+/* api_lookup_file --- return a handle to an open file */
+
+static const awk_input_buf_t *
+api_lookup_file(awk_ext_id_t id, const char *name, size_t namelen)
+{
+	const struct redirect *f;
+
+	if ((name == NULL) || (namelen == 0)) {
+		if (curfile == NULL)
+			return NULL;
+		return &curfile->public;
+	}
+	if ((f = getredirect(name, namelen)) == NULL)
+		return NULL;
+	return &f->iop->public;
+}
+
+/* api_get_file --- return a handle to an existing or newly opened file */
+
+static const awk_input_buf_t *
+api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *filetype, size_t typelen)
+{
+	const struct redirect *f;
+	int flag;	/* not used, sigh */
+	enum redirval redirtype;
+
+	if ((name == NULL) || (namelen == 0)) {
+		if (curfile == NULL) {
+			if (nextfile(& curfile, false) <= 0)
+				return NULL;
+			/* XXX Fix me! */
+			fputs("Bug: need to call BEGINFILE!\n", stderr);
+		}
+		return &curfile->public;
+	}
+	redirtype = redirect_none;
+	switch (typelen) {
+	case 1:
+		switch (*filetype) {
+		case '<':
+			redirtype = redirect_input;
+			break;
+		case '>':
+			redirtype = redirect_output;
+			break;
+		}
+		break;
+	case 2:
+		switch (*filetype) {
+		case '>':
+			if (filetype[1] == '>')
+				redirtype = redirect_append;
+			break;
+		case '|':
+			switch (filetype[1]) {
+			case '>':
+				redirtype = redirect_pipe;
+				break;
+			case '<':
+				redirtype = redirect_pipein;
+				break;
+			case '&':
+				redirtype = redirect_twoway;
+				break;
+			}
+			break;
+		}
+	}
+	if (redirtype == redirect_none) {
+		warning(_("cannot open unrecognized file type `%s' for `%s'"),
+			filetype, name);
+		return NULL;
+	}
+	if ((f = redirect_string(name, namelen, 0, redirtype, &flag)) == NULL)
+		return NULL;
+	return &f->iop->public;
+}
+
 /*
  * Register a version string for this extension with gawk.
  */
@@ -1107,6 +1187,10 @@ gawk_api_t api_impl = {
 	api_clear_array,
 	api_flatten_array,
 	api_release_flattened_array,
+
+	/* Find/get open files */
+	api_lookup_file,
+	api_get_file,
 };
 
 /* init_ext_api --- init the extension API */
