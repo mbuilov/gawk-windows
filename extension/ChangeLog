@@ -1,3 +1,13 @@
+2013-07-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* siglist.h: New file copied from glibc to provide a mapping between
+	signal number and name.
+	* select.c: Add a new "select_signal" function and provide support
+	for trapping signals.
+	(do_select): Add support for a 5th argument to contain an array
+	of returned signals.  Improve the argument processing, and add
+	better warning messages.
+
 2013-06-30         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* Makefile.am (pkgextension_LTLIBRARIES): Add select.la.

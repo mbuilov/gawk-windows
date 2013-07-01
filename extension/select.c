@@ -58,7 +58,138 @@ int plugin_is_GPL_compatible;
 #include <signal.h>
 #endif
 
-/*  do_ord --- return numeric value of first char of string */
+static const char *const signum2name[] = {
+#define init_sig(A, B, C) [A] = B,
+#include "siglist.h"
+#undef init_sig
+};
+#define NUMSIG	sizeof(signum2name)/sizeof(signum2name[0])
+
+#define MIN_VALID_SIGNAL	1		/* 0 is not allowed! */
+/*
+ * We would like to use NSIG, but I think this seems to be a BSD'ism that is not
+ * POSIX-compliant.  It is used internally by glibc, but not always
+ * available.  We add a buffer to the maximum number in the provided mapping
+ * in case the list is not comprehensive:
+ */
+#define MAX_VALID_SIGNAL	(NUMSIG+100)
+#define IS_VALID_SIGNAL(X) \
+	(((X) >= MIN_VALID_SIGNAL) && ((X) <= MAX_VALID_SIGNAL))
+
+static int
+signame2num(const char *name)
+{
+	size_t i;
+
+	if (strncasecmp(name, "sig", 3) == 0)
+		/* skip "sig" prefix */
+		name += 3;
+	for (i = MIN_VALID_SIGNAL; i < NUMSIG; i++) {
+		if (signum2name[i] && ! strcasecmp(signum2name[i], name))
+			return i;
+	}
+	return -1;
+}
+
+static volatile struct {
+   int flag;
+   sigset_t mask;
+} caught;
+
+static void
+signal_handler(int signum)
+{
+	/*
+	 * All signals should be blocked, so we do not have to worry about
+	 * whether sigaddset is thread-safe.  It is documented to be
+	 * async-signal-safe.
+	 */
+	sigaddset(& caught.mask, signum);
+	caught.flag = 1;
+}
+
+static int
+integer_string(const char *s, long *x)
+{
+	char *endptr;
+
+	*x = strtol(s, & endptr, 10);
+	return ((endptr != s) && (*endptr == '\0')) ? 0 : -1;
+}
+
+static int
+get_signal_number(awk_value_t signame)
+{
+	int x;
+
+	switch (signame.val_type) {
+	case AWK_NUMBER:
+		x = signame.num_value;
+		if ((x != signame.num_value) || ! IS_VALID_SIGNAL(x)) {
+			update_ERRNO_string(_("select_signal: invalid signal number"));
+			return -1;
+		}
+		return x;
+	case AWK_STRING:
+		if ((x = signame2num(signame.str_value.str)) >= 0)
+			return x;
+		{
+			long z;
+			if ((integer_string(signame.str_value.str, &z) == 0) && IS_VALID_SIGNAL(z))
+				return z;
+		}
+		update_ERRNO_string(_("select_signal: invalid signal name"));
+		return -1;
+	default:
+		update_ERRNO_string(_("select_signal: signal name argument must be string or numeric"));
+		return -1;
+	}
+}
+
+/*  do_signal --- trap signals */
+
+static awk_value_t *
+do_signal(int nargs, awk_value_t *result)
+{
+#ifdef HAVE_SIGACTION
+	awk_value_t signame, disposition;
+	int signum;
+	struct sigaction sa;
+
+	if (! get_argument(0, AWK_UNDEFINED, & signame)) {
+		update_ERRNO_string(_("select_signal: missing required signal name argument"));
+		return make_number(-1, result);
+	}
+	if ((signum = get_signal_number(signame)) < 0)
+		return make_number(-1, result);
+	if (! get_argument(1, AWK_STRING, & disposition)) {
+		update_ERRNO_string(_("select_signal: missing required signal disposition argument"));
+		return make_number(-1, result);
+	}
+	if (strcasecmp(disposition.str_value.str, "default") == 0)
+		sa.sa_handler = SIG_DFL;
+	else if (strcasecmp(disposition.str_value.str, "ignore") == 0)
+		sa.sa_handler = SIG_IGN;
+	else if (strcasecmp(disposition.str_value.str, "trap") == 0)
+		sa.sa_handler = signal_handler;
+	else {
+		update_ERRNO_string(_("select_signal: invalid disposition argument"));
+		return make_number(-1, result);
+	}
+	sigfillset(& sa.sa_mask);	/* block all signals in handler */
+	sa.sa_flags = SA_RESTART;
+	if (sigaction(signum, &sa, NULL) < 0) {
+		update_ERRNO_int(errno);
+		return make_number(-1, result);
+	}
+	return make_number(0, result);
+#else
+	update_ERRNO_string(_("select_signal: not supported on this platform"));
+	return make_number(-1, result);
+#endif
+}
+
+/*  do_select --- I/O multiplexing */
 
 static awk_value_t *
 do_select(int nargs, awk_value_t *result)
@@ -76,11 +207,23 @@ do_select(int nargs, awk_value_t *result)
 	struct timeval *timeout;
 	int nfds = 0;
 	int rc;
+	awk_value_t sigarr;
+	int dosig = 0;
 
 	if (do_lint && nargs > 5)
 		lintwarn(ext_id, _("select: called with too many arguments"));
 
 #define EL	fds[i].flat->elements[j]
+	if (nargs == 5) {
+		dosig = 1;
+		if (! get_argument(4, AWK_ARRAY, &sigarr)) {
+			warning(ext_id, _("select: the signal argument must be an array"));
+			update_ERRNO_string(_("select: bad signal parameter"));
+			return make_number(-1, result);
+		}
+		clear_array(sigarr.array_cookie);
+	}
+
 	for (i = 0; i < sizeof(fds)/sizeof(fds[0]); i++) {
 		size_t j;
 
@@ -99,19 +242,33 @@ do_select(int nargs, awk_value_t *result)
 				case AWK_NUMBER:
 					if (EL.index.num_value >= 0)
 						fds[i].array2fd[j] = EL.index.num_value;
-					if (fds[i].array2fd[j] != EL.index.num_value)
+					if (fds[i].array2fd[j] != EL.index.num_value) {
 						fds[i].array2fd[j] = -1;
+						warning(ext_id, _("select: invalid numeric index `%g' in `%s' array (should be a non-negative integer)"), EL.index.num_value, argname[i]);
+					}
 					break;
 				case AWK_STRING:
-					if (EL.value.val_type == AWK_STRING) {
-						const awk_input_buf_t *buf;
-						if ((buf = get_file(EL.index.str_value.str, EL.index.str_value.len, EL.value.str_value.str, EL.value.str_value.len)) != NULL)
-							fds[i].array2fd[j] = buf->fd;
+					{
+						long x;
+
+						if ((integer_string(EL.index.str_value.str, &x) == 0) && (x >= 0))
+							fds[i].array2fd[j] = x;
+						else if (EL.value.val_type == AWK_STRING) {
+							const awk_input_buf_t *buf;
+							if ((buf = get_file(EL.index.str_value.str, EL.index.str_value.len, EL.value.str_value.str, EL.value.str_value.len)) != NULL)
+								fds[i].array2fd[j] = buf->fd;
+							else
+								warning(ext_id, _("select: get_file(`%s', `%s') failed in `%s' array"), EL.index.str_value.str, EL.value.str_value.str, argname[i]);
+						}
+						else
+							warning(ext_id, _("select: command type should be a string for `%s' in `%s' array"), EL.index.str_value.str, argname[i]);
 					}
+					break;
+				default:
+					warning(ext_id, _("select: invalid index type in `%s' array (must be a string or a non-negative integer"), argname[i]);
 					break;
 				}
 				if (fds[i].array2fd[j] < 0) {
-					warning(ext_id, _("select: get_file failed"));
 					update_ERRNO_string(_("select: get_file failed"));
 					if (! release_flattened_array(fds[i].array.array_cookie, fds[i].flat))
 						warning(ext_id, _("select: release_flattened_array failed"));
@@ -126,7 +283,12 @@ do_select(int nargs, awk_value_t *result)
 		else
 			fds[i].flat = NULL;
 	}
-        if (get_argument(3, AWK_NUMBER, &timeout_arg)) {
+	if (dosig && caught.flag) {
+		/* take a quick poll, but do not block, since signals have been trapped */
+		maxwait.tv_sec = maxwait.tv_usec = 0;
+		timeout = &maxwait;
+	}
+        else if (get_argument(3, AWK_NUMBER, &timeout_arg)) {
 		double secs = timeout_arg.num_value;
 		if (secs < 0) {
 			warning(ext_id, _("select: treating negative timeout as zero"));
@@ -137,10 +299,37 @@ do_select(int nargs, awk_value_t *result)
 		timeout = &maxwait;
 	} else
 		timeout = NULL;
-	rc = select(nfds, &fds[0].bits, &fds[1].bits, &fds[2].bits, timeout);
+
+	if ((rc = select(nfds, &fds[0].bits, &fds[1].bits, &fds[2].bits, timeout)) < 0)
+		update_ERRNO_int(errno);
+
+	if (dosig && caught.flag) {
+		int i;
+		sigset_t set, oldset, trapped;
+		sigfillset(& set);
+		sigprocmask(SIG_SETMASK, &set, &oldset);
+		trapped = caught.mask;
+		sigemptyset(& caught.mask);
+		caught.flag = 0;
+		sigprocmask(SIG_SETMASK, &oldset, NULL);
+		/* populate sigarr with trapped signals */
+		/*
+		 * XXX this is very inefficient!  Note that get_signal_number
+		 * ensures that we trap only signals between MIN_VALID_SIGNAL
+		 * and MAX_VALID_SIGNAL.
+		 */
+		for (i = MIN_VALID_SIGNAL; i <= MAX_VALID_SIGNAL; i++) {
+			if (sigismember(& trapped, i) > 0) {
+				awk_value_t idx, val;
+				if ((i < NUMSIG) && signum2name[i])
+					set_array_element(sigarr.array_cookie, make_number(i, &idx), make_const_string(signum2name[i], strlen(signum2name[i]), &val));
+				else
+					set_array_element(sigarr.array_cookie, make_number(i, &idx), make_null_string(&val));
+			}
+		}
+	}
 
 	if (rc < 0) {
-		update_ERRNO_int(errno);
 		/* bit masks are undefined, so delete all array entries */
 		for (i = 0; i < sizeof(fds)/sizeof(fds[0]); i++) {
 			if (fds[i].flat) {
@@ -176,6 +365,7 @@ do_select(int nargs, awk_value_t *result)
 
 static awk_ext_func_t func_table[] = {
 	{ "select", do_select, 5 },
+	{ "select_signal", do_signal, 2 },
 };
 
 /* define the dl_load function using the boilerplate macro */
