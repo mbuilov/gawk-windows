@@ -241,18 +241,22 @@ do_select(int nargs, awk_value_t *result)
 				fds[i].array2fd[j] = -1;
 				switch (EL.index.val_type) {
 				case AWK_NUMBER:
-					if (EL.index.num_value >= 0)
-						fds[i].array2fd[j] = EL.index.num_value;
-					if (fds[i].array2fd[j] != EL.index.num_value) {
-						fds[i].array2fd[j] = -1;
-						warning(ext_id, _("select: invalid numeric index `%g' in `%s' array (should be a non-negative integer)"), EL.index.num_value, argname[i]);
+					if ((EL.value.val_type == AWK_UNDEFINED) || ((EL.value.val_type == AWK_STRING) && ! EL.value.str_value.len)) {
+						if (EL.index.num_value >= 0)
+							fds[i].array2fd[j] = EL.index.num_value;
+						if (fds[i].array2fd[j] != EL.index.num_value) {
+							fds[i].array2fd[j] = -1;
+							warning(ext_id, _("select: invalid numeric index `%g' in `%s' array (should be a non-negative integer)"), EL.index.num_value, argname[i]);
+						}
 					}
+					else
+						warning(ext_id, _("select: numeric index `%g' in `%s' array should have an empty command type to be treated as a file descriptor"), EL.index.num_value, argname[i]);
 					break;
 				case AWK_STRING:
 					{
 						long x;
 
-						if ((integer_string(EL.index.str_value.str, &x) == 0) && (x >= 0))
+						if ((integer_string(EL.index.str_value.str, &x) == 0) && (x >= 0) && ((EL.value.val_type == AWK_UNDEFINED) || ((EL.value.val_type == AWK_STRING) && ! EL.value.str_value.len)))
 							fds[i].array2fd[j] = x;
 						else if (EL.value.val_type == AWK_STRING) {
 							const awk_input_buf_t *buf;
