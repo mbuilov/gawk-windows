@@ -1,5 +1,11 @@
 2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* select.c (do_select): Now that the API flatten_array call has been
+	patched to ensure that the index values are strings, we can remove
+	the code to check for the AWK_NUMBER case.
+
+2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* select.c (do_select): Do not treat a numeric command value as a
 	file descriptor unless the command type is empty.
 
