@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -288,7 +289,7 @@ do_select(int nargs, awk_value_t *result)
 		maxwait.tv_sec = maxwait.tv_usec = 0;
 		timeout = &maxwait;
 	}
-        else if (get_argument(3, AWK_NUMBER, &timeout_arg)) {
+	else if (get_argument(3, AWK_NUMBER, &timeout_arg)) {
 		double secs = timeout_arg.num_value;
 		if (secs < 0) {
 			warning(ext_id, _("select: treating negative timeout as zero"));
@@ -363,9 +364,39 @@ do_select(int nargs, awk_value_t *result)
 	return make_number(rc, result);
 }
 
+/*  do_set_non_blocking --- Set a file to be non-blocking */
+
+static awk_value_t *
+do_set_non_blocking(int nargs, awk_value_t *result)
+{
+	awk_value_t cmd, cmdtype;
+
+	if (do_lint && nargs > 2)
+		lintwarn(ext_id, _("set_non_blocking: called with too many arguments"));
+	if (get_argument(0, AWK_STRING, & cmd) &&
+		get_argument(1, AWK_STRING, & cmdtype)) {
+		const awk_input_buf_t *buf;
+		if ((buf = get_file(cmd.str_value.str, cmd.str_value.len, cmdtype.str_value.str, cmdtype.str_value.len)) != NULL) {
+			int flags = fcntl(buf->fd, F_GETFL);
+			int rc = fcntl(buf->fd, F_SETFL, (flags|O_NONBLOCK));
+			if (rc < 0)
+				update_ERRNO_int(errno);
+			return make_number(rc, result);
+		} else
+			warning(ext_id, _("set_non_blocking: get_file(`%s', `%s') failed"), cmd.str_value.str, cmdtype.str_value.str);
+	} else if (do_lint) {
+		if (nargs < 2)
+			lintwarn(ext_id, _("set_non_blocking: called with too few arguments"));
+		else
+			lintwarn(ext_id, _("set_non_blocking: called with inappropriate argument(s)"));
+	}
+	return make_number(-1, result);
+}
+
 static awk_ext_func_t func_table[] = {
 	{ "select", do_select, 5 },
 	{ "select_signal", do_signal, 2 },
+	{ "set_non_blocking", do_set_non_blocking, 2 },
 };
 
 /* define the dl_load function using the boilerplate macro */
