@@ -997,6 +997,7 @@ update_ERRNO_int(int errcode)
 {
 	char *cp;
 
+	update_PROCINFO_num("errno", errcode);
 	if (errcode) {
 		cp = strerror(errcode);
 		cp = gettext(cp);
@@ -1020,6 +1021,7 @@ update_ERRNO_string(const char *string)
 void
 unset_ERRNO(void)
 {
+	update_PROCINFO_num("errno", 0);
 	unref(ERRNO_node->var_value);
 	ERRNO_node->var_value = dupnode(Nnull_string);
 }

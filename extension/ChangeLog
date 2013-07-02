@@ -1,5 +1,17 @@
 2013-07-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* errlist.h: New file containing a list of all the errno values I could
+	find.
+	* errno.c: Implement a new errno extension providing strerror,
+	errno2name, and name2errno.
+	* Makefile.am (pkgextension_LTLIBRARIES): Add errno.la.
+	(errno_la_SOURCES, errno_la_LDFLAGS, errno_la_LIBADD): Build new errno
+	extension.
+	* select.c (ext_version): Fix version string.
+	* siglist.h: Update to newest glibc version.
+
+2013-07-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* siglist.h: New file copied from glibc to provide a mapping between
 	signal number and name.
 	* select.c: Add a new "select_signal" function and provide support

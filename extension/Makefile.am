@@ -32,6 +32,7 @@ ACLOCAL_AMFLAGS = -I m4
 # Note: rwarray does not currently compile.
 
 pkgextension_LTLIBRARIES =	\
+	errno.la	\
 	filefuncs.la	\
 	fnmatch.la	\
 	fork.la		\
@@ -49,6 +50,10 @@ pkgextension_LTLIBRARIES =	\
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 # on Cygwin, gettext requires that we link with -lintl 
 MY_LIBS = $(LTLIBINTL)
+
+errno_la_SOURCES     = errno.c
+errno_la_LDFLAGS     = $(MY_MODULE_FLAGS)
+errno_la_LIBADD      = $(MY_LIBS)
 
 filefuncs_la_SOURCES  = filefuncs.c stack.h stack.c gawkfts.h \
 			gawkfts.c gawkdirfd.h
@@ -71,10 +76,6 @@ ordchr_la_SOURCES     = ordchr.c
 ordchr_la_LDFLAGS     = $(MY_MODULE_FLAGS)
 ordchr_la_LIBADD      = $(MY_LIBS)
 
-select_la_SOURCES     = select.c
-select_la_LDFLAGS     = $(MY_MODULE_FLAGS)
-select_la_LIBADD      = $(MY_LIBS)
-
 readdir_la_SOURCES    = readdir.c gawkdirfd.h
 readdir_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 readdir_la_LIBADD     = $(MY_LIBS)
@@ -94,6 +95,10 @@ revtwoway_la_LIBADD   = $(MY_LIBS)
 rwarray_la_SOURCES    = rwarray.c
 rwarray_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 rwarray_la_LIBADD     = $(MY_LIBS)
+
+select_la_SOURCES     = select.c
+select_la_LDFLAGS     = $(MY_MODULE_FLAGS)
+select_la_LIBADD      = $(MY_LIBS)
 
 time_la_SOURCES       = time.c
 time_la_LDFLAGS       = $(MY_MODULE_FLAGS)
