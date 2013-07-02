@@ -364,26 +364,36 @@ do_select(int nargs, awk_value_t *result)
 	return make_number(rc, result);
 }
 
+static int
+set_non_blocking(int fd)
+{
+	int flags = fcntl(fd, F_GETFL);
+	int rc = fcntl(fd, F_SETFL, (flags|O_NONBLOCK));
+	if (rc < 0)
+		update_ERRNO_int(errno);
+	return rc;
+}
+
 /*  do_set_non_blocking --- Set a file to be non-blocking */
 
 static awk_value_t *
 do_set_non_blocking(int nargs, awk_value_t *result)
 {
 	awk_value_t cmd, cmdtype;
+	int fd;
 
 	if (do_lint && nargs > 2)
 		lintwarn(ext_id, _("set_non_blocking: called with too many arguments"));
-	if (get_argument(0, AWK_STRING, & cmd) &&
+	if (get_argument(0, AWK_NUMBER, & cmd) &&
+		(cmd.num_value == (fd = cmd.num_value)) && 
+		! get_argument(1, AWK_STRING, & cmdtype))
+		return make_number(set_non_blocking(fd), result);
+	else if (get_argument(0, AWK_STRING, & cmd) &&
 		get_argument(1, AWK_STRING, & cmdtype)) {
 		const awk_input_buf_t *buf;
-		if ((buf = get_file(cmd.str_value.str, cmd.str_value.len, cmdtype.str_value.str, cmdtype.str_value.len)) != NULL) {
-			int flags = fcntl(buf->fd, F_GETFL);
-			int rc = fcntl(buf->fd, F_SETFL, (flags|O_NONBLOCK));
-			if (rc < 0)
-				update_ERRNO_int(errno);
-			return make_number(rc, result);
-		} else
-			warning(ext_id, _("set_non_blocking: get_file(`%s', `%s') failed"), cmd.str_value.str, cmdtype.str_value.str);
+		if ((buf = get_file(cmd.str_value.str, cmd.str_value.len, cmdtype.str_value.str, cmdtype.str_value.len)) != NULL)
+			return make_number(set_non_blocking(buf->fd), result);
+		warning(ext_id, _("set_non_blocking: get_file(`%s', `%s') failed"), cmd.str_value.str, cmdtype.str_value.str);
 	} else if (do_lint) {
 		if (nargs < 2)
 			lintwarn(ext_id, _("set_non_blocking: called with too few arguments"));

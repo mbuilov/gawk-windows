@@ -1012,6 +1012,7 @@ update_ERRNO_int(int errcode)
 void
 update_ERRNO_string(const char *string)
 {
+	update_PROCINFO_num("errno", 0);
 	unref(ERRNO_node->var_value);
 	ERRNO_node->var_value = make_string(string, strlen(string));
 }

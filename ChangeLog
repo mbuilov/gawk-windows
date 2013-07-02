@@ -1,3 +1,20 @@
+2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* eval.c (update_ERRNO_string): Set PROCINFO["errno"] to 0.
+	* io.c (inrec): Since get_a_record may now return -2, be sure
+	to throw an error in that case as well.
+	(wait_any): Fix what appears to be a bug.  The old logic repeatedly
+	called wait until it failed.  When a process has multiple children,
+	this causes it to stall until all of them have exited.  Instead,
+	we now exit the function after the first successful wait call.
+	(do_getline_redir, do_getline): Handle case where get_a_record
+	returns -2.
+	(errno_io_retry): New function to decide whether an I/O operation should
+	be retried.
+	(get_a_record): When read returns an error, call errno_io_retry to
+	decide whether the operation should be retried.  If so, return -2
+	instead of setting the IOP_AT_EOF flag.
+
 2013-07-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* eval.c (update_ERRNO_int, unset_ERRNO): Update PROCINFO["errno"].

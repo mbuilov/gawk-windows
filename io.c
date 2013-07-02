@@ -555,7 +555,7 @@ inrec(IOBUF *iop, int *errcode)
 	else 
 		cnt = get_a_record(& begin, iop, errcode);
 
-	if (cnt == EOF) {
+	if (cnt < 0) {
 		retval = 1;
 		if (*errcode > 0)
 			update_ERRNO_int(*errcode);
@@ -2210,12 +2210,13 @@ wait_any(int interesting)	/* pid of interest, if any */
 				if (pid == redp->pid) {
 					redp->pid = -1;
 					redp->status = status;
-					break;
+					goto finished;
 				}
 		}
 		if (pid == -1 && errno == ECHILD)
 			break;
 	}
+finished:
 	signal(SIGHUP, hstat);
 	signal(SIGQUIT, qstat);
 #endif
@@ -2439,7 +2440,7 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 	if (errcode != 0) {
 		if (! do_traditional && (errcode != -1))
 			update_ERRNO_int(errcode);
-		return make_number((AWKNUM) -1.0);
+		return make_number((AWKNUM) cnt);
 	}
 
 	if (cnt == EOF) {
@@ -2489,7 +2490,7 @@ do_getline(int into_variable, IOBUF *iop)
 			update_ERRNO_int(errcode);
 		if (into_variable)
 			(void) POP_ADDRESS();
-		return make_number((AWKNUM) -1.0); 
+		return make_number((AWKNUM) cnt); 
 	}
 
 	if (cnt == EOF)
@@ -3427,6 +3428,32 @@ find_longest_terminator:
 	return REC_OK;
 }
 
+/* Does the I/O error indicate that the operation should be retried later? */
+
+static inline int
+errno_io_retry(void)
+{
+	switch (errno) {
+#ifdef EAGAIN
+	case EAGAIN:
+#endif
+#ifdef EWOULDBLOCK
+#if !defined(EAGAIN) || (EWOULDBLOCK != EAGAIN)
+	case EWOULDBLOCK:
+#endif
+#endif
+#ifdef EINTR
+	case EINTR:
+#endif
+#ifdef ETIMEDOUT
+	case ETIMEDOUT:
+#endif
+		return 1;
+	default:
+		return 0;
+	}
+}
+
 /*
  * get_a_record --- read a record from IOP into out,
  * return length of EOF, set RT.
@@ -3474,8 +3501,10 @@ get_a_record(char **out,        /* pointer to pointer to data */
 			iop->flag |= IOP_AT_EOF;
 			return EOF;
 		} else if (iop->count == -1) {
-			iop->flag |= IOP_AT_EOF; 
 			*errcode = errno;
+			if (errno_io_retry())
+				return -2;
+			iop->flag |= IOP_AT_EOF; 
 			return EOF;
 		} else {
 			iop->dataend = iop->buf + iop->count;
@@ -3540,6 +3569,8 @@ get_a_record(char **out,        /* pointer to pointer to data */
 		iop->count = iop->public.read_func(iop->public.fd, iop->dataend, amt_to_read);
 		if (iop->count == -1) {
 			*errcode = errno;
+			if (errno_io_retry())
+				return -2;
 			iop->flag |= IOP_AT_EOF;
 			break;
 		} else if (iop->count == 0) {
