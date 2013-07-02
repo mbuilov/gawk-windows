@@ -343,7 +343,7 @@ typedef struct awk_element {
 		AWK_ELEMENT_DELETE = 1		/* set by extension if
 						   should be deleted */
 	} flags;
-	awk_value_t	index;
+	awk_value_t	index;			/* guaranteed to be a string! */
 	awk_value_t	value;
 } awk_element_t;
 

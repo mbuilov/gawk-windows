@@ -936,12 +936,17 @@ api_flatten_array(awk_ext_id_t id,
 	for (i = j = 0; i < 2 * array->table_size; i += 2, j++) {
 		NODE *index, *value;
 
-		index = force_string(list[i]);
+		index = list[i];
 		value = list[i + 1]; /* number or string or subarray */
 
-		/* convert index and value to ext types */
+		/*
+		 * Convert index and value to ext types.  Force the
+		 * index to be a string, since indices are always
+		 * conceptually strings, regardless of internal optimizations
+		 * to treat them as integers in some cases.
+		 */
 		if (! node_to_awk_value(index,
-				& (*data)->elements[j].index, AWK_UNDEFINED)) {
+				& (*data)->elements[j].index, AWK_STRING)) {
 			fatal(_("api_flatten_array: could not convert index %d\n"),
 						(int) i);
 		}
