@@ -116,8 +116,10 @@ install-data-hook:
 EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
 	ChangeLog.0 \
+	errlist.h \
 	fts.3 \
-	README.fts
+	README.fts \
+	siglist.h
 
 dist_man_MANS = \
 	filefuncs.3am fnmatch.3am fork.3am ordchr.3am \
