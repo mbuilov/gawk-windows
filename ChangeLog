@@ -1,5 +1,16 @@
 2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* awkgram.y (main_beginfile): Declare new global INSTRUCTION *.
+	(parse_program): Set main_beginfile to point to the BEGINFILE
+	instruction block.
+	* gawkapi.c (api_get_file): After nextfile starts a new file,
+	we need to run the BEGINFILE actions.  We retrieve the
+	instruction pointer from main_beginfile and execute it until
+	we reach the Op_after_beginfile opcode.  We then run after_beginfile
+	manually and restore the value of currule and source.
+
+2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* gawkapi.h (awk_element_t): Add comment indicating that the array
 	element index will always be a string!
 	* gawkapi.c (api_flatten_array): When converting the index to an awk

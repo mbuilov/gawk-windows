@@ -1054,6 +1054,9 @@ api_lookup_file(awk_ext_id_t id, const char *name, size_t namelen)
 
 /* api_get_file --- return a handle to an existing or newly opened file */
 
+extern INSTRUCTION *main_beginfile;
+extern int currule;
+
 static const awk_input_buf_t *
 api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *filetype, size_t typelen)
 {
@@ -1065,8 +1068,27 @@ api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *file
 		if (curfile == NULL) {
 			if (nextfile(& curfile, false) <= 0)
 				return NULL;
-			/* XXX Fix me! */
-			fputs("Bug: need to call BEGINFILE!\n", stderr);
+			{
+				INSTRUCTION *pc = main_beginfile;
+				/* save execution state */
+				int save_rule = currule;
+				char *save_source = source;
+
+				while (1) {
+					if (!pc)
+						fatal(_("cannot find end of BEGINFILE rule"));
+					if (pc->opcode == Op_after_beginfile)
+						break;
+					pc = pc->nexti;
+				}
+				pc->opcode = Op_stop;
+			        (void) (*interpret)(main_beginfile);
+				pc->opcode = Op_after_beginfile;
+				after_beginfile(& curfile);
+				/* restore execution state */
+				currule = save_rule;
+				source = save_source;
+			}
 		}
 		return &curfile->public;
 	}

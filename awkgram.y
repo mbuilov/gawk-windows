@@ -145,6 +145,7 @@ static INSTRUCTION *ip_atexit = NULL;
 static INSTRUCTION *ip_end;
 static INSTRUCTION *ip_endfile;
 static INSTRUCTION *ip_beginfile;
+INSTRUCTION *main_beginfile;
 
 static inline INSTRUCTION *list_create(INSTRUCTION *x);
 static inline INSTRUCTION *list_append(INSTRUCTION *l, INSTRUCTION *x);
@@ -2271,7 +2272,7 @@ parse_program(INSTRUCTION **pcode)
 		ip_newfile = ip_rec = ip_atexit = ip_beginfile = ip_endfile = NULL;
 	else {
 		ip_endfile = instruction(Op_no_op);
-		ip_beginfile = instruction(Op_no_op);
+		main_beginfile = ip_beginfile = instruction(Op_no_op);
 		ip_rec = instruction(Op_get_record); /* target for `next', also ip_newfile */
 		ip_newfile = bcalloc(Op_newfile, 2, 0); /* target for `nextfile' */
 		ip_newfile->target_jmp = ip_end;
