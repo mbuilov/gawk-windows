@@ -25,7 +25,10 @@
 
 #include "awk.h"
 
-extern IOBUF *curfile;	/* required by api_lookup_file and api_get_file */
+/* Declare some globals used by api_get_file: */
+extern IOBUF *curfile;
+extern INSTRUCTION *main_beginfile;
+extern int currule;
 
 static awk_bool_t node_to_awk_value(NODE *node, awk_value_t *result, awk_valtype_t wanted);
 
@@ -1035,27 +1038,7 @@ api_release_value(awk_ext_id_t id, awk_value_cookie_t value)
 	return true;
 }
 
-/* api_lookup_file --- return a handle to an open file */
-
-static const awk_input_buf_t *
-api_lookup_file(awk_ext_id_t id, const char *name, size_t namelen)
-{
-	const struct redirect *f;
-
-	if ((name == NULL) || (namelen == 0)) {
-		if (curfile == NULL)
-			return NULL;
-		return &curfile->public;
-	}
-	if ((f = getredirect(name, namelen)) == NULL)
-		return NULL;
-	return &f->iop->public;
-}
-
 /* api_get_file --- return a handle to an existing or newly opened file */
-
-extern INSTRUCTION *main_beginfile;
-extern int currule;
 
 static const awk_input_buf_t *
 api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *filetype, size_t typelen)
@@ -1215,8 +1198,7 @@ gawk_api_t api_impl = {
 	api_flatten_array,
 	api_release_flattened_array,
 
-	/* Find/get open files */
-	api_lookup_file,
+	/* Find/open a file */
 	api_get_file,
 };
 

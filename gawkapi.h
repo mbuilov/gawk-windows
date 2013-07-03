@@ -667,15 +667,7 @@ typedef struct gawk_api {
 			awk_flat_array_t *data);
 
 	/*
-	 * Look up a currently open file.  If the name is NULL, it returns
-	 * data for the currently open input file corresponding to FILENAME.
-	 * If the file is not found, it returns NULL.
-	 */
-	const awk_input_buf_t *(*api_lookup_file)(awk_ext_id_t id,
-							const char *name,
-							size_t name_len);
-	/*
-	 * Look up a file.  If the name is NULL, it returns
+	 * Look up a file.  If the name is NULL or name_len is 0, it returns
 	 * data for the currently open input file corresponding to FILENAME.
 	 * If the file is not already open, it tries to open it.
 	 * The "filetype" argument should be one of:
@@ -762,9 +754,6 @@ typedef struct gawk_api {
 
 #define release_value(value) \
 	(api->api_release_value(ext_id, value))
-
-#define lookup_file(name, namelen) \
-	(api->api_lookup_file(ext_id, name, namelen))
 
 #define get_file(name, namelen, filetype, typelen) \
 	(api->api_get_file(ext_id, name, namelen, filetype, typelen))
