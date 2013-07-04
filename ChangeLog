@@ -1,3 +1,13 @@
+2013-07-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (awk_element_t): Add comment indicating that the array
+	element index will always be a string!
+	* gawkapi.c (api_flatten_array): When converting the index to an awk
+	value, request a string conversion, since we want the indices to
+	appear as strings to the extensions.  This makes the call to
+	force_string redundant, since node_to_awk_value does that internally
+	when we request a string.
+
 2013-07-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (format_tree): Fixes for %c with multibyte characters
