@@ -1,3 +1,13 @@
+2013-07-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac (AC_CHECK_FUNCS): Add a check for waitpid.
+	* io.c (wait_any): Enhance comment to explain why we loop reaping all
+	exited children when the argument is zero.  When available, use waitpid
+	with WNOHANG to avoid blocking.  Remove my previous incorrect patch to
+	exit after reaping the first child.  The function is intended to
+	wait for all children, since we are not careful about reaping children
+	as soon as they die.
+
 2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.h (gawk_api): Remove unused api_lookup_file hook.

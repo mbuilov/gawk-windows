@@ -2168,7 +2168,16 @@ use_pipes:
 
 #ifndef PIPES_SIMULATED		/* real pipes */
 
-/* wait_any --- wait for a child process, close associated pipe */
+/*
+ * wait_any --- if the argument pid is 0, wait for all child processes that
+ * have exited.  We loop to make sure to reap all children that have exited to
+ * minimize the risk of running out of process slots.  Since we don't process
+ * SIGCHLD, we do not immediately reap exited children.  So when we get here,
+ * we want to reap any that have piled up.
+ *
+ * Note: on platforms that do not support waitpid with WNOHANG, when called with
+ * a zero argument, this function will hang until all children have exited.
+ */
 
 static int
 wait_any(int interesting)	/* pid of interest, if any */
@@ -2198,7 +2207,11 @@ wait_any(int interesting)	/* pid of interest, if any */
 	hstat = signal(SIGHUP, SIG_IGN);
 	qstat = signal(SIGQUIT, SIG_IGN);
 	for (;;) {
-# ifdef HAVE_SYS_WAIT_H	/* POSIX compatible sys/wait.h */
+# if defined(HAVE_WAITPID) && defined(WNOHANG)
+		if ((pid = waitpid(-1, & status, WNOHANG)) == 0)
+			/* No children have exited */
+			break;
+# elif defined(HAVE_SYS_WAIT_H)	/* POSIX compatible sys/wait.h */
 		pid = wait(& status);
 # else
 		pid = wait((union wait *) & status);
@@ -2210,13 +2223,12 @@ wait_any(int interesting)	/* pid of interest, if any */
 				if (pid == redp->pid) {
 					redp->pid = -1;
 					redp->status = status;
-					goto finished;
+					break;
 				}
 		}
 		if (pid == -1 && errno == ECHILD)
 			break;
 	}
-finished:
 	signal(SIGHUP, hstat);
 	signal(SIGQUIT, qstat);
 #endif

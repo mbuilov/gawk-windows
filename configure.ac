@@ -276,7 +276,7 @@ AC_CHECK_FUNCS(atexit btowc fmod getgrent getgroups grantpt \
 	memcmp memcpy memcpy_ulong memmove memset \
 	memset_ulong mkstemp posix_openpt setenv setlocale setsid snprintf strchr \
 	strerror strftime strncasecmp strcoll strtod strtoul \
-	system tmpfile towlower towupper tzset usleep wcrtomb \
+	system tmpfile towlower towupper tzset usleep waitpid wcrtomb \
 	wcscoll wctype)
 dnl this check is for both mbrtowc and the mbstate_t type, which is good
 AC_FUNC_MBRTOWC
