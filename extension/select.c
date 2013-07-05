@@ -127,7 +127,7 @@ get_signal_number(awk_value_t signame)
 	case AWK_NUMBER:
 		x = signame.num_value;
 		if ((x != signame.num_value) || ! IS_VALID_SIGNAL(x)) {
-			update_ERRNO_string(_("select_signal: invalid signal number"));
+			update_ERRNO_string(_("invalid signal number"));
 			return -1;
 		}
 		return x;
@@ -139,10 +139,10 @@ get_signal_number(awk_value_t signame)
 			if ((integer_string(signame.str_value.str, &z) == 0) && IS_VALID_SIGNAL(z))
 				return z;
 		}
-		update_ERRNO_string(_("select_signal: invalid signal name"));
+		update_ERRNO_string(_("invalid signal name"));
 		return -1;
 	default:
-		update_ERRNO_string(_("select_signal: signal name argument must be string or numeric"));
+		update_ERRNO_string(_("signal name argument must be string or numeric"));
 		return -1;
 	}
 }
@@ -157,6 +157,8 @@ do_signal(int nargs, awk_value_t *result)
 	int signum;
 	struct sigaction sa;
 
+	if (do_lint && nargs > 2)
+		lintwarn(ext_id, _("select_signal: called with too many arguments"));
 	if (! get_argument(0, AWK_UNDEFINED, & signame)) {
 		update_ERRNO_string(_("select_signal: missing required signal name argument"));
 		return make_number(-1, result);
@@ -186,6 +188,43 @@ do_signal(int nargs, awk_value_t *result)
 	return make_number(0, result);
 #else
 	update_ERRNO_string(_("select_signal: not supported on this platform"));
+	return make_number(-1, result);
+#endif
+}
+
+/*  do_kill --- send a signal */
+
+static awk_value_t *
+do_kill(int nargs, awk_value_t *result)
+{
+#ifdef HAVE_KILL
+	awk_value_t pidarg, signame;
+	pid_t pid;
+	int signum;
+	int rc;
+
+	if (do_lint && nargs > 2)
+		lintwarn(ext_id, _("kill: called with too many arguments"));
+	if (! get_argument(0, AWK_NUMBER, & pidarg)) {
+		update_ERRNO_string(_("kill: missing required pid argument"));
+		return make_number(-1, result);
+	}
+	pid = pidarg.num_value;
+	if (pid != pidarg.num_value) {
+		update_ERRNO_string(_("kill: pid argument must be an integer"));
+		return make_number(-1, result);
+	}
+	if (! get_argument(1, AWK_UNDEFINED, & signame)) {
+		update_ERRNO_string(_("kill: missing required signal name argument"));
+		return make_number(-1, result);
+	}
+	if ((signum = get_signal_number(signame)) < 0)
+		return make_number(-1, result);
+	if ((rc = kill(pid, signum)) < 0)
+		update_ERRNO_int(errno);
+	return make_number(rc, result);
+#else
+	update_ERRNO_string(_("kill: not supported on this platform"));
 	return make_number(-1, result);
 #endif
 }
@@ -290,13 +329,26 @@ do_select(int nargs, awk_value_t *result)
 
 	if (dosig && caught.flag) {
 		int i;
-		sigset_t set, oldset, trapped;
+		sigset_t trapped;
+#ifdef HAVE_SIGPROCMASK
+		/*
+		 * Block signals while we copy and reset the mask to eliminate
+		 * a race condition whereby a signal could be missed.
+		 */
+		sigset_t set, oldset;
 		sigfillset(& set);
 		sigprocmask(SIG_SETMASK, &set, &oldset);
+#endif
+		/*
+		 * Reset flag to 0 first.  If we don't have sigprocmask,
+		 * that may reduce the chance of missing a signal.
+		 */
+		caught.flag = 0;
 		trapped = caught.mask;
 		sigemptyset(& caught.mask);
-		caught.flag = 0;
+#ifdef HAVE_SIGPROCMASK
 		sigprocmask(SIG_SETMASK, &oldset, NULL);
+#endif
 		/* populate sigarr with trapped signals */
 		/*
 		 * XXX this is very inefficient!  Note that get_signal_number
@@ -391,6 +443,7 @@ static awk_ext_func_t func_table[] = {
 	{ "select", do_select, 5 },
 	{ "select_signal", do_signal, 2 },
 	{ "set_non_blocking", do_set_non_blocking, 2 },
+	{ "kill", do_kill, 2 },
 };
 
 /* define the dl_load function using the boilerplate macro */

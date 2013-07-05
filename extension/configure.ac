@@ -71,7 +71,7 @@ AC_CHECK_HEADERS(dirent.h fnmatch.h limits.h time.h sys/time.h sys/select.h \
 		sys/param.h signal.h)
 
 AC_CHECK_FUNCS(fdopendir fnmatch gettimeofday \
-		getdtablesize nanosleep select sigaction \
+		getdtablesize kill nanosleep select sigaction sigprocmask \
 		GetSystemTimeAsFileTime)
 
 GAWK_FUNC_DIRFD

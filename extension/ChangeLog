@@ -1,3 +1,14 @@
+2013-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac (AC_CHECK_FUNCS): Add kill and sigprocmask.
+	* select.c (get_signal_number): Change error messages since now may
+	be called by "kill" as well as "select_signal".
+	(do_signal): Add a lint warning if there are more than 2 args.
+	(do_kill): Add new function to send a signal.
+	(do_select): Support platforms where sigprocmask is not available.
+	There will be a race condition on such platforms, but that is not
+	easily avoided.
+
 2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* select.c (do_select): Now that the API flatten_array call has been
