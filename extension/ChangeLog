@@ -1,5 +1,10 @@
 2013-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* select.c (do_signal): If sigaction is unavailable, fall back to
+	signal and hope that it does the right thing.
+
+2013-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* configure.ac (AC_CHECK_FUNCS): Add kill and sigprocmask.
 	* select.c (get_signal_number): Change error messages since now may
 	be called by "kill" as well as "select_signal".

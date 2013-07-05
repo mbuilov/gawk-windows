@@ -152,10 +152,9 @@ get_signal_number(awk_value_t signame)
 static awk_value_t *
 do_signal(int nargs, awk_value_t *result)
 {
-#ifdef HAVE_SIGACTION
 	awk_value_t signame, disposition;
 	int signum;
-	struct sigaction sa;
+	void (*func)(int);
 
 	if (do_lint && nargs > 2)
 		lintwarn(ext_id, _("select_signal: called with too many arguments"));
@@ -170,25 +169,36 @@ do_signal(int nargs, awk_value_t *result)
 		return make_number(-1, result);
 	}
 	if (strcasecmp(disposition.str_value.str, "default") == 0)
-		sa.sa_handler = SIG_DFL;
+		func = SIG_DFL;
 	else if (strcasecmp(disposition.str_value.str, "ignore") == 0)
-		sa.sa_handler = SIG_IGN;
+		func = SIG_IGN;
 	else if (strcasecmp(disposition.str_value.str, "trap") == 0)
-		sa.sa_handler = signal_handler;
+		func = signal_handler;
 	else {
 		update_ERRNO_string(_("select_signal: invalid disposition argument"));
 		return make_number(-1, result);
 	}
-	sigfillset(& sa.sa_mask);	/* block all signals in handler */
-	sa.sa_flags = SA_RESTART;
-	if (sigaction(signum, &sa, NULL) < 0) {
+#ifdef HAVE_SIGACTION
+	{
+		int rc;
+		struct sigaction sa;
+		sa.sa_handler = func;
+		sigfillset(& sa.sa_mask);  /* block all signals in handler */
+		sa.sa_flags = SA_RESTART;
+		if ((rc = sigaction(signum, &sa, NULL)) < 0)
+			update_ERRNO_int(errno);
+		return make_number(rc, result);
+	}
+#else
+	/*
+	 * Fall back to signal; this is available on all platforms.  We can
+	 * only hope that it does the right thing.
+	 */
+	if (signal(signum, func) == SIG_ERR) {
 		update_ERRNO_int(errno);
 		return make_number(-1, result);
 	}
 	return make_number(0, result);
-#else
-	update_ERRNO_string(_("select_signal: not supported on this platform"));
-	return make_number(-1, result);
 #endif
 }
 
