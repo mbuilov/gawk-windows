@@ -413,11 +413,14 @@ do_select(int nargs, awk_value_t *result)
 static int
 set_non_blocking(int fd)
 {
-	int flags = fcntl(fd, F_GETFL);
-	int rc = fcntl(fd, F_SETFL, (flags|O_NONBLOCK));
-	if (rc < 0)
+	int flags;
+
+	if (((flags = fcntl(fd, F_GETFL)) == -1) ||
+		(fcntl(fd, F_SETFL, (flags|O_NONBLOCK)) == -1)) {
 		update_ERRNO_int(errno);
-	return rc;
+		return -1;
+	}
+	return 0;
 }
 
 /*  do_set_non_blocking --- Set a file to be non-blocking */
@@ -430,12 +433,19 @@ do_set_non_blocking(int nargs, awk_value_t *result)
 
 	if (do_lint && nargs > 2)
 		lintwarn(ext_id, _("set_non_blocking: called with too many arguments"));
+	/*
+	 * N.B. If called with a single "" arg, we want it to work!  In that
+	 * case, the 1st arg is an empty string, and get_argument fails on the
+	 * 2nd arg.  Note that API get_file promises not to access the type
+	 * argument if the name argument is an empty string.
+	 */
 	if (get_argument(0, AWK_NUMBER, & cmd) &&
 		(cmd.num_value == (fd = cmd.num_value)) && 
 		! get_argument(1, AWK_STRING, & cmdtype))
 		return make_number(set_non_blocking(fd), result);
 	else if (get_argument(0, AWK_STRING, & cmd) &&
-		get_argument(1, AWK_STRING, & cmdtype)) {
+		(get_argument(1, AWK_STRING, & cmdtype) ||
+			(! cmd.str_value.len && (nargs == 1)))) {
 		const awk_input_buf_t *buf;
 		if ((buf = get_file(cmd.str_value.str, cmd.str_value.len, cmdtype.str_value.str, cmdtype.str_value.len)) != NULL)
 			return make_number(set_non_blocking(buf->fd), result);

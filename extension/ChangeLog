@@ -1,5 +1,11 @@
 2013-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* select.c (set_non_blocking): Do not attempt F_SETFL if F_GETFL fails.
+	(do_set_non_blocking): Add support for case when called with a single
+	"" argument.
+
+2013-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* select.c (do_signal): If sigaction is unavailable, fall back to
 	signal and hope that it does the right thing.
 

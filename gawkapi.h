@@ -668,7 +668,9 @@ typedef struct gawk_api {
 
 	/*
 	 * Look up a file.  If the name is NULL or name_len is 0, it returns
-	 * data for the currently open input file corresponding to FILENAME.
+	 * data for the currently open input file corresponding to FILENAME
+	 * (and it will not access the filetype or typelen arguments, so those
+	 * may be undefined).
 	 * If the file is not already open, it tries to open it.
 	 * The "filetype" argument should be one of:
 	 *    ">", ">>", "<", "|>", "|<", and "|&"
