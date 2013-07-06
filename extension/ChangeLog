@@ -1,5 +1,15 @@
 2013-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* select.c (signal_result): New function to set result string from
+	signal function and detect when we need to roll back.
+	(do_signal): Now takes an optional 3rd override argument.  Instead
+	of returning -1 or 0, we now return information about the previously
+	installed signal handler: default, ignore, trap, or unknown.  An
+	empty string is returned on error.  If it is an unknown handler,
+	and override is not non-zero, we roll back the handler and return "".
+
+2013-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* select.c (set_non_blocking): Do not attempt F_SETFL if F_GETFL fails.
 	(do_set_non_blocking): Add support for case when called with a single
 	"" argument.

@@ -147,6 +147,25 @@ get_signal_number(awk_value_t signame)
 	}
 }
 
+static awk_value_t *
+signal_result(awk_value_t *result, void (*func)(int))
+{
+	awk_value_t override;
+
+	if (func == SIG_DFL)
+		return make_const_string("default", 7, result);
+	if (func == SIG_IGN)
+		return make_const_string("ignore", 6, result);
+	if (func == signal_handler)
+		return make_const_string("trap", 4, result);
+	if (get_argument(2, AWK_NUMBER, & override) && override.num_value)
+		return make_const_string("unknown", 7, result);
+	/* need to roll it back! */
+	update_ERRNO_string(_("select_signal: override not requested for unknown signal handler"));
+	make_null_string(result);
+	return NULL;
+}
+
 /*  do_signal --- trap signals */
 
 static awk_value_t *
@@ -156,17 +175,17 @@ do_signal(int nargs, awk_value_t *result)
 	int signum;
 	void (*func)(int);
 
-	if (do_lint && nargs > 2)
+	if (do_lint && nargs > 3)
 		lintwarn(ext_id, _("select_signal: called with too many arguments"));
 	if (! get_argument(0, AWK_UNDEFINED, & signame)) {
 		update_ERRNO_string(_("select_signal: missing required signal name argument"));
-		return make_number(-1, result);
+		return make_null_string(result);
 	}
 	if ((signum = get_signal_number(signame)) < 0)
-		return make_number(-1, result);
+		return make_null_string(result);
 	if (! get_argument(1, AWK_STRING, & disposition)) {
 		update_ERRNO_string(_("select_signal: missing required signal disposition argument"));
-		return make_number(-1, result);
+		return make_null_string(result);
 	}
 	if (strcasecmp(disposition.str_value.str, "default") == 0)
 		func = SIG_DFL;
@@ -176,29 +195,69 @@ do_signal(int nargs, awk_value_t *result)
 		func = signal_handler;
 	else {
 		update_ERRNO_string(_("select_signal: invalid disposition argument"));
-		return make_number(-1, result);
+		return make_null_string(result);
 	}
+
+#ifdef HAVE_SIGPROCMASK
+/* Temporarily block this signal in case we need to roll back the handler! */
+#define PROTECT \
+		sigset_t set, oldset; \
+		sigemptyset(& set); \
+		sigaddset(& set, signum); \
+		sigprocmask(SIG_BLOCK, &set, &oldset);
+#define RELEASE sigprocmask(SIG_SETMASK, &oldset, NULL);
+#else
+/* Brain-damaged platform, so we will have to live with the race condition. */
+#define PROTECT
+#define RELEASE
+#endif
+	
 #ifdef HAVE_SIGACTION
 	{
-		int rc;
-		struct sigaction sa;
+		awk_value_t override;
+		struct sigaction sa, prev;
 		sa.sa_handler = func;
 		sigfillset(& sa.sa_mask);  /* block all signals in handler */
 		sa.sa_flags = SA_RESTART;
-		if ((rc = sigaction(signum, &sa, NULL)) < 0)
-			update_ERRNO_int(errno);
-		return make_number(rc, result);
+		{
+			PROTECT
+			if (sigaction(signum, &sa, &prev) < 0) {
+				update_ERRNO_int(errno);
+				RELEASE
+				return make_null_string(result);
+			}
+			if (signal_result(result, prev.sa_handler)) {
+				RELEASE
+				return result;
+			}
+			/* roll it back! */
+			sigaction(signum, &prev, NULL);
+			RELEASE
+			return result;
+		}
 	}
 #else
 	/*
 	 * Fall back to signal; this is available on all platforms.  We can
 	 * only hope that it does the right thing.
 	 */
-	if (signal(signum, func) == SIG_ERR) {
-		update_ERRNO_int(errno);
-		return make_number(-1, result);
+	{
+		void (*prev)(int);
+		PROTECT
+		if ((prev = signal(signum, func)) == SIG_ERR) {
+			update_ERRNO_int(errno);
+			RELEASE
+			return make_null_string(result);
+		}
+		if (signal_result(result, prev)) {
+			RELEASE
+			return result;
+		}
+		/* roll it back! */
+		signal(signum, prev);
+		RELEASE
+		return result;
 	}
-	return make_number(0, result);
 #endif
 }
 
@@ -461,7 +520,7 @@ do_set_non_blocking(int nargs, awk_value_t *result)
 
 static awk_ext_func_t func_table[] = {
 	{ "select", do_select, 5 },
-	{ "select_signal", do_signal, 2 },
+	{ "select_signal", do_signal, 3 },
 	{ "set_non_blocking", do_set_non_blocking, 2 },
 	{ "kill", do_kill, 2 },
 };
