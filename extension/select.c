@@ -481,6 +481,7 @@ do_select(int nargs, awk_value_t *result)
 static int
 set_non_blocking(int fd)
 {
+#if defined(HAVE_FCNTL) && defined(O_NONBLOCK)
 	int flags;
 
 	if (((flags = fcntl(fd, F_GETFL)) == -1) ||
@@ -489,6 +490,10 @@ set_non_blocking(int fd)
 		return -1;
 	}
 	return 0;
+#else
+	update_ERRNO_string(_("set_non_blocking: not supported on this platform"));
+	return -1;
+#endif
 }
 
 /*  do_set_non_blocking --- Set a file to be non-blocking */

@@ -1,5 +1,11 @@
 2013-07-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* configure.ac (AC_CHECK_FUNCS): Check for fcntl.
+	* select.c (set_non_blocking): Check that fcntl and O_NONBLOCK are
+	available.
+
+2013-07-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* select.c (signal_handler): On platforms lacking sigaction, reset
 	the signal handler each time a signal is trapped to protect in case
 	the system resets it to default.
