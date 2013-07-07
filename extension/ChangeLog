@@ -1,3 +1,9 @@
+2013-07-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* select.c (signal_handler): On platforms lacking sigaction, reset
+	the signal handler each time a signal is trapped to protect in case
+	the system resets it to default.
+
 2013-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* select.c (signal_result): New function to set result string from

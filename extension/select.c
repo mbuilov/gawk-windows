@@ -107,6 +107,15 @@ signal_handler(int signum)
 	 */
 	sigaddset(& caught.mask, signum);
 	caught.flag = 1;
+#ifndef HAVE_SIGACTION
+	/*
+	 * On platforms without sigaction, we do not know how the legacy
+	 * signal API will behave.  There does not appear to be an autoconf
+	 * test for whether the signal handler is reset to default each time
+	 * a signal is trapped, so we do this to be safe.
+	 */
+	signal(signum, signal_handler);
+#endif
 }
 
 static int
