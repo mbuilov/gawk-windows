@@ -1,3 +1,9 @@
+2013-07-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac (AC_CHECK_FUNCS): Check for sigprocmask.
+	* io.c (wait_any): If sigprocmask is available, block signals instead
+	of ignoring them temporarily.
+
 2013-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.h (gawk_api): Document that the api_get_file function will not

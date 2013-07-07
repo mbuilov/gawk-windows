@@ -2177,17 +2177,34 @@ use_pipes:
  *
  * Note: on platforms that do not support waitpid with WNOHANG, when called with
  * a zero argument, this function will hang until all children have exited.
+ *
+ * AJS, 2013-07-07: I do not see why we need to ignore signals during this
+ * function.  This function just waits and updates the pid and status fields.
+ * I don't see why that should interfere with any signal handlers.  But I am
+ * reluctant to remove this protection.  So I changed to use sigprocmask to
+ * block signals instead to avoid interfering with installed signal handlers.
  */
 
 static int
 wait_any(int interesting)	/* pid of interest, if any */
 {
-	RETSIGTYPE (*hstat)(int), (*istat)(int), (*qstat)(int);
 	int pid;
 	int status = 0;
 	struct redirect *redp;
+#ifdef HAVE_SIGPROCMASK
+	sigset_t set, oldset;
+
+	/* I have no idea why we are blocking signals during this function... */
+	sigemptyset(& set);
+	sigaddset(& set, SIGINT);
+	sigaddset(& set, SIGHUP);
+	sigaddset(& set, SIGQUIT);
+	sigprocmask(SIG_BLOCK, & set, & oldset);
+#else
+	RETSIGTYPE (*hstat)(int), (*istat)(int), (*qstat)(int);
 
 	istat = signal(SIGINT, SIG_IGN);
+#endif
 #ifdef __MINGW32__
 	if (interesting < 0) {
 		status = -1;
@@ -2204,8 +2221,10 @@ wait_any(int interesting)	/* pid of interest, if any */
 			}
 	}
 #else
+#ifndef HAVE_SIGPROCMASK
 	hstat = signal(SIGHUP, SIG_IGN);
 	qstat = signal(SIGQUIT, SIG_IGN);
+#endif
 	for (;;) {
 # if defined(HAVE_WAITPID) && defined(WNOHANG)
 		if ((pid = waitpid(-1, & status, WNOHANG)) == 0)
@@ -2229,10 +2248,16 @@ wait_any(int interesting)	/* pid of interest, if any */
 		if (pid == -1 && errno == ECHILD)
 			break;
 	}
+#ifndef HAVE_SIGPROCMASK
 	signal(SIGHUP, hstat);
 	signal(SIGQUIT, qstat);
 #endif
+#endif
+#ifndef HAVE_SIGPROCMASK
 	signal(SIGINT, istat);
+#else
+	sigprocmask(SIG_SETMASK, & oldset, NULL);
+#endif
 	return status;
 }
 
