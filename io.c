@@ -3500,12 +3500,12 @@ get_a_record(char **out,        /* pointer to pointer to data */
 			recm.rt_start = iop->off + recm.len;
 
 		/* read more data, break if EOF */
-#ifndef min
-#define min(x, y) (x < y ? x : y)
+#ifndef MIN
+#define MIN(x, y) (x < y ? x : y)
 #endif
 		/* subtract one in read count to leave room for sentinel */
 		room_left = iop->end - iop->dataend - 1;
-		amt_to_read = min(iop->readsize, room_left);
+		amt_to_read = MIN(iop->readsize, room_left);
 
 		if (amt_to_read < iop->readsize) {
 			grow_iop_buffer(iop);
@@ -3516,7 +3516,7 @@ get_a_record(char **out,        /* pointer to pointer to data */
 
 			/* recalculate amt_to_read */
 			room_left = iop->end - iop->dataend - 1;
-			amt_to_read = min(iop->readsize, room_left);
+			amt_to_read = MIN(iop->readsize, room_left);
 		}
 		while (amt_to_read + iop->readsize < room_left)
 			amt_to_read += iop->readsize;
@@ -3526,7 +3526,7 @@ get_a_record(char **out,        /* pointer to pointer to data */
 		 * POSIX limits read to SSIZE_MAX. There are (bizarre)
 		 * systems where this amount is small.
 		 */
-		amt_to_read = min(amt_to_read, SSIZE_MAX);
+		amt_to_read = MIN(amt_to_read, SSIZE_MAX);
 #endif
 
 		iop->count = iop->public.read_func(iop->public.fd, iop->dataend, amt_to_read);
