@@ -146,6 +146,8 @@ static INSTRUCTION *ip_end;
 static INSTRUCTION *ip_endfile;
 static INSTRUCTION *ip_beginfile;
 
+static INSTRUCTION *comment = NULL;
+
 static inline INSTRUCTION *list_create(INSTRUCTION *x);
 static inline INSTRUCTION *list_append(INSTRUCTION *l, INSTRUCTION *x);
 static inline INSTRUCTION *list_prepend(INSTRUCTION *l, INSTRUCTION *x);
@@ -446,16 +448,26 @@ statements
 	  {	$$ = NULL; }
 	| statements statement
 	  {
-		if ($2 == NULL)
-			$$ = $1;
-		else {
-			add_lint($2, LINT_no_effect);
-			if ($1 == NULL)
-				$$ = $2;
+		if ($2 == NULL) {
+			if (comment == NULL)
+				$$ = $1;
 			else
+				$$ = list_prepend($1, comment);
+		} else {
+			add_lint($2, LINT_no_effect);
+			if ($1 == NULL) {
+				if (comment == NULL)
+					$$ = $2;
+				else
+					$$ = list_prepend($2, comment);
+			} else {
+				if (comment != NULL)
+					list_append($1, comment);
 				$$ = list_merge($1, $2);
+			}
 		}
-	    yyerrok;
+		comment = NULL;
+		yyerrok;
 	  }
 	| statements error
 	  {	$$ = NULL; }
@@ -2880,8 +2892,28 @@ allow_newline(void)
 			break;
 		}
 		if (c == '#') {
-			while ((c = nextc()) != '\n' && c != END_FILE)
-				continue;
+//			if (do_pretty_print) {
+				tok = tokstart;
+				tokadd('#');
+				while ((c = nextc()) != '\n' && c != END_FILE)
+					tokadd(c);
+				if (c == '\n')
+					tokadd(c);
+
+				if (comment != NULL) {
+					size_t new = comment->memory->stlen + (tok - tokstart) + 2;
+					erealloc(comment->memory->stptr, char *, new, "allow_newline");
+					memcpy(comment->memory->stptr + comment->memory->stlen, tokstart, (tok - tokstart));
+					comment->memory->stlen += (tok - tokstart);
+					comment->memory->stptr[comment->memory->stlen] = '\0';
+				} else {
+					comment = bcalloc(Op_comment, 1, sourceline);
+					comment->memory = make_str_node(tokstart, tok - tokstart, 0);
+				}
+//			} else {
+//				while ((c = nextc()) != '\n' && c != END_FILE)
+//					continue;
+//			}
 			if (c == END_FILE) {
 				pushback();
 				break;
@@ -3085,10 +3117,36 @@ retry:
 		return lasttok = NEWLINE;
 
 	case '#':		/* it's a comment */
-		while ((c = nextc()) != '\n') {
+//		if (do_pretty_print) {
+			tok = tokstart;
+			tokadd('#');
+			while ((c = nextc()) != '\n') {
+				if (c == END_FILE)
+					break;
+				tokadd(c);
+			}
+			if (c == '\n')
+				tokadd(c);
+
+			if (comment != NULL) {
+				size_t new = comment->memory->stlen + (tok - tokstart) + 2;
+				erealloc(comment->memory->stptr, char *, new, "yylex");
+				memcpy(comment->memory->stptr + comment->memory->stlen, tokstart, (tok - tokstart));
+				comment->memory->stlen += (tok - tokstart);
+				comment->memory->stptr[comment->memory->stlen] = '\0';
+			} else {
+				comment = bcalloc(Op_comment, 1, sourceline);
+				comment->memory = make_str_node(tokstart, tok - tokstart, 0);
+			}
+
 			if (c == END_FILE)
 				return lasttok = NEWLINE_EOF;
-		}
+//		} else {
+//			while ((c = nextc()) != '\n') {
+//				if (c == END_FILE)
+//					return lasttok = NEWLINE_EOF;
+//			}
+//		}
 		sourceline++;
 		return lasttok = NEWLINE;
 

@@ -1,3 +1,16 @@
+2013-07-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (enum opcodeval): Add Op_comment.
+	* awkgram.y (comment): New variable to hold comment text.
+	(statement): Add saved comments to lists being built.
+	(allow_newline): Save comment text if necessary. Append if have
+	existing text.
+	(yylex): Ditto.
+	* debug.c (print_instruction): Handle Op_comment.
+	* eval.c (optypes): Add entry for Op_comment.
+	* interpret.h (r_interpret): Ditto.
+	* profile.c (pprint): For Op_comment, print the comment text.
+
 2013-07-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c (FAKE_FD_VALUE): Move definition from here ...

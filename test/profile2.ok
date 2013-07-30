@@ -1,19 +1,34 @@
 	# BEGIN block(s)
 
 	BEGIN {
+		# xref.awk - cross reference an awk program
+		# 12/2010: Modified for gawk test suite to use a variable
+		# for the sort command and to use `sort -k1' instead of `sort +1'
+		# "sort -k1"
+		# create array of keywords to be ignored by lexer
      1  	if (sortcmd == "") {
 			sortcmd = "sort"
 		}
+		# build the symbol-state table
      1  	asplit("BEGIN:END:atan2:break:close:continue:cos:delete:" "do:else:exit:exp:for:getline:gsub:if:in:index:int:" "length:log:match:next:print:printf:rand:return:sin:" "split:sprintf:sqrt:srand:sub:substr:system:while", keywords, ":")
+		# parse the input and store an intermediate representation
+		# of the cross-reference information
+		# set up the machine
      1  	split("00:00:00:00:00:00:00:00:00:00:" "20:10:10:12:12:11:07:00:00:00:" "08:08:08:08:08:33:08:00:00:00:" "08:44:08:36:08:08:08:00:00:00:" "08:44:45:42:42:41:08", machine, ":")
+		# run the machine
      1  	state = 1
+		# finished parsing, now ready to print output
    571  	for (; ; ) {
+			# get next symbol
    571  		symb = lex()
    571  		nextstate = substr(machine[state symb], 1, 1)
+			# perform required action
    571  		act = substr(machine[state symb], 2, 1)
+			# finished with current token
    571  		if (act == "0") { # 12
    559  		} else {
    559  			if (act == "1") { # 8
+					# do nothing
      8  				if (! inarray(tok, names)) { # 3
      3  					names[++nnames] = tok
 					}
@@ -93,6 +108,7 @@
 
      1  function asplit(str, arr, fs, n)
 	{
+		# END OF PROGRAM
      1  	n = split(str, temp_asplit, fs)
     36  	for (i = 1; i <= n; i++) {
     36  		arr[temp_asplit[i]]++
@@ -119,9 +135,13 @@
      1  				return 7
 				}
 			}
+			# remove white space,
   1701  		sub(/^[ \t]+/, "", line)
+			# quoted strings,
   1701  		sub(/^"([^"]|\\")*"/, "", line)
+			# regular expressions,
   1701  		sub(/^\/([^\/]|\\\/)+\//, "", line)
+			# and comments
   1701  		sub(/^#.*/, "", line)
   1701  		if (line ~ /^function/) { # 4
      4  			tok = "function"
@@ -139,6 +159,7 @@
     53  					return 3
   1591  				} else {
   1591  					if (match(line, /^[[:alpha:]_][[:alnum:]]*\[/)) { # 43
+							# change regexes to use posix character classes
     43  						tok = substr(line, 1, RLENGTH - 1)
     43  						line = substr(line, RLENGTH + 1)
     43  						return 5

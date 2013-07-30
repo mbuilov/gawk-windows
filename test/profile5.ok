@@ -5,6 +5,8 @@
 	}
 
 	BEGIN {
+		#___________________________________________________________________________________
+		############################################################################
 		BINMODE = "rw"
 		SUBSEP = "\000"
 		_NULARR[""]
@@ -25,6 +27,8 @@
 	}
 
 	BEGIN {
+		#___________________________________________________________________________________
+		#############################################################################
 		_delay_perfmsdelay = 11500
 	}
 
@@ -36,19 +40,25 @@
 	}
 
 	BEGIN {
+		#___________________________________________________________________________________
+		###########################################################################
 		_addlib("_EXTFN")
 	}
 
 	BEGIN {
+		#___________________________________________________________________________________
+		#############################################################################
 		delete _XCHR
 		delete _ASC
 		delete _CHR
 		t = ""
+		#_____________________________________________________________________________
 		for (i = 0; i < 256; i++) {
 			_ASC[a = _CHR[i] = sprintf("%c", i)] = i
 			_QASC[a] = sprintf("%.3o", i)
 			_XCHR[_CHR[i]] = sprintf("%c", (i < 128 ? i + 128 : i - 128))
 		}
+		#_______________________________________________________________________
 		for (i = 0; i < 256; i++) {
 			_QSTRQ[_CHR[i]] = "\\" sprintf("%.3o", i)
 		}
@@ -61,10 +71,13 @@
 		for (; i < 256; i++) {
 			_QSTR[_CHR[i]] = _QSTRQ[_CHR[i]]
 		}
+		#; _QSTR["\""]="\\\""
+		#_____________________________________________________________________________
 		_QSTR["\\"] = "\\\\"
 		_CHR["CR"] = "\r"
 		_CHR["EOL"] = "\r\n"
 		_CHR["EOF"] = "\032"
+		#_______________________________________________________________________
 		_QSTR[_CHR["EOL"]] = "\\015\\012"
 		_CHR["MONTH"][_CHR["MONTH"]["Jan"] = "01"] = "Jan"
 		_CHR["MONTH"][_CHR["MONTH"]["Feb"] = "02"] = "Feb"
@@ -77,7 +90,9 @@
 		_CHR["MONTH"][_CHR["MONTH"]["Sep"] = "09"] = "Sep"
 		_CHR["MONTH"][_CHR["MONTH"]["Oct"] = "10"] = "Oct"
 		_CHR["MONTH"][_CHR["MONTH"]["Nov"] = "11"] = "Nov"
+		#_____________________________________________________________________________
 		_CHR["MONTH"][_CHR["MONTH"]["Dec"] = "12"] = "Dec"
+		#_____________________________________________________________________________
 		_TAB_STEP_DEFAULT = 8
 		for (i = 0; i < 32; i++) {
 			_REXPSTR[_CHR[i]] = _QSTRQ[_CHR[i]]
@@ -93,6 +108,8 @@
 	}
 
 	BEGIN {
+		#___________________________________________________________________________________
+		#############################################################################
 		_SYS_STDCON = "CON"
 		_CON_WIDTH = (match(_cmd("MODE " _SYS_STDCON " 2>NUL"), /Columns:[ \t]*([0-9]+)/, A) ? strtonum(A[1]) : 80)
 	}
@@ -102,6 +119,8 @@
 	}
 
 	BEGIN {
+		#___________________________________________________________________________________
+		#############################################################################
 		if (_SYS_STDOUT == "") {
 			_SYS_STDOUT = "/dev/stdout"
 		}
@@ -123,6 +142,8 @@
 	}
 
 	BEGIN {
+		#___________________________________________________________________________________
+		#############################################################################
 		_tInBy = "\212._tInBy"
 		_tgenuid_init()
 		_UIDS[""]
@@ -155,6 +176,8 @@
 
 	BEGIN {
 		if (_gawk_scriptlevel < 1) {
+			#___________________________________________________________________________________
+			#############################################################################
 			_ERRLOG_TF = 1
 			_ERRLOG_VF = 1
 			_ERRLOG_IF = 1
@@ -170,18 +193,22 @@
 	}
 
 	BEGIN {
+		#___________________________________________________________________________________
 		_shortcut_init()
 	}
 
 	BEGIN {
+		#########################################################
 		_addlib("_eXTFN")
 	}
 
 	BEGIN {
+		#___________________________________________________________________________________
 		_extfn_init()
 	}
 
 	BEGIN {
+		############################################################
 		_addlib("_sHARE")
 	}
 
@@ -190,6 +217,7 @@
 	}
 
 	BEGIN {
+		###############################################################################
 		_addlib("_DS")
 		_PRODUCT_NAME = "Deployment Solution Control"
 		_PRODUCT_VERSION = "1.0"
@@ -198,33 +226,42 @@
 	}
 
 	BEGIN {
+		# problem configuring uid by array charset: i can' understand what format of the array: possibly - remove array support
+		# after removal of array format detection: there is unfinished conflicts: it is possible to totally remove array uid-gen initialization
+		#_____________________________________________________
 		_inituidefault()
 	}
 
 	BEGIN {
+		#_____________________________________________________
 		_initfilever()
 	}
 
 	BEGIN {
+		#_____________________________________________________
 		_initshare()
 	}
 
 	BEGIN {
+		#_________________________________________________________________
 		_inspass(_IMPORT, "_import_data")
 	}
 
 	BEGIN {
+		#_______________________________________________
 		_TEND[_ARRLEN] = 0
 		_TYPEWORD = "_TYPE"
 	}
 
 	BEGIN {
+		#_______________________________________________
 		_ARRLEN = "\032LEN"
 		_ARRPTR = "\032PTR"
 		_ARRSTR = ""
 	}
 
 	BEGIN {
+		#_____________________________________________________
 		_getperf_fn = "_nop"
 	}
 
@@ -233,18 +270,28 @@
 	}
 
 	BEGIN {
+		#_____________________________________________________
 		_initrdreg()
 	}
 
 	BEGIN {
+		#_____________________________________________________
 		_initregpath0()
 	}
 
 	BEGIN {
+		#_____________________________________________________________________________
+		################################################################
+		#_____________________________________________________
 		_initsys()
 	}
 
 	BEGIN {
+		#_________________________________________________________________________________________
+		##########################################################################################
+		#BootDevice               BuildNumber  BuildType            Caption                                      CodeSet  CountryCode  CreationClassName      CSCreationClassName   CSDVersion      CSName  CurrentTimeZone  DataExecutionPrevention_32BitApplications  DataExecutionPrevention_Available  DataExecutionPrevention_Drivers  DataExecutionPrevention_SupportPolicy  Debug  Description  Distributed  EncryptionLevel  ForegroundApplicationBoost  FreePhysicalMemory  FreeSpaceInPagingFiles  FreeVirtualMemory  InstallDate                LargeSystemCache  LastBootUpTime             LocalDateTime              Locale  Manufacturer           MaxNumberOfProcesses  MaxProcessMemorySize  MUILanguages  Name                                                                                  NumberOfLicensedUsers  NumberOfProcesses  NumberOfUsers  OperatingSystemSKU  Organization  OSArchitecture  OSLanguage  OSProductSuite  OSType  OtherTypeDescription  PAEEnabled  PlusProductID  PlusVersionNumber  Primary  ProductType  RegisteredUser  SerialNumber             ServicePackMajorVersion  ServicePackMinorVersion  SizeStoredInPagingFiles  Status  SuiteMask  SystemDevice             SystemDirectory      SystemDrive  TotalSwapSpaceSize  TotalVirtualMemorySize  TotalVisibleMemorySize  Version   WindowsDirectory
+		#\Device\HarddiskVolume1  7601         Multiprocessor Free  Microsoft Windows Server 2008 R2 Enterprise  1252     1            Win32_OperatingSystem  Win32_ComputerSystem  Service Pack 1  CPU     180              TRUE                                       TRUE                               TRUE                             3                                      FALSE               FALSE        256              0                           6925316             33518716                41134632           20110502192745.000000+180                    20130426120425.497469+180  20130510134606.932000+180  0409    Microsoft Corporation  -1                    8589934464            {"en-US"}     Microsoft Windows Server 2008 R2 Enterprise |C:\Windows|\Device\Harddisk0\Partition2  0                      116                2              10                                64-bit          1033        274             18                                                                          TRUE     3            Windows User    55041-507-2389175-84833  1                        0                        33554432                 OK      274        \Device\HarddiskVolume2  C:\Windows\system32  C:                               50311020                16758448                6.1.7601  C:\Windows
+		############################################################################
 		a = ENVIRON["EGAWK_CMDLINE"]
 		gsub(/^[ \t]*/, "", a)
 		a = _lib_CMDLN(a)
@@ -266,11 +313,16 @@
 	# END block(s)
 
 	END {
+		#_____________________________________________________________________________
+		########################################################################
 		_EXIT()
 	}
 
 	END {
 		if (_gawk_scriptlevel < 1) {
+			#_______________________________________________________________________
+			########################################################################
+			###############################################################################
 			close(_errlog_file)
 			p = _Zimport(_rdfile(_errlog_file), _N())
 			if ((t = _get_errout(p)) != "") {
@@ -282,6 +334,18 @@
 	END {
 		if (_gawk_scriptlevel < 1) {
 			if (! _fileio_notdeltmpflag) {
+				##########################################################################################
+				# PUBLIC:
+				#_____________________________________________________________________________
+				# _rFBRO(ptr)				- Return ptr of first-bro.				[TESTED]
+				#						If !ptr then returns "".
+				#_____________________________________________________________________________
+				# _rLBRO(ptr)				- Return ptr of last-bro.				[TESTED]
+				#						If !ptr then returns "".
+				#_____________________________________________________________________________
+				# _rQBRO(ptr)				- Returns brothers total quantity.			[TESTED]
+				#						If !ptr then returns "".
+				###############################################################################
 				_FILEIO_TMPATHS[_FILEIO_TMPRD]
 				_Foreach(_FILEIO_TMPATHS, "_uninit_del")
 			}
@@ -289,6 +353,276 @@
 	}
 
 	END {
+		#___________________________________________________________________________________
+		####################################################################################
+		#___________________________________________________________________________________
+		# fn	_dirtree(array,pathmask)
+		#
+		#	Return in `array' file tree from pathmask:
+		#		array["file.filerdne"]="size date time"
+		#		array["subdir.filerd"]["file.filerdne"]="size date time"
+		#		array["subdir.filerd"]["file.filerd"][...]
+		#
+		#		The array will be cleared before any action. Function return pathmask w/o ltabspc and rtabspc.
+		#___________________________________________________________________________________
+		# OK:		change internal function's names to: w\o "_"
+		# OK:		FLENGTH: should cover r-spcs
+		# OK:		optimize REXP
+		# OK:		add new symbols to dir/file names ( ! and + )
+		# OK:		create _getfilepath()
+		# OK:		del - conflict with WROOTDIR (do not update it)
+		# OK:		dir/del - support for filemask ( * and ? )
+		# OK:		how to define code injections: header\ender; and HANDLERS
+		# OK:		units in header\ender? conline division...
+		# OK:		_FILEPATH problem: it will not been defined at the moment when subscript0 starts - at the start TMPRD="_tmp"
+		# OK:		del:	if del("dir\\") - then all ok except it NOT deleted "dir\\"	- _del function removed(renamed to __del)
+		# OK:		tmpdirs: it delete only autotmp dir and only from script0
+		# OK:		MICROTEST:	global testing of filepath (UNC! CORRECT RESULTS! )
+		#	question about cache: did new just now generated absolute filepath cached in FILECACHE? its seems like NO
+		# check _untmp: CONFLICT: if file or dir from autotmp dir will be untmp then it anyway will be deleted; but file or dir from other point never be deleted anyway - so what is the point of untmp?????
+		#ERRLOG:	_setmpath:	warning!!!!!
+		#___________________________________________________________________________________
+		####################################################################################
+		# PUBLIC:
+		#___________________________________________________________________________________
+		#
+		#	fn	_rdfile(_filepath)
+		#
+		#		Read and return data from file specified in _filepath.
+		#			If _filepath=="" then no action occured and return "".
+		#			Function read and return data from file. No any changes in data occured.
+		#			Function use _filerdne function internally. If some syntax error
+		#				found in _filepath then function return "".
+		#			If some error occured while reading data from file then fuction return ""
+		#				and error-text is in ERRNO(and no close-file action will be occured!).
+		#			If reading data completed successfully then function try to close
+		#				file and if while closing file some error occured then function
+		#				returns "" and error-text is in ERRNO.
+		#			Otherwise function returns readed data.
+		#_____________________________________________________________________________
+		#
+		#	fn	_wrfile(_filepath,_data)
+		#
+		#		Write data into file specified in _filepath.
+		#			If _filepath=="" then no action occured and return "".
+		#			Function write _data to file. No any changes in data occured.
+		#			Function use _filerdne function internally. If some syntax error
+		#				found in _filepath then function return "".
+		#			If some error occured while writing data to file then fuction return ""
+		#				and error-text is in ERRNO(and no close-file action will be occured!).
+		#			If writing data completed successfully then function try to close
+		#				file and if while closing file some error occured then function
+		#				returns "" and error-text is in ERRNO.
+		#			Otherwise function returns _filepath(re-processed).
+		#___________________________________________________________________________________
+		#
+		#	fn	_filepath(_filepath)
+		#
+		#		Return re-processed root-dir-name-ext of _filepath.
+		#			If _filepath=="" then no action occured and return "".
+		#			If some syntax error found in _filepath then function return ""
+		#				(and NO _filepath-cache-record will be created!).
+		#_____________________________________________________________________________
+		#
+		#	fn	_filerdne(_filepath)
+		#
+		#		Return re-processed root-dir-filename of _filepath.
+		#			If _filepath=="" then no action occured and return "".
+		#			Function return result only if in _filepath present file-name(name
+		#				and/or extension) - otherwise its return "".
+		#			If some syntax error found in _filepath then function return ""
+		#				(and NO _filepath-cache-record will be created!).
+		#_____________________________________________________________________________
+		#
+		#	fn	_filerdn(_filepath)
+		#
+		#		Return re-processed root-dir-name of _filepath.
+		#			If _filepath=="" then no action occured and return "".
+		#			Function return result only if in _filepath present name field -
+		#				- otherwise its return "".
+		#			If some syntax error found in _filepath then function return ""
+		#				(and NO _filepath-cache-record will be created!).
+		#_____________________________________________________________________________
+		#
+		#	fn	_filerd(_filepath)
+		#
+		#		Return re-processed root-dir of _filepath.
+		#			If _filepath=="" then no action occured and return "".
+		#			If some syntax error found in _filepath then function return ""
+		#				(and NO _filepath-cache-record will be created!).
+		#_____________________________________________________________________________
+		#
+		#	fn	_filer(_filepath)
+		#
+		#		Return re-processed root of _filepath.
+		#			If _filepath=="" then no action occured and return "".
+		#			If some syntax error found in _filepath then function return ""
+		#				(and NO _filepath-cache-record will be created!).
+		#_____________________________________________________________________________
+		#
+		#	fn	_filed(_filepath)
+		#
+		#		Return re-processed dir of _filepath.
+		#			If _filepath=="" then no action occured and return "".
+		#			There is only one case when dir string can be =="" - when in
+		#				_filepath specified unmounted drive(MS-format) and from-
+		#				current-location address used(like Z:file.ext). In this
+		#				case no rootdir-cache-record will be created.
+		#			If some syntax error found in _filepath then function return ""
+		#				(and NO _filepath-cache-record will be created!).
+		#_____________________________________________________________________________
+		#	fn	_filene(_filepath)
+		#
+		#		Return re-processed name-ext of _filepath.
+		#			If _filepath=="" then no action occured and return "".
+		#			Function return result only if in _filepath present file-name(name
+		#				and/or extension) - otherwise its return "".
+		#			If some syntax error found in _filepath then function return ""
+		#				(and NO _filepath-cache-record will be created!).
+		#_____________________________________________________________________________
+		#
+		#	fn	_filen(_filepath)
+		#
+		#		Return re-processed name of _filepath.
+		#			If _filepath=="" then no action occured and return "".
+		#			Function return result only if in _filepath present name field -
+		#				- otherwise its return "".
+		#			If some syntax error found in _filepath then function return ""
+		#				(and NO _filepath-cache-record will be created!).
+		#_____________________________________________________________________________
+		#
+		#	fn	_file(_filepath)
+		#
+		#		Return re-processed ext of _filepath.
+		#			If _filepath=="" then no action occured and return "".
+		#			Function return result only if in _filepath present ext field -
+		#				- otherwise its return "".
+		#			If some syntax error found in _filepath then function return ""
+		#				(and NO _filepath-cache-record will be created!).
+		#___________________________________________________________________________________
+		#
+		#	fn	_dir(_ARR,_filepathmask)
+		#
+		#		Get file-/folder-list of root-folder of _filepathmask.
+		#			If _filepathmask=="" then no action occured and return "".
+		#			_filepathmask can contain symbols like `*' and `?' as like
+		#				its used in `dir'-shell command.
+		#			Function gets file-/folder-list of specified root-dir-_filepathmask
+		#				and return this list in array _ARR - where each element:
+		#
+		#			index - is the _filepath of file-or-folder name-ext
+		#			value - contains 3 fields separated by " ":
+		#				1. =="D" if this is folder
+		#				   ==/[0-9]+/ if this is file - size of file in bytes
+		#				2. ==date-of-creation of file or folder
+		#				3. ==time-of-creation of file or folder
+		#
+		#			Function returns quantity of items in ARR.
+		#___________________________________________________________________________________
+		#
+		#	fn	_filexist(_filepath)
+		#
+		#		Test if file or path or drive specified in _filepath is exist.
+		#				If _filepath=="" then no action occured and return "".
+		#				If some syntax error found in _filepath then function return ""
+		#			(and NO _filepath-cache-record will be created!).
+		#				Function returns _filepath if _filepath is exist. Otherwise
+		#			function return 0.
+		#_____________________________________________________________________________
+		#
+		#	fn	_filenotexist(_filepath)
+		#
+		#		Test if file or path or drive specified in _filepath is not exist.
+		#			If _filepath=="" then no action occured and return "".
+		#			If some syntax error found in _filepath then function return ""
+		#				(and NO _filepath-cache-record will be created!).
+		#			Function returns 1 if _filepath is not exist. Otherwise function
+		#				return 0.
+		#_____________________________________________________________________________
+		#
+		#	fn	_newdir(_filepath)
+		#
+		#		Create path specified in root-dir-_filepath.
+		#			If _filepath=="" then no action occured and return "".
+		#			If some syntax error found in _filepath then function return ""
+		#				(and NO _filepath-cache-record will be created!).
+		#			Function returns root-dir of _filepath.
+		#_______________________________________________________________________
+		#
+		#	fn	_newdir(_filepath)
+		#
+		#		Create path specified in root-dir-_filepath. If this folder
+		#		already exist then it will be completely cleared.
+		#			If _filepath=="" then no action occured and return "".
+		#			If some syntax error found in _filepath then function return ""
+		#				(and NO _filepath-cache-record will be created!).
+		#			Function returns root-dir of _filepath.
+		#___________________________________________________________________________________
+		#
+		#	fn	_getmpfile(_filepath,_currfilepath)
+		#
+		#		Return ....
+		#
+		#_____________________________________________________________________________
+		#
+		#	fn	_getmpdir(_filepath,_currfilepath)
+		#
+		#		Return ...
+		#
+		#_____________________________________________________________________________
+		#
+		#	Temporary files folder.
+		#
+		#		Temporary files folder location is defined by _FILEIO_TMPRD.
+		#		If it wasn't been initialized before program run or not been initialized
+		#			by ENVIRON["TMPDIR"] then it will defined as the:
+		#				`current rootdir(stored in _FILEIO_RD)\programname.TMP'
+		#			In this case if its already exist then it will completely cleared when _FILEIO
+		#			library initialization processed.
+		#			And at the program uninitialization processed it will completely
+		#			cleared if _FILEIO_TMPCLRFLAG is true.
+		#___________________________________________________________________________________
+		#
+		#	var	_FILEIO_RD (ENVIRON["CD"])
+		#
+		#		This var can be set before running program. It can contain path which
+		#		will be used as default current dir while program run.
+		#		If this var is set before program runs - then it will be refreshed by the
+		#			_filerd it will be used as default current dir while program run.
+		#		If this var is not set before program runs - then ENVIRON["CD"] can also
+		#			set up default current dir while program run. If it set before program
+		#			begin then it will be refreshed by the _filerd - and also writed into
+		#			_FILEIO_RD.
+		#		If both _FILEIO_RD and ENVIRON["CD"] are not set before program begins
+		#			then real current root\dir will be writed into both _FILEIO_RD and
+		#			ENVIRON["CD"] and it will be used as default current dir while program run.
+		#
+		#___________________________________________________________________________________
+		#
+		#	var	_FILEIO_TMPRD (ENVIRON["TMPRD"])
+		#
+		#		This var can be set before running program. It can contain path which
+		#		will be used as default temporary files root-folder while program run.
+		#		If this var is set before program runs - then it will be refreshed by the
+		#			_filerd - and also writed into ENVIRON["TMPRD"].
+		#		If this var is not set before program runs - then ENVIRON["TMPRD"] can also
+		#			set up default temporary files root-folder while program run. If it set
+		#			before program begin then it will be refreshed by the _filerd - and
+		#			also writed into _FILEIO_TMPRD.
+		#		If both _FILEIO_TMPRD and ENVIRON["TMPRD"] are not set before program begins
+		#			then new folder into path specified by the _FILEIO_RD(after its handling)
+		#			will be writed into both _FILEIO_TMPRD and ENVIRON["TMPRD"] and it
+		#			will be used as default temporary files root-folder while program run.
+		#___________________________________________________________________________________
+		#
+		#	var	_FILEPATH
+		#
+		#		This var contain filepath of working script. It should be setting up externally.
+		#
+		#	var	_gawk_scriptlevel
+		#___________________________________________________________________________________
+		####################################################################################
+		###############################################################################
 		if (_constatstrln > 0) {
 			_constat()
 		}
@@ -300,6 +634,8 @@
 	function W(p, p0, p1)
 	{
 		if (isarray(p0)) {
+			#_______________________________________________________________________
+			#####################################################
 			delete p0[p]
 			if (isarray(p1)) {
 				for (i in p1) {
@@ -335,14 +671,20 @@
 	{
 		switch (c) {
 		case "_lib_CMDLN":
+			##########################################################
+			#___________________________________________________________
 			return t
 		case "_lib_APPLY":
+			#___________________________________________________________
 			return 
 		case "_lib_HELP":
+			#___________________________________________________________
 			return 
 		case "_lib_NAMEVER":
+			#___________________________________________________________
 			return _ln("_ARR 1.0")
 		case "_lib_BEGIN":
+			#___________________________________________________________
 			return 
 		case "_lib_END":
 			return 
@@ -354,6 +696,7 @@
 		switch (c) {
 		case "_lib_CMDLN":
 			if (match(t, /^((--([Vv])ersion)|(-([Vv])))[ \t]*/, A)) {
+				##########################################################
 				t = substr(t, RLENGTH + 1)
 				_cmdln_version = A[3] A[5]
 			} else {
@@ -366,6 +709,7 @@
 					}
 				}
 			}
+			#___________________________________________________________
 			return t
 		case "_lib_APPLY":
 			if (_cmdln_help) {
@@ -377,12 +721,16 @@
 				_out(_ln(_PRODUCT_NAME " v" _PRODUCT_VERSION) _ln(_PRODUCT_COPYRIGHT) _ln() ((_cmdln_version == "v" ? "" : _lib_NAMEVER())))
 				return _endpass(_basexit_fl = 1)
 			}
+			#___________________________________________________________
 			return 
 		case "_lib_HELP":
+			#___________________________________________________________
 			return ("\000" _ln(_PRODUCT_NAME " v" _PRODUCT_VERSION) _ln(_PRODUCT_COPYRIGHT) _ln() _ln(" Usage:") _ln() _ln("    " _PRODUCT_FILENAME " [/key1 /key2...] [-- cmdline]") _ln() _ln(" keys:") _ln() "\001" _ln("    -v -V --version                    - output product version and (if /V) all modules") _ln("    ? -? --help                        - output this help page") _ln("    --                                 - command line string edge"))
 		case "_lib_NAMEVER":
+			#___________________________________________________________
 			return _ln("_BASE 3.0")
 		case "_lib_BEGIN":
+			#___________________________________________________________
 			return 
 		case "_lib_END":
 			return 
@@ -393,14 +741,22 @@
 	{
 		switch (c) {
 		case "_lib_CMDLN":
+			#____________________________________________________________________________
+			######################################################
+			#___________________________________________________________
+			#_____________________________________________________
 			return t
 		case "_lib_APPLY":
+			#_____________________________________________________
 			return 
 		case "_lib_HELP":
+			#_____________________________________________________
 			return (_ln() _ln(" Usage: " _PRODUCT_NAME " [/key1 /key2...] sourcefile [cmdline]") _ln())
 		case "_lib_NAMEVER":
+			#_____________________________________________________
 			return 
 		case "_lib_BEGIN":
+			#_____________________________________________________
 			return 
 		case "_lib_END":
 			return 
@@ -416,9 +772,11 @@
 		switch (c) {
 		case "_lib_CMDLN":
 			if (match(t, /^[ \t]*-L:([TtVvIiWwEeFf]*)[ \t]*/, A)) {
+				########################################################
 				t = substr(t, RLENGTH + 1)
 				_errlog_errflkey = _errlog_errflkey A[1]
 			}
+			#_______________________________________________________________________
 			return t
 		case "_lib_APPLY":
 			if (_errlog_errflkey) {
@@ -454,10 +812,13 @@
 					_info("Log-message types inherited acc/deny: " "TRACE " ((_ERRLOG_TF ? "ON" : "OFF")) "/" "VERBOSE " ((_ERRLOG_VF ? "ON" : "OFF")) "/" "INFO " ((_ERRLOG_IF ? "ON" : "OFF")) "/" "WARNING " ((_ERRLOG_WF ? "ON" : "OFF")) "/" "ERROR " ((_ERRLOG_EF ? "ON" : "OFF")) "/" "FATAL " ((_ERRLOG_FF ? "ON" : "OFF")))
 				}
 			}
+			#_______________________________________________________________________
 			return 
 		case "_lib_HELP":
+			#_______________________________________________________________________
 			return (_ln("    -L:TtVvIiWwEeFf                    - enable(upcase: TVIWEF) or disable(lowcase: tviwef) allowable type of") _ln("                                         log messages. Trace/Verbose/Informational/Warning/Error/Fatal.") _ln())
 		case "_lib_NAMEVER":
+			#_______________________________________________________________________
 			return _ln("_ERRLOG 1.0")
 		case "_lib_BEGIN":
 			P["_ERRLOG_TF"] = _ERRLOG_TF
@@ -479,14 +840,20 @@
 	{
 		switch (c) {
 		case "_lib_CMDLN":
+			########################################################
+			#___________________________________________________________
 			return t
 		case "_lib_APPLY":
+			#___________________________________________________________
 			return 
 		case "_lib_HELP":
+			#___________________________________________________________
 			return 
 		case "_lib_NAMEVER":
+			#___________________________________________________________
 			return _ln("_EXTFN 1.0")
 		case "_lib_BEGIN":
+			#___________________________________________________________
 			return 
 		case "_lib_END":
 			return 
@@ -498,6 +865,7 @@
 		switch (c) {
 		case "_lib_CMDLN":
 			if (match(t, /^[ \t]*-[Tt]([\+-])[ \t]*/, A)) {
+				#######################################################
 				t = substr(t, RLENGTH + 1)
 				if (A[1] == "+") {
 					_fileio_notdeltmpflag = 1
@@ -505,15 +873,19 @@
 					_fileio_notdeltmpflag = ""
 				}
 			}
+			#___________________________________________________________
 			return t
 		case "_lib_APPLY":
 			if (_fileio_notdeltmpflag) {
 				_info("Temporary objects deletion DISABLED (inherited)")
 			}
+			#___________________________________________________________
 			return 
 		case "_lib_HELP":
+			#___________________________________________________________
 			return (_ln("    -[Tt][+-]                          - inherited: +enable\\-disable temporary files\\dirs deletion") _ln())
 		case "_lib_NAMEVER":
+			#___________________________________________________________
 			return _ln("_FILEIO 2.1")
 		case "_lib_BEGIN":
 			P["ENVIRON"]["CD"] = ENVIRON["CD"]
@@ -523,6 +895,7 @@
 			if (! ("_FILEIO_TMPRD" in P)) {
 				P["_FILEIO_TMPRD"] = _getmpdir(_filen(P["SOURCE"]) "." ++_egawk_subcntr _CHR["SUBDIR"])
 			}
+			#___________________________________________________________
 			return 
 		case "_lib_END":
 			return 
@@ -533,14 +906,23 @@
 	{
 		switch (c) {
 		case "_lib_CMDLN":
+			############################################################
+			#_____________________________________________________________________________
+			#################################################
+			#___________________________________________________________
+			#_____________________________________________________
 			return t
 		case "_lib_APPLY":
+			#_____________________________________________________
 			return 
 		case "_lib_HELP":
+			#_____________________________________________________
 			return 
 		case "_lib_NAMEVER":
+			#_____________________________________________________
 			return 
 		case "_lib_BEGIN":
+			#_____________________________________________________
 			return 
 		case "_lib_END":
 			return 
@@ -560,6 +942,8 @@
 
 	function _INITBASE()
 	{
+		#___________________________________________________________________________________
+		################################################################
 		_egawk_utilpath = ENVIRON["EGAWK_PATH"] "BIN\\UTIL\\"
 	}
 
@@ -567,14 +951,20 @@
 	{
 		switch (c) {
 		case "_lib_CMDLN":
+			######################################################
+			#___________________________________________________________
 			return t
 		case "_lib_APPLY":
+			#___________________________________________________________
 			return 
 		case "_lib_HELP":
+			#___________________________________________________________
 			return 
 		case "_lib_NAMEVER":
+			#___________________________________________________________
 			return _ln("_INSTRUC 1.0")
 		case "_lib_BEGIN":
+			#___________________________________________________________
 			return 
 		case "_lib_END":
 			return 
@@ -584,6 +974,10 @@
 	function _N(F, v, p)
 	{
 		for (p in _UIDS) {
+			#___________________________________________________________________________________
+			####################################################################################
+			#_____________________________________________________________________________
+			###########################################################
 			delete _UIDS[p]
 			return _nN_i0(p, F, v)
 		}
@@ -594,14 +988,20 @@
 	{
 		switch (c) {
 		case "_lib_CMDLN":
+			#####################################################
+			#___________________________________________________________
 			return t
 		case "_lib_APPLY":
+			#___________________________________________________________
 			return 
 		case "_lib_HELP":
+			#___________________________________________________________
 			return 
 		case "_lib_NAMEVER":
+			#___________________________________________________________
 			return _ln("_shortcut 1.0")
 		case "_lib_BEGIN":
+			#___________________________________________________________
 			return 
 		case "_lib_END":
 			return 
@@ -610,6 +1010,8 @@
 
 	function _START(t, i, A)
 	{
+		#______________________________________________________________________________________________
+		#########################################################################
 		_torexp_init()
 		test_uid()
 		return 
@@ -639,6 +1041,7 @@
 		return 
 		_tstini()
 		return 
+		#	_split_regpath()
 		_splitpath_test()
 		return 
 		hh = "CPU"
@@ -669,8 +1072,12 @@
 		_dsbasepath = "\\\\CPU\\CPU\\DEV\\PROJECT\\_DS\\"
 		_rdreg(_REG, "HKEY_LOCAL_MACHINE\\SOFTWARE\\Altiris")
 		_wrfile("rego.txt", _dumparr(_REG))
+		#_______________________________________________________________________
 		_conl("fF")
+		#_________________________________________________________________________________________
 		c = _getreg_i1(DDD, "HKEY_LOCAL_MACHINE\\SOFTWARE\\Altiris\\Altiris Agent\\Plugin Objects\\\204~.*\224Install path", _REG)
+		#pp=_n()
+		#___________________________________________________________________________________
 		pp = _n("NAME", "NS")
 		p = _defsolution(pp, "DS Plug-in", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Altiris\\Altiris Agent\\Plugin Objects\\Agents\\")
 		ClientConfiguration = _defdll(p, "Client Configuration", "ClientConfiguration")
@@ -689,6 +1096,7 @@
 		_defsrv(p, "DS Plug-in Service", "Altiris Deployment Solution - System Configuration")
 		_defreg(p, "Deployment Agent Path", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Altiris\\Deployment\\AgentInstallPath.STR")
 		_defile(p, "Altiris_DeploymentSolutionAgent_7_1_x86.msi", (_SYS["OSArchitecture"] == "64-bit" ? "C:\\Program Files\\Altiris\\Altiris Agent\\Agents\\SoftwareManagement\\Software Delivery\\{9D76E4CA-377A-472D-A82E-EDAD77E7E4ED}\\cache\\Altiris_DeploymentSolutionAgent_7_1_x64.msi" : "C:\\Program Files\\Altiris\\Altiris Agent\\Agents\\SoftwareManagement\\Software Delivery\\{4B747D25-612F-48FC-B6B5-9916D1BB755C}\\cache\\Altiris_DeploymentSolutionAgent_7_1_x86.msi"), "")
+		#___________________________________________________________________________________
 		_defdir(p, "Deployment Folder", a = gensub(/[^\\]*$/, "", 1, _rdsafe(_REG, "HKEY_LOCAL_MACHINE\\SOFTWARE\\Altiris\\Deployment\\AgentInstallPath.STR", "C:\\Program Files\\Altiris\\Altiris Agent\\Agents\\Deployment\\Agent\\")))
 		p = _defsolution(pp, "DS Auto", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Altiris\\Altiris Agent\\Plugin Objects\\Agents\\")
 		_defdir(p, "C:\\Boot\\Altiris\\iso\\boot\\fonts\\", "C:\\Boot\\Altiris\\iso\\boot\\fonts\\")
@@ -701,7 +1109,9 @@
 		_defile(p, "C:\\Boot\\Altiris\\iso\\bootmgr", "C:\\Boot\\Altiris\\iso\\bootmgr", "")
 		_defile(p, "C:\\Boot\\Altiris\\iso\\bootsect.exe", "C:\\Boot\\Altiris\\iso\\bootsect.exe", "")
 		_defreg(p, "Deployment Automation reg.File", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Altiris\\AutoUtil\\File.XSZ", "autoutil.exe")
+		#_________________________________________________________________________________________
 		_defreg(p, "Deployment Automation reg.Path", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Altiris\\AutoUtil\\Path.XSZ", "%systemdrive%\\boot\\altiris\\iso")
+		#_________________________________________________________________________________________
 		_check(pp)
 		_conl(_report(pp))
 		_wrfile("report.txt", _report(pp))
@@ -711,14 +1121,20 @@
 	{
 		switch (c) {
 		case "_lib_CMDLN":
+			#########################################################
+			#___________________________________________________________
 			return t
 		case "_lib_APPLY":
+			#___________________________________________________________
 			return 
 		case "_lib_HELP":
+			#___________________________________________________________
 			return 
 		case "_lib_NAMEVER":
+			#___________________________________________________________
 			return _ln("_SYSIO 1.0")
 		case "_lib_BEGIN":
+			#___________________________________________________________
 			return 
 		case "_lib_END":
 			return 
@@ -729,6 +1145,8 @@
 	{
 		if (isarray(v)) {
 			if (p) {
+				#_______________________________________________________________________
+				########################################################################
 				delete A[p]
 				A[p][""]
 				delete A[p][""]
@@ -745,6 +1163,8 @@
 
 	function _Zexparr(S, s, t, i)
 	{
+		#_______________________________________________________________________
+		##############################################
 		t = ""
 		if (isarray(S)) {
 			for (i in S) {
@@ -763,6 +1183,7 @@
 	function _Zexparr_i0(S, t, i)
 	{
 		for (i in S) {
+			#_________________________________________________________________
 			t = t ((isarray(S[i]) ? _Zexparr_i1(i) "\020" _Zexparr_i0(S[i]) "\021\021\020" : _Zexparr_i2(_Zexparr_i3(i) "\021" _Zexparr_i3(S[i])) "\020"))
 		}
 		return t
@@ -770,6 +1191,7 @@
 
 	function _Zexparr_i1(t)
 	{
+		#_________________________________________________________________
 		gsub(/\x1B/, "\033;", t)
 		gsub(/\x11/, "\0331", t)
 		gsub(/\x10/, "\0330", t)
@@ -778,12 +1200,14 @@
 
 	function _Zexparr_i2(t)
 	{
+		#_________________________________________________________________
 		gsub(/\x10/, "\0330", t)
 		return t
 	}
 
 	function _Zexparr_i3(t)
 	{
+		#_________________________________________________________________
 		gsub(/\x1B/, "\033;", t)
 		gsub(/\x11/, "\0331", t)
 		return t
@@ -792,6 +1216,8 @@
 	function _Zimparr(D, t, A, B)
 	{
 		if (isarray(D)) {
+			#_______________________________________________________________________
+			##############################################
 			split(t, A, /\x10/, B)
 			t = _Zimparr_i0(A, B, _Zimparr_i1(D, A, B, 1))
 			gsub(/\x1B\x30/, "\020", t)
@@ -802,12 +1228,14 @@
 
 	function _Zimparr_i0(A, B, i)
 	{
+		#_________________________________________________________________
 		return ((i in A ? A[i] B[i] _Zimparr_i0(A, B, i + 1) : ""))
 	}
 
 	function _Zimparr_i1(D, A, B, i, t, a, n)
 	{
 		while (i in B) {
+			#_________________________________________________________________
 			if ((t = A[i++]) == "\021\021") {
 				return i
 			}
@@ -830,6 +1258,7 @@
 
 	function _Zimparr_i2(t)
 	{
+		#_________________________________________________________________
 		gsub(/\x1B\x31/, "\021", t)
 		gsub(/\x1B\x3B/, "\033", t)
 		return t
@@ -838,6 +1267,8 @@
 	function _Zimport(t, p, A, c, i, n, B)
 	{
 		if (p) {
+			#_____________________________________________________________________________
+			##############################################
 			c = split(t, B, /\x0A/)
 			for (i = 1; i <= c; i++) {
 				if ((t = B[i]) == "") {
@@ -913,6 +1344,8 @@
 		if (sf in S) {
 			if (isarray(S[sf])) {
 				if (df in D) {
+					#_______________________________________________________________________
+					################################################
 					if (isarray(D[df])) {
 						return _extarr(D[df], S[sf])
 					}
@@ -932,6 +1365,8 @@
 
 	function _addarr(D, S)
 	{
+		#_________________________________________________________________
+		#############################################
 		if (isarray(S)) {
 			_addarr_i0(D, S)
 		}
@@ -941,6 +1376,7 @@
 	{
 		for (i in S) {
 			if (isarray(S[i])) {
+				#_____________________________________________________
 				delete D[i]
 				D[i][""]
 				delete D[i][""]
@@ -958,6 +1394,8 @@
 			if (_addarrmaski0 in S) {
 				if (isarray(S[_addarrmaski0])) {
 					if (! isarray(D[_addarrmaski0])) {
+						#_______________________________________________________________________
+						#############################################
 						delete D[_addarrmaski0]
 						D[_addarrmaski0][""]
 						delete D[_addarrmaski0][""]
@@ -981,12 +1419,18 @@
 
 	function _addf(A, f)
 	{
+		#___________________________________________________________________________________
+		####################################################################################
+		#_______________________________________________________________________
+		#####################################################
 		A["B"][""] = A["F"][A["B"][f] = A["B"][""]] = f
 	}
 
 	function _addfile(f, d, a, b)
 	{
 		if ((f = _wfilerdnehnd(f)) == "" || _filene(f) == "") {
+			#___________________________________________________________
+			##################################
 			ERRNO = "Filename error"
 			return 
 		}
@@ -1010,16 +1454,27 @@
 
 	function _addlib(f)
 	{
+		#_____________________________________________________________________________
+		###########################################################
 		_addf(_LIBAPI, f)
 	}
 
 	function _addlist(A, v)
 	{
+		#___________________________________________________________________________________
+		####################################################################################
+		#_______________________________________________________________________
+		##################################################
 		A[++A[0]] = v
 	}
 
 	function _bearray(A)
 	{
+		##############################
+		#_______________________________________________________________________
+		############################################
+		#_______________________________________________________________________
+		####################################################
 		if (isarray(A) || A == 0 && A == "") {
 			return 1
 		}
@@ -1027,16 +1482,22 @@
 
 	function _bframe(A, t, p)
 	{
+		#_________________________________________________________________
+		###########################################
 		return _bframe_i0(A, t, p, A[""])
 	}
 
 	function _bframe_i0(A, t, p, f)
 	{
+		#___________________________________________________________
 		return ((f ? _bframe_i0(A, t, p, A[f]) (@f(t, p)) : ""))
 	}
 
 	function _cfguid(p, optr, pfx, sfx, hstrcnt, lstrchr)
 	{
+		# add to _dumparr: checking that if element is undefined
+		#_______________________________________________________________________
+		#################### 0 #
 		delete _UIDOBL[p]
 		if (_isptr(optr)) {
 			if (optr == p) {
@@ -1064,6 +1525,7 @@
 	function _cfguidchr(p, h, l, H, L)
 	{
 		if (_isptr(l)) {
+			#_____________________________________________________
 			if (l != p) {
 				return (_UIDCHR[p] = _UIDCHR[l])
 			}
@@ -1082,6 +1544,7 @@
 	function _cfguidh(p, H, L, hi, h, li)
 	{
 		for (hi = 1; hi in H; hi++) {
+			#_______________________________________________
 			h = H[hi]
 			for (li = 1; li in L; li++) {
 				_UIDCHRH[p][h L[li]]
@@ -1102,6 +1565,12 @@
 
 	function _check(p)
 	{
+		#______________________________________________________________________________________________
+		#################################################################################
+		#______________________________________________________________________________________________
+		################################################################################
+		#____________________________________________________________________________________________________
+		####################################################################################
 		_dll_check(p)
 		_file_check(p)
 		_serv_check(p)
@@ -1110,11 +1579,15 @@
 
 	function _chrline(t, ts, w, s)
 	{
+		#_______________________________________________________________________
+		#############################################
 		return ((t = " " _tabtospc(t, ts) ((t ? (t ~ /[ \t]$/ ? "" : " ") : ""))) _getchrln((s ? s : "_"), ((w ? w : _CON_WIDTH - 1)) - length(t)) _CHR["EOL"])
 	}
 
 	function _cmd(c, i, A)
 	{
+		#_____________________________________________________________________________
+		#######################################################
 		_fio_cmda = RS
 		RS = ".{1,}"
 		_fio_cmdb = BINMODE
@@ -1131,6 +1604,8 @@
 
 	function _cmparr(A0, A1, R, a, i)
 	{
+		#_______________________________________________________________________
+		##########################################
 		a = 0
 		delete R
 		for (i in A0) {
@@ -1155,6 +1630,8 @@
 
 	function _con(t, ts, a, b, c, d, i, r, A, B)
 	{
+		#_____________________________________________________________________________
+		##########################################
 		d = RLENGTH
 		if ((c = split(r = t, A, /\x0D?\x0A/, B)) > 0) {
 			a = BINMODE
@@ -1195,6 +1672,8 @@
 
 	function _conin(t, a, b)
 	{
+		#_______________________________________________________________________
+		#################################################
 		_constatpush()
 		_constat()
 		a = BINMODE
@@ -1215,22 +1694,30 @@
 
 	function _conl(t, ts)
 	{
+		#_______________________________________________________________________
+		####################################################
 		return _con(t ((t ~ /\x0A$/ ? "" : _CHR["EOL"])), ts)
 	}
 
 	function _conline(t, ts)
 	{
+		#_______________________________________________________________________
+		#################################################
 		return _con(_chrline(t, ts))
 	}
 
 	function _conlq(t, ts)
 	{
+		#___________________________________________________________________________________
+		####################################################################################
 		return _conl("`" t "'", ts)
 	}
 
 	function _constat(t, ts, ln, a)
 	{
 		if (_constatstrln > (ln = length(t = _constatgtstr(_constatstr = _tabtospc(t, ts), _CON_WIDTH - 1 - _conlastrln)))) {
+			#_______________________________________________________________________
+			###########################################
 			t = t _getchrln(" ", _constatstrln - ln)
 		}
 		_constatstrln = ln
@@ -1248,6 +1735,7 @@
 	function _constatgtstr(t, ln, a, b)
 	{
 		if (ln < 1) {
+			#_________________________________________________________________
 			return ""
 		}
 		if ((a = length(t)) <= ln) {
@@ -1265,6 +1753,8 @@
 	function _constatpop()
 	{
 		if (_CONSTATPUSH[0] > 0) {
+			#_______________________________________________________________________
+			##################################################
 			return _constat(_CONSTATPUSH[_CONSTATPUSH[0]--])
 		}
 		return _constat("")
@@ -1272,6 +1762,8 @@
 
 	function _constatpush(t, ts)
 	{
+		#_______________________________________________________________________
+		#############################################
 		_CONSTATPUSH[++_CONSTATPUSH[0]] = _constatstr
 		if (t) {
 			_constat(t, ts)
@@ -1281,11 +1773,14 @@
 
 	function _creport(p, t, f, z)
 	{
+		#___________________________________________________________________________________
 		_[p]["REPORT"] = _[p]["REPORT"] _ln(t ((f == "" ? "" : ": " f)))
 	}
 
 	function _defdir(pp, n, f, v, p)
 	{
+		#_________________________________________________________________________________________
+		#############################################################
 		_[p = _wLCHLD(pp, _n("TYPE", "defdir"))]["NAME"] = n
 		_[p]["DIR"] = f
 		return p
@@ -1293,6 +1788,8 @@
 
 	function _defdll(pp, n, rn, p)
 	{
+		#_________________________________________________________________________________________
+		##############################################################
 		_[p = _wLCHLD(pp, _n("TYPE", "defdll"))]["NAME"] = n
 		_[p]["REGPATH"] = _[pp]["REGPATH"] rn
 		_[p]["ERRHOST"] = pp
@@ -1304,6 +1801,7 @@
 		if (isarray(S)) {
 			for (i = 0; i < 256; i++) {
 				if ((c = _CHR[i]) ~ r) {
+					#___________________________________________________________
 					D[c] = "\\" S[c]
 					t = t c
 				} else {
@@ -1331,6 +1829,8 @@
 
 	function _defile(pp, n, f, v, p)
 	{
+		#_________________________________________________________________________________________
+		#############################################################
 		_[p = _wLCHLD(pp, _n("TYPE", "defile"))]["NAME"] = n
 		_[p]["FILE"] = f
 		if (! (v == 0 && v == "")) {
@@ -1341,11 +1841,15 @@
 
 	function _defn(f, c, v)
 	{
+		#_______________________________________________________________________
+		###################################################
 		FUNCTAB[c f] = v
 	}
 
 	function _defreg(pp, n, f, v, p)
 	{
+		#_________________________________________________________________________________________
+		#############################################################
 		_[p = _wLCHLD(pp, _n("TYPE", "defreg"))]["NAME"] = n
 		_[p]["REGPATH"] = f
 		if (! (v == 0 && v == "")) {
@@ -1355,6 +1859,8 @@
 
 	function _defsolution(pp, n, rn, p)
 	{
+		#_______________________________________________________________________________________________
+		###############################################################
 		_[p = _wLCHLD(pp, _n("TYPE", "solution"))]["NAME"] = n
 		_[p]["REGPATH"] = rn
 		_[p]["ERRHOST"] = pp
@@ -1363,6 +1869,8 @@
 
 	function _defsrv(pp, n, f, v, p)
 	{
+		#_________________________________________________________________________________________
+		#############################################################
 		_[p = _wLCHLD(pp, _n("TYPE", "defsrv"))]["NAME"] = n
 		_[p]["SERVNAME"] = f
 		return p
@@ -1372,6 +1880,8 @@
 	{
 		if (match(f, /\\[ \t]*$/)) {
 			if ((c = toupper(_filerd(f))) && length(f) == FLENGTH) {
+				#_______________________________________________________________________
+				#################################################
 				_cmd("rd " c " /S /Q 2>NUL")
 				_deletepfx(_WFILEROOTDIR, c)
 				_deletepfx(_FILEIO_RDTMP, c)
@@ -1398,18 +1908,24 @@
 	function _delay(t, a)
 	{
 		for (a = 1; a <= t; a++) {
+			#_______________________________________________________________________
+			###################################################
 			_delayms()
 		}
 	}
 
 	function _delayms(a)
 	{
+		#_________________________________________________________________
+		#############################################
 		for (a = 1; a <= _delay_perfmsdelay; a++) {
 		}
 	}
 
 	function _deletepfx(A, f, B, le, i)
 	{
+		#_______________________________________________________________________
+		########################################
 		le = length(f)
 		for (i in A) {
 			if (substr(toupper(i), 1, le) == f) {
@@ -1421,6 +1937,8 @@
 
 	function _delf(A, f)
 	{
+		#_________________________________________________________________
+		###############################################
 		A["B"][A["F"][A["B"][f]] = A["F"][f]] = A["B"][f]
 		delete A["F"][f]
 		delete A["B"][f]
@@ -1429,6 +1947,8 @@
 	function _deluid(p)
 	{
 		if (p in _CLASSPTR) {
+			#_______________________________________________________________________
+			################################################# 1 #
 			_deluida0 = _CLASSPTR[p]
 			if (_deluida0 in _UIDOBL) {
 				_UIDOBLV[_UIDOBL[_deluida0]][p]
@@ -1440,6 +1960,8 @@
 
 	function _dir(A, rd, i, r, f, ds, pf, B, C)
 	{
+		#_______________________________________________________________________
+		####################################
 		delete A
 		gsub(/(^[ \t]*)|([ \t]*$)/, "", rd)
 		if (rd == "") {
@@ -1468,6 +1990,8 @@
 
 	function _dirtree(A, f, B)
 	{
+		#_________________________________________________________________
+		#########################################
 		gsub(/(^[ \t]*)|([ \t]*$)/, "", f)
 		delete A
 		A[""]
@@ -1478,6 +2002,7 @@
 
 	function _dirtree_i0(B, i, c, A, f, lf, a, C)
 	{
+		#___________________________________________________________
 		delete A[f]
 		A[f][0]
 		delete A[f][0]
@@ -1500,8 +2025,10 @@
 
 	function _dll_check(pp)
 	{
+		#_______________________________________________________________________
 		_dllchktv = ""
 		_missfl = 1
+		#also check that all dll have same version; also check that all dlls have success and then report that DS plug-in version n - installed
 		_tframe("_dll_check_i0", pp, _REG, pp)
 		if (1 || "AGENT" in _[pp]) {
 			if (_dllchktv != _[pp][".Product Version"]) {
@@ -1520,10 +2047,12 @@
 	function _dll_check_i0(p, R, pp, p2, i, i2, r, f, v, rs, d, tv, tf)
 	{
 		if (_[p]["TYPE"] == "defdll") {
+			#_______________________________________________
 			r = toupper(_[p]["REGPATH"])
 			rs = 0
 			tf = 0
 			tv = ""
+			#{ rs=_missfl=1; _[p]["." gensub(/^([^\\]+\\)+(.*)\..../,"\\2","G",i)]=R[i] } }
 			for (i in R) {
 				if (toupper(substr(i, 1, length(r))) == r) {
 					if ((_chka0 = substr(i, 1 + length(r), 1)) == "" || _chka0 == "\\") {
@@ -1578,6 +2107,7 @@
 	{
 		if (_[p]["TYPE"] == "defdll") {
 			for (i in _[p]) {
+				#_______________________________________________
 				if (i ~ /^\./) {
 					_dllerr(pp, "          " _[p]["REGPATH"] "\\" substr(i, 2))
 				}
@@ -1587,6 +2117,7 @@
 
 	function _dllerr(p, t, f)
 	{
+		#___________________________________________________________________________________
 		if (t !~ /\x00/) {
 			t = "ERROR: \000" t
 		}
@@ -1626,6 +2157,8 @@
 
 	function _dumparr(A, t, lv, a)
 	{
+		#_______________________________________________________________________
+		############################################
 		b = PROCINFO["sorted_in"]
 		PROCINFO["sorted_in"] = "_lengthsort"
 		if (isarray(A)) {
@@ -1639,6 +2172,7 @@
 
 	function _dumparr_i1(A, lv, ls, ln, t, t2, i, a, f)
 	{
+		#___________________________________________________________
 		t2 = _getchrln(" ", length(t))
 		if (ln == lv) {
 			if (ls > 0) {
@@ -1681,6 +2215,12 @@
 
 	function _dumpobj(p, f, t, s)
 	{
+		#___________________________________________________________________________________
+		####################################################################################
+		#___________________________________________________________________________________
+		# OTHER tFUNCTIONs #################################################################
+		#_____________________________________________________________________________
+		###################################################
 		s = _dumpobj_i0(p, f, t = t "." p "{")
 		if (p = _rFCHLD(p)) {
 			return (s = s _dumpobjm(p, f, (s ? _getchrln(" ", length(t) - 1) : t " ")))
@@ -1690,6 +2230,7 @@
 
 	function _dumpobj_i0(p, f, t)
 	{
+		#___________________________________________________________
 		if (f == "") {
 			return _dumpobj_i2(p, t)
 		}
@@ -1701,11 +2242,13 @@
 
 	function _dumpobj_i1(p, t)
 	{
+		#___________________________________________________________
 		return _ln(t substr(((p in _tPREV ? "\253" _tPREV[p] : "")) "       ", 1, 7) " " substr(((p in _tPARENT ? "\210" _tPARENT[p] : "")) "       ", 1, 7) " " substr(((p in _tFCHLD ? _tFCHLD[p] : "")) "\205" ((p in _tQCHLD ? " (" _tQCHLD[p] ") " : "\205")) "\205" ((p in _tLCHLD ? _tLCHLD[p] : "")) "                      ", 1, 22) substr(((p in _tNEXT ? "\273" _tNEXT[p] : "")) "        ", 1, 8))
 	}
 
 	function _dumpobj_i2(p, t)
 	{
+		#___________________________________________________________
 		return (_dumpobj_i3(_[p], t " ") _dumpobj_i3(_ptr[p], _getchrln(" ", length(t)) "`", "`"))
 	}
 
@@ -1713,6 +2256,7 @@
 	{
 		if (isarray(A)) {
 			for (i in A) {
+				#___________________________________________________________
 				t2 = _getchrln(" ", length(t))
 				for (i in A) {
 					if (isarray(A[i])) {
@@ -1734,6 +2278,7 @@
 
 	function _dumpobj_i4(t)
 	{
+		#___________________________________________________________
 		if (length(t) > 64) {
 			return (substr(t, 1, 28) " ... " substr(t, length(t) - 28))
 		}
@@ -1742,11 +2287,15 @@
 
 	function _dumpobj_nc(p, f, t)
 	{
+		#_________________________________________________________________
+		#######################################
 		return _dumpobj_i0(p, f, t "." p "{ ")
 	}
 
 	function _dumpobjm(p, f, t, s, t2)
 	{
+		#_________________________________________________________________
+		###################################
 		t2 = _getchrln(" ", length(t))
 		do {
 			s = s _dumpobj(p, f, t)
@@ -1757,6 +2306,8 @@
 
 	function _dumpobjm_nc(p, f, t, s, t2)
 	{
+		#_________________________________________________________________
+		################################
 		t2 = _getchrln(" ", length(t))
 		do {
 			s = s _dumpobj_nc(p, f, t)
@@ -1790,6 +2341,7 @@
 
 	function _dumpval(v, n)
 	{
+		#_____________________________________________________________________________
 		_dumpstr = _dumpstr (v = _ln(((n == 0 && n == "" ? "RET" : n)) ": " ((v == 0 && v == "" ? "-" : v "'"))))
 		return v
 	}
@@ -1798,14 +2350,20 @@
 	{
 		switch (c) {
 		case "_lib_CMDLN":
+			########################################################
+			#___________________________________________________________
 			return t
 		case "_lib_APPLY":
+			#___________________________________________________________
 			return 
 		case "_lib_HELP":
+			#___________________________________________________________
 			return 
 		case "_lib_NAMEVER":
+			#___________________________________________________________
 			return _ln("_extfn 1.0")
 		case "_lib_BEGIN":
+			#___________________________________________________________
 			return 
 		case "_lib_END":
 			return 
@@ -1814,11 +2372,14 @@
 
 	function _endpass(t)
 	{
+		#_________________________________________________________________
 		_endpass_v0 = t
 	}
 
 	function _err(t, a, b)
 	{
+		#_______________________________________________________________________
+		###################################################
 		a = BINMODE
 		b = ORS
 		BINMODE = "rw"
@@ -1832,12 +2393,16 @@
 
 	function _errnl(t)
 	{
+		#_________________________________________________________________
+		################################################
 		return _err(t ((t ~ /\x0A$/ ? "" : _CHR["EOL"])))
 	}
 
 	function _error(t, d, A)
 	{
 		if (_ERRLOG_EF) {
+			#_______________________________________________________________________
+			#################################################
 			A["TYPE"] = "ERROR"
 			A["TEXT"] = t
 			_log(A, d)
@@ -1846,11 +2411,15 @@
 
 	function _exit(c)
 	{
+		#_______________________________________________________________________
+		#######################################################
 		exit c
 	}
 
 	function _export_data(t, i, A)
 	{
+		#_____________________________________________________________________________
+		#################################################
 		A["DATA"] = t
 		A["ID"] = i
 		_expout("_DATA: " _Zexparr(A) "\n")
@@ -1858,6 +2427,10 @@
 
 	function _expout(t, d, a, b)
 	{
+		#___________________________________________________________________________________
+		####################################################################################
+		#_____________________________________________________________________________
+		####################################################
 		a = BINMODE
 		b = ORS
 		BINMODE = "rw"
@@ -1870,6 +2443,9 @@
 
 	function _extfn_init()
 	{
+		#_________________________________________________________________________________________
+		##########################################################################################
+		##############################################################
 		_formatstrs_init()
 		_formatstrd_init()
 		_formatrexp_init()
@@ -1902,6 +2478,8 @@
 	function _fatal(t, d, A)
 	{
 		if (_ERRLOG_FF) {
+			#_______________________________________________________________________
+			#################################################
 			A["TYPE"] = "FATAL"
 			A["TEXT"] = t
 			_log(A, d)
@@ -1933,16 +2511,22 @@
 
 	function _fframe(A, t, p)
 	{
+		##################
+		#_______________________________________________________________________
+		#################################################
 		return _fframe_i0(A, t, p, A[""])
 	}
 
 	function _fframe_i0(A, t, p, f)
 	{
+		#___________________________________________________________
 		return ((f ? (@f(t, p)) _fframe_i0(A, t, p, A[f]) : ""))
 	}
 
 	function _file(f)
 	{
+		#_________________________________________________________________
+		#################################################
 		if ((f = _filerdnehnd(f)) == "") {
 			return ""
 		}
@@ -1952,6 +2536,7 @@
 	function _file_check(p)
 	{
 		if (1 || "AGENT" in _[p]) {
+			#_______________________________________________________________________
 			_tframe("_file_check_i0", p, p)
 		}
 	}
@@ -1959,6 +2544,7 @@
 	function _file_check_i0(p, pp, p1, p2, f, v)
 	{
 		if (_[p]["TYPE"] == "defile") {
+			#_______________________________________________
 			f = _[p]["FILE"]
 			f = ((match(f, /^.:/) ? "" : _[_[pp]["AGENT"]][".Install Path"] "\\")) _[p]["FILE"]
 			if ("RQVERSION" in _[p]) {
@@ -1988,6 +2574,8 @@
 
 	function _filed(f, dd, d)
 	{
+		#_________________________________________________________________
+		##########################################
 		if ((f = _filerdnehnd(f)) == "") {
 			return ""
 		}
@@ -2011,6 +2599,8 @@
 
 	function _filen(f)
 	{
+		#_________________________________________________________________
+		################################################
 		if ((f = _filerdnehnd(f)) == "") {
 			return ""
 		}
@@ -2019,6 +2609,8 @@
 
 	function _filene(f)
 	{
+		#_________________________________________________________________
+		###############################################
 		if ((f = _filerdnehnd(f)) == "") {
 			return ""
 		}
@@ -2027,6 +2619,8 @@
 
 	function _filenotexist(f, a)
 	{
+		#_________________________________________________________________
+		######################################
 		if (f == "") {
 			return ""
 		}
@@ -2043,6 +2637,8 @@
 
 	function _filepath(f, dd)
 	{
+		#_______________________________________________________________________
+		################################################
 		if ((f = _filerdnehnd(f)) == "") {
 			return ""
 		}
@@ -2051,6 +2647,8 @@
 
 	function _filer(f, dd)
 	{
+		#_________________________________________________________________
+		#############################################
 		if ((f = _filerdnehnd(f)) == "") {
 			return ""
 		}
@@ -2065,6 +2663,8 @@
 
 	function _filerd(f, dd)
 	{
+		#_________________________________________________________________
+		############################################
 		if ((f = _filerdnehnd(f)) == "") {
 			return ""
 		}
@@ -2073,6 +2673,8 @@
 
 	function _filerdn(f, dd)
 	{
+		#_________________________________________________________________
+		###########################################
 		if ((f = _filerdnehnd(f)) == "") {
 			return ""
 		}
@@ -2081,6 +2683,8 @@
 
 	function _filerdne(f, dd)
 	{
+		#_________________________________________________________________
+		##########################################
 		if ((f = _filerdnehnd(f)) == "") {
 			return ""
 		}
@@ -2097,6 +2701,7 @@
 	{
 		if (st) {
 			if ((c = toupper(st)) in _FILECACHE) {
+				#___________________________________________________________
 				FLENGTH = length(st)
 				return _FILECACHE[c]
 			}
@@ -2149,6 +2754,8 @@
 
 	function _filexist(f, a)
 	{
+		#_______________________________________________________________________
+		################################################
 		if (f == "") {
 			return ""
 		}
@@ -2166,6 +2773,8 @@
 
 	function _fn(f, p0, p1, p2)
 	{
+		#_______________________________________________________________________
+		################################################
 		if (f in FUNCTAB) {
 			return @f(p0, p1, p2)
 		}
@@ -2174,6 +2783,8 @@
 	function _foreach(A, f, r, p0, p1, p2, i, p)
 	{
 		if (isarray(A)) {
+			#_______________________________________________________________________
+			####################################
 			_TMP0[p = _n()]["."] = 1
 			_foreach_i0(A, f, _TMP0[p], p0, p1, p2)
 			return _th0(_retarr(_TMP0[p]), _tdel(p))
@@ -2188,6 +2799,7 @@
 	function _foreach_i0(A, f, D, p0, p1, p2)
 	{
 		for (i in A) {
+			#_____________________________________________________
 			if (isarray(A[i])) {
 				_foreach_i0(A[i], f, D, p0, p1, p2)
 			} else {
@@ -2198,11 +2810,13 @@
 
 	function _foreach_i1(p, f, D, p0, p1, p2)
 	{
+		#_____________________________________________________
 		_gen(D, @f(p, p0, p1, p2))
 	}
 
 	function _formatrexp(t)
 	{
+		#_____________________________________________________________________________
 		_formatstrq0 = split(t, _FORMATSTRA, /[\/\x00-\x1F\x80-\xFF]/, _FORMATSTRB)
 		_formatstrs0 = ""
 		for (t = 1; t < _formatstrq0; t++) {
@@ -2213,6 +2827,7 @@
 
 	function _formatrexp_init()
 	{
+		#___________________________________________________________
 		_defescarr(_FORMATREXPESC, "[\\x00-\\x1F\\x80-\\xFF]", _QASC)
 		_defescarr(_FORMATREXPESC, "\\/", "\\")
 		_FORMATREXPESC["\t"] = "\\t"
@@ -2220,6 +2835,7 @@
 
 	function _formatstrd(t)
 	{
+		#_____________________________________________________________________________
 		_formatstrq0 = split(t, _FORMATSTRA, /["\x00-\x1F\x80-\xFF]/, _FORMATSTRB)
 		_formatstrs0 = ""
 		for (t = 1; t < _formatstrq0; t++) {
@@ -2230,6 +2846,7 @@
 
 	function _formatstrd_init()
 	{
+		#___________________________________________________________
 		_defescarr(_FORMATSTRDESC, "[\\x00-\\x1F\\x80-\\xFF]", _QASC)
 		_defescarr(_FORMATSTRDESC, "[\\\\\"]", "\\")
 		_FORMATSTRDESC["\t"] = "\\t"
@@ -2237,6 +2854,9 @@
 
 	function _formatstrs(t)
 	{
+		#__________________________________________________________________________________
+		####################################################################################
+		#___________________________________________________________________________________
 		_formatstrq0 = split(t, _FORMATSTRA, /['\x00-\x1F\x80-\xFF]/, _FORMATSTRB)
 		_formatstrs0 = ""
 		for (t = 1; t < _formatstrq0; t++) {
@@ -2247,6 +2867,7 @@
 
 	function _formatstrs_init()
 	{
+		#___________________________________________________________
 		_defescarr(_FORMATSTRSESC, "[\\x00-\\x1F\\x80-\\xFF]", _QASC)
 		_defescarr(_FORMATSTRSESC, "[\\\\']", "\\")
 		_FORMATSTRSESC["\t"] = "\\t"
@@ -2257,6 +2878,8 @@
 		_conl()
 		_conline(q)
 		_conl()
+		#_arregpath(D,S)
+		#_conl(_dumparr(D))
 		q = _patharr0(S, q)
 		_conl(_dumparr(S))
 		_conl()
@@ -2265,11 +2888,14 @@
 
 	function _fthru(A, c, p, B)
 	{
+		#_______________________________________________________________________
+		########################################################################
 		return _fthru_i0(A, c, p, B, A[""])
 	}
 
 	function _fthru_i0(A, c, p, B, f)
 	{
+		#_________________________________________________________________
 		return ((f ? @f(c, _fthru_i0(A, c, p, B, A[f]), B) : ""))
 	}
 
@@ -2282,6 +2908,8 @@
 
 	function _gensubfn(t, r, f, p0, A)
 	{
+		#_____________________________________________________________________________
+		###############################################
 		if (match(t, r, A)) {
 			return (substr(t, 1, RSTART - 1) (@f(_th0(substr(t, RSTART, RLENGTH), t = substr(t, RSTART + RLENGTH)), A, p0)) _gensubfn(t, r, f, p0))
 		}
@@ -2290,17 +2918,21 @@
 
 	function _get_errout(p)
 	{
+		#_____________________________________________________________________________
+		#######################################################
 		return _tframe("_get_errout_i0", p)
 	}
 
 	function _get_errout_i0(p, t, n, a)
 	{
+		#_______________________________________________________________________
 		return ((p in _tLOG ? _get_errout_i1(p) _get_errout_i3(p) : ""))
 	}
 
 	function _get_errout_i1(p, t, n, a)
 	{
 		if (p in _tLOG) {
+			#_________________________________________________________________
 			n = ""
 			if (_tLOG[p]["TYPE"]) {
 				n = _tLOG[p]["TYPE"] ": " _get_errout_i2(p)
@@ -2316,12 +2948,14 @@
 
 	function _get_errout_i2(p)
 	{
+		#_______________________________________________________________________
 		return (("FILE" in _tLOG[p] ? _tLOG[p]["FILE"] (("LINE" in _tLOG[p] ? "(" _tLOG[p]["LINE"] ")" : "")) ": " : ""))
 	}
 
 	function _get_errout_i3(p, t, ts, cl, cp, cr, a, b)
 	{
 		if ("LSTR" in _tLOG[p]) {
+			#_______________________________________________________________________
 			t = _tLOG[p]["FULLSTR"]
 			ts = _tLOG[p]["TS"]
 			cp = "^"
@@ -2339,12 +2973,15 @@
 
 	function _get_logout(p)
 	{
+		#_____________________________________________________________________________
+		#######################################################
 		return _tframe("_get_logout_i0", p)
 	}
 
 	function _get_logout_i0(p, t, n, a)
 	{
 		if (p in _tLOG) {
+			#_______________________________________________________________________
 			n = (("DATE" in _tLOG[p] ? _tLOG[p]["DATE"] " " : "")) (("TIME" in _tLOG[p] ? _tLOG[p]["TIME"] " " : ""))
 			if (_tLOG[p]["TYPE"]) {
 				n = n _tLOG[p]["TYPE"] ": " (("FILE" in _tLOG[p] ? _tLOG[p]["FILE"] (("LINE" in _tLOG[p] ? "(" _tLOG[p]["LINE"] ")" : "")) ": " : ""))
@@ -2360,6 +2997,9 @@
 
 	function _getchrln(s, w)
 	{
+		#_______________________________________________________________________
+		#################################################
+		#if ( w!=w+0 || w<0 )	w=_CON_WIDTH
 		if (s == "") {
 			return 
 		}
@@ -2383,11 +3023,15 @@
 
 	function _getdate()
 	{
+		#_______________________________________________________________________
+		#####################################################
 		return strftime("%F")
 	}
 
 	function _getfilepath(t, f, al, b, A)
 	{
+		#_____________________________________________________________________________
+		############################################
 		ERRNO = ""
 		if (match(t, /^[ \t]*(("([^"]*)"[ \t]*)|([`']([^']*)'[ \t]*)|(([^ \t]+)[ \t]*))/, A)) {
 			al = RLENGTH
@@ -2406,6 +3050,7 @@
 
 	function _getfilever(f)
 	{
+		#############################################################
 		split(_cmd(_fileverpath " \"" f "\""), _GETFILEVERA0, /[ \t]+/)
 		if (_GETFILEVERA0[5]) {
 			return _GETFILEVERA0[5]
@@ -2414,11 +3059,15 @@
 
 	function _getime()
 	{
+		#_________________________________________________________________
+		################################################
 		return strftime("%H:%M:%S")
 	}
 
 	function _getmpdir(f, dd)
 	{
+		#_________________________________________________________________
+		##########################################
 		if (! dd || ! (dd = _filerd(dd))) {
 			dd = _FILEIO_TMPRD
 		}
@@ -2430,6 +3079,8 @@
 
 	function _getmpfile(f, dd)
 	{
+		#_________________________________________________________________
+		#########################################
 		if (! dd || ! (dd = _filerd(dd))) {
 			dd = _FILEIO_TMPRD
 		}
@@ -2441,6 +3092,8 @@
 
 	function _getperf(o, t, a)
 	{
+		#_______________________________________________________________________
+		###############################################
 		(o == "" ? ++_getperf_opcurr : _getperf_opcurr = o)
 		if ((a = _getsecond()) != _getperf_last) {
 			_getperf_opsec = (_getperf_opcurr - _getperf_opstart) / ((_getperf_last = a) - _getperf_start)
@@ -2451,6 +3104,7 @@
 
 	function _getperf_(o, t, a)
 	{
+		#___________________________________________________________
 		if (a >= _getperf_end) {
 			return 0
 		}
@@ -2464,6 +3118,7 @@
 	function _getperf_noe(o, t, a)
 	{
 		if (_getperf_opsecp != _getperf_opsec) {
+			#___________________________________________________________
 			_constat(((_constatstr == _getperf_stat ? _getperf_statstr : _getperf_statstr = _constatstr)) t " [TIME=" (a - _getperf_start) " sec(" (_getperf_opsecp = _getperf_opsec) " ops/sec)]")
 			_getperf_stat = _constatstr
 		}
@@ -2472,11 +3127,13 @@
 
 	function _getperf_noenot(o, t, a)
 	{
+		#___________________________________________________________
 		return 1
 	}
 
 	function _getperf_not(o, t, a)
 	{
+		#___________________________________________________________
 		if (a < _getperf_end) {
 			return 1
 		}
@@ -2484,6 +3141,8 @@
 
 	function _getreg_i1(D, r, R, a, i, il, ir, rc, B)
 	{
+		#_________________________________________________________________________________________
+		##########################################################################################
 		a = IGNORECASE
 		IGNORECASE = 1
 		r = "^" _torexp(r)
@@ -2508,11 +3167,15 @@
 
 	function _getsecond()
 	{
+		#_________________________________________________________________
+		#############################################
 		return systime()
 	}
 
 	function _getsecondsync(a, c, b, c2)
 	{
+		#___________________________________________________________
+		##########################
 		a = systime()
 		while (a == systime()) {
 			++c
@@ -2524,6 +3187,8 @@
 	{
 		if (p in _UIDOBL) {
 			for (_tptr in _UIDOBLV[_getuida0 = _UIDOBL[p]]) {
+				#_______________________________________________________________________
+				################################################# 1 #
 				delete _UIDOBLV[_getuida0][_tptr]
 				_CLASSPTR[_tptr] = p
 				return _tptr
@@ -2537,6 +3202,7 @@
 	{
 		if ("" == (_tptr = UL[_UIDCNTL[p]])) {
 			for (_tptr in UH) {
+				#_____________________________________________________
 				delete UH[_tptr]
 				return ((_UIDCNTH[p] = _tptr) (_UIDCNTL[p] = UL[""]))
 			}
@@ -2552,6 +3218,8 @@
 
 	function _hexnum(n, l)
 	{
+		#_____________________________________________________________________________
+		#########################################################
 		if (l + 0 < 1) {
 			l = 2
 		}
@@ -2561,6 +3229,8 @@
 	function _igetperf(t, s, o)
 	{
 		if (t == 0 && t == "" && s == 0 && s == "" && o == 0 && o == "") {
+			#_________________________________________________________________
+			#########################################	# t-test period in seconds(==0 ? no period; s(=true/false)-output/not output status; o-qnt of ops before test start
 			if (_getperf_fn !~ /not$/ && _constatstr == _getperf_stat) {
 				_constat(_getperf_statstr)
 			}
@@ -2590,6 +3260,8 @@
 	function _info(t, d, A)
 	{
 		if (_ERRLOG_IF) {
+			#_______________________________________________________________________
+			##################################################
 			A["TYPE"] = "INFO"
 			A["TEXT"] = t
 			_log(A, d)
@@ -2598,6 +3270,8 @@
 
 	function _ini(p, cs, dptr, pfx, sfx, hstr, lstr)
 	{
+		# test with the different path types
+		#	_conl(_ln("SRC:") _dumparr(S)); _conl();
 		return _inituid(p, cs, dptr, pfx, sfx, hstr, lstr, A)
 	}
 
@@ -2641,6 +3315,7 @@
 
 	function _initspecialuid()
 	{
+		#_________________________________________
 		_NOINDEX = _getuid()
 		_LEN = _getuid()
 		_PTR = _getuid()
@@ -2656,6 +3331,8 @@
 	function _inituid(p, cs, dptr, pfx, sfx, hstr, lstr, A)
 	{
 		if (cs == 0 && cs == "") {
+			#_______________________________________________________________________
+			################### 1 #
 			cs = p
 			p = _getuid()
 		}
@@ -2718,6 +3395,8 @@
 		if (sf in S) {
 			if (isarray(S[sf])) {
 				if (df in D) {
+					#_______________________________________________________________________
+					################################################
 					if (isarray(D[df])) {
 						return _extarr(D[df], S[sf])
 					}
@@ -2737,17 +3416,23 @@
 
 	function _insf(A, f)
 	{
+		#_________________________________________________________________
+		###############################################
 		A["F"][""] = A["B"][A["F"][f] = A["F"][""]] = f
 	}
 
 	function _insframe(A, f)
 	{
+		#_________________________________________________________________
+		###########################################
 		A[f] = A[""]
 		A[""] = f
 	}
 
 	function _inspass(A, f)
 	{
+		########################
+		#_________________________________________________________________
 		A[f] = A[""]
 		A[""] = f
 	}
@@ -2755,6 +3440,9 @@
 	function _isptr(p)
 	{
 		if (isarray(p)) {
+			# there is problem with string's format: i can;t easilly merge 2 charsets: comma-divided and every-char-divided strings
+			#_______________________________________________________________________
+			################################################## 1 #
 			is = _NOP
 			it = "A"
 			return 0
@@ -2774,6 +3462,8 @@
 	function _istr(p)
 	{
 		if (isarray(p)) {
+			#_______________________________________________________________________
+			################################################### 1 #
 			is = _NOP
 			it = "A"
 			return 0
@@ -2788,47 +3478,59 @@
 
 	function _lengthsort(i1, v1, i2, v2)
 	{
+		#_________________________________________________________________
+		##############################
 		return ((length(i1) < length(i2) ? -1 : (length(i1) > length(i2) ? 1 : (i1 < i2 ? -1 : 1))))
 	}
 
 	function _lib_APPLY()
 	{
+		#_________________________________________________________________
 		return _ffaccr(_LIBAPI, "_lib_APPLY")
 	}
 
 	function _lib_BEGIN(A)
 	{
+		#_________________________________________________________________
 		return _ffaccr(_LIBAPI, "_lib_BEGIN", "", A)
 	}
 
 	function _lib_CMDLN(t)
 	{
+		#_______________________________________________________________________
 		return _pass(_LIBAPI["F"], "_lib_CMDLN", t)
 	}
 
 	function _lib_END(A)
 	{
+		#_________________________________________________________________
 		return _ffaccr(_LIBAPI, "_lib_END", "", A)
 	}
 
 	function _lib_HELP()
 	{
+		#_________________________________________________________________
 		return _fbaccr(_LIBAPI, "_lib_HELP")
 	}
 
 	function _lib_NAMEVER()
 	{
+		#_________________________________________________________________
 		return _fbaccr(_LIBAPI, "_lib_NAMEVER")
 	}
 
 	function _ln(t)
 	{
+		#_____________________________________________________________________________
+		###############################################################
 		return ((t ~ /\x0A$/ ? t : t _CHR["EOL"]))
 	}
 
 	function _log(A, p, a, B)
 	{
 		if (isarray(A)) {
+			#_________________________________________________________________
+			###########################################
 			A["TIME"] = _getime()
 			A["DATE"] = _getdate()
 			if (p) {
@@ -2848,6 +3550,8 @@
 	function _lspctab(t, ts, l, l1, l2, A)
 	{
 		while (match(t, /^(\t*)( *)((\t*)(.*))$/, A)) {
+			#_________________________________________________________________
+			################################
 			if (A[1, "length"] >= l) {
 				return substr(t, l + 1)
 			}
@@ -2887,6 +3591,8 @@
 
 	function _movarr(D, S)
 	{
+		#_______________________________________________________________________
+		###################################################
 		delete D
 		D[""]
 		delete D[""]
@@ -2912,6 +3618,11 @@
 
 	function _mpudefaulthnd(F, D, C, p1, p2, p3)
 	{
+		#
+		#	/rexpstr/	->	datastr
+		#	(\x00\t\+)*	->	28 00 09 5B 2B 29
+		#
+		# unesc all non-rexp characters: replace unesc of rexp-characters but do not remove it: \* -> \*, \x2A -> \*, \052 -> \*, \\ -> \#
 		_mpuretsub(D, _mpucc0)
 	}
 
@@ -2957,6 +3668,7 @@
 			_conl("WARNING: unclosed expression: `" d _mpuacc "'")
 			_mpuacc = d _mpuacc
 		}
+		# collect: _mpuacc=_retarr(D) _mpuacc
 		_retarrm(D, q, "", (_mpufn0 == -1 ? _th0(d, _mpusubwrng("WARNING: unclosed expression", d _mpuacc)) : ""))
 		_conl("mpusub exit: _mpuacc: `" _mpuacc "'")
 	}
@@ -2964,6 +3676,8 @@
 	function _n(F, v, p)
 	{
 		for (p in _UIDSDEL) {
+			#_______________________________________________________________________
+			#####################################################
 			delete _UIDSDEL[p]
 			delete _ptr[p]
 			delete _tPREV[p]
@@ -2987,6 +3701,7 @@
 
 	function _nN_i0(p, F, v)
 	{
+		#_____________________________________________________
 		_[p][""]
 		delete _[p][""]
 		_ptr[p][""]
@@ -3023,6 +3738,8 @@
 
 	function _newclrdir(f)
 	{
+		#_________________________________________________________________
+		############################################
 		if ((f = _filerd(f)) == "") {
 			return 
 		}
@@ -3034,6 +3751,8 @@
 
 	function _newdir(f)
 	{
+		#_______________________________________________________________________
+		#####################################################
 		if ((f = _filerd(f)) == "") {
 			return 
 		}
@@ -3052,6 +3771,23 @@
 	{
 		if ((i = (i == "" ? 1 : i + 0)) <= (q = A[_ARRLEN])) {
 			if (i <= (r = q - 16)) {
+				#_____________________________________________________
+				#	_retarr(ARRAY,start,prefixtr,postfixtr)
+				#		Return string collected from elements of ARRAY.
+				#		The data elements in ARRAY have numeric indexes. By default it starts from element with index 1, but it is possible to locate elements starting from
+				#		0,-1,-.... The last data element in the ARRAY have the highest numeric index that is stored in ARRAY[_ARRLEN].
+				#		Optimized for very large data size.
+				#
+				#			IN:		ARRAY			- source data array(is ARRAY is not array then return undefined)
+				#					start			- (optional) start index in ARRAY; if missed or have non-numeric value then start array index will be 1.
+				#					prefixst		- the string that will be inserted in the begin of generated return string
+				#					postfix		- the string that will be added at the end of generated return string
+				#			MOD:		-
+				#			OUT:		-
+				#			RETURN:	undefined		- if ARRAY is not array; if ARRAY is empty; if start is higher than ARRAY last element index
+				#					string		- collected string: prefixtr-arraydata-postfixtr
+				#_________________________________________________________________
+				#####################################
 				_ARRSTR = A[i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i]
 				while (i < r) {
 					_ARRSTR = _ARRSTR A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i]
@@ -3070,6 +3806,8 @@
 	{
 		if ((i = (i == "" ? 1 : i + 0)) <= (q = A[_ARRLEN])) {
 			if (i <= (r = q - 16)) {
+				#___________________________________________________________
+				##############################
 				_ARRSTR = A[i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i]
 				while (i < r) {
 					_ARRSTR = _ARRSTR A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i]
@@ -3088,6 +3826,10 @@
 
 	function _out(t, a, b)
 	{
+		#___________________________________________________________________________________
+		####################################################################################
+		#___________________________________________________________________________________
+		###############################################################
 		a = BINMODE
 		b = ORS
 		BINMODE = "rw"
@@ -3101,6 +3843,8 @@
 
 	function _outnl(t)
 	{
+		#_________________________________________________________________
+		################################################
 		return _out(t ((t ~ /\x0A$/ ? "" : _CHR["EOL"])))
 	}
 
@@ -3154,6 +3898,8 @@
 
 	function _pass(A, f, t, p2, i, a)
 	{
+		#_______________________________________________________________________
+		###########################################
 		a = _endpass_v0
 		_endpass_v0 = ""
 		i = 1
@@ -3174,6 +3920,9 @@
 
 	function _patharr0(D, q, i, h, A, B)
 	{
+		# this is somnitelno: that   / / . / / com 56 / / - is the DEV...; what is DEV ??? this already PROBLEM
+		#_____________________________________________________________________________
+		##############################################
 		delete D
 		if (0 < (q = split(gensub(/\\/, "/", "G", gensub(/ *([:$\\\/]) */, "\\1", "G", gensub(/(^[ \t]+)|([ \t]+$)/, "", "G", q))), A, /\/+/, B))) {
 			if (2 > (h = length(B[1]))) {
@@ -3214,6 +3963,7 @@
 	function _patharr0_i0(t, D, l, r, d, i)
 	{
 		if (i = index(t, ":")) {
+			#_____________________________________________________
 			if (d) {
 				D["type"] = d
 			}
@@ -3235,6 +3985,7 @@
 	function _patharr0_i1(D, A, i, q, t, c)
 	{
 		if (D["type"] == "UNC") {
+			#_____________________________________________________
 			if (t = A[i++]) {
 				D[0] = (D["share"] = D[++c] = t) "/"
 			} else {
@@ -3262,6 +4013,7 @@
 	function _pmap(m, s1, s2, s3, s4, s5, s6, s7, s8)
 	{
 		if (match(m, /^([^\(]+)\(([^\)]*)\)$/, _QMAP)) {
+			#############################################################################
 			_qparamf1 = _QMAP[1]
 			_QMAP[0] = "r" (_qparamc1 = split(_QMAP[2], _QMAP, ""))
 			_qparamf0 = "_p" _QMAP[_qparamc1--]
@@ -3316,6 +4068,8 @@
 
 	function _printarr(A, t, lv, r, a)
 	{
+		#_________________________________________________________________
+		####################################
 		a = PROCINFO["sorted_in"]
 		PROCINFO["sorted_in"] = "_lengthsort"
 		_printarrexp = (r ? r : "")
@@ -3330,6 +4084,7 @@
 
 	function _printarr_i1(A, lv, ls, ln, t, t2, i, a, f)
 	{
+		#___________________________________________________________
 		t2 = _getchrln(" ", length(t))
 		if (ln == lv) {
 			if (ls > 0) {
@@ -3419,6 +4174,8 @@
 
 	function _qstr(t, c, A, B)
 	{
+		#_______________________________________________________________________
+		################################################
 		c = ""
 		for (t = split(t, A, /[\x00-\x1F\\"]/, B); t >= 0; t--) {
 			c = _QSTR[B[t]] A[t + 1] c
@@ -3428,6 +4185,8 @@
 
 	function _qstrq(t)
 	{
+		#_________________________________________________________________
+		################################################
 		gsub(/\\/, "\\\\", t)
 		gsub(/"/, "\\\"", t)
 		return t
@@ -3437,14 +4196,23 @@
 	{
 		switch (c) {
 		case "_lib_CMDLN":
+			################################################################
+			#_____________________________________________________________________________
+			#####################################################
+			#___________________________________________________________
+			#_____________________________________________________
 			return t
 		case "_lib_APPLY":
+			#_____________________________________________________
 			return 
 		case "_lib_HELP":
+			#_____________________________________________________
 			return 
 		case "_lib_NAMEVER":
+			#_____________________________________________________
 			return _ln("_reg 0.001")
 		case "_lib_BEGIN":
+			#_____________________________________________________
 			return 
 		case "_lib_END":
 			return 
@@ -3455,6 +4223,8 @@
 	{
 		if (p) {
 			if (p in _tPARENT) {
+				#_______________________________________________________________________
+				######################################################
 				return _tFCHLD[_tPARENT[p]]
 			}
 			while (p in _tPREV) {
@@ -3468,6 +4238,8 @@
 	function _rFCHLD(p)
 	{
 		if (p && p in _tFCHLD) {
+			#_______________________________________________________________________
+			#####################################################
 			return _tFCHLD[p]
 		}
 		return ""
@@ -3477,6 +4249,9 @@
 	{
 		if (p) {
 			if (p in _tPARENT) {
+				######################## p="", !v
+				#_______________________________________________________________________
+				######################################################
 				return _tLCHLD[_tPARENT[p]]
 			}
 			while (p in _tNEXT) {
@@ -3490,6 +4265,9 @@
 	function _rLCHLD(p)
 	{
 		if (p && p in _tLCHLD) {
+			######################## p=""
+			#_______________________________________________________________________
+			#####################################################
 			return _tLCHLD[p]
 		}
 		return ""
@@ -3497,12 +4275,17 @@
 
 	function _rLINK(p)
 	{
+		#_______________________________________________________________________
+		######################################################
 		return ((p in _tLINK ? _tLINK[p] : ""))
 	}
 
 	function _rNEXT(p)
 	{
 		if (p && p in _tNEXT) {
+			######################## p=""
+			#_______________________________________________________________________
+			######################################################
 			return _tNEXT[p]
 		}
 		return ""
@@ -3511,6 +4294,9 @@
 	function _rPARENT(p)
 	{
 		if (p && p in _tPARENT) {
+			######################## p=""
+			#_______________________________________________________________________
+			####################################################
 			return _tPARENT[p]
 		}
 		return ""
@@ -3519,6 +4305,9 @@
 	function _rPREV(p)
 	{
 		if (p && p in _tPREV) {
+			######################## p=""
+			#_______________________________________________________________________
+			######################################################
 			return _tPREV[p]
 		}
 		return ""
@@ -3528,6 +4317,9 @@
 	{
 		if (p) {
 			if (p in _tPARENT) {
+				######################## p=""
+				#_______________________________________________________________________
+				################################################
 				return _tQCHLD[_tPARENT[p]]
 			}
 			c = 1
@@ -3548,6 +4340,9 @@
 	function _rQCHLD(p)
 	{
 		if (p && p in _tQCHLD) {
+			######################## p=""
+			#_______________________________________________________________________
+			#####################################################
 			return _tQCHLD[p]
 		}
 		return ""
@@ -3555,6 +4350,10 @@
 
 	function _rSQFIRST(g, p, A)
 	{
+		#___________________________________________________________________________________
+		# EMMULATED FUNCTIONAL FIELDS ######################################################
+		#_____________________________________________________________________________
+		#####################################################
 		if (isarray(A)) {
 			return _rSQFIRSTA(g, p, A)
 		}
@@ -3565,6 +4364,8 @@
 
 	function _rSQFIRSTA(g, p, A)
 	{
+		#_________________________________________________________________
+		########################################
 		_SQTOPTR[g] = p
 		_SQSTACK[g][0] = 0
 		if ((p = _rsqgetptr(g, p)) in A) {
@@ -3575,6 +4376,8 @@
 
 	function _rSQNEXT(g, p, A)
 	{
+		#_______________________________________________________________________
+		################################################
 		if (isarray(A)) {
 			return _rSQNEXTA(g, p, A)
 		}
@@ -3585,6 +4388,8 @@
 	{
 		if (p == _SQTOPTR[g]) {
 			if (_SQSTACK[g][0] > 0) {
+				#_________________________________________________________________
+				#########################################
 				_SQTOPTR[g] = _SQSTACK[g][_SQSTACK[g][0]--]
 				return _rSQNEXTA(g, _SQSTACK[g][_SQSTACK[g][0]--], A)
 			}
@@ -3611,6 +4416,7 @@
 	function _rd_shortcut(D, f)
 	{
 		if ((_shrtcutf0 = _filepath(f)) && _shortcut_nerr(_shrtcuta0 = _cmd(_shortcut_fpath " /A:Q /F:\"" _shrtcutf0 "\" 2>&1"), _shrtcutf0)) {
+			#___________________________________________________________
 			ERRNO = ""
 			split(_shrtcuta0, _SHRTCUTA0, /\x0D?\x0A/)
 			for (_shrtcuta0 in _SHRTCUTA0) {
@@ -3627,6 +4433,8 @@
 	function _rdfile(f, i, A)
 	{
 		if ((f = _filerdne(f)) == "" || _filene(f) == "") {
+			#_______________________________________________________________________
+			################################################
 			ERRNO = "Filename error"
 			return 
 		}
@@ -3649,6 +4457,36 @@
 
 	function _rdreg(D, p)
 	{
+		####################################################################################
+		# PUBLIC:
+		#_____________________________________________________________________________
+		#	fn	_th0,_th1,_th2,_th3
+		#		USAGE:
+		#			_th0(p1,p2,p3,p4)
+		#
+		#			Each of this functions can have up to 4 parameters.
+		#				_th0(p1,p2,p3,p4) return 1st parameter (p1)
+		#				_th1(p1,p2,p3,p4) return 2nd parameter (p2)
+		#				_th2(p1,p2,p3,p4) return 3rd parameter (p3)
+		#				_th3(p1,p2,p3,p4) return 4th parameter (p4)
+		#_____________________________________________________________________________
+		#	fn	_nop(p1,p2,p3,p4,p5,p6,p7,p8)
+		#		USAGE:
+		#			_nop()
+		#
+		#			Does not do any action. No result returned. Up to 8 parameters.
+		#_____________________________________________________________________________
+		#	fn	_exit(c)
+		#		USAGE:
+		#			_exit(code)
+		#
+		#			This function do the same as GAWK-operator `exit code'.
+		#_____________________________________________________________________________
+		#	fn	_getdate()
+		#	fn	_getime()
+		#	fn	_getsecond()
+		#	fn	_getsecondsync()
+		################################################################
 		_rdregp0 = "reg query \"" p "\" /S /reg:64 2>NUL"
 		_rdregfld = _rdregkey = 0
 		_rdregq0 = split(gensub(/[\x0D?\x0A]{2,}/, _CHR["EOL"], "G", _cmd(_rdregp0)), _RDREGA0, /\x0D?\x0A/)
@@ -3663,6 +4501,7 @@
 		while (_rdregq0 > 0) {
 			if (match(_rdregp0 = _RDREGA0[_rdregq0--], /    (.*)    REG_((SZ)|(DWORD)|(QWORD)|(BINARY)|(EXPAND_SZ)|(MULTI_SZ))    (.*)$/, A)) {
 				if (! _rdreg_i0(D)) {
+					#___________________________________________________________
 					++_rdregfld
 					D[_rdregp0 A[1] "." _RDREGTYPE[A[2]]] = A[9]
 					return 
@@ -3681,6 +4520,8 @@
 
 	function _rdsafe(A, i, d)
 	{
+		#_____________________________________________________________________________________________________
+		######################################################################################################
 		if (i in A) {
 			return A[i]
 		}
@@ -3689,6 +4530,7 @@
 
 	function _reg_check(p)
 	{
+		#_______________________________________________________________________
 		_tframe("_reg_check_i0", p, p)
 	}
 
@@ -3697,6 +4539,7 @@
 		if (_[p]["TYPE"] == "defreg") {
 			if (_[p]["REGPATH"] in _REG) {
 				if ("VALUE" in _[p]) {
+					#_______________________________________________
 					if (_[p]["VALUE"] == _REG[_[p]["REGPATH"]]) {
 						_creport(p, substr("OK:    REGENTRY MATCH(==" _[p]["VALUE"] "): " _[p]["REGPATH"], 1, 126))
 					} else {
@@ -3717,12 +4560,17 @@
 
 	function _registryinit()
 	{
+		#_____________________________________________________
 		_registrytmpfile = _getmpfile()
 	}
 
 	function _regpath0(D, i, s, q, S)
 	{
 		if (i = _patharr0(S, i)) {
+			# _rdregfld		: gvar	- number of readed registry fields by _rdreg()
+			# _rdregkey		: gvar	- number of readed registry keys by _rdreg()
+			#_____________________________________________________________________________
+			############################################ 0 #
 			if ("name" in S) {
 				D["name"] = S["name"]
 			}
@@ -3744,6 +4592,8 @@
 
 	function _report(p)
 	{
+		#_________________________________________________________________________________________
+		#######################################################################
 		_report_t0 = _reportparnt = ""
 		_report_i0(p)
 		_tframe("_report_i0", p)
@@ -3767,6 +4617,7 @@
 
 	function _reporterr(p, t3, pp, t, t2)
 	{
+		#___________________________________________________________________________________
 		t = ""
 		pp = p
 		do {
@@ -3781,6 +4632,55 @@
 	function _retarr(A, i, p, a, q)
 	{
 		if (isarray(A)) {
+			#___________________________________________________________________________________
+			####################################################################################
+			#_______________________________________________________________________
+			# _CHR array
+			#
+			#	_CHR[ASC-code decimal number]=="char"
+			#
+			#		Contains 256 elements. The index is the decimal number from 0-255.
+			#		The value is the single character with ASC-code equivalent to index number:
+			#
+			#			_CHR[97]		=="a"			- character with ASC-code 97 is `a'
+			#
+			#		This array is useful if you want to get character using it's ASC-code
+			#_________________________________________________________________
+			# _ASC array
+			#
+			#	_ASC[char]==number: ASC-code of char
+			#
+			#		Contains 256 elements. The index is the any single character with ASC-code \x00-\xFF.
+			#		The value is the number equivalent of character's ASC-code:
+			#
+			#			_ASC["A"]		==65			- ASC-code of character `A' is 65
+			#
+			#		This array is useful if you want to get ASC-code of the character.
+			#_________________________________________________________________
+			# _QASC array
+			#
+			#	_QASC[char]=="string: octal ASC-code of char in 3-digit octal format"
+			#
+			#		Contains 256 elements. The index is the any single charcter with ASC-code \x00-\xFF.
+			#		The value is the octal number equivalent of character's ASC-code in fixed-length - 3-digit - string:
+			#
+			#			_QASC["!"]		=="041"		- ASC-code of character `!' is 33(decimal) == 41(in octal)
+			#			_QASC["\x0D"]	=="015"
+			#
+			#		This array is useful when some type of string escape conversion is performed. It allows quickly get
+			#		replace string for the characters that can be specified only by character code in result string:
+			#
+			#			"\x0D"	->	"\\015"
+			#_______________________________________________________________________
+			####################################################################################
+			# PUBLIC:
+			#_____________________________________________________________________________
+			#	fn	_getchrln(ptt,len)
+			#_____________________________________________________________________________
+			#	fn	_tabtospc(src,tabstep,xcoord)
+			####################################################################################
+			#_____________________________________________________________________________
+			##################################################
 			i = (i == "" ? 0 : i + 0)
 			q = A[_ARRLEN] + 0
 			if (i < q) {
@@ -3802,6 +4702,8 @@
 
 	function _retarrd(A, v, i)
 	{
+		#_________________________________________________________________
+		#########################################
 		if (1 in A) {
 			return (A[1] A[2] A[3] A[4] A[5] A[6] A[7] A[8] A[9] A[10] A[11] A[12] A[13] A[14] A[15] A[16] (((i = 17) in A ? _retarrd_i0(A, i) v : v)))
 		}
@@ -3811,6 +4713,7 @@
 
 	function _retarrd_i0(A, i)
 	{
+		#_____________________________________________________
 		if (i in A) {
 			return (A[i++] A[i++] A[i++] A[i++] A[i++] A[i++] A[i++] A[i++] A[i++] A[i++] A[i++] A[i++] A[i++] A[i++] A[i++] A[i++] ((i in A ? _retarrd_i0(A, i) : "")))
 		}
@@ -3819,6 +4722,9 @@
 
 	function _rexpfn(R, t, p)
 	{
+		#_______________________________________________________________________
+		########################################################################
+		#EXPERIMENTAL
 		_REXPFN[""] = ""
 		while (t) {
 			t = _rxpfn(R, t, p)
@@ -3833,6 +4739,8 @@
 
 	function _rexpstr(r, i, c, A)
 	{
+		#_____________________________________________________________________________
+		###################################################
 		c = split(r, A, "")
 		r = ""
 		for (i = 1; i <= c; i++) {
@@ -3843,11 +4751,13 @@
 
 	function _rexpstr_i0(t, A, p0)
 	{
+		#_____________________________________________________________________________
 		return (_REXPSTR[t] = "\\" t)
 	}
 
 	function _rmtsharerr(h, t)
 	{
+		#___________________________________________________________
 		gsub(/[\x0D\x0A]+/, "", t)
 		if (t ~ /^The command failed: 53/) {
 			ERRNO = "host not found: \\\\" h
@@ -3861,6 +4771,7 @@
 		_conl()
 		_conline(q)
 		_conl()
+		#_conl(_dumparr(D))
 		_regpath0(D, q)
 		_conl(_ln("DEST:") _dumparr(D))
 		_conl()
@@ -3869,6 +4780,8 @@
 
 	function _rrdreg(DD, p, k, t, v, c, i, q, tT, A, B, C, D)
 	{
+		#_________________________________________________________________________________________
+		#############################################	old; regedit
 		if (! _registrytmpfile) {
 			_registryinit()
 		}
@@ -3923,6 +4836,7 @@
 	function _rsqgetptr(g, p, A)
 	{
 		if (p in _tLINK) {
+			#_________________________________________________________________
 			_SQSTACK[g][++_SQSTACK[g][0]] = p
 			_SQSTACK[g][++_SQSTACK[g][0]] = _SQTOPTR[g]
 			while ((p = _tLINK[p]) in _tLINK) {
@@ -3940,6 +4854,7 @@
 	{
 		if (p == _SQTOPTR[g]) {
 			if (_SQSTACK[g][0] > 0) {
+				#___________________________________________________________
 				_SQTOPTR[g] = _SQSTACK[g][_SQSTACK[g][0]--]
 				return _rsqnext_i0(g, _SQSTACK[g][_SQSTACK[g][0]--])
 			}
@@ -3988,14 +4903,23 @@
 	{
 		switch (c) {
 		case "_lib_CMDLN":
+			##############################################################
+			#_____________________________________________________________________________
+			###################################################
+			#___________________________________________________________
+			#_____________________________________________________
 			return t
 		case "_lib_APPLY":
+			#_____________________________________________________
 			return 
 		case "_lib_HELP":
+			#_____________________________________________________
 			return 
 		case "_lib_NAMEVER":
+			#_____________________________________________________
 			return _ln("_share 1.000")
 		case "_lib_BEGIN":
+			#_____________________________________________________
 			return 
 		case "_lib_END":
 			return 
@@ -4006,14 +4930,23 @@
 	{
 		switch (c) {
 		case "_lib_CMDLN":
+			################################################################
+			#_____________________________________________________________________________
+			#####################################################
+			#___________________________________________________________
+			#_____________________________________________________
 			return t
 		case "_lib_APPLY":
+			#_____________________________________________________
 			return 
 		case "_lib_HELP":
+			#_____________________________________________________
 			return 
 		case "_lib_NAMEVER":
+			#_____________________________________________________
 			return 
 		case "_lib_BEGIN":
+			#_____________________________________________________
 			return 
 		case "_lib_END":
 			return 
@@ -4022,12 +4955,14 @@
 
 	function _serv_check(p)
 	{
+		#_______________________________________________________________________
 		_tframe("_serv_check_i0", p, p)
 	}
 
 	function _serv_check_i0(p, p0, p1, p2, p3, i, q, c)
 	{
 		if (_[p]["TYPE"] == "defsrv") {
+			#_______________________________________________
 			i = IGNORECASE
 			IGNORECASE = 1
 			if (match(_servoutput, roi = "\\012DISPLAY_NAME: " _torexp(_[p]["SERVNAME"]))) {
@@ -4041,6 +4976,8 @@
 
 	function _setarrsort(f, a)
 	{
+		#_______________________________________________________________________
+		##############################################
 		a = PROCINFO["sorted_in"]
 		if (! f) {
 			delete PROCINFO["sorted_in"]
@@ -4052,8 +4989,12 @@
 
 	function _setmpath(p, a)
 	{
+		#_______________________________________________________________________
+		################################################
 		ERRNO = ""
 		if (p && (a = _filerd(p))) {
+			#if ( _filexist(a) ) _del(a)
+			#_cmd("rd " a " /S /Q 2>NUL"); _cmd("del " a " /Q 2>NUL")
 			if (_FILEIO_TMPRD) {
 				_FILEIO_TMPATHS[_FILEIO_TMPRD]
 			}
@@ -4065,6 +5006,9 @@
 
 	function _sharelist(D, h, q, c, l, A, B)
 	{
+		#_________________________________________________________________________________________
+		##########################################################################################
+		#################################################
 		delete D
 		c = _sharextool " \\\\" ((h == "" ? h = ENVIRON["COMPUTERNAME"] : h)) " 2>&1"
 		if (match(c = _cmd(c), /\x0AShare[^\x0A]*Remark/)) {
@@ -4083,6 +5027,8 @@
 
 	function _sharepath(h, s, A)
 	{
+		#_____________________________________________________________________________
+		###################################################
 		s = _sharextool " \\\\" ((h == "" ? h = ENVIRON["COMPUTERNAME"] : h)) "\\\"" s "\" 2>&1"
 		if (match(s = _cmd(s), /\x0APath[ \t]+([^\x0D\x0A]+)/, _SHAREPATHA0)) {
 			return gensub(/[ \t\\\/]*$/, "\\\\", 1, _SHAREPATHA0[1])
@@ -4092,14 +5038,19 @@
 
 	function _shortcut(D, S)
 	{
+		# filepath,filepath2*	- [over]write shorcut file filepath; shortcut parameters will be defined from shortcut file filepath2(copy shortcut)
 		if (isarray(D)) {
+			# array,ptr*		- copy from array _[ptr] to array shorcut-specific elements
 			if (isarray(S)) {
+				#############################################################
 				_addarrmask(D, S, _SHORTCUTWSTRUC)
 			} else {
 				if (S == 0 && S == "") {
+					# array,array2*		- copy from array2 to array shorcut-specific elements
 					_addarrmask(D, _SHORTCUTDEFAULT, _SHORTCUTWSTRUC)
 				} else {
 					if (_isnotfileptr(S)) {
+						# array*			- define shortcut-specific elements in array by default values
 						_addarrmask(D, _[S], _SHORTCUTWSTRUC)
 					} else {
 						if (_rd_shortcut(D, S)) {
@@ -4113,13 +5064,18 @@
 				return _NOP
 			} else {
 				if (_isnotfileptr(D)) {
+					# ptr,ptr2*			- copy from array _[ptr2] to array _[ptr] shorcut-specific elements
 					if (isarray(S)) {
+						# array,filepath*		- define in array shortcut-specific elements by reading its from shortcut file filepath(load shortcut)
+						# -*				- no action(return -)
 						_addarrmask(_[D], S, _SHORTCUTWSTRUC)
 					} else {
 						if (S == 0 && S == "") {
+							# ptr,array*		- copy from array to array _[ptr] shorcut-specific elements
 							_addarrmask(_[D], _SHORTCUTDEFAULT, _SHORTCUTWSTRUC)
 						} else {
 							if (_isnotfileptr(S)) {
+								# ptr*			- define shortcut-specifc elements in array _[ptr] by default values
 								_addarrmask(_[D], _[S], _SHORTCUTWSTRUC)
 							} else {
 								if (_rd_shortcut(_[D], S)) {
@@ -4129,6 +5085,10 @@
 						}
 					}
 				} else {
+					# ptr,filepath*		- define in array _[ptr] shortcut-specific elements by reading its from shortcut file filepath(load shortcut)
+					# filepath,array*		- [over]write shorcut file filepath; shortcut parameters will be defined by shortcut-specific elements in array(save shortcut)
+					# filepath*			- [over]write shorcut file filepath; shortcut parameters will be defined by default values
+					# filepath,ptr*		- [over]write shorcut file filepath; shortcut parameters will be defined by shortcut-specific elements in array _[ptr](save shortcut)
 					if (isarray(S) && _wr_shortcut(D, S)) {
 						return 
 					} else {
@@ -4152,6 +5112,7 @@
 
 	function _shortcut_init(A, B, q)
 	{
+		#________________________________________________
 		_SHORTCUTERR[2] = "file not found"
 		_SHORTCUTERR[3] = "no such filepath"
 		_SHORTCUTERR["The system cannot find the file specified."] = "no such filepath"
@@ -4186,6 +5147,7 @@
 	function _shortcut_nerr(t, s, A)
 	{
 		if (match(t, /\x0ASystem error (-?[0-9]+)[^\x0D\x0A]*[\x0D\x0A]+([^\x0D\x0A]+)/, A)) {
+			#_____________________________________________________
 			ERRNO = ((A[1] in _SHORTCUTERR ? _SHORTCUTERR[A[1]] : (A[2] in _SHORTCUTERR ? _SHORTCUTERR[A[2]] : tolower(gensub(/^(The )?(((.*)\.$)|(.*[^\.]$))/, "\\4\\5", "G", A[2])) "(" A[1] ")"))) ((s ? ": `" s "'" : ""))
 		} else {
 			return 1
@@ -4330,6 +5292,8 @@
 	function _splitstr(A, t, r)
 	{
 		if (_istr(t)) {
+			#_______________________________________________________________________
+			########################################### 1 #
 			if (_splitstr_i0(A, t) > 0) {
 				return _splitstrp0
 			}
@@ -4355,6 +5319,7 @@
 
 	function _splitstr_i0(A, t, C)
 	{
+		#_____________________________________________________
 		if (2 > (_splitstrq0 = patsplit(t, _SPLITSTRA0, /([^,\xB4]*\xB4.)*[^,\xB4]*/))) {
 			_splitstrq0 = split(gensub(/\xB4(.)/, "\\1", "G", t), _SPLITSTRA0, "")
 		}
@@ -4371,6 +5336,7 @@
 
 	function _strtorexp(t)
 	{
+		#_______________________________________________
 		gsub(/[\\\.\?\*\+\-\(\)\{\}\[\]\^\$\/\|]/, "\\\\&", t)
 		t = split(t, _TOREXP_STRA, /[\x00-\x1F]/, _TOREXP_STRB)
 		_torexp_strt0 = ""
@@ -4392,7 +5358,10 @@
 		r = ""
 		f = F[""]
 		for (i = 1; i < q; i++) {
+			#_conl("curr r==`" r "': A[" i "]=`" A[i] "'")
+			#s=s in F ? _th0(F[s],_conl("handler `" F[s] "' for `" s "' ost=`" substr(e,3,length(e)-3) "'")) : _th0(F[""],_conl("default handler for `" s "'"))
 			s = substr(e = B[i], 2, 1)
+			#_conl("`" f "'")
 			s = (s in F ? F[s] : F[""])
 			r = r (@f(A[i])) (@s(substr(e, 3, length(e) - 3)))
 		}
@@ -4401,6 +5370,34 @@
 
 	function _sysinfo(D, h)
 	{
+		#_____________________________________________________________________________
+		# _rdreg(ARRAY,reg_path)
+		#		Import into ARRAY the content of the whole registree tree with the higher point specified by reg_path.
+		#		ARRAY will be filled by the strings with following format:
+		#
+		# HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\GnuWin32\CoreUtils\5.3.0\pck\InstallPath.STR=C:\Program Files (x86)\GnuWin32
+		#	where:
+		# HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\GnuWin32\CoreUtils\5.3.0\pck									<- REG KEY PATH
+		#											     InstallPath							<- DATA FIELD
+		#													     STR						<- TYPE
+		#														   C:\Program Files (x86)\GnuWin32	<- VALUE
+		# TYPE:
+		#	STR		- REG_SZ		(String Value)
+		#	W32		- REG_DWORD		(DWORD (32-bit) Value)
+		#	W64		- REG_QWORD		(QWORD (64-bit) Value)
+		#	BIN		- REG_BINARY	(Binary Value)
+		#	XSZ		- REG_EXPAND_SZ	(Expandable String Value)
+		#	MSZ		- REG_MULTI_SZ	(Multi-String Value)
+		#_________________________________________________________________________________________
+		# HKCR		HKEY_CLASSES_ROOT
+		# HKCU		HKEY_CURRENT_USER
+		# HKLM		HKEY_LOCAL_MACHINE
+		# HKU			HKEY_USERS
+		# HKCC		HKEY_CURRENT_CONFIG
+		# HKPD		HKEY_PERFORMANCE_DATA
+		#___________________________________________________________________________________
+		####################################################################################
+		##############################################################
 		h = "wmic /NODE: \"" h "\" OS 2>NUL"
 		if (split(_cmd(h), _SYSINFOA0, /[\x0D\x0A]+/) == 3) {
 			_sysinfol0 = length(h = _SYSINFOA0[2]) + 1
@@ -4416,16 +5413,24 @@
 	{
 		switch (c) {
 		case "_lib_CMDLN":
+			#########################################################
+			#___________________________________________________________
+			#___________________________________________________________
 			return t
 		case "_lib_APPLY":
+			#___________________________________________________________
 			return 
 		case "_lib_HELP":
+			#___________________________________________________________
 			return 
 		case "_lib_NAMEVER":
+			#___________________________________________________________
 			return _ln("_tOBJ 3.0")
 		case "_lib_BEGIN":
+			#___________________________________________________________
 			return 
 		case "_lib_END":
+			#___________________________________________________________
 			return 
 		case "_lib_CLEANUP":
 			return _tOBJ_CLEANUP()
@@ -4435,6 +5440,8 @@
 	function _tOBJ_CLEANUP(p)
 	{
 		for (p in UIDSDEL) {
+			#_______________________________________________________________________
+			##############################################
 			delete _ptr[p]
 			delete _tPREV[p]
 			delete _tPARENT[p]
@@ -4452,6 +5459,8 @@
 	function _tabtospc(t, ts, xc, a, c, n, A, B)
 	{
 		if (! ts) {
+			#_______________________________________________________________________
+			##################################
 			ts = _TAB_STEP_DEFAULT
 		}
 		c = split("." t, A, /\t+/, B)
@@ -4465,6 +5474,8 @@
 
 	function _tapi(p, f, p0, p1, p2, p3, c)
 	{
+		#___________________________________________________________________________________
+		####################################################################################
 		c = p
 		do {
 			if (f in _[c]["API"]) {
@@ -4477,6 +5488,8 @@
 
 	function _tbframe(f, p, p0, p1)
 	{
+		#_____________________________________________________________________________
+		##################################################
 		delete _t_ENDF[++_t_ENDF[0]]
 		f = (p ? _tbframe_i0(f, p, p0, p1) : "")
 		--_t_ENDF[0]
@@ -4485,6 +5498,7 @@
 
 	function _tbframe_i0(f, p, p0, p1, a)
 	{
+		#___________________________________________________________
 		while (p in _tLINK) {
 			p = _tLINK[p]
 		}
@@ -4493,6 +5507,8 @@
 
 	function _tbframex(f, p, p0, p1)
 	{
+		#_______________________________________________________________________
+		###########################################
 		delete _t_ENDF[++_t_ENDF[0]]
 		f = (p ? _tbframex_i0(f, p, p0, p1) : "")
 		--_t_ENDF[0]
@@ -4501,6 +5517,7 @@
 
 	function _tbframex_i0(f, p, p0, p1)
 	{
+		#___________________________________________________________
 		while (p in _tLINK) {
 			p = _tLINK[p]
 		}
@@ -4509,6 +5526,8 @@
 
 	function _tbpass(f, p, p0, p1)
 	{
+		#_____________________________________________________________________________
+		###################################################
 		delete _t_ENDF[++_t_ENDF[0]]
 		f = (p ? _tbpass_i0(f, p, p0, p1) : "")
 		--_t_ENDF[0]
@@ -4517,6 +5536,7 @@
 
 	function _tbpass_i0(f, p, p0, p1, a)
 	{
+		#___________________________________________________________
 		while (p in _tLINK) {
 			p = _tLINK[p]
 		}
@@ -4525,6 +5545,8 @@
 
 	function _tbpassx(f, p, p0, p1)
 	{
+		#_____________________________________________________________________________
+		##################################################
 		delete _t_ENDF[++_t_ENDF[0]]
 		f = (p ? _tbpassx_i0(f, p, p0, p1) : "")
 		--_t_ENDF[0]
@@ -4533,6 +5555,7 @@
 
 	function _tbpassx_i0(f, p, p0, p1)
 	{
+		#___________________________________________________________
 		while (p in _tLINK) {
 			p = _tLINK[p]
 		}
@@ -4543,6 +5566,8 @@
 	{
 		if (p) {
 			if (p in _tFCHLD) {
+				#_____________________________________________________________________________
+				###################################################				# TEST!!!
 				f = _tFCHLD[p]
 				delete _tFCHLD[p]
 				delete _tLCHLD[p]
@@ -4631,27 +5656,37 @@
 
 	function _tbrunframe(f, p, p0, p1)
 	{
+		#_________________________________________________________________
+		###################################
 		return _tbframe((f ? f : "_trunframe_i0"), p, p0, p1)
 	}
 
 	function _tbrunframex(f, p, p0, p1)
 	{
+		#_________________________________________________________________
+		##################################
 		return _tbframex((f ? f : "_trunframe_i0"), p, p0, p1)
 	}
 
 	function _tbrunpass(f, p, p0, p1)
 	{
+		#_________________________________________________________________
+		####################################
 		return _tbpass((f ? f : "_trunframe_i0"), p, p0, p1)
 	}
 
 	function _tbrunpassx(f, p, p0, p1)
 	{
+		#_________________________________________________________________
+		###################################
 		return _tbpassx((f ? f : "_trunframe_i0"), p, p0, p1)
 	}
 
 	function _tdel(p, i)
 	{
 		if (p in _) {
+			#_____________________________________________________________________________
+			##########################################################
 			_texclude(p)
 			for (i in _ptr[p]) {
 				if (isarray(_ptr[p][i])) {
@@ -4676,6 +5711,7 @@
 	function _tdel_i0(p, i)
 	{
 		for (i in _ptr[p]) {
+			#_____________________________________________________
 			if (isarray(_ptr[p][i])) {
 				_tdel_i1(_ptr[p][i])
 			} else {
@@ -4697,6 +5733,7 @@
 	function _tdel_i1(A, i)
 	{
 		for (i in A) {
+			#_____________________________________________________
 			if (isarray(A[i])) {
 				_tdel_i1(A[i])
 			} else {
@@ -4709,6 +5746,8 @@
 
 	function _tdelete(p, v)
 	{
+		#_____________________________________________________________________________
+		#######################################################				# REMAKE EXCLUDE
 		if (p) {
 			_wLCHLD(_tDELPTR, p)
 		}
@@ -4719,6 +5758,8 @@
 	{
 		if (p) {
 			if ("HOST" in _PTR[p] && "ITEMNAME" in _[p]) {
+				#_________________________________________________________________
+				#############################################
 				return _wLCHLD(_PTR[_PTR[p]["HOST"]]["ITEM"][_[p]["ITEMNAME"]], p)
 			}
 			_tdelete(p)
@@ -4728,6 +5769,8 @@
 
 	function _tend(a, b)
 	{
+		#_______________________________________________________________________
+		#####################################################
 		if (b == "") {
 			return (_t_ENDF[_t_ENDF[0]] = a)
 		} else {
@@ -4739,6 +5782,8 @@
 	{
 		if (p in _) {
 			if (p in _tPARENT) {
+				#_____________________________________________________________________________
+				###################################################				# TEST!!!
 				pp = _tPARENT[p]
 				delete _tPARENT[p]
 				if (p in _tPREV) {
@@ -4783,6 +5828,9 @@
 
 	function _tframe(fF, p, p0, p1, p2)
 	{
+		# _tDLINK progressive development: concrete _tDLINK function\processing algo; all frame's families support
+		#_____________________________________________________________________________
+		###############################################
 		delete _t_ENDF[++_t_ENDF[0]]
 		p = (_isptr(p) ? (isarray(fF) ? _tframe_i1(fF, p, p0, p1, p2) : _tframe_i0(fF, p, p0, p1, p2)) : "")
 		--_t_ENDF[0]
@@ -4792,6 +5840,8 @@
 	function _tframe0(f, p, p0, p1, p2, p3, A)
 	{
 		if (_isptr(p)) {
+			#_____________________________________________________________________________
+			#########################################
 			if (isarray(f)) {
 				return _tframe0_i0(f, p)
 			}
@@ -4803,6 +5853,7 @@
 	function _tframe0_i0(A, p, f)
 	{
 		if (p in _tLINK) {
+			#_______________________________________________
 			_tframe_link = p
 			if ("`" in A) {
 				f = A["`"]
@@ -4825,6 +5876,7 @@
 
 	function _tframe0_i1(A, p)
 	{
+		#_______________________________________________
 		if (_TEND[_ARRLEN] in _TEND) {
 			return 
 		}
@@ -4836,6 +5888,7 @@
 
 	function _tframe0_i2(A, m, p)
 	{
+		#_______________________________________________
 		_tframe_dlink = p
 		while (p in _tDLINK) {
 			p = _tDLINK[p]
@@ -4854,6 +5907,8 @@
 	function _tframe1(f, p, p0, p1, p2, p3, A)
 	{
 		if (_isptr(p)) {
+			#_________________________________________________________________
+			#############################
 			if (isarray(f)) {
 				return _tframe1_i0(f, p, p0)
 			}
@@ -4864,6 +5919,7 @@
 
 	function _tframe1_i0(A, p, p0)
 	{
+		#_______________________________________________
 		_tframe_link = p
 		while (p in _tLINK) {
 			p = _tLINK[p]
@@ -4876,6 +5932,7 @@
 
 	function _tframe1_i1(A, p, p0)
 	{
+		#_______________________________________________
 		if (_TEND[_ARRLEN] in _TEND) {
 			return 
 		}
@@ -4887,6 +5944,7 @@
 
 	function _tframe1_i2(A, m, p, p0)
 	{
+		#_______________________________________________
 		_tframe_dlink = p
 		while (p in _tDLINK) {
 			p = _tDLINK[p]
@@ -4905,6 +5963,8 @@
 	function _tframe2(f, p, p0, p1, p2, p3, A)
 	{
 		if (_isptr(p)) {
+			#_________________________________________________________________
+			#############################
 			if (isarray(f)) {
 				return _tframe2_i0(f, p, p0, p1)
 			}
@@ -4915,6 +5975,7 @@
 
 	function _tframe2_i0(A, p, p0, p1)
 	{
+		#_______________________________________________
 		_tframe_link = p
 		while (p in _tLINK) {
 			p = _tLINK[p]
@@ -4927,6 +5988,7 @@
 
 	function _tframe2_i1(A, p, p0, p1)
 	{
+		#_______________________________________________
 		if (_TEND[_ARRLEN] in _TEND) {
 			return 
 		}
@@ -4938,6 +6000,7 @@
 
 	function _tframe2_i2(A, m, p, p0, p1)
 	{
+		#_______________________________________________
 		_tframe_dlink = p
 		while (p in _tDLINK) {
 			p = _tDLINK[p]
@@ -4956,6 +6019,8 @@
 	function _tframe3(f, p, p0, p1, p2, p3, A)
 	{
 		if (_isptr(p)) {
+			#_________________________________________________________________
+			#############################
 			if (isarray(f)) {
 				return _tframe3_i0(f, p, p0, p1, p2)
 			}
@@ -4966,6 +6031,7 @@
 
 	function _tframe3_i0(A, p, p0, p1, p2)
 	{
+		#_______________________________________________
 		_tframe_link = p
 		while (p in _tLINK) {
 			p = _tLINK[p]
@@ -4978,6 +6044,7 @@
 
 	function _tframe3_i1(A, p, p0, p1, p2)
 	{
+		#_______________________________________________
 		if (_TEND[_ARRLEN] in _TEND) {
 			return 
 		}
@@ -4989,6 +6056,7 @@
 
 	function _tframe3_i2(A, m, p, p0, p1, p2)
 	{
+		#_______________________________________________
 		_tframe_dlink = p
 		while (p in _tDLINK) {
 			p = _tDLINK[p]
@@ -5007,6 +6075,8 @@
 	function _tframe4(f, p, p0, p1, p2, p3, A)
 	{
 		if (_isptr(p)) {
+			#_________________________________________________________________
+			#############################
 			if (isarray(f)) {
 				return _tframe4_i0(f, p, p0, p1, p2, p3)
 			}
@@ -5017,6 +6087,7 @@
 
 	function _tframe4_i0(A, p, p0, p1, p2, p3)
 	{
+		#_______________________________________________
 		_tframe_link = p
 		while (p in _tLINK) {
 			p = _tLINK[p]
@@ -5029,6 +6100,7 @@
 
 	function _tframe4_i1(A, p, p0, p1, p2, p3)
 	{
+		#_______________________________________________
 		if (_TEND[_ARRLEN] in _TEND) {
 			return 
 		}
@@ -5040,6 +6112,7 @@
 
 	function _tframe4_i2(A, m, p, p0, p1, p2, p3)
 	{
+		#_______________________________________________
 		_tframe_dlink = p
 		while (p in _tDLINK) {
 			p = _tDLINK[p]
@@ -5057,6 +6130,7 @@
 
 	function _tframe_i0(f, p, p0, p1, p2, a)
 	{
+		#___________________________________________________________
 		while (p in _tLINK) {
 			p = _tLINK[p]
 		}
@@ -5065,6 +6139,7 @@
 
 	function _tframe_i1(F, p, p0, p1, p2, a)
 	{
+		#___________________________________________________________
 		while (p in _tLINK) {
 			p = _tLINK[p]
 		}
@@ -5073,6 +6148,8 @@
 
 	function _tframex(f, p, p0, p1)
 	{
+		#_______________________________________________________________________
+		############################################
 		delete _t_ENDF[++_t_ENDF[0]]
 		f = (p ? _tframex_i0(f, p, p0, p1) : "")
 		--_t_ENDF[0]
@@ -5081,6 +6158,7 @@
 
 	function _tframex_i0(f, p, p0, p1)
 	{
+		#___________________________________________________________
 		while (p in _tLINK) {
 			p = _tLINK[p]
 		}
@@ -5089,6 +6167,7 @@
 
 	function _tframex_p0(A, f, q, i, B, C)
 	{
+		#_____________________________________________________
 		_tframe_qparam = q
 		delete _TEND[++_TEND[_ARRLEN]]
 		if (match(f, /\~(.*)$/, B)) {
@@ -5109,6 +6188,7 @@
 
 	function _tframex_p1(A, v, i, r, B)
 	{
+		#_______________________________________________
 		gsub(/[ \t]+/, "", v)
 		while (match(v, /^([^~]*)~\/(([^\/\\]*\\.)*[^\/\\]*)\//, B)) {
 			v = B[1] substr(v, RSTART + RLENGTH)
@@ -5138,6 +6218,17 @@
 	function _tgenuid(c)
 	{
 		for (_uidcntr in _UIDARR1) {
+			#_____________________________________________________
+			#	F	v	action
+			#-----------------------------------------------------
+			#	-	*	no additional action
+			#	A	B	delete A[p] and define A[p] as array; copy array B to array A[p]
+			#	A	-	delete A[p]
+			#	A	"*"	delete A[p]; A[p]="*"
+			#	"*"	B	define _[p]["*"] as array; copy array B to array _[p]["*"]
+			#	"*"	-	run _mpu program "*" for `p
+			#	"*0"	"*1"	_[p]["*0"]="*1"
+			#___________________________________________________________
 			delete _UIDARR1[_uidcntr]
 			for (c in _UIDARR0) {
 				_UIDS[_uidcntr c]
@@ -5150,6 +6241,7 @@
 
 	function _tgenuid_init(a, b, A)
 	{
+		#_____________________________________________________
 		_ptrlength = 4
 		a = "\222\223\224\225\226\227\230\231\232" "\240\241\242\243\244\245\246\247" "\260\261\262\263\264\265\266\267\270\271\272\273\274\275\276\277" "\300\301\302\303\304\305\306\307\310\311\312\313\314\315\316\317" "\320\321\322\323\324\325\326\327\330\331\332\333\334\335\336\337"
 		split(a, A, "")
@@ -5164,6 +6256,12 @@
 	function _tgetitem(p, n, a, b)
 	{
 		if (p) {
+			#	if ( F in _TCLASS )				{ _[p]["CLASS"]=_TCLASS[F]; _tapi(p); return p }
+			#		# ???		_mpu(F,p)		???
+			#		return p }
+			#	_[p][F]=v; return p }
+			#_______________________________________________________________________
+			############################################
 			if (isarray(_PTR[p]["ITEM"]) && n in _PTR[p]["ITEM"]) {
 				a = _PTR[p]["ITEM"][n]
 			} else {
@@ -5180,36 +6278,50 @@
 
 	function _tgetsp(p)
 	{
+		#_________________________________________________________________
+		###############################################
 		return _tSTACK[p][0]
 	}
 
 	function _th0(p, p1, p2, p3)
 	{
+		####################################################################################
+		#_____________________________________________________________________________
 		return p
 	}
 
 	function _th1(p0, p, p2, p3)
 	{
+		##########################################
+		#_________________________________________________________________
 		return p
 	}
 
 	function _th10(p0, p1)
 	{
+		##############################
+		#_________________________________________________________________
 		return (p1 p0)
 	}
 
 	function _th2(p0, p1, r, p3)
 	{
+		##############################
+		#_________________________________________________________________
 		return p
 	}
 
 	function _th3(p0, p1, p2, r)
 	{
+		##############################
+		#_________________________________________________________________
 		return p
 	}
 
 	function _tifend(l)
 	{
+		#_________________________________________________________________
+		###############################################
 		return ((_t_ENDF[0] + l in _t_ENDF ? (_t_ENDF[_t_ENDF[0] + l] ? _t_ENDF[_t_ENDF[0] + l] : 1) : ""))
 	}
 
@@ -5218,6 +6330,8 @@
 		for (i in S) {
 			if (isarray(S[i])) {
 				if (! isarray(D[i][""])) {
+					# 	test _tbrochld fn; develope tOBJ r\w func specification for brochld func
+					#_________________________________________________________________
 					delete D[i]
 					D[i][""]
 					delete D[i][""]
@@ -5234,6 +6348,51 @@
 
 	function _tlist(L, p, f)
 	{
+		#_______________________________________________________________________
+		########################################################################
+		#_______________________________________________________________________
+		#	_N(arr\str\mpuptr,val) \ _n(arr\str\mpuptr,val)
+		#		This functions create new object and return ptr.
+		#		_n() - creates object from list of deleted objects or if it's empty create new one, while _N() always create new one
+		#		It is strongly recommended to use _N() for the objects that have some data outside of standart object arrays. Or - make routines
+		#		that will clear outsided object data in case if object deleting.
+		#
+		#			IN:		arr\str\mpu,val	- (both missed) just create obj and return ptr
+		#					arr,val		- create object and write arr[ptr]=val
+		#					str,val		- create object and write _[ptr][str]=val
+		#					mpuptr		- NOT ALLOWED (val missed) create object and run MPU-code specified by mpuptr with created object ptr as primary parameter
+		#			MOD:		-
+		#			OUT:		-
+		#			RETURN:	ptr			- pointer to newly created object
+		#_________________________________________________________________
+		#	_tdel(ptr)
+		#		This function exclude object from it's current structure and delete it. ptr can be later used by function: _n() for creating new object
+		#		Also same story will occured with all chields and subchields of object specified by ptr.
+		#		??? What happened with linked py _ptr[ptr] objects ???
+		#
+		#			IN:		ptr			- pointer to object that will deleted
+		#			MOD:		-
+		#			OUT:		-
+		#			RETURN:	undefined
+		#_________________________________________________________________
+		#	_isptr(ptr)
+		#		This function checks: is ptr is the object pointer that is currently exist?
+		#		Unescaped remained data will be in data of src_dst_ptr.
+		#
+		#			IN:		ptr			- string that will be tested
+		#			MOD:		-
+		#			OUT:		-
+		#			RETURN:	undefined		- if ptr is not pointer to exist object
+		#					ptr			- if ptr is the pointer to exist object
+		#_________________________________________________________________
+		#_________________________________________________________________
+		#
+		# TO DESIGN:
+		#
+		# create basic objectapi interface support
+		# modify everywhere checking ptr not by `if ( ptr )...', but by `if ( ptr in _ )...'
+		# _TMP0, _TMP1 name change to something like _DATA name ???
+		# think about redesigning routines for not depending if ptr is exist in tsysarrs: reason: performance\light code
 		_tlisti1 = _tlisti0 = L[_ARRLEN] + 0
 		if (f == 0 && f == "") {
 			_tlist_i0(L, p)
@@ -5295,6 +6454,8 @@
 	function _tmbframe(f, p, p0, p1, t)
 	{
 		while (p && ! (_t_ENDF[0] in _t_ENDF)) {
+			#_________________________________________________________________
+			##################################
 			t = t _tbframe_i0(f, p, p0, p1, p = (p in _tPREV ? _tPREV[p] : ""))
 		}
 		return t
@@ -5303,6 +6464,8 @@
 	function _tmbframex(f, p, p0, p1, t)
 	{
 		while (p && ! (_t_ENDF[0] in _t_ENDF)) {
+			#_________________________________________________________________
+			#################################
 			t = t _tbframex_i0(f, p, p0, p1)
 			p = (p in _tPREV ? _tPREV[p] : "")
 		}
@@ -5312,6 +6475,8 @@
 	function _tmbpass(f, p, p0, p1)
 	{
 		while (p && ! (_t_ENDF[0] in _t_ENDF)) {
+			#_________________________________________________________________
+			######################################
 			p0 = _tbpass_i0(f, p, p0, p1, p = (p in _tPREV ? _tPREV[p] : ""))
 		}
 		return p0
@@ -5320,6 +6485,8 @@
 	function _tmbpassx(f, p, p0, p1)
 	{
 		while (p && ! (_t_ENDF[0] in _t_ENDF)) {
+			#_________________________________________________________________
+			#####################################
 			p0 = _tbpassx_i0(f, p, p0, p1)
 			p = (p in _tPREV ? _tPREV[p] : "")
 		}
@@ -5328,6 +6495,8 @@
 
 	function _tmframe(f, p, p0, p1, p2)
 	{
+		#_________________________________________________________________
+		###################################
 		delete _t_ENDF[++_t_ENDF[0]]
 		f = (p ? _tmframe_i0(f, p, p0, p1, p2) : "")
 		--_t_ENDF[0]
@@ -5337,6 +6506,7 @@
 	function _tmframe_i0(f, p, p0, p1, p2, t)
 	{
 		while (p && ! (_t_ENDF[0] in _t_ENDF)) {
+			#___________________________________________________________
 			t = t _tframe_i0(f, p, p0, p1, p2, p = (p in _tNEXT ? _tNEXT[p] : ""))
 		}
 		return t
@@ -5345,6 +6515,7 @@
 	function _tmframe_i1(F, p, p0, p1, p2, t)
 	{
 		while (p && ! (_t_ENDF[0] in _t_ENDF)) {
+			#___________________________________________________________
 			t = t _tframe_i1(F, p, p0, p1, p2, p = (p in _tNEXT ? _tNEXT[p] : ""))
 		}
 		return t
@@ -5353,6 +6524,8 @@
 	function _tmframex(f, p, p0, p1, t)
 	{
 		while (p && ! (_t_ENDF[0] in _t_ENDF)) {
+			#_________________________________________________________________
+			##################################
 			t = t _tframex_i0(f, p, p0, p1)
 			p = (p in _tNEXT ? _tNEXT[p] : "")
 		}
@@ -5362,6 +6535,8 @@
 	function _tmpass(f, p, p0, p1)
 	{
 		while (p && ! (_t_ENDF[0] in _t_ENDF)) {
+			#_________________________________________________________________
+			#######################################
 			p0 = _tbpass_i0(f, p, p0, p1, p = (p in _tNEXT ? _tNEXT[p] : ""))
 		}
 		return p0
@@ -5370,6 +6545,8 @@
 	function _tmpassx(f, p, p0, p1)
 	{
 		while (p && ! (_t_ENDF[0] in _t_ENDF)) {
+			#_________________________________________________________________
+			######################################
 			p0 = _tbpassx_i0(f, p, p0, p1)
 			p = (p in _tNEXT ? _tNEXT[p] : "")
 		}
@@ -5393,6 +6570,7 @@
 
 	function _torexp_init()
 	{
+		#_______________________________________________
 		_TOREXPFN[""] = "_strtorexp"
 		_TOREXPFN["~"] = "_torexp_rexp"
 		_TOREXPFN["="] = "_strtorexp"
@@ -5404,11 +6582,14 @@
 
 	function _torexp_rexp(t)
 	{
+		#_______________________________________________
 		return t
 	}
 
 	function _tpass(f, p, p0, p1)
 	{
+		#_____________________________________________________________________________
+		####################################################
 		delete _t_ENDF[++_t_ENDF[0]]
 		f = (p ? _tpass_i0(f, p, p0, p1) : "")
 		--_t_ENDF[0]
@@ -5417,6 +6598,7 @@
 
 	function _tpass_i0(f, p, p0, p1, a)
 	{
+		#___________________________________________________________
 		while (p in _tLINK) {
 			p = _tLINK[p]
 		}
@@ -5425,6 +6607,8 @@
 
 	function _tpassx(f, p, p0, p1)
 	{
+		#_____________________________________________________________________________
+		###################################################
 		delete _t_ENDF[++_t_ENDF[0]]
 		f = (p ? _tpassx_i0(f, p, p0, p1) : "")
 		--_t_ENDF[0]
@@ -5433,6 +6617,7 @@
 
 	function _tpassx_i0(f, p, p0, p1)
 	{
+		#___________________________________________________________
 		while (p in _tLINK) {
 			p = _tLINK[p]
 		}
@@ -5442,6 +6627,8 @@
 	function _tpop(p, aA, a)
 	{
 		if ((a = _tSTACK[p][0]) > 0) {
+			#_________________________________________________________________
+			###########################################
 			_tSTACK[p][0]--
 			if (isarray(_tSTACK[p][a])) {
 				delete aA
@@ -5456,6 +6643,8 @@
 	function _tpush(p, aA, a)
 	{
 		if (isarray(aA)) {
+			#_____________________________________________________________________________
+			######################################################
 			delete _tSTACK[p][a = ++_tSTACK[p][0]]
 			_tSTACK[p][a][""]
 			delete _tSTACK[p][a][""]
@@ -5468,6 +6657,13 @@
 
 	function _tr(n, cs, H)
 	{
+		# prefix	-
+		# prichr	- aware character `{', `^',`]'
+		# sechr	- aware character `.' as the first char of sechr, and character `}'
+		# suffix	- aware character `]'
+		# cntptr	- aware character `]'
+		#_tuidinitcs[p]=cs
+		#2 uidel, 5 pfx, 7 hichr,11(10) lochr,14 suffix
 		_rconline(n ": " cs)
 		_rconl()
 		if (match(cs, /^((([^\xB4:\[\|\]]*\xB4.)*[^\xB4:\[\|\]]*):)?((([^\xB4\[\|\]]*\xB4.)*[^\xB4\[\|\]]*)\[)?(([^\xB4\|\]]*\xB4.)*[^\xB4\|\]]*)?(\|(\.)?(([^\xB4\]]*\xB4.)*[^\xB4\]]*))?(\](.*))?$/, H)) {
@@ -5485,6 +6681,8 @@
 	function _trace(t, d, A)
 	{
 		if (_ERRLOG_TF) {
+			#_______________________________________________________________________
+			#################################################
 			A["TYPE"] = "TRACE"
 			A["TEXT"] = t
 			_log(A, d)
@@ -5493,12 +6691,15 @@
 
 	function _trunframe(f, p, p0, p1, p2)
 	{
+		#_________________________________________________________________
+		#################################
 		return _tframe((f ? f : "_trunframe_i0"), p, p0, p1, p2)
 	}
 
 	function _trunframe_i0(p, p0, p1, p2, f)
 	{
 		if (p in _tFN) {
+			#_________________________________________________________________
 			f = _tFN[p]
 			return @f(p, p0, p1, p2)
 		}
@@ -5506,26 +6707,88 @@
 
 	function _trunframex(f, p, p0, p1)
 	{
+		#_________________________________________________________________
+		###################################
 		return _tframex((f ? f : "_trunframe_i0"), p, p0, p1)
 	}
 
 	function _trunpass(f, p, p0, p1)
 	{
+		#_________________________________________________________________
+		#####################################
 		return _tpass((f ? f : "_trunframe_i0"), p, p0, p1)
 	}
 
 	function _trunpassx(f, p, p0, p1)
 	{
+		#_________________________________________________________________
+		####################################
 		return _tpassx((f ? f : "_trunframe_i0"), p, p0, p1)
 	}
 
 	function _tsetsp(p, v)
 	{
+		#_________________________________________________________________
+		#############################################
 		return (_tSTACK[p][0] = v)
 	}
 
 	function _tstini()
 	{
+		#			dptr			- morg ptr; in case if object deleted then _CLASSPTR[ptr] will be deleted(object is death), but
+		#							_tUIDEL[_CLASSPTR[ptr]] will be created that object can be resurrected from morg
+		#							dptr can be any string containing any characters except `:'. It's not verified
+		#			pfx,sfx		- uid prefix str, and uid suffix str; this strings specifies string that can be inserted before/after
+		#							uid generated by uid generator:
+		#
+		#								class uid:			pfx uidgen sfx
+		#
+		#							Both can be any string(including ""), and can contains any character with B4-escaping feature.
+		#							Note: that this strings cannot contains "'" character: it's should be escaped by B4-escaper.
+		#			hstr,lstr		- this values configure uid-generator itself. ther is a 3 combinations regarding its:
+		#
+		#								hstr			lstr			function
+		#
+		#								`ptr			*			- specify pointer to external uid-generator
+		#														All uids and chars will be generated by external uid-generator
+		#								*			^ptr			- class will have it's own uid generator using external character set
+		#								str			str			- class will have it's own uid generator with it's own character set
+		#														character set inmplemented in hstr(high-charset) and in lstr(low-charset) in 2 ways:
+		#							1)	"AB"			"AB01"			- this mean that high-charset contain chars: `A' and `B'
+		#																low-charset contains chars: `A', `B', `0', `1'
+		#
+		#							2)	"Az,By"		"Ax,Bw,0v,1u"		- this mean that high-charset contain chars: `Az' and `By'
+		#																low-charset contains chars:  `Ax', `Bw', `0v', `1u'
+		#															Note: both: hstr and lstr cannot contain char `,' directly, but it's can uses
+		#																	B4-escaper to escape any char including `,'
+		# !!!! in case of using `,' in hstr/lstr - the escaped `,' will leads to interpretate hstr and lstr as divided by `,'
+		# if parameters error then i should be more specific about what error in parameters detected
+		# document _inituid(): parameters; document cs: uid initialization string format
+		# test with escape char
+		# adv hstr and lstr splitting?
+		# chk if hstr len==0 ?
+		# return _tclass & report error?
+		# _tapi thru function
+		# additional syntax checking ???
+		# implement syntax and uid srv in docs
+		# add _dumpuid() ????
+		# make performance measurement
+		# protection against badchar list
+		# additional feature to specify _getuid() to not resurrect uid; and informative that uid was ressurected or not
+		# build _defclass fn
+		# _tuidinitcs ????
+		# _tuidchrh[p]
+		# _tuidchrl[p]
+		# _tuidchr[p]
+		# _tuidcnt[p]
+		# _tUIDPFX[p]
+		# _tUIDSFX[p]
+		# _tUIDEL
+		# _tUIDCNTH
+		# _tUIDCNTL
+		# _tUIDCHRL
+		# _tUIDCHRH
+		# create default class basic `new' and `del' functions
 		_ini("uidel:pfx'hstr|lstr'sfx")
 		_ini("uidel:pfx'hstr|lstr'")
 		_ini("uidel:'hstr|lstr'sfx")
@@ -5613,6 +6876,32 @@
 
 	function _tzend(a, b)
 	{
+		#_____________________________________________________
+		#	_tframe0(hndstr,ptr)
+		#
+		#
+		#			IN:
+		#			MOD:
+		#			OUT:
+		#			RETURN:
+		#
+		#	handler string:
+		#		Handler-string divides to words. Word splitter is char ";"
+		#
+		#	Note that handler-string processed left to right. This mean that next word(more rightly) will overwrite fields implemented before(leftmost).
+		#	Note that if word-string contains more than one rexp-field then only last rexp-field(most rightly) will be applied.
+		#_______________________________________________
+		# TO DESIGN:
+		#
+		# 0-4: complete design of tlink handler call
+		# 1-4: add new tlink handler call
+		# 1-4: add new run fn (changed rexp to different for each type: see _tframe0)
+		#
+		# hndstr:
+		#	may be add rexp for each type of handler and also total rexp for all ??? ADDED (test)
+		#	may be add separator char ";" ???		ADDED (test)
+		#_______________________________________________________________________
+		#####################################################
 		if (b == 0 && b == "") {
 			return (_TEND[_TEND[_ARRLEN]] = a)
 		} else {
@@ -5636,6 +6925,7 @@
 
 	function _unformatrexp(t)
 	{
+		#___________________________________________________________________________________
 		_formatstrq0 = split(t, _FORMATSTRA, /(\\[0-9]{1,3})|(\\x[[:xdigit:]]+)|(\\.)/, _FORMATSTRB)
 		_formatstrs0 = ""
 		for (t = 1; t < _formatstrq0; t++) {
@@ -5646,6 +6936,7 @@
 
 	function _unformatrexp_init(i, a)
 	{
+		#___________________________________________________________
 		_formatstrs0 = "\\^$.[]|()*+?{}-sSwW<>yB`'"
 		delete _FORMATSTRB
 		for (i = 0; i < 256; i++) {
@@ -5673,6 +6964,7 @@
 
 	function _unformatstr(t)
 	{
+		#___________________________________________________________________________________
 		_formatstrq0 = split(t, _FORMATSTRA, /(\\[0-9]{1,3})|(\\x[[:xdigit:]]+)|(\\.)/, _FORMATSTRB)
 		_formatstrs0 = ""
 		for (t = 1; t < _formatstrq0; t++) {
@@ -5683,6 +6975,7 @@
 
 	function _unformatstr_init(i)
 	{
+		#___________________________________________________________
 		for (i = 0; i < 256; i++) {
 			_QESCHR["\\" _CHR[i]] = _CHR[i]
 		}
@@ -5708,11 +7001,38 @@
 
 	function _uninit_del(A, i, p0)
 	{
+		#_____________________________________________________________________________
 		_del(i)
 	}
 
 	function _unstr(t)
 	{
+		####################################################################################
+		# PUBLIC:
+		#_____________________________________________________________________________
+		#	var	_SYS_STDOUT			- (by default = "/dev/stdout") standart output pipe filename
+		#	var	_SYS_STDERR			- (by default = "/dev/stderr") standart error output pipe filename
+		#	var	_SYS_STDCON			- (by default = "CON") standart console output device
+		#_____________________________________________________________________________
+		#	var	_CHR["CR"]			- return cursor to the position 0 without newline(normally ="\x0D")
+		#	var	_CHR["EOL"]			- return cursor to the position 0 & newline (MS:="\x0D\x0A" / UX:="\x0D")
+		#	var	_CON_WIDTH 			- console width(columns number)
+		#_____________________________________________________________________________
+		#	fn	_cmd(c)			- execute shell command c and return output
+		#	fn	_err				- output string w\o any addition into _SYS_STDERR device
+		#	fn	_errnl			- output string with addition _CHR["EOL"] at the end of the string into _SYS_STDERR device
+		#	fn	_out				- output string w\o any addition into _SYS_STDOUT device
+		#	fn	_outnl			- output string with addition _CHR["EOL"] at the end of the string into _SYS_STDOUT device
+		#_____________________________________________________________________________
+		#	fn	_con(text[,tabspace])
+		#	fn	_conl(text[,tabspace])
+		#	fn	_conline(text[,tabspace])
+		#	fn	_constat(status[,tabspace])
+		#	fn	_constatpush([status[,tabspace]])
+		#	fn	_constatpop()
+		#_______________________________________________________________________
+		#	var	_constatstr
+		####################################################################################
 		return gensub(/\\(.)/, "\\1", "G", t)
 	}
 
@@ -5720,6 +7040,8 @@
 	{
 		if (f = filepath(f)) {
 			if (match(f, /\\$/)) {
+				#_________________________________________________________________
+				#############################################
 				_deletepfx(_FILEIO_RDTMP, a = toupper(f))
 				_deletepfx(_FILEIO_RDNETMP, a)
 			} else {
@@ -5732,6 +7054,7 @@
 
 	function _val(v, t)
 	{
+		#_____________________________________________________________________________
 		if (isarray(v)) {
 			return (_dumparr(v) _ln(t))
 		}
@@ -5743,6 +7066,7 @@
 
 	function _val0(v)
 	{
+		#_____________________________________________________________________________
 		if (isarray(v)) {
 			return _dumparr(v)
 		}
@@ -5754,6 +7078,7 @@
 
 	function _var(v, t)
 	{
+		#_____________________________________________________________________________
 		if (isarray(v)) {
 			return (_dumparr(v) _ln(t))
 		}
@@ -5766,6 +7091,8 @@
 	function _verb(t, d, A)
 	{
 		if (_ERRLOG_VF) {
+			#_______________________________________________________________________
+			##################################################
 			A["TYPE"] = "VERB"
 			A["TEXT"] = t
 			_log(A, d)
@@ -5776,8 +7103,11 @@
 	{
 		if (p) {
 			if (v) {
+				######################## v is parentesis of p
 				for (a = p; a in _tPARENT; ) {
 					if ((a = _tPARENT[a]) == v) {
+						#_________________________________________________________________
+						###########################################
 						return v
 					}
 				}
@@ -5876,15 +7206,19 @@
 					return (_tPREV[_tNEXT[v] = p] = v)
 				}
 			} else {
+				######################## p=ptr, v=0
 				if (v == 0) {
 					return v
 				}
 				return v
 			}
 		} else {
+			######################## p=ptr, v=""
+			######################## p=0
 			if (p == 0) {
 				return v
 			}
+			######################## p="", v=ptr	- exclude v
 			if (v) {
 				return _texclude(v)
 			}
@@ -5896,9 +7230,13 @@
 	{
 		if (p) {
 			if (v) {
+				######################## p=v=ptr
 				if (p == v) {
+					#_________________________________________________________________
+					##########################################
 					return v
 				}
+				######################## v is parentesis of p
 				for (a = p; a in _tPARENT; ) {
 					if ((a = _tPARENT[a]) == v) {
 						return v
@@ -5963,6 +7301,7 @@
 			} else {
 				if (v == 0) {
 					if (p in _tFCHLD) {
+						######################## p=ptr, v=0 > delete all chld
 						v = _tFCHLD[p]
 						delete _tFCHLD[p]
 						delete _tLCHLD[p]
@@ -5975,6 +7314,8 @@
 				return v
 			}
 		} else {
+			######################## p=ptr, v="" > ignore action
+			######################## p=0
 			if (p == 0) {
 				return v
 			}
@@ -5986,8 +7327,11 @@
 	{
 		if (p) {
 			if (v) {
+				######################## v is parentesis of p
 				for (a = p; a in _tPARENT; ) {
 					if ((a = _tPARENT[a]) == v) {
+						#_________________________________________________________________
+						###########################################
 						return v
 					}
 				}
@@ -6086,15 +7430,19 @@
 					return (_tNEXT[_tPREV[v] = p] = v)
 				}
 			} else {
+				######################## p=ptr, v=0
 				if (v == 0) {
 					return v
 				}
 				return v
 			}
 		} else {
+			######################## p=ptr, v=""
+			######################## p=0
 			if (p == 0) {
 				return v
 			}
+			######################## p="", v=ptr	- exclude v
 			if (v) {
 				return _texclude(v)
 			}
@@ -6106,9 +7454,13 @@
 	{
 		if (p) {
 			if (v) {
+				######################## p=v=ptr
 				if (p == v) {
+					#_________________________________________________________________
+					##########################################
 					return v
 				}
+				######################## v is parentesis of p
 				for (a = p; a in _tPARENT; ) {
 					if ((a = _tPARENT[a]) == v) {
 						return v
@@ -6173,6 +7525,7 @@
 			} else {
 				if (v == 0) {
 					if (p in _tFCHLD) {
+						######################## p=ptr, v=0 > delete all chld
 						v = _tFCHLD[p]
 						delete _tFCHLD[p]
 						delete _tLCHLD[p]
@@ -6185,6 +7538,8 @@
 				return v
 			}
 		} else {
+			######################## p=ptr, v="" > ignore action
+			######################## p=0
 			if (p == 0) {
 				return v
 			}
@@ -6194,6 +7549,8 @@
 
 	function _wLINK(p, v)
 	{
+		#_________________________________________________________________
+		##############################################
 		return (_tLINK[p] = v)
 	}
 
@@ -6201,9 +7558,13 @@
 	{
 		if (p) {
 			if (v) {
+				######################## p=v=ptr
 				if (p == v) {
+					#_________________________________________________________________
+					#########################################
 					return v
 				}
+				######################## v is parentesis of p
 				for (a = p; a in _tPARENT; ) {
 					if ((a = _tPARENT[a]) == v) {
 						return v
@@ -6258,15 +7619,19 @@
 				}
 				return (_tNEXT[_tPREV[v] = p] = v)
 			} else {
+				######################## p=ptr, v=0
 				if (v == 0) {
 					return v
 				}
 				return v
 			}
 		} else {
+			######################## p=ptr, v=""
+			######################## p=0
 			if (p == 0) {
 				return v
 			}
+			######################## p="", v=ptr	- exclude v
 			if (v) {
 				return _texclude(v)
 			}
@@ -6276,6 +7641,8 @@
 
 	function _wPARENT(p, v)
 	{
+		#_________________________________________________________________
+		############################################
 		return v
 	}
 
@@ -6283,9 +7650,13 @@
 	{
 		if (p) {
 			if (v) {
+				######################## p=v=ptr
 				if (p == v) {
+					#_________________________________________________________________
+					#########################################
 					return v
 				}
+				######################## v is parentesis of p
 				for (a = p; a in _tPARENT; ) {
 					if ((a = _tPARENT[a]) == v) {
 						return v
@@ -6340,15 +7711,19 @@
 				}
 				return (_tPREV[_tNEXT[v] = p] = v)
 			} else {
+				######################## p=ptr, v=0
 				if (v == 0) {
 					return v
 				}
 				return v
 			}
 		} else {
+			######################## p=ptr, v=""
+			######################## p=0
 			if (p == 0) {
 				return v
 			}
+			######################## p="", v=ptr	- exclude v
 			if (v) {
 				return _texclude(v)
 			}
@@ -6358,6 +7733,8 @@
 
 	function _wQBRO(p, v)
 	{
+		#_________________________________________________________________
+		##############################################
 		return v
 	}
 
@@ -6368,6 +7745,10 @@
 			} else {
 				if (v == 0) {
 					if (p in _tFCHLD) {
+						#_________________________________________________________________
+						#############################################
+						######################## p=ptr, v=ptr
+						######################## p=ptr, v=0 > delete all chld
 						v = _tFCHLD[p]
 						delete _tFCHLD[p]
 						delete _tLCHLD[p]
@@ -6380,7 +7761,9 @@
 				return v
 			}
 		} else {
+			######################## p=0
 			if (p == 0) {
+				######################## p=ptr, v="" > ignore action
 				return v
 			}
 			return v
@@ -6390,6 +7773,8 @@
 	function _warning(t, d, A)
 	{
 		if (_ERRLOG_WF) {
+			#_______________________________________________________________________
+			###############################################
 			A["TYPE"] = "WARNING"
 			A["TEXT"] = t
 			_log(A, d)
@@ -6398,6 +7783,7 @@
 
 	function _wfilerdnehnd(f, t)
 	{
+		#___________________________________________________________
 		if ((f = _filerdne(f)) == "") {
 			return ""
 		}
@@ -6421,6 +7807,7 @@
 	function _wr_shortcut(f, S)
 	{
 		if (_shrtcutf0 = _filepath(f)) {
+			#___________________________________________________________
 			ERRNO = ""
 			_shrtcuta0 = _shortcut_fpath " /A:C /F:\"" _shrtcutf0 "\" 2>&1"
 			for (f in _SHORTCUTWSTRUC) {
@@ -6438,6 +7825,8 @@
 	function _wrfile(f, d, a, b)
 	{
 		if ((f = _wfilerdnehnd(f)) == "" || _filene(f) == "") {
+			#_________________________________________________________________
+			#########################################
 			ERRNO = "Filename error"
 			return 
 		}
@@ -6462,6 +7851,8 @@
 	function _wrfile1(f, d, a, b)
 	{
 		if ((f = _wfilerdnehnd(f)) == "" || _filene(f) == "") {
+			#___________________________________________________________
+			##################################
 			ERRNO = "Filename error"
 			return 
 		}
@@ -6485,11 +7876,14 @@
 
 	function _yexport(p)
 	{
+		#_______________________________________________________________________
+		#####################################################
 		return _tframe("_yexport_i0", p)
 	}
 
 	function _yexport_i0(p, p0, p1, p2)
 	{
+		#_______________________________________________________________________
 		if (p in _tLOG) {
 			return ("_ERRLOG: " _Zexparr(_tLOG[p]) "\n")
 		}
@@ -6503,11 +7897,14 @@
 
 	function cmp_str_idx(i1, v1, i2, v2)
 	{
+		#_________________________________________________________________
+		##############################
 		return ((i1 < i2 ? -1 : 1))
 	}
 
 	function filedi(f, d)
 	{
+		#___________________________________________________________
 		if ((f = filerdnehndi(f)) == "") {
 			return _FILEIO_D
 		}
@@ -6528,6 +7925,7 @@
 
 	function filegetdrvdir(t, r)
 	{
+		#___________________________________________________________
 		if (t in _FILEDRV) {
 			return _FILEDRV[t]
 		}
@@ -6544,6 +7942,7 @@
 	function filegetrootdir(f, dd, d)
 	{
 		if (f in _FILEDIRFL) {
+			#___________________________________________________________
 			if (f in _FILEROOT) {
 				return (_FILEROOT[f] _FILEDIR[f])
 			}
@@ -6581,6 +7980,7 @@
 	function filerdnehndi(st, a, c, r, d, n, A)
 	{
 		if (st) {
+			#___________________________________________________________
 			if ((c = toupper(st)) in _FILECACHE) {
 				return _FILECACHE[c]
 			}
@@ -6632,6 +8032,7 @@
 
 	function fileri(f)
 	{
+		#_____________________________________________________
 		if ((f = filerdnehndi(f)) == "") {
 			return _FILEIO_R
 		}
@@ -6651,6 +8052,8 @@
 
 	function ncmp_str_idx(i1, v1, i2, v2)
 	{
+		#___________________________________________________________
+		#######################
 		return ((i1 < i2 ? 1 : -1))
 	}
 
@@ -6709,6 +8112,9 @@
 
 	function test_uid(p, i)
 	{
+		#test_cfg()
+		#return
+		#_fclass=_cfguid(p=_getuid(_classys),_NOP,_NOP,_NOP,"",_classys)
 		_fclass = _cfguid(p = _getuid(_classys), p, "pfx", "sfx", "abc")
 		_conl("_fclass uid: " _getuid(_fclass))
 		_drawuid(_fclass)
@@ -6741,6 +8147,20 @@
 
 	function zorr(A, i, r)
 	{
+		#			#		- p is array
+		#			`		- p is ptr detected in array _CLASSPTR(for _typ); or p is ptr detected in array A(for _typa)
+		#			0		- p is undefined
+		#			2		- p is string==""
+		#			3		- p is string!=""
+		#			4		- p is number 0
+		#			5		- p is any number except 0(positive and negative)
+		# str:			_typ(p)+0		!_typ(p)+0
+		# str/ptr			_typ(p)>0		_typ(p)<1
+		# str/arr			"`">_typ(p0) && _t0
+		# str/ptr/arr		_typ(p)		!_typ(p)
+		# ptr				_typ(p)=="`"	_typ(p)<"`"  ?
+		# ptr/arr			_typ(p)+0!=_t0
+		# arr				_typ(p)=="#"	_typ(p)>"#"  ?
 		if (i in A) {
 			_conl("`" i "' in A")
 		} else {

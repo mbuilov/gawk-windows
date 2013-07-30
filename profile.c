@@ -873,6 +873,28 @@ cleanup:
 				indent(pc->exec_count);
 			break;
 
+		case Op_comment:
+		{
+			char *text;
+			size_t count;
+			bool after_newline = false;
+
+			count = pc->memory->stlen;
+			text = pc->memory->stptr;
+
+			indent(SPACEOVER);
+			for (; count > 0; count--, text++) {
+				if (after_newline) {
+					indent(SPACEOVER);
+					after_newline = false;
+				}
+				putc(*text, prof_fp);
+				if (*text == '\n')
+					after_newline = true;
+			}
+		}
+			break;
+
 		default:
 			cant_happen();
 		}

@@ -679,6 +679,7 @@ typedef enum opcodeval {
 
 	Op_func,
 
+	Op_comment,		/* for pretty printing */
 	Op_exec_count,
 	Op_breakpoint,
 	Op_lint,
