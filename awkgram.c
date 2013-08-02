@@ -7601,8 +7601,12 @@ append_rule(INSTRUCTION *pattern, INSTRUCTION *action)
 						action),
 					tp);
 		}
-
 	}
+
+//	if (comment != NULL) {
+//		ip = list_prepend(ip, comment);
+//		comment = NULL;
+//	}
 
 	list_append(rule_list, rp + 1);
 
