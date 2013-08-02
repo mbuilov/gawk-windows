@@ -511,7 +511,24 @@ init_filefuncs(void)
 	return errors == 0;
 }
 
-#ifndef _WIN32
+#ifdef _WIN32
+/*  do_fts --- walk a heirarchy and fill in an array */
+
+/*
+ * Usage from awk:
+ *	flags = or(FTS_PHYSICAL, ...)
+ *	result = fts(pathlist, flags, filedata)
+ */
+
+static awk_value_t *
+do_fts(int nargs, awk_value_t *result)
+{
+	fatal(ext_id, _("fts is not supported on this system"));
+
+	return NULL;	/* for the compiler */
+}
+
+#else /* _WIN32 */
 
 static int fts_errors = 0;
 
