@@ -1,3 +1,19 @@
+2013-08-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c: Change _WIN32 to __MINGW32__ globally, per
+	Eli Zaretskii.
+
+2013-08-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (do_fts): Add a version for _WIN32 that prints a
+	"not supported" fatal message.  This is slightly better than the
+	"fts not found" which is otherwise produced.
+
+2013-07-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkdirfd.h (FAKE_FD_VALUE): Move definition up in the file to give
+	clean compile on MinGW.
+
 2013-07-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* configure.ac (AC_CHECK_FUNCS): Check for fcntl.

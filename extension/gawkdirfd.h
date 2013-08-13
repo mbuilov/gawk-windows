@@ -25,6 +25,16 @@
 # define ENOTSUP ENOSYS
 #endif
 
+/*
+ * This is for fake directory file descriptors on systems that don't
+ * allow to open() a directory.
+ *
+ * It would be nice if this could be shared with the definition in awk.h
+ * in the main code base, but there's not a very clean way to do that,
+ * at least that I can see.
+ */
+#define FAKE_FD_VALUE 42
+
 #ifndef DIR_TO_FD
 # define DIR_TO_FD(d) (FAKE_FD_VALUE)
 #endif
@@ -39,7 +49,3 @@ dirfd (DIR *dir_p)
   return fd;
 }
 #endif /* HAVE_DIRFD */
-
-/* This is for fake directory file descriptors on systems that don't
-   allow to open() a directory.  */
-#define FAKE_FD_VALUE 42

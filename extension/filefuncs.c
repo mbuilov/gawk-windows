@@ -71,7 +71,7 @@
 #define readlink(f,b,bs) (-1)
 #endif
 
-#ifdef _WIN32
+#ifdef __MINGW32__
 #define S_IRGRP S_IRUSR
 #define S_IWGRP S_IWUSR
 #define S_IXGRP S_IXUSR
@@ -361,7 +361,7 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 	/* fill in the array */
 	array_set(array, "name", make_const_string(name, strlen(name), & tmp));
 	array_set_numeric(array, "dev", sbuf->st_dev);
-#ifdef _WIN32
+#ifdef __MINGW32__
 	array_set_numeric(array, "ino", (double)get_inode (name));
 #else
 	array_set_numeric(array, "ino", sbuf->st_ino);
@@ -371,7 +371,7 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 	array_set_numeric(array, "uid", sbuf->st_uid);
 	array_set_numeric(array, "gid", sbuf->st_gid);
 	array_set_numeric(array, "size", sbuf->st_size);
-#ifdef _WIN32
+#ifdef __MINGW32__
 	array_set_numeric(array, "blocks", (sbuf->st_size + 4095) / 4096);
 #else
 	array_set_numeric(array, "blocks", sbuf->st_blocks);
@@ -389,7 +389,7 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 
 #ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
 	array_set_numeric(array, "blksize", sbuf->st_blksize);
-#elif defined(_WIN32)
+#elif defined(__MINGW32__)
 	array_set_numeric(array, "blksize", 4096);
 #endif /* HAVE_STRUCT_STAT_ST_BLKSIZE */
 
@@ -483,7 +483,7 @@ init_filefuncs(void)
 	int i;
 	awk_value_t value;
 
-#ifndef _WIN32
+#ifndef __MINGW32__
 	/* at least right now, only FTS needs initializing */
 	static struct flagtab {
 		const char *name;
@@ -511,7 +511,24 @@ init_filefuncs(void)
 	return errors == 0;
 }
 
-#ifndef _WIN32
+#ifdef __MINGW32__
+/*  do_fts --- walk a heirarchy and fill in an array */
+
+/*
+ * Usage from awk:
+ *	flags = or(FTS_PHYSICAL, ...)
+ *	result = fts(pathlist, flags, filedata)
+ */
+
+static awk_value_t *
+do_fts(int nargs, awk_value_t *result)
+{
+	fatal(ext_id, _("fts is not supported on this system"));
+
+	return NULL;	/* for the compiler */
+}
+
+#else /* __MINGW32__ */
 
 static int fts_errors = 0;
 
@@ -815,12 +832,12 @@ out:
 
 	return make_number(ret, result);
 }
-#endif	/* !_WIN32 */
+#endif	/* ! __MINGW32__ */
 
 static awk_ext_func_t func_table[] = {
 	{ "chdir",	do_chdir, 1 },
 	{ "stat",	do_stat, 2 },
-#ifndef _WIN32
+#ifndef __MINGW32__
 	{ "fts",	do_fts, 3 },
 #endif
 };

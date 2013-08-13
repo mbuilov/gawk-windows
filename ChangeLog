@@ -1,3 +1,13 @@
+2013-07-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (FAKE_FD_VALUE): Move definition from here ...
+	* awk.h (FAKE_FD_VALUE): ... to here. Fixes compilation on MinGW.
+
+2013-07-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (get_a_record): Change `min' to `MIN' for consistency with
+	other files and general practice.
+
 2013-07-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* configure.ac (AC_CHECK_FUNCS): Check for sigprocmask.
@@ -37,7 +47,7 @@
 	we reach the Op_after_beginfile opcode.  We then run after_beginfile
 	manually and restore the value of currule and source.
 
-2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+2013-07-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.h (awk_element_t): Add comment indicating that the array
 	element index will always be a string!
@@ -84,6 +94,17 @@
 	to take a string instead of a 'NODE *'.  This allows it to be called
 	through the API's new get_file hook.
 	(redirect): Now implemented by calling redirect_string backend function.
+
+2013-07-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (format_tree): Fixes for %c with multibyte characters
+	and field width > 1. Bugs reported by Nethox <nethox@gmail.com>.
+
+2013-07-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pp_string): Add a call to chksize and fix another.
+	Avoids valgrind errors on profile5 test. Thanks to Andrew
+	Schorr for the report.
 
 2013-06-27         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -1845,7 +1866,7 @@
 2012-06-19         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* main.c (main): Do setlocale to "C" if --characters-as-bytes.
-	Thanks to "SP" <sp0sp0sp@gmail.com> for the bug report.
+	Thanks to "SP" for the bug report.
 
 2012-05-09         Arnold D. Robbins     <arnold@skeeve.com>
 

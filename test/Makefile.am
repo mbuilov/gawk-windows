@@ -493,6 +493,9 @@ EXTRA_DIST = \
 	mbprintf3.awk \
 	mbprintf3.in \
 	mbprintf3.ok \
+	mbprintf4.awk \
+	mbprintf4.in \
+	mbprintf4.ok \
 	mbstr1.awk \
 	mbstr1.ok \
 	membug1.awk \
@@ -991,7 +994,7 @@ MPFR_TESTS = mpfrnr mpfrrnd mpfrieee mpfrexprange mpfrsort mpfrbigint
 
 LOCALE_CHARSET_TESTS = \
 	asort asorti fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
-	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
+	mbprintf1 mbprintf2 mbprintf3 mbprintf4 rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
 	fnmatch filefuncs fork fork2 fts functab4 inplace1 inplace2 inplace3 \
@@ -1559,6 +1562,12 @@ mbprintf2::
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 mbprintf3::
+	@echo $@
+	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	$(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mbprintf4::
 	@echo $@
 	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
 	$(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
