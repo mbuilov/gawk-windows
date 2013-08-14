@@ -5456,6 +5456,8 @@ allow_newline(void)
 					comment->memory->stptr[comment->memory->stlen] = '\0';
 				} else {
 					comment = bcalloc(Op_comment, 1, sourceline);
+					comment->source_file = source;
+
 					comment->memory = make_str_node(tokstart, tok - tokstart, 0);
 				}
 //			} else {
@@ -5684,6 +5686,7 @@ retry:
 				comment->memory->stptr[comment->memory->stlen] = '\0';
 			} else {
 				comment = bcalloc(Op_comment, 1, sourceline);
+				comment->source_file = source;
 				comment->memory = make_str_node(tokstart, tok - tokstart, 0);
 			}
 
