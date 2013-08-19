@@ -13037,10 +13037,18 @@ it is not special.
 An associative array containing the values of the environment.  The array
 indices are the environment variable names; the elements are the values of
 the particular environment variables.  For example,
-@code{ENVIRON["HOME"]} might be @file{/home/arnold}.  Changing this array
-does not affect the environment passed on to any programs that
-@command{awk} may spawn via redirection or the @code{system()} function.
-@c (In a future version of @command{gawk}, it may do so.)
+@code{ENVIRON["HOME"]} might be @file{/home/arnold}.
+
+For POSIX @command{awk}, changing this array does not affect the
+environment passed on to any programs that @command{awk} may spawn via
+redirection or the @code{system()} function.
+
+However, beginning with @value{PVERSION} 4.2, if not in POSIX
+compatibility mode, @command{gawk} does update its own environment when
+@code{ENVIRON} is changed, thus changing the environment seen by programs
+that it creates.  You should therefore be especially careful if you
+modify @code{ENVIRON["PATH"]"}, which is the search path for finding
+executable programs.
 
 Some operating systems may not have environment variables.
 On such systems, the @code{ENVIRON} array is empty (except for

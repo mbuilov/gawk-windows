@@ -1,3 +1,13 @@
+2013-08-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Reflect updates to ENVIRON into the real environment.
+
+	* awk.h (init_env_array): Add declaration.
+	* main.c (load_environ): Call init_env_array.
+	* str_array.c (env_remove, env_store, env_clear, init_env_array):
+	New functions.
+	(env_array_func): New array vtable.
+
 2013-08-15         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* debug.c (print_memory): Fix whitespace / indentation.

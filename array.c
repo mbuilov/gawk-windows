@@ -113,21 +113,14 @@ null_array(NODE *symbol)
 	symbol->table_size = symbol->array_size = 0;
 	symbol->array_capacity = 0;
 	symbol->flags = 0;
-	/*
-	 * 5/2013: This used to be
-	 *
-	 * 	assert(symbol->xarray == NULL);
-	 *
-	 * But that seems to cause problems for no good reason
-	 * that I can see. I believe it to be an artifact of the
-	 * union getting in the way.
-	 */
-	symbol->xarray = NULL;
+
+	assert(symbol->xarray == NULL);
+
 	/* vname, parent_array not (re)initialized */
 }
 
 
-/* null_lookup: assign type to an empty array. */
+/* null_lookup --- assign type to an empty array. */
 
 static NODE **
 null_lookup(NODE *symbol, NODE *subs)
@@ -349,6 +342,7 @@ force_array(NODE *symbol, bool canfatal)
 
 	switch (symbol->type) {
 	case Node_var_new:
+		symbol->xarray = NULL;	/* make sure union is as it should be */
 		null_array(symbol);
 		symbol->parent_array = NULL;	/* main array has no parent */
 		/* fall through */
