@@ -113,6 +113,7 @@ base_sources = \
 	mpfr.c \
 	msg.c \
 	node.c \
+	nonposix.h \
 	profile.c \
 	protos.h \
 	random.c \

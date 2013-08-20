@@ -29,11 +29,13 @@
  * This is for fake directory file descriptors on systems that don't
  * allow to open() a directory.
  *
- * It would be nice if this could be shared with the definition in awk.h
- * in the main code base, but there's not a very clean way to do that,
- * at least that I can see.
+ * Including a header from the main gawk source to share the definition
+ * of FAKE_FD_VALUE is the least of all evils that I can see.
+ *
+ * Unlike the main gawk code base, this include is NOT dependant
+ * upon MinGW or EMX.
  */
-#define FAKE_FD_VALUE 42
+#include "../nonposix.h"
 
 #ifndef DIR_TO_FD
 # define DIR_TO_FD(d) (FAKE_FD_VALUE)
