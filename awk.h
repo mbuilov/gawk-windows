@@ -206,11 +206,9 @@ typedef void *stackoverflow_context_t;
 #define stackoverflow_install_handler(catchstackoverflow, extra_stack, STACK_SIZE) 0
 #endif
 
-/*
- * This is for fake directory file descriptors on systems that don't
- * allow to open() a directory.
- */
-#define FAKE_FD_VALUE 42
+#if defined(__EMX__) || defined(__MINGW32__)
+#include "nonposix.h"
+#endif /* defined(__EMX__) || defined(__MINGW32__) */
 
 /* use this as lintwarn("...")
    this is a hack but it gives us the right semantics */
