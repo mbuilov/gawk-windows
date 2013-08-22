@@ -792,10 +792,15 @@ static NODE **
 env_store(NODE *symbol, NODE *subs)
 {
 	NODE **val = str_exists(symbol, subs);
+	const char *newval;
 
 	assert(val != NULL);
 
-	(void) setenv(subs->stptr, (*val)->stptr, 1);
+	newval = (*val)->stptr;
+	if (newval == NULL)
+		newval = "";
+
+	(void) setenv(subs->stptr, newval, 1);
 
 	return val;
 }
