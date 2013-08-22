@@ -1,3 +1,17 @@
+2013-08-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Clean up some warnings from -Wextra.
+
+	* gawkfts.c (fts_set): Add cast to void for sp.
+	* inplace.c (at_exit): Add cast to void for data and exit_status.
+	* readdir.c (ftype): Add cast to void for dirname.
+	(dir_get_record): Assign NULL to *rt_start.
+	* revtwoway.c (rev2way_get_record): Add cast to void for errcode.
+	(rev2way_fwrite): Add cast to void for fp.
+	(rev2way_take_control_of): Add cast to void for name.
+	* testext.c (test_array_param, test_scalar, test_scalar_reserved,
+	test_indirect_vars): Add cast to void for nargs.
+
 2013-08-20         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkdirfd.h: Include ../nonposix.h to get FAKE_FD_VALUE.
