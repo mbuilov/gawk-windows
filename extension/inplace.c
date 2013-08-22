@@ -88,6 +88,8 @@ static struct {
 static void
 at_exit(void *data, int exit_status)
 {
+	(void) data;		/* silence warnings */
+	(void) exit_status;	/* silence warnings */
 	if (state.tname) {
 		unlink(state.tname);
 		free(state.tname);

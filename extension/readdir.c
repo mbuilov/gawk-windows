@@ -89,6 +89,7 @@ static const char *
 ftype(struct dirent *entry, const char *dirname)
 {
 #ifdef DT_BLK
+	(void) dirname;		/* silence warnings */
 	switch (entry->d_type) {
 	case DT_BLK:	return "b";
 	case DT_CHR:	return "c";
@@ -158,6 +159,7 @@ get_inode(struct dirent *entry, const char *dirname)
 	}
 	return 0;
 #else
+	(void) dirname;		/* silence warnings */
 	return entry->d_ino;
 #endif
 }
@@ -215,6 +217,7 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 
 	*out = the_dir->buf;
 
+	*rt_start = NULL;
 	*rt_len = 0;	/* set RT to "" */
 	return len;
 }
