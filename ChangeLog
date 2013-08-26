@@ -1,3 +1,14 @@
+2013-08-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regcomp.c (parse_dup_op): Remove RE_TOKEN_INIT_BUG code (change of
+	Feb 19 2005) since it's no longer needed.
+
+	* regcomp.c (re_fastmap_iter): Undo addition of volatile from
+	Jan 18 2007; no longer needed and is one less change to have to
+	maintain aginst the upstream.
+
+	* regcomp.c, regex.h, regex_internal.h: Sync with GLIBC.
+
 2013-08-22         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* str_array.c (env_store): If the new value being stored is NULL,
