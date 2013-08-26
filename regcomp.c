@@ -2547,13 +2547,7 @@ parse_dup_op (bin_tree_t *elem, re_string_t *regexp, re_dfa_t *dfa,
 {
   bin_tree_t *tree = NULL, *old_tree = NULL;
   int i, start, end, start_idx = re_string_cur_idx (regexp);
-#ifndef RE_TOKEN_INIT_BUG
   re_token_t start_token = *token;
-#else
-  re_token_t start_token;
-
-  memcpy ((void *) &start_token, (void *) token, sizeof start_token);
-#endif
 
   if (token->type == OP_OPEN_DUP_NUM)
     {
