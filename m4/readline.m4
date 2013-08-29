@@ -72,6 +72,12 @@ dnl action if cross compiling:
            AC_DEFINE(HAVE_LIBREADLINE,1,
 	      [Define to 1 if you have a fully functional readline library.])
            AC_SUBST(LIBREADLINE,$_combo)
+
+	   AC_CHECK_LIB(readline, history_list,
+		[AC_DEFINE(HAVE_HISTORY_LIST, 1, [Do we have history_list?])],
+		[],
+		[$_combo])
+
            break
         fi
      done

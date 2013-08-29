@@ -108,6 +108,12 @@ static BREAKPOINT breakpoints = { &breakpoints, &breakpoints, 0 };
 static int sess_history_base = 0;
 #endif
 
+#ifndef HAVE_HISTORY_LIST
+#define HIST_ENTRY void
+#define history_list()	NULL
+#endif
+
+
 /* 'list' command */
 static int last_printed_line = 0;
 static int last_print_count;	/* # of lines printed */
@@ -4058,7 +4064,7 @@ do_dump_instructions(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 int
 do_save(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 {
-#ifdef HAVE_LIBREADLINE
+#if defined(HAVE_LIBREADLINE) && defined(HAVE_HISTORY_LIST)
 	FILE *fp;
 	HIST_ENTRY **hist_list;
 	int i;
@@ -4282,11 +4288,6 @@ serialize_subscript(char *buf, int buflen, struct list_item *item)
 static void
 serialize(int type)
 {
-#ifndef HAVE_LIBREADLINE
-#define HIST_ENTRY void
-#define history_list()	NULL
-#endif
-
 	static char *buf = NULL;
 	static int buflen = 0;
 	int bl;
@@ -4400,7 +4401,7 @@ enlarge_buffer:
 			cndn = &wd->cndn;
 			break;
 		case HISTORY:
-#ifdef HAVE_LIBREADLINE
+#if defined(HAVE_LIBREADLINE) && defined(HAVE_HISTORY_LIST)
 			h = (HIST_ENTRY *) ptr;
 			nchar = strlen(h->line);
 			if (nchar >= buflen - bl)
