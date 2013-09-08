@@ -2764,7 +2764,14 @@ build_range_exp (reg_syntax_t syntax, bitset_t sbcset,
 					new_nranges);
 
 	    if (BE (new_array_start == NULL || new_array_end == NULL, 0))
-	      return REG_ESPACE;
+              {
+                 /* if one is not NULL, free it to avoid leaks */
+                 if (new_array_start != NULL)
+                     re_free(new_array_start);
+                 if (new_array_end != NULL)
+                     re_free(new_array_end);
+	         return REG_ESPACE;
+	      }
 
 	    mbcset->range_starts = new_array_start;
 	    mbcset->range_ends = new_array_end;
@@ -3673,6 +3680,13 @@ build_charclass_op (re_dfa_t *dfa, RE_TRANSLATE_TYPE trans,
   if (BE (sbcset == NULL, 0))
 #endif /* not RE_ENABLE_I18N */
     {
+      /* if one is not NULL, free it to avoid leaks */
+      if (sbcset != NULL)
+         free(sbcset);
+#ifdef RE_ENABLE_I18N
+      if (mbcset != NULL)
+         free(mbcset);
+#endif
       *err = REG_ESPACE;
       return NULL;
     }
@@ -3715,6 +3729,7 @@ build_charclass_op (re_dfa_t *dfa, RE_TRANSLATE_TYPE trans,
 #endif
 
   /* Build a tree for simple bracket.  */
+  memset(& br_token, 0, sizeof(br_token));	/* silence "not initialized" errors froms static checkers */
   br_token.type = SIMPLE_BRACKET;
   br_token.opr.sbcset = sbcset;
   tree = create_token_tree (dfa, NULL, NULL, &br_token);
@@ -3805,6 +3820,7 @@ create_tree (re_dfa_t *dfa, bin_tree_t *left, bin_tree_t *right,
 	     re_token_type_t type)
 {
   re_token_t t;
+  memset(& t, 0, sizeof(t));	/* silence "not initialized" errors froms static checkers */
   t.type = type;
   return create_token_tree (dfa, left, right, &t);
 }

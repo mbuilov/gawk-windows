@@ -848,6 +848,8 @@ asort_actual(int nargs, sort_context_t ctxt)
  		/* source array is empty */
  		if (dest != NULL && dest != array)
  			assoc_clear(dest);
+		if (list != NULL)
+			efree(list);
  		return make_number((AWKNUM) 0);
  	}
 

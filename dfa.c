@@ -1038,7 +1038,8 @@ parse_bracket_exp (void)
                     /* This is in any case an invalid class name.  */
                     str[0] = '\0';
                 }
-              str[len] = '\0';
+              if (len < BRACKET_BUFFER_SIZE)
+                 str[len] = '\0';
 
               /* Fetch bracket.  */
               FETCH_WC (c, wc, _("unbalanced ["));

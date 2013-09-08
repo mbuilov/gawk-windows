@@ -1,3 +1,29 @@
+2013-09-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fixes based on reports from a static code checker. Thanks to
+	Anders Wallin for sending in the list.
+
+	* array.c (asort_actual): Free list if it's not NULL.
+	* builtin.c (do_sub): Set buf to NULL and assert on it before using
+	it.
+	* cint_array.c (cint_array_init): Clamp any value of NHAT from the
+	environment such that it won't overflow power_two_table when used as
+	an index.
+	* dfa.c (parse_bracket_exp): Check that len is in range before using it
+	to index buf.
+	* getopt.c (_getopt_internal_r): Change call to alloca to use malloc.
+	* io.c (socket_open): Init read_len to zero.
+	(two_way_open): Upon failure to fork, close the slave fd also.
+	* re.c (research): Init try_backref to false.
+	* regcomp.c (build_range_exp): Free any items that were allocated in
+	the case where not all items were.
+	(build_charclass_op): Same. Init br_token to zero with memset.
+	(create_tree): Init token t to zero with memset.
+	* regex_internal.c (re_dfa_add_node): Free any items that were
+	allocated in the case where not all items were.
+	* symbol.c (destroy_symbol): On default, break, to fall into releasing
+	of resources.
+
 2013-08-29         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* debug.c (HAVE_HISTORY_LIST): Move checks and defines to the top.

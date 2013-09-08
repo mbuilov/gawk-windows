@@ -2955,13 +2955,16 @@ set_how_many:
 done:
 	DEREF(s);
 
-	if ((matches == 0 || (flags & LITERAL) != 0) && buf != NULL)
+	if ((matches == 0 || (flags & LITERAL) != 0) && buf != NULL) {
 		efree(buf); 
+		buf = NULL;
+	}
 
 	if (flags & GENSUB) {
 		if (matches > 0) {
 			/* return the result string */
 			DEREF(t);
+			assert(buf != NULL);
 			return make_str_node(buf, textlen, ALREADY_MALLOCED);	
 		}
 
