@@ -1180,7 +1180,7 @@ r_get_field(NODE *n, Func_ptr *assign, bool reference)
 			*assign = reset_record;
 	} else
 		lhs = get_field(field_num, assign);
-	if (do_lint && reference && (*lhs == Null_field || *lhs == Nnull_string))
+	if (do_lint && reference && ((*lhs)->flags & NULL_FIELD) != 0)
 		lintwarn(_("reference to uninitialized field `$%ld'"),
 			      field_num);
 	return lhs;

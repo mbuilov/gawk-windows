@@ -434,6 +434,7 @@ typedef struct exp_node {
 #		define	MPFN	0x0800       /* arbitrary-precision floating-point number */
 #		define	MPZN	0x1000       /* arbitrary-precision integer */
 #		define	NO_EXT_SET 0x2000    /* extension cannot set a value for this variable */
+#		define	NULL_FIELD 0x4000    /* this is the null field */
 
 /* type = Node_var_array */
 #		define	ARRAYMAXED	0x4000       /* array is at max size */

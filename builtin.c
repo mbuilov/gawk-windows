@@ -2159,7 +2159,7 @@ do_print_rec(int nargs, int redirtype)
 
 	f0 = fields_arr[0];
 
-	if (do_lint && f0 == Nnull_string)
+	if (do_lint && (f0->flags & NULL_FIELD) != 0)
 		lintwarn(_("reference to uninitialized field `$%d'"), 0);
 
 	efwrite(f0->stptr, sizeof(char), f0->stlen, fp, "print", rp, false);

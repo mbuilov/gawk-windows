@@ -85,13 +85,19 @@ void
 init_fields()
 {
 	emalloc(fields_arr, NODE **, sizeof(NODE *), "init_fields");
-	fields_arr[0] = dupnode(Nnull_string);
+
+	getnode(fields_arr[0]);
+	*fields_arr[0] = *Nnull_string;
+	fields_arr[0]->flags |= NULL_FIELD;
+
 	parse_extent = fields_arr[0]->stptr;
 	save_FS = dupnode(FS_node->var_value);
+
 	getnode(Null_field);
 	*Null_field = *Nnull_string;
 	Null_field->valref = 1;
-	Null_field->flags = (FIELD|STRCUR|STRING);
+	Null_field->flags = (FIELD|STRCUR|STRING|NULL_FIELD);
+
 	field0_valid = true;
 }
 
@@ -348,6 +354,7 @@ set_NF()
 			*n = *Null_field;
 			fields_arr[i] = n;
 		}
+		parse_high_water = NF;
 	} else if (parse_high_water > 0) {
 		for (i = NF + 1; i >= 0 && i <= parse_high_water; i++) {
 			unref(fields_arr[i]);

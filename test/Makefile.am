@@ -540,6 +540,8 @@ EXTRA_DIST = \
 	nfldstr.awk \
 	nfldstr.in \
 	nfldstr.ok \
+	nfloop.awk \
+	nfloop.ok \
 	nfneg.awk \
 	nfneg.ok \
 	nfset.awk \
@@ -943,7 +945,7 @@ BASIC_TESTS = \
 	inputred intest intprec iobug1 \
 	leaddig leadnl litoct longsub longwrds \
 	manglprm math membug1 messages minusstr mmap8k mtchi18n \
-	nasty nasty2 negexp negrange nested nfldstr nfneg nfset nlfldsep \
+	nasty nasty2 negexp negrange nested nfldstr nfloop nfneg nfset nlfldsep \
 	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl \
 	noparms nors nulrsend numindex numsubstr \
 	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofs1 onlynl opasnidx opasnslf \
