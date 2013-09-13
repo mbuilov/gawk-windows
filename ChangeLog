@@ -1,3 +1,17 @@
+2013-09-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix use of NF after it's extended, e.g. see test/nfloop.awk.
+
+	* awk.h (NULL_FIELD): New flag
+	* builtin.c (do_print_rec): Check f0->flags instead of if
+	equal to Nnull_string.
+	* eval.c (r_get_field): Check (*lhs)->flags instead of if
+	equal to Nnull_string or Null_field.
+	* field.c (init_fields): Init field zero and Null_field with
+	NULL_FIELD flag.
+	(set_NF): Set parse_high_water = NF in case NF extended past the
+	end. This is the actual bug fix.
+
 2013-09-08         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Fixes based on reports from a static code checker. Thanks to
