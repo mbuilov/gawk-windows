@@ -1859,7 +1859,7 @@ dfamb1:
 # Targets generated for other tests:
 include Maketests
 
-"$(srcdir)"/Maketests: "$(srcdir)"/Makefile.am "$(srcdir)"/Gentests
+$(srcdir)/Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
 	files=`cd ""$(srcdir)"" && echo *.awk *.in`; \
 	$(AWK) -f "$(srcdir)"/Gentests ""$(srcdir)"/Makefile.am" $$files > "$(srcdir)"/Maketests
 
