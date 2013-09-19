@@ -804,7 +804,7 @@ using_utf8 (void)
 #endif
 #ifdef LIBC_IS_BORKED
       if (gawk_mb_cur_max == 1)
-	utf8 = 0;
+         utf8 = 0;
 #endif
     }
 
@@ -1017,8 +1017,8 @@ parse_bracket_exp (void)
          dfa is ever called.  */
       if (c == '[' && (syntax_bits & RE_CHAR_CLASSES))
         {
-#define BRACKET_BUFFER_SIZE 128
-          char str[BRACKET_BUFFER_SIZE];
+#define MAX_BRACKET_STRING_LEN 32
+          char str[MAX_BRACKET_STRING_LEN + 1];
           FETCH_WC (c1, wc1, _("unbalanced ["));
 
           /* If pattern contains '[[:', '[[.', or '[[='.  */
@@ -1032,14 +1032,13 @@ parse_bracket_exp (void)
                   FETCH_WC (c, wc, _("unbalanced ["));
                   if ((c == c1 && *lexptr == ']') || lexleft == 0)
                     break;
-                  if (len < BRACKET_BUFFER_SIZE)
+                  if (len < MAX_BRACKET_STRING_LEN)
                     str[len++] = c;
                   else
                     /* This is in any case an invalid class name.  */
                     str[0] = '\0';
                 }
-              if (len < BRACKET_BUFFER_SIZE)
-                 str[len] = '\0';
+              str[len] = '\0';
 
               /* Fetch bracket.  */
               FETCH_WC (c, wc, _("unbalanced ["));
