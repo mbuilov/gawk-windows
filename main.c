@@ -1096,6 +1096,10 @@ load_environ()
 	 */
 	path_environ("AWKPATH", defpath);
 	path_environ("AWKLIBPATH", deflibpath);
+
+	/* set up array functions */
+	init_env_array(ENVIRON_node);
+
 	return ENVIRON_node;
 }
 

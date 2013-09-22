@@ -1,3 +1,19 @@
+2013-09-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am: Fix quoting for generation of Maketests file so
+	that it will happen correctly.
+
+	Unrelated:
+
+	* Makefile.am (nfloop): New test.
+	* nfloop.awk, nfloop.ok: New files.
+
+2013-08-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am: Quote $(srcdir) everywhere so that tests can run
+	in locations with spaces in their names (think Windows or Mac OS X).
+	* Gentests: Ditto for when creating Maketests file.
+
 2013-07-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (mbprintf4): New test.

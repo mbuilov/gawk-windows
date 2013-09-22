@@ -141,6 +141,7 @@ rev2way_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 	 * error occurs.
 	 */
 
+	(void) errcode;		/* silence warnings */
 	if (out == NULL || iobuf == NULL || iobuf->opaque == NULL)
 		return EOF;
 
@@ -195,6 +196,7 @@ rev2way_fwrite(const void *buf, size_t size, size_t count, FILE *fp, void *opaqu
 	size_t amount, char_count;
 	char *src, *dest;
 
+	(void) fp;	/* silence warnings */
 	if (opaque == NULL)
 		return 0;	/* error */
 
@@ -281,6 +283,7 @@ revtwoway_take_control_of(const char *name, awk_input_buf_t *inbuf, awk_output_b
 {
 	two_way_proc_data_t *proc_data;
 
+	(void) name;	/* silence warnings */
 	if (inbuf == NULL || outbuf == NULL)
 		return awk_false;
 

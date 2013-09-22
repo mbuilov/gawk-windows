@@ -1451,7 +1451,18 @@ re_dfa_add_node (re_dfa_t *dfa, re_token_t token)
       new_eclosures = re_realloc (dfa->eclosures, re_node_set, new_nodes_alloc);
       if (BE (new_nexts == NULL || new_indices == NULL
 	      || new_edests == NULL || new_eclosures == NULL, 0))
-	return -1;
+        {
+	   /* if any are not NULL, free them, avoid leaks */
+	   if (new_nexts != NULL)
+              re_free(new_nexts);
+	   if (new_indices != NULL)
+              re_free(new_indices);
+	   if (new_edests != NULL)
+              re_free(new_edests);
+	   if (new_eclosures != NULL)
+              re_free(new_eclosures);
+	   return -1;
+	}
       dfa->nexts = new_nexts;
       dfa->org_indices = new_indices;
       dfa->edests = new_edests;

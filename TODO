@@ -15,15 +15,6 @@ TODO
 Minor Cleanups and Code Improvements
 ------------------------------------
 
-	Put FAKE_FD_VALUE into a head included from awk.h and extension/
-	dirfd.h.
-
-	Mac OS X readline doesn't have history_list which is used from debug.c
-	functions do_save and serialize.
-	See http://ftp.samba.org/pub/unpacked/samba_3_current/source4/lib/smbreadline/readline.m4
-	for some help. Reported by Larry Baker, larry.baker@stanfordalumni.org
-
-
 	API:
 		??? #if !defined(GAWK) && !defined(GAWK_OMIT_CONVENIENCE_MACROS)
 
@@ -38,10 +29,7 @@ Minor Cleanups and Code Improvements
 	Review the bash source script for working with shared libraries in
 	order to nuke the use of libtool.
 
-	In test/Makefile.am and generation scripts, quote $(srcdir) etc.
-	for windows or other systems with spaces in path names. Fun.
-
-	Enhance profiling to same comments in a byte-code that does nothing
+	Enhance profiling to save comments in a byte-code that does nothing
 	but that can be used when pretty printing the program.
 
 Minor New Features
@@ -52,9 +40,6 @@ Minor New Features
 	waitpid in which to return exit status information.
 
 	Add a readfile() function in awk from mail.
-
-	Make writes to ENVIRON / deletions affect the real environment
-	using setenv / unsetenv.
 
 	Consider relaxing the strictness of --posix.
 

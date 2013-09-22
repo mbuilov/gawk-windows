@@ -606,7 +606,6 @@
 #endif
 /* #define YYDEBUG 0 */
 #define NO_MBSUPPORT  /* VAX C's preprocessor can't handle mbsupport.h */
-#define RE_TOKEN_INIT_BUG     /* regcomp.c */
 #endif
 
 /*

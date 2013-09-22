@@ -16,6 +16,113 @@
 	* interpret.h (r_interpret): Ditto.
 	* profile.c (pprint): For Op_comment, print the comment text.
 
+2013-09-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c (parse_bracket_exp): Use code from grep to keep things within
+	range (updates change of 2013-09-08). Fix whitespace in one of the
+	gawk-only additions.
+
+2013-09-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix use of NF after it's extended, e.g. see test/nfloop.awk.
+
+	* awk.h (NULL_FIELD): New flag
+	* builtin.c (do_print_rec): Check f0->flags instead of if
+	equal to Nnull_string.
+	* eval.c (r_get_field): Check (*lhs)->flags instead of if
+	equal to Nnull_string or Null_field.
+	* field.c (init_fields): Init field zero and Null_field with
+	NULL_FIELD flag.
+	(set_NF): Set parse_high_water = NF in case NF extended past the
+	end. This is the actual bug fix.
+
+2013-09-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fixes based on reports from a static code checker. Thanks to
+	Anders Wallin for sending in the list.
+
+	* array.c (asort_actual): Free list if it's not NULL.
+	* builtin.c (do_sub): Set buf to NULL and assert on it before using
+	it.
+	* cint_array.c (cint_array_init): Clamp any value of NHAT from the
+	environment such that it won't overflow power_two_table when used as
+	an index.
+	* dfa.c (parse_bracket_exp): Check that len is in range before using it
+	to index buf.
+	* getopt.c (_getopt_internal_r): Change call to alloca to use malloc.
+	* io.c (socket_open): Init read_len to zero.
+	(two_way_open): Upon failure to fork, close the slave fd also.
+	* re.c (research): Init try_backref to false.
+	* regcomp.c (build_range_exp): Free any items that were allocated in
+	the case where not all items were.
+	(build_charclass_op): Same. Init br_token to zero with memset.
+	(create_tree): Init token t to zero with memset.
+	* regex_internal.c (re_dfa_add_node): Free any items that were
+	allocated in the case where not all items were.
+	* symbol.c (destroy_symbol): On default, break, to fall into releasing
+	of resources.
+
+2013-08-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* debug.c (HAVE_HISTORY_LIST): Move checks and defines to the top.
+	(do_save, serialize): Adjust #if checks to depend on having both
+	readline and the history functions. Needed for Mac OS X whose
+	native readline is a very old version. Sigh.
+	* configh.in, configure: Regenerated due to change in m4/readline.m4.
+	Issue reported by Hermann Peifer and Larry Baker.
+
+	Unrelated:
+
+	* getopt.c: Sync with GLIBC, changes are minor.
+
+	Unrelated:
+
+	* dfa.c: Sync with version in grep. Primarily whitespace / comment
+	wording changes.
+
+2013-08-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regcomp.c (parse_dup_op): Remove RE_TOKEN_INIT_BUG code (change of
+	Feb 19 2005) since it's no longer needed.
+
+	* regcomp.c (re_fastmap_iter): Undo addition of volatile from
+	Jan 18 2007; no longer needed and is one less change to have to
+	maintain aginst the upstream.
+
+	* regcomp.c, regex.h, regex_internal.h: Sync with GLIBC.
+
+2013-08-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* str_array.c (env_store): If the new value being stored is NULL,
+	pass in "" instead. Avoids core dump on Mac OS X.
+	Thanks to Hermann Peifer for the bug report.
+
+2013-08-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* nonposix.h: New file. Contains FAKE_FD_VALUE.
+	* awk.h: Include it if MinGW or EMX.
+	* Makefile.am (base_sources): Add nonposix.h.
+
+2013-08-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Reflect updates to ENVIRON into the real environment.
+
+	* awk.h (init_env_array): Add declaration.
+	* main.c (load_environ): Call init_env_array.
+	* str_array.c (env_remove, env_store, env_clear, init_env_array):
+	New functions.
+	(env_array_func): New array vtable.
+
+2013-08-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* array.c (force_array): Set symbol->xarray to NULL before
+	initing the array if it was Node_var_new.
+	(null_array): Restore assert, undoing change of 2013-05-27.
+
+2013-08-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* debug.c (print_memory): Fix whitespace / indentation.
+
 2013-07-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c (FAKE_FD_VALUE): Move definition from here ...

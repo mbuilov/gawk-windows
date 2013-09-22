@@ -108,6 +108,12 @@ static BREAKPOINT breakpoints = { &breakpoints, &breakpoints, 0 };
 static int sess_history_base = 0;
 #endif
 
+#ifndef HAVE_HISTORY_LIST
+#define HIST_ENTRY void
+#define history_list()	NULL
+#endif
+
+
 /* 'list' command */
 static int last_printed_line = 0;
 static int last_print_count;	/* # of lines printed */
@@ -3656,56 +3662,56 @@ static void
 print_memory(NODE *m, NODE *func, Func_print print_func, FILE *fp)
 {
 	switch (m->type) {
-		case Node_val:
-			if (m == Nnull_string)
-				print_func(fp, "Nnull_string");
-			else if ((m->flags & NUMBER) != 0) {
+	case Node_val:
+		if (m == Nnull_string)
+			print_func(fp, "Nnull_string");
+		else if ((m->flags & NUMBER) != 0) {
 #ifdef HAVE_MPFR
-				if ((m->flags & MPFN) != 0)
-					print_func(fp, "%s", mpg_fmt("%R*g", ROUND_MODE, m->mpg_numbr));
-				else if ((m->flags & MPZN) != 0)
-					print_func(fp, "%s", mpg_fmt("%Zd", m->mpg_i));
-				else
-#endif
-					print_func(fp, "%g", m->numbr);
-			} else if ((m->flags & STRING) != 0)
-				pp_string_fp(print_func, fp, m->stptr, m->stlen, '"', false);
-			else if ((m->flags & NUMCUR) != 0) {
-#ifdef HAVE_MPFR
-				if ((m->flags & MPFN) != 0)
-					print_func(fp, "%s", mpg_fmt("%R*g", ROUND_MODE, m->mpg_numbr));
-				else if ((m->flags & MPZN) != 0)
-					print_func(fp, "%s", mpg_fmt("%Zd", m->mpg_i));
-				else
-#endif
-					print_func(fp, "%g", m->numbr);
-			} else if ((m->flags & STRCUR) != 0)
-				pp_string_fp(print_func, fp, m->stptr, m->stlen, '"', false);
+			if ((m->flags & MPFN) != 0)
+				print_func(fp, "%s", mpg_fmt("%R*g", ROUND_MODE, m->mpg_numbr));
+			else if ((m->flags & MPZN) != 0)
+				print_func(fp, "%s", mpg_fmt("%Zd", m->mpg_i));
 			else
-				print_func(fp, "-?-");
-			print_func(fp, " [%s]", flags2str(m->flags));
-			break;
+#endif
+				print_func(fp, "%g", m->numbr);
+		} else if ((m->flags & STRING) != 0)
+			pp_string_fp(print_func, fp, m->stptr, m->stlen, '"', false);
+		else if ((m->flags & NUMCUR) != 0) {
+#ifdef HAVE_MPFR
+			if ((m->flags & MPFN) != 0)
+				print_func(fp, "%s", mpg_fmt("%R*g", ROUND_MODE, m->mpg_numbr));
+			else if ((m->flags & MPZN) != 0)
+				print_func(fp, "%s", mpg_fmt("%Zd", m->mpg_i));
+			else
+#endif
+				print_func(fp, "%g", m->numbr);
+		} else if ((m->flags & STRCUR) != 0)
+			pp_string_fp(print_func, fp, m->stptr, m->stlen, '"', false);
+		else
+			print_func(fp, "-?-");
+		print_func(fp, " [%s]", flags2str(m->flags));
+		break;
 
-		case Node_regex:
-			pp_string_fp(print_func, fp, m->re_exp->stptr, m->re_exp->stlen, '/', false);
-			break;
+	case Node_regex:
+		pp_string_fp(print_func, fp, m->re_exp->stptr, m->re_exp->stlen, '/', false);
+		break;
 
-		case Node_dynregex:
-			break;
-			
-		case Node_param_list:
-			assert(func != NULL);
-			print_func(fp, "%s", func->fparms[m->param_cnt].param);
-			break;
+	case Node_dynregex:
+		break;
+		
+	case Node_param_list:
+		assert(func != NULL);
+		print_func(fp, "%s", func->fparms[m->param_cnt].param);
+		break;
 
-		case Node_var:
-		case Node_var_new:
-		case Node_var_array:
-			print_func(fp, "%s", m->vname);
-			break;
+	case Node_var:
+	case Node_var_new:
+	case Node_var_array:
+		print_func(fp, "%s", m->vname);
+		break;
 
-		default:
-			print_func(fp, "?");  /* can't happen */
+	default:
+		print_func(fp, "?");  /* can't happen */
 	}
 }
 
@@ -4059,7 +4065,7 @@ do_dump_instructions(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 int
 do_save(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 {
-#ifdef HAVE_LIBREADLINE
+#if defined(HAVE_LIBREADLINE) && defined(HAVE_HISTORY_LIST)
 	FILE *fp;
 	HIST_ENTRY **hist_list;
 	int i;
@@ -4283,11 +4289,6 @@ serialize_subscript(char *buf, int buflen, struct list_item *item)
 static void
 serialize(int type)
 {
-#ifndef HAVE_LIBREADLINE
-#define HIST_ENTRY void
-#define history_list()	NULL
-#endif
-
 	static char *buf = NULL;
 	static int buflen = 0;
 	int bl;
@@ -4401,7 +4402,7 @@ enlarge_buffer:
 			cndn = &wd->cndn;
 			break;
 		case HISTORY:
-#ifdef HAVE_LIBREADLINE
+#if defined(HAVE_LIBREADLINE) && defined(HAVE_HISTORY_LIST)
 			h = (HIST_ENTRY *) ptr;
 			nchar = strlen(h->line);
 			if (nchar >= buflen - bl)

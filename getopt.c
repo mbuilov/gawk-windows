@@ -236,7 +236,7 @@ exchange (char **argv, struct _getopt_data *d)
 	{
 	  /* Bottom segment is the short one.  */
 	  int len = middle - bottom;
-	  register int i;
+	  int i;
 
 	  /* Swap it with the top part of the top segment.  */
 	  for (i = 0; i < len; i++)
@@ -253,7 +253,7 @@ exchange (char **argv, struct _getopt_data *d)
 	{
 	  /* Top segment is the short one.  */
 	  int len = top - middle;
-	  register int i;
+	  int i;
 
 	  /* Swap it with the bottom part of the bottom segment.  */
 	  for (i = 0; i < len; i++)
@@ -574,7 +574,7 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 		     || pfound->flag != p->flag
 		     || pfound->val != p->val)
 	      {
-	      /* Second or later nonexact match found.  */
+		/* Second or later nonexact match found.  */
 		struct option_list *newp = malloc (sizeof (*newp));
 		newp->p = p;
 		newp->needs_free = 1;

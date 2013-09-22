@@ -206,11 +206,9 @@ typedef void *stackoverflow_context_t;
 #define stackoverflow_install_handler(catchstackoverflow, extra_stack, STACK_SIZE) 0
 #endif
 
-/*
- * This is for fake directory file descriptors on systems that don't
- * allow to open() a directory.
- */
-#define FAKE_FD_VALUE 42
+#if defined(__EMX__) || defined(__MINGW32__)
+#include "nonposix.h"
+#endif /* defined(__EMX__) || defined(__MINGW32__) */
 
 /* use this as lintwarn("...")
    this is a hack but it gives us the right semantics */
@@ -436,6 +434,7 @@ typedef struct exp_node {
 #		define	MPFN	0x0800       /* arbitrary-precision floating-point number */
 #		define	MPZN	0x1000       /* arbitrary-precision integer */
 #		define	NO_EXT_SET 0x2000    /* extension cannot set a value for this variable */
+#		define	NULL_FIELD 0x4000    /* this is the null field */
 
 /* type = Node_var_array */
 #		define	ARRAYMAXED	0x4000       /* array is at max size */
@@ -1364,6 +1363,7 @@ extern NODE *do_aoption(int nargs);
 extern NODE *do_asort(int nargs);
 extern NODE *do_asorti(int nargs);
 extern unsigned long (*hash)(const char *s, size_t len, unsigned long hsize, size_t *code);
+extern void init_env_array(NODE *env_node);
 /* awkgram.c */
 extern NODE *variable(int location, char *name, NODETYPE type);
 extern int parse_program(INSTRUCTION **pcode);
