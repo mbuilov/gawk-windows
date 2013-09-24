@@ -1,3 +1,9 @@
+2013-09-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* debug.c (find_rule): Handle case where lineno is zero. Can happen
+	if break is given without a line number on a current line. Thanks
+	to Ray Song <i@maskray.me> for the report.
+
 2013-09-19         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c (parse_bracket_exp): Use code from grep to keep things within
