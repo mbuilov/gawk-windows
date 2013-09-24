@@ -2068,12 +2068,18 @@ find_rule(char *src, long lineno)
 {
 	INSTRUCTION *rp;
 
-	assert(lineno > 0);
-	for (rp = rule_list->nexti; rp != NULL; rp = rp->nexti) {
-		if ((rp - 1)->source_file == src
-				&& lineno >= (rp + 1)->first_line
-				&& lineno <= (rp + 1)->last_line)
-			return (rp - 1);
+	if (lineno == 0) {
+		for (rp = rule_list->nexti; rp != NULL; rp = rp->nexti) {
+			if ((rp - 1)->source_file == src && (rp - 1)->source_line > 0)
+				return (rp - 1);
+		}
+	} else {
+		for (rp = rule_list->nexti; rp != NULL; rp = rp->nexti) {
+			if ((rp - 1)->source_file == src
+					&& lineno >= (rp + 1)->first_line
+					&& lineno <= (rp + 1)->last_line)
+				return (rp - 1);
+		}
 	}
 	return NULL;
 }

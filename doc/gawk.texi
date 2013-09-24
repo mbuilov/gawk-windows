@@ -608,6 +608,8 @@ particular records in a file and perform operations upon them.
 * Join Function::                       A function to join an array into a
                                         string.
 * Getlocaltime Function::               A function to get formatted times.
+* Readfile Function::                   A function to read an entire file at
+                                        once.
 * Data File Management::                Functions for managing command-line
                                         data files.
 * Filetrans Function::                  A function for handling data file
@@ -19082,6 +19084,7 @@ programming use.
                                 vice versa.
 * Join Function::               A function to join an array into a string.
 * Getlocaltime Function::       A function to get formatted times.
+* Readfile Function::           A function to read an entire file at once.
 @end menu
 
 @node Strtonum Function
@@ -19705,6 +19708,81 @@ uses this function.
 A more general design for the @code{getlocaltime()} function would have
 allowed the user to supply an optional timestamp value to use instead
 of the current time.
+
+@node Readfile Function
+@subsection Reading A Whole File At Once
+
+Often, it is convenient to have the entire contents of a file available
+in memory as a single string. A straightforward but naive way to
+do that might be as follows:
+
+@example
+function readfile(file,    tmp, contents)
+@{
+    if ((getline tmp < file) < 0)
+        return
+
+    contents = tmp
+    while (getline tmp < file) > 0)
+        contents = contents RT tmp
+
+    close(file)
+    return contents
+@}
+@end example
+
+This function reads from @code{file} one record at a time, building
+up the full contents of the file in the local variable @code{contents}.
+It works, but is not necessarily efficient.
+
+The following function, based on a suggestion by Denis Shirokov,
+reads the entire contents of the named file in one shot:
+
+@cindex @code{readfile()} user-defined function
+@example
+@c file eg/lib/readfile.awk
+# readfile.awk --- read an entire file at once
+@c endfile
+@ignore
+@c file eg/lib/readfile.awk
+#
+# Original idea by Denis Shirokov, cosmogen@@gmail.com, April 2013
+#
+@c endfile
+@end ignore
+@c file eg/lib/readfile.awk
+
+function readfile(file,     tmp, save_rs)
+@{
+    save_rs = RS
+    RS = "^$"
+    getline tmp < file
+    close(file)
+    RS = save_rs
+
+    return tmp
+@}
+@c endfile
+@end example
+
+It works by setting @code{RS} to @samp{^$}, a regular expression that
+will never match if the file has contents.  @command{gawk} reads data from
+the file into @code{tmp} attempting to match @code{RS}.  The match fails
+after each read, but fails quickly, such that @command{gawk} fills
+@code{tmp} with the entire contents of the file.
+(@xref{Records}, for information on @code{RT} and @code{RS}.)
+
+In the case that @code{file} is empty, the return value is the null
+string.  Thus calling code may use something like:
+
+@example
+contents = readfile("/some/path")
+if (length(contents) == 0)
+    # file was empty @dots{}
+@end example
+
+This tests the result to see if it is empty or not. An equivalent
+test would be @samp{contents == ""}.
 
 @node Data File Management
 @section Data File Management
