@@ -691,6 +691,8 @@ EXTRA_DIST = \
 	rand-mpfr.ok \
 	rand.awk \
 	rand.ok \
+	randtest.sh \
+	randtest.ok \
 	range1.awk \
 	range1.in \
 	range1.ok \
@@ -952,7 +954,7 @@ BASIC_TESTS = \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
 	pcntplus posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
 	prt1eval prtoeval \
-	rand range1 rebt8b1 redfilnm regeq regexprange regrange reindops \
+	rand randtest range1 rebt8b1 redfilnm regeq regexprange regrange reindops \
 	reparse resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin sortempty splitargv splitarr splitdef \
@@ -1856,6 +1858,11 @@ dfamb1:
 	@echo $@
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+randtest::
+	@echo $@
+	@GAWK="$(AWKPROG)" "$(srcdir)"/randtest.sh >_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:

@@ -2372,6 +2372,8 @@ static char *const state = (char *const) istate;
 NODE *
 do_rand(int nargs ATTRIBUTE_UNUSED)
 {
+	double tmprand;
+#define RAND_DIVISOR ((double)GAWK_RANDOM_MAX+1.0)
 	if (firstrand) {
 		(void) initstate((unsigned) 1, state, SIZEOF_STATE);
 		/* don't need to srandom(1), initstate() does it for us. */
@@ -2383,7 +2385,24 @@ do_rand(int nargs ATTRIBUTE_UNUSED)
 	 *
 	 * 	0 <= n < 1
 	 */
-	return make_number((AWKNUM) (random() % GAWK_RANDOM_MAX) / GAWK_RANDOM_MAX);
+ 	/*
+	 * Date: Wed, 28 Aug 2013 17:52:46 -0700
+	 * From: Bob Jewett <jewett@bill.scs.agilent.com>
+	 *
+ 	 * Call random() twice to fill in more bits in the value
+ 	 * of the double.  Also, there is a bug in random() such
+ 	 * that when the values of successive values are combined
+ 	 * like (rand1*rand2)^2, (rand3*rand4)^2,  ...  the
+ 	 * resulting time series is not white noise.  The
+ 	 * following also seems to fix that bug. 
+ 	 *
+ 	 * The add/subtract 0.5 keeps small bits from filling
+ 	 * below 2^-53 in the double, not that anyone should be
+ 	 * looking down there. 
+ 	 */
+ 
+ 	tmprand = 0.5 + ( (random()/RAND_DIVISOR + random()) / RAND_DIVISOR);
+ 	return make_number((AWKNUM) (tmprand - 0.5));
 }
 
 /* do_srand --- seed the random number generator */

@@ -11,6 +11,11 @@ Changes from 4.1.1 to 4.2.0
    gawk's environment, affecting any programs run by system()
    or for piped redirections.
 
+2. The series of numbers returned by rand() should now be "more
+   random" than previously.  Gawk's rand() remains repeatable; you will
+   get the same series of numbers each time you call rand() repeatedly,
+   but this will be a different series than previously.
+
 Changes from 4.1.0 to 4.1.1
 ---------------------------
 
