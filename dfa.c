@@ -280,7 +280,7 @@ enum
   RPAREN,                       /* RPAREN never appears in the parse tree.  */
 
   ANYCHAR,                      /* ANYCHAR is a terminal symbol that matches
-                                   any multibyte (or single byte) characters.
+                                   a valid multibyte (or single byte) character.
                                    It is used only if MB_CUR_MAX > 1.  */
 
   MBCSET,                       /* MBCSET is similar to CSET, but for
@@ -951,8 +951,7 @@ find_pred (const char *str)
 }
 
 /* Multibyte character handling sub-routine for lex.
-   This function  parse a bracket expression and build a struct
-   mb_char_classes.  */
+   Parse a bracket expression and build a struct mb_char_classes.  */
 static token
 parse_bracket_exp (void)
 {
@@ -1169,8 +1168,7 @@ parse_bracket_exp (void)
               regcomp (&re, pattern, REG_NOSUB);
               for (c = 0; c < NOTCHAR; ++c)
                 {
-                  if ((case_fold && isupper (c))
-                      || (MB_CUR_MAX > 1 && btowc (c) == WEOF))
+                  if ((case_fold && isupper (c)))
                     continue;
                   subject[0] = c;
                   if (regexec (&re, subject, 0, NULL, 0) != REG_NOMATCH)
@@ -1686,7 +1684,7 @@ add_utf8_anychar (void)
 {
 #if MBS_SUPPORT
   static const charclass utf8_classes[5] = {
-    {0, 0, 0, 0, ~0, ~0, 0, 0}, /* 80-bf: non-lead bytes */
+    {0, 0, 0, 0, ~0, ~0, 0, 0},		/* 80-bf: non-leading bytes */
     {~0, ~0, ~0, ~0, 0, 0, 0, 0},       /* 00-7f: 1-byte sequence */
     {0, 0, 0, 0, 0, 0, ~3, 0},          /* c2-df: 2-byte sequence */
     {0, 0, 0, 0, 0, 0, 0, 0xffff},      /* e0-ef: 3-byte sequence */
@@ -3375,37 +3373,39 @@ dfaexec (struct dfa *d, char const *begin, char *end,
   for (;;)
     {
       if (d->mb_cur_max > 1)
-        while ((t = trans[s]) != NULL)
-          {
-            if (p > buf_end)
-              break;
-            s1 = s;
-            SKIP_REMAINS_MB_IF_INITIAL_STATE (s, p);
+        {
+          while ((t = trans[s]) != NULL)
+            {
+              if (p > buf_end)
+                break;
+              s1 = s;
+              SKIP_REMAINS_MB_IF_INITIAL_STATE (s, p);
 
-            if (d->states[s].mbps.nelem == 0)
-              {
-                s = t[*p++];
-                continue;
-              }
+              if (d->states[s].mbps.nelem == 0)
+                {
+                  s = t[*p++];
+                  continue;
+                }
 
-            /* Falling back to the glibc matcher in this case gives
-               better performance (up to 25% better on [a-z], for
-               example) and enables support for collating symbols and
-               equivalence classes.  */
-            if (backref)
-              {
-                *backref = 1;
-                free (mblen_buf);
-                free (inputwcs);
-                *end = saved_end;
-                return (char *) p;
-              }
+              /* Falling back to the glibc matcher in this case gives
+                 better performance (up to 25% better on [a-z], for
+                 example) and enables support for collating symbols and
+                 equivalence classes.  */
+              if (backref)
+                {
+                  *backref = 1;
+                  free (mblen_buf);
+                  free (inputwcs);
+                  *end = saved_end;
+                  return (char *) p;
+                }
 
-            /* Can match with a multibyte character (and multi character
-               collating element).  Transition table might be updated.  */
-            s = transit_state (d, s, &p);
-            trans = d->trans;
-          }
+              /* Can match with a multibyte character (and multi character
+                 collating element).  Transition table might be updated.  */
+              s = transit_state (d, s, &p);
+              trans = d->trans;
+            }
+        }
       else
         {
           while ((t = trans[s]) != NULL)
