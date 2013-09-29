@@ -35156,10 +35156,8 @@ repository in a directory named @file{bwkawk}.  If you leave that argument
 off the @command{git} command line, the repository copy is created in a
 directory named @file{awk}.
 
-This version requires an ISO C (1990 standard) compiler;
-the C compiler from
-GCC (the GNU Compiler Collection)
-works quite nicely.
+This version requires an ISO C (1990 standard) compiler; the C compiler
+from GCC (the GNU Compiler Collection) works quite nicely.
 
 @xref{Common Extensions},
 for a list of extensions in this @command{awk} that are not in POSIX @command{awk}.
@@ -35240,14 +35238,21 @@ information, see the @uref{http://busybox.net, project's home page}.
 @cindex source code, Solaris @command{awk}
 @item The OpenSolaris POSIX @command{awk}
 The version of @command{awk} in @file{/usr/xpg4/bin} on Solaris is
-more-or-less
-POSIX-compliant. It is based on the @command{awk} from Mortice Kern
-Systems for PCs.  The source code can be downloaded from
-the @uref{http://www.opensolaris.org, OpenSolaris web site}.
+more-or-less POSIX-compliant. It is based on the @command{awk} from
+Mortice Kern Systems for PCs.
 This author was able to make it compile and work under GNU/Linux
 with 1--2 hours of work.  Making it more generally portable (using
 GNU Autoconf and/or Automake) would take more work, and this
 has not been done, at least to our knowledge.
+
+@cindex Illumos
+@cindex Illumos, POSIX-compliant @command{awk}
+@cindex source code, Illumos @command{awk}
+The source code used to be available from the OpenSolaris web site.
+However, that project was ended and the web site shut down.  Fortunately, the
+@uref{http://wiki.illumos.org/display/illumos/illumos+Home, Illumos project}
+makes this implementation available.  You can view the files one at a time from
+@uref{https://github.com/joyent/illumos-joyent/blob/master/usr/src/cmd/awk_xpg4}.
 
 @cindex @command{jawk}
 @cindex Java implementation of @command{awk}
@@ -35288,6 +35293,10 @@ under the GPL. It has a large number of extensions over standard
 @command{awk} and may not be 100% syntactically compatible with it.
 See @uref{http://www.quiktrim.org/QTawk.html} for more information,
 including the manual and a download link.
+
+@item Other Versions
+See also the @uref{http://en.wikipedia.org/wiki/Awk_language#Versions_and_implementations,
+Wikipedia article}, for information on additional versions.
 
 @end table
 @c ENDOFRANGE gligawk
