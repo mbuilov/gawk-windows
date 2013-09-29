@@ -26530,12 +26530,18 @@ Busybox Awk
 The OpenSolaris POSIX `awk'
      The version of `awk' in `/usr/xpg4/bin' on Solaris is more-or-less
      POSIX-compliant. It is based on the `awk' from Mortice Kern
-     Systems for PCs.  The source code can be downloaded from the
-     OpenSolaris web site (http://www.opensolaris.org).  This author
-     was able to make it compile and work under GNU/Linux with 1-2
-     hours of work.  Making it more generally portable (using GNU
-     Autoconf and/or Automake) would take more work, and this has not
-     been done, at least to our knowledge.
+     Systems for PCs.  This author was able to make it compile and work
+     under GNU/Linux with 1-2 hours of work.  Making it more generally
+     portable (using GNU Autoconf and/or Automake) would take more
+     work, and this has not been done, at least to our knowledge.
+
+     The source code used to be available from the OpenSolaris web site.
+     However, that project was ended and the web site shut down.
+     Fortunately, the Illumos project
+     (http://wiki.illumos.org/display/illumos/illumos+Home) makes this
+     implementation available.  You can view the files one at a time
+     from
+     `https://github.com/joyent/illumos-joyent/blob/master/usr/src/cmd/awk_xpg4'.
 
 `jawk'
      This is an interpreter for `awk' written in Java. It claims to be
@@ -26564,6 +26570,11 @@ QSE Awk
      and may not be 100% syntactically compatible with it.  See
      `http://www.quiktrim.org/QTawk.html' for more information,
      including the manual and a download link.
+
+Other Versions
+     See also the Wikipedia article
+     (http://en.wikipedia.org/wiki/Awk_language#Versions_and_implementations),
+     for information on additional versions.
 
 
 
@@ -30932,6 +30943,8 @@ Index
 * IGNORECASE variable, array subscripts and: Array Intro.     (line  92)
 * IGNORECASE variable, in example programs: Library Functions.
                                                               (line  53)
+* Illumos:                               Other Versions.      (line 104)
+* Illumos, POSIX-compliant awk:          Other Versions.      (line 104)
 * implementation issues, gawk:           Notes.               (line   6)
 * implementation issues, gawk, debugging: Compatibility Mode. (line   6)
 * implementation issues, gawk, limits <1>: Redirection.       (line 135)
@@ -31011,9 +31024,9 @@ Index
 * Jacobs, Andrew:                        Passwd Functions.    (line  90)
 * Jaegermann, Michal <1>:                Contributors.        (line  46)
 * Jaegermann, Michal:                    Acknowledgments.     (line  60)
-* Java implementation of awk:            Other Versions.      (line 106)
+* Java implementation of awk:            Other Versions.      (line 112)
 * Java programming language:             Glossary.            (line 388)
-* jawk:                                  Other Versions.      (line 106)
+* jawk:                                  Other Versions.      (line 112)
 * Jedi knights:                          Undocumented.        (line   6)
 * join() user-defined function:          Join Function.       (line  18)
 * Kahrs, Ju"rgen <1>:                    Contributors.        (line  71)
@@ -31060,7 +31073,7 @@ Index
 * length() function:                     String Functions.    (line 168)
 * Lesser General Public License (LGPL):  Glossary.            (line 405)
 * LGPL (Lesser General Public License):  Glossary.            (line 405)
-* libmawk:                               Other Versions.      (line 114)
+* libmawk:                               Other Versions.      (line 120)
 * libraries of awk functions:            Library Functions.   (line   6)
 * libraries of awk functions, assertions: Assert Function.    (line   6)
 * libraries of awk functions, associative arrays and: Library Names.
@@ -31347,7 +31360,7 @@ Index
 * patterns, types of:                    Pattern Overview.    (line  15)
 * pawk (profiling version of Brian Kernighan's awk): Other Versions.
                                                               (line  78)
-* pawk, awk-like facilities for Python:  Other Versions.      (line 118)
+* pawk, awk-like facilities for Python:  Other Versions.      (line 124)
 * PC operating systems, gawk on:         PC Using.            (line   6)
 * PC operating systems, gawk on, installing: PC Installation. (line   6)
 * percent sign (%), % operator:          Precedence.          (line  55)
@@ -31526,12 +31539,12 @@ Index
 * pwcat program:                         Passwd Functions.    (line  23)
 * q debugger command (alias for quit):   Miscellaneous Debugger Commands.
                                                               (line  99)
-* QSE Awk:                               Other Versions.      (line 124)
+* QSE Awk:                               Other Versions.      (line 130)
 * question mark (?) regexp operator <1>: GNU Regexp Operators.
                                                               (line  59)
 * question mark (?) regexp operator:     Regexp Operators.    (line 111)
 * question mark (?), ?: operator:        Precedence.          (line  92)
-* QuikTrim Awk:                          Other Versions.      (line 128)
+* QuikTrim Awk:                          Other Versions.      (line 134)
 * quit debugger command:                 Miscellaneous Debugger Commands.
                                                               (line  99)
 * QUIT signal (MS-Windows):              Profiling.           (line 207)
@@ -31820,13 +31833,14 @@ Index
 * source code, Brian Kernighan's awk:    Other Versions.      (line  13)
 * source code, Busybox Awk:              Other Versions.      (line  88)
 * source code, gawk:                     Gawk Distribution.   (line   6)
-* source code, jawk:                     Other Versions.      (line 106)
-* source code, libmawk:                  Other Versions.      (line 114)
+* source code, Illumos awk:              Other Versions.      (line 104)
+* source code, jawk:                     Other Versions.      (line 112)
+* source code, libmawk:                  Other Versions.      (line 120)
 * source code, mawk:                     Other Versions.      (line  44)
 * source code, mixing:                   Options.             (line 131)
 * source code, pawk:                     Other Versions.      (line  78)
-* source code, QSE Awk:                  Other Versions.      (line 124)
-* source code, QuikTrim Awk:             Other Versions.      (line 128)
+* source code, QSE Awk:                  Other Versions.      (line 130)
+* source code, QuikTrim Awk:             Other Versions.      (line 134)
 * source code, Solaris awk:              Other Versions.      (line  96)
 * source files, search path for:         Igawk Program.       (line 368)
 * sparse arrays:                         Array Intro.         (line  71)
@@ -32646,35 +32660,35 @@ Node: VMS Running1056786
 Node: VMS Old Gawk1058393
 Node: Bugs1058867
 Node: Other Versions1062719
-Node: Notes1068320
-Node: Compatibility Mode1069120
-Node: Additions1069903
-Node: Accessing The Source1070830
-Node: Adding Code1072270
-Node: New Ports1078315
-Node: Derived Files1082450
-Ref: Derived Files-Footnote-11087771
-Ref: Derived Files-Footnote-21087805
-Ref: Derived Files-Footnote-31088405
-Node: Future Extensions1088503
-Node: Implementation Limitations1089084
-Node: Extension Design1090336
-Node: Old Extension Problems1091490
-Ref: Old Extension Problems-Footnote-11092998
-Node: Extension New Mechanism Goals1093055
-Ref: Extension New Mechanism Goals-Footnote-11096421
-Node: Extension Other Design Decisions1096607
-Node: Extension Future Growth1098713
-Node: Old Extension Mechanism1099549
-Node: Basic Concepts1101289
-Node: Basic High Level1101970
-Ref: figure-general-flow1102241
-Ref: figure-process-flow1102840
-Ref: Basic High Level-Footnote-11106069
-Node: Basic Data Typing1106254
-Node: Glossary1109609
-Node: Copying1135071
-Node: GNU Free Documentation License1172628
-Node: Index1197765
+Node: Notes1068800
+Node: Compatibility Mode1069600
+Node: Additions1070383
+Node: Accessing The Source1071310
+Node: Adding Code1072750
+Node: New Ports1078795
+Node: Derived Files1082930
+Ref: Derived Files-Footnote-11088251
+Ref: Derived Files-Footnote-21088285
+Ref: Derived Files-Footnote-31088885
+Node: Future Extensions1088983
+Node: Implementation Limitations1089564
+Node: Extension Design1090816
+Node: Old Extension Problems1091970
+Ref: Old Extension Problems-Footnote-11093478
+Node: Extension New Mechanism Goals1093535
+Ref: Extension New Mechanism Goals-Footnote-11096901
+Node: Extension Other Design Decisions1097087
+Node: Extension Future Growth1099193
+Node: Old Extension Mechanism1100029
+Node: Basic Concepts1101769
+Node: Basic High Level1102450
+Ref: figure-general-flow1102721
+Ref: figure-process-flow1103320
+Ref: Basic High Level-Footnote-11106549
+Node: Basic Data Typing1106734
+Node: Glossary1110089
+Node: Copying1135551
+Node: GNU Free Documentation License1173108
+Node: Index1198245
 
 End Tag Table
