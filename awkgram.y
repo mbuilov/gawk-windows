@@ -5028,8 +5028,13 @@ mk_assignment(INSTRUCTION *lhs, INSTRUCTION *rhs, INSTRUCTION *op)
 	case Op_push_array:
 		tp->opcode = Op_push_lhs; 
 		break;
+	case Op_field_assign:
+		yyerror(_("cannot assign a value to the result of a field post-increment expression"));
+		break;
 	default:
-		cant_happen();
+		yyerror(_("invalid target of assignment (opcode %s)"),
+				opcode2str(tp->opcode));
+		break;
 	}
 
 	tp->do_reference = (op->opcode != Op_assign);	/* check for uninitialized reference */
