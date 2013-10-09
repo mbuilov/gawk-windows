@@ -113,6 +113,8 @@ EXTRA_DIST = \
 	backw.in \
 	backw.ok \
 	badargs.ok \
+	badassign1.awk \
+	badassign1.ok \
 	beginfile1.awk \
 	beginfile1.ok \
 	beginfile2.in \
@@ -931,6 +933,7 @@ BASIC_TESTS = \
 	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
 	aryprm8 arysubnm asgext awkpath \
 	back89 backgsub \
+	badassign1 \
 	childin clobber closebad clsflnam compare compare2 concat1 concat2 \
 	concat3 concat4 convfmt \
 	datanonl defref delargv delarpm2 delarprm delfunc dfamb1 dfastress dynlj \
