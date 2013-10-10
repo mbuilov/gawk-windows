@@ -437,10 +437,10 @@ typedef struct exp_node {
 #		define	NULL_FIELD 0x4000    /* this is the null field */
 
 /* type = Node_var_array */
-#		define	ARRAYMAXED	0x4000       /* array is at max size */
-#		define	HALFHAT		0x8000       /* half-capacity Hashed Array Tree;
+#		define	ARRAYMAXED	0x8000       /* array is at max size */
+#		define	HALFHAT		0x10000       /* half-capacity Hashed Array Tree;
 		                                      * See cint_array.c */
-#		define	XARRAY		0x10000
+#		define	XARRAY		0x20000
 } NODE;
 
 #define vname sub.nodep.name
