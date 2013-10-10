@@ -2,6 +2,12 @@
 
 	* dfa.c (lex): Sync with GNU grep. Handle multibyte \s and \S.
 
+	Unrelated:
+
+	* awk.h [ARRAY_MAXED]: Fix value of this and subsequent flags
+	after addition of NULL_FIELD.
+	* eval.c (flags2str): Add NULL_FIELD. Duh.
+
 2013-10-09         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y (mk_assignment): Rework switch to handle Op_assign,
