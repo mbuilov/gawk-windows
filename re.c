@@ -396,6 +396,13 @@ re_update(NODE *t)
 void
 resetup()
 {
+	/*
+	 * Syntax bits: _that_ is yet another mind trip.  Recreational drugs
+	 * are helpful for recovering from the experience.
+	 *
+	 *	Aharon Robbins <arnold@skeeve.com>
+	 *	Sun, 21 Oct 2007 23:55:33 +0200
+	 */
 	if (do_posix)
 		syn = RE_SYNTAX_POSIX_AWK;	/* strict POSIX re's */
 	else if (do_traditional)
