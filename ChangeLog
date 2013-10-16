@@ -1,5 +1,18 @@
 2013-10-16         Arnold D. Robbins     <arnold@skeeve.com>
 
+	Make -O work again.  Turns out that C99 bool variables
+	are clamped to zero or one.
+
+	* main.c (do_optimize): Init to false.
+	(main): Set do_optimize to true on -O.
+	* eval.c (setup_frame): Change all uses of do_optimize to be
+	a boolean check instead of a test > 1.
+	* awkgram.y: Ditto.
+	(optimize_assignment): Remove check against do_optimize since
+	it was inited to true anyway.
+
+	Unrelated:
+
 	* re.c (resetup): Add a comment about the joy of syntax bits.
 
 2013-10-10         Arnold D. Robbins     <arnold@skeeve.com>

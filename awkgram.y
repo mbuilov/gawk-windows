@@ -852,7 +852,7 @@ non_compound_stmt
 			(void) list_prepend($$, instruction(Op_push_i));
 			$$->nexti->memory = dupnode(Nnull_string);
 		} else {
-			if (do_optimize > 1
+			if (do_optimize
 				&& $3->lasti->opcode == Op_func_call
 				&& strcmp($3->lasti->func_name, in_function) == 0
 			) {
@@ -1356,7 +1356,7 @@ common_exp
 		 			                             */
 		}
 
-		if (do_optimize > 1
+		if (do_optimize
 			&& $1->nexti == $1->lasti && $1->nexti->opcode == Op_push_i
 			&& $2->nexti == $2->lasti && $2->nexti->opcode == Op_push_i
 		) {
@@ -1494,7 +1494,7 @@ non_post_simp_exp
 			$$ = list_append(list_append(list_create($1),
 						instruction(Op_field_spec)), $2);
 		} else {
-			if (do_optimize > 1 && $2->nexti == $2->lasti
+			if (do_optimize && $2->nexti == $2->lasti
 					&& $2->nexti->opcode == Op_push_i
 					&& ($2->nexti->memory->flags & (MPFN|MPZN)) == 0
 			) {
@@ -4157,7 +4157,7 @@ mk_function(INSTRUCTION *fi, INSTRUCTION *def)
 	thisfunc = fi->func_body;
 	assert(thisfunc != NULL);
 
-	if (do_optimize > 1 && def->lasti->opcode == Op_pop) {
+	if (do_optimize && def->lasti->opcode == Op_pop) {
 		/* tail call which does not return any value. */
 
 		INSTRUCTION *t;
@@ -4685,7 +4685,7 @@ mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 	if (s2->lasti == ip2 && ip2->opcode == Op_push_i) {
 	/* do any numeric constant folding */
 		ip1 = s1->nexti;
-		if (do_optimize > 1
+		if (do_optimize
 				&& ip1 == s1->lasti && ip1->opcode == Op_push_i
 				&& (ip1->memory->flags & (MPFN|MPZN|STRCUR|STRING)) == 0
 				&& (ip2->memory->flags & (MPFN|MPZN|STRCUR|STRING)) == 0
@@ -5104,10 +5104,8 @@ optimize_assignment(INSTRUCTION *exp)
 	i2 = NULL;
 	i1 = exp->lasti;
 
-	if (   ! do_optimize
-	    || (   i1->opcode != Op_assign
-		&& i1->opcode != Op_field_assign)
-	) 
+	if (   i1->opcode != Op_assign
+	    && i1->opcode != Op_field_assign) 
 		return list_append(exp, instruction(Op_pop));
 
 	for (i2 = exp->nexti; i2 != i1; i2 = i2->nexti) {
