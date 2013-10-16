@@ -53,7 +53,8 @@ int main(int argc, char **argv)
 	dup(fd);
 	line = readline("giveittome> ");
 
-	printf("got <%s>\n", line);
+	/* some printfs don't handle NULL for %s */
+	printf("got <%s>\n", line ? line : "(NULL)");
 	return 0;
 }]]),
 dnl action if true:
