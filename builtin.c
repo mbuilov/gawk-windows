@@ -2399,9 +2399,44 @@ do_rand(int nargs ATTRIBUTE_UNUSED)
  	 * The add/subtract 0.5 keeps small bits from filling
  	 * below 2^-53 in the double, not that anyone should be
  	 * looking down there. 
+	 *
+	 * Date: Wed, 25 Sep 2013 10:45:38 -0600 (MDT)
+	 * From: "Nelson H. F. Beebe" <beebe@math.utah.edu>
+	 * (4) The code is typical of many published fragments for converting
+	 *     from integer to floating-point, and I discuss the serious pitfalls
+	 *     in my book, because it leads to platform-dependent behavior at the
+	 *     end points of the interval [0,1]
+	 * 
+	 * (5) the documentation in the gawk info node says
+	 * 
+	 *     `rand()'
+	 * 	 Return a random number.  The values of `rand()' are uniformly
+	 * 	 distributed between zero and one.  The value could be zero but is
+	 * 	 never one.(1)
+	 * 
+	 *     The division by RAND_DIVISOR may not guarantee that 1.0 is never
+	 *     returned: the programmer forgot the platform-dependent issue of
+	 *     rounding.
+	 * 
+	 * For points 4 and 5, the safe way is a loop:
+	 * 
+	 *         double 
+	 * 	   rand(void)		// return value in [0.0, 1.0)
+	 *         {
+	 * 	    value = internal_rand();
+	 *
+	 * 	    while (value == 1.0) 
+	 *                 value = internal_rand();
+	 * 
+	 * 	    return (value);
+	 *         }
  	 */
  
  	tmprand = 0.5 + ( (random()/RAND_DIVISOR + random()) / RAND_DIVISOR);
+
+	while (tmprand == 1.0)
+ 		tmprand = 0.5 + ( (random()/RAND_DIVISOR + random()) / RAND_DIVISOR);
+
  	return make_number((AWKNUM) (tmprand - 0.5));
 }
 
