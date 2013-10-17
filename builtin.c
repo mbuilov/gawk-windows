@@ -2432,12 +2432,13 @@ do_rand(int nargs ATTRIBUTE_UNUSED)
 	 *         }
  	 */
  
- 	tmprand = 0.5 + ( (random()/RAND_DIVISOR + random()) / RAND_DIVISOR);
+	do {
+	 	tmprand = 0.5 + ( (random()/RAND_DIVISOR + random())
+					/ RAND_DIVISOR);
+		tmprand -= 0.5;
+	} while (tmprand == 1.0);
 
-	while (tmprand == 1.0)
- 		tmprand = 0.5 + ( (random()/RAND_DIVISOR + random()) / RAND_DIVISOR);
-
- 	return make_number((AWKNUM) (tmprand - 0.5));
+ 	return make_number((AWKNUM) tmprand);
 }
 
 /* do_srand --- seed the random number generator */
