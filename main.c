@@ -284,6 +284,14 @@ main(int argc, char **argv)
 #ifdef SIGBUS
 	(void) signal(SIGBUS, catchsig);
 #endif
+#ifdef SIGPIPE
+	/*
+	 * Ignore SIGPIPE so that writes to pipes that fail don't
+	 * kill the process but instead return -1 and set errno.
+	 * That lets us print a fatal message instead of dieing suddenly.
+	 */
+	signal(SIGPIPE, SIG_IGN);
+#endif
 
 	(void) sigsegv_install_handler(catchsegv);
 #define STACK_SIZE (16*1024)

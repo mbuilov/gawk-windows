@@ -653,6 +653,8 @@ EXTRA_DIST = \
 	pipeio2.awk \
 	pipeio2.in \
 	pipeio2.ok \
+	pipeio3.awk \
+	pipeio3.ok \
 	posix.awk \
 	posix.in \
 	posix.ok \
@@ -974,8 +976,8 @@ BASIC_TESTS = \
 	zero2 zeroe0 zeroflag
 
 UNIX_TESTS = \
-	fflush getlnhd localenl pid pipeio1 pipeio2 poundbang rtlen rtlen01 \
-	space strftlng
+	fflush getlnhd localenl pid pipeio1 pipeio2 pipeio3 poundbang \
+	rtlen rtlen01 space strftlng
 
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
