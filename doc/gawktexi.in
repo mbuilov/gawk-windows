@@ -3884,10 +3884,6 @@ for use by the @command{gawk} developers for testing and tuning.
 They are subject to change. The variables are:
 
 @table @env
-@item AVG_CHAIN_MAX
-The average number of items @command{gawk} will maintain on a
-hash chain for managing arrays.
-
 @item AWK_HASH
 If this variable exists with a value of @samp{gst}, @command{gawk}
 will switch to using the hash function from GNU Smalltalk for
@@ -3900,6 +3896,13 @@ files one line at a time, instead of reading in blocks. This exists
 for debugging problems on filesystems on non-POSIX operating systems
 where I/O is performed in records, not in blocks.
 
+@item GAWK_MSG_SRC
+If this variable exists, @command{gawk} includes the source file
+name and line number from which warning and/or fatal messages
+are generated.  Its purpose is to help isolate the source of a
+message, since there can be multiple places which produce the
+same warning or error message.
+
 @item GAWK_NO_DFA
 If this variable exists, @command{gawk} does not use the DFA regexp matcher
 for ``does it match'' kinds of tests. This can cause @command{gawk}
@@ -3911,6 +3914,14 @@ coordinate with each other.)
 @item GAWK_STACKSIZE
 This specifies the amount by which @command{gawk} should grow its
 internal evaluation stack, when needed.
+
+@item INT_CHAIN_MAX
+The average number of items @command{gawk} will maintain on a
+hash chain for managing arrays indexed by integers.
+
+@item STR_CHAIN_MAX
+The average number of items @command{gawk} will maintain on a
+hash chain for managing arrays indexed by strings.
 
 @item TIDYMEM
 If this variable exists, @command{gawk} uses the @code{mtrace()} library

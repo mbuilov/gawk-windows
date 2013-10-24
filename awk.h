@@ -213,6 +213,8 @@ typedef void *stackoverflow_context_t;
 /* use this as lintwarn("...")
    this is a hack but it gives us the right semantics */
 #define lintwarn (*(set_loc(__FILE__, __LINE__),lintfunc))
+/* same thing for warning */
+#define warning (*(set_loc(__FILE__, __LINE__),r_warning))
 
 #ifdef HAVE_MPFR
 #include <gmp.h>
@@ -1577,7 +1579,7 @@ extern void final_exit(int status) ATTRIBUTE_NORETURN;
 extern void err(bool isfatal, const char *s, const char *emsg, va_list argp) ATTRIBUTE_PRINTF(3, 0);
 extern void msg (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 extern void error (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
-extern void warning (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
+extern void r_warning (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 extern void set_loc (const char *file, int line);
 extern void r_fatal (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 #if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 2)

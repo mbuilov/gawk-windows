@@ -1,3 +1,21 @@
+2013-10-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Revise error messages when writing to standard output or standard
+	error to ignore EPIPE.  Add the ability based on an environment
+	variable to get the source file and line number.
+
+	* awk.h (r_warning): Renamed from warning.
+	(warning): New macro to set location and call warning.
+	* io.c (flush_io): Print errors only if not EPIPE.
+	(close_io): Ditto.
+	* main.c (lintfunc): Init to r_warning.
+	(main): Enhance explanatory comment.
+	(usage): Print errors only if not EPIPE.
+	(copyleft): Ditto.
+	* msg.c (err): Make printing srcfile and srcline depend upon
+	GAWK_MSG_SRC environment variable.
+	(r_warning): Renamed from warning.
+
 2013-10-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* main.c (main): Ignore SIGPIPE. See the comment in the code.
