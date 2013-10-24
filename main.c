@@ -157,7 +157,7 @@ GETGROUPS_T *groupset;		/* current group set */
 int ngroups;			/* size of said set */
 #endif
 
-void (*lintfunc)(const char *mesg, ...) = warning;
+void (*lintfunc)(const char *mesg, ...) = r_warning;
 
 static const struct option optab[] = {
 	{ "traditional",	no_argument,		NULL,	'c' },
@@ -289,6 +289,14 @@ main(int argc, char **argv)
 	 * Ignore SIGPIPE so that writes to pipes that fail don't
 	 * kill the process but instead return -1 and set errno.
 	 * That lets us print a fatal message instead of dieing suddenly.
+	 *
+	 * Note that this requires ignoring EPIPE when writing and
+	 * flushing stdout/stderr in other parts of the program. E.g.,
+	 *
+	 * 	gawk 'BEGIN { print "hi" }' | exit
+	 *
+	 * should not give us "broken pipe" messages --- mainly because
+	 * it did not do so in the past and people would complain.
 	 */
 	signal(SIGPIPE, SIG_IGN);
 #endif
@@ -849,8 +857,13 @@ By default it reads standard input and writes standard output.\n\n"), fp);
 	fflush(fp);
 
 	if (ferror(fp)) {
-		if (fp == stdout)
-			warning(_("error writing standard output (%s)"), strerror(errno));
+		/* don't warn about stdout/stderr if EPIPE, but do error exit */
+		if (errno != EPIPE) {
+			if (fp == stdout)
+				warning(_("error writing standard output (%s)"), strerror(errno));
+			else if (fp == stderr)
+				warning(_("error writing standard error (%s)"), strerror(errno));
+		}
 		exit(EXIT_FAILURE);
 	}
 
@@ -887,7 +900,9 @@ along with this program. If not, see http://www.gnu.org/licenses/.\n");
 	fflush(stdout);
 
 	if (ferror(stdout)) {
-		warning(_("error writing standard output (%s)"), strerror(errno));
+		/* don't warn about stdout if EPIPE, but do error exit */
+		if (errno != EPIPE)
+			warning(_("error writing standard output (%s)"), strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 

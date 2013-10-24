@@ -1261,12 +1261,15 @@ flush_io()
 	int status = 0;
 
 	errno = 0;
+	/* we don't warn about stdout/stderr if EPIPE, but we do error exit */
 	if (fflush(stdout)) {
-		warning(_("error writing standard output (%s)"), strerror(errno));
+		if (errno != EPIPE)
+			warning(_("error writing standard output (%s)"), strerror(errno));
 		status++;
 	}
 	if (fflush(stderr)) {
-		warning(_("error writing standard error (%s)"), strerror(errno));
+		if (errno != EPIPE)
+			warning(_("error writing standard error (%s)"), strerror(errno));
 		status++;
 	}
 	for (rp = red_head; rp != NULL; rp = rp->next)
@@ -1316,13 +1319,16 @@ close_io(bool *stdio_problem)
 	 * them, we just flush them, and do that across the board.
 	 */
 	*stdio_problem = false;
-	if (fflush(stdout)) {
-		warning(_("error writing standard output (%s)"), strerror(errno));
+	/* we don't warn about stdout/stderr if EPIPE, but we do error exit */
+	if (fflush(stdout) != 0) {
+		if (errno != EPIPE)
+			warning(_("error writing standard output (%s)"), strerror(errno));
 		status++;
 		*stdio_problem = true;
 	}
-	if (fflush(stderr)) {
-		warning(_("error writing standard error (%s)"), strerror(errno));
+	if (fflush(stderr) != 0) {
+		if (errno != EPIPE)
+			warning(_("error writing standard error (%s)"), strerror(errno));
 		status++;
 		*stdio_problem = true;
 	}

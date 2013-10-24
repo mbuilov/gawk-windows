@@ -27,8 +27,12 @@
 #include <config.h>
 #endif
 
-#define _XOPEN_SOURCE
-#define _XOPEN_SOURCE_EXTENDED
+#ifndef _XOPEN_SOURCE
+# define _XOPEN_SOURCE
+#endif
+#ifndef _XOPEN_SOURCE_EXTENDED
+# define _XOPEN_SOURCE_EXTENDED 1
+#endif
 
 #include <stdio.h>
 #include <assert.h>
