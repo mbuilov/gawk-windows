@@ -398,7 +398,7 @@ particular records in a file and perform operations upon them.
 * Field Splitting Summary::             Some final points and a summary table.
 * Constant Size::                       Reading constant width data.
 * Splitting By Content::                Defining Fields By Content
-* Multiple Line::                       Reading multi-line records.
+* Multiple Line::                       Reading multiline records.
 * Getline::                             Reading files under explicit program
                                         control using the @code{getline}
                                         function.
@@ -549,9 +549,9 @@ particular records in a file and perform operations upon them.
                                         @command{awk}.
 * Uninitialized Subscripts::            Using Uninitialized variables as
                                         subscripts.
-* Multi-dimensional::                   Emulating multidimensional arrays in
+* Multidimensional::                    Emulating multidimensional arrays in
                                         @command{awk}.
-* Multi-scanning::                      Scanning multidimensional arrays.
+* Multiscanning::                       Scanning multidimensional arrays.
 * Arrays of Arrays::                    True multidimensional arrays.
 * Built-in::                            Summarizes the built-in functions.
 * Calling Built-in::                    How to call built-in functions.
@@ -2546,7 +2546,7 @@ learn in this @value{DOCUMENT}.
 If you are using the stand-alone version of Info,
 see @ref{Extract Program},
 for an @command{awk} program that extracts these data files from
-@file{gawk.texi}, the Texinfo source file for this Info file.
+@file{gawk.texi}, the (generated) Texinfo source file for this Info file.
 @end ifinfo
 
 @node Very Simple
@@ -5385,7 +5385,7 @@ used with it do not have to be named on the @command{awk} command line
 * Field Separators::            The field separator and how to change it.
 * Constant Size::               Reading constant width data.
 * Splitting By Content::        Defining Fields By Content
-* Multiple Line::               Reading multi-line records.
+* Multiple Line::               Reading multiline records.
 * Getline::                     Reading files under explicit program control
                                 using the @code{getline} function.
 * Read Timeout::                Reading input with a timeout.
@@ -12787,7 +12787,7 @@ exclusively on the value of @code{FS}.
 @item FS
 This is the input field separator
 (@pxref{Field Separators}).
-The value is a single-character string or a multi-character regular
+The value is a single-character string or a multicharacter regular
 expression that matches the separations between fields in an input
 record.  If the value is the null string (@code{""}), then each
 character in the record becomes a separate field.
@@ -12933,7 +12933,7 @@ This is the subscript separator.  It has the default value of
 @code{"\034"} and is used to separate the parts of the indices of a
 multidimensional array.  Thus, the expression @code{@w{foo["A", "B"]}}
 really accesses @code{foo["A\034B"]}
-(@pxref{Multi-dimensional}).
+(@pxref{Multidimensional}).
 
 @cindex @command{gawk}, @code{TEXTDOMAIN} variable in
 @cindex @code{TEXTDOMAIN} variable
@@ -13571,7 +13571,7 @@ same @command{awk} program.
 * Numeric Array Subscripts::    How to use numbers as subscripts in
                                 @command{awk}.
 * Uninitialized Subscripts::    Using Uninitialized variables as subscripts.
-* Multi-dimensional::           Emulating multidimensional arrays in
+* Multidimensional::            Emulating multidimensional arrays in
                                 @command{awk}.
 * Arrays of Arrays::            True multidimensional arrays.
 @end menu
@@ -14364,11 +14364,11 @@ Even though it is somewhat unusual, the null string
 if @option{--lint} is provided
 on the command line (@pxref{Options}).
 
-@node Multi-dimensional
+@node Multidimensional
 @section Multidimensional Arrays
 
 @menu
-* Multi-scanning::              Scanning multidimensional arrays.
+* Multiscanning::              Scanning multidimensional arrays.
 @end menu
 
 @cindex subscripts in arrays, multidimensional
@@ -14466,7 +14466,7 @@ the program produces the following output:
 3 2 1 6
 @end example
 
-@node Multi-scanning
+@node Multiscanning
 @subsection Scanning Multidimensional Arrays
 
 There is no special @code{for} statement for scanning a
@@ -19540,7 +19540,7 @@ The discussion that follows walks through the code a bit at a time:
 #    <c>    a character representing the current option
 
 # Private Data:
-#    _opti  -- index in multi-flag option, e.g., -abc
+#    _opti  -- index in multiflag option, e.g., -abc
 @c endfile
 @end example
 
@@ -22969,7 +22969,7 @@ Lines containing @samp{@@group} and @samp{@@end group} are simply removed.
 (@pxref{Join Function}).
 
 The example programs in the online Texinfo source for @cite{@value{TITLE}}
-(@file{gawk.texi}) have all been bracketed inside @samp{file} and
+(@file{gawktexi.in}) have all been bracketed inside @samp{file} and
 @samp{endfile} lines.  The @command{gawk} distribution uses a copy of
 @file{extract.awk} to extract the sample programs and install many
 of them in a standard directory where @command{gawk} can find them.
@@ -31496,7 +31496,7 @@ Return zero if there were no errors, otherwise return @minus{}1.
 
 The @code{fts()} function provides a hook to the C library @code{fts()}
 routines for traversing file hierarchies.  Instead of returning data
-about one file at a time in a stream, it fills in a multi-dimensional
+about one file at a time in a stream, it fills in a multidimensional
 array with data about each file and directory encountered in the requested
 hierarchies.
 
@@ -31597,7 +31597,7 @@ be more comfortable to use from an @command{awk} program.  This includes the
 lack of a comparison function, since @command{gawk} already provides
 powerful array sorting facilities.  While an @code{fts_read()}-like
 interface could have been provided, this felt less natural than simply
-creating a multi-dimensional array to represent the file hierarchy and
+creating a multidimensional array to represent the file hierarchy and
 its information.
 @end quotation
 
@@ -32255,7 +32255,7 @@ Multiple @code{BEGIN} and @code{END} rules
 
 @item
 Multidimensional arrays
-(@pxref{Multi-dimensional}).
+(@pxref{Multidimensional}).
 @end itemize
 @c ENDOFRANGE gawkv1
 
@@ -33067,6 +33067,10 @@ The modifications to convert @command{gawk}
 into a byte-code interpreter, including the debugger.
 
 @item
+The addition of true multidimensional arrays.
+@ref{Arrays of Arrays}.
+
+@item
 The additional modifications for support of arbitrary precision arithmetic.
 
 @item
@@ -33079,6 +33083,10 @@ into one, for the 4.1 release.
 
 @item
 Improved array internals for arrays indexed by integers.
+
+@item
+The improved array sorting features were driven by John together
+with Pat Rankin.
 @end itemize
 
 @item
@@ -33297,12 +33305,20 @@ The @command{troff} source for a manual page describing @command{gawk}.
 This is distributed for the convenience of Unix users.
 
 @cindex Texinfo
-@item doc/gawk.texi
+@item doc/gawktexi.in
+@itemx doc/sidebar.awk
 The Texinfo source file for this @value{DOCUMENT}.
-It should be processed with @TeX{}
-(via @command{texi2dvi} or @command{texi2pdf})
+It should be processed by @file{doc/sidebar.awk}
+before processing with @TeX{}
+It should be processed with
 to produce a printed document, and
 with @command{makeinfo} to produce an Info or HTML file.
+The @file{Makefile} takes care of this processing and produces
+printable output via @command{texi2dvi} or @command{texi2pdf}.
+
+@item doc/gawk.texi
+The file produced after processing @file{gawktexi.in}
+with @file{sidebar.awk}.
 
 @item doc/gawk.info
 The generated Info file for this @value{DOCUMENT}.
@@ -33341,6 +33357,7 @@ the @file{Makefile.in} files used by @command{autoconf} and
 
 @item Makefile.in
 @itemx aclocal.m4
+@itemx config.guess
 @itemx configh.in
 @itemx configure.ac
 @itemx configure
@@ -35204,7 +35221,7 @@ in order to loop over all the element in an easy fashion for C code.
 
 @item
 The ability to create arrays (including @command{gawk}'s true
-multi-dimensional arrays).
+multidimensional arrays).
 @end itemize
 @end itemize
 
@@ -37690,6 +37707,7 @@ Consistency issues:
 	Use MS-Windows not MS Windows
 	Use MS-DOS not MS-DOS
 	Use an empty set of parentheses after built-in and awk function names.
+	Use "multiFOO" without a hyphen.
 
 Date: Wed, 13 Apr 94 15:20:52 -0400
 From: rms@gnu.org (Richard Stallman)
