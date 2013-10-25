@@ -17,7 +17,7 @@
 #    <c>    a character representing the current option
 
 # Private Data:
-#    _opti  -- index in multi-flag option, e.g., -abc
+#    _opti  -- index in multiflag option, e.g., -abc
 function getopt(argc, argv, options,    thisopt, i)
 {
     if (length(options) == 0)    # no options given
