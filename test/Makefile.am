@@ -1885,7 +1885,7 @@ backsmalls1:
 pipeio3:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@sed 's/sh.*cart:.*not found/sh: 1: cart: not found/' < _$@ >_x$@ ; mv _x$@ _$@
+	@sed 's/.*sh.*cart:.*not found/sh: 1: cart: not found/' < _$@ >_x$@ ; mv _x$@ _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
