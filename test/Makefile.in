@@ -3637,7 +3637,7 @@ pass-fail:
 	@COUNT=`ls _* 2>/dev/null | wc -l` ; \
 	if test $$COUNT = 0 ; \
 	then	echo ALL TESTS PASSED ; \
-	else	echo $$COUNT TESTS FAILED ; \
+	else	echo $$COUNT TESTS FAILED ; exit 1; \
 	fi
 
 # This target for my convenience to look at all the results
