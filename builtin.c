@@ -125,6 +125,11 @@ efwrite(const void *ptr,
 	return;
 
 wrerror:
+	/* die silently on EPIPE to stdout */
+	if (fp == stdout && errno == EPIPE)
+		gawk_exit(EXIT_FATAL);
+
+	/* otherwise die verbosely */
 	fatal(_("%s to \"%s\" failed (%s)"), from,
 		rp ? rp->value : _("standard output"),
 		errno ? strerror(errno) : _("reason unknown"));
