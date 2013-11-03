@@ -118,6 +118,8 @@ EXTRA_DIST = \
 	backsmalls1.awk \
 	backsmalls1.in \
 	backsmalls1.ok \
+	backsmalls2.awk \
+	backsmalls2.ok \
 	badargs.ok \
 	badassign1.awk \
 	badassign1.ok \
@@ -1006,7 +1008,7 @@ MACHINE_TESTS = double1 double2 fmtspcl intformat
 MPFR_TESTS = mpfrnr mpfrrnd mpfrieee mpfrexprange mpfrsort mpfrbigint
 
 LOCALE_CHARSET_TESTS = \
-	asort asorti backbigs1 backsmalls1 \
+	asort asorti backbigs1 backsmalls1 backsmalls2 \
 	fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 mbprintf3 mbprintf4 rebt8b2 rtlenmb sort1 sprintfc
 
@@ -1876,6 +1878,12 @@ backbigs1:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 backsmalls1:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+backsmalls2:
 	@echo $@
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
