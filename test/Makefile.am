@@ -657,6 +657,7 @@ EXTRA_DIST = \
 	pipeio2.ok \
 	pipeio3.awk \
 	pipeio3.ok \
+	pipeio3.ok2 \
 	posix.awk \
 	posix.in \
 	posix.ok \
@@ -1893,7 +1894,7 @@ pipeio3:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@sed 's/.*sh.*cart:.*not found/sh: 1: cart: not found/' < _$@ >_x$@ ; mv _x$@ _$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ || $(CMP) "$(srcdir)"/$@.ok2 _$@ && rm -f _$@
 
 # Targets generated for other tests:
 include Maketests
