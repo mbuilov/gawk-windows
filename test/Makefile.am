@@ -1925,15 +1925,17 @@ pass-fail:
 	fi
 
 # This target for my convenience to look at all the results
+# Don't use POSIX or bash-isms so that it'll work on !@#$%^&*() Solaris.
 diffout:
 	for i in _* ; \
 	do  \
 		if [ "$$i" != "_*" ]; then \
 		echo ============== $$i ============= ; \
-		if [ -r $${i#_}.ok ]; then \
-		diff -c $${i#_}.ok $$i ; \
+		base=`echo $$i | sed 's/^_//'` ; \
+		if [ -r $${base}.ok ]; then \
+		diff -c $${base}.ok $$i ; \
 		else \
-		diff -c "$(srcdir)"/$${i#_}.ok  $$i ; \
+		diff -c "$(srcdir)"/$${base}.ok  $$i ; \
 		fi ; \
 		fi ; \
 	done | more

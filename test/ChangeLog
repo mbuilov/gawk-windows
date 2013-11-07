@@ -1,3 +1,13 @@
+2013-11-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Solaris fixes.
+
+	* readdir0.awk: Run ls -afi and ls -la separately since POSIX
+	says that -f turns off -l. Thanks to Dagobert Michelsen
+	<dam@opencsw.org> for the report.
+	* Makefile.am (diffout): Don't use POSIX or bash-isms so that
+	it will work on Solaris. Sigh.
+
 2013-11-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (backsmalls2): New test.
