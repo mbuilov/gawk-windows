@@ -1,3 +1,14 @@
+Thu Nov  7 22:42:46 IST 2013
+============================
+
+On Solaris 11 x86 with the Sun compiler you need to use
+
+	c99 -Xc -D_XPG6
+
+to correctly compile gawk and the extensions.
+
+Various tests can fail if the necessary locales aren't installed.
+
 Fri Jul 15 14:24:00 IDT 2011
 ============================
 It looks like you need to use
