@@ -25605,6 +25605,13 @@ to different non-Unix operating systems:
 Various `.c', `.y', and `.h' files
      The actual `gawk' source code.
 
+`ABOUT-NLS'
+     Information about GNU `gettext' and translations.
+
+`AUTHORS'
+     A file with some information about the authorship of `gawk'.  It
+     exists only to satisfy the pedants at the Free Software Foundation.
+
 `README'
 `README_d/README.*'
      Descriptive files: `README' for `gawk' under Unix and the rest for
@@ -25629,16 +25636,6 @@ Various `.c', `.y', and `.h' files
 
 `COPYING'
      The GNU General Public License.
-
-`FUTURES'
-     A brief list of features and changes being contemplated for future
-     releases, with some indication of the time frame for the feature,
-     based on its difficulty.
-
-`LIMITATIONS'
-     A list of those factors that limit `gawk''s performance.  Most of
-     these depend on the hardware or operating system software and are
-     not limits in `gawk' itself.
 
 `POSIX.STD'
      A description of behaviors in the POSIX standard for `awk' which
@@ -25674,11 +25671,11 @@ Various `.c', `.y', and `.h' files
 `doc/gawktexi.in'
 `doc/sidebar.awk'
      The Texinfo source file for this Info file.  It should be
-     processed by `doc/sidebar.awk' before processing with TeX It
-     should be processed with to produce a printed document, and with
-     `makeinfo' to produce an Info or HTML file.  The `Makefile' takes
-     care of this processing and produces printable output via
-     `texi2dvi' or `texi2pdf'.
+     processed by `doc/sidebar.awk' before processing with `texi2dvi'
+     or `texi2pdf' to produce a printed document, and with `makeinfo'
+     to produce an Info or HTML file.  The `Makefile' takes care of
+     this processing and produces printable output via `texi2dvi' or
+     `texi2pdf'.
 
 `doc/gawk.texi'
      The file produced after processing `gawktexi.in' with
@@ -25712,16 +25709,21 @@ Various `.c', `.y', and `.h' files
 
 `Makefile.in'
 `aclocal.m4'
+`bisonfix.awk'
 `config.guess'
 `configh.in'
 `configure.ac'
 `configure'
 `custom.h'
+`depcomp'
+`install-sh'
 `missing_d/*'
+`mkinstalldirs'
 `m4/*'
-     These files and subdirectories are used when configuring `gawk'
-     for various Unix systems.  They are explained in *note Unix
-     Installation::.
+     These files and subdirectories are used when configuring and
+     compiling `gawk' for various Unix systems.  Most of them are
+     explained in *note Unix Installation::. The rest are there to
+     support the main infrastructure.
 
 `po/*'
      The `po' library contains message translations.
@@ -29745,7 +29747,7 @@ Index
 * arrays, subscripts, uninitialized variables as: Uninitialized Subscripts.
                                                               (line   6)
 * artificial intelligence, gawk and:     Distribution contents.
-                                                              (line  55)
+                                                              (line  52)
 * ASCII <1>:                             Glossary.            (line 141)
 * ASCII:                                 Ordinal Functions.   (line  45)
 * asort() function (gawk) <1>:           Array Sorting Functions.
@@ -31951,7 +31953,7 @@ Index
                                                               (line   6)
 * Texinfo <1>:                           Adding Code.         (line  99)
 * Texinfo <2>:                           Distribution contents.
-                                                              (line  80)
+                                                              (line  77)
 * Texinfo <3>:                           Extract Program.     (line  12)
 * Texinfo <4>:                           Dupword Program.     (line  17)
 * Texinfo <5>:                           Library Functions.   (line  33)
@@ -32655,55 +32657,55 @@ Node: Gawk Distribution1025159
 Node: Getting1025643
 Node: Extracting1026469
 Node: Distribution contents1028161
-Node: Unix Installation1033705
-Node: Quick Installation1034322
-Node: Additional Configuration Options1036766
-Node: Configuration Philosophy1038243
-Node: Non-Unix Installation1040597
-Node: PC Installation1041055
-Node: PC Binary Installation1042354
-Node: PC Compiling1044202
-Node: PC Testing1047146
-Node: PC Using1048322
-Node: Cygwin1052507
-Node: MSYS1053507
-Node: VMS Installation1054021
-Node: VMS Compilation1054624
-Ref: VMS Compilation-Footnote-11055631
-Node: VMS Installation Details1055689
-Node: VMS Running1057324
-Node: VMS Old Gawk1058931
-Node: Bugs1059405
-Node: Other Versions1063257
-Node: Notes1069338
-Node: Compatibility Mode1070138
-Node: Additions1070921
-Node: Accessing The Source1071848
-Node: Adding Code1073288
-Node: New Ports1079333
-Node: Derived Files1083468
-Ref: Derived Files-Footnote-11088789
-Ref: Derived Files-Footnote-21088823
-Ref: Derived Files-Footnote-31089423
-Node: Future Extensions1089521
-Node: Implementation Limitations1090102
-Node: Extension Design1091354
-Node: Old Extension Problems1092508
-Ref: Old Extension Problems-Footnote-11094016
-Node: Extension New Mechanism Goals1094073
-Ref: Extension New Mechanism Goals-Footnote-11097438
-Node: Extension Other Design Decisions1097624
-Node: Extension Future Growth1099730
-Node: Old Extension Mechanism1100566
-Node: Basic Concepts1102306
-Node: Basic High Level1102987
-Ref: figure-general-flow1103258
-Ref: figure-process-flow1103857
-Ref: Basic High Level-Footnote-11107086
-Node: Basic Data Typing1107271
-Node: Glossary1110626
-Node: Copying1136088
-Node: GNU Free Documentation License1173645
-Node: Index1198782
+Node: Unix Installation1033681
+Node: Quick Installation1034298
+Node: Additional Configuration Options1036742
+Node: Configuration Philosophy1038219
+Node: Non-Unix Installation1040573
+Node: PC Installation1041031
+Node: PC Binary Installation1042330
+Node: PC Compiling1044178
+Node: PC Testing1047122
+Node: PC Using1048298
+Node: Cygwin1052483
+Node: MSYS1053483
+Node: VMS Installation1053997
+Node: VMS Compilation1054600
+Ref: VMS Compilation-Footnote-11055607
+Node: VMS Installation Details1055665
+Node: VMS Running1057300
+Node: VMS Old Gawk1058907
+Node: Bugs1059381
+Node: Other Versions1063233
+Node: Notes1069314
+Node: Compatibility Mode1070114
+Node: Additions1070897
+Node: Accessing The Source1071824
+Node: Adding Code1073264
+Node: New Ports1079309
+Node: Derived Files1083444
+Ref: Derived Files-Footnote-11088765
+Ref: Derived Files-Footnote-21088799
+Ref: Derived Files-Footnote-31089399
+Node: Future Extensions1089497
+Node: Implementation Limitations1090078
+Node: Extension Design1091330
+Node: Old Extension Problems1092484
+Ref: Old Extension Problems-Footnote-11093992
+Node: Extension New Mechanism Goals1094049
+Ref: Extension New Mechanism Goals-Footnote-11097414
+Node: Extension Other Design Decisions1097600
+Node: Extension Future Growth1099706
+Node: Old Extension Mechanism1100542
+Node: Basic Concepts1102282
+Node: Basic High Level1102963
+Ref: figure-general-flow1103234
+Ref: figure-process-flow1103833
+Ref: Basic High Level-Footnote-11107062
+Node: Basic Data Typing1107247
+Node: Glossary1110602
+Node: Copying1136064
+Node: GNU Free Documentation License1173621
+Node: Index1198758
 
 End Tag Table
