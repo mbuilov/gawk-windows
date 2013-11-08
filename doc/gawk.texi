@@ -34100,6 +34100,13 @@ The actual @command{gawk} source code.
 @end table
 
 @table @file
+@item ABOUT-NLS
+Information about GNU @command{gettext} and translations.
+
+@item AUTHORS
+A file with some information about the authorship of @command{gawk}.
+It exists only to satisfy the pedants at the Free Software Foundation.
+
 @item README
 @itemx README_d/README.*
 Descriptive files: @file{README} for @command{gawk} under Unix and the
@@ -34122,16 +34129,6 @@ An older list of changes to @command{gawk}.
 
 @item COPYING
 The GNU General Public License.
-
-@item FUTURES
-A brief list of features and changes being contemplated for future
-releases, with some indication of the time frame for the feature, based
-on its difficulty.
-
-@item LIMITATIONS
-A list of those factors that limit @command{gawk}'s performance.
-Most of these depend on the hardware or operating system software and
-are not limits in @command{gawk} itself.
 
 @item POSIX.STD
 A description of behaviors in the POSIX standard for @command{awk} which
@@ -34169,8 +34166,7 @@ This is distributed for the convenience of Unix users.
 @itemx doc/sidebar.awk
 The Texinfo source file for this @value{DOCUMENT}.
 It should be processed by @file{doc/sidebar.awk}
-before processing with @TeX{}
-It should be processed with
+before processing with @command{texi2dvi} or @command{texi2pdf}
 to produce a printed document, and
 with @command{makeinfo} to produce an Info or HTML file.
 The @file{Makefile} takes care of this processing and produces
@@ -34217,16 +34213,21 @@ the @file{Makefile.in} files used by @command{autoconf} and
 
 @item Makefile.in
 @itemx aclocal.m4
+@itemx bisonfix.awk
 @itemx config.guess
 @itemx configh.in
 @itemx configure.ac
 @itemx configure
 @itemx custom.h
+@itemx depcomp
+@itemx install-sh
 @itemx missing_d/*
+@itemx mkinstalldirs
 @itemx m4/*
-These files and subdirectories are used when configuring @command{gawk}
-for various Unix systems.  They are explained in
-@ref{Unix Installation}.
+These files and subdirectories are used when configuring and compiling
+@command{gawk} for various Unix systems.  Most of them are explained
+in @ref{Unix Installation}. The rest are there to support the main
+infrastructure.
 
 @item po/*
 The @file{po} library contains message translations.
