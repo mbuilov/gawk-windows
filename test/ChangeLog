@@ -1,3 +1,10 @@
+2013-11-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* readdir0.awk: Use `ls -lan' to get numeric user and group ID
+	numbers. This keeps the number of fields correct and consistent, even
+	on systems (like, oh, say, Windows with Cygwin) where group names
+	can contain spaces.
+
 2013-11-07         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Solaris fixes.
