@@ -176,6 +176,7 @@ static const struct option optab[] = {
 	{ "file",		required_argument,	NULL,	'f' },
 	{ "re-interval",	no_argument,		NULL,	'r' },
 	{ "source",		required_argument,	NULL,	'e' },
+	{ "include",		required_argument,	NULL,	'i' },
 	{ "load",		required_argument,	NULL,	'l' },
 	{ "dump-variables",	optional_argument,	NULL,	'd' },
 	{ "assign",		required_argument,	NULL,	'v' },
