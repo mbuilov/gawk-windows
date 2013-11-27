@@ -1,5 +1,10 @@
 2013-11-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* readdir0.awk: Restore fix so that we do not fail on filesysystems
+	such as XFS where the dirent does not contain the file type.
+
+2013-11-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* Makefile.am (ordchr2): Use --load instead of -l to make sure the
 	long option works properly.  Note that the readfile test still uses
 	the short version.
