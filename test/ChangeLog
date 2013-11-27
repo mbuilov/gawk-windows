@@ -1,3 +1,12 @@
+2013-11-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (ordchr2): Use --load instead of -l to make sure the
+	long option works properly.  Note that the readfile test still uses
+	the short version.
+	(include2): Use --include instead of -i to make sure that the long
+	option works properly.  Note that many other tests use the -i short
+	version.
+
 2013-11-20         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* readdir0.awk: Use `ls -lan' to get numeric user and group ID
