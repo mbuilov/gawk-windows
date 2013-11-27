@@ -41,5 +41,5 @@ BEGIN {
 		printf("mismatch: %d from `ls -afi' and %d from `ls -l'\n", i, j) > "/dev/stderr"
 	
 	for (i = 1; i in names; i++)
-		printf("%s/%s/%s\n", ino[names[i]], names[i], type[names[i]])
+		printf("%s/%s/%s\n", ino[names[i]], names[i], (ftype_unknown ? "u" : type[names[i]]))
 }
