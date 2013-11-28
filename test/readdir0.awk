@@ -12,8 +12,10 @@ BEGIN {
 }
 
 BEGIN {
-	ls_afi = "ls -afi .."
-	ls_al = "ls -lna .. | sed 1d"
+	dir = ARGV[1]
+	delete ARGV[1]
+	ls_afi = "ls -afi " dir
+	ls_al = ("ls -lna " dir " | sed 1d")
 
 	for (i = 1; (ls_afi | getline) > 0; i++) {
 		# inode number is $1, filename is read of record
