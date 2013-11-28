@@ -1195,6 +1195,12 @@ install-data-hook:
 		$(RM) $(pkgextensiondir)/$$i ; \
 	done
 
+# Keep the uninstall check working:
+uninstall-so:
+	$(RM) $(pkgextensiondir)/*.so
+
+uninstall-recursive: uninstall-so
+
 # This is an ugly hack, initially for MirBSD but probably needed for other
 # systems. If gawk doesn't have the API built in, don't try to build the
 # extensions.

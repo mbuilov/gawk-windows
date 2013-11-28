@@ -103,6 +103,12 @@ install-data-hook:
 		$(RM) $(pkgextensiondir)/$$i ; \
 	done
 
+# Keep the uninstall check working:
+uninstall-so:
+	$(RM) $(pkgextensiondir)/*.so
+
+uninstall-recursive: uninstall-so
+
 EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
 	ChangeLog.0 \
