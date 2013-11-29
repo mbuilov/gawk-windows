@@ -655,9 +655,6 @@ EXTRA_DIST = \
 	pipeio2.awk \
 	pipeio2.in \
 	pipeio2.ok \
-	pipeio3.awk \
-	pipeio3.ok \
-	pipeio3.ok2 \
 	posix.awk \
 	posix.in \
 	posix.ok \
@@ -979,7 +976,7 @@ BASIC_TESTS = \
 	zero2 zeroe0 zeroflag
 
 UNIX_TESTS = \
-	fflush getlnhd localenl pid pipeio1 pipeio2 pipeio3 poundbang \
+	fflush getlnhd localenl pid pipeio1 pipeio2 poundbang \
 	rtlen rtlen01 space strftlng
 
 GAWK_EXT_TESTS = \
@@ -1897,12 +1894,6 @@ backsmalls2:
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-pipeio3:
-	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@sed 's/.*sh.*cart:.*not found/sh: 1: cart: not found/' < _$@ >_x$@ ; mv _x$@ _$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ || $(CMP) "$(srcdir)"/$@.ok2 _$@ && rm -f _$@
 
 # Targets generated for other tests:
 include Maketests
