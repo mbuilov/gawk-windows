@@ -1813,10 +1813,14 @@ readdir:
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 fts:
-	@if [ "`uname`" = IRIX ];  then \
+	@case `uname` in \
+	IRIX) \
 	echo This test may fail on IRIX systems when run on an NFS filesystem.; \
-	echo If it does, try rerunning on an xfs filesystem. ; \
-	fi
+	echo If it does, try rerunning on an xfs filesystem. ;; \
+	CYGWIN*) \
+	echo This test may fail on CYGWIN systems when run on an NFS filesystem.; \
+	echo If it does, try rerunning on an ntfs filesystem. ;; \
+	esac
 	@echo $@
 	@$(AWK) -f "$(srcdir)"/fts.awk
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
