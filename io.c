@@ -947,7 +947,10 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			/* Alpha/VMS V7.1's C RTL is returning this instead
 			   of EMFILE (haven't tried other post-V6.2 systems) */
 #define SS$_EXQUOTA 0x001C
-			else if (errno == EIO && vaxc$errno == SS$_EXQUOTA)
+#define SS$_EXBYTLM 0x2a14  /* VMS 8.4 seen */
+			else if (errno == EIO && 
+                                 (vaxc$errno == SS$_EXQUOTA ||
+                                  vaxc$errno == SS$_EXBYTLM))
 				close_one();
 #endif
 			else {
@@ -2632,7 +2635,10 @@ do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 			return NULL;
 		}
 		erealloc(path, char *, strlen(path) + strlen(src) + 2, "do_find_source");
-#ifndef VMS
+#ifdef VMS
+		if (strcspn(path,">]:") == strlen(path))
+			strcat(path, "/");
+#else
 		strcat(path, "/");
 #endif
 		strcat(path, src);
