@@ -1054,7 +1054,7 @@ parse_bracket_exp (void)
                   if (MB_CUR_MAX > 1 && !pred->single_byte_only)
                     {
                       /* Store the character class as wctype_t.  */
-                      wctype_t wt = wctype (class);
+                      wctype_t wt = (wctype_t) wctype (class);
 
                       REALLOC_IF_NECESSARY (work_mbc->ch_classes,
                                             ch_classes_al,
