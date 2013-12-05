@@ -2068,6 +2068,11 @@ find_rule(char *src, long lineno)
 {
 	INSTRUCTION *rp;
 
+	/*
+	 * FIXME: The check for zero and code that goes with it
+	 * are probably fragile.  A break with no arguments can
+	 * cause this in certain cases. Try to review how this works.
+	 */
 	if (lineno == 0) {
 		for (rp = rule_list->nexti; rp != NULL; rp = rp->nexti) {
 			if ((rp - 1)->source_file == src && (rp - 1)->source_line > 0)
