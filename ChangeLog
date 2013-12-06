@@ -1,3 +1,15 @@
+2013-12-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	No need to generate version.c from version.in.
+	Thanks to John E. Malmberg <wb8tyw@qsl.net> for the suggestion.
+
+	* version.in: Removed.
+	* version.c: Use PACKAGE_STRING directly.
+	* Makefile.am (EXTRA_DIST): Remove version.in.
+	(distcleancheck_listfiles): Remove this rule.
+	(MAINTAINERCLEANFILES): Remove this definition.
+	(version.c): Remove the rule to create it.
+
 2013-12-05         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Fixes for Z/OS.

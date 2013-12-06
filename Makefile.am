@@ -55,14 +55,8 @@ EXTRA_DIST = \
 	regex_internal.c \
 	regex_internal.h \
 	regexec.c \
-	version.in \
 	vms \
 	ylwrap
-
-# It's OK for the generated file `version.c' not to be removed by
-# "make distclean".
-distcleancheck_listfiles = \
-  find . -type f -print | grep -v '^\./version\.c$$'
 
 # The order to do things in.
 # Build explicitly in "." in order to build gawk first, so
@@ -147,8 +141,6 @@ DEFS= -DDEFPATH=$(DEFPATH) -DDEFLIBPATH=$(DEFLIBPATH) -DSHLIBEXT=$(SHLIBEXT) -DH
 # Get rid of core files when cleaning
 CLEANFILES = core core.*
 
-MAINTAINERCLEANFILES = version.c
-
 # We want hard links for install-exec-hook, below
 LN= ln
 
@@ -195,9 +187,6 @@ awkgram.c: awkgram.y
 	if test -f y.tab.h; then \
 	if cmp -s y.tab.h $*.h; then rm -f y.tab.h; else mv y.tab.h $*.h; fi; \
 	else :; fi
-
-version.c: config.status version.in
-	$(SHELL) ./config.status --file=version.c:version.in
 
 command.c: command.y
 	$(YACC) -p zz $<

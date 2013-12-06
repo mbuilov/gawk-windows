@@ -269,6 +269,7 @@ DIST_TARGETS = dist-lzip dist-xz dist-gzip
 distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
+distcleancheck_listfiles = find . -type f -print
 
 # Directory for gawk's data files. Automake supplies datadir.
 pkgdatadir = $(datadir)/awk
@@ -431,15 +432,8 @@ EXTRA_DIST = \
 	regex_internal.c \
 	regex_internal.h \
 	regexec.c \
-	version.in \
 	vms \
 	ylwrap
-
-
-# It's OK for the generated file `version.c' not to be removed by
-# "make distclean".
-distcleancheck_listfiles = \
-  find . -type f -print | grep -v '^\./version\.c$$'
 
 
 # The order to do things in.
@@ -517,7 +511,6 @@ DEFLIBPATH = "\"$(pkgextensiondir)\""
 
 # Get rid of core files when cleaning
 CLEANFILES = core core.*
-MAINTAINERCLEANFILES = version.c
 
 # We want hard links for install-exec-hook, below
 LN = ln
@@ -1026,7 +1019,6 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 	-rm -f awkgram.c
 	-rm -f command.c
-	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 clean: clean-recursive
 
 clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
@@ -1166,9 +1158,6 @@ awkgram.c: awkgram.y
 	if test -f y.tab.h; then \
 	if cmp -s y.tab.h $*.h; then rm -f y.tab.h; else mv y.tab.h $*.h; fi; \
 	else :; fi
-
-version.c: config.status version.in
-	$(SHELL) ./config.status --file=version.c:version.in
 
 command.c: command.y
 	$(YACC) -p zz $<
