@@ -155,6 +155,7 @@ is_blank (int c)
 # define __attribute(arg) __attribute__ (arg)
 #else
 # define __attribute(arg)
+# define __attribute__(arg)	/* GAWK: They left this out. Duh. */
 #endif
 
 #ifdef GAWK

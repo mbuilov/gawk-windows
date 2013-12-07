@@ -673,8 +673,6 @@
 #include "vms/redirect.h"
 #undef  IN_CONFIG_H
 
-#define __attribute__(x)
-
 #endif	/*"custom.h"*/
 
 #endif	/*CONFIG_H*/
