@@ -75,5 +75,4 @@
 #define unsetenv zos_unsetenv
 extern int setenv(const char *name, const char *value, int rewrite);
 extern int unsetenv(const char *name);
-#define __attribute__(x)
 #endif
