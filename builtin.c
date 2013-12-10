@@ -469,9 +469,9 @@ double
 double_to_int(double d)
 {
 	if (d >= 0)
-		d = Floor(d);
+		d = floor(d);
 	else
-		d = Ceil(d);
+		d = ceil(d);
 	return d;
 }
 
