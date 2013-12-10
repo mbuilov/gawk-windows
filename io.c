@@ -116,6 +116,10 @@
 #define ENFILE EMFILE
 #endif
 
+#if defined(__DJGPP__)
+#define closemaybesocket(fd)	close(fd)
+#endif
+
 #if defined(VMS)
 #define closemaybesocket(fd)	close(fd)
 #endif
