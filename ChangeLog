@@ -1,3 +1,14 @@
+2013-12-10         Scott Deifik          <scottd.mail@sbcglobal.net>
+
+	* io.c (closemaybesocket): Add definition for DJGPP.
+
+2013-12-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (Floor, Ceil): Remove declarations and VMS redefinitions.
+	* floatcomp.c (Floor, Ceil): Removed, not needed. Move bracketing
+	ifdef to the top of the file.
+	* builtin.c (double_to_int): Use floor() and ceil().
+
 2013-12-07         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regex_internal.h (__attribute__): Define to empty if not GCC.

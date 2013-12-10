@@ -1662,13 +1662,6 @@ extern NODE **function_list(bool sort);
 extern void print_vars(NODE **table, Func_print print_func, FILE *fp);
 
 /* floatcomp.c */
-#ifdef VMS	/* VMS linker weirdness? */
-#define Ceil	gawk_ceil
-#define Floor	gawk_floor
-#endif
-
-extern AWKNUM Floor(AWKNUM n);
-extern AWKNUM Ceil(AWKNUM n);
 #ifdef HAVE_UINTMAX_T
 extern uintmax_t adjust_uint(uintmax_t n);
 #else
