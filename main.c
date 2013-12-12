@@ -194,11 +194,6 @@ static const struct option optab[] = {
 	{ NULL, 0, NULL, '\0' }
 };
 
-/* VMS needs some special fix-ups for the program name */
-#ifdef __VMS
-#include "vms_gawk_main_wrapper.c"
-#endif
-
 /* main --- process args, parse program, run it, clean up */
 
 int
