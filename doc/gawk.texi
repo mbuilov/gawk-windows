@@ -14675,29 +14675,29 @@ Array elements are processed in arbitrary order, which is the default
 @command{awk} behavior.
 
 @item "@@ind_str_asc"
-Order by indices compared as strings; this is the most basic sort.
+Order by indices in ascending order compared as strings; this is the most basic sort.
 (Internally, array indices are always strings, so with @samp{a[2*5] = 1}
 the index is @code{"10"} rather than numeric 10.)
 
 @item "@@ind_num_asc"
-Order by indices but force them to be treated as numbers in the process.
+Order by indices in ascending order but force them to be treated as numbers in the process.
 Any index with a non-numeric value will end up positioned as if it were zero. 
 
 @item "@@val_type_asc"
-Order by element values rather than indices.
+Order by element values in ascending order (rather than by indices).
 Ordering is by the type assigned to the element
 (@pxref{Typing and Comparison}).
 All numeric values come before all string values,
 which in turn come before all subarrays.
 (Subarrays have not been described yet;
-@pxref{Arrays of Arrays}).
+@pxref{Arrays of Arrays}.)
 
 @item "@@val_str_asc"
-Order by element values rather than by indices.  Scalar values are 
+Order by element values in ascending order (rather than by indices).  Scalar values are 
 compared as strings.  Subarrays, if present, come out last.
 
 @item "@@val_num_asc"
-Order by element values rather than by indices.  Scalar values are 
+Order by element values in ascending order (rather than by indices).  Scalar values are 
 compared as numbers.  Subarrays, if present, come out last.
 When numeric values are equal, the string values are used to provide
 an ordering: this guarantees consistent results across different
@@ -14710,13 +14710,14 @@ across different environments.} which @command{gawk} uses internally
 to perform the sorting.
 
 @item "@@ind_str_desc"
-Reverse order from the most basic sort.
+String indices ordered from high to low.
 
 @item "@@ind_num_desc"
 Numeric indices ordered from high to low.
 
 @item "@@val_type_desc"
-Element values, based on type, in descending order.
+Element values, based on type, ordered from high to low.
+Subarrays, if present, come out first.
 
 @item "@@val_str_desc"
 Element values, treated as strings, ordered from high to low.
@@ -15573,15 +15574,16 @@ sequences of random numbers.
 @node String Functions
 @subsection String-Manipulation Functions
 
-The functions in this @value{SECTION} look at or change the text of one or more
-strings.
-@code{gawk} understands locales (@pxref{Locales}), and does all string processing in terms of
-@emph{characters}, not @emph{bytes}.  This distinction is particularly important
-to understand for locales where one character
-may be represented by multiple bytes.  Thus, for example, @code{length()}
-returns the number of characters in a string, and not the number of bytes
-used to represent those characters, Similarly, @code{index()} works with
-character indices, and not byte indices.
+The functions in this @value{SECTION} look at or change the text of one
+or more strings.
+
+@code{gawk} understands locales (@pxref{Locales}), and does all
+string processing in terms of @emph{characters}, not @emph{bytes}.
+This distinction is particularly important to understand for locales
+where one character may be represented by multiple bytes.  Thus, for
+example, @code{length()} returns the number of characters in a string,
+and not the number of bytes used to represent those characters. Similarly,
+@code{index()} works with character indices, and not byte indices.
 
 In the following list, optional parameters are enclosed in square brackets@w{ ([ ]).}
 Several functions perform string substitution; the full discussion is
@@ -15598,30 +15600,32 @@ pound sign@w{ (@samp{#}):}
 
 @table @code
 @item asort(@var{source} @r{[}, @var{dest} @r{[}, @var{how}  @r{]} @r{]}) #
+@itemx asorti(@var{source} @r{[}, @var{dest} @r{[}, @var{how}  @r{]} @r{]}) #
+@cindex @code{asorti()} function (@command{gawk})
 @cindex arrays, elements, retrieving number of
 @cindex @code{asort()} function (@command{gawk})
 @cindex @command{gawk}, @code{IGNORECASE} variable in
 @cindex @code{IGNORECASE} variable
-Return the number of elements in the array @var{source}.
-@command{gawk} sorts the contents of @var{source}
-and replaces the indices
-of the sorted values of @var{source} with sequential
-integers starting with one.  If the optional array @var{dest} is specified,
-then @var{source} is duplicated into @var{dest}.  @var{dest} is then
-sorted, leaving the indices of @var{source} unchanged.  The optional third
-argument @var{how} is a string which controls the rule for comparing values,
-and the sort direction.  A single space is required between the
-comparison mode, @samp{string} or @samp{number}, and the direction specification,
-@samp{ascending} or @samp{descending}.  You can omit direction and/or mode
-in which case it will default to @samp{ascending} and @samp{string}, respectively. 
-An empty string "" is the same as the default @code{"ascending string"}
-for the value of @var{how}.  If the @samp{source} array contains subarrays as values,
-they will come out last(first) in the @samp{dest} array for @samp{ascending}(@samp{descending})
-order specification.  The value of @code{IGNORECASE} affects the sorting.
-The third argument can also be a user-defined function name in which case
-the value returned by the function is used to order the array elements
-before constructing the result array.
-@xref{Array Sorting Functions}, for more information.
+These two functions are similar in behavior, so they are described
+together.
+
+@quotation NOTE
+The following description ignores the third argument, @var{how}, since it
+requires understanding features that we have not discussed yet.  Thus,
+the discussion here is a deliberate simplification.  (We do provide all
+the details later on: @xref{Array Sorting Functions}, for the full story.)
+@end quotation
+
+Both functions return the number of elements in the array @var{source}.
+For @command{asort()}, @command{gawk} sorts the values of @var{source}
+and replaces the indices of the sorted values of @var{source} with
+sequential integers starting with one.  If the optional array @var{dest}
+is specified, then @var{source} is duplicated into @var{dest}.  @var{dest}
+is then sorted, leaving the indices of @var{source} unchanged.
+
+When comparing strings, @code{IGNORECASE} affects the sorting.  If the
+@var{source} array contains subarrays as values (@pxref{Arrays of
+Arrays}), they will come last, after all scalar values.
 
 For example, if the contents of @code{a} are as follows:
 
@@ -15647,29 +15651,19 @@ a[2] = "de"
 a[3] = "sac"
 @end example
 
-In order to reverse the direction of the sorted results in the above example,
-@code{asort()} can be called with three arguments as follows:
+The @code{asorti()} function works similarly to @code{asort()}, however,
+the @emph{indices} are sorted, instead of the values. Thus, in the
+previous example, starting with the same initial set of indices and
+values in @code{a}, calling @samp{asorti(a)} would yield:
 
 @example
-asort(a, a, "descending")
+a[1] = "first"
+a[2] = "last"
+a[3] = "middle"
 @end example
 
-The @code{asort()} function is described in more detail in
-@ref{Array Sorting Functions}.
-@code{asort()} is a @command{gawk} extension; it is not available
-in compatibility mode (@pxref{Options}).
-
-@item asorti(@var{source} @r{[}, @var{dest} @r{[}, @var{how}  @r{]} @r{]}) #
-@cindex @code{asorti()} function (@command{gawk})
-Return the number of elements in the array @var{source}.
-It works similarly to @code{asort()}, however, the @emph{indices}
-are sorted, instead of the values. (Here too,
-@code{IGNORECASE} affects the sorting.)
-
-The @code{asorti()} function is described in more detail in
-@ref{Array Sorting Functions}.
-@code{asorti()} is a @command{gawk} extension; it is not available
-in compatibility mode (@pxref{Options}).
+@code{asort()} and @code{asorti()} are @command{gawk} extensions; they
+are not available in compatibility mode (@pxref{Options}).
 
 @item gensub(@var{regexp}, @var{replacement}, @var{how} @r{[}, @var{target}@r{]}) #
 @cindex @code{gensub()} function (@command{gawk})
@@ -25243,7 +25237,7 @@ ordered data:
 @example
 function cmp_randomize(i1, v1, i2, v2)
 @{
-    # random order
+    # random order (caution: this may never terminate!)
     return (2 - 4 * rand())
 @}
 @end example
@@ -25258,7 +25252,7 @@ with otherwise equal values is to include the indices in the comparison
 rules.  Note that doing this may make the loop traversal less efficient,
 so consider it only if necessary.  The following comparison functions
 force a deterministic order, and are based on the fact that the
-indices of two elements are never equal:
+(string) indices of two elements are never equal:
 
 @example
 function cmp_numeric(i1, v1, i2, v2)
@@ -25317,15 +25311,14 @@ sorted array traversal is not the default.
 @cindex arrays, sorting
 @cindex @code{asort()} function (@command{gawk})
 @cindex @code{asort()} function (@command{gawk}), arrays@comma{} sorting
+@cindex @code{asorti()} function (@command{gawk})
+@cindex @code{asorti()} function (@command{gawk}), arrays@comma{} sorting
 @cindex sort function, arrays, sorting
-In most @command{awk} implementations, sorting an array requires
-writing a @code{sort()} function.
-While this can be educational for exploring different sorting algorithms,
-usually that's not the point of the program.
-@command{gawk} provides the built-in @code{asort()}
-and @code{asorti()} functions
-(@pxref{String Functions})
-for sorting arrays.  For example:
+In most @command{awk} implementations, sorting an array requires writing
+a @code{sort()} function.  While this can be educational for exploring
+different sorting algorithms, usually that's not the point of the program.
+@command{gawk} provides the built-in @code{asort()} and @code{asorti()}
+functions (@pxref{String Functions}) for sorting arrays.  For example:
 
 @example
 @var{populate the array} data
@@ -25338,7 +25331,7 @@ After the call to @code{asort()}, the array @code{data} is indexed from 1
 to some number @var{n}, the total number of elements in @code{data}.
 (This count is @code{asort()}'s return value.)
 @code{data[1]} @value{LEQ} @code{data[2]} @value{LEQ} @code{data[3]}, and so on.
-The comparison is based on the type of the elements
+The default comparison is based on the type of the elements
 (@pxref{Typing and Comparison}).
 All numeric values come before all string values,
 which in turn come before all subarrays.
@@ -25360,24 +25353,11 @@ In this case, @command{gawk} copies the @code{source} array into the
 @code{dest} array and then sorts @code{dest}, destroying its indices.
 However, the @code{source} array is not affected.
 
-@code{asort()} accepts a third string argument to control comparison of
-array elements.  As with @code{PROCINFO["sorted_in"]}, this argument
-may be one of the predefined names that @command{gawk} provides
-(@pxref{Controlling Scanning}), or the name of a user-defined function
-(@pxref{Controlling Array Traversal}).
-
-@quotation NOTE
-In all cases, the sorted element values consist of the original
-array's element values.  The ability to control comparison merely
-affects the way in which they are sorted.
-@end quotation
-
 Often, what's needed is to sort on the values of the @emph{indices}
-instead of the values of the elements.
-To do that, use the
-@code{asorti()} function.  The interface is identical to that of
-@code{asort()}, except that the index values are used for sorting, and
-become the values of the result array:
+instead of the values of the elements.  To do that, use the
+@code{asorti()} function.  The interface and behavior are identical to
+that of @code{asort()}, except that the index values are used for sorting,
+and become the values of the result array:
 
 @example
 @{ source[$0] = some_func($0) @}
@@ -25394,23 +25374,35 @@ END @{
 @}
 @end example
 
-Similar to @code{asort()},
-in all cases, the sorted element values consist of the original
-array's indices.  The ability to control comparison merely
-affects the way in which they are sorted.
+So far, so good. Now it starts to get interesting.  Both @code{asort()}
+and @code{asorti()} accept a third string argument to control comparison
+of array elements.  In @ref{String Functions}, we ignored this third
+argument; however, the time has now come to describe how this argument
+affects these two functions.
 
-Sorting the array by replacing the indices provides maximal flexibility.
-To traverse the elements in decreasing order, use a loop that goes from
-@var{n} down to 1, either over the elements or over the indices.@footnote{You
-may also use one of the predefined sorting names that sorts in
-decreasing order.}
+Basically, the third argument specifies how the array is to be sorted.
+There are two possibilities.  As with @code{PROCINFO["sorted_in"]},
+this argument may be one of the predefined names that @command{gawk}
+provides (@pxref{Controlling Scanning}), or it may be the name of a
+user-defined function (@pxref{Controlling Array Traversal}).
+
+In the latter case, @emph{the function can compare elements in any way
+it chooses}, taking into account just the indices, just the values,
+or both.  This is extremely powerful.
+
+Once the array is sorted, @code{asort()} takes the @emph{values} in
+their final order, and uses them to fill in the result array, whereas
+@code{asorti()} takes the @emph{indices} in their final order, and uses
+them to fill in the result array.
 
 @cindex reference counting, sorting arrays
+@quotation NOTE
 Copying array indices and elements isn't expensive in terms of memory.
 Internally, @command{gawk} maintains @dfn{reference counts} to data.
 For example, when @code{asort()} copies the first array to the second one,
 there is only one copy of the original array elements' data, even though
 both arrays use the values.
+@end quotation
 
 @c Document It And Call It A Feature. Sigh.
 @cindex @command{gawk}, @code{IGNORECASE} variable in
