@@ -601,7 +601,7 @@ $	mon = f$cvtime(now,"ABSOLUTE","MONTH")
 $	mon = f$extract(0,1,mon) + f$edit(f$extract(1,2,mon),"LOWERCASE")
 $	day = f$cvtime(now,,"DAY")
 $	tim = f$extract(0,8,f$cvtime(now,,"TIME"))
-$	tz  = ""
+$	tz = f$trnlnm("SYS$TIMEZONE_NAME")
 $	yr  = f$cvtime(now,,"YEAR")
 $	if f$trnlnm("FTMP").nes."" then  close/noLog ftmp
 $	open/Write ftmp strftime.in

@@ -6,21 +6,36 @@ CC and LINK commands, and there's also a Makefile for use with the MMS
 utility.  From the source directory, use either
  |$ @[.VMS]VMSBUILD.COM
 or
- |$ MMS/DECRIPTION=[.VMS]DECSRIP.MMS GAWK
+ |$ MMS/DESCRIPTION=[.VMS]DESCRIP.MMS gawk
+or
+ |$ MMK/DESCRIPTION=[.VMS]DESCRIP.MMS gawk
+
+Note that on IA64 and Alpha the case of the target may be important.
 
 DEC C  -- use either vmsbuild.com or descrip.mms as is.
+       DEC C is also known as Compaq C and HP C.
+
 VAX C  -- use `@vmsbuild VAXC' or `MMS/MACRO=("VAXC")'.  On a system
         with both VAX C and DEC C installed where DEC C is the default,
         use `MMS/MACRO=("VAXC","CC=CC/VAXC")' for the MMS variant; for
         the vmsbuild.com variant, any need for `/VAXC' will be detected
         automatically.
+        * IMPORTANT NOTE * VAX C should not be used on VAX/VMS 5.5-2 and
+        later.  Use DEC C instead.
+
 GNU C  -- use `@vmsbuild GNUC' or `MMS/MACRO=("GNUC")'.  On a system
         where the GCC command is not already defined, use either
         `@vmsbuild GNUC DO_GNUC_SETUP' or
         `MMS/MACRO=("GNUC","DO_GNUC_SETUP")'.
 
-     Tested under Alpha/VMS V7.1 using DEC C V6.4.  GAWK should work
-without modifications for VMS V4.6 and up.
+Most recent builds are using:
+    OpenVMS VAX 7.3 using DEC C 6.4
+    OpenVMS Alpha 8.3 using HP C V 7.3
+    OpenVMS Alpha 8.4 using HP C V 7.3
+    OpenVMS IA64 8.4 using HP C V 7.3
+
+GAWK was originally ported for VMS V4.6 and up.  It has not been tested
+with a release that old for some time.
 
 
 Installing GAWK on VMS:
@@ -79,9 +94,3 @@ separated list of directory specifications.  When defining it, the
 value should be quoted so that it retains a single translation, not a
 multi-translation RMS searchlist.
 
-------------------------------
-Thu Jun 18 05:22:10 IDT 2009
-============================
-
-On OpenVMS V7.3 (Alpha) the "manyfiles" test is known to fail. The reason
-is not (yet) known.

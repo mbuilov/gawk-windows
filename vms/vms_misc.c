@@ -118,15 +118,24 @@ vms_open( const char *name, int mode, ... )
 	result = creat(name, 0, "rfm=stmlf", "rat=cr", "shr=nil", "mbc=32");
     } else {
 	struct stat stb;
+	int stat_result;
 	const char *mbc, *shr = "shr=get", *ctx = "ctx=stm";
-
-	if (stat((char *)name, &stb) < 0) {	/* assume DECnet */
+ 
+	stat_result = stat((char *)name, &stb);
+	if ( stat_result < 0) {	/* assume DECnet */
 	    mbc = "mbc=8";
 	} else {    /* ordinary file; allow full sharing iff record format */
 	    mbc = "mbc=32";
 	    if ((stb.st_fab_rfm & 0x0F) < FAB$C_STM) shr = "shr=get,put,upd";
 	}
 	result = open(name, mode, 0, shr, mbc, "mbf=2");
+	if ((stat_result >= 0) && (result < 0) && (errno == ENOENT)) {
+	    /* ENOENT not possible because stat succeeded */
+	    errno = EMFILE;
+	    if (S_ISDIR(stb.st_mode)) {
+		errno = EISDIR; /* Bug seen in VMS 8.3 */
+	    }
+        }
     }
 
     /* This is only approximate; the ACP -> RMS -> VAXCRTL interface

@@ -1,3 +1,36 @@
+2013-12-08	   John E. Malmberg	<wb8tyw@qsl.net>
+
+	* descrip.mms: Add IEEE float for non-vax.
+	  Add vms_crtl_init.c.
+	  Remove code to generate version.c
+	* generate_config_vms_h_gawk.com (__attribute__): Removed
+	  definition from here.
+	* version_c.com: removed no longer used.
+	* vmsbuild.com: Add IEEE float for non-vax.
+	  Add vms_crtl_init.c
+	  Remove code to generate version.c
+	  Changes that should have been in the previous commit.
+	* vms_misc.c (vms_open): VMS CRTL for 8.3 Alpha is setting
+	  errno to ENOENT instead of EISDIR for ".".
+
+2013-12-05	   John E. Malmberg	<wb8tyw@qsl.net>
+
+	* New config_h.com to generate config.h
+	* New gawk_ident.com generates ident line for link option file.
+	* Add version_c.com to create version.c from version.in.
+	* Remove fcntl.h covering up real fcntl.h.  If an older version
+	  of VMS needs this file, the build procedure should be updated
+	  to generate it from a template.
+	* descrip.mms: Use command files to generate files based
+	  on same input files as a Linux build.
+	* gawkmisc.vms (files_are_same): support _USE_STD_STAT for VMS 8.x.
+	* generate_config_vms_h_gawk.com: Generates a helper file
+	  config_vms.h to cover issues config_h.com can not handle.
+	* vmsbuild.com: Use command files to generate files based
+	  on the same input files as a Linux build.
+	* vms_misc.c (vms_open): VMS CRTL setting errno to ENOENT where
+	  it should be set to EMFILE.
+
 2013-12-06         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* vms-conf.h (__attribute__): Removed definition from here; fixed

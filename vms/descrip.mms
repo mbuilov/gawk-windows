@@ -47,6 +47,7 @@ MAKEFILE = $(VMSDIR)Descrip.MMS
 #CCFLAGS = /noOpt/Debug
 
 # a comma separated list of macros to define
+# Do not specify _POSIX_EXIT here, other tricks are used for this.
 CDEFS	= "GAWK","HAVE_CONFIG_H"
 
 .ifdef GNUC
@@ -67,8 +68,13 @@ CFLAGS	= /Incl=[]/Obj=[]/Opt=noInline/Def=($(CDEFS)) $(CCFLAGS)
 LIBS	= sys$share:vaxcrtl.exe/Shareable
 .else	!!VAXC
 # neither GNUC nor VAXC, assume DECC (same for either VAX or Alpha)
-CC	= cc/DECC/Prefix=All
-CFLAGS	= /Incl=[]/Obj=[]/Def=($(CDEFS)) $(CCFLAGS)
+.ifdef __VAX__
+CFLOAT  =
+.else
+CFLOAT	= /float=ieee/ieee_mode=denorm_results
+.endif
+CC	= cc/DECC/Prefix=All/NESTED_INCLUDE=NONE$(CFLOAT)
+CFLAGS	= /Incl=([],[.vms])/Obj=[]/Def=($(CDEFS)) $(CCFLAGS)
 LIBS	=	# DECC$SHR instead of VAXCRTL, no special link option needed
 .endif	!VAXC
 .endif	!GNUC
@@ -106,7 +112,7 @@ AWKOBJS = $(AWKOBJ1),$(AWKOBJ2)
 # VMSOBJS
 #	VMS specific stuff
 VMSCODE = vms_misc.obj,vms_popen.obj,vms_fwrite.obj,vms_args.obj,\
-	vms_gawk.obj,vms_cli.obj
+	vms_gawk.obj,vms_cli.obj,vms_crtl_init.obj
 VMSCMD	= gawk_cmd.obj			# built from .cld file
 VMSOBJS = $(VMSCODE),$(VMSCMD)
 
@@ -128,8 +134,8 @@ gawk : gawk.exe
 gawk.exe : $(GAWKOBJ) $(AWKOBJS) $(VMSOBJS) gawk.opt
 	$(LINK) $(LINKFLAGS) gawk.opt/options
 
-gawk.opt : $(MAKEFILE)			# create linker options file
-      @	open/write opt sys$disk:[]gawk.opt		! ~ 'cat <<close >gawk.opt'
+gawk.opt : $(MAKEFILE) config.h         # create linker options file
+      @	open/write opt sys$disk:[]gawk.opt	! ~ 'cat <<close >gawk.opt'
       @	write opt "! GAWK -- GNU awk"
       @ write opt "$(GAWKOBJ)"
       @ write opt "$(AWKOBJ1)"
@@ -139,17 +145,19 @@ gawk.opt : $(MAKEFILE)			# create linker options file
       @ write opt "stack=48	!preallocate more pages (default is 20)"
       @ write opt "iosegment=128	!ditto (default is 32)"
       @	write opt "$(LIBS)"
-      @	write opt "identification=""V$(REL).$(PATCHLVL)"""
-      @	close opt
+      @ close opt
+      $ @$(VMSDIR)gawk_ident.com
 
 $(VMSCODE)	: awk.h config.h $(VMSDIR)redirect.h $(VMSDIR)vms.h
-$(AWKOBJS)	: awk.h gettext.h mbsupport.h regex.h dfa.h config.h $(VMSDIR)redirect.h
+$(AWKOBJS)	: awk.h gettext.h mbsupport.h regex.h dfa.h config.h \
+		  $(VMSDIR)redirect.h
 $(GAWKOBJ)	: awk.h config.h $(VMSDIR)redirect.h
 
 #-----------------------------------------------------------------------------
 # Older versions of MMS have problems handling lower case file names typically
 # found on ODS-5 disks. Fix this by adding explicit dependencies.
 #_____________________________________________________________________________
+
 array.obj	: array.c
 awkgram.obj	: awkgram.c awk.h
 builtin.obj	: builtin.c floatmagic.h random.h
@@ -174,7 +182,8 @@ node.obj	: node.c
 profile.obj	: profile.c
 random.obj	: random.c random.h
 re.obj		: re.c
-regex.obj	: regex.c regcomp.c regex_internal.c regexec.c regex.h regex_internal.h
+regex.obj	: regex.c regcomp.c regex_internal.c regexec.c regex.h \
+		  regex_internal.h
 str_array.obj	: str_array.c
 symbol.obj	: symbol.c
 version.obj	: version.c
@@ -184,12 +193,14 @@ vms_fwrite.obj	: $(VMSDIR)vms_fwrite.c
 vms_args.obj	: $(VMSDIR)vms_args.c
 vms_gawk.obj	: $(VMSDIR)vms_gawk.c
 vms_cli.obj	: $(VMSDIR)vms_cli.c
+vms_crtl_init.obj : $(VMSDIR)vms_crtl_init.c
 replace.obj	: replace.c $(MISSNGD)system.c $(MISSNGD)memcmp.c \
 		  $(MISSNGD)memcpy.c $(MISSNGD)memset.c $(MISSNGD)memmove.c \
 		  $(MISSNGD)strncasecmp.c $(MISSNGD)strerror.c \
 		  $(MISSNGD)strftime.c $(MISSNGD)strchr.c $(MISSNGD)strtod.c \
 		  $(MISSNGD)strtoul.c $(MISSNGD)tzset.c $(MISSNGD)mktime.c \
-		  $(MISSNGD)snprintf.c $(MISSNGD)getaddrinfo.c $(MISSNGD)usleep.c \
+		  $(MISSNGD)snprintf.c $(MISSNGD)getaddrinfo.c \
+		  $(MISSNGD)usleep.c \
 		  $(MISSNGD)setenv.c $(MISSNGD)strcoll.c $(MISSNGD)wcmisc.c
 
 # bison or yacc required
@@ -201,7 +212,8 @@ awkgram.c	: awkgram.y	# foo.y :: yacc => y[_]tab.c, bison => foo_tab.c
 	$(PARSER) $(YFLAGS) $<
      @- if f$search("ytab.c")	.nes."" then  rename/new_vers ytab.c  $@
      @- if f$search("y_tab.c")	.nes."" then  rename/new_vers y_tab.c $@
-     @- if f$search("awkgram_tab.c").nes."" then  rename/new_vers awkgram_tab.c $@
+     @- if f$search("awkgram_tab.c").nes."" then \
+            rename/new_vers awkgram_tab.c $@
 
 command.c	: command.y
      @- if f$search("ytab.c")	.nes."" then  delete ytab.c;*
@@ -211,10 +223,14 @@ command.c	: command.y
 	$(PARSER) $(YFLAGS) $<
      @- if f$search("ytab.c")	.nes."" then  rename/new_vers ytab.c  $@
      @- if f$search("y_tab.c")	.nes."" then  rename/new_vers y_tab.c $@
-     @- if f$search("command_tab.c").nes."" then  rename/new_vers command_tab.c $@
+     @- if f$search("command_tab.c").nes."" then \
+            rename/new_vers command_tab.c $@
 
-config.h	: $(VMSDIR)vms-conf.h
-	copy $< sys$disk:[]$@
+config_vms.h : $(VMSDIR)generate_config_vms_h_gawk.com
+     $ @$(VMSDIR)generate_config_vms_h_gawk.com
+
+config.h	: configh.in config_vms.h $(VMSDIR)config_h.com
+     $ @$(VMSDIR)config_h.com
 
 $(VMSCMD)	: $(VMSDIR)gawk.cld
 	set command $(CLDFLAGS)/object=$@ $<
@@ -230,13 +246,16 @@ tidy :
 
 clean :
       - if f$search ("*.obj")    .nes. "" then delete *.obj;*
+      - if f$search ("*.lis")    .nes. "" then delete *.lis;*
       - if f$search ("gawk.opt") .nes. "" then delete gawk.opt;*
 
 spotless : clean tidy
-      - if f$search("config.h").nes."" then  rename config.h config.h-old/New
+      - if f$search("config.h").nes."" then delete config.h;*
+      - if f$search("config_vms.h").nes."" then delete config_vms.h;*
       - if f$search("gawk.exe").nes."" then  delete gawk.exe;*
       - if f$search("gawk.dvi").nes."" then  delete gawk.dvi;*
-      - if f$search("[.doc]texindex.exe").nes."" then  delete [.doc]texindex.exe;*
+      - if f$search("[.doc]texindex.exe").nes."" then \
+            delete [.doc]texindex.exe;*
 
 #
 # Note: this only works if you kept a copy of [.support]texindex.c
@@ -258,7 +277,8 @@ gawk.dvi : [.doc]texindex.exe [.doc]gawk.texi
       @ write sys$output " Third (final) pass"
 	TeX gawk.texi
      -@ purge
-     -@ delete gawk.lis;,.aux;,gawk.%%;,.cps;,.fns;,.kys;,.pgs;,.toc;,.tps;,.vrs;
+     -@ delete \
+         gawk.lis;,.aux;,gawk.%%;,.cps;,.fns;,.kys;,.pgs;,.toc;,.tps;,.vrs;
       @ rename/new_vers gawk.dvi [-]*.*
       @ set default [-]
 
