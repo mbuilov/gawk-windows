@@ -247,7 +247,6 @@ dnl Check for C11 _Noreturn
 GAWK_AC_NORETURN
 
 dnl checks for functions
-AC_FUNC_VPRINTF
 AC_FUNC_MKTIME
 case "$ac_cv_func_working_mktime" in
 yes)	AC_DEFINE(HAVE_MKTIME, 1, [we have the mktime function])
