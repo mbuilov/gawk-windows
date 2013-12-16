@@ -37,6 +37,38 @@ Most recent builds are using:
 GAWK was originally ported for VMS V4.6 and up.  It has not been tested
 with a release that old for some time.
 
+Compiling dynamic extensions on VMS:
+
+Dynamic extensions need to be compiled with the same compiler options for
+floating point, pointer size, and symbol name handling as gawk.
+Alpha and Itanium should use IEEE floating point.  The pointer size is 32 bits,
+and the symbol name handling is to be exact case with CRC shortening for
+symbols longer than 32 bits.
+
+Alpha and Itanium:
+
+/name=(as_is,short)
+/float=ieee/ieee_mode=denorm_results
+
+VAX:
+
+/name=(as_is,short)
+
+Compile time macros needed to be defined before the first VMS supplied
+header file is included.
+
+#if (__CRTL_VER >= 70200000) && !defined (__VAX)
+#define _LARGEFILE 1
+#endif
+
+#ifndef __VAX
+#ifdef __CRTL_VER
+#if __CRTL_VER >= 80200000
+#define _USE_STD_STAT 1
+#endif
+#endif
+#endif
+
 
 Installing GAWK on VMS:
 
@@ -47,6 +79,10 @@ whose value begins with a dollar sign.
 That symbol should be placed in the user's login.com or in the system-
 wide sylogin.com procedure so that it will be defined every time the
 user logs on.
+
+If your gawk was installed by a PCSI kit into the GNV$GNU: directory tree,
+the program will be known as GNV$GNU:[bin]gnv$gawk.exe and the help file
+will be GNV$GNU:[vms_help]gawk.hlp.
 
      Optionally, the help entry can be loaded into a VMS help library.
  |$ LIBRARY/HELP SYS$HELP:HELPLIB [.VMS]GAWK.HLP

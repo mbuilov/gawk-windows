@@ -817,9 +817,12 @@ particular records in a file and perform operations upon them.
 * VMS Installation::                    Installing @command{gawk} on VMS.
 * VMS Compilation::                     How to compile @command{gawk} under
                                         VMS.
+* VMS Dynamic Extensions::              Compiling @command{gawk} dynamic
+                                        extensions on VMS.
 * VMS Installation Details::            How to install @command{gawk} under
                                         VMS.
 * VMS Running::                         How to run @command{gawk} under VMS.
+* VMS GNV::                             The VMS GNV Project.
 * VMS Old Gawk::                        An old version comes with some VMS
                                         systems.
 * Bugs::                                Reporting Problems and Bugs.
@@ -14370,7 +14373,7 @@ on the command line (@pxref{Options}).
 @section Multidimensional Arrays
 
 @menu
-* Multiscanning::              Scanning multidimensional arrays.
+* Multiscanning::               Scanning multidimensional arrays.
 @end menu
 
 @cindex subscripts in arrays, multidimensional
@@ -32713,6 +32716,9 @@ Tandem (non-POSIX)
 @item
 Prestandard VAX C compiler for VAX/VMS
 
+@item
+GCC for VAX and Alpha has not been tested for a while.
+
 @end itemize
 
 @end itemize
@@ -33984,8 +33990,11 @@ The older designation ``VMS'' is used throughout to refer to OpenVMS.
 
 @menu
 * VMS Compilation::             How to compile @command{gawk} under VMS.
+* VMS Dynamic Extensions::      Compiling @command{gawk} dynamic extensions on
+                                VMS.
 * VMS Installation Details::    How to install @command{gawk} under VMS.
 * VMS Running::                 How to run @command{gawk} under VMS.
+* VMS GNV::                     The VMS GNV Project.
 * VMS Old Gawk::                An old version comes with some VMS systems.
 @end menu
 
@@ -33993,41 +34002,99 @@ The older designation ``VMS'' is used throughout to refer to OpenVMS.
 @appendixsubsubsec Compiling @command{gawk} on VMS
 @cindex compiling @command{gawk} for VMS
 
-To compile @command{gawk} under VMS, there is a @code{DCL} command procedure that
-issues all the necessary @code{CC} and @code{LINK} commands. There is
-also a @file{Makefile} for use with the @code{MMS} utility.  From the source
-directory, use either:
+To compile @command{gawk} under VMS, there is a @code{DCL} command procedure
+that issues all the necessary @code{CC} and @code{LINK} commands. There is
+also a @file{Makefile} for use with the @code{MMS} or @code{MMK} utility.
+From the source directory, use either:
 
 @example
-$ @kbd{@@[.VMS]VMSBUILD.COM}
+$ @kbd{@@[.vms]vmsbuild.com}
 @end example
 
 @noindent
 or:
 
 @example
-$ @kbd{MMS/DESCRIPTION=[.VMS]DESCRIP.MMS GAWK}
+$ @kbd{MMS/DESCRIPTION=[.vms]descrip.mms gawk}
 @end example
+
+@noindent
+or:
+
+@example
+$ @kbd{MMK/DESCRIPTION=[.vms]descrip.mms gawk}
+@end example
+
+@code{MMK} is an open source freeware near clone of @code{MMS} and
+can better handle @code{ODS-5} volumes with upper- and lower-case filenames.
+@code{MMK} is available from @uref{https://github.com/endlesssoftware/mmk}.
+
+With @code{ODS-5} volumes and extended parsing enabled, the case of the target
+parameter may need to be exact.
 
 Older versions of @command{gawk} could be built with VAX C or
 GNU C on VAX/VMS, as well as with DEC C, but that is no longer
 supported.  DEC C (also briefly known as ``Compaq C'' and now known
 as ``HP C,'' but referred to here as ``DEC C'') is required.  Both
-@code{VMSBUILD.COM} and @code{DESCRIP.MMS} contain some obsolete support
+@code{vmsbuild.com} and @code{descrip.mms} contain some obsolete support
 for the older compilers but are set up to use DEC C by default.
 
-@command{gawk} has been tested under Alpha/VMS 7.3-1 using Compaq C V6.4,
-and on Alpha/VMS 7.3, Alpha/VMS 7.3-2, and IA64/VMS 8.3.@footnote{The IA64
-architecture is also known as ``Itanium.''}
+@command{gawk} has been tested under VAX/VMS 7.3 and Alpha/VMS 7.3-1
+using Compaq C V6.4, and Alpha/VMS 7.3, Alpha/VMS 7.3-2, and IA64/VMS 8.3.
+The most recent builds used HP C V7.3 on Alpha VMS 8.3 and both
+Alpha and IA64 VMS 8.4 used HP C 7.3.@footnote{The IA64 architecture
+is also known as ``Itanium.''}
+
+Work is currently being done for a procedure to build @command{gawk} and create
+a PCSI kit for compatible with the GNV product.
+
+@node VMS Dynamic Extensions
+@appendixsubsubsec Compiling @command{gawk} Dynamic Extensions on VMS
+
+Dynamic extensions need to be compiled with the same compiler options for
+floating point, pointer size, and symbol name handling as @command{gawk}.
+Alpha and Itanium should use IEEE floating point.  The pointer size is 32 bits,
+and the symbol name handling is to be exact case with CRC shortening for
+symbols longer than 32 bits.
+
+For Alpha and Itanium:
+
+@example
+/name=(as_is,short)
+/float=ieee/ieee_mode=denorm_results
+@end example
+
+For VAX:
+
+@example
+/name=(as_is,short)
+@end example
+
+Compile time macros need to be defined before the first VMS-supplied
+header file is included.
+
+@example
+#if (__CRTL_VER >= 70200000) && !defined (__VAX)
+#define _LARGEFILE 1
+#endif
+
+#ifndef __VAX
+#ifdef __CRTL_VER
+#if __CRTL_VER >= 80200000
+#define _USE_STD_STAT 1
+#endif
+#endif
+#endif
+@end example
 
 @node VMS Installation Details
 @appendixsubsubsec Installing @command{gawk} on VMS
 
-To install @command{gawk}, all you need is a ``foreign'' command, which is
-a @code{DCL} symbol whose value begins with a dollar sign. For example:
+To use @command{gawk}, all you need is a ``foreign'' command, which is a
+@code{DCL} symbol whose value begins with a dollar sign. For example:
 
 @example
-$ @kbd{GAWK :== $disk1:[gnubin]GAWK}
+$ @kbd{GAWK :== $disk1:[gnubin]gawk}
 @end example
 
 @noindent
@@ -34039,10 +34106,15 @@ Alternatively, the symbol may be placed in the system-wide
 @file{sylogin.com} procedure, which allows all users
 to run @command{gawk}.
 
+If your @command{gawk} was installed by a PCSI kit into the
+@file{GNV$GNU:} directory tree, the program will be known as
+@file{GNV$GNU:[bin]gnv$gawk.exe} and the help file will be
+@file{GNV$GNU:[vms_help]gawk.hlp}.
+
 Optionally, the help entry can be loaded into a VMS help library:
 
 @example
-$ @kbd{LIBRARY/HELP SYS$HELP:HELPLIB [.VMS]GAWK.HLP}
+$ @kbd{LIBRARY/HELP sys$help:helplib [.vms]gawk.hlp}
 @end example
 
 @noindent
@@ -34106,6 +34178,20 @@ name @env{AWKPATH} can be used to override this default.  The format
 of @env{AWKPATH} is a comma-separated list of directory specifications.
 When defining it, the value should be quoted so that it retains a single
 translation and not a multitranslation @code{RMS} searchlist.
+
+@node VMS GNV
+@appendixsubsubsec The VMS GNV Project
+
+The VMS GNV package provides a build environment similar to POSIX with ports
+of a collection of open source tools.  The @command{gawk} found in the GNV
+base kit is an older port.  Currently the GNV project is being reorganized
+to be individual PCSI packages for each component.
+See @uref{https://sourceforge.net/p/gnv/wiki/InstallingGNVPackages/}.
+
+The normal build procedure for @command{gawk} produces a program that
+is suitable for use with GNV.  At this time work is being done to create
+the procedures for building a PCSI kit to replace the older @command{gawk}
+port.
 
 @ignore
 @c The VMS POSIX product, also known as POSIX for OpenVMS, is long defunct
