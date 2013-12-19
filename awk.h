@@ -180,10 +180,6 @@ typedef int off_t;
 #define O_BINARY	0
 #endif
 
-#ifndef HAVE_VPRINTF
-#error "you lose: you need a system with vfprintf"
-#endif	/* HAVE_VPRINTF */
-
 #ifndef HAVE_SETLOCALE
 #define setlocale(locale, val)	/* nothing */
 #endif /* HAVE_SETLOCALE */

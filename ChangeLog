@@ -1,3 +1,14 @@
+2013-12-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regexec.c (re_search_internal): Make sure `dfa' pointer is
+	not NULL before trying to dereference it.
+
+2013-12-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac (AC_FUNC_VPRINTF): Remove. Not needed on current
+	systems.
+	* awk.h (HAVE_VPRINTF): Remove check.
+
 2013-12-12         John E. Malmberg      <wb8tyw@qsl.net>
 
 	* io.c (redirect): Add additional VMS error codes.
