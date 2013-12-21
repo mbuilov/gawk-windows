@@ -578,7 +578,7 @@ $defref:	echo "defref"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk --lint -f defref.awk >_defref.tmp 2>&1
-$	if .not.$status then call exit_code 2 _defref.tmp
+$	if .not. $status then call exit_code '$status' _defref.tmp
 $	set On
 $	cmp defref.ok sys$disk:[]_defref.tmp
 $	if $status then  rm _defref.tmp;
@@ -637,7 +637,7 @@ $
 $incdupe:   echo "''test'"
 $   set noOn
 $   gawk --lint -i inclib -i inclib.awk "BEGIN {print sandwich(""a"", ""b"", ""c"")}" > _'test'.tmp 2>&1
-$   if .not. $status then call exit_code 1 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -646,7 +646,7 @@ $
 $incdupe2:   echo "''test'"
 $   set noOn
 $   gawk --lint -f inclib -f inclib.awk >_'test'.tmp 2>&1
-$   if .not. $status then call exit_code 1 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -661,7 +661,7 @@ $
 $incdupe4:   echo "''test'"
 $   set NoOn
 $   gawk --lint -f hello -i hello.awk >_'test'.tmp 2>&1
-$   if .not. $status then call exit_code 2 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -670,7 +670,7 @@ $
 $incdupe5:   echo "''test'"
 $   set NoOn
 $   gawk --lint -i hello -f hello.awk >_'test'.tmp 2>&1
-$   if .not. $status then call exit_code 2 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -679,7 +679,7 @@ $
 $incdupe6:   echo "''test'"
 $   set NoOn
 $   gawk --lint -i inchello -f hello.awk >_'test'.tmp 2>&1
-$   if .not. $status then call exit_code 2 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -688,7 +688,7 @@ $
 $incdupe7:   echo "''test'"
 $   set NoOn
 $   gawk --lint -f hello -i inchello >_'test'.tmp 2>&1
-$   if .not. $status then call exit_code 2 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -706,7 +706,7 @@ $symtab2:
 $symtab3:   echo "''test'"
 $   set noOn
 $   gawk -f 'test'.awk  >_'test'.tmp 2>&1
-$   if .not. $status then call exit_code 2 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -717,7 +717,7 @@ $symtab5:
 $symtab7:   echo "''test'"
 $   set noOn
 $   gawk -f 'test'.awk <'test'.in >_'test'.tmp 2>&1
-$   if .not. $status then call exit_code 2 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -897,7 +897,7 @@ $noparms:	echo "noparms"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk -f noparms.awk >_noparms.tmp 2>&1
-$	if .not.$status then call exit_code 1 _noparms.tmp
+$	if .not. $status then call exit_code '$status' _noparms.tmp
 $	set On
 $	cmp noparms.ok sys$disk:[]_noparms.tmp
 $	if $status then  rm _noparms.tmp;
@@ -968,8 +968,9 @@ $subslash:
 $	echo "''test'"
 $	set noOn
 $	gawk -f 'test'.awk >_'test'.tmp 2>&1
-$	if .not.$status then call exit_code 2 _'test'.tmp
+$	if .not. $status then call exit_code '$status' _'test'.tmp
 $	set On
+$	diff 'test'.ok sys$disk:[]_'test'.tmp/out='test'.diff
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
@@ -1077,7 +1078,7 @@ $lintwarn:	echo "lintwarn"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk --lint -f lintwarn.awk >_lintwarn.tmp 2>&1
-$	if .not.$status then call exit_code 1 _lintwarn.tmp
+$	if .not. $status then call exit_code '$status' _lintwarn.tmp
 $	set On
 $	cmp lintwarn.ok sys$disk:[]_lintwarn.tmp
 $	if $status then  rm _lintwarn.tmp;
@@ -1120,7 +1121,7 @@ $sclifin:
 $	echo "''test'"
 $	set noOn
 $	gawk -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
-$	if .not.$status then call exit_code 2 _'test'.tmp
+$	if .not. $status then call exit_code '$status' _'test'.tmp
 $	set On
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
@@ -1132,7 +1133,7 @@ $   !
 $	echo "''test'"
 $	set noOn
 $	gawk -f 'test'.awk <'test'.in >_'test'.tmp 2>&1
-$	if .not.$status then call exit_code 2 _'test'.tmp
+$	if .not. $status then call exit_code '$status' _'test'.tmp
 $	set On
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
@@ -1157,7 +1158,7 @@ $unterm:
 $	echo "''test'"
 $	set noOn
 $	gawk -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
-$	if .not.$status then call exit_code 1 _'test'.tmp
+$	if .not. $status then call exit_code '$status' _'test'.tmp
 $	set On
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
@@ -1217,7 +1218,7 @@ $synerr2:
 $	echo "''test'"
 $	set noOn
 $	gawk -f 'test'.awk >_'test'.tmp 2>&1
-$	if .not.$status then call exit_code 1 _'test'.tmp
+$	if .not. $status then call exit_code '$status' _'test'.tmp
 $	set On
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
@@ -1237,7 +1238,7 @@ $
 $space:		echo "space"
 $	set noOn
 $	gawk -f " " space.awk >_space.tmp 2>&1
-$	if .not.$status then call exit_code 2 _space.tmp
+$	if .not. $status then call exit_code '$status' _space.tmp
 $	set On
 $!	we get a different error from what space.ok expects
 $	gawk "{gsub(""file specification syntax error"", ""no such file or directory""); print}" -
@@ -1320,7 +1321,7 @@ $
 $! This test is somewhat suspect for vms due to exit code manipulation
 $exitval1:	echo "exitval1"
 $	gawk -f exitval1.awk >_exitval1.tmp 2>&1
-$	if $status then  call exit_code 0 _exitval1.tmp
+$	if $status then  call exit_code '$status' _exitval1.tmp
 $	cmp exitval1.ok sys$disk:[]_exitval1.tmp
 $	if $status then  rm _exitval1.tmp;
 $	return
@@ -1424,7 +1425,7 @@ $!	nofile.ok expects no/such/file, but using that name in the test would
 $!	yield "file specification syntax error" instead of "no such file..."
 $	set noOn
 $	gawk "{}" no-such-file >_nofile.tmp 2>&1
-$	if .not.$status then call exit_code 2 _nofile.tmp
+$	if .not. $status then call exit_code '$status' _nofile.tmp
 $	set On
 $!	restore altered file name
 $	gawk "{gsub(""no-such-file"", ""no/such/file""); print}" _nofile.tmp >_nofile.too
@@ -1496,7 +1497,7 @@ $
 $mixed1:	echo "mixed1"
 $	set noOn
 $	gawk -f /dev/null --source "BEGIN {return junk}" >_mixed1.tmp 2>&1
-$	if .not.$status then call exit_code 1 _mixed1.tmp
+$	if .not. $status then call exit_code '$status' _mixed1.tmp
 $	set On
 $	cmp mixed1.ok sys$disk:[]_mixed1.tmp
 $	if $status then  rm _mixed1.tmp;
@@ -1869,10 +1870,12 @@ $ endsubroutine !fixup_LRL
 $
 $! add a fake "EXIT CODE" record to the end of the temporary output file
 $! to simulate the ``|| echo EXIT CODE $$? >>_$@'' shell script usage
+$! Unix code = vms_code & (255 * 2^3) >> 3
 $exit_code: subroutine
+$	unix_status = (p1 .and. %x7f8) / 8
 $	if f$trnlnm("FTMP").nes."" then  close/noLog ftmp
 $	open/Append ftmp 'p2'
-$	write ftmp "EXIT CODE: ",p1
+$	write ftmp "EXIT CODE: ",'unix_status'
 $	close ftmp
 $ endsubroutine !exit_code
 $

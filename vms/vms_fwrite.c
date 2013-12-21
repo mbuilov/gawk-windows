@@ -83,9 +83,9 @@ tty_fwrite( const void *buf, size_t size, size_t number, FILE *file )
 
 	    fgetname(file, devnam);			/* get 'file's name */
 	    device.len = strlen(device.adr = devnam);	/* create descriptor */
-	    if (vmswork(sys$assign(&device, &chan, 0, (Dsc *)0))) {
+	    if (vmswork(SYS$ASSIGN(&device, &chan, 0, (Dsc *)0))) {
 		/* get an event flag; use #0 if problem */
-		if (evfn == -1 && vmsfail(lib$get_ef(&evfn)))  evfn = 0;
+		if (evfn == -1 && vmsfail(LIB$GET_EF(&evfn)))  evfn = 0;
 	    } else  chan = 0;	    /* $ASSIGN failed */
 	}
 	/* store channel for later use; -1 => don't repeat failed init attempt */
@@ -119,19 +119,19 @@ tty_fwrite( const void *buf, size_t size, size_t number, FILE *file )
 	    else if (pos < count)  pos++,  cc_fmt |= POSTFIX_CR,  extra++;
 	    /* wait for previous write, if any, to complete */
 	    if (pt > (char *)buf) {
-		sts = sys$synch(evfn, &iosb);
+		sts = SYS$SYNCH(evfn, &iosb);
 		if (vmswork(sts))  sts = iosb.status,  result += iosb.count;
 		if (vmsfail(sts))  break;
 	    }
 	    /* queue an asynchronous write */
-	    sts = sys$qio(evfn, chan, io_func, &iosb, (void (*)(U_Long))0, 0L,
+	    sts = SYS$QIO(evfn, chan, io_func, &iosb, (void (*)(U_Long))0, 0L,
 			  pt, pos, 0, cc_fmt, 0, 0);
 	    if (vmsfail(sts))  break;	/*(should never happen)*/
 	    pt += pos,	count -= pos;
 	}
 	/* wait for last write to complete */
 	if (pt > (char *)buf && vmswork(sts)) {
-	    sts = sys$synch(evfn, &iosb);
+	    sts = SYS$SYNCH(evfn, &iosb);
 	    if (vmswork(sts))  sts = iosb.status,  result += iosb.count;
 	}
 	if (vmsfail(sts))  errno = EVMSERR,  vaxc$errno = sts;
@@ -202,7 +202,7 @@ tty_fclose( FILE *file )
 	short chan = file_num < _NFILE ? channel[file_num] : -1;
 
 	if (chan > 0)
-	    (void)sys$dassgn(chan); /* deassign the channel (ie, close) */
+	    (void)SYS$DASSGN(chan); /* deassign the channel (ie, close) */
 	if (file_num < _NFILE)
 	    channel[file_num] = 0;  /* clear stale info */
     }

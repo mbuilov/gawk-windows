@@ -29,13 +29,13 @@
 #include <string.h>
 #endif
 
-extern U_Long cli$present(const Dsc *);
-extern U_Long cli$get_value(const Dsc *, Dsc *, short *);
-extern U_Long cli$dcl_parse(const Dsc *, const void *, ...);
-extern U_Long sys$cli(void *, ...);
-extern U_Long sys$filescan(const Dsc *, void *, long *);
+extern U_Long CLI$PRESENT(const Dsc *);
+extern U_Long CLI$GET_VALUE(const Dsc *, Dsc *, short *);
+extern U_Long CLI$DCL_PARSE(const Dsc *, const void *, ...);
+extern U_Long SYS$CLI(void *, ...);
+extern U_Long SYS$FILESCAN(const Dsc *, void *, long *);
 extern void  *lib$establish(U_Long (*handler)(void *, void *));
-extern U_Long lib$sig_to_ret(void *, void *);	/* condition handler */
+extern U_Long LIB$SIG_TO_RET(void *, void *);	/* condition handler */
 
 /* Cli_Present() - call CLI$PRESENT to determine whether a parameter or     */
 /*		  qualifier is present on the [already parsed] command line */
@@ -43,10 +43,10 @@ U_Long
 Cli_Present( const char *item )
 {
     Dsc item_dsc;
-    (void)lib$establish(lib$sig_to_ret);
+    (void)lib$establish(LIB$SIG_TO_RET);
 
     item_dsc.len = strlen(item_dsc.adr = (char *)item);
-    return cli$present(&item_dsc);
+    return CLI$PRESENT(&item_dsc);
 }
 
 /* Cli_Get_Value() - call CLI$GET_VALUE to retreive the value of a */
@@ -57,11 +57,11 @@ Cli_Get_Value( const char *item, char *result, int size )
     Dsc item_dsc, res_dsc;
     U_Long sts;
     short len = 0;
-    (void)lib$establish(lib$sig_to_ret);
+    (void)lib$establish(LIB$SIG_TO_RET);
 
     item_dsc.len = strlen(item_dsc.adr = (char *)item);
     res_dsc.len = size,  res_dsc.adr = result;
-    sts = cli$get_value(&item_dsc, &res_dsc, &len);
+    sts = CLI$GET_VALUE(&item_dsc, &res_dsc, &len);
     result[len] = '\0';
     return sts;
 }
@@ -79,11 +79,11 @@ Cli_Parse_Command( const void *cmd_tables, const char *cmd_verb )
     U_Long sts;
     int    ltmp;
     char   longbuf[8200];
-    (void)lib$establish(lib$sig_to_ret);
+    (void)lib$establish(LIB$SIG_TO_RET);
 
     memset(&cmd, 0, sizeof cmd);
     cmd.rqtype = CLI$K_GETCMD;		/* command line minus the verb */
-    sts = sys$cli(&cmd, (void *)0, (void *)0);	/* get actual command line */
+    sts = SYS$CLI(&cmd, (void *)0, (void *)0);	/* get actual command line */
 
     if (vmswork(sts)) {		/* ok => cli available & verb wasn't "RUN" */
 	/* invoked via symbol => have command line (which might be empty) */
@@ -92,7 +92,7 @@ Cli_Parse_Command( const void *cmd_tables, const char *cmd_verb )
 	    /* need to strip image name from MCR invocation   */
 	    memset(fscn, 0, sizeof fscn);
 	    fscn[0].code = FSCN$_FILESPEC;	/* full file specification */
-	    (void)sys$filescan(&cmd.rdesc, fscn, (long *)0);
+	    (void)SYS$FILESCAN(&cmd.rdesc, fscn, (long *)0);
 	    cmd.rdesc.len -= fscn[0].len;	/* shrink size */
 	    cmd.rdesc.adr += fscn[0].len;	/* advance ptr */
 	}
@@ -102,7 +102,7 @@ Cli_Parse_Command( const void *cmd_tables, const char *cmd_verb )
 	    cmd.rdesc.len = sizeof longbuf - ltmp;
 	strncpy(&longbuf[ltmp], cmd.rdesc.adr, cmd.rdesc.len);
 	cmd.rdesc.len += ltmp,	cmd.rdesc.adr = longbuf;
-	sts = cli$dcl_parse(&cmd.rdesc, cmd_tables);
+	sts = CLI$DCL_PARSE(&cmd.rdesc, cmd_tables);
     }
 
     return sts;

@@ -106,10 +106,26 @@ vms_arg_fixup( int *pargc, char ***pargv )
     char **argv = *pargv;
     int i, argc = *pargc;
     int err_to_out_redirect = 0, out_to_err_redirect = 0;
+    char * shell;
+    int using_shell;
 
     /* make sure AWK_LIBRARY has a value */
     if (!getenv("AWK_LIBRARY"))
 	vms_define("AWK_LIBRARY", "SYS$LIBRARY:");
+
+    /* Check if running under a shell instead of DCL */
+    using_shell = 1;
+    shell = getenv("SHELL");
+    if (shell != NULL) {
+	if (strcmp(shell, "DCL") == 0) {
+	    using_shell = 0;
+	}
+    } else {
+	using_shell = 0;
+    }
+    if (using_shell) {
+	return;
+    }
 #ifdef CHECK_DECSHELL	    /* don't define this if linking with DECC$SHR */
     if (shell$is_shell())
 	return;		    /* don't do anything if we're running DEC/Shell */
@@ -325,12 +341,12 @@ vms_expand_wildcards( const char *prospective_filespec )
      */
     len = -1;			/* overload 'len' with flag value */
     context = NULL;		/* init */
-    while (vmswork(lib$find_file(&spec, &result, &context))) {
+    while (vmswork(LIB$FIND_FILE(&spec, &result, &context))) {
 	for (len = sizeof(res_buf)-1; len > 0 && res_buf[len-1] == ' '; len--) ;
 	res_buf[len] = '\0';	/* terminate after discarding trailing blanks */
 	v_add_arg(v_argc++, strdup(res_buf));		/* store result */
     }
-    (void)lib$find_file_end(&context);
+    (void)LIB$FIND_FILE_END(&context);
     if (len >= 0)		/* (still -1 => never entered loop) */
 	--v_argc;		/* undo final post-increment */
     return;
@@ -395,7 +411,7 @@ vms_define( const char *log_name, const char *trans_val )
     log_dsc.len = len;
     itemlist[0].buffer = (char *)trans_val;
     itemlist[0].len = strlen(trans_val);
-    return sys$crelnm(&attr, &lnmtable, &log_dsc, &acmode, itemlist);
+    return SYS$CRELNM(&attr, &lnmtable, &log_dsc, &acmode, itemlist);
 }
 
 /* t_strstr -- strstr() substitute; search 'str' for 'sub' */

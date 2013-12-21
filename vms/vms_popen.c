@@ -172,7 +172,7 @@ vms_execute( const char *command, const char *input, const char *output )
 	out_p = 0;
 
     push_logicals();	/* guard against user-mode definitions of sys$Xput */
-    sts = lib$spawn(&cmd, in_p, out_p, (U_Long *)0,
+    sts = LIB$SPAWN(&cmd, in_p, out_p, (U_Long *)0,
 		    (Dsc *)0, (U_Long *)0, &cmpltn_sts);
     pop_logicals();	/* restore environment */
 
@@ -219,9 +219,9 @@ static const Descrip(sys_output,"SYS$OUTPUT");
 static const unsigned char acmode = PSL$C_USER; /* only care about user-mode */
 
  /* macros for simplfying the code a bunch */
-#define DelTrans(l)	sys$dellnm(&lnmtable, (l), &acmode)
-#define GetTrans(l,i)	sys$trnlnm((U_Long *)0, &lnmtable, (l), &acmode, (i))
-#define SetTrans(l,i)	sys$crelnm((U_Long *)0, &lnmtable, (l), &acmode, (i))
+#define DelTrans(l)	SYS$DELLNM(&lnmtable, (l), &acmode)
+#define GetTrans(l,i)	SYS$TRNLNM((U_Long *)0, &lnmtable, (l), &acmode, (i))
+#define SetTrans(l,i)	SYS$CRELNM((U_Long *)0, &lnmtable, (l), &acmode, (i))
  /* itemlist manipulation macros; separate versions for aggregate and scalar */
 #define SetItmA(i,c,p,r) ((i).code = (c), (i).len = sizeof (p),\
 			  (i).buffer = (p), (i).retlen = (U_Short *)(r))
@@ -333,7 +333,7 @@ restore_translation( const Dsc *logname, const Itm *itemlist )
      /* assert( itemlist[2].code == LNM$_STRING ); */
 	trans_val.adr = itemlist[2].buffer;
 	trans_val.len = itemlist[2].len;
-	(void) sys$crelog(LOG_PROCESS_TABLE, logname, &trans_val, LOG_USERMODE);
+	(void) SYS$CRELOG(LOG_PROCESS_TABLE, logname, &trans_val, LOG_USERMODE);
     } else {
 	/* $crelnm definition; itemlist could specify multiple translations,
 	    but has already been setup properly for use as-is.

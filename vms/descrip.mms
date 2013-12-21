@@ -73,8 +73,9 @@ CFLOAT  =
 .else
 CFLOAT	= /float=ieee/ieee_mode=denorm_results
 .endif
+CNAME	= /NAME=(AS_IS,SHORT)
 CC	= cc/DECC/Prefix=All/NESTED_INCLUDE=NONE$(CFLOAT)
-CFLAGS	= /Incl=([],[.vms])/Obj=[]/Def=($(CDEFS)) $(CCFLAGS)
+CFLAGS	= /Incl=([],[.vms])/Obj=[]/Def=($(CDEFS))$(CNAME) $(CCFLAGS)
 LIBS	=	# DECC$SHR instead of VAXCRTL, no special link option needed
 .endif	!VAXC
 .endif	!GNUC
@@ -256,6 +257,8 @@ spotless : clean tidy
       - if f$search("gawk.dvi").nes."" then  delete gawk.dvi;*
       - if f$search("[.doc]texindex.exe").nes."" then \
             delete [.doc]texindex.exe;*
+      - if f$search("[.cxx_repository]*.*;").nes."" then \
+            delete [.cxx_repository]*.*;*
 
 #
 # Note: this only works if you kept a copy of [.support]texindex.c

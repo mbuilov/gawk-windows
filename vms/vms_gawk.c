@@ -37,16 +37,16 @@
 #define Present(arg)		vmswork(Cli_Present(arg))
 #define Get_Value(arg,buf,siz)	vmswork(Cli_Get_Value(arg,buf,siz))
 
-#ifndef __ia64__
-extern void   gawk_cmd();	/* created with $ SET COMMAND/OBJECT */
-#define GAWK_CMD ((const void *)gawk_cmd)
-#else	/* linker on Itanium is much pickier about such things */
+#ifndef __DECC
+extern void   GAWK_CMD();	/* created with $ SET COMMAND/OBJECT */
+#define gawk_cmd ((const void *)GAWK_CMD) */
+#else	/* Use ANSI definitions for DEC C */
 #pragma extern_model save
 #pragma extern_model strict_refdef
 /* (could use globalvalue rather than _refdef if we omit GAWK_CMD's `&') */
-extern void  *gawk_cmd;
+extern void  *GAWK_CMD;
 #pragma extern_model restore
-#define GAWK_CMD ((const void *)&gawk_cmd)
+#define gawk_cmd ((const void *)&GAWK_CMD)
 #endif
 extern void   _exit(int);
 static int    vms_usage(int);
@@ -88,7 +88,7 @@ vms_gawk()
 	   command, so we'll now attempt to generate a command from the
 	   foreign command string and parse that.
 	*/
-	sts = Cli_Parse_Command(GAWK_CMD, "GAWK");	/* (*not* CmdName) */
+	sts = Cli_Parse_Command(gawk_cmd, "GAWK");	/* (*not* CmdName) */
 	if (vmswork(sts))
 	    sts = Cli_Present("GAWK_P1");
     }

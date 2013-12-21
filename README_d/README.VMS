@@ -11,6 +11,9 @@ or
  |$ MMK/DESCRIPTION=[.VMS]DESCRIP.MMS gawk
 
 Note that on IA64 and Alpha the case of the target may be important.
+MMS has had problems on ODS-5 volumes.  MMK does not have these issues.
+MMK is available free from https://github.com/endlesssoftware/mmk.
+The most recent builds of gawk on VMS used MMK.
 
 DEC C  -- use either vmsbuild.com or descrip.mms as is.
        DEC C is also known as Compaq C and HP C.
@@ -130,3 +133,27 @@ separated list of directory specifications.  When defining it, the
 value should be quoted so that it retains a single translation, not a
 multi-translation RMS searchlist.
 
+     The exit status from Gawk is encoded in the the VMS $status exit
+value so that the severity bits are set as expected and the original
+Gawk exit value can be extracted.
+
+To extract the actual gawk exit code from the VMS status use:
+     unix_status = (vms_status .and. &x7f8) / 8
+
+The exit value is encoded to comply with VMS coding standards and
+will have the C_FACILITY_NO of 0x350000 with the constant 0xA000
+added to the number shifted over by 3 bits to make room for the
+severity codes.
+
+The Gawk exit value of 1 will result in the VMS status having the
+ERROR severity status set.  The Gawk exit value of 2 will result in
+the FATAL severity status set.  All other Gawk exit values will have
+the Success severity status set.
+
+This change was needed to provide all Gawk exit values to VMS programs and
+for compatibilty with programs written in C and the GNV environment.
+
+Older versions of Gawk incorrectly mostly passed through the Gawk
+status values instead of encoding them.  DCL scripts that were checking
+the severity values will probably not need changing.  DCL scripts that
+were checking the exact exit status will need an update.

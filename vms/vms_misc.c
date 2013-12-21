@@ -118,7 +118,7 @@ vms_open( const char *name, int mode, ... )
 	result = creat(name, 0, "rfm=stmlf", "rat=cr", "shr=nil", "mbc=32");
     } else {
 	struct stat stb;
-	int stat_result;
+        int stat_result;
 	const char *mbc, *shr = "shr=get", *ctx = "ctx=stm";
  
 	stat_result = stat((char *)name, &stb);
@@ -174,8 +174,8 @@ vms_devopen( const char *name, int mode )
 #define VMS_UNITS_PER_SECOND 10000000L	/* hundreds of nanoseconds, 1e-7 */
 #define UNIX_EPOCH "01-JAN-1970 00:00:00.00"
 
-extern U_Long sys$bintim(), sys$gettim();
-extern U_Long lib$subx(), lib$ediv();
+extern U_Long SYS$BINTIM(), SYS$GETTIM();
+extern U_Long LIB$SUBX(), LIB$EDIV();
 
     /*
      * Get current time in microsecond precision.
@@ -192,13 +192,13 @@ vms_gettimeofday(struct timeval *tv, void *timezone__not_used)
     const long  thunk = VMS_UNITS_PER_SECOND;
     long        now[2], quad[2];
 
-    if (!epoch[0])  sys$bintim(&epoch_dsc, epoch);	/* 1 Jan 0:0:0 1970 */
+    if (!epoch[0])  SYS$BINTIM(&epoch_dsc, epoch);	/* 1 Jan 0:0:0 1970 */
     /* get current time, as VMS quadword time */
-    sys$gettim(now);
+    SYS$GETTIM(now);
     /* convert the quadword time so that it's relative to Unix epoch */
-    lib$subx(now, epoch, quad); /* quad = now - epoch; */
+    LIB$SUBX(now, epoch, quad); /* quad = now - epoch; */
     /* convert 1e-7 units into seconds and fraction of seconds */
-    lib$ediv(&thunk, quad, &tv->tv_sec, &tv->tv_usec);
+    LIB$EDIV(&thunk, quad, &tv->tv_sec, &tv->tv_usec);
     /* convert fraction of seconds into microseconds */
     tv->tv_usec /= (VMS_UNITS_PER_SECOND / 1000000);
 
@@ -281,7 +281,7 @@ int fork( void ) {
 #include <fab.h>
 #include <nam.h>
 
-extern unsigned long sys$parse(), sys$search();
+extern unsigned long SYS$PARSE(), SYS$SEARCH();
 
 /* Work around a VAXCRTL bug.  If a file is located via a searchlist,
    and if the device it's on is not the same device as the one specified

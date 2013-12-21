@@ -49,14 +49,15 @@ $  else  !!VAXC
 $!  neither GNUC nor VAXC, assume DECC (same for either VAX or Alpha)
 $ if arch_name .eqs. "vax"
 $ then
-$   cfloat = ""
+$   CFLOAT = ""
 $ else
-$   cfloat = "/float=ieee/ieee_mode=denorm_results"
+$   CFLOAT = "/float=ieee/ieee_mode=denorm_results"
 $ endif
 $   CC = "cc/DECC/Prefix=All"
+$   CNAME = "/NAME=(AS_IS,SHORT)
 $   CINC = "/NESTED_INCLUDE=NONE"
 $   CFLAGS = "/Incl=([],[.vms])/Obj=[]/Def=(''CDEFS')''CINC'''CCFLAGS'"
-$   CFLAGS = cfloat + CFLAGS
+$   CFLAGS = CNAMES + CFLOAT + CFLAGS 
 $   LIBS = ""	! DECC$SHR instead of VAXCRTL, no special link option needed
 $  endif !VAXC
 $ endif !GNUC
@@ -90,7 +91,7 @@ $	if f$search("ytab.c").nes."" .or. f$search("y_tab.c").nes."" then - !yacc
 	  write sys$output " or else rename `ytab.c' or `y_tab.c' to `command.c'."
 $	exit
 $command_ok:
-$ v = f$verify(1)
+$ v1 = f$verify(1)
 $ cc array.c
 $ cc awkgram.c
 $ cc builtin.c
@@ -145,13 +146,13 @@ psect_attr=environ,noshr	!extern [noshare] char **
 stack=48	!preallocate more pages (default is 20)
 iosegment=128	!ditto (default is 32)
 $!
-$ v = f$verify(1)
+$ v1 = f$verify(1)
 $ @[.vms]gawk_ident.com
 $ open/append Fopt gawk.opt
 $ write Fopt libs
 $ close Fopt
 $!
-$ v = f$verify(1)
+$ v1 = f$verify(1)
 $ link/exe=gawk.exe gawk.opt/options
 $! 'f$verify(v)'
 $ exit
