@@ -25836,6 +25836,12 @@ B.2.2 Additional Configuration Options
 There are several additional options you may use on the `configure'
 command line when compiling `gawk' from scratch, including:
 
+`--disable-extensions'
+     Disable configuring and building the sample extensions in the
+     `extension' directory. This is useful for cross-compiling.  The
+     default action is to dynamically check if the extensions can be
+     configured and compiled.
+
 `--disable-lint'
      Disable all lint checking within `gawk'.  The `--lint' and
      `--lint-old' options (*note Options::) are accepted, but silently
@@ -29461,10 +29467,12 @@ Index
 * --characters-as-bytes option:          Options.             (line  82)
 * --copyright option:                    Options.             (line 102)
 * --debug option:                        Options.             (line 122)
-* --disable-lint configuration option:   Additional Configuration Options.
+* --disable-extensions configuration option: Additional Configuration Options.
                                                               (line   9)
+* --disable-lint configuration option:   Additional Configuration Options.
+                                                              (line  15)
 * --disable-nls configuration option:    Additional Configuration Options.
-                                                              (line  24)
+                                                              (line  30)
 * --dump-variables option <1>:           Library Names.       (line  45)
 * --dump-variables option:               Options.             (line 107)
 * --exec option:                         Options.             (line 139)
@@ -29502,7 +29510,7 @@ Index
 * --use-lc-numeric option:               Options.             (line 215)
 * --version option:                      Options.             (line 293)
 * --with-whiny-user-strftime configuration option: Additional Configuration Options.
-                                                              (line  29)
+                                                              (line  35)
 * -b option:                             Options.             (line  82)
 * -C option:                             Options.             (line 102)
 * -D option:                             Options.             (line 122)
@@ -30097,12 +30105,14 @@ Index
 * concatenating:                         Concatenation.       (line   8)
 * condition debugger command:            Breakpoint Control.  (line  54)
 * conditional expressions:               Conditional Exp.     (line   6)
-* configuration option, --disable-lint:  Additional Configuration Options.
+* configuration option, --disable-extensions: Additional Configuration Options.
                                                               (line   9)
+* configuration option, --disable-lint:  Additional Configuration Options.
+                                                              (line  15)
 * configuration option, --disable-nls:   Additional Configuration Options.
-                                                              (line  24)
+                                                              (line  30)
 * configuration option, --with-whiny-user-strftime: Additional Configuration Options.
-                                                              (line  29)
+                                                              (line  35)
 * configuration options, gawk:           Additional Configuration Options.
                                                               (line   6)
 * constants, floating-point:             Floating-point Constants.
@@ -32653,52 +32663,52 @@ Node: Distribution contents1028252
 Node: Unix Installation1033772
 Node: Quick Installation1034389
 Node: Additional Configuration Options1036833
-Node: Configuration Philosophy1038310
-Node: Non-Unix Installation1040664
-Node: PC Installation1041122
-Node: PC Binary Installation1042421
-Node: PC Compiling1044269
-Node: PC Testing1047213
-Node: PC Using1048389
-Node: Cygwin1052574
-Node: MSYS1053574
-Node: VMS Installation1054088
-Node: VMS Compilation1054691
-Ref: VMS Compilation-Footnote-11055698
-Node: VMS Installation Details1055756
-Node: VMS Running1057391
-Node: VMS Old Gawk1058998
-Node: Bugs1059472
-Node: Other Versions1063328
-Node: Notes1069412
-Node: Compatibility Mode1070212
-Node: Additions1070995
-Node: Accessing The Source1071922
-Node: Adding Code1073362
-Node: New Ports1079407
-Node: Derived Files1083542
-Ref: Derived Files-Footnote-11088863
-Ref: Derived Files-Footnote-21088897
-Ref: Derived Files-Footnote-31089497
-Node: Future Extensions1089595
-Node: Implementation Limitations1090172
-Node: Extension Design1091424
-Node: Old Extension Problems1092578
-Ref: Old Extension Problems-Footnote-11094086
-Node: Extension New Mechanism Goals1094143
-Ref: Extension New Mechanism Goals-Footnote-11097508
-Node: Extension Other Design Decisions1097694
-Node: Extension Future Growth1099800
-Node: Old Extension Mechanism1100636
-Node: Basic Concepts1102376
-Node: Basic High Level1103057
-Ref: figure-general-flow1103328
-Ref: figure-process-flow1103927
-Ref: Basic High Level-Footnote-11107156
-Node: Basic Data Typing1107341
-Node: Glossary1110696
-Node: Copying1136158
-Node: GNU Free Documentation License1173715
-Node: Index1198852
+Node: Configuration Philosophy1038569
+Node: Non-Unix Installation1040923
+Node: PC Installation1041381
+Node: PC Binary Installation1042680
+Node: PC Compiling1044528
+Node: PC Testing1047472
+Node: PC Using1048648
+Node: Cygwin1052833
+Node: MSYS1053833
+Node: VMS Installation1054347
+Node: VMS Compilation1054950
+Ref: VMS Compilation-Footnote-11055957
+Node: VMS Installation Details1056015
+Node: VMS Running1057650
+Node: VMS Old Gawk1059257
+Node: Bugs1059731
+Node: Other Versions1063587
+Node: Notes1069671
+Node: Compatibility Mode1070471
+Node: Additions1071254
+Node: Accessing The Source1072181
+Node: Adding Code1073621
+Node: New Ports1079666
+Node: Derived Files1083801
+Ref: Derived Files-Footnote-11089122
+Ref: Derived Files-Footnote-21089156
+Ref: Derived Files-Footnote-31089756
+Node: Future Extensions1089854
+Node: Implementation Limitations1090431
+Node: Extension Design1091683
+Node: Old Extension Problems1092837
+Ref: Old Extension Problems-Footnote-11094345
+Node: Extension New Mechanism Goals1094402
+Ref: Extension New Mechanism Goals-Footnote-11097767
+Node: Extension Other Design Decisions1097953
+Node: Extension Future Growth1100059
+Node: Old Extension Mechanism1100895
+Node: Basic Concepts1102635
+Node: Basic High Level1103316
+Ref: figure-general-flow1103587
+Ref: figure-process-flow1104186
+Ref: Basic High Level-Footnote-11107415
+Node: Basic Data Typing1107600
+Node: Glossary1110955
+Node: Copying1136417
+Node: GNU Free Documentation License1173974
+Node: Index1199111
 
 End Tag Table

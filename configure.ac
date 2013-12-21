@@ -59,6 +59,7 @@ AC_ARG_ENABLE([lint], [  --disable-lint	Disable gawk lint checking],
 	fi
 )
 
+AC_CANONICAL_HOST
 AC_USE_SYSTEM_EXTENSIONS
 
 dnl checks for programs
@@ -119,8 +120,8 @@ dnl	need -D_SYSV3 for ISC
 fi
 
 dnl check for systems where libc is borked for regex handling
-case `uname` in
-MirBSD | MirOS)
+case $host_os in
+mirbsd*)
 	AC_DEFINE([LIBC_IS_BORKED], 1, [libc is broken for regex handling])
 	;;
 esac
@@ -262,8 +263,8 @@ AC_CHECK_LIB(m, fmod)
 AC_CHECK_LIB(m, isinf)
 AC_CHECK_LIB(m, ismod)
 dnl Don't look for libsigsegv on OSF/1, gives us severe headaches
-case `uname` in
-OSF1)	: ;;
+case $host_os in
+osf1)	: ;;
 *)
 	gl_LIBSIGSEGV
 	;;
@@ -282,38 +283,52 @@ AC_FUNC_MBRTOWC
 
 dnl check for dynamic linking
 dnl This is known to be very primitive
-dnl On MirBSD (and probably other systems), don't even try.
-case `uname` in
-MirBSD | MirOS)
-	: ;;
-*)
-AC_CHECK_HEADER(dlfcn.h,
-	[
-	# Check this separately. Some systems have dlopen
-	# in libc. Notably freebsd and cygwin.
-	# HP-NSK has it in zrldsrl
-	AC_SEARCH_LIBS(dlopen, dl zrldsrl, gawk_have_dlopen=yes, gawk_have_dlopen=no)
-	# Only do DYNAMIC if we have the lib. z/OS (some versions) have
-	# the header but not the lib, apparently
-	if test "$gawk_have_dlopen" = yes
-	then
-		AC_DEFINE([DYNAMIC], 1, [dynamic loading is possible])
-		# Add -export-dynamic for old extensions. Only works for GCC
-		if test "$GCC" = yes &&
-		   uname | $EGREP -i 'linux|freebsd' > /dev/null
+AC_ARG_ENABLE([extensions],
+	[AS_HELP_STRING([--disable-extensions], [disable dynamic extensions (default is detect)])])
+if test "x$enable_extensions" != "xno"; then
+	extensions_supported=no
+
+	dnl On MirBSD (and probably other systems), don't even try.
+	case $host_os in
+	mirbsd*)
+		: ;;
+	*)
+	AC_CHECK_HEADER(dlfcn.h,
+		[
+		# Check this separately. Some systems have dlopen
+		# in libc. Notably freebsd and cygwin.
+		# HP-NSK has it in zrldsrl
+		AC_SEARCH_LIBS(dlopen, dl zrldsrl, gawk_have_dlopen=yes, gawk_have_dlopen=no)
+		# Only do DYNAMIC if we have the lib. z/OS (some versions) have
+		# the header but not the lib, apparently
+		if test "$gawk_have_dlopen" = yes
 		then
-			LDFLAGS="$LDFLAGS -export-dynamic"
+			extensions_supported=yes
+			AC_DEFINE([DYNAMIC], 1, [dynamic loading is possible])
+			# Add -export-dynamic for old extensions. Only works for GCC
+			if test "$GCC" = yes; then
+				case $host_os in
+				linux*|freebsd*)
+					LDFLAGS="$LDFLAGS -export-dynamic"
+					;;
+				esac
+			fi
 		fi
+	])
+		;;
+	esac
+
+	if test "x$enable_extensions$extensions_supported" = "xyesno"; then
+		AC_MSG_ERROR([extension support requested, but unavailable])
 	fi
-])
-	;;
-esac
+	enable_extensions=$extensions_supported
+fi
 
 dnl check for how to use getpgrp
 dnl have to hardwire it for VMS POSIX. Sigh.
 dnl ditto for BeOS, OS/2, and MS-DOS.
-case `(uname) 2> /dev/null` in
-*VMS*|*BeOS*|*OS/2*|*MS-DOS*)
+case $host_os in
+vms*|beos*|os2*|msdos)
 	AC_DEFINE(GETPGRP_VOID, 1,
 	  [Define to 1 if the getpgrp function requires zero arguments.])
 	;;
@@ -387,5 +402,7 @@ AC_CONFIG_FILES(Makefile
 	doc/Makefile
 	po/Makefile.in
 	test/Makefile)
-AC_CONFIG_SUBDIRS(extension)
+if test "x$enable_extensions" = "xyes"; then
+	AC_CONFIG_SUBDIRS(extension)
+fi
 AC_OUTPUT
