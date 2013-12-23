@@ -440,6 +440,7 @@ flags2str(int flagval)
 		{ WSTRCUR, "WSTRCUR" },
 		{ MPFN,	"MPFN" },
 		{ MPZN,	"MPZN" },
+		{ NULL_FIELD, "NULL_FIELD" },
 		{ ARRAYMAXED, "ARRAYMAXED" },
 		{ HALFHAT, "HALFHAT" },
 		{ XARRAY, "XARRAY" },
@@ -1180,7 +1181,7 @@ r_get_field(NODE *n, Func_ptr *assign, bool reference)
 			*assign = reset_record;
 	} else
 		lhs = get_field(field_num, assign);
-	if (do_lint && reference && (*lhs == Null_field || *lhs == Nnull_string))
+	if (do_lint && reference && ((*lhs)->flags & NULL_FIELD) != 0)
 		lintwarn(_("reference to uninitialized field `$%ld'"),
 			      field_num);
 	return lhs;
@@ -1240,7 +1241,7 @@ setup_frame(INSTRUCTION *pc)
 	arg_count = (pc + 1)->expr_count;
 
 	/* tail recursion optimization */
-	tail_optimize =  ((pc + 1)->tail_call && do_optimize > 1
+	tail_optimize =  ((pc + 1)->tail_call && do_optimize
 				&& ! do_debug && ! do_profile);
 
 	if (tail_optimize) {
@@ -1462,7 +1463,13 @@ unwind_stack(long n)
 			freenode(r);
 			break;
 		default:
-			if (in_main_context())
+			/*
+			 * Check `exiting' and don't produce an error for
+			 * cases like:
+			 *	func     _fn0() { exit }
+			 *	BEGIN { ARRAY[_fn0()] }
+			 */
+			if (in_main_context() && ! exiting)
 				fatal(_("unwind_stack: unexpected type `%s'"),
 						nodetype2str(r->type));
 			/* else 

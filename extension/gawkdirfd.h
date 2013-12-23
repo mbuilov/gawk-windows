@@ -25,6 +25,18 @@
 # define ENOTSUP ENOSYS
 #endif
 
+/*
+ * This is for fake directory file descriptors on systems that don't
+ * allow to open() a directory.
+ *
+ * Including a header from the main gawk source to share the definition
+ * of FAKE_FD_VALUE is the least of all evils that I can see.
+ *
+ * Unlike the main gawk code base, this include is NOT dependant
+ * upon MinGW or EMX.
+ */
+#include "../nonposix.h"
+
 #ifndef DIR_TO_FD
 # define DIR_TO_FD(d) (FAKE_FD_VALUE)
 #endif
@@ -39,7 +51,3 @@ dirfd (DIR *dir_p)
   return fd;
 }
 #endif /* HAVE_DIRFD */
-
-/* This is for fake directory file descriptors on systems that don't
-   allow to open() a directory.  */
-#define FAKE_FD_VALUE 42

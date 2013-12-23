@@ -66,7 +66,8 @@ else
 	AC_MSG_RESULT([no])
 fi
 
-AC_CHECK_HEADERS(dirent.h fnmatch.h time.h sys/time.h sys/select.h sys/param.h)
+AC_HEADER_MAJOR
+AC_CHECK_HEADERS(dirent.h fnmatch.h limits.h time.h sys/time.h sys/select.h sys/param.h)
 
 AC_CHECK_FUNCS(fdopendir fnmatch gettimeofday \
 		getdtablesize nanosleep select GetSystemTimeAsFileTime)
@@ -80,15 +81,4 @@ AC_C_INLINE
 AC_CONFIG_HEADERS([config.h:configh.in])
 
 AC_CONFIG_FILES(Makefile)
-AC_OUTPUT_COMMANDS([
-case `uname` in
-MirBSD | MirOS | "OS/390")
-	cat << \EOF > Makefile
-all dist check clean distclean install uninstall distcheck:
-	@exit 0
-EOF
-	;;
-*)
-esac
-])dnl
 AC_OUTPUT

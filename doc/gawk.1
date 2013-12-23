@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "May 09 2013" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Aug 15 2013" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -917,11 +917,17 @@ An array containing the values of the current environment.
 The array is indexed by the environment variables, each element being
 the value of that variable (e.g., \fBENVIRON["HOME"]\fP might be
 \fB"/home/arnold"\fR).
-Changing this array does not affect the environment seen by programs which
+.sp
+In POSIX mode,
+changing this array does not affect the environment seen by programs which
 .I gawk
 spawns via redirection or the
 .B system()
 function.
+Otherwise,
+.I gawk
+updates its real environment so that programs it spawns see
+the changes.
 .TP
 .B ERRNO
 If a system error occurs either doing a redirection for

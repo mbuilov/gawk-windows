@@ -1,3 +1,74 @@
+2013-12-21         Mike Frysinger        <vapier@gentoo.org>
+
+	* configure.ac: Remove MirBSD and OS/390 hack to create
+	do-nothing Makefile. Should be handled by configure in the
+	parent directory.
+
+2013-12-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure, aclocal.m4: Updated to automake 1.13.4 and
+	libtool 2.4.2.418.
+
+2013-11-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (uninstall-so, uninstall-recursive): Remove the
+	.so files. Keeps make distcheck happy.
+
+2013-11-17  Dmitry V. Levin  <ldv@altlinux.org>
+
+	* Makefile.am (dist_man_MANS): Add inplace.3am.
+
+2013-10-23  Michael Haubenwallner <michael.haubenwallner@salomon.at>
+
+	Fix portability for AIX.
+
+	* inplace.c (_XOPEN_SOURCE): Define when not defined yet.
+	(_XOPEN_SOURCE_EXTENDED): Ditto. Needs to define a number.
+
+2013-08-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Clean up some warnings from -Wextra.
+
+	* gawkfts.c (fts_set): Add cast to void for sp.
+	* inplace.c (at_exit): Add cast to void for data and exit_status.
+	* readdir.c (ftype): Add cast to void for dirname.
+	(dir_get_record): Assign NULL to *rt_start.
+	* revtwoway.c (rev2way_get_record): Add cast to void for errcode.
+	(rev2way_fwrite): Add cast to void for fp.
+	(rev2way_take_control_of): Add cast to void for name.
+	* testext.c (test_array_param, test_scalar, test_scalar_reserved,
+	test_indirect_vars): Add cast to void for nargs.
+
+2013-08-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkdirfd.h: Include ../nonposix.h to get FAKE_FD_VALUE.
+
+2013-08-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c: Change _WIN32 to __MINGW32__ globally, per
+	Eli Zaretskii.
+
+2013-08-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (do_fts): Add a version for _WIN32 that prints a
+	"not supported" fatal message.  This is slightly better than the
+	"fts not found" which is otherwise produced.
+
+2013-07-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkdirfd.h (FAKE_FD_VALUE): Move definition up in the file to give
+	clean compile on MinGW.
+
+2013-06-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac (AC_HEADER_MAJOR): New macro added.
+	Add check for limits.h header.
+	* filefuncs.c: Add the right stuff to get the major/minor macros.
+	* readdir.c: Add include of limits.h appropriately wrapped.
+
+	Thanks to ICHII Takashi <ichii386@schweetheart.jp> for the reports
+	and pointers.
+
 2013-06-01  Eli Zaretskii  <eliz@gnu.org>
 
 	* filefuncs.c [_WIN32]: Define WIN32_LEAN_AND_MEAN before

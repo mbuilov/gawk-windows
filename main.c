@@ -133,7 +133,7 @@ static bool disallow_var_assigns = false;	/* true for --exec */
 static void add_preassign(enum assign_type type, char *val);
 
 int do_flags = false;
-bool do_optimize = true;		/* apply default optimizations */
+bool do_optimize = false;		/* apply default optimizations */
 static int do_nostalgia = false;	/* provide a blast from the past */
 static int do_binary = false;		/* hands off my data! */
 static int do_version = false;		/* print version info */
@@ -157,38 +157,40 @@ GETGROUPS_T *groupset;		/* current group set */
 int ngroups;			/* size of said set */
 #endif
 
-void (*lintfunc)(const char *mesg, ...) = warning;
+void (*lintfunc)(const char *mesg, ...) = r_warning;
 
+/* Sorted by long option name! */
 static const struct option optab[] = {
-	{ "traditional",	no_argument,		NULL,	'c' },
-	{ "lint",		optional_argument,	NULL,	'L' },
-	{ "lint-old",		no_argument,		NULL,	't' },
-	{ "optimize",		no_argument,		NULL,	'O' },
-	{ "posix",		no_argument,		NULL,	'P' },
-	{ "nostalgia",		no_argument,		& do_nostalgia,	1 },
-	{ "gen-pot",		no_argument,		NULL,	'g' },
-	{ "non-decimal-data",	no_argument,		NULL,	'n' },
-	{ "pretty-print",	optional_argument,	NULL,	'o' },
-	{ "profile",		optional_argument,	NULL,	'p' },
-	{ "debug",		optional_argument,	NULL,	'D' },
+	{ "assign",		required_argument,	NULL,	'v' },
+	{ "bignum",		no_argument,		NULL,	'M' },
+	{ "characters-as-bytes", no_argument,		& do_binary,	 'b' },
 	{ "copyright",		no_argument,		NULL,	'C' },
+	{ "debug",		optional_argument,	NULL,	'D' },
+	{ "dump-variables",	optional_argument,	NULL,	'd' },
+	{ "exec",		required_argument,	NULL,	'E' },
 	{ "field-separator",	required_argument,	NULL,	'F' },
 	{ "file",		required_argument,	NULL,	'f' },
-	{ "re-interval",	no_argument,		NULL,	'r' },
-	{ "source",		required_argument,	NULL,	'e' },
-	{ "load",		required_argument,	NULL,	'l' },
-	{ "dump-variables",	optional_argument,	NULL,	'd' },
-	{ "assign",		required_argument,	NULL,	'v' },
-	{ "version",		no_argument,		& do_version, 'V' },
+	{ "gen-pot",		no_argument,		NULL,	'g' },
 	{ "help",		no_argument,		NULL,	'h' },
-	{ "exec",		required_argument,	NULL,	'E' },
-	{ "use-lc-numeric",	no_argument,		& use_lc_numeric, 1 },
-	{ "characters-as-bytes", no_argument,		& do_binary,	 'b' },
-	{ "sandbox",		no_argument,		NULL, 	'S' },
-	{ "bignum",		no_argument,		NULL,	'M' },
+	{ "include",		required_argument,	NULL,	'i' },
+	{ "lint",		optional_argument,	NULL,	'L' },
+	{ "lint-old",		no_argument,		NULL,	't' },
+	{ "load",		required_argument,	NULL,	'l' },
+	{ "non-decimal-data",	no_argument,		NULL,	'n' },
+	{ "nostalgia",		no_argument,		& do_nostalgia,	1 },
+	{ "optimize",		no_argument,		NULL,	'O' },
 #if defined(YYDEBUG) || defined(GAWKDEBUG)
-	{ "parsedebug",		no_argument,		NULL,		'Y' },
+	{ "parsedebug",		no_argument,		NULL,	'Y' },
 #endif
+	{ "posix",		no_argument,		NULL,	'P' },
+	{ "pretty-print",	optional_argument,	NULL,	'o' },
+	{ "profile",		optional_argument,	NULL,	'p' },
+	{ "re-interval",	no_argument,		NULL,	'r' },
+	{ "sandbox",		no_argument,		NULL, 	'S' },
+	{ "source",		required_argument,	NULL,	'e' },
+	{ "traditional",	no_argument,		NULL,	'c' },
+	{ "use-lc-numeric",	no_argument,		& use_lc_numeric, 1 },
+	{ "version",		no_argument,		& do_version, 'V' },
 	{ NULL, 0, NULL, '\0' }
 };
 
@@ -283,6 +285,22 @@ main(int argc, char **argv)
 	(void) signal(SIGFPE, catchsig);
 #ifdef SIGBUS
 	(void) signal(SIGBUS, catchsig);
+#endif
+#ifdef SIGPIPE
+	/*
+	 * Ignore SIGPIPE so that writes to pipes that fail don't
+	 * kill the process but instead return -1 and set errno.
+	 * That lets us print a fatal message instead of dieing suddenly.
+	 *
+	 * Note that this requires ignoring EPIPE when writing and
+	 * flushing stdout/stderr in other parts of the program. E.g.,
+	 *
+	 * 	gawk 'BEGIN { print "hi" }' | exit
+	 *
+	 * should not give us "broken pipe" messages --- mainly because
+	 * it did not do so in the past and people would complain.
+	 */
+	signal(SIGPIPE, SIG_IGN);
 #endif
 
 	(void) sigsegv_install_handler(catchsegv);
@@ -438,7 +456,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'O':
-			do_optimize++;
+			do_optimize = true;
 			break;
 
 		case 'p':
@@ -841,8 +859,13 @@ By default it reads standard input and writes standard output.\n\n"), fp);
 	fflush(fp);
 
 	if (ferror(fp)) {
-		if (fp == stdout)
-			warning(_("error writing standard output (%s)"), strerror(errno));
+		/* don't warn about stdout/stderr if EPIPE, but do error exit */
+		if (errno != EPIPE) {
+			if (fp == stdout)
+				warning(_("error writing standard output (%s)"), strerror(errno));
+			else if (fp == stderr)
+				warning(_("error writing standard error (%s)"), strerror(errno));
+		}
 		exit(EXIT_FAILURE);
 	}
 
@@ -879,7 +902,9 @@ along with this program. If not, see http://www.gnu.org/licenses/.\n");
 	fflush(stdout);
 
 	if (ferror(stdout)) {
-		warning(_("error writing standard output (%s)"), strerror(errno));
+		/* don't warn about stdout if EPIPE, but do error exit */
+		if (errno != EPIPE)
+			warning(_("error writing standard output (%s)"), strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -1096,6 +1121,10 @@ load_environ()
 	 */
 	path_environ("AWKPATH", defpath);
 	path_environ("AWKLIBPATH", deflibpath);
+
+	/* set up array functions */
+	init_env_array(ENVIRON_node);
+
 	return ENVIRON_node;
 }
 

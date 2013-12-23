@@ -69,6 +69,25 @@ afunc_t str_array_func[] = {
 	(afunc_t) 0,
 };
 
+static NODE **env_remove(NODE *symbol, NODE *subs);
+static NODE **env_store(NODE *symbol, NODE *subs);
+static NODE **env_clear(NODE *symbol, NODE *subs);
+
+/* special case for ENVIRON */
+afunc_t env_array_func[] = {
+	str_array_init,
+	(afunc_t) 0,
+	null_length,
+	str_lookup,
+	str_exists,
+	env_clear,
+	env_remove,
+	str_list,
+	str_copy,
+	str_dump,
+	env_store,
+};
+
 static inline NODE **str_find(NODE *symbol, NODE *s1, size_t code1, unsigned long hash1);
 static void grow_table(NODE *symbol);
 
@@ -736,4 +755,64 @@ scramble(unsigned long x)
 	}
 
 	return x;
+}
+
+/* env_remove --- for ENVIRON, remove value from real environment */
+
+static NODE **
+env_remove(NODE *symbol, NODE *subs)
+{
+	NODE **val = str_remove(symbol, subs);
+
+	if (val != NULL)
+		(void) unsetenv(subs->stptr);
+
+	return val;
+}
+
+/* env_clear --- clear out the environment when ENVIRON is deleted */
+
+static NODE **
+env_clear(NODE *symbol, NODE *subs)
+{
+	extern char **environ;
+	NODE **val = str_clear(symbol, subs);
+
+	environ = NULL;	/* ZAP! */
+
+	/* str_clear zaps the vtable, reset it */
+	symbol->array_funcs = env_array_func;
+
+	return val;
+}
+
+/* env_store --- post assign function for ENVIRON, put new value into env */
+
+static NODE **
+env_store(NODE *symbol, NODE *subs)
+{
+	NODE **val = str_exists(symbol, subs);
+	const char *newval;
+
+	assert(val != NULL);
+
+	newval = (*val)->stptr;
+	if (newval == NULL)
+		newval = "";
+
+	(void) setenv(subs->stptr, newval, 1);
+
+	return val;
+}
+
+/* init_env_array --- set up the pointers for ENVIRON. A bit hacky. */
+
+void
+init_env_array(NODE *env_node)
+{
+	/* If POSIX simply don't reset the vtable and things work as before */
+	if (do_posix)
+		return;
+
+	env_node->array_funcs = env_array_func;
 }

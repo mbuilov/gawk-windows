@@ -125,6 +125,11 @@ efwrite(const void *ptr,
 	return;
 
 wrerror:
+	/* die silently on EPIPE to stdout */
+	if (fp == stdout && errno == EPIPE)
+		gawk_exit(EXIT_FATAL);
+
+	/* otherwise die verbosely */
 	fatal(_("%s to \"%s\" failed (%s)"), from,
 		rp ? rp->value : _("standard output"),
 		errno ? strerror(errno) : _("reason unknown"));
@@ -464,9 +469,9 @@ double
 double_to_int(double d)
 {
 	if (d >= 0)
-		d = Floor(d);
+		d = floor(d);
 	else
-		d = Ceil(d);
+		d = ceil(d);
 	return d;
 }
 
@@ -1097,6 +1102,7 @@ out0:
 			 * used to work? 6/2003.)
 			 */
 			cp = arg->stptr;
+			prec = 1;
 #if MBS_SUPPORT
 			/*
 			 * First character can be multiple bytes if
@@ -1108,17 +1114,14 @@ out0:
 
 				memset(& state, 0, sizeof(state));
 				count = mbrlen(cp, arg->stlen, & state);
-				if (count == 0
-				    || count == (size_t)-1
-				    || count == (size_t)-2)
-					goto out2;
-				prec = count;
-				goto pr_tail;
+				if (count > 0) {
+					prec = count;
+					/* may need to increase fw so that padding happens, see pr_tail code */
+					if (fw > 0)
+						fw += count - 1;
+				}
 			}
-out2:
-			;
 #endif
-			prec = 1;
 			goto pr_tail;
 		case 's':
 			need_format = false;
@@ -1421,9 +1424,14 @@ mpf1:
 			copy_count = prec;
 			if (fw == 0 && ! have_prec)
 				;
-			else if (gawk_mb_cur_max > 1 && (cs1 == 's' || cs1 == 'c')) {
-				assert(cp == arg->stptr || cp == cpbuf);
-				copy_count = mbc_byte_count(arg->stptr, prec);
+			else if (gawk_mb_cur_max > 1) {
+				if (cs1 == 's') {
+					assert(cp == arg->stptr || cp == cpbuf);
+					copy_count = mbc_byte_count(arg->stptr, prec);
+				}
+				/* prec was set by code for %c */
+				/* else
+					copy_count = prec; */
 			}
 			bchunk(cp, copy_count);
 			while (fw > prec) {
@@ -2156,7 +2164,7 @@ do_print_rec(int nargs, int redirtype)
 
 	f0 = fields_arr[0];
 
-	if (do_lint && f0 == Nnull_string)
+	if (do_lint && (f0->flags & NULL_FIELD) != 0)
 		lintwarn(_("reference to uninitialized field `$%d'"), 0);
 
 	efwrite(f0->stptr, sizeof(char), f0->stlen, fp, "print", rp, false);
@@ -2369,6 +2377,8 @@ static char *const state = (char *const) istate;
 NODE *
 do_rand(int nargs ATTRIBUTE_UNUSED)
 {
+	double tmprand;
+#define RAND_DIVISOR ((double)GAWK_RANDOM_MAX+1.0)
 	if (firstrand) {
 		(void) initstate((unsigned) 1, state, SIZEOF_STATE);
 		/* don't need to srandom(1), initstate() does it for us. */
@@ -2380,7 +2390,60 @@ do_rand(int nargs ATTRIBUTE_UNUSED)
 	 *
 	 * 	0 <= n < 1
 	 */
-	return make_number((AWKNUM) (random() % GAWK_RANDOM_MAX) / GAWK_RANDOM_MAX);
+ 	/*
+	 * Date: Wed, 28 Aug 2013 17:52:46 -0700
+	 * From: Bob Jewett <jewett@bill.scs.agilent.com>
+	 *
+ 	 * Call random() twice to fill in more bits in the value
+ 	 * of the double.  Also, there is a bug in random() such
+ 	 * that when the values of successive values are combined
+ 	 * like (rand1*rand2)^2, (rand3*rand4)^2,  ...  the
+ 	 * resulting time series is not white noise.  The
+ 	 * following also seems to fix that bug. 
+ 	 *
+ 	 * The add/subtract 0.5 keeps small bits from filling
+ 	 * below 2^-53 in the double, not that anyone should be
+ 	 * looking down there. 
+	 *
+	 * Date: Wed, 25 Sep 2013 10:45:38 -0600 (MDT)
+	 * From: "Nelson H. F. Beebe" <beebe@math.utah.edu>
+	 * (4) The code is typical of many published fragments for converting
+	 *     from integer to floating-point, and I discuss the serious pitfalls
+	 *     in my book, because it leads to platform-dependent behavior at the
+	 *     end points of the interval [0,1]
+	 * 
+	 * (5) the documentation in the gawk info node says
+	 * 
+	 *     `rand()'
+	 * 	 Return a random number.  The values of `rand()' are uniformly
+	 * 	 distributed between zero and one.  The value could be zero but is
+	 * 	 never one.(1)
+	 * 
+	 *     The division by RAND_DIVISOR may not guarantee that 1.0 is never
+	 *     returned: the programmer forgot the platform-dependent issue of
+	 *     rounding.
+	 * 
+	 * For points 4 and 5, the safe way is a loop:
+	 * 
+	 *         double 
+	 * 	   rand(void)		// return value in [0.0, 1.0)
+	 *         {
+	 * 	    value = internal_rand();
+	 *
+	 * 	    while (value == 1.0) 
+	 *                 value = internal_rand();
+	 * 
+	 * 	    return (value);
+	 *         }
+ 	 */
+ 
+	do {
+	 	tmprand = 0.5 + ( (random()/RAND_DIVISOR + random())
+					/ RAND_DIVISOR);
+		tmprand -= 0.5;
+	} while (tmprand == 1.0);
+
+ 	return make_number((AWKNUM) tmprand);
 }
 
 /* do_srand --- seed the random number generator */
@@ -2952,13 +3015,16 @@ set_how_many:
 done:
 	DEREF(s);
 
-	if ((matches == 0 || (flags & LITERAL) != 0) && buf != NULL)
+	if ((matches == 0 || (flags & LITERAL) != 0) && buf != NULL) {
 		efree(buf); 
+		buf = NULL;
+	}
 
 	if (flags & GENSUB) {
 		if (matches > 0) {
 			/* return the result string */
 			DEREF(t);
+			assert(buf != NULL);
 			return make_str_node(buf, textlen, ALREADY_MALLOCED);	
 		}
 

@@ -27,8 +27,12 @@
 #include <config.h>
 #endif
 
-#define _XOPEN_SOURCE
-#define _XOPEN_SOURCE_EXTENDED
+#ifndef _XOPEN_SOURCE
+# define _XOPEN_SOURCE
+#endif
+#ifndef _XOPEN_SOURCE_EXTENDED
+# define _XOPEN_SOURCE_EXTENDED 1
+#endif
 
 #include <stdio.h>
 #include <assert.h>
@@ -88,6 +92,8 @@ static struct {
 static void
 at_exit(void *data, int exit_status)
 {
+	(void) data;		/* silence warnings */
+	(void) exit_status;	/* silence warnings */
 	if (state.tname) {
 		unlink(state.tname);
 		free(state.tname);

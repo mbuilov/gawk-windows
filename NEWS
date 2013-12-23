@@ -4,6 +4,46 @@
    are permitted in any medium without royalty provided the copyright
    notice and this notice are preserved.
 
+Changes from 4.1.1 to 4.2.0
+---------------------------
+
+1. If not in POSIX mode, changes to ENVIRON are reflected into
+   gawk's environment, affecting any programs run by system()
+   or for piped redirections.
+
+2. The series of numbers returned by rand() should now be "more
+   random" than previously.  Gawk's rand() remains repeatable; you will
+   get the same series of numbers each time you call rand() repeatedly,
+   but this will be a different series than previously.
+
+Changes from 4.1.0 to 4.1.1
+---------------------------
+
+1. The "stat" extension now includes a "devbsize" element which indicates
+   the units for the "nblocks" element
+
+2. The extension facility works on MinGW. Many of the extensions can be
+   built and used directly.
+
+3. A number of bugs in the pretty-printing / profiling code have been fixed.
+
+4. Sockets and two-way pipes now work under MinGW.
+
+5. The debugger now lists source code correctly under Cygwin.
+
+6. Configuration and building Mac OS X libreadline should work now.
+
+7. The -O option now works again.
+
+8. The --include option, documented since 4.0, now actually works.
+
+9. Infrastructure updated to automake 1.13.4 and libtool 2.4.2.418.
+
+10. The configure script now accepts a --disable-extensions option,
+which disables checking for and building the extensions.
+
+XXX. A number of bugs have been fixed. See the ChangeLog.
+
 Changes from 4.0.2 to 4.1.0
 ---------------------------
 

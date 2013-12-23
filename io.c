@@ -76,10 +76,6 @@
 #include <netdb.h>
 #endif /* HAVE_NETDB_H */
 
-#if defined(HAVE_POPEN_H)
-#include "popen.h"
-#endif
-
 #ifndef HAVE_GETADDRINFO
 #include "missing_d/getaddrinfo.h"
 #endif
@@ -108,12 +104,24 @@
 #include <limits.h>
 #endif
 
+#if defined(HAVE_POPEN_H)
+#include "popen.h"
+#endif
+
 #ifdef __EMX__
 #include <process.h>
 #endif
 
 #ifndef ENFILE
 #define ENFILE EMFILE
+#endif
+
+#if defined(__DJGPP__)
+#define closemaybesocket(fd)	close(fd)
+#endif
+
+#if defined(VMS)
+#define closemaybesocket(fd)	close(fd)
 #endif
 
 #ifdef HAVE_SOCKETS
@@ -180,10 +188,6 @@
 #else
 #define INCREMENT_REC(X)	X++
 #endif
-
-/* This is for fake directory file descriptors on systems that don't
-   allow to open() a directory.  */
-#define FAKE_FD_VALUE 42
 
 typedef enum { CLOSE_ALL, CLOSE_TO, CLOSE_FROM } two_way_close_type;
 
@@ -294,10 +298,9 @@ init_io()
 {
 	long tmout;
 
-#ifdef HAVE_SOCKETS
 	/* Only MinGW has a non-trivial implementation of this.  */
 	init_sockets();
-#endif
+
 	/*
 	 * N.B.: all these hacks are to minimize the effect
 	 * on programs that do not care about timeout.
@@ -948,7 +951,10 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			/* Alpha/VMS V7.1's C RTL is returning this instead
 			   of EMFILE (haven't tried other post-V6.2 systems) */
 #define SS$_EXQUOTA 0x001C
-			else if (errno == EIO && vaxc$errno == SS$_EXQUOTA)
+#define SS$_EXBYTLM 0x2a14  /* VMS 8.4 seen */
+			else if (errno == EIO && 
+                                 (vaxc$errno == SS$_EXQUOTA ||
+                                  vaxc$errno == SS$_EXBYTLM))
 				close_one();
 #endif
 			else {
@@ -1262,12 +1268,15 @@ flush_io()
 	int status = 0;
 
 	errno = 0;
+	/* we don't warn about stdout/stderr if EPIPE, but we do error exit */
 	if (fflush(stdout)) {
-		warning(_("error writing standard output (%s)"), strerror(errno));
+		if (errno != EPIPE)
+			warning(_("error writing standard output (%s)"), strerror(errno));
 		status++;
 	}
 	if (fflush(stderr)) {
-		warning(_("error writing standard error (%s)"), strerror(errno));
+		if (errno != EPIPE)
+			warning(_("error writing standard error (%s)"), strerror(errno));
 		status++;
 	}
 	for (rp = red_head; rp != NULL; rp = rp->next)
@@ -1317,13 +1326,16 @@ close_io(bool *stdio_problem)
 	 * them, we just flush them, and do that across the board.
 	 */
 	*stdio_problem = false;
-	if (fflush(stdout)) {
-		warning(_("error writing standard output (%s)"), strerror(errno));
+	/* we don't warn about stdout/stderr if EPIPE, but we do error exit */
+	if (fflush(stdout) != 0) {
+		if (errno != EPIPE)
+			warning(_("error writing standard output (%s)"), strerror(errno));
 		status++;
 		*stdio_problem = true;
 	}
-	if (fflush(stderr)) {
-		warning(_("error writing standard error (%s)"), strerror(errno));
+	if (fflush(stderr) != 0) {
+		if (errno != EPIPE)
+			warning(_("error writing standard error (%s)"), strerror(errno));
 		status++;
 		*stdio_problem = true;
 	}
@@ -1464,7 +1476,7 @@ socketopen(int family, int type, const char *localpname,
 #ifdef MSG_PEEK
 					char buf[10];
 					struct sockaddr_storage remote_addr;
-					socklen_t read_len;
+					socklen_t read_len = 0;
 
 					if (recvfrom(socket_fd, buf, 1, MSG_PEEK,
 						(struct sockaddr *) & remote_addr,
@@ -1916,6 +1928,7 @@ two_way_open(const char *str, struct redirect *rp)
 		case -1:
 			save_errno = errno;
 			close(master);
+			close(slave);
 			errno = save_errno;
 			return false;
 
@@ -2626,7 +2639,10 @@ do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 			return NULL;
 		}
 		erealloc(path, char *, strlen(path) + strlen(src) + 2, "do_find_source");
-#ifndef VMS
+#ifdef VMS
+		if (strcspn(path,">]:") == strlen(path))
+			strcat(path, "/");
+#else
 		strcat(path, "/");
 #endif
 		strcat(path, src);
@@ -2732,11 +2748,18 @@ find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
 int
 srcopen(SRCFILE *s)
 {
+	int fd = INVALID_HANDLE;
+
 	if (s->stype == SRC_STDIN)
-		return fileno(stdin);
-	if (s->stype == SRC_FILE || s->stype == SRC_INC)
-		return devopen(s->fullpath, "r");
-	return INVALID_HANDLE;
+		fd = fileno(stdin);
+	else if (s->stype == SRC_FILE || s->stype == SRC_INC)
+		fd = devopen(s->fullpath, "r");
+
+	/* set binary mode so that debugger byte offset calculations will be right */
+	if (fd != INVALID_HANDLE)
+		os_setbinmode(fd, O_BINARY);
+
+	return fd;
 }
 
 /* input parsers, mainly for use by extension functions */
@@ -2997,8 +3020,6 @@ iop_finish(IOBUF *iop)
 			if (isdir)
 				iop->errcode = EISDIR;
 			else {
-				struct stat sbuf;
-
 				iop->errcode = EIO;
 				/*
 				 * Extensions can supply values that are not
@@ -3006,8 +3027,12 @@ iop_finish(IOBUF *iop)
 				 * file descriptors. So check the fd before
 				 * trying to close it, which avoids errors
 				 * on some operating systems.
+				 *
+				 * The fcntl call works for Windows, too.
 				 */
-				if (fstat(iop->public.fd, & sbuf) == 0)
+#if defined(F_GETFL)
+				if (fcntl(iop->public.fd, F_GETFL) >= 0)
+#endif
 					(void) close(iop->public.fd);
 				iop->public.fd = INVALID_HANDLE;
 			}
@@ -3488,12 +3513,12 @@ get_a_record(char **out,        /* pointer to pointer to data */
 			recm.rt_start = iop->off + recm.len;
 
 		/* read more data, break if EOF */
-#ifndef min
-#define min(x, y) (x < y ? x : y)
+#ifndef MIN
+#define MIN(x, y) (x < y ? x : y)
 #endif
 		/* subtract one in read count to leave room for sentinel */
 		room_left = iop->end - iop->dataend - 1;
-		amt_to_read = min(iop->readsize, room_left);
+		amt_to_read = MIN(iop->readsize, room_left);
 
 		if (amt_to_read < iop->readsize) {
 			grow_iop_buffer(iop);
@@ -3504,7 +3529,7 @@ get_a_record(char **out,        /* pointer to pointer to data */
 
 			/* recalculate amt_to_read */
 			room_left = iop->end - iop->dataend - 1;
-			amt_to_read = min(iop->readsize, room_left);
+			amt_to_read = MIN(iop->readsize, room_left);
 		}
 		while (amt_to_read + iop->readsize < room_left)
 			amt_to_read += iop->readsize;
@@ -3514,7 +3539,7 @@ get_a_record(char **out,        /* pointer to pointer to data */
 		 * POSIX limits read to SSIZE_MAX. There are (bizarre)
 		 * systems where this amount is small.
 		 */
-		amt_to_read = min(amt_to_read, SSIZE_MAX);
+		amt_to_read = MIN(amt_to_read, SSIZE_MAX);
 #endif
 
 		iop->count = iop->public.read_func(iop->public.fd, iop->dataend, amt_to_read);

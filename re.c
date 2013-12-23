@@ -259,7 +259,7 @@ research(Regexp *rp, char *str, int start,
 	 size_t len, int flags)
 {
 	const char *ret = str;
-	int try_backref;
+	int try_backref = false;
 	int need_start;
 	int no_bol;
 	int res;
@@ -396,6 +396,13 @@ re_update(NODE *t)
 void
 resetup()
 {
+	/*
+	 * Syntax bits: _that_ is yet another mind trip.  Recreational drugs
+	 * are helpful for recovering from the experience.
+	 *
+	 *	Aharon Robbins <arnold@skeeve.com>
+	 *	Sun, 21 Oct 2007 23:55:33 +0200
+	 */
 	if (do_posix)
 		syn = RE_SYNTAX_POSIX_AWK;	/* strict POSIX re's */
 	else if (do_traditional)
@@ -555,8 +562,6 @@ again:
 		goto done;
 
 	for (count++, sp++; *sp != '\0'; sp++) {
-		static bool range_warned = false;
-
 		if (*sp == '[')
 			count++;
 		/*
@@ -575,14 +580,6 @@ again:
 				count--;
 		}
 
-		if (*sp == '-' && do_lint && ! range_warned && count == 1
-		    && sp[-1] != '[' && sp[1] != ']'
-		    && ! isdigit((unsigned char) sp[-1]) && ! isdigit((unsigned char) sp[1])
-		    && ! (sp[-2] == '[' && sp[-1] == '^')) {
-			range_warned = true;
-			warning(_("range of the form `[%c-%c]' is locale dependent"),
-					sp[-1], sp[1]);
-		}
 		if (count == 0) {
 			sp++;	/* skip past ']' */
 			break;

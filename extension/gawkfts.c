@@ -554,7 +554,7 @@ name:		t = sp->fts_path + NAPPEND(p->fts_parent);
 int
 fts_set(FTS *sp, FTSENT *p, int instr)
 {
-
+	(void) sp;	/* silence warnings */
 	_DIAGASSERT(sp != NULL);
 	_DIAGASSERT(p != NULL);
 

@@ -285,12 +285,10 @@ files_are_same(char *path, SRCFILE *src)
 		&& st.st_ino == src->sbuf.st_ino);
 }
 
-#ifdef HAVE_SOCKETS
 void
 init_sockets(void)
 {
 }
-#endif
 
 #ifdef __CYGWIN__
 void

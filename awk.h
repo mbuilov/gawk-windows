@@ -180,10 +180,6 @@ typedef int off_t;
 #define O_BINARY	0
 #endif
 
-#ifndef HAVE_VPRINTF
-#error "you lose: you need a system with vfprintf"
-#endif	/* HAVE_VPRINTF */
-
 #ifndef HAVE_SETLOCALE
 #define setlocale(locale, val)	/* nothing */
 #endif /* HAVE_SETLOCALE */
@@ -206,9 +202,15 @@ typedef void *stackoverflow_context_t;
 #define stackoverflow_install_handler(catchstackoverflow, extra_stack, STACK_SIZE) 0
 #endif
 
+#if defined(__EMX__) || defined(__MINGW32__)
+#include "nonposix.h"
+#endif /* defined(__EMX__) || defined(__MINGW32__) */
+
 /* use this as lintwarn("...")
    this is a hack but it gives us the right semantics */
 #define lintwarn (*(set_loc(__FILE__, __LINE__),lintfunc))
+/* same thing for warning */
+#define warning (*(set_loc(__FILE__, __LINE__),r_warning))
 
 #ifdef HAVE_MPFR
 #include <gmp.h>
@@ -430,12 +432,13 @@ typedef struct exp_node {
 #		define	MPFN	0x0800       /* arbitrary-precision floating-point number */
 #		define	MPZN	0x1000       /* arbitrary-precision integer */
 #		define	NO_EXT_SET 0x2000    /* extension cannot set a value for this variable */
+#		define	NULL_FIELD 0x4000    /* this is the null field */
 
 /* type = Node_var_array */
-#		define	ARRAYMAXED	0x4000       /* array is at max size */
-#		define	HALFHAT		0x8000       /* half-capacity Hashed Array Tree;
+#		define	ARRAYMAXED	0x8000       /* array is at max size */
+#		define	HALFHAT		0x10000       /* half-capacity Hashed Array Tree;
 		                                      * See cint_array.c */
-#		define	XARRAY		0x10000
+#		define	XARRAY		0x20000
 } NODE;
 
 #define vname sub.nodep.name
@@ -1357,6 +1360,7 @@ extern NODE *do_aoption(int nargs);
 extern NODE *do_asort(int nargs);
 extern NODE *do_asorti(int nargs);
 extern unsigned long (*hash)(const char *s, size_t len, unsigned long hsize, size_t *code);
+extern void init_env_array(NODE *env_node);
 /* awkgram.c */
 extern NODE *variable(int location, char *name, NODETYPE type);
 extern int parse_program(INSTRUCTION **pcode);
@@ -1508,6 +1512,7 @@ extern int ispath(const char *file);
 extern int isdirpunct(int c);
 
 /* io.c */
+extern void init_sockets(void);
 extern void init_io(void);
 extern void register_input_parser(awk_input_parser_t *input_parser);
 extern void register_output_wrapper(awk_output_wrapper_t *wrapper);
@@ -1571,7 +1576,7 @@ extern void final_exit(int status) ATTRIBUTE_NORETURN;
 extern void err(bool isfatal, const char *s, const char *emsg, va_list argp) ATTRIBUTE_PRINTF(3, 0);
 extern void msg (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 extern void error (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
-extern void warning (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
+extern void r_warning (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 extern void set_loc (const char *file, int line);
 extern void r_fatal (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 #if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 2)
@@ -1653,13 +1658,6 @@ extern NODE **function_list(bool sort);
 extern void print_vars(NODE **table, Func_print print_func, FILE *fp);
 
 /* floatcomp.c */
-#ifdef VMS	/* VMS linker weirdness? */
-#define Ceil	gawk_ceil
-#define Floor	gawk_floor
-#endif
-
-extern AWKNUM Floor(AWKNUM n);
-extern AWKNUM Ceil(AWKNUM n);
 #ifdef HAVE_UINTMAX_T
 extern uintmax_t adjust_uint(uintmax_t n);
 #else

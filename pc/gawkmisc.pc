@@ -716,18 +716,6 @@ dlsym (void *handle, const char *name)
 #endif	/* DYNAMIC */
 
 #ifdef HAVE_SOCKETS
-
-void
-init_sockets(void)
-{
-  WSADATA  winsockData;
-  int errcode;
-
-  if ((errcode = WSAStartup (0x101, &winsockData)) != 0
-      || winsockData.wVersion != 0x101)
-    fatal(_("cannot start Winsock (%d)"), errcode);
-}
-
 int
 socket_to_fd(SOCKET s)
 {
@@ -861,6 +849,23 @@ w32_shutdown (int fd, int how)
 #endif	/* HAVE_SOCKETS */
 
 #endif	/* __MINGW32__ */
+
+#if defined(__DJGPP__) || defined(__MINGW32__)
+
+void
+init_sockets(void)
+{
+#ifdef HAVE_SOCKETS
+  WSADATA  winsockData;
+  int errcode;
+
+  if ((errcode = WSAStartup (0x101, &winsockData)) != 0
+      || winsockData.wVersion != 0x101)
+    fatal(_("cannot start Winsock (%d)"), errcode);
+#endif
+}
+
+#endif	/* __DJGPP__ || __MINGW32__ */
 
 #ifdef __DJGPP__
 

@@ -1232,6 +1232,8 @@ pp_string(const char *in_str, size_t len, int delim)
 			*obufout++ = '\\';
 			*obufout++ = delim;
 		} else if (*str == '\0') {
+			chksize(4);
+
 			*obufout++ = '\\';
 			*obufout++ = '0';
 			*obufout++ = '0';
@@ -1255,7 +1257,7 @@ pp_string(const char *in_str, size_t len, int delim)
 			obufout += len;
 		}
 	}
-	chksize(1);
+	chksize(2);
 	*obufout++ = delim;
 	*obufout = '\0';
 	return obuf;

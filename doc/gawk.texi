@@ -120,13 +120,6 @@
 @end macro
 @end ifnothtml
 
-@set FN file name
-@set FFN File Name
-@set DF data file
-@set DDF Data File
-@set PVERSION version
-@set CTL Ctrl
-
 @ignore
 Some comments on the layout for TeX.
 1. Use at least texinfo.tex 2000-09-06.09
@@ -201,6 +194,7 @@ supports it in developing GNU and promoting software freedom.''
 @c during editing and review.
 @setchapternewpage odd
 
+@shorttitlepage GNU Awk
 @titlepage
 @title @value{TITLE}
 @subtitle @value{SUBTITLE}
@@ -410,7 +404,7 @@ particular records in a file and perform operations upon them.
 * Field Splitting Summary::             Some final points and a summary table.
 * Constant Size::                       Reading constant width data.
 * Splitting By Content::                Defining Fields By Content
-* Multiple Line::                       Reading multi-line records.
+* Multiple Line::                       Reading multiline records.
 * Getline::                             Reading files under explicit program
                                         control using the @code{getline}
                                         function.
@@ -561,9 +555,9 @@ particular records in a file and perform operations upon them.
                                         @command{awk}.
 * Uninitialized Subscripts::            Using Uninitialized variables as
                                         subscripts.
-* Multi-dimensional::                   Emulating multidimensional arrays in
+* Multidimensional::                    Emulating multidimensional arrays in
                                         @command{awk}.
-* Multi-scanning::                      Scanning multidimensional arrays.
+* Multiscanning::                       Scanning multidimensional arrays.
 * Arrays of Arrays::                    True multidimensional arrays.
 * Built-in::                            Summarizes the built-in functions.
 * Calling Built-in::                    How to call built-in functions.
@@ -615,6 +609,8 @@ particular records in a file and perform operations upon them.
 * Join Function::                       A function to join an array into a
                                         string.
 * Getlocaltime Function::               A function to get formatted times.
+* Readfile Function::                   A function to read an entire file at
+                                        once.
 * Data File Management::                Functions for managing command-line
                                         data files.
 * Filetrans Function::                  A function for handling data file
@@ -1188,17 +1184,17 @@ wrote the bulk of
 @cite{TCP/IP Internetworking with @command{gawk}}
 (a separate document, available as part of the @command{gawk} distribution).
 His code finally became part of the main @command{gawk} distribution
-with @command{gawk} @value{PVERSION} 3.1.
+with @command{gawk} version 3.1.
 
 John Haque rewrote the @command{gawk} internals, in the process providing
 an @command{awk}-level debugger. This version became available as
-@command{gawk} @value{PVERSION} 4.0, in 2011.
+@command{gawk} version 4.0, in 2011.
 
 @xref{Contributors},
 for a complete list of those who made important contributions to @command{gawk}.
 
 @node Names
-@section A Rose by Any Other Name
+@unnumberedsec A Rose by Any Other Name
 
 @cindex @command{awk}, new vs.@: old
 The @command{awk} language has evolved over the years. Full details are
@@ -1234,7 +1230,7 @@ we simply use the term @command{awk}.  When referring to a feature that is
 specific to the GNU implementation, we use the term @command{gawk}.
 
 @node This Manual
-@section Using This Book
+@unnumberedsec Using This Book
 @cindex @command{awk}, terms describing
 
 The term @command{awk} refers to a particular program as well as to the language you
@@ -1407,7 +1403,7 @@ present the licenses that cover the @command{gawk} source code
 and this @value{DOCUMENT}, respectively.
 
 @node Conventions
-@section Typographical Conventions
+@unnumberedsec Typographical Conventions
 
 @cindex Texinfo
 This @value{DOCUMENT} is written in @uref{http://www.gnu.org/software/texinfo/, Texinfo},
@@ -1446,23 +1442,23 @@ emphasized @emph{like this}, and if a point needs to be made
 strongly, it is done @strong{like this}.  The first occurrence of
 a new term is usually its @dfn{definition} and appears in the same
 font as the previous occurrence of ``definition'' in this sentence.
-Finally, @value{FN}s are indicated like this: @file{/path/to/ourfile}.
+Finally, file names are indicated like this: @file{/path/to/ourfile}.
 @end ifnotinfo
 
 Characters that you type at the keyboard look @kbd{like this}.  In particular,
 there are special characters called ``control characters.''  These are
 characters that you type by holding down both the @kbd{CONTROL} key and
-another key, at the same time.  For example, a @kbd{@value{CTL}-d} is typed
+another key, at the same time.  For example, a @kbd{Ctrl-d} is typed
 by first pressing and holding the @kbd{CONTROL} key, next
 pressing the @kbd{d} key and finally releasing both keys.
 
 @c fakenode --- for prepinfo
-@subsubheading Dark Corners
+@unnumberedsubsec Dark Corners
 @cindex Kernighan, Brian
 @quotation
 @i{Dark corners are basically fractal --- no matter how much
-you illuminate, there's always a smaller but darker one.}@*
-Brian Kernighan
+you illuminate, there's always a smaller but darker one.}
+@author Brian Kernighan
 @end quotation
 
 @cindex d.c., See dark corner
@@ -1597,7 +1593,7 @@ of @cite{GAWK: The GNU Awk User's Guide}.
 
 Edition @value{EDITION} maintains the basic structure of Edition 1.0,
 but with significant additional material, reflecting the host of new features
-in @command{gawk} @value{PVERSION} @value{VERSION}.
+in @command{gawk} version @value{VERSION}.
 Of particular note is
 @ref{Array Sorting},
 @ref{Bitwise Functions},
@@ -2033,9 +2029,9 @@ awk '@var{program}'
 @noindent
 @command{awk} applies the @var{program} to the @dfn{standard input},
 which usually means whatever you type on the terminal.  This continues
-until you indicate end-of-file by typing @kbd{@value{CTL}-d}.
+until you indicate end-of-file by typing @kbd{Ctrl-d}.
 (On other operating systems, the end-of-file character may be different.
-For example, on OS/2, it is @kbd{@value{CTL}-z}.)
+For example, on OS/2, it is @kbd{Ctrl-z}.)
 
 @cindex files, input, See input files
 @cindex input files, running @command{awk} without
@@ -2081,7 +2077,7 @@ $ @kbd{awk '@{ print @}'}
 @print{} Four score and seven years ago, ...
 @kbd{What, me worry?}
 @print{} What, me worry?
-@kbd{@value{CTL}-d}
+@kbd{Ctrl-d}
 @end example
 
 @node Long
@@ -2102,7 +2098,7 @@ awk -f @var{source-file} @var{input-file1} @var{input-file2} @dots{}
 @cindex command line, options
 @cindex options, command-line
 The @option{-f} instructs the @command{awk} utility to get the @command{awk} program
-from the file @var{source-file}.  Any @value{FN} can be used for
+from the file @var{source-file}.  Any file name can be used for
 @var{source-file}.  For example, you could put the program:
 
 @example
@@ -2127,8 +2123,8 @@ awk "BEGIN @{ print \"Don't Panic!\" @}"
 @noindent
 This was explained earlier
 (@pxref{Read Terminal}).
-Note that you don't usually need single quotes around the @value{FN} that you
-specify with @option{-f}, because most @value{FN}s don't contain any of the shell's
+Note that you don't usually need single quotes around the file name that you
+specify with @option{-f}, because most file names don't contain any of the shell's
 special characters.  Notice that in @file{advice}, the @command{awk}
 program did not have single quotes around it.  The quotes are only needed
 for programs that are provided on the @command{awk} command line.
@@ -2138,7 +2134,7 @@ for programs that are provided on the @command{awk} command line.
 @c STARTOFRANGE qs2x
 @cindex @code{'} (single quote)
 If you want to clearly identify your @command{awk} program files as such,
-you can add the extension @file{.awk} to the @value{FN}.  This doesn't
+you can add the extension @file{.awk} to the file name.  This doesn't
 affect the execution of the @command{awk} program but it does make
 ``housekeeping'' easier.
 
@@ -2165,13 +2161,13 @@ BEGIN @{ print "Don't Panic!" @}
 After making this file executable (with the @command{chmod} utility),
 simply type @samp{advice}
 at the shell and the system arranges to run @command{awk}@footnote{The
-line beginning with @samp{#!} lists the full @value{FN} of an interpreter
+line beginning with @samp{#!} lists the full file name of an interpreter
 to run and an optional initial command-line argument to pass to that
 interpreter.  The operating system then runs the interpreter with the given
 argument and the full argument list of the executed program.  The first argument
-in the list is the full @value{FN} of the @command{awk} program.
+in the list is the full file name of the @command{awk} program.
 The rest of the
-argument list contains either options to @command{awk}, or @value{DF}s,
+argument list contains either options to @command{awk}, or data files,
 or both. Note that on many systems @command{awk} may be found in
 @file{/usr/bin} instead of in @file{/bin}. Caveat Emptor.} as if you had
 typed @samp{awk -f advice}:
@@ -2421,7 +2417,7 @@ awk -F"" '@var{program}' @var{files}  # wrong!
 
 @noindent
 In the second case, @command{awk} will attempt to use the text of the program
-as the value of @code{FS}, and the first @value{FN} as the text of the program!
+as the value of @code{FS}, and the first file name as the text of the program!
 This results in syntax errors at best, and confusing behavior at worst.
 @end itemize
 
@@ -2536,19 +2532,19 @@ gawk "@{ print \"\042\" $0 \"\042\" @}" @var{file}
 
 
 @node Sample Data Files
-@section @value{DDF}s for the Examples
+@section Data Files for the Examples
 @c For gawk >= 4.0, update these data files. No-one has such slow modems!
 
 @cindex input files, examples
 @cindex @code{BBS-list} file
 Many of the examples in this @value{DOCUMENT} take their input from two sample
-@value{DF}s.  The first, @file{BBS-list}, represents a list of
+data files.  The first, @file{BBS-list}, represents a list of
 computer bulletin board systems together with information about those systems.
-The second @value{DF}, called @file{inventory-shipped}, contains
+The second data file, called @file{inventory-shipped}, contains
 information about monthly shipments.  In both files,
 each line is considered to be one @dfn{record}.
 
-In the @value{DF} @file{BBS-list}, each record contains the name of a computer
+In the data file @file{BBS-list}, each record contains the name of a computer
 bulletin board, its phone number, the board's baud rate(s), and a code for
 the number of hours it is operational.  An @samp{A} in the last column
 means the board operates 24 hours a day.  A @samp{B} in the last
@@ -2578,7 +2574,7 @@ sabafoo      555-2127     1200/300          C
 @end example
 
 @cindex @code{inventory-shipped} file
-The @value{DF} @file{inventory-shipped} represents
+The data file @file{inventory-shipped} represents
 information about shipments during the year.
 Each record contains the month, the number
 of green crates shipped, the number of red boxes shipped, the number of
@@ -2622,8 +2618,8 @@ learn in this @value{DOCUMENT}.
 @cindex Texinfo
 If you are using the stand-alone version of Info,
 see @ref{Extract Program},
-for an @command{awk} program that extracts these @value{DF}s from
-@file{gawk.texi}, the Texinfo source file for this Info file.
+for an @command{awk} program that extracts these data files from
+@file{gawk.texi}, the (generated) Texinfo source file for this Info file.
 @end ifinfo
 
 @node Very Simple
@@ -2685,9 +2681,9 @@ collection of useful, short programs to get you started.  Some of these
 programs contain constructs that haven't been covered yet. (The description
 of the program will give you a good idea of what is going on, but please
 read the rest of the @value{DOCUMENT} to become an @command{awk} expert!)
-Most of the examples use a @value{DF} named @file{data}.  This is just a
+Most of the examples use a data file named @file{data}.  This is just a
 placeholder; if you use these programs yourself, substitute
-your own @value{FN}s for @file{data}.
+your own file names for @file{data}.
 For future reference, note that there is often more than
 one way to do things in @command{awk}.  At some point, you may want
 to look back at these examples and see if
@@ -2777,7 +2773,7 @@ awk 'END @{ print NR @}' data
 @end example
 
 @item
-Print the even-numbered lines in the @value{DF}:
+Print the even-numbered lines in the data file:
 
 @example
 awk 'NR % 2 == 0' data
@@ -2819,7 +2815,7 @@ This program prints every line that contains the string
 @samp{12} @emph{or} the string @samp{21}.  If a line contains both
 strings, it is printed twice, once by each rule.
 
-This is what happens if we run this program on our two sample @value{DF}s,
+This is what happens if we run this program on our two sample data files,
 @file{BBS-list} and @file{inventory-shipped}:
 
 @example
@@ -2885,7 +2881,7 @@ the file. The fourth field identifies the group of the file.
 The fifth field contains the size of the file in bytes.  The
 sixth, seventh, and eighth fields contain the month, day, and time,
 respectively, that the file was last modified.  Finally, the ninth field
-contains the @value{FN}.@footnote{The @samp{LC_ALL=C} is
+contains the file name.@footnote{The @samp{LC_ALL=C} is
 needed to produce this traditional-style output from @command{ls}.}
 
 @c @cindex automatic initialization
@@ -3294,8 +3290,8 @@ conventions.
 
 @cindex @code{-} (hyphen), filenames beginning with
 @cindex hyphen (@code{-}), filenames beginning with
-This is useful if you have @value{FN}s that start with @samp{-},
-or in shell scripts, if you have @value{FN}s that will be specified
+This is useful if you have file names that start with @samp{-},
+or in shell scripts, if you have file names that will be specified
 by the user that could start with @samp{-}.
 It is also useful for passing options on to the @command{awk}
 program; see @ref{Getopt Function}.
@@ -3513,7 +3509,7 @@ when parsing numeric input data (@pxref{Locales}).
 Enable pretty-printing of @command{awk} programs.
 By default, output program is created in a file named @file{awkprof.out}.
 The optional @var{file} argument allows you to specify a different
-@value{FN} for the output.
+file name for the output.
 No space is allowed between the @option{-o} and @var{file}, if
 @var{file} is supplied.
 
@@ -3534,7 +3530,7 @@ Enable profiling of @command{awk} programs
 (@pxref{Profiling}).
 By default, profiles are created in a file named @file{awkprof.out}.
 The optional @var{file} argument allows you to specify a different
-@value{FN} for the profile file.
+file name for the profile file.
 No space is allowed between the @option{-p} and @var{file}, if
 @var{file} is supplied.
 
@@ -3662,7 +3658,7 @@ function names must be unique.)
 With standard @command{awk}, library functions can still be used, even
 if the program is entered at the terminal,
 by specifying @samp{-f /dev/tty}.  After typing your program,
-type @kbd{@value{CTL}-d} (the end-of-file character) to terminate it.
+type @kbd{Ctrl-d} (the end-of-file character) to terminate it.
 (You may also use @samp{-f -} to read program source from the standard
 input but then you will not be able to also use the standard input as a
 source of data.)
@@ -3744,9 +3740,9 @@ sets the variable @code{ARGIND} to the index in @code{ARGV} of the
 current element.
 
 @cindex input files, variable assignments and
-The distinction between @value{FN} arguments and variable-assignment
+The distinction between file name arguments and variable-assignment
 arguments is made when @command{awk} is about to open the next input file.
-At that point in execution, it checks the @value{FN} to see whether
+At that point in execution, it checks the file name to see whether
 it is really a variable assignment; if so, @command{awk} sets the variable
 instead of reading a file.
 
@@ -3763,7 +3759,7 @@ sequences (@pxref{Escape Sequences}).
 @value{DARKCORNER}
 
 In some earlier implementations of @command{awk}, when a variable assignment
-occurred before any @value{FN}s, the assignment would happen @emph{before}
+occurred before any file names, the assignment would happen @emph{before}
 the @code{BEGIN} rule was executed.  @command{awk}'s behavior was thus
 inconsistent; some command-line assignments were available inside the
 @code{BEGIN} rule, while others were not.  Unfortunately,
@@ -3774,8 +3770,8 @@ upon the old behavior.
 
 The variable assignment feature is most useful for assigning to variables
 such as @code{RS}, @code{OFS}, and @code{ORS}, which control input and
-output formats before scanning the @value{DF}s.  It is also useful for
-controlling state if multiple passes are needed over a @value{DF}.  For
+output formats before scanning the data files.  It is also useful for
+controlling state if multiple passes are needed over a data file.  For
 example:
 
 @cindex files, multiple passes over
@@ -3811,13 +3807,13 @@ You may also use @code{"-"} to name standard input when reading
 files with @code{getline} (@pxref{Getline/File}).
 
 In addition, @command{gawk} allows you to specify the special
-@value{FN} @file{/dev/stdin}, both on the command line and
+file name @file{/dev/stdin}, both on the command line and
 with @code{getline}.
 Some other versions of @command{awk} also support this, but it
 is not standard.
 (Some operating systems provide a @file{/dev/stdin} file
 in the file system, however, @command{gawk} always processes
-this @value{FN} itself.)
+this file name itself.)
 
 @node Environment Variables
 @section The Environment Variables @command{gawk} Uses
@@ -3847,7 +3843,7 @@ on the command-line with the @option{-f} option.
 In most @command{awk}
 implementations, you must supply a precise path name for each program
 file, unless the file is in the current directory.
-But in @command{gawk}, if the @value{FN} supplied to the @option{-f}
+But in @command{gawk}, if the file name supplied to the @option{-f}
 or @option{-i} options
 does not contain a @samp{/}, then @command{gawk} searches a list of
 directories (called the @dfn{search path}), one by one, looking for a
@@ -3867,7 +3863,7 @@ though.}
 The search path feature is particularly useful for building libraries
 of useful @command{awk} functions.  The library files can be placed in a
 standard directory in the default path and then specified on
-the command line with a short @value{FN}.  Otherwise, the full @value{FN}
+the command line with a short file name.  Otherwise, the full file name
 would have to be typed for each file.
 
 By using the @option{-i} option, or the @option{--source} and @option{-f} options, your command-line
@@ -3961,10 +3957,6 @@ for use by the @command{gawk} developers for testing and tuning.
 They are subject to change. The variables are:
 
 @table @env
-@item AVG_CHAIN_MAX
-The average number of items @command{gawk} will maintain on a
-hash chain for managing arrays.
-
 @item AWK_HASH
 If this variable exists with a value of @samp{gst}, @command{gawk}
 will switch to using the hash function from GNU Smalltalk for
@@ -3977,6 +3969,13 @@ files one line at a time, instead of reading in blocks. This exists
 for debugging problems on filesystems on non-POSIX operating systems
 where I/O is performed in records, not in blocks.
 
+@item GAWK_MSG_SRC
+If this variable exists, @command{gawk} includes the source file
+name and line number from which warning and/or fatal messages
+are generated.  Its purpose is to help isolate the source of a
+message, since there can be multiple places which produce the
+same warning or error message.
+
 @item GAWK_NO_DFA
 If this variable exists, @command{gawk} does not use the DFA regexp matcher
 for ``does it match'' kinds of tests. This can cause @command{gawk}
@@ -3988,6 +3987,14 @@ coordinate with each other.)
 @item GAWK_STACKSIZE
 This specifies the amount by which @command{gawk} should grow its
 internal evaluation stack, when needed.
+
+@item INT_CHAIN_MAX
+The average number of items @command{gawk} will maintain on a
+hash chain for managing arrays indexed by integers.
+
+@item STR_CHAIN_MAX
+The average number of items @command{gawk} will maintain on a
+hash chain for managing arrays indexed by strings.
 
 @item TIDYMEM
 If this variable exists, @command{gawk} uses the @code{mtrace()} library
@@ -4067,7 +4074,7 @@ use @samp{@@include} followed by the name of the file to be included,
 enclosed in double quotes.
 
 @quotation NOTE
-Keep in mind that this is a language construct and the @value{FN} cannot
+Keep in mind that this is a language construct and the file name cannot
 be a string variable, but rather just a literal string in double quotes.
 @end quotation
 
@@ -4092,7 +4099,7 @@ $ @kbd{gawk -f test3}
 @print{} This is file test3.
 @end example
 
-The @value{FN} can, of course, be a pathname. For example:
+The file name can, of course, be a pathname. For example:
 
 @example
 @@include "../io_funcs"
@@ -4190,7 +4197,7 @@ they will @emph{not} be in the next release).
 @cindex @code{PROCINFO} array
 The process-related special files @file{/dev/pid}, @file{/dev/ppid},
 @file{/dev/pgrpid}, and @file{/dev/user} were deprecated in @command{gawk}
-3.1, but still worked.  As of @value{PVERSION} 4.0, they are no longer
+3.1, but still worked.  As of version 4.0, they are no longer
 interpreted specially by @command{gawk}.  (Use @code{PROCINFO} instead;
 see @ref{Auto-set}.)
 
@@ -4209,8 +4216,8 @@ in case some option becomes obsolete in a future version of @command{gawk}.
 @cindex Jedi knights
 @cindex Knights, jedi
 @quotation
-@i{Use the Source, Luke!}@*
-Obi-Wan
+@i{Use the Source, Luke!}
+@author Obi-Wan
 @end quotation
 
 This @value{SECTION} intentionally left
@@ -4446,39 +4453,39 @@ A literal backslash, @samp{\}.
 @cindex @code{\} (backslash), @code{\a} escape sequence
 @cindex backslash (@code{\}), @code{\a} escape sequence
 @item \a
-The ``alert'' character, @kbd{@value{CTL}-g}, ASCII code 7 (BEL).
+The ``alert'' character, @kbd{Ctrl-g}, ASCII code 7 (BEL).
 (This usually makes some sort of audible noise.)
 
 @cindex @code{\} (backslash), @code{\b} escape sequence
 @cindex backslash (@code{\}), @code{\b} escape sequence
 @item \b
-Backspace, @kbd{@value{CTL}-h}, ASCII code 8 (BS).
+Backspace, @kbd{Ctrl-h}, ASCII code 8 (BS).
 
 @cindex @code{\} (backslash), @code{\f} escape sequence
 @cindex backslash (@code{\}), @code{\f} escape sequence
 @item \f
-Formfeed, @kbd{@value{CTL}-l}, ASCII code 12 (FF).
+Formfeed, @kbd{Ctrl-l}, ASCII code 12 (FF).
 
 @cindex @code{\} (backslash), @code{\n} escape sequence
 @cindex backslash (@code{\}), @code{\n} escape sequence
 @item \n
-Newline, @kbd{@value{CTL}-j}, ASCII code 10 (LF).
+Newline, @kbd{Ctrl-j}, ASCII code 10 (LF).
 
 @cindex @code{\} (backslash), @code{\r} escape sequence
 @cindex backslash (@code{\}), @code{\r} escape sequence
 @item \r
-Carriage return, @kbd{@value{CTL}-m}, ASCII code 13 (CR).
+Carriage return, @kbd{Ctrl-m}, ASCII code 13 (CR).
 
 @cindex @code{\} (backslash), @code{\t} escape sequence
 @cindex backslash (@code{\}), @code{\t} escape sequence
 @item \t
-Horizontal TAB, @kbd{@value{CTL}-i}, ASCII code 9 (HT).
+Horizontal TAB, @kbd{Ctrl-i}, ASCII code 9 (HT).
 
 @c @cindex @command{awk} language, V.4 version
 @cindex @code{\} (backslash), @code{\v} escape sequence
 @cindex backslash (@code{\}), @code{\v} escape sequence
 @item \v
-Vertical tab, @kbd{@value{CTL}-k}, ASCII code 11 (VT).
+Vertical tab, @kbd{Ctrl-k}, ASCII code 11 (VT).
 
 @cindex @code{\} (backslash), @code{\}@var{nnn} escape sequence
 @cindex backslash (@code{\}), @code{\}@var{nnn} escape sequence
@@ -4891,7 +4898,7 @@ constants,
 @command{gawk} did @emph{not} match interval expressions
 in regexps.
 
-However, beginning with @value{PVERSION} 4.0,
+However, beginning with version 4.0,
 @command{gawk} does match interval expressions by default.
 This is because compatibility with POSIX has become more
 important to most @command{gawk} users than compatibility with
@@ -5487,7 +5494,7 @@ But a newline in a regexp constant works with no problem:
 $ @kbd{awk '$0 ~ /[ \t\n]/'}
 @kbd{here is a sample line}
 @print{} here is a sample line
-@kbd{@value{CTL}-d}
+@kbd{Ctrl-d}
 @end example
 
 @command{gawk} does not have this problem, and it isn't likely to
@@ -5525,7 +5532,7 @@ But a newline in a regexp constant works with no problem:
 $ @kbd{awk '$0 ~ /[ \t\n]/'}
 @kbd{here is a sample line}
 @print{} here is a sample line
-@kbd{@value{CTL}-d}
+@kbd{Ctrl-d}
 @end example
 
 @command{gawk} does not have this problem, and it isn't likely to
@@ -5576,7 +5583,7 @@ used with it do not have to be named on the @command{awk} command line
 * Field Separators::            The field separator and how to change it.
 * Constant Size::               Reading constant width data.
 * Splitting By Content::        Defining Fields By Content
-* Multiple Line::               Reading multi-line records.
+* Multiple Line::               Reading multiline records.
 * Getline::                     Reading files under explicit program control
                                 using the @code{getline} function.
 * Read Timeout::                Reading input with a timeout.
@@ -5601,7 +5608,7 @@ so far
 from the current input file.  This value is stored in a
 built-in variable called @code{FNR}.  It is reset to zero when a new
 file is started.  Another built-in variable, @code{NR}, records the total
-number of input records read so far from all @value{DF}s.  It starts at zero,
+number of input records read so far from all data files.  It starts at zero,
 but is never automatically reset to zero.
 
 @cindex separators, for records
@@ -5675,7 +5682,7 @@ $ @kbd{awk 'BEGIN @{ RS = "/" @}}
 
 @noindent
 Note that the entry for the @samp{camelot} BBS is not split.
-In the original @value{DF}
+In the original data file
 (@pxref{Sample Data Files}),
 the line looks like this:
 
@@ -5688,7 +5695,7 @@ It has one baud rate only, so there are no slashes in the record,
 unlike the others which have two or more baud rates.
 In fact, this record is treated as part of the record
 for the @samp{core} BBS; the newline separating them in the output
-is the original newline in the @value{DF}, not the one added by
+is the original newline in the data file, not the one added by
 @command{awk} when it printed the record!
 
 @cindex record separators, changing
@@ -5829,8 +5836,8 @@ In compatibility mode, only the first character of the value of
 <sidebar><title>@code{RS = "\0"} Is Not Portable</title>
 @end docbook
 
-@cindex portability, @value{DF}s as single record
-There are times when you might want to treat an entire @value{DF} as a
+@cindex portability, data files as single record
+There are times when you might want to treat an entire data file as a
 single record.  The only way to make this happen is to give @code{RS}
 a value that you know doesn't occur in the input file.  This is hard
 to do in a general way, such that a program always works for arbitrary
@@ -5874,8 +5881,8 @@ record onto the end of the previous ones.
 @center @b{@code{RS = "\0"} Is Not Portable}
 
 
-@cindex portability, @value{DF}s as single record
-There are times when you might want to treat an entire @value{DF} as a
+@cindex portability, data files as single record
+There are times when you might want to treat an entire data file as a
 single record.  The only way to make this happen is to give @code{RS}
 a value that you know doesn't occur in the input file.  This is hard
 to do in a general way, such that a program always works for arbitrary
@@ -7184,7 +7191,7 @@ appear in a row, they are considered one record separator.
 @cindex dark corner, multiline records
 There is an important difference between @samp{RS = ""} and
 @samp{RS = "\n\n+"}. In the first case, leading newlines in the input
-@value{DF} are ignored, and if a file ends without extra blank lines
+data file are ignored, and if a file ends without extra blank lines
 after the last record, the final newline is removed from the record.
 In the second case, this special processing is not done.
 @value{DARKCORNER}
@@ -7219,7 +7226,7 @@ Another way to separate fields is to
 put each field on a separate line: to do this, just set the
 variable @code{FS} to the string @code{"\n"}.  (This single
 character separator matches a single newline.)
-A practical example of a @value{DF} organized this way might be a mailing
+A practical example of a data file organized this way might be a mailing
 list, where each entry is separated by blank lines.  Consider a mailing
 list in a file named @file{addresses}, which looks like this:
 
@@ -7284,7 +7291,7 @@ value of
 @table @code
 @item RS == "\n"
 Records are separated by the newline character (@samp{\n}).  In effect,
-every line in the @value{DF} is a separate record, including blank lines.
+every line in the data file is a separate record, including blank lines.
 This is the default.
 
 @item RS == @var{any single character}
@@ -7490,7 +7497,7 @@ the value of @code{NF} do not change.
 @cindex operators, input/output
 Use @samp{getline < @var{file}} to read the next record from @var{file}.
 Here @var{file} is a string-valued expression that
-specifies the @value{FN}.  @samp{< @var{file}} is called a @dfn{redirection}
+specifies the file name.  @samp{< @var{file}} is called a @dfn{redirection}
 because it directs input to come from a different place.
 For example, the following
 program reads its input record from the file @file{secondary.input} when it
@@ -7576,8 +7583,8 @@ that does handle nested @samp{@@include} statements.
 @c From private email, dated October 2, 1988. Used by permission, March 2013.
 @quotation
 @i{Omniscience has much to recommend it.
-Failing that, attention to details would be useful.}@*
-Brian Kernighan
+Failing that, attention to details would be useful.}
+@author Brian Kernighan
 @end quotation
 
 @cindex @code{|} (vertical bar), @code{|} operator (I/O)
@@ -7797,10 +7804,10 @@ system permits.
 @item
 An interesting side effect occurs if you use @code{getline} without a
 redirection inside a @code{BEGIN} rule. Because an unredirected @code{getline}
-reads from the command-line @value{DF}s, the first @code{getline} command
+reads from the command-line data files, the first @code{getline} command
 causes @command{awk} to set the value of @code{FILENAME}. Normally,
 @code{FILENAME} does not have a value inside @code{BEGIN} rules, because you
-have not yet started to process the command-line @value{DF}s.
+have not yet started to process the command-line data files.
 @value{DARKCORNER}
 (@xref{BEGIN/END},
 also @pxref{Auto-set}.)
@@ -8022,7 +8029,7 @@ For printing with specifications, you need the @code{printf} statement
 @cindex @code{printf} statement
 Besides basic and formatted printing, this @value{CHAPTER}
 also covers I/O redirections to files and pipes, introduces
-the special @value{FN}s that @command{gawk} processes internally,
+the special file names that @command{gawk} processes internally,
 and discusses the @code{close()} built-in function.
 
 @menu
@@ -8823,9 +8830,9 @@ but they work identically for @code{printf}:
 @cindex operators, input/output
 @item print @var{items} > @var{output-file}
 This redirection prints the items into the output file named
-@var{output-file}.  The @value{FN} @var{output-file} can be any
+@var{output-file}.  The file name @var{output-file} can be any
 expression.  Its value is changed to a string and then used as a
-@value{FN} (@pxref{Expressions}).
+file name (@pxref{Expressions}).
 
 When this type of redirection is used, the @var{output-file} is erased
 before the first output is written to it.  Subsequent writes to the same
@@ -8996,7 +9003,7 @@ open as many pipelines as the underlying operating system permits.
 
 A particularly powerful way to use redirection is to build command lines
 and pipe them into the shell, @command{sh}.  For example, suppose you
-have a list of files brought over from a system where all the @value{FN}s
+have a list of files brought over from a system where all the file names
 are stored in uppercase, and you wish to rename them to have names in
 all lowercase.  The following program is both simple and efficient:
 
@@ -9028,7 +9035,7 @@ It then sends the list to the shell for execution.
 
 A particularly powerful way to use redirection is to build command lines
 and pipe them into the shell, @command{sh}.  For example, suppose you
-have a list of files brought over from a system where all the @value{FN}s
+have a list of files brought over from a system where all the file names
 are stored in uppercase, and you wish to rename them to have names in
 all lowercase.  The following program is both simple and efficient:
 
@@ -9051,12 +9058,12 @@ It then sends the list to the shell for execution.
 @c ENDOFRANGE reout
 
 @node Special Files
-@section Special @value{FFN}s in @command{gawk}
+@section Special File Names in @command{gawk}
 @c STARTOFRANGE gfn
-@cindex @command{gawk}, @value{FN}s in
+@cindex @command{gawk}, file names in
 
-@command{gawk} provides a number of special @value{FN}s that it interprets
-internally.  These @value{FN}s provide access to standard file descriptors
+@command{gawk} provides a number of special file names that it interprets
+internally.  These file names provide access to standard file descriptors
 and TCP/IP networking.
 
 @menu
@@ -9120,12 +9127,12 @@ that happens, writing to the screen is not correct.  In fact, if
 terminal at all.
 Then opening @file{/dev/tty} fails.
 
-@command{gawk} provides special @value{FN}s for accessing the three standard
+@command{gawk} provides special file names for accessing the three standard
 streams. @value{COMMONEXT}. It also provides syntax for accessing
-any other inherited open files.  If the @value{FN} matches
+any other inherited open files.  If the file name matches
 one of these special names when @command{gawk} redirects input or output,
-then it directly uses the stream that the @value{FN} stands for.
-These special @value{FN}s work for all operating systems that @command{gawk}
+then it directly uses the stream that the file name stands for.
+These special file names work for all operating systems that @command{gawk}
 has been ported to, not just those that are POSIX-compliant:
 
 @cindex common extensions, @code{/dev/stdin} special file
@@ -9134,7 +9141,7 @@ has been ported to, not just those that are POSIX-compliant:
 @cindex extensions, common@comma{} @code{/dev/stdin} special file
 @cindex extensions, common@comma{} @code{/dev/stdout} special file
 @cindex extensions, common@comma{} @code{/dev/stderr} special file
-@cindex @value{FN}s, standard streams in @command{gawk}
+@cindex file names, standard streams in @command{gawk}
 @cindex @code{/dev/@dots{}} special files (@command{gawk})
 @cindex files, @code{/dev/@dots{}} special files
 @cindex @code{/dev/fd/@var{N}} special files
@@ -9155,7 +9162,7 @@ the shell).  Unless special pains are taken in the shell from which
 @command{gawk} is invoked, only descriptors 0, 1, and 2 are available.
 @end table
 
-The @value{FN}s @file{/dev/stdin}, @file{/dev/stdout}, and @file{/dev/stderr}
+The file names @file{/dev/stdin}, @file{/dev/stdout}, and @file{/dev/stderr}
 are aliases for @file{/dev/fd/0}, @file{/dev/fd/1}, and @file{/dev/fd/2},
 respectively. However, they are more self-explanatory.
 The proper way to write an error message in a @command{gawk} program
@@ -9165,14 +9172,14 @@ is to use @file{/dev/stderr}, like this:
 print "Serious error detected!" > "/dev/stderr"
 @end example
 
-@cindex troubleshooting, quotes with @value{FN}s
-Note the use of quotes around the @value{FN}.
+@cindex troubleshooting, quotes with file names
+Note the use of quotes around the file name.
 Like any other redirection, the value must be a string.
 It is a common error to omit the quotes, which leads
 to confusing results.
 @c Exercise: What does it do?  :-)
 
-Finally, using the @code{close()} function on a @value{FN} of the
+Finally, using the @code{close()} function on a file name of the
 form @code{"/dev/fd/@var{N}"}, for file descriptor numbers
 above two, does actually close the given file descriptor.
 
@@ -9188,7 +9195,7 @@ versions of @command{awk}.
 @command{gawk} programs
 can open a two-way
 TCP/IP connection, acting as either a client or a server.
-This is done using a special @value{FN} of the form:
+This is done using a special file name of the form:
 
 @example
 @file{/@var{net-type}/@var{protocol}/@var{local-port}/@var{remote-host}/@var{remote-port}}
@@ -9198,7 +9205,7 @@ The @var{net-type} is one of @samp{inet}, @samp{inet4} or @samp{inet6}.
 The @var{protocol} is one of @samp{tcp} or @samp{udp},
 and the other fields represent the other essential pieces of information
 for making a networking connection.
-These @value{FN}s are used with the @samp{|&} operator for communicating
+These file names are used with the @samp{|&} operator for communicating
 with a coprocess
 (@pxref{Two-way I/O}).
 This is an advanced feature, mentioned here only for completeness.
@@ -9206,21 +9213,21 @@ Full discussion is delayed until
 @ref{TCP/IP Networking}.
 
 @node Special Caveats
-@subsection Special @value{FFN} Caveats
+@subsection Special File Name Caveats
 
 Here is a list of things to bear in mind when using the
-special @value{FN}s that @command{gawk} provides:
+special file names that @command{gawk} provides:
 
 @itemize @bullet
-@cindex compatibility mode (@command{gawk}), @value{FN}s
-@cindex @value{FN}s, in compatibility mode
+@cindex compatibility mode (@command{gawk}), file names
+@cindex file names, in compatibility mode
 @item
-Recognition of these special @value{FN}s is disabled if @command{gawk} is in
+Recognition of these special file names is disabled if @command{gawk} is in
 compatibility mode (@pxref{Options}).
 
 @item
 @command{gawk} @emph{always}
-interprets these special @value{FN}s.
+interprets these special file names.
 For example, using @samp{/dev/fd/4}
 for output actually writes on file descriptor 4, and not on a new
 file descriptor that is @code{dup()}'ed from file descriptor 4.  Most of
@@ -9243,7 +9250,7 @@ Doing so results in unpredictable behavior.
 @cindex coprocesses, closing
 @cindex @code{getline} command, coprocesses@comma{} using from
 
-If the same @value{FN} or the same shell command is used with @code{getline}
+If the same file name or the same shell command is used with @code{getline}
 more than once during the execution of an @command{awk} program
 (@pxref{Getline}),
 the file is opened (or the command is executed) the first time only.
@@ -9252,7 +9259,7 @@ The next time the same file or command is used with @code{getline},
 another record is read from it, and so on.
 
 Similarly, when a file or pipe is opened for output, @command{awk} remembers
-the @value{FN} or command associated with it, and subsequent
+the file name or command associated with it, and subsequent
 writes to the same file or command are appended to the previous writes.
 The file or pipe stays open until @command{awk} exits.
 
@@ -9294,7 +9301,7 @@ file or command, or the next @code{print} or @code{printf} to that
 file or command, reopens the file or reruns the command.
 Because the expression that you use to close a file or pipeline must
 exactly match the expression used to open the file or run the command,
-it is good practice to use a variable to store the @value{FN} or command.
+it is good practice to use a variable to store the file name or command.
 The previous example becomes the following:
 
 @example
@@ -9343,7 +9350,7 @@ a separate message.
 @cindex portability, @code{close()} function and
 If you use more files than the system allows you to have open,
 @command{gawk} attempts to multiplex the available open files among
-your @value{DF}s.  @command{gawk}'s ability to do this depends upon the
+your data files.  @command{gawk}'s ability to do this depends upon the
 facilities of your operating system, so it may not always work.  It is
 therefore both good practice and good portability advice to always
 use @code{close()} on your files when you are done with them.
@@ -9948,7 +9955,7 @@ as in the following:
 @noindent
 the variable is set at the very beginning, even before the
 @code{BEGIN} rules execute.  The @option{-v} option and its assignment
-must precede all the @value{FN} arguments, as well as the program text.
+must precede all the file name arguments, as well as the program text.
 (@xref{Options}, for more information about
 the @option{-v} option.)
 Otherwise, the variable assignment is performed at a time determined by
@@ -10030,7 +10037,7 @@ with @code{CONVFMT} as the format
 specifier
 (@pxref{String Functions}).
 
-@code{CONVFMT}'s default value is @code{"%.6g"}, which prints a value with
+@code{CONVFMT}'s default value is @code{"%.6g"}, which creates a value with
 at most six significant digits.  For some applications, you might want to
 change it to specify more precision.
 On most modern machines,
@@ -10121,7 +10128,7 @@ point, so the default behavior was restored to use a period as the
 decimal point character.  You can use the @option{--use-lc-numeric}
 option (@pxref{Options}) to force @command{gawk} to use the locale's
 decimal point character.  (@command{gawk} also uses the locale's decimal
-point character when in POSIX mode, either via @w{@option{--posix}}, or the
+point character when in POSIX mode, either via @option{--posix}, or the
 @env{POSIXLY_CORRECT} environment variable, as shown previously.)
 
 @ref{table-locale-affects} describes the cases in which the locale's decimal
@@ -10279,8 +10286,8 @@ For maximum portability, do not use the @samp{**} operator.
 @subsection String Concatenation
 @cindex Kernighan, Brian
 @quotation
-@i{It seemed like a good idea at the time.}@*
-Brian Kernighan
+@i{It seemed like a good idea at the time.}
+@author Brian Kernighan
 @end quotation
 
 @cindex string operators
@@ -10810,8 +10817,8 @@ like @samp{@var{lvalue}++}, but instead of adding, it subtracts.)
 @cindex Marx, Groucho
 @quotation
 @i{Doctor, doctor!  It hurts when I do this!@*
-So don't do that!}@*
-Groucho Marx
+So don't do that!}
+@author Groucho Marx
 @end quotation
 
 @noindent
@@ -10862,8 +10869,8 @@ You should avoid such things in your own programs.
 @cindex Marx, Groucho
 @quotation
 @i{Doctor, doctor!  It hurts when I do this!@*
-So don't do that!}@*
-Groucho Marx
+So don't do that!}
+@author Groucho Marx
 @end quotation
 
 @noindent
@@ -10961,8 +10968,8 @@ the string constant @code{"0"} is actually true, because it is non-null.
 @node Typing and Comparison
 @subsection Variable Typing and Comparison Expressions
 @quotation
-@i{The Guide is definitive. Reality is frequently inaccurate.}@*
-The Hitchhiker's Guide to the Galaxy
+@i{The Guide is definitive. Reality is frequently inaccurate.}
+@author The Hitchhiker's Guide to the Galaxy
 @end quotation
 
 @c STARTOFRANGE comex
@@ -11620,7 +11627,7 @@ $ @kbd{awk '@{ print "The square root of", $1, "is", sqrt($1) @}'}
 @print{} The square root of 3 is 1.73205
 @kbd{5}
 @print{} The square root of 5 is 2.23607
-@kbd{@value{CTL}-d}
+@kbd{Ctrl-d}
 @end example
 
 A function can also have side effects, such as assigning
@@ -13142,11 +13149,11 @@ The @code{nextfile} statement
 is similar to the @code{next} statement.
 However, instead of abandoning processing of the current record, the
 @code{nextfile} statement instructs @command{awk} to stop processing the
-current @value{DF}.
+current data file.
 
 Upon execution of the @code{nextfile} statement,
 @code{FILENAME} is
-updated to the name of the next @value{DF} listed on the command line,
+updated to the name of the next data file listed on the command line,
 @code{FNR} is reset to one,
 and processing
 starts over with the first rule in the program.
@@ -13155,10 +13162,10 @@ then the code in any @code{END} rules is executed. An exception to this is
 when @code{nextfile} is invoked during execution of any statement in an
 @code{END} rule; In this case, it causes the program to stop immediately. @xref{BEGIN/END}.
 
-The @code{nextfile} statement is useful when there are many @value{DF}s
+The @code{nextfile} statement is useful when there are many data files
 to process but it isn't necessary to process every record in every file.
 Without @code{nextfile},
-in order to move on to the next @value{DF}, a program
+in order to move on to the next data file, a program
 would have to continue scanning the unwanted records.  The @code{nextfile}
 statement accomplishes this much more efficiently.
 
@@ -13396,7 +13403,7 @@ exclusively on the value of @code{FS}.
 @item FS
 This is the input field separator
 (@pxref{Field Separators}).
-The value is a single-character string or a multi-character regular
+The value is a single-character string or a multicharacter regular
 expression that matches the separations between fields in an input
 record.  If the value is the null string (@code{""}), then each
 character in the record becomes a separate field.
@@ -13542,7 +13549,7 @@ This is the subscript separator.  It has the default value of
 @code{"\034"} and is used to separate the parts of the indices of a
 multidimensional array.  Thus, the expression @code{@w{foo["A", "B"]}}
 really accesses @code{foo["A\034B"]}
-(@pxref{Multi-dimensional}).
+(@pxref{Multidimensional}).
 
 @cindex @command{gawk}, @code{TEXTDOMAIN} variable in
 @cindex @code{TEXTDOMAIN} variable
@@ -13625,17 +13632,17 @@ about how @command{awk} uses these variables.
 @cindex differences in @command{awk} and @command{gawk}, @code{ARGIND} variable
 @item ARGIND #
 The index in @code{ARGV} of the current file being processed.
-Every time @command{gawk} opens a new @value{DF} for processing, it sets
-@code{ARGIND} to the index in @code{ARGV} of the @value{FN}.
+Every time @command{gawk} opens a new data file for processing, it sets
+@code{ARGIND} to the index in @code{ARGV} of the file name.
 When @command{gawk} is processing the input files,
 @samp{FILENAME == ARGV[ARGIND]} is always true.
 
 @cindex files, processing@comma{} @code{ARGIND} variable and
 This variable is useful in file processing; it allows you to tell how far
-along you are in the list of @value{DF}s as well as to distinguish between
-successive instances of the same @value{FN} on the command line.
+along you are in the list of data files as well as to distinguish between
+successive instances of the same file name on the command line.
 
-@cindex @value{FN}s, distinguishing
+@cindex file names, distinguishing
 While you can change the value of @code{ARGIND} within your @command{awk}
 program, @command{gawk} automatically sets it to a new value when the
 next file is opened.
@@ -13652,10 +13659,18 @@ it is not special.
 An associative array containing the values of the environment.  The array
 indices are the environment variable names; the elements are the values of
 the particular environment variables.  For example,
-@code{ENVIRON["HOME"]} might be @file{/home/arnold}.  Changing this array
-does not affect the environment passed on to any programs that
-@command{awk} may spawn via redirection or the @code{system()} function.
-@c (In a future version of @command{gawk}, it may do so.)
+@code{ENVIRON["HOME"]} might be @file{/home/arnold}.
+
+For POSIX @command{awk}, changing this array does not affect the
+environment passed on to any programs that @command{awk} may spawn via
+redirection or the @code{system()} function.
+
+However, beginning with version 4.2, if not in POSIX
+compatibility mode, @command{gawk} does update its own environment when
+@code{ENVIRON} is changed, thus changing the environment seen by programs
+that it creates.  You should therefore be especially careful if you
+modify @code{ENVIRON["PATH"]"}, which is the search path for finding
+executable programs.
 
 Some operating systems may not have environment variables.
 On such systems, the @code{ENVIRON} array is empty (except for
@@ -13697,14 +13712,14 @@ it is not special.
 @cindex dark corner, @code{FILENAME} variable
 @item FILENAME
 The name of the file that @command{awk} is currently reading.
-When no @value{DF}s are listed on the command line, @command{awk} reads
+When no data files are listed on the command line, @command{awk} reads
 from the standard input and @code{FILENAME} is set to @code{"-"}.
 @code{FILENAME} is changed each time a new file is read
 (@pxref{Reading Files}).
 Inside a @code{BEGIN} rule, the value of @code{FILENAME} is
 @code{""}, since there are no input files being processed
 yet.@footnote{Some early implementations of Unix @command{awk} initialized
-@code{FILENAME} to @code{"-"}, even if there were @value{DF}s to be
+@code{FILENAME} to @code{"-"}, even if there were data files to be
 processed. This behavior was incorrect and should not be relied
 upon in your programs.}
 @value{DARKCORNER}
@@ -13744,8 +13759,12 @@ current record. @xref{Changing Fields}.
 @item FUNCTAB #
 An array whose indices and corresponding values are the names of all
 the user-defined or extension functions in the program.
-@strong{NOTE}: You may not use the @code{delete} statement with the
-@code{FUNCTAB} array.
+
+@quotation NOTE
+Attempting to use the @code{delete} statement with the @code{FUNCTAB}
+array will cause a fatal error.  Any attempt to assign to an element of
+the @code{FUNCTAB} array will also cause a fatal error.
+@end quotation
 
 @cindex @code{NR} variable
 @item NR
@@ -14123,11 +14142,11 @@ additional files to be read.
 If the value of @code{ARGC} is decreased, that eliminates input files
 from the end of the list.  By recording the old value of @code{ARGC}
 elsewhere, a program can treat the eliminated arguments as
-something other than @value{FN}s.
+something other than file names.
 
 To eliminate a file from the middle of the list, store the null string
 (@code{""}) into @code{ARGV} in place of the file's name.  As a
-special feature, @command{awk} ignores @value{FN}s that have been
+special feature, @command{awk} ignores file names that have been
 replaced with the null string.
 Another option is to
 use the @code{delete} statement to remove elements from
@@ -14222,7 +14241,7 @@ same @command{awk} program.
 * Numeric Array Subscripts::    How to use numbers as subscripts in
                                 @command{awk}.
 * Uninitialized Subscripts::    Using Uninitialized variables as subscripts.
-* Multi-dimensional::           Emulating multidimensional arrays in
+* Multidimensional::            Emulating multidimensional arrays in
                                 @command{awk}.
 * Arrays of Arrays::            True multidimensional arrays.
 @end menu
@@ -14252,8 +14271,8 @@ an array.
 @cindex Wall, Larry
 @quotation
 @i{Doing linear scans over an associative array is like trying to club someone
-to death with a loaded Uzi.}@*
-Larry Wall
+to death with a loaded Uzi.}
+@author Larry Wall
 @end quotation
 
 The @command{awk} language provides one-dimensional arrays
@@ -14664,29 +14683,29 @@ Array elements are processed in arbitrary order, which is the default
 @command{awk} behavior.
 
 @item "@@ind_str_asc"
-Order by indices compared as strings; this is the most basic sort.
+Order by indices in ascending order compared as strings; this is the most basic sort.
 (Internally, array indices are always strings, so with @samp{a[2*5] = 1}
 the index is @code{"10"} rather than numeric 10.)
 
 @item "@@ind_num_asc"
-Order by indices but force them to be treated as numbers in the process.
+Order by indices in ascending order but force them to be treated as numbers in the process.
 Any index with a non-numeric value will end up positioned as if it were zero. 
 
 @item "@@val_type_asc"
-Order by element values rather than indices.
+Order by element values in ascending order (rather than by indices).
 Ordering is by the type assigned to the element
 (@pxref{Typing and Comparison}).
 All numeric values come before all string values,
 which in turn come before all subarrays.
 (Subarrays have not been described yet;
-@pxref{Arrays of Arrays}).
+@pxref{Arrays of Arrays}.)
 
 @item "@@val_str_asc"
-Order by element values rather than by indices.  Scalar values are 
+Order by element values in ascending order (rather than by indices).  Scalar values are 
 compared as strings.  Subarrays, if present, come out last.
 
 @item "@@val_num_asc"
-Order by element values rather than by indices.  Scalar values are 
+Order by element values in ascending order (rather than by indices).  Scalar values are 
 compared as numbers.  Subarrays, if present, come out last.
 When numeric values are equal, the string values are used to provide
 an ordering: this guarantees consistent results across different
@@ -14699,13 +14718,14 @@ across different environments.} which @command{gawk} uses internally
 to perform the sorting.
 
 @item "@@ind_str_desc"
-Reverse order from the most basic sort.
+String indices ordered from high to low.
 
 @item "@@ind_num_desc"
 Numeric indices ordered from high to low.
 
 @item "@@val_type_desc"
-Element values, based on type, in descending order.
+Element values, based on type, ordered from high to low.
+Subarrays, if present, come out first.
 
 @item "@@val_str_desc"
 Element values, treated as strings, ordered from high to low.
@@ -15015,11 +15035,11 @@ Even though it is somewhat unusual, the null string
 if @option{--lint} is provided
 on the command line (@pxref{Options}).
 
-@node Multi-dimensional
+@node Multidimensional
 @section Multidimensional Arrays
 
 @menu
-* Multi-scanning::              Scanning multidimensional arrays.
+* Multiscanning::              Scanning multidimensional arrays.
 @end menu
 
 @cindex subscripts in arrays, multidimensional
@@ -15117,7 +15137,7 @@ the program produces the following output:
 3 2 1 6
 @end example
 
-@node Multi-scanning
+@node Multiscanning
 @subsection Scanning Multidimensional Arrays
 
 There is no special @code{for} statement for scanning a
@@ -15562,15 +15582,16 @@ sequences of random numbers.
 @node String Functions
 @subsection String-Manipulation Functions
 
-The functions in this @value{SECTION} look at or change the text of one or more
-strings.
-@code{gawk} understands locales (@pxref{Locales}), and does all string processing in terms of
-@emph{characters}, not @emph{bytes}.  This distinction is particularly important
-to understand for locales where one character
-may be represented by multiple bytes.  Thus, for example, @code{length()}
-returns the number of characters in a string, and not the number of bytes
-used to represent those characters, Similarly, @code{index()} works with
-character indices, and not byte indices.
+The functions in this @value{SECTION} look at or change the text of one
+or more strings.
+
+@code{gawk} understands locales (@pxref{Locales}), and does all
+string processing in terms of @emph{characters}, not @emph{bytes}.
+This distinction is particularly important to understand for locales
+where one character may be represented by multiple bytes.  Thus, for
+example, @code{length()} returns the number of characters in a string,
+and not the number of bytes used to represent those characters. Similarly,
+@code{index()} works with character indices, and not byte indices.
 
 In the following list, optional parameters are enclosed in square brackets@w{ ([ ]).}
 Several functions perform string substitution; the full discussion is
@@ -15587,30 +15608,32 @@ pound sign@w{ (@samp{#}):}
 
 @table @code
 @item asort(@var{source} @r{[}, @var{dest} @r{[}, @var{how}  @r{]} @r{]}) #
+@itemx asorti(@var{source} @r{[}, @var{dest} @r{[}, @var{how}  @r{]} @r{]}) #
+@cindex @code{asorti()} function (@command{gawk})
 @cindex arrays, elements, retrieving number of
 @cindex @code{asort()} function (@command{gawk})
 @cindex @command{gawk}, @code{IGNORECASE} variable in
 @cindex @code{IGNORECASE} variable
-Return the number of elements in the array @var{source}.
-@command{gawk} sorts the contents of @var{source}
-and replaces the indices
-of the sorted values of @var{source} with sequential
-integers starting with one.  If the optional array @var{dest} is specified,
-then @var{source} is duplicated into @var{dest}.  @var{dest} is then
-sorted, leaving the indices of @var{source} unchanged.  The optional third
-argument @var{how} is a string which controls the rule for comparing values,
-and the sort direction.  A single space is required between the
-comparison mode, @samp{string} or @samp{number}, and the direction specification,
-@samp{ascending} or @samp{descending}.  You can omit direction and/or mode
-in which case it will default to @samp{ascending} and @samp{string}, respectively. 
-An empty string "" is the same as the default @code{"ascending string"}
-for the value of @var{how}.  If the @samp{source} array contains subarrays as values,
-they will come out last(first) in the @samp{dest} array for @samp{ascending}(@samp{descending})
-order specification.  The value of @code{IGNORECASE} affects the sorting.
-The third argument can also be a user-defined function name in which case
-the value returned by the function is used to order the array elements
-before constructing the result array.
-@xref{Array Sorting Functions}, for more information.
+These two functions are similar in behavior, so they are described
+together.
+
+@quotation NOTE
+The following description ignores the third argument, @var{how}, since it
+requires understanding features that we have not discussed yet.  Thus,
+the discussion here is a deliberate simplification.  (We do provide all
+the details later on: @xref{Array Sorting Functions}, for the full story.)
+@end quotation
+
+Both functions return the number of elements in the array @var{source}.
+For @command{asort()}, @command{gawk} sorts the values of @var{source}
+and replaces the indices of the sorted values of @var{source} with
+sequential integers starting with one.  If the optional array @var{dest}
+is specified, then @var{source} is duplicated into @var{dest}.  @var{dest}
+is then sorted, leaving the indices of @var{source} unchanged.
+
+When comparing strings, @code{IGNORECASE} affects the sorting.  If the
+@var{source} array contains subarrays as values (@pxref{Arrays of
+Arrays}), they will come last, after all scalar values.
 
 For example, if the contents of @code{a} are as follows:
 
@@ -15636,29 +15659,19 @@ a[2] = "de"
 a[3] = "sac"
 @end example
 
-In order to reverse the direction of the sorted results in the above example,
-@code{asort()} can be called with three arguments as follows:
+The @code{asorti()} function works similarly to @code{asort()}, however,
+the @emph{indices} are sorted, instead of the values. Thus, in the
+previous example, starting with the same initial set of indices and
+values in @code{a}, calling @samp{asorti(a)} would yield:
 
 @example
-asort(a, a, "descending")
+a[1] = "first"
+a[2] = "last"
+a[3] = "middle"
 @end example
 
-The @code{asort()} function is described in more detail in
-@ref{Array Sorting Functions}.
-@code{asort()} is a @command{gawk} extension; it is not available
-in compatibility mode (@pxref{Options}).
-
-@item asorti(@var{source} @r{[}, @var{dest} @r{[}, @var{how}  @r{]} @r{]}) #
-@cindex @code{asorti()} function (@command{gawk})
-Return the number of elements in the array @var{source}.
-It works similarly to @code{asort()}, however, the @emph{indices}
-are sorted, instead of the values. (Here too,
-@code{IGNORECASE} affects the sorting.)
-
-The @code{asorti()} function is described in more detail in
-@ref{Array Sorting Functions}.
-@code{asorti()} is a @command{gawk} extension; it is not available
-in compatibility mode (@pxref{Options}).
+@code{asort()} and @code{asorti()} are @command{gawk} extensions; they
+are not available in compatibility mode (@pxref{Options}).
 
 @item gensub(@var{regexp}, @var{replacement}, @var{how} @r{[}, @var{target}@r{]}) #
 @cindex @code{gensub()} function (@command{gawk})
@@ -16557,17 +16570,17 @@ _bigskip}
 The only case where the difference is noticeable is the last one: @samp{\\\\}
 is seen as @samp{\\} and produces @samp{\} instead of @samp{\\}.
 
-Starting with @value{PVERSION} 3.1.4, @command{gawk} followed the POSIX rules
+Starting with version 3.1.4, @command{gawk} followed the POSIX rules
 when @option{--posix} is specified (@pxref{Options}). Otherwise,
 it continued to follow the 1996 proposed rules, since
 that had been its behavior for many years.
 
-When @value{PVERSION} 4.0.0 was released, the @command{gawk} maintainer
+When version 4.0.0 was released, the @command{gawk} maintainer
 made the POSIX rules the default, breaking well over a decade's worth
 of backwards compatibility.@footnote{This was rather naive of him, despite
 there being a note in this section indicating that the next major version
 would move to the POSIX rules.} Needless to say, this was a bad idea,
-and as of @value{PVERSION} 4.0.1, @command{gawk} resumed its historical
+and as of version 4.0.1, @command{gawk} resumed its historical
 behavior, and only follows the POSIX rules when @option{--posix} is given.
 
 The rules for @code{gensub()} are considerably simpler. At the runtime
@@ -16839,7 +16852,7 @@ $ @kbd{awk '@{ print $1 + $2 @}'}
 @print{} 2
 @kbd{2 3}
 @print{} 5
-@kbd{@value{CTL}-d}
+@kbd{Ctrl-d}
 @end example
 
 @noindent
@@ -16850,13 +16863,13 @@ with this example:
 $ @kbd{awk '@{ print $1 + $2 @}' | cat}
 @kbd{1 1}
 @kbd{2 3}
-@kbd{@value{CTL}-d}
+@kbd{Ctrl-d}
 @print{} 2
 @print{} 5
 @end example
 
 @noindent
-Here, no output is printed until after the @kbd{@value{CTL}-d} is typed, because
+Here, no output is printed until after the @kbd{Ctrl-d} is typed, because
 it is all buffered and sent down the pipe to @command{cat} in one shot.
 
 @docbook
@@ -16890,7 +16903,7 @@ $ @kbd{awk '@{ print $1 + $2 @}'}
 @print{} 2
 @kbd{2 3}
 @print{} 5
-@kbd{@value{CTL}-d}
+@kbd{Ctrl-d}
 @end example
 
 @noindent
@@ -16901,13 +16914,13 @@ with this example:
 $ @kbd{awk '@{ print $1 + $2 @}' | cat}
 @kbd{1 1}
 @kbd{2 3}
-@kbd{@value{CTL}-d}
+@kbd{Ctrl-d}
 @print{} 2
 @print{} 5
 @end example
 
 @noindent
-Here, no output is printed until after the @kbd{@value{CTL}-d} is typed, because
+Here, no output is printed until after the @kbd{Ctrl-d} is typed, because
 it is all buffered and sent down the pipe to @command{cat} in one shot.
 @end cartouche
 @end ifnotdocbook
@@ -17436,8 +17449,8 @@ gawk 'BEGIN  @{
 @c STARTOFRANGE opbit
 @cindex operations, bitwise
 @quotation
-@i{I can explain it for you, but I can't understand it for you.}@*
-Anonymous
+@i{I can explain it for you, but I can't understand it for you.}
+@author Anonymous
 @end quotation
 
 Many languages provide the ability to perform @dfn{bitwise} operations
@@ -17738,6 +17751,19 @@ that traverses every element of a true multidimensional array
 @item isarray(@var{x})
 Return a true value if @var{x} is an array. Otherwise return false.
 @end table
+
+@code{isarray()} is meant for use in two circumstances. The first is when
+traversing a multidimensional array: you can test if an element is itself
+an array or not.  The second is inside the body of a user-defined function
+(not discussed yet; @pxref{User-defined}), to test if a paramater is an
+array or not.
+
+Note, however, that using @code{isarray()} at the global level to test 
+variables makes no sense. Since you are the one writing the program, you
+are supposed to know if your variables are arrays or not. And in fact,
+due to the way @command{gawk} works, if you pass the name of a variable
+that has not been previously used to @code{isarray()}, @command{gawk}
+will end up turning it into a scalar.
 
 @node I18N Functions
 @subsection String-Translation Functions
@@ -18863,9 +18889,9 @@ it allows you to encapsulate algorithms and program tasks in a single
 place.  It simplifies programming, making program development more
 manageable, and making programs more readable.
 
-In their seminal 1976 book, @cite{Software Tools}@footnote{Sadly, over 35
+In their seminal 1976 book, @cite{Software Tools},@footnote{Sadly, over 35
 years later, many of the lessons taught by this book have yet to be
-learned by a vast number of practicing programmers.}, Brian Kernighan
+learned by a vast number of practicing programmers.} Brian Kernighan
 and P.J.@: Plauger wrote:
 
 @quotation
@@ -19064,6 +19090,7 @@ programming use.
                                 vice versa.
 * Join Function::               A function to join an array into a string.
 * Getlocaltime Function::       A function to get formatted times.
+* Readfile Function::           A function to read an entire file at once.
 @end menu
 
 @node Strtonum Function
@@ -19279,7 +19306,7 @@ An @code{END} rule is automatically added
 to the program calling @code{assert()}.  Normally, if a program consists
 of just a @code{BEGIN} rule, the input files and/or standard input are
 not read. However, now that the program has an @code{END} rule, @command{awk}
-attempts to read the input @value{DF}s or standard input
+attempts to read the input data files or standard input
 (@pxref{Using BEGIN/END}),
 most likely causing the program to hang as it waits for input.
 
@@ -19688,17 +19715,92 @@ A more general design for the @code{getlocaltime()} function would have
 allowed the user to supply an optional timestamp value to use instead
 of the current time.
 
+@node Readfile Function
+@subsection Reading A Whole File At Once
+
+Often, it is convenient to have the entire contents of a file available
+in memory as a single string. A straightforward but naive way to
+do that might be as follows:
+
+@example
+function readfile(file,    tmp, contents)
+@{
+    if ((getline tmp < file) < 0)
+        return
+
+    contents = tmp
+    while (getline tmp < file) > 0)
+        contents = contents RT tmp
+
+    close(file)
+    return contents
+@}
+@end example
+
+This function reads from @code{file} one record at a time, building
+up the full contents of the file in the local variable @code{contents}.
+It works, but is not necessarily efficient.
+
+The following function, based on a suggestion by Denis Shirokov,
+reads the entire contents of the named file in one shot:
+
+@cindex @code{readfile()} user-defined function
+@example
+@c file eg/lib/readfile.awk
+# readfile.awk --- read an entire file at once
+@c endfile
+@ignore
+@c file eg/lib/readfile.awk
+#
+# Original idea by Denis Shirokov, cosmogen@@gmail.com, April 2013
+#
+@c endfile
+@end ignore
+@c file eg/lib/readfile.awk
+
+function readfile(file,     tmp, save_rs)
+@{
+    save_rs = RS
+    RS = "^$"
+    getline tmp < file
+    close(file)
+    RS = save_rs
+
+    return tmp
+@}
+@c endfile
+@end example
+
+It works by setting @code{RS} to @samp{^$}, a regular expression that
+will never match if the file has contents.  @command{gawk} reads data from
+the file into @code{tmp} attempting to match @code{RS}.  The match fails
+after each read, but fails quickly, such that @command{gawk} fills
+@code{tmp} with the entire contents of the file.
+(@xref{Records}, for information on @code{RT} and @code{RS}.)
+
+In the case that @code{file} is empty, the return value is the null
+string.  Thus calling code may use something like:
+
+@example
+contents = readfile("/some/path")
+if (length(contents) == 0)
+    # file was empty @dots{}
+@end example
+
+This tests the result to see if it is empty or not. An equivalent
+test would be @samp{contents == ""}.
+
 @node Data File Management
-@section @value{DDF} Management
+@section Data File Management
 
 @c STARTOFRANGE dataf
 @cindex files, managing
 @c STARTOFRANGE libfdataf
-@cindex libraries of @command{awk} functions, managing, @value{DF}s
+@cindex libraries of @command{awk} functions, managing, data files
 @c STARTOFRANGE flibdataf
-@cindex functions, library, managing @value{DF}s
+@cindex functions, library, managing data files
 This @value{SECTION} presents functions that are useful for managing
-command-line @value{DF}s.
+command-line data files.
 
 @menu
 * Filetrans Function::          A function for handling data file transitions.
@@ -19709,16 +19811,16 @@ command-line @value{DF}s.
 @end menu
 
 @node Filetrans Function
-@subsection Noting @value{DDF} Boundaries
+@subsection Noting Data File Boundaries
 
-@cindex files, managing, @value{DF} boundaries
+@cindex files, managing, data file boundaries
 @cindex files, initialization and cleanup
 The @code{BEGIN} and @code{END} rules are each executed exactly once at
 the beginning and end of your @command{awk} program, respectively
 (@pxref{BEGIN/END}).
 We (the @command{gawk} authors) once had a user who mistakenly thought that the
-@code{BEGIN} rule is executed at the beginning of each @value{DF} and the
-@code{END} rule is executed at the end of each @value{DF}.
+@code{BEGIN} rule is executed at the beginning of each data file and the
+@code{END} rule is executed at the end of each data file.
 
 When informed
 that this was not the case, the user requested that we add new special
@@ -19729,7 +19831,7 @@ Adding these special patterns to @command{gawk} wasn't necessary;
 the job can be done cleanly in @command{awk} itself, as illustrated
 by the following library program.
 It arranges to call two user-supplied functions, @code{beginfile()} and
-@code{endfile()}, at the beginning and end of each @value{DF}.
+@code{endfile()}, at the beginning and end of each data file.
 Besides solving the problem in only nine(!) lines of code, it does so
 @emph{portably}; this works with any implementation of @command{awk}:
 
@@ -19760,17 +19862,17 @@ This file must be loaded before the user's ``main'' program, so that the
 rule it supplies is executed first.
 
 This rule relies on @command{awk}'s @code{FILENAME} variable that
-automatically changes for each new @value{DF}.  The current @value{FN} is
+automatically changes for each new data file.  The current file name is
 saved in a private variable, @code{_oldfilename}.  If @code{FILENAME} does
-not equal @code{_oldfilename}, then a new @value{DF} is being processed and
+not equal @code{_oldfilename}, then a new data file is being processed and
 it is necessary to call @code{endfile()} for the old file.  Because
 @code{endfile()} should only be called if a file has been processed, the
 program first checks to make sure that @code{_oldfilename} is not the null
-string.  The program then assigns the current @value{FN} to
+string.  The program then assigns the current file name to
 @code{_oldfilename} and calls @code{beginfile()} for the file.
 Because, like all @command{awk} variables, @code{_oldfilename} is
 initialized to the null string, this rule executes correctly even for the
-first @value{DF}.
+first data file.
 
 The program also supplies an @code{END} rule to do the final processing for
 the last file.  Because this @code{END} rule comes before any @code{END} rules
@@ -19779,7 +19881,7 @@ again the value of multiple @code{BEGIN} and @code{END} rules should be clear.
 
 @cindex @code{beginfile()} user-defined function
 @cindex @code{endfile()} user-defined function
-If the same @value{DF} occurs twice in a row on the command line, then
+If the same data file occurs twice in a row on the command line, then
 @code{endfile()} and @code{beginfile()} are not executed at the end of the
 first pass and at the beginning of the second pass.
 The following version solves the problem:
@@ -19923,12 +20025,12 @@ The @code{rewind()} function also relies on the @code{nextfile} keyword
 (@pxref{Nextfile Statement}).
 
 @node File Checking
-@subsection Checking for Readable @value{DDF}s
+@subsection Checking for Readable Data Files
 
-@cindex troubleshooting, readable @value{DF}s
-@cindex readable @value{DF}s@comma{} checking
+@cindex troubleshooting, readable data files
+@cindex readable data files@comma{} checking
 @cindex files, skipping
-Normally, if you give @command{awk} a @value{DF} that isn't readable,
+Normally, if you give @command{awk} a data file that isn't readable,
 it stops with a fatal error.  There are times when you
 might want to just ignore such files and keep going.  You can
 do this by prepending the following program to your @command{awk}
@@ -19977,15 +20079,15 @@ This is a by-product of @command{awk}'s implicit
 read-a-record-and-match-against-the-rules loop: when @command{awk}
 tries to read a record from an empty file, it immediately receives an
 end of file indication, closes the file, and proceeds on to the next
-command-line @value{DF}, @emph{without} executing any user-level
+command-line data file, @emph{without} executing any user-level
 @command{awk} program code.
 
 Using @command{gawk}'s @code{ARGIND} variable
 (@pxref{Built-in Variables}), it is possible to detect when an empty
-@value{DF} has been skipped.  Similar to the library file presented
+data file has been skipped.  Similar to the library file presented
 in @ref{Filetrans Function}, the following library file calls a function named
 @code{zerofile()} that the user must provide.  The arguments passed are
-the @value{FN} and the position in @code{ARGV} where it was found:
+the file name and the position in @code{ARGV} where it was found:
 
 @cindex @code{zerofile.awk} program
 @example
@@ -20073,15 +20175,15 @@ END @{
 @end ignore
 
 @node Ignoring Assigns
-@subsection Treating Assignments as @value{FFN}s
+@subsection Treating Assignments as File Names
 
 @cindex assignments as filenames
 @cindex filenames, assignments as
 Occasionally, you might not want @command{awk} to process command-line
 variable assignments
 (@pxref{Assignment Options}).
-In particular, if you have a @value{FN} that contain an @samp{=} character,
-@command{awk} treats the @value{FN} as an assignment, and does not process it.
+In particular, if you have a file name that contain an @samp{=} character,
+@command{awk} treats the file name as an assignment, and does not process it.
 
 Some users have suggested an additional command-line option for @command{gawk}
 to disable command-line assignments.  However, some simple programming with
@@ -20125,7 +20227,7 @@ awk -v No_command_assign=1 -f noassign.awk -f yourprog.awk *
 The function works by looping through the arguments.
 It prepends @samp{./} to
 any argument that matches the form
-of a variable assignment, turning that argument into a @value{FN}.
+of a variable assignment, turning that argument into a file name.
 
 The use of @code{No_command_assign} allows you to disable command-line
 assignments at invocation time, by giving the variable a true value.
@@ -20292,7 +20394,7 @@ The discussion that follows walks through the code a bit at a time:
 #    <c>    a character representing the current option
 
 # Private Data:
-#    _opti  -- index in multi-flag option, e.g., -abc
+#    _opti  -- index in multiflag option, e.g., -abc
 @c endfile
 @end example
 
@@ -20484,7 +20586,7 @@ After @code{getopt()} is through, it is the responsibility of the user level
 code to
 clear out all the elements of @code{ARGV} from 1 to @code{Optind},
 so that @command{awk} does not try to process the command-line options
-as @value{FN}s.
+as file names.
 @end quotation
 
 Several of the sample programs presented in
@@ -21358,7 +21460,7 @@ awk -f @var{program} -- @var{options} @var{files}
 @noindent
 Here, @var{program} is the name of the @command{awk} program (such as
 @file{cut.awk}), @var{options} are any command-line options for the
-program that start with a @samp{-}, and @var{files} are the actual @value{DF}s.
+program that start with a @samp{-}, and @var{files} are the actual data files.
 
 If your system supports the @samp{#!} executable interpreter mechanism
 (@pxref{Executable Scripts}),
@@ -21563,7 +21665,7 @@ spaces.  Also remember that after @code{getopt()} is through
 we have to
 clear out all the elements of @code{ARGV} from 1 to @code{Optind},
 so that @command{awk} does not try to process the command-line options
-as @value{FN}s.
+as file names.
 
 After dealing with the command-line options, the program verifies that the
 options make sense.  Only one or the other of @option{-c} and @option{-f}
@@ -21759,8 +21861,8 @@ egrep @r{[} @var{options} @r{]} '@var{pattern}' @var{files} @dots{}
 
 The @var{pattern} is a regular expression.  In typical usage, the regular
 expression is quoted to prevent the shell from expanding any of the
-special characters as @value{FN} wildcards.  Normally, @command{egrep}
-prints the lines that matched.  If multiple @value{FN}s are provided on
+special characters as file name wildcards.  Normally, @command{egrep}
+prints the lines that matched.  If multiple file names are provided on
 the command line, each output line is preceded by the name of the file
 and a colon.
 
@@ -21851,7 +21953,7 @@ pattern is supplied with @option{-e}, the first nonoption on the
 command line is used.  The @command{awk} command-line arguments up to @code{ARGV[Optind]}
 are cleared, so that @command{awk} won't try to process them as files.  If no
 files are specified, the standard input is used, and if multiple files are
-specified, we make sure to note this so that the @value{FN}s can precede the
+specified, we make sure to note this so that the file names can precede the
 matched lines in the output:
 
 @example
@@ -21949,9 +22051,9 @@ A number of additional tests are made, but they are only done if we
 are not counting lines.  First, if the user only wants exit status
 (@code{no_print} is true), then it is enough to know that @emph{one}
 line in this file matched, and we can skip on to the next file with
-@code{nextfile}.  Similarly, if we are only printing @value{FN}s, we can
-print the @value{FN}, and then skip to the next file with @code{nextfile}.
-Finally, each line is printed, with a leading @value{FN} and colon
+@code{nextfile}.  Similarly, if we are only printing file names, we can
+print the file name, and then skip to the next file with @code{nextfile}.
+Finally, each line is printed, with a leading file name and colon
 if necessary:
 
 @cindex @code{!} (exclamation point), @code{!} operator
@@ -22199,7 +22301,7 @@ number of lines in each file, supply a number on the command line
 preceded with a minus; e.g., @samp{-500} for files with 500 lines in them
 instead of 1000.  To change the name of the output files to something like
 @file{myfileaa}, @file{myfileab}, and so on, supply an additional
-argument that specifies the @value{FN} prefix.
+argument that specifies the file name prefix.
 
 Here is a version of @command{split} in @command{awk}. It uses the
 @code{ord()} and @code{chr()} functions presented in
@@ -22209,8 +22311,8 @@ The program first sets its defaults, and then tests to make sure there are
 not too many arguments.  It then looks at each argument in turn.  The
 first argument could be a minus sign followed by a number. If it is, this happens
 to look like a negative number, so it is made positive, and that is the
-count of lines.  The data @value{FN} is skipped over and the final argument
-is used as the prefix for the output @value{FN}s:
+count of lines.  The data file name is skipped over and the final argument
+is used as the prefix for the output file names:
 
 @cindex @code{split.awk} program
 @example
@@ -22259,7 +22361,7 @@ BEGIN @{
 The next rule does most of the work. @code{tcount} (temporary count) tracks
 how many lines have been printed to the output file so far. If it is greater
 than @code{count}, it is time to close the current file and start a new one.
-@code{s1} and @code{s2} track the current suffixes for the @value{FN}. If
+@code{s1} and @code{s2} track the current suffixes for the file name. If
 they are both @samp{z}, the file is just too big.  Otherwise, @code{s1}
 moves to the next letter in the alphabet and @code{s2} starts over again at
 @samp{a}:
@@ -22347,13 +22449,13 @@ The @code{BEGIN} rule first makes a copy of all the command-line arguments
 into an array named @code{copy}.
 @code{ARGV[0]} is not copied, since it is not needed.
 @code{tee} cannot use @code{ARGV} directly, since @command{awk} attempts to
-process each @value{FN} in @code{ARGV} as input data.
+process each file name in @code{ARGV} as input data.
 
 @cindex flag variables
 If the first argument is @option{-a}, then the flag variable
 @code{append} is set to true, and both @code{ARGV[1]} and
 @code{copy[1]} are deleted. If @code{ARGC} is less than two, then no
-@value{FN}s were supplied and @code{tee} prints a usage message and exits.
+file names were supplied and @code{tee} prints a usage message and exits.
 Finally, @command{awk} is forced to read the standard input by setting
 @code{ARGV[1]} to @code{"-"} and @code{ARGC} to two:
 
@@ -22815,7 +22917,7 @@ BEGIN @{
 @end example
 
 The @code{beginfile()} function is simple; it just resets the counts of lines,
-words, and characters to zero, and saves the current @value{FN} in
+words, and characters to zero, and saves the current file name in
 @code{fname}:
 
 @example
@@ -22837,7 +22939,7 @@ you will see that
 @code{FNR} has already been reset by the time
 @code{endfile()} is called.}  It then prints out those numbers
 for the file that was just read. It relies on @code{beginfile()} to reset the
-numbers for the following @value{DF}:
+numbers for the following data file:
 @c FIXME: ONE DAY: make the above footnote an exercise,
 @c instead of giving away the answer.
 
@@ -23005,8 +23107,8 @@ word, comparing it to the previous one:
 @cindex insomnia, cure for
 @cindex Robbins, Arnold
 @quotation
-@i{Nothing cures insomnia like a ringing alarm clock.}@*
-Arnold Robbins
+@i{Nothing cures insomnia like a ringing alarm clock.}
+@author Arnold Robbins
 @end quotation
 
 @c STARTOFRANGE tialarm
@@ -23182,12 +23284,10 @@ often used to map uppercase letters into lowercase for further processing:
 
 @command{tr} requires two lists of characters.@footnote{On some older
 systems,
-@ifset ORA
 including Solaris,
-@end ifset
 @command{tr} may require that the lists be written as
 range expressions enclosed in square brackets (@samp{[a-z]}) and quoted,
-to prevent the shell from attempting a @value{FN} expansion.  This is
+to prevent the shell from attempting a file name expansion.  This is
 not a feature.}  When processing the input, the first character in the
 first list is replaced with the first character in the second list,
 the second character in the first list is replaced with the second
@@ -23585,7 +23685,7 @@ The @command{uniq} program
 (@pxref{Uniq Program}),
 removes duplicate lines from @emph{sorted} data.
 
-Suppose, however, you need to remove duplicate lines from a @value{DF} but
+Suppose, however, you need to remove duplicate lines from a data file but
 that you want to preserve the order the lines are in.  A good example of
 this might be a shell history file.  The history file keeps a copy of all
 the commands you have entered, and it is not unusual to repeat a command
@@ -23721,7 +23821,7 @@ Lines containing @samp{@@group} and @samp{@@end group} are simply removed.
 (@pxref{Join Function}).
 
 The example programs in the online Texinfo source for @cite{@value{TITLE}}
-(@file{gawk.texi}) have all been bracketed inside @samp{file} and
+(@file{gawktexi.in}) have all been bracketed inside @samp{file} and
 @samp{endfile} lines.  The @command{gawk} distribution uses a copy of
 @file{extract.awk} to extract the sample programs and install many
 of them in a standard directory where @command{gawk} can find them.
@@ -23804,7 +23904,7 @@ screen.
 @end ifnottex
 
 The second rule handles moving data into files.  It verifies that a
-@value{FN} is given in the directive.  If the file named is not the
+file name is given in the directive.  If the file named is not the
 current file, then the current file is closed.  Keeping the current file
 open until a new file is encountered allows the use of the @samp{>}
 redirection for printing the contents, keeping open file management
@@ -23886,7 +23986,7 @@ subsequent output is appended to the file
 (@pxref{Redirection}).
 This makes it easy to mix program text and explanatory prose for the same
 sample source file (as has been done here!) without any hassle.  The file is
-only closed when a new data @value{FN} is encountered or at the end of the
+only closed when a new data file name is encountered or at the end of the
 input file.
 
 Finally, the function @code{@w{unexpected_eof()}} prints an appropriate
@@ -23938,7 +24038,7 @@ Here, @samp{s/old/new/g} tells @command{sed} to look for the regexp
 
 The following program, @file{awksed.awk}, accepts at least two command-line
 arguments: the pattern to look for and the text to replace it with. Any
-additional arguments are treated as data @value{FN}s to process. If none
+additional arguments are treated as data file names to process. If none
 are provided, the standard input is used:
 
 @cindex Brennan, Michael
@@ -24011,7 +24111,7 @@ The @code{BEGIN} rule handles the setup, checking for the right number
 of arguments and calling @code{usage()} if there is a problem. Then it sets
 @code{RS} and @code{ORS} from the command-line arguments and sets
 @code{ARGV[1]} and @code{ARGV[2]} to the null string, so that they are
-not treated as @value{FN}s
+not treated as file names
 (@pxref{ARGC and ARGV}).
 
 The @code{usage()} function prints an error message and exits.
@@ -24109,7 +24209,7 @@ Literal text, provided with @option{--source} or @option{--source=}.  This
 text is just appended directly.
 
 @item
-Source @value{FN}s, provided with @option{-f}.  We use a neat trick and append
+Source file names, provided with @option{-f}.  We use a neat trick and append
 @samp{@@include @var{filename}} to the shell variable's contents.  Since the file-inclusion
 program works the way @command{gawk} does, this gets the text
 of the file included into the program at the correct point.
@@ -24122,7 +24222,7 @@ shell variable.
 
 @item
 Run the expanded program with @command{gawk} and any other original command-line
-arguments that the user supplied (such as the data @value{FN}s).
+arguments that the user supplied (such as the data file names).
 @end enumerate
 
 This program uses shell variables extensively: for storing command-line arguments,
@@ -24153,7 +24253,7 @@ programming trick.  Don't worry about it if you are not familiar with
 These are saved and passed on to @command{gawk}.
 
 @item -f@r{,} --file@r{,} --file=@r{,} -Wfile=
-The @value{FN} is appended to the shell variable @code{program} with an
+The file name is appended to the shell variable @code{program} with an
 @samp{@@include} statement.
 The @command{expr} utility is used to remove the leading option part of the
 argument (e.g., @samp{--file=}).
@@ -24277,10 +24377,10 @@ is stored in the shell variable @code{expand_prog}.  Doing this keeps
 the shell script readable.  The @command{awk} program
 reads through the user's program, one line at a time, using @code{getline}
 (@pxref{Getline}).  The input
-@value{FN}s and @samp{@@include} statements are managed using a stack.
-As each @samp{@@include} is encountered, the current @value{FN} is
+file names and @samp{@@include} statements are managed using a stack.
+As each @samp{@@include} is encountered, the current file name is
 ``pushed'' onto the stack and the file named in the @samp{@@include}
-directive becomes the current @value{FN}.  As each file is finished,
+directive becomes the current file name.  As each file is finished,
 the stack is ``popped,'' and the previous input file becomes the current
 input file again.  The process is started by making the original file
 the first one on the stack.
@@ -24289,16 +24389,16 @@ The @code{pathto()} function does the work of finding the full path to
 a file.  It simulates @command{gawk}'s behavior when searching the
 @env{AWKPATH} environment variable
 (@pxref{AWKPATH Variable}).
-If a @value{FN} has a @samp{/} in it, no path search is done.
-Similarly, if the @value{FN} is @code{"-"}, then that string is
+If a file name has a @samp{/} in it, no path search is done.
+Similarly, if the file name is @code{"-"}, then that string is
 used as-is.  Otherwise,
-the @value{FN} is concatenated with the name of each directory in
-the path, and an attempt is made to open the generated @value{FN}.
+the file name is concatenated with the name of each directory in
+the path, and an attempt is made to open the generated file name.
 The only way to test if a file can be read in @command{awk} is to go
 ahead and try to read it with @code{getline}; this is what @code{pathto()}
 does.@footnote{On some very old versions of @command{awk}, the test
 @samp{getline junk < t} can loop forever if the file exists but is empty.
-Caveat emptor.} If the file can be read, it is closed and the @value{FN}
+Caveat emptor.} If the file can be read, it is closed and the file name
 is returned:
 
 @ignore
@@ -24356,14 +24456,14 @@ BEGIN @{
 The stack is initialized with @code{ARGV[1]}, which will be @file{/dev/stdin}.
 The main loop comes next.  Input lines are read in succession. Lines that
 do not start with @samp{@@include} are printed verbatim.
-If the line does start with @samp{@@include}, the @value{FN} is in @code{$2}.
+If the line does start with @samp{@@include}, the file name is in @code{$2}.
 @code{pathto()} is called to generate the full path.  If it cannot, then the program
 prints an error message and continues.
 
 The next thing to check is if the file is included already.  The
-@code{processed} array is indexed by the full @value{FN} of each included
+@code{processed} array is indexed by the full file name of each included
 file and it tracks this information for us.  If the file is
-seen again, a warning message is printed. Otherwise, the new @value{FN} is
+seen again, a warning message is printed. Otherwise, the new file name is
 pushed onto the stack and processing continues.
 
 Finally, when @code{getline} encounters the end of the input file, the file
@@ -24441,10 +24541,10 @@ options and command-line arguments that the user supplied.
 
 @c this causes more problems than it solves, so leave it out.
 @ignore
-The special file @file{/dev/null} is passed as a @value{DF} to @command{gawk}
+The special file @file{/dev/null} is passed as a data file to @command{gawk}
 to handle an interesting case. Suppose that the user's program only has
-a @code{BEGIN} rule and there are no @value{DF}s to read.
-The program should exit without reading any @value{DF}s.
+a @code{BEGIN} rule and there are no data files to read.
+The program should exit without reading any data files.
 However, suppose that an included library file defines an @code{END}
 rule of its own. In this case, @command{gawk} will hang, reading standard
 input. In order to avoid this, @file{/dev/null} is explicitly added to the
@@ -24825,8 +24925,8 @@ who knows where you live."
 @end ignore
 @quotation
 @i{Write documentation as if whoever reads it is
-a violent psychopath who knows where you live.}@*
-Steve English, as quoted by Peter Langston
+a violent psychopath who knows where you live.}
+@author Steve English, as quoted by Peter Langston
 @end quotation
 
 This @value{CHAPTER} discusses advanced features in @command{gawk}.
@@ -25145,7 +25245,7 @@ ordered data:
 @example
 function cmp_randomize(i1, v1, i2, v2)
 @{
-    # random order
+    # random order (caution: this may never terminate!)
     return (2 - 4 * rand())
 @}
 @end example
@@ -25160,7 +25260,7 @@ with otherwise equal values is to include the indices in the comparison
 rules.  Note that doing this may make the loop traversal less efficient,
 so consider it only if necessary.  The following comparison functions
 force a deterministic order, and are based on the fact that the
-indices of two elements are never equal:
+(string) indices of two elements are never equal:
 
 @example
 function cmp_numeric(i1, v1, i2, v2)
@@ -25219,15 +25319,14 @@ sorted array traversal is not the default.
 @cindex arrays, sorting
 @cindex @code{asort()} function (@command{gawk})
 @cindex @code{asort()} function (@command{gawk}), arrays@comma{} sorting
+@cindex @code{asorti()} function (@command{gawk})
+@cindex @code{asorti()} function (@command{gawk}), arrays@comma{} sorting
 @cindex sort function, arrays, sorting
-In most @command{awk} implementations, sorting an array requires
-writing a @code{sort()} function.
-While this can be educational for exploring different sorting algorithms,
-usually that's not the point of the program.
-@command{gawk} provides the built-in @code{asort()}
-and @code{asorti()} functions
-(@pxref{String Functions})
-for sorting arrays.  For example:
+In most @command{awk} implementations, sorting an array requires writing
+a @code{sort()} function.  While this can be educational for exploring
+different sorting algorithms, usually that's not the point of the program.
+@command{gawk} provides the built-in @code{asort()} and @code{asorti()}
+functions (@pxref{String Functions}) for sorting arrays.  For example:
 
 @example
 @var{populate the array} data
@@ -25240,7 +25339,7 @@ After the call to @code{asort()}, the array @code{data} is indexed from 1
 to some number @var{n}, the total number of elements in @code{data}.
 (This count is @code{asort()}'s return value.)
 @code{data[1]} @value{LEQ} @code{data[2]} @value{LEQ} @code{data[3]}, and so on.
-The comparison is based on the type of the elements
+The default comparison is based on the type of the elements
 (@pxref{Typing and Comparison}).
 All numeric values come before all string values,
 which in turn come before all subarrays.
@@ -25262,24 +25361,11 @@ In this case, @command{gawk} copies the @code{source} array into the
 @code{dest} array and then sorts @code{dest}, destroying its indices.
 However, the @code{source} array is not affected.
 
-@code{asort()} accepts a third string argument to control comparison of
-array elements.  As with @code{PROCINFO["sorted_in"]}, this argument
-may be one of the predefined names that @command{gawk} provides
-(@pxref{Controlling Scanning}), or the name of a user-defined function
-(@pxref{Controlling Array Traversal}).
-
-@quotation NOTE
-In all cases, the sorted element values consist of the original
-array's element values.  The ability to control comparison merely
-affects the way in which they are sorted.
-@end quotation
-
 Often, what's needed is to sort on the values of the @emph{indices}
-instead of the values of the elements.
-To do that, use the
-@code{asorti()} function.  The interface is identical to that of
-@code{asort()}, except that the index values are used for sorting, and
-become the values of the result array:
+instead of the values of the elements.  To do that, use the
+@code{asorti()} function.  The interface and behavior are identical to
+that of @code{asort()}, except that the index values are used for sorting,
+and become the values of the result array:
 
 @example
 @{ source[$0] = some_func($0) @}
@@ -25296,23 +25382,35 @@ END @{
 @}
 @end example
 
-Similar to @code{asort()},
-in all cases, the sorted element values consist of the original
-array's indices.  The ability to control comparison merely
-affects the way in which they are sorted.
+So far, so good. Now it starts to get interesting.  Both @code{asort()}
+and @code{asorti()} accept a third string argument to control comparison
+of array elements.  In @ref{String Functions}, we ignored this third
+argument; however, the time has now come to describe how this argument
+affects these two functions.
 
-Sorting the array by replacing the indices provides maximal flexibility.
-To traverse the elements in decreasing order, use a loop that goes from
-@var{n} down to 1, either over the elements or over the indices.@footnote{You
-may also use one of the predefined sorting names that sorts in
-decreasing order.}
+Basically, the third argument specifies how the array is to be sorted.
+There are two possibilities.  As with @code{PROCINFO["sorted_in"]},
+this argument may be one of the predefined names that @command{gawk}
+provides (@pxref{Controlling Scanning}), or it may be the name of a
+user-defined function (@pxref{Controlling Array Traversal}).
+
+In the latter case, @emph{the function can compare elements in any way
+it chooses}, taking into account just the indices, just the values,
+or both.  This is extremely powerful.
+
+Once the array is sorted, @code{asort()} takes the @emph{values} in
+their final order, and uses them to fill in the result array, whereas
+@code{asorti()} takes the @emph{indices} in their final order, and uses
+them to fill in the result array.
 
 @cindex reference counting, sorting arrays
+@quotation NOTE
 Copying array indices and elements isn't expensive in terms of memory.
 Internally, @command{gawk} maintains @dfn{reference counts} to data.
 For example, when @code{asort()} copies the first array to the second one,
 there is only one copy of the original array elements' data, even though
 both arrays use the values.
+@end quotation
 
 @c Document It And Call It A Feature. Sigh.
 @cindex @command{gawk}, @code{IGNORECASE} variable in
@@ -25538,10 +25636,10 @@ another process on another system across an IP network connection.
 You can think of this as just a @emph{very long} two-way pipeline to
 a coprocess.
 The way @command{gawk} decides that you want to use TCP/IP networking is
-by recognizing special @value{FN}s that begin with one of @samp{/inet/},
+by recognizing special file names that begin with one of @samp{/inet/},
 @samp{/inet4/} or @samp{/inet6}.
 
-The full syntax of the special @value{FN} is
+The full syntax of the special file name is
 @file{/@var{net-type}/@var{protocol}/@var{local-port}/@var{remote-host}/@var{remote-port}}.
 The components are:
 
@@ -25910,8 +26008,8 @@ the case of the @code{INT} signal, @command{gawk} exits.  This is
 because these systems don't support the @command{kill} command, so the
 only signals you can deliver to a program are those generated by the
 keyboard.  The @code{INT} signal is generated by the
-@kbd{@value{CTL}-@key{C}} or @kbd{@value{CTL}-@key{BREAK}} key, while the
-@code{QUIT} signal is generated by the @kbd{@value{CTL}-@key{\}} key.
+@kbd{Ctrl-@key{C}} or @kbd{Ctrl-@key{BREAK}} key, while the
+@code{QUIT} signal is generated by the @kbd{Ctrl-@key{\}} key.
 
 Finally, @command{gawk} also accepts another option, @option{--pretty-print}.
 When called this way, @command{gawk} ``pretty prints'' the program into
@@ -26703,7 +26801,7 @@ complete detail in
 @cite{GNU gettext tools}.)
 @end ifnotinfo
 As of this writing, the latest version of GNU @code{gettext} is
-@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.18.2.1.tar.gz, @value{PVERSION} 0.18.2.1}.
+@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.18.2.1.tar.gz, version 0.18.2.1}.
 
 If a translation of @command{gawk}'s messages exists,
 then @command{gawk} produces usage messages, warnings,
@@ -27583,7 +27681,7 @@ functions which called the one you are in.  The commands for doing this are:
 Print a backtrace of all function calls (stack frames), or innermost @var{count}
 frames if @var{count} > 0. Print the outermost @var{count} frames if
 @var{count} < 0.  The backtrace displays the name and arguments to each
-function, the source @value{FN}, and the line number.
+function, the source file name, and the line number.
 
 @cindex debugger commands, @code{down}
 @cindex @code{down} debugger command
@@ -27716,7 +27814,7 @@ Turn instruction tracing on or off. The default is @code{off}.
 @end table
 
 @item @code{save} @var{filename}
-Save the commands from the current session to the given @value{FN},
+Save the commands from the current session to the given file name,
 so that they can be replayed using the @command{source} command.
 
 @item @code{source} @var{filename}
@@ -27884,8 +27982,8 @@ features. The following types of completion are available:
 @item Command completion
 Command names.
 
-@item Source @value{FN} completion
-Source @value{FN}s. Relevant commands are
+@item Source file name completion
+Source file names. Relevant commands are
 @code{break},
 @code{clear},
 @code{list},
@@ -27973,11 +28071,11 @@ to believe. Novice computer users solve this problem by implicitly trusting
 in the computer as an infallible authority; they tend to believe that all
 digits of a printed answer are significant. Disillusioned computer users have
 just the opposite approach; they are constantly afraid that their answers
-are almost meaningless.}@*
-Donald Knuth@footnote{Donald E.@: Knuth.
+are almost meaningless.}@footnote{Donald E.@: Knuth.
 @cite{The Art of Computer Programming}. Volume 2,
 @cite{Seminumerical Algorithms}, third edition,
 1998, ISBN 0-201-89683-4, p.@: 229.}
+@author Donald Knuth
 @end quotation
 
 This @value{CHAPTER} discusses issues that you may encounter
@@ -28115,7 +28213,7 @@ This makes it clear that the full numeric value is different from
 what the default string representations show.
 
 @code{CONVFMT}'s default value is @code{"%.6g"}, which yields a value with
-at least six significant digits.  For some applications, you might want to
+at most six significant digits.  For some applications, you might want to
 change it to specify more precision.
 On most modern machines, most of the time,
 17 digits is enough to capture a floating-point number's
@@ -28144,7 +28242,7 @@ $ @kbd{awk '@{ printf("%010d\n", $1 * 100) @}'}
 @print{} 0000051580
 515.82
 @print{} 0000051582
-@kbd{@value{CTL}-d}
+@kbd{Ctrl-d}
 @end example
 
 @noindent
@@ -28984,11 +29082,10 @@ floating-point format to a precision lower than working precision.
 Do we promote them to full membership of the high-precision club,
 or do we treat them and all their associates as second-class citizens?
 Sometimes the first course is proper, sometimes the second, and it takes
-careful analysis to tell which.}
-
-Dirk Laurie@footnote{Dirk Laurie.
+careful analysis to tell which.}@footnote{Dirk Laurie.
 @cite{Variable-precision Arithmetic Considered Perilous --- A Detective Story}.
 Electronic Transactions on Numerical Analysis. Volume 28, pp. 168-173, 2008.}
+@author Dirk Laurie
 @end quotation
 
 @command{gawk} does not implicitly modify the precision of any previously
@@ -29526,12 +29623,12 @@ the macros as if they were functions.
 @subsection General Purpose Data Types
 
 @quotation
-@i{I have a true love/hate relationship with unions.}@*
-Arnold Robbins
+@i{I have a true love/hate relationship with unions.}
+@author Arnold Robbins
 
 @i{That's the thing about unions: the compiler will arrange things so they
-can accommodate both love and hate.}@*
-Chet Ramey
+can accommodate both love and hate.}
+@author Chet Ramey
 @end quotation
 
 The extension API defines a number of simple types and structures for general
@@ -31464,8 +31561,8 @@ path with a list of directories to search for compiled extensions.
 @section Example: Some File Functions
 
 @quotation
-@i{No matter where you go, there you are.} @*
-Buckaroo Bonzai
+@i{No matter where you go, there you are.}
+@author Buckaroo Bonzai
 @end quotation
 
 @c It's enough to show chdir and stat, no need for fts
@@ -32248,7 +32345,7 @@ Return zero if there were no errors, otherwise return @minus{}1.
 
 The @code{fts()} function provides a hook to the C library @code{fts()}
 routines for traversing file hierarchies.  Instead of returning data
-about one file at a time in a stream, it fills in a multi-dimensional
+about one file at a time in a stream, it fills in a multidimensional
 array with data about each file and directory encountered in the requested
 hierarchies.
 
@@ -32349,7 +32446,7 @@ be more comfortable to use from an @command{awk} program.  This includes the
 lack of a comparison function, since @command{gawk} already provides
 powerful array sorting facilities.  While an @code{fts_read()}-like
 interface could have been provided, this felt less natural than simply
-creating a multi-dimensional array to represent the file hierarchy and
+creating a multidimensional array to represent the file hierarchy and
 its information.
 @end quotation
 
@@ -33007,7 +33104,7 @@ Multiple @code{BEGIN} and @code{END} rules
 
 @item
 Multidimensional arrays
-(@pxref{Multi-dimensional}).
+(@pxref{Multidimensional}).
 @end itemize
 @c ENDOFRANGE gawkv1
 
@@ -33214,7 +33311,7 @@ Special files in I/O redirections:
 @itemize @minus{}
 @item
 The @file{/dev/stdin}, @file{/dev/stdout}, @file{/dev/stderr} and
-@file{/dev/fd/@var{N}} special @value{FN}s
+@file{/dev/fd/@var{N}} special file names
 (@pxref{Special Files}).
 
 @item
@@ -33438,7 +33535,7 @@ long options
 
 @item
 Support for the following obsolete systems was removed from the code
-and the documentation for @command{gawk} @value{PVERSION} 4.0:
+and the documentation for @command{gawk} version 4.0:
 
 @c nested table
 @itemize @minus
@@ -33621,8 +33718,8 @@ cases: the default regexp matching; with @option{--traditional}, and with
 @appendixsec Major Contributors to @command{gawk}
 @cindex @command{gawk}, list of contributors to
 @quotation
-@i{Always give credit where credit is due.}@*
-Anonymous
+@i{Always give credit where credit is due.}
+@author Anonymous
 @end quotation
 
 This @value{SECTION} names the major contributors to @command{gawk}
@@ -33819,6 +33916,10 @@ The modifications to convert @command{gawk}
 into a byte-code interpreter, including the debugger.
 
 @item
+The addition of true multidimensional arrays.
+@ref{Arrays of Arrays}.
+
+@item
 The additional modifications for support of arbitrary precision arithmetic.
 
 @item
@@ -33831,6 +33932,10 @@ into one, for the 4.1 release.
 
 @item
 Improved array internals for arrays indexed by integers.
+
+@item
+The improved array sorting features were driven by John together
+with Pat Rankin.
 @end itemize
 
 @item
@@ -33952,7 +34057,7 @@ Extracting the archive
 creates a directory named @file{gawk-@value{VERSION}.@value{PATCHLEVEL}}
 in the current directory.
 
-The distribution @value{FN} is of the form
+The distribution file name is of the form
 @file{gawk-@var{V}.@var{R}.@var{P}.tar.gz}.
 The @var{V} represents the major version of @command{gawk},
 the @var{R} represents the current release of version @var{V}, and
@@ -33984,6 +34089,13 @@ The actual @command{gawk} source code.
 @end table
 
 @table @file
+@item ABOUT-NLS
+Information about GNU @command{gettext} and translations.
+
+@item AUTHORS
+A file with some information about the authorship of @command{gawk}.
+It exists only to satisfy the pedants at the Free Software Foundation.
+
 @item README
 @itemx README_d/README.*
 Descriptive files: @file{README} for @command{gawk} under Unix and the
@@ -34006,16 +34118,6 @@ An older list of changes to @command{gawk}.
 
 @item COPYING
 The GNU General Public License.
-
-@item FUTURES
-A brief list of features and changes being contemplated for future
-releases, with some indication of the time frame for the feature, based
-on its difficulty.
-
-@item LIMITATIONS
-A list of those factors that limit @command{gawk}'s performance.
-Most of these depend on the hardware or operating system software and
-are not limits in @command{gawk} itself.
 
 @item POSIX.STD
 A description of behaviors in the POSIX standard for @command{awk} which
@@ -34049,12 +34151,19 @@ The @command{troff} source for a manual page describing @command{gawk}.
 This is distributed for the convenience of Unix users.
 
 @cindex Texinfo
-@item doc/gawk.texi
+@item doc/gawktexi.in
+@itemx doc/sidebar.awk
 The Texinfo source file for this @value{DOCUMENT}.
-It should be processed with @TeX{}
-(via @command{texi2dvi} or @command{texi2pdf})
+It should be processed by @file{doc/sidebar.awk}
+before processing with @command{texi2dvi} or @command{texi2pdf}
 to produce a printed document, and
 with @command{makeinfo} to produce an Info or HTML file.
+The @file{Makefile} takes care of this processing and produces
+printable output via @command{texi2dvi} or @command{texi2pdf}.
+
+@item doc/gawk.texi
+The file produced after processing @file{gawktexi.in}
+with @file{sidebar.awk}.
 
 @item doc/gawk.info
 The generated Info file for this @value{DOCUMENT}.
@@ -34093,15 +34202,21 @@ the @file{Makefile.in} files used by @command{autoconf} and
 
 @item Makefile.in
 @itemx aclocal.m4
+@itemx bisonfix.awk
+@itemx config.guess
 @itemx configh.in
 @itemx configure.ac
 @itemx configure
 @itemx custom.h
+@itemx depcomp
+@itemx install-sh
 @itemx missing_d/*
+@itemx mkinstalldirs
 @itemx m4/*
-These files and subdirectories are used when configuring @command{gawk}
-for various Unix systems.  They are explained in
-@ref{Unix Installation}.
+These files and subdirectories are used when configuring and compiling
+@command{gawk} for various Unix systems.  Most of them are explained
+in @ref{Unix Installation}. The rest are there to support the main
+infrastructure.
 
 @item po/*
 The @file{po} library contains message translations.
@@ -34244,6 +34359,14 @@ There are several additional options you may use on the @command{configure}
 command line when compiling @command{gawk} from scratch, including:
 
 @table @code
+
+@cindex @code{--disable-extensions} configuration option
+@cindex configuration option, @code{--disable-extensions}
+@item --disable-extensions
+Disable configuring and building the sample extensions in the
+@file{extension} directory. This is useful for cross-compiling.
+The default action is to dynamically check if the extensions
+can be configured and compiled.
 
 @cindex @code{--disable-lint} configuration option
 @cindex configuration option, @code{--disable-lint}
@@ -34804,7 +34927,7 @@ provides information about both the @command{gawk} implementation and the
 
 The logical name @samp{AWK_LIBRARY} can designate a default location
 for @command{awk} program files.  For the @option{-f} option, if the specified
-@value{FN} has no device or directory path information in it, @command{gawk}
+file name has no device or directory path information in it, @command{gawk}
 looks in the current directory first, then in the directory specified
 by the translation of @samp{AWK_LIBRARY} if the file is not found.
 If, after searching in both directories, the file still is not found,
@@ -34837,7 +34960,7 @@ One side effect of dual command-line parsing is that if there is only a
 single parameter (as in the quoted string program above), the command
 becomes ambiguous.  To work around this, the normally optional @option{--}
 flag is required to force Unix-style parsing rather than @code{DCL} parsing.  If any
-other dash-type options (or multiple parameters such as @value{DF}s to
+other dash-type options (or multiple parameters such as data files to
 process) are present, there is no ambiguity and @option{--} can be omitted.
 
 @c @cindex directory search
@@ -34898,7 +35021,7 @@ define a symbol, as follows:
 $ @kbd{gawk :== $sys$common:[syshlp.examples.tcpip.snmp]gawk.exe}
 @end example
 
-This is apparently @value{PVERSION} 2.15.6, which is extremely old. We
+This is apparently version 2.15.6, which is extremely old. We
 recommend compiling and using the current version.
 
 @c ENDOFRANGE opgawx
@@ -34908,8 +35031,8 @@ recommend compiling and using the current version.
 @appendixsec Reporting Problems and Bugs
 @cindex archeologists
 @quotation
-@i{There is nothing more dangerous than a bored archeologist.}@*
-The Hitchhiker's Guide to the Galaxy
+@i{There is nothing more dangerous than a bored archeologist.}
+@author The Hitchhiker's Guide to the Galaxy
 @end quotation
 @c the radio show, not the book. :-)
 
@@ -34927,8 +35050,8 @@ what you're trying to do.  If it's not clear whether you should be able
 to do something or not, report that too; it's a bug in the documentation!
 
 Before reporting a bug or trying to fix it yourself, try to isolate it
-to the smallest possible @command{awk} program and input @value{DF} that
-reproduces the problem.  Then send us the program and @value{DF},
+to the smallest possible @command{awk} program and input data file that
+reproduces the problem.  Then send us the program and data file,
 some idea of what kind of Unix system you're using,
 the compiler you used to compile @command{gawk}, and the exact results
 @command{gawk} gave you.  Also say what you expected to occur; this helps
@@ -35025,8 +35148,8 @@ Date: Wed, 4 Sep 1996 08:11:48 -0700 (PDT)
 @cindex Brennan, Michael
 @quotation
 @i{It's kind of fun to put comments like this in your awk code.}@*
-@ @ @ @ @ @ @code{// Do C++ comments work? answer: yes! of course}@*
-Michael Brennan
+@ @ @ @ @ @ @code{// Do C++ comments work? answer: yes! of course}
+@author Michael Brennan
 @end quotation
 
 There are a number of other freely available @command{awk} implementations.
@@ -35068,10 +35191,8 @@ repository in a directory named @file{bwkawk}.  If you leave that argument
 off the @command{git} command line, the repository copy is created in a
 directory named @file{awk}.
 
-This version requires an ISO C (1990 standard) compiler;
-the C compiler from
-GCC (the GNU Compiler Collection)
-works quite nicely.
+This version requires an ISO C (1990 standard) compiler; the C compiler
+from GCC (the GNU Compiler Collection) works quite nicely.
 
 @xref{Common Extensions},
 for a list of extensions in this @command{awk} that are not in POSIX @command{awk}.
@@ -35152,14 +35273,21 @@ information, see the @uref{http://busybox.net, project's home page}.
 @cindex source code, Solaris @command{awk}
 @item The OpenSolaris POSIX @command{awk}
 The version of @command{awk} in @file{/usr/xpg4/bin} on Solaris is
-more-or-less
-POSIX-compliant. It is based on the @command{awk} from Mortice Kern
-Systems for PCs.  The source code can be downloaded from
-the @uref{http://www.opensolaris.org, OpenSolaris web site}.
+more-or-less POSIX-compliant. It is based on the @command{awk} from
+Mortice Kern Systems for PCs.
 This author was able to make it compile and work under GNU/Linux
 with 1--2 hours of work.  Making it more generally portable (using
 GNU Autoconf and/or Automake) would take more work, and this
 has not been done, at least to our knowledge.
+
+@cindex Illumos
+@cindex Illumos, POSIX-compliant @command{awk}
+@cindex source code, Illumos @command{awk}
+The source code used to be available from the OpenSolaris web site.
+However, that project was ended and the web site shut down.  Fortunately, the
+@uref{http://wiki.illumos.org/display/illumos/illumos+Home, Illumos project}
+makes this implementation available.  You can view the files one at a time from
+@uref{https://github.com/joyent/illumos-joyent/blob/master/usr/src/cmd/awk_xpg4}.
 
 @cindex @command{jawk}
 @cindex Java implementation of @command{awk}
@@ -35200,6 +35328,10 @@ under the GPL. It has a large number of extensions over standard
 @command{awk} and may not be 100% syntactically compatible with it.
 See @uref{http://www.quiktrim.org/QTawk.html} for more information,
 including the manual and a download link.
+
+@item Other Versions
+See also the @uref{http://en.wikipedia.org/wiki/Awk_language#Versions_and_implementations,
+Wikipedia article}, for information on additional versions.
 
 @end table
 @c ENDOFRANGE gligawk
@@ -35811,11 +35943,11 @@ Larry
 @cindex Wall, Larry
 @cindex Robbins, Arnold
 @quotation
-@i{AWK is a language similar to PERL, only considerably more elegant.}@*
-Arnold Robbins
+@i{AWK is a language similar to PERL, only considerably more elegant.}
+@author Arnold Robbins
 
-@i{Hey!}@*
-Larry Wall
+@i{Hey!}
+@author Larry Wall
 @end quotation
 
 The @file{TODO} file in the @command{gawk} Git repository lists possible
@@ -35947,7 +36079,7 @@ in order to loop over all the element in an easy fashion for C code.
 
 @item
 The ability to create arrays (including @command{gawk}'s true
-multi-dimensional arrays).
+multidimensional arrays).
 @end itemize
 @end itemize
 
@@ -36080,11 +36212,11 @@ to any of the above.
 
 @ref{Dynamic Extensions}, describes the supported API and mechanisms
 for writing extensions for @command{gawk}.  This API was introduced
-in @value{PVERSION} 4.1.  However, for many years @command{gawk}
+in version 4.1.  However, for many years @command{gawk}
 provided an extension mechanism that required knowledge of @command{gawk}
 internals and that was not as well designed.
 
-In order to provide a transition period, @command{gawk} @value{PVERSION}
+In order to provide a transition period, @command{gawk} version
 4.1 continues to support the original extension mechanism.
 This will be true for the life of exactly one major release.  This support
 will be withdrawn, and removed from the source code, at the next major
@@ -37052,7 +37184,7 @@ numeric values.  It is the C type @code{float}.
 The character generated by hitting the space bar on the keyboard.
 
 @item Special File
-A @value{FN} interpreted internally by @command{gawk}, instead of being handed
+A file name interpreted internally by @command{gawk}, instead of being handed
 directly to the underlying operating system---for example, @file{/dev/stderr}.
 (@xref{Special Files}.)
 
@@ -38433,6 +38565,7 @@ Consistency issues:
 	Use MS-Windows not MS Windows
 	Use MS-DOS not MS-DOS
 	Use an empty set of parentheses after built-in and awk function names.
+	Use "multiFOO" without a hyphen.
 
 Date: Wed, 13 Apr 94 15:20:52 -0400
 From: rms@gnu.org (Richard Stallman)

@@ -28,9 +28,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-/* switch statements are enabled in awk programs */
-#undef ALLOW_SWITCH
-
 #if 0		/* no longer used */
 /* Define to 1 if using alloca.c.  */
 #define C_ALLOCA 1
@@ -553,8 +550,6 @@
 /* Gawk configuration options. */
 /*******************************/
 
-#define ALLOW_SWITCH 1
-
 /*
  * DEFPATH
  *	VMS: "/AWK_LIBRARY" => "AWK_LIBRARY:"
@@ -606,7 +601,6 @@
 #endif
 /* #define YYDEBUG 0 */
 #define NO_MBSUPPORT  /* VAX C's preprocessor can't handle mbsupport.h */
-#define RE_TOKEN_INIT_BUG     /* regcomp.c */
 #endif
 
 /*
