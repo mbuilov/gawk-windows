@@ -26255,7 +26255,7 @@ B.3.2.1 Compiling `gawk' on VMS
 
 To compile `gawk' under VMS, there is a `DCL' command procedure that
 issues all the necessary `CC' and `LINK' commands. There is also a
-`Makefile' for use with the `MMS' or `MMK' utility.  From the source
+`Makefile' for use with the `MMS' and `MMK' utilities.  From the source
 directory, use either:
 
      $ @[.vms]vmsbuild.com
@@ -26268,8 +26268,8 @@ or:
 
      $ MMK/DESCRIPTION=[.vms]descrip.mms gawk
 
-   `MMK' is an open source freeware near clone of `MMS' and can better
-handle `ODS-5' volumes with upper- and lower-case filenames.  `MMK' is
+   `MMK' is an open source, free, near-clone of `MMS' and can better
+handle `ODS-5' volumes with upper- and lowercase filenames.  `MMK' is
 available from `https://github.com/endlesssoftware/mmk'.
 
    With `ODS-5' volumes and extended parsing enabled, the case of the
@@ -26301,10 +26301,11 @@ B.3.2.2 Compiling `gawk' Dynamic Extensions on VMS
 ..................................................
 
 Dynamic extensions need to be compiled with the same compiler options
-for floating point, pointer size, and symbol name handling as `gawk'.
-Alpha and Itanium should use IEEE floating point.  The pointer size is
-32 bits, and the symbol name handling is to be exact case with CRC
-shortening for symbols longer than 32 bits.
+for floating point, pointer size, and symbol name handling as were used
+to compile `gawk' itself.  Alpha and Itanium should use IEEE floating
+point.  The pointer size is 32 bits, and the symbol name handling
+should be exact case with CRC shortening for symbols longer than 32
+bits.
 
    For Alpha and Itanium:
 
@@ -26404,6 +26405,35 @@ If any other dash-type options (or multiple parameters such as data
 files to process) are present, there is no ambiguity and `--' can be
 omitted.
 
+   The `exit' value is a Unix-style value and is encoded to a VMS exit
+status value when the program exits.
+
+   The VMS severity bits will be set based on the `exit' value.  A
+failure is indicated by 1 and VMS sets the `ERROR' status.  A fatal
+error is indicated by 2 and VMS will set the `FATAL' status.  All other
+values will have the `SUCCESS' status.  The exit value is encoded to
+comply with VMS coding standards and will have the `C_FACILITY_NO' of
+`0x350000' with the constant `0xA000' added to the number shifted over
+by 3 bits to make room for the severity codes.
+
+   To extract the actual `gawk' exit code from the VMS status use:
+
+     unix_status = (vms_status .and. &x7f8) / 8
+
+A C program that uses `exec()' to call `gawk' will get the original
+Unix-style exit value.
+
+   Older versions of `gawk' treated a Unix exit code 0 as 1, a failure
+as 2, a fatal error as 4, and passed all the other numbers through.
+This violated the VMS exit status coding requirements.
+
+   VAX/VMS floating point uses unbiased rounding. *Note Round
+Function::.
+
+   VMS reports time values in GMT unless one of the `SYS$TIMEZONE_RULE'
+or `TZ' logical names is set.  Older versions of VMS, such as VAX/VMS
+7.3 do not set these logical names.
+
    The default search path, when looking for `awk' program files
 specified by the `-f' option, is `"SYS$DISK:[],AWK_LIBRARY:"'.  The
 logical name `AWKPATH' can be used to override this default.  The format
@@ -26420,7 +26450,7 @@ B.3.2.5 The VMS GNV Project
 The VMS GNV package provides a build environment similar to POSIX with
 ports of a collection of open source tools.  The `gawk' found in the GNV
 base kit is an older port.  Currently the GNV project is being
-reorganized to be individual PCSI packages for each component.  See
+reorganized to supply individual PCSI packages for each component.  See
 `https://sourceforge.net/p/gnv/wiki/InstallingGNVPackages/'.
 
    The normal build procedure for `gawk' produces a program that is
@@ -30577,6 +30607,7 @@ Index
 * exclamation point (!), !~ operator:    Regexp Usage.        (line  19)
 * exit statement:                        Exit Statement.      (line   6)
 * exit status, of gawk:                  Exit Status.         (line   6)
+* exit status, of VMS:                   VMS Running.         (line  29)
 * exp() function:                        Numeric Functions.   (line  18)
 * expand utility:                        Very Simple.         (line  69)
 * Expat XML parser library:              gawkextlib.          (line  33)
@@ -30726,6 +30757,7 @@ Index
                                                               (line   6)
 * floating-point, numbers <1>:           Unexpected Results.  (line   6)
 * floating-point, numbers:               General Arithmetic.  (line   6)
+* floating-point, VAX/VMS:               VMS Running.         (line  51)
 * fnmatch extension function:            Extension Sample Fnmatch.
                                                               (line   6)
 * FNR variable <1>:                      Auto-set.            (line 103)
@@ -31805,13 +31837,13 @@ Index
 * Schorr, Andrew:                        Acknowledgments.     (line  60)
 * Schreiber, Bert:                       Acknowledgments.     (line  38)
 * Schreiber, Rita:                       Acknowledgments.     (line  38)
-* search paths <1>:                      VMS Running.         (line  29)
+* search paths <1>:                      VMS Running.         (line  58)
 * search paths <2>:                      PC Using.            (line  11)
 * search paths <3>:                      Igawk Program.       (line 368)
 * search paths <4>:                      AWKLIBPATH Variable. (line   6)
 * search paths:                          AWKPATH Variable.    (line   6)
 * search paths, for shared libraries:    AWKLIBPATH Variable. (line   6)
-* search paths, for source files <1>:    VMS Running.         (line  29)
+* search paths, for source files <1>:    VMS Running.         (line  58)
 * search paths, for source files <2>:    PC Using.            (line  11)
 * search paths, for source files <3>:    Igawk Program.       (line 368)
 * search paths, for source files:        AWKPATH Variable.    (line   6)
@@ -32748,41 +32780,41 @@ Node: VMS Installation1054207
 Node: VMS Compilation1054971
 Ref: VMS Compilation-Footnote-11056586
 Node: VMS Dynamic Extensions1056644
-Node: VMS Installation Details1057665
-Node: VMS Running1059499
-Node: VMS GNV1061101
-Node: VMS Old Gawk1061806
-Node: Bugs1062276
-Node: Other Versions1066132
-Node: Notes1072216
-Node: Compatibility Mode1073016
-Node: Additions1073799
-Node: Accessing The Source1074726
-Node: Adding Code1076166
-Node: New Ports1082211
-Node: Derived Files1086346
-Ref: Derived Files-Footnote-11091667
-Ref: Derived Files-Footnote-21091701
-Ref: Derived Files-Footnote-31092301
-Node: Future Extensions1092399
-Node: Implementation Limitations1092976
-Node: Extension Design1094228
-Node: Old Extension Problems1095382
-Ref: Old Extension Problems-Footnote-11096890
-Node: Extension New Mechanism Goals1096947
-Ref: Extension New Mechanism Goals-Footnote-11100312
-Node: Extension Other Design Decisions1100498
-Node: Extension Future Growth1102604
-Node: Old Extension Mechanism1103440
-Node: Basic Concepts1105180
-Node: Basic High Level1105861
-Ref: figure-general-flow1106132
-Ref: figure-process-flow1106731
-Ref: Basic High Level-Footnote-11109960
-Node: Basic Data Typing1110145
-Node: Glossary1113500
-Node: Copying1138962
-Node: GNU Free Documentation License1176519
-Node: Index1201656
+Node: VMS Installation Details1057695
+Node: VMS Running1059529
+Node: VMS GNV1062363
+Node: VMS Old Gawk1063072
+Node: Bugs1063542
+Node: Other Versions1067398
+Node: Notes1073482
+Node: Compatibility Mode1074282
+Node: Additions1075065
+Node: Accessing The Source1075992
+Node: Adding Code1077432
+Node: New Ports1083477
+Node: Derived Files1087612
+Ref: Derived Files-Footnote-11092933
+Ref: Derived Files-Footnote-21092967
+Ref: Derived Files-Footnote-31093567
+Node: Future Extensions1093665
+Node: Implementation Limitations1094242
+Node: Extension Design1095494
+Node: Old Extension Problems1096648
+Ref: Old Extension Problems-Footnote-11098156
+Node: Extension New Mechanism Goals1098213
+Ref: Extension New Mechanism Goals-Footnote-11101578
+Node: Extension Other Design Decisions1101764
+Node: Extension Future Growth1103870
+Node: Old Extension Mechanism1104706
+Node: Basic Concepts1106446
+Node: Basic High Level1107127
+Ref: figure-general-flow1107398
+Ref: figure-process-flow1107997
+Ref: Basic High Level-Footnote-11111226
+Node: Basic Data Typing1111411
+Node: Glossary1114766
+Node: Copying1140228
+Node: GNU Free Documentation License1177785
+Node: Index1202922
 
 End Tag Table

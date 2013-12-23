@@ -34,7 +34,7 @@ extern U_Long CLI$GET_VALUE(const Dsc *, Dsc *, short *);
 extern U_Long CLI$DCL_PARSE(const Dsc *, const void *, ...);
 extern U_Long SYS$CLI(void *, ...);
 extern U_Long SYS$FILESCAN(const Dsc *, void *, long *);
-extern void  *lib$establish(U_Long (*handler)(void *, void *));
+extern void  *LIB$ESTABLISH(U_Long (*handler)(void *, void *));
 extern U_Long LIB$SIG_TO_RET(void *, void *);	/* condition handler */
 
 /* Cli_Present() - call CLI$PRESENT to determine whether a parameter or     */
@@ -43,7 +43,7 @@ U_Long
 Cli_Present( const char *item )
 {
     Dsc item_dsc;
-    (void)lib$establish(LIB$SIG_TO_RET);
+    (void)LIB$ESTABLISH(LIB$SIG_TO_RET);
 
     item_dsc.len = strlen(item_dsc.adr = (char *)item);
     return CLI$PRESENT(&item_dsc);
@@ -57,7 +57,7 @@ Cli_Get_Value( const char *item, char *result, int size )
     Dsc item_dsc, res_dsc;
     U_Long sts;
     short len = 0;
-    (void)lib$establish(LIB$SIG_TO_RET);
+    (void)LIB$ESTABLISH(LIB$SIG_TO_RET);
 
     item_dsc.len = strlen(item_dsc.adr = (char *)item);
     res_dsc.len = size,  res_dsc.adr = result;
@@ -79,7 +79,7 @@ Cli_Parse_Command( const void *cmd_tables, const char *cmd_verb )
     U_Long sts;
     int    ltmp;
     char   longbuf[8200];
-    (void)lib$establish(LIB$SIG_TO_RET);
+    (void)LIB$ESTABLISH(LIB$SIG_TO_RET);
 
     memset(&cmd, 0, sizeof cmd);
     cmd.rqtype = CLI$K_GETCMD;		/* command line minus the verb */

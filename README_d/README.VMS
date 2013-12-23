@@ -157,3 +157,14 @@ Older versions of Gawk incorrectly mostly passed through the Gawk
 status values instead of encoding them.  DCL scripts that were checking
 the severity values will probably not need changing.  DCL scripts that
 were checking the exact exit status will need an update.
+
+VAX/VMS floating point uses unbiased rounding.  This is generaly incompatible
+with the expected behavior.  The ofmta test in the test directory will
+fail on VAX.
+
+Gawk needs the SYS$TIMEZONE_RULE or TZ logical name to be defined or it
+will output times in GMT.
+
+The vmstest.com script needs SYS$TIMEZONE_NAME to be defined to match
+the SYS$TIMEZONE_RULE.  Older versions of VMS do not define these logical
+names.

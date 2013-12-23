@@ -594,6 +594,8 @@ $
 $strftime:	echo "strftime"
 $	! this test could fail on slow machines or on a second boundary,
 $	! so if it does, double check the actual results
+$	! This test needs SYS$TIMEZONE_NAME and SYS$TIMEZONE_RULE
+$	! to be properly defined.
 $!!	date | gawk -v "OUTPUT"=_strftime.tmp -f strftime.awk
 $	now = f$time()
 $	wkd = f$extract(0,3,f$cvtime(now,,"WEEKDAY"))
@@ -601,11 +603,12 @@ $	mon = f$cvtime(now,"ABSOLUTE","MONTH")
 $	mon = f$extract(0,1,mon) + f$edit(f$extract(1,2,mon),"LOWERCASE")
 $	day = f$cvtime(now,,"DAY")
 $	tim = f$extract(0,8,f$cvtime(now,,"TIME"))
-$	tz = f$trnlnm("SYS$TIMEZONE_NAME")
+$!	Can not use tz as it shows up in the C environment.
+$	timezone = f$trnlnm("SYS$TIMEZONE_NAME")
 $	yr  = f$cvtime(now,,"YEAR")
 $	if f$trnlnm("FTMP").nes."" then  close/noLog ftmp
 $	open/Write ftmp strftime.in
-$	write ftmp wkd," ",mon," ",day," ",tim," ",tz," ",yr
+$	write ftmp wkd," ",mon," ",day," ",tim," ",timezone," ",yr
 $	close ftmp
 $	gawk -v "OUTPUT"=_strftime.tmp -f strftime.awk strftime.in
 $	set noOn

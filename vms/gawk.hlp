@@ -1183,6 +1183,10 @@
                  the default is systime(); if u is present and non-zero
                  then t is treated as a UTC value, otherwise it is
                  considered to be local time
+
+5 time_logical_names
+ Gawk needs the SYS$TIMEZONE_RULE or TZ logical names defined or it will
+ output the time in the GMT timezone.
 5 time_formats
  Formatting directives similar to the 'printf' & 'sprintf' functions
  (each is introduced in the format string by preceding it with a
@@ -1559,7 +1563,7 @@
  operating system.  GAWK expects a UN*X-style value instead of a
  VMS status value, so 0 indicates success.  A failure is indicated
  by 1 and VMS will set the ERROR status.  A fatal error is indicated
- by 2 and VMS seet the FATAL status.  All other values will will have
+ by 2 and VMS will set the FATAL status.  All other values will will have
  the SUCCESS status.  The exit value is encoded to comply with VMS
  coding standards and will have the C_FACILITY_NO of 0x350000 with
  the constant 0xA000 added to the number shifted over by 3 bits to
@@ -1573,7 +1577,11 @@
 
  Older versions of Gawk treated Unix exit code 0 as 1, A failure as
  2, and a fatal error as 4, and passed all the other numbers through.
- This violate the VMS exit status coding requirements.
+ This violated the VMS exit status coding requirements.
+
+4 rounding
+ VAX/VMS floating point uses unbiased rounding.  This is different than
+ what portable gawk programs expect.
 
 3 changes
  Changes between version 4.0.0 and earlier versions

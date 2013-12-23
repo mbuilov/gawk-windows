@@ -82,7 +82,7 @@ char quote = '\'';
 char *defpath = DEFPATH;
 char *deflibpath = DEFLIBPATH;
 char envsep  = ',';
-#define VMS_NAME_LEN 1
+#define VMS_NAME_LEN 255
 static char vms_name[VMS_NAME_LEN+1];
 
 /* Take all the fun out of simply looking up a logical name */
@@ -149,6 +149,7 @@ const char *filespec;
 	 * be fixed.
 	 */
 
+	result = 0;
 	if (filespec[0] == '/') {
 		char * nextslash;
 		int length;
@@ -333,6 +334,7 @@ const char *filespec;
 
 			strncpy(vms_name, name, name_len);
 			vms_name[name_len] = 0;
+			result = 1;
 
 			/* We only keep the extension if it is not ".exe" */
 			keep_ext = 0;
@@ -427,13 +429,6 @@ const char *filespec;
 					}
 				}
 			}
-
-		} else {
-			/* There is no way that the code should ever get here
-			 * As we already verified that the '/' was present
-			 */
-			fprintf(stderr,
-				"Sanity failure somewhere we lost a '/'\n");
 		}
 	} else {
 		/* No changes needed */
