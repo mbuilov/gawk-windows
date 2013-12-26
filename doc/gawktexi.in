@@ -21,7 +21,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH May, 2013
+@set UPDATE-MONTH December, 2013
 @set VERSION 4.1
 @set PATCHLEVEL 0
 
@@ -32780,7 +32780,7 @@ character ranges (such as @samp{[a-z]}) to match any character between
 the first character in the range and the last character in the range,
 inclusive.  Ordering was based on the numeric value of each character
 in the machine's native character set.  Thus, on ASCII-based systems,
-@code{[a-z]} matched all the lowercase letters, and only the lowercase
+@samp{[a-z]} matched all the lowercase letters, and only the lowercase
 letters, since the numeric values for the letters from @samp{a} through
 @samp{z} were contiguous.  (On an EBCDIC system, the range @samp{[a-z]}
 includes additional, non-alphabetic characters as well.)
@@ -33393,6 +33393,11 @@ are included as ready-to-use files in the @command{gawk} distribution.
 They are installed as part of the installation process.
 The rest of the programs in this @value{DOCUMENT} are available in appropriate
 subdirectories of @file{awklib/eg}.
+
+@item extension/*
+The source code, manual pages, and infrastructure files for
+the sample extensions included with @command{gawk}.
+@xref{Dynamic Extensions}, for more information.
 
 @item posix/*
 Files needed for building @command{gawk} on POSIX-compliant systems.
@@ -35099,7 +35104,9 @@ Larry
 @quotation
 @i{AWK is a language similar to PERL, only considerably more elegant.}
 @author Arnold Robbins
+@end quotation
 
+@quotation
 @i{Hey!}
 @author Larry Wall
 @end quotation
