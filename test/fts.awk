@@ -3,8 +3,19 @@
 BEGIN {
 	Level = 0
 
-	system("rm -fr d1 d2")
-	system("mkdir d1 d2 ; touch d1/f1 d1/f2 d2/f1 d2/f2")
+	os = ""
+	if (ENVIRON["AWKLIBPATH"] == "sys$disk:[-]") {
+		os = "VMS"
+		system("create/dir/prot=o:rwed [.d1]")
+		system("create/dir/prot=o:rwed [.d2]")
+		system("copy fts.awk [.d1]f1")
+		system("copy fts.awk [.d1]f2")
+		system("copy fts.awk [.d2]f1")
+		system("copy fts.awk [.d2]f2")
+	} else {
+		system("rm -fr d1 d2")
+		system("mkdir d1 d2 ; touch d1/f1 d1/f2 d2/f1 d2/f2")
+	}
 	pathlist[1] = "d1"
 	pathlist[2] = "d2"
 	flags = FTS_PHYSICAL
@@ -19,7 +30,14 @@ BEGIN {
 	traverse(data2)
 	close(output)
 
-	system("rm -fr d1 d2")
+	if (os == "VMS") {
+		system("delete [.d1]*.*;*")
+		system("delete [.d2]*.*;*")
+		system("delete d1.dir;*")
+		system("delete d2.dir;*")
+	} else {
+		system("rm -fr d1 d2")
+	}
 }
 
 function indent(        i)

@@ -76,6 +76,7 @@ CFLOAT	= /float=ieee/ieee_mode=denorm_results
 CNAME	= /NAME=(AS_IS,SHORT)
 CC	= cc/DECC/Prefix=All/NESTED_INCLUDE=NONE$(CFLOAT)
 CFLAGS	= /Incl=([],[.vms])/Obj=[]/Def=($(CDEFS))$(CNAME) $(CCFLAGS)
+CEFLAGS = /Incl=([],[.vms],[.missing_d],[.extension])$(CNAME) $(CCFLAGS)
 LIBS	=	# DECC$SHR instead of VAXCRTL, no special link option needed
 .endif	!VAXC
 .endif	!GNUC
@@ -239,6 +240,96 @@ $(VMSCMD)	: $(VMSDIR)gawk.cld
 # special target for loading the help text into a VMS help library
 install.help	: $(VMSDIR)gawk.hlp
 	library/help $(HELPLIB) $< /log
+
+
+# Build dynamic extensions - Alpha/Itanium only.
+.ifdef __VAX__
+# VAX not complete yet.
+plug_opt = [.VMS.VAX]gawk_plugin_xfer.opt
+.else
+plug_opt = [.vms]gawk_plugin.opt
+.endif
+
+ext_gawkdirfd_h = [.extension]gawkdirfd.h config.h nonposix.h
+
+extensions : filefuncs.exe fnmatch.exe inplace.exe ordchr.exe readdir.exe \
+	revoutput.exe revtwoway.exe rwarray.exe testext.exe time.exe
+
+filefuncs.exe : filefuncs.obj stack.obj gawkfts.obj $(plug_opt)
+	link/share=$(MMS$TARGET) $(MMS$SOURCE), stack.obj, gawkfts.obj, \
+		$(plug_opt)/opt
+
+fnmatch.exe : fnmatch.obj $(plug_opt)
+	link/share=$(MMS$TARGET) $(MMS$SOURCE), $(plug_opt)/opt
+
+inplace.exe : inplace.obj $(plug_opt)
+	link/share=$(MMS$TARGET) $(MMS$SOURCE), $(plug_opt)/opt
+
+ordchr.exe : ordchr.obj $(plug_opt)
+	link/share=$(MMS$TARGET) $(MMS$SOURCE), $(plug_opt)/opt
+
+readdir.exe : readdir.obj $(plug_opt)
+	link/share=$(MMS$TARGET) $(MMS$SOURCE), $(plug_opt)/opt
+
+revoutput.exe : revoutput.obj $(plug_opt)
+	link/share=$(MMS$TARGET) $(MMS$SOURCE), $(plug_opt)/opt
+
+revtwoway.exe : revtwoway.obj $(plug_opt)
+	link/share=$(MMS$TARGET) $(MMS$SOURCE), $(plug_opt)/opt
+
+rwarray.exe : rwarray.obj $(plug_opt)
+	link/share=$(MMS$TARGET) $(MMS$SOURCE), $(plug_opt)/opt
+
+testext.exe : testext.obj $(plug_opt)
+	link/share=$(MMS$TARGET) $(MMS$SOURCE), $(plug_opt)/opt
+
+time.exe : time.obj $(plug_opt)
+	link/share=$(MMS$TARGET) $(MMS$SOURCE), $(plug_opt)/opt
+
+stack.obj : [.extension]stack.c config.h gawkapi.h \
+	[.extension]gawkfts.h, [.extension]stack.h
+    $(CC)$(CEFLAGS)/define=(HAVE_CONFIG_H)/object=$(MMS$TARGET) $(MMS$SOURCE)
+
+gawkfts.obj : [.extension]gawkfts.c config.h [.extension]gawkfts.h \
+	$(ext_gawkdirfd_h)
+    $(CC)$(CEFLAGS)/define=(HAVE_CONFIG_H, ZOS_USS, "fchdir(x)=(-1)") \
+	/object=$(MMS$TARGET) $(MMS$SOURCE)
+
+filefuncs.obj : [.extension]filefuncs.c config.h gawkapi.h \
+	[.extension]gawkfts.h
+    $(CC)$(CEFLAGS)/define=(HAVE_CONFIG_H)/object=$(MMS$TARGET) $(MMS$SOURCE)
+
+fnmatch.obj : [.extension]fnmatch.c config.h gawkapi.h \
+	[.missing_d]fnmatch.h [.missing_d]fnmatch.c
+    $(CC)$(CEFLAGS)/define=(HAVE_CONFIG_H)/object=$(MMS$TARGET) $(MMS$SOURCE)
+
+inplace.obj : [.extension]inplace.c config.h gawkapi.h
+    $(CC)$(CEFLAGS)/define=(HAVE_CONFIG_H)/object=$(MMS$TARGET) $(MMS$SOURCE)
+
+ordchr.obj : [.extension]ordchr.c config.h gawkapi.h
+    $(CC)$(CEFLAGS)/define=(HAVE_CONFIG_H)/object=$(MMS$TARGET) $(MMS$SOURCE)
+
+readdir.obj : [.extension]readdir.c config.h gawkapi.h \
+	$(ext_gawkdirfd_h)
+    $(CC)$(CEFLAGS)/define=(HAVE_CONFIG_H, HAVE_DIRENT_H) \
+	/object=$(MMS$TARGET) $(MMS$SOURCE)
+
+revoutput.obj : [.extension]revoutput.c config.h gawkapi.h
+    $(CC)$(CEFLAGS)/define=(HAVE_CONFIG_H)/object=$(MMS$TARGET) $(MMS$SOURCE)
+
+revtwoway.obj : [.extension]revtwoway.c config.h gawkapi.h
+    $(CC)$(CEFLAGS)/define=(HAVE_CONFIG_H, HAVE_GETDTABLESIZE) \
+	/object=$(MMS$TARGET) $(MMS$SOURCE)
+
+rwarray.obj : [.extension]rwarray.c config.h gawkapi.h
+    $(CC)$(CEFLAGS)/define=(HAVE_CONFIG_H)/object=$(MMS$TARGET) $(MMS$SOURCE)
+
+testext.obj : [.extension]testext.c config.h gawkapi.h
+    $(CC)$(CEFLAGS)/define=(HAVE_CONFIG_H)/object=$(MMS$TARGET) $(MMS$SOURCE)
+
+time.obj : [.extension]time.c config.h gawkapi.h
+    $(CC)$(CEFLAGS)/define=(HAVE_CONFIG_H)/object=$(MMS$TARGET) $(MMS$SOURCE)
+
 
 # miscellaneous other targets
 tidy :
