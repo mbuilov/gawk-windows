@@ -25,6 +25,7 @@ $	rm	= "delete/noConfirm/noLog"
 $	mv	= "rename/New_Vers"
 $	gawk = "$sys$disk:[-]gawk"
 $	AWKPATH_srcdir = "define/User AWKPATH sys$disk:[]"
+$	AWKLIBPATH_dir = "define/User AWKLIBPATH sys$disk:[-]"
 $
 $	listdepth = 0
 $	pipeok = 0
@@ -159,6 +160,13 @@ $		type sys$input:
 $		list = "inetechu inetecht inetdayu inetdayt"
 $		gosub list_of_tests
 $		return
+$!
+$extension:	echo "extension...."
+$		list = "inplace1 filefuncs fnmatch fts functab4 ordchr" -
+		+ " readdir revout revtwoway rwarray time"
+		gosub list_of_tests
+		return
+
 $
 $! list_of_tests: process 'list', a space-separated list of tests.
 $! Some tests assign their own 'list' and call us recursively,
@@ -1804,6 +1812,86 @@ $	cmp _NL: sys$disk:[]_vms_io2.tmp
 $	if $status then  rm _vms_io2.tmp;
 $	cmp vms_io2.ok sys$disk:[]_vms_io2.vfc
 $	if $status then  rm _vms_io2.vfc;*
+$	return
+$!
+$!
+$inplace1:
+$	set process/parse=extended ! ODS-5 only
+$	echo "''test'"
+$	filefunc_file = "[-]gawkapi.o"
+$	open/write awkfile _'test'.awk
+$	write awkfile "@load ""inplace"""
+$!	write awkfile "BEGIN {print ""before""}"
+$	write awkfile "   {gsub(/foo/, ""bar""); print}"
+$!	write awkfile "END {print ""after""}"
+$	close awkfile
+$	copy inplace^.1.in _'test'.1
+$	copy inplace^.2.in _'test'.2
+$	set noOn
+$	AWKLIBPATH_dir
+$	gawk -f _'test'.awk _'test'.1 <inplace.in >_'test'.1.tmp 2>&1
+$	if .not. $status then call exit_code '$status' _'test'.1.tmp
+$	AWKLIBPATH_dir
+$	gawk -f _'test'.awk _'test'.2 <inplace.in >_'test'.2.tmp 2>&1
+$	if .not. $status then call exit_code '$status' _'test'.2.tmp
+$	set On
+$	cmp 'test'.1.ok sys$disk:[]_'test'.1.tmp
+$	if $status then rm _'test'.1.tmp;,_'test'.1;
+$	cmp 'test'.2.ok sys$disk:[]_'test'.2.tmp
+$	if $status then rm _'test'.2.tmp;,_'test'.2;,_'test'.awk;
+$	return
+$!
+$filefuncs:
+$fnmatch:
+$functab4:
+$ordchr:
+$revout:
+$revtwoway:
+$time:
+$	echo "''test'"
+$	filefunc_file = "[-]gawkapi.o"
+$	open/write gapi 'filefunc_file'
+$	close gapi
+$	set noOn
+$	AWKLIBPATH_dir
+$	gawk -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
+$	if .not. $status then call exit_code '$status' _'test'.tmp
+$	set On
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then rm _'test'.tmp;
+$	if f$search(filefunc_file) .nes. "" then rm 'filefunc_file';
+$	return
+$!
+$rwarray:
+$	echo "''test'"
+$	set noOn
+$	AWKLIBPATH_dir
+$	gawk -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
+$	if .not. $status then call exit_code '$status' _'test'.tmp
+$	set On
+$	cmp orig.out new.out
+$	if $status
+$	then
+$	    open/append tout _'test'.tmp
+$	    write tout "old and new are equal - GOOD"
+$	    close tout
+$	endif
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then rm _'test'.tmp;,orig.out;,new.out;
+$	return
+$!
+$readdir:
+$fts:
+$	echo "''test'"
+$	set noOn
+$	AWKLIBPATH_dir
+$	gawk -f 'test'.awk >_'test'.tmp 2>&1
+$	if .not. $status
+$	then
+$	    call exit_code '$status' _'test'.tmp
+$	    write sys$output _'test'.tmp
+$	endif
+$	set On
 $	return
 $
 $clean:

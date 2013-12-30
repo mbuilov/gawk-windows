@@ -60,6 +60,7 @@
 #ifndef minor
 #define minor(s) (0)
 #endif
+#include <unixlib.h>
 #endif
 
 

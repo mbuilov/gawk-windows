@@ -15,6 +15,8 @@ MMS has had problems on ODS-5 volumes.  MMK does not have these issues.
 MMK is available free from https://github.com/endlesssoftware/mmk.
 The most recent builds of gawk on VMS used MMK.
 
+Support of the vmsbuild.com may get dropped in a future release.
+
 DEC C  -- use either vmsbuild.com or descrip.mms as is.
        DEC C is also known as Compaq C and HP C.
 
@@ -42,23 +44,28 @@ with a release that old for some time.
 
 Compiling dynamic extensions on VMS:
 
+GAWK comes with some dynamic extensions.  The extensions that have been
+ported to VMS can be built using one of the following commands.
+
+ |$ MMS/DESCRIPTION=[.VMS]DESCRIP.MMS extensions
+or
+ |$ MMK/DESCRIPTION=[.VMS]DESCRIP.MMS extensions
+
+GAWK uses AWKLIBPATH as either an environment variable or a logical name
+to find the dynamic extensions.
+
 Dynamic extensions need to be compiled with the same compiler options for
 floating point, pointer size, and symbol name handling as gawk.
 Alpha and Itanium should use IEEE floating point.  The pointer size is 32 bits,
 and the symbol name handling is to be exact case with CRC shortening for
 symbols longer than 32 bits.
 
-Alpha and Itanium:
+Currently dynamic extensions have only been tested to work on VMS 8.3 and later
+on both Alpha and Itanium.  Dynamic extensions are not currently working on
+VAX/VMS 7.3.
 
-/name=(as_is,short)
-/float=ieee/ieee_mode=denorm_results
-
-VAX:
-
-/name=(as_is,short)
-
-Compile time macros needed to be defined before the first VMS supplied
-header file is included.
+Compile time are macros needed to be defined before the first VMS supplied
+header file is included.  Usually this will be done with a config.h file.
 
 #if (__CRTL_VER >= 70200000) && !defined (__VAX)
 #define _LARGEFILE 1
@@ -71,6 +78,40 @@ header file is included.
 #endif
 #endif
 #endif
+
+Alpha and Itanium:
+
+/name=(as_is,short)
+/float=ieee/ieee_mode=denorm_results
+
+VAX:
+
+/name=(as_is,short)
+
+The linker option files are [.vms]gawk_plugin.opt for Alpha and Itanium.
+
+As the VAX dynamic plug-in feature is not yet working, the files potentially
+needed for a future VAX plugin are in [.vms.vax] directory of the source.
+
+
+Testing GAWK on VMS:
+
+After you build gawk, you can test it with the [.vms]vmstest.com procedure.
+The procedure takes a parameter that is either for a list of tests or
+a specific test.  The parameter clean cleans up files left over from running
+the tests.
+
+  $ set def [.test]
+  $ @[-.vms]vmstest.com bigtest
+  $ @[-.vms]vmstest.com clean
+  $ set def [-]
+
+To test the dynamic extensions on VMS 8.3 and later, use:
+
+  $ set def [.test]
+  $ @[-.vms]vmstest.com extension
+  $ @[-.vms]vmstest.com clean
+  $ set def [-]
 
 
 Installing GAWK on VMS:
@@ -85,7 +126,8 @@ user logs on.
 
 If your gawk was installed by a PCSI kit into the GNV$GNU: directory tree,
 the program will be known as GNV$GNU:[bin]gnv$gawk.exe and the help file
-will be GNV$GNU:[vms_help]gawk.hlp.
+will be GNV$GNU:[vms_help]gawk.hlp.  The GNV$GNU:[vms_bin]gawk_verb.cld can be
+used to add GAWK and the alias AWK to a DCL command table.
 
      Optionally, the help entry can be loaded into a VMS help library.
  |$ LIBRARY/HELP SYS$HELP:HELPLIB [.VMS]GAWK.HLP
@@ -168,3 +210,14 @@ will output times in GMT.
 The vmstest.com script needs SYS$TIMEZONE_NAME to be defined to match
 the SYS$TIMEZONE_RULE.  Older versions of VMS do not define these logical
 names.
+
+TO DO Items (not in order of priority)
+
+1. Implement dynamic plug-ins on VAX.
+
+2. With the system() function, the status for DCL commands are not being
+   returned.
+
+3. Need gawk to accept logical names GNV$AWKPATH, GNV$AWKLIB, and
+   GNV$AWK_LIBARARY in addtion to the unprefixed names.  This will allow
+   system wide default values to be set by an installation kit.

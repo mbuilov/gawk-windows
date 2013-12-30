@@ -135,7 +135,9 @@ $ write cvh "#pragma message disable (LONGDOUBLENYI)"
 $ write cvh "#endif"
 $!
 $! This stuff seems needed for VMS 7.3 and earlier, but not VMS 8.2+
+$! Need some more data as to which versions these issues are fixed in.
 $ write cvh "#if __VMS_VER <= 80200000"
+$! mkstemp goes into an infinte loop in gawk in VAX/VMS 7.3
 $ write cvh "#ifdef HAVE_MKSTEMP"
 $ write cvh "#undef HAVE_MKSTEMP"
 $ write cvh "#endif"

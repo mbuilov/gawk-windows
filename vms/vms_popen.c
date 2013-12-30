@@ -133,8 +133,8 @@ pclose( FILE *current )
     int rval, cur = fileno(current);
 
  /* assert( cur >= 0 && cur < pipes_lim ); */
-    if (pipes[cur].pmode == unopened)
-	return -1;	/* should never happen */
+    if ((cur < 0) || (pipes[cur].pmode == unopened))
+	return -1;	/* should never happen, but does with two-way */
 
     rval = fclose(current);	/* close temp file; if reading, we're done */
     if (pipes[cur].pmode == writing) {

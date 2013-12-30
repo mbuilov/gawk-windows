@@ -34920,6 +34920,23 @@ a PCSI kit for compatible with the GNV product.
 @node VMS Dynamic Extensions
 @appendixsubsubsec Compiling @command{gawk} Dynamic Extensions on VMS
 
+The extensions that have been ported to VMS can be built using one of
+the following commands.
+
+@example
+$ @kbd{MMS/DESCRIPTION=[.vms]descrip.mms extensions}
+@end example
+
+@noindent
+or:
+
+@example
+$ @kbd{MMK/DESCRIPTION=[.vms]descrip.mms extensions}
+@end example
+
+@command{gawk} uses @code{AWKLIBPATH} as either an environment variable
+or a logical name to find the dynamic extensions.
+
 Dynamic extensions need to be compiled with the same compiler options for
 floating point, pointer size, and symbol name handling as were used
 to compile @command{gawk} itself.

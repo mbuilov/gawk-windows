@@ -26309,12 +26309,24 @@ File: gawk.info,  Node: VMS Dynamic Extensions,  Next: VMS Installation Details,
 B.3.2.2 Compiling `gawk' Dynamic Extensions on VMS
 ..................................................
 
-Dynamic extensions need to be compiled with the same compiler options
-for floating point, pointer size, and symbol name handling as were used
-to compile `gawk' itself.  Alpha and Itanium should use IEEE floating
-point.  The pointer size is 32 bits, and the symbol name handling
-should be exact case with CRC shortening for symbols longer than 32
-bits.
+The extensions that have been ported to VMS can be built using one of
+the following commands.
+
+     $ MMS/DESCRIPTION=[.vms]descrip.mms extensions
+
+or:
+
+     $ MMK/DESCRIPTION=[.vms]descrip.mms extensions
+
+   `gawk' uses `AWKLIBPATH' as either an environment variable or a
+logical name to find the dynamic extensions.
+
+   Dynamic extensions need to be compiled with the same compiler
+options for floating point, pointer size, and symbol name handling as
+were used to compile `gawk' itself.  Alpha and Itanium should use IEEE
+floating point.  The pointer size is 32 bits, and the symbol name
+handling should be exact case with CRC shortening for symbols longer
+than 32 bits.
 
    For Alpha and Itanium:
 
@@ -32793,41 +32805,41 @@ Node: VMS Installation1054419
 Node: VMS Compilation1055183
 Ref: VMS Compilation-Footnote-11056798
 Node: VMS Dynamic Extensions1056856
-Node: VMS Installation Details1057907
-Node: VMS Running1059741
-Node: VMS GNV1062575
-Node: VMS Old Gawk1063284
-Node: Bugs1063754
-Node: Other Versions1067674
-Node: Notes1073758
-Node: Compatibility Mode1074558
-Node: Additions1075341
-Node: Accessing The Source1076268
-Node: Adding Code1077708
-Node: New Ports1083753
-Node: Derived Files1087888
-Ref: Derived Files-Footnote-11093209
-Ref: Derived Files-Footnote-21093243
-Ref: Derived Files-Footnote-31093843
-Node: Future Extensions1093941
-Node: Implementation Limitations1094524
-Node: Extension Design1095776
-Node: Old Extension Problems1096930
-Ref: Old Extension Problems-Footnote-11098438
-Node: Extension New Mechanism Goals1098495
-Ref: Extension New Mechanism Goals-Footnote-11101860
-Node: Extension Other Design Decisions1102046
-Node: Extension Future Growth1104152
-Node: Old Extension Mechanism1104988
-Node: Basic Concepts1106728
-Node: Basic High Level1107409
-Ref: figure-general-flow1107680
-Ref: figure-process-flow1108279
-Ref: Basic High Level-Footnote-11111508
-Node: Basic Data Typing1111693
-Node: Glossary1115048
-Node: Copying1140510
-Node: GNU Free Documentation License1178067
-Node: Index1203204
+Node: VMS Installation Details1058229
+Node: VMS Running1060063
+Node: VMS GNV1062897
+Node: VMS Old Gawk1063606
+Node: Bugs1064076
+Node: Other Versions1067996
+Node: Notes1074080
+Node: Compatibility Mode1074880
+Node: Additions1075663
+Node: Accessing The Source1076590
+Node: Adding Code1078030
+Node: New Ports1084075
+Node: Derived Files1088210
+Ref: Derived Files-Footnote-11093531
+Ref: Derived Files-Footnote-21093565
+Ref: Derived Files-Footnote-31094165
+Node: Future Extensions1094263
+Node: Implementation Limitations1094846
+Node: Extension Design1096098
+Node: Old Extension Problems1097252
+Ref: Old Extension Problems-Footnote-11098760
+Node: Extension New Mechanism Goals1098817
+Ref: Extension New Mechanism Goals-Footnote-11102182
+Node: Extension Other Design Decisions1102368
+Node: Extension Future Growth1104474
+Node: Old Extension Mechanism1105310
+Node: Basic Concepts1107050
+Node: Basic High Level1107731
+Ref: figure-general-flow1108002
+Ref: figure-process-flow1108601
+Ref: Basic High Level-Footnote-11111830
+Node: Basic Data Typing1112015
+Node: Glossary1115370
+Node: Copying1140832
+Node: GNU Free Documentation License1178389
+Node: Index1203526
 
 End Tag Table

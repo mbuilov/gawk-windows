@@ -114,6 +114,13 @@ function process(pathname, data_array,
 	for (i in stat_data)
 		data_array[pathname]["."]["stat"][i] = stat_data[i]
 
+	os = ""
+	if (ENVIRON["AWKLIBPATH"] == "sys$disk:[-]") {
+		os = "VMS"
+		# Command in next section not valid on VMS.
+		return
+	}
+
 	command = ("ls -f " pathname)
 	while ((command | getline direntry) > 0) {
 		if (direntry == "." || direntry == "..")
