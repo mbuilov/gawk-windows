@@ -401,6 +401,7 @@ particular records in a file and perform operations upon them.
                                         field.
 * Command Line Field Separator::        Setting @code{FS} from the
                                         command-line.
+* Full Line Fields::                    Making the full line be a single field.
 * Field Splitting Summary::             Some final points and a summary table.
 * Constant Size::                       Reading constant width data.
 * Splitting By Content::                Defining Fields By Content
@@ -6303,6 +6304,7 @@ with a statement such as @samp{$1 = $1}, as described earlier.
 * Regexp Field Splitting::       Using regexps as the field separator.
 * Single Character Fields::      Making each character a separate field.
 * Command Line Field Separator:: Setting @code{FS} from the command-line.
+* Full Line Fields::             Making the full line be a single field.
 * Field Splitting Summary::      Some final points and a summary table.
 @end menu
 
@@ -6670,6 +6672,9 @@ the entries for users who have no password:
 @example
 awk -F: '$2 == ""' /etc/passwd
 @end example
+
+@node Full Line Fields
+@subsection Making The Full Line Be A Single Field
 
 @node Field Splitting Summary
 @subsection Field-Splitting Summary
