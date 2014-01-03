@@ -1,5 +1,5 @@
 /* dfa.c - deterministic extended regexp routines for GNU
-   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2013 Free Software
+   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2014 Free Software
    Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -470,7 +470,7 @@ static void dfamust (struct dfa *dfa);
 static void regexp (void);
 
 /* These two macros are identical to the ones in gnulib's xalloc.h,
-   except that they not to case the result to "(t *)", and thus may
+   except that they do not cast the result to "(t *)", and thus may
    be used via type-free CALLOC and MALLOC macros.  */
 #undef XNMALLOC
 #undef XCALLOC
