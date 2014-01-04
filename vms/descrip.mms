@@ -345,6 +345,23 @@ spotless : clean tidy
       - if f$search("config.h").nes."" then delete config.h;*
       - if f$search("config_vms.h").nes."" then delete config_vms.h;*
       - if f$search("gawk.exe").nes."" then  delete gawk.exe;*
+      - if f$search("*.dsf").nes."" then  delete *.dsf;*
+      - if f$search("*.map").nes."" then  delete *.map;*
+      - if f$search("*.pcsi$desc").nes."" then  delete *.pcsi$desc;*
+      - if f$search("*.pcsi$text").nes."" then  delete *.pcsi$text;*
+      - if f$search("gawk*_src.bck").nes."" then  delete gawk*_src.bck;*
+      - if f$search("*.release_notes").nes."" then  delete *.release_notes;*
+      - if f$search("filefuncs.exe").nes."" then  delete filefuncs.exe;*
+      - if f$search("fnmatch.exe").nes."" then  delete fnmatch.exe;*
+      - if f$search("inplace.exe").nes."" then  delete inplace.exe;*
+      - if f$search("ordchr.exe").nes."" then  delete ordchr.exe;*
+      - if f$search("readdir.exe").nes."" then  delete readdir.exe;*
+      - if f$search("revoutput.exe").nes."" then  delete revoutput.exe;*
+      - if f$search("revtwoway.exe").nes."" then  delete revtwoway.exe;*
+      - if f$search("rwarray.exe").nes."" then  delete rwarray.exe;*
+      - if f$search("testext.exe").nes."" then  delete testext.exe;*
+      - if f$search("time.exe").nes."" then  delete time.exe;*
+      - if f$search("gawk_verb.cld").nes."" then  delete gawk_verb.cld;*
       - if f$search("gawk.dvi").nes."" then  delete gawk.dvi;*
       - if f$search("[.doc]texindex.exe").nes."" then \
             delete [.doc]texindex.exe;*

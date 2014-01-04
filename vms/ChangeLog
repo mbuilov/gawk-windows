@@ -1,3 +1,39 @@
+2014-01-03         John E. Malmberg      <wb8tyw@qsl.net>
+
+	* config_h.com, generate_config_vms_h_gawk.com,
+	  vms_args.c, vms_cli.c, vms_fwrite.c, vms_gawk.c, vms_misc.c,  
+	  vms_popen.c: Update copyright to 2014.
+	* descrip.mms: Improve spotless cleanup.
+	* vmstest.com: Improve test cleanup.
+	* backup_gawk_src.com: New file. Create backup savesets for gawk source.
+	* build_gawk_pcsi_desc.com: New file. Create a pcsi$desc manifest
+	  file for building a gawk package.
+	* build_gawk_pcsi_text.com: New file. Create a pcsi$text file for
+	  building a gawk package.
+	* build_gawk_release_notes.com: New file. Create a VMS release notes
+	  file based on the gawk README and COPYING files and the release note
+	  start and build instruction files.
+	* compare_gawk_source.com: New file. Helper file to compare and
+	  optionally update two gawk source directories.  Used to copy
+	  source from an NFS volume to a VMS native volume for backup.
+	* gawk_alias_setup.com: New file. Used at installation time to
+	  create hard links for for some files instead of copies.
+	* gawk_build_steps.txt: New file.  Document how to build a PCSI kit.
+	* gawk_release_note_start.txt: New file.  Start of release notes.
+	* gawk_verb.com: New file. Converts the gawk.cld file into a
+	  gawk_verb.cld file for setting up GAWK as a DCL command.
+	* gnv_gawk_startup.com: New file.  Makes sure that the GNV$GNU logical
+	  name need to easily find the gawk image is defined.
+	* make_pcsi_gawk_kit_name.com: New File. Create the PCSI kit name
+	  based on the GAWK version.
+	* pcsi_gawk_file_list.txt: New File.  Input file for creating the
+	  pcsi$desc manifest file.
+	* pcsi_product_gawk.com: New file.  File to create the PCSI kit.
+	* remove_old_gawk.com: New file.  File to remove obsolete GNV gawk
+	  files replaced by the new PCSI kit.
+	* stage_gawk_install.com: New file.  Stages an install for the
+	  pcsi kit building.
+
 2013-12-29         John E. Malmberg      <wb8tyw@qsl.net>
 
 	* gawk_plugin.opt: New file. Needed to build plugins on IA64

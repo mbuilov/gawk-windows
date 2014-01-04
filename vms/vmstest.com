@@ -949,7 +949,12 @@ $	gawk -f nasty.awk >_nasty.tmp
 $	call fixup_LRL nasty.ok
 $	call fixup_LRL _nasty.tmp "purge"
 $	cmp nasty.ok sys$disk:[]_nasty.tmp
-$	if $status then  rm _nasty.tmp;
+$	if $status
+$	then
+$	    rm _nasty.tmp;
+$	    file = "lcl_root:[]nasty.ok"
+$	    if f$search(file) .nes. "" then rm 'file';*
+$	endif
 $	set On
 $	return
 $
@@ -959,7 +964,12 @@ $	gawk -f nasty2.awk >_nasty2.tmp
 $	call fixup_LRL nasty2.ok
 $	call fixup_LRL _nasty2.tmp "purge"
 $	cmp nasty2.ok sys$disk:[]_nasty2.tmp
-$	if $status then  rm _nasty2.tmp;
+$	if $status
+$	then
+$	    rm _nasty2.tmp;
+$	    file = "lcl_root:[]nasty2.ok"
+$	    if f$search(file) .nes. "" then rm 'file';*
+$	endif
 $	set On
 $	return
 $
@@ -981,7 +991,6 @@ $	set noOn
 $	gawk -f 'test'.awk >_'test'.tmp 2>&1
 $	if .not. $status then call exit_code '$status' _'test'.tmp
 $	set On
-$	diff 'test'.ok sys$disk:[]_'test'.tmp/out='test'.diff
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
@@ -1770,7 +1779,7 @@ World!
 $	endif
 $	gawk /Commands="BEGIN { print ""World!"" }" _NL: /Output=_vms_cmd.tmp
 $	cmp vms_cmd.ok sys$disk:[]_vms_cmd.tmp
-$	if $status then  rm _vms_cmd.tmp;
+$	if $status then  rm _vms_cmd.tmp;,vms_cmd.ok;*
 $	return
 $
 $vms_io1:	echo "vms_io1"
@@ -1783,7 +1792,7 @@ $	gawk -f - >_vms_io1.tmp
 # prior to 3.0.4, gawk crashed doing any redirection after closing stdin
 BEGIN { print "Hello" >"/dev/stdout" }
 $	cmp vms_io1.ok sys$disk:[]_vms_io1.tmp
-$	if $status then  rm _vms_io1.tmp;
+$	if $status then  rm _vms_io1.tmp;,vms_io1.ok;*
 $	return
 $
 $vms_io2:	echo "vms_io2"
@@ -1811,7 +1820,7 @@ $	set On
 $	cmp _NL: sys$disk:[]_vms_io2.tmp
 $	if $status then  rm _vms_io2.tmp;
 $	cmp vms_io2.ok sys$disk:[]_vms_io2.vfc
-$	if $status then  rm _vms_io2.vfc;*
+$	if $status then  rm _vms_io2.vfc;*,vms_io2.ok;*
 $	return
 $!
 $!
@@ -1859,7 +1868,7 @@ $	if .not. $status then call exit_code '$status' _'test'.tmp
 $	set On
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then rm _'test'.tmp;
-$	if f$search(filefunc_file) .nes. "" then rm 'filefunc_file';
+$	if f$search(filefunc_file) .nes. "" then rm 'filefunc_file';*
 $	return
 $!
 $rwarray:
@@ -1877,7 +1886,7 @@ $	    write tout "old and new are equal - GOOD"
 $	    close tout
 $	endif
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
-$	if $status then rm _'test'.tmp;,orig.out;,new.out;
+$	if $status then rm _'test'.tmp;,orig.bin;,orig.out;,new.out;
 $	return
 $!
 $readdir:
@@ -1890,6 +1899,8 @@ $	if .not. $status
 $	then
 $	    call exit_code '$status' _'test'.tmp
 $	    write sys$output _'test'.tmp
+$	else
+$	    rm _'test'.tmp;*,_'test'.;*
 $	endif
 $	set On
 $	return
