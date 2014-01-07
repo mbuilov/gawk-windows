@@ -174,9 +174,9 @@ load_old_ext(SRCFILE *s, const char *init_func, const char *fini_func, NODE *obj
 		fatal(_("`extension' is a gawk extension"));
 
 	if (lib_name == NULL)
-		fatal(_("load_ext: received NULL lib_name"));
+		fatal(_("extension: received NULL lib_name"));
 
-	if ((dl = dlopen(s->fullpath, flags)) == NULL)
+	if ((dl = dlopen(lib_name, flags)) == NULL)
 		fatal(_("extension: cannot open library `%s' (%s)"), lib_name,
 		      dlerror());
 

@@ -40,7 +40,7 @@ typedef struct spec_array {
  * the base array is str_array.
  */
 
-#define	SUPER(F)	(*str_array_func[AFUNC(F)])
+#define	SUPER(F)	(*str_array_func[F ## _ind])
 
 
 /*
