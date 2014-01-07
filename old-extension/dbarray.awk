@@ -3,7 +3,7 @@
 # @load "bindarr"
 
 BEGIN {
-	extension("bindarr")
+	extension("./bindarr.so")
 }
 
 function _db_count(symbol, sq,
