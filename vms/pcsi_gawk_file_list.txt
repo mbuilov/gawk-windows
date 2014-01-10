@@ -1,0 +1,120 @@
+! File: pcsi_gawk_file_list.txt
+!
+! File list for building a PCSI kit.
+! Very simple format so that the parsing logic can be simple.
+! links first, directory second, and files third.
+!
+! link -> file tells procedure to create/remove a link on install/uninstall
+! If more than one link, consider using an alias file.
+!
+! [xxx.yyy]foo.dir is a directory file for the rename phase.
+! [xxx.yyy.foo] is a directory file for the create phase.
+! Each subdirectory needs to be on its own pair of lines.
+!
+! [xxx.yyy]file.ext is a file for the rename and add phases.
+!
+! 14-Mar-2011  J. Malmberg
+! 08-Dec-2013  J. Malmberg      This list is based on what was found on
+!                               some Linux systems and what can be currently
+!                               built on VMS.
+!
+!============================================================================
+![gnv.bin]awk. -> [gnv.bin]gnv$gawk.exe
+![gnv.bin]awk.exe -> [gnv.bin]gnv$gawk.exe
+![gnv.bin]gawk. -> [gnv.bin]gnv$gawk.exe
+![gnv.bin]gawk.exe -> [gnv.bin]gnv$gawk.exe
+![gnv.usr.bin]awk. -> [gnv.bin]gnv$gawk.exe
+![gnv.usr.bin]awk.exe -> [gnv.bin]gnv$gawk.exe
+![gnv.usr.bin]gawk. -> [gnv.bin]gnv$gawk.exe
+![gnv.usr.bin]gawk.exe -> [gnv.bin]gnv$gawk.exe
+![gnv.usr.share.man.man1]awk.1 -> [gnv.usr.share.man.man1]gawk.1
+[gnv]
+[000000]gnv.dir
+[gnv.bin]
+[gnv]bin.dir
+[gnv.vms_bin]
+[gnv]vms_bin.dir
+[gnv.vms_help]
+[gnv]vms_help.dir
+[gnv.lib]
+[gnv]lib.dir
+[gnv.usr]
+[gnv]usr.dir
+[gnv.usr.bin]
+[gnv.usr]bin.dir
+[gnv.usr.include]
+[gnv.usr]include.dir
+[gnv.usr.lib]
+[gnv.usr]lib.dir
+[gnv.usr.lib.gawk]
+[gnv.usr.lib]gawk.dir
+[gnv.usr.share]
+[gnv.usr]share.dir
+[gnv.usr.share.awk]
+[gnv.usr.share]awk.dir
+[gnv.usr.share.doc]
+[gnv.usr.share]doc.dir
+[gnv.usr.share.doc.gawk]
+[gnv.usr.share.doc]gawk.dir
+[gnv.usr.share.info]
+[gnv.usr.share]info.dir
+[gnv.usr.share.man]
+[gnv.usr.share]man.dir
+[gnv.usr.share.man.man1]
+[gnv.usr.share.man]man1.dir
+![gnv.usr.share.man.man7]
+![gnv.usr.share.man]man7.dir
+[gnv.usr]src.dir
+[gnv.usr.src]
+[gnv.usr.src]gawk.dir
+[gnv.usr.src.gawk]extension.dir
+[gnv.usr.src.gawk.extension]
+[gnv.usr.src.gawk.extension]vms.dir
+[gnv.usr.src.gawk.extension.vms]
+[gnv.bin]gnv$gawk.exe
+[gnv.bin]igawk.
+[gnv.vms_bin]remove_old_gawk.com
+[gnv.vms_bin]gawk_alias_setup.com
+[gnv.vms_bin]gawk_verb.cld
+[gnv.vms_help]gawk.hlp
+[gnv.usr.include]gawkapi.h
+[gnv.usr.lib.gawk]filefuncs.exe
+[gnv.usr.lib.gawk]fnmatch.exe
+[gnv.usr.lib.gawk]inplace.exe
+[gnv.usr.lib.gawk]ordchr.exe
+[gnv.usr.lib.gawk]readdir.exe
+[gnv.usr.lib.gawk]revoutput.exe
+[gnv.usr.lib.gawk]revtwoway.exe
+[gnv.usr.lib.gawk]rwarray.exe
+[gnv.usr.lib.gawk]time.exe
+[gnv.usr.share.awk]assert.awk
+[gnv.usr.share.awk]bits2str.awk
+[gnv.usr.share.awk]cliff_rand.awk
+[gnv.usr.share.awk]ctime.awk
+[gnv.usr.share.awk]ftrans.awk
+[gnv.usr.share.awk]getopt.awk
+[gnv.usr.share.awk]gettime.awk
+[gnv.usr.share.awk]join.awk
+[gnv.usr.share.awk]libintl.awk
+[gnv.usr.share.awk]noassign.awk
+[gnv.usr.share.awk]ord.awk
+[gnv.usr.share.awk]readable.awk
+[gnv.usr.share.awk]readfile.awk
+[gnv.usr.share.awk]rewind.awk
+[gnv.usr.share.awk]round.awk
+[gnv.usr.share.awk]strtonum.awk
+[gnv.usr.share.awk]walkarray.awk
+[gnv.usr.share.awk]zerofile.awk
+[gnv.usr.share.doc.gawk]COPYING.
+[gnv.usr.share.doc.gawk]NEWS.
+[gnv.usr.share.doc.gawk]POSIX.STD
+[gnv.usr.share.doc.gawk]README.
+[gnv.usr.share.doc.gawk]README.vms
+[gnv.usr.share.doc.gawk]README.multibyte
+[gnv.usr.share.doc.gawk]README.tests
+[gnv.usr.share.info]gawk.info
+[gnv.usr.share.info]gawkinet.info
+[gnv.usr.share.man.man1]gawk.1
+[gnv.usr.share.man.man1]igawk.1
+![gnv.usr.share.man.man7]
+[gnv.usr.src.gawk.extension.vms]gawk_plugin.opt

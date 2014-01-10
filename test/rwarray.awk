@@ -21,13 +21,20 @@ BEGIN {
 		printf("dict[%s] = %s\n", dictindices[i], dict[dictindices[i]]) > "new.out"
 	close("new.out");
 
-	ret = system("cmp orig.out new.out")
+	os = ""
+	if (ENVIRON["AWKLIBPATH"] == "sys$disk:[-]") {
+		os = "VMS"
+		# return status from system() on VMS can not be used here
+	}
+	if (os != "VMS") {
+		ret = system("cmp orig.out new.out")
 
-	if (ret == 0)
-		print "old and new are equal - GOOD"
-	else
-		print "old and new are not equal - BAD"
+		if (ret == 0)
+			print "old and new are equal - GOOD"
+		else
+			print "old and new are not equal - BAD"
 
-	if (ret == 0 && !("KEEPIT" in ENVIRON))
-		system("rm -f orig.bin orig.out new.out")
+		if (ret == 0 && !("KEEPIT" in ENVIRON))
+			system("rm -f orig.bin orig.out new.out")
+	}
 }

@@ -1183,6 +1183,10 @@
                  the default is systime(); if u is present and non-zero
                  then t is treated as a UTC value, otherwise it is
                  considered to be local time
+
+5 time_logical_names
+ Gawk needs the SYS$TIMEZONE_RULE or TZ logical names defined or it will
+ output the time in the GMT timezone.
 5 time_formats
  Formatting directives similar to the 'printf' & 'sprintf' functions
  (each is introduced in the format string by preceding it with a
@@ -1557,9 +1561,28 @@
 4 exit
  The exit statement can optionally pass a final status value to the
  operating system.  GAWK expects a UN*X-style value instead of a
- VMS status value, so 0 indicates success and non-zero indicates
- failure.  The final exit status will be 1 (VMS success) if 0 is
- used, or even (VMS non-success) if non-zero is used.
+ VMS status value, so 0 indicates success.  A failure is indicated
+ by 1 and VMS will set the ERROR status.  A fatal error is indicated
+ by 2 and VMS will set the FATAL status.  All other values will will have
+ the SUCCESS status.  The exit value is encoded to comply with VMS
+ coding standards and will have the C_FACILITY_NO of 0x350000 with
+ the constant 0xA000 added to the number shifted over by 3 bits to
+ make room for the severity codes.
+
+ To extract the actual gawk exit code from the VMS status use:
+     unix_status = (vms_status .and. &x7f8) / 8
+
+ A C program that uses exec() to call gawk will get the original
+ UN*X-style exit value.
+
+ Older versions of Gawk treated Unix exit code 0 as 1, A failure as
+ 2, and a fatal error as 4, and passed all the other numbers through.
+ This violated the VMS exit status coding requirements.
+
+4 rounding
+ VAX/VMS floating point uses unbiased rounding.  This is different than
+ what portable gawk programs expect.
+
 3 changes
  Changes between version 4.0.0 and earlier versions
 
@@ -1569,6 +1592,7 @@
    General
      dgawk.exe does interactive debugging of awk programs
      pgawk.exe does comprehensive execution profiling of awk programs
+     pgawk.exe is not currently supplied for VMS.
      -d[file] and -p[file] options added
      -Wcompat and -Wusage options dropped; use -Wtraditional and -Whelp
      BEGINFILE and ENDFILE built-in rule patterns
@@ -1594,6 +1618,10 @@
        support for radix prefix '0' (octal) and '0x' (hexadecimal)
 
    VMS-specific
+     The VMS exit codes now correctly encode the gawk exit status and
+     the VMS severity bits are set.
+     Large file support is enabled on the platforms that support it.
+     Extended filename support is enabled on the platforms that support it.
      New command qualifiers: /EXTRA_COMMANDS, /PROFILE, /DUMP_VARIABLES,
        /OPTIMIZE, /TRADITIONAL, /SANDBOX, /NON_DECIMAL_DATA
      Revised qualifier: /LINT, takes optional argument list

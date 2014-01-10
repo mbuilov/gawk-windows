@@ -36,6 +36,34 @@
 
 #define _BSD_SOURCE
 
+#ifdef __VMS
+#if (__CRTL_VER >= 70200000) && !defined (__VAX)
+#define _LARGEFILE 1
+#endif
+
+#ifndef __VAX
+#ifdef __CRTL_VER
+#if __CRTL_VER >= 80200000
+#define _USE_STD_STAT 1
+#endif
+#endif
+#endif
+#define _POSIX_C_SOURCE 1
+#define _XOPEN_SOURCE 1
+#include <stat.h>
+#ifndef S_ISVTX
+#define S_ISVTX (0)
+#endif
+#ifndef major
+#define major(s) (s)
+#endif
+#ifndef minor
+#define minor(s) (0)
+#endif
+#include <unixlib.h>
+#endif
+
+
 #include <stdio.h>
 #include <assert.h>
 #include <errno.h>

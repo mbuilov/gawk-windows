@@ -1,0 +1,13 @@
+	.PSECT GAWK_PLUGIN_XFERVECTORS -
+			PIC,USR,CON,REL,GBL,SHR,EXE,RD,NOWRT,QUAD
+
+;	Exact case transfer vector and universal symbols
+;
+	.ALIGN QUAD
+	.EXTERNAL plugin_is_GPL_compatible
+
+	.TRANSFER dl_load
+	.MASK dl_load
+	JMP L^dl_load+2
+
+	.END

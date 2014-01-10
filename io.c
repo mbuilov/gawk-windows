@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2013 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2014 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -121,6 +121,11 @@
 #endif
 
 #if defined(VMS)
+#include <ssdef.h>
+#ifndef SS$_EXBYTLM
+#define SS$_EXBYTLM 0x2a14  /* VMS 8.4 seen */
+#endif
+#include <rmsdef.h>
 #define closemaybesocket(fd)	close(fd)
 #endif
 
@@ -462,6 +467,11 @@ nextfile(IOBUF **curfile, bool skipping)
 			/* IOBUF management: */
 			errno = 0;
 			fd = devopen(fname, binmode("r"));
+			if (fd == INVALID_HANDLE && errno == EMFILE) {
+				close_one();
+				close_one();
+				fd = devopen(fname, binmode("r"));
+			}
 			errcode = errno;
 			if (! do_traditional)
 				update_ERRNO_int(errno);
@@ -948,13 +958,13 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			if (errno == EMFILE || errno == ENFILE)
 				close_one();
 #ifdef VMS
-			/* Alpha/VMS V7.1's C RTL is returning this instead
+			/* Alpha/VMS V7.1+ C RTL is returning these instead
 			   of EMFILE (haven't tried other post-V6.2 systems) */
-#define SS$_EXQUOTA 0x001C
-#define SS$_EXBYTLM 0x2a14  /* VMS 8.4 seen */
-			else if (errno == EIO && 
+			else if ((errno == EIO || errno == EVMSERR) && 
                                  (vaxc$errno == SS$_EXQUOTA ||
-                                  vaxc$errno == SS$_EXBYTLM))
+                                  vaxc$errno == SS$_EXBYTLM ||
+                                  vaxc$errno == RMS$_ACC ||
+				  vaxc$errno == RMS$_SYN))
 				close_one();
 #endif
 			else {
