@@ -112,7 +112,17 @@ EXTRA_DIST = \
 	backw.awk \
 	backw.in \
 	backw.ok \
+	backbigs1.awk \
+	backbigs1.in \
+	backbigs1.ok \
+	backsmalls1.awk \
+	backsmalls1.in \
+	backsmalls1.ok \
+	backsmalls2.awk \
+	backsmalls2.ok \
 	badargs.ok \
+	badassign1.awk \
+	badassign1.ok \
 	beginfile1.awk \
 	beginfile1.ok \
 	beginfile2.in \
@@ -691,6 +701,8 @@ EXTRA_DIST = \
 	rand-mpfr.ok \
 	rand.awk \
 	rand.ok \
+	randtest.sh \
+	randtest.ok \
 	range1.awk \
 	range1.in \
 	range1.ok \
@@ -931,6 +943,7 @@ BASIC_TESTS = \
 	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
 	aryprm8 arysubnm asgext awkpath \
 	back89 backgsub \
+	badassign1 \
 	childin clobber closebad clsflnam compare compare2 concat1 concat2 \
 	concat3 concat4 convfmt \
 	datanonl defref delargv delarpm2 delarprm delfunc dfamb1 dfastress dynlj \
@@ -952,7 +965,7 @@ BASIC_TESTS = \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
 	pcntplus posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
 	prt1eval prtoeval \
-	rand range1 rebt8b1 redfilnm regeq regexprange regrange reindops \
+	rand randtest range1 rebt8b1 redfilnm regeq regexprange regrange reindops \
 	reparse resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin sortempty splitargv splitarr splitdef \
@@ -963,8 +976,8 @@ BASIC_TESTS = \
 	zero2 zeroe0 zeroflag
 
 UNIX_TESTS = \
-	fflush getlnhd localenl pid pipeio1 pipeio2 poundbang rtlen rtlen01 \
-	space strftlng
+	fflush getlnhd localenl pid pipeio1 pipeio2 poundbang \
+	rtlen rtlen01 space strftlng
 
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
@@ -995,7 +1008,8 @@ MACHINE_TESTS = double1 double2 fmtspcl intformat
 MPFR_TESTS = mpfrnr mpfrrnd mpfrieee mpfrexprange mpfrsort mpfrbigint
 
 LOCALE_CHARSET_TESTS = \
-	asort asorti fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
+	asort asorti backbigs1 backsmalls1 backsmalls2 \
+	fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 mbprintf3 mbprintf4 rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
@@ -1217,7 +1231,7 @@ getline2::
 
 awkpath::
 	@echo $@
-	@AWKPATH=""$(srcdir)"$(PATH_SEPARATOR)"$(srcdir)"/lib" $(AWK) -f awkpath.awk >_$@
+	@AWKPATH="$(srcdir)$(PATH_SEPARATOR)$(srcdir)/lib" $(AWK) -f awkpath.awk >_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 argtest::
@@ -1296,7 +1310,7 @@ nors::
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 fmtspcl.ok: fmtspcl.tok Makefile
-	@$(AWK) -v "sd="$(srcdir)"" 'BEGIN {pnan = sprintf("%g",sqrt(-1)); nnan = sprintf("%g",-sqrt(-1)); pinf = sprintf("%g",-log(0)); ninf = sprintf("%g",log(0))} {sub(/positive_nan/,pnan); sub(/negative_nan/,nnan); sub(/positive_infinity/,pinf); sub(/negative_infinity/,ninf); sub(/fmtspcl/,(sd"/fmtspcl")); print}' < "$(srcdir)"/fmtspcl.tok > $@ 2>/dev/null
+	@$(AWK) -v "sd=$(srcdir)" 'BEGIN {pnan = sprintf("%g",sqrt(-1)); nnan = sprintf("%g",-sqrt(-1)); pinf = sprintf("%g",-log(0)); ninf = sprintf("%g",log(0))} {sub(/positive_nan/,pnan); sub(/negative_nan/,nnan); sub(/positive_infinity/,pinf); sub(/negative_infinity/,ninf); sub(/fmtspcl/,(sd"/fmtspcl")); print}' < "$(srcdir)"/fmtspcl.tok > $@ 2>/dev/null
 
 fmtspcl: fmtspcl.ok
 	@echo $@
@@ -1440,7 +1454,7 @@ widesub4::
 
 ignrcas2::
 	@echo $@
-	@GAWKLOCALE=en_US ; export GAWKLOCALE ; \
+	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1698,12 +1712,12 @@ mpfrbigint:
 
 jarebug::
 	@echo $@
-	@"$(srcdir)"/$@.sh "$(AWKPROG)" ""$(srcdir)"/$@.awk" ""$(srcdir)"/$@.in" "_$@"
+	@"$(srcdir)"/$@.sh "$(AWKPROG)" "$(srcdir)"/$@.awk "$(srcdir)"/$@.in "_$@"
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 ordchr2::
 	@echo $@
-	@$(AWK) -l ordchr 'BEGIN {print chr(ord("z"))}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@$(AWK) --load ordchr 'BEGIN {print chr(ord("z"))}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # N.B. If the test fails, create readfile.ok so that "make diffout" will work
@@ -1714,7 +1728,7 @@ readfile::
 
 include2::
 	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -i inclib 'BEGIN {print sandwich("a", "b", "c")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH="$(srcdir)" $(AWK) --include inclib 'BEGIN {print sandwich("a", "b", "c")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 incdupe::
@@ -1797,14 +1811,18 @@ readdir:
 	fi
 	@echo $@
 	@$(AWK) -f "$(srcdir)"/readdir.awk $(top_srcdir) > _$@
-	@ls -afli $(top_srcdir) | sed 1d | $(AWK) -f "$(srcdir)"/readdir0.awk -v extout=_$@ > $@.ok
+	@ls -afli $(top_srcdir) | sed 1d | $(AWK) -f "$(srcdir)"/readdir0.awk -v extout=_$@ $(top_srcdir) > $@.ok
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 fts:
-	@if [ "`uname`" = IRIX ];  then \
+	@case `uname` in \
+	IRIX) \
 	echo This test may fail on IRIX systems when run on an NFS filesystem.; \
-	echo If it does, try rerunning on an xfs filesystem. ; \
-	fi
+	echo If it does, try rerunning on an xfs filesystem. ;; \
+	CYGWIN*) \
+	echo This test may fail on CYGWIN systems when run on an NFS filesystem.; \
+	echo If it does, try rerunning on an ntfs filesystem. ;; \
+	esac
 	@echo $@
 	@$(AWK) -f "$(srcdir)"/fts.awk
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
@@ -1813,9 +1831,8 @@ charasbytes:
 	@echo $@
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH="$(srcdir)" $(AWK) -b -f $@.awk "$(srcdir)"/$@.in | \
-	od -c -t x1 | sed -e 's/  */ /g' -e 's/ *$$//' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	od -c -t x1 | tr '	' ' ' | sed -e 's/  */ /g' -e 's/ *$$//' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
 
 symtab6:
 	@echo $@
@@ -1858,12 +1875,36 @@ dfamb1:
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+
+randtest::
+	@echo $@
+	@GAWK="$(AWKPROG)" "$(srcdir)"/randtest.sh >_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+backbigs1:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+backsmalls1:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+backsmalls2:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 # Targets generated for other tests:
 include Maketests
 
 $(srcdir)/Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
-	files=`cd ""$(srcdir)"" && echo *.awk *.in`; \
-	$(AWK) -f "$(srcdir)"/Gentests ""$(srcdir)"/Makefile.am" $$files > "$(srcdir)"/Maketests
+	files=`cd "$(srcdir)" && echo *.awk *.in`; \
+	$(AWK) -f "$(srcdir)"/Gentests "$(srcdir)"/Makefile.am $$files > "$(srcdir)"/Maketests
 
 clean:
 	rm -fr _* core core.* fmtspcl.ok junk strftime.ok test1 test2 \
@@ -1875,19 +1916,21 @@ pass-fail:
 	@COUNT=`ls _* 2>/dev/null | wc -l` ; \
 	if test $$COUNT = 0 ; \
 	then	echo ALL TESTS PASSED ; \
-	else	echo $$COUNT TESTS FAILED ; \
+	else	echo $$COUNT TESTS FAILED ; exit 1; \
 	fi
 
 # This target for my convenience to look at all the results
+# Don't use POSIX or bash-isms so that it'll work on !@#$%^&*() Solaris.
 diffout:
 	for i in _* ; \
 	do  \
 		if [ "$$i" != "_*" ]; then \
 		echo ============== $$i ============= ; \
-		if [ -r $${i#_}.ok ]; then \
-		diff -c $${i#_}.ok $$i ; \
+		base=`echo $$i | sed 's/^_//'` ; \
+		if [ -r $${base}.ok ]; then \
+		diff -c $${base}.ok $$i ; \
 		else \
-		diff -c "$(srcdir)"/$${i#_}.ok  $$i ; \
+		diff -c "$(srcdir)"/$${base}.ok  $$i ; \
 		fi ; \
 		fi ; \
 	done | more

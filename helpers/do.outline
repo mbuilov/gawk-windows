@@ -1,0 +1,102 @@
+#! /usr/local/bin2/gawk -f
+
+# do.outline --- produce an outline of a texinfo document
+
+BEGIN {
+	# manifest constants
+	TRUE = 1
+	FALSE = 0
+
+	# Levels at which different nodes can be
+	Level["@top"] =	0
+	Level["@appendix"] = 1
+	Level["@chapter"] = 1
+	Level["@majorheading"] = 1
+	Level["@unnumbered"] = 1
+	Level["@preface"] = 1
+	Level["@appendixsec"] = 2
+	Level["@heading"] = 2
+	Level["@section"] = 2
+	Level["@unnumberedsec"] = 2
+	Level["@unnumberedsubsec"] = 3
+	Level["@appendixsubsec"] = 3
+	Level["@subheading"] = 3
+	Level["@subsection"] = 3
+	Level["@appendixsubsubsec"] = 4
+	Level["@subsubheading"] = 4
+	Level["@subsubsection"] = 4
+	Level["@unnumberedsubsubsec"] = 4
+
+	ah = bh = ch = 0
+
+	appendix = 0
+}
+
+/^@ignore/ && Pass == 1, /^@end[ \t]+ignore/ && Pass == 1 {
+	next
+}
+
+
+$1 in Level {
+	# save type
+	type = $1
+
+	lev = Level[$1]
+
+	if (lev == 1 && tolower($0) !~ /preface|foreword/) {
+		if ($1 == "@appendix") {
+			appendix = next_appendix(appendix)
+			ah = appendix
+		} else
+			ah++
+		bh = ch = dh = 0
+	} else if (lev == 2) {
+		bh++
+		ch = dh = 0
+	} else if (lev == 3) {
+		ch++
+		dh = 0
+	} else if (lev == 4)
+		dh++
+
+	Unnumbered = ($1 ~ /^@unnumbered/)
+
+	$1 = ""
+	$0 = preprocess($0)
+
+	for (i = 1; i < lev; i++)
+		printf "\t"
+
+	if (! Unnumbered) {
+		printf("%s.", ah)
+		if (bh)
+			printf("%d.", bh)
+		if (ch)
+			printf("%d.", ch)
+		if (dh)
+			printf("%d.", dh)
+	}
+
+	printf("%s\n", $0)
+}
+
+function preprocess(record)
+{
+	record = gensub(/@(code|command|samp|env)\{([^\}]+)\}/, "\\2", "g", record)
+	record = gensub(/@dots\{\}/, "...", "g", record)
+
+	return record
+}
+
+function next_appendix(cur,	ind, letters)
+{
+	if (cur == 0)
+		return "A"	# first time
+
+	letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	ind = index(letters, cur)
+	if (ind > 0 && ind <= 26)
+		return substr(letters, ++ind, 1)
+
+	return "Z"
+}

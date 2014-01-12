@@ -54,26 +54,26 @@ typedef struct _itm { U_Short len, code; void *buffer; U_Short *retlen; } Itm;
 #define Descrip(strdsc,strbuf) Dsc strdsc = {sizeof strbuf - 1, (char *)strbuf}
 
 extern int    shell$is_shell(void);
-extern U_Long lib$find_file(const Dsc *, Dsc *, void *, ...);
-extern U_Long lib$find_file_end(void *);
+extern U_Long LIB$FIND_FILE(const Dsc *, Dsc *, void *, ...);
+extern U_Long LIB$FIND_FILE_END(void *);
 #ifndef NO_TTY_FWRITE
-extern U_Long lib$get_ef(long *);
-extern U_Long sys$assign(const Dsc *, short *, long, const Dsc *);
-extern U_Long sys$dassgn(short);
-extern U_Long sys$qio(U_Long, U_Long, U_Long, void *,
+extern U_Long LIB$GET_EF(long *);
+extern U_Long SYS$ASSIGN(const Dsc *, short *, long, const Dsc *);
+extern U_Long SYS$DASSGN(short);
+extern U_Long SYS$QIO(U_Long, U_Long, U_Long, void *,
 			 void (*)(U_Long), U_Long,
 			 const char *, int, int, U_Long, int, int);
-extern U_Long sys$synch(long, void *);
+extern U_Long SYS$SYNCH(long, void *);
 #endif	/*!NO_TTY_FWRITE*/
-extern U_Long lib$spawn(const Dsc *,const Dsc *,const Dsc *,
+extern U_Long LIB$SPAWN(const Dsc *,const Dsc *,const Dsc *,
 			   const U_Long *,const Dsc *,U_Long *,U_Long *,...);
  /* system services for logical name manipulation */
-extern U_Long sys$trnlnm(const U_Long *,const Dsc *,const Dsc *,
+extern U_Long SYS$TRNLNM(const U_Long *,const Dsc *,const Dsc *,
 			    const unsigned char *,Itm *);
-extern U_Long sys$crelnm(const U_Long *,const Dsc *,const Dsc *,
+extern U_Long SYS$CRELNM(const U_Long *,const Dsc *,const Dsc *,
 			    const unsigned char *,const Itm *);
-extern U_Long sys$crelog(int,const Dsc *,const Dsc *,unsigned char);
-extern U_Long sys$dellnm(const Dsc *,const Dsc *,const unsigned char *);
+extern U_Long SYS$CRELOG(int,const Dsc *,const Dsc *,unsigned char);
+extern U_Long SYS$DELLNM(const Dsc *,const Dsc *,const unsigned char *);
 
 extern void   v_add_arg(int, const char *);
 extern void   vms_exit(int);

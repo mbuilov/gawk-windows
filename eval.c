@@ -441,6 +441,7 @@ flags2str(int flagval)
 		{ WSTRCUR, "WSTRCUR" },
 		{ MPFN,	"MPFN" },
 		{ MPZN,	"MPZN" },
+		{ NULL_FIELD, "NULL_FIELD" },
 		{ ARRAYMAXED, "ARRAYMAXED" },
 		{ HALFHAT, "HALFHAT" },
 		{ XARRAY, "XARRAY" },
@@ -1241,7 +1242,7 @@ setup_frame(INSTRUCTION *pc)
 	arg_count = (pc + 1)->expr_count;
 
 	/* tail recursion optimization */
-	tail_optimize =  ((pc + 1)->tail_call && do_optimize > 1
+	tail_optimize =  ((pc + 1)->tail_call && do_optimize
 				&& ! do_debug && ! do_profile);
 
 	if (tail_optimize) {

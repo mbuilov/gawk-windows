@@ -57,9 +57,9 @@
 #include <limits.h>
 
 /* This header defines the MIN and MAX macros.  */
-#ifndef VMS
+#ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
-#endif /* VMS */
+#endif /* HAVE_SYS_PARAM_H */
 
 #ifdef GAWK
 #undef alloca

@@ -1,5 +1,5 @@
 /* dfa.c - deterministic extended regexp routines for GNU
-   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2013 Free Software
+   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2014 Free Software
    Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -125,7 +125,7 @@ extern int gawk_mb_cur_max;
 #define CHARCLASS_INTS ((NOTCHAR + INTBITS - 1) / INTBITS)
 
 /* Sets of unsigned characters are stored as bit vectors in arrays of ints.  */
-typedef int charclass[CHARCLASS_INTS];
+typedef unsigned int charclass[CHARCLASS_INTS];
 
 /* Convert a possibly-signed character to an unsigned character.  This is
    a bit safer than casting to unsigned char, since it catches some type
@@ -280,7 +280,7 @@ enum
   RPAREN,                       /* RPAREN never appears in the parse tree.  */
 
   ANYCHAR,                      /* ANYCHAR is a terminal symbol that matches
-                                   any multibyte (or single byte) characters.
+                                   a valid multibyte (or single byte) character.
                                    It is used only if MB_CUR_MAX > 1.  */
 
   MBCSET,                       /* MBCSET is similar to CSET, but for
@@ -470,7 +470,7 @@ static void dfamust (struct dfa *dfa);
 static void regexp (void);
 
 /* These two macros are identical to the ones in gnulib's xalloc.h,
-   except that they not to case the result to "(t *)", and thus may
+   except that they do not cast the result to "(t *)", and thus may
    be used via type-free CALLOC and MALLOC macros.  */
 #undef XNMALLOC
 #undef XCALLOC
@@ -585,22 +585,22 @@ prtok (token t)
 
 /* Stuff pertaining to charclasses.  */
 
-static int
+static bool
 tstbit (unsigned int b, charclass const c)
 {
-  return c[b / INTBITS] & 1 << b % INTBITS;
+  return c[b / INTBITS] >> b % INTBITS & 1;
 }
 
 static void
 setbit (unsigned int b, charclass c)
 {
-  c[b / INTBITS] |= 1 << b % INTBITS;
+  c[b / INTBITS] |= 1U << b % INTBITS;
 }
 
 static void
 clrbit (unsigned int b, charclass c)
 {
-  c[b / INTBITS] &= ~(1 << b % INTBITS);
+  c[b / INTBITS] &= ~(1U << b % INTBITS);
 }
 
 static void
@@ -951,8 +951,7 @@ find_pred (const char *str)
 }
 
 /* Multibyte character handling sub-routine for lex.
-   This function  parse a bracket expression and build a struct
-   mb_char_classes.  */
+   Parse a bracket expression and build a struct mb_char_classes.  */
 static token
 parse_bracket_exp (void)
 {
@@ -1055,7 +1054,7 @@ parse_bracket_exp (void)
                   if (MB_CUR_MAX > 1 && !pred->single_byte_only)
                     {
                       /* Store the character class as wctype_t.  */
-                      wctype_t wt = wctype (class);
+                      wctype_t wt = (wctype_t) wctype (class);
 
                       REALLOC_IF_NECESSARY (work_mbc->ch_classes,
                                             ch_classes_al,
@@ -1169,8 +1168,7 @@ parse_bracket_exp (void)
               regcomp (&re, pattern, REG_NOSUB);
               for (c = 0; c < NOTCHAR; ++c)
                 {
-                  if ((case_fold && isupper (c))
-                      || (MB_CUR_MAX > 1 && btowc (c) == WEOF))
+                  if ((case_fold && isupper (c)))
                     continue;
                   subject[0] = c;
                   if (regexec (&re, subject, 0, NULL, 0) != REG_NOMATCH)
@@ -1490,14 +1488,46 @@ lex (void)
         case 'S':
           if (!backslash || (syntax_bits & RE_NO_GNU_OPS))
             goto normal_char;
-          zeroset (ccl);
-          for (c2 = 0; c2 < NOTCHAR; ++c2)
-            if (isspace (c2))
-              setbit (c2, ccl);
-          if (c == 'S')
-            notset (ccl);
+          if (MB_CUR_MAX == 1)
+            {
+              zeroset (ccl);
+              for (c2 = 0; c2 < NOTCHAR; ++c2)
+                if (isspace (c2))
+                  setbit (c2, ccl);
+              if (c == 'S')
+                notset (ccl);
+              laststart = 0;
+              return lasttok = CSET + charclass_index (ccl);
+            }
+
+#define PUSH_LEX_STATE(s)			\
+  do						\
+    {						\
+      char const *lexptr_saved = lexptr;	\
+      size_t lexleft_saved = lexleft;		\
+      lexptr = (s);				\
+      lexleft = strlen (lexptr)
+
+#define POP_LEX_STATE()				\
+      lexptr = lexptr_saved;			\
+      lexleft = lexleft_saved;			\
+    }						\
+  while (0)
+
+          /* FIXME: see if optimizing this, as is done with ANYCHAR and
+             add_utf8_anychar, makes sense.  */
+
+          /* \s and \S are documented to be equivalent to [[:space:]] and
+             [^[:space:]] respectively, so tell the lexer to process those
+             strings, each minus its "already processed" '['.  */
+          PUSH_LEX_STATE (c == 's' ? "[:space:]]" : "^[:space:]]");
+
+          lasttok = parse_bracket_exp ();
+
+          POP_LEX_STATE ();
+
           laststart = 0;
-          return lasttok = CSET + charclass_index (ccl);
+          return lasttok;
 
         case 'w':
         case 'W':
@@ -1686,7 +1716,7 @@ add_utf8_anychar (void)
 {
 #if MBS_SUPPORT
   static const charclass utf8_classes[5] = {
-    {0, 0, 0, 0, ~0, ~0, 0, 0}, /* 80-bf: non-lead bytes */
+    {0, 0, 0, 0, ~0, ~0, 0, 0},		/* 80-bf: non-leading bytes */
     {~0, ~0, ~0, ~0, 0, 0, 0, 0},       /* 00-7f: 1-byte sequence */
     {0, 0, 0, 0, 0, 0, ~3, 0},          /* c2-df: 2-byte sequence */
     {0, 0, 0, 0, 0, 0, 0, 0xffff},      /* e0-ef: 3-byte sequence */
@@ -2761,7 +2791,7 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
       /* Set the transitions for each character in the current label.  */
       for (j = 0; j < CHARCLASS_INTS; ++j)
         for (k = 0; k < INTBITS; ++k)
-          if (labels[i][j] & 1 << k)
+          if (labels[i][j] & 1U << k)
             {
               int c = j * INTBITS + k;
 
@@ -3375,37 +3405,39 @@ dfaexec (struct dfa *d, char const *begin, char *end,
   for (;;)
     {
       if (d->mb_cur_max > 1)
-        while ((t = trans[s]) != NULL)
-          {
-            if (p > buf_end)
-              break;
-            s1 = s;
-            SKIP_REMAINS_MB_IF_INITIAL_STATE (s, p);
+        {
+          while ((t = trans[s]) != NULL)
+            {
+              if (p > buf_end)
+                break;
+              s1 = s;
+              SKIP_REMAINS_MB_IF_INITIAL_STATE (s, p);
 
-            if (d->states[s].mbps.nelem == 0)
-              {
-                s = t[*p++];
-                continue;
-              }
+              if (d->states[s].mbps.nelem == 0)
+                {
+                  s = t[*p++];
+                  continue;
+                }
 
-            /* Falling back to the glibc matcher in this case gives
-               better performance (up to 25% better on [a-z], for
-               example) and enables support for collating symbols and
-               equivalence classes.  */
-            if (backref)
-              {
-                *backref = 1;
-                free (mblen_buf);
-                free (inputwcs);
-                *end = saved_end;
-                return (char *) p;
-              }
+              /* Falling back to the glibc matcher in this case gives
+                 better performance (up to 25% better on [a-z], for
+                 example) and enables support for collating symbols and
+                 equivalence classes.  */
+              if (backref)
+                {
+                  *backref = 1;
+                  free (mblen_buf);
+                  free (inputwcs);
+                  *end = saved_end;
+                  return (char *) p;
+                }
 
-            /* Can match with a multibyte character (and multi character
-               collating element).  Transition table might be updated.  */
-            s = transit_state (d, s, &p);
-            trans = d->trans;
-          }
+              /* Can match with a multibyte character (and multi character
+                 collating element).  Transition table might be updated.  */
+              s = transit_state (d, s, &p);
+              trans = d->trans;
+            }
+        }
       else
         {
           while ((t = trans[s]) != NULL)

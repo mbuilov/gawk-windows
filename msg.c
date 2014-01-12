@@ -44,15 +44,22 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 	char *file;
 	const char *me;
 
+	static bool first = true;
+	static bool add_src_info = false;
+
+	if (first) {
+		first = false;
+		add_src_info = (getenv("GAWK_MSG_SRC") != NULL);
+	}
+
 	(void) fflush(output_fp);
 	me = myname;
 	(void) fprintf(stderr, "%s: ", me);
-#ifdef GAWKDEBUG
-	if (srcfile != NULL) {
+
+	if (srcfile != NULL && add_src_info) {
 		fprintf(stderr, "%s:%d:", srcfile, srcline);
 		srcfile = NULL;
 	}
-#endif /* GAWKDEBUG */
 
 	if (sourceline > 0) {
 		if (source != NULL)
@@ -109,10 +116,10 @@ msg(const char *mesg, ...)
 	va_end(args);
 }
 
-/* warning --- print a warning message */
+/* r_warning --- print a warning message */
 
 void
-warning(const char *mesg, ...)
+r_warning(const char *mesg, ...)
 {
 	va_list args;
 	va_start(args, mesg);

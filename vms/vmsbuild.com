@@ -15,9 +15,18 @@ $!
 $ REL = "4.1"	!release version number
 $ PATCHLVL = "0"
 $!
+$ if (f$getsyi("HW_MODEL") .lt. 1024)
+$ then
+$   arch_name = "VAX"
+$ else
+$   arch_name = f$edit(f$getsyi("ARCH_NAME"), "UPCASE")
+$ endif
 $!
 $ CCFLAGS = "/noList"	! "/noOpt/Debug"
+$! CCFLAGS = "/list/show=(expan,incl)
 $ CDEFS	  = "GAWK,HAVE_CONFIG_H"
+$! Do not specify _POSIX_EXIT here, we are using other tricks for that.
+$!
 $!
 $ if p1.eqs."" then  p1 = "DECC"	!default compiler
 $ if p1.eqs."GNUC"
@@ -38,8 +47,17 @@ $   CFLAGS = "/Incl=[]/Obj=[]/Opt=noInline/Def=(''CDEFS')''CCFLAGS'"
 $   LIBS = "sys$share:vaxcrtl.exe/Shareable"
 $  else  !!VAXC
 $!  neither GNUC nor VAXC, assume DECC (same for either VAX or Alpha)
+$ if arch_name .eqs. "vax"
+$ then
+$   CFLOAT = ""
+$ else
+$   CFLOAT = "/float=ieee/ieee_mode=denorm_results"
+$ endif
 $   CC = "cc/DECC/Prefix=All"
-$   CFLAGS = "/Incl=[]/Obj=[]/Def=(''CDEFS')''CCFLAGS'"
+$   CNAME = "/NAME=(AS_IS,SHORT)
+$   CINC = "/NESTED_INCLUDE=NONE"
+$   CFLAGS = "/Incl=([],[.vms])/Obj=[]/Def=(''CDEFS')''CINC'''CCFLAGS'"
+$   CFLAGS = CNAMES + CFLOAT + CFLAGS 
 $   LIBS = ""	! DECC$SHR instead of VAXCRTL, no special link option needed
 $  endif !VAXC
 $ endif !GNUC
@@ -47,12 +65,15 @@ $!
 $ cc = CC + CFLAGS
 $ show symbol cc
 $!
-$ if f$search("config.h").nes."" then -
-    if f$cvtime(f$file_attr("config.h","RDT")).ges.-
-       f$cvtime(f$file_attr("[.vms]vms-conf.h","RDT")) then  goto config_ok
-$ v = f$verify(1)
-$ copy [.vms]vms-conf.h []config.h
-$! 'f$verify(v)'
+$ if f$search("config.h") .nes. ""
+$ then
+$    if f$cvtime(f$file_attr("config.h", "RDT")) .ges. -
+        f$cvtime(f$file_attr("configh.in","RDT")) then  goto config_ok
+$ endif
+$ v = f$verify(0)
+$ @[.vms]generate_config_vms_h_gawk.com
+$ @[.vms]config_h.com NOBUILTINS
+$!
 $config_ok:
 $ if f$search("awkgram.c").nes."" then  goto awkgram_ok
 $	write sys$output " You must process `awkgram.y' with ""yacc"" or ""bison"""
@@ -70,7 +91,7 @@ $	if f$search("ytab.c").nes."" .or. f$search("y_tab.c").nes."" then - !yacc
 	  write sys$output " or else rename `ytab.c' or `y_tab.c' to `command.c'."
 $	exit
 $command_ok:
-$ v = f$verify(1)
+$ v1 = f$verify(1)
 $ cc array.c
 $ cc awkgram.c
 $ cc builtin.c
@@ -106,7 +127,8 @@ $ cc [.vms]vms_fwrite.c
 $ cc [.vms]vms_args.c
 $ cc [.vms]vms_gawk.c
 $ cc [.vms]vms_cli.c
-$ set command/Object=[]gawk_cmd.obj [.vms]gawk.cld
+$ cc [.vms]vms_crtl_init.c
+$ set command/Object=[]gawk_cmd.obj sys$disk:[.vms]gawk.cld
 $! 'f$verify(v)'
 $!
 $ close/noLog Fopt
@@ -116,18 +138,21 @@ array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,field.obj,floatcomp.obj
 gawkmisc.obj,getopt.obj,getopt1.obj,io.obj
 main.obj,msg.obj,node.obj
 random.obj,re.obj,regex.obj,replace.obj,version.obj,eval.obj,profile.obj
-command.obj,debug.obj,int_array.obj,cint_array.obj,gawkapi.obj,mpfr.obj,str_array.obj,symbol.obj
+command.obj,debug.obj,int_array.obj,cint_array.obj,gawkapi.obj,mpfr.obj
+str_array.obj,symbol.obj
 []vms_misc.obj,vms_popen.obj,vms_fwrite.obj,vms_args.obj
-[]vms_gawk.obj,vms_cli.obj,gawk_cmd.obj
+[]vms_gawk.obj,vms_cli.obj,gawk_cmd.obj,vms_crtl_init.obj
 psect_attr=environ,noshr	!extern [noshare] char **
 stack=48	!preallocate more pages (default is 20)
 iosegment=128	!ditto (default is 32)
+$!
+$ v1 = f$verify(1)
+$ @[.vms]gawk_ident.com
 $ open/append Fopt gawk.opt
 $ write Fopt libs
-$ write Fopt "identification=""V''REL'.''PATCHLVL'"""
 $ close Fopt
 $!
-$ v = f$verify(1)
+$ v1 = f$verify(1)
 $ link/exe=gawk.exe gawk.opt/options
 $! 'f$verify(v)'
 $ exit

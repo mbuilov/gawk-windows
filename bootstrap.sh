@@ -3,7 +3,7 @@
 # bootstrap.sh --- touch relevant files to avoid out-of-date issues in
 #		   Git sandboxes
 
-# Copyright (C) 2007, 2009-2013 the Free Software Foundation, Inc.
+# Copyright (C) 2007, 2009-2014 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -41,4 +41,3 @@ touch po/*.gmo
 touch po/stamp-po
 touch awkgram.c
 touch command.c
-touch version.c

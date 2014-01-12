@@ -6,21 +6,112 @@ CC and LINK commands, and there's also a Makefile for use with the MMS
 utility.  From the source directory, use either
  |$ @[.VMS]VMSBUILD.COM
 or
- |$ MMS/DECRIPTION=[.VMS]DECSRIP.MMS GAWK
+ |$ MMS/DESCRIPTION=[.VMS]DESCRIP.MMS gawk
+or
+ |$ MMK/DESCRIPTION=[.VMS]DESCRIP.MMS gawk
+
+Note that on IA64 and Alpha the case of the target may be important.
+MMS has had problems on ODS-5 volumes.  MMK does not have these issues.
+MMK is available free from https://github.com/endlesssoftware/mmk.
+The most recent builds of gawk on VMS used MMK.
+
+Support of the vmsbuild.com may get dropped in a future release.
 
 DEC C  -- use either vmsbuild.com or descrip.mms as is.
+       DEC C is also known as Compaq C and HP C.
+
 VAX C  -- use `@vmsbuild VAXC' or `MMS/MACRO=("VAXC")'.  On a system
         with both VAX C and DEC C installed where DEC C is the default,
         use `MMS/MACRO=("VAXC","CC=CC/VAXC")' for the MMS variant; for
         the vmsbuild.com variant, any need for `/VAXC' will be detected
         automatically.
+        * IMPORTANT NOTE * VAX C should not be used on VAX/VMS 5.5-2 and
+        later.  Use DEC C instead.
+
 GNU C  -- use `@vmsbuild GNUC' or `MMS/MACRO=("GNUC")'.  On a system
         where the GCC command is not already defined, use either
         `@vmsbuild GNUC DO_GNUC_SETUP' or
         `MMS/MACRO=("GNUC","DO_GNUC_SETUP")'.
 
-     Tested under Alpha/VMS V7.1 using DEC C V6.4.  GAWK should work
-without modifications for VMS V4.6 and up.
+Most recent builds are using:
+    OpenVMS VAX 7.3 using DEC C 6.4
+    OpenVMS Alpha 8.3 using HP C V 7.3
+    OpenVMS Alpha 8.4 using HP C V 7.3
+    OpenVMS IA64 8.4 using HP C V 7.3
+
+GAWK was originally ported for VMS V4.6 and up.  It has not been tested
+with a release that old for some time.
+
+Compiling dynamic extensions on VMS:
+
+GAWK comes with some dynamic extensions.  The extensions that have been
+ported to VMS can be built using one of the following commands.
+
+ |$ MMS/DESCRIPTION=[.VMS]DESCRIP.MMS extensions
+or
+ |$ MMK/DESCRIPTION=[.VMS]DESCRIP.MMS extensions
+
+GAWK uses AWKLIBPATH as either an environment variable or a logical name
+to find the dynamic extensions.
+
+Dynamic extensions need to be compiled with the same compiler options for
+floating point, pointer size, and symbol name handling as gawk.
+Alpha and Itanium should use IEEE floating point.  The pointer size is 32 bits,
+and the symbol name handling is to be exact case with CRC shortening for
+symbols longer than 32 bits.
+
+Currently dynamic extensions have only been tested to work on VMS 8.3 and later
+on both Alpha and Itanium.  Dynamic extensions are not currently working on
+VAX/VMS 7.3.
+
+Compile time are macros needed to be defined before the first VMS supplied
+header file is included.  Usually this will be done with a config.h file.
+
+#if (__CRTL_VER >= 70200000) && !defined (__VAX)
+#define _LARGEFILE 1
+#endif
+
+#ifndef __VAX
+#ifdef __CRTL_VER
+#if __CRTL_VER >= 80200000
+#define _USE_STD_STAT 1
+#endif
+#endif
+#endif
+
+Alpha and Itanium:
+
+/name=(as_is,short)
+/float=ieee/ieee_mode=denorm_results
+
+VAX:
+
+/name=(as_is,short)
+
+The linker option files are [.vms]gawk_plugin.opt for Alpha and Itanium.
+
+As the VAX dynamic plug-in feature is not yet working, the files potentially
+needed for a future VAX plugin are in [.vms.vax] directory of the source.
+
+
+Testing GAWK on VMS:
+
+After you build gawk, you can test it with the [.vms]vmstest.com procedure.
+The procedure takes a parameter that is either for a list of tests or
+a specific test.  The parameter clean cleans up files left over from running
+the tests.
+
+  $ set def [.test]
+  $ @[-.vms]vmstest.com bigtest
+  $ @[-.vms]vmstest.com clean
+  $ set def [-]
+
+To test the dynamic extensions on VMS 8.3 and later, use:
+
+  $ set def [.test]
+  $ @[-.vms]vmstest.com extension
+  $ @[-.vms]vmstest.com clean
+  $ set def [-]
 
 
 Installing GAWK on VMS:
@@ -32,6 +123,11 @@ whose value begins with a dollar sign.
 That symbol should be placed in the user's login.com or in the system-
 wide sylogin.com procedure so that it will be defined every time the
 user logs on.
+
+If your gawk was installed by a PCSI kit into the GNV$GNU: directory tree,
+the program will be known as GNV$GNU:[bin]gnv$gawk.exe and the help file
+will be GNV$GNU:[vms_help]gawk.hlp.  The GNV$GNU:[vms_bin]gawk_verb.cld can be
+used to add GAWK and the alias AWK to a DCL command table.
 
      Optionally, the help entry can be loaded into a VMS help library.
  |$ LIBRARY/HELP SYS$HELP:HELPLIB [.VMS]GAWK.HLP
@@ -79,9 +175,49 @@ separated list of directory specifications.  When defining it, the
 value should be quoted so that it retains a single translation, not a
 multi-translation RMS searchlist.
 
-------------------------------
-Thu Jun 18 05:22:10 IDT 2009
-============================
+     The exit status from Gawk is encoded in the the VMS $status exit
+value so that the severity bits are set as expected and the original
+Gawk exit value can be extracted.
 
-On OpenVMS V7.3 (Alpha) the "manyfiles" test is known to fail. The reason
-is not (yet) known.
+To extract the actual gawk exit code from the VMS status use:
+     unix_status = (vms_status .and. &x7f8) / 8
+
+The exit value is encoded to comply with VMS coding standards and
+will have the C_FACILITY_NO of 0x350000 with the constant 0xA000
+added to the number shifted over by 3 bits to make room for the
+severity codes.
+
+The Gawk exit value of 1 will result in the VMS status having the
+ERROR severity status set.  The Gawk exit value of 2 will result in
+the FATAL severity status set.  All other Gawk exit values will have
+the Success severity status set.
+
+This change was needed to provide all Gawk exit values to VMS programs and
+for compatibilty with programs written in C and the GNV environment.
+
+Older versions of Gawk incorrectly mostly passed through the Gawk
+status values instead of encoding them.  DCL scripts that were checking
+the severity values will probably not need changing.  DCL scripts that
+were checking the exact exit status will need an update.
+
+VAX/VMS floating point uses unbiased rounding.  This is generaly incompatible
+with the expected behavior.  The ofmta test in the test directory will
+fail on VAX.
+
+Gawk needs the SYS$TIMEZONE_RULE or TZ logical name to be defined or it
+will output times in GMT.
+
+The vmstest.com script needs SYS$TIMEZONE_NAME to be defined to match
+the SYS$TIMEZONE_RULE.  Older versions of VMS do not define these logical
+names.
+
+TO DO Items (not in order of priority)
+
+1. Implement dynamic plug-ins on VAX.
+
+2. With the system() function, the status for DCL commands are not being
+   returned.
+
+3. Need gawk to accept logical names GNV$AWKPATH, GNV$AWKLIB, and
+   GNV$AWK_LIBARARY in addtion to the unprefixed names.  This will allow
+   system wide default values to be set by an installation kit.

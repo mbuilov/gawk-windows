@@ -1,3 +1,117 @@
+2013-12-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (ignrcas2): Change to use en_US.UTF-8; it
+	seems that plain en_US doesn't exist anymore. Thanks to
+	Richard Palo.
+
+2013-12-29         John E. Malmberg      <wb8tyw@qsl.net>
+
+	* fts.awk: Adjust for VMS.
+	* rwarray.awk: Adjust for VMS.
+
+2013-12-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am: Remove instances of "" that were incorrect.
+	Thanks to Scott Deifik for the report.
+
+2013-12-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (fts): Add a check for Cygwin on NFS and print
+	a message, similar to that of IRIX. Per Corinna Vinschen.
+
+2013-11-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (pipeio3): Removed test and reference to files.
+	It was too ful of race conditions to work reliably everywhere.
+	* pipeio3.awk, pipeio3.ok, pipeio3.ok2: Removed.
+
+2013-11-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* readdir0.awk: Take argument which is directory to read.
+	* Makefile.am (readdir): Pass $(top_srcdir) to readdir0.awk.
+
+2013-11-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readdir0.awk: Restore fix so that we do not fail on filesysystems
+	such as XFS where the dirent does not contain the file type.
+
+2013-11-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (ordchr2): Use --load instead of -l to make sure the
+	long option works properly.  Note that the readfile test still uses
+	the short version.
+	(include2): Use --include instead of -i to make sure that the long
+	option works properly.  Note that many other tests use the -i short
+	version.
+
+2013-11-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* readdir0.awk: Use `ls -lan' to get numeric user and group ID
+	numbers. This keeps the number of fields correct and consistent, even
+	on systems (like, oh, say, Windows with Cygwin) where group names
+	can contain spaces.
+
+2013-11-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Solaris fixes.
+
+	* readdir0.awk: Run ls -afi and ls -la separately since POSIX
+	says that -f turns off -l. Thanks to Dagobert Michelsen
+	<dam@opencsw.org> for the report.
+	* Makefile.am (diffout): Don't use POSIX or bash-isms so that
+	it will work on Solaris. Sigh.
+
+2013-11-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (backsmalls2): New test.
+	(pipeio3): Check results against pipeio3.ok2 if
+	the first check fails.
+	* backsmalls2.awk, backsmalls2.ok: New files.
+	* pipeio3.ok2: New file. This is the results on PPC Mac OS X.
+
+2013-10-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (pipeio3): Enhance test, again, to be more resilient
+	to variations in error messages produced by different Bourne shells
+	when a command is not found.  This time for Cygwin.
+
+	Unrelated:
+
+	(charasbytes): Translit any tabs to spaces. Should help on
+	some System V systems such as Solaris. We hope.
+
+	Unrelated:
+
+	(pass-fail): Exit non-zero if tests fail. Useful for buildbots.
+
+2013-10-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (pipeio3): Enhance test to be more resilient to
+	variations in error messages produced by different Bourne shells
+	when a command is not found. Initially for Mac OS X.
+
+2013-10-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (pipeio3): New test.
+	* pipeio3.awk, pipeio3.ok: New files.
+
+2013-10-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (backbigs1, backsmalls1): New tests.
+	* backbigs1.awk, backbigs1.in, backbigs1.ok: New files.
+	* backsmalls1.awk, backsmalls1.in, backsmalls1.ok: New files.
+
+2013-10-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (badassign1): New test.
+	* badassign1.awk, badassign1.ok: New files.
+
+2013-09-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makfile.am (randtest): New test.
+	* randtest.sh, randtest.ok: New files.
+	* rand.ok: Updated to reflect new results based on code change.
+
 2013-09-13         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am: Fix quoting for generation of Maketests file so

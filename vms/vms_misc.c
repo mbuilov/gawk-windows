@@ -1,6 +1,6 @@
 /* vms_misc.c -- sustitute code for missing/different run-time library routines.
 
-   Copyright (C) 1991-1993, 1996-1997, 2001, 2003, 2009, 2010, 2011
+   Copyright (C) 1991-1993, 1996-1997, 2001, 2003, 2009, 2010, 2011, 2014
    the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -118,15 +118,24 @@ vms_open( const char *name, int mode, ... )
 	result = creat(name, 0, "rfm=stmlf", "rat=cr", "shr=nil", "mbc=32");
     } else {
 	struct stat stb;
+        int stat_result;
 	const char *mbc, *shr = "shr=get", *ctx = "ctx=stm";
-
-	if (stat((char *)name, &stb) < 0) {	/* assume DECnet */
+ 
+	stat_result = stat((char *)name, &stb);
+	if ( stat_result < 0) {	/* assume DECnet */
 	    mbc = "mbc=8";
 	} else {    /* ordinary file; allow full sharing iff record format */
 	    mbc = "mbc=32";
 	    if ((stb.st_fab_rfm & 0x0F) < FAB$C_STM) shr = "shr=get,put,upd";
 	}
 	result = open(name, mode, 0, shr, mbc, "mbf=2");
+	if ((stat_result >= 0) && (result < 0) && (errno == ENOENT)) {
+	    /* ENOENT not possible because stat succeeded */
+	    errno = EMFILE;
+	    if (S_ISDIR(stb.st_mode)) {
+		errno = EISDIR; /* Bug seen in VMS 8.3 */
+	    }
+        }
     }
 
     /* This is only approximate; the ACP -> RMS -> VAXCRTL interface
@@ -165,8 +174,8 @@ vms_devopen( const char *name, int mode )
 #define VMS_UNITS_PER_SECOND 10000000L	/* hundreds of nanoseconds, 1e-7 */
 #define UNIX_EPOCH "01-JAN-1970 00:00:00.00"
 
-extern U_Long sys$bintim(), sys$gettim();
-extern U_Long lib$subx(), lib$ediv();
+extern U_Long SYS$BINTIM(), SYS$GETTIM();
+extern U_Long LIB$SUBX(), LIB$EDIV();
 
     /*
      * Get current time in microsecond precision.
@@ -183,13 +192,13 @@ vms_gettimeofday(struct timeval *tv, void *timezone__not_used)
     const long  thunk = VMS_UNITS_PER_SECOND;
     long        now[2], quad[2];
 
-    if (!epoch[0])  sys$bintim(&epoch_dsc, epoch);	/* 1 Jan 0:0:0 1970 */
+    if (!epoch[0])  SYS$BINTIM(&epoch_dsc, epoch);	/* 1 Jan 0:0:0 1970 */
     /* get current time, as VMS quadword time */
-    sys$gettim(now);
+    SYS$GETTIM(now);
     /* convert the quadword time so that it's relative to Unix epoch */
-    lib$subx(now, epoch, quad); /* quad = now - epoch; */
+    LIB$SUBX(now, epoch, quad); /* quad = now - epoch; */
     /* convert 1e-7 units into seconds and fraction of seconds */
-    lib$ediv(&thunk, quad, &tv->tv_sec, &tv->tv_usec);
+    LIB$EDIV(&thunk, quad, &tv->tv_sec, &tv->tv_usec);
     /* convert fraction of seconds into microseconds */
     tv->tv_usec /= (VMS_UNITS_PER_SECOND / 1000000);
 
@@ -272,7 +281,7 @@ int fork( void ) {
 #include <fab.h>
 #include <nam.h>
 
-extern unsigned long sys$parse(), sys$search();
+extern unsigned long SYS$PARSE(), SYS$SEARCH();
 
 /* Work around a VAXCRTL bug.  If a file is located via a searchlist,
    and if the device it's on is not the same device as the one specified

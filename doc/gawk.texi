@@ -26,7 +26,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH May, 2013
+@set UPDATE-MONTH January, 2014
 @set VERSION 4.1
 @set PATCHLEVEL 0
 
@@ -153,7 +153,8 @@ Some comments on the layout for TeX.
 
 @copying
 Copyright @copyright{} 1989, 1991, 1992, 1993, 1996, 1997, 1998, 1999,
-2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2010, 2011, 2012, 2013
+2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2010, 2011, 2012, 2013,
+2014
 Free Software Foundation, Inc.
 @sp 2
 
@@ -194,6 +195,7 @@ supports it in developing GNU and promoting software freedom.''
 @c during editing and review.
 @setchapternewpage odd
 
+@shorttitlepage GNU Awk
 @titlepage
 @title @value{TITLE}
 @subtitle @value{SUBTITLE}
@@ -400,10 +402,11 @@ particular records in a file and perform operations upon them.
                                         field.
 * Command Line Field Separator::        Setting @code{FS} from the
                                         command-line.
+* Full Line Fields::                    Making the full line be a single field.
 * Field Splitting Summary::             Some final points and a summary table.
 * Constant Size::                       Reading constant width data.
 * Splitting By Content::                Defining Fields By Content
-* Multiple Line::                       Reading multi-line records.
+* Multiple Line::                       Reading multiline records.
 * Getline::                             Reading files under explicit program
                                         control using the @code{getline}
                                         function.
@@ -554,9 +557,9 @@ particular records in a file and perform operations upon them.
                                         @command{awk}.
 * Uninitialized Subscripts::            Using Uninitialized variables as
                                         subscripts.
-* Multi-dimensional::                   Emulating multidimensional arrays in
+* Multidimensional::                    Emulating multidimensional arrays in
                                         @command{awk}.
-* Multi-scanning::                      Scanning multidimensional arrays.
+* Multiscanning::                       Scanning multidimensional arrays.
 * Arrays of Arrays::                    True multidimensional arrays.
 * Built-in::                            Summarizes the built-in functions.
 * Calling Built-in::                    How to call built-in functions.
@@ -608,6 +611,8 @@ particular records in a file and perform operations upon them.
 * Join Function::                       A function to join an array into a
                                         string.
 * Getlocaltime Function::               A function to get formatted times.
+* Readfile Function::                   A function to read an entire file at
+                                        once.
 * Data File Management::                Functions for managing command-line
                                         data files.
 * Filetrans Function::                  A function for handling data file
@@ -819,9 +824,12 @@ particular records in a file and perform operations upon them.
 * VMS Installation::                    Installing @command{gawk} on VMS.
 * VMS Compilation::                     How to compile @command{gawk} under
                                         VMS.
+* VMS Dynamic Extensions::              Compiling @command{gawk} dynamic
+                                        extensions on VMS.
 * VMS Installation Details::            How to install @command{gawk} under
                                         VMS.
 * VMS Running::                         How to run @command{gawk} under VMS.
+* VMS GNV::                             The VMS GNV Project.
 * VMS Old Gawk::                        An old version comes with some VMS
                                         systems.
 * Bugs::                                Reporting Problems and Bugs.
@@ -1191,7 +1199,7 @@ an @command{awk}-level debugger. This version became available as
 for a complete list of those who made important contributions to @command{gawk}.
 
 @node Names
-@section A Rose by Any Other Name
+@unnumberedsec A Rose by Any Other Name
 
 @cindex @command{awk}, new vs.@: old
 The @command{awk} language has evolved over the years. Full details are
@@ -1227,7 +1235,7 @@ we simply use the term @command{awk}.  When referring to a feature that is
 specific to the GNU implementation, we use the term @command{gawk}.
 
 @node This Manual
-@section Using This Book
+@unnumberedsec Using This Book
 @cindex @command{awk}, terms describing
 
 The term @command{awk} refers to a particular program as well as to the language you
@@ -1400,7 +1408,7 @@ present the licenses that cover the @command{gawk} source code
 and this @value{DOCUMENT}, respectively.
 
 @node Conventions
-@section Typographical Conventions
+@unnumberedsec Typographical Conventions
 
 @cindex Texinfo
 This @value{DOCUMENT} is written in @uref{http://www.gnu.org/software/texinfo/, Texinfo},
@@ -1450,12 +1458,12 @@ by first pressing and holding the @kbd{CONTROL} key, next
 pressing the @kbd{d} key and finally releasing both keys.
 
 @c fakenode --- for prepinfo
-@subsubheading Dark Corners
+@unnumberedsubsec Dark Corners
 @cindex Kernighan, Brian
 @quotation
 @i{Dark corners are basically fractal --- no matter how much
-you illuminate, there's always a smaller but darker one.}@*
-Brian Kernighan
+you illuminate, there's always a smaller but darker one.}
+@author Brian Kernighan
 @end quotation
 
 @cindex d.c., See dark corner
@@ -2616,7 +2624,7 @@ learn in this @value{DOCUMENT}.
 If you are using the stand-alone version of Info,
 see @ref{Extract Program},
 for an @command{awk} program that extracts these data files from
-@file{gawk.texi}, the Texinfo source file for this Info file.
+@file{gawk.texi}, the (generated) Texinfo source file for this Info file.
 @end ifinfo
 
 @node Very Simple
@@ -3954,10 +3962,6 @@ for use by the @command{gawk} developers for testing and tuning.
 They are subject to change. The variables are:
 
 @table @env
-@item AVG_CHAIN_MAX
-The average number of items @command{gawk} will maintain on a
-hash chain for managing arrays.
-
 @item AWK_HASH
 If this variable exists with a value of @samp{gst}, @command{gawk}
 will switch to using the hash function from GNU Smalltalk for
@@ -3970,6 +3974,13 @@ files one line at a time, instead of reading in blocks. This exists
 for debugging problems on filesystems on non-POSIX operating systems
 where I/O is performed in records, not in blocks.
 
+@item GAWK_MSG_SRC
+If this variable exists, @command{gawk} includes the source file
+name and line number from which warning and/or fatal messages
+are generated.  Its purpose is to help isolate the source of a
+message, since there can be multiple places which produce the
+same warning or error message.
+
 @item GAWK_NO_DFA
 If this variable exists, @command{gawk} does not use the DFA regexp matcher
 for ``does it match'' kinds of tests. This can cause @command{gawk}
@@ -3981,6 +3992,14 @@ coordinate with each other.)
 @item GAWK_STACKSIZE
 This specifies the amount by which @command{gawk} should grow its
 internal evaluation stack, when needed.
+
+@item INT_CHAIN_MAX
+The average number of items @command{gawk} will maintain on a
+hash chain for managing arrays indexed by integers.
+
+@item STR_CHAIN_MAX
+The average number of items @command{gawk} will maintain on a
+hash chain for managing arrays indexed by strings.
 
 @item TIDYMEM
 If this variable exists, @command{gawk} uses the @code{mtrace()} library
@@ -4202,8 +4221,8 @@ in case some option becomes obsolete in a future version of @command{gawk}.
 @cindex Jedi knights
 @cindex Knights, jedi
 @quotation
-@i{Use the Source, Luke!}@*
-Obi-Wan
+@i{Use the Source, Luke!}
+@author Obi-Wan
 @end quotation
 
 This @value{SECTION} intentionally left
@@ -5569,7 +5588,7 @@ used with it do not have to be named on the @command{awk} command line
 * Field Separators::            The field separator and how to change it.
 * Constant Size::               Reading constant width data.
 * Splitting By Content::        Defining Fields By Content
-* Multiple Line::               Reading multi-line records.
+* Multiple Line::               Reading multiline records.
 * Getline::                     Reading files under explicit program control
                                 using the @code{getline} function.
 * Read Timeout::                Reading input with a timeout.
@@ -6289,6 +6308,7 @@ with a statement such as @samp{$1 = $1}, as described earlier.
 * Regexp Field Splitting::       Using regexps as the field separator.
 * Single Character Fields::      Making each character a separate field.
 * Command Line Field Separator:: Setting @code{FS} from the command-line.
+* Full Line Fields::             Making the full line be a single field.
 * Field Splitting Summary::      Some final points and a summary table.
 @end menu
 
@@ -6656,6 +6676,21 @@ the entries for users who have no password:
 @example
 awk -F: '$2 == ""' /etc/passwd
 @end example
+
+@node Full Line Fields
+@subsection Making The Full Line Be A Single Field
+
+Occasionally, it's useful to treat the whole input line as a
+single field.  This can be done easily and portably simply by
+setting @code{FS} to @code{"\n"} (a newline).@footnote{Thanks to
+Andrew Schorr for this tip.}
+
+@example
+awk -F'\n' '@var{program}' @var{files @dots{}}
+@end example
+
+@noindent
+When you do this, @code{$1} is the same as @code{$0}.
 
 @node Field Splitting Summary
 @subsection Field-Splitting Summary
@@ -7569,8 +7604,8 @@ that does handle nested @samp{@@include} statements.
 @c From private email, dated October 2, 1988. Used by permission, March 2013.
 @quotation
 @i{Omniscience has much to recommend it.
-Failing that, attention to details would be useful.}@*
-Brian Kernighan
+Failing that, attention to details would be useful.}
+@author Brian Kernighan
 @end quotation
 
 @cindex @code{|} (vertical bar), @code{|} operator (I/O)
@@ -10023,7 +10058,7 @@ with @code{CONVFMT} as the format
 specifier
 (@pxref{String Functions}).
 
-@code{CONVFMT}'s default value is @code{"%.6g"}, which prints a value with
+@code{CONVFMT}'s default value is @code{"%.6g"}, which creates a value with
 at most six significant digits.  For some applications, you might want to
 change it to specify more precision.
 On most modern machines,
@@ -10272,8 +10307,8 @@ For maximum portability, do not use the @samp{**} operator.
 @subsection String Concatenation
 @cindex Kernighan, Brian
 @quotation
-@i{It seemed like a good idea at the time.}@*
-Brian Kernighan
+@i{It seemed like a good idea at the time.}
+@author Brian Kernighan
 @end quotation
 
 @cindex string operators
@@ -10803,8 +10838,8 @@ like @samp{@var{lvalue}++}, but instead of adding, it subtracts.)
 @cindex Marx, Groucho
 @quotation
 @i{Doctor, doctor!  It hurts when I do this!@*
-So don't do that!}@*
-Groucho Marx
+So don't do that!}
+@author Groucho Marx
 @end quotation
 
 @noindent
@@ -10855,8 +10890,8 @@ You should avoid such things in your own programs.
 @cindex Marx, Groucho
 @quotation
 @i{Doctor, doctor!  It hurts when I do this!@*
-So don't do that!}@*
-Groucho Marx
+So don't do that!}
+@author Groucho Marx
 @end quotation
 
 @noindent
@@ -10954,8 +10989,8 @@ the string constant @code{"0"} is actually true, because it is non-null.
 @node Typing and Comparison
 @subsection Variable Typing and Comparison Expressions
 @quotation
-@i{The Guide is definitive. Reality is frequently inaccurate.}@*
-The Hitchhiker's Guide to the Galaxy
+@i{The Guide is definitive. Reality is frequently inaccurate.}
+@author The Hitchhiker's Guide to the Galaxy
 @end quotation
 
 @c STARTOFRANGE comex
@@ -13389,7 +13424,7 @@ exclusively on the value of @code{FS}.
 @item FS
 This is the input field separator
 (@pxref{Field Separators}).
-The value is a single-character string or a multi-character regular
+The value is a single-character string or a multicharacter regular
 expression that matches the separations between fields in an input
 record.  If the value is the null string (@code{""}), then each
 character in the record becomes a separate field.
@@ -13535,7 +13570,7 @@ This is the subscript separator.  It has the default value of
 @code{"\034"} and is used to separate the parts of the indices of a
 multidimensional array.  Thus, the expression @code{@w{foo["A", "B"]}}
 really accesses @code{foo["A\034B"]}
-(@pxref{Multi-dimensional}).
+(@pxref{Multidimensional}).
 
 @cindex @command{gawk}, @code{TEXTDOMAIN} variable in
 @cindex @code{TEXTDOMAIN} variable
@@ -13651,7 +13686,7 @@ For POSIX @command{awk}, changing this array does not affect the
 environment passed on to any programs that @command{awk} may spawn via
 redirection or the @code{system()} function.
 
-However, beginning with @value{PVERSION} 4.2, if not in POSIX
+However, beginning with version 4.2, if not in POSIX
 compatibility mode, @command{gawk} does update its own environment when
 @code{ENVIRON} is changed, thus changing the environment seen by programs
 that it creates.  You should therefore be especially careful if you
@@ -14227,7 +14262,7 @@ same @command{awk} program.
 * Numeric Array Subscripts::    How to use numbers as subscripts in
                                 @command{awk}.
 * Uninitialized Subscripts::    Using Uninitialized variables as subscripts.
-* Multi-dimensional::           Emulating multidimensional arrays in
+* Multidimensional::            Emulating multidimensional arrays in
                                 @command{awk}.
 * Arrays of Arrays::            True multidimensional arrays.
 @end menu
@@ -14257,8 +14292,8 @@ an array.
 @cindex Wall, Larry
 @quotation
 @i{Doing linear scans over an associative array is like trying to club someone
-to death with a loaded Uzi.}@*
-Larry Wall
+to death with a loaded Uzi.}
+@author Larry Wall
 @end quotation
 
 The @command{awk} language provides one-dimensional arrays
@@ -14669,29 +14704,29 @@ Array elements are processed in arbitrary order, which is the default
 @command{awk} behavior.
 
 @item "@@ind_str_asc"
-Order by indices compared as strings; this is the most basic sort.
+Order by indices in ascending order compared as strings; this is the most basic sort.
 (Internally, array indices are always strings, so with @samp{a[2*5] = 1}
 the index is @code{"10"} rather than numeric 10.)
 
 @item "@@ind_num_asc"
-Order by indices but force them to be treated as numbers in the process.
+Order by indices in ascending order but force them to be treated as numbers in the process.
 Any index with a non-numeric value will end up positioned as if it were zero. 
 
 @item "@@val_type_asc"
-Order by element values rather than indices.
+Order by element values in ascending order (rather than by indices).
 Ordering is by the type assigned to the element
 (@pxref{Typing and Comparison}).
 All numeric values come before all string values,
 which in turn come before all subarrays.
 (Subarrays have not been described yet;
-@pxref{Arrays of Arrays}).
+@pxref{Arrays of Arrays}.)
 
 @item "@@val_str_asc"
-Order by element values rather than by indices.  Scalar values are 
+Order by element values in ascending order (rather than by indices).  Scalar values are 
 compared as strings.  Subarrays, if present, come out last.
 
 @item "@@val_num_asc"
-Order by element values rather than by indices.  Scalar values are 
+Order by element values in ascending order (rather than by indices).  Scalar values are 
 compared as numbers.  Subarrays, if present, come out last.
 When numeric values are equal, the string values are used to provide
 an ordering: this guarantees consistent results across different
@@ -14704,13 +14739,14 @@ across different environments.} which @command{gawk} uses internally
 to perform the sorting.
 
 @item "@@ind_str_desc"
-Reverse order from the most basic sort.
+String indices ordered from high to low.
 
 @item "@@ind_num_desc"
 Numeric indices ordered from high to low.
 
 @item "@@val_type_desc"
-Element values, based on type, in descending order.
+Element values, based on type, ordered from high to low.
+Subarrays, if present, come out first.
 
 @item "@@val_str_desc"
 Element values, treated as strings, ordered from high to low.
@@ -15020,11 +15056,11 @@ Even though it is somewhat unusual, the null string
 if @option{--lint} is provided
 on the command line (@pxref{Options}).
 
-@node Multi-dimensional
+@node Multidimensional
 @section Multidimensional Arrays
 
 @menu
-* Multi-scanning::              Scanning multidimensional arrays.
+* Multiscanning::               Scanning multidimensional arrays.
 @end menu
 
 @cindex subscripts in arrays, multidimensional
@@ -15122,7 +15158,7 @@ the program produces the following output:
 3 2 1 6
 @end example
 
-@node Multi-scanning
+@node Multiscanning
 @subsection Scanning Multidimensional Arrays
 
 There is no special @code{for} statement for scanning a
@@ -15567,15 +15603,16 @@ sequences of random numbers.
 @node String Functions
 @subsection String-Manipulation Functions
 
-The functions in this @value{SECTION} look at or change the text of one or more
-strings.
-@code{gawk} understands locales (@pxref{Locales}), and does all string processing in terms of
-@emph{characters}, not @emph{bytes}.  This distinction is particularly important
-to understand for locales where one character
-may be represented by multiple bytes.  Thus, for example, @code{length()}
-returns the number of characters in a string, and not the number of bytes
-used to represent those characters, Similarly, @code{index()} works with
-character indices, and not byte indices.
+The functions in this @value{SECTION} look at or change the text of one
+or more strings.
+
+@code{gawk} understands locales (@pxref{Locales}), and does all
+string processing in terms of @emph{characters}, not @emph{bytes}.
+This distinction is particularly important to understand for locales
+where one character may be represented by multiple bytes.  Thus, for
+example, @code{length()} returns the number of characters in a string,
+and not the number of bytes used to represent those characters. Similarly,
+@code{index()} works with character indices, and not byte indices.
 
 In the following list, optional parameters are enclosed in square brackets@w{ ([ ]).}
 Several functions perform string substitution; the full discussion is
@@ -15592,30 +15629,32 @@ pound sign@w{ (@samp{#}):}
 
 @table @code
 @item asort(@var{source} @r{[}, @var{dest} @r{[}, @var{how}  @r{]} @r{]}) #
+@itemx asorti(@var{source} @r{[}, @var{dest} @r{[}, @var{how}  @r{]} @r{]}) #
+@cindex @code{asorti()} function (@command{gawk})
 @cindex arrays, elements, retrieving number of
 @cindex @code{asort()} function (@command{gawk})
 @cindex @command{gawk}, @code{IGNORECASE} variable in
 @cindex @code{IGNORECASE} variable
-Return the number of elements in the array @var{source}.
-@command{gawk} sorts the contents of @var{source}
-and replaces the indices
-of the sorted values of @var{source} with sequential
-integers starting with one.  If the optional array @var{dest} is specified,
-then @var{source} is duplicated into @var{dest}.  @var{dest} is then
-sorted, leaving the indices of @var{source} unchanged.  The optional third
-argument @var{how} is a string which controls the rule for comparing values,
-and the sort direction.  A single space is required between the
-comparison mode, @samp{string} or @samp{number}, and the direction specification,
-@samp{ascending} or @samp{descending}.  You can omit direction and/or mode
-in which case it will default to @samp{ascending} and @samp{string}, respectively. 
-An empty string "" is the same as the default @code{"ascending string"}
-for the value of @var{how}.  If the @samp{source} array contains subarrays as values,
-they will come out last(first) in the @samp{dest} array for @samp{ascending}(@samp{descending})
-order specification.  The value of @code{IGNORECASE} affects the sorting.
-The third argument can also be a user-defined function name in which case
-the value returned by the function is used to order the array elements
-before constructing the result array.
-@xref{Array Sorting Functions}, for more information.
+These two functions are similar in behavior, so they are described
+together.
+
+@quotation NOTE
+The following description ignores the third argument, @var{how}, since it
+requires understanding features that we have not discussed yet.  Thus,
+the discussion here is a deliberate simplification.  (We do provide all
+the details later on: @xref{Array Sorting Functions}, for the full story.)
+@end quotation
+
+Both functions return the number of elements in the array @var{source}.
+For @command{asort()}, @command{gawk} sorts the values of @var{source}
+and replaces the indices of the sorted values of @var{source} with
+sequential integers starting with one.  If the optional array @var{dest}
+is specified, then @var{source} is duplicated into @var{dest}.  @var{dest}
+is then sorted, leaving the indices of @var{source} unchanged.
+
+When comparing strings, @code{IGNORECASE} affects the sorting.  If the
+@var{source} array contains subarrays as values (@pxref{Arrays of
+Arrays}), they will come last, after all scalar values.
 
 For example, if the contents of @code{a} are as follows:
 
@@ -15641,29 +15680,19 @@ a[2] = "de"
 a[3] = "sac"
 @end example
 
-In order to reverse the direction of the sorted results in the above example,
-@code{asort()} can be called with three arguments as follows:
+The @code{asorti()} function works similarly to @code{asort()}, however,
+the @emph{indices} are sorted, instead of the values. Thus, in the
+previous example, starting with the same initial set of indices and
+values in @code{a}, calling @samp{asorti(a)} would yield:
 
 @example
-asort(a, a, "descending")
+a[1] = "first"
+a[2] = "last"
+a[3] = "middle"
 @end example
 
-The @code{asort()} function is described in more detail in
-@ref{Array Sorting Functions}.
-@code{asort()} is a @command{gawk} extension; it is not available
-in compatibility mode (@pxref{Options}).
-
-@item asorti(@var{source} @r{[}, @var{dest} @r{[}, @var{how}  @r{]} @r{]}) #
-@cindex @code{asorti()} function (@command{gawk})
-Return the number of elements in the array @var{source}.
-It works similarly to @code{asort()}, however, the @emph{indices}
-are sorted, instead of the values. (Here too,
-@code{IGNORECASE} affects the sorting.)
-
-The @code{asorti()} function is described in more detail in
-@ref{Array Sorting Functions}.
-@code{asorti()} is a @command{gawk} extension; it is not available
-in compatibility mode (@pxref{Options}).
+@code{asort()} and @code{asorti()} are @command{gawk} extensions; they
+are not available in compatibility mode (@pxref{Options}).
 
 @item gensub(@var{regexp}, @var{replacement}, @var{how} @r{[}, @var{target}@r{]}) #
 @cindex @code{gensub()} function (@command{gawk})
@@ -17441,8 +17470,8 @@ gawk 'BEGIN  @{
 @c STARTOFRANGE opbit
 @cindex operations, bitwise
 @quotation
-@i{I can explain it for you, but I can't understand it for you.}@*
-Anonymous
+@i{I can explain it for you, but I can't understand it for you.}
+@author Anonymous
 @end quotation
 
 Many languages provide the ability to perform @dfn{bitwise} operations
@@ -18881,9 +18910,9 @@ it allows you to encapsulate algorithms and program tasks in a single
 place.  It simplifies programming, making program development more
 manageable, and making programs more readable.
 
-In their seminal 1976 book, @cite{Software Tools}@footnote{Sadly, over 35
+In their seminal 1976 book, @cite{Software Tools},@footnote{Sadly, over 35
 years later, many of the lessons taught by this book have yet to be
-learned by a vast number of practicing programmers.}, Brian Kernighan
+learned by a vast number of practicing programmers.} Brian Kernighan
 and P.J.@: Plauger wrote:
 
 @quotation
@@ -19082,6 +19111,7 @@ programming use.
                                 vice versa.
 * Join Function::               A function to join an array into a string.
 * Getlocaltime Function::       A function to get formatted times.
+* Readfile Function::           A function to read an entire file at once.
 @end menu
 
 @node Strtonum Function
@@ -19706,6 +19736,81 @@ A more general design for the @code{getlocaltime()} function would have
 allowed the user to supply an optional timestamp value to use instead
 of the current time.
 
+@node Readfile Function
+@subsection Reading A Whole File At Once
+
+Often, it is convenient to have the entire contents of a file available
+in memory as a single string. A straightforward but naive way to
+do that might be as follows:
+
+@example
+function readfile(file,    tmp, contents)
+@{
+    if ((getline tmp < file) < 0)
+        return
+
+    contents = tmp
+    while (getline tmp < file) > 0)
+        contents = contents RT tmp
+
+    close(file)
+    return contents
+@}
+@end example
+
+This function reads from @code{file} one record at a time, building
+up the full contents of the file in the local variable @code{contents}.
+It works, but is not necessarily efficient.
+
+The following function, based on a suggestion by Denis Shirokov,
+reads the entire contents of the named file in one shot:
+
+@cindex @code{readfile()} user-defined function
+@example
+@c file eg/lib/readfile.awk
+# readfile.awk --- read an entire file at once
+@c endfile
+@ignore
+@c file eg/lib/readfile.awk
+#
+# Original idea by Denis Shirokov, cosmogen@@gmail.com, April 2013
+#
+@c endfile
+@end ignore
+@c file eg/lib/readfile.awk
+
+function readfile(file,     tmp, save_rs)
+@{
+    save_rs = RS
+    RS = "^$"
+    getline tmp < file
+    close(file)
+    RS = save_rs
+
+    return tmp
+@}
+@c endfile
+@end example
+
+It works by setting @code{RS} to @samp{^$}, a regular expression that
+will never match if the file has contents.  @command{gawk} reads data from
+the file into @code{tmp} attempting to match @code{RS}.  The match fails
+after each read, but fails quickly, such that @command{gawk} fills
+@code{tmp} with the entire contents of the file.
+(@xref{Records}, for information on @code{RT} and @code{RS}.)
+
+In the case that @code{file} is empty, the return value is the null
+string.  Thus calling code may use something like:
+
+@example
+contents = readfile("/some/path")
+if (length(contents) == 0)
+    # file was empty @dots{}
+@end example
+
+This tests the result to see if it is empty or not. An equivalent
+test would be @samp{contents == ""}.
+
 @node Data File Management
 @section Data File Management
 
@@ -20310,7 +20415,7 @@ The discussion that follows walks through the code a bit at a time:
 #    <c>    a character representing the current option
 
 # Private Data:
-#    _opti  -- index in multi-flag option, e.g., -abc
+#    _opti  -- index in multiflag option, e.g., -abc
 @c endfile
 @end example
 
@@ -23023,8 +23128,8 @@ word, comparing it to the previous one:
 @cindex insomnia, cure for
 @cindex Robbins, Arnold
 @quotation
-@i{Nothing cures insomnia like a ringing alarm clock.}@*
-Arnold Robbins
+@i{Nothing cures insomnia like a ringing alarm clock.}
+@author Arnold Robbins
 @end quotation
 
 @c STARTOFRANGE tialarm
@@ -23200,9 +23305,7 @@ often used to map uppercase letters into lowercase for further processing:
 
 @command{tr} requires two lists of characters.@footnote{On some older
 systems,
-@ifset ORA
 including Solaris,
-@end ifset
 @command{tr} may require that the lists be written as
 range expressions enclosed in square brackets (@samp{[a-z]}) and quoted,
 to prevent the shell from attempting a file name expansion.  This is
@@ -23739,7 +23842,7 @@ Lines containing @samp{@@group} and @samp{@@end group} are simply removed.
 (@pxref{Join Function}).
 
 The example programs in the online Texinfo source for @cite{@value{TITLE}}
-(@file{gawk.texi}) have all been bracketed inside @samp{file} and
+(@file{gawktexi.in}) have all been bracketed inside @samp{file} and
 @samp{endfile} lines.  The @command{gawk} distribution uses a copy of
 @file{extract.awk} to extract the sample programs and install many
 of them in a standard directory where @command{gawk} can find them.
@@ -24843,8 +24946,8 @@ who knows where you live."
 @end ignore
 @quotation
 @i{Write documentation as if whoever reads it is
-a violent psychopath who knows where you live.}@*
-Steve English, as quoted by Peter Langston
+a violent psychopath who knows where you live.}
+@author Steve English, as quoted by Peter Langston
 @end quotation
 
 This @value{CHAPTER} discusses advanced features in @command{gawk}.
@@ -25163,7 +25266,7 @@ ordered data:
 @example
 function cmp_randomize(i1, v1, i2, v2)
 @{
-    # random order
+    # random order (caution: this may never terminate!)
     return (2 - 4 * rand())
 @}
 @end example
@@ -25178,7 +25281,7 @@ with otherwise equal values is to include the indices in the comparison
 rules.  Note that doing this may make the loop traversal less efficient,
 so consider it only if necessary.  The following comparison functions
 force a deterministic order, and are based on the fact that the
-indices of two elements are never equal:
+(string) indices of two elements are never equal:
 
 @example
 function cmp_numeric(i1, v1, i2, v2)
@@ -25237,15 +25340,14 @@ sorted array traversal is not the default.
 @cindex arrays, sorting
 @cindex @code{asort()} function (@command{gawk})
 @cindex @code{asort()} function (@command{gawk}), arrays@comma{} sorting
+@cindex @code{asorti()} function (@command{gawk})
+@cindex @code{asorti()} function (@command{gawk}), arrays@comma{} sorting
 @cindex sort function, arrays, sorting
-In most @command{awk} implementations, sorting an array requires
-writing a @code{sort()} function.
-While this can be educational for exploring different sorting algorithms,
-usually that's not the point of the program.
-@command{gawk} provides the built-in @code{asort()}
-and @code{asorti()} functions
-(@pxref{String Functions})
-for sorting arrays.  For example:
+In most @command{awk} implementations, sorting an array requires writing
+a @code{sort()} function.  While this can be educational for exploring
+different sorting algorithms, usually that's not the point of the program.
+@command{gawk} provides the built-in @code{asort()} and @code{asorti()}
+functions (@pxref{String Functions}) for sorting arrays.  For example:
 
 @example
 @var{populate the array} data
@@ -25258,7 +25360,7 @@ After the call to @code{asort()}, the array @code{data} is indexed from 1
 to some number @var{n}, the total number of elements in @code{data}.
 (This count is @code{asort()}'s return value.)
 @code{data[1]} @value{LEQ} @code{data[2]} @value{LEQ} @code{data[3]}, and so on.
-The comparison is based on the type of the elements
+The default comparison is based on the type of the elements
 (@pxref{Typing and Comparison}).
 All numeric values come before all string values,
 which in turn come before all subarrays.
@@ -25280,24 +25382,11 @@ In this case, @command{gawk} copies the @code{source} array into the
 @code{dest} array and then sorts @code{dest}, destroying its indices.
 However, the @code{source} array is not affected.
 
-@code{asort()} accepts a third string argument to control comparison of
-array elements.  As with @code{PROCINFO["sorted_in"]}, this argument
-may be one of the predefined names that @command{gawk} provides
-(@pxref{Controlling Scanning}), or the name of a user-defined function
-(@pxref{Controlling Array Traversal}).
-
-@quotation NOTE
-In all cases, the sorted element values consist of the original
-array's element values.  The ability to control comparison merely
-affects the way in which they are sorted.
-@end quotation
-
 Often, what's needed is to sort on the values of the @emph{indices}
-instead of the values of the elements.
-To do that, use the
-@code{asorti()} function.  The interface is identical to that of
-@code{asort()}, except that the index values are used for sorting, and
-become the values of the result array:
+instead of the values of the elements.  To do that, use the
+@code{asorti()} function.  The interface and behavior are identical to
+that of @code{asort()}, except that the index values are used for sorting,
+and become the values of the result array:
 
 @example
 @{ source[$0] = some_func($0) @}
@@ -25314,23 +25403,35 @@ END @{
 @}
 @end example
 
-Similar to @code{asort()},
-in all cases, the sorted element values consist of the original
-array's indices.  The ability to control comparison merely
-affects the way in which they are sorted.
+So far, so good. Now it starts to get interesting.  Both @code{asort()}
+and @code{asorti()} accept a third string argument to control comparison
+of array elements.  In @ref{String Functions}, we ignored this third
+argument; however, the time has now come to describe how this argument
+affects these two functions.
 
-Sorting the array by replacing the indices provides maximal flexibility.
-To traverse the elements in decreasing order, use a loop that goes from
-@var{n} down to 1, either over the elements or over the indices.@footnote{You
-may also use one of the predefined sorting names that sorts in
-decreasing order.}
+Basically, the third argument specifies how the array is to be sorted.
+There are two possibilities.  As with @code{PROCINFO["sorted_in"]},
+this argument may be one of the predefined names that @command{gawk}
+provides (@pxref{Controlling Scanning}), or it may be the name of a
+user-defined function (@pxref{Controlling Array Traversal}).
+
+In the latter case, @emph{the function can compare elements in any way
+it chooses}, taking into account just the indices, just the values,
+or both.  This is extremely powerful.
+
+Once the array is sorted, @code{asort()} takes the @emph{values} in
+their final order, and uses them to fill in the result array, whereas
+@code{asorti()} takes the @emph{indices} in their final order, and uses
+them to fill in the result array.
 
 @cindex reference counting, sorting arrays
+@quotation NOTE
 Copying array indices and elements isn't expensive in terms of memory.
 Internally, @command{gawk} maintains @dfn{reference counts} to data.
 For example, when @code{asort()} copies the first array to the second one,
 there is only one copy of the original array elements' data, even though
 both arrays use the values.
+@end quotation
 
 @c Document It And Call It A Feature. Sigh.
 @cindex @command{gawk}, @code{IGNORECASE} variable in
@@ -27991,11 +28092,11 @@ to believe. Novice computer users solve this problem by implicitly trusting
 in the computer as an infallible authority; they tend to believe that all
 digits of a printed answer are significant. Disillusioned computer users have
 just the opposite approach; they are constantly afraid that their answers
-are almost meaningless.}@*
-Donald Knuth@footnote{Donald E.@: Knuth.
+are almost meaningless.}@footnote{Donald E.@: Knuth.
 @cite{The Art of Computer Programming}. Volume 2,
 @cite{Seminumerical Algorithms}, third edition,
 1998, ISBN 0-201-89683-4, p.@: 229.}
+@author Donald Knuth
 @end quotation
 
 This @value{CHAPTER} discusses issues that you may encounter
@@ -28133,7 +28234,7 @@ This makes it clear that the full numeric value is different from
 what the default string representations show.
 
 @code{CONVFMT}'s default value is @code{"%.6g"}, which yields a value with
-at least six significant digits.  For some applications, you might want to
+at most six significant digits.  For some applications, you might want to
 change it to specify more precision.
 On most modern machines, most of the time,
 17 digits is enough to capture a floating-point number's
@@ -29002,11 +29103,10 @@ floating-point format to a precision lower than working precision.
 Do we promote them to full membership of the high-precision club,
 or do we treat them and all their associates as second-class citizens?
 Sometimes the first course is proper, sometimes the second, and it takes
-careful analysis to tell which.}
-
-Dirk Laurie@footnote{Dirk Laurie.
+careful analysis to tell which.}@footnote{Dirk Laurie.
 @cite{Variable-precision Arithmetic Considered Perilous --- A Detective Story}.
 Electronic Transactions on Numerical Analysis. Volume 28, pp. 168-173, 2008.}
+@author Dirk Laurie
 @end quotation
 
 @command{gawk} does not implicitly modify the precision of any previously
@@ -29544,12 +29644,14 @@ the macros as if they were functions.
 @subsection General Purpose Data Types
 
 @quotation
-@i{I have a true love/hate relationship with unions.}@*
-Arnold Robbins
+@i{I have a true love/hate relationship with unions.}
+@author Arnold Robbins
+@end quotation
 
+@quotation
 @i{That's the thing about unions: the compiler will arrange things so they
-can accommodate both love and hate.}@*
-Chet Ramey
+can accommodate both love and hate.}
+@author Chet Ramey
 @end quotation
 
 The extension API defines a number of simple types and structures for general
@@ -31482,8 +31584,8 @@ path with a list of directories to search for compiled extensions.
 @section Example: Some File Functions
 
 @quotation
-@i{No matter where you go, there you are.} @*
-Buckaroo Bonzai
+@i{No matter where you go, there you are.}
+@author Buckaroo Bonzai
 @end quotation
 
 @c It's enough to show chdir and stat, no need for fts
@@ -32266,7 +32368,7 @@ Return zero if there were no errors, otherwise return @minus{}1.
 
 The @code{fts()} function provides a hook to the C library @code{fts()}
 routines for traversing file hierarchies.  Instead of returning data
-about one file at a time in a stream, it fills in a multi-dimensional
+about one file at a time in a stream, it fills in a multidimensional
 array with data about each file and directory encountered in the requested
 hierarchies.
 
@@ -32367,7 +32469,7 @@ be more comfortable to use from an @command{awk} program.  This includes the
 lack of a comparison function, since @command{gawk} already provides
 powerful array sorting facilities.  While an @code{fts_read()}-like
 interface could have been provided, this felt less natural than simply
-creating a multi-dimensional array to represent the file hierarchy and
+creating a multidimensional array to represent the file hierarchy and
 its information.
 @end quotation
 
@@ -32791,12 +32893,15 @@ project provides a number of @command{gawk} extensions, including one for
 processing XML files.  This is the evolution of the original @command{xgawk}
 (XML @command{gawk}) project.
 
-As of this writing, there are four extensions:
+As of this writing, there are five extensions:
 
 @itemize @bullet
 @item
 XML parser extension, using the @uref{http://expat.sourceforge.net, Expat}
 XML parsing library.
+
+@item
+PDF extension.
 
 @item
 PostgreSQL extension.
@@ -33025,7 +33130,7 @@ Multiple @code{BEGIN} and @code{END} rules
 
 @item
 Multidimensional arrays
-(@pxref{Multi-dimensional}).
+(@pxref{Multidimensional}).
 @end itemize
 @c ENDOFRANGE gawkv1
 
@@ -33493,6 +33598,9 @@ Tandem (non-POSIX)
 @item
 Prestandard VAX C compiler for VAX/VMS
 
+@item
+GCC for VAX and Alpha has not been tested for a while.
+
 @end itemize
 
 @end itemize
@@ -33547,7 +33655,7 @@ character ranges (such as @samp{[a-z]}) to match any character between
 the first character in the range and the last character in the range,
 inclusive.  Ordering was based on the numeric value of each character
 in the machine's native character set.  Thus, on ASCII-based systems,
-@code{[a-z]} matched all the lowercase letters, and only the lowercase
+@samp{[a-z]} matched all the lowercase letters, and only the lowercase
 letters, since the numeric values for the letters from @samp{a} through
 @samp{z} were contiguous.  (On an EBCDIC system, the range @samp{[a-z]}
 includes additional, non-alphabetic characters as well.)
@@ -33639,8 +33747,8 @@ cases: the default regexp matching; with @option{--traditional}, and with
 @appendixsec Major Contributors to @command{gawk}
 @cindex @command{gawk}, list of contributors to
 @quotation
-@i{Always give credit where credit is due.}@*
-Anonymous
+@i{Always give credit where credit is due.}
+@author Anonymous
 @end quotation
 
 This @value{SECTION} names the major contributors to @command{gawk}
@@ -33837,6 +33945,10 @@ The modifications to convert @command{gawk}
 into a byte-code interpreter, including the debugger.
 
 @item
+The addition of true multidimensional arrays.
+@ref{Arrays of Arrays}.
+
+@item
 The additional modifications for support of arbitrary precision arithmetic.
 
 @item
@@ -33849,6 +33961,10 @@ into one, for the 4.1 release.
 
 @item
 Improved array internals for arrays indexed by integers.
+
+@item
+The improved array sorting features were driven by John together
+with Pat Rankin.
 @end itemize
 
 @item
@@ -34002,6 +34118,13 @@ The actual @command{gawk} source code.
 @end table
 
 @table @file
+@item ABOUT-NLS
+Information about GNU @command{gettext} and translations.
+
+@item AUTHORS
+A file with some information about the authorship of @command{gawk}.
+It exists only to satisfy the pedants at the Free Software Foundation.
+
 @item README
 @itemx README_d/README.*
 Descriptive files: @file{README} for @command{gawk} under Unix and the
@@ -34024,16 +34147,6 @@ An older list of changes to @command{gawk}.
 
 @item COPYING
 The GNU General Public License.
-
-@item FUTURES
-A brief list of features and changes being contemplated for future
-releases, with some indication of the time frame for the feature, based
-on its difficulty.
-
-@item LIMITATIONS
-A list of those factors that limit @command{gawk}'s performance.
-Most of these depend on the hardware or operating system software and
-are not limits in @command{gawk} itself.
 
 @item POSIX.STD
 A description of behaviors in the POSIX standard for @command{awk} which
@@ -34067,12 +34180,19 @@ The @command{troff} source for a manual page describing @command{gawk}.
 This is distributed for the convenience of Unix users.
 
 @cindex Texinfo
-@item doc/gawk.texi
+@item doc/gawktexi.in
+@itemx doc/sidebar.awk
 The Texinfo source file for this @value{DOCUMENT}.
-It should be processed with @TeX{}
-(via @command{texi2dvi} or @command{texi2pdf})
+It should be processed by @file{doc/sidebar.awk}
+before processing with @command{texi2dvi} or @command{texi2pdf}
 to produce a printed document, and
 with @command{makeinfo} to produce an Info or HTML file.
+The @file{Makefile} takes care of this processing and produces
+printable output via @command{texi2dvi} or @command{texi2pdf}.
+
+@item doc/gawk.texi
+The file produced after processing @file{gawktexi.in}
+with @file{sidebar.awk}.
 
 @item doc/gawk.info
 The generated Info file for this @value{DOCUMENT}.
@@ -34111,15 +34231,21 @@ the @file{Makefile.in} files used by @command{autoconf} and
 
 @item Makefile.in
 @itemx aclocal.m4
+@itemx bisonfix.awk
+@itemx config.guess
 @itemx configh.in
 @itemx configure.ac
 @itemx configure
 @itemx custom.h
+@itemx depcomp
+@itemx install-sh
 @itemx missing_d/*
+@itemx mkinstalldirs
 @itemx m4/*
-These files and subdirectories are used when configuring @command{gawk}
-for various Unix systems.  They are explained in
-@ref{Unix Installation}.
+These files and subdirectories are used when configuring and compiling
+@command{gawk} for various Unix systems.  Most of them are explained
+in @ref{Unix Installation}. The rest are there to support the main
+infrastructure.
 
 @item po/*
 The @file{po} library contains message translations.
@@ -34142,6 +34268,11 @@ are included as ready-to-use files in the @command{gawk} distribution.
 They are installed as part of the installation process.
 The rest of the programs in this @value{DOCUMENT} are available in appropriate
 subdirectories of @file{awklib/eg}.
+
+@item extension/*
+The source code, manual pages, and infrastructure files for
+the sample extensions included with @command{gawk}.
+@xref{Dynamic Extensions}, for more information.
 
 @item posix/*
 Files needed for building @command{gawk} on POSIX-compliant systems.
@@ -34262,6 +34393,14 @@ There are several additional options you may use on the @command{configure}
 command line when compiling @command{gawk} from scratch, including:
 
 @table @code
+
+@cindex @code{--disable-extensions} configuration option
+@cindex configuration option, @code{--disable-extensions}
+@item --disable-extensions
+Disable configuring and building the sample extensions in the
+@file{extension} directory. This is useful for cross-compiling.
+The default action is to dynamically check if the extensions
+can be configured and compiled.
 
 @cindex @code{--disable-lint} configuration option
 @cindex configuration option, @code{--disable-lint}
@@ -34746,8 +34885,11 @@ The older designation ``VMS'' is used throughout to refer to OpenVMS.
 
 @menu
 * VMS Compilation::             How to compile @command{gawk} under VMS.
+* VMS Dynamic Extensions::      Compiling @command{gawk} dynamic extensions on
+                                VMS.
 * VMS Installation Details::    How to install @command{gawk} under VMS.
 * VMS Running::                 How to run @command{gawk} under VMS.
+* VMS GNV::                     The VMS GNV Project.
 * VMS Old Gawk::                An old version comes with some VMS systems.
 @end menu
 
@@ -34755,41 +34897,117 @@ The older designation ``VMS'' is used throughout to refer to OpenVMS.
 @appendixsubsubsec Compiling @command{gawk} on VMS
 @cindex compiling @command{gawk} for VMS
 
-To compile @command{gawk} under VMS, there is a @code{DCL} command procedure that
-issues all the necessary @code{CC} and @code{LINK} commands. There is
-also a @file{Makefile} for use with the @code{MMS} utility.  From the source
-directory, use either:
+To compile @command{gawk} under VMS, there is a @code{DCL} command procedure
+that issues all the necessary @code{CC} and @code{LINK} commands. There is
+also a @file{Makefile} for use with the @code{MMS} and @code{MMK} utilities.
+From the source directory, use either:
 
 @example
-$ @kbd{@@[.VMS]VMSBUILD.COM}
+$ @kbd{@@[.vms]vmsbuild.com}
 @end example
 
 @noindent
 or:
 
 @example
-$ @kbd{MMS/DESCRIPTION=[.VMS]DESCRIP.MMS GAWK}
+$ @kbd{MMS/DESCRIPTION=[.vms]descrip.mms gawk}
 @end example
+
+@noindent
+or:
+
+@example
+$ @kbd{MMK/DESCRIPTION=[.vms]descrip.mms gawk}
+@end example
+
+@code{MMK} is an open source, free, near-clone of @code{MMS} and
+can better handle @code{ODS-5} volumes with upper- and lowercase filenames.
+@code{MMK} is available from @uref{https://github.com/endlesssoftware/mmk}.
+
+With @code{ODS-5} volumes and extended parsing enabled, the case of the target
+parameter may need to be exact.
 
 Older versions of @command{gawk} could be built with VAX C or
 GNU C on VAX/VMS, as well as with DEC C, but that is no longer
 supported.  DEC C (also briefly known as ``Compaq C'' and now known
 as ``HP C,'' but referred to here as ``DEC C'') is required.  Both
-@code{VMSBUILD.COM} and @code{DESCRIP.MMS} contain some obsolete support
+@code{vmsbuild.com} and @code{descrip.mms} contain some obsolete support
 for the older compilers but are set up to use DEC C by default.
 
-@command{gawk} has been tested under Alpha/VMS 7.3-1 using Compaq C V6.4,
-and on Alpha/VMS 7.3, Alpha/VMS 7.3-2, and IA64/VMS 8.3.@footnote{The IA64
-architecture is also known as ``Itanium.''}
+@command{gawk} has been tested under VAX/VMS 7.3 and Alpha/VMS 7.3-1
+using Compaq C V6.4, and Alpha/VMS 7.3, Alpha/VMS 7.3-2, and IA64/VMS 8.3.
+The most recent builds used HP C V7.3 on Alpha VMS 8.3 and both
+Alpha and IA64 VMS 8.4 used HP C 7.3.@footnote{The IA64 architecture
+is also known as ``Itanium.''}
+
+Work is currently being done for a procedure to build @command{gawk} and create
+a PCSI kit for compatible with the GNV product.
+
+@node VMS Dynamic Extensions
+@appendixsubsubsec Compiling @command{gawk} Dynamic Extensions on VMS
+
+The extensions that have been ported to VMS can be built using one of
+the following commands.
+
+@example
+$ @kbd{MMS/DESCRIPTION=[.vms]descrip.mms extensions}
+@end example
+
+@noindent
+or:
+
+@example
+$ @kbd{MMK/DESCRIPTION=[.vms]descrip.mms extensions}
+@end example
+
+@command{gawk} uses @code{AWKLIBPATH} as either an environment variable
+or a logical name to find the dynamic extensions.
+
+Dynamic extensions need to be compiled with the same compiler options for
+floating point, pointer size, and symbol name handling as were used
+to compile @command{gawk} itself.
+Alpha and Itanium should use IEEE floating point.  The pointer size is 32 bits,
+and the symbol name handling should be exact case with CRC shortening for
+symbols longer than 32 bits.
+
+For Alpha and Itanium:
+
+@example
+/name=(as_is,short)
+/float=ieee/ieee_mode=denorm_results
+@end example
+
+For VAX:
+
+@example
+/name=(as_is,short)
+@end example
+
+Compile time macros need to be defined before the first VMS-supplied
+header file is included.
+
+@example
+#if (__CRTL_VER >= 70200000) && !defined (__VAX)
+#define _LARGEFILE 1
+#endif
+
+#ifndef __VAX
+#ifdef __CRTL_VER
+#if __CRTL_VER >= 80200000
+#define _USE_STD_STAT 1
+#endif
+#endif
+#endif
+@end example
 
 @node VMS Installation Details
 @appendixsubsubsec Installing @command{gawk} on VMS
 
-To install @command{gawk}, all you need is a ``foreign'' command, which is
-a @code{DCL} symbol whose value begins with a dollar sign. For example:
+To use @command{gawk}, all you need is a ``foreign'' command, which is a
+@code{DCL} symbol whose value begins with a dollar sign. For example:
 
 @example
-$ @kbd{GAWK :== $disk1:[gnubin]GAWK}
+$ @kbd{GAWK :== $disk1:[gnubin]gawk}
 @end example
 
 @noindent
@@ -34801,10 +35019,15 @@ Alternatively, the symbol may be placed in the system-wide
 @file{sylogin.com} procedure, which allows all users
 to run @command{gawk}.
 
+If your @command{gawk} was installed by a PCSI kit into the
+@file{GNV$GNU:} directory tree, the program will be known as
+@file{GNV$GNU:[bin]gnv$gawk.exe} and the help file will be
+@file{GNV$GNU:[vms_help]gawk.hlp}.
+
 Optionally, the help entry can be loaded into a VMS help library:
 
 @example
-$ @kbd{LIBRARY/HELP SYS$HELP:HELPLIB [.VMS]GAWK.HLP}
+$ @kbd{LIBRARY/HELP sys$help:helplib [.vms]gawk.hlp}
 @end example
 
 @noindent
@@ -34858,6 +35081,39 @@ flag is required to force Unix-style parsing rather than @code{DCL} parsing.  If
 other dash-type options (or multiple parameters such as data files to
 process) are present, there is no ambiguity and @option{--} can be omitted.
 
+@cindex exit status, of VMS
+The @code{exit} value is a Unix-style value and is encoded to a VMS exit
+status value when the program exits.
+
+The VMS severity bits will be set based on the @code{exit} value.
+A failure is indicated by 1 and VMS sets the @code{ERROR} status.
+A fatal error is indicated by 2 and VMS will set the @code{FATAL} status.
+All other values will have the @code{SUCCESS} status.  The exit value is
+encoded to comply with VMS coding standards and will have the
+@code{C_FACILITY_NO} of @code{0x350000} with the constant @code{0xA000}
+added to the number shifted over by 3 bits to make room for the severity codes.
+
+To extract the actual @command{gawk} exit code from the VMS status use:
+
+@example
+unix_status = (vms_status .and. &x7f8) / 8
+@end example
+
+@noindent
+A C program that uses @code{exec()} to call @command{gawk} will get the original
+Unix-style exit value.
+
+Older versions of @command{gawk} treated a Unix exit code 0 as 1, a failure
+as 2, a fatal error as 4, and passed all the other numbers through.
+This violated the VMS exit status coding requirements.
+
+@cindex floating-point, VAX/VMS
+VAX/VMS floating point uses unbiased rounding. @xref{Round Function}.
+
+VMS reports time values in GMT unless one of the @code{SYS$TIMEZONE_RULE}
+or @code{TZ} logical names is set.  Older versions of VMS, such as VAX/VMS
+7.3 do not set these logical names.
+
 @c @cindex directory search
 @c @cindex path, search
 @cindex search paths
@@ -34868,6 +35124,20 @@ name @env{AWKPATH} can be used to override this default.  The format
 of @env{AWKPATH} is a comma-separated list of directory specifications.
 When defining it, the value should be quoted so that it retains a single
 translation and not a multitranslation @code{RMS} searchlist.
+
+@node VMS GNV
+@appendixsubsubsec The VMS GNV Project
+
+The VMS GNV package provides a build environment similar to POSIX with ports
+of a collection of open source tools.  The @command{gawk} found in the GNV
+base kit is an older port.  Currently the GNV project is being reorganized
+to supply individual PCSI packages for each component.
+See @uref{https://sourceforge.net/p/gnv/wiki/InstallingGNVPackages/}.
+
+The normal build procedure for @command{gawk} produces a program that
+is suitable for use with GNV.  At this time work is being done to create
+the procedures for building a PCSI kit to replace the older @command{gawk}
+port.
 
 @ignore
 @c The VMS POSIX product, also known as POSIX for OpenVMS, is long defunct
@@ -34926,8 +35196,8 @@ recommend compiling and using the current version.
 @appendixsec Reporting Problems and Bugs
 @cindex archeologists
 @quotation
-@i{There is nothing more dangerous than a bored archeologist.}@*
-The Hitchhiker's Guide to the Galaxy
+@i{There is nothing more dangerous than a bored archeologist.}
+@author The Hitchhiker's Guide to the Galaxy
 @end quotation
 @c the radio show, not the book. :-)
 
@@ -35000,9 +35270,10 @@ mail at the Internet address noted previously.
 
 If you find bugs in one of the non-Unix ports of @command{gawk}, please send
 an electronic mail message to the person who maintains that port.  They
-are named in the following list, as well as in the @file{README} file in the @command{gawk}
-distribution.  Information in the @file{README} file should be considered
-authoritative if it conflicts with this @value{DOCUMENT}.
+are named in the following list, as well as in the @file{README} file
+in the @command{gawk} distribution.  Information in the @file{README}
+file should be considered authoritative if it conflicts with this
+@value{DOCUMENT}.
 
 The people maintaining the non-Unix ports of @command{gawk} are
 as follows:
@@ -35018,14 +35289,17 @@ as follows:
 @item OS/2 @tab Andreas Buening, @EMAIL{andreas.buening@@nexgo.de,andreas dot buening at nexgo dot de}.
 
 @cindex Rankin, Pat
-@item VMS @tab Pat Rankin, @EMAIL{r.pat.rankin@@gmail.com,r.pat.rankin at gmail.com}
+@cindex Malmberg, John
+@item VMS @tab Pat Rankin, @EMAIL{r.pat.rankin@@gmail.com,r.pat.rankin at gmail.com}, and
+John Malmberg, @EMAIL{wb8tyw@@gmail.com,wb8tyw at gmail.com}.
 
 @cindex Pitts, Dave
 @item z/OS (OS/390) @tab Dave Pitts, @EMAIL{dpitts@@cozx.com,dpitts at cozx dot com}.
 @end multitable
 
 If your bug is also reproducible under Unix, please send a copy of your
-report to the @EMAIL{bug-gawk@@gnu.org,bug-gawk at gnu dot org} email list as well.
+report to the @EMAIL{bug-gawk@@gnu.org,bug-gawk at gnu dot org} email
+list as well.
 @c ENDOFRANGE dbugg
 @c ENDOFRANGE tblgawb
 
@@ -35043,8 +35317,8 @@ Date: Wed, 4 Sep 1996 08:11:48 -0700 (PDT)
 @cindex Brennan, Michael
 @quotation
 @i{It's kind of fun to put comments like this in your awk code.}@*
-@ @ @ @ @ @ @code{// Do C++ comments work? answer: yes! of course}@*
-Michael Brennan
+@ @ @ @ @ @ @code{// Do C++ comments work? answer: yes! of course}
+@author Michael Brennan
 @end quotation
 
 There are a number of other freely available @command{awk} implementations.
@@ -35086,10 +35360,8 @@ repository in a directory named @file{bwkawk}.  If you leave that argument
 off the @command{git} command line, the repository copy is created in a
 directory named @file{awk}.
 
-This version requires an ISO C (1990 standard) compiler;
-the C compiler from
-GCC (the GNU Compiler Collection)
-works quite nicely.
+This version requires an ISO C (1990 standard) compiler; the C compiler
+from GCC (the GNU Compiler Collection) works quite nicely.
 
 @xref{Common Extensions},
 for a list of extensions in this @command{awk} that are not in POSIX @command{awk}.
@@ -35170,14 +35442,21 @@ information, see the @uref{http://busybox.net, project's home page}.
 @cindex source code, Solaris @command{awk}
 @item The OpenSolaris POSIX @command{awk}
 The version of @command{awk} in @file{/usr/xpg4/bin} on Solaris is
-more-or-less
-POSIX-compliant. It is based on the @command{awk} from Mortice Kern
-Systems for PCs.  The source code can be downloaded from
-the @uref{http://www.opensolaris.org, OpenSolaris web site}.
+more-or-less POSIX-compliant. It is based on the @command{awk} from
+Mortice Kern Systems for PCs.
 This author was able to make it compile and work under GNU/Linux
 with 1--2 hours of work.  Making it more generally portable (using
 GNU Autoconf and/or Automake) would take more work, and this
 has not been done, at least to our knowledge.
+
+@cindex Illumos
+@cindex Illumos, POSIX-compliant @command{awk}
+@cindex source code, Illumos @command{awk}
+The source code used to be available from the OpenSolaris web site.
+However, that project was ended and the web site shut down.  Fortunately, the
+@uref{http://wiki.illumos.org/display/illumos/illumos+Home, Illumos project}
+makes this implementation available.  You can view the files one at a time from
+@uref{https://github.com/joyent/illumos-joyent/blob/master/usr/src/cmd/awk_xpg4}.
 
 @cindex @command{jawk}
 @cindex Java implementation of @command{awk}
@@ -35218,6 +35497,10 @@ under the GPL. It has a large number of extensions over standard
 @command{awk} and may not be 100% syntactically compatible with it.
 See @uref{http://www.quiktrim.org/QTawk.html} for more information,
 including the manual and a download link.
+
+@item Other Versions
+See also the @uref{http://en.wikipedia.org/wiki/Awk_language#Versions_and_implementations,
+Wikipedia article}, for information on additional versions.
 
 @end table
 @c ENDOFRANGE gligawk
@@ -35829,11 +36112,13 @@ Larry
 @cindex Wall, Larry
 @cindex Robbins, Arnold
 @quotation
-@i{AWK is a language similar to PERL, only considerably more elegant.}@*
-Arnold Robbins
+@i{AWK is a language similar to PERL, only considerably more elegant.}
+@author Arnold Robbins
+@end quotation
 
-@i{Hey!}@*
-Larry Wall
+@quotation
+@i{Hey!}
+@author Larry Wall
 @end quotation
 
 The @file{TODO} file in the @command{gawk} Git repository lists possible
@@ -35965,7 +36250,7 @@ in order to loop over all the element in an easy fashion for C code.
 
 @item
 The ability to create arrays (including @command{gawk}'s true
-multi-dimensional arrays).
+multidimensional arrays).
 @end itemize
 @end itemize
 
@@ -38451,6 +38736,7 @@ Consistency issues:
 	Use MS-Windows not MS Windows
 	Use MS-DOS not MS-DOS
 	Use an empty set of parentheses after built-in and awk function names.
+	Use "multiFOO" without a hyphen.
 
 Date: Wed, 13 Apr 94 15:20:52 -0400
 From: rms@gnu.org (Richard Stallman)

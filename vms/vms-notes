@@ -6,3 +6,1143 @@ Per Anders Wallin, the HP VMS porting guide is available at
 	http://h71000.www7.hp.com/portability/portingguidelines.html
 
 This file documents this fact, and anything else of interest.
+From wb8tyw@qsl.net  Wed Dec 11 20:03:44 2013
+Return-Path: <wb8tyw@qsl.net>
+Received: from skeeve.com (skeeve.com [127.0.0.1])
+	by skeeve.com (8.14.4/8.14.4/Debian-2ubuntu2.1) with ESMTP id rBBI3gNX002464
+	for <arnold@localhost>; Wed, 11 Dec 2013 20:03:43 +0200
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	frenzy.freefriends.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,FREEMAIL_FROM
+	autolearn=ham version=3.3.1
+X-Envelope-From: wb8tyw@qsl.net
+X-Envelope-To: <arnold@skeeve.com>
+Received: from frenzy.freefriends.org [66.54.153.139]
+	by skeeve.com with IMAP (fetchmail-6.3.21)
+	for <arnold@localhost> (single-drop); Wed, 11 Dec 2013 20:03:43 +0200 (IST)
+Received: from Encompasserve.org (Eisner.encompasserve.org [67.53.90.116])
+	by freefriends.org (8.14.6/8.14.6) with ESMTP id rBB5jaW9020988
+	for <arnold@skeeve.com>; Tue, 10 Dec 2013 22:45:40 -0700
+Received: from [192.168.0.101]
+ (173-19-202-206.client.mchsi.com [173.19.202.206])
+ by Encompasserve.org (PMDF V6.6 #13031)
+ with ESMTPSA id <01P1SYL5LELG002FZE@Encompasserve.org> for arnold@skeeve.com;
+ Tue, 10 Dec 2013 23:45:35 -0600 (CST)
+Date: Tue, 10 Dec 2013 23:45:36 -0600
+From: "John E. Malmberg" <wb8tyw@qsl.net>
+Subject: Re: Some questions...
+In-reply-to: <201312110426.rBB4QXXc003297@skeeve.com>
+To: Aharon Robbins <arnold@skeeve.com>
+Cc: wb8tyw@qsl.net
+Message-id: <52A7FC00.2040905@qsl.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+User-Agent: Mozilla/5.0 (Windows NT 6.2; WOW64; rv:17.0) Gecko/20130215
+ Thunderbird/17.0.3
+References: <529A9537.7090404@qsl.net> <201312110426.rBB4QXXc003297@skeeve.com>
+Status: RO
+
+On 12/10/2013 10:26 PM, Aharon Robbins wrote:
+> Hi. Some questions about your changes.
+>
+> 1. I notice that there is at least one instance of #if __VMS, where as
+> it seems most code uses #if VMS.  Is that on purpose?  If not, which
+> is correct?
+
+VMS is a macro historically pre-defined by C compilers on C before the 
+ANSI rules.
+
+Under strict ANSI rules, a standards compliant compiler is not allowed 
+to pre-define macros that are not prefixed by "__".
+
+Which means that you can not count on the VMS macro being defined unless 
+you do it yourself.
+
+So __VMS is the ANSI correct definition.  But it would be a lot of work 
+to change all the code.
+
+The vms_config.h that is now generated has these lines in it to make 
+sure that VMS is defined.
+
+#ifdef __VMS  /* ANSI compliant */
+#ifndef VMS /* PRE-ansi */
+#define VMS 1
+#endif
+#endif
+
+This may be needed for other architectures.  It only shows up as an 
+issue if you set a "strict" compliance flag on the compile command.
+
+> 2. For the include of the main wrapper.  Gawk already has a routine
+> os_arg_fixup which is intended to manipulate argc and argv as needed
+> by an OS-specific routine before main() parses it.  A quick look at
+> the wrapper looks to me like it could be made to fit within that framework,
+> which would keep #if and the include out of the mainline code.
+
+I can look at that.  I can also look to see if I can move the logic from 
+vms_crtl_init.c into it in a way that would sidestep that it has no 
+copyright notice at all.  The result would be code that is almost 
+identical to code that is in the official Perl distribution.
+
+GNV was started as a user project and when the VMS POSIX product was 
+dropped and they needed a Unix like environment, Digital took over the 
+GNV product, but did not really do much to keep it up to date.
+
+The routine in vms_crtl_init.c is actually called before main() is 
+called, so just linking a module with it in is all that it takes to 
+activate the change.  Unfortunately I do not know how to get it to 
+magically fix up the argv array.
+
+> If that looks reasonable to you, can you make that change?  You can send
+> it as a diff against what you currently have already done.
+
+I will look at it tomorrow night.  I also found another change needed 
+for vms_args.c to work properly under a bash shell.
+
+> I'm sorry about the hassle on the copyrights, but I really have to play
+> this game by the FSF rules.  I hope we can get it clarified soon
+> so that I can include the files in the dist.
+
+I hope so.  I have not seen a reply from Karl yet.  He did say that 
+there are other options.
+
+This would clear the way for getting the similar code accepted into the 
+Bash and coreutils repositories.  I have a report that the first bash 
+4.3 beta built on VMS and looked real good on the test run.
+
+I am currently working on adapting the packaging scripts from bash and 
+coreutils to gawk.  Each product has had it unique features, so I have 
+not yet come up with a generic set of scripts.
+
+This is a preview what will be coming:
+
+backup_gawk_src.com - Builds a VMS equivalent to tar archive.  By 
+placing the source in the PCSI kit, it covers the requirement of 
+providing source somewhere with the binary.
+
+build_gawk_pcsi_desc.com - Creates a VMS PCSI package manifest file.
+
+build_gawk_pcsi_text.com - text output by the VMS PCSI package installer.
+
+compare_gawk_source.com - I have the source checked out on an NFS 
+server.  The backup program needs me to copy it to a VMS volume first. 
+This procedure makes sure that the two copies are the same and ready for 
+backup.
+
+gawk_alias_setup.com - Sets up gawk and awk links to gnv$gawk.exe. 
+Needed to repair when sins of the past partially break an install.
+
+gawk_verb.cld - for gawk to use gnv$gawk.exe as an image.  Different 
+than gawk.cld.  To properly add an image to the VMS command table, it 
+needs a prefix.  I have "GNV$" registered as a prefix for this purpose.
+
+gnv_gawk_kit_name.com - Calculates the VMS PCSI package name, used for 
+both file names and file contents.
+
+gnv_gawk_startup.com - Run at VMS startup to make sure that the 
+environment is set up properly for gawk.
+
+pcsi_gawk_file_list.txt - Source file for build_gawk_pcsi_desc.com.
+
+remove_old_gawk.com - Needed to properly clean up sins of the past. 
+Only touches the the GNV provided gawk and awk programs.
+
+stage_gawk_install.com - Does a pre-install into a fake "root" directory 
+tree for the kitting procedure to pull files out of.
+
+Regards,
+-John
+
+From wb8tyw@qsl.net  Thu Dec 12 12:21:57 2013
+Return-Path: <wb8tyw@qsl.net>
+Received: from skeeve.com (skeeve.com [127.0.0.1])
+	by skeeve.com (8.14.4/8.14.4/Debian-2ubuntu2.1) with ESMTP id rBCAIn2l004322
+	for <arnold@localhost>; Thu, 12 Dec 2013 12:21:55 +0200
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	frenzy.freefriends.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,FREEMAIL_FROM
+	autolearn=ham version=3.3.1
+X-Envelope-From: wb8tyw@qsl.net
+X-Envelope-To: <arnold@skeeve.com>
+Received: from frenzy.freefriends.org [66.54.153.139]
+	by skeeve.com with IMAP (fetchmail-6.3.21)
+	for <arnold@localhost> (single-drop); Thu, 12 Dec 2013 12:21:55 +0200 (IST)
+Received: from Encompasserve.org (Eisner.encompasserve.org [67.53.90.116])
+	by freefriends.org (8.14.6/8.14.6) with ESMTP id rBC6FboY024650
+	for <arnold@skeeve.com>; Wed, 11 Dec 2013 23:15:41 -0700
+Received: from [192.168.0.101]
+ (173-19-202-206.client.mchsi.com [173.19.202.206])
+ by Encompasserve.org (PMDF V6.6 #13031)
+ with ESMTPSA id <01P1UDWPUU7M002J4J@Encompasserve.org> for arnold@skeeve.com;
+ Thu, 12 Dec 2013 00:15:35 -0600 (CST)
+Date: Thu, 12 Dec 2013 00:15:38 -0600
+From: "John E. Malmberg" <wb8tyw@qsl.net>
+Subject: Re: Some questions...
+In-reply-to: <201312110755.rBB7tIrb026097@freefriends.org>
+To: arnold@skeeve.com
+Cc: wb8tyw@qsl.net
+Message-id: <52A9548A.5060604@qsl.net>
+MIME-version: 1.0
+Content-type: multipart/mixed; boundary="Boundary_(ID_0V6xQMBg8dMk2LzZyR0ioQ)"
+User-Agent: Mozilla/5.0 (Windows NT 6.2; WOW64; rv:17.0) Gecko/20130215
+ Thunderbird/17.0.3
+References: <529A9537.7090404@qsl.net> <201312110426.rBB4QXXc003297@skeeve.com>
+ <52A7FC00.2040905@qsl.net> <201312110755.rBB7tIrb026097@freefriends.org>
+Status: RO
+X-Status: A
+
+This is a multi-part message in MIME format.
+
+--Boundary_(ID_0V6xQMBg8dMk2LzZyR0ioQ)
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+
+I moved the vms_gawk_main_wrapper.c code into gawkmisc.vms so that file 
+is not needed anymore.
+
+I also discovered that we were not building with exact case public 
+symbols, so I fixed up the source to build with exact case symbols. 
+This will be more important when building dynamic plug-ins, and in the 
+future if and when the other related packages can be built with it.
+
+This caused small changes to most of the source files in VMS, as all the 
+system services routines were in the wrong case.
+
+I see that just about everything has been backed out of git until the 
+legal stuff is resolved.
+
+This is what I currently have for io.c changes based on a branch I just 
+made against master.
+
+And this is what the diff for the vms/gawkmisc.vms changes are, which 
+eliminates the change to main.c.
+
+Regards,
+-John
+
+
+
+On 12/11/2013 1:55 AM, arnold@skeeve.com wrote:
+> Hi.
+>
+> Thahks for the answers. I will address some of this later; I'm at work now.
+>
+> I would like to emphasize that, from my perspective, the priorities are:
+>
+> 1. Code changes (os_arg_fixup, etc.).
+> 2. Documentation revisions.
+> 3. The other VMS-only goodies that you described.
+>
+> The documentation revisions are not optional; I have to have them.
+>
+> But, as I said, it's enough if you give me plain text. I can do the
+> markup.  If the markup is what's holding you back then don't bother,
+> just send me text, with some kind of clear indication of the sectioning /
+> subsectioning (if any), and I'll do the markup.
+>
+> Karl replied further to me; I don't know if it was on purpose or
+> by accident that he didn't include you. I will include you on the
+> further correspondance that I need to send.
+>
+> Believe me, I very much want to move this forward, but I really do
+> have to play by the rules.
+>
+> Thanks,
+>
+> Arnold
+>
+
+
+--Boundary_(ID_0V6xQMBg8dMk2LzZyR0ioQ)
+Content-type: application/gzip; name=gawk_io_c_vms.patch.gz
+Content-transfer-encoding: base64
+Content-disposition: attachment; filename=gawk_io_c_vms.patch.gz
+
+H4sICANRqVICAzAwMDEtaW8uYy1yZWRpcmVjdC1BZGQtYWRkaXRpb25hbC1WTVMtZXJyb3It
+Y29kZXMucGF0Y2gAnVV/b9pIEP0bf4q5pmptwI5tzM82FRRImyqQXEhzV51OyPaOwY3t5Wwn
+TdT0u9/sGhNIIuVyKyTvzs6bfTNvdjlMeQy+7Ti+z3zT902n6wZdz/acltU0zQBNn7VZs2m2
+ut0GTHgCM1yB1QbT7Mkf2KZpKYcUpgdf+DKBiRvFHqYLeP/D6+S3P/r/ZJGRYP5BGbk59uAP
+ZHWwLBihT1irAXaj12z0GjboZss0ldmV9x39vAd/nQ7Oh5//hpAbPqgpsjAlu9aDAWPgMhbm
+IU/cCC4mM8A05Sn4nGFmSIACaoI3eRBGSIgzzNNb4CtMwA1yJM+IZ2GygIzHCMIpMxRF13UF
+hks3WeAxX8Ad0HCgRkMpSMghzLYpzVtD1yXaLoKBL6OIRLsQJhmmgmum1rQ6NIFhhMVa1xSF
+hUEAur4Ic3D370/37udKmDC8AdfqYIc1DAO7zGx6Llim2XIcQXsbqRCbHXS/D7pVb0DNqreh
+31dqouq6ZeskQjmkcmPjXjw5HilYK/2rL1blMfal+pAKG+bmhvnM53lOzRQG4eXGCO8zYWZG
+7IZRP/P8RcQ9d50EKFApOYhzMHZvPcy4f4llHgyDMJGZQEAZjL58Oj01dpWSeE9+1vo4AV2j
+Junjt5sMW51dfaRjIY2cSlVsq94iXehDWpA0sIcJnSIo7oVBQQOZSrXUlNpemPjRFUNKLqMd
+Y/lB2AI6O4DZ7PV8/OfHb+fHEzIWuG0jmDe2azkA+1WpTMdwIEMqd3Wf/ItDtw5I4/IEKIM9
+rJQaMK0ijWK2xVwk5rRskZjTaheJQam1enTy8eshVKv+VSrWdfA4jyC7DFcr0pviVCoV4li4
+xW7iLjDGhF4DIir2qKUSDgdgvpPLgNGc4bVoHTVI3FhEDJOYWk59lb7StHdKjdyolqoqfA/g
+aHoxOD4azT8PpqPjsQZv3oC6DnoA48nhERk1+ClhRX5znqC6DvSE5T9S+FXSF9eBEPLMIgnB
+7jdgfJ6nbnl/ikpUrlaMHs35+OxsejIPk7ygSiFFlbtOp07vZ63blF8ylddRnZ6MxlCVyzne
+rOr0COXFbn67wmJZpVhBtK654PCgDHB3B/emqaxMwWqnCKJTRQtSWyl6od4gWi3dfdFnF23D
+epvBEM7OjyHMiEJ+lSbiZudLWtLTmKPLZIEe4WpPwzDDDU6wodvOg5KyunSvMXmbQ56GyICT
+ewornuX6RcuwIbslXJxpopv03Wvy+9eT8wFdE/o3Gz7ce/YKibwxEsR2ynh0ItpLZrfZ3d3e
+KTFFJaFlSyrw7FCv3Rv/9Qa9ncXdnaI/H+ApvMxU0+4f6/8BF8e/GH82oQCD4VCCK1LWJxxm
+36ba0z24fn3KSv+kVxcUy2gbXUX5F+2/BB3kCAAA
+
+--Boundary_(ID_0V6xQMBg8dMk2LzZyR0ioQ)
+Content-type: application/gzip; name=gawk_gawkmisc_vms.gdiff.gz
+Content-transfer-encoding: base64
+Content-disposition: attachment; filename=gawk_gawkmisc_vms.gdiff.gz
+
+H4sICINTqVICA2dhd2tfZ2F3a21pc2Nfdm1zLmdkaWZmAJ0aa1PbSPKz+RWzDgU22MY2JLsX
+X3LLgtmllpBUTPZxHKWSpbGtQ5YUjcRj9/jv193z0OhhlrtUBdBMT09Pv7tn+v0+OxCp56Rx
+nB0s3fvbg7u1oD/WgfAG8NH6lfvslHtsNGLj8dvX3709/I6Nh6PDrf39fYbgL198OH47/ptc
+/P33rD8+7B0O2T78Ojp6w77/fouxPXYW55HvZkEc9dh55A167PWInaVudBsGEZtlKedZj50F
+i2zFzsI4Tnvsh1hkCP7hmLHheDQa9keHw1GPfZkdI8qDLba1/yqIvDD3Ofu7yPwgHqzel8fS
+IFpWBr3sMeE1QD8M5jRoD/tceGmQVID9u8Dni8ogX0T1wYXwGkZFJuqDWbCuEhVGaw1HZCWp
+u1y7bM3Xc546bhgsozWPMibcO15MR3ENIIyj5X2c+lv7wJDcy1iQ8bUTBiJzDtmfW/utPBIA
+CzIVqzgFeB5N6qNe7HMcvosDHwQ6zxeunzbA7bGUZxLF0wQJV5sughDY6UZOkK1D2HqMWzP4
+V999ma0mjXOwVJGBk97KTWE7L14ncQQHNTtuYhXOBcCQ2e+z7R+nV6e/nP/akahKeyG/GAi0
+1zCneLFy7VkvjgTIQZ7TF962UpwsTh0BFPr8LnLXmxbY0thjkjsWrOJ3EIt5dbSzx1yRgRi6
+nRLx3d6mUwF4kq7r2KM8DN102Z3YLDo7v5jOTo4vOy8/KTgdmLTwbxT+Hrtzw5zjuTdSu8cW
+ob8I3aWoY6xv7uYPcZ5tFppWzOKQjI559fny4vJD7ZBVUtysdLC/4kTmzkPuwMRLSGegHlXg
+ChVK2V1vDQbwUlVSX3RiieFrHmecvWO7/9rdnaixPXAziQuO9x07nZ59Or76yZ4Bx1hMXpz/
+YM/z6E7whCG+HqDbfwXwQcTZLx9mzuXxh6lzMb1kI3QB4Po9uQZDCx732gbaH92QVA722JV7
+y5kbhixbcbbIIwZCZfGCiWCdhI8gjfgWnDrLE+bCxzLw3JDYhxFBb4TCFY/CydIIvCgxqyMZ
+pdgIC3FNr+RISCHVEGKgbwc1Zmsf3aTEsH0KRvH5/NPVx8+dQsisDTpEFuOcTn9pI8dbTXqE
+WgTsQuAPzsnxbOr8cHF+eYrgm7RD6wbC0MHgjLlo8LwpF3mYWahsdQgysLvrsWRzS34NbwZw
+OiDHnHRiz6GrVbQ6s6vP55c/lqZlBNCrS1PS0GBqx9Bkpkd60+HEHlObDSWoPvMAuXHvyJgA
+03Aw+LujxEdcLoG6ThIDjziS1ZFi7SrgGuzc8TEVQMWenWz/7Jxe/f5p6lw1wHmhK4SBO7k4
+ns2cmSRUCgPmLE+yQ66C7VjasWMMnA17UhZdxZQF62yjKcyujq++wK8vJyfT2awjEXe7GCUB
+rAWWcZmjVfB0HUQuGLEb+ejR8jQiU5HJDllBq0UiuZbMvyFzH6J9tp4ImVplFAlH2RaDLTDL
+I+tkfcghE9wQzQ/xt3GuzRIXNG2Rxmu2iu9p4uOMgQ2GoIbACJmWAabf45zdx3noQ0aCCILo
+Fn669KdAhcWpOZyCidxbwa8kjYFd6x5kFhCowRyBKYw/ZBxSKJ8CCBMJ94IFWDzmkYK5KWdw
+aO/2kWUxEiZ4j7hyz9mKkiL0wzGwTHkTP1gseMojj8PO2T0HNXTZyeerC7bkEU+BqT4gXd6B
+ChMelzAkIHyY4A/c63RL85AF+EDWPAbd9FzBxQAXHBhnu7dVMLRDIRAO0N1itivSw+BS/9zq
+t+Rg0mN7X+v2jl+FkSuvJVZwPD0beiQ8Y0cgiPMFnZ18OE0CvjQT7D7IkO0HPZyOQCcZyMUF
+jsxFHOaZXAEokIcot7X7SFwF1gF4wbD5I+EnNgZwLu766K5xDDKzNbBIIsG9BwzJkVuRQPhd
+AMIgsrRESJfB4FZcKNJQYySOe1ewMLjlEAdIBRE2hRChNiKhRJz7AsUOyrUIHlAtk4Fcrlhx
+Oj052f70cXb+m3Py8cOni/PjyysHwxpGoxnSJniGGMY2bzQrYP357OftXz5efPkwlay5D0DB
+YLsEhANpplTCQI2LDH8iVYBSItGUSbIOjB/QuoD69Q6M9mCXzL+lRR2BORBrUNxS3jpZbjX7
+fL7GP68PbwikEi+gkHEwrbw+ktO0C1iyTFev3xw1rjIAOl5sDFwSzMQuid8PxO1dHOIG49dv
+mukyIGoLhEHv9COIRUB9A3q2iNM1uQHQV+2hcJ3yfwd7/Rf9k9CGTyYgdkTwBwctNoftsj4b
+TarAKmhBIbHtHF9cQOQHFapBmUBpsNVAioBZZ6+BG1WpKxhF5MH/17UVNomgszX6RhZ9O5Zw
+Xt/U4AoiaxKyAMel+F4aL8d4dE7Hvi+9UwqJ4wMDqdIn4M7XXLkMLVGrbJOW5SYJBIfqAvL4
+GGPkOlBOL3nsFBT32mS/bRV/W8aoZHrhrdLOjjHE0U2PzFAeBUy0gP7mHbv8cnGhLLRlUpQC
+os80HqU8BAgHQQcEjvxrHoDDAB8MsSNjK4hMiuaWZTkb0xqbyEnjKitvsvxEDeyZPKgJ+Jlk
+qFVOh4oSG2Za07PL7RNnennWk99D9XvH2kINaZ1Rn9pPqU/kOqVRQykWkss3f5VDtSTrVQiA
+4mB7yTPAfM8WbhDaoUYHPvinQo7KACDSQXxUeQCkK8vUXcuQE2cGnuLS6QlQKGLmxzi3wiaU
+AThGFC7UMhwjTfsgWycHClmb3ZMWwNBbA+/HoCOYQ/EHYIkelnrSktmAMbbWE+OhAMSbOGJc
+/vCmYMsGJGpWxR7LccnQU/FSOnxAeuTAlIoehu+V3JUCN2WhmHJpl2eOVQShkju8KWhUillz
+qnrCkT6o6k0LemQ8ZuI2SFC+ENciKC4heaHiEnLOVHhxYZGkZIomFZ2dXcNBten+/qT0jZv2
++2rsydr9mFL3dXwnOZGloIK4rxdDkdi0pXUocCVy/7e1/Uv7tWpLbfY9vVA20mcaksqOn+2/
+UxHHnrkuA91YHp+2O1lx7xZcYwpMR4cfYSgPZQI555BiBjBY54GUqHZlxdHBZ0fo4XVfAYqt
+kvtW8IpM032QwzZLjBl0MAxAOu+tE7V3z3QtukiCdjwlLoJnUXUHWesS/ruQNGdQ3HjyxHFq
+jJqyT3YSgxsIXDAmfW5IkK8oc12D7hlo1/NyTLZ7uINHlZMbgnuReFGLeQEcLGRSuuDg/FJy
+Mq6XBXd8UPEdyNqOPjQeiu3sKBDsl1REXXC+YD26AWDS5P+SxHOiaAFWFY61HIr4XchCQxeS
+o3VlAemf+MP2bNhq0nWRH8gylUojXRlRECc3HmSK63NqbVE6usdkCmqXNECYGsUaH3QBg7tM
+TQ5UqRNEajXMwzT8XOcio0K4Xnq1ihymMcFGMAdHTD1Q1Iqtct9pEfDQd6iXaufs9b6sqR90
+BqibY3QMe0Q3VWhjiuA6FigASISKTO+vch5zlo0JT1Ep18DrHSJTbTdAP5fwVCGfy3bwVHG0
+m6F95RBpHnWVB1IOssANIUvHsEIJAF6Y6PuLIqU9Z/9G8cs8gUpbiD3FaqgioyRXnUihS0XK
+hV0AepQeoCfTFq1IlN9gIqx4gmpGWIpix9F1hyboHTubnVxuO9Ty/zQ9mdQgDYOH9TlzA8Nk
+TlzwR6VbWvlFUSKbwhqKLGr1UJ5cJXFUJxGKrPOT6aQGt5HA0XMEgkOVQqMiRKZ0VEVgXkda
+UiVpXCcJ+waTGtRGgsYbCSpgDuu7oJZOalAbdzl87thTVTchZO2ER/beVbRHz2x5tHHLUl1g
+3SupWPMXlyndHWOWPb2mcFQUZox36zFZH1Btptn6fI9VxT0kpFHl37Fmb9O8sFDFbzAQmQau
+SaRjvGpTlQvw6ZbzxJGuUo0EVqn4q6Wf2lmr5pbIPY8LschDWRhhL7DB7GU3SschtVaZ4UAt
+1OthN1lZC0Gw1NziLI7Aty1lT8xUSDCqlwFySJexGRMvyJZpoSlcRJ4k2NfBM0zPZnoV8gM8
+J/h4wWuUXFFowJ4j9YgfHh62dZMglj3CYO0uVYtAL7oIovyBaTsW2q2qNq06TRhiTDccy0DN
+rBaExiVzJNVMbTbdiQFRxUaD9asimkQugxM1GGR2tLu9a1WwCqjSVlBrTWVhbWf+7JvFfWbn
+RYp6W+GetthWH/WqLV3y22t85TG4gZw95R6Y2+NA5HP4uPnx+NefB9PfppOozfrvWRu/28iX
+fiuxTqLjLJzmBk7DsE1ncLEkjzA0Up+Oln5tXvpeL3VD0AeqQv5O4T+itW74XqIiJIAG+UWJ
+HrKK/ec/7CsDiC7MEHFfJwWVfp5YoP8oWjJvEcU+G3W7E4WxY1OXAFmDXTBfLRBEvvdV36UQ
+tVJ5BhAmJmgAWmvqeXDx01EX0Hb+q8dVBowSUjc0KrWWfoCsEL0FqSvdjJDNBTr9RF1vD/gD
+b2tKtG8pUmv50RwltNtBXjTFGODEyOjlM0BHRYVgETDSKXmpu0AO70En8g9SABFm/LCqp47T
+A5QaBPd9kK7V4GjaRqX+RQVgjlYA2+fRQtupi0X1nVpEUcOZu5NKlWEa+rIwKTfxIaG0mvj1
+oGBGMjj6pLIQRisZtlSCIrJfUSrI3UgorcB7NXceylsacgnUonKxSWXd0KAzPAt0WoDJuWxi
+3q8CqGAFT1ysQIUJROYCRq3FkDCwahZzzGaLlz1VHZwL4Ir7K4VDA0XeUFvG/xQptGEc6GDx
+kliB2UaxrhoxTM+26uQNucbT/4++3mZh2YnrZmtadjNmQdfiz3nEvlye/8bw3Qj4OwjA5chL
+qThwUF7J6riIvCB+6she3G0Jy90ksRDBPOR62T1m9XgTixWPvno1DsrKE1K6SNbL1H0h0YlK
+IjNwIQeMiHJwGxHkJWng6YXGAKjwBi2IHqHIdAUMWJHcaA+YjyWggnHo6YtIrCGr4ikpYyuw
+nA0YCShNJxB+sAwyjeA6uLGbJUauT4UHLSBVC0ZD7xXkDidNnuzAMld0klrZiXUdbJvgbSww
+B1s/XZOp4QqQGQiklOhIb/MC3ijAGmswfMq5a9We5LsYmMtj091qk0lOj+X0g71Ejf22Yclh
+wy6Hz+9ypJhcpOTAZ3PyYXN8wm4t9tp0aa8chEtP5hSMrYhgNZ6Lmoq3h6qpmev2f9F8s5ip
+mGPHszpVjeGsRKpxhWSa7N591O8tOL3d1G8uONggJfMIrPXiWGCe74ZgO/4jWmkAJZVfIAB/
+LW9CpBco6c4iScEyFlBN+TxNVbBsqwYFXq5gFxKvbeXlBuwTxthvR6T/iuRTqabu3GVM7yyX
+WEUA84Ec0w2rpFdFXLHflEnEjc/NTK/xSb6the3kzTx2BN059uXxgl7gKzNtVPQwxdxQYvCk
+lxdyHYafkGPvFz1dBOsS4DJaYU9F0DWUagVCwUNweRzctXqaAHg9WgwqFsb3ajHJyLwSaNGG
+QDpIj0d3nfbsp+nFhWQgqpOcLpsmjUOcgISKpiGlAtLb3ZLGmVcjo0ZZlKef1G56tEiiyD8a
+nVU+0fAfXJydtdnj7+DUdGgbWjsd5TZVYqUzYw0I6fKTersUC8dNlw4IDpiMz5fkX9ZDFBbi
+40RgJT5Tf/2m9y3bP/p23Bsf0St1JH8PMHiJef64h993Cb3N0Q9usj+cNA957XXOFmt18DVt
+l2gzlHQIY48uxpKueZVzBomDIg6ffrM/4ki1mnASlIzeOchQhmoBIhd4TwRCVHag6ADmrd0w
+jL3OaDiWabJpthRPIDvtq39CGq3W9JiBfcnzMzA5pXAVJITB1pTGnell3PmH6T8/Xk6dz18u
+po2EvJCSZ0kxSrJIOe+oyW5ZRaDujRMsmkFB6A96VOaGDAy2/3GmWpVCa8l4+F1vNGL7b45G
+vdG3pCcg6MUYX0HEoY+ep/9ezPMF7EJeC6spfJimWp7Wq7xXwcLnC+Z8mU3hjKd0zkKhO4sR
+IMqQPrSpxVh/KW+I6nv0XX8eyKY9C3zYKr4NdINyZ4cpDAF4/wIDfCFv2CuUEtCot1NOodi1
+Z+0p3YM60eadBRT51KNmh/qBfpTJN4AVgtSdaUETDNSBRlWgUQPQuAo0Jlfxikd+sFCiBjK2
+/gvg4az2BTMAAA==
+
+--Boundary_(ID_0V6xQMBg8dMk2LzZyR0ioQ)--
+
+From wb8tyw@qsl.net  Sun Dec  8 19:58:11 2013
+Return-Path: <wb8tyw@qsl.net>
+Received: from skeeve.com (skeeve.com [127.0.0.1])
+	by skeeve.com (8.14.4/8.14.4/Debian-2ubuntu2.1) with ESMTP id rB8Hw8Y1002346
+	for <arnold@localhost>; Sun, 8 Dec 2013 19:58:10 +0200
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	frenzy.freefriends.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,FREEMAIL_FROM
+	autolearn=ham version=3.3.1
+X-Envelope-From: wb8tyw@qsl.net
+X-Envelope-To: <arnold@skeeve.com>
+Received: from frenzy.freefriends.org [66.54.153.139]
+	by skeeve.com with IMAP (fetchmail-6.3.21)
+	for <arnold@localhost> (single-drop); Sun, 08 Dec 2013 19:58:10 +0200 (IST)
+Received: from Encompasserve.org (Eisner.encompasserve.org [67.53.90.116])
+	by freefriends.org (8.14.6/8.14.6) with ESMTP id rB84BBd2018585
+	for <arnold@skeeve.com>; Sat, 7 Dec 2013 21:11:14 -0700
+Received: from [192.168.0.101]
+ (173-19-202-206.client.mchsi.com [173.19.202.206])
+ by Encompasserve.org (PMDF V6.6 #13031)
+ with ESMTPSA id <01P1OOF0VUTE001YI1@Encompasserve.org> for arnold@skeeve.com;
+ Sat, 07 Dec 2013 22:11:09 -0600 (CST)
+Date: Sat, 07 Dec 2013 22:11:05 -0600
+From: "John E. Malmberg" <wb8tyw@qsl.net>
+Subject: Re: VMS patch for config.h generation, passing tests.
+In-reply-to: <52A277C3.303@qsl.net>
+To: "John E. Malmberg" <wb8tyw@qsl.net>
+Cc: arnold@skeeve.com, r.pat.rankin@gmail.com, anders_s_wallin@yahoo.se
+Message-id: <52A3F159.9000607@qsl.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+User-Agent: Mozilla/5.0 (Windows NT 6.2; WOW64; rv:17.0) Gecko/20130215
+ Thunderbird/17.0.3
+References: <52A17089.9060701@qsl.net>
+ <201312060840.rB68eH2F029601@freefriends.org> <52A277C3.303@qsl.net>
+Status: R
+X-Status: A
+
+I have merged in your changes with my local copy, but not sure yet what 
+to do to get the git status happy.
+
+Unfortunately the VMS 8.3 Alpha manyfile test failed.  Closing 2 files 
+in io.c was not good enough.  I am trying again with closing 4 files.
+Still failed.  I am going to have to add some diagnostics to identify 
+the failure.
+
+And the beginfile1 test also is failing on VMS 8.3 Alpha.  I will look 
+at that after I resolve the manyfile issue.
+
+I also did not notice that ofmta test failed on VMS 7.3 VAX.  The 
+floating point number is rounding differently.  I get the same result 
+with the replacement SNPRINTF or the VMS provided SNPRINTF.
+
+TOAD> diff ofmta.ok sys$disk:[]_ofmta.tmp
+************
+File SRC_ROOT:[GAWK.TEST]OFMTA.OK;1
+     5   4.234
+     6   4.2345 hi
+******
+File LCL_ROOT:[GAWK.TEST]_OFMTA.TMP;2
+     5   4.235
+     6   4.2345 hi
+************
+
+I tried that build again with #undef HAVE_VPRINTF, and it failed.
+
+ From eval.c:
+  I1        8733 #ifndef HAVE_VPRINTF
+  I1        8734 #error "you lose: you need a system with vfprintf"
+                 .1
+%CC-E-ERRORMESSAGE, (1) #error "you lose: you need a system with vfprintf"
+
+Note that the error message has the wrong routine name.
+
+I have looked over the manual, and will try to get some detailed changes 
+to it.
+
+Some preliminary things to help collect my thoughts.
+
+As the MMS program has a lot of issues with ODS-5, Some open source 
+programmers have switched to Madgoat Make, known as MMK from 
+https://github.com/endlesssoftware/mmk .  MMK uses most unmodified MMS 
+description files and handles ODS-5 volumes better than MMS does.
+
+The optional POSIX subsystem is no longer supported on VMS.  While I 
+used to know at what version this support stopped in my head, I have 
+forgotten, and so far have not found that with an online search.
+
+Most of the C runtime routines that formerly required the POSIX 
+subsystem are in the VMS C runtime, so there no separate POSIX builds 
+needed for newer versions of VMS.
+
+The behavior of the VMS C runtime is controlled by feature settings that 
+can be set by logical names before the program is run.
+
+These feature settings include the support of longer filenames with 
+almost any characters including UTF-8, on ODS-5 volumes and if routines 
+should behave in a more Unix like fashion.
+
+I will be adding vms_crtl_init.c to the next commit for vmsbuild.com and 
+descrip.mms.  This vms_crtl_init.c detects when the program is running 
+under a bash or similar shell and sets the feature settings for better 
+UNIX compatibility, or sets them for better DCL compatibilities.
+It makes sure that the extended filename support is enabled.
+This way a single binary can be used for both the VMS environment and 
+the DCL environment.
+
+As a replacement, a GNV https://sourceforge.net/projects/gnv/ was 
+created.  There is older version of gawk that is provided by that package.
+
+Recently a group of programmers have started trying to correct issues 
+with the GNV project and reorganize it as a collection of packages along 
+wth a VMSPORTS https://sourceforge.net/projects/vms-ports/ effort.
+
+The GNV environment provides a Bash shell and several other utilities 
+intended to simulate a Unix environment.
+
+The web page https://sourceforge.net/p/gnv/wiki/InstallingGNVPackages/ 
+documents what needs to be done before installing these newer packages 
+while GNV is in the transition phase.
+
+Currently only Bash 4.2.45 and Coreutils 8.21 have been packaged, both 
+are fixing critical issues in GNV.
+
+I plan to have a GAWK PCSI package that will be installed with the VMS 
+PRODUCT command.  This package will install into the GNV directory 
+structure, which mimics a Linux directory tree, so I will need to 
+determine where to put the gawk.hlp file in it.
+
+Regards,
+-John
+
+
+
+On 12/6/2013 7:20 PM, John E. Malmberg wrote:
+> Hello Arnold,
+>
+> I almost missed this, the gmail randomizer threw it in the spam folder.
+>   It tends to do that with about 1 to 5 percent of my incoming e-mail.
+>
+> I am still learning git, so I am not sure how to regenerate the patch
+> set.  If you can help me with the commands, I can try to regenerate it.
+>
+> I ended up doing two patches, because I forgot that VMS execute
+> permission is interpreted differently than Unix, so is usually on.
+>
+> I did not change the commands to kick off the build procedure, just the
+> internals.
+>
+> Unfortunately  Texinfo is not in my toolbox.  I will look at the *.tex*
+> files to see what I can figure out for editing the source format for any
+> changes.  I did update the readme.vms FILE.
+>
+> Also this patch should enable the dynamic extension loading, which I
+> forgot to put in the change list.
+>
+> To better support dynamic extensions, gawk on VMS/ALPHA should be built
+> using IEEE floating point.
+>
+> This slightly changes the precision of floating point output.  I am not
+> sure that anyone would notice.  IA64 defaults to IEEE, and VAX can not
+> support IEEE.
+>
+> The reason for this is that most open source packages expect the IEEE
+> behavior, so it seems best to default to that when possible.
+>
+> When we get this step resolved, I am going to work on the procedure to
+> generate a installable package in the VMS PCSI format.
+>
+> Regards,
+> -John
+>
+>
+>
+> On 12/6/2013 2:40 AM, arnold@skeeve.com wrote:
+>> Hi.
+>>
+>> Thanks for this.  I already pushed the change you suggested about
+>> version.c.  Do you want to pull and regenerate this patch set?
+>> Or should I just apply it all and you'll send me an updated patch?
+>>
+>> Finally, we need the manual updated about the build procedure. If
+>> Texinfo isn't in your toolbox, you can just send me plain text and I'll
+>> handle the formatting, but the manual needs to be updated and also
+>> and README files.
+>>
+>> This is great work and it's exciting that VMS gawk is progressing
+>> this way.
+>>
+>> Thanks,
+>>
+>> Arnold
+>>
+>> "John E. Malmberg" <wb8tyw@qsl.net> wrote:
+>>
+>>> Forgot to document that the previous strftime test was incorrect as it
+>>> was not specifying a timezone on VMS versions that support timezones
+>>> which made the behavior different than on Unix/Linux.  The test has been
+>>> fixed.
+>>>
+>>> All tests now passing on VAX/VMS 7.3, Alpha and IA64/VMS 8.4.
+>>> Tests are still running on ALPHA/VMS 8.3, but I am expecting them to
+>>> also pass.
+>>>
+>>> VMS build procedures no longer need to be edited when the version number
+>>> changes.
+>>>
+>>> 2013-12-05   John E. Malmberg       <wb8tyw@qsl.net>
+>>>
+>>> * New config_h.com to generate config.h
+>>>
+>>> * New gawk_ident.com generates ident line for link option file.
+>>>
+>>> * Add version_c.com to create version.c from version.in.
+>>>
+>>> * Remove fcntl.h covering up real fcntl.h.  If an older version
+>>>     of VMS needs this file, the build procedure should be updated
+>>>     to generate it from a template.
+>>>
+>>> * descrip.mms: Use command files to generate files based
+>>>     on same input files as a Linux build.
+>>>
+>>> * gawkmisc.vms (files_are_same): support _USE_STD_STAT for VMS 8.x.
+>>>
+>>> * generate_config_vms_h_gawk.com: Generates a helper file
+>>>     config_vms.h to cover issues config_h.com can not handle.
+>>>
+>>> * vmsbuild.com: Use command files to generate files based
+>>>     on the same input files as a Linux build.
+>>>
+>>> * vms_misc.c (vms_open): VMS CRTL setting errno to ENOENT where
+>>>     it should be set to EMFILE.
+>>>
+>>> Regards,
+>>> -John
+>
+
+From wb8tyw@gmail.com  Mon Dec 16 21:27:20 2013
+Return-Path: <wb8tyw@gmail.com>
+Received: from skeeve.com (skeeve.com [127.0.0.1])
+	by skeeve.com (8.14.4/8.14.4/Debian-2ubuntu2.1) with ESMTP id rBGJQJfQ002202
+	for <arnold@localhost>; Mon, 16 Dec 2013 21:27:19 +0200
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	frenzy.freefriends.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.7 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FROM,RCVD_IN_DNSWL_LOW autolearn=ham
+	version=3.3.1
+X-Envelope-From: wb8tyw@gmail.com
+X-Envelope-To: <arnold@skeeve.com>
+Received: from frenzy.freefriends.org [66.54.153.139]
+	by skeeve.com with IMAP (fetchmail-6.3.21)
+	for <arnold@localhost> (single-drop); Mon, 16 Dec 2013 21:27:19 +0200 (IST)
+Received: from mail-ie0-f173.google.com (mail-ie0-f173.google.com [209.85.223.173])
+	by freefriends.org (8.14.6/8.14.6) with ESMTP id rBG6Tatb002732
+	for <arnold@skeeve.com>; Sun, 15 Dec 2013 23:29:39 -0700
+Received: by mail-ie0-f173.google.com with SMTP id to1so5932042ieb.4
+        for <arnold@skeeve.com>; Sun, 15 Dec 2013 22:29:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type;
+        bh=ksiNjtwxRvh74kzY1LKaRL/l+Ja2PriUxgPwwm+Igho=;
+        b=BiJLgaDXXU4R0IwBKeNvon0qca3q3Le4HtVArPhKruA9rRhSqfVcTRHrQ8fF1r0f5h
+         N28vQidBEX3PNHi9k0uzfHF1sqT7LHGxOfSS/7ipk8UWoa4BVB3taSOFAAMzTkQUeduC
+         2RNaWLJHjFR4xRvkOwYqJPVikLyg2atmds6iLoxKOFbNCz+KUFQacDmaCLiibEg4pxV1
+         DsZWlBKLFrl8wXF5+gy3ZAj3FafIZluCgY5rUqrfXxrV9a7kumGrgljPG84MAOT01eCe
+         nXnlrhJgxIAjndT7sYPSYGZkeieSagmN57kRqefNkHk9PhdF5RbY3J0PBC7r0cJn/MKE
+         Uh0A==
+X-Received: by 10.50.154.102 with SMTP id vn6mr13663789igb.1.1387175375953;
+        Sun, 15 Dec 2013 22:29:35 -0800 (PST)
+Received: from [192.168.0.101] (173-19-202-206.client.mchsi.com. [173.19.202.206])
+        by mx.google.com with ESMTPSA id da14sm14704681igc.1.2013.12.15.22.29.33
+        for <multiple recipients>
+        (version=TLSv1 cipher=ECDHE-RSA-RC4-SHA bits=128/128);
+        Sun, 15 Dec 2013 22:29:34 -0800 (PST)
+Message-ID: <52AE9DD7.1020409@gmail.com>
+Date: Mon, 16 Dec 2013 00:29:43 -0600
+From: John Malmberg <wb8tyw@gmail.com>
+User-Agent: Mozilla/5.0 (Windows NT 6.2; WOW64; rv:17.0) Gecko/20130215 Thunderbird/17.0.3
+MIME-Version: 1.0
+To: Aharon Robbins <arnold@skeeve.com>
+CC: "John E. Malmberg" <wb8tyw@qsl.net>
+Subject: Updates for gawktexi.in,readme.vms
+Content-Type: multipart/mixed;
+ boundary="------------040502020402090508010905"
+Status: RO
+X-Status: A
+
+This is a multi-part message in MIME format.
+--------------040502020402090508010905
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Hello Arnold,
+
+These are the preliminary updates for the VMS documentation.
+
+I forgot to document (not sure where to put it)
+
+   *  The exit code reporting in GAWK is wrong and violates VMS
+      standards.  This is a common problem in older ports because
+      the exit() was not implemented correctly, and neither was
+      the rest of the C runtime.  Day 1 porting bug that was inevitable.
+
+      The first problem is that if I fix it to report the correct exit
+      status, it would break DCL procedures written to expect the
+      wrong value.
+
+      The second problem is that the new exit() call does not
+      allow setting the severity values and the existing gawk code
+      is setting them for tests to use.
+
+      Using reverse engineering, I have determined how to encode
+      the correct exit codes with severity into the old exit()
+      API.
+
+   If the shell is a UNIX shell:
+
+   *  The input parameters and options are handled the same as Unix.
+      (I have forgotten if I sent you that patch yet)
+
+   *  The exit codes are correct.  The DCL severity information
+      is also added even though most C programs will not use them.
+
+I do not know if would be permissible to change the behavior to always 
+use the correct exit code with the severity values set.
+
+Existing DCL code using the severity values would not notice this change.
+
+I would have to document how to convert UNIX exit codes to DCL values 
+for people to get the original codes back.
+
+
+
+In the documentation, I have been trying to change the case of the 
+filenames referenced in the VMS sections to be exact instead in upper case.
+
+
+In general, on the older ODS-2 VMS file system, the files were stored 
+and displayed in upper case.
+
+In the newer ODS-5 file system, filenames are stored in a case preserved 
+state and are when unpacked from a repository are still in lower case.
+
+The VMS DCL shell also has an optional mode /PARSE=EXTEND mode where it 
+handles those names.
+
+In the normal mode DCL converts all unquoted parameters to upper case, 
+and then the C runtime converts all unquoted parameters to lower case.
+A slight but significant difference.
+
+In the extended mode, DCL and the C runtime will also not do any 
+conversion of parameters.
+
+Which means that in extended mode, the target to the MMS or MMK program 
+needs to be in the exact case, or it may not be found.
+
+When you have an NFS mounted volume, like I do, things get a bit strange 
+on older VMS, like VAX/VMS, because it presents lower case filenames in 
+upper case, and uses the $ character to indicate when the case gets 
+inverted.
+
+Example:
+
+TOAD> dir src_root:[gawk.readme_d]readme.vms
+%DIRECT-E-OPENIN, error opening SRC_ROOT:[GAWK.README_D]README.VMS;* as 
+input
+
+TOAD> dir src_root:[gawk.$readme_$d]$readme.vms
+
+Directory SRC_ROOT:[GAWK.$README_$D]
+
+$README.VMS;1
+
+On current versions of VMS that support ODS-5, the exact case of the 
+files are seen.
+
+EAGLE> dir src_root:[gawk.readme_d]readme.vms
+
+Directory SRC_ROOT:[gawk.README_d]
+
+README.VMS;1
+
+This affects build procedures as they must look for both path names.
+
+Regards,
+-John
+
+--------------040502020402090508010905
+Content-Type: text/plain; charset=windows-1252;
+ name="gawktexti_in.gdiff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="gawktexti_in.gdiff"
+
+--- /src_root/gawk/doc/gawktexi.in	Fri Dec 13 17:43:41 2013
++++ /vms_root/gawk/doc/gawktexi.in	Sun Dec 15 23:28:13 2013
+@@ -32713,6 +32713,9 @@
+ @item
+ Prestandard VAX C compiler for VAX/VMS
+ 
++@item
++GCC for VAX and Alpha has not been tested for a while.
++
+ @end itemize
+ 
+ @end itemize
+@@ -33993,41 +33996,96 @@
+ @appendixsubsubsec Compiling @command{gawk} on VMS
+ @cindex compiling @command{gawk} for VMS
+ 
+-To compile @command{gawk} under VMS, there is a @code{DCL} command procedure that
+-issues all the necessary @code{CC} and @code{LINK} commands. There is
+-also a @file{Makefile} for use with the @code{MMS} utility.  From the source
+-directory, use either:
++To compile @command{gawk} under VMS, there is a @code{DCL} command procedure
++that issues all the necessary @code{CC} and @code{LINK} commands. There is
++also a @file{Makefile} for use with the @code{MMS} or @code{MMK} utility.
++From the source directory, use either:
+ 
+ @example
+-$ @kbd{@@[.VMS]VMSBUILD.COM}
++$ @kbd{@@[.vms]vmsbuild.com}
+ @end example
+ 
+ @noindent
+ or:
+ 
+ @example
+-$ @kbd{MMS/DESCRIPTION=[.VMS]DESCRIP.MMS GAWK}
++$ @kbd{MMS/DESCRIPTION=[.vms]descrip.mms gawk}
+ @end example
++or:
++
++@example
++$ @kbd{MMK/DESCRIPTION=[.vms]descrip.mms gawk}
++@end example
++
++The @code{MMK} is an open source freeware near clone of @code{MMS} and
++can better handle @code{ODS-5} volumes with upper and lower case filenames.
++@code{MMK} is available from @url{https://github.com/endlesssoftware/mmk}.
++
++With @CODE{ODS-5} volumes and extended parsing enabled, the case of the target
++parameter may need to be exact.
+ 
+ Older versions of @command{gawk} could be built with VAX C or
+ GNU C on VAX/VMS, as well as with DEC C, but that is no longer
+ supported.  DEC C (also briefly known as ``Compaq C'' and now known
+ as ``HP C,'' but referred to here as ``DEC C'') is required.  Both
+-@code{VMSBUILD.COM} and @code{DESCRIP.MMS} contain some obsolete support
++@code{vmsbuild.com} and @code{descrip.mms} contain some obsolete support
+ for the older compilers but are set up to use DEC C by default.
+ 
+-@command{gawk} has been tested under Alpha/VMS 7.3-1 using Compaq C V6.4,
+-and on Alpha/VMS 7.3, Alpha/VMS 7.3-2, and IA64/VMS 8.3.@footnote{The IA64
+-architecture is also known as ``Itanium.''}
++@command{gawk} has been tested under VAX/VMS 7.3 and Alpha/VMS 7.3-1
++using Compaq C V6.4, and Alpha/VMS 7.3, Alpha/VMS 7.3-2, and IA64/VMS 8.3.
++Most recent builds are were using HP C V7.3 on Alpha VMS 8.3 and both
++Alpha and IA64 VMS 8.4 using HP C 7.3.
++@footnote{The IA64 architecture is also known as ``Itanium.''}
++
++Work is currently being done for a procedure to build @code{gawk} and create
++a PCSI kit for compatible with the GNV product.
++
++@appendixsubsubsec Compiling @command{gawk} Dynamic Extensions on VMS
++
++Dynamic extensions need to be compiled with the same compiler options for
++floating point, pointer size, and symbol name handling as @code{gawk}.
++Alpha and Itanium should use IEEE floating point.  The pointer size is 32 bits,
++and the symbol name handling is to be exact case with CRC shortening for
++symbols longer than 32 bits.
++
++Alpha and Itanium:
++
++@example
++/name=(as_is,short)
++/float=ieee/ieee_mode=denorm_results
++@end example
++
++VAX:
++
++@example
++/name=(as_is,short)
++@end example
++
++Compile time macros needed to be defined before the first VMS supplied
++header file is included.
++
++@example
++#if (__CRTL_VER >= 70200000) && !defined (__VAX)
++#define _LARGEFILE 1
++#endif
++
++#ifndef __VAX
++#ifdef __CRTL_VER
++#if __CRTL_VER >= 80200000
++#define _USE_STD_STAT 1
++#endif
++#endif
++#endif
++@end example
+ 
+ @node VMS Installation Details
+ @appendixsubsubsec Installing @command{gawk} on VMS
+ 
+-To install @command{gawk}, all you need is a ``foreign'' command, which is
+-a @code{DCL} symbol whose value begins with a dollar sign. For example:
++To use @command{gawk}, all you need is a ``foreign'' command, which is a
++@code{DCL} symbol whose value begins with a dollar sign. For example:
+ 
+ @example
+-$ @kbd{GAWK :== $disk1:[gnubin]GAWK}
++$ @kbd{GAWK :== $disk1:[gnubin]gawk}
+ @end example
+ 
+ @noindent
+@@ -34039,10 +34097,15 @@
+ @file{sylogin.com} procedure, which allows all users
+ to run @command{gawk}.
+ 
++If your @command{gawk} was installed by a PCSI kit into the
++@file{GNV$GNU:} directory tree, the program will be known as
++@file{GNV$GNU:[bin]gnv$gawk.exe} and the help file will be
++@file{GNV$GNU:[vms_help]gawk.hlp}.
++
+ Optionally, the help entry can be loaded into a VMS help library:
+ 
+ @example
+-$ @kbd{LIBRARY/HELP SYS$HELP:HELPLIB [.VMS]GAWK.HLP}
++$ @kbd{LIBRARY/HELP sys$help:helplib [.vms]gawk.hlp}
+ @end example
+ 
+ @noindent
+@@ -34106,6 +34169,19 @@
+ of @env{AWKPATH} is a comma-separated list of directory specifications.
+ When defining it, the value should be quoted so that it retains a single
+ translation and not a multitranslation @code{RMS} searchlist.
++
++@node VMS GNV
++
++The VMS GNV package provides a build environment similar to POSIX with ports
++of a collection of open source tools.  The @command{gawk} found in the GNV
++base kit is an older port.  Currently the GNV project is being reorganized
++to be individual PCSI packages for each component.
++@url{https://sourceforge.net/p/gnv/wiki/InstallingGNVPackages/}
++
++The normal build procedure @command{gawk} will produce a program that
++is suitable for use with GNV.  At this time work is being done to create
++the procedures for building a PCSI kit to replace the older @code{gawk}
++port.
+ 
+ @ignore
+ @c The VMS POSIX product, also known as POSIX for OpenVMS, is long defunct
+
+--------------040502020402090508010905
+Content-Type: text/plain; charset=windows-1252;
+ name="readme_vms.gdiff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="readme_vms.gdiff"
+
+--- /src_root/gawk/readme_d/README.VMS	Fri Dec 13 17:43:41 2013
++++ /vms_root/gawk/readme_d/README.VMS	Sun Dec 15 22:57:42 2013
+@@ -37,6 +37,38 @@
+ GAWK was originally ported for VMS V4.6 and up.  It has not been tested
+ with a release that old for some time.
+ 
++Compiling dynamic extensions on VMS:
++
++Dynamic extensions need to be compiled with the same compiler options for
++floating point, pointer size, and symbol name handling as gawk.
++Alpha and Itanium should use IEEE floating point.  The pointer size is 32 bits,
++and the symbol name handling is to be exact case with CRC shortening for
++symbols longer than 32 bits.
++
++Alpha and Itanium:
++
++/name=(as_is,short)
++/float=ieee/ieee_mode=denorm_results
++
++VAX:
++
++/name=(as_is,short)
++
++Compile time macros needed to be defined before the first VMS supplied
++header file is included.
++
++#if (__CRTL_VER >= 70200000) && !defined (__VAX)
++#define _LARGEFILE 1
++#endif
++
++#ifndef __VAX
++#ifdef __CRTL_VER
++#if __CRTL_VER >= 80200000
++#define _USE_STD_STAT 1
++#endif
++#endif
++#endif
++
+ 
+ Installing GAWK on VMS:
+ 
+@@ -47,6 +79,10 @@
+ That symbol should be placed in the user's login.com or in the system-
+ wide sylogin.com procedure so that it will be defined every time the
+ user logs on.
++
++If your gawk was installed by a PCSI kit into the GNV$GNU: directory tree,
++the program will be known as GNV$GNU:[bin]gnv$gawk.exe and the help file
++will be GNV$GNU:[vms_help]gawk.hlp.
+ 
+      Optionally, the help entry can be loaded into a VMS help library.
+  |$ LIBRARY/HELP SYS$HELP:HELPLIB [.VMS]GAWK.HLP
+
+--------------040502020402090508010905--
+
+From wb8tyw@qsl.net  Wed Dec 11 20:03:44 2013
+Return-Path: <wb8tyw@qsl.net>
+Received: from skeeve.com (skeeve.com [127.0.0.1])
+	by skeeve.com (8.14.4/8.14.4/Debian-2ubuntu2.1) with ESMTP id rBBI3gNX002464
+	for <arnold@localhost>; Wed, 11 Dec 2013 20:03:43 +0200
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	frenzy.freefriends.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,FREEMAIL_FROM
+	autolearn=ham version=3.3.1
+X-Envelope-From: wb8tyw@qsl.net
+X-Envelope-To: <arnold@skeeve.com>
+Received: from frenzy.freefriends.org [66.54.153.139]
+	by skeeve.com with IMAP (fetchmail-6.3.21)
+	for <arnold@localhost> (single-drop); Wed, 11 Dec 2013 20:03:43 +0200 (IST)
+Received: from Encompasserve.org (Eisner.encompasserve.org [67.53.90.116])
+	by freefriends.org (8.14.6/8.14.6) with ESMTP id rBB5jaW9020988
+	for <arnold@skeeve.com>; Tue, 10 Dec 2013 22:45:40 -0700
+Received: from [192.168.0.101]
+ (173-19-202-206.client.mchsi.com [173.19.202.206])
+ by Encompasserve.org (PMDF V6.6 #13031)
+ with ESMTPSA id <01P1SYL5LELG002FZE@Encompasserve.org> for arnold@skeeve.com;
+ Tue, 10 Dec 2013 23:45:35 -0600 (CST)
+Date: Tue, 10 Dec 2013 23:45:36 -0600
+From: "John E. Malmberg" <wb8tyw@qsl.net>
+Subject: Re: Some questions...
+In-reply-to: <201312110426.rBB4QXXc003297@skeeve.com>
+To: Aharon Robbins <arnold@skeeve.com>
+Cc: wb8tyw@qsl.net
+Message-id: <52A7FC00.2040905@qsl.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+User-Agent: Mozilla/5.0 (Windows NT 6.2; WOW64; rv:17.0) Gecko/20130215
+ Thunderbird/17.0.3
+References: <529A9537.7090404@qsl.net> <201312110426.rBB4QXXc003297@skeeve.com>
+Status: R
+
+On 12/10/2013 10:26 PM, Aharon Robbins wrote:
+> Hi. Some questions about your changes.
+>
+> 1. I notice that there is at least one instance of #if __VMS, where as
+> it seems most code uses #if VMS.  Is that on purpose?  If not, which
+> is correct?
+
+VMS is a macro historically pre-defined by C compilers on C before the 
+ANSI rules.
+
+Under strict ANSI rules, a standards compliant compiler is not allowed 
+to pre-define macros that are not prefixed by "__".
+
+Which means that you can not count on the VMS macro being defined unless 
+you do it yourself.
+
+So __VMS is the ANSI correct definition.  But it would be a lot of work 
+to change all the code.
+
+The vms_config.h that is now generated has these lines in it to make 
+sure that VMS is defined.
+
+#ifdef __VMS  /* ANSI compliant */
+#ifndef VMS /* PRE-ansi */
+#define VMS 1
+#endif
+#endif
+
+This may be needed for other architectures.  It only shows up as an 
+issue if you set a "strict" compliance flag on the compile command.
+
+> 2. For the include of the main wrapper.  Gawk already has a routine
+> os_arg_fixup which is intended to manipulate argc and argv as needed
+> by an OS-specific routine before main() parses it.  A quick look at
+> the wrapper looks to me like it could be made to fit within that framework,
+> which would keep #if and the include out of the mainline code.
+
+I can look at that.  I can also look to see if I can move the logic from 
+vms_crtl_init.c into it in a way that would sidestep that it has no 
+copyright notice at all.  The result would be code that is almost 
+identical to code that is in the official Perl distribution.
+
+GNV was started as a user project and when the VMS POSIX product was 
+dropped and they needed a Unix like environment, Digital took over the 
+GNV product, but did not really do much to keep it up to date.
+
+The routine in vms_crtl_init.c is actually called before main() is 
+called, so just linking a module with it in is all that it takes to 
+activate the change.  Unfortunately I do not know how to get it to 
+magically fix up the argv array.
+
+> If that looks reasonable to you, can you make that change?  You can send
+> it as a diff against what you currently have already done.
+
+I will look at it tomorrow night.  I also found another change needed 
+for vms_args.c to work properly under a bash shell.
+
+> I'm sorry about the hassle on the copyrights, but I really have to play
+> this game by the FSF rules.  I hope we can get it clarified soon
+> so that I can include the files in the dist.
+
+I hope so.  I have not seen a reply from Karl yet.  He did say that 
+there are other options.
+
+This would clear the way for getting the similar code accepted into the 
+Bash and coreutils repositories.  I have a report that the first bash 
+4.3 beta built on VMS and looked real good on the test run.
+
+I am currently working on adapting the packaging scripts from bash and 
+coreutils to gawk.  Each product has had it unique features, so I have 
+not yet come up with a generic set of scripts.
+
+This is a preview what will be coming:
+
+backup_gawk_src.com - Builds a VMS equivalent to tar archive.  By 
+placing the source in the PCSI kit, it covers the requirement of 
+providing source somewhere with the binary.
+
+build_gawk_pcsi_desc.com - Creates a VMS PCSI package manifest file.
+
+build_gawk_pcsi_text.com - text output by the VMS PCSI package installer.
+
+compare_gawk_source.com - I have the source checked out on an NFS 
+server.  The backup program needs me to copy it to a VMS volume first. 
+This procedure makes sure that the two copies are the same and ready for 
+backup.
+
+gawk_alias_setup.com - Sets up gawk and awk links to gnv$gawk.exe. 
+Needed to repair when sins of the past partially break an install.
+
+gawk_verb.cld - for gawk to use gnv$gawk.exe as an image.  Different 
+than gawk.cld.  To properly add an image to the VMS command table, it 
+needs a prefix.  I have "GNV$" registered as a prefix for this purpose.
+
+gnv_gawk_kit_name.com - Calculates the VMS PCSI package name, used for 
+both file names and file contents.
+
+gnv_gawk_startup.com - Run at VMS startup to make sure that the 
+environment is set up properly for gawk.
+
+pcsi_gawk_file_list.txt - Source file for build_gawk_pcsi_desc.com.
+
+remove_old_gawk.com - Needed to properly clean up sins of the past. 
+Only touches the the GNV provided gawk and awk programs.
+
+stage_gawk_install.com - Does a pre-install into a fake "root" directory 
+tree for the kitting procedure to pull files out of.
+
+Regards,
+-John
+
