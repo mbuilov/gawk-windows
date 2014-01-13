@@ -35016,7 +35016,21 @@ If your @command{gawk} was installed by a PCSI kit into the
 @file{GNV$GNU:[bin]gnv$gawk.exe} and the help file will be
 @file{GNV$GNU:[vms_help]gawk.hlp}.
 
-Optionally, the help entry can be loaded into a VMS help library:
+The PCSI kit also installs a @file{GNV$GNU:[vms_bin]gawk_verb.cld} file
+which can be used to add @command{gawk} and @command{awk} as DCL commands.
+
+For just the current process you can use:
+
+@example
+$ @kbd{set command gnv$gnu:[vms_bin]gawk_verb.cld}
+@end example
+
+Or the system manager can use @file{GNV$GNU:[vms_bin]gawk_verb.cld} to
+add the @command{gawk} and @command{awk} to the system wide @samp{DCLTABLES}.
+
+The DCL syntax is documented in the @file{gawk.hlp} file.
+
+Optionally, @file{gawk.hlp} entry can be loaded into a VMS help library:
 
 @example
 $ @kbd{LIBRARY/HELP sys$help:helplib [.vms]gawk.hlp}
@@ -35127,9 +35141,10 @@ to supply individual PCSI packages for each component.
 See @uref{https://sourceforge.net/p/gnv/wiki/InstallingGNVPackages/}.
 
 The normal build procedure for @command{gawk} produces a program that
-is suitable for use with GNV.  At this time work is being done to create
-the procedures for building a PCSI kit to replace the older @command{gawk}
-port.
+is suitable for use with GNV.
+
+The @file{vms/gawk_build_steps.txt} in the source documents the procedure
+for building a VMS PCSI kit that is compatible with GNV.
 
 @ignore
 @c The VMS POSIX product, also known as POSIX for OpenVMS, is long defunct
@@ -35282,7 +35297,7 @@ as follows:
 @cindex Rankin, Pat
 @cindex Malmberg, John
 @item VMS @tab Pat Rankin, @EMAIL{r.pat.rankin@@gmail.com,r.pat.rankin at gmail.com}, and
-John Malmberg, @EMAIL{wb8tyw@@gmail.com,wb8tyw at gmail.com}.
+John Malmberg, @EMAIL{wb8tyw@@qsl.net,wb8tyw at qsl.net}.
 
 @cindex Pitts, Dave
 @item z/OS (OS/390) @tab Dave Pitts, @EMAIL{dpitts@@cozx.com,dpitts at cozx dot com}.

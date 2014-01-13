@@ -26394,7 +26394,19 @@ directory tree, the program will be known as
 `GNV$GNU:[bin]gnv$gawk.exe' and the help file will be
 `GNV$GNU:[vms_help]gawk.hlp'.
 
-   Optionally, the help entry can be loaded into a VMS help library:
+   The PCSI kit also installs a `GNV$GNU:[vms_bin]gawk_verb.cld' file
+which can be used to add `gawk' and `awk' as DCL commands.
+
+   For just the current process you can use:
+
+     $ set command gnv$gnu:[vms_bin]gawk_verb.cld
+
+   Or the system manager can use `GNV$GNU:[vms_bin]gawk_verb.cld' to
+add the `gawk' and `awk' to the system wide `DCLTABLES'.
+
+   The DCL syntax is documented in the `gawk.hlp' file.
+
+   Optionally, `gawk.hlp' entry can be loaded into a VMS help library:
 
      $ LIBRARY/HELP sys$help:helplib [.vms]gawk.hlp
 
@@ -26495,8 +26507,10 @@ reorganized to supply individual PCSI packages for each component.  See
 `https://sourceforge.net/p/gnv/wiki/InstallingGNVPackages/'.
 
    The normal build procedure for `gawk' produces a program that is
-suitable for use with GNV.  At this time work is being done to create
-the procedures for building a PCSI kit to replace the older `gawk' port.
+suitable for use with GNV.
+
+   The `vms/gawk_build_steps.txt' in the source documents the procedure
+for building a VMS PCSI kit that is compatible with GNV.
 
 
 File: gawk.info,  Node: VMS Old Gawk,  Prev: VMS GNV,  Up: VMS Installation
@@ -26586,7 +26600,7 @@ MS-DOS with DJGPP       Scott Deifik, <scottd.mail@sbcglobal.net>.
 MS-Windows with MINGW   Eli Zaretskii, <eliz@gnu.org>.
 OS/2                    Andreas Buening, <andreas.buening@nexgo.de>.
 VMS                     Pat Rankin, <r.pat.rankin@gmail.com>, and John
-                        Malmberg, <wb8tyw@gmail.com>.
+                        Malmberg, <wb8tyw@qsl.net>.
 z/OS (OS/390)           Dave Pitts, <dpitts@cozx.com>.
 
    If your bug is also reproducible under Unix, please send a copy of
@@ -32828,40 +32842,40 @@ Node: VMS Compilation1055883
 Ref: VMS Compilation-Footnote-11057498
 Node: VMS Dynamic Extensions1057556
 Node: VMS Installation Details1058929
-Node: VMS Running1060763
-Node: VMS GNV1063597
-Node: VMS Old Gawk1064306
-Node: Bugs1064776
-Node: Other Versions1068696
-Node: Notes1074780
-Node: Compatibility Mode1075580
-Node: Additions1076363
-Node: Accessing The Source1077290
-Node: Adding Code1078730
-Node: New Ports1084775
-Node: Derived Files1088910
-Ref: Derived Files-Footnote-11094231
-Ref: Derived Files-Footnote-21094265
-Ref: Derived Files-Footnote-31094865
-Node: Future Extensions1094963
-Node: Implementation Limitations1095546
-Node: Extension Design1096798
-Node: Old Extension Problems1097952
-Ref: Old Extension Problems-Footnote-11099460
-Node: Extension New Mechanism Goals1099517
-Ref: Extension New Mechanism Goals-Footnote-11102882
-Node: Extension Other Design Decisions1103068
-Node: Extension Future Growth1105174
-Node: Old Extension Mechanism1106010
-Node: Basic Concepts1107750
-Node: Basic High Level1108431
-Ref: figure-general-flow1108702
-Ref: figure-process-flow1109301
-Ref: Basic High Level-Footnote-11112530
-Node: Basic Data Typing1112715
-Node: Glossary1116070
-Node: Copying1141532
-Node: GNU Free Documentation License1179089
-Node: Index1204226
+Node: VMS Running1061176
+Node: VMS GNV1064010
+Node: VMS Old Gawk1064733
+Node: Bugs1065203
+Node: Other Versions1069121
+Node: Notes1075205
+Node: Compatibility Mode1076005
+Node: Additions1076788
+Node: Accessing The Source1077715
+Node: Adding Code1079155
+Node: New Ports1085200
+Node: Derived Files1089335
+Ref: Derived Files-Footnote-11094656
+Ref: Derived Files-Footnote-21094690
+Ref: Derived Files-Footnote-31095290
+Node: Future Extensions1095388
+Node: Implementation Limitations1095971
+Node: Extension Design1097223
+Node: Old Extension Problems1098377
+Ref: Old Extension Problems-Footnote-11099885
+Node: Extension New Mechanism Goals1099942
+Ref: Extension New Mechanism Goals-Footnote-11103307
+Node: Extension Other Design Decisions1103493
+Node: Extension Future Growth1105599
+Node: Old Extension Mechanism1106435
+Node: Basic Concepts1108175
+Node: Basic High Level1108856
+Ref: figure-general-flow1109127
+Ref: figure-process-flow1109726
+Ref: Basic High Level-Footnote-11112955
+Node: Basic Data Typing1113140
+Node: Glossary1116495
+Node: Copying1141957
+Node: GNU Free Documentation License1179514
+Node: Index1204651
 
 End Tag Table
