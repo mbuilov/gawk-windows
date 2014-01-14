@@ -1,7 +1,7 @@
 #
 # test/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1988-2012 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2014 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -808,6 +808,9 @@ EXTRA_DIST = \
 	sortu.awk \
 	sortu.ok \
 	space.ok \
+	split_after_fpat.awk \
+	split_after_fpat.in \
+	split_after_fpat.ok \
 	splitarg4.awk \
 	splitarg4.in \
 	splitarg4.ok \
@@ -995,7 +998,8 @@ GAWK_EXT_TESTS = \
 	patsplit posix printfbad1 printfbad2 printfbad3 procinfs \
 	profile1 profile2 profile3 profile4 profile5 pty1 \
 	rebuf regx8bit reginttrad reint reint2 rsstart1 \
-	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
+	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
+	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
 	symtab7 symtab8 symtab9
 
