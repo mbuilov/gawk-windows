@@ -1013,7 +1013,9 @@ do_split(int nargs)
 		return make_number((AWKNUM) 0);
 	}
 
-	if ((sep->re_flags & FS_DFLT) != 0 && current_field_sep() != Using_FIELDWIDTHS && ! RS_is_null) {
+	if (   (sep->re_flags & FS_DFLT) != 0
+	    && current_field_sep() == Using_FS
+	    && ! RS_is_null) {
 		parseit = parse_field;
 		fs = force_string(FS_node->var_value);
 		rp = FS_regexp;
