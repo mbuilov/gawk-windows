@@ -13,7 +13,6 @@
 #define _NFILE 40
 #endif
 
-static char template[] = "piXXXXXX";
 static struct {
   char *command;
   char *name;
@@ -34,6 +33,7 @@ static struct {
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#if 0
 static int
 unixshell(char *p)
 {
@@ -119,20 +119,16 @@ unlink_and_free(char *cmd)
     s = cmd;
   unlink(s); free(cmd);
 }
+#endif
 
 int
 os_system(const char *cmd)
 {
-  char *s;
-  int i;
-  char *cmd1;
+  char *cmdexe = getenv("ComSpec");
+  char *cmd1 = quote_cmd(cmd);
+  int i = spawnl(P_WAIT, cmdexe, "cmd.exe", "/c", cmd1, NULL);
 
-  if ((cmd1 = scriptify(cmd)) == NULL) return(1);
-  if (s = getenv("SHELL"))
-    i = spawnlp(P_WAIT, s, s, cmd1 + strlen(s), NULL);
-  else
-    i = system(cmd1);
-  unlink_and_free(cmd1);
+  free(cmd1);
   return(i);
 }
 
@@ -209,19 +205,15 @@ os_popen(const char *command, const char *mode )
     char *name;
     int cur;
     char curmode[4];
-#if defined(__MINGW32__)
-    char *cmd;
-#endif
 
     if (*mode != 'r' && *mode != 'w')
       return NULL;
     strncpy(curmode, mode, 3); curmode[3] = '\0';
 
 #if defined(__MINGW32__)
-    current = popen(cmd = scriptify(command), mode);
+    current = popen(command, mode);
     cur = fileno(current);
     strcpy(pipes[cur].pmode, curmode);
-    pipes[cur].command = cmd;
     return(current);
 #endif
 
@@ -268,7 +260,6 @@ os_pclose( FILE * current)
 #if defined(__MINGW32__)
     rval = pclose(current);
     *pipes[cur].pmode = '\0';
-    unlink_and_free(pipes[cur].command);
     return rval;
 #endif
 
