@@ -1,5 +1,10 @@
 2014-01-15  Eli Zaretskii  <eliz@gnu.org>
 
+	* Makefile.tst (mbprintf4, profile5, backbigs1, backsmalls1):
+	Announce expected failures.
+	(fts): Fail gracefully, to avoid bailing out of the test suite too
+	early.
+
 	* popen.c (os_system): Use spawnl, and quote the command line, to
 	be consistent with what gawk_popen does.
 	(os_popen) [__MINGW32__]: Don't scriptify the command, to be
