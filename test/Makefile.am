@@ -1254,12 +1254,10 @@ nonl::
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 strftime::
-	@echo This test could fail on slow machines or on a minute boundary,
-	@echo so if it does, double check the actual results:
 	@echo $@
 	@GAWKLOCALE=C; export GAWKLOCALE; \
 	TZ=GMT0; export TZ; \
-	(LC_ALL=C date) | $(AWK) -v OUTPUT=_$@ -f "$(srcdir)"/strftime.awk
+	$(AWK) -v OUTPUT=_$@ -f "$(srcdir)"/strftime.awk
 	@-$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
 
 litoct::

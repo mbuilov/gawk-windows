@@ -1,3 +1,13 @@
+2014-01-16         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (strftime): Remove comment about the race condition, since
+	this should be fixed.  And gawk now calls date inside the script.
+	* strftime.awk: Based on an idea from Pat Ranking, fix the race
+	condition by looping repeatedly over strftime/date/strftime until
+	the before and after strftime results match.  That should fix
+	the race condition where the seconds field might increment between
+	invocations.
+
 2014-01-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (split_after_fpat): New test.
