@@ -10070,6 +10070,12 @@ if test "x$enable_extensions" != "xno"; then
 		case $host_os in
 	mirbsd*)
 		: ;;
+	openedition*)	# OS/390 z/OS POSIX layer
+		cat << \EOF > extension/Makefile
+all dist check clean distclean install uninstall distcheck:
+	@exit 0
+EOF
+		;;
 	*)
 	ac_fn_c_check_header_mongrel "$LINENO" "dlfcn.h" "ac_cv_header_dlfcn_h" "$ac_includes_default"
 if test "x$ac_cv_header_dlfcn_h" = xyes; then :
