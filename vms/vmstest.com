@@ -120,8 +120,9 @@ $		list = "include2 indirectcall lint lintold lintwarn match1" -
 		  + " nondec2 patsplit posix profile1 procinfs printfbad1" -
 		  + " printfbad2 printfbad3 profile2 profile3 pty1" -
 		  + " regx8bit rebuf reginttrad reint reint2 rsstart1 rsstart2 rsstart3 rstest6" -
-		  + " shadow sortfor sortu splitarg4 strtonum strftime switch2" -
-		  + " symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9"
+		  + " shadow sortfor sortu split_after_fpat splitarg4" -
+		  + " strtonum strftime switch2 symtab1 symtab2 symtab3" -
+		  + " symtab4 symtab5 symtab6 symtab7 symtab8 symtab9"
 $		gosub list_of_tests
 $		return
 $
@@ -267,6 +268,7 @@ $rstest6:
 $rswhite:
 $sortempty:
 $sortfor:
+$split_after_fpat:
 $splitarg4:
 $splitargv:
 $splitarr:
