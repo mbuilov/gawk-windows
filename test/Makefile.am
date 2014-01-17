@@ -1800,7 +1800,7 @@ inplace3::
 
 testext::
 	@echo $@
-	@$(AWK) '/^(@load|BEGIN)/,/^}/' $(top_srcdir)/extension/testext.c > testext.awk
+	@$(AWK) '/^(@load|BEGIN)/,/^}/' "$(top_srcdir)"/extension/testext.c > testext.awk
 	@$(AWK) -f testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ testext.awk
 
@@ -1810,8 +1810,8 @@ readdir:
 	echo If it does, try rerunning on an ext'[234]' filesystem. ; \
 	fi
 	@echo $@
-	@$(AWK) -f "$(srcdir)"/readdir.awk $(top_srcdir) > _$@
-	@ls -afli $(top_srcdir) | sed 1d | $(AWK) -f "$(srcdir)"/readdir0.awk -v extout=_$@ $(top_srcdir) > $@.ok
+	@$(AWK) -f "$(srcdir)"/readdir.awk "$(top_srcdir)" > _$@
+	@ls -afli $"(top_srcdir)" | sed 1d | $(AWK) -f "$(srcdir)"/readdir0.awk -v extout=_$@ "$(top_srcdir)" > $@.ok
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 fts:
