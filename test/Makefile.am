@@ -1811,7 +1811,7 @@ readdir:
 	fi
 	@echo $@
 	@$(AWK) -f "$(srcdir)"/readdir.awk "$(top_srcdir)" > _$@
-	@ls -afli $"(top_srcdir)" | sed 1d | $(AWK) -f "$(srcdir)"/readdir0.awk -v extout=_$@ "$(top_srcdir)" > $@.ok
+	@ls -afli "$(top_srcdir)" | sed 1d | $(AWK) -f "$(srcdir)"/readdir0.awk -v extout=_$@ "$(top_srcdir)" > $@.ok
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 fts:
