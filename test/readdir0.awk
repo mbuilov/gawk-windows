@@ -1,4 +1,9 @@
+# NOTE: This program is not a generalized parser for the output of 'ls'.
+# It's job is to read the output of ls from the gawk source code directory,
+# where we know there are no symbolic links, nor are there files with
+# spaces in their file names, etc.
 BEGIN {
+	# analyze results from readdir extension
 	while ((getline x < extout) > 0) {
 		numrec++
 		if ((split(x, f, "/") == 3) && (f[3] == "u"))
@@ -12,12 +17,7 @@ BEGIN {
 }
 
 BEGIN {
-	dir = ARGV[1]
-	delete ARGV[1]
-	ls_afi = "ls -afi " dir
-	ls_al = ("ls -lna " dir " | sed 1d")
-
-	for (i = 1; (ls_afi | getline) > 0; i++) {
+	for (i = 1; (getline < dirlist) > 0; i++) {
 		# inode number is $1, filename is read of record
 		inode = $1
 		$1 = ""
@@ -26,21 +26,18 @@ BEGIN {
 		names[i] = $0
 		ino[names[i]] = inode
 	}
-	close(ls_afi)
+	close(dirlist)
 
-	for (j = 1; (ls_al | getline) > 0; j++) {
+	for (j = 1; (getline < longlist) > 0; j++) {
 		type_let = substr($0, 1, 1)
 		if (type_let == "-")
 			type_let = "f"
-		$1 = $2 = $3 = $4 = $5 = $6 = $7 = $8 = ""
-		$0 = $0
-		sub(/^ */, "")
-		type[$0] = type_let
+		type[$NF] = type_let
 	}
-	close(ls_al)
+	close(longlist)
 
 	if (i != j)
-		printf("mismatch: %d from `ls -afi' and %d from `ls -l'\n", i, j) > "/dev/stderr"
+		printf("mismatch: %d from `ls -afi' and %d from `ls -lna'\n", i, j) > "/dev/stderr"
 	
 	for (i = 1; i in names; i++)
 		printf("%s/%s/%s\n", ino[names[i]], names[i], (ftype_unknown ? "u" : type[names[i]]))
