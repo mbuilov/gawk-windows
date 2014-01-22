@@ -13,22 +13,31 @@ $! This generates a []config.h file and also a config_vms.h file,
 $! which is used to supplement that file.
 $!
 $!
-$! Copyright 2013, John Malmberg
+$! Copyright (C) 2014 the Free Software Foundation, Inc.
 $!
-$! Permission to use, copy, modify, and/or distribute this software for any
-$! purpose with or without fee is hereby granted, provided that the above
-$! copyright notice and this permission notice appear in all copies.
+$! This file is part of GAWK, the GNU implementation of the
+$! AWK Progamming Language.
 $!
-$! THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-$! WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-$! MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-$! ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-$! WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-$! ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
-$! OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+$! GAWK is free software; you can redistribute it and/or modify
+$! it under the terms of the GNU General Public License as published by
+$! the Free Software Foundation; either version 3 of the License, or
+$! (at your option) any later version.
+$!
+$! GAWK is distributed in the hope that it will be useful,
+$! but WITHOUT ANY WARRANTY; without even the implied warranty of
+$! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+$! GNU General Public License for more details.
+$!
+$! You should have received a copy of the GNU General Public License
+$! along with this program; if not, write to the Free Software
+$! Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+$! USA
+$!
+$! Per assignment agreement with FSF, similar procedures may be present
+$! in other packages under other licensing agreements and copyrights
 $!
 $!
-$! 28-Nov-2013	J. Malmberg
+$! 21-Jan-2014	J. Malmberg
 $!
 $!=========================================================================
 $!
@@ -264,8 +273,11 @@ $ write cvh "static void vms_exit(int status) {"
 $ write cvh "    int vms_status;"
 $ write cvh "    /* Fake the __posix_exit with severity added */"
 $ write cvh "    /* Undocumented correct way to do this. */"
-$ write cvh "    vms_status = C_FACILITY_NO | 0xA000 | STS$M_INHIB_MSG;"
-$ write cvh "    vms_status |= (status << 3);"
+$ write cvh "    vms_status = 0;"
+$ write cvh "    if (status != 0) {"
+$ write cvh "        vms_status = C_FACILITY_NO | 0xA000 | STS$M_INHIB_MSG;"
+$ write cvh "        vms_status |= (status << 3);"
+$ write cvh "    }"
 $ write cvh "    if (status == EXIT_FAILURE) {"
 $ write cvh "        vms_status |= STS$K_ERROR;"
 $ write cvh "    } else if (status == EXIT_FATAL) {"
