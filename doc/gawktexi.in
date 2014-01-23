@@ -397,7 +397,8 @@ particular records in a file and perform operations upon them.
                                         field.
 * Command Line Field Separator::        Setting @code{FS} from the
                                         command-line.
-* Full Line Fields::                    Making the full line be a single field.
+* Full Line Fields::                    Making the full line be a single
+                                        field.
 * Field Splitting Summary::             Some final points and a summary table.
 * Constant Size::                       Reading constant width data.
 * Splitting By Content::                Defining Fields By Content
@@ -787,6 +788,7 @@ particular records in a file and perform operations upon them.
                                         version of @command{awk}.
 * POSIX/GNU::                           The extensions in @command{gawk} not
                                         in POSIX @command{awk}.
+* Feature History::                     The history of the features in @command{gawk}.
 * Common Extensions::                   Common Extensions Summary.
 * Ranges and Locales::                  How locales used to affect regexp
                                         ranges.
@@ -32182,6 +32184,7 @@ of the @value{DOCUMENT} where you can find more information.
                                 @command{awk}.
 * POSIX/GNU::                   The extensions in @command{gawk} not in POSIX
                                 @command{awk}.
+* Feature History::             The history of the features in @command{gawk}.
 * Common Extensions::           Common Extensions Summary.
 * Ranges and Locales::          How locales used to affect regexp ranges.
 * Contributors::                The major contributors to @command{gawk}.
@@ -32760,6 +32763,612 @@ GCC for VAX and Alpha has not been tested for a while.
 @c ENDOFRANGE exgnot
 @c ENDOFRANGE posnot
 
+@node Feature History
+@appendixsec History of @command{gawk} Features
+
+@ignore
+See the thread:
+https://groups.google.com/forum/#!topic/comp.lang.awk/SAUiRuff30c
+This motivated me to add this section.
+@end ignore
+
+@ignore
+I've tried to follow this general order, esp.@: for the 3.0 and 3.1 sections:
+       variables
+       special files
+       language changes (e.g., hex constants)
+       differences in standard awk functions
+       new gawk functions
+       new keywords
+       new command-line options
+       behavioral changes
+       new ports
+Within each category, be alphabetical.
+@end ignore
+
+This @value{SECTION} describes the features in @command{gawk}
+over and above those in POSIX @command{awk},
+in the order they were added to @command{gawk}.
+
+Version 2.10 of @command{gawk} introduced the following features:
+
+@itemize @bullet
+@item
+The @env{AWKPATH} environment variable for specifying a path search for
+the @option{-f} command-line option
+(@pxref{Options}).
+
+@item
+The @code{IGNORECASE} variable and its effects
+(@pxref{Case-sensitivity}).
+
+@item
+The @file{/dev/stdin}, @file{/dev/stdout}, @file{/dev/stderr} and
+@file{/dev/fd/@var{N}} special file names
+(@pxref{Special Files}).
+@end itemize
+
+Version 2.13 of @command{gawk} introduced the following features:
+
+@itemize @bullet
+@item
+The @code{FIELDWIDTHS} variable and its effects
+(@pxref{Constant Size}).
+
+@item
+The @code{systime()} and @code{strftime()} built-in functions for obtaining
+and printing timestamps
+(@pxref{Time Functions}).
+
+@item
+Additional command-line options
+(@pxref{Options}):
+
+@itemize @minus
+@item
+The @option{-W lint} option to provide error and portability checking
+for both the source code and at runtime.
+
+@item
+The @option{-W compat} option to turn off the GNU extensions.
+
+@item
+The @option{-W posix} option for full POSIX compliance.
+@end itemize
+@end itemize
+
+Version 2.14 of @command{gawk} introduced the following feature:
+
+@itemize @bullet
+@item
+The @code{next file} statement for skipping to the next data file
+(@pxref{Nextfile Statement}).
+@end itemize
+
+Version 2.15 of @command{gawk} introduced the following features:
+
+@itemize @bullet
+@item
+New variables (@pxref{Built-in Variables}):
+
+@itemize @minus
+@item
+@code{ARGIND}, which tracks the movement of @code{FILENAME}
+through @code{ARGV}.
+
+@item
+@code{ERRNO}, which contains the system error message when
+@code{getline} returns @minus{}1 or @code{close()} fails.
+@end itemize
+
+@item
+The @file{/dev/pid}, @file{/dev/ppid}, @file{/dev/pgrpid}, and
+@file{/dev/user} special file names. These have since been removed.
+
+@item
+The ability to delete all of an array at once with @samp{delete @var{array}}
+(@pxref{Delete}).
+
+@item
+Command line option changes
+(@pxref{Options}):
+
+@itemize @minus
+@item
+The ability to use GNU-style long-named options that start with @option{--}.
+
+@item
+The @option{--source} option for mixing command-line and library-file
+source code.
+@end itemize
+@end itemize
+
+Version 3.0 of @command{gawk} introduced the following features:
+
+@itemize @bullet
+@item
+New or changed variables:
+
+@itemize @minus
+@item
+@code{IGNORECASE} changed, now applying to string comparison as well
+as regexp operations
+(@pxref{Case-sensitivity}).
+
+@item
+@code{RT}, which contains the input text that matched @code{RS}
+(@pxref{Records}).
+@end itemize
+
+@item
+Full support for both POSIX and GNU regexps
+(@pxref{Regexp}).
+
+@item
+The @code{gensub()} function for more powerful text manipulation
+(@pxref{String Functions}).
+
+@item
+The @code{strftime()} function acquired a default time format,
+allowing it to be called with no arguments
+(@pxref{Time Functions}).
+
+@item
+The ability for @code{FS} and for the third
+argument to @code{split()} to be null strings
+(@pxref{Single Character Fields}).
+
+@item
+The ability for @code{RS} to be a regexp
+(@pxref{Records}).
+
+@item
+The @code{next file} statement became @code{nextfile}
+(@pxref{Nextfile Statement}).
+
+@item
+The @code{fflush()} function from the
+Bell Laboratories research version of @command{awk}
+(@pxref{I/O Functions}).
+
+@item
+New command line options:
+
+@itemize @minus
+@item
+The @option{--lint-old} option to
+warn about constructs that are not available in
+the original Version 7 Unix version of @command{awk}
+(@pxref{V7/SVR3.1}).
+
+@item
+The @option{-m} option from the
+Bell Laboratories research version of @command{awk}
+This was later removed.
+
+@item
+The @option{--re-interval} option to provide interval expressions in regexps
+(@pxref{Regexp Operators}).
+
+@item
+The @option{--traditional} option was added as a better name for
+@option{--compat} (@pxref{Options}).
+@end itemize
+
+@item
+The use of GNU Autoconf to control the configuration process
+(@pxref{Quick Installation}).
+
+@item
+Amiga support.
+
+@end itemize
+
+Version 3.1 of @command{gawk} introduced the following features:
+
+@itemize @bullet
+@item
+New variables
+(@pxref{Built-in Variables}):
+
+@itemize @minus
+@item
+@code{BINMODE}, for non-POSIX systems,
+which allows binary I/O for input and/or output files
+(@pxref{PC Using}).
+
+@item
+@code{LINT}, which dynamically controls lint warnings.
+
+@item
+@code{PROCINFO}, an array for providing process-related information.
+
+@item
+@code{TEXTDOMAIN}, for setting an application's internationalization text domain
+(@pxref{Internationalization}).
+@end itemize
+
+@item
+The ability to use octal and hexadecimal constants in @command{awk}
+program source code
+(@pxref{Nondecimal-numbers}).
+
+@item
+The @samp{|&} operator for two-way I/O to a coprocess
+(@pxref{Two-way I/O}).
+
+@item
+The @file{/inet} special files for TCP/IP networking using @samp{|&}
+(@pxref{TCP/IP Networking}).
+
+@item
+The optional second argument to @code{close()} that allows closing one end
+of a two-way pipe to a coprocess
+(@pxref{Two-way I/O}).
+
+@item
+The optional third argument to the @code{match()} function
+for capturing text-matching subexpressions within a regexp
+(@pxref{String Functions}).
+
+@item
+Positional specifiers in @code{printf} formats for
+making translations easier
+(@pxref{Printf Ordering}).
+
+@item
+A number of new built-in functions:
+
+@itemize @minus
+@item
+The @code{asort()} and @code{asorti()} functions for sorting arrays
+(@pxref{Array Sorting}).
+
+@item
+The @code{bindtextdomain()}, @code{dcgettext()} and @code{dcngettext()} functions
+for internationalization
+(@pxref{Programmer i18n}).
+
+@item
+The @code{extension()} function and the ability to add
+new built-in functions dynamically
+(@pxref{Dynamic Extensions}).
+
+@item
+The @code{mktime()} function for creating timestamps
+(@pxref{Time Functions}).
+
+@item
+The @code{and()}, @code{or()}, @code{xor()}, @code{compl()},
+@code{lshift()}, @code{rshift()}, and @code{strtonum()} functions
+(@pxref{Bitwise Functions}).
+@end itemize
+
+@item
+@cindex @code{next file} statement
+The support for @samp{next file} as two words was removed completely
+(@pxref{Nextfile Statement}).
+
+@item
+Additional commnd line options
+(@pxref{Options}):
+
+@itemize @minus
+@item
+The @option{--dump-variables} option to print a list of all global variables.
+
+@item
+The @option{--exec} option, for use in CGI scripts.
+
+@item
+The @option{--gen-po} command-line option and the use of a leading
+underscore to mark strings that should be translated
+(@pxref{String Extraction}).
+
+@item
+The @option{--non-decimal-data} option to allow non-decimal
+input data
+(@pxref{Nondecimal Data}).
+
+@item
+The @option{--profile} option and @command{pgawk}, the
+profiling version of @command{gawk}, for producing execution
+profiles of @command{awk} programs
+(@pxref{Profiling}).
+
+@item
+The @option{--use-lc-numeric} option to force @command{gawk}
+to use the locale's decimal point for parsing input data
+(@pxref{Conversion}).
+@end itemize
+
+@item
+The use of GNU Automake to help in standardizing the configuration process
+(@pxref{Quick Installation}).
+
+@item
+The use of GNU @code{gettext} for @command{gawk}'s own message output
+(@pxref{Gawk I18N}).
+
+@item
+BeOS support. This was later removed.
+
+@item
+Tandem support. This was later removed.
+
+@item
+The Atari port became officially unsupported.
+
+@item
+The source code changed to use ISO C standard-style function definitions.
+
+@item
+POSIX compliance for @code{sub()} and @code{gsub()}
+(@pxref{Gory Details}).
+
+@item
+The @code{length()} function was extended to accept an array argument
+and return the number of elements in the array
+(@pxref{String Functions}).
+
+@item
+The @code{strftime()} function acquired a third argument to
+enable printing times as UTC
+(@pxref{Time Functions}).
+@end itemize
+
+Version 4.0 of @command{gawk} introduced the following features:
+
+@itemize @bullet
+
+@item
+Variable additions:
+
+@itemize @minus
+@item
+@code{FPAT}, which allows you to specify a regexp that matches
+the fields, instead of matching the field separator
+(@pxref{Splitting By Content}).
+
+@item
+If @code{PROCINFO["sorted_in"]} exists, @samp{for(iggy in foo)} loops sort the
+indices before looping over them.  The value of this element
+provides control over how the indices are sorted before the loop
+traversal starts
+(@pxref{Controlling Scanning}).
+
+@item
+@code{PROCINFO["strftime"]}, which holds
+the default format for @code{strftime()}
+(@pxref{Time Functions}).
+@end itemize
+
+@item
+The special files @file{/dev/pid}, @file{/dev/ppid}, @file{/dev/pgrpid}
+and @file{/dev/user} were removed.
+
+@item
+Support for IPv6 was added via the @file{/inet6} special file.
+@file{/inet4} forces IPv4 and @file{/inet} chooses the system
+default, which is probably IPv4
+(@pxref{TCP/IP Networking}).
+
+@item
+The use of @samp{\s} and @samp{\S} escape sequences in regular expressions
+(@pxref{GNU Regexp Operators}).
+
+@item
+Interval expressions became part of default regular expressions
+(@pxref{Regexp Operators}).
+
+@item
+POSIX character classes work even with @option{--traditional}
+(@pxref{Regexp Operators}).
+
+@item
+@code{break} and @code{continue} became invalid outside a loop,
+even with @option{--traditional}
+(@pxref{Break Statement}, and also see
+@ref{Continue Statement}).
+
+@item
+@code{fflush()}, @code{nextfile}, and @samp{delete @var{array}}
+are allowed if @option{--posix} or @option{--traditional}, since they
+are all now part of POSIX.
+
+@item
+An optional third argument to
+@code{asort()} and @code{asorti()}, specifying how to sort
+(@pxref{String Functions}).
+
+@item
+The behavior of @code{fflush()} changed to match Brian Kernighan's @command{awk}
+and for POSIX; now both @samp{fflush()} and @samp{fflush("")}
+flush all open output redirections
+(@pxref{I/O Functions}).
+
+@item
+The @code{isarray()}
+function which distinguishes if an item is an array
+or not, to make it possible to traverse multidimensional arrays
+(@pxref{Type Functions}).
+
+@item
+The @code{patsplit()}
+function which gives the same capability as @code{FPAT}, for splitting
+(@pxref{String Functions}).
+
+@item
+An optional fourth argument to the @code{split()} function,
+which is an array to hold the values of the separators
+(@pxref{String Functions}).
+
+@item
+Arrays of arrays
+(@pxref{Arrays of Arrays}).
+
+@item
+The @code{BEGINFILE} and @code{ENDFILE} special patterns
+(@pxref{BEGINFILE/ENDFILE}).
+
+@item
+Indirect function calls
+(@pxref{Indirect Calls}).
+
+@item
+@code{switch} / @code{case} are enabled by default
+(@pxref{Switch Statement}).
+
+@item
+Command line option changes
+(@pxref{Options}):
+
+@itemize @minus
+@item
+The @option{-b} and @option{--characters-as-bytes} options
+which prevent @command{gawk} from treating input as a multibyte string.
+
+@item
+The redundant @option{--compat}, @option{--copyleft}, and @option{--usage}
+long options were removed.
+
+@item
+The @option{--gen-po} option was finally renamed to the correct @option{--gen-pot}.
+
+@item
+The @option{--sandbox} option which disables certain features.
+
+@item
+All long options acquired corresponding short options, for use in @samp{#!} scripts.
+@end itemize
+
+@item
+Directories named on the command line now produce a warning, not a fatal
+error, unless @option{--posix} or @option{--traditional} are used
+(@pxref{Command line directories}).
+
+@item
+The @command{gawk} internals were rewritten, bringing the @command{dgawk}
+debugger and possibly improved performance
+(@pxref{Debugger}).
+
+@item
+Per the GNU Coding Standards, dynamic extensions must now define
+a global symbol indicating that they are GPL-compatible
+(@pxref{Plugin License}).
+
+@item
+In POSIX mode, string comparisons use @code{strcoll()} / @code{wcscoll()}
+(@pxref{POSIX String Comparison}).
+
+@item
+The option for raw sockets was removed, since it was never implemented
+(@pxref{TCP/IP Networking}).
+
+@item
+Ranges of the form @code{[d-h]} are treated as if they were in the
+C locale, no matter what kind of regexp is being used, and even if
+@option{--posix}
+(@pxref{Ranges and Locales}).
+
+@item
+Support was removed for the following systems:
+
+@itemize @minus
+@item
+Atari
+
+@item
+Amiga
+
+@item
+BeOS
+
+@item
+Cray
+
+@item
+MIPS RiscOS
+
+@item
+MS-DOS with Microsoft Compiler
+
+@item
+MS-Windows with Microsoft Compiler
+
+@item
+NeXT
+
+@item
+SunOS 3.x, Sun 386 (Road Runner)
+
+@item
+Tandem (non-POSIX)
+
+@item
+Prestandard VAX C compiler for VAX/VMS
+@end itemize
+@end itemize
+
+Version 4.1 of @command{gawk} introduced the following features:
+
+@itemize @bullet
+
+@item
+Three new arrays:
+@code{SYMTAB}, @code{FUNCTAB}, and @code{PROCINFO["identifiers"]}
+(@pxref{Auto-set}).
+
+@item
+The three executables @command{gawk}, @command{pgawk}, and @command{dgawk}, were merged into
+one, named just @command{gawk}.  As a result the command line options changed.
+
+@item
+Command line option changes
+(@pxref{Options}):
+
+@itemize @minus
+@item
+The @option{-D} option invokes the debugger.
+
+@item
+The @option{-i} and @option{--include} options
+load @command{awk} library files.
+
+@item
+The @option{-l} and @option{--load} options for load compiled dynamic extensions.
+
+@item 
+The @option{-M} and @option{--bignum} options enable MPFR.
+
+@item
+The @option{-o} only does pretty-printing.
+
+@item
+The @option{-p} option is used for profiling.
+
+@item
+The @option{-R} option was removed.
+@end itemize
+
+@item
+Support for high precision arithmetic with MPFR.
+(@pxref{Gawk and MPFR}).
+
+@item
+The @code{and()}, @code{or()} and @code{xor()} functions
+allow any number of arguments,
+with a minimum of two
+(@pxref{Bitwise Functions}).
+
+@item
+The dynamic extension interface was completely redone
+(@pxref{Dynamic Extensions}).
+
+@end itemize
+
+@c XXX ADD MORE STUFF HERE
+
 @node Common Extensions
 @appendixsec Common Extensions Summary
 
@@ -32775,7 +33384,7 @@ the three most widely-used freely available versions of @command{awk}
 @item @samp{\x} Escape sequence @tab X @tab X @tab X
 @item @code{RS} as regexp @tab @tab X @tab X
 @item @code{FS} as null string @tab X @tab X @tab X
-@item @file{/dev/stdin} special file @tab X @tab @tab X
+@item @file{/dev/stdin} special file @tab X @tab X @tab X
 @item @file{/dev/stdout} special file @tab X @tab X @tab X
 @item @file{/dev/stderr} special file @tab X @tab X @tab X
 @item @code{**} and @code{**=} operators @tab X @tab @tab X
@@ -32783,7 +33392,7 @@ the three most widely-used freely available versions of @command{awk}
 @item @code{func} keyword @tab X @tab @tab X
 @item @code{nextfile} statement @tab X @tab X @tab X
 @item @code{delete} without subscript @tab X @tab X @tab X
-@item @code{length()} of an array @tab X @tab @tab X
+@item @code{length()} of an array @tab X @tab X @tab X
 @item @code{BINMODE} variable @tab @tab X @tab X
 @item Time related functions @tab @tab X @tab X
 @end multitable
