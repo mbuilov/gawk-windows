@@ -412,7 +412,7 @@ getline2::
 
 awkpath::
 	@echo $@
-	@AWKPATH=""$(srcdir)"$(PATH_SEPARATOR)"$(srcdir)"/lib" $(AWK) -f awkpath.awk >_$@
+	@AWKPATH="$(srcdir)$(PATH_SEPARATOR)$(srcdir)/lib" $(AWK) -f awkpath.awk >_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 argtest::
@@ -496,7 +496,7 @@ nors::
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 fmtspcl.ok: fmtspcl.tok
-	@$(AWK) -v "sd="$(srcdir)"" 'BEGIN {pnan = sprintf("%g",sqrt(-1)); nnan = sprintf("%g",-sqrt(-1)); pinf = sprintf("%g",-log(0)); ninf = sprintf("%g",log(0))} {sub(/positive_nan/,pnan); sub(/negative_nan/,nnan); sub(/positive_infinity/,pinf); sub(/negative_infinity/,ninf); sub(/fmtspcl/,(sd"/fmtspcl")); print}' < "$(srcdir)"/fmtspcl.tok > $@ 2>/dev/null
+	@$(AWK) -v "sd=$(srcdir)" 'BEGIN {pnan = sprintf("%g",sqrt(-1)); nnan = sprintf("%g",-sqrt(-1)); pinf = sprintf("%g",-log(0)); ninf = sprintf("%g",log(0))} {sub(/positive_nan/,pnan); sub(/negative_nan/,nnan); sub(/positive_infinity/,pinf); sub(/negative_infinity/,ninf); sub(/fmtspcl/,(sd"/fmtspcl")); print}' < "$(srcdir)"/fmtspcl.tok > $@ 2>/dev/null
 
 fmtspcl: fmtspcl.ok
 	@echo $@
@@ -662,7 +662,7 @@ widesub4::
 
 ignrcas2::
 	@echo $@
-	@GAWKLOCALE=en_US ; export GAWKLOCALE ; \
+	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -938,7 +938,7 @@ mpfrbigint:
 jarebug::
 	@echo $@
 	@echo Expect jarebug to fail with DJGPP and MinGW.
-	@"$(srcdir)"/$@.sh "$(AWKPROG)" ""$(srcdir)"/$@.awk" ""$(srcdir)"/$@.in" "_$@"
+	@"$(srcdir)"/$@.sh "$(AWKPROG)" "$(srcdir)"/$@.awk "$(srcdir)"/$@.in "_$@"
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 ordchr2::
@@ -1044,10 +1044,14 @@ readdir:
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 fts:
-	@if [ "`uname`" = IRIX ];  then \
+	@case `uname` in \
+	IRIX) \
 	echo This test may fail on IRIX systems when run on an NFS filesystem.; \
-	echo If it does, try rerunning on an xfs filesystem. ; \
-	fi
+	echo If it does, try rerunning on an xfs filesystem. ;; \
+	CYGWIN*) \
+	echo This test may fail on CYGWIN systems when run on an NFS filesystem.; \
+	echo If it does, try rerunning on an ntfs filesystem. ;; \
+	esac
 	@echo $@
 	@echo Expect $@ to fail with MinGW because function 'fts' is not defined.
 	@$(AWK) -f "$(srcdir)"/fts.awk || echo EXIT CODE: $$? >>_$@
@@ -2487,8 +2491,8 @@ time:
 # Targets generated for other tests:
 
 $(srcdir)/Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
-	files=`cd ""$(srcdir)"" && echo *.awk *.in`; \
-	$(AWK) -f "$(srcdir)"/Gentests ""$(srcdir)"/Makefile.am" $$files > "$(srcdir)"/Maketests
+	files=`cd "$(srcdir)" && echo *.awk *.in`; \
+	$(AWK) -f "$(srcdir)"/Gentests "$(srcdir)"/Makefile.am $$files > "$(srcdir)"/Maketests
 
 clean:
 	rm -fr _* core core.* fmtspcl.ok junk strftime.ok test1 test2 \
