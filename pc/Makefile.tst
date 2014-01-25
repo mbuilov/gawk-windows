@@ -799,7 +799,7 @@ mbprintf3::
 
 mbprintf4::
 	@echo $@
-	@echo Expect mbprintf4 to fail with MinGW
+	@echo Expect mbprintf4 to fail with MinGW and DJGPP
 	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -1111,14 +1111,14 @@ dfamb1:
 
 backbigs1:
 	@echo $@
-	@echo Expect backbigs1 to fail with MinGW
+	@echo Expect backbigs1 to fail with MinGW and DJGPP
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 backsmalls1:
 	@echo $@
-	@echo Expect backsmalls1 to fail with MinGW
+	@echo Expect backsmalls1 to fail with MinGW and DJGPP
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
