@@ -14,6 +14,20 @@
 * awk: (gawk)Invoking gawk.                     Text scanning and processing.
 @end direntry
 
+@ifset FOR_PRINT
+@tex
+\gdef\xrefprintnodename#1{``#1''}
+@end tex
+@end ifset
+@ifclear FOR_PRINT
+@c With early 2014 texinfo.tex, restore PDF links and colors
+@tex
+\gdef\linkcolor{0.5 0.09 0.12} % Dark Red
+\gdef\urlcolor{0.5 0.09 0.12} % Also
+\global\urefurlonlylinktrue
+@end tex
+@end ifclear
+
 @set xref-automatic-section-title
 
 @c The following information should be updated here only!
