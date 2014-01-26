@@ -423,7 +423,7 @@
 #define PACKAGE_NAME "GNU Awk"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GNU Awk 4.1.0b"
+#define PACKAGE_STRING "GNU Awk 4.1.0c"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gawk"
@@ -432,7 +432,7 @@
 #define PACKAGE_URL "http://www.gnu.org/software/gawk/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.1.0b"
+#define PACKAGE_VERSION "4.1.0c"
 
 /* Define to 1 if *printf supports %F format */
 #undef PRINTF_HAS_F_FORMAT
@@ -494,7 +494,7 @@
 
 
 /* Version number of package */
-#define VERSION "4.1.0b"
+#define VERSION "4.1.0c"
 
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE
