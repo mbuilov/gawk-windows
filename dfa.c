@@ -1136,7 +1136,6 @@ parse_bracket_exp (void)
               work_mbc->range_ends[work_mbc->nranges++] =
                 case_fold ? towlower (wc2) : (wchar_t) wc2;
 
-#ifndef GREP
               if (case_fold && (iswalpha (wc) || iswalpha (wc2)))
                 {
                   REALLOC_IF_NECESSARY (work_mbc->range_sts,
@@ -1146,7 +1145,6 @@ parse_bracket_exp (void)
                                         range_ends_al, work_mbc->nranges + 1);
                   work_mbc->range_ends[work_mbc->nranges++] = towupper (wc2);
                 }
-#endif
             }
           else
             {
@@ -1182,11 +1180,7 @@ parse_bracket_exp (void)
                                     work_mbc->nchars + 1);
               work_mbc->chars[work_mbc->nchars++] = wc;
             }
-#ifdef GREP
-          continue;
-#else
           wc = towupper (wc);
-#endif
         }
       if (!setbit_wc (wc, ccl))
         {
@@ -1780,13 +1774,11 @@ atom (void)
   else if (MBS_SUPPORT && tok == WCHAR)
     {
       addtok_wc (case_fold ? towlower (wctok) : wctok);
-#ifndef GREP
       if (case_fold && iswalpha (wctok))
         {
           addtok_wc (towupper (wctok));
           addtok (OR);
         }
-#endif
 
       tok = lex ();
     }
