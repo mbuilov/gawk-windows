@@ -1966,10 +1966,13 @@ negate_num(NODE *n)
 {
 	int tval = 0;
 
-	if (! is_mpg_number(n))
+	if (! is_mpg_number(n)) {
 		n->numbr = -n->numbr;
+		return;
+	}
+
 #ifdef HAVE_MPFR
-	else if (is_mpg_integer(n)) {
+	if (is_mpg_integer(n)) {
 		if (! iszero(n)) {
 			mpz_neg(n->mpg_i, n->mpg_i);
 			return;
@@ -1978,9 +1981,11 @@ negate_num(NODE *n)
 		/*
 		 * 0 --> -0 conversion. Requires turning the MPG integer
 		 * into an MPFR float.
-		 *
-		 * So, convert and fall through.
 		 */
+
+		mpz_clear(n->mpg_i);	/* release the integer storage */
+
+		/* Convert and fall through. */
 		tval = mpfr_set_d(n->mpg_numbr, 0.0, ROUND_MODE);
 		IEEE_FMT(n->mpg_numbr, tval);
 		n->flags &= ~MPZN;

@@ -439,7 +439,7 @@ strftime::
 #	(LC_ALL=C date) | $(AWK) -v OUTPUT=_$@ -f "$(srcdir)"/strftime.awk
 	@GAWKLOCALE=C; export GAWKLOCALE; \
 	TZ=GMT0; export TZ; \
-	(LC_ALL=C $(DATE)) | $(AWK) -v OUTPUT=_$@ -f "$(srcdir)"/strftime.awk
+	$(AWK) -v OUTPUT=_$@ -v DATECMD="$(DATE)" -f "$(srcdir)"/strftime.awk
 	@-$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
 
 litoct::
@@ -1039,8 +1039,10 @@ readdir:
 	@echo $@
 	@echo This test may fail on MinGW if $(LS) does not report full Windows file index as the inode
 	@$(AWK) -f "$(srcdir)"/readdir.awk $(top_srcdir) > _$@
-#	@ls -afli $(top_srcdir) | sed 1d | $(AWK) -f "$(srcdir)"/readdir0.awk -v extout=_$@ $(top_srcdir) > $@.ok
-	@$(LS) -afli $(top_srcdir) | sed 1d | $(AWK) -f "$(srcdir)"/readdir0.awk -v extout=_$@ $(top_srcdir) > $@.ok
+	@$(LS) -afi "$(top_srcdir)" > _dirlist
+	@$(LS) -lna "$(top_srcdir)" | sed 1d > _longlist
+	@$(AWK) -f "$(srcdir)"/readdir0.awk -v extout=_$@  \
+		-v dirlist=_dirlist -v longlist=_longlist > $@.ok
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 fts:

@@ -8,7 +8,11 @@
 
 BEGIN {
 	maxtries = 10
-	datecmd = "date"
+	# On DOS/Windows, DATECMD is set by the Makefile to point to
+	# Unix-like 'date' command.
+	datecmd = DATECMD
+	if (datecmd == "")
+	    datecmd = "date"
 	fmt = "%a %b %d %H:%M:%S %Z %Y"
 
 	# loop until before equals after, thereby protecting
