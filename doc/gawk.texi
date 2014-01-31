@@ -19538,7 +19538,7 @@ function _ord_init(    low, high, i, t)
 @cindex ASCII
 @cindex EBCDIC
 @cindex mark parity
-Some explanation of the numbers used by @code{chr} is worthwhile.
+Some explanation of the numbers used by @code{chr()} is worthwhile.
 The most prominent character set in use today is ASCII.@footnote{This
 is changing; many systems use Unicode, a very large character set
 that includes ASCII as a subset.  On systems with full Unicode support,
@@ -32280,14 +32280,14 @@ The usage is:
 @item @@load "filefuncs"
 This is how you load the extension.
 
-@cindex @code{chdir} extension function
+@cindex @code{chdir()} extension function
 @item result = chdir("/some/directory")
 The @code{chdir()} function is a direct hook to the @code{chdir()}
 system call to change the current directory.  It returns zero
 upon success or less than zero upon error.  In the latter case it updates
 @code{ERRNO}.
 
-@cindex @code{stat} extension function
+@cindex @code{stat()} extension function
 @item result = stat("/some/path", statdata [, follow])
 The @code{stat()} function provides a hook into the
 @code{stat()} system call.
@@ -32377,7 +32377,7 @@ or
 Not all systems support all file types.
 @end multitable
 
-@cindex @code{fts} extension function
+@cindex @code{fts()} extension function
 @item flags = or(FTS_PHYSICAL, ...)
 @itemx result = fts(pathlist, flags, filedata)
 Walk the file trees provided in @code{pathlist} and fill in the
@@ -32498,7 +32498,7 @@ See @file{test/fts.awk} in the @command{gawk} distribution for an example.
 @node Extension Sample Fnmatch
 @subsection Interface To @code{fnmatch()}
 
-@cindex @code{fnmatch} extension function
+@cindex @code{fnmatch()} extension function
 This extension provides an interface to the C library
 @code{fnmatch()} function.  The usage is:
 
@@ -32571,7 +32571,7 @@ The @code{fork} extension adds three functions, as follows.
 @item @@load "fork"
 This is how you load the extension.
 
-@cindex @code{fork} extension function
+@cindex @code{fork()} extension function
 @item pid = fork()
 This function creates a new process. The return value is the zero in the
 child and the process-id number of the child in the parent, or @minus{}1
@@ -32579,13 +32579,13 @@ upon error. In the latter case, @code{ERRNO} indicates the problem.
 In the child, @code{PROCINFO["pid"]} and @code{PROCINFO["ppid"]} are
 updated to reflect the correct values.
 
-@cindex @code{waitpid} extension function
+@cindex @code{waitpid()} extension function
 @item ret = waitpid(pid)
 This function takes a numeric argument, which is the process-id to
 wait for. The return value is that of the
 @code{waitpid()} system call.
 
-@cindex @code{wait} extension function
+@cindex @code{wait()} extension function
 @item ret = wait()
 This function waits for the first child to die.
 The return value is that of the
@@ -32672,11 +32672,11 @@ The @code{ordchr} extension adds two functions, named
 @item @@load "ordchr"
 This is how you load the extension.
 
-@cindex @code{ord} extension function
+@cindex @code{ord()} extension function
 @item number = ord(string)
 Return the numeric value of the first character in @code{string}.
 
-@cindex @code{chr} extension function
+@cindex @code{chr()} extension function
 @item char = chr(number)
 Return a string whose first character is that represented by @code{number}.
 @end table
@@ -32793,14 +32793,14 @@ The @code{rwarray} extension adds two functions,
 named @code{writea()} and @code{reada()}, as follows:
 
 @table @code
-@cindex @code{writea} extension function
+@cindex @code{writea()} extension function
 @item ret = writea(file, array)
 This function takes a string argument, which is the name of the file
 to which dump the array, and the array itself as the second argument.
 @code{writea()} understands multidimensional arrays.  It returns one on
 success, or zero upon failure.
 
-@cindex @code{reada} extension function
+@cindex @code{reada()} extension function
 @item ret = reada(file, array)
 @code{reada()} is the inverse of @code{writea()};
 it reads the file named as its first argument, filling in
@@ -32843,7 +32843,7 @@ named @code{readfile()}:
 @item @@load "readfile"
 This is how you load the extension.
 
-@cindex @code{readfile} extension function
+@cindex @code{readfile()} extension function
 @item result = readfile("/some/path")
 The argument is the name of the file to read.  The return value is a
 string containing the entire contents of the requested file.  Upon error,
@@ -32884,7 +32884,7 @@ inserting @samp{@@load "time"} in your script.
 @item @@load "time"
 This is how you load the extension.
 
-@cindex @code{gettimeofday} extension function
+@cindex @code{gettimeofday()} extension function
 @item the_time = gettimeofday()
 Return the time in seconds that has elapsed since 1970-01-01 UTC as a
 floating point value.  If the time is unavailable on this platform, return
@@ -32894,7 +32894,7 @@ If the standard C @code{gettimeofday()} system call is available on this
 platform, then it simply returns the value.  Otherwise, if on Windows,
 it tries to use @code{GetSystemTimeAsFileTime()}.
 
-@cindex @code{sleep} extension function
+@cindex @code{sleep()} extension function
 @item result = sleep(@var{seconds})
 Attempt to sleep for @var{seconds} seconds.  If @var{seconds} is negative,
 or the attempt to sleep fails, return @minus{}1 and set @code{ERRNO}.
