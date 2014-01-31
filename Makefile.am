@@ -172,11 +172,14 @@ check-local: gawk$(EXEEXT)
 dist-hook:
 	cd $(distdir)/extension ; rm -f *.o *.so
 	cd $(srcdir)/pc ; \
+	chmod u+w config.h ; \
 	sed -n -f configpk.sed < ../configure.ac > /tmp/tmp.sed ; \
 	sed -f config.sed < ../configh.in > /tmp/config.tmp ; \
 	sed -f /tmp/tmp.sed < /tmp/config.tmp > config.h ; \
 	$(RM) /tmp/tmp.sed /tmp/config.tmp
-	cp pc/config.h $(distdir)/pc/config.h
+	pwd
+	chmod u+w $(distdir)/pc/config.h
+	cp $(srcdir)/pc/config.h $(distdir)/pc/config.h
 
 # Special rules for individual files
 # Use of awk instead of $(AWK) is deliberate, in case gawk doesn't build
