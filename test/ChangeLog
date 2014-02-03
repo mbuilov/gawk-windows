@@ -1,4 +1,11 @@
-2014-01-28  Eli Zaretskii  <eliz@gnu.org>
+2014-02-03         Stepan Kasal         <kasal@ucw.cz>
+
+	* strftime.awk: the default format uses %e, not %d (Introduced on
+	2014-01-16; the previous code mangled the output of command "date"
+	to match %d.) Remove the "mucking" for cygwin, it's obsolete and
+	incompatible with %e.
+
+2014-01-28         Eli Zaretskii        <eliz@gnu.org>
 
 	* strftime.awk: If DATECMD variable is non-empty, use it instead
 	of the literal "date" as the 'date'-like command.
