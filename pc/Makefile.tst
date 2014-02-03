@@ -431,12 +431,10 @@ nonl::
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 strftime::
-	@echo This test could fail on slow machines or on a minute boundary,
-	@echo so if it does, double check the actual results:
 	@echo $@
 #	@GAWKLOCALE=C; export GAWKLOCALE; \
 #	TZ=GMT0; export TZ; \
-#	(LC_ALL=C date) | $(AWK) -v OUTPUT=_$@ -f "$(srcdir)"/strftime.awk
+#	$(AWK) -v OUTPUT=_$@ -f "$(srcdir)"/strftime.awk
 	@GAWKLOCALE=C; export GAWKLOCALE; \
 	TZ=GMT0; export TZ; \
 	$(AWK) -v OUTPUT=_$@ -v DATECMD="$(DATE)" -f "$(srcdir)"/strftime.awk
@@ -1026,8 +1024,8 @@ inplace3::
 
 testext::
 	@echo $@
-#	@$(AWK) '/^(@load|BEGIN)/,/^}/' $(top_srcdir)/extension/testext.c > testext.awk
-	@$(AWK) ' /^(@load|BEGIN)/,/^}/' $(top_srcdir)/extension/testext.c > testext.awk
+#	@$(AWK) '/^(@load|BEGIN)/,/^}/' "$(top_srcdir)"/extension/testext.c > testext.awk
+	@$(AWK) ' /^(@load|BEGIN)/,/^}/' "$(top_srcdir)"/extension/testext.c > testext.awk
 	@$(AWK) -f testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ testext.awk
 
@@ -1038,12 +1036,14 @@ readdir:
 	fi
 	@echo $@
 	@echo This test may fail on MinGW if $(LS) does not report full Windows file index as the inode
-	@$(AWK) -f "$(srcdir)"/readdir.awk $(top_srcdir) > _$@
+	@$(AWK) -f "$(srcdir)"/readdir.awk "$(top_srcdir)" > _$@
+#	@ls -afi "$(top_srcdir)" > _dirlist
 	@$(LS) -afi "$(top_srcdir)" > _dirlist
+#	@ls -lna "$(top_srcdir)" | sed 1d > _longlist
 	@$(LS) -lna "$(top_srcdir)" | sed 1d > _longlist
 	@$(AWK) -f "$(srcdir)"/readdir0.awk -v extout=_$@  \
 		-v dirlist=_dirlist -v longlist=_longlist > $@.ok
-	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
+	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@ _dirlist _longlist
 
 fts:
 	@case `uname` in \
@@ -1056,6 +1056,7 @@ fts:
 	esac
 	@echo $@
 	@echo Expect $@ to fail with MinGW because function 'fts' is not defined.
+#	@$(AWK) -f "$(srcdir)"/fts.awk
 	@$(AWK) -f "$(srcdir)"/fts.awk || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
@@ -1130,7 +1131,6 @@ backsmalls2:
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
 addcomma:
