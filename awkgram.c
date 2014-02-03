@@ -4512,7 +4512,9 @@ getfname(NODE *(*fptr)(int))
 void
 negate_num(NODE *n)
 {
+#ifdef HAVE_MPFR
 	int tval = 0;
+#endif
 
 	if (! is_mpg_number(n)) {
 		n->numbr = -n->numbr;

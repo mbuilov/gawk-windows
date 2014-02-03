@@ -1,10 +1,6 @@
 # strftime.awk ; test the strftime code
 #
 # input is the output of `date', see Makefile.in
-#
-# The mucking about with $0 and $NF is to avoid problems
-# on cygwin, where the timezone field is empty and there
-# are two consecutive blanks.
 
 BEGIN {
 	maxtries = 10
@@ -13,7 +9,7 @@ BEGIN {
 	datecmd = DATECMD
 	if (datecmd == "")
 	    datecmd = "date"
-	fmt = "%a %b %d %H:%M:%S %Z %Y"
+	fmt = "%a %b %e %H:%M:%S %Z %Y"
 
 	# loop until before equals after, thereby protecting
 	# against a race condition where the seconds field might have
@@ -35,7 +31,5 @@ BEGIN {
 		}
 	}
 	print sd > "strftime.ok"
-	$0 = after
-	$NF = $NF
-	print > OUTPUT
+	print after > OUTPUT
 }
