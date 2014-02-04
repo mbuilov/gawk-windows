@@ -29,7 +29,7 @@
 
 	* Makefile.am (strftime): Remove comment about the race condition, since
 	this should be fixed.  And gawk now calls date inside the script.
-	* strftime.awk: Based on an idea from Pat Ranking, fix the race
+	* strftime.awk: Based on an idea from Pat Rankin, fix the race
 	condition by looping repeatedly over strftime/date/strftime until
 	the before and after strftime results match.  That should fix
 	the race condition where the seconds field might increment between
