@@ -2080,7 +2080,7 @@ more convenient to put the program into a separate file.  In order to tell
 awk -f @var{source-file} @var{input-file1} @var{input-file2} @dots{}
 @end example
 
-@cindex @code{-f} option
+@cindex @option{-f} option
 @cindex command line, options
 @cindex options, command-line
 The @option{-f} instructs the @command{awk} utility to get the @command{awk} program
@@ -3121,7 +3121,7 @@ It is possible to invoke @command{awk} with an empty program:
 awk '' datafile1 datafile2
 @end example
 
-@cindex @code{--lint} option
+@cindex @option{--lint} option
 @noindent
 Doing so makes little sense, though; @command{awk} exits
 silently when given an empty program.
@@ -3161,16 +3161,16 @@ The following list describes options mandated by the POSIX standard:
 @table @code
 @item -F @var{fs}
 @itemx --field-separator @var{fs}
-@cindex @code{-F} option
-@cindex @code{--field-separator} option
+@cindex @option{-F} option
+@cindex @option{--field-separator} option
 @cindex @code{FS} variable, @code{--field-separator} option and
 Set the @code{FS} variable to @var{fs}
 (@pxref{Field Separators}).
 
 @item -f @var{source-file}
 @itemx --file @var{source-file}
-@cindex @code{-f} option
-@cindex @code{--file} option
+@cindex @option{-f} option
+@cindex @option{--file} option
 @cindex @command{awk} programs, location of
 Read @command{awk} program source from @var{source-file}
 instead of in the first non-option argument.
@@ -3180,8 +3180,8 @@ each specified @var{source-file}.
 
 @item -i @var{source-file}
 @itemx --include @var{source-file}
-@cindex @code{-i} option
-@cindex @code{--include} option
+@cindex @option{-i} option
+@cindex @option{--include} option
 @cindex @command{awk} programs, location of
 Read @command{awk} source library from @var{source-file}.  This option is
 completely equivalent to using the @samp{@@include} directive inside
@@ -3196,8 +3196,8 @@ find the main source code via the @option{-f} option or on the command-line.
 
 @item -v @var{var}=@var{val}
 @itemx --assign @var{var}=@var{val}
-@cindex @code{-v} option
-@cindex @code{--assign} option
+@cindex @option{-v} option
+@cindex @option{--assign} option
 @cindex variables, setting
 Set the variable @var{var} to the value @var{val} @emph{before}
 execution of the program begins.  Such variable values are available
@@ -3218,7 +3218,7 @@ predefined value you may have given.
 @end quotation
 
 @item -W @var{gawk-opt}
-@cindex @code{-W} option
+@cindex @option{-W} option
 Provide an implementation-specific option.
 This is the POSIX convention for providing implementation-specific options.
 These options
@@ -3528,8 +3528,8 @@ data (@pxref{Locales}).
 
 @c @cindex automatic warnings
 @c @cindex warnings, automatic
-@cindex @code{--traditional} option, @code{--posix} option and
-@cindex @code{--posix} option, @code{--traditional} option and
+@cindex @option{--traditional} option, @code{--posix} option and
+@cindex @option{--posix} option, @code{--traditional} option and
 If you supply both @option{--traditional} and @option{--posix} on the
 command line, @option{--posix} takes precedence. @command{gawk}
 also issues a warning if both options are supplied.
@@ -3584,14 +3584,14 @@ As long as program text has been supplied,
 any other options are flagged as invalid with a warning message but
 are otherwise ignored.
 
-@cindex @code{-F} option, @code{-Ft} sets @code{FS} to TAB
+@cindex @option{-F} option, @option{-Ft} sets @code{FS} to TAB
 In compatibility mode, as a special case, if the value of @var{fs} supplied
 to the @option{-F} option is @samp{t}, then @code{FS} is set to the TAB
 character (@code{"\t"}).  This is true only for @option{--traditional} and not
 for @option{--posix}
 (@pxref{Field Separators}).
 
-@cindex @code{-f} option, multiple uses
+@cindex @option{-f} option, multiple uses
 The @option{-f} option may be used more than once on the command line.
 If it is, @command{awk} reads its program source from all of the named files, as
 if they had been concatenated together into one big file.  This is
@@ -3618,7 +3618,7 @@ and library source code
 (@pxref{AWKPATH Variable}).
 The @option{--source} option may also be used multiple times on the command line.
 
-@cindex @code{--source} option
+@cindex @option{--source} option
 If no @option{-f} or @option{--source} option is specified, then @command{gawk}
 uses the first non-option command-line argument as the text of the
 program source code.
@@ -6297,7 +6297,7 @@ behaves this way.
 
 @node Command Line Field Separator
 @subsection Setting @code{FS} from the Command Line
-@cindex @code{-F} option
+@cindex @option{-F} option
 @cindex options, command-line
 @cindex command line, options
 @cindex field separators, on command line
@@ -7008,7 +7008,7 @@ rest of this @value{DOCUMENT} and have a good knowledge of how @command{awk} wor
 @cindex @code{ERRNO} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{getline} command
 @cindex @code{getline} command, return values
-@cindex @code{--sandbox} option, input redirection with @command{getline}
+@cindex @option{--sandbox} option, input redirection with @code{getline}
 
 The @code{getline} command returns one if it finds a record and zero if
 it encounters the end of the file.  If there is some error in getting
@@ -8464,7 +8464,7 @@ on the @code{print} statement
 @cindex output redirection
 @c STARTOFRANGE reout
 @cindex redirection of output
-@cindex @code{--sandbox} option, output redirection with @code{print}, @code{printf}
+@cindex @option{--sandbox} option, output redirection with @code{print}, @code{printf}
 So far, the output from @code{print} and @code{printf} has gone
 to the standard
 output, usually the screen.  Both @code{print} and @code{printf} can
@@ -9478,7 +9478,7 @@ Such an assignment has the following form:
 @var{variable}=@var{text}
 @end example
 
-@cindex @code{-v} option
+@cindex @option{-v} option
 @noindent
 With it, a variable is set either at the beginning of the
 @command{awk} run or in between input files.
@@ -10674,7 +10674,7 @@ string comparison (true)
 string comparison (true)
 
 @item a = 2; b = " +2"
-@item a == b
+@itemx a == b
 string comparison (false)
 @end table
 
@@ -16150,7 +16150,7 @@ close("/bin/sh")
 
 @noindent
 @cindex troubleshooting, @code{system()} function
-@cindex @code{--sandbox} option, disabling @code{system()} function
+@cindex @option{--sandbox} option, disabling @code{system()} function
 However, if your @command{awk}
 program is interactive, @code{system()} is useful for running large
 self-contained programs, such as a shell or an editor.
@@ -18248,7 +18248,7 @@ The leading capital letter indicates that it is global, while the fact that
 the variable name is not all capital letters indicates that the variable is
 not one of @command{awk}'s built-in variables, such as @code{FS}.
 
-@cindex @code{--dump-variables} option
+@cindex @option{--dump-variables} option
 It is also important that @emph{all} variables in library
 functions that do not need to save state are, in fact, declared
 local.@footnote{@command{gawk}'s @option{--dump-variables} command-line
@@ -24158,7 +24158,7 @@ discusses the ability to dynamically add new built-in functions to
 
 @node Nondecimal Data
 @section Allowing Nondecimal Input Data
-@cindex @code{--non-decimal-data} option
+@cindex @option{--non-decimal-data} option
 @cindex advanced features, nondecimal input data
 @cindex input, data@comma{} nondecimal
 @cindex constants, nondecimal
@@ -24202,7 +24202,7 @@ using this facility could lead to surprising results, the default is to leave it
 disabled.  If you want it, you must explicitly request it.
 
 @cindex programming conventions, @code{--non-decimal-data} option
-@cindex @code{--non-decimal-data} option, @code{strtonum()} function and
+@cindex @option{--non-decimal-data} option, @code{strtonum()} function and
 @cindex @code{strtonum()} function (@command{gawk}), @code{--non-decimal-data} option and
 @quotation CAUTION
 @emph{Use of this option is not recommended.}
@@ -24910,7 +24910,7 @@ When @command{gawk} has finished running, it creates a profile of your program i
 named @file{awkprof.out}. Because it is profiling, it also executes up to 45% slower than
 @command{gawk} normally does.
 
-@cindex @code{--profile} option
+@cindex @option{--profile} option
 As shown in the following example,
 the @option{--profile} option can be used to change the name of the file
 where @command{gawk} will write the profile:
@@ -25629,13 +25629,13 @@ is covered.
 @subsection Extracting Marked Strings
 @cindex strings, extracting
 @cindex marked strings@comma{} extracting
-@cindex @code{--gen-pot} option
+@cindex @option{--gen-pot} option
 @cindex command-line options, string extraction
 @cindex string extraction (internationalization)
 @cindex marked string extraction (internationalization)
 @cindex extraction, of marked strings (internationalization)
 
-@cindex @code{--gen-pot} option
+@cindex @option{--gen-pot} option
 Once your @command{awk} program is working, and all the strings have
 been marked and you've set (and perhaps bound) the text domain,
 it is time to produce translations.
@@ -34166,7 +34166,7 @@ command line when compiling @command{gawk} from scratch, including:
 
 @table @code
 
-@cindex @code{--disable-extensions} configuration option
+@cindex @option{--disable-extensions} configuration option
 @cindex configuration option, @code{--disable-extensions}
 @item --disable-extensions
 Disable configuring and building the sample extensions in the
@@ -34174,7 +34174,7 @@ Disable configuring and building the sample extensions in the
 The default action is to dynamically check if the extensions
 can be configured and compiled.
 
-@cindex @code{--disable-lint} configuration option
+@cindex @option{--disable-lint} configuration option
 @cindex configuration option, @code{--disable-lint}
 @item --disable-lint
 Disable all lint checking within @code{gawk}.  The
@@ -34194,14 +34194,14 @@ Using this option may bring you some slight performance improvement.
 Using this option will cause some of the tests in the test suite
 to fail.  This option may be removed at a later date.
 
-@cindex @code{--disable-nls} configuration option
+@cindex @option{--disable-nls} configuration option
 @cindex configuration option, @code{--disable-nls}
 @item --disable-nls
 Disable all message-translation facilities.
 This is usually not desirable, but it may bring you some slight performance
 improvement.
 
-@cindex @code{--with-whiny-user-strftime} configuration option
+@cindex @option{--with-whiny-user-strftime} configuration option
 @cindex configuration option, @code{--with-whiny-user-strftime}
 @item  --with-whiny-user-strftime
 Force use of the included version of the @code{strftime()}
