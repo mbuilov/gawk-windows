@@ -40,7 +40,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH January, 2014
+@set UPDATE-MONTH February, 2014
 @set VERSION 4.1
 @set PATCHLEVEL 0
 
@@ -136,10 +136,7 @@
 
 @ignore
 Some comments on the layout for TeX.
-1. Use at least texinfo.tex 2000-09-06.09
-2. I have done A LOT of work to make this look good. There are  `@page' commands
-   and use of `@group ... @end group' in a number of places. If you muck
-   with anything, it's your responsibility not to break the layout.
+1. Use at least texinfo.tex 2014-01-30.15
 @end ignore
 
 @c merge the function and variable indexes into the concept index
@@ -2623,23 +2620,8 @@ Apr  21  70  74 514
 @c endfile
 @end example
 
-@ifinfo
-If you are reading this in GNU Emacs using Info, you can copy the regions
-of text showing these sample files into your own test files.  This way you
-can try out the examples shown in the remainder of this document.  You do
-this by using the command @kbd{M-x write-region} to copy text from the Info
-file into a file for use with @command{awk}
-(@xref{Misc File Ops, , Miscellaneous File Operations, emacs, GNU Emacs Manual},
-for more information).  Using this information, create your own
-@file{BBS-list} and @file{inventory-shipped} files and practice what you
-learn in this @value{DOCUMENT}.
-
-@cindex Texinfo
-If you are using the stand-alone version of Info,
-see @ref{Extract Program},
-for an @command{awk} program that extracts these data files from
-@file{gawk.texi}, the (generated) Texinfo source file for this Info file.
-@end ifinfo
+The sample files are included in the @command{gawk} distribution,
+in the directory @file{awklib/eg/data}.
 
 @node Very Simple
 @section Some Simple Examples
@@ -3136,7 +3118,7 @@ easier to maintain and usually run more efficiently.
 @node Invoking Gawk
 @chapter Running @command{awk} and @command{gawk}
 
-This @value{CHAPTER} covers how to run awk, both POSIX-standard
+This @value{CHAPTER} covers how to run @command{awk}, both POSIX-standard
 and @command{gawk}-specific command-line options, and what
 @command{awk} and
 @command{gawk} do with non-option arguments.
@@ -3247,24 +3229,8 @@ Set the @code{FS} variable to @var{fs}
 Read @command{awk} program source from @var{source-file}
 instead of in the first non-option argument.
 This option may be given multiple times; the @command{awk}
-program consists of the concatenation the contents of
+program consists of the concatenation of the contents of
 each specified @var{source-file}.
-
-@item -i @var{source-file}
-@itemx --include @var{source-file}
-@cindex @option{-i} option
-@cindex @option{--include} option
-@cindex @command{awk} programs, location of
-Read @command{awk} source library from @var{source-file}.  This option is
-completely equivalent to using the @samp{@@include} directive inside
-your program.  This option is very
-similar to the @option{-f} option, but there are two important differences.
-First, when @option{-i} is used, the program source will not be loaded if it has
-been previously loaded, whereas the @option{-f} will always load the file.
-Second, because this option is intended to be used with code libraries,
-@command{gawk} does not recognize such files as constituting main program
-input.  Thus, after processing an @option{-i} argument, @command{gawk} still expects to
-find the main source code via the @option{-f} option or on the command-line.
 
 @item -v @var{var}=@var{val}
 @itemx --assign @var{var}=@var{val}
@@ -3454,6 +3420,22 @@ for information about this option.
 @cindex printing, list of options
 Print a ``usage'' message summarizing the short and long style options
 that @command{gawk} accepts and then exit.
+
+@item -i @var{source-file}
+@itemx --include @var{source-file}
+@cindex @option{-i} option
+@cindex @option{--include} option
+@cindex @command{awk} programs, location of
+Read @command{awk} source library from @var{source-file}.  This option is
+completely equivalent to using the @samp{@@include} directive inside
+your program.  This option is very
+similar to the @option{-f} option, but there are two important differences.
+First, when @option{-i} is used, the program source will not be loaded if it has
+been previously loaded, whereas the @option{-f} will always load the file.
+Second, because this option is intended to be used with code libraries,
+@command{gawk} does not recognize such files as constituting main program
+input.  Thus, after processing an @option{-i} argument, @command{gawk} still expects to
+find the main source code via the @option{-f} option or on the command-line.
 
 @item -l @var{lib}
 @itemx --load @var{lib}
@@ -6911,19 +6893,11 @@ will take effect.
 @node Constant Size
 @section Reading Fixed-Width Data
 
-@ifnotinfo
 @quotation NOTE
 This @value{SECTION} discusses an advanced
 feature of @command{gawk}.  If you are a novice @command{awk} user,
 you might want to skip it on the first reading.
 @end quotation
-@end ifnotinfo
-
-@ifinfo
-(This @value{SECTION} discusses an advanced feature of @command{awk}.
-If you are a novice @command{awk} user, you might want to skip it on
-the first reading.)
-@end ifinfo
 
 @cindex data, fixed-width
 @cindex fixed-width data
@@ -7053,19 +7027,11 @@ for an example of such a function).
 @node Splitting By Content
 @section Defining Fields By Content
 
-@ifnotinfo
 @quotation NOTE
 This @value{SECTION} discusses an advanced
 feature of @command{gawk}.  If you are a novice @command{awk} user,
 you might want to skip it on the first reading.
 @end quotation
-@end ifnotinfo
-
-@ifinfo
-(This @value{SECTION} discusses an advanced feature of @command{awk}.
-If you are a novice @command{awk} user, you might want to skip it on
-the first reading.)
-@end ifinfo
 
 @cindex advanced features, specifying field content
 Normally, when using @code{FS}, @command{gawk} defines the fields as the
@@ -13782,13 +13748,7 @@ The number of fields in the current input record.
 @code{NF} is set each time a new record is read, when a new field is
 created or when @code{$0} changes (@pxref{Fields}).
 
-Unlike most of the variables described in this
-@ifnotinfo
-section,
-@end ifnotinfo
-@ifinfo
-node,
-@end ifinfo
+Unlike most of the variables described in this @value{SUBSECTION},
 assigning a value to @code{NF} has the potential to affect
 @command{awk}'s internal workings.  In particular, assignments
 to @code{NF} can be used to create or remove fields from the
@@ -23818,7 +23778,8 @@ printed and online documentation.
 @ifnotinfo
 Texinfo is fully documented in the book
 @cite{Texinfo---The GNU Documentation Format},
-available from the Free Software Foundation.
+available from the Free Software Foundation,
+and also available @uref{http://www.gnu.org/software/texinfo/manual/texinfo/, online}.
 @end ifnotinfo
 @ifinfo
 The Texinfo language is described fully, starting with
@@ -29691,9 +29652,9 @@ certain fields in the API data structures unwritable from extension code,
 while allowing @command{gawk} to use them as it needs to.
 
 @item typedef enum awk_bool @{
-@item @ @ @ @ awk_false = 0,
-@item @ @ @ @ awk_true
-@item @} awk_bool_t;
+@itemx @ @ @ @ awk_false = 0,
+@itemx @ @ @ @ awk_true
+@itemx @} awk_bool_t;
 A simple boolean type.
 
 @item typedef struct awk_string @{
@@ -36298,7 +36259,7 @@ for information on getting the latest version of @command{gawk}.)
 
 @item
 @ifnotinfo
-Follow the @cite{GNU Coding Standards}.
+Follow the @uref{http://www.gnu.org/prep/standards/, @cite{GNU Coding Standards}}.
 @end ifnotinfo
 @ifinfo
 See @inforef{Top, , Version, standards, GNU Coding Standards}.
@@ -36457,11 +36418,9 @@ Be prepared to sign the appropriate paperwork.
 In order for the FSF to distribute your code, you must either place
 your code in the public domain and submit a signed statement to that
 effect, or assign the copyright in your code to the FSF.
-@ifinfo
 Both of these actions are easy to do and @emph{many} people have done so
 already. If you have questions, please contact me, or
 @email{gnu@@gnu.org}.
-@end ifinfo
 
 @item
 When doing a port, bear in mind that your code must coexist peacefully
