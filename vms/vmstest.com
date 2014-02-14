@@ -606,6 +606,14 @@ $	! this test could fail on slow machines or on a second boundary,
 $	! so if it does, double check the actual results
 $	! This test needs SYS$TIMEZONE_NAME and SYS$TIMEZONE_RULE
 $	! to be properly defined.
+$	! This test now needs GNV Corutils to work
+$	date_bin = "gnv$gnu:[bin]gnv$date.exe"
+$	if f$search(date_bin) .eqs. ""
+$	then
+$		echo "''test' skipped"
+$		return
+$	endif
+$	date := $'date_bin'
 $!!	date | gawk -v "OUTPUT"=_strftime.tmp -f strftime.awk
 $	now = f$time()
 $	wkd = f$extract(0,3,f$cvtime(now,,"WEEKDAY"))
@@ -1902,7 +1910,8 @@ $	then
 $	    call exit_code '$status' _'test'.tmp
 $	    write sys$output _'test'.tmp
 $	else
-$	    rm _'test'.tmp;*,_'test'.;*
+$	    if f$search("_''test'.tmp") .nes. "" then rm _'test'.tmp;*
+$	    if f$search("_''test'.") .nes. "" then rm _'test'.;*
 $	endif
 $	set On
 $	return
