@@ -1,7 +1,7 @@
 dnl
 dnl configure.ac --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995-2013 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995-2014 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Programming Language.
@@ -292,6 +292,12 @@ if test "x$enable_extensions" != "xno"; then
 	case $host_os in
 	mirbsd*)
 		: ;;
+	openedition*)	# OS/390 z/OS POSIX layer
+		cat << \EOF > extension/Makefile
+all dist check clean distclean install uninstall distcheck:
+	@exit 0
+EOF
+		;;
 	*)
 	AC_CHECK_HEADER(dlfcn.h,
 		[

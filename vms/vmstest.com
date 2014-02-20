@@ -120,8 +120,9 @@ $		list = "include2 indirectcall lint lintold lintwarn match1" -
 		  + " nondec2 patsplit posix profile1 procinfs printfbad1" -
 		  + " printfbad2 printfbad3 profile2 profile3 pty1" -
 		  + " regx8bit rebuf reginttrad reint reint2 rsstart1 rsstart2 rsstart3 rstest6" -
-		  + " shadow sortfor sortu splitarg4 strtonum strftime switch2" -
-		  + " symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9"
+		  + " shadow sortfor sortu split_after_fpat splitarg4" -
+		  + " strtonum strftime switch2 symtab1 symtab2 symtab3" -
+		  + " symtab4 symtab5 symtab6 symtab7 symtab8 symtab9"
 $		gosub list_of_tests
 $		return
 $
@@ -267,6 +268,7 @@ $rstest6:
 $rswhite:
 $sortempty:
 $sortfor:
+$split_after_fpat:
 $splitarg4:
 $splitargv:
 $splitarr:
@@ -604,6 +606,14 @@ $	! this test could fail on slow machines or on a second boundary,
 $	! so if it does, double check the actual results
 $	! This test needs SYS$TIMEZONE_NAME and SYS$TIMEZONE_RULE
 $	! to be properly defined.
+$	! This test now needs GNV Corutils to work
+$	date_bin = "gnv$gnu:[bin]gnv$date.exe"
+$	if f$search(date_bin) .eqs. ""
+$	then
+$		echo "''test' skipped"
+$		return
+$	endif
+$	date := $'date_bin'
 $!!	date | gawk -v "OUTPUT"=_strftime.tmp -f strftime.awk
 $	now = f$time()
 $	wkd = f$extract(0,3,f$cvtime(now,,"WEEKDAY"))
@@ -1900,7 +1910,8 @@ $	then
 $	    call exit_code '$status' _'test'.tmp
 $	    write sys$output _'test'.tmp
 $	else
-$	    rm _'test'.tmp;*,_'test'.;*
+$	    if f$search("_''test'.tmp") .nes. "" then rm _'test'.tmp;*
+$	    if f$search("_''test'.") .nes. "" then rm _'test'.;*
 $	endif
 $	set On
 $	return

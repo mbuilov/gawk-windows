@@ -1136,7 +1136,6 @@ parse_bracket_exp (void)
               work_mbc->range_ends[work_mbc->nranges++] =
                 case_fold ? towlower (wc2) : (wchar_t) wc2;
 
-#ifndef GREP
               if (case_fold && (iswalpha (wc) || iswalpha (wc2)))
                 {
                   REALLOC_IF_NECESSARY (work_mbc->range_sts,
@@ -1146,11 +1145,19 @@ parse_bracket_exp (void)
                                         range_ends_al, work_mbc->nranges + 1);
                   work_mbc->range_ends[work_mbc->nranges++] = towupper (wc2);
                 }
-#endif
             }
           else
             {
-#ifndef GAWK
+#ifdef GAWK
+              c1 = c;
+              if (case_fold)
+                {
+                  c1 = tolower (c1);
+                  c2 = tolower (c2);
+                }
+              for (c = c1; c <= c2; c++)
+                setbit_case_fold_c (c, ccl);
+#else
               /* Defer to the system regex library about the meaning
                  of range expressions.  */
               regex_t re;
@@ -1175,15 +1182,6 @@ parse_bracket_exp (void)
                     setbit_case_fold_c (c, ccl);
                 }
               regfree (&re);
-#else
-              c1 = c;
-              if (case_fold)
-                {
-                  c1 = tolower (c1);
-                  c2 = tolower (c2);
-                }
-              for (c = c1; c <= c2; c++)
-                setbit_case_fold_c (c, ccl);
 #endif
             }
 
@@ -1209,11 +1207,7 @@ parse_bracket_exp (void)
                                     work_mbc->nchars + 1);
               work_mbc->chars[work_mbc->nchars++] = wc;
             }
-#ifdef GREP
-          continue;
-#else
           wc = towupper (wc);
-#endif
         }
       if (!setbit_wc (wc, ccl))
         {
@@ -1807,13 +1801,11 @@ atom (void)
   else if (MBS_SUPPORT && tok == WCHAR)
     {
       addtok_wc (case_fold ? towlower (wctok) : wctok);
-#ifndef GREP
       if (case_fold && iswalpha (wctok))
         {
           addtok_wc (towupper (wctok));
           addtok (OR);
         }
-#endif
 
       tok = lex ();
     }
@@ -3080,7 +3072,7 @@ match_mb_charset (struct dfa *d, state_num s, position pos, size_t idx)
 
   /* Match in range 0-255?  */
   if (wc < NOTCHAR && work_mbc->cset != -1
-      && tstbit ((unsigned char) wc, d->charclasses[work_mbc->cset]))
+      && tstbit (to_uchar (wc), d->charclasses[work_mbc->cset]))
     goto charset_matched;
 
   /* match with a character class?  */

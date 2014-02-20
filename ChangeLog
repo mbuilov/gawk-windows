@@ -1,3 +1,83 @@
+2014-02-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regex.h, regex.c, regex_internal.c, regex_internal.h: Sync
+	with GLIBC. Mainly copyright updates.
+	* getopt.c, getopt.h, getopt1.c, getopt_int.h: Ditto.
+	* dfa.c (parse_bracket_exp): Sync with grep, where they restored
+	the buggy code.  Sigh.
+
+	Unrelated:
+
+	* NEWS: Typo fix.
+	* interpret.h (r_interpret): Init a variable for BEGINFILE to avoid
+	compiler warnings. Thanks to Michal Jaegermann.
+
+2014-02-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.c, command.c: Regenerated - Bison 3.0.2.
+
+2014-02-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c (to_uchar): Make use of this. Syncs with GNU grep.
+
+2014-02-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (negate_num): Bracket `tval' in #ifdef MPFR since it's
+	only used in that code.
+
+2014-01-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (dist-hook): Improve creation of pc/config.h. We
+	have to jump through a lot of hoops for 'make distcheck' to
+	actually work.
+
+2014-01-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (dist-hook): Improve creation of pc/config.h to copy
+	the new file into the distribution directory being created.
+	Also, put the temporary files into /tmp.
+
+2014-01-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (negate_num): If just a double, return. Fixes a bug
+	that showed up on 32-bit systems with MPFR. Thanks to Eli Zaretskii
+	and Corinna Vinschen for the report.  Also, free the MPZ integer.
+	Thanks to valgrind for the report.
+
+	Unrelated:
+
+	* dfa.c: Sync with GNU grep - removed some special cased code
+	for grep.
+
+2014-01-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac, field.c: Update copyright year.
+
+2014-01-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (negate_num): Handle the case of -0 for MPFR; the sign
+	was getting lost. Thanks to Hermann Peifer for the report.
+
+2014-01-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c (parse_bracket_exp): Sync with GNU grep, which now uses
+	gawk's code for RRI in single-byte locales!  Hurray.
+
+2014-01-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: For z/OS, restore creation of do-nothing
+	Makefile in extension directory.
+
+2014-01-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* field.c (do_split): Make sure split() gets FS value if no
+	third arg even after FPAT was set. Thanks to Janis Papanagnou
+	for the report.
+
+2014-01-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* README: Fix John Malmberg's email address.
+
 2014-01-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y:  Update copyright year.

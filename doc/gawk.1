@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Aug 15 2013" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Jan 28 2014" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -1370,6 +1370,11 @@ The
 construct may also be used in a
 .B for
 loop to iterate over all the elements of an array.
+However, the
+.B "(i, j) in array"
+construct only works in tests, not in
+.B for
+loops.
 .PP
 An element may be deleted from an array using the
 .B delete
@@ -3968,7 +3973,7 @@ We thank him.
 .SH COPYING PERMISSIONS
 Copyright \(co 1989, 1991, 1992, 1993, 1994, 1995, 1996,
 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2007, 2009,
-2010, 2011, 2012, 2013
+2010, 2011, 2012, 2013, 2014
 Free Software Foundation, Inc.
 .PP
 Permission is granted to make and distribute verbatim copies of
