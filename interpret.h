@@ -1217,7 +1217,7 @@ match_re:
 			ret = nextfile(& curfile, true);	/* skip current file */
 
 			if (currule == BEGINFILE) {
-				long stack_size;
+				long stack_size = 0;
 
 				ni = pop_exec_state(& currule, & source, & stack_size);
 

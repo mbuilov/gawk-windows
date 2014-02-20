@@ -1,3 +1,17 @@
+2014-02-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regex.h, regex.c, regex_internal.c, regex_internal.h: Sync
+	with GLIBC. Mainly copyright updates.
+	* getopt.c, getopt.h, getopt1.c, getopt_int.h: Ditto.
+	* dfa.c (parse_bracket_exp): Sync with grep, where they restored
+	the buggy code.  Sigh.
+
+	Unrelated:
+
+	* NEWS: Typo fix.
+	* interpret.h (r_interpret): Init a variable for BEGINFILE to avoid
+	compiler warnings. Thanks to Michal Jaegermann.
+
 2014-02-15         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.c, command.c: Regenerated - Bison 3.0.2.

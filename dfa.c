@@ -1148,6 +1148,7 @@ parse_bracket_exp (void)
             }
           else
             {
+#ifdef GAWK
               c1 = c;
               if (case_fold)
                 {
@@ -1156,6 +1157,32 @@ parse_bracket_exp (void)
                 }
               for (c = c1; c <= c2; c++)
                 setbit_case_fold_c (c, ccl);
+#else
+              /* Defer to the system regex library about the meaning
+                 of range expressions.  */
+              regex_t re;
+              char pattern[6] = { '[', 0, '-', 0, ']', 0 };
+              char subject[2] = { 0, 0 };
+              c1 = c;
+              if (case_fold)
+                {
+                  c1 = tolower (c1);
+                  c2 = tolower (c2);
+                }
+
+              pattern[1] = c1;
+              pattern[3] = c2;
+              regcomp (&re, pattern, REG_NOSUB);
+              for (c = 0; c < NOTCHAR; ++c)
+                {
+                  if ((case_fold && isupper (c)))
+                    continue;
+                  subject[0] = c;
+                  if (regexec (&re, subject, 0, NULL, 0) != REG_NOMATCH)
+                    setbit_case_fold_c (c, ccl);
+                }
+              regfree (&re);
+#endif
             }
 
           colon_warning_state |= 8;
