@@ -4221,6 +4221,7 @@ in case some option becomes obsolete in a future version of @command{gawk}.
 @author Obi-Wan
 @end quotation
 
+@cindex shells, sea
 This @value{SECTION} intentionally left
 blank.
 
@@ -4233,7 +4234,7 @@ blank.
 @table @code
 @item -W nostalgia
 @itemx --nostalgia
-Print the message @code{"awk: bailing out near line 1"} and dump core.
+Print the message @samp{awk: bailing out near line 1} and dump core.
 This option was inspired by the common behavior of very early versions of
 Unix @command{awk} and by a t--shirt.
 The message is @emph{not} subject to translation in non-English locales.
@@ -6558,7 +6559,7 @@ $ @kbd{echo a b | gawk 'BEGIN @{ FS = "" @}}
 @end example
 
 @cindex dark corner, @code{FS} as null string
-@cindex FS variable, as null string
+@cindex @code{FS} variable, as null string
 Traditionally, the behavior of @code{FS} equal to @code{""} was not defined.
 In this case, most versions of Unix @command{awk} simply treat the entire record
 as only having one field.
@@ -26483,7 +26484,7 @@ and use translations from @command{awk}.
 @cindex portable object files
 @cindex files, portable object
 Once a program's translatable strings have been marked, they must
-be extracted to create the initial @file{.po} file.
+be extracted to create the initial @file{.pot} file.
 As part of translation, it is often helpful to rearrange the order
 in which arguments to @code{printf} are output.
 
@@ -26578,7 +26579,7 @@ example, @samp{string} is the first argument and @samp{length(string)} is the se
 @example
 $ @kbd{gawk 'BEGIN @{}
 >     @kbd{string = "Dont Panic"}
->     @kbd{printf _"%2$d characters live in \"%1$s\"\n",}
+>     @kbd{printf "%2$d characters live in \"%1$s\"\n",}
 >                         @kbd{string, length(string)}
 > @kbd{@}'}
 @print{} 10 characters live in "Dont Panic"
@@ -26612,7 +26613,7 @@ This is somewhat counterintuitive.
 and those with positional specifiers in the same string:
 
 @example
-$ @kbd{gawk 'BEGIN @{ printf _"%d %3$s\n", 1, 2, "hi" @}'}
+$ @kbd{gawk 'BEGIN @{ printf "%d %3$s\n", 1, 2, "hi" @}'}
 @error{} gawk: cmd. line:1: fatal: must use `count$' on all formats or none
 @end example
 
@@ -27028,12 +27029,13 @@ as our example.
 @node Debugger Invocation
 @subsection How to Start the Debugger
 
-Starting the debugger is almost exactly like running @command{awk}, except you have to
-pass an additional option @option{--debug} or the corresponding short option @option{-D}.
-The file(s) containing the program and any supporting code are given on the command
-line as arguments to one or more @option{-f} options. (@command{gawk} is not designed
-to debug command-line programs, only programs contained in files.)  In our case,
-we invoke the debugger like this:
+Starting the debugger is almost exactly like running @command{gawk},
+except you have to pass an additional option @option{--debug} or the
+corresponding short option @option{-D}.  The file(s) containing the
+program and any supporting code are given on the command line as arguments
+to one or more @option{-f} options. (@command{gawk} is not designed
+to debug command-line programs, only programs contained in files.)
+In our case, we invoke the debugger like this:
 
 @example
 $ @kbd{gawk -D -f getopt.awk -f join.awk -f uniq.awk inputfile}
@@ -27166,7 +27168,7 @@ gawk> @kbd{p NR}
 
 @noindent
 So we can see that @code{are_equal()} was only called for the second record
-of the file.  Of course, this is because our program contained a rule for
+of the file.  Of course, this is because our program contains a rule for
 @samp{NR == 1}:
 
 @example
@@ -29333,7 +29335,7 @@ to begin with:
 gawk -M 'BEGIN @{ n = 13.0; print n % 2.0 @}'
 @end example
 
-Note that for the particular example above, there is likely best
+Note that for the particular example above, it is likely best
 to just use the following:
 
 @example
@@ -29678,6 +29680,8 @@ the macros as if they were functions.
 @node General Data Types
 @subsection General Purpose Data Types
 
+@cindex Robbins, Arnold
+@cindex Ramey, Chet
 @quotation
 @i{I have a true love/hate relationship with unions.}
 @author Arnold Robbins
@@ -30005,7 +30009,7 @@ Letter case in function names is significant.
 This is a pointer to the C function that provides the desired
 functionality.
 The function must fill in the result with either a number
-or a string. @command{awk} takes ownership of any string memory.
+or a string. @command{gawk} takes ownership of any string memory.
 As mentioned earlier, string memory @strong{must} come from @code{malloc()}.
 
 The @code{num_actual_args} argument tells the C function how many
@@ -32075,7 +32079,7 @@ do_stat(int nargs, awk_value_t *result)
     awk_array_t array;
     int ret;
     struct stat sbuf;
-    /* default is stat() */
+    /* default is lstat() */
     int (*statfunc)(const char *path, struct stat *sbuf) = lstat;
 
     assert(result != NULL);
@@ -32303,7 +32307,7 @@ upon success or less than zero upon error.  In the latter case it updates
 @code{ERRNO}.
 
 @cindex @code{stat()} extension function
-@item result = stat("/some/path", statdata [, follow])
+@item result = stat("/some/path", statdata @r{[}, follow@r{]})
 The @code{stat()} function provides a hook into the
 @code{stat()} system call.
 It returns zero upon success or less than zero upon error.
@@ -32513,19 +32517,23 @@ See @file{test/fts.awk} in the @command{gawk} distribution for an example.
 @node Extension Sample Fnmatch
 @subsection Interface To @code{fnmatch()}
 
-@cindex @code{fnmatch()} extension function
 This extension provides an interface to the C library
 @code{fnmatch()} function.  The usage is:
 
-@example
-@@load "fnmatch"
+@table @code
+@item @@load "fnmatch"
+This is how you load the extension.
 
-result = fnmatch(pattern, string, flags)
-@end example
+@cindex @code{fnmatch()} extension function
+@item result = fnmatch(pattern, string, flags)
+The return value is zero on success, @code{FNM_NOMATCH}
+if the string did not match the pattern, or
+a different non-zero value if an error occurred.
+@end table
 
-The @code{fnmatch} extension adds a single function named
-@code{fnmatch()}, one constant (@code{FNM_NOMATCH}), and an array of
-flag values named @code{FNM}.
+Besides the @code{fnmatch()} function, the @code{fnmatch} extension
+adds one constant (@code{FNM_NOMATCH}), and an array of flag values
+named @code{FNM}.
 
 The arguments to @code{fnmatch()} are:
 
@@ -32540,10 +32548,6 @@ The filename string.
 Either zero, or the bitwise OR of one or more of the
 flags in the @code{FNM} array.
 @end table
-
-The return value is zero on success, @code{FNM_NOMATCH}
-if the string did not match the pattern, or
-a different non-zero value if an error occurred.
 
 The flags are follows:
 
@@ -32588,15 +32592,15 @@ This is how you load the extension.
 
 @cindex @code{fork()} extension function
 @item pid = fork()
-This function creates a new process. The return value is the zero in the
-child and the process-id number of the child in the parent, or @minus{}1
+This function creates a new process. The return value is zero in the
+child and the process-ID number of the child in the parent, or @minus{}1
 upon error. In the latter case, @code{ERRNO} indicates the problem.
 In the child, @code{PROCINFO["pid"]} and @code{PROCINFO["ppid"]} are
 updated to reflect the correct values.
 
 @cindex @code{waitpid()} extension function
 @item ret = waitpid(pid)
-This function takes a numeric argument, which is the process-id to
+This function takes a numeric argument, which is the process-ID to
 wait for. The return value is that of the
 @code{waitpid()} system call.
 
@@ -34220,7 +34224,7 @@ The @option{-i} and @option{--include} options
 load @command{awk} library files.
 
 @item
-The @option{-l} and @option{--load} options for load compiled dynamic extensions.
+The @option{-l} and @option{--load} options load compiled dynamic extensions.
 
 @item 
 The @option{-M} and @option{--bignum} options enable MPFR.
@@ -34241,7 +34245,7 @@ Support for high precision arithmetic with MPFR.
 
 @item
 The @code{and()}, @code{or()} and @code{xor()} functions
-allow any number of arguments,
+changed to allow any number of arguments,
 with a minimum of two
 (@pxref{Bitwise Functions}).
 
@@ -34266,18 +34270,18 @@ the three most widely-used freely available versions of @command{awk}
 @multitable {@file{/dev/stderr} special file} {BWK Awk} {Mawk} {GNU Awk}
 @headitem Feature @tab BWK Awk @tab Mawk @tab GNU Awk
 @item @samp{\x} Escape sequence @tab X @tab X @tab X
-@item @code{RS} as regexp @tab @tab X @tab X
 @item @code{FS} as null string @tab X @tab X @tab X
 @item @file{/dev/stdin} special file @tab X @tab X @tab X
 @item @file{/dev/stdout} special file @tab X @tab X @tab X
 @item @file{/dev/stderr} special file @tab X @tab X @tab X
-@item @code{**} and @code{**=} operators @tab X @tab @tab X
-@item @code{fflush()} function @tab X @tab X @tab X
-@item @code{func} keyword @tab X @tab @tab X
-@item @code{nextfile} statement @tab X @tab X @tab X
 @item @code{delete} without subscript @tab X @tab X @tab X
+@item @code{fflush()} function @tab X @tab X @tab X
 @item @code{length()} of an array @tab X @tab X @tab X
+@item @code{nextfile} statement @tab X @tab X @tab X
+@item @code{**} and @code{**=} operators @tab X @tab @tab X
+@item @code{func} keyword @tab X @tab @tab X
 @item @code{BINMODE} variable @tab @tab X @tab X
+@item @code{RS} as regexp @tab @tab X @tab X
 @item Time related functions @tab @tab X @tab X
 @end multitable
 
@@ -34366,10 +34370,10 @@ the @command{gawk} maintainer grew weary of trying to explain that
 was in the user's locale.  During the development of version 4.0,
 he modified @command{gawk} to always treat ranges in the original,
 pre-POSIX fashion, unless @option{--posix} was used (@pxref{Options}).@footnote{And
-thus was born the Campain for Rational Range Interpretation (or RRI). A number
-of GNU tools, such as @command{grep} and @command{sed}, have either
-implemented this change, or will soon.  Thanks to Karl Berry for coining the phrase
-``Rational Range Interpretation.''}
+thus was born the Campaign for Rational Range Interpretation (or
+RRI). A number of GNU tools have either implemented this change,
+or will soon.  Thanks to Karl Berry for coining the phrase ``Rational
+Range Interpretation.''}
 
 Fortunately, shortly before the final release of @command{gawk} 4.0,
 the maintainer learned that the 2008 standard had changed the
@@ -34382,7 +34386,7 @@ and
 By using this lovely technical term, the standard gives license
 to implementors to implement ranges in whatever way they choose.
 The @command{gawk} maintainer chose to apply the pre-POSIX meaning in all
-cases: the default regexp matching; with @option{--traditional}, and with
+cases: the default regexp matching; with @option{--traditional} and with
 @option{--posix}; in all cases, @command{gawk} remains POSIX compliant.
 
 @node Contributors
@@ -35023,7 +35027,7 @@ please send in a bug report (@pxref{Bugs}).
 
 Of course, once you've built @command{gawk}, it is likely that you will
 wish to install it.  To do so, you need to run the command @samp{make
-check}, as a user with the appropriate permissions.  How to do this
+install}, as a user with the appropriate permissions.  How to do this
 varies by system, but on many systems you can use the @command{sudo}
 command to do so.  The command then becomes @samp{sudo make install}. It
 is likely that you will be asked for your password, and you will have
@@ -35349,11 +35353,10 @@ multibyte functionality is not available.
 @c STARTOFRANGE pcgawon
 @cindex PC operating systems, @command{gawk} on
 
-With the exception of the Cygwin environment,
-the @samp{|&} operator and TCP/IP networking
-(@pxref{TCP/IP Networking})
-are not supported for MS-DOS or MS-Windows.  EMX (OS/2 only) does support
-at least the @samp{|&} operator.
+Under MS-DOS and MS-Windows, the Cygwin and MinGW environments support
+both the @samp{|&} operator and TCP/IP networking
+(@pxref{TCP/IP Networking}).
+EMX (OS/2 only) supports at least the @samp{|&} operator.
 
 @cindex search paths
 @cindex search paths, for source files
@@ -35483,7 +35486,7 @@ moved into the @code{BEGIN} rule.
 
 @command{gawk} can be built and used ``out of the box'' under MS-Windows
 if you are using the @uref{http://www.cygwin.com, Cygwin environment}.
-This environment provides an excellent simulation of Unix, using the
+This environment provides an excellent simulation of GNU/Linux, using the
 GNU tools, such as Bash, the GNU Compiler Collection (GCC), GNU Make,
 and other GNU programs.  Compilation and installation for Cygwin is the
 same as for a Unix system:
@@ -35498,13 +35501,6 @@ make
 When compared to GNU/Linux on the same system, the @samp{configure}
 step on Cygwin takes considerably longer.  However, it does finish,
 and then the @samp{make} proceeds as usual.
-
-@quotation NOTE
-The @samp{|&} operator and TCP/IP networking
-(@pxref{TCP/IP Networking})
-are fully supported in the Cygwin environment.  This is not true
-for any other environment on MS-Windows.
-@end quotation
 
 @node MSYS
 @appendixsubsubsec Using @command{gawk} In The MSYS Environment
@@ -35684,7 +35680,7 @@ add the @command{gawk} and @command{awk} to the system wide @samp{DCLTABLES}.
 
 The DCL syntax is documented in the @file{gawk.hlp} file.
 
-Optionally, @file{gawk.hlp} entry can be loaded into a VMS help library:
+Optionally, the @file{gawk.hlp} entry can be loaded into a VMS help library:
 
 @example
 $ @kbd{LIBRARY/HELP sys$help:helplib [.vms]gawk.hlp}
@@ -36028,7 +36024,7 @@ from GCC (the GNU Compiler Collection) works quite nicely.
 for a list of extensions in this @command{awk} that are not in POSIX @command{awk}.
 
 @cindex Brennan, Michael
-@cindex @command{mawk} program
+@cindex @command{mawk} utility
 @cindex source code, @command{mawk}
 @item @command{mawk}
 Michael Brennan wrote an independent implementation of @command{awk},
