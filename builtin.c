@@ -719,7 +719,7 @@ format_tree(
 	mpz_ptr zi;
 	mpfr_ptr mf;
 #endif
-	enum { MP_INT_WITH_PREC = 1, MP_INT_WITHOUT_PREC, MP_FLOAT } fmt_type;
+	enum { MP_NONE = 0, MP_INT_WITH_PREC = 1, MP_INT_WITHOUT_PREC, MP_FLOAT } fmt_type;
 
 	static const char sp[] = " ";
 	static const char zero_string[] = "0";
@@ -817,7 +817,7 @@ format_tree(
 		mf = NULL;
 		zi = NULL;
 #endif
-		fmt_type = 0;
+		fmt_type = MP_NONE;
 
 		lj = alt = big_flag = bigbig_flag = small_flag = false;
 		fill = sp;

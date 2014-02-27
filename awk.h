@@ -1327,6 +1327,7 @@ if (--val) \
 /* array.c */
 typedef enum { SORTED_IN = 1, ASORT, ASORTI } sort_context_t;
 typedef enum {
+	ANONE   = 0x00,		/* "unused" value */
 	AINDEX	= 0x001,	/* list of indices */ 
 	AVALUE	= 0x002,	/* list of values */
 	AINUM	= 0x004,	/* numeric index */

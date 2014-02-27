@@ -1279,7 +1279,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 	INSTRUCTION *code = NULL;
 	extern int currule;
 	int save_rule = 0;
-	assoc_kind_t assoc_kind = 0;
+	assoc_kind_t assoc_kind = ANONE;
 	
 	elem_size = 1;
 

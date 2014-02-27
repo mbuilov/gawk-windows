@@ -1,3 +1,13 @@
+2014-02-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fixes for enum/int mismatches as warned by some compilers.
+
+	* awk.h (ANONE): New enum for array sorting.
+	* array.c (assoc_list): Use it.
+	* builtin.c (format_tree): New MP_NONE value.
+	* gawkapi.c: Use awk_false and awk_true everywhere instead of
+	false and true.
+
 2014-02-26         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Set up do-nothing extension/Makefile on
