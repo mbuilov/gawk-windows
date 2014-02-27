@@ -290,9 +290,7 @@ if test "x$enable_extensions" != "xno"; then
 
 	dnl On MirBSD (and probably other systems), don't even try.
 	case $host_os in
-	mirbsd*)
-		: ;;
-	openedition*)	# OS/390 z/OS POSIX layer
+	mirbsd* | openedition*)	# OS/390 z/OS POSIX layer
 		cat << \EOF > extension/Makefile
 all dist check clean distclean install uninstall distcheck:
 	@exit 0

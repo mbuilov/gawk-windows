@@ -12272,6 +12272,8 @@ for more information on this version of the @code{for} loop.
 @cindex @code{case} keyword
 @cindex @code{default} keyword
 
+This @value{SECTION} describes a @command{gawk}-specific feature.
+
 The @code{switch} statement allows the evaluation of an expression and
 the execution of statements based on a @code{case} match. Case statements
 are checked for a match in the order they are defined.  If no suitable
@@ -16053,11 +16055,10 @@ This is the purpose of the @code{fflush()} function---@command{gawk} also
 buffers its output and the @code{fflush()} function forces
 @command{gawk} to flush its buffers.
 
-@code{fflush()} was added to Brian Kernighan's
-version of @command{awk} in 1994.
-For over two decades, it was not part of the POSIX standard.
-As of December, 2012, it was accepted for
-inclusion into the POSIX standard.
+@code{fflush()} was added to Brian Kernighan's version of @command{awk} in
+April of 1992.  For two decades, it was not part of the POSIX standard.
+As of December, 2012, it was accepted for inclusion into the POSIX
+standard.
 See @uref{http://austingroupbugs.net/view.php?id=634, the Austin Group website}.
 
 POSIX standardizes @code{fflush()} as follows: If there
@@ -17061,7 +17062,7 @@ have a parameter with the same name as the function itself.
 In addition, according to the POSIX standard, function parameters cannot have the same
 name as one of the special built-in variables
 (@pxref{Built-in Variables}.  Not all versions of @command{awk}
-enforce this restriction.
+enforce this restriction.)
 
 The @var{body-of-function} consists of @command{awk} statements.  It is the
 most important part of the definition, because it says what the function
@@ -17108,7 +17109,7 @@ function.  When this happens, we say the function is @dfn{recursive}.
 The act of a function calling itself is called @dfn{recursion}.
 
 All the built-in functions return a value to their caller.
-User-defined functions can do also, using the @code{return} statement,
+User-defined functions can do so also, using the @code{return} statement,
 which is described in detail in @ref{Return Statement}.
 Many of the subsequent examples in this @value{SECTION} use
 the @code{return} statement.
@@ -17200,7 +17201,8 @@ Instead of having
 to repeat this loop everywhere that you need to clear out
 an array, your program can just call @code{delarray}.
 (This guarantees portability.  The use of @samp{delete @var{array}} to delete
-the contents of an entire array is a nonstandard extension.)
+the contents of an entire array is a recent@footnote{Late in 2012.}
+addition to the POSIX standard.)
 
 The following is an example of a recursive function.  It takes a string
 as an input parameter and returns the string in backwards order.
@@ -17256,7 +17258,10 @@ function ctime(ts,    format)
 @subsection Calling User-Defined Functions
 
 @c STARTOFRANGE fudc
-This section describes how to call a user-defined function.
+@cindex functions, user-defined, calling
+@dfn{Calling a function} means causing the function to run and do its job.
+A function call is an expression and its value is the value returned by
+the function.
 
 @menu
 * Calling A Function::          Don't use spaces.
@@ -17266,11 +17271,6 @@ This section describes how to call a user-defined function.
 
 @node Calling A Function
 @subsubsection Writing A Function Call
-
-@cindex functions, user-defined, calling
-@dfn{Calling a function} means causing the function to run and do its job.
-A function call is an expression and its value is the value returned by
-the function.
 
 A function call consists of the function name followed by the arguments
 in parentheses.  @command{awk} expressions are what you write in the
@@ -17741,7 +17741,7 @@ character:
 
 @example
 the_func = "sum"
-result = @@the_func()   # calls the `sum' function
+result = @@the_func()   # calls the sum() function
 @end example
 
 Here is a full program that processes the previously shown data,
@@ -17862,8 +17862,9 @@ We can do something similar using @command{gawk}, like this:
 @ignore
 @c file eg/lib/quicksort.awk
 #
-# Arnold Robbins, arnold@skeeve.com, Public Domain
+# Arnold Robbins, arnold@@skeeve.com, Public Domain
 # January 2009
+
 @c endfile
 
 @end ignore
@@ -17936,7 +17937,7 @@ or equal to), which yields data sorted in descending order.
 
 Next comes a sorting function.  It is parameterized with the starting and
 ending field numbers and the comparison function. It builds an array with
-the data and calls @code{quicksort} appropriately, and then formats the
+the data and calls @code{quicksort()} appropriately, and then formats the
 results as a single string:
 
 @example
@@ -18074,6 +18075,8 @@ it allows you to encapsulate algorithms and program tasks in a single
 place.  It simplifies programming, making program development more
 manageable, and making programs more readable.
 
+@cindex Kernighan, Brian
+@cindex Plauger, P.J.@:
 In their seminal 1976 book, @cite{Software Tools},@footnote{Sadly, over 35
 years later, many of the lessons taught by this book have yet to be
 learned by a vast number of practicing programmers.} Brian Kernighan
@@ -18203,7 +18206,7 @@ with the user's program.
 @cindex underscore (@code{_}), in names of private variables
 In addition, several of the library functions use a prefix that helps
 indicate what function or set of functions use the variables---for example,
-@code{_pw_byname} in the user database routines
+@code{_pw_byname()} in the user database routines
 (@pxref{Passwd Functions}).
 This convention is recommended, since it even further decreases the
 chance of inadvertent conflict among variable names.  Note that this
@@ -18517,9 +18520,9 @@ with an @code{exit} statement.
 The way @code{printf} and @code{sprintf()}
 (@pxref{Printf})
 perform rounding often depends upon the system's C @code{sprintf()}
-subroutine.  On many machines, @code{sprintf()} rounding is ``unbiased,''
-which means it doesn't always round a trailing @samp{.5} up, contrary
-to naive expectations.  In unbiased rounding, @samp{.5} rounds to even,
+subroutine.  On many machines, @code{sprintf()} rounding is @dfn{unbiased},
+which means it doesn't always round a trailing .5 up, contrary
+to naive expectations.  In unbiased rounding, .5 rounds to even,
 rather than always up, so 1.5 rounds to 2 but 4.5 rounds to 4.  This means
 that if you are using a format that does rounding (e.g., @code{"%.0f"}),
 you should check what your system does.  The following function does
@@ -18568,7 +18571,7 @@ function round(x,   ival, aval, fraction)
 @c don't include test harness in the file that gets installed
 
 # test harness
-@{ print $0, round($0) @}
+# @{ print $0, round($0) @}
 @end example
 
 @node Cliff Random Function
@@ -18682,7 +18685,7 @@ function _ord_init(    low, high, i, t)
 @cindex ASCII
 @cindex EBCDIC
 @cindex mark parity
-Some explanation of the numbers used by @code{chr()} is worthwhile.
+Some explanation of the numbers used by @code{_ord_init()} is worthwhile.
 The most prominent character set in use today is ASCII.@footnote{This
 is changing; many systems use Unicode, a very large character set
 that includes ASCII as a subset.  On systems with full Unicode support,
@@ -18693,7 +18696,7 @@ Although an
 defines characters that use the values from 0 to 127.@footnote{ASCII
 has been extended in many countries to use the values from 128 to 255
 for country-specific characters.  If your  system uses these extensions,
-you can simplify @code{_ord_init} to loop from 0 to 255.}
+you can simplify @code{_ord_init()} to loop from 0 to 255.}
 In the now distant past,
 at least one minicomputer manufacturer
 @c Pr1me, blech
@@ -19338,7 +19341,7 @@ END @{
 Occasionally, you might not want @command{awk} to process command-line
 variable assignments
 (@pxref{Assignment Options}).
-In particular, if you have a file name that contain an @samp{=} character,
+In particular, if you have a file name that contains an @samp{=} character,
 @command{awk} treats the file name as an assignment, and does not process it.
 
 Some users have suggested an additional command-line option for @command{gawk}
@@ -20017,7 +20020,7 @@ field-splitting mechanism later.  The test can only be true for
 or on some other @command{awk} implementation.
 
 The code that checks for using @code{FPAT}, using @code{using_fpat}
-and @code{PROCINFO["FS"]} is similar.
+and @code{PROCINFO["FS"]}, is similar.
 
 The main part of the function uses a loop to read database lines, split
 the line into fields, and then store the line into each array as necessary.
@@ -20047,10 +20050,9 @@ function getpwnam(name)
 @end example
 
 @cindex @code{getpwuid()} function (C library)
-Similarly,
-the @code{getpwuid} function takes a user ID number argument. If that
-user number is in the database, it returns the appropriate line. Otherwise, it
-returns the null string:
+Similarly, the @code{getpwuid()} function takes a user ID number
+argument. If that user number is in the database, it returns the
+appropriate line. Otherwise, it returns the null string:
 
 @cindex @code{getpwuid()} user-defined function
 @example
@@ -20554,7 +20556,7 @@ index and value, use the indirect function call syntax
 and the value.
 
 When calling @code{walk_array()}, you would pass the name of a user-defined
-function that expects to receive and index and a value, and then processes
+function that expects to receive an index and a value, and then processes
 the element.
 
 
@@ -20908,7 +20910,7 @@ complete field list, including filler fields:
 
 @example
 @c file eg/prog/cut.awk
-function set_charlist(    field, i, j, f, g, t,
+function set_charlist(    field, i, j, f, g, n, m, t,
                           filler, last, len)
 @{
     field = 1   # count total fields
@@ -23636,7 +23638,7 @@ BEGIN @{
 @c endfile
 @end example
 
-The stack is initialized with @code{ARGV[1]}, which will be @file{/dev/stdin}.
+The stack is initialized with @code{ARGV[1]}, which will be @samp{/dev/stdin}.
 The main loop comes next.  Input lines are read in succession. Lines that
 do not start with @samp{@@include} are printed verbatim.
 If the line does start with @samp{@@include}, the file name is in @code{$2}.
@@ -24678,7 +24680,7 @@ open a @emph{two-way} pipe to another process.  The second process is
 termed a @dfn{coprocess}, since it runs in parallel with @command{gawk}.
 The two-way connection is created using the @samp{|&} operator
 (borrowed from the Korn shell, @command{ksh}):@footnote{This is very
-different from the same operator in the C shell.}
+different from the same operator in the C shell and in Bash.}
 
 @example
 do @{
@@ -24966,52 +24968,60 @@ foo
 junk
 @end example
 
-Here is the @file{awkprof.out} that results from running the @command{gawk}
-profiler on this program and data (this example also illustrates that @command{awk}
-programmers sometimes have to work late):
+Here is the @file{awkprof.out} that results from running the
+@command{gawk} profiler on this program and data. (This example also
+illustrates that @command{awk} programmers sometimes get up very early
+in the morning to work.)
 
 @cindex @code{BEGIN} pattern
 @cindex @code{END} pattern
 @example
-        # gawk profile, created Sun Aug 13 00:00:15 2000
+    # gawk profile, created Thu Feb 27 05:16:21 2014
 
-        # BEGIN block(s)
+    # BEGIN block(s)
 
-        BEGIN @{
-     1          print "First BEGIN rule"
-     1          print "Second BEGIN rule"
-        @}
+    BEGIN @{
+ 1          print "First BEGIN rule"
+    @}
 
-        # Rule(s)
+    BEGIN @{
+ 1          print "Second BEGIN rule"
+    @}
 
-     5  /foo/   @{ # 2
-     2          print "matched /foo/, gosh"
-     6          for (i = 1; i <= 3; i++) @{
-     6                  sing()
-                @}
-        @}
+    # Rule(s)
 
-     5  @{
-     5          if (/foo/) @{ # 2
-     2                  print "if is true"
-     3          @} else @{
-     3                  print "else is true"
-                @}
-        @}
+ 5  /foo/ @{ # 2
+ 2          print "matched /foo/, gosh"
+ 6          for (i = 1; i <= 3; i++) @{
+ 6                  sing()
+            @}
+    @}
 
-        # END block(s)
+ 5  @{
+ 5          if (/foo/) @{ # 2
+ 2                  print "if is true"
+ 3          @} else @{
+ 3                  print "else is true"
+            @}
+    @}
 
-        END @{
-     1          print "First END rule"
-     1          print "Second END rule"
-        @}
+    # END block(s)
 
-        # Functions, listed alphabetically
+    END @{
+ 1          print "First END rule"
+    @}
 
-     6  function sing(dummy)
-        @{
-     6          print "I gotta be me!"
-        @}
+    END @{
+ 1          print "Second END rule"
+    @}
+
+
+    # Functions, listed alphabetically
+
+ 6  function sing(dummy)
+    @{
+ 6          print "I gotta be me!"
+    @}
 @end example
 
 This example illustrates many of the basic features of profiling output.
@@ -25019,13 +25029,14 @@ They are as follows:
 
 @itemize @bullet
 @item
-The program is printed in the order @code{BEGIN} rule,
-@code{BEGINFILE} rule,
+The program is printed in the order @code{BEGIN} rules,
+@code{BEGINFILE} rules,
 pattern/action rules,
-@code{ENDFILE} rule, @code{END} rule and functions, listed
+@code{ENDFILE} rules, @code{END} rules and functions, listed
 alphabetically.
-Multiple @code{BEGIN} and @code{END} rules are merged together,
-as are multiple @code{BEGINFILE} and @code{ENDFILE} rules.
+Multiple @code{BEGIN} and @code{END} rules retain their
+separate identities, as do
+multiple @code{BEGINFILE} and @code{ENDFILE} rules.
 
 @cindex patterns, counts
 @item
@@ -25106,8 +25117,8 @@ typed when you wrote it.  This is because @command{gawk} creates the
 profiled version by ``pretty printing'' its internal representation of
 the program.  The advantage to this is that @command{gawk} can produce
 a standard representation.  The disadvantage is that all source-code
-comments are lost, as are the distinctions among multiple @code{BEGIN},
-@code{END}, @code{BEGINFILE}, and @code{ENDFILE} rules.  Also, things such as:
+comments are lost.
+Also, things such as:
 
 @example
 /foo/
@@ -25197,6 +25208,11 @@ keyboard.  The @code{INT} signal is generated by the
 Finally, @command{gawk} also accepts another option, @option{--pretty-print}.
 When called this way, @command{gawk} ``pretty prints'' the program into
 @file{awkprof.out}, without any execution counts.
+
+@quotation NOTE
+The @option{--pretty-print} option still runs your program.
+This will change in the next major release.
+@end quotation
 @c ENDOFRANGE advgaw
 @c ENDOFRANGE gawadv
 @c ENDOFRANGE awkp
@@ -33435,7 +33451,7 @@ as working in this fashion, and in particular, would teach that the
 that @samp{[A-Z]} was the ``correct'' way to match uppercase letters.
 And indeed, this was true.@footnote{And Life was good.}
 
-The 1993 POSIX standard introduced the idea of locales (@pxref{Locales}).
+The 1992 POSIX standard introduced the idea of locales (@pxref{Locales}).
 Since many locales include other letters besides the plain twenty-six
 letters of the American English alphabet, the POSIX standard added
 character classes (@pxref{Bracket Expressions}) as a way to match
