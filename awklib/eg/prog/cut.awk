@@ -86,7 +86,7 @@ function set_fieldlist(        n, m, i, j, k, f, g)
     }
     nfields = j - 1
 }
-function set_charlist(    field, i, j, f, g, t,
+function set_charlist(    field, i, j, f, g, n, m, t,
                           filler, last, len)
 {
     field = 1   # count total fields
