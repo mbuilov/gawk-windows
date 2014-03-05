@@ -1,3 +1,14 @@
+2014-03-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Straighten out enumerated types some more.
+
+	* awk.h (add_srcfile): Fix type of first parameter.
+	* awkgram.y (add_srcfile, do_add_srcfile): Ditto.
+	* cmd.h (A_NONE): New enum nametypeval.
+	* command.y (argtab): Use it in final value.
+	* ext.c (make_builtin): Use awk_false, awk_true.
+	* io.c (init_output_wrapper): Use awk_false.
+
 2014-03-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with grep. Yet again.

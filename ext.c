@@ -221,11 +221,11 @@ make_builtin(const awk_ext_func_t *funcinfo)
 		fatal(_("make_builtin: missing function name"));
 
 	if (! is_letter(*sp))
-		return false;
+		return awk_false;
 
 	for (sp++; (c = *sp++) != '\0';) {
 		if (! is_identifier_char(c))
-			return false;
+			return awk_false;
 	}
 
 	f = lookup(name);
@@ -238,7 +238,7 @@ make_builtin(const awk_ext_func_t *funcinfo)
 			/* multiple extension() calls etc. */ 
 			if (do_lint)
 				lintwarn(_("make_builtin: function `%s' already defined"), name);
-			return false;
+			return awk_false;
 		} else
 			/* variable name etc. */ 
 			fatal(_("make_builtin: function name `%s' previously defined"), name);
@@ -258,7 +258,7 @@ make_builtin(const awk_ext_func_t *funcinfo)
        	symbol = install_symbol(estrdup(name, strlen(name)), Node_ext_func);
 	symbol->code_ptr = b;
 	track_ext_func(name);
-	return true;
+	return awk_true;
 }
 
 /* make_old_builtin --- register name to be called as func with a builtin body */
