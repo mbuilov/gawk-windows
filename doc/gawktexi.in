@@ -34704,21 +34704,14 @@ can better handle @code{ODS-5} volumes with upper- and lowercase filenames.
 With @code{ODS-5} volumes and extended parsing enabled, the case of the target
 parameter may need to be exact.
 
-Older versions of @command{gawk} could be built with VAX C or
-GNU C on VAX/VMS, as well as with DEC C, but that is no longer
-supported.  DEC C (also briefly known as ``Compaq C'' and now known
-as ``HP C,'' but referred to here as ``DEC C'') is required.  Both
-@code{vmsbuild.com} and @code{descrip.mms} contain some obsolete support
-for the older compilers but are set up to use DEC C by default.
-
 @command{gawk} has been tested under VAX/VMS 7.3 and Alpha/VMS 7.3-1
 using Compaq C V6.4, and Alpha/VMS 7.3, Alpha/VMS 7.3-2, and IA64/VMS 8.3.
 The most recent builds used HP C V7.3 on Alpha VMS 8.3 and both
 Alpha and IA64 VMS 8.4 used HP C 7.3.@footnote{The IA64 architecture
 is also known as ``Itanium.''}
 
-Work is currently being done for a procedure to build @command{gawk} and create
-a PCSI kit for compatible with the GNV product.
+The @file{[.vms]gawk_build_steps.txt} provides information on how to build
+@command{gawk} into a PCSI kit that is compatible with the GNV product.
 
 @node VMS Dynamic Extensions
 @appendixsubsubsec Compiling @command{gawk} Dynamic Extensions on VMS
