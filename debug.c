@@ -4851,7 +4851,7 @@ do_commands(CMDARG *arg, int cmd)
 	struct commands_item *c;
 	
 	if (cmd == D_commands) {
-		int num, type;
+		int num = -1, type;
 		if (arg == NULL)
 			type = has_break_or_watch_point(&num, true);
 		else {
