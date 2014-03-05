@@ -2667,7 +2667,7 @@ struct argtoken argtab[] = {
 	{ "sources", D_info, A_SOURCES },
 	{ "variables", D_info, A_VARIABLES },
 	{ "watch", D_info, A_WATCH },
-	{ NULL, D_illegal, 0 },
+	{ NULL, D_illegal, A_NONE },
 };
 
 

@@ -3968,7 +3968,7 @@ init_output_wrapper(awk_output_buf_t *outbuf)
 	outbuf->mode = NULL;
 	outbuf->fp = NULL;
 	outbuf->opaque = NULL;
-	outbuf->redirected = false;
+	outbuf->redirected = awk_false;
 	outbuf->gawk_fwrite = gawk_fwrite;
 	outbuf->gawk_fflush = gawk_fflush;
 	outbuf->gawk_ferror = gawk_ferror;

@@ -109,7 +109,8 @@ enum argtype {
 /* non-number arguments to commands */ 
 
 enum nametypeval {
-	A_ARGS = 1,
+	A_NONE = 0,
+	A_ARGS,
 	A_BREAK,
 	A_DEL,
 	A_DISPLAY,
