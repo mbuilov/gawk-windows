@@ -995,6 +995,7 @@ Arnold has distilled over a decade of experience writing and
 using AWK programs, and developing @command{gawk}, into this book.  If you use
 AWK or want to learn how, then read this book.
 
+@cindex Brennan, Michael
 @display
 Michael Brennan
 Author of @command{mawk}
@@ -1019,6 +1020,7 @@ Such jobs are often easier with @command{awk}.
 The @command{awk} utility interprets a special-purpose programming language
 that makes it easy to handle simple data-reformatting jobs.
 
+@cindex Brian Kernighan's @command{awk}
 The GNU implementation of @command{awk} is called @command{gawk}; if you
 invoke it with the proper options or environment variables
 (@pxref{Options}), it is fully
@@ -1741,7 +1743,7 @@ significant editorial help for this @value{DOCUMENT} for the
 3.1 release of @command{gawk}.
 @end quotation
 
-@cindex Beebe, Nelson
+@cindex Beebe, Nelson H.F.@:
 @cindex Buening, Andreas
 @cindex Collado, Manuel
 @cindex Colombo, Antonio
@@ -2961,8 +2963,8 @@ noticed because it is ``hidden'' inside the comment. Thus, the
 @code{BEGIN} is noted as a syntax error.
 
 @cindex statements, multiple
-@cindex @code{;} (semicolon)
-@cindex semicolon (@code{;})
+@cindex @code{;} (semicolon), separating statements in actions
+@cindex semicolon (@code{;}), separating statements in actions
 When @command{awk} statements within one rule are short, you might want to put
 more than one of them on a line.  This is accomplished by separating the statements
 with a semicolon (@samp{;}).
@@ -3022,6 +3024,7 @@ used once, and thrown away.  Because @command{awk} programs are interpreted, you
 can avoid the (usually lengthy) compilation part of the typical
 edit-compile-test-debug cycle of software development.
 
+@cindex Brian Kernighan's @command{awk}
 Complex programs have been written in @command{awk}, including a complete
 retargetable assembler for eight-bit microprocessors (@pxref{Glossary}, for
 more information), and a microcode assembler for a special-purpose Prolog
@@ -4508,6 +4511,7 @@ leaves what happens as undefined.  There are two choices:
 
 @c @cindex automatic warnings
 @c @cindex warnings, automatic
+@cindex Brian Kernighan's @command{awk}
 @table @asis
 @item Strip the backslash out
 This is what Brian Kernighan's @command{awk} and @command{gawk} both do.
@@ -4521,6 +4525,7 @@ two backslashes in the string: @samp{FS = @w{"[ \t]+\\|[ \t]+"}}.)
 
 @cindex @command{gawk}, escape sequences
 @cindex Unix @command{awk}, backslashes in escape sequences
+@cindex @command{mawk} utility
 @item Leave the backslash alone
 Some other @command{awk} implementations do this.
 In such implementations, typing @code{"a\qc"} is the same as typing
@@ -4596,8 +4601,8 @@ The condition is not true in the following example:
 if ("line1\nLINE 2" ~ /^L/) @dots{}
 @end example
 
-@cindex @code{$} (dollar sign)
-@cindex dollar sign (@code{$})
+@cindex @code{$} (dollar sign), regexp operator
+@cindex dollar sign (@code{$}), regexp operator
 @item $
 This is similar to @samp{^}, but it matches only at the end of a string.
 For example, @samp{p$}
@@ -4631,6 +4636,7 @@ may not be able to match the @sc{nul} character.
 @cindex bracket expressions
 @cindex character sets, See Also bracket expressions
 @cindex character lists, See bracket expressions
+@cindex character classes, See bracket expressions
 @item [@dots{}]
 This is called a @dfn{bracket expression}.@footnote{In other literature,
 you may see a bracket expression referred to as either a
@@ -4692,8 +4698,8 @@ prints every record in @file{sample} containing a string of the form
 Notice the escaping of the parentheses by preceding them
 with backslashes.
 
-@cindex @code{+} (plus sign)
-@cindex plus sign (@code{+})
+@cindex @code{+} (plus sign), regexp operator
+@cindex plus sign (@code{+}), regexp operator
 @item +
 This symbol is similar to @samp{*}, except that the preceding expression must be
 matched at least once.  This means that @samp{wh+y}
@@ -4706,8 +4712,8 @@ way of writing the last @samp{*} example:
 awk '/\(c[ad]+r x\)/ @{ print @}' sample
 @end example
 
-@cindex @code{?} (question mark) regexp operator
-@cindex question mark (@code{?}) regexp operator
+@cindex @code{?} (question mark), regexp operator
+@cindex question mark (@code{?}), regexp operator
 @item ?
 This symbol is similar to @samp{*}, except that the preceding expression can be
 matched either once or not at all.  For example, @samp{fe?d}
@@ -5029,10 +5035,10 @@ Matches the empty string at the
 end of a buffer (string).
 @end table
 
-@cindex @code{^} (caret)
-@cindex caret (@code{^})
-@cindex @code{?} (question mark) regexp operator
-@cindex question mark (@code{?}) regexp operator
+@cindex @code{^} (caret), regexp operator
+@cindex caret (@code{^}), regexp operator
+@cindex @code{?} (question mark), regexp operator
+@cindex question mark (@code{?}), regexp operator
 Because @samp{^} and @samp{$} always work in terms of the beginning
 and end of strings, these operators don't add any new capabilities
 for @command{awk}.  They are provided for compatibility with other
@@ -5076,6 +5082,7 @@ Only POSIX regexps are supported; the GNU operators are not special
 (e.g., @samp{\w} matches a literal @samp{w}).  Interval expressions
 are allowed.
 
+@cindex Brian Kernighan's @command{awk}
 @item @code{--traditional}
 Traditional Unix @command{awk} regexps are matched. The GNU operators
 are not special, and interval expressions are not available.
@@ -6220,7 +6227,7 @@ was ignored when finding @code{$1}, it is not part of the new @code{$0}.
 Finally, the last @code{print} statement prints the new @code{$0}.
 
 @cindex @code{FS}, containing @code{^}
-@cindex @code{^}, in @code{FS}
+@cindex @code{^} (caret), in @code{FS}
 @cindex dark corner, @code{^}, in @code{FS}
 There is an additional subtlety to be aware of when using regular expressions
 for field splitting.
@@ -6231,6 +6238,7 @@ different @command{awk} versions answer this question differently, and you
 should not rely on any specific behavior in your programs.
 @value{DARKCORNER}
 
+@cindex Brian Kernighan's @command{awk}
 As a point of information, Brian Kernighan's @command{awk} allows @samp{^}
 to match only at the beginning of the record. @command{gawk}
 also works this way. For example:
@@ -7216,6 +7224,7 @@ that does handle nested @samp{@@include} statements.
 @subsection Using @code{getline} from a Pipe
 
 @c From private email, dated October 2, 1988. Used by permission, March 2013.
+@cindex Kernighan, Brian
 @quotation
 @i{Omniscience has much to recommend it.
 Failing that, attention to details would be useful.}
@@ -7303,6 +7312,8 @@ because the concatenation operator is not parenthesized.  You should
 write it as @samp{(@w{"echo "} "date") | getline} if you want your program
 to be portable to all @command{awk} implementations.
 
+@cindex Brian Kernighan's @command{awk}
+@cindex @command{mawk} utility
 @quotation NOTE
 Unfortunately, @command{gawk} has not been consistent in its treatment
 of a construct like @samp{@w{"echo "} "date" | getline}.
@@ -7627,6 +7638,7 @@ indefinitely until some other process opens it for writing.
 
 @node Command line directories
 @section Directories On The Command Line
+@cindex differences in @command{awk} and @command{gawk}, command line directories
 @cindex directories, command line
 @cindex command line, directories on
 
@@ -8741,9 +8753,9 @@ has been ported to, not just those that are POSIX-compliant:
 @cindex extensions, common@comma{} @code{/dev/stdout} special file
 @cindex extensions, common@comma{} @code{/dev/stderr} special file
 @cindex file names, standard streams in @command{gawk}
-@cindex @code{/dev/@dots{}} special files (@command{gawk})
+@cindex @code{/dev/@dots{}} special files
 @cindex files, @code{/dev/@dots{}} special files
-@cindex @code{/dev/fd/@var{N}} special files
+@cindex @code{/dev/fd/@var{N}} special files (@command{gawk})
 @table @file
 @item /dev/stdin
 The standard input (file descriptor 0).
@@ -9837,6 +9849,8 @@ name = "name"
 print "something meaningful" > file name
 @end example
 
+@cindex Brian Kernighan's @command{awk}
+@cindex @command{mawk} utility
 @noindent
 This produces a syntax error with some versions of Unix
 @command{awk}.@footnote{It happens that Brian Kernighan's
@@ -11570,6 +11584,11 @@ $ @kbd{echo Yes | gawk '(/1/,/2/) || /Yes/'}
 @error{} gawk: cmd. line:1:           ^ syntax error
 @end example
 
+@cindex range patterns, line continuation and
+As a minor point of interest, although it is poor style,
+POSIX allows you to put a newline after the comma in
+a range pattern.  @value{DARKCORNER}
+
 @node BEGIN/END
 @subsection The @code{BEGIN} and @code{END} Special Patterns
 
@@ -11668,6 +11687,7 @@ to give @code{$0} a real value is to execute a @code{getline} command
 without a variable (@pxref{Getline}).
 Another way is simply to assign a value to @code{$0}.
 
+@cindex Brian Kernighan's @command{awk}
 @cindex differences in @command{awk} and @command{gawk}, @code{BEGIN}/@code{END} patterns
 @cindex POSIX @command{awk}, @code{BEGIN}/@code{END} patterns
 @cindex @code{print} statement, @code{BEGIN}/@code{END} patterns and
@@ -12398,6 +12418,7 @@ This is discussed in @ref{Switch Statement}.
 @cindex POSIX @command{awk}, @code{break} statement and
 @cindex dark corner, @code{break} statement
 @cindex @command{gawk}, @code{break} statement in
+@cindex Brian Kernighan's @command{awk}
 The @code{break} statement has no meaning when
 used outside the body of a loop or @code{switch}.
 However, although it was never documented,
@@ -12462,6 +12483,7 @@ This program loops forever once @code{x} reaches 5.
 @cindex POSIX @command{awk}, @code{continue} statement and
 @cindex dark corner, @code{continue} statement
 @cindex @command{gawk}, @code{continue} statement in
+@cindex Brian Kernighan's @command{awk}
 The @code{continue} statement has no special meaning with respect to the
 @code{switch} statement, nor does it have any meaning when used outside the
 body of a loop.  Historical versions of @command{awk} treated a @code{continue}
@@ -12599,8 +12621,10 @@ See @uref{http://austingroupbugs.net/view.php?id=607, the Austin Group website}.
 
 @cindex functions, user-defined, @code{next}/@code{nextfile} statements and
 @cindex @code{nextfile} statement, user-defined functions and
-The current version of the Brian Kernighan's @command{awk} (@pxref{Other
-Versions}) also supports @code{nextfile}.  However, it doesn't allow the
+@cindex Brian Kernighan's @command{awk}
+@cindex @command{mawk} utility
+The current version of the Brian Kernighan's @command{awk}, and @command{mawk} (@pxref{Other
+Versions}) also support @code{nextfile}.  However, they don't allow the
 @code{nextfile} statement inside function bodies (@pxref{User-defined}).
 @command{gawk} does; a @code{nextfile} inside a function body reads the
 next record and starts processing it with the first rule in the program,
@@ -14220,6 +14244,7 @@ Using this version of the @code{delete} statement is about three times
 more efficient than the equivalent loop that deletes each element one
 at a time.
 
+@cindex Brian Kernighan's @command{awk}
 @quotation NOTE
 For many years,
 using @code{delete} without a subscript was a @command{gawk} extension.
@@ -15452,7 +15477,6 @@ you use the @option{--non-decimal-data} option, which isn't recommended.
 Note also that @code{strtonum()} uses the current locale's decimal point
 for recognizing numbers (@pxref{Locales}).
 
-@cindex differences in @command{awk} and @command{gawk}, @code{strtonum()} function (@command{gawk})
 @code{strtonum()} is a @command{gawk} extension; it is not available
 in compatibility mode (@pxref{Options}).
 
@@ -15571,6 +15595,7 @@ suffix is also returned
 if @var{length} is greater than the number of characters remaining
 in the string, counting from character @var{start}.
 
+@cindex Brian Kernighan's @command{awk}
 If @var{start} is less than one, @code{substr()} treats it as
 if it was one. (POSIX doesn't specify what to do in this case:
 Brian Kernighan's @command{awk} acts this way, and therefore @command{gawk}
@@ -15650,6 +15675,7 @@ and builds an internal copy of it that can be executed.
 Then there is the runtime level, which is when @command{awk} actually scans the
 replacement string to determine what to generate.
 
+@cindex Brian Kernighan's @command{awk}
 At both levels, @command{awk} looks for a defined set of characters that
 can come after a backslash.  At the lexical level, it looks for the
 escape sequences listed in @ref{Escape Sequences}.
@@ -16056,6 +16082,8 @@ This is the purpose of the @code{fflush()} function---@command{gawk} also
 buffers its output and the @code{fflush()} function forces
 @command{gawk} to flush its buffers.
 
+@cindex extensions, common@comma{} @code{fflush()} function
+@cindex Brian Kernighan's @command{awk}
 @code{fflush()} was added to Brian Kernighan's version of @command{awk} in
 April of 1992.  For two decades, it was not part of the POSIX standard.
 As of December, 2012, it was accepted for inclusion into the POSIX
@@ -18639,6 +18667,7 @@ reason to build them into the @command{awk} interpreter:
 
 @cindex @code{ord()} user-defined function
 @cindex @code{chr()} user-defined function
+@cindex @code{_ord_init()} user-defined function
 @example
 @c file eg/lib/ord.awk
 # ord.awk --- do ord and chr
@@ -18685,6 +18714,7 @@ function _ord_init(    low, high, i, t)
 @cindex character sets (machine character encodings)
 @cindex ASCII
 @cindex EBCDIC
+@cindex Unicode
 @cindex mark parity
 Some explanation of the numbers used by @code{_ord_init()} is worthwhile.
 The most prominent character set in use today is ASCII.@footnote{This
@@ -21008,6 +21038,7 @@ of picking the input line apart by characters.
 @cindex searching, files for regular expressions
 @c STARTOFRANGE fsregexp
 @cindex files, searching for regular expressions
+@c STARTOFRANGE egrep
 @cindex @command{egrep} utility
 The @command{egrep} utility searches files for patterns.  It uses regular
 expressions that are almost identical to those available in @command{awk}
@@ -21293,12 +21324,14 @@ or not.
 @c ENDOFRANGE regexps
 @c ENDOFRANGE sfregexp
 @c ENDOFRANGE fsregexp
+@c ENDOFRANGE egrep
 
 @node Id Program
 @subsection Printing out User Information
 
 @cindex printing, user information
 @cindex users, information about, printing
+@c STARTOFRANGE id
 @cindex @command{id} utility
 The @command{id} utility lists a user's real and effective user ID numbers,
 real and effective group ID numbers, and the user's group set, if any.
@@ -21435,6 +21468,7 @@ The POSIX version of @command{id} takes arguments that control which
 information is printed.  Modify this version to accept the same
 arguments and perform in the same way.
 @end ignore
+@c ENDOFRANGE id
 
 @node Split Program
 @subsection Splitting a Large File into Pieces
@@ -21443,6 +21477,7 @@ arguments and perform in the same way.
 
 @c STARTOFRANGE filspl
 @cindex files, splitting
+@c STARTOFRANGE split
 @cindex @code{split} utility
 The @command{split} program splits large text files into smaller pieces.
 Usage is as follows:@footnote{This is the traditional usage. The
@@ -21586,12 +21621,14 @@ which isn't true for EBCDIC systems.
 @c Exercise: Fix these problems.
 @c BFD...
 @c ENDOFRANGE filspl
+@c ENDOFRANGE split
 
 @node Tee Program
 @subsection Duplicating Output into Multiple Files
 
 @cindex files, multiple@comma{} duplicating output into
 @cindex output, duplicating into files
+@c STARTOFRANGE tee
 @cindex @code{tee} utility
 The @code{tee} program is known as a ``pipe fitting.''  @code{tee} copies
 its standard input to its standard output and also duplicates it to the
@@ -21706,6 +21743,7 @@ END    \
 @}
 @c endfile
 @end example
+@c ENDOFRANGE tee
 
 @node Uniq Program
 @subsection Printing Nonduplicated Lines of Text
@@ -21716,6 +21754,7 @@ END    \
 @cindex printing, unduplicated lines of text
 @c STARTOFRANGE tpul
 @cindex text@comma{} printing, unduplicated lines of
+@c STARTOFRANGE uniq
 @cindex @command{uniq} utility
 The @command{uniq} utility reads sorted lines of data on its standard
 input, and by default removes duplicate lines.  In other words, it only
@@ -21967,6 +22006,7 @@ END @{
 @end example
 @c ENDOFRANGE prunt
 @c ENDOFRANGE tpul
+@c ENDOFRANGE uniq
 
 @node Wc Program
 @subsection Counting Things
@@ -21983,6 +22023,7 @@ END @{
 @cindex characters, counting
 @c STARTOFRANGE lico
 @cindex lines, counting
+@c STARTOFRANGE wc
 @cindex @command{wc} utility
 The @command{wc} (word count) utility counts lines, words, and characters in
 one or more input files. Its usage is as follows:
@@ -22165,6 +22206,7 @@ END @{
 @c ENDOFRANGE lico
 @c ENDOFRANGE woco
 @c ENDOFRANGE chco
+@c ENDOFRANGE wc
 @c ENDOFRANGE posimawk
 
 @node Miscellaneous Programs
@@ -22459,6 +22501,7 @@ seconds are necessary:
 
 @c STARTOFRANGE chtra
 @cindex characters, transliterating
+@c STARTOFRANGE tr
 @cindex @command{tr} utility
 The system @command{tr} utility transliterates characters.  For example, it is
 often used to map uppercase letters into lowercase for further processing:
@@ -22607,6 +22650,7 @@ An obvious improvement to this program would be to set up the
 assumes that the ``from'' and ``to'' lists
 will never change throughout the lifetime of the program.
 @c ENDOFRANGE chtra
+@c ENDOFRANGE tr
 
 @node Labels Program
 @subsection Printing Mailing Labels
@@ -22666,6 +22710,7 @@ that there are two blank lines at the top and two blank lines at the bottom.
 The @code{END} rule arranges to flush the final page of labels; there may
 not have been an even multiple of 20 labels in the data:
 
+@c STARTOFRANGE labels
 @cindex @code{labels.awk} program
 @example
 @c file eg/prog/labels.awk
@@ -22733,6 +22778,7 @@ END    \
 @end example
 @c ENDOFRANGE prml
 @c ENDOFRANGE mlprint
+@c ENDOFRANGE labels
 
 @node Word Sorting
 @subsection Generating Word-Usage Counts
@@ -22799,6 +22845,7 @@ to remove punctuation characters.  Finally, we solve the third problem
 by using the system @command{sort} utility to process the output of the
 @command{awk} script.  Here is the new version of the program:
 
+@c STARTOFRANGE wordfreq
 @cindex @code{wordfreq.awk} program
 @example
 @c file eg/prog/wordfreq.awk
@@ -22860,6 +22907,7 @@ have true pipes at the command-line (or batch-file) level.
 See the general operating system documentation for more information on how
 to use the @command{sort} program.
 @c ENDOFRANGE worus
+@c ENDOFRANGE wordfreq
 
 @node History Sorting
 @subsection Removing Duplicates from Unsorted Text
@@ -22889,6 +22937,7 @@ Each element of @code{lines} is a unique command, and the indices of
 The @code{END} rule simply prints out the lines, in order:
 
 @cindex Rakitzis, Byron
+@c STARTOFRANGE histsort
 @cindex @code{histsort.awk} program
 @example
 @c file eg/prog/histsort.awk
@@ -22931,6 +22980,7 @@ print data[lines[i]], lines[i]
 This works because @code{data[$0]} is incremented each time a line is
 seen.
 @c ENDOFRANGE lidu
+@c ENDOFRANGE histsort
 
 @node Extract Program
 @subsection Extracting Programs from Texinfo Source Files
@@ -23041,6 +23091,7 @@ The first rule handles calling @code{system()}, checking that a command is
 given (@code{NF} is at least three) and also checking that the command
 exits with a zero exit status, signifying OK:
 
+@c STARTOFRANGE extract
 @cindex @code{extract.awk} program
 @example
 @c file eg/prog/extract.awk
@@ -23199,6 +23250,7 @@ END @{
 @end example
 @c ENDOFRANGE texse
 @c ENDOFRANGE fitex
+@c ENDOFRANGE extract
 
 @node Simple Sed
 @subsection A Simple Stream Editor
@@ -23228,6 +23280,7 @@ additional arguments are treated as data file names to process. If none
 are provided, the standard input is used:
 
 @cindex Brennan, Michael
+@c STARTOFRANGE awksed
 @cindex @command{awksed.awk} program
 @c @cindex simple stream editor
 @c @cindex stream editor, simple
@@ -23324,6 +23377,7 @@ Exercise: what are the advantages and disadvantages of this version versus sed?
 
 Others?
 @end ignore
+@c ENDOFRANGE awksed
 
 @node Igawk Program
 @subsection An Easy Way to Use Library Functions
@@ -23467,6 +23521,7 @@ program.
 
 The program is as follows:
 
+@c STARTOFRANGE igawk
 @cindex @code{igawk.sh} program
 @example
 @c file eg/prog/igawk.sh
@@ -23826,10 +23881,12 @@ statements for the desired library functions.
 @c ENDOFRANGE libfex
 @c ENDOFRANGE flibex
 @c ENDOFRANGE awkpex
+@c ENDOFRANGE igawk
 
 @node Anagram Program
 @subsection Finding Anagrams From A Dictionary
 
+@cindex anagrams, finding
 An interesting programming challenge is to
 search for @dfn{anagrams} in a
 word list (such as
@@ -23849,6 +23906,7 @@ The following program uses arrays of arrays to bring together
 words with the same signature and array sorting to print the words
 in sorted order.
 
+@c STARTOFRANGE anagram
 @cindex @code{anagram.awk} program
 @example
 @c file eg/prog/anagram.awk
@@ -23956,10 +24014,13 @@ babels beslab
 babery yabber 
 @dots{}
 @end example
+@c ENDOFRANGE anagram
 
 @node Signature Program
 @subsection And Now For Something Completely Different
 
+@cindex signature program
+@cindex Brini, Davide
 The following program was written by Davide Brini
 @c (@email{dave_br@@gmx.com})
 and is published on @uref{http://backreference.org/2011/02/03/obfuscated-awk/,
@@ -24091,12 +24152,15 @@ It contains the following chapters:
 
 @item
 @ref{Dynamic Extensions}.
+@end itemize
 @end ifdocbook
 @end ignore
 
 @node Advanced Features
 @chapter Advanced Features of @command{gawk}
+@ifset WITH_NETWORK_CHAPTER
 @cindex advanced features, network connections, See Also networks@comma{} connections
+@end ifset
 @c STARTOFRANGE gawadv
 @cindex @command{gawk}, features, advanced
 @c STARTOFRANGE advgaw
@@ -25325,6 +25389,7 @@ lookup of the translations.
 
 @cindex @code{.po} files
 @cindex files, @code{.po}
+@c STARTOFRANGE portobfi
 @cindex portable object files
 @cindex files, portable object
 @item
@@ -25336,6 +25401,7 @@ For example, there might be a @file{fr.po} for a French translation.
 @cindex @code{.gmo} files
 @cindex files, @code{.gmo}
 @cindex message object files
+@c STARTOFRANGE portmsgfi
 @cindex files, message object
 @item
 Each language's @file{.po} file is converted into a binary
@@ -25676,6 +25742,8 @@ second argument to @code{dcngettext()}.@footnote{The
 @xref{I18N Example},
 for the full list of steps to go through to create and test
 translations for @command{guide}.
+@c ENDOFRANGE portobfi
+@c ENDOFRANGE portmsgfi
 
 @node Printf Ordering
 @subsection Rearranging @code{printf} Arguments
@@ -27261,7 +27329,7 @@ be added, and of course feel free to try to add them yourself!
 @cindex arbitrary precision
 @cindex multiple precision
 @cindex infinite precision
-@cindex floating-point numbers, arbitrary precision
+@cindex floating-point, numbers@comma{} arbitrary precision
 @cindex MPFR
 @cindex GMP
 
@@ -33494,6 +33562,7 @@ This output is unexpected, since the @samp{bc} at the end of
 This result is due to the locale setting (and thus you may not see
 it on your system).
 
+@cindex Unicode
 Similar considerations apply to other ranges.  For example, @samp{["-/]}
 is perfectly valid in ASCII, but is not valid in many Unicode locales,
 such as @samp{en_US.UTF-8}.
@@ -33507,6 +33576,7 @@ vendors started implementing non-ASCII locales, @emph{and making them
 the default}.  Perhaps the most frequently asked question became something
 like ``why does @samp{[A-Z]} match lowercase letters?!?''
 
+@cindex Berry, Karl
 This situation existed for close to 10 years, if not more, and
 the @command{gawk} maintainer grew weary of trying to explain that
 @command{gawk} was being nicely standards-compliant, and that the issue
@@ -35121,7 +35191,7 @@ This @value{SECTION} briefly describes where to get them:
 @cindex Kernighan, Brian
 @cindex source code, Brian Kernighan's @command{awk}
 @cindex @command{awk}, versions of, See Also Brian Kernighan's @command{awk}
-@cindex Brian Kernighan's @command{awk}
+@cindex Brian Kernighan's @command{awk}, source code
 @item Unix @command{awk}
 Brian Kernighan, one of the original designers of Unix @command{awk},
 has made his implementation of
@@ -35206,7 +35276,7 @@ To get @command{awka}, go to @url{http://sourceforge.net/projects/awka}.
 The project seems to be frozen; no new code changes have been made
 since approximately 2003.
 
-@cindex Beebe, Nelson
+@cindex Beebe, Nelson H.F.@:
 @cindex @command{pawk} (profiling version of Brian Kernighan's @command{awk})
 @cindex source code, @command{pawk}
 @item @command{pawk}
@@ -36616,6 +36686,8 @@ The @uref{http://www.unicode.org, Unicode character set} is
 becoming increasingly popular and standard, and is particularly
 widely used on GNU/Linux systems.
 
+@cindex Kernighan, Brian
+@cindex Bentley, Jon
 @cindex @command{chem} utility
 @item CHEM
 A preprocessor for @command{pic} that reads descriptions of molecules
