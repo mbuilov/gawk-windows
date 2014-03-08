@@ -1111,6 +1111,12 @@ gawk_api_t api_impl = {
 	api_clear_array,
 	api_flatten_array,
 	api_release_flattened_array,
+
+	/* Memory allocation */
+	malloc,
+	calloc,
+	realloc,
+	free,
 };
 
 /* init_ext_api --- init the extension API */
