@@ -1,3 +1,13 @@
+2014-03-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (api_impl): Add memory allocation function pointers.
+	* gawkapi.h (GAWK_API_MINOR_VERSION): Bump.
+	(gawk_api_t): Add memory allocation function pointers api_malloc,
+	api_calloc, api_realloc, and api_free.
+	(gawk_malloc, gawk_calloc, gawk_realloc, gawk_free): New macros.
+	(emalloc): Replace malloc with gawk_malloc.
+	(erealloc): Replace erealloc with gawk_erealloc.
+
 2014-03-05         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Straighten out enumerated types some more.

@@ -408,7 +408,7 @@ read_elem(FILE *fp, awk_element_t *element)
 			buflen = index_len;
 		} else if (buflen < index_len) {
 			/* reallocate buffer */
-			char *cp = realloc(buffer, index_len);
+			char *cp = gawk_realloc(buffer, index_len);
 
 			if (cp == NULL)
 				return awk_false;
@@ -468,11 +468,11 @@ read_value(FILE *fp, awk_value_t *value)
 		len = ntohl(len);
 		value->val_type = AWK_STRING;
 		value->str_value.len = len;
-		value->str_value.str = malloc(len + 2);
+		value->str_value.str = gawk_malloc(len + 2);
 		memset(value->str_value.str, '\0', len + 2);
 
 		if (fread(value->str_value.str, 1, len, fp) != (ssize_t) len) {
-			free(value->str_value.str);
+			gawk_free(value->str_value.str);
 			return awk_false;
 		}
 	}

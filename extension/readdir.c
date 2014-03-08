@@ -235,8 +235,8 @@ dir_close(awk_input_buf_t *iobuf)
 	the_dir = (open_directory_t *) iobuf->opaque;
 
 	closedir(the_dir->dp);
-	free(the_dir->buf);
-	free(the_dir);
+	gawk_free(the_dir->buf);
+	gawk_free(the_dir);
 
 	iobuf->fd = -1;
 }
