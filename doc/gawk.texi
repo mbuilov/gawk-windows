@@ -29632,6 +29632,9 @@ Symbol table access: retrieving a global variable, creating one,
 or changing one.
 
 @item
+Allocating, reallocating, and releasing memory.
+
+@item
 Creating and releasing cached values; this provides an
 efficient way to use values for multiple variables and
 can be a big performance win.
@@ -29701,8 +29704,9 @@ does not support this keyword, you should either place
 All pointers filled in by @command{gawk} are to memory
 managed by @command{gawk} and should be treated by the extension as
 read-only.  Memory for @emph{all} strings passed into @command{gawk}
-from the extension @emph{must} come from calling the api-provided function pointers @code{api_malloc()}, @code{api_calloc()} or @code{api_realloc()} and is managed
-by @command{gawk} from then on.
+from the extension @emph{must} come from calling the API-provided function
+pointers @code{api_malloc()}, @code{api_calloc()} or @code{api_realloc()},
+and is managed by @command{gawk} from then on.
 
 @item
 The API defines several simple @code{struct}s that map values as seen
@@ -29784,7 +29788,8 @@ A simple boolean type.
 This represents a mutable string. @command{gawk}
 owns the memory pointed to if it supplied
 the value. Otherwise, it takes ownership of the memory pointed to.
-@strong{Such memory must come from calling the api-provided function pointers @code{api_malloc()}, @code{api_calloc()}, or @code{api_realloc()}!}
+@strong{Such memory must come from calling the API-provided function
+pointers @code{api_malloc()}, @code{api_calloc()}, or @code{api_realloc()}!}
 
 As mentioned earlier, strings are maintained using the current
 multibyte encoding.
@@ -29950,7 +29955,8 @@ value type, as appropriate.  This behavior is summarized in
 @subsection Memory Allocation Functions and Convenience Macros
 
 The API provides a number of @dfn{memory allocation} functions for
-allocating memory that can be passed to gawk, as well as a number of convenience macros.
+allocating memory that can be passed to @command{gawk}, as well as a number of
+convenience macros.
 
 @table @code
 @item void *gawk_malloc(size_t size);
@@ -29970,10 +29976,19 @@ Call @command{gawk}-provided @code{api_free()} to release storage that was
 allocated with @code{gawk_malloc()}, @code{gawk_calloc()} or @code{gawk_realloc()}.
 @end table
 
+The API has to provide these functions because it is possible
+for an extension to be compiled and linked against a different
+version of the C library than was used for the @command{gawk}
+executable.@footnote{This is more common on MS-Windows systems, but
+can happen on Unix-like systems as well.} If @command{gawk} were
+to use its version of @code{free()} when the memory came from an
+unrelated version of @code{malloc()}, unexpected behavior would
+likely result.
 
-Two convenience macros may be used for allocating storage from the api-provided function pointers @code{api_malloc()}
-and @code{api_realloc()}. If the allocation fails, they cause @command{gawk} to
-exit with a fatal error message.  They should be used as if they were
+Two convenience macros may be used for allocating storage
+from the API-provided function pointers @code{api_malloc()} and
+@code{api_realloc()}. If the allocation fails, they cause @command{gawk}
+to exit with a fatal error message.  They should be used as if they were
 procedure calls that do not return a value.
 
 @table @code
