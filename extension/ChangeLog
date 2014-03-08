@@ -1,3 +1,14 @@
+2014-03-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* filefuncs.c (read_symlink, do_fts): Replace free with gawk_free.
+	* inplace.c (at_exit, do_inplace_end): Ditto.
+	* readdir.c (dir_close): Ditto.
+	* readfile.c (do_readfile): Ditto.
+	* revtwoway.c (close_two_proc_data): Ditto.
+	* rwarray (read_elem): Replace realloc with gawk_realloc.
+	(read_value): Replace malloc and free with gawk_malloc and gawk_free.
+	* testext.c (try_modify_environ): Replace free with gawk_free.
+
 2014-02-12         John E. Malmberg      <wb8tyw@qsl.net>
 
 	* time.c: Better hack for nanosleep bug based on feedback from HP.

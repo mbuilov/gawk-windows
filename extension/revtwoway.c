@@ -119,8 +119,8 @@ close_two_proc_data(two_way_proc_data_t *proc_data)
 		return;
 	}
 
-	free(proc_data->data);
-	free(proc_data);
+	gawk_free(proc_data->data);
+	gawk_free(proc_data);
 }
 
 /*

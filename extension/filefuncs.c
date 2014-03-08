@@ -284,7 +284,7 @@ read_symlink(const char *fname, size_t bufsize, ssize_t *linksize)
 			   returns -1 with errno == ERANGE if the buffer is
 			   too small.  */
 			if (errno != ERANGE) {
-				free(buf);
+				gawk_free(buf);
 				return NULL;
 			}
 		}
@@ -293,7 +293,7 @@ read_symlink(const char *fname, size_t bufsize, ssize_t *linksize)
 			buf[*linksize] = '\0';
 			return buf;
 		}
-		free(buf);
+		gawk_free(buf);
 		if (bufsize <= MAXSIZE/2)
 			bufsize *= 2;
 		else if (bufsize < MAXSIZE)
@@ -854,7 +854,7 @@ do_fts(int nargs, awk_value_t *result)
 
 out:
 	if (pathvector != NULL)
-		free(pathvector);
+		gawk_free(pathvector);
 	if (path_array != NULL)
 		(void) release_flattened_array(pathlist.array_cookie, path_array);
 
