@@ -17,17 +17,17 @@ fi
 llist="
 C
 en_US
-en_US.utf8
+en_US.UTF-8
 de_DE
-de_DE.utf8
+de_DE.UTF-8
 fr_FR
-fr_FR.utf8
+fr_FR.UTF-8
 pt_PT
-pt_PT.utf8
+pt_PT.UTF-8
 pt_BR
-pt_BR.utf8
+pt_BR.UTF-8
 ru_RU
-ru_RU.utf8
+ru_RU.UTF-8
 pl_PX
 "
 
