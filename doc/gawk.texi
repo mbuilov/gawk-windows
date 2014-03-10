@@ -8359,7 +8359,7 @@ parentheses are necessary if any of the item expressions use the @samp{>}
 relational operator; otherwise, it can be confused with an output redirection
 (@pxref{Redirection}).
 
-@cindex format strings
+@cindex format specifiers
 The difference between @code{printf} and @code{print} is the @var{format}
 argument.  This is an expression whose value is taken as a string; it
 specifies how to output each of the other arguments.  It is called the
@@ -12706,6 +12706,7 @@ the first thing on its line.
 @subsection The @code{while} Statement
 @cindex @code{while} statement
 @cindex loops
+@cindex loops, @code{while}
 @cindex loops, See Also @code{while} statement
 
 In programming, a @dfn{loop} is a part of a program that can
@@ -12766,6 +12767,7 @@ program is harder to read without it.
 @node Do Statement
 @subsection The @code{do}-@code{while} Statement
 @cindex @code{do}-@code{while} statement
+@cindex loops, @code{do}-@code{while}
 
 The @code{do} loop is a variation of the @code{while} looping statement.
 The @code{do} loop executes the @var{body} once and then repeats the
@@ -12811,6 +12813,7 @@ occasionally is there a real use for a @code{do} statement.
 @node For Statement
 @subsection The @code{for} Statement
 @cindex @code{for} statement
+@cindex loops, @code{for}, iterative
 
 The @code{for} statement makes it more convenient to count iterations of a
 loop.  The general form of the @code{for} statement looks like this:
@@ -12983,6 +12986,7 @@ it is not available.
 @subsection The @code{break} Statement
 @cindex @code{break} statement
 @cindex loops, exiting
+@cindex loops, @code{break} statement and
 
 The @code{break} statement jumps out of the innermost @code{for},
 @code{while}, or @code{do} loop that encloses it.  The following example
@@ -14620,6 +14624,7 @@ END @{
 @subsection Scanning All Elements of an Array
 @cindex elements in arrays, scanning
 @cindex arrays, scanning
+@cindex loops, @code{for}, array scanning
 
 In programs that use arrays, it is often necessary to use a loop that
 executes once for each element of an array.  In other languages, where
@@ -29310,7 +29315,7 @@ the problem at hand is often the correct approach in such situations.
 
 @node Arbitrary Precision Integers
 @section Arbitrary Precision Integer Arithmetic with @command{gawk}
-@cindex integer, arbitrary precision
+@cindex integers, arbitrary precision
 
 If one of the options @option{--bignum} or @option{-M} is specified,
 @command{gawk} performs all
@@ -33060,6 +33065,7 @@ The @code{time} extension described earlier (@pxref{Extension Sample
 Time}) was originally from this project but has been moved in to the
 main @command{gawk} distribution.
 
+@cindex @command{git} utility
 You can check out the code for the @code{gawkextlib} project
 using the @uref{http://git-scm.com, GIT} distributed source
 code control system.  The command is as follows:
@@ -34690,6 +34696,11 @@ environments.
 Anders Wallin helped keep the VMS port going for several years.
 
 @item
+@cindex Gordon, Assaf
+Assaf Gordon contributed the code to implement the
+@option{--sandbox} option.
+
+@item
 @cindex Haque, John
 John Haque made the following contributions:
 
@@ -36100,6 +36111,7 @@ It is available in several archive formats:
 @uref{http://www.cs.princeton.edu/~bwk/btl.mirror/awk.zip}
 @end table
 
+@cindex @command{git} utility
 You can also retrieve it from Git Hub:
 
 @example
@@ -36228,6 +36240,7 @@ This is an embeddable @command{awk} interpreter derived from
 @uref{http://repo.hu/projects/libmawk/}.
 
 @item @code{pawk}
+@cindex source code, @command{pawk} (Python version)
 @cindex @code{pawk}, @command{awk}-like facilities for Python
 This is a Python module that claims to bring @command{awk}-like
 features to Python. See @uref{https://github.com/alecthomas/pawk}
@@ -36333,6 +36346,7 @@ As @command{gawk} is Free Software, the source code is always available.
 @ref{Gawk Distribution}, describes how to get and build the formal,
 released versions of @command{gawk}.
 
+@cindex @command{git} utility
 However, if you want to modify @command{gawk} and contribute back your
 changes, you will probably wish to work with the development version.
 To do so, you will need to access the @command{gawk} source code
@@ -36508,6 +36522,7 @@ If possible, please update the @command{man} page as well.
 
 You will also have to sign paperwork for your documentation changes.
 
+@cindex @command{git} utility
 @item
 Submit changes as unified diffs.
 Use @samp{diff -u -r -N} to compare
@@ -36641,6 +36656,8 @@ coding style and brace layout that suits your taste.
 @node Derived Files
 @appendixsubsec Why Generated Files Are Kept In @command{git}
 
+@c STARTOFRANGE gawkgit
+@cindex @command{git}, use of for @command{gawk} source code
 @c From emails written March 22, 2012, to the gawk developers list.
 
 If you look at the @command{gawk} source in the @command{git}
@@ -36820,7 +36837,7 @@ wget http://git.savannah.gnu.org/cgit/gawk.git/snapshot/gawk-@var{branchname}.ta
 
 @noindent
 to retrieve a snapshot of the given branch.
-
+@c ENDOFRANGE gawkgit
 
 @node Future Extensions
 @appendixsec Probable Future Extensions
@@ -37399,7 +37416,7 @@ better written in another language.
 You can get it from @uref{http://awk.info/?awk100/aaa}.
 
 @cindex Ada programming language
-@cindex Programming languages, Ada
+@cindex programming languages, Ada
 @item Ada
 A programming language originally defined by the U.S.@: Department of
 Defense for embedded programming. It was designed to enforce good
@@ -37882,7 +37899,7 @@ information about the name of the organization and its language-independent
 three-letter acronym.
 
 @cindex Java programming language
-@cindex Programming languages, Java
+@cindex programming languages, Java
 @item Java
 A modern programming language originally developed by Sun Microsystems
 (now Oracle) supporting Object-Oriented programming.  Although usually

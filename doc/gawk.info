@@ -25928,6 +25928,9 @@ Info file, in approximate chronological order:
 
    * Anders Wallin helped keep the VMS port going for several years.
 
+   * Assaf Gordon contributed the code to implement the `--sandbox'
+     option.
+
    * John Haque made the following contributions:
 
         - The modifications to convert `gawk' into a byte-code
@@ -31292,12 +31295,12 @@ Index
 * for statement, looping over arrays:    Scanning an Array.   (line  20)
 * fork() extension function:             Extension Sample Fork.
                                                               (line  11)
+* format specifiers:                     Basic Printf.        (line  15)
 * format specifiers, mixing regular with positional specifiers: Printf Ordering.
                                                               (line  57)
 * format specifiers, printf statement:   Control Letters.     (line   6)
 * format specifiers, strftime() function (gawk): Time Functions.
                                                               (line  88)
-* format strings:                        Basic Printf.        (line  15)
 * formats, numeric output:               OFMT.                (line   6)
 * formatting output:                     Printf.              (line   6)
 * forward slash (/):                     Regexp.              (line  10)
@@ -31522,6 +31525,12 @@ Index
 * gettext() function (C library):        Explaining gettext.  (line  62)
 * gettimeofday() extension function:     Extension Sample Time.
                                                               (line  13)
+* git utility <1>:                       Adding Code.         (line 111)
+* git utility <2>:                       Accessing The Source.
+                                                              (line  10)
+* git utility <3>:                       Other Versions.      (line  29)
+* git utility:                           gawkextlib.          (line  29)
+* git, use of for gawk source code:      Derived Files.       (line   6)
 * GMP:                                   Arbitrary Precision Arithmetic.
                                                               (line   6)
 * GNITS mailing list:                    Acknowledgments.     (line  52)
@@ -31538,6 +31547,7 @@ Index
 * GNU/Linux <1>:                         Glossary.            (line 624)
 * GNU/Linux <2>:                         I18N Example.        (line  55)
 * GNU/Linux:                             Manual History.      (line  28)
+* Gordon, Assaf:                         Contributors.        (line 105)
 * GPL (General Public License) <1>:      Glossary.            (line 314)
 * GPL (General Public License):          Manual History.      (line  11)
 * GPL (General Public License), printing: Options.            (line  88)
@@ -31555,7 +31565,7 @@ Index
                                                               (line  66)
 * Hankerson, Darrel <1>:                 Contributors.        (line  60)
 * Hankerson, Darrel:                     Acknowledgments.     (line  60)
-* Haque, John:                           Contributors.        (line 105)
+* Haque, John:                           Contributors.        (line 108)
 * Hartholz, Elaine:                      Acknowledgments.     (line  38)
 * Hartholz, Marshall:                    Acknowledgments.     (line  38)
 * Hasegawa, Isamu:                       Contributors.        (line  94)
@@ -31643,9 +31653,9 @@ Index
 * installing gawk:                       Installation.        (line   6)
 * INT signal (MS-Windows):               Profiling.           (line 214)
 * int() function:                        Numeric Functions.   (line  23)
-* integer, arbitrary precision:          Arbitrary Precision Integers.
-                                                              (line   6)
 * integers:                              General Arithmetic.  (line   6)
+* integers, arbitrary precision:         Arbitrary Precision Integers.
+                                                              (line   6)
 * integers, unsigned:                    General Arithmetic.  (line  15)
 * interacting with other programs:       I/O Functions.       (line  72)
 * internationalization <1>:              I18N and L10N.       (line   6)
@@ -31791,10 +31801,15 @@ Index
 * login information:                     Passwd Functions.    (line  16)
 * long options:                          Command Line.        (line  13)
 * loops:                                 While Statement.     (line   6)
+* loops, break statement and:            Break Statement.     (line   6)
 * loops, continue statements and:        For Statement.       (line  64)
 * loops, count for header:               Profiling.           (line 131)
+* loops, do-while:                       Do Statement.        (line   6)
 * loops, exiting:                        Break Statement.     (line   6)
+* loops, for, array scanning:            Scanning an Array.   (line   6)
+* loops, for, iterative:                 For Statement.       (line   6)
 * loops, See Also while statement:       While Statement.     (line   6)
+* loops, while:                          While Statement.     (line   6)
 * ls utility:                            More Complex.        (line  15)
 * lshift() function (gawk):              Bitwise Functions.   (line  46)
 * lvalues/rvalues:                       Assignment Ops.      (line  32)
@@ -32191,10 +32206,10 @@ Index
 * programming conventions, private variable names: Library Names.
                                                               (line  23)
 * programming language, recipe for:      History.             (line   6)
-* Programming languages, Ada:            Glossary.            (line  20)
+* programming languages, Ada:            Glossary.            (line  20)
 * programming languages, data-driven vs. procedural: Getting Started.
                                                               (line  12)
-* Programming languages, Java:           Glossary.            (line 388)
+* programming languages, Java:           Glossary.            (line 388)
 * programming, basic steps:              Basic High Level.    (line  20)
 * programming, concepts:                 Basic Concepts.      (line   6)
 * pwcat program:                         Passwd Functions.    (line  23)
@@ -32331,7 +32346,7 @@ Index
 * RLENGTH variable, match() function and: String Functions.   (line 220)
 * Robbins, Arnold <1>:                   Future Extensions.   (line   6)
 * Robbins, Arnold <2>:                   Bugs.                (line  32)
-* Robbins, Arnold <3>:                   Contributors.        (line 132)
+* Robbins, Arnold <3>:                   Contributors.        (line 135)
 * Robbins, Arnold <4>:                   General Data Types.  (line   6)
 * Robbins, Arnold <5>:                   Alarm Program.       (line   6)
 * Robbins, Arnold <6>:                   Passwd Functions.    (line  90)
@@ -32372,7 +32387,7 @@ Index
                                                               (line  68)
 * sandbox mode:                          Options.             (line 279)
 * scalar values:                         Basic Data Typing.   (line  13)
-* Schorr, Andrew <1>:                    Contributors.        (line 128)
+* Schorr, Andrew <1>:                    Contributors.        (line 131)
 * Schorr, Andrew:                        Acknowledgments.     (line  60)
 * Schreiber, Bert:                       Acknowledgments.     (line  38)
 * Schreiber, Rita:                       Acknowledgments.     (line  38)
@@ -32507,6 +32522,7 @@ Index
 * source code, mawk:                     Other Versions.      (line  44)
 * source code, mixing:                   Options.             (line 117)
 * source code, pawk:                     Other Versions.      (line  78)
+* source code, pawk (Python version):    Other Versions.      (line 124)
 * source code, QSE Awk:                  Other Versions.      (line 130)
 * source code, QuikTrim Awk:             Other Versions.      (line 134)
 * source code, Solaris awk:              Other Versions.      (line  96)
@@ -32807,7 +32823,7 @@ Index
 * xgettext utility:                      String Extraction.   (line  13)
 * XOR bitwise operation:                 Bitwise Functions.   (line   6)
 * xor() function (gawk):                 Bitwise Functions.   (line  55)
-* Yawitz, Efraim:                        Contributors.        (line 126)
+* Yawitz, Efraim:                        Contributors.        (line 129)
 * Zaretskii, Eli <1>:                    Bugs.                (line  70)
 * Zaretskii, Eli <2>:                    Contributors.        (line  55)
 * Zaretskii, Eli:                        Acknowledgments.     (line  60)
@@ -33308,62 +33324,62 @@ Ref: Ranges and Locales-Footnote-11034539
 Ref: Ranges and Locales-Footnote-21034566
 Ref: Ranges and Locales-Footnote-31034800
 Node: Contributors1035021
-Node: Installation1040166
-Node: Gawk Distribution1041060
-Node: Getting1041544
-Node: Extracting1042370
-Node: Distribution contents1044062
-Node: Unix Installation1049767
-Node: Quick Installation1050384
-Node: Additional Configuration Options1052830
-Node: Configuration Philosophy1054566
-Node: Non-Unix Installation1056920
-Node: PC Installation1057378
-Node: PC Binary Installation1058677
-Node: PC Compiling1060525
-Node: PC Testing1063469
-Node: PC Using1064645
-Node: Cygwin1068813
-Node: MSYS1069622
-Node: VMS Installation1070136
-Node: VMS Compilation1070900
-Ref: VMS Compilation-Footnote-11072152
-Node: VMS Dynamic Extensions1072210
-Node: VMS Installation Details1073583
-Node: VMS Running1075834
-Node: VMS GNV1078668
-Node: VMS Old Gawk1079391
-Node: Bugs1079861
-Node: Other Versions1083779
-Node: Notes1089863
-Node: Compatibility Mode1090663
-Node: Additions1091446
-Node: Accessing The Source1092373
-Node: Adding Code1093813
-Node: New Ports1099858
-Node: Derived Files1103993
-Ref: Derived Files-Footnote-11109314
-Ref: Derived Files-Footnote-21109348
-Ref: Derived Files-Footnote-31109948
-Node: Future Extensions1110046
-Node: Implementation Limitations1110629
-Node: Extension Design1111881
-Node: Old Extension Problems1113035
-Ref: Old Extension Problems-Footnote-11114543
-Node: Extension New Mechanism Goals1114600
-Ref: Extension New Mechanism Goals-Footnote-11117965
-Node: Extension Other Design Decisions1118151
-Node: Extension Future Growth1120257
-Node: Old Extension Mechanism1121093
-Node: Basic Concepts1122833
-Node: Basic High Level1123514
-Ref: figure-general-flow1123785
-Ref: figure-process-flow1124384
-Ref: Basic High Level-Footnote-11127613
-Node: Basic Data Typing1127798
-Node: Glossary1131153
-Node: Copying1156615
-Node: GNU Free Documentation License1194172
-Node: Index1219309
+Node: Installation1040248
+Node: Gawk Distribution1041142
+Node: Getting1041626
+Node: Extracting1042452
+Node: Distribution contents1044144
+Node: Unix Installation1049849
+Node: Quick Installation1050466
+Node: Additional Configuration Options1052912
+Node: Configuration Philosophy1054648
+Node: Non-Unix Installation1057002
+Node: PC Installation1057460
+Node: PC Binary Installation1058759
+Node: PC Compiling1060607
+Node: PC Testing1063551
+Node: PC Using1064727
+Node: Cygwin1068895
+Node: MSYS1069704
+Node: VMS Installation1070218
+Node: VMS Compilation1070982
+Ref: VMS Compilation-Footnote-11072234
+Node: VMS Dynamic Extensions1072292
+Node: VMS Installation Details1073665
+Node: VMS Running1075916
+Node: VMS GNV1078750
+Node: VMS Old Gawk1079473
+Node: Bugs1079943
+Node: Other Versions1083861
+Node: Notes1089945
+Node: Compatibility Mode1090745
+Node: Additions1091528
+Node: Accessing The Source1092455
+Node: Adding Code1093895
+Node: New Ports1099940
+Node: Derived Files1104075
+Ref: Derived Files-Footnote-11109396
+Ref: Derived Files-Footnote-21109430
+Ref: Derived Files-Footnote-31110030
+Node: Future Extensions1110128
+Node: Implementation Limitations1110711
+Node: Extension Design1111963
+Node: Old Extension Problems1113117
+Ref: Old Extension Problems-Footnote-11114625
+Node: Extension New Mechanism Goals1114682
+Ref: Extension New Mechanism Goals-Footnote-11118047
+Node: Extension Other Design Decisions1118233
+Node: Extension Future Growth1120339
+Node: Old Extension Mechanism1121175
+Node: Basic Concepts1122915
+Node: Basic High Level1123596
+Ref: figure-general-flow1123867
+Ref: figure-process-flow1124466
+Ref: Basic High Level-Footnote-11127695
+Node: Basic Data Typing1127880
+Node: Glossary1131235
+Node: Copying1156697
+Node: GNU Free Documentation License1194254
+Node: Index1219391
 
 End Tag Table
