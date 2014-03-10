@@ -994,9 +994,7 @@ check_pos:
 			goto check_pos;
 		case '\'':
 #if defined(HAVE_LOCALE_H)       
-			/* allow quote_flag if there is a thousands separator. */
-			if (loc.thousands_sep[0] != '\0')
-				quote_flag = true;
+			quote_flag = true;
 			goto check_pos;
 #else
 			goto retry;  
@@ -1196,6 +1194,9 @@ out0:
 			}
 			if (i < 1)
 				goto out_of_range;
+#if defined(HAVE_LOCALE_H)
+			quote_flag = (quote_flag && loc.thousands_sep[0] != 0);
+#endif
 			chp = &cpbufs[1].buf[i-1];
 			ii = jj = 0;
 			do {
@@ -1203,8 +1204,14 @@ out0:
 				chp--; i--;
 #if defined(HAVE_LOCALE_H)
 				if (quote_flag && loc.grouping[ii] && ++jj == loc.grouping[ii]) {
-					if (i)	/* only add if more digits coming */
-						PREPEND(loc.thousands_sep[0]);	/* XXX - assumption it's one char */
+					if (i) {	/* only add if more digits coming */
+						int k;
+						const char *ts = loc.thousands_sep;
+
+						for (k = strlen(ts) - 1; k >= 0; k--) {
+							PREPEND(ts[k]);
+						}
+					}
 					if (loc.grouping[ii+1] == 0)
 						jj = 0;		/* keep using current val in loc.grouping[ii] */
 					else if (loc.grouping[ii+1] == CHAR_MAX)
@@ -1360,6 +1367,9 @@ mpf1:
 #ifdef HAVE_MPFR
 	int0:
 #endif
+#if defined(HAVE_LOCALE_H)
+			quote_flag = (quote_flag && loc.thousands_sep[0] != 0);
+#endif
 			/*
 			 * When to fill with zeroes is of course not simple.
 			 * First: No zero fill if left-justifying.
@@ -1378,8 +1388,14 @@ mpf1:
 				uval /= base;
 #if defined(HAVE_LOCALE_H)
 				if (base == 10 && quote_flag && loc.grouping[ii] && ++jj == loc.grouping[ii]) {
-					if (uval)	/* only add if more digits coming */
-						PREPEND(loc.thousands_sep[0]);	/* XXX --- assumption it's one char */
+					if (uval) {	/* only add if more digits coming */
+						int k;
+						const char *ts = loc.thousands_sep;
+
+						for (k = strlen(ts) - 1; k >= 0; k--) {
+							PREPEND(ts[k]);
+						}
+					}
 					if (loc.grouping[ii+1] == 0)                                          
 						jj = 0;     /* keep using current val in loc.grouping[ii] */
 					else if (loc.grouping[ii+1] == CHAR_MAX)                        

@@ -40,6 +40,11 @@ extension facility only works on Alpha and Itanium.
 realloc() and free(), to insure that the same memory allocation
 functions are always used. This bumps the minor version by one.
 
+13. The printf quote flag now works correctly in locales with a different
+decimal point character but without a thousands separator character.
+If the thousands separator is a string, it will be correctly added
+to decimal numbers.
+
 XXX. A number of bugs have been fixed. See the ChangeLog.
 
 Changes from 4.0.2 to 4.1.0
