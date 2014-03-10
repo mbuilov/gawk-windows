@@ -1,3 +1,17 @@
+2014-03-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: Sync with grep. Yet again.
+	* regex_internal.c (built_wcs_upper_buffer, build_upper_buffer):
+	Fixes from GNULIB for mixed case matching on Mac OS X.
+
+	Unrelated:
+
+	* builtin.c (format_tree): Smarten handling of %' flag. Always
+	pass it in for floating point formats. Then only add the
+	thousands_sep if there is one. Also, allow for thousands_sep
+	to be a string, not just one character.  Thanks to Michal Jaegermann
+	for the report.
+
 2014-03-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.c (api_impl): Add memory allocation function pointers.

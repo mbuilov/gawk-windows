@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Jan 28 2014" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Mar 08 2014" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -2453,6 +2453,15 @@ padded with zeroes instead of spaces.
 This applies only to the numeric output formats.
 This flag only has an effect when the field width is wider than the
 value to be printed.
+.TP
+.B '
+A single quote character instructs
+.I gawk
+to insert the locale's thousands-separator character
+into decimal numbers, and to also use the locale's
+decimal point character with floating point formats.
+This requires correct locale support in the C library
+and in the definition of the current locale.
 .TP
 .I width
 The field should be padded to this width.  The field is normally padded
