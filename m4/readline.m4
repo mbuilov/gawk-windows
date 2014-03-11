@@ -70,6 +70,10 @@ dnl action if cross compiling:
         LIBS=$_readline_save_libs
 
         if test $_found_readline = yes ; then
+	   case $host_os in
+	   *bsd* )	_combo="$_combo -ltermcap"
+	  	 ;;
+	   esac
            AC_DEFINE(HAVE_LIBREADLINE,1,
 	      [Define to 1 if you have a fully functional readline library.])
            AC_SUBST(LIBREADLINE,$_combo)
