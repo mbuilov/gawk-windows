@@ -715,6 +715,7 @@ uninstall-local:
 clean-local:
 	rm -f $(AUXAWK) igawk *.exe
 	rm -fr eg.old
+	rm -fr grcat.dSYM pwcat.dSYM
 
 $(srcdir)/stamp-eg: $(srcdir)/../doc/gawk.texi $(srcdir)/../doc/gawkinet.texi
 	cd $(srcdir) && \
