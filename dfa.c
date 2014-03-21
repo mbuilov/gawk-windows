@@ -820,9 +820,13 @@ using_simple_locale (void)
       static int unibyte_c = -1;
       if (unibyte_c < 0)
         {
+#ifdef LC_ALL
           char *locale = setlocale (LC_ALL, NULL);
           unibyte_c = (locale && (STREQ (locale, "C")
                                   || STREQ (locale, "POSIX")));
+#else
+          unibyte_c = 1;
+#endif
         }
       return unibyte_c;
     }
