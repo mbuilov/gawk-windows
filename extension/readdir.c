@@ -67,6 +67,10 @@
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
 
+#ifndef PATH_MAX
+#define PATH_MAX	1024	/* a good guess */
+#endif
+
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
 static const char *ext_version = "readdir extension: version 1.0";

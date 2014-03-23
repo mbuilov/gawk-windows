@@ -43,8 +43,6 @@
 #include "missing_d/gawkbool.h"
 #endif /* HAVE_STDBOOL_H */
 
-#include "dfa.h"
-
 /* Gawk doesn't use Gnulib, so don't assume static_assert is present.  */
 #ifndef static_assert
 # define static_assert(cond, diagnostic) \
@@ -88,6 +86,8 @@
 #endif
 
 #include "xalloc.h"
+
+#include "dfa.h"
 
 #ifdef GAWK
 static int
