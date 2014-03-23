@@ -139,6 +139,10 @@ static int	 fts_safe_changedir(const FTS *, const FTSENT *, int,
 
 #define _DIAGASSERT(expression)
 
+#ifndef MAXPATHLEN
+#define MAXPATHLEN	1024	/* a guess */
+#endif
+
 FTS *
 fts_open(char * const *argv, int options,
     int (*compar)(const FTSENT **, const FTSENT **))
