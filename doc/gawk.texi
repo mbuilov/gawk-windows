@@ -134,6 +134,30 @@
 @end macro
 @end ifnothtml
 
+@c Indexing macros
+@ifinfo
+
+@macro cindexawkfunc{name}
+@cindex @code{\name\}
+@end macro
+
+@macro cindexgawkfunc{name}
+@cindex @code{\name\}
+@end macro
+
+@end ifinfo
+
+@ifnotinfo
+
+@macro cindexawkfunc{name}
+@cindex @code{\name\()} function
+@end macro
+
+@macro cindexgawkfunc{name}
+@cindex @code{\name\()} function (@command{gawk})
+@end macro
+@end ifnotinfo
+
 @ignore
 Some comments on the layout for TeX.
 1. Use at least texinfo.tex 2014-01-30.15
@@ -2070,11 +2094,11 @@ $ @kbd{awk "BEGIN @{ print \"Don't Panic!\" @}"}
 @print{} Don't Panic!
 @end example
 
-@cindex quoting
-@cindex double quote (@code{"})
-@cindex @code{"} (double quote)
-@cindex @code{\} (backslash)
-@cindex backslash (@code{\})
+@cindex shell quoting, double quote
+@cindex double quote (@code{"}) in shell commands
+@cindex @code{"} (double quote) in shell commands
+@cindex @code{\} (backslash) in shell commands
+@cindex backslash (@code{\}) in shell commands
 This program does not read any input.  The @samp{\} before each of the
 inner double quotes is necessary because of the shell's quoting
 rules---in particular because it mixes both single quotes and
@@ -2114,8 +2138,7 @@ awk -f @var{source-file} @var{input-file1} @var{input-file2} @dots{}
 @end example
 
 @cindex @option{-f} option
-@cindex command line, options
-@cindex options, command-line
+@cindex command line, option @option{-f}
 The @option{-f} instructs the @command{awk} utility to get the @command{awk} program
 from the file @var{source-file}.  Any file name can be used for
 @var{source-file}.  For example, you could put the program:
@@ -2138,7 +2161,7 @@ does the same thing as this one:
 awk "BEGIN @{ print \"Don't Panic!\" @}"
 @end example
 
-@cindex quoting
+@cindex quoting in @command{gawk} command lines
 @noindent
 This was explained earlier
 (@pxref{Read Terminal}).
@@ -2149,9 +2172,9 @@ program did not have single quotes around it.  The quotes are only needed
 for programs that are provided on the @command{awk} command line.
 
 @c STARTOFRANGE sq1x
-@cindex single quote (@code{'})
+@cindex single quote (@code{'}) in @command{gawk} command lines
 @c STARTOFRANGE qs2x
-@cindex @code{'} (single quote)
+@cindex @code{'} (single quote) in @command{gawk} command lines
 If you want to clearly identify your @command{awk} program files as such,
 you can add the extension @file{.awk} to the file name.  This doesn't
 affect the execution of the @command{awk} program but it does make
@@ -2300,7 +2323,7 @@ programs, but this usually isn't very useful; the purpose of a
 comment is to help you or another person understand the program
 when reading it at a later time.
 
-@cindex quoting
+@cindex quoting, for small awk programs
 @cindex single quote (@code{'}), vs.@: apostrophe
 @cindex @code{'} (single quote), vs.@: apostrophe
 @quotation CAUTION
@@ -2341,7 +2364,7 @@ The next @value{SUBSECTION} describes the shell's quoting rules.
 
 @node Quoting
 @subsection Shell-Quoting Issues
-@cindex quoting, rules for
+@cindex shell quoting, rules for
 
 @menu
 * DOS Quoting::                 Quoting in Windows Batch Files.
@@ -2376,10 +2399,10 @@ that character.  The shell removes the backslash and passes the quoted
 character on to the command.
 
 @item
-@cindex @code{\} (backslash)
-@cindex backslash (@code{\})
-@cindex single quote (@code{'})
-@cindex @code{'} (single quote)
+@cindex @code{\} (backslash), in shell commands
+@cindex backslash (@code{\}), in shell commands
+@cindex single quote (@code{'}), in shell commands
+@cindex @code{'} (single quote), in shell commands
 Single quotes protect everything between the opening and closing quotes.
 The shell does no interpretation of the quoted text, passing it on verbatim
 to the command.
@@ -2389,8 +2412,8 @@ Refer back to
 for an example of what happens if you try.
 
 @item
-@cindex double quote (@code{"})
-@cindex @code{"} (double quote)
+@cindex double quote (@code{"}), in shell commands
+@cindex @code{"} (double quote), in shell commands
 Double quotes protect most things between the opening and closing quotes.
 The shell does at least variable and command substitution on the quoted text.
 Different shells may do additional kinds of processing on double-quoted text.
@@ -2427,7 +2450,7 @@ awk -F "" '@var{program}' @var{files} # correct
 @end example
 
 @noindent
-@cindex null strings, quoting and
+@cindex null strings in @command{gawk} arguments, quoting and
 Don't use this:
 
 @example
@@ -2440,7 +2463,7 @@ as the value of @code{FS}, and the first file name as the text of the program!
 This results in syntax errors at best, and confusing behavior at worst.
 @end itemize
 
-@cindex quoting, tricks for
+@cindex quoting in @command{gawk} command lines, tricks for
 Mixing single and double quotes is difficult.  You have to resort
 to shell quoting tricks, like this:
 
@@ -2555,40 +2578,39 @@ gawk "@{ print \"\042\" $0 \"\042\" @}" @var{file}
 @c For gawk >= 4.0, update these data files. No-one has such slow modems!
 
 @cindex input files, examples
-@cindex @code{BBS-list} file
+@cindex @code{mail-list} file
 Many of the examples in this @value{DOCUMENT} take their input from two sample
-data files.  The first, @file{BBS-list}, represents a list of
-computer bulletin board systems together with information about those systems.
+data files.  The first, @file{mail-list}, represents a list of peoples' names
+together with their email addresses and information about those people.
 The second data file, called @file{inventory-shipped}, contains
 information about monthly shipments.  In both files,
 each line is considered to be one @dfn{record}.
 
-In the data file @file{BBS-list}, each record contains the name of a computer
-bulletin board, its phone number, the board's baud rate(s), and a code for
-the number of hours it is operational.  An @samp{A} in the last column
-means the board operates 24 hours a day.  A @samp{B} in the last
-column means the board only operates on evening and weekend hours.
-A @samp{C} means the board operates only on weekends:
+In the data file @file{mail-list}, each record contains the name of a person,
+his/her phone number, his/her email-address, and a code for their relationship
+with the author of the list.  An @samp{A} in the last column
+means that the person is an acquaintance.  An @samp{F} in the last
+column means that the person is a friend.
+An @samp{R} means that the person is a relative:
 
-@c 2e: Update the baud rates to reflect today's faster modems
 @example
 @c system if test ! -d eg      ; then mkdir eg      ; fi
 @c system if test ! -d eg/lib  ; then mkdir eg/lib  ; fi
 @c system if test ! -d eg/data ; then mkdir eg/data ; fi
 @c system if test ! -d eg/prog ; then mkdir eg/prog ; fi
 @c system if test ! -d eg/misc ; then mkdir eg/misc ; fi
-@c file eg/data/BBS-list
-aardvark     555-5553     1200/300          B
-alpo-net     555-3412     2400/1200/300     A
-barfly       555-7685     1200/300          A
-bites        555-1675     2400/1200/300     A
-camelot      555-0542     300               C
-core         555-2912     1200/300          C
-fooey        555-1234     2400/1200/300     B
-foot         555-6699     1200/300          B
-macfoo       555-6480     1200/300          A
-sdace        555-3430     2400/1200/300     A
-sabafoo      555-2127     1200/300          C
+@c file eg/data/mail-list
+Amelia       555-5553     amelia.zodiacusque@@gmail.com    F
+Anthony      555-3412     anthony.asserturo@@hotmail.com   A
+Becky        555-7685     becky.algebrarum@@gmail.com      A
+Bill         555-1675     bill.drowning@@hotmail.com       A
+Broderick    555-0542     broderick.aliquotiens@@yahoo.com R
+Camilla      555-2912     camilla.infusarum@@skynet.be     R
+Fabius       555-1234     fabius.undevicesimus@@ucb.edu    F
+Julie        555-6699     julie.perscrutabor@@skeeve.com   F
+Martin       555-6480     martin.codicibus@@hotmail.com    A
+Samuel       555-3430     samuel.lanceolis@@shu.edu        A
+Jean-Paul    555-2127     jeanpaul.campanorum@@nyu.edu     R
 @c endfile
 @end example
 
@@ -2630,23 +2652,23 @@ in the directory @file{awklib/eg/data}.
 @section Some Simple Examples
 
 The following command runs a simple @command{awk} program that searches the
-input file @file{BBS-list} for the character string @samp{foo} (a
+input file @file{mail-list} for the character string @samp{li} (a
 grouping of characters is usually called a @dfn{string};
 the term @dfn{string} is based on similar usage in English, such
 as ``a string of pearls,'' or ``a string of cars in a train''):
 
 @example
-awk '/foo/ @{ print $0 @}' BBS-list
+awk '/li/ @{ print $0 @}' mail-list
 @end example
 
 @noindent
-When lines containing @samp{foo} are found, they are printed because
+When lines containing @samp{li} are found, they are printed because
 @w{@samp{print $0}} means print the current line.  (Just @samp{print} by
 itself means the same thing, so we could have written that
 instead.)
 
-You will notice that slashes (@samp{/}) surround the string @samp{foo}
-in the @command{awk} program.  The slashes indicate that @samp{foo}
+You will notice that slashes (@samp{/}) surround the string @samp{li}
+in the @command{awk} program.  The slashes indicate that @samp{li}
 is the pattern to search for.  This type of pattern is called a
 @dfn{regular expression}, which is covered in more detail later
 (@pxref{Regexp}).
@@ -2658,11 +2680,11 @@ interpret any of it as special shell characters.
 Here is what this program prints:
 
 @example
-$ @kbd{awk '/foo/ @{ print $0 @}' BBS-list}
-@print{} fooey        555-1234     2400/1200/300     B
-@print{} foot         555-6699     1200/300          B
-@print{} macfoo       555-6480     1200/300          A
-@print{} sabafoo      555-2127     1200/300          C
+$ @kbd{awk '/li/ @{ print $0 @}' mail-list}
+@print{} Amelia       555-5553     amelia.zodiacusque@@gmail.com    F
+@print{} Broderick    555-0542     broderick.aliquotiens@@yahoo.com R
+@print{} Julie        555-6699     julie.perscrutabor@@skeeve.com   F
+@print{} Samuel       555-3430     samuel.lanceolis@@shu.edu        A
 @end example
 
 @cindex actions, default
@@ -2675,7 +2697,7 @@ action is to print all lines that match the pattern.
 @cindex actions, empty
 Thus, we could leave out the action (the @code{print} statement and the curly
 braces) in the previous example and the result would be the same:
-@command{awk} prints all lines matching the pattern @samp{foo}.  By comparison,
+@command{awk} prints all lines matching the pattern @samp{li}.  By comparison,
 omitting the @code{print} statement but retaining the curly braces makes an
 empty action that does nothing (i.e., no lines are printed).
 
@@ -2820,29 +2842,23 @@ This program prints every line that contains the string
 strings, it is printed twice, once by each rule.
 
 This is what happens if we run this program on our two sample data files,
-@file{BBS-list} and @file{inventory-shipped}:
+@file{mail-list} and @file{inventory-shipped}:
 
 @example
 $ @kbd{awk '/12/ @{ print $0 @}}
->      @kbd{/21/ @{ print $0 @}' BBS-list inventory-shipped}
-@print{} aardvark     555-5553     1200/300          B
-@print{} alpo-net     555-3412     2400/1200/300     A
-@print{} barfly       555-7685     1200/300          A
-@print{} bites        555-1675     2400/1200/300     A
-@print{} core         555-2912     1200/300          C
-@print{} fooey        555-1234     2400/1200/300     B
-@print{} foot         555-6699     1200/300          B
-@print{} macfoo       555-6480     1200/300          A
-@print{} sdace        555-3430     2400/1200/300     A
-@print{} sabafoo      555-2127     1200/300          C
-@print{} sabafoo      555-2127     1200/300          C
+>      @kbd{/21/ @{ print $0 @}' mail-list inventory-shipped}
+@print{} Anthony      555-3412     anthony.asserturo@@hotmail.com   A
+@print{} Camilla      555-2912     camilla.infusarum@@skynet.be     R
+@print{} Fabius       555-1234     fabius.undevicesimus@@ucb.edu    F
+@print{} Jean-Paul    555-2127     jeanpaul.campanorum@@nyu.edu     R
+@print{} Jean-Paul    555-2127     jeanpaul.campanorum@@nyu.edu     R
 @print{} Jan  21  36  64 620
 @print{} Apr  21  70  74 514
 @end example
 
 @noindent
-Note how the line beginning with @samp{sabafoo}
-in @file{BBS-list} was printed twice, once for each rule.
+Note how the line beginning with @samp{Jean-Paul}
+in @file{mail-list} was printed twice, once for each rule.
 
 @node More Complex
 @section A More Complex Example
@@ -2921,7 +2937,7 @@ separate rule, like this:
 
 @example
 awk '/12/  @{ print $0 @}
-     /21/  @{ print $0 @}' BBS-list inventory-shipped
+     /21/  @{ print $0 @}' mail-list inventory-shipped
 @end example
 
 @cindex @command{gawk}, newlines in
@@ -3329,6 +3345,7 @@ Print the short version of the General Public License and then exit.
 @itemx --dump-variables@r{[}=@var{file}@r{]}
 @cindex @option{-d} option
 @cindex @option{--dump-variables} option
+@cindex dump all variables of a program
 @cindex @file{awkvars.out} file
 @cindex files, @file{awkvars.out}
 @cindex variables, global, printing list of
@@ -3482,7 +3499,7 @@ care to search for all occurrences of each inappropriate construct. As
 @cindex @option{--bignum} option
 Force arbitrary precision arithmetic on numbers. This option has no effect
 if @command{gawk} is not compiled to use the GNU MPFR and MP libraries
-(@pxref{Arbitrary Precision Arithmetic}).
+(@pxref{Gawk and MPFR}).
 
 @item -n
 @itemx --non-decimal-data
@@ -3735,6 +3752,7 @@ file at all.
 
 @cindex @command{gawk}, @code{ARGIND} variable in
 @cindex @code{ARGIND} variable, command-line arguments
+@cindex @code{ARGV} array, indexing into
 @cindex @code{ARGC}/@code{ARGV} variables, command-line arguments
 All these arguments are made available to your @command{awk} program in the
 @code{ARGV} array (@pxref{Built-in Variables}).  Command-line options
@@ -3745,6 +3763,7 @@ sets the variable @code{ARGIND} to the index in @code{ARGV} of the
 current element.
 
 @cindex input files, variable assignments and
+@cindex variable assignments and input files
 The distinction between file name arguments and variable-assignment
 arguments is made when @command{awk} is about to open the next input file.
 At that point in execution, it checks the file name to see whether
@@ -3822,6 +3841,7 @@ this file name itself.)
 
 @node Environment Variables
 @section The Environment Variables @command{gawk} Uses
+@cindex environment variables used by @command{gawk}
 
 A number of environment variables influence how @command{gawk}
 behaves.
@@ -3837,8 +3857,7 @@ behaves.
 @node AWKPATH Variable
 @subsection The @env{AWKPATH} Environment Variable
 @cindex @env{AWKPATH} environment variable
-@cindex directories, searching
-@cindex search paths
+@cindex directories, searching for source files
 @cindex search paths, for source files
 @cindex differences in @command{awk} and @command{gawk}, @code{AWKPATH} environment variable
 @ifinfo
@@ -3850,12 +3869,12 @@ implementations, you must supply a precise path name for each program
 file, unless the file is in the current directory.
 But in @command{gawk}, if the file name supplied to the @option{-f}
 or @option{-i} options
-does not contain a @samp{/}, then @command{gawk} searches a list of
+does not contain a directory separator @samp{/}, then @command{gawk} searches a list of
 directories (called the @dfn{search path}), one by one, looking for a
 file with the specified name.
 
 The search path is a string consisting of directory names
-separated by colons.  @command{gawk} gets its search path from the
+separated by colons@footnote{Semicolons on MS-Windows and MS-DOS.}.  @command{gawk} gets its search path from the
 @env{AWKPATH} environment variable.  If that variable does not exist,
 @command{gawk} uses a default path,
 @samp{.:/usr/local/share/awk}.@footnote{Your version of @command{gawk}
@@ -3913,8 +3932,7 @@ found, and @command{gawk} no longer needs to use @env{AWKPATH}.
 @node AWKLIBPATH Variable
 @subsection The @env{AWKLIBPATH} Environment Variable
 @cindex @env{AWKLIBPATH} environment variable
-@cindex directories, searching
-@cindex search paths
+@cindex directories, searching for shared libraries
 @cindex search paths, for shared libraries
 @cindex differences in @command{awk} and @command{gawk}, @code{AWKLIBPATH} environment variable
 
@@ -4199,7 +4217,6 @@ they will @emph{not} be in the next release).
 
 @c update this section for each release!
 
-@cindex @code{PROCINFO} array
 The process-related special files @file{/dev/pid}, @file{/dev/ppid},
 @file{/dev/pgrpid}, and @file{/dev/user} were deprecated in @command{gawk}
 3.1, but still worked.  As of version 4.0, they are no longer
@@ -4284,7 +4301,7 @@ long-undocumented ``feature'' of Unix @code{awk}.
 
 @node Regexp
 @chapter Regular Expressions
-@cindex regexp, See regular expressions
+@cindex regexp
 @c STARTOFRANGE regexp
 @cindex regular expressions
 
@@ -4293,8 +4310,8 @@ set of strings.
 Because regular expressions are such a fundamental part of @command{awk}
 programming, their format and use deserve a separate @value{CHAPTER}.
 
-@cindex forward slash (@code{/})
-@cindex @code{/} (forward slash)
+@cindex forward slash (@code{/}) to enclose regular expressions
+@cindex @code{/} (forward slash) to enclose regular expressions
 A regular expression enclosed in slashes (@samp{/})
 is an @command{awk} pattern that matches every input record whose text
 belongs to that set.
@@ -4331,14 +4348,14 @@ slashes.  Then the regular expression is tested against the
 entire text of each record.  (Normally, it only needs
 to match some part of the text in order to succeed.)  For example, the
 following prints the second field of each record that contains the string
-@samp{foo} anywhere in it:
+@samp{li} anywhere in it:
 
 @example
-$ @kbd{awk '/foo/ @{ print $2 @}' BBS-list}
-@print{} 555-1234
+$ @kbd{awk '/li/ @{ print $2 @}' mail-list}
+@print{} 555-5553
+@print{} 555-0542
 @print{} 555-6699
-@print{} 555-6480
-@print{} 555-2127
+@print{} 555-3430
 @end example
 
 @cindex regular expressions, operators
@@ -4350,9 +4367,9 @@ $ @kbd{awk '/foo/ @{ print $2 @}' BBS-list}
 @cindex @code{!} (exclamation point), @code{!~} operator
 @cindex exclamation point (@code{!}), @code{!~} operator
 @c @cindex operators, @code{!~}
-@cindex @code{if} statement
-@cindex @code{while} statement
-@cindex @code{do}-@code{while} statement
+@cindex @code{if} statement, use of regexps in
+@cindex @code{while} statement, use of regexps in
+@cindex @code{do}-@code{while} statement, use of regexps in
 @c @cindex statements, @code{if}
 @c @cindex statements, @code{while}
 @c @cindex statements, @code{do}
@@ -4411,6 +4428,7 @@ $ @kbd{awk '$1 !~ /J/' inventory-shipped}
 @end example
 
 @cindex regexp constants
+@cindex constant regexps
 @cindex regular expressions, constants, See regexp constants
 When a regexp is enclosed in slashes, such as @code{/foo/}, we call it
 a @dfn{regexp constant}, much like @code{5.27} is a numeric constant and
@@ -4419,7 +4437,7 @@ a @dfn{regexp constant}, much like @code{5.27} is a numeric constant and
 @node Escape Sequences
 @section Escape Sequences
 
-@cindex escape sequences
+@cindex escape sequences, in strings
 @cindex backslash (@code{\}), in escape sequences
 @cindex @code{\} (backslash), in escape sequences
 Some characters cannot be included literally in string constants
@@ -4713,6 +4731,7 @@ escape sequences literally when used in regexp constants. Thus,
 @section Regular Expression Operators
 @c STARTOFRANGE regexpo
 @cindex regular expressions, operators
+@cindex metacharacters in regular expressions
 
 You can combine regular expressions with special characters,
 called @dfn{regular expression operators} or @dfn{metacharacters}, to
@@ -4731,8 +4750,8 @@ Here is a list of metacharacters.  All characters that are not escape
 sequences and that are not listed in the table stand for themselves:
 
 @table @code
-@cindex backslash (@code{\})
-@cindex @code{\} (backslash)
+@cindex backslash (@code{\}), regexp operator
+@cindex @code{\} (backslash), regexp operator
 @item \
 This is used to suppress the special meaning of a character when
 matching.  For example, @samp{\$}
@@ -4770,8 +4789,8 @@ The condition in the following example is not true:
 if ("line1\nLINE 2" ~ /1$/) @dots{}
 @end example
 
-@cindex @code{.} (period)
-@cindex period (@code{.})
+@cindex @code{.} (period), regexp operator
+@cindex period (@code{.}), regexp operator
 @item . @r{(period)}
 This matches any single character,
 @emph{including} the newline character.  For example, @samp{.P}
@@ -4787,8 +4806,8 @@ character, which is a character with all bits equal to zero.
 Otherwise, @sc{nul} is just another character. Other versions of @command{awk}
 may not be able to match the @sc{nul} character.
 
-@cindex @code{[]} (square brackets)
-@cindex square brackets (@code{[]})
+@cindex @code{[]} (square brackets), regexp operator
+@cindex square brackets (@code{[]}), regexp operator
 @cindex bracket expressions
 @cindex character sets, See Also bracket expressions
 @cindex character lists, See bracket expressions
@@ -4825,8 +4844,8 @@ means it matches any string that starts with @samp{P} or contains a digit.
 
 The alternation applies to the largest possible regexps on either side.
 
-@cindex @code{()} (parentheses)
-@cindex parentheses @code{()}
+@cindex @code{()} (parentheses), regexp operator
+@cindex parentheses @code{()}, regexp operator
 @item (@dots{})
 Parentheses are used for grouping in regular expressions, as in
 arithmetic.  They can be used to concatenate regular expressions
@@ -4875,7 +4894,7 @@ This symbol is similar to @samp{*}, except that the preceding expression can be
 matched either once or not at all.  For example, @samp{fe?d}
 matches @samp{fed} and @samp{fd}, but nothing else.
 
-@cindex interval expressions
+@cindex interval expressions, regexp operator
 @item @{@var{n}@}
 @itemx @{@var{n},@}
 @itemx @{@var{n},@var{m}@}
@@ -4952,6 +4971,7 @@ expressions are not available in regular expressions.
 @cindex bracket expressions
 @cindex bracket expressions, range expressions
 @cindex range expressions (regexps)
+@cindex character lists in regular expression
 
 As mentioned earlier, a bracket expression matches any character amongst
 those listed between the opening and closing square brackets.
@@ -5215,7 +5235,7 @@ lesser of two evils.
 @c
 @c Should really do this with file inclusion.
 @cindex regular expressions, @command{gawk}, command-line options
-@cindex @command{gawk}, command-line options
+@cindex @command{gawk}, command-line options, and regular expressions
 The various command-line options
 (@pxref{Options})
 control how @command{gawk} interprets characters in regexps:
@@ -5294,7 +5314,7 @@ This works in any POSIX-compliant @command{awk}.
 @cindex tilde (@code{~}), @code{~} operator
 @cindex @code{!} (exclamation point), @code{!~} operator
 @cindex exclamation point (@code{!}), @code{!~} operator
-@cindex @code{IGNORECASE} variable
+@cindex @code{IGNORECASE} variable, with @code{~} and @code{!~} operators
 @cindex @command{gawk}, @code{IGNORECASE} variable in
 @c @cindex variables, @code{IGNORECASE}
 Another method, specific to @command{gawk}, is to set the variable
@@ -5559,6 +5579,7 @@ occur often in practice, but it's worth noting for future reference.
 @chapter Reading Input Files
 
 @c STARTOFRANGE infir
+@cindex reading input files
 @cindex input files, reading
 @cindex input files
 @cindex @code{FILENAME} variable
@@ -5645,68 +5666,79 @@ To do this, use the special @code{BEGIN} pattern
 (@pxref{BEGIN/END}).
 For example:
 
-@cindex @code{BEGIN} pattern
 @example
-awk 'BEGIN @{ RS = "/" @}
-     @{ print $0 @}' BBS-list
+awk 'BEGIN @{ RS = "u" @}
+     @{ print $0 @}' mail-list
 @end example
 
 @noindent
-changes the value of @code{RS} to @code{"/"}, before reading any input.
-This is a string whose first character is a slash; as a result, records
-are separated by slashes.  Then the input file is read, and the second
+changes the value of @code{RS} to @samp{u}, before reading any input.
+This is a string whose first character is the letter ``u;'' as a result, records
+are separated by the letter ``u.''  Then the input file is read, and the second
 rule in the @command{awk} program (the action with no pattern) prints each
 record.  Because each @code{print} statement adds a newline at the end of
 its output, this @command{awk} program copies the input
-with each slash changed to a newline.  Here are the results of running
-the program on @file{BBS-list}:
+with each @samp{u} changed to a newline.  Here are the results of running
+the program on @file{mail-list}:
 
 @example
-$ @kbd{awk 'BEGIN @{ RS = "/" @}}
->      @kbd{@{ print $0 @}' BBS-list}
-@print{} aardvark     555-5553     1200
-@print{} 300          B
-@print{} alpo-net     555-3412     2400
-@print{} 1200
-@print{} 300     A
-@print{} barfly       555-7685     1200
-@print{} 300          A
-@print{} bites        555-1675     2400
-@print{} 1200
-@print{} 300     A
-@print{} camelot      555-0542     300               C
-@print{} core         555-2912     1200
-@print{} 300          C
-@print{} fooey        555-1234     2400
-@print{} 1200
-@print{} 300     B
-@print{} foot         555-6699     1200
-@print{} 300          B
-@print{} macfoo       555-6480     1200
-@print{} 300          A
-@print{} sdace        555-3430     2400
-@print{} 1200
-@print{} 300     A
-@print{} sabafoo      555-2127     1200
-@print{} 300          C
-@print{}
+$ @kbd{awk 'BEGIN @{ RS = "u" @}}
+>      @kbd{@{ print $0 @}' mail-list}
+@print{} Amelia       555-5553     amelia.zodiac
+@print{} sq
+@print{} e@@gmail.com    F
+@print{} Anthony      555-3412     anthony.assert
+@print{} ro@@hotmail.com   A
+@print{} Becky        555-7685     becky.algebrar
+@print{} m@@gmail.com      A
+@print{} Bill         555-1675     bill.drowning@@hotmail.com       A
+@print{} Broderick    555-0542     broderick.aliq
+@print{} otiens@@yahoo.com R
+@print{} Camilla      555-2912     camilla.inf
+@print{} sar
+@print{} m@@skynet.be     R
+@print{} Fabi
+@print{} s       555-1234     fabi
+@print{} s.
+@print{} ndevicesim
+@print{} s@@
+@print{} cb.ed
+@print{}     F
+@print{} J
+@print{} lie        555-6699     j
+@print{} lie.perscr
+@print{} tabor@@skeeve.com   F
+@print{} Martin       555-6480     martin.codicib
+@print{} s@@hotmail.com    A
+@print{} Sam
+@print{} el       555-3430     sam
+@print{} el.lanceolis@@sh
+@print{} .ed
+@print{}         A
+@print{} Jean-Pa
+@print{} l    555-2127     jeanpa
+@print{} l.campanor
+@print{} m@@ny
+@print{} .ed
+@print{}      R
+@print{} 
 @end example
 
 @noindent
-Note that the entry for the @samp{camelot} BBS is not split.
+Note that the entry for the name @samp{Bill} is not split.
 In the original data file
 (@pxref{Sample Data Files}),
 the line looks like this:
 
 @example
-camelot      555-0542     300               C
+Bill         555-1675     bill.drowning@@hotmail.com       A
 @end example
 
 @noindent
-It has one baud rate only, so there are no slashes in the record,
-unlike the others which have two or more baud rates.
-In fact, this record is treated as part of the record
-for the @samp{core} BBS; the newline separating them in the output
+It contains no @samp{u} so there is no reason to split the record,
+unlike the others which have one or more occurrences of the @samp{u}.
+In fact, this record is treated as part of the previous record;
+the newline separating them in the output
 is the original newline in the data file, not the one added by
 @command{awk} when it printed the record!
 
@@ -5717,14 +5749,17 @@ using the variable-assignment feature
 (@pxref{Other Arguments}):
 
 @example
-awk '@{ print $0 @}' RS="/" BBS-list
+awk '@{ print $0 @}' RS="u" mail-list
 @end example
 
 @noindent
-This sets @code{RS} to @samp{/} before processing @file{BBS-list}.
+This sets @code{RS} to @samp{u} before processing @file{mail-list}.
 
-Using an unusual character such as @samp{/} for the record separator
-produces correct behavior in the vast majority of cases.
+Using an alphabetic character such as @samp{u} for the record separator
+is highly likely to produce strange results.
+Using an unusual character such as @samp{/} is more likely to
+produce correct behavior in the majority of cases, but there
+are no guarantees. The moral is: Know Your Data.
 
 There is one unusual case, that occurs when @command{gawk} is
 being fully POSIX-compliant (@pxref{Options}).
@@ -5746,6 +5781,7 @@ Reaching the end of an input file terminates the current input record,
 even if the last character in the file is not the character in @code{RS}.
 @value{DARKCORNER}
 
+@cindex empty strings
 @cindex null strings
 @cindex strings, empty, See null strings
 The empty string @code{""} (a string without any characters)
@@ -5882,7 +5918,7 @@ character as a record separator. However, this is a special case:
 @command{mawk} does not allow embedded @sc{nul} characters in strings.
 
 @cindex records, treating files as
-@cindex files, as single records
+@cindex treating files, as single records
 The best way to treat a whole file as a single record is to
 simply read the file in, one record at a time, concatenating each
 record onto the end of the previous ones.
@@ -5933,7 +5969,7 @@ character as a record separator. However, this is a special case:
 @command{mawk} does not allow embedded @sc{nul} characters in strings.
 
 @cindex records, treating files as
-@cindex files, as single records
+@cindex treating files, as single records
 The best way to treat a whole file as a single record is to
 simply read the file in, one record at a time, concatenating each
 record onto the end of the previous ones.
@@ -6011,31 +6047,29 @@ when you are not interested in specific fields.
 Here are some more examples:
 
 @example
-$ @kbd{awk '$1 ~ /foo/ @{ print $0 @}' BBS-list}
-@print{} fooey        555-1234     2400/1200/300     B
-@print{} foot         555-6699     1200/300          B
-@print{} macfoo       555-6480     1200/300          A
-@print{} sabafoo      555-2127     1200/300          C
+$ @kbd{awk '$1 ~ /li/ @{ print $0 @}' mail-list}
+@print{} Amelia       555-5553     amelia.zodiacusque@@gmail.com    F
+@print{} Julie        555-6699     julie.perscrutabor@@skeeve.com   F
 @end example
 
 @noindent
-This example prints each record in the file @file{BBS-list} whose first
-field contains the string @samp{foo}.  The operator @samp{~} is called a
+This example prints each record in the file @file{mail-list} whose first
+field contains the string @samp{li}.  The operator @samp{~} is called a
 @dfn{matching operator}
 (@pxref{Regexp Usage});
 it tests whether a string (here, the field @code{$1}) matches a given regular
 expression.
 
 By contrast, the following example
-looks for @samp{foo} in @emph{the entire record} and prints the first
+looks for @samp{li} in @emph{the entire record} and prints the first
 field and the last field for each matching input record:
 
 @example
-$ @kbd{awk '/foo/ @{ print $1, $NF @}' BBS-list}
-@print{} fooey B
-@print{} foot B
-@print{} macfoo A
-@print{} sabafoo C
+$ @kbd{awk '/li/ @{ print $1, $NF @}' mail-list}
+@print{} Amelia F
+@print{} Broderick R
+@print{} Julie F
+@print{} Samuel A
 @end example
 @c ENDOFRANGE fiex
 
@@ -6063,7 +6097,7 @@ the record has fewer than 20 fields, so this prints a blank line.
 Here is another example of using expressions as field numbers:
 
 @example
-awk '@{ print $(2*2) @}' BBS-list
+awk '@{ print $(2*2) @}' mail-list
 @end example
 
 @command{awk} evaluates the expression @samp{(2*2)} and uses
@@ -6072,8 +6106,8 @@ represents multiplication, so the expression @samp{2*2} evaluates to four.
 The parentheses are used so that the multiplication is done before the
 @samp{$} operation; they are necessary whenever there is a binary
 operator in the field-number expression.  This example, then, prints the
-hours of operation (the fourth field) for every line of the file
-@file{BBS-list}.  (All of the @command{awk} operators are listed, in
+type of relationship (the fourth field) for every line of the file
+@file{mail-list}.  (All of the @command{awk} operators are listed, in
 order of decreasing precedence, in
 @ref{Precedence}.)
 
@@ -6582,10 +6616,8 @@ behaves this way.
 
 @node Command Line Field Separator
 @subsection Setting @code{FS} from the Command Line
-@cindex @option{-F} option
-@cindex options, command-line
-@cindex command line, options
-@cindex field separators, on command line
+@cindex @option{-F} option, command line
+@cindex field separator, on command line
 @cindex command line, @code{FS} on@comma{} setting
 @cindex @code{FS} variable, setting from command line
 
@@ -6635,66 +6667,59 @@ figures that you really want your fields to be separated with TABs and
 not @samp{t}s.  Use @samp{-v FS="t"} or @samp{-F"[t]"} on the command line
 if you really do want to separate your fields with @samp{t}s.
 
-As an example, let's use an @command{awk} program file called @file{baud.awk}
-that contains the pattern @code{/300/} and the action @samp{print $1}:
+As an example, let's use an @command{awk} program file called @file{edu.awk}
+that contains the pattern @code{/edu/} and the action @samp{print $1}:
 
 @example
-/300/   @{ print $1 @}
+/edu/   @{ print $1 @}
 @end example
 
 Let's also set @code{FS} to be the @samp{-} character and run the
-program on the file @file{BBS-list}.  The following command prints a
-list of the names of the bulletin boards that operate at 300 baud and
+program on the file @file{mail-list}.  The following command prints a
+list of the names of the people that work at or attend a university, and
 the first three digits of their phone numbers:
 
 @c tweaked to make the tex output look better in @smallbook
 @example
-$ @kbd{awk -F- -f baud.awk BBS-list}
-@print{} aardvark     555
-@print{} alpo
-@print{} barfly       555
-@print{} bites        555
-@print{} camelot      555
-@print{} core         555
-@print{} fooey        555
-@print{} foot         555
-@print{} macfoo       555
-@print{} sdace        555
-@print{} sabafoo      555
+$ @kbd{awk -F- -f edu.awk mail-list}
+@print{} Fabius       555
+@print{} Samuel       555
+@print{} Jean
 @end example
 
 @noindent
-Note the second line of output.  The second line
+Note the third line of output.  The third line
 in the original file looked like this:
 
 @example
-alpo-net     555-3412     2400/1200/300     A
+Jean-Paul    555-2127     jeanpaul.campanorum@@nyu.edu     R
 @end example
 
-The @samp{-} as part of the system's name was used as the field
+The @samp{-} as part of the person's name was used as the field
 separator, instead of the @samp{-} in the phone number that was
 originally intended.  This demonstrates why you have to be careful in
 choosing your field and record separators.
 
 @cindex Unix @command{awk}, password files@comma{} field separators and
-Perhaps the most common use of a single character as the field
-separator occurs when processing the Unix system password file.
-On many Unix systems, each user has a separate entry in the system password
-file, one line per user.  The information in these lines is separated
-by colons.  The first field is the user's login name and the second is
-the user's (encrypted or shadow) password.  A password file entry might look
-like this:
+Perhaps the most common use of a single character as the field separator
+occurs when processing the Unix system password file.  On many Unix
+systems, each user has a separate entry in the system password file, one
+line per user.  The information in these lines is separated by colons.
+The first field is the user's login name and the second is the user's
+encrypted or shadow password.  (A shadow password is indicated by the
+presence of a single @samp{x} in the second field.)  A password file
+entry might look like this:
 
 @cindex Robbins, Arnold
 @example
-arnold:xyzzy:2076:10:Arnold Robbins:/home/arnold:/bin/bash
+arnold:x:2076:10:Arnold Robbins:/home/arnold:/bin/bash
 @end example
 
 The following program searches the system password file and prints
-the entries for users who have no password:
+the entries for users whose full name is not indicated:
 
 @example
-awk -F: '$2 == ""' /etc/passwd
+awk -F: '$5 == ""' /etc/passwd
 @end example
 
 @node Full Line Fields
@@ -6757,7 +6782,7 @@ POSIX standard.)
 
 
 @cindex POSIX @command{awk}, field separators and
-@cindex field separators, POSIX and
+@cindex field separator, POSIX and
 According to the POSIX standard, @command{awk} is supposed to behave
 as if each record is split into fields at the time it is read.
 In particular, this means that if you change the value of @code{FS}
@@ -6810,7 +6835,7 @@ root:nSijPlPhZZwgE:0:0:Root:/:
 
 
 @cindex POSIX @command{awk}, field separators and
-@cindex field separators, POSIX and
+@cindex field separator, POSIX and
 According to the POSIX standard, @command{awk} is supposed to behave
 as if each record is split into fields at the time it is read.
 In particular, this means that if you change the value of @code{FS}
@@ -7170,6 +7195,7 @@ available for splitting regular strings (@pxref{String Functions}).
 @node Multiple Line
 @section Multiple-Line Records
 
+@cindex multiple-line records
 @c STARTOFRANGE recm
 @cindex records, multiline
 @c STARTOFRANGE imr
@@ -7221,7 +7247,8 @@ after the last record, the final newline is removed from the record.
 In the second case, this special processing is not done.
 @value{DARKCORNER}
 
-@cindex field separators, in multiline records
+@cindex field separator, in multiline records
+@cindex @code{FS}, in multiline records
 Now that the input is separated into records, the second step is to
 separate the fields in the record.  One way to do this is to divide each
 of the lines into fields in the normal manner.  This happens by default
@@ -7369,7 +7396,7 @@ and study the @code{getline} command @emph{after} you have reviewed the
 rest of this @value{DOCUMENT} and have a good knowledge of how @command{awk} works.
 
 @cindex @command{gawk}, @code{ERRNO} variable in
-@cindex @code{ERRNO} variable
+@cindex @code{ERRNO} variable, with @command{getline} command
 @cindex differences in @command{awk} and @command{gawk}, @code{getline} command
 @cindex @code{getline} command, return values
 @cindex @option{--sandbox} option, input redirection with @code{getline}
@@ -7465,6 +7492,7 @@ rule in the program.  @xref{Next Statement}.
 
 @node Getline/Variable
 @subsection Using @code{getline} into a Variable
+@cindex @code{getline} into a variable
 @cindex variables, @code{getline} command into@comma{} using
 
 You can use @samp{getline @var{var}} to read the next record from
@@ -7516,6 +7544,7 @@ the value of @code{NF} do not change.
 @node Getline/File
 @subsection Using @code{getline} from a File
 
+@cindex @code{getline} from a file
 @cindex input redirection
 @cindex redirection of input
 @cindex @code{<} (left angle bracket), @code{<} operator (I/O)
@@ -7564,8 +7593,6 @@ from the file
 @var{file}, and put it in the variable @var{var}.  As above, @var{file}
 is a string-valued expression that specifies the file from which to read.
 
-@cindex @command{gawk}, @code{RT} variable in
-@cindex @code{RT} variable
 In this version of @code{getline}, none of the built-in variables are
 changed and the record is not split into fields.  The only variable
 changed is @var{var}.@footnote{This is not quite true. @code{RT} could
@@ -7590,7 +7617,6 @@ Note here how the name of the extra input file is not built into
 the program; it is taken directly from the data, specifically from the second field on
 the @samp{@@include} line.
 
-@cindex @code{close()} function
 The @code{close()} function is called to ensure that if two identical
 @samp{@@include} lines appear in the input, the entire specified file is
 included twice.
@@ -7617,7 +7643,7 @@ Failing that, attention to details would be useful.}
 @cindex @code{|} (vertical bar), @code{|} operator (I/O)
 @cindex vertical bar (@code{|}), @code{|} operator (I/O)
 @cindex input pipeline
-@cindex pipes, input
+@cindex pipe, input
 @cindex operators, input/output
 The output of a command can also be piped into @code{getline}, using
 @samp{@var{command} | getline}.  In
@@ -7641,7 +7667,6 @@ produced by running the rest of the line as a shell command:
 @end example
 
 @noindent
-@cindex @code{close()} function
 The @code{close()} function is called to ensure that if two identical
 @samp{@@execute} lines appear in the input, the command is run for
 each one.
@@ -8265,13 +8290,29 @@ program by using a new value of @code{OFS}.
 
 @example
 $ @kbd{awk 'BEGIN @{ OFS = ";"; ORS = "\n\n" @}}
->            @kbd{@{ print $1, $2 @}' BBS-list}
-@print{} aardvark;555-5553
-@print{}
-@print{} alpo-net;555-3412
-@print{}
-@print{} barfly;555-7685
-@dots{}
+>            @kbd{@{ print $1, $2 @}' mail-list}
+@print{} Amelia;555-5553
+@print{} 
+@print{} Anthony;555-3412
+@print{} 
+@print{} Becky;555-7685
+@print{} 
+@print{} Bill;555-1675
+@print{} 
+@print{} Broderick;555-0542
+@print{} 
+@print{} Camilla;555-2912
+@print{} 
+@print{} Fabius;555-1234
+@print{} 
+@print{} Julie;555-6699
+@print{} 
+@print{} Martin;555-6480
+@print{} 
+@print{} Samuel;555-3430
+@print{} 
+@print{} Jean-Paul;555-2127
+@print{} 
 @end example
 
 If the value of @code{ORS} does not contain a newline, the program's output
@@ -8293,7 +8334,7 @@ numbers can be formatted.  The different format specifications are discussed
 more fully in
 @ref{Control Letters}.
 
-@cindex @code{sprintf()} function
+@cindexawkfunc{sprintf}
 @cindex @code{OFMT} variable
 @cindex output, format specifier@comma{} @code{OFMT}
 The built-in variable @code{OFMT} contains the default format specification
@@ -8745,30 +8786,30 @@ The following simple example shows
 how to use @code{printf} to make an aligned table:
 
 @example
-awk '@{ printf "%-10s %s\n", $1, $2 @}' BBS-list
+awk '@{ printf "%-10s %s\n", $1, $2 @}' mail-list
 @end example
 
 @noindent
 This command
-prints the names of the bulletin boards (@code{$1}) in the file
-@file{BBS-list} as a string of 10 characters that are left-justified.  It also
+prints the names of the people (@code{$1}) in the file
+@file{mail-list} as a string of 10 characters that are left-justified.  It also
 prints the phone numbers (@code{$2}) next on the line.  This
 produces an aligned two-column table of names and phone numbers,
 as shown here:
 
 @example
-$ @kbd{awk '@{ printf "%-10s %s\n", $1, $2 @}' BBS-list}
-@print{} aardvark   555-5553
-@print{} alpo-net   555-3412
-@print{} barfly     555-7685
-@print{} bites      555-1675
-@print{} camelot    555-0542
-@print{} core       555-2912
-@print{} fooey      555-1234
-@print{} foot       555-6699
-@print{} macfoo     555-6480
-@print{} sdace      555-3430
-@print{} sabafoo    555-2127
+$ @kbd{awk '@{ printf "%-10s %s\n", $1, $2 @}' mail-list}
+@print{} Amelia     555-5553
+@print{} Anthony    555-3412
+@print{} Becky      555-7685
+@print{} Bill       555-1675
+@print{} Broderick  555-0542
+@print{} Camilla    555-2912
+@print{} Fabius     555-1234
+@print{} Julie      555-6699
+@print{} Martin     555-6480
+@print{} Samuel     555-3430
+@print{} Jean-Paul  555-2127
 @end example
 
 In this case, the phone numbers had to be printed as strings because
@@ -8789,7 +8830,7 @@ the @command{awk} program:
 @example
 awk 'BEGIN @{ print "Name      Number"
              print "----      ------" @}
-     @{ printf "%-10s %s\n", $1, $2 @}' BBS-list
+     @{ printf "%-10s %s\n", $1, $2 @}' mail-list
 @end example
 
 The above example mixes @code{print} and @code{printf} statements in
@@ -8799,7 +8840,7 @@ same results:
 @example
 awk 'BEGIN @{ printf "%-10s %s\n", "Name", "Number"
              printf "%-10s %s\n", "----", "------" @}
-     @{ printf "%-10s %s\n", $1, $2 @}' BBS-list
+     @{ printf "%-10s %s\n", $1, $2 @}' mail-list
 @end example
 
 @noindent
@@ -8814,7 +8855,7 @@ emphasized by storing it in a variable, like this:
 awk 'BEGIN @{ format = "%-10s %s\n"
              printf format, "Name", "Number"
              printf format, "----", "------" @}
-     @{ printf format, $1, $2 @}' BBS-list
+     @{ printf format, $1, $2 @}' mail-list
 @end example
 
 @c !!! exercise
@@ -8871,20 +8912,20 @@ before the first output is written to it.  Subsequent writes to the same
 @var{output-file} do not erase @var{output-file}, but append to it.
 (This is different from how you use redirections in shell scripts.)
 If @var{output-file} does not exist, it is created.  For example, here
-is how an @command{awk} program can write a list of BBS names to one
+is how an @command{awk} program can write a list of peoples' names to one
 file named @file{name-list}, and a list of phone numbers to another file
 named @file{phone-list}:
 
 @example
 $ @kbd{awk '@{ print $2 > "phone-list"}
->        @kbd{print $1 > "name-list" @}' BBS-list}
+>        @kbd{print $1 > "name-list" @}' mail-list}
 $ @kbd{cat phone-list}
 @print{} 555-5553
 @print{} 555-3412
 @dots{}
 $ @kbd{cat name-list}
-@print{} aardvark
-@print{} alpo-net
+@print{} Amelia
+@print{} Anthony
 @dots{}
 @end example
 
@@ -8902,7 +8943,7 @@ appended to the file.
 If @var{output-file} does not exist, then it is created.
 
 @cindex @code{|} (vertical bar), @code{|} operator (I/O)
-@cindex pipes, output
+@cindex pipe, output
 @cindex output, pipes
 @item print @var{items} | @var{command}
 It is possible to send output to another program through a pipe
@@ -8913,7 +8954,7 @@ to another process created to execute @var{command}.
 The redirection argument @var{command} is actually an @command{awk}
 expression.  Its value is converted to a string whose contents give
 the shell command to be run.  For example, the following produces two
-files, one unsorted list of BBS names, and one list sorted in reverse
+files, one unsorted list of peoples' names, and one list sorted in reverse
 alphabetical order:
 
 @ignore
@@ -8926,7 +8967,7 @@ alone for now and let's hope no-one notices.
 @example
 awk '@{ print $1 > "names.unsorted"
        command = "sort -r > names.sorted"
-       print $1 | command @}' BBS-list
+       print $1 | command @}' mail-list
 @end example
 
 The unsorted list is written with an ordinary redirection, while
@@ -9277,7 +9318,7 @@ Doing so results in unpredictable behavior.
 @c STARTOFRANGE ofc
 @cindex output, files@comma{} closing
 @c STARTOFRANGE pc
-@cindex pipes, closing
+@cindex pipe, closing
 @c STARTOFRANGE cc
 @cindex coprocesses, closing
 @cindex @code{getline} command, coprocesses@comma{} using from
@@ -9295,7 +9336,7 @@ the file name or command associated with it, and subsequent
 writes to the same file or command are appended to the previous writes.
 The file or pipe stays open until @command{awk} exits.
 
-@cindex @code{close()} function
+@cindexawkfunc{close}
 This implies that special steps are necessary in order to read the same
 file again from the beginning, or to rerun a shell command (rather than
 reading more output from the same command).  The @code{close()} function
@@ -9380,6 +9421,7 @@ a separate message.
 
 @cindex differences in @command{awk} and @command{gawk}, @code{close()} function
 @cindex portability, @code{close()} function and
+@cindex @code{close()} function, portability
 If you use more files than the system allows you to have open,
 @command{gawk} attempts to multiplex the available open files among
 your data files.  @command{gawk}'s ability to do this depends upon the
@@ -9464,7 +9506,7 @@ retval = close(command)  # syntax error in many Unix awks
 @end example
 
 @cindex @command{gawk}, @code{ERRNO} variable in
-@cindex @code{ERRNO} variable
+@cindex @code{ERRNO} variable, with @command{close()} function
 @command{gawk} treats @code{close()} as a function.
 The return value is @minus{}1 if the argument names something
 that was never opened with a redirection, or if there is
@@ -9520,7 +9562,7 @@ retval = close(command)  # syntax error in many Unix awks
 @end example
 
 @cindex @command{gawk}, @code{ERRNO} variable in
-@cindex @code{ERRNO} variable
+@cindex @code{ERRNO} variable, with @command{close()} function
 @command{gawk} treats @code{close()} as a function.
 The return value is @minus{}1 if the argument names something
 that was never opened with a redirection, or if there is
@@ -9620,7 +9662,8 @@ have different forms, but are stored identically internally.
 @node Scalar Constants
 @subsubsection Numeric and String Constants
 
-@cindex numeric, constants
+@cindex constants, numeric
+@cindex numeric constants
 A @dfn{numeric constant} stands for a number.  This number can be an
 integer, a decimal fraction, or a number in scientific (exponential)
 notation.@footnote{The internal representation of all numbers,
@@ -9646,7 +9689,7 @@ double-quotation marks.  For example:
 
 @noindent
 @cindex differences in @command{awk} and @command{gawk}, strings
-@cindex strings, length of
+@cindex strings, length limitations
 represents the string whose contents are @samp{parrot}.  Strings in
 @command{gawk} can be of any length, and they can contain any of the possible
 eight-bit ASCII characters including ASCII @sc{nul} (character code zero).
@@ -9862,9 +9905,9 @@ upon the contents of the current input record.
 
 @cindex differences in @command{awk} and @command{gawk}, regexp constants
 @cindex dark corner, regexp constants, as arguments to user-defined functions
-@cindex @code{gensub()} function (@command{gawk})
-@cindex @code{sub()} function
-@cindex @code{gsub()} function
+@cindexgawkfunc{gensub}
+@cindexawkfunc{sub}
+@cindexawkfunc{gsub}
 Constant regular expressions are also used as the first argument for
 the @code{gensub()}, @code{sub()}, and @code{gsub()} functions, as the
 second argument of the @code{match()} function,
@@ -9997,7 +10040,7 @@ its position among the input file arguments---after the processing of the
 preceding input file argument.  For example:
 
 @example
-awk '@{ print $n @}' n=4 inventory-shipped n=2 BBS-list
+awk '@{ print $n @}' n=4 inventory-shipped n=2 mail-list
 @end example
 
 @noindent
@@ -10006,10 +10049,10 @@ the first file is read, the command line sets the variable @code{n}
 equal to four.  This causes the fourth field to be printed in lines from
 @file{inventory-shipped}.  After the first file has finished,
 but before the second file is started, @code{n} is set to two, so that the
-second field is printed in lines from @file{BBS-list}:
+second field is printed in lines from @file{mail-list}:
 
 @example
-$ @kbd{awk '@{ print $n @}' n=4 inventory-shipped n=2 BBS-list}
+$ @kbd{awk '@{ print $n @}' n=4 inventory-shipped n=2 mail-list}
 @print{} 15
 @print{} 24
 @dots{}
@@ -10332,9 +10375,9 @@ specific operator to represent it.  Instead, concatenation is performed by
 writing expressions next to one another, with no operator.  For example:
 
 @example
-$ @kbd{awk '@{ print "Field number one: " $1 @}' BBS-list}
-@print{} Field number one: aardvark
-@print{} Field number one: alpo-net
+$ @kbd{awk '@{ print "Field number one: " $1 @}' mail-list}
+@print{} Field number one: Amelia
+@print{} Field number one: Anthony
 @dots{}
 @end example
 
@@ -10342,9 +10385,9 @@ Without the space in the string constant after the @samp{:}, the line
 runs together.  For example:
 
 @example
-$ @kbd{awk '@{ print "Field number one:" $1 @}' BBS-list}
-@print{} Field number one:aardvark
-@print{} Field number one:alpo-net
+$ @kbd{awk '@{ print "Field number one:" $1 @}' mail-list}
+@print{} Field number one:Amelia
+@print{} Field number one:Anthony
 @dots{}
 @end example
 
@@ -11419,10 +11462,10 @@ The Boolean operators are:
 @item @var{boolean1} && @var{boolean2}
 True if both @var{boolean1} and @var{boolean2} are true.  For example,
 the following statement prints the current input record if it contains
-both @samp{2400} and @samp{foo}:
+both @samp{edu} and @samp{li}:
 
 @example
-if ($0 ~ /2400/ && $0 ~ /foo/) print
+if ($0 ~ /edu/ && $0 ~ /li/) print
 @end example
 
 @cindex side effects, Boolean operators
@@ -11435,11 +11478,11 @@ no substring @samp{foo} in the record.
 @item @var{boolean1} || @var{boolean2}
 True if at least one of @var{boolean1} or @var{boolean2} is true.
 For example, the following statement prints all records in the input
-that contain @emph{either} @samp{2400} or
-@samp{foo} or both:
+that contain @emph{either} @samp{edu} or
+@samp{li} or both:
 
 @example
-if ($0 ~ /2400/ || $0 ~ /foo/) print
+if ($0 ~ /edu/ || $0 ~ /li/) print
 @end example
 
 The subexpression @var{boolean2} is evaluated only if @var{boolean1}
@@ -12034,7 +12077,7 @@ slashes (@code{/@var{regexp}/}), or any expression whose string value
 is used as a dynamic regular expression
 (@pxref{Computed Regexps}).
 The following example prints the second field of each input record
-whose first field is precisely @samp{foo}:
+whose first field is precisely @samp{li}:
 
 @cindex @code{/} (forward slash), patterns and
 @cindex forward slash (@code{/}), patterns and
@@ -12043,68 +12086,65 @@ whose first field is precisely @samp{foo}:
 @cindex @code{!} (exclamation point), @code{!~} operator
 @cindex exclamation point (@code{!}), @code{!~} operator
 @example
-$ @kbd{awk '$1 == "foo" @{ print $2 @}' BBS-list}
+$ @kbd{awk '$1 == "li" @{ print $2 @}' mail-list}
 @end example
 
 @noindent
-(There is no output, because there is no BBS site with the exact name @samp{foo}.)
+(There is no output, because there is no person with the exact name @samp{li}.)
 Contrast this with the following regular expression match, which
-accepts any record with a first field that contains @samp{foo}:
+accepts any record with a first field that contains @samp{li}:
 
 @example
-$ @kbd{awk '$1 ~ /foo/ @{ print $2 @}' BBS-list}
-@print{} 555-1234
+$ @kbd{awk '$1 ~ /foo/ @{ print $2 @}' mail-list}
+@print{} 555-5553
 @print{} 555-6699
-@print{} 555-6480
-@print{} 555-2127
 @end example
 
 @cindex regexp constants, as patterns
 @cindex patterns, regexp constants as
 A regexp constant as a pattern is also a special case of an expression
-pattern.  The expression @code{/foo/} has the value one if @samp{foo}
-appears in the current input record. Thus, as a pattern, @code{/foo/}
-matches any record containing @samp{foo}.
+pattern.  The expression @code{/li/} has the value one if @samp{li}
+appears in the current input record. Thus, as a pattern, @code{/li/}
+matches any record containing @samp{li}.
 
 @cindex Boolean expressions, as patterns
 Boolean expressions are also commonly used as patterns.
 Whether the pattern
 matches an input record depends on whether its subexpressions match.
 For example, the following command prints all the records in
-@file{BBS-list} that contain both @samp{2400} and @samp{foo}:
+@file{mail-list} that contain both @samp{edu} and @samp{li}:
 
 @example
-$ @kbd{awk '/2400/ && /foo/' BBS-list}
-@print{} fooey        555-1234     2400/1200/300     B
+$ @kbd{awk '/edu/ && /li/' mail-list}
+@print{} Samuel       555-3430     samuel.lanceolis@@shu.edu        A
 @end example
 
 The following command prints all records in
-@file{BBS-list} that contain @emph{either} @samp{2400} or @samp{foo}
+@file{mail-list} that contain @emph{either} @samp{edu} or @samp{li}
 (or both, of course):
 
 @example
-$ @kbd{awk '/2400/ || /foo/' BBS-list}
-@print{} alpo-net     555-3412     2400/1200/300     A
-@print{} bites        555-1675     2400/1200/300     A
-@print{} fooey        555-1234     2400/1200/300     B
-@print{} foot         555-6699     1200/300          B
-@print{} macfoo       555-6480     1200/300          A
-@print{} sdace        555-3430     2400/1200/300     A
-@print{} sabafoo      555-2127     1200/300          C
+$ @kbd{awk '/edu/ || /li/' mail-list}
+@print{} Amelia       555-5553     amelia.zodiacusque@@gmail.com    F
+@print{} Broderick    555-0542     broderick.aliquotiens@@yahoo.com R
+@print{} Fabius       555-1234     fabius.undevicesimus@@ucb.edu    F
+@print{} Julie        555-6699     julie.perscrutabor@@skeeve.com   F
+@print{} Samuel       555-3430     samuel.lanceolis@@shu.edu        A
+@print{} Jean-Paul    555-2127     jeanpaul.campanorum@@nyu.edu     R
 @end example
 
 The following command prints all records in
-@file{BBS-list} that do @emph{not} contain the string @samp{foo}:
+@file{mail-list} that do @emph{not} contain the string @samp{li}:
 
 @example
-$ @kbd{awk '! /foo/' BBS-list}
-@print{} aardvark     555-5553     1200/300          B
-@print{} alpo-net     555-3412     2400/1200/300     A
-@print{} barfly       555-7685     1200/300          A
-@print{} bites        555-1675     2400/1200/300     A
-@print{} camelot      555-0542     300               C
-@print{} core         555-2912     1200/300          C
-@print{} sdace        555-3430     2400/1200/300     A
+$ @kbd{awk '! /li/' mail-list}
+@print{} Anthony      555-3412     anthony.asserturo@@hotmail.com   A
+@print{} Becky        555-7685     becky.algebrarum@@gmail.com      A
+@print{} Bill         555-1675     bill.drowning@@hotmail.com       A
+@print{} Camilla      555-2912     camilla.infusarum@@skynet.be     R
+@print{} Fabius       555-1234     fabius.undevicesimus@@ucb.edu    F
+@print{} Martin       555-6480     martin.codicibus@@hotmail.com    A
+@print{} Jean-Paul    555-2127     jeanpaul.campanorum@@nyu.edu     R
 @end example
 
 @cindex @code{BEGIN} pattern, Boolean patterns and
@@ -12237,28 +12277,30 @@ programmers.
 @node Using BEGIN/END
 @subsubsection Startup and Cleanup Actions
 
+@cindex @code{BEGIN} pattern
+@cindex @code{END} pattern
 A @code{BEGIN} rule is executed once only, before the first input record
 is read. Likewise, an @code{END} rule is executed once only, after all the
 input is read.  For example:
 
 @example
 $ @kbd{awk '}
-> @kbd{BEGIN @{ print "Analysis of \"foo\"" @}}
-> @kbd{/foo/ @{ ++n @}}
-> @kbd{END   @{ print "\"foo\" appears", n, "times." @}' BBS-list}
-@print{} Analysis of "foo"
-@print{} "foo" appears 4 times.
+> @kbd{BEGIN @{ print "Analysis of \"li\"" @}}
+> @kbd{/li/ @{ ++n @}}
+> @kbd{END   @{ print "\"li\" appears in", n, "records." @}' mail-list}
+@print{} Analysis of "li"
+@print{} "li" appears in 4 records.
 @end example
 
 @cindex @code{BEGIN} pattern, operators and
 @cindex @code{END} pattern, operators and
-This program finds the number of records in the input file @file{BBS-list}
-that contain the string @samp{foo}.  The @code{BEGIN} rule prints a title
+This program finds the number of records in the input file @file{mail-list}
+that contain the string @samp{li}.  The @code{BEGIN} rule prints a title
 for the report.  There is no need to use the @code{BEGIN} rule to
 initialize the counter @code{n} to zero, since @command{awk} does this
 automatically (@pxref{Variables}).
 The second rule increments the variable @code{n} every time a
-record containing the pattern @samp{foo} is read.  The @code{END} rule
+record containing the pattern @samp{li} is read.  The @code{END} rule
 prints the value of @code{n} at the end of the run.
 
 The special patterns @code{BEGIN} and @code{END} cannot be used in ranges
@@ -12380,7 +12422,7 @@ you can bypass the fatal error and move on to the next file on the
 command line.
 
 @cindex @command{gawk}, @code{ERRNO} variable in
-@cindex @code{ERRNO} variable
+@cindex @code{ERRNO} variable, with @code{BEGINFILE} pattern
 @cindex @code{nextfile} statement, @code{BEGINFILE}/@code{ENDFILE} patterns and
 You do this by checking if the @code{ERRNO} variable is not the empty
 string; if so, then @command{gawk} was not able to open the file. In
@@ -12422,7 +12464,7 @@ both @code{BEGINFILE} and @code{ENDFILE}.  Only the @samp{getline
 In most other @command{awk} implementations, or if @command{gawk} is in
 compatibility mode (@pxref{Options}), they are not special.
 
-@c FIXME: For 4.1 maybe deal with this?
+@c FIXME: For 4.2 maybe deal with this?
 @ignore
 Date:     Tue, 17 May 2011 02:06:10 PDT
 From:     rankin@pactechdata.com (Pat Rankin)
@@ -12453,7 +12495,7 @@ An empty (i.e., nonexistent) pattern is considered to match @emph{every}
 input record.  For example, the program:
 
 @example
-awk '@{ print $1 @}' BBS-list
+awk '@{ print $1 @}' mail-list
 @end example
 
 @noindent
@@ -13489,8 +13531,8 @@ is to simply say @samp{FS = FS}, perhaps with an explanatory comment.
 @cindex @command{gawk}, @code{IGNORECASE} variable in
 @cindex @code{IGNORECASE} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{IGNORECASE} variable
-@cindex case sensitivity, string comparisons and
-@cindex case sensitivity, regexps and
+@cindex case sensitivity, and string comparisons
+@cindex case sensitivity, and regexps
 @cindex regular expressions, case sensitivity
 @item IGNORECASE #
 If @code{IGNORECASE} is nonzero or non-null, then all string comparisons
@@ -13655,16 +13697,16 @@ In the following example:
 $ @kbd{awk 'BEGIN @{}
 >         @kbd{for (i = 0; i < ARGC; i++)}
 >             @kbd{print ARGV[i]}
->      @kbd{@}' inventory-shipped BBS-list}
+>      @kbd{@}' inventory-shipped mail-list}
 @print{} awk
 @print{} inventory-shipped
-@print{} BBS-list
+@print{} mail-list
 @end example
 
 @noindent
 @code{ARGV[0]} contains @samp{awk}, @code{ARGV[1]}
 contains @samp{inventory-shipped}, and @code{ARGV[2]} contains
-@samp{BBS-list}.  The value of @code{ARGC} is three, one more than the
+@samp{mail-list}.  The value of @code{ARGC} is three, one more than the
 index of the last element in @code{ARGV}, because the elements are numbered
 from zero.
 
@@ -13707,7 +13749,7 @@ or if @command{gawk} is in compatibility mode
 it is not special.
 
 @cindex @code{ENVIRON} array
-@cindex environment variables
+@cindex environment variables, in @code{ENVIRON} array
 @item ENVIRON
 An associative array containing the values of the environment.  The array
 indices are the environment variable names; the elements are the values of
@@ -13830,10 +13872,12 @@ The following elements (listed alphabetically)
 are guaranteed to be available:
 
 @table @code
+@cindex effective group id of @command{gawk} user
 @item PROCINFO["egid"]
 The value of the @code{getegid()} system call.
 
 @item PROCINFO["euid"]
+@cindex effective user id of @command{gawk} user
 The value of the @code{geteuid()} system call.
 
 @item PROCINFO["FS"]
@@ -13843,6 +13887,7 @@ This is
 or @code{"FPAT"} if field matching with @code{FPAT} is in effect.
 
 @item PROCINFO["identifiers"]
+@cindex program identifiers
 A subarray, indexed by the names of all identifiers used in the
 text of the AWK program.  For each identifier, the value of the element is one of the following:
 
@@ -13871,15 +13916,19 @@ after it has finished parsing the program; they are @emph{not} updated
 while the program runs.
 
 @item PROCINFO["gid"]
+@cindex group id of @command{gawk} user
 The value of the @code{getgid()} system call.
 
 @item PROCINFO["pgrpid"]
+@cindex process group id of @command{gawk} process
 The process group ID of the current process.
 
 @item PROCINFO["pid"]
+@cindex process id of @command{gawk} process
 The process ID of the current process.
 
 @item PROCINFO["ppid"]
+@cindex parent process id of @command{gawk} process
 The parent process ID of the current process.
 
 @item PROCINFO["sorted_in"]
@@ -13899,25 +13948,31 @@ Assigning a new value to this element changes the default.
 The value of the @code{getuid()} system call.
 
 @item PROCINFO["version"]
+@cindex version of @command{gawk}
+@cindex @command{gawk} version
 The version of @command{gawk}.
 @end table
 
 The following additional elements in the array
 are available to provide information about the MPFR and GMP libraries
 if your version of @command{gawk} supports arbitrary precision numbers
-(@pxref{Arbitrary Precision Arithmetic}): 
+(@pxref{Gawk and MPFR}): 
 
 @table @code 
+@cindex version of GNU MPFR library
 @item PROCINFO["mpfr_version"]
 The version of the GNU MPFR library.
 
 @item PROCINFO["gmp_version"]
+@cindex version of GNU MP library
 The version of the GNU MP library.
 
 @item PROCINFO["prec_max"]
+@cindex maximum precision supported by MPFR library
 The maximum precision supported by MPFR.
 
 @item PROCINFO["prec_min"]
+@cindex minimum precision supported by MPFR library
 The minimum precision required by MPFR.
 @end table
 
@@ -13928,12 +13983,15 @@ of @command{gawk} supports dynamic loading of extension functions
 
 @table @code
 @item PROCINFO["api_major"]
+@cindex version of @command{gawk} extension API
+@cindex extension API, version number
 The major version of the extension API.
 
 @item PROCINFO["api_minor"]
 The minor version of the extension API.
 @end table
 
+@cindex supplementary groups of @command{gawk} process
 On some systems, there may be elements in the array, @code{"group1"}
 through @code{"group@var{N}"} for some @var{N}. @var{N} is the number of
 supplementary groups that the process has.  Use the @code{in} operator
@@ -13941,7 +13999,7 @@ to test for these elements
 (@pxref{Reference to Elements}).
 
 @cindex @command{gawk}, @code{PROCINFO} array in
-@cindex @code{PROCINFO} array
+@cindex @code{PROCINFO} array, uses
 The @code{PROCINFO} array has the following additional uses:
 
 @itemize @bullet
@@ -14127,7 +14185,7 @@ changed.
 
 @node ARGC and ARGV
 @subsection Using @code{ARGC} and @code{ARGV}
-@cindex @code{ARGC}/@code{ARGV} variables
+@cindex @code{ARGC}/@code{ARGV} variables, how to use
 @cindex arguments, command-line
 @cindex command line, arguments
 
@@ -14139,16 +14197,16 @@ and @code{ARGV}:
 $ @kbd{awk 'BEGIN @{}
 >        @kbd{for (i = 0; i < ARGC; i++)}
 >            @kbd{print ARGV[i]}
->      @kbd{@}' inventory-shipped BBS-list}
+>      @kbd{@}' inventory-shipped mail-list}
 @print{} awk
 @print{} inventory-shipped
-@print{} BBS-list
+@print{} mail-list
 @end example
 
 @noindent
 In this example, @code{ARGV[0]} contains @samp{awk}, @code{ARGV[1]}
 contains @samp{inventory-shipped}, and @code{ARGV[2]} contains
-@samp{BBS-list}.
+@samp{mail-list}.
 Notice that the @command{awk} program is not entered in @code{ARGV}.  The
 other command-line options, with their arguments, are also not
 entered.  This includes variable assignments done with the @option{-v}
@@ -14272,7 +14330,7 @@ ability to support true multidimensional arrays.
 
 @cindex variables, names of
 @cindex functions, names of
-@cindex arrays, names of
+@cindex arrays, names of, and names of functions/variables
 @cindex names, arrays/variables
 @cindex namespace issues
 @command{awk} maintains a single set
@@ -14448,10 +14506,9 @@ Here, the number @code{1} isn't double-quoted, since @command{awk}
 automatically converts it to a string.
 
 @cindex @command{gawk}, @code{IGNORECASE} variable in
-@cindex @code{IGNORECASE} variable
 @cindex case sensitivity, array indices and
-@cindex arrays, @code{IGNORECASE} variable and
-@cindex @code{IGNORECASE} variable, array subscripts and
+@cindex arrays, and @code{IGNORECASE} variable
+@cindex @code{IGNORECASE} variable, and array indices
 The value of @code{IGNORECASE} has no effect upon array subscripting.
 The identical string value used to store an array element must be used
 to retrieve it.
@@ -14467,8 +14524,9 @@ is independent of the number of elements in the array.
 
 @node Reference to Elements
 @subsection Referring to an Array Element
-@cindex arrays, elements, referencing
-@cindex elements in arrays
+@cindex arrays, referencing elements
+@cindex array members
+@cindex elements of arrays
 
 The principal way to use an array is to refer to one of its elements.
 An array reference is an expression as follows:
@@ -14485,11 +14543,16 @@ The value of the array reference is the current value of that array
 element.  For example, @code{foo[4.3]} is an expression for the element
 of array @code{foo} at index @samp{4.3}.
 
+@cindex arrays, unassigned elements
+@cindex unassigned array elements
+@cindex empty array elements
 A reference to an array element that has no recorded value yields a value of
 @code{""}, the null string.  This includes elements
 that have not been assigned any value as well as elements that have been
 deleted (@pxref{Delete}).
 
+@cindex non-existent array elements
+@cindex arrays, elements that don't exist
 @quotation NOTE
 A reference to an element that does not exist @emph{automatically} creates
 that array element, with the null string as its value.  (In some cases,
@@ -14509,7 +14572,7 @@ if it didn't exist before!
 @end quotation
 
 @c @cindex arrays, @code{in} operator and
-@cindex @code{in} operator
+@cindex @code{in} operator, testing if array element exists
 To determine whether an element exists in an array at a certain index, use
 the following expression:
 
@@ -14544,8 +14607,8 @@ if (frequencies[2] != "")
 
 @node Assigning Elements
 @subsection Assigning Array Elements
-@cindex arrays, elements, assigning
-@cindex elements in arrays, assigning
+@cindex arrays, elements, assigning values
+@cindex elements in arrays, assigning values
 
 Array elements can be assigned values just like
 @command{awk} variables:
@@ -14562,6 +14625,7 @@ assign to that element of the array.
 
 @node Array Example
 @subsection Basic Array Example
+@cindex arrays, an example of using
 
 The following program takes a list of lines, each beginning with a line
 number, and prints them out in order of line number.  The line numbers
@@ -14631,6 +14695,7 @@ END @{
 @node Scanning an Array
 @subsection Scanning All Elements of an Array
 @cindex elements in arrays, scanning
+@cindex scanning arrays
 @cindex arrays, scanning
 @cindex loops, @code{for}, array scanning
 
@@ -14649,7 +14714,7 @@ for (@var{var} in @var{array})
 @end example
 
 @noindent
-@cindex @code{in} operator
+@cindex @code{in} operator, use in loops
 This loop executes @var{body} once for each index in @var{array} that the
 program has previously used, with the variable @var{var} set to that index.
 
@@ -14688,8 +14753,9 @@ END @{
 @xref{Word Sorting},
 for a more detailed example of this type.
 
-@cindex arrays, elements, order of
-@cindex elements in arrays, order of
+@cindex arrays, elements, order of access by @code{in} operator
+@cindex elements in arrays, order of access by @code{in} operator
+@cindex @code{in} operator, order of array access
 The order in which elements of the array are accessed by this statement
 is determined by the internal arrangement of the array elements within
 @command{awk} and normally cannot be controlled or changed.  This can lead to
@@ -14707,6 +14773,8 @@ determines the order in which the array is traversed.
 This order is usually based on the internal implementation of arrays
 and will vary from one version of @command{awk} to the next.
 
+@cindex array scanning order, controlling
+@cindex controlling array scanning order
 Often, though, you may wish to do something simple, such as
 ``traverse the array by comparing the indices in ascending order,''
 or ``traverse the array by comparing the values in descending order.''
@@ -14723,6 +14791,7 @@ to use for comparison of array elements. This advanced feature
 is described later, in @ref{Array Sorting}.
 @end itemize
 
+@cindex @code{PROCINFO}, values of @code{sorted_in}
 The following special values for @code{PROCINFO["sorted_in"]} are available:
 
 @table @code
@@ -14883,7 +14952,7 @@ if (4 in foo)
     print "This will never be printed"
 @end example
 
-@cindex null strings, array elements and
+@cindex null strings, and deleting array elements
 It is important to note that deleting an element is @emph{not} the
 same as assigning it a null value (the empty string, @code{""}).
 For example:
@@ -14905,6 +14974,7 @@ is not in the array is deleted.
 @cindex extensions, common@comma{} @code{delete} to delete entire arrays
 @cindex arrays, deleting entire contents
 @cindex deleting entire arrays
+@cindex @code{delete} @var{array}
 @cindex differences in @command{awk} and @command{gawk}, array elements, deleting
 All the elements of an array may be deleted with a single statement
 by leaving off the subscript in the @code{delete} statement,
@@ -14962,9 +15032,9 @@ a = 3
 @section Using Numbers to Subscript Arrays
 
 @cindex numbers, as array subscripts
-@cindex arrays, subscripts
+@cindex arrays, numeric subscripts
 @cindex subscripts in arrays, numbers as
-@cindex @code{CONVFMT} variable, array subscripts and
+@cindex @code{CONVFMT} variable, and array subscripts
 An important aspect to remember about arrays is that @emph{array subscripts
 are always strings}.  When a numeric value is used as a subscript,
 it is converted to a string value before being used for subscripting
@@ -14994,7 +15064,8 @@ string value from @code{xyz}---this time @code{"12.15"}---because the value of
 @code{CONVFMT} only allows two significant digits.  This test fails,
 since @code{"12.15"} is different from @code{"12.153"}.
 
-@cindex converting, during subscripting
+@cindex converting integer array subscripts
+@cindex integer array indices
 According to the rules for conversions
 (@pxref{Conversion}), integer
 values are always converted to strings as integers, no matter what the
@@ -15100,7 +15171,7 @@ languages, including @command{awk}) to refer to an element of a
 two-dimensional array named @code{grid} is with
 @code{grid[@var{x},@var{y}]}.
 
-@cindex @code{SUBSEP} variable, multidimensional arrays
+@cindex @code{SUBSEP} variable, and multidimensional arrays
 Multidimensional arrays are supported in @command{awk} through
 concatenation of indices into one string.
 @command{awk} converts the indices into strings
@@ -15132,6 +15203,7 @@ combined strings that are ambiguous.  Suppose that @code{SUBSEP} is
 "b@@c"]}} are indistinguishable because both are actually
 stored as @samp{foo["a@@b@@c"]}.
 
+@cindex @code{in} operator, index existence in multidimensional arrays
 To test whether a particular index sequence exists in a
 multidimensional array, use the same operator (@code{in}) that is
 used for single dimensional arrays.  Write the whole sequence of indices
@@ -15197,6 +15269,7 @@ multidimensional @emph{way of accessing} an array.
 
 @cindex subscripts in arrays, multidimensional, scanning
 @cindex arrays, multidimensional, scanning
+@cindex scanning multidimensional arrays
 However, if your program has an array that is always accessed as
 multidimensional, you can get the effect of scanning it by combining
 the scanning @code{for} statement
@@ -15238,6 +15311,7 @@ separate indices is recovered.
 
 @node Arrays of Arrays
 @section Arrays of Arrays
+@cindex arrays of arrays
 
 @command{gawk} goes beyond standard @command{awk}'s multidimensional
 array access and provides true arrays of
@@ -15497,6 +15571,7 @@ two arguments 11 and 10.
 
 @node Numeric Functions
 @subsection Numeric Functions
+@cindex numeric functions
 
 The following list describes all of
 the built-in functions that work with numbers.
@@ -15505,21 +15580,25 @@ Optional parameters are enclosed in square brackets@w{ ([ ]):}
 @table @code
 @item atan2(@var{y}, @var{x})
 @cindex @code{atan2()} function
+@cindex arctangent
 Return the arctangent of @code{@var{y} / @var{x}} in radians.
 You can use @samp{pi = atan2(0, -1)} to retrieve the value of @value{PI}.
 
 @item cos(@var{x})
-@cindex @code{cos()} function
+@cindexawkfunc{cos}
+@cindex cosine
 Return the cosine of @var{x}, with @var{x} in radians.
 
 @item exp(@var{x})
-@cindex @code{exp()} function
+@cindexawkfunc{exp}
+@cindex exponent
 Return the exponential of @var{x} (@code{e ^ @var{x}}) or report
 an error if @var{x} is out of range.  The range of values @var{x} can have
 depends on your machine's floating-point representation.
 
 @item int(@var{x})
-@cindex @code{int()} function
+@cindexawkfunc{int}
+@cindex round to nearest integer
 Return the nearest integer to @var{x}, located between @var{x} and zero and
 truncated toward zero.
 
@@ -15527,12 +15606,13 @@ For example, @code{int(3)} is 3, @code{int(3.9)} is 3, @code{int(-3.9)}
 is @minus{}3, and @code{int(-3)} is @minus{}3 as well.
 
 @item log(@var{x})
-@cindex @code{log()} function
+@cindexawkfunc{log}
+@cindex logarithm
 Return the natural logarithm of @var{x}, if @var{x} is positive;
 otherwise, report an error.
 
 @item rand()
-@cindex @code{rand()} function
+@cindexawkfunc{rand}
 @cindex random numbers, @code{rand()}/@code{srand()} functions
 Return a random number.  The values of @code{rand()} are
 uniformly distributed between zero and one.
@@ -15574,7 +15654,7 @@ function roll(n) @{ return 1 + int(rand() * n) @}
 @}
 @end example
 
-@cindex numbers, random
+@cindex seeding random number generator
 @cindex random numbers, seed of
 @quotation CAUTION
 In most @command{awk} implementations, including @command{gawk},
@@ -15590,17 +15670,19 @@ use @code{srand()}.
 @end quotation
 
 @item sin(@var{x})
-@cindex @code{sin()} function
+@cindexawkfunc{sin}
+@cindex sine
 Return the sine of @var{x}, with @var{x} in radians.
 
 @item sqrt(@var{x})
-@cindex @code{sqrt()} function
+@cindexawkfunc{sqrt}
+@cindex square root
 Return the positive square root of @var{x}.
 @command{gawk} prints a warning message
 if @var{x} is negative.  Thus, @code{sqrt(4)} is 2.
 
 @item srand(@r{[}@var{x}@r{]})
-@cindex @code{srand()} function
+@cindexawkfunc{srand}
 Set the starting point, or seed,
 for generating random numbers to the value @var{x}.
 
@@ -15630,6 +15712,7 @@ sequences of random numbers.
 
 @node String Functions
 @subsection String-Manipulation Functions
+@cindex string-manipulation functions
 
 The functions in this @value{SECTION} look at or change the text of one
 or more strings.
@@ -15658,11 +15741,11 @@ pound sign@w{ (@samp{#}):}
 @table @code
 @item asort(@var{source} @r{[}, @var{dest} @r{[}, @var{how}  @r{]} @r{]}) #
 @itemx asorti(@var{source} @r{[}, @var{dest} @r{[}, @var{how}  @r{]} @r{]}) #
-@cindex @code{asorti()} function (@command{gawk})
+@cindexgawkfunc{asorti}
+@cindex sort array
 @cindex arrays, elements, retrieving number of
-@cindex @code{asort()} function (@command{gawk})
-@cindex @command{gawk}, @code{IGNORECASE} variable in
-@cindex @code{IGNORECASE} variable
+@cindexgawkfunc{asort}
+@cindex sort array indices
 These two functions are similar in behavior, so they are described
 together.
 
@@ -15680,7 +15763,9 @@ sequential integers starting with one.  If the optional array @var{dest}
 is specified, then @var{source} is duplicated into @var{dest}.  @var{dest}
 is then sorted, leaving the indices of @var{source} unchanged.
 
-When comparing strings, @code{IGNORECASE} affects the sorting.  If the
+@cindex @command{gawk}, @code{IGNORECASE} variable in
+When comparing strings, @code{IGNORECASE} affects the sorting
+(@pxref{Array Sorting Functions}).  If the
 @var{source} array contains subarrays as values (@pxref{Arrays of
 Arrays}), they will come last, after all scalar values.
 
@@ -15723,7 +15808,9 @@ a[3] = "middle"
 are not available in compatibility mode (@pxref{Options}).
 
 @item gensub(@var{regexp}, @var{replacement}, @var{how} @r{[}, @var{target}@r{]}) #
-@cindex @code{gensub()} function (@command{gawk})
+@cindexgawkfunc{gensub}
+@cindex search and replace in strings
+@cindex substitute in string
 Search the target string @var{target} for matches of the regular
 expression @var{regexp}.  If @var{how} is a string beginning with
 @samp{g} or @samp{G} (short for ``global''), then replace all matches of @var{regexp} with
@@ -15732,7 +15819,7 @@ which match of @var{regexp} to replace. If no @var{target} is supplied,
 use @code{$0}.  It returns the modified string as the result
 of the function and the original target string is @emph{not} changed.
 
-@code{gensub()} is a general substitution function.  It's purpose is
+@code{gensub()} is a general substitution function.  Its purpose is
 to provide more features than the standard @code{sub()} and @code{gsub()}
 functions.
 
@@ -15786,7 +15873,7 @@ is the original unchanged value of @var{target}.
 in compatibility mode (@pxref{Options}).
 
 @item gsub(@var{regexp}, @var{replacement} @r{[}, @var{target}@r{]})
-@cindex @code{gsub()} function
+@cindexawkfunc{gsub}
 Search @var{target} for
 @emph{all} of the longest, leftmost, @emph{nonoverlapping} matching
 substrings it can find and replace them with @var{replacement}.
@@ -15808,8 +15895,9 @@ As in @code{sub()}, the characters @samp{&} and @samp{\} are special,
 and the third argument must be assignable.
 
 @item index(@var{in}, @var{find})
-@cindex @code{index()} function
-@cindex searching
+@cindexawkfunc{index}
+@cindex search in string
+@cindex find substring in string
 Search the string @var{in} for the first occurrence of the string
 @var{find}, and return the position in characters where that occurrence
 begins in the string @var{in}.  Consider the following example:
@@ -15826,7 +15914,9 @@ If @var{find} is not found, @code{index()} returns zero.
 It is a fatal error to use a regexp constant for @var{find}.
 
 @item length(@r{[}@var{string}@r{]})
-@cindex @code{length()} function
+@cindexawkfunc{length}
+@cindex string length
+@cindex length of string
 Return the number of characters in @var{string}.  If
 @var{string} is a number, the length of the digit string representing
 that number is returned.  For example, @code{length("abcde")} is five.  By
@@ -15834,6 +15924,8 @@ contrast, @code{length(15 * 35)} works out to three. In this example, 15 * 35 =
 525, and 525 is then converted to the string @code{"525"}, which has
 three characters.
 
+@cindex length of input record
+@cindex input record, length of
 If no argument is supplied, @code{length()} returns the length of @code{$0}.
 
 @c @cindex historical features
@@ -15872,6 +15964,8 @@ warning about this.
 @cindex common extensions, @code{length()} applied to an array
 @cindex extensions, common@comma{} @code{length()} applied to an array
 @cindex differences between @command{gawk} and @command{awk}
+@cindex number of array elements
+@cindex array, number of elements
 With @command{gawk} and several other @command{awk} implementations, when given an
 array argument, the @code{length()} function returns the number of elements
 in the array. @value{COMMONEXT}
@@ -15885,7 +15979,9 @@ If @option{--posix} is supplied, using an array argument is a fatal error
 (@pxref{Arrays}).
 
 @item match(@var{string}, @var{regexp} @r{[}, @var{array}@r{]})
-@cindex @code{match()} function
+@cindexawkfunc{match}
+@cindex string, regular expression match
+@cindex match regexp in string
 Search @var{string} for the
 longest, leftmost substring matched by the regular expression,
 @var{regexp} and return the character position, or @dfn{index},
@@ -16000,7 +16096,8 @@ The @var{array} argument to @code{match()} is a
 using a third argument is a fatal error.
 
 @item patsplit(@var{string}, @var{array} @r{[}, @var{fieldpat} @r{[}, @var{seps} @r{]} @r{]}) #
-@cindex @code{patsplit()} function (@command{gawk})
+@cindexgawkfunc{patsplit}
+@cindex split string into array
 Divide
 @var{string} into pieces defined by @var{fieldpat}
 and store the pieces in @var{array} and the separator strings in the
@@ -16031,7 +16128,7 @@ The @code{patsplit()} function is a
 it is not available.
 
 @item split(@var{string}, @var{array} @r{[}, @var{fieldsep} @r{[}, @var{seps} @r{]} @r{]})
-@cindex @code{split()} function
+@cindexawkfunc{split}
 Divide @var{string} into pieces separated by @var{fieldsep}
 and store the pieces in @var{array} and the separator strings in the
 @var{seps} array.  The first piece is stored in
@@ -16060,7 +16157,7 @@ split("cul-de-sac", a, "-", seps)
 @end example
 
 @noindent
-@cindex strings, splitting
+@cindex strings splitting, example
 splits the string @samp{cul-de-sac} into three fields using @samp{-} as the
 separator.  It sets the contents of the array @code{a} as follows:
 
@@ -16116,7 +16213,8 @@ If @var{string} does not match @var{fieldsep} at all (but is not null),
 @var{string}.
 
 @item sprintf(@var{format}, @var{expression1}, @dots{})
-@cindex @code{sprintf()} function
+@cindexawkfunc{sprintf}
+@cindex formatting strings
 Return (without printing) the string that @code{printf} would
 have printed out with the same arguments
 (@pxref{Printf}).
@@ -16129,7 +16227,8 @@ pival = sprintf("pi = %.2f (approx.)", 22/7)
 @noindent
 assigns the string @w{@samp{pi = 3.14 (approx.)}} to the variable @code{pival}.
 
-@cindex @code{strtonum()} function (@command{gawk})
+@cindexgawkfunc{strtonum}
+@cindex convert string to number
 @item strtonum(@var{str}) #
 Examine @var{str} and return its numeric value.  If @var{str}
 begins with a leading @samp{0}, @code{strtonum()} assumes that @var{str}
@@ -16156,7 +16255,8 @@ for recognizing numbers (@pxref{Locales}).
 in compatibility mode (@pxref{Options}).
 
 @item sub(@var{regexp}, @var{replacement} @r{[}, @var{target}@r{]})
-@cindex @code{sub()} function
+@cindexawkfunc{sub}
+@cindex replace in string
 Search @var{target}, which is treated as a string, for the
 leftmost, longest substring matched by the regular expression @var{regexp}.
 Modify the entire string
@@ -16256,7 +16356,8 @@ Finally, if the @var{regexp} is not a regexp constant, it is converted into a
 string, and then the value of that string is treated as the regexp to match.
 
 @item substr(@var{string}, @var{start} @r{[}, @var{length}@r{]})
-@cindex @code{substr()} function
+@cindexawkfunc{substr}
+@cindex substring
 Return a @var{length}-character-long substring of @var{string},
 starting at character number @var{start}.  The first character of a
 string is character number one.@footnote{This is different from
@@ -16313,16 +16414,18 @@ string = substr(string, 1, 2) "CDE" substr(string, 6)
 @end example
 
 @cindex case sensitivity, converting case
-@cindex converting, case
+@cindex strings, converting letter case
 @item tolower(@var{string})
-@cindex @code{tolower()} function
+@cindexawkfunc{tolower}
+@cindex convert string to lower case
 Return a copy of @var{string}, with each uppercase character
 in the string replaced with its corresponding lowercase character.
 Nonalphabetic characters are left unchanged.  For example,
 @code{tolower("MiXeD cAsE 123")} returns @code{"mixed case 123"}.
 
 @item toupper(@var{string})
-@cindex @code{toupper()} function
+@cindexawkfunc{toupper}
+@cindex convert string to upper case
 Return a copy of @var{string}, with each lowercase character
 in the string replaced with its corresponding uppercase character.
 Nonalphabetic characters are left unchanged.  For example,
@@ -16748,14 +16851,16 @@ Although this makes a certain amount of sense, it can be surprising.
 
 @node I/O Functions
 @subsection Input/Output Functions
+@cindex input/output functions
 
 The following functions relate to input/output (I/O).
 Optional parameters are enclosed in square brackets ([ ]):
 
 @table @code
 @item close(@var{filename} @r{[}, @var{how}@r{]})
-@cindex @code{close()} function
+@cindexawkfunc{close}
 @cindex files, closing
+@cindex close file or coprocess
 Close the file @var{filename} for input or output. Alternatively, the
 argument may be a shell command that was used for creating a coprocess, or
 for redirecting to or from a pipe; then the coprocess or pipe is closed.
@@ -16772,7 +16877,8 @@ not matter.
 which discusses this feature in more detail and gives an example.
 
 @item fflush(@r{[}@var{filename}@r{]})
-@cindex @code{fflush()} function
+@cindexawkfunc{fflush}
+@cindex flush buffered output
 Flush any buffered output associated with @var{filename}, which is either a
 file opened for writing or a shell command for redirecting output to
 a pipe or coprocess.
@@ -16831,7 +16937,8 @@ or if @var{filename} is not an open file, pipe, or coprocess.
 In such a case, @code{fflush()} returns @minus{}1, as well.
 
 @item system(@var{command})
-@cindex @code{system()} function
+@cindexawkfunc{system}
+@cindex invoke shell command
 @cindex interacting with other programs
 Execute the operating-system
 command @var{command} and then return to the @command{awk} program.
@@ -17106,6 +17213,7 @@ you would see the latter (undesirable) output.
 
 @node Time Functions
 @subsection Time Functions
+@cindex time functions
 
 @c STARTOFRANGE tst
 @cindex timestamps
@@ -17144,7 +17252,8 @@ Optional parameters are enclosed in square brackets ([ ]):
 
 @table @code
 @item mktime(@var{datespec})
-@cindex @code{mktime()} function (@command{gawk})
+@cindexgawkfunc{mktime}
+@cindex generate time values
 Turn @var{datespec} into a timestamp in the same form
 as is returned by @code{systime()}.  It is similar to the function of the
 same name in ISO C.  The argument, @var{datespec}, is a string of the form
@@ -17174,7 +17283,8 @@ is out of range, @code{mktime()} returns @minus{}1.
 @cindex @code{PROCINFO} array
 @item strftime(@r{[}@var{format} @r{[}, @var{timestamp} @r{[}, @var{utc-flag}@r{]]]})
 @c STARTOFRANGE strf
-@cindex @code{strftime()} function (@command{gawk})
+@cindexgawkfunc{strftime}
+@cindex format time string
 Format the time specified by @var{timestamp}
 based on the contents of the @var{format} string and return the result.
 It is similar to the function of the same name in ISO C.
@@ -17191,11 +17301,12 @@ The default string value is
 @code{@w{"%a %b %e %H:%M:%S %Z %Y"}}.  This format string produces
 output that is equivalent to that of the @command{date} utility.
 You can assign a new value to @code{PROCINFO["strftime"]} to
-change the default format.
+change the default format; see below for the various format directives.
 
 @item systime()
-@cindex @code{systime()} function (@command{gawk})
+@cindexgawkfunc{systime}
 @cindex timestamps
+@cindex current system time
 Return the current time as the number of seconds since
 the system epoch.  On POSIX systems, this is the number of seconds
 since 1970-01-01 00:00:00 UTC, not counting leap seconds.
@@ -17489,6 +17600,7 @@ gawk 'BEGIN  @{
 
 @node Bitwise Functions
 @subsection Bit-Manipulation Functions
+@cindex bit-manipulation functions
 @c STARTOFRANGE bit
 @cindex bitwise, operations
 @c STARTOFRANGE and
@@ -17651,27 +17763,33 @@ bitwise operations just described. They are:
 
 @cindex @command{gawk}, bitwise operations in
 @table @code
-@cindex @code{and()} function (@command{gawk})
+@cindexgawkfunc{and}
+@cindex bitwise AND
 @item and(@var{v1}, @var{v2} @r{[}, @r{@dots{}]})
 Return the bitwise AND of the arguments. There must be at least two.
 
-@cindex @code{compl()} function (@command{gawk})
+@cindexgawkfunc{compl}
+@cindex bitwise complement
 @item compl(@var{val})
 Return the bitwise complement of @var{val}.
 
-@cindex @code{lshift()} function (@command{gawk})
+@cindexgawkfunc{lshift}
+@cindex left shift
 @item lshift(@var{val}, @var{count})
 Return the value of @var{val}, shifted left by @var{count} bits.
 
-@cindex @code{or()} function (@command{gawk})
+@cindexgawkfunc{or}
+@cindex bitwise OR
 @item or(@var{v1}, @var{v2} @r{[}, @r{@dots{}]})
 Return the bitwise OR of the arguments. There must be at least two.
 
-@cindex @code{rshift()} function (@command{gawk})
+@cindexgawkfunc{rshift}
+@cindex right shift
 @item rshift(@var{val}, @var{count})
 Return the value of @var{val}, shifted right by @var{count} bits.
 
-@cindex @code{xor()} function (@command{gawk})
+@cindexgawkfunc{xor}
+@cindex bitwise XOR
 @item xor(@var{v1}, @var{v2} @r{[}, @r{@dots{}]})
 Return the bitwise XOR of the arguments. There must be at least two.
 @end table
@@ -17763,6 +17881,7 @@ $ @kbd{gawk -f testbits.awk}
 @cindex strings, converting
 @cindex numbers, converting
 @cindex converting, numbers to strings
+@cindex number as string of bits
 The @code{bits2str()} function turns a binary number into a string.
 The number @code{1} represents a binary value where the rightmost bit
 is set to 1.  Using this mask,
@@ -17798,7 +17917,8 @@ that traverses every element of a true multidimensional array
 (@pxref{Arrays of Arrays}).
 
 @table @code
-@cindex @code{isarray()} function (@command{gawk})
+@cindexgawkfunc{isarray}
+@cindex scalar or array
 @item isarray(@var{x})
 Return a true value if @var{x} is an array. Otherwise return false.
 @end table
@@ -17820,6 +17940,7 @@ will end up turning it into a scalar.
 @subsection String-Translation Functions
 @cindex @command{gawk}, string-translation functions
 @cindex functions, string-translation
+@cindex string-translation functions
 @cindex internationalization
 @cindex @command{awk} programs, internationalizing
 
@@ -17831,7 +17952,8 @@ for the full story.
 Optional parameters are enclosed in square brackets ([ ]):
 
 @table @code
-@cindex @code{bindtextdomain()} function (@command{gawk})
+@cindexgawkfunc{bindtextdomain}
+@cindex set directory of message catalogs
 @item bindtextdomain(@var{directory} @r{[}, @var{domain}@r{]})
 Set the directory in which
 @command{gawk} will look for message translation files, in case they
@@ -17844,14 +17966,15 @@ If @var{directory} is the null string (@code{""}), then
 @code{bindtextdomain()} returns the current binding for the
 given @var{domain}.
 
-@cindex @code{dcgettext()} function (@command{gawk})
+@cindexgawkfunc{dcgettext}
+@cindex translate string
 @item dcgettext(@var{string} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
 Return the translation of @var{string} in
 text domain @var{domain} for locale category @var{category}.
 The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
 The default value for @var{category} is @code{"LC_MESSAGES"}.
 
-@cindex @code{dcngettext()} function (@command{gawk})
+@cindexgawkfunc{dcngettext}
 @item dcngettext(@var{string1}, @var{string2}, @var{number} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
 Return the plural form used for @var{number} of the
 translation of @var{string1} and @var{string2} in text domain
@@ -17868,7 +17991,7 @@ The default value for @var{category} is @code{"LC_MESSAGES"}.
 @section User-Defined Functions
 
 @c STARTOFRANGE udfunc
-@cindex user-defined, functions
+@cindex user-defined functions
 @c STARTOFRANGE funcud
 @cindex functions, user-defined
 Complicated @command{awk} programs can often be simplified by defining
@@ -17954,6 +18077,7 @@ conventional to place some extra space between the arguments and
 the local variables, in order to document how your function is supposed to be used.
 
 @cindex variables, shadowing
+@cindex shadowing of variable values
 During execution of the function body, the arguments and local variable
 values hide, or @dfn{shadow}, any variables of the same names used in the
 rest of the program.  The shadowed variables are not accessible in the
@@ -18012,6 +18136,7 @@ keyword @code{function} when defining a function.
 
 @node Function Example
 @subsection Function Definition Examples
+@cindex function definition example
 
 Here is an example of a user-defined function, called @code{myprint()}, that
 takes a number and prints it in a specific format:
@@ -18160,8 +18285,8 @@ an error.
 @node Variable Scope
 @subsubsection Controlling Variable Scope
 
-@cindex local variables
-@cindex variables, local
+@cindex local variables, in a function
+@cindex variables, local to a function
 There is no way to make a variable local to a @code{@{ @dots{} @}} block in
 @command{awk}, but you can make a variable local to a function. It is
 good practice to do so whenever a variable is needed only in that
@@ -19090,7 +19215,7 @@ The leading capital letter indicates that it is global, while the fact that
 the variable name is not all capital letters indicates that the variable is
 not one of @command{awk}'s built-in variables, such as @code{FS}.
 
-@cindex @option{--dump-variables} option
+@cindex @option{--dump-variables} option, using for library functions
 It is also important that @emph{all} variables in library
 functions that do not need to save state are, in fact, declared
 local.@footnote{@command{gawk}'s @option{--dump-variables} command-line
@@ -20907,7 +21032,7 @@ from anywhere within a user's program, and the user may have his
 or her
 own way of splitting records and fields.
 
-@cindex @code{PROCINFO} array
+@cindex @code{PROCINFO} array, testing the field splitting
 The @code{using_fw} variable checks @code{PROCINFO["FS"]}, which
 is @code{"FIELDWIDTHS"} if field splitting is being done with
 @code{FIELDWIDTHS}.  This makes it possible to restore the correct
@@ -21030,7 +21155,7 @@ uses these functions.
 @cindex group database, reading
 @c STARTOFRANGE datagr
 @cindex database, group, reading
-@cindex @code{PROCINFO} array
+@cindex @code{PROCINFO} array, and group membership
 @cindex @code{getgrent()} function (C library)
 @cindex @code{getgrent()} user-defined function
 @cindex groups@comma{} information about
@@ -22209,7 +22334,7 @@ $ @kbd{id}
 @print{} uid=500(arnold) gid=500(arnold) groups=6(disk),7(lp),19(floppy)
 @end example
 
-@cindex @code{PROCINFO} array
+@cindex @code{PROCINFO} array, and user and group ID numbers
 This information is part of what is provided by @command{gawk}'s
 @code{PROCINFO} array (@pxref{Built-in Variables}).
 However, the @command{id} utility provides a more palatable output than just
@@ -22310,7 +22435,6 @@ BEGIN    \
 @c endfile
 @end example
 
-@cindex @code{in} operator
 The test in the @code{for} loop is worth noting.
 Any supplementary groups in the @code{PROCINFO} array have the
 indices @code{"group1"} through @code{"group@var{N}"} for some
@@ -22320,7 +22444,7 @@ there are.
 
 This loop works by starting at one, concatenating the value with
 @code{"group"}, and then using @code{in} to see if that value is
-in the array.  Eventually, @code{i} is incremented past
+in the array (@pxref{Reference to Elements}).  Eventually, @code{i} is incremented past
 the last group in the array and the loop exits.
 
 The loop is also correct if there are @emph{no} supplementary
@@ -25432,9 +25556,9 @@ sorted array traversal is not the default.
 @subsection Sorting Array Values and Indices with @command{gawk}
 
 @cindex arrays, sorting
-@cindex @code{asort()} function (@command{gawk})
+@cindexgawkfunc{asort}
 @cindex @code{asort()} function (@command{gawk}), arrays@comma{} sorting
-@cindex @code{asorti()} function (@command{gawk})
+@cindexgawkfunc{asorti}
 @cindex @code{asorti()} function (@command{gawk}), arrays@comma{} sorting
 @cindex sort function, arrays, sorting
 In most @command{awk} implementations, sorting an array requires writing
@@ -25529,9 +25653,8 @@ both arrays use the values.
 
 @c Document It And Call It A Feature. Sigh.
 @cindex @command{gawk}, @code{IGNORECASE} variable in
-@cindex @code{IGNORECASE} variable
-@cindex arrays, sorting, @code{IGNORECASE} variable and
-@cindex @code{IGNORECASE} variable, array sorting and
+@cindex arrays, sorting, and @code{IGNORECASE} variable
+@cindex @code{IGNORECASE} variable, and array sorting functions
 Because @code{IGNORECASE} affects string comparisons, the value
 of @code{IGNORECASE} also affects sorting for both @code{asort()} and @code{asorti()}.
 Note also that the locale's sorting order does @emph{not}
@@ -25700,7 +25823,7 @@ As a side note, the assignment @samp{LC_ALL=C} in the @command{sort}
 command ensures traditional Unix (ASCII) sorting from @command{sort}.
 
 @cindex @command{gawk}, @code{PROCINFO} array in
-@cindex @code{PROCINFO} array
+@cindex @code{PROCINFO} array, and communications via ptys
 You may also use pseudo-ttys (ptys) for
 two-way communication instead of pipes, if your system supports them.
 This is done on a per-command basis, by setting a special element
@@ -25903,8 +26026,8 @@ Here is the @file{awkprof.out} that results from running the
 illustrates that @command{awk} programmers sometimes get up very early
 in the morning to work.)
 
-@cindex @code{BEGIN} pattern
-@cindex @code{END} pattern
+@cindex @code{BEGIN} pattern, and profiling
+@cindex @code{END} pattern, and profiling
 @example
     # gawk profile, created Thu Feb 27 05:16:21 2014
 
@@ -25968,7 +26091,7 @@ Multiple @code{BEGIN} and @code{END} rules retain their
 separate identities, as do
 multiple @code{BEGINFILE} and @code{ENDFILE} rules.
 
-@cindex patterns, counts
+@cindex patterns, counts, in a profile
 @item
 Pattern-action rules have two counts.
 The first count, to the left of the rule, shows how many times
@@ -25988,7 +26111,7 @@ is a count showing how many times the condition was true.
 The count for the @code{else}
 indicates how many times the test failed.
 
-@cindex loops, count for header
+@cindex loops, count for header, in a profile
 @item
 The count for a loop header (such as @code{for}
 or @code{while}) shows how many times the loop test was executed.
@@ -25996,8 +26119,8 @@ or @code{while}) shows how many times the loop test was executed.
 statement in a rule to determine how many times the rule was executed.
 If the first statement is a loop, the count is misleading.)
 
-@cindex functions, user-defined, counts
-@cindex user-defined, functions, counts
+@cindex functions, user-defined, counts, in a profile
+@cindex user-defined, functions, counts, in a profile
 @item
 For user-defined functions, the count next to the @code{function}
 keyword indicates how many times the function was called.
@@ -26011,8 +26134,8 @@ The layout uses ``K&R'' style with TABs.
 Braces are used everywhere, even when
 the body of an @code{if}, @code{else}, or loop is only a single statement.
 
-@cindex @code{()} (parentheses)
-@cindex parentheses @code{()}
+@cindex @code{()} (parentheses), in a profile
+@cindex parentheses @code{()}, in a profile
 @item
 Parentheses are used only where needed, as indicated by the structure
 of the program and the precedence rules.
@@ -26068,6 +26191,7 @@ which is correct, but possibly surprising.
 
 @cindex profiling @command{awk} programs, dynamically
 @cindex @command{gawk} program, dynamic profiling
+@cindex dynamic profiling
 Besides creating profiles when a program has completed,
 @command{gawk} can produce a profile while it is running.
 This is useful if your @command{awk} program goes into an
@@ -26081,9 +26205,9 @@ $ @kbd{gawk --profile -f myprog &}
 @end example
 
 @cindex @command{kill} command@comma{} dynamic profiling
-@cindex @code{USR1} signal
-@cindex @code{SIGUSR1} signal
-@cindex signals, @code{USR1}/@code{SIGUSR1}
+@cindex @code{USR1} signal, for dynamic profiling
+@cindex @code{SIGUSR1} signal, for dynamic profiling
+@cindex signals, @code{USR1}/@code{SIGUSR1}, for profiling
 @noindent
 The shell prints a job number and process ID number; in this case, 13992.
 Use the @command{kill} command to send the @code{USR1} signal
@@ -26114,9 +26238,9 @@ You may send @command{gawk} the @code{USR1} signal as many times as you like.
 Each time, the profile and function call trace are appended to the output
 profile file.
 
-@cindex @code{HUP} signal
-@cindex @code{SIGHUP} signal
-@cindex signals, @code{HUP}/@code{SIGHUP}
+@cindex @code{HUP} signal, for dynamic profiling
+@cindex @code{SIGHUP} signal, for dynamic profiling
+@cindex signals, @code{HUP}/@code{SIGHUP}, for profiling
 If you use the @code{HUP} signal instead of the @code{USR1} signal,
 @command{gawk} produces the profile and the function call trace and then exits.
 
@@ -26414,7 +26538,7 @@ String constants marked with a leading underscore
 are candidates for translation at runtime.
 String constants without a leading underscore are not translated.
 
-@cindex @code{dcgettext()} function (@command{gawk})
+@cindexgawkfunc{dcgettext}
 @item dcgettext(@var{string} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
 Return the translation of @var{string} in
 text domain @var{domain} for locale category @var{category}.
@@ -26440,7 +26564,7 @@ chosen to be simple and to allow for reasonable @command{awk}-style
 default arguments.
 @end quotation
 
-@cindex @code{dcngettext()} function (@command{gawk})
+@cindexgawkfunc{dcngettext}
 @item dcngettext(@var{string1}, @var{string2}, @var{number} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
 Return the plural form used for @var{number} of the
 translation of @var{string1} and @var{string2} in text domain
@@ -26456,7 +26580,7 @@ The same remarks about argument order as for the @code{dcgettext()} function app
 @cindex files, @code{.gmo}, specifying directory of
 @cindex message object files, specifying directory of
 @cindex files, message object, specifying directory of
-@cindex @code{bindtextdomain()} function (@command{gawk})
+@cindexgawkfunc{bindtextdomain}
 @item bindtextdomain(@var{directory} @r{[}, @var{domain}@r{]})
 Change the directory in which
 @code{gettext} looks for @file{.gmo} files, in case they
@@ -27030,6 +27154,7 @@ The following list defines terms used throughout the rest of
 this @value{CHAPTER}.
 
 @table @dfn
+@cindex stack frame
 @item Stack Frame
 Programs generally call functions during the course of their execution.
 One function can call another, or a function can call itself (recursion).
@@ -27051,6 +27176,7 @@ invoked. Commands that print the call stack print information about
 each stack frame (as detailed later on).
 
 @item Breakpoint
+@cindex breakpoint
 During debugging, you often wish to let the program run until it
 reaches a certain point, and then continue execution from there one
 statement (or instruction) at a time.  The way to do this is to set
@@ -27060,6 +27186,7 @@ take over control of the program's execution.  You can add and remove
 as many breakpoints as you like.
 
 @item Watchpoint
+@cindex watchpoint
 A watchpoint is similar to a breakpoint.  The difference is that
 breakpoints are oriented around the code: stop when a certain point in the
 code is reached.  A watchpoint, however, specifies that program execution
@@ -27091,6 +27218,7 @@ by the higher-level @command{awk} commands.
 
 @node Sample Debugging Session
 @section Sample Debugging Session
+@cindex sample debugging session
 
 In order to illustrate the use of @command{gawk} as a debugger, let's look at a sample
 debugging session.  We will use the @command{awk} implementation of the
@@ -27104,6 +27232,8 @@ as our example.
 
 @node Debugger Invocation
 @subsection How to Start the Debugger
+@cindex starting the debugger
+@cindex debugger, how to start
 
 Starting the debugger is almost exactly like running @command{gawk},
 except you have to pass an additional option @option{--debug} or the
@@ -27444,6 +27574,8 @@ controlling breakpoints are:
 @cindex debugger commands, @code{break}
 @cindex @code{break} debugger command
 @cindex @code{b} debugger command (alias for @code{break})
+@cindex set breakpoint
+@cindex breakpoint, setting
 @item @code{break} [[@var{filename}@code{:}]@var{n} | @var{function}] [@code{"@var{expression}"}]
 @itemx @code{b} [[@var{filename}@code{:}]@var{n} | @var{function}] [@code{"@var{expression}"}]
 Without any argument, set a breakpoint at the next instruction
@@ -27474,6 +27606,8 @@ it continues executing the program.
 
 @cindex debugger commands, @code{clear}
 @cindex @code{clear} debugger command
+@cindex delete breakpoint at location
+@cindex breakpoint at location, how to delete
 @item @code{clear} [[@var{filename}@code{:}]@var{n} | @var{function}]
 Without any argument, delete any breakpoint at the next instruction
 to be executed in the selected stack frame. If the program stops at
@@ -27494,6 +27628,7 @@ Delete breakpoint(s) set at entry to function @var{function}.
 
 @cindex debugger commands, @code{condition}
 @cindex @code{condition} debugger command
+@cindex breakpoint condition
 @item @code{condition} @var{n} @code{"@var{expression}"}
 Add a condition to existing breakpoint or watchpoint @var{n}. The
 condition is an @command{awk} expression that the debugger evaluates
@@ -27507,6 +27642,8 @@ watchpoint is made unconditional.
 @cindex debugger commands, @code{delete}
 @cindex @code{delete} debugger command
 @cindex @code{d} debugger command (alias for @code{delete})
+@cindex delete breakpoint by number
+@cindex breakpoint, delete by number
 @item @code{delete} [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 @itemx @code{d} [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 Delete specified breakpoints or a range of breakpoints. Deletes
@@ -27514,6 +27651,8 @@ all defined breakpoints if no argument is supplied.
 
 @cindex debugger commands, @code{disable}
 @cindex @code{disable} debugger command
+@cindex disable breakpoint
+@cindex breakpoint, how to disable or enable
 @item @code{disable} [@var{n1 n2} @dots{} | @var{n}--@var{m}]
 Disable specified breakpoints or a range of breakpoints. Without
 any argument, disables all breakpoints.
@@ -27522,6 +27661,7 @@ any argument, disables all breakpoints.
 @cindex debugger commands, @code{enable}
 @cindex @code{enable} debugger command
 @cindex @code{e} debugger command (alias for @code{enable})
+@cindex enable breakpoint
 @item @code{enable} [@code{del} | @code{once}] [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 @itemx @code{e} [@code{del} | @code{once}] [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 Enable specified breakpoints or a range of breakpoints. Without
@@ -27541,6 +27681,7 @@ the program stops at the breakpoint.
 
 @cindex debugger commands, @code{ignore}
 @cindex @code{ignore} debugger command
+@cindex ignore breakpoint
 @item @code{ignore} @var{n} @var{count}
 Ignore breakpoint number @var{n} the next @var{count} times it is
 hit.
@@ -27549,6 +27690,7 @@ hit.
 @cindex debugger commands, @code{tbreak}
 @cindex @code{tbreak} debugger command
 @cindex @code{t} debugger command (alias for @code{tbreak})
+@cindex temporary breakpoint
 @item @code{tbreak} [[@var{filename}@code{:}]@var{n} | @var{function}]
 @itemx @code{t} [[@var{filename}@code{:}]@var{n} | @var{function}]
 Set a temporary breakpoint (enabled for only one stop).
@@ -27569,6 +27711,8 @@ execution of the program than we saw in our earlier example:
 @cindex @code{silent} debugger command
 @cindex debugger commands, @code{end}
 @cindex @code{end} debugger command
+@cindex breakpoint commands
+@cindex commands to execute at breakpoint
 @item @code{commands} [@var{n}]
 @itemx @code{silent}
 @itemx @dots{}
@@ -27596,6 +27740,7 @@ gawk>
 
 @cindex debugger commands, @code{c} (@code{continue})
 @cindex debugger commands, @code{continue}
+@cindex continue program, in debugger
 @item @code{continue} [@var{count}]
 @itemx @code{c} [@var{count}]
 Resume program execution. If continued from a breakpoint and @var{count} is
@@ -27612,6 +27757,7 @@ Print the returned value.
 @cindex debugger commands, @code{next}
 @cindex @code{next} debugger command
 @cindex @code{n} debugger command (alias for @code{next})
+@cindex single-step execution, in the debugger
 @item @code{next} [@var{count}]
 @itemx @code{n} [@var{count}]
 Continue execution to the next source line, stepping over function calls.
@@ -27706,6 +27852,7 @@ items on the list.
 
 @cindex debugger commands, @code{eval}
 @cindex @code{eval} debugger command
+@cindex evaluate expressions, in debugger
 @item @code{eval "@var{awk statements}"}
 Evaluate @var{awk statements} in the context of the running program.
 You can do anything that an @command{awk} program would do: assign
@@ -27723,6 +27870,7 @@ parameters defined by the program.
 @cindex debugger commands, @code{print}
 @cindex @code{print} debugger command
 @cindex @code{p} debugger command (alias for @code{print})
+@cindex print variables, in debugger
 @item @code{print} @var{var1}[@code{,} @var{var2} @dots{}]
 @itemx @code{p} @var{var1}[@code{,} @var{var2} @dots{}]
 Print the value of a @command{gawk} variable or field.
@@ -27756,6 +27904,7 @@ No newline is printed unless one is specified.
 
 @cindex debugger commands, @code{set}
 @cindex @code{set} debugger command
+@cindex assign values to variables, in debugger
 @item @code{set} @var{var}@code{=}@var{value}
 Assign a constant (number or string) value to an @command{awk} variable
 or field.
@@ -27768,6 +27917,7 @@ You can also set special @command{awk} variables, such as @code{FS},
 @cindex debugger commands, @code{watch}
 @cindex @code{watch} debugger command
 @cindex @code{w} debugger command (alias for @code{watch})
+@cindex set watchpoint
 @item @code{watch} @var{var} | @code{$}@var{n} [@code{"@var{expression}"}]
 @itemx @code{w} @var{var} | @code{$}@var{n} [@code{"@var{expression}"}]
 Add variable @var{var} (or field @code{$@var{n}}) to the watch list.
@@ -27784,12 +27934,14 @@ then the debugger stops execution and prompts for a command. Otherwise,
 
 @cindex debugger commands, @code{undisplay}
 @cindex @code{undisplay} debugger command
+@cindex stop automatic display, in debugger
 @item @code{undisplay} [@var{n}]
 Remove item number @var{n} (or all items, if no argument) from the
 automatic display list.
 
 @cindex debugger commands, @code{unwatch}
 @cindex @code{unwatch} debugger command
+@cindex delete watchpoint
 @item @code{unwatch} [@var{n}]
 Remove item number @var{n} (or all items, if no argument) from the
 watch list.
@@ -27810,6 +27962,8 @@ functions which called the one you are in.  The commands for doing this are:
 @cindex debugger commands, @code{backtrace}
 @cindex @code{backtrace} debugger command
 @cindex @code{bt} debugger command (alias for @code{backtrace})
+@cindex call stack, display in debugger
+@cindex traceback, display in debugger
 @item @code{backtrace} [@var{count}]
 @itemx @code{bt} [@var{count}]
 Print a backtrace of all function calls (stack frames), or innermost @var{count}
@@ -27863,25 +28017,32 @@ The value for @var{what} should be one of the following:
 @c nested table
 @table @code
 @item args
+@cindex show function arguments, in debugger
 Arguments of the selected frame.
 
 @item break
+@cindex show breakpoints
 List all currently set breakpoints.
 
 @item display
+@cindex automatic displays, in debugger
 List all items in the automatic display list.
 
 @item frame
+@cindex describe call stack frame, in debugger
 Description of the selected stack frame.
 
 @item functions
+@cindex list function definitions, in debugger
 List all function definitions including source file names and
 line numbers.
 
 @item locals
+@cindex show local variables, in debugger
 Local variables of the selected frame.
 
 @item source
+@cindex show name of current source file, in debugger
 The name of the current source file. Each time the program stops, the
 current source file is the file containing the current instruction.
 When the debugger first starts, the current source file is the first file
@@ -27890,12 +28051,15 @@ included via the @option{-f} option. The
 be used at any time to change the current source.
 
 @item sources
+@cindex show all source files, in debugger
 List all program sources.
 
 @item variables
+@cindex list all global variables, in debugger
 List all global variables.
 
 @item watch
+@cindex show watchpoints
 List all items in the watch list.
 @end table
 @end table
@@ -27909,6 +28073,8 @@ from a file.  The commands are:
 @cindex debugger commands, @code{option}
 @cindex @code{option} debugger command
 @cindex @code{o} debugger command (alias for @code{option})
+@cindex display debugger options
+@cindex debugger options
 @item @code{option} [@var{name}[@code{=}@var{value}]]
 @itemx @code{o} [@var{name}[@code{=}@var{value}]]
 Without an argument, display the available debugger options
@@ -27920,6 +28086,7 @@ The available options are:
 @c nested table
 @table @code
 @item history_size
+@cindex debugger history size
 The maximum number of lines to keep in the history file @file{./.gawk_history}.
 The default is 100.
 
@@ -27927,23 +28094,28 @@ The default is 100.
 The number of lines that @code{list} prints. The default is 15.
 
 @item outfile
+@cindex redirect @command{gawk} output, in debugger
 Send @command{gawk} output to a file; debugger output still goes
 to standard output. An empty string (@code{""}) resets output to
 standard output.
 
 @item prompt
+@cindex debugger prompt
 The debugger prompt. The default is @samp{@w{gawk> }}.
 
 @item save_history @r{[}on @r{|} off@r{]}
+@cindex debugger history file
 Save command history to file @file{./.gawk_history}.
 The default is @code{on}.
 
 @item save_options @r{[}on @r{|} off@r{]}
+@cindex save debugger options
 Save current options to file @file{./.gawkrc} upon exit.
 The default is @code{on}.
 Options are read back in to the next session upon startup.
 
 @item trace @r{[}on @r{|} off@r{]}
+@cindex instruction tracing, in debugger
 Turn instruction tracing on or off. The default is @code{off}.
 @end table
 
@@ -27952,6 +28124,7 @@ Save the commands from the current session to the given file name,
 so that they can be replayed using the @command{source} command.
 
 @item @code{source} @var{filename}
+@cindex debugger, read commands from a file
 Run command(s) from a file; an error in any command does not
 terminate execution of subsequent commands. Comments (lines starting
 with @samp{#}) are allowed in a command file.
@@ -28084,6 +28257,7 @@ function @var{function}. This command may change the current source file.
 @cindex debugger commands, @code{quit}
 @cindex @code{quit} debugger command
 @cindex @code{q} debugger command (alias for @code{quit})
+@cindex exit the debugger
 @item @code{quit}
 @itemx @code{q}
 Exit the debugger.  Debugging is great fun, but sometimes we all have
@@ -28107,6 +28281,8 @@ fairly self-explanatory, and using @code{stepi} and @code{nexti} while
 
 @node Readline Support
 @section Readline Support
+@cindex command completion, in debugger
+@cindex history expansion, in debugger
 
 If @command{gawk} is compiled with the @code{readline} library, you
 can take advantage of that library's command completion and history expansion
@@ -28195,8 +28371,6 @@ be added, and of course feel free to try to add them yourself!
 @cindex multiple precision
 @cindex infinite precision
 @cindex floating-point, numbers@comma{} arbitrary precision
-@cindex MPFR
-@cindex GMP
 
 @cindex Knuth, Donald
 @quotation
@@ -28960,6 +29134,8 @@ when you change the rounding mode.
 
 @node Gawk and MPFR
 @section @command{gawk} + MPFR = Powerful Arithmetic
+@cindex MPFR
+@cindex GMP
 
 The rest of this @value{CHAPTER} describes how to use the arbitrary precision
 (also known as @dfn{multiple precision} or @dfn{infinite precision}) numeric
@@ -29064,6 +29240,7 @@ your program.
 @node Setting Precision
 @subsection Setting the Working Precision
 @cindex @code{PREC} variable
+@cindex setting working precision
 
 @command{gawk} uses a global working precision; it does not keep track of
 the precision or accuracy of individual numbers. Performing an arithmetic
@@ -29139,6 +29316,7 @@ issues that occur because numbers are stored internally in binary.
 @node Setting Rounding Mode
 @subsection Setting the Rounding Mode
 @cindex @code{ROUNDMODE} variable
+@cindex setting rounding mode
 
 The @code{ROUNDMODE} variable provides
 program level control over the rounding mode.
@@ -29206,6 +29384,7 @@ In the first case, the number is stored with the default precision of 53 bits.
 
 @node Changing Precision
 @subsection Changing the Precision of a Number
+@cindex changing precision of a number
 
 @cindex Laurie, Dirk
 @quotation
@@ -29324,6 +29503,7 @@ the problem at hand is often the correct approach in such situations.
 @node Arbitrary Precision Integers
 @section Arbitrary Precision Integer Arithmetic with @command{gawk}
 @cindex integers, arbitrary precision
+@cindex arbitrary precision integers
 
 If one of the options @option{--bignum} or @option{-M} is specified,
 @command{gawk} performs all
@@ -29420,6 +29600,7 @@ gawk -M 'BEGIN @{ n = 13; print n % 2 @}'
 
 @node Dynamic Extensions
 @chapter Writing Extensions for @command{gawk}
+@cindex dynamically loaded extensions
 
 It is possible to add new functions written in C or C++ to @command{gawk} using
 dynamically loaded libraries. This facility is available on systems
@@ -29454,6 +29635,7 @@ When @option{--sandbox} is specified, extensions are disabled
 @node Extension Intro
 @section Introduction
 
+@cindex plug-in
 An @dfn{extension} (sometimes called a @dfn{plug-in}) is a piece of
 external compiled code that @command{gawk} can load at runtime to
 provide additional functionality, over and above the built-in capabilities
@@ -29582,6 +29764,7 @@ happen, but we all know how @emph{that} goes.)
 
 @node Extension API Description
 @section API Description
+@cindex extension API
 
 This (rather large) @value{SECTION} describes the API in detail.
 
@@ -29966,6 +30149,8 @@ value type, as appropriate.  This behavior is summarized in
 
 @node Memory Allocation Functions
 @subsection Memory Allocation Functions and Convenience Macros
+@cindex allocating memory for extensions
+@cindex extensions, allocating memory
 
 The API provides a number of @dfn{memory allocation} functions for
 allocating memory that can be passed to @command{gawk}, as well as a number of
@@ -30080,6 +30265,8 @@ pointed to by @code{result}.
 
 @node Registration Functions
 @subsection Registration Functions
+@cindex register extension
+@cindex extension registration
 
 This @value{SECTION} describes the API functions for
 registering parts of your extension with @command{gawk}.
@@ -30201,6 +30388,7 @@ is invoked with the @option{--version} option.
 
 @node Input Parsers
 @subsubsection Customized Input Parsers
+@cindex customized input parser
 
 By default, @command{gawk} reads text files as its input. It uses the value
 of @code{RS} to find the end of the record, and then uses @code{FS}
@@ -30448,7 +30636,9 @@ Register the input parser pointed to by @code{input_parser} with
 
 @node Output Wrappers
 @subsubsection Customized Output Wrappers
+@cindex customized output wrapper
 
+@cindex output wrapper
 An @dfn{output wrapper} is the mirror image of an input parser.
 It allows an extension to take over the output to a file opened
 with the @samp{>} or @samp{>>} I/O redirection operators (@pxref{Redirection}).
@@ -30562,6 +30752,7 @@ Register the output wrapper pointed to by @code{output_wrapper} with
 
 @node Two-way processors
 @subsubsection Customized Two-way Processors
+@cindex customized two-way processor
 
 A @dfn{two-way processor} combines an input parser and an output wrapper for
 two-way I/O with the @samp{|&} operator (@pxref{Redirection}).  It makes identical
@@ -30619,6 +30810,8 @@ Register the two-way processor pointed to by @code{two_way_processor} with
 
 @node Printing Messages
 @subsection Printing Messages
+@cindex printing messages from extensions
+@cindex messages from extensions
 
 You can print different kinds of warning messages from your
 extension, as described below.  Note that for these functions,
@@ -30692,6 +30885,7 @@ for more information on creating arrays.
 
 @node Symbol Table Access
 @subsection Symbol Table Access
+@cindex accessing global variables from extensions
 
 Two sets of routines provide access to global variables, and one set
 allows you to create and release cached values.
@@ -30736,6 +30930,13 @@ variables (such as @code{ARGC} or @code{NF}).
 An extension can look up the value of @command{gawk}'s special variables.
 However, with the exception of the @code{PROCINFO} array, an extension
 cannot change any of those variables.
+
+@quotation NOTE
+It is possible for the lookup of @code{PROCINFO} to fail. This happens if
+the @command{awk} program being run does not reference @code{PROCINFO};
+in this case @command{gawk} doesn't bother to create the array and
+populate it.
+@end quotation
 
 @node Symbol table by cookie
 @subsubsection Variable Access and Update by Cookie
@@ -30949,6 +31150,7 @@ you should release any cached values that you created, using
 
 @node Array Manipulation
 @subsection Array Manipulation
+@cindex array manipulation in extensions
 
 The primary data structure@footnote{Okay, the only data structure.} in @command{awk}
 is the associative array (@pxref{Arrays}).
@@ -31528,6 +31730,8 @@ information about how @command{gawk} was invoked.
 
 @node Extension Versioning
 @subsubsection API Version Constants and Variables
+@cindex API version
+@cindex extension API version
 
 The API provides both a ``major'' and a ``minor'' version number.
 The API versions are available at compile time as constants:
@@ -31581,6 +31785,8 @@ provided in @file{gawkapi.h} (discussed later, in
 
 @node Extension API Informational Variables
 @subsubsection Informational Variables
+@cindex API informational variables
+@cindex extension API informational variables
 
 The API provides access to several variables that describe
 whether the corresponding command-line options were enabled when
@@ -31726,6 +31932,8 @@ the version string with @command{gawk}.
 
 @node Finding Extensions
 @section How @command{gawk} Finds Extensions
+@cindex extension search path
+@cindex finding extensions
 
 Compiled extensions have to be installed in a directory where
 @command{gawk} can find them.  If @command{gawk} is configured and
@@ -31736,6 +31944,7 @@ path with a list of directories to search for compiled extensions.
 
 @node Extension Example
 @section Example: Some File Functions
+@cindex extension example
 
 @quotation
 @i{No matter where you go, there you are.}
@@ -32380,6 +32589,7 @@ $ @kbd{AWKLIBPATH=$PWD gawk -f testff.awk}
 
 @node Extension Samples
 @section The Sample Extensions In The @command{gawk} Distribution
+@cindex extensions distributed with @command{gawk}
 
 This @value{SECTION} provides brief overviews of the sample extensions
 that come in the @command{gawk} distribution. Some of them are intended
@@ -32971,7 +33181,7 @@ ret = reada("arraydump.bin", array)
 @subsection Reading An Entire File
 
 The @code{readfile} extension adds a single function
-named @code{readfile()}:
+named @code{readfile()}, and an input parser:
 
 @table @code
 @item @@load "readfile"
@@ -32982,6 +33192,12 @@ This is how you load the extension.
 The argument is the name of the file to read.  The return value is a
 string containing the entire contents of the requested file.  Upon error,
 the function returns the empty string and sets @code{ERRNO}.
+
+@item BEGIN @{ PROCINFO["readfile"] = 1 @}
+In addition, the extension adds an input parser that is activated if
+@code{PROCINFO["readfile"]} exists.
+When activated, each input file is returned in its entirety as @code{$0}.
+@code{RT} is set to the null string.
 @end table
 
 Here is an example:
@@ -33040,6 +33256,8 @@ tries to use @code{nanosleep()} or @code{select()} to implement the delay.
 
 @node gawkextlib
 @section The @code{gawkextlib} Project
+@cindex @code{gawkextlib}
+@cindex extensions, where to find
 
 @cindex @code{gawkextlib} project
 The @uref{http://sourceforge.net/projects/gawkextlib/, @code{gawkextlib}}
@@ -34750,6 +34968,11 @@ The development of the extension API first released with
 @command{gawk} 4.1 was driven primarily by
 Arnold Robbins and Andrew Schorr, with notable contributions from
 the rest of the development team.
+
+@item
+@cindex Colombo, Antonio
+Antonio Giovanni Colombo rewrote a number of examples in the early
+chapters that were severely dated, for which I am incredibly grateful.
 
 @item
 @cindex Robbins, Arnold
@@ -37494,9 +37717,6 @@ The GNU version of the standard shell
 @end ifinfo
 See also ``Bourne Shell.''
 
-@item BBS
-See ``Bulletin Board System.''
-
 @item Bit
 Short for ``Binary Digit.''
 All values in computer memory ultimately reduce to binary digits: values
@@ -37570,11 +37790,6 @@ Changing some of them affects @command{awk}'s running environment.
 
 @item Braces
 See ``Curly Braces.''
-
-@item Bulletin Board System
-A computer system allowing users to log in and read and/or leave messages
-for other users of the system, much like leaving paper notes on a bulletin
-board.
 
 @item C
 The system programming language that most GNU software is written in.  The
@@ -39541,8 +39756,6 @@ Suggestions:
 % Next edition:
 %	1. Standardize the error messages from the functions and programs
 %	   in the two sample code chapters.
-%	2. Nuke the BBS stuff and use something that won't be obsolete
-%	3. Turn the advanced notes into sidebars by using @cartouche
 
 Better sidebars can almost sort of be done with:
 
@@ -39574,4 +39787,3 @@ But to use it you have to say
 	}
 
 which sorta sucks.
-
