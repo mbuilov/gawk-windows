@@ -134,6 +134,30 @@
 @end macro
 @end ifnothtml
 
+@c Indexing macros
+@ifinfo
+
+@macro cindexawkfunc{name}
+@cindex @code{\name\}
+@end macro
+
+@macro cindexgawkfunc{name}
+@cindex @code{\name\}
+@end macro
+
+@end ifinfo
+
+@ifnotinfo
+
+@macro cindexawkfunc{name}
+@cindex @code{\name\()} function
+@end macro
+
+@macro cindexgawkfunc{name}
+@cindex @code{\name\()} function (@command{gawk})
+@end macro
+@end ifnotinfo
+
 @ignore
 Some comments on the layout for TeX.
 1. Use at least texinfo.tex 2014-01-30.15
@@ -4820,8 +4844,8 @@ means it matches any string that starts with @samp{P} or contains a digit.
 
 The alternation applies to the largest possible regexps on either side.
 
-@cindex @code{()} (parentheses)
-@cindex parentheses @code{()}
+@cindex @code{()} (parentheses), regexp operator
+@cindex parentheses @code{()}, regexp operator
 @item (@dots{})
 Parentheses are used for grouping in regular expressions, as in
 arithmetic.  They can be used to concatenate regular expressions
@@ -5290,7 +5314,7 @@ This works in any POSIX-compliant @command{awk}.
 @cindex tilde (@code{~}), @code{~} operator
 @cindex @code{!} (exclamation point), @code{!~} operator
 @cindex exclamation point (@code{!}), @code{!~} operator
-@cindex @code{IGNORECASE} variable, @code{~} and @code{!~} operators
+@cindex @code{IGNORECASE} variable, with @code{~} and @code{!~} operators
 @cindex @command{gawk}, @code{IGNORECASE} variable in
 @c @cindex variables, @code{IGNORECASE}
 Another method, specific to @command{gawk}, is to set the variable
@@ -8310,7 +8334,7 @@ numbers can be formatted.  The different format specifications are discussed
 more fully in
 @ref{Control Letters}.
 
-@cindex @code{sprintf()} function
+@cindexawkfunc{sprintf}
 @cindex @code{OFMT} variable
 @cindex output, format specifier@comma{} @code{OFMT}
 The built-in variable @code{OFMT} contains the default format specification
@@ -9312,7 +9336,7 @@ the file name or command associated with it, and subsequent
 writes to the same file or command are appended to the previous writes.
 The file or pipe stays open until @command{awk} exits.
 
-@cindex @code{close()} function
+@cindexawkfunc{close}
 This implies that special steps are necessary in order to read the same
 file again from the beginning, or to rerun a shell command (rather than
 reading more output from the same command).  The @code{close()} function
@@ -9881,9 +9905,9 @@ upon the contents of the current input record.
 
 @cindex differences in @command{awk} and @command{gawk}, regexp constants
 @cindex dark corner, regexp constants, as arguments to user-defined functions
-@cindex @code{gensub()} function (@command{gawk})
-@cindex @code{sub()} function
-@cindex @code{gsub()} function
+@cindexgawkfunc{gensub}
+@cindexawkfunc{sub}
+@cindexawkfunc{gsub}
 Constant regular expressions are also used as the first argument for
 the @code{gensub()}, @code{sub()}, and @code{gsub()} functions, as the
 second argument of the @code{match()} function,
@@ -15553,19 +15577,19 @@ Return the arctangent of @code{@var{y} / @var{x}} in radians.
 You can use @samp{pi = atan2(0, -1)} to retrieve the value of @value{PI}.
 
 @item cos(@var{x})
-@cindex @code{cos()} function
+@cindexawkfunc{cos}
 @cindex cosine
 Return the cosine of @var{x}, with @var{x} in radians.
 
 @item exp(@var{x})
-@cindex @code{exp()} function
+@cindexawkfunc{exp}
 @cindex exponent
 Return the exponential of @var{x} (@code{e ^ @var{x}}) or report
 an error if @var{x} is out of range.  The range of values @var{x} can have
 depends on your machine's floating-point representation.
 
 @item int(@var{x})
-@cindex @code{int()} function
+@cindexawkfunc{int}
 @cindex round to nearest integer
 Return the nearest integer to @var{x}, located between @var{x} and zero and
 truncated toward zero.
@@ -15574,13 +15598,13 @@ For example, @code{int(3)} is 3, @code{int(3.9)} is 3, @code{int(-3.9)}
 is @minus{}3, and @code{int(-3)} is @minus{}3 as well.
 
 @item log(@var{x})
-@cindex @code{log()} function
+@cindexawkfunc{log}
 @cindex logarithm
 Return the natural logarithm of @var{x}, if @var{x} is positive;
 otherwise, report an error.
 
 @item rand()
-@cindex @code{rand()} function
+@cindexawkfunc{rand}
 @cindex random numbers, @code{rand()}/@code{srand()} functions
 Return a random number.  The values of @code{rand()} are
 uniformly distributed between zero and one.
@@ -15638,19 +15662,19 @@ use @code{srand()}.
 @end quotation
 
 @item sin(@var{x})
-@cindex @code{sin()} function
+@cindexawkfunc{sin}
 @cindex sine
 Return the sine of @var{x}, with @var{x} in radians.
 
 @item sqrt(@var{x})
-@cindex @code{sqrt()} function
+@cindexawkfunc{sqrt}
 @cindex square root
 Return the positive square root of @var{x}.
 @command{gawk} prints a warning message
 if @var{x} is negative.  Thus, @code{sqrt(4)} is 2.
 
 @item srand(@r{[}@var{x}@r{]})
-@cindex @code{srand()} function
+@cindexawkfunc{srand}
 Set the starting point, or seed,
 for generating random numbers to the value @var{x}.
 
@@ -15709,10 +15733,10 @@ pound sign@w{ (@samp{#}):}
 @table @code
 @item asort(@var{source} @r{[}, @var{dest} @r{[}, @var{how}  @r{]} @r{]}) #
 @itemx asorti(@var{source} @r{[}, @var{dest} @r{[}, @var{how}  @r{]} @r{]}) #
-@cindex @code{asorti()} function (@command{gawk})
+@cindexgawkfunc{asorti}
 @cindex sort array
 @cindex arrays, elements, retrieving number of
-@cindex @code{asort()} function (@command{gawk})
+@cindexgawkfunc{asort}
 @cindex sort array indices
 These two functions are similar in behavior, so they are described
 together.
@@ -15776,7 +15800,7 @@ a[3] = "middle"
 are not available in compatibility mode (@pxref{Options}).
 
 @item gensub(@var{regexp}, @var{replacement}, @var{how} @r{[}, @var{target}@r{]}) #
-@cindex @code{gensub()} function (@command{gawk})
+@cindexgawkfunc{gensub}
 @cindex search and replace in strings
 @cindex substitute in string
 Search the target string @var{target} for matches of the regular
@@ -15841,7 +15865,7 @@ is the original unchanged value of @var{target}.
 in compatibility mode (@pxref{Options}).
 
 @item gsub(@var{regexp}, @var{replacement} @r{[}, @var{target}@r{]})
-@cindex @code{gsub()} function
+@cindexawkfunc{gsub}
 Search @var{target} for
 @emph{all} of the longest, leftmost, @emph{nonoverlapping} matching
 substrings it can find and replace them with @var{replacement}.
@@ -15863,7 +15887,7 @@ As in @code{sub()}, the characters @samp{&} and @samp{\} are special,
 and the third argument must be assignable.
 
 @item index(@var{in}, @var{find})
-@cindex @code{index()} function
+@cindexawkfunc{index}
 @cindex search in string
 @cindex find substring in string
 Search the string @var{in} for the first occurrence of the string
@@ -15882,7 +15906,7 @@ If @var{find} is not found, @code{index()} returns zero.
 It is a fatal error to use a regexp constant for @var{find}.
 
 @item length(@r{[}@var{string}@r{]})
-@cindex @code{length()} function
+@cindexawkfunc{length}
 @cindex string length
 @cindex length of string
 Return the number of characters in @var{string}.  If
@@ -15947,7 +15971,7 @@ If @option{--posix} is supplied, using an array argument is a fatal error
 (@pxref{Arrays}).
 
 @item match(@var{string}, @var{regexp} @r{[}, @var{array}@r{]})
-@cindex @code{match()} function
+@cindexawkfunc{match}
 @cindex string, regular expression match
 @cindex match regexp in string
 Search @var{string} for the
@@ -16064,7 +16088,7 @@ The @var{array} argument to @code{match()} is a
 using a third argument is a fatal error.
 
 @item patsplit(@var{string}, @var{array} @r{[}, @var{fieldpat} @r{[}, @var{seps} @r{]} @r{]}) #
-@cindex @code{patsplit()} function (@command{gawk})
+@cindexgawkfunc{patsplit}
 @cindex split string into array
 Divide
 @var{string} into pieces defined by @var{fieldpat}
@@ -16096,7 +16120,7 @@ The @code{patsplit()} function is a
 it is not available.
 
 @item split(@var{string}, @var{array} @r{[}, @var{fieldsep} @r{[}, @var{seps} @r{]} @r{]})
-@cindex @code{split()} function
+@cindexawkfunc{split}
 Divide @var{string} into pieces separated by @var{fieldsep}
 and store the pieces in @var{array} and the separator strings in the
 @var{seps} array.  The first piece is stored in
@@ -16181,7 +16205,7 @@ If @var{string} does not match @var{fieldsep} at all (but is not null),
 @var{string}.
 
 @item sprintf(@var{format}, @var{expression1}, @dots{})
-@cindex @code{sprintf()} function
+@cindexawkfunc{sprintf}
 @cindex formatting strings
 Return (without printing) the string that @code{printf} would
 have printed out with the same arguments
@@ -16195,7 +16219,7 @@ pival = sprintf("pi = %.2f (approx.)", 22/7)
 @noindent
 assigns the string @w{@samp{pi = 3.14 (approx.)}} to the variable @code{pival}.
 
-@cindex @code{strtonum()} function (@command{gawk})
+@cindexgawkfunc{strtonum}
 @cindex convert string to number
 @item strtonum(@var{str}) #
 Examine @var{str} and return its numeric value.  If @var{str}
@@ -16223,7 +16247,7 @@ for recognizing numbers (@pxref{Locales}).
 in compatibility mode (@pxref{Options}).
 
 @item sub(@var{regexp}, @var{replacement} @r{[}, @var{target}@r{]})
-@cindex @code{sub()} function
+@cindexawkfunc{sub}
 @cindex replace in string
 Search @var{target}, which is treated as a string, for the
 leftmost, longest substring matched by the regular expression @var{regexp}.
@@ -16324,7 +16348,7 @@ Finally, if the @var{regexp} is not a regexp constant, it is converted into a
 string, and then the value of that string is treated as the regexp to match.
 
 @item substr(@var{string}, @var{start} @r{[}, @var{length}@r{]})
-@cindex @code{substr()} function
+@cindexawkfunc{substr}
 @cindex substring
 Return a @var{length}-character-long substring of @var{string},
 starting at character number @var{start}.  The first character of a
@@ -16384,7 +16408,7 @@ string = substr(string, 1, 2) "CDE" substr(string, 6)
 @cindex case sensitivity, converting case
 @cindex strings, converting letter case
 @item tolower(@var{string})
-@cindex @code{tolower()} function
+@cindexawkfunc{tolower}
 @cindex convert string to lower case
 Return a copy of @var{string}, with each uppercase character
 in the string replaced with its corresponding lowercase character.
@@ -16392,7 +16416,7 @@ Nonalphabetic characters are left unchanged.  For example,
 @code{tolower("MiXeD cAsE 123")} returns @code{"mixed case 123"}.
 
 @item toupper(@var{string})
-@cindex @code{toupper()} function
+@cindexawkfunc{toupper}
 @cindex convert string to upper case
 Return a copy of @var{string}, with each lowercase character
 in the string replaced with its corresponding uppercase character.
@@ -16826,7 +16850,7 @@ Optional parameters are enclosed in square brackets ([ ]):
 
 @table @code
 @item close(@var{filename} @r{[}, @var{how}@r{]})
-@cindex @code{close()} function
+@cindexawkfunc{close}
 @cindex files, closing
 @cindex close file or coprocess
 Close the file @var{filename} for input or output. Alternatively, the
@@ -16845,7 +16869,7 @@ not matter.
 which discusses this feature in more detail and gives an example.
 
 @item fflush(@r{[}@var{filename}@r{]})
-@cindex @code{fflush()} function
+@cindexawkfunc{fflush}
 @cindex flush buffered output
 Flush any buffered output associated with @var{filename}, which is either a
 file opened for writing or a shell command for redirecting output to
@@ -16905,7 +16929,7 @@ or if @var{filename} is not an open file, pipe, or coprocess.
 In such a case, @code{fflush()} returns @minus{}1, as well.
 
 @item system(@var{command})
-@cindex @code{system()} function
+@cindexawkfunc{system}
 @cindex invoke shell command
 @cindex interacting with other programs
 Execute the operating-system
@@ -17220,7 +17244,7 @@ Optional parameters are enclosed in square brackets ([ ]):
 
 @table @code
 @item mktime(@var{datespec})
-@cindex @code{mktime()} function (@command{gawk})
+@cindexgawkfunc{mktime}
 @cindex generate time values
 Turn @var{datespec} into a timestamp in the same form
 as is returned by @code{systime()}.  It is similar to the function of the
@@ -17251,7 +17275,7 @@ is out of range, @code{mktime()} returns @minus{}1.
 @cindex @code{PROCINFO} array
 @item strftime(@r{[}@var{format} @r{[}, @var{timestamp} @r{[}, @var{utc-flag}@r{]]]})
 @c STARTOFRANGE strf
-@cindex @code{strftime()} function (@command{gawk})
+@cindexgawkfunc{strftime}
 @cindex format time string
 Format the time specified by @var{timestamp}
 based on the contents of the @var{format} string and return the result.
@@ -17269,10 +17293,10 @@ The default string value is
 @code{@w{"%a %b %e %H:%M:%S %Z %Y"}}.  This format string produces
 output that is equivalent to that of the @command{date} utility.
 You can assign a new value to @code{PROCINFO["strftime"]} to
-change the default format.
+change the default format; see below for the various format directives.
 
 @item systime()
-@cindex @code{systime()} function (@command{gawk})
+@cindexgawkfunc{systime}
 @cindex timestamps
 @cindex current system time
 Return the current time as the number of seconds since
@@ -17731,32 +17755,32 @@ bitwise operations just described. They are:
 
 @cindex @command{gawk}, bitwise operations in
 @table @code
-@cindex @code{and()} function (@command{gawk})
+@cindexgawkfunc{and}
 @cindex bitwise AND
 @item and(@var{v1}, @var{v2} @r{[}, @r{@dots{}]})
 Return the bitwise AND of the arguments. There must be at least two.
 
-@cindex @code{compl()} function (@command{gawk})
+@cindexgawkfunc{compl}
 @cindex bitwise complement
 @item compl(@var{val})
 Return the bitwise complement of @var{val}.
 
-@cindex @code{lshift()} function (@command{gawk})
+@cindexgawkfunc{lshift}
 @cindex left shift
 @item lshift(@var{val}, @var{count})
 Return the value of @var{val}, shifted left by @var{count} bits.
 
-@cindex @code{or()} function (@command{gawk})
+@cindexgawkfunc{or}
 @cindex bitwise OR
 @item or(@var{v1}, @var{v2} @r{[}, @r{@dots{}]})
 Return the bitwise OR of the arguments. There must be at least two.
 
-@cindex @code{rshift()} function (@command{gawk})
+@cindexgawkfunc{rshift}
 @cindex right shift
 @item rshift(@var{val}, @var{count})
 Return the value of @var{val}, shifted right by @var{count} bits.
 
-@cindex @code{xor()} function (@command{gawk})
+@cindexgawkfunc{xor}
 @cindex bitwise XOR
 @item xor(@var{v1}, @var{v2} @r{[}, @r{@dots{}]})
 Return the bitwise XOR of the arguments. There must be at least two.
@@ -17885,7 +17909,7 @@ that traverses every element of a true multidimensional array
 (@pxref{Arrays of Arrays}).
 
 @table @code
-@cindex @code{isarray()} function (@command{gawk})
+@cindexgawkfunc{isarray}
 @cindex scalar or array
 @item isarray(@var{x})
 Return a true value if @var{x} is an array. Otherwise return false.
@@ -17920,7 +17944,7 @@ for the full story.
 Optional parameters are enclosed in square brackets ([ ]):
 
 @table @code
-@cindex @code{bindtextdomain()} function (@command{gawk})
+@cindexgawkfunc{bindtextdomain}
 @cindex set directory of message catalogs
 @item bindtextdomain(@var{directory} @r{[}, @var{domain}@r{]})
 Set the directory in which
@@ -17934,7 +17958,7 @@ If @var{directory} is the null string (@code{""}), then
 @code{bindtextdomain()} returns the current binding for the
 given @var{domain}.
 
-@cindex @code{dcgettext()} function (@command{gawk})
+@cindexgawkfunc{dcgettext}
 @cindex translate string
 @item dcgettext(@var{string} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
 Return the translation of @var{string} in
@@ -17942,7 +17966,7 @@ text domain @var{domain} for locale category @var{category}.
 The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
 The default value for @var{category} is @code{"LC_MESSAGES"}.
 
-@cindex @code{dcngettext()} function (@command{gawk})
+@cindexgawkfunc{dcngettext}
 @item dcngettext(@var{string1}, @var{string2}, @var{number} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
 Return the plural form used for @var{number} of the
 translation of @var{string1} and @var{string2} in text domain
@@ -25524,9 +25548,9 @@ sorted array traversal is not the default.
 @subsection Sorting Array Values and Indices with @command{gawk}
 
 @cindex arrays, sorting
-@cindex @code{asort()} function (@command{gawk})
+@cindexgawkfunc{asort}
 @cindex @code{asort()} function (@command{gawk}), arrays@comma{} sorting
-@cindex @code{asorti()} function (@command{gawk})
+@cindexgawkfunc{asorti}
 @cindex @code{asorti()} function (@command{gawk}), arrays@comma{} sorting
 @cindex sort function, arrays, sorting
 In most @command{awk} implementations, sorting an array requires writing
@@ -26506,7 +26530,7 @@ String constants marked with a leading underscore
 are candidates for translation at runtime.
 String constants without a leading underscore are not translated.
 
-@cindex @code{dcgettext()} function (@command{gawk})
+@cindexgawkfunc{dcgettext}
 @item dcgettext(@var{string} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
 Return the translation of @var{string} in
 text domain @var{domain} for locale category @var{category}.
@@ -26532,7 +26556,7 @@ chosen to be simple and to allow for reasonable @command{awk}-style
 default arguments.
 @end quotation
 
-@cindex @code{dcngettext()} function (@command{gawk})
+@cindexgawkfunc{dcngettext}
 @item dcngettext(@var{string1}, @var{string2}, @var{number} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
 Return the plural form used for @var{number} of the
 translation of @var{string1} and @var{string2} in text domain
@@ -26548,7 +26572,7 @@ The same remarks about argument order as for the @code{dcgettext()} function app
 @cindex files, @code{.gmo}, specifying directory of
 @cindex message object files, specifying directory of
 @cindex files, message object, specifying directory of
-@cindex @code{bindtextdomain()} function (@command{gawk})
+@cindexgawkfunc{bindtextdomain}
 @item bindtextdomain(@var{directory} @r{[}, @var{domain}@r{]})
 Change the directory in which
 @code{gettext} looks for @file{.gmo} files, in case they
