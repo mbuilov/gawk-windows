@@ -32314,7 +32314,7 @@ ret = reada("arraydump.bin", array)
 @subsection Reading An Entire File
 
 The @code{readfile} extension adds a single function
-named @code{readfile()}:
+named @code{readfile()}, and an input parser:
 
 @table @code
 @item @@load "readfile"
@@ -32325,6 +32325,12 @@ This is how you load the extension.
 The argument is the name of the file to read.  The return value is a
 string containing the entire contents of the requested file.  Upon error,
 the function returns the empty string and sets @code{ERRNO}.
+
+@item BEGIN @{ PROCINFO["readfile"] = 1 @}
+In addition, the extension adds an input parser that is activated if
+@code{PROCINFO["readfile"]} exists.
+When activated, each input file is returned in its entirety as @code{$0}.
+@code{RT} is set to the null string.
 @end table
 
 Here is an example:
