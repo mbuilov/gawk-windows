@@ -2555,40 +2555,39 @@ gawk "@{ print \"\042\" $0 \"\042\" @}" @var{file}
 @c For gawk >= 4.0, update these data files. No-one has such slow modems!
 
 @cindex input files, examples
-@cindex @code{BBS-list} file
+@cindex @code{mail-list} file
 Many of the examples in this @value{DOCUMENT} take their input from two sample
-data files.  The first, @file{BBS-list}, represents a list of
-computer bulletin board systems together with information about those systems.
+data files.  The first, @file{mail-list}, represents a list of peoples' names
+together with their email addresses and information about those people.
 The second data file, called @file{inventory-shipped}, contains
 information about monthly shipments.  In both files,
 each line is considered to be one @dfn{record}.
 
-In the data file @file{BBS-list}, each record contains the name of a computer
-bulletin board, its phone number, the board's baud rate(s), and a code for
-the number of hours it is operational.  An @samp{A} in the last column
-means the board operates 24 hours a day.  A @samp{B} in the last
-column means the board only operates on evening and weekend hours.
-A @samp{C} means the board operates only on weekends:
+In the data file @file{mail-list}, each record contains the name of a person,
+his/her phone number, his/her email-address, and a code for their relationship
+with the author of the list.  An @samp{A} in the last column
+means that the person is an acquaintance.  An @samp{F} in the last
+column means that the person is a friend.
+An @samp{R} means that the person is a relative:
 
-@c 2e: Update the baud rates to reflect today's faster modems
 @example
 @c system if test ! -d eg      ; then mkdir eg      ; fi
 @c system if test ! -d eg/lib  ; then mkdir eg/lib  ; fi
 @c system if test ! -d eg/data ; then mkdir eg/data ; fi
 @c system if test ! -d eg/prog ; then mkdir eg/prog ; fi
 @c system if test ! -d eg/misc ; then mkdir eg/misc ; fi
-@c file eg/data/BBS-list
-aardvark     555-5553     1200/300          B
-alpo-net     555-3412     2400/1200/300     A
-barfly       555-7685     1200/300          A
-bites        555-1675     2400/1200/300     A
-camelot      555-0542     300               C
-core         555-2912     1200/300          C
-fooey        555-1234     2400/1200/300     B
-foot         555-6699     1200/300          B
-macfoo       555-6480     1200/300          A
-sdace        555-3430     2400/1200/300     A
-sabafoo      555-2127     1200/300          C
+@c file eg/data/mail-list
+Amelia       555-5553     amelia.zodiacusque@@gmail.com    F
+Anthony      555-3412     anthony.asserturo@@hotmail.com   A
+Becky        555-7685     becky.algebrarum@@gmail.com      A
+Bill         555-1675     bill.drowning@@hotmail.com       A
+Broderick    555-0542     broderick.aliquotiens@@yahoo.com R
+Camilla      555-2912     camilla.infusarum@@skynet.be     R
+Fabius       555-1234     fabius.undevicesimus@@ucb.edu    F
+Julie        555-6699     julie.perscrutabor@@skeeve.com   F
+Martin       555-6480     martin.codicibus@@hotmail.com    A
+Samuel       555-3430     samuel.lanceolis@@shu.edu        A
+Jean-Paul    555-2127     jeanpaul.campanorum@@nyu.edu     R
 @c endfile
 @end example
 
@@ -2630,23 +2629,23 @@ in the directory @file{awklib/eg/data}.
 @section Some Simple Examples
 
 The following command runs a simple @command{awk} program that searches the
-input file @file{BBS-list} for the character string @samp{foo} (a
+input file @file{mail-list} for the character string @samp{li} (a
 grouping of characters is usually called a @dfn{string};
 the term @dfn{string} is based on similar usage in English, such
 as ``a string of pearls,'' or ``a string of cars in a train''):
 
 @example
-awk '/foo/ @{ print $0 @}' BBS-list
+awk '/li/ @{ print $0 @}' mail-list
 @end example
 
 @noindent
-When lines containing @samp{foo} are found, they are printed because
+When lines containing @samp{li} are found, they are printed because
 @w{@samp{print $0}} means print the current line.  (Just @samp{print} by
 itself means the same thing, so we could have written that
 instead.)
 
-You will notice that slashes (@samp{/}) surround the string @samp{foo}
-in the @command{awk} program.  The slashes indicate that @samp{foo}
+You will notice that slashes (@samp{/}) surround the string @samp{li}
+in the @command{awk} program.  The slashes indicate that @samp{li}
 is the pattern to search for.  This type of pattern is called a
 @dfn{regular expression}, which is covered in more detail later
 (@pxref{Regexp}).
@@ -2658,11 +2657,11 @@ interpret any of it as special shell characters.
 Here is what this program prints:
 
 @example
-$ @kbd{awk '/foo/ @{ print $0 @}' BBS-list}
-@print{} fooey        555-1234     2400/1200/300     B
-@print{} foot         555-6699     1200/300          B
-@print{} macfoo       555-6480     1200/300          A
-@print{} sabafoo      555-2127     1200/300          C
+$ @kbd{awk '/li/ @{ print $0 @}' mail-list}
+@print{} Amelia       555-5553     amelia.zodiacusque@@gmail.com    F
+@print{} Broderick    555-0542     broderick.aliquotiens@@yahoo.com R
+@print{} Julie        555-6699     julie.perscrutabor@@skeeve.com   F
+@print{} Samuel       555-3430     samuel.lanceolis@@shu.edu        A
 @end example
 
 @cindex actions, default
@@ -2675,7 +2674,7 @@ action is to print all lines that match the pattern.
 @cindex actions, empty
 Thus, we could leave out the action (the @code{print} statement and the curly
 braces) in the previous example and the result would be the same:
-@command{awk} prints all lines matching the pattern @samp{foo}.  By comparison,
+@command{awk} prints all lines matching the pattern @samp{li}.  By comparison,
 omitting the @code{print} statement but retaining the curly braces makes an
 empty action that does nothing (i.e., no lines are printed).
 
@@ -2820,29 +2819,23 @@ This program prints every line that contains the string
 strings, it is printed twice, once by each rule.
 
 This is what happens if we run this program on our two sample data files,
-@file{BBS-list} and @file{inventory-shipped}:
+@file{mail-list} and @file{inventory-shipped}:
 
 @example
 $ @kbd{awk '/12/ @{ print $0 @}}
->      @kbd{/21/ @{ print $0 @}' BBS-list inventory-shipped}
-@print{} aardvark     555-5553     1200/300          B
-@print{} alpo-net     555-3412     2400/1200/300     A
-@print{} barfly       555-7685     1200/300          A
-@print{} bites        555-1675     2400/1200/300     A
-@print{} core         555-2912     1200/300          C
-@print{} fooey        555-1234     2400/1200/300     B
-@print{} foot         555-6699     1200/300          B
-@print{} macfoo       555-6480     1200/300          A
-@print{} sdace        555-3430     2400/1200/300     A
-@print{} sabafoo      555-2127     1200/300          C
-@print{} sabafoo      555-2127     1200/300          C
+>      @kbd{/21/ @{ print $0 @}' mail-list inventory-shipped}
+@print{} Anthony      555-3412     anthony.asserturo@@hotmail.com   A
+@print{} Camilla      555-2912     camilla.infusarum@@skynet.be     R
+@print{} Fabius       555-1234     fabius.undevicesimus@@ucb.edu    F
+@print{} Jean-Paul    555-2127     jeanpaul.campanorum@@nyu.edu     R
+@print{} Jean-Paul    555-2127     jeanpaul.campanorum@@nyu.edu     R
 @print{} Jan  21  36  64 620
 @print{} Apr  21  70  74 514
 @end example
 
 @noindent
-Note how the line beginning with @samp{sabafoo}
-in @file{BBS-list} was printed twice, once for each rule.
+Note how the line beginning with @samp{Jean-Paul}
+in @file{mail-list} was printed twice, once for each rule.
 
 @node More Complex
 @section A More Complex Example
@@ -2921,7 +2914,7 @@ separate rule, like this:
 
 @example
 awk '/12/  @{ print $0 @}
-     /21/  @{ print $0 @}' BBS-list inventory-shipped
+     /21/  @{ print $0 @}' mail-list inventory-shipped
 @end example
 
 @cindex @command{gawk}, newlines in
@@ -4331,14 +4324,14 @@ slashes.  Then the regular expression is tested against the
 entire text of each record.  (Normally, it only needs
 to match some part of the text in order to succeed.)  For example, the
 following prints the second field of each record that contains the string
-@samp{foo} anywhere in it:
+@samp{li} anywhere in it:
 
 @example
-$ @kbd{awk '/foo/ @{ print $2 @}' BBS-list}
-@print{} 555-1234
+$ @kbd{awk '/li/ @{ print $2 @}' mail-list}
+@print{} 555-5553
+@print{} 555-0542
 @print{} 555-6699
-@print{} 555-6480
-@print{} 555-2127
+@print{} 555-3430
 @end example
 
 @cindex regular expressions, operators
@@ -5647,66 +5640,78 @@ For example:
 
 @cindex @code{BEGIN} pattern
 @example
-awk 'BEGIN @{ RS = "/" @}
-     @{ print $0 @}' BBS-list
+awk 'BEGIN @{ RS = "u" @}
+     @{ print $0 @}' mail-list
 @end example
 
 @noindent
-changes the value of @code{RS} to @code{"/"}, before reading any input.
-This is a string whose first character is a slash; as a result, records
-are separated by slashes.  Then the input file is read, and the second
+changes the value of @code{RS} to @samp{u}, before reading any input.
+This is a string whose first character is the letter ``u;'' as a result, records
+are separated by the letter ``u.''  Then the input file is read, and the second
 rule in the @command{awk} program (the action with no pattern) prints each
 record.  Because each @code{print} statement adds a newline at the end of
 its output, this @command{awk} program copies the input
-with each slash changed to a newline.  Here are the results of running
-the program on @file{BBS-list}:
+with each @samp{u} changed to a newline.  Here are the results of running
+the program on @file{mail-list}:
 
 @example
-$ @kbd{awk 'BEGIN @{ RS = "/" @}}
->      @kbd{@{ print $0 @}' BBS-list}
-@print{} aardvark     555-5553     1200
-@print{} 300          B
-@print{} alpo-net     555-3412     2400
-@print{} 1200
-@print{} 300     A
-@print{} barfly       555-7685     1200
-@print{} 300          A
-@print{} bites        555-1675     2400
-@print{} 1200
-@print{} 300     A
-@print{} camelot      555-0542     300               C
-@print{} core         555-2912     1200
-@print{} 300          C
-@print{} fooey        555-1234     2400
-@print{} 1200
-@print{} 300     B
-@print{} foot         555-6699     1200
-@print{} 300          B
-@print{} macfoo       555-6480     1200
-@print{} 300          A
-@print{} sdace        555-3430     2400
-@print{} 1200
-@print{} 300     A
-@print{} sabafoo      555-2127     1200
-@print{} 300          C
-@print{}
+$ @kbd{awk 'BEGIN @{ RS = "u" @}}
+>      @kbd{@{ print $0 @}' mail-list}
+@print{} Amelia       555-5553     amelia.zodiac
+@print{} sq
+@print{} e@@gmail.com    F
+@print{} Anthony      555-3412     anthony.assert
+@print{} ro@@hotmail.com   A
+@print{} Becky        555-7685     becky.algebrar
+@print{} m@@gmail.com      A
+@print{} Bill         555-1675     bill.drowning@@hotmail.com       A
+@print{} Broderick    555-0542     broderick.aliq
+@print{} otiens@@yahoo.com R
+@print{} Camilla      555-2912     camilla.inf
+@print{} sar
+@print{} m@@skynet.be     R
+@print{} Fabi
+@print{} s       555-1234     fabi
+@print{} s.
+@print{} ndevicesim
+@print{} s@@
+@print{} cb.ed
+@print{}     F
+@print{} J
+@print{} lie        555-6699     j
+@print{} lie.perscr
+@print{} tabor@@skeeve.com   F
+@print{} Martin       555-6480     martin.codicib
+@print{} s@@hotmail.com    A
+@print{} Sam
+@print{} el       555-3430     sam
+@print{} el.lanceolis@@sh
+@print{} .ed
+@print{}         A
+@print{} Jean-Pa
+@print{} l    555-2127     jeanpa
+@print{} l.campanor
+@print{} m@@ny
+@print{} .ed
+@print{}      R
+@print{} 
 @end example
 
 @noindent
-Note that the entry for the @samp{camelot} BBS is not split.
+Note that the entry for the name @samp{Bill} is not split.
 In the original data file
 (@pxref{Sample Data Files}),
 the line looks like this:
 
 @example
-camelot      555-0542     300               C
+Bill         555-1675     bill.drowning@@hotmail.com       A
 @end example
 
 @noindent
-It has one baud rate only, so there are no slashes in the record,
-unlike the others which have two or more baud rates.
-In fact, this record is treated as part of the record
-for the @samp{core} BBS; the newline separating them in the output
+It contains no @samp{u} so there is no reason to split the record,
+unlike the others which have one or more occurrences of the @samp{u}.
+In fact, this record is treated as part of the previous record;
+the newline separating them in the output
 is the original newline in the data file, not the one added by
 @command{awk} when it printed the record!
 
@@ -5717,14 +5722,17 @@ using the variable-assignment feature
 (@pxref{Other Arguments}):
 
 @example
-awk '@{ print $0 @}' RS="/" BBS-list
+awk '@{ print $0 @}' RS="u" mail-list
 @end example
 
 @noindent
-This sets @code{RS} to @samp{/} before processing @file{BBS-list}.
+This sets @code{RS} to @samp{u} before processing @file{mail-list}.
 
-Using an unusual character such as @samp{/} for the record separator
-produces correct behavior in the vast majority of cases.
+Using an alphabetic character such as @samp{u} for the record separator
+is highly likely to produce strange results.
+Using an unusual character such as @samp{/} is more likely to
+produce correct behavior in the majority of cases, but there
+are no guarantees. The moral is: Know Your Data.
 
 There is one unusual case, that occurs when @command{gawk} is
 being fully POSIX-compliant (@pxref{Options}).
@@ -6011,31 +6019,29 @@ when you are not interested in specific fields.
 Here are some more examples:
 
 @example
-$ @kbd{awk '$1 ~ /foo/ @{ print $0 @}' BBS-list}
-@print{} fooey        555-1234     2400/1200/300     B
-@print{} foot         555-6699     1200/300          B
-@print{} macfoo       555-6480     1200/300          A
-@print{} sabafoo      555-2127     1200/300          C
+$ @kbd{awk '$1 ~ /li/ @{ print $0 @}' mail-list}
+@print{} Amelia       555-5553     amelia.zodiacusque@@gmail.com    F
+@print{} Julie        555-6699     julie.perscrutabor@@skeeve.com   F
 @end example
 
 @noindent
-This example prints each record in the file @file{BBS-list} whose first
-field contains the string @samp{foo}.  The operator @samp{~} is called a
+This example prints each record in the file @file{mail-list} whose first
+field contains the string @samp{li}.  The operator @samp{~} is called a
 @dfn{matching operator}
 (@pxref{Regexp Usage});
 it tests whether a string (here, the field @code{$1}) matches a given regular
 expression.
 
 By contrast, the following example
-looks for @samp{foo} in @emph{the entire record} and prints the first
+looks for @samp{li} in @emph{the entire record} and prints the first
 field and the last field for each matching input record:
 
 @example
-$ @kbd{awk '/foo/ @{ print $1, $NF @}' BBS-list}
-@print{} fooey B
-@print{} foot B
-@print{} macfoo A
-@print{} sabafoo C
+$ @kbd{awk '/li/ @{ print $1, $NF @}' mail-list}
+@print{} Amelia F
+@print{} Broderick R
+@print{} Julie F
+@print{} Samuel A
 @end example
 @c ENDOFRANGE fiex
 
@@ -6063,7 +6069,7 @@ the record has fewer than 20 fields, so this prints a blank line.
 Here is another example of using expressions as field numbers:
 
 @example
-awk '@{ print $(2*2) @}' BBS-list
+awk '@{ print $(2*2) @}' mail-list
 @end example
 
 @command{awk} evaluates the expression @samp{(2*2)} and uses
@@ -6072,8 +6078,8 @@ represents multiplication, so the expression @samp{2*2} evaluates to four.
 The parentheses are used so that the multiplication is done before the
 @samp{$} operation; they are necessary whenever there is a binary
 operator in the field-number expression.  This example, then, prints the
-hours of operation (the fourth field) for every line of the file
-@file{BBS-list}.  (All of the @command{awk} operators are listed, in
+type of relationship (the fourth field) for every line of the file
+@file{mail-list}.  (All of the @command{awk} operators are listed, in
 order of decreasing precedence, in
 @ref{Precedence}.)
 
@@ -6635,66 +6641,59 @@ figures that you really want your fields to be separated with TABs and
 not @samp{t}s.  Use @samp{-v FS="t"} or @samp{-F"[t]"} on the command line
 if you really do want to separate your fields with @samp{t}s.
 
-As an example, let's use an @command{awk} program file called @file{baud.awk}
-that contains the pattern @code{/300/} and the action @samp{print $1}:
+As an example, let's use an @command{awk} program file called @file{edu.awk}
+that contains the pattern @code{/edu/} and the action @samp{print $1}:
 
 @example
-/300/   @{ print $1 @}
+/edu/   @{ print $1 @}
 @end example
 
 Let's also set @code{FS} to be the @samp{-} character and run the
-program on the file @file{BBS-list}.  The following command prints a
-list of the names of the bulletin boards that operate at 300 baud and
+program on the file @file{mail-list}.  The following command prints a
+list of the names of the people that work at or attend a university, and
 the first three digits of their phone numbers:
 
 @c tweaked to make the tex output look better in @smallbook
 @example
-$ @kbd{awk -F- -f baud.awk BBS-list}
-@print{} aardvark     555
-@print{} alpo
-@print{} barfly       555
-@print{} bites        555
-@print{} camelot      555
-@print{} core         555
-@print{} fooey        555
-@print{} foot         555
-@print{} macfoo       555
-@print{} sdace        555
-@print{} sabafoo      555
+$ @kbd{awk -F- -f edu.awk mail-list}
+@print{} Fabius       555
+@print{} Samuel       555
+@print{} Jean
 @end example
 
 @noindent
-Note the second line of output.  The second line
+Note the third line of output.  The third line
 in the original file looked like this:
 
 @example
-alpo-net     555-3412     2400/1200/300     A
+Jean-Paul    555-2127     jeanpaul.campanorum@@nyu.edu     R
 @end example
 
-The @samp{-} as part of the system's name was used as the field
+The @samp{-} as part of the person's name was used as the field
 separator, instead of the @samp{-} in the phone number that was
 originally intended.  This demonstrates why you have to be careful in
 choosing your field and record separators.
 
 @cindex Unix @command{awk}, password files@comma{} field separators and
-Perhaps the most common use of a single character as the field
-separator occurs when processing the Unix system password file.
-On many Unix systems, each user has a separate entry in the system password
-file, one line per user.  The information in these lines is separated
-by colons.  The first field is the user's login name and the second is
-the user's (encrypted or shadow) password.  A password file entry might look
-like this:
+Perhaps the most common use of a single character as the field separator
+occurs when processing the Unix system password file.  On many Unix
+systems, each user has a separate entry in the system password file, one
+line per user.  The information in these lines is separated by colons.
+The first field is the user's login name and the second is the user's
+encrypted or shadow password.  (A shadow password is indicated by the
+presence of a single @samp{x} in the second field.)  A password file
+entry might look like this:
 
 @cindex Robbins, Arnold
 @example
-arnold:xyzzy:2076:10:Arnold Robbins:/home/arnold:/bin/bash
+arnold:x:2076:10:Arnold Robbins:/home/arnold:/bin/bash
 @end example
 
 The following program searches the system password file and prints
-the entries for users who have no password:
+the entries for users whose full name is not indicated:
 
 @example
-awk -F: '$2 == ""' /etc/passwd
+awk -F: '$5 == ""' /etc/passwd
 @end example
 
 @node Full Line Fields
@@ -8265,13 +8264,29 @@ program by using a new value of @code{OFS}.
 
 @example
 $ @kbd{awk 'BEGIN @{ OFS = ";"; ORS = "\n\n" @}}
->            @kbd{@{ print $1, $2 @}' BBS-list}
-@print{} aardvark;555-5553
-@print{}
-@print{} alpo-net;555-3412
-@print{}
-@print{} barfly;555-7685
-@dots{}
+>            @kbd{@{ print $1, $2 @}' mail-list}
+@print{} Amelia;555-5553
+@print{} 
+@print{} Anthony;555-3412
+@print{} 
+@print{} Becky;555-7685
+@print{} 
+@print{} Bill;555-1675
+@print{} 
+@print{} Broderick;555-0542
+@print{} 
+@print{} Camilla;555-2912
+@print{} 
+@print{} Fabius;555-1234
+@print{} 
+@print{} Julie;555-6699
+@print{} 
+@print{} Martin;555-6480
+@print{} 
+@print{} Samuel;555-3430
+@print{} 
+@print{} Jean-Paul;555-2127
+@print{} 
 @end example
 
 If the value of @code{ORS} does not contain a newline, the program's output
@@ -8745,30 +8760,30 @@ The following simple example shows
 how to use @code{printf} to make an aligned table:
 
 @example
-awk '@{ printf "%-10s %s\n", $1, $2 @}' BBS-list
+awk '@{ printf "%-10s %s\n", $1, $2 @}' mail-list
 @end example
 
 @noindent
 This command
-prints the names of the bulletin boards (@code{$1}) in the file
-@file{BBS-list} as a string of 10 characters that are left-justified.  It also
+prints the names of the people (@code{$1}) in the file
+@file{mail-list} as a string of 10 characters that are left-justified.  It also
 prints the phone numbers (@code{$2}) next on the line.  This
 produces an aligned two-column table of names and phone numbers,
 as shown here:
 
 @example
-$ @kbd{awk '@{ printf "%-10s %s\n", $1, $2 @}' BBS-list}
-@print{} aardvark   555-5553
-@print{} alpo-net   555-3412
-@print{} barfly     555-7685
-@print{} bites      555-1675
-@print{} camelot    555-0542
-@print{} core       555-2912
-@print{} fooey      555-1234
-@print{} foot       555-6699
-@print{} macfoo     555-6480
-@print{} sdace      555-3430
-@print{} sabafoo    555-2127
+$ @kbd{awk '@{ printf "%-10s %s\n", $1, $2 @}' mail-list}
+@print{} Amelia     555-5553
+@print{} Anthony    555-3412
+@print{} Becky      555-7685
+@print{} Bill       555-1675
+@print{} Broderick  555-0542
+@print{} Camilla    555-2912
+@print{} Fabius     555-1234
+@print{} Julie      555-6699
+@print{} Martin     555-6480
+@print{} Samuel     555-3430
+@print{} Jean-Paul  555-2127
 @end example
 
 In this case, the phone numbers had to be printed as strings because
@@ -8789,7 +8804,7 @@ the @command{awk} program:
 @example
 awk 'BEGIN @{ print "Name      Number"
              print "----      ------" @}
-     @{ printf "%-10s %s\n", $1, $2 @}' BBS-list
+     @{ printf "%-10s %s\n", $1, $2 @}' mail-list
 @end example
 
 The above example mixes @code{print} and @code{printf} statements in
@@ -8799,7 +8814,7 @@ same results:
 @example
 awk 'BEGIN @{ printf "%-10s %s\n", "Name", "Number"
              printf "%-10s %s\n", "----", "------" @}
-     @{ printf "%-10s %s\n", $1, $2 @}' BBS-list
+     @{ printf "%-10s %s\n", $1, $2 @}' mail-list
 @end example
 
 @noindent
@@ -8814,7 +8829,7 @@ emphasized by storing it in a variable, like this:
 awk 'BEGIN @{ format = "%-10s %s\n"
              printf format, "Name", "Number"
              printf format, "----", "------" @}
-     @{ printf format, $1, $2 @}' BBS-list
+     @{ printf format, $1, $2 @}' mail-list
 @end example
 
 @c !!! exercise
@@ -8871,20 +8886,20 @@ before the first output is written to it.  Subsequent writes to the same
 @var{output-file} do not erase @var{output-file}, but append to it.
 (This is different from how you use redirections in shell scripts.)
 If @var{output-file} does not exist, it is created.  For example, here
-is how an @command{awk} program can write a list of BBS names to one
+is how an @command{awk} program can write a list of peoples' names to one
 file named @file{name-list}, and a list of phone numbers to another file
 named @file{phone-list}:
 
 @example
 $ @kbd{awk '@{ print $2 > "phone-list"}
->        @kbd{print $1 > "name-list" @}' BBS-list}
+>        @kbd{print $1 > "name-list" @}' mail-list}
 $ @kbd{cat phone-list}
 @print{} 555-5553
 @print{} 555-3412
 @dots{}
 $ @kbd{cat name-list}
-@print{} aardvark
-@print{} alpo-net
+@print{} Amelia
+@print{} Anthony
 @dots{}
 @end example
 
@@ -8913,7 +8928,7 @@ to another process created to execute @var{command}.
 The redirection argument @var{command} is actually an @command{awk}
 expression.  Its value is converted to a string whose contents give
 the shell command to be run.  For example, the following produces two
-files, one unsorted list of BBS names, and one list sorted in reverse
+files, one unsorted list of peoples' names, and one list sorted in reverse
 alphabetical order:
 
 @ignore
@@ -8926,7 +8941,7 @@ alone for now and let's hope no-one notices.
 @example
 awk '@{ print $1 > "names.unsorted"
        command = "sort -r > names.sorted"
-       print $1 | command @}' BBS-list
+       print $1 | command @}' mail-list
 @end example
 
 The unsorted list is written with an ordinary redirection, while
@@ -9997,7 +10012,7 @@ its position among the input file arguments---after the processing of the
 preceding input file argument.  For example:
 
 @example
-awk '@{ print $n @}' n=4 inventory-shipped n=2 BBS-list
+awk '@{ print $n @}' n=4 inventory-shipped n=2 mail-list
 @end example
 
 @noindent
@@ -10006,10 +10021,10 @@ the first file is read, the command line sets the variable @code{n}
 equal to four.  This causes the fourth field to be printed in lines from
 @file{inventory-shipped}.  After the first file has finished,
 but before the second file is started, @code{n} is set to two, so that the
-second field is printed in lines from @file{BBS-list}:
+second field is printed in lines from @file{mail-list}:
 
 @example
-$ @kbd{awk '@{ print $n @}' n=4 inventory-shipped n=2 BBS-list}
+$ @kbd{awk '@{ print $n @}' n=4 inventory-shipped n=2 mail-list}
 @print{} 15
 @print{} 24
 @dots{}
@@ -10332,9 +10347,9 @@ specific operator to represent it.  Instead, concatenation is performed by
 writing expressions next to one another, with no operator.  For example:
 
 @example
-$ @kbd{awk '@{ print "Field number one: " $1 @}' BBS-list}
-@print{} Field number one: aardvark
-@print{} Field number one: alpo-net
+$ @kbd{awk '@{ print "Field number one: " $1 @}' mail-list}
+@print{} Field number one: Amelia
+@print{} Field number one: Anthony
 @dots{}
 @end example
 
@@ -10342,9 +10357,9 @@ Without the space in the string constant after the @samp{:}, the line
 runs together.  For example:
 
 @example
-$ @kbd{awk '@{ print "Field number one:" $1 @}' BBS-list}
-@print{} Field number one:aardvark
-@print{} Field number one:alpo-net
+$ @kbd{awk '@{ print "Field number one:" $1 @}' mail-list}
+@print{} Field number one:Amelia
+@print{} Field number one:Anthony
 @dots{}
 @end example
 
@@ -11419,10 +11434,10 @@ The Boolean operators are:
 @item @var{boolean1} && @var{boolean2}
 True if both @var{boolean1} and @var{boolean2} are true.  For example,
 the following statement prints the current input record if it contains
-both @samp{2400} and @samp{foo}:
+both @samp{edu} and @samp{li}:
 
 @example
-if ($0 ~ /2400/ && $0 ~ /foo/) print
+if ($0 ~ /edu/ && $0 ~ /li/) print
 @end example
 
 @cindex side effects, Boolean operators
@@ -11435,11 +11450,11 @@ no substring @samp{foo} in the record.
 @item @var{boolean1} || @var{boolean2}
 True if at least one of @var{boolean1} or @var{boolean2} is true.
 For example, the following statement prints all records in the input
-that contain @emph{either} @samp{2400} or
-@samp{foo} or both:
+that contain @emph{either} @samp{edu} or
+@samp{li} or both:
 
 @example
-if ($0 ~ /2400/ || $0 ~ /foo/) print
+if ($0 ~ /edu/ || $0 ~ /li/) print
 @end example
 
 The subexpression @var{boolean2} is evaluated only if @var{boolean1}
@@ -12034,7 +12049,7 @@ slashes (@code{/@var{regexp}/}), or any expression whose string value
 is used as a dynamic regular expression
 (@pxref{Computed Regexps}).
 The following example prints the second field of each input record
-whose first field is precisely @samp{foo}:
+whose first field is precisely @samp{li}:
 
 @cindex @code{/} (forward slash), patterns and
 @cindex forward slash (@code{/}), patterns and
@@ -12043,68 +12058,65 @@ whose first field is precisely @samp{foo}:
 @cindex @code{!} (exclamation point), @code{!~} operator
 @cindex exclamation point (@code{!}), @code{!~} operator
 @example
-$ @kbd{awk '$1 == "foo" @{ print $2 @}' BBS-list}
+$ @kbd{awk '$1 == "li" @{ print $2 @}' mail-list}
 @end example
 
 @noindent
-(There is no output, because there is no BBS site with the exact name @samp{foo}.)
+(There is no output, because there is no person with the exact name @samp{li}.)
 Contrast this with the following regular expression match, which
-accepts any record with a first field that contains @samp{foo}:
+accepts any record with a first field that contains @samp{li}:
 
 @example
-$ @kbd{awk '$1 ~ /foo/ @{ print $2 @}' BBS-list}
-@print{} 555-1234
+$ @kbd{awk '$1 ~ /foo/ @{ print $2 @}' mail-list}
+@print{} 555-5553
 @print{} 555-6699
-@print{} 555-6480
-@print{} 555-2127
 @end example
 
 @cindex regexp constants, as patterns
 @cindex patterns, regexp constants as
 A regexp constant as a pattern is also a special case of an expression
-pattern.  The expression @code{/foo/} has the value one if @samp{foo}
-appears in the current input record. Thus, as a pattern, @code{/foo/}
-matches any record containing @samp{foo}.
+pattern.  The expression @code{/li/} has the value one if @samp{li}
+appears in the current input record. Thus, as a pattern, @code{/li/}
+matches any record containing @samp{li}.
 
 @cindex Boolean expressions, as patterns
 Boolean expressions are also commonly used as patterns.
 Whether the pattern
 matches an input record depends on whether its subexpressions match.
 For example, the following command prints all the records in
-@file{BBS-list} that contain both @samp{2400} and @samp{foo}:
+@file{mail-list} that contain both @samp{edu} and @samp{li}:
 
 @example
-$ @kbd{awk '/2400/ && /foo/' BBS-list}
-@print{} fooey        555-1234     2400/1200/300     B
+$ @kbd{awk '/edu/ && /li/' mail-list}
+@print{} Samuel       555-3430     samuel.lanceolis@@shu.edu        A
 @end example
 
 The following command prints all records in
-@file{BBS-list} that contain @emph{either} @samp{2400} or @samp{foo}
+@file{mail-list} that contain @emph{either} @samp{edu} or @samp{li}
 (or both, of course):
 
 @example
-$ @kbd{awk '/2400/ || /foo/' BBS-list}
-@print{} alpo-net     555-3412     2400/1200/300     A
-@print{} bites        555-1675     2400/1200/300     A
-@print{} fooey        555-1234     2400/1200/300     B
-@print{} foot         555-6699     1200/300          B
-@print{} macfoo       555-6480     1200/300          A
-@print{} sdace        555-3430     2400/1200/300     A
-@print{} sabafoo      555-2127     1200/300          C
+$ @kbd{awk '/edu/ || /li/' mail-list}
+@print{} Amelia       555-5553     amelia.zodiacusque@@gmail.com    F
+@print{} Broderick    555-0542     broderick.aliquotiens@@yahoo.com R
+@print{} Fabius       555-1234     fabius.undevicesimus@@ucb.edu    F
+@print{} Julie        555-6699     julie.perscrutabor@@skeeve.com   F
+@print{} Samuel       555-3430     samuel.lanceolis@@shu.edu        A
+@print{} Jean-Paul    555-2127     jeanpaul.campanorum@@nyu.edu     R
 @end example
 
 The following command prints all records in
-@file{BBS-list} that do @emph{not} contain the string @samp{foo}:
+@file{mail-list} that do @emph{not} contain the string @samp{li}:
 
 @example
-$ @kbd{awk '! /foo/' BBS-list}
-@print{} aardvark     555-5553     1200/300          B
-@print{} alpo-net     555-3412     2400/1200/300     A
-@print{} barfly       555-7685     1200/300          A
-@print{} bites        555-1675     2400/1200/300     A
-@print{} camelot      555-0542     300               C
-@print{} core         555-2912     1200/300          C
-@print{} sdace        555-3430     2400/1200/300     A
+$ @kbd{awk '! /li/' mail-list}
+@print{} Anthony      555-3412     anthony.asserturo@@hotmail.com   A
+@print{} Becky        555-7685     becky.algebrarum@@gmail.com      A
+@print{} Bill         555-1675     bill.drowning@@hotmail.com       A
+@print{} Camilla      555-2912     camilla.infusarum@@skynet.be     R
+@print{} Fabius       555-1234     fabius.undevicesimus@@ucb.edu    F
+@print{} Martin       555-6480     martin.codicibus@@hotmail.com    A
+@print{} Jean-Paul    555-2127     jeanpaul.campanorum@@nyu.edu     R
 @end example
 
 @cindex @code{BEGIN} pattern, Boolean patterns and
@@ -12243,22 +12255,22 @@ input is read.  For example:
 
 @example
 $ @kbd{awk '}
-> @kbd{BEGIN @{ print "Analysis of \"foo\"" @}}
-> @kbd{/foo/ @{ ++n @}}
-> @kbd{END   @{ print "\"foo\" appears", n, "times." @}' BBS-list}
-@print{} Analysis of "foo"
-@print{} "foo" appears 4 times.
+> @kbd{BEGIN @{ print "Analysis of \"li\"" @}}
+> @kbd{/li/ @{ ++n @}}
+> @kbd{END   @{ print "\"li\" appears in", n, "records." @}' mail-list}
+@print{} Analysis of "li"
+@print{} "li" appears in 4 records.
 @end example
 
 @cindex @code{BEGIN} pattern, operators and
 @cindex @code{END} pattern, operators and
-This program finds the number of records in the input file @file{BBS-list}
-that contain the string @samp{foo}.  The @code{BEGIN} rule prints a title
+This program finds the number of records in the input file @file{mail-list}
+that contain the string @samp{li}.  The @code{BEGIN} rule prints a title
 for the report.  There is no need to use the @code{BEGIN} rule to
 initialize the counter @code{n} to zero, since @command{awk} does this
 automatically (@pxref{Variables}).
 The second rule increments the variable @code{n} every time a
-record containing the pattern @samp{foo} is read.  The @code{END} rule
+record containing the pattern @samp{li} is read.  The @code{END} rule
 prints the value of @code{n} at the end of the run.
 
 The special patterns @code{BEGIN} and @code{END} cannot be used in ranges
@@ -12422,7 +12434,7 @@ both @code{BEGINFILE} and @code{ENDFILE}.  Only the @samp{getline
 In most other @command{awk} implementations, or if @command{gawk} is in
 compatibility mode (@pxref{Options}), they are not special.
 
-@c FIXME: For 4.1 maybe deal with this?
+@c FIXME: For 4.2 maybe deal with this?
 @ignore
 Date:     Tue, 17 May 2011 02:06:10 PDT
 From:     rankin@pactechdata.com (Pat Rankin)
@@ -12453,7 +12465,7 @@ An empty (i.e., nonexistent) pattern is considered to match @emph{every}
 input record.  For example, the program:
 
 @example
-awk '@{ print $1 @}' BBS-list
+awk '@{ print $1 @}' mail-list
 @end example
 
 @noindent
@@ -13655,16 +13667,16 @@ In the following example:
 $ @kbd{awk 'BEGIN @{}
 >         @kbd{for (i = 0; i < ARGC; i++)}
 >             @kbd{print ARGV[i]}
->      @kbd{@}' inventory-shipped BBS-list}
+>      @kbd{@}' inventory-shipped mail-list}
 @print{} awk
 @print{} inventory-shipped
-@print{} BBS-list
+@print{} mail-list
 @end example
 
 @noindent
 @code{ARGV[0]} contains @samp{awk}, @code{ARGV[1]}
 contains @samp{inventory-shipped}, and @code{ARGV[2]} contains
-@samp{BBS-list}.  The value of @code{ARGC} is three, one more than the
+@samp{mail-list}.  The value of @code{ARGC} is three, one more than the
 index of the last element in @code{ARGV}, because the elements are numbered
 from zero.
 
@@ -14131,16 +14143,16 @@ and @code{ARGV}:
 $ @kbd{awk 'BEGIN @{}
 >        @kbd{for (i = 0; i < ARGC; i++)}
 >            @kbd{print ARGV[i]}
->      @kbd{@}' inventory-shipped BBS-list}
+>      @kbd{@}' inventory-shipped mail-list}
 @print{} awk
 @print{} inventory-shipped
-@print{} BBS-list
+@print{} mail-list
 @end example
 
 @noindent
 In this example, @code{ARGV[0]} contains @samp{awk}, @code{ARGV[1]}
 contains @samp{inventory-shipped}, and @code{ARGV[2]} contains
-@samp{BBS-list}.
+@samp{mail-list}.
 Notice that the @command{awk} program is not entered in @code{ARGV}.  The
 other command-line options, with their arguments, are also not
 entered.  This includes variable assignments done with the @option{-v}
@@ -34744,6 +34756,11 @@ Arnold Robbins and Andrew Schorr, with notable contributions from
 the rest of the development team.
 
 @item
+@cindex Colombo, Antonio
+Antonio Giovanni Colombo rewrote a number of examples in the early
+chapters that were severely dated, for which I am incredibly grateful.
+
+@item
 @cindex Robbins, Arnold
 Arnold Robbins
 has been working on @command{gawk} since 1988, at first
@@ -37484,9 +37501,6 @@ The GNU version of the standard shell
 @end ifinfo
 See also ``Bourne Shell.''
 
-@item BBS
-See ``Bulletin Board System.''
-
 @item Bit
 Short for ``Binary Digit.''
 All values in computer memory ultimately reduce to binary digits: values
@@ -37560,11 +37574,6 @@ Changing some of them affects @command{awk}'s running environment.
 
 @item Braces
 See ``Curly Braces.''
-
-@item Bulletin Board System
-A computer system allowing users to log in and read and/or leave messages
-for other users of the system, much like leaving paper notes on a bulletin
-board.
 
 @item C
 The system programming language that most GNU software is written in.  The
@@ -39531,8 +39540,6 @@ Suggestions:
 % Next edition:
 %	1. Standardize the error messages from the functions and programs
 %	   in the two sample code chapters.
-%	2. Nuke the BBS stuff and use something that won't be obsolete
-%	3. Turn the advanced notes into sidebars by using @cartouche
 
 Better sidebars can almost sort of be done with:
 
@@ -39564,4 +39571,3 @@ But to use it you have to say
 	}
 
 which sorta sucks.
-
