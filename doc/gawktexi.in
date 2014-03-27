@@ -30064,6 +30064,13 @@ An extension can look up the value of @command{gawk}'s special variables.
 However, with the exception of the @code{PROCINFO} array, an extension
 cannot change any of those variables.
 
+@quotation NOTE
+It is possible for the lookup of @code{PROCINFO} to fail. This happens if
+the @command{awk} program being run does not reference @code{PROCINFO};
+in this case @command{gawk} doesn't bother to create the array and
+populate it.
+@end quotation
+
 @node Symbol table by cookie
 @subsubsection Variable Access and Update by Cookie
 
