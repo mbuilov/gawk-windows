@@ -13864,12 +13864,12 @@ The following elements (listed alphabetically)
 are guaranteed to be available:
 
 @table @code
-@cindex effective group id of @command{gawk} user
+@cindex effective group ID of @command{gawk} user
 @item PROCINFO["egid"]
 The value of the @code{getegid()} system call.
 
 @item PROCINFO["euid"]
-@cindex effective user id of @command{gawk} user
+@cindex effective user ID of @command{gawk} user
 The value of the @code{geteuid()} system call.
 
 @item PROCINFO["FS"]
@@ -13908,19 +13908,19 @@ after it has finished parsing the program; they are @emph{not} updated
 while the program runs.
 
 @item PROCINFO["gid"]
-@cindex group id of @command{gawk} user
+@cindex group ID of @command{gawk} user
 The value of the @code{getgid()} system call.
 
 @item PROCINFO["pgrpid"]
-@cindex process group id of @command{gawk} process
+@cindex process group idIDof @command{gawk} process
 The process group ID of the current process.
 
 @item PROCINFO["pid"]
-@cindex process id of @command{gawk} process
+@cindex process ID of @command{gawk} process
 The process ID of the current process.
 
 @item PROCINFO["ppid"]
-@cindex parent process id of @command{gawk} process
+@cindex parent process ID of @command{gawk} process
 The parent process ID of the current process.
 
 @item PROCINFO["sorted_in"]
@@ -15571,7 +15571,7 @@ Optional parameters are enclosed in square brackets@w{ ([ ]):}
 
 @table @code
 @item atan2(@var{y}, @var{x})
-@cindex @code{atan2()} function
+@cindexawkfunc{atan2}
 @cindex arctangent
 Return the arctangent of @code{@var{y} / @var{x}} in radians.
 You can use @samp{pi = atan2(0, -1)} to retrieve the value of @value{PI}.
@@ -28083,6 +28083,7 @@ The maximum number of lines to keep in the history file @file{./.gawk_history}.
 The default is 100.
 
 @item listsize
+@cindex debugger default list amount
 The number of lines that @code{list} prints. The default is 15.
 
 @item outfile
@@ -31254,7 +31255,7 @@ requires that you understand how such values are converted to strings
 (@pxref{Conversion}); thus using integral values is safest.
 
 As with @emph{all} strings passed into @code{gawk} from an extension,
-the string value of @code{index} must come from the api-provided functions @code{api_malloc()}, @code{api_calloc()} or @code{api_realloc()} and
+the string value of @code{index} must come from the API-provided functions @code{api_malloc()}, @code{api_calloc()} or @code{api_realloc()} and
 @command{gawk} releases the storage.
 
 @item awk_bool_t set_array_element(awk_array_t a_cookie,
