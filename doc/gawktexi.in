@@ -111,10 +111,18 @@
 @end ifnottex
 
 @ifnottex
+@ifnotdocbook
 @macro ii{text}
 @i{\text\}
 @end macro
+@end ifnotdocbook
 @end ifnottex
+
+@ifdocbook
+@macro ii{text}
+@inlineraw{docbook,<lineannotation>\text\</lineannotation>}
+@end macro
+@end ifdocbook
 
 @c For HTML, spell out email addresses, to avoid problems with
 @c address harvesters for spammers.
@@ -171,6 +179,10 @@ Some comments on the layout for TeX.
 @syncodeindex fn cp
 @syncodeindex vr cp
 @end ifxml
+@ifdocbook
+@synindex fn cp
+@synindex vr cp
+@end ifdocbook
 
 @c If "finalout" is commented out, the printed output will show
 @c black boxes that mark lines that are too long.  Thus, it is
@@ -182,10 +194,26 @@ Some comments on the layout for TeX.
 @end iftex
 
 @copying
-Copyright @copyright{} 1989, 1991, 1992, 1993, 1996, 1997, 1998, 1999,
-2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2010, 2011, 2012, 2013,
-2014
+@docbook
+<para>Published by:</para>
+
+<literallayout class="normal">Free Software Foundation
+51 Franklin Street, Fifth Floor
+Boston, MA  02110-1301 USA
+Phone: +1-617-542-5942
+Fax: +1-617-542-2652
+Email: <email>gnu@@gnu.org</email>
+URL: <ulink url="http://www.gnu.org">http://www.gnu.org/</ulink></literallayout>
+
+<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2014
 Free Software Foundation, Inc.
+All Rights Reserved.</literallayout>
+@end docbook
+
+@ifnotdocbook
+Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2014 @*
+Free Software Foundation, Inc.
+@end ifnotdocbook
 @sp 2
 
 This is Edition @value{EDITION} of @cite{@value{TITLE}: @value{SUBTITLE}},
@@ -233,6 +261,7 @@ supports it in developing GNU and promoting software freedom.''
 @subtitle @value{UPDATE-MONTH}
 @author Arnold D. Robbins
 
+@ifnotdocbook
 @c Include the Distribution inside the titlepage environment so
 @c that headings are turned off.  Headings on and off do not work.
 
@@ -257,6 +286,7 @@ URL: @uref{http://www.gnu.org/} @*
 ISBN 1-882114-28-0 @*
 @sp 2
 @insertcopying
+@end ifnotdocbook
 @end titlepage
 
 @c Thanks to Bob Chassell for directions on doing dedications.
@@ -281,6 +311,18 @@ ISBN 1-882114-28-0 @*
 @headings on
 @end iftex
 
+@docbook
+<dedication>
+<simplelist>
+<member>To Miriam, for making me complete.</member>
+<member>To Chana, for the joy you bring us.</member>
+<member>To Rivka, for the exponential increase.</member>
+<member>To Nachum, for the added dimension.</member>
+<member>To Malka, for the new beginning.</member>
+</simplelist>
+</dedication>
+@end docbook
+
 @iftex
 @headings off
 @evenheading @thispage@ @ @ @strong{@value{TITLE}} @| @|
@@ -289,6 +331,7 @@ ISBN 1-882114-28-0 @*
 
 @ifnottex
 @ifnotxml
+@ifnotdocbook
 @node Top
 @top General Introduction
 @c Preface node should come right after the Top
@@ -300,6 +343,7 @@ particular records in a file and perform operations upon them.
 
 @insertcopying
 
+@end ifnotdocbook
 @end ifnotxml
 @end ifnottex
 
@@ -996,21 +1040,37 @@ and the AWK prototype becomes the product.
 The new @command{pgawk} (profiling @command{gawk}), produces
 program execution counts.
 I recently experimented with an algorithm that for
-@math{n} lines of input, exhibited
+@ifnotdocbook
+@math{n}
+@end ifnotdocbook
+@ifdocbook
+@i{n}
+@end ifdocbook
+lines of input, exhibited
 @tex
 $\sim\! Cn^2$
 @end tex
 @ifnottex
+@ifnotdocbook
 ~ C n^2
+@end ifnotdocbook
 @end ifnottex
+@docbook
+<emphasis>&sim; Cn<superscript>2</superscript></emphasis>&thinsp;
+@end docbook
 performance, while
 theory predicted
 @tex
 $\sim\! Cn\log n$
 @end tex
 @ifnottex
+@ifnotdocbook
 ~ C n log n
+@end ifnotdocbook
 @end ifnottex
+@docbook
+<emphasis>&sim; Cn log n</emphasis>&thinsp;
+@end docbook
 behavior. A few minutes poring
 over the @file{awkprof.out} profile pinpointed the problem to
 a single line of code.  @command{pgawk} is a welcome addition to
@@ -3104,10 +3164,19 @@ There are two ways to run @command{awk}---with an explicit program or with
 one or more program files.  Here are templates for both of them; items
 enclosed in [@dots{}] in these templates are optional:
 
+@ifnotdocbook
 @example
 awk @r{[@var{options}]} -f progfile @r{[@code{--}]} @var{file} @dots{}
 awk @r{[@var{options}]} @r{[@code{--}]} '@var{program}' @var{file} @dots{}
 @end example
+@end ifnotdocbook
+
+@c FIXME - find a better way to mark this up in docbook
+@docbook
+<screen>awk [<replaceable>options</replaceable>] -f progfile [<literal>--</literal>] <replaceable>file</replaceable> &#8230;
+awk [<replaceable>options</replaceable>] [<literal>--</literal>] '<replaceable>program</replaceable>' <replaceable>file</replaceable> &#8230;
+</screen>
+@end docbook
 
 @cindex GNU long options
 @cindex long options
@@ -13249,12 +13318,12 @@ The following elements (listed alphabetically)
 are guaranteed to be available:
 
 @table @code
-@cindex effective group id of @command{gawk} user
+@cindex effective group ID of @command{gawk} user
 @item PROCINFO["egid"]
 The value of the @code{getegid()} system call.
 
 @item PROCINFO["euid"]
-@cindex effective user id of @command{gawk} user
+@cindex effective user ID of @command{gawk} user
 The value of the @code{geteuid()} system call.
 
 @item PROCINFO["FS"]
@@ -13293,19 +13362,19 @@ after it has finished parsing the program; they are @emph{not} updated
 while the program runs.
 
 @item PROCINFO["gid"]
-@cindex group id of @command{gawk} user
+@cindex group ID of @command{gawk} user
 The value of the @code{getgid()} system call.
 
 @item PROCINFO["pgrpid"]
-@cindex process group id of @command{gawk} process
+@cindex process group idIDof @command{gawk} process
 The process group ID of the current process.
 
 @item PROCINFO["pid"]
-@cindex process id of @command{gawk} process
+@cindex process ID of @command{gawk} process
 The process ID of the current process.
 
 @item PROCINFO["ppid"]
-@cindex parent process id of @command{gawk} process
+@cindex parent process ID of @command{gawk} process
 The parent process ID of the current process.
 
 @item PROCINFO["sorted_in"]
@@ -14910,7 +14979,7 @@ Optional parameters are enclosed in square brackets@w{ ([ ]):}
 
 @table @code
 @item atan2(@var{y}, @var{x})
-@cindex @code{atan2()} function
+@cindexawkfunc{atan2}
 @cindex arctangent
 Return the arctangent of @code{@var{y} / @var{x}} in radians.
 You can use @samp{pi = atan2(0, -1)} to retrieve the value of @value{PI}.
@@ -16403,7 +16472,18 @@ it is the number of seconds since
 1970-01-01 00:00:00 UTC, not counting leap seconds.@footnote{@xref{Glossary},
 especially the entries ``Epoch'' and ``UTC.''}
 All known POSIX-compliant systems support timestamps from 0 through
-@math{2^{31} - 1}, which is sufficient to represent times through
+@iftex
+@math{2^{31} - 1},
+@end iftex
+@ifnottex
+@ifnotdocbook
+2^31 - 1,
+@end ifnotdocbook
+@end ifnottex
+@docbook
+2<superscript>31</superscript> &minus; 1,&thinsp;
+@end docbook
+which is sufficient to represent times through
 2038-01-19 03:14:07 UTC.  Many systems support a wider range of timestamps,
 including negative timestamps that represent times before the
 epoch.
@@ -26723,15 +26803,16 @@ Without any argument, set a breakpoint at the next instruction
 to be executed in the selected stack frame.
 Arguments can be one of the following:
 
+@c @asis for docbook
 @c nested table
-@table @var
-@item n
+@table @asis
+@item @var{n}
 Set a breakpoint at line number @var{n} in the current source file.
 
-@item filename@code{:}n
+@item @var{filename}@code{:}@var{n}
 Set a breakpoint at line number @var{n} in source file @var{filename}.
 
-@item function
+@item @var{function}
 Set a breakpoint at entry to (the first instruction of)
 function @var{function}.
 @end table
@@ -26756,14 +26837,14 @@ a breakpoint, this deletes that breakpoint so that the program
 does not stop at that location again.  Arguments can be one of the following:
 
 @c nested table
-@table @var
-@item n
+@table @asis
+@item @var{n}
 Delete breakpoint(s) set at line number @var{n} in the current source file.
 
-@item filename@code{:}n
+@item @var{filename}@code{:}@var{n}
 Delete breakpoint(s) set at line number @var{n} in source file @var{filename}.
 
-@item function
+@item @var{function}
 Delete breakpoint(s) set at entry to function @var{function}.
 @end table
 
@@ -27232,6 +27313,7 @@ The maximum number of lines to keep in the history file @file{./.gawk_history}.
 The default is 100.
 
 @item listsize
+@cindex debugger default list amount
 The number of lines that @code{list} prints. The default is 15.
 
 @item outfile
@@ -27364,8 +27446,8 @@ about the command @var{command}.
 @cindex debugger commands, @code{list}
 @cindex @code{list} debugger command
 @cindex @code{l} debugger command (alias for @code{list})
-@item @code{list} [@code{-} | @code{+} | @var{n} | @var{filename@code{:}n} | @var{n}--@var{m} | @var{function}]
-@itemx @code{l} [@code{-} | @code{+} | @var{n} | @var{filename@code{:}n} | @var{n}--@var{m} | @var{function}]
+@item @code{list} [@code{-} | @code{+} | @var{n} | @var{filename}@code{:}@var{n} | @var{n}--@var{m} | @var{function}]
+@itemx @code{l} [@code{-} | @code{+} | @var{n} | @var{filename}@code{:}@var{n} | @var{n}--@var{m} | @var{function}]
 Print the specified lines (default 15) from the current source file
 or the file named @var{filename}. The possible arguments to @code{list}
 are as follows:
@@ -27385,7 +27467,7 @@ Print lines centered around line number @var{n}.
 @item  @var{n}--@var{m}
 Print lines from @var{n} to @var{m}.
 
-@item @var{filename@code{:}n}
+@item @var{filename}@code{:}@var{n}
 Print lines centered around line number @var{n} in
 source file @var{filename}. This command may change the current source file.
 
@@ -27855,23 +27937,38 @@ then the answer is
 @math{2^{53}}.
 @end iftex
 @ifnottex
+@ifnotdocbook
 2^53.
+@end ifnotdocbook
 @end ifnottex
+@docbook
+2<superscript>53</superscript>.&thinsp;
+@end docbook
 The next representable number is the even number
 @iftex
 @math{2^{53} + 2},
 @end iftex
 @ifnottex
+@ifnotdocbook
 2^53 + 2,
+@end ifnotdocbook
 @end ifnottex
+@docbook
+2<superscript>53</superscript> &plus; 2,
+@end docbook
 meaning it is unlikely that you will be able to make
 @command{gawk} print
 @iftex
 @math{2^{53} + 1}
 @end iftex
 @ifnottex
+@ifnotdocbook
 2^53 + 1
+@end ifnotdocbook
 @end ifnottex
+@docbook
+2<superscript>53</superscript> &plus; 1&thinsp;
+@end docbook
 in integer format.
 The range of integers exactly representable by a 64-bit double
 is
@@ -27879,8 +27976,13 @@ is
 @math{[-2^{53}, 2^{53}]}.
 @end iftex
 @ifnottex
+@ifnotdocbook
 [@minus{}2^53, 2^53].
+@end ifnotdocbook
 @end ifnottex
+@docbook
+[&minus;2<superscript>53</superscript>, 2<superscript>53</superscript>].&thinsp;
+@end docbook
 If you ever see an integer outside this range in @command{awk}
 using 64-bit doubles, you have reason to be very suspicious about
 the accuracy of the output. Here is a simple program with erroneous output:
@@ -28104,8 +28206,13 @@ number is then
 @math{s @cdot 2^e}.
 @end iftex
 @ifnottex
+@ifnotdocbook
 @var{s * 2^e}.
+@end ifnotdocbook
 @end ifnottex
+@docbook
+<emphasis>s &cdot; 2<superscript>e</superscript></emphasis>.&thinsp;
+@end docbook
 The first bit of a non-zero binary significand
 is always one, so the significand in an IEEE-754 format only includes the
 fractional part, leaving the leading one implicit.
@@ -28348,8 +28455,13 @@ numbers are not implemented.}
 (@math{emax = 2^{30} - 1, emin = -emax})
 @end iftex
 @ifnottex
+@ifnotdocbook
 (@var{emax} = 2^30 @minus{} 1, @var{emin} = @minus{}@var{emax})
+@end ifnotdocbook
 @end ifnottex
+@docbook
+(<emphasis>emax</emphasis> = 2<superscript>30</superscript> &minus; 1, <emphasis>emin</emphasis> = &minus;<emphasis>emax</emphasis>)&thinsp;
+@end docbook
 for all floating-point contexts.
 There is no explicit mechanism to adjust the exponent range.
 MPFR does not implement subnormal numbers by default,
@@ -28421,8 +28533,15 @@ formula:
 @math{prec = 3.322 @cdot dps}
 @end iftex
 @ifnottex
+@ifnotdocbook
 @var{prec} = 3.322 * @var{dps}
+@end ifnotdocbook
 @end ifnottex
+@docbook
+<para>
+<emphasis>prec</emphasis> = 3.322 &cdot; <emphasis>dps</emphasis>
+</para>
+@end docbook
 
 @noindent
 Here, @var{prec} denotes the binary precision
@@ -28822,8 +28941,14 @@ Communication between
 @command{gawk} and an extension is two-way.  First, when an extension
 is loaded, it is passed a pointer to a @code{struct} whose fields are
 function pointers.
+@ifnotdocbook
 This is shown in @ref{load-extension}.
+@end ifnotdocbook
+@ifdocbook
+This is shown in @inlineraw{docbook, <xref linkend="load-extension"/>}.
+@end ifdocbook
 
+@ifnotdocbook
 @float Figure,load-extension
 @caption{Loading The Extension}
 @c FIXME: One day, it should not be necessary to have two cases,
@@ -28836,13 +28961,27 @@ This is shown in @ref{load-extension}.
 @center @image{api-figure1, , , Loading the extension}
 @end ifnotinfo
 @end float
+@end ifnotdocbook
+
+@docbook
+<figure id="load-extension">
+<title>Loading the extension</title>
+<graphic fileref="api-figure1.eps"/>
+</figure>
+@end docbook
 
 The extension can call functions inside @command{gawk} through these
 function pointers, at runtime, without needing (link-time) access
 to @command{gawk}'s symbols.  One of these function pointers is to a
 function for ``registering'' new built-in functions.
+@ifnotdocbook
 This is shown in @ref{load-new-function}.
+@end ifnotdocbook
+@ifdocbook
+This is shown in @inlineraw{docboook, <xref linkend="load-new-function"/>}.
+@end ifdocbook
 
+@ifnotdocbook
 @float Figure,load-new-function
 @caption{Loading The New Function}
 @ifinfo
@@ -28852,14 +28991,28 @@ This is shown in @ref{load-new-function}.
 @center @image{api-figure2, , , Loading the new function}
 @end ifnotinfo
 @end float
+@end ifnotdocbook
+
+@docbook
+<figure id="load-new-function">
+<title>Loading the new function</title>
+<graphic fileref="api-figure2.eps"/>
+</figure>
+@end docbook
 
 In the other direction, the extension registers its new functions
 with @command{gawk} by passing function pointers to the functions that
 provide the new feature (@code{do_chdir()}, for example).  @command{gawk}
 associates the function pointer with a name and can then call it, using a
 defined calling convention.
+@ifnotdocbook
 This is shown in @ref{call-new-function}.
+@end ifnotdocbook
+@ifdocbook
+This is shown in @inlineraw{docbook, <xref linkend="call-new-function"/>}.
+@end ifdocbook
 
+@ifnotdocbook
 @float Figure,call-new-function
 @caption{Calling The New Function}
 @ifinfo
@@ -28869,6 +29022,14 @@ This is shown in @ref{call-new-function}.
 @center @image{api-figure3, , , Calling the new function}
 @end ifnotinfo
 @end float
+@end ifnotdocbook
+
+@docbook
+<figure id="call-new-function">
+<title>Calling The New Function</title>
+<graphic fileref="api-figure3.eps"/>
+</figure>
+@end docbook
 
 The @code{do_@var{xxx}()} function, in turn, then uses the function
 pointers in the API @code{struct} to do its work, such as updating
@@ -29242,7 +29403,94 @@ print an error message, or reissue the request for the actual
 value type, as appropriate.  This behavior is summarized in
 @ref{table-value-types-returned}.
 
+@c FIXME: Try to do this with spans...
+@ifdocbook
+@anchor{table-value-types-returned}
+@end ifdocbook
+@docbook
+<informaltable>
+<tgroup cols="2">
+  <colspec colwidth="50*"/><colspec colwidth="50*"/>
+  <thead>
+    <row><entry></entry><entry><para>Type of Actual Value:</para></entry></row>
+  </thead>
+  <tbody>
+    <row><entry></entry><entry></entry></row>
+  </tbody>
+</tgroup>
+<tgroup cols="6">
+  <colspec colwidth="16.6*"/>
+  <colspec colwidth="16.6*"/>
+  <colspec colwidth="19.8*"/>
+  <colspec colwidth="15*"/>
+  <colspec colwidth="15*"/>
+  <colspec colwidth="16.6*"/>
+  <thead>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry><para>String</para></entry>
+      <entry><para>Number</para></entry>
+      <entry><para>Array</para></entry>
+      <entry><para>Undefined</para></entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry></entry>
+      <entry><para><emphasis role="bold">String</emphasis></para></entry>
+      <entry><para>String</para></entry>
+      <entry><para>String</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry><para><emphasis role="bold">Number</emphasis></para></entry>
+      <entry><para>Number if can be converted, else false</para></entry>
+      <entry><para>Number</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+    </row>
+    <row>
+      <entry><para><emphasis role="bold">Type</emphasis></para></entry>
+      <entry><para><emphasis role="bold">Array</emphasis></para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>Array</para></entry>
+      <entry><para>false</para></entry>
+    </row>
+    <row>
+      <entry><para><emphasis role="bold">Requested:</emphasis></para></entry>
+      <entry><para><emphasis role="bold">Scalar</emphasis></para></entry>
+      <entry><para>Scalar</para></entry>
+      <entry><para>Scalar</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry><para><emphasis role="bold">Undefined</emphasis></para></entry>
+      <entry><para>String</para></entry>
+      <entry><para>Number</para></entry>
+      <entry><para>Array</para></entry>
+      <entry><para>Undefined</para></entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry><para><emphasis role="bold">Value Cookie</emphasis></para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para>
+      </entry><entry><para>false</para></entry>
+    </row>
+  </tbody>
+</tgroup>
+</informaltable>
+@end docbook
+
 @ifnotplaintext
+@ifnotdocbook
 @float Table,table-value-types-returned
 @caption{Value Types Returned}
 @multitable @columnfractions .50 .50
@@ -29258,6 +29506,7 @@ value type, as appropriate.  This behavior is summarized in
 @item @tab @b{Value Cookie} @tab false @tab false @tab false @tab false
 @end multitable
 @end float
+@end ifnotdocbook
 @end ifnotplaintext
 @ifplaintext
 @float Table,table-value-types-returned
@@ -30403,7 +30652,7 @@ requires that you understand how such values are converted to strings
 (@pxref{Conversion}); thus using integral values is safest.
 
 As with @emph{all} strings passed into @code{gawk} from an extension,
-the string value of @code{index} must come from the api-provided functions @code{api_malloc()}, @code{api_calloc()} or @code{api_realloc()} and
+the string value of @code{index} must come from the API-provided functions @code{api_malloc()}, @code{api_calloc()} or @code{api_realloc()} and
 @command{gawk} releases the storage.
 
 @item awk_bool_t set_array_element(awk_array_t a_cookie,
@@ -35415,22 +35664,23 @@ file should be considered authoritative if it conflicts with this
 The people maintaining the non-Unix ports of @command{gawk} are
 as follows:
 
-@multitable {MS-Windows with MINGW} {123456789012345678901234567890123456789001234567890}
+@c put the index entries outside the table, for docbook
 @cindex Deifik, Scott
-@item MS-DOS with DJGPP @tab Scott Deifik, @EMAIL{scottd.mail@@sbcglobal.net,scottd dot mail at sbcglobal dot net}.
-
 @cindex Zaretskii, Eli
-@item MS-Windows with MINGW @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}.
-
 @cindex Buening, Andreas
-@item OS/2 @tab Andreas Buening, @EMAIL{andreas.buening@@nexgo.de,andreas dot buening at nexgo dot de}.
-
 @cindex Rankin, Pat
 @cindex Malmberg, John
+@cindex Pitts, Dave
+@multitable {MS-Windows with MINGW} {123456789012345678901234567890123456789001234567890}
+@item MS-DOS with DJGPP @tab Scott Deifik, @EMAIL{scottd.mail@@sbcglobal.net,scottd dot mail at sbcglobal dot net}.
+
+@item MS-Windows with MINGW @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}.
+
+@item OS/2 @tab Andreas Buening, @EMAIL{andreas.buening@@nexgo.de,andreas dot buening at nexgo dot de}.
+
 @item VMS @tab Pat Rankin, @EMAIL{r.pat.rankin@@gmail.com,r.pat.rankin at gmail.com}, and
 John Malmberg, @EMAIL{wb8tyw@@qsl.net,wb8tyw at qsl.net}.
 
-@cindex Pitts, Dave
 @item z/OS (OS/390) @tab Dave Pitts, @EMAIL{dpitts@@cozx.com,dpitts at cozx dot com}.
 @end multitable
 
@@ -36582,8 +36832,15 @@ other introductory texts that you should refer to instead.)
 
 @cindex processing data
 At the most basic level, the job of a program is to process
-some input data and produce results. See @ref{figure-general-flow}.
+some input data and produce results.
+@ifnotdocbook
+See @ref{figure-general-flow}.
+@end ifnotdocbook
+@ifdocbook
+See @inlineraw{docbook, <xref linkend="figure-general-flow"/>}.
+@end ifdocbook
 
+@ifnotdocbook
 @float Figure,figure-general-flow
 @caption{General Program Flow}
 @ifinfo
@@ -36593,6 +36850,14 @@ some input data and produce results. See @ref{figure-general-flow}.
 @center @image{general-program, , , General program flow}
 @end ifnotinfo
 @end float
+@end ifnotdocbook
+
+@docbook
+<figure id="figure-general-flow">
+<title>General Program Flow</title>
+<graphic fileref="general-program.eps"/>
+</figure>
+@end docbook
 
 @cindex compiled programs
 @cindex interpreted programs
@@ -36608,9 +36873,15 @@ instructions in your program to process the data.
 
 @cindex programming, basic steps
 When you write a program, it usually consists
-of the following, very basic set of steps, as shown
-in @ref{figure-process-flow}:
+of the following, very basic set of steps,
+@ifnotdocbook
+as shown in @ref{figure-process-flow}:
+@end ifnotdocbook
+@ifdocbook
+as shown in @inlineraw{docbook <xref linkend="figure-process-flow"/>}:
+@end ifdocbook
 
+@ifnotdocbook
 @float Figure,figure-process-flow
 @caption{Basic Program Steps}
 @ifinfo
@@ -36620,6 +36891,14 @@ in @ref{figure-process-flow}:
 @center @image{process-flow, , , Basic Program Stages}
 @end ifnotinfo
 @end float
+@end ifnotdocbook
+
+@docbook
+<figure id="figure-process-flow">
+<title>Basic Program Stages</title>
+<graphic fileref="process-flow.eps"/>
+</figure>
+@end docbook
 
 @table @asis
 @item Initialization
@@ -37096,7 +37375,7 @@ ordinary expression.  It could be a string constant, such as
 (@xref{Computed Regexps}.)
 
 @item Environment
-A collection of strings, of the form @var{name@code{=}val}, that each
+A collection of strings, of the form @var{name}@code{=}@code{val}, that each
 program has available to it. Users generally place values into the
 environment in order to provide information to various programs. Typical
 examples are the environment variables @env{HOME} and @env{PATH}.
@@ -37552,7 +37831,12 @@ record or a string.
 @c The GNU General Public License.
 @node Copying
 @unnumbered GNU General Public License
+@ifnotdocbook
 @center Version 3, 29 June 2007
+@end ifnotdocbook
+@docbook
+<subtitle>Version 3, 29 June 2007</subtitle>
+@end docbook
 
 @c This file is intended to be included within another document,
 @c hence no sectioning command or @node.  
@@ -38277,10 +38561,17 @@ first, please read @url{http://www.gnu.org/philosophy/why-not-lgpl.html}.
 @c The GNU Free Documentation License.
 @node GNU Free Documentation License
 @unnumbered GNU Free Documentation License
+@ifnotdocbook
+@center Version 1.3, 3 November 2008
+@end ifnotdocbook
+
+@docbook
+<subtitle>Version 1.3, 3 November 2008</subtitle>
+@end docbook
+
 @cindex FDL (Free Documentation License)
 @cindex Free Documentation License (FDL)
 @cindex GNU Free Documentation License
-@center Version 1.3, 3 November 2008
 
 @c This file is intended to be included within another document,
 @c hence no sectioning command or @node.
@@ -38785,8 +39076,10 @@ to permit their use in free software.
 @c ispell-local-pdict: "ispell-dict"
 @c End:
 
+@ifnotdocbook
 @node Index
 @unnumbered Index
+@end ifnotdocbook
 @printindex cp
 
 @bye
