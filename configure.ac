@@ -137,14 +137,14 @@ AM_LANGINFO_CODESET
 gt_LC_MESSAGES
 
 dnl checks for header files
-AC_HEADER_STDC
-AC_HEADER_STDBOOL
-AC_HEADER_SYS_WAIT
-AC_HEADER_TIME
 AC_CHECK_HEADERS(arpa/inet.h fcntl.h limits.h locale.h libintl.h mcheck.h \
 	netdb.h netinet/in.h stdarg.h stddef.h string.h \
 	sys/ioctl.h sys/param.h sys/socket.h sys/time.h unistd.h \
 	termios.h stropts.h wchar.h wctype.h)
+AC_HEADER_STDC
+AC_HEADER_STDBOOL
+AC_HEADER_SYS_WAIT
+AC_HEADER_TIME
 
 if test "$ac_cv_header_string_h" = yes
 then
@@ -378,7 +378,6 @@ GNUPG_CHECK_MPFR
 
 dnl checks for structure members
 AC_CHECK_MEMBERS([struct stat.st_blksize])
-AC_HEADER_TIME
 AC_STRUCT_TM
 AC_STRUCT_TIMEZONE
 
