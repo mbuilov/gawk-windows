@@ -164,6 +164,9 @@
 @ignore
 Some comments on the layout for TeX.
 1. Use at least texinfo.tex 2014-01-30.15
+2. When using @docbook, if the last line is part of a paragraph, end
+it with a space and @c so that the lines won't run together. This is a
+quirk of the language / makeinfo, and isn't going to change.
 @end ignore
 
 @c merge the function and variable indexes into the concept index
@@ -1056,7 +1059,7 @@ $\sim\! Cn^2$
 @end ifnotdocbook
 @end ifnottex
 @docbook
-<emphasis>&sim; Cn<superscript>2</superscript></emphasis>&thinsp;
+<emphasis>&sim; Cn<superscript>2</superscript></emphasis> @c
 @end docbook
 performance, while
 theory predicted
@@ -1069,7 +1072,7 @@ $\sim\! Cn\log n$
 @end ifnotdocbook
 @end ifnottex
 @docbook
-<emphasis>&sim; Cn log n</emphasis>&thinsp;
+<emphasis>&sim; Cn log n</emphasis> @c
 @end docbook
 behavior. A few minutes poring
 over the @file{awkprof.out} profile pinpointed the problem to
@@ -16481,7 +16484,7 @@ All known POSIX-compliant systems support timestamps from 0 through
 @end ifnotdocbook
 @end ifnottex
 @docbook
-2<superscript>31</superscript> &minus; 1,&thinsp;
+2<superscript>31</superscript> &minus; 1, @c
 @end docbook
 which is sufficient to represent times through
 2038-01-19 03:14:07 UTC.  Many systems support a wider range of timestamps,
@@ -27942,7 +27945,7 @@ then the answer is
 @end ifnotdocbook
 @end ifnottex
 @docbook
-2<superscript>53</superscript>.&thinsp;
+2<superscript>53</superscript>. @c
 @end docbook
 The next representable number is the even number
 @iftex
@@ -27954,7 +27957,7 @@ The next representable number is the even number
 @end ifnotdocbook
 @end ifnottex
 @docbook
-2<superscript>53</superscript> &plus; 2,
+2<superscript>53</superscript> &plus; 2, @c
 @end docbook
 meaning it is unlikely that you will be able to make
 @command{gawk} print
@@ -27967,7 +27970,7 @@ meaning it is unlikely that you will be able to make
 @end ifnotdocbook
 @end ifnottex
 @docbook
-2<superscript>53</superscript> &plus; 1&thinsp;
+2<superscript>53</superscript> &plus; 1 @c
 @end docbook
 in integer format.
 The range of integers exactly representable by a 64-bit double
@@ -27981,7 +27984,7 @@ is
 @end ifnotdocbook
 @end ifnottex
 @docbook
-[&minus;2<superscript>53</superscript>, 2<superscript>53</superscript>].&thinsp;
+[&minus;2<superscript>53</superscript>, 2<superscript>53</superscript>]. @c
 @end docbook
 If you ever see an integer outside this range in @command{awk}
 using 64-bit doubles, you have reason to be very suspicious about
@@ -28211,7 +28214,7 @@ number is then
 @end ifnotdocbook
 @end ifnottex
 @docbook
-<emphasis>s &cdot; 2<superscript>e</superscript></emphasis>.&thinsp;
+<emphasis>s &sdot; 2<superscript>e</superscript></emphasis>. @c
 @end docbook
 The first bit of a non-zero binary significand
 is always one, so the significand in an IEEE-754 format only includes the
@@ -28460,7 +28463,7 @@ numbers are not implemented.}
 @end ifnotdocbook
 @end ifnottex
 @docbook
-(<emphasis>emax</emphasis> = 2<superscript>30</superscript> &minus; 1, <emphasis>emin</emphasis> = &minus;<emphasis>emax</emphasis>)&thinsp;
+(<emphasis>emax</emphasis> = 2<superscript>30</superscript> &minus; 1, <emphasis>emin</emphasis> = &minus;<emphasis>emax</emphasis>) @c
 @end docbook
 for all floating-point contexts.
 There is no explicit mechanism to adjust the exponent range.
@@ -28539,7 +28542,7 @@ formula:
 @end ifnottex
 @docbook
 <para>
-<emphasis>prec</emphasis> = 3.322 &cdot; <emphasis>dps</emphasis>
+<emphasis>prec</emphasis> = 3.322 &sdot; <emphasis>dps</emphasis> @c
 </para>
 @end docbook
 
@@ -28777,8 +28780,13 @@ For example, the following computes
 @math{5^{4^{3^{2}}}},
 @end iftex
 @ifnottex
+@ifnotdocbook
 5^4^3^2,
+@end ifnotdocbook
 @end ifnottex
+@docbook
+5<superscript>4<superscript>3<superscript>2</superscript></superscript></superscript>, @c
+@end docbook
 the result of which is beyond the
 limits of ordinary @command{gawk} numbers:
 
@@ -28800,9 +28808,16 @@ floating-point values instead, the precision needed for correct output
 would be @math{3.322 @cdot 183231},
 @end iftex
 @ifnottex
+@ifnotdocbook
 @samp{prec = 3.322 * dps}),
 would be 3.322 x 183231,
+@end ifnotdocbook
 @end ifnottex
+@docbook
+<emphasis>prec</emphasis> = 3.322 &sdot; <emphasis>dps</emphasis>),
+would be
+<emphasis>prec</emphasis> = 3.322 &sdot; 183231, @c
+@end docbook
 or 608693.
 
 The result from an arithmetic operation with an integer and a floating-point value

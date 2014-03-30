@@ -43,7 +43,11 @@
 #include "missing_d/gawkbool.h"
 #endif /* HAVE_STDBOOL_H */
 
-/* Gawk doesn't use Gnulib, so don't assume static_assert is present.  */
+/* Gawk doesn't use Gnulib, so don't assume that setlocale and
+   static_assert are present.  */
+#ifndef LC_ALL
+# define setlocale(category, locale) NULL
+#endif
 #ifndef static_assert
 # define static_assert(cond, diagnostic) \
     extern int (*foo (void)) [!!sizeof (struct { int foo: (cond) ? 8 : -1; })]
@@ -408,6 +412,14 @@ struct dfa
   size_t nmultibyte_prop;
   int *multibyte_prop;
 
+#if MBS_SUPPORT
+  /* A table indexed by byte values that contains the corresponding wide
+     character (if any) for that byte.  WEOF means the byte is the
+     leading byte of a multibyte character.  Invalid and null bytes are
+     mapped to themselves.  */
+  wint_t mbrtowc_cache[NOTCHAR];
+#endif
+
   /* Array of the bracket expression in the DFA.  */
   struct mb_char_classes *mbcsets;
   size_t nmbcsets;
@@ -510,6 +522,64 @@ static void regexp (void);
     }								\
   while (false)
 
+static void
+dfambcache (struct dfa *d)
+{
+#if MBS_SUPPORT
+  int i;
+  for (i = CHAR_MIN; i <= CHAR_MAX; ++i)
+    {
+      char c = i;
+      unsigned char uc = i;
+      mbstate_t s = { 0 };
+      wchar_t wc;
+      wint_t wi;
+      switch (mbrtowc (&wc, &c, 1, &s))
+        {
+        default: wi = wc; break;
+        case (size_t) -2: wi = WEOF; break;
+        case (size_t) -1: wi = uc; break;
+        }
+      d->mbrtowc_cache[uc] = wi;
+    }
+#endif
+}
+
+#if MBS_SUPPORT
+/* Given the dfa D, store into *PWC the result of converting the
+   leading bytes of the multibyte buffer S of length N bytes, updating
+   the conversion state in *MBS.  On conversion error, convert just a
+   single byte as-is.  Return the number of bytes converted.
+
+   This differs from mbrtowc (PWC, S, N, MBS) as follows:
+
+   * Extra arg D, containing an mbrtowc_cache for speed.
+   * N must be at least 1.
+   * S[N - 1] must be a sentinel byte.
+   * Shift encodings are not supported.
+   * The return value is always in the range 1..N.
+   * *MBS is always valid afterwards.
+   * *PWC is always set to something.  */
+static size_t
+mbs_to_wchar (struct dfa *d, wchar_t *pwc, char const *s, size_t n,
+              mbstate_t *mbs)
+{
+  unsigned char uc = s[0];
+  wint_t wc = d->mbrtowc_cache[uc];
+
+  if (wc == WEOF)
+    {
+      size_t nbytes = mbrtowc (pwc, s, n, mbs);
+      if (0 < nbytes && nbytes < (size_t) -2)
+        return nbytes;
+      memset (mbs, 0, sizeof *mbs);
+      wc = uc;
+    }
+
+  *pwc = wc;
+  return 1;
+}
+#endif
 
 #ifdef DEBUG
 
@@ -820,13 +890,10 @@ using_simple_locale (void)
       static int unibyte_c = -1;
       if (unibyte_c < 0)
         {
-#ifdef LC_ALL
-          char *locale = setlocale (LC_ALL, NULL);
-          unibyte_c = (locale && (STREQ (locale, "C")
-                                  || STREQ (locale, "POSIX")));
-#else
-          unibyte_c = 1;
-#endif
+          char const *locale = setlocale (LC_ALL, NULL);
+          unibyte_c = (!locale
+                       || STREQ (locale, "C")
+                       || STREQ (locale, "POSIX"));
         }
       return unibyte_c;
     }
@@ -848,7 +915,7 @@ static int minrep, maxrep;      /* Repeat counts for {m,n}.  */
 static int cur_mb_len = 1;      /* Length of the multibyte representation of
                                    wctok.  */
 /* These variables are used only if (MB_CUR_MAX > 1).  */
-static mbstate_t mbs;           /* Mbstate for mbrlen.  */
+static mbstate_t mbs;           /* mbstate for mbrtowc.  */
 static wchar_t wctok;           /* Wide character representation of the current
                                    multibyte character.  */
 static unsigned char *mblen_buf;/* Correspond to the input buffer in dfaexec.
@@ -885,32 +952,18 @@ static unsigned char const *buf_end;    /* reference to end in dfaexec.  */
     else					\
       {						\
         wchar_t _wc;				\
-        cur_mb_len = mbrtowc (&_wc, lexptr, lexleft, &mbs); \
-        if (cur_mb_len <= 0)			\
-          {					\
-            cur_mb_len = 1;			\
-            --lexleft;				\
-            (wc) = (c) = to_uchar (*lexptr++);  \
-          }					\
-        else					\
-          {					\
-            lexptr += cur_mb_len;		\
-            lexleft -= cur_mb_len;		\
-            (wc) = _wc;				\
-            (c) = wctob (wc);			\
-          }					\
+        size_t nbytes = mbs_to_wchar (dfa, &_wc, lexptr, lexleft, &mbs); \
+        cur_mb_len = nbytes;			\
+        (wc) = _wc;				\
+        (c) = nbytes == 1 ? to_uchar (*lexptr) : EOF;    \
+        lexptr += nbytes;			\
+        lexleft -= nbytes;			\
       }						\
-  } while (0)
-
-# define FETCH(c, eoferr)			\
-  do {						\
-    wint_t wc;					\
-    FETCH_WC (c, wc, eoferr);			\
   } while (0)
 
 #else
 /* Note that characters become unsigned here.  */
-# define FETCH(c, eoferr)	      \
+# define FETCH_WC(c, unused, eoferr)  \
   do {				      \
     if (! lexleft)		      \
       {				      \
@@ -922,8 +975,6 @@ static unsigned char const *buf_end;    /* reference to end in dfaexec.  */
     (c) = to_uchar (*lexptr++);       \
     --lexleft;			      \
   } while (0)
-
-# define FETCH_WC(c, unused, eoferr) FETCH (c, eoferr)
 
 #endif /* MBS_SUPPORT */
 
@@ -1302,14 +1353,9 @@ lex (void)
      "if (backslash) ...".  */
   for (i = 0; i < 2; ++i)
     {
-      if (MB_CUR_MAX > 1)
-        {
-          FETCH_WC (c, wctok, NULL);
-          if ((int) c == EOF)
-            goto normal_char;
-        }
-      else
-        FETCH (c, NULL);
+      FETCH_WC (c, wctok, NULL);
+      if (c == (unsigned int) EOF)
+        goto normal_char;
 
       switch (c)
         {
@@ -1726,16 +1772,19 @@ static void
 addtok_wc (wint_t wc)
 {
   unsigned char buf[MB_LEN_MAX];
-  mbstate_t s;
+  mbstate_t s = { 0 };
   int i;
-  memset (&s, 0, sizeof s);
-  cur_mb_len = wcrtomb ((char *) buf, wc, &s);
+  size_t stored_bytes = wcrtomb ((char *) buf, wc, &s);
 
-  /* This is merely stop-gap.  When cur_mb_len is 0 or negative,
-     buf[0] is undefined, yet skipping the addtok_mb call altogether
-     can result in heap corruption.  */
-  if (cur_mb_len <= 0)
-    buf[0] = 0;
+  if (stored_bytes != (size_t) -1)
+    cur_mb_len = stored_bytes;
+  else
+    {
+      /* This is merely stop-gap.  buf[0] is undefined, yet skipping
+         the addtok_mb call altogether can corrupt the heap.  */
+      cur_mb_len = 1;
+      buf[0] = 0;
+    }
 
   addtok_mb (buf[0], cur_mb_len == 1 ? 3 : 1);
   for (i = 1; i < cur_mb_len; i++)
@@ -3356,43 +3405,26 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp)
 /* Initialize mblen_buf and inputwcs with data from the next line.  */
 
 static void
-prepare_wc_buf (const char *begin, const char *end)
+prepare_wc_buf (struct dfa *d, const char *begin, const char *end)
 {
 #if MBS_SUPPORT
   unsigned char eol = eolbyte;
-  size_t remain_bytes, i;
+  size_t i;
+  size_t ilim = end - begin + 1;
 
   buf_begin = (unsigned char *) begin;
 
-  remain_bytes = 0;
-  for (i = 0; i < end - begin + 1; i++)
+  for (i = 0; i < ilim; i++)
     {
-      if (remain_bytes == 0)
+      size_t nbytes = mbs_to_wchar (d, inputwcs + i, begin + i, ilim - i, &mbs);
+      mblen_buf[i] = nbytes - (nbytes == 1);
+      if (begin[i] == eol)
+        break;
+      while (--nbytes != 0)
         {
-          remain_bytes
-            = mbrtowc (inputwcs + i, begin + i, end - begin - i + 1, &mbs);
-          if (remain_bytes < 1
-              || remain_bytes == (size_t) -1
-              || remain_bytes == (size_t) -2
-              || (remain_bytes == 1 && inputwcs[i] == (wchar_t) begin[i]))
-            {
-              remain_bytes = 0;
-              inputwcs[i] = (wchar_t) begin[i];
-              mblen_buf[i] = 0;
-              if (begin[i] == eol)
-                break;
-            }
-          else
-            {
-              mblen_buf[i] = remain_bytes;
-              remain_bytes--;
-            }
-        }
-      else
-        {
-          mblen_buf[i] = remain_bytes;
+          i++;
+          mblen_buf[i] = nbytes;
           inputwcs[i] = 0;
-          remain_bytes--;
         }
     }
 
@@ -3439,7 +3471,7 @@ dfaexec (struct dfa *d, char const *begin, char *end,
       MALLOC (mblen_buf, end - begin + 2);
       MALLOC (inputwcs, end - begin + 2);
       memset (&mbs, 0, sizeof (mbstate_t));
-      prepare_wc_buf ((const char *) p, end);
+      prepare_wc_buf (d, (const char *) p, end);
     }
 
   for (;;)
@@ -3529,7 +3561,7 @@ dfaexec (struct dfa *d, char const *begin, char *end,
             ++*count;
 
           if (d->mb_cur_max > 1)
-            prepare_wc_buf ((const char *) p, end);
+            prepare_wc_buf (d, (const char *) p, end);
         }
 
       /* Check if we've run off the end of the buffer.  */
@@ -3648,6 +3680,7 @@ void
 dfacomp (char const *s, size_t len, struct dfa *d, int searchflag)
 {
   dfainit (d);
+  dfambcache (d);
   dfaparse (s, len, d);
   dfamust (d);
   dfaoptimize (d);
