@@ -51,7 +51,7 @@ AC_SUBST([pkgextensiondir], ['${libdir}/gawk'])
 
 if test "$GCC" = yes
 then
-	CFLAGS="$CFLAGS -Wall -Wextra"
+	CFLAGS="$CFLAGS -Wall"	# Don't add -Wextra, hurts older gcc
 fi
 
 AC_MSG_CHECKING([for special development options])
