@@ -14034,7 +14034,7 @@ pkgextensiondir='${libdir}/gawk'
 
 if test "$GCC" = yes
 then
-	CFLAGS="$CFLAGS -Wall -Wextra"
+	CFLAGS="$CFLAGS -Wall"	# Don't add -Wextra, hurts older gcc
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for special development options" >&5
