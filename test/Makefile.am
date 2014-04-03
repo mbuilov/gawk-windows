@@ -711,6 +711,7 @@ EXTRA_DIST = \
 	readdir.awk \
 	readdir0.awk \
 	readfile2.awk \
+	readfile2.ok \
 	rebt8b1.awk \
 	rebt8b1.ok \
 	rebt8b2.awk \
