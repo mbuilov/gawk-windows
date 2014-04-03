@@ -3128,8 +3128,8 @@ parse_bracket_exp (re_string_t *regexp, re_dfa_t *dfa, re_token_t *token,
   if (BE (sbcset == NULL, 0))
 #endif /* RE_ENABLE_I18N */
     {
-      re_free (sbcset);
 #ifdef RE_ENABLE_I18N
+      re_free (sbcset);
       re_free (mbcset);
 #endif
       *err = REG_ESPACE;
