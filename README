@@ -7,19 +7,21 @@
 
 README:
 
-This is GNU Awk 4.1.0. It is upwardly compatible with Brian Kernighan's
+This is GNU Awk 4.1.1. It is upwardly compatible with Brian Kernighan's
 version of Unix awk.  It is almost completely compliant with the
 2008 POSIX 1003.1 standard for awk. (See the note below about POSIX.)
 
-This is a major new release. See NEWS and ChangeLog for details.
+This is a bug-fix release. See NEWS and ChangeLog for details.
 
-Work to be done is described briefly in the TODO file.  Changes in this
-version are summarized in the NEWS file.
+Work to be done is described briefly in the TODO file, which is available
+only in the 'master' branch in the Git repo.
+
+Changes in this version are summarized in the NEWS file.
 
 Read the file POSIX.STD for a discussion of issues where the standard
 says one thing but gawk does something different.
 
-To format the documentation with TeX, use at least version 2013-03-19.11
+To format the documentation with TeX, use at least version 2014-03-18.17
 of texinfo.tex. There is a usable copy of texinfo.tex in the doc directory.
 
 INSTALLATION:
@@ -45,9 +47,12 @@ Automake.
 After successful compilation, do `make check' to run the test suite.
 There should be no output from the `cmp' invocations except in the
 cases where there are small differences in floating point values, and
-possibly in the case of strftime. Several of the tests ignore errors
-on purpose; those are not a problem.  If there are other differences,
-please investigate and report the problem.
+possibly in the case of strftime.  There may be differences based on
+installed (or not installed) locales and the quality of multibyte
+character support on your system.
+
+Several of the tests ignore errors on purpose; those are not a problem.
+If there are other differences, please investigate and report the problem.
 
 PRINTING THE MANUAL
 
@@ -65,7 +70,7 @@ the section in the manual on reporting bugs. Note that comp.lang.awk
 is about the worst place to post a gawk bug report. Please, use the
 mechanisms outlined in the manual.
 
-Email should be sent to bug-gawk@gnu.org.  This is now a separate mailing
+Email should be sent to bug-gawk@gnu.org.  This is a separate mailing
 list at GNU Central.  The advantage to using this address is that bug
 reports are archived at GNU Central.
 
