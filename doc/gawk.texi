@@ -40,9 +40,9 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH February, 2014
+@set UPDATE-MONTH April, 2014
 @set VERSION 4.1
-@set PATCHLEVEL 0
+@set PATCHLEVEL 1
 
 @set FSF
 
@@ -876,7 +876,8 @@ particular records in a file and perform operations upon them.
                                         version of @command{awk}.
 * POSIX/GNU::                           The extensions in @command{gawk} not
                                         in POSIX @command{awk}.
-* Feature History::                     The history of the features in @command{gawk}.
+* Feature History::                     The history of the features in
+                                        @command{gawk}.
 * Common Extensions::                   Common Extensions Summary.
 * Ranges and Locales::                  How locales used to affect regexp
                                         ranges.
@@ -14143,7 +14144,7 @@ if an element in @code{SYMTAB} is an array.
 Also, you may not use the @code{delete} statement with the
 @code{SYMTAB} array.
 
-You may use an index for @code{SYMTAB} that is not a predefined identifer:
+You may use an index for @code{SYMTAB} that is not a predefined identifier:
 
 @example
 SYMTAB["xxx"] = 5
@@ -18009,7 +18010,7 @@ Return a true value if @var{x} is an array. Otherwise return false.
 @code{isarray()} is meant for use in two circumstances. The first is when
 traversing a multidimensional array: you can test if an element is itself
 an array or not.  The second is inside the body of a user-defined function
-(not discussed yet; @pxref{User-defined}), to test if a paramater is an
+(not discussed yet; @pxref{User-defined}), to test if a parameter is an
 array or not.
 
 Note, however, that using @code{isarray()} at the global level to test 
@@ -29258,11 +29259,16 @@ The easiest way to find out is to look at the output of
 the following command:
 
 @example
-$ @kbd{gawk --version}
-@print{} GNU Awk 4.1.0, API: 1.0 (GNU MPFR 3.1.0-p3, GNU MP 5.0.2)
-@print{} Copyright (C) 1989, 1991-2013 Free Software Foundation.
+$ @kbd{./gawk --version}
+@print{} GNU Awk 4.1.1, API: 1.1 (GNU MPFR 3.1.0-p3, GNU MP 5.0.2)
+@print{} Copyright (C) 1989, 1991-2014 Free Software Foundation.
 @dots{}
 @end example
+
+@noindent
+(You may see different version numbers than what's shown here. That's OK;
+what's important is to see that GNU MPFR and GNU MP are listed in
+the output.)
 
 @command{gawk} uses the
 @uref{http://www.mpfr.org, GNU MPFR}
@@ -29852,7 +29858,7 @@ function for ``registering'' new built-in functions.
 This is shown in @ref{load-new-function}.
 @end ifnotdocbook
 @ifdocbook
-This is shown in @inlineraw{docboook, <xref linkend="load-new-function"/>}.
+This is shown in @inlineraw{docbook, <xref linkend="load-new-function"/>}.
 @end ifdocbook
 
 @ifnotdocbook
