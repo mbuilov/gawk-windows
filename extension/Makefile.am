@@ -100,7 +100,7 @@ testext_la_LIBADD     = $(MY_LIBS)
 
 install-data-hook:
 	for i in $(pkgextension_LTLIBRARIES) ; do \
-		$(RM) $(pkgextensiondir)/$$i ; \
+		$(RM) $(DESTDIR)$(pkgextensiondir)/$$i ; \
 	done
 
 # Keep the uninstall check working:

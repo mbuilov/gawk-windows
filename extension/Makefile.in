@@ -1231,7 +1231,7 @@ uninstall-man: uninstall-man3
 
 install-data-hook:
 	for i in $(pkgextension_LTLIBRARIES) ; do \
-		$(RM) $(pkgextensiondir)/$$i ; \
+		$(RM) $(DESTDIR)$(pkgextensiondir)/$$i ; \
 	done
 
 # Keep the uninstall check working:
