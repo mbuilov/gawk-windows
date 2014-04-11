@@ -1,3 +1,58 @@
+2014-04-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (install-data-hook): Use $(DESTDIR) when removing
+	the .la files. Thanks to Lars Wendler <polynomial-c@gentoo.org>
+	for the report and fix.
+
+2014-04-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* 4.1.1: Release tar ball made.
+
+2014-04-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Bump version before release.
+
+2014-04-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* time.c: Include <time.h> unconditionally to get declaration
+	of nanosleep on Linux. Avoids a warning. Thanks to Michal
+	Jaegermann.
+
+2014-03-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Remove -Wextra to avoid killing compilations
+	on older versions of gcc. Thanks to Antonio Diaz Diaz for
+	the report.
+
+2014-03-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Add AC_HEADER_TIME and AC_HEADER_DIRENT, and
+	rearrange order of macros some. May help on older systems.
+
+2014-03-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* readfile.c: Add an input parser that works off of
+	PROCINFO["readfile"].
+	* readfile.3am: Document same.
+
+2014-03-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkfts.c (MAXPATHLEN): Add a default definition. Thanks to
+	Antonio Diaz Dian and Nelson H.F. Beebe.
+	* readdir.c (PATH_MAX): Add a default definition. Thanks to
+	Nelson H.F. Beebe.
+
+2014-03-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* filefuncs.c (read_symlink, do_fts): Replace free with gawk_free.
+	* inplace.c (at_exit, do_inplace_end): Ditto.
+	* readdir.c (dir_close): Ditto.
+	* readfile.c (do_readfile): Ditto.
+	* revtwoway.c (close_two_proc_data): Ditto.
+	* rwarray.c (read_elem): Replace realloc with gawk_realloc.
+	(read_value): Replace malloc and free with gawk_malloc and gawk_free.
+	* testext.c (try_modify_environ): Replace free with gawk_free.
+
 2014-02-12         John E. Malmberg      <wb8tyw@qsl.net>
 
 	* time.c: Better hack for nanosleep bug based on feedback from HP.

@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 2012, 2013
+ * Copyright (C) 2012, 2013, 2014
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -85,14 +85,12 @@ static awk_bool_t (*init_func)(void) = NULL;
 
 int plugin_is_GPL_compatible;
 
+#include <time.h>
 #if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
 #include <sys/time.h>
 #endif
 #if defined(HAVE_SELECT) && defined(HAVE_SYS_SELECT_H)
 #include <sys/select.h>
-#endif
-#if defined(HAVE_NANOSLEEP) && defined(HAVE_TIME_H)
-#include <time.h>
 #endif
 #if defined(HAVE_GETSYSTEMTIMEASFILETIME)
 #define WIN32_LEAN_AND_MEAN

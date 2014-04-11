@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 2013 the Free Software Foundation, Inc.
+ * Copyright (C) 2013, 2014 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -96,7 +96,7 @@ at_exit(void *data, int exit_status)
 	(void) exit_status;	/* silence warnings */
 	if (state.tname) {
 		unlink(state.tname);
-		free(state.tname);
+		gawk_free(state.tname);
 		state.tname = NULL;
 	}
 }
@@ -242,7 +242,7 @@ do_inplace_end(int nargs, awk_value_t *result)
 		if (link(filename.str_value.str, bakname) < 0)
 			fatal(ext_id, _("inplace_end: link(`%s', `%s') failed (%s)"),
 				filename.str_value.str, bakname, strerror(errno));
-		free(bakname);
+		gawk_free(bakname);
 	}
 
 #ifdef __MINGW32__
@@ -252,7 +252,7 @@ do_inplace_end(int nargs, awk_value_t *result)
 	if (rename(state.tname, filename.str_value.str) < 0)
 		fatal(ext_id, _("inplace_end: rename(`%s', `%s') failed (%s)"),
 			state.tname, filename.str_value.str, strerror(errno));
-	free(state.tname);
+	gawk_free(state.tname);
 	state.tname = NULL;
 	return make_number(0, result);
 }

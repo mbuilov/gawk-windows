@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2013 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2014 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -1279,7 +1279,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 	INSTRUCTION *code = NULL;
 	extern int currule;
 	int save_rule = 0;
-	assoc_kind_t assoc_kind = 0;
+	assoc_kind_t assoc_kind = ANONE;
 	
 	elem_size = 1;
 

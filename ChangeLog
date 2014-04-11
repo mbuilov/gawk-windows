@@ -1,3 +1,128 @@
+2014-04-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (closemabyesocket): Define if not defined, e.g. building
+	without socket code. Thanks to dave.gma@googlemail.com (Dave Sines)
+	for the report.
+
+2014-04-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* 4.1.1: Release tar ball made.
+
+2014-04-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* README: Update.
+	* configure.ac: Bump version.
+
+2014-04-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regcomp.c (parse_bracket_exp): Move a call to `re_free' inside
+	an ifdef. Makes the code marginally cleaner.
+
+2014-03-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+
+2014-03-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Remove duplicate AC_HEADER_TIME and rearrange
+	order of macros some. May help on older systems.
+
+2014-03-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Move include of dfa.h around for correct building
+	on Irix. Thanks to Nelson H.F. Beebe for the report.
+
+	Unrelated:
+
+	* .gitignore: Simplify .dSYM pattern for Mac OS X.
+
+2014-03-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c (using_simple_locale): Add ifdefs in case there is no
+	locale support at all. Thanks to Scott Deifik for the report.
+
+	Unrelated:
+
+	* main.c (UPDATE_YEAR): Set to 2014.
+
+2014-03-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* .gitignore: Add .dSYM directories for Mac OS X.
+	Thanks to Hermann Peifer for the suggestion.
+
+2014-03-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: Sync with grep. Yet again.
+	* regex_internal.c (built_wcs_upper_buffer, build_upper_buffer):
+	Fixes from GNULIB for mixed case matching on Mac OS X.
+
+	Unrelated:
+
+	* builtin.c (format_tree): Smarten handling of %' flag. Always
+	pass it in for floating point formats. Then only add the
+	thousands_sep if there is one. Also, allow for thousands_sep
+	to be a string, not just one character.  Thanks to Michal Jaegermann
+	for the report.
+
+2014-03-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (api_impl): Add memory allocation function pointers.
+	* gawkapi.h (GAWK_API_MINOR_VERSION): Bump.
+	(gawk_api_t): Add memory allocation function pointers api_malloc,
+	api_calloc, api_realloc, and api_free.
+	(gawk_malloc, gawk_calloc, gawk_realloc, gawk_free): New macros.
+	(emalloc): Replace malloc with gawk_malloc.
+	(erealloc): Replace erealloc with gawk_erealloc.
+
+2014-03-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Straighten out enumerated types some more.
+
+	* awk.h (add_srcfile): Fix type of first parameter.
+	* awkgram.y (add_srcfile, do_add_srcfile): Ditto.
+	* cmd.h (A_NONE): New enum nametypeval.
+	* command.y (argtab): Use it in final value.
+	* ext.c (make_builtin): Use awk_false, awk_true.
+	* io.c (init_output_wrapper): Use awk_false.
+
+	Unrelated:
+
+	* debug.c (do_commands): Initialize num to silence warnings.
+	Thanks to Michal Jaegermann.
+
+	Unrelated:
+
+	* builtin.c (do_mktime): Change lint warning for minutes to
+	check against 59, not 60.  Thanks to Hermann Peifer for the report.
+
+2014-03-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with grep. Yet again.
+
+2014-02-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with grep. Looks like good improvement with
+	respect to bracket expressions.
+
+2014-02-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fixes for enum/int mismatches as warned by some compilers.
+
+	* awk.h (ANONE): New enum for array sorting.
+	* array.c (assoc_list): Use it.
+	* builtin.c (format_tree): New MP_NONE value.
+	* gawkapi.c: Use awk_false and awk_true everywhere instead of
+	false and true.
+
+2014-02-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Set up do-nothing extension/Makefile on
+	MirBSD also.
+
+2014-02-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.h, dfa.c (parse_bracket_exp): Sync with grep.
+
 2014-02-20         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regex.h, regex.c, regex_internal.c, regex_internal.h: Sync

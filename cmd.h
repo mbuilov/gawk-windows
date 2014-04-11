@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 2004, 2010, 2011, 2013 the Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2010, 2011, 2013, 2014 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -109,7 +109,8 @@ enum argtype {
 /* non-number arguments to commands */ 
 
 enum nametypeval {
-	A_ARGS = 1,
+	A_NONE = 0,
+	A_ARGS,
 	A_BREAK,
 	A_DEL,
 	A_DISPLAY,
