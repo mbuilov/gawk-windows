@@ -166,6 +166,12 @@
 # define SOCKET			int
 #endif
 
+#else /* HAVE_SOCKETS */
+
+#ifndef closemaybesocket
+# define closemaybesocket(fd)	close(fd)
+#endif
+
 #endif /* HAVE_SOCKETS */
 
 #ifndef HAVE_SETSID
