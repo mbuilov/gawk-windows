@@ -1,6 +1,6 @@
 # ../gawk -lsparr -f testsparr.awk
 BEGIN {
-	extension("sparr")
+	extension("./sparr.so")
 	print SYS["time"]
 	SYS["readline"] = "sparr.c";
 	printf("File %s has %d lines\n", SYS["readline"], length(READLINE)) 

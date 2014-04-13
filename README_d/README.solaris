@@ -1,20 +1,14 @@
-Fri Jul 15 14:24:00 IDT 2011
+Wed Jan 22 21:51:59 IST 2014
 ============================
-It looks like you need to use
 
-	-Xc -D_XPG4_2
+On Solaris 10 x86, Solaris 11 x86, Solaris 10 sparc and Solaris 11 sparc,
+with the Sun compiler (Solaris Studio 12.3) you need to use
 
-on Solaris 10 with the Sun C compiler when compiling gawk in order for
-libsigsegv to be found correctly, and
+	c99 -Xc -D_XPG6
 
-	-Xc -D_XPG4_2 -Duint64_t=upad64_t
+to correctly compile gawk and the extensions.
 
-on Solaris 9.
-
-Tue Apr 20 11:33:20 IDT 2010
-============================
-The lc_num1 test fails on Solaris 10 systems. This is a bug with Solaris,
-not gawk.
+Various tests can fail if the necessary locales aren't installed.
 
 Arnold Robbins
 arnold@skeeve.com

@@ -1,3 +1,52 @@
+2014-04-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* 4.1.1: Release tar ball made.
+
+2014-02-03   Scott Deifik  <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Include original test/Makefile.in lines as
+	comments.
+
+2014-01-28  Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile.tst (strftime): Pass the value of 'date' command
+	through the DATECMD variable.
+	(readdir): Adapt to changes in test/readdir0.awk.
+
+2014-01-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.tst (mbprintf4, backbigs1, backsmalls1): Add warning
+	that the tests are expected to fail with DJGPP.
+
+2014-01-24   Scott Deifik  <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline.
+
+2014-01-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.tst (split_after_fpat, mpfrnegzero): Added, to
+	sync with main test Makefile.
+
+2014-01-15  Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile.tst (mbprintf4, profile5, backbigs1, backsmalls1):
+	Announce expected failures.
+	(fts): Fail gracefully, to avoid bailing out of the test suite too
+	early.
+
+	* popen.c (os_system): Use spawnl, and quote the command line, to
+	be consistent with what gawk_popen does.
+	(os_popen) [__MINGW32__]: Don't scriptify the command, to be
+	consistent with gawk_popen.
+	(os_pclose) [__MINGW32__]: Update to match os_open: no need to
+	unlink the script file.
+
+2013-12-10   Scott Deifik  <scottd.mail@sbcglobal.net>
+
+	* gawkmisc.c (init_sockets): Move into the right part of the
+	file so that it will be compiled for DJGPP also.
+	* Makefile.tst: Sync with mainline.
+
 2013-06-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkmisc.c (init_sockets): Rearrange ifdefs.

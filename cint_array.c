@@ -150,10 +150,14 @@ cint_array_init(NODE *symbol ATTRIBUTE_UNUSED, NODE *subs ATTRIBUTE_UNUSED)
 {
 	if (symbol == NULL) {
 		long newval;
+		size_t nelems = (sizeof(power_two_table) / sizeof(power_two_table[0]));
 
 		/* check relevant environment variables */
 		if ((newval = getenv_long("NHAT")) > 1 && newval < INT32_BIT)
 			NHAT = newval;
+		/* don't allow overflow off the end of the table */
+		if (NHAT >= nelems)
+			NHAT = nelems - 2;
 		THRESHOLD = power_two_table[NHAT + 1];
 	} else
 		null_array(symbol);

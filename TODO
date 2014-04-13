@@ -1,4 +1,4 @@
-Thu May  9 15:31:55 IDT 2013
+Thu Oct 24 22:11:44 IDT 2013
 ============================
 
 There were too many files tracking different thoughts and ideas for
@@ -9,20 +9,22 @@ or simply removed.
 Upon creation of a release (major or patch release), items from the
 previous release should be removed.
 
+This file should exist only in the master branch or branches based off
+of it for development, but not in the stable branch. This may require some
+careful work with Git.
+
 TODO
 ====
 
 Minor Cleanups and Code Improvements
 ------------------------------------
 
-	Put FAKE_FD_VALUE into a head included from awk.h and extension/
-	dirfd.h.
+	Review the bash source script for working with shared libraries in
+	order to nuke the use of libtool. [ Partially started in the
+	nolibtool branch. ]
 
-	Mac OS X readline doesn't have history_list which is used from debug.c
-	functions do_save and serialize.
-	See http://ftp.samba.org/pub/unpacked/samba_3_current/source4/lib/smbreadline/readline.m4
-	for some help. Reported by Larry Baker, larry.baker@stanfordalumni.org
-
+	Enhance profiling to save comments in a byte-code that does nothing
+	but that can be used when pretty printing the program.
 
 	API:
 		??? #if !defined(GAWK) && !defined(GAWK_OMIT_CONVENIENCE_MACROS)
@@ -35,28 +37,29 @@ Minor Cleanups and Code Improvements
 
 	Consider removing use of and/or need for the protos.h file.
 
-	Review the bash source script for working with shared libraries in
-	order to nuke the use of libtool.
+	Recheck if gnulib regex can be dropped in
 
-	In test/Makefile.am and generation scripts, quote $(srcdir) etc.
-	for windows or other systems with spaces in path names. Fun.
-
-	Enhance profiling to same comments in a byte-code that does nothing
-	but that can be used when pretty printing the program.
+	Fully synchronize whitespaces tests (for \s, \S in Unicode
+	environment) with those of GNU grep.
 
 Minor New Features
 ------------------
+
+	Add a div() function to do integer division result. Needed
+	esp for MPFR with large ints.
 
 	Enhance extension/fork.c waitpid to allow the caller to specify
 	the options.  And add an optional array argument to wait and
 	waitpid in which to return exit status information.
 
-	Add a readfile() function in awk from mail.
-
-	Make writes to ENVIRON / deletions affect the real environment
-	using setenv / unsetenv.
-
 	Consider relaxing the strictness of --posix.
+
+	Make it possible to put print/printf + redirections into
+	an expression.
+
+	Have pretty printing not run the program and nuke the
+	undocumented GAWK_NO_PP_RUN env var. Requires test suite
+	adjustments.
 
 	? Add an optional base to strtonum, allowing 2-36.
 
@@ -74,12 +77,24 @@ Major New Features
 
 	Also needed:
 
-		indirect calls of built-ins
-		indirect calls of extension functions
-		indirect through array elements, not just scalar variables
+		Indirect calls of built-ins
+		Indirect calls of extension functions
+		Indirect through array elements, not just scalar variables
+
+	Some way to make regexp constants first class citizens:
+		- Assign to variables
+		- Pass to functions
+	Tawk has this and it would also make indirect calling of builtins
+	work more reasonably.  Probably would use a special syntax like
+	@/.../ for such objects.
+
+	Consider a typeof() function that returns a string (scalar, array,
+	regexp).
 
 	Fix the early chapters in the doc with more up-to-date examples.
 	No-one uses Bulletin Board Systems anymore.
+
+	Add ability to do decimal arithmetic.
 
 	Rework management of array index storage. (Partially DONE.)
 
@@ -87,15 +102,13 @@ Major New Features
 
 	DBM storage of awk arrays. Try to allow multiple dbm packages.
 
-	?? Some way to make regexp constants first class citizens
-		- Assign to variables
-		- Pass to functions
-
 	?? A RECLEN variable for fixed-length record input. PROCINFO["RS"]
 	would be "RS" or "RECLEN" depending upon what's in use.
-	*** Could be done as an extension?
+	*** Could this be done as an extension?
 
 	?? Use a new or improved dfa and/or regex library.
+
+	Rewrite in C++.
 
 Things To Think About That May Never Happen
 -------------------------------------------
@@ -105,21 +118,10 @@ Things To Think About That May Never Happen
 
 	Similar for extra parameters in a function call.
 
-	?? Scope IDs for IPv6 addresses ??
-
-	??? Gnulib
-
 	Look at code coverage tools, like S2E: https://s2e.epfl.ch/
 	
 	Try running with diehard. See http://www.diehard-software.org,
 	https://github.com/emeryberger/DieHard
-
-	Change from dlopen to using the libltdl library (i.e. lt_dlopen).
-	This may support more platforms.
-
-	FIX regular field splitting to use FPAT algorithm.
-		Note: Looked at this. Not sure it's with the trouble:
-		If it ain't broke...
 
 	Implement namespaces.  Arnold suggested the following in an email:
 	- Extend the definition of an 'identifier' to include "." as a valid character
@@ -140,12 +142,6 @@ Things To Think About That May Never Happen
 
 	Patch lexer for @include and @load to make quotes optional.
 
-	Do an optimization pass over parse tree?
-
-	Consider integrating Fred Fish's DBUG library into gawk.
-
-	Make 	awk '/foo/' files...	run at egrep speeds (how?)
-
 	? Have strftime() pay attention to the value of ENVIRON["TZ"]
 
 	Add a lint check if the return value of a function is used but
@@ -159,78 +155,21 @@ Things To Think About That May Never Happen
 	Enhance FIELDWIDTHS with some way to indicate "the rest of the record".
 	E.g., a length of 0 or -1 or something.  Maybe "n"?
 
-	Make FIELDWIDTHS be an array?
-
-Code Review
------------
-awkgram.y
-debug.c
-eval.c
-ext.c
-field.c
-floatcomp.c
-floatmagic.h
-gawkmisc.c
-profile.c
-protos.h
 
 DONE
 ====
 
 Minor Cleanups and Code Improvements
 ------------------------------------
-Done in 4.1:
-
-	Review all FIXME and TODO comments
-
-	Fix all *assoc_lookup() = xxx  calls.
-
-	Make GAWKDEBUG pass the test suite.
-
-	Make fflush() and fflush("") both flush all files, as in BWK awk.
-
-	In gawkapi.c - review switch statements and use of default.
-
-	API:
-		awk_true and awk_false
-		Update doc to use gcc -o filefuncs.so -shared filefuncs.o
-			instead of ld ...
-		Have check for name not rely on isalpha, isalnum since
-			the locale could botch that up. Also make it not
-			fatal.
 
 Minor New Features
 ------------------
-Done in 4.1:
-
-	Merge the chapter and the appendix on floating-point math (for 4.1).
 
 Major New Features
 ------------------
-Done in 4.1:
-
-	Integration of array_iface branch.
-
-	Design and implement I/O plugin API.
-
-	Implement designed API for loadable modules
-
-	Redo the loadable modules interface from the awk level.
-
-	xgawk features (@load, -l, others)
-
-	Merge gawk/pgawk/dgawk into one executable
-
-	Merge xmlgawk XML extensions (via source forge project that
-	      works with new API)
-
-	Integrate MPFR to provide high precision arithmetic.
-
-	Consider really implementing BWK awk SYMTAB for seeing what
-	global variables are defined.
 
 Things That We Decided We Will Never Do
----------------------------------------
+=======================================
 
 	Consider moving var_value info into Node_var itself to reduce
 	memory usage. This would break all uses of get_lhs in the
@@ -239,21 +178,30 @@ Things That We Decided We Will Never Do
 	Add macros for working with flags instead of using & and |
 	directly.
 
-Code Review
------------
-array.c
-awk.h
-builtin.c
-cmd.h
-command.y
-custom.h
-hard-locale.h
-io.c
-main.c
-mbsupport.h
-msg.c
-node.c
-re.c
-replace.c
-version.c
-xalloc.h
+	FIX regular field splitting to use FPAT algorithm.
+		Note: Looked at this. Not sure it's with the trouble:
+		If it ain't broke...
+
+	Scope IDs for IPv6 addresses
+
+	Gnulib
+
+	Make FIELDWIDTHS be an array?
+
+	"Do an optimization pass over parse tree?"
+	This isn't relevant now that we are using a byte code engine.
+
+	"Consider integrating Fred Fish's DBUG library into gawk."
+	I did this once as an experiment. But I don't see a lot of value
+	to this at this stage of the development. Stepping through things
+	in a debugger is generally enough. Also, I would have to try to
+	track down the latest version of this.
+
+	"Make 	awk '/foo/' files...	run at egrep speeds (how?)"
+	This has been on the list since the early days (gawk 1.x or early
+	2.x).  But I am not sure how to really do this, nor have I done
+	timings, nor does there seem to be any real demand for this.
+
+	Change from dlopen to using the libltdl library (i.e. lt_dlopen).
+	This may support more platforms.  If we move off of libtool
+	then this is the wrong direction.

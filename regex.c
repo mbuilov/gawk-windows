@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -57,9 +57,9 @@
 #include <limits.h>
 
 /* This header defines the MIN and MAX macros.  */
-#ifndef VMS
+#ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
-#endif /* VMS */
+#endif /* HAVE_SYS_PARAM_H */
 
 #ifdef GAWK
 #undef alloca

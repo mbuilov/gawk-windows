@@ -8,10 +8,11 @@
  * Revised for new dynamic function facilities
  * Mon Jun 14 14:53:07 IDT 2004
  * Revised for formal API May 2012
+ * Added input parser March 2014
  */
 
 /*
- * Copyright (C) 2002, 2003, 2004, 2011, 2012, 2013
+ * Copyright (C) 2002, 2003, 2004, 2011, 2012, 2013, 2014
  * the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
@@ -61,10 +62,38 @@
 
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
-static const char *ext_version = "readfile extension: version 1.0";
-static awk_bool_t (*init_func)(void) = NULL;
+static const char *ext_version = "readfile extension: version 2.0";
+static awk_bool_t init_readfile();
+static awk_bool_t (*init_func)(void) = init_readfile;
 
 int plugin_is_GPL_compatible;
+
+/* read_file_to_buffer --- handle the mechanics of reading the file */
+
+static char *
+read_file_to_buffer(int fd, const struct stat *sbuf)
+{
+	char *text = NULL;
+	int ret;
+
+	if ((sbuf->st_mode & S_IFMT) != S_IFREG) {
+		errno = EINVAL;
+		update_ERRNO_int(errno);
+		goto done;
+	}
+
+	emalloc(text, char *, sbuf->st_size + 2, "do_readfile");
+	memset(text, '\0', sbuf->st_size + 2);
+
+	if ((ret = read(fd, text, sbuf->st_size)) != sbuf->st_size) {
+		update_ERRNO_int(errno);
+		gawk_free(text);
+		text = NULL;
+		/* fall through to return */
+	}
+done:
+	return text;
+}
 
 /* do_readfile --- read a file into memory */
 
@@ -90,10 +119,6 @@ do_readfile(int nargs, awk_value_t *result)
 		if (ret < 0) {
 			update_ERRNO_int(errno);
 			goto done;
-		} else if ((sbuf.st_mode & S_IFMT) != S_IFREG) {
-			errno = EINVAL;
-			update_ERRNO_int(errno);
-			goto done;
 		}
 
 		if ((fd = open(filename.str_value.str, O_RDONLY|O_BINARY)) < 0) {
@@ -101,15 +126,9 @@ do_readfile(int nargs, awk_value_t *result)
 			goto done;
 		}
 
-		emalloc(text, char *, sbuf.st_size + 2, "do_readfile");
-		memset(text, '\0', sbuf.st_size + 2);
-
-		if ((ret = read(fd, text, sbuf.st_size)) != sbuf.st_size) {
-			(void) close(fd);
-			update_ERRNO_int(errno);
-			free(text);
-			goto done;
-		}
+		text = read_file_to_buffer(fd, & sbuf);
+		if (text == NULL)
+			goto done;	/* ERRNO already updated */
 
 		close(fd);
 		make_malloced_string(text, sbuf.st_size, result);
@@ -117,10 +136,108 @@ do_readfile(int nargs, awk_value_t *result)
 	} else if (do_lint)
 		lintwarn(ext_id, _("readfile: called with no arguments"));
 
-
 done:
 	/* Set the return value */
 	return result;
+}
+
+/* readfile_get_record --- read the whole file as one record */
+
+static int
+readfile_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
+			char **rt_start, size_t *rt_len)
+{
+	char *text;
+
+	/*
+	 * The caller sets *errcode to 0, so we should set it only if an
+	 * error occurs.
+	 */
+
+	if (out == NULL || iobuf == NULL)
+		return EOF;
+
+	if (iobuf->opaque != NULL) {
+		/*
+		 * Already read the whole file,
+		 * free up stuff and return EOF
+		 */
+		gawk_free(iobuf->opaque);
+		iobuf->opaque = NULL;
+		return EOF;
+	}
+
+	/* read file */
+	text = read_file_to_buffer(iobuf->fd, & iobuf->sbuf);
+	if (text == NULL)
+		return EOF;
+
+	/* set up the iobuf for next time */
+	iobuf->opaque = text;
+
+	/* set return values */
+	*rt_start = NULL;
+	*rt_len = 0;
+	*out = text;
+
+	/* return count */
+	return iobuf->sbuf.st_size;
+}
+
+/* readfile_can_take_file --- return true if we want the file */
+
+static awk_bool_t
+readfile_can_take_file(const awk_input_buf_t *iobuf)
+{
+	awk_value_t array, index, value;
+
+	if (iobuf == NULL)
+		return awk_false;
+
+	/*
+	 * This could fail if PROCINFO isn't referenced from
+	 * the awk program. It's not a "can't happen" error.
+	 */
+	if (! sym_lookup("PROCINFO", AWK_ARRAY, & array)) {
+		return awk_false;
+	}
+
+	(void) make_const_string("readfile", 8, & index);
+
+	if (! get_array_element(array.array_cookie, & index, AWK_UNDEFINED, & value)) {
+		return awk_false;
+	}
+
+	return awk_true;
+}
+
+/* readfile_take_control_of --- take over the file */
+
+static awk_bool_t
+readfile_take_control_of(awk_input_buf_t *iobuf)
+{
+	if (iobuf == NULL)
+		return awk_false;
+
+	iobuf->get_record = readfile_get_record;
+	return awk_true;
+}
+
+static awk_input_parser_t readfile_parser = {
+	"readfile",
+	readfile_can_take_file,
+	readfile_take_control_of,
+	NULL
+};
+
+/* init_readfile --- set things up */
+
+static awk_bool_t
+init_readfile()
+{
+	register_input_parser(& readfile_parser);
+
+	return awk_true;
 }
 
 static awk_ext_func_t func_table[] = {

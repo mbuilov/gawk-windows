@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2013 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2014 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -116,7 +116,16 @@
 #define ENFILE EMFILE
 #endif
 
+#if defined(__DJGPP__)
+#define closemaybesocket(fd)	close(fd)
+#endif
+
 #if defined(VMS)
+#include <ssdef.h>
+#ifndef SS$_EXBYTLM
+#define SS$_EXBYTLM 0x2a14  /* VMS 8.4 seen */
+#endif
+#include <rmsdef.h>
 #define closemaybesocket(fd)	close(fd)
 #endif
 
@@ -155,6 +164,12 @@
 #ifndef SOCKET_TO_FD
 # define SOCKET_TO_FD(s)	(s)
 # define SOCKET			int
+#endif
+
+#else /* HAVE_SOCKETS */
+
+#ifndef closemaybesocket
+# define closemaybesocket(fd)	close(fd)
 #endif
 
 #endif /* HAVE_SOCKETS */
@@ -458,6 +473,11 @@ nextfile(IOBUF **curfile, bool skipping)
 			/* IOBUF management: */
 			errno = 0;
 			fd = devopen(fname, binmode("r"));
+			if (fd == INVALID_HANDLE && errno == EMFILE) {
+				close_one();
+				close_one();
+				fd = devopen(fname, binmode("r"));
+			}
 			errcode = errno;
 			if (! do_traditional)
 				update_ERRNO_int(errno);
@@ -943,10 +963,13 @@ redirect_string(char *str, size_t explen, int not_string, int redirtype, int *er
 			if (errno == EMFILE || errno == ENFILE)
 				close_one();
 #ifdef VMS
-			/* Alpha/VMS V7.1's C RTL is returning this instead
+			/* Alpha/VMS V7.1+ C RTL is returning these instead
 			   of EMFILE (haven't tried other post-V6.2 systems) */
-#define SS$_EXQUOTA 0x001C
-			else if (errno == EIO && vaxc$errno == SS$_EXQUOTA)
+			else if ((errno == EIO || errno == EVMSERR) && 
+                                 (vaxc$errno == SS$_EXQUOTA ||
+                                  vaxc$errno == SS$_EXBYTLM ||
+                                  vaxc$errno == RMS$_ACC ||
+				  vaxc$errno == RMS$_SYN))
 				close_one();
 #endif
 			else {
@@ -1269,12 +1292,15 @@ flush_io()
 	int status = 0;
 
 	errno = 0;
+	/* we don't warn about stdout/stderr if EPIPE, but we do error exit */
 	if (fflush(stdout)) {
-		warning(_("error writing standard output (%s)"), strerror(errno));
+		if (errno != EPIPE)
+			warning(_("error writing standard output (%s)"), strerror(errno));
 		status++;
 	}
 	if (fflush(stderr)) {
-		warning(_("error writing standard error (%s)"), strerror(errno));
+		if (errno != EPIPE)
+			warning(_("error writing standard error (%s)"), strerror(errno));
 		status++;
 	}
 	for (rp = red_head; rp != NULL; rp = rp->next)
@@ -1324,13 +1350,16 @@ close_io(bool *stdio_problem)
 	 * them, we just flush them, and do that across the board.
 	 */
 	*stdio_problem = false;
-	if (fflush(stdout)) {
-		warning(_("error writing standard output (%s)"), strerror(errno));
+	/* we don't warn about stdout/stderr if EPIPE, but we do error exit */
+	if (fflush(stdout) != 0) {
+		if (errno != EPIPE)
+			warning(_("error writing standard output (%s)"), strerror(errno));
 		status++;
 		*stdio_problem = true;
 	}
-	if (fflush(stderr)) {
-		warning(_("error writing standard error (%s)"), strerror(errno));
+	if (fflush(stderr) != 0) {
+		if (errno != EPIPE)
+			warning(_("error writing standard error (%s)"), strerror(errno));
 		status++;
 		*stdio_problem = true;
 	}
@@ -1471,7 +1500,7 @@ socketopen(int family, int type, const char *localpname,
 #ifdef MSG_PEEK
 					char buf[10];
 					struct sockaddr_storage remote_addr;
-					socklen_t read_len;
+					socklen_t read_len = 0;
 
 					if (recvfrom(socket_fd, buf, 1, MSG_PEEK,
 						(struct sockaddr *) & remote_addr,
@@ -1923,6 +1952,7 @@ two_way_open(const char *str, struct redirect *rp)
 		case -1:
 			save_errno = errno;
 			close(master);
+			close(slave);
 			errno = save_errno;
 			return false;
 
@@ -2671,7 +2701,10 @@ do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 			return NULL;
 		}
 		erealloc(path, char *, strlen(path) + strlen(src) + 2, "do_find_source");
-#ifndef VMS
+#ifdef VMS
+		if (strcspn(path,">]:") == strlen(path))
+			strcat(path, "/");
+#else
 		strcat(path, "/");
 #endif
 		strcat(path, src);
@@ -4017,7 +4050,7 @@ init_output_wrapper(awk_output_buf_t *outbuf)
 	outbuf->mode = NULL;
 	outbuf->fp = NULL;
 	outbuf->opaque = NULL;
-	outbuf->redirected = false;
+	outbuf->redirected = awk_false;
 	outbuf->gawk_fwrite = gawk_fwrite;
 	outbuf->gawk_fflush = gawk_fflush;
 	outbuf->gawk_ferror = gawk_ferror;

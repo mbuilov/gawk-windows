@@ -43,11 +43,11 @@ static char sccsid[] = "@(#)fts.c	8.6 (Berkeley) 8/14/94";
 
 #include <limits.h>
 /* #include "namespace.h" */
-#ifndef ZOS_USS
+#ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #else
 #include <stdio.h>
-#endif /* ZOS_USS */
+#endif
 #include <sys/stat.h>
 
 #include <assert.h>
@@ -138,6 +138,10 @@ static int	 fts_safe_changedir(const FTS *, const FTSENT *, int,
 #endif
 
 #define _DIAGASSERT(expression)
+
+#ifndef MAXPATHLEN
+#define MAXPATHLEN	1024	/* a guess */
+#endif
 
 FTS *
 fts_open(char * const *argv, int options,
@@ -554,7 +558,7 @@ name:		t = sp->fts_path + NAPPEND(p->fts_parent);
 int
 fts_set(FTS *sp, FTSENT *p, int instr)
 {
-
+	(void) sp;	/* silence warnings */
 	_DIAGASSERT(sp != NULL);
 	_DIAGASSERT(p != NULL);
 

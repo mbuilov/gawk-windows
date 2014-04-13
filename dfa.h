@@ -1,5 +1,5 @@
 /* dfa.h - declarations for GNU deterministic regexp compiler
-   Copyright (C) 1988, 1998, 2007, 2009-2013 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1998, 2007, 2009-2014 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -99,3 +99,13 @@ extern void dfawarn (const char *);
    takes a single argument, a NUL-terminated string describing the error.
    The user must supply a dfaerror.  */
 extern _Noreturn void dfaerror (const char *);
+
+extern int using_utf8 (void);
+
+/* Maximum number of characters that can be the case-folded
+   counterparts of a single character, not counting the character
+   itself.  This is 1 for towupper, 1 for towlower, and 1 for each
+   entry in LONESOME_LOWER; see dfa.c.  */
+enum { CASE_FOLDED_BUFSIZE = 1 + 1 + 19 };
+
+extern int case_folded_counterparts (wchar_t, wchar_t[CASE_FOLDED_BUFSIZE]);

@@ -664,7 +664,7 @@ re_search_internal (preg, string, length, start, range, stop, nmatch, pmatch,
   nmatch -= extra_nmatch;
 
   /* Check if the DFA haven't been compiled.  */
-  if (BE (preg->used == 0 || dfa->init_state == NULL
+  if (BE (preg->used == 0 || dfa == NULL || dfa->init_state == NULL
 	  || dfa->init_state_word == NULL || dfa->init_state_nl == NULL
 	  || dfa->init_state_begbuf == NULL, 0))
     return REG_NOMATCH;

@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2013 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2014 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -1217,7 +1217,7 @@ match_re:
 			ret = nextfile(& curfile, true);	/* skip current file */
 
 			if (currule == BEGINFILE) {
-				long stack_size;
+				long stack_size = 0;
 
 				ni = pop_exec_state(& currule, & source, & stack_size);
 

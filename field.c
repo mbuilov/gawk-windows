@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2013 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2014 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -85,13 +85,19 @@ void
 init_fields()
 {
 	emalloc(fields_arr, NODE **, sizeof(NODE *), "init_fields");
-	fields_arr[0] = dupnode(Nnull_string);
+
+	getnode(fields_arr[0]);
+	*fields_arr[0] = *Nnull_string;
+	fields_arr[0]->flags |= NULL_FIELD;
+
 	parse_extent = fields_arr[0]->stptr;
 	save_FS = dupnode(FS_node->var_value);
+
 	getnode(Null_field);
 	*Null_field = *Nnull_string;
 	Null_field->valref = 1;
-	Null_field->flags = (FIELD|STRCUR|STRING);
+	Null_field->flags = (FIELD|STRCUR|STRING|NULL_FIELD);
+
 	field0_valid = true;
 }
 
@@ -348,6 +354,7 @@ set_NF()
 			*n = *Null_field;
 			fields_arr[i] = n;
 		}
+		parse_high_water = NF;
 	} else if (parse_high_water > 0) {
 		for (i = NF + 1; i >= 0 && i <= parse_high_water; i++) {
 			unref(fields_arr[i]);
@@ -1006,7 +1013,9 @@ do_split(int nargs)
 		return make_number((AWKNUM) 0);
 	}
 
-	if ((sep->re_flags & FS_DFLT) != 0 && current_field_sep() != Using_FIELDWIDTHS && ! RS_is_null) {
+	if (   (sep->re_flags & FS_DFLT) != 0
+	    && current_field_sep() == Using_FS
+	    && ! RS_is_null) {
 		parseit = parse_field;
 		fs = force_string(FS_node->var_value);
 		rp = FS_regexp;

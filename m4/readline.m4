@@ -1,5 +1,5 @@
 dnl Check for readline and dependencies
-dnl Copyright (C) 2004, 2005, 2013 Free Software Foundation, Inc.
+dnl Copyright (C) 2004, 2005, 2013, 2014 Free Software Foundation, Inc.
 dnl
 dnl This file is free software, distributed under the terms of the GNU
 dnl General Public License.  As a special exception to the GNU General
@@ -53,7 +53,8 @@ int main(int argc, char **argv)
 	dup(fd);
 	line = readline("giveittome> ");
 
-	printf("got <%s>\n", line);
+	/* some printfs don't handle NULL for %s */
+	printf("got <%s>\n", line ? line : "(NULL)");
 	return 0;
 }]]),
 dnl action if true:
@@ -69,9 +70,19 @@ dnl action if cross compiling:
         LIBS=$_readline_save_libs
 
         if test $_found_readline = yes ; then
+	   case $host_os in
+	   *bsd* )	_combo="$_combo -ltermcap"
+	  	 ;;
+	   esac
            AC_DEFINE(HAVE_LIBREADLINE,1,
 	      [Define to 1 if you have a fully functional readline library.])
            AC_SUBST(LIBREADLINE,$_combo)
+
+	   AC_CHECK_LIB(readline, history_list,
+		[AC_DEFINE(HAVE_HISTORY_LIST, 1, [Do we have history_list?])],
+		[],
+		[$_combo])
+
            break
         fi
      done

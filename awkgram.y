@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2013 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2014 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -853,7 +853,7 @@ non_compound_stmt
 			(void) list_prepend($$, instruction(Op_push_i));
 			$$->nexti->memory = dupnode(Nnull_string);
 		} else {
-			if (do_optimize > 1
+			if (do_optimize
 				&& $3->lasti->opcode == Op_func_call
 				&& strcmp($3->lasti->func_name, in_function) == 0
 			) {
@@ -1357,7 +1357,7 @@ common_exp
 		 			                             */
 		}
 
-		if (do_optimize > 1
+		if (do_optimize
 			&& $1->nexti == $1->lasti && $1->nexti->opcode == Op_push_i
 			&& $2->nexti == $2->lasti && $2->nexti->opcode == Op_push_i
 		) {
@@ -1495,7 +1495,7 @@ non_post_simp_exp
 			$$ = list_append(list_append(list_create($1),
 						instruction(Op_field_spec)), $2);
 		} else {
-			if (do_optimize > 1 && $2->nexti == $2->lasti
+			if (do_optimize && $2->nexti == $2->lasti
 					&& $2->nexti->opcode == Op_push_i
 					&& ($2->nexti->memory->flags & (MPFN|MPZN)) == 0
 			) {
@@ -1966,15 +1966,39 @@ void
 negate_num(NODE *n)
 {
 #ifdef HAVE_MPFR
-	if (is_mpg_float(n)) {
-		int tval;
-		tval = mpfr_neg(n->mpg_numbr, n->mpg_numbr, ROUND_MODE);
-		IEEE_FMT(n->mpg_numbr, tval);
-	} else if (is_mpg_integer(n)) {
-		mpz_neg(n->mpg_i, n->mpg_i);
-	} else
+	int tval = 0;
 #endif
+
+	if (! is_mpg_number(n)) {
 		n->numbr = -n->numbr;
+		return;
+	}
+
+#ifdef HAVE_MPFR
+	if (is_mpg_integer(n)) {
+		if (! iszero(n)) {
+			mpz_neg(n->mpg_i, n->mpg_i);
+			return;
+		}
+
+		/*
+		 * 0 --> -0 conversion. Requires turning the MPG integer
+		 * into an MPFR float.
+		 */
+
+		mpz_clear(n->mpg_i);	/* release the integer storage */
+
+		/* Convert and fall through. */
+		tval = mpfr_set_d(n->mpg_numbr, 0.0, ROUND_MODE);
+		IEEE_FMT(n->mpg_numbr, tval);
+		n->flags &= ~MPZN;
+		n->flags |= MPFN;
+	}
+
+	/* mpfr float case */
+	tval = mpfr_neg(n->mpg_numbr, n->mpg_numbr, ROUND_MODE);
+	IEEE_FMT(n->mpg_numbr, tval);
+#endif
 }
 
 /* print_included_from --- print `Included from ..' file names and locations */
@@ -2313,7 +2337,7 @@ parse_program(INSTRUCTION **pcode)
 /* do_add_srcfile --- add one item to srcfiles */
 
 static SRCFILE *
-do_add_srcfile(int stype, char *src, char *path, SRCFILE *thisfile)
+do_add_srcfile(enum srctype stype, char *src, char *path, SRCFILE *thisfile)
 {
 	SRCFILE *s;
 
@@ -2335,7 +2359,7 @@ do_add_srcfile(int stype, char *src, char *path, SRCFILE *thisfile)
  */
 
 SRCFILE *
-add_srcfile(int stype, char *src, SRCFILE *thisfile, bool *already_included, int *errcode)
+add_srcfile(enum srctype stype, char *src, SRCFILE *thisfile, bool *already_included, int *errcode)
 {
 	SRCFILE *s;
 	struct stat sbuf;
@@ -4158,7 +4182,7 @@ mk_function(INSTRUCTION *fi, INSTRUCTION *def)
 	thisfunc = fi->func_body;
 	assert(thisfunc != NULL);
 
-	if (do_optimize > 1 && def->lasti->opcode == Op_pop) {
+	if (do_optimize && def->lasti->opcode == Op_pop) {
 		/* tail call which does not return any value. */
 
 		INSTRUCTION *t;
@@ -4309,18 +4333,9 @@ func_use(const char *name, enum defref how)
 	len = strlen(name);
 	ind = hash(name, len, HASHSIZE, NULL);
 
-	for (fp = ftable[ind]; fp != NULL; fp = fp->next) {
-		if (strcmp(fp->name, name) == 0) {
-			if (how == FUNC_DEFINE)
-				fp->defined++;
-			else if (how == FUNC_EXT) {
-				fp->defined++;
-				fp->extension++;
-			} else
-				fp->used++;
-			return;
-		}
-	}
+	for (fp = ftable[ind]; fp != NULL; fp = fp->next)
+		if (strcmp(fp->name, name) == 0)
+			goto update_value;
 
 	/* not in the table, fall through to allocate a new one */
 
@@ -4328,6 +4343,10 @@ func_use(const char *name, enum defref how)
 	memset(fp, '\0', sizeof(struct fdesc));
 	emalloc(fp->name, char *, len + 1, "func_use");
 	strcpy(fp->name, name);
+	fp->next = ftable[ind];
+	ftable[ind] = fp;
+
+update_value:
 	if (how == FUNC_DEFINE)
 		fp->defined++;
 	else if (how == FUNC_EXT) {
@@ -4335,8 +4354,6 @@ func_use(const char *name, enum defref how)
 		fp->extension++;
 	} else
 		fp->used++;
-	fp->next = ftable[ind];
-	ftable[ind] = fp;
 }
 
 /* track_ext_func --- add an extension function to the table */
@@ -4686,7 +4703,7 @@ mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 	if (s2->lasti == ip2 && ip2->opcode == Op_push_i) {
 	/* do any numeric constant folding */
 		ip1 = s1->nexti;
-		if (do_optimize > 1
+		if (do_optimize
 				&& ip1 == s1->lasti && ip1->opcode == Op_push_i
 				&& (ip1->memory->flags & (MPFN|MPZN|STRCUR|STRING)) == 0
 				&& (ip2->memory->flags & (MPFN|MPZN|STRCUR|STRING)) == 0
@@ -5029,8 +5046,13 @@ mk_assignment(INSTRUCTION *lhs, INSTRUCTION *rhs, INSTRUCTION *op)
 	case Op_push_array:
 		tp->opcode = Op_push_lhs; 
 		break;
+	case Op_field_assign:
+		yyerror(_("cannot assign a value to the result of a field post-increment expression"));
+		break;
 	default:
-		cant_happen();
+		yyerror(_("invalid target of assignment (opcode %s)"),
+				opcode2str(tp->opcode));
+		break;
 	}
 
 	tp->do_reference = (op->opcode != Op_assign);	/* check for uninitialized reference */
@@ -5100,10 +5122,8 @@ optimize_assignment(INSTRUCTION *exp)
 	i2 = NULL;
 	i1 = exp->lasti;
 
-	if (   ! do_optimize
-	    || (   i1->opcode != Op_assign
-		&& i1->opcode != Op_field_assign)
-	) 
+	if (   i1->opcode != Op_assign
+	    && i1->opcode != Op_field_assign) 
 		return list_append(exp, instruction(Op_pop));
 
 	for (i2 = exp->nexti; i2 != i1; i2 = i2->nexti) {

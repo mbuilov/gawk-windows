@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 2012 the Free Software Foundation, Inc.
+ * Copyright (C) 2012, 2014 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -40,7 +40,7 @@ typedef struct spec_array {
  * the base array is str_array.
  */
 
-#define	SUPER(F)	(*str_array_func[AFUNC(F)])
+#define	SUPER(F)	(*str_array_func[F ## _ind])
 
 
 /*

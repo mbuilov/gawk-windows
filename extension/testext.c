@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 2012, 2013
+ * Copyright (C) 2012, 2013, 2014
  * the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
@@ -237,8 +237,8 @@ try_modify_environ(int nargs, awk_value_t *result)
 		printf("try_modify_environ: set_array_element of ENVIRON passed\n");
 	} else {
 		printf("try_modify_environ: set_array_element of ENVIRON failed\n");
-		free(index.str_value.str);
-		free(value.str_value.str);
+		gawk_free(index.str_value.str);
+		gawk_free(value.str_value.str);
 	}
 
 	if (! flatten_array(environ_array, & flat_array)) {
@@ -537,6 +537,7 @@ test_array_param(int nargs, awk_value_t *result)
 	awk_value_t new_array;
 	awk_value_t arg0;
 
+	(void) nargs;		/* silence warnings */
 	make_number(0.0, result);
 
 	if (! get_argument(0, AWK_UNDEFINED, & arg0)) {
@@ -615,6 +616,7 @@ test_scalar(int nargs, awk_value_t *result)
 	awk_value_t new_value, new_value2;
 	awk_value_t the_scalar;
 
+	(void) nargs;		/* silence warnings */
 	make_number(0.0, result);
 
 	if (! sym_lookup("the_scalar", AWK_SCALAR, & the_scalar)) {
@@ -661,6 +663,7 @@ test_scalar_reserved(int nargs, awk_value_t *result)
 	awk_value_t new_value;
 	awk_value_t the_scalar;
 
+	(void) nargs;		/* silence warnings */
 	make_number(0.0, result);
 
 	/* look up a reserved variable - should pass */
@@ -712,6 +715,7 @@ test_indirect_vars(int nargs, awk_value_t *result)
 	awk_value_t value;
 	char *name = "NR";
 
+	(void) nargs;		/* silence warnings */
 	assert(result != NULL);
 	make_number(0.0, result);
 

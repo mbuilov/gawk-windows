@@ -1,5 +1,5 @@
 /* dfa.c - deterministic extended regexp routines for GNU
-   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2013 Free Software
+   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2014 Free Software
    Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -43,8 +43,15 @@
 #include "missing_d/gawkbool.h"
 #endif /* HAVE_STDBOOL_H */
 
-#include "dfa.h"
-
+/* Gawk doesn't use Gnulib, so don't assume that setlocale and
+   static_assert are present.  */
+#ifndef LC_ALL
+# define setlocale(category, locale) NULL
+#endif
+#ifndef static_assert
+# define static_assert(cond, diagnostic) \
+    extern int (*foo (void)) [!!sizeof (struct { int foo: (cond) ? 8 : -1; })]
+#endif
 
 #define STREQ(a, b) (strcmp (a, b) == 0)
 
@@ -62,9 +69,9 @@
 #include "gettext.h"
 #define _(str) gettext (str)
 
-#include "mbsupport.h"          /* defines MBS_SUPPORT to 1 or 0, as appropriate */
+#include "mbsupport.h" /* Define MBS_SUPPORT to 1 or 0, as appropriate.  */
 #if MBS_SUPPORT
-/* We can handle multibyte strings. */
+/* We can handle multibyte strings.  */
 # include <wchar.h>
 # include <wctype.h>
 #endif
@@ -84,6 +91,8 @@
 
 #include "xalloc.h"
 
+#include "dfa.h"
+
 #ifdef GAWK
 static int
 is_blank (int c)
@@ -100,7 +109,7 @@ extern int gawk_mb_cur_max;
 #define mbrtowc(a, b, c, d) (-1)
 #endif
 
-/* HPUX, define those as macros in sys/param.h */
+/* HPUX defines these as macros in sys/param.h.  */
 #ifdef setbit
 # undef setbit
 #endif
@@ -108,36 +117,36 @@ extern int gawk_mb_cur_max;
 # undef clrbit
 #endif
 
-/* Number of bits in an unsigned char. */
+/* Number of bits in an unsigned char.  */
 #ifndef CHARBITS
 # define CHARBITS 8
 #endif
 
-/* First integer value that is greater than any character code. */
+/* First integer value that is greater than any character code.  */
 #define NOTCHAR (1 << CHARBITS)
 
-/* INTBITS need not be exact, just a lower bound. */
+/* INTBITS need not be exact, just a lower bound.  */
 #ifndef INTBITS
 # define INTBITS (CHARBITS * sizeof (int))
 #endif
 
-/* Number of ints required to hold a bit for every character. */
+/* Number of ints required to hold a bit for every character.  */
 #define CHARCLASS_INTS ((NOTCHAR + INTBITS - 1) / INTBITS)
 
-/* Sets of unsigned characters are stored as bit vectors in arrays of ints. */
-typedef int charclass[CHARCLASS_INTS];
+/* Sets of unsigned characters are stored as bit vectors in arrays of ints.  */
+typedef unsigned int charclass[CHARCLASS_INTS];
 
 /* Convert a possibly-signed character to an unsigned character.  This is
    a bit safer than casting to unsigned char, since it catches some type
    errors that the cast doesn't.  */
-static inline unsigned char
+static unsigned char
 to_uchar (char ch)
 {
   return ch;
 }
 
 /* Contexts tell us whether a character is a newline or a word constituent.
-   Word-constituent characters are those that satisfy iswalnum(), plus '_'.
+   Word-constituent characters are those that satisfy iswalnum, plus '_'.
    Each character has a single CTX_* value; bitmasks of CTX_* values denote
    a particular character class.
 
@@ -167,17 +176,17 @@ to_uchar (char ch)
    The macro SUCCEEDS_IN_CONTEXT determines whether a given constraint
    succeeds in a particular context.  Prev is a bitmask of possible
    context values for the previous character, curr is the (single-bit)
-   context value for the lookahead character. */
+   context value for the lookahead character.  */
 #define NEWLINE_CONSTRAINT(constraint) (((constraint) >> 8) & 0xf)
 #define LETTER_CONSTRAINT(constraint)  (((constraint) >> 4) & 0xf)
 #define OTHER_CONSTRAINT(constraint)    ((constraint)       & 0xf)
 
 #define SUCCEEDS_IN_CONTEXT(constraint, prev, curr) \
-  ((((curr) & CTX_NONE      ? OTHER_CONSTRAINT(constraint) : 0) \
-    | ((curr) & CTX_LETTER  ? LETTER_CONSTRAINT(constraint) : 0) \
-    | ((curr) & CTX_NEWLINE ? NEWLINE_CONSTRAINT(constraint) : 0)) & (prev))
+  ((((curr) & CTX_NONE      ? OTHER_CONSTRAINT (constraint) : 0) \
+    | ((curr) & CTX_LETTER  ? LETTER_CONSTRAINT (constraint) : 0) \
+    | ((curr) & CTX_NEWLINE ? NEWLINE_CONSTRAINT (constraint) : 0)) & (prev))
 
-/* The following macros give information about what a constraint depends on. */
+/* The following macros describe what a constraint depends on.  */
 #define PREV_NEWLINE_CONSTRAINT(constraint) (((constraint) >> 2) & 0x111)
 #define PREV_LETTER_CONSTRAINT(constraint)  (((constraint) >> 1) & 0x111)
 #define PREV_OTHER_CONSTRAINT(constraint)    ((constraint)       & 0x111)
@@ -190,7 +199,7 @@ to_uchar (char ch)
 /* Tokens that match the empty string subject to some constraint actually
    work by applying that constraint to determine what may follow them,
    taking into account what has gone before.  The following values are
-   the constraints corresponding to the special tokens previously defined. */
+   the constraints corresponding to the special tokens previously defined.  */
 #define NO_CONSTRAINT         0x777
 #define BEGLINE_CONSTRAINT    0x444
 #define ENDLINE_CONSTRAINT    0x700
@@ -201,7 +210,7 @@ to_uchar (char ch)
 
 /* The regexp is parsed into an array of tokens in postfix form.  Some tokens
    are operators and others are terminal symbols.  Most (but not all) of these
-   codes are returned by the lexical analyzer. */
+   codes are returned by the lexical analyzer.  */
 
 typedef ptrdiff_t token;
 
@@ -212,75 +221,76 @@ enum
                                    end of input; any value of END or less in
                                    the parse tree is such a symbol.  Accepting
                                    states of the DFA are those that would have
-                                   a transition on END. */
+                                   a transition on END.  */
 
-  /* Ordinary character values are terminal symbols that match themselves. */
+  /* Ordinary character values are terminal symbols that match themselves.  */
 
   EMPTY = NOTCHAR,              /* EMPTY is a terminal symbol that matches
-                                   the empty string. */
+                                   the empty string.  */
 
-  BACKREF,                      /* BACKREF is generated by \<digit>; it
+  BACKREF,                      /* BACKREF is generated by \<digit>
+                                   or by any other construct that
                                    is not completely handled.  If the scanner
                                    detects a transition on backref, it returns
                                    a kind of "semi-success" indicating that
                                    the match will have to be verified with
-                                   a backtracking matcher. */
+                                   a backtracking matcher.  */
 
   BEGLINE,                      /* BEGLINE is a terminal symbol that matches
                                    the empty string if it is at the beginning
-                                   of a line. */
+                                   of a line.  */
 
   ENDLINE,                      /* ENDLINE is a terminal symbol that matches
                                    the empty string if it is at the end of
-                                   a line. */
+                                   a line.  */
 
   BEGWORD,                      /* BEGWORD is a terminal symbol that matches
                                    the empty string if it is at the beginning
-                                   of a word. */
+                                   of a word.  */
 
   ENDWORD,                      /* ENDWORD is a terminal symbol that matches
                                    the empty string if it is at the end of
-                                   a word. */
+                                   a word.  */
 
   LIMWORD,                      /* LIMWORD is a terminal symbol that matches
                                    the empty string if it is at the beginning
-                                   or the end of a word. */
+                                   or the end of a word.  */
 
   NOTLIMWORD,                   /* NOTLIMWORD is a terminal symbol that
                                    matches the empty string if it is not at
-                                   the beginning or end of a word. */
+                                   the beginning or end of a word.  */
 
   QMARK,                        /* QMARK is an operator of one argument that
                                    matches zero or one occurrences of its
-                                   argument. */
+                                   argument.  */
 
   STAR,                         /* STAR is an operator of one argument that
                                    matches the Kleene closure (zero or more
-                                   occurrences) of its argument. */
+                                   occurrences) of its argument.  */
 
   PLUS,                         /* PLUS is an operator of one argument that
                                    matches the positive closure (one or more
-                                   occurrences) of its argument. */
+                                   occurrences) of its argument.  */
 
   REPMN,                        /* REPMN is a lexical token corresponding
                                    to the {m,n} construct.  REPMN never
-                                   appears in the compiled token vector. */
+                                   appears in the compiled token vector.  */
 
   CAT,                          /* CAT is an operator of two arguments that
                                    matches the concatenation of its
                                    arguments.  CAT is never returned by the
-                                   lexical analyzer. */
+                                   lexical analyzer.  */
 
   OR,                           /* OR is an operator of two arguments that
-                                   matches either of its arguments. */
+                                   matches either of its arguments.  */
 
   LPAREN,                       /* LPAREN never appears in the parse tree,
-                                   it is only a lexeme. */
+                                   it is only a lexeme.  */
 
-  RPAREN,                       /* RPAREN never appears in the parse tree. */
+  RPAREN,                       /* RPAREN never appears in the parse tree.  */
 
   ANYCHAR,                      /* ANYCHAR is a terminal symbol that matches
-                                   any multibyte (or single byte) characters.
+                                   a valid multibyte (or single byte) character.
                                    It is used only if MB_CUR_MAX > 1.  */
 
   MBCSET,                       /* MBCSET is similar to CSET, but for
@@ -291,50 +301,49 @@ enum
 
   CSET                          /* CSET and (and any value greater) is a
                                    terminal symbol that matches any of a
-                                   class of characters. */
+                                   class of characters.  */
 };
 
 
 /* States of the recognizer correspond to sets of positions in the parse
    tree, together with the constraints under which they may be matched.
    So a position is encoded as an index into the parse tree together with
-   a constraint. */
+   a constraint.  */
 typedef struct
 {
-  size_t index;                 /* Index into the parse array. */
-  unsigned int constraint;      /* Constraint for matching this position. */
+  size_t index;                 /* Index into the parse array.  */
+  unsigned int constraint;      /* Constraint for matching this position.  */
 } position;
 
-/* Sets of positions are stored as arrays. */
+/* Sets of positions are stored as arrays.  */
 typedef struct
 {
-  position *elems;              /* Elements of this position set. */
-  size_t nelem;                 /* Number of elements in this set. */
+  position *elems;              /* Elements of this position set.  */
+  size_t nelem;                 /* Number of elements in this set.  */
   size_t alloc;                 /* Number of elements allocated in ELEMS.  */
 } position_set;
 
-/* Sets of leaves are also stored as arrays. */
+/* Sets of leaves are also stored as arrays.  */
 typedef struct
 {
-  size_t *elems;                /* Elements of this position set. */
-  size_t nelem;                 /* Number of elements in this set. */
+  size_t *elems;                /* Elements of this position set.  */
+  size_t nelem;                 /* Number of elements in this set.  */
 } leaf_set;
 
 /* A state of the dfa consists of a set of positions, some flags,
    and the token value of the lowest-numbered position of the state that
-   contains an END token. */
+   contains an END token.  */
 typedef struct
 {
-  size_t hash;                  /* Hash of the positions of this state. */
-  position_set elems;           /* Positions this state could match. */
-  unsigned char context;        /* Context from previous state. */
+  size_t hash;                  /* Hash of the positions of this state.  */
+  position_set elems;           /* Positions this state could match.  */
+  unsigned char context;        /* Context from previous state.  */
   char backref;                 /* True if this state matches a \<digit>.  */
-  unsigned short constraint;    /* Constraint for this state to accept. */
-  token first_end;              /* Token value of the first END in elems. */
+  unsigned short constraint;    /* Constraint for this state to accept.  */
+  token first_end;              /* Token value of the first END in elems.  */
   position_set mbps;            /* Positions which can match multibyte
-                                   characters.  e.g. period.
-                                   These staff are used only if
-                                   MB_CUR_MAX > 1.  */
+                                   characters, e.g., period.
+                                   Used only if MB_CUR_MAX > 1.  */
 } dfa_state;
 
 /* States are indexed by state_num values.  These are normally
@@ -342,7 +351,7 @@ typedef struct
 typedef ptrdiff_t state_num;
 
 /* A bracket operator.
-   e.g. [a-c], [[:alpha:]], etc.  */
+   e.g., [a-c], [[:alpha:]], etc.  */
 struct mb_char_classes
 {
   ptrdiff_t cset;
@@ -360,26 +369,26 @@ struct mb_char_classes
   size_t ncoll_elems;           /* Collating elements.  */
 };
 
-/* A compiled regular expression. */
+/* A compiled regular expression.  */
 struct dfa
 {
-  /* Fields filled by the scanner. */
-  charclass *charclasses;       /* Array of character sets for CSET tokens. */
-  size_t cindex;                /* Index for adding new charclasses. */
-  size_t calloc;                /* Number of charclasses currently allocated. */
+  /* Fields filled by the scanner.  */
+  charclass *charclasses;       /* Array of character sets for CSET tokens.  */
+  size_t cindex;                /* Index for adding new charclasses.  */
+  size_t calloc;                /* Number of charclasses allocated.  */
 
-  /* Fields filled by the parser. */
-  token *tokens;                /* Postfix parse array. */
-  size_t tindex;                /* Index for adding new tokens. */
-  size_t talloc;                /* Number of tokens currently allocated. */
+  /* Fields filled by the parser.  */
+  token *tokens;                /* Postfix parse array.  */
+  size_t tindex;                /* Index for adding new tokens.  */
+  size_t talloc;                /* Number of tokens currently allocated.  */
   size_t depth;                 /* Depth required of an evaluation stack
                                    used for depth-first traversal of the
-                                   parse tree. */
-  size_t nleaves;               /* Number of leaves on the parse tree. */
+                                   parse tree.  */
+  size_t nleaves;               /* Number of leaves on the parse tree.  */
   size_t nregexps;              /* Count of parallel regexps being built
-                                   with dfaparse(). */
+                                   with dfaparse.  */
   unsigned int mb_cur_max;      /* Cached value of MB_CUR_MAX.  */
-  token utf8_anychar_classes[5];        /* To lower ANYCHAR in UTF-8 locales.  */
+  token utf8_anychar_classes[5]; /* To lower ANYCHAR in UTF-8 locales.  */
 
   /* The following are used only if MB_CUR_MAX > 1.  */
 
@@ -403,67 +412,75 @@ struct dfa
   size_t nmultibyte_prop;
   int *multibyte_prop;
 
+#if MBS_SUPPORT
+  /* A table indexed by byte values that contains the corresponding wide
+     character (if any) for that byte.  WEOF means the byte is the
+     leading byte of a multibyte character.  Invalid and null bytes are
+     mapped to themselves.  */
+  wint_t mbrtowc_cache[NOTCHAR];
+#endif
+
   /* Array of the bracket expression in the DFA.  */
   struct mb_char_classes *mbcsets;
   size_t nmbcsets;
   size_t mbcsets_alloc;
 
-  /* Fields filled by the state builder. */
-  dfa_state *states;            /* States of the dfa. */
-  state_num sindex;             /* Index for adding new states. */
-  state_num salloc;             /* Number of states currently allocated. */
+  /* Fields filled by the state builder.  */
+  dfa_state *states;            /* States of the dfa.  */
+  state_num sindex;             /* Index for adding new states.  */
+  state_num salloc;             /* Number of states currently allocated.  */
 
-  /* Fields filled by the parse tree->NFA conversion. */
+  /* Fields filled by the parse tree->NFA conversion.  */
   position_set *follows;        /* Array of follow sets, indexed by position
                                    index.  The follow of a position is the set
                                    of positions containing characters that
                                    could conceivably follow a character
                                    matching the given position in a string
                                    matching the regexp.  Allocated to the
-                                   maximum possible position index. */
+                                   maximum possible position index.  */
   int searchflag;               /* True if we are supposed to build a searching
                                    as opposed to an exact matcher.  A searching
                                    matcher finds the first and shortest string
                                    matching a regexp anywhere in the buffer,
                                    whereas an exact matcher finds the longest
                                    string matching, but anchored to the
-                                   beginning of the buffer. */
+                                   beginning of the buffer.  */
 
-  /* Fields filled by dfaexec. */
+  /* Fields filled by dfaexec.  */
   state_num tralloc;            /* Number of transition tables that have
-                                   slots so far. */
+                                   slots so far.  */
   int trcount;                  /* Number of transition tables that have
-                                   actually been built. */
+                                   actually been built.  */
   state_num **trans;            /* Transition tables for states that can
                                    never accept.  If the transitions for a
                                    state have not yet been computed, or the
                                    state could possibly accept, its entry in
-                                   this table is NULL. */
+                                   this table is NULL.  */
   state_num **realtrans;        /* Trans always points to realtrans + 1; this
-                                   is so trans[-1] can contain NULL. */
+                                   is so trans[-1] can contain NULL.  */
   state_num **fails;            /* Transition tables after failing to accept
-                                   on a state that potentially could do so. */
+                                   on a state that potentially could do so.  */
   int *success;                 /* Table of acceptance conditions used in
-                                   dfaexec and computed in build_state. */
+                                   dfaexec and computed in build_state.  */
   state_num *newlines;          /* Transitions on newlines.  The entry for a
                                    newline in any transition table is always
                                    -1 so we can count lines without wasting
                                    too many cycles.  The transition for a
                                    newline is stored separately and handled
                                    as a special case.  Newline is also used
-                                   as a sentinel at the end of the buffer. */
+                                   as a sentinel at the end of the buffer.  */
   struct dfamust *musts;        /* List of strings, at least one of which
                                    is known to appear in any r.e. matching
-                                   the dfa. */
+                                   the dfa.  */
 };
 
-/* Some macros for user access to dfa internals. */
+/* Some macros for user access to dfa internals.  */
 
-/* ACCEPTING returns true if s could possibly be an accepting state of r. */
+/* ACCEPTING returns true if s could possibly be an accepting state of r.  */
 #define ACCEPTING(s, r) ((r).states[s].constraint)
 
 /* ACCEPTS_IN_CONTEXT returns true if the given state accepts in the
-   specified context. */
+   specified context.  */
 #define ACCEPTS_IN_CONTEXT(prev, curr, state, dfa) \
   SUCCEEDS_IN_CONTEXT ((dfa).states[state].constraint, prev, curr)
 
@@ -471,7 +488,7 @@ static void dfamust (struct dfa *dfa);
 static void regexp (void);
 
 /* These two macros are identical to the ones in gnulib's xalloc.h,
-   except that they not to case the result to "(t *)", and thus may
+   except that they do not cast the result to "(t *)", and thus may
    be used via type-free CALLOC and MALLOC macros.  */
 #undef XNMALLOC
 #undef XCALLOC
@@ -492,7 +509,7 @@ static void regexp (void);
 #define MALLOC(p, n) do { (p) = XNMALLOC (n, *(p)); } while (0)
 #define REALLOC(p, n) do {(p) = xnrealloc (p, n, sizeof (*(p))); } while (0)
 
-/* Reallocate an array of type *P if N_ALLOC is <= N_REQUIRED. */
+/* Reallocate an array of type *P if N_ALLOC is <= N_REQUIRED.  */
 #define REALLOC_IF_NECESSARY(p, n_alloc, n_required)		\
   do								\
     {								\
@@ -505,6 +522,64 @@ static void regexp (void);
     }								\
   while (false)
 
+static void
+dfambcache (struct dfa *d)
+{
+#if MBS_SUPPORT
+  int i;
+  for (i = CHAR_MIN; i <= CHAR_MAX; ++i)
+    {
+      char c = i;
+      unsigned char uc = i;
+      mbstate_t s = { 0 };
+      wchar_t wc;
+      wint_t wi;
+      switch (mbrtowc (&wc, &c, 1, &s))
+        {
+        default: wi = wc; break;
+        case (size_t) -2: wi = WEOF; break;
+        case (size_t) -1: wi = uc; break;
+        }
+      d->mbrtowc_cache[uc] = wi;
+    }
+#endif
+}
+
+#if MBS_SUPPORT
+/* Given the dfa D, store into *PWC the result of converting the
+   leading bytes of the multibyte buffer S of length N bytes, updating
+   the conversion state in *MBS.  On conversion error, convert just a
+   single byte as-is.  Return the number of bytes converted.
+
+   This differs from mbrtowc (PWC, S, N, MBS) as follows:
+
+   * Extra arg D, containing an mbrtowc_cache for speed.
+   * N must be at least 1.
+   * S[N - 1] must be a sentinel byte.
+   * Shift encodings are not supported.
+   * The return value is always in the range 1..N.
+   * *MBS is always valid afterwards.
+   * *PWC is always set to something.  */
+static size_t
+mbs_to_wchar (struct dfa *d, wchar_t *pwc, char const *s, size_t n,
+              mbstate_t *mbs)
+{
+  unsigned char uc = s[0];
+  wint_t wc = d->mbrtowc_cache[uc];
+
+  if (wc == WEOF)
+    {
+      size_t nbytes = mbrtowc (pwc, s, n, mbs);
+      if (0 < nbytes && nbytes < (size_t) -2)
+        return nbytes;
+      memset (mbs, 0, sizeof *mbs);
+      wc = uc;
+    }
+
+  *pwc = wc;
+  return 1;
+}
+#endif
 
 #ifdef DEBUG
 
@@ -584,24 +659,24 @@ prtok (token t)
 }
 #endif /* DEBUG */
 
-/* Stuff pertaining to charclasses. */
+/* Stuff pertaining to charclasses.  */
 
-static int
+static bool
 tstbit (unsigned int b, charclass const c)
 {
-  return c[b / INTBITS] & 1 << b % INTBITS;
+  return c[b / INTBITS] >> b % INTBITS & 1;
 }
 
 static void
 setbit (unsigned int b, charclass c)
 {
-  c[b / INTBITS] |= 1 << b % INTBITS;
+  c[b / INTBITS] |= 1U << b % INTBITS;
 }
 
 static void
 clrbit (unsigned int b, charclass c)
 {
-  c[b / INTBITS] &= ~(1 << b % INTBITS);
+  c[b / INTBITS] &= ~(1U << b % INTBITS);
 }
 
 static void
@@ -631,10 +706,11 @@ equal (charclass const s1, charclass const s2)
   return memcmp (s1, s2, sizeof (charclass)) == 0;
 }
 
-/* A pointer to the current dfa is kept here during parsing. */
+/* A pointer to the current dfa is kept here during parsing.  */
 static struct dfa *dfa;
 
-/* Find the index of charclass s in dfa->charclasses, or allocate a new charclass. */
+/* Find the index of charclass s in dfa->charclasses, or allocate a
+   new charclass.  */
 static size_t
 charclass_index (charclass const s)
 {
@@ -649,10 +725,10 @@ charclass_index (charclass const s)
   return i;
 }
 
-/* Syntax bits controlling the behavior of the lexical analyzer. */
+/* Syntax bits controlling the behavior of the lexical analyzer.  */
 static reg_syntax_t syntax_bits, syntax_bits_set;
 
-/* Flag for case-folding letters into sets. */
+/* Flag for case-folding letters into sets.  */
 static int case_fold;
 
 /* End-of-line byte in data.  */
@@ -661,10 +737,10 @@ static unsigned char eolbyte;
 /* Cache of char-context values.  */
 static int sbit[NOTCHAR];
 
-/* Set of characters considered letters. */
+/* Set of characters considered letters.  */
 static charclass letters;
 
-/* Set of characters that are newline. */
+/* Set of characters that are newline.  */
 static charclass newline;
 
 /* Add this to the test for whether a byte is word-constituent, since on
@@ -700,7 +776,7 @@ wchar_context (wint_t wc)
   return CTX_NONE;
 }
 
-/* Entry point to set syntax options. */
+/* Entry point to set syntax options.  */
 void
 dfasyntax (reg_syntax_t bits, int fold, unsigned char eol)
 {
@@ -731,67 +807,39 @@ dfasyntax (reg_syntax_t bits, int fold, unsigned char eol)
    this may happen when folding case in weird Turkish locales where
    dotless i/dotted I are not included in the chosen character set.
    Return whether a bit was set in the charclass.  */
-#if MBS_SUPPORT
 static bool
 setbit_wc (wint_t wc, charclass c)
 {
+#if MBS_SUPPORT
   int b = wctob (wc);
   if (b == EOF)
     return false;
 
   setbit (b, c);
   return true;
-}
-
-/* Set a bit in the charclass for the given single byte character,
-   if it is valid in the current character set.  */
-static void
-setbit_c (int b, charclass c)
-{
-  /* Do nothing if b is invalid in this character set.  */
-  if (MB_CUR_MAX > 1 && btowc (b) == WEOF)
-    return;
-  setbit (b, c);
-}
 #else
-# define setbit_c setbit
-static inline bool
-setbit_wc (wint_t wc, charclass c)
-{
   abort ();
    /*NOTREACHED*/ return false;
-}
 #endif
+}
 
-/* Like setbit_c, but if case is folded, set both cases of a letter.  For
-   MB_CUR_MAX > 1, the resulting charset is only used as an optimization,
-   and the caller takes care of setting the appropriate field of struct
-   mb_char_classes.  */
+/* Set a bit for B and its case variants in the charclass C.
+   MB_CUR_MAX must be 1.  */
 static void
 setbit_case_fold_c (int b, charclass c)
 {
-  if (MB_CUR_MAX > 1)
-    {
-      wint_t wc = btowc (b);
-      if (wc == WEOF)
-        return;
-      setbit (b, c);
-      if (case_fold && iswalpha (wc))
-        setbit_wc (iswupper (wc) ? towlower (wc) : towupper (wc), c);
-    }
-  else
-    {
-      setbit (b, c);
-      if (case_fold && isalpha (b))
-        setbit_c (isupper (b) ? tolower (b) : toupper (b), c);
-    }
+  int ub = toupper (b);
+  int i;
+  for (i = 0; i < NOTCHAR; i++)
+    if (toupper (i) == ub)
+      setbit (i, c);
 }
 
 
 
 /* UTF-8 encoding allows some optimizations that we can't otherwise
-   assume in a multibyte encoding. */
-static inline int
+   assume in a multibyte encoding.  */
+int
 using_utf8 (void)
 {
   static int utf8 = -1;
@@ -804,54 +852,94 @@ using_utf8 (void)
 #endif
 #ifdef LIBC_IS_BORKED
       if (gawk_mb_cur_max == 1)
-	utf8 = 0;
+         utf8 = 0;
 #endif
     }
 
   return utf8;
 }
 
+/* Return true if the current locale is known to be a unibyte locale
+   without multicharacter collating sequences and where range
+   comparisons simply use the native encoding.  These locales can be
+   processed more efficiently.  */
+
+static bool
+using_simple_locale (void)
+{
+  /* True if the native character set is known to be compatible with
+     the C locale.  The following test isn't perfect, but it's good
+     enough in practice, as only ASCII and EBCDIC are in common use
+     and this test correctly accepts ASCII and rejects EBCDIC.  */
+  enum { native_c_charset =
+    ('\b' == 8 && '\t' == 9 && '\n' == 10 && '\v' == 11 && '\f' == 12
+     && '\r' == 13 && ' ' == 32 && '!' == 33 && '"' == 34 && '#' == 35
+     && '%' == 37 && '&' == 38 && '\'' == 39 && '(' == 40 && ')' == 41
+     && '*' == 42 && '+' == 43 && ',' == 44 && '-' == 45 && '.' == 46
+     && '/' == 47 && '0' == 48 && '9' == 57 && ':' == 58 && ';' == 59
+     && '<' == 60 && '=' == 61 && '>' == 62 && '?' == 63 && 'A' == 65
+     && 'Z' == 90 && '[' == 91 && '\\' == 92 && ']' == 93 && '^' == 94
+     && '_' == 95 && 'a' == 97 && 'z' == 122 && '{' == 123 && '|' == 124
+     && '}' == 125 && '~' == 126)
+  };
+
+  if (! native_c_charset || MB_CUR_MAX > 1)
+    return false;
+  else
+    {
+      static int unibyte_c = -1;
+      if (unibyte_c < 0)
+        {
+          char const *locale = setlocale (LC_ALL, NULL);
+          unibyte_c = (!locale
+                       || STREQ (locale, "C")
+                       || STREQ (locale, "POSIX"));
+        }
+      return unibyte_c;
+    }
+}
+
 /* Lexical analyzer.  All the dross that deals with the obnoxious
    GNU Regex syntax bits is located here.  The poor, suffering
    reader is referred to the GNU Regex documentation for the
-   meaning of the @#%!@#%^!@ syntax bits. */
+   meaning of the @#%!@#%^!@ syntax bits.  */
 
-static char const *lexptr;      /* Pointer to next input character. */
-static size_t lexleft;          /* Number of characters remaining. */
-static token lasttok;           /* Previous token returned; initially END. */
-static int laststart;           /* True if we're separated from beginning or (, |
-                                   only by zero-width characters. */
-static size_t parens;           /* Count of outstanding left parens. */
-static int minrep, maxrep;      /* Repeat counts for {m,n}. */
+static char const *lexptr;      /* Pointer to next input character.  */
+static size_t lexleft;          /* Number of characters remaining.  */
+static token lasttok;           /* Previous token returned; initially END.  */
+static int laststart;           /* True if we're separated from beginning or (,
+                                   | only by zero-width characters.  */
+static size_t parens;           /* Count of outstanding left parens.  */
+static int minrep, maxrep;      /* Repeat counts for {m,n}.  */
 
 static int cur_mb_len = 1;      /* Length of the multibyte representation of
                                    wctok.  */
 /* These variables are used only if (MB_CUR_MAX > 1).  */
-static mbstate_t mbs;           /* Mbstate for mbrlen().  */
+static mbstate_t mbs;           /* mbstate for mbrtowc.  */
 static wchar_t wctok;           /* Wide character representation of the current
                                    multibyte character.  */
-static unsigned char *mblen_buf;        /* Correspond to the input buffer in dfaexec().
-                                           Each element store the amount of remain
-                                           byte of corresponding multibyte character
-                                           in the input string.  A element's value
-                                           is 0 if corresponding character is a
-                                           single byte character.
-                                           e.g. input : 'a', <mb(0)>, <mb(1)>, <mb(2)>
-                                           mblen_buf :   0,       3,       2,       1
-                                         */
-static wchar_t *inputwcs;       /* Wide character representation of input
-                                   string in dfaexec().
-                                   The length of this array is same as
-                                   the length of input string(char array).
+static unsigned char *mblen_buf;/* Correspond to the input buffer in dfaexec.
+                                   Each element stores the number of remaining
+                                   bytes of the corresponding multibyte
+                                   character in the input string.  A element's
+                                   value is 0 if the corresponding character is
+                                   single-byte.
+                                   e.g., input : 'a', <mb(0)>, <mb(1)>, <mb(2)>
+                                   mblen_buf   :  0,       3,       2,       1
+                                 */
+static wchar_t *inputwcs;       /* Wide character representation of the input
+                                   string in dfaexec.
+                                   The length of this array is the same as
+                                   the length of input string (char array).
                                    inputstring[i] is a single-byte char,
-                                   or 1st byte of a multibyte char.
-                                   And inputwcs[i] is the codepoint.  */
-static unsigned char const *buf_begin;  /* reference to begin in dfaexec().  */
-static unsigned char const *buf_end;    /* reference to end in dfaexec().  */
+                                   or the first byte of a multibyte char;
+                                   inputwcs[i] is the codepoint.  */
+static unsigned char const *buf_begin;  /* reference to begin in dfaexec.  */
+static unsigned char const *buf_end;    /* reference to end in dfaexec.  */
 
 
 #if MBS_SUPPORT
-/* Note that characters become unsigned here. */
+/* Note that characters become unsigned here.  */
 # define FETCH_WC(c, wc, eoferr)		\
   do {						\
     if (! lexleft)				\
@@ -864,32 +952,18 @@ static unsigned char const *buf_end;    /* reference to end in dfaexec().  */
     else					\
       {						\
         wchar_t _wc;				\
-        cur_mb_len = mbrtowc (&_wc, lexptr, lexleft, &mbs); \
-        if (cur_mb_len <= 0)			\
-          {					\
-            cur_mb_len = 1;			\
-            --lexleft;				\
-            (wc) = (c) = to_uchar (*lexptr++);  \
-          }					\
-        else					\
-          {					\
-            lexptr += cur_mb_len;		\
-            lexleft -= cur_mb_len;		\
-            (wc) = _wc;				\
-            (c) = wctob (wc);			\
-          }					\
+        size_t nbytes = mbs_to_wchar (dfa, &_wc, lexptr, lexleft, &mbs); \
+        cur_mb_len = nbytes;			\
+        (wc) = _wc;				\
+        (c) = nbytes == 1 ? to_uchar (*lexptr) : EOF;    \
+        lexptr += nbytes;			\
+        lexleft -= nbytes;			\
       }						\
-  } while(0)
-
-# define FETCH(c, eoferr)			\
-  do {						\
-    wint_t wc;					\
-    FETCH_WC (c, wc, eoferr);			\
   } while (0)
 
 #else
-/* Note that characters become unsigned here. */
-# define FETCH(c, eoferr)	      \
+/* Note that characters become unsigned here.  */
+# define FETCH_WC(c, unused, eoferr)  \
   do {				      \
     if (! lexleft)		      \
       {				      \
@@ -900,9 +974,7 @@ static unsigned char const *buf_end;    /* reference to end in dfaexec().  */
       }				      \
     (c) = to_uchar (*lexptr++);       \
     --lexleft;			      \
-  } while(0)
-
-# define FETCH_WC(c, unused, eoferr) FETCH (c, eoferr)
+  } while (0)
 
 #endif /* MBS_SUPPORT */
 
@@ -910,11 +982,56 @@ static unsigned char const *buf_end;    /* reference to end in dfaexec().  */
 # define MIN(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
+/* The set of wchar_t values C such that there's a useful locale
+   somewhere where C != towupper (C) && C != towlower (towupper (C)).
+   For example, 0x00B5 (U+00B5 MICRO SIGN) is in this table, because
+   towupper (0x00B5) == 0x039C (U+039C GREEK CAPITAL LETTER MU), and
+   towlower (0x039C) == 0x03BC (U+03BC GREEK SMALL LETTER MU).  */
+static short const lonesome_lower[] =
+  {
+    0x00B5, 0x0131, 0x017F, 0x01C5, 0x01C8, 0x01CB, 0x01F2, 0x0345,
+    0x03C2, 0x03D0, 0x03D1, 0x03D5, 0x03D6, 0x03F0, 0x03F1,
+
+    /* U+03F2 GREEK LUNATE SIGMA SYMBOL lacks a specific uppercase
+       counterpart in locales predating Unicode 4.0.0 (April 2003).  */
+    0x03F2,
+
+    0x03F5, 0x1E9B, 0x1FBE,
+  };
+
+static_assert ((sizeof lonesome_lower / sizeof *lonesome_lower + 2
+                == CASE_FOLDED_BUFSIZE),
+               "CASE_FOLDED_BUFSIZE is wrong");
+
+/* Find the characters equal to C after case-folding, other than C
+   itself, and store them into FOLDED.  Return the number of characters
+   stored.  */
+int
+case_folded_counterparts (wchar_t c, wchar_t folded[CASE_FOLDED_BUFSIZE])
+{
+  int i;
+  int n = 0;
+  wint_t uc = towupper (c);
+  wint_t lc = towlower (uc);
+  if (uc != c)
+    folded[n++] = uc;
+  if (lc != uc && lc != c && towupper (lc) == uc)
+    folded[n++] = lc;
+  for (i = 0; i < sizeof lonesome_lower / sizeof *lonesome_lower; i++)
+    {
+      wint_t li = lonesome_lower[i];
+      if (li != lc && li != uc && li != c && towupper (li) == uc)
+        folded[n++] = li;
+    }
+  return n;
+}
+
 typedef int predicate (int);
 
 /* The following list maps the names of the Posix named character classes
    to predicate functions that determine whether a given character is in
-   the class.  The leading [ has already been eaten by the lexical analyzer. */
+   the class.  The leading [ has already been eaten by the lexical
+   analyzer.  */
 struct dfa_ctype
 {
   const char *name;
@@ -927,7 +1044,7 @@ static const struct dfa_ctype prednames[] = {
   {"upper", isupper, false},
   {"lower", islower, false},
   {"digit", isdigit, true},
-  {"xdigit", isxdigit, true},
+  {"xdigit", isxdigit, false},
   {"space", isspace, false},
   {"punct", ispunct, false},
   {"alnum", isalnum, false},
@@ -950,14 +1067,17 @@ find_pred (const char *str)
 }
 
 /* Multibyte character handling sub-routine for lex.
-   This function  parse a bracket expression and build a struct
-   mb_char_classes.  */
+   Parse a bracket expression and build a struct mb_char_classes.  */
 static token
 parse_bracket_exp (void)
 {
   int invert;
   int c, c1, c2;
   charclass ccl;
+
+  /* True if this is a bracket expression that dfaexec is known to
+     process correctly.  */
+  bool known_bracket_exp = true;
 
   /* Used to warn about [:space:].
      Bit 0 = first character is a colon.
@@ -984,7 +1104,7 @@ parse_bracket_exp (void)
                             dfa->nmbcsets + 1);
 
       /* dfa->multibyte_prop[] hold the index of dfa->mbcsets.
-         We will update dfa->multibyte_prop[] in addtok(), because we can't
+         We will update dfa->multibyte_prop[] in addtok, because we can't
          decide the index in dfa->tokens[].  */
 
       /* Initialize work area.  */
@@ -1000,6 +1120,7 @@ parse_bracket_exp (void)
     {
       FETCH_WC (c, wc, _("unbalanced ["));
       invert = 1;
+      known_bracket_exp = using_simple_locale ();
     }
   else
     invert = 0;
@@ -1013,17 +1134,15 @@ parse_bracket_exp (void)
       /* Note that if we're looking at some other [:...:] construct,
          we just treat it as a bunch of ordinary characters.  We can do
          this because we assume regex has checked for syntax errors before
-         dfa is ever called. */
-      if (c == '[' && (syntax_bits & RE_CHAR_CLASSES))
+         dfa is ever called.  */
+      if (c == '[')
         {
-#define BRACKET_BUFFER_SIZE 128
-          char str[BRACKET_BUFFER_SIZE];
+#define MAX_BRACKET_STRING_LEN 32
+          char str[MAX_BRACKET_STRING_LEN + 1];
           FETCH_WC (c1, wc1, _("unbalanced ["));
 
-          /* If pattern contains '[[:', '[[.', or '[[='.  */
-          if (c1 == ':'
-              /* TODO: handle '[[.' and '[[=' also for MB_CUR_MAX == 1.  */
-              || (MB_CUR_MAX > 1 && (c1 == '.' || c1 == '=')))
+          if ((c1 == ':' && (syntax_bits & RE_CHAR_CLASSES))
+              || c1 == '.' || c1 == '=')
             {
               size_t len = 0;
               for (;;)
@@ -1031,7 +1150,7 @@ parse_bracket_exp (void)
                   FETCH_WC (c, wc, _("unbalanced ["));
                   if ((c == c1 && *lexptr == ']') || lexleft == 0)
                     break;
-                  if (len < BRACKET_BUFFER_SIZE)
+                  if (len < MAX_BRACKET_STRING_LEN)
                     str[len++] = c;
                   else
                     /* This is in any case an invalid class name.  */
@@ -1042,7 +1161,10 @@ parse_bracket_exp (void)
               /* Fetch bracket.  */
               FETCH_WC (c, wc, _("unbalanced ["));
               if (c1 == ':')
-                /* build character class.  */
+                /* Build character class.  POSIX allows character
+                   classes to match multicharacter collating elements,
+                   but the regex code does not support that, so do not
+                   worry about that possibility.  */
                 {
                   char const *class
                     = (case_fold && (STREQ (str, "upper")
@@ -1054,7 +1176,7 @@ parse_bracket_exp (void)
                   if (MB_CUR_MAX > 1 && !pred->single_byte_only)
                     {
                       /* Store the character class as wctype_t.  */
-                      wctype_t wt = wctype (class);
+                      wctype_t wt = (wctype_t) wctype (class);
 
                       REALLOC_IF_NECESSARY (work_mbc->ch_classes,
                                             ch_classes_al,
@@ -1064,30 +1186,11 @@ parse_bracket_exp (void)
 
                   for (c2 = 0; c2 < NOTCHAR; ++c2)
                     if (pred->func (c2))
-                      setbit_case_fold_c (c2, ccl);
+                      setbit (c2, ccl);
                 }
+              else
+                known_bracket_exp = false;
 
-              else if (MBS_SUPPORT && (c1 == '=' || c1 == '.'))
-                {
-                  char *elem = xmemdup (str, len + 1);
-
-                  if (c1 == '=')
-                    /* build equivalence class.  */
-                    {
-                      REALLOC_IF_NECESSARY (work_mbc->equivs,
-                                            equivs_al, work_mbc->nequivs + 1);
-                      work_mbc->equivs[work_mbc->nequivs++] = elem;
-                    }
-
-                  if (c1 == '.')
-                    /* build collating element.  */
-                    {
-                      REALLOC_IF_NECESSARY (work_mbc->coll_elems,
-                                            coll_elems_al,
-                                            work_mbc->ncoll_elems + 1);
-                      work_mbc->coll_elems[work_mbc->ncoll_elems++] = elem;
-                    }
-                }
               colon_warning_state |= 8;
 
               /* Fetch new lookahead character.  */
@@ -1109,112 +1212,96 @@ parse_bracket_exp (void)
         /* build range characters.  */
         {
           FETCH_WC (c2, wc2, _("unbalanced ["));
-          if (c2 == ']')
+
+          /* A bracket expression like [a-[.aa.]] matches an unknown set.
+             Treat it like [-a[.aa.]] while parsing it, and
+             remember that the set is unknown.  */
+          if (c2 == '[' && *lexptr == '.')
             {
-              /* In the case [x-], the - is an ordinary hyphen,
-                 which is left in c1, the lookahead character. */
-              lexptr -= cur_mb_len;
-              lexleft += cur_mb_len;
+              known_bracket_exp = false;
+              c2 = ']';
             }
-        }
 
-      if (c1 == '-' && c2 != ']')
-        {
-          if (c2 == '\\' && (syntax_bits & RE_BACKSLASH_ESCAPE_IN_LISTS))
-            FETCH_WC (c2, wc2, _("unbalanced ["));
-
-          if (MB_CUR_MAX > 1)
+          if (c2 != ']')
             {
-              /* When case folding map a range, say [m-z] (or even [M-z])
-                 to the pair of ranges, [m-z] [M-Z].  */
-              REALLOC_IF_NECESSARY (work_mbc->range_sts,
-                                    range_sts_al, work_mbc->nranges + 1);
-              REALLOC_IF_NECESSARY (work_mbc->range_ends,
-                                    range_ends_al, work_mbc->nranges + 1);
-              work_mbc->range_sts[work_mbc->nranges] =
-                case_fold ? towlower (wc) : (wchar_t) wc;
-              work_mbc->range_ends[work_mbc->nranges++] =
-                case_fold ? towlower (wc2) : (wchar_t) wc2;
+              if (c2 == '\\' && (syntax_bits & RE_BACKSLASH_ESCAPE_IN_LISTS))
+                FETCH_WC (c2, wc2, _("unbalanced ["));
 
-#ifndef GREP
-              if (case_fold && (iswalpha (wc) || iswalpha (wc2)))
+              if (MB_CUR_MAX > 1)
                 {
+                  /* When case folding map a range, say [m-z] (or even [M-z])
+                     to the pair of ranges, [m-z] [M-Z].  Although this code
+                     is wrong in multiple ways, it's never used in practice.
+                     FIXME: Remove this (and related) unused code.  */
                   REALLOC_IF_NECESSARY (work_mbc->range_sts,
                                         range_sts_al, work_mbc->nranges + 1);
-                  work_mbc->range_sts[work_mbc->nranges] = towupper (wc);
                   REALLOC_IF_NECESSARY (work_mbc->range_ends,
                                         range_ends_al, work_mbc->nranges + 1);
-                  work_mbc->range_ends[work_mbc->nranges++] = towupper (wc2);
-                }
-#endif
-            }
-          else
-            {
-#ifndef GAWK
-              /* Defer to the system regex library about the meaning
-                 of range expressions.  */
-              regex_t re;
-              char pattern[6] = { '[', 0, '-', 0, ']', 0 };
-              char subject[2] = { 0, 0 };
-              c1 = c;
-              if (case_fold)
-                {
-                  c1 = tolower (c1);
-                  c2 = tolower (c2);
-                }
+                  work_mbc->range_sts[work_mbc->nranges] =
+                    case_fold ? towlower (wc) : (wchar_t) wc;
+                  work_mbc->range_ends[work_mbc->nranges++] =
+                    case_fold ? towlower (wc2) : (wchar_t) wc2;
 
-              pattern[1] = c1;
-              pattern[3] = c2;
-              regcomp (&re, pattern, REG_NOSUB);
-              for (c = 0; c < NOTCHAR; ++c)
-                {
-                  if ((case_fold && isupper (c))
-                      || (MB_CUR_MAX > 1 && btowc (c) == WEOF))
-                    continue;
-                  subject[0] = c;
-                  if (regexec (&re, subject, 0, NULL, 0) != REG_NOMATCH)
-                    setbit_case_fold_c (c, ccl);
+                  if (case_fold && (iswalpha (wc) || iswalpha (wc2)))
+                    {
+                      REALLOC_IF_NECESSARY (work_mbc->range_sts,
+                                            range_sts_al, work_mbc->nranges + 1);
+                      work_mbc->range_sts[work_mbc->nranges] = towupper (wc);
+                      REALLOC_IF_NECESSARY (work_mbc->range_ends,
+                                            range_ends_al, work_mbc->nranges + 1);
+                      work_mbc->range_ends[work_mbc->nranges++] = towupper (wc2);
+                    }
                 }
-              regfree (&re);
-#else
-              c1 = c;
-              if (case_fold)
+              else if (using_simple_locale ())
                 {
-                  c1 = tolower (c1);
-                  c2 = tolower (c2);
+                  for (c1 = c; c1 <= c2; c1++)
+                    setbit (c1, ccl);
+                  if (case_fold)
+                    {
+                      int uc = toupper (c);
+                      int uc2 = toupper (c2);
+                      for (c1 = 0; c1 < NOTCHAR; c1++)
+                        {
+                          int uc1 = toupper (c1);
+                          if (uc <= uc1 && uc1 <= uc2)
+                            setbit (c1, ccl);
+                        }
+                    }
                 }
-              for (c = c1; c <= c2; c++)
-                setbit_case_fold_c (c, ccl);
-#endif
+              else
+                known_bracket_exp = false;
+
+              colon_warning_state |= 8;
+              FETCH_WC (c1, wc1, _("unbalanced ["));
+              continue;
             }
 
-          colon_warning_state |= 8;
-          FETCH_WC (c1, wc1, _("unbalanced ["));
-          continue;
+          /* In the case [x-], the - is an ordinary hyphen,
+             which is left in c1, the lookahead character.  */
+          lexptr -= cur_mb_len;
+          lexleft += cur_mb_len;
         }
 
       colon_warning_state |= (c == ':') ? 2 : 4;
 
       if (MB_CUR_MAX == 1)
         {
-          setbit_case_fold_c (c, ccl);
+          if (case_fold)
+            setbit_case_fold_c (c, ccl);
+          else
+            setbit (c, ccl);
           continue;
         }
 
-      if (case_fold && iswalpha (wc))
+      if (case_fold)
         {
-          wc = towlower (wc);
-          if (!setbit_wc (wc, ccl))
-            {
-              REALLOC_IF_NECESSARY (work_mbc->chars, chars_al,
-                                    work_mbc->nchars + 1);
-              work_mbc->chars[work_mbc->nchars++] = wc;
-            }
-#ifdef GREP
-          continue;
-#else
-          wc = towupper (wc);
-#endif
+          wchar_t folded[CASE_FOLDED_BUFSIZE];
+          int i, n = case_folded_counterparts (wc, folded);
+          REALLOC_IF_NECESSARY (work_mbc->chars, chars_al,
+                                work_mbc->nchars + n);
+          for (i = 0; i < n; i++)
+            if (!setbit_wc (folded[i], ccl))
+              work_mbc->chars[work_mbc->nchars++] = folded[i];
         }
       if (!setbit_wc (wc, ccl))
         {
@@ -1227,6 +1314,9 @@ parse_bracket_exp (void)
 
   if (colon_warning_state == 7)
     dfawarn (_("character class syntax is [[:space:]], not [:space:]"));
+
+  if (! known_bracket_exp)
+    return BACKREF;
 
   if (MB_CUR_MAX > 1)
     {
@@ -1263,14 +1353,9 @@ lex (void)
      "if (backslash) ...".  */
   for (i = 0; i < 2; ++i)
     {
-      if (MB_CUR_MAX > 1)
-        {
-          FETCH_WC (c, wctok, NULL);
-          if ((int) c == EOF)
-            goto normal_char;
-        }
-      else
-        FETCH (c, NULL);
+      FETCH_WC (c, wctok, NULL);
+      if (c == (unsigned int) EOF)
+        goto normal_char;
 
       switch (c)
         {
@@ -1324,7 +1409,7 @@ lex (void)
 
         case '`':
           if (backslash && !(syntax_bits & RE_NO_GNU_OPS))
-            return lasttok = BEGLINE;   /* FIXME: should be beginning of string */
+            return lasttok = BEGLINE; /* FIXME: should be beginning of string */
           goto normal_char;
 
         case '\'':
@@ -1489,14 +1574,46 @@ lex (void)
         case 'S':
           if (!backslash || (syntax_bits & RE_NO_GNU_OPS))
             goto normal_char;
-          zeroset (ccl);
-          for (c2 = 0; c2 < NOTCHAR; ++c2)
-            if (isspace (c2))
-              setbit (c2, ccl);
-          if (c == 'S')
-            notset (ccl);
+          if (MB_CUR_MAX == 1)
+            {
+              zeroset (ccl);
+              for (c2 = 0; c2 < NOTCHAR; ++c2)
+                if (isspace (c2))
+                  setbit (c2, ccl);
+              if (c == 'S')
+                notset (ccl);
+              laststart = 0;
+              return lasttok = CSET + charclass_index (ccl);
+            }
+
+#define PUSH_LEX_STATE(s)			\
+  do						\
+    {						\
+      char const *lexptr_saved = lexptr;	\
+      size_t lexleft_saved = lexleft;		\
+      lexptr = (s);				\
+      lexleft = strlen (lexptr)
+
+#define POP_LEX_STATE()				\
+      lexptr = lexptr_saved;			\
+      lexleft = lexleft_saved;			\
+    }						\
+  while (0)
+
+          /* FIXME: see if optimizing this, as is done with ANYCHAR and
+             add_utf8_anychar, makes sense.  */
+
+          /* \s and \S are documented to be equivalent to [[:space:]] and
+             [^[:space:]] respectively, so tell the lexer to process those
+             strings, each minus its "already processed" '['.  */
+          PUSH_LEX_STATE (c == 's' ? "[:space:]]" : "^[:space:]]");
+
+          lasttok = parse_bracket_exp ();
+
+          POP_LEX_STATE ();
+
           laststart = 0;
-          return lasttok = CSET + charclass_index (ccl);
+          return lasttok;
 
         case 'w':
         case 'W':
@@ -1537,19 +1654,19 @@ lex (void)
     }
 
   /* The above loop should consume at most a backslash
-     and some other character. */
+     and some other character.  */
   abort ();
-  return END;                   /* keeps pedantic compilers happy. */
+  return END;                   /* keeps pedantic compilers happy.  */
 }
 
-/* Recursive descent parser for regular expressions. */
+/* Recursive descent parser for regular expressions.  */
 
-static token tok;               /* Lookahead token. */
+static token tok;               /* Lookahead token.  */
 static size_t depth;            /* Current depth of a hypothetical stack
                                    holding deferred productions.  This is
                                    used to determine the depth that will be
                                    required of the real stack later on in
-                                   dfaanalyze(). */
+                                   dfaanalyze.  */
 
 static void
 addtok_mb (token t, int mbprop)
@@ -1589,7 +1706,7 @@ addtok_mb (token t, int mbprop)
 static void addtok_wc (wint_t wc);
 
 /* Add the given token to the parse tree, maintaining the depth count and
-   updating the maximum depth if necessary. */
+   updating the maximum depth if necessary.  */
 static void
 addtok (token t)
 {
@@ -1613,10 +1730,11 @@ addtok (token t)
           work_mbc->nchars = 0;
         }
 
-      /* UTF-8 allows treating a simple, non-inverted MBCSET like a CSET.  */
+      /* If the MBCSET is non-inverted and doesn't include neither
+         character classes including multibyte characters, range
+         expressions, equivalence classes nor collating elements,
+         it can be replaced to a simple CSET. */
       if (work_mbc->invert
-          || (!using_utf8 () && work_mbc->cset != -1)
-          || work_mbc->nchars != 0
           || work_mbc->nch_classes != 0
           || work_mbc->nranges != 0
           || work_mbc->nequivs != 0 || work_mbc->ncoll_elems != 0)
@@ -1631,7 +1749,6 @@ addtok (token t)
              that the mbcset is empty now.  Do nothing in that case.  */
           if (work_mbc->cset != -1)
             {
-              assert (using_utf8 ());
               addtok (CSET + work_mbc->cset);
               if (need_or)
                 addtok (OR);
@@ -1648,23 +1765,26 @@ addtok (token t)
 /* We treat a multibyte character as a single atom, so that DFA
    can treat a multibyte character as a single expression.
 
-   e.g. We construct following tree from "<mb1><mb2>".
+   e.g., we construct the following tree from "<mb1><mb2>".
    <mb1(1st-byte)><mb1(2nd-byte)><CAT><mb1(3rd-byte)><CAT>
    <mb2(1st-byte)><mb2(2nd-byte)><CAT><mb2(3rd-byte)><CAT><CAT> */
 static void
 addtok_wc (wint_t wc)
 {
   unsigned char buf[MB_LEN_MAX];
-  mbstate_t s;
+  mbstate_t s = { 0 };
   int i;
-  memset (&s, 0, sizeof s);
-  cur_mb_len = wcrtomb ((char *) buf, wc, &s);
+  size_t stored_bytes = wcrtomb ((char *) buf, wc, &s);
 
-  /* This is merely stop-gap.  When cur_mb_len is 0 or negative,
-     buf[0] is undefined, yet skipping the addtok_mb call altogether
-     can result in heap corruption.  */
-  if (cur_mb_len <= 0)
-    buf[0] = 0;
+  if (stored_bytes != (size_t) -1)
+    cur_mb_len = stored_bytes;
+  else
+    {
+      /* This is merely stop-gap.  buf[0] is undefined, yet skipping
+         the addtok_mb call altogether can corrupt the heap.  */
+      cur_mb_len = 1;
+      buf[0] = 0;
+    }
 
   addtok_mb (buf[0], cur_mb_len == 1 ? 3 : 1);
   for (i = 1; i < cur_mb_len; i++)
@@ -1685,7 +1805,7 @@ add_utf8_anychar (void)
 {
 #if MBS_SUPPORT
   static const charclass utf8_classes[5] = {
-    {0, 0, 0, 0, ~0, ~0, 0, 0}, /* 80-bf: non-lead bytes */
+    {0, 0, 0, 0, ~0, ~0, 0, 0},		/* 80-bf: non-leading bytes */
     {~0, ~0, ~0, ~0, 0, 0, 0, 0},       /* 00-7f: 1-byte sequence */
     {0, 0, 0, 0, 0, 0, ~3, 0},          /* c2-df: 2-byte sequence */
     {0, 0, 0, 0, 0, 0, 0, 0xffff},      /* e0-ef: 3-byte sequence */
@@ -1764,25 +1884,25 @@ add_utf8_anychar (void)
      LPAREN regexp RPAREN
      <empty>
 
-   The parser builds a parse tree in postfix form in an array of tokens. */
+   The parser builds a parse tree in postfix form in an array of tokens.  */
 
 static void
 atom (void)
 {
-  if (0)
+  if (MBS_SUPPORT && tok == WCHAR)
     {
-      /* empty */
-    }
-  else if (MBS_SUPPORT && tok == WCHAR)
-    {
-      addtok_wc (case_fold ? towlower (wctok) : wctok);
-#ifndef GREP
-      if (case_fold && iswalpha (wctok))
+      addtok_wc (wctok);
+
+      if (case_fold)
         {
-          addtok_wc (towupper (wctok));
-          addtok (OR);
+          wchar_t folded[CASE_FOLDED_BUFSIZE];
+          int i, n = case_folded_counterparts (wctok, folded);
+          for (i = 0; i < n; i++)
+            {
+              addtok_wc (folded[i]);
+              addtok (OR);
+            }
         }
-#endif
 
       tok = lex ();
     }
@@ -1820,7 +1940,7 @@ atom (void)
     addtok (EMPTY);
 }
 
-/* Return the number of tokens in the given subexpression. */
+/* Return the number of tokens in the given subexpression.  */
 static size_t _GL_ATTRIBUTE_PURE
 nsubtoks (size_t tindex)
 {
@@ -1841,7 +1961,7 @@ nsubtoks (size_t tindex)
     }
 }
 
-/* Copy the given subexpression to the top of the tree. */
+/* Copy the given subexpression to the top of the tree.  */
 static void
 copytoks (size_t tindex, size_t ntokens)
 {
@@ -1849,10 +1969,10 @@ copytoks (size_t tindex, size_t ntokens)
 
   if (MB_CUR_MAX > 1)
     for (i = 0; i < ntokens; ++i)
-      addtok_mb(dfa->tokens[tindex + i], dfa->multibyte_prop[tindex + i]);
+      addtok_mb (dfa->tokens[tindex + i], dfa->multibyte_prop[tindex + i]);
   else
     for (i = 0; i < ntokens; ++i)
-      addtok_mb(dfa->tokens[tindex + i], 3);
+      addtok_mb (dfa->tokens[tindex + i], 3);
 }
 
 static void
@@ -1922,7 +2042,7 @@ regexp (void)
 
 /* Main entry point for the parser.  S is a string to be parsed, len is the
    length of the string, so s can include NUL characters.  D is a pointer to
-   the struct dfa to parse into. */
+   the struct dfa to parse into.  */
 void
 dfaparse (char const *s, size_t len, struct dfa *d)
 {
@@ -1958,9 +2078,9 @@ dfaparse (char const *s, size_t len, struct dfa *d)
   ++d->nregexps;
 }
 
-/* Some primitives for operating on sets of positions. */
+/* Some primitives for operating on sets of positions.  */
 
-/* Copy one set to another; the destination must be large enough. */
+/* Copy one set to another; the destination must be large enough.  */
 static void
 copy (position_set const *src, position_set * dst)
 {
@@ -1980,7 +2100,7 @@ alloc_position_set (position_set * s, size_t size)
 /* Insert position P in set S.  S is maintained in sorted order on
    decreasing index.  If there is already an entry in S with P.index
    then merge (logically-OR) P's constraints into the one in S.
-   S->elems must point to an array large enough to hold the resulting set. */
+   S->elems must point to an array large enough to hold the resulting set.  */
 static void
 insert (position p, position_set * s)
 {
@@ -2010,7 +2130,7 @@ insert (position p, position_set * s)
 }
 
 /* Merge two sets of positions into a third.  The result is exactly as if
-   the positions of both sets were inserted into an initially empty set. */
+   the positions of both sets were inserted into an initially empty set.  */
 static void
 merge (position_set const *s1, position_set const *s2, position_set * m)
 {
@@ -2034,7 +2154,7 @@ merge (position_set const *s1, position_set const *s2, position_set * m)
     m->elems[m->nelem++] = s2->elems[j++];
 }
 
-/* Delete a position from a set. */
+/* Delete a position from a set.  */
 static void
 delete (position p, position_set * s)
 {
@@ -2050,7 +2170,7 @@ delete (position p, position_set * s)
 
 /* Find the index of the state corresponding to the given position set with
    the given preceding context, or create a new state if there is no such
-   state.  Context tells whether we got here on a newline or letter. */
+   state.  Context tells whether we got here on a newline or letter.  */
 static state_num
 state_index (struct dfa *d, position_set const *s, int context)
 {
@@ -2061,7 +2181,7 @@ state_index (struct dfa *d, position_set const *s, int context)
   for (i = 0; i < s->nelem; ++i)
     hash ^= s->elems[i].index + s->elems[i].constraint;
 
-  /* Try to find a state that exactly matches the proposed one. */
+  /* Try to find a state that exactly matches the proposed one.  */
   for (i = 0; i < d->sindex; ++i)
     {
       if (hash != d->states[i].hash || s->nelem != d->states[i].elems.nelem
@@ -2076,7 +2196,7 @@ state_index (struct dfa *d, position_set const *s, int context)
         return i;
     }
 
-  /* We'll have to create a new state. */
+  /* We'll have to create a new state.  */
   REALLOC_IF_NECESSARY (d->states, d->salloc, d->sindex + 1);
   d->states[i].hash = hash;
   alloc_position_set (&d->states[i].elems, s->nelem);
@@ -2114,12 +2234,12 @@ state_index (struct dfa *d, position_set const *s, int context)
    contains a symbol that matches the empty string in some context, replace
    that position with the elements of its follow labeled with an appropriate
    constraint.  Repeat exhaustively until no funny positions are left.
-   S->elems must be large enough to hold the result. */
+   S->elems must be large enough to hold the result.  */
 static void
 epsclosure (position_set * s, struct dfa const *d)
 {
   size_t i, j;
-  char *visited;                /* array of booleans, enough to use char, not int */
+  char *visited;  /* Array of booleans, enough to use char, not int.  */
   position p, old;
 
   CALLOC (visited, d->tindex);
@@ -2170,7 +2290,7 @@ epsclosure (position_set * s, struct dfa const *d)
             p.index = d->follows[old.index].elems[j].index;
             insert (p, s);
           }
-        /* Force rescan to start at the beginning. */
+        /* Force rescan to start at the beginning.  */
         i = -1;
       }
 
@@ -2275,18 +2395,18 @@ state_separate_contexts (position_set const *s)
    analysis is conveniently done by a linear scan with the aid of a stack.
    Sets are stored as arrays of the elements, obeying a stack-like allocation
    scheme; the number of elements in each set deeper in the stack can be
-   used to determine the address of a particular set's array. */
+   used to determine the address of a particular set's array.  */
 void
 dfaanalyze (struct dfa *d, int searchflag)
 {
-  int *nullable;                /* Nullable stack. */
-  size_t *nfirstpos;            /* Element count stack for firstpos sets. */
-  position *firstpos;           /* Array where firstpos elements are stored. */
-  size_t *nlastpos;             /* Element count stack for lastpos sets. */
-  position *lastpos;            /* Array where lastpos elements are stored. */
-  position_set tmp;             /* Temporary set for merging sets. */
-  position_set merged;          /* Result of merging sets. */
-  int separate_contexts;        /* Context wanted by some position. */
+  int *nullable;                /* Nullable stack.  */
+  size_t *nfirstpos;            /* Element count stack for firstpos sets.  */
+  position *firstpos;           /* Array where firstpos elements are stored.  */
+  size_t *nlastpos;             /* Element count stack for lastpos sets.  */
+  position *lastpos;            /* Array where lastpos elements are stored.  */
+  position_set tmp;             /* Temporary set for merging sets.  */
+  position_set merged;          /* Result of merging sets.  */
+  int separate_contexts;        /* Context wanted by some position.  */
   int *o_nullable;
   size_t *o_nfirst, *o_nlast;
   position *o_firstpos, *o_lastpos;
@@ -2324,17 +2444,17 @@ dfaanalyze (struct dfa *d, int searchflag)
       switch (d->tokens[i])
         {
         case EMPTY:
-          /* The empty set is nullable. */
+          /* The empty set is nullable.  */
           *nullable++ = 1;
 
-          /* The firstpos and lastpos of the empty leaf are both empty. */
+          /* The firstpos and lastpos of the empty leaf are both empty.  */
           *nfirstpos++ = *nlastpos++ = 0;
           break;
 
         case STAR:
         case PLUS:
           /* Every element in the firstpos of the argument is in the follow
-             of every element in the lastpos. */
+             of every element in the lastpos.  */
           tmp.nelem = nfirstpos[-1];
           tmp.elems = firstpos;
           pos = lastpos;
@@ -2345,14 +2465,14 @@ dfaanalyze (struct dfa *d, int searchflag)
             }
 
         case QMARK:
-          /* A QMARK or STAR node is automatically nullable. */
+          /* A QMARK or STAR node is automatically nullable.  */
           if (d->tokens[i] != PLUS)
             nullable[-1] = 1;
           break;
 
         case CAT:
           /* Every element in the firstpos of the second argument is in the
-             follow of every element in the lastpos of the first argument. */
+             follow of every element in the lastpos of the first argument.  */
           tmp.nelem = nfirstpos[-1];
           tmp.elems = firstpos;
           pos = lastpos + nlastpos[-1];
@@ -2363,7 +2483,7 @@ dfaanalyze (struct dfa *d, int searchflag)
             }
 
           /* The firstpos of a CAT node is the firstpos of the first argument,
-             union that of the second argument if the first is nullable. */
+             union that of the second argument if the first is nullable.  */
           if (nullable[-2])
             nfirstpos[-2] += nfirstpos[-1];
           else
@@ -2371,7 +2491,7 @@ dfaanalyze (struct dfa *d, int searchflag)
           --nfirstpos;
 
           /* The lastpos of a CAT node is the lastpos of the second argument,
-             union that of the first argument if the second is nullable. */
+             union that of the first argument if the second is nullable.  */
           if (nullable[-1])
             nlastpos[-2] += nlastpos[-1];
           else
@@ -2384,21 +2504,21 @@ dfaanalyze (struct dfa *d, int searchflag)
             }
           --nlastpos;
 
-          /* A CAT node is nullable if both arguments are nullable. */
+          /* A CAT node is nullable if both arguments are nullable.  */
           nullable[-2] = nullable[-1] && nullable[-2];
           --nullable;
           break;
 
         case OR:
-          /* The firstpos is the union of the firstpos of each argument. */
+          /* The firstpos is the union of the firstpos of each argument.  */
           nfirstpos[-2] += nfirstpos[-1];
           --nfirstpos;
 
-          /* The lastpos is the union of the lastpos of each argument. */
+          /* The lastpos is the union of the lastpos of each argument.  */
           nlastpos[-2] += nlastpos[-1];
           --nlastpos;
 
-          /* An OR node is nullable if either argument is nullable. */
+          /* An OR node is nullable if either argument is nullable.  */
           nullable[-2] = nullable[-1] || nullable[-2];
           --nullable;
           break;
@@ -2408,21 +2528,21 @@ dfaanalyze (struct dfa *d, int searchflag)
              constructs like \< are treated as nonempty strings here;
              an "epsilon closure" effectively makes them nullable later.
              Backreferences have to get a real position so we can detect
-             transitions on them later.  But they are nullable. */
+             transitions on them later.  But they are nullable.  */
           *nullable++ = d->tokens[i] == BACKREF;
 
-          /* This position is in its own firstpos and lastpos. */
+          /* This position is in its own firstpos and lastpos.  */
           *nfirstpos++ = *nlastpos++ = 1;
           --firstpos, --lastpos;
           firstpos->index = lastpos->index = i;
           firstpos->constraint = lastpos->constraint = NO_CONSTRAINT;
 
-          /* Allocate the follow set for this position. */
+          /* Allocate the follow set for this position.  */
           alloc_position_set (&d->follows[i], 1);
           break;
         }
 #ifdef DEBUG
-      /* ... balance the above nonsyntactic #ifdef goo... */
+      /* ... balance the above nonsyntactic #ifdef goo...  */
       fprintf (stderr, "node %zd:", i);
       prtok (d->tokens[i]);
       putc ('\n', stderr);
@@ -2444,7 +2564,7 @@ dfaanalyze (struct dfa *d, int searchflag)
     }
 
   /* For each follow set that is the follow set of a real position, replace
-     it with its epsilon closure. */
+     it with its epsilon closure.  */
   for (i = 0; i < d->tindex; ++i)
     if (d->tokens[i] < NOTCHAR || d->tokens[i] == BACKREF
 #if MBS_SUPPORT
@@ -2469,13 +2589,13 @@ dfaanalyze (struct dfa *d, int searchflag)
       }
 
   /* Get the epsilon closure of the firstpos of the regexp.  The result will
-     be the set of positions of state 0. */
+     be the set of positions of state 0.  */
   merged.nelem = 0;
   for (i = 0; i < nfirstpos[-1]; ++i)
     insert (firstpos[i], &merged);
   epsclosure (&merged, d);
 
-  /* Build the initial state. */
+  /* Build the initial state.  */
   d->salloc = 1;
   d->sindex = 0;
   MALLOC (d->states, d->salloc);
@@ -2523,27 +2643,27 @@ dfaanalyze (struct dfa *d, int searchflag)
 
    If after comparing with every group there are characters remaining in C,
    create a new group labeled with the characters of C and insert this
-   position in that group. */
+   position in that group.  */
 void
 dfastate (state_num s, struct dfa *d, state_num trans[])
 {
-  leaf_set *grps;               /* As many as will ever be needed. */
-  charclass *labels;            /* Labels corresponding to the groups. */
-  size_t ngrps = 0;             /* Number of groups actually used. */
-  position pos;                 /* Current position being considered. */
-  charclass matches;            /* Set of matching characters. */
-  int matchesf;                 /* True if matches is nonempty. */
-  charclass intersect;          /* Intersection with some label set. */
-  int intersectf;               /* True if intersect is nonempty. */
-  charclass leftovers;          /* Stuff in the label that didn't match. */
-  int leftoversf;               /* True if leftovers is nonempty. */
-  position_set follows;         /* Union of the follows of some group. */
-  position_set tmp;             /* Temporary space for merging sets. */
-  int possible_contexts;        /* Contexts that this group can match. */
-  int separate_contexts;        /* Context that new state wants to know. */
-  state_num state;              /* New state. */
-  state_num state_newline;      /* New state on a newline transition. */
-  state_num state_letter;       /* New state on a letter transition. */
+  leaf_set *grps;               /* As many as will ever be needed.  */
+  charclass *labels;            /* Labels corresponding to the groups.  */
+  size_t ngrps = 0;             /* Number of groups actually used.  */
+  position pos;                 /* Current position being considered.  */
+  charclass matches;            /* Set of matching characters.  */
+  int matchesf;                 /* True if matches is nonempty.  */
+  charclass intersect;          /* Intersection with some label set.  */
+  int intersectf;               /* True if intersect is nonempty.  */
+  charclass leftovers;          /* Stuff in the label that didn't match.  */
+  int leftoversf;               /* True if leftovers is nonempty.  */
+  position_set follows;         /* Union of the follows of some group.  */
+  position_set tmp;             /* Temporary space for merging sets.  */
+  int possible_contexts;        /* Contexts that this group can match.  */
+  int separate_contexts;        /* Context that new state wants to know.  */
+  state_num state;              /* New state.  */
+  state_num state_newline;      /* New state on a newline transition.  */
+  state_num state_letter;       /* New state on a letter transition.  */
   int next_isnt_1st_byte = 0;   /* Flag if we can't add state0.  */
   size_t i, j, k;
 
@@ -2576,7 +2696,7 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
         continue;
 
       /* Some characters may need to be eliminated from matches because
-         they fail in the current context. */
+         they fail in the current context.  */
       if (pos.constraint != NO_CONSTRAINT)
         {
           if (!SUCCEEDS_IN_CONTEXT (pos.constraint,
@@ -2592,7 +2712,7 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
             for (j = 0; j < CHARCLASS_INTS; ++j)
               matches[j] &= letters[j] | newline[j];
 
-          /* If there are no characters left, there's no point in going on. */
+          /* If there are no characters left, there's no point in going on.  */
           for (j = 0; j < CHARCLASS_INTS && !matches[j]; ++j)
             continue;
           if (j == CHARCLASS_INTS)
@@ -2603,31 +2723,31 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
         {
           /* If matches contains a single character only, and the current
              group's label doesn't contain that character, go on to the
-             next group. */
+             next group.  */
           if (d->tokens[pos.index] >= 0 && d->tokens[pos.index] < NOTCHAR
               && !tstbit (d->tokens[pos.index], labels[j]))
             continue;
 
           /* Check if this group's label has a nonempty intersection with
-             matches. */
+             matches.  */
           intersectf = 0;
           for (k = 0; k < CHARCLASS_INTS; ++k)
             (intersect[k] = matches[k] & labels[j][k]) ? (intersectf = 1) : 0;
           if (!intersectf)
             continue;
 
-          /* It does; now find the set differences both ways. */
+          /* It does; now find the set differences both ways.  */
           leftoversf = matchesf = 0;
           for (k = 0; k < CHARCLASS_INTS; ++k)
             {
-              /* Even an optimizing compiler can't know this for sure. */
+              /* Even an optimizing compiler can't know this for sure.  */
               int match = matches[k], label = labels[j][k];
 
               (leftovers[k] = ~match & label) ? (leftoversf = 1) : 0;
               (matches[k] = match & ~label) ? (matchesf = 1) : 0;
             }
 
-          /* If there were leftovers, create a new group labeled with them. */
+          /* If there were leftovers, create a new group labeled with them.  */
           if (leftoversf)
             {
               copyset (leftovers, labels[ngrps]);
@@ -2644,13 +2764,13 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
           grps[j].elems[grps[j].nelem++] = pos.index;
 
           /* If every character matching the current position has been
-             accounted for, we're done. */
+             accounted for, we're done.  */
           if (!matchesf)
             break;
         }
 
       /* If we've passed the last group, and there are still characters
-         unaccounted for, then we'll have to create a new group. */
+         unaccounted for, then we'll have to create a new group.  */
       if (j == ngrps)
         {
           copyset (matches, labels[ngrps]);
@@ -2667,10 +2787,10 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
 
   /* If we are a searching matcher, the default transition is to a state
      containing the positions of state 0, otherwise the default transition
-     is to fail miserably. */
+     is to fail miserably.  */
   if (d->searchflag)
     {
-      /* Find the state(s) corresponding to the positions of state 0. */
+      /* Find the state(s) corresponding to the positions of state 0.  */
       copy (&d->states[0].elems, &follows);
       separate_contexts = state_separate_contexts (&follows);
       state = state_index (d, &follows, separate_contexts ^ CTX_ANY);
@@ -2696,7 +2816,7 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
       follows.nelem = 0;
 
       /* Find the union of the follows of the positions of the group.
-         This is a hideously inefficient loop.  Fix it someday. */
+         This is a hideously inefficient loop.  Fix it someday.  */
       for (j = 0; j < grps[i].nelem; ++j)
         for (k = 0; k < d->follows[grps[i].elems[j]].nelem; ++k)
           insert (d->follows[grps[i].elems[j]].elems[k], &follows);
@@ -2733,17 +2853,17 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
         }
 
       /* If we are building a searching matcher, throw in the positions
-         of state 0 as well. */
+         of state 0 as well.  */
       if (d->searchflag
           && (!MBS_SUPPORT || (d->mb_cur_max == 1 || !next_isnt_1st_byte)))
         for (j = 0; j < d->states[0].elems.nelem; ++j)
           insert (d->states[0].elems.elems[j], &follows);
 
-      /* Find out if the new state will want any context information. */
+      /* Find out if the new state will want any context information.  */
       possible_contexts = charclass_context (labels[i]);
       separate_contexts = state_separate_contexts (&follows);
 
-      /* Find the state(s) corresponding to the union of the follows. */
+      /* Find the state(s) corresponding to the union of the follows.  */
       if ((separate_contexts & possible_contexts) != possible_contexts)
         state = state_index (d, &follows, separate_contexts ^ CTX_ANY);
       else
@@ -2757,10 +2877,10 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
       else
         state_letter = state;
 
-      /* Set the transitions for each character in the current label. */
+      /* Set the transitions for each character in the current label.  */
       for (j = 0; j < CHARCLASS_INTS; ++j)
         for (k = 0; k < INTBITS; ++k)
-          if (labels[i][j] & 1 << k)
+          if (labels[i][j] & 1U << k)
             {
               int c = j * INTBITS + k;
 
@@ -2786,18 +2906,18 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
    is a non-accepting state, then d->trans[state] points to its table.
    If it is an accepting state then d->fails[state] points to its table.
    If it has no table at all, then d->trans[state] is NULL.
-   TODO: Improve this comment, get rid of the unnecessary redundancy. */
+   TODO: Improve this comment, get rid of the unnecessary redundancy.  */
 
 static void
 build_state (state_num s, struct dfa *d)
 {
-  state_num *trans;             /* The new transition table. */
+  state_num *trans;             /* The new transition table.  */
   state_num i;
 
   /* Set an upper limit on the number of transition tables that will ever
      exist at once.  1024 is arbitrary.  The idea is that the frequently
      used transition tables will be quickly rebuilt, whereas the ones that
-     were only needed once or twice will be cleared away. */
+     were only needed once or twice will be cleared away.  */
   if (d->trcount >= 1024)
     {
       for (i = 0; i < d->tralloc; ++i)
@@ -2811,7 +2931,7 @@ build_state (state_num s, struct dfa *d)
 
   ++d->trcount;
 
-  /* Set up the success bits for this state. */
+  /* Set up the success bits for this state.  */
   d->success[s] = 0;
   if (ACCEPTS_IN_CONTEXT (d->states[s].context, CTX_NEWLINE, s, *d))
     d->success[s] |= CTX_NEWLINE;
@@ -2825,7 +2945,7 @@ build_state (state_num s, struct dfa *d)
 
   /* Now go through the new transition table, and make sure that the trans
      and fail arrays are allocated large enough to hold a pointer for the
-     largest state mentioned in the table. */
+     largest state mentioned in the table.  */
   for (i = 0; i < NOTCHAR; ++i)
     if (trans[i] >= d->tralloc)
       {
@@ -2846,7 +2966,7 @@ build_state (state_num s, struct dfa *d)
       }
 
   /* Keep the newline transition in a special place so we can use it as
-     a sentinel. */
+     a sentinel.  */
   d->newlines[s] = trans[eolbyte];
   trans[eolbyte] = -1;
 
@@ -2871,13 +2991,13 @@ build_state_zero (struct dfa *d)
 
 /* Multibyte character handling sub-routines for dfaexec.  */
 
-/* Initial state may encounter the byte which is not a single byte character
-   nor 1st byte of a multibyte character.  But it is incorrect for initial
-   state to accept such a byte.
-   For example, in sjis encoding the regular expression like "\\" accepts
-   the codepoint 0x5c, but should not accept the 2nd byte of the codepoint
-   0x815c. Then Initial state must skip the bytes which are not a single byte
-   character nor 1st byte of a multibyte character.  */
+/* The initial state may encounter a byte which is not a single byte character
+   nor the first byte of a multibyte character.  But it is incorrect for the
+   initial state to accept such a byte.  For example, in Shift JIS the regular
+   expression "\\" accepts the codepoint 0x5c, but should not accept the second
+   byte of the codepoint 0x815c.  Then the initial state must skip the bytes
+   that are not a single byte character nor the first byte of a multibyte
+   character.  */
 #define SKIP_REMAINS_MB_IF_INITIAL_STATE(s, p)		\
   if (s == 0)						\
     {							\
@@ -2898,7 +3018,7 @@ static void
 realloc_trans_if_necessary (struct dfa *d, state_num new_state)
 {
   /* Make sure that the trans and fail arrays are allocated large enough
-     to hold a pointer for the new state. */
+     to hold a pointer for the new state.  */
   if (new_state >= d->tralloc)
     {
       state_num oldalloc = d->tralloc;
@@ -2918,7 +3038,7 @@ realloc_trans_if_necessary (struct dfa *d, state_num new_state)
     }
 }
 
-/* Return values of transit_state_singlebyte(), and
+/* Return values of transit_state_singlebyte, and
    transit_state_consume_1char.  */
 typedef enum
 {
@@ -2928,7 +3048,7 @@ typedef enum
 } status_transit_state;
 
 /* Consume a single byte and transit state from 's' to '*next_state'.
-   This function is almost same as the state transition routin in dfaexec().
+   This function is almost same as the state transition routin in dfaexec.
    But state transition is done just once, otherwise matching succeed or
    reach the end of the buffer.  */
 static status_transit_state
@@ -3012,10 +3132,10 @@ static int
 match_mb_charset (struct dfa *d, state_num s, position pos, size_t idx)
 {
   size_t i;
-  int match;                    /* Flag which represent that matching succeed.  */
-  int match_len;                /* Length of the character (or collating element)
-                                   with which this operator match.  */
-  int op_len;                   /* Length of the operator.  */
+  int match;               /* Matching succeeded.  */
+  int match_len;           /* Length of the character (or collating element)
+                              with which this operator matches.  */
+  int op_len;              /* Length of the operator.  */
   char buffer[128];
 
   /* Pointer to the structure to which we are currently referring.  */
@@ -3049,7 +3169,7 @@ match_mb_charset (struct dfa *d, state_num s, position pos, size_t idx)
 
   /* Match in range 0-255?  */
   if (wc < NOTCHAR && work_mbc->cset != -1
-      && tstbit ((unsigned char) wc, d->charclasses[work_mbc->cset]))
+      && tstbit (to_uchar (wc), d->charclasses[work_mbc->cset]))
     goto charset_matched;
 
   /* match with a character class?  */
@@ -3109,13 +3229,14 @@ charset_matched:
   return match ? match_len : 0;
 }
 
-/* Check each of 'd->states[s].mbps.elem' can match or not. Then return the
-   array which corresponds to 'd->states[s].mbps.elem' and each element of
-   the array contains the amount of the bytes with which the element can
-   match.
-   'idx' is the index from the buf_begin, and it is the current position
+/* Check whether each of 'd->states[s].mbps.elem' can match.  Then return the
+   array which corresponds to 'd->states[s].mbps.elem'; each element of the
+   array contains the number of bytes with which the element can match.
+
+   'idx' is the index from buf_begin, and it is the current position
    in the buffer.
-   Caller MUST free the array which this function return.  */
+
+   The caller MUST free the array which this function return.  */
 static int *
 check_matching_with_multibyte_ops (struct dfa *d, state_num s, size_t idx)
 {
@@ -3142,11 +3263,13 @@ check_matching_with_multibyte_ops (struct dfa *d, state_num s, size_t idx)
 }
 
 /* Consume a single character and enumerate all of the positions which can
-   be next position from the state 's'.
-   'match_lens' is the input. It can be NULL, but it can also be the output
-   of check_matching_with_multibyte_ops() for optimization.
+   be the next position from the state 's'.
+
+   'match_lens' is the input.  It can be NULL, but it can also be the output
+   of check_matching_with_multibyte_ops for optimization.
+
    'mbclen' and 'pps' are the output.  'mbclen' is the length of the
-   character consumed, and 'pps' is the set this function enumerate.  */
+   character consumed, and 'pps' is the set this function enumerates.  */
 static status_transit_state
 transit_state_consume_1char (struct dfa *d, state_num s,
                              unsigned char const **pp,
@@ -3203,7 +3326,7 @@ static state_num
 transit_state (struct dfa *d, state_num s, unsigned char const **pp)
 {
   state_num s1;
-  int mbclen;                   /* The length of current input multibyte character. */
+  int mbclen;  /* The length of current input multibyte character.  */
   int maxlen = 0;
   size_t i, j;
   int *match_lens = NULL;
@@ -3282,43 +3405,26 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp)
 /* Initialize mblen_buf and inputwcs with data from the next line.  */
 
 static void
-prepare_wc_buf (const char *begin, const char *end)
+prepare_wc_buf (struct dfa *d, const char *begin, const char *end)
 {
 #if MBS_SUPPORT
   unsigned char eol = eolbyte;
-  size_t remain_bytes, i;
+  size_t i;
+  size_t ilim = end - begin + 1;
 
   buf_begin = (unsigned char *) begin;
 
-  remain_bytes = 0;
-  for (i = 0; i < end - begin + 1; i++)
+  for (i = 0; i < ilim; i++)
     {
-      if (remain_bytes == 0)
+      size_t nbytes = mbs_to_wchar (d, inputwcs + i, begin + i, ilim - i, &mbs);
+      mblen_buf[i] = nbytes - (nbytes == 1);
+      if (begin[i] == eol)
+        break;
+      while (--nbytes != 0)
         {
-          remain_bytes
-            = mbrtowc (inputwcs + i, begin + i, end - begin - i + 1, &mbs);
-          if (remain_bytes < 1
-              || remain_bytes == (size_t) -1
-              || remain_bytes == (size_t) -2
-              || (remain_bytes == 1 && inputwcs[i] == (wchar_t) begin[i]))
-            {
-              remain_bytes = 0;
-              inputwcs[i] = (wchar_t) begin[i];
-              mblen_buf[i] = 0;
-              if (begin[i] == eol)
-                break;
-            }
-          else
-            {
-              mblen_buf[i] = remain_bytes;
-              remain_bytes--;
-            }
-        }
-      else
-        {
-          mblen_buf[i] = remain_bytes;
+          i++;
+          mblen_buf[i] = nbytes;
           inputwcs[i] = 0;
-          remain_bytes--;
         }
     }
 
@@ -3339,15 +3445,15 @@ prepare_wc_buf (const char *begin, const char *end)
    If COUNT is non-NULL, increment *COUNT once for each newline processed.
    Finally, if BACKREF is non-NULL set *BACKREF to indicate whether we
    encountered a back-reference (1) or not (0).  The caller may use this
-   to decide whether to fall back on a backtracking matcher. */
+   to decide whether to fall back on a backtracking matcher.  */
 char *
 dfaexec (struct dfa *d, char const *begin, char *end,
          int allow_nl, size_t *count, int *backref)
 {
-  state_num s, s1;              /* Current state. */
-  unsigned char const *p;       /* Current input character. */
+  state_num s, s1;              /* Current state.  */
+  unsigned char const *p;       /* Current input character.  */
   state_num **trans, *t;        /* Copy of d->trans so it can be optimized
-                                   into a register. */
+                                   into a register.  */
   unsigned char eol = eolbyte;  /* Likewise for eolbyte.  */
   unsigned char saved_end;
 
@@ -3365,43 +3471,45 @@ dfaexec (struct dfa *d, char const *begin, char *end,
       MALLOC (mblen_buf, end - begin + 2);
       MALLOC (inputwcs, end - begin + 2);
       memset (&mbs, 0, sizeof (mbstate_t));
-      prepare_wc_buf ((const char *) p, end);
+      prepare_wc_buf (d, (const char *) p, end);
     }
 
   for (;;)
     {
       if (d->mb_cur_max > 1)
-        while ((t = trans[s]) != NULL)
-          {
-            if (p > buf_end)
-              break;
-            s1 = s;
-            SKIP_REMAINS_MB_IF_INITIAL_STATE (s, p);
+        {
+          while ((t = trans[s]) != NULL)
+            {
+              if (p > buf_end)
+                break;
+              s1 = s;
+              SKIP_REMAINS_MB_IF_INITIAL_STATE (s, p);
 
-            if (d->states[s].mbps.nelem == 0)
-              {
-                s = t[*p++];
-                continue;
-              }
+              if (d->states[s].mbps.nelem == 0)
+                {
+                  s = t[*p++];
+                  continue;
+                }
 
-            /* Falling back to the glibc matcher in this case gives
-               better performance (up to 25% better on [a-z], for
-               example) and enables support for collating symbols and
-               equivalence classes.  */
-            if (backref)
-              {
-                *backref = 1;
-                free (mblen_buf);
-                free (inputwcs);
-                *end = saved_end;
-                return (char *) p;
-              }
+              /* Falling back to the glibc matcher in this case gives
+                 better performance (up to 25% better on [a-z], for
+                 example) and enables support for collating symbols and
+                 equivalence classes.  */
+              if (backref)
+                {
+                  *backref = 1;
+                  free (mblen_buf);
+                  free (inputwcs);
+                  *end = saved_end;
+                  return (char *) p;
+                }
 
-            /* Can match with a multibyte character (and multi character
-               collating element).  Transition table might be updated.  */
-            s = transit_state (d, s, &p);
-            trans = d->trans;
-          }
+              /* Can match with a multibyte character (and multi character
+                 collating element).  Transition table might be updated.  */
+              s = transit_state (d, s, &p);
+              trans = d->trans;
+            }
+        }
       else
         {
           while ((t = trans[s]) != NULL)
@@ -3446,17 +3554,17 @@ dfaexec (struct dfa *d, char const *begin, char *end,
           continue;
         }
 
-      /* If the previous character was a newline, count it. */
+      /* If the previous character was a newline, count it.  */
       if ((char *) p <= end && p[-1] == eol)
         {
           if (count)
             ++*count;
 
           if (d->mb_cur_max > 1)
-            prepare_wc_buf ((const char *) p, end);
+            prepare_wc_buf (d, (const char *) p, end);
         }
 
-      /* Check if we've run off the end of the buffer. */
+      /* Check if we've run off the end of the buffer.  */
       if ((char *) p > end)
         {
           if (d->mb_cur_max > 1)
@@ -3517,7 +3625,7 @@ free_mbdata (struct dfa *d)
 }
 
 /* Initialize the components of a dfa that the other routines don't
-   initialize for themselves. */
+   initialize for themselves.  */
 void
 dfainit (struct dfa *d)
 {
@@ -3567,18 +3675,19 @@ dfaoptimize (struct dfa *d)
   d->mb_cur_max = 1;
 }
 
-/* Parse and analyze a single string of the given length. */
+/* Parse and analyze a single string of the given length.  */
 void
 dfacomp (char const *s, size_t len, struct dfa *d, int searchflag)
 {
   dfainit (d);
+  dfambcache (d);
   dfaparse (s, len, d);
   dfamust (d);
   dfaoptimize (d);
   dfaanalyze (d, searchflag);
 }
 
-/* Free the storage held by the components of a dfa. */
+/* Free the storage held by the components of a dfa.  */
 void
 dfafree (struct dfa *d)
 {
@@ -3673,13 +3782,13 @@ dfafree (struct dfa *d)
                 and q->left	and q->right	p->is : NULL
 
    If there's anything else we recognize in the tree, all four sequences get set
-   to zero-length sequences.  If there's something we don't recognize in the tree,
-   we just return a zero-length sequence.
+   to zero-length sequences.  If there's something we don't recognize in the
+   tree, we just return a zero-length sequence.
 
    Break ties in favor of infrequent letters (choosing 'zzz' in preference to
    'aaa')?
 
-   And. . .is it here or someplace that we might ponder "optimizations" such as
+   And ... is it here or someplace that we might ponder "optimizations" such as
         egrep 'psi|epsilon'	->	egrep 'psi'
         egrep 'pepsi|epsilon'	->	egrep 'epsi'
                                         (Yes, we now find "epsi" as a "string
@@ -3700,7 +3809,7 @@ dfafree (struct dfa *d)
 
    Are optimizable r.e.'s likely to be used in real-life situations
    (something like 'ab*' is probably unlikely; something like is
-   'psi|epsilon' is likelier)? */
+   'psi|epsilon' is likelier)?  */
 
 static char *
 icatalloc (char *old, char const *new)
@@ -3761,14 +3870,14 @@ enlist (char **cpp, char *new, size_t len)
       return NULL;
     }
   new[len] = '\0';
-  /* Is there already something in the list that's new (or longer)? */
+  /* Is there already something in the list that's new (or longer)?  */
   for (i = 0; cpp[i] != NULL; ++i)
     if (istrstr (cpp[i], new) != NULL)
       {
         free (new);
         return cpp;
       }
-  /* Eliminate any obsoleted strings. */
+  /* Eliminate any obsoleted strings.  */
   j = 0;
   while (cpp[j] != NULL)
     if (istrstr (new, cpp[j]) == NULL)
@@ -3781,7 +3890,7 @@ enlist (char **cpp, char *new, size_t len)
         cpp[j] = cpp[i];
         cpp[i] = NULL;
       }
-  /* Add the new string. */
+  /* Add the new string.  */
   REALLOC (cpp, i + 2);
   cpp[i] = new;
   cpp[i + 1] = NULL;
@@ -3789,8 +3898,8 @@ enlist (char **cpp, char *new, size_t len)
 }
 
 /* Given pointers to two strings, return a pointer to an allocated
-   list of their distinct common substrings. Return NULL if something
-   seems wild. */
+   list of their distinct common substrings.  Return NULL if something
+   seems wild.  */
 static char **
 comsubs (char *left, char const *right)
 {
@@ -3850,7 +3959,7 @@ addlists (char **old, char **new)
 }
 
 /* Given two lists of substrings, return a new list giving substrings
-   common to both. */
+   common to both.  */
 static char **
 inboth (char **left, char **right)
 {
@@ -3970,7 +4079,7 @@ dfamust (struct dfa *d)
 
             rmp = --mp;
             lmp = --mp;
-            /* Guaranteed to be.  Unlikely, but. . . */
+            /* Guaranteed to be.  Unlikely, but ...  */
             if (!STREQ (lmp->is, rmp->is))
               lmp->is[0] = '\0';
             /* Left side--easy */
@@ -4021,7 +4130,7 @@ dfamust (struct dfa *d)
             lmp = --mp;
             /* In.  Everything in left, plus everything in
                right, plus concatenation of
-               left's right and right's left. */
+               left's right and right's left.  */
             lmp->in = addlists (lmp->in, rmp->in);
             if (lmp->in == NULL)
               goto done;

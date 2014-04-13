@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 2012, 2013 the Free Software Foundation, Inc.
+ * Copyright (C) 2012-2014 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -30,7 +30,6 @@
  *
  * FILE			- <stdio.h>
  * NULL			- <stddef.h>
- * malloc()		- <stdlib.h>
  * memset(), memcpy()	- <string.h>
  * size_t		- <sys/types.h>
  * struct stat		- <sys/stat.h>
@@ -62,7 +61,7 @@
  *
  * Additional important information:
  *
- * 1. ALL string values in awk_value_t objects need to come from malloc().
+ * 1. ALL string values in awk_value_t objects need to come from api_malloc().
  * Gawk will handle releasing the storage if necessary.  This is slightly
  * awkward, in that you can't take an awk_value_t that you got from gawk
  * and reuse it directly, even for something that is conceptually pass
@@ -667,6 +666,16 @@ typedef struct gawk_api {
 			awk_flat_array_t *data);
 
 	/*
+	 * Hooks to provide access to gawk's memory allocation functions.
+	 * This ensures that memory passed between gawk and the extension
+	 * is allocated and released by the same library.
+	 */
+	void *(*api_malloc)(size_t size);
+	void *(*api_calloc)(size_t nmemb, size_t size);
+	void *(*api_realloc)(void *ptr, size_t size);
+	void (*api_free)(void *ptr);
+
+        /*
 	 * Look up a file.  If the name is NULL or name_len is 0, it returns
 	 * data for the currently open input file corresponding to FILENAME
 	 * (and it will not access the filetype or typelen arguments, so those
@@ -751,6 +760,11 @@ typedef struct gawk_api {
 #define release_flattened_array(array, data) \
 	(api->api_release_flattened_array(ext_id, array, data))
 
+#define gawk_malloc(size)		(api->api_malloc(size))
+#define gawk_calloc(nmemb, size)	(api->api_calloc(nmemb, size))
+#define gawk_realloc(ptr, size)		(api->api_realloc(ptr, size))
+#define gawk_free(ptr)			(api->api_free(ptr))
+
 #define create_value(value, result) \
 	(api->api_create_value(ext_id, value,result))
 
@@ -765,13 +779,13 @@ typedef struct gawk_api {
 
 #define emalloc(pointer, type, size, message) \
 	do { \
-		if ((pointer = (type) malloc(size)) == 0) \
+		if ((pointer = (type) gawk_malloc(size)) == 0) \
 			fatal(ext_id, "%s: malloc of %d bytes failed\n", message, size); \
 	} while(0)
 
 #define erealloc(pointer, type, size, message) \
 	do { \
-		if ((pointer = (type) realloc(pointer, size)) == 0) \
+		if ((pointer = (type) gawk_realloc(pointer, size)) == 0) \
 			fatal(ext_id, "%s: realloc of %d bytes failed\n", message, size); \
 	} while(0)
 

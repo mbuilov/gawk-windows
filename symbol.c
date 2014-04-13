@@ -221,9 +221,10 @@ remove_symbol(NODE *r)
 }
 
 
-/* destroy_symbol --- remove a symbol from symbol table
-*	and free all associated memory.
-*/
+/*
+ * destroy_symbol --- remove a symbol from symbol table
+ *	and free all associated memory.
+ */
 
 void
 destroy_symbol(NODE *r)
@@ -262,7 +263,7 @@ destroy_symbol(NODE *r)
 
 	default:
 		/* Node_param_list -- YYABORT */
-		return;
+		break;	/* use break so that storage is freed */
 	}
 
 	efree(r->vname);

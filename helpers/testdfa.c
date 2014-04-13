@@ -76,7 +76,6 @@ int main(int argc, char **argv)
 	size_t len;
 	const char *pattern;
 	const char *rerr;
-	int infd;
 	char *data;
 	reg_syntax_t dfa_syn;
 	bool ignorecase = false;
@@ -180,7 +179,7 @@ int main(int argc, char **argv)
 
 	/* run the regex matcher */
 	ret = re_search(& pat, data, len, 0, len, NULL);
-	printf("re_search returned %d (%s)\n", ret, (ret != 0) ? "true" : "false");
+	printf("re_search returned position %d (%s)\n", ret, (ret >= 0) ? "true" : "false");
 
 	/* run the dfa matcher */
 	/*
@@ -202,6 +201,8 @@ int main(int argc, char **argv)
 		free(regs.end);
 	dfafree(dfareg);
 	free(dfareg);
+
+	return 0;
 }
 
 /* genflags2str --- general routine to convert a flag value to a string */
@@ -366,11 +367,14 @@ setup_pattern(const char *pattern, size_t len)
 {
 	size_t is_multibyte = 0;
 	int c, c2;
-	size_t buflen;
+	size_t buflen = 0;
 	mbstate_t mbs;
 	bool has_anchor = false;
-	char *buf, *dest;
+	char *buf = NULL;
+	char *dest;
 	const char *src, *end;
+
+	memset(& mbs, 0, sizeof(mbs));
 
 	src = pattern;
 	end = pattern + len;

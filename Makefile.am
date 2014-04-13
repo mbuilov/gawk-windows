@@ -1,7 +1,7 @@
 #
 # Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 2000-2013 the Free Software Foundation, Inc.
+# Copyright (C) 2000-2014 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -55,14 +55,8 @@ EXTRA_DIST = \
 	regex_internal.c \
 	regex_internal.h \
 	regexec.c \
-	version.in \
 	vms \
 	ylwrap
-
-# It's OK for the generated file `version.c' not to be removed by
-# "make distclean".
-distcleancheck_listfiles = \
-  find . -type f -print | grep -v '^\./version\.c$$'
 
 # The order to do things in.
 # Build explicitly in "." in order to build gawk first, so
@@ -113,6 +107,7 @@ base_sources = \
 	mpfr.c \
 	msg.c \
 	node.c \
+	nonposix.h \
 	profile.c \
 	protos.h \
 	random.c \
@@ -146,8 +141,6 @@ DEFS= -DDEFPATH=$(DEFPATH) -DDEFLIBPATH=$(DEFLIBPATH) -DSHLIBEXT=$(SHLIBEXT) -DH
 # Get rid of core files when cleaning
 CLEANFILES = core core.*
 
-MAINTAINERCLEANFILES = version.c
-
 # We want hard links for install-exec-hook, below
 LN= ln
 
@@ -179,10 +172,14 @@ check-local: gawk$(EXEEXT)
 dist-hook:
 	cd $(distdir)/extension ; rm -f *.o *.so
 	cd $(srcdir)/pc ; \
-	sed -n -f configpk.sed < ../configure.ac > tmp.sed ; \
-	sed -f config.sed < ../configh.in > config.tmp ; \
-	sed -f tmp.sed < config.tmp > config.h ; \
-	$(RM) tmp.sed config.tmp
+	chmod u+w config.h ; \
+	sed -n -f configpk.sed < ../configure.ac > /tmp/tmp.sed ; \
+	sed -f config.sed < ../configh.in > /tmp/config.tmp ; \
+	sed -f /tmp/tmp.sed < /tmp/config.tmp > config.h ; \
+	$(RM) /tmp/tmp.sed /tmp/config.tmp
+	pwd
+	chmod u+w $(distdir)/pc/config.h
+	cp $(srcdir)/pc/config.h $(distdir)/pc/config.h
 
 # Special rules for individual files
 # Use of awk instead of $(AWK) is deliberate, in case gawk doesn't build
@@ -194,9 +191,6 @@ awkgram.c: awkgram.y
 	if test -f y.tab.h; then \
 	if cmp -s y.tab.h $*.h; then rm -f y.tab.h; else mv y.tab.h $*.h; fi; \
 	else :; fi
-
-version.c: config.status version.in
-	$(SHELL) ./config.status --file=version.c:version.in
 
 command.c: command.y
 	$(YACC) -p zz $<

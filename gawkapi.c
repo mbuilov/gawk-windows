@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 2012, 2013 the Free Software Foundation, Inc.
+ * Copyright (C) 2012-2014 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -48,7 +48,7 @@ api_get_argument(awk_ext_id_t id, size_t count,
 	NODE *arg;
 
 	if (result == NULL)
-		return false;
+		return awk_false;
 
 	(void) id;
 
@@ -64,7 +64,7 @@ api_get_argument(awk_ext_id_t id, size_t count,
 	 */
 	arg = get_argument(count);
 	if (arg == NULL)
-		return false;
+		return awk_false;
 
 	/* if type is undefined */
 	if (arg->type == Node_var_new) {
@@ -89,7 +89,7 @@ array:
 	/* get the array here */
 	arg = get_array_argument(count, false);
 	if (arg == NULL)
-		return false;
+		return awk_false;
 
 	return node_to_awk_value(arg, result, wanted);
 
@@ -97,11 +97,11 @@ scalar:
 	/* at this point we have a real type that is not an array */
 	arg = get_scalar_argument(count, false);
 	if (arg == NULL)
-		return false;
+		return awk_false;
 
 	return node_to_awk_value(arg, result, wanted);
 #else
-	return false;
+	return awk_false;
 #endif
 }
 
@@ -119,23 +119,23 @@ api_set_argument(awk_ext_id_t id,
 	(void) id;
 
 	if (array == NULL || array->type != Node_var_array)
-		return false;
+		return awk_false;
 
 	if (   (arg = get_argument(count)) == NULL
 	    || arg->type != Node_var_new)
-		return false;
+		return awk_false;
 
 	arg = get_array_argument(count, false);
 	if (arg == NULL)
-		return false;
+		return awk_false;
 
 	array->vname = arg->vname;
 	*arg = *array;
 	freenode(array);
 
-	return true;
+	return awk_true;
 #else
-	return false;
+	return awk_false;
 #endif
 }
 
@@ -319,12 +319,12 @@ api_add_ext_func(awk_ext_id_t id,
 	(void) namespace;
 
 	if (func == NULL)
-		return false;
+		return awk_false;
 
 #ifdef DYNAMIC
 	return make_builtin(func);
 #else
-	return false;
+	return awk_false;
 #endif
 }
 
@@ -383,7 +383,7 @@ api_awk_atexit(awk_ext_id_t id,
 static awk_bool_t
 node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 {
-	awk_bool_t ret = false;
+	awk_bool_t ret = awk_false;
 
 	if (node == NULL)
 		fatal(_("node_to_awk_value: received null node"));
@@ -395,7 +395,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 	case Node_var_new:	/* undefined variable */
 		val->val_type = AWK_UNDEFINED;
 		if (wanted == AWK_UNDEFINED) {
-			ret = true;
+			ret = awk_true;
 		}
 		break;
 
@@ -404,7 +404,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 		if (wanted == AWK_SCALAR) {
 			val->val_type = AWK_SCALAR;
 			val->scalar_cookie = (void *) node;
-			ret = true;
+			ret = awk_true;
 			break;
 		}
 
@@ -419,7 +419,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 			(void) force_number(node);
 			if ((node->flags & NUMCUR) != 0) {
 				val->num_value = get_number_d(node);
-				ret = true;
+				ret = awk_true;
 			}
 			break;
 
@@ -430,7 +430,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 			if ((node->flags & STRCUR) != 0) {
 				val->str_value.str = node->stptr;
 				val->str_value.len = node->stlen;
-				ret = true;
+				ret = awk_true;
 			}
 			break;
 
@@ -441,7 +441,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				val->val_type = AWK_STRING;
 			} else
 				val->val_type = AWK_UNDEFINED;
-			ret = false;
+			ret = awk_false;
 			break;
 
 		case AWK_UNDEFINED:
@@ -449,12 +449,12 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 			if ((node->flags & NUMBER) != 0) {
 				val->val_type = AWK_NUMBER;
 				val->num_value = get_number_d(node);
-				ret = true;
+				ret = awk_true;
 			} else if ((node->flags & STRING) != 0) {
 				val->val_type = AWK_STRING;
 				val->str_value.str = node->stptr;
 				val->str_value.len = node->stlen;
-				ret = true;
+				ret = awk_true;
 			} else
 				val->val_type = AWK_UNDEFINED;
 			break;
@@ -469,15 +469,14 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 		val->val_type = AWK_ARRAY;
 		if (wanted == AWK_ARRAY || wanted == AWK_UNDEFINED) {
 			val->array_cookie = node;
-			ret = true;
-		} else {
-			ret = false;
-		}
+			ret = awk_true;
+		} else
+			ret = awk_false;
 		break;
 
 	default:
 		val->val_type = AWK_UNDEFINED;
-		ret = false;
+		ret = awk_false;
 		break;
 	}
 
@@ -515,7 +514,7 @@ api_sym_lookup(awk_ext_id_t id,
 	    || *name == '\0'
 	    || result == NULL
 	    || (node = lookup(name)) == NULL)
-		return false;
+		return awk_false;
 
 	if (is_off_limits_var(name))	/* a built-in variable */
 		node->flags |= NO_EXT_SET;
@@ -536,7 +535,7 @@ api_sym_lookup_scalar(awk_ext_id_t id,
 	if (node == NULL
 	    || result == NULL
 	    || node->type != Node_var)
-		return false;
+		return awk_false;
 
 	update_global_values();	/* make sure stuff like NF, NR, are up to date */
 
@@ -556,7 +555,7 @@ api_sym_update(awk_ext_id_t id,
 	if (   name == NULL
 	    || *name == '\0'
 	    || value == NULL)
-		return false;
+		return awk_false;
 
 	switch (value->val_type) {
 	case AWK_NUMBER:
@@ -569,7 +568,7 @@ api_sym_update(awk_ext_id_t id,
 
 	default:
 		/* fatal(_("api_sym_update: invalid value for type of new value (%d)"), value->val_type); */
-		return false;
+		return awk_false;
 	}
 
 	node = lookup(name);
@@ -591,7 +590,7 @@ api_sym_update(awk_ext_id_t id,
 			node->var_value = awk_value_to_node(value);
 		}
 
-		return true;
+		return awk_true;
 	}
 
 	/*
@@ -601,7 +600,7 @@ api_sym_update(awk_ext_id_t id,
 	if (   (node->flags & NO_EXT_SET) != 0
 	    || is_off_limits_var(name)) {	/* most built-in vars not allowed */
 		node->flags |= NO_EXT_SET;
-		return false;
+		return awk_false;
 	}
 
 	if (    value->val_type != AWK_ARRAY
@@ -611,10 +610,10 @@ api_sym_update(awk_ext_id_t id,
 		if (node->type == Node_var_new && value->val_type != AWK_UNDEFINED)
 			node->type = Node_var;
 
-		return true;
+		return awk_true;
 	}
 
-	return false;
+	return awk_false;
 }
 
 /* api_sym_update_scalar --- update a scalar cookie */
@@ -630,7 +629,7 @@ api_sym_update_scalar(awk_ext_id_t id,
 	    || node == NULL
 	    || node->type != Node_var
 	    || (node->flags & NO_EXT_SET) != 0)
-		return false;
+		return awk_false;
 
 	/*
 	 * Optimization: if valref is 1, and the new value is a string or
@@ -655,7 +654,7 @@ api_sym_update_scalar(awk_ext_id_t id,
 			r->flags = MALLOC|NUMBER|NUMCUR;
 			r->stptr = NULL;
 			r->stlen = 0;
-			return true;
+			return awk_true;
 		}
 		break;
 	case AWK_STRING:
@@ -675,7 +674,7 @@ api_sym_update_scalar(awk_ext_id_t id,
 			r->stfmt = -1;
 			r->stptr = value->str_value.str;
 			r->stlen = value->str_value.len;
-			return true;
+			return awk_true;
 		}
 		break;
 	case AWK_UNDEFINED:
@@ -684,13 +683,13 @@ api_sym_update_scalar(awk_ext_id_t id,
 		break;
 
 	default:	/* AWK_ARRAY or invalid type */
-		return false;
+		return awk_false;
 	}
 
 	/* do it the hard (slow) way */
 	unref(node->var_value);
 	node->var_value = awk_value_to_node(value);
-	return true;
+	return awk_true;
 }
 
 /*
@@ -699,7 +698,7 @@ api_sym_update_scalar(awk_ext_id_t id,
  * Any scalar value is fine, so only AWK_ARRAY (or an invalid type) is illegal.
  */
 
-static inline int
+static inline bool
 valid_subscript_type(awk_valtype_t valtype)
 {
 	switch (valtype) {
@@ -738,21 +737,21 @@ api_get_array_element(awk_ext_id_t id,
 	    || result == NULL
 	    || index == NULL
 	    || ! valid_subscript_type(index->val_type))
-		return false;
+		return awk_false;
 
 	subscript = awk_value_to_node(index);
 
 	/* if it doesn't exist, return false */
 	if (in_array(array, subscript) == NULL) {
 		unref(subscript);
-		return false;
+		return awk_false;
 	}
 
 	aptr = assoc_lookup(array, subscript);
 
 	if (aptr == NULL) {	/* can't happen */
 		unref(subscript);
-		return false;
+		return awk_false;
 	}
 
 	unref(subscript);
@@ -782,7 +781,7 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 	    || index == NULL
 	    || value == NULL
 	    || ! valid_subscript_type(index->val_type))
-		return false;
+		return awk_false;
 
 	tmp = awk_value_to_node(index);
 	aptr = assoc_lookup(array, tmp);
@@ -796,7 +795,7 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 		make_aname(elem);
 	}
 
-	return true;
+	return awk_true;
 }
 
 /*
@@ -848,13 +847,13 @@ api_del_array_element(awk_ext_id_t id,
 	    || (array->flags & NO_EXT_SET) != 0
 	    || index == NULL
 	    || ! valid_subscript_type(index->val_type))
-		return false;
+		return awk_false;
 
 	sub = awk_value_to_node(index);
 	remove_element(array, sub);
 	unref(sub);
 
-	return true;
+	return awk_true;
 }
 
 /*
@@ -869,10 +868,10 @@ api_get_element_count(awk_ext_id_t id,
 	NODE *node = (NODE *) a_cookie;
 
 	if (count == NULL || node == NULL || node->type != Node_var_array)
-		return false;
+		return awk_false;
 
 	*count = node->table_size;
-	return true;
+	return awk_true;
 }
 
 /* api_create_array --- create a new array cookie to which elements may be added */
@@ -899,10 +898,10 @@ api_clear_array(awk_ext_id_t id, awk_array_t a_cookie)
 	if (   node == NULL
 	    || node->type != Node_var_array
 	    || (node->flags & NO_EXT_SET) != 0)
-		return false;
+		return awk_false;
 
 	assoc_clear(node);
-	return true;
+	return awk_true;
 }
 
 /* api_flatten_array --- flatten out an array so that it can be looped over easily. */
@@ -921,7 +920,7 @@ api_flatten_array(awk_ext_id_t id,
 	    || array->type != Node_var_array
 	    || array->table_size == 0
 	    || data == NULL)
-		return false;
+		return awk_false;
 
 	alloc_size = sizeof(awk_flat_array_t) +
 			(array->table_size - 1) * sizeof(awk_element_t);
@@ -959,7 +958,7 @@ api_flatten_array(awk_ext_id_t id,
 						(int) i);
 		}
 	}
-	return true;
+	return awk_true;
 }
 
 /*
@@ -983,7 +982,7 @@ api_release_flattened_array(awk_ext_id_t id,
 	    || array != (NODE *) data->opaque1
 	    || data->count != array->table_size
 	    || data->opaque2 == NULL)
-		return false;
+		return awk_false;
 
 	list = (NODE **) data->opaque2;
 
@@ -1000,7 +999,7 @@ api_release_flattened_array(awk_ext_id_t id,
 	efree(list);
 	efree(data);
 
-	return true;
+	return awk_true;
 }
 
 /* api_create_value --- create a cached value */
@@ -1010,7 +1009,7 @@ api_create_value(awk_ext_id_t id, awk_value_t *value,
 		awk_value_cookie_t *result)
 {
 	if (value == NULL || result == NULL)
-		return false;
+		return awk_false;
 
 	switch (value->val_type) {
 	case AWK_NUMBER:
@@ -1018,10 +1017,10 @@ api_create_value(awk_ext_id_t id, awk_value_t *value,
 		break;
 	default:
 		/* reject anything other than a simple scalar */
-		return false;
+		return awk_false;
 	}
 
-	return (*result = awk_value_to_node(value)) != NULL;
+	return (awk_bool_t) ((*result = awk_value_to_node(value)) != NULL);
 }
 
 /* api_release_value --- release a cached value */
@@ -1032,10 +1031,10 @@ api_release_value(awk_ext_id_t id, awk_value_cookie_t value)
 	NODE *val = (NODE *) value;
 
 	if (val == NULL)
-		return false;
+		return awk_false;
 
 	unref(val);
-	return true;
+	return awk_true;
 }
 
 /* api_get_file --- return a handle to an existing or newly opened file */
@@ -1197,6 +1196,12 @@ gawk_api_t api_impl = {
 	api_clear_array,
 	api_flatten_array,
 	api_release_flattened_array,
+
+	/* Memory allocation */
+	malloc,
+	calloc,
+	realloc,
+	free,
 
 	/* Find/open a file */
 	api_get_file,

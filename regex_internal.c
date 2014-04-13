@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -320,12 +320,11 @@ build_wcs_upper_buffer (re_string_t *pstr)
 			       + byte_idx), remain_len, &pstr->cur_state);
 	  if (BE (mbclen + 2 > 2, 1))
 	    {
-	      wchar_t wcu = wc;
-	      if (iswlower (wc))
+	      wchar_t wcu = towupper (wc);
+	      if (wcu != wc)
 		{
 		  size_t mbcdlen;
 
-		  wcu = towupper (wc);
 		  mbcdlen = wcrtomb (buf, wcu, &prev_st);
 		  if (BE (mbclen == mbcdlen, 1))
 		    memcpy (pstr->mbs + byte_idx, buf, mbclen);
@@ -390,12 +389,11 @@ build_wcs_upper_buffer (re_string_t *pstr)
 	mbclen = __mbrtowc (&wc, p, remain_len, &pstr->cur_state);
 	if (BE (mbclen + 2 > 2, 1))
 	  {
-	    wchar_t wcu = wc;
-	    if (iswlower (wc))
+	    wchar_t wcu = towupper (wc);
+	    if (wcu != wc)
 	      {
 		size_t mbcdlen;
 
-		wcu = towupper (wc);
 		mbcdlen = wcrtomb ((char *) buf, wcu, &prev_st);
 		if (BE (mbclen == mbcdlen, 1))
 		  memcpy (pstr->mbs + byte_idx, buf, mbclen);
@@ -547,10 +545,7 @@ build_upper_buffer (re_string_t *pstr)
       int ch = pstr->raw_mbs[pstr->raw_mbs_idx + char_idx];
       if (BE (pstr->trans != NULL, 0))
 	ch = pstr->trans[ch];
-      if (islower (ch))
-	pstr->mbs[char_idx] = toupper (ch);
-      else
-	pstr->mbs[char_idx] = ch;
+      pstr->mbs[char_idx] = toupper (ch);
     }
   pstr->valid_len = char_idx;
   pstr->valid_raw_len = char_idx;
@@ -1451,7 +1446,18 @@ re_dfa_add_node (re_dfa_t *dfa, re_token_t token)
       new_eclosures = re_realloc (dfa->eclosures, re_node_set, new_nodes_alloc);
       if (BE (new_nexts == NULL || new_indices == NULL
 	      || new_edests == NULL || new_eclosures == NULL, 0))
-	return -1;
+        {
+	   /* if any are not NULL, free them, avoid leaks */
+	   if (new_nexts != NULL)
+              re_free(new_nexts);
+	   if (new_indices != NULL)
+              re_free(new_indices);
+	   if (new_edests != NULL)
+              re_free(new_edests);
+	   if (new_eclosures != NULL)
+              re_free(new_eclosures);
+	   return -1;
+	}
       dfa->nexts = new_nexts;
       dfa->org_indices = new_indices;
       dfa->edests = new_edests;

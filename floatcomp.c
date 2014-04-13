@@ -26,6 +26,8 @@
 #include "awk.h"
 #include <math.h>
 
+#ifdef HAVE_UINTMAX_T
+
 /* Assume IEEE-754 arithmetic on pre-C89 hosts.  */
 #ifndef FLT_RADIX
 #define FLT_RADIX 2
@@ -69,28 +71,6 @@ Please port the following code to your weird host;
 #define AWKNUM_FRACTION_BITS (AWKNUM_MANT_DIG * (FLT_RADIX == 2 ? 1 : 4))
 #define DBL_FRACTION_BITS (DBL_MANT_DIG * (FLT_RADIX == 2 ? 1 : 4))
 
-/*
- * Floor and Ceil --- Work around a problem in conversion of
- * doubles to exact integers.
- */
-
-/* Floor --- do floor(), also for Cray */
-
-AWKNUM
-Floor(AWKNUM n)
-{
-	return floor(n);
-}
-
-/* Ceil --- do ceil(), also for Cray */
-
-AWKNUM
-Ceil(AWKNUM n)
-{
-	return ceil(n);
-}
-
-#ifdef HAVE_UINTMAX_T
 /* adjust_uint --- fiddle with values, ask Paul Eggert to explain */
 
 uintmax_t

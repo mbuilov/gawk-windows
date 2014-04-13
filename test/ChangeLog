@@ -1,3 +1,203 @@
+2014-04-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (charset-msg-start): Add a warning message that tests
+	may fail without adequate locale support, per request from
+	Nelson H.F. Beebe.
+
+2014-04-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* 4.1.1: Release tar ball made.
+
+2014-04-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am: Prettify list of tests a little bit.
+
+2014-04-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (EXTRA_DIST): Add readfile2.ok. Oops.
+
+2014-03-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (readfile2): New test.
+	* readfile2.awk, readfile2.ok: New files.
+
+2014-02-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regrange.ok: Update after code improvements.
+
+2014-02-03         Stepan Kasal         <kasal@ucw.cz>
+
+	* strftime.awk: the default format uses %e, not %d (Introduced on
+	2014-01-16; the previous code mangled the output of command "date"
+	to match %d.) Remove the "mucking" for cygwin, it's obsolete and
+	incompatible with %e.
+
+2014-01-28         Eli Zaretskii        <eliz@gnu.org>
+
+	* strftime.awk: If DATECMD variable is non-empty, use it instead
+	of the literal "date" as the 'date'-like command.
+
+2014-01-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (mpfrnegzero): New test.
+	* mpfrnegzero.awk, mpfrnegzero.ok: New files.
+
+2014-01-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (readdir): Run ls commands outside the awk script.
+	* readdir0.awk: Read ls results from files. Helps with MinGW.
+	Thanks to Eli Zaretskii for the problem report.
+
+2014-01-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am: Quote instances of $(top_srcdir) also.
+
+2014-01-16         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (strftime): Remove comment about the race condition, since
+	this should be fixed.  And gawk now calls date inside the script.
+	* strftime.awk: Based on an idea from Pat Rankin, fix the race
+	condition by looping repeatedly over strftime/date/strftime until
+	the before and after strftime results match.  That should fix
+	the race condition where the seconds field might increment between
+	invocations.
+
+2014-01-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (split_after_fpat): New test.
+	* split_after_fpat.awk, split_after_fpat.ok,
+	split_after_fpat.in: New files.
+
+2013-12-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (ignrcas2): Change to use en_US.UTF-8; it
+	seems that plain en_US doesn't exist anymore. Thanks to
+	Richard Palo.
+
+2013-12-29         John E. Malmberg      <wb8tyw@qsl.net>
+
+	* fts.awk: Adjust for VMS.
+	* rwarray.awk: Adjust for VMS.
+
+2013-12-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am: Remove instances of "" that were incorrect.
+	Thanks to Scott Deifik for the report.
+
+2013-12-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (fts): Add a check for Cygwin on NFS and print
+	a message, similar to that of IRIX. Per Corinna Vinschen.
+
+2013-11-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (pipeio3): Removed test and reference to files.
+	It was too ful of race conditions to work reliably everywhere.
+	* pipeio3.awk, pipeio3.ok, pipeio3.ok2: Removed.
+
+2013-11-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* readdir0.awk: Take argument which is directory to read.
+	* Makefile.am (readdir): Pass $(top_srcdir) to readdir0.awk.
+
+2013-11-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readdir0.awk: Restore fix so that we do not fail on filesysystems
+	such as XFS where the dirent does not contain the file type.
+
+2013-11-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (ordchr2): Use --load instead of -l to make sure the
+	long option works properly.  Note that the readfile test still uses
+	the short version.
+	(include2): Use --include instead of -i to make sure that the long
+	option works properly.  Note that many other tests use the -i short
+	version.
+
+2013-11-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* readdir0.awk: Use `ls -lan' to get numeric user and group ID
+	numbers. This keeps the number of fields correct and consistent, even
+	on systems (like, oh, say, Windows with Cygwin) where group names
+	can contain spaces.
+
+2013-11-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Solaris fixes.
+
+	* readdir0.awk: Run ls -afi and ls -la separately since POSIX
+	says that -f turns off -l. Thanks to Dagobert Michelsen
+	<dam@opencsw.org> for the report.
+	* Makefile.am (diffout): Don't use POSIX or bash-isms so that
+	it will work on Solaris. Sigh.
+
+2013-11-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (backsmalls2): New test.
+	(pipeio3): Check results against pipeio3.ok2 if
+	the first check fails.
+	* backsmalls2.awk, backsmalls2.ok: New files.
+	* pipeio3.ok2: New file. This is the results on PPC Mac OS X.
+
+2013-10-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (pipeio3): Enhance test, again, to be more resilient
+	to variations in error messages produced by different Bourne shells
+	when a command is not found.  This time for Cygwin.
+
+	Unrelated:
+
+	(charasbytes): Translit any tabs to spaces. Should help on
+	some System V systems such as Solaris. We hope.
+
+	Unrelated:
+
+	(pass-fail): Exit non-zero if tests fail. Useful for buildbots.
+
+2013-10-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (pipeio3): Enhance test to be more resilient to
+	variations in error messages produced by different Bourne shells
+	when a command is not found. Initially for Mac OS X.
+
+2013-10-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (pipeio3): New test.
+	* pipeio3.awk, pipeio3.ok: New files.
+
+2013-10-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (backbigs1, backsmalls1): New tests.
+	* backbigs1.awk, backbigs1.in, backbigs1.ok: New files.
+	* backsmalls1.awk, backsmalls1.in, backsmalls1.ok: New files.
+
+2013-10-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (badassign1): New test.
+	* badassign1.awk, badassign1.ok: New files.
+
+2013-09-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makfile.am (randtest): New test.
+	* randtest.sh, randtest.ok: New files.
+	* rand.ok: Updated to reflect new results based on code change.
+
+2013-09-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am: Fix quoting for generation of Maketests file so
+	that it will happen correctly.
+
+	Unrelated:
+
+	* Makefile.am (nfloop): New test.
+	* nfloop.awk, nfloop.ok: New files.
+
+2013-08-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am: Quote $(srcdir) everywhere so that tests can run
+	in locations with spaces in their names (think Windows or Mac OS X).
+	* Gentests: Ditto for when creating Maketests file.
+
 2013-07-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (mbprintf4): New test.

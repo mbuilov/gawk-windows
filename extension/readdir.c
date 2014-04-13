@@ -10,7 +10,7 @@
  */
 
 /*
- * Copyright (C) 2012, 2013 the Free Software Foundation, Inc.
+ * Copyright (C) 2012-2014 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -67,6 +67,10 @@
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
 
+#ifndef PATH_MAX
+#define PATH_MAX	1024	/* a good guess */
+#endif
+
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
 static const char *ext_version = "readdir extension: version 1.0";
@@ -89,6 +93,7 @@ static const char *
 ftype(struct dirent *entry, const char *dirname)
 {
 #ifdef DT_BLK
+	(void) dirname;		/* silence warnings */
 	switch (entry->d_type) {
 	case DT_BLK:	return "b";
 	case DT_CHR:	return "c";
@@ -158,6 +163,7 @@ get_inode(struct dirent *entry, const char *dirname)
 	}
 	return 0;
 #else
+	(void) dirname;		/* silence warnings */
 	return entry->d_ino;
 #endif
 }
@@ -215,6 +221,7 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 
 	*out = the_dir->buf;
 
+	*rt_start = NULL;
 	*rt_len = 0;	/* set RT to "" */
 	return len;
 }
@@ -232,8 +239,8 @@ dir_close(awk_input_buf_t *iobuf)
 	the_dir = (open_directory_t *) iobuf->opaque;
 
 	closedir(the_dir->dp);
-	free(the_dir->buf);
-	free(the_dir);
+	gawk_free(the_dir->buf);
+	gawk_free(the_dir);
 
 	iobuf->fd = -1;
 }
