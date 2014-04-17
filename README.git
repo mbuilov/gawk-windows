@@ -1,4 +1,4 @@
-Sat Dec  1 21:53:02 IST 2012
+Thu Apr 17 16:54:26 IDT 2014
 ============================
 
 If you are reading this, you have retrieved the gawk code base via
@@ -350,3 +350,16 @@ has been pushed up to the Savannah repo or not.
 
 If your branch is completely local to your machine, use `git rebase'.
 Otherwise, use `git merge'.
+
+- How do I remove branches in my local repo that are no longer in the
+  remote repo?
+
+  Either
+  	git fetch --prume
+  or
+  	git remote prune origin
+
+  These remove the remote branches (i.e., origin/something)
+  that no longer exist on the remote.
+
+  (Thanks to Stepan Kasal for this answer.)
