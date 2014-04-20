@@ -1,3 +1,16 @@
+2014-04-20         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (struct inet_socket_info): Define new structure
+	for use in parsing special socket filenames.
+	(inetfile): Parse all components of the special socket filename
+	into the struct inet_socket_info.  Returns true only if it is a
+	valid socket fliename, unlike the previous version which checked
+	for the '/inet[46]?/' prefix only.
+	(redirect): Patch to use updated inetfile() function.
+	(devopen): Remove logic to parse socket filenames, since this has
+	been moved into the inetfile() function.
+	(two_way_open): Update args to inetfile().
+
 2014-04-18         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Change adding of -export-dynamic for GCC to be
