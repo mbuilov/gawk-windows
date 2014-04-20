@@ -1,3 +1,10 @@
+2014-04-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_rand): Make calls to random() in predictable
+	order to avoid order of evaluation differences amongst compilers.
+	Thanks to Anders Magnusson <ragge@ludd.ltu.se> (of the PCC team)
+	for the suggestion.
+
 2014-04-18         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Change adding of -export-dynamic for GCC to be

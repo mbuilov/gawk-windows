@@ -2454,8 +2454,14 @@ do_rand(int nargs ATTRIBUTE_UNUSED)
  	 */
  
 	do {
-	 	tmprand = 0.5 + ( (random()/RAND_DIVISOR + random())
-					/ RAND_DIVISOR);
+		long d1, d2;
+		/*
+		 * Do the calls in predictable order to avoid
+		 * compiler differences in order of evaluation.
+		 */
+		d1 = random();
+		d2 = random();
+	 	tmprand = 0.5 + ( (d1/RAND_DIVISOR + d2) / RAND_DIVISOR );
 		tmprand -= 0.5;
 	} while (tmprand == 1.0);
 
