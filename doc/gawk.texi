@@ -303,15 +303,15 @@ ISBN 1-882114-28-0 @*
 @page
 @w{ }
 @sp 9
-@center @i{To Miriam, for making me complete.}
+@center @i{To my parents, for their love, and for the wonderful
+example they set for me.}
 @sp 1
-@center @i{To Chana, for the joy you bring us.}
+@center @i{To my wife Miriam, for making me complete.
+Thank you for building your life together with me.}
 @sp 1
-@center @i{To Rivka, for the exponential increase.}
+@center @i{To our children Chana, Rivka, Nachum and Malka,
+for enrichening our lives in innumerable ways.}
 @sp 1
-@center @i{To Nachum, for the added dimension.}
-@sp 1
-@center @i{To Malka, for the new beginning.}
 @w{ }
 @page
 @w{ }
@@ -321,13 +321,12 @@ ISBN 1-882114-28-0 @*
 
 @docbook
 <dedication>
-<simplelist>
-<member>To Miriam, for making me complete.</member>
-<member>To Chana, for the joy you bring us.</member>
-<member>To Rivka, for the exponential increase.</member>
-<member>To Nachum, for the added dimension.</member>
-<member>To Malka, for the new beginning.</member>
-</simplelist>
+<para>To my parents, for their love, and for the wonderful
+example they set for me.</para>
+<para>To my wife Miriam, for making me complete.
+Thank you for building your life together with me.</para>
+<para>To our children Chana, Rivka, Nachum and Malka,
+for enrichening our lives in innumerable ways.</para>
 </dedication>
 @end docbook
 
@@ -420,7 +419,7 @@ particular records in a file and perform operations upon them.
 * One-shot::                            Running a short throwaway
                                         @command{awk} program.
 * Read Terminal::                       Using no input files (input from
-                                        terminal instead).
+                                        the keyboard instead).
 * Long::                                Putting permanent @command{awk}
                                         programs in files.
 * Executable Scripts::                  Making self-contained @command{awk}
@@ -1119,7 +1118,7 @@ The GNU implementation of @command{awk} is called @command{gawk}; if you
 invoke it with the proper options or environment variables
 (@pxref{Options}), it is fully
 compatible with
-the POSIX@footnote{The 2008 POSIX standard is online at
+the POSIX@footnote{The 2008 POSIX standard is accessable online at
 @url{http://www.opengroup.org/onlinepubs/9699919799/}.}
 specification of the @command{awk} language
 and with the Unix version of @command{awk} maintained
@@ -1171,6 +1170,12 @@ Sort data
 
 @item
 Perform simple network communications
+
+@item
+Profile and debug @command{awk} programs.
+
+@item
+Extend the language with functions written in C or C++.
 @end itemize
 
 This @value{DOCUMENT} teaches you about the @command{awk} language and
@@ -1186,12 +1191,18 @@ Implementations of the @command{awk} language are available for many
 different computing environments.  This @value{DOCUMENT}, while describing
 the @command{awk} language in general, also describes the particular
 implementation of @command{awk} called @command{gawk} (which stands for
-``GNU awk'').  @command{gawk} runs on a broad range of Unix systems,
+``GNU @command{awk}'').  @command{gawk} runs on a broad range of Unix systems,
 ranging from Intel@registeredsymbol{}-architecture PC-based computers
-up through large-scale systems,
-such as Crays. @command{gawk} has also been ported to Mac OS X,
-Microsoft Windows (all versions) and OS/2 PCs,
-and VMS.
+up through large-scale systems.
+@command{gawk} has also been ported to Mac OS X,
+Microsoft Windows
+@ifset FOR_PRINT
+(all versions) and OS/2 PCs,
+@end ifset
+@ifclear FOR_PRINT
+(all versions),
+@end ifclear
+and OpenVMS.
 (Some other, obsolete systems to which @command{gawk} was once ported
 are no longer supported and the code for those systems
 has been removed.)
@@ -1312,26 +1323,26 @@ The language described in this @value{DOCUMENT}
 is often referred to as ``new @command{awk}'' (@command{nawk}).
 
 @cindex @command{awk}, versions of
-Because of this, there are systems with multiple
-versions of @command{awk}.
-Some systems have an @command{awk} utility that implements the
-original version of the @command{awk} language and a @command{nawk} utility
-for the new version.
-Others have an @command{oawk} version for the ``old @command{awk}''
-language and plain @command{awk} for the new one.  Still others only
-have one version, which is usually the new one.@footnote{Often, these systems
-use @command{gawk} for their @command{awk} implementation!}
-
 @cindex @command{nawk} utility
 @cindex @command{oawk} utility
-All in all, this makes it difficult for you to know which version of
-@command{awk} you should run when writing your programs.  The best advice
-we can give here is to check your local documentation. Look for @command{awk},
-@command{oawk}, and @command{nawk}, as well as for @command{gawk}.
-It is likely that you already
-have some version of new @command{awk} on your system, which is what
-you should use when running your programs.  (Of course, if you're reading
-this @value{DOCUMENT}, chances are good that you have @command{gawk}!)
+For some time after new @command{awk} was introduced, there were
+systems with multiple versions of @command{awk}.  Some systems had
+an @command{awk} utility that implemented the original version of the
+@command{awk} language and a @command{nawk} utility for the new version.
+Others had an @command{oawk} version for the ``old @command{awk}''
+language and plain @command{awk} for the new one.  Still others only
+had one version, which is usually the new one.
+
+Today, only Solaris systems still use an old @command{awk} for the
+default @command{awk} utility. (A more modern @command{awk} lives in
+@file{/usr/xpg6/bin} on these systems.)  All other modern systems use
+some version of new @command{awk}.@footnote{Many of these systems use
+@command{gawk} for their @command{awk} implementation!}
+
+It is likely that you already have some version of new @command{awk} on
+your system, which is what you should use when running your programs.
+(Of course, if you're reading this @value{DOCUMENT}, chances are good
+that you have @command{gawk}!)
 
 Throughout this @value{DOCUMENT}, whenever we refer to a language feature
 that should be available in any complete implementation of POSIX @command{awk},
@@ -1493,6 +1504,32 @@ non-POSIX systems.  It also describes how to report bugs
 in @command{gawk} and where to get other freely
 available @command{awk} implementations.
 
+@ifset FOR_PRINT
+To save space, we have omitted some of the appendices from this
+printed edition. You may find them online, as follows:
+
+@uref{http://www.gnu.org/software/gawk/manual/html_node/Notes.html}
+describes how to disable @command{gawk}'s extensions, as
+well as how to contribute new code to @command{gawk},
+and some possible future directions for @command{gawk} development.
+
+@uref{http://www.gnu.org/software/gawk/manual/html_node/Basic-Concepts.html}
+provides some very cursory background material for those who
+are completely unfamiliar with computer programming.
+
+@uref{http://www.gnu.org/software/gawk/manual/html_node/Glossary.html,
+The Glossary}
+defines most, if not all, the significant terms used
+throughout the book.  If you find terms that you aren't familiar with,
+try looking them up here.
+
+@uref{http://www.gnu.org/software/gawk/manual/html_node/Copying.html} and
+@uref{http://www.gnu.org/software/gawk/manual/html_node/GNU-Free-Documentation-License.html}
+present the licenses that cover the @command{gawk} source code
+and this @value{DOCUMENT}, respectively.
+@end ifset
+
+@ifclear FOR_PRINT
 @ref{Notes},
 describes how to disable @command{gawk}'s extensions, as
 well as how to contribute new code to @command{gawk},
@@ -1510,6 +1547,7 @@ try looking them up here.
 @ref{GNU Free Documentation License},
 present the licenses that cover the @command{gawk} source code
 and this @value{DOCUMENT}, respectively.
+@end ifclear
 
 @node Conventions
 @unnumberedsec Typographical Conventions
@@ -1585,9 +1623,8 @@ the picture of a flashlight in the margin, as shown here.
 @end ifnottex
 They also appear in the index under the heading ``dark corner.''
 
-As noted by the opening quote, though, any
-coverage of dark corners
-is, by definition, incomplete.
+As noted by the opening quote, though, any coverage of dark corners is,
+by definition, incomplete.
 
 Extensions to the standard @command{awk} language that are supported by
 more than one @command{awk} implementation are marked
@@ -1727,6 +1764,11 @@ the FSF published several preliminary versions (numbered 0.@var{x}).
 In 1996, Edition 1.0 was released with @command{gawk} 3.0.0.
 The FSF published the first two editions under
 the title @cite{The GNU Awk User's Guide}.
+@ifset FOR_PRINT
+SSC published two editions of the @value{DOCUMENT} under the
+title @cite{Effective awk Programming}, and in O'Reilly published
+the edition in 2001.
+@end ifset
 
 This edition maintains the basic structure of the previous editions.
 For Edition 4.0, the content has been thoroughly reviewed
@@ -1738,13 +1780,12 @@ For edition @value{EDITION}, the content has been reorganized into parts,
 and the major new additions are @ref{Arbitrary Precision Arithmetic},
 and @ref{Dynamic Extensions}.
 
-@cite{@value{TITLE}} will undoubtedly continue to evolve.
-An electronic version
-comes with the @command{gawk} distribution from the FSF.
-If you find an error in this @value{DOCUMENT}, please report it!
-@xref{Bugs}, for information on submitting
-problem reports electronically.
+This @value{DOCUMENT} will undoubtedly continue to evolve.  An electronic
+version comes with the @command{gawk} distribution from the FSF.  If you
+find an error in this @value{DOCUMENT}, please report it!  @xref{Bugs},
+for information on submitting problem reports electronically.
 
+@ifclear FOR_PRINT
 @node How To Contribute
 @unnumberedsec How to Contribute
 
@@ -1761,7 +1802,7 @@ However, I found that I could not dedicate enough time to managing
 contributed code: the archive did not grow and the domain went unused
 for several years.
 
-Fortunately, late in 2008, a volunteer took on the task of setting up
+Late in 2008, a volunteer took on the task of setting up
 an @command{awk}-related web site---@uref{http://awk.info}---and did a very
 nice job.
 
@@ -1770,11 +1811,15 @@ a @command{gawk} extension that you would like to share with the rest
 of the world, please see @uref{http://awk.info/?contribute} for how to
 contribute it to the web site.
 
+As of this writing, this website is in search of a maintainer; please
+contact me if you are interested.
+
 @ignore
 Other links:
 
 http://www.reddit.com/r/linux/comments/dtect/composing_music_in_awk/
 @end ignore
+@end ifclear
 
 @node Acknowledgments
 @unnumberedsec Acknowledgments
@@ -1936,7 +1981,7 @@ take advantage of those opportunities.
 Arnold Robbins @*
 Nof Ayalon @*
 ISRAEL @*
-May, 2013
+May, 2014
 
 @iftex
 @part Part I:@* The @command{awk} Language
@@ -1944,11 +1989,11 @@ May, 2013
 
 @ignore
 @ifdocbook
-@part Part I:@* The @command{awk} Language
-
-Part I describes the @command{awk} language and @command{gawk} program in detail.
-It starts with the basics, and continues through all of the features of @command{awk}
-and @command{gawk}.  It contains the following chapters:
+Part I describes the @command{awk} language and @command{gawk} program
+in detail.  It starts with the basics, and continues through all of
+the features of @command{awk}. Included also are many, but not all,
+of the features of @command{gawk}.  This part contains the
+following chapters:
 
 @itemize @bullet
 @item
@@ -2071,7 +2116,7 @@ variations of each.
 @menu
 * One-shot::                    Running a short throwaway @command{awk}
                                 program.
-* Read Terminal::               Using no input files (input from terminal
+* Read Terminal::               Using no input files (input from the keyboard
                                 instead).
 * Long::                        Putting permanent @command{awk} programs in
                                 files.
@@ -2135,10 +2180,15 @@ awk '@var{program}'
 
 @noindent
 @command{awk} applies the @var{program} to the @dfn{standard input},
-which usually means whatever you type on the terminal.  This continues
+which usually means whatever you type on the keyboard.  This continues
 until you indicate end-of-file by typing @kbd{Ctrl-d}.
+@ifset FOR_PRINT
+(On other operating systems, the end-of-file character may be different.)
+@end ifset
+@ifclear FOR_PRINT
 (On other operating systems, the end-of-file character may be different.
 For example, on OS/2, it is @kbd{Ctrl-z}.)
+@end ifclear
 
 @cindex files, input, See input files
 @cindex input files, running @command{awk} without
@@ -3444,7 +3494,7 @@ names like @code{i}, @code{j}, etc.)
 @cindex @command{awk} debugging, enabling
 Enable debugging of @command{awk} programs
 (@pxref{Debugging}).
-By default, the debugger reads commands interactively from the terminal.
+By default, the debugger reads commands interactively from the keyboard.
 The optional @var{file} argument allows you to specify a file with a list
 of commands for the debugger to execute non-interactively.
 No space is allowed between the @option{-D} and @var{file}, if
@@ -3751,7 +3801,7 @@ of having to be included into each individual program.
 function names must be unique.)
 
 With standard @command{awk}, library functions can still be used, even
-if the program is entered at the terminal,
+if the program is entered at the keyboard,
 by specifying @samp{-f /dev/tty}.  After typing your program,
 type @kbd{Ctrl-d} (the end-of-file character) to terminate it.
 (You may also use @samp{-f -} to read program source from the standard
@@ -7455,7 +7505,7 @@ then @command{gawk} sets @code{RT} to the null string.
 @c STARTOFRANGE inex
 @cindex input, explicit
 So far we have been getting our input data from @command{awk}'s main
-input stream---either the standard input (usually your terminal, sometimes
+input stream---either the standard input (usually your keyboard, sometimes
 the output from another program) or from the
 files specified on the command line.  The @command{awk} language has a
 special built-in command called @code{getline} that
@@ -8017,7 +8067,7 @@ Note: for each variant, @command{gawk} sets the @code{RT} built-in variable.
 @section Reading Input With A Timeout
 @cindex timeout, reading input
 
-You may specify a timeout in milliseconds for reading input from a terminal,
+You may specify a timeout in milliseconds for reading input from the keyboard,
 pipe or two-way communication including, TCP/IP sockets. This can be done
 on a per input, command or connection basis, by setting a special element
 in the @code{PROCINFO} array:
@@ -8040,8 +8090,8 @@ else if (ERRNO != "")
     print ERRNO
 @end example
 
-Here is how to read interactively from the terminal@footnote{This assumes
-that standard input is the keyboard} without waiting
+Here is how to read interactively from the user@footnote{This assumes
+that standard input is the keyboard.} without waiting
 for more than five seconds:
 
 @example
@@ -8056,7 +8106,7 @@ and set the @code{ERRNO} variable to an appropriate string value.
 A negative or zero value for the timeout is the same as specifying
 no timeout at all.
 
-A timeout can also be set for reading from the terminal in the implicit
+A timeout can also be set for reading from the keyboard in the implicit
 loop that reads input records and matches them against patterns,
 like so:
 
@@ -29251,7 +29301,7 @@ The easiest way to find out is to look at the output of
 the following command:
 
 @example
-$ @kbd{./gawk --version}
+$ @kbd{gawk --version}
 @print{} GNU Awk 4.1.1, API: 1.1 (GNU MPFR 3.1.0-p3, GNU MP 5.0.2)
 @print{} Copyright (C) 1989, 1991-2014 Free Software Foundation.
 @dots{}
@@ -35540,7 +35590,7 @@ Files needed for building @command{gawk} under MS-Windows and OS/2
 (@pxref{PC Installation}, for details).
 
 @item vms/*
-Files needed for building @command{gawk} under VMS
+Files needed for building @command{gawk} under Vax/VMS and OpenVMS
 (@pxref{VMS Installation}, for details).
 
 @item test/*
@@ -36122,7 +36172,7 @@ been ported to MS-Windows that expect @command{gawk} to do automatic
 translation of @code{"\r\n"}, since it won't.  Caveat Emptor!
 
 @node VMS Installation
-@appendixsubsec How to Compile and Install @command{gawk} on VMS
+@appendixsubsec How to Compile and Install @command{gawk} on Vax/VMS and OpenVMS
 
 @c based on material from Pat Rankin <rankin@eql.caltech.edu>
 @c now rankin@pactechdata.com
