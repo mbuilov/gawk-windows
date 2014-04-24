@@ -136,6 +136,8 @@ xnmalloc (size_t n, size_t s)
 
 #ifdef GAWK
 #include <errno.h>
+extern void r_fatal(const char *msg, ...) ATTRIBUTE_NORETURN ;
+
 /* Allocate an array of N objects, each with S bytes of memory,
    dynamically, with error checking.  S must be nonzero.
    Clear the contents afterwards.  */
@@ -165,8 +167,6 @@ xrealloc(void *p, size_t size)
 void
 xalloc_die (void)
 {
-	extern void r_fatal(const char *msg, ...) ATTRIBUTE_NORETURN ;
-
 	r_fatal(_("xalloc: malloc failed: %s"), strerror(errno));
 }
 
@@ -178,6 +178,22 @@ void *
 xmemdup (void const *p, size_t s)
 {
   return memcpy (xmalloc (s), p, s);
+}
+
+/* xstrdup --- strdup and die if fails */
+char *xstrdup(const char *s)
+{
+	char *p;
+	int l;
+
+	if (s == NULL)
+		r_fatal(_("xstrdup: null parameter"));
+
+	l = strlen(s);
+	p = xmemdup(s, l + 1);
+	p[l] = '\0';
+
+	return p;
 }
 #endif
 
@@ -260,7 +276,7 @@ x2nrealloc (void *p, size_t *pn, size_t s)
              requests, when the invoking code specifies an old size of
              zero.  64 bytes is the largest "small" request for the
              GNU C library malloc.  */
-          enum { DEFAULT_MXFAST = 64 };
+          enum { DEFAULT_MXFAST = 64 * sizeof (size_t) / 4 };
 
           n = DEFAULT_MXFAST / s;
           n += !n;
@@ -274,7 +290,7 @@ x2nrealloc (void *p, size_t *pn, size_t s)
          worth the trouble.  */
       if ((size_t) -1 / 3 * 2 / s <= n)
         xalloc_die ();
-      n += (n + 1) / 2;
+      n += n / 2 + 1;
     }
 
   *pn = n;
