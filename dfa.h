@@ -19,13 +19,20 @@
 /* Written June, 1988 by Mike Haertel */
 
 #include <regex.h>
+#ifdef HAVE_STDBOOL_H
+#include <stdbool.h>
+#else
+#include "missing_d/gawkbool.h"
+#endif /* HAVE_STDBOOL_H */
 #include <stddef.h>
 
 /* Element of a list of strings, at least one of which is known to
    appear in any R.E. matching the DFA. */
 struct dfamust
 {
-  int exact;
+  bool exact;
+  bool begline;
+  bool endline;
   char *must;
   struct dfamust *next;
 };
@@ -68,6 +75,17 @@ extern void dfacomp (char const *, size_t, struct dfa *, int);
 extern char *dfaexec (struct dfa *d, char const *begin, char *end,
                       int newline, size_t *count, int *backref);
 
+/* Search through a buffer looking for a potential match for D.
+   Return the offset of the byte after the first potential match.
+   If there is no match, return (size_t) -1.  If D lacks a superset
+   so it's not known whether there is a match, return (size_t) -2.
+   BEGIN points to the beginning of the buffer, and END points to the
+   first byte after its end.  Store a sentinel byte (usually newline)
+   in *END, so the actual buffer must be one byte longer.  If COUNT is
+   non-NULL, increment *COUNT once for each newline processed.  */
+extern size_t dfahint (struct dfa *d, char const *begin, char *end,
+                       size_t *count);
+
 /* Free the storage held by the components of a struct dfa. */
 extern void dfafree (struct dfa *);
 
@@ -101,11 +119,3 @@ extern void dfawarn (const char *);
 extern _Noreturn void dfaerror (const char *);
 
 extern int using_utf8 (void);
-
-/* Maximum number of characters that can be the case-folded
-   counterparts of a single character, not counting the character
-   itself.  This is 1 for towupper, 1 for towlower, and 1 for each
-   entry in LONESOME_LOWER; see dfa.c.  */
-enum { CASE_FOLDED_BUFSIZE = 1 + 1 + 19 };
-
-extern int case_folded_counterparts (wchar_t, wchar_t[CASE_FOLDED_BUFSIZE]);
