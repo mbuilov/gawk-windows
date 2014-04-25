@@ -2078,6 +2078,7 @@ use_pipes:
 		    || close(ctop[0]) == -1 || close(ctop[1]) == -1)
 			fatal(_("close of pipe failed (%s)"), strerror(errno));
 		/* stderr does NOT get dup'ed onto child's stdout */
+		signal(SIGPIPE, SIG_DFL);
 		execl("/bin/sh", "sh", "-c", str, NULL);
 		_exit(errno == ENOENT ? 127 : 126);
 	}
@@ -2271,6 +2272,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 			fatal(_("moving pipe to stdout in child failed (dup: %s)"), strerror(errno));
 		if (close(p[0]) == -1 || close(p[1]) == -1)
 			fatal(_("close of pipe failed (%s)"), strerror(errno));
+		signal(SIGPIPE, SIG_DFL);
 		execl("/bin/sh", "sh", "-c", cmd, NULL);
 		_exit(errno == ENOENT ? 127 : 126);
 	}
