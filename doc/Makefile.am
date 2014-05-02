@@ -36,6 +36,8 @@ EXTRA_DIST = ChangeLog ChangeLog.0 README.card ad.block setter.outline \
 	api-figure2.png api-figure2.txt \
 	api-figure3.eps api-figure3.fig api-figure3.pdf \
 	api-figure3.png api-figure3.txt \
+	array-elements.eps array-elements.fig array-elements.pdf \
+	array-elements.png array-elements.txt \
 	gawktexi.in sidebar.awk \
 	general-program.eps general-program.fig general-program.pdf \
 	general-program.png general-program.txt \

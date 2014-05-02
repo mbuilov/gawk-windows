@@ -13037,9 +13037,9 @@ automatically by @command{awk}, so that they carry information from the
 internal workings of @command{awk} to your program.
 
 @cindex @command{gawk}, built-in variables and
-This @value{SECTION} documents all the built-in variables of
-@command{gawk}, most of which are also documented in the chapters
-describing their areas of activity.
+This @value{SECTION} documents all of @command{gawk}'s built-in variables,
+most of which are also documented in the @value{CHAPTER}s describing
+their areas of activity.
 
 @menu
 * User-modified::               Built-in variables that you change to control
@@ -13057,44 +13057,38 @@ describing their areas of activity.
 @cindex user-modifiable variables
 
 The following is an alphabetical list of variables that you can change to
-control how @command{awk} does certain things. The variables that are
-specific to @command{gawk} are marked with a pound sign@w{ (@samp{#}).}
+control how @command{awk} does certain things.
+
+The variables that are specific to @command{gawk} are marked with a pound
+sign (@samp{#}).  These variables are @command{gawk} extensions.  In other
+@command{awk} implementations or if @command{gawk} is in compatibility
+mode (@pxref{Options}), they are not special.  (Any exceptions are noted
+in the description of each variable.)
 
 @table @code
 @cindex @code{BINMODE} variable
 @cindex binary input/output
 @cindex input/output, binary
-@item BINMODE #
-On non-POSIX systems, this variable specifies use of binary mode for all I/O.
-Numeric values of one, two, or three specify that input files, output files, or
-all files, respectively, should use binary I/O.
-A numeric value less than zero is treated as zero, and a numeric value greater than
-three is treated as three.
-Alternatively,
-string values of @code{"r"} or @code{"w"} specify that input files and
-output files, respectively, should use binary I/O.
-A string value of @code{"rw"} or @code{"wr"} indicates that all
-files should use binary I/O.
-Any other string value is treated the same as @code{"rw"},
-but causes @command{gawk}
-to generate a warning message.
-@code{BINMODE} is described in more detail in
-@ref{PC Using}.
-
 @cindex differences in @command{awk} and @command{gawk}, @code{BINMODE} variable
-This variable is a @command{gawk} extension.
-In other @command{awk} implementations
-(except @command{mawk},
-@pxref{Other Versions}),
-or if @command{gawk} is in compatibility mode
-(@pxref{Options}),
-it is not special.
+@item BINMODE #
+On non-POSIX systems, this variable specifies use of binary mode
+for all I/O.  Numeric values of one, two, or three specify that input
+files, output files, or all files, respectively, should use binary I/O.
+A numeric value less than zero is treated as zero, and a numeric value
+greater than three is treated as three.  Alternatively, string values
+of @code{"r"} or @code{"w"} specify that input files and output files,
+respectively, should use binary I/O.  A string value of @code{"rw"} or
+@code{"wr"} indicates that all files should use binary I/O.  Any other
+string value is treated the same as @code{"rw"}, but causes @command{gawk}
+to generate a warning message.  @code{BINMODE} is described in more
+detail in @ref{PC Using}.  @command{mawk} @pxref{Other Versions}),
+also supports this variable, but only using numeric values.
 
 @cindex @code{CONVFMT} variable
 @cindex POSIX @command{awk}, @code{CONVFMT} variable and
 @cindex numbers, converting, to strings
 @cindex strings, converting, numbers to
-@item CONVFMT
+@item @code{CONVFMT}
 This string controls conversion of numbers to
 strings (@pxref{Conversion}).
 It works by being passed, in effect, as the first argument to the
@@ -13109,16 +13103,11 @@ Its default value is @code{"%.6g"}.
 @cindex field separators, @code{FIELDWIDTHS} variable and
 @cindex separators, field, @code{FIELDWIDTHS} variable and
 @item FIELDWIDTHS #
-This is a space-separated list of columns that tells @command{gawk}
+A space-separated list of columns that tells @command{gawk}
 how to split input with fixed columnar boundaries.
 Assigning a value to @code{FIELDWIDTHS}
 overrides the use of @code{FS} and @code{FPAT} for field splitting.
 @xref{Constant Size}, for more information.
-
-If @command{gawk} is in compatibility mode
-(@pxref{Options}), then @code{FIELDWIDTHS}
-has no special meaning, and field-splitting operations occur based
-exclusively on the value of @code{FS}.
 
 @cindex @command{gawk}, @code{FPAT} variable in
 @cindex @code{FPAT} variable
@@ -13126,23 +13115,17 @@ exclusively on the value of @code{FS}.
 @cindex field separators, @code{FPAT} variable and
 @cindex separators, field, @code{FPAT} variable and
 @item FPAT #
-This is a regular expression (as a string) that tells @command{gawk}
+A regular expression (as a string) that tells @command{gawk}
 to create the fields based on text that matches the regular expression.
 Assigning a value to @code{FPAT}
 overrides the use of @code{FS} and @code{FIELDWIDTHS} for field splitting.
 @xref{Splitting By Content}, for more information.
 
-If @command{gawk} is in compatibility mode
-(@pxref{Options}), then @code{FPAT}
-has no special meaning, and field-splitting operations occur based
-exclusively on the value of @code{FS}.
-
 @cindex @code{FS} variable
 @cindex separators, field
 @cindex field separators
 @item FS
-This is the input field separator
-(@pxref{Field Separators}).
+The input field separator (@pxref{Field Separators}).
 The value is a single-character string or a multicharacter regular
 expression that matches the separations between fields in an input
 record.  If the value is the null string (@code{""}), then each
@@ -13192,18 +13175,13 @@ and it does not affect field splitting when using a single-character
 field separator.
 @xref{Case-sensitivity}.
 
-If @command{gawk} is in compatibility mode
-(@pxref{Options}),
-then @code{IGNORECASE} has no special meaning.  Thus, string
-and regexp operations are always case-sensitive.
-
 @cindex @command{gawk}, @code{LINT} variable in
 @cindex @code{LINT} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{LINT} variable
 @cindex lint checking
 @item LINT #
 When this variable is true (nonzero or non-null), @command{gawk}
-behaves as if the @option{--lint} command-line option is in effect.
+behaves as if the @option{--lint} command-line option is in effect
 (@pxref{Options}).
 With a value of @code{"fatal"}, lint warnings become fatal errors.
 With a value of @code{"invalid"}, only warnings about things that are
@@ -13224,7 +13202,7 @@ of @command{awk} being executed.
 @cindex numbers, converting, to strings
 @cindex strings, converting, numbers to
 @item OFMT
-This string controls conversion of numbers to
+Controls conversion of numbers to
 strings (@pxref{Conversion}) for
 printing with the @code{print} statement.  It works by being passed
 as the first argument to the @code{sprintf()} function
@@ -13245,7 +13223,7 @@ default value is @w{@code{" "}}, a string consisting of a single space.
 
 @cindex @code{ORS} variable
 @item ORS
-This is the output record separator.  It is output at the end of every
+The output record separator.  It is output at the end of every
 @code{print} statement.  Its default value is @code{"\n"}, the newline
 character.  (@xref{Output Separators}.)
 
@@ -13258,14 +13236,13 @@ The working precision of arbitrary precision floating-point numbers,
 @item ROUNDMODE #
 The rounding mode to use for arbitrary precision arithmetic on
 numbers, by default @code{"N"} (@samp{roundTiesToEven} in
-the IEEE-754 standard)
-(@pxref{Setting Rounding Mode}).
+the IEEE-754 standard; @pxref{Setting Rounding Mode}).
 
 @cindex @code{RS} variable
 @cindex separators, for records
 @cindex record separators
-@item RS
-This is @command{awk}'s input record separator.  Its default value is a string
+@item @code{RS}
+The input record separator.  Its default value is a string
 containing a single newline character, which means that an input record
 consists of a single line of text.
 It can also be the null string, in which case records are separated by
@@ -13284,8 +13261,8 @@ just the first character of @code{RS}'s value is used.
 @cindex @code{SUBSEP} variable
 @cindex separators, subscript
 @cindex subscript separators
-@item SUBSEP
-This is the subscript separator.  It has the default value of
+@item @code{SUBSEP}
+The subscript separator.  It has the default value of
 @code{"\034"} and is used to separate the parts of the indices of a
 multidimensional array.  Thus, the expression @code{@w{foo["A", "B"]}}
 really accesses @code{foo["A\034B"]}
@@ -13296,18 +13273,12 @@ really accesses @code{foo["A\034B"]}
 @cindex differences in @command{awk} and @command{gawk}, @code{TEXTDOMAIN} variable
 @cindex internationalization, localization
 @item TEXTDOMAIN #
-This variable is used for internationalization of programs at the
+Used for internationalization of programs at the
 @command{awk} level.  It sets the default text domain for specially
 marked string constants in the source text, as well as for the
 @code{dcgettext()}, @code{dcngettext()} and @code{bindtextdomain()} functions
 (@pxref{Internationalization}).
 The default value of @code{TEXTDOMAIN} is @code{"messages"}.
-
-This variable is a @command{gawk} extension.
-In other @command{awk} implementations,
-or if @command{gawk} is in compatibility mode
-(@pxref{Options}),
-it is not special.
 @end table
 @c ENDOFRANGE bvar
 @c ENDOFRANGE varb
@@ -13323,8 +13294,12 @@ it is not special.
 @cindex variables, built-in, conveying information
 The following is an alphabetical list of variables that @command{awk}
 sets automatically on certain occasions in order to provide
-information to your program.  The variables that are specific to
-@command{gawk} are marked with a pound sign@w{ (@samp{#}).}
+information to your program.
+
+The variables that are specific to @command{gawk} are marked with a pound
+sign (@samp{#}).  These variables are @command{gawk} extensions.  In other
+@command{awk} implementations or if @command{gawk} is in compatibility
+mode (@pxref{Options}), they are not special.
 
 @c @asis for docbook
 @table @asis
@@ -13371,7 +13346,7 @@ about how @command{awk} uses these variables.
 
 @cindex @code{ARGIND} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{ARGIND} variable
-@item @code{ARGIND} #
+@item @code{ARGIND #}
 The index in @code{ARGV} of the current file being processed.
 Every time @command{gawk} opens a new data file for processing, it sets
 @code{ARGIND} to the index in @code{ARGV} of the file name.
@@ -13388,78 +13363,58 @@ While you can change the value of @code{ARGIND} within your @command{awk}
 program, @command{gawk} automatically sets it to a new value when the
 next file is opened.
 
-This variable is a @command{gawk} extension.
-In other @command{awk} implementations,
-or if @command{gawk} is in compatibility mode
-(@pxref{Options}),
-it is not special.
-
 @cindex @code{ENVIRON} array
 @cindex environment variables, in @code{ENVIRON} array
 @item @code{ENVIRON}
 An associative array containing the values of the environment.  The array
 indices are the environment variable names; the elements are the values of
 the particular environment variables.  For example,
-@code{ENVIRON["HOME"]} might be @file{/home/arnold}.  Changing this array
+@code{ENVIRON["HOME"]} might be @code{"/home/arnold"}.  Changing this array
 does not affect the environment passed on to any programs that
 @command{awk} may spawn via redirection or the @code{system()} function.
-@c (In a future version of @command{gawk}, it may do so.)
+(In a future version of @command{gawk}, it may do so.)
 
 Some operating systems may not have environment variables.
 On such systems, the @code{ENVIRON} array is empty (except for
-@w{@code{ENVIRON["AWKPATH"]}},
-@pxref{AWKPATH Variable} and
-@w{@code{ENVIRON["AWKLIBPATH"]}},
+@w{@code{ENVIRON["AWKPATH"]}} and
+@w{@code{ENVIRON["AWKLIBPATH"]}};
+@pxref{AWKPATH Variable}, and
 @pxref{AWKLIBPATH Variable}).
 
 @cindex @command{gawk}, @code{ERRNO} variable in
 @cindex @code{ERRNO} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{ERRNO} variable
 @cindex error handling, @code{ERRNO} variable and
-@item @code{ERRNO} #
-If a system error occurs during a redirection for @code{getline},
-during a read for @code{getline}, or during a @code{close()} operation,
-then @code{ERRNO} contains a string describing the error.
+@item @code{ERRNO #}
+If a system error occurs during a redirection for @code{getline}, during
+a read for @code{getline}, or during a @code{close()} operation, then
+@code{ERRNO} contains a string describing the error.
 
-In addition, @command{gawk} clears @code{ERRNO}
-before opening each command-line input file. This enables checking if
-the file is readable inside a @code{BEGINFILE} pattern (@pxref{BEGINFILE/ENDFILE}).
+In addition, @command{gawk} clears @code{ERRNO} before opening each
+command-line input file. This enables checking if the file is readable
+inside a @code{BEGINFILE} pattern (@pxref{BEGINFILE/ENDFILE}).
 
-Otherwise,
-@code{ERRNO} works similarly to the C variable @code{errno}.
-Except for the case just mentioned,
-@command{gawk} @emph{never} clears it (sets it
-to zero or @code{""}).  Thus, you should only expect its value
-to be meaningful when an I/O operation returns a failure
-value, such as @code{getline} returning @minus{}1.
-You are, of course, free to clear it yourself before doing an
-I/O operation.
-
-This variable is a @command{gawk} extension.
-In other @command{awk} implementations,
-or if @command{gawk} is in compatibility mode
-(@pxref{Options}),
-it is not special.
+Otherwise, @code{ERRNO} works similarly to the C variable @code{errno}.
+Except for the case just mentioned, @command{gawk} @emph{never} clears
+it (sets it to zero or @code{""}).  Thus, you should only expect its
+value to be meaningful when an I/O operation returns a failure value,
+such as @code{getline} returning @minus{}1.  You are, of course, free
+to clear it yourself before doing an I/O operation.
 
 @cindex @code{FILENAME} variable
 @cindex dark corner, @code{FILENAME} variable
 @item @code{FILENAME}
-The name of the file that @command{awk} is currently reading.
-When no data files are listed on the command line, @command{awk} reads
-from the standard input and @code{FILENAME} is set to @code{"-"}.
-@code{FILENAME} is changed each time a new file is read
-(@pxref{Reading Files}).
-Inside a @code{BEGIN} rule, the value of @code{FILENAME} is
-@code{""}, since there are no input files being processed
-yet.@footnote{Some early implementations of Unix @command{awk} initialized
-@code{FILENAME} to @code{"-"}, even if there were data files to be
-processed. This behavior was incorrect and should not be relied
-upon in your programs.}
-@value{DARKCORNER}
-Note, though, that using @code{getline}
-(@pxref{Getline})
-inside a @code{BEGIN} rule can give
-@code{FILENAME} a value.
+The name of the current input file.  When no data files are listed
+on the command line, @command{awk} reads from the standard input and
+@code{FILENAME} is set to @code{"-"}.  @code{FILENAME} changes each
+time a new file is read (@pxref{Reading Files}).  Inside a @code{BEGIN}
+rule, the value of @code{FILENAME} is @code{""}, since there are no input
+files being processed yet.@footnote{Some early implementations of Unix
+@command{awk} initialized @code{FILENAME} to @code{"-"}, even if there
+were data files to be processed. This behavior was incorrect and should
+not be relied upon in your programs.} @value{DARKCORNER} Note, though,
+that using @code{getline} (@pxref{Getline}) inside a @code{BEGIN} rule
+can give @code{FILENAME} a value.
 
 @cindex @code{FNR} variable
 @item @code{FNR}
@@ -13483,14 +13438,14 @@ current record. @xref{Changing Fields}.
 @cindex @code{FUNCTAB} array
 @cindex @command{gawk}, @code{FUNCTAB} array in
 @cindex differences in @command{awk} and @command{gawk}, @code{FUNCTAB} variable
-@item @code{FUNCTAB} #
+@item @code{FUNCTAB #}
 An array whose indices and corresponding values are the names of all
 the user-defined or extension functions in the program.
 
 @quotation NOTE
 Attempting to use the @code{delete} statement with the @code{FUNCTAB}
-array will cause a fatal error.  Any attempt to assign to an element of
-the @code{FUNCTAB} array will also cause a fatal error.
+array causes a fatal error.  Any attempt to assign to an element of
+@code{FUNCTAB} also causes a fatal error.
 @end quotation
 
 @cindex @code{NR} variable
@@ -13503,7 +13458,7 @@ the beginning of the program's execution
 @cindex @command{gawk}, @code{PROCINFO} array in
 @cindex @code{PROCINFO} array
 @cindex differences in @command{awk} and @command{gawk}, @code{PROCINFO} array
-@item @code{PROCINFO} #
+@item @code{PROCINFO #}
 The elements of this array provide access to information about the
 running @command{awk} program.
 The following elements (listed alphabetically)
@@ -13572,7 +13527,7 @@ The parent process ID of the current process.
 @item PROCINFO["sorted_in"]
 If this element exists in @code{PROCINFO}, its value controls the
 order in which array indices will be processed by
-@samp{for (index in array) @dots{}} loops.
+@samp{for (@var{index} in @var{array})} loops.
 Since this is an advanced feature, we defer the
 full description until later; see
 @ref{Scanning an Array}.
@@ -13642,22 +13597,15 @@ The @code{PROCINFO} array has the following additional uses:
 
 @itemize @bullet
 @item
-It may be
-used to cause coprocesses
-to communicate over pseudo-ttys instead of through two-way pipes;
-this is discussed further in @ref{Two-way I/O}.
+It may be used to cause coprocesses to communicate over pseudo-ttys
+instead of through two-way pipes; this is discussed further in
+@ref{Two-way I/O}.
 
 @item
 It may be used to provide a timeout when reading from any
 open input file, pipe, or coprocess.
 @xref{Read Timeout}, for more information.
 @end itemize
-
-This array is a @command{gawk} extension.
-In other @command{awk} implementations,
-or if @command{gawk} is in compatibility mode
-(@pxref{Options}),
-it is not special.
 
 @cindex @code{RLENGTH} variable
 @item @code{RLENGTH}
@@ -13679,20 +13627,14 @@ if no match was found.
 @cindex @command{gawk}, @code{RT} variable in
 @cindex @code{RT} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{RT} variable
-@item @code{RT} #
-This is set each time a record is read. It contains the input text
-that matched the text denoted by @code{RS}, the record separator.
-
-This variable is a @command{gawk} extension.
-In other @command{awk} implementations,
-or if @command{gawk} is in compatibility mode
-(@pxref{Options}),
-it is not special.
+@item @code{RT #}
+The input text that matched the text denoted by @code{RS},
+the record separator.  It is set every time a record is read.
 
 @cindex @command{gawk}, @code{SYMTAB} array in
 @cindex @code{SYMTAB} array
 @cindex differences in @command{awk} and @command{gawk}, @code{SYMTAB} variable
-@item @code{SYMTAB} #
+@item @code{SYMTAB #}
 An array whose indices are the names of all currently defined
 global variables and arrays in the program.  The array may be used
 for indirect access to read or write the value of a variable:
@@ -13721,6 +13663,7 @@ This works as expected: in this case @code{SYMTAB} acts just like
 a regular array.  The only difference is that you can't then delete
 @code{SYMTAB["xxx"]}.
 
+@cindex Schorr, Andrew
 The @code{SYMTAB} array is more interesting than it looks. Andrew Schorr
 points out that it effectively gives @command{awk} data pointers. Consider his
 example:
@@ -13735,8 +13678,8 @@ function multiply(variable, amount)
 @end example
 
 @quotation NOTE
-In order to avoid severe time-travel paradoxes@footnote{Not to mention difficult
-implementation issues.}, neither @code{FUNCTAB} nor @code{SYMTAB}
+In order to avoid severe time-travel paradoxes,@footnote{Not to mention difficult
+implementation issues.} neither @code{FUNCTAB} nor @code{SYMTAB}
 are available as elements within the @code{SYMTAB} array.
 @end quotation
 @end table
@@ -13918,7 +13861,7 @@ It also describes how @command{awk} simulates multidimensional
 arrays, as well as some of the less obvious points about array usage.
 The @value{CHAPTER} moves on to discuss @command{gawk}'s facility
 for sorting arrays, and ends with a brief description of @command{gawk}'s
-ability to support true multidimensional arrays.
+ability to support true arrays of arrays.
 
 @cindex variables, names of
 @cindex functions, names of
@@ -14002,35 +13945,32 @@ the array is declared.)
 
 A contiguous array of four elements might look like the following example,
 conceptually, if the element values are 8, @code{"foo"},
-@code{""}, and 30:
+@code{""}, and 30
+@ifnotdocbook
+as shown in @ref{figure-array-elements}:
+@end ifnotdocbook
+@ifdocbook
+as shown in @inlineraw{docbook, <xref linkend="figure-array-elements"/>}:
+@end ifdocbook
 
-@c @strong{FIXME: NEXT ED:} Use real images here, and an @float
-@iftex
-@c from Karl Berry, much thanks for the help.
-@tex
-\bigskip % space above the table (about 1 linespace)
-\offinterlineskip
-\newdimen\width \width = 1.5cm
-\newdimen\hwidth \hwidth = 4\width \advance\hwidth by 2pt % 5 * 0.4pt
-\centerline{\vbox{
-\halign{\strut\hfil\ignorespaces#&&\vrule#&\hbox to\width{\hfil#\unskip\hfil}\cr
-\noalign{\hrule width\hwidth}
-	&&{\tt 8} &&{\tt "foo"} &&{\tt ""} &&{\tt 30} &&\quad Value\cr
-\noalign{\hrule width\hwidth}
-\noalign{\smallskip}
-	&\omit&0&\omit &1   &\omit&2 &\omit&3 &\omit&\quad Index\cr
-}
-}}
-@end tex
-@end iftex
-@ifnottex
-@example
-+---------+---------+--------+---------+
-|    8    |  "foo"  |   ""   |    30   |    @r{Value}
-+---------+---------+--------+---------+
-     0         1         2         3        @r{Index}
-@end example
-@end ifnottex
+@ifnotdocbook
+@float Figure,figure-array-elements
+@caption{A Contiguous Array}
+@ifinfo
+@center @image{array-elements, , , Basic Program Stages, txt}
+@end ifinfo
+@ifnotinfo
+@center @image{array-elements, , , Basic Program Stages}
+@end ifnotinfo
+@end float
+@end ifnotdocbook
+
+@docbook
+<figure id="figure-array-elements">
+<title>A Contiguous Array</title>
+<graphic fileref="array-elements.eps"/>
+</figure>
+@end docbook
 
 @noindent
 Only the values are stored; the indices are implicit from the order of
@@ -14047,12 +13987,53 @@ Arrays in @command{awk} are different---they are @dfn{associative}.  This means
 that each array is a collection of pairs: an index and its corresponding
 array element value:
 
+@ifnotdocbook
 @example
 @r{Index} 3     @r{Value} 30
 @r{Index} 1     @r{Value} "foo"
 @r{Index} 0     @r{Value} 8
 @r{Index} 2     @r{Value} ""
 @end example
+@end ifnotdocbook
+
+@docbook
+<informaltable>
+<tgroup cols="2">
+<colspec colname="1" align="center"/>
+<colspec colname="2" align="center"/>
+<thead>
+<row>
+<entry>Index</entry>
+<entry>Value</entry>
+</row>
+</thead>
+
+<tbody>
+<row>
+<entry><literal>3</literal></entry>
+<entry><literal>30</literal></entry>
+</row>
+
+<row>
+<entry><literal>1</literal></entry>
+<entry><literal>"foo"</literal></entry>
+</row>
+
+<row>
+<entry><literal>0</literal></entry>
+<entry><literal>8</literal></entry>
+</row>
+
+<row>
+<entry><literal>2</literal></entry>
+<entry><literal>""</literal></entry>
+</row>
+
+</tbody>
+</tgroup>
+</informaltable>
+
+@end docbook
 
 @noindent
 The pairs are shown in jumbled order because their order is irrelevant.
@@ -14061,6 +14042,7 @@ One advantage of associative arrays is that new pairs can be added
 at any time.  For example, suppose a tenth element is added to the array
 whose value is @w{@code{"number ten"}}.  The result is:
 
+@ifnotdocbook
 @example
 @r{Index} 10    @r{Value} "number ten"
 @r{Index} 3     @r{Value} 30
@@ -14068,6 +14050,51 @@ whose value is @w{@code{"number ten"}}.  The result is:
 @r{Index} 0     @r{Value} 8
 @r{Index} 2     @r{Value} ""
 @end example
+@end ifnotdocbook
+
+@docbook
+<informaltable>
+<tgroup cols="2">
+<colspec colname="1" align="center"/>
+<colspec colname="2" align="center"/>
+<thead>
+<row>
+<entry>Index</entry>
+<entry>Value</entry>
+</row>
+</thead>
+<tbody>
+
+<row>
+<entry><literal>10</literal></entry>
+<entry><literal>"number ten"</literal></entry>
+</row>
+
+<row>
+<entry><literal>3</literal></entry>
+<entry><literal>30</literal></entry>
+</row>
+
+<row>
+<entry><literal>1</literal></entry>
+<entry><literal>"foo"</literal></entry>
+</row>
+
+<row>
+<entry><literal>0</literal></entry>
+<entry><literal>8</literal></entry>
+</row>
+
+<row>
+<entry><literal>2</literal></entry>
+<entry><literal>""</literal></entry>
+</row>
+
+</tbody>
+</tgroup>
+</informaltable>
+
+@end docbook
 
 @noindent
 @cindex sparse arrays
@@ -14080,20 +14107,60 @@ have to be positive integers.  Any number, or even a string, can be
 an index.  For example, the following is an array that translates words from
 English to French:
 
+@ifnotdocbook
 @example
 @r{Index} "dog" @r{Value} "chien"
 @r{Index} "cat" @r{Value} "chat"
 @r{Index} "one" @r{Value} "un"
 @r{Index} 1     @r{Value} "un"
 @end example
+@end ifnotdocbook
+
+@docbook
+<informaltable>
+<tgroup cols="2">
+<colspec colname="1" align="center"/>
+<colspec colname="2" align="center"/>
+<thead>
+<row>
+<entry>Index</entry>
+<entry>Value</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry><literal>"dog"</literal></entry>
+<entry><literal>"chien"</literal></entry>
+</row>
+
+<row>
+<entry><literal>"cat"</literal></entry>
+<entry><literal>"chat"</literal></entry>
+</row>
+
+<row>
+<entry><literal>"one"</literal></entry>
+<entry><literal>"un"</literal></entry>
+</row>
+
+<row>
+<entry><literal>1</literal></entry>
+<entry><literal>"un"</literal></entry>
+</row>
+
+</tbody>
+</tgroup>
+</informaltable>
+
+@end docbook
 
 @noindent
 Here we decided to translate the number one in both spelled-out and
 numeric form---thus illustrating that a single array can have both
 numbers and strings as indices.
-In fact, array subscripts are always strings; this is discussed
+(In fact, array subscripts are always strings; this is discussed
 in more detail in
-@ref{Numeric Array Subscripts}.
+@ref{Numeric Array Subscripts}.)
 Here, the number @code{1} isn't double-quoted, since @command{awk}
 automatically converts it to a string.
 
@@ -14169,14 +14236,14 @@ To determine whether an element exists in an array at a certain index, use
 the following expression:
 
 @example
-@var{ind} in @var{array}
+@var{indx} in @var{array}
 @end example
 
 @cindex side effects, array indexing
 @noindent
-This expression tests whether the particular index @var{ind} exists,
+This expression tests whether the particular index @var{indx} exists,
 without the side effect of creating that element if it is not present.
-The expression has the value one (true) if @code{@var{array}[@var{ind}]}
+The expression has the value one (true) if @code{@var{array}[@var{indx}]}
 exists and zero (false) if it does not exist.
 For example, this statement tests whether the array @code{frequencies}
 contains the index @samp{2}:
@@ -14350,14 +14417,56 @@ for a more detailed example of this type.
 @cindex @code{in} operator, order of array access
 The order in which elements of the array are accessed by this statement
 is determined by the internal arrangement of the array elements within
-@command{awk} and normally cannot be controlled or changed.  This can lead to
-problems if new elements are added to @var{array} by statements in
-the loop body; it is not predictable whether the @code{for} loop will
-reach them.  Similarly, changing @var{var} inside the loop may produce
-strange results.  It is best to avoid such things.
+@command{awk} and in standard @command{awk} cannot be controlled
+or changed.  This can lead to problems if new elements are added to
+@var{array} by statements in the loop body; it is not predictable whether
+the @code{for} loop will reach them.  Similarly, changing @var{var} inside
+the loop may produce strange results.  It is best to avoid such things.
+
+As a point of information, @command{gawk} sets up the list of elements
+to be iterated over before the loop starts, and does not change it.
+But not all @command{awk} versions do so. Consider this program, named
+@file{loopcheck.awk}:
+
+@example
+BEGIN @{
+    a["here"] = "here"
+    a["is"] = "is"
+    a["a"] = "a"
+    a["loop"] = "loop"
+    for (i in a) @{
+        j++
+        a[j] = j
+        print i
+    @}
+@}
+@end example
+
+Here is what happens when run with @command{gawk}:
+
+@example
+$ @kbd{gawk -f loopcheck.awk}
+@print{} here
+@print{} loop
+@print{} a
+@print{} is
+@end example
+
+Contrast this to Brian Kernighan's @command{awk}:
+
+@example
+$ @kbd{nawk -f loopcheck.awk}
+@print{} loop
+@print{} here
+@print{} is
+@print{} a
+@print{} 1
+@end example
 
 @node Controlling Scanning
-@subsection Using Predefined Array Scanning Orders
+@subsection Using Predefined Array Scanning Orders With @command{gawk}
+
+This @value{SUBSECTION} describes a feature that is specific to @command{gawk}.
 
 By default, when a @code{for} loop traverses an array, the order
 is undefined, meaning that the @command{awk} implementation
@@ -14711,7 +14820,7 @@ $ @kbd{echo 'line 1}
 @print{} line 2
 @end example
 
-Unfortunately, the very first line of input data did not come out in the
+Unfortunately, the very first line of input data did not appear in the
 output!
 
 Upon first glance, we would think that this program should have worked.
@@ -14909,7 +15018,7 @@ separate indices is recovered.
 array access and provides true arrays of
 arrays. Elements of a subarray are referred to by their own indices
 enclosed in square brackets, just like the elements of the main array.
-For example, the following creates a two-element subarray at index @samp{1}
+For example, the following creates a two-element subarray at index @code{1}
 of the main array @code{a}:
 
 @example
@@ -14933,7 +15042,7 @@ Each subarray and the main array can be of different length. In fact, the
 elements of an array or its subarray do not all have to have the same
 type. This means that the main array and any of its subarrays can be
 non-rectangular, or jagged in structure. One can assign a scalar value to
-the index @samp{4} of the main array @code{a}:
+the index @code{4} of the main array @code{a}:
 
 @example
 a[4] = "An element in a jagged array"
@@ -14954,7 +15063,7 @@ a[4][5][6][7] = "An element in a four-dimensional array"
 @end example
 
 @noindent
-This removes the scalar value from index @samp{4} and then inserts a
+This removes the scalar value from index @code{4} and then inserts a
 subarray of subarray of subarray containing a scalar. You can also
 delete an entire subarray or subarray of subarrays:
 
@@ -37087,7 +37196,7 @@ of the following, very basic set of steps,
 as shown in @ref{figure-process-flow}:
 @end ifnotdocbook
 @ifdocbook
-as shown in @inlineraw{docbook <xref linkend="figure-process-flow"/>}:
+as shown in @inlineraw{docbook, <xref linkend="figure-process-flow"/>}:
 @end ifdocbook
 
 @ifnotdocbook
@@ -39433,4 +39542,5 @@ which sorta sucks.
 
 TODO:
 -----
-2. Add back in docbook fixes for @r{}.
+3. Check all docbook figures, if they should include with a
+specific extension or not.
