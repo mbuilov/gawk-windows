@@ -4,7 +4,7 @@
 
 function ctime(ts,    format)
 {
-    format = "%a %b %e %H:%M:%S %Z %Y"
+    format = PROCINFO["strftime"]
     if (ts == 0)
         ts = systime()       # use current time as default
     return strftime(format, ts)

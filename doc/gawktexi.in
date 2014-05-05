@@ -11574,27 +11574,35 @@ For maximum portability, do not use them.
 @section Where You Are Makes A Difference
 @cindex locale, definition of
 
-Modern systems support the notion of @dfn{locales}: a way to tell
-the system about the local character set and language.
+Modern systems support the notion of @dfn{locales}: a way to tell the
+system about the local character set and language.  The ISO C standard
+defines a default @code{"C"} locale, which is an environment that is
+typical of what many C programmers are used to.
 
 Once upon a time, the locale setting used to affect regexp matching
 (@pxref{Ranges and Locales}), but this is no longer true.
 
-Locales can affect record splitting.
-For the normal case of @samp{RS = "\n"}, the locale is largely irrelevant.
-For other single-character record separators, setting @samp{LC_ALL=C}
-in the environment
-will give you much better performance when reading records.  Otherwise,
+Locales can affect record splitting.  For the normal case of @samp{RS =
+"\n"}, the locale is largely irrelevant.  For other single-character
+record separators, setting @samp{LC_ALL=C} in the environment will
+give you much better performance when reading records.  Otherwise,
 @command{gawk} has to make several function calls, @emph{per input
 character}, to find the record terminator.
 
-According to POSIX, string comparison is also affected by locales
-(similar to regular expressions).  The details are presented in
-@ref{POSIX String Comparison}.
+Locales can affect how dates and times are formatted (@pxref{Time
+Functions}).  For example, a common way to abbreviate the date September
+4, 2015 in the United States is ``9/4/15.''  In many countries in
+Europe, however, it is abbreviated ``4.9.15.''  Thus, the @samp{%x}
+specification in a @code{"US"} locale might produce @samp{9/4/15},
+while in a @code{"EUROPE"} locale, it might produce @samp{4.9.15}.
+
+According to POSIX, string comparison is also affected by locales (similar
+to regular expressions).  The details are presented in @ref{POSIX String
+Comparison}.
 
 Finally, the locale affects the value of the decimal point character
-used when @command{gawk} parses input data.  This is discussed in
-detail in @ref{Conversion}.
+used when @command{gawk} parses input data.  This is discussed in detail
+in @ref{Conversion}.
 
 @c ENDOFRANGE exps
 
@@ -15292,7 +15300,14 @@ Optional parameters are enclosed in square brackets@w{ ([ ]):}
 @cindexawkfunc{atan2}
 @cindex arctangent
 Return the arctangent of @code{@var{y} / @var{x}} in radians.
-You can use @samp{pi = atan2(0, -1)} to retrieve the value of @value{PI}.
+You can use @samp{pi = atan2(0, -1)} to retrieve the value of
+@ifnotdocbook
+@value{PI}.
+@end ifnotdocbook
+@docbook
+&pgr;.
+
+@end docbook
 
 @item @code{cos(@var{x})}
 @cindexawkfunc{cos}
@@ -15435,12 +15450,23 @@ example, @code{length()} returns the number of characters in a string,
 and not the number of bytes used to represent those characters. Similarly,
 @code{index()} works with character indices, and not byte indices.
 
+@quotation CAUTION
+A number of functions deal with indices into strings.  For these
+functions, the first character of a string is at position (index) one.
+This is different from C and the languages descended from it, where the
+first character is at position zero.  You need to remember this when
+doing index calculations, particularly if you are used to C.
+@end quotation
+
 In the following list, optional parameters are enclosed in square brackets@w{ ([ ]).}
 Several functions perform string substitution; the full discussion is
 provided in the description of the @code{sub()} function, which comes
 towards the end since the list is presented in alphabetic order.
+
 Those functions that are specific to @command{gawk} are marked with a
-pound sign@w{ (@samp{#}):}
+pound sign (@samp{#}).  They are not available in compatibility mode
+(@pxref{Options}):
+
 
 @menu
 * Gory Details::                More than you want to know about @samp{\} and
@@ -15450,8 +15476,8 @@ pound sign@w{ (@samp{#}):}
 
 @c @asis for docbook
 @table @asis
-@item @code{asort(}@var{source} [@code{,} @var{dest} [@code{,} @var{how} ] ]@code{)} #
-@itemx @code{asorti(}@var{source} [@code{,} @var{dest} [@code{,} @var{how} ] ]@code{)} #
+@item @code{asort(}@var{source} [@code{,} @var{dest} [@code{,} @var{how} ] ]@code{) #}
+@itemx @code{asorti(}@var{source} [@code{,} @var{dest} [@code{,} @var{how} ] ]@code{) #}
 @cindexgawkfunc{asorti}
 @cindex sort array
 @cindex arrays, elements, retrieving number of
@@ -15515,10 +15541,7 @@ a[2] = "last"
 a[3] = "middle"
 @end example
 
-@code{asort()} and @code{asorti()} are @command{gawk} extensions; they
-are not available in compatibility mode (@pxref{Options}).
-
-@item @code{gensub(@var{regexp}, @var{replacement}, @var{how}} [@code{, @var{target}}]@code{)} #
+@item @code{gensub(@var{regexp}, @var{replacement}, @var{how}} [@code{, @var{target}}]@code{) #}
 @cindexgawkfunc{gensub}
 @cindex search and replace in strings
 @cindex substitute in string
@@ -15580,9 +15603,6 @@ a warning message.
 If @var{regexp} does not match @var{target}, @code{gensub()}'s return value
 is the original unchanged value of @var{target}.
 
-@code{gensub()} is a @command{gawk} extension; it is not available
-in compatibility mode (@pxref{Options}).
-
 @item @code{gsub(@var{regexp}, @var{replacement}} [@code{, @var{target}}]@code{)}
 @cindexawkfunc{gsub}
 Search @var{target} for
@@ -15620,7 +15640,6 @@ $ @kbd{awk 'BEGIN @{ print index("peanut", "an") @}'}
 
 @noindent
 If @var{find} is not found, @code{index()} returns zero.
-(Remember that string indices in @command{awk} start at one.)
 
 It is a fatal error to use a regexp constant for @var{find}.
 
@@ -15631,8 +15650,19 @@ It is a fatal error to use a regexp constant for @var{find}.
 Return the number of characters in @var{string}.  If
 @var{string} is a number, the length of the digit string representing
 that number is returned.  For example, @code{length("abcde")} is five.  By
-contrast, @code{length(15 * 35)} works out to three. In this example, 15 * 35 =
-525, and 525 is then converted to the string @code{"525"}, which has
+contrast, @code{length(15 * 35)} works out to three. In this example,
+@iftex
+@math{15 @cdot 35 = 525},
+@end iftex
+@ifnottex
+@ifnotdocbook
+15 * 35 = 525,
+@end ifnotdocbook
+@end ifnottex
+@docbook
+15 &sdot; 35 = 525, @c
+@end docbook
+and 525 is then converted to the string @code{"525"}, which has
 three characters.
 
 @cindex length of input record
@@ -15695,12 +15725,12 @@ If @option{--posix} is supplied, using an array argument is a fatal error
 @cindex match regexp in string
 Search @var{string} for the
 longest, leftmost substring matched by the regular expression,
-@var{regexp} and return the character position, or @dfn{index},
+@var{regexp} and return the character position (index)
 at which that substring begins (one, if it starts at the beginning of
 @var{string}).  If no match is found, return zero.
 
 The @var{regexp} argument may be either a regexp constant
-(@code{/@dots{}/}) or a string constant (@code{"@dots{}"}).
+(@code{/}@dots{}@code{/}) or a string constant (@code{"}@dots{}@code{"}).
 In the latter case, the string is treated as a regexp to be matched.
 @xref{Computed Regexps}, for a
 discussion of the difference between the two forms, and the
@@ -15806,7 +15836,7 @@ The @var{array} argument to @code{match()} is a
 (@pxref{Options}),
 using a third argument is a fatal error.
 
-@item @code{patsplit(@var{string}, @var{array}} [@code{, @var{fieldpat}} [@code{, @var{seps}} ] ]@code{)} #
+@item @code{patsplit(@var{string}, @var{array}} [@code{, @var{fieldpat}} [@code{, @var{seps}} ] ]@code{) #}
 @cindexgawkfunc{patsplit}
 @cindex split string into array
 Divide
@@ -15831,12 +15861,6 @@ manner similar to the way input lines are split into fields using @code{FPAT}
 
 Before splitting the string, @code{patsplit()} deletes any previously existing
 elements in the arrays @var{array} and @var{seps}.
-
-@cindex troubleshooting, @code{patsplit()} function
-The @code{patsplit()} function is a
-@command{gawk} extension.  In compatibility mode
-(@pxref{Options}),
-it is not available.
 
 @item @code{split(@var{string}, @var{array}} [@code{, @var{fieldsep}} [@code{, @var{seps}} ] ]@code{)}
 @cindexawkfunc{split}
@@ -15923,6 +15947,8 @@ If @var{string} does not match @var{fieldsep} at all (but is not null),
 @var{array} has one element only. The value of that element is the original
 @var{string}.
 
+In POSIX mode (@pxref{Options}), the fourth argument is not allowed.
+
 @item @code{sprintf(@var{format}, @var{expression1}, @dots{})}
 @cindexawkfunc{sprintf}
 @cindex formatting strings
@@ -15940,7 +15966,7 @@ assigns the string @w{@samp{pi = 3.14 (approx.)}} to the variable @code{pival}.
 
 @cindexgawkfunc{strtonum}
 @cindex convert string to number
-@item @code{strtonum(@var{str})} #
+@item @code{strtonum(@var{str}) #}
 Examine @var{str} and return its numeric value.  If @var{str}
 begins with a leading @samp{0}, @code{strtonum()} assumes that @var{str}
 is an octal number.  If @var{str} begins with a leading @samp{0x} or
@@ -15962,9 +15988,6 @@ you use the @option{--non-decimal-data} option, which isn't recommended.
 Note also that @code{strtonum()} uses the current locale's decimal point
 for recognizing numbers (@pxref{Locales}).
 
-@code{strtonum()} is a @command{gawk} extension; it is not available
-in compatibility mode (@pxref{Options}).
-
 @item @code{sub(@var{regexp}, @var{replacement}} [@code{, @var{target}}]@code{)}
 @cindexawkfunc{sub}
 @cindex replace in string
@@ -15976,7 +15999,7 @@ The modified string becomes the new value of @var{target}.
 Return the number of substitutions made (zero or one).
 
 The @var{regexp} argument may be either a regexp constant
-(@code{/@dots{}/}) or a string constant (@code{"@dots{}"}).
+(@code{/}@dots{}@code{/}) or a string constant (@code{"}@dots{}@code{"}).
 In the latter case, the string is treated as a regexp to be matched.
 @xref{Computed Regexps}, for a
 discussion of the difference between the two forms, and the
@@ -16160,7 +16183,7 @@ that there are several levels of @dfn{escape processing} going on.
 
 First, there is the @dfn{lexical} level, which is when @command{awk} reads
 your program
-and builds an internal copy of it that can be executed.
+and builds an internal copy of it to execute.
 Then there is the runtime level, which is when @command{awk} actually scans the
 replacement string to determine what to generate.
 
@@ -16554,6 +16577,9 @@ not matter.
 @xref{Two-way I/O},
 which discusses this feature in more detail and gives an example.
 
+Note that the second argument to @code{close()} is a @command{gawk}
+extension; it is not available in compatibility mode (@pxref{Options}).
+
 @item @code{fflush(}[@var{filename}]@code{)}
 @cindexawkfunc{fflush}
 @cindex flush buffered output
@@ -16576,7 +16602,7 @@ buffers its output and the @code{fflush()} function forces
 
 @cindex extensions, common@comma{} @code{fflush()} function
 @cindex Brian Kernighan's @command{awk}
-@code{fflush()} was added to Brian Kernighan's version of @command{awk} in
+@code{fflush()} was added to Brian Kernighan's @command{awk} in
 April of 1992.  For two decades, it was not part of the POSIX standard.
 As of December, 2012, it was accepted for inclusion into the POSIX
 standard.
@@ -16604,7 +16630,7 @@ only the standard output.
 @c @cindex warnings, automatic
 @cindex troubleshooting, @code{fflush()} function
 @code{fflush()} returns zero if the buffer is successfully flushed;
-otherwise, it returns non-zero (@command{gawk} returns @minus{}1).
+otherwise, it returns non-zero. (@command{gawk} returns @minus{}1.)
 In the case where all buffers are flushed, the return value is zero
 only if all buffers were flushed successfully.  Otherwise, it is
 @minus{}1, and @command{gawk} warns about the problem @var{filename}.
@@ -16811,8 +16837,9 @@ However, recent versions
 of @command{mawk} (@pxref{Other Versions}) also support these functions.
 Optional parameters are enclosed in square brackets ([ ]):
 
-@table @code
-@item mktime(@var{datespec})
+@c @asis for docbook
+@table @asis
+@item @code{mktime(@var{datespec})}
 @cindexgawkfunc{mktime}
 @cindex generate time values
 Turn @var{datespec} into a timestamp in the same form
@@ -16842,7 +16869,7 @@ is out of range, @code{mktime()} returns @minus{}1.
 
 @cindex @command{gawk}, @code{PROCINFO} array in
 @cindex @code{PROCINFO} array
-@item @code{strftime(} [@var{format} [@code{,} @var{timestamp} [@code{,} @var{utc-flag} ]]]@code{)}
+@item @code{strftime(} [@var{format} [@code{,} @var{timestamp} [@code{,} @var{utc-flag}] ] ]@code{)}
 @c STARTOFRANGE strf
 @cindexgawkfunc{strftime}
 @cindex format time string
@@ -16864,7 +16891,7 @@ output that is equivalent to that of the @command{date} utility.
 You can assign a new value to @code{PROCINFO["strftime"]} to
 change the default format; see below for the various format directives.
 
-@item systime()
+@item @code{systime()}
 @cindexgawkfunc{systime}
 @cindex timestamps
 @cindex current system time
@@ -16939,10 +16966,10 @@ This is the ISO 8601 date format.
 
 @item %g
 The year modulo 100 of the ISO 8601 week number, as a decimal number (00--99).
-For example, January 1, 1993 is in week 53 of 1992. Thus, the year
-of its ISO 8601 week number is 1992, even though its year is 1993.
-Similarly, December 31, 1973 is in week 1 of 1974. Thus, the year
-of its ISO week number is 1974, even though its year is 1973.
+For example, January 1, 2012 is in week 53 of 2011. Thus, the year
+of its ISO 8601 week number is 2011, even though its year is 2012.
+Similarly, December 31, 2012 is in week 1 of 2013. Thus, the year
+of its ISO week number is 2013, even though its year is 2012.
 
 @item %G
 The full year of the ISO week number, as a decimal number.
@@ -17023,7 +17050,7 @@ The locale's ``appropriate'' time representation.
 The year modulo 100 as a decimal number (00--99).
 
 @item %Y
-The full year as a decimal number (e.g., 2011).
+The full year as a decimal number (e.g., 2015).
 
 @c @cindex RFC 822
 @c @cindex RFC 1036
@@ -17056,17 +17083,6 @@ behavior of the C version of @code{strftime()} undefined and @command{gawk}
 uses the system's version of @code{strftime()} if it's there.
 Typically, the conversion specifier either does not appear in the
 returned string or appears literally.}
-
-@c @cindex locale, definition of
-Informally, a @dfn{locale} is the geographic place in which a program
-is meant to run.  For example, a common way to abbreviate the date
-September 4, 2012 in the United States is ``9/4/12.''
-In many countries in Europe, however, it is abbreviated ``4.9.12.''
-Thus, the @samp{%x} specification in a @code{"US"} locale might produce
-@samp{9/4/12}, while in a @code{"EUROPE"} locale, it might produce
-@samp{4.9.12}.  The ISO C standard defines a default @code{"C"}
-locale, which is an environment that is typical of what many C programmers
-are used to.
 
 For systems that are not yet fully standards-compliant,
 @command{gawk} supplies a copy of
@@ -17120,7 +17136,7 @@ the string.  For example:
 
 @example
 $ date '+Today is %A, %B %d, %Y.'
-@print{} Today is Wednesday, March 30, 2011.
+@print{} Today is Monday, May 05, 2014.
 @end example
 
 Here is the @command{gawk} version of the @command{date} utility.
@@ -17140,7 +17156,7 @@ case $1 in
 esac
 
 gawk 'BEGIN  @{
-    format = "%a %b %e %H:%M:%S %Z %Y"
+    format = PROCINFO["strftime"]
     exitval = 0
 
     if (ARGC > 2)
@@ -17228,7 +17244,6 @@ Operands  | 0 | 1 | 0 | 1 | 0 | 1
 @end tex
 
 @docbook
-<!-- FIXME: Fix ID and add xref in text. -->
 <table id="table-bitwise-ops">
 <title>Bitwise Operations</title>
 
@@ -17474,7 +17489,7 @@ results of the @code{compl()}, @code{lshift()}, and @code{rshift()} functions.
 
 @command{gawk} provides a single function that lets you distinguish
 an array from a scalar variable.  This is necessary for writing code
-that traverses every element of a true multidimensional array
+that traverses every element of an array of arrays.
 (@pxref{Arrays of Arrays}).
 
 @table @code
@@ -17512,10 +17527,10 @@ The descriptions here are purposely brief.
 for the full story.
 Optional parameters are enclosed in square brackets ([ ]):
 
-@table @code
+@table @asis
 @cindexgawkfunc{bindtextdomain}
 @cindex set directory of message catalogs
-@item @code{bindtextdomain(@var{directory}} [@code{,} @var{domain} ]@code{)}
+@item @code{bindtextdomain(@var{directory}} [@code{,} @var{domain}]@code{)}
 Set the directory in which
 @command{gawk} will look for message translation files, in case they
 will not or cannot be placed in the ``standard'' locations
@@ -17529,14 +17544,14 @@ given @var{domain}.
 
 @cindexgawkfunc{dcgettext}
 @cindex translate string
-@item @code{dcgettext(@var{string}} [@code{,} @var{domain} [@code{,} @var{category} ]]@code{)}
+@item @code{dcgettext(@var{string}} [@code{,} @var{domain} [@code{,} @var{category}] ]@code{)}
 Return the translation of @var{string} in
 text domain @var{domain} for locale category @var{category}.
 The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
 The default value for @var{category} is @code{"LC_MESSAGES"}.
 
 @cindexgawkfunc{dcngettext}
-@item @code{dcngettext(@var{string1}, @var{string2}, @var{number}} [@code{,} @var{domain} [@code{,} @var{category} ]]@code{)}
+@item @code{dcngettext(@var{string1}, @var{string2}, @var{number}} [@code{,} @var{domain} [@code{,} @var{category}] ]@code{)}
 Return the plural form used for @var{number} of the
 translation of @var{string1} and @var{string2} in text domain
 @var{domain} for locale category @var{category}. @var{string1} is the
@@ -17608,10 +17623,10 @@ the call.  The local variables are initialized to the empty string.
 A function cannot have two parameters with the same name, nor may it
 have a parameter with the same name as the function itself.
 
-In addition, according to the POSIX standard, function parameters cannot have the same
-name as one of the special built-in variables
-(@pxref{Built-in Variables}.  Not all versions of @command{awk}
-enforce this restriction.)
+In addition, according to the POSIX standard, function parameters
+cannot have the same name as one of the special built-in variables
+(@pxref{Built-in Variables}).  Not all versions of @command{awk} enforce
+this restriction.)
 
 The @var{body-of-function} consists of @command{awk} statements.  It is the
 most important part of the definition, because it says what the function
@@ -17796,7 +17811,7 @@ to create an @command{awk} version of @code{ctime()}:
 
 function ctime(ts,    format)
 @{
-    format = "%a %b %e %H:%M:%S %Z %Y"
+    format = PROCINFO["strftime"]
     if (ts == 0)
         ts = systime()       # use current time as default
     return strftime(format, ts)
@@ -17848,7 +17863,8 @@ an error.
 
 @cindex local variables, in a function
 @cindex variables, local to a function
-There is no way to make a variable local to a @code{@{ @dots{} @}} block in
+Unlike many languages,
+there is no way to make a variable local to a @code{@{} @dots{} @code{@}} block in
 @command{awk}, but you can make a variable local to a function. It is
 good practice to do so whenever a variable is needed only in that
 function.
@@ -18117,7 +18133,7 @@ return @r{[}@var{expression}@r{]}
 The @var{expression} part is optional.
 Due most likely to an oversight, POSIX does not define what the return
 value is if you omit the @var{expression}.  Technically speaking, this
-make the returned value undefined, and therefore, unpredictable.
+makes the returned value undefined, and therefore, unpredictable.
 In practice, though, all versions of @command{awk} simply return the
 null string, which acts like zero if used in a numeric context.
 
@@ -18220,9 +18236,9 @@ BEGIN @{
 @end example
 
 In this example, the first call to @code{foo()} generates
-a fatal error, so @command{gawk} will not report the second
-error. If you comment out that call, though, then @command{gawk}
-will report the second error.
+a fatal error, so @command{awk} will not report the second
+error. If you comment out that call, though, then @command{awk}
+does report the second error.
 
 Usually, such things aren't a big issue, but it's worth
 being aware of them.
@@ -36224,6 +36240,7 @@ Wikipedia article}, for information on additional versions.
 @c ENDOFRANGE ingawk
 @c ENDOFRANGE awkim
 
+@ifclear FOR_PRINT
 @node Notes
 @appendix Implementation Notes
 @c STARTOFRANGE gawii
@@ -39403,6 +39420,7 @@ to permit their use in free software.
 @c Local Variables:
 @c ispell-local-pdict: "ispell-dict"
 @c End:
+@end ifclear
 
 @ifnotdocbook
 @node Index

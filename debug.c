@@ -2801,7 +2801,7 @@ debug_prog(INSTRUCTION *pc)
 		unserialize(OPTION);
 		unsetenv("DGAWK_RESTART");
 		fprintf(out_fp, "Restarting ...\n");	
-		if (run[0] == 'T') 
+		if (strcasecmp(run, "true") == 0)
 			(void) do_run(NULL, 0);
 
 	} else if (command_file != NULL) {
