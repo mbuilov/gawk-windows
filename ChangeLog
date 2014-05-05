@@ -1,3 +1,9 @@
+2014-05-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* debug.c (debug_prog): Change check for GAWK_RESTART so that it
+	actually works. Bug fix: run command in debugger would start
+	over again but not actually start running the program.
+
 2014-04-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* io.c (two_way_open): In forked child, reset SIGPIPE to SIG_DFL.
