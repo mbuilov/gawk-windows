@@ -105,6 +105,21 @@
 @set COMMONEXT (c.e.)
 @end ifplaintext
 
+@ifdocbook
+@c empty on purpose
+@set PART1
+@set PART2
+@set PART3
+@set PART4
+@end ifdocbook
+
+@ifnotdocbook
+@set PART1 Part I:@*
+@set PART2 Part II:@*
+@set PART3 Part III:@*
+@set PART4 Part IV:@*
+@end ifnotdocbook
+
 @c some special symbols
 @iftex
 @set LEQ @math{@leq}
@@ -963,6 +978,20 @@ for enrichening our lives in innumerable ways.
 @node Foreword
 @unnumbered Foreword
 
+@c This bit is post-processed by a script which turns the chapter
+@c tag into a preface tag, and moves this stuff to before the title.
+@c Bleah.
+@docbook
+  <prefaceinfo>
+    <author>
+      <firstname>Michael</firstname>
+      <surname>Brennan</surname>
+      <affiliation><jobtitle>Author of <command>mawk</command></jobtitle></affiliation>
+    </author>
+    <date>March, 2001</date>
+   </prefaceinfo>
+@end docbook
+
 Arnold Robbins and I are good friends. We were introduced
 @c 11 years ago
 in 1990
@@ -1087,12 +1116,14 @@ Arnold has distilled over a decade of experience writing and
 using AWK programs, and developing @command{gawk}, into this book.  If you use
 AWK or want to learn how, then read this book.
 
+@ifnotdocbook
 @cindex Brennan, Michael
 @display
 Michael Brennan
 Author of @command{mawk}
 March, 2001
 @end display
+@end ifnotdocbook
 
 @node Preface
 @unnumbered Preface
@@ -1982,13 +2013,15 @@ Nof Ayalon @*
 ISRAEL @*
 May, 2014
 
-@iftex
-@part Part I:@* The @command{awk} Language
-@end iftex
+@ifnotinfo
+@part @value{PART1}The @command{awk} Language
+@end ifnotinfo
 
 @ifdocbook
-@part The @command{awk} Language
 
+@docbook
+<partintro>
+@end docbook
 Part I describes the @command{awk} language and @command{gawk} program
 in detail.  It starts with the basics, and continues through all of
 the features of @command{awk}. Included also are many, but not all,
@@ -2023,6 +2056,9 @@ following chapters:
 @item
 @ref{Functions}.
 @end itemize
+@docbook
+</partintro>
+@end docbook
 @end ifdocbook
 
 @node Getting Started
@@ -4141,9 +4177,18 @@ for use by the @command{gawk} developers for testing and tuning.
 They are subject to change. The variables are:
 
 @table @env
+@item AWKBUFSIZE
+This variable only affects @command{gawk} on POSIX-compliant systems.
+With a value of @samp{exact}, @command{gawk} uses the size of each input
+file as the size of the memory buffer to allocate for I/O. Otherwise,
+the value should be a number, and @command{gawk} uses that number as
+the size of the buffer to allocate.  (When this variable is not set,
+@command{gawk} uses the smaller of the file's size and the ``default''
+blocksize, which is usually the file systems I/O blocksize.)
+
 @item AWK_HASH
 If this variable exists with a value of @samp{gst}, @command{gawk}
-will switch to using the hash function from GNU Smalltalk for
+switches to using the hash function from GNU Smalltalk for
 managing arrays.
 This function may be marginally faster than the standard function.
 
@@ -19424,13 +19469,15 @@ for (i = 1; i <= n; i++)
 
 @c ENDOFRANGE funcud
 
-@iftex
-@part Part II:@* Problem Solving With @command{awk}
-@end iftex
+@ifnotinfo
+@part @value{PART2}Problem Solving With @command{awk}
+@end ifnotinfo
 
 @ifdocbook
-@part Problem Solving With @command{awk}
 
+@docbook
+<partintro>
+@end docbook
 Part II shows how to use @command{awk} and @command{gawk} for problem solving.
 There is lots of code here for you to read and learn from.
 It contains the following chapters:
@@ -19442,6 +19489,9 @@ It contains the following chapters:
 @item
 @ref{Sample Programs}.
 @end itemize
+@docbook
+</partintro>
+@end docbook
 @end ifdocbook
 
 @node Library Functions
@@ -25509,13 +25559,15 @@ BEGIN {
 }
 @end ignore
 
-@iftex
-@part Part III:@* Moving Beyond Standard @command{awk} With @command{gawk}
-@end iftex
+@ifnotinfo
+@part @value{PART3}Moving Beyond Standard @command{awk} With @command{gawk}
+@end ifnotinfo
 
 @ifdocbook
-@part Moving Beyond Standard @command{awk} With @command{gawk}
 
+@docbook
+<partintro>
+@end docbook
 Part III focuses on features specific to @command{gawk}.
 It contains the following chapters:
 
@@ -25535,6 +25587,9 @@ It contains the following chapters:
 @item
 @ref{Dynamic Extensions}.
 @end itemize
+@docbook
+</partintro>
+@end docbook
 @end ifdocbook
 
 @node Advanced Features
@@ -33920,14 +33975,15 @@ If you write an extension that you wish to share with other
 @code{gawkextlib} project.
 See the project's web site for more information.
 
-@iftex
-@part Part IV:@* Appendices
-@end iftex
+@ifnotinfo
+@part @value{PART4}Appendices
+@end ifnotinfo
 
 @ifdocbook
 
-@part Appendices
-
+@docbook
+<partintro>
+@end docbook
 @ifclear FOR_PRINT
 Part IV contains the appendixes (including the two licenses that cover
 the @command{gawk} source code and this @value{DOCUMENT}, respectively)
@@ -33962,6 +34018,9 @@ Part IV contains two appendixes:
 @ref{GNU Free Documentation License}.
 @end ifclear
 @end itemize
+@docbook
+</partintro>
+@end docbook
 @end ifdocbook
 
 @node Language History
