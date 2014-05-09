@@ -5565,8 +5565,16 @@ do_eval(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 
 	pop_context();	/* switch to prev context */
 	free_context(ctxt, (ret_val != NULL));   /* free all instructions and optionally symbols */
-	if (ret_val != NULL)
-		destroy_symbol(f);	/* destroy "@eval" */
+
+	/*
+	 * May 2014:
+	 * Don't do this. f points into the context we just released.
+	 * Only showed up on Fedora 20 / Ubuntu 14.04.
+	 *
+	 * if (ret_val != NULL)
+	 *	destroy_symbol(f);	// destroy "@eval"
+	 */
+
 	return false;
 }
 
