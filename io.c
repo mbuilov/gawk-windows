@@ -206,6 +206,7 @@ typedef enum { CLOSE_ALL, CLOSE_TO, CLOSE_FROM } two_way_close_type;
 #define at_eof(iop)     (((iop)->flag & IOP_AT_EOF) != 0)
 #define has_no_data(iop)        ((iop)->dataend == NULL)
 #define no_data_left(iop)	((iop)->off >= (iop)->dataend)
+#define buffer_has_all_data(iop) ((iop)->dataend - (iop)->off == (iop)->public.sbuf.st_size)
 
 /*
  * The key point to the design is to split out the code that searches through
@@ -3473,6 +3474,8 @@ get_a_record(char **out,        /* pointer to pointer to data */
 		ret = (*matchrec)(iop, & recm, & state);
 		iop->flag &= ~IOP_AT_START;
 		if (ret == REC_OK)
+			break;
+		if (ret == TERMNEAREND && buffer_has_all_data(iop))
 			break;
 
 		/* need to add more data to buffer */

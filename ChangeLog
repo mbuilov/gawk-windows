@@ -8,6 +8,12 @@
 	(do_eval): Fix a memory leak seen by valgrind on Fedora 20 and
 	Ubuntu 14.04: the new SRCFILE that is added wasn't released.
 
+	Unrelated:
+
+	* io.c (get_a_record): Handle return of TERMNEAREND when the
+	entire file has been read into the buffer and we're using a
+	regex for RS. Bug report by Grail Dane <grail69@hotmail.com>.
+
 2014-05-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* debug.c (debug_prog): Change check for GAWK_RESTART so that it
