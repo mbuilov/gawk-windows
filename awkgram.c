@@ -4672,6 +4672,15 @@ parse_program(INSTRUCTION **pcode)
 	return (ret || errcount);
 }
 
+/* free_srcfile --- free a SRCFILE struct */
+
+void
+free_srcfile(SRCFILE *thisfile)
+{
+	efree(thisfile->src);
+	efree(thisfile);
+}
+
 /* do_add_srcfile --- add one item to srcfiles */
 
 static SRCFILE *
