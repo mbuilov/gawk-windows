@@ -5448,6 +5448,7 @@ do_eval(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	int ecount = 0, pcount = 0;
 	int ret;
 	int save_flags = do_flags;
+	SRCFILE *the_source;
 	
 	if (prog_running) {
 		this_frame = find_frame(0);
@@ -5458,7 +5459,7 @@ do_eval(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	ctxt = new_context();
 	ctxt->install_func = append_symbol;	/* keep track of newly installed globals */
 	push_context(ctxt);
-	(void) add_srcfile(SRC_CMDLINE, arg->a_string, srcfiles, NULL, NULL);
+	the_source = add_srcfile(SRC_CMDLINE, arg->a_string, srcfiles, NULL, NULL);
 	do_flags = false;
 	ret = parse_program(&code);
 	do_flags = save_flags;
@@ -5565,8 +5566,18 @@ do_eval(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 
 	pop_context();	/* switch to prev context */
 	free_context(ctxt, (ret_val != NULL));   /* free all instructions and optionally symbols */
-	if (ret_val != NULL)
-		destroy_symbol(f);	/* destroy "@eval" */
+
+	/*
+	 * May 2014:
+	 * Don't do this. f points into the context we just released.
+	 * Only showed up on Fedora 20 / Ubuntu 14.04.
+	 *
+	 * if (ret_val != NULL)
+	 *	destroy_symbol(f);	// destroy "@eval"
+	 */
+
+	free_srcfile(the_source);
+
 	return false;
 }
 

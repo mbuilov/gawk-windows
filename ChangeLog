@@ -1,3 +1,19 @@
+2014-05-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* debug.c (do_eval): Don't free `f' which points into the context
+	that was previously freed. Bug reported by Jan Chaloupka
+	<jchaloup@redhat.com>.  Apparently introduced with move to
+	SYMTAB and FUNCTAB, but only showed up on Fedora 20 and Ubuntu 14.04,
+	which have a newer glibc.
+	(do_eval): Fix a memory leak seen by valgrind on Fedora 20 and
+	Ubuntu 14.04: the new SRCFILE that is added wasn't released.
+
+	Unrelated:
+
+	* io.c (get_a_record): Handle return of TERMNEAREND when the
+	entire file has been read into the buffer and we're using a
+	regex for RS. Bug report by Grail Dane <grail69@hotmail.com>.
+
 2014-05-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* debug.c (debug_prog): Change check for GAWK_RESTART so that it
