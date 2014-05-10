@@ -3473,8 +3473,15 @@ get_a_record(char **out,        /* pointer to pointer to data */
 
 		ret = (*matchrec)(iop, & recm, & state);
 		iop->flag &= ~IOP_AT_START;
+		/* found the record, we're done, break the loop */
 		if (ret == REC_OK)
 			break;
+
+		/*
+		 * Likely found the record; if there's no more data
+		 * to be had (like from a tiny regular file), break the
+		 * loop. Otherwise, see if we can read more.
+		 */
 		if (ret == TERMNEAREND && buffer_has_all_data(iop))
 			break;
 
@@ -3527,10 +3534,14 @@ get_a_record(char **out,        /* pointer to pointer to data */
 			break;
 		} else if (iop->count == 0) {
 			/*
-			 * hit EOF before matching RS, so end
-			 * the record and set RT to ""
+			 * Hit EOF before being certain that we've matched
+			 * the end of the record. If ret is TERMNEAREND,
+			 * we need to pull out what we've got in the buffer.
+			 * Eventually we'll come back here and see the EOF,
+			 * end the record and set RT to "".
 			 */
-			iop->flag |= IOP_AT_EOF;
+			if (ret != TERMNEAREND)
+				iop->flag |= IOP_AT_EOF;
 			break;
 		} else
 			iop->dataend += iop->count;
