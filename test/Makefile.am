@@ -760,6 +760,7 @@ EXTRA_DIST = \
 	rsgetline.awk \
 	rsgetline.in \
 	rsgetline.ok \
+	rsglstdin.ok \
 	rsnul1nl.awk \
 	rsnul1nl.in \
 	rsnul1nl.ok \
@@ -1001,7 +1002,7 @@ GAWK_EXT_TESTS = \
 	nastyparm next nondec nondec2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 procinfs \
 	profile1 profile2 profile3 profile4 profile5 pty1 \
-	rebuf regx8bit reginttrad reint reint2 rsgetline rsstart1 \
+	rebuf regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
 	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
@@ -1333,6 +1334,11 @@ fmtspcl: fmtspcl.ok
 rebuf::
 	@echo $@
 	@AWKBUFSIZE=4096 AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+rsglstdin:: 
+	@echo $@
+	@cat  "$(srcdir)"/rsgetline.in | AWKPATH="$(srcdir)" $(AWK) -f rsgetline.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 reint::
