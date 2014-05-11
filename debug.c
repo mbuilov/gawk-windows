@@ -5560,21 +5560,24 @@ do_eval(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 		this_func->param_cnt -= ecount;
 	}
 
-	/* always destroy symbol "@eval", however destroy all newly installed
+	/*
+	 * Always destroy symbol "@eval", however destroy all newly installed
 	 * globals only if fatal error (execute_code() returing NULL).
 	 */
 
 	pop_context();	/* switch to prev context */
 	free_context(ctxt, (ret_val != NULL));   /* free all instructions and optionally symbols */
 
-	/*
-	 * May 2014:
-	 * Don't do this. f points into the context we just released.
-	 * Only showed up on Fedora 20 / Ubuntu 14.04.
-	 *
-	 * if (ret_val != NULL)
-	 *	destroy_symbol(f);	// destroy "@eval"
-	 */
+	if (ret_val != NULL) {
+		/*
+		 * Remove @eval from FUNCTAB, so that above code
+		 * will work the next time around.
+		 */
+		NODE *s = make_string("@eval", 5);
+
+		(void) assoc_remove(func_table, s);
+		unref(s);
+	}
 
 	free_srcfile(the_source);
 
