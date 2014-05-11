@@ -508,7 +508,7 @@ append_symbol(NODE *r)
 	symbol_list->rnode = p;
 }
 
-/* release_symbol --- free symbol list and optionally remove symbol from symbol table */
+/* release_symbols --- free symbol list and optionally remove symbol from symbol table */
 
 void
 release_symbols(NODE *symlist, int keep_globals)
