@@ -318,14 +318,12 @@ ISBN 1-882114-28-0 @*
 @page
 @w{ }
 @sp 9
-@center @i{To my parents, for their love, and for the wonderful
-example they set for me.}
+@center @i{To my parents, for their love, and for the wonderful example they set for me.}
 @sp 1
 @center @i{To my wife Miriam, for making me complete.
 Thank you for building your life together with me.}
 @sp 1
-@center @i{To our children Chana, Rivka, Nachum and Malka,
-for enrichening our lives in innumerable ways.}
+@center @i{To our children Chana, Rivka, Nachum and Malka, for enrichening our lives in innumerable ways.}
 @sp 1
 @w{ }
 @page
@@ -986,7 +984,8 @@ for enrichening our lives in innumerable ways.
     <author>
       <firstname>Michael</firstname>
       <surname>Brennan</surname>
-      <affiliation><jobtitle>Author of <command>mawk</command></jobtitle></affiliation>
+      <!-- can't put mawk into command tags. sigh. -->
+      <affiliation><jobtitle>Author of mawk</jobtitle></affiliation>
     </author>
     <date>March, 2001</date>
    </prefaceinfo>
@@ -1149,7 +1148,7 @@ invoke it with the proper options or environment variables
 (@pxref{Options}), it is fully
 compatible with
 the POSIX@footnote{The 2008 POSIX standard is accessable online at
-@url{http://www.opengroup.org/onlinepubs/9699919799/}.}
+@w{@url{http://www.opengroup.org/onlinepubs/9699919799/}.}}
 specification of the @command{awk} language
 and with the Unix version of @command{awk} maintained
 by Brian Kernighan.
@@ -1227,10 +1226,10 @@ up through large-scale systems.
 @command{gawk} has also been ported to Mac OS X,
 Microsoft Windows
 @ifset FOR_PRINT
-(all versions) and OS/2 PCs,
+(all versions),
 @end ifset
 @ifclear FOR_PRINT
-(all versions),
+(all versions) and OS/2 PCs,
 @end ifclear
 and OpenVMS.
 (Some other, obsolete systems to which @command{gawk} was once ported
@@ -1517,9 +1516,14 @@ describes advanced arithmetic facilities provided by
 @ref{Dynamic Extensions}, describes how to add new variables and
 functions to @command{gawk} by writing extensions in C or C++.
 
+@ifclear FOR_PRINT
 Part IV provides the appendices, the Glossary, and two licenses that cover
 the @command{gawk} source code and this @value{DOCUMENT}, respectively.
 It contains the following appendices:
+@end ifclear
+@ifset FOR_PRINT
+Part IV provides the following appendices:
+@end ifset
 
 @ref{Language History},
 describes how the @command{awk} language has evolved since
@@ -1535,7 +1539,9 @@ in @command{gawk} and where to get other freely
 available @command{awk} implementations.
 
 @ifset FOR_PRINT
-To save space, we have omitted some of the appendices from this
+The version of this @value{DOCUMENT} distributed with @command{gawk}
+contains additional appendices and other end material.
+To save space, we have omitted them from the
 printed edition. You may find them online, as follows:
 
 @uref{http://www.gnu.org/software/gawk/manual/html_node/Notes.html}
@@ -1550,12 +1556,12 @@ are completely unfamiliar with computer programming.
 @uref{http://www.gnu.org/software/gawk/manual/html_node/Glossary.html,
 The Glossary}
 defines most, if not all, the significant terms used
-throughout the book.  If you find terms that you aren't familiar with,
+throughout the @value{DOCUMENT}.  If you find terms that you aren't familiar with,
 try looking them up here.
 
-@uref{http://www.gnu.org/software/gawk/manual/html_node/Copying.html} and
-@uref{http://www.gnu.org/software/gawk/manual/html_node/GNU-Free-Documentation-License.html}
-present the licenses that cover the @command{gawk} source code
+@uref{http://www.gnu.org/software/gawk/manual/html_node/Copying.html, The GNU GPL} and
+@uref{http://www.gnu.org/software/gawk/manual/html_node/GNU-Free-Documentation-License.html, the GNU FDL}
+are the licenses that cover the @command{gawk} source code
 and this @value{DOCUMENT}, respectively.
 @end ifset
 
@@ -1570,7 +1576,7 @@ provides some very cursory background material for those who
 are completely unfamiliar with computer programming.
 
 The @ref{Glossary}, defines most, if not all, the significant terms used
-throughout the book.  If you find terms that you aren't familiar with,
+throughout the @value{DOCUMENT}.  If you find terms that you aren't familiar with,
 try looking them up here.
 
 @ref{Copying}, and
@@ -1682,13 +1688,15 @@ Foundation to create a complete, freely distributable, POSIX-compliant
 computing environment.
 The FSF uses the ``GNU General Public License'' (GPL) to ensure that
 their software's
-source code is always available to the end user. A
-copy of the GPL is included
+source code is always available to the end user.
+@ifclear FOR_PRINT
+A copy of the GPL is included
 @ifnotinfo
 in this @value{DOCUMENT}
 @end ifnotinfo
 for your reference
 (@pxref{Copying}).
+@end ifclear
 The GPL applies to the C language source code for @command{gawk}.
 To find out more about the FSF and the GNU Project online,
 see @uref{http://www.gnu.org, the GNU Project's home page}.
@@ -1711,8 +1719,13 @@ consider using GNU/Linux, a freely distributable, Unix-like operating
 system for Intel@registeredsymbol{},
 Power Architecture,
 Sun SPARC, IBM S/390, and other
+@ifclear FOR_PRINT
 systems.@footnote{The terminology ``GNU/Linux'' is explained
 in the @ref{Glossary}.}
+@end ifclear
+@ifset FOR_PRINT
+systems.
+@end ifset
 Many GNU/Linux distributions are
 available for download from the Internet.
 
@@ -1732,8 +1745,11 @@ The @value{DOCUMENT} you are reading is actually free---at least, the
 information in it is free to anyone.  The machine-readable
 source code for the @value{DOCUMENT} comes with @command{gawk}; anyone
 may take this @value{DOCUMENT} to a copying machine and make as many
-copies as they like.  (Take a moment to check the Free Documentation
+copies as they like.
+@ifclear FOR_PRINT
+(Take a moment to check the Free Documentation
 License in @ref{GNU Free Documentation License}.)
+@end ifclear
 @end ifnotinfo
 
 @ignore
@@ -3285,8 +3301,14 @@ edit-compile-test-debug cycle of software development.
 
 @cindex Brian Kernighan's @command{awk}
 Complex programs have been written in @command{awk}, including a complete
-retargetable assembler for eight-bit microprocessors (@pxref{Glossary}, for
-more information), and a microcode assembler for a special-purpose Prolog
+retargetable assembler for
+@ifclear FOR_PRINT
+eight-bit microprocessors (@pxref{Glossary}, for more information),
+@end ifclear
+@ifset FOR_PRINT
+eight-bit microprocessors,
+@end ifset
+and a microcode assembler for a special-purpose Prolog
 computer.
 While the original @command{awk}'s capabilities were strained by tasks
 of such complexity, modern versions are more capable.  Even Brian Kernighan's
@@ -3514,8 +3536,11 @@ Specify @dfn{compatibility mode}, in which the GNU extensions to
 the @command{awk} language are disabled, so that @command{gawk} behaves just
 like Brian Kernighan's version @command{awk}.
 @xref{POSIX/GNU},
-which summarizes the extensions.  Also see
+which summarizes the extensions.
+@ifclear FOR_PRINT
+Also see
 @ref{Compatibility Mode}.
+@end ifclear
 
 @item @option{-C}
 @itemx @option{--copyright}
@@ -17670,8 +17695,13 @@ particular log record was written.  Many programs log their timestamp
 in the form returned by the @code{time()} system call, which is the
 number of seconds since a particular epoch.  On POSIX-compliant systems,
 it is the number of seconds since
-1970-01-01 00:00:00 UTC, not counting leap seconds.@footnote{@xref{Glossary},
-especially the entries ``Epoch'' and ``UTC.''}
+1970-01-01 00:00:00 UTC, not counting leap
+@ifclear FOR_PRINT
+seconds.@footnote{@xref{Glossary}, especially the entries ``Epoch'' and ``UTC.''}
+@end ifclear
+@ifset FOR_PRINT
+seconds.
+@end ifset
 All known POSIX-compliant systems support timestamps from 0 through
 @iftex
 @math{2^{31} - 1},
@@ -19543,9 +19573,11 @@ these example library functions and programs from the Texinfo source
 for this @value{DOCUMENT}.
 (This has already been done as part of the @command{gawk} distribution.)
 
+@ifclear FOR_PRINT
 If you have written one or more useful, general-purpose @command{awk} functions
 and would like to contribute them to the @command{awk} user community, see
 @ref{How To Contribute}, for more information.
+@end ifclear
 
 @cindex portability, example programs
 The programs in this @value{CHAPTER} and in
@@ -30156,8 +30188,15 @@ the facilities that the API provides and how to use
 them, and presents a small sample extension.  In addition, it documents
 the sample extensions included in the @command{gawk} distribution,
 and describes the @code{gawkextlib} project.
+@ifclear FOR_PRINT
 @xref{Extension Design}, for a discussion of the extension mechanism
 goals and design.
+@end ifclear
+@ifset FOR_PRINT
+See @uref{http://www.gnu.org/software/gawk/manual/html_node/Extension-Design.html}
+for a discussion of the extension mechanism
+goals and design.
+@end ifset
 
 @node Plugin License
 @section Extension Licensing
@@ -30613,8 +30652,11 @@ reading and/or changing the value of one or more scalar variables, you
 can obtain a @dfn{scalar cookie}@footnote{See
 @uref{http://catb.org/jargon/html/C/cookie.html, the ``cookie'' entry in the Jargon file} for a
 definition of @dfn{cookie}, and @uref{http://catb.org/jargon/html/M/magic-cookie.html,
-the ``magic cookie'' entry in the Jargon file} for a nice example. See
-also the entry for ``Cookie'' in the @ref{Glossary}.}
+the ``magic cookie'' entry in the Jargon file} for a nice example.
+@ifclear FOR_PRINT
+See also the entry for ``Cookie'' in the @ref{Glossary}.
+@end ifclear
+}
 object for that variable, and then use
 the cookie for getting the variable's value or for changing the variable's
 value.
@@ -32492,8 +32534,14 @@ These variables and functions are as follows:
 
 @table @code
 @item int plugin_is_GPL_compatible;
-This asserts that the extension is compatible with the GNU GPL
-(@pxref{Copying}).  If your extension does not have this, @command{gawk}
+This asserts that the extension is compatible with
+@ifclear FOR_PRINT
+the GNU GPL (@pxref{Copying}).
+@end ifclear
+@ifset FOR_PRINT
+the GNU GPL.
+@end ifset
+If your extension does not have this, @command{gawk}
 will not load it (@pxref{Plugin License}).
 
 @item static gawk_api_t *const api;
@@ -35915,7 +35963,10 @@ the sample extensions included with @command{gawk}.
 Files needed for building @command{gawk} on POSIX-compliant systems.
 
 @item pc/*
-Files needed for building @command{gawk} under MS-Windows and OS/2
+Files needed for building @command{gawk} under MS-Windows
+@ifclear FOR_PRINT
+and OS/2
+@end ifclear
 (@pxref{PC Installation}, for details).
 
 @item vms/*
@@ -36146,16 +36197,21 @@ various non-Unix systems.
 @cindex PC operating systems@comma{} @command{gawk} on, installing
 @cindex operating systems, PC@comma{} @command{gawk} on, installing
 This @value{SECTION} covers installation and usage of @command{gawk} on x86 machines
+@ifclear FOR_PRINT
 running MS-DOS, any version of MS-Windows, or OS/2.
+@end ifclear
+@ifset FOR_PRINT
+running MS-DOS and any version of MS-Windows.
+@end ifset
 In this @value{SECTION}, the term ``Windows32''
-refers to any of Microsoft Windows-95/98/ME/NT/2000/XP/Vista/7.
+refers to any of Microsoft Windows-95/98/ME/NT/2000/XP/Vista/7/8.
 
-The limitations of MS-DOS (and MS-DOS shells under Windows32 or OS/2) has meant
-that various ``DOS extenders'' are often used with programs such as
-@command{gawk}.  The varying capabilities of Microsoft Windows 3.1
-and Windows32 can add to the confusion.  For an overview of the
-considerations, please refer to @file{README_d/README.pc} in the
-distribution.
+The limitations of MS-DOS (and MS-DOS shells under the other operating
+systems) has meant that various ``DOS extenders'' are often used with
+programs such as @command{gawk}.  The varying capabilities of Microsoft
+Windows 3.1 and Windows32 can add to the confusion.  For an overview
+of the considerations, please refer to @file{README_d/README.pc} in
+the distribution.
 
 @menu
 * PC Binary Installation::      Installing a prepared distribution.
@@ -36169,6 +36225,7 @@ distribution.
 * MSYS::                        Using @command{gawk} In The MSYS Environment.
 @end menu
 
+@ifclear FOR_PRINT
 @node PC Binary Installation
 @appendixsubsubsec Installing a Prepared Distribution for PC Systems
 
@@ -36207,13 +36264,21 @@ install-info --info-dir=x:/usr/info x:/usr/info/gawkinet.info
 
 The binary distribution may contain a separate file containing additional
 or more detailed installation instructions.
+@end ifclear
 
 @node PC Compiling
 @appendixsubsubsec Compiling @command{gawk} for PC Operating Systems
 
+@ifclear FOR_PRINT
 @command{gawk} can be compiled for MS-DOS, Windows32, and OS/2 using the GNU
-development tools from DJ Delorie (DJGPP: MS-DOS only) or Eberhard
-Mattes (EMX: MS-DOS, Windows32 and OS/2).  The file
+development tools from DJ Delorie (DJGPP: MS-DOS only), MinGW (Windows32) or Eberhard
+Mattes (EMX: MS-DOS, Windows32 and OS/2).
+@end ifclear
+@ifset FOR_PRINT
+@command{gawk} can be compiled for MS-DOS and Windows32 using the GNU
+development tools from DJ Delorie (DJGPP: MS-DOS only) or MinGW (Windows32).
+@end ifset
+The file
 @file{README_d/README.pc} in the @command{gawk} distribution contains
 additional notes, and @file{pc/Makefile} contains important information on
 compilation options.
@@ -36235,6 +36300,7 @@ build @command{gawk} using the DJGPP tools, enter @samp{make djgpp}.
 @uref{ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/}.)  To build a
 native MS-Windows binary of @command{gawk}, type @samp{make mingw32}.
 
+@ifclear FOR_PRINT
 @cindex compiling @command{gawk} with EMX for OS/2
 The 32 bit EMX version of @command{gawk} works ``out of the box'' under OS/2.
 However, it is highly recommended to use GCC 2.95.3 for the compilation.
@@ -36308,6 +36374,7 @@ the Makefiles of this package.  If you encounter any problems with
 find the latest version on
 @uref{ftp://hobbes.nmsu.edu/pub/os2/}.
 @end quotation
+@end ifclear
 
 @node PC Testing
 @appendixsubsubsec Testing @command{gawk} on PC Operating Systems
@@ -36319,6 +36386,7 @@ be converted so that they have the usual MS-DOS-style end-of-line markers.
 Alternatively, run @command{make check CMP="diff -a"} to use GNU @command{diff}
 in text mode instead of @command{cmp} to compare the resulting files.
 
+@ifclear FOR_PRINT
 Most
 of the tests work properly with Stewartson's shell along with the
 companion utilities or appropriate GNU utilities.  However, some editing of
@@ -36331,7 +36399,7 @@ On OS/2 the @code{pid} test fails because @code{spawnl()} is used instead of
 @code{fork()}/@code{execl()} to start child processes.
 Also the @code{mbfw1} and @code{mbprintf1} tests fail because the needed
 multibyte functionality is not available.
-
+@end ifclear
 
 @node PC Using
 @appendixsubsubsec Using @command{gawk} on PC Operating Systems
@@ -36343,11 +36411,12 @@ multibyte functionality is not available.
 Under MS-DOS and MS-Windows, the Cygwin and MinGW environments support
 both the @samp{|&} operator and TCP/IP networking
 (@pxref{TCP/IP Networking}).
+@ifclear FOR_PRINT
 EMX (OS/2 only) supports at least the @samp{|&} operator.
+@end ifclear
 
 @cindex search paths
 @cindex search paths, for source files
-@cindex @command{gawk}, OS/2 version of
 @cindex @command{gawk}, MS-DOS version of
 @cindex @command{gawk}, MS-Windows version of
 @cindex @code{;} (semicolon), @code{AWKPATH} variable and
@@ -36360,6 +36429,8 @@ variable.  If @env{AWKPATH} is not set or is empty, then the default
 search path for MS-Windows and MS-DOS versions is
 @code{@w{".;c:/lib/awk;c:/gnu/lib/awk"}}.
 
+@ifclear FOR_PRINT
+@cindex @command{gawk}, OS/2 version of
 @cindex @code{UNIXROOT} variable, on OS/2 systems
 The search path for OS/2 (32 bit, EMX) is determined by the prefix directory
 (most likely @file{/usr} or @file{c:/usr}) that has been specified as an option of
@@ -36377,12 +36448,24 @@ An @command{sh}-like shell (as opposed to @command{command.com} under MS-DOS
 or @command{cmd.exe} under MS-Windows or OS/2) may be useful for @command{awk} programming.
 The DJGPP collection of tools includes an MS-DOS port of Bash,
 and several shells are available for OS/2, including @command{ksh}.
+@end ifclear
+@ifset FOR_PRINT
+An @command{sh}-like shell (as opposed to @command{command.com} under MS-DOS
+or @command{cmd.exe} under MS-Windows) may be useful for @command{awk} programming.
+The DJGPP collection of tools includes an MS-DOS port of Bash.
+@end ifset
 
 @cindex common extensions, @code{BINMODE} variable
 @cindex extensions, common@comma{} @code{BINMODE} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{BINMODE} variable
 @cindex @code{BINMODE} variable
-Under MS-Windows, OS/2 and MS-DOS, @command{gawk} (and many other text programs) silently
+@ifclear FOR_PRINT
+Under MS-Windows, OS/2 and MS-DOS,
+@end ifclear
+@ifset FOR_PRINT
+Under MS-Windows and MS-DOS,
+@end ifset
+@command{gawk} (and many other text programs) silently
 translate end-of-line @code{"\r\n"} to @code{"\n"} on input and @code{"\n"}
 to @code{"\r\n"} on output.  A special @code{BINMODE} variable @value{COMMONEXT}
 allows control over these translations and is interpreted as follows:
@@ -36926,6 +37009,8 @@ as follows:
 
 @item MS-Windows with MINGW @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}.
 
+@c Leave this in the print version on purpose. OS/2 not mentioned anywhere else
+@c in the print version though.
 @item OS/2 @tab Andreas Buening, @EMAIL{andreas.buening@@nexgo.de,andreas dot buening at nexgo dot de}.
 
 @item VMS @tab Pat Rankin, @EMAIL{r.pat.rankin@@gmail.com,r.pat.rankin at gmail.com}, and
@@ -37008,8 +37093,13 @@ for a list of extensions in this @command{awk} that are not in POSIX @command{aw
 @cindex source code, @command{mawk}
 @item @command{mawk}
 Michael Brennan wrote an independent implementation of @command{awk},
-called @command{mawk}.  It is available under the GPL
-(@pxref{Copying}),
+called @command{mawk}.  It is available under the
+@ifclear FOR_PRINT
+GPL (@pxref{Copying}),
+@end ifclear
+@ifset FOR_PRINT
+GPL,
+@end ifset
 just as @command{gawk} is.
 
 The original distribution site for the @command{mawk} source code
