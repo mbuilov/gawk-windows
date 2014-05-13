@@ -168,6 +168,7 @@ EXTRA_DIST = \
 	datanonl.in \
 	datanonl.ok \
 	dbugeval.in \
+	dbugeval.ok \
 	defref.awk \
 	defref.ok \
 	delargv.awk \
