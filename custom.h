@@ -47,12 +47,6 @@
 #define HAVE_MKTIME	1
 #endif
 
-/* For ULTRIX 4.3 */
-#ifdef ultrix
-#define HAVE_MKTIME     1
-#define GETGROUPS_NOT_STANDARD	1
-#endif
-
 /* For whiny users */
 #ifdef USE_INCLUDED_STRFTIME
 #undef HAVE_STRFTIME
