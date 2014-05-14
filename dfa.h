@@ -75,16 +75,14 @@ extern void dfacomp (char const *, size_t, struct dfa *, int);
 extern char *dfaexec (struct dfa *d, char const *begin, char *end,
                       int newline, size_t *count, int *backref);
 
-/* Search through a buffer looking for a potential match for D.
-   Return the offset of the byte after the first potential match.
-   If there is no match, return (size_t) -1.  If D lacks a superset
-   so it's not known whether there is a match, return (size_t) -2.
-   BEGIN points to the beginning of the buffer, and END points to the
-   first byte after its end.  Store a sentinel byte (usually newline)
-   in *END, so the actual buffer must be one byte longer.  If COUNT is
-   non-NULL, increment *COUNT once for each newline processed.  */
-extern size_t dfahint (struct dfa *d, char const *begin, char *end,
-                       size_t *count);
+/* Return a superset for D.  The superset matches everything that D
+   matches, along with some other strings (though the latter should be
+   rare, for efficiency reasons).  Return a null pointer if no useful
+   superset is available.  */
+extern struct dfa *dfasuperset (struct dfa const *d) _GL_ATTRIBUTE_PURE;
+
+/* The DFA is likely to be fast.  */
+extern bool dfaisfast (struct dfa const *) _GL_ATTRIBUTE_PURE;
 
 /* Free the storage held by the components of a struct dfa. */
 extern void dfafree (struct dfa *);
