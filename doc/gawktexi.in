@@ -1126,6 +1126,21 @@ March, 2001
 @c
 @c 12/2000: Chuck wants the preface & intro combined.
 
+@c This bit is post-processed by a script which turns the chapter
+@c tag into a preface tag, and moves this stuff to before the title.
+@c Bleah.
+@docbook
+  <prefaceinfo>
+    <author>
+      <firstname>Arnold</firstname>
+      <surname>Robbins</surname>
+      <affiliation><jobtitle>Nof Ayalon</jobtitle></affiliation>
+      <affiliation><jobtitle>ISRAEL</jobtitle></affiliation>
+    </author>
+    <date>June, 2014</date>
+   </prefaceinfo>
+@end docbook
+
 Several kinds of tasks occur repeatedly
 when working with text files.
 You might want to extract certain lines and discard the rest.
@@ -1989,12 +2004,14 @@ which they raised and educated me.
 Finally, I also must acknowledge my gratitude to G-d, for the many opportunities
 He has sent my way, as well as for the gifts He has given me with which to
 take advantage of those opportunities.
+@iftex
 @sp 2
 @noindent
 Arnold Robbins @*
 Nof Ayalon @*
 ISRAEL @*
 May, 2014
+@end iftex
 
 @ifnotinfo
 @part @value{PART1}The @command{awk} Language
