@@ -43,7 +43,7 @@ BEGIN    \
             if (FS == " ")    # defeat awk semantics
                 FS = "[ ]"
         } else if (c == "s")
-            suppress++
+            suppress = 1
         else
             usage()
     }
