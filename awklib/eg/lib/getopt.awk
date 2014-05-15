@@ -70,7 +70,7 @@ BEGIN {
     # test program
     if (_getopt_test) {
         while ((_go_c = getopt(ARGC, ARGV, "ab:cd")) != -1)
-            printf("c = <%c>, optarg = <%s>\n",
+            printf("c = <%c>, Optarg = <%s>\n",
                                        _go_c, Optarg)
         printf("non-option arguments:\n")
         for (; Optind < ARGC; Optind++)

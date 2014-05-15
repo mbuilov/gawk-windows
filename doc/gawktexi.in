@@ -53,6 +53,7 @@
 @set SUBSECTION subsection
 @set DARKCORNER @inmargin{@image{lflashlight,1cm}, @image{rflashlight,1cm}}
 @set COMMONEXT (c.e.)
+@set PAGE page
 @end iftex
 @ifinfo
 @set DOCUMENT Info file
@@ -62,6 +63,7 @@
 @set SUBSECTION node
 @set DARKCORNER (d.c.)
 @set COMMONEXT (c.e.)
+@set PAGE screen
 @end ifinfo
 @ifhtml
 @set DOCUMENT Web page
@@ -71,6 +73,7 @@
 @set SUBSECTION subsection
 @set DARKCORNER (d.c.)
 @set COMMONEXT (c.e.)
+@set PAGE screen
 @end ifhtml
 @ifdocbook
 @set DOCUMENT book
@@ -80,6 +83,7 @@
 @set SUBSECTION subsection
 @set DARKCORNER (d.c.)
 @set COMMONEXT (c.e.)
+@set PAGE page
 @end ifdocbook
 @ifxml
 @set DOCUMENT book
@@ -89,6 +93,7 @@
 @set SUBSECTION subsection
 @set DARKCORNER (d.c.)
 @set COMMONEXT (c.e.)
+@set PAGE page
 @end ifxml
 @ifplaintext
 @set DOCUMENT book
@@ -98,6 +103,7 @@
 @set SUBSECTION subsection
 @set DARKCORNER (d.c.)
 @set COMMONEXT (c.e.)
+@set PAGE page
 @end ifplaintext
 
 @ifdocbook
@@ -3316,19 +3322,10 @@ There are two ways to run @command{awk}---with an explicit program or with
 one or more program files.  Here are templates for both of them; items
 enclosed in [@dots{}] in these templates are optional:
 
-@ifnotdocbook
-@example
-awk @r{[@var{options}]} -f progfile @r{[@code{--}]} @var{file} @dots{}
-awk @r{[@var{options}]} @r{[@code{--}]} '@var{program}' @var{file} @dots{}
-@end example
-@end ifnotdocbook
-
-@c FIXME - find a better way to mark this up in docbook
-@docbook
-<screen>awk [<replaceable>options</replaceable>] -f progfile [<literal>--</literal>] <replaceable>file</replaceable> &#8230;
-awk [<replaceable>options</replaceable>] [<literal>--</literal>] '<replaceable>program</replaceable>' <replaceable>file</replaceable> &#8230;
-</screen>
-@end docbook
+@display
+@command{awk} [@var{options}] @option{-f} @var{progfile} [@option{--}] @var{file} @dots{}
+@command{awk} [@var{options}] [@option{--}] @code{'@var{program}'} @var{file} @dots{}
+@end display
 
 @cindex GNU long options
 @cindex long options
@@ -12328,13 +12325,13 @@ both) may be omitted.  The purpose of the @dfn{action} is to tell
 @command{awk} what to do once a match for the pattern is found.  Thus,
 in outline, an @command{awk} program generally looks like this:
 
-@example
-@r{[}@var{pattern}@r{]}  @{ @var{action} @}
- @var{pattern}  @r{[}@{ @var{action} @}@r{]}
+@display
+[@var{pattern}]  @code{@{ @var{action} @}}
+ @var{pattern}  [@code{@{ @var{action} @}}]
 @dots{}
-function @var{name}(@var{args}) @{ @dots{} @}
+@code{function @var{name}(@var{args}) @{ @dots{} @}}
 @dots{}
-@end example
+@end display
 
 @cindex @code{@{@}} (braces), actions and
 @cindex braces (@code{@{@}}), actions and
@@ -12449,9 +12446,9 @@ newlines or semicolons.
 The @code{if}-@code{else} statement is @command{awk}'s decision-making
 statement.  It looks like this:
 
-@example
-if (@var{condition}) @var{then-body} @r{[}else @var{else-body}@r{]}
-@end example
+@display
+@code{if (@var{condition}) @var{then-body}} [@code{else @var{else-body}}]
+@end display
 
 @noindent
 The @var{condition} is an expression that controls what the rest of the
@@ -13049,9 +13046,9 @@ The @code{exit} statement causes @command{awk} to immediately stop
 executing the current rule and to stop processing input; any remaining input
 is ignored.  The @code{exit} statement is written as follows:
 
-@example
-exit @r{[}@var{return code}@r{]}
-@end example
+@display
+@code{exit} [@var{return code}]
+@end display
 
 @cindex @code{BEGIN} pattern, @code{exit} statement and
 @cindex @code{END} pattern, @code{exit} statement and
@@ -17691,12 +17688,12 @@ entire program before starting to execute any of it.
 
 The definition of a function named @var{name} looks like this:
 
-@example
-function @var{name}(@r{[}@var{parameter-list}@r{]})
-@{
+@display
+@code{function} @var{name}@code{(}[@var{parameter-list}]@code{)}
+@code{@{}
      @var{body-of-function}
-@}
-@end example
+@code{@}}
+@end display
 
 @cindex names, functions
 @cindex functions, names of
@@ -18218,9 +18215,9 @@ This statement returns control to the calling part of the @command{awk} program.
 can also be used to return a value for use in the rest of the @command{awk}
 program.  It looks like this:
 
-@example
-return @r{[}@var{expression}@r{]}
-@end example
+@display
+@code{return} [@var{expression}]
+@end display
 
 The @var{expression} part is optional.
 Due most likely to an oversight, POSIX does not define what the return
@@ -19529,7 +19526,7 @@ function getlocaltime(time,    ret, now, i)
     now = systime()
 
     # return date(1)-style output
-    ret = strftime("%a %b %e %H:%M:%S %Z %Y", now)
+    ret = strftime(PROCINFO["strftime"], now)
 
     # clear out target array
     delete time
@@ -19856,10 +19853,12 @@ The @code{rewind()} function also relies on the @code{nextfile} keyword
 @cindex readable data files@comma{} checking
 @cindex files, skipping
 Normally, if you give @command{awk} a data file that isn't readable,
-it stops with a fatal error.  There are times when you
-might want to just ignore such files and keep going.  You can
-do this by prepending the following program to your @command{awk}
-program:
+it stops with a fatal error.  There are times when you might want to
+just ignore such files and keep going.@footnote{The @code{BEGINFILE}
+special pattern (@pxref{BEGINFILE/ENDFILE}) provides an alternative
+mechanism for dealing with files that can't be opened.  However, the
+code here provides a portable solution.} You can do this by prepending
+the following program to your @command{awk} program:
 
 @cindex @code{readable.awk} program
 @example
@@ -19897,7 +19896,7 @@ skips the file (since it's no longer in the list).
 See also @ref{ARGC and ARGV}.
 
 @node Empty Files
-@subsection Checking For Zero-length Files
+@subsection Checking for Zero-length Files
 
 All known @command{awk} implementations silently skip over zero-length files.
 This is a by-product of @command{awk}'s implicit 
@@ -20370,7 +20369,7 @@ BEGIN @{
     # test program
     if (_getopt_test) @{
         while ((_go_c = getopt(ARGC, ARGV, "ab:cd")) != -1)
-            printf("c = <%c>, optarg = <%s>\n",
+            printf("c = <%c>, Optarg = <%s>\n",
                                        _go_c, Optarg)
         printf("non-option arguments:\n")
         for (; Optind < ARGC; Optind++)
@@ -20386,32 +20385,31 @@ result of two sample runs of the test program:
 
 @example
 $ @kbd{awk -f getopt.awk -v _getopt_test=1 -- -a -cbARG bax -x}
-@print{} c = <a>, optarg = <>
-@print{} c = <c>, optarg = <>
-@print{} c = <b>, optarg = <ARG>
+@print{} c = <a>, Optarg = <>
+@print{} c = <c>, Optarg = <>
+@print{} c = <b>, Optarg = <ARG>
 @print{} non-option arguments:
 @print{}         ARGV[3] = <bax>
 @print{}         ARGV[4] = <-x>
 
 $ @kbd{awk -f getopt.awk -v _getopt_test=1 -- -a -x -- xyz abc}
-@print{} c = <a>, optarg = <>
+@print{} c = <a>, Optarg = <>
 @error{} x -- invalid option
-@print{} c = <?>, optarg = <>
+@print{} c = <?>, Optarg = <>
 @print{} non-option arguments:
 @print{}         ARGV[4] = <xyz>
 @print{}         ARGV[5] = <abc>
 @end example
 
-In both runs,
-the first @option{--} terminates the arguments to @command{awk}, so that it does
-not try to interpret the @option{-a}, etc., as its own options.
+In both runs, the first @option{--} terminates the arguments to
+@command{awk}, so that it does not try to interpret the @option{-a},
+etc., as its own options.
 
 @quotation NOTE
-After @code{getopt()} is through, it is the responsibility of the user level
-code to
-clear out all the elements of @code{ARGV} from 1 to @code{Optind},
-so that @command{awk} does not try to process the command-line options
-as file names.
+After @code{getopt()} is through, it is the responsibility of the
+user level code to clear out all the elements of @code{ARGV} from 1
+to @code{Optind}, so that @command{awk} does not try to process the
+command-line options as file names.
 @end quotation
 
 Several of the sample programs presented in
@@ -20480,7 +20478,7 @@ Following is @command{pwcat}, a C program that ``cats'' the password database:
 /*
  * pwcat.c
  *
- * Generate a printable version of the password database
+ * Generate a printable version of the password database.
  */
 @c endfile
 @ignore
@@ -20826,7 +20824,7 @@ is as follows:
 /*
  * grcat.c
  *
- * Generate a printable version of the group database
+ * Generate a printable version of the group database.
  */
 @c endfile
 @ignore
@@ -20913,7 +20911,7 @@ it is usually empty or set to @samp{*}.
 
 @item Group ID Number
 The group's numeric group ID number;
-this number must be unique within the file.
+the association of name to number must be unique within the file.
 (On some systems it's a C @code{long}, and not an @code{int}.  Thus
 we cast it to @code{long} for all cases.)
 
@@ -21049,10 +21047,10 @@ tvpeople:*:101:david,conan,tom,joan
 
 For this reason, @code{_gr_init()} looks to see if a group name or
 group ID number is already seen.  If it is, then the user names are
-simply concatenated onto the previous list of users.  (There is actually a
+simply concatenated onto the previous list of users.@footnote{There is actually a
 subtle problem with the code just presented.  Suppose that
 the first time there were no names. This code adds the names with
-a leading comma. It also doesn't check that there is a @code{$4}.)
+a leading comma. It also doesn't check that there is a @code{$4}.}
 
 Finally, @code{_gr_init()} closes the pipeline to @command{grcat}, restores
 @code{FS} (and @code{FIELDWIDTHS} or @code{FPAT} if necessary), @code{RS}, and @code{$0},
@@ -21422,13 +21420,7 @@ function usage(    e1, e2)
 
 @noindent
 The variables @code{e1} and @code{e2} are used so that the function
-fits nicely on the
-@ifnotinfo
-page.
-@end ifnotinfo
-@ifnottex
-screen.
-@end ifnottex
+fits nicely on the @value{PAGE}.
 
 @cindex @code{BEGIN} pattern, running @command{awk} programs and
 @cindex @code{FS} variable, running @command{awk} programs and
@@ -21467,7 +21459,7 @@ BEGIN    \
             if (FS == " ")    # defeat awk semantics
                 FS = "[ ]"
         @} else if (c == "s")
-            suppress++
+            suppress = 1
         else
             usage()
     @}
@@ -21680,9 +21672,9 @@ expressions that are almost identical to those available in @command{awk}
 (@pxref{Regexp}).
 You invoke it as follows:
 
-@example
-egrep @r{[} @var{options} @r{]} '@var{pattern}' @var{files} @dots{}
-@end example
+@display
+@command{egrep} [@var{options}] @code{'@var{pattern}'} @var{files} @dots{}
+@end display
 
 The @var{pattern} is a regular expression.  In typical usage, the regular
 expression is quoted to prevent the shell from expanding any of the
@@ -21864,6 +21856,11 @@ function endfile(file)
 @c endfile
 @end example
 
+The @code{BEGINFILE} and @code{ENDFILE} special patterns
+(@pxref{BEGINFILE/ENDFILE}) could be used, but then the program would be
+@command{gawk}-specific. Additionally, this example was written before
+@command{gawk} acquired @code{BEGINFILE} and @code{ENDFILE}.
+
 The following rule does most of the work of matching lines. The variable
 @code{matches} is true if the line matched the pattern. If the user
 wants lines that did not match, the sense of @code{matches} is inverted
@@ -21920,9 +21917,7 @@ there are no matches, the exit status is one; otherwise it is zero:
 @c file eg/prog/egrep.awk
 END    \
 @{
-    if (total == 0)
-        exit 1
-    exit 0
+    exit (total == 0)
 @}
 @c endfile
 @end example
@@ -21976,7 +21971,7 @@ corresponding user and group names.  The output might look like this:
 
 @example
 $ @kbd{id}
-@print{} uid=500(arnold) gid=500(arnold) groups=6(disk),7(lp),19(floppy)
+@print{} uid=1000(arnold) gid=1000(arnold) groups=1000(arnold),4(adm),7(lp),27(sudo)
 @end example
 
 @cindex @code{PROCINFO} array, and user and group ID numbers
@@ -22012,6 +22007,7 @@ numbers:
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
 # Revised February 1996
+# Revised May 2014
 
 @c endfile
 @end ignore
@@ -22031,34 +22027,26 @@ BEGIN    \
 
     printf("uid=%d", uid)
     pw = getpwuid(uid)
-    if (pw != "") @{
-        split(pw, a, ":")
-        printf("(%s)", a[1])
-    @}
+    if (pw != "")
+        pr_first_field(pw)
 
     if (euid != uid) @{
         printf(" euid=%d", euid)
         pw = getpwuid(euid)
-        if (pw != "") @{
-            split(pw, a, ":")
-            printf("(%s)", a[1])
-        @}
+        if (pw != "")
+            pr_first_field(pw)
     @}
 
     printf(" gid=%d", gid)
     pw = getgrgid(gid)
-    if (pw != "") @{
-        split(pw, a, ":")
-        printf("(%s)", a[1])
-    @}
+    if (pw != "")
+        pr_first_field(pw)
 
     if (egid != gid) @{
         printf(" egid=%d", egid)
         pw = getgrgid(egid)
-        if (pw != "") @{
-            split(pw, a, ":")
-            printf("(%s)", a[1])
-        @}
+        if (pw != "")
+            pr_first_field(pw)
     @}
 
     for (i = 1; ("group" i) in PROCINFO; i++) @{
@@ -22067,15 +22055,19 @@ BEGIN    \
         group = PROCINFO["group" i]
         printf("%d", group)
         pw = getgrgid(group)
-        if (pw != "") @{
-            split(pw, a, ":")
-            printf("(%s)", a[1])
-        @}
+        if (pw != "")
+            pr_first_field(pw)
         if (("group" (i+1)) in PROCINFO)
             printf(",")
     @}
 
     print ""
+@}
+
+function pr_first_field(str,  a)
+@{
+    split(str, a, ":")
+    printf("(%s)", a[1])
 @}
 @c endfile
 @end example
@@ -22096,9 +22088,13 @@ The loop is also correct if there are @emph{no} supplementary
 groups; then the condition is false the first time it's
 tested, and the loop body never executes.
 
+The @code{pr_first_field()} function simply isolates out some
+code that is used repeatedly, making the whole program
+slightly shorter and cleaner.
+
 @c exercise!!!
 @ignore
-The POSIX version of @command{id} takes arguments that control which
+The POSIX version of @command{id} takes options that control which
 information is printed.  Modify this version to accept the same
 arguments and perform in the same way.
 @end ignore
@@ -22118,9 +22114,9 @@ Usage is as follows:@footnote{This is the traditional usage. The
 POSIX usage is different, but not relevant for what the program
 aims to demonstrate.}
 
-@example
-split @r{[}-@var{count}@r{]} file @r{[} @var{prefix} @r{]}
-@end example
+@display
+@command{split} [@code{-@var{count}}] [@var{file}] [@var{prefix}]
+@end display
 
 By default,
 the output files are named @file{xaa}, @file{xab}, and so on. Each file has
@@ -22154,11 +22150,12 @@ is used as the prefix for the output file names:
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
+# Revised slightly, May 2014
 
 @c endfile
 @end ignore
 @c file eg/prog/split.awk
-# usage: split [-num] [file] [outname]
+# usage: split [-count] [file] [outname]
 
 BEGIN @{
     outfile = "x"    # default
@@ -22167,7 +22164,7 @@ BEGIN @{
         usage()
 
     i = 1
-    if (ARGV[i] ~ /^-[[:digit:]]+$/) @{
+    if (i in ARGV && ARGV[i] ~ /^-[[:digit:]]+$/) @{
         count = -ARGV[i]
         ARGV[i] = ""
         i++
@@ -22239,13 +22236,7 @@ function usage(   e)
 
 @noindent
 The variable @code{e} is used so that the function
-fits nicely on the
-@ifinfo
-screen.
-@end ifinfo
-@ifnotinfo
-page.
-@end ifnotinfo
+fits nicely on the @value{PAGE}.
 
 This program is a bit sloppy; it relies on @command{awk} to automatically close the last file
 instead of doing it in an @code{END} rule.
@@ -22268,9 +22259,9 @@ The @code{tee} program is known as a ``pipe fitting.''  @code{tee} copies
 its standard input to its standard output and also duplicates it to the
 files named on the command line.  Its usage is as follows:
 
-@example
-tee @r{[}-a@r{]} file @dots{}
-@end example
+@display
+@command{tee} [@option{-a}] @var{file} @dots{}
+@end display
 
 The @option{-a} option tells @code{tee} to append to the named files, instead of
 truncating them and starting over.
@@ -22395,9 +22386,9 @@ input, and by default removes duplicate lines.  In other words, it only
 prints unique lines---hence the name.  @command{uniq} has a number of
 options. The usage is as follows:
 
-@example
-uniq @r{[}-udc @r{[}-@var{n}@r{]]} @r{[}+@var{n}@r{]} @r{[} @var{input file} @r{[} @var{output file} @r{]]}
-@end example
+@display
+@command{uniq} [@option{-udc} [@code{-@var{n}}]] [@code{+@var{n}}] [@var{inputfile} [@var{outputfile}]]
+@end display
 
 The options for @command{uniq} are:
 
@@ -22421,11 +22412,11 @@ by runs of spaces and/or TABs.
 Skip @var{n} characters before comparing lines.  Any fields specified with
 @samp{-@var{n}} are skipped first.
 
-@item @var{input file}
+@item @var{inputfile}
 Data is read from the input file named on the command line, instead of from
 the standard input.
 
-@item @var{output file}
+@item @var{outputfile}
 The generated output is sent to the named output file, instead of to the
 standard output.
 @end table
@@ -22662,9 +22653,9 @@ END @{
 The @command{wc} (word count) utility counts lines, words, and characters in
 one or more input files. Its usage is as follows:
 
-@example
-wc @r{[}-lwc@r{]} @r{[} @var{files} @dots{} @r{]}
-@end example
+@display
+@command{wc} [@option{-lwc}] [@var{files} @dots{}]
+@end display
 
 If no files are specified on the command line, @command{wc} reads its standard
 input. If there are multiple files, it also prints total counts for all
@@ -23145,19 +23136,18 @@ often used to map uppercase letters into lowercase for further processing:
 @end example
 
 @command{tr} requires two lists of characters.@footnote{On some older
-systems,
-including Solaris,
-@command{tr} may require that the lists be written as
-range expressions enclosed in square brackets (@samp{[a-z]}) and quoted,
-to prevent the shell from attempting a file name expansion.  This is
-not a feature.}  When processing the input, the first character in the
-first list is replaced with the first character in the second list,
-the second character in the first list is replaced with the second
-character in the second list, and so on.  If there are more characters
-in the ``from'' list than in the ``to'' list, the last character of the
-``to'' list is used for the remaining characters in the ``from'' list.
+systems, including Solaris, the system version of @command{tr} may require
+that the lists be written as range expressions enclosed in square brackets
+(@samp{[a-z]}) and quoted, to prevent the shell from attempting a file
+name expansion.  This is not a feature.}  When processing the input, the
+first character in the first list is replaced with the first character
+in the second list, the second character in the first list is replaced
+with the second character in the second list, and so on.  If there are
+more characters in the ``from'' list than in the ``to'' list, the last
+character of the ``to'' list is used for the remaining characters in the
+``from'' list.
 
-Some time ago,
+Once upon a time,
 @c early or mid-1989!
 a user proposed that a transliteration function should
 be added to @command{gawk}.
@@ -23271,13 +23261,12 @@ BEGIN @{
 While it is possible to do character transliteration in a user-level
 function, it is not necessarily efficient, and we (the @command{gawk}
 authors) started to consider adding a built-in function.  However,
-shortly after writing this program, we learned that the System V Release 4
-@command{awk} had added the @code{toupper()} and @code{tolower()} functions
-(@pxref{String Functions}).
-These functions handle the vast majority of the
-cases where character transliteration is necessary, and so we chose to
-simply add those functions to @command{gawk} as well and then leave well
-enough alone.
+shortly after writing this program, we learned that Brian Kernighan
+had added the @code{toupper()} and @code{tolower()} functions to his
+@command{awk} (@pxref{String Functions}).  These functions handle the
+vast majority of the cases where character transliteration is necessary,
+and so we chose to simply add those functions to @command{gawk} as well
+and then leave well enough alone.
 
 An obvious improvement to this program would be to set up the
 @code{t_ar} array only once, in a @code{BEGIN} rule. However, this
@@ -23310,7 +23299,18 @@ The @code{BEGIN} rule simply sets @code{RS} to the empty string, so that
 @command{awk} splits records at blank lines
 (@pxref{Records}).
 It sets @code{MAXLINES} to 100, since 100 is the maximum number
-of lines on the page (20 * 5 = 100).
+of lines on the page
+@iftex
+(@math{20 @cdot 5 = 100}).
+@end iftex
+@ifnottex
+@ifnotdocbook
+(20 * 5 = 100).
+@end ifnotdocbook
+@end ifnottex
+@docbook
+(20 &sdot; 5 = 100). @c
+@end docbook
 
 Most of the work is done in the @code{printpage()} function.
 The label lines are stored sequentially in the @code{line} array.  But they
@@ -23422,7 +23422,7 @@ END    \
 
 When working with large amounts of text, it can be interesting to know
 how often different words appear.  For example, an author may overuse
-certain words, in which case she might wish to find synonyms to substitute
+certain words, in which case he or she might wish to find synonyms to substitute
 for words that appear too often. This @value{SUBSECTION} develops a
 program for counting words and presenting the frequency information
 in a useful format.
@@ -23499,6 +23499,10 @@ END @{
         printf "%s\t%d\n", word, freq[word]
 @}
 @end example
+
+The regexp @samp{/[^[:alnum:]_[:blank:]]/} might have been written
+@samp{/[[:punct:]]/}, but then underscores would also be removed,
+and we want to keep them.
 
 Assuming we have saved this program in a file named @file{wordfreq.awk},
 and that the data is in @file{file1}, the following pipeline:
@@ -23611,6 +23615,7 @@ information.  For example, using the following @code{print} statement in the
 print data[lines[i]], lines[i]
 @end example
 
+@noindent
 This works because @code{data[$0]} is incremented each time a line is
 seen.
 @c ENDOFRANGE lidu
@@ -23766,13 +23771,7 @@ BEGIN    @{ IGNORECASE = 1 @}
 
 @noindent
 The variable @code{e} is used so that the rule
-fits nicely on the
-@ifnotinfo
-page.
-@end ifnotinfo
-@ifnottex
-screen.
-@end ifnottex
+fits nicely on the @value{PAGE}.
 
 The second rule handles moving data into files.  It verifies that a
 file name is given in the directive.  If the file named is not the
@@ -23801,10 +23800,13 @@ Each element of @code{a} that is empty indicates two successive @samp{@@}
 symbols in the original line.  For each two empty elements (@samp{@@@@} in
 the original file), we have to add a single @samp{@@} symbol back
 in.@footnote{This program was written before @command{gawk} had the
-@code{gensub()} function. Consider how you might use it to simplify the code.}
+@code{gensub()} function.
+@c exercise!!
+Consider how you might use it to simplify the code.}
 
 When the processing of the array is finished, @code{join()} is called with the
-value of @code{SUBSEP}, to rejoin the pieces back into a single
+value of @code{SUBSEP} (@pxref{Multidimensional}),
+to rejoin the pieces back into a single
 line.  That line is then printed to the output file:
 
 @example
@@ -24329,7 +24331,7 @@ BEGIN @{
 @c endfile
 @end example
 
-The stack is initialized with @code{ARGV[1]}, which will be @samp{/dev/stdin}.
+The stack is initialized with @code{ARGV[1]}, which will be @code{"/dev/stdin"}.
 The main loop comes next.  Input lines are read in succession. Lines that
 do not start with @code{@@include} are printed verbatim.
 If the line does start with @code{@@include}, the file name is in @code{$2}.
@@ -24439,7 +24441,7 @@ eval gawk $opts -- '"$processed_program"' '"$@@"'
 The @command{eval} command is a shell construct that reruns the shell's parsing
 process.  This keeps things properly quoted.
 
-This version of @command{igawk} represents my fifth version of this program.
+This version of @command{igawk} represents the fifth version of this program.
 There are four key simplifications that make the program work better:
 
 @itemize @bullet
@@ -24649,6 +24651,9 @@ babels beslab
 babery yabber 
 @dots{}
 @end example
+
+@c Exercise: Avoid the use of external sort command
+
 @c ENDOFRANGE anagram
 
 @node Signature Program
@@ -24680,7 +24685,10 @@ X*(X-x)-o*o,(x+X)*o*o+o,x*(X-x)-O-O,x-O+(O+o+X+x)*(o+O),X*X-X*(x-O)-x+O,
 O+X*(o*(o+O)+O),+x+O+X*o,x*(x-o),(o+X+x)*o*o-(x-O-O),O+(X-x)*(X+O),x-O@}'
 @end example
 
-We leave it to you to determine what the program does.
+@cindex Johansen, Chris
+We leave it to you to determine what the program does.  (If you are
+truly desperate to understand it, see Chris Johansen's explanation,
+which is embedded in the Texinfo source file for this @value{DOCUMENT}.)
 
 @ignore
 To: "Arnold Robbins" <arnold@skeeve.com>
@@ -27808,7 +27816,7 @@ partial dump of Davide Brini's obfuscated code
 
 @smallexample
 gawk> @kbd{dump}
-@print{} 	# BEGIN
+@print{}        # BEGIN
 @print{} 
 @print{} [     1:0xfcd340] Op_rule             : [in_rule = BEGIN] [source_file = brini.awk]
 @print{} [     1:0xfcc240] Op_push_i           : "~" [MALLOC|STRING|STRCUR]
