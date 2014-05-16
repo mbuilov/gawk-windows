@@ -131,9 +131,15 @@
 @set LEQ @math{@leq}
 @set PI @math{@pi}
 @end iftex
+@ifdocbook
+@set LEQ @inlineraw{docbook, &le;}
+@set PI @inlineraw{docbook, &pgr;}
+@end ifdocbook
 @ifnottex
+@ifnotdocbook
 @set LEQ <=
 @set PI @i{pi}
+@end ifnotdocbook
 @end ifnottex
 
 @ifnottex
@@ -16043,13 +16049,7 @@ Optional parameters are enclosed in square brackets@w{ ([ ]):}
 @cindex arctangent
 Return the arctangent of @code{@var{y} / @var{x}} in radians.
 You can use @samp{pi = atan2(0, -1)} to retrieve the value of
-@ifnotdocbook
 @value{PI}.
-@end ifnotdocbook
-@docbook
-&pgr;.
-
-@end docbook
 
 @item @code{cos(@var{x})}
 @cindexawkfunc{cos}
@@ -25744,7 +25744,7 @@ $ @kbd{echo 0123 123 0x123 | gawk '@{ print $1, $2, $3 @}'}
 The @code{print} statement treats its expressions as strings.
 Although the fields can act as numbers when necessary,
 they are still strings, so @code{print} does not try to treat them
-numerically.  You may need to add zero to a field to force it to
+numerically.  You need to add zero to a field to force it to
 be treated as a number.  For example:
 
 @example
@@ -25766,7 +25766,7 @@ disabled.  If you want it, you must explicitly request it.
 @emph{Use of this option is not recommended.}
 It can break old programs very badly.
 Instead, use the @code{strtonum()} function to convert your data
-(@pxref{Nondecimal-numbers}).
+(@pxref{String Functions}).
 This makes your programs easier to write and easier to read, and
 leads to less surprising results.
 @end quotation
@@ -25800,7 +25800,7 @@ lets you do this.
 
 @ref{Controlling Scanning}, describes how you can assign special,
 pre-defined values to @code{PROCINFO["sorted_in"]} in order to
-control the order in which @command{gawk} will traverse an array
+control the order in which @command{gawk} traverses an array
 during a @code{for} loop.
 
 In addition, the value of @code{PROCINFO["sorted_in"]} can be a function name.
@@ -26124,9 +26124,9 @@ END @{
 
 So far, so good. Now it starts to get interesting.  Both @code{asort()}
 and @code{asorti()} accept a third string argument to control comparison
-of array elements.  In @ref{String Functions}, we ignored this third
-argument; however, the time has now come to describe how this argument
-affects these two functions.
+of array elements.  When we introduced @code{asort()} and @code{asorti()}
+in @ref{String Functions}, we ignored this third argument; however,
+now is the time to describe how this argument affects these two functions.
 
 Basically, the third argument specifies how the array is to be sorted.
 There are two possibilities.  As with @code{PROCINFO["sorted_in"]},
@@ -26322,6 +26322,7 @@ has been read, @command{gawk} terminates the coprocess and exits.
 
 As a side note, the assignment @samp{LC_ALL=C} in the @command{sort}
 command ensures traditional Unix (ASCII) sorting from @command{sort}.
+This is not strictly necessary here, but it's good to know how to do this.
 
 @cindex @command{gawk}, @code{PROCINFO} array in
 @cindex @code{PROCINFO} array, and communications via ptys
@@ -26340,7 +26341,7 @@ print @dots{} |& command       # start two-way pipe
 @end example
 
 @noindent
-Using ptys avoids the buffer deadlock issues described earlier, at some
+Using ptys usually avoids the buffer deadlock issues described earlier, at some
 loss in performance.  If your system does not have ptys, or if all the
 system's ptys are in use, @command{gawk} automatically falls back to
 using regular pipes.
@@ -26444,7 +26445,9 @@ See
 @inforef{Top, , General Introduction, gawkinet, TCP/IP Internetworking with @command{gawk}},
 @end ifinfo
 @ifnotinfo
-See @cite{TCP/IP Internetworking with @command{gawk}},
+See
+@uref{http://www.gnu.org/software/gawk/manual/gawkinet/,
+@cite{TCP/IP Internetworking with @command{gawk}}},
 which comes as part of the @command{gawk} distribution,
 @end ifnotinfo
 for a much more complete introduction and discussion, as well as
@@ -26723,7 +26726,7 @@ As usual, the profiled version of the program is written to
 @file{awkprof.out}, or to a different file if one specified with
 the @option{--profile} option.
 
-Along with the regular profile, as shown earlier, the profile
+Along with the regular profile, as shown earlier, the profile file
 includes a trace of any active functions:
 
 @example
@@ -26830,6 +26833,8 @@ monetary values are printed and read.
 @cindex internationalizing a program
 @c STARTOFRANGE gettex
 @cindex @code{gettext} library
+@command{gawk} uses GNU @code{gettext} to provide its internationalization
+features.
 The facilities in GNU @code{gettext} focus on messages; strings printed
 by a program, either directly or via formatting with @code{printf} or
 @code{sprintf()}.@footnote{For some operating systems, the @command{gawk}
@@ -27040,7 +27045,7 @@ are candidates for translation at runtime.
 String constants without a leading underscore are not translated.
 
 @cindexgawkfunc{dcgettext}
-@item @code{dcgettext(@var{string}} [@code{,} @var{domain} [@code{,} @var{category} ]]@code{)}
+@item @code{dcgettext(@var{string}} [@code{,} @var{domain} [@code{,} @var{category}]]@code{)}
 Return the translation of @var{string} in
 text domain @var{domain} for locale category @var{category}.
 The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
@@ -27066,7 +27071,7 @@ default arguments.
 @end quotation
 
 @cindexgawkfunc{dcngettext}
-@item @code{dcngettext(@var{string1}, @var{string2}, @var{number}} [@code{,} @var{domain} [@code{,} @var{category} ]]@code{)}
+@item @code{dcngettext(@var{string1}, @var{string2}, @var{number}} [@code{,} @var{domain} [@code{,} @var{category}]]@code{)}
 Return the plural form used for @var{number} of the
 translation of @var{string1} and @var{string2} in text domain
 @var{domain} for locale category @var{category}. @var{string1} is the
@@ -27494,33 +27499,34 @@ msgstr "Like, the scoop is"
 @cindex Linux
 @cindex GNU/Linux
 The next step is to make the directory to hold the binary message object
-file and then to create the @file{guide.gmo} file.
+file and then to create the @file{guide.mo} file.
+We pretend that our file is to be used in the @code{en_US.UTF-8} locale.
 The directory layout shown here is standard for GNU @code{gettext} on
 GNU/Linux systems.  Other versions of @code{gettext} may use a different
 layout:
 
 @example
-$ @kbd{mkdir en_US en_US/LC_MESSAGES}
+$ @kbd{mkdir en_US.UTF-8 en_US.UTF-8/LC_MESSAGES}
 @end example
 
-@cindex @code{.po} files, converting to @code{.gmo}
-@cindex files, @code{.po}, converting to @code{.gmo}
-@cindex @code{.gmo} files, converting from @code{.po}
-@cindex files, @code{.gmo}, converting from @code{.po}
+@cindex @code{.po} files, converting to @code{.mo}
+@cindex files, @code{.po}, converting to @code{.mo}
+@cindex @code{.mo} files, converting from @code{.po}
+@cindex files, @code{.mo}, converting from @code{.po}
 @cindex portable object files, converting to message object files
 @cindex files, portable object, converting to message object files
 @cindex message object files, converting from portable object files
 @cindex files, message object, converting from portable object files
 @cindex @command{msgfmt} utility
 The @command{msgfmt} utility does the conversion from human-readable
-@file{.po} file to machine-readable @file{.gmo} file.
+@file{.po} file to machine-readable @file{.mo} file.
 By default, @command{msgfmt} creates a file named @file{messages}.
 This file must be renamed and placed in the proper directory so that
 @command{gawk} can find it:
 
 @example
 $ @kbd{msgfmt guide-mellow.po}
-$ @kbd{mv messages en_US/LC_MESSAGES/guide.gmo}
+$ @kbd{mv messages en_US.UTF-8/LC_MESSAGES/guide.mo}
 @end example
 
 Finally, we run the program to test it:
@@ -27592,7 +27598,7 @@ how to use @command{gawk} for debugging your program is easy.
 @end menu
 
 @node Debugging
-@section Introduction to @command{gawk} Debugger
+@section Introduction to The @command{gawk} Debugger
 
 This @value{SECTION} introduces debugging in general and begins
 the discussion of debugging in @command{gawk}.
@@ -27907,13 +27913,7 @@ This tells us that @command{gawk} is now ready to execute line 67, which
 decides whether to give the lines the special ``field skipping'' treatment
 indicated by the @option{-f} command-line option.  (Notice that we skipped
 from where we were before at line 64 to here, since the condition in line 64
-
-@example
-if (fcount == 0 && charcount == 0)
-@end example
-
-@noindent
-was false.)
+@samp{if (fcount == 0 && charcount == 0)} was false.)
 
 Continuing to step, we now get to the splitting of the current and
 last records:
@@ -28048,7 +28048,7 @@ In the following descriptions, commands which may be abbreviated
 show the abbreviation on a second description line.
 A debugger command name may also be truncated if that partial
 name is unambiguous. The debugger has the built-in capability to
-automatically repeat the previous command when just hitting @key{Enter}.
+automatically repeat the previous command just by hitting @key{Enter}.
 This works for the commands @code{list}, @code{next}, @code{nexti}, @code{step}, @code{stepi}
 and @code{continue} executed without any argument.
 
@@ -28410,7 +28410,7 @@ No newline is printed unless one is specified.
 @item @code{set} @var{var}@code{=}@var{value}
 Assign a constant (number or string) value to an @command{awk} variable
 or field.
-String values must be enclosed between double quotes (@code{"@dots{}"}).
+String values must be enclosed between double quotes (@code{"}@dots{}@code{"}).
 
 You can also set special @command{awk} variables, such as @code{FS},
 @code{NF}, @code{NR}, etc.
@@ -28485,10 +28485,11 @@ Then select and print the frame.
 @cindex @code{f} debugger command (alias for @code{frame})
 @item @code{frame} [@var{n}]
 @itemx @code{f} [@var{n}]
-Select and print (frame number, function and argument names, source file,
-and the source line) stack frame @var{n}. Frame 0 is the currently executing,
-or @dfn{innermost}, frame (function call), frame 1 is the frame that called the
-innermost one. The highest numbered frame is the one for the main program.
+Select and print stack frame @var{n}.  Frame 0 is the currently executing,
+or @dfn{innermost}, frame (function call), frame 1 is the frame that
+called the innermost one. The highest numbered frame is the one for the
+main program.  The printed information consists of the frame number,
+function and argument names, source file, and the source line.
 
 @cindex debugger commands, @code{up}
 @cindex @code{up} debugger command
@@ -28788,9 +28789,11 @@ fairly self-explanatory, and using @code{stepi} and @code{nexti} while
 @cindex command completion, in debugger
 @cindex history expansion, in debugger
 
-If @command{gawk} is compiled with the @code{readline} library, you
-can take advantage of that library's command completion and history expansion
-features. The following types of completion are available:
+If @command{gawk} is compiled with
+@uref{http://cnswww.cns.cwru.edu/php/chet/readline/readline.html,
+the @code{readline} library}, you can take advantage of that library's
+command completion and history expansion features. The following types
+of completion are available:
 
 @table @asis
 @item Command completion
@@ -28840,9 +28843,10 @@ If you perused the dump of opcodes in @ref{Miscellaneous Debugger Commands},
 you will realize that much of the internal manipulation of data
 in @command{gawk}, as in many interpreters, is done on a stack.
 @code{Op_push}, @code{Op_pop}, etc., are the ``bread and butter'' of
-most @command{gawk} code.  Unfortunately, as of now, the @command{gawk}
-debugger does not allow you to examine the stack's contents.
+most @command{gawk} code.
 
+Unfortunately, as of now, the @command{gawk}
+debugger does not allow you to examine the stack's contents.
 That is, the intermediate results of expression evaluation are on the
 stack, but cannot be printed.  Rather, only variables which are defined
 in the program can be printed.  Of course, a workaround for
