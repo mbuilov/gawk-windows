@@ -18179,8 +18179,8 @@ your data as numeric:
 
 The `print' statement treats its expressions as strings.  Although the
 fields can act as numbers when necessary, they are still strings, so
-`print' does not try to treat them numerically.  You may need to add
-zero to a field to force it to be treated as a number.  For example:
+`print' does not try to treat them numerically.  You need to add zero
+to a field to force it to be treated as a number.  For example:
 
      $ echo 0123 123 0x123 | gawk --non-decimal-data '
      > { print $1, $2, $3
@@ -18195,7 +18195,7 @@ request it.
 
      CAUTION: _Use of this option is not recommended._ It can break old
      programs very badly.  Instead, use the `strtonum()' function to
-     convert your data (*note Nondecimal-numbers::).  This makes your
+     convert your data (*note String Functions::).  This makes your
      programs easier to write and easier to read, and leads to less
      surprising results.
 
@@ -18234,7 +18234,7 @@ you do this.
 
    *note Controlling Scanning::, describes how you can assign special,
 pre-defined values to `PROCINFO["sorted_in"]' in order to control the
-order in which `gawk' will traverse an array during a `for' loop.
+order in which `gawk' traverses an array during a `for' loop.
 
    In addition, the value of `PROCINFO["sorted_in"]' can be a function
 name.  This lets you traverse an array based on any custom criterion.
@@ -18507,9 +18507,9 @@ become the values of the result array:
 
    So far, so good. Now it starts to get interesting.  Both `asort()'
 and `asorti()' accept a third string argument to control comparison of
-array elements.  In *note String Functions::, we ignored this third
-argument; however, the time has now come to describe how this argument
-affects these two functions.
+array elements.  When we introduced `asort()' and `asorti()' in *note
+String Functions::, we ignored this third argument; however, now is the
+time to describe how this argument affects these two functions.
 
    Basically, the third argument specifies how the array is to be
 sorted.  There are two possibilities.  As with `PROCINFO["sorted_in"]',
@@ -18657,7 +18657,8 @@ the `gawk' program.  Once all of the data has been read, `gawk'
 terminates the coprocess and exits.
 
    As a side note, the assignment `LC_ALL=C' in the `sort' command
-ensures traditional Unix (ASCII) sorting from `sort'.
+ensures traditional Unix (ASCII) sorting from `sort'.  This is not
+strictly necessary here, but it's good to know how to do this.
 
    You may also use pseudo-ttys (ptys) for two-way communication
 instead of pipes, if your system supports them.  This is done on a
@@ -18669,10 +18670,10 @@ per-command basis, by setting a special element in the `PROCINFO' array
      print ... |& command       # start two-way pipe
      ...
 
-Using ptys avoids the buffer deadlock issues described earlier, at some
-loss in performance.  If your system does not have ptys, or if all the
-system's ptys are in use, `gawk' automatically falls back to using
-regular pipes.
+Using ptys usually avoids the buffer deadlock issues described earlier,
+at some loss in performance.  If your system does not have ptys, or if
+all the system's ptys are in use, `gawk' automatically falls back to
+using regular pipes.
 
    ---------- Footnotes ----------
 
@@ -18953,7 +18954,7 @@ As usual, the profiled version of the program is written to
 `awkprof.out', or to a different file if one specified with the
 `--profile' option.
 
-   Along with the regular profile, as shown earlier, the profile
+   Along with the regular profile, as shown earlier, the profile file
 includes a trace of any active functions:
 
      # Function Call Stack:
@@ -19037,6 +19038,7 @@ File: gawk.info,  Node: Explaining gettext,  Next: Programmer i18n,  Prev: I18N 
 13.2 GNU `gettext'
 ==================
 
+`gawk' uses GNU `gettext' to provide its internationalization features.
 The facilities in GNU `gettext' focus on messages; strings printed by a
 program, either directly or via formatting with `printf' or
 `sprintf()'.(1)
@@ -19183,7 +19185,7 @@ internationalization:
      for translation at runtime.  String constants without a leading
      underscore are not translated.
 
-``dcgettext(STRING' [`,' DOMAIN [`,' CATEGORY ]]`)''
+``dcgettext(STRING' [`,' DOMAIN [`,' CATEGORY]]`)''
      Return the translation of STRING in text domain DOMAIN for locale
      category CATEGORY.  The default value for DOMAIN is the current
      value of `TEXTDOMAIN'.  The default value for CATEGORY is
@@ -19200,7 +19202,7 @@ internationalization:
           be simple and to allow for reasonable `awk'-style default
           arguments.
 
-``dcngettext(STRING1, STRING2, NUMBER' [`,' DOMAIN [`,' CATEGORY ]]`)''
+``dcngettext(STRING1, STRING2, NUMBER' [`,' DOMAIN [`,' CATEGORY]]`)''
      Return the plural form used for NUMBER of the translation of
      STRING1 and STRING2 in text domain DOMAIN for locale category
      CATEGORY. STRING1 is the English singular variant of a message,
@@ -19516,19 +19518,20 @@ Following are the translations:
      msgstr "Like, the scoop is"
 
    The next step is to make the directory to hold the binary message
-object file and then to create the `guide.gmo' file.  The directory
+object file and then to create the `guide.mo' file.  We pretend that
+our file is to be used in the `en_US.UTF-8' locale.  The directory
 layout shown here is standard for GNU `gettext' on GNU/Linux systems.
 Other versions of `gettext' may use a different layout:
 
-     $ mkdir en_US en_US/LC_MESSAGES
+     $ mkdir en_US.UTF-8 en_US.UTF-8/LC_MESSAGES
 
    The `msgfmt' utility does the conversion from human-readable `.po'
-file to machine-readable `.gmo' file.  By default, `msgfmt' creates a
+file to machine-readable `.mo' file.  By default, `msgfmt' creates a
 file named `messages'.  This file must be renamed and placed in the
 proper directory so that `gawk' can find it:
 
      $ msgfmt guide-mellow.po
-     $ mv messages en_US/LC_MESSAGES/guide.gmo
+     $ mv messages en_US.UTF-8/LC_MESSAGES/guide.mo
 
    Finally, we run the program to test it:
 
@@ -19592,8 +19595,8 @@ program is easy.
 
 File: gawk.info,  Node: Debugging,  Next: Sample Debugging Session,  Up: Debugger
 
-14.1 Introduction to `gawk' Debugger
-====================================
+14.1 Introduction to The `gawk' Debugger
+========================================
 
 This minor node introduces debugging in general and begins the
 discussion of debugging in `gawk'.
@@ -19879,11 +19882,7 @@ typing `n' (for "next"):
 decides whether to give the lines the special "field skipping" treatment
 indicated by the `-f' command-line option.  (Notice that we skipped
 from where we were before at line 64 to here, since the condition in
-line 64
-
-     if (fcount == 0 && charcount == 0)
-
-was false.)
+line 64 `if (fcount == 0 && charcount == 0)' was false.)
 
    Continuing to step, we now get to the splitting of the current and
 last records:
@@ -19989,7 +19988,7 @@ following descriptions, commands which may be abbreviated show the
 abbreviation on a second description line.  A debugger command name may
 also be truncated if that partial name is unambiguous. The debugger has
 the built-in capability to automatically repeat the previous command
-when just hitting <Enter>.  This works for the commands `list', `next',
+just by hitting <Enter>.  This works for the commands `list', `next',
 `nexti', `step', `stepi' and `continue' executed without any argument.
 
 * Menu:
@@ -20249,7 +20248,7 @@ AWK STATEMENTS
 `set' VAR`='VALUE
      Assign a constant (number or string) value to an `awk' variable or
      field.  String values must be enclosed between double quotes
-     (`"..."').
+     (`"'...`"').
 
      You can also set special `awk' variables, such as `FS', `NF',
      `NR', etc.
@@ -20303,11 +20302,12 @@ are:
 
 `frame' [N]
 `f' [N]
-     Select and print (frame number, function and argument names,
-     source file, and the source line) stack frame N. Frame 0 is the
-     currently executing, or "innermost", frame (function call), frame
-     1 is the frame that called the innermost one. The highest numbered
-     frame is the one for the main program.
+     Select and print stack frame N.  Frame 0 is the currently
+     executing, or "innermost", frame (function call), frame 1 is the
+     frame that called the innermost one. The highest numbered frame is
+     the one for the main program.  The printed information consists of
+     the frame number, function and argument names, source file, and
+     the source line.
 
 `up' [COUNT]
      Move COUNT (default 1) frames up the stack toward the outermost
@@ -20546,9 +20546,10 @@ File: gawk.info,  Node: Readline Support,  Next: Limitations,  Prev: List of Deb
 14.4 Readline Support
 =====================
 
-If `gawk' is compiled with the `readline' library, you can take
-advantage of that library's command completion and history expansion
-features. The following types of completion are available:
+If `gawk' is compiled with the `readline' library
+(http://cnswww.cns.cwru.edu/php/chet/readline/readline.html), you can
+take advantage of that library's command completion and history
+expansion features. The following types of completion are available:
 
 Command completion
      Command names.
@@ -20587,15 +20588,14 @@ some limitations.  A few which are worth being aware of are:
      you will realize that much of the internal manipulation of data in
      `gawk', as in many interpreters, is done on a stack.  `Op_push',
      `Op_pop', etc., are the "bread and butter" of most `gawk' code.
-     Unfortunately, as of now, the `gawk' debugger does not allow you
-     to examine the stack's contents.
 
-     That is, the intermediate results of expression evaluation are on
-     the stack, but cannot be printed.  Rather, only variables which
-     are defined in the program can be printed.  Of course, a
-     workaround for this is to use more explicit variables at the
-     debugging stage and then change back to obscure, perhaps more
-     optimal code later.
+     Unfortunately, as of now, the `gawk' debugger does not allow you
+     to examine the stack's contents.  That is, the intermediate
+     results of expression evaluation are on the stack, but cannot be
+     printed.  Rather, only variables which are defined in the program
+     can be printed.  Of course, a workaround for this is to use more
+     explicit variables at the debugging stage and then change back to
+     obscure, perhaps more optimal code later.
 
    * There is no way to look "inside" the process of compiling regular
      expressions to see if you got it right.  As an `awk' programmer,
@@ -30297,14 +30297,14 @@ Index
 * -v option:                             Options.             (line  32)
 * -W option:                             Options.             (line  46)
 * . (period), regexp operator:           Regexp Operators.    (line  44)
-* .gmo files:                            Explaining gettext.  (line  41)
-* .gmo files, converting from .po:       I18N Example.        (line  62)
+* .gmo files:                            Explaining gettext.  (line  42)
 * .gmo files, specifying directory of <1>: Programmer i18n.   (line  47)
-* .gmo files, specifying directory of:   Explaining gettext.  (line  53)
+* .gmo files, specifying directory of:   Explaining gettext.  (line  54)
+* .mo files, converting from .po:        I18N Example.        (line  63)
 * .po files <1>:                         Translator i18n.     (line   6)
-* .po files:                             Explaining gettext.  (line  36)
-* .po files, converting to .gmo:         I18N Example.        (line  62)
-* .pot files:                            Explaining gettext.  (line  30)
+* .po files:                             Explaining gettext.  (line  37)
+* .po files, converting to .mo:          I18N Example.        (line  63)
+* .pot files:                            Explaining gettext.  (line  31)
 * / (forward slash) to enclose regular expressions: Regexp.   (line  10)
 * / (forward slash), / operator:         Precedence.          (line  55)
 * / (forward slash), /= operator <1>:    Precedence.          (line  95)
@@ -30409,7 +30409,7 @@ Index
 * ^ (caret), regexp operator <1>:        GNU Regexp Operators.
                                                               (line  59)
 * ^ (caret), regexp operator:            Regexp Operators.    (line  22)
-* _ (underscore), C macro:               Explaining gettext.  (line  70)
+* _ (underscore), C macro:               Explaining gettext.  (line  71)
 * _ (underscore), in names of private variables: Library Names.
                                                               (line  29)
 * _ (underscore), translatable string:   Programmer i18n.     (line  69)
@@ -30709,7 +30709,7 @@ Index
 * binary input/output:                   User-modified.       (line  15)
 * bindtextdomain <1>:                    Programmer i18n.     (line  47)
 * bindtextdomain:                        I18N Functions.      (line  12)
-* bindtextdomain() function (C library): Explaining gettext.  (line  49)
+* bindtextdomain() function (C library): Explaining gettext.  (line  50)
 * bindtextdomain() function (gawk), portability and: I18N Portability.
                                                               (line  33)
 * BINMODE variable <1>:                  PC Using.            (line  33)
@@ -30981,7 +30981,7 @@ Index
 * csh utility, POSIXLY_CORRECT environment variable: Options. (line 355)
 * csh utility, |& operator, comparison with: Two-way I/O.     (line  44)
 * ctime() user-defined function:         Function Example.    (line  73)
-* currency symbols, localization:        Explaining gettext.  (line 103)
+* currency symbols, localization:        Explaining gettext.  (line 104)
 * current system time:                   Time Functions.      (line  66)
 * custom.h file:                         Configuration Philosophy.
                                                               (line  30)
@@ -31043,7 +31043,7 @@ Index
 * date utility, POSIX:                   Time Functions.      (line 254)
 * dates, converting to timestamps:       Time Functions.      (line  76)
 * dates, information related to, localization: Explaining gettext.
-                                                              (line 115)
+                                                              (line 116)
 * Davies, Stephen <1>:                   Contributors.        (line  74)
 * Davies, Stephen:                       Acknowledgments.     (line  60)
 * dcgettext <1>:                         Programmer i18n.     (line  19)
@@ -31146,7 +31146,7 @@ Index
                                                               (line  83)
 * debugger commands, unwatch:            Viewing And Changing Data.
                                                               (line  84)
-* debugger commands, up:                 Execution Stack.     (line  33)
+* debugger commands, up:                 Execution Stack.     (line  34)
 * debugger commands, w (watch):          Viewing And Changing Data.
                                                               (line  67)
 * debugger commands, watch:              Viewing And Changing Data.
@@ -31485,14 +31485,14 @@ Index
 * FILENAME variable:                     Reading Files.       (line   6)
 * FILENAME variable, getline, setting with: Getline Notes.    (line  19)
 * filenames, assignments as:             Ignoring Assigns.    (line   6)
-* files, .gmo:                           Explaining gettext.  (line  41)
-* files, .gmo, converting from .po:      I18N Example.        (line  62)
+* files, .gmo:                           Explaining gettext.  (line  42)
 * files, .gmo, specifying directory of <1>: Programmer i18n.  (line  47)
-* files, .gmo, specifying directory of:  Explaining gettext.  (line  53)
+* files, .gmo, specifying directory of:  Explaining gettext.  (line  54)
+* files, .mo, converting from .po:       I18N Example.        (line  63)
 * files, .po <1>:                        Translator i18n.     (line   6)
-* files, .po:                            Explaining gettext.  (line  36)
-* files, .po, converting to .gmo:        I18N Example.        (line  62)
-* files, .pot:                           Explaining gettext.  (line  30)
+* files, .po:                            Explaining gettext.  (line  37)
+* files, .po, converting to .mo:         I18N Example.        (line  63)
+* files, .pot:                           Explaining gettext.  (line  31)
 * files, /dev/... special files:         Special FD.          (line  46)
 * files, /inet/... (gawk):               TCP/IP Networking.   (line   6)
 * files, /inet4/... (gawk):              TCP/IP Networking.   (line   6)
@@ -31509,23 +31509,23 @@ Index
 * files, managing:                       Data File Management.
                                                               (line   6)
 * files, managing, data file boundaries: Filetrans Function.  (line   6)
-* files, message object:                 Explaining gettext.  (line  41)
+* files, message object:                 Explaining gettext.  (line  42)
 * files, message object, converting from portable object files: I18N Example.
-                                                              (line  62)
+                                                              (line  63)
 * files, message object, specifying directory of <1>: Programmer i18n.
                                                               (line  47)
 * files, message object, specifying directory of: Explaining gettext.
-                                                              (line  53)
+                                                              (line  54)
 * files, multiple passes over:           Other Arguments.     (line  49)
 * files, multiple, duplicating output into: Tee Program.      (line   6)
 * files, output, See output files:       Close Files And Pipes.
                                                               (line   6)
 * files, password:                       Passwd Functions.    (line  16)
 * files, portable object <1>:            Translator i18n.     (line   6)
-* files, portable object:                Explaining gettext.  (line  36)
-* files, portable object template:       Explaining gettext.  (line  30)
+* files, portable object:                Explaining gettext.  (line  37)
+* files, portable object template:       Explaining gettext.  (line  31)
 * files, portable object, converting to message object files: I18N Example.
-                                                              (line  62)
+                                                              (line  63)
 * files, portable object, generating:    Options.             (line 147)
 * files, processing, ARGIND variable and: Auto-set.           (line  51)
 * files, reading:                        Rewind Function.     (line   6)
@@ -31720,7 +31720,7 @@ Index
 * gawk, newlines in:                     Statements/Lines.    (line  12)
 * gawk, octal numbers and:               Nondecimal-numbers.  (line  42)
 * gawk, OS/2 version of:                 PC Using.            (line  16)
-* gawk, PROCINFO array in <1>:           Two-way I/O.         (line 116)
+* gawk, PROCINFO array in <1>:           Two-way I/O.         (line 117)
 * gawk, PROCINFO array in <2>:           Time Functions.      (line  47)
 * gawk, PROCINFO array in:               Auto-set.            (line 136)
 * gawk, regexp constants and:            Using Constant Regexps.
@@ -31791,8 +31791,8 @@ Index
 * getpwuid() function (C library):       Passwd Functions.    (line 188)
 * getpwuid() user-defined function:      Passwd Functions.    (line 192)
 * gettext library:                       Explaining gettext.  (line   6)
-* gettext library, locale categories:    Explaining gettext.  (line  80)
-* gettext() function (C library):        Explaining gettext.  (line  62)
+* gettext library, locale categories:    Explaining gettext.  (line  81)
+* gettext() function (C library):        Explaining gettext.  (line  63)
 * gettimeofday() extension function:     Extension Sample Time.
                                                               (line  13)
 * git utility <1>:                       Adding Code.         (line 111)
@@ -31944,7 +31944,7 @@ Index
 * internationalization, localization, gawk and: Internationalization.
                                                               (line  13)
 * internationalization, localization, locale categories: Explaining gettext.
-                                                              (line  80)
+                                                              (line  81)
 * internationalization, localization, marked strings: Programmer i18n.
                                                               (line  14)
 * internationalization, localization, portability and: I18N Portability.
@@ -31993,16 +31993,16 @@ Index
 * labels.awk program:                    Labels Program.      (line  51)
 * languages, data-driven:                Basic High Level.    (line  85)
 * Laurie, Dirk:                          Changing Precision.  (line   6)
-* LC_ALL locale category:                Explaining gettext.  (line 120)
-* LC_COLLATE locale category:            Explaining gettext.  (line  93)
-* LC_CTYPE locale category:              Explaining gettext.  (line  97)
-* LC_MESSAGES locale category:           Explaining gettext.  (line  87)
+* LC_ALL locale category:                Explaining gettext.  (line 121)
+* LC_COLLATE locale category:            Explaining gettext.  (line  94)
+* LC_CTYPE locale category:              Explaining gettext.  (line  98)
+* LC_MESSAGES locale category:           Explaining gettext.  (line  88)
 * LC_MESSAGES locale category, bindtextdomain() function (gawk): Programmer i18n.
                                                               (line  88)
-* LC_MONETARY locale category:           Explaining gettext.  (line 103)
-* LC_NUMERIC locale category:            Explaining gettext.  (line 107)
-* LC_RESPONSE locale category:           Explaining gettext.  (line 111)
-* LC_TIME locale category:               Explaining gettext.  (line 115)
+* LC_MONETARY locale category:           Explaining gettext.  (line 104)
+* LC_NUMERIC locale category:            Explaining gettext.  (line 108)
+* LC_RESPONSE locale category:           Explaining gettext.  (line 112)
+* LC_TIME locale category:               Explaining gettext.  (line 116)
 * left angle bracket (<), < operator <1>: Precedence.         (line  65)
 * left angle bracket (<), < operator:    Comparison Operators.
                                                               (line  11)
@@ -32071,7 +32071,7 @@ Index
 * list function definitions, in debugger: Debugger Info.      (line  30)
 * loading, extensions:                   Options.             (line 173)
 * local variables, in a function:        Variable Scope.      (line   6)
-* locale categories:                     Explaining gettext.  (line  80)
+* locale categories:                     Explaining gettext.  (line  81)
 * locale decimal point character:        Options.             (line 270)
 * locale, definition of:                 Locales.             (line   6)
 * localization:                          I18N and L10N.       (line   6)
@@ -32122,23 +32122,23 @@ Index
 * mawk utility:                          Escape Sequences.    (line 124)
 * maximum precision supported by MPFR library: Auto-set.      (line 221)
 * McPhee, Patrick:                       Contributors.        (line 100)
-* message object files:                  Explaining gettext.  (line  41)
+* message object files:                  Explaining gettext.  (line  42)
 * message object files, converting from portable object files: I18N Example.
-                                                              (line  62)
+                                                              (line  63)
 * message object files, specifying directory of <1>: Programmer i18n.
                                                               (line  47)
 * message object files, specifying directory of: Explaining gettext.
-                                                              (line  53)
+                                                              (line  54)
 * messages from extensions:              Printing Messages.   (line   6)
 * metacharacters in regular expressions: Regexp Operators.    (line   6)
 * metacharacters, escape sequences for:  Escape Sequences.    (line 130)
 * minimum precision supported by MPFR library: Auto-set.      (line 224)
 * mktime:                                Time Functions.      (line  25)
 * modifiers, in format specifiers:       Format Modifiers.    (line   6)
-* monetary information, localization:    Explaining gettext.  (line 103)
+* monetary information, localization:    Explaining gettext.  (line 104)
 * Moore, Duncan:                         Getline Notes.       (line  40)
 * MPFR:                                  Gawk and MPFR.       (line   6)
-* msgfmt utility:                        I18N Example.        (line  62)
+* msgfmt utility:                        I18N Example.        (line  63)
 * multiple precision:                    Arbitrary Precision Arithmetic.
                                                               (line   6)
 * multiple-line records:                 Multiple Line.       (line   6)
@@ -32370,7 +32370,7 @@ Index
 * portability, example programs:         Library Functions.   (line  42)
 * portability, functions, defining:      Definition Syntax.   (line  99)
 * portability, gawk:                     New Ports.           (line   6)
-* portability, gettext library and:      Explaining gettext.  (line  10)
+* portability, gettext library and:      Explaining gettext.  (line  11)
 * portability, internationalization and: I18N Portability.    (line   6)
 * portability, length() function:        String Functions.    (line 176)
 * portability, new awk vs. old awk:      Conversion.          (line  55)
@@ -32382,11 +32382,11 @@ Index
 * portability, POSIXLY_CORRECT environment variable: Options. (line 360)
 * portability, substr() function:        String Functions.    (line 510)
 * portable object files <1>:             Translator i18n.     (line   6)
-* portable object files:                 Explaining gettext.  (line  36)
+* portable object files:                 Explaining gettext.  (line  37)
 * portable object files, converting to message object files: I18N Example.
-                                                              (line  62)
+                                                              (line  63)
 * portable object files, generating:     Options.             (line 147)
-* portable object template files:        Explaining gettext.  (line  30)
+* portable object template files:        Explaining gettext.  (line  31)
 * porting gawk:                          New Ports.           (line   6)
 * positional specifiers, printf statement <1>: Printf Ordering.
                                                               (line   6)
@@ -32484,7 +32484,7 @@ Index
 * PROCINFO array <1>:                    Passwd Functions.    (line   6)
 * PROCINFO array <2>:                    Time Functions.      (line  47)
 * PROCINFO array:                        Auto-set.            (line 136)
-* PROCINFO array, and communications via ptys: Two-way I/O.   (line 116)
+* PROCINFO array, and communications via ptys: Two-way I/O.   (line 117)
 * PROCINFO array, and group membership:  Group Functions.     (line   6)
 * PROCINFO array, and user and group ID numbers: Id Program.  (line  15)
 * PROCINFO array, testing the field splitting: Passwd Functions.
@@ -32852,7 +32852,7 @@ Index
 * sort utility:                          Word Sorting.        (line  50)
 * sort utility, coprocesses and:         Two-way I/O.         (line  83)
 * sorting characters in different languages: Explaining gettext.
-                                                              (line  93)
+                                                              (line  94)
 * source code, awka:                     Other Versions.      (line  64)
 * source code, Brian Kernighan's awk:    Other Versions.      (line  13)
 * source code, Busybox Awk:              Other Versions.      (line  88)
@@ -32990,7 +32990,7 @@ Index
 * TEXTDOMAIN variable:                   User-modified.       (line 152)
 * TEXTDOMAIN variable, BEGIN pattern and: Programmer i18n.    (line  60)
 * TEXTDOMAIN variable, portability and:  I18N Portability.    (line  20)
-* textdomain() function (C library):     Explaining gettext.  (line  27)
+* textdomain() function (C library):     Explaining gettext.  (line  28)
 * tilde (~), ~ operator <1>:             Expression Patterns. (line  24)
 * tilde (~), ~ operator <2>:             Precedence.          (line  80)
 * tilde (~), ~ operator <3>:             Comparison Operators.
@@ -33001,7 +33001,7 @@ Index
 * tilde (~), ~ operator:                 Regexp Usage.        (line  19)
 * time functions:                        Time Functions.      (line   6)
 * time, alarm clock example program:     Alarm Program.       (line  11)
-* time, localization and:                Explaining gettext.  (line 115)
+* time, localization and:                Explaining gettext.  (line 116)
 * time, managing:                        Getlocaltime Function.
                                                               (line   6)
 * time, retrieving:                      Time Functions.      (line  17)
@@ -33064,7 +33064,7 @@ Index
                                                               (line  18)
 * undefined functions:                   Pass By Value/Reference.
                                                               (line  71)
-* underscore (_), C macro:               Explaining gettext.  (line  70)
+* underscore (_), C macro:               Explaining gettext.  (line  71)
 * underscore (_), in names of private variables: Library Names.
                                                               (line  29)
 * underscore (_), translatable string:   Programmer i18n.     (line  69)
@@ -33092,7 +33092,7 @@ Index
                                                               (line  83)
 * unwatch debugger command:              Viewing And Changing Data.
                                                               (line  84)
-* up debugger command:                   Execution Stack.     (line  33)
+* up debugger command:                   Execution Stack.     (line  34)
 * user database, reading:                Passwd Functions.    (line   6)
 * user-defined functions:                User-defined.        (line   6)
 * user-defined, functions, counts, in a profile: Profiling.   (line 137)
@@ -33548,213 +33548,213 @@ Node: Anagram Program729474
 Node: Signature Program732542
 Node: Advanced Features733789
 Node: Nondecimal Data735675
-Node: Array Sorting737258
-Node: Controlling Array Traversal737955
-Node: Array Sorting Functions746239
-Ref: Array Sorting Functions-Footnote-1750108
-Node: Two-way I/O750302
-Ref: Two-way I/O-Footnote-1755734
-Node: TCP/IP Networking755816
-Node: Profiling758660
-Node: Internationalization766163
-Node: I18N and L10N767588
-Node: Explaining gettext768274
-Ref: Explaining gettext-Footnote-1773342
-Ref: Explaining gettext-Footnote-2773526
-Node: Programmer i18n773691
-Node: Translator i18n777918
-Node: String Extraction778712
-Ref: String Extraction-Footnote-1779673
-Node: Printf Ordering779759
-Ref: Printf Ordering-Footnote-1782541
-Node: I18N Portability782605
-Ref: I18N Portability-Footnote-1785054
-Node: I18N Example785117
-Ref: I18N Example-Footnote-1787755
-Node: Gawk I18N787827
-Node: Debugger788448
-Node: Debugging789419
-Node: Debugging Concepts789852
-Node: Debugging Terms791708
-Node: Awk Debugging794305
-Node: Sample Debugging Session795197
-Node: Debugger Invocation795717
-Node: Finding The Bug797050
-Node: List of Debugger Commands803537
-Node: Breakpoint Control804871
-Node: Debugger Execution Control808535
-Node: Viewing And Changing Data811895
-Node: Execution Stack815251
-Node: Debugger Info816718
-Node: Miscellaneous Debugger Commands820712
-Node: Readline Support825896
-Node: Limitations826727
-Node: Arbitrary Precision Arithmetic828979
-Ref: Arbitrary Precision Arithmetic-Footnote-1830628
-Node: General Arithmetic830776
-Node: Floating Point Issues832496
-Node: String Conversion Precision833377
-Ref: String Conversion Precision-Footnote-1835082
-Node: Unexpected Results835191
-Node: POSIX Floating Point Problems837344
-Ref: POSIX Floating Point Problems-Footnote-1841169
-Node: Integer Programming841207
-Node: Floating-point Programming842946
-Ref: Floating-point Programming-Footnote-1849277
-Ref: Floating-point Programming-Footnote-2849547
-Node: Floating-point Representation849811
-Node: Floating-point Context850976
-Ref: table-ieee-formats851815
-Node: Rounding Mode853199
-Ref: table-rounding-modes853678
-Ref: Rounding Mode-Footnote-1856693
-Node: Gawk and MPFR856872
-Node: Arbitrary Precision Floats858281
-Ref: Arbitrary Precision Floats-Footnote-1860724
-Node: Setting Precision861040
-Ref: table-predefined-precision-strings861726
-Node: Setting Rounding Mode863871
-Ref: table-gawk-rounding-modes864275
-Node: Floating-point Constants865462
-Node: Changing Precision866891
-Ref: Changing Precision-Footnote-1868288
-Node: Exact Arithmetic868462
-Node: Arbitrary Precision Integers871600
-Ref: Arbitrary Precision Integers-Footnote-1874615
-Node: Dynamic Extensions874762
-Node: Extension Intro876220
-Node: Plugin License877485
-Node: Extension Mechanism Outline878170
-Ref: load-extension878587
-Ref: load-new-function880065
-Ref: call-new-function881060
-Node: Extension API Description883075
-Node: Extension API Functions Introduction884362
-Node: General Data Types889289
-Ref: General Data Types-Footnote-1894984
-Node: Requesting Values895283
-Ref: table-value-types-returned896020
-Node: Memory Allocation Functions896974
-Ref: Memory Allocation Functions-Footnote-1899720
-Node: Constructor Functions899816
-Node: Registration Functions901574
-Node: Extension Functions902259
-Node: Exit Callback Functions904561
-Node: Extension Version String905810
-Node: Input Parsers906460
-Node: Output Wrappers916217
-Node: Two-way processors920727
-Node: Printing Messages922935
-Ref: Printing Messages-Footnote-1924012
-Node: Updating `ERRNO'924164
-Node: Accessing Parameters924903
-Node: Symbol Table Access926133
-Node: Symbol table by name926647
-Node: Symbol table by cookie928623
-Ref: Symbol table by cookie-Footnote-1932755
-Node: Cached values932818
-Ref: Cached values-Footnote-1936308
-Node: Array Manipulation936399
-Ref: Array Manipulation-Footnote-1937497
-Node: Array Data Types937536
-Ref: Array Data Types-Footnote-1940239
-Node: Array Functions940331
-Node: Flattening Arrays944167
-Node: Creating Arrays951019
-Node: Extension API Variables955744
-Node: Extension Versioning956380
-Node: Extension API Informational Variables958281
-Node: Extension API Boilerplate959367
-Node: Finding Extensions963171
-Node: Extension Example963731
-Node: Internal File Description964461
-Node: Internal File Ops968552
-Ref: Internal File Ops-Footnote-1980061
-Node: Using Internal File Ops980201
-Ref: Using Internal File Ops-Footnote-1982548
-Node: Extension Samples982814
-Node: Extension Sample File Functions984338
-Node: Extension Sample Fnmatch992825
-Node: Extension Sample Fork994594
-Node: Extension Sample Inplace995807
-Node: Extension Sample Ord997585
-Node: Extension Sample Readdir998421
-Node: Extension Sample Revout999953
-Node: Extension Sample Rev2way1000546
-Node: Extension Sample Read write array1001236
-Node: Extension Sample Readfile1003119
-Node: Extension Sample API Tests1004219
-Node: Extension Sample Time1004744
-Node: gawkextlib1006108
-Node: Language History1008889
-Node: V7/SVR3.11010482
-Node: SVR41012802
-Node: POSIX1014244
-Node: BTL1015630
-Node: POSIX/GNU1016364
-Node: Feature History1021963
-Node: Common Extensions1034939
-Node: Ranges and Locales1036251
-Ref: Ranges and Locales-Footnote-11040868
-Ref: Ranges and Locales-Footnote-21040895
-Ref: Ranges and Locales-Footnote-31041129
-Node: Contributors1041350
-Node: Installation1046731
-Node: Gawk Distribution1047625
-Node: Getting1048109
-Node: Extracting1048935
-Node: Distribution contents1050627
-Node: Unix Installation1056348
-Node: Quick Installation1056965
-Node: Additional Configuration Options1059411
-Node: Configuration Philosophy1061147
-Node: Non-Unix Installation1063501
-Node: PC Installation1063959
-Node: PC Binary Installation1065270
-Node: PC Compiling1067118
-Node: PC Testing1070078
-Node: PC Using1071254
-Node: Cygwin1075422
-Node: MSYS1076231
-Node: VMS Installation1076745
-Node: VMS Compilation1077541
-Ref: VMS Compilation-Footnote-11078793
-Node: VMS Dynamic Extensions1078851
-Node: VMS Installation Details1080224
-Node: VMS Running1082475
-Node: VMS GNV1085309
-Node: VMS Old Gawk1086032
-Node: Bugs1086502
-Node: Other Versions1090420
-Node: Notes1096504
-Node: Compatibility Mode1097304
-Node: Additions1098087
-Node: Accessing The Source1099014
-Node: Adding Code1100454
-Node: New Ports1106499
-Node: Derived Files1110634
-Ref: Derived Files-Footnote-11115955
-Ref: Derived Files-Footnote-21115989
-Ref: Derived Files-Footnote-31116589
-Node: Future Extensions1116687
-Node: Implementation Limitations1117270
-Node: Extension Design1118518
-Node: Old Extension Problems1119672
-Ref: Old Extension Problems-Footnote-11121180
-Node: Extension New Mechanism Goals1121237
-Ref: Extension New Mechanism Goals-Footnote-11124602
-Node: Extension Other Design Decisions1124788
-Node: Extension Future Growth1126894
-Node: Old Extension Mechanism1127730
-Node: Basic Concepts1129470
-Node: Basic High Level1130151
-Ref: figure-general-flow1130423
-Ref: figure-process-flow1131022
-Ref: Basic High Level-Footnote-11134251
-Node: Basic Data Typing1134436
-Node: Glossary1137791
-Node: Copying1163022
-Node: GNU Free Documentation License1200578
-Node: Index1225714
+Node: Array Sorting737252
+Node: Controlling Array Traversal737949
+Node: Array Sorting Functions746229
+Ref: Array Sorting Functions-Footnote-1750136
+Node: Two-way I/O750330
+Ref: Two-way I/O-Footnote-1755846
+Node: TCP/IP Networking755928
+Node: Profiling758772
+Node: Internationalization766280
+Node: I18N and L10N767705
+Node: Explaining gettext768391
+Ref: Explaining gettext-Footnote-1773531
+Ref: Explaining gettext-Footnote-2773715
+Node: Programmer i18n773880
+Node: Translator i18n778105
+Node: String Extraction778899
+Ref: String Extraction-Footnote-1779860
+Node: Printf Ordering779946
+Ref: Printf Ordering-Footnote-1782728
+Node: I18N Portability782792
+Ref: I18N Portability-Footnote-1785241
+Node: I18N Example785304
+Ref: I18N Example-Footnote-1788026
+Node: Gawk I18N788098
+Node: Debugger788719
+Node: Debugging789690
+Node: Debugging Concepts790131
+Node: Debugging Terms791987
+Node: Awk Debugging794584
+Node: Sample Debugging Session795476
+Node: Debugger Invocation795996
+Node: Finding The Bug797329
+Node: List of Debugger Commands803811
+Node: Breakpoint Control805143
+Node: Debugger Execution Control808807
+Node: Viewing And Changing Data812167
+Node: Execution Stack815525
+Node: Debugger Info817038
+Node: Miscellaneous Debugger Commands821032
+Node: Readline Support826216
+Node: Limitations827108
+Node: Arbitrary Precision Arithmetic829356
+Ref: Arbitrary Precision Arithmetic-Footnote-1831005
+Node: General Arithmetic831153
+Node: Floating Point Issues832873
+Node: String Conversion Precision833754
+Ref: String Conversion Precision-Footnote-1835459
+Node: Unexpected Results835568
+Node: POSIX Floating Point Problems837721
+Ref: POSIX Floating Point Problems-Footnote-1841546
+Node: Integer Programming841584
+Node: Floating-point Programming843323
+Ref: Floating-point Programming-Footnote-1849654
+Ref: Floating-point Programming-Footnote-2849924
+Node: Floating-point Representation850188
+Node: Floating-point Context851353
+Ref: table-ieee-formats852192
+Node: Rounding Mode853576
+Ref: table-rounding-modes854055
+Ref: Rounding Mode-Footnote-1857070
+Node: Gawk and MPFR857249
+Node: Arbitrary Precision Floats858658
+Ref: Arbitrary Precision Floats-Footnote-1861101
+Node: Setting Precision861417
+Ref: table-predefined-precision-strings862103
+Node: Setting Rounding Mode864248
+Ref: table-gawk-rounding-modes864652
+Node: Floating-point Constants865839
+Node: Changing Precision867268
+Ref: Changing Precision-Footnote-1868665
+Node: Exact Arithmetic868839
+Node: Arbitrary Precision Integers871977
+Ref: Arbitrary Precision Integers-Footnote-1874992
+Node: Dynamic Extensions875139
+Node: Extension Intro876597
+Node: Plugin License877862
+Node: Extension Mechanism Outline878547
+Ref: load-extension878964
+Ref: load-new-function880442
+Ref: call-new-function881437
+Node: Extension API Description883452
+Node: Extension API Functions Introduction884739
+Node: General Data Types889666
+Ref: General Data Types-Footnote-1895361
+Node: Requesting Values895660
+Ref: table-value-types-returned896397
+Node: Memory Allocation Functions897351
+Ref: Memory Allocation Functions-Footnote-1900097
+Node: Constructor Functions900193
+Node: Registration Functions901951
+Node: Extension Functions902636
+Node: Exit Callback Functions904938
+Node: Extension Version String906187
+Node: Input Parsers906837
+Node: Output Wrappers916594
+Node: Two-way processors921104
+Node: Printing Messages923312
+Ref: Printing Messages-Footnote-1924389
+Node: Updating `ERRNO'924541
+Node: Accessing Parameters925280
+Node: Symbol Table Access926510
+Node: Symbol table by name927024
+Node: Symbol table by cookie929000
+Ref: Symbol table by cookie-Footnote-1933132
+Node: Cached values933195
+Ref: Cached values-Footnote-1936685
+Node: Array Manipulation936776
+Ref: Array Manipulation-Footnote-1937874
+Node: Array Data Types937913
+Ref: Array Data Types-Footnote-1940616
+Node: Array Functions940708
+Node: Flattening Arrays944544
+Node: Creating Arrays951396
+Node: Extension API Variables956121
+Node: Extension Versioning956757
+Node: Extension API Informational Variables958658
+Node: Extension API Boilerplate959744
+Node: Finding Extensions963548
+Node: Extension Example964108
+Node: Internal File Description964838
+Node: Internal File Ops968929
+Ref: Internal File Ops-Footnote-1980438
+Node: Using Internal File Ops980578
+Ref: Using Internal File Ops-Footnote-1982925
+Node: Extension Samples983191
+Node: Extension Sample File Functions984715
+Node: Extension Sample Fnmatch993202
+Node: Extension Sample Fork994971
+Node: Extension Sample Inplace996184
+Node: Extension Sample Ord997962
+Node: Extension Sample Readdir998798
+Node: Extension Sample Revout1000330
+Node: Extension Sample Rev2way1000923
+Node: Extension Sample Read write array1001613
+Node: Extension Sample Readfile1003496
+Node: Extension Sample API Tests1004596
+Node: Extension Sample Time1005121
+Node: gawkextlib1006485
+Node: Language History1009266
+Node: V7/SVR3.11010859
+Node: SVR41013179
+Node: POSIX1014621
+Node: BTL1016007
+Node: POSIX/GNU1016741
+Node: Feature History1022340
+Node: Common Extensions1035316
+Node: Ranges and Locales1036628
+Ref: Ranges and Locales-Footnote-11041245
+Ref: Ranges and Locales-Footnote-21041272
+Ref: Ranges and Locales-Footnote-31041506
+Node: Contributors1041727
+Node: Installation1047108
+Node: Gawk Distribution1048002
+Node: Getting1048486
+Node: Extracting1049312
+Node: Distribution contents1051004
+Node: Unix Installation1056725
+Node: Quick Installation1057342
+Node: Additional Configuration Options1059788
+Node: Configuration Philosophy1061524
+Node: Non-Unix Installation1063878
+Node: PC Installation1064336
+Node: PC Binary Installation1065647
+Node: PC Compiling1067495
+Node: PC Testing1070455
+Node: PC Using1071631
+Node: Cygwin1075799
+Node: MSYS1076608
+Node: VMS Installation1077122
+Node: VMS Compilation1077918
+Ref: VMS Compilation-Footnote-11079170
+Node: VMS Dynamic Extensions1079228
+Node: VMS Installation Details1080601
+Node: VMS Running1082852
+Node: VMS GNV1085686
+Node: VMS Old Gawk1086409
+Node: Bugs1086879
+Node: Other Versions1090797
+Node: Notes1096881
+Node: Compatibility Mode1097681
+Node: Additions1098464
+Node: Accessing The Source1099391
+Node: Adding Code1100831
+Node: New Ports1106876
+Node: Derived Files1111011
+Ref: Derived Files-Footnote-11116332
+Ref: Derived Files-Footnote-21116366
+Ref: Derived Files-Footnote-31116966
+Node: Future Extensions1117064
+Node: Implementation Limitations1117647
+Node: Extension Design1118895
+Node: Old Extension Problems1120049
+Ref: Old Extension Problems-Footnote-11121557
+Node: Extension New Mechanism Goals1121614
+Ref: Extension New Mechanism Goals-Footnote-11124979
+Node: Extension Other Design Decisions1125165
+Node: Extension Future Growth1127271
+Node: Old Extension Mechanism1128107
+Node: Basic Concepts1129847
+Node: Basic High Level1130528
+Ref: figure-general-flow1130800
+Ref: figure-process-flow1131399
+Ref: Basic High Level-Footnote-11134628
+Node: Basic Data Typing1134813
+Node: Glossary1138168
+Node: Copying1163399
+Node: GNU Free Documentation License1200955
+Node: Index1226091
 
 End Tag Table
