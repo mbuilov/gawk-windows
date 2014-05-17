@@ -9710,7 +9710,7 @@ description of each variable.)
 
 `ROUNDMODE #'
      The rounding mode to use for arbitrary precision arithmetic on
-     numbers, by default `"N"' (`roundTiesToEven' in the IEEE-754
+     numbers, by default `"N"' (`roundTiesToEven' in the IEEE 754
      standard; *note Setting Rounding Mode::).
 
 ``RS''
@@ -20893,8 +20893,8 @@ as follows:
           $ echo 0xDeadBeef | gawk '{ print $1 + 0 }'
           -| 0
 
-     `gawk' does ignore case in the four special values.  Thus `+nan'
-     and `+NaN' are the same.
+     `gawk' ignores case in the four special values.  Thus `+nan' and
+     `+NaN' are the same.
 
    ---------- Footnotes ----------
 
@@ -20908,13 +20908,14 @@ File: gawk.info,  Node: Integer Programming,  Prev: Floating Point Issues,  Up: 
 
 As has been mentioned already, `awk' uses hardware double precision
 with 64-bit IEEE binary floating-point representation for numbers on
-most systems. A large integer like 9,007,199,254,740,997 has a binary
+most systems.  A large integer like 9,007,199,254,740,997 has a binary
 representation that, although finite, is more than 53 bits long; it
-must also be rounded to 53 bits.  The biggest integer that can be
+must also be rounded to 53 bits.  (The details are discussed in *note
+Floating-point Representation::.)  The biggest integer that can be
 stored in a C `double' is usually the same as the largest possible
 value of a `double'. If your system `double' is an IEEE 64-bit
 `double', this largest possible value is an integer and can be
-represented precisely.  What more should one know about integers?
+represented precisely.  What more should you know about integers?
 
    If you want to know what is the largest integer, such that it and
 all smaller integers can be stored in 64-bit doubles without losing
@@ -20972,9 +20973,9 @@ matters worse, with arbitrary precision floating-point, you can set the
 precision before starting a computation, but then you cannot be sure of
 the number of significant decimal places in the final result.
 
-   Sometimes, before you start to write any code, you should think more
-about what you really want and what's really happening. Consider the
-two numbers in the following example:
+   So, before you start to write any code, you should think more about
+what you really want and what's really happening. Consider the two
+numbers in the following example:
 
      x = 0.875             # 1/2 + 1/4 + 1/8
      y = 0.425
@@ -20999,8 +21000,8 @@ previous example, produces an output identical to the input.
 
    Because the underlying representation can be a little bit off from
 the exact value, comparing floating-point values to see if they are
-equal is generally not a good idea.  Here is an example where it does
-not work like you expect:
+exactly equal is generally a bad idea.  Here is an example where it
+does not work like you expect:
 
      $ gawk 'BEGIN { print (0.1 + 12.2 == 12.3) }'
      -| 0
@@ -21056,7 +21057,7 @@ operations in your calculation.  The stability and the accuracy of the
 computation of the constant pi in the earlier example can be enhanced
 by using the following simple algebraic transformation:
 
-     (sqrt(x * x + 1) - 1) / x = x / (sqrt(x * x + 1) + 1)
+     (sqrt(x * x + 1) - 1) / x == x / (sqrt(x * x + 1) + 1)
 
 After making this, change the program does converge to pi in under 30
 iterations:
@@ -21110,7 +21111,7 @@ File: gawk.info,  Node: Floating-point Representation,  Next: Floating-point Con
 
 Although floating-point representations vary from machine to machine,
 the most commonly encountered representation is that defined by the
-IEEE 754 Standard. An IEEE-754 format value has three components:
+IEEE 754 Standard. An IEEE 754 format value has three components:
 
    * A sign bit telling whether the number is positive or negative.
 
@@ -21120,11 +21121,11 @@ IEEE 754 Standard. An IEEE-754 format value has three components:
 
    The value of the number is then S * 2^E.  The first bit of a
 non-zero binary significand is always one, so the significand in an
-IEEE-754 format only includes the fractional part, leaving the leading
+IEEE 754 format only includes the fractional part, leaving the leading
 one implicit.  The significand is stored in "normalized" format, which
 means that the first bit is always a one.
 
-   Three of the standard IEEE-754 types are 32-bit single precision,
+   Three of the standard IEEE 754 types are 32-bit single precision,
 64-bit double precision and 128-bit quadruple precision.  The standard
 also specifies extended precision formats to allow greater precisions
 and larger exponent ranges.
@@ -21156,7 +21157,7 @@ components:
      The rounding mode of the context.
 
    *note table-ieee-formats:: lists the precision and exponent field
-values for the basic IEEE-754 binary formats:
+values for the basic IEEE 754 binary formats:
 
 Name           Total bits     Precision      emin           emax
 --------------------------------------------------------------------------- 
@@ -21171,10 +21172,10 @@ Table 15.1: Basic IEEE Format Context Values
 
    A floating-point context can also determine which signals are treated
 as exceptions, and can set rules for arithmetic with special values.
-Please consult the IEEE-754 standard or other resources for details.
+Please consult the IEEE 754 standard or other resources for details.
 
    `gawk' ordinarily uses the hardware double precision representation
-for numbers.  On most systems, this is IEEE-754 floating-point format,
+for numbers.  On most systems, this is IEEE 754 floating-point format,
 corresponding to 64-bit binary with 53 bits of precision.
 
      NOTE: In case an underflow occurs, the standard allows, but does
@@ -21182,8 +21183,8 @@ corresponding to 64-bit binary with 53 bits of precision.
      number smaller than the smallest nonzero normalized number. Such
      numbers do not have as many significant digits as normal numbers,
      and are called "denormals" or "subnormals". The alternative,
-     simply returning a zero, is called "flush to zero". The basic
-     IEEE-754 binary formats support subnormal numbers.
+     simply returning a zero, is called "flush to zero". The basic IEEE
+     754 binary formats support subnormal numbers.
 
 
 File: gawk.info,  Node: Rounding Mode,  Prev: Floating-point Context,  Up: Floating-point Programming
@@ -21194,7 +21195,7 @@ File: gawk.info,  Node: Rounding Mode,  Prev: Floating-point Context,  Up: Float
 The "rounding mode" specifies the behavior for the results of numerical
 operations when discarding extra precision. Each rounding mode indicates
 how the least significant returned digit of a rounded result is to be
-calculated.  *note table-rounding-modes:: lists the IEEE-754 defined
+calculated.  *note table-rounding-modes:: lists the IEEE 754 defined
 rounding modes:
 
 Rounding Mode                    IEEE Name
@@ -21244,7 +21245,7 @@ produces the following output when run on the author's system:(1)
    The theory behind the rounding mode `roundTiesToEven' is that it
 more or less evenly distributes upward and downward rounds of exact
 halves, which might cause any round-off error to cancel itself out.
-This is the default rounding mode used in IEEE-754 computing functions
+This is the default rounding mode used in IEEE 754 computing functions
 and operators.
 
    The other rounding modes are rarely used.  Round toward positive
@@ -21269,7 +21270,7 @@ significant difference in output when you change the rounding mode.
    ---------- Footnotes ----------
 
    (1) It is possible for the output to be completely different if the
-C library in your system does not use the IEEE-754 even-rounding rule
+C library in your system does not use the IEEE 754 even-rounding rule
 to round halfway cases for `printf'.
 
 
@@ -21325,14 +21326,14 @@ rounding mode are set globally for every operation to follow.
 
    The default working precision for arbitrary precision floating-point
 values is 53 bits, and the default value for `ROUNDMODE' is `"N"',
-which selects the IEEE-754 `roundTiesToEven' rounding mode (*note
+which selects the IEEE 754 `roundTiesToEven' rounding mode (*note
 Rounding Mode::).(1) `gawk' uses the default exponent range in MPFR
 (EMAX = 2^30 - 1, EMIN = -EMAX) for all floating-point contexts.  There
 is no explicit mechanism to adjust the exponent range.  MPFR does not
 implement subnormal numbers by default, and this behavior cannot be
 changed in `gawk'.
 
-     NOTE: When emulating an IEEE-754 format (*note Setting
+     NOTE: When emulating an IEEE 754 format (*note Setting
      Precision::), `gawk' internally adjusts the exponent range to the
      value defined for the format and also performs computations needed
      for gradual underflow (subnormal numbers).
@@ -21355,7 +21356,7 @@ changed in `gawk'.
 
    (1) The default precision is 53 bits, since according to the MPFR
 documentation, the library should be able to exactly reproduce all
-computations with double-precision machine floating-point numbers
+computations done with double-precision machine floating-point numbers
 (`double' type in C), except the default exponent range is much wider
 and subnormal numbers are not implemented.
 
@@ -21369,12 +21370,12 @@ File: gawk.info,  Node: Setting Precision,  Next: Setting Rounding Mode,  Up: Ar
 precision or accuracy of individual numbers. Performing an arithmetic
 operation or calling a built-in function rounds the result to the
 current working precision. The default working precision is 53 bits,
-which can be modified using the built-in variable `PREC'. You can also
-set the value to one of the pre-defined case-insensitive strings shown
-in *note table-predefined-precision-strings::, to emulate an IEEE-754
+which you can modify using the built-in variable `PREC'. You can also
+set the value to one of the predefined case-insensitive strings shown
+in *note table-predefined-precision-strings::, to emulate an IEEE 754
 binary format.
 
-`PREC'       IEEE-754 Binary Format
+`PREC'       IEEE 754 Binary Format
 --------------------------------------------------- 
 `"half"'     16-bit half-precision.
 `"single"'   Basic 32-bit single precision.
@@ -21447,9 +21448,9 @@ from zero
 
 Table 15.4: `gawk' Rounding Modes
 
-   `ROUNDMODE' has the default value `"N"', which selects the IEEE-754
+   `ROUNDMODE' has the default value `"N"', which selects the IEEE 754
 rounding mode `roundTiesToEven'.  In *note Table 15.4:
-table-gawk-rounding-modes, `"A"' is listed to select the IEEE-754 mode
+table-gawk-rounding-modes, `"A"' is listed to select the IEEE 754 mode
 `roundTiesToAway'.  This is only available if your version of the MPFR
 library supports it; otherwise setting `ROUNDMODE' to this value has no
 effect. *Note Rounding Mode::, for the meanings of the various rounding
@@ -21468,16 +21469,16 @@ File: gawk.info,  Node: Floating-point Constants,  Next: Changing Precision,  Pr
 --------------------------------------------
 
 Be wary of floating-point constants! When reading a floating-point
-constant from program source code, `gawk' uses the default precision,
-unless overridden by an assignment to the special variable `PREC' on
-the command line, to store it internally as a MPFR number.  Changing
-the precision using `PREC' in the program text does _not_ change the
-precision of a constant. If you need to represent a floating-point
-constant at a higher precision than the default and cannot use a
-command line assignment to `PREC', you should either specify the
-constant as a string, or as a rational number, whenever possible. The
-following example illustrates the differences among various ways to
-print a floating-point constant:
+constant from program source code, `gawk' uses the default precision
+(that of a C `double'), unless overridden by an assignment to the
+special variable `PREC' on the command line, to store it internally as
+a MPFR number.  Changing the precision using `PREC' in the program text
+does _not_ change the precision of a constant. If you need to represent
+a floating-point constant at a higher precision than the default and
+cannot use a command line assignment to `PREC', you should either
+specify the constant as a string, or as a rational number, whenever
+possible. The following example illustrates the differences among
+various ways to print a floating-point constant:
 
      $ gawk -M 'BEGIN { PREC = 113; printf("%0.25f\n", 0.1) }'
      -| 0.1000000000000000055511151
@@ -21509,8 +21510,8 @@ File: gawk.info,  Node: Changing Precision,  Next: Exact Arithmetic,  Prev: Floa
    `gawk' does not implicitly modify the precision of any previously
 computed results when the working precision is changed with an
 assignment to `PREC'.  The precision of a number is always the one that
-was used at the time of its creation, and there is no way for the user
-to explicitly change it afterwards. However, since the result of a
+was used at the time of its creation, and there is no way for you to
+explicitly change it afterwards. However, since the result of a
 floating-point arithmetic operation is always an arbitrary precision
 floating-point value--with a precision set by the value of `PREC'--one
 of the following workarounds effectively accomplishes the desired
@@ -21570,10 +21571,10 @@ straight test for equality may not work.
 
    So, don't assume that floating-point values can be compared for
 equality.  You should also exercise caution when using other forms of
-comparisons.  The standard way to compare between floating-point
-numbers is to determine how much error (or "tolerance") you will allow
-in a comparison and check to see if one value is within this error
-range of the other.
+comparisons.  The standard way to compare two floating-point numbers is
+to determine how much error (or "tolerance") you will allow in a
+comparison and check to see if one value is within this error range of
+the other.
 
    In applications where 15 or fewer decimal places suffice, hardware
 double precision arithmetic can be adequate, and is usually much faster.
@@ -21833,9 +21834,9 @@ Figure 16.3: Calling The New Function
 the API `struct' to do its work, such as updating variables or arrays,
 printing messages, setting `ERRNO', and so on.
 
-   Convenience macros in the `gawkapi.h' header file make calling
-through the function pointers look like regular function calls so that
-extension code is quite readable and understandable.
+   Convenience macros make calling through the function pointers look
+like regular function calls so that extension code is quite readable
+and understandable.
 
    Although all of this sounds somewhat complicated, the result is that
 extension code is quite straightforward to write and to read. You can
@@ -21862,7 +21863,10 @@ File: gawk.info,  Node: Extension API Description,  Next: Finding Extensions,  P
 16.4 API Description
 ====================
 
-This (rather large) minor node describes the API in detail.
+C or C++ code for an extension must include the header file
+`gawkapi.h', which declares the functions and defines the data types
+used to communicate with `gawk'.  This (rather large) minor node
+describes the API in detail.
 
 * Menu:
 
@@ -21946,6 +21950,7 @@ operations:
      C Entity                 Header File
      ------------------------------------------- 
      `EOF'                    `<stdio.h>'
+     Values for `errno'       `<errno.h>'
      `FILE'                   `<stdio.h>'
      `NULL'                   `<stddef.h>'
      `memcpy()'               `<string.h>'
@@ -21959,9 +21964,6 @@ operations:
      necessary in order to keep `gawkapi.h' clean, instead of becoming
      a portability hodge-podge as can be seen in some parts of the
      `gawk' source code.
-
-     To pass reasonable integer values for `ERRNO', you will also need
-     to include `<errno.h>'.
 
    * The `gawkapi.h' file may be included more than once without ill
      effect.  Doing so, however, is poor coding practice.
@@ -21982,7 +21984,7 @@ operations:
    * The API defines several simple `struct's that map values as seen
      from `awk'.  A value can be a `double', a string, or an array (as
      in multidimensional arrays, or when creating a new array).  String
-     values maintain both pointer and length since embedded `NUL'
+     values maintain both pointer and length since embedded NUL
      characters are allowed.
 
           NOTE: By intent, strings are maintained using the current
@@ -22106,7 +22108,7 @@ that use them.
 indicates what is in the `union'.
 
    Representing numbers is easy--the API uses a C `double'.  Strings
-require more work. Since `gawk' allows embedded `NUL' bytes in string
+require more work. Since `gawk' allows embedded NUL bytes in string
 values, a string must be represented as a pair containing a
 data-pointer and length. This is the `awk_string_t' type.
 
@@ -22476,7 +22478,8 @@ used for `RT', if any.
      A pointer to your `XXX_take_control_of()' function.
 
 `awk_const struct input_parser *awk_const next;'
-     This pointer is used by `gawk'.  The extension cannot modify it.
+     This is for use by `gawk'; therefore it is marked `awk_const' so
+     that the extension cannot modify it.
 
    The steps are as follows:
 
@@ -22515,8 +22518,8 @@ as follows:
      Otherwise, it will.
 
 `struct stat sbuf;'
-     If file descriptor is valid, then `gawk' will have filled in this
-     structure via a call to the `fstat()' system call.
+     If the file descriptor is valid, then `gawk' will have filled in
+     this structure via a call to the `fstat()' system call.
 
    The `XXX_can_take_file()' function should examine these fields and
 decide if the input parser should be used for the file.  The decision
@@ -22679,8 +22682,8 @@ an extension to take over the output to a file opened with the `>' or
      false otherwise.
 
 `awk_const struct output_wrapper *awk_const next;'
-     This is for use by `gawk'; therefore they are marked `awk_const'
-     so that the extension cannot modify them.
+     This is for use by `gawk'; therefore it is marked `awk_const' so
+     that the extension cannot modify it.
 
    The `awk_output_buf_t' structure looks like this:
 
@@ -22737,9 +22740,9 @@ in the `awk_output_buf_t'.  The data members are as follows:
 the `name' and `mode' fields, and any additional state (such as `awk'
 variable values) that is appropriate.
 
-   When `gawk' calls `XXX_take_control_of()', it should fill in the
-other fields, as appropriate, except for `fp', which it should just use
-normally.
+   When `gawk' calls `XXX_take_control_of()', that function should fill
+in the other fields, as appropriate, except for `fp', which it should
+just use normally.
 
    You register your output wrapper with the following function:
 
@@ -22787,8 +22790,8 @@ structures as described earlier.
      respectively.  These structures were described earlier.
 
 `awk_const struct two_way_processor *awk_const next;'
-     This is for use by `gawk'; therefore they are marked `awk_const'
-     so that the extension cannot modify them.
+     This is for use by `gawk'; therefore it is marked `awk_const' so
+     that the extension cannot modify it.
 
    As with the input parser and output processor, you provide "yes I
 can take this" and "take over for this" functions,
@@ -22957,7 +22960,7 @@ was discussed earlier, in *note General Data Types::.
 
 `awk_bool_t sym_update_scalar(awk_scalar_t cookie, awk_value_t *value);'
      Update the value associated with a scalar cookie.  Return false if
-     the new value is not one of `AWK_STRING' or `AWK_NUMBER'.  Here
+     the new value is not of type `AWK_STRING' or `AWK_NUMBER'.  Here
      too, the built-in variables may not be updated.
 
    It is not obvious at first glance how to work with scalar cookies or
@@ -23072,9 +23075,10 @@ follows:
 
 `awk_bool_t create_value(awk_value_t *value, awk_value_cookie_t *result);'
      Create a cached string or numeric value from `value' for efficient
-     later assignment.  Only `AWK_NUMBER' and `AWK_STRING' values are
-     allowed.  Any other type is rejected.  While `AWK_UNDEFINED' could
-     be allowed, doing so would result in inferior performance.
+     later assignment.  Only values of type `AWK_NUMBER' and
+     `AWK_STRING' are allowed.  Any other type is rejected.  While
+     `AWK_UNDEFINED' could be allowed, doing so would result in
+     inferior performance.
 
 `awk_bool_t release_value(awk_value_cookie_t vc);'
      Release the memory associated with a value cookie obtained from
@@ -23128,11 +23132,11 @@ if `awk' code assigns a new value to `VAR1', are all the others be
 changed too?"
 
    That's a great question. The answer is that no, it's not a problem.
-Internally, `gawk' uses reference-counted strings. This means that many
-variables can share the same string value, and `gawk' keeps track of
-the usage.  When a variable's value changes, `gawk' simply decrements
-the reference count on the old value and updates the variable to use
-the new value.
+Internally, `gawk' uses "reference-counted strings". This means that
+many variables can share the same string value, and `gawk' keeps track
+of the usage.  When a variable's value changes, `gawk' simply
+decrements the reference count on the old value and updates the
+variable to use the new value.
 
    Finally, as part of your clean up action (*note Exit Callback
 Functions::) you should release any cached values that you created,
@@ -23275,7 +23279,7 @@ The following functions relate to individual array elements.
 `                             const awk_value_t *const value);'
      In the array represented by `a_cookie', create or modify the
      element whose index is given by `index'.  The `ARGV' and `ENVIRON'
-     arrays may not be changed.
+     arrays may not be changed, although the `PROCINFO' array can be.
 
 `awk_bool_t set_array_element_by_elem(awk_array_t a_cookie,'
 `                                     awk_element_t element);'
@@ -23513,8 +23517,8 @@ code:
      Thus, the correct way to build an array is to work "top down."
      Create the array, and immediately install it in `gawk''s symbol
      table using `sym_update()', or install it as an element in a
-     previously existing array using `set_element()'.  We show example
-     code shortly.
+     previously existing array using `set_array_element()'.  We show
+     example code shortly.
 
   2. Due to gawk internals, after using `sym_update()' to install an
      array into `gawk', you have to retrieve the array cookie from the
@@ -23704,13 +23708,15 @@ The API provides access to several variables that describe whether the
 corresponding command-line options were enabled when `gawk' was
 invoked.  The variables are:
 
+`do_debug'
+     This variable is true if `gawk' was invoked with `--debug' option.
+
 `do_lint'
      This variable is true if `gawk' was invoked with `--lint' option
      (*note Options::).
 
-`do_traditional'
-     This variable is true if `gawk' was invoked with `--traditional'
-     option.
+`do_mpfr'
+     This variable is true if `gawk' was invoked with `--bignum' option.
 
 `do_profile'
      This variable is true if `gawk' was invoked with `--profile'
@@ -23720,11 +23726,9 @@ invoked.  The variables are:
      This variable is true if `gawk' was invoked with `--sandbox'
      option.
 
-`do_debug'
-     This variable is true if `gawk' was invoked with `--debug' option.
-
-`do_mpfr'
-     This variable is true if `gawk' was invoked with `--bignum' option.
+`do_traditional'
+     This variable is true if `gawk' was invoked with `--traditional'
+     option.
 
    The value of `do_lint' can change if `awk' code modifies the `LINT'
 built-in variable (*note Built-in Variables::).  The others should not
@@ -24324,7 +24328,9 @@ for loading each function into `gawk':
      static awk_ext_func_t func_table[] = {
          { "chdir", do_chdir, 1 },
          { "stat",  do_stat, 2 },
+     #ifndef __MINGW32__
          { "fts",   do_fts, 3 },
+     #endif
      };
 
    Each extension must have a routine named `dl_load()' to load
@@ -24484,52 +24490,36 @@ follows: The usage is:
      successful, `stat()' fills the `statdata' array with information
      retrieved from the filesystem, as follows:
 
-     `statdata["name"]' The name of the file.
-     `statdata["dev"]'  Corresponds to the `st_dev' field in
-                       the `struct stat'.
-     `statdata["ino"]'  Corresponds to the `st_ino' field in
-                       the `struct stat'.
-     `statdata["mode"]' Corresponds to the `st_mode' field in
-                       the `struct stat'.
-     `statdata["nlink"]' Corresponds to the `st_nlink' field in
-                       the `struct stat'.
-     `statdata["uid"]'  Corresponds to the `st_uid' field in
-                       the `struct stat'.
-     `statdata["gid"]'  Corresponds to the `st_gid' field in
-                       the `struct stat'.
-     `statdata["size"]' Corresponds to the `st_size' field in
-                       the `struct stat'.
-     `statdata["atime"]' Corresponds to the `st_atime' field in
-                       the `struct stat'.
-     `statdata["mtime"]' Corresponds to the `st_mtime' field in
-                       the `struct stat'.
-     `statdata["ctime"]' Corresponds to the `st_ctime' field in
-                       the `struct stat'.
-     `statdata["rdev"]' Corresponds to the `st_rdev' field in
-                       the `struct stat'.  This element is
-                       only present for device files.
-     `statdata["major"]' Corresponds to the `st_major' field in
-                       the `struct stat'.  This element is
-                       only present for device files.
-     `statdata["minor"]' Corresponds to the `st_minor' field in
-                       the `struct stat'.  This element is
-                       only present for device files.
-     `statdata["blksize"]' Corresponds to the `st_blksize' field
-                       in the `struct stat', if this field is
-                       present on your system.  (It is present
-                       on all modern systems that we know of.)
-     `statdata["pmode"]' A human-readable version of the mode
-                       value, such as printed by `ls'.  For
-                       example, `"-rwxr-xr-x"'.
-     `statdata["linkval"]' If the named file is a symbolic link,
-                       this element will exist and its value
-                       is the value of the symbolic link
-                       (where the symbolic link points to).
-     `statdata["type"]' The type of the file as a string. One
-                       of `"file"', `"blockdev"', `"chardev"',
-                       `"directory"', `"socket"', `"fifo"',
-                       `"symlink"', `"door"', or `"unknown"'.
-                       Not all systems support all file types.
+     Subscript  Field in `struct stat'             File type
+     ------------------------------------------------------------ 
+     `"name"'   The file name                      All
+     `"dev"'    `st_dev'                           All
+     `"ino"'    `st_ino'                           All
+     `"mode"'   `st_mode'                          All
+     `"nlink"'  `st_nlink'                         All
+     `"uid"'    `st_uid'                           All
+     `"gid"'    `st_gid'                           All
+     `"size"'   `st_size'                          All
+     `"atime"'  `st_atime'                         All
+     `"mtime"'  `st_mtime'                         All
+     `"ctime"'  `st_ctime'                         All
+     `"rdev"'   `st_rdev'                          Device files
+     `"major"'  `st_major'                         Device files
+     `"minor"'  `st_minor'                         Device files
+     `"blksize"'`st_blksize'                       All
+     `"pmode"'  A human-readable version of the    All
+                mode value, such as printed by     
+                `ls'.  For example,                
+                `"-rwxr-xr-x"'                     
+     `"linkval"'The value of the symbolic link     Symbolic
+                                                   links
+     `"type"'   The type of the file as a string.  All
+                One of `"file"', `"blockdev"',     
+                `"chardev"', `"directory"',        
+                `"socket"', `"fifo"', `"symlink"', 
+                `"door"', or `"unknown"'.  Not     
+                all systems support all file       
+                types.                             
 
 `flags = or(FTS_PHYSICAL, ...)'
 `result = fts(pathlist, flags, filedata)'
@@ -24674,18 +24664,14 @@ constant (`FNM_NOMATCH'), and an array of flag values named `FNM'.
 
    The flags are follows:
 
-`FNM["CASEFOLD"]'   Corresponds to the `FNM_CASEFOLD' flag as defined in
-                   `fnmatch()'.
-`FNM["FILE_NAME"]'  Corresponds to the `FNM_FILE_NAME' flag as defined
-                   in `fnmatch()'.
-`FNM["LEADING_DIR"]' Corresponds to the `FNM_LEADING_DIR' flag as defined
-                   in `fnmatch()'.
-`FNM["NOESCAPE"]'   Corresponds to the `FNM_NOESCAPE' flag as defined in
-                   `fnmatch()'.
-`FNM["PATHNAME"]'   Corresponds to the `FNM_PATHNAME' flag as defined in
-                   `fnmatch()'.
-`FNM["PERIOD"]'     Corresponds to the `FNM_PERIOD' flag as defined in
-                   `fnmatch()'.
+Array element      Corresponding lag defined by `fnmatch()'
+-------------------------------------------------------------------------- 
+`FNM["CASEFOLD"]'  `FNM_CASEFOLD'
+`FNM["FILE_NAME"]' `FNM_FILE_NAME'
+`FNM["LEADING_DIR"]'`FNM_LEADING_DIR'
+`FNM["NOESCAPE"]'  `FNM_NOESCAPE'
+`FNM["PATHNAME"]'  `FNM_PATHNAME'
+`FNM["PERIOD"]'    `FNM_PERIOD'
 
    Here is an example:
 
@@ -24826,7 +24812,8 @@ returned as a record.
 number and the filename, separated by a forward slash character.  On
 systems where the directory entry contains the file type, the record
 has a third field (also separated by a slash) which is a single letter
-indicating the type of the file:
+indicating the type of the file. The letters are file types are shown
+in *note table-readdir-file-types::.
 
 Letter  File Type
 -------------------------------------------------------------------------- 
@@ -24838,6 +24825,8 @@ Letter  File Type
 `p'     Named pipe (FIFO)
 `s'     Socket
 `u'     Anything else (unknown)
+
+Table 16.2: File types returned by `readdir()'
 
    On systems without the file type information, the third field is
 always `u'.
@@ -24870,10 +24859,10 @@ unwary.  Here is an example:
 
      BEGIN {
          REVOUT = 1
-         print "hello, world" > "/dev/stdout"
+         print "don't panic" > "/dev/stdout"
      }
 
-   The output from this program is: `dlrow ,olleh'.
+   The output from this program is: `cinap t'nod'.
 
 
 File: gawk.info,  Node: Extension Sample Rev2way,  Next: Extension Sample Read write array,  Prev: Extension Sample Revout,  Up: Extension Samples
@@ -24891,11 +24880,13 @@ example shows how to use it:
 
      BEGIN {
          cmd = "/magic/mirror"
-         print "hello, world" |& cmd
+         print "don't panic" |& cmd
          cmd |& getline result
          print result
          close(cmd)
      }
+
+   The output from this program is: `cinap t'nod'.
 
 
 File: gawk.info,  Node: Extension Sample Read write array,  Next: Extension Sample Readfile,  Prev: Extension Sample Rev2way,  Up: Extension Samples
@@ -24908,8 +24899,8 @@ The `rwarray' extension adds two functions, named `writea()' and
 
 `ret = writea(file, array)'
      This function takes a string argument, which is the name of the
-     file to which dump the array, and the array itself as the second
-     argument.  `writea()' understands multidimensional arrays.  It
+     file to which to dump the array, and the array itself as the
+     second argument.  `writea()' understands arrays of arrays.  It
      returns one on success, or zero upon failure.
 
 `ret = reada(file, array)'
@@ -24992,9 +24983,8 @@ File: gawk.info,  Node: Extension Sample Time,  Prev: Extension Sample API Tests
 16.7.12 Extension Time Functions
 --------------------------------
 
-These functions can be used either by invoking `gawk' with a
-command-line argument of `-l time' or by inserting `@load "time"' in
-your script.
+The `time' extension adds two functions, named `gettimeofday()' and
+`sleep()', as follows:
 
 `@load "time"'
      This is how you load the extension.
@@ -25006,7 +24996,7 @@ your script.
      have sub-second precision, but the actual precision may vary based
      on the platform.  If the standard C `gettimeofday()' system call
      is available on this platform, then it simply returns the value.
-     Otherwise, if on Windows, it tries to use
+     Otherwise, if on MS-Windows, it tries to use
      `GetSystemTimeAsFileTime()'.
 
 `result = sleep(SECONDS)'
@@ -31594,7 +31584,7 @@ Index
 * FSF (Free Software Foundation) <2>:    Getting.             (line  10)
 * FSF (Free Software Foundation):        Manual History.      (line   6)
 * fts() extension function:              Extension Sample File Functions.
-                                                              (line  77)
+                                                              (line  61)
 * FUNCTAB array:                         Auto-set.            (line 115)
 * function calls:                        Function Calls.      (line   6)
 * function calls, indirect:              Indirect Calls.      (line   6)
@@ -31786,7 +31776,7 @@ Index
 * gettext library, locale categories:    Explaining gettext.  (line  81)
 * gettext() function (C library):        Explaining gettext.  (line  63)
 * gettimeofday() extension function:     Extension Sample Time.
-                                                              (line  13)
+                                                              (line  12)
 * git utility <1>:                       Adding Code.         (line 111)
 * git utility <2>:                       Accessing The Source.
                                                               (line  10)
@@ -31849,7 +31839,7 @@ Index
 * i debugger command (alias for info):   Debugger Info.       (line  13)
 * id utility:                            Id Program.          (line   6)
 * id.awk program:                        Id Program.          (line  30)
-* IEEE-754 format:                       Floating-point Representation.
+* IEEE 754 format:                       Floating-point Representation.
                                                               (line   6)
 * if statement:                          If Statement.        (line   6)
 * if statement, actions, changing:       Ranges.              (line  25)
@@ -32835,7 +32825,7 @@ Index
 * Skywalker, Luke:                       Undocumented.        (line   6)
 * sleep utility:                         Alarm Program.       (line 111)
 * sleep() extension function:            Extension Sample Time.
-                                                              (line  23)
+                                                              (line  22)
 * Solaris, POSIX-compliant awk:          Other Versions.      (line  96)
 * sort array:                            String Functions.    (line  42)
 * sort array indices:                    String Functions.    (line  42)
@@ -33589,164 +33579,165 @@ Node: String Conversion Precision833417
 Ref: String Conversion Precision-Footnote-1835122
 Node: Unexpected Results835231
 Node: POSIX Floating Point Problems837384
-Ref: POSIX Floating Point Problems-Footnote-1841209
-Node: Integer Programming841247
-Node: Floating-point Programming842986
-Ref: Floating-point Programming-Footnote-1849317
-Ref: Floating-point Programming-Footnote-2849587
-Node: Floating-point Representation849851
-Node: Floating-point Context851016
-Ref: table-ieee-formats851855
-Node: Rounding Mode853239
-Ref: table-rounding-modes853718
-Ref: Rounding Mode-Footnote-1856733
-Node: Gawk and MPFR856912
-Node: Arbitrary Precision Floats858321
-Ref: Arbitrary Precision Floats-Footnote-1860764
-Node: Setting Precision861080
-Ref: table-predefined-precision-strings861766
-Node: Setting Rounding Mode863911
-Ref: table-gawk-rounding-modes864315
-Node: Floating-point Constants865502
-Node: Changing Precision866931
-Ref: Changing Precision-Footnote-1868328
-Node: Exact Arithmetic868502
-Node: Arbitrary Precision Integers871640
-Ref: Arbitrary Precision Integers-Footnote-1874655
-Node: Dynamic Extensions874802
-Node: Extension Intro876260
-Node: Plugin License877525
-Node: Extension Mechanism Outline878210
-Ref: load-extension878627
-Ref: load-new-function880105
-Ref: call-new-function881100
-Node: Extension API Description883115
-Node: Extension API Functions Introduction884402
-Node: General Data Types889329
-Ref: General Data Types-Footnote-1895024
-Node: Requesting Values895323
-Ref: table-value-types-returned896060
-Node: Memory Allocation Functions897014
-Ref: Memory Allocation Functions-Footnote-1899760
-Node: Constructor Functions899856
-Node: Registration Functions901614
-Node: Extension Functions902299
-Node: Exit Callback Functions904601
-Node: Extension Version String905850
-Node: Input Parsers906500
-Node: Output Wrappers916257
-Node: Two-way processors920767
-Node: Printing Messages922975
-Ref: Printing Messages-Footnote-1924052
-Node: Updating `ERRNO'924204
-Node: Accessing Parameters924943
-Node: Symbol Table Access926173
-Node: Symbol table by name926687
-Node: Symbol table by cookie928663
-Ref: Symbol table by cookie-Footnote-1932795
-Node: Cached values932858
-Ref: Cached values-Footnote-1936348
-Node: Array Manipulation936439
-Ref: Array Manipulation-Footnote-1937537
-Node: Array Data Types937576
-Ref: Array Data Types-Footnote-1940279
-Node: Array Functions940371
-Node: Flattening Arrays944207
-Node: Creating Arrays951059
-Node: Extension API Variables955784
-Node: Extension Versioning956420
-Node: Extension API Informational Variables958321
-Node: Extension API Boilerplate959407
-Node: Finding Extensions963211
-Node: Extension Example963771
-Node: Internal File Description964501
-Node: Internal File Ops968592
-Ref: Internal File Ops-Footnote-1980101
-Node: Using Internal File Ops980241
-Ref: Using Internal File Ops-Footnote-1982588
-Node: Extension Samples982854
-Node: Extension Sample File Functions984378
-Node: Extension Sample Fnmatch992865
-Node: Extension Sample Fork994634
-Node: Extension Sample Inplace995847
-Node: Extension Sample Ord997625
-Node: Extension Sample Readdir998461
-Node: Extension Sample Revout999993
-Node: Extension Sample Rev2way1000586
-Node: Extension Sample Read write array1001276
-Node: Extension Sample Readfile1003159
-Node: Extension Sample API Tests1004259
-Node: Extension Sample Time1004784
-Node: gawkextlib1006148
-Node: Language History1008929
-Node: V7/SVR3.11010522
-Node: SVR41012842
-Node: POSIX1014284
-Node: BTL1015670
-Node: POSIX/GNU1016404
-Node: Feature History1022003
-Node: Common Extensions1034979
-Node: Ranges and Locales1036291
-Ref: Ranges and Locales-Footnote-11040908
-Ref: Ranges and Locales-Footnote-21040935
-Ref: Ranges and Locales-Footnote-31041169
-Node: Contributors1041390
-Node: Installation1046771
-Node: Gawk Distribution1047665
-Node: Getting1048149
-Node: Extracting1048975
-Node: Distribution contents1050667
-Node: Unix Installation1056388
-Node: Quick Installation1057005
-Node: Additional Configuration Options1059451
-Node: Configuration Philosophy1061187
-Node: Non-Unix Installation1063541
-Node: PC Installation1063999
-Node: PC Binary Installation1065310
-Node: PC Compiling1067158
-Node: PC Testing1070118
-Node: PC Using1071294
-Node: Cygwin1075462
-Node: MSYS1076271
-Node: VMS Installation1076785
-Node: VMS Compilation1077581
-Ref: VMS Compilation-Footnote-11078833
-Node: VMS Dynamic Extensions1078891
-Node: VMS Installation Details1080264
-Node: VMS Running1082515
-Node: VMS GNV1085349
-Node: VMS Old Gawk1086072
-Node: Bugs1086542
-Node: Other Versions1090460
-Node: Notes1096544
-Node: Compatibility Mode1097344
-Node: Additions1098127
-Node: Accessing The Source1099054
-Node: Adding Code1100494
-Node: New Ports1106539
-Node: Derived Files1110674
-Ref: Derived Files-Footnote-11115995
-Ref: Derived Files-Footnote-21116029
-Ref: Derived Files-Footnote-31116629
-Node: Future Extensions1116727
-Node: Implementation Limitations1117310
-Node: Extension Design1118558
-Node: Old Extension Problems1119712
-Ref: Old Extension Problems-Footnote-11121220
-Node: Extension New Mechanism Goals1121277
-Ref: Extension New Mechanism Goals-Footnote-11124642
-Node: Extension Other Design Decisions1124828
-Node: Extension Future Growth1126934
-Node: Old Extension Mechanism1127770
-Node: Basic Concepts1129510
-Node: Basic High Level1130191
-Ref: figure-general-flow1130463
-Ref: figure-process-flow1131062
-Ref: Basic High Level-Footnote-11134291
-Node: Basic Data Typing1134476
-Node: Glossary1137831
-Node: Copying1163062
-Node: GNU Free Documentation License1200618
-Node: Index1225754
+Ref: POSIX Floating Point Problems-Footnote-1841205
+Node: Integer Programming841243
+Node: Floating-point Programming843054
+Ref: Floating-point Programming-Footnote-1849382
+Ref: Floating-point Programming-Footnote-2849652
+Node: Floating-point Representation849916
+Node: Floating-point Context851081
+Ref: table-ieee-formats851920
+Node: Rounding Mode853304
+Ref: table-rounding-modes853783
+Ref: Rounding Mode-Footnote-1856798
+Node: Gawk and MPFR856977
+Node: Arbitrary Precision Floats858386
+Ref: Arbitrary Precision Floats-Footnote-1860829
+Node: Setting Precision861150
+Ref: table-predefined-precision-strings861834
+Node: Setting Rounding Mode863979
+Ref: table-gawk-rounding-modes864383
+Node: Floating-point Constants865570
+Node: Changing Precision867022
+Ref: Changing Precision-Footnote-1868414
+Node: Exact Arithmetic868588
+Node: Arbitrary Precision Integers871722
+Ref: Arbitrary Precision Integers-Footnote-1874737
+Node: Dynamic Extensions874884
+Node: Extension Intro876342
+Node: Plugin License877607
+Node: Extension Mechanism Outline878292
+Ref: load-extension878709
+Ref: load-new-function880187
+Ref: call-new-function881182
+Node: Extension API Description883166
+Node: Extension API Functions Introduction884616
+Node: General Data Types889482
+Ref: General Data Types-Footnote-1895175
+Node: Requesting Values895474
+Ref: table-value-types-returned896211
+Node: Memory Allocation Functions897165
+Ref: Memory Allocation Functions-Footnote-1899911
+Node: Constructor Functions900007
+Node: Registration Functions901765
+Node: Extension Functions902450
+Node: Exit Callback Functions904752
+Node: Extension Version String906001
+Node: Input Parsers906651
+Node: Output Wrappers916454
+Node: Two-way processors920970
+Node: Printing Messages923173
+Ref: Printing Messages-Footnote-1924250
+Node: Updating `ERRNO'924402
+Node: Accessing Parameters925141
+Node: Symbol Table Access926371
+Node: Symbol table by name926885
+Node: Symbol table by cookie928861
+Ref: Symbol table by cookie-Footnote-1932994
+Node: Cached values933057
+Ref: Cached values-Footnote-1936562
+Node: Array Manipulation936653
+Ref: Array Manipulation-Footnote-1937751
+Node: Array Data Types937790
+Ref: Array Data Types-Footnote-1940493
+Node: Array Functions940585
+Node: Flattening Arrays944459
+Node: Creating Arrays951311
+Node: Extension API Variables956042
+Node: Extension Versioning956678
+Node: Extension API Informational Variables958579
+Node: Extension API Boilerplate959665
+Node: Finding Extensions963469
+Node: Extension Example964029
+Node: Internal File Description964759
+Node: Internal File Ops968850
+Ref: Internal File Ops-Footnote-1980396
+Node: Using Internal File Ops980536
+Ref: Using Internal File Ops-Footnote-1982883
+Node: Extension Samples983149
+Node: Extension Sample File Functions984673
+Node: Extension Sample Fnmatch992240
+Node: Extension Sample Fork993719
+Node: Extension Sample Inplace994932
+Node: Extension Sample Ord996710
+Node: Extension Sample Readdir997546
+Ref: table-readdir-file-types998401
+Node: Extension Sample Revout999200
+Node: Extension Sample Rev2way999791
+Node: Extension Sample Read write array1000532
+Node: Extension Sample Readfile1002411
+Node: Extension Sample API Tests1003511
+Node: Extension Sample Time1004036
+Node: gawkextlib1005351
+Node: Language History1008132
+Node: V7/SVR3.11009725
+Node: SVR41012045
+Node: POSIX1013487
+Node: BTL1014873
+Node: POSIX/GNU1015607
+Node: Feature History1021206
+Node: Common Extensions1034182
+Node: Ranges and Locales1035494
+Ref: Ranges and Locales-Footnote-11040111
+Ref: Ranges and Locales-Footnote-21040138
+Ref: Ranges and Locales-Footnote-31040372
+Node: Contributors1040593
+Node: Installation1045974
+Node: Gawk Distribution1046868
+Node: Getting1047352
+Node: Extracting1048178
+Node: Distribution contents1049870
+Node: Unix Installation1055591
+Node: Quick Installation1056208
+Node: Additional Configuration Options1058654
+Node: Configuration Philosophy1060390
+Node: Non-Unix Installation1062744
+Node: PC Installation1063202
+Node: PC Binary Installation1064513
+Node: PC Compiling1066361
+Node: PC Testing1069321
+Node: PC Using1070497
+Node: Cygwin1074665
+Node: MSYS1075474
+Node: VMS Installation1075988
+Node: VMS Compilation1076784
+Ref: VMS Compilation-Footnote-11078036
+Node: VMS Dynamic Extensions1078094
+Node: VMS Installation Details1079467
+Node: VMS Running1081718
+Node: VMS GNV1084552
+Node: VMS Old Gawk1085275
+Node: Bugs1085745
+Node: Other Versions1089663
+Node: Notes1095747
+Node: Compatibility Mode1096547
+Node: Additions1097330
+Node: Accessing The Source1098257
+Node: Adding Code1099697
+Node: New Ports1105742
+Node: Derived Files1109877
+Ref: Derived Files-Footnote-11115198
+Ref: Derived Files-Footnote-21115232
+Ref: Derived Files-Footnote-31115832
+Node: Future Extensions1115930
+Node: Implementation Limitations1116513
+Node: Extension Design1117761
+Node: Old Extension Problems1118915
+Ref: Old Extension Problems-Footnote-11120423
+Node: Extension New Mechanism Goals1120480
+Ref: Extension New Mechanism Goals-Footnote-11123845
+Node: Extension Other Design Decisions1124031
+Node: Extension Future Growth1126137
+Node: Old Extension Mechanism1126973
+Node: Basic Concepts1128713
+Node: Basic High Level1129394
+Ref: figure-general-flow1129666
+Ref: figure-process-flow1130265
+Ref: Basic High Level-Footnote-11133494
+Node: Basic Data Typing1133679
+Node: Glossary1137034
+Node: Copying1162265
+Node: GNU Free Documentation License1199821
+Node: Index1224957
 
 End Tag Table
