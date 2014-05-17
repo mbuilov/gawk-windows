@@ -13954,7 +13954,7 @@ The working precision of arbitrary precision floating-point numbers,
 @item ROUNDMODE #
 The rounding mode to use for arbitrary precision arithmetic on
 numbers, by default @code{"N"} (@samp{roundTiesToEven} in
-the IEEE-754 standard; @pxref{Setting Rounding Mode}).
+the IEEE 754 standard; @pxref{Setting Rounding Mode}).
 
 @cindex @code{RS} variable
 @cindex separators, for records
@@ -29206,7 +29206,7 @@ $ @kbd{echo 0xDeadBeef | gawk '@{ print $1 + 0 @}'}
 @print{} 0
 @end example
 
-@command{gawk} does ignore case in the four special values.
+@command{gawk} ignores case in the four special values.
 Thus @samp{+nan} and @samp{+NaN} are the same.
 @end itemize
 
@@ -29215,13 +29215,15 @@ Thus @samp{+nan} and @samp{+NaN} are the same.
 
 As has been mentioned already, @command{awk} uses hardware double
 precision with 64-bit IEEE binary floating-point representation
-for numbers on most systems. A large integer like 9,007,199,254,740,997
+for numbers on most systems.
+A large integer like 9,007,199,254,740,997
 has a binary representation that, although finite, is more than 53 bits long;
 it must also be rounded to 53 bits.
+(The details are discussed in @ref{Floating-point Representation}.)
 The biggest integer that can be stored in a C @code{double} is usually the same
 as the largest possible value of a @code{double}. If your system @code{double}
 is an IEEE 64-bit @code{double}, this largest possible value is an integer and
-can be represented precisely.  What more should one know about integers?
+can be represented precisely.  What more should you know about integers?
 
 If you want to know what is the largest integer, such that it and
 all smaller integers can be stored in 64-bit doubles without losing precision,
@@ -29337,7 +29339,7 @@ floating-point, you can set the precision before starting a computation,
 but then you cannot be sure of the number of significant decimal places
 in the final result.
 
-Sometimes, before you start to write any code, you should think more
+So, before you start to write any code, you should think more
 about what you really want and what's really happening. Consider the
 two numbers in the following example:
 
@@ -29368,7 +29370,7 @@ Usually this is a format string like @code{"%.15g"}, which when
 used in the previous example, produces an output identical to the input.
 
 Because the underlying representation can be a little bit off from the exact value,
-comparing floating-point values to see if they are equal is generally not a good idea.
+comparing floating-point values to see if they are exactly equal is generally a bad idea.
 Here is an example where it does not work like you expect:
 
 @example 
@@ -29435,7 +29437,7 @@ in the earlier example can be enhanced by using the following
 simple algebraic transformation:
 
 @example
-(sqrt(x * x + 1) - 1) / x = x / (sqrt(x * x + 1) + 1)
+(sqrt(x * x + 1) - 1) / x @equiv{} x / (sqrt(x * x + 1) + 1)
 @end example
 
 @noindent
@@ -29475,11 +29477,11 @@ implies better precision than is actually the case.
 
 @node Floating-point Representation
 @subsection Binary Floating-point Representation
-@cindex IEEE-754 format
+@cindex IEEE 754 format
 
 Although floating-point representations vary from machine to machine,
 the most commonly encountered representation is that defined by the
-IEEE 754 Standard. An IEEE-754 format value has three components:
+IEEE 754 Standard. An IEEE 754 format value has three components:
 
 @itemize @bullet
 @item
@@ -29507,12 +29509,12 @@ number is then
 <emphasis>s &sdot; 2<superscript>e</superscript></emphasis>. @c
 @end docbook
 The first bit of a non-zero binary significand
-is always one, so the significand in an IEEE-754 format only includes the
+is always one, so the significand in an IEEE 754 format only includes the
 fractional part, leaving the leading one implicit.
 The significand is stored in @dfn{normalized} format,
 which means that the first bit is always a one.
 
-Three of the standard IEEE-754 types are 32-bit single precision,
+Three of the standard IEEE 754 types are 32-bit single precision,
 64-bit double precision and 128-bit quadruple precision.
 The standard also specifies extended precision formats
 to allow greater precisions and larger exponent ranges.
@@ -29543,7 +29545,7 @@ The rounding mode of the context.
 @end table
 
 @ref{table-ieee-formats} lists the precision and exponent
-field values for the basic IEEE-754 binary formats:
+field values for the basic IEEE 754 binary formats:
 
 @float Table,table-ieee-formats
 @caption{Basic IEEE Format Context Values}
@@ -29562,10 +29564,10 @@ one extra bit of significand.
 
 A floating-point context can also determine which signals are treated
 as exceptions, and can set rules for arithmetic with special values.
-Please consult the IEEE-754 standard or other resources for details.
+Please consult the IEEE 754 standard or other resources for details.
 
 @command{gawk} ordinarily uses the hardware double precision
-representation for numbers.  On most systems, this is IEEE-754
+representation for numbers.  On most systems, this is IEEE 754
 floating-point format, corresponding to 64-bit binary with 53 bits
 of precision.
 
@@ -29575,7 +29577,7 @@ the result from an arithmetic operation to be a number smaller than
 the smallest nonzero normalized number. Such numbers do
 not have as many significant digits as normal numbers, and are called
 @dfn{denormals} or @dfn{subnormals}. The alternative, simply returning a zero,
-is called @dfn{flush to zero}. The basic IEEE-754 binary formats
+is called @dfn{flush to zero}. The basic IEEE 754 binary formats
 support subnormal numbers.
 @end quotation
 
@@ -29587,7 +29589,7 @@ The @dfn{rounding mode} specifies the behavior for the results of numerical
 operations when discarding extra precision. Each rounding mode indicates
 how the least significant returned digit of a rounded result is to
 be calculated.
-@ref{table-rounding-modes} lists the IEEE-754 defined
+@ref{table-rounding-modes} lists the IEEE 754 defined
 rounding modes:
 
 @float Table,table-rounding-modes
@@ -29630,7 +29632,7 @@ BEGIN @{
 @noindent
 produces the following output when run on the author's system:@footnote{It
 is possible for the output to be completely different if the
-C library in your system does not use the IEEE-754 even-rounding
+C library in your system does not use the IEEE 754 even-rounding
 rule to round halfway cases for @code{printf}.}
 
 @example
@@ -29649,7 +29651,7 @@ The theory behind the rounding mode @code{roundTiesToEven} is that
 it more or less evenly distributes upward and downward rounds
 of exact halves, which might cause any round-off error
 to cancel itself out. This is the default rounding mode used
-in IEEE-754 computing functions and operators.
+in IEEE 754 computing functions and operators.
 
 The other rounding modes are rarely used.
 Round toward positive infinity (@code{roundTowardPositive})
@@ -29741,10 +29743,10 @@ to follow.
 
 The default working precision for arbitrary precision floating-point values is
 53 bits, and the default value for @code{ROUNDMODE} is @code{"N"},
-which selects the IEEE-754 @code{roundTiesToEven} rounding mode
+which selects the IEEE 754 @code{roundTiesToEven} rounding mode
 (@pxref{Rounding Mode}).@footnote{The
 default precision is 53 bits, since according to the MPFR documentation,
-the library should be able to exactly reproduce all computations with
+the library should be able to exactly reproduce all computations done with
 double-precision machine floating-point numbers (@code{double} type
 in C), except the default exponent range is much wider and subnormal
 numbers are not implemented.}
@@ -29766,7 +29768,7 @@ MPFR does not implement subnormal numbers by default,
 and this behavior cannot be changed in @command{gawk}.
 
 @quotation NOTE
-When emulating an IEEE-754 format (@pxref{Setting Precision}),
+When emulating an IEEE 754 format (@pxref{Setting Precision}),
 @command{gawk} internally adjusts the exponent range
 to the value defined for the format and also performs computations needed for
 gradual underflow (subnormal numbers).
@@ -29796,16 +29798,16 @@ your program.
 @command{gawk} uses a global working precision; it does not keep track of
 the precision or accuracy of individual numbers. Performing an arithmetic
 operation or calling a built-in function rounds the result to the current
-working precision. The default working precision is 53 bits, which can be
-modified using the built-in variable @code{PREC}. You can also set the
-value to one of the pre-defined case-insensitive strings
+working precision. The default working precision is 53 bits, which you can
+modify using the built-in variable @code{PREC}. You can also set the
+value to one of the predefined case-insensitive strings
 shown in @ref{table-predefined-precision-strings},
-to emulate an IEEE-754 binary format.
+to emulate an IEEE 754 binary format.
 
 @float Table,table-predefined-precision-strings
 @caption{Predefined precision strings for @code{PREC}}
 @multitable {@code{"double"}} {12345678901234567890123456789012345}
-@headitem @code{PREC} @tab IEEE-754 Binary Format
+@headitem @code{PREC} @tab IEEE 754 Binary Format
 @item @code{"half"} @tab 16-bit half-precision.
 @item @code{"single"} @tab Basic 32-bit single precision.
 @item @code{"double"} @tab Basic 64-bit double precision.
@@ -29894,8 +29896,8 @@ rounding modes is shown in @ref{table-gawk-rounding-modes}.
 @end float
 
 @code{ROUNDMODE} has the default value @code{"N"},
-which selects the IEEE-754 rounding mode @code{roundTiesToEven}.
-In @ref{table-gawk-rounding-modes}, @code{"A"} is listed to select the IEEE-754 mode
+which selects the IEEE 754 rounding mode @code{roundTiesToEven}.
+In @ref{table-gawk-rounding-modes}, @code{"A"} is listed to select the IEEE 754 mode
 @code{roundTiesToAway}.  This is only available
 if your version of the MPFR library supports it; otherwise setting
 @code{ROUNDMODE} to this value has no effect. @xref{Rounding Mode},
@@ -29914,8 +29916,8 @@ $ @kbd{gawk -M -v ROUNDMODE="Z" 'BEGIN @{ printf("%.2f\n", 1.378) @}'}
 @cindex constants, floating-point
 
 Be wary of floating-point constants! When reading a floating-point constant
-from program source code, @command{gawk} uses the default precision,
-unless overridden
+from program source code, @command{gawk} uses the default precision (that
+of a C @code{double}), unless overridden
 by an assignment to the special variable @code{PREC} on the command
 line, to store it internally as a MPFR number.
 Changing the precision using @code{PREC} in the program text does
@@ -29962,7 +29964,7 @@ Electronic Transactions on Numerical Analysis. Volume 28, pp. 168-173, 2008.}
 @command{gawk} does not implicitly modify the precision of any previously
 computed results when the working precision is changed with an assignment
 to @code{PREC}.  The precision of a number is always the one that was
-used at the time of its creation, and there is no way for the user
+used at the time of its creation, and there is no way for you
 to explicitly change it afterwards. However, since the result of a
 floating-point arithmetic operation is always an arbitrary precision
 floating-point value---with a precision set by the value of @code{PREC}---one of the
@@ -30027,7 +30029,7 @@ a straight test for equality may not work.
 
 So, don't assume that floating-point values can be compared for equality.
 You should also exercise caution when using other forms of comparisons.
-The standard way to compare between floating-point numbers is to determine
+The standard way to compare two floating-point numbers is to determine
 how much error (or @dfn{tolerance}) you will allow in a comparison and
 check to see if one value is within this error range of the other.
 
@@ -30352,9 +30354,9 @@ The @code{do_@var{xxx}()} function, in turn, then uses the function
 pointers in the API @code{struct} to do its work, such as updating
 variables or arrays, printing messages, setting @code{ERRNO}, and so on.
 
-Convenience macros in the @file{gawkapi.h} header file make calling
-through the function pointers look like regular function calls so that
-extension code is quite readable and understandable.
+Convenience macros make calling through the function pointers look
+like regular function calls so that extension code is quite readable
+and understandable.
 
 Although all of this sounds somewhat complicated, the result is that
 extension code is quite straightforward to write and to read. You can
@@ -30385,6 +30387,9 @@ happen, but we all know how @emph{that} goes.)
 @section API Description
 @cindex extension API
 
+C or C++ code for an extension must include the header file
+@file{gawkapi.h}, which declares the functions and defines the data
+types used to communicate with @command{gawk}.
 This (rather large) @value{SECTION} describes the API in detail.
 
 @menu
@@ -30486,6 +30491,7 @@ corresponding standard header file @emph{before} including @file{gawkapi.h}:
 @multitable {@code{memset()}, @code{memcpy()}} {@code{<sys/types.h>}}
 @headitem C Entity @tab Header File
 @item @code{EOF} @tab @code{<stdio.h>}
+@item Values for @code{errno} @tab @code{<errno.h>}
 @item @code{FILE} @tab @code{<stdio.h>}
 @item @code{NULL} @tab @code{<stddef.h>}
 @item @code{memcpy()} @tab @code{<string.h>}
@@ -30500,9 +30506,6 @@ to include the correct files in the correct way. This requirement
 is necessary in order to keep @file{gawkapi.h} clean, instead of becoming
 a portability hodge-podge as can be seen in some parts of
 the @command{gawk} source code.
-
-To pass reasonable integer values for @code{ERRNO}, you will also need to
-include @code{<errno.h>}.
 
 @item
 The @file{gawkapi.h} file may be included more than once without ill effect.
@@ -30527,7 +30530,7 @@ and is managed by @command{gawk} from then on.
 The API defines several simple @code{struct}s that map values as seen
 from @command{awk}.  A value can be a @code{double}, a string, or an
 array (as in multidimensional arrays, or when creating a new array).
-String values maintain both pointer and length since embedded @code{NUL}
+String values maintain both pointer and length since embedded @sc{nul}
 characters are allowed.
 
 @quotation NOTE
@@ -30659,7 +30662,7 @@ Scalar values in @command{awk} are either numbers or strings. The
 indicates what is in the @code{union}.
 
 Representing numbers is easy---the API uses a C @code{double}.  Strings
-require more work. Since @command{gawk} allows embedded @code{NUL} bytes
+require more work. Since @command{gawk} allows embedded @sc{nul} bytes
 in string values, a string must be represented as a pair containing a
 data-pointer and length. This is the @code{awk_string_t} type.
 
@@ -31156,8 +31159,9 @@ A pointer to your @code{@var{XXX}_can_take_file()} function.
 A pointer to your @code{@var{XXX}_take_control_of()} function.
 
 @item awk_const struct input_parser *awk_const next;
-This pointer is used by @command{gawk}.
-The extension cannot modify it.
+This is for use by @command{gawk};
+therefore it is marked @code{awk_const} so that the extension cannot
+modify it.
 @end table
 
 The steps are as follows:
@@ -31204,7 +31208,7 @@ open the file, then @code{fd} will @emph{not} be equal to
 @code{INVALID_HANDLE}. Otherwise, it will.
 
 @item struct stat sbuf;
-If file descriptor is valid, then @command{gawk} will have filled
+If the file descriptor is valid, then @command{gawk} will have filled
 in this structure via a call to the @code{fstat()} system call.
 @end table
 
@@ -31385,8 +31389,8 @@ as described below, and return true if successful, false otherwise.
 
 @item awk_const struct output_wrapper *awk_const next;
 This is for use by @command{gawk};
-therefore they are marked @code{awk_const} so that the extension cannot
-modify them.
+therefore it is marked @code{awk_const} so that the extension cannot
+modify it.
 @end table
 
 The @code{awk_output_buf_t} structure looks like this:
@@ -31448,7 +31452,7 @@ The @code{@var{XXX}_can_take_file()} function should make a decision based
 upon the @code{name} and @code{mode} fields, and any additional state
 (such as @command{awk} variable values) that is appropriate.
 
-When @command{gawk} calls @code{@var{XXX}_take_control_of()}, it should fill
+When @command{gawk} calls @code{@var{XXX}_take_control_of()}, that function should fill
 in the other fields, as appropriate, except for @code{fp}, which it should just
 use normally.
 
@@ -31502,8 +31506,8 @@ This function should fill in the @code{awk_input_buf_t} and
 
 @item awk_const struct two_way_processor *awk_const next;
 This is for use by @command{gawk};
-therefore they are marked @code{awk_const} so that the extension cannot
-modify them.
+therefore it is marked @code{awk_const} so that the extension cannot
+modify it.
 @end table
 
 As with the input parser and output processor, you provide
@@ -31669,7 +31673,7 @@ Return false if the value cannot be retrieved.
 
 @item awk_bool_t sym_update_scalar(awk_scalar_t cookie, awk_value_t *value);
 Update the value associated with a scalar cookie.  Return false if
-the new value is not one of @code{AWK_STRING} or @code{AWK_NUMBER}.
+the new value is not of type @code{AWK_STRING} or @code{AWK_NUMBER}.
 Here too, the built-in variables may not be updated.
 @end table
 
@@ -31787,7 +31791,7 @@ is what the routines in this section let you do.  The functions are as follows:
 @item awk_bool_t create_value(awk_value_t *value, awk_value_cookie_t *result);
 Create a cached string or numeric value from @code{value} for efficient later
 assignment.
-Only @code{AWK_NUMBER} and @code{AWK_STRING} values are allowed.  Any other type
+Only values of type @code{AWK_NUMBER} and @code{AWK_STRING} are allowed.  Any other type
 is rejected.  While @code{AWK_UNDEFINED} could be allowed, doing so would
 result in inferior performance.
 
@@ -31848,7 +31852,7 @@ What happens if @command{awk} code assigns a new value to @code{VAR1},
 are all the others be changed too?''
 
 That's a great question. The answer is that no, it's not a problem.
-Internally, @command{gawk} uses reference-counted strings. This means
+Internally, @command{gawk} uses @dfn{reference-counted strings}. This means
 that many variables can share the same string value, and @command{gawk}
 keeps track of the usage.  When a variable's value changes, @command{gawk}
 simply decrements the reference count on the old value and updates
@@ -31980,7 +31984,8 @@ the string value of @code{index} must come from the API-provided functions @code
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const@ awk_value_t *const value);
 In the array represented by @code{a_cookie}, create or modify
 the element whose index is given by @code{index}.
-The @code{ARGV} and @code{ENVIRON} arrays may not be changed.
+The @code{ARGV} and @code{ENVIRON} arrays may not be changed,
+although the @code{PROCINFO} array can be.
 
 @item awk_bool_t set_array_element_by_elem(awk_array_t a_cookie,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_element_t element);
@@ -32251,7 +32256,7 @@ you must add the new array to its parent before adding any elements to it.
 Thus, the correct way to build an array is to work ``top down.''  Create
 the array, and immediately install it in @command{gawk}'s symbol table
 using @code{sym_update()}, or install it as an element in a previously
-existing array using @code{set_element()}.  We show example code shortly.
+existing array using @code{set_array_element()}.  We show example code shortly.
 
 @item
 Due to gawk internals, after using @code{sym_update()} to install an array
@@ -32277,7 +32282,7 @@ of the array cookie after the call to @code{set_element()}.
 @end enumerate
 
 The following C code is a simple test extension to create an array
-with two regular elements and with a subarray. The leading @samp{#include}
+with two regular elements and with a subarray. The leading @code{#include}
 directives and boilerplate variable declarations are omitted for brevity.
 The first step is to create a new array and then install it
 in the symbol table:
@@ -32503,12 +32508,15 @@ whether the corresponding command-line options were enabled when
 @command{gawk} was invoked.  The variables are:
 
 @table @code
+@item do_debug
+This variable is true if @command{gawk} was invoked with @option{--debug} option.
+
 @item do_lint
 This variable is true if @command{gawk} was invoked with @option{--lint} option
 (@pxref{Options}).
 
-@item do_traditional
-This variable is true if @command{gawk} was invoked with @option{--traditional} option.
+@item do_mpfr
+This variable is true if @command{gawk} was invoked with @option{--bignum} option.
 
 @item do_profile
 This variable is true if @command{gawk} was invoked with @option{--profile} option.
@@ -32516,11 +32524,8 @@ This variable is true if @command{gawk} was invoked with @option{--profile} opti
 @item do_sandbox
 This variable is true if @command{gawk} was invoked with @option{--sandbox} option.
 
-@item do_debug
-This variable is true if @command{gawk} was invoked with @option{--debug} option.
-
-@item do_mpfr
-This variable is true if @command{gawk} was invoked with @option{--bignum} option.
+@item do_traditional
+This variable is true if @command{gawk} was invoked with @option{--traditional} option.
 @end table
 
 The value of @code{do_lint} can change if @command{awk} code
@@ -33204,7 +33209,9 @@ structures for loading each function into @command{gawk}:
 static awk_ext_func_t func_table[] = @{
     @{ "chdir", do_chdir, 1 @},
     @{ "stat",  do_stat, 2 @},
+#ifndef __MINGW32__
     @{ "fts",   do_fts, 3 @},
+#endif
 @};
 @end example
 
@@ -33362,69 +33369,27 @@ In all cases, it clears the @code{statdata} array.
 When the call is successful, @code{stat()} fills the @code{statdata}
 array with information retrieved from the filesystem, as follows:
 
-@c nested table
-@multitable @columnfractions .25 .60
-@item @code{statdata["name"]} @tab
-The name of the file.
-
-@item @code{statdata["dev"]} @tab
-Corresponds to the @code{st_dev} field in the @code{struct stat}.
-
-@item @code{statdata["ino"]} @tab
-Corresponds to the @code{st_ino} field in the @code{struct stat}.
-
-@item @code{statdata["mode"]} @tab
-Corresponds to the @code{st_mode} field in the @code{struct stat}.
-
-@item @code{statdata["nlink"]} @tab
-Corresponds to the @code{st_nlink} field in the @code{struct stat}.
-
-@item @code{statdata["uid"]} @tab
-Corresponds to the @code{st_uid} field in the @code{struct stat}.
-
-@item @code{statdata["gid"]} @tab
-Corresponds to the @code{st_gid} field in the @code{struct stat}.
-
-@item @code{statdata["size"]} @tab
-Corresponds to the @code{st_size} field in the @code{struct stat}.
-
-@item @code{statdata["atime"]} @tab
-Corresponds to the @code{st_atime} field in the @code{struct stat}.
-
-@item @code{statdata["mtime"]} @tab
-Corresponds to the @code{st_mtime} field in the @code{struct stat}.
-
-@item @code{statdata["ctime"]} @tab
-Corresponds to the @code{st_ctime} field in the @code{struct stat}.
-
-@item @code{statdata["rdev"]} @tab
-Corresponds to the @code{st_rdev} field in the @code{struct stat}.
-This element is only present for device files.
-
-@item @code{statdata["major"]} @tab
-Corresponds to the @code{st_major} field in the @code{struct stat}.
-This element is only present for device files.
-
-@item @code{statdata["minor"]} @tab
-Corresponds to the @code{st_minor} field in the @code{struct stat}.
-This element is only present for device files.
-
-@item @code{statdata["blksize"]} @tab
-Corresponds to the @code{st_blksize} field in the @code{struct stat},
-if this field is present on your system.
-(It is present on all modern systems that we know of.)
-
-@item @code{statdata["pmode"]} @tab
-A human-readable version of the mode value, such as printed by
-@command{ls}.  For example, @code{"-rwxr-xr-x"}.
-
-@item @code{statdata["linkval"]} @tab
-If the named file is a symbolic link, this element will exist
-and its value is the value of the symbolic link (where the
-symbolic link points to).
-
-@item @code{statdata["type"]} @tab
-The type of the file as a string. One of
+@multitable @columnfractions .15 .50 .20
+@headitem Subscript @tab Field in @code{struct stat} @tab File type
+@item @code{"name"} @tab The file name @tab All
+@item @code{"dev"} @tab @code{st_dev} @tab All
+@item @code{"ino"} @tab @code{st_ino} @tab All
+@item @code{"mode"} @tab @code{st_mode} @tab All
+@item @code{"nlink"} @tab @code{st_nlink} @tab All
+@item @code{"uid"} @tab @code{st_uid} @tab All
+@item @code{"gid"} @tab @code{st_gid} @tab All
+@item @code{"size"} @tab @code{st_size} @tab All
+@item @code{"atime"} @tab @code{st_atime} @tab All
+@item @code{"mtime"} @tab @code{st_mtime} @tab All
+@item @code{"ctime"} @tab @code{st_ctime} @tab All
+@item @code{"rdev"} @tab @code{st_rdev} @tab Device files
+@item @code{"major"} @tab @code{st_major} @tab Device files
+@item @code{"minor"} @tab @code{st_minor} @tab Device files
+@item @code{"blksize"} @tab @code{st_blksize} @tab All
+@item @code{"pmode"} @tab A human-readable version of the mode value, such as printed by
+@command{ls}.  For example, @code{"-rwxr-xr-x"} @tab All
+@item @code{"linkval"} @tab The value of the symbolic link @tab Symbolic links
+@item @code{"type"} @tab The type of the file as a string. One of
 @code{"file"},
 @code{"blockdev"},
 @code{"chardev"},
@@ -33435,7 +33400,7 @@ The type of the file as a string. One of
 @code{"door"},
 or
 @code{"unknown"}.
-Not all systems support all file types.
+Not all systems support all file types. @tab All
 @end multitable
 
 @cindex @code{fts()} extension function
@@ -33594,23 +33559,13 @@ flags in the @code{FNM} array.
 The flags are follows:
 
 @multitable @columnfractions .25 .75
-@item @code{FNM["CASEFOLD"]} @tab
-Corresponds to the @code{FNM_CASEFOLD} flag as defined in @code{fnmatch()}.
-
-@item @code{FNM["FILE_NAME"]} @tab
-Corresponds to the @code{FNM_FILE_NAME} flag as defined in @code{fnmatch()}.
-
-@item @code{FNM["LEADING_DIR"]} @tab
-Corresponds to the @code{FNM_LEADING_DIR} flag as defined in @code{fnmatch()}.
-
-@item @code{FNM["NOESCAPE"]} @tab
-Corresponds to the @code{FNM_NOESCAPE} flag as defined in @code{fnmatch()}.
-
-@item @code{FNM["PATHNAME"]} @tab
-Corresponds to the @code{FNM_PATHNAME} flag as defined in @code{fnmatch()}.
-
-@item @code{FNM["PERIOD"]} @tab
-Corresponds to the @code{FNM_PERIOD} flag as defined in @code{fnmatch()}.
+@headitem Array element @tab Corresponding lag defined by @code{fnmatch()}
+@item @code{FNM["CASEFOLD"]} @tab @code{FNM_CASEFOLD}
+@item @code{FNM["FILE_NAME"]} @tab @code{FNM_FILE_NAME}
+@item @code{FNM["LEADING_DIR"]} @tab @code{FNM_LEADING_DIR}
+@item @code{FNM["NOESCAPE"]} @tab @code{FNM_NOESCAPE}
+@item @code{FNM["PATHNAME"]} @tab @code{FNM_PATHNAME}
+@item @code{FNM["PERIOD"]} @tab @code{FNM_PERIOD}
 @end multitable
 
 Here is an example:
@@ -33771,8 +33726,11 @@ The record consists of three fields. The first two are the inode number and the
 filename, separated by a forward slash character.
 On systems where the directory entry contains the file type, the record
 has a third field (also separated by a slash) which is a single letter
-indicating the type of the file:
+indicating the type of the file. The letters are file types are shown
+in @ref{table-readdir-file-types}.
 
+@float Table,table-readdir-file-types
+@caption{File types returned by @code{readdir()}}
 @multitable @columnfractions .1 .9
 @headitem Letter @tab File Type
 @item @code{b} @tab Block device
@@ -33784,6 +33742,7 @@ indicating the type of the file:
 @item @code{s} @tab Socket
 @item @code{u} @tab Anything else (unknown)
 @end multitable
+@end float
 
 On systems without the file type information, the third field is always
 @samp{u}.
@@ -33818,12 +33777,12 @@ Here is an example:
 
 BEGIN @{
     REVOUT = 1
-    print "hello, world" > "/dev/stdout"
+    print "don't panic" > "/dev/stdout"
 @}
 @end example
 
 The output from this program is:
-@samp{dlrow ,olleh}.
+@samp{cinap t'nod}.
 
 @node Extension Sample Rev2way
 @subsection Two-Way I/O Example
@@ -33840,12 +33799,21 @@ The following example shows how to use it:
 
 BEGIN @{
     cmd = "/magic/mirror"
-    print "hello, world" |& cmd
+    print "don't panic" |& cmd
     cmd |& getline result
     print result
     close(cmd)
 @}
 @end example
+
+The output from this program
+@ifnotinfo
+also is:
+@end ifnotinfo
+@ifinfo
+is:
+@end ifinfo
+@samp{cinap t'nod}.
 
 @node Extension Sample Read write array
 @subsection Dumping and Restoring An Array
@@ -33857,8 +33825,8 @@ named @code{writea()} and @code{reada()}, as follows:
 @cindex @code{writea()} extension function
 @item ret = writea(file, array)
 This function takes a string argument, which is the name of the file
-to which dump the array, and the array itself as the second argument.
-@code{writea()} understands multidimensional arrays.  It returns one on
+to which to dump the array, and the array itself as the second argument.
+@code{writea()} understands arrays of arrays.  It returns one on
 success, or zero upon failure.
 
 @cindex @code{reada()} extension function
@@ -33943,9 +33911,8 @@ for more information.
 @node Extension Sample Time
 @subsection Extension Time Functions
 
-These functions can be used either by invoking @command{gawk}
-with a command-line argument of @samp{-l time} or by
-inserting @samp{@@load "time"} in your script.
+The @code{time} extension adds two functions, named @code{gettimeofday()}
+and @code{sleep()}, as follows:
 
 @table @code
 @item @@load "time"
@@ -33958,7 +33925,7 @@ floating point value.  If the time is unavailable on this platform, return
 @minus{}1 and set @code{ERRNO}.  The returned time should have sub-second
 precision, but the actual precision may vary based on the platform.
 If the standard C @code{gettimeofday()} system call is available on this
-platform, then it simply returns the value.  Otherwise, if on Windows,
+platform, then it simply returns the value.  Otherwise, if on MS-Windows,
 it tries to use @code{GetSystemTimeAsFileTime()}.
 
 @cindex @code{sleep()} extension function
