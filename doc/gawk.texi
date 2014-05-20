@@ -1571,12 +1571,14 @@ contains additional appendices and other end material.
 To save space, we have omitted them from the
 printed edition. You may find them online, as follows:
 
-@uref{http://www.gnu.org/software/gawk/manual/html_node/Notes.html}
+@uref{http://www.gnu.org/software/gawk/manual/html_node/Notes.html,
+The appendix on implementation notes}
 describes how to disable @command{gawk}'s extensions, as
 well as how to contribute new code to @command{gawk},
 and some possible future directions for @command{gawk} development.
 
-@uref{http://www.gnu.org/software/gawk/manual/html_node/Basic-Concepts.html}
+@uref{http://www.gnu.org/software/gawk/manual/html_node/Basic-Concepts.html,
+The appendix on basic concepts}
 provides some very cursory background material for those who
 are completely unfamiliar with computer programming.
 
@@ -2064,9 +2066,6 @@ May, 2014
 
 @ifdocbook
 
-@docbook
-<partintro>
-@end docbook
 Part I describes the @command{awk} language and @command{gawk} program
 in detail.  It starts with the basics, and continues through all of
 the features of @command{awk}. Included also are many, but not all,
@@ -2101,9 +2100,6 @@ following chapters:
 @item
 @ref{Functions}.
 @end itemize
-@docbook
-</partintro>
-@end docbook
 @end ifdocbook
 
 @node Getting Started
@@ -18160,8 +18156,7 @@ Operands  | 0 | 1 | 0 | 1 | 0 | 1
 @end tex
 
 @docbook
-<table id="table-bitwise-ops">
-<title>Bitwise Operations</title>
+<informaltable>
 
 <tgroup cols="7" colsep="1">
 <colspec colname="c1"/>
@@ -18221,7 +18216,7 @@ Operands  | 0 | 1 | 0 | 1 | 0 | 1
 
 </tbody>
 </tgroup>
-</table>
+</informaltable>
 @end docbook
 @end float
 
@@ -19526,10 +19521,6 @@ for (i = 1; i <= n; i++)
 @end ifnotinfo
 
 @ifdocbook
-
-@docbook
-<partintro>
-@end docbook
 Part II shows how to use @command{awk} and @command{gawk} for problem solving.
 There is lots of code here for you to read and learn from.
 It contains the following chapters:
@@ -19541,9 +19532,6 @@ It contains the following chapters:
 @item
 @ref{Sample Programs}.
 @end itemize
-@docbook
-</partintro>
-@end docbook
 @end ifdocbook
 
 @node Library Functions
@@ -25629,10 +25617,6 @@ BEGIN {
 @end ifnotinfo
 
 @ifdocbook
-
-@docbook
-<partintro>
-@end docbook
 Part III focuses on features specific to @command{gawk}.
 It contains the following chapters:
 
@@ -25652,9 +25636,6 @@ It contains the following chapters:
 @item
 @ref{Dynamic Extensions}.
 @end itemize
-@docbook
-</partintro>
-@end docbook
 @end ifdocbook
 
 @node Advanced Features
@@ -29805,7 +29786,7 @@ shown in @ref{table-predefined-precision-strings},
 to emulate an IEEE 754 binary format.
 
 @float Table,table-predefined-precision-strings
-@caption{Predefined precision strings for @code{PREC}}
+@caption{Predefined Precision Strings For @code{PREC}}
 @multitable {@code{"double"}} {12345678901234567890123456789012345}
 @headitem @code{PREC} @tab IEEE 754 Binary Format
 @item @code{"half"} @tab 16-bit half-precision.
@@ -30261,30 +30242,30 @@ Communication between
 is loaded, it is passed a pointer to a @code{struct} whose fields are
 function pointers.
 @ifnotdocbook
-This is shown in @ref{load-extension}.
+This is shown in @ref{figure-load-extension}.
 @end ifnotdocbook
 @ifdocbook
-This is shown in @inlineraw{docbook, <xref linkend="load-extension"/>}.
+This is shown in @inlineraw{docbook, <xref linkend="figure-load-extension"/>}.
 @end ifdocbook
 
 @ifnotdocbook
-@float Figure,load-extension
+@float Figure,figure-load-extension
 @caption{Loading The Extension}
 @c FIXME: One day, it should not be necessary to have two cases,
 @c but rather just the one without the "txt" final argument.
 @c This applies to the other figures as well.
 @ifinfo
-@center @image{api-figure1, , , Loading the extension, txt}
+@center @image{api-figure1, , , Loading The Extension, txt}
 @end ifinfo
 @ifnotinfo
-@center @image{api-figure1, , , Loading the extension}
+@center @image{api-figure1, , , Loading The Extension}
 @end ifnotinfo
 @end float
 @end ifnotdocbook
 
 @docbook
-<figure id="load-extension">
-<title>Loading the extension</title>
+<figure id="figure-load-extension">
+<title>Loading The Extension</title>
 <graphic fileref="api-figure1.eps"/>
 </figure>
 @end docbook
@@ -30294,27 +30275,27 @@ function pointers, at runtime, without needing (link-time) access
 to @command{gawk}'s symbols.  One of these function pointers is to a
 function for ``registering'' new built-in functions.
 @ifnotdocbook
-This is shown in @ref{load-new-function}.
+This is shown in @ref{figure-load-new-function}.
 @end ifnotdocbook
 @ifdocbook
-This is shown in @inlineraw{docbook, <xref linkend="load-new-function"/>}.
+This is shown in @inlineraw{docbook, <xref linkend="figure-load-new-function"/>}.
 @end ifdocbook
 
 @ifnotdocbook
-@float Figure,load-new-function
+@float Figure,figure-load-new-function
 @caption{Loading The New Function}
 @ifinfo
-@center @image{api-figure2, , , Loading the new function, txt}
+@center @image{api-figure2, , , Loading The New Function, txt}
 @end ifinfo
 @ifnotinfo
-@center @image{api-figure2, , , Loading the new function}
+@center @image{api-figure2, , , Loading The New Function}
 @end ifnotinfo
 @end float
 @end ifnotdocbook
 
 @docbook
-<figure id="load-new-function">
-<title>Loading the new function</title>
+<figure id="figure-load-new-function">
+<title>Loading The New Function</title>
 <graphic fileref="api-figure2.eps"/>
 </figure>
 @end docbook
@@ -30325,14 +30306,14 @@ provide the new feature (@code{do_chdir()}, for example).  @command{gawk}
 associates the function pointer with a name and can then call it, using a
 defined calling convention.
 @ifnotdocbook
-This is shown in @ref{call-new-function}.
+This is shown in @ref{figure-call-new-function}.
 @end ifnotdocbook
 @ifdocbook
-This is shown in @inlineraw{docbook, <xref linkend="call-new-function"/>}.
+This is shown in @inlineraw{docbook, <xref linkend="figure-call-new-function"/>}.
 @end ifdocbook
 
 @ifnotdocbook
-@float Figure,call-new-function
+@float Figure,figure-call-new-function
 @caption{Calling The New Function}
 @ifinfo
 @center @image{api-figure3, , , Calling the new function, txt}
@@ -30344,7 +30325,7 @@ This is shown in @inlineraw{docbook, <xref linkend="call-new-function"/>}.
 @end ifnotdocbook
 
 @docbook
-<figure id="call-new-function">
+<figure id="figure-call-new-function">
 <title>Calling The New Function</title>
 <graphic fileref="api-figure3.eps"/>
 </figure>
@@ -30727,9 +30708,9 @@ value type, as appropriate.  This behavior is summarized in
 @ref{table-value-types-returned}.
 
 @c FIXME: Try to do this with spans...
-@ifdocbook
-@anchor{table-value-types-returned}
-@end ifdocbook
+
+@float Table,table-value-types-returned
+@caption{API Value Types Returned}
 @docbook
 <informaltable>
 <tgroup cols="2">
@@ -30814,8 +30795,6 @@ value type, as appropriate.  This behavior is summarized in
 
 @ifnotplaintext
 @ifnotdocbook
-@float Table,table-value-types-returned
-@caption{Value Types Returned}
 @multitable @columnfractions .50 .50
 @headitem @tab Type of Actual Value:
 @end multitable
@@ -30828,12 +30807,9 @@ value type, as appropriate.  This behavior is summarized in
 @item @tab @b{Undefined} @tab String @tab Number @tab Array @tab Undefined
 @item @tab @b{Value Cookie} @tab false @tab false @tab false @tab false
 @end multitable
-@end float
 @end ifnotdocbook
 @end ifnotplaintext
 @ifplaintext
-@float Table,table-value-types-returned
-@caption{Value Types Returned}
 @example
                         +-------------------------------------------------+
                         |                Type of Actual Value:            |
@@ -30857,8 +30833,8 @@ value type, as appropriate.  This behavior is summarized in
 |           | Cookie    |            |            |           |           |
 +-----------+-----------+------------+------------+-----------+-----------+
 @end example
-@end float
 @end ifplaintext
+@end float
 
 @node Memory Allocation Functions
 @subsection Memory Allocation Functions and Convenience Macros
@@ -33730,7 +33706,7 @@ indicating the type of the file. The letters are file types are shown
 in @ref{table-readdir-file-types}.
 
 @float Table,table-readdir-file-types
-@caption{File types returned by @code{readdir()}}
+@caption{File Types Returned By @code{readdir()}}
 @multitable @columnfractions .1 .9
 @headitem Letter @tab File Type
 @item @code{b} @tab Block device
@@ -34033,9 +34009,6 @@ See the project's web site for more information.
 
 @ifdocbook
 
-@docbook
-<partintro>
-@end docbook
 @ifclear FOR_PRINT
 Part IV contains the appendixes (including the two licenses that cover
 the @command{gawk} source code and this @value{DOCUMENT}, respectively)
@@ -34070,9 +34043,6 @@ Part IV contains two appendixes:
 @ref{GNU Free Documentation License}.
 @end ifclear
 @end itemize
-@docbook
-</partintro>
-@end docbook
 @end ifdocbook
 
 @node Language History
