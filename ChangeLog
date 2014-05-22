@@ -1,3 +1,11 @@
+2014-05-22         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Allow any redirected getline inside BEGINFILE/ENDFILE.
+
+	* awkgram.y (LEX_GETLINE): Only require a redirection and not also
+	a variable if getline is in a BEGINFILE or ENDFILE rule.
+	* interpret.h (Op_K_getline_redir): Remove check and fatal error.
+
 2014-05-20         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c (dfaexec): Minor sync with GNU grep.
