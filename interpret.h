@@ -1098,10 +1098,6 @@ match_re:
 			JUMPTO(ni);
 
 		case Op_K_getline_redir:
-			if ((currule == BEGINFILE || currule == ENDFILE)
-					&& pc->into_var == false
-					&& pc->redir_type == redirect_input)
-				fatal(_("`getline' invalid inside `%s' rule"), ruletab[currule]);
 			r = do_getline_redir(pc->into_var, pc->redir_type);
 			PUSH(r);
 			break;

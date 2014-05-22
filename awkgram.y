@@ -1405,21 +1405,12 @@ simp_exp
 	| LEX_GETLINE opt_variable input_redir
 	  {
 		/*
-		 * In BEGINFILE/ENDFILE, allow `getline var < file'
+		 * In BEGINFILE/ENDFILE, allow `getline [var] < file'
 		 */
 
-		if (rule == BEGINFILE || rule == ENDFILE) {
-			if ($2 != NULL && $3 != NULL)
-				;	 /* all  ok */
-			else {
-				if ($2 != NULL)
-					error_ln($1->source_line,
-						_("`getline var' invalid inside `%s' rule"), ruletab[rule]);
-				else
-					error_ln($1->source_line,
-						_("`getline' invalid inside `%s' rule"), ruletab[rule]);
-			}
-		}
+		if ((rule == BEGINFILE || rule == ENDFILE) && $3 == NULL)
+			error_ln($1->source_line,
+				 _("non-redirected `getline' invalid inside `%s' rule"), ruletab[rule]);
 		if (do_lint && rule == END && $3 == NULL)
 			lintwarn_ln($1->source_line,
 				_("non-redirected `getline' undefined inside END action"));
