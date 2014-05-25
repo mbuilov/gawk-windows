@@ -1267,6 +1267,9 @@ has been removed.)
 * Conventions::                 Typographical Conventions.
 * Manual History::              Brief history of the GNU project and this
                                 @value{DOCUMENT}.
+@ifset FOR_PRINT
+* Staying current::             How to keep up.
+@end ifset
 * How To Contribute::           Helping to save the world.
 * Acknowledgments::             Acknowledgments.
 @end menu
@@ -1830,6 +1833,20 @@ This @value{DOCUMENT} will undoubtedly continue to evolve.  An electronic
 version comes with the @command{gawk} distribution from the FSF.  If you
 find an error in this @value{DOCUMENT}, please report it!  @xref{Bugs},
 for information on submitting problem reports electronically.
+
+@ifset FOR_PRINT
+@node Staying current
+@unnumberedsec How to Stay Current
+
+It may be you have a version of @command{gawk} which is newer than the
+one described in this @value{DOCUMENT}.  To find out what has changed,
+you should first look at the @file{NEWS} file in the @command{gawk}
+distribution, which provides a high level summary of what changed in
+each release.
+
+You can then look at the @uref{http://www.gnu.org/software/gawk/manual/,
+online version} of this @value{DOCUMENT} to read about any new features.
+@end ifset
 
 @ifclear FOR_PRINT
 @node How To Contribute
@@ -33201,11 +33218,19 @@ which follows the POSIX specification.  Many long-time @command{awk}
 users learned @command{awk} programming with the original @command{awk}
 implementation in Version 7 Unix.  (This implementation was the basis for
 @command{awk} in Berkeley Unix, through 4.3-Reno.  Subsequent versions
-of Berkeley Unix, and some systems derived from 4.4BSD-Lite, use various
+of Berkeley Unix, and some systems derived from 4.4BSD-Lite, used various
 versions of @command{gawk} for their @command{awk}.)  This @value{CHAPTER}
 briefly describes the evolution of the @command{awk} language, with
 cross-references to other parts of the @value{DOCUMENT} where you can
 find more information.
+
+@ifset FOR_PRINT
+To save space, we have omitted
+information on the history of features in @command{gawk} from this
+edition. You can find it in the
+@uref{http://www.gnu.org/software/gawk/manual/html_node/Feature-History.html,
+online documentation}.
+@end ifset
 
 @menu
 * V7/SVR3.1::                   The major changes between V7 and System V
@@ -33796,6 +33821,8 @@ GCC for VAX and Alpha has not been tested for a while.
 @c ENDOFRANGE exgnot
 @c ENDOFRANGE posnot
 
+@c This does not need to be in the formal book.
+@ifclear FOR_PRINT
 @node Feature History
 @appendixsec History of @command{gawk} Features
 
@@ -33960,9 +33987,10 @@ The @code{next file} statement became @code{nextfile}
 (@pxref{Nextfile Statement}).
 
 @item
-The @code{fflush()} function from the
-Bell Laboratories research version of @command{awk}
-(@pxref{I/O Functions}).
+The @code{fflush()} function from
+Brian Kernighan's @command{awk}
+(then at Bell Laboratories;
+@pxref{I/O Functions}).
 
 @item
 New command line options:
@@ -33975,9 +34003,9 @@ the original Version 7 Unix version of @command{awk}
 (@pxref{V7/SVR3.1}).
 
 @item
-The @option{-m} option from the
-Bell Laboratories research version of @command{awk}
-This was later removed.
+The @option{-m} option from Brian Kernighan's @command{awk}.  (He was
+still at Bell Laboratories at the time.)  This was later removed from
+both his @command{awk} and from @command{gawk}.
 
 @item
 The @option{--re-interval} option to provide interval expressions in regexps
@@ -33994,6 +34022,7 @@ The use of GNU Autoconf to control the configuration process
 
 @item
 Amiga support.
+This has since been removed.
 
 @end itemize
 
@@ -34130,7 +34159,8 @@ BeOS support. This was later removed.
 Tandem support. This was later removed.
 
 @item
-The Atari port became officially unsupported.
+The Atari port became officially unsupported and was
+later removed entirely.
 
 @item
 The source code changed to use ISO C standard-style function definitions.
@@ -34223,7 +34253,7 @@ flush all open output redirections
 @item
 The @code{isarray()}
 function which distinguishes if an item is an array
-or not, to make it possible to traverse multidimensional arrays
+or not, to make it possible to traverse arrays of arrays
 (@pxref{Type Functions}).
 
 @item
@@ -34401,6 +34431,7 @@ The dynamic extension interface was completely redone
 @end itemize
 
 @c XXX ADD MORE STUFF HERE
+@end ifclear
 
 @node Common Extensions
 @appendixsec Common Extensions Summary
@@ -34627,8 +34658,8 @@ provided the initial port to OS/2 and its documentation.
 Michal Jaegermann
 provided the port to Atari systems and its documentation.
 (This port is no longer supported.)
-He continues to provide portability checking with DEC Alpha
-systems, and has done a lot of work to make sure @command{gawk}
+He continues to provide portability checking,
+and has done a lot of work to make sure @command{gawk}
 works on non-32-bit systems.
 
 @item
@@ -34747,7 +34778,7 @@ The modifications to convert @command{gawk}
 into a byte-code interpreter, including the debugger.
 
 @item
-The addition of true multidimensional arrays.
+The addition of true arrays of arrays.
 @ref{Arrays of Arrays}.
 
 @item

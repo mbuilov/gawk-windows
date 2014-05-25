@@ -25098,7 +25098,7 @@ the POSIX specification.  Many long-time `awk' users learned `awk'
 programming with the original `awk' implementation in Version 7 Unix.
 (This implementation was the basis for `awk' in Berkeley Unix, through
 4.3-Reno.  Subsequent versions of Berkeley Unix, and some systems
-derived from 4.4BSD-Lite, use various versions of `gawk' for their
+derived from 4.4BSD-Lite, used various versions of `gawk' for their
 `awk'.)  This major node briefly describes the evolution of the `awk'
 language, with cross-references to other parts of the Info file where
 you can find more information.
@@ -25540,8 +25540,8 @@ in POSIX `awk', in the order they were added to `gawk'.
    * The `next file' statement became `nextfile' (*note Nextfile
      Statement::).
 
-   * The `fflush()' function from the Bell Laboratories research
-     version of `awk' (*note I/O Functions::).
+   * The `fflush()' function from Brian Kernighan's `awk' (then at Bell
+     Laboratories; *note I/O Functions::).
 
    * New command line options:
 
@@ -25549,8 +25549,9 @@ in POSIX `awk', in the order they were added to `gawk'.
           available in the original Version 7 Unix version of `awk'
           (*note V7/SVR3.1::).
 
-        - The `-m' option from the Bell Laboratories research version
-          of `awk' This was later removed.
+        - The `-m' option from Brian Kernighan's `awk'.  (He was still
+          at Bell Laboratories at the time.)  This was later removed
+          from both his `awk' and from `gawk'.
 
         - The `--re-interval' option to provide interval expressions in
           regexps (*note Regexp Operators::).
@@ -25561,7 +25562,7 @@ in POSIX `awk', in the order they were added to `gawk'.
    * The use of GNU Autoconf to control the configuration process
      (*note Quick Installation::).
 
-   * Amiga support.
+   * Amiga support.  This has since been removed.
 
 
    Version 3.1 of `gawk' introduced the following features:
@@ -25652,7 +25653,8 @@ in POSIX `awk', in the order they were added to `gawk'.
 
    * Tandem support. This was later removed.
 
-   * The Atari port became officially unsupported.
+   * The Atari port became officially unsupported and was later removed
+     entirely.
 
    * The source code changed to use ISO C standard-style function
      definitions.
@@ -25714,8 +25716,8 @@ in POSIX `awk', in the order they were added to `gawk'.
      output redirections (*note I/O Functions::).
 
    * The `isarray()' function which distinguishes if an item is an array
-     or not, to make it possible to traverse multidimensional arrays
-     (*note Type Functions::).
+     or not, to make it possible to traverse arrays of arrays (*note
+     Type Functions::).
 
    * The `patsplit()' function which gives the same capability as
      `FPAT', for splitting (*note String Functions::).
@@ -26016,8 +26018,8 @@ Info file, in approximate chronological order:
 
    * Michal Jaegermann provided the port to Atari systems and its
      documentation.  (This port is no longer supported.)  He continues
-     to provide portability checking with DEC Alpha systems, and has
-     done a lot of work to make sure `gawk' works on non-32-bit systems.
+     to provide portability checking, and has done a lot of work to
+     make sure `gawk' works on non-32-bit systems.
 
    * Fred Fish provided the port to Amiga systems and its documentation.
      (With Fred's sad passing, this is no longer supported.)
@@ -26082,8 +26084,8 @@ Info file, in approximate chronological order:
         - The modifications to convert `gawk' into a byte-code
           interpreter, including the debugger.
 
-        - The addition of true multidimensional arrays.  *note Arrays
-          of Arrays::.
+        - The addition of true arrays of arrays.  *note Arrays of
+          Arrays::.
 
         - The additional modifications for support of arbitrary
           precision arithmetic.
@@ -32161,7 +32163,7 @@ Index
                                                               (line  19)
 * next debugger command:                 Debugger Execution Control.
                                                               (line  43)
-* next file statement:                   Feature History.     (line 168)
+* next file statement:                   Feature History.     (line 169)
 * next statement <1>:                    Next Statement.      (line   6)
 * next statement:                        Boolean Ops.         (line  85)
 * next statement, BEGIN/END patterns and: I/O And BEGIN/END.  (line  37)
@@ -33679,74 +33681,74 @@ Node: Extension Sample API Tests1003868
 Node: Extension Sample Time1004393
 Node: gawkextlib1005708
 Node: Language History1008489
-Node: V7/SVR3.11010082
-Node: SVR41012402
-Node: POSIX1013844
-Node: BTL1015230
-Node: POSIX/GNU1015964
-Node: Feature History1021563
-Node: Common Extensions1034539
-Node: Ranges and Locales1035851
-Ref: Ranges and Locales-Footnote-11040468
-Ref: Ranges and Locales-Footnote-21040495
-Ref: Ranges and Locales-Footnote-31040729
-Node: Contributors1040950
-Node: Installation1046331
-Node: Gawk Distribution1047225
-Node: Getting1047709
-Node: Extracting1048535
-Node: Distribution contents1050227
-Node: Unix Installation1055948
-Node: Quick Installation1056565
-Node: Additional Configuration Options1059011
-Node: Configuration Philosophy1060747
-Node: Non-Unix Installation1063101
-Node: PC Installation1063559
-Node: PC Binary Installation1064870
-Node: PC Compiling1066718
-Node: PC Testing1069678
-Node: PC Using1070854
-Node: Cygwin1075022
-Node: MSYS1075831
-Node: VMS Installation1076345
-Node: VMS Compilation1077141
-Ref: VMS Compilation-Footnote-11078393
-Node: VMS Dynamic Extensions1078451
-Node: VMS Installation Details1079824
-Node: VMS Running1082075
-Node: VMS GNV1084909
-Node: VMS Old Gawk1085632
-Node: Bugs1086102
-Node: Other Versions1090020
-Node: Notes1096104
-Node: Compatibility Mode1096904
-Node: Additions1097687
-Node: Accessing The Source1098614
-Node: Adding Code1100054
-Node: New Ports1106099
-Node: Derived Files1110234
-Ref: Derived Files-Footnote-11115555
-Ref: Derived Files-Footnote-21115589
-Ref: Derived Files-Footnote-31116189
-Node: Future Extensions1116287
-Node: Implementation Limitations1116870
-Node: Extension Design1118118
-Node: Old Extension Problems1119272
-Ref: Old Extension Problems-Footnote-11120780
-Node: Extension New Mechanism Goals1120837
-Ref: Extension New Mechanism Goals-Footnote-11124202
-Node: Extension Other Design Decisions1124388
-Node: Extension Future Growth1126494
-Node: Old Extension Mechanism1127330
-Node: Basic Concepts1129070
-Node: Basic High Level1129751
-Ref: figure-general-flow1130023
-Ref: figure-process-flow1130622
-Ref: Basic High Level-Footnote-11133851
-Node: Basic Data Typing1134036
-Node: Glossary1137391
-Node: Copying1162622
-Node: GNU Free Documentation License1200178
-Node: Index1225314
+Node: V7/SVR3.11010083
+Node: SVR41012403
+Node: POSIX1013845
+Node: BTL1015231
+Node: POSIX/GNU1015965
+Node: Feature History1021564
+Node: Common Extensions1034676
+Node: Ranges and Locales1035988
+Ref: Ranges and Locales-Footnote-11040605
+Ref: Ranges and Locales-Footnote-21040632
+Ref: Ranges and Locales-Footnote-31040866
+Node: Contributors1041087
+Node: Installation1046438
+Node: Gawk Distribution1047332
+Node: Getting1047816
+Node: Extracting1048642
+Node: Distribution contents1050334
+Node: Unix Installation1056055
+Node: Quick Installation1056672
+Node: Additional Configuration Options1059118
+Node: Configuration Philosophy1060854
+Node: Non-Unix Installation1063208
+Node: PC Installation1063666
+Node: PC Binary Installation1064977
+Node: PC Compiling1066825
+Node: PC Testing1069785
+Node: PC Using1070961
+Node: Cygwin1075129
+Node: MSYS1075938
+Node: VMS Installation1076452
+Node: VMS Compilation1077248
+Ref: VMS Compilation-Footnote-11078500
+Node: VMS Dynamic Extensions1078558
+Node: VMS Installation Details1079931
+Node: VMS Running1082182
+Node: VMS GNV1085016
+Node: VMS Old Gawk1085739
+Node: Bugs1086209
+Node: Other Versions1090127
+Node: Notes1096211
+Node: Compatibility Mode1097011
+Node: Additions1097794
+Node: Accessing The Source1098721
+Node: Adding Code1100161
+Node: New Ports1106206
+Node: Derived Files1110341
+Ref: Derived Files-Footnote-11115662
+Ref: Derived Files-Footnote-21115696
+Ref: Derived Files-Footnote-31116296
+Node: Future Extensions1116394
+Node: Implementation Limitations1116977
+Node: Extension Design1118225
+Node: Old Extension Problems1119379
+Ref: Old Extension Problems-Footnote-11120887
+Node: Extension New Mechanism Goals1120944
+Ref: Extension New Mechanism Goals-Footnote-11124309
+Node: Extension Other Design Decisions1124495
+Node: Extension Future Growth1126601
+Node: Old Extension Mechanism1127437
+Node: Basic Concepts1129177
+Node: Basic High Level1129858
+Ref: figure-general-flow1130130
+Ref: figure-process-flow1130729
+Ref: Basic High Level-Footnote-11133958
+Node: Basic Data Typing1134143
+Node: Glossary1137498
+Node: Copying1162729
+Node: GNU Free Documentation License1200285
+Node: Index1225421
 
 End Tag Table
