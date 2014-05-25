@@ -24,6 +24,7 @@
 \gdef\xrefprintnodename#1{``#1''}
 @end tex
 @end ifset
+
 @ifclear FOR_PRINT
 @c With early 2014 texinfo.tex, restore PDF links and colors
 @tex
@@ -32,6 +33,16 @@
 \global\urefurlonlylinktrue
 @end tex
 @end ifclear
+
+@ifnotdocbook
+@set BULLET @bullet{}
+@set MINUS @minus{}
+@end ifnotdocbook
+
+@ifdocbook
+@set BULLET
+@set MINUS
+@end ifdocbook
 
 @set xref-automatic-section-title
 
@@ -1192,7 +1203,7 @@ Thus, we usually don't distinguish between @command{gawk} and other
 @cindex @command{awk}, uses for
 Using @command{awk} allows you to:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 Manage small, personal databases
 
@@ -1217,7 +1228,7 @@ In addition,
 @command{gawk}
 provides facilities that make it easy to:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 Extract bits and pieces of data for processing
 
@@ -2093,7 +2104,7 @@ the features of @command{awk}. Included also are many, but not all,
 of the features of @command{gawk}.  This part contains the
 following chapters:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 @ref{Getting Started}.
 
@@ -2619,7 +2630,7 @@ though that argument has no characters in it. In the rest of this
 interchangeably.  Now, on to the quoting rules.
 
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 Quoted items can be concatenated with nonquoted items as well as with other
 quoted items.  The shell turns everything into one argument for
@@ -2947,7 +2958,7 @@ one way to do things in @command{awk}.  At some point, you may want
 to look back at these examples and see if
 you can come up with different ways to do the same things shown here:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 Print the length of the longest input line:
 
@@ -3643,7 +3654,7 @@ programs (@pxref{AWKPATH Variable}).
 Similar to @option{-f}, read @command{awk} program text from @var{file}.
 There are two differences from @option{-f}:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 This option terminates option processing; anything
 else on the command line is passed on directly to the @command{awk} program.
@@ -3831,7 +3842,7 @@ Also,
 the following additional
 restrictions apply:
 
-@itemize @bullet
+@itemize @value{BULLET}
 
 @cindex newlines
 @cindex whitespace, newlines as
@@ -4845,7 +4856,7 @@ shown in the previous list.
 
 To summarize:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The escape sequences in the table above are always processed first,
 for both string constants and regexp constants. This happens very early,
@@ -5754,7 +5765,7 @@ Given that you can use both regexp and string constants to describe
 regular expressions, which should you use?  The answer is ``regexp
 constants,'' for several reasons:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 String constants are more complicated to write and
 more difficult to read. Using regexp constants makes your programs
@@ -8133,7 +8144,7 @@ where coprocesses are discussed in more detail.
 Here are some miscellaneous points about @code{getline} that
 you should bear in mind:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 When @code{getline} changes the value of @code{$0} and @code{NF},
 @command{awk} does @emph{not} automatically jump to the start of the
@@ -9604,7 +9615,7 @@ Full discussion is delayed until
 Here is a list of things to bear in mind when using the
 special file names that @command{gawk} provides:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @cindex compatibility mode (@command{gawk}), file names
 @cindex file names, in compatibility mode
 @item
@@ -9701,7 +9712,7 @@ close(sortcom)
 This helps avoid hard-to-find typographical errors in your @command{awk}
 programs.  Here are some of the reasons for closing an output file:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 To write a file and read it back later on in the same @command{awk}
 program.  Close the file after writing it, then
@@ -11413,7 +11424,7 @@ and variable typing follows these rules:@footnote{@command{gawk} has
 followed these rules for many years,
 and it is gratifying that the POSIX standard is also now correct.}
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 A numeric constant or the result of a numeric operation has the @var{numeric}
 attribute.
@@ -12800,7 +12811,7 @@ is set to the name of the current file, and @code{FNR} is set to zero.
 The @code{BEGINFILE} rule provides you the opportunity to accomplish two tasks
 that would otherwise be difficult or impossible to perform:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 You can test if the file is readable.  Normally, it is a fatal error if a
 file named on the command line cannot be opened for reading.  However,
@@ -14330,7 +14341,7 @@ to test for these elements
 @cindex @code{PROCINFO} array, uses
 The @code{PROCINFO} array has the following additional uses:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 It may be used to cause coprocesses to communicate over pseudo-ttys
 instead of through two-way pipes; this is discussed further in
@@ -15262,7 +15273,7 @@ Often, though, you may wish to do something simple, such as
 or ``traverse the array by comparing the values in descending order.''
 @command{gawk} provides two mechanisms which give you this control.
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 Set @code{PROCINFO["sorted_in"]} to one of a set of predefined values.
 We describe this now.
@@ -15369,7 +15380,7 @@ order relative to each other is determined by their index strings.
 Here are some additional things to bear in mind about sorted
 array traversal.
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The value of @code{PROCINFO["sorted_in"]} is global. That is, it affects
 all array traversal @code{for} loops.  If you need to change it within your
@@ -17085,7 +17096,7 @@ says, in effect, that @samp{\} turns off the special meaning of any
 following character, but for anything other than @samp{\} and @samp{&},
 such special meaning is undefined.  This wording leads to two problems:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 Backslashes must now be doubled in the @var{replacement} string, breaking
 historical @command{awk} programs.
@@ -19538,7 +19549,7 @@ Part II shows how to use @command{awk} and @command{gawk} for problem solving.
 There is lots of code here for you to read and learn from.
 It contains the following chapters:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 @ref{Library Functions}.
 
@@ -19609,7 +19620,7 @@ freely use features that are @command{gawk}-specific.
 Rewriting these programs for different implementations of @command{awk}
 is pretty straightforward.
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 Diagnostic error messages are sent to @file{/dev/stderr}.
 Use @samp{| "cat 1>&2"} instead of @samp{> "/dev/stderr"} if your system
@@ -24309,7 +24320,7 @@ it prints the counts.
 This program has several problems that prevent it from being
 useful on real text files:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The @command{awk} language considers upper- and lowercase characters to be
 distinct.  Therefore, ``bartender'' and ``Bartender'' are not treated
@@ -24519,7 +24530,7 @@ The Texinfo language is described fully, starting with
 For our purposes, it is enough to know three things about Texinfo input
 files:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The ``at'' symbol (@samp{@@}) is special in Texinfo, much as
 the backslash (@samp{\}) is in C
@@ -25301,7 +25312,7 @@ process.  This keeps things properly quoted.
 This version of @command{igawk} represents the fifth version of this program.
 There are four key simplifications that make the program work better:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 Using @code{@@include} even for the files named with @option{-f} makes building
 the initial collected @command{awk} program much simpler; all the
@@ -25633,7 +25644,7 @@ BEGIN {
 Part III focuses on features specific to @command{gawk}.
 It contains the following chapters:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 @ref{Advanced Features}.
 
@@ -25687,7 +25698,7 @@ it for performance.
 A number of advanced features require separate @value{CHAPTER}s of their
 own:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 @ref{Internationalization}, discusses how to internationalize
 your @command{awk} programs, so that they can speak multiple
@@ -26258,7 +26269,7 @@ the shell.
 
 There are some cautionary items to be aware of:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 As the code inside @command{gawk} currently stands, the coprocess's
 standard error goes to the same place that the parent @command{gawk}'s
@@ -26586,7 +26597,7 @@ in the morning to work.)
 This example illustrates many of the basic features of profiling output.
 They are as follows:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The program is printed in the order @code{BEGIN} rules,
 @code{BEGINFILE} rules,
@@ -27361,7 +27372,7 @@ As written, it won't work on other versions of @command{awk}.
 However, it is actually almost portable, requiring very little
 change:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @cindex @code{TEXTDOMAIN} variable, portability and
 @item
 Assignments to @code{TEXTDOMAIN} won't have any effect,
@@ -27625,7 +27636,7 @@ In that case, what can you expect from such a tool?  The answer to that
 depends on the language being debugged, but in general, you can expect at
 least the following:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The ability to watch a program execute its instructions one by one,
 giving you, the programmer, the opportunity to think about what is happening
@@ -28024,7 +28035,7 @@ and problem solved!
 The @command{gawk} debugger command set can be divided into the
 following categories:
 
-@itemize @bullet{}
+@itemize @value{BULLET}
 
 @item
 Breakpoint control
@@ -28832,7 +28843,7 @@ We hope you find the @command{gawk} debugger useful and enjoyable to work with,
 but as with any program, especially in its early releases, it still has
 some limitations.  A few which are worth being aware of are:
 
-@itemize @bullet{}
+@itemize @value{BULLET}
 @item
 At this point, the debugger does not give a detailed explanation of
 what you did wrong when you type in something it doesn't like. Rather, it just
@@ -29116,7 +29127,7 @@ Changes in the language of the
 2001 and 2004 POSIX standards can be interpreted to imply that @command{awk}
 should support additional features.  These features are:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 Interpretation of floating point data values specified in hexadecimal
 notation (@samp{0xDEADBEEF}). (Note: data values, @emph{not}
@@ -29133,7 +29144,7 @@ characters after the @samp{nan} and allow either @samp{inf} or @samp{infinity}.
 The first problem is that both of these are clear changes to historical
 practice:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The @command{gawk} maintainer feels that supporting hexadecimal floating
 point values, in particular, is ugly, and was never intended by the
@@ -29162,7 +29173,7 @@ nevertheless, on systems that support IEEE floating point, it seems
 reasonable to provide @emph{some} way to support NaN and Infinity values.
 The solution implemented in @command{gawk} is as follows:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 With the @option{--posix} command-line option, @command{gawk} becomes
 ``hands off.'' String values are passed directly to the system library's
@@ -29477,7 +29488,7 @@ Although floating-point representations vary from machine to machine,
 the most commonly encountered representation is that defined by the
 IEEE 754 Standard. An IEEE 754 format value has three components:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 A sign bit telling whether the number is positive or negative.
 
@@ -30359,7 +30370,7 @@ Example}) and also the @file{testext.c} code for testing the APIs.
 
 Some other bits and pieces:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The API provides access to @command{gawk}'s @code{do_@var{xxx}} values,
 reflecting command line options, like @code{do_lint}, @code{do_profiling}
@@ -30412,10 +30423,10 @@ by calling through function pointers passed into your extension.
 
 API function pointers are provided for the following kinds of operations:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 Registrations functions. You may register:
-@itemize @minus
+@itemize @value{MINUS}
 @item
 extension functions,
 @item
@@ -30456,7 +30467,7 @@ can be a big performance win.
 @item
 Manipulating arrays:
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 Retrieving, adding, deleting, and modifying elements
 
@@ -30476,7 +30487,7 @@ Flattening an array for easy C style looping over all its indices and elements
 
 Some points about using the API:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The following types and/or macros and/or functions are referenced
 in @file{gawkapi.h}.  For correct use, you must therefore include the
@@ -33940,7 +33951,7 @@ processing XML files.  This is the evolution of the original @command{xgawk}
 
 As of this writing, there are five extensions:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 XML parser extension, using the @uref{http://expat.sourceforge.net, Expat}
 XML parsing library.
@@ -34032,7 +34043,7 @@ and the Glossary:
 Part IV contains two appendixes:
 @end ifset
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 @ref{Language History}.
 
@@ -34108,7 +34119,7 @@ Version 7 Unix (1978) and the new version that was first made generally availabl
 System V Release 3.1 (1987).  This @value{SECTION} summarizes the changes, with
 cross-references to further details:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The requirement for @samp{;} to separate rules on a line
 (@pxref{Statements/Lines}).
@@ -34199,7 +34210,7 @@ Multidimensional arrays
 The System V Release 4 (1989) version of Unix @command{awk} added these features
 (some of which originated in @command{gawk}):
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The @code{ENVIRON} array (@pxref{Built-in Variables}).
 @c gawk and MKS awk
@@ -34259,7 +34270,7 @@ Processing of escape sequences inside command-line variable assignments
 The POSIX Command Language and Utilities standard for @command{awk} (1992)
 introduced the following changes into the language:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The use of @option{-W} for implementation-specific options
 (@pxref{Options}).
@@ -34284,7 +34295,7 @@ features of the language.
 In 2012, a number of extensions that had been commonly available for
 many years were finally added to POSIX. They are:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The @code{fflush()} built-in function for flushing buffered output
 (@pxref{I/O Functions}).
@@ -34321,7 +34332,7 @@ has made his version available via his home page
 This @value{SECTION} describes common extensions that
 originally appeared in his version of @command{awk}.
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The @samp{**} and @samp{**=} operators
 (@pxref{Arithmetic Ops}
@@ -34366,12 +34377,12 @@ A number of features have come and gone over the years. This @value{SECTION}
 summarizes the additional features over POSIX @command{awk} that are
 in the current version of @command{gawk}.
 
-@itemize @bullet
+@itemize @value{BULLET}
 
 @item
 Additional built-in variables:
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 The
 @code{ARGIND}
@@ -34392,7 +34403,7 @@ variables
 @item
 Special files in I/O redirections:
 
-@itemize @minus{}
+@itemize @value{MINUS}
 @item
 The @file{/dev/stdin}, @file{/dev/stdout}, @file{/dev/stderr} and
 @file{/dev/fd/@var{N}} special file names
@@ -34408,7 +34419,7 @@ IP protocol to use.
 @item
 Changes and/or additions to the language:
 
-@itemize @minus{}
+@itemize @value{MINUS}
 @item
 The @samp{\x} escape sequence
 (@pxref{Escape Sequences}).
@@ -34447,7 +34458,7 @@ Directories on the command line produce a warning and are skipped
 @item
 New keywords:
 
-@itemize @minus{}
+@itemize @value{MINUS}
 @item
 The @code{BEGINFILE} and @code{ENDFILE} special patterns.
 (@pxref{BEGINFILE/ENDFILE}).
@@ -34468,7 +34479,7 @@ The @code{switch} statement
 @item
 Changes to standard @command{awk} functions:
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 The optional second argument to @code{close()} that allows closing one end
 of a two-way pipe to a coprocess
@@ -34501,7 +34512,7 @@ argument which is an array to hold the text of the field separators.
 @item
 Additional functions only in @command{gawk}:
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 The
 @code{and()},
@@ -34544,7 +34555,7 @@ functions for working with timestamps
 @item
 Changes and/or additions in the command-line options:
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 The @env{AWKPATH} environment variable for specifying a path search for
 the @option{-f} command-line option
@@ -34622,7 +34633,7 @@ Support for the following obsolete systems was removed from the code
 and the documentation for @command{gawk} version 4.0:
 
 @c nested table
-@itemize @minus
+@itemize @value{MINUS}
 @item
 Amiga
 
@@ -34700,7 +34711,7 @@ in the order they were added to @command{gawk}.
 
 Version 2.10 of @command{gawk} introduced the following features:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The @env{AWKPATH} environment variable for specifying a path search for
 the @option{-f} command-line option
@@ -34718,7 +34729,7 @@ The @file{/dev/stdin}, @file{/dev/stdout}, @file{/dev/stderr} and
 
 Version 2.13 of @command{gawk} introduced the following features:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The @code{FIELDWIDTHS} variable and its effects
 (@pxref{Constant Size}).
@@ -34732,7 +34743,7 @@ and printing timestamps
 Additional command-line options
 (@pxref{Options}):
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 The @option{-W lint} option to provide error and portability checking
 for both the source code and at runtime.
@@ -34747,7 +34758,7 @@ The @option{-W posix} option for full POSIX compliance.
 
 Version 2.14 of @command{gawk} introduced the following feature:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The @code{next file} statement for skipping to the next data file
 (@pxref{Nextfile Statement}).
@@ -34755,11 +34766,11 @@ The @code{next file} statement for skipping to the next data file
 
 Version 2.15 of @command{gawk} introduced the following features:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 New variables (@pxref{Built-in Variables}):
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 @code{ARGIND}, which tracks the movement of @code{FILENAME}
 through @code{ARGV}.
@@ -34781,7 +34792,7 @@ The ability to delete all of an array at once with @samp{delete @var{array}}
 Command line option changes
 (@pxref{Options}):
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 The ability to use GNU-style long-named options that start with @option{--}.
 
@@ -34793,11 +34804,11 @@ source code.
 
 Version 3.0 of @command{gawk} introduced the following features:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 New or changed variables:
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 @code{IGNORECASE} changed, now applying to string comparison as well
 as regexp operations
@@ -34843,7 +34854,7 @@ Brian Kernighan's @command{awk}
 @item
 New command line options:
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 The @option{--lint-old} option to
 warn about constructs that are not available in
@@ -34876,12 +34887,12 @@ This has since been removed.
 
 Version 3.1 of @command{gawk} introduced the following features:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 New variables
 (@pxref{Built-in Variables}):
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 @code{BINMODE}, for non-POSIX systems,
 which allows binary I/O for input and/or output files
@@ -34929,7 +34940,7 @@ making translations easier
 @item
 A number of new built-in functions:
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 The @code{asort()} and @code{asorti()} functions for sorting arrays
 (@pxref{Array Sorting}).
@@ -34963,7 +34974,7 @@ The support for @samp{next file} as two words was removed completely
 Additional commnd line options
 (@pxref{Options}):
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 The @option{--dump-variables} option to print a list of all global variables.
 
@@ -35030,12 +35041,12 @@ enable printing times as UTC
 
 Version 4.0 of @command{gawk} introduced the following features:
 
-@itemize @bullet
+@itemize @value{BULLET}
 
 @item
 Variable additions:
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 @code{FPAT}, which allows you to specify a regexp that matches
 the fields, instead of matching the field separator
@@ -35134,7 +35145,7 @@ Indirect function calls
 Command line option changes
 (@pxref{Options}):
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 The @option{-b} and @option{--characters-as-bytes} options
 which prevent @command{gawk} from treating input as a multibyte string.
@@ -35185,7 +35196,7 @@ C locale, no matter what kind of regexp is being used, and even if
 @item
 Support was removed for the following systems:
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 Atari
 
@@ -35223,7 +35234,7 @@ Prestandard VAX C compiler for VAX/VMS
 
 Version 4.1 of @command{gawk} introduced the following features:
 
-@itemize @bullet
+@itemize @value{BULLET}
 
 @item
 Three new arrays:
@@ -35238,7 +35249,7 @@ one, named just @command{gawk}.  As a result the command line options changed.
 Command line option changes
 (@pxref{Options}):
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 The @option{-D} option invokes the debugger.
 
@@ -35426,7 +35437,7 @@ cases: the default regexp matching; with @option{--traditional} and with
 This @value{SECTION} names the major contributors to @command{gawk}
 and/or this @value{DOCUMENT}, in approximate chronological order:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 @cindex Aho, Alfred
 @cindex Weinberger, Peter
@@ -35620,7 +35631,7 @@ Assaf Gordon contributed the code to implement the
 @cindex Haque, John
 John Haque made the following contributions:
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 The modifications to convert @command{gawk}
 into a byte-code interpreter, including the debugger.
@@ -35717,7 +35728,7 @@ subdirectories.
 @cindex @command{gawk}, source code@comma{} obtaining
 There are three ways to get GNU software:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 Copy it from someone else who already has it.
 
@@ -36471,7 +36482,7 @@ translate end-of-line @code{"\r\n"} to @code{"\n"} on input and @code{"\n"}
 to @code{"\r\n"} on output.  A special @code{BINMODE} variable @value{COMMONEXT}
 allows control over these translations and is interpreted as follows:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 If @code{BINMODE} is @code{"r"}, or one,
 then
@@ -37404,7 +37415,7 @@ using the traditional ``K&R'' style, particularly as regards to the placement
 of braces and the use of TABs.  In brief, the coding rules for @command{gawk}
 are as follows:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 Use ANSI/ISO style (prototype) function headers when defining functions.
 
@@ -37915,7 +37926,7 @@ mechanism was bolted onto the side and was not really well thought out.
 
 The old extension mechanism had several problems:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 It depended heavily upon @command{gawk} internals.  Any time the
 @code{NODE} structure@footnote{A critical central data structure
@@ -37951,7 +37962,7 @@ project is provided in @ref{gawkextlib}.
 
 Some goals for the new API were:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The API should be independent of @command{gawk} internals.  Changes in
 @command{gawk} internals should not be visible to the writer of an
@@ -37966,7 +37977,7 @@ The API should enable extensions written in C or C++ to have roughly the
 same ``appearance'' to @command{awk}-level code as @command{awk}
 functions do. This means that extensions should have:
 
-@itemize @minus
+@itemize @value{MINUS}
 @item
 The ability to access function parameters.
 
@@ -37988,7 +37999,7 @@ multidimensional arrays).
 
 Some additional important goals were:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 The API should use only features in ISO C 90, so that extensions
 can be written using the widest range of C and C++ compilers. The header
@@ -38011,7 +38022,7 @@ During development, it became clear that there were other features
 that should be available to extensions, which were also subsequently
 provided:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 Extensions should have the ability to hook into @command{gawk}'s
 I/O redirection mechanism.  In particular, the @command{xgawk}
@@ -38092,7 +38103,7 @@ to provide a minimal yet powerful set of features for creating extensions.
 
 The API can later be expanded, in two ways:
 
-@itemize @bullet
+@itemize @value{BULLET}
 @item
 @command{gawk} passes an ``extension id'' into the extension when it
 first loads the extension.  The extension then passes this id back
