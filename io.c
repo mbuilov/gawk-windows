@@ -296,7 +296,7 @@ struct inet_socket_info {
 	} localport, remotehost, remoteport;
 };
 
-static int inetfile(const char *str, struct inet_socket_info *isn);
+static bool inetfile(const char *str, struct inet_socket_info *isn);
 
 static NODE *in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx);
 static long get_read_timeout(IOBUF *iop);
@@ -3723,9 +3723,12 @@ free_rp(struct redirect *rp)
 
 /* inetfile --- return true for a /inet special file, set other values */
 
-static int
+static bool
 inetfile(const char *str, struct inet_socket_info *isi)
 {
+#ifndef HAVE_SOCKETS
+	return false;
+#else
 	const char *cp = str;
 	struct inet_socket_info buf;
 
@@ -3805,6 +3808,7 @@ inetfile(const char *str, struct inet_socket_info *isi)
 		fatal(_("IPv6 communication is not supported"));
 #endif
 	return true;
+#endif /* HAVE_SOCKETS */
 }
 
 /*
