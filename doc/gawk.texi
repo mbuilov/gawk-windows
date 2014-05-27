@@ -788,7 +788,7 @@ particular records in a file and perform operations upon them.
                                         programming.
 * Profiling::                           Profiling your @command{awk} programs.
 * I18N and L10N::                       Internationalization and Localization.
-* Explaining gettext::                  How GNU @code{gettext} works.
+* Explaining gettext::                  How GNU @command{gettext} works.
 * Programmer i18n::                     Features for the programmer.
 * Translator i18n::                     Features for the translator.
 * String Extraction::                   Extracting marked strings.
@@ -965,7 +965,7 @@ particular records in a file and perform operations upon them.
 * New Ports::                           Porting @command{gawk} to a new
                                         operating system.
 * Derived Files::                       Why derived files are kept in the
-                                        @command{git} repository.
+                                        Git repository.
 * Future Extensions::                   New features that may be implemented
                                         one day.
 * Implementation Limitations::          Some limitations of the
@@ -2172,7 +2172,7 @@ pattern to search for and one action to perform
 upon finding the pattern.
 
 Syntactically, a rule consists of a pattern followed by an action.  The
-action is enclosed in curly braces to separate it from the pattern.
+action is enclosed in braces to separate it from the pattern.
 Newlines usually separate rules.  Therefore, an @command{awk}
 program looks like this:
 
@@ -2938,10 +2938,10 @@ for @emph{every} input line.  If the action is omitted, the default
 action is to print all lines that match the pattern.
 
 @cindex actions, empty
-Thus, we could leave out the action (the @code{print} statement and the curly
+Thus, we could leave out the action (the @code{print} statement and the
 braces) in the previous example and the result would be the same:
 @command{awk} prints all lines matching the pattern @samp{li}.  By comparison,
-omitting the @code{print} statement but retaining the curly braces makes an
+omitting the @code{print} statement but retaining the braces makes an
 empty action that does nothing (i.e., no lines are printed).
 
 @cindex @command{awk} programs, one-line examples
@@ -3683,7 +3683,7 @@ with @samp{#!} scripts (@pxref{Executable Scripts}), like so:
 @cindex portable object files, generating
 @cindex files, portable object, generating
 Analyze the source program and
-generate a GNU @code{gettext} Portable Object Template file on standard
+generate a GNU @command{gettext} Portable Object Template file on standard
 output for all string constants that have been marked for translation.
 @xref{Internationalization},
 for information about this option.
@@ -12994,11 +12994,11 @@ in outline, an @command{awk} program generally looks like this:
 @cindex @code{;} (semicolon), separating statements in actions
 @cindex semicolon (@code{;}), separating statements in actions
 An action consists of one or more @command{awk} @dfn{statements}, enclosed
-in curly braces (@samp{@{@r{@dots{}}@}}).  Each statement specifies one
+in braces (@samp{@{@r{@dots{}}@}}).  Each statement specifies one
 thing to do.  The statements are separated by newlines or semicolons.
-The curly braces around an action must be used even if the action
+The braces around an action must be used even if the action
 contains only one statement, or if it contains no statements at
-all.  However, if you omit the action entirely, omit the curly braces as
+all.  However, if you omit the action entirely, omit the braces as
 well.  An omitted action is equivalent to @samp{@{ print $0 @}}:
 
 @example
@@ -13024,7 +13024,7 @@ programs.  The @command{awk} language gives you C-like constructs
 special ones (@pxref{Statements}).
 
 @item Compound statements
-Enclose one or more statements in curly braces.  A compound statement
+Enclose one or more statements in braces.  A compound statement
 is used in order to put several statements together in the body of an
 @code{if}, @code{while}, @code{do}, or @code{for} statement.
 
@@ -13072,7 +13072,7 @@ Many control statements contain other statements.  For example, the
 @code{if} statement contains another statement that may or may not be
 executed.  The contained statement is called the @dfn{body}.
 To include more than one statement in the body, group them into a
-single @dfn{compound statement} with curly braces, separating them with
+single @dfn{compound statement} with braces, separating them with
 newlines or semicolons.
 
 @menu
@@ -13126,7 +13126,7 @@ if the value of @code{x} is evenly divisible by two), then the first
 statement is executed.
 If the @code{else} keyword appears on the same line as @var{then-body} and
 @var{then-body} is not a compound statement (i.e., not surrounded by
-curly braces), then a semicolon must separate @var{then-body} from
+braces), then a semicolon must separate @var{then-body} from
 the @code{else}.
 To illustrate this, the previous example can be rewritten as:
 
@@ -26825,7 +26825,7 @@ a requirement.
 
 @menu
 * I18N and L10N::               Internationalization and Localization.
-* Explaining gettext::          How GNU @code{gettext} works.
+* Explaining gettext::          How GNU @command{gettext} works.
 * Programmer i18n::             Features for the programmer.
 * Translator i18n::             Features for the translator.
 * I18N Example::                A simple i18n example.
@@ -26849,22 +26849,22 @@ responses, and information related to how numerical and
 monetary values are printed and read.
 
 @node Explaining gettext
-@section GNU @code{gettext}
+@section GNU @command{gettext}
 
 @cindex internationalizing a program
 @c STARTOFRANGE gettex
-@cindex @code{gettext} library
-@command{gawk} uses GNU @code{gettext} to provide its internationalization
+@cindex @command{gettext} library
+@command{gawk} uses GNU @command{gettext} to provide its internationalization
 features.
-The facilities in GNU @code{gettext} focus on messages; strings printed
+The facilities in GNU @command{gettext} focus on messages; strings printed
 by a program, either directly or via formatting with @code{printf} or
 @code{sprintf()}.@footnote{For some operating systems, the @command{gawk}
-port doesn't support GNU @code{gettext}.
+port doesn't support GNU @command{gettext}.
 Therefore, these features are not available
 if you are using one of those operating systems. Sorry.}
 
-@cindex portability, @code{gettext} library and
-When using GNU @code{gettext}, each application has its own
+@cindex portability, @command{gettext} library and
+When using GNU @command{gettext}, each application has its own
 @dfn{text domain}.  This is a unique name, such as @samp{kpilot} or @samp{gawk},
 that identifies the application.
 A complete application may have multiple components---programs written
@@ -26888,7 +26888,7 @@ language).
 @cindex @code{textdomain()} function (C library)
 @item
 The programmer indicates the application's text domain
-(@code{"guide"}) to the @code{gettext} library,
+(@command{"guide"}) to the @command{gettext} library,
 by calling the @code{textdomain()} function.
 
 @cindex @code{.pot} files
@@ -26932,7 +26932,7 @@ are installed in a standard place.
 
 @cindex @code{bindtextdomain()} function (C library)
 @item
-For testing and development, it is possible to tell @code{gettext}
+For testing and development, it is possible to tell @command{gettext}
 to use @file{.gmo} files in a different directory than the standard
 one by using the @code{bindtextdomain()} function.
 
@@ -26965,7 +26965,7 @@ strings enclosed in calls to @code{gettext()}.
 
 @cindex @code{_} (underscore), C macro
 @cindex underscore (@code{_}), C macro
-The GNU @code{gettext} developers, recognizing that typing
+The GNU @command{gettext} developers, recognizing that typing
 @samp{gettext(@dots{})} over and over again is both painful and ugly to look
 at, use the macro @samp{_} (an underscore) to make things easier:
 
@@ -26978,7 +26978,7 @@ printf("%s", _("Don't Panic!\n"));
 @end example
 
 @cindex internationalization, localization, locale categories
-@cindex @code{gettext} library, locale categories
+@cindex @command{gettext} library, locale categories
 @cindex locale categories
 @noindent
 This reduces the typing overhead to just three extra characters per string
@@ -26986,12 +26986,12 @@ and is considerably easier to read as well.
 
 There are locale @dfn{categories}
 for different types of locale-related information.
-The defined locale categories that @code{gettext} knows about are:
+The defined locale categories that @command{gettext} knows about are:
 
 @table @code
 @cindex @code{LC_MESSAGES} locale category
 @item LC_MESSAGES
-Text messages.  This is the default category for @code{gettext}
+Text messages.  This is the default category for @command{gettext}
 operations, but it is possible to supply a different one explicitly,
 if necessary.  (It is almost never necessary to supply a different category.)
 
@@ -27039,7 +27039,7 @@ before or after the day in a date, local month abbreviations, and so on.
 
 @cindex @code{LC_ALL} locale category
 @item LC_ALL
-All of the above.  (Not too useful in the context of @code{gettext}.)
+All of the above.  (Not too useful in the context of @command{gettext}.)
 @end table
 @c ENDOFRANGE gettex
 
@@ -27055,7 +27055,7 @@ internationalization:
 @cindex @code{TEXTDOMAIN} variable
 @item TEXTDOMAIN
 This variable indicates the application's text domain.
-For compatibility with GNU @code{gettext}, the default
+For compatibility with GNU @command{gettext}, the default
 value is @code{"messages"}.
 
 @cindex internationalization, localization, marked strings
@@ -27110,7 +27110,7 @@ The same remarks about argument order as for the @code{dcgettext()} function app
 @cindexgawkfunc{bindtextdomain}
 @item @code{bindtextdomain(@var{directory}} [@code{,} @var{domain} ]@code{)}
 Change the directory in which
-@code{gettext} looks for @file{.gmo} files, in case they
+@command{gettext} looks for @file{.gmo} files, in case they
 will not or cannot be placed in the standard locations
 (e.g., during testing).
 Return the directory in which @var{domain} is ``bound.''
@@ -27249,12 +27249,12 @@ $ @kbd{gawk --gen-pot -f guide.awk > guide.pot}
 @cindex @code{xgettext} utility
 When run with @option{--gen-pot}, @command{gawk} does not execute your
 program.  Instead, it parses it as usual and prints all marked strings
-to standard output in the format of a GNU @code{gettext} Portable Object
+to standard output in the format of a GNU @command{gettext} Portable Object
 file.  Also included in the output are any constant strings that
 appear as the first argument to @code{dcgettext()} or as the first and
 second argument to @code{dcngettext()}.@footnote{The
 @command{xgettext} utility that comes with GNU
-@code{gettext} can handle @file{.awk} files.}
+@command{gettext} can handle @file{.awk} files.}
 @xref{I18N Example},
 for the full list of steps to go through to create and test
 translations for @command{guide}.
@@ -27270,7 +27270,7 @@ Format strings for @code{printf} and @code{sprintf()}
 (@pxref{Printf})
 present a special problem for translation.
 Consider the following:@footnote{This example is borrowed
-from the GNU @code{gettext} manual.}
+from the GNU @command{gettext} manual.}
 
 @c line broken here only for smallbook format
 @example
@@ -27522,8 +27522,8 @@ msgstr "Like, the scoop is"
 The next step is to make the directory to hold the binary message object
 file and then to create the @file{guide.mo} file.
 We pretend that our file is to be used in the @code{en_US.UTF-8} locale.
-The directory layout shown here is standard for GNU @code{gettext} on
-GNU/Linux systems.  Other versions of @code{gettext} may use a different
+The directory layout shown here is standard for GNU @command{gettext} on
+GNU/Linux systems.  Other versions of @command{gettext} may use a different
 layout:
 
 @example
@@ -27576,16 +27576,16 @@ $ @kbd{gawk --posix -f guide.awk -f libintl.awk}
 @section @command{gawk} Can Speak Your Language
 
 @command{gawk} itself has been internationalized
-using the GNU @code{gettext} package.
-(GNU @code{gettext} is described in
+using the GNU @command{gettext} package.
+(GNU @command{gettext} is described in
 complete detail in
 @ifinfo
-@inforef{Top, , GNU @code{gettext} utilities, gettext, GNU gettext tools}.)
+@inforef{Top, , GNU @command{gettext} utilities, gettext, GNU gettext tools}.)
 @end ifinfo
 @ifnotinfo
 @cite{GNU gettext tools}.)
 @end ifnotinfo
-As of this writing, the latest version of GNU @code{gettext} is
+As of this writing, the latest version of GNU @command{gettext} is
 @uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.18.2.1.tar.gz, version 0.18.2.1}.
 
 If a translation of @command{gawk}'s messages exists,
@@ -33247,7 +33247,7 @@ code must be compiled.  Assuming that the functions are in
 a file named @file{filefuncs.c}, and @var{idir} is the location
 of the @file{gawkapi.h} header file,
 the following steps@footnote{In practice, you would probably want to
-use the GNU Autotools---Automake, Autoconf, Libtool, and Gettext---to
+use the GNU Autotools---Automake, Autoconf, Libtool, and @command{gettext}---to
 configure and build your libraries. Instructions for doing so are beyond
 the scope of this @value{DOCUMENT}. @xref{gawkextlib}, for WWW links to
 the tools.} create a GNU/Linux shared library:
@@ -34001,7 +34001,7 @@ In addition, you must have the GNU Autotools installed
 @uref{http://www.gnu.org/software/automake, Automake},
 @uref{http://www.gnu.org/software/libtool, Libtool},
 and
-@uref{http://www.gnu.org/software/gettext, Gettext}).
+@uref{http://www.gnu.org/software/gettext, GNU @command{gettext}}).
 
 The simple recipe for building and testing @code{gawkextlib} is as follows.
 First, build and install @command{gawk}:
@@ -35016,7 +35016,7 @@ The use of GNU Automake to help in standardizing the configuration process
 (@pxref{Quick Installation}).
 
 @item
-The use of GNU @code{gettext} for @command{gawk}'s own message output
+The use of GNU @command{gettext} for @command{gawk}'s own message output
 (@pxref{Gawk I18N}).
 
 @item
@@ -35597,7 +35597,7 @@ provided the port to BeOS and its documentation.
 @cindex Peters, Arno
 Arno Peters
 did the initial work to convert @command{gawk} to use
-GNU Automake and GNU @code{gettext}.
+GNU Automake and GNU @command{gettext}.
 
 @item
 @cindex Broder, Alan J.@:
@@ -35775,7 +35775,6 @@ file and then use @code{tar} to extract it.  You can use the following
 pipeline to produce the @command{gawk} distribution:
 
 @example
-# Under System V, add 'o' to the tar options
 gzip -d -c gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz | tar -xvpf -
 @end example
 
@@ -35930,8 +35929,8 @@ actual @file{Makefile} for creating the documentation.
 
 @item Makefile.am
 @itemx */Makefile.am
-Files used by the GNU @command{automake} software for generating
-the @file{Makefile.in} files used by @command{autoconf} and
+Files used by the GNU Automake software for generating
+the @file{Makefile.in} files used by Autoconf and
 @command{configure}.
 
 @item Makefile.in
@@ -36027,9 +36026,9 @@ to @file{gawk-@value{VERSION}.@value{PATCHLEVEL}}.  Like most GNU software,
 @command{gawk} is configured
 automatically for your system by running the @command{configure} program.
 This program is a Bourne shell script that is generated automatically using
-GNU @command{autoconf}.
+GNU Autoconf.
 @ifnotinfo
-(The @command{autoconf} software is
+(The Autoconf software is
 described fully in
 @cite{Autoconf---Generating Automatic Configuration Scripts},
 which can be found online at
@@ -36037,7 +36036,7 @@ which can be found online at
 the Free Software Foundation's web site}.)
 @end ifnotinfo
 @ifinfo
-(The @command{autoconf} software is described fully starting with
+(The Autoconf software is described fully starting with
 @inforef{Top, , Autoconf, autoconf,Autoconf---Generating Automatic Configuration Scripts}.)
 @end ifinfo
 
@@ -36140,7 +36139,7 @@ improvement.
 @cindex @option{--with-whiny-user-strftime} configuration option
 @cindex configuration option, @code{--with-whiny-user-strftime}
 @item  --with-whiny-user-strftime
-Force use of the included version of the @code{strftime()}
+Force use of the included version of the C @code{strftime()}
 function for deficient systems.
 @end table
 
@@ -36187,9 +36186,9 @@ should not have.  @file{custom.h} is automatically included by
 @file{config.h}.
 
 It is also possible that the @command{configure} program generated by
-@command{autoconf} will not work on your system in some other fashion.
+Autoconf will not work on your system in some other fashion.
 If you do have a problem, the file @file{configure.ac} is the input for
-@command{autoconf}.  You may be able to change this file and generate a
+Autoconf.  You may be able to change this file and generate a
 new version of @command{configure} that works on your system
 (@pxref{Bugs},
 for information on how to report problems in configuring @command{gawk}).
@@ -36355,7 +36354,7 @@ and @option{--libexecdir=c:/usr/lib}.
 @end ignore
 
 @ignore
-The internal @code{gettext} library tends to be problematic. It is therefore recommended
+The internal @command{gettext} library tends to be problematic. It is therefore recommended
 to use either an external one (@option{--without-included-gettext}) or to disable
 NLS entirely (@option{--disable-nls}).
 @end ignore
@@ -36392,7 +36391,9 @@ Ancient OS/2 ports of GNU @command{make} are not able to handle
 the Makefiles of this package.  If you encounter any problems with
 @command{make}, try GNU Make 3.79.1 or later versions.  You should
 find the latest version on
-@uref{ftp://hobbes.nmsu.edu/pub/os2/}.
+@uref{ftp://hobbes.nmsu.edu/pub/os2/}.@footnote{As of May, 2014,
+this site is still there, but the author could not find a package
+for GNU Make.}
 @end quotation
 @end ifclear
 
@@ -36447,14 +36448,14 @@ program files as described in @ref{AWKPATH Variable}.  However,
 semicolons (rather than colons) separate elements in the @env{AWKPATH}
 variable.  If @env{AWKPATH} is not set or is empty, then the default
 search path for MS-Windows and MS-DOS versions is
-@code{@w{".;c:/lib/awk;c:/gnu/lib/awk"}}.
+@samp{@w{.;c:/lib/awk;c:/gnu/lib/awk}}.
 
 @ifclear FOR_PRINT
 @cindex @command{gawk}, OS/2 version of
 @cindex @code{UNIXROOT} variable, on OS/2 systems
 The search path for OS/2 (32 bit, EMX) is determined by the prefix directory
 (most likely @file{/usr} or @file{c:/usr}) that has been specified as an option of
-the @command{configure} script like it is the case for the Unix versions.
+the @command{configure} script as is the case for the Unix versions.
 If @file{c:/usr} is the prefix directory then the default search path contains @file{.}
 and @file{c:/usr/share/awk}.
 Additionally, to support binary distributions of @command{gawk} for OS/2
@@ -36462,7 +36463,7 @@ systems whose drive @samp{c:} might not support long file names or might not exi
 at all, there is a special environment variable.  If @env{UNIXROOT} specifies
 a drive then this specific drive is also searched for program files.
 E.g., if @env{UNIXROOT} is set to @file{e:} the complete default search path is
-@code{@w{".;c:/usr/share/awk;e:/usr/share/awk"}}.
+@samp{@w{.;c:/usr/share/awk;e:/usr/share/awk}}.
 
 An @command{sh}-like shell (as opposed to @command{command.com} under MS-DOS
 or @command{cmd.exe} under MS-Windows or OS/2) may be useful for @command{awk} programming.
@@ -36486,8 +36487,8 @@ Under MS-Windows, OS/2 and MS-DOS,
 Under MS-Windows and MS-DOS,
 @end ifset
 @command{gawk} (and many other text programs) silently
-translate end-of-line @code{"\r\n"} to @code{"\n"} on input and @code{"\n"}
-to @code{"\r\n"} on output.  A special @code{BINMODE} variable @value{COMMONEXT}
+translate end-of-line @samp{\r\n} to @samp{\n} on input and @samp{\n}
+to @samp{\r\n} on output.  A special @code{BINMODE} variable @value{COMMONEXT}
 allows control over these translations and is interpreted as follows:
 
 @itemize @value{BULLET}
@@ -36528,7 +36529,7 @@ The name @code{BINMODE} was chosen to match @command{mawk}
 @command{mawk} adds a @samp{-W BINMODE=@var{N}} option and an environment
 variable that can set @code{BINMODE}, @code{RS}, and @code{ORS}.  The
 files @file{binmode[1-3].awk} (under @file{gnu/lib/awk} in some of the
-prepared distributions) have been chosen to match @command{mawk}'s @samp{-W
+prepared binary distributions) have been chosen to match @command{mawk}'s @samp{-W
 BINMODE=@var{N}} option.  These can be changed or discarded; in particular,
 the setting of @code{RS} giving the fewest ``surprises'' is open to debate.
 @command{mawk} uses @samp{RS = "\r\n"} if binary mode is set on read, which is
@@ -36652,11 +36653,11 @@ or:
 $ @kbd{MMK/DESCRIPTION=[.vms]descrip.mms gawk}
 @end example
 
-@code{MMK} is an open source, free, near-clone of @code{MMS} and
-can better handle @code{ODS-5} volumes with upper- and lowercase filenames.
-@code{MMK} is available from @uref{https://github.com/endlesssoftware/mmk}.
+@command{MMK} is an open source, free, near-clone of @command{MMS} and
+can better handle ODS-5 volumes with upper- and lowercase filenames.
+@command{MMK} is available from @uref{https://github.com/endlesssoftware/mmk}.
 
-With @code{ODS-5} volumes and extended parsing enabled, the case of the target
+With ODS-5 volumes and extended parsing enabled, the case of the target
 parameter may need to be exact.
 
 @command{gawk} has been tested under VAX/VMS 7.3 and Alpha/VMS 7.3-1
@@ -36665,8 +36666,8 @@ The most recent builds used HP C V7.3 on Alpha VMS 8.3 and both
 Alpha and IA64 VMS 8.4 used HP C 7.3.@footnote{The IA64 architecture
 is also known as ``Itanium.''}
 
-The @file{[.vms]gawk_build_steps.txt} provides information on how to build
-@command{gawk} into a PCSI kit that is compatible with the GNV product.
+@xref{VMS GNV}, for information on building
+@command{gawk} as a PCSI kit that is compatible with the GNV product.
 
 @node VMS Dynamic Extensions
 @appendixsubsubsec Compiling @command{gawk} Dynamic Extensions on VMS
@@ -36871,7 +36872,7 @@ The VMS GNV package provides a build environment similar to POSIX with ports
 of a collection of open source tools.  The @command{gawk} found in the GNV
 base kit is an older port.  Currently the GNV project is being reorganized
 to supply individual PCSI packages for each component.
-See @uref{https://sourceforge.net/p/gnv/wiki/InstallingGNVPackages/}.
+See @w{@uref{https://sourceforge.net/p/gnv/wiki/InstallingGNVPackages/}.}
 
 The normal build procedure for @command{gawk} produces a program that
 is suitable for use with GNV.
@@ -36972,12 +36973,14 @@ Once you have a precise problem, send email to
 @EMAIL{bug-gawk@@gnu.org,bug-gawk at gnu dot org}.
 
 @cindex Robbins, Arnold
-Using this address automatically sends a copy of your
-mail to me.  If necessary, I can be reached directly at
+The @command{gawk} maintainers subscribe to this address and
+thus they will receive your bug report.
+If necessary, the primary maintainer can be reached directly at
 @EMAIL{arnold@@skeeve.com,arnold at skeeve dot com}.
 The bug reporting address is preferred since the
 email list is archived at the GNU Project.
-@emph{All email should be in English, since that is my native language.}
+@emph{All email should be in English. This is the only language
+understood in common by all the maintainers.}
 
 @cindex @code{comp.lang.awk} newsgroup
 @quotation CAUTION
@@ -37025,13 +37028,13 @@ as follows:
 @cindex Rankin, Pat
 @cindex Malmberg, John
 @cindex Pitts, Dave
-@multitable {MS-Windows with MINGW} {123456789012345678901234567890123456789001234567890}
+@multitable {MS-Windows with MinGW} {123456789012345678901234567890123456789001234567890}
 @item MS-DOS with DJGPP @tab Scott Deifik, @EMAIL{scottd.mail@@sbcglobal.net,scottd dot mail at sbcglobal dot net}.
 
-@item MS-Windows with MINGW @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}.
+@item MS-Windows with MinGW @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}.
 
-@c Leave this in the print version on purpose. OS/2 not mentioned anywhere else
-@c in the print version though.
+@c Leave this in the print version on purpose.
+@c OS/2 is not mentioned anywhere else in the print version though.
 @item OS/2 @tab Andreas Buening, @EMAIL{andreas.buening@@nexgo.de,andreas dot buening at nexgo dot de}.
 
 @item VMS @tab Pat Rankin, @EMAIL{r.pat.rankin@@gmail.com,r.pat.rankin at gmail.com}, and
@@ -37190,10 +37193,10 @@ information, see the @uref{http://busybox.net, project's home page}.
 @cindex Solaris, POSIX-compliant @command{awk}
 @cindex source code, Solaris @command{awk}
 @item The OpenSolaris POSIX @command{awk}
-The version of @command{awk} in @file{/usr/xpg4/bin} on Solaris is
-more-or-less POSIX-compliant. It is based on the @command{awk} from
-Mortice Kern Systems for PCs.
-This author was able to make it compile and work under GNU/Linux
+The versions of @command{awk} in @file{/usr/xpg4/bin} and
+@file{/usr/xpg6/bin} on Solaris are more-or-less POSIX-compliant.
+They are based on the @command{awk} from Mortice Kern Systems for PCs.
+This author was able to make this code compile and work under GNU/Linux
 with 1--2 hours of work.  Making it more generally portable (using
 GNU Autoconf and/or Automake) would take more work, and this
 has not been done, at least to our knowledge.
@@ -37248,6 +37251,9 @@ under the GPL. It has a large number of extensions over standard
 See @uref{http://www.quiktrim.org/QTawk.html} for more information,
 including the manual and a download link.
 
+The project may als be frozen; no new code changes have been made
+since approximately 2008.
+
 @item Other Versions
 See also the @uref{http://en.wikipedia.org/wiki/Awk_language#Versions_and_implementations,
 Wikipedia article}, for information on additional versions.
@@ -37297,7 +37303,7 @@ is one more option available on the command line:
 @table @code
 @item -Y
 @itemx --parsedebug
-Prints out the parse stack information as the program is being parsed.
+Print out the parse stack information as the program is being parsed.
 @end table
 
 This option is intended only for serious @command{gawk} developers
@@ -37322,7 +37328,7 @@ as well as any considerations you should bear in mind.
 * New Ports::                   Porting @command{gawk} to a new operating
                                 system.
 * Derived Files::               Why derived files are kept in the
-                                @command{git} repository.
+                                Git repository.
 @end menu
 
 @node Accessing The Source
@@ -37346,8 +37352,8 @@ git clone git://git.savannah.gnu.org/gawk.git
 @end example
 
 @noindent
-This will clone the @command{gawk} repository.  If you are behind a
-firewall that will not allow you to use the Git native protocol, you
+This clones the @command{gawk} repository.  If you are behind a
+firewall that does not allow you to use the Git native protocol, you
 can still access the repository using:
 
 @example
@@ -37375,7 +37381,7 @@ that has a Git plug-in for working with Git repositories.
 You are free to add any new features you like to @command{gawk}.
 However, if you want your changes to be incorporated into the @command{gawk}
 distribution, there are several steps that you need to take in order to
-make it possible to include your changes:
+make it possible to include them:
 
 @enumerate 1
 @item
@@ -37397,8 +37403,9 @@ or @EMAIL{assign@@gnu.org,assign at gnu dot org}.
 @item
 Get the latest version.
 It is much easier for me to integrate changes if they are relative to
-the most recent distributed version of @command{gawk}.  If your version of
-@command{gawk} is very old, I may not be able to integrate them at all.
+the most recent distributed version of @command{gawk}, or better yet,
+relative to the latest code in the Git repository.  If your version of
+@command{gawk} is very old, I may not be able to integrate your changes at all.
 (@xref{Getting},
 for information on getting the latest version of @command{gawk}.)
 
@@ -37529,6 +37536,7 @@ not do so, particularly if there are lots of changes.
 Include an entry for the @file{ChangeLog} file with your submission.
 This helps further minimize the amount of work I have to do,
 making it easier for me to accept patches.
+It is simplest if you just make this part of your diff.
 @end enumerate
 
 Although this sounds like a lot of work, please remember that while you
@@ -37586,10 +37594,39 @@ A number of the files that come with @command{gawk} are maintained by other
 people.  Thus, you should not change them
 unless it is for a very good reason; i.e., changes are not out of the
 question, but changes to these files are scrutinized extra carefully.
-The files are @file{dfa.c}, @file{dfa.h}, @file{getopt1.c}, @file{getopt.c},
-@file{getopt.h}, @file{install-sh}, @file{mkinstalldirs}, @file{regcomp.c},
-@file{regex.c}, @file{regexec.c}, @file{regexex.c}, @file{regex.h},
-@file{regex_internal.c}, and @file{regex_internal.h}.
+The files are
+@file{dfa.c},
+@file{dfa.h},
+@file{getopt.c},
+@file{getopt.h},
+@file{getopt1.c},
+@file{getopt_int.h},
+@file{gettext.h},
+@file{regcomp.c},
+@file{regex.c},
+@file{regex.h},
+@file{regex_internal.c},
+@file{regex_internal.h},
+and
+@file{regexec.c}.
+
+@item
+A number of other files are provided by the GNU
+Autotools (Autoconf, Automake, and GNU @command{gettext}).
+You should not change them either, unless it is for a very
+good reason. The files are
+@file{ABOUT-NLS},
+@file{config.guess},
+@file{config.rpath},
+@file{config.sub},
+@file{depcomp},
+@file{INSTALL},
+@file{install-sh},
+@file{missing},
+@file{mkinstalldirs},
+@file{xalloc.h},
+and
+@file{ylwrap}.
 
 @item
 Be willing to continue to maintain the port.
@@ -37640,16 +37677,16 @@ In the code that you supply and maintain, feel free to use a
 coding style and brace layout that suits your taste.
 
 @node Derived Files
-@appendixsubsec Why Generated Files Are Kept In @command{git}
+@appendixsubsec Why Generated Files Are Kept In Git
 
 @c STARTOFRANGE gawkgit
-@cindex @command{git}, use of for @command{gawk} source code
+@cindex Git, use of for @command{gawk} source code
 @c From emails written March 22, 2012, to the gawk developers list.
 
-If you look at the @command{gawk} source in the @command{git}
+If you look at the @command{gawk} source in the Git
 repository, you will notice that it includes files that are automatically
 generated by GNU infrastructure tools, such as @file{Makefile.in} from
-@command{automake} and even @file{configure} from @command{autoconf}.
+Automake and even @file{configure} from Autoconf.
 
 This is different from many Free Software projects that do not store
 the derived files, because that keeps the repository less cluttered,
@@ -37675,11 +37712,10 @@ there a guarantee that we could find that @command{bison} version? Or that
 @emph{it} would build?)
 
 If the repository has all the generated files, then it's easy to just check
-them out and build. (Or @emph{easier}, depending upon how far back we go.
-@code{:-)})
+them out and build. (Or @emph{easier}, depending upon how far back we go.)
 
 And that brings us to the second (and stronger) reason why all the files
-really need to be in @command{git}.  It boils down to who do you cater
+really need to be in Git.  It boils down to who do you cater
 to---the @command{gawk} developer(s), or the user who just wants to check
 out a version and try it out?
 
@@ -37688,10 +37724,10 @@ wants it to be possible for any interested @command{awk} user in the
 world to just clone the repository, check out the branch of interest and
 build it. Without their having to have the correct version(s) of the
 autotools.@footnote{There is one GNU program that is (in our opinion)
-severely difficult to bootstrap from the @command{git} repository. For
-example, on the author's old (but still working) PowerPC macintosh with
+severely difficult to bootstrap from the Git repository. For
+example, on the author's old (but still working) PowerPC Macintosh with
 Mac OS X 10.5, it was necessary to bootstrap a ton of software, starting
-with @command{git} itself, in order to try to work with the latest code.
+with Git itself, in order to try to work with the latest code.
 It's not pleasant, and especially on older systems, it's a big waste
 of time.
 
@@ -37714,14 +37750,14 @@ This is extremely important for the @code{master} and
 
 Further, the @command{gawk} maintainer would argue that it's also
 important for the @command{gawk} developers. When he tried to check out
-the @code{xgawk} branch@footnote{A branch created by one of the other
+the @code{xgawk} branch@footnote{A branch (since removed) created by one of the other
 developers that did not include the generated files.} to build it, he
 couldn't. (No @file{ltmain.sh} file, and he had no idea how to create it,
 and that was not the only problem.)
 
 He felt @emph{extremely} frustrated.  With respect to that branch,
 the maintainer is no different than Jane User who wants to try to build
-@code{gawk-4.0-stable} or @code{master} from the repository.
+@code{gawk-4.1-stable} or @code{master} from the repository.
 
 Thus, the maintainer thinks that it's not just important, but critical,
 that for any given branch, the above incantation @emph{just works}.
@@ -37741,14 +37777,14 @@ It's the maintainer's job to merge them and he will deal with it.
 
 @item
 He is really good at @samp{git diff x y > /tmp/diff1 ; gvim /tmp/diff1} to
-remove the diffs that aren't of interest in order to review code. @code{:-)}
+remove the diffs that aren't of interest in order to review code.
 @end enumerate
 
 @item
 It would certainly help if everyone used the same versions of the GNU tools
 as he does, which in general are the latest released versions of
-@command{automake},
-@command{autoconf},
+Automake,
+Autoconf,
 @command{bison},
 and
 @command{gettext}.
@@ -37760,10 +37796,10 @@ now it hasn't been a real issue since I'm the only one who's been
 dorking with the configuration machinery.
 @end ignore
 
-@enumerate A
-@item
-Installing from source is quite easy. It's how the maintainer worked for years
-under Fedora.
+@c @enumerate A
+@c @item
+Installing from source is quite easy. It's how the maintainer worked for years,
+and still works.
 He had @file{/usr/local/bin} at the front of his @env{PATH} and just did:
 
 @example
@@ -37774,10 +37810,11 @@ cd @var{package}-@var{x}.@var{y}.@var{z}
 make install    # as root
 @end example
 
-@item
+@c @item
+@ignore
 These days the maintainer uses Ubuntu 12.04 which is medium current, but
-he is already doing the above for @command{autoconf}, @command{automake}
-and @command{bison}.
+he is already doing the above for Automake, Autoconf, and @command{bison}.
+@end ignore
 
 @ignore
 (C. Rant: Recent Linux versions with GNOME 3 really suck. What
@@ -37785,7 +37822,7 @@ and @command{bison}.
     me to Ubuntu, but Ubuntu 11.04 and 11.10 are totally unusable from
     a UI perspective. Bleah.)
 @end ignore
-@end enumerate
+@c @end enumerate
 
 @ignore
 @item
@@ -37801,7 +37838,7 @@ the "real" changes and the second with "everything else needed for
 Most of the above was originally written by the maintainer to other
 @command{gawk} developers.  It raised the objection from one of
 the developers ``@dots{} that anybody pulling down the source from
-@command{git} is not an end user.''
+Git is not an end user.''
 
 However, this is not true. There are ``power @command{awk} users''
 who can build @command{gawk} (using the magic incantation shown previously)
@@ -37811,10 +37848,10 @@ kept buildable all the time.
 It was then suggested that there be a @command{cron} job to create
 nightly tarballs of ``the source.''  Here, the problem is that there
 are source trees, corresponding to the various branches! So,
-nightly tar balls aren't the answer, especially as the repository can go
+nightly tarballs aren't the answer, especially as the repository can go
 for weeks without significant change being introduced.
 
-Fortunately, the @command{git} server can meet this need. For any given
+Fortunately, the Git server can meet this need. For any given
 branch named @var{branchname}, use:
 
 @example
@@ -37874,9 +37911,10 @@ Larry
 @author Larry Wall
 @end quotation
 
-The @file{TODO} file in the @command{gawk} Git repository lists possible
-future enhancements.  Some of these relate to the source code, and others
-to possible new features.  Please see that file for the list.
+The @file{TODO} file in the @code{master} branch of the @command{gawk}
+Git repository lists possible future enhancements.  Some of these relate
+to the source code, and others to possible new features.  Please see
+that file for the list.
 @xref{Additions},
 if you are interested in tackling any of the projects listed there.
 
@@ -37948,8 +37986,8 @@ documentation in this @value{DOCUMENT}, but it was quite minimal.
 @item
 Being able to call into @command{gawk} from an extension required linker
 facilities that are common on Unix-derived systems but that did
-not work on Windows systems; users wanting extensions on Windows
-had to statically link them into @command{gawk}, even though Windows supports
+not work on MS-Windows systems; users wanting extensions on MS-Windows
+had to statically link them into @command{gawk}, even though MS-Windows supports
 dynamic loading of shared objects.
 
 @item
@@ -38003,7 +38041,7 @@ in order to loop over all the element in an easy fashion for C code.
 
 @item
 The ability to create arrays (including @command{gawk}'s true
-multidimensional arrays).
+arrays of arrays).
 @end itemize
 @end itemize
 
@@ -38024,8 +38062,8 @@ The API mechanism should not require access to @command{gawk}'s
 symbols@footnote{The @dfn{symbols} are the variables and functions
 defined inside @command{gawk}.  Access to these symbols by code
 external to @command{gawk} loaded dynamically at runtime is
-problematic on Windows.} by the compile-time or dynamic linker,
-in order to enable creation of extensions that also work on Windows.
+problematic on MS-Windows.} by the compile-time or dynamic linker,
+in order to enable creation of extensions that also work on MS-Windows.
 @end itemize
 
 During development, it became clear that there were other features
@@ -38372,14 +38410,14 @@ like this: @code{""}.
 
 Humans are used to working in decimal; i.e., base 10.  In base 10,
 numbers go from 0 to 9, and then ``roll over'' into the next
-column.  (Remember grade school? 42 is 4 times 10 plus 2.)
+column.  (Remember grade school? 42 = 4 x 10 + 2.)
 
 There are other number bases though.  Computers commonly use base 2
 or @dfn{binary}, base 8 or @dfn{octal}, and base 16 or @dfn{hexadecimal}.
 In binary, each column represents two times the value in the column to
 its right. Each column may contain either a 0 or a 1.
-Thus, binary 1010 represents 1 times 8, plus 0 times 4, plus 1 times 2,
-plus 0 times 1, or decimal 10.
+Thus, binary 1010 represents (1 x 8) + (0 x 4) + (1 x 2)
++ (0 x 1), or decimal 10.
 Octal and hexadecimal are discussed more in
 @ref{Nondecimal-numbers}.
 
@@ -38416,7 +38454,7 @@ Where it makes sense, POSIX @command{awk} is compatible with 1999 ISO C.
 @item Action
 A series of @command{awk} statements attached to a rule.  If the rule's
 pattern matches an input record, @command{awk} executes the
-rule's action.  Actions are always enclosed in curly braces.
+rule's action.  Actions are always enclosed in braces.
 (@xref{Action Overview}.)
 
 @cindex Spencer, Henry
@@ -38521,7 +38559,7 @@ Named after the English mathematician Boole. See also ``Logical Expression.''
 
 @item Bourne Shell
 The standard shell (@file{/bin/sh}) on Unix and Unix-like systems,
-originally written by Steven R.@: Bourne.
+originally written by Steven R.@: Bourne at Bell Laboratories.
 Many shells (Bash, @command{ksh}, @command{pdksh}, @command{zsh}) are
 generally upwardly compatible with the Bourne shell.
 
@@ -38571,7 +38609,9 @@ Changing some of them affects @command{awk}'s running environment.
 (@xref{Built-in Variables}.)
 
 @item Braces
-See ``Curly Braces.''
+The characters @samp{@{} and @samp{@}}.  Braces are used in
+@command{awk} for delimiting actions, compound statements, and function
+bodies.
 
 @item C
 The system programming language that most GNU software is written in.  The
@@ -38596,7 +38636,7 @@ or place. The most common character set in use today is ASCII (American
 Standard Code for Information Interchange).  Many European
 countries use an extension of ASCII known as ISO-8859-1 (ISO Latin-1).
 The @uref{http://www.unicode.org, Unicode character set} is
-becoming increasingly popular and standard, and is particularly
+increasingly popular and standard, and is particularly
 widely used on GNU/Linux systems.
 
 @cindex Kernighan, Brian
@@ -38609,10 +38649,11 @@ It was written in @command{awk}
 by Brian Kernighan and Jon Bentley, and is available from
 @uref{http://netlib.sandia.gov/netlib/typesetting/chem.gz}.
 
+@cindex McIlroy, Doug
 @cindex cookie
 @item Cookie
 A peculiar goodie, token, saying or remembrance
-produced by or presented to a program. (With thanks to Doug McIlroy.)
+produced by or presented to a program. (With thanks to Professor Doug McIlroy.)
 @ignore
 From: Doug McIlroy <doug@cs.dartmouth.edu>
 Date: Sat, 13 Oct 2012 19:55:25 -0400
@@ -38690,9 +38731,7 @@ statements, and in patterns to select which input records to process.
 (@xref{Typing and Comparison}.)
 
 @item Curly Braces
-The characters @samp{@{} and @samp{@}}.  Curly braces are used in
-@command{awk} for delimiting actions, compound statements, and function
-bodies.
+See ``Braces.''
 
 @cindex dark corner
 @item Dark Corner
@@ -38737,7 +38776,7 @@ ordinary expression.  It could be a string constant, such as
 (@xref{Computed Regexps}.)
 
 @item Environment
-A collection of strings, of the form @var{name}@code{=}@code{val}, that each
+A collection of strings, of the form @samp{@var{name}=@var{val}}, that each
 program has available to it. Users generally place values into the
 environment in order to provide information to various programs. Typical
 examples are the environment variables @env{HOME} and @env{PATH}.
@@ -38791,8 +38830,8 @@ this is just a number that can have a fractional part.
 See also ``Double Precision'' and ``Single Precision.''
 
 @item Format
-Format strings are used to control the appearance of output in the
-@code{strftime()} and @code{sprintf()} functions, and are used in the
+Format strings control the appearance of output in the
+@code{strftime()} and @code{sprintf()} functions, and in the
 @code{printf} statement as well.  Also, data conversions from numbers to strings
 are controlled by the format strings contained in the built-in variables
 @code{CONVFMT} and @code{OFMT}. (@xref{Control Letters}.)
@@ -38861,7 +38900,7 @@ Base 16 notation, where the digits are @code{0}--@code{9} and
 @code{A}--@code{F}, with @samp{A}
 representing 10, @samp{B} representing 11, and so on, up to @samp{F} for 15.
 Hexadecimal numbers are written in C using a leading @samp{0x},
-to indicate their base.  Thus, @code{0x12} is 18 (1 times 16 plus 2).
+to indicate their base.  Thus, @code{0x12} is 18 ((1 x 16) + 2).
 @xref{Nondecimal-numbers}.
 
 @item I/O
@@ -38935,8 +38974,8 @@ meaning.  Keywords are reserved and may not be used as variable names.
 @code{function},
 @code{func},
 @code{if},
-@code{nextfile},
 @code{next},
+@code{nextfile},
 @code{switch},
 and
 @code{while}.
@@ -38997,12 +39036,8 @@ Ancient @command{awk} implementations used single precision floating-point.
 @item Octal
 Base-eight notation, where the digits are @code{0}--@code{7}.
 Octal numbers are written in C using a leading @samp{0},
-to indicate their base.  Thus, @code{013} is 11 (one times 8 plus 3).
+to indicate their base.  Thus, @code{013} is 11 ((1 x 8) + 3).
 @xref{Nondecimal-numbers}.
-
-@cindex P1003.1 POSIX standard
-@item P1003.1
-See ``POSIX.''
 
 @item Pattern
 Patterns tell @command{awk} which input records are interesting to which
@@ -39044,8 +39079,8 @@ specify single lines. (@xref{Pattern Overview}.)
 
 @item Recursion
 When a function calls itself, either directly or indirectly.
-As long as this is not clear, refer to the entry for ``recursion.''
 If this is clear, stop, and proceed to the next entry.
+Otherwise, refer to the entry for ``recursion.''
 
 @item Redirection
 Redirection means performing input from something other than the standard input
@@ -39124,7 +39159,7 @@ expressions, and function calls have side effects.
 An internal representation of numbers that can have fractional parts.
 Single precision numbers keep track of fewer digits than do double precision
 numbers, but operations on them are sometimes less expensive in terms of CPU time.
-This is the type used by some very old versions of @command{awk} to store
+This is the type used by some ancient versions of @command{awk} to store
 numeric values.  It is the C type @code{float}.
 
 @item Space
@@ -39161,7 +39196,7 @@ into the local language.
 A value in the ``seconds since the epoch'' format used by Unix
 and POSIX systems.  Used for the @command{gawk} functions
 @code{mktime()}, @code{strftime()}, and @code{systime()}.
-See also ``Epoch'' and ``UTC.''
+See also ``Epoch,'' ``GMT,'' and ``UTC.''
 
 @cindex Linux
 @cindex GNU/Linux
