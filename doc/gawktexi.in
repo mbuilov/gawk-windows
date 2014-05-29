@@ -236,6 +236,10 @@ quirk of the language / makeinfo, and isn't going to change.
 
 @copying
 @docbook
+<para>
+&ldquo;To boldly go where no man has gone before&rdquo; is a
+Registered Trademark of Paramount Pictures Corporation.</para>
+
 <para>Published by:</para>
 
 <literallayout class="normal">Free Software Foundation
@@ -1766,49 +1770,6 @@ License in @ref{GNU Free Documentation License}.)
 @end ifclear
 @end ifnotinfo
 
-@ignore
-@cindex Close, Diane
-The @value{DOCUMENT} itself has gone through several previous,
-preliminary editions.
-Paul Rubin wrote the very first draft of @cite{The GAWK Manual};
-it was around 40 pages in size.
-Diane Close and Richard Stallman improved it, yielding the
-version which I started working with in the fall of 1988.
-It was around 90 pages long and barely described the original, ``old''
-version of @command{awk}. After substantial revision, the first version of
-the @cite{The GAWK Manual} to be released was Edition 0.11 Beta in
-October of 1989.  The manual then underwent more substantial revision
-for Edition 0.13 of December 1991.
-David Trueman, Pat Rankin and Michal Jaegermann contributed sections
-of the manual for Edition 0.13.
-That edition was published by the
-FSF as a bound book early in 1992.  Since then there were several
-minor revisions, notably Edition 0.14 of November 1992 that was published
-by the FSF in January of 1993 and Edition 0.16 of August 1993.
-
-Edition 1.0 of @cite{GAWK: The GNU Awk User's Guide} represented a significant re-working
-of @cite{The GAWK Manual}, with much additional material.
-The FSF and I agreed that I was now the primary author.
-@c I also felt that the manual needed a more descriptive title.
-
-In January 1996, SSC published Edition 1.0 under the title @cite{Effective AWK Programming}.
-In February 1997, they published Edition 1.0.3 which had minor changes
-as a ``second edition.''
-In 1999, the FSF published this same version as Edition 2
-of @cite{GAWK: The GNU Awk User's Guide}.
-
-Edition @value{EDITION} maintains the basic structure of Edition 1.0,
-but with significant additional material, reflecting the host of new features
-in @command{gawk} version @value{VERSION}.
-Of particular note is
-@ref{Array Sorting},
-@ref{Bitwise Functions},
-@ref{Internationalization},
-@ref{Advanced Features},
-and
-@ref{Dynamic Extensions}.
-@end ignore
-
 @cindex Close, Diane
 The @value{DOCUMENT} itself has gone through a number of previous editions.
 Paul Rubin wrote the very first draft of @cite{The GAWK Manual};
@@ -1827,16 +1788,24 @@ the title @cite{The GNU Awk User's Guide}.
 @ifset FOR_PRINT
 SSC published two editions of the @value{DOCUMENT} under the
 title @cite{Effective awk Programming}, and in O'Reilly published
-the edition in 2001.
+the third edition in 2001.
 @end ifset
 
 This edition maintains the basic structure of the previous editions.
-For Edition 4.0, the content has been thoroughly reviewed
+For FSF edition 4.0, the content has been thoroughly reviewed
 and updated. All references to @command{gawk} versions prior to 4.0 have been
 removed.
 Of significant note for this edition was @ref{Debugger}.
 
-For edition @value{EDITION}, the content has been reorganized into parts,
+For FSF edition
+@ifclear FOR_PRINT
+@value{EDITION},
+@end ifclear
+@ifset FOR_PRINT
+@value{EDITION}
+(the fourth edition as published by O'Reilly),
+@end ifset
+the content has been reorganized into parts,
 and the major new additions are @ref{Arbitrary Precision Arithmetic},
 and @ref{Dynamic Extensions}.
 
@@ -4106,7 +4075,8 @@ path.  (A null entry is indicated by starting or ending the path with a
 colon or by placing two colons next to each other [@samp{::}].)
 This path search mechanism is similar
 to the shell's.
-@c someday, @cite{The Bourne Again Shell}....
+(See @uref{http://www.gnu.org/software/bash/manual/,
+@cite{The Bourne-Again SHell manual}.})
 
 However, @command{gawk} always looks in the current directory @emph{before}
 searching @env{AWKPATH}, so there is no real reason to include
@@ -4419,6 +4389,8 @@ that can be loaded with either @code{@@load} or the @option{-l} option.
 @node Obsolete
 @section Obsolete Options and/or Features
 
+@c update this section for each release!
+
 @cindex options, deprecated
 @cindex features, deprecated
 @cindex obsolete features
@@ -4426,8 +4398,6 @@ This @value{SECTION} describes features and/or command-line options from
 previous releases of @command{gawk} that are either not available in the
 current version or that are still supported but deprecated (meaning that
 they will @emph{not} be in the next release).
-
-@c update this section for each release!
 
 The process-related special files @file{/dev/pid}, @file{/dev/ppid},
 @file{/dev/pgrpid}, and @file{/dev/user} were deprecated in @command{gawk}
@@ -5363,9 +5333,6 @@ GNU operators, but this was deemed too confusing. The current
 method of using @samp{\y} for the GNU @samp{\b} appears to be the
 lesser of two evils.
 
-@c NOTE!!! Keep this in sync with the same table in the summary appendix!
-@c
-@c Should really do this with file inclusion.
 @cindex regular expressions, @command{gawk}, command-line options
 @cindex @command{gawk}, command-line options, and regular expressions
 The various command-line options
@@ -6692,7 +6659,6 @@ program on the file @file{mail-list}.  The following command prints a
 list of the names of the people that work at or attend a university, and
 the first three digits of their phone numbers:
 
-@c tweaked to make the tex output look better in @smallbook
 @example
 $ @kbd{awk -F- -f edu.awk mail-list}
 @print{} Fabius       555
@@ -8396,16 +8362,6 @@ the first character of the string.
 @cindex dark corner, format-control characters
 @cindex @command{gawk}, format-control characters
 @quotation NOTE
-@ignore
-The @samp{%c} format does @emph{not} handle values outside the range
-0--255.  On most systems, values from 0--127 are within the range of
-ASCII and will yield an ASCII character.  Values in the range 128--255
-may format as characters in some extended character set, or they may not.
-System 390 (IBM architecture mainframe) systems use 8-bit characters,
-and thus values from 0--255 yield the corresponding EBCDIC character.
-Any value above 255 is treated as modulo 255; i.e., the lowest eight bits
-of the value are used.  The locale and character set are always ignored.
-@end ignore
 The POSIX standard says the first character of a string is printed.
 In locales with multibyte characters, @command{gawk} attempts to
 convert the leading bytes of the string into a valid wide character
@@ -8528,7 +8484,7 @@ which they may appear:
 @table @code
 @cindex differences in @command{awk} and @command{gawk}, @code{print}/@code{printf} statements
 @cindex @code{printf} statement, positional specifiers
-@c the command does NOT start a secondary
+@c the code{} does NOT start a secondary
 @cindex positional specifiers, @code{printf} statement
 @item @var{N}$
 An integer constant followed by a @samp{$} is a @dfn{positional specifier}.
@@ -10159,7 +10115,7 @@ One possibly undesirable effect of this definition of remainder is that
 
 In other @command{awk} implementations, the signedness of the remainder
 may be machine-dependent.
-@c !!! what does posix say?
+@c FIXME !!! what does posix say?
 
 @cindex portability, @code{**} operator and
 @cindex @code{*} (asterisk), @code{**} operator
@@ -18775,7 +18731,6 @@ that their statement is correct, this @value{CHAPTER} and @ref{Sample
 Programs}, provide a good-sized body of code for you to read, and we hope,
 to learn from.
 
-@c 2e: USE TEXINFO-2 FUNCTION DEFINITION STUFF!!!!!!!!!!!!!
 This @value{CHAPTER} presents a library of useful @command{awk} functions.
 Many of the sample programs presented later in this @value{DOCUMENT}
 use these functions.
@@ -20155,7 +20110,6 @@ application might want to print its own error message.)
 
 @item optopt
 The letter representing the command-line option.
-@c While not usually documented, most versions supply this variable.
 @end table
 
 The following C fragment shows how @code{getopt()} might process command-line
@@ -20206,7 +20160,6 @@ necessary for accessing individual characters
 function was written before @command{gawk} acquired the ability to
 split strings into single characters using @code{""} as the separator.
 We have left it alone, since using @code{substr()} is more portable.}
-@c FIXME: could use split(str, a, "") to do it more easily.
 
 The discussion that follows walks through the code a bit at a time:
 
@@ -20490,8 +20443,6 @@ is called, it returns the next entry in the database.  When there are
 no more entries, it returns @code{NULL}, the null pointer.  When this
 happens, the C program should call @code{endpwent()} to close the database.
 Following is @command{pwcat}, a C program that ``cats'' the password database:
-
-@c Use old style function header for portability to old systems (SunOS, HP/UX).
 
 @example
 @c file eg/lib/pwcat.c
@@ -23886,7 +23837,6 @@ Finally, the function @code{@w{unexpected_eof()}} prints an appropriate
 error message and then exits.
 The @code{END} rule handles the final cleanup, closing the open file:
 
-@c function lb put on same line for page breaking. sigh
 @example
 @c file eg/prog/extract.awk
 @group
@@ -25808,7 +25758,6 @@ the body of an @code{if}, @code{else}, or loop is only a single statement.
 @item
 Parentheses are used only where needed, as indicated by the structure
 of the program and the precedence rules.
-@c extra verbiage here satisfies the copyeditor. ugh.
 For example, @samp{(3 + 5) * 4} means add three plus five, then multiply
 the total by four.  However, @samp{3 + 5 * 4} has no parentheses, and
 means @samp{3 + (5 * 4)}.
@@ -26416,7 +26365,6 @@ present a special problem for translation.
 Consider the following:@footnote{This example is borrowed
 from the GNU @command{gettext} manual.}
 
-@c line broken here only for smallbook format
 @example
 printf(_"String `%s' has %d characters\n",
           string, length(string)))
@@ -28116,8 +28064,6 @@ exactly.
 @command{awk} uses @dfn{double precision} floating-point numbers, which
 can hold more digits than @dfn{single precision}
 floating-point numbers.
-@c Floating-point issues are discussed more fully in
-@c @ref{Floating Point Issues}.
 
 There a several important issues to be aware of, described next.
 
@@ -30057,6 +30003,7 @@ procedure calls that do not return a value.
 @table @code
 @item #define emalloc(pointer, type, size, message) @dots{}
 The arguments to this macro are as follows:
+
 @c nested table
 @table @code
 @item pointer
@@ -30218,6 +30165,7 @@ a function with @command{gawk} using the following function.
 @item void awk_atexit(void (*funcp)(void *data, int exit_status),
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ void *arg0);
 The parameters are:
+
 @c nested table
 @table @code
 @item funcp
@@ -32000,7 +31948,6 @@ Those are followed by the necessary variable declarations
 to make use of the API macros and boilerplate code
 (@pxref{Extension API Boilerplate}).
 
-@c break line for page breaking
 @example
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -32087,7 +32034,6 @@ The @code{stat()} extension is more involved.  First comes a function
 that turns a numeric mode into a printable representation
 (e.g., 644 becomes @samp{-rw-r--r--}). This is omitted here for brevity:
 
-@c break line for page breaking
 @example
 /* format_mode --- turn a stat mode field into something readable */
 
@@ -33502,7 +33448,7 @@ The @code{fflush()} built-in function for flushing buffered output
 @ignore
 @item
 The @code{SYMTAB} array, that allows access to @command{awk}'s internal symbol
-table. This feature is not documented, largely because
+table. This feature was never documented for his @command{awk}, largely because
 it is somewhat shakily implemented. For instance, you cannot access arrays
 or array elements through it.
 @end ignore
@@ -34810,6 +34756,9 @@ Improved array internals for arrays indexed by integers.
 The improved array sorting features were driven by John together
 with Pat Rankin.
 @end itemize
+
+@cindex Papadopoulos, Panos
+Panos Papadopoulos contributed the original text for @ref{Include Files}.
 
 @item
 @cindex Yawitz, Efraim
@@ -36931,19 +36880,19 @@ Automake,
 Autoconf,
 @command{bison},
 and
-@command{gettext}.
+GNU @command{gettext}.
 
 @ignore
-If it would help if I sent out an "I just upgraded to version x.y
-of tool Z" kind of message to this list, I can do that.  Up until
+If it would help if I sent out an ``I just upgraded to version x.y
+of tool Z'' kind of message to this list, I can do that.  Up until
 now it hasn't been a real issue since I'm the only one who's been
 dorking with the configuration machinery.
 @end ignore
 
 @c @enumerate A
 @c @item
-Installing from source is quite easy. It's how the maintainer worked for years,
-and still works.
+Installing from source is quite easy. It's how the maintainer worked for years
+(and still works).
 He had @file{/usr/local/bin} at the front of his @env{PATH} and just did:
 
 @example
@@ -39613,9 +39562,6 @@ recommend releasing these examples in parallel under your choice of
 free software license, such as the GNU General Public License,
 to permit their use in free software.
 
-@c Local Variables:
-@c ispell-local-pdict: "ispell-dict"
-@c End:
 @end ifclear
 
 @ifnotdocbook
