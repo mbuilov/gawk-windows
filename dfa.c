@@ -1475,10 +1475,10 @@ lex (void)
               {
                 if (syntax_bits & RE_INVALID_INTERVAL_ORD)
                   goto normal_char;
-                dfaerror (_("Invalid content of \\{\\}"));
+                dfaerror (_("invalid content of \\{\\}"));
               }
             if (RE_DUP_MAX < maxrep)
-              dfaerror (_("Regular expression too big"));
+              dfaerror (_("regular expression too big"));
             lexptr = p;
             lexleft = lim - p;
           }
@@ -2932,16 +2932,17 @@ build_state (state_num s, struct dfa *d)
   /* Set an upper limit on the number of transition tables that will ever
      exist at once.  1024 is arbitrary.  The idea is that the frequently
      used transition tables will be quickly rebuilt, whereas the ones that
-     were only needed once or twice will be cleared away.  */
+     were only needed once or twice will be cleared away.  However, do
+     not clear the initial state, as it's always used.  */
   if (d->trcount >= 1024)
     {
-      for (i = 0; i < d->tralloc; ++i)
+      for (i = 1; i < d->tralloc; ++i)
         {
           free (d->trans[i]);
           free (d->fails[i]);
           d->trans[i] = d->fails[i] = NULL;
         }
-      d->trcount = 0;
+      d->trcount = 1;
     }
 
   ++d->trcount;
@@ -2976,22 +2977,6 @@ build_state (state_num s, struct dfa *d)
     d->fails[s] = trans;
   else
     d->trans[s] = trans;
-}
-
-static void
-build_state_zero (struct dfa *d)
-{
-  /* Initial size of the transition tables; must be positive.  */
-  int initial_tab_size = 1;
-
-  d->tralloc = 0;
-  d->trcount = 0;
-  d->trans = NULL;
-  d->fails = NULL;
-  d->success = NULL;
-  d->newlines = NULL;
-  realloc_trans_if_necessary (d, initial_tab_size);
-  build_state (0, d);
 }
 
 /* Multibyte character handling sub-routines for dfaexec.  */
@@ -3357,7 +3342,10 @@ dfaexec (struct dfa *d, char const *begin, char *end,
   size_t nlcount = 0;
 
   if (!d->tralloc)
-    build_state_zero (d);
+    {
+      realloc_trans_if_necessary (d, 1);
+      build_state (0, d);
+    }
 
   s = s1 = 0;
   p = mbp = (unsigned char const *) begin;
@@ -3478,7 +3466,7 @@ dfaexec (struct dfa *d, char const *begin, char *end,
 
       /* If the previous character was a newline, count it, and skip
          checking of multibyte character boundary until here.  */
-      if (p[-1] == eol && (char *) p != begin)
+      if (p[-1] == eol)
         {
           nlcount++;
           mbp = p;
@@ -4056,10 +4044,17 @@ dfamust (struct dfa *d)
             size_t j, ln, rn, n;
 
             /* Guaranteed to be.  Unlikely, but ...  */
-            if (!STREQ (lmp->is, rmp->is))
-              lmp->is[0] = '\0';
-            lmp->begline &= rmp->begline;
-            lmp->endline &= rmp->endline;
+            if (STREQ (lmp->is, rmp->is))
+              {
+                lmp->begline &= rmp->begline;
+                lmp->endline &= rmp->endline;
+              }
+            else
+              {
+                lmp->is[0] = '\0';
+                lmp->begline = false;
+                lmp->endline = false;
+              }
             /* Left side--easy */
             i = 0;
             while (lmp->left[i] != '\0' && lmp->left[i] == rmp->left[i])
