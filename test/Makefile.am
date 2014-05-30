@@ -729,6 +729,10 @@ EXTRA_DIST = \
 	regexprange.ok \
 	reginttrad.awk \
 	reginttrad.ok \
+	regnul1.awk \
+	regnul1.ok \
+	regnul2.awk \
+	regnul2.ok \
 	regrange.awk \
 	regrange.ok \
 	regtest.sh \
@@ -1004,7 +1008,7 @@ GAWK_EXT_TESTS = \
 	nastyparm next nondec nondec2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 procinfs \
 	profile1 profile2 profile3 profile4 profile5 pty1 \
-	rebuf regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
+	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
 	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
