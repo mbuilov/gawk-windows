@@ -532,6 +532,8 @@ mbs_to_wchar (wint_t *pwc, char const *s, size_t n, struct dfa *d)
   *pwc = wc;
   return 1;
 }
+#else
+#define mbs_to_wchar(pwc, s, n, d) (WEOF)
 #endif
 
 #ifdef DEBUG
