@@ -3836,19 +3836,6 @@ icatalloc (char *old, char const *new)
   return result;
 }
 
-static char *_GL_ATTRIBUTE_PURE
-istrstr (char const *lookin, char const *lookfor)
-{
-  char const *cp;
-  size_t len;
-
-  len = strlen (lookfor);
-  for (cp = lookin; *cp != '\0'; ++cp)
-    if (strncmp (cp, lookfor, len) == 0)
-      return (char *) cp;
-  return NULL;
-}
-
 static void
 freelist (char **cpp)
 {
@@ -3864,7 +3851,7 @@ enlist (char **cpp, char *new, size_t len)
   new[len] = '\0';
   /* Is there already something in the list that's new (or longer)?  */
   for (i = 0; cpp[i] != NULL; ++i)
-    if (istrstr (cpp[i], new) != NULL)
+    if (strstr (cpp[i], new) != NULL)
       {
         free (new);
         return cpp;
@@ -3872,7 +3859,7 @@ enlist (char **cpp, char *new, size_t len)
   /* Eliminate any obsoleted strings.  */
   j = 0;
   while (cpp[j] != NULL)
-    if (istrstr (new, cpp[j]) == NULL)
+    if (strstr (new, cpp[j]) == NULL)
       ++j;
     else
       {
