@@ -471,8 +471,8 @@ particular records in a file and perform operations upon them.
                                         includes command-line syntax.
 * One-shot::                            Running a short throwaway
                                         @command{awk} program.
-* Read Terminal::                       Using no input files (input from
-                                        the keyboard instead).
+* Read Terminal::                       Using no input files (input from the
+                                        keyboard instead).
 * Long::                                Putting permanent @command{awk}
                                         programs in files.
 * Executable Scripts::                  Making self-contained @command{awk}
@@ -494,6 +494,7 @@ particular records in a file and perform operations upon them.
 * Other Features::                      Other Features of @command{awk}.
 * When::                                When to use @command{gawk} and when to
                                         use other things.
+* Intro Summary::                       Summary of the introduction.
 * Command Line::                        How to run @command{awk}.
 * Options::                             Command-line options and their
                                         meanings.
@@ -515,6 +516,7 @@ particular records in a file and perform operations upon them.
                                         program.
 * Obsolete::                            Obsolete Options and/or features.
 * Undocumented::                        Undocumented Options and Features.
+* Invoking Summary::                    Invocation summary.
 * Regexp Usage::                        How to Use Regular Expressions.
 * Escape Sequences::                    How to write nonprinting characters.
 * Regexp Operators::                    Regular Expression Operators.
@@ -523,8 +525,12 @@ particular records in a file and perform operations upon them.
 * Case-sensitivity::                    How to do case-insensitive matching.
 * Leftmost Longest::                    How much text matches.
 * Computed Regexps::                    Using Dynamic Regexps.
+* Regexp Summary::                      Regular expressions summary.
 * Records::                             Controlling how data is split into
                                         records.
+* awk split records::                   How standard @command{awk} splits
+                                        records.
+* gawk split records::                  How @command{gawk} splits records.
 * Fields::                              An introduction to fields.
 * Nonconstant Fields::                  Nonconstant Field Numbers.
 * Changing Fields::                     Changing the Contents of a Field.
@@ -981,8 +987,8 @@ particular records in a file and perform operations upon them.
                                         @command{gawk}.
 * New Ports::                           Porting @command{gawk} to a new
                                         operating system.
-* Derived Files::                       Why derived files are kept in the
-                                        Git repository.
+* Derived Files::                       Why derived files are kept in the Git
+                                        repository.
 * Future Extensions::                   New features that may be implemented
                                         one day.
 * Implementation Limitations::          Some limitations of the
@@ -1300,9 +1306,6 @@ has been removed.)
 * Conventions::                 Typographical Conventions.
 * Manual History::              Brief history of the GNU project and this
                                 @value{DOCUMENT}.
-@ifset FOR_PRINT
-* Staying current::             How to keep up.
-@end ifset
 * How To Contribute::           Helping to save the world.
 * Acknowledgments::             Acknowledgments.
 @end menu
@@ -1861,7 +1864,7 @@ find an error in this @value{DOCUMENT}, please report it!  @xref{Bugs},
 for information on submitting problem reports electronically.
 
 @ifset FOR_PRINT
-@node Staying current
+@c fakenode --- for prepinfo
 @unnumberedsec How to Stay Current
 
 It may be you have a version of @command{gawk} which is newer than the
@@ -2178,6 +2181,7 @@ program looks like this:
 * Other Features::              Other Features of @command{awk}.
 * When::                        When to use @command{gawk} and when to use
                                 other things.
+* Intro Summary::               Summary of the introduction.
 @end menu
 
 @node Running gawk
@@ -3369,6 +3373,39 @@ Programs in these languages may require more lines
 of source code than the equivalent @command{awk} programs, but they are
 easier to maintain and usually run more efficiently.
 
+@node Intro Summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+Programs in @command{awk} consist of @var{pattern}-@var{action} pairs.
+
+@item
+Use either
+@samp{awk '@var{program}' @var{files}}
+or
+@samp{awk -f @var{program-file} @var{files}}
+to run @command{awk}.
+
+@item
+You may use the special @samp{#!} header line to create @command{awk}
+programs that are directly executable.
+
+@item
+Comments in @command{awk} programs start with @samp{#} and continue to
+the end of the same line.
+
+@item
+Be aware of quoting issues when writing @command{awk} programs as
+part of a larger shell script (or MS-Windows batch file).
+
+@item
+You may use backslash continuation to continue a source line.
+Lines are automatically continued after
+a comma, open brace, question mark, colon,
+@samp{||}, @samp{&&}, @code{do} and @code{else}.
+@end itemize
+
 @node Invoking Gawk
 @chapter Running @command{awk} and @command{gawk}
 
@@ -3397,6 +3434,7 @@ things in this @value{CHAPTER} that don't interest you right now.
 * Loading Shared Libraries::    Loading shared libraries into your program.
 * Obsolete::                    Obsolete Options and/or features.
 * Undocumented::                Undocumented Options and Features.
+* Invoking Summary::            Invocation summary.
 @end menu
 
 @node Command Line
@@ -4566,6 +4604,58 @@ long-undocumented ``feature'' of Unix @code{awk}.
 
 @end ignore
 
+@node Invoking Summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+Use either
+@samp{awk '@var{program}' @var{files}}
+or
+@samp{awk -f @var{program-file} @var{files}}
+to run @command{awk}.
+
+@item
+The three standard @command{awk} options are @option{-f}, @option{-F}
+and @option{-v}.  @command{gawk} supplies these and many others, as well
+as corresponding GNU-style long options.
+
+@item
+Non-option command-line arguments are usually treated as @value{FN}s,
+unless they have the form @samp{@var{var}=@var{value}}, in which case
+they are taken as variable assignments to be performed at that point
+in processing the input.
+
+@item
+All non-option command-line arguments, excluding the program text,
+are placed in the @code{ARGV} array.  Adjusting @code{ARGC} and @code{ARGV}
+affects how @command{awk} processes input.
+
+@item
+You can use a single minus sign (@samp{-}) to refer to standard input
+on the command line.
+
+@item
+@command{gawk} pays attention to a number of environment variables.
+@env{AWKPATH}, @env{AWKLIBPATH}, and @env{POSIXLY_CORRECT} are the
+most important ones.
+
+@item
+@command{gawk}'s exit status conveys information to the program
+that invoked it. Use the @code{exit} statement from within
+an @command{awk} program to set the exit status.
+
+@item
+@command{gawk} allows you to include other @command{awk} source files into
+your program using the @code{@@include} statement and/or the @option{-i}
+and @option{-f} command-line options.
+
+@item
+@command{gawk} allows you to load additional functions written in C
+or C++ using the @code{@@load} statement and/or the @option{-l} option.
+(This advanced feature is described later on in @ref{Dynamic Extensions}.)
+@end itemize
+
 @node Regexp
 @chapter Regular Expressions
 @cindex regexp
@@ -4604,6 +4694,7 @@ regular expressions work, we present more complicated instances.
 * Case-sensitivity::            How to do case-insensitive matching.
 * Leftmost Longest::            How much text matches.
 * Computed Regexps::            Using Dynamic Regexps.
+* Regexp Summary::              Regular expressions summary.
 @end menu
 
 @node Regexp Usage
@@ -5841,6 +5932,52 @@ occur often in practice, but it's worth noting for future reference.
 @end ifnotdocbook
 @c ENDOFRANGE dregexp
 @c ENDOFRANGE regexpd
+
+@node Regexp Summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+Regular expressions describe sets of strings to be matched.
+In @command{awk}, regular expression constants are written enclosed
+between slashes: @code{/}@dots{}@code{/}.
+
+@item
+Regexp constants may be used by standalone in patterns and
+in conditional expressions, or as part of matching expressions
+using the @samp{~} and @samp{!~} operators.
+
+@item
+Escape sequences let you represent non-printable characters and
+also let you represent regexp metacharacters as literal characters
+to be matched.
+
+@item
+Regexp operators provide grouping, alternation and repetition.
+
+@item
+Bracket expressions give you a shorthand for specifyings sets
+of characters that can match at a particular point in a regexp.
+Within bracket expressions, POSIX character classes let you specify
+certain groups of characters in a locale-independent fashion.
+
+@item
+@command{gawk}'s @code{IGNORECASE} variable lets you control the
+case sensitivity of regexp matching.  In other @command{awk}
+versions, use @code{tolower()} or @code{toupper()}.
+
+@item
+Regular expressions match the leftmost longest text in the string being
+matched.  This matters for cases where you need to know the extent of
+the match, such as for text substitution and when the record separator
+is a regexp.
+
+@item
+Matching expressions may use dynamic regexps; that is string values
+treated as regular expressions.
+
+@end itemize
+
 @c ENDOFRANGE regexp
 
 @node Reading Files
@@ -5913,8 +6050,8 @@ number of input records read so far from all @value{DF}s.  It starts at zero,
 but is never automatically reset to zero.
 
 @menu
-* awk split records::       How standard @command{awk} splits records.
-* gawk split records::      How @command{gawk} splits records.
+* awk split records::           How standard @command{awk} splits records.
+* gawk split records::          How @command{gawk} splits records.
 @end menu
 
 @node awk split records
@@ -11723,7 +11860,7 @@ has the value one if @code{x} contains @samp{foo}, such as
 @cindex @code{!} (exclamation point), @code{!~} operator
 @cindex exclamation point (@code{!}), @code{!~} operator
 The righthand operand of the @samp{~} and @samp{!~} operators may be
-either a regexp constant (@code{/@dots{}/}) or an ordinary
+either a regexp constant (@code{/}@dots{}@code{/}) or an ordinary
 expression. In the latter case, the value of the expression as a string is used as a
 dynamic regexp (@pxref{Regexp Usage}; also
 @pxref{Computed Regexps}).
@@ -37296,8 +37433,8 @@ as well as any considerations you should bear in mind.
                                 @command{gawk}.
 * New Ports::                   Porting @command{gawk} to a new operating
                                 system.
-* Derived Files::               Why derived files are kept in the
-                                Git repository.
+* Derived Files::               Why derived files are kept in the Git
+                                repository.
 @end menu
 
 @node Accessing The Source

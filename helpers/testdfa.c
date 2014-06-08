@@ -40,14 +40,16 @@
 #include <sys/stat.h>
 
 
+#undef _Noreturn
 #define _Noreturn
+#define _GL_ATTRIBUTE_PURE
 #include "dfa.h"
 
 const char *regexflags2str(int flags);
 char *databuf(int fd);
 const char * reflags2str(int flagval);
 int parse_escape(const char **string_ptr);
-char *setup_pattern(const char *pattern, size_t len);
+char *setup_pattern(const char *pattern, size_t *len);
 char casetable[];
 
 reg_syntax_t syn;
@@ -126,10 +128,10 @@ int main(int argc, char **argv)
 	printf("Ignorecase: %s\nSyntax: %s\n",
 			(ignorecase ? "true" : "false"),
 			reflags2str(syn));
-	printf("Pattern: /%s/\n", pattern);
+	printf("Pattern: /%s/, len = %d\n", pattern, len);
 
-	pattern = setup_pattern(pattern, len);
-	len = strlen(pattern);
+	pattern = setup_pattern(pattern, & len);
+	printf("After setup_pattern(), len = %d\n", len);
 
 	pat.fastmap = (char *) malloc(256);
 	if (pat.fastmap == NULL) {
@@ -191,7 +193,10 @@ int main(int argc, char **argv)
 				&count, &try_backref);
 	data[len] = save;
 
-	printf("dfaexec returned %p (%.3s)\n", place, place);
+	if (place == NULL)
+		printf("dfaexec returned NULL\n");
+	else
+		printf("dfaexec returned %d (%.3s)\n", place - data, place);
 
 	/* release storage */
 	regfree(& pat);
@@ -363,7 +368,7 @@ r_fatal(const char *mesg, ...)
 /* setup_pattern --- do what gawk does with the pattern string */
 
 char *
-setup_pattern(const char *pattern, size_t len)
+setup_pattern(const char *pattern, size_t *len)
 {
 	size_t is_multibyte = 0;
 	int c, c2;
@@ -377,7 +382,7 @@ setup_pattern(const char *pattern, size_t len)
 	memset(& mbs, 0, sizeof(mbs));
 
 	src = pattern;
-	end = pattern + len;
+	end = pattern + *len;
 
 	/* Handle escaped characters first. */
 
@@ -387,19 +392,19 @@ setup_pattern(const char *pattern, size_t len)
 	 * from that. 
 	 */
 	if (buf == NULL) {
-		buf = (char *) malloc(len + 2);
+		buf = (char *) malloc(*len + 2);
 		if (buf == NULL) {
 			fprintf(stderr, "%s: malloc failed\n", __func__);
 			exit(EXIT_FAILURE);
 		}
-		buflen = len;
-	} else if (len > buflen) {
-		buf = (char *) realloc(buf, len + 2);
+		buflen = *len;
+	} else if (*len > buflen) {
+		buf = (char *) realloc(buf, *len + 2);
 		if (buf == NULL) {
 			fprintf(stderr, "%s: realloc failed\n", __func__);
 			exit(EXIT_FAILURE);
 		}
-		buflen = len;
+		buflen = *len;
 	}
 	dest = buf;
 
@@ -487,7 +492,7 @@ setup_pattern(const char *pattern, size_t len)
 	} /* while */
 
 	*dest = '\0';
-	len = dest - buf;
+	*len = dest - buf;
 
 	return buf;
 }
