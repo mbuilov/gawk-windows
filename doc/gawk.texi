@@ -1460,9 +1460,15 @@ Primarily, this @value{DOCUMENT} explains the features of @command{awk}
 as defined in the POSIX standard.  It does so in the context of the
 @command{gawk} implementation.  While doing so, it also
 attempts to describe important differences between @command{gawk}
-and other @command{awk} implementations.@footnote{All such differences
+and other @command{awk}
+@ifclear FOR_PRINT
+implementations.@footnote{All such differences
 appear in the index under the
 entry ``differences in @command{awk} and @command{gawk}.''}
+@end ifclear
+@ifset FOR_PRINT
+implementations.
+@end ifset
 Finally, any @command{gawk} features that are not in
 the POSIX standard for @command{awk} are noted.
 
@@ -6027,6 +6033,7 @@ used with it do not have to be named on the @command{awk} command line
 * Read Timeout::                Reading input with a timeout.
 * Command line directories::    What happens if you put a directory on the
                                 command line.
+* Input Summary::               Input summary.
 @end menu
 
 @node Records
@@ -8505,6 +8512,75 @@ to treating a directory on the command line as a fatal error.
 @xref{Extension Sample Readdir}, for a way to treat directories
 as usable data from an @command{awk} program.
 
+@node Input Summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+Input is split into records based on the value of @code{RS}.
+The possibilities are as follows:
+
+@multitable @columnfractions .25 .35 .40
+@headitem Value of @code{RS} @tab Records are split on @tab @command{awk} / @command{gawk}
+@item Any single character @tab That character @tab @command{awk}
+@item The empty string (@code{""}) @tab Runs of two or more newlines @tab @command{awk}
+@item A regexp @tab Text that matches the regexp @tab @command{gawk}
+@end multitable
+
+@item
+@command{gawk} sets @code{RT} to the text matched by @code{RS}.
+
+@item
+After splitting the input into records, @command{awk} further splits the record
+into individual fields, named @code{$1}, @code{$2} and so on. @code{$0} is the
+whole record, and @code{NF} indicates how many fields there are.  The default way
+to split fields is between whitespace characters.
+
+@item
+Fields may be referenced using a variable, as in @samp{$NF}.  Fields may also be
+assigned values, which causes the value of @code{$0} to be recomputed when it is
+later referenced. Assigning to a field with a number greater than @code{NF}
+creates the field and rebuilds the record, using @code{OFS} to separate the fields.
+Incrementing @code{NF} does the same thing. Decrementing @code{NF} throws away fields
+and rebuilds the record.
+
+@item
+Field splitting is more complicated than record splitting.
+
+@multitable @columnfractions .40 .40 .20
+@headitem Field separator value @tab Fields are split @dots{} @tab @command{awk} / @command{gawk}
+@item @code{FS == " "} @tab On runs of whitespace @tab @command{awk}
+@item @code{FS == @var{any single character}} @tab On that character @tab @command{awk}
+@item @code{FS == @var{regexp}} @tab On text matching the regexp @tab @command{awk}
+@item @code{FS == ""}  @tab Each individual character is a separate field @tab @command{gawk}
+@item @code{FIELDWIDTHS == @var{list of columns}} @tab Based on character position @tab @command{gawk}
+@item @code{FPAT == @var{regexp}} @tab On text around text matching the regexp @tab @command{gawk}
+@end multitable
+
+Using @samp{FS = "\n"} causes the entire record to be a single field (assuming
+that newlines separate records).
+
+@item
+@code{FS} may be set from the command line using the @option{-F} option.
+This can also be done using command-line variable assignment.
+
+@item
+@code{PROCINFO["FS"]} can be used to see how fields are being split.
+
+@item
+Use @code{getline} in its varioius forms to read additional records,
+from the default input stream, from a file, or from a pipe or co-process.
+
+@item
+Use @code{PROCINFO[@var{file}, "READ_TIMEOUT"]} to cause reads to timeout
+for @var{file}.
+
+@item
+Directories on the command line are fatal for standard @command{awk};
+@command{gawk} ignores them if not in POSIX mode.
+
+@end itemize
+
 @node Printing
 @chapter Printing Output
 
@@ -8544,6 +8620,7 @@ and discusses the @code{close()} built-in function.
                                 @command{gawk} allows access to inherited file
                                 descriptors.
 * Close Files And Pipes::       Closing Input and Output Files and Pipes.
+* Output Summary::              Output summary.
 @end menu
 
 @node Print
@@ -10033,6 +10110,38 @@ when closing a pipe.
 @c ENDOFRANGE ofc
 @c ENDOFRANGE pc
 @c ENDOFRANGE cc
+
+@node Output Summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+The @code{print} statement prints comma-separated expressions. Each expression
+is separated by the value of @code{OFS} and terminated by the value of @code{ORS}.
+@code{OFMT} provides the conversion format for numeric values for the @code{print}
+statement.
+
+@item
+The @code{printf} statement provides finer-grained control over output, with format
+control letters for different data types and various flags that modify the
+behavior of the format control letters.
+
+@item
+Output from both @code{print} and @code{printf} may be redirected to files,
+pipes, and co-processes.
+
+@item
+@command{gawk} provides special file names for access to standard input, output
+and error, and for network communications.
+
+@item
+Use @code{close()} to close open file, pipe and co-process redirections.
+For co-processes, it is possible to close only one direction of the
+communications.
+
+@end itemize
+
+
 @c ENDOFRANGE prnt
 
 @node Expressions
@@ -10059,6 +10168,7 @@ combinations of these with various operators.
 * Function Calls::              A function call is an expression.
 * Precedence::                  How various operators nest.
 * Locales::                     How the locale affects things.
+* Expressions Summary::         Expressions summary.
 @end menu
 
 @node Values
@@ -12454,6 +12564,71 @@ Finally, the locale affects the value of the decimal point character
 used when @command{gawk} parses input data.  This is discussed in detail
 in @ref{Conversion}.
 
+@node Expressions Summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+Expressions are the basic elements of computation in programs.
+They are built from constants, variables, function calls and combinations
+of the various kinds of values with operators.
+
+@item
+@command{awk} supplies three kinds of constants: numeric, string, and
+regexp.  @command{gawk} lets you specify numeric constants in octal
+and hexadecimal (bases 8 and 16) in addition to decimal (base 10).
+In certain contexts, a standalone regexp constant such as @code{/foo/}
+has the same meaning as @samp{$0 ~ /foo/}.
+
+@item
+Variables hold values between uses in computations. A number of built-in
+variables provide information to your @command{awk} program, and a number
+of others let you control how @command{awk} behaves.
+
+@item
+Numbers are automatically converted to strings, and strings to numbers,
+as needed by @command{awk}. Numeric values are converted as if they were
+formatted with @code{sprintf()} using the format in @code{CONVFMT}.
+
+@item
+@command{awk} provides the usual arithmetic operators (addition,
+subtraction, multiplication, division, modulus), and unary plus and minus.
+It also provides comparison operators, boolean operators, and regexp
+matching operators.  String concatenation is accomplished by placing
+two expressions next to each other; there is no explicit operator.
+The three-operand @samp{?:} operator provides an ``if-else'' test
+within expressions.
+
+@item
+Assignment operators provide convenient shorthands for common arithmetic
+operations.
+
+@item
+In @command{awk}, a value is considered to be true if it is non-zero
+@emph{or} non-null. Otherwise, the value is false.
+
+@item
+A value's type is set upon each assignment and may change over its lifetime.
+The type determines how it behaves in comparisons (string or numeric).
+
+@item
+Function calls return a value which may be used as part of a larger
+expression.  Expressions used to pass parameter values are fully
+evaluated before the function is called.  @command{awk} provides
+built-in and user-defined functions; this is described later on in
+this @value{DOCUMENT}.
+
+@item
+Operator precedence specifies the order in which operations are
+performed, unless explicitly overridden by parentheses.  @command{awk}'s
+operator precedence is compatible with that of C.
+
+@item
+Locales can affect the format of data as output by an @command{awk}
+program, and occasionally the format for data read as input.
+
+@end itemize
+
 @c ENDOFRANGE exps
 
 @node Patterns and Actions
@@ -12480,6 +12655,7 @@ building something useful.
 * Statements::                  Describes the various control statements in
                                 detail.
 * Built-in Variables::          Summarizes the built-in variables.
+* Pattern Action Summary::      Patterns and Actions summary.
 @end menu
 
 @node Pattern Overview
@@ -14756,6 +14932,65 @@ it and the following @option{-v}
 are passed on to the @command{awk} program.
 (@xref{Getopt Function}, for an @command{awk} library function
 that parses command-line options.)
+
+@node Pattern Action Summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+Pattern-action pairs make up the basic elements of an @command{awk}
+program.  Patterns are either normal expressions, range expressions,
+regexp constants, one of the special keywords @code{BEGIN}, @code{END},
+@code{BEGINFILE}, @code{ENDFILE}, or empty.  The action executes if
+the current record matches the pattern.  Empty (missing) patterns match
+all records.
+
+@item
+I/O from @code{BEGIN} and @code{END} rules have certain constraints.
+This is also true, only more so, for @code{BEGINFILE} and @code{ENDFILE}
+rules.  The latter two give you ``hooks'' into @command{gawk}'s file
+processing, allowing you to recover from a file that otherwise would
+cause a fatal error (such as a file that cannot be opened).
+
+@item
+Shell variables can be used in @command{awk} programs by careful
+use of shell quoting.  It is easier to pass a shell variable into
+@command{awk} by using the @option{-v} option and an @command{awk}
+variable.
+
+@item
+Actions consist of statements enclosed in curly braces. Statements
+are built up from expressions, control statements, compound statements,
+input and output statements, and deletion statements.
+
+@item
+The control statements in @command{awk} are @code{if}-@code{else},
+@code{while}, @code{for}, and @code{do}-@code{while}.  @command{gawk}
+adds the @code{switch} statement.  There are two flavors of @code{for}
+statement: one for for performing general looping, and the other iterating
+through an array.
+
+@item
+@code{break} and @code{continue} let you exit early or start the next
+iteration of a loop (or get out of a @code{switch}).
+
+@item
+@code{next} and @code{nextfile} let you read the next record and start
+over at the top of your program, or skip to the next input file and
+start over, respectively.
+
+@item
+The @code{exit} statement terminates your program. When executed
+from an action (or function body) it transfers control to the
+@code{END} statements. From an @code{END} statement body, it exits
+immediately.  You may pass an optional numeric value to be used
+at @command{awk}'s exit status.
+
+@item
+Some built-in variables provide control over @command{awk}, mainly for I/O.
+Other variables convey information from @command{awk} to your program.
+
+@end itemize
 
 @node Arrays
 @chapter Arrays in @command{awk}
