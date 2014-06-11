@@ -15023,6 +15023,7 @@ same @command{awk} program.
 * Multidimensional::            Emulating multidimensional arrays in
                                 @command{awk}.
 * Arrays of Arrays::            True multidimensional arrays.
+* Arrays Summary::              Summary of arrays.
 @end menu
 
 @node Array Basics
@@ -16305,6 +16306,64 @@ creating an arbitrary index:
 $ @kbd{gawk 'BEGIN @{ b[1][1] = ""; split("a b c d", b[1]); print b[1][1] @}'}
 @print{} a
 @end example
+
+@node Arrays Summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+Standard @command{awk} provides one-dimensional associative arrays (arrays
+indexed by string values).  All arrays are associative; numeric indices
+are converted automatically to strings.
+
+@item
+Array elements are referenced as @code{@var{array}[@var{indx}]}.
+Referencing an element creates it if it did not exist previously.
+
+@item
+The proper way to see if an array has an element with a given index
+is to use the @code{in} operator: @samp{@var{indx} in @var{array}}.
+
+@item
+Use @samp{for (@var{indx} in @var{array}) @dots{}} to scan through all the
+individual elements of an array. In the body of the loop, @var{indx} takes
+on the value of each element's index in turn.
+
+@item
+The order in which a
+@samp{for (@var{indx} in @var{array})} loop traverses an array is
+undefined in POSIX @command{awk} and varies among implementations.
+@command{gawk} lets you control the order by assigning special predefined
+values to @code{PROCINFO["sorted_in"]}.
+
+@item
+Use @samp{delete @var{array}[@var{indx}]} to delete an
+individual element.  You may also use @samp{delete @var{array}}
+to delete all of the elements in the array.  This latter feature
+has been a common extension for many years and is now standard, but
+may not be supported by all commercial versions of @command{awk}.
+
+@item
+Standard @command{awk} simulates multidimensional arrays by separating
+subscript values with a comma.  The values are concatenated into a
+single string, separated by the value of @code{SUBSEP}.  The fact that
+such a subscript was created in this way is not retained; thus changing
+@code{SUBSEP} may have unexpected consequences.
+You can use @samp{(@var{sub1}, @var{sub2}, @dots{}) in @var{array}}
+to see if such a multidimensional subscript exists in @var{array}.
+
+@item
+@command{gawk} provides true arrays of arrays. You use a separate
+set of square brackets for each dimension in such an array:
+@code{data[row][col]}, for example. Array elements may thus be either
+scalar values (number or string) or another array.
+
+@item
+Use the @code{isarray()} built-in function to determine if an
+array element is itself a subarray.
+
+@end itemize
+
 @c ENDOFRANGE arrs
 
 @node Functions
@@ -16329,6 +16388,7 @@ The second half of this @value{CHAPTER} describes these
 * Built-in::                    Summarizes the built-in functions.
 * User-defined::                Describes User-defined functions in detail.
 * Indirect Calls::              Choosing the function to call at runtime.
+* Functions Summary::           Summary of functions.
 @end menu
 
 @node Built-in
@@ -19887,6 +19947,68 @@ for (i = 1; i <= n; i++)
 @noindent
 @code{gawk} will look up the actual function to call only once.
 
+@node Functions Summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+@command{awk} provides built-in functions and lets you define your own
+functions.
+
+@item
+POSIX @command{awk} provides three kinds of built-in functions: numeric, string,
+and I/O.  @command{gawk} provides functions that work with values
+representing time, do bit manipulation, sort arrays, and internationalize
+and localize programs.
+@command{gawk} also provides several extensions to some of standard functions,
+typically in the form of additional arguments.
+
+@item
+Functions accept zero or more arguments and return a value.
+The expressions that provide the argument values are comnpletely evaluated
+before the function is called. Order of evaluation is not defined.
+The return value can be ignored.
+
+@item
+The handling of backslash in @code{sub()} and @code{gsub()} is
+not simple.  It is more straightforward in @command{gawk}'s @code{gensub()}
+function, but that function still requires care in its use.
+
+@item
+User-defined functions provide important capabilities but come with some
+syntactic inelegancies. In a function call, there cannot be any space
+between the function name and the opening left parethesis of the argument
+list.  Also, there is no provision for local variables, so the convention
+is to add extra parameters, and to separate them visually from the real
+parameters by extra whitespace.
+
+@item
+User-defined functions may call other user-defined (and built-in) functions
+and may call themselves recursively. Function parameters ``hide'' any global
+variables of the same names.
+
+@item
+Scalar values are passed to user-defined functions by value. Array parameters
+are passed by reference; any changes made by the function to array parameters
+are thus visible after the function has returned.
+
+@item
+Use the @code{return} statement to return from a user-defined function.
+An optional expression becomes the function's return value.
+Only scalar values may be returned by a function.
+
+@item
+If a variable that has never been used is passed to a user-defined function,
+how that function treats the variable can set its nature: either scalar or array.
+
+@item
+@command{gawk} provides indirect function calls using a special syntax.
+By setting a variable to the name of a user-defined function, you can
+determine at runtime what function will be called at that point in the
+program. This is equivalent to function pointers in C and C++.
+
+@end itemize
+
 @c ENDOFRANGE funcud
 
 @ifnotinfo
@@ -20012,6 +20134,7 @@ comparisons use only lowercase letters.
 * Passwd Functions::            Functions for getting user information.
 * Group Functions::             Functions for getting group information.
 * Walking Arrays::              A function to walk arrays of arrays.
+* Library Functions Summary::   Summary of library functions.
 @end menu
 
 @node Library Names
@@ -21215,7 +21338,7 @@ END @{
 @end ignore
 
 @node Ignoring Assigns
-@subsection Treating Assignments as @value{FFN}
+@subsection Treating Assignments as @value{FFN}s
 
 @cindex assignments as filenames
 @cindex filenames, assignments as
@@ -22422,6 +22545,7 @@ $ @kbd{gawk -f walk_array.awk}
 @print{} a[3] = 3
 @end example
 
+@c exercise!
 Walking an array and processing each element is a general-purpose
 operation.  You might want to consider generalizing the @code{walk_array()}
 function by adding an additional parameter named @code{process}.
@@ -22440,6 +22564,50 @@ the element.
 @c ENDOFRANGE flibgdata
 @c ENDOFRANGE gdatar
 @c ENDOFRANGE libf
+
+@node Library Functions Summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+Reading programs is an excellent way to learn Good Programming.
+The functions provided in this @value{CHAPTER} and the next are intended
+to serve that purpose.
+
+@item
+When writing general-purpose library functions, put some thought into
+how to name any global variables so that they won't conflict with
+variables from a user's program.
+
+@item
+The functions presented here fit into the following categories:
+
+@c nested list
+@table @asis
+@item General problems
+Number to string conversion, assertions, rounding, random number generation,
+converting characters to numbers, joining strings, getting easily usable
+time-of-day information, and reading a whole file in one shot.
+
+@item Managing @value{DF}s
+Noting @value{DF} boundaries, rereading the current file, checking for
+readable files, checking for zero-length files, and treating assignments
+as @value{FN}s.
+
+@item Processing command-line options
+An @command{awk} version of the standard C @code{getopt()} function.
+
+@item Reading the user and group databases
+Two sets of routines that parallel the C library versions.
+
+@item Traversing arrays of arrays
+A simple function to traverse an array of arrays to any depth.
+@end table
+@c end nested list
+
+@end itemize
+
+
 @c ENDOFRANGE flib
 @c ENDOFRANGE fudlib
 @c ENDOFRANGE datagr
@@ -27924,7 +28092,8 @@ complete detail in
 @cite{GNU gettext tools}}.)
 @end ifnotinfo
 As of this writing, the latest version of GNU @command{gettext} is
-@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.19.tar.gz, @value{PVERSION} 0.19}.
+@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.19.1.tar.gz,
+@value{PVERSION} 0.19.1}.
 
 If a translation of @command{gawk}'s messages exists,
 then @command{gawk} produces usage messages, warnings,
