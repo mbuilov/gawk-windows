@@ -8150,18 +8150,19 @@ The possibilities are as follows:
 @command{gawk} sets @code{RT} to the text matched by @code{RS}.
 
 @item
-After splitting the input into records, @command{awk} further splits the record
-into individual fields, named @code{$1}, @code{$2} and so on. @code{$0} is the
-whole record, and @code{NF} indicates how many fields there are.  The default way
-to split fields is between whitespace characters.
+After splitting the input into records, @command{awk} further splits
+the record into individual fields, named @code{$1}, @code{$2} and so
+on. @code{$0} is the whole record, and @code{NF} indicates how many
+fields there are.  The default way to split fields is between whitespace
+characters.
 
 @item
-Fields may be referenced using a variable, as in @samp{$NF}.  Fields may also be
-assigned values, which causes the value of @code{$0} to be recomputed when it is
-later referenced. Assigning to a field with a number greater than @code{NF}
-creates the field and rebuilds the record, using @code{OFS} to separate the fields.
-Incrementing @code{NF} does the same thing. Decrementing @code{NF} throws away fields
-and rebuilds the record.
+Fields may be referenced using a variable, as in @samp{$NF}.  Fields
+may also be assigned values, which causes the value of @code{$0} to be
+recomputed when it is later referenced. Assigning to a field with a number
+greater than @code{NF} creates the field and rebuilds the record, using
+@code{OFS} to separate the fields.  Incrementing @code{NF} does the same
+thing. Decrementing @code{NF} throws away fields and rebuilds the record.
 
 @item
 Field splitting is more complicated than record splitting.
@@ -8176,8 +8177,8 @@ Field splitting is more complicated than record splitting.
 @item @code{FPAT == @var{regexp}} @tab On text around text matching the regexp @tab @command{gawk}
 @end multitable
 
-Using @samp{FS = "\n"} causes the entire record to be a single field (assuming
-that newlines separate records).
+Using @samp{FS = "\n"} causes the entire record to be a single field
+(assuming that newlines separate records).
 
 @item
 @code{FS} may be set from the command line using the @option{-F} option.
@@ -9635,23 +9636,23 @@ when closing a pipe.
 
 @itemize @value{BULLET}
 @item
-The @code{print} statement prints comma-separated expressions. Each expression
-is separated by the value of @code{OFS} and terminated by the value of @code{ORS}.
-@code{OFMT} provides the conversion format for numeric values for the @code{print}
-statement.
+The @code{print} statement prints comma-separated expressions. Each
+expression is separated by the value of @code{OFS} and terminated by
+the value of @code{ORS}.  @code{OFMT} provides the conversion format
+for numeric values for the @code{print} statement.
 
 @item
-The @code{printf} statement provides finer-grained control over output, with format
-control letters for different data types and various flags that modify the
-behavior of the format control letters.
+The @code{printf} statement provides finer-grained control over output,
+with format control letters for different data types and various flags
+that modify the behavior of the format control letters.
 
 @item
-Output from both @code{print} and @code{printf} may be redirected to files,
-pipes, and co-processes.
+Output from both @code{print} and @code{printf} may be redirected to
+files, pipes, and co-processes.
 
 @item
-@command{gawk} provides special file names for access to standard input, output
-and error, and for network communications.
+@command{gawk} provides special file names for access to standard input,
+output and error, and for network communications.
 
 @item
 Use @code{close()} to close open file, pipe and co-process redirections.
@@ -11949,9 +11950,9 @@ in @ref{Conversion}.
 
 @itemize @value{BULLET}
 @item
-Expressions are the basic elements of computation in programs.
-They are built from constants, variables, function calls and combinations
-of the various kinds of values with operators.
+Expressions are the basic elements of computation in programs.  They are
+built from constants, variables, function calls and combinations of the
+various kinds of values with operators.
 
 @item
 @command{awk} supplies three kinds of constants: numeric, string, and
@@ -11976,8 +11977,8 @@ subtraction, multiplication, division, modulus), and unary plus and minus.
 It also provides comparison operators, boolean operators, and regexp
 matching operators.  String concatenation is accomplished by placing
 two expressions next to each other; there is no explicit operator.
-The three-operand @samp{?:} operator provides an ``if-else'' test
-within expressions.
+The three-operand @samp{?:} operator provides an ``if-else'' test within
+expressions.
 
 @item
 Assignment operators provide convenient shorthands for common arithmetic
@@ -11988,20 +11989,21 @@ In @command{awk}, a value is considered to be true if it is non-zero
 @emph{or} non-null. Otherwise, the value is false.
 
 @item
-A value's type is set upon each assignment and may change over its lifetime.
-The type determines how it behaves in comparisons (string or numeric).
+A value's type is set upon each assignment and may change over its
+lifetime.  The type determines how it behaves in comparisons (string
+or numeric).
 
 @item
 Function calls return a value which may be used as part of a larger
 expression.  Expressions used to pass parameter values are fully
 evaluated before the function is called.  @command{awk} provides
-built-in and user-defined functions; this is described later on in
-this @value{DOCUMENT}.
+built-in and user-defined functions; this is described later on in this
+@value{DOCUMENT}.
 
 @item
-Operator precedence specifies the order in which operations are
-performed, unless explicitly overridden by parentheses.  @command{awk}'s
-operator precedence is compatible with that of C.
+Operator precedence specifies the order in which operations are performed,
+unless explicitly overridden by parentheses.  @command{awk}'s operator
+precedence is compatible with that of C.
 
 @item
 Locales can affect the format of data as output by an @command{awk}
@@ -15654,9 +15656,9 @@ $ @kbd{gawk 'BEGIN @{ b[1][1] = ""; split("a b c d", b[1]); print b[1][1] @}'}
 
 @itemize @value{BULLET}
 @item
-Standard @command{awk} provides one-dimensional associative arrays (arrays
-indexed by string values).  All arrays are associative; numeric indices
-are converted automatically to strings.
+Standard @command{awk} provides one-dimensional associative arrays
+(arrays indexed by string values).  All arrays are associative; numeric
+indices are converted automatically to strings.
 
 @item
 Array elements are referenced as @code{@var{array}[@var{indx}]}.
@@ -15672,27 +15674,26 @@ individual elements of an array. In the body of the loop, @var{indx} takes
 on the value of each element's index in turn.
 
 @item
-The order in which a
-@samp{for (@var{indx} in @var{array})} loop traverses an array is
-undefined in POSIX @command{awk} and varies among implementations.
-@command{gawk} lets you control the order by assigning special predefined
-values to @code{PROCINFO["sorted_in"]}.
+The order in which a @samp{for (@var{indx} in @var{array})} loop
+traverses an array is undefined in POSIX @command{awk} and varies among
+implementations.  @command{gawk} lets you control the order by assigning
+special predefined values to @code{PROCINFO["sorted_in"]}.
 
 @item
-Use @samp{delete @var{array}[@var{indx}]} to delete an
-individual element.  You may also use @samp{delete @var{array}}
-to delete all of the elements in the array.  This latter feature
-has been a common extension for many years and is now standard, but
-may not be supported by all commercial versions of @command{awk}.
+Use @samp{delete @var{array}[@var{indx}]} to delete an individual element.
+You may also use @samp{delete @var{array}} to delete all of the elements
+in the array.  This latter feature has been a common extension for many
+years and is now standard, but may not be supported by all commercial
+versions of @command{awk}.
 
 @item
 Standard @command{awk} simulates multidimensional arrays by separating
 subscript values with a comma.  The values are concatenated into a
-single string, separated by the value of @code{SUBSEP}.  The fact that
-such a subscript was created in this way is not retained; thus changing
-@code{SUBSEP} may have unexpected consequences.
-You can use @samp{(@var{sub1}, @var{sub2}, @dots{}) in @var{array}}
-to see if such a multidimensional subscript exists in @var{array}.
+single string, separated by the value of @code{SUBSEP}.  The fact
+that such a subscript was created in this way is not retained; thus
+changing @code{SUBSEP} may have unexpected consequences.  You can use
+@samp{(@var{sub1}, @var{sub2}, @dots{}) in @var{array}} to see if such
+a multidimensional subscript exists in @var{array}.
 
 @item
 @command{gawk} provides true arrays of arrays. You use a separate
@@ -15701,8 +15702,8 @@ set of square brackets for each dimension in such an array:
 scalar values (number or string) or another array.
 
 @item
-Use the @code{isarray()} built-in function to determine if an
-array element is itself a subarray.
+Use the @code{isarray()} built-in function to determine if an array
+element is itself a subarray.
 
 @end itemize
 
@@ -19137,50 +19138,50 @@ for (i = 1; i <= n; i++)
 functions.
 
 @item
-POSIX @command{awk} provides three kinds of built-in functions: numeric, string,
-and I/O.  @command{gawk} provides functions that work with values
+POSIX @command{awk} provides three kinds of built-in functions: numeric,
+string, and I/O.  @command{gawk} provides functions that work with values
 representing time, do bit manipulation, sort arrays, and internationalize
-and localize programs.
-@command{gawk} also provides several extensions to some of standard functions,
-typically in the form of additional arguments.
+and localize programs.  @command{gawk} also provides several extensions to
+some of standard functions, typically in the form of additional arguments.
 
 @item
-Functions accept zero or more arguments and return a value.
-The expressions that provide the argument values are comnpletely evaluated
+Functions accept zero or more arguments and return a value.  The
+expressions that provide the argument values are comnpletely evaluated
 before the function is called. Order of evaluation is not defined.
 The return value can be ignored.
 
 @item
-The handling of backslash in @code{sub()} and @code{gsub()} is
-not simple.  It is more straightforward in @command{gawk}'s @code{gensub()}
-function, but that function still requires care in its use.
+The handling of backslash in @code{sub()} and @code{gsub()} is not simple.
+It is more straightforward in @command{gawk}'s @code{gensub()} function,
+but that function still requires care in its use.
 
 @item
-User-defined functions provide important capabilities but come with some
-syntactic inelegancies. In a function call, there cannot be any space
-between the function name and the opening left parethesis of the argument
-list.  Also, there is no provision for local variables, so the convention
-is to add extra parameters, and to separate them visually from the real
-parameters by extra whitespace.
+User-defined functions provide important capabilities but come with
+some syntactic inelegancies. In a function call, there cannot be any
+space between the function name and the opening left parethesis of the
+argument list.  Also, there is no provision for local variables, so the
+convention is to add extra parameters, and to separate them visually
+from the real parameters by extra whitespace.
 
 @item
-User-defined functions may call other user-defined (and built-in) functions
-and may call themselves recursively. Function parameters ``hide'' any global
-variables of the same names.
+User-defined functions may call other user-defined (and built-in)
+functions and may call themselves recursively. Function parameters
+``hide'' any global variables of the same names.
 
 @item
-Scalar values are passed to user-defined functions by value. Array parameters
-are passed by reference; any changes made by the function to array parameters
-are thus visible after the function has returned.
+Scalar values are passed to user-defined functions by value. Array
+parameters are passed by reference; any changes made by the function to
+array parameters are thus visible after the function has returned.
 
 @item
 Use the @code{return} statement to return from a user-defined function.
-An optional expression becomes the function's return value.
-Only scalar values may be returned by a function.
+An optional expression becomes the function's return value.  Only scalar
+values may be returned by a function.
 
 @item
-If a variable that has never been used is passed to a user-defined function,
-how that function treats the variable can set its nature: either scalar or array.
+If a variable that has never been used is passed to a user-defined
+function, how that function treats the variable can set its nature:
+either scalar or array.
 
 @item
 @command{gawk} provides indirect function calls using a special syntax.
@@ -21727,9 +21728,9 @@ The functions provided in this @value{CHAPTER} and the next are intended
 to serve that purpose.
 
 @item
-When writing general-purpose library functions, put some thought into
-how to name any global variables so that they won't conflict with
-variables from a user's program.
+When writing general-purpose library functions, put some thought into how
+to name any global variables so that they won't conflict with variables
+from a user's program.
 
 @item
 The functions presented here fit into the following categories:
@@ -21737,9 +21738,10 @@ The functions presented here fit into the following categories:
 @c nested list
 @table @asis
 @item General problems
-Number to string conversion, assertions, rounding, random number generation,
-converting characters to numbers, joining strings, getting easily usable
-time-of-day information, and reading a whole file in one shot.
+Number to string conversion, assertions, rounding, random number
+generation, converting characters to numbers, joining strings, getting
+easily usable time-of-day information, and reading a whole file in
+one shot.
 
 @item Managing @value{DF}s
 Noting @value{DF} boundaries, rereading the current file, checking for
@@ -21775,11 +21777,11 @@ presents the idea that reading programs in a language contributes to
 learning that language.  This @value{CHAPTER} continues that theme,
 presenting a potpourri of @command{awk} programs for your reading
 enjoyment.
+@c FULLXREF OFF
 @ifnotinfo
 There are three sections.
 The first describes how to run the programs presented
 in this @value{CHAPTER}.
-@c FULLXREF OFF
 
 The second presents @command{awk}
 versions of several common POSIX utilities.
@@ -21802,6 +21804,7 @@ Many of these programs use library functions presented in
 * Running Examples::            How to run these examples.
 * Clones::                      Clones of common utilities.
 * Miscellaneous Programs::      Some interesting @command{awk} programs.
+* Programs Summary::            Summary of programs.
 @end menu
 
 @node Running Examples
@@ -25301,6 +25304,42 @@ BEGIN {
 }
 @end ignore
 
+@node Programs Summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+The functions provided in this @value{CHAPTER} and the previous one
+continue on the theme that reading programs is an excellent way to learn
+Good Programming.
+
+@item
+Using @samp{#!} to make @command{awk} programs directly runnable makes
+them easier to use.  Otherwise, invoke the program using @samp{awk
+-f @dots{}}.
+
+@item
+Reimplementing standard POSIX programs in @command{awk} is a pleasant
+exercise; @command{awk}'s expressive power lets you write such programs
+in relatively few lines of code, yet they are functionally complete
+and usable.
+
+@item
+One of standard @command{awk}'s weaknesses is working with individual
+characters.  The ability to use @code{split()} with the empty string as
+the separator can considerably simplify such tasks.
+
+@item
+The library functions from @ref{Library Functions}, proved their
+usefulness for a number of real (if small) programs.
+
+@item
+Besides reinventing POSIX wheels, other programs solved a selection of
+interesting problems, such as finding duplicates words in text, printing
+mailing labels, and finding anagrams.
+
+@end itemize
+
 @ifnotinfo
 @part @value{PART3}Moving Beyond Standard @command{awk} With @command{gawk}
 @end ifnotinfo
@@ -25341,6 +25380,8 @@ Contributed by: Peter Langston <pud!psl@bellcore.bellcore.com>
 "Write documentation as if whoever reads it is a violent psychopath
 who knows where you live."
 @end ignore
+@cindex Langston, Peter
+@cindex English, Steve
 @quotation
 @i{Write documentation as if whoever reads it is
 a violent psychopath who knows where you live.}
@@ -25392,6 +25433,7 @@ discusses the ability to dynamically add new built-in functions to
 * Two-way I/O::                 Two-way communications with another process.
 * TCP/IP Networking::           Using @command{gawk} for network programming.
 * Profiling::                   Profiling your @command{awk} programs.
+* Advanced Features Summary::   Summary of advanced features.
 @end menu
 
 @node Nondecimal Data
@@ -26450,10 +26492,55 @@ When called this way, @command{gawk} ``pretty prints'' the program into
 The @option{--pretty-print} option still runs your program.
 This will change in the next major release.
 @end quotation
-@c ENDOFRANGE advgaw
-@c ENDOFRANGE gawadv
 @c ENDOFRANGE awkp
 @c ENDOFRANGE proawk
+
+@node Advanced Features Summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+The @option{--non-decimal-data} option causes @command{gawk} to treat
+octal- and hexadecimal-looking input data as octal and hexadecimal.
+This option should be used with caution or not at all; use of @code{strtonum()}
+is preferable.
+
+@item
+You can take over complete control of sorting in @samp{for (@var{indx} in @var{array})}
+array traversal by setting @code{PROCINFO["sorted_in"]} to the name of a user-defined
+function that does the comparison of array elements based on index and value.
+
+@item
+Similarly, you can supply the name of a user-defined comparison function as the
+third argument to either @code{asort()} or @command{asorti()} to control how
+those functions sort arrays. Or you may provide one of the predefined control
+strings that work for @code{PROCINFO["sorted_in"]}.
+
+@item
+You can use the @samp{|&} operator to create a two-way pipe to a co-process.
+You read from the co-process with @code{getline} and write to it with @code{print}
+or @code{printf}. Use @code{close()} to close off the co-process completely, or
+optionally, close off one side of the two-way communications.
+
+@item
+By using special ``@value{FN}s'' with the @samp{|&} operator, you can open a
+TCP/IP (or UDP/IP) connection to remote hosts in the Internet. @command{gawk}
+supports both IPv4 an IPv6.
+
+@item
+You can generate statement count profiles of your program. This can help you
+determine which parts of your program may be taking the most time and let
+you tune them more easily.  Sending the @code{USR1} signal while profiling causes
+@command{gawk} to dump the profile and keep going, including a function call stack.
+
+@item
+You can also just ``pretty print'' the program. This currently also runs
+the program, but that will change in the next major release.
+
+@end itemize
+
+@c ENDOFRANGE advgaw
+@c ENDOFRANGE gawadv
 
 @node Internationalization
 @chapter Internationalization with @command{gawk}
@@ -26488,6 +26575,7 @@ a requirement.
 * Translator i18n::             Features for the translator.
 * I18N Example::                A simple i18n example.
 * Gawk I18N::                   @command{gawk} is also internationalized.
+* I18N Summary::                Summary of I18N stuff.
 @end menu
 
 @node I18N and L10N
@@ -27250,14 +27338,53 @@ As of this writing, the latest version of GNU @command{gettext} is
 If a translation of @command{gawk}'s messages exists,
 then @command{gawk} produces usage messages, warnings,
 and fatal errors in the local language.
-@c ENDOFRANGE inloc
 
-@c The original text for this chapter was contributed by Efraim Yawitz.
-@c FIXME: Add more indexing.
+@node I18N Summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+Internationalization means writing a program such that it can use multiple
+languages without requiring source-code changes.  Localization means
+providing the data necessary for an internationalized program to work
+in a particular language.
+
+@item
+@command{gawk} uses GNU @command{gettext} to let you internationalize
+and localize @command{awk} programs.  A program's text domain identifies
+the program for grouping all messages and other data together.
+
+@item
+You mark a program's strings for translation by preceding them with
+an underscore. Once that is done, the strings are extracted into a
+@file{.pot} file.  This file is copied for each langauge into a @file{.po}
+file, and the @file{.po} files are compiled into @file{.gmo} files for
+use at runtime.
+
+@item
+You can use position specifications with @code{sprintf()} and
+@code{printf} to rearrange the placement of argument values in formatted
+strings and output. This is useful for the translations of format
+control strings.
+
+@item
+The internationalization features have been designed so that they
+can be easily worked around in a standard @command{awk}.
+
+@item
+@command{gawk} itself has been internationalized and ships with
+a number of translations for its messages.
+
+@end itemize
+
+@c ENDOFRANGE inloc
 
 @node Debugger
 @chapter Debugging @command{awk} Programs
 @cindex debugging @command{awk} programs
+
+@c The original text for this chapter was contributed by Efraim Yawitz.
+@c FIXME: Add more indexing.
 
 It would be nice if computer programs worked perfectly the first time they
 were run, but in real life, this rarely happens for programs of
@@ -27275,6 +27402,7 @@ how to use @command{gawk} for debugging your program is easy.
 * List of Debugger Commands::   Main debugger commands.
 * Readline Support::            Readline support.
 * Limitations::                 Limitations and future plans.
+* Debugging Summary::           Debugging summary.
 @end menu
 
 @node Debugging
@@ -28552,6 +28680,39 @@ The @command{gawk} debugger only accepts source supplied with the @option{-f} op
 
 Look forward to a future release when these and other missing features may
 be added, and of course feel free to try to add them yourself!
+
+@node Debugging Summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+Programs rarely work correctly the first time.  Finding bugs
+is @dfn{debugging} and a program that helps you find bugs is a
+@dfn{debugger}.  @command{gawk} has a built-in debugger that works very
+similarly to the GNU Debugger, GDB.
+
+@item
+Debuggers let you step through your program one statement at a time,
+examine and change variable and array values, and do a number of other
+things that let understand what your program is actually doing (as
+opposed to what it is supposed to do).
+
+@item
+Like most debuggers, the @command{gawk} debugger works in terms of stack
+frames, and lets you set both breakpoints (stop at a point in the code)
+and watchpoints (stop when a data value changes).
+
+@item
+The debugger command set is fairly complete, providing control over
+breakpoints, execution, viewing and changing data, working with the stack,
+getting information, and other tasks.
+
+@item
+If the @code{readline} library is available when @command{gawk} is
+compiled, it is used by the debugger to provide command-line history
+and editing.
+
+@end itemize
 
 @node Arbitrary Precision Arithmetic
 @chapter Arithmetic and Arbitrary Precision Arithmetic with @command{gawk}
