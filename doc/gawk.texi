@@ -1730,15 +1730,22 @@ the picture of a flashlight in the margin, as shown here.
 @ifnottex
 ``(d.c.)''.
 @end ifnottex
+@ifclear FOR_PRINT
 They also appear in the index under the heading ``dark corner.''
+@end ifclear
 
 As noted by the opening quote, though, any coverage of dark corners is,
 by definition, incomplete.
 
 Extensions to the standard @command{awk} language that are supported by
 more than one @command{awk} implementation are marked
+@ifclear FOR_PRINT
 ``@value{COMMONEXT},'' and listed in the index under ``common extensions''
 and ``extensions, common.''
+@end ifclear
+@ifset FOR_PRINT
+``@value{COMMONEXT}.''
+@end ifset
 
 @node Manual History
 @unnumberedsec The GNU Project and This Book
@@ -2553,7 +2560,7 @@ runs, it will probably print strange messages about syntax errors.
 For example, look at the following:
 
 @example
-$ @kbd{awk '@{ print "hello" @} # let's be cute'}
+$ @kbd{awk 'BEGIN @{ print "hello" @} # let's be cute'}
 >
 @end example
 
@@ -20278,11 +20285,12 @@ provides an implementation for other versions of @command{awk}:
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # February, 2004
+# Revised June, 2014
 
 @c endfile
 @end ignore
 @c file eg/lib/strtonum.awk
-function mystrtonum(str,        ret, chars, n, i, k, c)
+function mystrtonum(str,        ret, n, i, k, c)
 @{
     if (str ~ /^0[0-7]*$/) @{
         # octal
@@ -20295,7 +20303,7 @@ function mystrtonum(str,        ret, chars, n, i, k, c)
 
             ret = ret * 8 + k
         @}
-    @} else if (str ~ /^0[xX][[:xdigit:]]+/) @{
+    @} else if (str ~ /^0[xX][[:xdigit:]]+$/) @{
         # hexadecimal
         str = substr(str, 3)    # lop off leading 0x
         n = length(str)
@@ -20303,10 +20311,7 @@ function mystrtonum(str,        ret, chars, n, i, k, c)
         for (i = 1; i <= n; i++) @{
             c = substr(str, i, 1)
             c = tolower(c)
-            if ((k = index("0123456789", c)) > 0)
-                k-- # adjust for 1-basing in awk
-            else if ((k = index("abcdef", c)) > 0)
-                k += 9
+            k = index("123456789abcdef", c)
 
             ret = ret * 16 + k
         @}
@@ -30889,6 +30894,7 @@ When @option{--sandbox} is specified, extensions are disabled
 * Extension Samples::           The sample extensions that ship with
                                 @code{gawk}.
 * gawkextlib::                  The @code{gawkextlib} project.
+* Extension summary::           Extension summary.
 @end menu
 
 @node Extension Intro
@@ -31113,7 +31119,7 @@ API function pointers are provided for the following kinds of operations:
 
 @itemize @value{BULLET}
 @item
-Registrations functions. You may register:
+Registration functions. You may register:
 @itemize @value{MINUS}
 @item
 extension functions,
@@ -34715,6 +34721,121 @@ If you write an extension that you wish to share with other
 @code{gawkextlib} project.
 See the project's web site for more information.
 
+@node Extension summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+You can write extensions (sometimes called plug-ins) for @command{gawk}
+in C or C++ using the Application Programming Interface (API) defined
+by the @command{gawk} developers.
+
+@item
+Extensions must have a license compatible with the GNU General Public
+License (GPL), and they must assert that fact by declaring a variable
+named @code{plugin_is_GPL_compatible}.
+
+@item
+Communication between @command{gawk} and an extension is two-way.
+@command{gawk} passes a @code{struct} to the extension which contains
+various data fields and function pointers.  The extension can then call
+into @command{gawk} via the supplied function pointers to accomplish
+certain tasks.
+
+@item
+One of these tasks is to ``register'' the name and implementation of
+a new @command{awk}-level function with @command{gawk}.  The implementation
+takes the form of a C function pointer with a defined signature.
+By convention, implementation functions are named @code{do_@var{XXXX}()}
+for some @command{awk}-level function @code{@var{XXXX}()}.
+
+@item
+The API is defined in a header file named @file{gawkpi.h}. You must include
+a number of standard header files @emph{before} including it in your source file.
+
+@item
+API function pointers are provided for the following kinds of operations:
+
+@itemize @value{BULLET}
+@item
+Registration functions. You may register
+extension functions,
+exit callbacks,
+a version string,
+input parsers,
+output wrappers,
+and two-way processors.
+
+@item
+Printing fatal, warning, and ``lint'' warning messages.
+
+@item
+Updating @code{ERRNO}, or unsetting it.
+
+@item
+Accessing parameters, including converting an undefined parameter into
+an array.
+
+@item
+Symbol table access: retrieving a global variable, creating one,
+or changing one.
+
+@item
+Allocating, reallocating, and releasing memory.
+
+@item
+Creating and releasing cached values; this provides an
+efficient way to use values for multiple variables and
+can be a big performance win.
+
+@item
+Manipulating arrays:
+retrieving, adding, deleting, and modifying elements;
+getting the count of elements in an array;
+creating a new array;
+clearing an array;
+and
+flattening an array for easy C style looping over all its indices and elements
+@end itemize
+
+@item
+The API defines a number of standard data types for representing
+@command{awk} values, array elements, and arrays.
+
+@item
+The API provide convenience functions for constructing values.
+It also provides memory management functions to ensure compatibility
+between memory allocated by @command{gawk} and memory allocated by an
+extension.
+
+@item
+@emph{All} memory passed from @command{gawk} to an extension must be
+treated as read-only by the extension.
+
+@item
+@emph{All} memory passed from an extension to @command{gawk} must come from
+the API's memory allocation functions. @command{gawk} takes responsibility for
+the memory and will release it when appropriate.
+
+@item
+The API provides information about the running version of @command{gawk} so
+that an extension can make sure it is compatible with the @command{gawk}
+that loaded it.
+
+@item
+It is easiest to start a new extension by copying the boilerplate code
+described in this @value{CHAPTER}.  Macros in the @file{gawkapi.h} make
+this easier to do.
+
+@item
+The @command{gawk} distribution includes a number of small but useful
+sample extensions. The @code{gawkextlib} project includes several more,
+larger, extensions.  If you wish to write an extension and contribute it
+to the community of @command{gawk} users, the @code{gawkextlib} project
+should be the place to do so.
+
+@end itemize
+
 @ifnotinfo
 @part @value{PART4}Appendices
 @end ifnotinfo
@@ -34793,6 +34914,7 @@ online documentation}.
 * Common Extensions::           Common Extensions Summary.
 * Ranges and Locales::          How locales used to affect regexp ranges.
 * Contributors::                The major contributors to @command{gawk}.
+* History summary::             History summary.
 @end menu
 
 @node V7/SVR3.1
@@ -36373,6 +36495,41 @@ has been working on @command{gawk} since 1988, at first
 helping David Trueman, and as the primary maintainer since around 1994.
 @end itemize
 
+@node History summary
+@appendixsec Summary
+
+@itemize @value{BULLET}
+@item
+The @command{awk} language has evolved over time. The first release
+was with V7 Unix circa 1978.  In 1987 for System V Release 3.1,
+major additions, including user-defined functions, were made to the language.
+Additional changes were made for System V Release 4, in 1989.
+Since then, further minor changes happen under the auspices of the
+POSIX standard.
+
+@item
+Brian Kernighan's @command{awk} provides a small number of extensions
+that are implemented in common with other versions of @command{awk}.
+
+@item
+@command{gawk} provides a large number of extensions over POSIX @command{awk}.
+They can be disabled with either the @option{--traditional} or @option{--posix}
+options.
+
+@item
+The interaction of POSIX locales and regexp matching in @command{gawk} has been confusing over
+the years. Today, @command{gawk} implements Rational Range Interpretation, where
+ranges of the form @samp{[a-z]} match @emph{only} the characters numerically between
+@samp{a} through @samp{z} in the machine's native character set.  Usually this is ASCII
+but it can be EBCDIC on IBM S/390 systems.
+
+@item
+Many people have contributed to @command{gawk} development over the years.
+We hope that the list provided in this @value{CHAPTER} is complete and gives
+the appropriate credit where credit is due.
+
+@end itemize
+
 @node Installation
 @appendix Installing @command{gawk}
 
@@ -36398,6 +36555,7 @@ the respective ports.
 * Bugs::                        Reporting Problems and Bugs.
 * Other Versions::              Other freely available @command{awk}
                                 implementations.
+* Installation summary::        Summary of installation.
 @end menu
 
 @node Gawk Distribution
@@ -37942,9 +38100,46 @@ See also the @uref{http://en.wikipedia.org/wiki/Awk_language#Versions_and_implem
 Wikipedia article}, for information on additional versions.
 
 @end table
+@c ENDOFRANGE awkim
+
+@node Installation summary
+@appendixsec Summary
+
+@itemize @value{BULLET}
+@item
+The @command{gawk} distribution is availble from GNU project's main
+distribution site, @code{ftp.gnu.org}.  The canonical build recipe is:
+
+@example
+wget http://ftp.gnu.org/gnu/gawk/gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz
+tar -xvpzf gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz
+cd gawk-@value{VERSION}.@value{PATCHLEVEL}
+./configure && make && make check
+@end example
+
+@item
+@command{gawk} may be built on non-POSIX systems as well. The currently
+supported systems are MS-Windows using DJGPP, MSYS, MinGW and Cygwin,
+@ifclear FOR_PRINT
+OS/2 using EMX,
+@end ifclear
+and both Vax/VMS and OpenVMS.
+Instructions for each system are included in this @value{CHAPTER}.
+
+@item
+Bug reports should be sent via email to @email{bug-gawk@@gnu.org}.
+Bug reports should be in English, and should include the version of @command{gawk},
+how it was compiled, and a short program and @value{DF} which demonstrate
+the problem.
+
+@item
+There are a number of other freely available @command{awk}
+implementations.  Many are POSIX compliant; others are less so.
+
+@end itemize
+
 @c ENDOFRANGE gligawk
 @c ENDOFRANGE ingawk
-@c ENDOFRANGE awkim
 
 @ifclear FOR_PRINT
 @node Notes
@@ -37966,6 +38161,7 @@ maintainers of @command{gawk}.  Everything in it applies specifically to
 * Implementation Limitations::  Some limitations of the implementation.
 * Extension Design::            Design notes about the extension API.
 * Old Extension Mechanism::     Some compatibility for old extensions.
+* Notes summary::               Summary of implementation notes.
 @end menu
 
 @node Compatibility Mode
@@ -38887,6 +39083,42 @@ without conflict.
 The @command{gawk} development team strongly recommends that you
 convert any old extensions that you may have to use the new API
 described in @ref{Dynamic Extensions}.
+
+@node Notes summary
+@appendixsec Summary
+
+@itemize @value{BULLET}
+@item
+@command{gawk}'s extensions can be disabled with either the
+@option{--traditional} option or with the @option{--posix} option.
+The @option{--parsedebug} option is availble if @command{gawk} is
+compiled with @samp{-DDEBUG}.
+
+@item
+The source code for @command{gawk} is maintained in a publicly
+accessable Git repository. Anyone may check it out and view the source.
+
+@item
+Contributions to @command{gawk} are welcome. Following the steps
+outlined in this @value{CHAPTER} will make it easier to integrate
+your contributions into the code base.
+This applies both to new feature contributions and to ports to
+additional operating systems.
+
+@item
+@command{gawk} has some limits---generally those that are imposed by
+the machine architecture.
+
+@item
+The extension API design was intended to solve a number of problems
+with the previous extension mechanism, enable features needed by
+the @code{xgawk} project, and provide binary compatibility going forward.
+
+@item
+The previous extension mechanism is still supported in @value{PVERSION} 4.1
+of @command{gawk}, but it @emph{will} be removed in the next major release.
+
+@end itemize
 
 @c ENDOFRANGE impis
 @c ENDOFRANGE gawii
