@@ -564,6 +564,8 @@ particular records in a file and perform operations upon them.
 * Read Timeout::                        Reading input with a timeout.
 * Command line directories::            What happens if you put a directory on
                                         the command line.
+* Input Summary::                       Input summary.
+* Input Exercises::                     Exercises.
 * Print::                               The @code{print} statement.
 * Print Examples::                      Simple examples of @code{print}
                                         statements.
@@ -587,6 +589,8 @@ particular records in a file and perform operations upon them.
 * Special Caveats::                     Things to watch out for.
 * Close Files And Pipes::               Closing Input and Output Files and
                                         Pipes.
+* Output Summary::                      Output summary.
+* Output exercises::                    Exercises.
 * Values::                              Constants, Variables, and Regular
                                         Expressions.
 * Constants::                           String, numeric and regexp constants.
@@ -629,6 +633,7 @@ particular records in a file and perform operations upon them.
 * Function Calls::                      A function call is an expression.
 * Precedence::                          How various operators nest.
 * Locales::                             How the locale affects things.
+* Expressions Summary::                 Expressions summary.
 * Pattern Overview::                    What goes into a pattern.
 * Regexp Patterns::                     Using regexps as patterns.
 * Expression Patterns::                 Any expression can be used as a
@@ -675,6 +680,7 @@ particular records in a file and perform operations upon them.
                                         gives you information.
 * ARGC and ARGV::                       Ways to use @code{ARGC} and
                                         @code{ARGV}.
+* Pattern Action Summary::              Patterns and Actions summary.
 * Array Basics::                        The basics of arrays.
 * Array Intro::                         Introduction to Arrays
 * Reference to Elements::               How to examine one element of an
@@ -697,6 +703,7 @@ particular records in a file and perform operations upon them.
                                         @command{awk}.
 * Multiscanning::                       Scanning multidimensional arrays.
 * Arrays of Arrays::                    True multidimensional arrays.
+* Arrays Summary::                      Summary of arrays.
 * Built-in::                            Summarizes the built-in functions.
 * Calling Built-in::                    How to call built-in functions.
 * Numeric Functions::                   Functions that work with numbers,
@@ -731,6 +738,7 @@ particular records in a file and perform operations upon them.
                                         runtime.
 * Indirect Calls::                      Choosing the function to call at
                                         runtime.
+* Functions Summary::                   Summary of functions.
 * Library Names::                       How to best name private global
                                         variables in library functions.
 * General Functions::                   Functions that are of general use.
@@ -765,6 +773,8 @@ particular records in a file and perform operations upon them.
 * Group Functions::                     Functions for getting group
                                         information.
 * Walking Arrays::                      A function to walk arrays of arrays.
+* Library Functions Summary::           Summary of library functions.
+* Library exercises::                   Exercises.
 * Running Examples::                    How to run these examples.
 * Clones::                              Clones of common utilities.
 * Cut Program::                         The @command{cut} utility.
@@ -794,6 +804,8 @@ particular records in a file and perform operations upon them.
 * Anagram Program::                     Finding anagrams from a dictionary.
 * Signature Program::                   People do amazing things with too much
                                         time on their hands.
+* Programs Summary::                    Summary of programs.
+* Programs Exercises::                  Exercises.
 * Nondecimal Data::                     Allowing nondecimal input data.
 * Array Sorting::                       Facilities for controlling array
                                         traversal and sorting arrays.
@@ -805,6 +817,7 @@ particular records in a file and perform operations upon them.
 * TCP/IP Networking::                   Using @command{gawk} for network
                                         programming.
 * Profiling::                           Profiling your @command{awk} programs.
+* Advanced Features Summary::           Summary of advanced features.
 * I18N and L10N::                       Internationalization and Localization.
 * Explaining gettext::                  How GNU @command{gettext} works.
 * Programmer i18n::                     Features for the programmer.
@@ -816,6 +829,7 @@ particular records in a file and perform operations upon them.
 * I18N Example::                        A simple i18n example.
 * Gawk I18N::                           @command{gawk} is also
                                         internationalized.
+* I18N Summary::                        Summary of I18N stuff.
 * Debugging::                           Introduction to @command{gawk}
                                         debugger.
 * Debugging Concepts::                  Debugging in General.
@@ -834,31 +848,23 @@ particular records in a file and perform operations upon them.
 * Miscellaneous Debugger Commands::     Miscellaneous Commands.
 * Readline Support::                    Readline support.
 * Limitations::                         Limitations and future plans.
-* General Arithmetic::                  An introduction to computer
-                                        arithmetic.
-* Floating Point Issues::               Stuff to know about floating-point
-                                        numbers.
-* String Conversion Precision::         The String Value Can Lie.
-* Unexpected Results::                  Floating Point Numbers Are Not
-                                        Abstract Numbers.
-* POSIX Floating Point Problems::       Standards Versus Existing Practice.
-* Integer Programming::                 Effective integer programming.
-* Floating-point Programming::          Effective Floating-point Programming.
-* Floating-point Representation::       Binary floating-point representation.
-* Floating-point Context::              Floating-point context.
-* Rounding Mode::                       Floating-point rounding mode.
-* Gawk and MPFR::                       How @command{gawk} provides
-                                        arbitrary-precision arithmetic.
-* Arbitrary Precision Floats::          Arbitrary Precision Floating-point
-                                        Arithmetic with @command{gawk}.
-* Setting Precision::                   Setting the working precision.
-* Setting Rounding Mode::               Setting the rounding mode.
-* Floating-point Constants::            Representing floating-point constants.
-* Changing Precision::                  Changing the precision of a number.
-* Exact Arithmetic::                    Exact arithmetic with floating-point
-                                        numbers.
+* Debugging Summary::                   Debugging summary.
+* Computer Arithmetic::                 A quick intro to computer math.
+* Math Definitions::                    Defining terms used.
+* MPFR features::                       The MPFR features in @command{gawk}.
+* FP Math Caution::                     Things to know.
+* Inexactness of computations::         Floating point math is not exact.
+* Inexact representation::              Numbers are not exactly represented.
+* Comparing FP Values::                 How to compare floating point values.
+* Errors accumulate::                   Errors get bigger as they go.
+* Getting Accuracy::                    Getting more accuracy takes some work.
+* Try To Round::                        Add digits and round.
+* Setting precision::                   How to set the precision.
+* Setting the rounding mode::           How to set the rounding mode.
 * Arbitrary Precision Integers::        Arbitrary Precision Integer Arithmetic
                                         with @command{gawk}.
+* POSIX Floating Point Problems::       Standards Versus Existing Practice.
+* Floating point summary::              Summary of floating point discussion.
 * Extension Intro::                     What is an extension.
 * Plugin License::                      A note about licensing.
 * Extension Mechanism Outline::         An outline of how it works.
@@ -920,6 +926,8 @@ particular records in a file and perform operations upon them.
 * Extension Sample Time::               An interface to @code{gettimeofday()}
                                         and @code{sleep()}.
 * gawkextlib::                          The @code{gawkextlib} project.
+* Extension summary::                   Extension summary.
+* Extension Exercises::                 Exercises.
 * V7/SVR3.1::                           The major changes between V7 and
                                         System V Release 3.1.
 * SVR4::                                Minor changes between System V
@@ -936,6 +944,7 @@ particular records in a file and perform operations upon them.
                                         ranges.
 * Contributors::                        The major contributors to
                                         @command{gawk}.
+* History summary::                     History summary.
 * Gawk Distribution::                   What is in the @command{gawk}
                                         distribution.
 * Getting::                             How to get the distribution.
@@ -974,6 +983,7 @@ particular records in a file and perform operations upon them.
 * Bugs::                                Reporting Problems and Bugs.
 * Other Versions::                      Other freely available @command{awk}
                                         implementations.
+* Installation summary::                Summary of installation.
 * Compatibility Mode::                  How to disable certain @command{gawk}
                                         extensions.
 * Additions::                           Making Additions To @command{gawk}.
@@ -994,6 +1004,7 @@ particular records in a file and perform operations upon them.
 * Extension Other Design Decisions::    Some other design decisions.
 * Extension Future Growth::             Some room for future growth.
 * Old Extension Mechanism::             Some compatibility for old extensions.
+* Notes summary::                       Summary of implementation notes.
 * Basic High Level::                    The high level view.
 * Basic Data Typing::                   A very quick intro to data types.
 @end detailmenu
@@ -2985,7 +2996,7 @@ the program would print the odd-numbered lines.
 
 The @command{awk} utility reads the input files one line at a
 time.  For each line, @command{awk} tries the patterns of each of the rules.
-If several patterns match, then several actions execture in the order in
+If several patterns match, then several actions execute in the order in
 which they appear in the @command{awk} program.  If no patterns match, then
 no actions run.
 
@@ -3721,7 +3732,7 @@ care to search for all occurrences of each inappropriate construct. As
 @cindex @option{--bignum} option
 Force arbitrary precision arithmetic on numbers. This option has no effect
 if @command{gawk} is not compiled to use the GNU MPFR and MP libraries
-(@pxref{Gawk and MPFR}).
+(@pxref{Arbitrary Precision Arithmetic}).
 
 @item @option{-n}
 @itemx @option{--non-decimal-data}
@@ -5770,7 +5781,7 @@ to be matched.
 Regexp operators provide grouping, alternation and repetition.
 
 @item
-Bracket expressions give you a shorthand for specifyings sets
+Bracket expressions give you a shorthand for specifying sets
 of characters that can match at a particular point in a regexp.
 Within bracket expressions, POSIX character classes let you specify
 certain groups of characters in a locale-independent fashion.
@@ -8186,7 +8197,7 @@ This can also be done using command-line variable assignment.
 @code{PROCINFO["FS"]} can be used to see how fields are being split.
 
 @item
-Use @code{getline} in its varioius forms to read additional records,
+Use @code{getline} in its various forms to read additional records,
 from the default input stream, from a file, or from a pipe or co-process.
 
 @item
@@ -8259,7 +8270,7 @@ and discusses the @code{close()} built-in function.
                                 descriptors.
 * Close Files And Pipes::       Closing Input and Output Files and Pipes.
 * Output Summary::              Output summary.
-* Output exercises::             Exercises.
+* Output exercises::            Exercises.
 @end menu
 
 @node Print
@@ -8658,7 +8669,7 @@ infinity are formatted as
 and positive infinity as
 @samp{inf} and @samp{infinity}.
 The special ``not a number'' value formats as @samp{-nan} or @samp{nan}
-(@pxref{General Arithmetic}).
+(@pxref{Math Definitions}).
 
 @item @code{%F}
 Like @samp{%f} but the infinity and ``not a number'' values are spelled
@@ -9471,7 +9482,7 @@ file or command, or the next @code{print} or @code{printf} to that
 file or command, reopens the file or reruns the command.
 Because the expression that you use to close a file or pipeline must
 exactly match the expression used to open the file or run the command,
-it is good practice to use a valueiable to store the @value{FN} or command.
+it is good practice to use a variable to store the @value{FN} or command.
 The previous example becomes the following:
 
 @example
@@ -13677,13 +13688,13 @@ character.  (@xref{Output Separators}.)
 @cindex @code{PREC} variable
 @item PREC #
 The working precision of arbitrary precision floating-point numbers,
-53 bits by default (@pxref{Setting Precision}).
+53 bits by default (@pxref{Setting precision}).
 
 @cindex @code{ROUNDMODE} variable
 @item ROUNDMODE #
 The rounding mode to use for arbitrary precision arithmetic on
 numbers, by default @code{"N"} (@samp{roundTiesToEven} in
-the IEEE 754 standard; @pxref{Setting Rounding Mode}).
+the IEEE 754 standard; @pxref{Setting the rounding mode}).
 
 @cindex @code{RS} variable
 @cindex separators, for records
@@ -14004,7 +14015,7 @@ The version of @command{gawk}.
 The following additional elements in the array
 are available to provide information about the MPFR and GMP libraries
 if your version of @command{gawk} supports arbitrary precision numbers
-(@pxref{Gawk and MPFR}): 
+(@pxref{Arbitrary Precision Arithmetic}): 
 
 @table @code 
 @cindex version of GNU MPFR library
@@ -19177,7 +19188,7 @@ some of standard functions, typically in the form of additional arguments.
 
 @item
 Functions accept zero or more arguments and return a value.  The
-expressions that provide the argument values are comnpletely evaluated
+expressions that provide the argument values are completely evaluated
 before the function is called. Order of evaluation is not defined.
 The return value can be ignored.
 
@@ -19189,7 +19200,7 @@ but that function still requires care in its use.
 @item
 User-defined functions provide important capabilities but come with
 some syntactic inelegancies. In a function call, there cannot be any
-space between the function name and the opening left parethesis of the
+space between the function name and the opening left parenthesis of the
 argument list.  Also, there is no provision for local variables, so the
 convention is to add extra parameters, and to separate them visually
 from the real parameters by extra whitespace.
@@ -21519,7 +21530,7 @@ database for the same group.  This is common when a group has a large number
 of members.  A pair of such entries might look like the following:
 
 @example
-tvpeople:*:101:johnny,jay,arsenio
+tvpeople:*:101:johny,jay,arsenio
 tvpeople:*:101:david,conan,tom,joan
 @end example
 
@@ -21846,6 +21857,7 @@ Many of these programs use library functions presented in
 * Clones::                      Clones of common utilities.
 * Miscellaneous Programs::      Some interesting @command{awk} programs.
 * Programs Summary::            Summary of programs.
+* Programs Exercises::          Exercises.
 @end menu
 
 @node Running Examples
@@ -22232,7 +22244,6 @@ of picking the input line apart by characters.
 @c ENDOFRANGE ficut
 @c ENDOFRANGE colcut
 
-@c Exercise: Rewrite using split with "".
 
 @node Egrep Program
 @subsection Searching for Regular Expressions in Files
@@ -22381,8 +22392,6 @@ also introduces a subtle bug;
 if a match happens, we output the translated line, not the original.}
 The rule is
 commented out since it is not necessary with @command{gawk}:
-
-@c Exercise: Fix this, w/array and new line as key to original line
 
 @example
 @c file eg/prog/egrep.awk
@@ -22670,12 +22679,6 @@ The @code{pr_first_field()} function simply isolates out some
 code that is used repeatedly, making the whole program
 slightly shorter and cleaner.
 
-@c exercise!!!
-@ignore
-The POSIX version of @command{id} takes options that control which
-information is printed.  Modify this version to accept the same
-arguments and perform in the same way.
-@end ignore
 @c ENDOFRANGE id
 
 @node Split Program
@@ -22796,8 +22799,6 @@ moves to the next letter in the alphabet and @code{s2} starts over again at
 @c endfile
 @end example
 
-@c Exercise: do this with just awk builtin functions, index("abc..."), substr, etc.
-
 @noindent
 The @code{usage()} function simply prints an error message and exits:
 
@@ -22821,8 +22822,6 @@ instead of doing it in an @code{END} rule.
 It also assumes that letters are contiguous in the character set,
 which isn't true for EBCDIC systems.
 
-@c Exercise: Fix these problems.
-@c BFD...
 @c ENDOFRANGE filspl
 @c ENDOFRANGE split
 
@@ -23333,18 +23332,10 @@ function beginfile(file)
 @c endfile
 @end example
 
-The @code{endfile()} function adds the current file's numbers to the running
-totals of lines, words, and characters.@footnote{@command{wc} can't just use the value of
-@code{FNR} in @code{endfile()}. If you examine
-the code in
-@ref{Filetrans Function},
-you will see that
-@code{FNR} has already been reset by the time
-@code{endfile()} is called.}  It then prints out those numbers
-for the file that was just read. It relies on @code{beginfile()} to reset the
-numbers for the following @value{DF}:
-@c FIXME: ONE DAY: make the above footnote an exercise,
-@c instead of giving away the answer.
+The @code{endfile()} function adds the current file's numbers to the
+running totals of lines, words, and characters.  It then prints out those
+numbers for the file that was just read. It relies on @code{beginfile()}
+to reset the numbers for the following @value{DF}:
 
 @example
 @c file eg/prog/wc.awk
@@ -23743,7 +23734,6 @@ and @code{gsub()} built-in functions
 (@pxref{String Functions}).@footnote{This
 program was written before @command{gawk} acquired the ability to
 split each character in a string into separate array elements.}
-@c Exercise: How might you use this new feature to simplify the program?
 There are two functions.  The first, @code{stranslate()}, takes three
 arguments:
 
@@ -24376,11 +24366,7 @@ the array @code{a}, using the @code{split()} function
 The @samp{@@} symbol is used as the separator character.
 Each element of @code{a} that is empty indicates two successive @samp{@@}
 symbols in the original line.  For each two empty elements (@samp{@@@@} in
-the original file), we have to add a single @samp{@@} symbol back
-in.@footnote{This program was written before @command{gawk} had the
-@code{gensub()} function.
-@c exercise!!
-Consider how you might use it to simplify the code.}
+the original file), we have to add a single @samp{@@} symbol back in.
 
 When the processing of the array is finished, @code{join()} is called with the
 value of @code{SUBSEP} (@pxref{Multidimensional}),
@@ -24570,26 +24556,6 @@ The @code{usage()} function prints an error message and exits.
 Finally, the single rule handles the printing scheme outlined above,
 using @code{print} or @code{printf} as appropriate, depending upon the
 value of @code{RT}.
-
-@ignore
-Exercise, compare the performance of this version with the more
-straightforward:
-
-BEGIN {
-    pat = ARGV[1]
-    repl = ARGV[2]
-    ARGV[1] = ARGV[2] = ""
-}
-
-{ gsub(pat, repl); print }
-
-Exercise: what are the advantages and disadvantages of this version versus sed?
-  Advantage: egrep regexps
-             speed (?)
-  Disadvantage: no & in replacement text
-
-Others?
-@end ignore
 @c ENDOFRANGE awksed
 
 @node Igawk Program
@@ -25032,8 +24998,6 @@ Not trying to save the line read with @code{getline}
 in the @code{pathto()} function when testing for the
 file's accessibility for use with the main program simplifies things
 considerably.
-@c what problem does this engender though - exercise
-@c answer, reading from "-" or /dev/stdin
 
 @item
 Using a @code{getline} loop in the @code{BEGIN} rule does it all in one
@@ -25061,37 +25025,6 @@ With @command{igawk},
 there is no real reason to build @code{@@include} processing into
 @command{gawk} itself.
 @end ignore
-
-@cindex search paths
-@cindex search paths, for source files
-@cindex source files@comma{} search path for
-@cindex files, source@comma{} search path for
-@cindex directories, searching
-As an additional example of this, consider the idea of having two
-files in a directory in the search path:
-
-@table @file
-@item default.awk
-This file contains a set of default library functions, such
-as @code{getopt()} and @code{assert()}.
-
-@item site.awk
-This file contains library functions that are specific to a site or
-installation; i.e., locally developed functions.
-Having a separate file allows @file{default.awk} to change with
-new @command{gawk} releases, without requiring the system administrator to
-update it each time by adding the local functions.
-@end table
-
-One user
-@c Karl Berry, karl@ileaf.com, 10/95
-suggested that @command{gawk} be modified to automatically read these files
-upon startup.  Instead, it would be very simple to modify @command{igawk}
-to do this. Since @command{igawk} can process nested @code{@@include}
-directives, @file{default.awk} could simply contain @code{@@include}
-statements for the desired library functions.
-
-@c Exercise: make this change
 @c ENDOFRANGE libfex
 @c ENDOFRANGE flibex
 @c ENDOFRANGE awkpex
@@ -25228,8 +25161,6 @@ babels beslab
 babery yabber 
 @dots{}
 @end example
-
-@c Exercise: Avoid the use of external sort command
 
 @c ENDOFRANGE anagram
 
@@ -25380,6 +25311,136 @@ interesting problems, such as finding duplicates words in text, printing
 mailing labels, and finding anagrams.
 
 @end itemize
+
+@node Programs Exercises
+@section Exercises
+
+@enumerate
+@item
+Rewrite @file{cut.awk} (@pxref{Cut Program})
+using @code{split()} with @code{""} as the seperator.
+
+@item
+In @ref{Egrep Program}, we mentioned that @samp{egrep -i} could be
+simulated in versions of @command{awk} without @code{IGNORECASE} by
+using @code{tolower()} on the line and the pattern. In a footnote there,
+we also mentioned that this solution has a bug: the translated line is
+output, and not the original one.  Fix this problem.
+@c Exercise: Fix this, w/array and new line as key to original line
+
+@item
+The POSIX version of @command{id} takes options that control which
+information is printed.  Modify the @command{awk} version
+(@pxref{Id Program}) to accept the same arguments and perform in the
+same way.
+
+@item
+The @code{split.awk} program (@pxref{Split Program}) uses
+the @code{chr()} and @code{ord()} functions to move through the
+letters of the alphabet.
+Modify the program to instead use only the @command{awk}
+built-in functions, such as @code{index()} and @code{substr()}.
+
+@item
+The @code{split.awk} program (@pxref{Split Program}) assumes
+that letters are contiguous in the character set,
+which isn't true for EBCDIC systems.
+Fix this problem.
+
+@item
+Why can't the @file{wc.awk} program (@pxref{Wc Program}) just
+use the value of @code{FNR} in @code{endfile()}?
+Hint: examine the code in @ref{Filetrans Function}.
+
+@ignore
+@command{wc} can't just use the value of @code{FNR} in
+@code{endfile()}. If you examine the code in @ref{Filetrans Function},
+you will see that @code{FNR} has already been reset by the time
+@code{endfile()} is called.
+@end ignore
+
+@item
+Manipulation of individual characters in the @command{translate} program
+(@pxref{Translate Program}) is painful using standard @command{awk}
+functions.  Given that @command{gawk} can split strings into individual
+characters using @code{""} as the separator, how might you use this
+feature to simplify the program?
+
+@item
+The @file{extract.awk} program (@pxref{Extract Program}) was written
+before @command{gawk} had the @code{gensub()} function.  Use it
+to simplify the code.
+
+@item
+Compare the performance of the @file{awksed.awk} program
+(@pxref{Simple Sed}) with the more straightforward:
+
+@example
+BEGIN @{
+    pat = ARGV[1]
+    repl = ARGV[2]
+    ARGV[1] = ARGV[2] = ""
+@}
+
+@{ gsub(pat, repl); print @}
+@end example
+
+@item
+What are the advantages and disadvantages of @file{awksed.awk} versus
+the real @command{sed} utility?
+
+@ignore
+  Advantage: egrep regexps
+             speed (?)
+  Disadvantage: no & in replacement text
+
+Others?
+@end ignore
+
+@item
+In @ref{Igawk Program}, we mentioned that not trying to save the line
+read with @code{getline} in the @code{pathto()} function when testing
+for the file's accessibility for use with the main program simplifies
+things considerably.  What problem does this engender though?
+@c answer, reading from "-" or /dev/stdin
+
+@cindex search paths
+@cindex search paths, for source files
+@cindex source files@comma{} search path for
+@cindex files, source@comma{} search path for
+@cindex directories, searching
+@item
+As an additional example of the idea that it is not always necessary to
+add new features to a program, consider the idea of having two files in
+a directory in the search path:
+
+@table @file
+@item default.awk
+This file contains a set of default library functions, such
+as @code{getopt()} and @code{assert()}.
+
+@item site.awk
+This file contains library functions that are specific to a site or
+installation; i.e., locally developed functions.
+Having a separate file allows @file{default.awk} to change with
+new @command{gawk} releases, without requiring the system administrator to
+update it each time by adding the local functions.
+@end table
+
+One user
+@c Karl Berry, karl@ileaf.com, 10/95
+suggested that @command{gawk} be modified to automatically read these files
+upon startup.  Instead, it would be very simple to modify @command{igawk}
+to do this. Since @command{igawk} can process nested @code{@@include}
+directives, @file{default.awk} could simply contain @code{@@include}
+statements for the desired library functions.
+Make this change.
+
+@item
+Modify @file{anagram.awk} (@pxref{Anagram Program}), to avoid
+the use of the external @command{sort} utility.
+
+@end enumerate
 
 @ifnotinfo
 @part @value{PART3}Moving Beyond Standard @command{awk} With @command{gawk}
@@ -27398,7 +27459,7 @@ the program for grouping all messages and other data together.
 @item
 You mark a program's strings for translation by preceding them with
 an underscore. Once that is done, the strings are extracted into a
-@file{.pot} file.  This file is copied for each langauge into a @file{.po}
+@file{.pot} file.  This file is copied for each language into a @file{.po}
 file, and the @file{.po} files are compiled into @file{.gmo} files for
 use at runtime.
 
@@ -28762,227 +28823,778 @@ and editing.
 @cindex infinite precision
 @cindex floating-point, numbers@comma{} arbitrary precision
 
-@cindex Knuth, Donald
-@quotation
-@i{There's a credibility gap: We don't know how much of the computer's answers
-to believe. Novice computer users solve this problem by implicitly trusting
-in the computer as an infallible authority; they tend to believe that all
-digits of a printed answer are significant. Disillusioned computer users have
-just the opposite approach; they are constantly afraid that their answers
-are almost meaningless.}@footnote{Donald E.@: Knuth.
-@cite{The Art of Computer Programming}. Volume 2,
-@cite{Seminumerical Algorithms}, third edition,
-1998, ISBN 0-201-89683-4, p.@: 229.}
-@author Donald Knuth
-@end quotation
-
-This @value{CHAPTER} discusses issues that you may encounter
-when performing arithmetic.  It begins by discussing some of
-the general attributes of computer arithmetic, along with how
-this can influence what you see when running @command{awk} programs.
-This discussion applies to all versions of @command{awk}.
-
-The @value{CHAPTER} then moves on to describe @dfn{arbitrary precision
-arithmetic}, a feature which is specific to @command{gawk}.
+This @value{CHAPTER} introduces some basic concepts relating to
+how computers do arithmetic and briefly lists the features in
+@command{gawk} for performing arbitrary precision floating point
+computations.  It then proceeds to describe floating-point arithmetic,
+which is what @command{awk} uses for all its computations, including a
+discussion of arbitrary precision floating point arithmetic, which is
+a feature available only in @command{gawk}. It continues on to present
+arbitrary precision integers, and concludes with a description of some
+points where @command{gawk} and the POSIX standard are not quite in
+agreement.
 
 @menu
-* General Arithmetic::          An introduction to computer arithmetic.
-* Floating-point Programming::  Effective Floating-point Programming.
-* Gawk and MPFR::               How @command{gawk} provides
-                                arbitrary-precision arithmetic.
-* Arbitrary Precision Floats::  Arbitrary Precision Floating-point Arithmetic
-                                with @command{gawk}.
-* Arbitrary Precision Integers:: Arbitrary Precision Integer Arithmetic with
-                                @command{gawk}.
+* Computer Arithmetic::           A quick intro to computer math.
+* Math Definitions::              Defining terms used.
+* MPFR features::                 The MPFR features in @command{gawk}.
+* FP Math Caution::               Things to know.
+* Arbitrary Precision Integers::  Arbitrary Precision Integer Arithmetic with
+                                  @command{gawk}.
+* POSIX Floating Point Problems:: Standards Versus Existing Practice.
+* Floating point summary::        Summary of floating point discussion.
 @end menu
 
-@node General Arithmetic
+@node Computer Arithmetic
 @section A General Description of Computer Arithmetic
 
-@cindex integers
-@cindex floating-point, numbers
-@cindex numbers, floating-point
-Within computers, there are two kinds of numeric values: @dfn{integers}
-and @dfn{floating-point}.
-In school, integer values were referred to as ``whole'' numbers---that is,
-numbers without any fractional part, such as 1, 42, or @minus{}17.
+Until now, we have worked with data as either numbers or
+strings.  Ultimately, however, computers represent everything in terms
+of @dfn{binary digits}, or @dfn{bits}.  A decimal digit can take on any
+of 10 values: zero through nine.  A binary digit can take on any of two
+values, zero or one.  Using binary, computers (and computer software)
+can represent and manipulate numerical and character data.  In general,
+the more bits you can use to represent a particular thing, the greater
+the range of possible values it can take on.
+
+Modern computers support at least two, and often more, ways to do
+arithmetic.  Each kind of arithmetic uses a different representation
+(organization of the bits) for the numbers.  The kinds of arithmetic
+that interest us are:
+
+@table @asis
+@item Decimal arithmetic
+This is the kind of arithmetic you learned in elementary school, using
+paper and pencil (and/or a calculator). In theory, numbers can have an
+arbitrary number of digits on either side (or both sides) of the decimal
+point, and the results of a computation are always exact.
+
+Some modern system can do decimal arithmetic in hardware, but usually you
+need a special software library to provide access to these instructions.
+There are also libraries that do decimal arithmetic entirely in software.
+
+Despite the fact that some users expect @command{gawk} to be performing
+decimal arithmetic,@footnote{We don't know why they expect this, but
+they do.} it does not do so.
+
+@item Integer arithmetic
+In school, integer values were referred to as ``whole'' numbers---that
+is, numbers without any fractional part, such as 1, 42, or @minus{}17.
 The advantage to integer numbers is that they represent values exactly.
-The disadvantage is that their range is limited.  On most systems,
-this range is @minus{}2,147,483,648 to 2,147,483,647.
-However, many systems now support a range from
-@minus{}9,223,372,036,854,775,808 to 9,223,372,036,854,775,807.
+The disadvantage is that their range is limited.
 
 @cindex unsigned integers
 @cindex integers, unsigned
-Integer values come in two flavors: @dfn{signed} and @dfn{unsigned}.
-Signed values may be negative or positive, with the range of values just
-described.
-Unsigned values are always positive.  On most systems,
-the range is from 0 to 4,294,967,295.
-However, many systems now support a range from
-0 to 18,446,744,073,709,551,615.
+In computers, integer values come in two flavors: @dfn{signed} and
+@dfn{unsigned}.  Signed values may be negative or positive, whereas
+unsigned values are always positive (that is, greater than or equal
+to zero).
 
-@cindex double precision floating-point
-@cindex single precision floating-point
-Floating-point numbers represent what are called ``real'' numbers; i.e.,
-those that do have a fractional part, such as 3.1415927.
-The advantage to floating-point numbers is that they
-can represent a much larger range of values.
-The disadvantage is that there are numbers that they cannot represent
-exactly.
-@command{awk} uses @dfn{double precision} floating-point numbers, which
-can hold more digits than @dfn{single precision}
-floating-point numbers.
+In computer systems, integer arithmetic is exact, but the possible
+range of values is limited.  Integer arithmetic is generally faster than
+floating point arithmetic.
 
-There a several important issues to be aware of, described next.
+@item Floating point arithmetic
+Floating-point numbers represent what were called in school ``real''
+numbers; i.e., those that have a fractional part, such as 3.1415927.
+The advantage to floating-point numbers is that they can represent a
+much larger range of values than can integers.  The disadvantage is that
+there are numbers that they cannot represent exactly.
 
-@menu
-* Floating Point Issues::       Stuff to know about floating-point numbers.
-* Integer Programming::         Effective integer programming.
-@end menu
+Modern systems support floating point arithmetic in hardware, with a
+limited range of values.  There are software libraries that allow
+the use of arbitrary precision floating point calculations.
 
-@node Floating Point Issues
-@subsection Floating-Point Number Caveats
+POSIX @command{awk} uses @dfn{double precision} floating-point numbers, which
+can hold more digits than @dfn{single precision} floating-point numbers.
+@command{gawk} has facilities for performing arbitrary precision floating
+point arithmetic, which we describe in more detail shortly.
+@end table
 
-This @value{SECTION} describes some of the issues
-involved in using floating-point numbers.
+Computers work with integer and floating point values of different
+ranges. Integer values are usually either 32 or 64 bits in size.  Single
+precision floating point values occupy 32 bits, whereas double precision
+floating point values occupy 64 bits.  Floating point values are always
+signed. The possible ranges of values are shown in the following table.
 
-There is a very nice
-@uref{http://www.validlab.com/goldberg/paper.pdf, paper on floating-point arithmetic}
-by David Goldberg,
-``What Every Computer Scientist Should Know About Floating-point Arithmetic,''
-@cite{ACM Computing Surveys} @strong{23}, 1 (1991-03), 5-48.
-This is worth reading if you are interested in the details,
-but it does require a background in computer science.
+@multitable @columnfractions .34 .33 .33
+@headitem Numeric representation @tab Miniumum value @tab Maximum value
+@item 32-bit signed integer @tab @minus{}2,147,483,648 @tab 2,147,483,647
+@item 32-bit unsigned integer @tab 0 @tab 4,294,967,295
+@item 64-bit signed integer @tab @minus{}9,223,372,036,854,775,808 @tab 9,223,372,036,854,775,807
+@item 64-bit unsigned integer @tab 0 @tab 18,446,744,073,709,551,615
+@item Single precision floating point (approximate) @tab @code{1.175494e-38} @tab @code{3.402823e+38}
+@item Double precision floating point (approximate) @tab @code{2.225074e-308} @tab @code{1.797693e+308}
+@end multitable
 
-@menu
-* String Conversion Precision:: The String Value Can Lie.
-* Unexpected Results::          Floating Point Numbers Are Not Abstract
-                                Numbers.
-* POSIX Floating Point Problems:: Standards Versus Existing Practice.
-@end menu
+@node Math Definitions
+@section Other Stuff To Know
 
-@node String Conversion Precision
-@subsubsection The String Value Can Lie
+The rest of this @value{CHAPTER} uses a number of terms. Here are some
+informal definitions that should help you work your way through the material
+here.
 
-Internally, @command{awk} keeps both the numeric value
-(double precision floating-point) and the string value for a variable.
-Separately, @command{awk} keeps
-track of what type the variable has
-(@pxref{Typing and Comparison}),
-which plays a role in how variables are used in comparisons.
+@table @dfn
+@item Accuracy
+A floating-point calculation's accuracy is how close it comes
+to the real (paper and pencil) value.
 
-It is important to note that the string value for a number may not
-reflect the full value (all the digits) that the numeric value
-actually contains.
-The following program, @file{values.awk}, illustrates this:
+@item Error
+The difference between what the result of a computation ``should be''
+and what it actually is.  It is best to minimize error as much
+as possible.
+
+@item Exponent
+The order of magnitude of a value;
+some number of bits in a floating-point value store the exponent.
+
+@item Inf
+A special value representing infinity. Operations involving another
+number and infinity produce infinity.
+
+@item NaN
+``Not A Number.'' A special value indicating a result that can't
+happen in real math, but that can happen in floating-point computations.
+
+@item Normalized
+How the significand (see later in this list) is usually stored. The
+value is adjusted so that the first bit is one, and then that leading
+one is assumed instead of physically stored.  This provides one
+extra bit of precision.
+
+@item Precision
+The number of bits used to represent a floating-point number.
+The more bits, the more digits you can represent.
+Binary and decimal precisions are related approximately, according to the
+formula:
+
+@display
+@iftex
+@math{prec = 3.322 @cdot dps}
+@end iftex
+@ifnottex
+@ifnotdocbook
+@var{prec} = 3.322 * @var{dps}
+@end ifnotdocbook
+@end ifnottex
+@docbook
+<para>
+<emphasis>prec</emphasis> = 3.322 &sdot; <emphasis>dps</emphasis> @c
+</para>
+@end docbook
+@end display
+
+@noindent
+Here, @var{prec} denotes the binary precision
+(measured in bits) and @var{dps} (short for decimal places)
+is the decimal digits.
+
+@item Rounding mode
+How numbers are rounded up or down when necessary.
+More details are provided later.
+
+@item Significand
+A floating point value consists the significand multiplied by 10
+to the power of the exponent. For example, in @code{1.2345e67},
+the significand is @code{1.2345}.
+
+@item Stability
+From @uref{http://en.wikipedia.org/wiki/Numerical_stability,
+the Wikipedia article on numerical stability}:
+``Calculations that can be proven not to magnify approximation errors
+are called @dfn{numerically stable}.''
+@end table
+
+See @uref{http://en.wikipedia.org/wiki/Accuracy_and_precision,
+the Wikipedia article on accuracy and precision} for more information
+on some of those terms.
+
+On modern systems, floating-point hardware uses the representation and
+operations defined by the IEEE 754 standard.
+Three of the standard IEEE 754 types are 32-bit single precision,
+64-bit double precision and 128-bit quadruple precision.
+The standard also specifies extended precision formats
+to allow greater precisions and larger exponent ranges.
+(@command{awk} uses only the 64-bit double precision format.)
+
+@ref{table-ieee-formats} lists the precision and exponent
+field values for the basic IEEE 754 binary formats:
+
+@float Table,table-ieee-formats
+@caption{Basic IEEE Format Context Values}
+@multitable @columnfractions .20 .20 .20 .20 .20
+@headitem Name @tab Total bits @tab Precision @tab emin @tab emax
+@item Single @tab 32 @tab 24 @tab @minus{}126 @tab +127 
+@item Double @tab 64 @tab 53 @tab @minus{}1022 @tab +1023
+@item Quadruple @tab 128 @tab 113 @tab @minus{}16382 @tab +16383
+@end multitable
+@end float
+
+@quotation NOTE
+The precision numbers include the implied leading one that gives them
+one extra bit of significand.
+@end quotation
+
+@node MPFR features
+@section Arbitrary Precison Arithmetic Features In @command{gawk}
+
+By default, @command{gawk} uses the double precision floating point values
+supplied by the hardware of the system it runs on.  However, if it was
+compiled to do, @command{gawk} uses the @uref{http://www.mpfr.org, GNU
+MPFR} and @uref{http://gmplib.org, GNU MP} (GMP) libraries for arbitrary
+precision arithmetic on numbers.  You can see if MPFR support is available
+like so:
 
 @example
-@{
-   sum = $1 + $2
-   # see it for what it is
-   printf("sum = %.12g\n", sum)
-   # use CONVFMT
-   a = "<" sum ">"
-   print "a =", a
-   # use OFMT
-   print "sum =", sum
+$ @kbd{gawk --version}
+@print{} GNU Awk 4.1.1, API: 1.1 (GNU MPFR 3.1.0-p3, GNU MP 5.0.2)
+@print{} Copyright (C) 1989, 1991-2014 Free Software Foundation.
+@dots{}
+@end example
+
+@noindent
+(You may see different version numbers than what's shown here. That's OK;
+what's important is to see that GNU MPFR and GNU MP are listed in
+the output.)
+
+Additionally, there are a few elements available in the @code{PROCINFO}
+array to provide information about the MPFR and GMP libraries
+(@pxref{Auto-set}).
+
+The MPFR library provides precise control over precisions and rounding
+modes, and gives correctly rounded, reproducible, platform-independent
+results.  With either of the command-line options @option{--bignum} or
+@option{-M}, all floating-point arithmetic operators and numeric functions
+can yield results to any desired precision level supported by MPFR.
+
+Two built-in variables, @code{PREC} and @code{ROUNDMODE},
+provide control over the working precision and the rounding mode.
+The precision and the rounding mode are set globally for every operation
+to follow.
+@xref{Auto-set}, for more information.
+
+@node FP Math Caution
+@section Floating Point Arithmetic: Caveat Emptor!
+
+@quotation
+Math class is tough!
+@author Late 1980's Barbie
+@end quotation
+
+This @value{SECTION} provides a high level overview of the issues
+involved when doing lots of floating-point arithmetic.@footnote{There
+is a very nice @uref{http://www.validlab.com/goldberg/paper.pdf,
+paper on floating-point arithmetic} by David Goldberg, ``What Every
+Computer Scientist Should Know About Floating-point Arithmetic,''
+@cite{ACM Computing Surveys} @strong{23}, 1 (1991-03), 5-48.  This is
+worth reading if you are interested in the details, but it does require
+a background in computer science.}
+The discussion applies to both hardware and arbitrary-precision
+floating-point arithmetic.
+
+@quotation CAUTION
+The material here is purposely general. If you need to do serious
+computer arithmetic, you should do some research first, and not
+rely just on what we tell you.
+@end quotation
+
+@menu
+* Inexactness of computations:: Floating point math is not exact.
+* Getting Accuracy::            Getting more accuracy takes some work.
+* Try To Round::                Add digits and round.
+* Setting precision::           How to set the precision.
+* Setting the rounding mode::   How to set the rounding mode.
+@end menu
+
+@node Inexactness of computations
+@subsection Floating Point Arithmetic Is Not Exact
+
+Binary floating-point representations and arithmetic are inexact.
+Simple values like 0.1 cannot be precisely represented using
+binary floating-point numbers, and the limited precision of
+floating-point numbers means that slight changes in
+the order of operations or the precision of intermediate storage
+can change the result. To make matters worse, with arbitrary precision
+floating-point, you can set the precision before starting a computation,
+but then you cannot be sure of the number of significant decimal places
+in the final result.
+
+@menu
+* Inexact representation::      Numbers are not exactly represented.
+* Comparing FP Values::         How to compare floating point values.
+* Errors accumulate::           Errors get bigger as they go.
+@end menu
+
+@node Inexact representation
+@subsubsection Many Numbers Cannot Be Represented Exactly
+
+So, before you start to write any code, you should think
+about what you really want and what's really happening. Consider the
+two numbers in the following example:
+
+@example
+x = 0.875             # 1/2 + 1/4 + 1/8
+y = 0.425
+@end example
+
+Unlike the number in @code{y}, the number stored in @code{x}
+is exactly representable
+in binary since it can be written as a finite sum of one or
+more fractions whose denominators are all powers of two.
+When @command{gawk} reads a floating-point number from
+program source, it automatically rounds that number to whatever
+precision your machine supports. If you try to print the numeric
+content of a variable using an output format string of @code{"%.17g"},
+it may not produce the same number as you assigned to it:
+
+@example
+$ @kbd{gawk 'BEGIN @{ x = 0.875; y = 0.425}
+> @kbd{              printf("%0.17g, %0.17g\n", x, y) @}'}
+@print{} 0.875, 0.42499999999999999
+@end example
+
+Often the error is so small you do not even notice it, and if you do,
+you can always specify how much precision you would like in your output.
+Usually this is a format string like @code{"%.15g"}, which when
+used in the previous example, produces an output identical to the input.
+
+@node Comparing FP Values
+@subsubsection Be Careful Comparing Values
+
+Because the underlying representation can be a little bit off from the exact value,
+comparing floating-point values to see if they are exactly equal is generally a bad idea.
+Here is an example where it does not work like you would expect:
+
+@example 
+$ @kbd{gawk 'BEGIN @{ print (0.1 + 12.2 == 12.3) @}'}
+@print{} 0
+@end example
+
+The general wisdom when comparing floating-point values is to see if
+they are within some small range of each other (called a @dfn{delta},
+or @dfn{tolerance}).
+You have to decide how small a delta is important to you. Code to do
+this looks something like this:
+
+@example
+delta = 0.00001                 # for example
+difference = abs(a) - abs(b)    # subtract the two values
+if (difference < delta)
+    # all ok
+else
+    # not ok
+@end example
+
+@node Errors accumulate
+@subsubsection Errors Accumulate
+
+The loss of accuracy during a single computation with floating-point
+numbers usually isn't enough to worry about. However, if you compute a
+value which is the result of a sequence of floating point operations,
+the error can accumulate and greatly affect the computation itself.
+Here is an attempt to compute the value of @value{PI} using one of its
+many series representations:
+
+@example
+BEGIN @{
+    x = 1.0 / sqrt(3.0)
+    n = 6
+    for (i = 1; i < 30; i++) @{
+        n = n * 2.0
+        x = (sqrt(x * x + 1) - 1) / x
+        printf("%.15f\n", n * x)
+    @}
+@}
+@end example
+
+When run, the early errors propagate through later computations,
+causing the loop to terminate prematurely after attempting to divide by zero:
+
+@example
+$ @kbd{gawk -f pi.awk}
+@print{} 3.215390309173475
+@print{} 3.159659942097510
+@print{} 3.146086215131467
+@print{} 3.142714599645573
+@dots{}
+@print{} 3.224515243534819
+@print{} 2.791117213058638
+@print{} 0.000000000000000
+@error{} gawk: pi.awk:6: fatal: division by zero attempted
+@end example
+
+Here is an additional example where the inaccuracies in internal representations
+yield an unexpected result:
+
+@example
+$ @kbd{gawk 'BEGIN @{}
+>   @kbd{for (d = 1.1; d <= 1.5; d += 0.1)    # loop five times (?)}
+>       @kbd{i++}
+>   @kbd{print i}
+> @kbd{@}'}
+@print{} 4
+@end example
+
+@node Getting Accuracy
+@subsection Getting The Accuracy You Need
+
+Can arbitrary precision arithmetic give exact results? There are
+no easy answers. The standard rules of algebra often do not apply
+when using floating-point arithmetic.
+Among other things, the distributive and associative laws
+do not hold completely, and order of operation may be important
+for your computation. Rounding error, cumulative precision loss
+and underflow are often troublesome.
+
+When @command{gawk} tests the expressions @samp{0.1 + 12.2} and
+@samp{12.3} for equality using the machine double precision arithmetic,
+it decides that they are not equal!  (@xref{Comparing FP Values}.)
+You can get the result you want by increasing the precision; 56 bits in
+this case does the job:
+
+@example 
+$ @kbd{gawk -M -v PREC=56 'BEGIN @{ print (0.1 + 12.2 == 12.3) @}'}
+@print{} 1
+@end example
+
+If adding more bits is good, perhaps adding even more bits of
+precision is better?
+Here is what happens if we use an even larger value of @code{PREC}:
+
+@example 
+$ @kbd{gawk -M -v PREC=201 'BEGIN @{ print (0.1 + 12.2 == 12.3) @}'}
+@print{} 0
+@end example
+
+This is not a bug in @command{gawk} or in the MPFR library.
+It is easy to forget that the finite number of bits used to store the value
+is often just an approximation after proper rounding.
+The test for equality succeeds if and only if @emph{all} bits in the two operands
+are exactly the same. Since this is not necessarily true after floating-point
+computations with a particular precision and effective rounding rule,
+a straight test for equality may not work. Instead, compare the
+two numbers to see if they are within the desirable delta of each other.
+
+In applications where 15 or fewer decimal places suffice,
+hardware double precision arithmetic can be adequate, and is usually much faster.
+But you need to keep in mind that every floating-point operation
+can suffer a new rounding error with catastrophic consequences as illustrated
+by our earlier attempt to compute the value of @value{PI}.
+Extra precision can greatly enhance the stability and the accuracy
+of your computation in such cases.
+
+Repeated addition is not necessarily equivalent to multiplication
+in floating-point arithmetic. In the example in
+@ref{Errors accumulate}:
+
+@example
+$ @kbd{gawk 'BEGIN @{}
+>   @kbd{for (d = 1.1; d <= 1.5; d += 0.1)    # loop five times (?)}
+>       @kbd{i++}
+>   @kbd{print i}
+> @kbd{@}'}
+@print{} 4
+@end example
+
+@noindent
+you may or may not succeed in getting the correct result by choosing
+an arbitrarily large value for @code{PREC}. Reformulation of
+the problem at hand is often the correct approach in such situations.
+
+@node Try To Round
+@subsection Try A Few Extra Bits of Precision and Rounding
+
+Instead of arbitrary precision floating-point arithmetic,
+often all you need is an adjustment of your logic
+or a different order for the operations in your calculation.
+The stability and the accuracy of the computation of @value{PI}
+in the earlier example can be enhanced by using the following
+simple algebraic transformation:
+
+@example
+(sqrt(x * x + 1) - 1) / x @equiv{} x / (sqrt(x * x + 1) + 1)
+@end example
+
+@noindent
+After making this, change the program converges to
+@value{PI} in under 30 iterations:
+
+@example
+$ @kbd{gawk -f pi2.awk}
+@print{} 3.215390309173473
+@print{} 3.159659942097501
+@print{} 3.146086215131436
+@print{} 3.142714599645370
+@print{} 3.141873049979825
+@dots{}
+@print{} 3.141592653589797
+@print{} 3.141592653589797
+@end example
+
+@node Setting precision
+@subsection Setting The Precision
+
+@command{gawk} uses a global working precision; it does not keep track of
+the precision or accuracy of individual numbers. Performing an arithmetic
+operation or calling a built-in function rounds the result to the current
+working precision. The default working precision is 53 bits, which you can
+modify using the built-in variable @code{PREC}. You can also set the
+value to one of the predefined case-insensitive strings
+shown in @ref{table-predefined-precision-strings},
+to emulate an IEEE 754 binary format.
+
+@float Table,table-predefined-precision-strings
+@caption{Predefined Precision Strings For @code{PREC}}
+@multitable {@code{"double"}} {12345678901234567890123456789012345}
+@headitem @code{PREC} @tab IEEE 754 Binary Format
+@item @code{"half"} @tab 16-bit half-precision.
+@item @code{"single"} @tab Basic 32-bit single precision.
+@item @code{"double"} @tab Basic 64-bit double precision.
+@item @code{"quad"} @tab Basic 128-bit quadruple precision.
+@item @code{"oct"} @tab 256-bit octuple precision.
+@end multitable
+@end float
+
+The following example illustrates the effects of changing precision
+on arithmetic operations:
+
+@example
+$ @kbd{gawk -M -v PREC=100 'BEGIN @{ x = 1.0e-400; print x + 0}
+>   @kbd{PREC = "double"; print x + 0 @}'}
+@print{} 1e-400
+@print{} 0
+@end example
+
+@quotation CAUTION
+Be wary of floating-point constants! When reading a floating-point
+constant from program source code, @command{gawk} uses the default
+precision (that of a C @code{double}), unless overridden by an assignment
+to the special variable @code{PREC} on the command line, to store it
+internally as a MPFR number.  Changing the precision using @code{PREC}
+in the program text does @emph{not} change the precision of a constant.
+
+If you need to represent a floating-point constant at a higher precision
+than the default and cannot use a command line assignment to @code{PREC},
+you should either specify the constant as a string, or as a rational
+number, whenever possible. The following example illustrates the
+differences among various ways to print a floating-point constant:
+@end quotation
+
+@example
+$ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", 0.1) @}'}
+@print{} 0.1000000000000000055511151 
+$ @kbd{gawk -M -v PREC=113 'BEGIN @{ printf("%0.25f\n", 0.1) @}'}
+@print{} 0.1000000000000000000000000
+$ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", "0.1") @}'}
+@print{} 0.1000000000000000000000000
+$ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", 1/10) @}'}
+@print{} 0.1000000000000000000000000
+@end example
+
+@node Setting the rounding mode
+@subsection Setting The Rounding Mode
+
+The @code{ROUNDMODE} variable provides
+program level control over the rounding mode.
+The correspondence between @code{ROUNDMODE} and the IEEE
+rounding modes is shown in @ref{table-gawk-rounding-modes}.
+
+@float Table,table-gawk-rounding-modes
+@caption{@command{gawk} Rounding Modes}
+@multitable @columnfractions .45 .30 .25
+@headitem Rounding Mode @tab IEEE Name @tab @code{ROUNDMODE}
+@item Round to nearest, ties to even @tab @code{roundTiesToEven} @tab @code{"N"} or @code{"n"}
+@item Round toward plus Infinity @tab @code{roundTowardPositive} @tab @code{"U"} or @code{"u"}
+@item Round toward negative Infinity @tab @code{roundTowardNegative} @tab @code{"D"} or @code{"d"}
+@item Round toward zero @tab @code{roundTowardZero} @tab @code{"Z"} or @code{"z"}
+@item Round to nearest, ties away from zero @tab @code{roundTiesToAway} @tab @code{"A"} or @code{"a"}
+@end multitable
+@end float
+
+@code{ROUNDMODE} has the default value @code{"N"}, which
+selects the IEEE 754 rounding mode @code{roundTiesToEven}.
+In @ref{table-gawk-rounding-modes}, the value @code{"A"} selects
+@code{roundTiesToAway}.  This is only available if your version of the
+MPFR library supports it; otherwise setting @code{ROUNDMODE} to @code{"A"}
+has no effect.
+
+The default mode @code{roundTiesToEven} is the most preferred,
+but the least intuitive. This method does the obvious thing for most values,
+by rounding them up or down to the nearest digit.
+For example, rounding 1.132 to two digits yields 1.13,
+and rounding 1.157 yields 1.16.
+
+However, when it comes to rounding a value that is exactly halfway between,
+things do not work the way you probably learned in school.
+In this case, the number is rounded to the nearest even digit.
+So rounding 0.125 to two digits rounds down to 0.12,
+but rounding 0.6875 to three digits rounds up to 0.688.
+You probably have already encountered this rounding mode when
+using @code{printf} to format floating-point numbers.
+For example:
+
+@example
+BEGIN @{
+    x = -4.5
+    for (i = 1; i < 10; i++) @{
+        x += 1.0
+        printf("%4.1f => %2.0f\n", x, x)
+    @}
 @}
 @end example
 
 @noindent
-This program shows the full value of the sum of @code{$1} and @code{$2}
-using @code{printf}, and then prints the string values obtained
-from both automatic conversion (via @code{CONVFMT}) and
-from printing (via @code{OFMT}).
-
-Here is what happens when the program is run:
+produces the following output when run on the author's system:@footnote{It
+is possible for the output to be completely different if the
+C library in your system does not use the IEEE 754 even-rounding
+rule to round halfway cases for @code{printf}.}
 
 @example
-$ @kbd{echo 3.654321 1.2345678 | awk -f values.awk}
-@print{} sum = 4.8888888
-@print{} a = <4.88889>
-@print{} sum = 4.88889
+-3.5 => -4
+-2.5 => -2
+-1.5 => -2
+-0.5 => 0
+ 0.5 => 0
+ 1.5 => 2
+ 2.5 => 2
+ 3.5 => 4
+ 4.5 => 4
 @end example
 
-This makes it clear that the full numeric value is different from
-what the default string representations show.
+The theory behind @code{roundTiesToEven} is that it more or less evenly
+distributes upward and downward rounds of exact halves, which might
+cause any accumulating round-off error to cancel itself out. This is the
+default rounding mode for IEEE 754 computing functions and operators.
 
-@code{CONVFMT}'s default value is @code{"%.6g"}, which yields a value with
-at most six significant digits.  For some applications, you might want to
-change it to specify more precision.
-On most modern machines, most of the time,
-17 digits is enough to capture a floating-point number's
-value exactly.@footnote{Pathological cases can require up to
-752 digits (!), but we doubt that you need to worry about this.}
+The other rounding modes are rarely used.  Round toward positive infinity
+(@code{roundTowardPositive}) and round toward negative infinity
+(@code{roundTowardNegative}) are often used to implement interval
+arithmetic, where you adjust the rounding mode to calculate upper and
+lower bounds for the range of output. The @code{roundTowardZero} mode can
+be used for converting floating-point numbers to integers.  The rounding
+mode @code{roundTiesToAway} rounds the result to the nearest number and
+selects the number with the larger magnitude if a tie occurs.
 
-@node Unexpected Results
-@subsubsection Floating Point Numbers Are Not Abstract Numbers
+Some numerical analysts will tell you that your choice of rounding
+style has tremendous impact on the final outcome, and advise you to
+wait until final output for any rounding. Instead, you can often avoid
+round-off error problems by setting the precision initially to some
+value sufficiently larger than the final desired precision, so that
+the accumulation of round-off error does not influence the outcome.
+If you suspect that results from your computation are sensitive to
+accumulation of round-off error, look for a significant difference in
+output when you change the rounding mode to be sure.
 
-@cindex floating-point, numbers
-Unlike numbers in the abstract sense (such as what you studied in high school
-or college arithmetic), numbers stored in computers are limited in certain ways.
-They cannot represent an infinite number of digits, nor can they always
-represent things exactly.
-In particular,
-floating-point numbers cannot
-always represent values exactly.  Here is an example:
+@node Arbitrary Precision Integers
+@section Arbitrary Precision Integer Arithmetic with @command{gawk}
+@cindex integers, arbitrary precision
+@cindex arbitrary precision integers
 
-@example
-$ @kbd{awk '@{ printf("%010d\n", $1 * 100) @}'}
-515.79
-@print{} 0000051579
-515.80
-@print{} 0000051579
-515.81
-@print{} 0000051580
-515.82
-@print{} 0000051582
-@kbd{Ctrl-d}
-@end example
-
-@noindent
-This shows that some values can be represented exactly,
-whereas others are only approximated.  This is not a ``bug''
-in @command{awk}, but simply an artifact of how computers
-represent numbers.
-
-@quotation NOTE
-It cannot be emphasized enough that the behavior just
-described is fundamental to modern computers. You will
-see this kind of thing happen in @emph{any} programming
-language using hardware floating-point numbers. It is @emph{not}
-a bug in @command{gawk}, nor is it something that can be ``just
-fixed.''
-@end quotation
-
-@cindex negative zero
-@cindex positive zero
-@cindex zero@comma{} negative vs.@: positive
-Another peculiarity of floating-point numbers on modern systems
-is that they often have more than one representation for the number zero!
-In particular, it is possible to represent ``minus zero'' as well as
-regular, or ``positive'' zero.
-
-This example shows that negative and positive zero are distinct values
-when stored internally, but that they are in fact equal to each other,
-as well as to ``regular'' zero:
+When given one of the options @option{--bignum} or @option{-M},
+@command{gawk} performs all integer arithmetic using GMP arbitrary
+precision integers.  Any number that looks like an integer in a source
+or @value{DF} is stored as an arbitrary precision integer.  The size
+of the integer is limited only by the available memory.  For example,
+the following computes
+@iftex
+@math{5^{4^{3^{2}}}},
+@end iftex
+@ifnottex
+@ifnotdocbook
+5^4^3^2,
+@end ifnotdocbook
+@end ifnottex
+@docbook
+5<superscript>4<superscript>3<superscript>2</superscript></superscript></superscript>, @c
+@end docbook
+the result of which is beyond the
+limits of ordinary @command{gawk} numbers:
 
 @example
-$ @kbd{gawk 'BEGIN @{ mz = -0 ; pz = 0}
-> @kbd{printf "-0 = %g, +0 = %g, (-0 == +0) -> %d\n", mz, pz, mz == pz}
-> @kbd{printf "mz == 0 -> %d, pz == 0 -> %d\n", mz == 0, pz == 0}
+$ @kbd{gawk -M 'BEGIN @{}
+>   @kbd{x = 5^4^3^2}
+>   @kbd{print "# of digits =", length(x)}
+>   @kbd{print substr(x, 1, 20), "...", substr(x, length(x) - 19, 20)}
 > @kbd{@}'}
-@print{} -0 = -0, +0 = 0, (-0 == +0) -> 1
-@print{} mz == 0 -> 1, pz == 0 -> 1
+@print{} # of digits = 183231
+@print{} 62060698786608744707 ... 92256259918212890625
 @end example
 
-It helps to keep this in mind should you process numeric data
-that contains negative zero values; the fact that the zero is negative
-is noted and can affect comparisons.
+If instead you were to compute the same value using arbitrary precision
+floating-point values, the precision needed for correct output (using
+the formula
+@iftex
+@math{prec = 3.322 @cdot dps}),
+would be @math{3.322 @cdot 183231},
+@end iftex
+@ifnottex
+@ifnotdocbook
+@samp{prec = 3.322 * dps}),
+would be 3.322 x 183231,
+@end ifnotdocbook
+@end ifnottex
+@docbook
+<emphasis>prec</emphasis> = 3.322 &sdot; <emphasis>dps</emphasis>),
+would be
+<emphasis>prec</emphasis> = 3.322 &sdot; 183231, @c
+@end docbook
+or 608693.
+
+The result from an arithmetic operation with an integer and a floating-point value
+is a floating-point value with a precision equal to the working precision.
+The following program calculates the eighth term in
+Sylvester's sequence@footnote{Weisstein, Eric W.
+@cite{Sylvester's Sequence}. From MathWorld---A Wolfram Web Resource
+@w{(@url{http://mathworld.wolfram.com/SylvestersSequence.html}).}}
+using a recurrence:
+
+@example
+$ @kbd{gawk -M 'BEGIN @{}
+>   @kbd{s = 2.0}
+>   @kbd{for (i = 1; i <= 7; i++)}
+>       @kbd{s = s * (s - 1) + 1}
+>   @kbd{print s}
+> @kbd{@}'}
+@print{} 113423713055421845118910464
+@end example
+
+The output differs from the actual number, 113,423,713,055,421,844,361,000,443,
+because the default precision of 53 bits is not enough to represent the
+floating-point results exactly. You can either increase the precision
+(100 bits is enough in this case), or replace the floating-point constant
+@samp{2.0} with an integer, to perform all computations using integer
+arithmetic to get the correct output.
+
+Sometimes @command{gawk} must implicitly convert an arbitrary precision
+integer into an arbitrary precision floating-point value.  This is
+primarily because the MPFR library does not always provide the relevant
+interface to process arbitrary precision integers or mixed-mode numbers
+as needed by an operation or function.  In such a case, the precision is
+set to the minimum value necessary for exact conversion, and the working
+precision is not used for this purpose.  If this is not what you need or
+want, you can employ a subterfuge, and convert the integer to floating
+point first, like this:
+
+@example
+gawk -M 'BEGIN @{ n = 13; print (n + 0.0) % 2.0 @}'
+@end example
+
+You can avoid this issue altogether by specifying the number as a floating-point value
+to begin with:
+
+@example
+gawk -M 'BEGIN @{ n = 13.0; print n % 2.0 @}'
+@end example
+
+Note that for the particular example above, it is likely best
+to just use the following:
+
+@example
+gawk -M 'BEGIN @{ n = 13; print n % 2 @}'
+@end example
 
 @node POSIX Floating Point Problems
-@subsubsection Standards Versus Existing Practice
+@section Standards Versus Existing Practice
 
 Historically, @command{awk} has converted any non-numeric looking string
 to the numeric value zero, when required.  Furthermore, the original
@@ -28997,7 +29609,7 @@ should support additional features.  These features are:
 @itemize @value{BULLET}
 @item
 Interpretation of floating point data values specified in hexadecimal
-notation (@samp{0xDEADBEEF}). (Note: data values, @emph{not}
+notation (e.g., @code{0xDEADBEEF}). (Note: data values, @emph{not}
 source code constants.)
 
 @item
@@ -29082,965 +29694,74 @@ $ @kbd{echo 0xDeadBeef | gawk '@{ print $1 + 0 @}'}
 Thus @samp{+nan} and @samp{+NaN} are the same.
 @end itemize
 
-@node Integer Programming
-@subsection Mixing Integers And Floating-point
-
-As has been mentioned already, @command{awk} uses hardware double
-precision with 64-bit IEEE binary floating-point representation
-for numbers on most systems.
-A large integer like 9,007,199,254,740,997
-has a binary representation that, although finite, is more than 53 bits long;
-it must also be rounded to 53 bits.
-(The details are discussed in @ref{Floating-point Representation}.)
-The biggest integer that can be stored in a C @code{double} is usually the same
-as the largest possible value of a @code{double}. If your system @code{double}
-is an IEEE 64-bit @code{double}, this largest possible value is an integer and
-can be represented precisely.  What more should you know about integers?
-
-If you want to know what is the largest integer, such that it and
-all smaller integers can be stored in 64-bit doubles without losing precision,
-then the answer is
-@iftex
-@math{2^{53}}.
-@end iftex
-@ifnottex
-@ifnotdocbook
-2^53.
-@end ifnotdocbook
-@end ifnottex
-@docbook
-2<superscript>53</superscript>. @c
-@end docbook
-The next representable number is the even number
-@iftex
-@math{2^{53} + 2},
-@end iftex
-@ifnottex
-@ifnotdocbook
-2^53 + 2,
-@end ifnotdocbook
-@end ifnottex
-@docbook
-2<superscript>53</superscript> &plus; 2, @c
-@end docbook
-meaning it is unlikely that you will be able to make
-@command{gawk} print
-@iftex
-@math{2^{53} + 1}
-@end iftex
-@ifnottex
-@ifnotdocbook
-2^53 + 1
-@end ifnotdocbook
-@end ifnottex
-@docbook
-2<superscript>53</superscript> &plus; 1 @c
-@end docbook
-in integer format.
-The range of integers exactly representable by a 64-bit double
-is
-@iftex
-@math{[-2^{53}, 2^{53}]}.
-@end iftex
-@ifnottex
-@ifnotdocbook
-[@minus{}2^53, 2^53].
-@end ifnotdocbook
-@end ifnottex
-@docbook
-[&minus;2<superscript>53</superscript>, 2<superscript>53</superscript>]. @c
-@end docbook
-If you ever see an integer outside this range in @command{awk}
-using 64-bit doubles, you have reason to be very suspicious about
-the accuracy of the output. Here is a simple program with erroneous output:
-
-@example
-$ @kbd{gawk 'BEGIN @{ i = 2^53 - 1; for (j = 0; j < 4; j++) print i + j @}'}
-@print{} 9007199254740991
-@print{} 9007199254740992
-@print{} 9007199254740992
-@print{} 9007199254740994
-@end example
-
-The lesson is to not assume that any large integer printed by @command{awk}
-represents an exact result from your computation, especially if it wraps
-around on your screen.
-
-@node Floating-point Programming
-@section Understanding Floating-point Programming
-
-Numerical programming is an extensive area; if you need to develop
-sophisticated numerical algorithms then @command{gawk} may not be
-the ideal tool, and this documentation may not be sufficient.
-It might require digesting a book or two@footnote{One recommended title is
-@cite{Numerical Computing with IEEE Floating Point Arithmetic}, Michael L.@:
-Overton, Society for Industrial and Applied Mathematics, 2004.
-ISBN: 0-89871-482-6, ISBN-13: 978-0-89871-482-1. See
-@uref{http://www.cs.nyu.edu/cs/faculty/overton/book}.}
-to really internalize how to compute
-with ideal accuracy and precision,
-and the result often depends on the particular application.
-
-@quotation NOTE
-A floating-point calculation's @dfn{accuracy} is how close it comes
-to the real value.  This is as opposed to the @dfn{precision}, which
-usually refers to the number of bits used to represent the number
-(see @uref{http://en.wikipedia.org/wiki/Accuracy_and_precision,
-the Wikipedia article} for more information).
-@end quotation
-
-There are two options for doing floating-point calculations:
-hardware floating-point (as used by standard @command{awk} and
-the default for @command{gawk}), and @dfn{arbitrary-precision}
-floating-point, which is software based.
-From this point forward, this @value{CHAPTER}
-aims to provide enough information to understand both, and then
-will focus on @command{gawk}'s facilities for the latter.@footnote{If you
-are interested in other tools that perform arbitrary precision arithmetic,
-you may want to investigate the POSIX @command{bc} tool. See
-@uref{http://pubs.opengroup.org/onlinepubs/009695399/utilities/bc.html,
-the POSIX specification for it}, for more information.}
-
-Binary floating-point representations and arithmetic are inexact.
-Simple values like 0.1 cannot be precisely represented using
-binary floating-point numbers, and the limited precision of
-floating-point numbers means that slight changes in
-the order of operations or the precision of intermediate storage
-can change the result. To make matters worse, with arbitrary precision
-floating-point, you can set the precision before starting a computation,
-but then you cannot be sure of the number of significant decimal places
-in the final result.
-
-So, before you start to write any code, you should think more
-about what you really want and what's really happening. Consider the
-two numbers in the following example:
-
-@example
-x = 0.875             # 1/2 + 1/4 + 1/8
-y = 0.425
-@end example
-
-Unlike the number in @code{y}, the number stored in @code{x}
-is exactly representable
-in binary since it can be written as a finite sum of one or
-more fractions whose denominators are all powers of two.
-When @command{gawk} reads a floating-point number from
-program source, it automatically rounds that number to whatever
-precision your machine supports. If you try to print the numeric
-content of a variable using an output format string of @code{"%.17g"},
-it may not produce the same number as you assigned to it:
-
-@example
-$ @kbd{gawk 'BEGIN @{ x = 0.875; y = 0.425}
-> @kbd{              printf("%0.17g, %0.17g\n", x, y) @}'}
-@print{} 0.875, 0.42499999999999999
-@end example
-
-Often the error is so small you do not even notice it, and if you do,
-you can always specify how much precision you would like in your output.
-Usually this is a format string like @code{"%.15g"}, which when
-used in the previous example, produces an output identical to the input.
-
-Because the underlying representation can be a little bit off from the exact value,
-comparing floating-point values to see if they are exactly equal is generally a bad idea.
-Here is an example where it does not work like you expect:
-
-@example 
-$ @kbd{gawk 'BEGIN @{ print (0.1 + 12.2 == 12.3) @}'}
-@print{} 0
-@end example
-
-The loss of accuracy during a single computation with floating-point numbers
-usually isn't enough to worry about. However, if you compute a value
-which is the result of a sequence of floating point operations,
-the error can accumulate and greatly affect the computation itself.
-Here is an attempt to compute the value of the constant
-@value{PI} using one of its many series representations:
-
-@example
-BEGIN @{
-    x = 1.0 / sqrt(3.0)
-    n = 6
-    for (i = 1; i < 30; i++) @{
-        n = n * 2.0
-        x = (sqrt(x * x + 1) - 1) / x
-        printf("%.15f\n", n * x)
-    @}
-@}
-@end example
-
-When run, the early errors propagating through later computations
-cause the loop to terminate prematurely after an attempt to divide by zero.
-
-@example
-$ @kbd{gawk -f pi.awk}
-@print{} 3.215390309173475
-@print{} 3.159659942097510
-@print{} 3.146086215131467
-@print{} 3.142714599645573
-@dots{}
-@print{} 3.224515243534819
-@print{} 2.791117213058638
-@print{} 0.000000000000000
-@error{} gawk: pi.awk:6: fatal: division by zero attempted
-@end example
-
-Here is an additional example where the inaccuracies in internal representations
-yield an unexpected result:
-
-@example
-$ @kbd{gawk 'BEGIN @{}
->   @kbd{for (d = 1.1; d <= 1.5; d += 0.1)    # loop five times (?)}
->       @kbd{i++}
->   @kbd{print i}
-> @kbd{@}'}
-@print{} 4
-@end example
-
-Can computation using arbitrary precision help with the previous examples?
-If you are impatient to know, see
-@ref{Exact Arithmetic}.
-
-Instead of arbitrary precision floating-point arithmetic,
-often all you need is an adjustment of your logic
-or a different order for the operations in your calculation.
-The stability and the accuracy of the computation of the constant @value{PI}
-in the earlier example can be enhanced by using the following
-simple algebraic transformation:
-
-@example
-(sqrt(x * x + 1) - 1) / x @equiv{} x / (sqrt(x * x + 1) + 1)
-@end example
-
-@noindent
-After making this, change the program does converge to
-@value{PI} in under 30 iterations:
-
-@example
-$ @kbd{gawk -f pi2.awk}
-@print{} 3.215390309173473
-@print{} 3.159659942097501
-@print{} 3.146086215131436
-@print{} 3.142714599645370
-@print{} 3.141873049979825
-@dots{}
-@print{} 3.141592653589797
-@print{} 3.141592653589797
-@end example
-
-There is no need to be unduly suspicious about the results from
-floating-point arithmetic. The lesson to remember is that
-floating-point arithmetic is always more complex than arithmetic using
-pencil and paper. In order to take advantage of the power
-of computer floating-point, you need to know its limitations
-and work within them. For most casual use of floating-point arithmetic,
-you will often get the expected result in the end if you simply round
-the display of your final results to the correct number of significant
-decimal digits.
-
-As general advice, avoid presenting numerical data in a manner that
-implies better precision than is actually the case.
-
-@menu
-* Floating-point Representation:: Binary floating-point representation.
-* Floating-point Context::        Floating-point context.
-* Rounding Mode::                 Floating-point rounding mode.
-@end menu
-
-@node Floating-point Representation
-@subsection Binary Floating-point Representation
-@cindex IEEE 754 format
-
-Although floating-point representations vary from machine to machine,
-the most commonly encountered representation is that defined by the
-IEEE 754 Standard. An IEEE 754 format value has three components:
+@node Floating point summary
+@section Summary
 
 @itemize @value{BULLET}
 @item
-A sign bit telling whether the number is positive or negative.
+Most computer arithmetic is done using either integers or floating-point
+values.  The default for @command{awk} is to use double-precision
+floating-point values.
 
 @item
-An @dfn{exponent}, @var{e}, giving its order of magnitude.
+In the 1980's, Barbie mistakenly said ``Math class is tough!''
+While math isn't tough, floating-point arithmetic isn't the same
+as pencil and paper math, and care must be taken:
+
+@c nested list
+@itemize @value{MINUS}
+@item
+Not all numbers can be represented exactly.
 
 @item
-A @dfn{significand}, @var{s},
-specifying the actual digits of the number.
+Comparing values should use a delta, instead of being done directly
+with @samp{==} and @samp{!=}.
+
+@item
+Errors accumulate.
+
+@item
+Operations are not always truly associative or distributive.
 @end itemize
 
-The value of the
-number is then
-@iftex
-@math{s @cdot 2^e}.
-@end iftex
-@ifnottex
-@ifnotdocbook
-@var{s * 2^e}.
-@end ifnotdocbook
-@end ifnottex
-@docbook
-<emphasis>s &sdot; 2<superscript>e</superscript></emphasis>. @c
-@end docbook
-The first bit of a non-zero binary significand
-is always one, so the significand in an IEEE 754 format only includes the
-fractional part, leaving the leading one implicit.
-The significand is stored in @dfn{normalized} format,
-which means that the first bit is always a one.
-
-Three of the standard IEEE 754 types are 32-bit single precision,
-64-bit double precision and 128-bit quadruple precision.
-The standard also specifies extended precision formats
-to allow greater precisions and larger exponent ranges.
-
-@node Floating-point Context
-@subsection Floating-point Context
-@cindex context, floating-point
-
-A floating-point @dfn{context} defines the environment for arithmetic operations.
-It governs precision, sets rules for rounding, and limits the range for exponents.
-The context has the following primary components:
-
-@table @dfn
-@item Precision
-Precision of the floating-point format in bits.
-
-@item emax
-Maximum exponent allowed for the format.
-
-@item emin
-Minimum exponent allowed for the format.
-
-@item Underflow behavior
-The format may or may not support gradual underflow.
-
-@item Rounding
-The rounding mode of the context.
-@end table
-
-@ref{table-ieee-formats} lists the precision and exponent
-field values for the basic IEEE 754 binary formats:
-
-@float Table,table-ieee-formats
-@caption{Basic IEEE Format Context Values}
-@multitable @columnfractions .20 .20 .20 .20 .20
-@headitem Name @tab Total bits @tab Precision @tab emin @tab emax
-@item Single @tab 32 @tab 24 @tab @minus{}126 @tab +127 
-@item Double @tab 64 @tab 53 @tab @minus{}1022 @tab +1023
-@item Quadruple @tab 128 @tab 113 @tab @minus{}16382 @tab +16383
-@end multitable
-@end float
-
-@quotation NOTE
-The precision numbers include the implied leading one that gives them
-one extra bit of significand.
-@end quotation
-
-A floating-point context can also determine which signals are treated
-as exceptions, and can set rules for arithmetic with special values.
-Please consult the IEEE 754 standard or other resources for details.
-
-@command{gawk} ordinarily uses the hardware double precision
-representation for numbers.  On most systems, this is IEEE 754
-floating-point format, corresponding to 64-bit binary with 53 bits
-of precision.
-
-@quotation NOTE
-In case an underflow occurs, the standard allows, but does not require,
-the result from an arithmetic operation to be a number smaller than
-the smallest nonzero normalized number. Such numbers do
-not have as many significant digits as normal numbers, and are called
-@dfn{denormals} or @dfn{subnormals}. The alternative, simply returning a zero,
-is called @dfn{flush to zero}. The basic IEEE 754 binary formats
-support subnormal numbers.
-@end quotation
-
-@node Rounding Mode
-@subsection Floating-point Rounding Mode
-@cindex rounding mode, floating-point
-
-The @dfn{rounding mode} specifies the behavior for the results of numerical
-operations when discarding extra precision. Each rounding mode indicates
-how the least significant returned digit of a rounded result is to
-be calculated.
-@ref{table-rounding-modes} lists the IEEE 754 defined
-rounding modes:
-
-@float Table,table-rounding-modes
-@caption{IEEE 754 Rounding Modes}
-@multitable @columnfractions .45 .55
-@headitem Rounding Mode @tab IEEE Name
-@item Round to nearest, ties to even @tab @code{roundTiesToEven}
-@item Round toward plus Infinity @tab @code{roundTowardPositive}
-@item Round toward negative Infinity @tab @code{roundTowardNegative}
-@item Round toward zero @tab @code{roundTowardZero}
-@item Round to nearest, ties away from zero @tab @code{roundTiesToAway}
-@end multitable
-@end float
-
-The default mode @code{roundTiesToEven} is the most preferred,
-but the least intuitive. This method does the obvious thing for most values,
-by rounding them up or down to the nearest digit.
-For example, rounding 1.132 to two digits yields 1.13,
-and rounding 1.157 yields 1.16.
-
-However, when it comes to rounding a value that is exactly halfway between,
-things do not work the way you probably learned in school.
-In this case, the number is rounded to the nearest even digit.
-So rounding 0.125 to two digits rounds down to 0.12,
-but rounding 0.6875 to three digits rounds up to 0.688.
-You probably have already encountered this rounding mode when
-using @code{printf} to format floating-point numbers.
-For example:
-
-@example
-BEGIN @{
-    x = -4.5
-    for (i = 1; i < 10; i++) @{
-        x += 1.0
-        printf("%4.1f => %2.0f\n", x, x)
-    @}
-@}
-@end example
-
-@noindent
-produces the following output when run on the author's system:@footnote{It
-is possible for the output to be completely different if the
-C library in your system does not use the IEEE 754 even-rounding
-rule to round halfway cases for @code{printf}.}
-
-@example
--3.5 => -4
--2.5 => -2
--1.5 => -2
--0.5 => 0
- 0.5 => 0
- 1.5 => 2
- 2.5 => 2
- 3.5 => 4
- 4.5 => 4
-@end example
-
-The theory behind the rounding mode @code{roundTiesToEven} is that
-it more or less evenly distributes upward and downward rounds
-of exact halves, which might cause any round-off error
-to cancel itself out. This is the default rounding mode used
-in IEEE 754 computing functions and operators.
-
-The other rounding modes are rarely used.
-Round toward positive infinity (@code{roundTowardPositive})
-and round toward negative infinity (@code{roundTowardNegative})
-are often used to implement interval arithmetic,
-where you adjust the rounding mode to calculate upper and lower bounds
-for the range of output. The @code{roundTowardZero}
-mode can be used for converting floating-point numbers to integers.
-The rounding mode @code{roundTiesToAway} rounds the result to the
-nearest number and selects the number with the larger magnitude
-if a tie occurs.
-
-Some numerical analysts will tell you that your choice of rounding style
-has tremendous impact on the final outcome, and advise you to wait until
-final output for any rounding. Instead, you can often avoid round-off error problems by
-setting the precision initially to some value sufficiently larger than
-the final desired precision, so that the accumulation of round-off error
-does not influence the outcome.
-If you suspect that results from your computation are
-sensitive to accumulation of round-off error,
-one way to be sure is to look for a significant difference in output
-when you change the rounding mode.
-
-@node Gawk and MPFR
-@section @command{gawk} + MPFR = Powerful Arithmetic
-@cindex MPFR
-@cindex GMP
-
-The rest of this @value{CHAPTER} describes how to use the arbitrary precision
-(also known as @dfn{multiple precision} or @dfn{infinite precision}) numeric
-capabilities in @command{gawk} to produce maximally accurate results
-when you need it.
-
-But first you should check if your version of
-@command{gawk} supports arbitrary precision arithmetic.
-The easiest way to find out is to look at the output of
-the following command:
-
-@example
-$ @kbd{gawk --version}
-@print{} GNU Awk 4.1.1, API: 1.1 (GNU MPFR 3.1.0-p3, GNU MP 5.0.2)
-@print{} Copyright (C) 1989, 1991-2014 Free Software Foundation.
-@dots{}
-@end example
-
-@noindent
-(You may see different version numbers than what's shown here. That's OK;
-what's important is to see that GNU MPFR and GNU MP are listed in
-the output.)
-
-@command{gawk} uses the
-@uref{http://www.mpfr.org, GNU MPFR}
-and
-@uref{http://gmplib.org, GNU MP} (GMP)
-libraries for arbitrary precision
-arithmetic on numbers. So if you do not see the names of these libraries
-in the output, then your version of @command{gawk} does not support
-arbitrary precision arithmetic.
-
-Additionally,
-there are a few elements available in the @code{PROCINFO} array
-to provide information about the MPFR and GMP libraries.
-@xref{Auto-set}, for more information.
-
-@ignore
-Even if you aren't interested in arbitrary precision arithmetic, you
-may still benefit from knowing about how @command{gawk} handles numbers
-in general, and the limitations of doing arithmetic with ordinary
-@command{gawk} numbers.
-@end ignore
-
-
-@node Arbitrary Precision Floats
-@section Arbitrary Precision Floating-point Arithmetic with @command{gawk}
-
-@command{gawk} uses the GNU MPFR library
-for arbitrary precision floating-point arithmetic.  The MPFR library
-provides precise control over precisions and rounding modes, and gives
-correctly rounded, reproducible, platform-independent results.  With one
-of the command-line options @option{--bignum} or @option{-M},
-all floating-point arithmetic operators and numeric functions can yield
-results to any desired precision level supported by MPFR.
-Two built-in variables, @code{PREC} and @code{ROUNDMODE},
-provide control over the working precision and the rounding mode
-(@pxref{Setting Precision}, and
-@pxref{Setting Rounding Mode}).
-The precision and the rounding mode are set globally for every operation
-to follow.
-
-The default working precision for arbitrary precision floating-point values is
-53 bits, and the default value for @code{ROUNDMODE} is @code{"N"},
-which selects the IEEE 754 @code{roundTiesToEven} rounding mode
-(@pxref{Rounding Mode}).@footnote{The
-default precision is 53 bits, since according to the MPFR documentation,
-the library should be able to exactly reproduce all computations done with
-double-precision machine floating-point numbers (@code{double} type
-in C), except the default exponent range is much wider and subnormal
-numbers are not implemented.}
-@command{gawk} uses the default exponent range in MPFR
-@iftex
-(@math{emax = 2^{30} - 1, emin = -emax})
-@end iftex
-@ifnottex
-@ifnotdocbook
-(@var{emax} = 2^30 @minus{} 1, @var{emin} = @minus{}@var{emax})
-@end ifnotdocbook
-@end ifnottex
-@docbook
-(<emphasis>emax</emphasis> = 2<superscript>30</superscript> &minus; 1, <emphasis>emin</emphasis> = &minus;<emphasis>emax</emphasis>) @c
-@end docbook
-for all floating-point contexts.
-There is no explicit mechanism to adjust the exponent range.
-MPFR does not implement subnormal numbers by default,
-and this behavior cannot be changed in @command{gawk}.
-
-@quotation NOTE
-When emulating an IEEE 754 format (@pxref{Setting Precision}),
-@command{gawk} internally adjusts the exponent range
-to the value defined for the format and also performs computations needed for
-gradual underflow (subnormal numbers).
-@end quotation
-
-@quotation NOTE
-MPFR numbers are variable-size entities, consuming only as much space as
-needed to store the significant digits. Since the performance using MPFR
-numbers pales in comparison to doing arithmetic using the underlying machine
-types, you should consider using only as much precision as needed by
-your program.
-@end quotation
-
-@menu
-* Setting Precision::           Setting the working precision.
-* Setting Rounding Mode::       Setting the rounding mode.
-* Floating-point Constants::    Representing floating-point constants.
-* Changing Precision::          Changing the precision of a number.
-* Exact Arithmetic::            Exact arithmetic with floating-point numbers.
-@end menu
-
-@node Setting Precision
-@subsection Setting the Working Precision
-@cindex @code{PREC} variable
-@cindex setting working precision
-
-@command{gawk} uses a global working precision; it does not keep track of
-the precision or accuracy of individual numbers. Performing an arithmetic
-operation or calling a built-in function rounds the result to the current
-working precision. The default working precision is 53 bits, which you can
-modify using the built-in variable @code{PREC}. You can also set the
-value to one of the predefined case-insensitive strings
-shown in @ref{table-predefined-precision-strings},
-to emulate an IEEE 754 binary format.
-
-@float Table,table-predefined-precision-strings
-@caption{Predefined Precision Strings For @code{PREC}}
-@multitable {@code{"double"}} {12345678901234567890123456789012345}
-@headitem @code{PREC} @tab IEEE 754 Binary Format
-@item @code{"half"} @tab 16-bit half-precision.
-@item @code{"single"} @tab Basic 32-bit single precision.
-@item @code{"double"} @tab Basic 64-bit double precision.
-@item @code{"quad"} @tab Basic 128-bit quadruple precision.
-@item @code{"oct"} @tab 256-bit octuple precision.
-@end multitable
-@end float
-
-The following example illustrates the effects of changing precision
-on arithmetic operations:
-
-@example
-$ @kbd{gawk -M -v PREC=100 'BEGIN @{ x = 1.0e-400; print x + 0}
->   @kbd{PREC = "double"; print x + 0 @}'}
-@print{} 1e-400
-@print{} 0
-@end example
-
-Binary and decimal precisions are related approximately, according to the
-formula:
-
-@iftex
-@math{prec = 3.322 @cdot dps}
-@end iftex
-@ifnottex
-@ifnotdocbook
-@var{prec} = 3.322 * @var{dps}
-@end ifnotdocbook
-@end ifnottex
-@docbook
-<para>
-<emphasis>prec</emphasis> = 3.322 &sdot; <emphasis>dps</emphasis> @c
-</para>
-@end docbook
-
-@noindent
-Here, @var{prec} denotes the binary precision
-(measured in bits) and @var{dps} (short for decimal places)
-is the decimal digits. We can easily calculate how many decimal
-digits the 53-bit significand of an IEEE double is equivalent to:
-53 / 3.322 which is equal to about 15.95.
-But what does 15.95 digits actually mean? It depends whether you are
-concerned about how many digits you can rely on, or how many digits
-you need.
-
-It is important to know how many bits it takes to uniquely identify
-a double-precision value (the C type @code{double}).  If you want to
-convert from @code{double} to decimal and back to @code{double} (e.g.,
-saving a @code{double} representing an intermediate result to a file, and
-later reading it back to restart the computation), then a few more decimal
-digits are required. 17 digits is generally enough for a @code{double}.
-
-It can also be important to know what decimal numbers can be uniquely
-represented with a @code{double}. If you want to convert
-from decimal to @code{double} and back again, 15 digits is the most that
-you can get. Stated differently, you should not present
-the numbers from your floating-point computations with more than 15
-significant digits in them.
-
-Conversely, it takes a precision of 332 bits to hold an approximation
-of the constant @value{PI} that is accurate to 100 decimal places.
-
-You should always add some extra bits in order to avoid the confusing round-off
-issues that occur because numbers are stored internally in binary.
-
-@node Setting Rounding Mode
-@subsection Setting the Rounding Mode
-@cindex @code{ROUNDMODE} variable
-@cindex setting rounding mode
-
-The @code{ROUNDMODE} variable provides
-program level control over the rounding mode.
-The correspondence between @code{ROUNDMODE} and the IEEE
-rounding modes is shown in @ref{table-gawk-rounding-modes}.
-
-@float Table,table-gawk-rounding-modes
-@caption{@command{gawk} Rounding Modes}
-@multitable @columnfractions .45 .30 .25
-@headitem Rounding Mode @tab IEEE Name @tab @code{ROUNDMODE}
-@item Round to nearest, ties to even @tab @code{roundTiesToEven} @tab @code{"N"} or @code{"n"}
-@item Round toward plus Infinity @tab @code{roundTowardPositive} @tab @code{"U"} or @code{"u"}
-@item Round toward negative Infinity @tab @code{roundTowardNegative} @tab @code{"D"} or @code{"d"}
-@item Round toward zero @tab @code{roundTowardZero} @tab @code{"Z"} or @code{"z"}
-@item Round to nearest, ties away from zero @tab @code{roundTiesToAway} @tab @code{"A"} or @code{"a"}
-@end multitable
-@end float
-
-@code{ROUNDMODE} has the default value @code{"N"},
-which selects the IEEE 754 rounding mode @code{roundTiesToEven}.
-In @ref{table-gawk-rounding-modes}, @code{"A"} is listed to select the IEEE 754 mode
-@code{roundTiesToAway}.  This is only available
-if your version of the MPFR library supports it; otherwise setting
-@code{ROUNDMODE} to this value has no effect. @xref{Rounding Mode},
-for the meanings of the various rounding modes.
-
-Here is an example of how to change the default rounding behavior of
-@code{printf}'s output:
-
-@example
-$ @kbd{gawk -M -v ROUNDMODE="Z" 'BEGIN @{ printf("%.2f\n", 1.378) @}'}
-@print{} 1.37
-@end example
-
-@node Floating-point Constants
-@subsection Representing Floating-point Constants
-@cindex constants, floating-point
-
-Be wary of floating-point constants! When reading a floating-point constant
-from program source code, @command{gawk} uses the default precision (that
-of a C @code{double}), unless overridden
-by an assignment to the special variable @code{PREC} on the command
-line, to store it internally as a MPFR number.
-Changing the precision using @code{PREC} in the program text does
-@emph{not} change the precision of a constant. If you need to
-represent a floating-point constant at a higher precision than the
-default and cannot use a command line assignment to @code{PREC},
-you should either specify the constant as a string, or 
-as a rational number, whenever possible. The following example
-illustrates the differences among various ways to
-print a floating-point constant:
-
-@example
-$ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", 0.1) @}'}
-@print{} 0.1000000000000000055511151 
-$ @kbd{gawk -M -v PREC=113 'BEGIN @{ printf("%0.25f\n", 0.1) @}'}
-@print{} 0.1000000000000000000000000
-$ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", "0.1") @}'}
-@print{} 0.1000000000000000000000000
-$ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", 1/10) @}'}
-@print{} 0.1000000000000000000000000
-@end example
-
-In the first case, the number is stored with the default precision of 53 bits.
-
-@node Changing Precision
-@subsection Changing the Precision of a Number
-@cindex changing precision of a number
-
-@cindex Laurie, Dirk
-@quotation
-@i{The point is that in any variable-precision package,
-a decision is made on how to treat numbers given as data,
-or arising in intermediate results, which are represented in
-floating-point format to a precision lower than working precision.
-Do we promote them to full membership of the high-precision club,
-or do we treat them and all their associates as second-class citizens?
-Sometimes the first course is proper, sometimes the second, and it takes
-careful analysis to tell which.}@footnote{Dirk Laurie.
-@cite{Variable-precision Arithmetic Considered Perilous --- A Detective Story}.
-Electronic Transactions on Numerical Analysis. Volume 28, pp. 168-173, 2008.}
-@author Dirk Laurie
-@end quotation
-
-@command{gawk} does not implicitly modify the precision of any previously
-computed results when the working precision is changed with an assignment
-to @code{PREC}.  The precision of a number is always the one that was
-used at the time of its creation, and there is no way for you
-to explicitly change it afterwards. However, since the result of a
-floating-point arithmetic operation is always an arbitrary precision
-floating-point value---with a precision set by the value of @code{PREC}---one of the
-following workarounds effectively accomplishes the desired behavior:
-
-@example
-x = x + 0.0
-@end example
-
-@noindent
-or:
-
-@example
-x += 0.0
-@end example
-
-@node Exact Arithmetic
-@subsection Exact Arithmetic with Floating-point Numbers
-
-@quotation CAUTION
-Never depend on the exactness of floating-point arithmetic,
-even for apparently simple expressions!
-@end quotation
-
-Can arbitrary precision arithmetic give exact results? There are
-no easy answers. The standard rules of algebra often do not apply
-when using floating-point arithmetic.
-Among other things, the distributive and associative laws
-do not hold completely, and order of operation may be important
-for your computation. Rounding error, cumulative precision loss
-and underflow are often troublesome.
-
-When @command{gawk} tests the expressions @samp{0.1 + 12.2} and @samp{12.3}
-for equality
-using the machine double precision arithmetic, it decides that they
-are not equal!
-(@xref{Floating-point Programming}.)
-You can get the result you want by increasing the precision;
-56 bits in this case will get the job done:
-
-@example 
-$ @kbd{gawk -M -v PREC=56 'BEGIN @{ print (0.1 + 12.2 == 12.3) @}'}
-@print{} 1
-@end example
-
-If adding more bits is good, perhaps adding even more bits of
-precision is better?
-Here is what happens if we use an even larger value of @code{PREC}:
-
-@example 
-$ @kbd{gawk -M -v PREC=201 'BEGIN @{ print (0.1 + 12.2 == 12.3) @}'}
-@print{} 0
-@end example
-
-This is not a bug in @command{gawk} or in the MPFR library.
-It is easy to forget that the finite number of bits used to store the value
-is often just an approximation after proper rounding.
-The test for equality succeeds if and only if @emph{all} bits in the two operands
-are exactly the same. Since this is not necessarily true after floating-point
-computations with a particular precision and effective rounding rule,
-a straight test for equality may not work. 
-
-So, don't assume that floating-point values can be compared for equality.
-You should also exercise caution when using other forms of comparisons.
-The standard way to compare two floating-point numbers is to determine
-how much error (or @dfn{tolerance}) you will allow in a comparison and
-check to see if one value is within this error range of the other.
-
-In applications where 15 or fewer decimal places suffice,
-hardware double precision arithmetic can be adequate, and is usually much faster.
-But you do need to keep in mind that every floating-point operation
-can suffer a new rounding error with catastrophic consequences as illustrated
-by our earlier attempt to compute the value of the constant @value{PI}
-(@pxref{Floating-point Programming}).
-Extra precision can greatly enhance the stability and the accuracy
-of your computation in such cases.
-
-Repeated addition is not necessarily equivalent to multiplication
-in floating-point arithmetic. In the example in
-@ref{Floating-point Programming}:
-
-@example
-$ @kbd{gawk 'BEGIN @{}
->   @kbd{for (d = 1.1; d <= 1.5; d += 0.1)    # loop five times (?)}
->       @kbd{i++}
->   @kbd{print i}
-> @kbd{@}'}
-@print{} 4
-@end example
-
-@noindent
-you may or may not succeed in getting the correct result by choosing
-an arbitrarily large value for @code{PREC}. Reformulation of
-the problem at hand is often the correct approach in such situations.
-
-@node Arbitrary Precision Integers
-@section Arbitrary Precision Integer Arithmetic with @command{gawk}
-@cindex integers, arbitrary precision
-@cindex arbitrary precision integers
-
-If one of the options @option{--bignum} or @option{-M} is specified,
-@command{gawk} performs all
-integer arithmetic using GMP arbitrary precision integers.
-Any number that looks like an integer in a program source or @value{DF}
-is stored as an arbitrary precision integer.
-The size of the integer is limited only by your computer's memory.
-The current floating-point context has no effect on operations involving integers.
-For example, the following computes
-@iftex
-@math{5^{4^{3^{2}}}},
-@end iftex
-@ifnottex
-@ifnotdocbook
-5^4^3^2,
-@end ifnotdocbook
-@end ifnottex
-@docbook
-5<superscript>4<superscript>3<superscript>2</superscript></superscript></superscript>, @c
-@end docbook
-the result of which is beyond the
-limits of ordinary @command{gawk} numbers:
-
-@example
-$ @kbd{gawk -M 'BEGIN @{}
->   @kbd{x = 5^4^3^2}
->   @kbd{print "# of digits =", length(x)}
->   @kbd{print substr(x, 1, 20), "...", substr(x, length(x) - 19, 20)}
-> @kbd{@}'}
-@print{} # of digits = 183231
-@print{} 62060698786608744707 ... 92256259918212890625
-@end example
-
-If you were to compute the same value using arbitrary precision
-floating-point values instead, the precision needed for correct output
-(using the formula
-@iftex
-@math{prec = 3.322 @cdot dps}),
-would be @math{3.322 @cdot 183231},
-@end iftex
-@ifnottex
-@ifnotdocbook
-@samp{prec = 3.322 * dps}),
-would be 3.322 x 183231,
-@end ifnotdocbook
-@end ifnottex
-@docbook
-<emphasis>prec</emphasis> = 3.322 &sdot; <emphasis>dps</emphasis>),
-would be
-<emphasis>prec</emphasis> = 3.322 &sdot; 183231, @c
-@end docbook
-or 608693.
-
-The result from an arithmetic operation with an integer and a floating-point value
-is a floating-point value with a precision equal to the working precision.
-The following program calculates the eighth term in
-Sylvester's sequence@footnote{Weisstein, Eric W.
-@cite{Sylvester's Sequence}. From MathWorld---A Wolfram Web Resource.
-@url{http://mathworld.wolfram.com/SylvestersSequence.html}}
-using a recurrence:
-
-@example
-$ @kbd{gawk -M 'BEGIN @{}
->   @kbd{s = 2.0}
->   @kbd{for (i = 1; i <= 7; i++)}
->       @kbd{s = s * (s - 1) + 1}
->   @kbd{print s}
-> @kbd{@}'}
-@print{} 113423713055421845118910464
-@end example
-
-The output differs from the actual number, 113,423,713,055,421,844,361,000,443,
-because the default precision of 53 bits is not enough to represent the
-floating-point results exactly. You can either increase the precision
-(100 bits is enough in this case), or replace the floating-point constant
-@samp{2.0} with an integer, to perform all computations using integer
-arithmetic to get the correct output.
-
-It will sometimes be necessary for @command{gawk} to implicitly convert an
-arbitrary precision integer into an arbitrary precision floating-point value.
-This is primarily because the MPFR library does not always provide the
-relevant interface to process arbitrary precision integers or mixed-mode
-numbers as needed by an operation or function.
-In such a case, the precision is set to the minimum value necessary
-for exact conversion, and the working precision is not used for this purpose.
-If this is not what you need or want, you can employ a subterfuge
-like this:
-
-@example
-gawk -M 'BEGIN @{ n = 13; print (n + 0.0) % 2.0 @}'
-@end example
-
-You can avoid this issue altogether by specifying the number as a floating-point value
-to begin with:
-
-@example
-gawk -M 'BEGIN @{ n = 13.0; print n % 2.0 @}'
-@end example
-
-Note that for the particular example above, it is likely best
-to just use the following:
-
-@example
-gawk -M 'BEGIN @{ n = 13; print n % 2 @}'
-@end example
+@item
+Increasing the accuracy can help, but it is not a panacea.
+
+@item
+Often, increasing the accuracy and then rounding to the desired
+number of digits produces reasonable results.
+
+@item
+Use either @option{-M} or @option{--bignum} to enable MPFR
+arithmetic. Use @code{PREC} to set the precision in bits, and
+@code{ROUNDMODE} to set the IEEE 754 rounding mode.
+
+@item
+With @option{-M} or @option{--bignum}, @command{gawk} performs
+arbitrary precision integer arithmetic using the GMP library.
+This is faster and more space efficient than using MPFR for
+the same calculations.
+
+@item
+There are several ``dark corners'' with respect to floating-point
+numbers where @command{gawk} disagrees with the POSIX standard.
+It pays to be aware of them.
+
+@item
+Overall, there is no need to be unduly suspicious about the results from
+floating-point arithmetic. The lesson to remember is that floating-point
+arithmetic is always more complex than arithmetic using pencil and
+paper. In order to take advantage of the power of computer floating-point,
+you need to know its limitations and work within them. For most casual
+use of floating-point arithmetic, you will often get the expected result
+if you simply round the display of your final results to the correct number
+of significant decimal digits.
+
+@item
+As general advice, avoid presenting numerical data in a manner that
+implies better precision than is actually the case.
+
+@end itemize
 
 @node Dynamic Extensions
 @chapter Writing Extensions for @command{gawk}
@@ -30075,6 +29796,7 @@ When @option{--sandbox} is specified, extensions are disabled
                                 @code{gawk}.
 * gawkextlib::                  The @code{gawkextlib} project.
 * Extension summary::           Extension summary.
+* Extension Exercises::         Exercises.
 @end menu
 
 @node Extension Intro
@@ -33099,9 +32821,7 @@ everything that needs to be loaded.  It is simplest to use the
 dl_load_func(func_table, filefuncs, "")
 @end example
 
-And that's it!  As an exercise, consider adding functions to
-implement system calls such as @code{chown()}, @code{chmod()},
-and @code{umask()}.
+And that's it!
 
 @node Using Internal File Ops
 @subsection Integrating The Extensions
@@ -33548,9 +33268,6 @@ To keep a backup copy of the original files, try this:
 $ @kbd{gawk -i inplace -v INPLACE_SUFFIX=.bak '@{ gsub(/foo/, "bar") @}}
 > @kbd{@{ print @}' file1 file2 file3}
 @end example
-
-We leave it as an exercise to write a wrapper script that presents an
-interface similar to @samp{sed -i}.
 
 @node Extension Sample Ord
 @subsection Character and Numeric values: @code{ord()} and @code{chr()}
@@ -34015,6 +33732,29 @@ to the community of @command{gawk} users, the @code{gawkextlib} project
 should be the place to do so.
 
 @end itemize
+
+@node Extension Exercises
+@section Exercises
+
+@enumerate
+@item
+Add functions to implement system calls such as @code{chown()},
+@code{chmod()}, and @code{umask()} to the file operations extension
+presented in @ref{Internal File Ops}.
+
+@item
+(Hard.)
+How would you provide namespaces in @command{gawk}, so that the
+names of functions in different extensions don't conflict with each other?
+If you come up with a really good scheme, contact the @command{gawk}
+maintainer to tell him about it.
+
+@item
+Write a wrapper script that provides an interface similar to
+@samp{sed -i} for the ``inplace'' extension presented in
+@ref{Extension Sample Inplace}.
+
+@end enumerate
 
 @ifnotinfo
 @part @value{PART4}Appendices
@@ -34961,7 +34701,7 @@ The support for @samp{next file} as two words was removed completely
 (@pxref{Nextfile Statement}).
 
 @item
-Additional commnd line options
+Additional command-line options
 (@pxref{Options}):
 
 @itemize @value{MINUS}
@@ -35265,7 +35005,7 @@ The @option{-R} option was removed.
 
 @item
 Support for high precision arithmetic with MPFR.
-(@pxref{Gawk and MPFR}).
+(@pxref{Arbitrary Precision Arithmetic}).
 
 @item
 The @code{and()}, @code{or()} and @code{xor()} functions
@@ -37287,7 +37027,7 @@ Wikipedia article}, for information on additional versions.
 
 @itemize @value{BULLET}
 @item
-The @command{gawk} distribution is availble from GNU project's main
+The @command{gawk} distribution is available from GNU project's main
 distribution site, @code{ftp.gnu.org}.  The canonical build recipe is:
 
 @example
@@ -38271,7 +38011,7 @@ described in @ref{Dynamic Extensions}.
 @item
 @command{gawk}'s extensions can be disabled with either the
 @option{--traditional} option or with the @option{--posix} option.
-The @option{--parsedebug} option is availble if @command{gawk} is
+The @option{--parsedebug} option is available if @command{gawk} is
 compiled with @samp{-DDEBUG}.
 
 @item
@@ -38493,7 +38233,7 @@ Individual variables, as well as numeric and string variables, are
 referred to as @dfn{scalar} values.
 Groups of values, such as arrays, are not scalars.
 
-@ref{General Arithmetic}, provided a basic introduction to numeric
+@ref{Computer Arithmetic}, provided a basic introduction to numeric
 types (integer and floating-point) and how they are used in a computer.
 Please review that information, including a number of caveats that
 were presented.
@@ -40715,5 +40455,3 @@ which sorta sucks.
 
 TODO:
 -----
-3. Check all docbook figures, if they should include with a
-specific extension or not.
