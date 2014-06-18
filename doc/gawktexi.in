@@ -606,6 +606,9 @@ particular records in a file and perform operations upon them.
                                         This is an advanced method of input.
 * Conversion::                          The conversion of strings to numbers
                                         and vice versa.
+* Strings And Numbers::                 How @command{awk} Converts Between
+                                        Strings And Numbers.
+* Locale influences conversions::       How the locale may affect conversions.
 * All Operators::                       @command{gawk}'s operators.
 * Arithmetic Ops::                      Arithmetic operations (@samp{+},
                                         @samp{-}, etc.)
@@ -10153,6 +10156,19 @@ sequences
 @node Conversion
 @subsection Conversion of Strings and Numbers
 
+Number to string and string to number conversion are generally
+straightforward.  There can be subtleties to be aware of;
+this @value{SECTION} discusses this important facet of @command{awk}.
+
+@menu
+* Strings And Numbers::         How @command{awk} Converts Between Strings And
+                                Numbers.
+* Locale influences conversions:: How the locale may affect conversions.
+@end menu
+
+@node Strings And Numbers
+@subsubsection How @command{awk} Converts Between Strings And Numbers
+
 @cindex converting, strings to numbers
 @cindex strings, converting
 @cindex numbers, converting
@@ -10222,6 +10238,7 @@ b = a ""
 @code{b} has the value @code{"12"}, not @code{"12.00"}.
 @value{DARKCORNER}
 
+@sidebar Pre-POSIX @command{awk} Used @code{OFMT} For String Conversion
 @cindex POSIX @command{awk}, @code{OFMT} variable and
 @cindex @code{OFMT} variable
 @cindex portability, new @command{awk} vs.@: old @command{awk}
@@ -10234,6 +10251,10 @@ conversion from the semantics of printing.  Both @code{CONVFMT} and
 @code{OFMT} have the same default value: @code{"%.6g"}.  In the vast majority
 of cases, old @command{awk} programs do not change their behavior.
 @xref{Print}, for more information on the @code{print} statement.
+@end sidebar
+
+@node Locale influences conversions
+@subsubsection Locales Can Influence Conversion
 
 Where you are can matter when it comes to converting between numbers and
 strings.  The local character set and language---the @dfn{locale}---can
@@ -12012,6 +12033,7 @@ of others let you control how @command{awk} behaves.
 Numbers are automatically converted to strings, and strings to numbers,
 as needed by @command{awk}. Numeric values are converted as if they were
 formatted with @code{sprintf()} using the format in @code{CONVFMT}.
+Locales can influence the conversions.
 
 @item
 @command{awk} provides the usual arithmetic operators (addition,
@@ -29506,7 +29528,7 @@ the following computes
 5<superscript>4<superscript>3<superscript>2</superscript></superscript></superscript>, @c
 @end docbook
 the result of which is beyond the
-limits of ordinary @command{gawk} numbers:
+limits of ordinary hardware double-precision floating point values:
 
 @example
 $ @kbd{gawk -M 'BEGIN @{}
@@ -29614,7 +29636,7 @@ source code constants.)
 Support for the special IEEE 754 floating point values ``Not A Number''
 (NaN), positive Infinity (``inf'') and negative Infinity (``@minus{}inf'').
 In particular, the format for these values is as specified by the ISO 1999
-C standard, which ignores case and can allow machine-dependent additional
+C standard, which ignores case and can allow implementation-dependent additional
 characters after the @samp{nan} and allow either @samp{inf} or @samp{infinity}.
 @end itemize
 
