@@ -2708,23 +2708,28 @@ do_match(int nargs)
  * 2001 standard:
  * 
  * sub(ere, repl[, in ])
- *  Substitute the string repl in place of the first instance of the extended regular
- *  expression ERE in string in and return the number of substitutions. An ampersand
- *  ('&') appearing in the string repl shall be replaced by the string from in that
- *  matches the ERE. An ampersand preceded with a backslash ('\') shall be
- *  interpreted as the literal ampersand character. An occurrence of two consecutive
- *  backslashes shall be interpreted as just a single literal backslash character. Any
- *  other occurrence of a backslash (for example, preceding any other character) shall
- *  be treated as a literal backslash character. Note that if repl is a string literal (the
- *  lexical token STRING; see Grammar (on page 170)), the handling of the
- *  ampersand character occurs after any lexical processing, including any lexical
- *  backslash escape sequence processing. If in is specified and it is not an lvalue (see
- *  Expressions in awk (on page 156)), the behavior is undefined. If in is omitted, awk
- *  shall use the current record ($0) in its place.
+ *  Substitute the string repl in place of the first instance of the
+ *  extended regular expression ERE in string in and return the number of
+ *  substitutions. An ampersand ('&') appearing in the string repl shall
+ *  be replaced by the string from in that matches the ERE. An ampersand
+ *  preceded with a backslash ('\') shall be interpreted as the literal
+ *  ampersand character. An occurrence of two consecutive backslashes shall
+ *  be interpreted as just a single literal backslash character. Any other
+ *  occurrence of a backslash (for example, preceding any other character)
+ *  shall be treated as a literal backslash character. Note that if repl is a
+ *  string literal (the lexical token STRING; see Grammar (on page 170)), the
+ *  handling of the ampersand character occurs after any lexical processing,
+ *  including any lexical backslash escape sequence processing. If in is
+ *  specified and it is not an lvalue (see Expressions in awk (on page 156)),
+ *  the behavior is undefined. If in is omitted, awk shall use the current
+ *  record ($0) in its place.
  *
- * 11/2010: The text in the 2008 standard is the same as just quoted.  However, POSIX behavior
- * is now the default.  This can change the behavior of awk programs.  The old behavior
- * is not available.
+ * 11/2010: The text in the 2008 standard is the same as just quoted.
+ * However, POSIX behavior is now the default.  This can change the behavior
+ * of awk programs.  The old behavior is not available.
+ *
+ * 7/2011: Reverted backslash handling to what it used to be. It was in
+ * gawk for too long. Should have known better.
  */
 
 /*
@@ -2835,9 +2840,11 @@ set_how_many:
 	repl = s->stptr;
 	replend = repl + s->stlen;
 	repllen = replend - repl;
+
 	emalloc(buf, char *, buflen + 2, "do_sub");
 	buf[buflen] = '\0';
 	buf[buflen + 1] = '\0';
+
 	ampersands = 0;
 
 	/*

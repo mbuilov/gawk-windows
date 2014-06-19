@@ -2076,6 +2076,10 @@ people.
 Notable code and documentation contributions were made by
 a number of people. @xref{Contributors}, for the full list.
 
+Thanks to Patrice Dumas  for the new @command{makeinfo} program.
+Thanks to Karl Berry who continues to work to keep
+the Texinfo markup language sane.
+
 @cindex Kernighan, Brian
 I would like to thank Brian Kernighan for invaluable assistance during the
 testing and debugging of @command{gawk}, and for ongoing
@@ -12376,7 +12380,9 @@ If those arguments are not supplied, the functions
 use a reasonable default value.
 @xref{Built-in}, for full details.  If arguments
 are omitted in calls to user-defined functions, then those arguments are
-treated as local variables and initialized to the empty string
+treated as local variables. Such local variables act like the
+empty string if referenced where a string value is required,
+and like zero if referenced where a numeric value is required
 (@pxref{User-defined}).
 
 As an advanced feature, @command{gawk} provides indirect function calls,
@@ -19065,14 +19071,20 @@ used as a variable, array, or function.
 @var{parameter-list} is an optional list of the function's arguments and local
 variable names, separated by commas.  When the function is called,
 the argument names are used to hold the argument values given in
-the call.  The local variables are initialized to the empty string.
+the call.
+
 A function cannot have two parameters with the same name, nor may it
 have a parameter with the same name as the function itself.
-
 In addition, according to the POSIX standard, function parameters
 cannot have the same name as one of the special built-in variables
 (@pxref{Built-in Variables}).  Not all versions of @command{awk} enforce
 this restriction.)
+
+Local variables act like the empty string if referenced where a string
+value is required, and like zero if referenced where a numeric value
+is required. This is the same as regular variables that have never been
+assigned a value.  (There is more to understand about local variables;
+@pxref{Dynamic Typing}.)
 
 The @var{body-of-function} consists of @command{awk} statements.  It is the
 most important part of the definition, because it says what the function
