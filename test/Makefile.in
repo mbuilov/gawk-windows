@@ -1618,7 +1618,7 @@ poundbang::
 	@if ./_pbd.awk "$(srcdir)"/poundbang.awk > _`basename $@` ; \
 	then : ; \
 	else \
-		sed "s;/tmp/gawk;../$(AWKPROG);" < "$(srcdir)"/poundbang.awk > ./_pbd.awk ; \
+		sed "s;/tmp/gawk;$(AWKPROG);" < "$(srcdir)"/poundbang.awk > ./_pbd.awk ; \
 		chmod +x ./_pbd.awk ; \
 		LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} ./_pbd.awk "$(srcdir)"/poundbang.awk > _`basename $@`;  \
 	fi
