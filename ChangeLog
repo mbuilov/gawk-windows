@@ -1,3 +1,13 @@
+2014-06-22         Paul Eggert          <eggert@penguin.cs.ucla.edu>
+
+	Bring in from GNULIB:
+
+	regex: fix memory leak in compiler
+	Fix by Andreas Schwab in:
+	https://sourceware.org/ml/libc-alpha/2014-06/msg00462.html
+	* lib/regcomp.c (parse_expression): Deallocate partially
+	constructed tree before returning error.
+
 2014-06-19         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_sub): Add more info to leading comment.
