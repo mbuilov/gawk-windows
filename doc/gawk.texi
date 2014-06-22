@@ -3302,7 +3302,7 @@ $ gawk 'BEGIN @{ print "dont panic" # a friendly \
 >                                    BEGIN rule
 > @}'
 @error{} gawk: cmd. line:2:                BEGIN rule
-@error{} gawk: cmd. line:2:                ^ parse error
+@error{} gawk: cmd. line:2:                ^ syntax error
 @end example
 
 @noindent
@@ -34062,7 +34062,7 @@ flags in the @code{FNM} array.
 The flags are follows:
 
 @multitable @columnfractions .25 .75
-@headitem Array element @tab Corresponding lag defined by @code{fnmatch()}
+@headitem Array element @tab Corresponding flag defined by @code{fnmatch()}
 @item @code{FNM["CASEFOLD"]} @tab @code{FNM_CASEFOLD}
 @item @code{FNM["FILE_NAME"]} @tab @code{FNM_FILE_NAME}
 @item @code{FNM["LEADING_DIR"]} @tab @code{FNM_LEADING_DIR}
@@ -34477,7 +34477,7 @@ main @command{gawk} distribution.
 
 @cindex @command{git} utility
 You can check out the code for the @code{gawkextlib} project
-using the @uref{http://git-scm.com, GIT} distributed source
+using the @uref{http://git-scm.com, Git} distributed source
 code control system.  The command is as follows:
 
 @example
@@ -36277,7 +36277,6 @@ into a byte-code interpreter, including the debugger.
 
 @item
 The addition of true arrays of arrays.
-@ref{Arrays of Arrays}.
 
 @item
 The additional modifications for support of arbitrary precision arithmetic.
@@ -36299,6 +36298,7 @@ with Pat Rankin.
 @end itemize
 
 @cindex Papadopoulos, Panos
+@item
 Panos Papadopoulos contributed the original text for @ref{Include Files}.
 
 @item
