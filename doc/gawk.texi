@@ -3849,10 +3849,8 @@ No space is allowed between the @option{-o} and @var{file}, if
 @var{file} is supplied.
 
 @quotation NOTE
-Due to the way @command{gawk} has evolved, with this option
-your program is still executed.  This will change in the
-next major release such that @command{gawk} will only
-pretty-print the program and not run it.
+In the past, this option would also execute your program.
+This is no longer the case.
 @end quotation
 
 @item @option{-O}
@@ -4337,11 +4335,6 @@ to be slower. Its purpose is to help isolate differences between the
 two regexp matchers that @command{gawk} uses internally. (There aren't
 supposed to be differences, but occasionally theory and practice don't
 coordinate with each other.)
-
-@item GAWK_NO_PP_RUN
-If this variable exists, then when invoked with the @option{--pretty-print}
-option, @command{gawk} skips running the program.  This variable will
-not survive into the next major release.
 
 @item GAWK_STACKSIZE
 This specifies the amount by which @command{gawk} should grow its
@@ -27510,8 +27503,8 @@ When called this way, @command{gawk} ``pretty prints'' the program into
 @file{awkprof.out}, without any execution counts.
 
 @quotation NOTE
-The @option{--pretty-print} option still runs your program.
-This will change in the next major release.
+Once upon a time, the @option{--pretty-print} option would also run
+your program.  This is is no longer the case.
 @end quotation
 @c ENDOFRANGE awkp
 @c ENDOFRANGE proawk
