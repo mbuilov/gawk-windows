@@ -107,10 +107,11 @@ STRING( REGEX REPLACE ".*[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" GAWK_BUGFIX_VERSION
 # The definition of the symbol GAWK cannot be passed in config.h
 # because the extensions will fail to build.
 add_definitions(-DGAWK)
+DefineConfigHValue(_GL_ATTRIBUTE_PURE "__attribute__ ((__pure__))")
 DefineConfigHValue(GAWK_VERSION "${GAWK_MAJOR_VERSION}.${GAWK_MINOR_VERSION}.${GAWK_BUGFIX_VERSION}")
 DefineConfigHValue(VERSION \\"${GAWK_VERSION}\\")
 DefineConfigHValue(PACKAGE \\"gawk\\")
-DefineConfigHValue(PACKAGE_STRING "GNU Awk ${GAWK_VERSION}")
+DefineConfigHValue(PACKAGE_STRING \\"GNU Awk ${GAWK_VERSION}\\")
 DefineConfigHValue(PACKAGE_TARNAME \\"gawk\\")
 DefineConfigHValue(PACKAGE_URL \\"http://www.gnu.org/software/gawk/\\")
 DefineConfigHValue(PACKAGE_VERSION \\"${GAWK_VERSION}\\")
