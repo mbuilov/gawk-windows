@@ -1,3 +1,122 @@
+2014-06-19         Michael Forney       <forney@google.com>
+
+	* Makefile.am (poundbang): Fix relative path of AWKPROG.
+
+2014-06-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (dbugeval): Add leading @ to recipe. Ooops.
+
+2014-05-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (regnul1, regnul2): New tests.
+	* regnul1.awk, regnul1.ok, regnul1.awk, regnul2.ok: New files.
+
+2014-05-22         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* lintwarn.ok: Updated.
+
+2014-05-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (EXTRA_DIST): Forgot dbugeval.ok. Ooops.
+
+2014-05-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (dbugeval): New test.
+	* dbugeval.in, dbugeval.ok: New files.
+
+2014-05-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (rsglstdin): New test.
+	* rsglstdin.ok: New file.
+
+2014-05-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (rebuf): Force buffer size to 4096 via AWKBUFSIZE
+	environment variable.
+	(rsgetline): New test.
+	* rsgetline.awk, rsgetline.in, rsgetline.ok: New files.
+
+2014-04-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (charset-msg-start): Add a warning message that tests
+	may fail without adequate locale support, per request from
+	Nelson H.F. Beebe.
+
+2014-04-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* 4.1.1: Release tar ball made.
+
+2014-04-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am: Prettify list of tests a little bit.
+
+2014-04-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (EXTRA_DIST): Add readfile2.ok. Oops.
+
+2014-03-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (readfile2): New test.
+	* readfile2.awk, readfile2.ok: New files.
+
+2014-02-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regrange.ok: Update after code improvements.
+
+2014-02-03         Stepan Kasal         <kasal@ucw.cz>
+
+	* strftime.awk: the default format uses %e, not %d (Introduced on
+	2014-01-16; the previous code mangled the output of command "date"
+	to match %d.) Remove the "mucking" for cygwin, it's obsolete and
+	incompatible with %e.
+
+2014-01-28         Eli Zaretskii        <eliz@gnu.org>
+
+	* strftime.awk: If DATECMD variable is non-empty, use it instead
+	of the literal "date" as the 'date'-like command.
+
+2014-01-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (mpfrnegzero): New test.
+	* mpfrnegzero.awk, mpfrnegzero.ok: New files.
+
+2014-01-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (readdir): Run ls commands outside the awk script.
+	* readdir0.awk: Read ls results from files. Helps with MinGW.
+	Thanks to Eli Zaretskii for the problem report.
+
+2014-01-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am: Quote instances of $(top_srcdir) also.
+
+2014-01-16         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (strftime): Remove comment about the race condition, since
+	this should be fixed.  And gawk now calls date inside the script.
+	* strftime.awk: Based on an idea from Pat Rankin, fix the race
+	condition by looping repeatedly over strftime/date/strftime until
+	the before and after strftime results match.  That should fix
+	the race condition where the seconds field might increment between
+	invocations.
+
+2014-01-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (split_after_fpat): New test.
+	* split_after_fpat.awk, split_after_fpat.ok,
+	split_after_fpat.in: New files.
+
+2013-12-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (ignrcas2): Change to use en_US.UTF-8; it
+	seems that plain en_US doesn't exist anymore. Thanks to
+	Richard Palo.
+
+2013-12-29         John E. Malmberg      <wb8tyw@qsl.net>
+
+	* fts.awk: Adjust for VMS.
+	* rwarray.awk: Adjust for VMS.
+
 2013-12-10         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am: Remove instances of "" that were incorrect.

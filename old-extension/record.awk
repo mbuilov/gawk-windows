@@ -30,8 +30,8 @@
 #
 
 BEGIN {
-	extension("fileop.so")
-	extension("bindarr.so")
+	extension("./fileop.so")
+	extension("./bindarr.so")
 }
 
 # _record_count --- return the number of records in file

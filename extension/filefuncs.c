@@ -9,7 +9,7 @@
  */
 
 /*
- * Copyright (C) 2001, 2004, 2005, 2010, 2011, 2012, 2013
+ * Copyright (C) 2001, 2004, 2005, 2010, 2011, 2012, 2013, 2014
  * the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
@@ -35,6 +35,34 @@
 #endif
 
 #define _BSD_SOURCE
+
+#ifdef __VMS
+#if (__CRTL_VER >= 70200000) && !defined (__VAX)
+#define _LARGEFILE 1
+#endif
+
+#ifndef __VAX
+#ifdef __CRTL_VER
+#if __CRTL_VER >= 80200000
+#define _USE_STD_STAT 1
+#endif
+#endif
+#endif
+#define _POSIX_C_SOURCE 1
+#define _XOPEN_SOURCE 1
+#include <stat.h>
+#ifndef S_ISVTX
+#define S_ISVTX (0)
+#endif
+#ifndef major
+#define major(s) (s)
+#endif
+#ifndef minor
+#define minor(s) (0)
+#endif
+#include <unixlib.h>
+#endif
+
 
 #include <stdio.h>
 #include <assert.h>
@@ -256,7 +284,7 @@ read_symlink(const char *fname, size_t bufsize, ssize_t *linksize)
 			   returns -1 with errno == ERANGE if the buffer is
 			   too small.  */
 			if (errno != ERANGE) {
-				free(buf);
+				gawk_free(buf);
 				return NULL;
 			}
 		}
@@ -265,7 +293,7 @@ read_symlink(const char *fname, size_t bufsize, ssize_t *linksize)
 			buf[*linksize] = '\0';
 			return buf;
 		}
-		free(buf);
+		gawk_free(buf);
 		if (bufsize <= MAXSIZE/2)
 			bufsize *= 2;
 		else if (bufsize < MAXSIZE)
@@ -826,7 +854,7 @@ do_fts(int nargs, awk_value_t *result)
 
 out:
 	if (pathvector != NULL)
-		free(pathvector);
+		gawk_free(pathvector);
 	if (path_array != NULL)
 		(void) release_flattened_array(pathlist.array_cookie, path_array);
 

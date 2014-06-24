@@ -1,7 +1,7 @@
 dnl
 dnl configure.ac --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995-2013 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995-2014 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Programming Language.
@@ -137,14 +137,14 @@ AM_LANGINFO_CODESET
 gt_LC_MESSAGES
 
 dnl checks for header files
-AC_HEADER_STDC
-AC_HEADER_STDBOOL
-AC_HEADER_SYS_WAIT
-AC_HEADER_TIME
 AC_CHECK_HEADERS(arpa/inet.h fcntl.h limits.h locale.h libintl.h mcheck.h \
 	netdb.h netinet/in.h stdarg.h stddef.h string.h \
 	sys/ioctl.h sys/param.h sys/socket.h sys/time.h unistd.h \
 	termios.h stropts.h wchar.h wctype.h)
+AC_HEADER_STDC
+AC_HEADER_STDBOOL
+AC_HEADER_SYS_WAIT
+AC_HEADER_TIME
 
 if test "$ac_cv_header_string_h" = yes
 then
@@ -290,8 +290,12 @@ if test "x$enable_extensions" != "xno"; then
 
 	dnl On MirBSD (and probably other systems), don't even try.
 	case $host_os in
-	mirbsd*)
-		: ;;
+	mirbsd* | openedition*)	# OS/390 z/OS POSIX layer
+		cat << \EOF > extension/Makefile
+all dist check clean distclean install uninstall distcheck:
+	@exit 0
+EOF
+		;;
 	*)
 	AC_CHECK_HEADER(dlfcn.h,
 		[
@@ -309,7 +313,7 @@ if test "x$enable_extensions" != "xno"; then
 			if test "$GCC" = yes; then
 				case $host_os in
 				linux*|freebsd*)
-					LDFLAGS="$LDFLAGS -export-dynamic"
+					LDFLAGS="$LDFLAGS -Wl,-export-dynamic"
 					;;
 				esac
 			fi
@@ -374,7 +378,6 @@ GNUPG_CHECK_MPFR
 
 dnl checks for structure members
 AC_CHECK_MEMBERS([struct stat.st_blksize])
-AC_HEADER_TIME
 AC_STRUCT_TM
 AC_STRUCT_TIMEZONE
 

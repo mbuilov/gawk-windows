@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2013 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2014 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -1405,21 +1405,12 @@ simp_exp
 	| LEX_GETLINE opt_variable input_redir
 	  {
 		/*
-		 * In BEGINFILE/ENDFILE, allow `getline var < file'
+		 * In BEGINFILE/ENDFILE, allow `getline [var] < file'
 		 */
 
-		if (rule == BEGINFILE || rule == ENDFILE) {
-			if ($2 != NULL && $3 != NULL)
-				;	 /* all  ok */
-			else {
-				if ($2 != NULL)
-					error_ln($1->source_line,
-						_("`getline var' invalid inside `%s' rule"), ruletab[rule]);
-				else
-					error_ln($1->source_line,
-						_("`getline' invalid inside `%s' rule"), ruletab[rule]);
-			}
-		}
+		if ((rule == BEGINFILE || rule == ENDFILE) && $3 == NULL)
+			error_ln($1->source_line,
+				 _("non-redirected `getline' invalid inside `%s' rule"), ruletab[rule]);
 		if (do_lint && rule == END && $3 == NULL)
 			lintwarn_ln($1->source_line,
 				_("non-redirected `getline' undefined inside END action"));
@@ -1965,15 +1956,39 @@ void
 negate_num(NODE *n)
 {
 #ifdef HAVE_MPFR
-	if (is_mpg_float(n)) {
-		int tval;
-		tval = mpfr_neg(n->mpg_numbr, n->mpg_numbr, ROUND_MODE);
-		IEEE_FMT(n->mpg_numbr, tval);
-	} else if (is_mpg_integer(n)) {
-		mpz_neg(n->mpg_i, n->mpg_i);
-	} else
+	int tval = 0;
 #endif
+
+	if (! is_mpg_number(n)) {
 		n->numbr = -n->numbr;
+		return;
+	}
+
+#ifdef HAVE_MPFR
+	if (is_mpg_integer(n)) {
+		if (! iszero(n)) {
+			mpz_neg(n->mpg_i, n->mpg_i);
+			return;
+		}
+
+		/*
+		 * 0 --> -0 conversion. Requires turning the MPG integer
+		 * into an MPFR float.
+		 */
+
+		mpz_clear(n->mpg_i);	/* release the integer storage */
+
+		/* Convert and fall through. */
+		tval = mpfr_set_d(n->mpg_numbr, 0.0, ROUND_MODE);
+		IEEE_FMT(n->mpg_numbr, tval);
+		n->flags &= ~MPZN;
+		n->flags |= MPFN;
+	}
+
+	/* mpfr float case */
+	tval = mpfr_neg(n->mpg_numbr, n->mpg_numbr, ROUND_MODE);
+	IEEE_FMT(n->mpg_numbr, tval);
+#endif
 }
 
 /* print_included_from --- print `Included from ..' file names and locations */
@@ -2309,10 +2324,19 @@ parse_program(INSTRUCTION **pcode)
 	return (ret || errcount);
 }
 
+/* free_srcfile --- free a SRCFILE struct */
+
+void
+free_srcfile(SRCFILE *thisfile)
+{
+	efree(thisfile->src);
+	efree(thisfile);
+}
+
 /* do_add_srcfile --- add one item to srcfiles */
 
 static SRCFILE *
-do_add_srcfile(int stype, char *src, char *path, SRCFILE *thisfile)
+do_add_srcfile(enum srctype stype, char *src, char *path, SRCFILE *thisfile)
 {
 	SRCFILE *s;
 
@@ -2334,7 +2358,7 @@ do_add_srcfile(int stype, char *src, char *path, SRCFILE *thisfile)
  */
 
 SRCFILE *
-add_srcfile(int stype, char *src, SRCFILE *thisfile, bool *already_included, int *errcode)
+add_srcfile(enum srctype stype, char *src, SRCFILE *thisfile, bool *already_included, int *errcode)
 {
 	SRCFILE *s;
 	struct stat sbuf;
@@ -4308,18 +4332,9 @@ func_use(const char *name, enum defref how)
 	len = strlen(name);
 	ind = hash(name, len, HASHSIZE, NULL);
 
-	for (fp = ftable[ind]; fp != NULL; fp = fp->next) {
-		if (strcmp(fp->name, name) == 0) {
-			if (how == FUNC_DEFINE)
-				fp->defined++;
-			else if (how == FUNC_EXT) {
-				fp->defined++;
-				fp->extension++;
-			} else
-				fp->used++;
-			return;
-		}
-	}
+	for (fp = ftable[ind]; fp != NULL; fp = fp->next)
+		if (strcmp(fp->name, name) == 0)
+			goto update_value;
 
 	/* not in the table, fall through to allocate a new one */
 
@@ -4327,6 +4342,10 @@ func_use(const char *name, enum defref how)
 	memset(fp, '\0', sizeof(struct fdesc));
 	emalloc(fp->name, char *, len + 1, "func_use");
 	strcpy(fp->name, name);
+	fp->next = ftable[ind];
+	ftable[ind] = fp;
+
+update_value:
 	if (how == FUNC_DEFINE)
 		fp->defined++;
 	else if (how == FUNC_EXT) {
@@ -4334,8 +4353,6 @@ func_use(const char *name, enum defref how)
 		fp->extension++;
 	} else
 		fp->used++;
-	fp->next = ftable[ind];
-	ftable[ind] = fp;
 }
 
 /* track_ext_func --- add an extension function to the table */

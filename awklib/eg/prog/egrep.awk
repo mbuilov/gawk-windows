@@ -90,9 +90,7 @@ function endfile(file)
 }
 END    \
 {
-    if (total == 0)
-        exit 1
-    exit 0
+    exit (total == 0)
 }
 function usage(    e)
 {

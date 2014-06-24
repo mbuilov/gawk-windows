@@ -115,7 +115,7 @@ BEGIN {
             }
             fpath = pathto($2)
             if (fpath == "") {
-                printf("igawk:%s:%d: cannot find %s\n",
+                printf("igawk: %s:%d: cannot find %s\n",
                     input[stackptr], FNR, $2) > "/dev/stderr"
                 continue
             }

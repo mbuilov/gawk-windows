@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 2012, 2013
+ * Copyright (C) 2012, 2013, 2014
  * the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
@@ -237,8 +237,8 @@ try_modify_environ(int nargs, awk_value_t *result)
 		printf("try_modify_environ: set_array_element of ENVIRON passed\n");
 	} else {
 		printf("try_modify_environ: set_array_element of ENVIRON failed\n");
-		free(index.str_value.str);
-		free(value.str_value.str);
+		gawk_free(index.str_value.str);
+		gawk_free(value.str_value.str);
 	}
 
 	if (! flatten_array(environ_array, & flat_array)) {

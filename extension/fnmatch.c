@@ -45,15 +45,29 @@
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
 
+#ifdef __VMS
+#define __iswctype iswctype
+#define __btowc btowc
+#endif
+
 #define _GNU_SOURCE	1	/* use GNU extensions if they're there */
 #ifdef HAVE_FNMATCH_H
 #include <fnmatch.h>
 #else
+#ifdef __VMS
+#include "fnmatch.h"	/* version that comes with gawk */
+#else
 #include "../missing_d/fnmatch.h"	/* version that comes with gawk */
+#endif
+#define HAVE_FNMATCH_H
 #endif
 
 #ifndef HAVE_FNMATCH
+#ifdef __VMS
+#include "fnmatch.c"	/* ditto */
+#else
 #include "../missing_d/fnmatch.c"	/* ditto */
+#endif
 #define HAVE_FNMATCH
 #endif
 

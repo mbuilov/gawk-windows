@@ -1,6 +1,6 @@
 # Makefile for GNU Awk test suite.
 #
-# Copyright (C) 1988-2013 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2014 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -141,8 +141,7 @@ BASIC_TESTS = \
 	arrayref arrymem1 arryref2 arryref3 arryref4 arryref5 arynasty \
 	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
 	aryprm8 arysubnm asgext awkpath \
-	back89 backgsub \
-	badassign1 \
+	back89 backgsub badassign1 \
 	childin clobber closebad clsflnam compare compare2 concat1 concat2 \
 	concat3 concat4 convfmt \
 	datanonl defref delargv delarpm2 delarprm delfunc dfamb1 dfastress dynlj \
@@ -194,14 +193,16 @@ GAWK_EXT_TESTS = \
 	patsplit posix printfbad1 printfbad2 printfbad3 procinfs \
 	profile1 profile2 profile3 profile4 profile5 pty1 \
 	rebuf regx8bit reginttrad reint reint2 rsstart1 \
-	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
+	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
+	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
 	symtab7 symtab8 symtab9
 
 EXTRA_TESTS = inftest regtest
 INET_TESTS = inetdayu inetdayt inetechu inetecht
 MACHINE_TESTS = double1 double2 fmtspcl intformat
-MPFR_TESTS = mpfrnr mpfrrnd mpfrieee mpfrexprange mpfrsort mpfrbigint
+MPFR_TESTS = mpfrnr mpfrnegzero mpfrrnd mpfrieee mpfrexprange \
+	mpfrsort mpfrbigint
 LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
 	fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
@@ -209,7 +210,7 @@ LOCALE_CHARSET_TESTS = \
 
 SHLIB_TESTS = \
 	fnmatch filefuncs fork fork2 fts functab4 inplace1 inplace2 inplace3 \
-	ordchr ordchr2 readdir readfile revout revtwoway rwarray testext time
+	ordchr ordchr2 readdir readfile readfile2 revout revtwoway rwarray testext time
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
@@ -410,7 +411,7 @@ getline2::
 
 awkpath::
 	@echo $@
-	@AWKPATH=""$(srcdir)"$(PATH_SEPARATOR)"$(srcdir)"/lib" $(AWK) -f awkpath.awk >_$@
+	@AWKPATH="$(srcdir)$(PATH_SEPARATOR)$(srcdir)/lib" $(AWK) -f awkpath.awk >_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 argtest::
@@ -429,15 +430,13 @@ nonl::
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 strftime::
-	@echo This test could fail on slow machines or on a minute boundary,
-	@echo so if it does, double check the actual results:
 	@echo $@
 #	@GAWKLOCALE=C; export GAWKLOCALE; \
 #	TZ=GMT0; export TZ; \
-#	(LC_ALL=C date) | $(AWK) -v OUTPUT=_$@ -f "$(srcdir)"/strftime.awk
+#	$(AWK) -v OUTPUT=_$@ -f "$(srcdir)"/strftime.awk
 	@GAWKLOCALE=C; export GAWKLOCALE; \
 	TZ=GMT0; export TZ; \
-	(LC_ALL=C $(DATE)) | $(AWK) -v OUTPUT=_$@ -f "$(srcdir)"/strftime.awk
+	$(AWK) -v OUTPUT=_$@ -v DATECMD="$(DATE)" -f "$(srcdir)"/strftime.awk
 	@-$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
 
 litoct::
@@ -494,7 +493,7 @@ nors::
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 fmtspcl.ok: fmtspcl.tok
-	@$(AWK) -v "sd="$(srcdir)"" 'BEGIN {pnan = sprintf("%g",sqrt(-1)); nnan = sprintf("%g",-sqrt(-1)); pinf = sprintf("%g",-log(0)); ninf = sprintf("%g",log(0))} {sub(/positive_nan/,pnan); sub(/negative_nan/,nnan); sub(/positive_infinity/,pinf); sub(/negative_infinity/,ninf); sub(/fmtspcl/,(sd"/fmtspcl")); print}' < "$(srcdir)"/fmtspcl.tok > $@ 2>/dev/null
+	@$(AWK) -v "sd=$(srcdir)" 'BEGIN {pnan = sprintf("%g",sqrt(-1)); nnan = sprintf("%g",-sqrt(-1)); pinf = sprintf("%g",-log(0)); ninf = sprintf("%g",log(0))} {sub(/positive_nan/,pnan); sub(/negative_nan/,nnan); sub(/positive_infinity/,pinf); sub(/negative_infinity/,ninf); sub(/fmtspcl/,(sd"/fmtspcl")); print}' < "$(srcdir)"/fmtspcl.tok > $@ 2>/dev/null
 
 fmtspcl: fmtspcl.ok
 	@echo $@
@@ -660,7 +659,7 @@ widesub4::
 
 ignrcas2::
 	@echo $@
-	@GAWKLOCALE=en_US ; export GAWKLOCALE ; \
+	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -797,6 +796,7 @@ mbprintf3::
 
 mbprintf4::
 	@echo $@
+	@echo Expect mbprintf4 to fail with MinGW and DJGPP
 	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -870,6 +870,7 @@ profile4:
 
 profile5:
 	@echo $@
+	@echo Expect profile5 to fail with MinGW due to 3 digits in %e output
 	@GAWK_NO_PP_RUN=1 $(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -911,6 +912,11 @@ mpfrrnd:
 	@$(AWK) -M -vPREC=53 -f "$(srcdir)"/$@.awk > _$@ 2>&1
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+mpfrnegzero:
+	@echo $@
+	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 mpfrnr:
 	@echo $@
 	@$(AWK) -M -vPREC=113 -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in > _$@
@@ -929,7 +935,7 @@ mpfrbigint:
 jarebug::
 	@echo $@
 	@echo Expect jarebug to fail with DJGPP and MinGW.
-	@"$(srcdir)"/$@.sh "$(AWKPROG)" ""$(srcdir)"/$@.awk" ""$(srcdir)"/$@.in" "_$@"
+	@"$(srcdir)"/$@.sh "$(AWKPROG)" "$(srcdir)"/$@.awk "$(srcdir)"/$@.in "_$@"
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 ordchr2::
@@ -942,6 +948,11 @@ readfile::
 	@echo $@
 	@$(AWK) -l readfile 'BEGIN {printf "%s", readfile("Makefile")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) Makefile _$@ && rm -f _$@ || cp -p Makefile $@.ok
+
+readfile2::
+	@echo $@
+	@$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.awk "$(srcdir)"/readdir.awk > _$@ || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 include2::
 	@echo $@
@@ -1017,8 +1028,8 @@ inplace3::
 
 testext::
 	@echo $@
-#	@$(AWK) '/^(@load|BEGIN)/,/^}/' $(top_srcdir)/extension/testext.c > testext.awk
-	@$(AWK) ' /^(@load|BEGIN)/,/^}/' $(top_srcdir)/extension/testext.c > testext.awk
+#	@$(AWK) '/^(@load|BEGIN)/,/^}/' "$(top_srcdir)"/extension/testext.c > testext.awk
+	@$(AWK) ' /^(@load|BEGIN)/,/^}/' "$(top_srcdir)"/extension/testext.c > testext.awk
 	@$(AWK) -f testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ testext.awk
 
@@ -1029,19 +1040,28 @@ readdir:
 	fi
 	@echo $@
 	@echo This test may fail on MinGW if $(LS) does not report full Windows file index as the inode
-	@$(AWK) -f "$(srcdir)"/readdir.awk $(top_srcdir) > _$@
-#	@ls -afli $(top_srcdir) | sed 1d | $(AWK) -f "$(srcdir)"/readdir0.awk -v extout=_$@ $(top_srcdir) > $@.ok
-	@$(LS) -afli $(top_srcdir) | sed 1d | $(AWK) -f "$(srcdir)"/readdir0.awk -v extout=_$@ $(top_srcdir) > $@.ok
-	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
+	@$(AWK) -f "$(srcdir)"/readdir.awk "$(top_srcdir)" > _$@
+#	@ls -afi "$(top_srcdir)" > _dirlist
+	@$(LS) -afi "$(top_srcdir)" > _dirlist
+#	@ls -lna "$(top_srcdir)" | sed 1d > _longlist
+	@$(LS) -lna "$(top_srcdir)" | sed 1d > _longlist
+	@$(AWK) -f "$(srcdir)"/readdir0.awk -v extout=_$@  \
+		-v dirlist=_dirlist -v longlist=_longlist > $@.ok
+	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@ _dirlist _longlist
 
 fts:
-	@if [ "`uname`" = IRIX ];  then \
+	@case `uname` in \
+	IRIX) \
 	echo This test may fail on IRIX systems when run on an NFS filesystem.; \
-	echo If it does, try rerunning on an xfs filesystem. ; \
-	fi
+	echo If it does, try rerunning on an xfs filesystem. ;; \
+	CYGWIN*) \
+	echo This test may fail on CYGWIN systems when run on an NFS filesystem.; \
+	echo If it does, try rerunning on an ntfs filesystem. ;; \
+	esac
 	@echo $@
 	@echo Expect $@ to fail with MinGW because function 'fts' is not defined.
-	@$(AWK) -f "$(srcdir)"/fts.awk
+#	@$(AWK) -f "$(srcdir)"/fts.awk
+	@$(AWK) -f "$(srcdir)"/fts.awk || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 charasbytes:
@@ -1098,12 +1118,14 @@ dfamb1:
 
 backbigs1:
 	@echo $@
+	@echo Expect backbigs1 to fail with MinGW and DJGPP
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 backsmalls1:
 	@echo $@
+	@echo Expect backsmalls1 to fail with MinGW and DJGPP
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -1113,7 +1135,6 @@ backsmalls2:
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
 addcomma:
@@ -2308,6 +2329,11 @@ sortu:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+split_after_fpat:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 splitarg4:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -2471,8 +2497,8 @@ time:
 # Targets generated for other tests:
 
 $(srcdir)/Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
-	files=`cd ""$(srcdir)"" && echo *.awk *.in`; \
-	$(AWK) -f "$(srcdir)"/Gentests ""$(srcdir)"/Makefile.am" $$files > "$(srcdir)"/Maketests
+	files=`cd "$(srcdir)" && echo *.awk *.in`; \
+	$(AWK) -f "$(srcdir)"/Gentests "$(srcdir)"/Makefile.am $$files > "$(srcdir)"/Maketests
 
 clean:
 	rm -fr _* core core.* fmtspcl.ok junk strftime.ok test1 test2 \

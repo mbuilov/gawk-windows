@@ -1,7 +1,7 @@
 #
 # Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 2000-2013 the Free Software Foundation, Inc.
+# Copyright (C) 2000-2014 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -172,10 +172,14 @@ check-local: gawk$(EXEEXT)
 dist-hook:
 	cd $(distdir)/extension ; rm -f *.o *.so
 	cd $(srcdir)/pc ; \
-	sed -n -f configpk.sed < ../configure.ac > tmp.sed ; \
-	sed -f config.sed < ../configh.in > config.tmp ; \
-	sed -f tmp.sed < config.tmp > config.h ; \
-	$(RM) tmp.sed config.tmp
+	chmod u+w config.h ; \
+	sed -n -f configpk.sed < ../configure.ac > /tmp/tmp.sed ; \
+	sed -f config.sed < ../configh.in > /tmp/config.tmp ; \
+	sed -f /tmp/tmp.sed < /tmp/config.tmp > config.h ; \
+	$(RM) /tmp/tmp.sed /tmp/config.tmp
+	pwd
+	chmod u+w $(distdir)/pc/config.h
+	cp $(srcdir)/pc/config.h $(distdir)/pc/config.h
 
 # Special rules for individual files
 # Use of awk instead of $(AWK) is deliberate, in case gawk doesn't build

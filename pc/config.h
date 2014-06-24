@@ -49,9 +49,6 @@
 #define HAVE_DECL_TZNAME 1
 #endif
 
-/* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
-#undef HAVE_DOPRNT
-
 /* Define to 1 if you have the <fcntl.h> header file. */
 #define HAVE_FCNTL_H 1
 
@@ -372,9 +369,6 @@
 #define HAVE_USLEEP 1
 #endif
 
-/* Define to 1 if you have the `vprintf' function. */
-#define HAVE_VPRINTF 1
-
 /* Define to 1 if you have the <wchar.h> header file. */
 #ifdef __MINGW32__
 #define HAVE_WCHAR_H 1
@@ -429,7 +423,7 @@
 #define PACKAGE_NAME "GNU Awk"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GNU Awk 4.1.0a"
+#define PACKAGE_STRING "GNU Awk 4.1.60"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gawk"
@@ -438,7 +432,7 @@
 #define PACKAGE_URL "http://www.gnu.org/software/gawk/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.1.0a"
+#define PACKAGE_VERSION "4.1.60"
 
 /* Define to 1 if *printf supports %F format */
 #undef PRINTF_HAS_F_FORMAT
@@ -500,7 +494,7 @@
 
 
 /* Version number of package */
-#define VERSION "4.1.0a"
+#define VERSION "4.1.60"
 
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE

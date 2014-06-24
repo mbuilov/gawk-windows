@@ -35,7 +35,11 @@
  * Unlike the main gawk code base, this include is NOT dependant
  * upon MinGW or EMX.
  */
+#ifndef __VMS
 #include "../nonposix.h"
+#else
+#include "nonposix.h"
+#endif
 
 #ifndef DIR_TO_FD
 # define DIR_TO_FD(d) (FAKE_FD_VALUE)

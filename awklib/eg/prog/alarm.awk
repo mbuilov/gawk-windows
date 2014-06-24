@@ -71,7 +71,7 @@ BEGIN    \
     # how long to sleep for
     naptime = target - current
     if (naptime <= 0) {
-        print "time is in the past!" > "/dev/stderr"
+        print "alarm: time is in the past!" > "/dev/stderr"
         exit 1
     }
     # zzzzzz..... go away if interrupted

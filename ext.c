@@ -7,7 +7,7 @@
  */
 
 /*
- * Copyright (C) 1995 - 2001, 2003-2013 the Free Software Foundation, Inc.
+ * Copyright (C) 1995 - 2001, 2003-2014 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -174,9 +174,9 @@ load_old_ext(SRCFILE *s, const char *init_func, const char *fini_func, NODE *obj
 		fatal(_("`extension' is a gawk extension"));
 
 	if (lib_name == NULL)
-		fatal(_("load_ext: received NULL lib_name"));
+		fatal(_("extension: received NULL lib_name"));
 
-	if ((dl = dlopen(s->fullpath, flags)) == NULL)
+	if ((dl = dlopen(lib_name, flags)) == NULL)
 		fatal(_("extension: cannot open library `%s' (%s)"), lib_name,
 		      dlerror());
 
@@ -221,13 +221,11 @@ make_builtin(const awk_ext_func_t *funcinfo)
 		fatal(_("make_builtin: missing function name"));
 
 	if (! is_letter(*sp))
-		return false;
+		return awk_false;
 
-	sp++;
-
-	while ((c = *sp++) != '\0') {
+	for (sp++; (c = *sp++) != '\0';) {
 		if (! is_identifier_char(c))
-			return false;
+			return awk_false;
 	}
 
 	f = lookup(name);
@@ -240,7 +238,7 @@ make_builtin(const awk_ext_func_t *funcinfo)
 			/* multiple extension() calls etc. */ 
 			if (do_lint)
 				lintwarn(_("make_builtin: function `%s' already defined"), name);
-			return false;
+			return awk_false;
 		} else
 			/* variable name etc. */ 
 			fatal(_("make_builtin: function name `%s' previously defined"), name);
@@ -260,7 +258,7 @@ make_builtin(const awk_ext_func_t *funcinfo)
        	symbol = install_symbol(estrdup(name, strlen(name)), Node_ext_func);
 	symbol->code_ptr = b;
 	track_ext_func(name);
-	return true;
+	return awk_true;
 }
 
 /* make_old_builtin --- register name to be called as func with a builtin body */
@@ -277,9 +275,11 @@ make_old_builtin(const char *name, NODE *(*func)(int), int count)	/* temporary *
 	if (sp == NULL || *sp == '\0')
 		fatal(_("extension: missing function name"));
 
-	while ((c = *sp++) != '\0') {
-		if ((sp == & name[1] && c != '_' && ! isalpha((unsigned char) c))
-				|| (sp > &name[1] && ! is_identifier_char((unsigned char) c)))
+	if (! is_letter(*sp))
+		fatal(_("extension: illegal character `%c' in function name `%s'"), *sp, name);
+
+	for (sp++; (c = *sp++) != '\0';) {
+		if (! is_identifier_char(c))
 			fatal(_("extension: illegal character `%c' in function name `%s'"), c, name);
 	}
 
@@ -312,6 +312,7 @@ make_old_builtin(const char *name, NODE *(*func)(int), int count)	/* temporary *
 
        	symbol = install_symbol(estrdup(name, strlen(name)), Node_old_ext_func);
 	symbol->code_ptr = b;
+	track_ext_func(name);
 }
 
 

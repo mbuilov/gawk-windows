@@ -1,25 +1,24 @@
 /*
  * time.c - Builtin functions that provide time-related functions.
- *
  */
 
 /*
- * Copyright (C) 2012, 2013
+ * Copyright (C) 2012, 2013, 2014
  * the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -39,6 +38,40 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef __VMS
+#define HAVE_NANOSLEEP
+#define HAVE_GETTIMEOFDAY
+#ifdef gettimeofday
+#undef gettimeofday
+#endif
+#ifdef __ia64__
+/* nanosleep not working correctly on IA64 */
+static int
+vms_fake_nanosleep(struct timespec *rqdly, struct timespec *rmdly)
+{
+	int result;
+	struct timespec mtime1, mtime2;
+
+	result = nanosleep(rqdly, &mtime1);
+	if (result == 0)
+		return 0;
+
+	/* On IA64 it returns 100 nanoseconds early with an error */
+	if ((mtime1.tv_sec == 0) && (mtime1.tv_nsec <= 100)) {
+		mtime1.tv_nsec += 100;
+		result = nanosleep(&mtime1, &mtime2);
+		if (result == 0)
+			return 0;
+		if ((mtime2.tv_sec == 0) && (mtime2.tv_nsec <= 100)) {
+			return 0;
+		}
+	}
+	return result;
+}
+#define nanosleep(x,y) vms_fake_nanosleep(x, y)
+#endif
+#endif
+
 #include "gawkapi.h"
 
 #include "gettext.h"
@@ -52,14 +85,12 @@ static awk_bool_t (*init_func)(void) = NULL;
 
 int plugin_is_GPL_compatible;
 
+#include <time.h>
 #if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
 #include <sys/time.h>
 #endif
 #if defined(HAVE_SELECT) && defined(HAVE_SYS_SELECT_H)
 #include <sys/select.h>
-#endif
-#if defined(HAVE_NANOSLEEP) && defined(HAVE_TIME_H)
-#include <time.h>
 #endif
 #if defined(HAVE_GETSYSTEMTIMEASFILETIME)
 #define WIN32_LEAN_AND_MEAN

@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2013 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2014 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -1098,10 +1098,6 @@ match_re:
 			JUMPTO(ni);
 
 		case Op_K_getline_redir:
-			if ((currule == BEGINFILE || currule == ENDFILE)
-					&& pc->into_var == false
-					&& pc->redir_type == redirect_input)
-				fatal(_("`getline' invalid inside `%s' rule"), ruletab[currule]);
 			r = do_getline_redir(pc->into_var, pc->redir_type);
 			PUSH(r);
 			break;
@@ -1217,7 +1213,7 @@ match_re:
 			ret = nextfile(& curfile, true);	/* skip current file */
 
 			if (currule == BEGINFILE) {
-				long stack_size;
+				long stack_size = 0;
 
 				ni = pop_exec_state(& currule, & source, & stack_size);
 

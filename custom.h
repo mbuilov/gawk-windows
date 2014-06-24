@@ -47,12 +47,6 @@
 #define HAVE_MKTIME	1
 #endif
 
-/* For ULTRIX 4.3 */
-#ifdef ultrix
-#define HAVE_MKTIME     1
-#define GETGROUPS_NOT_STANDARD	1
-#endif
-
 /* For whiny users */
 #ifdef USE_INCLUDED_STRFTIME
 #undef HAVE_STRFTIME
@@ -75,4 +69,12 @@
 #define unsetenv zos_unsetenv
 extern int setenv(const char *name, const char *value, int rewrite);
 extern int unsetenv(const char *name);
+#endif
+
+/* Junk for dfa.[ch] */
+/* The __pure__ attribute was added in gcc 2.96.  */
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)
+# define _GL_ATTRIBUTE_PURE __attribute__ ((__pure__))
+#else
+# define _GL_ATTRIBUTE_PURE /* empty */
 #endif

@@ -2,7 +2,7 @@
    NOTE: getopt is part of the C library, so if you don't know what
    "Keep this file name-space clean" means, talk to drepper@gnu.org
    before changing it!
-   Copyright (C) 1987-2013 Free Software Foundation, Inc.
+   Copyright (C) 1987-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -57,7 +57,7 @@
 
 /* This needs to come after some library #include
    to get __GNU_LIBRARY__ defined.  */
-#if defined (__GNU_LIBRARY__) || defined (__CYGWIN__) || defined(__DJGPP__) || defined(__APPLE__) || defined(__MINGW32__)
+#if defined (__GNU_LIBRARY__) || defined (__CYGWIN__) || defined(__DJGPP__) || defined(__APPLE__) || defined(__MINGW32__) || defined(__sun) /* Illumos */
 /* Don't include stdlib.h for
  * non-GNU C libraries
  * non-Cygwin

@@ -1,3 +1,375 @@
+2014-06-22         Paul Eggert          <eggert@penguin.cs.ucla.edu>
+
+	Bring in from GNULIB:
+
+	regex: fix memory leak in compiler
+	Fix by Andreas Schwab in:
+	https://sourceware.org/ml/libc-alpha/2014-06/msg00462.html
+	* lib/regcomp.c (parse_expression): Deallocate partially
+	constructed tree before returning error.
+
+2014-06-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_sub): Add more info to leading comment.
+	Add some whitespace in the code.
+
+2014-06-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+
+2014-06-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c (mbs_to_wchar): Define a macro if not MBS.
+
+2014-05-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+
+2014-05-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (inetfile): Change return type to bool.  Wrap code
+	with ifdef HAVE_SOCKETS so that it'll compile on DJGPP.
+
+2014-05-22         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Allow any redirected getline inside BEGINFILE/ENDFILE.
+
+	* awkgram.y (LEX_GETLINE): Only require a redirection and not also
+	a variable if getline is in a BEGINFILE or ENDFILE rule.
+	* interpret.h (Op_K_getline_redir): Remove check and fatal error.
+
+2014-05-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c (dfaexec): Minor sync with GNU grep.
+
+2014-05-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* custom.h (_GL_PURE): Move definition to here. Sigh.
+	* dfa.h, dfa.c: Sync with GNU grep. Sigh.
+
+	Unrelated:
+
+	* custom.h: Remove stuff for Ultrix 4.3. No one has such
+	systems anymore; this just got missed earlier.
+
+2014-05-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* debug.c (do_eval): Repair fix of 2014-05-09 and use
+	assoc_remove to take @eval out of the function table.
+	* symbol.c: Fix a comment.  This file needs some work.
+
+2014-05-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (get_a_record): Finish TERMNEAREND handling in case
+	we don't have a regular file but aren't going to get more data.
+	Added some additional comments.
+
+2014-05-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* debug.c (do_eval): Don't free `f' which points into the context
+	that was previously freed. Bug reported by Jan Chaloupka
+	<jchaloup@redhat.com>.  Apparently introduced with move to
+	SYMTAB and FUNCTAB, but only showed up on Fedora 20 and Ubuntu 14.04,
+	which have a newer glibc.
+	(do_eval): Fix a memory leak seen by valgrind on Fedora 20 and
+	Ubuntu 14.04: the new SRCFILE that is added wasn't released.
+
+	Unrelated:
+
+	* io.c (get_a_record): Handle return of TERMNEAREND when the
+	entire file has been read into the buffer and we're using a
+	regex for RS. Bug report by Grail Dane <grail69@hotmail.com>.
+
+2014-05-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* debug.c (debug_prog): Change check for GAWK_RESTART so that it
+	actually works. Bug fix: run command in debugger would start
+	over again but not actually start running the program.
+
+2014-04-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (two_way_open): In forked child, reset SIGPIPE to SIG_DFL.
+	Fixes problems with "broken pipe" errors from child processes,
+	restoring 4.1.0 and earlier behavior. Thanks to Daryl F
+	<wyatt@prairieturtle.ca> for the report.
+	(gawk_popen): Ditto.
+
+2014-04-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: Merge with GNU grep; lots of forward motion.
+
+2014-04-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Update xalloc.h for pending merge with dfa.
+
+	* xalloc.h (xstrdup): Implement this.
+	(x2nrealloc): Incorporate changed logic from GNULIB.
+
+2014-04-20         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (struct inet_socket_info): Define new structure
+	for use in parsing special socket filenames.
+	(inetfile): Parse all components of the special socket filename
+	into the struct inet_socket_info.  Returns true only if it is a
+	valid socket fliename, unlike the previous version which checked
+	for the '/inet[46]?/' prefix only.
+	(redirect): Patch to use updated inetfile() function.
+	(devopen): Remove logic to parse socket filenames, since this has
+	been moved into the inetfile() function.
+	(two_way_open): Update args to inetfile().
+
+2014-04-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_rand): Make calls to random() in predictable
+	order to avoid order of evaluation differences amongst compilers.
+	Thanks to Anders Magnusson <ragge@ludd.ltu.se> (of the PCC team)
+	for the suggestion.
+
+2014-04-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Change adding of -export-dynamic for GCC to be
+	-Wl,-export-dynamic, which then works for PCC also.
+
+2014-04-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (closemabyesocket): Define if not defined, e.g. building
+	without socket code. Thanks to dave.gma@googlemail.com (Dave Sines)
+	for the report.
+
+2014-04-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* 4.1.1: Release tar ball made.
+
+2014-04-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* README: Update.
+	* configure.ac: Bump version.
+
+2014-04-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regcomp.c (parse_bracket_exp): Move a call to `re_free' inside
+	an ifdef. Makes the code marginally cleaner.
+
+2014-03-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+
+2014-03-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Remove duplicate AC_HEADER_TIME and rearrange
+	order of macros some. May help on older systems.
+
+2014-03-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Move include of dfa.h around for correct building
+	on Irix. Thanks to Nelson H.F. Beebe for the report.
+
+	Unrelated:
+
+	* .gitignore: Simplify .dSYM pattern for Mac OS X.
+
+2014-03-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c (using_simple_locale): Add ifdefs in case there is no
+	locale support at all. Thanks to Scott Deifik for the report.
+
+	Unrelated:
+
+	* main.c (UPDATE_YEAR): Set to 2014.
+
+2014-03-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* .gitignore: Add .dSYM directories for Mac OS X.
+	Thanks to Hermann Peifer for the suggestion.
+
+2014-03-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: Sync with grep. Yet again.
+	* regex_internal.c (built_wcs_upper_buffer, build_upper_buffer):
+	Fixes from GNULIB for mixed case matching on Mac OS X.
+
+	Unrelated:
+
+	* builtin.c (format_tree): Smarten handling of %' flag. Always
+	pass it in for floating point formats. Then only add the
+	thousands_sep if there is one. Also, allow for thousands_sep
+	to be a string, not just one character.  Thanks to Michal Jaegermann
+	for the report.
+
+2014-03-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (api_impl): Add memory allocation function pointers.
+	* gawkapi.h (GAWK_API_MINOR_VERSION): Bump.
+	(gawk_api_t): Add memory allocation function pointers api_malloc,
+	api_calloc, api_realloc, and api_free.
+	(gawk_malloc, gawk_calloc, gawk_realloc, gawk_free): New macros.
+	(emalloc): Replace malloc with gawk_malloc.
+	(erealloc): Replace erealloc with gawk_erealloc.
+
+2014-03-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Straighten out enumerated types some more.
+
+	* awk.h (add_srcfile): Fix type of first parameter.
+	* awkgram.y (add_srcfile, do_add_srcfile): Ditto.
+	* cmd.h (A_NONE): New enum nametypeval.
+	* command.y (argtab): Use it in final value.
+	* ext.c (make_builtin): Use awk_false, awk_true.
+	* io.c (init_output_wrapper): Use awk_false.
+
+	Unrelated:
+
+	* debug.c (do_commands): Initialize num to silence warnings.
+	Thanks to Michal Jaegermann.
+
+	Unrelated:
+
+	* builtin.c (do_mktime): Change lint warning for minutes to
+	check against 59, not 60.  Thanks to Hermann Peifer for the report.
+
+2014-03-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with grep. Yet again.
+
+2014-02-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with grep. Looks like good improvement with
+	respect to bracket expressions.
+
+2014-02-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fixes for enum/int mismatches as warned by some compilers.
+
+	* awk.h (ANONE): New enum for array sorting.
+	* array.c (assoc_list): Use it.
+	* builtin.c (format_tree): New MP_NONE value.
+	* gawkapi.c: Use awk_false and awk_true everywhere instead of
+	false and true.
+
+2014-02-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Set up do-nothing extension/Makefile on
+	MirBSD also.
+
+2014-02-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.h, dfa.c (parse_bracket_exp): Sync with grep.
+
+2014-02-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regex.h, regex.c, regex_internal.c, regex_internal.h: Sync
+	with GLIBC. Mainly copyright updates.
+	* getopt.c, getopt.h, getopt1.c, getopt_int.h: Ditto.
+	* dfa.c (parse_bracket_exp): Sync with grep, where they restored
+	the buggy code.  Sigh.
+
+	Unrelated:
+
+	* NEWS: Typo fix.
+	* interpret.h (r_interpret): Init a variable for BEGINFILE to avoid
+	compiler warnings. Thanks to Michal Jaegermann.
+
+2014-02-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.c, command.c: Regenerated - Bison 3.0.2.
+
+2014-02-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c (to_uchar): Make use of this. Syncs with GNU grep.
+
+2014-02-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (negate_num): Bracket `tval' in #ifdef MPFR since it's
+	only used in that code.
+
+2014-01-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (dist-hook): Improve creation of pc/config.h. We
+	have to jump through a lot of hoops for 'make distcheck' to
+	actually work.
+
+2014-01-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (dist-hook): Improve creation of pc/config.h to copy
+	the new file into the distribution directory being created.
+	Also, put the temporary files into /tmp.
+
+2014-01-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (negate_num): If just a double, return. Fixes a bug
+	that showed up on 32-bit systems with MPFR. Thanks to Eli Zaretskii
+	and Corinna Vinschen for the report.  Also, free the MPZ integer.
+	Thanks to valgrind for the report.
+
+	Unrelated:
+
+	* dfa.c: Sync with GNU grep - removed some special cased code
+	for grep.
+
+2014-01-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac, field.c: Update copyright year.
+
+2014-01-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (negate_num): Handle the case of -0 for MPFR; the sign
+	was getting lost. Thanks to Hermann Peifer for the report.
+
+2014-01-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c (parse_bracket_exp): Sync with GNU grep, which now uses
+	gawk's code for RRI in single-byte locales!  Hurray.
+
+2014-01-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: For z/OS, restore creation of do-nothing
+	Makefile in extension directory.
+
+2014-01-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* field.c (do_split): Make sure split() gets FS value if no
+	third arg even after FPAT was set. Thanks to Janis Papanagnou
+	for the report.
+
+2014-01-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* README: Fix John Malmberg's email address.
+
+2014-01-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y:  Update copyright year.
+	(func_use): Simplify code.
+	* command.y:  Update copyright year.
+	* ext.c:  Update copyright year.
+	(make_builtin): Small simplification.
+	(make_old_builtin): Make code consistent with make_builtin(), add
+	call to track_ext_func().
+	* bootstrap.sh: Update copyright year. Remove touch of version.c
+	since that file is no longer autogenerated.
+
+2014-01-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* command.y (next_word): Move into ifdef for HAVE_LIBREADLINE,
+	since it's only used by that code.
+	* ext.c (load_old_ext): Minor improvements.
+
+2014-01-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* config.guess, config.rpath, config.sub, depcomp,
+	install-sh: Updated.
+	* dfa.h, dfa.c: Sync with GNU grep; comment fix and copyright year.
+	* NEWS: Updated some, including copyright year.
+
+2013-12-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* README: Add John Malmberg for VMS.
+
+2013-12-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* getopt.h: Add `defined(__sun)' to list of system that do get to
+	include stdlib.h.  Needed for Illumos. Thanks to
+	Richard Palo <richard.palo@free.fr> for the report.
+
 2013-12-21         Mike Frysinger        <vapier@gentoo.org>
 
 	* configure.ac: Add --disable-extensions flag to control
@@ -21,6 +393,11 @@
 	* configure.ac (AC_FUNC_VPRINTF): Remove. Not needed on current
 	systems.
 	* awk.h (HAVE_VPRINTF): Remove check.
+
+2013-12-12         John E. Malmberg      <wb8tyw@qsl.net>
+
+	* io.c (redirect): Add additional VMS error codes.
+	(nextfile): Retry open after closing some files.
 
 2013-12-10         Scott Deifik          <scottd.mail@sbcglobal.net>
 

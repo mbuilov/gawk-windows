@@ -25,6 +25,7 @@ $	rm	= "delete/noConfirm/noLog"
 $	mv	= "rename/New_Vers"
 $	gawk = "$sys$disk:[-]gawk"
 $	AWKPATH_srcdir = "define/User AWKPATH sys$disk:[]"
+$	AWKLIBPATH_dir = "define/User AWKLIBPATH sys$disk:[-]"
 $
 $	listdepth = 0
 $	pipeok = 0
@@ -119,8 +120,9 @@ $		list = "include2 indirectcall lint lintold lintwarn match1" -
 		  + " nondec2 patsplit posix profile1 procinfs printfbad1" -
 		  + " printfbad2 printfbad3 profile2 profile3 pty1" -
 		  + " regx8bit rebuf reginttrad reint reint2 rsstart1 rsstart2 rsstart3 rstest6" -
-		  + " shadow sortfor sortu splitarg4 strtonum strftime switch2" -
-		  + " symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9"
+		  + " shadow sortfor sortu split_after_fpat splitarg4" -
+		  + " strtonum strftime switch2 symtab1 symtab2 symtab3" -
+		  + " symtab4 symtab5 symtab6 symtab7 symtab8 symtab9"
 $		gosub list_of_tests
 $		return
 $
@@ -159,6 +161,13 @@ $		type sys$input:
 $		list = "inetechu inetecht inetdayu inetdayt"
 $		gosub list_of_tests
 $		return
+$!
+$extension:	echo "extension...."
+$		list = "inplace1 filefuncs fnmatch fts functab4 ordchr" -
+		+ " readdir revout revtwoway rwarray time"
+		gosub list_of_tests
+		return
+
 $
 $! list_of_tests: process 'list', a space-separated list of tests.
 $! Some tests assign their own 'list' and call us recursively,
@@ -259,6 +268,7 @@ $rstest6:
 $rswhite:
 $sortempty:
 $sortfor:
+$split_after_fpat:
 $splitarg4:
 $splitargv:
 $splitarr:
@@ -578,7 +588,7 @@ $defref:	echo "defref"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk --lint -f defref.awk >_defref.tmp 2>&1
-$	if .not.$status then call exit_code 2 _defref.tmp
+$	if .not. $status then call exit_code '$status' _defref.tmp
 $	set On
 $	cmp defref.ok sys$disk:[]_defref.tmp
 $	if $status then  rm _defref.tmp;
@@ -594,6 +604,16 @@ $
 $strftime:	echo "strftime"
 $	! this test could fail on slow machines or on a second boundary,
 $	! so if it does, double check the actual results
+$	! This test needs SYS$TIMEZONE_NAME and SYS$TIMEZONE_RULE
+$	! to be properly defined.
+$	! This test now needs GNV Corutils to work
+$	date_bin = "gnv$gnu:[bin]gnv$date.exe"
+$	if f$search(date_bin) .eqs. ""
+$	then
+$		echo "''test' skipped"
+$		return
+$	endif
+$	date := $'date_bin'
 $!!	date | gawk -v "OUTPUT"=_strftime.tmp -f strftime.awk
 $	now = f$time()
 $	wkd = f$extract(0,3,f$cvtime(now,,"WEEKDAY"))
@@ -601,11 +621,12 @@ $	mon = f$cvtime(now,"ABSOLUTE","MONTH")
 $	mon = f$extract(0,1,mon) + f$edit(f$extract(1,2,mon),"LOWERCASE")
 $	day = f$cvtime(now,,"DAY")
 $	tim = f$extract(0,8,f$cvtime(now,,"TIME"))
-$	tz  = ""
+$!	Can not use tz as it shows up in the C environment.
+$	timezone = f$trnlnm("SYS$TIMEZONE_NAME")
 $	yr  = f$cvtime(now,,"YEAR")
 $	if f$trnlnm("FTMP").nes."" then  close/noLog ftmp
 $	open/Write ftmp strftime.in
-$	write ftmp wkd," ",mon," ",day," ",tim," ",tz," ",yr
+$	write ftmp wkd," ",mon," ",day," ",tim," ",timezone," ",yr
 $	close ftmp
 $	gawk -v "OUTPUT"=_strftime.tmp -f strftime.awk strftime.in
 $	set noOn
@@ -637,7 +658,7 @@ $
 $incdupe:   echo "''test'"
 $   set noOn
 $   gawk --lint -i inclib -i inclib.awk "BEGIN {print sandwich(""a"", ""b"", ""c"")}" > _'test'.tmp 2>&1
-$   if .not. $status then call exit_code 1 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -646,7 +667,7 @@ $
 $incdupe2:   echo "''test'"
 $   set noOn
 $   gawk --lint -f inclib -f inclib.awk >_'test'.tmp 2>&1
-$   if .not. $status then call exit_code 1 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -661,7 +682,7 @@ $
 $incdupe4:   echo "''test'"
 $   set NoOn
 $   gawk --lint -f hello -i hello.awk >_'test'.tmp 2>&1
-$   if .not. $status then call exit_code 2 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -670,7 +691,7 @@ $
 $incdupe5:   echo "''test'"
 $   set NoOn
 $   gawk --lint -i hello -f hello.awk >_'test'.tmp 2>&1
-$   if .not. $status then call exit_code 2 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -679,7 +700,7 @@ $
 $incdupe6:   echo "''test'"
 $   set NoOn
 $   gawk --lint -i inchello -f hello.awk >_'test'.tmp 2>&1
-$   if .not. $status then call exit_code 2 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -688,7 +709,7 @@ $
 $incdupe7:   echo "''test'"
 $   set NoOn
 $   gawk --lint -f hello -i inchello >_'test'.tmp 2>&1
-$   if .not. $status then call exit_code 2 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -706,7 +727,7 @@ $symtab2:
 $symtab3:   echo "''test'"
 $   set noOn
 $   gawk -f 'test'.awk  >_'test'.tmp 2>&1
-$   if .not. $status then call exit_code 2 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -717,7 +738,7 @@ $symtab5:
 $symtab7:   echo "''test'"
 $   set noOn
 $   gawk -f 'test'.awk <'test'.in >_'test'.tmp 2>&1
-$   if .not. $status then call exit_code 2 _'test'.tmp
+$   if .not. $status then call exit_code '$status' _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -897,7 +918,7 @@ $noparms:	echo "noparms"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk -f noparms.awk >_noparms.tmp 2>&1
-$	if .not.$status then call exit_code 1 _noparms.tmp
+$	if .not. $status then call exit_code '$status' _noparms.tmp
 $	set On
 $	cmp noparms.ok sys$disk:[]_noparms.tmp
 $	if $status then  rm _noparms.tmp;
@@ -938,7 +959,12 @@ $	gawk -f nasty.awk >_nasty.tmp
 $	call fixup_LRL nasty.ok
 $	call fixup_LRL _nasty.tmp "purge"
 $	cmp nasty.ok sys$disk:[]_nasty.tmp
-$	if $status then  rm _nasty.tmp;
+$	if $status
+$	then
+$	    rm _nasty.tmp;
+$	    file = "lcl_root:[]nasty.ok"
+$	    if f$search(file) .nes. "" then rm 'file';*
+$	endif
 $	set On
 $	return
 $
@@ -948,7 +974,12 @@ $	gawk -f nasty2.awk >_nasty2.tmp
 $	call fixup_LRL nasty2.ok
 $	call fixup_LRL _nasty2.tmp "purge"
 $	cmp nasty2.ok sys$disk:[]_nasty2.tmp
-$	if $status then  rm _nasty2.tmp;
+$	if $status
+$	then
+$	    rm _nasty2.tmp;
+$	    file = "lcl_root:[]nasty2.ok"
+$	    if f$search(file) .nes. "" then rm 'file';*
+$	endif
 $	set On
 $	return
 $
@@ -968,7 +999,7 @@ $subslash:
 $	echo "''test'"
 $	set noOn
 $	gawk -f 'test'.awk >_'test'.tmp 2>&1
-$	if .not.$status then call exit_code 2 _'test'.tmp
+$	if .not. $status then call exit_code '$status' _'test'.tmp
 $	set On
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
@@ -1077,7 +1108,7 @@ $lintwarn:	echo "lintwarn"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk --lint -f lintwarn.awk >_lintwarn.tmp 2>&1
-$	if .not.$status then call exit_code 1 _lintwarn.tmp
+$	if .not. $status then call exit_code '$status' _lintwarn.tmp
 $	set On
 $	cmp lintwarn.ok sys$disk:[]_lintwarn.tmp
 $	if $status then  rm _lintwarn.tmp;
@@ -1120,7 +1151,7 @@ $sclifin:
 $	echo "''test'"
 $	set noOn
 $	gawk -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
-$	if .not.$status then call exit_code 2 _'test'.tmp
+$	if .not. $status then call exit_code '$status' _'test'.tmp
 $	set On
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
@@ -1132,7 +1163,7 @@ $   !
 $	echo "''test'"
 $	set noOn
 $	gawk -f 'test'.awk <'test'.in >_'test'.tmp 2>&1
-$	if .not.$status then call exit_code 2 _'test'.tmp
+$	if .not. $status then call exit_code '$status' _'test'.tmp
 $	set On
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
@@ -1157,7 +1188,7 @@ $unterm:
 $	echo "''test'"
 $	set noOn
 $	gawk -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
-$	if .not.$status then call exit_code 1 _'test'.tmp
+$	if .not. $status then call exit_code '$status' _'test'.tmp
 $	set On
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
@@ -1217,7 +1248,7 @@ $synerr2:
 $	echo "''test'"
 $	set noOn
 $	gawk -f 'test'.awk >_'test'.tmp 2>&1
-$	if .not.$status then call exit_code 1 _'test'.tmp
+$	if .not. $status then call exit_code '$status' _'test'.tmp
 $	set On
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
@@ -1237,7 +1268,7 @@ $
 $space:		echo "space"
 $	set noOn
 $	gawk -f " " space.awk >_space.tmp 2>&1
-$	if .not.$status then call exit_code 2 _space.tmp
+$	if .not. $status then call exit_code '$status' _space.tmp
 $	set On
 $!	we get a different error from what space.ok expects
 $	gawk "{gsub(""file specification syntax error"", ""no such file or directory""); print}" -
@@ -1320,7 +1351,7 @@ $
 $! This test is somewhat suspect for vms due to exit code manipulation
 $exitval1:	echo "exitval1"
 $	gawk -f exitval1.awk >_exitval1.tmp 2>&1
-$	if $status then  call exit_code 0 _exitval1.tmp
+$	if $status then  call exit_code '$status' _exitval1.tmp
 $	cmp exitval1.ok sys$disk:[]_exitval1.tmp
 $	if $status then  rm _exitval1.tmp;
 $	return
@@ -1424,7 +1455,7 @@ $!	nofile.ok expects no/such/file, but using that name in the test would
 $!	yield "file specification syntax error" instead of "no such file..."
 $	set noOn
 $	gawk "{}" no-such-file >_nofile.tmp 2>&1
-$	if .not.$status then call exit_code 2 _nofile.tmp
+$	if .not. $status then call exit_code '$status' _nofile.tmp
 $	set On
 $!	restore altered file name
 $	gawk "{gsub(""no-such-file"", ""no/such/file""); print}" _nofile.tmp >_nofile.too
@@ -1496,7 +1527,7 @@ $
 $mixed1:	echo "mixed1"
 $	set noOn
 $	gawk -f /dev/null --source "BEGIN {return junk}" >_mixed1.tmp 2>&1
-$	if .not.$status then call exit_code 1 _mixed1.tmp
+$	if .not. $status then call exit_code '$status' _mixed1.tmp
 $	set On
 $	cmp mixed1.ok sys$disk:[]_mixed1.tmp
 $	if $status then  rm _mixed1.tmp;
@@ -1758,7 +1789,7 @@ World!
 $	endif
 $	gawk /Commands="BEGIN { print ""World!"" }" _NL: /Output=_vms_cmd.tmp
 $	cmp vms_cmd.ok sys$disk:[]_vms_cmd.tmp
-$	if $status then  rm _vms_cmd.tmp;
+$	if $status then  rm _vms_cmd.tmp;,vms_cmd.ok;*
 $	return
 $
 $vms_io1:	echo "vms_io1"
@@ -1771,7 +1802,7 @@ $	gawk -f - >_vms_io1.tmp
 # prior to 3.0.4, gawk crashed doing any redirection after closing stdin
 BEGIN { print "Hello" >"/dev/stdout" }
 $	cmp vms_io1.ok sys$disk:[]_vms_io1.tmp
-$	if $status then  rm _vms_io1.tmp;
+$	if $status then  rm _vms_io1.tmp;,vms_io1.ok;*
 $	return
 $
 $vms_io2:	echo "vms_io2"
@@ -1799,7 +1830,90 @@ $	set On
 $	cmp _NL: sys$disk:[]_vms_io2.tmp
 $	if $status then  rm _vms_io2.tmp;
 $	cmp vms_io2.ok sys$disk:[]_vms_io2.vfc
-$	if $status then  rm _vms_io2.vfc;*
+$	if $status then  rm _vms_io2.vfc;*,vms_io2.ok;*
+$	return
+$!
+$!
+$inplace1:
+$	set process/parse=extended ! ODS-5 only
+$	echo "''test'"
+$	filefunc_file = "[-]gawkapi.o"
+$	open/write awkfile _'test'.awk
+$	write awkfile "@load ""inplace"""
+$!	write awkfile "BEGIN {print ""before""}"
+$	write awkfile "   {gsub(/foo/, ""bar""); print}"
+$!	write awkfile "END {print ""after""}"
+$	close awkfile
+$	copy inplace^.1.in _'test'.1
+$	copy inplace^.2.in _'test'.2
+$	set noOn
+$	AWKLIBPATH_dir
+$	gawk -f _'test'.awk _'test'.1 <inplace.in >_'test'.1.tmp 2>&1
+$	if .not. $status then call exit_code '$status' _'test'.1.tmp
+$	AWKLIBPATH_dir
+$	gawk -f _'test'.awk _'test'.2 <inplace.in >_'test'.2.tmp 2>&1
+$	if .not. $status then call exit_code '$status' _'test'.2.tmp
+$	set On
+$	cmp 'test'.1.ok sys$disk:[]_'test'.1.tmp
+$	if $status then rm _'test'.1.tmp;,_'test'.1;
+$	cmp 'test'.2.ok sys$disk:[]_'test'.2.tmp
+$	if $status then rm _'test'.2.tmp;,_'test'.2;,_'test'.awk;
+$	return
+$!
+$filefuncs:
+$fnmatch:
+$functab4:
+$ordchr:
+$revout:
+$revtwoway:
+$time:
+$	echo "''test'"
+$	filefunc_file = "[-]gawkapi.o"
+$	open/write gapi 'filefunc_file'
+$	close gapi
+$	set noOn
+$	AWKLIBPATH_dir
+$	gawk -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
+$	if .not. $status then call exit_code '$status' _'test'.tmp
+$	set On
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then rm _'test'.tmp;
+$	if f$search(filefunc_file) .nes. "" then rm 'filefunc_file';*
+$	return
+$!
+$rwarray:
+$	echo "''test'"
+$	set noOn
+$	AWKLIBPATH_dir
+$	gawk -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
+$	if .not. $status then call exit_code '$status' _'test'.tmp
+$	set On
+$	cmp orig.out new.out
+$	if $status
+$	then
+$	    open/append tout _'test'.tmp
+$	    write tout "old and new are equal - GOOD"
+$	    close tout
+$	endif
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then rm _'test'.tmp;,orig.bin;,orig.out;,new.out;
+$	return
+$!
+$readdir:
+$fts:
+$	echo "''test'"
+$	set noOn
+$	AWKLIBPATH_dir
+$	gawk -f 'test'.awk >_'test'.tmp 2>&1
+$	if .not. $status
+$	then
+$	    call exit_code '$status' _'test'.tmp
+$	    write sys$output _'test'.tmp
+$	else
+$	    if f$search("_''test'.tmp") .nes. "" then rm _'test'.tmp;*
+$	    if f$search("_''test'.") .nes. "" then rm _'test'.;*
+$	endif
+$	set On
 $	return
 $
 $clean:
@@ -1869,10 +1983,12 @@ $ endsubroutine !fixup_LRL
 $
 $! add a fake "EXIT CODE" record to the end of the temporary output file
 $! to simulate the ``|| echo EXIT CODE $$? >>_$@'' shell script usage
+$! Unix code = vms_code & (255 * 2^3) >> 3
 $exit_code: subroutine
+$	unix_status = (p1 .and. %x7f8) / 8
 $	if f$trnlnm("FTMP").nes."" then  close/noLog ftmp
 $	open/Append ftmp 'p2'
-$	write ftmp "EXIT CODE: ",p1
+$	write ftmp "EXIT CODE: ",'unix_status'
 $	close ftmp
 $ endsubroutine !exit_code
 $
