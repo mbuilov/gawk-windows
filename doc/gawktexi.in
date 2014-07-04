@@ -5295,6 +5295,17 @@ With the POSIX character classes, you can write
 @code{/[[:alnum:]]/} to match the alphabetic
 and numeric characters in your character set.
 
+@c Thanks to
+@c Date: Tue, 01 Jul 2014 07:39:51 +0200
+@c From: Hermann Peifer <peifer@gmx.eu>
+Some utilities that match regular expressions provide a non-standard
+@code{[:ascii:]} character class; @command{awk} does not. However, you
+can simulate such a construct using @code{[\x00-\x7F]}.  This matches
+all values numerically between zero and 127, which is the defined
+range of the ASCII character set.  Use a complemented character list
+(@code{[^\x00-\x7F]}) to match any single-byte characters that are not
+in the ASCII range.
+
 @cindex bracket expressions, collating elements
 @cindex bracket expressions, non-ASCII
 @cindex collating elements
