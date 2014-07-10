@@ -1112,7 +1112,7 @@ out0:
 
 				memset(& state, 0, sizeof(state));
 				count = mbrlen(cp, arg->stlen, & state);
-				if (count > 0) {
+				if (count != (size_t) -1 && count != (size_t) -2 && count > 0) {
 					prec = count;
 					/* may need to increase fw so that padding happens, see pr_tail code */
 					if (fw > 0)

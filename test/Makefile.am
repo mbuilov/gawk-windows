@@ -682,6 +682,8 @@ EXTRA_DIST = \
 	printfbad3.awk \
 	printfbad3.ok \
 	printfloat.awk \
+	printhuge.awk \
+	printhuge.ok \
 	printlang.awk \
 	prmarscl.awk \
 	prmarscl.ok \
@@ -1008,7 +1010,7 @@ GAWK_EXT_TESTS = \
 	lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm next nondec nondec2 \
-	patsplit posix printfbad1 printfbad2 printfbad3 procinfs \
+	patsplit posix printfbad1 printfbad2 printfbad3 printhuge procinfs \
 	profile1 profile2 profile3 profile4 profile5 pty1 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
@@ -1946,6 +1948,12 @@ backsmalls2:
 dbugeval::
 	@echo $@
 	@$(AWK) --debug -f /dev/null < "$(srcdir)"/$@.in > _$@  2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+printhuge::
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
