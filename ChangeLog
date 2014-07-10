@@ -4,6 +4,10 @@
 	with smarter checking.
 	(nextc): Call it as appropriate.
 
+	* builtin.c (format_tree): Add check for bad returns from mbrlen
+	to avoid trying to malloc (size_t) -1 bytes. Thanks to
+	mail.green.fox@gmail.com for the bug report.
+
 2014-07-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y (nextc): Add bool check_for_bad parameter to check
