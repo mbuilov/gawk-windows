@@ -1,5 +1,20 @@
 2014-07-10         Arnold D. Robbins     <arnold@skeeve.com>
 
+	New `div()' function to do integer division and remainder;
+	mainly useful for use with GMP integers. Thanks to
+	Katie Wasserman <katie@wass.net> for the suggestion.
+
+	* awk.h (do_div, do_mpfr_div): Declare new functions.
+	* builtin.c (do_div): New function.
+	* mpfr.c (do_mpfr_div): New function.
+	* awkgram.y (tokentab): New entry.
+	(snode): Add check for do_div/do_mpfr_div to make 3rd arg
+	be an array.
+	* NEWS: Updated.
+	* TODO: Updated.
+
+2014-07-10         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* awkgram.y (check_for_bad): New routine to do the fatal message,
 	with smarter checking.
 	(nextc): Call it as appropriate.

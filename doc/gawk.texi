@@ -51,7 +51,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH June, 2014
+@set UPDATE-MONTH July, 2014
 @set VERSION 4.1
 @set PATCHLEVEL 1
 
@@ -16614,6 +16614,22 @@ You can use @samp{pi = atan2(0, -1)} to retrieve the value of
 @cindex cosine
 Return the cosine of @var{x}, with @var{x} in radians.
 
+@item @code{div(@var{numerator}, @var{denominator}, @var{result})}
+@cindexawkfunc{div}
+@cindex div
+Perform integer division, similar to the standard C function of the
+same name.  First, truncate @code{numerator} and @code{denominator}
+to integers.  Clear the @code{result} array, and then set
+@code{result["quotient"]} to the result of @samp{numerator / denominator},
+truncated to an integer, and set @code{result["remainder"]} to the result
+of @samp{numerator % denominator}, truncated to an integer.
+This function is primarily intended for use with arbitrary length
+integers; it avoids creating MPFR arbitrary precision floating-point
+values (@pxref{Arbitrary Precision Integers}).
+
+This function is a @code{gawk} extension.  It is not available in
+compatibility mode (@pxref{Options}).
+
 @item @code{exp(@var{x})}
 @cindexawkfunc{exp}
 @cindex exponent
@@ -30521,6 +30537,32 @@ to just use the following:
 
 @example
 gawk -M 'BEGIN @{ n = 13; print n % 2 @}'
+@end example
+
+When dividing two arbitrary precision integers with either
+@samp{/} or @samp{%}, the result is typically an arbitrary
+precision floating point value (unless the denominator evenly
+divides into the numerator).  In order to do integer division
+or remainder with arbitrary precision integers, use the built-in
+@code{div()} function (@pxref{Numeric Functions}).
+
+You can simulate the @code{div()} function in standard @command{awk}
+using this user-defined function:
+
+@example
+# div --- do integer division
+
+function div(numerator, denominator, result,    i)
+@{
+    split("", result)
+
+    numerator = int(numerator)
+    denominator = int(denominator)
+    result["quotient"] = int(numerator / denominator)
+    result["remainder"] = int(numerator % denominator)
+
+    return 0.0
+@}
 @end example
 
 @node POSIX Floating Point Problems

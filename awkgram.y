@@ -1860,6 +1860,7 @@ static const struct token tokentab[] = {
 {"dcngettext",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3)|A(4)|A(5),	do_dcngettext,	0},
 {"default",	Op_K_default,	 LEX_DEFAULT,	GAWKX,		0,	0},
 {"delete",	Op_K_delete,	 LEX_DELETE,	NOT_OLD,	0,	0},
+{"div",		Op_builtin,	 LEX_BUILTIN,	GAWKX|A(3),	do_div,	MPF(div)},
 {"do",		Op_K_do,	 LEX_DO,	NOT_OLD|BREAK|CONTINUE,	0,	0},
 {"else",	Op_K_else,	 LEX_ELSE,	0,		0,	0},
 {"eval",	Op_symbol,	 LEX_EVAL,	0,		0,	0},
@@ -3905,7 +3906,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	}
 
 #ifdef HAVE_MPFR
-	/* N.B.: There isn't any special processing for an alternate function below */
+	/* N.B.: If necessary, add special processing for alternate builtin, below */
 	if (do_mpfr && tokentab[idx].ptr2)
 		r->builtin =  tokentab[idx].ptr2;
 	else
@@ -3934,6 +3935,15 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		arg = subn->nexti;
 		if (arg->nexti == arg->lasti && arg->nexti->opcode == Op_push)
 			arg->nexti->opcode = Op_push_arg;	/* argument may be array */
+	} else if (r->builtin == do_div
+#ifdef HAVE_MPFR
+		   || r->builtin == MPF(div)
+#endif
+			) {
+		arg = subn->nexti->lasti->nexti->lasti->nexti;	/* 3rd arg list */
+		ip = arg->lasti;
+		if (ip->opcode == Op_push)
+			ip->opcode = Op_push_array;
 	} else if (r->builtin == do_match) {
 		static bool warned = false;
 

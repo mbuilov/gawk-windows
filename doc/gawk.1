@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Apr 17 2014" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Jul 10 2014" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -2628,6 +2628,23 @@ in radians.
 Return the cosine of
 .IR expr ,
 which is in radians.
+.TP
+.BI div( num ", " denom ", " result )
+Truncate
+.I num
+and
+.I denom
+to integers. Return the quotient of
+.I num
+divided by
+.I denom
+in \fIresult\fB["quotient"]\fR
+and the remainder in
+in \fIresult\fB["remainder"]\fR.
+This is a
+.I gawk
+extension, primarily of value when working with
+arbitrarily large integers.
 .TP
 .BI exp( expr )
 The exponential function.
