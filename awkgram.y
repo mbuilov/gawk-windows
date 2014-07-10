@@ -2791,6 +2791,34 @@ tokexpand()
 	return tok;
 }
 
+/* check_bad_char --- fatal if c isn't allowed in gawk source code */
+
+/*
+ * The error message was inspired by someone who decided to put
+ * a physical \0 byte into the source code to see what would
+ * happen and then filed a bug report about it.  Sigh.
+ */
+
+static void
+check_bad_char(int c)
+{
+	/* allow escapes. needed for autoconf. bleah. */
+	switch (c) {
+	case '\a':
+	case '\b':
+	case '\f':
+	case '\n':
+	case '\r':
+	case '\t':
+		return;
+	default:
+		break;
+	}
+
+	if (iscntrl(c) && ! isspace(c))
+		fatal(_("PEBKAC error: invalid character '\\%03o' in source code"), c);
+}
+
 /* nextc --- get the next input character */
 
 #if MBS_SUPPORT
@@ -2847,8 +2875,8 @@ again:
 				0 : work_ring_idx + 1;
 			cur_char_ring[work_ring_idx] = 0;
 		}
-		if (check_for_bad && iscntrl(*lexptr) && ! isspace(*lexptr))
-			fatal(_("PEBKAC error: invalid character '\\%03o' in source code"), *lexptr);
+		if (check_for_bad)
+			check_bad_char(*lexptr);
 
 		return (int) (unsigned char) *lexptr++;
 	} else {
@@ -2856,8 +2884,8 @@ again:
 			if (lexeof)
 				return END_FILE;
 			if (lexptr && lexptr < lexend) {
-				if (check_for_bad && iscntrl(*lexptr) && ! isspace(*lexptr))
-					fatal(_("PEBKAC error: invalid character '\\%03o' in source code"), *lexptr);
+				if (check_for_bad)
+					check_bad_char(*lexptr);
 				return ((int) (unsigned char) *lexptr++);
 			}
 		} while (get_src_buf());
@@ -2874,8 +2902,8 @@ nextc(bool check_for_bad)
 		if (lexeof)
 			return END_FILE;
 		if (lexptr && lexptr < lexend) {
-			if (check_for_bad && iscntrl(*lexptr) && ! isspace(*lexptr))
-				fatal(_("PEBKAC error: invalid character '\\%03o' in source code"), *lexptr);
+			if (check_for_bad)
+				check_bad_char(*lexptr);
 			return ((int) (unsigned char) *lexptr++);
 		}
 	} while (get_src_buf());
