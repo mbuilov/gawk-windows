@@ -1417,21 +1417,12 @@ simp_exp
 	| LEX_GETLINE opt_variable input_redir
 	  {
 		/*
-		 * In BEGINFILE/ENDFILE, allow `getline var < file'
+		 * In BEGINFILE/ENDFILE, allow `getline [var] < file'
 		 */
 
-		if (rule == BEGINFILE || rule == ENDFILE) {
-			if ($2 != NULL && $3 != NULL)
-				;	 /* all  ok */
-			else {
-				if ($2 != NULL)
-					error_ln($1->source_line,
-						_("`getline var' invalid inside `%s' rule"), ruletab[rule]);
-				else
-					error_ln($1->source_line,
-						_("`getline' invalid inside `%s' rule"), ruletab[rule]);
-			}
-		}
+		if ((rule == BEGINFILE || rule == ENDFILE) && $3 == NULL)
+			error_ln($1->source_line,
+				 _("non-redirected `getline' invalid inside `%s' rule"), ruletab[rule]);
 		if (do_lint && rule == END && $3 == NULL)
 			lintwarn_ln($1->source_line,
 				_("non-redirected `getline' undefined inside END action"));
@@ -1881,6 +1872,7 @@ static const struct token tokentab[] = {
 {"dcngettext",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3)|A(4)|A(5),	do_dcngettext,	0},
 {"default",	Op_K_default,	 LEX_DEFAULT,	GAWKX,		0,	0},
 {"delete",	Op_K_delete,	 LEX_DELETE,	NOT_OLD,	0,	0},
+{"div",		Op_builtin,	 LEX_BUILTIN,	GAWKX|A(3),	do_div,	MPF(div)},
 {"do",		Op_K_do,	 LEX_DO,	NOT_OLD|BREAK|CONTINUE,	0,	0},
 {"else",	Op_K_else,	 LEX_ELSE,	0,		0,	0},
 {"eval",	Op_symbol,	 LEX_EVAL,	0,		0,	0},
@@ -2345,6 +2337,15 @@ parse_program(INSTRUCTION **pcode)
 	return (ret || errcount);
 }
 
+/* free_srcfile --- free a SRCFILE struct */
+
+void
+free_srcfile(SRCFILE *thisfile)
+{
+	efree(thisfile->src);
+	efree(thisfile);
+}
+
 /* do_add_srcfile --- add one item to srcfiles */
 
 static SRCFILE *
@@ -2803,12 +2804,40 @@ tokexpand()
 	return tok;
 }
 
+/* check_bad_char --- fatal if c isn't allowed in gawk source code */
+
+/*
+ * The error message was inspired by someone who decided to put
+ * a physical \0 byte into the source code to see what would
+ * happen and then filed a bug report about it.  Sigh.
+ */
+
+static void
+check_bad_char(int c)
+{
+	/* allow escapes. needed for autoconf. bleah. */
+	switch (c) {
+	case '\a':
+	case '\b':
+	case '\f':
+	case '\n':
+	case '\r':
+	case '\t':
+		return;
+	default:
+		break;
+	}
+
+	if (iscntrl(c) && ! isspace(c))
+		fatal(_("PEBKAC error: invalid character '\\%03o' in source code"), c);
+}
+
 /* nextc --- get the next input character */
 
 #if MBS_SUPPORT
 
 static int
-nextc(void)
+nextc(bool check_for_bad)
 {
 	if (gawk_mb_cur_max > 1) {
 again:
@@ -2859,14 +2888,19 @@ again:
 				0 : work_ring_idx + 1;
 			cur_char_ring[work_ring_idx] = 0;
 		}
+		if (check_for_bad)
+			check_bad_char(*lexptr);
 
 		return (int) (unsigned char) *lexptr++;
 	} else {
 		do {
 			if (lexeof)
 				return END_FILE;
-			if (lexptr && lexptr < lexend)
-					return ((int) (unsigned char) *lexptr++);
+			if (lexptr && lexptr < lexend) {
+				if (check_for_bad)
+					check_bad_char(*lexptr);
+				return ((int) (unsigned char) *lexptr++);
+			}
 		} while (get_src_buf());
 		return END_SRC;
 	}
@@ -2875,13 +2909,16 @@ again:
 #else /* MBS_SUPPORT */
 
 int
-nextc()
+nextc(bool check_for_bad)
 {
 	do {
 		if (lexeof)
 			return END_FILE;
-		if (lexptr && lexptr < lexend)
+		if (lexptr && lexptr < lexend) {
+			if (check_for_bad)
+				check_bad_char(*lexptr);
 			return ((int) (unsigned char) *lexptr++);
+		}
 	} while (get_src_buf());
 	return END_SRC;
 }
@@ -2910,7 +2947,7 @@ allow_newline(void)
 	int c;
 
 	for (;;) {
-		c = nextc();
+		c = nextc(true);
 		if (c == END_FILE) {
 			pushback();
 			break;
@@ -2919,7 +2956,7 @@ allow_newline(void)
 //			if (do_pretty_print) {
 				tok = tokstart;
 				tokadd('#');
-				while ((c = nextc()) != '\n' && c != END_FILE)
+				while ((c = nextc(false)) != '\n' && c != END_FILE)
 					tokadd(c);
 				if (c == '\n')
 					tokadd(c);
@@ -3010,7 +3047,7 @@ yylex(void)
 	if (lasttok == LEX_EOF)		/* error earlier in current source, must give up !! */
 		return 0;
 
-	c = nextc();
+	c = nextc(true);
 	if (c == END_SRC)
 		return 0;
 	if (c == END_FILE)
@@ -3052,12 +3089,12 @@ yylex(void)
 		want_regexp = false;
 		tok = tokstart;
 		for (;;) {
-			c = nextc();
+			c = nextc(true);
 
 			if (gawk_mb_cur_max == 1 || nextc_is_1stbyte) switch (c) {
 			case '[':
 				/* one day check for `.' and `=' too */
-				if (nextc() == ':' || in_brack == 0)
+				if (nextc(true) == ':' || in_brack == 0)
 					in_brack++;
 				pushback();
 				break;
@@ -3071,7 +3108,7 @@ yylex(void)
 					in_brack--;
 				break;
 			case '\\':
-				if ((c = nextc()) == END_FILE) {
+				if ((c = nextc(true)) == END_FILE) {
 					pushback();
 					yyerror(_("unterminated regexp ends with `\\' at end of file"));
 					goto end_regexp; /* kludge */
@@ -3091,7 +3128,7 @@ end_regexp:
 				yylval = GET_INSTRUCTION(Op_token);
 				yylval->lextok = estrdup(tokstart, tok - tokstart);
 				if (do_lint) {
-					int peek = nextc();
+					int peek = nextc(true);
 
 					pushback();
 					if (peek == 'i' || peek == 's') {
@@ -3121,7 +3158,7 @@ end_regexp:
 retry:
 
 	/* skipping \r is a hack, but windows is just too pervasive. sigh. */
-	while ((c = nextc()) == ' ' || c == '\t' || c == '\r')
+	while ((c = nextc(true)) == ' ' || c == '\t' || c == '\r')
 		continue;
 
 	lexeme = lexptr ? lexptr - 1 : lexptr;
@@ -3146,7 +3183,7 @@ retry:
 //		if (do_pretty_print) {
 			tok = tokstart;
 			tokadd('#');
-			while ((c = nextc()) != '\n') {
+			while ((c = nextc(false)) != '\n') {
 				if (c == END_FILE)
 					break;
 				tokadd(c);
@@ -3190,7 +3227,7 @@ retry:
 		 */
 		if (! do_traditional) {
 			/* strip trailing white-space and/or comment */
-			while ((c = nextc()) == ' ' || c == '\t' || c == '\r')
+			while ((c = nextc(true)) == ' ' || c == '\t' || c == '\r')
 				continue;
 			if (c == '#') {
 				static bool warned = false;
@@ -3200,16 +3237,16 @@ retry:
 					lintwarn(
 		_("use of `\\ #...' line continuation is not portable"));
 				}
-				while ((c = nextc()) != '\n')
+				while ((c = nextc(false)) != '\n')
 					if (c == END_FILE)
 						break;
 			}
 			pushback();
 		}
 #endif /* RELAXED_CONTINUATION */
-		c = nextc();
+		c = nextc(true);
 		if (c == '\r')	/* allow MS-DOS files. bleah */
-			c = nextc();
+			c = nextc(true);
 		if (c == '\n') {
 			sourceline++;
 			goto retry;
@@ -3248,7 +3285,7 @@ retry:
 	case '[':
 			return lasttok = c;
 	case ']':
-		c = nextc();
+		c = nextc(true);
 		pushback();
 		if (c == '[') {
 			yylval = GET_INSTRUCTION(Op_sub_array);
@@ -3260,7 +3297,7 @@ retry:
 		return ']';
 
 	case '*':
-		if ((c = nextc()) == '=') {
+		if ((c = nextc(true)) == '=') {
 			yylval = GET_INSTRUCTION(Op_assign_times);
 			return lasttok = ASSIGNOP;
 		} else if (do_posix) {
@@ -3271,7 +3308,7 @@ retry:
 			/* make ** and **= aliases for ^ and ^= */
 			static bool did_warn_op = false, did_warn_assgn = false;
 
-			if (nextc() == '=') {
+			if (nextc(true) == '=') {
 				if (! did_warn_assgn) {
 					did_warn_assgn = true;
 					if (do_lint)
@@ -3299,7 +3336,7 @@ retry:
 		return lasttok = '*';
 
 	case '/':
-		if (nextc() == '=') {
+		if (nextc(true) == '=') {
 			pushback();
 			return lasttok = SLASH_BEFORE_EQUAL;
 		}
@@ -3308,7 +3345,7 @@ retry:
 		return lasttok = '/';
 
 	case '%':
-		if (nextc() == '=') {
+		if (nextc(true) == '=') {
 			yylval = GET_INSTRUCTION(Op_assign_mod);
 			return lasttok = ASSIGNOP;
 		}
@@ -3320,7 +3357,7 @@ retry:
 	{
 		static bool did_warn_op = false, did_warn_assgn = false;
 
-		if (nextc() == '=') {
+		if (nextc(true) == '=') {
 			if (do_lint_old && ! did_warn_assgn) {
 				did_warn_assgn = true;
 				warning(_("operator `^=' is not supported in old awk"));
@@ -3338,7 +3375,7 @@ retry:
 	}
 
 	case '+':
-		if ((c = nextc()) == '=') {
+		if ((c = nextc(true)) == '=') {
 			yylval = GET_INSTRUCTION(Op_assign_plus);
 			return lasttok = ASSIGNOP;
 		}
@@ -3351,7 +3388,7 @@ retry:
 		return lasttok = '+';
 
 	case '!':
-		if ((c = nextc()) == '=') {
+		if ((c = nextc(true)) == '=') {
 			yylval = GET_INSTRUCTION(Op_notequal);
 			return lasttok = RELOP;
 		}
@@ -3364,7 +3401,7 @@ retry:
 		return lasttok = '!';
 
 	case '<':
-		if (nextc() == '=') {
+		if (nextc(true) == '=') {
 			yylval = GET_INSTRUCTION(Op_leq);
 			return lasttok = RELOP;
 		}
@@ -3373,7 +3410,7 @@ retry:
 		return lasttok = '<';
 
 	case '=':
-		if (nextc() == '=') {
+		if (nextc(true) == '=') {
 			yylval = GET_INSTRUCTION(Op_equal);
 			return lasttok = RELOP;
 		}
@@ -3382,7 +3419,7 @@ retry:
 		return lasttok = ASSIGN;
 
 	case '>':
-		if ((c = nextc()) == '=') {
+		if ((c = nextc(true)) == '=') {
 			yylval = GET_INSTRUCTION(Op_geq);
 			return lasttok = RELOP;
 		} else if (c == '>') {
@@ -3421,7 +3458,7 @@ retry:
 	case '"':
 	string:
 		esc_seen = false;
-		while ((c = nextc()) != '"') {
+		while ((c = nextc(true)) != '"') {
 			if (c == '\n') {
 				pushback();
 				yyerror(_("unterminated string"));
@@ -3429,7 +3466,7 @@ retry:
 			}
 			if ((gawk_mb_cur_max == 1 || nextc_is_1stbyte) &&
 			    c == '\\') {
-				c = nextc();
+				c = nextc(true);
 				if (c == '\n') {
 					sourceline++;
 					continue;
@@ -3463,7 +3500,7 @@ retry:
 		return lasttok = YSTRING;
 
 	case '-':
-		if ((c = nextc()) == '=') {
+		if ((c = nextc(true)) == '=') {
 			yylval = GET_INSTRUCTION(Op_assign_minus);
 			return lasttok = ASSIGNOP;
 		}
@@ -3476,7 +3513,7 @@ retry:
 		return lasttok = '-';
 
 	case '.':
-		c = nextc();
+		c = nextc(true);
 		pushback();
 		if (! isdigit(c))
 			return lasttok = '.';
@@ -3504,7 +3541,7 @@ retry:
 				if (do_traditional)
 					goto done;
 				if (tok == tokstart + 2) {
-					int peek = nextc();
+					int peek = nextc(true);
 
 					if (isxdigit(peek)) {
 						inhex = true;
@@ -3532,8 +3569,8 @@ retry:
 					break;
 				}
 				seen_e = true;
-				if ((c = nextc()) == '-' || c == '+') {
-					int c2 = nextc();
+				if ((c = nextc(true)) == '-' || c == '+') {
+					int c2 = nextc(true);
 
 					if (isdigit(c2)) {
 						tokadd(c);
@@ -3580,7 +3617,7 @@ retry:
 			}
 			if (gotnumber)
 				break;
-			c = nextc();
+			c = nextc(true);
 		}
 		pushback();
 
@@ -3629,7 +3666,7 @@ retry:
 		return lasttok = YNUMBER;
 
 	case '&':
-		if ((c = nextc()) == '&') {
+		if ((c = nextc(true)) == '&') {
 			yylval = GET_INSTRUCTION(Op_and);
 			allow_newline();
 			return lasttok = LEX_AND;
@@ -3639,7 +3676,7 @@ retry:
 		return lasttok = '&';
 
 	case '|':
-		if ((c = nextc()) == '|') {
+		if ((c = nextc(true)) == '|') {
 			yylval = GET_INSTRUCTION(Op_or);
 			allow_newline();
 			return lasttok = LEX_OR;
@@ -3680,7 +3717,7 @@ retry:
 	 * occasions where the interactions are funny.
 	 */
 	if (! do_traditional && c == '_' && lasttok != '$') {
-		if ((c = nextc()) == '"') {
+		if ((c = nextc(true)) == '"') {
 			intlstr = true;
 			goto string;
 		}
@@ -3692,7 +3729,7 @@ retry:
 	tok = tokstart;
 	while (c != END_FILE && is_identchar(c)) {
 		tokadd(c);
-		c = nextc();
+		c = nextc(true);
 	}
 	tokadd('\0');
 	pushback();
@@ -3930,7 +3967,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	}
 
 #ifdef HAVE_MPFR
-	/* N.B.: There isn't any special processing for an alternate function below */
+	/* N.B.: If necessary, add special processing for alternate builtin, below */
 	if (do_mpfr && tokentab[idx].ptr2)
 		r->builtin =  tokentab[idx].ptr2;
 	else
@@ -3959,6 +3996,15 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		arg = subn->nexti;
 		if (arg->nexti == arg->lasti && arg->nexti->opcode == Op_push)
 			arg->nexti->opcode = Op_push_arg;	/* argument may be array */
+	} else if (r->builtin == do_div
+#ifdef HAVE_MPFR
+		   || r->builtin == MPF(div)
+#endif
+			) {
+		arg = subn->nexti->lasti->nexti->lasti->nexti;	/* 3rd arg list */
+		ip = arg->lasti;
+		if (ip->opcode == Op_push)
+			ip->opcode = Op_push_array;
 	} else if (r->builtin == do_match) {
 		static bool warned = false;
 

@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Mar 08 2014" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Jul 10 2014" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -2629,6 +2629,23 @@ Return the cosine of
 .IR expr ,
 which is in radians.
 .TP
+.BI div( num ", " denom ", " result )
+Truncate
+.I num
+and
+.I denom
+to integers. Return the quotient of
+.I num
+divided by
+.I denom
+in \fIresult\fB["quotient"]\fR
+and the remainder in
+in \fIresult\fB["remainder"]\fR.
+This is a
+.I gawk
+extension, primarily of value when working with
+arbitrarily large integers.
+.TP
 .BI exp( expr )
 The exponential function.
 .TP
@@ -3912,11 +3929,6 @@ The
 .B \-F
 option is not necessary given the command line variable assignment feature;
 it remains only for backwards compatibility.
-.PP
-Syntactically invalid single character programs tend to overflow
-the parse stack, generating a rather unhelpful message.  Such programs
-are surprisingly difficult to diagnose in the completely general case,
-and the effort to do so really is not worth it.
 .SH SEE ALSO
 .IR egrep (1),
 .IR sed (1),

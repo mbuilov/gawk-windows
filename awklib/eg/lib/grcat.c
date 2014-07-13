@@ -1,7 +1,7 @@
 /*
  * grcat.c
  *
- * Generate a printable version of the group database
+ * Generate a printable version of the group database.
  */
 /*
  * Arnold Robbins, arnold@skeeve.com, May 1993

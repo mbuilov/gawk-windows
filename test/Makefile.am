@@ -167,6 +167,8 @@ EXTRA_DIST = \
 	datanonl.awk \
 	datanonl.in \
 	datanonl.ok \
+	dbugeval.in \
+	dbugeval.ok \
 	defref.awk \
 	defref.ok \
 	delargv.awk \
@@ -680,6 +682,8 @@ EXTRA_DIST = \
 	printfbad3.awk \
 	printfbad3.ok \
 	printfloat.awk \
+	printhuge.awk \
+	printhuge.ok \
 	printlang.awk \
 	prmarscl.awk \
 	prmarscl.ok \
@@ -729,6 +733,10 @@ EXTRA_DIST = \
 	regexprange.ok \
 	reginttrad.awk \
 	reginttrad.ok \
+	regnul1.awk \
+	regnul1.ok \
+	regnul2.awk \
+	regnul2.ok \
 	regrange.awk \
 	regrange.ok \
 	regtest.sh \
@@ -759,6 +767,10 @@ EXTRA_DIST = \
 	rs.awk \
 	rs.in \
 	rs.ok \
+	rsgetline.awk \
+	rsgetline.in \
+	rsgetline.ok \
+	rsglstdin.ok \
 	rsnul1nl.awk \
 	rsnul1nl.in \
 	rsnul1nl.ok \
@@ -988,7 +1000,7 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
-	colonwarn clos1way delsub devfd devfd1 devfd2 dumpvars exit \
+	colonwarn clos1way dbugeval delsub devfd devfd1 devfd2 dumpvars exit \
 	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
 	gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
@@ -998,9 +1010,9 @@ GAWK_EXT_TESTS = \
 	lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm next nondec nondec2 \
-	patsplit posix printfbad1 printfbad2 printfbad3 procinfs \
+	patsplit posix printfbad1 printfbad2 printfbad3 printhuge procinfs \
 	profile1 profile2 profile3 profile4 profile5 pty1 \
-	rebuf regx8bit reginttrad reint reint2 rsstart1 \
+	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
 	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
@@ -1185,7 +1197,7 @@ poundbang::
 	@if ./_pbd.awk "$(srcdir)"/poundbang.awk > _`basename $@` ; \
 	then : ; \
 	else \
-		sed "s;/tmp/gawk;../$(AWKPROG);" < "$(srcdir)"/poundbang.awk > ./_pbd.awk ; \
+		sed "s;/tmp/gawk;$(AWKPROG);" < "$(srcdir)"/poundbang.awk > ./_pbd.awk ; \
 		chmod +x ./_pbd.awk ; \
 		LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} ./_pbd.awk "$(srcdir)"/poundbang.awk > _`basename $@`;  \
 	fi
@@ -1328,6 +1340,16 @@ fmtspcl: fmtspcl.ok
 	@-if test -z "$$AWKFLAGS" ; then $(CMP) $@.ok _$@ && rm -f _$@ ; else \
 	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
 	fi
+
+rebuf::
+	@echo $@
+	@AWKBUFSIZE=4096 AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+rsglstdin:: 
+	@echo $@
+	@cat  "$(srcdir)"/rsgetline.in | AWKPATH="$(srcdir)" $(AWK) -f rsgetline.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 reint::
 	@echo $@
@@ -1639,10 +1661,11 @@ dumpvars::
 
 profile1:
 	@echo $@
-	@$(AWK) --pretty-print=ap-$@.out -f "$(srcdir)"/xref.awk "$(srcdir)"/dtdgport.awk > _$@.out1
+	@$(AWK) -f "$(srcdir)"/xref.awk "$(srcdir)"/dtdgport.awk > _$@.out1
+	@$(AWK) --pretty-print=ap-$@.out -f "$(srcdir)"/xref.awk
 	@$(AWK) -f ap-$@.out "$(srcdir)"/dtdgport.awk > _$@.out2 ; rm ap-$@.out
 	@$(CMP) _$@.out1 _$@.out2 && rm _$@.out[12] || { echo EXIT CODE: $$? >>_$@ ; \
-	cp "$(srcdir)"/dtdgport.awk > $@.ok ; }
+	cp "$(srcdir)"/dtdgport.awk $@.ok ; }
 	
 
 profile2:
@@ -1659,13 +1682,13 @@ profile3:
 
 profile4:
 	@echo $@
-	@GAWK_NO_PP_RUN=1 $(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
+	@$(AWK) --pretty-print=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile5:
 	@echo $@
-	@GAWK_NO_PP_RUN=1 $(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
+	@$(AWK) --pretty-print=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1920,6 +1943,17 @@ backsmalls2:
 	@echo $@
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+dbugeval::
+	@echo $@
+	@$(AWK) --debug -f /dev/null < "$(srcdir)"/$@.in > _$@  2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+printhuge::
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:

@@ -1,7 +1,7 @@
 /*
  * pwcat.c
  *
- * Generate a printable version of the password database
+ * Generate a printable version of the password database.
  */
 /*
  * Arnold Robbins, arnold@skeeve.com, May 1993

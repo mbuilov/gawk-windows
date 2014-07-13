@@ -4,7 +4,7 @@
    are permitted in any medium without royalty provided the copyright
    notice and this notice are preserved.
 
-Changes from 4.1.1 to 4.2.0
+Changes from 4.1.x to 4.2.0
 ---------------------------
 
 1. If not in POSIX mode, changes to ENVIRON are reflected into
@@ -15,6 +15,25 @@ Changes from 4.1.1 to 4.2.0
    random" than previously.  Gawk's rand() remains repeatable; you will
    get the same series of numbers each time you call rand() repeatedly,
    but this will be a different series than previously.
+
+3. The --pretty-print option no longer runs the program too.
+
+4. The igawk script and igawk.1 man page are no longer installed by
+   `make install'.  They have been obsolete since gawk 4.0.0.
+
+5. Gawk now has a `div()' function to perform integer division; this is
+   primarily useful for the -M option to avoid MPFR division when all
+   values involved are integers.
+
+Changes from 4.1.1 to 4.1.2
+---------------------------
+
+1. The manual has been considerably improved.
+	- Thoroughly reviewed and updated.
+	- Out-of-date examples replaced.
+	- Chapter 15 on MPFR reworked.
+	- Summary sections added to all chapters.
+	- Exercises added in several chapters.
 
 Changes from 4.1.0 to 4.1.1
 ---------------------------

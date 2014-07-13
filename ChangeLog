@@ -1,3 +1,173 @@
+2014-07-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	New `div()' function to do integer division and remainder;
+	mainly useful for use with GMP integers. Thanks to
+	Katie Wasserman <katie@wass.net> for the suggestion.
+
+	* awk.h (do_div, do_mpfr_div): Declare new functions.
+	* builtin.c (do_div): New function.
+	* mpfr.c (do_mpfr_div): New function.
+	* awkgram.y (tokentab): New entry.
+	(snode): Add check for do_div/do_mpfr_div to make 3rd arg
+	be an array.
+	* NEWS: Updated.
+	* TODO: Updated.
+
+2014-07-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (check_for_bad): New routine to do the fatal message,
+	with smarter checking.
+	(nextc): Call it as appropriate.
+
+	* builtin.c (format_tree): Add check for bad returns from mbrlen
+	to avoid trying to malloc (size_t) -1 bytes. Thanks to
+	mail.green.fox@gmail.com for the bug report.
+
+2014-07-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (nextc): Add bool check_for_bad parameter to check
+	for bad characters in the source program.
+	(yylex): Adjust calls.
+
+2014-06-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c (main): The --pretty-print option no longer runs the
+	program.  This removes the need for the GAWK_NO_PP_RUN environment var.
+	* NEWS: Updated.
+	* TODO: Updated.
+
+2014-06-22         Paul Eggert          <eggert@penguin.cs.ucla.edu>
+
+	Bring in from GNULIB:
+
+	regex: fix memory leak in compiler
+	Fix by Andreas Schwab in:
+	https://sourceware.org/ml/libc-alpha/2014-06/msg00462.html
+	* lib/regcomp.c (parse_expression): Deallocate partially
+	constructed tree before returning error.
+
+2014-06-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_sub): Add more info to leading comment.
+	Add some whitespace in the code.
+
+2014-06-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+
+2014-06-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c (mbs_to_wchar): Define a macro if not MBS.
+
+2014-05-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+
+2014-05-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (inetfile): Change return type to bool.  Wrap code
+	with ifdef HAVE_SOCKETS so that it'll compile on DJGPP.
+
+2014-05-22         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Allow any redirected getline inside BEGINFILE/ENDFILE.
+
+	* awkgram.y (LEX_GETLINE): Only require a redirection and not also
+	a variable if getline is in a BEGINFILE or ENDFILE rule.
+	* interpret.h (Op_K_getline_redir): Remove check and fatal error.
+
+2014-05-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c (dfaexec): Minor sync with GNU grep.
+
+2014-05-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* custom.h (_GL_PURE): Move definition to here. Sigh.
+	* dfa.h, dfa.c: Sync with GNU grep. Sigh.
+
+	Unrelated:
+
+	* custom.h: Remove stuff for Ultrix 4.3. No one has such
+	systems anymore; this just got missed earlier.
+
+2014-05-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* debug.c (do_eval): Repair fix of 2014-05-09 and use
+	assoc_remove to take @eval out of the function table.
+	* symbol.c: Fix a comment.  This file needs some work.
+
+2014-05-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (get_a_record): Finish TERMNEAREND handling in case
+	we don't have a regular file but aren't going to get more data.
+	Added some additional comments.
+
+2014-05-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* debug.c (do_eval): Don't free `f' which points into the context
+	that was previously freed. Bug reported by Jan Chaloupka
+	<jchaloup@redhat.com>.  Apparently introduced with move to
+	SYMTAB and FUNCTAB, but only showed up on Fedora 20 and Ubuntu 14.04,
+	which have a newer glibc.
+	(do_eval): Fix a memory leak seen by valgrind on Fedora 20 and
+	Ubuntu 14.04: the new SRCFILE that is added wasn't released.
+
+	Unrelated:
+
+	* io.c (get_a_record): Handle return of TERMNEAREND when the
+	entire file has been read into the buffer and we're using a
+	regex for RS. Bug report by Grail Dane <grail69@hotmail.com>.
+
+2014-05-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* debug.c (debug_prog): Change check for GAWK_RESTART so that it
+	actually works. Bug fix: run command in debugger would start
+	over again but not actually start running the program.
+
+2014-04-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (two_way_open): In forked child, reset SIGPIPE to SIG_DFL.
+	Fixes problems with "broken pipe" errors from child processes,
+	restoring 4.1.0 and earlier behavior. Thanks to Daryl F
+	<wyatt@prairieturtle.ca> for the report.
+	(gawk_popen): Ditto.
+
+2014-04-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: Merge with GNU grep; lots of forward motion.
+
+2014-04-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Update xalloc.h for pending merge with dfa.
+
+	* xalloc.h (xstrdup): Implement this.
+	(x2nrealloc): Incorporate changed logic from GNULIB.
+
+2014-04-20         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (struct inet_socket_info): Define new structure
+	for use in parsing special socket filenames.
+	(inetfile): Parse all components of the special socket filename
+	into the struct inet_socket_info.  Returns true only if it is a
+	valid socket fliename, unlike the previous version which checked
+	for the '/inet[46]?/' prefix only.
+	(redirect): Patch to use updated inetfile() function.
+	(devopen): Remove logic to parse socket filenames, since this has
+	been moved into the inetfile() function.
+	(two_way_open): Update args to inetfile().
+
+2014-04-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_rand): Make calls to random() in predictable
+	order to avoid order of evaluation differences amongst compilers.
+	Thanks to Anders Magnusson <ragge@ludd.ltu.se> (of the PCC team)
+	for the suggestion.
+
+2014-04-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Change adding of -export-dynamic for GCC to be
+	-Wl,-export-dynamic, which then works for PCC also.
+
 2014-04-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c (closemabyesocket): Define if not defined, e.g. building
@@ -417,7 +587,6 @@
 	* debug.c (find_rule): Handle case where lineno is zero. Can happen
 	if break is given without a line number on a current line. Thanks
 	to Ray Song <i@maskray.me> for the report.
->>>>>>> master
 
 2013-09-19         Arnold D. Robbins     <arnold@skeeve.com>
 

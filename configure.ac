@@ -313,7 +313,7 @@ EOF
 			if test "$GCC" = yes; then
 				case $host_os in
 				linux*|freebsd*)
-					LDFLAGS="$LDFLAGS -export-dynamic"
+					LDFLAGS="$LDFLAGS -Wl,-export-dynamic"
 					;;
 				esac
 			fi
