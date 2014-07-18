@@ -46,7 +46,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH June, 2014
+@set UPDATE-MONTH July, 2014
 @set VERSION 4.1
 @set PATCHLEVEL 1
 
@@ -281,19 +281,24 @@ implementation of AWK.
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
 any later version published by the Free Software Foundation; with the
-Invariant Sections being ``GNU General Public License'', the Front-Cover
-texts being (a) (see below), and with the Back-Cover Texts being (b)
-(see below).  A copy of the license is included in the section entitled
+Invariant Sections being ``GNU General Public License'', with the
+Front-Cover Texts being ``A GNU Manual'', and with the Back-Cover Texts
+as in (a) below.
+@ifclear FOR_PRINT
+A copy of the license is included in the section entitled
 ``GNU Free Documentation License''.
+@end ifclear
+@ifset FOR_PRINT
+A copy of the license
+may be found on the Internet at
+@uref{http://www.gnu.org/software/gawk/manual/html_node/GNU-Free-Documentation-License.html,
+the GNU Project's web site}.
+@end ifset
 
 @enumerate a
 @item
-``A GNU Manual''
-
-@item
-``You have the freedom to
-copy and modify this GNU manual.  Buying copies from the FSF
-supports it in developing GNU and promoting software freedom.''
+The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.''
 @end enumerate
 @end copying
 
@@ -1572,7 +1577,8 @@ the @command{gawk} source code and this @value{DOCUMENT}, respectively.
 It contains the following appendices:
 @end ifclear
 @ifset FOR_PRINT
-Part IV provides the following appendices:
+Part IV provides the following appendices,
+including the GNU General Public License:
 @end ifset
 
 @ref{Language History},
@@ -1589,6 +1595,10 @@ in @command{gawk} and where to get other freely
 available @command{awk} implementations.
 
 @ifset FOR_PRINT
+
+@ref{Copying},
+presents the license that covers the @command{gawk} source code.
+
 The version of this @value{DOCUMENT} distributed with @command{gawk}
 contains additional appendices and other end material.
 To save space, we have omitted them from the
@@ -1611,10 +1621,9 @@ defines most, if not all, the significant terms used
 throughout the @value{DOCUMENT}.  If you find terms that you aren't familiar with,
 try looking them up here.
 
-@uref{http://www.gnu.org/software/gawk/manual/html_node/Copying.html, The GNU GPL} and
-@uref{http://www.gnu.org/software/gawk/manual/html_node/GNU-Free-Documentation-License.html, the GNU FDL}
-are the licenses that cover the @command{gawk} source code
-and this @value{DOCUMENT}, respectively.
+@uref{http://www.gnu.org/software/gawk/manual/html_node/GNU-Free-Documentation-License.html,
+The GNU FDL}
+is the license that covers this @value{DOCUMENT}.
 @end ifset
 
 @ifclear FOR_PRINT
@@ -3777,10 +3786,8 @@ No space is allowed between the @option{-o} and @var{file}, if
 @var{file} is supplied.
 
 @quotation NOTE
-Due to the way @command{gawk} has evolved, with this option
-your program is still executed.  This will change in the
-next major release such that @command{gawk} will only
-pretty-print the program and not run it.
+In the past, this option would also execute your program.
+This is no longer the case.
 @end quotation
 
 @item @option{-O}
@@ -4265,11 +4272,6 @@ to be slower. Its purpose is to help isolate differences between the
 two regexp matchers that @command{gawk} uses internally. (There aren't
 supposed to be differences, but occasionally theory and practice don't
 coordinate with each other.)
-
-@item GAWK_NO_PP_RUN
-If this variable exists, then when invoked with the @option{--pretty-print}
-option, @command{gawk} skips running the program.  This variable will
-not survive into the next major release.
 
 @item GAWK_STACKSIZE
 This specifies the amount by which @command{gawk} should grow its
@@ -5292,6 +5294,17 @@ match them.
 With the POSIX character classes, you can write
 @code{/[[:alnum:]]/} to match the alphabetic
 and numeric characters in your character set.
+
+@c Thanks to
+@c Date: Tue, 01 Jul 2014 07:39:51 +0200
+@c From: Hermann Peifer <peifer@gmx.eu>
+Some utilities that match regular expressions provide a non-standard
+@code{[:ascii:]} character class; @command{awk} does not. However, you
+can simulate such a construct using @code{[\x00-\x7F]}.  This matches
+all values numerically between zero and 127, which is the defined
+range of the ASCII character set.  Use a complemented character list
+(@code{[^\x00-\x7F]}) to match any single-byte characters that are not
+in the ASCII range.
 
 @cindex bracket expressions, collating elements
 @cindex bracket expressions, non-ASCII
@@ -15905,6 +15918,22 @@ You can use @samp{pi = atan2(0, -1)} to retrieve the value of
 @cindexawkfunc{cos}
 @cindex cosine
 Return the cosine of @var{x}, with @var{x} in radians.
+
+@item @code{div(@var{numerator}, @var{denominator}, @var{result})}
+@cindexawkfunc{div}
+@cindex div
+Perform integer division, similar to the standard C function of the
+same name.  First, truncate @code{numerator} and @code{denominator}
+to integers.  Clear the @code{result} array, and then set
+@code{result["quotient"]} to the result of @samp{numerator / denominator},
+truncated to an integer, and set @code{result["remainder"]} to the result
+of @samp{numerator % denominator}, truncated to an integer.
+This function is primarily intended for use with arbitrary length
+integers; it avoids creating MPFR arbitrary precision floating-point
+values (@pxref{Arbitrary Precision Integers}).
+
+This function is a @code{gawk} extension.  It is not available in
+compatibility mode (@pxref{Options}).
 
 @item @code{exp(@var{x})}
 @cindexawkfunc{exp}
@@ -26625,8 +26654,8 @@ When called this way, @command{gawk} ``pretty prints'' the program into
 @file{awkprof.out}, without any execution counts.
 
 @quotation NOTE
-The @option{--pretty-print} option still runs your program.
-This will change in the next major release.
+Once upon a time, the @option{--pretty-print} option would also run
+your program.  This is is no longer the case.
 @end quotation
 @c ENDOFRANGE awkp
 @c ENDOFRANGE proawk
@@ -29623,6 +29652,32 @@ to just use the following:
 
 @example
 gawk -M 'BEGIN @{ n = 13; print n % 2 @}'
+@end example
+
+When dividing two arbitrary precision integers with either
+@samp{/} or @samp{%}, the result is typically an arbitrary
+precision floating point value (unless the denominator evenly
+divides into the numerator).  In order to do integer division
+or remainder with arbitrary precision integers, use the built-in
+@code{div()} function (@pxref{Numeric Functions}).
+
+You can simulate the @code{div()} function in standard @command{awk}
+using this user-defined function:
+
+@example
+# div --- do integer division
+
+function div(numerator, denominator, result,    i)
+@{
+    split("", result)
+
+    numerator = int(numerator)
+    denominator = int(denominator)
+    result["quotient"] = int(numerator / denominator)
+    result["remainder"] = int(numerator % denominator)
+
+    return 0.0
+@}
 @end example
 
 @node POSIX Floating Point Problems
@@ -33795,13 +33850,14 @@ Write a wrapper script that provides an interface similar to
 @ifdocbook
 
 @ifclear FOR_PRINT
-Part IV contains the appendixes (including the two licenses that cover
+Part IV contains the appendices (including the two licenses that cover
 the @command{gawk} source code and this @value{DOCUMENT}, respectively)
 and the Glossary:
 @end ifclear
 
 @ifset FOR_PRINT
-Part IV contains two appendixes:
+Part IV contains two appendices and the license that
+covers the @command{gawk} source code:
 @end ifset
 
 @itemize @value{BULLET}
@@ -33820,10 +33876,12 @@ Part IV contains two appendixes:
 
 @item
 @ref{Glossary}.
+@end ifclear
 
 @item
 @ref{Copying}.
 
+@ifclear FOR_PRINT
 @item
 @ref{GNU Free Documentation License}.
 @end ifclear
@@ -35715,6 +35773,8 @@ The generated Info file for
 The @command{troff} source for a manual page describing the @command{igawk}
 program presented in
 @ref{Igawk Program}.
+(Since @command{gawk} can do its own @code{@@include} processing,
+neither @command{igawk} nor @file{igawk.1} are installed.)
 
 @item doc/Makefile.in
 The input file used during the configuration process to generate the
@@ -35759,8 +35819,6 @@ source file for this @value{DOCUMENT}. It also contains a @file{Makefile.in} fil
 @file{Makefile.am} is used by GNU Automake to create @file{Makefile.in}.
 The library functions from
 @ref{Library Functions},
-and the @command{igawk} program from
-@ref{Igawk Program},
 are included as ready-to-use files in the @command{gawk} distribution.
 They are installed as part of the installation process.
 The rest of the programs in this @value{DOCUMENT} are available in appropriate
@@ -39096,6 +39154,8 @@ A sequence of space, TAB, or newline characters occurring inside an input
 record or a string.
 @end table
 
+@end ifclear
+
 @c The GNU General Public License.
 @node Copying
 @unnumbered GNU General Public License
@@ -39825,7 +39885,7 @@ applications with the library.  If this is what you want to do, use
 the GNU Lesser General Public License instead of this License.  But
 first, please read @url{http://www.gnu.org/philosophy/why-not-lgpl.html}.
 
-
+@ifclear FOR_PRINT
 @c The GNU Free Documentation License.
 @node GNU Free Documentation License
 @unnumbered GNU Free Documentation License

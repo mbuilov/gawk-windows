@@ -1166,6 +1166,93 @@ do_mpfr_srand(int nargs)
 	return res;
 }
 
+/* do_mpfr_div --- do integer division, return quotient and remainder in dest array */
+
+/*
+ * We define the semantics as:
+ * 	numerator = int(numerator)
+ *	denominator = int(denonmator)
+ *	quotient = int(numerator / denomator)
+ *	remainder = int(numerator % denomator)
+ */
+
+NODE *
+do_mpfr_div(int nargs)
+{
+	NODE *numerator, *denominator, *result;
+	NODE *num, *denom;
+	NODE *quotient, *remainder;
+	NODE *sub, **lhs;
+
+	result = POP_PARAM();
+	if (result->type != Node_var_array)
+		fatal(_("div: third argument is not an array"));
+	assoc_clear(result);
+
+	denominator = POP_SCALAR();
+	numerator = POP_SCALAR();
+
+	if (do_lint) {
+		if ((numerator->flags & (NUMCUR|NUMBER)) == 0)
+			lintwarn(_("div: received non-numeric first argument"));
+		if ((denominator->flags & (NUMCUR|NUMBER)) == 0)
+			lintwarn(_("div: received non-numeric second argument"));
+	}
+
+	(void) force_number(numerator);
+	(void) force_number(denominator);
+
+	/* convert numerator and denominator to integer */
+	if (is_mpg_integer(numerator)) {
+		num = mpg_integer();
+		mpz_set(num->mpg_i, numerator->mpg_i);
+	} else {
+		if (! mpfr_number_p(numerator->mpg_numbr)) {
+			/* [+-]inf or NaN */
+			return numerator;
+		}
+
+		num = mpg_integer();
+		mpfr_get_z(num->mpg_i, numerator->mpg_numbr, MPFR_RNDZ);
+	}
+
+	if (is_mpg_integer(denominator)) {
+		denom = mpg_integer();
+		mpz_set(denom->mpg_i, denominator->mpg_i);
+	} else {
+		if (! mpfr_number_p(denominator->mpg_numbr)) {
+			/* [+-]inf or NaN */
+			return denominator;
+		}
+
+		denom = mpg_integer();
+		mpfr_get_z(denom->mpg_i, denominator->mpg_numbr, MPFR_RNDZ);
+	}
+
+	if (mpz_sgn(denom->mpg_i) == 0)
+		fatal(_("div: division by zero attempted"));
+
+	quotient = mpg_integer();
+	remainder = mpg_integer();
+
+	/* do the division */
+	mpz_tdiv_qr(quotient->mpg_i, remainder->mpg_i, num->mpg_i, denom->mpg_i);
+	unref(num);
+	unref(denom);
+
+	sub = make_string("quotient", 8);
+	lhs = assoc_lookup(result, sub);
+	unref(*lhs);
+	*lhs = quotient;
+
+	sub = make_string("remainder", 9);
+	lhs = assoc_lookup(result, sub);
+	unref(*lhs);
+	*lhs = remainder;
+
+	return make_number((AWKNUM) 0.0);
+}
+
 /*
  * mpg_tofloat --- convert an arbitrary-precision integer operand to
  *	a float without loss of precision. It is assumed that the

@@ -1112,7 +1112,7 @@ out0:
 
 				memset(& state, 0, sizeof(state));
 				count = mbrlen(cp, arg->stlen, & state);
-				if (count > 0) {
+				if (count != (size_t) -1 && count != (size_t) -2 && count > 0) {
 					prec = count;
 					/* may need to increase fw so that padding happens, see pr_tail code */
 					if (fw > 0)
@@ -3610,6 +3610,72 @@ do_bindtextdomain(int nargs)
 		DEREF(t2);
 
 	return make_string(the_result, strlen(the_result));
+}
+
+/* do_div --- do integer division, return quotient and remainder in dest array */
+
+/*
+ * We define the semantics as:
+ * 	numerator = int(numerator)
+ *	denominator = int(denonmator)
+ *	quotient = int(numerator / denomator)
+ *	remainder = int(numerator % denomator)
+ */
+
+NODE *
+do_div(int nargs)
+{
+	NODE *numerator, *denominator, *result;
+	double num, denom, quotient, remainder;
+	NODE *sub, **lhs;
+
+	result = POP_PARAM();
+	if (result->type != Node_var_array)
+		fatal(_("div: third argument is not an array"));
+	assoc_clear(result);
+
+	denominator = POP_SCALAR();
+	numerator = POP_SCALAR();
+
+	if (do_lint) {
+		if ((numerator->flags & (NUMCUR|NUMBER)) == 0)
+			lintwarn(_("div: received non-numeric first argument"));
+		if ((denominator->flags & (NUMCUR|NUMBER)) == 0)
+			lintwarn(_("div: received non-numeric second argument"));
+	}
+
+	(void) force_number(numerator);
+	(void) force_number(denominator);
+	num = double_to_int(get_number_d(numerator));
+	denom = double_to_int(get_number_d(denominator));
+
+	if (denom == 0.0)
+		fatal(_("div: division by zero attempted"));
+
+	quotient = double_to_int(num / denom);
+	/*
+	 * FIXME: This code is duplicated, factor it out to a
+	 * separate function.
+	 */
+#ifdef HAVE_FMOD
+	remainder = fmod(num, denom);
+#else	/* ! HAVE_FMOD */
+	(void) modf(num / denom, & remainder);
+	remainder = num - remainder * denom;
+#endif	/* ! HAVE_FMOD */
+	remainder = double_to_int(remainder);
+
+	sub = make_string("quotient", 8);
+	lhs = assoc_lookup(result, sub);
+	unref(*lhs);
+	*lhs = make_number((AWKNUM) quotient);
+
+	sub = make_string("remainder", 9);
+	lhs = assoc_lookup(result, sub);
+	unref(*lhs);
+	*lhs = make_number((AWKNUM) remainder);
+
+	return make_number((AWKNUM) 0.0);
 }
 
 

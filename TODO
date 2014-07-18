@@ -1,4 +1,4 @@
-Thu Apr 17 11:31:24 IDT 2014
+Wed Jun 25 22:28:05 IDT 2014
 ============================
 
 There were too many files tracking different thoughts and ideas for
@@ -18,9 +18,6 @@ TODO
 
 Minor Cleanups and Code Improvements
 ------------------------------------
-
-	Nuke installing the igawk script and the igawk.1 man page. Just
-	remove them from the dist.
 
 	Review the bash source script for working with shared libraries in
 	order to nuke the use of libtool. [ Partially started in the
@@ -42,14 +39,11 @@ Minor Cleanups and Code Improvements
 
 	Recheck if gnulib regex can be dropped in
 
-	Fully synchronize whitespaces tests (for \s, \S in Unicode
+	Fully synchronize whitespace tests (for \s, \S in Unicode
 	environment) with those of GNU grep.
 
 Minor New Features
 ------------------
-
-	Add a div() function to do integer division result. Needed
-	esp for MPFR with large ints.
 
 	Enhance extension/fork.c waitpid to allow the caller to specify
 	the options.  And add an optional array argument to wait and
@@ -59,10 +53,6 @@ Minor New Features
 
 	Make it possible to put print/printf + redirections into
 	an expression.
-
-	Have pretty printing not run the program and nuke the
-	undocumented GAWK_NO_PP_RUN env var. Requires test suite
-	adjustments.
 
 	? Add an optional base to strtonum, allowing 2-36.
 
@@ -94,9 +84,6 @@ Major New Features
 	Consider a typeof() function that returns a string (scalar, array,
 	regexp).
 
-	Fix the early chapters in the doc with more up-to-date examples.
-	No-one uses Bulletin Board Systems anymore.
-
 	Add ability to do decimal arithmetic.
 
 	Rework management of array index storage. (Partially DONE.)
@@ -127,12 +114,12 @@ Things To Think About That May Never Happen
 	https://github.com/emeryberger/DieHard
 
 	Implement namespaces.  Arnold suggested the following in an email:
-	- Extend the definition of an 'identifier' to include "." as a valid character
-	  although an identifier can't start with it.
+	- Extend the definition of an 'identifier' to include "." as a valid
+	  character although an identifier can't start with it.
 	- Extension libraries install functions and global variables with names
 	  that have a "." in them:  XML.parse(), XML.name, whatever.
-	- Awk code can read/write such variables and call such functions, but they
-	  cannot define such functions
+	- Awk code can read/write such variables and call such functions,
+	  but they cannot define such functions
 	 function XML.foo() { .. }	# error
 	  or create a variable with such a name if it doesn't exist. This would
 	  be a run-time error, not a parse-time error.
@@ -142,8 +129,10 @@ Things To Think About That May Never Happen
 	to be very important.
 
 	Include a sample rpm spec file in a new packaging subdirectory.
+	(Really needed?)
 
 	Patch lexer for @include and @load to make quotes optional.
+	(Really needed?)
 
 	? Have strftime() pay attention to the value of ENVIRON["TZ"]
 

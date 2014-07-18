@@ -1419,6 +1419,7 @@ extern AWKNUM nondec2awknum(char *str, size_t len);
 extern NODE *do_dcgettext(int nargs);
 extern NODE *do_dcngettext(int nargs);
 extern NODE *do_bindtextdomain(int nargs);
+extern NODE *do_div(int nargs);
 #if MBS_SUPPORT
 extern int strncasecmpmbs(const unsigned char *,
 			  const unsigned char *, size_t);
@@ -1555,6 +1556,7 @@ extern NODE *do_mpfr_and(int);
 extern NODE *do_mpfr_atan2(int);
 extern NODE *do_mpfr_compl(int);
 extern NODE *do_mpfr_cos(int);
+extern NODE *do_mpfr_div(int);
 extern NODE *do_mpfr_exp(int);
 extern NODE *do_mpfr_int(int);
 extern NODE *do_mpfr_log(int);

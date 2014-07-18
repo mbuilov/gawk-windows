@@ -682,6 +682,8 @@ EXTRA_DIST = \
 	printfbad3.awk \
 	printfbad3.ok \
 	printfloat.awk \
+	printhuge.awk \
+	printhuge.ok \
 	printlang.awk \
 	prmarscl.awk \
 	prmarscl.ok \
@@ -1008,7 +1010,7 @@ GAWK_EXT_TESTS = \
 	lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm next nondec nondec2 \
-	patsplit posix printfbad1 printfbad2 printfbad3 procinfs \
+	patsplit posix printfbad1 printfbad2 printfbad3 printhuge procinfs \
 	profile1 profile2 profile3 profile4 profile5 pty1 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
@@ -1659,10 +1661,11 @@ dumpvars::
 
 profile1:
 	@echo $@
-	@$(AWK) --pretty-print=ap-$@.out -f "$(srcdir)"/xref.awk "$(srcdir)"/dtdgport.awk > _$@.out1
+	@$(AWK) -f "$(srcdir)"/xref.awk "$(srcdir)"/dtdgport.awk > _$@.out1
+	@$(AWK) --pretty-print=ap-$@.out -f "$(srcdir)"/xref.awk
 	@$(AWK) -f ap-$@.out "$(srcdir)"/dtdgport.awk > _$@.out2 ; rm ap-$@.out
 	@$(CMP) _$@.out1 _$@.out2 && rm _$@.out[12] || { echo EXIT CODE: $$? >>_$@ ; \
-	cp "$(srcdir)"/dtdgport.awk > $@.ok ; }
+	cp "$(srcdir)"/dtdgport.awk $@.ok ; }
 	
 
 profile2:
@@ -1679,13 +1682,13 @@ profile3:
 
 profile4:
 	@echo $@
-	@GAWK_NO_PP_RUN=1 $(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
+	@$(AWK) --pretty-print=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile5:
 	@echo $@
-	@GAWK_NO_PP_RUN=1 $(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
+	@$(AWK) --pretty-print=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1945,6 +1948,12 @@ backsmalls2:
 dbugeval::
 	@echo $@
 	@$(AWK) --debug -f /dev/null < "$(srcdir)"/$@.in > _$@  2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+printhuge::
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
