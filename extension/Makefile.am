@@ -105,7 +105,7 @@ install-data-hook:
 
 # Keep the uninstall check working:
 uninstall-so:
-	$(RM) $(pkgextensiondir)/*.so
+	$(RM) $(DESTDIR)$(pkgextensiondir)/*.so
 
 uninstall-recursive: uninstall-so
 
