@@ -1531,7 +1531,7 @@ extern char *find_source(const char *src, struct stat *stb, int *errcode, int is
 extern NODE *do_getline_redir(int intovar, enum redirval redirtype);
 extern NODE *do_getline(int intovar, IOBUF *iop);
 extern struct redirect *getredirect(const char *str, int len);
-extern int inrec(IOBUF *iop, int *errcode);
+extern bool inrec(IOBUF *iop, int *errcode);
 extern int nextfile(IOBUF **curfile, bool skipping);
 /* main.c */
 extern int arg_assign(char *arg, bool initing);
