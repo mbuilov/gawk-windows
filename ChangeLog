@@ -1,3 +1,18 @@
+2014-07-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c (usage): Put text for `-n' *after* text for `-m'.
+	Report from Robert P. J. Day <rpjday@crashcourse.ca>.
+
+	Fix problems with I/O errors reported by Assaf Gordon
+	<assafgordon@gmail.com>:
+
+	* io.c (inrec): Change type to bool to make calling easier. Add
+	check in non-EOF case for error, and if so, return false.
+	Update ERRNO in case there is an ENDFILE block.
+	* awk.h (inrec): Change type in declaration.
+	* interpret.h (r_interpret): Change call of inrec() to boolean
+	notation.
+
 2014-07-10         Arnold D. Robbins     <arnold@skeeve.com>
 
 	New `div()' function to do integer division and remainder;
