@@ -1,3 +1,3 @@
 BEGIN {
-	printf("%c", sprintf("%c", (0xffffff00+255)))
+	printf("%c\n", sprintf("%c", (0xffffff00+255)))
 }
