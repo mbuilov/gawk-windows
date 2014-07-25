@@ -472,6 +472,8 @@ main(int argc, char **argv)
 		case 'M':
 #ifdef HAVE_MPFR
 			do_flags |= DO_MPFR;
+#else
+			warning(_("-M ignored: MPFR/GMP support not compiled in"));
 #endif
 			break;
 
