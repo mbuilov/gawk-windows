@@ -9,6 +9,12 @@
 	* awk.h (cleanup_mpfr): Add declaration.
 	* main.c (main): Add call to `cleanup_mpfr'.
 
+	Fix memory leak:
+
+	* mpfr.c (do_mpfr_div): Add unref to denominator and numerator
+	to not leak memory. Thanks to Katie Wasserman <katie@wass.net>
+	for isolating the problem to that routine.
+
 2014-07-25         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* main.c (main): Add a warning message if -M is used and gawk was

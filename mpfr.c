@@ -1248,6 +1248,8 @@ do_mpfr_div(int nargs)
 	mpz_tdiv_qr(quotient->mpg_i, remainder->mpg_i, num->mpg_i, denom->mpg_i);
 	unref(num);
 	unref(denom);
+	unref(numerator);
+	unref(denominator);
 
 	sub = make_string("quotient", 8);
 	lhs = assoc_lookup(result, sub);
