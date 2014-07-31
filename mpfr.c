@@ -89,6 +89,15 @@ init_mpfr(mpfr_prec_t prec, const char *rmode)
 	register_exec_hook(mpg_interpret, 0);
 }
 
+/* cleanup_mpfr --- clean stuff up, mainly for valgrind */
+
+void
+cleanup_mpfr(void)
+{
+	mpfr_clear(_mpf_t1);
+	mpfr_clear(_mpf_t2);
+}
+
 /* mpg_node --- allocate a node to store MPFR float or GMP integer */
 
 NODE *
@@ -1239,6 +1248,8 @@ do_mpfr_div(int nargs)
 	mpz_tdiv_qr(quotient->mpg_i, remainder->mpg_i, num->mpg_i, denom->mpg_i);
 	unref(num);
 	unref(denom);
+	unref(numerator);
+	unref(denominator);
 
 	sub = make_string("quotient", 8);
 	lhs = assoc_lookup(result, sub);

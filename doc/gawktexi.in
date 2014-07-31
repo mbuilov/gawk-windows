@@ -15924,13 +15924,14 @@ Return the cosine of @var{x}, with @var{x} in radians.
 @cindex div
 Perform integer division, similar to the standard C function of the
 same name.  First, truncate @code{numerator} and @code{denominator}
-to integers.  Clear the @code{result} array, and then set
-@code{result["quotient"]} to the result of @samp{numerator / denominator},
-truncated to an integer, and set @code{result["remainder"]} to the result
-of @samp{numerator % denominator}, truncated to an integer.
-This function is primarily intended for use with arbitrary length
-integers; it avoids creating MPFR arbitrary precision floating-point
-values (@pxref{Arbitrary Precision Integers}).
+towards zero, creating integer values.  Clear the @code{result}
+array, and then set @code{result["quotient"]} to the result of
+@samp{numerator / denominator}, truncated towards zero to an integer,
+and set @code{result["remainder"]} to the result of @samp{numerator %
+denominator}, truncated towards zero to an integer.  This function is
+primarily intended for use with arbitrary length integers; it avoids
+creating MPFR arbitrary precision floating-point values (@pxref{Arbitrary
+Precision Integers}).
 
 This function is a @code{gawk} extension.  It is not available in
 compatibility mode (@pxref{Options}).

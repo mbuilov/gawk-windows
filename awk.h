@@ -1534,7 +1534,7 @@ extern char *find_source(const char *src, struct stat *stb, int *errcode, int is
 extern NODE *do_getline_redir(int intovar, enum redirval redirtype);
 extern NODE *do_getline(int intovar, IOBUF *iop);
 extern struct redirect *getredirect(const char *str, int len);
-extern int inrec(IOBUF *iop, int *errcode);
+extern bool inrec(IOBUF *iop, int *errcode);
 extern int nextfile(IOBUF **curfile, bool skipping);
 /* main.c */
 extern int arg_assign(char *arg, bool initing);
@@ -1571,6 +1571,7 @@ extern NODE *do_mpfr_srand(int);
 extern NODE *do_mpfr_strtonum(int);
 extern NODE *do_mpfr_xor(int);
 extern void init_mpfr(mpfr_prec_t, const char *);
+extern void cleanup_mpfr(void);
 extern NODE *mpg_node(unsigned int);
 extern const char *mpg_fmt(const char *, ...);
 extern int mpg_strtoui(mpz_ptr, char *, size_t, char **, int);
