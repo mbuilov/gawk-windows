@@ -755,6 +755,11 @@ out:
 	if (do_dump_vars)
 		dump_vars(varfile);
 
+#ifdef HAVE_MPFR
+	if (do_mpfr)
+		cleanup_mpfr();
+#endif
+
 	if (do_tidy_mem)
 		release_all_vars();
 	

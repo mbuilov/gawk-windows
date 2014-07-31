@@ -1567,6 +1567,7 @@ extern NODE *do_mpfr_srand(int);
 extern NODE *do_mpfr_strtonum(int);
 extern NODE *do_mpfr_xor(int);
 extern void init_mpfr(mpfr_prec_t, const char *);
+extern void cleanup_mpfr(void);
 extern NODE *mpg_node(unsigned int);
 extern const char *mpg_fmt(const char *, ...);
 extern int mpg_strtoui(mpz_ptr, char *, size_t, char **, int);
