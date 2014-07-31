@@ -1,3 +1,14 @@
+2014-07-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep. Mainly white space differences.
+
+	Unrelated:
+
+	* mpfr.c (cleanup_mpfr): New function to deallocate _mpf_t1
+	and _mpf_t2; removes some valgrind warnings.
+	* awk.h (cleanup_mpfr): Add declaration.
+	* main.c (main): Add call to `cleanup_mpfr'.
+
 2014-07-25         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* main.c (main): Add a warning message if -M is used and gawk was
