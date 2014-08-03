@@ -2,6 +2,13 @@
 
 	* builtin.c (format_tree): Don't need to check return value of
 	wctombr for -2. Thanks to Eli Zaretskii for pointing this out.
+	
+	Unrelated:
+
+	* gawkapi.h: Fix doc for API get_record - errcode needs to
+	be greater than zero.
+	* interpret.h (r_interpret): Move setting of ERRNO to here, from ...
+	* io.c (inrec): ... here. Makes the code cleaner.
 
 2014-07-31         Arnold D. Robbins     <arnold@skeeve.com>
 
