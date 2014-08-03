@@ -590,16 +590,12 @@ inrec(IOBUF *iop, int *errcode)
 
 	if (cnt == EOF) {
 		retval = false;
-		if (*errcode > 0)
-			update_ERRNO_int(*errcode);
 	} else {
 		INCREMENT_REC(NR);
 		INCREMENT_REC(FNR);
 		set_record(begin, cnt);
-		if (*errcode > 0) {
-			update_ERRNO_int(*errcode);
+		if (*errcode > 0)
 			retval = false;
-		}
 	}
 
 	return retval;

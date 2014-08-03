@@ -8641,6 +8641,8 @@ and then to print the multibyte encoding of that character.
 Similarly, when printing a numeric value, @command{gawk} allows the
 value to be within the numeric range of values that can be held
 in a wide character.
+If the conversion to multibyte encoding fails, @command{gawk}
+uses the low eight bits of the value as the character to print.
 
 Other @command{awk} versions generally restrict themselves to printing
 the first byte of a string or to numeric values within the range of
@@ -30987,8 +30989,8 @@ need to test for a @code{NULL} value.  @command{gawk} sets @code{*errcode}
 to zero, so there is no need to set it unless an error occurs.
 
 If an error does occur, the function should return @code{EOF} and set
-@code{*errcode} to a non-zero value.  In that case, if @code{*errcode}
-does not equal @minus{}1, @command{gawk} automatically updates
+@code{*errcode} to a value greater than zero.  In that case, if @code{*errcode}
+does not equal zero, @command{gawk} automatically updates
 the @code{ERRNO} variable based on the value of @code{*errcode}.
 (In general, setting @samp{*errcode = errno} should do the right thing.)
 
