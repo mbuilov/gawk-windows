@@ -8648,6 +8648,8 @@ and then to print the multibyte encoding of that character.
 Similarly, when printing a numeric value, @command{gawk} allows the
 value to be within the numeric range of values that can be held
 in a wide character.
+If the conversion to multibyte encoding fails, @command{gawk}
+uses the low eight bits of the value as the character to print.
 
 Other @command{awk} versions generally restrict themselves to printing
 the first byte of a string or to numeric values within the range of
