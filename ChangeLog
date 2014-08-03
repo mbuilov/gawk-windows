@@ -10,6 +10,11 @@
 	* interpret.h (r_interpret): Move setting of ERRNO to here, from ...
 	* io.c (inrec): ... here. Makes the code cleaner.
 
+2014-08-03         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awkgram.y (getfname): Match on either ptr or ptr2 so --profile
+	will work in -M (MPFR bignum) mode.
+
 2014-07-31         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (format_tree): Make %c handling more sane on Windows.

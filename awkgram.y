@@ -1945,7 +1945,7 @@ getfname(NODE *(*fptr)(int))
 	j = sizeof(tokentab) / sizeof(tokentab[0]);
 	/* linear search, no other way to do it */
 	for (i = 0; i < j; i++) 
-		if (tokentab[i].ptr == fptr)
+		if (tokentab[i].ptr == fptr || tokentab[i].ptr2 == fptr)
 			return tokentab[i].operator;
 
 	return NULL;
