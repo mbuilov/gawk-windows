@@ -533,6 +533,8 @@ EXTRA_DIST = \
 	mpfrrnd.ok \
 	mpfrsort.awk \
 	mpfrsort.ok \
+	mpfrsqrt.awk \
+	mpfrsqrt.ok \
 	mtchi18n.awk \
 	mtchi18n.in \
 	mtchi18n.ok \
@@ -1023,7 +1025,7 @@ INET_TESTS = inetdayu inetdayt inetechu inetecht
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 
 MPFR_TESTS = mpfrnr mpfrnegzero mpfrrnd mpfrieee mpfrexprange \
-	mpfrsort mpfrbigint
+	mpfrsort mpfrsqrt mpfrbigint
 
 LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
@@ -1741,6 +1743,11 @@ mpfrsort:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mpfrbigint:
+	@echo $@
+	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfrsqrt:
 	@echo $@
 	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@

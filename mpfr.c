@@ -697,22 +697,35 @@ do_mpfr_atan2(int nargs)
 	return res;
 }
 
+/* do_mpfr_func --- run an MPFR function - not inline, for debugging */
 
-#define SPEC_MATH(X)						\
-NODE *t1, *res;							\
-mpfr_ptr p1;							\
-int tval;							\
-t1 = POP_SCALAR();						\
-if (do_lint && (t1->flags & (NUMCUR|NUMBER)) == 0)		\
-	lintwarn(_("%s: received non-numeric argument"), #X);	\
-force_number(t1);						\
-p1 = MP_FLOAT(t1);						\
-res = mpg_float();						\
-tval = mpfr_##X(res->mpg_numbr, p1, ROUND_MODE);			\
-IEEE_FMT(res->mpg_numbr, tval);					\
-DEREF(t1);							\
-return res
+static inline NODE *
+do_mpfr_func(const char *name,
+		int (*mpfr_func)(),	/* putting argument types just gets the compiler confused */
+		int nargs)
+{
+	NODE *t1, *res;
+	mpfr_ptr p1;
+	int tval;
 
+	t1 = POP_SCALAR();
+	if (do_lint && (t1->flags & (NUMCUR|NUMBER)) == 0)
+		lintwarn(_("%s: received non-numeric argument"), name);
+
+	force_number(t1);
+	p1 = MP_FLOAT(t1);
+	res = mpg_float();
+	mpfr_set_prec(res->mpg_numbr, mpfr_get_prec(p1));	/* needed at least for sqrt() */
+	tval = mpfr_func(res->mpg_numbr, p1, ROUND_MODE);
+	IEEE_FMT(res->mpg_numbr, tval);
+	DEREF(t1);
+	return res;
+}
+
+#define SPEC_MATH(X)				\
+NODE *result;					\
+result = do_mpfr_func(#X, mpfr_##X, nargs);	\
+return result
 
 /* do_mpfr_sin --- do the sin function */
 
