@@ -1,3 +1,22 @@
+2014-08-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Bug fix: For MPFR sqrt(), need to set precision of result to be
+	the same as that of the argument. Doesn't hurt other functions.
+	See test/mpfrsqrt.awk. Thank to Katie Wasserman <katie@wass.net>
+	for the bug report.
+
+	* mpfr.c (do_mpfr_func): New function. Runs code for MPFR functions
+	while still enabling debugging. Add call here to mpfr_set_prec().
+	Original code from SPEC_MATH macro.
+	(SPEC_MATH): Change macro to call do_mpfr_func().
+
+	Next MPFR bug fix: The % operator gave strange results for negative
+	numerator. Thanks again to Katie Wasserman for the bug report.
+
+	* mpfr.c (mpg_mod): Use mpz_tdiv_qr() instead of mpz_mod(). From
+	the GMP doc, mpz_mod() should have worked; it's not clear why
+	it doesn't.
+
 2014-08-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (format_tree): Don't need to check return value of
