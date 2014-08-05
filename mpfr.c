@@ -1376,8 +1376,27 @@ mpg_mod(NODE *t1, NODE *t2)
 	int tval;
 
 	if (is_mpg_integer(t1) && is_mpg_integer(t2)) {
+		/*
+		 * 8/2014: Originally, this was just
+		 *
+		 * r = mpg_integer();
+		 * mpz_mod(r->mpg_i, t1->mpg_i, t2->mpg_i);
+		 *
+		 * But that gave very strange results with negative numerator:
+		 *
+		 *	$ ./gawk -M 'BEGIN { print -15 % 7 }'
+		 *	6
+		 *
+		 * So instead we use mpz_tdiv_qr() to get the correct result
+		 * and just throw away the quotient. We could not find any
+		 * reason why mpz_mod() wasn't working correctly.
+		 */
+		NODE *dummy_quotient;
+
 		r = mpg_integer();
-		mpz_mod(r->mpg_i, t1->mpg_i, t2->mpg_i);
+		dummy_quotient = mpg_integer();
+		mpz_tdiv_qr(dummy_quotient->mpg_i, r->mpg_i, t1->mpg_i, t2->mpg_i);
+		unref(dummy_quotient);
 	} else {
 		mpfr_ptr p1, p2;
 		p1 = MP_FLOAT(t1);
