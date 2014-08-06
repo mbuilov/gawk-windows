@@ -1081,8 +1081,7 @@ check_pos:
 
 					count = wcrtomb(buf, wc, & mbs);
 					if (count == 0
-					    || count == (size_t)-1
-					    || count == (size_t)-2) {
+					    || count == (size_t) -1) {
 						if (do_lint)
 							lintwarn(
 						_("[s]printf: value %g is not a valid wide character"),

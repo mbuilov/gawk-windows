@@ -1698,6 +1698,16 @@ another key, at the same time.  For example, a @kbd{Ctrl-d} is typed
 by first pressing and holding the @kbd{CONTROL} key, next
 pressing the @kbd{d} key and finally releasing both keys.
 
+@ifset FOR_PRINT
+@quotation NOTE
+Notes of interest look like this.
+@end quotation
+
+@quotation CAUTION
+Cautionary or warning notes look like this.
+@end quotation
+@end ifset
+
 @c fakenode --- for prepinfo
 @unnumberedsubsec Dark Corners
 @cindex Kernighan, Brian
@@ -8641,6 +8651,8 @@ and then to print the multibyte encoding of that character.
 Similarly, when printing a numeric value, @command{gawk} allows the
 value to be within the numeric range of values that can be held
 in a wide character.
+If the conversion to multibyte encoding fails, @command{gawk}
+uses the low eight bits of the value as the character to print.
 
 Other @command{awk} versions generally restrict themselves to printing
 the first byte of a string or to numeric values within the range of
@@ -20441,7 +20453,9 @@ to either update @code{ARGIND} on your own
 or modify this code as appropriate.
 
 The @code{rewind()} function also relies on the @code{nextfile} keyword
-(@pxref{Nextfile Statement}).
+(@pxref{Nextfile Statement}).  Because of this, you should not call it
+from an @code{ENDFILE} rule.  (This isn't necessary anyway, since as soon
+as an @code{ENDFILE} rule finishes @command{gawk} goes to the next file!)
 
 @node File Checking
 @subsection Checking for Readable @value{DDF}s
@@ -30987,8 +31001,8 @@ need to test for a @code{NULL} value.  @command{gawk} sets @code{*errcode}
 to zero, so there is no need to set it unless an error occurs.
 
 If an error does occur, the function should return @code{EOF} and set
-@code{*errcode} to a non-zero value.  In that case, if @code{*errcode}
-does not equal @minus{}1, @command{gawk} automatically updates
+@code{*errcode} to a value greater than zero.  In that case, if @code{*errcode}
+does not equal zero, @command{gawk} automatically updates
 the @code{ERRNO} variable based on the value of @code{*errcode}.
 (In general, setting @samp{*errcode = errno} should do the right thing.)
 
@@ -34491,6 +34505,16 @@ Prestandard VAX C compiler for VAX/VMS
 @item
 GCC for VAX and Alpha has not been tested for a while.
 
+@end itemize
+
+@item
+Support for the following obsolete systems was removed from the code
+and the documentation for @command{gawk} @value{PVERSION} 4.1:
+
+@c nested table
+@itemize @value{MINUS}
+@item
+Ultrix
 @end itemize
 
 @end itemize
