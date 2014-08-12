@@ -1,9 +1,8 @@
 2014-08-12         Arnold D. Robbins     <arnold@skeeve.com>
 
-	* Makefile.am (install-data-hook): Replace use of $(RM) by rm -f;
-	not all versions of make set that variable. Thanks to Jeremie
-	Courreges-Anglas <jca@wxcvbn.org> for the report.
-	(uninstall-so): Ditto.
+	* Makefile.am (RM): Define for makes that don't have it,
+	such as on OpenBSD.  Thanks to Jeremie Courreges-Anglas
+	<jca@wxcvbn.org> for the report.
 
 2014-06-13         Paul Gortmaker        <paul.gortmaker@windriver.com>
 
