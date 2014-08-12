@@ -574,12 +574,12 @@ set_NR()
 
 /* inrec --- This reads in a record from the input file */
 
-int
+bool
 inrec(IOBUF *iop, int *errcode)
 {
 	char *begin;
 	int cnt;
-	int retval = 0;
+	bool retval = true;
 
 	if (at_eof(iop) && no_data_left(iop))
 		cnt = EOF;
@@ -589,13 +589,13 @@ inrec(IOBUF *iop, int *errcode)
 		cnt = get_a_record(& begin, iop, errcode);
 
 	if (cnt == EOF) {
-		retval = 1;
-		if (*errcode > 0)
-			update_ERRNO_int(*errcode);
+		retval = false;
 	} else {
 		INCREMENT_REC(NR);
 		INCREMENT_REC(FNR);
 		set_record(begin, cnt);
+		if (*errcode > 0)
+			retval = false;
 	}
 
 	return retval;

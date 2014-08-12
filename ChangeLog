@@ -1,3 +1,81 @@
+2014-08-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Bug fix: For MPFR sqrt(), need to set precision of result to be
+	the same as that of the argument. Doesn't hurt other functions.
+	See test/mpfrsqrt.awk. Thank to Katie Wasserman <katie@wass.net>
+	for the bug report.
+
+	* mpfr.c (do_mpfr_func): New function. Runs code for MPFR functions
+	while still enabling debugging. Add call here to mpfr_set_prec().
+	Original code from SPEC_MATH macro.
+	(SPEC_MATH): Change macro to call do_mpfr_func().
+
+	Next MPFR bug fix: The % operator gave strange results for negative
+	numerator. Thanks again to Katie Wasserman for the bug report.
+
+	* mpfr.c (mpg_mod): Use mpz_tdiv_qr() instead of mpz_mod(). From
+	the GMP doc, mpz_mod() should have worked; it's not clear why
+	it doesn't.
+
+2014-08-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (format_tree): Don't need to check return value of
+	wctombr for -2. Thanks to Eli Zaretskii for pointing this out.
+	
+	Unrelated:
+
+	* gawkapi.h: Fix doc for API get_record - errcode needs to
+	be greater than zero.
+	* interpret.h (r_interpret): Move setting of ERRNO to here, from ...
+	* io.c (inrec): ... here. Makes the code cleaner.
+
+2014-08-03         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awkgram.y (getfname): Match on either ptr or ptr2 so --profile
+	will work in -M (MPFR bignum) mode.
+
+2014-07-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (format_tree): Make %c handling more sane on Windows.
+	Rework the lint messages.
+
+	Unrelated:
+
+	* dfa.c: Sync with GNU grep. Mainly white space differences.
+
+	Unrelated:
+
+	* mpfr.c (cleanup_mpfr): New function to deallocate _mpf_t1
+	and _mpf_t2; removes some valgrind warnings.
+	* awk.h (cleanup_mpfr): Add declaration.
+	* main.c (main): Add call to `cleanup_mpfr'.
+
+	Fix memory leak:
+
+	* mpfr.c (do_mpfr_div): Add unref to denominator and numerator
+	to not leak memory. Thanks to Katie Wasserman <katie@wass.net>
+	for isolating the problem to that routine.
+
+2014-07-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c (main): Add a warning message if -M is used and gawk was
+	compiled without MPFR/GMP.
+
+2014-07-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c (usage): Put text for `-n' *after* text for `-m'.
+	Report from Robert P. J. Day <rpjday@crashcourse.ca>.
+
+	Fix problems with I/O errors reported by Assaf Gordon
+	<assafgordon@gmail.com>:
+
+	* io.c (inrec): Change type to bool to make calling easier. Add
+	check in non-EOF case for error, and if so, return false.
+	Update ERRNO in case there is an ENDFILE block.
+	* awk.h (inrec): Change type in declaration.
+	* interpret.h (r_interpret): Change call of inrec() to boolean
+	notation.
+
 2014-07-10         Arnold D. Robbins     <arnold@skeeve.com>
 
 	New `div()' function to do integer division and remainder;

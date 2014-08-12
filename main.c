@@ -472,6 +472,8 @@ main(int argc, char **argv)
 		case 'M':
 #ifdef HAVE_MPFR
 			do_flags |= DO_MPFR;
+#else
+			warning(_("-M ignored: MPFR/GMP support not compiled in"));
 #endif
 			break;
 
@@ -752,6 +754,11 @@ out:
 	if (do_dump_vars)
 		dump_vars(varfile);
 
+#ifdef HAVE_MPFR
+	if (do_mpfr)
+		cleanup_mpfr();
+#endif
+
 	if (do_tidy_mem)
 		release_all_vars();
 	
@@ -819,9 +826,9 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-i includefile\t\t--include=includefile\n"), fp);
 	fputs(_("\t-l library\t\t--load=library\n"), fp);
 	fputs(_("\t-L [fatal]\t\t--lint[=fatal]\n"), fp);
-	fputs(_("\t-n\t\t\t--non-decimal-data\n"), fp);
 	fputs(_("\t-M\t\t\t--bignum\n"), fp);
 	fputs(_("\t-N\t\t\t--use-lc-numeric\n"), fp);
+	fputs(_("\t-n\t\t\t--non-decimal-data\n"), fp);
 	fputs(_("\t-o[file]\t\t--pretty-print[=file]\n"), fp);
 	fputs(_("\t-O\t\t\t--optimize\n"), fp);
 	fputs(_("\t-p[file]\t\t--profile[=file]\n"), fp);

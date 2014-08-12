@@ -1066,13 +1066,29 @@ check_pos:
 					size_t count;
 
 					memset(& mbs, 0, sizeof(mbs));
+
+					/* handle systems with too small wchar_t */
+					if (sizeof(wchar_t) < 4 && uval > 0xffff) {
+						if (do_lint)
+							lintwarn(
+						_("[s]printf: value %g is too big for %%c format"),
+									arg->numbr);
+
+						goto out0;
+					}
+
 					wc = uval;
 
 					count = wcrtomb(buf, wc, & mbs);
 					if (count == 0
-					    || count == (size_t)-1
-					    || count == (size_t)-2)
+					    || count == (size_t) -1) {
+						if (do_lint)
+							lintwarn(
+						_("[s]printf: value %g is not a valid wide character"),
+									arg->numbr);
+
 						goto out0;
+					}
 
 					memcpy(cpbuf, buf, count);
 					prec = count;
@@ -1084,10 +1100,6 @@ out0:
 				/* else,
 					fall through */
 #endif
-				if (do_lint && uval > 255) {
-					lintwarn("[s]printf: value %g is too big for %%c format",
-							arg->numbr);
-				}
 				cpbuf[0] = uval;
 				prec = 1;
 				cp = cpbuf;

@@ -1191,10 +1191,13 @@ match_re:
 				JUMPTO(ni);
 			}
 
-			if (inrec(curfile, & errcode) != 0) {
-				if (errcode > 0 && (do_traditional || ! pc->has_endfile))
-					fatal(_("error reading input file `%s': %s"),
+			if (! inrec(curfile, & errcode)) {
+				if (errcode > 0) {
+					update_ERRNO_int(errcode);
+					if (do_traditional || ! pc->has_endfile)
+						fatal(_("error reading input file `%s': %s"),
 						curfile->public.name, strerror(errcode));
+				}
 
 				JUMPTO(ni);
 			} /* else
