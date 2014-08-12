@@ -144,6 +144,9 @@ CLEANFILES = core core.*
 # We want hard links for install-exec-hook, below
 LN= ln
 
+# For some make's, e.g. OpenBSD, that don't define this
+RM = rm -f
+
 # First, add a link from gawk to gawk-X.Y.Z.
 #
 # For GNU systems where gawk is awk, add a link to awk.

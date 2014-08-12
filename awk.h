@@ -1474,6 +1474,7 @@ extern NODE *get_actual_argument(int, bool, bool);
 extern void init_fields(void);
 extern void set_record(const char *buf, int cnt);
 extern void reset_record(void);
+extern void rebuild_record(void);
 extern void set_NF(void);
 extern NODE **get_field(long num, Func_ptr *assign);
 extern NODE *do_split(int nargs);

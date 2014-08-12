@@ -30565,8 +30565,20 @@ You can simulate the @code{div()} function in standard @command{awk}
 using this user-defined function:
 
 @example
+@c file eg/lib/div.awk
 # div --- do integer division
 
+@c endfile
+@ignore
+@c file eg/lib/div.awk
+#
+# Arnold Robbins, arnold@@skeeve.com, Public Domain
+# July, 2014
+
+@c endfile
+
+@end ignore
+@c file eg/lib/div.awk
 function div(numerator, denominator, result,    i)
 @{
     split("", result)
@@ -30578,6 +30590,7 @@ function div(numerator, denominator, result,    i)
 
     return 0.0
 @}
+@c endfile
 @end example
 
 @node POSIX Floating Point Problems

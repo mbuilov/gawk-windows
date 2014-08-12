@@ -1,0 +1,58 @@
+#!/bin/sh
+# On 2013-05-14 Arnold wrote in an e-mail:
+
+# <QUOTE)
+# I think that using CMake would be more palatable if there is also a simple
+# configure wrapper that can be used by people who build distributions. This would
+# mean things like
+# 
+# 	configure CC=XXXX   # XXXX in { gcc, clang, tcc } or native platform cc
+# 	configure --prefix=/path/to/install
+# 
+# And the few other current configure options like --with-whiny-user-strftime,
+# --disable-nls, etc.  I don't know if we need all the standard configure options,
+# but I do want the ones I've added in configure.ac.
+# </QUOTE)
+
+
+# Anyone using this script still needs an out-of-source build directory.
+if [ -f CMakeLists.txt ] ; then
+  echo "Your current working directory contains a file CMakeLists.txt, indicating"
+  echo "that this is a source directory. Create a new directory elsewhere, change into"
+  echo "this empty directory and try again."
+  echo "  mkdir build"
+  echo "  cd build"
+  echo "  ../$0"
+  exit 1
+fi
+
+# TODO: Evaluate all the options and translate the options into CMake variables.
+CC=$( which cc )
+PREFIX=""
+SRCDIR=".."
+WHINY=""
+
+for p in $@
+do
+  if [ ${p:0:3} = "CC=" ]; then CC=${p:3}; fi
+  if [ ${p:0:9} = "--prefix=" ]; then PREFIX=-DCMAKE_INSTALL_PREFIX=${p:9}; fi
+  if [ ${p:0:9} = "--srcdir=" ]; then SRCDIR=${p:9}; fi
+  if [ ${p:0:26} = "--with-whiny-user-strftime" ]; then WHINY=-DUSE_INCLUDED_STRFTIME=1; fi
+done
+CC=$( which $CC )
+
+rm -f Toolchain.cmake
+(
+  echo "set(CMAKE_C_COMPILER $CC)"
+  echo "set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)"
+  echo "set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)"
+  echo "set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)"
+) > Toolchain.cmake
+
+if ! [ -f ${SRCDIR}/CMakeLists.txt ] ; then
+  echo "The source directory (${SRCDIR}) does not contain a file CMakeLists.txt."
+  exit 1
+fi
+
+cmake ${PREFIX} ${WHINY} -DCMAKE_TOOLCHAIN_FILE=Toolchain.cmake ${SRCDIR}
+
