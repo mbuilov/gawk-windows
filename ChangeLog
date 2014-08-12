@@ -11,6 +11,12 @@
 	* field.c (rebuild_record): Is now extern instead of static.
 	Use OFS and OFSlen instead of the value of OFS_node.
 
+	Unrelated:
+
+	* Makefile.am (dist-hook): Replace use of $(RM) by rm -f; not all
+	versions of make set that variable. Thanks to Jeremie
+	Courreges-Anglas <jca@wxcvbn.org> for the report.
+
 2014-08-05         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Bug fix: For MPFR sqrt(), need to set precision of result to be
