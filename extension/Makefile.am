@@ -29,6 +29,9 @@ AM_CPPFLAGS = -I$(srcdir)/..
 # correctly after changing configure.ac
 ACLOCAL_AMFLAGS = -I m4
 
+# For some make's, e.g. OpenBSD, that don't define this
+RM = rm -f
+
 # Note: rwarray does not currently compile.
 
 pkgextension_LTLIBRARIES =	\
@@ -100,12 +103,12 @@ testext_la_LIBADD     = $(MY_LIBS)
 
 install-data-hook:
 	for i in $(pkgextension_LTLIBRARIES) ; do \
-		rm -f $(DESTDIR)$(pkgextensiondir)/$$i ; \
+		$(RM) $(DESTDIR)$(pkgextensiondir)/$$i ; \
 	done
 
 # Keep the uninstall check working:
 uninstall-so:
-	rm -f $(DESTDIR)$(pkgextensiondir)/*.so
+	$(RM) $(DESTDIR)$(pkgextensiondir)/*.so
 
 uninstall-recursive: uninstall-so
 

@@ -144,6 +144,9 @@ CLEANFILES = core core.*
 # We want hard links for install-exec-hook, below
 LN= ln
 
+# For some make's, e.g. OpenBSD, that don't define this
+RM = rm -f
+
 # First, add a link from gawk to gawk-X.Y.Z.
 #
 # For GNU systems where gawk is awk, add a link to awk.
@@ -176,7 +179,7 @@ dist-hook:
 	sed -n -f configpk.sed < ../configure.ac > /tmp/tmp.sed ; \
 	sed -f config.sed < ../configh.in > /tmp/config.tmp ; \
 	sed -f /tmp/tmp.sed < /tmp/config.tmp > config.h ; \
-	rm -f /tmp/tmp.sed /tmp/config.tmp
+	$(RM) /tmp/tmp.sed /tmp/config.tmp
 	pwd
 	chmod u+w $(distdir)/pc/config.h
 	cp $(srcdir)/pc/config.h $(distdir)/pc/config.h
