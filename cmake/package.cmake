@@ -1,7 +1,7 @@
 #
 # cmake/package --- CMake input file for gawk
 #
-# Copyright (C) 2013
+# Copyright (C) 2013-2014
 # the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
