@@ -1175,7 +1175,7 @@ dist-hook:
 	sed -n -f configpk.sed < ../configure.ac > /tmp/tmp.sed ; \
 	sed -f config.sed < ../configh.in > /tmp/config.tmp ; \
 	sed -f /tmp/tmp.sed < /tmp/config.tmp > config.h ; \
-	$(RM) /tmp/tmp.sed /tmp/config.tmp
+	rm -f /tmp/tmp.sed /tmp/config.tmp
 	pwd
 	chmod u+w $(distdir)/pc/config.h
 	cp $(srcdir)/pc/config.h $(distdir)/pc/config.h

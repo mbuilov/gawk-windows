@@ -1,3 +1,22 @@
+2014-08-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	OFS being set should rebuild $0 using previous OFS if $0
+	needs to be rebuilt. Thanks to Mike Brennan for pointing this out.
+
+	* awk.h (rebuild_record): Declare.
+	* eval.c (set_OFS): If not being called from var_init(), check
+	if $0 needs rebuilding. If so, parse the record fully and rebuild it.
+	Make OFS point to a separate copy of the new OFS for next time, since
+	OFS_node->var_value->stptr was already updated at this point.
+	* field.c (rebuild_record): Is now extern instead of static.
+	Use OFS and OFSlen instead of the value of OFS_node.
+
+	Unrelated:
+
+	* Makefile.am (dist-hook): Replace use of $(RM) by rm -f; not all
+	versions of make set that variable. Thanks to Jeremie
+	Courreges-Anglas <jca@wxcvbn.org> for the report.
+
 2014-08-05         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Bug fix: For MPFR sqrt(), need to set precision of result to be
