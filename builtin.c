@@ -2847,15 +2847,10 @@ set_how_many:
 
 	text = t->stptr;
 	textlen = t->stlen;
-	buflen = textlen + 2;
 
 	repl = s->stptr;
 	replend = repl + s->stlen;
 	repllen = replend - repl;
-
-	emalloc(buf, char *, buflen + 2, "do_sub");
-	buf[buflen] = '\0';
-	buf[buflen + 1] = '\0';
 
 	ampersands = 0;
 
@@ -2915,6 +2910,13 @@ set_how_many:
 	}
 
 	lastmatchnonzero = false;
+
+	/* guesstimate how much room to allocate; +2 forces > 0 */
+	buflen = textlen + (ampersands + 1) * repllen + 2;
+	emalloc(buf, char *, buflen + 2, "do_sub");
+	buf[buflen] = '\0';
+	buf[buflen + 1] = '\0';
+
 	bp = buf;
 	for (current = 1;; current++) {
 		matches++;

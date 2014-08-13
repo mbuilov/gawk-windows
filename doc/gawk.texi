@@ -1816,6 +1816,7 @@ see @uref{http://www.gnu.org, the GNU Project's home page}.
 This @value{DOCUMENT} may also be read from
 @uref{http://www.gnu.org/software/gawk/manual/, their web site}.
 
+@ifclear FOR_PRINT
 A shell, an editor (Emacs), highly portable optimizing C, C++, and
 Objective-C compilers, a symbolic debugger and dozens of large and
 small utilities (such as @command{gawk}), have all been completed and are
@@ -1826,32 +1827,16 @@ stage of development.
 @cindex Linux
 @cindex GNU/Linux
 @cindex operating systems, BSD-based
-@cindex Alpha (DEC)
 Until the GNU operating system is more fully developed, you should
 consider using GNU/Linux, a freely distributable, Unix-like operating
 system for Intel@registeredsymbol{},
 Power Architecture,
 Sun SPARC, IBM S/390, and other
-@ifclear FOR_PRINT
 systems.@footnote{The terminology ``GNU/Linux'' is explained
 in the @ref{Glossary}.}
-@end ifclear
-@ifset FOR_PRINT
-systems.
-@end ifset
 Many GNU/Linux distributions are
 available for download from the Internet.
-
-(There are numerous other freely available, Unix-like operating systems
-based on the
-Berkeley Software Distribution, and some of them use recent versions
-of @command{gawk} for their versions of @command{awk}.
-@uref{http://www.netbsd.org, NetBSD},
-@uref{http://www.freebsd.org, FreeBSD},
-and
-@uref{http://www.openbsd.org, OpenBSD}
-are three of the most popular ones, but there
-are others.)
+@end ifclear
 
 @ifnotinfo
 The @value{DOCUMENT} you are reading is actually free---at least, the
@@ -2095,9 +2080,13 @@ people.
 Notable code and documentation contributions were made by
 a number of people. @xref{Contributors}, for the full list.
 
-Thanks to Patrice Dumas  for the new @command{makeinfo} program.
+Thanks to Patrice Dumas for the new @command{makeinfo} program.
 Thanks to Karl Berry who continues to work to keep
 the Texinfo markup language sane.
+
+Robert P.J.@: Day, Michael Brennan and Brian Kernighan kindly acted as
+reviewers for the 2015 edition of this @value{DOCUMENT}. Their feedback
+helped improve the final work.
 
 @cindex Kernighan, Brian
 I would like to thank Brian Kernighan for invaluable assistance during the
@@ -2105,6 +2094,12 @@ testing and debugging of @command{gawk}, and for ongoing
 help and advice in clarifying numerous points about the language.
 We could not have done nearly as good a job on either @command{gawk}
 or its documentation without his help.
+
+Brian is in a class by himself as a programmer and technical
+author.  I have to thank him (yet again) for his ongoing friendship
+and the role-model he has been for me for close to 30 years!
+Having him as a reviewer is an exciting privilege. It has also
+been extremely humbling@enddots{}
 
 @cindex Robbins, Miriam
 @cindex Robbins, Jean
@@ -3018,12 +3013,14 @@ action---so it uses the default action, printing the record.
 Print the length of the longest line in @file{data}:
 
 @example
-expand data | awk '@{ if (x < length()) x = length() @}
+expand data | awk '@{ if (x < length($0)) x = length($0) @}
               END @{ print "maximum line length is " x @}'
 @end example
 
+This example differs slightly from the first example in this list:
 The input is processed by the @command{expand} utility to change TABs
-into spaces, so the widths compared are actually the right-margin columns.
+into spaces, so the widths compared are actually the right-margin columns,
+as opposed to the number of input characters on each line.
 
 @item
 Print every line that has at least one field:
@@ -9738,7 +9735,8 @@ print "Serious error detected!" | "cat 1>&2"
 @noindent
 This works by opening a pipeline to a shell command that can access the
 standard error stream that it inherits from the @command{awk} process.
-This is far from elegant, and it is also inefficient, because it requires a
+@c 8/2014: Mike Brennan says not to cite this as inefficient. So, fixed.
+This is far from elegant, and it also requires a
 separate process.  So people writing @command{awk} programs often
 don't do this.  Instead, they send the error messages to the
 screen, like this:
@@ -11158,7 +11156,7 @@ Otherwise, it's parsed as follows:
 @end display
 
 As mentioned earlier,
-when doing concatenation, @emph{parenthesize}.  Otherwise,
+when mixing concatenation with other operators, @emph{parenthesize}.  Otherwise,
 you're never quite sure what you'll get.
 
 @node Assignment Ops
@@ -11754,19 +11752,14 @@ compares variables.
 @cindex numeric, strings
 @cindex strings, numeric
 @cindex POSIX @command{awk}, numeric strings and
-The 1992 POSIX standard introduced
+The POSIX standard introduced
 the concept of a @dfn{numeric string}, which is simply a string that looks
 like a number---for example, @code{@w{" +2"}}.  This concept is used
 for determining the type of a variable.
 The type of the variable is important because the types of two variables
 determine how they are compared.
+Variable typing follows these rules:
 
-The various versions of the POSIX standard did not get the rules
-quite right for several editions.  Fortunately, as of at least the
-2008 standard (and possibly earlier), the standard has been fixed,
-and variable typing follows these rules:@footnote{@command{gawk} has
-followed these rules for many years,
-and it is gratifying that the POSIX standard is also now correct.}
 
 @itemize @value{BULLET}
 @item
@@ -16663,7 +16656,9 @@ is @minus{}3, and @code{int(-3)} is @minus{}3 as well.
 @cindexawkfunc{log}
 @cindex logarithm
 Return the natural logarithm of @var{x}, if @var{x} is positive;
-otherwise, report an error.
+otherwise, return @code{NaN} (``not a number'') on IEEE 754 systems.
+Additionally, @command{gawk} prints a warning message when @code{x}
+is negative.
 
 @item @code{rand()}
 @cindexawkfunc{rand}
