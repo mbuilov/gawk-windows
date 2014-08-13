@@ -1,3 +1,12 @@
+2014-08-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_sub): Move initial allocation of the replacement
+	string down towards code to do the replacement, with a (we hope)
+	better guesstimate of how much to initially allocate. The idea
+	is to avoid unnecessary realloc() calls by making a better guess
+	at how much to allocate.  This came up in an email discussion
+	with Tom Dickey about mawk's gsub().
+
 2014-08-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	OFS being set should rebuild $0 using previous OFS if $0
