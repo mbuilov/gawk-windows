@@ -51,7 +51,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH July, 2014
+@set UPDATE-MONTH August, 2014
 @set VERSION 4.1
 @set PATCHLEVEL 1
 
@@ -546,7 +546,7 @@ particular records in a file and perform operations upon them.
 * Single Character Fields::             Making each character a separate
                                         field.
 * Command Line Field Separator::        Setting @code{FS} from the
-                                        command-line.
+                                        command line.
 * Full Line Fields::                    Making the full line be a single
                                         field.
 * Field Splitting Summary::             Some final points and a summary table.
@@ -572,7 +572,7 @@ particular records in a file and perform operations upon them.
                                         @code{getline}.
 * Getline Summary::                     Summary of @code{getline} Variants.
 * Read Timeout::                        Reading input with a timeout.
-* Command line directories::            What happens if you put a directory on
+* Command-line directories::            What happens if you put a directory on
                                         the command line.
 * Input Summary::                       Input summary.
 * Input Exercises::                     Exercises.
@@ -611,7 +611,7 @@ particular records in a file and perform operations upon them.
 * Variables::                           Variables give names to values for
                                         later use.
 * Using Variables::                     Using variables in your programs.
-* Assignment Options::                  Setting variables on the command-line
+* Assignment Options::                  Setting variables on the command line
                                         and a summary of command-line syntax.
                                         This is an advanced method of input.
 * Conversion::                          The conversion of strings to numbers
@@ -1404,7 +1404,7 @@ help from me, thoroughly reworked @command{gawk} for compatibility
 with the newer @command{awk}.
 Circa 1994, I became the primary maintainer.
 Current development focuses on bug fixes,
-performance improvements, standards compliance, and occasionally, new features.
+performance improvements, standards compliance and, occasionally, new features.
 
 In May of 1997, J@"urgen Kahrs felt the need for network access
 from @command{awk}, and with a little help from me, set about adding
@@ -1697,7 +1697,7 @@ are slightly different than in other books you may have read.
 This @value{SECTION} briefly documents the typographical conventions used in Texinfo.
 @end ifinfo
 
-Examples you would type at the command-line are preceded by the common
+Examples you would type at the command line are preceded by the common
 shell primary and secondary prompts, @samp{$} and @samp{>}.
 Input that you type is shown @kbd{like this}.
 Output from the command is preceded by the glyph ``@print{}''.
@@ -2335,12 +2335,7 @@ For example, on OS/2, it is @kbd{Ctrl-z}.)
 As an example, the following program prints a friendly piece of advice
 (from Douglas Adams's @cite{The Hitchhiker's Guide to the Galaxy}),
 to keep you from worrying about the complexities of computer
-programming@footnote{If you use Bash as your shell, you should execute
-the command @samp{set +H} before running this program interactively,
-to disable the C shell-style command history, which treats
-@samp{!} as a special character. We recommend putting this command into
-your personal startup file.}
-(@code{BEGIN} is a feature we haven't discussed yet):
+programming (@code{BEGIN} is a feature we haven't discussed yet):
 
 @example
 $ @kbd{awk "BEGIN @{ print \"Don't Panic!\" @}"}
@@ -2358,6 +2353,14 @@ rules---in particular because it mixes both single quotes and
 double quotes.@footnote{Although we generally recommend the use of single
 quotes around the program text, double quotes are needed here in order to
 put the single quote into the message.}
+
+@quotation NOTE
+As a side note, if you use Bash as your shell, you should execute the
+command @samp{set +H} before running this program interactively, to
+disable the C shell-style command history, which treats @samp{!} as a
+special character. We recommend putting this command into your personal
+startup file.
+@end quotation
 
 This next simple @command{awk} program
 emulates the @command{cat} utility; it copies whatever you type on the
@@ -2715,7 +2718,7 @@ Note that the single quote is not special within double quotes.
 
 @item
 Null strings are removed when they occur as part of a non-null
-command-line argument, while explicit non-null objects are kept.
+command-line argument, while explicit null objects are kept.
 For example, to specify that the field separator @code{FS} should
 be set to the null string, use:
 
@@ -2862,7 +2865,9 @@ each line is considered to be one @dfn{record}.
 
 In the @value{DF} @file{mail-list}, each record contains the name of a person,
 his/her phone number, his/her email-address, and a code for their relationship
-with the author of the list.  An @samp{A} in the last column
+with the author of the list.
+The columns are aligned using spaces.
+An @samp{A} in the last column
 means that the person is an acquaintance.  An @samp{F} in the last
 column means that the person is a friend.
 An @samp{R} means that the person is a relative:
@@ -3780,7 +3785,7 @@ Second, because this option is intended to be used with code libraries,
 @command{gawk} does not recognize such files as constituting main program
 input.  Thus, after processing an @option{-i} argument, @command{gawk}
 still expects to find the main source code via the @option{-f} option
-or on the command-line.
+or on the command line.
 
 @item @option{-l} @var{ext}
 @itemx @option{--load} @var{ext}
@@ -3804,7 +3809,7 @@ a shared library.  This feature is described in detail in @ref{Dynamic Extension
 @cindex warnings, issuing
 Warn about constructs that are dubious or nonportable to
 other @command{awk} implementations.
-No space is allowed between the @option{-D} and @var{value}, if
+No space is allowed between the @option{-L} and @var{value}, if
 @var{value} is supplied.
 Some warnings are issued when @command{gawk} first reads your program.  Others
 are issued at runtime, as your program executes.
@@ -3923,7 +3928,7 @@ Newlines are not allowed after @samp{?} or @samp{:}
 
 @cindex @code{FS} variable, as TAB character
 @item
-Specifying @samp{-Ft} on the command-line does not set the value
+Specifying @samp{-Ft} on the command line does not set the value
 of @code{FS} to be a single TAB character
 (@pxref{Field Separators}).
 
@@ -4169,7 +4174,7 @@ with @code{getline}.
 Some other versions of @command{awk} also support this, but it
 is not standard.
 (Some operating systems provide a @file{/dev/stdin} file
-in the file system; however, @command{gawk} always processes
+in the filesystem; however, @command{gawk} always processes
 this @value{FN} itself.)
 
 @node Environment Variables
@@ -4195,7 +4200,7 @@ behaves.
 @cindex differences in @command{awk} and @command{gawk}, @code{AWKPATH} environment variable
 @ifinfo
 The previous @value{SECTION} described how @command{awk} program files can be named
-on the command-line with the @option{-f} option.
+on the command line with the @option{-f} option.
 @end ifinfo
 In most @command{awk}
 implementations, you must supply a precise path name for each program
@@ -4290,7 +4295,7 @@ list are meant to be used by regular users.
 
 @table @env
 @item POSIXLY_CORRECT
-Causes @command{gawk} to switch POSIX compatibility
+Causes @command{gawk} to switch to POSIX compatibility
 mode, disabling all traditional and GNU extensions.
 @xref{Options}.
 
@@ -4323,7 +4328,7 @@ file as the size of the memory buffer to allocate for I/O. Otherwise,
 the value should be a number, and @command{gawk} uses that number as
 the size of the buffer to allocate.  (When this variable is not set,
 @command{gawk} uses the smaller of the file's size and the ``default''
-blocksize, which is usually the file systems I/O blocksize.)
+blocksize, which is usually the filesystems I/O blocksize.)
 
 @item AWK_HASH
 If this variable exists with a value of @samp{gst}, @command{gawk}
@@ -4656,9 +4661,9 @@ or
 to run @command{awk}.
 
 @item
-The three standard @command{awk} options are @option{-f}, @option{-F}
-and @option{-v}.  @command{gawk} supplies these and many others, as well
-as corresponding GNU-style long options.
+The three standard options for all versions of @command{awk} are
+@option{-f}, @option{-F} and @option{-v}.  @command{gawk} supplies these
+and many others, as well as corresponding GNU-style long options.
 
 @item
 Non-option command-line arguments are usually treated as @value{FN}s,
@@ -5994,7 +5999,7 @@ In @command{awk}, regular expression constants are written enclosed
 between slashes: @code{/}@dots{}@code{/}.
 
 @item
-Regexp constants may be used by standalone in patterns and
+Regexp constants may be used standalone in patterns and
 in conditional expressions, or as part of matching expressions
 using the @samp{~} and @samp{!~} operators.
 
@@ -6024,7 +6029,7 @@ the match, such as for text substitution and when the record separator
 is a regexp.
 
 @item
-Matching expressions may use dynamic regexps; that is string values
+Matching expressions may use dynamic regexps; that is, string values
 treated as regular expressions.
 
 @end itemize
@@ -6076,7 +6081,7 @@ used with it do not have to be named on the @command{awk} command line
 * Getline::                     Reading files under explicit program control
                                 using the @code{getline} function.
 * Read Timeout::                Reading input with a timeout.
-* Command line directories::    What happens if you put a directory on the
+* Command-line directories::    What happens if you put a directory on the
                                 command line.
 * Input Summary::               Input summary.
 * Input Exercises::             Exercises.
@@ -6307,17 +6312,17 @@ with optional leading and/or trailing whitespace:
 @example
 $ @kbd{echo record 1 AAAA record 2 BBBB record 3 |}
 > @kbd{gawk 'BEGIN @{ RS = "\n|( *[[:upper:]]+ *)" @}}
->             @kbd{@{ print "Record =", $0, "and RT =", RT @}'}
-@print{} Record = record 1 and RT =  AAAA
-@print{} Record = record 2 and RT =  BBBB
-@print{} Record = record 3 and RT =
-@print{}
+>             @kbd{@{ print "Record =", $0,"and RT = [" RT "]" @}'}
+@print{} Record = record 1 and RT = [ AAAA ]
+@print{} Record = record 2 and RT = [ BBBB ]
+@print{} Record = record 3 and RT = [
+@print{} ]
 @end example
 
 @noindent
-The final line of output has an extra blank line. This is because the
-value of @code{RT} is a newline, and the @code{print} statement
-supplies its own terminating newline.
+The square brackets delineate the contents of @code{RT}, letting you
+see the leading and trailing whitespace. The final value of @code{RT}
+@code{RT} is a newline.
 @xref{Simple Sed}, for a more useful example
 of @code{RS} as a regexp and @code{RT}.
 
@@ -6831,7 +6836,7 @@ with a statement such as @samp{$1 = $1}, as described earlier.
 * Default Field Splitting::      How fields are normally separated.
 * Regexp Field Splitting::       Using regexps as the field separator.
 * Single Character Fields::      Making each character a separate field.
-* Command Line Field Separator:: Setting @code{FS} from the command-line.
+* Command Line Field Separator:: Setting @code{FS} from the command line.
 * Full Line Fields::             Making the full line be a single field.
 * Field Splitting Summary::      Some final points and a summary table.
 @end menu
@@ -7087,7 +7092,7 @@ behaves this way.
 
 @node Command Line Field Separator
 @subsection Setting @code{FS} from the Command Line
-@cindex @option{-F} option, command line
+@cindex @option{-F} option, command-line
 @cindex field separator, on command line
 @cindex command line, @code{FS} on@comma{} setting
 @cindex @code{FS} variable, setting from command line
@@ -8522,10 +8527,10 @@ a connection before it can start reading any data,
 or the attempt to open a FIFO special file for reading can block
 indefinitely until some other process opens it for writing.
 
-@node Command line directories
+@node Command-line directories
 @section Directories On The Command Line
-@cindex differences in @command{awk} and @command{gawk}, command line directories
-@cindex directories, command line
+@cindex differences in @command{awk} and @command{gawk}, command-line directories
+@cindex directories, command-line
 @cindex command line, directories on
 
 According to the POSIX standard, files named on the @command{awk}
@@ -10563,7 +10568,7 @@ function mysub(pat, repl, str, global)
 @c @cindex automatic warnings
 @c @cindex warnings, automatic
 In this example, the programmer wants to pass a regexp constant to the
-user-defined function @code{mysub}, which in turn passes it on to
+user-defined function @code{mysub()}, which in turn passes it on to
 either @code{sub()} or @code{gsub()}.  However, what really happens is that
 the @code{pat} parameter is either one or zero, depending upon whether
 or not @code{$0} matches @code{/hi/}.
@@ -10584,7 +10589,7 @@ on the @command{awk} command line.
 
 @menu
 * Using Variables::             Using variables in your programs.
-* Assignment Options::          Setting variables on the command-line and a
+* Assignment Options::          Setting variables on the command line and a
                                 summary of command-line syntax. This is an
                                 advanced method of input.
 @end menu
@@ -17501,6 +17506,12 @@ Nonalphabetic characters are left unchanged.  For example,
 @cindex backslash (@code{\}), @code{gsub()}/@code{gensub()}/@code{sub()} functions and
 @cindex @code{&} (ampersand), @code{gsub()}/@code{gensub()}/@code{sub()} functions and
 @cindex ampersand (@code{&}), @code{gsub()}/@code{gensub()}/@code{sub()} functions and
+
+@quotation CAUTION
+This section has been known to cause headaches.
+You might want to skip it upon first reading.
+@end quotation
+
 When using @code{sub()}, @code{gsub()}, or @code{gensub()}, and trying to get literal
 backslashes and ampersands into the replacement text, you need to remember
 that there are several levels of @dfn{escape processing} going on.
@@ -17543,26 +17554,26 @@ through unchanged.  This is illustrated in @ref{table-sub-escapes}.
 _halign{_hfil#!_qquad_hfil#!_qquad#_hfil_cr
       You type!@code{sub()} sees!@code{sub()} generates_cr
 _hrulefill!_hrulefill!_hrulefill_cr
-     @code{\&}!       @code{&}!the matched text_cr
-    @code{\\&}!      @code{\&}!a literal @samp{&}_cr
-   @code{\\\&}!      @code{\&}!a literal @samp{&}_cr
-  @code{\\\\&}!     @code{\\&}!a literal @samp{\&}_cr
- @code{\\\\\&}!     @code{\\&}!a literal @samp{\&}_cr
-@code{\\\\\\&}!    @code{\\\&}!a literal @samp{\\&}_cr
-    @code{\\q}!      @code{\q}!a literal @samp{\q}_cr
+     @code{\&}!       @code{&}!The matched text_cr
+    @code{\\&}!      @code{\&}!A literal @samp{&}_cr
+   @code{\\\&}!      @code{\&}!A literal @samp{&}_cr
+  @code{\\\\&}!     @code{\\&}!A literal @samp{\&}_cr
+ @code{\\\\\&}!     @code{\\&}!A literal @samp{\&}_cr
+@code{\\\\\\&}!    @code{\\\&}!A literal @samp{\\&}_cr
+    @code{\\q}!      @code{\q}!A literal @samp{\q}_cr
 }
 _bigskip}
 @end tex
 @ifdocbook
 @multitable @columnfractions .20 .20 .60
 @headitem You type @tab @code{sub()} sees @tab @code{sub()} generates
-@item @code{\&}      @tab @code{&}    @tab the matched text
-@item @code{\\&}     @tab @code{\&}   @tab a literal @samp{&}
-@item @code{\\\&}    @tab @code{\&}   @tab a literal @samp{&}
-@item @code{\\\\&}   @tab @code{\\&}  @tab a literal @samp{\&}
-@item @code{\\\\\&}  @tab @code{\\&}  @tab a literal @samp{\&}
-@item @code{\\\\\\&} @tab @code{\\\&} @tab a literal @samp{\\&}
-@item @code{\\q}     @tab @code{\q}   @tab a literal @samp{\q}
+@item @code{\&}      @tab @code{&}    @tab The matched text
+@item @code{\\&}     @tab @code{\&}   @tab A literal @samp{&}
+@item @code{\\\&}    @tab @code{\&}   @tab A literal @samp{&}
+@item @code{\\\\&}   @tab @code{\\&}  @tab A literal @samp{\&}
+@item @code{\\\\\&}  @tab @code{\\&}  @tab A literal @samp{\&}
+@item @code{\\\\\\&} @tab @code{\\\&} @tab A literal @samp{\\&}
+@item @code{\\q}     @tab @code{\q}   @tab A literal @samp{\q}
 @end multitable
 @end ifdocbook
 @ifnottex
@@ -17570,13 +17581,13 @@ _bigskip}
 @display
  You type         @code{sub()} sees          @code{sub()} generates
  --------         ----------          ---------------
-     @code{\&}              @code{&}            the matched text
-    @code{\\&}             @code{\&}            a literal @samp{&}
-   @code{\\\&}             @code{\&}            a literal @samp{&}
-  @code{\\\\&}            @code{\\&}            a literal @samp{\&}
- @code{\\\\\&}            @code{\\&}            a literal @samp{\&}
-@code{\\\\\\&}           @code{\\\&}            a literal @samp{\\&}
-    @code{\\q}             @code{\q}            a literal @samp{\q}
+     @code{\&}              @code{&}            The matched text
+    @code{\\&}             @code{\&}            A literal @samp{&}
+   @code{\\\&}             @code{\&}            A literal @samp{&}
+  @code{\\\\&}            @code{\\&}            A literal @samp{\&}
+ @code{\\\\\&}            @code{\\&}            A literal @samp{\&}
+@code{\\\\\\&}           @code{\\\&}            A literal @samp{\\&}
+    @code{\\q}             @code{\q}            A literal @samp{\q}
 @end display
 @end ifnotdocbook
 @end ifnottex
@@ -17592,86 +17603,19 @@ case of even numbers of backslashes entered at the lexical level.)
 The problem with the historical approach is that there is no way to get
 a literal @samp{\} followed by the matched text.
 
-@c @cindex @command{awk} language, POSIX version
-@cindex POSIX @command{awk}, functions and, @code{gsub()}/@code{sub()}
-The 1992 POSIX standard attempted to fix this problem. That standard
-says that @code{sub()} and @code{gsub()} look for either a @samp{\} or an @samp{&}
-after the @samp{\}. If either one follows a @samp{\}, that character is
-output literally.  The interpretation of @samp{\} and @samp{&} then becomes
-as shown in @ref{table-sub-posix-92}.
+Several editions of the POSIX standard attempted to fix this problem
+but weren't successful. The details are irrelevant at this point in time.
 
-@float Table,table-sub-posix-92
-@caption{1992 POSIX Rules for @code{sub()} and @code{gsub()} Escape Sequence Processing}
-@c thanks to Karl Berry for formatting this table
-@tex
-\vbox{\bigskip
-% We need more characters for escape and tab ...
-\catcode`_ = 0
-\catcode`! = 4
-% ... since this table has lots of &'s and \'s, so we unspecialize them.
-\catcode`\& = \other \catcode`\\ = \other
-_halign{_hfil#!_qquad_hfil#!_qquad#_hfil_cr
-    You type!@code{sub()} sees!@code{sub()} generates_cr
-_hrulefill!_hrulefill!_hrulefill_cr
-    @code{&}!       @code{&}!the matched text_cr
-  @code{\\&}!      @code{\&}!a literal @samp{&}_cr
-@code{\\\\&}!     @code{\\&}!a literal @samp{\}, then the matched text_cr
-@code{\\\\\\&}!  @code{\\\&}!a literal @samp{\&}_cr
-}
-_bigskip}
-@end tex
-@ifdocbook
-@multitable @columnfractions .20 .20 .60
-@headitem You type @tab @code{sub()} sees @tab @code{sub()} generates
-@item @code{&}       @tab @code{&}     @tab the matched text
-@item @code{\\&}     @tab @code{\&}    @tab a literal @samp{&}
-@item @code{\\\\&}   @tab @code{\\&}   @tab a literal @samp{\}, then the matched text
-@item @code{\\\\\\&} @tab  @code{\\\&} @tab a literal @samp{\&}
-@end multitable
-@end ifdocbook
-@ifnottex
-@ifnotdocbook
-@display
- You type         @code{sub()} sees          @code{sub()} generates
- --------         ----------          ---------------
-      @code{&}              @code{&}            the matched text
-    @code{\\&}             @code{\&}            a literal @samp{&}
-  @code{\\\\&}            @code{\\&}            a literal @samp{\}, then the matched text
-@code{\\\\\\&}           @code{\\\&}            a literal @samp{\&}
-@end display
-@end ifnotdocbook
-@end ifnottex
-@end float
-
-@noindent
-This appears to solve the problem.
-Unfortunately, the phrasing of the standard is unusual. It
-says, in effect, that @samp{\} turns off the special meaning of any
-following character, but for anything other than @samp{\} and @samp{&},
-such special meaning is undefined.  This wording leads to two problems:
-
-@itemize @value{BULLET}
-@item
-Backslashes must now be doubled in the @var{replacement} string, breaking
-historical @command{awk} programs.
-
-@item
-To make sure that an @command{awk} program is portable, @emph{every} character
-in the @var{replacement} string must be preceded with a
-backslash.@footnote{This consequence was certainly unintended.}
-@c I can say that, 'cause I was involved in making this change
-@end itemize
-
-Because of the problems just listed,
-in 1996, the @command{gawk} maintainer submitted
+At one point, the @command{gawk} maintainer submitted
 proposed text for a revised standard that
 reverts to rules that correspond more closely to the original existing
 practice. The proposed rules have special cases that make it possible
-to produce a @samp{\} preceding the matched text. This is shown in
+to produce a @samp{\} preceding the matched text.
+This is shown in
 @ref{table-sub-proposed}.
 
 @float Table,table-sub-proposed
-@caption{Proposed Rules For @code{sub()} And Backslash}
+@caption{GNU @command{awk} Rules For @code{sub()} And Backslash}
 @tex
 \vbox{\bigskip
 % We need more characters for escape and tab ...
@@ -17682,10 +17626,10 @@ to produce a @samp{\} preceding the matched text. This is shown in
 _halign{_hfil#!_qquad_hfil#!_qquad#_hfil_cr
     You type!@code{sub()} sees!@code{sub()} generates_cr
 _hrulefill!_hrulefill!_hrulefill_cr
-@code{\\\\\\&}!     @code{\\\&}!a literal @samp{\&}_cr
-@code{\\\\&}!     @code{\\&}!a literal @samp{\}, followed by the matched text_cr
-  @code{\\&}!      @code{\&}!a literal @samp{&}_cr
-  @code{\\q}!      @code{\q}!a literal @samp{\q}_cr
+@code{\\\\\\&}!     @code{\\\&}!A literal @samp{\&}_cr
+@code{\\\\&}!     @code{\\&}!A literal @samp{\}, followed by the matched text_cr
+  @code{\\&}!      @code{\&}!A literal @samp{&}_cr
+  @code{\\q}!      @code{\q}!A literal @samp{\q}_cr
  @code{\\\\}!      @code{\\}!@code{\\}_cr
 }
 _bigskip}
@@ -17693,10 +17637,10 @@ _bigskip}
 @ifdocbook
 @multitable @columnfractions .20 .20 .60
 @headitem You type @tab @code{sub()} sees @tab @code{sub()} generates
-@item @code{\\\\\\&} @tab @code{\\\&} @tab a literal @samp{\&}
-@item @code{\\\\&}   @tab @code{\\&}  @tab a literal @samp{\}, followed by the matched text
-@item @code{\\&}     @tab @code{\&}   @tab a literal @samp{&}
-@item @code{\\q}     @tab @code{\q}   @tab a literal @samp{\q}
+@item @code{\\\\\\&} @tab @code{\\\&} @tab A literal @samp{\&}
+@item @code{\\\\&}   @tab @code{\\&}  @tab A literal @samp{\}, followed by the matched text
+@item @code{\\&}     @tab @code{\&}   @tab A literal @samp{&}
+@item @code{\\q}     @tab @code{\q}   @tab A literal @samp{\q}
 @item @code{\\\\}    @tab @code{\\}   @tab @code{\\}
 @end multitable
 @end ifdocbook
@@ -17705,10 +17649,10 @@ _bigskip}
 @display
  You type         @code{sub()} sees         @code{sub()} generates
  --------         ----------         ---------------
-@code{\\\\\\&}           @code{\\\&}            a literal @samp{\&}
-  @code{\\\\&}            @code{\\&}            a literal @samp{\}, followed by the matched text
-    @code{\\&}             @code{\&}            a literal @samp{&}
-    @code{\\q}             @code{\q}            a literal @samp{\q}
+@code{\\\\\\&}           @code{\\\&}            A literal @samp{\&}
+  @code{\\\\&}            @code{\\&}            A literal @samp{\}, followed by the matched text
+    @code{\\&}             @code{\&}            A literal @samp{&}
+    @code{\\q}             @code{\q}            A literal @samp{\q}
    @code{\\\\}             @code{\\}            @code{\\}
 @end display
 @end ifnotdocbook
@@ -17721,13 +17665,13 @@ there was only one.  However, as in the historical case, any @samp{\} that
 is not part of one of these three sequences is not special and appears
 in the output literally.
 
-@command{gawk} 3.0 and 3.1 follow these proposed POSIX rules for @code{sub()} and
-@code{gsub()}.
-@c As much as we think it's a lousy idea. You win some, you lose some. Sigh.
-The POSIX standard took much longer to be revised than was expected in 1996.
-The 2001 standard does not follow the above rules.  Instead, the rules
-there are somewhat simpler.  The results are similar except for one case.
+@command{gawk} 3.0 and 3.1 follow these rules for @code{sub()} and
+@code{gsub()}.  The POSIX standard took much longer to be revised than
+was expected.  In addition, the @command{gawk} maintainer's proposal was
+lost during the standardization process.  The final rules are
+somewhat simpler.  The results are similar except for one case.
 
+@cindex POSIX @command{awk}, functions and, @code{gsub()}/@code{sub()}
 The POSIX rules state that @samp{\&} in the replacement string produces
 a literal @samp{&}, @samp{\\} produces a literal @samp{\}, and @samp{\} followed
 by anything else is not special; the @samp{\} is placed straight into the output.
@@ -17745,10 +17689,10 @@ These rules are presented in @ref{table-posix-sub}.
 _halign{_hfil#!_qquad_hfil#!_qquad#_hfil_cr
     You type!@code{sub()} sees!@code{sub()} generates_cr
 _hrulefill!_hrulefill!_hrulefill_cr
-@code{\\\\\\&}!     @code{\\\&}!a literal @samp{\&}_cr
-@code{\\\\&}!     @code{\\&}!a literal @samp{\}, followed by the matched text_cr
-  @code{\\&}!      @code{\&}!a literal @samp{&}_cr
-  @code{\\q}!      @code{\q}!a literal @samp{\q}_cr
+@code{\\\\\\&}!     @code{\\\&}!A literal @samp{\&}_cr
+@code{\\\\&}!     @code{\\&}!A literal @samp{\}, followed by the matched text_cr
+  @code{\\&}!      @code{\&}!A literal @samp{&}_cr
+  @code{\\q}!      @code{\q}!A literal @samp{\q}_cr
  @code{\\\\}!      @code{\\}!@code{\}_cr
 }
 _bigskip}
@@ -17756,10 +17700,10 @@ _bigskip}
 @ifdocbook
 @multitable @columnfractions .20 .20 .60
 @headitem You type @tab @code{sub()} sees @tab @code{sub()} generates
-@item @code{\\\\\\&} @tab @code{\\\&} @tab a literal @samp{\&}
-@item @code{\\\\&}   @tab @code{\\&}  @tab a literal @samp{\}, followed by the matched text
-@item @code{\\&}     @tab @code{\&}   @tab a literal @samp{&}
-@item @code{\\q}     @tab @code{\q}   @tab a literal @samp{\q}
+@item @code{\\\\\\&} @tab @code{\\\&} @tab A literal @samp{\&}
+@item @code{\\\\&}   @tab @code{\\&}  @tab A literal @samp{\}, followed by the matched text
+@item @code{\\&}     @tab @code{\&}   @tab A literal @samp{&}
+@item @code{\\q}     @tab @code{\q}   @tab A literal @samp{\q}
 @item @code{\\\\}    @tab @code{\\}   @tab @code{\}
 @end multitable
 @end ifdocbook
@@ -17768,10 +17712,10 @@ _bigskip}
 @display
  You type         @code{sub()} sees         @code{sub()} generates
  --------         ----------         ---------------
-@code{\\\\\\&}           @code{\\\&}            a literal @samp{\&}
-  @code{\\\\&}            @code{\\&}            a literal @samp{\}, followed by the matched text
-    @code{\\&}             @code{\&}            a literal @samp{&}
-    @code{\\q}             @code{\q}            a literal @samp{\q}
+@code{\\\\\\&}           @code{\\\&}            A literal @samp{\&}
+  @code{\\\\&}            @code{\\&}            A literal @samp{\}, followed by the matched text
+    @code{\\&}             @code{\&}            A literal @samp{&}
+    @code{\\q}             @code{\q}            A literal @samp{\q}
    @code{\\\\}             @code{\\}            @code{\}
 @end display
 @end ifnotdocbook
@@ -17783,7 +17727,7 @@ is seen as @samp{\\} and produces @samp{\} instead of @samp{\\}.
 
 Starting with @value{PVERSION} 3.1.4, @command{gawk} followed the POSIX rules
 when @option{--posix} is specified (@pxref{Options}). Otherwise,
-it continued to follow the 1996 proposed rules, since
+it continued to follow the proposed rules, since
 that had been its behavior for many years.
 
 When @value{PVERSION} 4.0.0 was released, the @command{gawk} maintainer
@@ -17814,24 +17758,24 @@ as shown in @ref{table-gensub-escapes}.
 _halign{_hfil#!_qquad_hfil#!_qquad#_hfil_cr
     You type!@code{gensub()} sees!@code{gensub()} generates_cr
 _hrulefill!_hrulefill!_hrulefill_cr
-      @code{&}!           @code{&}!the matched text_cr
-    @code{\\&}!          @code{\&}!a literal @samp{&}_cr
-   @code{\\\\}!          @code{\\}!a literal @samp{\}_cr
-  @code{\\\\&}!         @code{\\&}!a literal @samp{\}, then the matched text_cr
-@code{\\\\\\&}!        @code{\\\&}!a literal @samp{\&}_cr
-    @code{\\q}!          @code{\q}!a literal @samp{q}_cr
+      @code{&}!           @code{&}!The matched text_cr
+    @code{\\&}!          @code{\&}!A literal @samp{&}_cr
+   @code{\\\\}!          @code{\\}!A literal @samp{\}_cr
+  @code{\\\\&}!         @code{\\&}!A literal @samp{\}, then the matched text_cr
+@code{\\\\\\&}!        @code{\\\&}!A literal @samp{\&}_cr
+    @code{\\q}!          @code{\q}!A literal @samp{q}_cr
 }
 _bigskip}
 @end tex
 @ifdocbook
 @multitable @columnfractions .20 .20 .60
 @headitem You type @tab @code{gensub()} sees @tab @code{gensub()} generates
-@item @code{&}       @tab @code{&}    @tab the matched text
-@item @code{\\&}     @tab @code{\&}   @tab a literal @samp{&}
-@item @code{\\\\}    @tab @code{\\}   @tab a literal @samp{\}
-@item @code{\\\\&}   @tab @code{\\&}  @tab a literal @samp{\}, then the matched text
-@item @code{\\\\\\&} @tab @code{\\\&} @tab a literal @samp{\&}
-@item @code{\\q}     @tab  @code{\q}  @tab a literal @samp{q}
+@item @code{&}       @tab @code{&}    @tab The matched text
+@item @code{\\&}     @tab @code{\&}   @tab A literal @samp{&}
+@item @code{\\\\}    @tab @code{\\}   @tab A literal @samp{\}
+@item @code{\\\\&}   @tab @code{\\&}  @tab A literal @samp{\}, then the matched text
+@item @code{\\\\\\&} @tab @code{\\\&} @tab A literal @samp{\&}
+@item @code{\\q}     @tab  @code{\q}  @tab A literal @samp{q}
 @end multitable
 @end ifdocbook
 @ifnottex
@@ -17839,12 +17783,12 @@ _bigskip}
 @display
   You type          @code{gensub()} sees         @code{gensub()} generates
   --------          -------------         ------------------
-      @code{&}                    @code{&}            the matched text
-    @code{\\&}                   @code{\&}            a literal @samp{&}
-   @code{\\\\}                   @code{\\}            a literal @samp{\}
-  @code{\\\\&}                  @code{\\&}            a literal @samp{\}, then the matched text
-@code{\\\\\\&}                 @code{\\\&}            a literal @samp{\&}
-    @code{\\q}                   @code{\q}            a literal @samp{q}
+      @code{&}                    @code{&}            The matched text
+    @code{\\&}                   @code{\&}            A literal @samp{&}
+   @code{\\\\}                   @code{\\}            A literal @samp{\}
+  @code{\\\\&}                  @code{\\&}            A literal @samp{\}, then the matched text
+@code{\\\\\\&}                 @code{\\\&}            A literal @samp{\&}
+    @code{\\q}                   @code{\q}            A literal @samp{q}
 @end display
 @end ifnotdocbook
 @end ifnottex
@@ -19268,17 +19212,18 @@ addition to the POSIX standard.)
 The following is an example of a recursive function.  It takes a string
 as an input parameter and returns the string in backwards order.
 Recursive functions must always have a test that stops the recursion.
-In this case, the recursion terminates when the starting position
-is zero, i.e., when there are no more characters left in the string.
+In this case, the recursion terminates when the input string is
+already empty.
 
+@c 8/2014: Thanks to Mike Brennan for the improved formulation
 @cindex @code{rev()} user-defined function
 @example
-function rev(str, start)
+function rev(str)
 @{
-    if (start == 0)
+    if (str == "")
         return ""
 
-    return (substr(str, start, 1) rev(str, start - 1))
+    return (rev(substr(str, 2)) substr(str, 1, 1))
 @}
 @end example
 
@@ -19287,7 +19232,7 @@ this way:
 
 @example
 $ @kbd{echo "Don't Panic!" |}
-> @kbd{gawk --source '@{ print rev($0, length($0)) @}' -f rev.awk}
+> @kbd{gawk --source '@{ print rev($0) @}' -f rev.awk}
 @print{} !cinaP t'noD
 @end example
 
@@ -19572,7 +19517,7 @@ BEGIN @{
 
 @noindent
 prints @samp{a[1] = 1, a[2] = two, a[3] = 3}, because
-@code{changeit} stores @code{"two"} in the second element of @code{a}.
+@code{changeit()} stores @code{"two"} in the second element of @code{a}.
 @end quotation
 
 @cindex undefined functions
@@ -25927,7 +25872,7 @@ The program should exit without reading any @value{DF}s.
 However, suppose that an included library file defines an @code{END}
 rule of its own. In this case, @command{gawk} will hang, reading standard
 input. In order to avoid this, @file{/dev/null} is explicitly added to the
-command-line. Reading from @file{/dev/null} always returns an immediate
+command line. Reading from @file{/dev/null} always returns an immediate
 end of file indication.
 
 @c Hmm. Add /dev/null if $# is 0?  Still messes up ARGV. Sigh.
@@ -26949,6 +26894,9 @@ Caveat Emptor.
 
 @node Two-way I/O
 @section Two-Way Communications with Another Process
+
+@c 8/2014. Neither Mike nor BWK saw this as relevant. Commenting it out.
+@ignore
 @cindex Brennan, Michael
 @cindex programmers, attractiveness of
 @smallexample
@@ -26978,6 +26926,7 @@ the scent of perl programmers.
 Mike Brennan
 @c brennan@@whidbey.com
 @end smallexample
+@end ignore
 
 @cindex advanced features, processes@comma{} communicating with
 @cindex processes, two-way communications with
@@ -27004,7 +26953,10 @@ system("rm " tempfile)
 This works, but not elegantly.  Among other things, it requires that
 the program be run in a directory that cannot be shared among users;
 for example, @file{/tmp} will not do, as another user might happen
-to be using a temporary file with the same name.
+to be using a temporary file with the same name.@footnote{Michael
+Brennan suggests the use of @command{rand()} to generate unique
+@value{FN}s. This is a valid point; nevertheless, temporary files
+remain more difficult than two-way pipes.} @c 8/2014
 
 @cindex coprocesses
 @cindex input/output, two-way
@@ -27159,7 +27111,7 @@ You can think of this as just a @emph{very long} two-way pipeline to
 a coprocess.
 The way @command{gawk} decides that you want to use TCP/IP networking is
 by recognizing special @value{FN}s that begin with one of @samp{/inet/},
-@samp{/inet4/} or @samp{/inet6}.
+@samp{/inet4/} or @samp{/inet6/}.
 
 The full syntax of the special @value{FN} is
 @file{/@var{net-type}/@var{protocol}/@var{local-port}/@var{remote-host}/@var{remote-port}}.
@@ -29792,6 +29744,12 @@ arbitrary precision integers, and concludes with a description of some
 points where @command{gawk} and the POSIX standard are not quite in
 agreement.
 
+@quotation NOTE
+Most users of @command{gawk} can safely skip this chapter.
+But if you want to do scientific calculations with @command{gawk},
+this is the place to be.
+@end quotation
+
 @menu
 * Computer Arithmetic::           A quick intro to computer math.
 * Math Definitions::              Defining terms used.
@@ -29911,8 +29869,23 @@ A special value representing infinity. Operations involving another
 number and infinity produce infinity.
 
 @item NaN
-``Not A Number.'' A special value indicating a result that can't
-happen in real math, but that can happen in floating-point computations.
+``Not A Number.''@footnote{Thanks
+to Michael Brennan for this description, which I have paraphrased, and
+for the examples}.
+A special value that results from attempting a
+calculation that has no answer as a real number.  In such a case,
+programs can either receive a floating-point exception, or get @code{NaN}
+back as the result. The IEEE 754 standard recommends that systems return
+@code{NaN}. Some examples:
+
+@table @code
+@item sqrt(-1)
+This makes sense in the range of complex numbers, but not in the
+range of real numbers, so the result is @code{NaN}.
+
+@item log(-8)
+@minus{}8 is out of the domain of @code{log()}, so the result is @code{NaN}.
+@end table
 
 @item Normalized
 How the significand (see later in this list) is usually stored. The
@@ -30330,7 +30303,7 @@ internally as a MPFR number.  Changing the precision using @code{PREC}
 in the program text does @emph{not} change the precision of a constant.
 
 If you need to represent a floating-point constant at a higher precision
-than the default and cannot use a command line assignment to @code{PREC},
+than the default and cannot use a command-line assignment to @code{PREC},
 you should either specify the constant as a string, or as a rational
 number, whenever possible. The following example illustrates the
 differences among various ways to print a floating-point constant:
@@ -30964,7 +30937,7 @@ Some other bits and pieces:
 @itemize @value{BULLET}
 @item
 The API provides access to @command{gawk}'s @code{do_@var{xxx}} values,
-reflecting command line options, like @code{do_lint}, @code{do_profiling}
+reflecting command-line options, like @code{do_lint}, @code{do_profiling}
 and so on (@pxref{Extension API Variables}).
 These are informational: an extension cannot affect their values
 inside @command{gawk}.  In addition, attempting to assign to them
@@ -35180,7 +35153,7 @@ Indirect function calls
 
 @item
 Directories on the command line produce a warning and are skipped
-(@pxref{Command line directories}).
+(@pxref{Command-line directories}).
 @end itemize
 
 @item
@@ -35527,7 +35500,7 @@ The ability to delete all of an array at once with @samp{delete @var{array}}
 (@pxref{Delete}).
 
 @item
-Command line option changes
+Command-line option changes
 (@pxref{Options}):
 
 @itemize @value{MINUS}
@@ -35590,7 +35563,7 @@ Brian Kernighan's @command{awk}
 @pxref{I/O Functions}).
 
 @item
-New command line options:
+New command-line options:
 
 @itemize @value{MINUS}
 @item
@@ -35880,7 +35853,7 @@ Indirect function calls
 (@pxref{Switch Statement}).
 
 @item
-Command line option changes
+Command-line option changes
 (@pxref{Options}):
 
 @itemize @value{MINUS}
@@ -35905,7 +35878,7 @@ All long options acquired corresponding short options, for use in @samp{#!} scri
 @item
 Directories named on the command line now produce a warning, not a fatal
 error, unless @option{--posix} or @option{--traditional} are used
-(@pxref{Command line directories}).
+(@pxref{Command-line directories}).
 
 @item
 The @command{gawk} internals were rewritten, bringing the @command{dgawk}
@@ -35981,10 +35954,10 @@ Three new arrays:
 
 @item
 The three executables @command{gawk}, @command{pgawk}, and @command{dgawk}, were merged into
-one, named just @command{gawk}.  As a result the command line options changed.
+one, named just @command{gawk}.  As a result the command-line options changed.
 
 @item
-Command line option changes
+Command-line option changes
 (@pxref{Options}):
 
 @itemize @value{MINUS}
@@ -41362,13 +41335,14 @@ Consistency issues:
 	Use "zeros" instead of "zeroes".
 	Use "nonzero" not "non-zero".
 	Use "runtime" not "run time" or "run-time".
-	Use "command-line" not "command line".
+	Use "command-line" as an adjective and "command line" as a noun.
 	Use "online" not "on-line".
 	Use "whitespace" not "white space".
 	Use "Input/Output", not "input/output". Also "I/O", not "i/o".
 	Use "lefthand"/"righthand", not "left-hand"/"right-hand".
 	Use "workaround", not "work-around".
 	Use "startup"/"cleanup", not "start-up"/"clean-up"
+	Use "filesystem", not "file system"
 	Use @code{do}, and not @code{do}-@code{while}, except where
 		actually discussing the do-while.
 	Use "versus" in text and "vs." in index entries
@@ -41383,8 +41357,6 @@ Consistency issues:
 	The numbers zero through ten should be spelled out, except when
 		talking about file descriptor numbers. > 10 and < 0, it's
 		ok to use numbers.
-	In tables, put command-line options in @code, while in the text,
-		put them in @option.
 	For most cases, do NOT put a comma before "and", "or" or "but".
 		But exercise taste with this rule.
 	Don't show the awk command with a program in quotes when it's
