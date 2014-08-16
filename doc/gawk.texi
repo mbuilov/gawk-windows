@@ -7149,6 +7149,8 @@ shell, without any quotes, the @samp{\} gets deleted, so @command{awk}
 figures that you really want your fields to be separated with TABs and
 not @samp{t}s.  Use @samp{-v FS="t"} or @samp{-F"[t]"} on the command line
 if you really do want to separate your fields with @samp{t}s.
+Use @samp{-F '\t'} when not in compatibility mode to specify that TABs
+separate fields.
 
 As an example, let's use an @command{awk} program file called @file{edu.awk}
 that contains the pattern @code{/edu/} and the action @samp{print $1}:
@@ -7299,7 +7301,7 @@ root
 
 @noindent
 on an incorrect implementation of @command{awk}, while @command{gawk}
-prints something like:
+prints the full first line of the file, something like:
 
 @example
 root:nSijPlPhZZwgE:0:0:Root:/:
@@ -7352,7 +7354,7 @@ root
 
 @noindent
 on an incorrect implementation of @command{awk}, while @command{gawk}
-prints something like:
+prints the full first line of the file, something like:
 
 @example
 root:nSijPlPhZZwgE:0:0:Root:/:
@@ -7489,7 +7491,7 @@ haven't been introduced yet.
 BEGIN  @{ FIELDWIDTHS = "9 6 10 6 7 7 35" @}
 NR > 2 @{
     idle = $4
-    sub(/^  */, "", idle)   # strip leading spaces
+    sub(/^ +/, "", idle)   # strip leading spaces
     if (idle == "")
         idle = 0
     if (idle ~ /:/) @{
@@ -7647,6 +7649,8 @@ if (substr($i, 1, 1) == "\"") @{
 As with @code{FS}, the @code{IGNORECASE} variable (@pxref{User-modified})
 affects field splitting with @code{FPAT}.
 
+Assigning a value to @code{FPAT} overrides field splitting
+with @code{FS} and with @code{FIELDWIDTHS}.
 Similar to @code{FIELDWIDTHS}, the value of @code{PROCINFO["FS"]}
 will be @code{"FPAT"} if content-based field splitting is being used.
 
@@ -7669,6 +7673,12 @@ FPAT = "([^,]*)|(\"[^\"]+\")"
 
 Finally, the @code{patsplit()} function makes the same functionality
 available for splitting regular strings (@pxref{String Functions}).
+
+To recap, @command{gawk} provides three independent methods
+to split input records into fields. @command{gawk} uses whichever
+mechanism was last chosen based on which of the three
+variables---@code{FS}, @code{FIELDWIDTHS}, and @code{FPAT}---was
+last assigned to.
 
 @node Multiple Line
 @section Multiple-Line Records
@@ -9700,7 +9710,7 @@ It then sends the list to the shell for execution.
 @c ENDOFRANGE reout
 
 @node Special Files
-@section Special @value{FFN} in @command{gawk}
+@section Special @value{FFN}s in @command{gawk}
 @c STARTOFRANGE gfn
 @cindex @command{gawk}, file names in
 
@@ -11924,7 +11934,7 @@ made of characters and is therefore also a string.
 Thus, for example, the string constant @w{@code{" +3.14"}},
 when it appears in program source code,
 is a string---even though it looks numeric---and
-is @emph{never} treated as number for comparison
+is @emph{never} treated as a number for comparison
 purposes.
 
 In short, when one operand is a ``pure'' string, such as a string
@@ -29989,7 +29999,7 @@ to follow.
 
 @quotation
 Math class is tough!
-@author Late 1980's Barbie
+@author Teen Talk Barbie (July, 1992)
 @end quotation
 
 This @value{SECTION} provides a high level overview of the issues
@@ -30615,7 +30625,7 @@ values.  The default for @command{awk} is to use double-precision
 floating-point values.
 
 @item
-In the 1980's, Barbie mistakenly said ``Math class is tough!''
+In the early 1990's, Barbie mistakenly said ``Math class is tough!''
 While math isn't tough, floating-point arithmetic isn't the same
 as pencil and paper math, and care must be taken:
 
