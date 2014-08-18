@@ -112,14 +112,12 @@ lookup(const char *name)
 			continue;
 
 		n = in_array(tables[i], tmp);
-		if (n != NULL) {
-			unref(tmp);
-			return n;
-		}
+		if (n != NULL)
+			break;
 	}
 
 	unref(tmp);
-	return n;	/* NULL */
+	return n;	/* NULL or new place */
 }
 
 /* make_params --- allocate function parameters for the symbol table */
@@ -155,11 +153,13 @@ install_params(NODE *func)
 
 	if (func == NULL)
 		return;
+
 	assert(func->type == Node_func);
-	if ((pcount = func->param_cnt) <= 0
-			|| (parms = func->fparms) == NULL
-	)
+
+	if (   (pcount = func->param_cnt) <= 0
+	    || (parms = func->fparms) == NULL)
 		return;
+
 	for (i = 0; i < pcount; i++)
 		(void) install(parms[i].param, parms + i, Node_param_list);
 }
@@ -177,10 +177,11 @@ remove_params(NODE *func)
 
 	if (func == NULL)
 		return;
+
 	assert(func->type == Node_func);
-	if ((pcount = func->param_cnt) <= 0
-			|| (parms = func->fparms) == NULL
-	)
+
+	if (   (pcount = func->param_cnt) <= 0
+	    || (parms = func->fparms) == NULL)
 		return;
 
 	for (i = pcount - 1; i >= 0; i--) {
@@ -191,11 +192,11 @@ remove_params(NODE *func)
 		assert(p->type == Node_param_list);
 		tmp = make_string(p->vname, strlen(p->vname));
 		tmp2 = in_array(param_table, tmp);
-		if (tmp2 != NULL && tmp2->dup_ent != NULL) {
+		if (tmp2 != NULL && tmp2->dup_ent != NULL)
 			tmp2->dup_ent = tmp2->dup_ent->dup_ent;
-		} else {
+		else
 			(void) assoc_remove(param_table, tmp);
-		}
+
 		unref(tmp);
 	}
 
@@ -312,9 +313,9 @@ install(char *name, NODE *parm, NODETYPE type)
 		table = global_table;
 	}
 
-	if (parm != NULL) {
+	if (parm != NULL)
 		r = parm;
-	} else {
+	else {
 		/* global symbol */
 		r = make_symbol(name, type);
 		if (type == Node_func)
@@ -343,7 +344,6 @@ simple:
 
 	return r;
 }
-
 
 /* comp_symbol --- compare two (variable or function) names */
 
@@ -517,7 +517,8 @@ release_symbols(NODE *symlist, int keep_globals)
 
 	for (p = symlist->rnode; p != NULL; p = next) {
 		if (! keep_globals) {
-			/* destroys globals, function, and params
+			/*
+			 * destroys globals, function, and params
 			 * if still in symbol table
 			 */
 			destroy_symbol(p->lnode);
