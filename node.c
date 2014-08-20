@@ -557,9 +557,8 @@ parse_escape(const char **string_ptr)
 			warning(_("no hex digits in `\\x' escape sequence"));
 			return ('x');
 		}
-		i = j = 0;
 		start = *string_ptr;
-		for (;; j++) {
+		for (i = j = 0; j < 2; j++) {
 			/* do outside test to avoid multiple side effects */
 			c = *(*string_ptr)++;
 			if (isxdigit(c)) {

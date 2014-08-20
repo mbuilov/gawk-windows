@@ -4848,17 +4848,18 @@ between @samp{0} and @samp{7}.  For example, the code for the ASCII ESC
 @item \x@var{hh}@dots{}
 The hexadecimal value @var{hh}, where @var{hh} stands for a sequence
 of hexadecimal digits (@samp{0}--@samp{9}, and either @samp{A}--@samp{F}
-or @samp{a}--@samp{f}).  Like the same construct
-in ISO C, the escape sequence continues until the first nonhexadecimal
-digit is seen. @value{COMMONEXT}
-However, using more than two hexadecimal digits produces
-undefined results. (The @samp{\x} escape sequence is not allowed in
-POSIX @command{awk}.)
+or @samp{a}--@samp{f}).  A maximum of two digts are allowed after
+the @samp{\x}. Any further hexadecimal digits are treated as simple
+letters or numbers.  @value{COMMONEXT}
 
 @quotation CAUTION
-The next major relase of @command{gawk} will change, such
-that a maximum of two hexadecimal digits following the
-@samp{\x} will be used.
+In ISO C, the escape sequence continues until the first nonhexadecimal
+digit is seen.
+@c FIXME: Add exact version here.
+For many years, @command{gawk} would continue incorporating
+hexadecimal digits into the value until a non-hexadecimal digit
+or the end of the string was encountered.
+However, using more than two hexadecimal digits produces
 @end quotation
 
 @cindex @code{\} (backslash), @code{\/} escape sequence
