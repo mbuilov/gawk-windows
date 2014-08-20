@@ -1211,23 +1211,19 @@ March, 2001
    </prefaceinfo>
 @end docbook
 
-Several kinds of tasks occur repeatedly
-when working with text files.
-You might want to extract certain lines and discard the rest.
-Or you may need to make changes wherever certain patterns appear,
-but leave the rest of the file alone.
-Writing single-use programs for these tasks in languages such as C, C++,
-or Java is time-consuming and inconvenient.
-Such jobs are often easier with @command{awk}.
-The @command{awk} utility interprets a special-purpose programming language
-that makes it easy to handle simple data-reformatting jobs.
+Several kinds of tasks occur repeatedly when working with text files.
+You might want to extract certain lines and discard the rest.  Or you
+may need to make changes wherever certain patterns appear, but leave the
+rest of the file alone.  Such jobs are often easy with @command{awk}.
+The @command{awk} utility interprets a special-purpose programming
+language that makes it easy to handle simple data-reformatting jobs.
 
 @cindex Brian Kernighan's @command{awk}
 The GNU implementation of @command{awk} is called @command{gawk}; if you
 invoke it with the proper options or environment variables
 (@pxref{Options}), it is fully
 compatible with
-the POSIX@footnote{The 2008 POSIX standard is accessable online at
+the POSIX@footnote{The 2008 POSIX standard is accessible online at
 @w{@url{http://www.opengroup.org/onlinepubs/9699919799/}.}}
 specification of the @command{awk} language
 and with the Unix version of @command{awk} maintained
@@ -1301,7 +1297,7 @@ different computing environments.  This @value{DOCUMENT}, while describing
 the @command{awk} language in general, also describes the particular
 implementation of @command{awk} called @command{gawk} (which stands for
 ``GNU @command{awk}'').  @command{gawk} runs on a broad range of Unix systems,
-ranging from Intel@registeredsymbol{}-architecture PC-based computers
+ranging from Intel-architecture PC-based computers
 up through large-scale systems.
 @command{gawk} has also been ported to Mac OS X,
 Microsoft Windows
@@ -1777,7 +1773,7 @@ more than one @command{awk} implementation are marked
 and ``extensions, common.''
 @end ifclear
 @ifset FOR_PRINT
-``@value{COMMONEXT}.''
+``@value{COMMONEXT}'' for ``common extension.''
 @end ifset
 
 @node Manual History
@@ -1829,7 +1825,7 @@ stage of development.
 @cindex operating systems, BSD-based
 Until the GNU operating system is more fully developed, you should
 consider using GNU/Linux, a freely distributable, Unix-like operating
-system for Intel@registeredsymbol{},
+system for Intel,
 Power Architecture,
 Sun SPARC, IBM S/390, and other
 systems.@footnote{The terminology ``GNU/Linux'' is explained
@@ -3411,19 +3407,13 @@ version of @command{awk} has fewer predefined limits, and those
 that it has are much larger than they used to be.
 
 @cindex @command{awk} programs, complex
-If you find yourself writing @command{awk} scripts of more than, say, a few
-hundred lines, you might consider using a different programming
-language.
-The shell is good at string and
-pattern matching; in addition, it allows powerful use of the system
-utilities.  More conventional languages, such as C, C++, and Java, offer
-better facilities for system programming and for managing the complexity
-of large programs.
-Python offers a nice balance between high-level ease of programming and
-access to system facilities.
-Programs in these languages may require more lines
-of source code than the equivalent @command{awk} programs, but they are
-easier to maintain and usually run more efficiently.
+If you find yourself writing @command{awk} scripts of more than, say,
+a few hundred lines, you might consider using a different programming
+language.  The shell is good at string and pattern matching; in addition,
+it allows powerful use of the system utilities.  Python offers a nice
+balance between high-level ease of programming and access to system
+facilities.@footnote{Other popular scripting languages include Ruby
+and Perl.}
 
 @node Intro Summary
 @section Summary
@@ -3739,7 +3729,7 @@ Command-line variable assignments of the form
 This option is particularly necessary for World Wide Web CGI applications
 that pass arguments through the URL; using this option prevents a malicious
 (or other) user from passing in options, assignments, or @command{awk} source
-code (via @option{--source}) to the CGI application.  This option should be used
+code (via @option{-e}) to the CGI application.  This option should be used
 with @samp{#!} scripts (@pxref{Executable Scripts}), like so:
 
 @example
@@ -4025,14 +4015,14 @@ source of data.)
 
 Because it is clumsy using the standard @command{awk} mechanisms to mix
 source file and command-line @command{awk} programs, @command{gawk}
-provides the @option{--source} option.  This does not require you to
+provides the @option{-e} option.  This does not require you to
 pre-empt the standard input for your source code; it allows you to easily
 mix command-line and library source code (@pxref{AWKPATH Variable}).
-As with @option{-f}, the @option{--source} and @option{--include}
+As with @option{-f}, the @option{-e} and @option{-i}
 options may also be used multiple times on the command line.
 
-@cindex @option{--source} option
-If no @option{-f} or @option{--source} option is specified, then @command{gawk}
+@cindex @option{-e} option
+If no @option{-f} or @option{-e} option is specified, then @command{gawk}
 uses the first non-option command-line argument as the text of the
 program source code.
 
@@ -4228,7 +4218,7 @@ standard directory in the default path and then specified on
 the command line with a short @value{FN}.  Otherwise, the full @value{FN}
 would have to be typed for each file.
 
-By using the @option{-i} option, or the @option{--source} and @option{-f} options, your command-line
+By using the @option{-i} option, or the @option{-e} and @option{-f} options, your command-line
 @command{awk} programs can use facilities in @command{awk} library files
 (@pxref{Library Functions}).
 Path searching is not done if @command{gawk} is in compatibility mode.
@@ -4936,6 +4926,12 @@ digit is seen. @value{COMMONEXT}
 However, using more than two hexadecimal digits produces
 undefined results. (The @samp{\x} escape sequence is not allowed in
 POSIX @command{awk}.)
+
+@quotation CAUTION
+The next major relase of @command{gawk} will change, such
+that a maximum of two hexadecimal digits following the
+@samp{\x} will be used.
+@end quotation
 
 @cindex @code{\} (backslash), @code{\/} escape sequence
 @cindex backslash (@code{\}), @code{\/} escape sequence
@@ -13814,31 +13810,38 @@ case is made, the case statement bodies execute until a @code{break},
 or the end of the @code{switch} statement itself. For example:
 
 @example
-switch (NR * 2 + 1) @{
-case 3:
-case "11":
-    print NR - 1
-    break
-
-case /2[[:digit:]]+/:
-    print NR
-
-default:
-    print NR + 1
-
-case -1:
-    print NR * -1
+while ((c = getopt(ARGC, ARGV, "aksx")) != -1) @{
+    switch (c) @{
+    case "a":
+        # report size of all files
+        all_files = TRUE;
+        break
+    case "k":
+        BLOCK_SIZE = 1024       # 1K block size
+        break
+    case "s":
+        # do sums only
+        sum_only = TRUE
+        break
+    case "x":
+        # don't cross filesystems
+        fts_flags = or(fts_flags, FTS_XDEV)
+        break
+    case "?":
+    default:
+        usage()
+        break
+    @}
 @}
 @end example
 
 Note that if none of the statements specified above halt execution
 of a matched @code{case} statement, execution falls through to the
-next @code{case} until execution halts. In the above example, for
-any case value starting with @samp{2} followed by one or more digits,
-the @code{print} statement is executed and then falls through into the
-@code{default} section, executing its @code{print} statement. In turn,
-the @minus{}1 case will also be executed since the @code{default} does
-not halt execution.
+next @code{case} until execution halts. In the above example, the
+@code{case} for @code{"?"} falls through to the @code{default}
+case, which is to call a function named @code{usage()}.
+(The @code{getopt()} function being called here is
+described in @ref{Getopt Function}.)
 
 @node Break Statement
 @subsection The @code{break} Statement
@@ -13961,7 +13964,8 @@ BEGIN @{
 @end example
 
 @noindent
-This program loops forever once @code{x} reaches 5.
+This program loops forever once @code{x} reaches 5, since
+the increment (@samp{x++}) is never reached.
 
 @c @cindex @code{continue}, outside of loops
 @c @cindex historical features
@@ -15019,8 +15023,17 @@ before actual processing of the input begins.
 @xref{Split Program}, and see
 @ref{Tee Program}, for examples
 of each way of removing elements from @code{ARGV}.
+
+To actually get options into an @command{awk} program,
+end the @command{awk} options with @option{--} and then supply
+the @command{awk} program's options, in the following manner:
+
+@example
+awk -f myprog.awk -- -v -q file1 file2 @dots{}
+@end example
+
 The following fragment processes @code{ARGV} in order to examine, and
-then remove, command-line options:
+then remove, the above command-line options:
 
 @example
 BEGIN @{
@@ -15040,32 +15053,24 @@ BEGIN @{
 @}
 @end example
 
-To actually get the options into the @command{awk} program,
-end the @command{awk} options with @option{--} and then supply
-the @command{awk} program's options, in the following manner:
-
-@example
-awk -f myprog -- -v -q file1 file2 @dots{}
-@end example
-
 @cindex differences in @command{awk} and @command{gawk}, @code{ARGC}/@code{ARGV} variables
-This is not necessary in @command{gawk}. Unless @option{--posix} has
+Ending the @command{awk} options with @option{--} isn't
+necessary in @command{gawk}. Unless @option{--posix} has
 been specified, @command{gawk} silently puts any unrecognized options
 into @code{ARGV} for the @command{awk} program to deal with.  As soon
 as it sees an unknown option, @command{gawk} stops looking for other
-options that it might otherwise recognize.  The previous example with
+options that it might otherwise recognize.  The previous command line with
 @command{gawk} would be:
 
 @example
-gawk -f myprog -q -v file1 file2 @dots{}
+gawk -f myprog.awk -q -v file1 file2 @dots{}
 @end example
 
 @noindent
-Because @option{-q} is not a valid @command{gawk} option,
-it and the following @option{-v}
-are passed on to the @command{awk} program.
-(@xref{Getopt Function}, for an @command{awk} library function
-that parses command-line options.)
+Because @option{-q} is not a valid @command{gawk} option, it and the
+following @option{-v} are passed on to the @command{awk} program.
+(@xref{Getopt Function}, for an @command{awk} library function that
+parses command-line options.)
 
 @node Pattern Action Summary
 @section Summary
@@ -15510,8 +15515,9 @@ if (a["foo"] != "") @dots{}
 @end example
 
 @noindent
-This is incorrect, since this will @emph{create} @code{a["foo"]}
-if it didn't exist before!
+This is incorrect for two reasons. First, it @emph{creates} @code{a["foo"]}
+if it didn't exist before! Second, it is valid (if a bit unusual) to set
+an array element equal to the empty string.
 @end quotation
 
 @c @cindex arrays, @code{in} operator and
@@ -16195,10 +16201,11 @@ used for single dimensional arrays.  Write the whole sequence of indices
 in parentheses, separated by commas, as the left operand:
 
 @example
-(@var{subscript1}, @var{subscript2}, @dots{}) in @var{array}
+if ((@var{subscript1}, @var{subscript2}, @dots{}) in @var{array})
+    @dots{}
 @end example
 
-The following example treats its input as a two-dimensional array of
+Here is an example that treats its input as a two-dimensional array of
 fields; it rotates this array 90 degrees clockwise and prints the
 result.  It assumes that all lines have the same number of
 elements:
@@ -16772,6 +16779,9 @@ numbers that are truly unpredictable.
 The return value of @code{srand()} is the previous seed.  This makes it
 easy to keep track of the seeds in case you need to consistently reproduce
 sequences of random numbers.
+
+POSIX does not specify the initial seed; it differs among @command{awk}
+implementations.
 @end table
 
 @node String Functions
@@ -19199,7 +19209,8 @@ this program, using our function to format the results, prints:
   21.2
 @end example
 
-This function deletes all the elements in an array:
+This function deletes all the elements in an array (recall that the
+extra whitespace signifies the start of the local variable list):
 
 @example
 function delarray(a,    i)
@@ -19242,7 +19253,7 @@ this way:
 
 @example
 $ @kbd{echo "Don't Panic!" |}
-> @kbd{gawk --source '@{ print rev($0) @}' -f rev.awk}
+> @kbd{gawk -e '@{ print rev($0) @}' -f rev.awk}
 @print{} !cinaP t'noD
 @end example
 
@@ -20168,7 +20179,7 @@ of good programs leads to better writing.
 In fact, they felt this idea was so important that they placed this
 statement on the cover of their book.  Because we believe strongly
 that their statement is correct, this @value{CHAPTER} and @ref{Sample
-Programs}, provide a good-sized body of code for you to read, and we hope,
+Programs}, provide a good-sized body of code for you to read and, we hope,
 to learn from.
 
 This @value{CHAPTER} presents a library of useful @command{awk} functions.
@@ -25537,7 +25548,7 @@ a shell variable that will be expanded.  There are two cases:
 
 @enumerate a
 @item
-Literal text, provided with @option{--source} or @option{--source=}.  This
+Literal text, provided with @option{-e} or @option{--source}.  This
 text is just appended directly.
 
 @item
@@ -29716,7 +29727,7 @@ similarly to the GNU Debugger, GDB.
 @item
 Debuggers let you step through your program one statement at a time,
 examine and change variable and array values, and do a number of other
-things that let understand what your program is actually doing (as
+things that let you understand what your program is actually doing (as
 opposed to what it is supposed to do).
 
 @item
@@ -30002,8 +30013,8 @@ array to provide information about the MPFR and GMP libraries
 
 The MPFR library provides precise control over precisions and rounding
 modes, and gives correctly rounded, reproducible, platform-independent
-results.  With either of the command-line options @option{--bignum} or
-@option{-M}, all floating-point arithmetic operators and numeric functions
+results.  With the @option{-M} command-line option,
+all floating-point arithmetic operators and numeric functions
 can yield results to any desired precision level supported by MPFR.
 
 Two built-in variables, @code{PREC} and @code{ROUNDMODE},
@@ -30017,7 +30028,7 @@ to follow.
 
 @quotation
 Math class is tough!
-@author Teen Talk Barbie (July, 1992)
+@author Teen Talk Barbie, July 1992
 @end quotation
 
 This @value{SECTION} provides a high level overview of the issues
@@ -30429,7 +30440,7 @@ output when you change the rounding mode to be sure.
 @cindex integers, arbitrary precision
 @cindex arbitrary precision integers
 
-When given one of the options @option{--bignum} or @option{-M},
+When given the @option{-M} option,
 @command{gawk} performs all integer arithmetic using GMP arbitrary
 precision integers.  Any number that looks like an integer in a source
 or @value{DF} is stored as an arbitrary precision integer.  The size
@@ -30710,12 +30721,12 @@ Often, increasing the accuracy and then rounding to the desired
 number of digits produces reasonable results.
 
 @item
-Use either @option{-M} or @option{--bignum} to enable MPFR
+Use @option{-M} (or @option{--bignum}) to enable MPFR
 arithmetic. Use @code{PREC} to set the precision in bits, and
 @code{ROUNDMODE} to set the IEEE 754 rounding mode.
 
 @item
-With @option{-M} or @option{--bignum}, @command{gawk} performs
+With @option{-M}, @command{gawk} performs
 arbitrary precision integer arithmetic using the GMP library.
 This is faster and more space efficient than using MPFR for
 the same calculations.
@@ -31098,7 +31109,7 @@ does not support this keyword, you should either place
 @file{config.h} file in your extensions.
 
 @item
-All pointers filled in by @command{gawk} are to memory
+All pointers filled in by @command{gawk} point to memory
 managed by @command{gawk} and should be treated by the extension as
 read-only.  Memory for @emph{all} strings passed into @command{gawk}
 from the extension @emph{must} come from calling the API-provided function
@@ -31632,8 +31643,8 @@ empty string (@code{""}).  The @code{func} pointer is the address of a
 An @dfn{exit callback} function is a function that
 @command{gawk} calls before it exits.
 Such functions are useful if you have general ``cleanup'' tasks
-that should be performed in your extension (such as closing data
-base connections or other resource deallocations).
+that should be performed in your extension (such as closing database
+connections or other resource deallocations).
 You can register such
 a function with @command{gawk} using the following function.
 
@@ -35312,7 +35323,7 @@ and the
 @option{--copyright},
 @option{--debug},
 @option{--dump-variables},
-@option{--execle},
+@option{--exec},
 @option{--field-separator},
 @option{--file},
 @option{--gen-pot},
@@ -37309,7 +37320,7 @@ The following changes the record separator to @code{"\r\n"} and sets binary
 mode on reads, but does not affect the mode on standard input:
 
 @example
-gawk -v RS="\r\n" --source "BEGIN @{ BINMODE = 1 @}" @dots{}
+gawk -v RS="\r\n" -e "BEGIN @{ BINMODE = 1 @}" @dots{}
 @end example
 
 @noindent
@@ -39007,7 +39018,7 @@ compiled with @samp{-DDEBUG}.
 
 @item
 The source code for @command{gawk} is maintained in a publicly
-accessable Git repository. Anyone may check it out and view the source.
+accessible Git repository. Anyone may check it out and view the source.
 
 @item
 Contributions to @command{gawk} are welcome. Following the steps
