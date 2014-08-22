@@ -1218,7 +1218,6 @@ rest of the file alone.  Such jobs are often easy with @command{awk}.
 The @command{awk} utility interprets a special-purpose programming
 language that makes it easy to handle simple data-reformatting jobs.
 
-@cindex Brian Kernighan's @command{awk}
 The GNU implementation of @command{awk} is called @command{gawk}; if you
 invoke it with the proper options or environment variables
 (@pxref{Options}), it is fully
@@ -1696,8 +1695,15 @@ This @value{SECTION} briefly documents the typographical conventions used in Tex
 Examples you would type at the command line are preceded by the common
 shell primary and secondary prompts, @samp{$} and @samp{>}.
 Input that you type is shown @kbd{like this}.
+@c 8/2014: @print{} is stripped from the texi to make docbook.
+@ifclear FOR_PRINT
 Output from the command is preceded by the glyph ``@print{}''.
 This typically represents the command's standard output.
+@end ifclear
+@ifset FOR_PRINT
+Output from the command, usually its standard output, appears
+@code{like this}.
+@end ifset
 Error messages, and other output on the command's standard error, are preceded
 by the glyph ``@error{}''.  For example:
 
@@ -1726,6 +1732,10 @@ characters that you type by holding down both the @kbd{CONTROL} key and
 another key, at the same time.  For example, a @kbd{Ctrl-d} is typed
 by first pressing and holding the @kbd{CONTROL} key, next
 pressing the @kbd{d} key and finally releasing both keys.
+
+For the sake of brevity, throughout this @value{DOCUMENT}, we refer to
+Brian Kernighan's version of @command{awk} as ``BWK @command{awk}.''
+(@xref{Other Versions}, for information on his and other versions.)
 
 @ifset FOR_PRINT
 @quotation NOTE
@@ -2080,11 +2090,13 @@ Thanks to Patrice Dumas for the new @command{makeinfo} program.
 Thanks to Karl Berry who continues to work to keep
 the Texinfo markup language sane.
 
+@cindex Kernighan, Brian
+@cindex Brennan, Michael
+@cindex Day, Robert P.J.@:
 Robert P.J.@: Day, Michael Brennan and Brian Kernighan kindly acted as
 reviewers for the 2015 edition of this @value{DOCUMENT}. Their feedback
 helped improve the final work.
 
-@cindex Kernighan, Brian
 I would like to thank Brian Kernighan for invaluable assistance during the
 testing and debugging of @command{gawk}, and for ongoing
 help and advice in clarifying numerous points about the language.
@@ -2093,7 +2105,7 @@ or its documentation without his help.
 
 Brian is in a class by himself as a programmer and technical
 author.  I have to thank him (yet again) for his ongoing friendship
-and the role-model he has been for me for close to 30 years!
+and the role model he has been for me for close to 30 years!
 Having him as a reviewer is an exciting privilege. It has also
 been extremely humbling@enddots{}
 
@@ -2391,9 +2403,10 @@ awk -f @var{source-file} @var{input-file1} @var{input-file2} @dots{}
 
 @cindex @option{-f} option
 @cindex command line, option @option{-f}
-The @option{-f} instructs the @command{awk} utility to get the @command{awk} program
-from the file @var{source-file}.  Any @value{FN} can be used for
-@var{source-file}.  For example, you could put the program:
+The @option{-f} instructs the @command{awk} utility to get the
+@command{awk} program from the file @var{source-file} (@pxref{Options}).
+Any @value{FN} can be used for @var{source-file}.  For example, you
+could put the program:
 
 @example
 BEGIN @{ print "Don't Panic!" @}
@@ -2456,7 +2469,7 @@ After making this file executable (with the @command{chmod} utility),
 simply type @samp{advice}
 at the shell and the system arranges to run @command{awk}@footnote{The
 line beginning with @samp{#!} lists the full @value{FN} of an interpreter
-to run and an optional initial command-line argument to pass to that
+to run and a single optional initial command-line argument to pass to that
 interpreter.  The operating system then runs the interpreter with the given
 argument and the full argument list of the executed program.  The first argument
 in the list is the full @value{FN} of the @command{awk} program.
@@ -3402,8 +3415,8 @@ eight-bit microprocessors,
 and a microcode assembler for a special-purpose Prolog
 computer.
 While the original @command{awk}'s capabilities were strained by tasks
-of such complexity, modern versions are more capable.  Even Brian Kernighan's
-version of @command{awk} has fewer predefined limits, and those
+of such complexity, modern versions are more capable.  Even BWK @command{awk}
+has fewer predefined limits, and those
 that it has are much larger than they used to be.
 
 @cindex @command{awk} programs, complex
@@ -3644,7 +3657,7 @@ multibyte characters. This option is an easy way to tell @command{gawk}:
 @cindex compatibility mode (@command{gawk}), specifying
 Specify @dfn{compatibility mode}, in which the GNU extensions to
 the @command{awk} language are disabled, so that @command{gawk} behaves just
-like Brian Kernighan's version @command{awk}.
+like BWK @command{awk}.
 @xref{POSIX/GNU},
 which summarizes the extensions.
 @ifclear FOR_PRINT
@@ -5016,7 +5029,7 @@ leaves what happens as undefined.  There are two choices:
 @cindex Brian Kernighan's @command{awk}
 @table @asis
 @item Strip the backslash out
-This is what Brian Kernighan's @command{awk} and @command{gawk} both do.
+This is what BWK @command{awk} and @command{gawk} both do.
 For example, @code{"a\qc"} is the same as @code{"aqc"}.
 (Because this is such an easy bug both to introduce and to miss,
 @command{gawk} warns you about it.)
@@ -5059,7 +5072,7 @@ leaves what happens as undefined.  There are two choices:
 @cindex Brian Kernighan's @command{awk}
 @table @asis
 @item Strip the backslash out
-This is what Brian Kernighan's @command{awk} and @command{gawk} both do.
+This is what BWK @command{awk} and @command{gawk} both do.
 For example, @code{"a\qc"} is the same as @code{"aqc"}.
 (Because this is such an easy bug both to introduce and to miss,
 @command{gawk} warns you about it.)
@@ -5682,7 +5695,7 @@ are allowed.
 Traditional Unix @command{awk} regexps are matched. The GNU operators
 are not special, and interval expressions are not available.
 The POSIX character classes (@samp{[[:alnum:]]}, etc.) are supported,
-as Brian Kernighan's @command{awk} does support them.
+as BWK @command{awk} does support them.
 Characters described by octal and hexadecimal escape sequences are
 treated literally, even if they represent regexp metacharacters.
 
@@ -7040,7 +7053,7 @@ should not rely on any specific behavior in your programs.
 @value{DARKCORNER}
 
 @cindex Brian Kernighan's @command{awk}
-As a point of information, Brian Kernighan's @command{awk} allows @samp{^}
+As a point of information, BWK @command{awk} allows @samp{^}
 to match only at the beginning of the record. @command{gawk}
 also works this way. For example:
 
@@ -8219,7 +8232,7 @@ Unfortunately, @command{gawk} has not been consistent in its treatment
 of a construct like @samp{@w{"echo "} "date" | getline}.
 Most versions, including the current version, treat it at as
 @samp{@w{("echo "} "date") | getline}.
-(This how Brian Kernighan's @command{awk} behaves.)
+(This how BWK @command{awk} behaves.)
 Some versions changed and treated it as
 @samp{@w{"echo "} ("date" | getline)}.
 (This is how @command{mawk} behaves.)
@@ -8732,6 +8745,10 @@ To print a fixed piece of text, use a string constant, such as
 double-quote characters, your text is taken as an @command{awk}
 expression, and you will probably get an error.  Keep in mind that a
 space is printed between any two items.
+
+Note that the @code{print} statement is a statement and not an
+expression---you can't use it the pattern part of a pattern-action
+statement, for example.
 
 @node Print Examples
 @section @code{print} Statement Examples
@@ -11089,7 +11106,7 @@ print "something meaningful" > file name
 @cindex @command{mawk} utility
 @noindent
 This produces a syntax error with some versions of Unix
-@command{awk}.@footnote{It happens that Brian Kernighan's
+@command{awk}.@footnote{It happens that BWK
 @command{awk}, @command{gawk} and @command{mawk} all ``get it right,''
 but you should not rely on this.}
 It is necessary to use the following:
@@ -11432,7 +11449,7 @@ A workaround is:
 awk '/[=]=/' /dev/null
 @end example
 
-@command{gawk} does not have this problem; Brian Kernighan's @command{awk}
+@command{gawk} does not have this problem; BWK @command{awk}
 and @command{mawk} also do not (@pxref{Other Versions}).
 
 @docbook
@@ -11478,7 +11495,7 @@ A workaround is:
 awk '/[=]=/' /dev/null
 @end example
 
-@command{gawk} does not have this problem; Brian Kernighan's @command{awk}
+@command{gawk} does not have this problem; BWK @command{awk}
 and @command{mawk} also do not (@pxref{Other Versions}).
 @end cartouche
 @end ifnotdocbook
@@ -13178,7 +13195,7 @@ rule. It contains the number of fields from the last input record.
 Most probably due to an oversight, the standard does not say that @code{$0}
 is also preserved, although logically one would think that it should be.
 In fact, @command{gawk} does preserve the value of @code{$0} for use in
-@code{END} rules.  Be aware, however, that Brian Kernighan's @command{awk}, and possibly
+@code{END} rules.  Be aware, however, that BWK @command{awk}, and possibly
 other implementations, do not.
 
 The third point follows from the first two.  The meaning of @samp{print}
@@ -13922,7 +13939,7 @@ historical implementations of @command{awk} treated the @code{break}
 statement outside of a loop as if it were a @code{next} statement
 (@pxref{Next Statement}).
 @value{DARKCORNER}
-Recent versions of Brian Kernighan's @command{awk} no longer allow this usage,
+Recent versions of BWK @command{awk} no longer allow this usage,
 nor does @command{gawk}.
 
 @node Continue Statement
@@ -13989,7 +14006,7 @@ statement outside a loop: as if it were a @code{next}
 statement
 (@pxref{Next Statement}).
 @value{DARKCORNER}
-Recent versions of Brian Kernighan's @command{awk} no longer work this way, nor
+Recent versions of BWK @command{awk} no longer work this way, nor
 does @command{gawk}.
 
 @node Next Statement
@@ -14118,7 +14135,7 @@ See @uref{http://austingroupbugs.net/view.php?id=607, the Austin Group website}.
 @cindex @code{nextfile} statement, user-defined functions and
 @cindex Brian Kernighan's @command{awk}
 @cindex @command{mawk} utility
-The current version of the Brian Kernighan's @command{awk}, and @command{mawk} (@pxref{Other
+The current version of BWK @command{awk}, and @command{mawk} (@pxref{Other
 Versions}) also support @code{nextfile}.  However, they don't allow the
 @code{nextfile} statement inside function bodies (@pxref{User-defined}).
 @command{gawk} does; a @code{nextfile} inside a function body reads the
@@ -15741,7 +15758,7 @@ $ @kbd{gawk -f loopcheck.awk}
 @print{} is
 @end example
 
-Contrast this to Brian Kernighan's @command{awk}:
+Contrast this to BWK @command{awk}:
 
 @example
 $ @kbd{nawk -f loopcheck.awk}
@@ -15986,7 +16003,7 @@ using @code{delete} without a subscript was a @command{gawk} extension.
 As of September, 2012, it was accepted for
 inclusion into the POSIX standard. See @uref{http://austingroupbugs.net/view.php?id=544,
 the Austin Group website}.  This form of the @code{delete} statement is also supported
-by Brian Kernighan's @command{awk} and @command{mawk}, as well as
+by BWK @command{awk} and @command{mawk}, as well as
 by a number of other implementations (@pxref{Other Versions}).
 @end quotation
 
@@ -17439,7 +17456,7 @@ in the string, counting from character @var{start}.
 @cindex Brian Kernighan's @command{awk}
 If @var{start} is less than one, @code{substr()} treats it as
 if it was one. (POSIX doesn't specify what to do in this case:
-Brian Kernighan's @command{awk} acts this way, and therefore @command{gawk}
+BWK @command{awk} acts this way, and therefore @command{gawk}
 does too.)
 If @var{start} is greater than the number of characters
 in the string, @code{substr()} returns the null string.
@@ -17531,7 +17548,7 @@ escape sequences listed in @ref{Escape Sequences}.
 Thus, for every @samp{\} that @command{awk} processes at the runtime
 level, you must type two backslashes at the lexical level.
 When a character that is not valid for an escape sequence follows the
-@samp{\}, Brian Kernighan's @command{awk} and @command{gawk} both simply remove the initial
+@samp{\}, BWK @command{awk} and @command{gawk} both simply remove the initial
 @samp{\} and put the next character into the string. Thus, for
 example, @code{"a\qb"} is treated as @code{"aqb"}.
 
@@ -17905,7 +17922,7 @@ buffers its output and the @code{fflush()} function forces
 
 @cindex extensions, common@comma{} @code{fflush()} function
 @cindex Brian Kernighan's @command{awk}
-@code{fflush()} was added to Brian Kernighan's @command{awk} in
+@code{fflush()} was added to BWK @command{awk} in
 April of 1992.  For two decades, it was not part of the POSIX standard.
 As of December, 2012, it was accepted for inclusion into the POSIX
 standard.
@@ -27765,7 +27782,16 @@ and/or groups of characters sort in a given language.
 @cindex @code{LC_CTYPE} locale category
 @item LC_CTYPE
 Character-type information (alphabetic, digit, upper- or lowercase, and
-so on).
+so on) as well as character encoding.
+@ignore
+In June 2001 Bruno Haible wrote:
+- Description of LC_CTYPE: It determines both
+  1. character encoding,
+  2. character type information.
+  (For example, in both KOI8-R and ISO-8859-5 the character type information
+  is the same - cyrillic letters could as 'alpha' - but the encoding is
+  different.)
+@end ignore
 This information is accessed via the
 POSIX character classes in regular expressions,
 such as @code{/[[:alnum:]]/}
@@ -27785,11 +27811,6 @@ point and the thousands separator.@footnote{Americans
 use a comma every three decimal places and a period for the decimal
 point, while many Europeans do exactly the opposite:
 1,234.56 versus 1.234,56.}
-
-@cindex @code{LC_RESPONSE} locale category
-@item LC_RESPONSE
-Response information, such as how ``yes'' and ``no'' appear in the
-local language, and possibly other information as well.
 
 @cindex time, localization and
 @cindex dates, information related to@comma{} localization
@@ -27925,17 +27946,32 @@ printf(_"Number of users is %d\n", nusers)
 @item
 If you are creating strings dynamically, you can
 still translate them, using the @code{dcgettext()}
-built-in function:
+built-in function:@footnote{Thanks to Bruno Haible for this
+example.}
 
 @example
-message = nusers " users logged in"
-message = dcgettext(message, "adminprog")
-print message
+if (groggy)
+    message = dcgettext("%d customers disturbing me\n", "adminprog")
+else
+    message = dcgettext("enjoying %d customers\n", "adminprog")
+printf(message, ncustomers)
 @end example
 
 Here, the call to @code{dcgettext()} supplies a different
 text domain (@code{"adminprog"}) in which to find the
 message, but it uses the default @code{"LC_MESSAGES"} category.
+
+The previous example only works if @code{ncustomers} is greater than one.
+This example would be better done with @code{dcngettext()}:
+
+@example
+if (groggy)
+    message = dcngettext("%d customer disturbing me\n", "%d customers disturbing me\n", "adminprog")
+else
+    message = dcngettext("enjoying %d customer\n", "enjoying %d customers\n", "adminprog")
+printf(message, ncustomers)
+@end example
+
 
 @cindex @code{LC_MESSAGES} locale category, @code{bindtextdomain()} function (@command{gawk})
 @item
@@ -28016,6 +28052,9 @@ appear as the first argument to @code{dcgettext()} or as the first and
 second argument to @code{dcngettext()}.@footnote{The
 @command{xgettext} utility that comes with GNU
 @command{gettext} can handle @file{.awk} files.}
+You should distribute the generated @file{.pot} file with
+your @command{awk} program; translators will eventually use it
+to provide you translations that you can also then distribute.
 @xref{I18N Example},
 for the full list of steps to go through to create and test
 translations for @command{guide}.
@@ -28306,8 +28345,7 @@ This file must be renamed and placed in the proper directory so that
 @command{gawk} can find it:
 
 @example
-$ @kbd{msgfmt guide-mellow.po}
-$ @kbd{mv messages en_US.UTF-8/LC_MESSAGES/guide.mo}
+$ @kbd{msgfmt guide-mellow.po -o en_US.UTF-8/LC_MESSAGES/guide.mo}
 @end example
 
 Finally, we run the program to test it:
@@ -35201,8 +35239,7 @@ functions for internationalization
 (@pxref{Programmer i18n}).
 
 @item
-The @code{fflush()} function from Brian Kernighan's
-version of @command{awk}
+The @code{fflush()} function from BWK @command{awk}
 (@pxref{I/O Functions}).
 
 @item
@@ -35522,7 +35559,7 @@ The @code{next file} statement became @code{nextfile}
 
 @item
 The @code{fflush()} function from
-Brian Kernighan's @command{awk}
+BWK @command{awk}
 (then at Bell Laboratories;
 @pxref{I/O Functions}).
 
@@ -35537,7 +35574,7 @@ the original Version 7 Unix version of @command{awk}
 (@pxref{V7/SVR3.1}).
 
 @item
-The @option{-m} option from Brian Kernighan's @command{awk}.  (He was
+The @option{-m} option from BWK @command{awk}.  (Brian was
 still at Bell Laboratories at the time.)  This was later removed from
 both his @command{awk} and from @command{gawk}.
 
@@ -35779,7 +35816,7 @@ An optional third argument to
 (@pxref{String Functions}).
 
 @item
-The behavior of @code{fflush()} changed to match Brian Kernighan's @command{awk}
+The behavior of @code{fflush()} changed to match BWK @command{awk}
 and for POSIX; now both @samp{fflush()} and @samp{fflush("")}
 flush all open output redirections
 (@pxref{I/O Functions}).
@@ -37874,7 +37911,7 @@ since approximately 2003.
 @cindex source code, @command{pawk}
 @item @command{pawk}
 Nelson H.F.@: Beebe at the University of Utah has modified
-Brian Kernighan's @command{awk} to provide timing and profiling information.
+BWK @command{awk} to provide timing and profiling information.
 It is different from @command{gawk} with the @option{--profile} option.
 (@pxref{Profiling}),
 in that it uses CPU-based profiling, not line-count
@@ -37937,8 +37974,7 @@ This is an embeddable @command{awk} interpreter derived from
 This is a Python module that claims to bring @command{awk}-like
 features to Python. See @uref{https://github.com/alecthomas/pawk}
 for more information. (This is not related to Nelson Beebe's
-modified version of Brian Kernighan's @command{awk},
-described earlier.)
+modified version of BWK @command{awk}, described earlier.)
 
 @item @w{QSE Awk}
 @cindex QSE Awk
