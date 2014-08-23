@@ -3343,9 +3343,7 @@ eight-bit microprocessors,
 and a microcode assembler for a special-purpose Prolog
 computer.
 While the original @command{awk}'s capabilities were strained by tasks
-of such complexity, modern versions are more capable.  Even BWK @command{awk}
-has fewer predefined limits, and those
-that it has are much larger than they used to be.
+of such complexity, modern versions are more capable.
 
 @cindex @command{awk} programs, complex
 If you find yourself writing @command{awk} scripts of more than, say,
@@ -3359,9 +3357,14 @@ and Perl.}
 @node Intro Summary
 @section Summary
 
+@c FIXME: Review this chapter for summary of builtin functions called.
 @itemize @value{BULLET}
 @item
 Programs in @command{awk} consist of @var{pattern}-@var{action} pairs.
+
+@item
+An @var{action} without a @var{pattern} always runs.  The default
+@var{action} for a pattern without one is @samp{@{ print $0 @}}.
 
 @item
 Use either
@@ -4652,7 +4655,7 @@ The simplest regular expression is a sequence of letters, numbers, or
 both.  Such a regexp matches any string that contains that sequence.
 Thus, the regexp @samp{foo} matches any string containing @samp{foo}.
 Therefore, the pattern @code{/foo/} matches any input record containing
-the three characters @samp{foo} @emph{anywhere} in the record.  Other
+the three adjacent characters @samp{foo} @emph{anywhere} in the record.  Other
 kinds of regexps let you specify more complicated classes of strings.
 
 @ifnotinfo
@@ -5096,12 +5099,11 @@ or @samp{k}.
 @cindex vertical bar (@code{|})
 @item @code{|}
 This is the @dfn{alternation operator} and it is used to specify
-alternatives.
-The @samp{|} has the lowest precedence of all the regular
-expression operators.
-For example, @samp{^P|[[:digit:]]}
-matches any string that matches either @samp{^P} or @samp{[[:digit:]]}.  This
-means it matches any string that starts with @samp{P} or contains a digit.
+alternatives.  The @samp{|} has the lowest precedence of all the regular
+expression operators.  For example, @samp{^P|[aeiouy]} matches any string
+that matches either @samp{^P} or @samp{[aeiouy]}.  This means it matches
+any string that starts with @samp{P} or contains (anywhere within it)
+a lowercase English vowel.
 
 The alternation applies to the largest possible regexps on either side.
 
@@ -5260,6 +5262,9 @@ bracket expression, put a @samp{\} in front of it.  For example:
 
 @noindent
 matches either @samp{d} or @samp{]}.
+Additionally, if you place @samp{]} right after the opening
+@samp{[}, the closing bracket is treated as one of the
+characters to be matched.
 
 @cindex POSIX @command{awk}, bracket expressions and
 @cindex Extended Regular Expressions (EREs)
@@ -5840,7 +5845,7 @@ the match, such as for text substitution and when the record separator
 is a regexp.
 
 @item
-Matching expressions may use dynamic regexps; that is, string values
+Matching expressions may use dynamic regexps, that is, string values
 treated as regular expressions.
 
 @end itemize
@@ -5907,16 +5912,13 @@ used with it do not have to be named on the @command{awk} command line
 @cindex records, splitting input into
 @cindex @code{NR} variable
 @cindex @code{FNR} variable
-The @command{awk} utility divides the input for your @command{awk}
-program into records and fields.
-@command{awk} keeps track of the number of records that have
-been read
-so far
-from the current input file.  This value is stored in a
-built-in variable called @code{FNR}.  It is reset to zero when a new
-file is started.  Another built-in variable, @code{NR}, records the total
-number of input records read so far from all @value{DF}s.  It starts at zero,
-but is never automatically reset to zero.
+@command{awk} divides the input for your program into records and fields.
+It keeps track of the number of records that have been read so far from
+the current input file.  This value is stored in a built-in variable
+called @code{FNR} which is reset to zero when a new file is started.
+Another built-in variable, @code{NR}, records the total number of input
+records read so far from all @value{DF}s.  It starts at zero, but is
+never automatically reset to zero.
 
 @menu
 * awk split records::           How standard @command{awk} splits records.
@@ -7523,7 +7525,7 @@ and have a good knowledge of how @command{awk} works.
 @cindex @code{getline} command, return values
 @cindex @option{--sandbox} option, input redirection with @code{getline}
 
-The @code{getline} command returns one if it finds a record and zero if
+The @code{getline} command returns 1 if it finds a record and 0 if
 it encounters the end of the file.  If there is some error in getting
 a record, such as a file that cannot be opened, then @code{getline}
 returns @minus{}1.  In this case, @command{gawk} sets the variable
@@ -11609,7 +11611,7 @@ is ``short-circuited'' if the result can be determined part way through
 its evaluation.
 
 @cindex line continuations
-Statements that use @samp{&&} or @samp{||} can be continued simply
+Statements that end with @samp{&&} or @samp{||} can be continued simply
 by putting a newline after them.  But you cannot put a newline in front
 of either of these operators without using backslash continuation
 (@pxref{Statements/Lines}).
@@ -12268,7 +12270,7 @@ Contrast this with the following regular expression match, which
 accepts any record with a first field that contains @samp{li}:
 
 @example
-$ @kbd{awk '$1 ~ /foo/ @{ print $2 @}' mail-list}
+$ @kbd{awk '$1 ~ /li/ @{ print $2 @}' mail-list}
 @print{} 555-5553
 @print{} 555-6699
 @end example
@@ -14858,6 +14860,8 @@ This expression tests whether the particular index @var{indx} exists,
 without the side effect of creating that element if it is not present.
 The expression has the value one (true) if @code{@var{array}[@var{indx}]}
 exists and zero (false) if it does not exist.
+(We use @var{indx} here, since @samp{index} is the name of a built-in
+function.)
 For example, this statement tests whether the array @code{frequencies}
 contains the index @samp{2}:
 
@@ -19976,8 +19980,7 @@ function chr(c)
 @c endfile
 
 #### test code ####
-# BEGIN    \
-# @{
+# BEGIN @{
 #    for (;;) @{
 #        printf("enter a character: ")
 #        if (getline var <= 0)
@@ -21505,8 +21508,7 @@ There are several, modeled after the C library functions of the same names:
 @c line break on _gr_init for smallbook
 @c file eg/lib/groupawk.in
 
-BEGIN    \
-@{
+BEGIN @{
     # Change to suit your system
     _gr_awklib = "/usr/local/libexec/awk/"
 @}
@@ -22083,8 +22085,7 @@ string:
 
 @example
 @c file eg/prog/cut.awk
-BEGIN    \
-@{
+BEGIN @{
     FS = "\t"    # default
     OFS = FS
     while ((c = getopt(ARGC, ARGV, "sf:c:d:")) != -1) @{
@@ -22559,8 +22560,7 @@ there are no matches, the exit status is one; otherwise it is zero:
 
 @example
 @c file eg/prog/egrep.awk
-END    \
-@{
+END @{
     exit (total == 0)
 @}
 @c endfile
@@ -22584,17 +22584,6 @@ function usage(    e)
 The variable @code{e} is used so that the function fits nicely
 on the printed page.
 
-@cindex @code{END} pattern, backslash continuation and
-@cindex @code{\} (backslash), continuing lines and
-@cindex backslash (@code{\}), continuing lines and
-Just a note on programming style: you may have noticed that the @code{END}
-rule uses backslash continuation, with the open brace on a line by
-itself.  This is so that it more closely resembles the way functions
-are written.  Many of the examples
-in this @value{CHAPTER}
-use this style. You can decide for yourself if you like writing
-your @code{BEGIN} and @code{END} rules this way
-or not.
 @c ENDOFRANGE regexps
 @c ENDOFRANGE sfregexp
 @c ENDOFRANGE fsregexp
@@ -22661,8 +22650,7 @@ numbers:
 #             egid=5(blat) groups=9(nine),2(two),1(one)
 
 @group
-BEGIN    \
-@{
+BEGIN @{
     uid = PROCINFO["uid"]
     euid = PROCINFO["euid"]
     gid = PROCINFO["gid"]
@@ -22932,8 +22920,7 @@ Finally, @command{awk} is forced to read the standard input by setting
 @c endfile
 @end ignore
 @c file eg/prog/tee.awk
-BEGIN    \
-@{
+BEGIN @{
     for (i = 1; i < ARGC; i++)
         copy[i] = ARGV[i]
 
@@ -22995,8 +22982,7 @@ Finally, the @code{END} rule cleans up by closing all the output files:
 
 @example
 @c file eg/prog/tee.awk
-END    \
-@{
+END @{
     for (i in copy)
         close(copy[i])
 @}
@@ -23113,8 +23099,7 @@ function usage(    e)
 # -n    skip n fields
 # +n    skip n characters, skip fields first
 
-BEGIN   \
-@{
+BEGIN @{
     count = 1
     outputfile = "/dev/stdout"
     opts = "udc0:1:2:3:4:5:6:7:8:9:"
@@ -23633,8 +23618,7 @@ Here is the program:
 @c file eg/prog/alarm.awk
 # usage: alarm time [ "message" [ count [ delay ] ] ]
 
-BEGIN    \
-@{
+BEGIN @{
     # Initial argument sanity checking
     usage1 = "usage: alarm time ['message' [count [delay]]]"
     usage2 = sprintf("\t(%s) time ::= hh:mm", ARGV[1])
@@ -24029,8 +24013,7 @@ function printpage(    i, j)
     Count++
 @}
 
-END    \
-@{
+END @{
     printpage()
 @}
 @c endfile
