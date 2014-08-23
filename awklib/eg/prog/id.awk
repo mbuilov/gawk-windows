@@ -11,8 +11,7 @@
 # uid=12(foo) euid=34(bar) gid=3(baz) \
 #             egid=5(blat) groups=9(nine),2(two),1(one)
 
-BEGIN    \
-{
+BEGIN {
     uid = PROCINFO["uid"]
     euid = PROCINFO["euid"]
     gid = PROCINFO["gid"]
