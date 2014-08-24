@@ -1,0 +1,100 @@
+#!/bin/sh
+
+# The first parameter is the target, the file to be built.
+# All remaining parameters are dependencies (file names).
+if [ $# -lt 1 ] ; then
+  echo "  $0: Incorrect number ($#) of parameters passed: $*"
+  exit 1
+fi
+OUTFILE=$1
+shift 1
+INFILES="$@"
+
+MAKEINFO="makeinfo --no-split --force"
+TROFF="groff -t -Tps -U"
+SEDME="sed -e \"s/^level0 restore/level0 restore flashme 100 72 moveto (Copyright `date '+%m-%d-%y %T'`, FSF, Inc. (all)) show/\" -e \"s/^\/level0 save def/\/level0 save def 30 -48 translate/\""
+SEDME2="sed '/%%Page: 10 10/,/0 Cg EP/d'"
+
+function BuildTarget()
+{
+  local OUTFILE=$1
+  local INFILE=""
+  local COMMAND=""
+
+  FILEBASE=${OUTFILE%.*}
+  case $OUTFILE in
+    *\.in | *\.1 | macros | cardfonts | colors | ad.block | setter.outline | \
+    gawkinet.texi | rflashlight.eps | api-figure1.fig | api-figure2.fig | api-figure3.fig | \
+    general-program.fig | process-flow.fig | statist.eps)
+      INFILE=$OUTFILE
+      ;;
+    *\.texi)
+      if [ $FILEBASE = gawk ] ; then
+               INFILE=gawktexi.in
+      else
+               INFILE=$OUTFILE.in
+      fi
+      COMMAND="awk -f sidebar.awk < $INFILE > $OUTFILE"
+      ;;
+    *\.dvi)
+      INFILE=$FILEBASE.texi
+      COMMAND="texi2dvi -q --clean $INFILE"
+      ;;
+    *\.info)
+      INFILE=$FILEBASE.texi
+      COMMAND="${MAKEINFO} $INFILE"
+      ;;
+    *\.ps)
+      if [ $FILEBASE = awkcard ] ; then
+        INFILE=awkcard.in
+        COMMAND="${TROFF} $* | ${SEDME} | cat setter.outline - | ${SEDME2} > awkcard.ps"
+      elif [ $FILEBASE = gawk.1 -o $FILEBASE = igawk.1 ] ; then
+        INFILE=$FILEBASE
+        COMMAND="groff -z -man $INFILE > $OUTFILE"
+      else
+        INFILE=$FILEBASE.dvi
+        COMMAND="dvips -q -o $OUTFILE $INFILE"
+      fi
+      ;;
+    *\.pdf)
+      INFILE=$FILEBASE.ps
+      COMMAND="ps2pdf -q $INFILE $OUTFILE"
+      ;;
+    *\.tr)
+      INFILE=$FILEBASE.in
+      COMMAND="sed 's:SRCDIR:.:' < $INFILE > $OUTFILE"
+      ;;
+    *\.nc)
+      INFILE=$FILEBASE.in
+      COMMAND="sed 's:SRCDIR:.:' < $INFILE > $OUTFILE"
+      COMMAND="${TROFF} $* | ${SEDME} | cat setter.outline - | ${SEDME2} > $FILEBASE.ps && touch $OUTFILE"
+      ;;
+    *)
+      echo "  unknwon target $OUTFILE"
+      exit 1
+  esac
+
+  if  [ ! -r "$INFILE" ] ; then
+    echo " $0: Cannot read input file $INFILE"
+    exit 1
+  fi
+  
+  if [ -f "$OUTFILE" ] ; then
+    if [ "$INFILE" -ot "$OUTFILE" ] ; then
+      #printf "  Target %15s is up-to-date\n" $OUTFILE
+      COMMAND=""
+    fi
+  fi
+  #echo "  Generating $OUTFILE from $INFILE"
+  echo $COMMAND | sh -x
+  #echo "COMMAND=$COMMAND"
+}
+
+# Build all dependencies first, then build the target.
+for dep in $INFILES
+do
+  #echo $OUTFILE depends on $dep
+  BuildTarget $dep
+done
+BuildTarget $OUTFILE
+

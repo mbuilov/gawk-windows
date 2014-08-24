@@ -542,6 +542,9 @@ CLEANFILES = core core.*
 
 # We want hard links for install-exec-hook, below
 LN = ln
+
+# For some make's, e.g. OpenBSD, that don't define this
+RM = rm -f
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
