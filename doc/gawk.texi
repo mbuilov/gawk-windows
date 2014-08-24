@@ -1424,29 +1424,27 @@ for a complete list of those who made important contributions to @command{gawk}.
 The @command{awk} language has evolved over the years. Full details are
 provided in @ref{Language History}.
 The language described in this @value{DOCUMENT}
-is often referred to as ``new @command{awk}'' (@command{nawk}).
+is often referred to as ``new @command{awk}''.
+By analogy, the original version of @command{awk} is
+referred to as ``old @command{awk}.''
 
-@cindex @command{awk}, versions of
-@cindex @command{nawk} utility
-@cindex @command{oawk} utility
-For some time after new @command{awk} was introduced, there were
-systems with multiple versions of @command{awk}.  Some systems had
-an @command{awk} utility that implemented the original version of the
-@command{awk} language and a @command{nawk} utility for the new version.
-Others had an @command{oawk} version for the ``old @command{awk}''
-language and plain @command{awk} for the new one.  Still others only
-had one version, which is usually the new one.
+Today, on most systems, when you run the @command{awk} utility,
+you get some version of new @command{awk}.@footnote{Only
+Solaris systems still use an old @command{awk} for the
+default @command{awk} utility. A more modern @command{awk} lives in
+@file{/usr/xpg6/bin} on these systems.} If your system's standard
+@command{awk} is the old one, you will see something like this
+if you try the test program:
 
-Today, only Solaris systems still use an old @command{awk} for the
-default @command{awk} utility. (A more modern @command{awk} lives in
-@file{/usr/xpg6/bin} on these systems.)  All other modern systems use
-some version of new @command{awk}.@footnote{Many of these systems use
-@command{gawk} for their @command{awk} implementation!}
+@example
+$ @kbd{awk 1 /dev/null}
+@error{} awk: syntax error near line 1
+@error{} awk: bailing out near line 1
+@end example
 
-It is likely that you already have some version of new @command{awk} on
-your system, which is what you should use when running your programs.
-(Of course, if you're reading this @value{DOCUMENT}, chances are good
-that you have @command{gawk}!)
+@noindent
+In this case, you should find a version of new @command{awk},
+or just install @command{gawk}!
 
 Throughout this @value{DOCUMENT}, whenever we refer to a language feature
 that should be available in any complete implementation of POSIX @command{awk},
@@ -2467,16 +2465,7 @@ BEGIN @{ print "Don't Panic!" @}
 @noindent
 After making this file executable (with the @command{chmod} utility),
 simply type @samp{advice}
-at the shell and the system arranges to run @command{awk}@footnote{The
-line beginning with @samp{#!} lists the full @value{FN} of an interpreter
-to run and a single optional initial command-line argument to pass to that
-interpreter.  The operating system then runs the interpreter with the given
-argument and the full argument list of the executed program.  The first argument
-in the list is the full @value{FN} of the @command{awk} program.
-The rest of the
-argument list contains either options to @command{awk}, or @value{DF}s,
-or both. Note that on many systems @command{awk} may be found in
-@file{/usr/bin} instead of in @file{/bin}. Caveat Emptor.} as if you had
+at the shell and the system arranges to run @command{awk} as if you had
 typed @samp{awk -f advice}:
 
 @example
@@ -2494,13 +2483,31 @@ Self-contained @command{awk} scripts are useful when you want to write a
 program that users can invoke without their having to know that the program is
 written in @command{awk}.
 
-@cindex sidebar, Portability Issues with @samp{#!}
+@cindex sidebar, Understanding @samp{#!}
 @ifdocbook
 @docbook
-<sidebar><title>Portability Issues with @samp{#!}</title>
+<sidebar><title>Understanding @samp{#!}</title>
 @end docbook
 
 @cindex portability, @code{#!} (executable scripts)
+
+@command{awk} is an @dfn{interpreted} language. This means that the
+@command{awk} utility reads your program and then processes your data
+according to the instructions in your program. (This is different
+from a @dfn{compiled} language such as C, where your program is first
+compiled into machine code that is executed directly by your system's
+hardware.)  The @command{awk} utility is thus termed an @dfn{interpreter}.
+Many modern languages are interperted.
+
+The line beginning with @samp{#!} lists the full @value{FN} of an
+interpreter to run and a single optional initial command-line argument
+to pass to that interpreter.  The operating system then runs the
+interpreter with the given argument and the full argument list of the
+executed program.  The first argument in the list is the full @value{FN}
+of the @command{awk} program.  The rest of the argument list contains
+either options to @command{awk}, or @value{DF}s, or both. Note that on
+many systems @command{awk} may be found in @file{/usr/bin} instead of
+in @file{/bin}. Caveat Emptor.
 
 Some systems limit the length of the interpreter name to 32 characters.
 Often, this can be dealt with by using a symbolic link.
@@ -2513,8 +2520,7 @@ of some sort from @command{awk}.
 
 @cindex @code{ARGC}/@code{ARGV} variables, portability and
 @cindex portability, @code{ARGV} variable
-Finally,
-the value of @code{ARGV[0]}
+Finally, the value of @code{ARGV[0]}
 (@pxref{Built-in Variables})
 varies depending upon your operating system.
 Some systems put @samp{awk} there, some put the full pathname
@@ -2530,10 +2536,28 @@ to provide your script name.
 
 @ifnotdocbook
 @cartouche
-@center @b{Portability Issues with @samp{#!}}
+@center @b{Understanding @samp{#!}}
 
 
 @cindex portability, @code{#!} (executable scripts)
+
+@command{awk} is an @dfn{interpreted} language. This means that the
+@command{awk} utility reads your program and then processes your data
+according to the instructions in your program. (This is different
+from a @dfn{compiled} language such as C, where your program is first
+compiled into machine code that is executed directly by your system's
+hardware.)  The @command{awk} utility is thus termed an @dfn{interpreter}.
+Many modern languages are interperted.
+
+The line beginning with @samp{#!} lists the full @value{FN} of an
+interpreter to run and a single optional initial command-line argument
+to pass to that interpreter.  The operating system then runs the
+interpreter with the given argument and the full argument list of the
+executed program.  The first argument in the list is the full @value{FN}
+of the @command{awk} program.  The rest of the argument list contains
+either options to @command{awk}, or @value{DF}s, or both. Note that on
+many systems @command{awk} may be found in @file{/usr/bin} instead of
+in @file{/bin}. Caveat Emptor.
 
 Some systems limit the length of the interpreter name to 32 characters.
 Often, this can be dealt with by using a symbolic link.
@@ -2546,8 +2570,7 @@ of some sort from @command{awk}.
 
 @cindex @code{ARGC}/@code{ARGV} variables, portability and
 @cindex portability, @code{ARGV} variable
-Finally,
-the value of @code{ARGV[0]}
+Finally, the value of @code{ARGV[0]}
 (@pxref{Built-in Variables})
 varies depending upon your operating system.
 Some systems put @samp{awk} there, some put the full pathname
@@ -2910,6 +2933,7 @@ of green crates shipped, the number of red boxes shipped, the number of
 orange bags shipped, and the number of blue packages shipped,
 respectively.  There are 16 entries, covering the 12 months of last year
 and the first four months of the current year.
+An empty line separates the data for the two years.
 
 @example
 @c file eg/data/inventory-shipped
@@ -3005,14 +3029,6 @@ you can come up with different ways to do the same things shown here:
 
 @itemize @value{BULLET}
 @item
-Print the length of the longest input line:
-
-@example
-awk '@{ if (length($0) > max) max = length($0) @}
-     END @{ print max @}' data
-@end example
-
-@item
 Print every line that is longer than 80 characters:
 
 @example
@@ -3021,6 +3037,14 @@ awk 'length($0) > 80' data
 
 The sole rule has a relational expression as its pattern and it has no
 action---so it uses the default action, printing the record.
+
+@item
+Print the length of the longest input line:
+
+@example
+awk '@{ if (length($0) > max) max = length($0) @}
+     END @{ print max @}' data
+@end example
 
 @cindex @command{expand} utility
 @item
@@ -3031,7 +3055,7 @@ expand data | awk '@{ if (x < length($0)) x = length($0) @}
               END @{ print "maximum line length is " x @}'
 @end example
 
-This example differs slightly from the first example in this list:
+This example differs slightly from the previous one:
 The input is processed by the @command{expand} utility to change TABs
 into spaces, so the widths compared are actually the right-margin columns,
 as opposed to the number of input characters on each line.
@@ -5282,14 +5306,15 @@ applies the @samp{*} symbol to the preceding @samp{h} and looks for matches
 of one @samp{p} followed by any number of @samp{h}s.  This also matches
 just @samp{p} if no @samp{h}s are present.
 
-The @samp{*} repeats the @emph{smallest} possible preceding expression.
-(Use parentheses if you want to repeat a larger expression.)  It finds
-as many repetitions as possible.  For example,
-@samp{awk '/\(c[ad][ad]*r x\)/ @{ print @}' sample}
-prints every record in @file{sample} containing a string of the form
-@samp{(car x)}, @samp{(cdr x)}, @samp{(cadr x)}, and so on.
-Notice the escaping of the parentheses by preceding them
-with backslashes.
+There are two subtle points to understand about how @samp{*} works.
+First, the @samp{*} applies only to the single preceding regular expression
+component (e.g., in @samp{ph*}, it applies just to the @samp{h}).
+To cause @samp{*} to apply to a larger sub-expression, use parentheses:
+@samp{(ph)*} matches @samp{ph}, @samp{phph}, @samp{phphph} and so on.
+
+Second, @samp{*} finds as many repetititons as possible. If the text
+to be matched is @samp{phhhhhhhhhhhhhhooey}, @samp{ph*} matches all of
+the @samp{h}s.
 
 @cindex @code{+} (plus sign), regexp operator
 @cindex plus sign (@code{+}), regexp operator
@@ -5298,12 +5323,6 @@ This symbol is similar to @samp{*}, except that the preceding expression must be
 matched at least once.  This means that @samp{wh+y}
 would match @samp{why} and @samp{whhy}, but not @samp{wy}, whereas
 @samp{wh*y} would match all three.
-The following is a simpler
-way of writing the last @samp{*} example:
-
-@example
-awk '/\(c[ad]+r x\)/ @{ print @}' sample
-@end example
 
 @cindex @code{?} (question mark), regexp operator
 @cindex question mark (@code{?}), regexp operator
@@ -15345,7 +15364,10 @@ array element value:
 @end docbook
 
 @noindent
-The pairs are shown in jumbled order because their order is irrelevant.
+The pairs are shown in jumbled order because their order is
+irrelevant.@footnote{The ordering will vary among @command{awk}
+implementations, which typically use hash tables to store array elements
+and values.}
 
 One advantage of associative arrays is that new pairs can be added
 at any time.  For example, suppose a tenth element is added to the array
@@ -15467,8 +15489,9 @@ English to French:
 Here we decided to translate the number one in both spelled-out and
 numeric form---thus illustrating that a single array can have both
 numbers and strings as indices.
-(In fact, array subscripts are always strings; this is discussed
-in more detail in
+(In fact, array subscripts are always strings.
+There are some subtleties to how numbers work when used as
+array subscripts; this is discussed in more detail in
 @ref{Numeric Array Subscripts}.)
 Here, the number @code{1} isn't double-quoted, since @command{awk}
 automatically converts it to a string.
@@ -19062,6 +19085,12 @@ them, i.e., to tell @command{awk} what they should do.
 @node Definition Syntax
 @subsection Function Definition Syntax
 
+@quotation
+It's entirely fair to say that the @command{awk} syntax for local
+variable definitions is appallingly awful
+@author Brian Kernighan
+@end quotation
+
 @c STARTOFRANGE fdef
 @cindex functions, defining
 Definitions of functions can appear anywhere between the rules of an
@@ -19101,7 +19130,7 @@ have a parameter with the same name as the function itself.
 In addition, according to the POSIX standard, function parameters
 cannot have the same name as one of the special built-in variables
 (@pxref{Built-in Variables}).  Not all versions of @command{awk} enforce
-this restriction.)
+this restriction.
 
 Local variables act like the empty string if referenced where a string
 value is required, and like zero if referenced where a numeric value
