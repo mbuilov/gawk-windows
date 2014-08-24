@@ -58,8 +58,13 @@ but use a different build directory. When using CMake, do this:
 Write a new Toolchain file for your cross-compiler and use it.
 
 - How can I build an installable file ?
-Use "make package". The exact kind of installable file depends on your
-operating system and defaults to TGZ.
+By default, installable files will not be generated.
+But if you instruct CMake about the kind of installable file you want,
+then some kinds of files can be generated.
+The exact kind of installable file depends on your operating system.
+Possible kinds are TGZ (.tar.gz file), RPM (.rpm file), and DEB (.deb file).
+   cmake -DCPACK_GENERATOR=DEB ..
+   make package
 
 - Can I build an executable that runs on any Win32 platform ?
 Yes, there are two ways of doing this.
