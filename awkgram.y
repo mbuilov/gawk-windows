@@ -209,6 +209,7 @@ program
 	| program nls
 	| program LEX_EOF
 	  {
+/* add any outstanding comments to end. But how?  */
 		next_sourcefile();
 		if (sourcefile == srcfiles)
 			process_deferred();
@@ -451,22 +452,27 @@ statements
 		if ($2 == NULL) {
 			if (comment == NULL)
 				$$ = $1;
-			else
+			else {
 				$$ = list_prepend($1, comment);
+				comment = NULL;
+			}
 		} else {
 			add_lint($2, LINT_no_effect);
 			if ($1 == NULL) {
 				if (comment == NULL)
 					$$ = $2;
-				else
+				else {
 					$$ = list_prepend($2, comment);
+					comment = NULL;
+				}
 			} else {
-				if (comment != NULL)
-					list_append($1, comment);
+				if (comment != NULL){
+					list_append($2, comment);
+					comment = NULL;
+				}
 				$$ = list_merge($1, $2);
 			}
 		}
-		comment = NULL;
 		yyerrok;
 	  }
 	| statements error
@@ -2939,6 +2945,53 @@ pushback(void)
 }
 
 
+/* get_comment --- collect comment text */
+
+int get_comment(void)
+{
+	int c;
+	tok = tokstart;
+	tokadd('#');
+
+	while (true){
+		while ((c = nextc(false)) != '\n' && c != END_FILE){
+			tokadd(c);
+		}
+		if (c == '\n'){
+			tokadd(c);
+			sourceline++;
+			do {
+				c = nextc(false);
+				if (c == '\n') {
+					sourceline++;
+					tokadd(c);
+				}
+			} while (isspace(c) && c != END_FILE) ;
+			if ( c == END_FILE)
+				break;
+			else if (c != '\#'){
+				pushback();
+				break;
+			} else
+				tokadd(c);
+		} else
+			break;
+	}
+	if (comment != NULL) {
+		size_t new = comment->memory->stlen + (tok - tokstart) + 2;
+		erealloc(comment->memory->stptr, char *, new, "yylex");
+		memcpy(comment->memory->stptr + comment->memory->stlen, tokstart, (tok - tokstart));
+		comment->memory->stlen += (tok - tokstart);
+		comment->memory->stptr[comment->memory->stlen] = '\0';
+	} else {
+		comment = bcalloc(Op_comment, 1, sourceline);
+		comment->source_file = source;
+		comment->memory = make_str_node(tokstart, tok - tokstart, 0);
+	}
+
+	return c;
+}
+
 /* allow_newline --- allow newline after &&, ||, ? and : */
 
 static void
@@ -2953,30 +3006,13 @@ allow_newline(void)
 			break;
 		}
 		if (c == '#') {
-//			if (do_pretty_print) {
-				tok = tokstart;
-				tokadd('#');
+			if (do_pretty_print && !do_profile) {
+			/* collect comment byte code iff doing pretty print but not profiling.  */
+				c = get_comment();
+			} else {
 				while ((c = nextc(false)) != '\n' && c != END_FILE)
-					tokadd(c);
-				if (c == '\n')
-					tokadd(c);
-
-				if (comment != NULL) {
-					size_t new = comment->memory->stlen + (tok - tokstart) + 2;
-					erealloc(comment->memory->stptr, char *, new, "allow_newline");
-					memcpy(comment->memory->stptr + comment->memory->stlen, tokstart, (tok - tokstart));
-					comment->memory->stlen += (tok - tokstart);
-					comment->memory->stptr[comment->memory->stlen] = '\0';
-				} else {
-					comment = bcalloc(Op_comment, 1, sourceline);
-					comment->source_file = source;
-
-					comment->memory = make_str_node(tokstart, tok - tokstart, 0);
-				}
-//			} else {
-//				while ((c = nextc()) != '\n' && c != END_FILE)
-//					continue;
-//			}
+					continue;
+			}
 			if (c == END_FILE) {
 				pushback();
 				break;
@@ -3180,38 +3216,19 @@ retry:
 		return lasttok = NEWLINE;
 
 	case '#':		/* it's a comment */
-//		if (do_pretty_print) {
-			tok = tokstart;
-			tokadd('#');
-			while ((c = nextc(false)) != '\n') {
-				if (c == END_FILE)
-					break;
-				tokadd(c);
-			}
-			if (c == '\n')
-				tokadd(c);
-
-			if (comment != NULL) {
-				size_t new = comment->memory->stlen + (tok - tokstart) + 2;
-				erealloc(comment->memory->stptr, char *, new, "yylex");
-				memcpy(comment->memory->stptr + comment->memory->stlen, tokstart, (tok - tokstart));
-				comment->memory->stlen += (tok - tokstart);
-				comment->memory->stptr[comment->memory->stlen] = '\0';
-			} else {
-				comment = bcalloc(Op_comment, 1, sourceline);
-				comment->source_file = source;
-				comment->memory = make_str_node(tokstart, tok - tokstart, 0);
-			}
+		if (do_pretty_print && ! do_profile) {
+			/* collect comment byte code iff doing pretty print but not profiling.  */
+				c = get_comment();
 
 			if (c == END_FILE)
 				return lasttok = NEWLINE_EOF;
-//		} else {
-//			while ((c = nextc()) != '\n') {
-//				if (c == END_FILE)
-//					return lasttok = NEWLINE_EOF;
-//			}
-//		}
-		sourceline++;
+		} else {
+			while ((c = nextc(false)) != '\n') {
+				if (c == END_FILE)
+					return lasttok = NEWLINE_EOF;
+			}
+		}
+//		sourceline++;
 		return lasttok = NEWLINE;
 
 	case '@':
@@ -3220,7 +3237,7 @@ retry:
 	case '\\':
 #ifdef RELAXED_CONTINUATION
 		/*
-		 * This code puports to allow comments and/or whitespace
+		 * This code purports to allow comments and/or whitespace
 		 * after the `\' at the end of a line used for continuation.
 		 * Use it at your own risk. We think it's a bad idea, which
 		 * is why it's not on by default.
@@ -3237,9 +3254,13 @@ retry:
 					lintwarn(
 		_("use of `\\ #...' line continuation is not portable"));
 				}
-				while ((c = nextc(false)) != '\n')
-					if (c == END_FILE)
-						break;
+				if (do_pretty_print && !do_profile)
+					c = get_comment();
+				else {
+					while ((c = nextc(false)) != '\n')
+						if (c == END_FILE)
+							break;
+				}
 			}
 			pushback();
 		}
@@ -3451,7 +3472,7 @@ retry:
 				lastline = sourceline;
 			return lasttok = c;
 		}
-		did_newline++;
+		did_newline = true;
 		--lexptr;	/* pick up } next time */
 		return lasttok = NEWLINE;
 
@@ -5120,11 +5141,6 @@ append_rule(INSTRUCTION *pattern, INSTRUCTION *action)
 					tp);
 		}
 	}
-
-//	if (comment != NULL) {
-//		ip = list_prepend(ip, comment);
-//		comment = NULL;
-//	}
 
 	list_append(rule_list, rp + 1);
 

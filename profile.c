@@ -882,7 +882,7 @@ cleanup:
 			count = pc->memory->stlen;
 			text = pc->memory->stptr;
 
-			indent(SPACEOVER);
+			indent(SPACEOVER);   /* is this correct? Where should comments go?  */
 			for (; count > 0; count--, text++) {
 				if (after_newline) {
 					indent(SPACEOVER);
