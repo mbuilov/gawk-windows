@@ -164,13 +164,14 @@ AM_V_texidevnull = $(am__v_texidevnull_@AM_V@)
 am__v_texidevnull_ = $(am__v_texidevnull_@AM_DEFAULT_V@)
 am__v_texidevnull_0 = > /dev/null
 am__v_texidevnull_1 = 
-INFO_DEPS = $(srcdir)/gawk.info $(srcdir)/gawkinet.info
+INFO_DEPS = $(srcdir)/gawk.info $(srcdir)/gawkinet.info \
+	$(srcdir)/using-git.info
 am__TEXINFO_TEX_DIR = $(srcdir)
-DVIS = gawk.dvi gawkinet.dvi
-PDFS = gawk.pdf gawkinet.pdf
-PSS = gawk.ps gawkinet.ps
-HTMLS = gawk.html gawkinet.html
-TEXINFOS = gawk.texi gawkinet.texi
+DVIS = gawk.dvi gawkinet.dvi using-git.dvi
+PDFS = gawk.pdf gawkinet.pdf using-git.pdf
+PSS = gawk.ps gawkinet.ps using-git.ps
+HTMLS = gawk.html gawkinet.html using-git.html
+TEXINFOS = gawk.texi gawkinet.texi using-git.texi
 TEXI2DVI = texi2dvi
 TEXI2PDF = $(TEXI2DVI) --pdf --batch
 MAKEINFOHTML = $(MAKEINFO) --html
@@ -340,7 +341,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-info_TEXINFOS = gawk.texi gawkinet.texi
+info_TEXINFOS = gawk.texi gawkinet.texi using-git.texi
 man_MANS = gawk.1
 EXTRA_DIST = ChangeLog ChangeLog.0 README.card ad.block setter.outline \
 	awkcard.in awkforai.txt texinfo.tex cardfonts \
@@ -365,7 +366,7 @@ EXTRA_DIST = ChangeLog ChangeLog.0 README.card ad.block setter.outline \
 
 
 # Get rid of generated files when cleaning
-CLEANFILES = *.ps *.html *.dvi *~ awkcard.nc awkcard.tr gawk.pdf gawkinet.pdf awkcard.pdf gawk.1.pdf
+CLEANFILES = *.ps *.html *.dvi *~ awkcard.nc awkcard.tr gawk.pdf gawkinet.pdf using-git.pdf awkcard.pdf gawk.1.pdf
 TROFF = groff -t -Tps -U
 SEDME = sed -e "s/^level0 restore/level0 restore flashme 100 72 moveto (Copyright `date '+%m-%d-%y %T'`, FSF, Inc. (all)) show/" \
 		-e "s/^\/level0 save def/\/level0 save def 30 -48 translate/"
@@ -467,6 +468,10 @@ $(srcdir)/gawkinet.info: gawkinet.texi
 gawkinet.dvi: gawkinet.texi 
 gawkinet.pdf: gawkinet.texi 
 gawkinet.html: gawkinet.texi 
+$(srcdir)/using-git.info: using-git.texi 
+using-git.dvi: using-git.texi 
+using-git.pdf: using-git.texi 
+using-git.html: using-git.texi 
 .dvi.ps:
 	$(AM_V_DVIPS)TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
 	$(DVIPS) $(AM_V_texinfo) -o $@ $<
@@ -548,13 +553,16 @@ dist-info: $(INFO_DEPS)
 	done
 
 mostlyclean-aminfo:
-	-rm -rf gawk.t2d gawk.t2p gawkinet.t2d gawkinet.t2p
+	-rm -rf gawk.t2d gawk.t2p gawkinet.t2d gawkinet.t2p using-git.t2d \
+	  using-git.t2p
 
 clean-aminfo:
 	-test -z "gawk.dvi gawk.pdf gawk.ps gawk.html gawkinet.dvi gawkinet.pdf \
-	  gawkinet.ps gawkinet.html" \
+	  gawkinet.ps gawkinet.html using-git.dvi using-git.pdf \
+	  using-git.ps using-git.html" \
 	|| rm -rf gawk.dvi gawk.pdf gawk.ps gawk.html gawkinet.dvi gawkinet.pdf \
-	  gawkinet.ps gawkinet.html
+	  gawkinet.ps gawkinet.html using-git.dvi using-git.pdf \
+	  using-git.ps using-git.html
 
 maintainer-clean-aminfo:
 	@list='$(INFO_DEPS)'; for i in $$list; do \
@@ -869,15 +877,18 @@ uninstall-man: uninstall-man1
 gawk.texi: $(srcdir)/gawktexi.in $(srcdir)/sidebar.awk
 	awk -f $(srcdir)/sidebar.awk < $(srcdir)/gawktexi.in > gawk.texi
 
-postscript: gawk.ps gawkinet.ps gawk.1.ps $(AWKCARD)
+postscript: gawk.ps gawkinet.ps using-git.ps gawk.1.ps $(AWKCARD)
 
-pdf: postscript gawk.pdf gawkinet.pdf awkcard.pdf gawk.1.pdf
+pdf: postscript gawk.pdf gawkinet.pdf using-git.pdf awkcard.pdf gawk.1.pdf
 
 gawk.ps: gawk.dvi
 	TEXINPUTS=$(srcdir): dvips -o gawk.ps gawk.dvi
 
 gawkinet.ps: gawkinet.dvi
 	TEXINPUTS=$(srcdir): dvips -o gawkinet.ps gawkinet.dvi
+
+using-git.ps: using-git.dvi
+	TEXINPUTS=$(srcdir): dvips -o using-git.ps using-git.dvi
 
 gawk.1.ps: gawk.1
 	-groff -man $(srcdir)/gawk.1 > gawk.1.ps
