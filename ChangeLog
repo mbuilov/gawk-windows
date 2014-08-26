@@ -1,3 +1,15 @@
+2014-08-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Remove support for MirBSD. It uglified the code too much
+	for no discernable gain.
+
+	* configure.ac: Remove check for MirBSD and define of
+	LIBC_IS_BORKED.
+	* dfa.c: Remove code depending on LIBC_IS_BORKED.
+	* main.c: Ditto.
+	* regcomp.c: Ditto.
+	* NEWS: Updated.
+
 2014-08-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regex.h: Remove underscores in names of parameters in function

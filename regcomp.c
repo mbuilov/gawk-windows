@@ -856,10 +856,6 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
 #ifndef _LIBC
   char *codeset_name;
 #endif
-#if defined(GAWK) && defined(LIBC_IS_BORKED)
-  /* Needed for brain damaged systems */
-  extern int gawk_mb_cur_max;
-#endif
 
   memset (dfa, '\0', sizeof (re_dfa_t));
 
@@ -881,11 +877,7 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
   dfa->state_table = calloc (sizeof (struct re_state_table_entry), table_size);
   dfa->state_hash_mask = table_size - 1;
 
-#if defined(GAWK) && defined(LIBC_IS_BORKED)
-  dfa->mb_cur_max = gawk_mb_cur_max;
-#else
   dfa->mb_cur_max = MB_CUR_MAX;
-#endif
 #ifdef _LIBC
   if (dfa->mb_cur_max == 6
       && strcmp (_NL_CURRENT (LC_CTYPE, _NL_CTYPE_CODESET_NAME), "UTF-8") == 0)
@@ -920,10 +912,6 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
           ? codeset_name[4] == '8' && codeset_name[5] == '\0'
           : codeset_name[3] == '8' && codeset_name[4] == '\0'))
     dfa->is_utf8 = 1;
-#if defined(GAWK) && defined(LIBC_IS_BORKED)
-  if (gawk_mb_cur_max == 1)
-    dfa->is_utf8 = 0;
-#endif /* defined(GAWK) && defined(LIBC_IS_BORKED) */
 #endif
 
   /* We check exhaustively in the loop below if this charset is a
