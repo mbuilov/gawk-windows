@@ -570,9 +570,7 @@ particular records in a file and perform operations upon them.
 * Command-line directories::            What happens if you put a directory on
                                         the command line.
 * Input Summary::                       Input summary.
-@ifclear FOR_PRINT
 * Input Exercises::                     Exercises.
-@end ifclear
 * Print::                               The @code{print} statement.
 * Print Examples::                      Simple examples of @code{print}
                                         statements.
@@ -597,9 +595,7 @@ particular records in a file and perform operations upon them.
 * Close Files And Pipes::               Closing Input and Output Files and
                                         Pipes.
 * Output Summary::                      Output summary.
-@ifclear FOR_PRINT
 * Output Exercises::                    Exercises.
-@end ifclear
 * Values::                              Constants, Variables, and Regular
                                         Expressions.
 * Constants::                           String, numeric and regexp constants.
@@ -786,9 +782,7 @@ particular records in a file and perform operations upon them.
                                         information.
 * Walking Arrays::                      A function to walk arrays of arrays.
 * Library Functions Summary::           Summary of library functions.
-@ifclear FOR_PRINT
 * Library Exercises::                   Exercises.
-@end ifclear
 * Running Examples::                    How to run these examples.
 * Clones::                              Clones of common utilities.
 * Cut Program::                         The @command{cut} utility.
@@ -819,9 +813,7 @@ particular records in a file and perform operations upon them.
 * Signature Program::                   People do amazing things with too much
                                         time on their hands.
 * Programs Summary::                    Summary of programs.
-@ifclear FOR_PRINT
 * Programs Exercises::                  Exercises.
-@end ifclear
 * Nondecimal Data::                     Allowing nondecimal input data.
 * Array Sorting::                       Facilities for controlling array
                                         traversal and sorting arrays.
@@ -943,9 +935,7 @@ particular records in a file and perform operations upon them.
                                         and @code{sleep()}.
 * gawkextlib::                          The @code{gawkextlib} project.
 * Extension summary::                   Extension summary.
-@ifclear FOR_PRINT
 * Extension Exercises::                 Exercises.
-@end ifclear
 * V7/SVR3.1::                           The major changes between V7 and
                                         System V Release 3.1.
 * SVR4::                                Minor changes between System V
@@ -3106,8 +3096,8 @@ features that haven't been covered yet, so don't worry if you don't
 understand all the details:
 
 @example
-LC_ALL=C ls -l | awk '$6 == "Nov" @{ sum += $5 @}
-                      END @{ print sum @}'
+ls -l | awk '$6 == "Nov" @{ sum += $5 @}
+             END @{ print sum @}'
 @end example
 
 @cindex @command{ls} utility
@@ -5912,9 +5902,7 @@ used with it do not have to be named on the @command{awk} command line
 * Command-line directories::    What happens if you put a directory on the
                                 command line.
 * Input Summary::               Input summary.
-@ifclear FOR_PRINT
 * Input Exercises::             Exercises.
-@end ifclear
 @end menu
 
 @node Records
@@ -8278,7 +8266,7 @@ Directories on the command line are fatal for standard @command{awk};
 
 @end itemize
 
-@ifclear FOR_PRINT
+@c EXCLUDE START
 @node Input Exercises
 @section Exercises
 
@@ -8298,7 +8286,7 @@ starts later on the same line.
 Write a program that does handle multiple comments on the line.
 
 @end enumerate
-@end ifclear
+@c EXCLUDE END
 
 @node Printing
 @chapter Printing Output
@@ -8340,9 +8328,7 @@ and discusses the @code{close()} built-in function.
                                 descriptors.
 * Close Files And Pipes::       Closing Input and Output Files and Pipes.
 * Output Summary::              Output summary.
-@ifclear FOR_PRINT
 * Output Exercises::            Exercises.
-@end ifclear
 @end menu
 
 @node Print
@@ -9753,7 +9739,7 @@ communications.
 
 @end itemize
 
-@ifclear FOR_PRINT
+@c EXCLUDE START
 @node Output Exercises
 @section Exercises
 
@@ -9783,7 +9769,7 @@ BEGIN @{ print "Serious error detected!" > /dev/stderr @}
 @end example
 
 @end enumerate
-@end ifclear
+@c EXCLUDE END
 
 @c ENDOFRANGE prnt
 
@@ -19448,9 +19434,7 @@ comparisons use only lowercase letters.
 * Group Functions::             Functions for getting group information.
 * Walking Arrays::              A function to walk arrays of arrays.
 * Library Functions Summary::   Summary of library functions.
-@ifclear FOR_PRINT
 * Library Exercises::           Exercises.
-@end ifclear
 @end menu
 
 @node Library Names
@@ -21838,7 +21822,7 @@ A simple function to traverse an array of arrays to any depth.
 
 @end itemize
 
-@ifclear FOR_PRINT
+@c EXCLUDE START
 @node Library Exercises
 @section Exercises
 
@@ -21905,7 +21889,7 @@ Test your new version by printing the array; you should end up with
 output identical to that of the original version.
 
 @end enumerate
-@end ifclear
+@c EXCLUDE END
 
 @c ENDOFRANGE flib
 @c ENDOFRANGE fudlib
@@ -21950,9 +21934,7 @@ Many of these programs use library functions presented in
 * Clones::                      Clones of common utilities.
 * Miscellaneous Programs::      Some interesting @command{awk} programs.
 * Programs Summary::            Summary of programs.
-@ifclear FOR_PRINT
 * Programs Exercises::          Exercises.
-@end ifclear
 @end menu
 
 @node Running Examples
@@ -25388,7 +25370,7 @@ mailing labels, and finding anagrams.
 
 @end itemize
 
-@ifclear FOR_PRINT
+@c EXCLUDE START
 @node Programs Exercises
 @section Exercises
 
@@ -25518,7 +25500,7 @@ Modify @file{anagram.awk} (@pxref{Anagram Program}), to avoid
 the use of the external @command{sort} utility.
 
 @end enumerate
-@end ifclear
+@c EXCLUDE END
 
 @ifnotinfo
 @part @value{PART3}Moving Beyond Standard @command{awk} With @command{gawk}
@@ -29960,9 +29942,7 @@ When @option{--sandbox} is specified, extensions are disabled
                                 @code{gawk}.
 * gawkextlib::                  The @code{gawkextlib} project.
 * Extension summary::           Extension summary.
-@ifclear FOR_PRINT
 * Extension Exercises::         Exercises.
-@end ifclear
 @end menu
 
 @node Extension Intro
@@ -33899,7 +33879,7 @@ should be the place to do so.
 
 @end itemize
 
-@ifclear FOR_PRINT
+@c EXCLUDE START
 @node Extension Exercises
 @section Exercises
 
@@ -33922,7 +33902,7 @@ Write a wrapper script that provides an interface similar to
 @ref{Extension Sample Inplace}.
 
 @end enumerate
-@end ifclear
+@c EXCLUDE END
 
 @ifnotinfo
 @part @value{PART4}Appendices

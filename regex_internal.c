@@ -545,7 +545,10 @@ build_upper_buffer (re_string_t *pstr)
       int ch = pstr->raw_mbs[pstr->raw_mbs_idx + char_idx];
       if (BE (pstr->trans != NULL, 0))
 	ch = pstr->trans[ch];
-      pstr->mbs[char_idx] = toupper (ch);
+      if (islower (ch))
+	pstr->mbs[char_idx] = toupper (ch);
+      else
+	pstr->mbs[char_idx] = ch;
     }
   pstr->valid_len = char_idx;
   pstr->valid_raw_len = char_idx;
@@ -683,7 +686,7 @@ re_string_reconstruct (re_string_t *pstr, int idx, int eflags)
 			 pstr->valid_len - offset);
 	      pstr->valid_len -= offset;
 	      pstr->valid_raw_len -= offset;
-#if DEBUG
+#if defined DEBUG && DEBUG
 	      assert (pstr->valid_len > 0);
 #endif
 	    }
@@ -940,7 +943,7 @@ re_string_context_at (const re_string_t *input, int idx, int eflags)
       int wc_idx = idx;
       while(input->wcs[wc_idx] == WEOF)
 	{
-#ifdef DEBUG
+#if defined DEBUG && DEBUG
 	  /* It must not happen.  */
 	  assert (wc_idx >= 0);
 #endif
