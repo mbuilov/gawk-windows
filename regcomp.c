@@ -2215,7 +2215,11 @@ parse_reg_exp (re_string_t *regexp, regex_t *preg, re_token_t *token,
 	{
 	  branch = parse_branch (regexp, preg, token, syntax, nest, err);
 	  if (BE (*err != REG_NOERROR && branch == NULL, 0))
-	    return NULL;
+	    {
+	      if (tree != NULL)
+		postorder (tree, free_tree, NULL);
+	      return NULL;
+	    }
 	}
       else
 	branch = NULL;
@@ -2476,8 +2480,7 @@ parse_expression (re_string_t *regexp, regex_t *preg, re_token_t *token,
   while (token->type == OP_DUP_ASTERISK || token->type == OP_DUP_PLUS
 	 || token->type == OP_DUP_QUESTION || token->type == OP_OPEN_DUP_NUM)
     {
-      bin_tree_t *dup_tree = parse_dup_op (tree, regexp, dfa, token,
-					   syntax, err);
+      bin_tree_t *dup_tree = parse_dup_op (tree, regexp, dfa, token, syntax, err);
       if (BE (*err != REG_NOERROR && dup_tree == NULL, 0))
 	{
 	  if (tree != NULL)
@@ -2640,6 +2643,8 @@ parse_dup_op (bin_tree_t *elem, re_string_t *regexp, re_dfa_t *dfa,
 
       /* Duplicate ELEM before it is marked optional.  */
       elem = duplicate_tree (elem, dfa);
+      if (BE (elem == NULL, 0))
+        goto parse_dup_op_espace;
       old_tree = tree;
     }
   else
@@ -3136,8 +3141,8 @@ parse_bracket_exp (re_string_t *regexp, re_dfa_t *dfa, re_token_t *token,
   if (BE (sbcset == NULL, 0))
 #endif /* RE_ENABLE_I18N */
     {
-#ifdef RE_ENABLE_I18N
       re_free (sbcset);
+#ifdef RE_ENABLE_I18N
       re_free (mbcset);
 #endif
       *err = REG_ESPACE;
