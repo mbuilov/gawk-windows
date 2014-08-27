@@ -1,3 +1,10 @@
+2014-08-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Add test for strcasecmp.
+	* regcomp.c: Remove special case code around use of strcasecmp().
+	* replace.c: Include missing/strncasecmp.c if either strcasecmp()
+	or strncasecmp() aren't available.
+
 2014-08-26         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regcomp.c, regex_internal.c: Sync with GBLIC. Why not.

@@ -907,24 +907,13 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
     codeset_name = strchr (codeset_name, '.') + 1;
 # endif
 
-  /* strcasecmp isn't a standard interface. brute force check */
-#ifndef GAWK
   if (strcasecmp (codeset_name, "UTF-8") == 0
       || strcasecmp (codeset_name, "UTF8") == 0)
-    dfa->is_utf8 = 1;
-#else
-  if (   (codeset_name[0] == 'U' || codeset_name[0] == 'u')
-      && (codeset_name[1] == 'T' || codeset_name[1] == 't')
-      && (codeset_name[2] == 'F' || codeset_name[2] == 'f')
-      && (codeset_name[3] == '-'
-          ? codeset_name[4] == '8' && codeset_name[5] == '\0'
-          : codeset_name[3] == '8' && codeset_name[4] == '\0'))
     dfa->is_utf8 = 1;
 #if defined(GAWK) && defined(LIBC_IS_BORKED)
   if (gawk_mb_cur_max == 1)
     dfa->is_utf8 = 0;
 #endif /* defined(GAWK) && defined(LIBC_IS_BORKED) */
-#endif
 
   /* We check exhaustively in the loop below if this charset is a
      superset of ASCII.  */
