@@ -38,8 +38,7 @@ function getopt(argc, argv, options,    thisopt, i)
     i = index(options, thisopt)
     if (i == 0) {
         if (Opterr)
-            printf("%c -- invalid option\n",
-                                  thisopt) > "/dev/stderr"
+            printf("%c -- invalid option\n", thisopt) > "/dev/stderr"
         if (_opti >= length(argv[Optind])) {
             Optind++
             _opti = 0
