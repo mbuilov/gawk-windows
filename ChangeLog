@@ -4,6 +4,12 @@
 	result is passed to length() with --lint. Based on discussions in
 	comp.lang.awk.
 
+	Unrelated:
+
+	* interpret.h (r_interpret): For indirect function call, separate
+	error message if lookup returned NULL. Otherwise got a core dump.
+	Thanks to "Kenny McKormack" for the report in comp.lang.awk.
+
 2014-08-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Add test for strcasecmp.

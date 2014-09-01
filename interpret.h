@@ -1038,7 +1038,11 @@ match_re:
 				f = lookup(t1->stptr);
 			}
 
-			if (f == NULL || f->type != Node_func) {
+			if (f == NULL) {
+				/* FIXME: See if function is a built-in and try to call it */
+				fatal(_("`%s' is not a user-defined function, so it cannot be called indirectly"),
+						t1->stptr);
+			} else if(f->type != Node_func) {
 				if (f->type == Node_ext_func || f->type == Node_old_ext_func)
 					fatal(_("cannot (yet) call extension functions indirectly"));
 				else
