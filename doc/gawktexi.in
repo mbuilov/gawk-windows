@@ -4346,6 +4346,9 @@ to @code{EXIT_FAILURE}.
 
 This @value{SECTION} describes a feature that is specific to @command{gawk}.
 
+@cindex @code{@@include} directive
+@cindex file inclusion, @code{@@include} directive
+@cindex including files, @code{@@include} directive
 The @code{@@include} keyword can be used to read external @command{awk} source
 files.  This gives you the ability to split large @command{awk} source files
 into smaller, more manageable pieces, and also lets you reuse common @command{awk}
@@ -4465,6 +4468,9 @@ and this also applies to files named with @code{@@include}.
 
 This @value{SECTION} describes a feature that is specific to @command{gawk}.
 
+@cindex @code{@@load} directive
+@cindex loading extensions, @code{@@load} directive
+@cindex extensions, loading, @code{@@load} directive
 The @code{@@load} keyword can be used to read external @command{awk} extensions
 (stored as system shared libraries).
 This allows you to link in compiled code that may offer superior
@@ -18978,6 +18984,9 @@ This style of programming works, but can be awkward.  With @dfn{indirect}
 function calls, you tell @command{gawk} to use the @emph{value} of a
 variable as the name of the function to call.
 
+@cindex @code{@@}-notation for indirect function calls
+@cindex indirect function calls, @code{@@}-notation
+@cindex function calls, indirect, @code{@@}-notation for
 The syntax is similar to that of a regular function call: an identifier
 immediately followed by a left parenthesis, any arguments, and then
 a closing right parenthesis, with the addition of a leading @samp{@@}
