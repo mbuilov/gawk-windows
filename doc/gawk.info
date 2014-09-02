@@ -20542,7 +20542,7 @@ options. (`gawk' is not designed to debug command-line programs, only
 programs contained in files.)  In our case, we invoke the debugger like
 this:
 
-     $ gawk -D -f getopt.awk -f join.awk -f uniq.awk inputfile
+     $ gawk -D -f getopt.awk -f join.awk -f uniq.awk -1 inputfile
 
 where both `getopt.awk' and `uniq.awk' are in `$AWKPATH'.  (Experienced
 users of GDB or similar debuggers should note that this syntax is
@@ -20594,7 +20594,7 @@ for a breakpoint in `uniq.awk' is at the beginning of the function
 To set the breakpoint, use the `b' (breakpoint) command:
 
      gawk> b are_equal
-     -| Breakpoint 1 set at file `awklib/eg/prog/uniq.awk', line 64
+     -| Breakpoint 1 set at file `awklib/eg/prog/uniq.awk', line 63
 
    The debugger tells us the file and line number where the breakpoint
 is.  Now type `r' or `run' and the program runs until it hits the
@@ -20604,8 +20604,8 @@ breakpoint for the first time:
      -| Starting program:
      -| Stopping in Rule ...
      -| Breakpoint 1, are_equal(n, m, clast, cline, alast, aline)
-              at `awklib/eg/prog/uniq.awk':64
-     -| 64          if (fcount == 0 && charcount == 0)
+              at `awklib/eg/prog/uniq.awk':63
+     -| 63          if (fcount == 0 && charcount == 0)
      gawk>
 
    Now we can look at what's going on inside our program.  First of all,
@@ -20615,11 +20615,11 @@ the current stack frames:
 
      gawk> bt
      -| #0  are_equal(n, m, clast, cline, alast, aline)
-              at `awklib/eg/prog/uniq.awk':69
-     -| #1  in main() at `awklib/eg/prog/uniq.awk':89
+              at `awklib/eg/prog/uniq.awk':68
+     -| #1  in main() at `awklib/eg/prog/uniq.awk':88
 
    This tells us that `are_equal()' was called by the main program at
-line 89 of `uniq.awk'.  (This is not a big surprise, since this is the
+line 88 of `uniq.awk'.  (This is not a big surprise, since this is the
 only call to `are_equal()' in the program, but in more complex
 programs, knowing who called a function and with what parameters can be
 the key to finding the source of the problem.)
@@ -20638,13 +20638,13 @@ function was called without arguments (*note Function Calls::).
    A more useful variable to display might be the current record:
 
      gawk> p $0
-     -| $0 = string ("gawk is a wonderful program!")
+     -| $0 = "gawk is a wonderful program!"
 
 This might be a bit puzzling at first since this is the second line of
 our test input above.  Let's look at `NR':
 
      gawk> p NR
-     -| NR = number (2)
+     -| NR = 2
 
 So we can see that `are_equal()' was only called for the second record
 of the file.  Of course, this is because our program contains a rule for
@@ -20658,7 +20658,7 @@ of the file.  Of course, this is because our program contains a rule for
    OK, let's just check that that rule worked correctly:
 
      gawk> p last
-     -| last = string ("awk is a wonderful program!")
+     -| last = "awk is a wonderful program!"
 
    Everything we have done so far has verified that the program has
 worked as planned, up to and including the call to `are_equal()', so
@@ -20667,38 +20667,39 @@ must begin "stepping through" the lines of `are_equal()'.  We start by
 typing `n' (for "next"):
 
      gawk> n
-     -| 67          if (fcount > 0) {
+     -| 66          if (fcount > 0) {
 
-   This tells us that `gawk' is now ready to execute line 67, which
+   This tells us that `gawk' is now ready to execute line 66, which
 decides whether to give the lines the special "field skipping" treatment
-indicated by the `-f' command-line option.  (Notice that we skipped
-from where we were before at line 64 to here, since the condition in
-line 64 `if (fcount == 0 && charcount == 0)' was false.)
+indicated by the `-1' command-line option.  (Notice that we skipped
+from where we were before at line 63 to here, since the condition in
+line 63 `if (fcount == 0 && charcount == 0)' was false.)
 
    Continuing to step, we now get to the splitting of the current and
 last records:
 
      gawk> n
-     -| 68              n = split(last, alast)
+     -| 67              n = split(last, alast)
      gawk> n
-     -| 69              m = split($0, aline)
+     -| 68              m = split($0, aline)
 
    At this point, we should be curious to see what our records were
 split into, so we try to look:
 
      gawk> p n m alast aline
-     -| n = number (5)
-     -| m = number (5)
+     -| n = 5
+     -| m = untyped variable
      -| alast = array, 5 elements
-     -| aline = array, 5 elements
+     -| aline = untyped variable
 
 (The `p' command can take more than one argument, similar to `awk''s
 `print' statement.)
 
    This is kind of disappointing, though.  All we found out is that
-there are five elements in each of our arrays.  Useful enough (we now
-know that none of the words were accidentally left out), but what if we
-want to see inside the array?
+there are five elements in `alast'; `m' and `aline' don't have values
+yet since we are at line 68 but haven't executed it yet.  This
+information is useful enough (we now know that none of the words were
+accidentally left out), but what if we want to see inside the array?
 
    The first choice would be to use subscripts:
 
@@ -20708,25 +20709,25 @@ want to see inside the array?
 Oops!
 
      gawk> p alast[1]
-     -| alast["1"] = string ("awk")
+     -| alast["1"] = "awk"
 
    This would be kind of slow for a 100-member array, though, so `gawk'
 provides a shortcut (reminiscent of another language not to be
 mentioned):
 
      gawk> p @alast
-     -| alast["1"] = string ("awk")
-     -| alast["2"] = string ("is")
-     -| alast["3"] = string ("a")
-     -| alast["4"] = string ("wonderful")
-     -| alast["5"] = string ("program!")
+     -| alast["1"] = "awk"
+     -| alast["2"] = "is"
+     -| alast["3"] = "a"
+     -| alast["4"] = "wonderful"
+     -| alast["5"] = "program!"
 
    It looks like we got this far OK.  Let's take another step or two:
 
      gawk> n
-     -| 70              clast = join(alast, fcount, n)
+     -| 69              clast = join(alast, fcount, n)
      gawk> n
-     -| 71              cline = join(aline, fcount, m)
+     -| 70              cline = join(aline, fcount, m)
 
    Well, here we are at our error (sorry to spoil the suspense).  What
 we had in mind was to join the fields starting from the second one to
@@ -20734,8 +20735,8 @@ make the virtual record to compare, and if the first field was numbered
 zero, this would work.  Let's look at what we've got:
 
      gawk> p cline clast
-     -| cline = string ("gawk is a wonderful program!")
-     -| clast = string ("awk is a wonderful program!")
+     -| cline = "gawk is a wonderful program!"
+     -| clast = "awk is a wonderful program!"
 
    Hey, those look pretty familiar!  They're just our original,
 unaltered, input records.  A little thinking (the human brain is still
@@ -34431,7 +34432,7 @@ Node: Debugging Terms826097
 Node: Awk Debugging828694
 Node: Sample Debugging Session829586
 Node: Debugger Invocation830106
-Node: Finding The Bug831439
+Node: Finding The Bug831442
 Node: List of Debugger Commands837921
 Node: Breakpoint Control839253
 Node: Debugger Execution Control842917
