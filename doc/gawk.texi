@@ -28682,7 +28682,7 @@ to debug command-line programs, only programs contained in files.)
 In our case, we invoke the debugger like this:
 
 @example
-$ @kbd{gawk -D -f getopt.awk -f join.awk -f uniq.awk inputfile}
+$ @kbd{gawk -D -f getopt.awk -f join.awk -f uniq.awk -1 inputfile}
 @end example
 
 @noindent
@@ -28744,7 +28744,7 @@ the breakpoint, use the @code{b} (breakpoint) command:
 
 @example
 gawk> @kbd{b are_equal}
-@print{} Breakpoint 1 set at file `awklib/eg/prog/uniq.awk', line 64
+@print{} Breakpoint 1 set at file `awklib/eg/prog/uniq.awk', line 63
 @end example
 
 The debugger tells us the file and line number where the breakpoint is.
@@ -28756,8 +28756,8 @@ gawk> @kbd{r}
 @print{} Starting program:
 @print{} Stopping in Rule ...
 @print{} Breakpoint 1, are_equal(n, m, clast, cline, alast, aline)
-         at `awklib/eg/prog/uniq.awk':64
-@print{} 64          if (fcount == 0 && charcount == 0)
+         at `awklib/eg/prog/uniq.awk':63
+@print{} 63          if (fcount == 0 && charcount == 0)
 gawk>
 @end example
 
@@ -28769,12 +28769,12 @@ listing of the current stack frames:
 @example
 gawk> @kbd{bt}
 @print{} #0  are_equal(n, m, clast, cline, alast, aline)
-         at `awklib/eg/prog/uniq.awk':69
-@print{} #1  in main() at `awklib/eg/prog/uniq.awk':89
+         at `awklib/eg/prog/uniq.awk':68
+@print{} #1  in main() at `awklib/eg/prog/uniq.awk':88
 @end example
 
 This tells us that @code{are_equal()} was called by the main program at
-line 89 of @file{uniq.awk}.  (This is not a big surprise, since this
+line 88 of @file{uniq.awk}.  (This is not a big surprise, since this
 is the only call to @code{are_equal()} in the program, but in more complex
 programs, knowing who called a function and with what parameters can be
 the key to finding the source of the problem.)
@@ -28798,7 +28798,7 @@ A more useful variable to display might be the current record:
 
 @example
 gawk> @kbd{p $0}
-@print{} $0 = string ("gawk is a wonderful program!")
+@print{} $0 = "gawk is a wonderful program!"
 @end example
 
 @noindent
@@ -28807,7 +28807,7 @@ our test input above.  Let's look at @code{NR}:
 
 @example
 gawk> @kbd{p NR}
-@print{} NR = number (2)
+@print{} NR = 2
 @end example
 
 @noindent
@@ -28826,7 +28826,7 @@ OK, let's just check that that rule worked correctly:
 
 @example
 gawk> @kbd{p last}
-@print{} last = string ("awk is a wonderful program!")
+@print{} last = "awk is a wonderful program!"
 @end example
 
 Everything we have done so far has verified that the program has worked as
@@ -28837,13 +28837,13 @@ be inside this function.  To investigate further, we must begin
 
 @example
 gawk> @kbd{n}
-@print{} 67          if (fcount > 0) @{
+@print{} 66          if (fcount > 0) @{
 @end example
 
-This tells us that @command{gawk} is now ready to execute line 67, which
+This tells us that @command{gawk} is now ready to execute line 66, which
 decides whether to give the lines the special ``field skipping'' treatment
-indicated by the @option{-f} command-line option.  (Notice that we skipped
-from where we were before at line 64 to here, since the condition in line 64
+indicated by the @option{-1} command-line option.  (Notice that we skipped
+from where we were before at line 63 to here, since the condition in line 63
 @samp{if (fcount == 0 && charcount == 0)} was false.)
 
 Continuing to step, we now get to the splitting of the current and
@@ -28851,9 +28851,9 @@ last records:
 
 @example
 gawk> @kbd{n}
-@print{} 68              n = split(last, alast)
+@print{} 67              n = split(last, alast)
 gawk> @kbd{n}
-@print{} 69              m = split($0, aline)
+@print{} 68              m = split($0, aline)
 @end example
 
 At this point, we should be curious to see what our records were split
@@ -28861,10 +28861,10 @@ into, so we try to look:
 
 @example
 gawk> @kbd{p n m alast aline}
-@print{} n = number (5)
-@print{} m = number (5)
+@print{} n = 5
+@print{} m = untyped variable
 @print{} alast = array, 5 elements
-@print{} aline = array, 5 elements
+@print{} aline = untyped variable
 @end example
 
 @noindent
@@ -28872,7 +28872,9 @@ gawk> @kbd{p n m alast aline}
 @command{awk}'s @code{print} statement.)
 
 This is kind of disappointing, though.  All we found out is that there
-are five elements in each of our arrays.  Useful enough (we now know that
+are five elements in @code{alast}; @code{m} and @code{aline} don't have
+values yet since we are at line 68 but haven't executed it yet.
+This information is useful enough (we now know that
 none of the words were accidentally left out), but what if we want to see
 inside the array?
 
@@ -28888,7 +28890,7 @@ Oops!
 
 @example
 gawk> @kbd{p alast[1]}
-@print{} alast["1"] = string ("awk")
+@print{} alast["1"] = "awk"
 @end example
 
 This would be kind of slow for a 100-member array, though, so
@@ -28897,11 +28899,11 @@ not to be mentioned):
 
 @example
 gawk> @kbd{p @@alast}
-@print{} alast["1"] = string ("awk")
-@print{} alast["2"] = string ("is")
-@print{} alast["3"] = string ("a")
-@print{} alast["4"] = string ("wonderful")
-@print{} alast["5"] = string ("program!")
+@print{} alast["1"] = "awk"
+@print{} alast["2"] = "is"
+@print{} alast["3"] = "a"
+@print{} alast["4"] = "wonderful"
+@print{} alast["5"] = "program!"
 @end example
 
 It looks like we got this far OK.  Let's take another step
@@ -28909,9 +28911,9 @@ or two:
 
 @example
 gawk> @kbd{n}
-@print{} 70              clast = join(alast, fcount, n)
+@print{} 69              clast = join(alast, fcount, n)
 gawk> @kbd{n}
-@print{} 71              cline = join(aline, fcount, m)
+@print{} 70              cline = join(aline, fcount, m)
 @end example
 
 Well, here we are at our error (sorry to spoil the suspense).  What we
@@ -28921,8 +28923,8 @@ this would work.  Let's look at what we've got:
 
 @example
 gawk> @kbd{p cline clast}
-@print{} cline = string ("gawk is a wonderful program!")
-@print{} clast = string ("awk is a wonderful program!")
+@print{} cline = "gawk is a wonderful program!"
+@print{} clast = "awk is a wonderful program!"
 @end example
 
 Hey, those look pretty familiar!  They're just our original, unaltered,
