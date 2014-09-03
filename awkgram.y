@@ -209,7 +209,6 @@ program
 	| program nls
 	| program LEX_EOF
 	  {
-/* add any outstanding comments to end. But how?  */
 		next_sourcefile();
 		if (sourcefile == srcfiles)
 			process_deferred();
@@ -291,9 +290,22 @@ library
 
 pattern
 	: /* empty */
-	  {	$$ = NULL; rule = Rule; }
+	  {	rule = Rule;
+		if (comment != NULL){
+			$$ = list_create(comment);
+			comment = NULL;
+		} else
+			$$ = NULL;
+	  }
 	| exp
-	  {	$$ = $1; rule = Rule; }
+	  {	rule = Rule;
+		if (comment != NULL){
+			$$ = list_prepend($1, comment);
+			comment = NULL;
+		} else
+			$$ = $1;
+	  }
+		
 	| exp ',' opt_nls exp
 	  {
 		INSTRUCTION *tp;
@@ -323,6 +335,7 @@ pattern
 	| LEX_BEGIN
 	  {
 		static int begin_seen = 0;
+		INSTRUCTION *ip;
 		if (do_lint_old && ++begin_seen == 2)
 			warning_ln($1->source_line,
 				_("old awk does not support multiple `BEGIN' or `END' rules"));
@@ -359,10 +372,12 @@ pattern
 action
 	: l_brace statements r_brace opt_semi opt_nls
 	  {
+		INSTRUCTION *ip;
 		if ($2 == NULL)
-			$$ = list_create(instruction(Op_no_op));
+			ip = list_create(instruction(Op_no_op));
 		else
-			$$ = $2;
+			ip = $2;
+		$$ = ip;
 	  }
 	;
 
@@ -467,7 +482,7 @@ statements
 				}
 			} else {
 				if (comment != NULL){
-					list_append($2, comment);
+					list_prepend($2, comment);
 					comment = NULL;
 				}
 				$$ = list_merge($1, $2);
@@ -488,7 +503,7 @@ statement
 	: semi opt_nls
 	  { $$ = NULL; }
 	| l_brace statements r_brace
-	  { $$ = $2; }
+	  { $$ = $2; } 
 	| if_statement
 	  {
 		if (do_pretty_print)
@@ -2240,6 +2255,8 @@ mk_program()
 				cp = end_block;
 			else
 				cp = list_merge(begin_block, end_block);
+			if (comment != NULL)
+				(void) list_append(cp, comment);
 			(void) list_append(cp, ip_atexit);
 			(void) list_append(cp, instruction(Op_stop));
 
@@ -2272,6 +2289,8 @@ mk_program()
 	if (begin_block != NULL)
 		cp = list_merge(begin_block, cp);
 
+	if (comment != NULL)
+		(void) list_append(cp, comment);
 	(void) list_append(cp, ip_atexit);
 	(void) list_append(cp, instruction(Op_stop));
 
@@ -2969,7 +2988,7 @@ int get_comment(void)
 			} while (isspace(c) && c != END_FILE) ;
 			if ( c == END_FILE)
 				break;
-			else if (c != '\#'){
+			else if (c != '#'){
 				pushback();
 				break;
 			} else
@@ -2977,17 +2996,9 @@ int get_comment(void)
 		} else
 			break;
 	}
-	if (comment != NULL) {
-		size_t new = comment->memory->stlen + (tok - tokstart) + 2;
-		erealloc(comment->memory->stptr, char *, new, "yylex");
-		memcpy(comment->memory->stptr + comment->memory->stlen, tokstart, (tok - tokstart));
-		comment->memory->stlen += (tok - tokstart);
-		comment->memory->stptr[comment->memory->stlen] = '\0';
-	} else {
-		comment = bcalloc(Op_comment, 1, sourceline);
-		comment->source_file = source;
-		comment->memory = make_str_node(tokstart, tok - tokstart, 0);
-	}
+	comment = bcalloc(Op_comment, 1, sourceline);
+	comment->source_file = source;
+	comment->memory = make_str_node(tokstart, tok - tokstart, 0);
 
 	return c;
 }
@@ -3228,7 +3239,6 @@ retry:
 					return lasttok = NEWLINE_EOF;
 			}
 		}
-//		sourceline++;
 		return lasttok = NEWLINE;
 
 	case '@':

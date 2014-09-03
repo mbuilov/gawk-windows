@@ -36,7 +36,8 @@ static bool is_scalar(int type);
 static int prec_level(int type);
 static void pp_push(int type, char *s, int flag);
 static NODE *pp_pop(void);
-static void pp_free(NODE *n);
+static void pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header);
+static void print_comment(INSTRUCTION *pc, long in);
 const char *redir2str(int redirtype);
 
 #define pp_str	vname
@@ -174,9 +175,12 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 	char *str;
 	NODE *t2;
 	INSTRUCTION *ip;
+	INSTRUCTION *ic;
+	INSTRUCTION *i2;
 	NODE *m;
 	char *tmp;
 	int rule;
+	long lind;
 	static int rule_count[MAXRULE];
 
 	for (pc = startp; pc != endp; pc = pc->nexti) {
@@ -189,16 +193,30 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 			rule = pc->in_rule;
 
 			if (rule != Rule) {
+				ip = (pc + 1)->firsti;
+				if (ip->opcode == Op_comment){
+	/* print pre-begin/end comments */
+					print_comment(ip, 0);
+					ip = pc->nexti->nexti;
+				}
 				if (! rule_count[rule]++)
 					fprintf(prof_fp, _("\t# %s block(s)\n\n"), ruletab[rule]);
 				fprintf(prof_fp, "\t%s {\n", ruletab[rule]);
-				ip = (pc + 1)->firsti;
 			} else {
 				if (! rule_count[rule]++)
 					fprintf(prof_fp, _("\t# Rule(s)\n\n"));
-				ip = pc->nexti;
-				indent(ip->exec_count);
+				ic = ip = pc->nexti;
+				i2 = (pc + 1)->firsti;
+				lind = ip->exec_count;
+	/*print pre-block comments */
+				if(ip->opcode == Op_exec_count && ip->nexti->opcode == Op_comment)ip = ip->nexti;
+				if(ip->opcode == Op_comment){
+					print_comment(ip, lind);
+					if (ip->nexti->nexti == (pc + 1)->firsti)
+						ip = ip->nexti->nexti;
+				}
 				if (ip != (pc + 1)->firsti) {		/* non-empty pattern */
+					indent(lind);
 					pprint(ip->nexti, (pc + 1)->firsti, false);
 					t1 = pp_pop();
 					fprintf(prof_fp, "%s {", t1->pp_str);
@@ -210,7 +228,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 
 					fprintf(prof_fp, "\n");
 				} else {
-					fprintf(prof_fp, "{\n");
+					fprintf(prof_fp, "\t{\n");
 					ip = (pc + 1)->firsti;
 				}
 				ip = ip->nexti;
@@ -874,27 +892,11 @@ cleanup:
 			break;
 
 		case Op_comment:
-		{
-			char *text;
-			size_t count;
-			bool after_newline = false;
-
-			count = pc->memory->stlen;
-			text = pc->memory->stptr;
-
-			indent(SPACEOVER);   /* is this correct? Where should comments go?  */
-			for (; count > 0; count--, text++) {
-				if (after_newline) {
-					indent(SPACEOVER);
-					after_newline = false;
-				}
-				putc(*text, prof_fp);
-				if (*text == '\n')
-					after_newline = true;
-			}
-		}
+			print_comment(pc, 0);
 			break;
 
+		case Op_list:
+			break;
 		default:
 			cant_happen();
 		}
@@ -975,6 +977,28 @@ print_lib_list(FILE *prof_fp)
 	}
 	if (printed_header)	/* we found some */
 		fprintf(prof_fp, "\n");
+}
+
+/* print comment text with proper indentation */
+static void
+print_comment(INSTRUCTION* pc, long in){
+			char *text;
+			size_t count;
+			bool after_newline = false;
+
+			count = pc->memory->stlen;
+			text = pc->memory->stptr;
+
+			indent(in);   /* is this correct? Where should comments go?  */
+			for (; count > 0; count--, text++) {
+				if (after_newline) {
+					indent(in);
+					after_newline = false;
+				}
+				putc(*text, prof_fp);
+				if (*text == '\n')
+					after_newline = true;
+			}
 }
 
 /* dump_prog --- dump the program */
