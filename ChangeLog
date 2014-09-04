@@ -3,6 +3,15 @@
 	* profile.c (pprint): Case Op_K_for: Improve printing of
 	empty for loop header.
 
+	Unrelated: Make indirect function calls work for built-in and
+	extension functions.
+
+	* awkgram.y (lookup_builtin): New function.
+	* awk.h (builtin_func_t): New typedef.
+	(lookup_builtin): Declare it.
+	* interpret.h (r_interpret): For indirect calls, add code to
+	find and call builtin functions, and call extension functions.
+
 2014-09-01         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_substr): Return "" instead of null string in case

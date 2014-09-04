@@ -1377,6 +1377,8 @@ extern void register_deferred_variable(const char *name, NODE *(*load_func)(void
 extern int files_are_same(char *path, SRCFILE *src);
 extern void valinfo(NODE *n, Func_print print_func, FILE *fp);
 extern void negate_num(NODE *n);
+typedef NODE *(*builtin_func_t)(int);	/* function that implements a built-in */
+extern builtin_func_t lookup_builtin(const char *name);
 /* builtin.c */
 extern double double_to_int(double d);
 extern NODE *do_exp(int nargs);

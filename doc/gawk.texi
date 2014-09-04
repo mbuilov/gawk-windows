@@ -19813,7 +19813,7 @@ being aware of them.
 @cindex pointers to functions
 @cindex differences in @command{awk} and @command{gawk}, indirect function calls
 
-This section describes a @command{gawk}-specific extension.
+This section describes an advanced, @command{gawk}-specific extension.
 
 Often, you may wish to defer the choice of function to call until runtime.
 For example, you may have different kinds of records, each of which
@@ -19859,7 +19859,7 @@ To process the data, you might write initially:
 @noindent
 This style of programming works, but can be awkward.  With @dfn{indirect}
 function calls, you tell @command{gawk} to use the @emph{value} of a
-variable as the name of the function to call.
+variable as the @emph{name} of the function to call.
 
 @cindex @code{@@}-notation for indirect function calls
 @cindex indirect function calls, @code{@@}-notation
@@ -19921,7 +19921,6 @@ Otherwise they perform the expected computations and are not unusual.
 @example
 @c file eg/prog/indirectcall.awk
 # For each record, print the class name and the requested statistics
-
 @{
     class_name = $1
     gsub(/_/, " ", class_name)  # Replace _ with spaces
@@ -20150,10 +20149,12 @@ $ @kbd{gawk -f quicksort.awk -f indirectcall.awk class_data2}
 
 Remember that you must supply a leading @samp{@@} in front of an indirect function call.
 
-Unfortunately, indirect function calls cannot be used with the built-in functions.  However,
-you can generally write ``wrapper'' functions which call the built-in ones, and those can
-be called indirectly. (Other than, perhaps, the mathematical functions, there is not a lot
-of reason to try to call the built-in functions indirectly.)
+Starting with @value{PVERSION} 4.1.2 of @command{gawk}, indirect function
+calls may also be used with built-in functions and with extension functions
+(@pxref{Dynamic Extensions}).  The only thing you cannot do is pass a regular
+expression constant to a built-in function through an indirect function
+call.@footnote{This may change in a future version; recheck the documentation that
+comes with your version of @command{gawk} to see if it has.}
 
 @command{gawk} does its best to make indirect function calls efficient.
 For example, in the following case:
@@ -20164,7 +20165,7 @@ for (i = 1; i <= n; i++)
 @end example
 
 @noindent
-@code{gawk} will look up the actual function to call only once.
+@code{gawk} looks up the actual function to call only once.
 
 @node Functions Summary
 @section Summary
@@ -20204,6 +20205,8 @@ from the real parameters by extra whitespace.
 User-defined functions may call other user-defined (and built-in)
 functions and may call themselves recursively. Function parameters
 ``hide'' any global variables of the same names.
+You cannot use the name of a reserved variable (such as @code{ARGC})
+as the name of a parameter in user-defined functions.
 
 @item
 Scalar values are passed to user-defined functions by value. Array
@@ -20222,7 +20225,7 @@ either scalar or array.
 
 @item
 @command{gawk} provides indirect function calls using a special syntax.
-By setting a variable to the name of a user-defined function, you can
+By setting a variable to the name of a function, you can
 determine at runtime what function will be called at that point in the
 program. This is equivalent to function pointers in C and C++.
 
