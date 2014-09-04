@@ -165,6 +165,19 @@
 @end macro
 @end ifdocbook
 
+@c hack for docbook, where comma shouldn't always follow an @ref{}
+@ifdocbook
+@macro DBREF{text}
+@ref{\text\}
+@end macro
+@end ifdocbook
+
+@ifnotdocbook
+@macro DBREF{text}
+@ref{\text\},
+@end macro
+@end ifnotdocbook
+
 @ifclear FOR_PRINT
 @set FN file name
 @set FFN File Name
@@ -1622,7 +1635,7 @@ available @command{awk} implementations.
 
 @ifset FOR_PRINT
 
-@ref{Copying},
+@DBREF{Copying}
 presents the license that covers the @command{gawk} source code.
 
 The version of this @value{DOCUMENT} distributed with @command{gawk}
@@ -3403,7 +3416,7 @@ and array sorting.
 
 As we develop our presentation of the @command{awk} language, we introduce
 most of the variables and many of the functions. They are described
-systematically in @ref{Built-in Variables}, and
+systematically in @ref{Built-in Variables}, and in
 @ref{Built-in}.
 
 @node When
@@ -5202,7 +5215,7 @@ The escape sequences described
 @ifnotinfo
 earlier
 @end ifnotinfo
-in @ref{Escape Sequences},
+in @DBREF{Escape Sequences}
 are valid inside a regexp.  They are introduced by a @samp{\} and
 are recognized and converted into corresponding real characters as
 the very first step in processing regexps.
@@ -5438,7 +5451,7 @@ Within a bracket expression, a @dfn{range expression} consists of two
 characters separated by a hyphen.  It matches any single character that
 sorts between the two characters, based upon the system's native character
 set.  For example, @samp{[0-9]} is equivalent to @samp{[0123456789]}.
-(See @ref{Ranges and Locales}, for an explanation of how the POSIX
+(See @DBREF{Ranges and Locales} for an explanation of how the POSIX
 standard and @command{gawk} have changed over time.  This is mainly
 of historical interest.)
 
@@ -8019,6 +8032,16 @@ processing on the next record @emph{right now}.  For example:
 @}
 @end example
 
+@c 8/2014: Here is some sample input:
+@ignore
+mon/*comment*/key
+rab/*commen
+t*/bit
+horse /*comment*/more text
+part 1 /*comment*/part 2 /*comment*/part 3
+no comment
+@end ignore
+
 This @command{awk} program deletes C-style comments (@samp{/* @dots{}
 */}) from the input.
 It uses a number of features we haven't covered yet, including
@@ -8434,7 +8457,7 @@ probably by accident, and you should reconsider what it is you're
 trying to accomplish.
 
 @item
-@ref{Getline Summary}, presents a table summarizing the
+@DBREF{Getline Summary} presents a table summarizing the
 @code{getline} variants and which variables they can affect.
 It is worth noting that those variants which do not use redirection
 can cause @code{FILENAME} to be updated if they cause
@@ -15031,7 +15054,7 @@ changed.
 @cindex arguments, command-line
 @cindex command line, arguments
 
-@ref{Auto-set},
+@DBREF{Auto-set}
 presented the following program describing the information contained in @code{ARGC}
 and @code{ARGV}:
 
@@ -20234,7 +20257,7 @@ It contains the following chapters:
 @c STARTOFRANGE fudlib
 @cindex functions, user-defined, library of
 
-@ref{User-defined}, describes how to write
+@DBREF{User-defined} describes how to write
 your own @command{awk} functions.  Writing functions is important, because
 it allows you to encapsulate algorithms and program tasks in a single
 place.  It simplifies programming, making program development more
@@ -20267,7 +20290,7 @@ use these functions.
 The functions are presented here in a progression from simple to complex.
 
 @cindex Texinfo
-@ref{Extract Program},
+@DBREF{Extract Program}
 presents a program that you can use to extract the source code for
 these example library functions and programs from the Texinfo source
 for this @value{DOCUMENT}.
@@ -20418,7 +20441,7 @@ A different convention, common in the Tcl community, is to use a single
 associative array to hold the values needed by the library function(s), or
 ``package.''  This significantly decreases the number of actual global names
 in use.  For example, the functions described in
-@ref{Passwd Functions},
+@DBREF{Passwd Functions}
 might have used array elements @code{@w{PW_data["inited"]}}, @code{@w{PW_data["total"]}},
 @code{@w{PW_data["count"]}}, and @code{@w{PW_data["awklib"]}}, instead of
 @code{@w{_pw_inited}}, @code{@w{_pw_awklib}}, @code{@w{_pw_total}},
@@ -20981,7 +21004,7 @@ more difficult than they really need to be.}
 @cindex timestamps, formatted
 @cindex time, managing
 The @code{systime()} and @code{strftime()} functions described in
-@ref{Time Functions},
+@DBREF{Time Functions}
 provide the minimum functionality necessary for dealing with the time of day
 in human readable form.  While @code{strftime()} is extensive, the control
 formats are not necessarily easy to remember or intuitively obvious when
@@ -21067,7 +21090,7 @@ function getlocaltime(time,    ret, now, i)
 
 The string indices are easier to use and read than the various formats
 required by @code{strftime()}.  The @code{alarm} program presented in
-@ref{Alarm Program},
+@DBREF{Alarm Program}
 uses this function.
 A more general design for the @code{getlocaltime()} function would have
 allowed the user to supply an optional timestamp value to use instead
@@ -21099,10 +21122,13 @@ This function reads from @code{file} one record at a time, building
 up the full contents of the file in the local variable @code{contents}.
 It works, but is not necessarily
 @c 8/2014. Thanks to BWK for pointing this out:
-efficient.@footnote{Execution time grows quadratically in the size of
+efficient.
+@ignore
+@footnote{Execution time grows quadratically in the size of
 the input; for each record, @command{awk} has to allocate a bigger
 internal buffer for @code{contents}, copy the old contents into it,
 and then append the contents of the new record.}
+@end ignore
 
 The following function, based on a suggestion by Denis Shirokov,
 reads the entire contents of the named file in one shot:
@@ -21275,7 +21301,7 @@ END  @{ endfile(_filename_) @}
 @c endfile
 @end example
 
-@ref{Wc Program},
+@DBREF{Wc Program}
 shows how this library function can be used and
 how it simplifies writing the main program.
 
@@ -22278,7 +22304,7 @@ once.  If you are worried about squeezing every last cycle out of your
 this is not necessary, since most @command{awk} programs are I/O-bound,
 and such a change would clutter up the code.
 
-The @command{id} program in @ref{Id Program},
+The @command{id} program in @DBREF{Id Program}
 uses these functions.
 @c ENDOFRANGE libfudata
 @c ENDOFRANGE flibudata
@@ -22304,7 +22330,7 @@ uses these functions.
 @cindex group file
 @cindex files, group
 Much of the discussion presented in
-@ref{Passwd Functions},
+@DBREF{Passwd Functions}
 applies to the group database as well.  Although there has traditionally
 been a well-known file (@file{/etc/group}) in a well-known format, the POSIX
 standard only provides a set of C library routines
@@ -22643,13 +22669,13 @@ Most of the work is in scanning the database and building the various
 associative arrays.  The functions that the user calls are themselves very
 simple, relying on @command{awk}'s associative arrays to do work.
 
-The @command{id} program in @ref{Id Program},
+The @command{id} program in @DBREF{Id Program}
 uses these functions.
 
 @node Walking Arrays
 @section Traversing Arrays of Arrays
 
-@ref{Arrays of Arrays}, described how @command{gawk}
+@DBREF{Arrays of Arrays} described how @command{gawk}
 provides arrays of arrays.  In particular, any element of
 an array may be either a scalar, or another array. The
 @code{isarray()} function (@pxref{Type Functions})
@@ -22804,7 +22830,7 @@ As a related challenge, revise that code to handle the case where
 an intervening value in @code{ARGV} is a variable assignment.
 
 @item
-@ref{Walking Arrays}, presented a function that walked a multidimensional
+@DBREF{Walking Arrays} presented a function that walked a multidimensional
 array to print it out.  However, walking an array and processing
 each element is a general-purpose operation.  Generalize the
 @code{walk_array()} function by adding an additional parameter named
@@ -23817,6 +23843,11 @@ This program is a bit sloppy; it relies on @command{awk} to automatically close 
 instead of doing it in an @code{END} rule.
 It also assumes that letters are contiguous in the character set,
 which isn't true for EBCDIC systems.
+@ifset FOR_PRINT
+You might want to consider how to eliminate the use of
+@code{ord()} and @code{chr()}; this can be done in such a
+way as to solve the EBCDIC issue as well.
+@end ifset
 
 @c ENDOFRANGE filspl
 @c ENDOFRANGE split
@@ -24062,7 +24093,7 @@ BEGIN @{
         else if (c == "c")
             do_count++
         else if (index("0123456789", c) != 0) @{
-            # getopt requires args to options
+            # getopt() requires args to options
             # this messes us up for things like -5
             if (Optarg ~ /^[[:digit:]]+$/)
                 fcount = (c Optarg) + 0
@@ -24199,6 +24230,22 @@ END @{
 @}
 @c endfile
 @end example
+
+@ifset FOR_PRINT
+The logic for choosing which lines to print represents a @dfn{state
+machine}, which is ``a device that can be in one of a set number of stable
+conditions depending on its previous condition and on the present values
+of its inputs.''@footnote{This is the definition returned from entering
+@code{define: state machine} into Google.}
+Brian Kernighan suggests that
+``an alternative approach to state mechines is to just read
+the input into an array, then use indexing.  It's almost always
+easier code, and for most inputs where you would use this, just
+as fast.''  Consider how to rewrite the logic to follow this 
+suggestion.
+@end ifset
+
+
 @c ENDOFRANGE prunt
 @c ENDOFRANGE tpul
 @c ENDOFRANGE uniq
@@ -24724,7 +24771,7 @@ of standard @command{awk}: dealing with individual characters is very
 painful, requiring repeated use of the @code{substr()}, @code{index()},
 and @code{gsub()} built-in functions
 (@pxref{String Functions}).@footnote{This
-program was written before @command{gawk} acquired the ability to
+program was also written before @command{gawk} acquired the ability to
 split each character in a string into separate array elements.}
 There are two functions.  The first, @code{stranslate()}, takes three
 arguments:
@@ -26338,6 +26385,23 @@ The @code{split.awk} program (@pxref{Split Program}) assumes
 that letters are contiguous in the character set,
 which isn't true for EBCDIC systems.
 Fix this problem.
+(Hint: Consider a different way to work through the alphabet,
+without relying on @code{ord()} and @code{chr()}.)
+
+@item
+In @file{uniq.awk} (@pxref{Uniq Program}, the
+logic for choosing which lines to print represents a @dfn{state
+machine}, which is ``a device that can be in one of a set number of stable
+conditions depending on its previous condition and on the present values
+of its inputs.''@footnote{This is the definition returned from entering
+@code{define: state machine} into Google.}
+Brian Kernighan suggests that
+``an alternative approach to state mechines is to just read
+the input into an array, then use indexing.  It's almost always
+easier code, and for most inputs where you would use this, just
+as fast.''  Rewrite the logic to follow this 
+suggestion.
+
 
 @item
 Why can't the @file{wc.awk} program (@pxref{Wc Program}) just
@@ -26615,7 +26679,7 @@ Often, though, it is desirable to be able to loop over the elements
 in a particular order that you, the programmer, choose.  @command{gawk}
 lets you do this.
 
-@ref{Controlling Scanning}, describes how you can assign special,
+@DBREF{Controlling Scanning} describes how you can assign special,
 pre-defined values to @code{PROCINFO["sorted_in"]} in order to
 control the order in which @command{gawk} traverses an array
 during a @code{for} loop.
@@ -29771,7 +29835,9 @@ responds @samp{syntax error}.  When you do figure out what your mistake was,
 though, you'll feel like a real guru.
 
 @item
-If you perused the dump of opcodes in @ref{Miscellaneous Debugger Commands},
+@c NOTE: no comma after the ref{} on purpose, due to following
+@c parenthetical remark.
+If you perused the dump of opcodes in @ref{Miscellaneous Debugger Commands}
 (or if you are already familiar with @command{gawk} internals),
 you will realize that much of the internal manipulation of data
 in @command{gawk}, as in many interpreters, is done on a stack.
@@ -38187,7 +38253,7 @@ as well as any considerations you should bear in mind.
 @appendixsubsec Accessing The @command{gawk} Git Repository
 
 As @command{gawk} is Free Software, the source code is always available.
-@ref{Gawk Distribution}, describes how to get and build the formal,
+@DBREF{Gawk Distribution} describes how to get and build the formal,
 released versions of @command{gawk}.
 
 @cindex @command{git} utility
