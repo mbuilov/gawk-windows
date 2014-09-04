@@ -1039,13 +1039,42 @@ match_re:
 			}
 
 			if (f == NULL) {
-				/* FIXME: See if function is a built-in and try to call it */
-				fatal(_("`%s' is not a user-defined function, so it cannot be called indirectly"),
+				int arg_count = (pc + 1)->expr_count;
+				builtin_func_t the_func = lookup_builtin(t1->stptr);
+				
+				if (the_func == NULL)
+					fatal(_("`%s' is not a user-defined function, so it cannot be called indirectly"),
 						t1->stptr);
-			} else if(f->type != Node_func) {
-				if (f->type == Node_ext_func || f->type == Node_old_ext_func)
-					fatal(_("cannot (yet) call extension functions indirectly"));
-				else
+
+				/* call it */
+				r = the_func(arg_count);
+				PUSH(r);
+				break;
+			} else if (f->type != Node_func) {
+				if (   f->type == Node_ext_func
+				    || f->type == Node_old_ext_func) {
+					/* code copied from below, keep in sync */
+					INSTRUCTION *bc;
+					char *fname = pc->func_name;
+					int arg_count = (pc + 1)->expr_count;
+					static INSTRUCTION npc[2];
+
+					npc[0] = *pc;
+
+					bc = f->code_ptr;
+					assert(bc->opcode == Op_symbol);
+					if (f->type == Node_ext_func)
+						npc[0].opcode = Op_ext_builtin;	/* self modifying code */
+					else
+						npc[0].opcode = Op_old_ext_builtin;	/* self modifying code */
+					npc[0].extfunc = bc->extfunc;
+					npc[0].expr_count = arg_count;		/* actual argument count */
+					npc[1] = pc[1];
+					npc[1].func_name = fname;	/* name of the builtin */
+					npc[1].expr_count = bc->expr_count;	/* defined max # of arguments */
+					ni = npc; 
+					JUMPTO(ni);
+				} else
 					fatal(_("function called indirectly through `%s' does not exist"),
 							pc->func_name);	
 			}
@@ -1069,6 +1098,7 @@ match_re:
 			}
 
 			if (f->type == Node_ext_func || f->type == Node_old_ext_func) {
+				/* keep in sync with indirect call code */
 				INSTRUCTION *bc;
 				char *fname = pc->func_name;
 				int arg_count = (pc + 1)->expr_count;

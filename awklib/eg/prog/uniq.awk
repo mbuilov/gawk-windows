@@ -30,7 +30,7 @@ BEGIN {
         else if (c == "c")
             do_count++
         else if (index("0123456789", c) != 0) {
-            # getopt requires args to options
+            # getopt() requires args to options
             # this messes us up for things like -5
             if (Optarg ~ /^[[:digit:]]+$/)
                 fcount = (c Optarg) + 0
