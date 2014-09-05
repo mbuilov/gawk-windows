@@ -23849,6 +23849,7 @@ This program is a bit sloppy; it relies on @command{awk} to automatically close 
 instead of doing it in an @code{END} rule.
 It also assumes that letters are contiguous in the character set,
 which isn't true for EBCDIC systems.
+
 @ifset FOR_PRINT
 You might want to consider how to eliminate the use of
 @code{ord()} and @code{chr()}; this can be done in such a
@@ -24885,6 +24886,12 @@ An obvious improvement to this program would be to set up the
 @code{t_ar} array only once, in a @code{BEGIN} rule. However, this
 assumes that the ``from'' and ``to'' lists
 will never change throughout the lifetime of the program.
+
+Another obvious improvement is to enable the use of ranges,
+such as @samp{a-z}, as allowed by the @command{tr} utility.
+Look at the code for @file{cut.awk} (@pxref{Cut Program})
+for inspiration.
+
 @c ENDOFRANGE chtra
 @c ENDOFRANGE tr
 
@@ -26378,13 +26385,6 @@ The POSIX version of @command{id} takes options that control which
 information is printed.  Modify the @command{awk} version
 (@pxref{Id Program}) to accept the same arguments and perform in the
 same way.
-
-@item
-The @code{split.awk} program (@pxref{Split Program}) uses
-the @code{chr()} and @code{ord()} functions to move through the
-letters of the alphabet.
-Modify the program to instead use only the @command{awk}
-built-in functions, such as @code{index()} and @code{substr()}.
 
 @item
 The @code{split.awk} program (@pxref{Split Program}) assumes
