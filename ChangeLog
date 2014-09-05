@@ -1,3 +1,19 @@
+2014-09-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add builtin functions to FUNCTAB for consistency.
+
+	* awk.h (Node_builtin_func): New node type.
+	(install_builtins): Declare new function.
+	* awkgram.y [DEBUG_USE]: New flag value for debug functions; they
+	don't go into FUNCTAB.
+	(install_builtins): New function.
+	* eval.c (nodetypes): Add Node_builtin_func.
+	* interpret.h (r_interpret): Rework indirect calls of built-ins
+	since they're now in the symbol table.
+	* main.c (main): Call `install_builtins'.
+	* symbol.c (install): Adjust for Node_builtin_func.
+	(load_symbols): Ditto.
+
 2014-09-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* profile.c (pprint): Case Op_K_for: Improve printing of

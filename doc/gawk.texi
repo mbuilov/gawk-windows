@@ -14726,7 +14726,7 @@ current record. @xref{Changing Fields}.
 @cindex differences in @command{awk} and @command{gawk}, @code{FUNCTAB} variable
 @item @code{FUNCTAB #}
 An array whose indices and corresponding values are the names of all
-the user-defined or extension functions in the program.
+the built-in, user-defined and extension functions in the program.
 
 @quotation NOTE
 Attempting to use the @code{delete} statement with the @code{FUNCTAB}
@@ -14774,9 +14774,12 @@ text of the AWK program.  For each identifier, the value of the element is one o
 @item "array"
 The identifier is an array.
 
+@item "builtin"
+The identifier is a built-in function.
+
 @item "extension"
 The identifier is an extension function loaded via
-@code{@@load}.
+@code{@@load} or @option{-l}.
 
 @item "scalar"
 The identifier is a scalar.

@@ -1039,12 +1039,13 @@ match_re:
 			}
 
 			if (f == NULL) {
+				fatal(_("`%s' is not a function, so it cannot be called indirectly"),
+						t1->stptr);
+			} else if (f->type == Node_builtin_func) {
 				int arg_count = (pc + 1)->expr_count;
 				builtin_func_t the_func = lookup_builtin(t1->stptr);
 				
-				if (the_func == NULL)
-					fatal(_("`%s' is not a user-defined function, so it cannot be called indirectly"),
-						t1->stptr);
+				assert(the_func != NULL);
 
 				/* call it */
 				r = the_func(arg_count);

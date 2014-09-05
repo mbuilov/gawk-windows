@@ -1805,6 +1805,7 @@ struct token {
 #	define	GAWKX		0x0400	/* gawk extension */
 #	define	BREAK		0x0800	/* break allowed inside */
 #	define	CONTINUE	0x1000	/* continue allowed inside */
+#	define	DEBUG_USE	0x2000	/* for use by developers */
 	
 	NODE *(*ptr)(int);	/* function that implements this keyword */
 	NODE *(*ptr2)(int);	/* alternate arbitrary-precision function */
@@ -1843,7 +1844,7 @@ static const struct token tokentab[] = {
 {"END",		Op_rule,	 LEX_END,	0,		0,	0},
 {"ENDFILE",		Op_rule,	 LEX_ENDFILE,	GAWKX,		0,	0},
 #ifdef ARRAYDEBUG
-{"adump",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_adump,	0},
+{"adump",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1)|A(2)|DEBUG_USE,	do_adump,	0},
 #endif
 {"and",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_and,	MPF(and)},
 {"asort",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asort,	0},
@@ -1903,7 +1904,7 @@ static const struct token tokentab[] = {
 {"sqrt",	Op_builtin,	 LEX_BUILTIN,	A(1),		do_sqrt,	MPF(sqrt)},
 {"srand",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0)|A(1), do_srand,	MPF(srand)},
 #if defined(GAWKDEBUG) || defined(ARRAYDEBUG) /* || ... */
-{"stopme",	Op_builtin,	LEX_BUILTIN,	GAWKX|A(0),	stopme,		0},
+{"stopme",	Op_builtin,	LEX_BUILTIN,	GAWKX|A(0)|DEBUG_USE,	stopme,		0},
 #endif
 {"strftime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(0)|A(1)|A(2)|A(3), do_strftime,	0},
 {"strtonum",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum, MPF(strtonum)},
@@ -5730,4 +5731,20 @@ lookup_builtin(const char *name)
 #endif
 
 	return tokentab[mid].ptr;
+}
+
+/* install_builtins --- add built-in functions to FUNCTAB */
+
+void
+install_builtins(void)
+{
+	int i, j;
+
+	j = sizeof(tokentab) / sizeof(tokentab[0]);
+	for (i = 0; i < j; i++) {
+		if (    tokentab[i].class == LEX_BUILTIN
+		    && (tokentab[i].flags & DEBUG_USE) == 0) {
+			(void) install_symbol(tokentab[i].operator, Node_builtin_func);
+		}
+	}
 }

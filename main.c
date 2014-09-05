@@ -694,6 +694,8 @@ out:
 	if (do_intl)
 		exit(EXIT_SUCCESS);
 
+	install_builtins();
+
 	if (do_lint)
 		shadow_funcs();
 

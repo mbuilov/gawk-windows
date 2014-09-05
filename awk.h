@@ -297,6 +297,7 @@ typedef enum nodevals {
 	Node_func,		/* lnode is param. list, rnode is body */
 	Node_ext_func,		/* extension function, code_ptr is builtin code */
 	Node_old_ext_func,	/* extension function, code_ptr is builtin code */
+	Node_builtin_func,	/* built-in function, main use is for FUNCTAB */
 
 	Node_array_ref,		/* array passed by ref as parameter */
 	Node_array_tree,	/* Hashed array tree (HAT) */
@@ -1380,6 +1381,7 @@ extern void valinfo(NODE *n, Func_print print_func, FILE *fp);
 extern void negate_num(NODE *n);
 typedef NODE *(*builtin_func_t)(int);	/* function that implements a built-in */
 extern builtin_func_t lookup_builtin(const char *name);
+extern void install_builtins(void);
 /* builtin.c */
 extern double double_to_int(double d);
 extern NODE *do_exp(int nargs);
