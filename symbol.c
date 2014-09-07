@@ -35,8 +35,8 @@ static int var_count;	/* total number of global variables and functions */
 
 static NODE *symbol_list;
 static void (*install_func)(NODE *) = NULL;
-static NODE *make_symbol(char *name, NODETYPE type);
-static NODE *install(char *name, NODE *parm, NODETYPE type);
+static NODE *make_symbol(const char *name, NODETYPE type);
+static NODE *install(const char *name, NODE *parm, NODETYPE type);
 static void free_bcpool(INSTRUCTION *pl);
 
 static AWK_CONTEXT *curr_ctxt = NULL;
@@ -75,7 +75,7 @@ init_symbol_table()
  */
 
 NODE *
-install_symbol(char *name, NODETYPE type)
+install_symbol(const char *name, NODETYPE type)
 {
 	return install(name, NULL, type);
 }
@@ -275,7 +275,7 @@ destroy_symbol(NODE *r)
 /* make_symbol --- allocates a global symbol for the symbol table. */
 
 static NODE *
-make_symbol(char *name, NODETYPE type)
+make_symbol(const char *name, NODETYPE type)
 {
 	NODE *r;
 
@@ -285,7 +285,7 @@ make_symbol(char *name, NODETYPE type)
 		null_array(r);
 	else if (type == Node_var)
 		r->var_value = dupnode(Nnull_string);
-	r->vname = name;
+	r->vname = (char *) name;
 	r->type = type;
 
 	return r;
@@ -294,7 +294,7 @@ make_symbol(char *name, NODETYPE type)
 /* install --- install a global name or function parameter in the symbol table */
 
 static NODE *
-install(char *name, NODE *parm, NODETYPE type)
+install(const char *name, NODE *parm, NODETYPE type)
 {
 	NODE *r;
 	NODE **aptr;

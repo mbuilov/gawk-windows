@@ -193,15 +193,6 @@ extern void *memset_ulong(void *dest, int val, unsigned long l);
 #define memset memset_ulong
 #endif
 
-#ifdef HAVE_LIBSIGSEGV
-#include <sigsegv.h>
-#else
-typedef void *stackoverflow_context_t;
-#define sigsegv_install_handler(catchsegv) signal(SIGSEGV, catchsig)
-/* define as 0 rather than empty so that (void) cast on it works */
-#define stackoverflow_install_handler(catchstackoverflow, extra_stack, STACK_SIZE) 0
-#endif
-
 #if defined(__EMX__) || defined(__MINGW32__)
 #include "nonposix.h"
 #endif /* defined(__EMX__) || defined(__MINGW32__) */
@@ -1645,7 +1636,7 @@ extern void load_symbols();
 extern void init_symbol_table();
 extern NODE *symbol_table;
 extern NODE *func_table;
-extern NODE *install_symbol(char *name, NODETYPE type);
+extern NODE *install_symbol(const char *name, NODETYPE type);
 extern NODE *remove_symbol(NODE *r);
 extern void destroy_symbol(NODE *r);
 extern void release_symbols(NODE *symlist, int keep_globals);
