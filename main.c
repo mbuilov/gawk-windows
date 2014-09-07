@@ -33,6 +33,16 @@
 #include <mcheck.h>
 #endif
 
+#ifdef HAVE_LIBSIGSEGV
+#include <sigsegv.h>
+#else
+typedef void *stackoverflow_context_t;
+/* the argument to this macro is purposely not used */
+#define sigsegv_install_handler(catchsegv) signal(SIGSEGV, catchsig)
+/* define as 0 rather than empty so that (void) cast on it works */
+#define stackoverflow_install_handler(catchstackoverflow, extra_stack, STACK_SIZE) 0
+#endif
+
 #define DEFAULT_PROFILE		"awkprof.out"	/* where to put profile */
 #define DEFAULT_VARFILE		"awkvars.out"	/* where to put vars */
 #define DEFAULT_PREC		53
