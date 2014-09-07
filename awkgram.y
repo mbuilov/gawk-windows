@@ -87,6 +87,7 @@ static void check_funcs(void);
 
 static ssize_t read_one_line(int fd, void *buffer, size_t count);
 static int one_line_close(int fd);
+void split_comment(void);
 
 static bool want_source = false;
 static bool want_regexp = false;	/* lexical scanning kludge */
@@ -147,6 +148,10 @@ static INSTRUCTION *ip_endfile;
 static INSTRUCTION *ip_beginfile;
 
 static INSTRUCTION *comment = NULL;
+static INSTRUCTION *comment0 = NULL;
+static INSTRUCTION *commentf = NULL;
+
+static int func_first = 1;
 
 static inline INSTRUCTION *list_create(INSTRUCTION *x);
 static inline INSTRUCTION *list_append(INSTRUCTION *l, INSTRUCTION *x);
@@ -335,6 +340,7 @@ pattern
 	| LEX_BEGIN
 	  {
 		static int begin_seen = 0;
+		func_first = 0;
 		INSTRUCTION *ip;
 		if (do_lint_old && ++begin_seen == 2)
 			warning_ln($1->source_line,
@@ -347,6 +353,7 @@ pattern
 	| LEX_END
 	  {
 		static int end_seen = 0;
+		func_first = 0;
 		if (do_lint_old && ++end_seen == 2)
 			warning_ln($1->source_line,
 				_("old awk does not support multiple `BEGIN' or `END' rules"));
@@ -357,12 +364,14 @@ pattern
 	  }
 	| LEX_BEGINFILE
 	  {
+		func_first = 0;
 		$1->in_rule = rule = BEGINFILE;
 		$1->source_file = source;
 		$$ = $1;
 	  }
 	| LEX_ENDFILE
 	  {
+		func_first = 0;
 		$1->in_rule = rule = ENDFILE;
 		$1->source_file = source;
 		$$ = $1;
@@ -404,6 +413,16 @@ lex_builtin
 function_prologue
 	: LEX_FUNCTION func_name '(' opt_param_list r_paren opt_nls
 	  {
+/* treat any comments between BOF and the first function definition (with no intervening BEGIN etc block) as program comments 
+   Special kludge: iff there are more than one such comments, treat the last as a function comment.  */
+		if (comment != NULL && func_first && strstr(comment->memory->stptr, "\n\n") != NULL)
+			split_comment();
+	/* save any other pre-function comment as function comment  */
+		if (comment != NULL){
+			commentf = comment;
+			comment = NULL;
+		}
+		func_first = 0;
 		$1->source_file = source;
 		if (install_function($2->lextok, $1, $4) < 0)
 			YYABORT;
@@ -461,14 +480,19 @@ a_slash
 
 statements
 	: /* empty */
-	  {	$$ = NULL; }
+	  {
+		if (comment != NULL){
+			$$ = list_create(comment);
+			comment = NULL;
+		} else $$ = NULL;
+	  }
 	| statements statement
 	  {
 		if ($2 == NULL) {
 			if (comment == NULL)
 				$$ = $1;
 			else {
-				$$ = list_prepend($1, comment);
+				$$ = list_append($1, comment);
 				comment = NULL;
 			}
 		} else {
@@ -477,12 +501,12 @@ statements
 				if (comment == NULL)
 					$$ = $2;
 				else {
-					$$ = list_prepend($2, comment);
+					$$ = list_append($2, comment);
 					comment = NULL;
 				}
 			} else {
 				if (comment != NULL){
-					list_prepend($2, comment);
+					list_append($2, comment);
 					comment = NULL;
 				}
 				$$ = list_merge($1, $2);
@@ -2289,8 +2313,12 @@ mk_program()
 	if (begin_block != NULL)
 		cp = list_merge(begin_block, cp);
 
-	if (comment != NULL)
+	if (comment0 != NULL){
+		(void) list_prepend(cp, comment0);
+	}  
+	if (comment != NULL){
 		(void) list_append(cp, comment);
+	} 
 	(void) list_append(cp, ip_atexit);
 	(void) list_append(cp, instruction(Op_stop));
 
@@ -2969,8 +2997,10 @@ pushback(void)
 int get_comment(void)
 {
 	int c;
+	int sl;
 	tok = tokstart;
 	tokadd('#');
+	sl = sourceline;
 
 	while (true){
 		while ((c = nextc(false)) != '\n' && c != END_FILE){
@@ -2996,11 +3026,42 @@ int get_comment(void)
 		} else
 			break;
 	}
-	comment = bcalloc(Op_comment, 1, sourceline);
+	comment = bcalloc(Op_comment, 1, sl);
 	comment->source_file = source;
 	comment->memory = make_str_node(tokstart, tok - tokstart, 0);
 
 	return c;
+}
+
+/* split_comment --- split initial comment text into program and function parts */
+
+void split_comment(void)
+{
+	char *p;
+	int l;
+	int j;
+	NODE *n;
+
+	p = comment->memory->stptr;
+	l = comment->memory->stlen - 3;
+	/* have at least two comments so split at last blank line ( \n\n)  */
+	while (l >= 0){
+		if (p[l] == '\n' && p[l+1] == '\n'){
+			commentf = comment;
+			n = commentf->memory;
+			commentf->memory = make_str_node(p + l + 2, n->stlen - l - 2, 0);
+	/* create program comment  */
+			comment0 = bcalloc(Op_comment, 1, sourceline);
+			comment0->source_file = comment->source_file;
+			p[l + 2] = 0;
+			comment0->memory = make_str_node(p , l + 2, 0);
+			comment = NULL;
+			freenode(n);
+			break;
+		}
+		else l--;
+	}
+			
 }
 
 /* allow_newline --- allow newline after &&, ||, ? and : */
@@ -4329,6 +4390,14 @@ mk_function(INSTRUCTION *fi, INSTRUCTION *def)
 		if (t->opcode == Op_func_call
 		    && strcmp(t->func_name, thisfunc->vname) == 0)
 			(t + 1)->tail_call = true;
+	}
+
+	/* add any pre-function comment to start of action for profile.c  */
+
+	if (commentf != NULL){
+		commentf->source_line = 0;
+		(void) list_prepend(def, commentf);
+		commentf = NULL;
 	}
 
 	/* add an implicit return at end;

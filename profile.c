@@ -101,10 +101,11 @@ indent(long count)
 {
 	int i;
 
-	if (count == 0)
-		fprintf(prof_fp, "\t");
-	else
-		fprintf(prof_fp, "%6ld  ", count);
+	if ( do_profile)
+		if (count == 0)
+			fprintf(prof_fp, "\t");
+		else
+			fprintf(prof_fp, "%6ld  ", count);
 
 	assert(indent_level >= 0);
 	for (i = 0; i < indent_level; i++)
@@ -197,13 +198,13 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 				if (ip->opcode == Op_comment){
 	/* print pre-begin/end comments */
 					print_comment(ip, 0);
-					ip = pc->nexti->nexti;
+					ip = ip->nexti->nexti;
 				}
-				if (! rule_count[rule]++)
+				if (do_profile && ! rule_count[rule]++)
 					fprintf(prof_fp, _("\t# %s block(s)\n\n"), ruletab[rule]);
 				fprintf(prof_fp, "\t%s {\n", ruletab[rule]);
 			} else {
-				if (! rule_count[rule]++)
+				if (do_profile && ! rule_count[rule]++)
 					fprintf(prof_fp, _("\t# Rule(s)\n\n"));
 				ic = ip = pc->nexti;
 				i2 = (pc + 1)->firsti;
@@ -1015,7 +1016,8 @@ dump_prog(INSTRUCTION *code)
 
 	(void) time(& now);
 	/* \n on purpose, with \n in ctime() output */
-	fprintf(prof_fp, _("\t# gawk profile, created %s\n"), ctime(& now));
+	if (do_profile)
+		fprintf(prof_fp, _("\t# gawk profile, created %s\n"), ctime(& now));
 	print_lib_list(prof_fp);
 	pprint(code, NULL, false);
 }
@@ -1515,14 +1517,23 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 	static bool first = true;
 	NODE *func;
 	int pcount;
+	INSTRUCTION *fp;
 
 	if (first) {
 		first = false;
-		fprintf(prof_fp, _("\n\t# Functions, listed alphabetically\n"));
+		if (do_profile)
+			fprintf(prof_fp, _("\n\t# Functions, listed alphabetically\n"));
 	}
 
+	fp = pc->nexti->nexti;
 	func = pc->func_body;
 	fprintf(prof_fp, "\n");
+/* print any function comment */
+	if (fp->opcode == Op_comment && fp->source_line == 0){
+		print_comment(fp, 0);
+		fp = fp->nexti;
+	}
+	fprintf(prof_fp, "\t");
 	indent(pc->nexti->exec_count);
 	fprintf(prof_fp, "%s %s(", op2str(Op_K_function), func->vname);
 	pcount = func->param_cnt;
@@ -1534,7 +1545,7 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 	}
 	fprintf(prof_fp, ")\n\t{\n");
 	indent_in();
-	pprint(pc->nexti->nexti, NULL, false);	/* function body */
+	pprint(fp, NULL, false);	/* function body */
 	indent_out();
 	fprintf(prof_fp, "\t}\n");
 	return 0;
