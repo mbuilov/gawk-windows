@@ -20258,15 +20258,7 @@ function readfile(file,    tmp, contents)
 
 This function reads from @code{file} one record at a time, building
 up the full contents of the file in the local variable @code{contents}.
-It works, but is not necessarily
-@c 8/2014. Thanks to BWK for pointing this out:
-efficient.
-@ignore
-@footnote{Execution time grows quadratically in the size of
-the input; for each record, @command{awk} has to allocate a bigger
-internal buffer for @code{contents}, copy the old contents into it,
-and then append the contents of the new record.}
-@end ignore
+It works, but is not necessarily efficient.
 
 The following function, based on a suggestion by Denis Shirokov,
 reads the entire contents of the named file in one shot:
