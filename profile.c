@@ -200,7 +200,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 				}
 				if (do_profile && ! rule_count[rule]++)
 					fprintf(prof_fp, _("\t# %s block(s)\n\n"), ruletab[rule]);
-				fprintf(prof_fp, "\t%s {\n", ruletab[rule]);
+				fprintf(prof_fp, "%s {\n", ruletab[rule]);
 			} else {
 				if (do_profile && ! rule_count[rule]++)
 					fprintf(prof_fp, _("\t# Rule(s)\n\n"));
@@ -226,7 +226,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 
 					fprintf(prof_fp, "\n");
 				} else {
-					fprintf(prof_fp, "\t{\n");
+					fprintf(prof_fp, "{\n");
 					ip = (pc + 1)->firsti;
 				}
 				ip = ip->nexti;
@@ -234,7 +234,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 			indent_in();
 			pprint(ip, (pc + 1)->lasti, false);
 			indent_out();
-			fprintf(prof_fp, "\t}\n\n");
+			fprintf(prof_fp, "}\n\n");
 			pc = (pc + 1)->lasti;
 			break;
 
@@ -1530,7 +1530,7 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 		print_comment(fp, 0);
 		fp = fp->nexti;
 	}
-	if (!do_profile)
+	if (do_profile)
 		fprintf(prof_fp, "\t");
 	indent(pc->nexti->exec_count);
 	fprintf(prof_fp, "%s %s(", op2str(Op_K_function), func->vname);
@@ -1541,11 +1541,11 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 		if (j < pcount - 1)
 			fprintf(prof_fp, ", ");
 	}
-	fprintf(prof_fp, ")\n\t{\n");
+	fprintf(prof_fp, ")\n{\n");
 	indent_in();
 	pprint(fp, NULL, false);	/* function body */
 	indent_out();
-	fprintf(prof_fp, "\t}\n");
+	fprintf(prof_fp, "}\n");
 	return 0;
 }
 
