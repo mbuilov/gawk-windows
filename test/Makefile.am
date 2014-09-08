@@ -1686,14 +1686,12 @@ profile3:
 
 profile4:
 	@echo $@
-	@$(AWK) --pretty-print=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
-	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
+	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile5:
 	@echo $@
-	@$(AWK) --pretty-print=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
-	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
+	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 posix2008sub:

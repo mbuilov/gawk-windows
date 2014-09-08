@@ -176,8 +176,6 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 	char *str;
 	NODE *t2;
 	INSTRUCTION *ip;
-	INSTRUCTION *ic;
-	INSTRUCTION *i2;
 	NODE *m;
 	char *tmp;
 	int rule;
@@ -198,7 +196,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 				if (ip->opcode == Op_comment){
 	/* print pre-begin/end comments */
 					print_comment(ip, 0);
-					ip = ip->nexti->nexti;
+					ip = ip->nexti;
 				}
 				if (do_profile && ! rule_count[rule]++)
 					fprintf(prof_fp, _("\t# %s block(s)\n\n"), ruletab[rule]);
@@ -206,8 +204,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 			} else {
 				if (do_profile && ! rule_count[rule]++)
 					fprintf(prof_fp, _("\t# Rule(s)\n\n"));
-				ic = ip = pc->nexti;
-				i2 = (pc + 1)->firsti;
+				ip = pc->nexti;
 				lind = ip->exec_count;
 	/*print pre-block comments */
 				if(ip->opcode == Op_exec_count && ip->nexti->opcode == Op_comment)ip = ip->nexti;
@@ -1533,7 +1530,8 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 		print_comment(fp, 0);
 		fp = fp->nexti;
 	}
-	fprintf(prof_fp, "\t");
+	if (!do_profile)
+		fprintf(prof_fp, "\t");
 	indent(pc->nexti->exec_count);
 	fprintf(prof_fp, "%s %s(", op2str(Op_K_function), func->vname);
 	pcount = func->param_cnt;
