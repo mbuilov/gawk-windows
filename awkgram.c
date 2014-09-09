@@ -5847,6 +5847,7 @@ retry:
 					return lasttok = NEWLINE_EOF;
 			}
 		}
+		sourceline++;
 		return lasttok = NEWLINE;
 
 	case '@':
