@@ -101,7 +101,7 @@ indent(long count)
 {
 	int i;
 
-	if ( do_profile)
+	if (do_profile)
 		if (count == 0)
 			fprintf(prof_fp, "\t");
 		else
@@ -193,22 +193,28 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 
 			if (rule != Rule) {
 				ip = (pc + 1)->firsti;
-				if (ip->opcode == Op_comment){
-	/* print pre-begin/end comments */
+
+				/* print pre-begin/end comments */
+				if (ip->opcode == Op_comment) {
 					print_comment(ip, 0);
 					ip = ip->nexti;
 				}
-				if (do_profile && ! rule_count[rule]++)
-					fprintf(prof_fp, _("\t# %s block(s)\n\n"), ruletab[rule]);
+
+				if (do_profile) {
+					if (! rule_count[rule]++)
+						fprintf(prof_fp, _("\t# %s block(s)\n\n"), ruletab[rule]);
+					indent(0);
+				}
 				fprintf(prof_fp, "%s {\n", ruletab[rule]);
 			} else {
 				if (do_profile && ! rule_count[rule]++)
 					fprintf(prof_fp, _("\t# Rule(s)\n\n"));
 				ip = pc->nexti;
 				lind = ip->exec_count;
-	/*print pre-block comments */
-				if(ip->opcode == Op_exec_count && ip->nexti->opcode == Op_comment)ip = ip->nexti;
-				if(ip->opcode == Op_comment){
+				/* print pre-block comments */
+				if (ip->opcode == Op_exec_count && ip->nexti->opcode == Op_comment)
+					ip = ip->nexti;
+				if (ip->opcode == Op_comment) {
 					print_comment(ip, lind);
 					if (ip->nexti->nexti == (pc + 1)->firsti)
 						ip = ip->nexti->nexti;
@@ -234,6 +240,8 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 			indent_in();
 			pprint(ip, (pc + 1)->lasti, false);
 			indent_out();
+			if (do_profile)
+				indent(0);
 			fprintf(prof_fp, "}\n\n");
 			pc = (pc + 1)->lasti;
 			break;
@@ -979,24 +987,25 @@ print_lib_list(FILE *prof_fp)
 
 /* print comment text with proper indentation */
 static void
-print_comment(INSTRUCTION* pc, long in){
-			char *text;
-			size_t count;
-			bool after_newline = false;
+print_comment(INSTRUCTION* pc, long in)
+{
+	char *text;
+	size_t count;
+	bool after_newline = false;
 
-			count = pc->memory->stlen;
-			text = pc->memory->stptr;
+	count = pc->memory->stlen;
+	text = pc->memory->stptr;
 
-			indent(in);   /* is this correct? Where should comments go?  */
-			for (; count > 0; count--, text++) {
-				if (after_newline) {
-					indent(in);
-					after_newline = false;
-				}
-				putc(*text, prof_fp);
-				if (*text == '\n')
-					after_newline = true;
-			}
+	indent(in);   /* is this correct? Where should comments go?  */
+	for (; count > 0; count--, text++) {
+		if (after_newline) {
+			indent(in);
+			after_newline = false;
+		}
+		putc(*text, prof_fp);
+		if (*text == '\n')
+			after_newline = true;
+	}
 }
 
 /* dump_prog --- dump the program */
@@ -1525,13 +1534,13 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 	fp = pc->nexti->nexti;
 	func = pc->func_body;
 	fprintf(prof_fp, "\n");
-/* print any function comment */
-	if (fp->opcode == Op_comment && fp->source_line == 0){
+
+	/* print any function comment */
+	if (fp->opcode == Op_comment && fp->source_line == 0) {
 		print_comment(fp, 0);
 		fp = fp->nexti;
 	}
-	if (do_profile)
-		fprintf(prof_fp, "\t");
+
 	indent(pc->nexti->exec_count);
 	fprintf(prof_fp, "%s %s(", op2str(Op_K_function), func->vname);
 	pcount = func->param_cnt;
@@ -1541,10 +1550,15 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 		if (j < pcount - 1)
 			fprintf(prof_fp, ", ");
 	}
-	fprintf(prof_fp, ")\n{\n");
+	fprintf(prof_fp, ")\n");
+	if (do_profile)
+		indent(0);
+	fprintf(prof_fp, "{\n");
 	indent_in();
 	pprint(fp, NULL, false);	/* function body */
 	indent_out();
+	if (do_profile)
+		indent(0);
 	fprintf(prof_fp, "}\n");
 	return 0;
 }
