@@ -185,6 +185,9 @@ different from the steps you used in the old days when you downloaded
 a tar ball, extracted it and compiled the source code. It is mainly
 the very first step that looks different; instead of downloading the
 tar ball you need the tool @command{git}.
+@footnote{If the command @command{git} does not exist on your machine,
+you need adminstrator privileges to install it. By convention, the
+command is usuallay part of an installation package by the same name.}
 @example
   git clone git://git.savannah.gnu.org/gawk.git
   cd gawk
@@ -207,11 +210,79 @@ explanation, here we are satisfied with getting to know the practical
 steps necessary to get a working environment going that you can use
 in your daily work in a reliable way.
 
-You have created your own repository
-
 @node Setting up a proper @command{git} repository, Basics of GIT repositories, Introduction, Introduction
 @section Setting up a proper @command{git} repository
-How can I update and re-build
+After the initial @emph{checkout} you have access to all the source code
+files that the maintainers have pushed through the official release procedure.
+You may not have noticed, but each change is well documented and traceable.
+This process of tracing the change history is so precise, reproducable and
+fine-grained that any dubious change may be kicked out later and the author
+of dubious stuff identified by name and change date. Some bookkeeping is
+necessary for this and that's why you need @command{git}. @command{git}
+will do all this for you. Developers who have used @command{svn} or
+@command{cvs} in the past will not be surprised to hear that each change
+is traceable precisely (they know that @command{svn} and @command{cvs}
+can do this, too).
+But the first-time user of @command{git} (as well as the @command{svn} user)
+may still have failed to notice what he actually did earlier in this @value{CHAPTER}.
+It is not just a mere copy of the source code that you created,
+it is a full copy of the @emph{upstream} repository server that you created
+(or @emph{clone}d). This means that others could make their own copy of
+@emph{your} repository and treat it as @emph{their upstream} repository.
+This is the essential difference between working with @command{svn} and
+working with @command{git}: by @emph{clone}ing you become a repository
+administrator, if you like it or not. As such you have some duties that
+go beyond the duties of a @command{svn} user. For example, you have to
+identify yourself properly as the owner of the repository by setting
+some global variables identifying you. The global settings will be used
+every time you connect again to the @emph{upstream} repository.
+
+@smallexample
+  git config --global user.name "@emph{First-Name Last-Name}"
+  git config --global user.email @emph{email@@address.site}
+  git config --global color.ui auto
+@end smallexample
+
+You may leave these variables unset, but then you are reduced to an
+anonymous consumer-only behaviour whenever you connect to the @emph{upstream}
+repository. Later you will learn that there are many other variables
+to be set, most of them serving as defaults that can be overridden if
+you like. Choosing to work with defaults makes work quick and easy for the most frequent
+use cases, but that comes at a cost: With so many helpful defaults
+you may be overwhelmed by the detail and complexity of the real inner working.
+
+@example
+  git config --list
+  user.name=First-Name Last-Name
+  user.email=email@@address.site
+  color.diff=auto
+  color.status=auto
+  color.branch=auto
+  gui.spellingdictionary=en_US
+  core.repositoryformatversion=0
+  core.filemode=true
+  core.logallrefupdates=true
+  remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+  remote.origin.url=ssh://jkahrs@@git.sv.gnu.org/srv/git/gawk.git
+  branch.master.remote=origin
+  branch.master.merge=refs/heads/master
+  branch.xgawk_load.remote=origin
+  branch.xgawk_load.merge=refs/heads/xgawk_load
+@end example
+
+If you set any of these variables or not, sooner or later you will want
+to catch up with the changes that happened in the upstream repository.
+So, how can I update my copy of the repository and re-build the source code?
+Updates are distributed by the @emph{pull} command.
+@smallexample
+  git pull
+  make
+@end smallexample
+By default, all the changes available in the upstream repository will
+be copied into your local repository. That's so easy because we are working
+with defaults; we assume here that we still have the @emph{master} branch
+checked out (as described earlier) and we are not interested in changes
+to other existing branches. @emph{What is a branch?} you may wonder.
 
 How can I change to a different branch, what branches are there ?
 
@@ -231,12 +302,6 @@ What is tracking ?
 @c https://www.atlassian.com/en/git/workflows
 @c https://help.github.com/articles/what-is-a-good-git-workflow
 @c https://guides.github.com/introduction/flow/index.html
-
-@smallexample
-  git config --global user.name "first-name last-name"
-  git config --global user.email First.Last@email.com
-  git config --global color.ui auto
-@end smallexample
 
 - How can I use git to contribute source code ?
 You need an account at Savannah. Read this to understand the first steps:
@@ -272,6 +337,35 @@ properly.
 
 @node step-by-step instructions for a first-time-gawk-administrator, FAQs and HOWTOs, Tutorial for a first-time-gawk-contributor, Tutorial for a first-time-gawk-contributor
 @section step-by-step instructions for a first-time-gawk-administrator
+
+@c e-mail from Arnold 2014-08.24
+@c Thanks to Michal for pointing us in the right direction!
+@c I see this:
+@c 
+@c bash-4.2$ git config --get push.default
+@c simple
+@c 
+@c What does yours say?
+@c 
+@c It appears that "simple" will be the default in version 2.0:
+@c 
+@c From:
+@c http://blog.nicoschuele.com/posts/git-2-0-changes-push-default-to-simple
+@c 
+@c Matching
+@c 
+@c The 'matching' option is the default behavior in Git 1.x. It means that if you do a git push without specifying a branch, it will push all your local branches to their matching ones on your remote repository.
+@c 
+@c Simple
+@c 
+@c The new default in Git 2.x is 'simple'. It means that when doing a git push without specifying a branch, only your current branch will be pushed to the one git pull would normally get your code from."
+@c 
+@c So this must explain it.  I'll bet yours is set to "matching".  I have no
+@c idea how mine got set to "simple", since I don't recall doing that.
+@c 
+@c In the future, I will simply make sure to push before switching branches.
+@c I think I actually prefer that behavior, since it's more intuitive to me.
+
 
 @node FAQs and HOWTOs, Links, Tutorial for a first-time-gawk-contributor, Top
 @chapter FAQs and HOWTOs
