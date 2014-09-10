@@ -1759,7 +1759,14 @@ do_substr(int nargs)
 			else if (do_lint == DO_LINT_INVALID && ! (d_length >= 0))
 				lintwarn(_("substr: length %g is not >= 0"), d_length);
 			DEREF(t1);
-			return dupnode(Nnull_string);
+			/*
+			 * Return explicit null string instead of doing
+			 * dupnode(Nnull_string) so that if the result
+			 * is checked with the combination of length()
+			 * and lint, no error is reported about using
+			 * an uninitialized value. Same thing later, too.
+			 */
+			return make_string("", 0);
 		}
 		if (do_lint) {
 			if (double_to_int(d_length) != d_length)
@@ -1813,7 +1820,7 @@ do_substr(int nargs)
 		if (do_lint && (do_lint == DO_LINT_ALL || ((indx | length) != 0)))
 			lintwarn(_("substr: source string is zero length"));
 		DEREF(t1);
-		return dupnode(Nnull_string);
+		return make_string("", 0);
 	}
 
 	/* get total len of input string, for following checks */
@@ -1830,7 +1837,7 @@ do_substr(int nargs)
 			lintwarn(_("substr: start index %g is past end of string"),
 				d_index);
 		DEREF(t1);
-		return dupnode(Nnull_string);
+		return make_string("", 0);
 	}
 	if (length > src_len - indx) {
 		if (do_lint)
@@ -2847,15 +2854,10 @@ set_how_many:
 
 	text = t->stptr;
 	textlen = t->stlen;
-	buflen = textlen + 2;
 
 	repl = s->stptr;
 	replend = repl + s->stlen;
 	repllen = replend - repl;
-
-	emalloc(buf, char *, buflen + 2, "do_sub");
-	buf[buflen] = '\0';
-	buf[buflen + 1] = '\0';
 
 	ampersands = 0;
 
@@ -2915,6 +2917,13 @@ set_how_many:
 	}
 
 	lastmatchnonzero = false;
+
+	/* guesstimate how much room to allocate; +2 forces > 0 */
+	buflen = textlen + (ampersands + 1) * repllen + 2;
+	emalloc(buf, char *, buflen + 2, "do_sub");
+	buf[buflen] = '\0';
+	buf[buflen + 1] = '\0';
+
 	bp = buf;
 	for (current = 1;; current++) {
 		matches++;

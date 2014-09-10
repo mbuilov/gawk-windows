@@ -241,6 +241,7 @@ static const char *const nodetypes[] = {
 	"Node_func",
 	"Node_ext_func",
 	"Node_old_ext_func",
+	"Node_builtin_func",
 	"Node_array_ref",
 	"Node_array_tree",
 	"Node_array_leaf",

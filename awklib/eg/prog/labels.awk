@@ -48,7 +48,6 @@ function printpage(    i, j)
     Count++
 }
 
-END    \
-{
+END {
     printpage()
 }

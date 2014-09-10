@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Jul 10 2014" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Aug 03 2014" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -1132,9 +1132,14 @@ For each identifier, the value of the element is one of the following:
 \fB"array"\fR
 The identifier is an array.
 .TP
+\fB"builtin"\fR
+The identifier is a built-in function.
+.TP
 \fB"extension"\fR
 The identifier is an extension function loaded via
-.BR @load .
+.B @load
+or
+.BR \-l .
 .TP
 \fB"scalar"\fR
 The identifier is a scalar.
@@ -3287,7 +3292,7 @@ sign, like so:
 .RS
 .ft B
 .nf
-function  myfunc()
+function myfunc()
 {
 	print "myfunc called"
 	\&.\|.\|.
@@ -3301,6 +3306,8 @@ function  myfunc()
 .fi
 .ft R
 .RE
+As of version 4.1.2, this works with user-defined functions,
+built-in functions, and extension functions.
 .PP
 If
 .B \-\^\-lint

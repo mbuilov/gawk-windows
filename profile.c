@@ -755,20 +755,28 @@ cleanup:
 			ip = pc + 1;
 			indent(ip->forloop_body->exec_count);
 			fprintf(prof_fp, "%s (", op2str(pc->opcode));	
-			pprint(pc->nexti, ip->forloop_cond, true);
-			fprintf(prof_fp, "; ");
 
-			if (ip->forloop_cond->opcode == Op_no_op &&
-					ip->forloop_cond->nexti == ip->forloop_body)
+			/* If empty for looop header, print it a little more nicely. */
+			if (   pc->nexti->opcode == Op_no_op
+			    && ip->forloop_cond == pc->nexti
+			    && pc->target_continue->opcode == Op_jmp) {
+				fprintf(prof_fp, ";;");
+			} else {
+				pprint(pc->nexti, ip->forloop_cond, true);
 				fprintf(prof_fp, "; ");
-			else {
-				pprint(ip->forloop_cond, ip->forloop_body, true);
-				t1 = pp_pop();
-				fprintf(prof_fp, "%s; ", t1->pp_str);
-				pp_free(t1);
-			}
 
-			pprint(pc->target_continue, pc->target_break, true);
+				if (ip->forloop_cond->opcode == Op_no_op &&
+						ip->forloop_cond->nexti == ip->forloop_body)
+					fprintf(prof_fp, "; ");
+				else {
+					pprint(ip->forloop_cond, ip->forloop_body, true);
+					t1 = pp_pop();
+					fprintf(prof_fp, "%s; ", t1->pp_str);
+					pp_free(t1);
+				}
+
+				pprint(pc->target_continue, pc->target_break, true);
+			}
 			fprintf(prof_fp, ") {\n");
 			indent_in();
 			pprint(ip->forloop_body->nexti, pc->target_continue, false);

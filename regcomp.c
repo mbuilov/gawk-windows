@@ -856,10 +856,6 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
 #ifndef _LIBC
   char *codeset_name;
 #endif
-#if defined(GAWK) && defined(LIBC_IS_BORKED)
-  /* Needed for brain damaged systems */
-  extern int gawk_mb_cur_max;
-#endif
 
   memset (dfa, '\0', sizeof (re_dfa_t));
 
@@ -881,11 +877,7 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
   dfa->state_table = calloc (sizeof (struct re_state_table_entry), table_size);
   dfa->state_hash_mask = table_size - 1;
 
-#if defined(GAWK) && defined(LIBC_IS_BORKED)
-  dfa->mb_cur_max = gawk_mb_cur_max;
-#else
   dfa->mb_cur_max = MB_CUR_MAX;
-#endif
 #ifdef _LIBC
   if (dfa->mb_cur_max == 6
       && strcmp (_NL_CURRENT (LC_CTYPE, _NL_CTYPE_CODESET_NAME), "UTF-8") == 0)
@@ -907,24 +899,9 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
     codeset_name = strchr (codeset_name, '.') + 1;
 # endif
 
-  /* strcasecmp isn't a standard interface. brute force check */
-#ifndef GAWK
   if (strcasecmp (codeset_name, "UTF-8") == 0
       || strcasecmp (codeset_name, "UTF8") == 0)
     dfa->is_utf8 = 1;
-#else
-  if (   (codeset_name[0] == 'U' || codeset_name[0] == 'u')
-      && (codeset_name[1] == 'T' || codeset_name[1] == 't')
-      && (codeset_name[2] == 'F' || codeset_name[2] == 'f')
-      && (codeset_name[3] == '-'
-          ? codeset_name[4] == '8' && codeset_name[5] == '\0'
-          : codeset_name[3] == '8' && codeset_name[4] == '\0'))
-    dfa->is_utf8 = 1;
-#if defined(GAWK) && defined(LIBC_IS_BORKED)
-  if (gawk_mb_cur_max == 1)
-    dfa->is_utf8 = 0;
-#endif /* defined(GAWK) && defined(LIBC_IS_BORKED) */
-#endif
 
   /* We check exhaustively in the loop below if this charset is a
      superset of ASCII.  */
@@ -2215,7 +2192,11 @@ parse_reg_exp (re_string_t *regexp, regex_t *preg, re_token_t *token,
 	{
 	  branch = parse_branch (regexp, preg, token, syntax, nest, err);
 	  if (BE (*err != REG_NOERROR && branch == NULL, 0))
-	    return NULL;
+	    {
+	      if (tree != NULL)
+		postorder (tree, free_tree, NULL);
+	      return NULL;
+	    }
 	}
       else
 	branch = NULL;
@@ -2476,8 +2457,7 @@ parse_expression (re_string_t *regexp, regex_t *preg, re_token_t *token,
   while (token->type == OP_DUP_ASTERISK || token->type == OP_DUP_PLUS
 	 || token->type == OP_DUP_QUESTION || token->type == OP_OPEN_DUP_NUM)
     {
-      bin_tree_t *dup_tree = parse_dup_op (tree, regexp, dfa, token,
-					   syntax, err);
+      bin_tree_t *dup_tree = parse_dup_op (tree, regexp, dfa, token, syntax, err);
       if (BE (*err != REG_NOERROR && dup_tree == NULL, 0))
 	{
 	  if (tree != NULL)
@@ -2640,6 +2620,8 @@ parse_dup_op (bin_tree_t *elem, re_string_t *regexp, re_dfa_t *dfa,
 
       /* Duplicate ELEM before it is marked optional.  */
       elem = duplicate_tree (elem, dfa);
+      if (BE (elem == NULL, 0))
+        goto parse_dup_op_espace;
       old_tree = tree;
     }
   else
@@ -3136,8 +3118,8 @@ parse_bracket_exp (re_string_t *regexp, re_dfa_t *dfa, re_token_t *token,
   if (BE (sbcset == NULL, 0))
 #endif /* RE_ENABLE_I18N */
     {
-#ifdef RE_ENABLE_I18N
       re_free (sbcset);
+#ifdef RE_ENABLE_I18N
       re_free (mbcset);
 #endif
       *err = REG_ESPACE;

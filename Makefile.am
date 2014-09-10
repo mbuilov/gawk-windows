@@ -61,10 +61,12 @@ EXTRA_DIST = \
 # The order to do things in.
 # Build explicitly in "." in order to build gawk first, so
 # that `make check' without a prior `make' works.
+# Build in awklib after in doc, since we want to extract
+# sample files if doc/gawk.texi changed.
 SUBDIRS = \
 	. \
-	awklib \
 	doc \
+	awklib \
 	po \
 	extension \
 	test
