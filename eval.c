@@ -241,6 +241,7 @@ static const char *const nodetypes[] = {
 	"Node_func",
 	"Node_ext_func",
 	"Node_old_ext_func",
+	"Node_builtin_func",
 	"Node_array_ref",
 	"Node_array_tree",
 	"Node_array_leaf",
@@ -803,9 +804,35 @@ set_BINMODE()
 void
 set_OFS()
 {
+	static bool first = true;
+	size_t new_ofs_len;
+
+	if (first)	/* true when called from init_vars() in main() */
+		first = false;
+	else {
+		/* rebuild $0 using OFS that was current when $0 changed */
+		if (! field0_valid) {
+			get_field(UNLIMITED - 1, NULL);
+			rebuild_record();
+		}
+	}
+
+	/*
+	 * Save OFS value for use in building record and in printing.
+	 * Can't just have OFS point into the OFS_node since it's
+	 * already updated when we come into this routine, and we need
+	 * the old value to rebuild the record (see above).
+	 */
 	OFS_node->var_value = force_string(OFS_node->var_value);
-	OFS = OFS_node->var_value->stptr;
-	OFSlen = OFS_node->var_value->stlen;
+	new_ofs_len = OFS_node->var_value->stlen;
+
+	if (OFS == NULL)
+		emalloc(OFS, char *, new_ofs_len + 2, "set_OFS");
+	else if (OFSlen < new_ofs_len)
+		erealloc(OFS, char *, new_ofs_len + 2, "set_OFS");
+
+	memcpy(OFS, OFS_node->var_value->stptr, OFS_node->var_value->stlen);
+	OFSlen = new_ofs_len;
 	OFS[OFSlen] = '\0';
 }
 

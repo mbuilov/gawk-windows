@@ -50,7 +50,7 @@
 #include "missing_d/memmove.c"
 #endif	/* HAVE_MEMMOVE */
 
-#ifndef HAVE_STRNCASECMP
+#if !defined(HAVE_STRNCASECMP) || !defined(HAVE_STRCASECMP)
 #include "missing_d/strncasecmp.c"
 #endif	/* HAVE_STRCASE */
 

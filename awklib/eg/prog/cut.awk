@@ -20,8 +20,7 @@ function usage(    e1, e2)
     print e2 > "/dev/stderr"
     exit 1
 }
-BEGIN    \
-{
+BEGIN {
     FS = "\t"    # default
     OFS = FS
     while ((c = getopt(ARGC, ARGV, "sf:c:d:")) != -1) {

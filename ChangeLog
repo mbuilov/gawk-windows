@@ -1,3 +1,135 @@
+2014-09-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h: Move libsigsegv stuff to ...
+	* main.c: here. Thanks to Yehezkel Bernat for motivating
+	the cleanup.
+	* symbol.c (make_symbol, install, install_symbol): Add const to
+	first parameter. Adjust decls and fix up uses.
+
+2014-09-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add builtin functions to FUNCTAB for consistency.
+
+	* awk.h (Node_builtin_func): New node type.
+	(install_builtins): Declare new function.
+	* awkgram.y [DEBUG_USE]: New flag value for debug functions; they
+	don't go into FUNCTAB.
+	(install_builtins): New function.
+	* eval.c (nodetypes): Add Node_builtin_func.
+	* interpret.h (r_interpret): Rework indirect calls of built-ins
+	since they're now in the symbol table.
+	* main.c (main): Call `install_builtins'.
+	* symbol.c (install): Adjust for Node_builtin_func.
+	(load_symbols): Ditto.
+
+2014-09-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pprint): Case Op_K_for: Improve printing of
+	empty for loop header.
+
+	Unrelated: Make indirect function calls work for built-in and
+	extension functions.
+
+	* awkgram.y (lookup_builtin): New function.
+	* awk.h (builtin_func_t): New typedef.
+	(lookup_builtin): Declare it.
+	* interpret.h (r_interpret): For indirect calls, add code to
+	find and call builtin functions, and call extension functions.
+
+2014-09-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_substr): Return "" instead of null string in case
+	result is passed to length() with --lint. Based on discussions in
+	comp.lang.awk.
+
+	Unrelated:
+
+	* interpret.h (r_interpret): For indirect function call, separate
+	error message if lookup returned NULL. Otherwise got a core dump.
+	Thanks to "Kenny McKormack" for the report in comp.lang.awk.
+
+2014-08-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Add test for strcasecmp.
+	* regcomp.c: Remove special case code around use of strcasecmp().
+	* replace.c: Include missing/strncasecmp.c if either strcasecmp()
+	or strncasecmp() aren't available.
+
+2014-08-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regcomp.c, regex_internal.c: Sync with GBLIC. Why not.
+
+	Unrelated:
+
+	Remove support for MirBSD. It uglified the code too much
+	for no discernable gain.
+
+	* configure.ac: Remove check for MirBSD and define of
+	LIBC_IS_BORKED.
+	* dfa.c: Remove code depending on LIBC_IS_BORKED.
+	* main.c: Ditto.
+	* regcomp.c: Ditto.
+	* NEWS: Updated.
+
+2014-08-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regex.h: Remove underscores in names of parameters in function
+	declarations. Tweak names as neeeded.
+
+2014-08-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* node.c (parse_escape): Max of 2 digits after \x.
+
+2014-08-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* symbol.c: General formatting cleanup.
+
+2014-08-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c (usage): Adjust whitespace for -L and add "invalid"
+	as a possible value for it.  Report from Robert P. J. Day
+	<rpjday@crashcourse.ca>.
+
+2014-08-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (SUBDIRS): Put awklib after doc so that examples
+	get extracted when the doc changes.
+
+2014-08-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_sub): Move initial allocation of the replacement
+	string down towards code to do the replacement, with a (we hope)
+	better guesstimate of how much to initially allocate. The idea
+	is to avoid unnecessary realloc() calls by making a better guess
+	at how much to allocate.  This came up in an email discussion
+	with Tom Dickey about mawk's gsub().
+
+2014-08-12         Juergen Kahrs <jkahrs@users.sourceforge.net>
+
+	* cmake/configure.cmake:
+	* cmake/package.cmake: Copyright update.
+	* README.cmake:
+	* README_d/README.cmake: Moved file.
+
+2014-08-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	OFS being set should rebuild $0 using previous OFS if $0
+	needs to be rebuilt. Thanks to Mike Brennan for pointing this out.
+
+	* awk.h (rebuild_record): Declare.
+	* eval.c (set_OFS): If not being called from var_init(), check
+	if $0 needs rebuilding. If so, parse the record fully and rebuild it.
+	Make OFS point to a separate copy of the new OFS for next time, since
+	OFS_node->var_value->stptr was already updated at this point.
+	* field.c (rebuild_record): Is now extern instead of static.
+	Use OFS and OFSlen instead of the value of OFS_node.
+
+	Unrelated:
+
+	* Makefile.am (RM): Define for makes that don't have it,
+	such as on OpenBSD.  Thanks to Jeremie Courreges-Anglas
+	<jca@wxcvbn.org> for the report.
+
 2014-08-05         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Bug fix: For MPFR sqrt(), need to set precision of result to be

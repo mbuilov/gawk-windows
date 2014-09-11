@@ -77,14 +77,6 @@ is_blank (int c)
 }
 #endif /* GAWK */
 
-#ifdef LIBC_IS_BORKED
-extern int gawk_mb_cur_max;
-#undef MB_CUR_MAX
-#define MB_CUR_MAX gawk_mb_cur_max
-#undef mbrtowc
-#define mbrtowc(a, b, c, d) (-1)
-#endif
-
 /* HPUX defines these as macros in sys/param.h.  */
 #ifdef setbit
 # undef setbit
@@ -828,10 +820,6 @@ using_utf8 (void)
       wchar_t wc;
       mbstate_t mbs = { 0 };
       utf8 = mbrtowc (&wc, "\xc4\x80", 2, &mbs) == 2 && wc == 0x100;
-#ifdef LIBC_IS_BORKED
-      if (gawk_mb_cur_max == 1)
-         utf8 = 0;
-#endif
     }
   return utf8;
 }
