@@ -251,7 +251,7 @@ you like. Choosing to work with defaults makes work quick and easy for the most 
 use cases, but that comes at a cost: With so many helpful defaults
 you may be overwhelmed by the detail and complexity of the real inner working.
 
-@example
+@smallexample
   git config --list
   user.name=First-Name Last-Name
   user.email=email@@address.site
@@ -268,25 +268,71 @@ you may be overwhelmed by the detail and complexity of the real inner working.
   branch.master.merge=refs/heads/master
   branch.xgawk_load.remote=origin
   branch.xgawk_load.merge=refs/heads/xgawk_load
-@end example
+@end smallexample
 
-If you set any of these variables or not, sooner or later you will want
+Whether you set any of these variables or not, sooner or later you will want
 to catch up with the changes that happened in the upstream repository.
-So, how can I update my copy of the repository and re-build the source code?
-Updates are distributed by the @emph{pull} command.
+So, how can you update your copy of the repository and re-build the source code?
+The easiest way is to rely on defaults and use the @emph{pull} command to request
+updates from the upstream repository.
 @smallexample
   git pull
+  ./configure
   make
 @end smallexample
-By default, all the changes available in the upstream repository will
-be copied into your local repository. That's so easy because we are working
-with defaults; we assume here that we still have the @emph{master} branch
-checked out (as described earlier) and we are not interested in changes
-to other existing branches. @emph{What is a branch?} you may wonder.
+When using the @emph{pull} command, all the changes available in all branches of
+the upstream repository will be copied (and merged) into your local repository.
+We assume here that we still have the @emph{master} branch checked out (as described earlier)
+and we are not interested in changes to other existing branches.
+The merging of changes will be done inside the branches only so that changes in one
+branch are kept inside this branch and don't mix up other branches.
+But @emph{what is a branch?} you may wonder. It is the name given to a sequence of changes
+that were made to the master branch outside the master branch.
+It is easy to look up all the available branches
+(the names of the change sequences) in the remote upstream repository.
+@smallexample
+  git branch -a
+* master
+  remotes/origin/cmake
+@end smallexample
+The asterisk in front of the branch name assures you of the fact that you see
+the source files as they are in the @emph{master} branch. It is also easy to
+have a look at other branches, for example when you are interested in what is
+going on in a certain @emph{feature branch} that the maintainer set up recently
+for a new feature to be developed separately (so that others can go on undisturbed).
+@smallexample
+  git checkout origin/cmake
+  git branch -a
+  master
+* remotes/origin/cmake
+  ./configure
+  make
+@end smallexample
 
-How can I change to a different branch, what branches are there ?
+When you try this, take care that you have not changed anything in any source file.
+@command{git} would notice changes and refuse to checkout the other branch.
+This is meant to protect you from losing changes that you forgot to save.
+Any source file that is part of the repository and gets generated during the build
+in a slightly different way than the original would cause such a problem.
+@smallexample
+git status
+# On branch master
+# Changes not staged for commit:
+#       awkgram.c
+@end smallexample
+Here we have @file{awkgram.c} that was generated from @file{awkgram.y}.
+But what was generated differently in the file?
+@smallexample
+git diff
+@end smallexample
+Ok, you are not interested in textual changes to the copyright notice
+that are only due to a new calendar year. You are also not interested
+in the internals of the generated parser and only wonder
+@emph{How do we get back the original from the repository?}
+@smallexample
+git checkout awkgram.c
+@end smallexample
 
-What is tracking ?
 
 @node Basics of GIT repositories, Conventions used in the repository, Compiling @command{gawk} in 5 minutes, Top
 @chapter Basics of GIT repositories
@@ -302,6 +348,11 @@ What is tracking ?
 @c https://www.atlassian.com/en/git/workflows
 @c https://help.github.com/articles/what-is-a-good-git-workflow
 @c https://guides.github.com/introduction/flow/index.html
+@c http://supercollider.sourceforge.net/wiki/index.php/Developer_cheatsheet_for_git
+@c http://savannah.gnu.org/maintenance/UsingGit/
+@c http://www.emacswiki.org/emacs/GitForEmacsDevs
+
+What is tracking ?
 
 - How can I use git to contribute source code ?
 You need an account at Savannah. Read this to understand the first steps:
