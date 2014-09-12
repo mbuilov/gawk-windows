@@ -270,6 +270,56 @@ you may be overwhelmed by the detail and complexity of the real inner working.
   branch.xgawk_load.merge=refs/heads/xgawk_load
 @end smallexample
 
+Changing these variables with specialized variants of the @command{git} command
+may seem awkward to you and perhaps you prefer to use your favourite text editor
+to overview and change the variables.
+
+@smallexample
+vi .git/config
+[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+[remote "origin"]
+        fetch = +refs/heads/*:refs/remotes/origin/*
+        url = ssh://jkahrs@@git.sv.gnu.org/srv/git/gawk.git
+[branch "master"]
+        remote = origin
+        merge = refs/heads/master
+[branch "cmake"]
+        remote = origin
+        merge = refs/heads/cmake
+@end smallexample
+
+Now you can see how variables are structured group-wise.
+But wait, where is the e-mail address in this list of variables?
+It is missing in the file @file{.git/config} because the file
+contains only the local settings of this one repository
+(while there may be others on your machine).
+The e-mail address is a variable of a more general kind that
+should be stored above all the repositories.
+
+@smallexample
+git config --list --global
+user.name=First-Name Last-Name
+user.email=email@@address.site
+color.diff=auto
+color.status=auto
+color.branch=auto
+gui.spellingdictionary=en_US
+@end smallexample
+
+If you wonder whether there is a parameter @command{--local} to list
+the local variables, then you should look into the well-structured
+man pages of @command{git}. The level of detail may overwhelm you,
+but one day you might appreciate it.
+
+@smallexample
+git help config
+@end smallexample
+
+@section Pulling the latest changes from the remote repository
 Whether you set any of these variables or not, sooner or later you will want
 to catch up with the changes that happened in the upstream repository.
 So, how can you update your copy of the repository and re-build the source code?
@@ -284,7 +334,7 @@ When using the @emph{pull} command, all the changes available in all branches of
 the upstream repository will be copied (and merged) into your local repository.
 We assume here that we still have the @emph{master} branch checked out (as described earlier)
 and we are not interested in changes to other existing branches.
-The merging of changes will be done inside the branches only so that changes in one
+The merging of changes will be done inside the branches only, so that changes in one
 branch are kept inside this branch and don't mix up other branches.
 But @emph{what is a branch?} you may wonder. It is the name given to a sequence of changes
 that were made to the master branch outside the master branch.
@@ -296,7 +346,10 @@ It is easy to look up all the available branches
   remotes/origin/cmake
 @end smallexample
 The asterisk in front of the branch name assures you of the fact that you see
-the source files as they are in the @emph{master} branch. It is also easy to
+the source files as they are in the @emph{master} branch.
+
+@section Checking out a feature branch from the remote repository
+It is also easy to
 have a look at other branches, for example when you are interested in what is
 going on in a certain @emph{feature branch} that the maintainer set up recently
 for a new feature to be developed separately (so that others can go on undisturbed).
@@ -311,7 +364,7 @@ for a new feature to be developed separately (so that others can go on undisturb
 
 When you try this, take care that you have not changed anything in any source file.
 @command{git} would notice changes and refuse to checkout the other branch.
-This is meant to protect you from losing changes that you forgot to save.
+This is meant to protect you from losing any local changes that you forgot to save.
 Any source file that is part of the repository and gets generated during the build
 in a slightly different way than the original would cause such a problem.
 @smallexample
@@ -323,15 +376,72 @@ git status
 Here we have @file{awkgram.c} that was generated from @file{awkgram.y}.
 But what was generated differently in the file?
 @smallexample
-git diff
+git diff awkgram.c
 @end smallexample
 Ok, you are not interested in textual changes to the copyright notice
 that are only due to a new calendar year. You are also not interested
 in the internals of the generated parser and only wonder
-@emph{How do we get back the original from the repository?}
+@emph{How do we get back the original file from the repository?}
 @smallexample
 git checkout awkgram.c
+git diff awkgram.c | wc -l
+0
 @end smallexample
+After checking the file out once more, there is obviously no difference
+to the copy saved in the repository. But let's not get distracted, we
+wanted to find out what was going on in this feature branch. We can
+find out by asking @command{git} what has changed in the file @file{ChangeLog}
+of this feature branch relative to the master branch.
+@smallexample
+git diff origin/master ChangeLog
+diff --git a/ChangeLog b/ChangeLog
+index eab657c..a499ec5 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,81 +1,3 @@
+-2014-09-07         Arnold D. Robbins     <arnold@@skeeve.com>
+-
+-       * awk.h: Move libsigsegv stuff to ...
+-       * main.c: here. Thanks to Yehezkel Bernat for motivating
+-       the cleanup.
+-       * symbol.c (make_symbol, install, install_symbol): Add const to
+-       first parameter. Adjust decls and fix up uses.
+@end smallexample
+Looks like a minor cleanup operation in the master branch that has not
+yet been merged into the feature branch. We still don't know what is new
+in this feature branch, how can we know? By looking at all changes that exist.
+@smallexample
+git diff origin/master --numstat
+0       78      ChangeLog
+8       3       README_d/README.cmake
+@end smallexample
+On your screen you see a list of all differences between the currently
+checked-out branch and the master branch. It tells you the names of the
+files that have changed, along with the number of added and deleted lines.
+Now we can have a closer look at who changed what.
+Let's single out one particular file that looks interesting.
+As usual there is a @command{diff} sub-command to list all the changed
+lines, but there is also a @command{blame} sub-command that tells you
+who made the last change to any of the lines.
+@smallexample
+git diff origin/master README_d/README.cmake
+..
+git blame README_d/README.cmake
+2092a35f (Juergen Kahrs     2014-08-12 17:11:20 +0200   1) CMake is a build automation system
+2092a35f (Juergen Kahrs     2014-08-12 17:11:20 +0200   2)   http://en.wikipedia.org/wiki/Cmake
+2092a35f (Juergen Kahrs     2014-08-12 17:11:20 +0200   3) 
+2092a35f (Juergen Kahrs     2014-08-12 17:11:20 +0200   4) We try to use it as a replacement for the established GNU build system.
+2092a35f (Juergen Kahrs     2014-08-12 17:11:20 +0200   5) This attempt is currently only experimental. If you wonder why anyone
+2092a35f (Juergen Kahrs     2014-08-12 17:11:20 +0200   6) should do this, read
+@end smallexample
+The strange number on the left margin is the short form of a numerical
+identifier of the change set. At the moment you can safely ignore it,
+but this number is the key you need in case you should ever want to
+cherry-pick some change sets. But cherry-picking is still far away,
+before you can do this, you have to learn how to make changes to your
+local repository and @command{push} them to the upstream repository.
+Some conceptual basics are needed for understanding this essential part
+of the workflow.
 
 
 @node Basics of GIT repositories, Conventions used in the repository, Compiling @command{gawk} in 5 minutes, Top
