@@ -1,3 +1,38 @@
+2014-09-13	Stephen Davies		<sdavies@sdc.com.au>
+	When doing pretty-print (but not profiling), include the original comments in the output.
+	General rules:
+	Pretty priting:
+		- Do NOT indent by a tab
+		- Do NOT print the header comments ("# BEGIN rules", etc.)
+		- DO print the comments that are in the program
+
+	Profiling:
+		- DO indent by a tab
+		- DO print the header comments
+		- Do NOT print the program's original comments
+
+	*awkgram.y:	add variables comment0 and commentf as pointers to program and function comments
+			add function get_comment (retrieve consecutive comment lines and empty lines as a unit)
+			add function split_comment (iff first block in the program is a function and it is predeeded by comments, 
+			take the last non-blank line as function comment and any preceeding lines as program comment.)
+
+			Following token rules were changed to handle comments:
+			 pattern, LEX_BEGIN, LEX_END, LEX_BEGINFILE, LEX_ENDFILE, action, function_prologue and statements.
+				
+			Following functions were changed to handle comments:
+			  mk_program, mk_function, allow_newline and yylex. (Also fixed typo in case '\\'.)
+
+	*profile.c
+			added function print_comment to format comment printing.
+
+			Following functions were changed to handle comments and the revised indent rules:
+			  indent, pprint, dump_prog, pp_func.
+
+	*test/Makefile(.am and .in)
+			Change processing of profile4 and profile5 to not delete first two lines (no longer necessary).
+
+	*profile4.ok and profile5.ok changed to suit new rules and comments.
+
 2014-09-07         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h: Move libsigsegv stuff to ...
