@@ -151,7 +151,7 @@ static INSTRUCTION *comment = NULL;
 static INSTRUCTION *comment0 = NULL;
 static INSTRUCTION *commentf = NULL;
 
-static int func_first = 1;
+static bool func_first = true;
 
 static inline INSTRUCTION *list_create(INSTRUCTION *x);
 static inline INSTRUCTION *list_append(INSTRUCTION *l, INSTRUCTION *x);
@@ -296,7 +296,7 @@ library
 pattern
 	: /* empty */
 	  {	rule = Rule;
-		if (comment != NULL){
+		if (comment != NULL) {
 			$$ = list_create(comment);
 			comment = NULL;
 		} else
@@ -304,7 +304,7 @@ pattern
 	  }
 	| exp
 	  {	rule = Rule;
-		if (comment != NULL){
+		if (comment != NULL) {
 			$$ = list_prepend($1, comment);
 			comment = NULL;
 		} else
@@ -340,7 +340,7 @@ pattern
 	| LEX_BEGIN
 	  {
 		static int begin_seen = 0;
-		func_first = 0;
+		func_first = false;
 		INSTRUCTION *ip;
 		if (do_lint_old && ++begin_seen == 2)
 			warning_ln($1->source_line,
@@ -353,7 +353,7 @@ pattern
 	| LEX_END
 	  {
 		static int end_seen = 0;
-		func_first = 0;
+		func_first = false;
 		if (do_lint_old && ++end_seen == 2)
 			warning_ln($1->source_line,
 				_("old awk does not support multiple `BEGIN' or `END' rules"));
@@ -364,14 +364,14 @@ pattern
 	  }
 	| LEX_BEGINFILE
 	  {
-		func_first = 0;
+		func_first = false;
 		$1->in_rule = rule = BEGINFILE;
 		$1->source_file = source;
 		$$ = $1;
 	  }
 	| LEX_ENDFILE
 	  {
-		func_first = 0;
+		func_first = false;
 		$1->in_rule = rule = ENDFILE;
 		$1->source_file = source;
 		$$ = $1;
@@ -413,16 +413,22 @@ lex_builtin
 function_prologue
 	: LEX_FUNCTION func_name '(' opt_param_list r_paren opt_nls
 	  {
-/* treat any comments between BOF and the first function definition (with no intervening BEGIN etc block) as program comments 
-   Special kludge: iff there are more than one such comments, treat the last as a function comment.  */
-		if (comment != NULL && func_first && strstr(comment->memory->stptr, "\n\n") != NULL)
+		/*
+		 *  treat any comments between BOF and the first function
+		 *  definition (with no intervening BEGIN etc block) as
+		 *  program comments.  Special kludge: iff there are more
+		 *  than one such comments, treat the last as a function
+		 *  comment.
+		 */
+		if (comment != NULL && func_first
+		    && strstr(comment->memory->stptr, "\n\n") != NULL)
 			split_comment();
-	/* save any other pre-function comment as function comment  */
-		if (comment != NULL){
+		/* save any other pre-function comment as function comment  */
+		if (comment != NULL) {
 			commentf = comment;
 			comment = NULL;
 		}
-		func_first = 0;
+		func_first = false;
 		$1->source_file = source;
 		if (install_function($2->lextok, $1, $4) < 0)
 			YYABORT;
@@ -481,7 +487,7 @@ a_slash
 statements
 	: /* empty */
 	  {
-		if (comment != NULL){
+		if (comment != NULL) {
 			$$ = list_create(comment);
 			comment = NULL;
 		} else $$ = NULL;
@@ -505,7 +511,7 @@ statements
 					comment = NULL;
 				}
 			} else {
-				if (comment != NULL){
+				if (comment != NULL) {
 					list_append($2, comment);
 					comment = NULL;
 				}
@@ -2314,10 +2320,10 @@ mk_program()
 	if (begin_block != NULL)
 		cp = list_merge(begin_block, cp);
 
-	if (comment0 != NULL){
+	if (comment0 != NULL) {
 		(void) list_prepend(cp, comment0);
 	}  
-	if (comment != NULL){
+	if (comment != NULL) {
 		(void) list_append(cp, comment);
 	} 
 	(void) list_append(cp, ip_atexit);
@@ -2821,7 +2827,7 @@ get_src_buf()
 		lexend = lexptr + n;
 		if (n == 0) {
 			static bool warned = false;
-			if (do_lint && newfile && ! warned){
+			if (do_lint && newfile && ! warned) {
 				warned = true;
 				sourceline = 0;
 				lintwarn(_("source file `%s' is empty"), source);
@@ -3003,11 +3009,11 @@ int get_comment(void)
 	tokadd('#');
 	sl = sourceline;
 
-	while (true){
-		while ((c = nextc(false)) != '\n' && c != END_FILE){
+	while (true) {
+		while ((c = nextc(false)) != '\n' && c != END_FILE) {
 			tokadd(c);
 		}
-		if (c == '\n'){
+		if (c == '\n') {
 			tokadd(c);
 			sourceline++;
 			do {
@@ -3019,7 +3025,7 @@ int get_comment(void)
 			} while (isspace(c) && c != END_FILE) ;
 			if ( c == END_FILE)
 				break;
-			else if (c != '#'){
+			else if (c != '#') {
 				pushback();
 				break;
 			} else
@@ -3046,23 +3052,23 @@ void split_comment(void)
 	p = comment->memory->stptr;
 	l = comment->memory->stlen - 3;
 	/* have at least two comments so split at last blank line ( \n\n)  */
-	while (l >= 0){
-		if (p[l] == '\n' && p[l+1] == '\n'){
+	while (l >= 0) {
+		if (p[l] == '\n' && p[l+1] == '\n') {
 			commentf = comment;
 			n = commentf->memory;
 			commentf->memory = make_str_node(p + l + 2, n->stlen - l - 2, 0);
-	/* create program comment  */
+			/* create program comment  */
 			comment0 = bcalloc(Op_comment, 1, sourceline);
 			comment0->source_file = comment->source_file;
 			p[l + 2] = 0;
-			comment0->memory = make_str_node(p , l + 2, 0);
+			comment0->memory = make_str_node(p, l + 2, 0);
 			comment = NULL;
 			freenode(n);
 			break;
 		}
-		else l--;
+		else
+			l--;
 	}
-			
 }
 
 /* allow_newline --- allow newline after &&, ||, ? and : */
@@ -3108,7 +3114,8 @@ allow_newline(void)
  * removes the warnings.
  */
 
-static int newline_eof()
+static int
+newline_eof()
 {
 	/* NB: a newline at end does not start a source line. */
 	if (lasttok != NEWLINE) {
@@ -4396,7 +4403,7 @@ mk_function(INSTRUCTION *fi, INSTRUCTION *def)
 
 	/* add any pre-function comment to start of action for profile.c  */
 
-	if (commentf != NULL){
+	if (commentf != NULL) {
 		commentf->source_line = 0;
 		(void) list_prepend(def, commentf);
 		commentf = NULL;
