@@ -13,8 +13,8 @@ function mystrtonum(str,        ret, n, i, k, c)
         ret = 0
         for (i = 1; i <= n; i++) {
             c = substr(str, i, 1)
-	    # index() returns 0 if c not in string,
-	    # includes c == "0"
+            # index() returns 0 if c not in string,
+            # includes c == "0"
             k = index("1234567", c)
 
             ret = ret * 8 + k
@@ -27,8 +27,8 @@ function mystrtonum(str,        ret, n, i, k, c)
         for (i = 1; i <= n; i++) {
             c = substr(str, i, 1)
             c = tolower(c)
-	    # index() returns 0 if c not in string,
-	    # includes c == "0"
+            # index() returns 0 if c not in string,
+            # includes c == "0"
             k = index("123456789abcdef", c)
 
             ret = ret * 16 + k
