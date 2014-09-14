@@ -155,7 +155,7 @@ extern double fmod(double x, double y);
 
 #define YYSTYPE INSTRUCTION *
 
-#define is_identchar(c)		(isalnum(c) || (c) == '_')
+static bool is_identchar(int c);
 %}
 
 %token FUNC_CALL NAME REGEXP FILENAME
@@ -5747,4 +5747,37 @@ install_builtins(void)
 			(void) install_symbol(tokentab[i].operator, Node_builtin_func);
 		}
 	}
+}
+
+/* is_identchar --- return true if c can be in an identifier */
+
+/*
+ * 9/2014: This can't be:
+ *
+ * #define is_identchar(c)		(isalnum(c) || (c) == '_')
+ *
+ * because in non-C locales, character codes outside the set of
+ * ASCII letters and digits pass the test.  BLEAH.
+ */
+
+static bool
+is_identchar(int c)
+{
+	switch (c) {
+	case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+	case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
+	case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
+	case 's': case 't': case 'u': case 'v': case 'w': case 'x':
+	case 'y': case 'z':
+	case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+	case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
+	case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
+	case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
+	case 'Y': case 'Z':
+	case '0': case '1': case '2': case '3': case '4': case '5':
+	case '6': case '7': case '8': case '9':
+	case '_':
+		return true;
+	}
+	return false;
 }
