@@ -8081,7 +8081,7 @@ install_builtins(void)
 /* is_identchar --- return true if c can be in an identifier */
 
 /*
- * This can't be:
+ * 9/2014: This can't be:
  *
  * #define is_identchar(c)		(isalnum(c) || (c) == '_')
  *
