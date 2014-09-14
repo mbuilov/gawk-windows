@@ -1,3 +1,9 @@
+2014-09-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (is_identchar): Change from simple macro to function
+	since use of isalnum() let non-ASCII letters slip through into
+	identifiers.
+
 2014-09-07         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h: Move libsigsegv stuff to ...
