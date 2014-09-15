@@ -10184,7 +10184,11 @@ on the @command{awk} command line.
 Variables let you give names to values and refer to them later.  Variables
 have already been used in many of the examples.  The name of a variable
 must be a sequence of letters, digits, or underscores, and it may not begin
-with a digit.  Case is significant in variable names; @code{a} and @code{A}
+with a digit.
+Here, a @dfn{letter} is any one of the 52 upper- and lowercase
+English letters.  Other characters that may be defined as letters
+in non-English locales are not valid in variable names.
+Case is significant in variable names; @code{a} and @code{A}
 are distinct variables.
 
 A variable name is a valid expression by itself; it represents the
@@ -14107,8 +14111,11 @@ or @code{"FPAT"} if field matching with @code{FPAT} is in effect.
 
 @item PROCINFO["identifiers"]
 @cindex program identifiers
-A subarray, indexed by the names of all identifiers used in the
-text of the AWK program.  For each identifier, the value of the element is one of the following:
+A subarray, indexed by the names of all identifiers used in the text of
+the AWK program.  An @dfn{identifier} is simply the name of a variable
+(be it scalar or array), built-in function, user-defined function, or
+extension function.  For each identifier, the value of the element is
+one of the following:
 
 @table @code
 @item "array"
@@ -18320,6 +18327,8 @@ The definition of a function named @var{name} looks like this:
 Here, @var{name} is the name of the function to define.  A valid function
 name is like a valid variable name: a sequence of letters, digits, and
 underscores that doesn't start with a digit.
+Here too, only the 52 upper- and lowercase English letters may
+be used in a function name.
 Within a single @command{awk} program, any particular name can only be
 used as a variable, array, or function.
 

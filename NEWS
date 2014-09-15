@@ -53,6 +53,10 @@ Changes from 4.1.1 to 4.1.2
 5. Indirect function calls now work for both built-in and
    extension functions.
 
+6. In non-English locales, it was accidentally possible to use "letters"
+   beside those of the English alphabet in identifiers.  This has
+   been fixed.  (isalpha and isalnum are NOT our friends.)
+
 XX. A number of bugs have been fixed. See the ChangeLog.
 
 Changes from 4.1.0 to 4.1.1

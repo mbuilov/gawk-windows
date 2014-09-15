@@ -1,3 +1,18 @@
+2014-09-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Finish removing use of isalpha and isalnum.
+
+	* awk.h (is_alpha, is_alnum, is_identchar): Add declarations.
+	* awkgram.y (yylex): Use is_alpha.
+	(is_alpha, is_alnum): New functions.
+	(is_identchar): Use is_alnum.
+	* builtin.c (r_format_tree): Use is_alpha, is_alnum.
+	* command.y (yylex): Use is_alpha, is_identchar.
+	* ext.c (is_letter): Use is_alpha.
+	(is_identifier_char): Removed; replaced uses with is_identchar.
+	* main.c (arg_assign): Use is_alpha, is_alnum.
+	* node.c (r_force_number): Use is_alpha.
+
 2014-09-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y (is_identchar): Change from simple macro to function

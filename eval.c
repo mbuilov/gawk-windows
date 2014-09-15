@@ -216,6 +216,7 @@ load_casetable(void)
 		return;
 
 #ifndef ZOS_USS
+	/* use of isalpha is ok here (see is_alpha in awkgram.y) */
 	for (i = 0200; i <= 0377; i++) {
 		if (isalpha(i) && islower(i) && i != toupper(i))
 			casetable[i] = toupper(i);
