@@ -1329,11 +1329,11 @@ arg_assign(char *arg, bool initing)
 
 	/* first check that the variable name has valid syntax */
 	badvar = false;
-	if (! isalpha((unsigned char) arg[0]) && arg[0] != '_')
+	if (! is_alpha((unsigned char) arg[0]) && arg[0] != '_')
 		badvar = true;
 	else
 		for (cp2 = arg+1; *cp2; cp2++)
-			if (! isalnum((unsigned char) *cp2) && *cp2 != '_') {
+			if (! is_identchar((unsigned char) *cp2)) {
 				badvar = true;
 				break;
 			}
