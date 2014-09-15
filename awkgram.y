@@ -154,8 +154,6 @@ static inline INSTRUCTION *list_merge(INSTRUCTION *l1, INSTRUCTION *l2);
 extern double fmod(double x, double y);
 
 #define YYSTYPE INSTRUCTION *
-
-static bool is_identchar(int c);
 %}
 
 %token FUNC_CALL NAME REGEXP FILENAME
@@ -3636,7 +3634,7 @@ retry:
 		}
 	}
 
-	if (c != '_' && ! isalpha(c)) {
+	if (c != '_' && ! is_alpha(c)) {
 		yyerror(_("invalid char '%c' in expression"), c);
 		return lasttok = LEX_EOF;
 	}
@@ -5739,20 +5737,20 @@ install_builtins(void)
 	}
 }
 
-/* is_identchar --- return true if c can be in an identifier */
-
 /*
- * 9/2014: This can't be:
- *
- * #define is_identchar(c)		(isalnum(c) || (c) == '_')
- *
- * because in non-C locales, character codes outside the set of
- * ASCII letters and digits pass the test.  BLEAH.
+ * 9/2014: Gawk cannot use <ctype.h> isalpha or isalnum when
+ * parsing the program since that can let through non-English
+ * letters.  So, we supply our own. !@#$%^&*()-ing locales!
  */
 
-static bool
-is_identchar(int c)
+/* is_alpha --- return true if c is an English letter */
+
+bool
+is_alpha(int c)
 {
+#ifdef I_DONT_KNOW_WHAT_IM_DOING
+	return isalpha(c);
+#else /* ! I_DONT_KNOW_WHAT_IM_DOING */
 	switch (c) {
 	case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
 	case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
@@ -5764,10 +5762,26 @@ is_identchar(int c)
 	case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
 	case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
 	case 'Y': case 'Z':
-	case '0': case '1': case '2': case '3': case '4': case '5':
-	case '6': case '7': case '8': case '9':
-	case '_':
 		return true;
 	}
 	return false;
+#endif /* ! I_DONT_KNOW_WHAT_IM_DOING */
+}
+
+/* is_alnum --- return true for alphanumeric, English only letters */
+
+bool
+is_alnum(int c)
+{
+	/* digit test is good for EBCDIC too. so there. */
+	return (is_alpha(c) || ('0' <= c && c <= '9'));
+}
+
+
+/* is_identchar --- return true if c can be in an identifier */
+
+bool
+is_identchar(int c)
+{
+	return (is_alnum(c) || c == '_');
 }

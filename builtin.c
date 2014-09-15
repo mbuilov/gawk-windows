@@ -1569,7 +1569,7 @@ mpf1:
 			s0 = s1;
 			break;
 		default:
-			if (do_lint && isalpha(cs1))
+			if (do_lint && is_alpha(cs1))
 				lintwarn(_("ignoring unknown format specifier character `%c': no argument converted"), cs1);
 			break;
 		}
