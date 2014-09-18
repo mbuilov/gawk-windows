@@ -19150,8 +19150,8 @@ them, i.e., to tell @command{awk} what they should do.
 @subsection Function Definition Syntax
 
 @quotation
-It's entirely fair to say that the @command{awk} syntax for local
-variable definitions is appallingly awful.
+@i{It's entirely fair to say that the @command{awk} syntax for local
+variable definitions is appallingly awful.}
 @author Brian Kernighan
 @end quotation
 
@@ -27260,6 +27260,7 @@ using regular pipes.
 @cindex @code{/inet6/@dots{}} special files (@command{gawk})
 @cindex files, @code{/inet6/@dots{}} (@command{gawk})
 @cindex @code{EMISTERED}
+@ifnotdocbook
 @quotation
 @code{EMISTERED}:@*
 @ @ @ @ @i{A host is a host from coast to coast,@*
@@ -27267,6 +27268,17 @@ using regular pipes.
 @ @ @ @ unless the host that isn't close@*
 @ @ @ @ is busy hung or dead.}
 @end quotation
+@end ifnotdocbook
+
+@docbook
+<blockquote>
+<literallayout class="normal"><literal>EMISTERED</literal>:
+&nbsp;&nbsp;&nbsp;&nbsp;<emphasis>A host is a host from coast to coast,</emphasis>
+&nbsp;&nbsp;&nbsp;&nbsp;<emphasis>and no-one can talk to host that's close,</emphasis>
+&nbsp;&nbsp;&nbsp;&nbsp;<emphasis>unless the host that isn't close</emphasis>
+&nbsp;&nbsp;&nbsp;&nbsp;<emphasis>is busy hung or dead.</emphasis></literallayout>
+</blockquote>
+@end docbook
 
 In addition to being able to open a two-way pipeline to a coprocess
 on the same system
@@ -30198,7 +30210,7 @@ to follow.
 @section Floating Point Arithmetic: Caveat Emptor!
 
 @quotation
-Math class is tough!
+@i{Math class is tough!}
 @author Teen Talk Barbie, July 1992
 @end quotation
 
@@ -37955,11 +37967,24 @@ Date: Wed, 4 Sep 1996 08:11:48 -0700 (PDT)
 
 @end ignore
 @cindex Brennan, Michael
+@ifnotdocbook
 @quotation
 @i{It's kind of fun to put comments like this in your awk code.}@*
 @ @ @ @ @ @ @code{// Do C++ comments work? answer: yes! of course}
 @author Michael Brennan
 @end quotation
+@end ifnotdocbook
+
+@docbook
+<blockquote><attribution>Michael Brennan</attribution>
+<literallayout>
+<emphasis>It's kind of fun to put comments like this in your awk code.</emphasis>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<literal>// Do C++ comments work? answer: yes! of course</literal>
+</literallayout>
+</blockquote>
+@end docbook
+
+
 
 There are a number of other freely available @command{awk} implementations.
 This @value{SECTION} briefly describes where to get them:
