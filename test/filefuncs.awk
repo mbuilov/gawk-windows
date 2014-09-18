@@ -1,7 +1,7 @@
 @load "filefuncs"
 
 BEGIN {
-   if (chdir("..") < 0) {
+   if (chdir(builddir) < 0) {
       printf "Error: chdir failed with ERRNO %s\n", ERRNO
       exit 1
    }
