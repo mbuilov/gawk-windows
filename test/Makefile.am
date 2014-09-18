@@ -1963,6 +1963,12 @@ printhuge::
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+filefuncs:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk -v builddir="$(abs_top_builddir)"  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+
 # Targets generated for other tests:
 include Maketests
 
