@@ -5745,6 +5745,16 @@ install_builtins(void)
 
 /* is_alpha --- return true if c is an English letter */
 
+/*
+ * The scene of the murder was grisly to look upon.  When the inspector
+ * arrived, the sergeant turned to him and said, "Another programmer stabbed
+ * in the back. He never knew what happened."
+ * 
+ * The inspector replied, "Looks like the MO of isalpha, and his even meaner
+ * big brother, isalnum. The Locale brothers."  The sergeant merely
+ * shuddered in horror.
+ */
+
 bool
 is_alpha(int c)
 {
