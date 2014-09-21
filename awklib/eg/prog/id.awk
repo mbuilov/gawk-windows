@@ -5,13 +5,13 @@
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993
 # Revised February 1996
+# Revised May 2014
 
 # output is:
 # uid=12(foo) euid=34(bar) gid=3(baz) \
 #             egid=5(blat) groups=9(nine),2(two),1(one)
 
-BEGIN    \
-{
+BEGIN {
     uid = PROCINFO["uid"]
     euid = PROCINFO["euid"]
     gid = PROCINFO["gid"]
@@ -19,34 +19,26 @@ BEGIN    \
 
     printf("uid=%d", uid)
     pw = getpwuid(uid)
-    if (pw != "") {
-        split(pw, a, ":")
-        printf("(%s)", a[1])
-    }
+    if (pw != "")
+        pr_first_field(pw)
 
     if (euid != uid) {
         printf(" euid=%d", euid)
         pw = getpwuid(euid)
-        if (pw != "") {
-            split(pw, a, ":")
-            printf("(%s)", a[1])
-        }
+        if (pw != "")
+            pr_first_field(pw)
     }
 
     printf(" gid=%d", gid)
     pw = getgrgid(gid)
-    if (pw != "") {
-        split(pw, a, ":")
-        printf("(%s)", a[1])
-    }
+    if (pw != "")
+        pr_first_field(pw)
 
     if (egid != gid) {
         printf(" egid=%d", egid)
         pw = getgrgid(egid)
-        if (pw != "") {
-            split(pw, a, ":")
-            printf("(%s)", a[1])
-        }
+        if (pw != "")
+            pr_first_field(pw)
     }
 
     for (i = 1; ("group" i) in PROCINFO; i++) {
@@ -55,13 +47,17 @@ BEGIN    \
         group = PROCINFO["group" i]
         printf("%d", group)
         pw = getgrgid(group)
-        if (pw != "") {
-            split(pw, a, ":")
-            printf("(%s)", a[1])
-        }
+        if (pw != "")
+            pr_first_field(pw)
         if (("group" (i+1)) in PROCINFO)
             printf(",")
     }
 
     print ""
+}
+
+function pr_first_field(str,  a)
+{
+    split(str, a, ":")
+    printf("(%s)", a[1])
 }

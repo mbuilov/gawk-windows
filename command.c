@@ -2863,7 +2863,7 @@ again:
 		}
 
 		while (c != '\0' && c != ' ' && c != '\t') {
-			if (! isalpha(c) && ! in_eval) {
+			if (! is_alpha(c) && ! in_eval) {
 				yyerror(_("invalid character in command"));
 				return '\n';
 			}
@@ -3031,12 +3031,12 @@ err:
 			|| c == ',' || c == '=')
 		return *lexptr++;
 
-	if (c != '_' && ! isalpha(c)) {
+	if (c != '_' && ! is_alpha(c)) {
 		yyerror(_("invalid character"));
 		return '\n';
 	}
 
-	while (isalnum(c) || c == '_')
+	while (is_identchar(c))
 		c = *++lexptr;
 	toklen = lexptr - tokstart;
 

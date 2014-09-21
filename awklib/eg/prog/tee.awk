@@ -7,8 +7,7 @@
 # May 1993
 # Revised December 1995
 
-BEGIN    \
-{
+BEGIN {
     for (i = 1; i < ARGC; i++)
         copy[i] = ARGV[i]
 
@@ -35,8 +34,7 @@ BEGIN    \
             print > copy[i]
     print
 }
-END    \
-{
+END {
     for (i in copy)
         close(copy[i])
 }

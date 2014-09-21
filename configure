@@ -5999,14 +5999,6 @@ then
 	CFLAGS="$CFLAGS -D_SYSV3"
 fi
 
-case $host_os in
-mirbsd*)
-
-$as_echo "#define LIBC_IS_BORKED 1" >>confdefs.h
-
-	;;
-esac
-
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -10008,7 +10000,7 @@ for ac_func in atexit btowc fmod getgrent getgroups grantpt \
 	memcmp memcpy memcpy_ulong memmove memset \
 	memset_ulong mkstemp posix_openpt setenv setlocale setsid sigprocmask \
 	snprintf strchr \
-	strerror strftime strncasecmp strcoll strtod strtoul \
+	strerror strftime strcasecmp strncasecmp strcoll strtod strtoul \
 	system tmpfile towlower towupper tzset usleep waitpid wcrtomb \
 	wcscoll wctype
 do :
@@ -10152,7 +10144,7 @@ $as_echo "#define DYNAMIC 1" >>confdefs.h
 			if test "$GCC" = yes; then
 				case $host_os in
 				linux*|freebsd*)
-					LDFLAGS="$LDFLAGS -export-dynamic"
+					LDFLAGS="$LDFLAGS -Wl,-export-dynamic"
 					;;
 				esac
 			fi

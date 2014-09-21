@@ -88,11 +88,8 @@ function endfile(file)
             print
     }
 }
-END    \
-{
-    if (total == 0)
-        exit 1
-    exit 0
+END {
+    exit (total == 0)
 }
 function usage(    e)
 {

@@ -142,8 +142,8 @@ typedef struct awk_input {
 	 * so there is no need to set it unless an error occurs.
 	 *
 	 * If an error does occur, the function should return EOF and set
-	 * *errcode to a non-zero value.  In that case, if *errcode does not
-	 * equal -1, gawk will automatically update the ERRNO variable based
+	 * *errcode to a positive value.  In that case, if *errcode is greater
+	 * than zero, gawk will automatically update the ERRNO variable based
 	 * on the value of *errcode (e.g., setting *errcode = errno should do
 	 * the right thing).
 	 */
@@ -263,7 +263,7 @@ typedef struct awk_two_way_processor {
 /* Current version of the API. */
 enum {
 	GAWK_API_MAJOR_VERSION = 1,
-	GAWK_API_MINOR_VERSION = 1
+	GAWK_API_MINOR_VERSION = 2
 };
 
 /* A number of typedefs related to different types of values. */

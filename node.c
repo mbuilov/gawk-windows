@@ -72,7 +72,7 @@ r_force_number(NODE *n)
 	 * This also allows hexadecimal floating point. Ugh.
 	 */
 	if (! do_posix) {
-		if (isalpha((unsigned char) *cp)) {
+		if (is_alpha((unsigned char) *cp)) {
 			return n;
 		} else if (n->stlen == 4 && is_ieee_magic_val(n->stptr)) {
 			if ((n->flags & MAYBE_NUM) != 0)
@@ -94,7 +94,7 @@ r_force_number(NODE *n)
 
 	if (   cp == cpend		/* only spaces, or */
 	    || (! do_posix		/* not POSIXLY paranoid and */
-	        && (isalpha((unsigned char) *cp)	/* letter, or */
+	        && (is_alpha((unsigned char) *cp)	/* letter, or */
 					/* CANNOT do non-decimal and saw 0x */
 		    || (! do_non_decimal_data && cp[0] == '0'
 		        && (cp[1] == 'x' || cp[1] == 'X'))))) {
@@ -557,9 +557,8 @@ parse_escape(const char **string_ptr)
 			warning(_("no hex digits in `\\x' escape sequence"));
 			return ('x');
 		}
-		i = j = 0;
 		start = *string_ptr;
-		for (;; j++) {
+		for (i = j = 0; j < 2; j++) {
 			/* do outside test to avoid multiple side effects */
 			c = *(*string_ptr)++;
 			if (isxdigit(c)) {

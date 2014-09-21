@@ -4,8 +4,9 @@
 #
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993
+# Revised slightly, May 2014
 
-# usage: split [-num] [file] [outname]
+# usage: split [-count] [file] [outname]
 
 BEGIN {
     outfile = "x"    # default
@@ -14,7 +15,7 @@ BEGIN {
         usage()
 
     i = 1
-    if (ARGV[i] ~ /^-[[:digit:]]+$/) {
+    if (i in ARGV && ARGV[i] ~ /^-[[:digit:]]+$/) {
         count = -ARGV[i]
         ARGV[i] = ""
         i++

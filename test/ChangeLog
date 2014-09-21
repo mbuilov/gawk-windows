@@ -1,3 +1,97 @@
+2014-09-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.awk: Change to build directory instead of "..".
+	* Makefile.am (filefuncs): Pass in $(abs_top_builddir).
+
+2014-09-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* functab4.awk: Changed to use stat instead of chdir since
+	/tmp isn't /tmp on all systems (e.g. Mac OS X). Thanks to
+	Hermann Peifer for the report.
+
+	Sort of related:
+
+	* indirectcall2.awk, indirectcall2.ok: New files.
+	* id.ok: Updated.
+
+2014-09-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile2.ok: Update after code improvement in profiler.
+	* functab4.ok: Update after making indirect calls of
+	extension functions work. :-)
+
+2014-08-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* badargs.ok: Adjust after revising text for -L option.
+
+2014-08-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* ofs1.ok: Updated to match corrected behavior in gawk.
+
+2014-08-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (mpfrsqrt): New test.
+	* mpfrsqrt.awk, mpfrsqrt.ok: New files.
+	Test from Katie Wasserman <katie@wass.net>.
+
+2014-07-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* printhuge.awk: Add a newline to output.
+	* printhuge.ok: Adjust.
+
+2014-07-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* badargs.ok: Adjust after correctly alphabetizing options.
+
+2014-07-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (printhuge): New test.
+	* printhuge.awk, printhuge.ok: New files.
+	Test from mail.green.fox@gmail.com.
+
+2014-06-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (profile1, profile4, profile5): Adjust for change to
+	--pretty-print option.
+
+2014-06-19         Michael Forney       <forney@google.com>
+
+	* Makefile.am (poundbang): Fix relative path of AWKPROG.
+
+2014-06-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (dbugeval): Add leading @ to recipe. Ooops.
+
+2014-05-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (regnul1, regnul2): New tests.
+	* regnul1.awk, regnul1.ok, regnul1.awk, regnul2.ok: New files.
+
+2014-05-22         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* lintwarn.ok: Updated.
+
+2014-05-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (EXTRA_DIST): Forgot dbugeval.ok. Ooops.
+
+2014-05-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (dbugeval): New test.
+	* dbugeval.in, dbugeval.ok: New files.
+
+2014-05-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (rsglstdin): New test.
+	* rsglstdin.ok: New file.
+
+2014-05-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (rebuf): Force buffer size to 4096 via AWKBUFSIZE
+	environment variable.
+	(rsgetline): New test.
+	* rsgetline.awk, rsgetline.in, rsgetline.ok: New files.
+
 2014-04-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (charset-msg-start): Add a warning message that tests

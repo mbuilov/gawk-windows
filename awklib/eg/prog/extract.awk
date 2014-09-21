@@ -10,7 +10,7 @@ BEGIN    { IGNORECASE = 1 }
 /^@c(omment)?[ \t]+system/    \
 {
     if (NF < 3) {
-        e = (FILENAME ":" FNR)
+        e = ("extract: " FILENAME ":" FNR)
         e = (e  ": badly formed `system' line")
         print e > "/dev/stderr"
         next
@@ -19,7 +19,7 @@ BEGIN    { IGNORECASE = 1 }
     $2 = ""
     stat = system($0)
     if (stat != 0) {
-        e = (FILENAME ":" FNR)
+        e = ("extract: " FILENAME ":" FNR)
         e = (e ": warning: system returned " stat)
         print e > "/dev/stderr"
     }
@@ -27,7 +27,7 @@ BEGIN    { IGNORECASE = 1 }
 /^@c(omment)?[ \t]+file/    \
 {
     if (NF != 3) {
-        e = (FILENAME ":" FNR ": badly formed `file' line")
+        e = ("extract: " FILENAME ":" FNR ": badly formed `file' line")
         print e > "/dev/stderr"
         next
     }
@@ -65,7 +65,7 @@ BEGIN    { IGNORECASE = 1 }
 }
 function unexpected_eof()
 {
-    printf("%s:%d: unexpected EOF or error\n",
+    printf("extract: %s:%d: unexpected EOF or error\n",
         FILENAME, FNR) > "/dev/stderr"
     exit 1
 }

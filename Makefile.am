@@ -61,10 +61,12 @@ EXTRA_DIST = \
 # The order to do things in.
 # Build explicitly in "." in order to build gawk first, so
 # that `make check' without a prior `make' works.
+# Build in awklib after in doc, since we want to extract
+# sample files if doc/gawk.texi changed.
 SUBDIRS = \
 	. \
-	awklib \
 	doc \
+	awklib \
 	po \
 	extension \
 	test
@@ -143,6 +145,9 @@ CLEANFILES = core core.*
 
 # We want hard links for install-exec-hook, below
 LN= ln
+
+# For some make's, e.g. OpenBSD, that don't define this
+RM = rm -f
 
 # First, add a link from gawk to gawk-X.Y.Z.
 #

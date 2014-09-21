@@ -20,8 +20,7 @@ function usage(    e1, e2)
     print e2 > "/dev/stderr"
     exit 1
 }
-BEGIN    \
-{
+BEGIN {
     FS = "\t"    # default
     OFS = FS
     while ((c = getopt(ARGC, ARGV, "sf:c:d:")) != -1) {
@@ -34,7 +33,7 @@ BEGIN    \
             OFS = ""
         } else if (c == "d") {
             if (length(Optarg) > 1) {
-                printf("Using first character of %s" \
+                printf("cut: using first character of %s" \
                        " for delimiter\n", Optarg) > "/dev/stderr"
                 Optarg = substr(Optarg, 1, 1)
             }
@@ -43,7 +42,7 @@ BEGIN    \
             if (FS == " ")    # defeat awk semantics
                 FS = "[ ]"
         } else if (c == "s")
-            suppress++
+            suppress = 1
         else
             usage()
     }
@@ -75,7 +74,7 @@ function set_fieldlist(        n, m, i, j, k, f, g)
         if (index(f[i], "-") != 0) { # a range
             m = split(f[i], g, "-")
             if (m != 2 || g[1] >= g[2]) {
-                printf("bad field list: %s\n",
+                printf("cut: bad field list: %s\n",
                                   f[i]) > "/dev/stderr"
                 exit 1
             }
@@ -96,7 +95,7 @@ function set_charlist(    field, i, j, f, g, n, m, t,
         if (index(f[i], "-") != 0) { # range
             m = split(f[i], g, "-")
             if (m != 2 || g[1] >= g[2]) {
-                printf("bad character list: %s\n",
+                printf("cut: bad character list: %s\n",
                                f[i]) > "/dev/stderr"
                 exit 1
             }

@@ -1066,13 +1066,29 @@ check_pos:
 					size_t count;
 
 					memset(& mbs, 0, sizeof(mbs));
+
+					/* handle systems with too small wchar_t */
+					if (sizeof(wchar_t) < 4 && uval > 0xffff) {
+						if (do_lint)
+							lintwarn(
+						_("[s]printf: value %g is too big for %%c format"),
+									arg->numbr);
+
+						goto out0;
+					}
+
 					wc = uval;
 
 					count = wcrtomb(buf, wc, & mbs);
 					if (count == 0
-					    || count == (size_t)-1
-					    || count == (size_t)-2)
+					    || count == (size_t) -1) {
+						if (do_lint)
+							lintwarn(
+						_("[s]printf: value %g is not a valid wide character"),
+									arg->numbr);
+
 						goto out0;
+					}
 
 					memcpy(cpbuf, buf, count);
 					prec = count;
@@ -1084,10 +1100,6 @@ out0:
 				/* else,
 					fall through */
 #endif
-				if (do_lint && uval > 255) {
-					lintwarn("[s]printf: value %g is too big for %%c format",
-							arg->numbr);
-				}
 				cpbuf[0] = uval;
 				prec = 1;
 				cp = cpbuf;
@@ -1112,7 +1124,7 @@ out0:
 
 				memset(& state, 0, sizeof(state));
 				count = mbrlen(cp, arg->stlen, & state);
-				if (count > 0) {
+				if (count != (size_t) -1 && count != (size_t) -2 && count > 0) {
 					prec = count;
 					/* may need to increase fw so that padding happens, see pr_tail code */
 					if (fw > 0)
@@ -1557,7 +1569,7 @@ mpf1:
 			s0 = s1;
 			break;
 		default:
-			if (do_lint && isalpha(cs1))
+			if (do_lint && is_alpha(cs1))
 				lintwarn(_("ignoring unknown format specifier character `%c': no argument converted"), cs1);
 			break;
 		}
@@ -1747,7 +1759,14 @@ do_substr(int nargs)
 			else if (do_lint == DO_LINT_INVALID && ! (d_length >= 0))
 				lintwarn(_("substr: length %g is not >= 0"), d_length);
 			DEREF(t1);
-			return dupnode(Nnull_string);
+			/*
+			 * Return explicit null string instead of doing
+			 * dupnode(Nnull_string) so that if the result
+			 * is checked with the combination of length()
+			 * and lint, no error is reported about using
+			 * an uninitialized value. Same thing later, too.
+			 */
+			return make_string("", 0);
 		}
 		if (do_lint) {
 			if (double_to_int(d_length) != d_length)
@@ -1801,7 +1820,7 @@ do_substr(int nargs)
 		if (do_lint && (do_lint == DO_LINT_ALL || ((indx | length) != 0)))
 			lintwarn(_("substr: source string is zero length"));
 		DEREF(t1);
-		return dupnode(Nnull_string);
+		return make_string("", 0);
 	}
 
 	/* get total len of input string, for following checks */
@@ -1818,7 +1837,7 @@ do_substr(int nargs)
 			lintwarn(_("substr: start index %g is past end of string"),
 				d_index);
 		DEREF(t1);
-		return dupnode(Nnull_string);
+		return make_string("", 0);
 	}
 	if (length > src_len - indx) {
 		if (do_lint)
@@ -2454,8 +2473,14 @@ do_rand(int nargs ATTRIBUTE_UNUSED)
  	 */
  
 	do {
-	 	tmprand = 0.5 + ( (random()/RAND_DIVISOR + random())
-					/ RAND_DIVISOR);
+		long d1, d2;
+		/*
+		 * Do the calls in predictable order to avoid
+		 * compiler differences in order of evaluation.
+		 */
+		d1 = random();
+		d2 = random();
+	 	tmprand = 0.5 + ( (d1/RAND_DIVISOR + d2) / RAND_DIVISOR );
 		tmprand -= 0.5;
 	} while (tmprand == 1.0);
 
@@ -2702,23 +2727,28 @@ do_match(int nargs)
  * 2001 standard:
  * 
  * sub(ere, repl[, in ])
- *  Substitute the string repl in place of the first instance of the extended regular
- *  expression ERE in string in and return the number of substitutions. An ampersand
- *  ('&') appearing in the string repl shall be replaced by the string from in that
- *  matches the ERE. An ampersand preceded with a backslash ('\') shall be
- *  interpreted as the literal ampersand character. An occurrence of two consecutive
- *  backslashes shall be interpreted as just a single literal backslash character. Any
- *  other occurrence of a backslash (for example, preceding any other character) shall
- *  be treated as a literal backslash character. Note that if repl is a string literal (the
- *  lexical token STRING; see Grammar (on page 170)), the handling of the
- *  ampersand character occurs after any lexical processing, including any lexical
- *  backslash escape sequence processing. If in is specified and it is not an lvalue (see
- *  Expressions in awk (on page 156)), the behavior is undefined. If in is omitted, awk
- *  shall use the current record ($0) in its place.
+ *  Substitute the string repl in place of the first instance of the
+ *  extended regular expression ERE in string in and return the number of
+ *  substitutions. An ampersand ('&') appearing in the string repl shall
+ *  be replaced by the string from in that matches the ERE. An ampersand
+ *  preceded with a backslash ('\') shall be interpreted as the literal
+ *  ampersand character. An occurrence of two consecutive backslashes shall
+ *  be interpreted as just a single literal backslash character. Any other
+ *  occurrence of a backslash (for example, preceding any other character)
+ *  shall be treated as a literal backslash character. Note that if repl is a
+ *  string literal (the lexical token STRING; see Grammar (on page 170)), the
+ *  handling of the ampersand character occurs after any lexical processing,
+ *  including any lexical backslash escape sequence processing. If in is
+ *  specified and it is not an lvalue (see Expressions in awk (on page 156)),
+ *  the behavior is undefined. If in is omitted, awk shall use the current
+ *  record ($0) in its place.
  *
- * 11/2010: The text in the 2008 standard is the same as just quoted.  However, POSIX behavior
- * is now the default.  This can change the behavior of awk programs.  The old behavior
- * is not available.
+ * 11/2010: The text in the 2008 standard is the same as just quoted.
+ * However, POSIX behavior is now the default.  This can change the behavior
+ * of awk programs.  The old behavior is not available.
+ *
+ * 7/2011: Reverted backslash handling to what it used to be. It was in
+ * gawk for too long. Should have known better.
  */
 
 /*
@@ -2824,14 +2854,11 @@ set_how_many:
 
 	text = t->stptr;
 	textlen = t->stlen;
-	buflen = textlen + 2;
 
 	repl = s->stptr;
 	replend = repl + s->stlen;
 	repllen = replend - repl;
-	emalloc(buf, char *, buflen + 2, "do_sub");
-	buf[buflen] = '\0';
-	buf[buflen + 1] = '\0';
+
 	ampersands = 0;
 
 	/*
@@ -2890,6 +2917,13 @@ set_how_many:
 	}
 
 	lastmatchnonzero = false;
+
+	/* guesstimate how much room to allocate; +2 forces > 0 */
+	buflen = textlen + (ampersands + 1) * repllen + 2;
+	emalloc(buf, char *, buflen + 2, "do_sub");
+	buf[buflen] = '\0';
+	buf[buflen + 1] = '\0';
+
 	bp = buf;
 	for (current = 1;; current++) {
 		matches++;
@@ -3597,6 +3631,72 @@ do_bindtextdomain(int nargs)
 		DEREF(t2);
 
 	return make_string(the_result, strlen(the_result));
+}
+
+/* do_div --- do integer division, return quotient and remainder in dest array */
+
+/*
+ * We define the semantics as:
+ * 	numerator = int(numerator)
+ *	denominator = int(denonmator)
+ *	quotient = int(numerator / denomator)
+ *	remainder = int(numerator % denomator)
+ */
+
+NODE *
+do_div(int nargs)
+{
+	NODE *numerator, *denominator, *result;
+	double num, denom, quotient, remainder;
+	NODE *sub, **lhs;
+
+	result = POP_PARAM();
+	if (result->type != Node_var_array)
+		fatal(_("div: third argument is not an array"));
+	assoc_clear(result);
+
+	denominator = POP_SCALAR();
+	numerator = POP_SCALAR();
+
+	if (do_lint) {
+		if ((numerator->flags & (NUMCUR|NUMBER)) == 0)
+			lintwarn(_("div: received non-numeric first argument"));
+		if ((denominator->flags & (NUMCUR|NUMBER)) == 0)
+			lintwarn(_("div: received non-numeric second argument"));
+	}
+
+	(void) force_number(numerator);
+	(void) force_number(denominator);
+	num = double_to_int(get_number_d(numerator));
+	denom = double_to_int(get_number_d(denominator));
+
+	if (denom == 0.0)
+		fatal(_("div: division by zero attempted"));
+
+	quotient = double_to_int(num / denom);
+	/*
+	 * FIXME: This code is duplicated, factor it out to a
+	 * separate function.
+	 */
+#ifdef HAVE_FMOD
+	remainder = fmod(num, denom);
+#else	/* ! HAVE_FMOD */
+	(void) modf(num / denom, & remainder);
+	remainder = num - remainder * denom;
+#endif	/* ! HAVE_FMOD */
+	remainder = double_to_int(remainder);
+
+	sub = make_string("quotient", 8);
+	lhs = assoc_lookup(result, sub);
+	unref(*lhs);
+	*lhs = make_number((AWKNUM) quotient);
+
+	sub = make_string("remainder", 9);
+	lhs = assoc_lookup(result, sub);
+	unref(*lhs);
+	*lhs = make_number((AWKNUM) remainder);
+
+	return make_number((AWKNUM) 0.0);
 }
 
 

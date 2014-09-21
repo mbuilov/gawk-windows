@@ -29,6 +29,9 @@ AM_CPPFLAGS = -I$(srcdir)/..
 # correctly after changing configure.ac
 ACLOCAL_AMFLAGS = -I m4
 
+# For some make's, e.g. OpenBSD, that don't define this
+RM = rm -f
+
 # Note: rwarray does not currently compile.
 
 pkgextension_LTLIBRARIES =	\
@@ -115,7 +118,7 @@ install-data-hook:
 
 # Keep the uninstall check working:
 uninstall-so:
-	$(RM) $(pkgextensiondir)/*.so
+	$(RM) $(DESTDIR)$(pkgextensiondir)/*.so
 
 uninstall-recursive: uninstall-so
 

@@ -206,6 +206,7 @@ typedef enum { CLOSE_ALL, CLOSE_TO, CLOSE_FROM } two_way_close_type;
 #define at_eof(iop)     (((iop)->flag & IOP_AT_EOF) != 0)
 #define has_no_data(iop)        ((iop)->dataend == NULL)
 #define no_data_left(iop)	((iop)->off >= (iop)->dataend)
+#define buffer_has_all_data(iop) ((iop)->dataend - (iop)->off == (iop)->public.sbuf.st_size)
 
 /*
  * The key point to the design is to split out the code that searches through
@@ -279,7 +280,23 @@ static RECVALUE (*matchrec)(IOBUF *iop, struct recmatch *recm, SCANSTATE *state)
 static int get_a_record(char **out, IOBUF *iop, int *errcode);
 
 static void free_rp(struct redirect *rp);
-static int inetfile(const char *str, int *length, int *family);
+
+struct inet_socket_info {
+	int family;		/* AF_UNSPEC, AF_INET, or AF_INET6 */
+	int protocol;		/* SOCK_STREAM or SOCK_DGRAM */
+	/*
+	 * N.B. If we used 'char *' or 'const char *' pointers to the
+	 * substrings, it would trigger compiler warnings about the casts
+	 * in either inetfile() or devopen().  So we use offset/len to
+	 * avoid that.
+	 */
+	struct {
+		int offset;
+		int len;
+	} localport, remotehost, remoteport;
+};
+
+static bool inetfile(const char *str, struct inet_socket_info *isn);
 
 static NODE *in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx);
 static long get_read_timeout(IOBUF *iop);
@@ -557,12 +574,12 @@ set_NR()
 
 /* inrec --- This reads in a record from the input file */
 
-int
+bool
 inrec(IOBUF *iop, int *errcode)
 {
 	char *begin;
 	int cnt;
-	int retval = 0;
+	bool retval = true;
 
 	if (at_eof(iop) && no_data_left(iop))
 		cnt = EOF;
@@ -571,14 +588,15 @@ inrec(IOBUF *iop, int *errcode)
 	else 
 		cnt = get_a_record(& begin, iop, errcode);
 
+	/* Note that get_a_record may return -2 when I/O would block */
 	if (cnt < 0) {
-		retval = 1;
-		if (*errcode > 0)
-			update_ERRNO_int(*errcode);
+		retval = false;
 	} else {
 		INCREMENT_REC(NR);
 		INCREMENT_REC(FNR);
 		set_record(begin, cnt);
+		if (*errcode > 0)
+			retval = false;
 	}
 
 	return retval;
@@ -712,7 +730,9 @@ redirect_string(char *str, size_t explen, int not_string, int redirtype, int *er
 	int fd;
 	const char *what = NULL;
 	bool new_rp = false;
-	int len;	/* used with /inet */
+#ifdef HAVE_SOCKETS
+	struct inet_socket_info isi;
+#endif
 	static struct redirect *save_rp = NULL;	/* hold onto rp that should
 	                                         * be freed for reuse
 	                                         */
@@ -769,9 +789,9 @@ redirect_string(char *str, size_t explen, int not_string, int redirtype, int *er
 	 * Use /inet4 to force IPv4, /inet6 to force IPv6, and plain
 	 * /inet will be whatever we get back from the system.
 	 */
-	if (inetfile(str, & len, NULL)) {
+	if (inetfile(str, & isi)) {
 		tflag |= RED_SOCKET;
-		if (strncmp(str + len, "tcp/", 4) == 0)
+		if (isi.protocol == SOCK_STREAM)
 			tflag |= RED_TCP;	/* use shutdown when closing */
 	}
 #endif /* HAVE_SOCKETS */
@@ -900,7 +920,7 @@ redirect_string(char *str, size_t explen, int not_string, int redirtype, int *er
 			direction = "to/from";
 			if (! two_way_open(str, rp)) {
 #ifdef HAVE_SOCKETS
-				if (inetfile(str, NULL, NULL)) {
+				if (inetfile(str, NULL)) {
 					*errflg = errno;
 					/* do not free rp, saving it for reuse (save_rp = rp) */
 					return NULL;
@@ -1546,8 +1566,7 @@ devopen(const char *name, const char *mode)
 	char *cp;
 	char *ptr;
 	int flag = 0;
-	int len;
-	int family;
+	struct inet_socket_info isi;
 
 	if (strcmp(name, "-") == 0)
 		return fileno(stdin);
@@ -1584,74 +1603,14 @@ devopen(const char *name, const char *mode)
 		/* do not set close-on-exec for inherited fd's */
 		if (openfd != INVALID_HANDLE)
 			return openfd;
-	} else if (inetfile(name, & len, & family)) {
+	} else if (inetfile(name, & isi)) {
 #ifdef HAVE_SOCKETS
-		/* /inet/protocol/localport/hostname/remoteport */
-		int protocol;
-		char *hostname;
-		char *hostnameslastcharp;
-		char *localpname;
-		char *localpnamelastcharp;
+		cp = (char *) name;
 
-		cp = (char *) name + len;
-		/* which protocol? */
-		if (strncmp(cp, "tcp/", 4) == 0)
-			protocol = SOCK_STREAM;
-		else if (strncmp(cp, "udp/", 4) == 0)
-			protocol = SOCK_DGRAM;
-		else {
-			protocol = SOCK_STREAM;	/* shut up the compiler */
-			fatal(_("no (known) protocol supplied in special filename `%s'"),
-						name);
-		}
-		cp += 4;
-
-		/* which localport? */
-		localpname = cp;
-		while (*cp != '/' && *cp != '\0')
-			cp++;
-		/*                    
-		 * Require a port, let them explicitly put 0 if
-		 * they don't care.  
-		 */
-		if (*cp != '/' || cp == localpname)
-			fatal(_("special file name `%s' is incomplete"), name);
-
-		/*
-		 * We change the special file name temporarily because we
-		 * need a 0-terminated string here for conversion with atoi().
-		 * By using atoi() the use of decimal numbers is enforced.
-		 */
-		*cp = '\0';
-		localpnamelastcharp = cp;
-
-		/* which hostname? */
-		cp++;
-		hostname = cp;
-		while (*cp != '/' && *cp != '\0')
-			cp++; 
-		if (*cp != '/' || cp == hostname) {
-			*localpnamelastcharp = '/';
-			fatal(_("must supply a remote hostname to `/inet'"));
-		}
-		*cp = '\0';
-		hostnameslastcharp = cp;
-
-		/* which remoteport? */
-		cp++;
-		/*
-		 * The remote port ends the special file name.
-		 * This means there already is a '\0' at the end of the string.
-		 * Therefore no need to patch any string ending.
-		 *
-		 * Here too, require a port, let them explicitly put 0 if
-		 * they don't care.
-		 */
-		if (*cp == '\0') {
-			*localpnamelastcharp = '/';
-			*hostnameslastcharp = '/';
-			fatal(_("must supply a remote port to `/inet'"));
-		}
+		/* socketopen requires NUL-terminated strings */
+		cp[isi.localport.offset+isi.localport.len] = '\0';
+		cp[isi.remotehost.offset+isi.remotehost.len] = '\0';
+		/* remoteport comes last, so already NUL-terminated */
 
 		{
 #define DEFAULT_RETRIES 20
@@ -1688,13 +1647,14 @@ devopen(const char *name, const char *mode)
 		retries = def_retries;
 
 		do {
-			openfd = socketopen(family, protocol, localpname, cp, hostname);
+			openfd = socketopen(isi.family, isi.protocol, name+isi.localport.offset, name+isi.remoteport.offset, name+isi.remotehost.offset);
 			retries--;
 		} while (openfd == INVALID_HANDLE && retries > 0 && usleep(msleep) == 0);
 	}
 
-	*localpnamelastcharp = '/';
-	*hostnameslastcharp = '/';
+	/* restore original name string */
+	cp[isi.localport.offset+isi.localport.len] = '/';
+	cp[isi.remotehost.offset+isi.remotehost.len] = '/';
 #else /* ! HAVE_SOCKETS */
 	fatal(_("TCP/IP communications are not supported"));
 #endif /* HAVE_SOCKETS */
@@ -1708,9 +1668,8 @@ strictopen:
 		/* On OS/2 and Windows directory access via open() is
 		   not permitted.  */
 		struct stat buf;
-		int l, f;
 
-		if (!inetfile(name, &l, &f)
+		if (!inetfile(name, NULL)
 		    && stat(name, & buf) == 0 && S_ISDIR(buf.st_mode))
 			errno = EISDIR;
 	}
@@ -1732,7 +1691,7 @@ two_way_open(const char *str, struct redirect *rp)
 
 #ifdef HAVE_SOCKETS
 	/* case 1: socket */
-	if (inetfile(str, NULL, NULL)) {
+	if (inetfile(str, NULL)) {
 		int fd, newfd;
 
 		fd = devopen(str, "rw");
@@ -2129,6 +2088,7 @@ use_pipes:
 		    || close(ctop[0]) == -1 || close(ctop[1]) == -1)
 			fatal(_("close of pipe failed (%s)"), strerror(errno));
 		/* stderr does NOT get dup'ed onto child's stdout */
+		signal(SIGPIPE, SIG_DFL);
 		execl("/bin/sh", "sh", "-c", str, NULL);
 		_exit(errno == ENOENT ? 127 : 126);
 	}
@@ -2360,6 +2320,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 			fatal(_("moving pipe to stdout in child failed (dup: %s)"), strerror(errno));
 		if (close(p[0]) == -1 || close(p[1]) == -1)
 			fatal(_("close of pipe failed (%s)"), strerror(errno));
+		signal(SIGPIPE, SIG_DFL);
 		execl("/bin/sh", "sh", "-c", cmd, NULL);
 		_exit(errno == ENOENT ? 127 : 126);
 	}
@@ -3524,6 +3485,7 @@ errno_io_retry(void)
  * get_a_record --- read a record from IOP into out,
  * return length of EOF, set RT.
  * Note that errcode is never NULL, and the caller initializes *errcode to 0.
+ * If I/O would block, return -2.
  */
 
 static int
@@ -3587,7 +3549,16 @@ get_a_record(char **out,        /* pointer to pointer to data */
 
 		ret = (*matchrec)(iop, & recm, & state);
 		iop->flag &= ~IOP_AT_START;
+		/* found the record, we're done, break the loop */
 		if (ret == REC_OK)
+			break;
+
+		/*
+		 * Likely found the record; if there's no more data
+		 * to be had (like from a tiny regular file), break the
+		 * loop. Otherwise, see if we can read more.
+		 */
+		if (ret == TERMNEAREND && buffer_has_all_data(iop))
 			break;
 
 		/* need to add more data to buffer */
@@ -3641,10 +3612,14 @@ get_a_record(char **out,        /* pointer to pointer to data */
 			break;
 		} else if (iop->count == 0) {
 			/*
-			 * hit EOF before matching RS, so end
-			 * the record and set RT to ""
+			 * Hit EOF before being certain that we've matched
+			 * the end of the record. If ret is TERMNEAREND,
+			 * we need to pull out what we've got in the buffer.
+			 * Eventually we'll come back here and see the EOF,
+			 * end the record and set RT to "".
 			 */
-			iop->flag |= IOP_AT_EOF;
+			if (ret != TERMNEAREND)
+				iop->flag |= IOP_AT_EOF;
 			break;
 		} else
 			iop->dataend += iop->count;
@@ -3826,35 +3801,92 @@ free_rp(struct redirect *rp)
 
 /* inetfile --- return true for a /inet special file, set other values */
 
-static int
-inetfile(const char *str, int *length, int *family)
+static bool
+inetfile(const char *str, struct inet_socket_info *isi)
 {
-	bool ret = false;
+#ifndef HAVE_SOCKETS
+	return false;
+#else
+	const char *cp = str;
+	struct inet_socket_info buf;
 
-	if (strncmp(str, "/inet/", 6) == 0) {
-		ret = true;
-		if (length != NULL)
-			*length = 6;
-		if (family != NULL)
-			*family = AF_UNSPEC;
-	} else if (strncmp(str, "/inet4/", 7) == 0) {
-		ret = true;
-		if (length != NULL)
-			*length = 7;
-		if (family != NULL)
-			*family = AF_INET;
-	} else if (strncmp(str, "/inet6/", 7) == 0) {
-		ret = true;
-		if (length != NULL)
-			*length = 7;
-		if (family != NULL)
-			*family = AF_INET6;
+	/* syntax: /inet/protocol/localport/hostname/remoteport */
+	if (strncmp(cp, "/inet", 5) != 0)
+		/* quick exit */
+		return false;
+	if (! isi)
+		isi = & buf;
+	cp += 5;
+	switch (*cp) {
+	case '/':
+		isi->family = AF_UNSPEC;
+		break;
+	case '4':
+		if (*++cp != '/')
+			return false;
+		isi->family = AF_INET;
+		break;
+	case '6':
+		if (*++cp != '/')
+			return false;
+		isi->family = AF_INET6;
+		break;
+	default:
+		return false;
+	}
+	cp++;	/* skip past '/' */
+
+	/* which protocol? */
+	if (strncmp(cp, "tcp/", 4) == 0)
+		isi->protocol = SOCK_STREAM;
+	else if (strncmp(cp, "udp/", 4) == 0)
+		isi->protocol = SOCK_DGRAM;
+	else
+		return false;
+	cp += 4;
+
+	/* which localport? */
+	isi->localport.offset = cp-str;
+	while (*cp != '/' && *cp != '\0')
+		cp++;
+	/*                    
+	 * Require a port, let them explicitly put 0 if
+	 * they don't care.  
+	 */
+	if (*cp != '/' || ((isi->localport.len = (cp-str)-isi->localport.offset) == 0))
+		return false;
+
+	/* which hostname? */
+	cp++;
+	isi->remotehost.offset = cp-str;
+	while (*cp != '/' && *cp != '\0')
+		cp++; 
+	if (*cp != '/' || ((isi->remotehost.len = (cp-str)-isi->remotehost.offset) == 0))
+		return false;
+
+	/* which remoteport? */
+	cp++;
+	/*
+	 * The remote port ends the special file name.
+	 * This means there already is a '\0' at the end of the string.
+	 * Therefore no need to patch any string ending.
+	 *
+	 * Here too, require a port, let them explicitly put 0 if
+	 * they don't care.
+	 */
+	isi->remoteport.offset = cp-str;
+	while (*cp != '/' && *cp != '\0')
+		cp++; 
+	if (*cp != '\0' || ((isi->remoteport.len = (cp-str)-isi->remoteport.offset) == 0))
+		return false;
+
 #ifndef HAVE_GETADDRINFO
+	/* final check for IPv6: */
+	if (isi->family == AF_INET6)
 		fatal(_("IPv6 communication is not supported"));
 #endif
-	}
-
-	return ret;
+	return true;
+#endif /* HAVE_SOCKETS */
 }
 
 /*

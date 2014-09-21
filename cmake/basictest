@@ -1,0 +1,553 @@
+#!/bin/sh
+
+# Use this for debugging the test cases.
+# The resulting textual output will not destroy the test cases.
+set -x
+# After test case execution, the output can be found in
+# build/Testing/Temporary/LastTest.log
+
+export PATH=$PATH:/c/MinGW/msys/1.0/bin
+export GAWKEXE=$1
+export TESTCASE=$2
+TOPSRCDIR=$(dirname ${0})/..
+SRCDIR=${TOPSRCDIR}/test
+export AWKPATH=${SRCDIR}
+export AWKLIBPATH=$(dirname ${GAWKEXE})/extension/
+export LANG=C
+# Is this shell running in a native MinGW shell (MSYS) ?
+if test -n "$COMSPEC"; then
+  # Ignore all differences in white space.
+  COMPARE="diff -w"
+  PATH_SEPARATOR="\\"
+else
+  # This is a shell running in Unix environment.
+  COMPARE="cmp"
+  PATH_SEPARATOR="/"
+fi
+
+# This is the central function for executing a standard test case.
+# Many of the more specialized test cases rely on this function.
+function simple_test_case() {
+  local options=$1      # options passed to the gawk executable
+  local parameters=$2   # parameters passed to the test case script
+  cd ${SRCDIR}
+  if test -r ${TESTCASE}.in
+  # Any existing .in file will be redirected to standard input.
+  # The output redirection must be bound to the test script, otherwise
+  # the "set -x" logging would mix with the test case output.
+  then
+    ${pregawk} $GAWKEXE ${options} -f ${TESTCASE}.awk ${parameters} < ${TESTCASE}.in ${postgawk} > _${TESTCASE} 2>&1
+  else
+    ${pregawk} $GAWKEXE ${options} -f ${TESTCASE}.awk ${parameters}                  ${postgawk} > _${TESTCASE} 2>&1
+  fi || echo EXIT CODE: $? >> _${TESTCASE}
+  # Compare the expected (correct) output with the actual output.
+  ${COMPARE} ${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+  # If the comparison succeeds then remove the actual output.
+  # Else leave the actual output file untouched for later analysis.
+}
+
+# Each test case that cannot be handle in the "standard way" shall
+# be implemented as a function here.
+
+function lintold()        { simple_test_case "--lint-old" "" ; }
+function defref()         { simple_test_case "--lint"     "" ; }
+function fmtspcl()        { simple_test_case "--lint"     "" ; }
+function lintwarn()       { simple_test_case "--lint"     "" ; }
+function noeffect()       { simple_test_case "--lint"     "" ; }
+function nofmtch()        { simple_test_case "--lint"     "" ; }
+function shadow()         { simple_test_case "--lint"     "" ; }
+function uninit2()        { simple_test_case "--lint"     "" ; }
+function uninit3()        { simple_test_case "--lint"     "" ; }
+function uninit4()        { simple_test_case "--lint"     "" ; }
+function uninit5()        { simple_test_case "--lint"     "" ; }
+function uninitialized()  { simple_test_case "--lint"     "" ; }
+
+function regtest() {
+  echo 'Some of the output from regtest is very system specific, do not'
+  echo 'be distressed if your output differs from that distributed.'
+  echo 'Manual inspection is called for.'
+  AWK=$GAWKEXE ${SRCDIR}/regtest.sh
+}
+
+function compare() { simple_test_case "" "0 1" ; }
+
+function inftest() {
+  echo This test is very machine specific...
+  $GAWKEXE -f ${SRCDIR}/inftest.awk | sed "s/inf/Inf/g" >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function getline2() { simple_test_case "" "getline2.awk getline2.awk" ; }
+
+function awkpath() {
+  AWKPATH="${SRCDIR}$(PATH_SEPARATOR)/lib" $GAWKEXE -f awkpath.awk >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function argtest() { simple_test_case "" "-x -y abc" ; }
+
+function badargs() {
+  $GAWKEXE -f 2>&1 | grep -v patchlevel >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function nonl() { simple_test_case "--lint" "/dev/null" ; }
+
+function poundbang() {
+# The original poundbang test case looks a bit non-deterministic.
+# This is a shortened version.
+  sed "s;/tmp/gawk;$GAWKEXE;" < ${SRCDIR}/poundbang.awk > ./_pbd.awk
+  chmod +x ./_pbd.awk
+  ./_pbd.awk ${SRCDIR}/poundbang.awk > _`basename ${TESTCASE}` ;
+  ${COMPARE} ${SRCDIR}/poundbang.awk _`basename ${TESTCASE}` && rm -f _`basename ${TESTCASE}` _pbd.awk
+}
+
+function messages() {
+  $GAWKEXE -f ${SRCDIR}/messages.awk >_out2 2>_out3
+  ${COMPARE} ${SRCDIR}/out1.ok _out1 && ${COMPARE} ${SRCDIR}/out2.ok _out2 && ${COMPARE} ${SRCDIR}/out3.ok _out3 && rm -f _out1 _out2 _out3
+}
+
+function argarray() {
+  case ${SRCDIR} in
+  .)      : ;;
+  *)      cp ${SRCDIR}/argarray.in . ;;
+  esac
+  TEST=test echo just a test | $GAWKEXE -f ${SRCDIR}/argarray.awk ./argarray.in - >_${TESTCASE}
+  case ${SRCDIR} in
+  .)      : ;;
+  *)      rm -f ./argarray.in ;;
+        esac
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+
+function localenl() {
+  ${SRCDIR}/${TESTCASE}.sh >_${TESTCASE} 2>/dev/null
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function mbprintf1() {
+  GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE
+  LANG=en_US.UTF-8
+  $GAWKEXE -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> _${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function mbfw1() {
+  GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE
+  LANG=en_US.UTF-8
+  $GAWKEXE -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> _${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function printfbad2() {
+  $GAWKEXE --lint -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in 2>&1 | sed "s;$SRCDIR/;;g" >_${TESTCASE} || echo EXIT CODE: $?  >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function beginfile1() {
+  AWKPATH=${SRCDIR} $GAWKEXE -f ${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.awk . ./no/such/file Makefile  >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function beginfile2() {
+  # This differs from the original, the pwd part is new.
+  # The re-direction is now bound to the .sh file.
+  # This way the output of "set -x" is not written to the script's output file.
+  ( cd ${SRCDIR} && LC_ALL=C AWK="$GAWKEXE" ${SRCDIR}/${TESTCASE}.sh ${SRCDIR}/${TESTCASE}.in  > `pwd`/_${TESTCASE} 2>&1 )
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE}
+}
+
+function dumpvars() {
+  AWKPATH=${SRCDIR} $GAWKEXE --dump-variables 1 < ${SRCDIR}/${TESTCASE}.in >/dev/null 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  mv awkvars.out _${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function manyfiles() {
+  rm -rf junk
+  mkdir junk
+  $GAWKEXE 'BEGIN { for (i = 1; i <= 1030; i++) print i, i}' >_${TESTCASE}
+  $GAWKEXE -f ${SRCDIR}/manyfiles.awk _${TESTCASE} _${TESTCASE}
+  wc -l junk/* | $GAWKEXE '$1 != 2' | wc -l | sed "s/  *//g" > _${TESTCASE}
+  rm -rf junk
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function exitval1() {
+  $GAWKEXE -f ${SRCDIR}/exitval1.awk >_${TESTCASE} 2>&1; echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function fsspcoln() {
+  $GAWKEXE -f ${SRCDIR}/${TESTCASE}.awk 'FS=[ :]+' ${SRCDIR}/${TESTCASE}.in >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function rsstart2() {
+  $GAWKEXE -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/rsstart1.in >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function rsstart3() {
+  head ${SRCDIR}/rsstart1.in | $GAWKEXE -f ${SRCDIR}/rsstart2.awk >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function strftime() {
+  echo This test could fail on slow machines or on a minute boundary,
+  echo so if it does, double check the actual results:
+  GAWKLOCALE=C; export GAWKLOCALE
+  TZ=GMT0; export TZ
+  (LC_ALL=C date) | $GAWKEXE -v OUTPUT=_${TESTCASE} -f ${SRCDIR}/strftime.awk
+  ${COMPARE} strftime.ok _${TESTCASE} && rm -f _${TESTCASE} strftime.ok || exit 0
+}
+
+function inplace1() {
+  cp ${SRCDIR}/inplace.1.in _${TESTCASE}.1
+  cp ${SRCDIR}/inplace.2.in _${TESTCASE}.2
+  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE}  ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+  ${COMPARE}  ${SRCDIR}/${TESTCASE}.1.ok _${TESTCASE}.1 && rm -f _${TESTCASE}.1
+  ${COMPARE}  ${SRCDIR}/${TESTCASE}.2.ok _${TESTCASE}.2 && rm -f _${TESTCASE}.2
+}
+
+function inplace2() {
+  cp ${SRCDIR}/inplace.1.in _${TESTCASE}.1
+  cp ${SRCDIR}/inplace.2.in _${TESTCASE}.2
+  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.1.ok _${TESTCASE}.1 && rm -f _${TESTCASE}.1
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.1.bak.ok _${TESTCASE}.1.bak && rm -f _${TESTCASE}.1.bak
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.2.ok _${TESTCASE}.2 && rm -f _${TESTCASE}.2
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.2.bak.ok _${TESTCASE}.2.bak && rm -f _${TESTCASE}.2.bak
+}
+
+function inplace3() {
+  cp ${SRCDIR}/inplace.1.in _${TESTCASE}.1
+  cp ${SRCDIR}/inplace.2.in _${TESTCASE}.2
+  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  AWKPATH=${SRCDIR}/../awklib/eg/lib $GAWKEXE -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "Before"} {gsub(/bar/, "foo"); print} END {print "After"}' _${TESTCASE}.1 - _${TESTCASE}.2 < ${SRCDIR}/inplace.in >>_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.1.ok _${TESTCASE}.1 && rm -f _${TESTCASE}.1
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.1.bak.ok _${TESTCASE}.1.bak && rm -f _${TESTCASE}.1.bak
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.2.ok _${TESTCASE}.2 && rm -f _${TESTCASE}.2
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.2.bak.ok _${TESTCASE}.2.bak && rm -f _${TESTCASE}.2.bak
+}
+
+function testext() {
+  $GAWKEXE ' /^(@load|BEGIN)/,/^}/' ${SRCDIR}/../extension/testext.c > testext.awk
+  $GAWKEXE -f ${TESTCASE}.awk  > ${SRCDIR}/_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> ${SRCDIR}/_${TESTCASE}
+  rm -f testext.awk
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE}
+}
+
+function readdir() {
+  if [ "`uname`" = Linux ] && [ "`stat -f . 2>/dev/null | awk 'NR == 2 { print $NF }'`" = nfs ];  then
+    echo This test may fail on GNU/Linux systems when run on an NFS filesystem.;
+    echo If it does, try rerunning on an ext'[234]' filesystem. ;
+  fi
+  $GAWKEXE -f ${TESTCASE}.awk ${SRCDIR}/.. > ${SRCDIR}/_${TESTCASE} 2>&1
+  ls -afli ${TOPSRCDIR} | sed 1d | $GAWKEXE -f ${SRCDIR}/readdir0.awk -v extout=${SRCDIR}/_${TESTCASE} > ${SRCDIR}/${TESTCASE}.ok
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok ${SRCDIR}/_${TESTCASE} && rm -f ${SRCDIR}/_${TESTCASE} ${SRCDIR}/${TESTCASE}.ok
+}
+
+function ordchr2() {
+  $GAWKEXE -l ordchr 'BEGIN {print chr(ord("z"))}' >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function include2() {
+  AWKPATH=${SRCDIR} $GAWKEXE -i inclib 'BEGIN {print sandwich("a", "b", "c")}' >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function incdupe() {
+  AWKPATH=${SRCDIR} $GAWKEXE --lint -i inclib -i inclib.awk 'BEGIN {print sandwich("a", "b", "c")}' >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function incdupe2() {
+  AWKPATH=${SRCDIR} $GAWKEXE --lint -f inclib -f inclib.awk >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function incdupe3() {
+  AWKPATH=${SRCDIR} $GAWKEXE --lint -f hello -f hello.awk >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function incdupe4() {
+  AWKPATH=${SRCDIR} $GAWKEXE --lint -f hello -i hello.awk >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function incdupe5() {
+  AWKPATH=${SRCDIR} $GAWKEXE --lint -i hello -f hello.awk >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function incdupe6() {
+  AWKPATH=${SRCDIR} $GAWKEXE --lint -i inchello -f hello.awk >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function incdupe7() {
+  AWKPATH=${SRCDIR} $GAWKEXE --lint -f hello -i inchello >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+# TODO: The compare operation passes even when there are diffs.
+function readfile() {
+  $GAWKEXE -l readfile 'BEGIN {printf "%s", readfile("Makefile")}' >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} Makefile _${TESTCASE} && rm -f _${TESTCASE} || cp -p Makefile ${TESTCASE}.ok
+}
+
+function fts() {
+  if [ "`uname`" = IRIX ];  then \
+    echo This test may fail on IRIX systems when run on an NFS filesystem.; \
+    echo If it does, try rerunning on an xfs filesystem. ; \
+  fi
+  simple_test_case ""  "" 
+}
+
+function charasbytes() {
+  [ -z "$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+  AWKPATH=${SRCDIR} $GAWKEXE -b -v BINMODE=2 -f ${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in | \
+  od -c -t x1 | sed -e 's/  */ /g' -e 's/ *$//' >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function symtab6() {
+  $GAWKEXE -d__${TESTCASE} -f ${SRCDIR}/${TESTCASE}.awk
+  grep -v '^ENVIRON' __${TESTCASE} | grep -v '^PROCINFO' > _${TESTCASE} ; rm __${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function symtab8() {
+  $GAWKEXE -d__${TESTCASE} -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in >_${TESTCASE}
+  grep -v '^ENVIRON' __${TESTCASE} | grep -v '^PROCINFO' | grep -v '^FILENAME' >> _${TESTCASE} ; rm __${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function colonwarn() {
+  for i in 1 2 3 ; \
+  do $GAWKEXE -f ${SRCDIR}/${TESTCASE}.awk $i < ${SRCDIR}/${TESTCASE}.in ; \
+  done > _${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function litoct() {
+  echo ab | $GAWKEXE --traditional -f ${SRCDIR}/litoct.awk >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function devfd() {
+  $GAWKEXE 1 /dev/fd/4 /dev/fd/5 4<${SRCDIR}/devfd.in4 5<${SRCDIR}/devfd.in5 >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >> _${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function fflush() {
+  ${SRCDIR}/fflush.sh >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function mmap8k() {
+  $GAWKEXE '{ print }' ${SRCDIR}/mmap8k.in >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/mmap8k.in _${TESTCASE} && rm -f _${TESTCASE} || cp ${SRCDIR}/${TESTCASE}.in ${TESTCASE}.ok
+}
+
+function pid() {
+  AWKPATH=${SRCDIR} AWK=$GAWKEXE ${SHELL} ${SRCDIR}/pid.sh $$ > _${TESTCASE} ; :
+  ${COMPARE} ${SRCDIR}/pid.ok _`basename ${TESTCASE}` && rm -f _${TESTCASE}
+}
+
+function strftlng() {
+  TZ=UTC; export TZ; $GAWKEXE -f ${SRCDIR}/strftlng.awk >_${TESTCASE}
+  if ${COMPARE} ${SRCDIR}/strftlng.ok _${TESTCASE} >/dev/null 2>&1 ; then : ; else \
+  TZ=UTC0; export TZ; $GAWKEXE -f ${SRCDIR}/strftlng.awk >_${TESTCASE} ; \
+  fi
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function nors() {
+  echo A B C D E | tr -d '\12\15' | $GAWKEXE '{ print $NF }' - ${SRCDIR}/nors.in > _${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function fmtspcl() {
+  $GAWKEXE -v "sd=${SRCDIR}" 'BEGIN {pnan = sprintf("%g",sqrt(-1)); nnan = sprintf("%g",-sqrt(-1)); pinf = sprintf("%g",-log(0)); ninf = sprintf("%g",log(0))} {sub(/positive_nan/,pnan); sub(/negative_nan/,nnan); sub(/positive_infinity/,pinf); sub(/negative_infinity/,ninf); sub(/fmtspcl/,(sd"/fmtspcl")); print}' < ${SRCDIR}/fmtspcl.tok > ${TESTCASE}.ok 2>/dev/null
+  $GAWKEXE  $AWKFLAGS -f ${SRCDIR}/fmtspcl.awk  --lint >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  if test -z "$AWKFLAGS" ; then
+    ${COMPARE} ${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+  else
+    ${COMPARE} ${SRCDIR}/${TESTCASE}-mpfr.ok _${TESTCASE} && rm -f _${TESTCASE}
+  fi
+}
+
+function pipeio2() { simple_test_case "-v SRCDIR=${SRCDIR}" "" ; }
+
+function arynocls() {
+  AWKPATH=${SRCDIR} $GAWKEXE -v INPUT=${SRCDIR}/arynocls.in -f arynocls.awk >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function inetechu() {
+  echo This test is for establishing UDP connections
+  $GAWKEXE 'BEGIN {print "" |& "/inet/udp/0/127.0.0.1/9"}'
+}
+
+function inetecht() {
+  echo This test is for establishing TCP connections
+  $GAWKEXE 'BEGIN {print "" |& "/inet/tcp/0/127.0.0.1/9"}'
+}
+
+function inetdayu() {
+  echo This test is for bidirectional UDP transmission
+  $GAWKEXE 'BEGIN { print "" |& "/inet/udp/0/127.0.0.1/13"; \
+  "/inet/udp/0/127.0.0.1/13" |& getline; print $0}'
+}
+
+function inetdayt() {
+  echo This test is for bidirectional TCP transmission
+  $GAWKEXE 'BEGIN { print "" |& "/inet/tcp/0/127.0.0.1/13"; \
+  "/inet/tcp/0/127.0.0.1/13" |& getline; print $0}'
+}
+
+function redfilnm() { simple_test_case "" "srcdir=${SRCDIR}" ; }
+
+function leaddig() { simple_test_case "-v x=2E" "" ; }
+function longwrds() { simple_test_case "-vSORT=sort" "" ; }
+
+function gsubtst3() {
+  $GAWKEXE --re-interval -f ${SRCDIR}/${TESTCASE}.awk ${SRCDIR}/${TESTCASE}.in >_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function space() {
+  $GAWKEXE -f ' ' ${SRCDIR}/space.awk >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function rsnulbig() {
+  # Suppose that block size for pipe is at most 128kB:
+  $GAWKEXE 'BEGIN { for (i = 1; i <= 128*64+1; i++) print "abcdefgh123456\n" }' 2>&1 | \
+  $GAWKEXE 'BEGIN { RS = ""; ORS = "\n\n" }; { print }' 2>&1 | \
+  $GAWKEXE '/^[^a]/; END{ print NR }' >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function rsnulbig2() {
+  $GAWKEXE 'BEGIN { ORS = ""; n = "\n"; for (i = 1; i <= 10; i++) n = (n n); \
+    for (i = 1; i <= 128; i++) print n; print "abc\n" }' 2>&1 | \
+    $GAWKEXE 'BEGIN { RS = ""; ORS = "\n\n" };{ print }' 2>&1 | \
+    $GAWKEXE '/^[^a]/; END { print NR }' >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function printf0() { simple_test_case "--posix" "" ; }
+
+function profile1() {
+  $GAWKEXE --pretty-print=ap-${TESTCASE}.out -f ${SRCDIR}/xref.awk ${SRCDIR}/dtdgport.awk > _${TESTCASE}.out1
+  $GAWKEXE -f ap-${TESTCASE}.out ${SRCDIR}/dtdgport.awk > _${TESTCASE}.out2 ; rm ap-${TESTCASE}.out
+  ${COMPARE} _${TESTCASE}.out1 _${TESTCASE}.out2 && rm _${TESTCASE}.out[12] || { echo EXIT CODE: $$? >>_${TESTCASE} ; \
+  cp $(srcdir)/dtdgport.awk > ${TESTCASE}.ok ; }
+}
+
+function profile2() {
+  $GAWKEXE --profile=ap-${TESTCASE}.out -v sortcmd=sort -f ${SRCDIR}/xref.awk ${SRCDIR}/dtdgport.awk > /dev/null
+  sed 1,2d < ap-${TESTCASE}.out > _${TESTCASE}; rm ap-${TESTCASE}.out
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function profile3() {
+  $GAWKEXE --profile=ap-${TESTCASE}.out -f ${SRCDIR}/${TESTCASE}.awk > /dev/null
+  sed 1,2d < ap-${TESTCASE}.out > _${TESTCASE}; rm ap-${TESTCASE}.out
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function profile4() {
+  GAWK_NO_PP_RUN=1 $GAWKEXE --profile=ap-${TESTCASE}.out -f ${SRCDIR}/${TESTCASE}.awk > /dev/null
+  sed 1,2d < ap-${TESTCASE}.out > _${TESTCASE}; rm ap-${TESTCASE}.out
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function profile5() {
+  GAWK_NO_PP_RUN=1 $GAWKEXE --profile=ap-${TESTCASE}.out -f ${SRCDIR}/${TESTCASE}.awk > /dev/null
+  sed 1,2d < ap-${TESTCASE}.out > _${TESTCASE}; rm ap-${TESTCASE}.out
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function posix2008sub() {
+  $GAWKEXE --posix -f ${SRCDIR}/${TESTCASE}.awk > _${TESTCASE} 2>&1
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function next() {
+  LC_ALL=${GAWKLOCALE:-C} LANG=${GAWKLOCALE:-C} AWK="$GAWKEXE" ${SRCDIR}/${TESTCASE}.sh > _${TESTCASE} 2>&1
+  LC_ALL=C ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function exit() {
+  AWK="$GAWKEXE" ${SRCDIR}/${TESTCASE}.sh > _${TESTCASE} 2>&1
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function mpfrexprange() { simple_test_case "-M -vPREC=53 " "" ; }
+function mpfrrnd()      { simple_test_case "-M -vPREC=53 " "" ; }
+function mpfrnr()       { simple_test_case "-M -vPREC=113" "" ; }
+function mpfrbigint()   { simple_test_case "-M           " "" ; }
+
+function jarebug() {
+  ${SRCDIR}/${TESTCASE}.sh "$GAWKEXE" "${SRCDIR}/${TESTCASE}.awk" "${SRCDIR}/${TESTCASE}.in" "_${TESTCASE}"
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function rtlen() {
+  ${SRCDIR}/${TESTCASE}.sh >_${TESTCASE} || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function rtlen01() {
+  ${SRCDIR}/${TESTCASE}.sh >_${TESTCASE} || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function rtlenmb() {
+  GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE
+  ${SRCDIR}/rtlen.sh >_${TESTCASE} || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function nondec2()      { simple_test_case "--non-decimal-data -v a=0x1"     "" ; }
+
+function nofile() {
+  $GAWKEXE '{}' no/such/file >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function binmode1() {
+  $GAWKEXE -v BINMODE=3 'BEGIN { print BINMODE }' >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function devfd1() {
+  $GAWKEXE -f ${SRCDIR}/${TESTCASE}.awk 4< ${SRCDIR}/devfd.in1 5< ${SRCDIR}/devfd.in2 >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+function devfd2() {
+  # The program text is the '1' which will print each record. How compact can you get?
+  $GAWKEXE 1 /dev/fd/4 /dev/fd/5 4< ${SRCDIR}/devfd.in1 5< ${SRCDIR}/devfd.in2 >_${TESTCASE} 2>&1 || echo EXIT CODE: $? >>_${TESTCASE}
+  ${COMPARE} ${SRCDIR}/${TESTCASE}.ok _${TESTCASE} && rm -f _${TESTCASE}
+}
+
+# Is this test case implemented as a function ?
+if [ "$( type -t $TESTCASE )" = "function" ]
+then
+  $TESTCASE
+else
+  # If no function exists, then treat the test case in standard way.
+  simple_test_case "" "" 
+fi
+

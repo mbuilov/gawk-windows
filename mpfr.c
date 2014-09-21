@@ -89,6 +89,15 @@ init_mpfr(mpfr_prec_t prec, const char *rmode)
 	register_exec_hook(mpg_interpret, 0);
 }
 
+/* cleanup_mpfr --- clean stuff up, mainly for valgrind */
+
+void
+cleanup_mpfr(void)
+{
+	mpfr_clear(_mpf_t1);
+	mpfr_clear(_mpf_t2);
+}
+
 /* mpg_node --- allocate a node to store MPFR float or GMP integer */
 
 NODE *
@@ -688,22 +697,35 @@ do_mpfr_atan2(int nargs)
 	return res;
 }
 
+/* do_mpfr_func --- run an MPFR function - not inline, for debugging */
 
-#define SPEC_MATH(X)						\
-NODE *t1, *res;							\
-mpfr_ptr p1;							\
-int tval;							\
-t1 = POP_SCALAR();						\
-if (do_lint && (t1->flags & (NUMCUR|NUMBER)) == 0)		\
-	lintwarn(_("%s: received non-numeric argument"), #X);	\
-force_number(t1);						\
-p1 = MP_FLOAT(t1);						\
-res = mpg_float();						\
-tval = mpfr_##X(res->mpg_numbr, p1, ROUND_MODE);			\
-IEEE_FMT(res->mpg_numbr, tval);					\
-DEREF(t1);							\
-return res
+static inline NODE *
+do_mpfr_func(const char *name,
+		int (*mpfr_func)(),	/* putting argument types just gets the compiler confused */
+		int nargs)
+{
+	NODE *t1, *res;
+	mpfr_ptr p1;
+	int tval;
 
+	t1 = POP_SCALAR();
+	if (do_lint && (t1->flags & (NUMCUR|NUMBER)) == 0)
+		lintwarn(_("%s: received non-numeric argument"), name);
+
+	force_number(t1);
+	p1 = MP_FLOAT(t1);
+	res = mpg_float();
+	mpfr_set_prec(res->mpg_numbr, mpfr_get_prec(p1));	/* needed at least for sqrt() */
+	tval = mpfr_func(res->mpg_numbr, p1, ROUND_MODE);
+	IEEE_FMT(res->mpg_numbr, tval);
+	DEREF(t1);
+	return res;
+}
+
+#define SPEC_MATH(X)				\
+NODE *result;					\
+result = do_mpfr_func(#X, mpfr_##X, nargs);	\
+return result
 
 /* do_mpfr_sin --- do the sin function */
 
@@ -1166,6 +1188,95 @@ do_mpfr_srand(int nargs)
 	return res;
 }
 
+/* do_mpfr_div --- do integer division, return quotient and remainder in dest array */
+
+/*
+ * We define the semantics as:
+ * 	numerator = int(numerator)
+ *	denominator = int(denonmator)
+ *	quotient = int(numerator / denomator)
+ *	remainder = int(numerator % denomator)
+ */
+
+NODE *
+do_mpfr_div(int nargs)
+{
+	NODE *numerator, *denominator, *result;
+	NODE *num, *denom;
+	NODE *quotient, *remainder;
+	NODE *sub, **lhs;
+
+	result = POP_PARAM();
+	if (result->type != Node_var_array)
+		fatal(_("div: third argument is not an array"));
+	assoc_clear(result);
+
+	denominator = POP_SCALAR();
+	numerator = POP_SCALAR();
+
+	if (do_lint) {
+		if ((numerator->flags & (NUMCUR|NUMBER)) == 0)
+			lintwarn(_("div: received non-numeric first argument"));
+		if ((denominator->flags & (NUMCUR|NUMBER)) == 0)
+			lintwarn(_("div: received non-numeric second argument"));
+	}
+
+	(void) force_number(numerator);
+	(void) force_number(denominator);
+
+	/* convert numerator and denominator to integer */
+	if (is_mpg_integer(numerator)) {
+		num = mpg_integer();
+		mpz_set(num->mpg_i, numerator->mpg_i);
+	} else {
+		if (! mpfr_number_p(numerator->mpg_numbr)) {
+			/* [+-]inf or NaN */
+			return numerator;
+		}
+
+		num = mpg_integer();
+		mpfr_get_z(num->mpg_i, numerator->mpg_numbr, MPFR_RNDZ);
+	}
+
+	if (is_mpg_integer(denominator)) {
+		denom = mpg_integer();
+		mpz_set(denom->mpg_i, denominator->mpg_i);
+	} else {
+		if (! mpfr_number_p(denominator->mpg_numbr)) {
+			/* [+-]inf or NaN */
+			return denominator;
+		}
+
+		denom = mpg_integer();
+		mpfr_get_z(denom->mpg_i, denominator->mpg_numbr, MPFR_RNDZ);
+	}
+
+	if (mpz_sgn(denom->mpg_i) == 0)
+		fatal(_("div: division by zero attempted"));
+
+	quotient = mpg_integer();
+	remainder = mpg_integer();
+
+	/* do the division */
+	mpz_tdiv_qr(quotient->mpg_i, remainder->mpg_i, num->mpg_i, denom->mpg_i);
+	unref(num);
+	unref(denom);
+	unref(numerator);
+	unref(denominator);
+
+	sub = make_string("quotient", 8);
+	lhs = assoc_lookup(result, sub);
+	unref(*lhs);
+	*lhs = quotient;
+
+	sub = make_string("remainder", 9);
+	lhs = assoc_lookup(result, sub);
+	unref(*lhs);
+	*lhs = remainder;
+
+	return make_number((AWKNUM) 0.0);
+}
+
 /*
  * mpg_tofloat --- convert an arbitrary-precision integer operand to
  *	a float without loss of precision. It is assumed that the
@@ -1354,8 +1465,27 @@ mpg_mod(NODE *t1, NODE *t2)
 	int tval;
 
 	if (is_mpg_integer(t1) && is_mpg_integer(t2)) {
+		/*
+		 * 8/2014: Originally, this was just
+		 *
+		 * r = mpg_integer();
+		 * mpz_mod(r->mpg_i, t1->mpg_i, t2->mpg_i);
+		 *
+		 * But that gave very strange results with negative numerator:
+		 *
+		 *	$ ./gawk -M 'BEGIN { print -15 % 7 }'
+		 *	6
+		 *
+		 * So instead we use mpz_tdiv_qr() to get the correct result
+		 * and just throw away the quotient. We could not find any
+		 * reason why mpz_mod() wasn't working correctly.
+		 */
+		NODE *dummy_quotient;
+
 		r = mpg_integer();
-		mpz_mod(r->mpg_i, t1->mpg_i, t2->mpg_i);
+		dummy_quotient = mpg_integer();
+		mpz_tdiv_qr(dummy_quotient->mpg_i, r->mpg_i, t1->mpg_i, t2->mpg_i);
+		unref(dummy_quotient);
 	} else {
 		mpfr_ptr p1, p2;
 		p1 = MP_FLOAT(t1);

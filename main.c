@@ -33,6 +33,16 @@
 #include <mcheck.h>
 #endif
 
+#ifdef HAVE_LIBSIGSEGV
+#include <sigsegv.h>
+#else
+typedef void *stackoverflow_context_t;
+/* the argument to this macro is purposely not used */
+#define sigsegv_install_handler(catchsegv) signal(SIGSEGV, catchsig)
+/* define as 0 rather than empty so that (void) cast on it works */
+#define stackoverflow_install_handler(catchstackoverflow, extra_stack, STACK_SIZE) 0
+#endif
+
 #define DEFAULT_PROFILE		"awkprof.out"	/* where to put profile */
 #define DEFAULT_VARFILE		"awkvars.out"	/* where to put vars */
 #define DEFAULT_PREC		53
@@ -262,17 +272,6 @@ main(int argc, char **argv)
 	 */
 	gawk_mb_cur_max = MB_CUR_MAX;
 	/* Without MBS_SUPPORT, gawk_mb_cur_max is 1. */
-#ifdef LIBC_IS_BORKED
-{
-	const char *env_lc;
-
-	env_lc = getenv("LC_ALL");
-	if (env_lc == NULL)
-		env_lc = getenv("LANG");
-	if (env_lc != NULL && env_lc[1] == '\0' && tolower(env_lc[0]) == 'c')
-		gawk_mb_cur_max = 1;
-}
-#endif
 
 	/* init the cache for checking bytes if they're characters */
 	init_btowc_cache();
@@ -472,6 +471,8 @@ main(int argc, char **argv)
 		case 'M':
 #ifdef HAVE_MPFR
 			do_flags |= DO_MPFR;
+#else
+			warning(_("-M ignored: MPFR/GMP support not compiled in"));
 #endif
 			break;
 
@@ -703,6 +704,8 @@ out:
 	if (do_intl)
 		exit(EXIT_SUCCESS);
 
+	install_builtins();
+
 	if (do_lint)
 		shadow_funcs();
 
@@ -739,9 +742,8 @@ out:
 
 	if (do_debug)
 		debug_prog(code_block);
-	else if (do_pretty_print && ! do_debug && getenv("GAWK_NO_PP_RUN") != NULL)
-		/* hack to run pretty printer only. need a better solution */
-		;
+	else if (do_pretty_print && ! do_profile)
+		;	/* run pretty printer only. */
 	else
 		interpret(code_block);
 
@@ -752,6 +754,11 @@ out:
 
 	if (do_dump_vars)
 		dump_vars(varfile);
+
+#ifdef HAVE_MPFR
+	if (do_mpfr)
+		cleanup_mpfr();
+#endif
 
 	if (do_tidy_mem)
 		release_all_vars();
@@ -819,10 +826,10 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-h\t\t\t--help\n"), fp);
 	fputs(_("\t-i includefile\t\t--include=includefile\n"), fp);
 	fputs(_("\t-l library\t\t--load=library\n"), fp);
-	fputs(_("\t-L [fatal]\t\t--lint[=fatal]\n"), fp);
-	fputs(_("\t-n\t\t\t--non-decimal-data\n"), fp);
+	fputs(_("\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"), fp);
 	fputs(_("\t-M\t\t\t--bignum\n"), fp);
 	fputs(_("\t-N\t\t\t--use-lc-numeric\n"), fp);
+	fputs(_("\t-n\t\t\t--non-decimal-data\n"), fp);
 	fputs(_("\t-o[file]\t\t--pretty-print[=file]\n"), fp);
 	fputs(_("\t-O\t\t\t--optimize\n"), fp);
 	fputs(_("\t-p[file]\t\t--profile[=file]\n"), fp);
@@ -1322,11 +1329,11 @@ arg_assign(char *arg, bool initing)
 
 	/* first check that the variable name has valid syntax */
 	badvar = false;
-	if (! isalpha((unsigned char) arg[0]) && arg[0] != '_')
+	if (! is_alpha((unsigned char) arg[0]) && arg[0] != '_')
 		badvar = true;
 	else
 		for (cp2 = arg+1; *cp2; cp2++)
-			if (! isalnum((unsigned char) *cp2) && *cp2 != '_') {
+			if (! is_identchar((unsigned char) *cp2)) {
 				badvar = true;
 				break;
 			}
