@@ -12,4 +12,4 @@ FNR == 1 {
     beginfile(FILENAME)
 }
 
-END  { endfile(_filename_) }
+END { endfile(_filename_) }
