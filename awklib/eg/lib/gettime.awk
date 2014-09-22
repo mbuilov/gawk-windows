@@ -31,7 +31,7 @@ function getlocaltime(time,    ret, now, i)
     now = systime()
 
     # return date(1)-style output
-    ret = strftime(PROCINFO["strftime"], now)
+    ret = strftime("%a %b %e %H:%M:%S %Z %Y", now)
 
     # clear out target array
     delete time
