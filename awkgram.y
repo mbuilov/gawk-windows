@@ -3395,7 +3395,11 @@ retry:
 	case '"':
 	string:
 		esc_seen = false;
-		while ((c = nextc(true)) != '"') {
+		/*
+		 * Allow any kind of junk in quoted string,
+		 * so pass false to nextc().
+		 */
+		while ((c = nextc(false)) != '"') {
 			if (c == '\n') {
 				pushback();
 				yyerror(_("unterminated string"));
