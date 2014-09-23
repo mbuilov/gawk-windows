@@ -565,8 +565,8 @@ particular records in a file and perform operations upon them.
 * Regexp Field Splitting::              Using regexps as the field separator.
 * Single Character Fields::             Making each character a separate
                                         field.
-* Command Line Field Separator::        Setting @code{FS} from the
-                                        command line.
+* Command Line Field Separator::        Setting @code{FS} from the command
+                                        line.
 * Full Line Fields::                    Making the full line be a single
                                         field.
 * Field Splitting Summary::             Some final points and a summary table.
@@ -610,10 +610,12 @@ particular records in a file and perform operations upon them.
 * Printf Examples::                     Several examples.
 * Redirection::                         How to redirect output to multiple
                                         files and pipes.
+* Special FD::                          Special files for I/O.
 * Special Files::                       File name interpretation in
                                         @command{gawk}. @command{gawk} allows
                                         access to inherited file descriptors.
-* Special FD::                          Special files for I/O.
+* Other Inherited Files::               Accessing other open files with
+                                        @command{gawk}.
 * Special Network::                     Special files for network
                                         communications.
 * Special Caveats::                     Things to watch out for.
@@ -8795,6 +8797,7 @@ and discusses the @code{close()} built-in function.
 * Printf::                      The @code{printf} statement.
 * Redirection::                 How to redirect output to multiple files and
                                 pipes.
+* Special FD::                  Special files for I/O.
 * Special Files::               File name interpretation in @command{gawk}.
                                 @command{gawk} allows access to inherited file
                                 descriptors.
@@ -9818,23 +9821,8 @@ It then sends the list to the shell for execution.
 @c ENDOFRANGE outre
 @c ENDOFRANGE reout
 
-@node Special Files
-@section Special @value{FFN}s in @command{gawk}
-@c STARTOFRANGE gfn
-@cindex @command{gawk}, file names in
-
-@command{gawk} provides a number of special @value{FN}s that it interprets
-internally.  These @value{FN}s provide access to standard pre-opened files
-and TCP/IP networking.
-
-@menu
-* Special FD::                  Special files for I/O.
-* Special Network::             Special files for network communications.
-* Special Caveats::             Things to watch out for.
-@end menu
-
 @node Special FD
-@subsection Special Files for Standard Pre-Opened Files
+@section Special Files for Standard Pre-Opened Data Streams
 @cindex standard input
 @cindex input, standard
 @cindex standard output
@@ -9845,9 +9833,12 @@ and TCP/IP networking.
 @cindex files, descriptors, See file descriptors
 
 Running programs conventionally have three input and output streams
-already available to them for reading and writing.  These are known as
-the @dfn{standard input}, @dfn{standard output}, and @dfn{standard error
-output}.  These streams are, by default, connected to your keyboard and screen, but
+already available to them for reading and writing.  These are known
+as the @dfn{standard input}, @dfn{standard output}, and @dfn{standard
+error output}.  These open streams (and any other open file or pipe)
+are often referred to by the technical term @dfn{file descriptors}.
+
+These streams are, by default, connected to your keyboard and screen, but
 they are often redirected with the shell, via the @samp{<}, @samp{<<},
 @samp{>}, @samp{>>}, @samp{>&}, and @samp{|} operators.  Standard error
 is typically used for writing error messages; the reason there are two separate
@@ -9856,7 +9847,7 @@ redirected separately.
 
 @cindex differences in @command{awk} and @command{gawk}, error messages
 @cindex error handling
-In other implementations of @command{awk}, the only way to write an error
+In traditional implementations of @command{awk}, the only way to write an error
 message to standard error in an @command{awk} program is as follows:
 
 @example
@@ -9889,15 +9880,12 @@ that happens, writing to the screen is not correct.  In fact, if
 terminal at all.
 Then opening @file{/dev/tty} fails.
 
-@command{gawk} provides special @value{FN}s for accessing the three standard
-streams. @value{COMMONEXT} It also provides syntax for accessing
-any other inherited open files.
-These open files are often referred to by the technical term
-@dfn{file descriptor}.
-If the @value{FN} matches
-one of these special names when @command{gawk} redirects input or output,
-then it directly uses the descriptor that the @value{FN} stands for.
-These special @value{FN}s work for all operating systems that @command{gawk}
+@command{gawk}, BWK @command{awk} and @command{mawk} provide
+special @value{FN}s for accessing the three standard streams.
+If the @value{FN} matches one of these special names when @command{gawk}
+(or one of the others) redirects input or output, then it directly uses
+the descriptor that the @value{FN} stands for.  These special
+@value{FN}s work for all operating systems that @command{gawk}
 has been ported to, not just those that are POSIX-compliant:
 
 @cindex common extensions, @code{/dev/stdin} special file
@@ -9919,19 +9907,10 @@ The standard output (file descriptor 1).
 
 @item /dev/stderr
 The standard error output (file descriptor 2).
-
-@item /dev/fd/@var{N}
-The file associated with file descriptor @var{N}.  Such a file must
-be opened by the program initiating the @command{awk} execution (typically
-the shell).  Unless special pains are taken in the shell from which
-@command{gawk} is invoked, only descriptors 0, 1, and 2 are available.
 @end table
 
-The @value{FN}s @file{/dev/stdin}, @file{/dev/stdout}, and @file{/dev/stderr}
-are aliases for @file{/dev/fd/0}, @file{/dev/fd/1}, and @file{/dev/fd/2},
-respectively. However, they are more self-explanatory.
-The proper way to write an error message in a @command{gawk} program
-is to use @file{/dev/stderr}, like this:
+With these facilities,
+the proper way to write an error message then becomes:
 
 @example
 print "Serious error detected!" > "/dev/stderr"
@@ -9943,13 +9922,50 @@ Like any other redirection, the value must be a string.
 It is a common error to omit the quotes, which leads
 to confusing results.
 
-Finally, using the @code{close()} function on a @value{FN} of the
+@command{gawk} does not treat these @value{FN}s as special when
+in POSIX compatibility mode. However, since BWK @command{awk}
+supports them, @command{gawk} does support them even when
+invoked with the @option{--traditional} option (@pxref{Options}).
+
+@node Special Files
+@section Special @value{FFN}s in @command{gawk}
+@c STARTOFRANGE gfn
+@cindex @command{gawk}, file names in
+
+Besides access to standard input, stanard output, and standard error,
+@command{gawk} provides access to any open file descriptor.
+Additionally, there are special @value{FN}s reserved for
+TCP/IP networking.
+
+@menu
+* Other Inherited Files::       Accessing other open files with
+                                @command{gawk}.
+* Special Network::             Special files for network communications.
+* Special Caveats::             Things to watch out for.
+@end menu
+
+@node Other Inherited Files
+@subsection Accessing Other Open Files With @command{gawk}
+
+Besides the @code{/dev/stdin}, @code{/dev/stdout}, and @code{/dev/stderr}
+special @value{FN}s mentioned earlier, @command{gawk} provides syntax
+for accessing any other inherited open file:
+
+@table @file
+@item /dev/fd/@var{N}
+The file associated with file descriptor @var{N}.  Such a file must
+be opened by the program initiating the @command{awk} execution (typically
+the shell).  Unless special pains are taken in the shell from which
+@command{gawk} is invoked, only descriptors 0, 1, and 2 are available.
+@end table
+
+The @value{FN}s @file{/dev/stdin}, @file{/dev/stdout}, and @file{/dev/stderr}
+are essentially aliases for @file{/dev/fd/0}, @file{/dev/fd/1}, and
+@file{/dev/fd/2}, respectively. However, those names are more self-explanatory.
+
+Note that using @code{close()} on a @value{FN} of the
 form @code{"/dev/fd/@var{N}"}, for file descriptor numbers
 above two, does actually close the given file descriptor.
-
-The @file{/dev/stdin}, @file{/dev/stdout}, and @file{/dev/stderr}
-special files are also recognized internally by several other
-versions of @command{awk}.
 
 @node Special Network
 @subsection Special Files for Network Communications
@@ -9986,8 +10002,13 @@ special @value{FN}s that @command{gawk} provides:
 @cindex compatibility mode (@command{gawk}), file names
 @cindex file names, in compatibility mode
 @item
-Recognition of these special @value{FN}s is disabled if @command{gawk} is in
-compatibility mode (@pxref{Options}).
+Recognition of the @value{FN}s for the three standard pre-opened
+files is disabled only in POSIX mode.
+
+@item
+Recognition of the other special @value{FN}s is disabled if @command{gawk} is in
+compatibility mode (either @option{--traditional} or @option{--posix};
+@pxref{Options}).
 
 @item
 @command{gawk} @emph{always}
