@@ -3914,6 +3914,8 @@ values in input data
 @quotation CAUTION
 This option can severely break old programs.
 Use with care.
+
+This option may disappear in a future version of @command{gawk}.
 @end quotation
 
 @item @option{-N}
@@ -21483,24 +21485,12 @@ function rewind(    i)
 @c endfile
 @end example
 
-This code relies on the @code{ARGIND} variable
-(@pxref{Auto-set}),
-which is specific to @command{gawk}.
-If you are not using
-@command{gawk}, you can use ideas presented in
-@ifnotinfo
-the previous @value{SECTION}
-@end ifnotinfo
-@ifinfo
-@ref{Filetrans Function},
-@end ifinfo
-to either update @code{ARGIND} on your own
-or modify this code as appropriate.
-
-The @code{rewind()} function also relies on the @code{nextfile} keyword
-(@pxref{Nextfile Statement}).  Because of this, you should not call it
-from an @code{ENDFILE} rule.  (This isn't necessary anyway, since as soon
-as an @code{ENDFILE} rule finishes @command{gawk} goes to the next file!)
+The @code{rewind()} function relies on the @code{ARGIND} variable
+(@pxref{Auto-set}), which is specific to @command{gawk}.  It also
+relies on the @code{nextfile} keyword (@pxref{Nextfile Statement}).
+Because of this, you should not call it from an @code{ENDFILE} rule.
+(This isn't necessary anyway, since as soon as an @code{ENDFILE} rule
+finishes @command{gawk} goes to the next file!)
 
 @node File Checking
 @subsection Checking for Readable @value{DDF}s
@@ -21533,7 +21523,7 @@ the following program to your @command{awk} program:
 
 BEGIN @{
     for (i = 1; i < ARGC; i++) @{
-        if (ARGV[i] ~ /^[[:alpha:]_][[:alnum:]_]*=.*/ \
+        if (ARGV[i] ~ /^[a-zA-Z_][a-zA-Z0-9_]*=.*/ \
             || ARGV[i] == "-" || ARGV[i] == "/dev/stdin")
             continue    # assignment or standard input
         else if ((getline junk < ARGV[i]) < 0) # unreadable
@@ -21550,6 +21540,11 @@ This works, because the @code{getline} won't be fatal.
 Removing the element from @code{ARGV} with @code{delete}
 skips the file (since it's no longer in the list).
 See also @ref{ARGC and ARGV}.
+
+The regular expression check purposely does not use character classes
+such as @samp{[:alpha:]} and @samp{[:alnum:]}
+(@pxref{Bracket Expressions})
+since @command{awk} variable names only allow the English letters.
 
 @node Empty Files
 @subsection Checking for Zero-length Files
@@ -21647,7 +21642,7 @@ a library file does the trick:
 function disable_assigns(argc, argv,    i)
 @{
     for (i = 1; i < argc; i++)
-        if (argv[i] ~ /^[[:alpha:]_][[:alnum:]_]*=.*/)
+        if (argv[i] ~ /^[a-zA-Z_][a-zA-Z0-9_]*=.*/)
             argv[i] = ("./" argv[i])
 @}
 
@@ -22019,11 +22014,17 @@ In both runs, the first @option{--} terminates the arguments to
 etc., as its own options.
 
 @quotation NOTE
-After @code{getopt()} is through, it is the responsibility of the
-user level code to clear out all the elements of @code{ARGV} from 1
+After @code{getopt()} is through,
+user level code must clear out all the elements of @code{ARGV} from 1
 to @code{Optind}, so that @command{awk} does not try to process the
 command-line options as @value{FN}s.
 @end quotation
+
+Using @samp{#!} with the @option{-E} option may help avoid
+conflicts between your program's options and @command{gawk}'s options,
+since @option{-E} causes @command{gawk} to abandon processing of
+further options
+(@pxref{Executable Scripts}, and @pxref{Options}).
 
 Several of the sample programs presented in
 @ref{Sample Programs},
@@ -22269,13 +22270,14 @@ The @code{BEGIN} rule sets a private variable to the directory where
 routine, we have chosen to put it in @file{/usr/local/libexec/awk};
 however, you might want it to be in a different directory on your system.
 
-The function @code{_pw_init()} keeps three copies of the user information
-in three associative arrays.  The arrays are indexed by username
+The function @code{_pw_init()} fills three copies of the user information
+into three associative arrays.  The arrays are indexed by username
 (@code{_pw_byname}), by user ID number (@code{_pw_byuid}), and by order of
 occurrence (@code{_pw_bycount}).
 The variable @code{_pw_inited} is used for efficiency, since @code{_pw_init()}
 needs to be called only once.
 
+@cindex @code{PROCINFO} array, testing the field splitting
 @cindex @code{getline} command, @code{_pw_init()} function
 Because this function uses @code{getline} to read information from
 @command{pwcat}, it first saves the values of @code{FS}, @code{RS}, and @code{$0}.
@@ -22283,13 +22285,8 @@ It notes in the variable @code{using_fw} whether field splitting
 with @code{FIELDWIDTHS} is in effect or not.
 Doing so is necessary, since these functions could be called
 from anywhere within a user's program, and the user may have his
-or her
-own way of splitting records and fields.
-
-@cindex @code{PROCINFO} array, testing the field splitting
-The @code{using_fw} variable checks @code{PROCINFO["FS"]}, which
-is @code{"FIELDWIDTHS"} if field splitting is being done with
-@code{FIELDWIDTHS}.  This makes it possible to restore the correct
+or her own way of splitting records and fields.
+This makes it possible to restore the correct
 field-splitting mechanism later.  The test can only be true for
 @command{gawk}.  It is false if using @code{FS} or @code{FPAT},
 or on some other @command{awk} implementation.
@@ -22603,8 +22600,7 @@ function _gr_init(    oldfs, oldrs, olddol0, grcat,
         n = split($4, a, "[ \t]*,[ \t]*")
         for (i = 1; i <= n; i++)
             if (a[i] in _gr_groupsbyuser)
-                _gr_groupsbyuser[a[i]] = \
-                    _gr_groupsbyuser[a[i]] " " $1
+                _gr_groupsbyuser[a[i]] = gr_groupsbyuser[a[i]] " " $1
             else
                 _gr_groupsbyuser[a[i]] = $1
 
@@ -22831,8 +22827,8 @@ $ @kbd{gawk -f walk_array.awk}
 @itemize @value{BULLET}
 @item
 Reading programs is an excellent way to learn Good Programming.
-The functions provided in this @value{CHAPTER} and the next are intended
-to serve that purpose.
+The functions and programs provided in this @value{CHAPTER} and the next
+are intended to serve that purpose.
 
 @item
 When writing general-purpose library functions, put some thought into how
@@ -23119,21 +23115,15 @@ supplied:
 # Requires getopt() and join() library functions
 
 @group
-function usage(    e1, e2)
+function usage()
 @{
-    e1 = "usage: cut [-f list] [-d c] [-s] [files...]"
-    e2 = "usage: cut [-c list] [files...]"
-    print e1 > "/dev/stderr"
-    print e2 > "/dev/stderr"
+    print("usage: cut [-f list] [-d c] [-s] [files...]") > "/dev/stderr"
+    print("usage: cut [-c list] [files...]") > "/dev/stderr"
     exit 1
 @}
 @end group
 @c endfile
 @end example
-
-@noindent
-The variables @code{e1} and @code{e2} are used so that the function
-fits nicely on the @value{PAGE}.
 
 @cindex @code{BEGIN} pattern, running @command{awk} programs and
 @cindex @code{FS} variable, running @command{awk} programs and
@@ -23635,18 +23625,14 @@ and then exits:
 
 @example
 @c file eg/prog/egrep.awk
-function usage(    e)
+function usage()
 @{
-    e = "Usage: egrep [-csvil] [-e pat] [files ...]"
-    e = e "\n\tegrep [-csvil] pat [files ...]"
-    print e > "/dev/stderr"
+    print("Usage: egrep [-csvil] [-e pat] [files ...]") > "/dev/stderr"
+    print("\n\tegrep [-csvil] pat [files ...]") > "/dev/stderr"
     exit 1
 @}
 @c endfile
 @end example
-
-The variable @code{e} is used so that the function fits nicely
-on the printed page.
 
 @c ENDOFRANGE regexps
 @c ENDOFRANGE sfregexp
@@ -23705,6 +23691,7 @@ numbers:
 # May 1993
 # Revised February 1996
 # Revised May 2014
+# Revised September 2014
 
 @c endfile
 @end ignore
@@ -23723,26 +23710,22 @@ BEGIN @{
 
     printf("uid=%d", uid)
     pw = getpwuid(uid)
-    if (pw != "")
-        pr_first_field(pw)
+    pr_first_field(pw)
 
     if (euid != uid) @{
         printf(" euid=%d", euid)
         pw = getpwuid(euid)
-        if (pw != "")
-            pr_first_field(pw)
+        pr_first_field(pw)
     @}
 
     printf(" gid=%d", gid)
     pw = getgrgid(gid)
-    if (pw != "")
-        pr_first_field(pw)
+    pr_first_field(pw)
 
     if (egid != gid) @{
         printf(" egid=%d", egid)
         pw = getgrgid(egid)
-        if (pw != "")
-            pr_first_field(pw)
+        pr_first_field(pw)
     @}
 
     for (i = 1; ("group" i) in PROCINFO; i++) @{
@@ -23751,8 +23734,7 @@ BEGIN @{
         group = PROCINFO["group" i]
         printf("%d", group)
         pw = getgrgid(group)
-        if (pw != "")
-            pr_first_field(pw)
+        pr_first_field(pw)
         if (("group" (i+1)) in PROCINFO)
             printf(",")
     @}
@@ -23762,8 +23744,10 @@ BEGIN @{
 
 function pr_first_field(str,  a)
 @{
-    split(str, a, ":")
-    printf("(%s)", a[1])
+    if (str != "") @{
+        split(str, a, ":")
+        printf("(%s)", a[1])
+    @}
 @}
 @c endfile
 @end example
@@ -23786,7 +23770,8 @@ tested, and the loop body never executes.
 
 The @code{pr_first_field()} function simply isolates out some
 code that is used repeatedly, making the whole program
-slightly shorter and cleaner.
+shorter and cleaner. In particular, moving the check for
+the empty string into this function saves several lines of code.
 
 @c ENDOFRANGE id
 
@@ -23913,18 +23898,13 @@ The @code{usage()} function simply prints an error message and exits:
 
 @example
 @c file eg/prog/split.awk
-function usage(   e)
+function usage()
 @{
-    e = "usage: split [-num] [file] [outname]"
-    print e > "/dev/stderr"
+    print("usage: split [-num] [file] [outname]") > "/dev/stderr"
     exit 1
 @}
 @c endfile
 @end example
-
-@noindent
-The variable @code{e} is used so that the function
-fits nicely on the @value{PAGE}.
 
 This program is a bit sloppy; it relies on @command{awk} to automatically close the last file
 instead of doing it in an @code{END} rule.
@@ -24084,10 +24064,10 @@ The options for @command{uniq} are:
 
 @table @code
 @item -d
-Print only repeated lines.
+Print only repeated (duplicated) lines.
 
 @item -u
-Print only nonrepeated lines.
+Print only nonrepeated (unique) lines.
 
 @item -c
 Count lines. This option overrides @option{-d} and @option{-u}.  Both repeated
@@ -24156,10 +24136,9 @@ standard output, @file{/dev/stdout}:
 @end ignore
 @c file eg/prog/uniq.awk
 
-function usage(    e)
+function usage()
 @{
-    e = "Usage: uniq [-udc [-n]] [+n] [ in [ out ]]"
-    print e > "/dev/stderr"
+    print("Usage: uniq [-udc [-n]] [+n] [ in [ out ]]") > "/dev/stderr"
     exit 1
 @}
 
@@ -24213,22 +24192,20 @@ BEGIN @{
 @end example
 
 The following function, @code{are_equal()}, compares the current line,
-@code{$0}, to the
-previous line, @code{last}.  It handles skipping fields and characters.
-If no field count and no character count are specified, @code{are_equal()}
-simply returns one or zero depending upon the result of a simple string
-comparison of @code{last} and @code{$0}.  Otherwise, things get more
-complicated.
-If fields have to be skipped, each line is broken into an array using
-@code{split()}
-(@pxref{String Functions});
-the desired fields are then joined back into a line using @code{join()}.
-The joined lines are stored in @code{clast} and @code{cline}.
-If no fields are skipped, @code{clast} and @code{cline} are set to
-@code{last} and @code{$0}, respectively.
-Finally, if characters are skipped, @code{substr()} is used to strip off the
-leading @code{charcount} characters in @code{clast} and @code{cline}.  The
-two strings are then compared and @code{are_equal()} returns the result:
+@code{$0}, to the previous line, @code{last}.  It handles skipping fields
+and characters.  If no field count and no character count are specified,
+@code{are_equal()} returns one or zero depending upon the result of a
+simple string comparison of @code{last} and @code{$0}.
+
+Otherwise, things get more complicated.  If fields have to be skipped,
+each line is broken into an array using @code{split()} (@pxref{String
+Functions}); the desired fields are then joined back into a line
+using @code{join()}.  The joined lines are stored in @code{clast} and
+@code{cline}.  If no fields are skipped, @code{clast} and @code{cline}
+are set to @code{last} and @code{$0}, respectively.  Finally, if
+characters are skipped, @code{substr()} is used to strip off the leading
+@code{charcount} characters in @code{clast} and @code{cline}.  The two
+strings are then compared and @code{are_equal()} returns the result:
 
 @example
 @c file eg/prog/uniq.awk
@@ -24319,6 +24296,13 @@ END @{
 @c endfile
 @end example
 
+@c FIXME: Include this?
+@ignore
+This program does not follow our recommended convention of naming
+global variables with a leading capital letter.  Doing that would
+make the program a little easier to follow.
+@end ignore
+
 @ifset FOR_PRINT
 The logic for choosing which lines to print represents a @dfn{state
 machine}, which is ``a device that can be in one of a set number of stable
@@ -24364,7 +24348,7 @@ one or more input files. Its usage is as follows:
 
 If no files are specified on the command line, @command{wc} reads its standard
 input. If there are multiple files, it also prints total counts for all
-the files.  The options and their meanings are shown in the following list:
+the files.  The options and their meanings are as follows:
 
 @table @code
 @item -l
@@ -25016,7 +25000,7 @@ of lines on the page
 Most of the work is done in the @code{printpage()} function.
 The label lines are stored sequentially in the @code{line} array.  But they
 have to print horizontally; @code{line[1]} next to @code{line[6]},
-@code{line[2]} next to @code{line[7]}, and so on.  Two loops are used to
+@code{line[2]} next to @code{line[7]}, and so on.  Two loops
 accomplish this.  The outer loop, controlled by @code{i}, steps through
 every 10 lines of data; this is each row of labels.  The inner loop,
 controlled by @code{j}, goes through the lines within the row.
@@ -25130,7 +25114,7 @@ in a useful format.
 At first glance, a program like this would seem to do the job:
 
 @example
-# Print list of word frequencies
+# wordfreq-first-try.awk --- print list of word frequencies
 
 @{
     for (i = 1; i <= NF; i++)
@@ -25347,16 +25331,16 @@ Texinfo input file into separate files.
 This @value{DOCUMENT} is written in @uref{http://www.gnu.org/software/texinfo/, Texinfo},
 the GNU project's document formatting language.
 A single Texinfo source file can be used to produce both
-printed and online documentation.
+printed documentation, with @TeX{}, and online documentation.
 @ifnotinfo
-Texinfo is fully documented in the book
+(Texinfo is fully documented in the book
 @cite{Texinfo---The GNU Documentation Format},
 available from the Free Software Foundation,
-and also available @uref{http://www.gnu.org/software/texinfo/manual/texinfo/, online}.
+and also available @uref{http://www.gnu.org/software/texinfo/manual/texinfo/, online}.)
 @end ifnotinfo
 @ifinfo
-The Texinfo language is described fully, starting with
-@inforef{Top, , Texinfo, texinfo,Texinfo---The GNU Documentation Format}.
+(The Texinfo language is described fully, starting with
+@inforef{Top, , Texinfo, texinfo,Texinfo---The GNU Documentation Format}.)
 @end ifinfo
 
 For our purposes, it is enough to know three things about Texinfo input
@@ -25434,8 +25418,7 @@ exits with a zero exit status, signifying OK:
 @cindex @code{extract.awk} program
 @example
 @c file eg/prog/extract.awk
-# extract.awk --- extract files and run programs
-#                 from texinfo files
+# extract.awk --- extract files and run programs from texinfo files
 @c endfile
 @ignore
 @c file eg/prog/extract.awk
@@ -25449,8 +25432,7 @@ exits with a zero exit status, signifying OK:
 
 BEGIN    @{ IGNORECASE = 1 @}
 
-/^@@c(omment)?[ \t]+system/    \
-@{
+/^@@c(omment)?[ \t]+system/ @{
     if (NF < 3) @{
         e = ("extract: " FILENAME ":" FNR)
         e = (e  ": badly formed `system' line")
@@ -25507,8 +25489,7 @@ line.  That line is then printed to the output file:
 
 @example
 @c file eg/prog/extract.awk
-/^@@c(omment)?[ \t]+file/    \
-@{
+/^@@c(omment)?[ \t]+file/ @{
     if (NF != 3) @{
         e = ("extract: " FILENAME ":" FNR ": badly formed `file' line")
         print e > "/dev/stderr"
@@ -25568,7 +25549,7 @@ The @code{END} rule handles the final cleanup, closing the open file:
 function unexpected_eof()
 @{
     printf("extract: %s:%d: unexpected EOF or error\n",
-        FILENAME, FNR) > "/dev/stderr"
+                     FILENAME, FNR) > "/dev/stderr"
     exit 1
 @}
 @end group
@@ -25828,6 +25809,7 @@ should be the @command{awk} program.  If there are no command-line
 arguments left, @command{igawk} prints an error message and exits.
 Otherwise, the first argument is appended to @code{program}.
 In any case, after the arguments have been processed,
+the shell variable
 @code{program} contains the complete text of the original @command{awk}
 program.
 
@@ -26151,12 +26133,10 @@ in C or C++, and it is frequently easier to do certain kinds of string
 and argument manipulation using the shell than it is in @command{awk}.
 
 Finally, @command{igawk} shows that it is not always necessary to add new
-features to a program; they can often be layered on top.
-@ignore
-With @command{igawk},
-there is no real reason to build @code{@@include} processing into
-@command{gawk} itself.
-@end ignore
+features to a program; they can often be layered on top.@footnote{@command{gawk}
+does @code{@@include} processing itself in order to support the use
+of @command{awk} programs as Web CGI scripts.}
+
 @c ENDOFRANGE libfex
 @c ENDOFRANGE flibex
 @c ENDOFRANGE awkpex
@@ -26174,12 +26154,11 @@ One word is an anagram of another if both words contain
 the same letters
 (for example, ``babbling'' and ``blabbing'').
 
-An elegant algorithm is presented in Column 2, Problem C of
-Jon Bentley's @cite{Programming Pearls}, second edition.
-The idea is to give words that are anagrams a common signature,
-sort all the words together by their signature, and then print them.
-Dr.@: Bentley observes that taking the letters in each word and
-sorting them produces that common signature.
+Column 2, Problem C of Jon Bentley's @cite{Programming Pearls}, second
+edition, presents an elegant algorithm.  The idea is to give words that
+are anagrams a common signature, sort all the words together by their
+signature, and then print them.  Dr.@: Bentley observes that taking the
+letters in each word and sorting them produces that common signature.
 
 The following program uses arrays of arrays to bring together
 words with the same signature and array sorting to print the words
@@ -26413,7 +26392,7 @@ BEGIN {
 
 @itemize @value{BULLET}
 @item
-The functions provided in this @value{CHAPTER} and the previous one
+The programs provided in this @value{CHAPTER}
 continue on the theme that reading programs is an excellent way to learn
 Good Programming.
 
@@ -26690,13 +26669,11 @@ discusses the ability to dynamically add new built-in functions to
 @cindex constants, nondecimal
 
 If you run @command{gawk} with the @option{--non-decimal-data} option,
-you can have nondecimal constants in your input data:
+you can have nondecimal values in your input data:
 
-@c line break here for small book format
 @example
 $ @kbd{echo 0123 123 0x123 |}
-> @kbd{gawk --non-decimal-data '@{ printf "%d, %d, %d\n",}
->                                         @kbd{$1, $2, $3 @}'}
+> @kbd{gawk --non-decimal-data '@{ printf "%d, %d, %d\n", $1, $2, $3 @}'}
 @print{} 83, 123, 291
 @end example
 
@@ -26737,6 +26714,8 @@ Instead, use the @code{strtonum()} function to convert your data
 (@pxref{String Functions}).
 This makes your programs easier to write and easier to read, and
 leads to less surprising results.
+
+This option may disappear in a future version of @command{gawk}.
 @end quotation
 
 @node Array Sorting
@@ -26771,7 +26750,9 @@ pre-defined values to @code{PROCINFO["sorted_in"]} in order to
 control the order in which @command{gawk} traverses an array
 during a @code{for} loop.
 
-In addition, the value of @code{PROCINFO["sorted_in"]} can be a function name.
+In addition, the value of @code{PROCINFO["sorted_in"]} can be a
+function name.@footnote{This is why the predefined sorting orders
+start with an @samp{@@} character, which cannot be part of an identifier.}
 This lets you traverse an array based on any custom criterion.
 The array elements are ordered according to the return value of this
 function.  The comparison function should be defined with at least
@@ -26903,7 +26884,7 @@ according to login name.  The following program sorts records
 by a specific field position and can be used for this purpose:   
 
 @example
-# sort.awk --- simple program to sort by field position
+# passwd-sort.awk --- simple program to sort by field position
 # field position is specified by the global variable POS
 
 function cmp_field(i1, v1, i2, v2)
@@ -26962,7 +26943,7 @@ As mentioned above, the order of the indices is arbitrary if two
 elements compare equal.  This is usually not a problem, but letting
 the tied elements come out in arbitrary order can be an issue, especially
 when comparing item values.  The partial ordering of the equal elements
-may change during the next loop traversal, if other elements are added or
+may change the next time the array is traversed, if other elements are added or
 removed from the array.  One way to resolve ties when comparing elements
 with otherwise equal values is to include the indices in the comparison
 rules.  Note that doing this may make the loop traversal less efficient,
@@ -27196,7 +27177,7 @@ for example, @file{/tmp} will not do, as another user might happen
 to be using a temporary file with the same name.@footnote{Michael
 Brennan suggests the use of @command{rand()} to generate unique
 @value{FN}s. This is a valid point; nevertheless, temporary files
-remain more difficult than two-way pipes.} @c 8/2014
+remain more difficult to use than two-way pipes.} @c 8/2014
 
 @cindex coprocesses
 @cindex input/output, two-way
@@ -27339,7 +27320,7 @@ using regular pipes.
 @ @ @ @ @i{A host is a host from coast to coast,@*
 @ @ @ @ and no-one can talk to host that's close,@*
 @ @ @ @ unless the host that isn't close@*
-@ @ @ @ is busy hung or dead.}
+@ @ @ @ is busy, hung, or dead.}
 @end quotation
 @end ifnotdocbook
 
@@ -27349,7 +27330,7 @@ using regular pipes.
 &nbsp;&nbsp;&nbsp;&nbsp;<emphasis>A host is a host from coast to coast,</emphasis>
 &nbsp;&nbsp;&nbsp;&nbsp;<emphasis>and no-one can talk to host that's close,</emphasis>
 &nbsp;&nbsp;&nbsp;&nbsp;<emphasis>unless the host that isn't close</emphasis>
-&nbsp;&nbsp;&nbsp;&nbsp;<emphasis>is busy hung or dead.</emphasis></literallayout>
+&nbsp;&nbsp;&nbsp;&nbsp;<emphasis>is busy, hung, or dead.</emphasis></literallayout>
 </blockquote>
 @end docbook
 
@@ -27380,7 +27361,7 @@ the system default, most likely IPv4.
 @item protocol
 The protocol to use over IP.  This must be either @samp{tcp}, or
 @samp{udp}, for a TCP or UDP IP connection,
-respectively.  The use of TCP is recommended for most applications.
+respectively.  TCP should be used for most applications.
 
 @item local-port
 @cindex @code{getaddrinfo()} function (C library)
@@ -27413,10 +27394,10 @@ Consider the following very simple example:
 
 @example
 BEGIN @{
-  Service = "/inet/tcp/0/localhost/daytime"
-  Service |& getline
-  print $0
-  close(Service)
+    Service = "/inet/tcp/0/localhost/daytime"
+    Service |& getline
+    print $0
+    close(Service)
 @}
 @end example
 
@@ -38050,10 +38031,8 @@ Date: Wed, 4 Sep 1996 08:11:48 -0700 (PDT)
 
 @docbook
 <blockquote><attribution>Michael Brennan</attribution>
-<literallayout>
-<emphasis>It's kind of fun to put comments like this in your awk code.</emphasis>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<literal>// Do C++ comments work? answer: yes! of course</literal>
-</literallayout>
+<literallayout><emphasis>It's kind of fun to put comments like this in your awk code.</emphasis>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<literal>// Do C++ comments work? answer: yes! of course</literal></literallayout>
 </blockquote>
 @end docbook
 
@@ -41694,4 +41673,3 @@ But to use it you have to say
 which sorta sucks.
 
 TODO:
------
