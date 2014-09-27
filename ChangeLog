@@ -1,3 +1,8 @@
+2014-09-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (check_for_bad): Bitwise-and the bad character with 0xFF
+	to avoid sign extension into a large integer.
+
 2014-09-23         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y (yylex): Don't check for junk characters inside
