@@ -202,7 +202,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 
 				if (do_profile) {
 					if (! rule_count[rule]++)
-						fprintf(prof_fp, _("\t# %s block(s)\n\n"), ruletab[rule]);
+						fprintf(prof_fp, _("\t# %s rule(s)\n\n"), ruletab[rule]);
 					indent(0);
 				}
 				fprintf(prof_fp, "%s {\n", ruletab[rule]);

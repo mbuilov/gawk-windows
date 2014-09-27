@@ -12,12 +12,10 @@
 #
 # Requires getopt() and join() library functions
 
-function usage(    e1, e2)
+function usage()
 {
-    e1 = "usage: cut [-f list] [-d c] [-s] [files...]"
-    e2 = "usage: cut [-c list] [files...]"
-    print e1 > "/dev/stderr"
-    print e2 > "/dev/stderr"
+    print("usage: cut [-f list] [-d c] [-s] [files...]") > "/dev/stderr"
+    print("usage: cut [-c list] [files...]") > "/dev/stderr"
     exit 1
 }
 BEGIN {

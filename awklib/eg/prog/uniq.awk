@@ -5,10 +5,9 @@
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993
 
-function usage(    e)
+function usage()
 {
-    e = "Usage: uniq [-udc [-n]] [+n] [ in [ out ]]"
-    print e > "/dev/stderr"
+    print("Usage: uniq [-udc [-n]] [+n] [ in [ out ]]") > "/dev/stderr"
     exit 1
 }
 
