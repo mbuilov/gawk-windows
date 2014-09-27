@@ -242,6 +242,9 @@
 #define HAVE_STDLIB_H 1
 #endif
 
+/* Define to 1 if you have the `strcasecmp' function. */
+#undef HAVE_STRCASECMP
+
 /* Define to 1 if you have the `strchr' function. */
 #define HAVE_STRCHR 1
 
@@ -406,6 +409,9 @@
 
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
+
+/* enable severe portability problems */
+#undef I_DONT_KNOW_WHAT_IM_DOING
 
 /* libc is broken for regex handling */
 #undef LIBC_IS_BORKED

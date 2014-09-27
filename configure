@@ -761,6 +761,7 @@ enable_option_checking
 enable_silent_rules
 with_whiny_user_strftime
 enable_lint
+enable_severe_portability_problems
 enable_dependency_tracking
 enable_largefile
 enable_nls
@@ -1405,6 +1406,7 @@ Optional Features:
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
   --disable-lint	Disable gawk lint checking
+  --enable-severe-portability-problems	Enable really nasty portability problems
   --enable-dependency-tracking
                           do not reject slow dependency extractors
   --disable-dependency-tracking
@@ -3176,6 +3178,17 @@ if test "${enable_lint+set}" = set; then :
 	then
 
 $as_echo "#define NO_LINT 1" >>confdefs.h
+
+	fi
+
+fi
+
+# Check whether --enable-severe-portability-problems was given.
+if test "${enable_severe_portability_problems+set}" = set; then :
+  enableval=$enable_severe_portability_problems; if test "$enableval" = yes
+	then
+
+$as_echo "#define I_DONT_KNOW_WHAT_IM_DOING 1" >>confdefs.h
 
 	fi
 
