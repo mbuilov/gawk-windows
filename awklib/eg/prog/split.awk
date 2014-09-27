@@ -50,9 +50,8 @@ BEGIN {
     }
     print > out
 }
-function usage(   e)
+function usage()
 {
-    e = "usage: split [-num] [file] [outname]"
-    print e > "/dev/stderr"
+    print("usage: split [-num] [file] [outname]") > "/dev/stderr"
     exit 1
 }

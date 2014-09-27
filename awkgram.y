@@ -2816,7 +2816,7 @@ check_bad_char(int c)
 	}
 
 	if (iscntrl(c) && ! isspace(c))
-		fatal(_("PEBKAC error: invalid character '\\%03o' in source code"), c);
+		fatal(_("PEBKAC error: invalid character '\\%03o' in source code"), c & 0xFF);
 }
 
 /* nextc --- get the next input character */
