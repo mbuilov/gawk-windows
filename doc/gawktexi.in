@@ -26418,11 +26418,13 @@ using regular pipes.
 @ @ @ @ and no-one can talk to host that's close,@*
 @ @ @ @ unless the host that isn't close@*
 @ @ @ @ is busy, hung, or dead.}
+@author Mike O'Brien (aka Mr.@: Protocol)
 @end quotation
 @end ifnotdocbook
 
 @docbook
 <blockquote>
+<attribution>Mike O'Brien (aka Mr.&nbsp;Protocol)</attribution>
 <literallayout class="normal"><literal>EMISTERED</literal>:
 &nbsp;&nbsp;&nbsp;&nbsp;<emphasis>A host is a host from coast to coast,</emphasis>
 &nbsp;&nbsp;&nbsp;&nbsp;<emphasis>and no-one can talk to host that's close,</emphasis>
@@ -26597,9 +26599,9 @@ in the morning to work.)
 @cindex @code{BEGIN} pattern, and profiling
 @cindex @code{END} pattern, and profiling
 @example
-    # gawk profile, created Thu Feb 27 05:16:21 2014
+    # gawk profile, created Mon Sep 29 05:16:21 2014
 
-    # BEGIN block(s)
+    # BEGIN rule(s)
 
     BEGIN @{
  1          print "First BEGIN rule"
@@ -26626,7 +26628,7 @@ in the morning to work.)
             @}
     @}
 
-    # END block(s)
+    # END rule(s)
 
     END @{
  1          print "First END rule"
@@ -26754,7 +26756,7 @@ come out as:
 @end example
 
 @noindent
-which is correct, but possibly surprising.
+which is correct, but possibly unexpected.
 
 @cindex profiling @command{awk} programs, dynamically
 @cindex @command{gawk} program, dynamic profiling
@@ -26786,7 +26788,7 @@ $ @kbd{kill -USR1 13992}
 
 @noindent
 As usual, the profiled version of the program is written to
-@file{awkprof.out}, or to a different file if one specified with
+@file{awkprof.out}, or to a different file if one was specified with
 the @option{--profile} option.
 
 Along with the regular profile, as shown earlier, the profile file
@@ -26846,6 +26848,7 @@ The @option{--non-decimal-data} option causes @command{gawk} to treat
 octal- and hexadecimal-looking input data as octal and hexadecimal.
 This option should be used with caution or not at all; use of @code{strtonum()}
 is preferable.
+Note that this option may disappear in a future version of @command{gawk}.
 
 @item
 You can take over complete control of sorting in @samp{for (@var{indx} in @var{array})}
@@ -26865,9 +26868,9 @@ or @code{printf}. Use @code{close()} to close off the coprocess completely, or
 optionally, close off one side of the two-way communications.
 
 @item
-By using special ``@value{FN}s'' with the @samp{|&} operator, you can open a
+By using special @value{FN}s with the @samp{|&} operator, you can open a
 TCP/IP (or UDP/IP) connection to remote hosts in the Internet. @command{gawk}
-supports both IPv4 an IPv6.
+supports both IPv4 and IPv6.
 
 @item
 You can generate statement count profiles of your program. This can help you
@@ -27105,7 +27108,7 @@ In June 2001 Bruno Haible wrote:
 This information is accessed via the
 POSIX character classes in regular expressions,
 such as @code{/[[:alnum:]]/}
-(@pxref{Regexp Operators}).
+(@pxref{Bracket Expressions}).
 
 @cindex monetary information, localization
 @cindex currency symbols, localization
@@ -27188,7 +27191,7 @@ default arguments.
 Return the plural form used for @var{number} of the
 translation of @var{string1} and @var{string2} in text domain
 @var{domain} for locale category @var{category}. @var{string1} is the
-English singular variant of a message, and @var{string2} the English plural
+English singular variant of a message, and @var{string2} is the English plural
 variant of the same message.
 The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
 The default value for @var{category} is @code{"LC_MESSAGES"}.
@@ -27276,9 +27279,11 @@ This example would be better done with @code{dcngettext()}:
 
 @example
 if (groggy)
-    message = dcngettext("%d customer disturbing me\n", "%d customers disturbing me\n", "adminprog")
+    message = dcngettext("%d customer disturbing me\n",
+                         "%d customers disturbing me\n", "adminprog")
 else
-    message = dcngettext("enjoying %d customer\n", "enjoying %d customers\n", "adminprog")
+    message = dcngettext("enjoying %d customer\n",
+                         "enjoying %d customers\n", "adminprog")
 printf(message, ncustomers)
 @end example
 
@@ -27350,7 +27355,7 @@ First, use the @option{--gen-pot} command-line option to create
 the initial @file{.pot} file:
 
 @example
-$ @kbd{gawk --gen-pot -f guide.awk > guide.pot}
+gawk --gen-pot -f guide.awk > guide.pot
 @end example
 
 @cindex @code{xgettext} utility
@@ -27414,11 +27419,11 @@ example, @samp{string} is the first argument and @samp{length(string)} is the se
 
 @example
 $ @kbd{gawk 'BEGIN @{}
->     @kbd{string = "Dont Panic"}
+>     @kbd{string = "Don\47t Panic"}
 >     @kbd{printf "%2$d characters live in \"%1$s\"\n",}
 >                         @kbd{string, length(string)}
 > @kbd{@}'}
-@print{} 10 characters live in "Dont Panic"
+@print{} 11 characters live in "Don't Panic"
 @end example
 
 If present, positional specifiers come first in the format specification,
@@ -27630,7 +27635,8 @@ msgstr "Like, the scoop is"
 @cindex GNU/Linux
 The next step is to make the directory to hold the binary message object
 file and then to create the @file{guide.mo} file.
-We pretend that our file is to be used in the @code{en_US.UTF-8} locale.
+We pretend that our file is to be used in the @code{en_US.UTF-8} locale,
+since we have to use a locale name known to the C @command{gettext} routines.
 The directory layout shown here is standard for GNU @command{gettext} on
 GNU/Linux systems.  Other versions of @command{gettext} may use a different
 layout:
@@ -27651,8 +27657,8 @@ $ @kbd{mkdir en_US.UTF-8 en_US.UTF-8/LC_MESSAGES}
 The @command{msgfmt} utility does the conversion from human-readable
 @file{.po} file to machine-readable @file{.mo} file.
 By default, @command{msgfmt} creates a file named @file{messages}.
-This file must be renamed and placed in the proper directory so that
-@command{gawk} can find it:
+This file must be renamed and placed in the proper directory (using
+the @option{-o} option) so that @command{gawk} can find it:
 
 @example
 $ @kbd{msgfmt guide-mellow.po -o en_US.UTF-8/LC_MESSAGES/guide.mo}
@@ -27695,8 +27701,8 @@ complete detail in
 @cite{GNU gettext tools}}.)
 @end ifnotinfo
 As of this writing, the latest version of GNU @command{gettext} is
-@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.19.1.tar.gz,
-@value{PVERSION} 0.19.1}.
+@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.19.2.tar.gz,
+@value{PVERSION} 0.19.2}.
 
 If a translation of @command{gawk}'s messages exists,
 then @command{gawk} produces usage messages, warnings,
@@ -27784,7 +27790,7 @@ the discussion of debugging in @command{gawk}.
 @subsection Debugging in General
 
 (If you have used debuggers in other languages, you may want to skip
-ahead to the next section on the specific features of the @command{awk}
+ahead to the next section on the specific features of the @command{gawk}
 debugger.)
 
 Of course, a debugging program cannot remove bugs for you, since it has
@@ -27824,7 +27830,7 @@ is going wrong (or, for that matter, to better comprehend a perfectly
 functional program that you or someone else wrote).
 
 @node Debugging Terms
-@subsection Additional Debugging Concepts
+@subsection Debugging Concepts
 
 Before diving in to the details, we need to introduce several
 important concepts that apply to just about all debuggers.
@@ -27913,8 +27919,8 @@ as our example.
 @cindex starting the debugger
 @cindex debugger, how to start
 
-Starting the debugger is almost exactly like running @command{gawk},
-except you have to pass an additional option @option{--debug} or the
+Starting the debugger is almost exactly like running @command{gawk} normally,
+except you have to pass an additional option @option{--debug}, or the
 corresponding short option @option{-D}.  The file(s) containing the
 program and any supporting code are given on the command line as arguments
 to one or more @option{-f} options. (@command{gawk} is not designed
@@ -27932,6 +27938,7 @@ this syntax is slightly different from what they are used to.
 With the @command{gawk} debugger, you give the arguments for running the program
 in the command line to the debugger rather than as part of the @code{run}
 command at the debugger prompt.)
+The @option{-1} is an option to @file{uniq.awk}.
 
 Instead of immediately running the program on @file{inputfile}, as
 @command{gawk} would ordinarily do, the debugger merely loads all
@@ -28113,7 +28120,7 @@ gawk> @kbd{p n m alast aline}
 
 This is kind of disappointing, though.  All we found out is that there
 are five elements in @code{alast}; @code{m} and @code{aline} don't have
-values yet since we are at line 68 but haven't executed it yet.
+values since we are at line 68 but haven't executed it yet.
 This information is useful enough (we now know that
 none of the words were accidentally left out), but what if we want to see
 inside the array?
@@ -28306,7 +28313,8 @@ Delete breakpoint(s) set at entry to function @var{function}.
 @cindex breakpoint condition
 @item @code{condition} @var{n} @code{"@var{expression}"}
 Add a condition to existing breakpoint or watchpoint @var{n}. The
-condition is an @command{awk} expression that the debugger evaluates
+condition is an @command{awk} expression @emph{enclosed in double quotes}
+that the debugger evaluates
 whenever the breakpoint or watchpoint is reached. If the condition is true, then
 the debugger stops execution and prompts for a command. Otherwise,
 the debugger continues executing the program. If the condition expression is
@@ -28494,7 +28502,7 @@ see the output shown under @code{dump} in @ref{Miscellaneous Debugger Commands}.
 @item @code{until} [[@var{filename}@code{:}]@var{n} | @var{function}]
 @itemx @code{u} [[@var{filename}@code{:}]@var{n} | @var{function}]
 Without any argument, continue execution until a line past the current
-line in current stack frame is reached. With an argument,
+line in the current stack frame is reached. With an argument,
 continue execution until the specified location is reached, or the current
 stack frame returns.
 @end table
@@ -28558,7 +28566,7 @@ gawk> @kbd{print $3}
 @noindent
 This prints the third field in the input record (if the specified field does not
 exist, it prints @samp{Null field}). A variable can be an array element, with
-the subscripts being constant values. To print the contents of an array,
+the subscripts being constant string values. To print the contents of an array,
 prefix the name of the array with the @samp{@@} symbol:
 
 @example
@@ -28624,7 +28632,7 @@ watch list.
 @end table
 
 @node Execution Stack
-@subsection Dealing with the Stack
+@subsection Working with the Stack
 
 Whenever you run a program which contains any function calls,
 @command{gawk} maintains a stack of all of the function calls leading up
@@ -28635,16 +28643,22 @@ functions which called the one you are in.  The commands for doing this are:
 @table @asis
 @cindex debugger commands, @code{bt} (@code{backtrace})
 @cindex debugger commands, @code{backtrace}
+@cindex debugger commands, @code{where} (@code{backtrace})
 @cindex @code{backtrace} debugger command
 @cindex @code{bt} debugger command (alias for @code{backtrace})
+@cindex @code{where} debugger command
+@cindex @code{where} debugger command (alias for @code{backtrace})
 @cindex call stack, display in debugger
 @cindex traceback, display in debugger
 @item @code{backtrace} [@var{count}]
 @itemx @code{bt} [@var{count}]
+@itemx @code{where} [@var{count}]
 Print a backtrace of all function calls (stack frames), or innermost @var{count}
 frames if @var{count} > 0. Print the outermost @var{count} frames if
 @var{count} < 0.  The backtrace displays the name and arguments to each
 function, the source @value{FN}, and the line number.
+The alias @code{where} for @code{backtrace} is provided for long-time
+GDB users who may be used to that command.
 
 @cindex debugger commands, @code{down}
 @cindex @code{down} debugger command
@@ -28694,7 +28708,7 @@ The value for @var{what} should be one of the following:
 @table @code
 @item args
 @cindex show function arguments, in debugger
-Arguments of the selected frame.
+List arguments of the selected frame.
 
 @item break
 @cindex show breakpoints
@@ -28706,7 +28720,7 @@ List all items in the automatic display list.
 
 @item frame
 @cindex describe call stack frame, in debugger
-Description of the selected stack frame.
+Give a description of the selected stack frame.
 
 @item functions
 @cindex list function definitions, in debugger
@@ -28715,11 +28729,11 @@ line numbers.
 
 @item locals
 @cindex show local variables, in debugger
-Local variables of the selected frame.
+List local variables of the selected frame.
 
 @item source
 @cindex show name of current source file, in debugger
-The name of the current source file. Each time the program stops, the
+Print the name of the current source file. Each time the program stops, the
 current source file is the file containing the current instruction.
 When the debugger first starts, the current source file is the first file
 included via the @option{-f} option. The
@@ -28836,6 +28850,7 @@ commands in a program.  This can be very enlightening, as the following
 partial dump of Davide Brini's obfuscated code
 (@pxref{Signature Program}) demonstrates:
 
+@c FIXME: This will need updating if num-handler branch is ever merged in.
 @smallexample
 gawk> @kbd{dump}
 @print{}        # BEGIN
@@ -28909,7 +28924,7 @@ are as follows:
 
 @c nested table
 @table @asis
-@item @code{-}
+@item @code{-} (Minus)
 Print lines before the lines last printed.
 
 @item @code{+}
@@ -28997,7 +29012,7 @@ and
 @end table
 
 @node Limitations
-@section Limitations and Future Plans
+@section Limitations
 
 We hope you find the @command{gawk} debugger useful and enjoyable to work with,
 but as with any program, especially in its early releases, it still has
@@ -29045,8 +29060,10 @@ executing, short programs.
 The @command{gawk} debugger only accepts source supplied with the @option{-f} option.
 @end itemize
 
+@ignore
 Look forward to a future release when these and other missing features may
 be added, and of course feel free to try to add them yourself!
+@end ignore
 
 @node Debugging Summary
 @section Summary
@@ -29089,9 +29106,8 @@ and editing.
 @cindex floating-point, numbers@comma{} arbitrary precision
 
 This @value{CHAPTER} introduces some basic concepts relating to
-how computers do arithmetic and briefly lists the features in
-@command{gawk} for performing arbitrary precision floating point
-computations.  It then proceeds to describe floating-point arithmetic,
+how computers do arithmetic and defines some important terms.
+It then proceeds to describe floating-point arithmetic,
 which is what @command{awk} uses for all its computations, including a
 discussion of arbitrary precision floating point arithmetic, which is
 a feature available only in @command{gawk}. It continues on to present
@@ -29186,8 +29202,10 @@ Computers work with integer and floating point values of different
 ranges. Integer values are usually either 32 or 64 bits in size.  Single
 precision floating point values occupy 32 bits, whereas double precision
 floating point values occupy 64 bits.  Floating point values are always
-signed. The possible ranges of values are shown in the following table.
+signed. The possible ranges of values are shown in @ref{table-numeric-ranges}.
 
+@float Table,table-numeric-ranges
+@caption{Value Ranges for Different Numeric Representations}
 @multitable @columnfractions .34 .33 .33
 @headitem Numeric representation @tab Miniumum value @tab Maximum value
 @item 32-bit signed integer @tab @minus{}2,147,483,648 @tab 2,147,483,647
@@ -29197,6 +29215,7 @@ signed. The possible ranges of values are shown in the following table.
 @item Single precision floating point (approximate) @tab @code{1.175494e-38} @tab @code{3.402823e+38}
 @item Double precision floating point (approximate) @tab @code{2.225074e-308} @tab @code{1.797693e+308}
 @end multitable
+@end float
 
 @node Math Definitions
 @section Other Stuff To Know
@@ -29224,14 +29243,12 @@ A special value representing infinity. Operations involving another
 number and infinity produce infinity.
 
 @item NaN
-``Not A Number.''@footnote{Thanks
-to Michael Brennan for this description, which I have paraphrased, and
-for the examples}.
-A special value that results from attempting a
-calculation that has no answer as a real number.  In such a case,
-programs can either receive a floating-point exception, or get @code{NaN}
-back as the result. The IEEE 754 standard recommends that systems return
-@code{NaN}. Some examples:
+``Not A Number.''@footnote{Thanks to Michael Brennan for this description,
+which we have paraphrased, and for the examples.} A special value that
+results from attempting a calculation that has no answer as a real number.
+In such a case, programs can either receive a floating-point exception,
+or get @code{NaN} back as the result. The IEEE 754 standard recommends
+that systems return @code{NaN}. Some examples:
 
 @table @code
 @item sqrt(-1)
@@ -29305,9 +29322,9 @@ to allow greater precisions and larger exponent ranges.
 field values for the basic IEEE 754 binary formats:
 
 @float Table,table-ieee-formats
-@caption{Basic IEEE Format Context Values}
+@caption{Basic IEEE Format Values}
 @multitable @columnfractions .20 .20 .20 .20 .20
-@headitem Name @tab Total bits @tab Precision @tab emin @tab emax
+@headitem Name @tab Total bits @tab Precision @tab Minimum exponent @tab Maximum exponent
 @item Single @tab 32 @tab 24 @tab @minus{}126 @tab +127 
 @item Double @tab 64 @tab 53 @tab @minus{}1022 @tab +1023
 @item Quadruple @tab 128 @tab 113 @tab @minus{}16382 @tab +16383
@@ -29322,16 +29339,16 @@ one extra bit of significand.
 @node MPFR features
 @section Arbitrary Precison Arithmetic Features In @command{gawk}
 
-By default, @command{gawk} uses the double precision floating point values
+By default, @command{gawk} uses the double precision floating-point values
 supplied by the hardware of the system it runs on.  However, if it was
-compiled to do, @command{gawk} uses the @uref{http://www.mpfr.org, GNU
-MPFR} and @uref{http://gmplib.org, GNU MP} (GMP) libraries for arbitrary
+compiled to do so, @command{gawk} uses the @uref{http://www.mpfr.org
+GNU MPFR} and @uref{http://gmplib.org, GNU MP} (GMP) libraries for arbitrary
 precision arithmetic on numbers.  You can see if MPFR support is available
 like so:
 
 @example
 $ @kbd{gawk --version}
-@print{} GNU Awk 4.1.1, API: 1.1 (GNU MPFR 3.1.0-p3, GNU MP 5.0.2)
+@print{} GNU Awk 4.1.2, API: 1.1 (GNU MPFR 3.1.0-p3, GNU MP 5.0.2)
 @print{} Copyright (C) 1989, 1991-2014 Free Software Foundation.
 @dots{}
 @end example
@@ -29355,7 +29372,8 @@ Two built-in variables, @code{PREC} and @code{ROUNDMODE},
 provide control over the working precision and the rounding mode.
 The precision and the rounding mode are set globally for every operation
 to follow.
-@xref{Auto-set}, for more information.
+@xref{Setting precision}, and @ref{Setting the rounding mode},
+for more information.
 
 @node FP Math Caution
 @section Floating Point Arithmetic: Caveat Emptor!
@@ -29469,6 +29487,10 @@ else
     # not ok
 @end example
 
+@noindent
+(We assume that you have a simple absolute value function named
+@code{abs()} defined elsewhere in your program.)
+
 @node Errors accumulate
 @subsubsection Errors Accumulate
 
@@ -29555,7 +29577,7 @@ It is easy to forget that the finite number of bits used to store the value
 is often just an approximation after proper rounding.
 The test for equality succeeds if and only if @emph{all} bits in the two operands
 are exactly the same. Since this is not necessarily true after floating-point
-computations with a particular precision and effective rounding rule,
+computations with a particular precision and effective rounding mode,
 a straight test for equality may not work. Instead, compare the
 two numbers to see if they are within the desirable delta of each other.
 
@@ -29654,7 +29676,7 @@ Be wary of floating-point constants! When reading a floating-point
 constant from program source code, @command{gawk} uses the default
 precision (that of a C @code{double}), unless overridden by an assignment
 to the special variable @code{PREC} on the command line, to store it
-internally as a MPFR number.  Changing the precision using @code{PREC}
+internally as an MPFR number.  Changing the precision using @code{PREC}
 in the program text does @emph{not} change the precision of a constant.
 
 If you need to represent a floating-point constant at a higher precision
@@ -29792,15 +29814,15 @@ the following computes
 5<superscript>4<superscript>3<superscript>2</superscript></superscript></superscript>, @c
 @end docbook
 the result of which is beyond the
-limits of ordinary hardware double-precision floating point values:
+limits of ordinary hardware double precision floating point values:
 
 @example
 $ @kbd{gawk -M 'BEGIN @{}
 >   @kbd{x = 5^4^3^2}
->   @kbd{print "# of digits =", length(x)}
+>   @kbd{print "number of digits =", length(x)}
 >   @kbd{print substr(x, 1, 20), "...", substr(x, length(x) - 19, 20)}
 > @kbd{@}'}
-@print{} # of digits = 183231
+@print{} number of digits = 183231
 @print{} 62060698786608744707 ... 92256259918212890625
 @end example
 
@@ -29984,7 +30006,7 @@ Thus @samp{+nan} and @samp{+NaN} are the same.
 @itemize @value{BULLET}
 @item
 Most computer arithmetic is done using either integers or floating-point
-values.  The default for @command{awk} is to use double-precision
+values.  Standard @command{awk} uses double precision
 floating-point values.
 
 @item
@@ -30103,7 +30125,7 @@ Extensions are written in C or C++, using the @dfn{Application Programming
 Interface} (API) defined for this purpose by the @command{gawk}
 developers.  The rest of this @value{CHAPTER} explains
 the facilities that the API provides and how to use
-them, and presents a small sample extension.  In addition, it documents
+them, and presents a small example extension.  In addition, it documents
 the sample extensions included in the @command{gawk} distribution,
 and describes the @code{gawkextlib} project.
 @ifclear FOR_PRINT
@@ -30119,10 +30141,14 @@ goals and design.
 @node Plugin License
 @section Extension Licensing
 
-Every dynamic extension should define the global symbol
-@code{plugin_is_GPL_compatible} to assert that it has been licensed under
-a GPL-compatible license.  If this symbol does not exist, @command{gawk}
-emits a fatal error and exits when it tries to load your extension.
+Every dynamic extension must be distributed under a license that is
+compatible with the GNU GPL (@pxref{Copying}).
+
+In order for the extension to tell @command{gawk} that it is
+properly licensed, the extension must define the global symbol
+@code{plugin_is_GPL_compatible}.  If this symbol does not exist,
+@command{gawk} emits a fatal error and exits when it tries to load
+your extension.
 
 The declared type of the symbol should be @code{int}.  It does not need
 to be in any allocated section, though.  The code merely asserts that
@@ -30137,7 +30163,7 @@ int plugin_is_GPL_compatible;
 
 Communication between
 @command{gawk} and an extension is two-way.  First, when an extension
-is loaded, it is passed a pointer to a @code{struct} whose fields are
+is loaded, @command{gawk} passes it a pointer to a @code{struct} whose fields are
 function pointers.
 @ifnotdocbook
 This is shown in @ref{figure-load-extension}.
@@ -30173,29 +30199,29 @@ This is shown in @inlineraw{docbook, <xref linkend="figure-load-extension"/>}.
 The extension can call functions inside @command{gawk} through these
 function pointers, at runtime, without needing (link-time) access
 to @command{gawk}'s symbols.  One of these function pointers is to a
-function for ``registering'' new built-in functions.
+function for ``registering'' new functions.
 @ifnotdocbook
-This is shown in @ref{figure-load-new-function}.
+This is shown in @ref{figure-register-new-function}.
 @end ifnotdocbook
 @ifdocbook
-This is shown in @inlineraw{docbook, <xref linkend="figure-load-new-function"/>}.
+This is shown in @inlineraw{docbook, <xref linkend="figure-register-new-function"/>}.
 @end ifdocbook
 
 @ifnotdocbook
-@float Figure,figure-load-new-function
-@caption{Loading The New Function}
+@float Figure,figure-register-new-function
+@caption{Registering A New Function}
 @ifinfo
-@center @image{api-figure2, , , Loading The New Function, txt}
+@center @image{api-figure2, , , Registering A New Function, txt}
 @end ifinfo
 @ifnotinfo
-@center @image{api-figure2, , , Loading The New Function}
+@center @image{api-figure2, , , Registering A New Function}
 @end ifnotinfo
 @end float
 @end ifnotdocbook
 
 @docbook
-<figure id="figure-load-new-function" float="0">
-<title>Loading The New Function</title>
+<figure id="figure-register-new-function" float="0">
+<title>Registering A New Function</title>
 <mediaobject>
 <imageobject role="web"><imagedata fileref="api-figure2.png" format="PNG"/></imageobject>
 </mediaobject>
@@ -30245,8 +30271,8 @@ and understandable.
 
 Although all of this sounds somewhat complicated, the result is that
 extension code is quite straightforward to write and to read. You can
-see this in the sample extensions @file{filefuncs.c} (@pxref{Extension
-Example}) and also the @file{testext.c} code for testing the APIs.
+see this in the sample extension @file{filefuncs.c} (@pxref{Extension
+Example}) and also in the @file{testext.c} code for testing the APIs.
 
 Some other bits and pieces:
 
@@ -30428,7 +30454,7 @@ and also how characters are likely to be input and output from files.
 @item
 When retrieving a value (such as a parameter or that of a global variable
 or array element), the extension requests a specific type (number, string,
-scalars, value cookie, array, or ``undefined'').  When the request is
+scalar, value cookie, array, or ``undefined'').  When the request is
 ``undefined,'' the returned value will have the real underlying type.
 
 However, if the request and actual type don't match, the access function
@@ -30587,7 +30613,7 @@ the cookie for getting the variable's value or for changing the variable's
 value.
 This is the @code{awk_scalar_t} type and @code{scalar_cookie} macro.
 Given a scalar cookie, @command{gawk} can directly retrieve or
-modify the value, as required, without having to first find it.
+modify the value, as required, without having to find it first.
 
 The @code{awk_value_cookie_t} type and @code{value_cookie} macro are similar.
 If you know that you wish to
