@@ -703,7 +703,7 @@ particular records in a file and perform operations upon them.
                                         record.
 * Nextfile Statement::                  Stop processing the current file.
 * Exit Statement::                      Stop execution of @command{awk}.
-* Built-in Variables::                  Summarizes the built-in variables.
+* Built-in Variables::                  Summarizes the predefined variables.
 * User-modified::                       Built-in variables that you change to
                                         control @command{awk}.
 * Auto-set::                            Built-in variables where @command{awk}
@@ -901,7 +901,6 @@ particular records in a file and perform operations upon them.
 * Extension API Description::           A full description of the API.
 * Extension API Functions Introduction:: Introduction to the API functions.
 * General Data Types::                  The data types.
-* Requesting Values::                   How to get a value.
 * Memory Allocation Functions::         Functions for allocating memory.
 * Constructor Functions::               Functions for creating values.
 * Registration Functions::              Functions to register things with
@@ -914,6 +913,7 @@ particular records in a file and perform operations upon them.
 * Two-way processors::                  Registering a two-way processor.
 * Printing Messages::                   Functions for printing messages.
 * Updating @code{ERRNO}::               Functions for updating @code{ERRNO}.
+* Requesting Values::                   How to get a value.
 * Accessing Parameters::                Functions for accessing parameters.
 * Symbol Table Access::                 Functions for accessing global
                                         variables.
@@ -952,9 +952,9 @@ particular records in a file and perform operations upon them.
                                         processor.
 * Extension Sample Read write array::   Serializing an array to a file.
 * Extension Sample Readfile::           Reading an entire file into a string.
-* Extension Sample API Tests::          Tests for the API.
 * Extension Sample Time::               An interface to @code{gettimeofday()}
                                         and @code{sleep()}.
+* Extension Sample API Tests::          Tests for the API.
 * gawkextlib::                          The @code{gawkextlib} project.
 * Extension summary::                   Extension summary.
 * Extension Exercises::                 Exercises.
@@ -1537,7 +1537,7 @@ for getting most things done in a program.
 
 @ref{Patterns and Actions},
 describes how to write patterns for matching records, actions for
-doing something when a record is matched, and the built-in variables
+doing something when a record is matched, and the predefined variables
 @command{awk} and @command{gawk} use.
 
 @ref{Arrays},
@@ -3567,8 +3567,8 @@ The @option{-v} option can only set one variable, but it can be used
 more than once, setting another variable each time, like this:
 @samp{awk @w{-v foo=1} @w{-v bar=2} @dots{}}.
 
-@cindex built-in variables, @code{-v} option@comma{} setting with
-@cindex variables, built-in, @code{-v} option@comma{} setting with
+@cindex predefined variables, @code{-v} option@comma{} setting with
+@cindex variables, predefined @code{-v} option@comma{} setting with
 @quotation CAUTION
 Using @option{-v} to set the values of the built-in
 variables may lead to surprising results.  @command{awk} will reset the
@@ -5926,7 +5926,7 @@ standard input (by default, this is the keyboard, but often it is a pipe from an
 command) or from files whose names you specify on the @command{awk}
 command line.  If you specify input files, @command{awk} reads them
 in order, processing all the data from one before going on to the next.
-The name of the current input file can be found in the built-in variable
+The name of the current input file can be found in the predefined variable
 @code{FILENAME}
 (@pxref{Built-in Variables}).
 
@@ -5974,9 +5974,9 @@ used with it do not have to be named on the @command{awk} command line
 @cindex @code{FNR} variable
 @command{awk} divides the input for your program into records and fields.
 It keeps track of the number of records that have been read so far from
-the current input file.  This value is stored in a built-in variable
+the current input file.  This value is stored in a predefined variable
 called @code{FNR} which is reset to zero every time a new file is started.
-Another built-in variable, @code{NR}, records the total number of input
+Another predefined variable, @code{NR}, records the total number of input
 records read so far from all @value{DF}s.  It starts at zero, but is
 never automatically reset to zero.
 
@@ -5994,7 +5994,7 @@ Records are separated by a character called the @dfn{record separator}.
 By default, the record separator is the newline character.
 This is why records are, by default, single lines.
 A different character can be used for the record separator by
-assigning the character to the built-in variable @code{RS}.
+assigning the character to the predefined variable @code{RS}.
 
 @cindex newlines, as record separators
 @cindex @code{RS} variable
@@ -6323,7 +6323,7 @@ field.
 
 @cindex @code{NF} variable
 @cindex fields, number of
-@code{NF} is a built-in variable whose value is the number of fields
+@code{NF} is a predefined variable whose value is the number of fields
 in the current record.  @command{awk} automatically updates the value
 of @code{NF} each time it reads a record.  No matter how many fields
 there are, the last field in a record can be represented by @code{$NF}.
@@ -6650,7 +6650,7 @@ is split into three fields: @samp{m}, @samp{@bullet{}g}, and
 Note the leading spaces in the values of the second and third fields.
 
 @cindex troubleshooting, @command{awk} uses @code{FS} not @code{IFS}
-The field separator is represented by the built-in variable @code{FS}.
+The field separator is represented by the predefined variable @code{FS}.
 Shell programmers take note:  @command{awk} does @emph{not} use the
 name @code{IFS} that is used by the POSIX-compliant shells (such as
 the Unix Bourne shell, @command{sh}, or Bash).
@@ -6895,7 +6895,7 @@ an uppercase @samp{F} instead of a lowercase @samp{f}. The latter
 option (@option{-f}) specifies a file containing an @command{awk} program.
 
 The value used for the argument to @option{-F} is processed in exactly the
-same way as assignments to the built-in variable @code{FS}.
+same way as assignments to the predefined variable @code{FS}.
 Any special characters in the field separator must be escaped
 appropriately.  For example, to use a @samp{\} as the field separator
 on the command line, you would have to type:
@@ -7786,7 +7786,7 @@ from the file
 @var{file}, and put it in the variable @var{var}.  As above, @var{file}
 is a string-valued expression that specifies the file from which to read.
 
-In this version of @code{getline}, none of the built-in variables are
+In this version of @code{getline}, none of the predefined variables are
 changed and the record is not split into fields.  The only variable
 changed is @var{var}.@footnote{This is not quite true. @code{RT} could
 be changed if @code{RS} is a regular expression.}
@@ -7948,7 +7948,7 @@ BEGIN @{
 @}
 @end example
 
-In this version of @code{getline}, none of the built-in variables are
+In this version of @code{getline}, none of the predefined variables are
 changed and the record is not split into fields. However, @code{RT} is set.
 
 @ifinfo
@@ -8010,7 +8010,7 @@ When you use @samp{@var{command} |& getline @var{var}}, the output from
 the coprocess @var{command} is sent through a two-way pipe to @code{getline}
 and into the variable @var{var}.
 
-In this version of @code{getline}, none of the built-in variables are
+In this version of @code{getline}, none of the predefined variables are
 changed and the record is not split into fields.  The only variable
 changed is @var{var}.
 However, @code{RT} is set.
@@ -8113,9 +8113,9 @@ know that there is a string value to be assigned.
 
 @ref{table-getline-variants}
 summarizes the eight variants of @code{getline},
-listing which built-in variables are set by each one,
+listing which predefined variables are set by each one,
 and whether the variant is standard or a @command{gawk} extension.
-Note: for each variant, @command{gawk} sets the @code{RT} built-in variable.
+Note: for each variant, @command{gawk} sets the @code{RT} predefined variable.
 
 @float Table,table-getline-variants
 @caption{@code{getline} Variants and What They Set}
@@ -8575,7 +8575,7 @@ of items separated by commas.  In the output, the items are normally
 separated by single spaces.  However, this doesn't need to be the case;
 a single space is simply the default.  Any string of
 characters may be used as the @dfn{output field separator} by setting the
-built-in variable @code{OFS}.  The initial value of this variable
+predefined variable @code{OFS}.  The initial value of this variable
 is the string @w{@code{" "}}---that is, a single space.
 
 The output from an entire @code{print} statement is called an
@@ -8651,7 +8651,7 @@ more fully in
 @cindexawkfunc{sprintf}
 @cindex @code{OFMT} variable
 @cindex output, format specifier@comma{} @code{OFMT}
-The built-in variable @code{OFMT} contains the format specification
+The predefined variable @code{OFMT} contains the format specification
 that @code{print} uses with @code{sprintf()} when it wants to convert a
 number to a string for printing.
 The default value of @code{OFMT} is @code{"%.6g"}.
@@ -9785,7 +9785,7 @@ retval = close(command)  # syntax error in many Unix awks
 The return value is @minus{}1 if the argument names something
 that was never opened with a redirection, or if there is
 a system problem closing the file or process.
-In these cases, @command{gawk} sets the built-in variable
+In these cases, @command{gawk} sets the predefined variable
 @code{ERRNO} to a string describing the problem.
 
 In @command{gawk},
@@ -10248,10 +10248,10 @@ array parameters. @xref{String Functions}.
 @cindex variables, initializing
 A few variables have special built-in meanings, such as @code{FS} (the
 field separator), and @code{NF} (the number of fields in the current input
-record).  @xref{Built-in Variables}, for a list of the built-in variables.
-These built-in variables can be used and assigned just like all other
+record).  @xref{Built-in Variables}, for a list of the predefined variables.
+These predefined variables can be used and assigned just like all other
 variables, but their values are also used or changed automatically by
-@command{awk}.  All built-in variables' names are entirely uppercase.
+@command{awk}.  All predefined variables' names are entirely uppercase.
 
 Variables in @command{awk} can be assigned either numeric or string values.
 The kind of value a variable holds can change over the life of a program.
@@ -10377,7 +10377,7 @@ Strings that can't be interpreted as valid numbers convert to zero.
 
 @cindex @code{CONVFMT} variable
 The exact manner in which numbers are converted into strings is controlled
-by the @command{awk} built-in variable @code{CONVFMT} (@pxref{Built-in Variables}).
+by the @command{awk} predefined variable @code{CONVFMT} (@pxref{Built-in Variables}).
 Numbers are converted using the @code{sprintf()} function
 with @code{CONVFMT} as the format
 specifier
@@ -12269,7 +12269,7 @@ program, and occasionally the format for data read as input.
 As you have already seen, each @command{awk} statement consists of
 a pattern with an associated action.  This @value{CHAPTER} describes how
 you build patterns and actions, what kinds of things you can do within
-actions, and @command{awk}'s built-in variables.
+actions, and @command{awk}'s predefined variables.
 
 The pattern-action rules and the statements available for use
 within actions form the core of @command{awk} programming.
@@ -12284,7 +12284,7 @@ building something useful.
 * Action Overview::             What goes into an action.
 * Statements::                  Describes the various control statements in
                                 detail.
-* Built-in Variables::          Summarizes the built-in variables.
+* Built-in Variables::          Summarizes the predefined variables.
 * Pattern Action Summary::      Patterns and Actions summary.
 @end menu
 
@@ -13693,11 +13693,11 @@ results across different operating systems.
 @c ENDOFRANGE accs
 
 @node Built-in Variables
-@section Built-in Variables
+@section Predefined Variables
 @c STARTOFRANGE bvar
-@cindex built-in variables
+@cindex predefined variables
 @c STARTOFRANGE varb
-@cindex variables, built-in
+@cindex variables, predefined
 
 Most @command{awk} variables are available to use for your own
 purposes; they never change unless your program assigns values to
@@ -13708,8 +13708,8 @@ to tell @command{awk} how to do certain things.  Others are set
 automatically by @command{awk}, so that they carry information from the
 internal workings of @command{awk} to your program.
 
-@cindex @command{gawk}, built-in variables and
-This @value{SECTION} documents all of @command{gawk}'s built-in variables,
+@cindex @command{gawk}, predefined variables and
+This @value{SECTION} documents all of @command{gawk}'s predefined variables,
 most of which are also documented in the @value{CHAPTER}s describing
 their areas of activity.
 
@@ -13724,7 +13724,7 @@ their areas of activity.
 @node User-modified
 @subsection Built-in Variables That Control @command{awk}
 @c STARTOFRANGE bvaru
-@cindex built-in variables, user-modifiable
+@cindex predefined variables, user-modifiable
 @c STARTOFRANGE nmbv
 @cindex user-modifiable variables
 
@@ -13961,9 +13961,9 @@ The default value of @code{TEXTDOMAIN} is @code{"messages"}.
 @subsection Built-in Variables That Convey Information
 
 @c STARTOFRANGE bvconi
-@cindex built-in variables, conveying information
+@cindex predefined variables, conveying information
 @c STARTOFRANGE vbconi
-@cindex variables, built-in, conveying information
+@cindex variables, predefined conveying information
 The following is an alphabetical list of variables that @command{awk}
 sets automatically on certain occasions in order to provide
 information to your program.
@@ -14592,7 +14592,7 @@ immediately.  You may pass an optional numeric value to be used
 as @command{awk}'s exit status.
 
 @item
-Some built-in variables provide control over @command{awk}, mainly for I/O.
+Some predefined variables provide control over @command{awk}, mainly for I/O.
 Other variables convey information from @command{awk} to your program.
 
 @item
@@ -15386,7 +15386,7 @@ An important aspect to remember about arrays is that @emph{array subscripts
 are always strings}.  When a numeric value is used as a subscript,
 it is converted to a string value before being used for subscripting
 (@pxref{Conversion}).
-This means that the value of the built-in variable @code{CONVFMT} can
+This means that the value of the predefined variable @code{CONVFMT} can
 affect how your program accesses elements of an array.  For example:
 
 @example
@@ -16570,8 +16570,8 @@ for @code{match()}, the order is the same as for the @samp{~} operator:
 @cindex @code{RSTART} variable, @code{match()} function and
 @cindex @code{RLENGTH} variable, @code{match()} function and
 @cindex @code{match()} function, @code{RSTART}/@code{RLENGTH} variables
-The @code{match()} function sets the built-in variable @code{RSTART} to
-the index.  It also sets the built-in variable @code{RLENGTH} to the
+The @code{match()} function sets the predefined variable @code{RSTART} to
+the index.  It also sets the predefined variable @code{RLENGTH} to the
 length in characters of the matched substring.  If no match is found,
 @code{RSTART} is set to zero, and @code{RLENGTH} to @minus{}1.
 
@@ -18399,7 +18399,7 @@ the call.
 A function cannot have two parameters with the same name, nor may it
 have a parameter with the same name as the function itself.
 In addition, according to the POSIX standard, function parameters
-cannot have the same name as one of the special built-in variables
+cannot have the same name as one of the special predefined variables
 (@pxref{Built-in Variables}).  Not all versions of @command{awk} enforce
 this restriction.
 
@@ -19647,7 +19647,7 @@ example, @code{getopt()}'s @code{Opterr} and @code{Optind} variables
 (@pxref{Getopt Function}).
 The leading capital letter indicates that it is global, while the fact that
 the variable name is not all capital letters indicates that the variable is
-not one of @command{awk}'s built-in variables, such as @code{FS}.
+not one of @command{awk}'s predefined variables, such as @code{FS}.
 
 @cindex @option{--dump-variables} option, using for library functions
 It is also important that @emph{all} variables in library
@@ -22532,7 +22532,7 @@ and the file transition library program
 The program begins with a descriptive comment and then a @code{BEGIN} rule
 that processes the command-line arguments with @code{getopt()}.  The @option{-i}
 (ignore case) option is particularly easy with @command{gawk}; we just use the
-@code{IGNORECASE} built-in variable
+@code{IGNORECASE} predefined variable
 (@pxref{Built-in Variables}):
 
 @cindex @code{egrep.awk} program
@@ -29384,7 +29384,7 @@ results.  With the @option{-M} command-line option,
 all floating-point arithmetic operators and numeric functions
 can yield results to any desired precision level supported by MPFR.
 
-Two built-in variables, @code{PREC} and @code{ROUNDMODE},
+Two predefined variables, @code{PREC} and @code{ROUNDMODE},
 provide control over the working precision and the rounding mode.
 The precision and the rounding mode are set globally for every operation
 to follow.
@@ -29660,7 +29660,7 @@ $ @kbd{gawk -f pi2.awk}
 the precision or accuracy of individual numbers. Performing an arithmetic
 operation or calling a built-in function rounds the result to the current
 working precision. The default working precision is 53 bits, which you can
-modify using the built-in variable @code{PREC}. You can also set the
+modify using the predefined variable @code{PREC}. You can also set the
 value to one of the predefined case-insensitive strings
 shown in @ref{table-predefined-precision-strings},
 to emulate an IEEE 754 binary format.
@@ -30361,13 +30361,13 @@ This (rather large) @value{SECTION} describes the API in detail.
 @menu
 * Extension API Functions Introduction:: Introduction to the API functions.
 * General Data Types::                   The data types.
-* Requesting Values::                    How to get a value.
 * Memory Allocation Functions::          Functions for allocating memory.
 * Constructor Functions::                Functions for creating values.
 * Registration Functions::               Functions to register things with
                                          @command{gawk}.
 * Printing Messages::                    Functions for printing messages.
 * Updating @code{ERRNO}::                Functions for updating @code{ERRNO}.
+* Requesting Values::                    How to get a value.
 * Accessing Parameters::                 Functions for accessing parameters.
 * Symbol Table Access::                  Functions for accessing global
                                          variables.
@@ -30385,6 +30385,9 @@ by calling through function pointers passed into your extension.
 API function pointers are provided for the following kinds of operations:
 
 @itemize @value{BULLET}
+@item
+Allocating, reallocating, and releasing memory.
+
 @item
 Registration functions. You may register:
 @itemize @value{MINUS}
@@ -30416,9 +30419,6 @@ an array.
 @item
 Symbol table access: retrieving a global variable, creating one,
 or changing one.
-
-@item
-Allocating, reallocating, and releasing memory.
 
 @item
 Creating and releasing cached values; this provides an
@@ -31631,7 +31631,7 @@ Return false if the value cannot be retrieved.
 @item awk_bool_t sym_update_scalar(awk_scalar_t cookie, awk_value_t *value);
 Update the value associated with a scalar cookie.  Return false if
 the new value is not of type @code{AWK_STRING} or @code{AWK_NUMBER}.
-Here too, the built-in variables may not be updated.
+Here too, the predefined variables may not be updated.
 @end table
 
 It is not obvious at first glance how to work with scalar cookies or
@@ -32496,7 +32496,7 @@ This variable is true if @command{gawk} was invoked with @option{--traditional} 
 @end table
 
 The value of @code{do_lint} can change if @command{awk} code
-modifies the @code{LINT} built-in variable (@pxref{Built-in Variables}).
+modifies the @code{LINT} predefined variable (@pxref{Built-in Variables}).
 The others should not change during execution.
 
 @node Extension API Boilerplate
@@ -33071,7 +33071,16 @@ for success:
 @}
 @end example
 
-Finally, here is the @code{do_stat()} function. It starts with
+The third argument to @code{stat()} was not discussed previously. This
+argument is optional. If present, it causes @code{do_stat()} to use
+the @code{stat()} system call instead of the @code{lstat()} system
+call.  This is done by using a function pointer: @code{statfunc}.
+@code{statfunc} is initialized to point to @code{lstat()} (instead
+of @code{stat()}) to get the file information, in case the file is a
+symbolic link. However, if there were three arguments, @code{statfunc}
+is set point to @code{stat()}, instead.
+
+Here is the @code{do_stat()} function. It starts with
 variable declarations and argument checking:
 
 @ignore
@@ -33102,16 +33111,10 @@ do_stat(int nargs, awk_value_t *result)
     @}
 @end example
 
-The third argument to @code{stat()} was not discussed previously. This argument
-is optional. If present, it causes @code{stat()} to use the @code{stat()}
-system call instead of the @code{lstat()} system call.
-
 Then comes the actual work. First, the function gets the arguments.
-Next, it gets the information for the file.
-The code use @code{lstat()} (instead of @code{stat()})
-to get the file information,
-in case the file is a symbolic link.
-If there's an error, it sets @code{ERRNO} and returns:
+Next, it gets the information for the file.  If the called function
+(@code{lstat()} or @code{stat()}) returns an error, the code sets
+@code{ERRNO} and returns:
 
 @example
     /* file is first arg, array to hold results is second */
@@ -33140,7 +33143,7 @@ If there's an error, it sets @code{ERRNO} and returns:
 @end example
 
 The tedious work is done by @code{fill_stat_array()}, shown
-earlier.  When done, return the result from @code{fill_stat_array()}:
+earlier.  When done, the function returns the result from @code{fill_stat_array()}:
 
 @example
     ret = fill_stat_array(name, array, & sbuf);
@@ -33203,7 +33206,7 @@ of the @file{gawkapi.h} header file,
 the following steps@footnote{In practice, you would probably want to
 use the GNU Autotools---Automake, Autoconf, Libtool, and @command{gettext}---to
 configure and build your libraries. Instructions for doing so are beyond
-the scope of this @value{DOCUMENT}. @xref{gawkextlib}, for WWW links to
+the scope of this @value{DOCUMENT}. @xref{gawkextlib}, for Internet links to
 the tools.} create a GNU/Linux shared library:
 
 @example
@@ -33231,14 +33234,14 @@ BEGIN @{
     for (i in data)
         printf "data[\"%s\"] = %s\n", i, data[i]
     print "testff.awk modified:",
-        strftime("%m %d %y %H:%M:%S", data["mtime"])
+        strftime("%m %d %Y %H:%M:%S", data["mtime"])
 
     print "\nInfo for JUNK"
     ret = stat("JUNK", data)
     print "ret =", ret
     for (i in data)
         printf "data[\"%s\"] = %s\n", i, data[i]
-    print "JUNK modified:", strftime("%m %d %y %H:%M:%S", data["mtime"])
+    print "JUNK modified:", strftime("%m %d %Y %H:%M:%S", data["mtime"])
 @}
 @end example
 
@@ -33252,25 +33255,26 @@ $ @kbd{AWKLIBPATH=$PWD gawk -f testff.awk}
 @print{} Info for testff.awk
 @print{} ret = 0
 @print{} data["blksize"] = 4096
-@print{} data["mtime"] = 1350838628
+@print{} data["devbsize"] = 512
+@print{} data["mtime"] = 1412004710
 @print{} data["mode"] = 33204
 @print{} data["type"] = file
 @print{} data["dev"] = 2053
 @print{} data["gid"] = 1000
-@print{} data["ino"] = 1719496
-@print{} data["ctime"] = 1350838628
+@print{} data["ino"] = 10358899
+@print{} data["ctime"] = 1412004710
 @print{} data["blocks"] = 8
 @print{} data["nlink"] = 1
 @print{} data["name"] = testff.awk
-@print{} data["atime"] = 1350838632
+@print{} data["atime"] = 1412004716
 @print{} data["pmode"] = -rw-rw-r--
-@print{} data["size"] = 662
+@print{} data["size"] = 666
 @print{} data["uid"] = 1000
-@print{} testff.awk modified: 10 21 12 18:57:08
-@print{} 
+@print{} testff.awk modified: 09 29 2014 18:31:50
+@print{}
 @print{} Info for JUNK
 @print{} ret = -1
-@print{} JUNK modified: 01 01 70 02:00:00
+@print{} JUNK modified: 01 01 1970 02:00:00
 @end example
 
 @node Extension Samples
@@ -33295,9 +33299,9 @@ Others mainly provide example code that shows how to use the extension API.
 * Extension Sample Rev2way::          Reversing data sample two-way processor.
 * Extension Sample Read write array:: Serializing an array to a file.
 * Extension Sample Readfile::         Reading an entire file into a string.
-* Extension Sample API Tests::        Tests for the API.
 * Extension Sample Time::             An interface to @code{gettimeofday()}
                                       and @code{sleep()}.
+* Extension Sample API Tests::        Tests for the API.
 @end menu
 
 @node Extension Sample File Functions
@@ -33307,7 +33311,7 @@ The @code{filefuncs} extension provides three different functions, as follows:
 The usage is:
 
 @table @asis
-@item @@load "filefuncs"
+@item @code{@@load "filefuncs"}
 This is how you load the extension.
 
 @cindex @code{chdir()} extension function
@@ -33370,7 +33374,7 @@ Not all systems support all file types. @tab All
 @itemx @code{result = fts(pathlist, flags, filedata)}
 Walk the file trees provided in @code{pathlist} and fill in the
 @code{filedata} array as described below.  @code{flags} is the bitwise
-OR of several predefined constant values, also described below.
+OR of several predefined values, also described below.
 Return zero if there were no errors, otherwise return @minus{}1.
 @end table
 
@@ -33415,10 +33419,10 @@ Immediately follow a symbolic link named in @code{pathlist},
 whether or not @code{FTS_LOGICAL} is set.
 
 @item FTS_SEEDOT
-By default, the @code{fts()} routines do not return entries for @file{.} (dot)
-and @file{..} (dot-dot).  This option causes entries for dot-dot to also
-be included.  (The extension always includes an entry for dot,
-see below.)
+By default, the C library @code{fts()} routines do not return entries for
+@file{.} (dot) and @file{..} (dot-dot).  This option causes entries for
+dot-dot to also be included.  (The extension always includes an entry
+for dot, see below.)
 
 @item FTS_XDEV
 During a traversal, do not cross onto a different mounted filesystem.
@@ -33472,8 +33476,8 @@ Otherwise it returns @minus{}1.
 @quotation NOTE
 The @code{fts()} extension does not exactly mimic the
 interface of the C library @code{fts()} routines, choosing instead to
-provide an interface that is based on associative arrays, which should
-be more comfortable to use from an @command{awk} program.  This includes the
+provide an interface that is based on associative arrays, which is
+more comfortable to use from an @command{awk} program.  This includes the
 lack of a comparison function, since @command{gawk} already provides
 powerful array sorting facilities.  While an @code{fts_read()}-like
 interface could have been provided, this felt less natural than simply
@@ -33481,7 +33485,8 @@ creating a multidimensional array to represent the file hierarchy and
 its information.
 @end quotation
 
-See @file{test/fts.awk} in the @command{gawk} distribution for an example.
+See @file{test/fts.awk} in the @command{gawk} distribution for an example
+use of the @code{fts()} extension function.
 
 @node Extension Sample Fnmatch
 @subsection Interface To @code{fnmatch()}
@@ -33689,7 +33694,7 @@ indicating the type of the file. The letters are file types are shown
 in @ref{table-readdir-file-types}.
 
 @float Table,table-readdir-file-types
-@caption{File Types Returned By @code{readdir()}}
+@caption{File Types Returned By The @code{readdir} Extension}
 @multitable @columnfractions .1 .9
 @headitem Letter @tab File Type
 @item @code{b} @tab Block device
@@ -33781,6 +33786,9 @@ The @code{rwarray} extension adds two functions,
 named @code{writea()} and @code{reada()}, as follows:
 
 @table @code
+@item @@load "rwarray"
+This is how you load the extension.
+
 @cindex @code{writea()} extension function
 @item ret = writea(file, array)
 This function takes a string argument, which is the name of the file
@@ -33856,17 +33864,6 @@ if (contents == "" && ERRNO != "") @{
 @}
 @end example
 
-@node Extension Sample API Tests
-@subsection API Tests
-@cindex @code{testext} extension
-
-The @code{testext} extension exercises parts of the extension API that
-are not tested by the other samples.  The @file{extension/testext.c}
-file contains both the C code for the extension and @command{awk}
-test code inside C comments that run the tests. The testing framework
-extracts the @command{awk} code and runs the tests.  See the source file
-for more information.
-
 @node Extension Sample Time
 @subsection Extension Time Functions
 
@@ -33897,6 +33894,17 @@ Implementation details: depending on platform availability, this function
 tries to use @code{nanosleep()} or @code{select()} to implement the delay.
 @end table
 
+@node Extension Sample API Tests
+@subsection API Tests
+@cindex @code{testext} extension
+
+The @code{testext} extension exercises parts of the extension API that
+are not tested by the other samples.  The @file{extension/testext.c}
+file contains both the C code for the extension and @command{awk}
+test code inside C comments that run the tests. The testing framework
+extracts the @command{awk} code and runs the tests.  See the source file
+for more information.
+
 @node gawkextlib
 @section The @code{gawkextlib} Project
 @cindex @code{gawkextlib}
@@ -33912,8 +33920,7 @@ As of this writing, there are five extensions:
 
 @itemize @value{BULLET}
 @item
-XML parser extension, using the @uref{http://expat.sourceforge.net, Expat}
-XML parsing library.
+GD graphics library extension.
 
 @item
 PDF extension.
@@ -33922,17 +33929,14 @@ PDF extension.
 PostgreSQL extension.
 
 @item
-GD graphics library extension.
-
-@item
 MPFR library extension.
 This provides access to a number of MPFR functions which @command{gawk}'s
 native MPFR support does not.
-@end itemize
 
-The @code{time} extension described earlier (@pxref{Extension Sample
-Time}) was originally from this project but has been moved in to the
-main @command{gawk} distribution.
+@item
+XML parser extension, using the @uref{http://expat.sourceforge.net, Expat}
+XML parsing library.
+@end itemize
 
 @cindex @command{git} utility
 You can check out the code for the @code{gawkextlib} project
@@ -34023,6 +34027,9 @@ API function pointers are provided for the following kinds of operations:
 
 @itemize @value{BULLET}
 @item
+Allocating, reallocating, and releasing memory.
+
+@item
 Registration functions. You may register
 extension functions,
 exit callbacks,
@@ -34044,9 +34051,6 @@ an array.
 @item
 Symbol table access: retrieving a global variable, creating one,
 or changing one.
-
-@item
-Allocating, reallocating, and releasing memory.
 
 @item
 Creating and releasing cached values; this provides an
@@ -34080,7 +34084,7 @@ treated as read-only by the extension.
 @item
 @emph{All} memory passed from an extension to @command{gawk} must come from
 the API's memory allocation functions. @command{gawk} takes responsibility for
-the memory and will release it when appropriate.
+the memory and releases it when appropriate.
 
 @item
 The API provides information about the running version of @command{gawk} so
@@ -34097,7 +34101,7 @@ The @command{gawk} distribution includes a number of small but useful
 sample extensions. The @code{gawkextlib} project includes several more,
 larger, extensions.  If you wish to write an extension and contribute it
 to the community of @command{gawk} users, the @code{gawkextlib} project
-should be the place to do so.
+is the place to do so.
 
 @end itemize
 
@@ -34179,7 +34183,7 @@ which follows the POSIX specification.  Many long-time @command{awk}
 users learned @command{awk} programming with the original @command{awk}
 implementation in Version 7 Unix.  (This implementation was the basis for
 @command{awk} in Berkeley Unix, through 4.3-Reno.  Subsequent versions
-of Berkeley Unix, and some systems derived from 4.4BSD-Lite, used various
+of Berkeley Unix, and, for a while, some systems derived from 4.4BSD-Lite, used various
 versions of @command{gawk} for their @command{awk}.)  This @value{CHAPTER}
 briefly describes the evolution of the @command{awk} language, with
 cross-references to other parts of the @value{DOCUMENT} where you can
@@ -34252,7 +34256,7 @@ The built-in functions @code{close()} and @code{system()}
 
 @item
 The @code{ARGC}, @code{ARGV}, @code{FNR}, @code{RLENGTH}, @code{RSTART},
-and @code{SUBSEP} built-in variables (@pxref{Built-in Variables}).
+and @code{SUBSEP} predefined variables (@pxref{Built-in Variables}).
 
 @item
 Assignable @code{$0} (@pxref{Changing Fields}).
@@ -34283,14 +34287,11 @@ of @code{FS}.
 
 @item
 Dynamic regexps as operands of the @samp{~} and @samp{!~} operators
-(@pxref{Regexp Usage}).
+(@pxref{Computed Regexps}).
 
 @item
 The escape sequences @samp{\b}, @samp{\f}, and @samp{\r}
 (@pxref{Escape Sequences}).
-(Some vendors have updated their old versions of @command{awk} to
-recognize @samp{\b}, @samp{\f}, and @samp{\r}, but this is not
-something you can rely on.)
 
 @item
 Redirection of input for the @code{getline} function
@@ -34329,7 +34330,7 @@ The @option{-v} option for assigning variables before program execution begins
 @c GNU, Bell Laboratories & MKS together
 
 @item
-The @option{--} option for terminating command-line options.
+The @option{--} signal for terminating command-line options.
 
 @item
 The @samp{\a}, @samp{\v}, and @samp{\x} escape sequences
@@ -34352,7 +34353,7 @@ A cleaner specification for the @code{%c} format-control letter in the
 
 @item
 The ability to dynamically pass the field width and precision (@code{"%*.*d"})
-in the argument list of the @code{printf} function
+in the argument list of @code{printf} and @code{sprintf()}
 (@pxref{Control Letters}).
 
 @item
@@ -34387,8 +34388,8 @@ The concept of a numeric string and tighter comparison rules to go
 with it (@pxref{Typing and Comparison}).
 
 @item
-The use of built-in variables as function parameter names is forbidden
-(@pxref{Definition Syntax}.
+The use of predefined variables as function parameter names is forbidden
+(@pxref{Definition Syntax}).
 
 @item
 More complete documentation of many of the previously undocumented
@@ -34483,7 +34484,7 @@ in the current version of @command{gawk}.
 @itemize @value{BULLET}
 
 @item
-Additional built-in variables:
+Additional predefined variables:
 
 @itemize @value{MINUS}
 @item
@@ -34567,14 +34568,6 @@ The @code{BEGINFILE} and @code{ENDFILE} special patterns.
 (@pxref{BEGINFILE/ENDFILE}).
 
 @item
-The ability to delete all of an array at once with @samp{delete @var{array}}
-(@pxref{Delete}).
-
-@item
-The @code{nextfile} statement
-(@pxref{Nextfile Statement}).
-
-@item
 The @code{switch} statement
 (@pxref{Switch Statement}).
 @end itemize
@@ -34589,7 +34582,7 @@ of a two-way pipe to a coprocess
 (@pxref{Two-way I/O}).
 
 @item
-POSIX compliance for @code{gsub()} and @code{sub()}.
+POSIX compliance for @code{gsub()} and @code{sub()} with @option{--posix}.
 
 @item
 The @code{length()} function accepts an array argument
@@ -34617,6 +34610,20 @@ Additional functions only in @command{gawk}:
 
 @itemize @value{MINUS}
 @item
+The @code{gensub()}, @code{patsplit()}, and @code{strtonum()} functions
+for more powerful text manipulation
+(@pxref{String Functions}).
+
+@item
+The @code{asort()} and @code{asorti()} functions for sorting arrays
+(@pxref{Array Sorting}).
+
+@item
+The @code{mktime()}, @code{systime()}, and @code{strftime()}
+functions for working with timestamps
+(@pxref{Time Functions}).
+
+@item
 The
 @code{and()},
 @code{compl()},
@@ -34630,29 +34637,14 @@ functions for bit manipulation
 @c In 4.1, and(), or() and xor() grew the ability to take > 2 arguments
 
 @item
-The @code{asort()} and @code{asorti()} functions for sorting arrays
-(@pxref{Array Sorting}).
+The @code{isarray()} function to check if a variable is an array or not
+(@pxref{Type Functions}).
 
 @item
 The @code{bindtextdomain()}, @code{dcgettext()} and @code{dcngettext()}
 functions for internationalization
 (@pxref{Programmer i18n}).
-
-@item
-The @code{fflush()} function from BWK @command{awk}
-(@pxref{I/O Functions}).
-
-@item
-The @code{gensub()}, @code{patsplit()}, and @code{strtonum()} functions
-for more powerful text manipulation
-(@pxref{String Functions}).
-
-@item
-The @code{mktime()}, @code{systime()}, and @code{strftime()}
-functions for working with timestamps
-(@pxref{Time Functions}).
 @end itemize
-
 
 @item
 Changes and/or additions in the command-line options:
@@ -34776,7 +34768,7 @@ GCC for VAX and Alpha has not been tested for a while.
 
 @item
 Support for the following obsolete systems was removed from the code
-and the documentation for @command{gawk} @value{PVERSION} 4.1:
+for @command{gawk} @value{PVERSION} 4.1:
 
 @c nested table
 @itemize @value{MINUS}
@@ -35413,32 +35405,28 @@ The dynamic extension interface was completely redone
 
 @cindex extensions, Brian Kernighan's @command{awk}
 @cindex extensions, @command{mawk}
-This @value{SECTION} summarizes the common extensions supported
+The following table summarizes the common extensions supported
 by @command{gawk}, Brian Kernighan's @command{awk}, and @command{mawk},
 the three most widely-used freely available versions of @command{awk}
 (@pxref{Other Versions}).
 
-@multitable {@file{/dev/stderr} special file} {BWK Awk} {Mawk} {GNU Awk}
-@headitem Feature @tab BWK Awk @tab Mawk @tab GNU Awk
-@item @samp{\x} Escape sequence @tab X @tab X @tab X
-@item @code{FS} as null string @tab X @tab X @tab X
-@item @file{/dev/stdin} special file @tab X @tab X @tab X
-@item @file{/dev/stdout} special file @tab X @tab X @tab X
-@item @file{/dev/stderr} special file @tab X @tab X @tab X
-@item @code{delete} without subscript @tab X @tab X @tab X
-@item @code{fflush()} function @tab X @tab X @tab X
-@item @code{length()} of an array @tab X @tab X @tab X
-@item @code{nextfile} statement @tab X @tab X @tab X
-@item @code{**} and @code{**=} operators @tab X @tab @tab X
-@item @code{func} keyword @tab X @tab @tab X
-@item @code{BINMODE} variable @tab @tab X @tab X
-@item @code{RS} as regexp @tab @tab X @tab X
-@item Time related functions @tab @tab X @tab X
+@multitable {@file{/dev/stderr} special file} {BWK Awk} {Mawk} {GNU Awk} {Now standard}
+@headitem Feature @tab BWK Awk @tab Mawk @tab GNU Awk @tab Now standard
+@item @samp{\x} Escape sequence @tab X @tab X @tab X @tab
+@item @code{FS} as null string @tab X @tab X @tab X @tab
+@item @file{/dev/stdin} special file @tab X @tab X @tab X @tab
+@item @file{/dev/stdout} special file @tab X @tab X @tab X @tab
+@item @file{/dev/stderr} special file @tab X @tab X @tab X @tab
+@item @code{delete} without subscript @tab X @tab X @tab X @tab X
+@item @code{fflush()} function @tab X @tab X @tab X @tab X
+@item @code{length()} of an array @tab X @tab X @tab X @tab
+@item @code{nextfile} statement @tab X @tab X @tab X @tab X
+@item @code{**} and @code{**=} operators @tab X @tab @tab X @tab
+@item @code{func} keyword @tab X @tab @tab X @tab
+@item @code{BINMODE} variable @tab @tab X @tab X @tab
+@item @code{RS} as regexp @tab @tab X @tab X @tab
+@item Time related functions @tab @tab X @tab X @tab
 @end multitable
-
-(Technically speaking, as of late 2012, @code{fflush()}, @samp{delete @var{array}},
-and @code{nextfile} are no longer extensions, since they have been added
-to POSIX.)
 
 @node Ranges and Locales
 @appendixsec Regexp Ranges and Locales: A Long Sad Story
@@ -35476,6 +35464,7 @@ In the @code{"C"} and @code{"POSIX"} locales, a range expression like
 But outside those locales, the ordering was defined to be based on
 @dfn{collation order}.
 
+What does that mean?
 In many locales, @samp{A} and @samp{a} are both less than @samp{B}.
 In other words, these locales sort characters in dictionary order,
 and @samp{[a-dx-z]} is typically not equivalent to @samp{[abcdxyz]};
@@ -35483,7 +35472,7 @@ instead it might be equivalent to @samp{[ABCXYabcdxyz]}, for example.
 
 This point needs to be emphasized: Much literature teaches that you should
 use @samp{[a-z]} to match a lowercase character.  But on systems with
-non-ASCII locales, this also matched all of the uppercase characters
+non-ASCII locales, this also matches all of the uppercase characters
 except @samp{A} or @samp{Z}!  This was a continuous cause of confusion, even well
 into the twenty-first century.
 
@@ -35788,6 +35777,11 @@ The development of the extension API first released with
 @command{gawk} 4.1 was driven primarily by
 Arnold Robbins and Andrew Schorr, with notable contributions from
 the rest of the development team.
+
+@cindex Malmberg, John E.
+@item
+John Malmberg contributed significant improvements to the
+OpenVMS port and the related documentation.
 
 @item
 @cindex Colombo, Antonio
@@ -38312,7 +38306,7 @@ Pat Rankin suggested the solution that was adopted.
 @appendixsubsec Other Design Decisions
 
 As an arbitrary design decision, extensions can read the values of
-built-in variables and arrays (such as @code{ARGV} and @code{FS}), but cannot
+predefined variables and arrays (such as @code{ARGV} and @code{FS}), but cannot
 change them, with the exception of @code{PROCINFO}.
 
 The reason for this is to prevent an extension function from affecting
@@ -39053,11 +39047,11 @@ See ``Free Documentation License.''
 @item Field
 When @command{awk} reads an input record, it splits the record into pieces
 separated by whitespace (or by a separator regexp that you can
-change by setting the built-in variable @code{FS}).  Such pieces are
+change by setting the predefined variable @code{FS}).  Such pieces are
 called fields.  If the pieces are of fixed length, you can use the built-in
 variable @code{FIELDWIDTHS} to describe their lengths.
 If you wish to specify the contents of fields instead of the field
-separator, you can use the built-in variable @code{FPAT} to do so.
+separator, you can use the predefined variable @code{FPAT} to do so.
 (@xref{Field Separators},
 @ref{Constant Size},
 and
@@ -39076,7 +39070,7 @@ See also ``Double Precision'' and ``Single Precision.''
 Format strings control the appearance of output in the
 @code{strftime()} and @code{sprintf()} functions, and in the
 @code{printf} statement as well.  Also, data conversions from numbers to strings
-are controlled by the format strings contained in the built-in variables
+are controlled by the format strings contained in the predefined variables
 @code{CONVFMT} and @code{OFMT}. (@xref{Control Letters}.)
 
 @item Free Documentation License
