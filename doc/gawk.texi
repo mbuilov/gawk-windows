@@ -31391,8 +31391,8 @@ does not support this keyword, you should either place
 All pointers filled in by @command{gawk} point to memory
 managed by @command{gawk} and should be treated by the extension as
 read-only.  Memory for @emph{all} strings passed into @command{gawk}
-from the extension @emph{must} come from calling the API-provided function
-pointers @code{api_malloc()}, @code{api_calloc()} or @code{api_realloc()},
+from the extension @emph{must} come from calling one of
+@code{gawk_malloc()}, @code{gawk_calloc()} or @code{gawk_realloc()},
 and is managed by @command{gawk} from then on.
 
 @item
@@ -31475,8 +31475,8 @@ A simple boolean type.
 This represents a mutable string. @command{gawk}
 owns the memory pointed to if it supplied
 the value. Otherwise, it takes ownership of the memory pointed to.
-@strong{Such memory must come from calling the API-provided function
-pointers @code{api_malloc()}, @code{api_calloc()}, or @code{api_realloc()}!}
+@strong{Such memory must come from calling one of the
+@code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()} functions!}
 
 As mentioned earlier, strings are maintained using the current
 multibyte encoding.
@@ -31581,149 +31581,6 @@ and then pass in that value cookie whenever you wish to set the value of a
 variable.  This saves both storage space within the running @command{gawk}
 process as well as the time needed to create the value.
 
-@node Requesting Values
-@subsection Requesting Values
-
-All of the functions that return values from @command{gawk}
-work in the same way. You pass in an @code{awk_valtype_t} value
-to indicate what kind of value you expect.  If the actual value
-matches what you requested, the function returns true and fills
-in the @code{awk_value_t} result.
-Otherwise, the function returns false, and the @code{val_type}
-member indicates the type of the actual value.  You may then
-print an error message, or reissue the request for the actual
-value type, as appropriate.  This behavior is summarized in
-@ref{table-value-types-returned}.
-
-@c FIXME: Try to do this with spans...
-
-@float Table,table-value-types-returned
-@caption{API Value Types Returned}
-@docbook
-<informaltable>
-<tgroup cols="2">
-  <colspec colwidth="50*"/><colspec colwidth="50*"/>
-  <thead>
-    <row><entry></entry><entry><para>Type of Actual Value:</para></entry></row>
-  </thead>
-  <tbody>
-    <row><entry></entry><entry></entry></row>
-  </tbody>
-</tgroup>
-<tgroup cols="6">
-  <colspec colwidth="16.6*"/>
-  <colspec colwidth="16.6*"/>
-  <colspec colwidth="19.8*"/>
-  <colspec colwidth="15*"/>
-  <colspec colwidth="15*"/>
-  <colspec colwidth="16.6*"/>
-  <thead>
-    <row>
-      <entry></entry>
-      <entry></entry>
-      <entry><para>String</para></entry>
-      <entry><para>Number</para></entry>
-      <entry><para>Array</para></entry>
-      <entry><para>Undefined</para></entry>
-    </row>
-  </thead>
-  <tbody>
-    <row>
-      <entry></entry>
-      <entry><para><emphasis role="bold">String</emphasis></para></entry>
-      <entry><para>String</para></entry>
-      <entry><para>String</para></entry>
-      <entry><para>false</para></entry>
-      <entry><para>false</para></entry>
-    </row>
-    <row>
-      <entry></entry>
-      <entry><para><emphasis role="bold">Number</emphasis></para></entry>
-      <entry><para>Number if can be converted, else false</para></entry>
-      <entry><para>Number</para></entry>
-      <entry><para>false</para></entry>
-      <entry><para>false</para></entry>
-    </row>
-    <row>
-      <entry><para><emphasis role="bold">Type</emphasis></para></entry>
-      <entry><para><emphasis role="bold">Array</emphasis></para></entry>
-      <entry><para>false</para></entry>
-      <entry><para>false</para></entry>
-      <entry><para>Array</para></entry>
-      <entry><para>false</para></entry>
-    </row>
-    <row>
-      <entry><para><emphasis role="bold">Requested:</emphasis></para></entry>
-      <entry><para><emphasis role="bold">Scalar</emphasis></para></entry>
-      <entry><para>Scalar</para></entry>
-      <entry><para>Scalar</para></entry>
-      <entry><para>false</para></entry>
-      <entry><para>false</para></entry>
-    </row>
-    <row>
-      <entry></entry>
-      <entry><para><emphasis role="bold">Undefined</emphasis></para></entry>
-      <entry><para>String</para></entry>
-      <entry><para>Number</para></entry>
-      <entry><para>Array</para></entry>
-      <entry><para>Undefined</para></entry>
-    </row>
-    <row>
-      <entry></entry>
-      <entry><para><emphasis role="bold">Value Cookie</emphasis></para></entry>
-      <entry><para>false</para></entry>
-      <entry><para>false</para></entry>
-      <entry><para>false</para>
-      </entry><entry><para>false</para></entry>
-    </row>
-  </tbody>
-</tgroup>
-</informaltable>
-@end docbook
-
-@ifnotplaintext
-@ifnotdocbook
-@multitable @columnfractions .50 .50
-@headitem @tab Type of Actual Value:
-@end multitable
-@multitable @columnfractions .166 .166 .198 .15 .15 .166
-@headitem @tab @tab String @tab Number @tab Array @tab Undefined
-@item @tab @b{String} @tab String @tab String @tab false @tab false
-@item @tab @b{Number} @tab Number if can be converted, else false @tab Number @tab false @tab false
-@item @b{Type} @tab @b{Array} @tab false @tab false @tab Array @tab false
-@item @b{Requested:} @tab @b{Scalar} @tab Scalar @tab Scalar @tab false @tab false
-@item @tab @b{Undefined} @tab String @tab Number @tab Array @tab Undefined
-@item @tab @b{Value Cookie} @tab false @tab false @tab false @tab false
-@end multitable
-@end ifnotdocbook
-@end ifnotplaintext
-@ifplaintext
-@example
-                        +-------------------------------------------------+
-                        |                Type of Actual Value:            |
-                        +------------+------------+-----------+-----------+
-                        |   String   |   Number   | Array     | Undefined |
-+-----------+-----------+------------+------------+-----------+-----------+
-|           | String    |   String   |   String   | false     | false     |
-|           |-----------+------------+------------+-----------+-----------+
-|           | Number    | Number if  |   Number   | false     | false     |
-|           |           | can be     |            |           |           |
-|           |           | converted, |            |           |           |
-|           |           | else false |            |           |           |
-|           |-----------+------------+------------+-----------+-----------+
-|   Type    | Array     |   false    |   false    | Array     | false     |
-| Requested |-----------+------------+------------+-----------+-----------+
-|           | Scalar    |   Scalar   |   Scalar   | false     | false     |
-|           |-----------+------------+------------+-----------+-----------+
-|           | Undefined |  String    |   Number   | Array     | Undefined |
-|           |-----------+------------+------------+-----------+-----------+
-|           | Value     |   false    |   false    | false     | false     |
-|           | Cookie    |            |            |           |           |
-+-----------+-----------+------------+------------+-----------+-----------+
-@end example
-@end ifplaintext
-@end float
-
 @node Memory Allocation Functions
 @subsection Memory Allocation Functions and Convenience Macros
 @cindex allocating memory for extensions
@@ -31732,22 +31589,24 @@ value type, as appropriate.  This behavior is summarized in
 The API provides a number of @dfn{memory allocation} functions for
 allocating memory that can be passed to @command{gawk}, as well as a number of
 convenience macros.
+This @value{SUBSECTION} presents them all as function prototypes, in
+the way that extension code would use them.
 
 @table @code
 @item void *gawk_malloc(size_t size);
-Call @command{gawk}-provided @code{api_malloc()} to allocate storage that may
+Call the correct version of @code{malloc()} to allocate storage that may
 be passed to @command{gawk}.
 
 @item void *gawk_calloc(size_t nmemb, size_t size);
-Call @command{gawk}-provided @code{api_calloc()} to allocate storage that may
+Call the correct version of @code{calloc()} to allocate storage that may
 be passed to @command{gawk}.
 
 @item void *gawk_realloc(void *ptr, size_t size);
-Call @command{gawk}-provided @code{api_realloc()} to allocate storage that may
+Call the correct version of @code{realloc()} to allocate storage that may
 be passed to @command{gawk}.
 
 @item void gawk_free(void *ptr);
-Call @command{gawk}-provided @code{api_free()} to release storage that was
+Call the correct version of @code{free()} to release storage that was
 allocated with @code{gawk_malloc()}, @code{gawk_calloc()} or @code{gawk_realloc()}.
 @end table
 
@@ -31761,8 +31620,8 @@ unrelated version of @code{malloc()}, unexpected behavior would
 likely result.
 
 Two convenience macros may be used for allocating storage
-from the API-provided function pointers @code{api_malloc()} and
-@code{api_realloc()}. If the allocation fails, they cause @command{gawk}
+from @code{gawk_malloc()} and
+@code{gawk_realloc()}. If the allocation fails, they cause @command{gawk}
 to exit with a fatal error message.  They should be used as if they were
 procedure calls that do not return a value.
 
@@ -31776,7 +31635,7 @@ The arguments to this macro are as follows:
 The pointer variable to point at the allocated storage.
 
 @item type
-The type of the pointer variable, used to create a cast for the call to @code{api_malloc()}.
+The type of the pointer variable, used to create a cast for the call to @code{gawk_malloc()}.
 
 @item size
 The total number of bytes to be allocated.
@@ -31800,8 +31659,8 @@ make_malloced_string(message, strlen(message), & result);
 @end example
 
 @item #define erealloc(pointer, type, size, message) @dots{}
-This is like @code{emalloc()}, but it calls @code{api_realloc()},
-instead of @code{api_malloc()}.
+This is like @code{emalloc()}, but it calls @code{gawk_realloc()},
+instead of @code{gawk_malloc()}.
 The arguments are the same as for the @code{emalloc()} macro.
 @end table
 
@@ -31825,7 +31684,7 @@ for storage in @code{result}. It returns @code{result}.
 @itemx make_malloced_string(const char *string, size_t length, awk_value_t *result)
 This function creates a string value in the @code{awk_value_t} variable
 pointed to by @code{result}. It expects @code{string} to be a @samp{char *}
-value pointing to data previously obtained from the api-provided functions @code{api_malloc()}, @code{api_calloc()} or @code{api_realloc()}. The idea here
+value pointing to data previously obtained from @code{gawk_malloc()}, @code{gawk_calloc()} or @code{gawk_realloc()}. The idea here
 is that the data is passed directly to @command{gawk}, which assumes
 responsibility for it. It returns @code{result}.
 
@@ -31880,17 +31739,18 @@ The name of the new function.
 This is a regular C string.
 
 Function names must obey the rules for @command{awk}
-identifiers. That is, they must begin with either a letter
+identifiers. That is, they must begin with either an English letter
 or an underscore, which may be followed by any number of
 letters, digits, and underscores.
 Letter case in function names is significant.
 
 @item awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
-This is a pointer to the C function that provides the desired
+This is a pointer to the C function that provides the extension's
 functionality.
-The function must fill in the result with either a number
+The function must fill in @code{*result} with either a number
 or a string. @command{gawk} takes ownership of any string memory.
-As mentioned earlier, string memory @strong{must} come from the api-provided functions @code{api_malloc()}, @code{api_calloc()} or @code{api_realloc()}.
+As mentioned earlier, string memory @strong{must} come from one of @code{gawk_malloc()},
+@code{gawk_calloc()} or @code{gawk_realloc()}.
 
 The @code{num_actual_args} argument tells the C function how many
 actual parameters were passed from the calling @command{awk} code.
@@ -31901,7 +31761,7 @@ This is for the convenience of the calling code inside @command{gawk}.
 @item size_t num_expected_args;
 This is the number of arguments the function expects to receive.
 Each extension function may decide what to do if the number of
-arguments isn't what it expected.  Following @command{awk} functions, it
+arguments isn't what it expected.  As with real @command{awk} functions, it
 is likely OK to ignore extra arguments.
 @end table
 
@@ -32155,7 +32015,7 @@ If the concept of a ``record terminator'' makes sense, then
 @code{RT}, and @code{*rt_len} should be set to the length of the
 data. Otherwise, @code{*rt_len} should be set to zero.
 @code{gawk} makes its own copy of this data, so the
-extension must manage the storage.
+extension must manage this storage.
 @end table
 
 The return value is the length of the buffer pointed to by
@@ -32434,9 +32294,143 @@ into a (possibly translated) string using the C @code{strerror()} function.
 Set @code{ERRNO} directly to the string value of @code{ERRNO}.
 @command{gawk} makes a copy of the value of @code{string}.
 
-@item void unset_ERRNO();
+@item void unset_ERRNO(void);
 Unset @code{ERRNO}.
 @end table
+
+@node Requesting Values
+@subsection Requesting Values
+
+All of the functions that return values from @command{gawk}
+work in the same way. You pass in an @code{awk_valtype_t} value
+to indicate what kind of value you expect.  If the actual value
+matches what you requested, the function returns true and fills
+in the @code{awk_value_t} result.
+Otherwise, the function returns false, and the @code{val_type}
+member indicates the type of the actual value.  You may then
+print an error message, or reissue the request for the actual
+value type, as appropriate.  This behavior is summarized in
+@ref{table-value-types-returned}.
+
+@float Table,table-value-types-returned
+@caption{API Value Types Returned}
+@docbook
+<informaltable>
+<tgroup cols="6">
+  <colspec colwidth="16.6*"/>
+  <colspec colwidth="16.6*"/>
+  <colspec colwidth="19.8*" colname="c3"/>
+  <colspec colwidth="15*" colname="c4"/>
+  <colspec colwidth="15*" colname="c5"/>
+  <colspec colwidth="16.6*" colname="c6"/>
+  <spanspec spanname="hspan" namest="c3" nameend="c6" align="center"/>
+  <thead>
+    <row><entry></entry><entry spanname="hspan"><para>Type of Actual Value:</para></entry></row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry><para>String</para></entry>
+      <entry><para>Number</para></entry>
+      <entry><para>Array</para></entry>
+      <entry><para>Undefined</para></entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry></entry>
+      <entry><para><emphasis role="bold">String</emphasis></para></entry>
+      <entry><para>String</para></entry>
+      <entry><para>String</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry><para><emphasis role="bold">Number</emphasis></para></entry>
+      <entry><para>Number if can be converted, else false</para></entry>
+      <entry><para>Number</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+    </row>
+    <row>
+      <entry><para><emphasis role="bold">Type</emphasis></para></entry>
+      <entry><para><emphasis role="bold">Array</emphasis></para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>Array</para></entry>
+      <entry><para>false</para></entry>
+    </row>
+    <row>
+      <entry><para><emphasis role="bold">Requested:</emphasis></para></entry>
+      <entry><para><emphasis role="bold">Scalar</emphasis></para></entry>
+      <entry><para>Scalar</para></entry>
+      <entry><para>Scalar</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry><para><emphasis role="bold">Undefined</emphasis></para></entry>
+      <entry><para>String</para></entry>
+      <entry><para>Number</para></entry>
+      <entry><para>Array</para></entry>
+      <entry><para>Undefined</para></entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry><para><emphasis role="bold">Value Cookie</emphasis></para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para>
+      </entry><entry><para>false</para></entry>
+    </row>
+  </tbody>
+</tgroup>
+</informaltable>
+@end docbook
+
+@ifnotplaintext
+@ifnotdocbook
+@multitable @columnfractions .50 .50
+@headitem @tab Type of Actual Value:
+@end multitable
+@multitable @columnfractions .166 .166 .198 .15 .15 .166
+@headitem @tab @tab String @tab Number @tab Array @tab Undefined
+@item @tab @b{String} @tab String @tab String @tab false @tab false
+@item @tab @b{Number} @tab Number if can be converted, else false @tab Number @tab false @tab false
+@item @b{Type} @tab @b{Array} @tab false @tab false @tab Array @tab false
+@item @b{Requested:} @tab @b{Scalar} @tab Scalar @tab Scalar @tab false @tab false
+@item @tab @b{Undefined} @tab String @tab Number @tab Array @tab Undefined
+@item @tab @b{Value Cookie} @tab false @tab false @tab false @tab false
+@end multitable
+@end ifnotdocbook
+@end ifnotplaintext
+@ifplaintext
+@example
+                        +-------------------------------------------------+
+                        |                Type of Actual Value:            |
+                        +------------+------------+-----------+-----------+
+                        |   String   |   Number   | Array     | Undefined |
++-----------+-----------+------------+------------+-----------+-----------+
+|           | String    |   String   |   String   | false     | false     |
+|           |-----------+------------+------------+-----------+-----------+
+|           | Number    | Number if  |   Number   | false     | false     |
+|           |           | can be     |            |           |           |
+|           |           | converted, |            |           |           |
+|           |           | else false |            |           |           |
+|           |-----------+------------+------------+-----------+-----------+
+|   Type    | Array     |   false    |   false    | Array     | false     |
+| Requested |-----------+------------+------------+-----------+-----------+
+|           | Scalar    |   Scalar   |   Scalar   | false     | false     |
+|           |-----------+------------+------------+-----------+-----------+
+|           | Undefined |  String    |   Number   | Array     | Undefined |
+|           |-----------+------------+------------+-----------+-----------+
+|           | Value     |   false    |   false    | false     | false     |
+|           | Cookie    |            |            |           |           |
++-----------+-----------+------------+------------+-----------+-----------+
+@end example
+@end ifplaintext
+@end float
 
 @node Accessing Parameters
 @subsection Accessing and Updating Parameters
@@ -32492,7 +32486,7 @@ about symbols is termed a @dfn{symbol table}.
 Fill in the @code{awk_value_t} structure pointed to by @code{result}
 with the value of the variable named by the string @code{name}, which is
 a regular C string.  @code{wanted} indicates the type of value expected.
-Return true if the actual type matches @code{wanted}, false otherwise
+Return true if the actual type matches @code{wanted}, false otherwise.
 In the latter case, @code{result->val_type} indicates the actual type
 (@pxref{table-value-types-returned}).
 
@@ -32511,7 +32505,7 @@ An extension can look up the value of @command{gawk}'s special variables.
 However, with the exception of the @code{PROCINFO} array, an extension
 cannot change any of those variables.
 
-@quotation NOTE
+@quotation CAUTION
 It is possible for the lookup of @code{PROCINFO} to fail. This happens if
 the @command{awk} program being run does not reference @code{PROCINFO};
 in this case @command{gawk} doesn't bother to create the array and
@@ -32533,7 +32527,7 @@ The following functions let you work with scalar cookies.
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_valtype_t wanted,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_value_t *result);
 Retrieve the current value of a scalar cookie.
-Once you have obtained a scalar_cookie using @code{sym_lookup()}, you can
+Once you have obtained a scalar cookie using @code{sym_lookup()}, you can
 use this function to get its value more efficiently.
 Return false if the value cannot be retrieved.
 
@@ -32595,7 +32589,7 @@ my_extension_init()
     /* install initial value */
     sym_update("MAGIC_VAR", make_number(42.0, & value));
 
-    /* get cookie */
+    /* get the cookie */
     sym_lookup("MAGIC_VAR", AWK_SCALAR, & value);
 
     /* save the cookie */
@@ -32644,7 +32638,8 @@ assign those values to variables using @code{sym_update()}
 or @code{sym_update_scalar()}, as you like.
 
 However, you can understand the point of cached values if you remember that
-@emph{every} string value's storage @emph{must} come from @code{api_malloc()}, @code{api_calloc()} or @code{api_realloc()}.
+@emph{every} string value's storage @emph{must} come from @code{gawk_malloc()},
+@code{gawk_calloc()} or @code{gawk_realloc()}.
 If you have 20 variables, all of which have the same string value, you
 must create 20 identical copies of the string.@footnote{Numeric values
 are clearly less problematic, requiring only a C @code{double} to store.}
@@ -32715,7 +32710,7 @@ Using value cookies in this way saves considerable storage, since all of
 
 You might be wondering, ``Is this sharing problematic?
 What happens if @command{awk} code assigns a new value to @code{VAR1},
-are all the others be changed too?''
+are all the others changed too?''
 
 That's a great question. The answer is that no, it's not a problem.
 Internally, @command{gawk} uses @dfn{reference-counted strings}. This means
@@ -32770,7 +32765,7 @@ with the @code{<stdio.h>} library routines.
 @itemx @ @ @ @ struct awk_element *next;
 @itemx @ @ @ @ enum @{
 @itemx @ @ @ @ @ @ @ @ AWK_ELEMENT_DEFAULT = 0,@ @ /* set by gawk */
-@itemx @ @ @ @ @ @ @ @ AWK_ELEMENT_DELETE = 1@ @ @ @ /* set by extension if should be deleted */
+@itemx @ @ @ @ @ @ @ @ AWK_ELEMENT_DELETE = 1@ @ @ @ /* set by extension */
 @itemx @ @ @ @ @} flags;
 @itemx @ @ @ @ awk_value_t    index;
 @itemx @ @ @ @ awk_value_t    value;
@@ -32790,8 +32785,8 @@ an extension to create a linked list of new elements that can then be
 added to an array in a loop that traverses the list.
 
 @item enum @{ @dots{} @} flags;
-A set of flag values that convey information between @command{gawk}
-and the extension. Currently there is only one: @code{AWK_ELEMENT_DELETE}.
+A set of flag values that convey information between the extension
+and @command{gawk}.  Currently there is only one: @code{AWK_ELEMENT_DELETE}.
 Setting it causes @command{gawk} to delete the
 element from the original array upon release of the flattened array.
 
@@ -32802,8 +32797,8 @@ The index and value of the element, respectively.
 @end table
 
 @item typedef struct awk_flat_array @{
-@itemx @ @ @ @ awk_const void *awk_const opaque1;@ @ @ @ /* private data for use by gawk */
-@itemx @ @ @ @ awk_const void *awk_const opaque2;@ @ @ @ /* private data for use by gawk */
+@itemx @ @ @ @ awk_const void *awk_const opaque1;@ @ @ @ /* for use by gawk */
+@itemx @ @ @ @ awk_const void *awk_const opaque2;@ @ @ @ /* for use by gawk */
 @itemx @ @ @ @ awk_const size_t count;@ @ @ @ @ /* how many elements */
 @itemx @ @ @ @ awk_element_t elements[1];@ @ /* will be extended */
 @itemx @} awk_flat_array_t;
@@ -32822,7 +32817,7 @@ The following functions relate to individual array elements.
 
 @table @code
 @item awk_bool_t get_element_count(awk_array_t a_cookie, size_t *count);
-For the array represented by @code{a_cookie}, return in @code{*count}
+For the array represented by @code{a_cookie}, place in @code{*count}
 the number of elements it contains. A subarray counts as a single element.
 Return false if there is an error.
 
@@ -32842,7 +32837,8 @@ requires that you understand how such values are converted to strings
 (@pxref{Conversion}); thus using integral values is safest.
 
 As with @emph{all} strings passed into @code{gawk} from an extension,
-the string value of @code{index} must come from the API-provided functions @code{api_malloc()}, @code{api_calloc()} or @code{api_realloc()} and
+the string value of @code{index} must come from @code{gawk_malloc()},
+@code{gawk_calloc()} or @code{gawk_realloc()}, and
 @command{gawk} releases the storage.
 
 @item awk_bool_t set_array_element(awk_array_t a_cookie,
@@ -32869,7 +32865,7 @@ not exist in the array.
 The following functions relate to arrays as a whole:
 
 @table @code
-@item awk_array_t create_array();
+@item awk_array_t create_array(void);
 Create a new array to which elements may be added.
 @xref{Creating Arrays}, for a discussion of how to
 create a new array and add elements to it.
@@ -32886,7 +32882,13 @@ For the array represented by @code{a_cookie}, create an @code{awk_flat_array_t}
 structure and fill it in. Set the pointer whose address is passed as @code{data}
 to point to this structure.
 Return true upon success, or false otherwise.
-@xref{Flattening Arrays}, for a discussion of how to
+@ifset FOR_PRINT
+See the next section
+@end ifset
+@ifclear FOR_PRINT
+@xref{Flattening Arrays},
+@end ifclear
+for a discussion of how to
 flatten an array and work with it.
 
 @item awk_bool_t release_flattened_array(awk_array_t a_cookie,
@@ -32906,6 +32908,7 @@ for C code to traverse the entire array.  Test code
 in @file{extension/testext.c} does this, and also serves
 as a nice example showing how to use the APIs.
 
+We walk through that part of the code one step at a time.
 First, the @command{gawk} script that drives the test extension:
 
 @example
@@ -33044,8 +33047,7 @@ have this flag bit set:
             valrep2str(& flat_array->elements[i].value));
 
         if (strcmp(value3.str_value.str,
-                   flat_array->elements[i].index.str_value.str)
-                   == 0) @{
+                   flat_array->elements[i].index.str_value.str) == 0) @{
             flat_array->elements[i].flags |= AWK_ELEMENT_DELETE;
             printf("dump_array_and_delete: marking element \"%s\" "
                    "for deletion\n",
@@ -33149,7 +33151,9 @@ of the array cookie after the call to @code{set_element()}.
 
 The following C code is a simple test extension to create an array
 with two regular elements and with a subarray. The leading @code{#include}
-directives and boilerplate variable declarations are omitted for brevity.
+directives and boilerplate variable declarations
+(@pxref{Extension API Boilerplate})
+are omitted for brevity.
 The first step is to create a new array and then install it
 in the symbol table:
 
@@ -33428,12 +33432,12 @@ static awk_bool_t (*init_func)(void) = NULL;
 /* OR: */
 
 static awk_bool_t
-init_my_module(void)
+init_my_extension(void)
 @{
     @dots{}
 @}
 
-static awk_bool_t (*init_func)(void) = init_my_module;
+static awk_bool_t (*init_func)(void) = init_my_extension;
 
 dl_load_func(func_table, some_name, "name_space_in_quotes")
 @end example
@@ -33476,8 +33480,8 @@ It can then be looped over for multiple calls to
 @c Use @var{OR} for docbook
 @item static awk_bool_t (*init_func)(void) = NULL;
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @var{OR}
-@itemx static awk_bool_t init_my_module(void) @{ @dots{} @}
-@itemx static awk_bool_t (*init_func)(void) = init_my_module;
+@itemx static awk_bool_t init_my_extension(void) @{ @dots{} @}
+@itemx static awk_bool_t (*init_func)(void) = init_my_extension;
 If you need to do some initialization work, you should define a
 function that does it (creates variables, opens files, etc.)
 and then define the @code{init_func} pointer to point to your
@@ -33544,8 +33548,8 @@ path with a list of directories to search for compiled extensions.
 Two useful functions that are not in @command{awk} are @code{chdir()} (so
 that an @command{awk} program can change its directory) and @code{stat()}
 (so that an @command{awk} program can gather information about a file).
-This @value{SECTION} implements these functions for @command{gawk}
-in an extension.
+In order to illustrate the API in action, this @value{SECTION} implements
+these functions for @command{gawk} in an extension.
 
 @menu
 * Internal File Description::   What the new functions will do.
@@ -33567,8 +33571,7 @@ straightforward. It takes one argument, the new directory to change to:
 newdir = "/home/arnold/funstuff"
 ret = chdir(newdir)
 if (ret < 0) @{
-    printf("could not change to %s: %s\n",
-                   newdir, ERRNO) > "/dev/stderr"
+    printf("could not change to %s: %s\n", newdir, ERRNO) > "/dev/stderr"
     exit 1
 @}
 @dots{}
@@ -33756,7 +33759,7 @@ The second is a pointer to an @code{awk_value_t}, usually named
 @code{result}.
 
 @example
-/*  do_chdir --- provide dynamically loaded chdir() builtin for gawk */
+/*  do_chdir --- provide dynamically loaded chdir() function for gawk */
 
 static awk_value_t *
 do_chdir(int nargs, awk_value_t *result)
@@ -33965,7 +33968,7 @@ for success:
         @}
     @}
 
-    array_set(array, "type", make_const_string(type, strlen(type), &tmp));
+    array_set(array, "type", make_const_string(type, strlen(type), & tmp));
 
     return 0;
 @}
@@ -36573,7 +36576,7 @@ the various PC platforms.
 @cindex Zoulas, Christos
 Christos Zoulas
 provided the @code{extension()}
-built-in function for dynamically adding new modules.
+built-in function for dynamically adding new functions.
 (This was obsoleted at @command{gawk} 4.1.)
 
 @item
@@ -38481,7 +38484,7 @@ make it possible to include them:
 @enumerate 1
 @item
 Before building the new feature into @command{gawk} itself,
-consider writing it as an extension module
+consider writing it as an extension
 (@pxref{Dynamic Extensions}).
 If that's not possible, continue with the rest of the steps in this list.
 

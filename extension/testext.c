@@ -302,6 +302,12 @@ var_test(int nargs, awk_value_t *result)
 		goto out;
 	}
 
+	/* look up PROCINFO - should fail */
+	if (sym_lookup("PROCINFO", AWK_ARRAY, & value))
+		printf("var_test: sym_lookup of PROCINFO failed - got a value!\n");
+	else
+		printf("var_test: sym_lookup of PROCINFO passed - did not get a value\n");
+
 	/* look up a reserved variable - should pass */
 	if (sym_lookup("ARGC", AWK_NUMBER, & value))
 		printf("var_test: sym_lookup of ARGC passed - got a value!\n");
