@@ -35785,7 +35785,7 @@ various platforms that are supported by the developers.  The primary
 developer supports GNU/Linux (and Unix), whereas the other ports are
 contributed.
 @xref{Bugs},
-for the electronic mail addresses of the people who did
+for the electronic mail addresses of the people who maintain
 the respective ports.
 
 @menu
@@ -36104,11 +36104,10 @@ Unix-derived systems, GNU/Linux, BSD-based systems, and the Cygwin
 environment for MS-Windows.
 
 After you have extracted the @command{gawk} distribution, @command{cd}
-to @file{gawk-@value{VERSION}.@value{PATCHLEVEL}}.  Like most GNU software,
-@command{gawk} is configured
-automatically for your system by running the @command{configure} program.
-This program is a Bourne shell script that is generated automatically using
-GNU Autoconf.
+to @file{gawk-@value{VERSION}.@value{PATCHLEVEL}}.  As with most GNU
+software, you configure @command{gawk} for your system by running the
+@command{configure} program.  This program is a Bourne shell script that
+is generated automatically using GNU Autoconf.
 @ifnotinfo
 (The Autoconf software is
 described fully in
@@ -36203,8 +36202,8 @@ Similarly, setting the @code{LINT} variable
 has no effect on the running @command{awk} program.
 
 When used with GCC's automatic dead-code-elimination, this option
-cuts almost 200K bytes off the size of the @command{gawk}
-executable on GNU/Linux x86 systems.  Results on other systems and
+cuts almost 23K bytes off the size of the @command{gawk}
+executable on GNU/Linux x86_64 systems.  Results on other systems and
 with other compilers are likely to vary.
 Using this option may bring you some slight performance improvement.
 
@@ -36297,7 +36296,8 @@ various non-Unix systems.
 
 @cindex PC operating systems@comma{} @command{gawk} on, installing
 @cindex operating systems, PC@comma{} @command{gawk} on, installing
-This @value{SECTION} covers installation and usage of @command{gawk} on x86 machines
+This @value{SECTION} covers installation and usage of @command{gawk}
+on Intel architecture machines
 @ifclear FOR_PRINT
 running MS-DOS, any version of MS-Windows, or OS/2.
 @end ifclear
@@ -36399,7 +36399,8 @@ MS-DOS and Windows32 versions.  A list of targets is printed if the
 build @command{gawk} using the DJGPP tools, enter @samp{make djgpp}.
 (The DJGPP tools needed for the build may be found at
 @uref{ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/}.)  To build a
-native MS-Windows binary of @command{gawk}, type @samp{make mingw32}.
+native MS-Windows binary of @command{gawk} using the MinGW tools,
+type @samp{make mingw32}.
 
 @ifclear FOR_PRINT
 @cindex compiling @command{gawk} with EMX for OS/2
@@ -36529,8 +36530,7 @@ The MS-DOS and MS-Windows versions of @command{gawk} search for
 program files as described in @ref{AWKPATH Variable}.  However,
 semicolons (rather than colons) separate elements in the @env{AWKPATH}
 variable.  If @env{AWKPATH} is not set or is empty, then the default
-search path for MS-Windows and MS-DOS versions is
-@samp{@w{.;c:/lib/awk;c:/gnu/lib/awk}}.
+search path is @samp{@w{.;c:/lib/awk;c:/gnu/lib/awk}}.
 
 @ifclear FOR_PRINT
 @cindex @command{gawk}, OS/2 version of
@@ -36575,12 +36575,12 @@ allows control over these translations and is interpreted as follows:
 
 @itemize @value{BULLET}
 @item
-If @code{BINMODE} is @code{"r"}, or one,
+If @code{BINMODE} is @code{"r"} or one,
 then
 binary mode is set on read (i.e., no translations on reads).
 
 @item
-If @code{BINMODE} is @code{"w"}, or two,
+If @code{BINMODE} is @code{"w"} or two,
 then
 binary mode is set on write (i.e., no translations on writes).
 
@@ -36668,7 +36668,7 @@ same as for a Unix system:
 tar -xvpzf gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz
 cd gawk-@value{VERSION}.@value{PATCHLEVEL}
 ./configure
-make
+make && make check
 @end example
 
 When compared to GNU/Linux on the same system, the @samp{configure}
@@ -36687,7 +36687,7 @@ been ported to MS-Windows that expect @command{gawk} to do automatic
 translation of @code{"\r\n"}, since it won't.
 
 @node VMS Installation
-@appendixsubsec How to Compile and Install @command{gawk} on Vax/VMS and OpenVMS
+@appendixsubsec Compiling and Installing @command{gawk} on Vax/VMS and OpenVMS
 
 @c based on material from Pat Rankin <rankin@eql.caltech.edu>
 @c now rankin@pactechdata.com
@@ -36904,12 +36904,12 @@ other dash-type options (or multiple parameters such as @value{DF}s to
 process) are present, there is no ambiguity and @option{--} can be omitted.
 
 @cindex exit status, of VMS
-The @code{exit} value is a Unix-style value and is encoded to a VMS exit
+The @code{exit} value is a Unix-style value and is encoded into a VMS exit
 status value when the program exits.
 
 The VMS severity bits will be set based on the @code{exit} value.
 A failure is indicated by 1 and VMS sets the @code{ERROR} status.
-A fatal error is indicated by 2 and VMS will set the @code{FATAL} status.
+A fatal error is indicated by 2 and VMS sets the @code{FATAL} status.
 All other values will have the @code{SUCCESS} status.  The exit value is
 encoded to comply with VMS coding standards and will have the
 @code{C_FACILITY_NO} of @code{0x350000} with the constant @code{0xA000}
@@ -36925,7 +36925,7 @@ unix_status = (vms_status .and. &x7f8) / 8
 A C program that uses @code{exec()} to call @command{gawk} will get the original
 Unix-style exit value.
 
-Older versions of @command{gawk} treated a Unix exit code 0 as 1, a failure
+Older versions of @command{gawk} for VMS treated a Unix exit code 0 as 1, a failure
 as 2, a fatal error as 4, and passed all the other numbers through.
 This violated the VMS exit status coding requirements.
 
@@ -36959,7 +36959,7 @@ See @w{@uref{https://sourceforge.net/p/gnv/wiki/InstallingGNVPackages/}.}
 The normal build procedure for @command{gawk} produces a program that
 is suitable for use with GNV.
 
-The @file{vms/gawk_build_steps.txt} in the source documents the procedure
+The @file{vms/gawk_build_steps.txt} in the distribution documents the procedure
 for building a VMS PCSI kit that is compatible with GNV.
 
 @ignore
@@ -37032,7 +37032,7 @@ If you have problems with @command{gawk} or think that you have found a bug,
 please report it to the developers; we cannot promise to do anything
 but we might well want to fix it.
 
-Before reporting a bug, make sure you have actually found a real bug.
+Before reporting a bug, please make sure you have actually found a real bug.
 Carefully reread the documentation and see if it really says you can do
 what you're trying to do.  If it's not clear whether you should be able
 to do something or not, report that too; it's a bug in the documentation!
@@ -37054,14 +37054,12 @@ You can get this information with the command @samp{gawk --version}.
 Once you have a precise problem, send email to
 @EMAIL{bug-gawk@@gnu.org,bug-gawk at gnu dot org}.
 
-@cindex Robbins, Arnold
 The @command{gawk} maintainers subscribe to this address and
 thus they will receive your bug report.
-If necessary, the primary maintainer can be reached directly at
-@EMAIL{arnold@@skeeve.com,arnold at skeeve dot com}.
-The bug reporting address is preferred since the
+Although you can send mail to the maintainers directly,
+the bug reporting address is preferred since the
 email list is archived at the GNU Project.
-@emph{All email should be in English. This is the only language
+@emph{All email must be in English. This is the only language
 understood in common by all the maintainers.}
 
 @cindex @code{comp.lang.awk} newsgroup
@@ -37070,7 +37068,7 @@ Do @emph{not} try to report bugs in @command{gawk} by
 posting to the Usenet/Internet newsgroup @code{comp.lang.awk}.
 While the @command{gawk} developers do occasionally read this newsgroup,
 there is no guarantee that we will see your posting.  The steps described
-above are the official recognized ways for reporting bugs.
+above are the only official recognized way for reporting bugs.
 Really.
 @end quotation
 
@@ -37082,34 +37080,35 @@ bug reporting system, @emph{please} also send a copy to
 
 This is for two reasons.  First, while some distributions forward
 bug reports ``upstream'' to the GNU mailing list, many don't, so there is a good
-chance that the @command{gawk}  maintainer won't even see the bug report!  Second,
+chance that the @command{gawk}  maintainers won't even see the bug report!  Second,
 mail to the GNU list is archived, and having everything at the GNU project
-keeps things self-contained and not dependant on other web sites.
+keeps things self-contained and not dependant on other organizations.
 @end quotation
 
 Non-bug suggestions are always welcome as well.  If you have questions
 about things that are unclear in the documentation or are just obscure
-features, ask me; I will try to help you out, although I
-may not have the time to fix the problem.  You can send me electronic
-mail at the Internet address noted previously.
+features, ask on the bug list; we will try to help you out if we can.
 
-If you find bugs in one of the non-Unix ports of @command{gawk}, please send
-an electronic mail message to the person who maintains that port.  They
-are named in the following list, as well as in the @file{README} file in the @command{gawk}
-distribution.  Information in the @file{README} file should be considered
-authoritative if it conflicts with this @value{DOCUMENT}.
+If you find bugs in one of the non-Unix ports of @command{gawk}, please
+send an electronic mail message to the bug list, with a copy to the
+person who maintains that port.  They are named in the following list,
+as well as in the @file{README} file in the @command{gawk} distribution.
+Information in the @file{README} file should be considered authoritative
+if it conflicts with this @value{DOCUMENT}.
 
-The people maintaining the non-Unix ports of @command{gawk} are
-as follows:
+The people maintaining the various @command{gawk} ports are:
 
 @c put the index entries outside the table, for docbook
-@cindex Deifik, Scott
-@cindex Zaretskii, Eli
 @cindex Buening, Andreas
-@cindex Rankin, Pat
+@cindex Deifik, Scott
 @cindex Malmberg, John
 @cindex Pitts, Dave
+@cindex Rankin, Pat
+@cindex Robbins, Arnold
+@cindex Zaretskii, Eli
 @multitable {MS-Windows with MinGW} {123456789012345678901234567890123456789001234567890}
+@item Unix and POSIX systems @tab Arnold Robbins, @EMAIL{arnold@@skeeve.com,arnold at skeeve dot com}.
+
 @item MS-DOS with DJGPP @tab Scott Deifik, @EMAIL{scottd.mail@@sbcglobal.net,scottd dot mail at sbcglobal dot net}.
 
 @item MS-Windows with MinGW @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}.
@@ -37262,7 +37261,7 @@ since approximately 2003.
 @item @command{pawk}
 Nelson H.F.@: Beebe at the University of Utah has modified
 BWK @command{awk} to provide timing and profiling information.
-It is different from @command{gawk} with the @option{--profile} option.
+It is different from @command{gawk} with the @option{--profile} option
 (@pxref{Profiling}),
 in that it uses CPU-based profiling, not line-count
 profiling.  You may find it at either
@@ -37287,7 +37286,7 @@ information, see the @uref{http://busybox.net, project's home page}.
 The versions of @command{awk} in @file{/usr/xpg4/bin} and
 @file{/usr/xpg6/bin} on Solaris are more-or-less POSIX-compliant.
 They are based on the @command{awk} from Mortice Kern Systems for PCs.
-This author was able to make this code compile and work under GNU/Linux
+We were able to make this code compile and work under GNU/Linux
 with 1--2 hours of work.  Making it more generally portable (using
 GNU Autoconf and/or Automake) would take more work, and this
 has not been done, at least to our knowledge.
