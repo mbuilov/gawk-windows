@@ -27004,7 +27004,7 @@ This appendix provides instructions for installing `gawk' on the
 various platforms that are supported by the developers.  The primary
 developer supports GNU/Linux (and Unix), whereas the other ports are
 contributed.  *Note Bugs::, for the electronic mail addresses of the
-people who did the respective ports.
+people who maintain the respective ports.
 
 * Menu:
 
@@ -27295,12 +27295,12 @@ Unix-derived systems, GNU/Linux, BSD-based systems, and the Cygwin
 environment for MS-Windows.
 
    After you have extracted the `gawk' distribution, `cd' to
-`gawk-4.1.2'.  Like most GNU software, `gawk' is configured
-automatically for your system by running the `configure' program.  This
-program is a Bourne shell script that is generated automatically using
-GNU Autoconf.  (The Autoconf software is described fully starting with
-*note (Autoconf)Top:: autoconf,Autoconf--Generating Automatic
-Configuration Scripts.)
+`gawk-4.1.2'.  As with most GNU software, you configure `gawk' for your
+system by running the `configure' program.  This program is a Bourne
+shell script that is generated automatically using GNU Autoconf.  (The
+Autoconf software is described fully starting with *note
+(Autoconf)Top:: autoconf,Autoconf--Generating Automatic Configuration
+Scripts.)
 
    To configure `gawk', simply run `configure':
 
@@ -27363,8 +27363,8 @@ command line when compiling `gawk' from scratch, including:
      User-modified::) has no effect on the running `awk' program.
 
      When used with GCC's automatic dead-code-elimination, this option
-     cuts almost 200K bytes off the size of the `gawk' executable on
-     GNU/Linux x86 systems.  Results on other systems and with other
+     cuts almost 23K bytes off the size of the `gawk' executable on
+     GNU/Linux x86_64 systems.  Results on other systems and with other
      compilers are likely to vary.  Using this option may bring you
      some slight performance improvement.
 
@@ -27450,10 +27450,10 @@ File: gawk.info,  Node: PC Installation,  Next: VMS Installation,  Up: Non-Unix 
 B.3.1 Installation on PC Operating Systems
 ------------------------------------------
 
-This minor node covers installation and usage of `gawk' on x86 machines
-running MS-DOS, any version of MS-Windows, or OS/2.  In this minor
-node, the term "Windows32" refers to any of Microsoft
-Windows-95/98/ME/NT/2000/XP/Vista/7/8.
+This minor node covers installation and usage of `gawk' on Intel
+architecture machines running MS-DOS, any version of MS-Windows, or
+OS/2.  In this minor node, the term "Windows32" refers to any of
+Microsoft Windows-95/98/ME/NT/2000/XP/Vista/7/8.
 
    The limitations of MS-DOS (and MS-DOS shells under the other
 operating systems) has meant that various "DOS extenders" are often
@@ -27538,7 +27538,7 @@ MS-DOS and Windows32 versions.  A list of targets is printed if the
 `gawk' using the DJGPP tools, enter `make djgpp'.  (The DJGPP tools
 needed for the build may be found at
 `ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/'.)  To build a native
-MS-Windows binary of `gawk', type `make mingw32'.
+MS-Windows binary of `gawk' using the MinGW tools, type `make mingw32'.
 
    The 32 bit EMX version of `gawk' works "out of the box" under OS/2.
 However, it is highly recommended to use GCC 2.95.3 for the compilation.
@@ -27630,8 +27630,8 @@ Networking::).  EMX (OS/2 only) supports at least the `|&' operator.
    The MS-DOS and MS-Windows versions of `gawk' search for program
 files as described in *note AWKPATH Variable::.  However, semicolons
 (rather than colons) separate elements in the `AWKPATH' variable.  If
-`AWKPATH' is not set or is empty, then the default search path for
-MS-Windows and MS-DOS versions is `.;c:/lib/awk;c:/gnu/lib/awk'.
+`AWKPATH' is not set or is empty, then the default search path is
+`.;c:/lib/awk;c:/gnu/lib/awk'.
 
    The search path for OS/2 (32 bit, EMX) is determined by the prefix
 directory (most likely `/usr' or `c:/usr') that has been specified as
@@ -27655,10 +27655,10 @@ programs) silently translate end-of-line `\r\n' to `\n' on input and
 `\n' to `\r\n' on output.  A special `BINMODE' variable (c.e.)  allows
 control over these translations and is interpreted as follows:
 
-   * If `BINMODE' is `"r"', or one, then binary mode is set on read
+   * If `BINMODE' is `"r"' or one, then binary mode is set on read
      (i.e., no translations on reads).
 
-   * If `BINMODE' is `"w"', or two, then binary mode is set on write
+   * If `BINMODE' is `"w"' or two, then binary mode is set on write
      (i.e., no translations on writes).
 
    * If `BINMODE' is `"rw"' or `"wr"' or three, binary mode is set for
@@ -27725,7 +27725,7 @@ same as for a Unix system:
      tar -xvpzf gawk-4.1.2.tar.gz
      cd gawk-4.1.2
      ./configure
-     make
+     make && make check
 
    When compared to GNU/Linux on the same system, the `configure' step
 on Cygwin takes considerably longer.  However, it does finish, and then
@@ -27748,8 +27748,8 @@ translation of `"\r\n"', since it won't.
 
 File: gawk.info,  Node: VMS Installation,  Prev: PC Installation,  Up: Non-Unix Installation
 
-B.3.2 How to Compile and Install `gawk' on Vax/VMS and OpenVMS
---------------------------------------------------------------
+B.3.2 Compiling and Installing `gawk' on Vax/VMS and OpenVMS
+------------------------------------------------------------
 
 This node describes how to compile and install `gawk' under VMS.  The
 older designation "VMS" is used throughout to refer to OpenVMS.
@@ -27940,12 +27940,12 @@ If any other dash-type options (or multiple parameters such as data
 files to process) are present, there is no ambiguity and `--' can be
 omitted.
 
-   The `exit' value is a Unix-style value and is encoded to a VMS exit
+   The `exit' value is a Unix-style value and is encoded into a VMS exit
 status value when the program exits.
 
    The VMS severity bits will be set based on the `exit' value.  A
 failure is indicated by 1 and VMS sets the `ERROR' status.  A fatal
-error is indicated by 2 and VMS will set the `FATAL' status.  All other
+error is indicated by 2 and VMS sets the `FATAL' status.  All other
 values will have the `SUCCESS' status.  The exit value is encoded to
 comply with VMS coding standards and will have the `C_FACILITY_NO' of
 `0x350000' with the constant `0xA000' added to the number shifted over
@@ -27958,9 +27958,9 @@ by 3 bits to make room for the severity codes.
 A C program that uses `exec()' to call `gawk' will get the original
 Unix-style exit value.
 
-   Older versions of `gawk' treated a Unix exit code 0 as 1, a failure
-as 2, a fatal error as 4, and passed all the other numbers through.
-This violated the VMS exit status coding requirements.
+   Older versions of `gawk' for VMS treated a Unix exit code 0 as 1, a
+failure as 2, a fatal error as 4, and passed all the other numbers
+through.  This violated the VMS exit status coding requirements.
 
    VAX/VMS floating point uses unbiased rounding. *Note Round
 Function::.
@@ -27991,8 +27991,8 @@ reorganized to supply individual PCSI packages for each component.  See
    The normal build procedure for `gawk' produces a program that is
 suitable for use with GNV.
 
-   The `vms/gawk_build_steps.txt' in the source documents the procedure
-for building a VMS PCSI kit that is compatible with GNV.
+   The `vms/gawk_build_steps.txt' in the distribution documents the
+procedure for building a VMS PCSI kit that is compatible with GNV.
 
 
 File: gawk.info,  Node: VMS Old Gawk,  Prev: VMS GNV,  Up: VMS Installation
@@ -28021,11 +28021,11 @@ B.4 Reporting Problems and Bugs
 please report it to the developers; we cannot promise to do anything
 but we might well want to fix it.
 
-   Before reporting a bug, make sure you have actually found a real bug.
-Carefully reread the documentation and see if it really says you can do
-what you're trying to do.  If it's not clear whether you should be able
-to do something or not, report that too; it's a bug in the
-documentation!
+   Before reporting a bug, please make sure you have actually found a
+real bug.  Carefully reread the documentation and see if it really says
+you can do what you're trying to do.  If it's not clear whether you
+should be able to do something or not, report that too; it's a bug in
+the documentation!
 
    Before reporting a bug or trying to fix it yourself, try to isolate
 it to the smallest possible `awk' program and input data file that
@@ -28041,17 +28041,17 @@ get this information with the command `gawk --version'.
    Once you have a precise problem, send email to <bug-gawk@gnu.org>.
 
    The `gawk' maintainers subscribe to this address and thus they will
-receive your bug report.  If necessary, the primary maintainer can be
-reached directly at <arnold@skeeve.com>.  The bug reporting address is
-preferred since the email list is archived at the GNU Project.  _All
-email should be in English. This is the only language understood in
-common by all the maintainers._
+receive your bug report.  Although you can send mail to the maintainers
+directly, the bug reporting address is preferred since the email list
+is archived at the GNU Project.  _All email must be in English. This is
+the only language understood in common by all the maintainers._
 
      CAUTION: Do _not_ try to report bugs in `gawk' by posting to the
      Usenet/Internet newsgroup `comp.lang.awk'.  While the `gawk'
      developers do occasionally read this newsgroup, there is no
      guarantee that we will see your posting.  The steps described
-     above are the official recognized ways for reporting bugs.  Really.
+     above are the only official recognized way for reporting bugs.
+     Really.
 
      NOTE: Many distributions of GNU/Linux and the various BSD-based
      operating systems have their own bug reporting systems.  If you
@@ -28060,25 +28060,26 @@ common by all the maintainers._
 
      This is for two reasons.  First, while some distributions forward
      bug reports "upstream" to the GNU mailing list, many don't, so
-     there is a good chance that the `gawk'  maintainer won't even see
+     there is a good chance that the `gawk'  maintainers won't even see
      the bug report!  Second, mail to the GNU list is archived, and
      having everything at the GNU project keeps things self-contained
-     and not dependant on other web sites.
+     and not dependant on other organizations.
 
    Non-bug suggestions are always welcome as well.  If you have
 questions about things that are unclear in the documentation or are
-just obscure features, ask me; I will try to help you out, although I
-may not have the time to fix the problem.  You can send me electronic
-mail at the Internet address noted previously.
+just obscure features, ask on the bug list; we will try to help you out
+if we can.
 
    If you find bugs in one of the non-Unix ports of `gawk', please send
-an electronic mail message to the person who maintains that port.  They
-are named in the following list, as well as in the `README' file in the
-`gawk' distribution.  Information in the `README' file should be
-considered authoritative if it conflicts with this Info file.
+an electronic mail message to the bug list, with a copy to the person
+who maintains that port.  They are named in the following list, as well
+as in the `README' file in the `gawk' distribution.  Information in the
+`README' file should be considered authoritative if it conflicts with
+this Info file.
 
-   The people maintaining the non-Unix ports of `gawk' are as follows:
+   The people maintaining the various `gawk' ports are:
 
+Unix and POSIX systems  Arnold Robbins, <arnold@skeeve.com>.
 MS-DOS with DJGPP       Scott Deifik, <scottd.mail@sbcglobal.net>.
 MS-Windows with MinGW   Eli Zaretskii, <eliz@gnu.org>.
 OS/2                    Andreas Buening, <andreas.buening@nexgo.de>.
@@ -28170,9 +28171,9 @@ Unix `awk'
 `pawk'
      Nelson H.F. Beebe at the University of Utah has modified BWK `awk'
      to provide timing and profiling information.  It is different from
-     `gawk' with the `--profile' option.  (*note Profiling::), in that
-     it uses CPU-based profiling, not line-count profiling.  You may
-     find it at either
+     `gawk' with the `--profile' option (*note Profiling::), in that it
+     uses CPU-based profiling, not line-count profiling.  You may find
+     it at either
      `ftp://ftp.math.utah.edu/pub/pawk/pawk-20030606.tar.gz' or
      `http://www.math.utah.edu/pub/pawk/pawk-20030606.tar.gz'.
 
@@ -28188,11 +28189,11 @@ Busybox Awk
 The OpenSolaris POSIX `awk'
      The versions of `awk' in `/usr/xpg4/bin' and `/usr/xpg6/bin' on
      Solaris are more-or-less POSIX-compliant.  They are based on the
-     `awk' from Mortice Kern Systems for PCs.  This author was able to
-     make this code compile and work under GNU/Linux with 1-2 hours of
-     work.  Making it more generally portable (using GNU Autoconf
-     and/or Automake) would take more work, and this has not been done,
-     at least to our knowledge.
+     `awk' from Mortice Kern Systems for PCs.  We were able to make
+     this code compile and work under GNU/Linux with 1-2 hours of work.
+     Making it more generally portable (using GNU Autoconf and/or
+     Automake) would take more work, and this has not been done, at
+     least to our knowledge.
 
      The source code used to be available from the OpenSolaris web site.
      However, that project was ended and the web site shut down.
@@ -31843,7 +31844,7 @@ Index
 * common extensions, RS as a regexp:     gawk split records.  (line   6)
 * common extensions, single character fields: Single Character Fields.
                                                               (line   6)
-* comp.lang.awk newsgroup:               Bugs.                (line  39)
+* comp.lang.awk newsgroup:               Bugs.                (line  38)
 * comparison expressions:                Typing and Comparison.
                                                               (line   9)
 * comparison expressions, as patterns:   Expression Patterns. (line  14)
@@ -33586,7 +33587,7 @@ Index
 * RLENGTH variable:                      Auto-set.            (line 259)
 * RLENGTH variable, match() function and: String Functions.   (line 227)
 * Robbins, Arnold <1>:                   Future Extensions.   (line   6)
-* Robbins, Arnold <2>:                   Bugs.                (line  32)
+* Robbins, Arnold <2>:                   Bugs.                (line  71)
 * Robbins, Arnold <3>:                   Contributors.        (line 144)
 * Robbins, Arnold <4>:                   General Data Types.  (line   6)
 * Robbins, Arnold <5>:                   Alarm Program.       (line   6)
@@ -34643,64 +34644,64 @@ Ref: Ranges and Locales-Footnote-31076872
 Node: Contributors1077093
 Node: History summary1082633
 Node: Installation1084002
-Node: Gawk Distribution1084953
-Node: Getting1085437
-Node: Extracting1086261
-Node: Distribution contents1087903
-Node: Unix Installation1093673
-Node: Quick Installation1094290
-Node: Additional Configuration Options1096732
-Node: Configuration Philosophy1098470
-Node: Non-Unix Installation1100821
-Node: PC Installation1101279
-Node: PC Binary Installation1102590
-Node: PC Compiling1104438
-Ref: PC Compiling-Footnote-11107437
-Node: PC Testing1107542
-Node: PC Using1108718
-Node: Cygwin1112870
-Node: MSYS1113679
-Node: VMS Installation1114177
-Node: VMS Compilation1114973
-Ref: VMS Compilation-Footnote-11116195
-Node: VMS Dynamic Extensions1116253
-Node: VMS Installation Details1117626
-Node: VMS Running1119878
-Node: VMS GNV1122712
-Node: VMS Old Gawk1123435
-Node: Bugs1123905
-Node: Other Versions1127909
-Node: Installation summary1134133
-Node: Notes1135189
-Node: Compatibility Mode1136054
-Node: Additions1136836
-Node: Accessing The Source1137761
-Node: Adding Code1139197
-Node: New Ports1145369
-Node: Derived Files1149850
-Ref: Derived Files-Footnote-11155325
-Ref: Derived Files-Footnote-21155359
-Ref: Derived Files-Footnote-31155955
-Node: Future Extensions1156069
-Node: Implementation Limitations1156675
-Node: Extension Design1157923
-Node: Old Extension Problems1159077
-Ref: Old Extension Problems-Footnote-11160594
-Node: Extension New Mechanism Goals1160651
-Ref: Extension New Mechanism Goals-Footnote-11164011
-Node: Extension Other Design Decisions1164200
-Node: Extension Future Growth1166308
-Node: Old Extension Mechanism1167144
-Node: Notes summary1168906
-Node: Basic Concepts1170092
-Node: Basic High Level1170773
-Ref: figure-general-flow1171045
-Ref: figure-process-flow1171644
-Ref: Basic High Level-Footnote-11174873
-Node: Basic Data Typing1175058
-Node: Glossary1178386
-Node: Copying1203544
-Node: GNU Free Documentation License1241100
-Node: Index1266236
+Node: Gawk Distribution1084958
+Node: Getting1085442
+Node: Extracting1086266
+Node: Distribution contents1087908
+Node: Unix Installation1093678
+Node: Quick Installation1094295
+Node: Additional Configuration Options1096726
+Node: Configuration Philosophy1098466
+Node: Non-Unix Installation1100817
+Node: PC Installation1101275
+Node: PC Binary Installation1102601
+Node: PC Compiling1104449
+Ref: PC Compiling-Footnote-11107470
+Node: PC Testing1107575
+Node: PC Using1108751
+Node: Cygwin1112866
+Node: MSYS1113689
+Node: VMS Installation1114187
+Node: VMS Compilation1114979
+Ref: VMS Compilation-Footnote-11116201
+Node: VMS Dynamic Extensions1116259
+Node: VMS Installation Details1117632
+Node: VMS Running1119884
+Node: VMS GNV1122725
+Node: VMS Old Gawk1123454
+Node: Bugs1123924
+Node: Other Versions1127888
+Node: Installation summary1134101
+Node: Notes1135157
+Node: Compatibility Mode1136022
+Node: Additions1136804
+Node: Accessing The Source1137729
+Node: Adding Code1139165
+Node: New Ports1145337
+Node: Derived Files1149818
+Ref: Derived Files-Footnote-11155293
+Ref: Derived Files-Footnote-21155327
+Ref: Derived Files-Footnote-31155923
+Node: Future Extensions1156037
+Node: Implementation Limitations1156643
+Node: Extension Design1157891
+Node: Old Extension Problems1159045
+Ref: Old Extension Problems-Footnote-11160562
+Node: Extension New Mechanism Goals1160619
+Ref: Extension New Mechanism Goals-Footnote-11163979
+Node: Extension Other Design Decisions1164168
+Node: Extension Future Growth1166276
+Node: Old Extension Mechanism1167112
+Node: Notes summary1168874
+Node: Basic Concepts1170060
+Node: Basic High Level1170741
+Ref: figure-general-flow1171013
+Ref: figure-process-flow1171612
+Ref: Basic High Level-Footnote-11174841
+Node: Basic Data Typing1175026
+Node: Glossary1178354
+Node: Copying1203512
+Node: GNU Free Documentation License1241068
+Node: Index1266204
 
 End Tag Table

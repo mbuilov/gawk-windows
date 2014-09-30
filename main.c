@@ -212,7 +212,7 @@ main(int argc, char **argv)
 	/*
 	 * The + on the front tells GNU getopt not to rearrange argv.
 	 */
-	const char *optlist = "+F:f:v:W;bcCd::D::e:E:gh:i:l:L:nNo::Op::MPrStVY";
+	const char *optlist = "+F:f:v:W;bcCd::D::e:E:ghi:l:L:nNo::Op::MPrStVY";
 	bool stopped_early = false;
 	int old_optind;
 	int i;
