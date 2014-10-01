@@ -792,6 +792,8 @@ particular records in a file and perform operations upon them.
 * Getlocaltime Function::               A function to get formatted times.
 * Readfile Function::                   A function to read an entire file at
                                         once.
+* Shell Quoting::                       A function to quote strings for the
+                                        shell.
 * Data File Management::                Functions for managing command-line
                                         data files.
 * Filetrans Function::                  A function for handling data file
@@ -9787,6 +9789,9 @@ The program builds up a list of command lines,
 using the @command{mv} utility to rename the files.
 It then sends the list to the shell for execution.
 
+@xref{Shell Quoting}, for a function that can help in generating
+command lines to be fed to the shell.
+
 @docbook
 </sidebar>
 @end docbook
@@ -9818,6 +9823,9 @@ uppercase characters converted to lowercase
 The program builds up a list of command lines,
 using the @command{mv} utility to rename the files.
 It then sends the list to the shell for execution.
+
+@xref{Shell Quoting}, for a function that can help in generating
+command lines to be fed to the shell.
 @end cartouche
 @end ifnotdocbook
 @c ENDOFRANGE outre
@@ -20250,6 +20258,69 @@ $ @kbd{gawk -f quicksort.awk -f indirectcall.awk class_data2}
 @print{}     rsort: <100.0 95.6 93.4 87.1>
 @end example
 
+Another example where indirect functions calls are useful can be found in
+processing arrays.  @DBREF{Walking Arrays} presented a simple function
+for ``walking'' an array of arrays.  That function simply printed the
+name and value of each scalar array element. However, it is easy to
+generalize that function, by passing in the name of a function to call
+when walking an array. The modified function looks like this:
+
+@example
+@c file eg/lib/processarray.awk
+function process_array(arr, name, process, do_arrays,   i, new_name)
+@{
+    for (i in arr) @{
+        new_name = (name "[" i "]")
+        if (isarray(arr[i])) @{
+            if (do_arrays)
+                @@process(new_name, arr[i])
+            process_array(arr[i], new_name, process, do_arrays)
+        @} else
+            @@process(new_name, arr[i])
+    @}
+@}
+@c endfile
+@end example
+
+The arguments are as follows:
+
+@table @code
+@item arr
+The array.
+
+@item name
+The name of the array (a string).
+
+@item process
+The name of the function to call.
+
+@item do_arrays
+If this is true, the function can handle elements that are subarrays.
+@end table
+
+If subarrays are to be processed, that is done before walking them further.
+
+When run with the following scaffolding, the function produces the same
+results as does the earlier @code{walk_array()} function:
+
+@example
+BEGIN @{
+    a[1] = 1
+    a[2][1] = 21
+    a[2][2] = 22
+    a[3] = 3
+    a[4][1][1] = 411
+    a[4][2] = 42
+
+    process_array(a, "a", "do_print", 0)
+@}
+
+function do_print(name, element)
+@{
+    printf "%s = %s\n", name, element
+@}
+@end example
+
 Remember that you must supply a leading @samp{@@} in front of an indirect function call.
 
 Starting with @value{PVERSION} 4.1.2 of @command{gawk}, indirect function
@@ -20578,6 +20649,7 @@ programming use.
 * Join Function::               A function to join an array into a string.
 * Getlocaltime Function::       A function to get formatted times.
 * Readfile Function::           A function to read an entire file at once.
+* Shell Quoting::               A function to quote strings for the shell.
 @end menu
 
 @node Strtonum Function
@@ -21284,6 +21356,84 @@ test would be @samp{contents == ""}.
 
 @xref{Extension Sample Readfile}, for an extension function that
 also reads an entire file into memory.
+
+@node Shell Quoting
+@subsection Quoting Strings to Pass to The Shell
+
+@c included by permission
+@ignore
+Date: Sun, 27 Jul 2014 17:16:16 -0700
+Message-ID: <CAKuGj+iCF_obaCLDUX60aSAgbfocFVtguG39GyeoNxTFby5sqQ@mail.gmail.com>
+Subject: Useful awk function
+From: Mike Brennan <mike@madronabluff.com>
+To: Arnold Robbins <arnold@skeeve.com>
+@end ignore
+
+Michael Brennan offers the following programming pattern,
+which he uses frequently:
+
+@example
+#! /bin/sh
+
+awkp='
+   @dots{}
+   '
+
+@var{input_program} | awk "$awkp" | /bin/sh
+@end example
+
+For example, a program of his named @command{flac-edit} has this form:
+
+@example
+$ @kbd{flac-edit -song="Whoope! That's Great" file.flac}
+@end example
+
+It generates the following output, which is to be piped to
+the shell (@file{/bin/sh}):
+
+@example
+chmod +w file.flac
+metaflac --remove-tag=TITLE file.flac
+LANG=en_US.88591 metaflac --set-tag=TITLE='Whoope! That'"'"'s Great' file.flac
+chmod -w file.flac
+@end example
+
+Note the need for shell quoting.  The function @code{shell_quote()}
+does it.  @code{SINGLE} is the one-character string @code{"'"} and
+@code{QSINGLE} is the three-character string @code{"\"'\""}.
+
+@example
+@c file eg/lib/shellquote.awk
+# shell_quote --- quote an argument for passing to the shell
+@c endfile
+@ignore
+@c file eg/lib/shellquote.awk
+#
+# Michael Brennan
+# brennan@@madronabluff.com
+# September 2014
+@c endfile
+@end ignore
+@c file eg/lib/shellquote.awk
+
+function shell_quote(s,             # parameter
+    SINGLE, QSINGLE, i, X, n, ret)  # locals
+@{
+    if (s == "")
+        return "\"\""
+
+    SINGLE = "\x27"  # single quote
+    QSINGLE = "\"\x27\""
+    n = split(s, X, SINGLE)
+
+    ret = SINGLE X[1] SINGLE
+    for (i = 2; i <= n; i++)
+        ret = ret QSINGLE SINGLE X[i] SINGLE
+
+    return ret
+@}
+@c endfile
+@end example
 
 @node Data File Management
 @section @value{DDF} Management
@@ -22824,12 +22974,12 @@ When run, the program produces the following output:
 
 @example
 $ @kbd{gawk -f walk_array.awk}
-@print{} a[4][1][1] = 411
-@print{} a[4][2] = 42
 @print{} a[1] = 1
 @print{} a[2][1] = 21
 @print{} a[2][2] = 22
 @print{} a[3] = 3
+@print{} a[4][1][1] = 411
+@print{} a[4][2] = 42
 @end example
 
 @c ENDOFRANGE libfgdata
@@ -24845,8 +24995,8 @@ character of the ``to'' list is used for the remaining characters in the
 
 Once upon a time,
 @c early or mid-1989!
-a user proposed that a transliteration function should
-be added to @command{gawk}.
+a user proposed adding a transliteration function
+to @command{gawk}.
 @c Wishing to avoid gratuitous new features,
 @c at least theoretically
 The following program was written to
@@ -24854,15 +25004,12 @@ prove that character transliteration could be done with a user-level
 function.  This program is not as complete as the system @command{tr} utility
 but it does most of the job.
 
-The @command{translate} program demonstrates one of the few weaknesses
-of standard @command{awk}: dealing with individual characters is very
-painful, requiring repeated use of the @code{substr()}, @code{index()},
-and @code{gsub()} built-in functions
-(@pxref{String Functions}).@footnote{This
-program was also written before @command{gawk} acquired the ability to
-split each character in a string into separate array elements.}
-There are two functions.  The first, @code{stranslate()}, takes three
-arguments:
+The @command{translate} program was written long before @command{gawk}
+acquired the ability to split each character in a string into separate
+array elements.  Thus, it makes repeated use of the @code{substr()},
+@code{index()}, and @code{gsub()} built-in functions (@pxref{String
+Functions}).  There are two functions.  The first, @code{stranslate()},
+takes three arguments:
 
 @table @code
 @item from
@@ -24881,7 +25028,7 @@ loop goes through @code{from}, one character at a time.  For each character
 in @code{from}, if the character appears in @code{target},
 it is replaced with the corresponding @code{to} character.
 
-The @code{translate()} function simply calls @code{stranslate()} using @code{$0}
+The @code{translate()} function calls @code{stranslate()} using @code{$0}
 as the target.  The main program sets two global variables, @code{FROM} and
 @code{TO}, from the command line, and then changes @code{ARGV} so that
 @command{awk} reads from the standard input.
@@ -37754,7 +37901,7 @@ For VAX:
 @end example
 
 Compile time macros need to be defined before the first VMS-supplied
-header file is included.
+header file is included, as follows:
 
 @example
 #if (__CRTL_VER >= 70200000) && !defined (__VAX)
@@ -37769,6 +37916,11 @@ header file is included.
 #endif
 #endif
 @end example
+
+If you are writing your own extensions to run on VMS, you must supply these
+definitions yourself. The @file{config.h} file created when building @command{gawk}
+on VMS does this for you; if instead you use that file or a similar one, then you
+must remember to include it before any VMS-supplied header files.
 
 @node VMS Installation Details
 @appendixsubsubsec Installing @command{gawk} on VMS
@@ -37994,8 +38146,8 @@ If you have problems with @command{gawk} or think that you have found a bug,
 please report it to the developers; we cannot promise to do anything
 but we might well want to fix it.
 
-Before reporting a bug, please make sure you have actually found a real bug.
-Carefully reread the documentation and see if it really says you can do
+Before reporting a bug, please make sure you have really found a genuine bug.
+Carefully reread the documentation and see if it says you can do
 what you're trying to do.  If it's not clear whether you should be able
 to do something or not, report that too; it's a bug in the documentation!
 
@@ -38013,7 +38165,7 @@ You can get this information with the command @samp{gawk --version}.
 @cindex @code{bug-gawk@@gnu.org} bug reporting address
 @cindex email address for bug reports, @code{bug-gawk@@gnu.org}
 @cindex bug reports, email address, @code{bug-gawk@@gnu.org}
-Once you have a precise problem, send email to
+Once you have a precise problem description, send email to
 @EMAIL{bug-gawk@@gnu.org,bug-gawk at gnu dot org}.
 
 The @command{gawk} maintainers subscribe to this address and
