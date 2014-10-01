@@ -31004,6 +31004,80 @@ function div(numerator, denominator, result,    i)
 @c endfile
 @end example
 
+The following example program, contributed by Katie Wasserman,
+uses @code{div()} to
+compute the digits of @value{PI} to as many places as you
+choose to set:
+
+@example
+@c file eg/prog/pi.awk
+# pi.awk --- compute the digits of pi
+@c endfile
+@c endfile
+@ignore
+@c file eg/prog/pi.awk
+#
+# Katie Wasserman, katie@@wass.net
+# August 2014
+@c endfile
+@end ignore
+@c file eg/prog/pi.awk
+
+BEGIN @{
+    digits = 100000
+    two = 2 * 10 ^ digits
+    pi = two
+    for (m = digits * 4; m > 0; --m) @{
+        d = m * 2 + 1
+        x = pi * m
+        div(x, d, result)
+        pi = result["quotient"]
+        pi = pi + two
+    @}
+    print pi
+@}
+@c endfile
+@end example
+
+@ignore
+Date: Wed, 20 Aug 2014 10:19:11 -0400
+To: arnold@skeeve.com
+From: Katherine Wasserman <katie@wass.net>
+Subject: Re: computation of digits of pi?
+
+Arnold,
+
+>The program that you sent to compute the digits of pi using div(). Is
+>that some standard algorithm that every math student knows? If so,
+>what's it called?
+
+It's not that well known but it's not that obscure either
+
+It's Euler's modification to Newton's method for calculating pi.
+
+Take a look at lines (23) - (25)  here: http://mathworld.wolfram.com/PiFormulas.htm
+
+The algorithm I wrote simply expands the multiply by 2 and works from the innermost expression outwards.  I used this to program HP calculators because it's quite easy to modify for tiny memory devices with smallish word sizes.   
+
+http://www.hpmuseum.org/cgi-sys/cgiwrap/hpmuseum/articles.cgi?read=899
+
+-Katie
+@end ignore
+
+When asked about the algorithm used, Katie replied:
+
+@quotation
+It's not that well known but it's not that obscure either.
+It's Euler's modification to Newton's method for calculating pi.
+Take a look at lines (23) - (25) here: @uref{http://mathworld.wolfram.com/PiFormulas.htm}.
+
+The algorithm I wrote simply expands the multiply by 2 and works from
+the innermost expression outwards.  I used this to program HP calculators
+because it's quite easy to modify for tiny memory devices with smallish
+word sizes. See
+@uref{http://www.hpmuseum.org/cgi-sys/cgiwrap/hpmuseum/articles.cgi?read=899}.
+@end quotation
+
 @node POSIX Floating Point Problems
 @section Standards Versus Existing Practice
 
