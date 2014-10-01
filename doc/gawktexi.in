@@ -26898,8 +26898,7 @@ The profiled version of your program may not look exactly like what you
 typed when you wrote it.  This is because @command{gawk} creates the
 profiled version by ``pretty printing'' its internal representation of
 the program.  The advantage to this is that @command{gawk} can produce
-a standard representation.  The disadvantage is that all source-code
-comments are lost.
+a standard representation.
 Also, things such as:
 
 @example
@@ -26996,6 +26995,23 @@ When called this way, @command{gawk} ``pretty prints'' the program into
 Once upon a time, the @option{--pretty-print} option would also run
 your program.  This is is no longer the case.
 @end quotation
+
+There is a significant difference between the output created when
+profiling, and that created when pretty-printing.  Pretty-printed output
+preserves the original comments that were in the program, although their
+placement may not correspond exactly to their original locations in the
+source code.
+
+However, as a deliberate design decision, profiling output @emph{omits}
+the original program's comments. This allows you to focus on the
+execution count data and helps you avoid the temptation to use the
+profiler for pretty-printing.
+
+Additionally, pretty-printed output does not have the leading indentation
+that the profiling output does. This makes it easy to pretty-print your
+code once development is completed, and then use the result as the final
+version of your program.
+
 @c ENDOFRANGE awkp
 @c ENDOFRANGE proawk
 

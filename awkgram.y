@@ -87,7 +87,7 @@ static void check_funcs(void);
 
 static ssize_t read_one_line(int fd, void *buffer, size_t count);
 static int one_line_close(int fd);
-void split_comment(void);
+static void split_comment(void);
 
 static bool want_source = false;
 static bool want_regexp = false;	/* lexical scanning kludge */
@@ -339,7 +339,6 @@ pattern
 	  {
 		static int begin_seen = 0;
 		func_first = false;
-		INSTRUCTION *ip;
 		if (do_lint_old && ++begin_seen == 2)
 			warning_ln($1->source_line,
 				_("old awk does not support multiple `BEGIN' or `END' rules"));
@@ -560,7 +559,7 @@ statement
 		} /*  else
 				curr = NULL; */
 
-		for(; curr != NULL; curr = nextc) {
+		for (; curr != NULL; curr = nextc) {
 			INSTRUCTION *caseexp = curr->case_exp;
 			INSTRUCTION *casestmt = curr->case_stmt;
 
@@ -1248,7 +1247,7 @@ opt_param_list
 	: /* empty */
 	  { $$ = NULL; }
 	| param_list
-	  { $$ = $1 ; }
+	  { $$ = $1; }
 	;
 
 param_list
@@ -2918,7 +2917,7 @@ again:
 			mbstate_t tmp_state;
 			size_t mbclen;
 	
-			for (idx = 0 ; lexptr + idx < lexend ; idx++) {
+			for (idx = 0; lexptr + idx < lexend; idx++) {
 				tmp_state = cur_mbstate;
 				mbclen = mbrlen(lexptr, idx + 1, &tmp_state);
 
@@ -2999,7 +2998,8 @@ pushback(void)
 
 /* get_comment --- collect comment text */
 
-int get_comment(void)
+int
+get_comment(void)
 {
 	int c;
 	int sl;
@@ -3020,7 +3020,7 @@ int get_comment(void)
 					sourceline++;
 					tokadd(c);
 				}
-			} while (isspace(c) && c != END_FILE) ;
+			} while (isspace(c) && c != END_FILE);
 			if ( c == END_FILE)
 				break;
 			else if (c != '#') {
@@ -3040,11 +3040,11 @@ int get_comment(void)
 
 /* split_comment --- split initial comment text into program and function parts */
 
-void split_comment(void)
+static void
+split_comment(void)
 {
 	char *p;
 	int l;
-	int j;
 	NODE *n;
 
 	p = comment->memory->stptr;

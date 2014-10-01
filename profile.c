@@ -101,11 +101,12 @@ indent(long count)
 {
 	int i;
 
-	if (do_profile)
+	if (do_profile) {
 		if (count == 0)
 			fprintf(prof_fp, "\t");
 		else
 			fprintf(prof_fp, "%6ld  ", count);
+	}
 
 	assert(indent_level >= 0);
 	for (i = 0; i < indent_level; i++)
