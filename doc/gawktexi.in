@@ -1239,8 +1239,7 @@ language that makes it easy to handle simple data-reformatting jobs.
 
 The GNU implementation of @command{awk} is called @command{gawk}; if you
 invoke it with the proper options or environment variables
-(@pxref{Options}), it is fully
-compatible with
+it is fully compatible with
 the POSIX@footnote{The 2008 POSIX standard is accessible online at
 @w{@url{http://www.opengroup.org/onlinepubs/9699919799/}.}}
 specification of the @command{awk} language
@@ -1257,7 +1256,7 @@ So most of the time, we don't distinguish between @command{gawk} and other
 @cindex @command{gawk}, @command{awk} and
 @cindex @command{awk}, @command{gawk} and
 @cindex @command{awk}, uses for
-Using @command{awk} allows you to:
+Using @command{awk} you can:
 
 @itemize @value{BULLET}
 @item
@@ -1376,13 +1375,13 @@ The version in System V Release 4 (1989) added some new features and cleaned
 up the behavior in some of the ``dark corners'' of the language.
 The specification for @command{awk} in the POSIX Command Language
 and Utilities standard further clarified the language.
-Both the @command{gawk} designers and the original Bell Laboratories @command{awk}
-designers provided feedback for the POSIX specification.
+Both the @command{gawk} designers and the original @command{awk} designers at Bell Laboratories
+provided feedback for the POSIX specification.
 
 @cindex Rubin, Paul
 @cindex Fenlason, Jay
 @cindex Trueman, David
-Paul Rubin wrote the GNU implementation, @command{gawk}, in 1986.
+Paul Rubin wrote @command{gawk} in 1986.
 Jay Fenlason completed it, with advice from Richard Stallman.  John Woods
 contributed parts of the code as well.  In 1988 and 1989, David Trueman, with
 help from me, thoroughly reworked @command{gawk} for compatibility
@@ -1405,7 +1404,7 @@ an @command{awk}-level debugger. This version became available as
 @command{gawk} @value{PVERSION} 4.0, in 2011.
 
 @xref{Contributors},
-for a complete list of those who made important contributions to @command{gawk}.
+for a full list of those who made important contributions to @command{gawk}.
 
 @node Names
 @unnumberedsec A Rose by Any Other Name
@@ -1471,8 +1470,8 @@ entry ``differences in @command{awk} and @command{gawk}.''}
 @ifset FOR_PRINT
 implementations.
 @end ifset
-Finally, any @command{gawk} features that are not in
-the POSIX standard for @command{awk} are noted.
+Finally, it notes any @command{gawk} features that are not in
+the POSIX standard for @command{awk}.
 
 @ifnotinfo
 This @value{DOCUMENT} has the difficult task of being both a tutorial and a reference.
@@ -1570,21 +1569,21 @@ Part III focuses on features specific to @command{gawk}.
 It contains the following chapters:
 
 @ref{Advanced Features},
-describes a number of @command{gawk}-specific advanced features.
+describes a number of advanced features.
 Of particular note
-are the abilities to have two-way communications with another process,
+are the abilities to control the order of array traversal,
+have two-way communications with another process,
 perform TCP/IP networking, and
 profile your @command{awk} programs.
 
 @ref{Internationalization},
-describes special features in @command{gawk} for translating program
+describes special features for translating program
 messages into different languages at runtime.
 
-@ref{Debugger}, describes the @command{awk} debugger.
+@ref{Debugger}, describes the @command{gawk} debugger.
 
 @ref{Arbitrary Precision Arithmetic},
-describes advanced arithmetic facilities provided by
-@command{gawk}.
+describes advanced arithmetic facilities.
 
 @ref{Dynamic Extensions}, describes how to add new variables and
 functions to @command{gawk} by writing extensions in C or C++.
@@ -1767,8 +1766,8 @@ the picture of a flashlight in the margin, as shown here.
 They also appear in the index under the heading ``dark corner.''
 @end ifclear
 
-As noted by the opening quote, though, any coverage of dark corners is,
-by definition, incomplete.
+But, as noted by the opening quote, any coverage of dark
+corners is by definition incomplete.
 
 @cindex c.e., See common extensions
 Extensions to the standard @command{awk} language that are supported by
@@ -1842,9 +1841,7 @@ available for download from the Internet.
 @ifnotinfo
 The @value{DOCUMENT} you are reading is actually free---at least, the
 information in it is free to anyone.  The machine-readable
-source code for the @value{DOCUMENT} comes with @command{gawk}; anyone
-may take this @value{DOCUMENT} to a copying machine and make as many
-copies as they like.
+source code for the @value{DOCUMENT} comes with @command{gawk}.
 @ifclear FOR_PRINT
 (Take a moment to check the Free Documentation
 License in @ref{GNU Free Documentation License}.)
@@ -1852,7 +1849,7 @@ License in @ref{GNU Free Documentation License}.)
 @end ifnotinfo
 
 @cindex Close, Diane
-The @value{DOCUMENT} itself has gone through a number of previous editions.
+The @value{DOCUMENT} itself has gone through multiple previous editions.
 Paul Rubin wrote the very first draft of @cite{The GAWK Manual};
 it was around 40 pages in size.
 Diane Close and Richard Stallman improved it, yielding a
@@ -1873,10 +1870,9 @@ the third edition in 2001.
 @end ifset
 
 This edition maintains the basic structure of the previous editions.
-For FSF edition 4.0, the content has been thoroughly reviewed
-and updated. All references to @command{gawk} versions prior to 4.0 have been
-removed.
-Of significant note for this edition was @ref{Debugger}.
+For FSF edition 4.0, the content was thoroughly reviewed and updated. All
+references to @command{gawk} versions prior to 4.0 were removed.
+Of significant note for that edition was @ref{Debugger}.
 
 For FSF edition
 @ifclear FOR_PRINT
@@ -1890,8 +1886,7 @@ the content has been reorganized into parts,
 and the major new additions are @ref{Arbitrary Precision Arithmetic},
 and @ref{Dynamic Extensions}.
 
-This @value{DOCUMENT} will undoubtedly continue to evolve.  An electronic
-version comes with the @command{gawk} distribution from the FSF.  If you
+This @value{DOCUMENT} will undoubtedly continue to evolve.  If you
 find an error in this @value{DOCUMENT}, please report it!  @xref{Bugs},
 for information on submitting problem reports electronically.
 
@@ -2072,14 +2067,15 @@ Andrew Schorr,
 Corinna Vinschen,
 and Eli Zaretskii
 (in alphabetical order)
-make up the current
-@command{gawk} ``crack portability team.''  Without their hard work and
-help, @command{gawk} would not be nearly the fine program it is today.  It
-has been and continues to be a pleasure working with this team of fine
-people.
+make up the current @command{gawk} ``crack portability team.''  Without
+their hard work and help, @command{gawk} would not be nearly the robust,
+portable program it is today.  It has been and continues to be a pleasure
+working with this team of fine people.
 
 Notable code and documentation contributions were made by
 a number of people. @xref{Contributors}, for the full list.
+
+Thanks to Michael Brennan for the Foreword.
 
 Thanks to Patrice Dumas for the new @command{makeinfo} program.
 Thanks to Karl Berry who continues to work to keep
@@ -5200,7 +5196,7 @@ component (e.g., in @samp{ph*}, it applies just to the @samp{h}).
 To cause @samp{*} to apply to a larger sub-expression, use parentheses:
 @samp{(ph)*} matches @samp{ph}, @samp{phph}, @samp{phphph} and so on.
 
-Second, @samp{*} finds as many repetititons as possible. If the text
+Second, @samp{*} finds as many repetitions as possible. If the text
 to be matched is @samp{phhhhhhhhhhhhhhooey}, @samp{ph*} matches all of
 the @samp{h}s.
 
@@ -23570,7 +23566,7 @@ conditions depending on its previous condition and on the present values
 of its inputs.''@footnote{This is the definition returned from entering
 @code{define: state machine} into Google.}
 Brian Kernighan suggests that
-``an alternative approach to state mechines is to just read
+``an alternative approach to state machines is to just read
 the input into an array, then use indexing.  It's almost always
 easier code, and for most inputs where you would use this, just
 as fast.''  Consider how to rewrite the logic to follow this 
@@ -25687,7 +25683,7 @@ mailing labels, and finding anagrams.
 @enumerate
 @item
 Rewrite @file{cut.awk} (@pxref{Cut Program})
-using @code{split()} with @code{""} as the seperator.
+using @code{split()} with @code{""} as the separator.
 
 @item
 In @ref{Egrep Program}, we mentioned that @samp{egrep -i} could be
@@ -25719,7 +25715,7 @@ conditions depending on its previous condition and on the present values
 of its inputs.''@footnote{This is the definition returned from entering
 @code{define: state machine} into Google.}
 Brian Kernighan suggests that
-``an alternative approach to state mechines is to just read
+``an alternative approach to state machines is to just read
 the input into an array, then use indexing.  It's almost always
 easier code, and for most inputs where you would use this, just
 as fast.''  Rewrite the logic to follow this 
@@ -29367,7 +29363,7 @@ signed. The possible ranges of values are shown in @ref{table-numeric-ranges}.
 @float Table,table-numeric-ranges
 @caption{Value Ranges for Different Numeric Representations}
 @multitable @columnfractions .34 .33 .33
-@headitem Numeric representation @tab Miniumum value @tab Maximum value
+@headitem Numeric representation @tab Minimum value @tab Maximum value
 @item 32-bit signed integer @tab @minus{}2,147,483,648 @tab 2,147,483,647
 @item 32-bit unsigned integer @tab 0 @tab 4,294,967,295
 @item 64-bit signed integer @tab @minus{}9,223,372,036,854,775,808 @tab 9,223,372,036,854,775,807
@@ -29497,7 +29493,7 @@ one extra bit of significand.
 @end quotation
 
 @node MPFR features
-@section Arbitrary Precison Arithmetic Features In @command{gawk}
+@section Arbitrary Precision Arithmetic Features In @command{gawk}
 
 By default, @command{gawk} uses the double precision floating-point values
 supplied by the hardware of the system it runs on.  However, if it was
@@ -38041,7 +38037,7 @@ and
 @item
 Be willing to continue to maintain the port.
 Non-Unix operating systems are supported by volunteers who maintain
-the code needed to compile and run @command{gawk} on their systems. If noone
+the code needed to compile and run @command{gawk} on their systems. If no-one
 volunteers to maintain a port, it becomes unsupported and it may
 be necessary to remove it from the distribution.
 
