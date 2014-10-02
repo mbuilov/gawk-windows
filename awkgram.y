@@ -293,7 +293,8 @@ library
 
 pattern
 	: /* empty */
-	  {	rule = Rule;
+	  {
+		rule = Rule;
 		if (comment != NULL) {
 			$$ = list_create(comment);
 			comment = NULL;
@@ -301,7 +302,8 @@ pattern
 			$$ = NULL;
 	  }
 	| exp
-	  {	rule = Rule;
+	  {
+		rule = Rule;
 		if (comment != NULL) {
 			$$ = list_prepend($1, comment);
 			comment = NULL;
@@ -338,6 +340,7 @@ pattern
 	| LEX_BEGIN
 	  {
 		static int begin_seen = 0;
+
 		func_first = false;
 		if (do_lint_old && ++begin_seen == 2)
 			warning_ln($1->source_line,
@@ -350,6 +353,7 @@ pattern
 	| LEX_END
 	  {
 		static int end_seen = 0;
+
 		func_first = false;
 		if (do_lint_old && ++end_seen == 2)
 			warning_ln($1->source_line,
@@ -530,7 +534,7 @@ statement
 	: semi opt_nls
 	  { $$ = NULL; }
 	| l_brace statements r_brace
-	  { $$ = $2; } 
+	  { $$ = $2; }
 	| if_statement
 	  {
 		if (do_pretty_print)
@@ -3021,7 +3025,7 @@ get_comment(void)
 					tokadd(c);
 				}
 			} while (isspace(c) && c != END_FILE);
-			if ( c == END_FILE)
+			if (c == END_FILE)
 				break;
 			else if (c != '#') {
 				pushback();
@@ -3049,7 +3053,7 @@ split_comment(void)
 
 	p = comment->memory->stptr;
 	l = comment->memory->stlen - 3;
-	/* have at least two comments so split at last blank line ( \n\n)  */
+	/* have at least two comments so split at last blank line (\n\n)  */
 	while (l >= 0) {
 		if (p[l] == '\n' && p[l+1] == '\n') {
 			commentf = comment;
@@ -3083,7 +3087,7 @@ allow_newline(void)
 			break;
 		}
 		if (c == '#') {
-			if (do_pretty_print && !do_profile) {
+			if (do_pretty_print && ! do_profile) {
 			/* collect comment byte code iff doing pretty print but not profiling.  */
 				c = get_comment();
 			} else {
@@ -3295,8 +3299,11 @@ retry:
 
 	case '#':		/* it's a comment */
 		if (do_pretty_print && ! do_profile) {
-			/* collect comment byte code iff doing pretty print but not profiling.  */
-				c = get_comment();
+			/*
+			 * Collect comment byte code iff doing pretty print
+			 * but not profiling.
+			 */
+			c = get_comment();
 
 			if (c == END_FILE)
 				return lasttok = NEWLINE_EOF;
@@ -3332,7 +3339,7 @@ retry:
 					lintwarn(
 		_("use of `\\ #...' line continuation is not portable"));
 				}
-				if (do_pretty_print && !do_profile)
+				if (do_pretty_print && ! do_profile)
 					c = get_comment();
 				else {
 					while ((c = nextc(false)) != '\n')

@@ -912,6 +912,7 @@ cleanup:
 
 		case Op_list:
 			break;
+
 		default:
 			cant_happen();
 		}
@@ -994,7 +995,8 @@ print_lib_list(FILE *prof_fp)
 		fprintf(prof_fp, "\n");
 }
 
-/* print comment text with proper indentation */
+/* print_comment --- print comment text with proper indentation */
+
 static void
 print_comment(INSTRUCTION* pc, long in)
 {
