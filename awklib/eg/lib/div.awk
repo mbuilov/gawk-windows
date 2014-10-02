@@ -4,7 +4,7 @@
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # July, 2014
 
-function div(numerator, denominator, result,    i)
+function div(numerator, denominator, result)
 {
     split("", result)
 
