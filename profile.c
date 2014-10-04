@@ -909,11 +909,11 @@ pp_string_fp(Func_print print_func, FILE *fp, const char *in_str,
 
 	slen = strlen(str);
 	for (count = 0; slen > 0; slen--, str++) {
+		print_func(fp, "%c", *str);
 		if (++count >= BREAKPOINT && breaklines) {
 			print_func(fp, "%c\n%c", delim, delim);
 			count = 0;
-		} else
-			print_func(fp, "%c", *str);
+		}
 	}
 	efree(s);
 }

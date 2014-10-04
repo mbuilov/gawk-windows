@@ -324,6 +324,8 @@ EXTRA_DIST = \
 	fwtest3.awk \
 	fwtest3.in \
 	fwtest3.ok \
+	genpot.awk \
+	genpot.ok \
 	gensub.awk \
 	gensub.in \
 	gensub.ok \
@@ -1007,7 +1009,7 @@ GAWK_EXT_TESTS = \
 	colonwarn clos1way dbugeval delsub devfd devfd1 devfd2 dumpvars exit \
 	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
-	gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
+	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcase \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
 	include include2 indirectcall indirectcall2 \
@@ -1966,6 +1968,11 @@ printhuge::
 filefuncs:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk -v builddir="$(abs_top_builddir)"  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+genpot:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --gen-pot >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 
