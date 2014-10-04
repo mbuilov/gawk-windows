@@ -188,8 +188,8 @@ static INSTRUCTION *ip_endfile;
 static INSTRUCTION *ip_beginfile;
 
 static INSTRUCTION *comment = NULL;
-static INSTRUCTION *comment0 = NULL;
-static INSTRUCTION *commentf = NULL;
+static INSTRUCTION *program_comment = NULL;
+static INSTRUCTION *function_comment = NULL;
 
 static bool func_first = true;
 
@@ -2147,7 +2147,7 @@ yyreduce:
 			split_comment();
 		/* save any other pre-function comment as function comment  */
 		if (comment != NULL) {
-			commentf = comment;
+			function_comment = comment;
 			comment = NULL;
 		}
 		func_first = false;
@@ -4659,8 +4659,8 @@ mk_program()
 	if (begin_block != NULL)
 		cp = list_merge(begin_block, cp);
 
-	if (comment0 != NULL) {
-		(void) list_prepend(cp, comment0);
+	if (program_comment != NULL) {
+		(void) list_prepend(cp, program_comment);
 	}  
 	if (comment != NULL) {
 		(void) list_append(cp, comment);
@@ -5394,14 +5394,14 @@ split_comment(void)
 	/* have at least two comments so split at last blank line (\n\n)  */
 	while (l >= 0) {
 		if (p[l] == '\n' && p[l+1] == '\n') {
-			commentf = comment;
-			n = commentf->memory;
-			commentf->memory = make_str_node(p + l + 2, n->stlen - l - 2, 0);
+			function_comment = comment;
+			n = function_comment->memory;
+			function_comment->memory = make_str_node(p + l + 2, n->stlen - l - 2, 0);
 			/* create program comment  */
-			comment0 = bcalloc(Op_comment, 1, sourceline);
-			comment0->source_file = comment->source_file;
+			program_comment = bcalloc(Op_comment, 1, sourceline);
+			program_comment->source_file = comment->source_file;
 			p[l + 2] = 0;
-			comment0->memory = make_str_node(p, l + 2, 0);
+			program_comment->memory = make_str_node(p, l + 2, 0);
 			comment = NULL;
 			freenode(n);
 			break;
@@ -6750,10 +6750,10 @@ mk_function(INSTRUCTION *fi, INSTRUCTION *def)
 
 	/* add any pre-function comment to start of action for profile.c  */
 
-	if (commentf != NULL) {
-		commentf->source_line = 0;
-		(void) list_prepend(def, commentf);
-		commentf = NULL;
+	if (function_comment != NULL) {
+		function_comment->source_line = 0;
+		(void) list_prepend(def, function_comment);
+		function_comment = NULL;
 	}
 
 	/* add an implicit return at end;
