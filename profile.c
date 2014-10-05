@@ -190,7 +190,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 
 			if (rule != Rule) {
 				if (! rule_count[rule]++)
-					fprintf(prof_fp, _("\t# %s rules(s)\n\n"), ruletab[rule]);
+					fprintf(prof_fp, _("\t# %s rule(s)\n\n"), ruletab[rule]);
 				fprintf(prof_fp, "\t%s {\n", ruletab[rule]);
 				ip = (pc + 1)->firsti;
 			} else {
