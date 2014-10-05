@@ -4625,6 +4625,11 @@ mk_program()
 				cp = end_block;
 			else
 				cp = list_merge(begin_block, end_block);
+			/*
+			 * We don't need to clear the comment variables
+			 * since they're not used anymore after this
+			 * function is called.
+			 */
 			if (comment != NULL)
 				(void) list_append(cp, comment);
 			(void) list_append(cp, ip_atexit);

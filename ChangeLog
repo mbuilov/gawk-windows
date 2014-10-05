@@ -1,8 +1,18 @@
+2014-10-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (mk_program): Add a comment that we don't need to
+	clear the comment* variables.
+
 2014-10-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* profile.c (pp_string_fp): Fix breaklines case to actually
 	output the current letter. This broke at gawk 4.0.0. Sigh.
 	Thanks to Bert Bos (bert@w3.org) for the report.
+
+2014-10-03	Stephen Davies		<sdavies@sdc.com.au>
+
+	* awkgram.y (program_comment): Renamed from comment0.
+	(function_comment): Renamed from commentf.
 
 2014-10-02         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -106,13 +116,13 @@
 		- DO print the header comments
 		- Do NOT print the program's original comments
 
-	* awkgram.y (comment0, commentf): New varibles that are  pointers to program
-	and function comments.
-	(get_comment): New function that retrieves consecutive comment lines and empty
-	lines as a unit).
-	(split_comment): New function: iff first block in the program is a function and
-	it is predeeded by comments, take the last non-blank line as function comment
-	and any preceeding lines as program comment.)
+	* awkgram.y (comment0, commentf): New varibles that are  pointers to
+	program and function comments.
+	(get_comment): New function that retrieves consecutive comment lines
+	and empty lines as a unit).
+	(split_comment): New function: iff first block in the program is a
+	function and it is predeeded by comments, take the last non-blank
+	line as function comment and any preceeding lines as program comment.)
 
 	Following token rules were changed to handle comments:
 
@@ -121,12 +131,12 @@
 				
 	Following functions were changed to handle comments:
 
-	* awkgram.y (mk_program, mk_function, allow_newline and yylex): Update to
-	handle comments. (Also fixed typo in case '\\'.)
+	* awkgram.y (mk_program, mk_function, allow_newline and yylex): Update
+	to handle comments. (Also fixed typo in case '\\'.)
 
 	* profile.c (print_comment): New function to format comment printing.
-	(indent, pprint, dump_prog, pp_func): Changed to handle comments and the
-	revised indentation rules.
+	(indent, pprint, dump_prog, pp_func): Changed to handle comments and
+	the revised indentation rules.
 
 2014-09-07         Arnold D. Robbins     <arnold@skeeve.com>
 
