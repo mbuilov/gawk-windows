@@ -2075,8 +2075,16 @@ working with this team of fine people.
 Notable code and documentation contributions were made by
 a number of people. @xref{Contributors}, for the full list.
 
+@ifset FOR_PRINT
+@cindex Oram, Andy
+Thanks to Andy Oram, of O'Reilly Media, for initiating
+the fourth edition and for his support during the work.
+@end ifset
+
 Thanks to Michael Brennan for the Foreword.
 
+@cindex Duman, Patrice
+@cindex Berry, Karl
 Thanks to Patrice Dumas for the new @command{makeinfo} program.
 Thanks to Karl Berry who continues to work to keep
 the Texinfo markup language sane.
@@ -2707,7 +2715,7 @@ awk -F"" '@var{program}' @var{files}  # wrong!
 @end example
 
 @noindent
-In the second case, @command{awk} will attempt to use the text of the program
+In the second case, @command{awk} attempts to use the text of the program
 as the value of @code{FS}, and the first @value{FN} as the text of the program!
 This results in syntax errors at best, and confusing behavior at worst.
 @end itemize
@@ -5760,7 +5768,7 @@ are allowed.
 Traditional Unix @command{awk} regexps are matched. The GNU operators
 are not special, and interval expressions are not available.
 The POSIX character classes (@samp{[[:alnum:]]}, etc.) are supported,
-as BWK @command{awk} does support them.
+as BWK @command{awk} supports them.
 Characters described by octal and hexadecimal escape sequences are
 treated literally, even if they represent regexp metacharacters.
 
@@ -6419,7 +6427,7 @@ implementations may behave differently.)
 
 As mentioned in @ref{Fields},
 @command{awk} stores the current record's number of fields in the built-in
-variable @code{NF} (also @pxref{Built-in Variables}).  The expression
+variable @code{NF} (also @pxref{Built-in Variables}).  Thus, the expression
 @code{$NF} is not a special feature---it is the direct consequence of
 evaluating @code{NF} and using its value as a field number.
 
@@ -10476,7 +10484,7 @@ $ @kbd{echo 4,321 | LC_ALL=en_DK.utf-8 gawk '@{ print $1 + 1 @}'}
 The @code{en_DK.utf-8} locale is for English in Denmark, where the comma acts as
 the decimal point separator.  In the normal @code{"C"} locale, @command{gawk}
 treats @samp{4,321} as 4, while in the Danish locale, it's treated
-as the full number, 4.321.
+as the full number including the fractional part, 4.321.
 
 Some earlier versions of @command{gawk} fully complied with this aspect
 of the standard.  However, many users in non-English locales complained
@@ -14674,7 +14682,7 @@ as a variable) in the same @command{awk} program.
 Arrays in @command{awk} superficially resemble arrays in other programming
 languages, but there are fundamental differences.  In @command{awk}, it
 isn't necessary to specify the size of an array before starting to use it.
-Additionally, any number or string in @command{awk}, not just consecutive integers,
+Additionally, any number or string, not just consecutive integers,
 may be used as an array index.
 
 In most other languages, arrays must be @dfn{declared} before use,
@@ -16451,7 +16459,7 @@ If @var{find} is not found, @code{index()} returns zero.
 With BWK @command{awk} and @command{gawk},
 it is a fatal error to use a regexp constant for @var{find}.
 Other implementations allow it, simply treating the regexp
-constant as an expression meaning @samp{$0 ~ /regexp/}.
+constant as an expression meaning @samp{$0 ~ /regexp/}. @value{DARKCORNER}.
 
 @item @code{length(}[@var{string}]@code{)}
 @cindexawkfunc{length}
@@ -24814,7 +24822,7 @@ While @command{sed} is a complicated program in its own right, its most common
 use is to perform global substitutions in the middle of a pipeline:
 
 @example
-command1 < orig.data | sed 's/old/new/g' | command2 > result
+@var{command1} < orig.data | sed 's/old/new/g' | @var{command2} > result
 @end example
 
 Here, @samp{s/old/new/g} tells @command{sed} to look for the regexp
@@ -34098,7 +34106,7 @@ certain tasks.
 
 @item
 One of these tasks is to ``register'' the name and implementation of
-a new @command{awk}-level function with @command{gawk}.  The implementation
+new @command{awk}-level functions with @command{gawk}.  The implementation
 takes the form of a C function pointer with a defined signature.
 By convention, implementation functions are named @code{do_@var{XXXX}()}
 for some @command{awk}-level function @code{@var{XXXX}()}.
@@ -34149,7 +34157,7 @@ getting the count of elements in an array;
 creating a new array;
 clearing an array;
 and
-flattening an array for easy C style looping over all its indices and elements
+flattening an array for easy C style looping over all its indices and elements.
 @end itemize
 
 @item
@@ -37104,8 +37112,8 @@ See @w{@uref{https://sourceforge.net/p/gnv/wiki/InstallingGNVPackages/}.}
 The normal build procedure for @command{gawk} produces a program that
 is suitable for use with GNV.
 
-The @file{vms/gawk_build_steps.txt} in the distribution documents the procedure
-for building a VMS PCSI kit that is compatible with GNV.
+The file @file{vms/gawk_build_steps.txt} in the distribution documents
+the procedure for building a VMS PCSI kit that is compatible with GNV.
 
 @ignore
 @c The VMS POSIX product, also known as POSIX for OpenVMS, is long defunct
