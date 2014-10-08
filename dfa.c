@@ -3432,11 +3432,38 @@ dfaexec_main (struct dfa *d, char const *begin, char *end,
                   goto done;
                 }
 
-              /* Can match with a multibyte character (and multi character
-                 collating element).  Transition table might be updated.  */
-              s = transit_state (d, s, &p, (unsigned char *) end);
-              mbp = p;
-              trans = d->trans;
+              /* The following code is used twice.
+                 Use a macro to avoid the risk that they diverge.  */
+#define State_transition()                                              \
+  do {                                                                  \
+              /* Can match with a multibyte character (and multi-character \
+                 collating element).  Transition table might be updated.  */ \
+              s = transit_state (d, s, &p, (unsigned char *) end);      \
+                                                                        \
+              /* If previous character is newline after a transition    \
+                 for ANYCHAR or MBCSET in non-UTF8 multibyte locales,   \
+                 check whether current position is beyond the end of    \
+                 the input buffer.  Also, transit to initial state if   \
+                 !ALLOW_NL, even if RE_DOT_NEWLINE is set. */           \
+              if (p[-1] == eol)                                         \
+                {                                                       \
+                  if ((char *) p > end)                                 \
+                    {                                                   \
+                      p = NULL;                                         \
+                      goto done;                                        \
+                    }                                                   \
+                                                                        \
+                  nlcount++;                                            \
+                                                                        \
+                  if (!allow_nl)                                        \
+                    s = 0;                                              \
+                }                                                       \
+                                                                        \
+              mbp = p;                                                  \
+              trans = d->trans;                                         \
+  } while (0)
+
+              State_transition();
             }
         }
       else
@@ -3479,13 +3506,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end,
 
           s1 = s;
           if (multibyte)
-            {
-              /* Can match with a multibyte character (and multicharacter
-                 collating element).  Transition table might be updated.  */
-              s = transit_state (d, s, &p, (unsigned char *) end);
-              mbp = p;
-              trans = d->trans;
-            }
+            State_transition();
           else
             s = d->fails[s][*p++];
           continue;
