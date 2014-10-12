@@ -111,6 +111,7 @@ uninstall-so:
 	$(RM) $(DESTDIR)$(pkgextensiondir)/*.so
 	$(RM) $(DESTDIR)$(pkgextensiondir)/*.dll
 	$(RM) $(DESTDIR)$(pkgextensiondir)/*.a
+	$(RM) $(DESTDIR)$(pkgextensiondir)/*.lib
 
 uninstall-recursive: uninstall-so
 
