@@ -4355,11 +4355,11 @@ This specifies the amount by which @command{gawk} should grow its
 internal evaluation stack, when needed.
 
 @item INT_CHAIN_MAX
-The average number of items @command{gawk} will maintain on a
+The intended maximum number of items @command{gawk} will maintain on a
 hash chain for managing arrays indexed by integers.
 
 @item STR_CHAIN_MAX
-The average number of items @command{gawk} will maintain on a
+The intended maximum number of items @command{gawk} will maintain on a
 hash chain for managing arrays indexed by strings.
 
 @item TIDYMEM
@@ -31729,6 +31729,10 @@ value type, as appropriate.  This behavior is summarized in
 @multitable @columnfractions .50 .50
 @headitem @tab Type of Actual Value:
 @end multitable
+@c 10/2014: Thanks to Karl Berry for this bit to reduce the space:
+@tex
+\vglue-1.1\baselineskip
+@end tex
 @multitable @columnfractions .166 .166 .198 .15 .15 .166
 @headitem @tab @tab String @tab Number @tab Array @tab Undefined
 @item @tab @b{String} @tab String @tab String @tab false @tab false
@@ -37405,7 +37409,6 @@ The people maintaining the various @command{gawk} ports are:
 @cindex Deifik, Scott
 @cindex Malmberg, John
 @cindex Pitts, Dave
-@cindex Rankin, Pat
 @cindex Robbins, Arnold
 @cindex Zaretskii, Eli
 @multitable {MS-Windows with MinGW} {123456789012345678901234567890123456789001234567890}
@@ -37419,8 +37422,7 @@ The people maintaining the various @command{gawk} ports are:
 @c OS/2 is not mentioned anywhere else in the print version though.
 @item OS/2 @tab Andreas Buening, @EMAIL{andreas.buening@@nexgo.de,andreas dot buening at nexgo dot de}.
 
-@item VMS @tab Pat Rankin, @EMAIL{r.pat.rankin@@gmail.com,r.pat.rankin at gmail.com}, and
-John Malmberg, @EMAIL{wb8tyw@@qsl.net,wb8tyw at qsl.net}.
+@item VMS @tab John Malmberg, @EMAIL{wb8tyw@@qsl.net,wb8tyw at qsl.net}.
 
 @item z/OS (OS/390) @tab Dave Pitts, @EMAIL{dpitts@@cozx.com,dpitts at cozx dot com}.
 @end multitable
