@@ -4432,8 +4432,8 @@ produces the following result:
 
 @example
 $ @kbd{gawk -f test2}
-@print{} This is file test1.
-@print{} This is file test2.
+@print{} This is script test1.
+@print{} This is script test2.
 @end example
 
 @code{gawk} runs the @file{test2} script which includes @file{test1}
@@ -4463,9 +4463,9 @@ following results:
 
 @example
 $ @kbd{gawk -f test3}
-@print{} This is file test1.
-@print{} This is file test2.
-@print{} This is file test3.
+@print{} This is script test1.
+@print{} This is script test2.
+@print{} This is script test3.
 @end example
 
 The @value{FN} can, of course, be a pathname. For example:
@@ -14330,9 +14330,13 @@ the record separator.  It is set every time a record is read.
 @cindex @code{SYMTAB} array
 @cindex differences in @command{awk} and @command{gawk}, @code{SYMTAB} variable
 @item @code{SYMTAB #}
-An array whose indices are the names of all currently defined
-global variables and arrays in the program.  The array may be used
-for indirect access to read or write the value of a variable:
+An array whose indices are the names of all defined global variables and
+arrays in the program.  @code{SYMTAB} makes @command{gawk}'s symbol table
+visible to the @command{awk} programmer.  It is built as @command{gawk}
+parses the program and is complete before the program starts to run.
+
+The array may be used for indirect access to read or write the value of
+a variable:
 
 @example
 foo = 5
