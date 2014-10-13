@@ -83,17 +83,14 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 
 @enumerate a
 @item
-``A GNU Manual''
-
-@item
-``You have the freedom to
-copy and modify this GNU manual.  Buying copies from the FSF
-supports it in developing GNU and promoting software freedom.''
+The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.''
 @end enumerate
 @end copying
 
 @ifinfo
-This file documents the workflow of the developers in the  GNU @command{awk} project.
+This file documents the workflow of the developers in the  GNU
+@command{awk} project.
 
 @insertcopying
 @end ifinfo
@@ -139,7 +136,7 @@ ISBN 1-882114-93-0 @*
 @end iftex
 
 @ifnottex
-@node Top, Preface, (dir), (dir)
+@node Top
 @top Introduction
 @comment node-name, next,          previous, up
 
@@ -150,20 +147,47 @@ version 4.1 and later.
 @end ifnottex
 
 @menu
-* Introduction::                     About networking.
-* Basics of GIT repositories::      The fundamental environment of the developer.
-* Conventions used in the repository:: How to behave.
-* Tutorial for a first-time-gawk-contributor:: How to get started with least pain.
-* FAQs and HOWTOs::                  General recipes for daily work.
-* Links::                            Where to find the stuff mentioned in this
-                                     document.
-* GNU Free Documentation License::   The license for this document.
-* Index::                            The index.
+* Introduction::                               About networking.
+* Basics of GIT repositories::                 The fundamental environment of
+                                               the developer.
+* Conventions used in the repository::         How to behave.
+* Tutorial for a first-time-gawk-contributor:: How to get started with least
+                                               pain.
+* FAQs and HOWTOs::                            General recipes for daily work.
+* Links::                                      Where to find the stuff
+                                               mentioned in this document.
+* GNU Free Documentation License::             The license for this document.
+* Index::                                      The index.
+
+@detailmenu
+* Quick Start::         
+* Setting up a proper @command{git} repository::               
+* Pulling the latest changes from the remote repository::      
+* Checking out a feature branch from the remote repository::   
+* Semantics of Cloning::                                        What to
+                                                                consider
+                                                                before you
+                                                                clone.
+* Local versus Remote::                                         Where my
+                                                                source code
+                                                                really is.
+* Tracking and Merging::                                        What the
+                                                                others are
+                                                                doing.
+* master::                                                     
+* stable::                                                     
+* feature::                                                    
+* who does what::                                               
+* step-by-step instructions for a first-time-gawk-contributor::
+* step-by-step instructions for a first-time-gawk-administrator::
+* general recipes for daily work::                             
+* references and URLs to books and other texts::               
+@end detailmenu
 @end menu
 
 @contents
 
-@node Introduction, Basics of GIT repositories, Top, Top
+@node Introduction
 @chapter Introduction
 
 This @value{DOCUMENT} is meant to be a description of the working habits
@@ -178,8 +202,16 @@ We hope that (in later, more abstract steps) you will always remember
 this down-to-earth introduction, should you ever wonder what all the
 later bizarre trickery is good for.
 
-@node Quick Start: Compiling @command{gawk} in 5 Minutes, Setting up a proper @command{git} repository, Introduction, Introduction
+@menu
+* Quick Start::   
+* Setting up a proper @command{git} repository::         
+* Pulling the latest changes from the remote repository::
+* Checking out a feature branch from the remote repository::
+@end menu
+
+@node Quick Start
 @section Quick Start: Compiling @command{gawk} in 5 Minutes
+
 The following steps will look familiar to you, they are not that much
 different from the steps you used in the old days when you downloaded
 a tar ball, extracted it and compiled the source code. It is mainly
@@ -188,18 +220,23 @@ tar ball you need the tool @command{git}.
 @footnote{If the command @command{git} does not exist on your machine,
 you need adminstrator privileges to install it. By convention, the
 command is usuallay part of an installation package by the same name.}
+
 @example
-  git clone git://git.savannah.gnu.org/gawk.git
-  cd gawk
-  git checkout master
-  ./configure
-  make
-  ./gawk --version
+git clone git://git.savannah.gnu.org/gawk.git
+cd gawk
+git checkout master
+./bootstrap.sh
+./configure
+make
+./gawk --version
 @end example
+
+FIXME: add bootstrap. Also default is master
+
 The only other difference to your working habits is the third step;
 you have to extract the @emph{master} branch of the current source
 code (there are other branches available, that's the point where
-things get interesting). Isn't this simple ? No, it's not that simple.
+things get interesting). Isn't this simple? No, it's not that simple.
 If you plan to go any step further (for example compile the source
 code again next week, including next week's latest update), you will
 need to know what's going on when you use this seemingly simple
@@ -210,8 +247,9 @@ explanation, here we are satisfied with getting to know the practical
 steps necessary to get a working environment going that you can use
 in your daily work in a reliable way.
 
-@node Setting up a proper @command{git} repository, Basics of GIT repositories, Introduction, Introduction
+@node Setting up a proper @command{git} repository
 @section Setting up a proper @command{git} repository
+
 After the initial @emph{checkout} you have access to all the source code
 files that the maintainers have pushed through the official release procedure.
 You may not have noticed, but each change is well documented and traceable.
@@ -238,9 +276,9 @@ some global variables identifying you. The global settings will be used
 every time you connect again to the @emph{upstream} repository.
 
 @smallexample
-  git config --global user.name "@emph{First-Name Last-Name}"
-  git config --global user.email @emph{email@@address.site}
-  git config --global color.ui auto
+git config --global user.name "@emph{First-Name Last-Name}"
+git config --global user.email @emph{email@@address.site}
+git config --global color.ui auto
 @end smallexample
 
 You may leave these variables unset, but then you are reduced to an
@@ -252,22 +290,22 @@ use cases, but that comes at a cost: With so many helpful defaults
 you may be overwhelmed by the detail and complexity of the real inner working.
 
 @smallexample
-  git config --list
-  user.name=First-Name Last-Name
-  user.email=email@@address.site
-  color.diff=auto
-  color.status=auto
-  color.branch=auto
-  gui.spellingdictionary=en_US
-  core.repositoryformatversion=0
-  core.filemode=true
-  core.logallrefupdates=true
-  remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
-  remote.origin.url=ssh://jkahrs@@git.sv.gnu.org/srv/git/gawk.git
-  branch.master.remote=origin
-  branch.master.merge=refs/heads/master
-  branch.xgawk_load.remote=origin
-  branch.xgawk_load.merge=refs/heads/xgawk_load
+$ @kbd{git config --list}
+@print{}  user.name=First-Name Last-Name
+@print{}  user.email=email@@address.site
+@print{}  color.diff=auto
+@print{}  color.status=auto
+@print{}  color.branch=auto
+@print{}  gui.spellingdictionary=en_US
+@print{}  core.repositoryformatversion=0
+@print{}  core.filemode=true
+@print{}  core.logallrefupdates=true
+@print{}  remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+@print{}  remote.origin.url=ssh://jkahrs@@git.sv.gnu.org/srv/git/gawk.git
+@print{}  branch.master.remote=origin
+@print{}  branch.master.merge=refs/heads/master
+@print{}  branch.xgawk_load.remote=origin
+@print{}  branch.xgawk_load.merge=refs/heads/xgawk_load
 @end smallexample
 
 Changing these variables with specialized variants of the @command{git} command
@@ -275,21 +313,21 @@ may seem awkward to you and perhaps you prefer to use your favourite text editor
 to overview and change the variables.
 
 @smallexample
-vi .git/config
-[core]
-        repositoryformatversion = 0
-        filemode = true
-        bare = false
-        logallrefupdates = true
-[remote "origin"]
-        fetch = +refs/heads/*:refs/remotes/origin/*
-        url = ssh://jkahrs@@git.sv.gnu.org/srv/git/gawk.git
-[branch "master"]
-        remote = origin
-        merge = refs/heads/master
-[branch "cmake"]
-        remote = origin
-        merge = refs/heads/cmake
+$ @kbd{cat .git/config}
+@print{} [core]
+@print{}         repositoryformatversion = 0
+@print{}         filemode = true
+@print{}         bare = false
+@print{}         logallrefupdates = true
+@print{} [remote "origin"]
+@print{}         fetch = +refs/heads/*:refs/remotes/origin/*
+@print{}         url = ssh://jkahrs@@git.sv.gnu.org/srv/git/gawk.git
+@print{} [branch "master"]
+@print{}         remote = origin
+@print{}         merge = refs/heads/master
+@print{} [branch "cmake"]
+@print{}         remote = origin
+@print{}         merge = refs/heads/cmake
 @end smallexample
 
 Now you can see how variables are structured group-wise.
@@ -301,13 +339,13 @@ The e-mail address is a variable of a more general kind that
 should be stored above all the repositories.
 
 @smallexample
-git config --list --global
-user.name=First-Name Last-Name
-user.email=email@@address.site
-color.diff=auto
-color.status=auto
-color.branch=auto
-gui.spellingdictionary=en_US
+$ @kbd{git config --list --global}
+@print{} user.name=First-Name Last-Name
+@print{} user.email=email@@address.site
+@print{} color.diff=auto
+@print{} color.status=auto
+@print{} color.branch=auto
+@print{} gui.spellingdictionary=en_US
 @end smallexample
 
 If you wonder whether there is a parameter @command{--local} to list
@@ -319,17 +357,22 @@ but one day you might appreciate it.
 git help config
 @end smallexample
 
+@node Pulling the latest changes from the remote repository
 @section Pulling the latest changes from the remote repository
+
 Whether you set any of these variables or not, sooner or later you will want
 to catch up with the changes that happened in the upstream repository.
 So, how can you update your copy of the repository and re-build the source code?
 The easiest way is to rely on defaults and use the @emph{pull} command to request
 updates from the upstream repository.
+
 @smallexample
-  git pull
-  ./configure
-  make
+git pull
+./bootstrap.sh
+./configure
+make
 @end smallexample
+
 When using the @emph{pull} command, all the changes available in all branches of
 the upstream repository will be copied (and merged) into your local repository.
 We assume here that we still have the @emph{master} branch checked out (as described earlier)
@@ -340,26 +383,32 @@ But @emph{what is a branch?} you may wonder. It is the name given to a sequence 
 that were made to the master branch outside the master branch.
 It is easy to look up all the available branches
 (the names of the change sequences) in the remote upstream repository.
+
 @smallexample
-  git branch -a
-* master
-  remotes/origin/cmake
+$ @kbd{git branch -a}
+@print{} * master
+@print{}   remotes/origin/cmake
 @end smallexample
+
 The asterisk in front of the branch name assures you of the fact that you see
 the source files as they are in the @emph{master} branch.
 
+@node Checking out a feature branch from the remote repository
 @section Checking out a feature branch from the remote repository
+
 It is also easy to
 have a look at other branches, for example when you are interested in what is
 going on in a certain @emph{feature branch} that the maintainer set up recently
 for a new feature to be developed separately (so that others can go on undisturbed).
+
 @smallexample
-  git checkout origin/cmake
-  git branch -a
-  master
-* remotes/origin/cmake
-  ./configure
-  make
+$ @kbd{git checkout origin/cmake}
+$ @kbd{git branch -a}
+@print{}   master
+@print{} * remotes/origin/cmake
+$ @kbd{./bootstrap.sh}
+$ @kbd{./configure}
+$ @kbd{make}
 @end smallexample
 
 When you try this, take care that you have not changed anything in any source file.
@@ -367,33 +416,46 @@ When you try this, take care that you have not changed anything in any source fi
 This is meant to protect you from losing any local changes that you forgot to save.
 Any source file that is part of the repository and gets generated during the build
 in a slightly different way than the original would cause such a problem.
+
 @smallexample
-git status
-# On branch master
-# Changes not staged for commit:
-#       awkgram.c
+$ @kbd{git status}
+@print{} # On branch master
+@print{} # Changes not staged for commit:
+@print{} #       awkgram.c
 @end smallexample
+
 Here we have @file{awkgram.c} that was generated from @file{awkgram.y}.
 But what was generated differently in the file?
+
 @smallexample
 git diff awkgram.c
 @end smallexample
+
 Ok, you are not interested in textual changes to the copyright notice
 that are only due to a new calendar year. You are also not interested
 in the internals of the generated parser and only wonder
 @emph{How do we get back the original file from the repository?}
+
 @smallexample
-git checkout awkgram.c
-git diff awkgram.c | wc -l
-0
+$ @kbd{git checkout awkgram.c}
+$ @kbd{git diff awkgram.c | wc -l}
+@print{} 0
 @end smallexample
+
 After checking the file out once more, there is obviously no difference
 to the copy saved in the repository. But let's not get distracted, we
 wanted to find out what was going on in this feature branch. We can
 find out by asking @command{git} what has changed in the file @file{ChangeLog}
 of this feature branch relative to the master branch.
+
 @smallexample
 git diff origin/master ChangeLog
+@end smallexample
+
+@noindent
+This produces:
+
+@smallexample
 diff --git a/ChangeLog b/ChangeLog
 index eab657c..a499ec5 100644
 --- a/ChangeLog
@@ -407,14 +469,17 @@ index eab657c..a499ec5 100644
 -       * symbol.c (make_symbol, install, install_symbol): Add const to
 -       first parameter. Adjust decls and fix up uses.
 @end smallexample
+
 Looks like a minor cleanup operation in the master branch that has not
 yet been merged into the feature branch. We still don't know what is new
 in this feature branch, how can we know? By looking at all changes that exist.
+
 @smallexample
-git diff origin/master --numstat
-0       78      ChangeLog
-8       3       README_d/README.cmake
+$ @kbd{git diff origin/master --numstat}
+@print{} 0       78      ChangeLog
+@print{} 8       3       README_d/README.cmake
 @end smallexample
+
 On your screen you see a list of all differences between the currently
 checked-out branch and the master branch. It tells you the names of the
 files that have changed, along with the number of added and deleted lines.
@@ -423,10 +488,15 @@ Let's single out one particular file that looks interesting.
 As usual there is a @command{diff} sub-command to list all the changed
 lines, but there is also a @command{blame} sub-command that tells you
 who made the last change to any of the lines.
+
 @smallexample
-git diff origin/master README_d/README.cmake
-..
 git blame README_d/README.cmake
+@end smallexample
+
+@noindent
+This produces (in part):
+
+@smallexample
 2092a35f (Juergen Kahrs     2014-08-12 17:11:20 +0200   1) CMake is a build automation system
 2092a35f (Juergen Kahrs     2014-08-12 17:11:20 +0200   2)   http://en.wikipedia.org/wiki/Cmake
 2092a35f (Juergen Kahrs     2014-08-12 17:11:20 +0200   3) 
@@ -434,6 +504,7 @@ git blame README_d/README.cmake
 2092a35f (Juergen Kahrs     2014-08-12 17:11:20 +0200   5) This attempt is currently only experimental. If you wonder why anyone
 2092a35f (Juergen Kahrs     2014-08-12 17:11:20 +0200   6) should do this, read
 @end smallexample
+
 The strange number on the left margin is the short form of a numerical
 identifier of the change set. At the moment you can safely ignore it,
 but this number is the key you need in case you should ever want to
@@ -443,13 +514,13 @@ local repository and @command{push} them to the upstream repository.
 Some conceptual basics are needed for understanding this essential part
 of the workflow.
 
-
-@node Basics of GIT repositories, Conventions used in the repository, Compiling @command{gawk} in 5 minutes, Top
+@node Basics of GIT repositories
 @chapter Basics of GIT repositories
+
 @menu
-* Semantics of Cloning::             What to consider before you clone.
-* Local versus Remote::              Where my source code really is.
-* Tracking and Merging::             What the others are doing.
+* Semantics of Cloning::        What to consider before you clone.
+* Local versus Remote::         Where my source code really is.
+* Tracking and Merging::        What the others are doing.
 @end menu
 
 @c http://iverilog.wikia.com/wiki/Installation_Guide
@@ -464,6 +535,7 @@ of the workflow.
 
 What is tracking ?
 
+@display
 - How can I use git to contribute source code ?
 You need an account at Savannah. Read this to understand the first steps:
   http://savannah.gnu.org/maintenance/UsingGit
@@ -473,30 +545,51 @@ Then you are ready to checkout. Remember that (when cloning) you are
 setting up your own local repository and make sure you configure it
 properly.
   git clone ssh://my_account_name@@git.sv.gnu.org/srv/git/gawk.git
+@end display
 
-@node Semantics of Cloning, Local versus Remote, Introduction, Introduction
+@node Semantics of Cloning
 @section Semantics of Cloning
 
-@node Local versus Remote, Tracking and Merging, Semantics of Cloning, Introduction
+@node Local versus Remote
 @section Local versus Remote
 
-@node Tracking and Merging, Conventions used in the repository, Local versus Remote, Introduction
+@node Tracking and Merging
 @section Tracking and Merging
 
-@node Conventions used in the repository, Tutorial for a first-time-gawk-contributor, Basics of GIT repositories, Top
+@node Conventions used in the repository
 @chapter Conventions used in the repository
+
+@menu
+* master::                     
+* stable::                     
+* feature::                    
+* who does what::               
+@end menu
+
+@node master
 @section master
+
+@node stable
 @section stable
+
+@node feature
 @section feature
+
+@node who does what
 @section who does what
 
-@node Tutorial for a first-time-gawk-contributor, FAQs and HOWTOs,  Conventions used in the repository, Top
+@node Tutorial for a first-time-gawk-contributor
 @chapter Tutorial for a first-time-gawk-contributor
 
-@node step-by-step instructions for a first-time-gawk-contributor, step-by-step instructions for a first-time-gawk-administrator,  Conventions used in the repository, Tutorial for a first-time-gawk-contributor
+@menu
+* step-by-step instructions for a first-time-gawk-contributor::
+* step-by-step instructions for a first-time-gawk-administrator::
+@end menu
+
+@node step-by-step instructions for a first-time-gawk-contributor
 @section step-by-step instructions for a first-time-gawk-contributor
 
-@node step-by-step instructions for a first-time-gawk-administrator, FAQs and HOWTOs, Tutorial for a first-time-gawk-contributor, Tutorial for a first-time-gawk-contributor
+@node step-by-step instructions for a first-time-gawk-administrator
 @section step-by-step instructions for a first-time-gawk-administrator
 
 @c e-mail from Arnold 2014-08.24
@@ -528,16 +621,28 @@ properly.
 @c I think I actually prefer that behavior, since it's more intuitive to me.
 
 
-@node FAQs and HOWTOs, Links, Tutorial for a first-time-gawk-contributor, Top
+@node FAQs and HOWTOs
 @chapter FAQs and HOWTOs
+
+@menu
+* general recipes for daily work::
+@end menu
+
+@node general recipes for daily work
 @section general recipes for daily work
 
-@node Links, GNU Free Documentation License, FAQs and HOWTOs, Top
+@node Links
 @chapter Links
+
+@menu
+* references and URLs to books and other texts::
+@end menu
+
+@node references and URLs to books and other texts
 @section references and URLs to books and other texts
 
 @c The GNU Free Documentation License.
-@node GNU Free Documentation License, Index, Links, Top
+@node GNU Free Documentation License
 @unnumbered GNU Free Documentation License
 @cindex FDL (Free Documentation License)
 @cindex Free Documentation License (FDL)
@@ -1048,7 +1153,7 @@ to permit their use in free software.
 @c End:
 
 
-@node Index, , GNU Free Documentation License, Top
+@node Index
 @comment node-name,    next,  previous,      up
 
 @unnumbered Index
