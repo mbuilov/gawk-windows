@@ -1550,6 +1550,17 @@ nextrres:
  * change the string.
  */
 
+/*
+ * 9/2014: Flow here is a little messy.
+ *
+ * For do_posix, we don't allow any of the special filenames.
+ *
+ * For do_traditional, we allow /dev/{stdin,stdout,stderr} since BWK awk
+ * (and mawk) support them.  But we don't allow /dev/fd/N or /inet.
+ *
+ * Note that for POSIX systems os_devopen() is a no-op.
+ */
+
 int
 devopen(const char *name, const char *mode)
 {
@@ -1565,7 +1576,7 @@ devopen(const char *name, const char *mode)
 	flag = str2mode(mode);
 	openfd = INVALID_HANDLE;
 
-	if (do_traditional)
+	if (do_posix)
 		goto strictopen;
 
 	if ((openfd = os_devopen(name, flag)) != INVALID_HANDLE) {
@@ -1582,6 +1593,8 @@ devopen(const char *name, const char *mode)
 			openfd = fileno(stdout);
 		else if (strcmp(cp, "stderr") == 0 && (flag & O_ACCMODE) == O_WRONLY)
 			openfd = fileno(stderr);
+		else if (do_traditional)
+			goto strictopen;
 		else if (strncmp(cp, "fd/", 3) == 0) {
 			struct stat sbuf;
 
@@ -1594,6 +1607,8 @@ devopen(const char *name, const char *mode)
 		/* do not set close-on-exec for inherited fd's */
 		if (openfd != INVALID_HANDLE)
 			return openfd;
+	} else if (do_traditional) {
+		goto strictopen;
 	} else if (inetfile(name, & isi)) {
 #ifdef HAVE_SOCKETS
 		cp = (char *) name;

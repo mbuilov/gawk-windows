@@ -35,8 +35,8 @@ static int var_count;	/* total number of global variables and functions */
 
 static NODE *symbol_list;
 static void (*install_func)(NODE *) = NULL;
-static NODE *make_symbol(char *name, NODETYPE type);
-static NODE *install(char *name, NODE *parm, NODETYPE type);
+static NODE *make_symbol(const char *name, NODETYPE type);
+static NODE *install(const char *name, NODE *parm, NODETYPE type);
 static void free_bcpool(INSTRUCTION *pl);
 
 static AWK_CONTEXT *curr_ctxt = NULL;
@@ -75,7 +75,7 @@ init_symbol_table()
  */
 
 NODE *
-install_symbol(char *name, NODETYPE type)
+install_symbol(const char *name, NODETYPE type)
 {
 	return install(name, NULL, type);
 }
@@ -275,7 +275,7 @@ destroy_symbol(NODE *r)
 /* make_symbol --- allocates a global symbol for the symbol table. */
 
 static NODE *
-make_symbol(char *name, NODETYPE type)
+make_symbol(const char *name, NODETYPE type)
 {
 	NODE *r;
 
@@ -285,7 +285,7 @@ make_symbol(char *name, NODETYPE type)
 		null_array(r);
 	else if (type == Node_var)
 		r->var_value = dupnode(Nnull_string);
-	r->vname = name;
+	r->vname = (char *) name;
 	r->type = type;
 
 	return r;
@@ -294,7 +294,7 @@ make_symbol(char *name, NODETYPE type)
 /* install --- install a global name or function parameter in the symbol table */
 
 static NODE *
-install(char *name, NODE *parm, NODETYPE type)
+install(const char *name, NODE *parm, NODETYPE type)
 {
 	NODE *r;
 	NODE **aptr;
@@ -307,7 +307,9 @@ install(char *name, NODE *parm, NODETYPE type)
 
 	if (type == Node_param_list) {
 		table = param_table;
-	} else if (type == Node_func || type == Node_ext_func) {
+	} else if (   type == Node_func
+		   || type == Node_ext_func
+		   || type == Node_builtin_func) {
 		table = func_table;
 	} else if (installing_specials) {
 		table = global_table;
@@ -320,7 +322,7 @@ install(char *name, NODE *parm, NODETYPE type)
 		r = make_symbol(name, type);
 		if (type == Node_func)
 			func_count++;
-		if (type != Node_ext_func && table != global_table)
+		if (type != Node_ext_func && type != Node_builtin_func && table != global_table)
 			var_count++;	/* total, includes Node_func */
 	}
 
@@ -393,7 +395,7 @@ get_symbols(SYMBOL_TYPE what, bool sort)
 
 		for (i = count = 0; i < max; i += 2) {
 			r = list[i+1];
-			if (r->type == Node_ext_func)
+			if (r->type == Node_ext_func || r->type == Node_builtin_func)
 				continue;
 			assert(r->type == Node_func);
 			table[count++] = r;
@@ -539,7 +541,7 @@ load_symbols()
 	NODE *sym_array;
 	NODE **aptr;
 	long i, j, max;
-	NODE *user, *extension, *untyped, *scalar, *array;
+	NODE *user, *extension, *untyped, *scalar, *array, *built_in;
 	NODE **list;
 	NODE *tables[4];
 
@@ -570,6 +572,7 @@ load_symbols()
 	scalar = make_string("scalar", 6);
 	untyped = make_string("untyped", 7);
 	array = make_string("array", 5);
+	built_in = make_string("builtin", 7);
 
 	for (i = 0; tables[i] != NULL; i++) {
 		list = assoc_list(tables[i], "@unsorted", ASORTI);
@@ -580,6 +583,7 @@ load_symbols()
 			r = list[j+1];
 			if (   r->type == Node_ext_func
 			    || r->type == Node_func
+			    || r->type == Node_builtin_func
 			    || r->type == Node_var
 			    || r->type == Node_var_array
 			    || r->type == Node_var_new) {
@@ -593,6 +597,9 @@ load_symbols()
 					break;
 				case Node_func:
 					*aptr = dupnode(user);
+					break;
+				case Node_builtin_func:
+					*aptr = dupnode(built_in);
 					break;
 				case Node_var:
 					*aptr = dupnode(scalar);

@@ -88,14 +88,12 @@ function endfile(file)
             print
     }
 }
-END    \
-{
+END {
     exit (total == 0)
 }
-function usage(    e)
+function usage()
 {
-    e = "Usage: egrep [-csvil] [-e pat] [files ...]"
-    e = e "\n\tegrep [-csvil] pat [files ...]"
-    print e > "/dev/stderr"
+    print("Usage: egrep [-csvil] [-e pat] [files ...]") > "/dev/stderr"
+    print("\n\tegrep [-csvil] pat [files ...]") > "/dev/stderr"
     exit 1
 }

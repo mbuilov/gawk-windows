@@ -7,7 +7,7 @@
 function disable_assigns(argc, argv,    i)
 {
     for (i = 1; i < argc; i++)
-        if (argv[i] ~ /^[[:alpha:]_][[:alnum:]_]*=.*/)
+        if (argv[i] ~ /^[a-zA-Z_][a-zA-Z0-9_]*=.*/)
             argv[i] = ("./" argv[i])
 }
 

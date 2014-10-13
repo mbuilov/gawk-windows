@@ -5,10 +5,9 @@
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993
 
-function usage(    e)
+function usage()
 {
-    e = "Usage: uniq [-udc [-n]] [+n] [ in [ out ]]"
-    print e > "/dev/stderr"
+    print("Usage: uniq [-udc [-n]] [+n] [ in [ out ]]") > "/dev/stderr"
     exit 1
 }
 
@@ -18,8 +17,7 @@ function usage(    e)
 # -n    skip n fields
 # +n    skip n characters, skip fields first
 
-BEGIN   \
-{
+BEGIN {
     count = 1
     outputfile = "/dev/stdout"
     opts = "udc0:1:2:3:4:5:6:7:8:9:"
@@ -31,7 +29,7 @@ BEGIN   \
         else if (c == "c")
             do_count++
         else if (index("0123456789", c) != 0) {
-            # getopt requires args to options
+            # getopt() requires args to options
             # this messes us up for things like -5
             if (Optarg ~ /^[[:digit:]]+$/)
                 fcount = (c Optarg) + 0

@@ -1,5 +1,4 @@
-# extract.awk --- extract files and run programs
-#                 from texinfo files
+# extract.awk --- extract files and run programs from texinfo files
 #
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993
@@ -7,8 +6,7 @@
 
 BEGIN    { IGNORECASE = 1 }
 
-/^@c(omment)?[ \t]+system/    \
-{
+/^@c(omment)?[ \t]+system/ {
     if (NF < 3) {
         e = ("extract: " FILENAME ":" FNR)
         e = (e  ": badly formed `system' line")
@@ -24,8 +22,7 @@ BEGIN    { IGNORECASE = 1 }
         print e > "/dev/stderr"
     }
 }
-/^@c(omment)?[ \t]+file/    \
-{
+/^@c(omment)?[ \t]+file/ {
     if (NF != 3) {
         e = ("extract: " FILENAME ":" FNR ": badly formed `file' line")
         print e > "/dev/stderr"
@@ -66,7 +63,7 @@ BEGIN    { IGNORECASE = 1 }
 function unexpected_eof()
 {
     printf("extract: %s:%d: unexpected EOF or error\n",
-        FILENAME, FNR) > "/dev/stderr"
+                     FILENAME, FNR) > "/dev/stderr"
     exit 1
 }
 

@@ -36,7 +36,8 @@ static bool is_scalar(int type);
 static int prec_level(int type);
 static void pp_push(int type, char *s, int flag);
 static NODE *pp_pop(void);
-static void pp_free(NODE *n);
+static void pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header);
+static void print_comment(INSTRUCTION *pc, long in);
 const char *redir2str(int redirtype);
 
 #define pp_str	vname
@@ -100,10 +101,12 @@ indent(long count)
 {
 	int i;
 
-	if (count == 0)
-		fprintf(prof_fp, "\t");
-	else
-		fprintf(prof_fp, "%6ld  ", count);
+	if (do_profile) {
+		if (count == 0)
+			fprintf(prof_fp, "\t");
+		else
+			fprintf(prof_fp, "%6ld  ", count);
+	}
 
 	assert(indent_level >= 0);
 	for (i = 0; i < indent_level; i++)
@@ -177,6 +180,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 	NODE *m;
 	char *tmp;
 	int rule;
+	long lind;
 	static int rule_count[MAXRULE];
 
 	for (pc = startp; pc != endp; pc = pc->nexti) {
@@ -189,16 +193,35 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 			rule = pc->in_rule;
 
 			if (rule != Rule) {
-				if (! rule_count[rule]++)
-					fprintf(prof_fp, _("\t# %s block(s)\n\n"), ruletab[rule]);
-				fprintf(prof_fp, "\t%s {\n", ruletab[rule]);
 				ip = (pc + 1)->firsti;
+
+				/* print pre-begin/end comments */
+				if (ip->opcode == Op_comment) {
+					print_comment(ip, 0);
+					ip = ip->nexti;
+				}
+
+				if (do_profile) {
+					if (! rule_count[rule]++)
+						fprintf(prof_fp, _("\t# %s rule(s)\n\n"), ruletab[rule]);
+					indent(0);
+				}
+				fprintf(prof_fp, "%s {\n", ruletab[rule]);
 			} else {
-				if (! rule_count[rule]++)
+				if (do_profile && ! rule_count[rule]++)
 					fprintf(prof_fp, _("\t# Rule(s)\n\n"));
 				ip = pc->nexti;
-				indent(ip->exec_count);
+				lind = ip->exec_count;
+				/* print pre-block comments */
+				if (ip->opcode == Op_exec_count && ip->nexti->opcode == Op_comment)
+					ip = ip->nexti;
+				if (ip->opcode == Op_comment) {
+					print_comment(ip, lind);
+					if (ip->nexti->nexti == (pc + 1)->firsti)
+						ip = ip->nexti->nexti;
+				}
 				if (ip != (pc + 1)->firsti) {		/* non-empty pattern */
+					indent(lind);
 					pprint(ip->nexti, (pc + 1)->firsti, false);
 					t1 = pp_pop();
 					fprintf(prof_fp, "%s {", t1->pp_str);
@@ -218,7 +241,9 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 			indent_in();
 			pprint(ip, (pc + 1)->lasti, false);
 			indent_out();
-			fprintf(prof_fp, "\t}\n\n");
+			if (do_profile)
+				indent(0);
+			fprintf(prof_fp, "}\n\n");
 			pc = (pc + 1)->lasti;
 			break;
 
@@ -731,20 +756,28 @@ cleanup:
 			ip = pc + 1;
 			indent(ip->forloop_body->exec_count);
 			fprintf(prof_fp, "%s (", op2str(pc->opcode));	
-			pprint(pc->nexti, ip->forloop_cond, true);
-			fprintf(prof_fp, "; ");
 
-			if (ip->forloop_cond->opcode == Op_no_op &&
-					ip->forloop_cond->nexti == ip->forloop_body)
+			/* If empty for looop header, print it a little more nicely. */
+			if (   pc->nexti->opcode == Op_no_op
+			    && ip->forloop_cond == pc->nexti
+			    && pc->target_continue->opcode == Op_jmp) {
+				fprintf(prof_fp, ";;");
+			} else {
+				pprint(pc->nexti, ip->forloop_cond, true);
 				fprintf(prof_fp, "; ");
-			else {
-				pprint(ip->forloop_cond, ip->forloop_body, true);
-				t1 = pp_pop();
-				fprintf(prof_fp, "%s; ", t1->pp_str);
-				pp_free(t1);
-			}
 
-			pprint(pc->target_continue, pc->target_break, true);
+				if (ip->forloop_cond->opcode == Op_no_op &&
+						ip->forloop_cond->nexti == ip->forloop_body)
+					fprintf(prof_fp, "; ");
+				else {
+					pprint(ip->forloop_cond, ip->forloop_body, true);
+					t1 = pp_pop();
+					fprintf(prof_fp, "%s; ", t1->pp_str);
+					pp_free(t1);
+				}
+
+				pprint(pc->target_continue, pc->target_break, true);
+			}
 			fprintf(prof_fp, ") {\n");
 			indent_in();
 			pprint(ip->forloop_body->nexti, pc->target_continue, false);
@@ -873,6 +906,13 @@ cleanup:
 				indent(pc->exec_count);
 			break;
 
+		case Op_comment:
+			print_comment(pc, 0);
+			break;
+
+		case Op_list:
+			break;
+
 		default:
 			cant_happen();
 		}
@@ -901,11 +941,11 @@ pp_string_fp(Func_print print_func, FILE *fp, const char *in_str,
 
 	slen = strlen(str);
 	for (count = 0; slen > 0; slen--, str++) {
+		print_func(fp, "%c", *str);
 		if (++count >= BREAKPOINT && breaklines) {
 			print_func(fp, "%c\n%c", delim, delim);
 			count = 0;
-		} else
-			print_func(fp, "%c", *str);
+		}
 	}
 	efree(s);
 }
@@ -955,6 +995,30 @@ print_lib_list(FILE *prof_fp)
 		fprintf(prof_fp, "\n");
 }
 
+/* print_comment --- print comment text with proper indentation */
+
+static void
+print_comment(INSTRUCTION* pc, long in)
+{
+	char *text;
+	size_t count;
+	bool after_newline = false;
+
+	count = pc->memory->stlen;
+	text = pc->memory->stptr;
+
+	indent(in);   /* is this correct? Where should comments go?  */
+	for (; count > 0; count--, text++) {
+		if (after_newline) {
+			indent(in);
+			after_newline = false;
+		}
+		putc(*text, prof_fp);
+		if (*text == '\n')
+			after_newline = true;
+	}
+}
+
 /* dump_prog --- dump the program */
 
 /*
@@ -969,7 +1033,8 @@ dump_prog(INSTRUCTION *code)
 
 	(void) time(& now);
 	/* \n on purpose, with \n in ctime() output */
-	fprintf(prof_fp, _("\t# gawk profile, created %s\n"), ctime(& now));
+	if (do_profile)
+		fprintf(prof_fp, _("\t# gawk profile, created %s\n"), ctime(& now));
 	print_lib_list(prof_fp);
 	pprint(code, NULL, false);
 }
@@ -1469,14 +1534,24 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 	static bool first = true;
 	NODE *func;
 	int pcount;
+	INSTRUCTION *fp;
 
 	if (first) {
 		first = false;
-		fprintf(prof_fp, _("\n\t# Functions, listed alphabetically\n"));
+		if (do_profile)
+			fprintf(prof_fp, _("\n\t# Functions, listed alphabetically\n"));
 	}
 
+	fp = pc->nexti->nexti;
 	func = pc->func_body;
 	fprintf(prof_fp, "\n");
+
+	/* print any function comment */
+	if (fp->opcode == Op_comment && fp->source_line == 0) {
+		print_comment(fp, 0);
+		fp = fp->nexti;
+	}
+
 	indent(pc->nexti->exec_count);
 	fprintf(prof_fp, "%s %s(", op2str(Op_K_function), func->vname);
 	pcount = func->param_cnt;
@@ -1486,11 +1561,16 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 		if (j < pcount - 1)
 			fprintf(prof_fp, ", ");
 	}
-	fprintf(prof_fp, ")\n\t{\n");
+	fprintf(prof_fp, ")\n");
+	if (do_profile)
+		indent(0);
+	fprintf(prof_fp, "{\n");
 	indent_in();
-	pprint(pc->nexti->nexti, NULL, false);	/* function body */
+	pprint(fp, NULL, false);	/* function body */
 	indent_out();
-	fprintf(prof_fp, "\t}\n");
+	if (do_profile)
+		indent(0);
+	fprintf(prof_fp, "}\n");
 	return 0;
 }
 

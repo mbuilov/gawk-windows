@@ -33,6 +33,16 @@
 #include <mcheck.h>
 #endif
 
+#ifdef HAVE_LIBSIGSEGV
+#include <sigsegv.h>
+#else
+typedef void *stackoverflow_context_t;
+/* the argument to this macro is purposely not used */
+#define sigsegv_install_handler(catchsegv) signal(SIGSEGV, catchsig)
+/* define as 0 rather than empty so that (void) cast on it works */
+#define stackoverflow_install_handler(catchstackoverflow, extra_stack, STACK_SIZE) 0
+#endif
+
 #define DEFAULT_PROFILE		"awkprof.out"	/* where to put profile */
 #define DEFAULT_VARFILE		"awkvars.out"	/* where to put vars */
 #define DEFAULT_PREC		53
@@ -202,7 +212,7 @@ main(int argc, char **argv)
 	/*
 	 * The + on the front tells GNU getopt not to rearrange argv.
 	 */
-	const char *optlist = "+F:f:v:W;bcCd::D::e:E:gh:i:l:L:nNo::Op::MPrStVY";
+	const char *optlist = "+F:f:v:W;bcCd::D::e:E:ghi:l:L:nNo::Op::MPrStVY";
 	bool stopped_early = false;
 	int old_optind;
 	int i;
@@ -262,17 +272,6 @@ main(int argc, char **argv)
 	 */
 	gawk_mb_cur_max = MB_CUR_MAX;
 	/* Without MBS_SUPPORT, gawk_mb_cur_max is 1. */
-#ifdef LIBC_IS_BORKED
-{
-	const char *env_lc;
-
-	env_lc = getenv("LC_ALL");
-	if (env_lc == NULL)
-		env_lc = getenv("LANG");
-	if (env_lc != NULL && env_lc[1] == '\0' && tolower(env_lc[0]) == 'c')
-		gawk_mb_cur_max = 1;
-}
-#endif
 
 	/* init the cache for checking bytes if they're characters */
 	init_btowc_cache();
@@ -704,6 +703,8 @@ out:
 	
 	if (do_intl)
 		exit(EXIT_SUCCESS);
+
+	install_builtins();
 
 	if (do_lint)
 		shadow_funcs();
@@ -1328,11 +1329,11 @@ arg_assign(char *arg, bool initing)
 
 	/* first check that the variable name has valid syntax */
 	badvar = false;
-	if (! isalpha((unsigned char) arg[0]) && arg[0] != '_')
+	if (! is_alpha((unsigned char) arg[0]) && arg[0] != '_')
 		badvar = true;
 	else
 		for (cp2 = arg+1; *cp2; cp2++)
-			if (! isalnum((unsigned char) *cp2) && *cp2 != '_') {
+			if (! is_identchar((unsigned char) *cp2)) {
 				badvar = true;
 				break;
 			}

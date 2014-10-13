@@ -324,6 +324,8 @@ EXTRA_DIST = \
 	fwtest3.awk \
 	fwtest3.in \
 	fwtest3.ok \
+	genpot.awk \
+	genpot.ok \
 	gensub.awk \
 	gensub.in \
 	gensub.ok \
@@ -421,6 +423,8 @@ EXTRA_DIST = \
 	indirectcall.awk \
 	indirectcall.in \
 	indirectcall.ok \
+	indirectcall2.awk \
+	indirectcall2.ok \
 	inftest.awk \
 	inftest.ok \
 	inplace.in \
@@ -1007,10 +1011,10 @@ GAWK_EXT_TESTS = \
 	colonwarn clos1way dbugeval delsub devfd devfd1 devfd2 dumpvars exit \
 	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
-	gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
+	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcase \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
-	include include2 indirectcall \
+	include include2 indirectcall indirectcall2 \
 	lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm next nondec nondec2 \
@@ -1164,6 +1168,8 @@ charset-msg-start:
 	@echo "************************************************"
 	@echo "** Some or all of these tests may fail if you **"
 	@echo "** have inadequate or missing locale support  **"
+	@echo "** At least en_US.UTF-8, ru_RU.UTF-8 and      **"
+	@echo "** ja_JP.UTF-8 are needed.                    **"
 	@echo "************************************************"
 
 charset-msg-end:
@@ -1686,14 +1692,12 @@ profile3:
 
 profile4:
 	@echo $@
-	@$(AWK) --pretty-print=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
-	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
+	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile5:
 	@echo $@
-	@$(AWK) --pretty-print=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
-	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
+	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 posix2008sub:
@@ -1969,6 +1973,17 @@ printhuge::
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+filefuncs:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk -v builddir="$(abs_top_builddir)"  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+genpot:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --gen-pot >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 
 # Targets generated for other tests:
 include Maketests

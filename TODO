@@ -1,13 +1,9 @@
-Wed Jun 25 22:28:05 IDT 2014
+Sun Sep 28 22:19:10 IDT 2014
 ============================
 
 There were too many files tracking different thoughts and ideas for
 things to do, or consider doing.  This file merges them into one. As
-tasks are completed, they should be moved to the DONE section, below,
-or simply removed.
-
-Upon creation of a release (major or patch release), items from the
-previous release should be removed.
+tasks are completed, they should be removed.
 
 This file should exist only in the master branch or branches based off
 of it for development, but not in the stable branch. This may require some
@@ -23,17 +19,12 @@ Minor Cleanups and Code Improvements
 	order to nuke the use of libtool. [ Partially started in the
 	nolibtool branch. ]
 
-	Enhance profiling to save comments in a byte-code that does nothing
-	but that can be used when pretty printing the program.
-
 	API:
 		??? #if !defined(GAWK) && !defined(GAWK_OMIT_CONVENIENCE_MACROS)
 
 	?? Add debugger commands to reference card
 
 	Look at function order within files.
-
-	regex.h - remove underscores in param names
 
 	Consider removing use of and/or need for the protos.h file.
 
@@ -44,6 +35,8 @@ Minor Cleanups and Code Improvements
 
 Minor New Features
 ------------------
+
+	Enable command line source text in the debugger.
 
 	Enhance extension/fork.c waitpid to allow the caller to specify
 	the options.  And add an optional array argument to wait and
@@ -147,18 +140,6 @@ Things To Think About That May Never Happen
 	Enhance FIELDWIDTHS with some way to indicate "the rest of the record".
 	E.g., a length of 0 or -1 or something.  Maybe "n"?
 
-
-DONE
-====
-
-Minor Cleanups and Code Improvements
-------------------------------------
-
-Minor New Features
-------------------
-
-Major New Features
-------------------
 
 Things That We Decided We Will Never Do
 =======================================

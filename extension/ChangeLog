@@ -1,3 +1,13 @@
+2014-10-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* inplace.c (do_inplace_begin): Use a cast to void in front
+	of the second call to chown to avoid compiler warnings from clang.
+
+2014-09-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c: Minor edits to sync with documentation.
+	* testext.c: Add test to get PROCINFO, expected to fail.
+
 2014-08-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (RM): Define for makes that don't have it,

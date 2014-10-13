@@ -26,7 +26,7 @@ function quicksort(data, left, right, less_than,    i, last)
 
 # quicksort_swap --- helper function for quicksort, should really be inline
 
-function quicksort_swap(data, i, j, temp)
+function quicksort_swap(data, i, j,      temp)
 {
     temp = data[i]
     data[i] = data[j]

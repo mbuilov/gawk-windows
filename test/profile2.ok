@@ -1,4 +1,4 @@
-	# BEGIN block(s)
+	# BEGIN rule(s)
 
 	BEGIN {
      1  	if (sortcmd == "") {
@@ -7,7 +7,7 @@
      1  	asplit("BEGIN:END:atan2:break:close:continue:cos:delete:" "do:else:exit:exp:for:getline:gsub:if:in:index:int:" "length:log:match:next:print:printf:rand:return:sin:" "split:sprintf:sqrt:srand:sub:substr:system:while", keywords, ":")
      1  	split("00:00:00:00:00:00:00:00:00:00:" "20:10:10:12:12:11:07:00:00:00:" "08:08:08:08:08:33:08:00:00:00:" "08:44:08:36:08:08:08:00:00:00:" "08:44:45:42:42:41:08", machine, ":")
      1  	state = 1
-   571  	for (; ; ) {
+   571  	for (;;) {
    571  		symb = lex()
    571  		nextstate = substr(machine[state symb], 1, 1)
    571  		act = substr(machine[state symb], 2, 1)
@@ -109,7 +109,7 @@
 
    571  function lex()
 	{
-  1702  	for (; ; ) {
+  1702  	for (;;) {
   1702  		if (tok == "(eof)") {
 				return 7
 			}

@@ -1,3 +1,239 @@
+2014-10-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regcomp.c (__re_error_msgid): Make error message for REG_EBRACK
+	more helpful - also used for unmatched [:, [., [=.
+	Thanks to Davide Brini for raising the issue.
+
+2014-10-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* README: Remove Pat Rankin from VMS duties, per his request.
+
+2014-10-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync wit GNU grep.
+
+2014-10-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pprint): Fix typo in header. Sheesh.
+
+	Unrelated:
+
+	* awkgram.y (mk_program): Add a comment that we don't need to
+	clear the comment* variables.
+
+2014-10-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pp_string_fp): Fix breaklines case to actually
+	output the current letter. This broke at gawk 4.0.0. Sigh.
+	Thanks to Bert Bos (bert@w3.org) for the report.
+
+2014-10-03	Stephen Davies		<sdavies@sdc.com.au>
+
+	* awkgram.y (program_comment): Renamed from comment0.
+	(function_comment): Renamed from commentf.
+
+2014-10-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y, profile.c: Minor white space cleanups.
+
+2014-10-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix a few compile warnings:
+
+	* awkgram.y (split_comment): Make static.
+	General: Remove some unused variables, clean up some whitepace nits.
+
+	* profile.c (indent): Add some braces to turn off compiler warnings.
+
+2014-09-29         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* main.c (main): In optlist, it should say "h", not "h:", since there
+	is no argument for the help option.  Thanks to Joep van Delft for
+	the bug report.
+
+2014-09-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h: Minor edits to sync with documentation. Does not
+	influence the behavior of the API.
+
+2014-09-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* command.y (cmdtab): Add "where" as an alias for "backtrace".
+	Finally!
+
+	Unrelated:
+
+	* dfa.c: Sync with GNU grep.
+
+2014-09-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (check_for_bad): Bitwise-and the bad character with 0xFF
+	to avoid sign extension into a large integer.
+
+	Unrelated:
+
+	* configure.ac: Add an option to enable locale letters in identifiers.
+	Undocumented and subject to being rescinded at any time in the future.
+	* NEWS: Mention to look at configure --help.
+
+	Unrelated:
+
+	* profile.c (pprint): Use "rule(s)" instead of "block(s)" in the
+	header.
+
+2014-09-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (yylex): Don't check for junk characters inside
+	quoted strings.  Caused issues on DJGPP and Solaris.
+
+	Unrelated:
+
+	* io.c (devopen): Straighten things out with respect to
+	compatibility with BWK awk.
+
+2014-09-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y: Further commentary as to the treacherousness
+	of isalnum and isalpha.
+
+2014-09-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Finish removing use of isalpha and isalnum.
+
+	* awk.h (is_alpha, is_alnum, is_identchar): Add declarations.
+	* awkgram.y (yylex): Use is_alpha.
+	(is_alpha, is_alnum): New functions.
+	(is_identchar): Use is_alnum.
+	* builtin.c (r_format_tree): Use is_alpha, is_alnum.
+	* command.y (yylex): Use is_alpha, is_identchar.
+	* ext.c (is_letter): Use is_alpha.
+	(is_identifier_char): Removed; replaced uses with is_identchar.
+	* main.c (arg_assign): Use is_alpha, is_alnum.
+	* node.c (r_force_number): Use is_alpha.
+
+2014-09-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (is_identchar): Change from simple macro to function
+	since use of isalnum() let non-ASCII letters slip through into
+	identifiers.
+
+2014-09-13	Stephen Davies		<sdavies@sdc.com.au>
+
+	When doing pretty-printing (but not profiling), include the original
+	comments in the output.
+
+	General rules:
+
+	Pretty printing:
+		- Do NOT indent by a tab
+		- Do NOT print the header comments ("# BEGIN rules", etc.)
+		- DO print the comments that are in the program
+
+	Profiling:
+		- DO indent by a tab
+		- DO print the header comments
+		- Do NOT print the program's original comments
+
+	* awkgram.y (comment0, commentf): New varibles that are  pointers to
+	program and function comments.
+	(get_comment): New function that retrieves consecutive comment lines
+	and empty lines as a unit).
+	(split_comment): New function: iff first block in the program is a
+	function and it is predeeded by comments, take the last non-blank
+	line as function comment and any preceeding lines as program comment.)
+
+	Following token rules were changed to handle comments:
+
+	* awkgram.y (pattern, LEX_BEGIN, LEX_END, LEX_BEGINFILE, LEX_ENDFILE,
+	action, function_prologue, statements): Update to handle comments.
+				
+	Following functions were changed to handle comments:
+
+	* awkgram.y (mk_program, mk_function, allow_newline and yylex): Update
+	to handle comments. (Also fixed typo in case '\\'.)
+
+	* profile.c (print_comment): New function to format comment printing.
+	(indent, pprint, dump_prog, pp_func): Changed to handle comments and
+	the revised indentation rules.
+
+2014-09-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h: Move libsigsegv stuff to ...
+	* main.c: here. Thanks to Yehezkel Bernat for motivating
+	the cleanup.
+	* symbol.c (make_symbol, install, install_symbol): Add const to
+	first parameter. Adjust decls and fix up uses.
+
+2014-09-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add builtin functions to FUNCTAB for consistency.
+
+	* awk.h (Node_builtin_func): New node type.
+	(install_builtins): Declare new function.
+	* awkgram.y [DEBUG_USE]: New flag value for debug functions; they
+	don't go into FUNCTAB.
+	(install_builtins): New function.
+	* eval.c (nodetypes): Add Node_builtin_func.
+	* interpret.h (r_interpret): Rework indirect calls of built-ins
+	since they're now in the symbol table.
+	* main.c (main): Call `install_builtins'.
+	* symbol.c (install): Adjust for Node_builtin_func.
+	(load_symbols): Ditto.
+
+2014-09-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pprint): Case Op_K_for: Improve printing of
+	empty for loop header.
+
+	Unrelated: Make indirect function calls work for built-in and
+	extension functions.
+
+	* awkgram.y (lookup_builtin): New function.
+	* awk.h (builtin_func_t): New typedef.
+	(lookup_builtin): Declare it.
+	* interpret.h (r_interpret): For indirect calls, add code to
+	find and call builtin functions, and call extension functions.
+
+2014-09-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_substr): Return "" instead of null string in case
+	result is passed to length() with --lint. Based on discussions in
+	comp.lang.awk.
+
+	Unrelated:
+
+	* interpret.h (r_interpret): For indirect function call, separate
+	error message if lookup returned NULL. Otherwise got a core dump.
+	Thanks to "Kenny McKormack" for the report in comp.lang.awk.
+
+2014-08-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Add test for strcasecmp.
+	* regcomp.c: Remove special case code around use of strcasecmp().
+	* replace.c: Include missing/strncasecmp.c if either strcasecmp()
+	or strncasecmp() aren't available.
+
+2014-08-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regcomp.c, regex_internal.c: Sync with GBLIC. Why not.
+
+	Unrelated:
+
+	Remove support for MirBSD. It uglified the code too much
+	for no discernable gain.
+
+	* configure.ac: Remove check for MirBSD and define of
+	LIBC_IS_BORKED.
+	* dfa.c: Remove code depending on LIBC_IS_BORKED.
+	* main.c: Ditto.
+	* regcomp.c: Ditto.
+	* NEWS: Updated.
+
+2014-08-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regex.h: Remove underscores in names of parameters in function
+	declarations. Tweak names as neeeded.
+
 2014-08-20         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* node.c (parse_escape): Max of 2 digits after \x.
@@ -826,6 +1062,24 @@
 2013-08-15         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* debug.c (print_memory): Fix whitespace / indentation.
+
+2013-08-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (append_rule): Add attempt to insert any comment
+	before a rule. Commented out at the moment.
+
+2013-07-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (enum opcodeval): Add Op_comment.
+	* awkgram.y (comment): New variable to hold comment text.
+	(statement): Add saved comments to lists being built.
+	(allow_newline): Save comment text if necessary. Append if have
+	existing text.
+	(yylex): Ditto.
+	* debug.c (print_instruction): Handle Op_comment.
+	* eval.c (optypes): Add entry for Op_comment.
+	* interpret.h (r_interpret): Ditto.
+	* profile.c (pprint): For Op_comment, print the comment text.
 
 2013-07-24         Arnold D. Robbins     <arnold@skeeve.com>
 

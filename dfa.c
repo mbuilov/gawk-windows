@@ -77,14 +77,6 @@ is_blank (int c)
 }
 #endif /* GAWK */
 
-#ifdef LIBC_IS_BORKED
-extern int gawk_mb_cur_max;
-#undef MB_CUR_MAX
-#define MB_CUR_MAX gawk_mb_cur_max
-#undef mbrtowc
-#define mbrtowc(a, b, c, d) (-1)
-#endif
-
 /* HPUX defines these as macros in sys/param.h.  */
 #ifdef setbit
 # undef setbit
@@ -374,6 +366,9 @@ struct dfa
   bool multibyte;		/* MB_CUR_MAX > 1.  */
   token utf8_anychar_classes[5]; /* To lower ANYCHAR in UTF-8 locales.  */
   mbstate_t mbs;		/* Multibyte conversion state.  */
+
+  /* dfaexec implementation.  */
+  char *(*dfaexec) (struct dfa *, char const *, char *, int, size_t *, int *);
 
   /* The following are valid only if MB_CUR_MAX > 1.  */
 
@@ -828,10 +823,6 @@ using_utf8 (void)
       wchar_t wc;
       mbstate_t mbs = { 0 };
       utf8 = mbrtowc (&wc, "\xc4\x80", 2, &mbs) == 2 && wc == 0x100;
-#ifdef LIBC_IS_BORKED
-      if (gawk_mb_cur_max == 1)
-         utf8 = 0;
-#endif
     }
   return utf8;
 }
@@ -3321,6 +3312,24 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
   return s1;
 }
 
+/* The initial state may encounter a byte which is not a single byte character
+   nor the first byte of a multibyte character.  But it is incorrect for the
+   initial state to accept such a byte.  For example, in Shift JIS the regular
+   expression "\\" accepts the codepoint 0x5c, but should not accept the second
+   byte of the codepoint 0x815c.  Then the initial state must skip the bytes
+   that are not a single byte character nor the first byte of a multibyte
+   character.  */
+static unsigned char const *
+skip_remains_mb (struct dfa *d, unsigned char const *p,
+                 unsigned char const *mbp, char const *end)
+{
+  wint_t wc;
+  while (mbp < p)
+    mbp += mbs_to_wchar (&wc, (char const *) mbp,
+                         end - (char const *) mbp, d);
+  return mbp;
+}
+
 /* Search through a buffer looking for a match to the given struct dfa.
    Find the first occurrence of a string matching the regexp in the
    buffer, and the shortest possible version thereof.  Return a pointer to
@@ -3332,10 +3341,14 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
    If COUNT is non-NULL, increment *COUNT once for each newline processed.
    Finally, if BACKREF is non-NULL set *BACKREF to indicate whether we
    encountered a back-reference (1) or not (0).  The caller may use this
-   to decide whether to fall back on a backtracking matcher.  */
-char *
-dfaexec (struct dfa *d, char const *begin, char *end,
-         int allow_nl, size_t *count, int *backref)
+   to decide whether to fall back on a backtracking matcher.
+
+   If MULTIBYTE, the input consists of multibyte characters and/or
+   encoding-error bytes.  Otherwise, the input consists of single-byte
+   characters.  */
+static inline char *
+dfaexec_main (struct dfa *d, char const *begin, char *end,
+             int allow_nl, size_t *count, int *backref, bool multibyte)
 {
   state_num s, s1;              /* Current state.  */
   unsigned char const *p, *mbp; /* Current input character.  */
@@ -3357,7 +3370,7 @@ dfaexec (struct dfa *d, char const *begin, char *end,
   saved_end = *(unsigned char *) end;
   *end = eol;
 
-  if (d->multibyte)
+  if (multibyte)
     {
       memset (&d->mbs, 0, sizeof d->mbs);
       if (! d->mb_match_lens)
@@ -3369,7 +3382,7 @@ dfaexec (struct dfa *d, char const *begin, char *end,
 
   for (;;)
     {
-      if (d->multibyte)
+      if (multibyte)
         {
           while ((t = trans[s]) != NULL)
             {
@@ -3377,27 +3390,18 @@ dfaexec (struct dfa *d, char const *begin, char *end,
 
               if (s == 0)
                 {
-                  /* The initial state may encounter a byte which is not
-                     a single byte character nor the first byte of a
-                     multibyte character.  But it is incorrect for the
-                     initial state to accept such a byte.  For example,
-                     in Shift JIS the regular expression "\\" accepts
-                     the codepoint 0x5c, but should not accept the second
-                     byte of the codepoint 0x815c.  Then the initial
-                     state must skip the bytes that are not a single
-                     byte character nor the first byte of a multibyte
-                     character.  */
-                  wint_t wc;
-                  while (mbp < p)
-                    mbp += mbs_to_wchar (&wc, (char const *) mbp,
-                                         end - (char const *) mbp, d);
-                  p = mbp;
-
-                  if ((char *) p > end)
+                  if (d->states[s].mbps.nelem == 0)
                     {
-                      p = NULL;
-                      goto done;
+                      do
+                        {
+                          while (t[*p] == 0)
+                            p++;
+                          p = mbp = skip_remains_mb (d, p, mbp, end);
+                        }
+                      while (t[*p] == 0);
                     }
+                  else
+                    p = mbp = skip_remains_mb (d, p, mbp, end);
                 }
 
               if (d->states[s].mbps.nelem == 0)
@@ -3416,15 +3420,49 @@ dfaexec (struct dfa *d, char const *begin, char *end,
                   goto done;
                 }
 
-              /* Can match with a multibyte character (and multi character
-                 collating element).  Transition table might be updated.  */
-              s = transit_state (d, s, &p, (unsigned char *) end);
-              mbp = p;
-              trans = d->trans;
+              /* The following code is used twice.
+                 Use a macro to avoid the risk that they diverge.  */
+#define State_transition()                                              \
+  do {                                                                  \
+              /* Can match with a multibyte character (and multi-character \
+                 collating element).  Transition table might be updated.  */ \
+              s = transit_state (d, s, &p, (unsigned char *) end);      \
+                                                                        \
+              /* If previous character is newline after a transition    \
+                 for ANYCHAR or MBCSET in non-UTF8 multibyte locales,   \
+                 check whether current position is beyond the end of    \
+                 the input buffer.  Also, transit to initial state if   \
+                 !ALLOW_NL, even if RE_DOT_NEWLINE is set. */           \
+              if (p[-1] == eol)                                         \
+                {                                                       \
+                  if ((char *) p > end)                                 \
+                    {                                                   \
+                      p = NULL;                                         \
+                      goto done;                                        \
+                    }                                                   \
+                                                                        \
+                  nlcount++;                                            \
+                                                                        \
+                  if (!allow_nl)                                        \
+                    s = 0;                                              \
+                }                                                       \
+                                                                        \
+              mbp = p;                                                  \
+              trans = d->trans;                                         \
+  } while (0)
+
+              State_transition();
             }
         }
       else
         {
+          if (s == 0 && (t = trans[s]) != NULL)
+            {
+              while (t[*p] == 0)
+                p++;
+              s = t[*p++];
+            }
+
           while ((t = trans[s]) != NULL)
             {
               s1 = t[*p++];
@@ -3455,14 +3493,8 @@ dfaexec (struct dfa *d, char const *begin, char *end,
             }
 
           s1 = s;
-          if (d->multibyte)
-            {
-              /* Can match with a multibyte character (and multicharacter
-                 collating element).  Transition table might be updated.  */
-              s = transit_state (d, s, &p, (unsigned char *) end);
-              mbp = p;
-              trans = d->trans;
-            }
+          if (multibyte)
+            State_transition();
           else
             s = d->fails[s][*p++];
           continue;
@@ -3498,6 +3530,33 @@ dfaexec (struct dfa *d, char const *begin, char *end,
     *count += nlcount;
   *end = saved_end;
   return (char *) p;
+}
+
+/* Specialized versions of dfaexec_main for multibyte and single-byte
+   cases.  This is for performance.  */
+
+static char *
+dfaexec_mb (struct dfa *d, char const *begin, char *end,
+            int allow_nl, size_t *count, int *backref)
+{
+  return dfaexec_main (d, begin, end, allow_nl, count, backref, true);
+}
+
+static char *
+dfaexec_sb (struct dfa *d, char const *begin, char *end,
+            int allow_nl, size_t *count, int *backref)
+{
+  return dfaexec_main (d, begin, end, allow_nl, count, backref, false);
+}
+
+/* Like dfaexec_main (D, BEGIN, END, ALLOW_NL, COUNT, BACKREF, D->multibyte),
+   but faster.  */
+
+char *
+dfaexec (struct dfa *d, char const *begin, char *end,
+         int allow_nl, size_t *count, int *backref)
+{
+  return d->dfaexec (d, begin, end, allow_nl, count, backref);
 }
 
 struct dfa *
@@ -3549,6 +3608,7 @@ dfainit (struct dfa *d)
 {
   memset (d, 0, sizeof *d);
   d->multibyte = MB_CUR_MAX > 1;
+  d->dfaexec = d->multibyte ? dfaexec_mb : dfaexec_sb;
   d->fast = !d->multibyte;
 }
 
@@ -3589,6 +3649,7 @@ dfaoptimize (struct dfa *d)
 
   free_mbdata (d);
   d->multibyte = false;
+  d->dfaexec = dfaexec_sb;
 }
 
 static void
@@ -3602,6 +3663,7 @@ dfassbuild (struct dfa *d)
 
   *sup = *d;
   sup->multibyte = false;
+  sup->dfaexec = dfaexec_sb;
   sup->multibyte_prop = NULL;
   sup->mbcsets = NULL;
   sup->superset = NULL;

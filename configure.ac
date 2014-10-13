@@ -58,6 +58,12 @@ AC_ARG_ENABLE([lint], [  --disable-lint	Disable gawk lint checking],
 		AC_DEFINE(NO_LINT, 1, [disable lint checks])
 	fi
 )
+AC_ARG_ENABLE([severe-portability-problems], [  --enable-severe-portability-problems	Enable really nasty portability problems],
+	if test "$enableval" = yes
+	then
+		AC_DEFINE(I_DONT_KNOW_WHAT_IM_DOING, 1, [enable severe portability problems])
+	fi
+)
 
 AC_CANONICAL_HOST
 AC_USE_SYSTEM_EXTENSIONS
@@ -118,13 +124,6 @@ then
 dnl	need -D_SYSV3 for ISC
 	CFLAGS="$CFLAGS -D_SYSV3"
 fi
-
-dnl check for systems where libc is borked for regex handling
-case $host_os in
-mirbsd*)
-	AC_DEFINE([LIBC_IS_BORKED], 1, [libc is broken for regex handling])
-	;;
-esac
 
 dnl Set the programming language for checks. Fortunately,
 dnl this only needs to be set once, since everything is in C.
@@ -275,7 +274,7 @@ AC_CHECK_FUNCS(atexit btowc fmod getgrent getgroups grantpt \
 	isascii iswctype iswlower iswupper mbrlen \
 	memcmp memcpy memcpy_ulong memmove memset \
 	memset_ulong mkstemp posix_openpt setenv setlocale setsid snprintf strchr \
-	strerror strftime strncasecmp strcoll strtod strtoul \
+	strerror strftime strcasecmp strncasecmp strcoll strtod strtoul \
 	system tmpfile towlower towupper tzset usleep wcrtomb \
 	wcscoll wctype)
 dnl this check is for both mbrtowc and the mbstate_t type, which is good

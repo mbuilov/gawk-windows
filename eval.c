@@ -216,6 +216,7 @@ load_casetable(void)
 		return;
 
 #ifndef ZOS_USS
+	/* use of isalpha is ok here (see is_alpha in awkgram.y) */
 	for (i = 0200; i <= 0377; i++) {
 		if (isalpha(i) && islower(i) && i != toupper(i))
 			casetable[i] = toupper(i);
@@ -241,6 +242,7 @@ static const char *const nodetypes[] = {
 	"Node_func",
 	"Node_ext_func",
 	"Node_old_ext_func",
+	"Node_builtin_func",
 	"Node_array_ref",
 	"Node_array_tree",
 	"Node_array_leaf",
@@ -360,6 +362,7 @@ static struct optypetab {
 	{ "Op_after_beginfile", NULL },
 	{ "Op_after_endfile", NULL },
 	{ "Op_func", NULL },
+	{ "Op_comment", NULL },
 	{ "Op_exec_count", NULL },
 	{ "Op_breakpoint", NULL },
 	{ "Op_lint", NULL },

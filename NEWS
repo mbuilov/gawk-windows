@@ -32,6 +32,11 @@ Changes from 4.1.x to 4.2.0
 7. Gawk now processes a maximum of two hexadecimal digits in \x
    escape sequences inside strings.
 
+8. MirBSD is no longer supported.
+
+9. Pretty printing now preserves comments and places them into the
+   pretty-printed file.
+
 Changes from 4.1.1 to 4.1.2
 ---------------------------
 
@@ -47,6 +52,19 @@ Changes from 4.1.1 to 4.1.2
 3. Redirected getline is now allowed inside BEGINFILE/ENDFILE.
 
 4. A number of bugs have been fixed in the MPFR code.
+
+5. Indirect function calls now work for both built-in and
+   extension functions.
+
+6. In non-English locales, it was accidentally possible to use "letters"
+   beside those of the English alphabet in identifiers.  This has
+   been fixed.  (isalpha and isalnum are NOT our friends.)
+
+   If you feel that you must have this misfeature, use `configure --help'
+   to see what option to use when configuring gawk to reenable it.
+
+7. The "where" command has been added to the debugger as an alias
+   for "backtrace". This will make life easier for long-time GDB users.
 
 XX. A number of bugs have been fixed. See the ChangeLog.
 
