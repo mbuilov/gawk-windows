@@ -428,8 +428,9 @@ particular records in a file and perform operations upon them.
 @end ifnottex
 
 @menu
-* Foreword::                       Some nice words about this
+* Foreword3::                      Some nice words about this
                                    @value{DOCUMENT}.
+* Foreword4::                      More nice words.
 * Preface::                        What this @value{DOCUMENT} is about; brief
                                    history and acknowledgments.
 * Getting Started::                A basic introduction to using
@@ -1057,8 +1058,8 @@ for enrichening our lives in innumerable ways.
 @summarycontents
 @contents
 
-@node Foreword
-@unnumbered Foreword
+@node Foreword3
+@unnumbered Foreword to the Third Edition
 
 @c This bit is post-processed by a script which turns the chapter
 @c tag into a preface tag, and moves this stuff to before the title.
@@ -1205,6 +1206,58 @@ AWK or want to learn how, then read this book.
 Michael Brennan
 Author of @command{mawk}
 March, 2001
+@end display
+@end ifnotdocbook
+
+@node Foreword4
+@unnumbered Foreword to the Fourth Edition
+
+@c This bit is post-processed by a script which turns the chapter
+@c tag into a preface tag, and moves this stuff to before the title.
+@c Bleah.
+@docbook
+  <prefaceinfo>
+    <author>
+      <firstname>Michael</firstname>
+      <surname>Brennan</surname>
+      <!-- can't put mawk into command tags. sigh. -->
+      <affiliation><jobtitle>Author of mawk</jobtitle></affiliation>
+    </author>
+    <date>March, 2001</date>
+   </prefaceinfo>
+@end docbook
+
+Some things don't change.  Thirteen years ago I wrote:
+``If you use AWK or want to learn how, then read this book.''
+True then and still true today.
+
+Learning to use a programming language is more than mastering the
+syntax.  One needs to acquire an understanding of how to use the
+features of the language to solve practical programming problems.
+A focus of this book is many examples that show how to use AWK.
+
+Some things do change. Our computers are much faster and have more memory.
+Consequently, speed and storage inefficiencies of a high level language
+matter less.  Prototyping in AWK and then rewriting in C for performance
+reasons happens less, because more often the prototype is fast enough.
+
+Of course, there are computing operations that are best done in C or C++.
+With @command{gawk} 4.1 and later, you do not have to choose between writing
+your program in AWK or in C/C++.  You can write most of your
+program in AWK and the aspects that require C/C++ capabilities can be written
+in C/C++ and then the pieces glued together when the @command{gawk} module loads
+the C/C++ module as a dynamic plug-in.
+@c Chapter 16
+@ref{Dynamic Extensions},
+has all the
+details, and as expected, many examples to help you learn the ins and outs.
+
+@ifnotdocbook
+@cindex Brennan, Michael
+@display
+Michael Brennan
+Author of @command{mawk}
+October, 2014
 @end display
 @end ifnotdocbook
 
