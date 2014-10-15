@@ -1,3 +1,19 @@
+2014-10-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Make sane the handling of AWKPATH and AWKLIBPATH:
+
+	1. Don't explicitly search "."; it must be in the path either
+	physically or as null element a la the shell's $PATH
+	2. If environment's value was empty, use built-in default value.
+	3. Set ENVIRON["AWK*PATH"] to the path used.
+
+	* io.c (path_info): Remove try_cwd member.
+	(get_cwd): Removed, not needed anymore.
+	(do_find_source): Don't do explicit check in current directory.
+	It must come from the AWKPATH or AWKLIBPATH variable.
+	* main.c (path_environ): If value from environment was empty,
+	set it to the default.  This is how gawk has behaved since 2.10.
+
 2014-10-13         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regcomp.c (__re_error_msgid): Make error message for REG_EBRACK
