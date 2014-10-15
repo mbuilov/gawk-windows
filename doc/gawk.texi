@@ -4333,30 +4333,26 @@ behaves.
 @cindex @env{AWKPATH} environment variable
 @cindex directories, searching for source files
 @cindex search paths, for source files
-@cindex differences in @command{awk} and @command{gawk}, @code{AWKPATH} environment variable
+@cindex differences in @command{awk} and @command{gawk}, @env{AWKPATH} environment variable
 @ifinfo
 The previous @value{SECTION} described how @command{awk} program files can be named
 on the command line with the @option{-f} option.
 @end ifinfo
 In most @command{awk}
-implementations, you must supply a precise path name for each program
+implementations, you must supply a precise pathname for each program
 file, unless the file is in the current directory.
-But in @command{gawk}, if the @value{FN} supplied to the @option{-f}
+But with @command{gawk}, if the @value{FN} supplied to the @option{-f}
 or @option{-i} options
 does not contain a directory separator @samp{/}, then @command{gawk} searches a list of
 directories (called the @dfn{search path}), one by one, looking for a
 file with the specified name.
 
 The search path is a string consisting of directory names
-separated by colons@footnote{Semicolons on MS-Windows and MS-DOS.}.  @command{gawk} gets its search path from the
+separated by colons.@footnote{Semicolons on MS-Windows and MS-DOS.}
+@command{gawk} gets its search path from the
 @env{AWKPATH} environment variable.  If that variable does not exist,
-@command{gawk} uses a default path,
-@samp{.:/usr/local/share/awk}.@footnote{Your version of @command{gawk}
-may use a different directory; it
-will depend upon how @command{gawk} was built and installed. The actual
-directory is the value of @code{$(datadir)} generated when
-@command{gawk} was configured.  You probably don't need to worry about this,
-though.}
+or if it has an empty value,
+@command{gawk} uses a default path (described shortly).
 
 The search path feature is particularly helpful for building libraries
 of useful @command{awk} functions.  The library files can be placed in a
@@ -4364,7 +4360,7 @@ standard directory in the default path and then specified on
 the command line with a short @value{FN}.  Otherwise, you would have to
 type the full @value{FN} for each file.
 
-By using the @option{-i} option, or the @option{-e} and @option{-f} options, your command-line
+By using the @option{-i} or @option{-f} options, your command-line
 @command{awk} programs can use facilities in @command{awk} library files
 (@pxref{Library Functions}).
 Path searching is not done if @command{gawk} is in compatibility mode.
@@ -4372,7 +4368,7 @@ This is true for both @option{--traditional} and @option{--posix}.
 @xref{Options}.
 
 If the source code file is not found after the initial search, the path is searched
-again after adding the default @samp{.awk} suffix to the @value{FN}.
+again after adding the suffix @samp{.awk} to the @value{FN}.
 
 @command{gawk}'s path search mechanism is similar
 to the shell's.
@@ -4384,19 +4380,30 @@ directory.
 colon or by placing two colons next to each other [@samp{::}].)
 
 @quotation NOTE
-@command{gawk} always looks in the current directory @emph{before}
-searching @env{AWKPATH}. Thus, while you can include the current directory
-in the search path, either explicitly or with a null entry, there is no
-real reason to do so.
-@c Prior to 4.0, gawk searched the current directory after the
-@c path search, but it's not worth documenting it.
+To include the current directory in the path, either place @file{.}
+as an entry in the path or write a null entry in the path.
+
+Different past versions of @command{gawk} would also look explicitly in
+the current directory, either before or after the path search.  As of
+@value{PVERSION} 4.1.2, this no longer happens, and if you wish to look
+in the current directory, you must include @file{.} either as a separate
+entry, or as a null entry in the search path.
 @end quotation
 
-If @env{AWKPATH} is not defined in the
-environment, @command{gawk} places its default search path into
-@code{ENVIRON["AWKPATH"]}. This makes it easy to determine
-the actual search path that @command{gawk} used
-from within an @command{awk} program.
+The default value for @env{AWKPATH} is
+@samp{.:/usr/local/share/awk}.@footnote{Your version of @command{gawk}
+may use a different directory; it
+will depend upon how @command{gawk} was built and installed. The actual
+directory is the value of @code{$(datadir)} generated when
+@command{gawk} was configured.  You probably don't need to worry about this,
+though.}  Since @file{.} is included at the beginning, @command{gawk}
+searches first in the current directory and then in @file{/usr/local/share/awk}.
+In practice, this means that you will rarely need to change the
+value of @env{AWKPATH}.
+
+@command{gawk} places the value of the search path that it used into
+@code{ENVIRON["AWKPATH"]}. This provides access to the actual search
+path value from within an @command{awk} program.
 
 While you can change @code{ENVIRON["AWKPATH"]} within your @command{awk}
 program, this has no effect on the running program's behavior.  This makes
@@ -4419,6 +4426,15 @@ searched again after adding the appropriate shared library suffix for
 the platform.  For example, on GNU/Linux systems, the suffix @samp{.so}
 is used.  The search path specified is also used for extensions loaded
 via the @code{@@load} keyword (@pxref{Loading Shared Libraries}).
+
+If @env{AWKLIBPATH} does not exist in the environment, or if it has
+an empty value, @command{gawk} uses a default path; this
+is typically @samp{/usr/local/lib/gawk}, although it can vary depending
+upon how @command{gawk} was built.
+
+@command{gawk} places the value of the search path that it used into
+@code{ENVIRON["AWKLIBPATH"]}. This provides access to the actual search
+path value from within an @command{awk} program.
 
 @node Other Environment Variables
 @subsection Other Environment Variables
@@ -4624,9 +4640,9 @@ or:
 @end example
 
 @noindent
-are valid. The @code{AWKPATH} environment variable can be of great
+are valid. The @env{AWKPATH} environment variable can be of great
 value when using @code{@@include}. The same rules for the use
-of the @code{AWKPATH} variable in command-line file searches
+of the @env{AWKPATH} variable in command-line file searches
 (@pxref{AWKPATH Variable}) apply to
 @code{@@include} also.
 
@@ -4634,7 +4650,7 @@ This is very helpful in constructing @command{gawk} function libraries.
 If you have a large script with useful, general purpose @command{awk}
 functions, you can break it down into library files and put those files
 in a special directory.  You can then include those ``libraries,'' using
-either the full pathnames of the files, or by setting the @code{AWKPATH}
+either the full pathnames of the files, or by setting the @env{AWKPATH}
 environment variable accordingly and then using @code{@@include} with
 just the file part of the full pathname. Of course you can have more
 than one directory to keep library files; the more complex the working
@@ -37771,8 +37787,8 @@ EMX (OS/2 only) supports at least the @samp{|&} operator.
 @cindex search paths, for source files
 @cindex @command{gawk}, MS-DOS version of
 @cindex @command{gawk}, MS-Windows version of
-@cindex @code{;} (semicolon), @code{AWKPATH} variable and
-@cindex semicolon (@code{;}), @code{AWKPATH} variable and
+@cindex @code{;} (semicolon), @env{AWKPATH} variable and
+@cindex semicolon (@code{;}), @env{AWKPATH} variable and
 @cindex @env{AWKPATH} environment variable
 The MS-DOS and MS-Windows versions of @command{gawk} search for
 program files as described in @ref{AWKPATH Variable}.  However,

@@ -2505,7 +2505,6 @@ do_getline(int into_variable, IOBUF *iop)
 typedef struct {
 	const char *envname;
 	char **dfltp;		/* pointer to address of default path */
-	char try_cwd;		/* always search current directory? */
 	char **awkpath;		/* array containing library search paths */ 
 	int max_pathlen;	/* length of the longest item in awkpath */ 
 } path_info;
@@ -2513,13 +2512,11 @@ typedef struct {
 static path_info pi_awkpath = {
 	/* envname */	"AWKPATH",
 	/* dfltp */	& defpath,
-	/* try_cwd */	true,
 };
 
 static path_info pi_awklibpath = {
 	/* envname */	"AWKLIBPATH",
 	/* dfltp */	& deflibpath,
-	/* try_cwd */	false,
 };
 
 /* init_awkpath --- split path(=$AWKPATH) into components */
@@ -2577,30 +2574,6 @@ init_awkpath(path_info *pi)
 #undef INC_PATH
 }
 
-/* get_cwd -- get current working directory */
-
-static char *
-get_cwd ()
-{
-#define BSIZE	100
-	char *buf;
-	size_t bsize = BSIZE;
-
-	emalloc(buf, char *, bsize * sizeof(char), "get_cwd");
-	while (true) {
-		if (getcwd(buf, bsize) == buf)
-			return buf;
-		if (errno != ERANGE) {
-			efree(buf);
-			return NULL;
-		}
-		bsize *= 2;
-		erealloc(buf, char *, bsize * sizeof(char), "get_cwd");
-	}
-#undef BSIZE
-}
-
-
 /* do_find_source --- search $AWKPATH for file, return NULL if not found */ 
 
 static char *
@@ -2620,24 +2593,6 @@ do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 		*errcode = errno;
 		efree(path);
 		return NULL;
-	}
-
-	/* try current directory before $AWKPATH search */
-	if (pi->try_cwd && stat(src, stb) == 0) {
-		path = get_cwd();
-		if (path == NULL) {
-			*errcode = errno;
-			return NULL;
-		}
-		erealloc(path, char *, strlen(path) + strlen(src) + 2, "do_find_source");
-#ifdef VMS
-		if (strcspn(path,">]:") == strlen(path))
-			strcat(path, "/");
-#else
-		strcat(path, "/");
-#endif
-		strcat(path, src);
-		return path;
 	}
 
 	if (pi->awkpath == NULL)
