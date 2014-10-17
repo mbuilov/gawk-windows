@@ -16529,6 +16529,7 @@ $ @kbd{awk 'BEGIN @{ print index("peanut", "an") @}'}
 @noindent
 If @var{find} is not found, @code{index()} returns zero.
 
+@cindex dark corner, regexp as second argument to @code{index()}
 With BWK @command{awk} and @command{gawk},
 it is a fatal error to use a regexp constant for @var{find}.
 Other implementations allow it, simply treating the regexp
@@ -37383,8 +37384,6 @@ Date: Wed, 4 Sep 1996 08:11:48 -0700 (PDT)
 </blockquote>
 @end docbook
 
-
-
 There are a number of other freely available @command{awk} implementations.
 This @value{SECTION} briefly describes where to get them:
 
@@ -41020,3 +41019,4 @@ But to use it you have to say
 which sorta sucks.
 
 TODO:
+Check that all dark corners are indexed properly.

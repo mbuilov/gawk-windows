@@ -33,6 +33,12 @@ Changes from 4.1.1 to 4.1.2
 7. The "where" command has been added to the debugger as an alias
    for "backtrace". This will make life easier for long-time GDB users.
 
+8. Gawk no longer explicitly checks the current directory after doing
+   a path search of AWKPATH.  The default value continues to have "." at
+   the front, so most people should not be affected.  If you have your own
+   AWKPATH setting, be sure to put "." in it somewhere. The documentation
+   has been updated and clarified.
+
 XX. A number of bugs have been fixed. See the ChangeLog.
 
 Changes from 4.1.0 to 4.1.1
