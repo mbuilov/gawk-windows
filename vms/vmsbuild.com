@@ -48,7 +48,7 @@ $   CFLAGS = "/Incl=[]/Obj=[]/Opt=noInline/Def=(''CDEFS')''CCFLAGS'"
 $   LIBS = "sys$share:vaxcrtl.exe/Shareable"
 $  else  !!VAXC
 $!  neither GNUC nor VAXC, assume DECC (same for either VAX or Alpha)
-$ if arch_name .eqs. "vax"
+$ if arch_name .eqs. "VAX"
 $ then
 $   CFLOAT = ""
 $ else
@@ -58,7 +58,7 @@ $   CC = "cc/DECC/Prefix=All"
 $   CNAME = "/NAME=(AS_IS,SHORT)
 $   CINC = "/NESTED_INCLUDE=NONE"
 $   CFLAGS = "/Incl=([],[.vms])/Obj=[]/Def=(''CDEFS')''CINC'''CCFLAGS'"
-$   CFLAGS = CNAMES + CFLOAT + CFLAGS 
+$   CFLAGS = CNAME + CFLOAT + CFLAGS
 $   LIBS = ""	! DECC$SHR instead of VAXCRTL, no special link option needed
 $  endif !VAXC
 $ endif !GNUC
@@ -147,8 +147,8 @@ psect_attr=environ,noshr	!extern [noshare] char **
 stack=48	!preallocate more pages (default is 20)
 iosegment=128	!ditto (default is 32)
 $!
-$ v1 = f$verify(1)
 $ @[.vms]gawk_ident.com
+$ v1 = f$verify(1)
 $ open/append Fopt gawk.opt
 $ write Fopt libs
 $ close Fopt
