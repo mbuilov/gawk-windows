@@ -68,7 +68,7 @@ $(srcdir)/stamp-eg: $(srcdir)/../doc/gawk.texi $(srcdir)/../doc/gawkinet.texi
 	cd $(srcdir) && \
 	rm -fr eg && \
 	rm -fr stamp-eg && \
-	$(AWKPROG) -f extract.awk ../doc/gawk.texi ../doc/gawkinet.texi
+	$(AWKPROG) -f ./extract.awk ../doc/gawk.texi ../doc/gawkinet.texi
 	@echo 'some makes are stupid and will not check a directory' > $(srcdir)/stamp-eg
 	@echo 'against a file, so this file is a place holder. gack.' >> $(srcdir)/stamp-eg
 
