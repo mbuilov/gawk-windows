@@ -1673,7 +1673,7 @@ profile1:
 	@echo $@
 	@$(AWK) -f "$(srcdir)"/xref.awk "$(srcdir)"/dtdgport.awk > _$@.out1
 	@$(AWK) --pretty-print=ap-$@.out -f "$(srcdir)"/xref.awk
-	@$(AWK) -f ap-$@.out "$(srcdir)"/dtdgport.awk > _$@.out2 ; rm ap-$@.out
+	@$(AWK) -f ./ap-$@.out "$(srcdir)"/dtdgport.awk > _$@.out2 ; rm ap-$@.out
 	@$(CMP) _$@.out1 _$@.out2 && rm _$@.out[12] || { echo EXIT CODE: $$? >>_$@ ; \
 	cp "$(srcdir)"/dtdgport.awk $@.ok ; }
 	
@@ -1862,7 +1862,7 @@ inplace3::
 testext::
 	@echo $@
 	@$(AWK) '/^(@load|BEGIN)/,/^}/' "$(top_srcdir)"/extension/testext.c > testext.awk
-	@$(AWK) -f testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@$(AWK) -f ./testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ testext.awk
 
 readdir:

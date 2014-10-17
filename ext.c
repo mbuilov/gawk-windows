@@ -397,6 +397,9 @@ close_extensions()
 {
 	SRCFILE *s;
 
+	if (srcfiles == NULL)
+		return;
+
 	for (s = srcfiles->next; s != srcfiles; s = s->next) 
 		if (s->stype == SRC_EXTLIB && s->fini_func)
                	        (*s->fini_func)();

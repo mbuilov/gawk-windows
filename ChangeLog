@@ -1,3 +1,9 @@
+2014-10-17         John E. Malmberg      <wb8tyw@qsl.net>
+
+	* ext.c (close_extensions): Test for null pointer since
+	since this can be called by signal handler before the
+	pointers are initialized.
+
 2014-10-15         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Make sane the handling of AWKPATH and AWKLIBPATH:
