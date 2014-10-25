@@ -3082,17 +3082,7 @@ match_mb_charset (struct dfa *d, state_num s, position pos,
   int context;
 
   /* Check syntax bits.  */
-  if (wc == (wchar_t) eolbyte)
-    {
-      if (!(syntax_bits & RE_DOT_NEWLINE))
-        return 0;
-    }
-  else if (wc == (wchar_t) '\0')
-    {
-      if (syntax_bits & RE_DOT_NOT_NULL)
-        return 0;
-    }
-  else if (wc == WEOF)
+  if (wc == WEOF)
     return 0;
 
   context = wchar_context (wc);
@@ -3422,20 +3412,20 @@ dfaexec_main (struct dfa *d, char const *begin, char *end,
                   continue;
                 }
 
-              /* Falling back to the glibc matcher in this case gives
-                 better performance (up to 25% better on [a-z], for
-                 example) and enables support for collating symbols and
-                 equivalence classes.  */
-              if (d->states[s].has_mbcset && backref)
-                {
-                  *backref = 1;
-                  goto done;
-                }
-
               /* The following code is used twice.
                  Use a macro to avoid the risk that they diverge.  */
 #define State_transition()                                              \
   do {                                                                  \
+              /* Falling back to the glibc matcher in this case gives   \
+                 better performance (up to 25% better on [a-z], for     \
+                 example) and enables support for collating symbols and \
+                 equivalence classes.  */                               \
+              if (d->states[s].has_mbcset && backref)                   \
+                {                                                       \
+                  *backref = 1;                                         \
+                  goto done;                                            \
+                }                                                       \
+                                                                        \
               /* Can match with a multibyte character (and multi-character \
                  collating element).  Transition table might be updated.  */ \
               s = transit_state (d, s, &p, (unsigned char *) end);      \
@@ -3472,6 +3462,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end,
             {
               while (t[*p] == 0)
                 p++;
+              s1 = 0;
               s = t[*p++];
             }
 
