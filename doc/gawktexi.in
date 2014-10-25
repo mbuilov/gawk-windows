@@ -5002,6 +5002,7 @@ of hexadecimal digits (@samp{0}--@samp{9}, and either @samp{A}--@samp{F}
 or @samp{a}--@samp{f}).  A maximum of two digts are allowed after
 the @samp{\x}. Any further hexadecimal digits are treated as simple
 letters or numbers.  @value{COMMONEXT}
+(The @samp{\x} escape sequence is not allowed in POSIX awk.)
 
 @quotation CAUTION
 In ISO C, the escape sequence continues until the first nonhexadecimal
@@ -5010,7 +5011,10 @@ digit is seen.
 For many years, @command{gawk} would continue incorporating
 hexadecimal digits into the value until a non-hexadecimal digit
 or the end of the string was encountered.
-However, using more than two hexadecimal digits produces
+However, using more than two hexadecimal digits produced
+undefined results.
+As of @value{PVERSION} @strong{FIXME:} 4.3.0, only two digits
+are processed.
 @end quotation
 
 @cindex @code{\} (backslash), @code{\/} escape sequence
