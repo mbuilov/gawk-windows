@@ -37,13 +37,11 @@
 @ifnotdocbook
 @set BULLET @bullet{}
 @set MINUS @minus{}
-@set NUL @sc{nul}
 @end ifnotdocbook
 
 @ifdocbook
 @set BULLET
 @set MINUS
-@set NUL NUL
 @end ifdocbook
 
 @set xref-automatic-section-title
@@ -5387,10 +5385,10 @@ with @samp{A}.
 
 @cindex POSIX @command{awk}, period (@code{.})@comma{} using
 In strict POSIX mode (@pxref{Options}),
-@samp{.} does not match the @value{NUL}
+@samp{.} does not match the @sc{nul}
 character, which is a character with all bits equal to zero.
-Otherwise, @value{NUL} is just another character. Other versions of @command{awk}
-may not be able to match the @value{NUL} character.
+Otherwise, @sc{nul} is just another character. Other versions of @command{awk}
+may not be able to match the @sc{nul} character.
 
 @cindex @code{[]} (square brackets), regexp operator
 @cindex square brackets (@code{[]}), regexp operator
@@ -6540,7 +6538,7 @@ a value that you know doesn't occur in the input file.  This is hard
 to do in a general way, such that a program always works for arbitrary
 input files.
 
-You might think that for text files, the @value{NUL} character, which
+You might think that for text files, the @sc{nul} character, which
 consists of a character with all bits equal to zero, is a good
 value to use for @code{RS} in this case:
 
@@ -6549,23 +6547,23 @@ BEGIN @{ RS = "\0" @}  # whole file becomes one record?
 @end example
 
 @cindex differences in @command{awk} and @command{gawk}, strings, storing
-@command{gawk} in fact accepts this, and uses the @value{NUL}
+@command{gawk} in fact accepts this, and uses the @sc{nul}
 character for the record separator.
 This works for certain special files, such as @file{/proc/environ} on
-GNU/Linux systems, where the @value{NUL} character is in fact the record separator.
+GNU/Linux systems, where the @sc{nul} character is in fact the record separator.
 However, this usage is @emph{not} portable
 to most other @command{awk} implementations.
 
 @cindex dark corner, strings, storing
 Almost all other @command{awk} implementations@footnote{At least that we know
 about.} store strings internally as C-style strings.  C strings use the
-@value{NUL} character as the string terminator.  In effect, this means that
+@sc{nul} character as the string terminator.  In effect, this means that
 @samp{RS = "\0"} is the same as @samp{RS = ""}.
 @value{DARKCORNER}
 
-It happens that recent versions of @command{mawk} can use the @value{NUL}
+It happens that recent versions of @command{mawk} can use the @sc{nul}
 character as a record separator. However, this is a special case:
-@command{mawk} does not allow embedded @value{NUL} characters in strings.
+@command{mawk} does not allow embedded @sc{nul} characters in strings.
 (This may change in a future version of @command{mawk}.)
 
 @cindex records, treating files as
@@ -6591,7 +6589,7 @@ a value that you know doesn't occur in the input file.  This is hard
 to do in a general way, such that a program always works for arbitrary
 input files.
 
-You might think that for text files, the @value{NUL} character, which
+You might think that for text files, the @sc{nul} character, which
 consists of a character with all bits equal to zero, is a good
 value to use for @code{RS} in this case:
 
@@ -6600,23 +6598,23 @@ BEGIN @{ RS = "\0" @}  # whole file becomes one record?
 @end example
 
 @cindex differences in @command{awk} and @command{gawk}, strings, storing
-@command{gawk} in fact accepts this, and uses the @value{NUL}
+@command{gawk} in fact accepts this, and uses the @sc{nul}
 character for the record separator.
 This works for certain special files, such as @file{/proc/environ} on
-GNU/Linux systems, where the @value{NUL} character is in fact the record separator.
+GNU/Linux systems, where the @sc{nul} character is in fact the record separator.
 However, this usage is @emph{not} portable
 to most other @command{awk} implementations.
 
 @cindex dark corner, strings, storing
 Almost all other @command{awk} implementations@footnote{At least that we know
 about.} store strings internally as C-style strings.  C strings use the
-@value{NUL} character as the string terminator.  In effect, this means that
+@sc{nul} character as the string terminator.  In effect, this means that
 @samp{RS = "\0"} is the same as @samp{RS = ""}.
 @value{DARKCORNER}
 
-It happens that recent versions of @command{mawk} can use the @value{NUL}
+It happens that recent versions of @command{mawk} can use the @sc{nul}
 character as a record separator. However, this is a special case:
-@command{mawk} does not allow embedded @value{NUL} characters in strings.
+@command{mawk} does not allow embedded @sc{nul} characters in strings.
 (This may change in a future version of @command{mawk}.)
 
 @cindex records, treating files as
@@ -10563,7 +10561,7 @@ double-quotation marks.  For example:
 @cindex strings, length limitations
 represents the string whose contents are @samp{parrot}.  Strings in
 @command{gawk} can be of any length, and they can contain any of the possible
-eight-bit ASCII characters including ASCII @value{NUL} (character code zero).
+eight-bit ASCII characters including ASCII @sc{nul} (character code zero).
 Other @command{awk}
 implementations may have difficulty with some character codes.
 
@@ -31570,7 +31568,7 @@ and is managed by @command{gawk} from then on.
 The API defines several simple @code{struct}s that map values as seen
 from @command{awk}.  A value can be a @code{double}, a string, or an
 array (as in multidimensional arrays, or when creating a new array).
-String values maintain both pointer and length since embedded @value{NUL}
+String values maintain both pointer and length since embedded @sc{nul}
 characters are allowed.
 
 @quotation NOTE
@@ -31702,7 +31700,7 @@ Scalar values in @command{awk} are either numbers or strings. The
 indicates what is in the @code{union}.
 
 Representing numbers is easy---the API uses a C @code{double}.  Strings
-require more work. Since @command{gawk} allows embedded @value{NUL} bytes
+require more work. Since @command{gawk} allows embedded @sc{nul} bytes
 in string values, a string must be represented as a pair containing a
 data-pointer and length. This is the @code{awk_string_t} type.
 
