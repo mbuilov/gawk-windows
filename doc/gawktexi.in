@@ -3735,7 +3735,8 @@ names like @code{i}, @code{j}, etc.)
 @cindex @command{awk} debugging, enabling
 Enable debugging of @command{awk} programs
 (@pxref{Debugging}).
-By default, the debugger reads commands interactively from the keyboard.
+By default, the debugger reads commands interactively from the keyboard
+(standard input).
 The optional @var{file} argument allows you to specify a file with a list
 of commands for the debugger to execute non-interactively.
 No space is allowed between the @option{-D} and @var{file}, if
@@ -39119,6 +39120,11 @@ originally written by Steven R.@: Bourne at Bell Laboratories.
 Many shells (Bash, @command{ksh}, @command{pdksh}, @command{zsh}) are
 generally upwardly compatible with the Bourne shell.
 
+@item Braces
+The characters @samp{@{} and @samp{@}}.  Braces are used in
+@command{awk} for delimiting actions, compound statements, and function
+bodies.
+
 @item Built-in Function
 The @command{awk} language provides built-in functions that perform various
 numerical, I/O-related, and string computations.  Examples are
@@ -39163,11 +39169,6 @@ and
 are the variables that have special meaning to @command{gawk}.
 Changing some of them affects @command{awk}'s running environment.
 (@xref{Built-in Variables}.)
-
-@item Braces
-The characters @samp{@{} and @samp{@}}.  Braces are used in
-@command{awk} for delimiting actions, compound statements, and function
-bodies.
 
 @item C
 The system programming language that most GNU software is written in.  The
