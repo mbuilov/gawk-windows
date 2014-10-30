@@ -989,6 +989,7 @@ particular records in a file and perform operations upon them.
 * Unix Installation::                   Installing @command{gawk} under
                                         various versions of Unix.
 * Quick Installation::                  Compiling @command{gawk} under Unix.
+* Shell Startup Files::                 Shell convenience functions.
 * Additional Configuration Options::    Other compile-time options.
 * Configuration Philosophy::            How it's all supposed to work.
 * Non-Unix Installation::               Installation on Other Operating
@@ -4400,6 +4401,9 @@ searches first in the current directory and then in @file{/usr/local/share/awk}.
 In practice, this means that you will rarely need to change the
 value of @env{AWKPATH}.
 
+@xref{Shell Startup Files}, for information on functions that help to
+manipulate the @env{AWKPATH} variable.
+
 @command{gawk} places the value of the search path that it used into
 @code{ENVIRON["AWKPATH"]}. This provides access to the actual search
 path value from within an @command{awk} program.
@@ -4430,6 +4434,9 @@ If @env{AWKLIBPATH} does not exist in the environment, or if it has
 an empty value, @command{gawk} uses a default path; this
 is typically @samp{/usr/local/lib/gawk}, although it can vary depending
 upon how @command{gawk} was built.
+
+@xref{Shell Startup Files}, for information on functions that help to
+manipulate the @env{AWKLIBPATH} variable.
 
 @command{gawk} places the value of the search path that it used into
 @code{ENVIRON["AWKLIBPATH"]}. This provides access to the actual search
@@ -37344,6 +37351,12 @@ The source code, manual pages, and infrastructure files for
 the sample extensions included with @command{gawk}.
 @xref{Dynamic Extensions}, for more information.
 
+@item extras/*
+Additional non-essential files.  Currently, this directory contains some shell
+startup files to be installed in @file{/etc/profile.d} to aid in manipulating
+the @env{AWKPATH} and @env{AWKLIBPATH} environment variables.
+@xref{Shell Startup Files}, for more information.
+
 @item posix/*
 Files needed for building @command{gawk} on POSIX-compliant systems.
 
@@ -37376,6 +37389,7 @@ to configure @command{gawk} for your system yourself.
 
 @menu
 * Quick Installation::               Compiling @command{gawk} under Unix.
+* Shell Startup Files::              Shell convenience functions.
 * Additional Configuration Options:: Other compile-time options.
 * Configuration Philosophy::         How it's all supposed to work.
 @end menu
@@ -37455,6 +37469,44 @@ command to do so.  The command then becomes @samp{sudo make install}. It
 is likely that you will be asked for your password, and you will have
 to have been set up previously as a user who is allowed to run the
 @command{sudo} command.
+
+@node Shell Startup Files
+@appendixsubsec Shell Startup Files
+
+The distribution contains shell startup files @file{gawk.sh} and
+@file{gawk.csh} containing functions to aid in manipulating
+the @env{AWKPATH} and @env{AWKLIBPATH} environment variables.
+On a Fedora system, these files should be installed in @file{/etc/profile.d};
+on other platforms, the appropriate location may be different.
+
+@table @command
+
+@cindex @command{gawkpath_default} shell function
+@item gawkpath_default
+Reset the @env{AWKPATH} environment variable to its default value.
+
+@cindex @command{gawkpath_prepend} shell function
+@item gawkpath_prepend
+Add the argument to the front of the @env{AWKPATH} environment variable.
+
+@cindex @command{gawkpath_append} shell function
+@item gawkpath_append
+Add the argument to the end of the @env{AWKPATH} environment variable.
+
+@cindex @command{gawklibpath_default} shell function
+@item gawklibpath_default
+Reset the @env{AWKLIBPATH} environment variable to its default value.
+
+@cindex @command{gawklibpath_prepend} shell function
+@item gawklibpath_prepend
+Add the argument to the front of the @env{AWKLIBPATH} environment variable.
+
+@cindex @command{gawklibpath_append} shell function
+@item gawklibpath_append
+Add the argument to the end of the @env{AWKLIBPATH} environment variable.
+
+@end table
+
 
 @node Additional Configuration Options
 @appendixsubsec Additional Configuration Options

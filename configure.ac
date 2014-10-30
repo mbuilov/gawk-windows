@@ -402,6 +402,7 @@ AC_SUBST(GAWKLIBEXT)
 AC_CONFIG_FILES(Makefile
 	awklib/Makefile
 	doc/Makefile
+	extras/Makefile
 	po/Makefile.in
 	test/Makefile)
 if test "x$enable_extensions" = "xyes"; then
