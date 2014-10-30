@@ -37,6 +37,12 @@ Changes from 4.1.x to 4.2.0
 9. Pretty printing now preserves comments and places them into the
    pretty-printed file.
 
+10. `make install' now installs shell startup files
+    $sysconfdir/profile.d/gawk.{csh,sh} containing shell functions to
+    manipulate the AWKPATH and AWKLIBPATH environment variables.  On a Fedora
+    system, these files belong in /etc/profile.d, but the appropriate location
+    may be different on other platforms.
+
 Changes from 4.1.1 to 4.1.2
 ---------------------------
 
