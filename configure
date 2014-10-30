@@ -10431,7 +10431,39 @@ fi
 $as_echo_n "checking whether readline via \"$_combo\" is present and sane... " >&6; }
 
 	if test "$cross_compiling" = yes; then :
-              _found_readline=no
+  		cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+int
+main ()
+{
+
+	int fd;
+	char *line;
+
+	close(0);
+	close(1);
+	fd = open("/dev/null", 2);	/* should get fd 0 */
+	dup(fd);
+	line = readline("giveittome> ");
+
+	/* some printfs don't handle NULL for %s */
+	printf("got <%s>\n", line ? line : "(NULL)");
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  			_found_readline=yes
+else
+  			_found_readline=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
 
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext

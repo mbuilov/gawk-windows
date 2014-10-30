@@ -1,3 +1,16 @@
+2014-10-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure: Regenerated after fix to m4/readline.m4.
+
+	Unrelated; fixes to profiling. Thanks to Hermann Peifer and
+	Manuel Collado for pointing out problems:
+
+	* profile.c (pprint): For Op_unary_minus, parenthesize -(-x)
+	correctly.
+	(prec_level): Get the levels right (checked the grammar).
+	(is_unary_minus): New function.
+	(pp_concat): Add checks for unary minus; needs to be parenthesized.
+
 2014-10-30         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* NEWS: Mention installation of /etc/profile.d/gawk.{csh,sh}.

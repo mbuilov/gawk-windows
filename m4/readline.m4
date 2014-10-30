@@ -62,7 +62,28 @@ dnl action if true:
 dnl action if false:
             [_found_readline=no],
 dnl action if cross compiling:
-            [_found_readline=no]
+		AC_TRY_LINK([#include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>],		dnl includes
+			dnl function body
+			[
+	int fd;
+	char *line;
+
+	close(0);
+	close(1);
+	fd = open("/dev/null", 2);	/* should get fd 0 */
+	dup(fd);
+	line = readline("giveittome> ");
+
+	/* some printfs don't handle NULL for %s */
+	printf("got <%s>\n", line ? line : "(NULL)");
+],
+dnl action if found:
+			[_found_readline=yes],
+dnl action if not found:
+			[_found_readline=no]
+		)
 	)
 
         AC_MSG_RESULT([$_found_readline])

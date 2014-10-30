@@ -420,7 +420,8 @@ cleanup:
 		case Op_unary_minus:
 		case Op_not:
 			t1 = pp_pop();
-			if (is_binary(t1->type))
+			if (is_binary(t1->type)
+			    || (((OPCODE) t1->type) == pc->opcode && pc->opcode == Op_unary_minus))
 				pp_parenthesize(t1);
 
 			/* optypes table (eval.c) includes space after ! */
@@ -1057,25 +1058,25 @@ prec_level(int type)
 	case Op_func_call:
 	case Op_K_delete_loop:
 	case Op_builtin:
-		return 15;
+		return 16;
 
 	case Op_field_spec:
 	case Op_field_spec_lhs:
+		return 15;
+
+	case Op_preincrement:
+	case Op_predecrement:
+	case Op_postincrement:
+	case Op_postdecrement:
 		return 14;
 
 	case Op_exp:
 	case Op_exp_i:
 		return 13;
 
-	case Op_preincrement:
-	case Op_predecrement:
-	case Op_postincrement:
-	case Op_postdecrement:
-		return 12;
-
 	case Op_unary_minus:
 	case Op_not:
-		return 11;
+		return 12;
 
 	case Op_times:
 	case Op_times_i:
@@ -1083,23 +1084,26 @@ prec_level(int type)
 	case Op_quotient_i:
 	case Op_mod:
 	case Op_mod_i:
-		return 10;
+		return 11;
 
 	case Op_plus:
 	case Op_plus_i:
 	case Op_minus:
 	case Op_minus_i:
-		return 9;
+		return 10;
 
 	case Op_concat:
 	case Op_assign_concat:
-		return 8;
+		return 9;
 
 	case Op_equal:
 	case Op_notequal:
 	case Op_greater:
+	case Op_less:
 	case Op_leq:
 	case Op_geq:
+		return 8;
+
 	case Op_match:
 	case Op_nomatch:
 		return 7;
@@ -1108,7 +1112,6 @@ prec_level(int type)
 	case Op_K_getline_redir:
 		return 6;
 
-	case Op_less:
 	case Op_in_array:
 		return 5;
 
@@ -1417,6 +1420,14 @@ pp_list(int nargs, const char *paren, const char *delim)
 	return str;					
 }
 
+/* is_unary_minus --- return true if string starts with unary minus */
+
+static bool
+is_unary_minus(const char *str)
+{
+	return str[0] == '-' && str[1] != '-';
+}
+
 /* pp_concat --- handle concatenation and correct parenthesizing of expressions */
 
 static char *
@@ -1458,7 +1469,12 @@ pp_concat(int nargs)
 		pl_l = prec_level(pp_args[i]->type);
 		pl_r = prec_level(pp_args[i+1]->type);
 
-		if (is_scalar(pp_args[i]->type) && is_scalar(pp_args[i+1]->type)) {
+		if (i >= 2 && is_unary_minus(r->pp_str)) {
+			*s++ = '(';
+			memcpy(s, r->pp_str, r->pp_len);
+			s += r->pp_len;
+			*s++ = ')';
+		} else if (is_scalar(pp_args[i]->type) && is_scalar(pp_args[i+1]->type)) {
 			memcpy(s, r->pp_str, r->pp_len);
 			s += r->pp_len;
 		} else if (pl_l <= pl_r || is_scalar(pp_args[i+1]->type)) {
@@ -1480,7 +1496,7 @@ pp_concat(int nargs)
 	pl_l = prec_level(pp_args[nargs-1]->type);
 	pl_r = prec_level(pp_args[nargs]->type);
 	r = pp_args[nargs];
-	if (pl_l >= pl_r && ! is_scalar(pp_args[nargs]->type)) {
+	if (is_unary_minus(r->pp_str) || ((pl_l >= pl_r && ! is_scalar(pp_args[nargs]->type)))) {
 		*s++ = '(';
 		memcpy(s, r->pp_str, r->pp_len);
 		s += r->pp_len;
