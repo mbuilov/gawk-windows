@@ -2127,7 +2127,7 @@ profile5:
 
 profile6:
 	@echo $@
-	@GAWK_NO_PP_RUN=1 $(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
+	$(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
