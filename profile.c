@@ -1180,6 +1180,26 @@ pp_parenthesize(NODE *sp)
 	sp->flags |= CAN_FREE;
 }
 
+/* div_on_left_mul_on_right --- have / or % on left and * on right */
+
+static bool
+div_on_left_mul_on_right(int o1, int o2)
+{
+	OPCODE op1 = (OPCODE) o1;
+	OPCODE op2 = (OPCODE) o2;
+
+	switch (op1) {
+	case Op_quotient:
+	case Op_quotient_i:
+	case Op_mod:
+	case Op_mod_i:
+		return (op2 == Op_times || op2 == Op_times_i);
+
+	default:
+		return false;
+	}
+}
+
 /* parenthesize --- parenthesize two nodes relative to parent node type */
 
 static void
@@ -1189,9 +1209,11 @@ parenthesize(int type, NODE *left, NODE *right)
 	int lprec = prec_level(left->type);
 	int prec = prec_level(type);
 
-	if (lprec < prec)
+	if (lprec < prec
+	    || (lprec == prec && div_on_left_mul_on_right(left->type, type)))
 		pp_parenthesize(left);
-	if (rprec < prec)
+	if (rprec < prec
+	    || (rprec == prec && div_on_left_mul_on_right(type, right->type)))
 		pp_parenthesize(right);
 }
 
