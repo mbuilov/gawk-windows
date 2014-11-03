@@ -51,7 +51,7 @@ function mystrtonum(str,        ret, n, i, k, c)
 #     a[5] = "123.45"
 #     a[6] = "1.e3"
 #     a[7] = "1.32"
-#     a[7] = "1.32E2"
+#     a[8] = "1.32E2"
 # 
 #     for (i = 1; i in a; i++)
 #         print a[i], strtonum(a[i]), mystrtonum(a[i])

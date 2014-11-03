@@ -1559,6 +1559,17 @@ nextrres:
  * change the string.
  */
 
+/*
+ * 9/2014: Flow here is a little messy.
+ *
+ * For do_posix, we don't allow any of the special filenames.
+ *
+ * For do_traditional, we allow /dev/{stdin,stdout,stderr} since BWK awk
+ * (and mawk) support them.  But we don't allow /dev/fd/N or /inet.
+ *
+ * Note that for POSIX systems os_devopen() is a no-op.
+ */
+
 int
 devopen(const char *name, const char *mode)
 {
@@ -1574,7 +1585,7 @@ devopen(const char *name, const char *mode)
 	flag = str2mode(mode);
 	openfd = INVALID_HANDLE;
 
-	if (do_traditional)
+	if (do_posix)
 		goto strictopen;
 
 	if ((openfd = os_devopen(name, flag)) != INVALID_HANDLE) {
@@ -1591,6 +1602,8 @@ devopen(const char *name, const char *mode)
 			openfd = fileno(stdout);
 		else if (strcmp(cp, "stderr") == 0 && (flag & O_ACCMODE) == O_WRONLY)
 			openfd = fileno(stderr);
+		else if (do_traditional)
+			goto strictopen;
 		else if (strncmp(cp, "fd/", 3) == 0) {
 			struct stat sbuf;
 
@@ -1603,6 +1616,8 @@ devopen(const char *name, const char *mode)
 		/* do not set close-on-exec for inherited fd's */
 		if (openfd != INVALID_HANDLE)
 			return openfd;
+	} else if (do_traditional) {
+		goto strictopen;
 	} else if (inetfile(name, & isi)) {
 #ifdef HAVE_SOCKETS
 		cp = (char *) name;
@@ -2537,7 +2552,6 @@ do_getline(int into_variable, IOBUF *iop)
 typedef struct {
 	const char *envname;
 	char **dfltp;		/* pointer to address of default path */
-	char try_cwd;		/* always search current directory? */
 	char **awkpath;		/* array containing library search paths */ 
 	int max_pathlen;	/* length of the longest item in awkpath */ 
 } path_info;
@@ -2545,13 +2559,11 @@ typedef struct {
 static path_info pi_awkpath = {
 	/* envname */	"AWKPATH",
 	/* dfltp */	& defpath,
-	/* try_cwd */	true,
 };
 
 static path_info pi_awklibpath = {
 	/* envname */	"AWKLIBPATH",
 	/* dfltp */	& deflibpath,
-	/* try_cwd */	false,
 };
 
 /* init_awkpath --- split path(=$AWKPATH) into components */
@@ -2609,30 +2621,6 @@ init_awkpath(path_info *pi)
 #undef INC_PATH
 }
 
-/* get_cwd -- get current working directory */
-
-static char *
-get_cwd ()
-{
-#define BSIZE	100
-	char *buf;
-	size_t bsize = BSIZE;
-
-	emalloc(buf, char *, bsize * sizeof(char), "get_cwd");
-	while (true) {
-		if (getcwd(buf, bsize) == buf)
-			return buf;
-		if (errno != ERANGE) {
-			efree(buf);
-			return NULL;
-		}
-		bsize *= 2;
-		erealloc(buf, char *, bsize * sizeof(char), "get_cwd");
-	}
-#undef BSIZE
-}
-
-
 /* do_find_source --- search $AWKPATH for file, return NULL if not found */ 
 
 static char *
@@ -2652,24 +2640,6 @@ do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 		*errcode = errno;
 		efree(path);
 		return NULL;
-	}
-
-	/* try current directory before $AWKPATH search */
-	if (pi->try_cwd && stat(src, stb) == 0) {
-		path = get_cwd();
-		if (path == NULL) {
-			*errcode = errno;
-			return NULL;
-		}
-		erealloc(path, char *, strlen(path) + strlen(src) + 2, "do_find_source");
-#ifdef VMS
-		if (strcspn(path,">]:") == strlen(path))
-			strcat(path, "/");
-#else
-		strcat(path, "/");
-#endif
-		strcat(path, src);
-		return path;
 	}
 
 	if (pi->awkpath == NULL)

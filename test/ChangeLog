@@ -1,7 +1,63 @@
+2014-11-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (profile7): New test.
+	(profile6): Add missing @ in front of gawk run.
+	* profile7.awk, profile7.ok: New files.
+
+2014-11-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (profile6): Actually run profiling. Should make test
+	output consistent with what's in master.
+	* profile6.ok: Updated.
+
+2014-10-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (profile6): New test.
+	* profile6.awk, profile6.ok: New files.
+
+2014-10-17         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (profile1, testext): Use explicit ./foo.awk to avoid
+	assumptions about AWKPATH in the environment.
+
+2014-10-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (charset-msg-start): Add a list of needed locales.
+	Suggested by Shaun Jackman <sjackman@gmail.com>.
+
+2014-10-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile2.ok, profile3.ok, profile4.ok, profile5.ok:
+	Adjusted after minor code change. Again.
+
+2014-10-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (genpot): New test.
+	* genpot.awk, genpot.ok: New files.
+
+2014-09-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* testext.ok: Adjusted after minor code change.
+
+2014-09-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile2.ok, profile3.ok, profile4.ok, profile5.ok:
+	Adjusted after minor code change.
+
 2014-09-18         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* filefuncs.awk: Change to build directory instead of "..".
 	* Makefile.am (filefuncs): Pass in $(abs_top_builddir).
+
+2014-09-13         Stephen Davies        <sdavies@sdc.com.au>
+
+	* Makefile.am (profile4, profile5): Changes processing to not delete
+	the first two lines. This is no longer needed.
+	* profile4.ok, profile5.ok: Changed to suit new rules and comments.
+
+2014-09-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile2.ok, profile4.ok, profile5.ok: Update for new code.
 
 2014-09-05         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -291,6 +347,10 @@
 	* Makefile.am: Quote $(srcdir) everywhere so that tests can run
 	in locations with spaces in their names (think Windows or Mac OS X).
 	* Gentests: Ditto for when creating Maketests file.
+
+2013-07-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile2.ok, profile5.ok: Update.
 
 2013-07-04         Arnold D. Robbins     <arnold@skeeve.com>
 

@@ -284,13 +284,18 @@ research(Regexp *rp, char *str, int start,
 	if (rp->dfa && ! no_bol && ! need_start) {
 		char save;
 		size_t count = 0;
+		struct dfa *superset = dfasuperset(rp->dfareg);
 		/*
 		 * dfa likes to stick a '\n' right after the matched
 		 * text.  So we just save and restore the character.
 		 */
 		save = str[start+len];
-		ret = dfaexec(rp->dfareg, str+start, str+start+len, true,
-					&count, &try_backref);
+		if (superset)
+			ret = dfaexec(superset, str+start, str+start+len,
+							true, NULL, NULL);
+		if (ret)
+			ret = dfaexec(rp->dfareg, str+start, str+start+len,
+						true, &count, &try_backref);
 		str[start+len] = save;
 	}
 

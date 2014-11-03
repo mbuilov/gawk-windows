@@ -27,6 +27,9 @@ $	gawk = "$sys$disk:[-]gawk"
 $	AWKPATH_srcdir = "define/User AWKPATH sys$disk:[]"
 $	AWKLIBPATH_dir = "define/User AWKLIBPATH sys$disk:[-]"
 $
+$!	Make sure that the default directory exists on a search list.
+$	def_dir = f$environment("default")
+$	create/dir 'def_dir'
 $	listdepth = 0
 $	pipeok = 0
 $	floatmode = -1	! 0: D_float, 1: G_float, 2: IEEE T_float

@@ -104,7 +104,7 @@ $! On some platforms, DCL search has problems with searching a file
 $! on a NFS mounted volume.  So copy it to sys$scratch:
 $!
 $if f$search(configure_script) .nes. "" then delete 'configure_script';*
-$copy PRJ_ROOT:configure 'configure_script'
+$copy sys$disk:configure 'configure_script'
 $!
 $!
 $! Write out the header

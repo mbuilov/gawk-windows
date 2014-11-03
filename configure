@@ -761,6 +761,7 @@ enable_option_checking
 enable_silent_rules
 with_whiny_user_strftime
 enable_lint
+enable_severe_portability_problems
 enable_dependency_tracking
 enable_largefile
 enable_nls
@@ -1405,6 +1406,7 @@ Optional Features:
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
   --disable-lint	Disable gawk lint checking
+  --enable-severe-portability-problems	Enable really nasty portability problems
   --enable-dependency-tracking
                           do not reject slow dependency extractors
   --disable-dependency-tracking
@@ -3176,6 +3178,17 @@ if test "${enable_lint+set}" = set; then :
 	then
 
 $as_echo "#define NO_LINT 1" >>confdefs.h
+
+	fi
+
+fi
+
+# Check whether --enable-severe-portability-problems was given.
+if test "${enable_severe_portability_problems+set}" = set; then :
+  enableval=$enable_severe_portability_problems; if test "$enableval" = yes
+	then
+
+$as_echo "#define I_DONT_KNOW_WHAT_IM_DOING 1" >>confdefs.h
 
 	fi
 
@@ -10419,7 +10432,39 @@ fi
 $as_echo_n "checking whether readline via \"$_combo\" is present and sane... " >&6; }
 
 	if test "$cross_compiling" = yes; then :
-              _found_readline=no
+  		cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+int
+main ()
+{
+
+	int fd;
+	char *line;
+
+	close(0);
+	close(1);
+	fd = open("/dev/null", 2);	/* should get fd 0 */
+	dup(fd);
+	line = readline("giveittome> ");
+
+	/* some printfs don't handle NULL for %s */
+	printf("got <%s>\n", line ? line : "(NULL)");
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  			_found_readline=yes
+else
+  			_found_readline=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
 
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -10953,7 +10998,7 @@ dylib)	GAWKLIBEXT=so ;;	# MacOS uses .dylib for shared libraries, but libtool us
 esac
 
 
-ac_config_files="$ac_config_files Makefile awklib/Makefile doc/Makefile po/Makefile.in test/Makefile"
+ac_config_files="$ac_config_files Makefile awklib/Makefile doc/Makefile extras/Makefile po/Makefile.in test/Makefile"
 
 if test "x$enable_extensions" = "xyes"; then
 
@@ -11709,6 +11754,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "awklib/Makefile") CONFIG_FILES="$CONFIG_FILES awklib/Makefile" ;;
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
+    "extras/Makefile") CONFIG_FILES="$CONFIG_FILES extras/Makefile" ;;
     "po/Makefile.in") CONFIG_FILES="$CONFIG_FILES po/Makefile.in" ;;
     "test/Makefile") CONFIG_FILES="$CONFIG_FILES test/Makefile" ;;
 

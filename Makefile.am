@@ -69,6 +69,7 @@ SUBDIRS = \
 	awklib \
 	po \
 	extension \
+	extras \
 	test
 
 # what to make and install

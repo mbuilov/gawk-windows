@@ -58,6 +58,12 @@ AC_ARG_ENABLE([lint], [  --disable-lint	Disable gawk lint checking],
 		AC_DEFINE(NO_LINT, 1, [disable lint checks])
 	fi
 )
+AC_ARG_ENABLE([severe-portability-problems], [  --enable-severe-portability-problems	Enable really nasty portability problems],
+	if test "$enableval" = yes
+	then
+		AC_DEFINE(I_DONT_KNOW_WHAT_IM_DOING, 1, [enable severe portability problems])
+	fi
+)
 
 AC_CANONICAL_HOST
 AC_USE_SYSTEM_EXTENSIONS
@@ -397,6 +403,7 @@ AC_SUBST(GAWKLIBEXT)
 AC_CONFIG_FILES(Makefile
 	awklib/Makefile
 	doc/Makefile
+	extras/Makefile
 	po/Makefile.in
 	test/Makefile)
 if test "x$enable_extensions" = "xyes"; then

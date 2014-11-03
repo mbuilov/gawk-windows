@@ -3995,6 +3995,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 	case Op_quotient_i:
 	case Op_mod_i:
 	case Op_assign_concat:
+	case Op_comment:
 		print_memory(pc->memory, func, print_func, fp);
 		/* fall through */
 	default:

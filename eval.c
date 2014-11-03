@@ -362,6 +362,7 @@ static struct optypetab {
 	{ "Op_after_beginfile", NULL },
 	{ "Op_after_endfile", NULL },
 	{ "Op_func", NULL },
+	{ "Op_comment", NULL },
 	{ "Op_exec_count", NULL },
 	{ "Op_breakpoint", NULL },
 	{ "Op_lint", NULL },

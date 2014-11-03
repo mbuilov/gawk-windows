@@ -34,6 +34,15 @@ Changes from 4.1.x to 4.2.0
 
 8. MirBSD is no longer supported.
 
+9. Pretty printing now preserves comments and places them into the
+   pretty-printed file.
+
+10. `make install' now installs shell startup files
+    $sysconfdir/profile.d/gawk.{csh,sh} containing shell functions to
+    manipulate the AWKPATH and AWKLIBPATH environment variables.  On a Fedora
+    system, these files belong in /etc/profile.d, but the appropriate location
+    may be different on other platforms.
+
 Changes from 4.1.1 to 4.1.2
 ---------------------------
 
@@ -56,6 +65,18 @@ Changes from 4.1.1 to 4.1.2
 6. In non-English locales, it was accidentally possible to use "letters"
    beside those of the English alphabet in identifiers.  This has
    been fixed.  (isalpha and isalnum are NOT our friends.)
+
+   If you feel that you must have this misfeature, use `configure --help'
+   to see what option to use when configuring gawk to reenable it.
+
+7. The "where" command has been added to the debugger as an alias
+   for "backtrace". This will make life easier for long-time GDB users.
+
+8. Gawk no longer explicitly checks the current directory after doing
+   a path search of AWKPATH.  The default value continues to have "." at
+   the front, so most people should not be affected.  If you have your own
+   AWKPATH setting, be sure to put "." in it somewhere. The documentation
+   has been updated and clarified.
 
 XX. A number of bugs have been fixed. See the ChangeLog.
 

@@ -145,7 +145,7 @@ static const char *ext_version = "filefuncs extension: version 1.0";
 
 int plugin_is_GPL_compatible;
 
-/*  do_chdir --- provide dynamically loaded chdir() builtin for gawk */
+/*  do_chdir --- provide dynamically loaded chdir() function for gawk */
 
 static awk_value_t *
 do_chdir(int nargs, awk_value_t *result)
@@ -448,7 +448,7 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 		}
 	}
 
-	array_set(array, "type", make_const_string(type, strlen(type), &tmp));
+	array_set(array, "type", make_const_string(type, strlen(type), & tmp));
 
 	return 0;
 }

@@ -2648,6 +2648,8 @@ struct cmdtoken cmdtab[] = {
 	gettext_noop("up [N] - move N frames up the stack.") },
 { "watch", "w", D_watch, D_WATCH, do_watch,
 	gettext_noop("watch var - set a watchpoint for a variable.") },
+{ "where", "", D_backtrace, D_BACKTRACE, do_backtrace,
+	gettext_noop("where [N] - (same as backtrace) print trace of all or N innermost (outermost if N < 0) frames.") },
 { NULL, NULL, D_illegal, 0, (Func_cmd) 0,
 	 NULL },
 };
