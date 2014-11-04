@@ -378,10 +378,10 @@ ISBN 1-882114-28-0 @*
 @sp 9
 @center @i{To my parents, for their love, and for the wonderful example they set for me.}
 @sp 1
-@center @i{To my wife Miriam, for making me complete.
+@center @i{To my wife, Miriam, for making me complete.
 Thank you for building your life together with me.}
 @sp 1
-@center @i{To our children Chana, Rivka, Nachum and Malka, for enrichening our lives in innumerable ways.}
+@center @i{To our children, Chana, Rivka, Nachum, and Malka, for enrichening our lives in innumerable ways.}
 @sp 1
 @w{ }
 @page
@@ -1070,7 +1070,7 @@ for enrichening our lives in innumerable ways.
       <!-- can't put mawk into command tags. sigh. -->
       <affiliation><jobtitle>Author of mawk</jobtitle></affiliation>
     </author>
-    <date>March, 2001</date>
+    <date>March 2001</date>
    </prefaceinfo>
 @end docbook
 
@@ -1082,21 +1082,23 @@ The circumstances started a couple of years
 earlier. I was working at a new job and noticed an unplugged
 Unix computer sitting in the corner.  No one knew how to use it,
 and neither did I.  However,
-a couple of days later it was running, and
+a couple of days later, it was running, and
 I was @code{root} and the one-and-only user.
 That day, I began the transition from statistician to Unix programmer.
 
 On one of many trips to the library or bookstore in search of
-books on Unix, I found the gray AWK book, a.k.a.@: Aho, Kernighan and
-Weinberger, @cite{The AWK Programming Language}, Addison-Wesley,
-1988.  AWK's simple programming paradigm---find a pattern in the
+books on Unix, I found the gray AWK book, a.k.a.@:
+Alfred V.@: Aho, Brian W.@: Kernighan, and
+Peter J.@: Weinberger's @cite{The AWK Programming Language} (Addison-Wesley,
+1988).  @command{awk}'s simple programming paradigm---find a pattern in the
 input and then perform an action---often reduced complex or tedious
 data manipulations to a few lines of code.  I was excited to try my
 hand at programming in AWK.
 
 Alas,  the @command{awk} on my computer was a limited version of the
-language described in the AWK book.  I discovered that my computer
-had ``old @command{awk}'' and the AWK book described ``new @command{awk}.''
+language described in the gray book.  I discovered that my computer
+had ``old @command{awk}'' and the book described
+``new @command{awk}.''
 I learned that this was typical; the old version refused to step
 aside or relinquish its name.  If a system had a new @command{awk}, it was
 invariably called @command{nawk}, and few systems had it.
@@ -1114,7 +1116,7 @@ My Unix system started out unplugged from the wall; it certainly was not
 plugged into a network.  So, oblivious to the existence of @command{gawk}
 and the Unix community in general, and desiring a new @command{awk}, I wrote
 my own, called @command{mawk}.
-Before I was finished I knew about @command{gawk},
+Before I was finished, I knew about @command{gawk},
 but it was too late to stop, so I eventually posted
 to a @code{comp.sources} newsgroup.
 
@@ -1123,7 +1125,7 @@ from Arnold introducing
 himself.   He suggested we share design and algorithms and
 attached a draft of the POSIX standard so
 that I could update @command{mawk} to support language extensions added
-after publication of the AWK book.
+after publication of @cite{The AWK Programming Language}.
 
 Frankly, if our roles had
 been reversed, I would not have been so open and we probably would
@@ -1203,7 +1205,7 @@ AWK or want to learn how, then read this book.
 @display
 Michael Brennan
 Author of @command{mawk}
-March, 2001
+March 2001
 @end display
 @end ifnotdocbook
 
@@ -1221,7 +1223,7 @@ March, 2001
       <!-- can't put mawk into command tags. sigh. -->
       <affiliation><jobtitle>Author of mawk</jobtitle></affiliation>
     </author>
-    <date>October, 2014</date>
+    <date>October 2014</date>
    </prefaceinfo>
 @end docbook
 
@@ -1255,7 +1257,7 @@ details, and as expected, many examples to help you learn the ins and outs.
 @display
 Michael Brennan
 Author of @command{mawk}
-October, 2014
+October 2014
 @end display
 @end ifnotdocbook
 
@@ -1289,7 +1291,7 @@ The @command{awk} utility interprets a special-purpose programming
 language that makes it easy to handle simple data-reformatting jobs.
 
 The GNU implementation of @command{awk} is called @command{gawk}; if you
-invoke it with the proper options or environment variables
+invoke it with the proper options or environment variables,
 it is fully compatible with
 the POSIX@footnote{The 2008 POSIX standard is accessible online at
 @w{@url{http://www.opengroup.org/onlinepubs/9699919799/}.}}
@@ -1396,7 +1398,7 @@ has been removed.}
 @unnumberedsec History of @command{awk} and @command{gawk}
 @cindex recipe for a programming language
 @cindex programming language, recipe for
-@sidebar Recipe For A Programming Language
+@sidebar Recipe for a Programming Language
 
 @multitable {2 parts} {1 part  @code{egrep}} {1 part  @code{snobol}}
 @item @tab 1 part  @code{egrep} @tab 1 part  @code{snobol}
@@ -1415,7 +1417,7 @@ more parts C.  Document very well and release.
 @cindex Kernighan, Brian
 @cindex @command{awk}, history of
 The name @command{awk} comes from the initials of its designers: Alfred V.@:
-Aho, Peter J.@: Weinberger and Brian W.@: Kernighan.  The original version of
+Aho, Peter J.@: Weinberger, and Brian W.@: Kernighan.  The original version of
 @command{awk} was written in 1977 at AT&T Bell Laboratories.
 In 1985, a new version made the programming
 language more powerful, introducing user-defined functions, multiple input
@@ -1441,7 +1443,7 @@ Circa 1994, I became the primary maintainer.
 Current development focuses on bug fixes,
 performance improvements, standards compliance and, occasionally, new features.
 
-In May of 1997, J@"urgen Kahrs felt the need for network access
+In May 1997, J@"urgen Kahrs felt the need for network access
 from @command{awk}, and with a little help from me, set about adding
 features to do this for @command{gawk}.  At that time, he also
 wrote the bulk of
@@ -1454,6 +1456,7 @@ John Haque rewrote the @command{gawk} internals, in the process providing
 an @command{awk}-level debugger. This version became available as
 @command{gawk} @value{PVERSION} 4.0, in 2011.
 
+@c FIXME: COPYEDIT
 @xref{Contributors},
 for a full list of those who made important contributions to @command{gawk}.
 
@@ -1464,7 +1467,7 @@ for a full list of those who made important contributions to @command{gawk}.
 The @command{awk} language has evolved over the years. Full details are
 provided in @ref{Language History}.
 The language described in this @value{DOCUMENT}
-is often referred to as ``new @command{awk}''.
+is often referred to as ``new @command{awk}.''
 By analogy, the original version of @command{awk} is
 referred to as ``old @command{awk}.''
 
@@ -1543,12 +1546,15 @@ Most of the time, the examples use complete @command{awk} programs.
 Some of the more advanced sections show only the part of the @command{awk}
 program that illustrates the concept being described.
 
-While this @value{DOCUMENT} is aimed principally at people who have not been
+Although this @value{DOCUMENT} is aimed principally at people who have not been
 exposed
 to @command{awk}, there is a lot of information here that even the @command{awk}
 expert should find useful.  In particular, the description of POSIX
 @command{awk} and the example programs in
-@ref{Library Functions}, and in
+@ref{Library Functions}, and
+@ifnotdocbook
+in
+@end ifnotdocbook
 @ref{Sample Programs},
 should be of interest.
 
@@ -1556,22 +1562,32 @@ This @value{DOCUMENT} is split into several parts, as follows:
 
 @c FULLXREF ON
 
-Part I describes the @command{awk} language and @command{gawk} program in detail.
+@itemize @value{BULLET}
+@item
+@c FIXME: COPYEDIT
+Part I
+describes the @command{awk} language and @command{gawk} program in detail.
 It starts with the basics, and continues through all of the features of @command{awk}.
 It contains the following chapters:
 
+@c nested
+@itemize @value{MINUS}
+@item
 @ref{Getting Started},
 provides the essentials you need to know to begin using @command{awk}.
 
+@item
 @ref{Invoking Gawk},
 describes how to run @command{gawk}, the meaning of its
 command-line options, and how it finds @command{awk}
 program source files.
 
+@item
 @ref{Regexp},
 introduces regular expressions in general, and in particular the flavors
 supported by POSIX @command{awk} and @command{gawk}.
 
+@item
 @ref{Reading Files},
 describes how @command{awk} reads your data.
 It introduces the concepts of records and fields, as well
@@ -1579,46 +1595,62 @@ as the @code{getline} command.
 I/O redirection is first described here.
 Network I/O is also briefly introduced here.
 
+@item
 @ref{Printing},
 describes how @command{awk} programs can produce output with
 @code{print} and @code{printf}.
 
+@item
 @ref{Expressions},
 describes expressions, which are the basic building blocks
 for getting most things done in a program.
 
+@item
 @ref{Patterns and Actions},
 describes how to write patterns for matching records, actions for
 doing something when a record is matched, and the predefined variables
 @command{awk} and @command{gawk} use.
 
+@item
 @ref{Arrays},
 covers @command{awk}'s one-and-only data structure: associative arrays.
 Deleting array elements and whole arrays is also described, as well as
 sorting arrays in @command{gawk}.  It also describes how @command{gawk}
 provides arrays of arrays.
 
+@item
 @ref{Functions},
 describes the built-in functions @command{awk} and @command{gawk} provide,
 as well as how to define your own functions.  It also discusses how
 @command{gawk} lets you call functions indirectly.
+@end itemize
 
+@item
+@c FIXME: COPYEDIT
 Part II shows how to use @command{awk} and @command{gawk} for problem solving.
 There is lots of code here for you to read and learn from.
 It contains the following chapters:
 
+@itemize @value{MINUS}
+@item
 @ref{Library Functions}, which provides a number of functions meant to
 be used from main @command{awk} programs.
 
+@item
 @ref{Sample Programs},
 which provides many sample @command{awk} programs.
+@end itemize
 
 Reading these two chapters allows you to see @command{awk}
 solving real problems.
 
+@item
+@c FIXME: COPYEDIT
 Part III focuses on features specific to @command{gawk}.
 It contains the following chapters:
 
+@itemize @value{MINUS}
+@item
 @ref{Advanced Features},
 describes a number of advanced features.
 Of particular note
@@ -1627,33 +1659,43 @@ have two-way communications with another process,
 perform TCP/IP networking, and
 profile your @command{awk} programs.
 
+@item
 @ref{Internationalization},
 describes special features for translating program
 messages into different languages at runtime.
 
+@item
 @ref{Debugger}, describes the @command{gawk} debugger.
 
+@item
 @ref{Arbitrary Precision Arithmetic},
 describes advanced arithmetic facilities.
 
+@item
 @ref{Dynamic Extensions}, describes how to add new variables and
 functions to @command{gawk} by writing extensions in C or C++.
+@end itemize
 
+@item
 @ifclear FOR_PRINT
 Part IV provides the appendices, the Glossary, and two licenses that cover
 the @command{gawk} source code and this @value{DOCUMENT}, respectively.
 It contains the following appendices:
 @end ifclear
 @ifset FOR_PRINT
+@c FIXME: COPYEDIT
 Part IV provides the following appendices,
 including the GNU General Public License:
 @end ifset
 
+@itemize @value{MINUS}
+@item
 @ref{Language History},
 describes how the @command{awk} language has evolved since
 its first release to present.  It also describes how @command{gawk}
 has acquired features over time.
 
+@item
 @ref{Installation},
 describes how to get @command{gawk}, how to compile it
 on POSIX-compatible systems,
@@ -1661,17 +1703,22 @@ and how to compile and use it on different
 non-POSIX systems.  It also describes how to report bugs
 in @command{gawk} and where to get other freely
 available @command{awk} implementations.
+@end itemize
 
 @ifset FOR_PRINT
-
+@itemize @value{MINUS}
+@item
 @ref{Copying},
 presents the license that covers the @command{gawk} source code.
+@end itemize
 
 The version of this @value{DOCUMENT} distributed with @command{gawk}
 contains additional appendices and other end material.
 To save space, we have omitted them from the
 printed edition. You may find them online, as follows:
 
+@itemize @value{BULLET}
+@item
 @uref{http://www.gnu.org/software/gawk/manual/html_node/Notes.html,
 The appendix on implementation notes}
 describes how to disable @command{gawk}'s extensions, how to contribute
@@ -1679,44 +1726,54 @@ new code to @command{gawk}, where to find information on some possible
 future directions for @command{gawk} development, and the design decisions
 behind the extension API.
 
+@item
 @uref{http://www.gnu.org/software/gawk/manual/html_node/Basic-Concepts.html,
 The appendix on basic concepts}
 provides some very cursory background material for those who
 are completely unfamiliar with computer programming.
 
+@item
 @uref{http://www.gnu.org/software/gawk/manual/html_node/Glossary.html,
 The Glossary}
-defines most, if not all, the significant terms used
+defines most, if not all of, the significant terms used
 throughout the @value{DOCUMENT}.  If you find terms that you aren't familiar with,
 try looking them up here.
 
+@item
 @uref{http://www.gnu.org/software/gawk/manual/html_node/GNU-Free-Documentation-License.html,
 The GNU FDL}
 is the license that covers this @value{DOCUMENT}.
+@end itemize
 
 Some of the chapters have exercise sections; these have also been
 omitted from the print edition but are available online.
 @end ifset
 
 @ifclear FOR_PRINT
+@itemize @value{MINUS}
+@item
 @ref{Notes},
 describes how to disable @command{gawk}'s extensions, as
 well as how to contribute new code to @command{gawk},
 and some possible future directions for @command{gawk} development.
 
+@item
 @ref{Basic Concepts},
 provides some very cursory background material for those who
 are completely unfamiliar with computer programming.
 
-The @ref{Glossary}, defines most, if not all, the significant terms used
+The @ref{Glossary}, defines most, if not all of, the significant terms used
 throughout the @value{DOCUMENT}.  If you find terms that you aren't familiar with,
 try looking them up here.
 
+@item
 @ref{Copying}, and
 @ref{GNU Free Documentation License},
 present the licenses that cover the @command{gawk} source code
 and this @value{DOCUMENT}, respectively.
+@end itemize
 @end ifclear
+@end itemize
 
 @c FULLXREF OFF
 
