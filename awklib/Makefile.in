@@ -342,7 +342,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 EXTRA_DIST = ChangeLog ChangeLog.0 extract.awk eg $(srcdir)/stamp-eg
-@TEST_CROSS_COMPILE_FALSE@AWKPROG = LC_ALL=C LANG=C $(abs_top_builddir)/gawk$(EXEEXT)
+@TEST_CROSS_COMPILE_FALSE@AWKPROG = LC_ALL=C LANG=C "$(abs_top_builddir)/gawk$(EXEEXT)"
 # With some locales, the script extract.awk fails.
 # So we fix the locale to some sensible value.
 @TEST_CROSS_COMPILE_TRUE@AWKPROG = LC_ALL=C LANG=C awk$(EXEEXT)
