@@ -51,7 +51,7 @@
 @set PATCHLEVEL 2
 
 @ifset FOR_PRINT
-@set TITLE Effective AWK Programming
+@set TITLE Effective Awk Programming
 @end ifset
 @ifclear FOR_PRINT
 @set TITLE GAWK: Effective AWK Programming
@@ -170,11 +170,17 @@
 @macro DBREF{text}
 @ref{\text\}
 @end macro
+@macro DBXREF{text}
+@xref{\text\}
+@end macro
 @end ifdocbook
 
 @ifnotdocbook
 @macro DBREF{text}
 @ref{\text\},
+@end macro
+@macro DBXREF{text}
+@xref{\text\},
 @end macro
 @end ifnotdocbook
 
@@ -1144,7 +1150,7 @@ standard.
 On the other hand, the novice AWK programmer can study
 a wealth of practical programs that emphasize
 the power of AWK's basic idioms:
-data driven control-flow, pattern matching with regular expressions,
+data-driven control flow, pattern matching with regular expressions,
 and associative arrays.
 Those looking for something new can try out @command{gawk}'s
 interface to network protocols via special @file{/inet} files.
@@ -1277,9 +1283,9 @@ October 2014
       <firstname>Arnold</firstname>
       <surname>Robbins</surname>
       <affiliation><jobtitle>Nof Ayalon</jobtitle></affiliation>
-      <affiliation><jobtitle>ISRAEL</jobtitle></affiliation>
+      <affiliation><jobtitle>Israel</jobtitle></affiliation>
     </author>
-    <date>December, 2014</date>
+    <date>December 2014</date>
    </prefaceinfo>
 @end docbook
 
@@ -1456,8 +1462,7 @@ John Haque rewrote the @command{gawk} internals, in the process providing
 an @command{awk}-level debugger. This version became available as
 @command{gawk} @value{PVERSION} 4.0, in 2011.
 
-@c FIXME: COPYEDIT
-@xref{Contributors},
+@DBXREF{Contributors}
 for a full list of those who made important contributions to @command{gawk}.
 
 @node Names
@@ -1564,9 +1569,7 @@ This @value{DOCUMENT} is split into several parts, as follows:
 
 @itemize @value{BULLET}
 @item
-@c FIXME: COPYEDIT
-Part I
-describes the @command{awk} language and @command{gawk} program in detail.
+Part I describes the @command{awk} language and @command{gawk} program in detail.
 It starts with the basics, and continues through all of the features of @command{awk}.
 It contains the following chapters:
 
@@ -1626,11 +1629,11 @@ as well as how to define your own functions.  It also discusses how
 @end itemize
 
 @item
-@c FIXME: COPYEDIT
 Part II shows how to use @command{awk} and @command{gawk} for problem solving.
 There is lots of code here for you to read and learn from.
 It contains the following chapters:
 
+@c nested
 @itemize @value{MINUS}
 @item
 @ref{Library Functions}, which provides a number of functions meant to
@@ -1645,10 +1648,10 @@ Reading these two chapters allows you to see @command{awk}
 solving real problems.
 
 @item
-@c FIXME: COPYEDIT
 Part III focuses on features specific to @command{gawk}.
 It contains the following chapters:
 
+@c nested
 @itemize @value{MINUS}
 @item
 @ref{Advanced Features},
@@ -1683,7 +1686,6 @@ the @command{gawk} source code and this @value{DOCUMENT}, respectively.
 It contains the following appendices:
 @end ifclear
 @ifset FOR_PRINT
-@c FIXME: COPYEDIT
 Part IV provides the following appendices,
 including the GNU General Public License:
 @end ifset
@@ -1836,7 +1838,7 @@ pressing the @kbd{d} key and finally releasing both keys.
 
 For the sake of brevity, throughout this @value{DOCUMENT}, we refer to
 Brian Kernighan's version of @command{awk} as ``BWK @command{awk}.''
-(@xref{Other Versions}, for information on his and other versions.)
+(@DBXREF{Other Versions} for information on his and other versions.)
 
 @ifset FOR_PRINT
 @quotation NOTE
@@ -1852,7 +1854,7 @@ Cautionary or warning notes look like this.
 @unnumberedsubsec Dark Corners
 @cindex Kernighan, Brian
 @quotation
-@i{Dark corners are basically fractal --- no matter how much
+@i{Dark corners are basically fractal---no matter how much
 you illuminate, there's always a smaller but darker one.}
 @author Brian Kernighan
 @end quotation
@@ -1922,7 +1924,7 @@ The GPL applies to the C language source code for @command{gawk}.
 To find out more about the FSF and the GNU Project online,
 see @uref{http://www.gnu.org, the GNU Project's home page}.
 This @value{DOCUMENT} may also be read from
-@uref{http://www.gnu.org/software/gawk/manual/, their web site}.
+@uref{http://www.gnu.org/software/gawk/manual/, GNU's website}.
 
 @ifclear FOR_PRINT
 A shell, an editor (Emacs), highly portable optimizing C, C++, and
@@ -1959,10 +1961,10 @@ License in @ref{GNU Free Documentation License}.)
 @cindex Close, Diane
 The @value{DOCUMENT} itself has gone through multiple previous editions.
 Paul Rubin wrote the very first draft of @cite{The GAWK Manual};
-it was around 40 pages in size.
+it was around 40 pages long.
 Diane Close and Richard Stallman improved it, yielding a
 version that was
-around 90 pages long and barely described the original, ``old''
+around 90 pages and barely described the original, ``old''
 version of @command{awk}.
 
 I started working with that version in the fall of 1988.
@@ -1995,17 +1997,17 @@ and the major new additions are @ref{Arbitrary Precision Arithmetic},
 and @ref{Dynamic Extensions}.
 
 This @value{DOCUMENT} will undoubtedly continue to evolve.  If you
-find an error in this @value{DOCUMENT}, please report it!  @xref{Bugs},
+find an error in this @value{DOCUMENT}, please report it!  @DBXREF{Bugs}
 for information on submitting problem reports electronically.
 
 @ifset FOR_PRINT
 @c fakenode --- for prepinfo
 @unnumberedsec How to Stay Current
 
-It may be you have a version of @command{gawk} which is newer than the
+You may have a newer version of @command{gawk} than the
 one described here.  To find out what has changed,
 you should first look at the @file{NEWS} file in the @command{gawk}
-distribution, which provides a high level summary of what changed in
+distribution, which provides a high-level summary of what changed in
 each release.
 
 You can then look at the @uref{http://www.gnu.org/software/gawk/manual/,
@@ -2183,7 +2185,7 @@ portable program it is today.  It has been and continues to be a pleasure
 working with this team of fine people.
 
 Notable code and documentation contributions were made by
-a number of people. @xref{Contributors}, for the full list.
+a number of people. @DBXREF{Contributors} for the full list.
 
 @ifset FOR_PRINT
 @cindex Oram, Andy
@@ -2202,7 +2204,7 @@ the Texinfo markup language sane.
 @cindex Kernighan, Brian
 @cindex Brennan, Michael
 @cindex Day, Robert P.J.@:
-Robert P.J.@: Day, Michael Brennan and Brian Kernighan kindly acted as
+Robert P.J.@: Day, Michael Brennan, and Brian Kernighan kindly acted as
 reviewers for the 2015 edition of this @value{DOCUMENT}. Their feedback
 helped improve the final work.
 
@@ -2214,7 +2216,7 @@ or its documentation without his help.
 
 Brian is in a class by himself as a programmer and technical
 author.  I have to thank him (yet again) for his ongoing friendship
-and the role model he has been for me for close to 30 years!
+and for being a role model to me for close to 30 years!
 Having him as a reviewer is an exciting privilege. It has also
 been extremely humbling@enddots{}
 
@@ -2235,8 +2237,8 @@ take advantage of those opportunities.
 @noindent
 Arnold Robbins @*
 Nof Ayalon @*
-ISRAEL @*
-December, 2014
+Israel @*
+December 2014
 @end iftex
 
 @ifnotinfo
@@ -2253,31 +2255,31 @@ following chapters:
 
 @itemize @value{BULLET}
 @item
-@ref{Getting Started}.
+@ref{Getting Started}
 
 @item
-@ref{Invoking Gawk}.
+@ref{Invoking Gawk}
 
 @item
-@ref{Regexp}.
+@ref{Regexp}
 
 @item
-@ref{Reading Files}.
+@ref{Reading Files}
 
 @item
-@ref{Printing}.
+@ref{Printing}
 
 @item
-@ref{Expressions}.
+@ref{Expressions}
 
 @item
-@ref{Patterns and Actions}.
+@ref{Patterns and Actions}
 
 @item
-@ref{Arrays}.
+@ref{Arrays}
 
 @item
-@ref{Functions}.
+@ref{Functions}
 @end itemize
 @end ifdocbook
 
@@ -2292,17 +2294,17 @@ following chapters:
 The basic function of @command{awk} is to search files for lines (or other
 units of text) that contain certain patterns.  When a line matches one
 of the patterns, @command{awk} performs specified actions on that line.
-@command{awk} keeps processing input lines in this way until it reaches
+@command{awk} continues to process input lines in this way until it reaches
 the end of the input files.
 
 @cindex @command{awk}, uses for
 @cindex programming languages@comma{} data-driven vs.@: procedural
 @cindex @command{awk} programs
 Programs in @command{awk} are different from programs in most other languages,
-because @command{awk} programs are @dfn{data-driven}; that is, you describe
-the data you want to work with and then what to do when you find it.
+because @command{awk} programs are @dfn{data driven} (i.e., you describe
+the data you want to work with and then what to do when you find it).
 Most other languages are @dfn{procedural}; you have to describe, in great
-detail, every step the program is to take.  When working with procedural
+detail, every step the program should take.  When working with procedural
 languages, it is usually much
 harder to clearly describe the data your program will process.
 For this reason, @command{awk} programs are often refreshingly easy to
