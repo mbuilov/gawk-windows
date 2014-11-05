@@ -1,3 +1,10 @@
+2014-11-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* select.c (set_retry): New function to set PROCINFO[<name>, "RETRY"].
+	(do_set_non_blocking): If called with a file name as opposed to a file
+	descriptor, call the set_retry function to configure PROCINFO to tell
+	io.c to retry I/O for temporary failures.
+
 2014-10-08         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* inplace.c (do_inplace_begin): Use a cast to void in front

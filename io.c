@@ -3425,6 +3425,13 @@ find_longest_terminator:
 	return REC_OK;
 }
 
+/* return true if PROCINFO[<filename>, "RETRY"] exists */
+static inline int
+retryable(IOBUF *iop)
+{
+	return PROCINFO_node && in_PROCINFO(iop->public.name, "RETRY", NULL);
+}
+
 /* Does the I/O error indicate that the operation should be retried later? */
 
 static inline int
@@ -3500,7 +3507,7 @@ get_a_record(char **out,        /* pointer to pointer to data */
 			return EOF;
 		} else if (iop->count == -1) {
 			*errcode = errno;
-			if (errno_io_retry())
+			if (errno_io_retry() && retryable(iop))
 				return -2;
 			iop->flag |= IOP_AT_EOF; 
 			return EOF;
@@ -3576,7 +3583,7 @@ get_a_record(char **out,        /* pointer to pointer to data */
 		iop->count = iop->public.read_func(iop->public.fd, iop->dataend, amt_to_read);
 		if (iop->count == -1) {
 			*errcode = errno;
-			if (errno_io_retry())
+			if (errno_io_retry() && retryable(iop))
 				return -2;
 			iop->flag |= IOP_AT_EOF;
 			break;

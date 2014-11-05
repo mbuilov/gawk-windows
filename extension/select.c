@@ -496,6 +496,53 @@ set_non_blocking(int fd)
 #endif
 }
 
+static void
+set_retry(const char *name)
+{
+	static const char suffix[] = "RETRY";
+	static awk_array_t procinfo;
+	static char *subsep;
+	static size_t subsep_len;
+	awk_value_t idx, val;
+	char *s;
+	size_t len;
+
+	if (!subsep) {
+		/* initialize cached values for PROCINFO and SUBSEP */
+		awk_value_t res;
+
+		if (! sym_lookup("PROCINFO", AWK_ARRAY, & res)) {
+			procinfo = create_array();
+			res.val_type = AWK_ARRAY;
+			res.array_cookie = procinfo;
+			if (! sym_update("PROCINFO", & res)) {
+				warning(ext_id, _("set_non_blocking: could not install PROCINFO array; unable to configure PROCINFO RETRY for `%s'"), name);
+				return;
+			}
+			/* must retrieve it after installing it! */
+			if (! sym_lookup("PROCINFO", AWK_ARRAY, & res)) {
+				warning(ext_id, _("set_non_blocking: sym_lookup(`%s') failed; unable to configure PROCINFO RETRY for `%s'"), "PROCINFO", name);
+				return;
+			}
+		}
+		procinfo = res.array_cookie;
+
+		if (! sym_lookup("SUBSEP", AWK_STRING, & res)) {
+			warning(ext_id, _("set_non_blocking: sym_lookup(`%s') failed; unable to configure PROCINFO RETRY for `%s'"), "SUBSEP", name);
+			return;
+		}
+		subsep = strdup(res.str_value.str);
+		subsep_len = res.str_value.len;
+	}
+
+	len = strlen(name)+subsep_len+sizeof(suffix)-1;
+	emalloc(s, char *, len+2, "set_non_blocking");
+	sprintf(s, "%s%s%s", name, subsep, suffix);
+
+	if (! set_array_element(procinfo, make_malloced_string(s, len, &idx), make_null_string(&val)))
+		warning(ext_id, _("set_non_blocking: unable to configure PROCINFO RETRY for `%s'"), name);
+}
+
 /*  do_set_non_blocking --- Set a file to be non-blocking */
 
 static awk_value_t *
@@ -520,8 +567,12 @@ do_set_non_blocking(int nargs, awk_value_t *result)
 		(get_argument(1, AWK_STRING, & cmdtype) ||
 			(! cmd.str_value.len && (nargs == 1)))) {
 		const awk_input_buf_t *buf;
-		if ((buf = get_file(cmd.str_value.str, cmd.str_value.len, cmdtype.str_value.str, cmdtype.str_value.len)) != NULL)
-			return make_number(set_non_blocking(buf->fd), result);
+		if ((buf = get_file(cmd.str_value.str, cmd.str_value.len, cmdtype.str_value.str, cmdtype.str_value.len)) != NULL) {
+			int rc = set_non_blocking(buf->fd);
+			if (rc == 0)
+				set_retry(buf->name);
+			return make_number(rc, result);
+		}
 		warning(ext_id, _("set_non_blocking: get_file(`%s', `%s') failed"), cmd.str_value.str, cmdtype.str_value.str);
 	} else if (do_lint) {
 		if (nargs < 2)
