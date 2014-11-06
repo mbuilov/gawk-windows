@@ -173,6 +173,9 @@
 @macro DBXREF{text}
 @xref{\text\}
 @end macro
+@macro DBPXREF{text}
+@pxref{\text\}
+@end macro
 @end ifdocbook
 
 @ifnotdocbook
@@ -181,6 +184,9 @@
 @end macro
 @macro DBXREF{text}
 @xref{\text\},
+@end macro
+@macro DBPXREF{text}
+@pxref{\text\},
 @end macro
 @end ifnotdocbook
 
@@ -5223,7 +5229,7 @@ sequences and that are not listed in the following stand for themselves:
 @cindex backslash (@code{\}), regexp operator
 @cindex @code{\} (backslash), regexp operator
 @item @code{\}
-This is used to suppress the special meaning of a character when
+This suppresses the special meaning of a character when
 matching.  For example, @samp{\$}
 matches the character @samp{$}.
 
@@ -5232,8 +5238,9 @@ matches the character @samp{$}.
 @cindex @code{^} (caret), regexp operator
 @cindex caret (@code{^}), regexp operator
 @item @code{^}
-This matches the beginning of a string.  For example, @samp{^@@chapter}
-matches @samp{@@chapter} at the beginning of a string and can be used
+This matches the beginning of a string.  @samp{^@@chapter}
+matches @samp{@@chapter} at the beginning of a string,
+for example, and can be used
 to identify chapter beginnings in Texinfo source files.
 The @samp{^} is known as an @dfn{anchor}, because it anchors the pattern to
 match only at the beginning of the string.
@@ -5339,7 +5346,7 @@ There are two subtle points to understand about how @samp{*} works.
 First, the @samp{*} applies only to the single preceding regular expression
 component (e.g., in @samp{ph*}, it applies just to the @samp{h}).
 To cause @samp{*} to apply to a larger sub-expression, use parentheses:
-@samp{(ph)*} matches @samp{ph}, @samp{phph}, @samp{phphph} and so on.
+@samp{(ph)*} matches @samp{ph}, @samp{phph}, @samp{phphph}, and so on.
 
 Second, @samp{*} finds as many repetitions as possible. If the text
 to be matched is @samp{phhhhhhhhhhhhhhooey}, @samp{ph*} matches all of
@@ -5439,7 +5446,7 @@ expressions are not available in regular expressions.
 @cindex range expressions (regexps)
 @cindex character lists in regular expression
 
-As mentioned earlier, a bracket expression matches any character amongst
+As mentioned earlier, a bracket expression matches any character among
 those listed between the opening and closing square brackets.
 
 Within a bracket expression, a @dfn{range expression} consists of two
@@ -5497,23 +5504,23 @@ a keyword denoting the class, and @samp{:]}.
 POSIX standard.
 
 @float Table,table-char-classes
-@caption{POSIX Character Classes}
+@caption{POSIX character classes}
 @multitable @columnfractions .15 .85
 @headitem Class @tab Meaning
-@item @code{[:alnum:]} @tab Alphanumeric characters.
-@item @code{[:alpha:]} @tab Alphabetic characters.
-@item @code{[:blank:]} @tab Space and TAB characters.
-@item @code{[:cntrl:]} @tab Control characters.
-@item @code{[:digit:]} @tab Numeric characters.
-@item @code{[:graph:]} @tab Characters that are both printable and visible.
-(A space is printable but not visible, whereas an @samp{a} is both.)
-@item @code{[:lower:]} @tab Lowercase alphabetic characters.
-@item @code{[:print:]} @tab Printable characters (characters that are not control characters).
-@item @code{[:punct:]} @tab Punctuation characters (characters that are not letters, digits,
-control characters, or space characters).
-@item @code{[:space:]} @tab Space characters (such as space, TAB, and formfeed, to name a few).
-@item @code{[:upper:]} @tab Uppercase alphabetic characters.
-@item @code{[:xdigit:]} @tab Characters that are hexadecimal digits.
+@item @code{[:alnum:]} @tab Alphanumeric characters
+@item @code{[:alpha:]} @tab Alphabetic characters
+@item @code{[:blank:]} @tab Space and TAB characters
+@item @code{[:cntrl:]} @tab Control characters
+@item @code{[:digit:]} @tab Numeric characters
+@item @code{[:graph:]} @tab Characters that are both printable and visible
+(a space is printable but not visible, whereas an @samp{a} is both)
+@item @code{[:lower:]} @tab Lowercase alphabetic characters
+@item @code{[:print:]} @tab Printable characters (characters that are not control characters)
+@item @code{[:punct:]} @tab Punctuation characters (characters that are not letters, digits
+control characters, or space characters)
+@item @code{[:space:]} @tab Space characters (such as space, TAB, and formfeed, to name a few)
+@item @code{[:upper:]} @tab Uppercase alphabetic characters
+@item @code{[:xdigit:]} @tab Characters that are hexadecimal digits
 @end multitable
 @end float
 
@@ -5528,7 +5535,7 @@ and numeric characters in your character set.
 @c Thanks to
 @c Date: Tue, 01 Jul 2014 07:39:51 +0200
 @c From: Hermann Peifer <peifer@gmx.eu>
-Some utilities that match regular expressions provide a non-standard
+Some utilities that match regular expressions provide a nonstandard
 @code{[:ascii:]} character class; @command{awk} does not. However, you
 can simulate such a construct using @code{[\x00-\x7F]}.  This matches
 all values numerically between zero and 127, which is the defined
@@ -5887,16 +5894,16 @@ in @ref{Regexp Operators}.
 @end ifnottex
 
 @item @code{--posix}
-Only POSIX regexps are supported; the GNU operators are not special
+Match only POSIX regexps; the GNU operators are not special
 (e.g., @samp{\w} matches a literal @samp{w}).  Interval expressions
 are allowed.
 
 @cindex Brian Kernighan's @command{awk}
 @item @code{--traditional}
-Traditional Unix @command{awk} regexps are matched. The GNU operators
+Match traditional Unix @command{awk} regexps. The GNU operators
 are not special, and interval expressions are not available.
-The POSIX character classes (@samp{[[:alnum:]]}, etc.) are supported,
-as BWK @command{awk} supports them.
+Because BWK @command{awk} supports them,
+the POSIX character classes (@samp{[[:alnum:]]}, etc.) are available.
 Characters described by octal and hexadecimal escape sequences are
 treated literally, even if they represent regexp metacharacters.
 
@@ -5956,7 +5963,7 @@ When @code{IGNORECASE} is not zero, @emph{all} regexp and string
 operations ignore case.
 
 Changing the value of @code{IGNORECASE} dynamically controls the
-case-sensitivity of the program as it runs.  Case is significant by
+case sensitivity of the program as it runs.  Case is significant by
 default because @code{IGNORECASE} (like most variables) is initialized
 to zero:
 
@@ -5969,7 +5976,7 @@ if (x ~ /ab/) @dots{}   # now it will succeed
 @end example
 
 In general, you cannot use @code{IGNORECASE} to make certain rules
-case-insensitive and other rules case-sensitive, because there is no
+case insensitive and other rules case sensitive, as there is no
 straightforward way
 to set @code{IGNORECASE} just for the pattern of
 a particular rule.@footnote{Experienced C and C++ programmers will note
@@ -5980,7 +5987,7 @@ and
 However, this is somewhat obscure and we don't recommend it.}
 To do this, use either bracket expressions or @code{tolower()}.  However, one
 thing you can do with @code{IGNORECASE} only is dynamically turn
-case-sensitivity on or off for all the rules at once.
+case sensitivity on or off for all the rules at once.
 
 @code{IGNORECASE} can be set on the command line or in a @code{BEGIN} rule
 (@pxref{Other Arguments}; also
@@ -6023,12 +6030,12 @@ in conditional expressions, or as part of matching expressions
 using the @samp{~} and @samp{!~} operators.
 
 @item
-Escape sequences let you represent non-printable characters and
+Escape sequences let you represent nonprintable characters and
 also let you represent regexp metacharacters as literal characters
 to be matched.
 
 @item
-Regexp operators provide grouping, alternation and repetition.
+Regexp operators provide grouping, alternation, and repetition.
 
 @item
 Bracket expressions give you a shorthand for specifying sets
@@ -6043,8 +6050,8 @@ the match, such as for text substitution and when the record separator
 is a regexp.
 
 @item
-Matching expressions may use dynamic regexps, that is, string values
-treated as regular expressions.
+Matching expressions may use dynamic regexps (i.e., string values
+treated as regular expressions).
 
 @item
 @command{gawk}'s @code{IGNORECASE} variable lets you control the
@@ -6129,7 +6136,7 @@ never automatically reset to zero.
 @end menu
 
 @node awk split records
-@subsection Record Splitting With Standard @command{awk}
+@subsection Record Splitting with Standard @command{awk}
 
 @cindex separators, for records
 @cindex record separators
@@ -6160,7 +6167,7 @@ awk 'BEGIN @{ RS = "u" @}
 
 @noindent
 changes the value of @code{RS} to @samp{u}, before reading any input.
-This is a string whose first character is the letter ``u;'' as a result, records
+This is a string whose first character is the letter ``u''; as a result, records
 are separated by the letter ``u.''  Then the input file is read, and the second
 rule in the @command{awk} program (the action with no pattern) prints each
 record.  Because each @code{print} statement adds a newline at the end of
@@ -6276,7 +6283,7 @@ The empty string @code{""} (a string without any characters)
 has a special meaning
 as the value of @code{RS}. It means that records are separated
 by one or more blank lines and nothing else.
-@xref{Multiple Line}, for more details.
+@DBXREF{Multiple Line} for more details.
 
 If you change the value of @code{RS} in the middle of an @command{awk} run,
 the new value is used to delimit subsequent records, but the record
@@ -6296,7 +6303,7 @@ sets the variable @code{RT} to the text in the input that matched
 @code{RS}.
 
 @node gawk split records
-@subsection Record Splitting With @command{gawk}
+@subsection Record Splitting with @command{gawk}
 
 @cindex common extensions, @code{RS} as a regexp
 @cindex extensions, common@comma{} @code{RS} as a regexp
@@ -6340,11 +6347,11 @@ $ @kbd{echo record 1 AAAA record 2 BBBB record 3 |}
 The square brackets delineate the contents of @code{RT}, letting you
 see the leading and trailing whitespace. The final value of
 @code{RT} is a newline.
-@xref{Simple Sed}, for a more useful example
+@DBXREF{Simple Sed} for a more useful example
 of @code{RS} as a regexp and @code{RT}.
 
 If you set @code{RS} to a regular expression that allows optional
-trailing text, such as @samp{RS = "abc(XYZ)?"} it is possible, due
+trailing text, such as @samp{RS = "abc(XYZ)?"}, it is possible, due
 to implementation constraints, that @command{gawk} may match the leading
 part of the regular expression, but not the trailing part, particularly
 if the input text that could match the trailing part is fairly long.
@@ -6407,7 +6414,7 @@ character as a record separator. However, this is a special case:
 
 @cindex records, treating files as
 @cindex treating files, as single records
-@xref{Readfile Function}, for an interesting way to read
+@DBXREF{Readfile Function} for an interesting way to read
 whole files.  If you are using @command{gawk}, see @ref{Extension Sample
 Readfile}, for another option.
 @end sidebar
@@ -6431,9 +6438,9 @@ called @dfn{fields}.  By default, fields are separated by @dfn{whitespace},
 like words in a line.
 Whitespace in @command{awk} means any string of one or more spaces,
 TABs, or newlines;@footnote{In POSIX @command{awk}, newlines are not
-considered whitespace for separating fields.} other characters, such as
-formfeed, vertical tab, etc., that are
-considered whitespace by other languages, are @emph{not} considered
+considered whitespace for separating fields.} other characters
+that are considered whitespace by other languages
+(such as formfeed, vertical tab, etc.) are @emph{not} considered
 whitespace by @command{awk}.
 
 The purpose of fields is to make it more convenient for you to refer to
@@ -6450,7 +6457,7 @@ to refer to a field in an @command{awk} program,
 followed by the number of the field you want.  Thus, @code{$1}
 refers to the first field, @code{$2} to the second, and so on.
 (Unlike the Unix shells, the field numbers are not limited to single digits.
-@code{$127} is the one hundred twenty-seventh field in the record.)
+@code{$127} is the 127th field in the record.)
 For example, suppose the following is a line of input:
 
 @example
@@ -6520,7 +6527,7 @@ awk '@{ print $NR @}'
 
 @noindent
 Recall that @code{NR} is the number of records read so far: one in the
-first record, two in the second, etc.  So this example prints the first
+first record, two in the second, and so on.  So this example prints the first
 field of the first record, the second field of the second record, and so
 on.  For the twentieth record, field number 20 is printed; most likely,
 the record has fewer than 20 fields, so this prints a blank line.
@@ -6537,7 +6544,7 @@ The parentheses are used so that the multiplication is done before the
 @samp{$} operation; they are necessary whenever there is a binary
 operator@footnote{A @dfn{binary operator}, such as @samp{*} for
 multiplication, is one that takes two operands. The distinction
-is required, since @command{awk} also has unary (one-operand)
+is required, because @command{awk} also has unary (one-operand)
 and ternary (three-operand) operators.}
 in the field-number expression.  This example, then, prints the
 type of relationship (the fourth field) for every line of the file
@@ -6611,7 +6618,7 @@ $ @kbd{awk '@{ $2 = $2 - 10; print $0 @}' inventory-shipped}
 @dots{}
 @end example
 
-It is also possible to also assign contents to fields that are out
+It is also possible to assign contents to fields that are out
 of range.  For example:
 
 @example
@@ -6662,9 +6669,9 @@ else
 
 @noindent
 should print @samp{everything is normal}, because @code{NF+1} is certain
-to be out of range.  (@xref{If Statement},
+to be out of range.  (@DBXREF{If Statement}
 for more information about @command{awk}'s @code{if-else} statements.
-@xref{Typing and Comparison},
+@DBXREF{Typing and Comparison}
 for more information about the @samp{!=} operator.)
 
 It is important to note that making an assignment to an existing field
@@ -6749,7 +6756,7 @@ in a record simply by setting @code{FS} and @code{OFS}, and then
 expecting a plain @samp{print} or @samp{print $0} to print the
 modified record.
 
-But this does not work, since nothing was done to change the record
+But this does not work, because nothing was done to change the record
 itself.  Instead, you must force the record to be rebuilt, typically
 with a statement such as @samp{$1 = $1}, as described earlier.
 @end sidebar
@@ -6801,7 +6808,7 @@ the Unix Bourne shell, @command{sh}, or Bash).
 @cindex @code{FS} variable, changing value of
 The value of @code{FS} can be changed in the @command{awk} program with the
 assignment operator, @samp{=} (@pxref{Assignment Ops}).
-Often the right time to do this is at the beginning of execution
+Often, the right time to do this is at the beginning of execution
 before any input has been processed, so that the very first record
 is read with the proper separator.  To do this, use the special
 @code{BEGIN} pattern
@@ -6957,7 +6964,7 @@ statement prints the new @code{$0}.
 @cindex dark corner, @code{^}, in @code{FS}
 There is an additional subtlety to be aware of when using regular expressions
 for field splitting.
-It is not well-specified in the POSIX standard, or anywhere else, what @samp{^}
+It is not well specified in the POSIX standard, or anywhere else, what @samp{^}
 means when splitting fields.  Does the @samp{^}  match only at the beginning of
 the entire record? Or is each field separator a new string?  It turns out that
 different @command{awk} versions answer this question differently, and you
@@ -7123,11 +7130,11 @@ awk -F: '$5 == ""' /etc/passwd
 @end example
 
 @node Full Line Fields
-@subsection Making The Full Line Be A Single Field
+@subsection Making the Full Line Be a Single Field
 
 Occasionally, it's useful to treat the whole input line as a
 single field.  This can be done easily and portably simply by
-setting @code{FS} to @code{"\n"} (a newline).@footnote{Thanks to
+setting @code{FS} to @code{"\n"} (a newline):@footnote{Thanks to
 Andrew Schorr for this tip.}
 
 @example
@@ -7136,42 +7143,6 @@ awk -F'\n' '@var{program}' @var{files @dots{}}
 
 @noindent
 When you do this, @code{$1} is the same as @code{$0}.
-
-@node Field Splitting Summary
-@subsection Field-Splitting Summary
-
-It is important to remember that when you assign a string constant
-as the value of @code{FS}, it undergoes normal @command{awk} string
-processing.  For example, with Unix @command{awk} and @command{gawk},
-the assignment @samp{FS = "\.."} assigns the character string @code{".."}
-to @code{FS} (the backslash is stripped).  This creates a regexp meaning
-``fields are separated by occurrences of any two characters.''
-If instead you want fields to be separated by a literal period followed
-by any single character, use @samp{FS = "\\.."}.
-
-The following list summarizes how fields are split, based on the value
-of @code{FS} (@samp{==} means ``is equal to''):
-
-@table @code
-@item FS == " "
-Fields are separated by runs of whitespace.  Leading and trailing
-whitespace are ignored.  This is the default.
-
-@item FS == @var{any other single character}
-Fields are separated by each occurrence of the character.  Multiple
-successive occurrences delimit empty fields, as do leading and
-trailing occurrences.
-The character can even be a regexp metacharacter; it does not need
-to be escaped.
-
-@item FS == @var{regexp}
-Fields are separated by occurrences of characters that match @var{regexp}.
-Leading and trailing matches of @var{regexp} delimit empty fields.
-
-@item FS == ""
-Each individual character in the record becomes a separate field.
-(This is a common extension; it is not specified by the POSIX standard.)
-@end table
 
 @sidebar Changing @code{FS} Does Not Affect the Fields
 
@@ -7218,6 +7189,42 @@ root:nSijPlPhZZwgE:0:0:Root:/:
 @end example
 @end sidebar
 
+@node Field Splitting Summary
+@subsection Field-Splitting Summary
+
+It is important to remember that when you assign a string constant
+as the value of @code{FS}, it undergoes normal @command{awk} string
+processing.  For example, with Unix @command{awk} and @command{gawk},
+the assignment @samp{FS = "\.."} assigns the character string @code{".."}
+to @code{FS} (the backslash is stripped).  This creates a regexp meaning
+``fields are separated by occurrences of any two characters.''
+If instead you want fields to be separated by a literal period followed
+by any single character, use @samp{FS = "\\.."}.
+
+The following list summarizes how fields are split, based on the value
+of @code{FS} (@samp{==} means ``is equal to''):
+
+@table @code
+@item FS == " "
+Fields are separated by runs of whitespace.  Leading and trailing
+whitespace are ignored.  This is the default.
+
+@item FS == @var{any other single character}
+Fields are separated by each occurrence of the character.  Multiple
+successive occurrences delimit empty fields, as do leading and
+trailing occurrences.
+The character can even be a regexp metacharacter; it does not need
+to be escaped.
+
+@item FS == @var{regexp}
+Fields are separated by occurrences of characters that match @var{regexp}.
+Leading and trailing matches of @var{regexp} delimit empty fields.
+
+@item FS == ""
+Each individual character in the record becomes a separate field.
+(This is a common extension; it is not specified by the POSIX standard.)
+@end table
+
 @sidebar @code{FS} and @code{IGNORECASE}
 
 The @code{IGNORECASE} variable
@@ -7236,7 +7243,7 @@ print $1
 @noindent
 The output is @samp{aCa}.  If you really want to split fields on an
 alphabetic character while ignoring case, use a regexp that will
-do it for you.  E.g., @samp{FS = "[c]"}.  In this case, @code{IGNORECASE}
+do it for you (e.g., @samp{FS = "[c]"}).  In this case, @code{IGNORECASE}
 will take effect.
 @end sidebar
 
@@ -7246,18 +7253,19 @@ will take effect.
 @node Constant Size
 @section Reading Fixed-Width Data
 
+@cindex data, fixed-width
+@cindex fixed-width data
+@cindex advanced features, fixed-width data
+@command{gawk} provides a facility for dealing with
+fixed-width fields with no distinctive field separator.
+
 @quotation NOTE
 This @value{SECTION} discusses an advanced
 feature of @command{gawk}.  If you are a novice @command{awk} user,
 you might want to skip it on the first reading.
 @end quotation
 
-@cindex data, fixed-width
-@cindex fixed-width data
-@cindex advanced features, fixed-width data
-@command{gawk} provides a facility for dealing with
-fixed-width fields with no distinctive field separator.  For example,
-data of this nature arises in the input for old Fortran programs where
+Fixed-width data data arises in the input for old Fortran programs where
 numbers are run together, or in the output of programs that did not
 anticipate the use of their output as input for other programs.
 
@@ -7298,14 +7306,9 @@ dave     ttyq4    26Jun9115days     46     46  wnewmail
 @end group
 @end example
 
-The following program takes the above input, converts the idle time to
+The following program takes this input, converts the idle time to
 number of seconds, and prints out the first two fields and the calculated
 idle time:
-
-@quotation NOTE
-This program uses a number of @command{awk} features that
-haven't been introduced yet.
-@end quotation
 
 @example
 BEGIN  @{ FIELDWIDTHS = "9 6 10 6 7 7 35" @}
@@ -7324,6 +7327,11 @@ NR > 2 @{
     print $1, $2, idle
 @}
 @end example
+
+@quotation NOTE
+The preceding program uses a number of @command{awk} features that
+haven't been introduced yet.
+@end quotation
 
 Running the program on the data produces the following results:
 
@@ -7370,7 +7378,7 @@ else
 This information is useful when writing a function
 that needs to temporarily change @code{FS} or @code{FIELDWIDTHS},
 read some records, and then restore the original settings
-(@pxref{Passwd Functions},
+(@DBPXREF{Passwd Functions},
 for an example of such a function).
 
 @node Splitting By Content
