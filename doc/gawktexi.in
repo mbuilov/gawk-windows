@@ -2895,7 +2895,7 @@ escapes mean.
 A fourth option is to use command-line variable assignment, like this:
 
 @example
-$ awk -v sq="'" 'BEGIN @{ print "Here is a single quote <" sq ">" @}'
+$ @kbd{awk -v sq="'" 'BEGIN @{ print "Here is a single quote <" sq ">" @}'}
 @print{} Here is a single quote <'>
 @end example
 
@@ -3424,9 +3424,9 @@ starts a comment, it ignores @emph{everything} on the rest of the
 line. For example:
 
 @example
-$ gawk 'BEGIN @{ print "dont panic" # a friendly \
->                                    BEGIN rule
-> @}'
+$ @kbd{gawk 'BEGIN @{ print "dont panic" # a friendly \}
+> @kbd{                                   BEGIN rule}
+> @kbd{@}'}
 @error{} gawk: cmd. line:2:                BEGIN rule
 @error{} gawk: cmd. line:2:                ^ syntax error
 @end example
@@ -5993,7 +5993,7 @@ case sensitivity on or off for all the rules at once.
 (@pxref{Other Arguments}; also
 @pxref{Using BEGIN/END}).
 Setting @code{IGNORECASE} from the command line is a way to make
-a program case-insensitive without having to edit it.
+a program case insensitive without having to edit it.
 
 @c @cindex ISO 8859-1
 @c @cindex ISO Latin-1
@@ -6125,7 +6125,7 @@ used with it do not have to be named on the @command{awk} command line
 @command{awk} divides the input for your program into records and fields.
 It keeps track of the number of records that have been read so far from
 the current input file.  This value is stored in a predefined variable
-called @code{FNR} which is reset to zero every time a new file is started.
+called @code{FNR}, which is reset to zero every time a new file is started.
 Another predefined variable, @code{NR}, records the total number of input
 records read so far from all @value{DF}s.  It starts at zero, but is
 never automatically reset to zero.
@@ -6153,7 +6153,7 @@ the value of @code{RS} can be changed in the @command{awk} program
 with the assignment operator, @samp{=}
 (@pxref{Assignment Ops}).
 The new record-separator character should be enclosed in quotation marks,
-which indicate a string constant.  Often the right time to do this is
+which indicate a string constant.  Often, the right time to do this is
 at the beginning of execution, before any input is processed,
 so that the very first record is read with the proper separator.
 To do this, use the special @code{BEGIN} pattern
@@ -6261,7 +6261,7 @@ being fully POSIX-compliant (@pxref{Options}).
 Then, the following (extreme) pipeline prints a surprising @samp{1}:
 
 @example
-$ echo | gawk --posix 'BEGIN @{ RS = "a" @} ; @{ print NF @}'
+$ @kbd{echo | gawk --posix 'BEGIN @{ RS = "a" @} ; @{ print NF @}'}
 @print{} 1
 @end example
 
@@ -6415,8 +6415,8 @@ character as a record separator. However, this is a special case:
 @cindex records, treating files as
 @cindex treating files, as single records
 @DBXREF{Readfile Function} for an interesting way to read
-whole files.  If you are using @command{gawk}, see @ref{Extension Sample
-Readfile}, for another option.
+whole files.  If you are using @command{gawk}, see @DBREF{Extension Sample
+Readfile} for another option.
 @end sidebar
 @c ENDOFRANGE inspl
 @c ENDOFRANGE recspl
@@ -6711,8 +6711,8 @@ after the new value of @code{NF} and recomputes @code{$0}.
 Here is an example:
 
 @example
-$ echo a b c d e f | awk '@{ print "NF =", NF;
->                           NF = 3; print $0 @}'
+$ @kbd{echo a b c d e f | awk '@{ print "NF =", NF;}
+> @kbd{                          NF = 3; print $0 @}'}
 @print{} NF = 6
 @print{} a b c
 @end example
@@ -7256,18 +7256,17 @@ will take effect.
 @cindex data, fixed-width
 @cindex fixed-width data
 @cindex advanced features, fixed-width data
-@command{gawk} provides a facility for dealing with
-fixed-width fields with no distinctive field separator.
 
-@quotation NOTE
+@c O'Reilly doesn't like it as a note the first thing in the section.
 This @value{SECTION} discusses an advanced
 feature of @command{gawk}.  If you are a novice @command{awk} user,
 you might want to skip it on the first reading.
-@end quotation
 
-Fixed-width data data arises in the input for old Fortran programs where
-numbers are run together, or in the output of programs that did not
-anticipate the use of their output as input for other programs.
+@command{gawk} provides a facility for dealing with fixed-width fields
+with no distinctive field separator.  For example, data of this nature
+arises in the input for old Fortran programs where numbers are run
+together, or in the output of programs that did not anticipate the use
+of their output as input for other programs.
 
 An example of the latter is a table where all the columns are lined up by
 the use of a variable number of spaces and @emph{empty fields are just
@@ -7378,17 +7377,16 @@ else
 This information is useful when writing a function
 that needs to temporarily change @code{FS} or @code{FIELDWIDTHS},
 read some records, and then restore the original settings
-(@DBPXREF{Passwd Functions},
+(@DBPXREF{Passwd Functions}
 for an example of such a function).
 
 @node Splitting By Content
-@section Defining Fields By Content
+@section Defining Fields by Content
 
-@quotation NOTE
+@c O'Reilly doesn't like it as a note the first thing in the section.
 This @value{SECTION} discusses an advanced
 feature of @command{gawk}.  If you are a novice @command{awk} user,
 you might want to skip it on the first reading.
-@end quotation
 
 @cindex advanced features, specifying field content
 Normally, when using @code{FS}, @command{gawk} defines the fields as the
@@ -7399,12 +7397,12 @@ However, there are times when you really want to define the fields by
 what they are, and not by what they are not.
 
 The most notorious such case
-is so-called @dfn{comma separated value} (CSV) data. Many spreadsheet programs,
+is so-called @dfn{comma-separated values} (CSV) data. Many spreadsheet programs,
 for example, can export their data into text files, where each record is
 terminated with a newline, and fields are separated by commas. If only
 commas separated the data, there wouldn't be an issue. The problem comes when
-one of the fields contains an @emph{embedded} comma. While there is no
-formal standard specification for CSV data@footnote{At least, we don't know of one.},
+one of the fields contains an @emph{embedded} comma. Altough there is no
+formal standard specification for CSV data,@footnote{At least, we don't know of one.}
 in such cases, most programs embed the field in double quotes. So we might
 have data like this:
 
@@ -7420,7 +7418,7 @@ The @code{FPAT} variable offers a solution for cases like this.
 The value of @code{FPAT} should be a string that provides a regular expression.
 This regular expression describes the contents of each field.
 
-In the case of CSV data as presented above, each field is either ``anything that
+In the case of CSV data as presented here, each field is either ``anything that
 is not a comma,'' or ``a double quote, anything that is not a double quote, and a
 closing double quote.''  If written as a regular expression constant
 (@pxref{Regexp}),
@@ -7485,7 +7483,7 @@ will be @code{"FPAT"} if content-based field splitting is being used.
 @quotation NOTE
 Some programs export CSV data that contains embedded newlines between
 the double quotes.  @command{gawk} provides no way to deal with this.
-Since there is no formal specification for CSV data, there isn't much
+Because no formal specification for CSV data exists, there isn't much
 more to be done;
 the @code{FPAT} mechanism provides an elegant solution for the majority
 of cases, and the @command{gawk} developers are satisfied with that. 
@@ -7642,7 +7640,7 @@ $ @kbd{awk -f addrs.awk addresses}
 @dots{}
 @end example
 
-@xref{Labels Program}, for a more realistic program that deals with
+@DBXREF{Labels Program} for a more realistic program dealing with
 address lists.  The following list summarizes how records are split,
 based on the value of
 @ifinfo
@@ -7737,7 +7735,7 @@ represents a shell command.
 
 @quotation NOTE
 When @option{--sandbox} is specified (@pxref{Options}),
-reading lines from files, pipes and coprocesses is disabled.
+reading lines from files, pipes, and coprocesses is disabled.
 @end quotation
 
 @menu
@@ -7880,7 +7878,7 @@ free
 @end example
 
 The @code{getline} command used in this way sets only the variables
-@code{NR}, @code{FNR} and @code{RT} (and of course, @var{var}).
+@code{NR}, @code{FNR}, and @code{RT} (and of course, @var{var}).
 The record is not
 split into fields, so the values of the fields (including @code{$0}) and
 the value of @code{NF} do not change.
@@ -7934,7 +7932,7 @@ you want your program to be portable to all @command{awk} implementations.
 
 Use @samp{getline @var{var} < @var{file}} to read input
 from the file
-@var{file}, and put it in the variable @var{var}.  As above, @var{file}
+@var{file}, and put it in the variable @var{var}.  As earlier, @var{file}
 is a string-valued expression that specifies the file from which to read.
 
 In this version of @code{getline}, none of the predefined variables are
@@ -7970,7 +7968,7 @@ One deficiency of this program is that it does not process nested
 @code{@@include} statements
 (i.e., @code{@@include} statements in included files)
 the way a true macro preprocessor would.
-@xref{Igawk Program}, for a program
+@DBXREF{Igawk Program} for a program
 that does handle nested @code{@@include} statements.
 
 @node Getline/Pipe
@@ -8269,7 +8267,7 @@ and whether the variant is standard or a @command{gawk} extension.
 Note: for each variant, @command{gawk} sets the @code{RT} predefined variable.
 
 @float Table,table-getline-variants
-@caption{@code{getline} Variants and What They Set}
+@caption{@code{getline} variants and what they set}
 @multitable @columnfractions .33 .38 .27
 @headitem Variant @tab Effect @tab @command{awk} / @command{gawk}
 @item @code{getline} @tab Sets @code{$0}, @code{NF}, @code{FNR}, @code{NR}, and @code{RT} @tab @command{awk}
@@ -8287,7 +8285,7 @@ Note: for each variant, @command{gawk} sets the @code{RT} predefined variable.
 @c ENDOFRANGE infir
 
 @node Read Timeout
-@section Reading Input With A Timeout
+@section Reading Input with a Timeout
 @cindex timeout, reading input
 
 @cindex differences in @command{awk} and @command{gawk}, read timeouts
@@ -8295,7 +8293,7 @@ This @value{SECTION} describes a feature that is specific to @command{gawk}.
 
 You may specify a timeout in milliseconds for reading input from the keyboard,
 a pipe, or two-way communication, including TCP/IP sockets. This can be done
-on a per input, command or connection basis, by setting a special element
+on a per input, command, or connection basis, by setting a special element
 in the @code{PROCINFO} array (@pxref{Auto-set}):
 
 @example
@@ -8369,11 +8367,11 @@ You should not assume that the read operation will block
 exactly after the tenth record has been printed. It is possible that
 @command{gawk} will read and buffer more than one record's
 worth of data the first time. Because of this, changing the value
-of timeout like in the above example is not very useful.
+of timeout like in the preceding example is not very useful.
 @end quotation
 
-If the @code{PROCINFO} element is not present and the environment
-variable @env{GAWK_READ_TIMEOUT} exists,
+If the @code{PROCINFO} element is not present and the
+@env{GAWK_READ_TIMEOUT} environment variable exists,
 @command{gawk} uses its value to initialize the timeout value.
 The exclusive use of the environment variable to specify timeout
 has the disadvantage of not being able to control it
@@ -8394,7 +8392,7 @@ or the attempt to open a FIFO special file for reading can block
 indefinitely until some other process opens it for writing.
 
 @node Command-line directories
-@section Directories On The Command Line
+@section Directories on the Command Line
 @cindex differences in @command{awk} and @command{gawk}, command-line directories
 @cindex directories, command-line
 @cindex command line, directories on
@@ -8416,7 +8414,7 @@ If either of the @option{--posix}
 or @option{--traditional} options is given, then @command{gawk} reverts
 to treating a directory on the command line as a fatal error.
 
-@xref{Extension Sample Readdir}, for a way to treat directories
+@DBXREF{Extension Sample Readdir} for a way to treat directories
 as usable data from an @command{awk} program.
 
 @node Input Summary
@@ -8443,7 +8441,7 @@ The possibilities are as follows:
 
 @item
 After splitting the input into records, @command{awk} further splits
-the record into individual fields, named @code{$1}, @code{$2} and so
+the record into individual fields, named @code{$1}, @code{$2}, and so
 on. @code{$0} is the whole record, and @code{NF} indicates how many
 fields there are.  The default way to split fields is between whitespace
 characters.
@@ -8457,7 +8455,7 @@ greater than @code{NF} creates the field and rebuilds the record, using
 thing. Decrementing @code{NF} throws away fields and rebuilds the record.
 
 @item
-Field splitting is more complicated than record splitting.
+Field splitting is more complicated than record splitting:
 
 @multitable @columnfractions .40 .45 .15
 @headitem Field separator value @tab Fields are split @dots{} @tab @command{awk} / @command{gawk}
@@ -11156,7 +11154,7 @@ This is most notable in some commercial @command{awk} versions.
 For example:
 
 @example
-$ awk /==/ /dev/null
+$ @kbd{awk /==/ /dev/null}
 @error{} awk: syntax error at source line 1
 @error{}  context is
 @error{}         >>> /= <<<
@@ -18036,7 +18034,7 @@ interprets the current time according to the format specifiers in
 the string.  For example:
 
 @example
-$ date '+Today is %A, %B %d, %Y.'
+$ @kbd{date '+Today is %A, %B %d, %Y.'}
 @print{} Today is Monday, September 22, 2014.
 @end example
 
@@ -27899,7 +27897,7 @@ called ``Hippy.'' Ah, well.}
 
 @example
 @group
-$ cp guide.pot guide-mellow.po
+$ @kbd{cp guide.pot guide-mellow.po}
 @var{Add translations to} guide-mellow.po @dots{}
 @end group
 @end example
