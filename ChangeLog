@@ -1,3 +1,26 @@
+2014-11-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (redirect_string): First argument should be const.  Add a new
+	extfd argument to enable extensions to create files with pre-opened
+	file descriptors.
+	(after_beginfile): Declare function used in both eval.c and gawkapi.c.
+	* eval.c (after_beginfile): Remove extern declaration now in awk.h.
+	* gawkapi.c (api_get_file): Implement API changes to return
+	awk_input_buf_t and/or awk_output_buf_t info, as well as accept an
+	fd for inserting an opened file into the table.
+	* gawkapi.h (gawk_api): Modify the api_get_file declaration to
+	return awk_bool_t and add 3 new arguments -- a file descriptor
+	for inserting an already opened file, and awk_input_buf_t and
+	awk_output_buf_t to return info about both input and output.
+	(get_file): Add new arguments to the macro.
+	* io.c (redirect_string): First arg should be const, and add a new
+	extfd arg so extensions can pass in a file that has already been
+	opened by the extension.  Use the passed-in fd when appropriate,
+	and pass it into two_way_open.
+	(redirect): Pass new fd -1 arg to redirect_string.
+	(two_way_open): Accept new extension fd parameter and open it
+	as a socket.
+
 2014-11-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* io.c (retryable): New function to indicate whether I/O can be

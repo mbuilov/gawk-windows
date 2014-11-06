@@ -1,3 +1,15 @@
+2014-11-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* errno.c (do_errno2name, do_name2errno): Remove unused variable 'str'.
+	* select.c (do_signal): Remove unused variable 'override'.
+	(grabfd): New helper function to map a gawk file to the appropriate
+	fd for use in the arguments to selectd.
+	(do_select): get_file has 3 new arguments and returns info about both
+	the input and output buf.
+	(do_set_non_blocking): Support changes to get_file API.
+	* testext.c (test_get_file): New test function to check that extension
+	file creation via the get_file API is working.
+
 2014-11-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* select.c (set_retry): New function to set PROCINFO[<name>, "RETRY"].

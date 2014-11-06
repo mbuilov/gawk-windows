@@ -264,7 +264,7 @@ static IOBUF *iop_alloc(int fd, const char *name, int errno_val);
 static IOBUF *iop_finish(IOBUF *iop);
 static int gawk_pclose(struct redirect *rp);
 static int str2mode(const char *mode);
-static int two_way_open(const char *str, struct redirect *rp);
+static int two_way_open(const char *str, struct redirect *rp, int extfd);
 static int pty_vs_pipe(const char *command);
 static void find_input_parser(IOBUF *iop);
 static bool find_output_wrapper(awk_output_buf_t *outbuf);
@@ -720,7 +720,7 @@ redflags2str(int flags)
 /* redirect --- Redirection for printf and print commands */
 
 struct redirect *
-redirect_string(char *str, size_t explen, int not_string, int redirtype, int *errflg)
+redirect_string(const char *str, size_t explen, int not_string, int redirtype, int *errflg, int extfd)
 {
 	struct redirect *rp;
 	int tflag = 0;
@@ -848,7 +848,7 @@ redirect_string(char *str, size_t explen, int not_string, int redirtype, int *er
 		memcpy(newstr, str, explen);
 		newstr[explen] = '\0';
 		str = newstr;
-		rp->value = str;
+		rp->value = newstr;
 		rp->flag = tflag;
 		init_output_wrapper(& rp->output);
 		rp->output.name = str;
@@ -880,6 +880,10 @@ redirect_string(char *str, size_t explen, int not_string, int redirtype, int *er
 			mode = binmode("a");
 			break;
 		case redirect_pipe:
+			if (extfd >= 0) {
+				warning(_("get_file cannot create pipe `%s' with fd %d"), str, extfd);
+				return NULL;
+			}
 			/* synchronize output before new pipe */
 			(void) flush_io();
 
@@ -893,6 +897,10 @@ redirect_string(char *str, size_t explen, int not_string, int redirtype, int *er
 			rp->flag |= RED_NOBUF;
 			break;
 		case redirect_pipein:
+			if (extfd >= 0) {
+				warning(_("get_file cannot create pipe `%s' with fd %d"), str, extfd);
+				return NULL;
+			}
 			direction = "from";
 			if (gawk_popen(str, rp) == NULL)
 				fatal(_("can't open pipe `%s' for input (%s)"),
@@ -900,7 +908,7 @@ redirect_string(char *str, size_t explen, int not_string, int redirtype, int *er
 			break;
 		case redirect_input:
 			direction = "from";
-			fd = devopen(str, binmode("r"));
+			fd = (extfd >= 0) ? extfd : devopen(str, binmode("r"));
 			if (fd == INVALID_HANDLE && errno == EISDIR) {
 				*errflg = EISDIR;
 				/* do not free rp, saving it for reuse (save_rp = rp) */
@@ -917,8 +925,14 @@ redirect_string(char *str, size_t explen, int not_string, int redirtype, int *er
 			}
 			break;
 		case redirect_twoway:
+#ifndef HAVE_SOCKETS
+			if (extfd >= 0) {
+				warning(_("get_file socket creation not supported on this platform for `%s' with fd %d"), str, extfd);
+				return NULL;
+			}
+#endif
 			direction = "to/from";
-			if (! two_way_open(str, rp)) {
+			if (! two_way_open(str, rp, extfd)) {
 #ifdef HAVE_SOCKETS
 				if (inetfile(str, NULL)) {
 					*errflg = errno;
@@ -937,7 +951,7 @@ redirect_string(char *str, size_t explen, int not_string, int redirtype, int *er
 		if (mode != NULL) {
 			errno = 0;
 			rp->output.mode = mode;
-			fd = devopen(str, mode);
+			fd = (extfd >= 0) ? extfd : devopen(str, mode);
 
 			if (fd > INVALID_HANDLE) {
 				if (fd == fileno(stdin))
@@ -1042,7 +1056,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 	int not_string = ((redir_exp->flags & STRCUR) == 0);
 	redir_exp = force_string(redir_exp);
 	return redirect_string(redir_exp->stptr, redir_exp->stlen, not_string,
-				redirtype, errflg);
+				redirtype, errflg, -1);
 }
 
 /* getredirect --- find the struct redirect for this file or pipe */
@@ -1700,16 +1714,16 @@ strictopen:
 /* two_way_open --- open a two way communications channel */
 
 static int
-two_way_open(const char *str, struct redirect *rp)
+two_way_open(const char *str, struct redirect *rp, int extfd)
 {
 	static bool no_ptys = false;
 
 #ifdef HAVE_SOCKETS
 	/* case 1: socket */
-	if (inetfile(str, NULL)) {
+	if (extfd >= 0 || inetfile(str, NULL)) {
 		int fd, newfd;
 
-		fd = devopen(str, "rw");
+		fd = (extfd >= 0) ? extfd : devopen(str, "rw");
 		if (fd == INVALID_HANDLE)
 			return false;
 		if ((BINMODE & BINMODE_OUTPUT) != 0)

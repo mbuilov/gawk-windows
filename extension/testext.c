@@ -37,6 +37,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include "gawkapi.h"
 
@@ -710,6 +711,7 @@ BEGIN {
 	ret = test_indirect_vars()	# should get correct value of NR
 	printf("test_indirect_var() return %d\n", ret)
 	delete ARGV[1]
+	print ""
 }
 */
 
@@ -740,6 +742,63 @@ test_indirect_vars(int nargs, awk_value_t *result)
 	make_number(1.0, result);
 out:
 	return result;
+}
+
+/*
+BEGIN {
+	outfile = "testexttmp.txt"
+	alias = ".test.alias"
+	print "line 1" > outfile
+	print "line 2" > outfile
+	print "line 3" > outfile
+	close(outfile)
+	ret = test_get_file(outfile, alias)
+	printf "test_get_file returned %d\n", ret
+	nr = 0
+	while ((getline < alias) > 0)
+		printf "File [%s] nr [%s]: %s\n", alias, ++nr, $0
+	close(alias)
+	system("rm " outfile)
+	print ""
+}
+*/
+
+/* test_get_file --- test that we can create a file */
+
+static awk_value_t *
+test_get_file(int nargs, awk_value_t *result)
+{
+	awk_value_t filename, alias;
+	int fd;
+	const awk_input_buf_t *ibuf;
+	const awk_output_buf_t *obuf;
+
+	if (nargs != 2) {
+		printf("%s: nargs not right (%d should be 2)\n", __func__, nargs);
+		return make_number(-1.0, result);
+	}
+
+	if (! get_argument(0, AWK_STRING, & filename)) {
+		printf("%s: cannot get first arg\n", __func__);
+		return make_number(-1.0, result);
+	}
+	if (! get_argument(1, AWK_STRING, & alias)) {
+		printf("%s: cannot get first arg\n", __func__);
+		return make_number(-1.0, result);
+	}
+	if ((fd = open(filename.str_value.str, O_RDONLY)) < 0) {
+		printf("%s: open(%s) failed\n", __func__, filename.str_value.str);
+		return make_number(-1.0, result);
+	}
+	if (! get_file(alias.str_value.str, strlen(alias.str_value.str), "<", 1, fd, &ibuf, &obuf)) {
+		printf("%s: get_file(%s) failed\n", __func__, alias.str_value.str);
+		return make_number(-1.0, result);
+	}
+	if (! ibuf || ibuf->fd != fd) {
+		printf("%s: get_file(%s) returned fd %d instead of %d\n", __func__, alias.str_value.str, ibuf ? ibuf->fd : -1, fd);
+		return make_number(-1.0, result);
+	}
+	return make_number(0.0, result);
 }
 
 /* fill_in_array --- fill in a new array */
@@ -837,6 +896,7 @@ static awk_ext_func_t func_table[] = {
 	{ "test_scalar", test_scalar, 1 },
 	{ "test_scalar_reserved", test_scalar_reserved, 0 },
 	{ "test_indirect_vars", test_indirect_vars, 0 },
+	{ "test_get_file", test_get_file, 2 },
 };
 
 /* init_testext --- additional initialization function */

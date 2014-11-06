@@ -223,7 +223,6 @@ do_signal(int nargs, awk_value_t *result)
 	
 #ifdef HAVE_SIGACTION
 	{
-		awk_value_t override;
 		struct sigaction sa, prev;
 		sa.sa_handler = func;
 		sigfillset(& sa.sa_mask);  /* block all signals in handler */
@@ -307,6 +306,27 @@ do_kill(int nargs, awk_value_t *result)
 #endif
 }
 
+static int
+grabfd(int i, const awk_input_buf_t *ibuf, const awk_output_buf_t *obuf, const char *fnm, const char *ftp)
+{
+	switch (i) {
+	case 0:	/* read */
+		return ibuf ? ibuf->fd : -1;
+	case 1:	/* write */
+		return obuf ? fileno(obuf->fp) : -1;
+	case 2: /* except */
+		if (ibuf) {
+			if (obuf && ibuf->fd != fileno(obuf->fp))
+				warning(ext_id, _("select: `%s', `%s' in `except' array has clashing fds, using input %d, not output %d"), fnm, ftp, ibuf->fd, fileno(obuf->fp));
+			return ibuf->fd;
+		}
+		if (obuf)
+			return fileno(obuf->fp);
+		break;
+	}
+	return -1;
+}
+
 /*  do_select --- I/O multiplexing */
 
 static awk_value_t *
@@ -362,9 +382,11 @@ do_select(int nargs, awk_value_t *result)
 				if (((EL.value.val_type == AWK_UNDEFINED) || ((EL.value.val_type == AWK_STRING) && ! EL.value.str_value.len)) && (integer_string(EL.index.str_value.str, &x) == 0) && (x >= 0))
 					fds[i].array2fd[j] = x;
 				else if (EL.value.val_type == AWK_STRING) {
-					const awk_input_buf_t *buf;
-					if ((buf = get_file(EL.index.str_value.str, EL.index.str_value.len, EL.value.str_value.str, EL.value.str_value.len)) != NULL)
-						fds[i].array2fd[j] = buf->fd;
+					const awk_input_buf_t *ibuf;
+					const awk_output_buf_t *obuf;
+					int fd;
+					if (get_file(EL.index.str_value.str, EL.index.str_value.len, EL.value.str_value.str, EL.value.str_value.len, -1, &ibuf, &obuf) && ((fd = grabfd(i, ibuf, obuf, EL.index.str_value.str, EL.value.str_value.str)) >= 0))
+						fds[i].array2fd[j] = fd;
 					else
 						warning(ext_id, _("select: get_file(`%s', `%s') failed in `%s' array"), EL.index.str_value.str, EL.value.str_value.str, argname[i]);
 				}
@@ -566,11 +588,12 @@ do_set_non_blocking(int nargs, awk_value_t *result)
 	else if (get_argument(0, AWK_STRING, & cmd) &&
 		(get_argument(1, AWK_STRING, & cmdtype) ||
 			(! cmd.str_value.len && (nargs == 1)))) {
-		const awk_input_buf_t *buf;
-		if ((buf = get_file(cmd.str_value.str, cmd.str_value.len, cmdtype.str_value.str, cmdtype.str_value.len)) != NULL) {
-			int rc = set_non_blocking(buf->fd);
-			if (rc == 0)
-				set_retry(buf->name);
+		const awk_input_buf_t *ibuf;
+		const awk_output_buf_t *obuf;
+		if (get_file(cmd.str_value.str, cmd.str_value.len, cmdtype.str_value.str, cmdtype.str_value.len, -1, &ibuf, &obuf)) {
+			int rc = set_non_blocking(ibuf ? ibuf->fd : fileno(obuf->fp));
+			if (rc == 0 && ibuf)
+				set_retry(ibuf->name);
 			return make_number(rc, result);
 		}
 		warning(ext_id, _("set_non_blocking: get_file(`%s', `%s') failed"), cmd.str_value.str, cmdtype.str_value.str);

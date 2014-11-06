@@ -86,7 +86,6 @@ static awk_value_t *
 do_errno2name(int nargs, awk_value_t *result)
 {
 	awk_value_t errnum;
-	const char *str;
 
 	if (do_lint && nargs > 1)
 		lintwarn(ext_id, _("errno2name: called with too many arguments"));
@@ -112,7 +111,6 @@ static awk_value_t *
 do_name2errno(int nargs, awk_value_t *result)
 {
 	awk_value_t err;
-	const char *str;
 
 	if (do_lint && nargs > 1)
 		lintwarn(ext_id, _("name2errno: called with too many arguments"));

@@ -25,7 +25,6 @@
 
 #include "awk.h"
 
-extern void after_beginfile(IOBUF **curfile);
 extern double pow(double x, double y);
 extern double modf(double x, double *yp);
 extern double fmod(double x, double y);

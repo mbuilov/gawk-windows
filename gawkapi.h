@@ -679,16 +679,34 @@ typedef struct gawk_api {
 	 * Look up a file.  If the name is NULL or name_len is 0, it returns
 	 * data for the currently open input file corresponding to FILENAME
 	 * (and it will not access the filetype or typelen arguments, so those
-	 * may be undefined).
+	 * may be undefined).  
 	 * If the file is not already open, it tries to open it.
 	 * The "filetype" argument should be one of:
 	 *    ">", ">>", "<", "|>", "|<", and "|&"
+	 * If the file is not already open, and the fd argument is non-negative,
+	 * gawk will use that file descriptor instead of opening the file
+	 * in the usual way.  If the fd is non-negative, but the file exists
+	 * already, gawk ignores the fd and returns the existing file.  It is
+	 * the caller's responsibility to notice that the fd in the returned
+	 * awk_input_buf_t does not match the requested value.  Note that
+	 * supplying a file descriptor is currently NOT supported for pipes.
+	 * It should work for input, output, append, and two-way (coprocess)
+	 * sockets.  If the filetype is two-way, we assume that it is a socket!
+	 * Note that in the two-way case, the intput and output file descriptors
+	 * may differ.  To check for success, one must check that either of
+	 * them matches.
 	 */
-	const awk_input_buf_t *(*api_get_file)(awk_ext_id_t id,
-						const char *name,
-						size_t name_len,
-						const char *filetype,
-						size_t typelen);
+	awk_bool_t (*api_get_file)(awk_ext_id_t id,
+			const char *name,
+			size_t name_len,
+			const char *filetype,
+			size_t typelen, int fd,
+			/*
+			 * Return values (on success, one or both should
+			 * be non-NULL):
+			 */
+			const awk_input_buf_t **ibufp,
+			const awk_output_buf_t **obufp);
 } gawk_api_t;
 
 #ifndef GAWK	/* these are not for the gawk code itself! */
@@ -771,8 +789,8 @@ typedef struct gawk_api {
 #define release_value(value) \
 	(api->api_release_value(ext_id, value))
 
-#define get_file(name, namelen, filetype, typelen) \
-	(api->api_get_file(ext_id, name, namelen, filetype, typelen))
+#define get_file(name, namelen, filetype, typelen, fd, ibuf, obuf) \
+	(api->api_get_file(ext_id, name, namelen, filetype, typelen, fd, ibuf, obuf))
 
 #define register_ext_version(version) \
 	(api->api_register_ext_version(ext_id, version))
