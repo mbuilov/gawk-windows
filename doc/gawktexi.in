@@ -8528,7 +8528,7 @@ The @code{print} statement is not limited when
 computing @emph{which} values to print. However, with two exceptions,
 you cannot specify @emph{how} to print them---how many
 columns, whether to use exponential notation or not, and so on.
-(For the exceptions, @pxref{Output Separators}, and
+(For the exceptions, @DBPXREF{Output Separators} and
 @ref{OFMT}.)
 For printing with specifications, you need the @code{printf} statement
 (@pxref{Printf}).
@@ -8725,14 +8725,14 @@ separated by single spaces.  However, this doesn't need to be the case;
 a single space is simply the default.  Any string of
 characters may be used as the @dfn{output field separator} by setting the
 predefined variable @code{OFS}.  The initial value of this variable
-is the string @w{@code{" "}}---that is, a single space.
+is the string @w{@code{" "}} (i.e., a single space).
 
-The output from an entire @code{print} statement is called an
-@dfn{output record}.  Each @code{print} statement outputs one output
-record, and then outputs a string called the @dfn{output record separator}
-(or @code{ORS}).  The initial
-value of @code{ORS} is the string @code{"\n"}; i.e., a newline
-character.  Thus, each @code{print} statement normally makes a separate line.
+The output from an entire @code{print} statement is called an @dfn{output
+record}.  Each @code{print} statement outputs one output record, and
+then outputs a string called the @dfn{output record separator} (or
+@code{ORS}).  The initial value of @code{ORS} is the string @code{"\n"}
+(i.e., a newline character).  Thus, each @code{print} statement normally
+makes a separate line.
 
 @cindex output, records
 @cindex output record separator, See @code{ORS} variable
@@ -8856,7 +8856,7 @@ printf @var{format}, @var{item1}, @var{item2}, @dots{}
 @end example
 
 @noindent
-As print @code{print}, the entire list of arguments may optionally be
+As for @code{print}, the entire list of arguments may optionally be
 enclosed in parentheses. Here too, the parentheses are necessary if any
 of the item expressions use the @samp{>} relational operator; otherwise,
 it can be confused with an output redirection (@pxref{Redirection}).
@@ -8964,7 +8964,7 @@ which follow the decimal point.
 (The @samp{4.3} represents two modifiers,
 discussed in the next @value{SUBSECTION}.)
 
-On systems supporting IEEE 754 floating point format, values
+On systems supporting IEEE 754 floating-point format, values
 representing negative
 infinity are formatted as
 @samp{-inf} or @samp{-infinity},
@@ -8995,7 +8995,7 @@ Print a string.
 @item @code{%u}
 Print an unsigned decimal integer.
 (This format is of marginal use, because all numbers in @command{awk}
-are floating-point; it is provided primarily for compatibility with C.)
+are floating point; it is provided primarily for compatibility with C.)
 
 @item @code{%x}, @code{%X}
 Print an unsigned hexadecimal integer;
@@ -9088,7 +9088,7 @@ says to always supply a sign for numeric conversions, even if the data
 to format is positive. The @samp{+} overrides the space modifier.
 
 @item #
-Use an ``alternate form'' for certain control letters.
+Use an ``alternative form'' for certain control letters.
 For @code{%o}, supply a leading zero.
 For @code{%x} and @code{%X}, supply a leading @code{0x} or @samp{0X} for
 a nonzero result.
@@ -9105,7 +9105,7 @@ value to print.
 
 @item '
 A single quote or apostrophe character is a POSIX extension to ISO C.
-It indicates that the integer part of a floating point value, or the
+It indicates that the integer part of a floating-point value, or the
 entire part of an integer decimal value, should have a thousands-separator
 character in it.  This only works in locales that support such characters.
 For example:
@@ -9186,7 +9186,7 @@ prints @samp{foob}.
 @end table
 
 The C library @code{printf}'s dynamic @var{width} and @var{prec}
-capability (for example, @code{"%*.*s"}) is supported.  Instead of
+capability (e.g., @code{"%*.*s"}) is supported.  Instead of
 supplying explicit @var{width} and/or @var{prec} values in the format
 string, they are passed in the argument list.  For example:
 
@@ -9286,7 +9286,7 @@ awk 'BEGIN @{ print "Name      Number"
            @{ printf "%-10s %s\n", $1, $2 @}' mail-list
 @end example
 
-The above example mixes @code{print} and @code{printf} statements in
+The preceding example mixes @code{print} and @code{printf} statements in
 the same program.  Using just @code{printf} statements can produce the
 same results:
 
@@ -9433,7 +9433,7 @@ close(report)
 
 The @code{close()} function is called here because it's a good idea to close
 the pipe as soon as all the intended output has been sent to it.
-@xref{Close Files And Pipes},
+@DBXREF{Close Files And Pipes}
 for more information.
 
 This example also illustrates the use of a variable to represent
@@ -9457,9 +9457,9 @@ but subsidiary to, the @command{awk} program.
 
 This feature is a @command{gawk} extension, and is not available in
 POSIX @command{awk}.
-@xref{Getline/Coprocess},
+@DBXREF{Getline/Coprocess}
 for a brief discussion.
-@xref{Two-way I/O},
+@DBXREF{Two-way I/O}
 for a more complete discussion.
 @end table
 
@@ -9483,7 +9483,7 @@ print "Avoid improbability generators" >> "guide.txt"
 @noindent
 This is indeed how redirections must be used from the shell.  But in
 @command{awk}, it isn't necessary.  In this kind of case, a program should
-use @samp{>} for all the @code{print} statements, since the output file
+use @samp{>} for all the @code{print} statements, because the output file
 is only opened once. (It happens that if you mix @samp{>} and @samp{>>}
 that output is produced in the expected order. However, mixing the operators
 for the same file is definitely poor style, and is confusing to readers
@@ -9532,7 +9532,7 @@ The program builds up a list of command lines,
 using the @command{mv} utility to rename the files.
 It then sends the list to the shell for execution.
 
-@xref{Shell Quoting}, for a function that can help in generating
+@DBXREF{Shell Quoting} for a function that can help in generating
 command lines to be fed to the shell.
 @end sidebar
 @c ENDOFRANGE outre
@@ -9597,7 +9597,7 @@ that happens, writing to the screen is not correct.  In fact, if
 terminal at all.
 Then opening @file{/dev/tty} fails.
 
-@command{gawk}, BWK @command{awk} and @command{mawk} provide
+@command{gawk}, BWK @command{awk}, and @command{mawk} provide
 special @value{FN}s for accessing the three standard streams.
 If the @value{FN} matches one of these special names when @command{gawk}
 (or one of the others) redirects input or output, then it directly uses
