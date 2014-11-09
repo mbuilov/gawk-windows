@@ -1,3 +1,9 @@
+2014-11-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (node_to_awk_value): When the type wanted is AWK_UNDEFINED
+	and a it's a Node_val set to Nnull_string, return AWK_UNDEFINED instead
+	of AWK_NUMBER 0.
+
 2014-11-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* awk.h (redirect_string): First argument should be const.  Add a new

@@ -30,7 +30,7 @@ EXTRA_DIST = ChangeLog ChangeLog.0 extract.awk eg $(srcdir)/stamp-eg
 if TEST_CROSS_COMPILE
 AWKPROG = LC_ALL=C LANG=C awk$(EXEEXT)
 else
-AWKPROG = LC_ALL=C LANG=C $(abs_top_builddir)/gawk$(EXEEXT)
+AWKPROG = LC_ALL=C LANG=C "$(abs_top_builddir)/gawk$(EXEEXT)"
 endif
 
 # Get config.h from the build directory and custom.h from the source directory.
