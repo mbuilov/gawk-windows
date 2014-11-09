@@ -606,11 +606,74 @@ do_set_non_blocking(int nargs, awk_value_t *result)
 	return make_number(-1, result);
 }
 
+/*  do_input_fd --- Return command's input file descriptor */
+
+static awk_value_t *
+do_input_fd(int nargs, awk_value_t *result)
+{
+	awk_value_t cmd, cmdtype;
+
+	if (do_lint && nargs > 2)
+		lintwarn(ext_id, _("input_fd: called with too many arguments"));
+	/*
+	 * N.B. If called with a single "" arg, we want it to work!  In that
+	 * case, the 1st arg is an empty string, and get_argument fails on the
+	 * 2nd arg.  Note that API get_file promises not to access the type
+	 * argument if the name argument is an empty string.
+	 */
+	if (get_argument(0, AWK_STRING, & cmd) &&
+	    (get_argument(1, AWK_STRING, & cmdtype) ||
+	     (! cmd.str_value.len && (nargs == 1)))) {
+		const awk_input_buf_t *ibuf;
+		const awk_output_buf_t *obuf;
+		if (get_file(cmd.str_value.str, cmd.str_value.len, cmdtype.str_value.str, cmdtype.str_value.len, -1, &ibuf, &obuf) && ibuf)
+			return make_number(ibuf->fd, result);
+		warning(ext_id, _("input_fd: get_file(`%s', `%s') failed to return an input descriptor"), cmd.str_value.str, cmdtype.str_value.str);
+	} else if (do_lint) {
+		if (nargs < 2)
+			lintwarn(ext_id, _("input_fd: called with too few arguments"));
+		else
+			lintwarn(ext_id, _("input_fd: called with inappropriate argument(s)"));
+	}
+	return make_number(-1, result);
+}
+
+/*  do_output_fd --- Return command's output file descriptor */
+
+static awk_value_t *
+do_output_fd(int nargs, awk_value_t *result)
+{
+	awk_value_t cmd, cmdtype;
+
+	if (do_lint && nargs > 2)
+		lintwarn(ext_id, _("output_fd: called with too many arguments"));
+	/*
+	 * N.B. If called with a single "" arg, it will not work, since there
+	 * is no output fd associated the current input file.
+	 */
+	if (get_argument(0, AWK_STRING, & cmd) &&
+	    get_argument(1, AWK_STRING, & cmdtype)) {
+		const awk_input_buf_t *ibuf;
+		const awk_output_buf_t *obuf;
+		if (get_file(cmd.str_value.str, cmd.str_value.len, cmdtype.str_value.str, cmdtype.str_value.len, -1, &ibuf, &obuf) && obuf)
+			return make_number(fileno(obuf->fp), result);
+		warning(ext_id, _("output_fd: get_file(`%s', `%s') failed to return an output descriptor"), cmd.str_value.str, cmdtype.str_value.str);
+	} else if (do_lint) {
+		if (nargs < 2)
+			lintwarn(ext_id, _("output_fd: called with too few arguments"));
+		else
+			lintwarn(ext_id, _("output_fd: called with inappropriate argument(s)"));
+	}
+	return make_number(-1, result);
+}
+
 static awk_ext_func_t func_table[] = {
 	{ "select", do_select, 5 },
 	{ "select_signal", do_signal, 3 },
 	{ "set_non_blocking", do_set_non_blocking, 2 },
 	{ "kill", do_kill, 2 },
+	{ "input_fd", do_input_fd, 2 },
+	{ "output_fd", do_output_fd, 2 },
 };
 
 /* define the dl_load function using the boilerplate macro */

@@ -1,3 +1,13 @@
+2014-11-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* select.c (do_input_fd): New function to return the input file
+	descriptor associated with a file/command.
+	(do_output_fd): New function to return the output file descriptor
+	associated with a file/command.
+	(func_table): Add new functions "input_fd" and "output_fd".
+	* testext.c (test_get_file): Do not use __func__, since it is a C99
+	feature, and gawk does not assume C99.
+
 2014-11-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* errno.c (do_errno2name, do_name2errno): Remove unused variable 'str'.

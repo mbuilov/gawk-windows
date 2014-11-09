@@ -774,28 +774,28 @@ test_get_file(int nargs, awk_value_t *result)
 	const awk_output_buf_t *obuf;
 
 	if (nargs != 2) {
-		printf("%s: nargs not right (%d should be 2)\n", __func__, nargs);
+		printf("%s: nargs not right (%d should be 2)\n", "test_get_file", nargs);
 		return make_number(-1.0, result);
 	}
 
 	if (! get_argument(0, AWK_STRING, & filename)) {
-		printf("%s: cannot get first arg\n", __func__);
+		printf("%s: cannot get first arg\n", "test_get_file");
 		return make_number(-1.0, result);
 	}
 	if (! get_argument(1, AWK_STRING, & alias)) {
-		printf("%s: cannot get first arg\n", __func__);
+		printf("%s: cannot get first arg\n", "test_get_file");
 		return make_number(-1.0, result);
 	}
 	if ((fd = open(filename.str_value.str, O_RDONLY)) < 0) {
-		printf("%s: open(%s) failed\n", __func__, filename.str_value.str);
+		printf("%s: open(%s) failed\n", "test_get_file", filename.str_value.str);
 		return make_number(-1.0, result);
 	}
 	if (! get_file(alias.str_value.str, strlen(alias.str_value.str), "<", 1, fd, &ibuf, &obuf)) {
-		printf("%s: get_file(%s) failed\n", __func__, alias.str_value.str);
+		printf("%s: get_file(%s) failed\n", "test_get_file", alias.str_value.str);
 		return make_number(-1.0, result);
 	}
 	if (! ibuf || ibuf->fd != fd) {
-		printf("%s: get_file(%s) returned fd %d instead of %d\n", __func__, alias.str_value.str, ibuf ? ibuf->fd : -1, fd);
+		printf("%s: get_file(%s) returned fd %d instead of %d\n", "test_get_file", alias.str_value.str, ibuf ? ibuf->fd : -1, fd);
 		return make_number(-1.0, result);
 	}
 	return make_number(0.0, result);
