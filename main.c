@@ -609,9 +609,6 @@ usage(int exitval, FILE *fp)
 #ifdef GAWKDEBUG
 	fputs(_("\t-Y\t\t--parsedebug\n"), fp);
 #endif
-#if defined(LOCALEDEBUG)
-	fputs(_("\t-Z\t\t--locale\n"), fp);
-#endif
 
 	/* This is one string to make things easier on translators. */
 	/* TRANSLATORS: --help output 5 (end)
