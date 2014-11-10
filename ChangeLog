@@ -1,3 +1,13 @@
+2014-11-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Reorder main.c activities so that we can set a locale on the
+	command line with the new, for now undocumented, -Z option.
+
+	* main.c (parse_args, set_locale_stuff): New functions.
+	(stopped_early): Made file level static.
+	(optlist, optab): Add new argument.
+	(main): Adjust ordering and move inline code into new functions.
+
 2014-11-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.c (node_to_awk_value): When the type wanted is AWK_UNDEFINED
