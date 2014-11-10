@@ -87,7 +87,7 @@ AC_MSG_CHECKING([for special development options])
 if test -f $srcdir/.developing
 then
 	# add other debug flags as appropriate, save GAWKDEBUG for emergencies
-	CFLAGS="$CFLAGS -DARRAYDEBUG -DYYDEBUG"
+	CFLAGS="$CFLAGS -DARRAYDEBUG -DYYDEBUG -DLOCALEDEBUG"
 	if grep dbug $srcdir/.developing
 	then
 		CFLAGS="$CFLAGS -DDBUG"
