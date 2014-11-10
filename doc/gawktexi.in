@@ -11081,9 +11081,12 @@ The indices of @code{bar} are practically guaranteed to be different, because
 @xref{Arrays},
 and
 @ifnotdocbook
-see
+@DBPXREF{Numeric Functions}
 @end ifnotdocbook
-@DBREF{Numeric Functions} for more information).
+@ifdocbook
+@DBREF{Numeric Functions}
+@end ifdocbook
+for more information).
 This example illustrates an important fact about assignment
 operators: the lefthand expression is only evaluated @emph{once}.
 
@@ -12853,9 +12856,11 @@ read-a-record-and-match-against-the-rules loop has not started yet.  Similarly, 
 are not valid in an @code{END} rule, because all the input has been read.
 (@DBXREF{Next Statement} and
 @ifnotdocbook
-see
+@DBPXREF{Nextfile Statement}.)
 @end ifnotdocbook
+@ifdocbook
 @DBREF{Nextfile Statement}.)
+@end ifdocbook
 @c ENDOFRANGE beg
 @c ENDOFRANGE end
 
@@ -13326,7 +13331,7 @@ The following is an example of a @code{do} statement:
 
 @noindent
 This program prints each input record 10 times.  However, it isn't a very
-realistic example, since in this case an ordinary @code{while} would do
+realistic example, because in this case an ordinary @code{while} would do
 just as well.  This situation reflects actual experience; only
 occasionally is there a real use for a @code{do} statement.
 
@@ -13423,7 +13428,7 @@ very common in loops.  It can be easier to think of this counting as part
 of looping rather than as something to do inside the loop.
 
 @cindex @code{in} operator
-There is an alternate version of the @code{for} loop, for iterating over
+There is an alternative version of the @code{for} loop, for iterating over
 all the indices of an array:
 
 @example
@@ -13432,7 +13437,7 @@ for (i in array)
 @end example
 
 @noindent
-@xref{Scanning an Array},
+@DBXREF{Scanning an Array}
 for more information on this version of the @code{for} loop.
 
 @node Switch Statement
@@ -13499,9 +13504,9 @@ while ((c = getopt(ARGC, ARGV, "aksx")) != -1) @{
 @}
 @end example
 
-Note that if none of the statements specified above halt execution
+Note that if none of the statements specified here halt execution
 of a matched @code{case} statement, execution falls through to the
-next @code{case} until execution halts. In the above example, the
+next @code{case} until execution halts. In this example, the
 @code{case} for @code{"?"} falls through to the @code{default}
 case, which is to call a function named @code{usage()}.
 (The @code{getopt()} function being called here is
@@ -13628,7 +13633,7 @@ BEGIN @{
 @end example
 
 @noindent
-This program loops forever once @code{x} reaches 5, since
+This program loops forever once @code{x} reaches 5, because
 the increment (@samp{x++}) is never reached.
 
 @c @cindex @code{continue}, outside of loops
@@ -13689,7 +13694,7 @@ Because of the @code{next} statement,
 the program's subsequent rules won't see the bad record.  The error
 message is redirected to the standard error output stream, as error
 messages should be.
-For more detail see
+For more detail, see
 @ref{Special Files}.
 
 If the @code{next} statement causes the end of the input to be reached,
@@ -13755,7 +13760,7 @@ rule to skip over a file that would otherwise cause @command{gawk}
 to exit with a fatal error. In this case, @code{ENDFILE} rules are not
 executed. @xref{BEGINFILE/ENDFILE}.
 
-While one might think that @samp{close(FILENAME)} would accomplish
+Although it might seem that @samp{close(FILENAME)} would accomplish
 the same as @code{nextfile}, this isn't true.  @code{close()} is
 reserved for closing files, pipes, and coprocesses that are
 opened with redirections.  It is not related to the main processing that
@@ -13763,7 +13768,7 @@ opened with redirections.  It is not related to the main processing that
 
 @quotation NOTE
 For many years, @code{nextfile} was a
-common extension. In September, 2012, it was accepted for
+common extension. In September 2012, it was accepted for
 inclusion into the POSIX standard.
 See @uref{http://austingroupbugs.net/view.php?id=607, the Austin Group website}.
 @end quotation
@@ -13812,7 +13817,7 @@ In such a case,
 if you don't want the @code{END} rule to do its job, set a variable
 to nonzero before the @code{exit} statement and check that variable in
 the @code{END} rule.
-@xref{Assert Function},
+@DBXREF{Assert Function}
 for an example that does this.
 
 @cindex dark corner, @code{exit} statement
@@ -13823,7 +13828,7 @@ In the case where an argument
 is supplied to a first @code{exit} statement, and then @code{exit} is
 called a second time from an @code{END} rule with no argument,
 @command{awk} uses the previously supplied exit value.  @value{DARKCORNER}
-@xref{Exit Status}, for more information.
+@DBXREF{Exit Status} for more information.
 
 @cindex programming conventions, @code{exit} statement
 For example, suppose an error condition occurs that is difficult or
@@ -13883,7 +13888,7 @@ their areas of activity.
 @end menu
 
 @node User-modified
-@subsection Built-in Variables That Control @command{awk}
+@subsection Built-In Variables That Control @command{awk}
 @c STARTOFRANGE bvaru
 @cindex predefined variables, user-modifiable
 @c STARTOFRANGE nmbv
@@ -13940,7 +13945,7 @@ A space-separated list of columns that tells @command{gawk}
 how to split input with fixed columnar boundaries.
 Assigning a value to @code{FIELDWIDTHS}
 overrides the use of @code{FS} and @code{FPAT} for field splitting.
-@xref{Constant Size}, for more information.
+@DBXREF{Constant Size} for more information.
 
 @cindex @command{gawk}, @code{FPAT} variable in
 @cindex @code{FPAT} variable
@@ -13952,7 +13957,7 @@ A regular expression (as a string) that tells @command{gawk}
 to create the fields based on text that matches the regular expression.
 Assigning a value to @code{FPAT}
 overrides the use of @code{FS} and @code{FIELDWIDTHS} for field splitting.
-@xref{Splitting By Content}, for more information.
+@DBXREF{Splitting By Content} for more information.
 
 @cindex @code{FS} variable
 @cindex separators, field
@@ -14062,12 +14067,12 @@ character.  (@xref{Output Separators}.)
 
 @cindex @code{PREC} variable
 @item PREC #
-The working precision of arbitrary precision floating-point numbers,
+The working precision of arbitrary-precision floating-point numbers,
 53 bits by default (@pxref{Setting precision}).
 
 @cindex @code{ROUNDMODE} variable
 @item ROUNDMODE #
-The rounding mode to use for arbitrary precision arithmetic on
+The rounding mode to use for arbitrary-precision arithmetic on
 numbers, by default @code{"N"} (@samp{roundTiesToEven} in
 the IEEE 754 standard; @pxref{Setting the rounding mode}).
 
@@ -14109,7 +14114,7 @@ really accesses @code{foo["A\034B"]}
 Used for internationalization of programs at the
 @command{awk} level.  It sets the default text domain for specially
 marked string constants in the source text, as well as for the
-@code{dcgettext()}, @code{dcngettext()} and @code{bindtextdomain()} functions
+@code{dcgettext()}, @code{dcngettext()}, and @code{bindtextdomain()} functions
 (@pxref{Internationalization}).
 The default value of @code{TEXTDOMAIN} is @code{"messages"}.
 @end table
@@ -14119,7 +14124,7 @@ The default value of @code{TEXTDOMAIN} is @code{"messages"}.
 @c ENDOFRANGE nmbv
 
 @node Auto-set
-@subsection Built-in Variables That Convey Information
+@subsection Built-In Variables That Convey Information
 
 @c STARTOFRANGE bvconi
 @cindex predefined variables, conveying information
@@ -14132,7 +14137,7 @@ information to your program.
 The variables that are specific to @command{gawk} are marked with a pound
 sign (@samp{#}).  These variables are @command{gawk} extensions.  In other
 @command{awk} implementations or if @command{gawk} is in compatibility
-mode (@pxref{Options}), they are not special.
+mode (@pxref{Options}), they are not special:
 
 @c @asis for docbook
 @table @asis
@@ -14173,7 +14178,7 @@ method of accessing command-line arguments.
 The value of @code{ARGV[0]} can vary from system to system.
 Also, you should note that the program text is @emph{not} included in
 @code{ARGV}, nor are any of @command{awk}'s command-line options.
-@xref{ARGC and ARGV}, for information
+@DBXREF{ARGC and ARGV} for information
 about how @command{awk} uses these variables.
 @value{DARKCORNER}
 
@@ -14211,8 +14216,13 @@ Some operating systems may not have environment variables.
 On such systems, the @code{ENVIRON} array is empty (except for
 @w{@code{ENVIRON["AWKPATH"]}} and
 @w{@code{ENVIRON["AWKLIBPATH"]}};
-@pxref{AWKPATH Variable}, and
+@DBPXREF{AWKPATH Variable} and
+@ifdocbook
+@DBREF{AWKLIBPATH Variable}).
+@end ifdocbook
+@ifnotdocbook
 @pxref{AWKLIBPATH Variable}).
+@end ifnotdocbook
 
 @cindex @command{gawk}, @code{ERRNO} variable in
 @cindex @code{ERRNO} variable
@@ -14241,7 +14251,7 @@ The name of the current input file.  When no @value{DF}s are listed
 on the command line, @command{awk} reads from the standard input and
 @code{FILENAME} is set to @code{"-"}.  @code{FILENAME} changes each
 time a new file is read (@pxref{Reading Files}).  Inside a @code{BEGIN}
-rule, the value of @code{FILENAME} is @code{""}, since there are no input
+rule, the value of @code{FILENAME} is @code{""}, because there are no input
 files being processed yet.@footnote{Some early implementations of Unix
 @command{awk} initialized @code{FILENAME} to @code{"-"}, even if there
 were @value{DF}s to be processed. This behavior was incorrect and should
@@ -14273,7 +14283,7 @@ current record. @xref{Changing Fields}.
 @cindex differences in @command{awk} and @command{gawk}, @code{FUNCTAB} variable
 @item @code{FUNCTAB #}
 An array whose indices and corresponding values are the names of all
-the built-in, user-defined and extension functions in the program.
+the built-in, user-defined, and extension functions in the program.
 
 @quotation NOTE
 Attempting to use the @code{delete} statement with the @code{FUNCTAB}
@@ -14367,7 +14377,7 @@ The parent process ID of the current process.
 If this element exists in @code{PROCINFO}, its value controls the
 order in which array indices will be processed by
 @samp{for (@var{indx} in @var{array})} loops.
-Since this is an advanced feature, we defer the
+This is an advanced feature, so we defer the
 full description until later; see
 @ref{Scanning an Array}.
 
@@ -14387,7 +14397,7 @@ The version of @command{gawk}.
 
 The following additional elements in the array
 are available to provide information about the MPFR and GMP libraries
-if your version of @command{gawk} supports arbitrary precision arithmetic
+if your version of @command{gawk} supports arbitrary-precision arithmetic
 (@pxref{Arbitrary Precision Arithmetic}): 
 
 @table @code 
@@ -14438,7 +14448,7 @@ The @code{PROCINFO} array has the following additional uses:
 @item
 It may be used to provide a timeout when reading from any
 open input file, pipe, or coprocess.
-@xref{Read Timeout}, for more information.
+@DBXREF{Read Timeout} for more information.
 
 @item
 It may be used to cause coprocesses to communicate over pseudo-ttys
@@ -14637,8 +14647,14 @@ use the @code{delete} statement to remove elements from
 
 All of these actions are typically done in the @code{BEGIN} rule,
 before actual processing of the input begins.
-@xref{Split Program}, and see
-@ref{Tee Program}, for examples
+@DBXREF{Split Program} and
+@ifnotdocbook
+@DBPXREF{Tee Program}
+@end ifnotdocbook
+@ifdocbook
+@DBREF{Tee Program}
+@end ifdocbook
+for examples
 of each way of removing elements from @code{ARGV}.
 
 To actually get options into an @command{awk} program,
@@ -14650,7 +14666,7 @@ awk -f myprog.awk -- -v -q file1 file2 @dots{}
 @end example
 
 The following fragment processes @code{ARGV} in order to examine, and
-then remove, the above command-line options:
+then remove, the previously mentioned command-line options:
 
 @example
 BEGIN @{
@@ -14686,14 +14702,21 @@ gawk -f myprog.awk -q -v file1 file2 @dots{}
 @noindent
 Because @option{-q} is not a valid @command{gawk} option, it and the
 following @option{-v} are passed on to the @command{awk} program.
-(@xref{Getopt Function}, for an @command{awk} library function that
+(@DBXREF{Getopt Function} for an @command{awk} library function that
 parses command-line options.)
 
 When designing your program, you should choose options that don't
-conflict with @command{gawk}'s, since it will process any options
+conflict with @command{gawk}'s, because it will process any options
 that it accepts before passing the rest of the command line on to
 your program.  Using @samp{#!} with the @option{-E} option may help
-(@pxref{Executable Scripts}, and @pxref{Options}).
+(@DBXREF{Executable Scripts}
+and
+@ifnotdocbook
+@DBPXREF{Options}).
+@end ifnotdocbook
+@ifdocbook
+@DBREF{Options}).
+@end ifdocbook
 
 @node Pattern Action Summary
 @section Summary
@@ -14859,7 +14882,7 @@ as shown in @inlineraw{docbook, <xref linkend="figure-array-elements"/>}:
 
 @ifnotdocbook
 @float Figure,figure-array-elements
-@caption{A Contiguous Array}
+@caption{A contiguous array}
 @ifinfo
 @center @image{array-elements, , , Basic Program Stages, txt}
 @end ifinfo
@@ -14871,7 +14894,7 @@ as shown in @inlineraw{docbook, <xref linkend="figure-array-elements"/>}:
 
 @docbook
 <figure id="figure-array-elements" float="0">
-<title>A Contiguous Array</title>
+<title>A contiguous array</title>
 <mediaobject>
 <imageobject role="web"><imagedata fileref="array-elements.png" format="PNG"/></imageobject>
 </mediaobject>
@@ -14890,7 +14913,7 @@ position with zero elements before it.
 @cindex associative arrays
 @cindex arrays, associative
 Arrays in @command{awk} are different---they are @dfn{associative}.  This means
-that each array is a collection of pairs: an index and its corresponding
+that each array is a collection of pairs---an index and its corresponding
 array element value:
 
 @ifnotdocbook
@@ -15071,7 +15094,7 @@ numbers and strings as indices.
 There are some subtleties to how numbers work when used as
 array subscripts; this is discussed in more detail in
 @ref{Numeric Array Subscripts}.)
-Here, the number @code{1} isn't double-quoted, since @command{awk}
+Here, the number @code{1} isn't double quoted, because @command{awk}
 automatically converts it to a string.
 
 @cindex @command{gawk}, @code{IGNORECASE} variable in
@@ -15156,7 +15179,7 @@ This expression tests whether the particular index @var{indx} exists,
 without the side effect of creating that element if it is not present.
 The expression has the value one (true) if @code{@var{array}[@var{indx}]}
 exists and zero (false) if it does not exist.
-(We use @var{indx} here, since @samp{index} is the name of a built-in
+(We use @var{indx} here, because @samp{index} is the name of a built-in
 function.)
 For example, this statement tests whether the array @code{frequencies}
 contains the index @samp{2}:
@@ -15299,7 +15322,7 @@ the word as index.  The second rule scans the elements of @code{used} to
 find all the distinct words that appear in the input.  It prints each
 word that is more than 10 characters long and also prints the number of
 such words.
-@xref{String Functions},
+@DBXREF{String Functions}
 for more information on the built-in function @code{length()}.
 
 @example
@@ -15322,7 +15345,7 @@ END @{
 @end example
 
 @noindent
-@xref{Word Sorting},
+@DBXREF{Word Sorting}
 for a more detailed example of this type.
 
 @cindex arrays, elements, order of access by @code{in} operator
@@ -15377,7 +15400,7 @@ $ @kbd{nawk -f loopcheck.awk}
 @end example
 
 @node Controlling Scanning
-@subsection Using Predefined Array Scanning Orders With @command{gawk}
+@subsection Using Predefined Array Scanning Orders with @command{gawk}
 
 This @value{SUBSECTION} describes a feature that is specific to @command{gawk}.
 
@@ -15402,7 +15425,7 @@ We describe this now.
 @item
 Set @code{PROCINFO["sorted_in"]} to the name of a user-defined function
 to use for comparison of array elements. This advanced feature
-is described later, in @ref{Array Sorting}.
+is described later in @ref{Array Sorting}.
 @end itemize
 
 @cindex @code{PROCINFO}, values of @code{sorted_in}
@@ -15501,7 +15524,7 @@ and all subarrays are treated as being equal to each other.  Their
 order relative to each other is determined by their index strings.
 
 Here are some additional things to bear in mind about sorted
-array traversal.
+array traversal:
 
 @itemize @value{BULLET}
 @item
@@ -15521,7 +15544,7 @@ if (save_sorted)
 @end example
 
 @item
-As mentioned, the default array traversal order is represented by
+As already mentioned, the default array traversal order is represented by
 @code{"@@unsorted"}.  You can also get the default behavior by assigning
 the null string to @code{PROCINFO["sorted_in"]} or by just deleting the
 @code{"sorted_in"} element from the @code{PROCINFO} array with
@@ -15566,7 +15589,7 @@ The program then changes
 the value of @code{CONVFMT}.  The test @samp{(xyz in data)} generates a new
 string value from @code{xyz}---this time @code{"12.15"}---because the value of
 @code{CONVFMT} only allows two significant digits.  This test fails,
-since @code{"12.15"} is different from @code{"12.153"}.
+because @code{"12.15"} is different from @code{"12.153"}.
 
 @cindex converting integer array subscripts
 @cindex integer array indices
@@ -15584,19 +15607,19 @@ for (i = 1; i <= maxsub; i++)
 The ``integer values always convert to strings as integers'' rule
 has an additional consequence for array indexing.
 Octal and hexadecimal constants
+@ifnotdocbook
 (@pxref{Nondecimal-numbers})
+@end ifnotdocbook
+@ifdocbook
+(covered in @pref{Nondecimal-numbers})
+@end ifdocbook
 are converted internally into numbers, and their original form
-is forgotten.
-This means, for example, that
-@code{array[17]},
-@code{array[021]},
-and
-@code{array[0x11]}
-all refer to the same element!
+is forgotten.  This means, for example, that @code{array[17]},
+@code{array[021]}, and @code{array[0x11]} all refer to the same element!
 
 As with many things in @command{awk}, the majority of the time
 things work as you would expect them to.  But it is useful to have a precise
-knowledge of the actual rules since they can sometimes have a subtle
+knowledge of the actual rules, as they can sometimes have a subtle
 effect on your programs.
 
 @node Uninitialized Subscripts
@@ -15739,7 +15762,7 @@ by a number of other implementations.
 @cindex Brian Kernighan's @command{awk}
 @quotation NOTE
 For many years, using @code{delete} without a subscript was a common
-extension.  In September, 2012, it was accepted for inclusion into the
+extension.  In September 2012, it was accepted for inclusion into the
 POSIX standard.  See @uref{http://austingroupbugs.net/view.php?id=544,
 the Austin Group website}.
 @end quotation
@@ -15781,7 +15804,7 @@ a = 3
 
 @cindex subscripts in arrays, multidimensional
 @cindex arrays, multidimensional
-A multidimensional array is an array in which an element is identified
+A @dfn{multidimensional array} is an array in which an element is identified
 by a sequence of indices instead of a single index.  For example, a
 two-dimensional array requires two indices.  The usual way (in many
 languages, including @command{awk}) to refer to an element of a
@@ -15823,7 +15846,7 @@ stored as @samp{foo["a@@b@@c"]}.
 @cindex @code{in} operator, index existence in multidimensional arrays
 To test whether a particular index sequence exists in a
 multidimensional array, use the same operator (@code{in}) that is
-used for single dimensional arrays.  Write the whole sequence of indices
+used for single-dimensional arrays.  Write the whole sequence of indices
 in parentheses, separated by commas, as the left operand:
 
 @example
@@ -15947,7 +15970,7 @@ This simulates a true two-dimensional array. Each subarray element can
 contain another subarray as a value, which in turn can hold other arrays
 as well. In this way, you can create arrays of three or more dimensions.
 The indices can be any @command{awk} expression, including scalars
-separated by commas (that is, a regular @command{awk} simulated
+separated by commas (i.e., a regular @command{awk} simulated
 multidimensional subscript). So the following is valid in
 @command{gawk}:
 
@@ -15966,7 +15989,7 @@ is itself an array and not a scalar:
 a[4] = "An element in a jagged array"
 @end example
   
-The terms @dfn{dimension}, @dfn{row} and @dfn{column} are
+The terms @dfn{dimension}, @dfn{row}, and @dfn{column} are
 meaningless when applied
 to such an array, but we will use ``dimension'' henceforth to imply the
 maximum number of indices needed to refer to an existing element. The
@@ -16064,8 +16087,8 @@ for (i in a) @{
 @end example
 
 @noindent
-@xref{Walking Arrays}, for a user-defined function that ``walks'' an
-arbitrarily-dimensioned array of arrays.
+@DBXREF{Walking Arrays} for a user-defined function that ``walks'' an
+arbitrarily dimensioned array of arrays.
 
 Recall that a reference to an uninitialized array element yields a value
 of @code{""}, the null string. This has one important implication when you
@@ -16115,8 +16138,9 @@ special predefined values to @code{PROCINFO["sorted_in"]}.
 
 @item
 Use @samp{delete @var{array}[@var{indx}]} to delete an individual element.
-You may also use @samp{delete @var{array}} to delete all of the elements
-in the array.  This latter feature has been a common extension for many
+To delete all of the elements in an array,
+use @samp{delete @var{array}}.
+This latter feature has been a common extension for many
 years and is now standard, but may not be supported by all commercial
 versions of @command{awk}.
 
@@ -16169,7 +16193,7 @@ The second half of this @value{CHAPTER} describes these
 @end menu
 
 @node Built-in
-@section Built-in Functions
+@section Built-In Functions
 
 @dfn{Built-in} functions are always available for
 your @command{awk} program to call.  This @value{SECTION} defines all
@@ -16192,7 +16216,7 @@ but are summarized here for your convenience.
 @end menu
 
 @node Calling Built-in
-@subsection Calling Built-in Functions
+@subsection Calling Built-In Functions
 
 To call one of @command{awk}'s built-in functions, write the name of
 the function followed
@@ -16202,7 +16226,7 @@ is a call to the function @code{atan2()} and has two arguments.
 @cindex programming conventions, functions, calling
 @cindex whitespace, functions@comma{} calling
 Whitespace is ignored between the built-in function name and the
-open parenthesis, but nonetheless it is good practice to avoid using whitespace
+opening parenthesis, but nonetheless it is good practice to avoid using whitespace
 there.  User-defined functions do not permit whitespace in this way, and
 it is easier to avoid mistakes by following a simple
 convention that always works---no whitespace after a function name.
@@ -16282,7 +16306,6 @@ depends on your machine's floating-point representation.
 @cindex round to nearest integer
 Return the nearest integer to @var{x}, located between @var{x} and zero and
 truncated toward zero.
-
 For example, @code{int(3)} is 3, @code{int(3.9)} is 3, @code{int(-3.9)}
 is @minus{}3, and @code{int(-3)} is @minus{}3 as well.
 
@@ -30470,7 +30493,7 @@ This is shown in @inlineraw{docbook, <xref linkend="figure-load-extension"/>}.
 
 @ifnotdocbook
 @float Figure,figure-load-extension
-@caption{Loading The Extension}
+@caption{Loading the extension}
 @c FIXME: One day, it should not be necessary to have two cases,
 @c but rather just the one without the "txt" final argument.
 @c This applies to the other figures as well.
@@ -30485,7 +30508,7 @@ This is shown in @inlineraw{docbook, <xref linkend="figure-load-extension"/>}.
 
 @docbook
 <figure id="figure-load-extension" float="0">
-<title>Loading The Extension</title>
+<title>Loading the extension</title>
 <mediaobject>
 <imageobject role="web"><imagedata fileref="api-figure1.png" format="PNG"/></imageobject>
 </mediaobject>
