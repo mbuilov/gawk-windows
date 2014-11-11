@@ -277,6 +277,12 @@ set_record(const char *buf, int cnt)
 	/* copy the data */
 	memcpy(databuf, buf, cnt);
 
+	/*
+	 * Add terminating '\0' so that C library routines 
+	 * will know when to stop.
+	 */
+	databuf[cnt] = '\0';
+
 	/* manage field 0: */
 	unref(fields_arr[0]);
 	getnode(n);
