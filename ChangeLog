@@ -1,3 +1,13 @@
+2014-11-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Don't let memory used increase linearly in the size of
+	the input.  Problem reported by dragan legic
+	<dragan.legic@yandex.ru>.
+
+	* field.c (set_record): NUL-terminate the buffer.
+	* interpret.h (r_interpret): Op_field_spec: if it's $0, increment
+	the valref.  Op_store_var: if we got $0, handle it appropriately.
+
 2014-11-10         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Reorder main.c activities so that we can set a locale on the
