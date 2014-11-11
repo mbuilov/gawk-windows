@@ -16395,7 +16395,7 @@ for generating random numbers to the value @var{x}.
 Each seed value leads to a particular sequence of random
 numbers.@footnote{Computer-generated random numbers really are not truly
 random.  They are technically known as ``pseudorandom.''  This means
-that while the numbers in a sequence appear to be random, you can in
+that although the numbers in a sequence appear to be random, you can in
 fact generate the same sequence of random numbers over and over again.}
 Thus, if the seed is set to the same value a second time,
 the same sequence of random numbers is produced again.
@@ -16445,7 +16445,7 @@ doing index calculations, particularly if you are used to C.
 In the following list, optional parameters are enclosed in square brackets@w{ ([ ]).}
 Several functions perform string substitution; the full discussion is
 provided in the description of the @code{sub()} function, which comes
-towards the end since the list is presented alphabetically.
+toward the end, because the list is presented alphabetically.
 
 Those functions that are specific to @command{gawk} are marked with a
 pound sign (@samp{#}).  They are not available in compatibility mode
@@ -16471,10 +16471,10 @@ These two functions are similar in behavior, so they are described
 together.
 
 @quotation NOTE
-The following description ignores the third argument, @var{how}, since it
+The following description ignores the third argument, @var{how}, as it
 requires understanding features that we have not discussed yet.  Thus,
 the discussion here is a deliberate simplification.  (We do provide all
-the details later on: @xref{Array Sorting Functions}, for the full story.)
+the details later on; see @DBREF{Array Sorting Functions} for the full story.)
 @end quotation
 
 Both functions return the number of elements in the array @var{source}.
@@ -16721,7 +16721,7 @@ at which that substring begins (one, if it starts at the beginning of
 The @var{regexp} argument may be either a regexp constant
 (@code{/}@dots{}@code{/}) or a string constant (@code{"}@dots{}@code{"}).
 In the latter case, the string is treated as a regexp to be matched.
-@xref{Computed Regexps}, for a
+@DBXREF{Computed Regexps} for a
 discussion of the difference between the two forms, and the
 implications for writing your program correctly.
 
@@ -16814,7 +16814,7 @@ $ @kbd{echo foooobazbarrrrr |}
 @end example
 
 There may not be subscripts for the start and index for every parenthesized
-subexpression, since they may not all have matched text; thus they
+subexpression, because they may not all have matched text; thus they
 should be tested for with the @code{in} operator
 (@pxref{Reference to Elements}).
 
@@ -16869,7 +16869,7 @@ space then any leading whitespace goes into @code{@var{seps}[0]} and
 any trailing
 whitespace goes into @code{@var{seps}[@var{n}]} where @var{n} is the 
 return value of 
-@code{split()} (that is, the number of elements in @var{array}).
+@code{split()} (i.e., the number of elements in @var{array}).
 
 The @code{split()} function splits strings into pieces in a
 manner similar to the way input lines are split into fields.  For example:
@@ -16905,7 +16905,7 @@ As with input field-splitting, when the value of @var{fieldsep} is
 the elements of
 @var{array} but not in @var{seps}, and the elements
 are separated by runs of whitespace.
-Also as with input field-splitting, if @var{fieldsep} is the null string, each
+Also, as with input field-splitting, if @var{fieldsep} is the null string, each
 individual character in the string is split into its own array element.
 @value{COMMONEXT}
 
@@ -16919,7 +16919,7 @@ the third argument to be a regexp constant (@code{/abc/}) as well as a
 string.
 @value{DARKCORNER}
 The POSIX standard allows this as well.
-@xref{Computed Regexps}, for a
+@DBXREF{Computed Regexps} for a
 discussion of the difference between using a string constant or a regexp constant,
 and the implications for writing your program correctly.
 
@@ -16970,7 +16970,7 @@ Using the @code{strtonum()} function is @emph{not} the same as adding zero
 to a string value; the automatic coercion of strings to numbers
 works only for decimal data, not for octal or hexadecimal.@footnote{Unless
 you use the @option{--non-decimal-data} option, which isn't recommended.
-@xref{Nondecimal Data}, for more information.}
+@DBXREF{Nondecimal Data} for more information.}
 
 Note also that @code{strtonum()} uses the current locale's decimal point
 for recognizing numbers (@pxref{Locales}).
@@ -16988,7 +16988,7 @@ Return the number of substitutions made (zero or one).
 The @var{regexp} argument may be either a regexp constant
 (@code{/}@dots{}@code{/}) or a string constant (@code{"}@dots{}@code{"}).
 In the latter case, the string is treated as a regexp to be matched.
-@xref{Computed Regexps}, for a
+@DBXREF{Computed Regexps} for a
 discussion of the difference between the two forms, and the
 implications for writing your program correctly.
 
@@ -17174,7 +17174,7 @@ Although this makes a certain amount of sense, it can be surprising.
 
 
 @node Gory Details
-@subsubsection More About @samp{\} and @samp{&} with @code{sub()}, @code{gsub()}, and @code{gensub()}
+@subsubsection More about @samp{\} and @samp{&} with @code{sub()}, @code{gsub()}, and @code{gensub()}
 
 @cindex escape processing, @code{gsub()}/@code{gensub()}/@code{sub()} functions
 @cindex @code{sub()} function, escape processing
@@ -17221,7 +17221,7 @@ through unchanged.  This is illustrated in @ref{table-sub-escapes}.
 
 @c Thank to Karl Berry for help with the TeX stuff.
 @float Table,table-sub-escapes
-@caption{Historical Escape Sequence Processing for @code{sub()} and @code{gsub()}}
+@caption{Historical escape sequence processing for @code{sub()} and @code{gsub()}}
 @tex
 \vbox{\bigskip
 % We need more characters for escape and tab ...
@@ -17293,7 +17293,7 @@ This is shown in
 @ref{table-sub-proposed}.
 
 @float Table,table-sub-proposed
-@caption{GNU @command{awk} Rules For @code{sub()} And Backslash}
+@caption{GNU @command{awk} rules for @code{sub()} and backslash}
 @tex
 \vbox{\bigskip
 % We need more characters for escape and tab ...
@@ -17356,7 +17356,7 @@ by anything else is not special; the @samp{\} is placed straight into the output
 These rules are presented in @ref{table-posix-sub}.
 
 @float Table,table-posix-sub
-@caption{POSIX Rules For @code{sub()} And @code{gsub()}}
+@caption{POSIX rules for @code{sub()} and @code{gsub()}}
 @tex
 \vbox{\bigskip
 % We need more characters for escape and tab ...
@@ -17405,12 +17405,12 @@ is seen as @samp{\\} and produces @samp{\} instead of @samp{\\}.
 
 Starting with @value{PVERSION} 3.1.4, @command{gawk} followed the POSIX rules
 when @option{--posix} is specified (@pxref{Options}). Otherwise,
-it continued to follow the proposed rules, since
+it continued to follow the proposed rules, as
 that had been its behavior for many years.
 
 When @value{PVERSION} 4.0.0 was released, the @command{gawk} maintainer
 made the POSIX rules the default, breaking well over a decade's worth
-of backwards compatibility.@footnote{This was rather naive of him, despite
+of backward compatibility.@footnote{This was rather naive of him, despite
 there being a note in this section indicating that the next major version
 would move to the POSIX rules.} Needless to say, this was a bad idea,
 and as of @value{PVERSION} 4.0.1, @command{gawk} resumed its historical
@@ -17425,7 +17425,7 @@ appears in the generated text and the @samp{\} does not,
 as shown in @ref{table-gensub-escapes}.
 
 @float Table,table-gensub-escapes
-@caption{Escape Sequence Processing For @code{gensub()}}
+@caption{Escape sequence processing for @code{gensub()}}
 @tex
 \vbox{\bigskip
 % We need more characters for escape and tab ...
@@ -17492,7 +17492,7 @@ Optional parameters are enclosed in square brackets ([ ]):
 Close the file @var{filename} for input or output. Alternatively, the
 argument may be a shell command that was used for creating a coprocess, or
 for redirecting to or from a pipe; then the coprocess or pipe is closed.
-@xref{Close Files And Pipes},
+@DBXREF{Close Files And Pipes}
 for more information.
 
 When closing a coprocess, it is occasionally useful to first close
@@ -17516,13 +17516,13 @@ a pipe or coprocess.
 
 @cindex buffers, flushing
 @cindex output, buffering
-Many utility programs @dfn{buffer} their output; i.e., they save information
+Many utility programs @dfn{buffer} their output (i.e., they save information
 to write to a disk file or the screen in memory until there is enough
-for it to be worthwhile to send the data to the output device.
+for it to be worthwhile to send the data to the output device).
 This is often more efficient than writing
 every little bit of information as soon as it is ready.  However, sometimes
-it is necessary to force a program to @dfn{flush} its buffers; that is,
-write the information to its destination, even if a buffer is not full.
+it is necessary to force a program to @dfn{flush} its buffers (i.e.,
+write the information to its destination, even if a buffer is not full).
 This is the purpose of the @code{fflush()} function---@command{gawk} also
 buffers its output and the @code{fflush()} function forces
 @command{gawk} to flush its buffers.
@@ -17530,11 +17530,11 @@ buffers its output and the @code{fflush()} function forces
 @cindex extensions, common@comma{} @code{fflush()} function
 @cindex Brian Kernighan's @command{awk}
 Brian Kernighan added @code{fflush()} to his @command{awk} in April
-of 1992.  For two decades, it was a common extension.  In December,
+1992.  For two decades, it was a common extension.  In December
 2012, it was accepted for inclusion into the POSIX standard.
 See @uref{http://austingroupbugs.net/view.php?id=634, the Austin Group website}.
 
-POSIX standardizes @code{fflush()} as follows: If there
+POSIX standardizes @code{fflush()} as follows: if there
 is no argument, or if the argument is the null string (@w{@code{""}}),
 then @command{awk} flushes the buffers for @emph{all} open output files
 and pipes.
@@ -17565,6 +17565,49 @@ only if all buffers were flushed successfully.  Otherwise, it is
 a file or pipe that was opened for reading (such as with @code{getline}),
 or if @var{filename} is not an open file, pipe, or coprocess.
 In such a case, @code{fflush()} returns @minus{}1, as well.
+
+@sidebar Interactive Versus Noninteractive Buffering
+@cindex buffering, interactive vs.@: noninteractive
+
+As a side point, buffering issues can be even more confusing, depending
+upon whether your program is @dfn{interactive} (i.e., communicating
+with a user sitting at a keyboard).@footnote{A program is interactive
+if the standard output is connected to a terminal device. On modern
+systems, this means your keyboard and screen.}
+
+@c Thanks to Walter.Mecky@dresdnerbank.de for this example, and for
+@c motivating me to write this section.
+Interactive programs generally @dfn{line buffer} their output (i.e., they
+write out every line).  Noninteractive programs wait until they have
+a full buffer, which may be many lines of output.
+Here is an example of the difference:
+
+@example
+$ @kbd{awk '@{ print $1 + $2 @}'}
+@kbd{1 1}
+@print{} 2
+@kbd{2 3}
+@print{} 5
+@kbd{Ctrl-d}
+@end example
+
+@noindent
+Each line of output is printed immediately. Compare that behavior
+with this example:
+
+@example
+$ @kbd{awk '@{ print $1 + $2 @}' | cat}
+@kbd{1 1}
+@kbd{2 3}
+@kbd{Ctrl-d}
+@print{} 2
+@print{} 5
+@end example
+
+@noindent
+Here, no output is printed until after the @kbd{Ctrl-d} is typed, because
+it is all buffered and sent down the pipe to @command{cat} in one shot.
+@end sidebar
 
 @item @code{system(@var{command})}
 @cindexawkfunc{system}
@@ -17613,49 +17656,6 @@ When @option{--sandbox} is specified, the @code{system()} function is disabled
 
 @end table
 
-@sidebar Interactive Versus Noninteractive Buffering
-@cindex buffering, interactive vs.@: noninteractive
-
-As a side point, buffering issues can be even more confusing, depending
-upon whether your program is @dfn{interactive}, i.e., communicating
-with a user sitting at a keyboard.@footnote{A program is interactive
-if the standard output is connected to a terminal device. On modern
-systems, this means your keyboard and screen.}
-
-@c Thanks to Walter.Mecky@dresdnerbank.de for this example, and for
-@c motivating me to write this section.
-Interactive programs generally @dfn{line buffer} their output; i.e., they
-write out every line.  Noninteractive programs wait until they have
-a full buffer, which may be many lines of output.
-Here is an example of the difference:
-
-@example
-$ @kbd{awk '@{ print $1 + $2 @}'}
-@kbd{1 1}
-@print{} 2
-@kbd{2 3}
-@print{} 5
-@kbd{Ctrl-d}
-@end example
-
-@noindent
-Each line of output is printed immediately. Compare that behavior
-with this example:
-
-@example
-$ @kbd{awk '@{ print $1 + $2 @}' | cat}
-@kbd{1 1}
-@kbd{2 3}
-@kbd{Ctrl-d}
-@print{} 2
-@print{} 5
-@end example
-
-@noindent
-Here, no output is printed until after the @kbd{Ctrl-d} is typed, because
-it is all buffered and sent down the pipe to @command{cat} in one shot.
-@end sidebar
-
 @sidebar Controlling Output Buffering with @code{system()}
 @cindex buffers, flushing
 @cindex buffering, input/output
@@ -17674,7 +17674,7 @@ system("")   # flush output
 @command{gawk} treats this use of the @code{system()} function as a special
 case and is smart enough not to run a shell (or other command
 interpreter) with the empty command.  Therefore, with @command{gawk}, this
-idiom is not only useful, it is also efficient.  While this method should work
+idiom is not only useful, it is also efficient.  Although this method should work
 with other @command{awk} implementations, it does not necessarily avoid
 starting an unnecessary shell.  (Other implementations may only
 flush the buffer associated with the standard output and not necessarily
@@ -17813,14 +17813,14 @@ Mean Time). Otherwise, the value is formatted for the local time zone.
 The @var{timestamp} is in the same format as the value returned by the
 @code{systime()} function.  If no @var{timestamp} argument is supplied,
 @command{gawk} uses the current time of day as the timestamp.
-If no @var{format} argument is supplied, @code{strftime()} uses
+Without a @var{format} argument, @code{strftime()} uses
 the value of @code{PROCINFO["strftime"]} as the format string
 (@pxref{Built-in Variables}).
 The default string value is
 @code{@w{"%a %b %e %H:%M:%S %Z %Y"}}.  This format string produces
 output that is equivalent to that of the @command{date} utility.
 You can assign a new value to @code{PROCINFO["strftime"]} to
-change the default format; see below for the various format directives.
+change the default format; see the following list for the various format directives.
 
 @item @code{systime()}
 @cindexgawkfunc{systime}
@@ -17897,9 +17897,9 @@ This is the ISO 8601 date format.
 
 @item %g
 The year modulo 100 of the ISO 8601 week number, as a decimal number (00--99).
-For example, January 1, 2012 is in week 53 of 2011. Thus, the year
+For example, January 1, 2012, is in week 53 of 2011. Thus, the year
 of its ISO 8601 week number is 2011, even though its year is 2012.
-Similarly, December 31, 2012 is in week 1 of 2013. Thus, the year
+Similarly, December 31, 2012, is in week 1 of 2013. Thus, the year
 of its ISO week number is 2013, even though its year is 2012.
 
 @item %G
@@ -17995,7 +17995,7 @@ no time zone is determinable.
 
 @item %Ec %EC %Ex %EX %Ey %EY %Od %Oe %OH
 @itemx %OI %Om %OM %OS %Ou %OU %OV %Ow %OW %Oy
-``Alternate representations'' for the specifications
+``Alternative representations'' for the specifications
 that use only the second letter (@code{%c}, @code{%C},
 and so on).@footnote{If you don't understand any of this, don't worry about
 it; these facilities are meant to make it easier to ``internationalize''
@@ -18008,7 +18008,7 @@ Other internationalization features are described in
 A literal @samp{%}.
 @end table
 
-If a conversion specifier is not one of the above, the behavior is
+If a conversion specifier is not one of those just listed, the behavior is
 undefined.@footnote{This is because ISO C leaves the
 behavior of the C version of @code{strftime()} undefined and @command{gawk}
 uses the system's version of @code{strftime()} if it's there.
@@ -18052,7 +18052,7 @@ The date in VMS format (e.g., @samp{20-JUN-1991}).
 @end table
 @c ENDOFRANGE strf
 
-Additionally, the alternate representations are recognized but their
+Additionally, the alternative representations are recognized but their
 normal representations are used.
 
 @cindex @code{date} utility, POSIX
@@ -18130,8 +18130,10 @@ each successive pair of bits in the operands.
 Three common operations are bitwise AND, OR, and XOR.
 The operations are described in @ref{table-bitwise-ops}.
 
+@c 11/2014: Postprocessing turns the docbook informaltable
+@c into a table. Hurray for scripting!
 @float Table,table-bitwise-ops
-@caption{Bitwise Operations}
+@caption{Bitwise operations}
 @ifnottex
 @ifnotdocbook
 @display
@@ -18299,7 +18301,7 @@ Return the value of @var{val}, shifted right by @var{count} bits.
 Return the bitwise XOR of the arguments. There must be at least two.
 @end table
 
-For all of these functions, first the double precision floating-point value is
+For all of these functions, first the double-precision floating-point value is
 converted to the widest C unsigned integer type, then the bitwise operation is
 performed.  If the result cannot be represented exactly as a C @code{double},
 leading nonzero bits are removed one by one until it can be represented
@@ -18398,7 +18400,7 @@ Otherwise, a @code{"0"} is added.
 The value is then shifted right by one bit and the loop continues
 until there are no more 1 bits.
 
-If the initial value is zero it returns a simple @code{"0"}.
+If the initial value is zero, it returns a simple @code{"0"}.
 Otherwise, at the end, it pads the value with zeros to represent multiples
 of 8-bit quantities. This is typical in modern computers.
 
@@ -18436,7 +18438,7 @@ array or not.
 
 @quotation NOTE
 Using @code{isarray()} at the global level to test 
-variables makes no sense. Since you are the one writing the program, you
+variables makes no sense. Because you are the one writing the program, you
 are supposed to know if your variables are arrays or not. And in fact,
 due to the way @command{gawk} works, if you pass the name of a variable
 that has not been previously used to @code{isarray()}, @command{gawk}
@@ -18504,7 +18506,7 @@ The default value for @var{category} is @code{"LC_MESSAGES"}.
 Complicated @command{awk} programs can often be simplified by defining
 your own functions.  User-defined functions can be called just like
 built-in ones (@pxref{Function Calls}), but it is up to you to define
-them, i.e., to tell @command{awk} what they should do.
+them (i.e., to tell @command{awk} what they should do).
 
 @menu
 * Definition Syntax::           How to write definitions and what they mean.
@@ -18643,13 +18645,13 @@ func foo() @{ a = sqrt($1) ; print a @}
 @end example
 
 @noindent
-Instead it defines a rule that, for each record, concatenates the value
+Instead, it defines a rule that, for each record, concatenates the value
 of the variable @samp{func} with the return value of the function @samp{foo}.
 If the resulting string is non-null, the action is executed.
 This is probably not what is desired.  (@command{awk} accepts this input as
 syntactically valid, because functions may be used before they are defined
 in @command{awk} programs.@footnote{This program won't actually run,
-since @code{foo()} is undefined.})
+because @code{foo()} is undefined.})
 
 @cindex portability, functions@comma{} defining
 To ensure that your @command{awk} programs are portable, always use the
@@ -18720,7 +18722,7 @@ The following is an example of a recursive function.  It takes a string
 as an input parameter and returns the string in backwards order.
 Recursive functions must always have a test that stops the recursion.
 In this case, the recursion terminates when the input string is
-already empty.
+already empty:
 
 @c 8/2014: Thanks to Mike Brennan for the improved formulation
 @cindex @code{rev()} user-defined function
