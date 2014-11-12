@@ -18770,7 +18770,7 @@ function ctime(ts,    format)
 @end example
 
 You might think that @code{ctime()} could use @code{PROCINFO["strftime"]}
-for its format string. That would be a mistake, since @code{ctime()} is
+for its format string. That would be a mistake, because @code{ctime()} is
 supposed to return the time formatted in a standard fashion, and user-level
 code could have changed @code{PROCINFO["strftime"]}.
 @c ENDOFRANGE fdef
@@ -18791,7 +18791,7 @@ the function.
 @end menu
 
 @node Calling A Function
-@subsubsection Writing A Function Call
+@subsubsection Writing a Function Call
 
 A function call consists of the function name followed by the arguments
 in parentheses.  @command{awk} expressions are what you write in the
@@ -18806,7 +18806,7 @@ foo(x y, "lose", 4 * z)
 
 @quotation CAUTION
 Whitespace characters (spaces and TABs) are not allowed
-between the function name and the open-parenthesis of the argument list.
+between the function name and the opening parenthesis of the argument list.
 If you write whitespace by mistake, @command{awk} might think that you mean
 to concatenate a variable with an expression in parentheses.  However, it
 notices that you used a function name and not a variable name, and reports
@@ -18869,7 +18869,7 @@ top's i=3
 @end example
 
 If you want @code{i} to be local to both @code{foo()} and @code{bar()} do as
-follows (the extra-space before @code{i} is a coding convention to
+follows (the extra space before @code{i} is a coding convention to
 indicate that @code{i} is a local variable, not an argument):
 
 @example
@@ -18949,21 +18949,16 @@ At level 2, index 2 is found in a
 @end example
 
 @node Pass By Value/Reference
-@subsubsection Passing Function Arguments By Value Or By Reference
+@subsubsection Passing Function Arguments by Value Or by Reference
 
 In @command{awk}, when you declare a function, there is no way to
 declare explicitly whether the arguments are passed @dfn{by value} or
 @dfn{by reference}.
 
-Instead the passing convention is determined at runtime when
+Instead, the passing convention is determined at runtime when
 the function is called according to the following rule:
-
-@itemize
-@item
-If the argument is an array variable, then it is passed by reference,
-@item
-Otherwise the argument is passed by value.
-@end itemize
+if the argument is an array variable, then it is passed by reference.
+Otherwise, the argument is passed by value.
 
 @cindex call by value
 Passing an argument by value means that when a function is called, it
@@ -19066,7 +19061,13 @@ If @option{--lint} is specified
 Some @command{awk} implementations generate a runtime
 error if you use either the @code{next} statement
 or the @code{nextfile} statement
-(@pxref{Next Statement}, also @pxref{Nextfile Statement})
+(@pxref{Next Statement}, and
+@ifdocbook
+@ref{Nextfile Statement})
+@end ifdocbook
+@ifnotdocbook
+@pxref{Nextfile Statement})
+@end ifnotdocbook
 inside a user-defined function.
 @command{gawk} does not have this limitation.
 @c ENDOFRANGE fudc
@@ -19122,8 +19123,8 @@ function maxelt(vec,   i, ret)
 @noindent
 You call @code{maxelt()} with one argument, which is an array name.  The local
 variables @code{i} and @code{ret} are not intended to be arguments;
-while there is nothing to stop you from passing more than one argument
-to @code{maxelt()}, the results would be strange.  The extra space before
+there is nothing to stop you from passing more than one argument
+to @code{maxelt()} but the results would be strange.  The extra space before
 @code{i} in the function parameter list indicates that @code{i} and
 @code{ret} are local variables.
 You should follow this convention when defining functions.
@@ -19260,8 +19261,8 @@ variable as the @emph{name} of the function to call.
 @cindex indirect function calls, @code{@@}-notation
 @cindex function calls, indirect, @code{@@}-notation for
 The syntax is similar to that of a regular function call: an identifier
-immediately followed by a left parenthesis, any arguments, and then
-a closing right parenthesis, with the addition of a leading @samp{@@}
+immediately followed by an opening parenthesis, any arguments, and then
+a closing parenthesis, with the addition of a leading @samp{@@}
 character:
 
 @example
@@ -19270,7 +19271,7 @@ result = @@the_func()   # calls the sum() function
 @end example
 
 Here is a full program that processes the previously shown data,
-using indirect function calls.
+using indirect function calls:
 
 @example
 @c file eg/prog/indirectcall.awk
@@ -19311,7 +19312,7 @@ function sum(first, last,   ret, i)
 
 These two functions expect to work on fields; thus the parameters
 @code{first} and @code{last} indicate where in the fields to start and end.
-Otherwise they perform the expected computations and are not unusual.
+Otherwise they perform the expected computations and are not unusual:
 
 @example
 @c file eg/prog/indirectcall.awk
@@ -19637,7 +19638,7 @@ functions.
 POSIX @command{awk} provides three kinds of built-in functions: numeric,
 string, and I/O.  @command{gawk} provides functions that sort arrays, work
 with values representing time, do bit manipulation, determine variable
-type (array vs.@: scalar), and internationalize and localize programs.
+type (array versus scalar), and internationalize and localize programs.
 @command{gawk} also provides several extensions to some of standard
 functions, typically in the form of additional arguments.
 
@@ -19693,7 +19694,7 @@ program. This is equivalent to function pointers in C and C++.
 @c ENDOFRANGE funcud
 
 @ifnotinfo
-@part @value{PART2}Problem Solving With @command{awk}
+@part @value{PART2}Problem Solving with @command{awk}
 @end ifnotinfo
 
 @ifdocbook
@@ -19703,10 +19704,10 @@ It contains the following chapters:
 
 @itemize @value{BULLET}
 @item
-@ref{Library Functions}.
+@ref{Library Functions}
 
 @item
-@ref{Sample Programs}.
+@ref{Sample Programs}
 @end itemize
 @end ifdocbook
 
@@ -19767,9 +19768,9 @@ and would like to contribute them to the @command{awk} user community, see
 @cindex portability, example programs
 The programs in this @value{CHAPTER} and in
 @ref{Sample Programs},
-freely use features that are @command{gawk}-specific.
+freely use @command{gawk}-specific features.
 Rewriting these programs for different implementations of @command{awk}
-is pretty straightforward.
+is pretty straightforward:
 
 @itemize @value{BULLET}
 @item
@@ -19839,7 +19840,7 @@ Library functions often need to have global variables that they can use to
 preserve state information between calls to the function---for example,
 @code{getopt()}'s variable @code{_opti}
 (@pxref{Getopt Function}).
-Such variables are called @dfn{private}, since the only functions that need to
+Such variables are called @dfn{private}, as the only functions that need to
 use them are the ones in the library.
 
 When writing a library function, you should try to choose names for your
@@ -19861,10 +19862,10 @@ In addition, several of the library functions use a prefix that helps
 indicate what function or set of functions use the variables---for example,
 @code{_pw_byname()} in the user database routines
 (@pxref{Passwd Functions}).
-This convention is recommended, since it even further decreases the
+This convention is recommended, as it even further decreases the
 chance of inadvertent conflict among variable names.  Note that this
 convention is used equally well for variable names and for private
-function names.@footnote{While all the library routines could have
+function names.@footnote{Although all the library routines could have
 been rewritten to use this convention, this was not done, in order to
 show how our own @command{awk} programming style has evolved and to
 provide some basis for this discussion.}
@@ -19937,7 +19938,7 @@ programming use.
 @end menu
 
 @node Strtonum Function
-@subsection Converting Strings To Numbers
+@subsection Converting Strings to Numbers
 
 The @code{strtonum()} function (@pxref{String Functions})
 is a @command{gawk} extension.  The following function
@@ -20019,7 +20020,7 @@ string.  It sets @code{k} to the index in @code{"1234567"} of the current
 octal digit.
 The return value will either be the same number as the digit, or zero
 if the character is not there, which will be true for a @samp{0}.
-This is safe, since the regexp test in the @code{if} ensures that
+This is safe, because the regexp test in the @code{if} ensures that
 only octal values are converted.
 
 Similar logic applies to the code that checks for and converts a
@@ -20366,7 +20367,7 @@ is always 1.  This means that on those systems, characters
 have numeric values from 128 to 255.
 Finally, large mainframe systems use the EBCDIC character set, which
 uses all 256 values.
-While there are other character sets in use on some older systems,
+There are other character sets in use on some older systems, but
 they are not really worth worrying about:
 
 @example
@@ -20420,7 +20421,7 @@ Good function design is important; this function needs to be general but it
 should also have a reasonable default behavior.  It is called with an array
 as well as the beginning and ending indices of the elements in the array to be
 merged.  This assumes that the array indices are numeric---a reasonable
-assumption since the array was likely created with @code{split()}
+assumption, as the array was likely created with @code{split()}
 (@pxref{String Functions}):
 
 @cindex @code{join()} user-defined function
@@ -20473,7 +20474,7 @@ more difficult than they really need to be.}
 The @code{systime()} and @code{strftime()} functions described in
 @DBREF{Time Functions}
 provide the minimum functionality necessary for dealing with the time of day
-in human readable form.  While @code{strftime()} is extensive, the control
+in human-readable form.  Although @code{strftime()} is extensive, the control
 formats are not necessarily easy to remember or intuitively obvious when
 reading a program.
 
@@ -20564,7 +20565,7 @@ allowed the user to supply an optional timestamp value to use instead
 of the current time.
 
 @node Readfile Function
-@subsection Reading A Whole File At Once
+@subsection Reading a Whole File At Once
 
 Often, it is convenient to have the entire contents of a file available
 in memory as a single string. A straightforward but naive way to
@@ -20624,7 +20625,7 @@ will never match if the file has contents.  @command{gawk} reads data from
 the file into @code{tmp} attempting to match @code{RS}.  The match fails
 after each read, but fails quickly, such that @command{gawk} fills
 @code{tmp} with the entire contents of the file.
-(@xref{Records}, for information on @code{RT} and @code{RS}.)
+(@DBXREF{Records} for information on @code{RT} and @code{RS}.)
 
 In the case that @code{file} is empty, the return value is the null
 string.  Thus calling code may use something like:
@@ -20642,7 +20643,7 @@ test would be @samp{contents == ""}.
 also reads an entire file into memory.
 
 @node Shell Quoting
-@subsection Quoting Strings to Pass to The Shell
+@subsection Quoting Strings to Pass to the Shell
 
 @c included by permission
 @ignore
@@ -20684,7 +20685,7 @@ chmod -w file.flac
 
 Note the need for shell quoting.  The function @code{shell_quote()}
 does it.  @code{SINGLE} is the one-character string @code{"'"} and
-@code{QSINGLE} is the three-character string @code{"\"'\""}.
+@code{QSINGLE} is the three-character string @code{"\"'\""}:
 
 @example
 @c file eg/lib/shellquote.awk
@@ -20744,7 +20745,7 @@ command-line @value{DF}s.
 
 @cindex files, managing, data file boundaries
 @cindex files, initialization and cleanup
-The @code{BEGIN} and @code{END} rules are each executed exactly once at
+The @code{BEGIN} and @code{END} rules are each executed exactly once, at
 the beginning and end of your @command{awk} program, respectively
 (@pxref{BEGIN/END}).
 We (the @command{gawk} authors) once had a user who mistakenly thought that the
@@ -20816,7 +20817,7 @@ The following version solves the problem:
 
 @example
 @c file eg/lib/ftrans.awk
-# ftrans.awk --- handle data file transitions
+# ftrans.awk --- handle datafile transitions
 #
 # user supplies beginfile() and endfile() functions
 @c endfile
@@ -20844,7 +20845,7 @@ END @{ endfile(_filename_) @}
 shows how this library function can be used and
 how it simplifies writing the main program.
 
-@sidebar So Why Does @command{gawk} have @code{BEGINFILE} and @code{ENDFILE}?
+@sidebar So Why Does @command{gawk} Have @code{BEGINFILE} and @code{ENDFILE}?
 
 You are probably wondering, if @code{beginfile()} and @code{endfile()}
 functions can do the job, why does @command{gawk} have
@@ -20852,7 +20853,7 @@ functions can do the job, why does @command{gawk} have
 
 Good question.  Normally, if @command{awk} cannot open a file, this
 causes an immediate fatal error.  In this case, there is no way for a
-user-defined function to deal with the problem, since the mechanism for
+user-defined function to deal with the problem, as the mechanism for
 calling it relies on the file being open and at the first record.  Thus,
 the main reason for @code{BEGINFILE} is to give you a ``hook'' to catch
 files that cannot be processed.  @code{ENDFILE} exists for symmetry,
@@ -20910,8 +20911,8 @@ The @code{rewind()} function relies on the @code{ARGIND} variable
 (@pxref{Auto-set}), which is specific to @command{gawk}.  It also
 relies on the @code{nextfile} keyword (@pxref{Nextfile Statement}).
 Because of this, you should not call it from an @code{ENDFILE} rule.
-(This isn't necessary anyway, since as soon as an @code{ENDFILE} rule
-finishes @command{gawk} goes to the next file!)
+(This isn't necessary anyway, because @command{gawk} goes to the next
+file as soon as an @code{ENDFILE} rule finishes!)
 
 @node File Checking
 @subsection Checking for Readable @value{DDF}s
@@ -20959,13 +20960,13 @@ BEGIN @{
 @cindex troubleshooting, @code{getline} function
 This works, because the @code{getline} won't be fatal.
 Removing the element from @code{ARGV} with @code{delete}
-skips the file (since it's no longer in the list).
+skips the file (because it's no longer in the list).
 See also @ref{ARGC and ARGV}.
 
-The regular expression check purposely does not use character classes
+Because @command{awk} variable names only allow the English letters,
+the regular expression check purposely does not use character classes
 such as @samp{[:alpha:]} and @samp{[:alnum:]}
 (@pxref{Bracket Expressions})
-since @command{awk} variable names only allow the English letters.
 
 @node Empty Files
 @subsection Checking for Zero-length Files
@@ -21107,12 +21108,12 @@ are left alone.
 @c STARTOFRANGE clibf
 @cindex functions, library, C library
 @cindex arguments, processing
-Most utilities on POSIX compatible systems take options on
+Most utilities on POSIX-compatible systems take options on
 the command line that can be used to change the way a program behaves.
 @command{awk} is an example of such a program
 (@pxref{Options}).
-Often, options take @dfn{arguments}; i.e., data that the program needs to
-correctly obey the command-line option.  For example, @command{awk}'s
+Often, options take @dfn{arguments} (i.e., data that the program needs to
+correctly obey the command-line option).  For example, @command{awk}'s
 @option{-F} option requires a string to use as the field separator.
 The first occurrence on the command line of either @option{--} or a
 string that does not begin with @samp{-} ends the options.
@@ -21216,7 +21217,7 @@ necessary for accessing individual characters
 (@pxref{String Functions}).@footnote{This
 function was written before @command{gawk} acquired the ability to
 split strings into single characters using @code{""} as the separator.
-We have left it alone, since using @code{substr()} is more portable.}
+We have left it alone, as using @code{substr()} is more portable.}
 
 The discussion that follows walks through the code a bit at a time:
 
@@ -21384,9 +21385,9 @@ next element in @code{argv}.  If neither condition is true, then only
 on the next call to @code{getopt()}.
 
 The @code{BEGIN} rule initializes both @code{Opterr} and @code{Optind} to one.
-@code{Opterr} is set to one, since the default behavior is for @code{getopt()}
+@code{Opterr} is set to one, because the default behavior is for @code{getopt()}
 to print a diagnostic message upon seeing an invalid option.  @code{Optind}
-is set to one, since there's no reason to look at the program name, which is
+is set to one, because there's no reason to look at the program name, which is
 in @code{ARGV[0]}:
 
 @example
@@ -21436,16 +21437,22 @@ etc., as its own options.
 
 @quotation NOTE
 After @code{getopt()} is through,
-user level code must clear out all the elements of @code{ARGV} from 1
+user-level code must clear out all the elements of @code{ARGV} from 1
 to @code{Optind}, so that @command{awk} does not try to process the
 command-line options as @value{FN}s.
 @end quotation
 
 Using @samp{#!} with the @option{-E} option may help avoid
 conflicts between your program's options and @command{gawk}'s options,
-since @option{-E} causes @command{gawk} to abandon processing of
+as @option{-E} causes @command{gawk} to abandon processing of
 further options
-(@pxref{Executable Scripts}, and @pxref{Options}).
+(@DBPXREF{Executable Scripts} and
+@ifnotdocbook
+@pxref{Options}).
+@end ifnotdocbook
+@ifdocbook
+@ref{Options}).
+@end ifdocbook
 
 Several of the sample programs presented in
 @ref{Sample Programs},
@@ -21475,7 +21482,7 @@ However, because these are numbers, they do not provide very useful
 information to the average user.  There needs to be some way to find the
 user information associated with the user and group ID numbers.  This
 @value{SECTION} presents a suite of functions for retrieving information from the
-user database.  @xref{Group Functions},
+user database.  @DBXREF{Group Functions}
 for a similar suite that retrieves information from the group database.
 
 @cindex @code{getpwent()} function (C library)
@@ -21494,7 +21501,7 @@ The ``password'' comes from the original user database file,
 encrypted passwords (hence the name).
 
 @cindex @command{pwcat} program
-While an @command{awk} program could simply read @file{/etc/passwd}
+Although an @command{awk} program could simply read @file{/etc/passwd}
 directly, this file may not contain complete information about the
 system's set of users.@footnote{It is often the case that password
 information is stored in a network database.} To be sure you are able to
@@ -21589,12 +21596,12 @@ The user's encrypted password.  This may not be available on some systems.
 
 @item User-ID
 The user's numeric user ID number.
-(On some systems it's a C @code{long}, and not an @code{int}.  Thus
+(On some systems, it's a C @code{long}, and not an @code{int}.  Thus
 we cast it to @code{long} for all cases.)
 
 @item Group-ID
 The user's numeric group ID number.
-(Similar comments about @code{long} vs.@: @code{int} apply here.)
+(Similar comments about @code{long} versus @code{int} apply here.)
 
 @item Full name
 The user's full name, and perhaps other information associated with the
@@ -21695,7 +21702,7 @@ The function @code{_pw_init()} fills three copies of the user information
 into three associative arrays.  The arrays are indexed by username
 (@code{_pw_byname}), by user ID number (@code{_pw_byuid}), and by order of
 occurrence (@code{_pw_bycount}).
-The variable @code{_pw_inited} is used for efficiency, since @code{_pw_init()}
+The variable @code{_pw_inited} is used for efficiency, as @code{_pw_init()}
 needs to be called only once.
 
 @cindex @code{PROCINFO} array, testing the field splitting
@@ -21704,7 +21711,7 @@ Because this function uses @code{getline} to read information from
 @command{pwcat}, it first saves the values of @code{FS}, @code{RS}, and @code{$0}.
 It notes in the variable @code{using_fw} whether field splitting
 with @code{FIELDWIDTHS} is in effect or not.
-Doing so is necessary, since these functions could be called
+Doing so is necessary, as these functions could be called
 from anywhere within a user's program, and the user may have his
 or her own way of splitting records and fields.
 This makes it possible to restore the correct
@@ -21806,7 +21813,7 @@ In turn, calling @code{_pw_init()} is not too expensive, because the
 once.  If you are worried about squeezing every last cycle out of your
 @command{awk} program, the check of @code{_pw_inited} could be moved out of
 @code{_pw_init()} and duplicated in all the other functions.  In practice,
-this is not necessary, since most @command{awk} programs are I/O-bound,
+this is not necessary, as most @command{awk} programs are I/O-bound,
 and such a change would clutter up the code.
 
 The @command{id} program in @DBREF{Id Program}
@@ -21945,7 +21952,7 @@ the association of name to number must be unique within the file.
 we cast it to @code{long} for all cases.)
 
 @item Group Member List
-A comma-separated list of user names.  These users are members of the group.
+A comma-separated list of usernames.  These users are members of the group.
 Modern Unix systems allow users to be members of several groups
 simultaneously.  If your system does, then there are elements
 @code{"group1"} through @code{"group@var{N}"} in @code{PROCINFO}
@@ -22060,7 +22067,7 @@ is being used, and to restore the appropriate field splitting mechanism.
 The group information is stored is several associative arrays.
 The arrays are indexed by group name (@code{@w{_gr_byname}}), by group ID number
 (@code{@w{_gr_bygid}}), and by position in the database (@code{@w{_gr_bycount}}).
-There is an additional array indexed by user name (@code{@w{_gr_groupsbyuser}}),
+There is an additional array indexed by username (@code{@w{_gr_groupsbyuser}}),
 which is a space-separated list of groups to which each user belongs.
 
 Unlike the user database, it is possible to have multiple records in the
@@ -22073,7 +22080,7 @@ tvpeople:*:101:david,conan,tom,joan
 @end example
 
 For this reason, @code{_gr_init()} looks to see if a group name or
-group ID number is already seen.  If it is, then the user names are
+group ID number is already seen.  If it is, the usernames are
 simply concatenated onto the previous list of users.@footnote{There is actually a
 subtle problem with the code just presented.  Suppose that
 the first time there were no names. This code adds the names with
@@ -22119,7 +22126,7 @@ function getgrgid(gid)
 
 @cindex @code{getgruser()} function (C library)
 The @code{getgruser()} function does not have a C counterpart. It takes a
-user name and returns the list of groups that have the user as a member:
+username and returns the list of groups that have the user as a member:
 
 @cindex @code{getgruser()} function, user-defined
 @example
@@ -22262,7 +22269,7 @@ The functions presented here fit into the following categories:
 @c nested list
 @table @asis
 @item General problems
-Number to string conversion, assertions, rounding, random number
+Number-to-string conversion, assertions, rounding, random number
 generation, converting characters to numbers, joining strings, getting
 easily usable time-of-day information, and reading a whole file in
 one shot.
@@ -22458,7 +22465,7 @@ The programs are presented in alphabetical order.
 @end menu
 
 @node Cut Program
-@subsection Cutting out Fields and Columns
+@subsection Cutting Out Fields and Columns
 
 @cindex @command{cut} utility
 @c STARTOFRANGE cut
@@ -22735,7 +22742,7 @@ function set_charlist(    field, i, j, f, g, n, m, t,
 @c endfile
 @end example
 
-Next is the rule that actually processes the data.  If the @option{-s} option
+Next is the rule that processes the data.  If the @option{-s} option
 is given, then @code{suppress} is true.  The first @code{if} statement
 makes sure that the input record does have the field separator.  If
 @command{cut} is processing fields, @code{suppress} is true, and the field
@@ -22767,9 +22774,9 @@ written out between the fields:
 @end example
 
 This version of @command{cut} relies on @command{gawk}'s @code{FIELDWIDTHS}
-variable to do the character-based cutting.  While it is possible in
+variable to do the character-based cutting.  It is possible in
 other @command{awk} implementations to use @code{substr()}
-(@pxref{String Functions}),
+(@pxref{String Functions}), but
 it is also extremely painful.
 The @code{FIELDWIDTHS} variable supplies an elegant solution to the problem
 of picking the input line apart by characters.
@@ -22914,7 +22921,7 @@ matched lines in the output:
 @c endfile
 @end example
 
-The last two lines are commented out, since they are not needed in
+The last two lines are commented out, as they are not needed in
 @command{gawk}.  They should be uncommented if you have to use another version
 of @command{awk}.
 
@@ -22924,7 +22931,7 @@ into lowercase if the @option{-i} option is specified.@footnote{It
 also introduces a subtle bug;
 if a match happens, we output the translated line, not the original.}
 The rule is
-commented out since it is not necessary with @command{gawk}:
+commented out as it is not necessary with @command{gawk}:
 
 @example
 @c file eg/prog/egrep.awk
@@ -23061,7 +23068,7 @@ function usage()
 @c ENDOFRANGE egrep
 
 @node Id Program
-@subsection Printing out User Information
+@subsection Printing Out User Information
 
 @cindex printing, user information
 @cindex users, information about, printing
@@ -23176,7 +23183,7 @@ function pr_first_field(str,  a)
 The test in the @code{for} loop is worth noting.
 Any supplementary groups in the @code{PROCINFO} array have the
 indices @code{"group1"} through @code{"group@var{N}"} for some
-@var{N}, i.e., the total number of supplementary groups.
+@var{N} (i.e., the total number of supplementary groups).
 However, we don't know in advance how many of these groups
 there are.
 
@@ -23216,10 +23223,10 @@ aims to demonstrate.}
 
 By default,
 the output files are named @file{xaa}, @file{xab}, and so on. Each file has
-1000 lines in it, with the likely exception of the last file. To change the
+1,000 lines in it, with the likely exception of the last file. To change the
 number of lines in each file, supply a number on the command line
-preceded with a minus; e.g., @samp{-500} for files with 500 lines in them
-instead of 1000.  To change the name of the output files to something like
+preceded with a minus (e.g., @samp{-500} for files with 500 lines in them
+instead of 1,000).  To change the name of the output files to something like
 @file{myfileaa}, @file{myfileab}, and so on, supply an additional
 argument that specifies the @value{FN} prefix.
 
@@ -23267,7 +23274,7 @@ BEGIN @{
     @}
     # test argv in case reading from stdin instead of file
     if (i in ARGV)
-        i++    # skip data file name
+        i++    # skip datafile name
     if (i in ARGV) @{
         outfile = ARGV[i]
         ARGV[i] = ""
@@ -23361,8 +23368,8 @@ truncating them and starting over.
 
 The @code{BEGIN} rule first makes a copy of all the command-line arguments
 into an array named @code{copy}.
-@code{ARGV[0]} is not copied, since it is not needed.
-@code{tee} cannot use @code{ARGV} directly, since @command{awk} attempts to
+@code{ARGV[0]} is not needed, so it is not copied.
+@code{tee} cannot use @code{ARGV} directly, because @command{awk} attempts to
 process each @value{FN} in @code{ARGV} as input data.
 
 @cindex flag variables
@@ -23411,7 +23418,7 @@ BEGIN @{
 @c endfile
 @end example
 
-The following single rule does all the work.  Since there is no pattern, it is
+The following single rule does all the work.  Because there is no pattern, it is
 executed for each line of input.  The body of the rule simply prints the
 line into each file on the command line, and then to the standard output:
 
@@ -23442,7 +23449,7 @@ for (i in copy)
 @end example
 
 @noindent
-This is more concise but it is also less efficient.  The @samp{if} is
+This is more concise, but it is also less efficient.  The @samp{if} is
 tested for each record and for each output file.  By duplicating the loop
 body, the @samp{if} is only tested once for each input record.  If there are
 @var{N} input records and @var{M} output files, the first method only
@@ -23662,10 +23669,10 @@ The second rule does the work. The variable @code{equal} is one or zero,
 depending upon the results of @code{are_equal()}'s comparison. If @command{uniq}
 is counting repeated lines, and the lines are equal, then it increments the @code{count} variable.
 Otherwise, it prints the line and resets @code{count},
-since the two lines are not equal.
+because the two lines are not equal.
 
 If @command{uniq} is not counting, and if the lines are equal, @code{count} is incremented.
-Nothing is printed, since the point is to remove duplicates.
+Nothing is printed, as the point is to remove duplicates.
 Otherwise, if @command{uniq} is counting repeated lines and more than
 one line is seen, or if @command{uniq} is counting nonrepeated lines
 and only one line is seen, then the line is printed, and @code{count}
@@ -23786,7 +23793,7 @@ Count only characters.
 @end table
 
 Implementing @command{wc} in @command{awk} is particularly elegant,
-since @command{awk} does a lot of the work for us; it splits lines into
+because @command{awk} does a lot of the work for us; it splits lines into
 words (i.e., fields) and counts them, it counts lines (i.e., records),
 and it can easily tell us how long a line is.
 
@@ -23891,7 +23898,7 @@ function endfile(file)
 @end example
 
 There is one rule that is executed for each line. It adds the length of
-the record, plus one, to @code{chars}.@footnote{Since @command{gawk}
+the record, plus one, to @code{chars}.@footnote{Because @command{gawk}
 understands multibyte locales, this code counts characters, not bytes.}
 Adding one plus the record length
 is needed because the newline character separating records (the value
@@ -24239,8 +24246,8 @@ often used to map uppercase letters into lowercase for further processing:
 @command{tr} requires two lists of characters.@footnote{On some older
 systems, including Solaris, the system version of @command{tr} may require
 that the lists be written as range expressions enclosed in square brackets
-(@samp{[a-z]}) and quoted, to prevent the shell from attempting a file
-name expansion.  This is not a feature.}  When processing the input, the
+(@samp{[a-z]}) and quoted, to prevent the shell from attempting a
+@value{FN} expansion.  This is not a feature.}  When processing the input, the
 first character in the first list is replaced with the first character
 in the second list, the second character in the first list is replaced
 with the second character in the second list, and so on.  If there are
@@ -24355,9 +24362,9 @@ BEGIN @{
 @c endfile
 @end example
 
-While it is possible to do character transliteration in a user-level
-function, it is not necessarily efficient, and we (the @command{gawk}
-authors) started to consider adding a built-in function.  However,
+It is possible to do character transliteration in a user-level
+function, but it is not necessarily efficient, and we (the @command{gawk}
+developers) started to consider adding a built-in function.  However,
 shortly after writing this program, we learned that Brian Kernighan
 had added the @code{toupper()} and @code{tolower()} functions to his
 @command{awk} (@pxref{String Functions}).  These functions handle the
@@ -24401,7 +24408,7 @@ the @code{line} array and printing the page when 20 labels have been read.
 The @code{BEGIN} rule simply sets @code{RS} to the empty string, so that
 @command{awk} splits records at blank lines
 (@pxref{Records}).
-It sets @code{MAXLINES} to 100, since 100 is the maximum number
+It sets @code{MAXLINES} to 100, because 100 is the maximum number
 of lines on the page
 @iftex
 (@math{20 @cdot 5 = 100}).
@@ -24558,9 +24565,9 @@ useful on real text files:
 @item
 The @command{awk} language considers upper- and lowercase characters to be
 distinct.  Therefore, ``bartender'' and ``Bartender'' are not treated
-as the same word.  This is undesirable, since in normal text, words
-are capitalized if they begin sentences, and a frequency analyzer should not
-be sensitive to capitalization.
+as the same word.  This is undesirable, because words are capitalized
+if they begin sentences in normal text, and a frequency analyzer should
+not be sensitive to capitalization.
 
 @item
 Words are detected using the @command{awk} convention that fields are
@@ -24741,7 +24748,7 @@ The nodes
 and @ref{Sample Programs},
 are the top level nodes for a large number of @command{awk} programs.
 @end ifinfo
-If you want to experiment with these programs, it is tedious to have to type
+If you want to experiment with these programs, it is tedious to type
 them in by hand.  Here we present a program that can extract parts of a
 Texinfo input file into separate files.
 
@@ -24819,7 +24826,7 @@ It also prints some final advice:
 
 @@example
 @@c file examples/messages.awk
-END @@@{ print "Always avoid bored archeologists!" @@@}
+END @@@{ print "Always avoid bored archaeologists!" @@@}
 @@c end file
 @@end example
 @dots{}
@@ -24991,7 +24998,7 @@ The @command{sed} utility is a stream editor, a program that reads a
 stream of data, makes changes to it, and passes it on.
 It is often used to make global changes to a large file or to a stream
 of data generated by a pipeline of commands.
-While @command{sed} is a complicated program in its own right, its most common
+Although @command{sed} is a complicated program in its own right, its most common
 use is to perform global substitutions in the middle of a pipeline:
 
 @example
@@ -25000,7 +25007,7 @@ use is to perform global substitutions in the middle of a pipeline:
 
 Here, @samp{s/old/new/g} tells @command{sed} to look for the regexp
 @samp{old} on each input line and globally replace it with the text
-@samp{new}, i.e., all the occurrences on a line.  This is similar to
+@samp{new} (i.e., all the occurrences on a line).  This is similar to
 @command{awk}'s @code{gsub()} function
 (@pxref{String Functions}).
 
@@ -25084,7 +25091,7 @@ not treated as @value{FN}s
 (@pxref{ARGC and ARGV}).
 
 The @code{usage()} function prints an error message and exits.
-Finally, the single rule handles the printing scheme outlined above,
+Finally, the single rule handles the printing scheme outlined earlier,
 using @code{print} or @code{printf} as appropriate, depending upon the
 value of @code{RT}.
 @c ENDOFRANGE awksed
@@ -25128,8 +25135,8 @@ BEGIN @{
 
 The following program, @file{igawk.sh}, provides this service.
 It simulates @command{gawk}'s searching of the @env{AWKPATH} variable
-and also allows @dfn{nested} includes; i.e., a file that is included
-with @code{@@include} can contain further @code{@@include} statements.
+and also allows @dfn{nested} includes (i.e., a file that is included
+with @code{@@include} can contain further @code{@@include} statements).
 @command{igawk} makes an effort to only include files once, so that nested
 includes don't accidentally include a library function twice.
 
@@ -25159,10 +25166,10 @@ Literal text, provided with @option{-e} or @option{--source}.  This
 text is just appended directly.
 
 @item
-Source @value{FN}s, provided with @option{-f}.  We use a neat trick and append
-@samp{@@include @var{filename}} to the shell variable's contents.  Since the file-inclusion
-program works the way @command{gawk} does, this gets the text
-of the file included into the program at the correct point.
+Source @value{FN}s, provided with @option{-f}.  We use a neat trick and
+append @samp{@@include @var{filename}} to the shell variable's contents.
+Because the file-inclusion program works the way @command{gawk} does, this
+gets the text of the file included in the program at the correct point.
 @end enumerate
 
 @item
@@ -25461,9 +25468,10 @@ EOF
 @c endfile
 @end example
 
-The shell construct @samp{@var{command} << @var{marker}} is called a @dfn{here document}.
-Everything in the shell script up to the @var{marker} is fed to @var{command} as input.
-The shell processes the contents of the here document for variable and command substitution
+The shell construct @samp{@var{command} << @var{marker}} is called
+a @dfn{here document}.  Everything in the shell script up to the
+@var{marker} is fed to @var{command} as input.  The shell processes
+the contents of the here document for variable and command substitution
 (and possibly other things as well, depending upon the shell).
 
 The shell construct @samp{$(@dots{})} is called @dfn{command substitution}.
@@ -25478,14 +25486,16 @@ It's done in these steps:
 @enumerate
 @item
 Run @command{gawk} with the @code{@@include}-processing program (the
-value of the @code{expand_prog} shell variable) on standard input.
+value of the @code{expand_prog} shell variable) reading standard input.
 
 @item
-Standard input is the contents of the user's program, from the shell variable @code{program}.
-Its contents are fed to @command{gawk} via a here document.
+Standard input is the contents of the user's program,
+from the shell variable @code{program}.
+Feed its contents to @command{gawk} via a here document.
 
 @item
-The results of this processing are saved in the shell variable @code{processed_program} by using command substitution.
+Save the results of this processing in the shell variable
+@code{processed_program} by using command substitution.
 @end enumerate
 
 The last step is to call @command{gawk} with the expanded program,
@@ -25561,7 +25571,7 @@ of @command{awk} programs as Web CGI scripts.}
 @c ENDOFRANGE igawk
 
 @node Anagram Program
-@subsection Finding Anagrams From A Dictionary
+@subsection Finding Anagrams from a Dictionary
 
 @cindex anagrams, finding
 An interesting programming challenge is to
@@ -25570,17 +25580,17 @@ word list (such as
 @file{/usr/share/dict/words} on many GNU/Linux systems).
 One word is an anagram of another if both words contain
 the same letters
-(for example, ``babbling'' and ``blabbing'').
+(e.g., ``babbling'' and ``blabbing'').
 
-Column 2, Problem C of Jon Bentley's @cite{Programming Pearls}, second
-edition, presents an elegant algorithm.  The idea is to give words that
+Column 2, Problem C, of Jon Bentley's @cite{Programming Pearls}, Second
+Edition, presents an elegant algorithm.  The idea is to give words that
 are anagrams a common signature, sort all the words together by their
 signature, and then print them.  Dr.@: Bentley observes that taking the
 letters in each word and sorting them produces that common signature.
 
 The following program uses arrays of arrays to bring together
 words with the same signature and array sorting to print the words
-in sorted order.
+in sorted order:
 
 @c STARTOFRANGE anagram
 @cindex @code{anagram.awk} program
@@ -25652,7 +25662,7 @@ function word2key(word,     a, i, n, result)
 
 Finally, the @code{END} rule traverses the array
 and prints out the anagram lists.  It sends the output
-to the system @command{sort} command, since otherwise
+to the system @command{sort} command because otherwise
 the anagrams would appear in arbitrary order:
 
 @example
@@ -25694,7 +25704,7 @@ babery yabber
 @c ENDOFRANGE anagram
 
 @node Signature Program
-@subsection And Now For Something Completely Different
+@subsection And Now for Something Completely Different
 
 @cindex signature program
 @cindex Brini, Davide
@@ -37347,9 +37357,9 @@ recommend compiling and using the current version.
 
 @node Bugs
 @appendixsec Reporting Problems and Bugs
-@cindex archeologists
+@cindex archaeologists
 @quotation
-@i{There is nothing more dangerous than a bored archeologist.}
+@i{There is nothing more dangerous than a bored archaeologist.}
 @author The Hitchhiker's Guide to the Galaxy
 @end quotation
 @c the radio show, not the book. :-)
