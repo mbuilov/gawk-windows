@@ -96,6 +96,15 @@
 	more helpful - also used for unmatched [:, [., [=.
 	Thanks to Davide Brini for raising the issue.
 
+2014-10-12         KO Myung-Hun          <komh78@gmail.com>
+
+	Fixes for OS/2:
+
+	* Makefile.am (install-exec-hook, uninstall-links): Use $(EXEEXT).
+	* getopt.h: Redefinitions if using KLIBC.
+	* io.c (_S_IFDIR, _S_IRWXU): Define if the more standard versions
+	are available.
+
 2014-10-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* README: Remove Pat Rankin from VMS duties, per his request.

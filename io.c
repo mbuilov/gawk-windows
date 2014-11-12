@@ -110,6 +110,14 @@
 
 #ifdef __EMX__
 #include <process.h>
+
+#if !defined(_S_IFDIR) && defined(S_IFDIR)
+#define _S_IFDIR	S_IFDIR
+#endif
+
+#if !defined(_S_IRWXU) && defined(S_IRWXU)
+#define _S_IRWXU	S_IRWXU
+#endif
 #endif
 
 #ifndef ENFILE

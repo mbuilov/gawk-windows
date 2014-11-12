@@ -850,12 +850,12 @@ w32_shutdown (int fd, int how)
 
 #endif	/* __MINGW32__ */
 
-#if defined(__DJGPP__) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__) || defined(__EMX__)
 
 void
 init_sockets(void)
 {
-#ifdef HAVE_SOCKETS
+#if defined(HAVE_SOCKETS) && !defined(__EMX__)
   WSADATA  winsockData;
   int errcode;
 
