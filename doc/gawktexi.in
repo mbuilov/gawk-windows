@@ -4666,7 +4666,7 @@ This @value{SECTION} describes a feature that is specific to @command{gawk}.
 The @code{@@load} keyword can be used to read external @command{awk} extensions
 (stored as system shared libraries).
 This allows you to link in compiled code that may offer superior
-performance and/or give you access to extended capabilities not supported 
+performance and/or give you access to extended capabilities not supported
 by the @command{awk} language.  The @env{AWKLIBPATH} variable is used to
 search for the extension.  Using @code{@@load} is completely equivalent
 to using the @option{-l} command-line option.
@@ -5721,7 +5721,7 @@ $ @kbd{awk '$0 ~ "[ \t\n]"'}
 @error{} ]...
 @error{}  source line number 1
 @error{}  context is
-@error{}        $0 ~ "[ >>>  \t\n]" <<< 
+@error{}        $0 ~ "[ >>>  \t\n]" <<<
 @end example
 
 @cindex newlines, in regexp constants
@@ -6215,7 +6215,7 @@ $ @kbd{awk 'BEGIN @{ RS = "u" @}}
 @print{} m@@ny
 @print{} .ed
 @print{}      R
-@print{} 
+@print{}
 @end example
 
 @noindent
@@ -7486,7 +7486,7 @@ the double quotes.  @command{gawk} provides no way to deal with this.
 Because no formal specification for CSV data exists, there isn't much
 more to be done;
 the @code{FPAT} mechanism provides an elegant solution for the majority
-of cases, and the @command{gawk} developers are satisfied with that. 
+of cases, and the @command{gawk} developers are satisfied with that.
 @end quotation
 
 As written, the regexp used for @code{FPAT} requires that each field
@@ -8755,27 +8755,27 @@ newline:
 $ @kbd{awk 'BEGIN @{ OFS = ";"; ORS = "\n\n" @}}
 >            @kbd{@{ print $1, $2 @}' mail-list}
 @print{} Amelia;555-5553
-@print{} 
+@print{}
 @print{} Anthony;555-3412
-@print{} 
+@print{}
 @print{} Becky;555-7685
-@print{} 
+@print{}
 @print{} Bill;555-1675
-@print{} 
+@print{}
 @print{} Broderick;555-0542
-@print{} 
+@print{}
 @print{} Camilla;555-2912
-@print{} 
+@print{}
 @print{} Fabius;555-1234
-@print{} 
+@print{}
 @print{} Julie;555-6699
-@print{} 
+@print{}
 @print{} Martin;555-6480
-@print{} 
+@print{}
 @print{} Samuel;555-3430
-@print{} 
+@print{}
 @print{} Jean-Paul;555-2127
-@print{} 
+@print{}
 @end example
 
 If the value of @code{ORS} does not contain a newline, the program's output
@@ -13457,7 +13457,7 @@ are checked for a match in the order they are defined.  If no suitable
 
 Each @code{case} contains a single constant, be it numeric, string, or
 regexp.  The @code{switch} expression is evaluated, and then each
-@code{case}'s constant is compared against the result in turn. The type of constant 
+@code{case}'s constant is compared against the result in turn. The type of constant
 determines the comparison: numeric or string do the usual comparisons.
 A regexp constant does a regular expression match against the string
 value of the original expression.  The general form of the @code{switch}
@@ -14398,9 +14398,9 @@ The version of @command{gawk}.
 The following additional elements in the array
 are available to provide information about the MPFR and GMP libraries
 if your version of @command{gawk} supports arbitrary-precision arithmetic
-(@pxref{Arbitrary Precision Arithmetic}): 
+(@pxref{Arbitrary Precision Arithmetic}):
 
-@table @code 
+@table @code
 @cindex version of GNU MPFR library
 @item PROCINFO["mpfr_version"]
 The version of the GNU MPFR library.
@@ -15443,7 +15443,7 @@ the index is @code{"10"} rather than numeric 10.)
 
 @item "@@ind_num_asc"
 Order by indices in ascending order but force them to be treated as numbers in the process.
-Any index with a non-numeric value will end up positioned as if it were zero. 
+Any index with a non-numeric value will end up positioned as if it were zero.
 
 @item "@@val_type_asc"
 Order by element values in ascending order (rather than by indices).
@@ -15455,11 +15455,11 @@ which in turn come before all subarrays.
 @pxref{Arrays of Arrays}.)
 
 @item "@@val_str_asc"
-Order by element values in ascending order (rather than by indices).  Scalar values are 
+Order by element values in ascending order (rather than by indices).  Scalar values are
 compared as strings.  Subarrays, if present, come out last.
 
 @item "@@val_num_asc"
-Order by element values in ascending order (rather than by indices).  Scalar values are 
+Order by element values in ascending order (rather than by indices).  Scalar values are
 compared as numbers.  Subarrays, if present, come out last.
 When numeric values are equal, the string values are used to provide
 an ordering: this guarantees consistent results across different
@@ -15520,7 +15520,7 @@ $ @kbd{gawk '}
 When sorting an array by element values, if a value happens to be
 a subarray then it is considered to be greater than any string or
 numeric value, regardless of what the subarray itself contains,
-and all subarrays are treated as being equal to each other.  Their 
+and all subarrays are treated as being equal to each other.  Their
 order relative to each other is determined by their index strings.
 
 Here are some additional things to bear in mind about sorted
@@ -15988,7 +15988,7 @@ is itself an array and not a scalar:
 @example
 a[4] = "An element in a jagged array"
 @end example
-  
+
 The terms @dfn{dimension}, @dfn{row}, and @dfn{column} are
 meaningless when applied
 to such an array, but we will use ``dimension'' henceforth to imply the
@@ -16045,14 +16045,14 @@ The @samp{for (item in array)} statement (@pxref{Scanning an Array})
 can be nested to scan all the
 elements of an array of arrays if it is rectangular in structure. In order
 to print the contents (scalar values) of a two-dimensional array of arrays
-(i.e., in which each first-level element is itself an 
-array, not necessarily of the same length) 
+(i.e., in which each first-level element is itself an
+array, not necessarily of the same length)
 you could use the following code:
 
 @example
 for (i in array)
     for (j in array[i])
-        print array[i][j] 
+        print array[i][j]
 @end example
 
 The @code{isarray()} function (@pxref{Type Functions})
@@ -16062,7 +16062,7 @@ lets you test if an array element is itself an array:
 for (i in array) @{
     if (isarray(array[i]) @{
         for (j in array[i]) @{
-            print array[i][j] 
+            print array[i][j]
         @}
     @}
     else
@@ -16072,7 +16072,7 @@ for (i in array) @{
 
 If the structure of a jagged array of arrays is known in advance,
 you can often devise workarounds using control statements. For example,
-the following code prints the elements of our main array @code{a}: 
+the following code prints the elements of our main array @code{a}:
 
 @example
 for (i in a) @{
@@ -16082,7 +16082,7 @@ for (i in a) @{
                 print a[i][j][k]
         @} else
             print a[i][j]
-    @} 
+    @}
 @}
 @end example
 
@@ -16861,14 +16861,14 @@ a regexp describing where to split @var{string} (much as @code{FS} can
 be a regexp describing where to split input records).
 If @var{fieldsep} is omitted, the value of @code{FS} is used.
 @code{split()} returns the number of elements created.
-@var{seps} is a @command{gawk} extension with @code{@var{seps}[@var{i}]} 
+@var{seps} is a @command{gawk} extension with @code{@var{seps}[@var{i}]}
 being the separator string
-between @code{@var{array}[@var{i}]} and @code{@var{array}[@var{i}+1]}. 
+between @code{@var{array}[@var{i}]} and @code{@var{array}[@var{i}+1]}.
 If @var{fieldsep} is a single
-space then any leading whitespace goes into @code{@var{seps}[0]} and 
+space then any leading whitespace goes into @code{@var{seps}[0]} and
 any trailing
-whitespace goes into @code{@var{seps}[@var{n}]} where @var{n} is the 
-return value of 
+whitespace goes into @code{@var{seps}[@var{n}]} where @var{n} is the
+return value of
 @code{split()} (i.e., the number of elements in @var{array}).
 
 The @code{split()} function splits strings into pieces in a
@@ -18437,7 +18437,7 @@ an array or not.  The second is inside the body of a user-defined function
 array or not.
 
 @quotation NOTE
-Using @code{isarray()} at the global level to test 
+Using @code{isarray()} at the global level to test
 variables makes no sense. Because you are the one writing the program, you
 are supposed to know if your variables are arrays or not. And in fact,
 due to the way @command{gawk} works, if you pass the name of a variable
@@ -18846,7 +18846,7 @@ function foo(j)
     print "foo's i=" i
 @}
 
-BEGIN @{ 
+BEGIN @{
       i = 10
       print "top's i=" i
       foo(0)
@@ -18875,7 +18875,7 @@ indicate that @code{i} is a local variable, not an argument):
 @example
 function bar(    i)
 @{
-    for (i = 0; i < 3; i++) 
+    for (i = 0; i < 3; i++)
         print "bar's i=" i
 @}
 
@@ -18887,10 +18887,10 @@ function foo(j,    i)
     print "foo's i=" i
 @}
 
-BEGIN @{ 
+BEGIN @{
       i = 10
       print "top's i=" i
-      foo(0) 
+      foo(0)
       print "top's i=" i
 @}
 @end example
@@ -19357,11 +19357,11 @@ $ @kbd{gawk -f indirectcall.awk class_data1}
 @print{} Biology 101:
 @print{}     sum: <352.8>
 @print{}     average: <88.2>
-@print{} 
+@print{}
 @print{} Chemistry 305:
 @print{}     sum: <356.4>
 @print{}     average: <89.1>
-@print{} 
+@print{}
 @print{} English 401:
 @print{}     sum: <376.1>
 @print{}     average: <94.025>
@@ -19483,7 +19483,7 @@ function do_sort(first, last, compare,      data, i, retval)
     retval = data[1]
     for (i = 2; i in data; i++)
         retval = retval " " data[i]
-    
+
     return retval
 @}
 @c endfile
@@ -19529,13 +19529,13 @@ $ @kbd{gawk -f quicksort.awk -f indirectcall.awk class_data2}
 @print{}     average: <88.2>
 @print{}     sort: <78.5 87.0 92.4 94.9>
 @print{}     rsort: <94.9 92.4 87.0 78.5>
-@print{} 
+@print{}
 @print{} Chemistry 305:
 @print{}     sum: <356.4>
 @print{}     average: <89.1>
 @print{}     sort: <75.2 88.2 94.7 98.3>
 @print{}     rsort: <98.3 94.7 88.2 75.2>
-@print{} 
+@print{}
 @print{} English 401:
 @print{}     sum: <376.1>
 @print{}     average: <94.025>
@@ -20006,7 +20006,7 @@ function mystrtonum(str,        ret, n, i, k, c)
 #     a[6] = "1.e3"
 #     a[7] = "1.32"
 #     a[8] = "1.32E2"
-# 
+#
 #     for (i = 1; i in a; i++)
 #         print a[i], strtonum(a[i]), mystrtonum(a[i])
 # @}
@@ -20972,7 +20972,7 @@ such as @samp{[:alpha:]} and @samp{[:alnum:]}
 @subsection Checking for Zero-length Files
 
 All known @command{awk} implementations silently skip over zero-length files.
-This is a by-product of @command{awk}'s implicit 
+This is a by-product of @command{awk}'s implicit
 read-a-record-and-match-against-the-rules loop: when @command{awk}
 tries to read a record from an empty file, it immediately receives an
 end of file indication, closes the file, and proceeds on to the next
@@ -22329,7 +22329,7 @@ ARGIND != Argind @{
 @}
 END @{
     if (ARGIND < ARGC - 1)
-        ARGIND = ARGC - 1 
+        ARGIND = ARGC - 1
     if (ARGIND > Argind)
         for (Argind++; Argind <= ARGIND; Argind++)
             zerofile(ARGV[Argind], Argind)
@@ -23741,7 +23741,7 @@ Brian Kernighan suggests that
 ``an alternative approach to state machines is to just read
 the input into an array, then use indexing.  It's almost always
 easier code, and for most inputs where you would use this, just
-as fast.''  Consider how to rewrite the logic to follow this 
+as fast.''  Consider how to rewrite the logic to follow this
 suggestion.
 @end ifset
 
@@ -25690,14 +25690,14 @@ Here is some partial output when the program is run:
 @example
 $ @kbd{gawk -f anagram.awk /usr/share/dict/words | grep '^b'}
 @dots{}
-babbled blabbed 
-babbler blabber brabble 
-babblers blabbers brabbles 
-babbling blabbing 
-babbly blabby 
-babel bable 
-babels beslab 
-babery yabber 
+babbled blabbed
+babbler blabber brabble
+babblers blabbers brabbles
+babbling blabbing
+babbly blabby
+babel bable
+babels beslab
+babery yabber
 @dots{}
 @end example
 
@@ -25744,28 +25744,28 @@ Subject: The GNU Awk User's Guide, Section 13.3.11
 From: "Chris Johansen" <johansen@main.nc.us>
 Message-ID: <op.v0iw6wlv7finx3@asusodin.thrudvang.lan>
 
-Arnold, you don't know me, but we have a tenuous connection.  My wife is  
+Arnold, you don't know me, but we have a tenuous connection.  My wife is
 Barbara A. Field, FAIA, GIT '65 (B. Arch.).
 
-I have had a couple of paper copies of "Effective Awk Programming" for  
-years, and now I'm going through a Kindle version of "The GNU Awk User's  
-Guide" again.  When I got to section 13.3.11, I reformatted and lightly  
+I have had a couple of paper copies of "Effective Awk Programming" for
+years, and now I'm going through a Kindle version of "The GNU Awk User's
+Guide" again.  When I got to section 13.3.11, I reformatted and lightly
 commented Davide Brin's signature script to understand its workings.
 
-It occurs to me that this might have pedagogical value as an example  
-(although imperfect) of the value of whitespace and comments, and a  
-starting point for that discussion.  It certainly helped _me_ understand  
-what's going on.  You are welcome to it, as-is or modified (subject to  
+It occurs to me that this might have pedagogical value as an example
+(although imperfect) of the value of whitespace and comments, and a
+starting point for that discussion.  It certainly helped _me_ understand
+what's going on.  You are welcome to it, as-is or modified (subject to
 Davide's constraints, of course, which I think I have met).
 
-If I were to include it in a future edition, I would put it at some  
-distance from section 13.3.11, say, as a note or an appendix, so as not to  
+If I were to include it in a future edition, I would put it at some
+distance from section 13.3.11, say, as a note or an appendix, so as not to
 be a "spoiler" to the puzzle.
 
 Best regards,
--- 
+--
 Chris Johansen {johansen at main dot nc dot us}
-  . . . collapsing the probability wave function, sending ripples of  
+  . . . collapsing the probability wave function, sending ripples of
 certainty through the space-time continuum.
 
 
@@ -25774,7 +25774,7 @@ certainty through the space-time continuum.
 # From "13.3.11 And Now For Something Completely Different"
 #   http://www.gnu.org/software/gawk/manual/html_node/Signature-Program.html#Signature-Program
 
-# Copyright © 2008 Davide Brini 
+# Copyright © 2008 Davide Brini
 
 # Copying and distribution of the code published in this page, with
 # or without modification, are permitted in any medium without
@@ -25893,7 +25893,7 @@ Brian Kernighan suggests that
 ``an alternative approach to state machines is to just read
 the input into an array, then use indexing.  It's almost always
 easier code, and for most inputs where you would use this, just
-as fast.''  Rewrite the logic to follow this 
+as fast.''  Rewrite the logic to follow this
 suggestion.
 
 
@@ -25994,7 +25994,7 @@ the use of the external @command{sort} utility.
 @c EXCLUDE END
 
 @ifnotinfo
-@part @value{PART3}Moving Beyond Standard @command{awk} With @command{gawk}
+@part @value{PART3}Moving Beyond Standard @command{awk} with @command{gawk}
 @end ifnotinfo
 
 @ifdocbook
@@ -26003,19 +26003,19 @@ It contains the following chapters:
 
 @itemize @value{BULLET}
 @item
-@ref{Advanced Features}.
+@ref{Advanced Features}
 
 @item
-@ref{Internationalization}.
+@ref{Internationalization}
 
 @item
-@ref{Debugger}.
+@ref{Debugger}
 
 @item
-@ref{Arbitrary Precision Arithmetic}.
+@ref{Arbitrary Precision Arithmetic}
 
 @item
-@ref{Dynamic Extensions}.
+@ref{Dynamic Extensions}
 @end itemize
 @end ifdocbook
 
@@ -26174,7 +26174,7 @@ in a particular order that you, the programmer, choose.  @command{gawk}
 lets you do this.
 
 @DBREF{Controlling Scanning} describes how you can assign special,
-pre-defined values to @code{PROCINFO["sorted_in"]} in order to
+predefined values to @code{PROCINFO["sorted_in"]} in order to
 control the order in which @command{gawk} traverses an array
 during a @code{for} loop.
 
@@ -26198,7 +26198,7 @@ Here, @var{i1} and @var{i2} are the indices, and @var{v1} and @var{v2}
 are the corresponding values of the two elements being compared.
 Either @var{v1} or @var{v2}, or both, can be arrays if the array being
 traversed contains subarrays as values.
-(@xref{Arrays of Arrays}, for more information about subarrays.)
+(@DBXREF{Arrays of Arrays} for more information about subarrays.)
 The three possible return values are interpreted as follows:
 
 @table @code
@@ -26241,7 +26241,7 @@ function cmp_str_val(i1, v1, i2, v2)
 
 The third
 comparison function makes all numbers, and numeric strings without
-any leading or trailing spaces, come out first during loop traversal:  
+any leading or trailing spaces, come out first during loop traversal:
 
 @example
 function cmp_num_str_val(i1, v1, i2, v2,   n1, n2)
@@ -26249,10 +26249,10 @@ function cmp_num_str_val(i1, v1, i2, v2,   n1, n2)
      # numbers before string value comparison, ascending order
      n1 = v1 + 0
      n2 = v2 + 0
-     if (n1 == v1) 
+     if (n1 == v1)
          return (n2 == v2) ? (n1 - n2) : -1
      else if (n2 == v2)
-         return 1 
+         return 1
      return (v1 < v2) ? -1 : (v1 != v2)
 @}
 @end example
@@ -26267,7 +26267,7 @@ BEGIN @{
     data[10] = "one"
     data[100] = 100
     data[20] = "two"
-    
+
     f[1] = "cmp_num_idx"
     f[2] = "cmp_str_val"
     f[3] = "cmp_num_str_val"
@@ -26291,14 +26291,14 @@ $ @kbd{gawk -f compdemo.awk}
 @print{}     data[10] = one
 @print{}     data[20] = two
 @print{}     data[100] = 100
-@print{} 
+@print{}
 @print{} Sort function: cmp_str_val      @ii{Sort by element values as strings}
 @print{}     data[one] = 10
 @print{}     data[100] = 100             @ii{String 100 is less than string 20}
 @print{}     data[two] = 20
 @print{}     data[10] = one
 @print{}     data[20] = two
-@print{} 
+@print{}
 @print{} Sort function: cmp_num_str_val  @ii{Sort all numeric values before all strings}
 @print{}     data[one] = 10
 @print{}     data[two] = 20
@@ -26309,7 +26309,7 @@ $ @kbd{gawk -f compdemo.awk}
 
 Consider sorting the entries of a GNU/Linux system password file
 according to login name.  The following program sorts records
-by a specific field position and can be used for this purpose:   
+by a specific field position and can be used for this purpose:
 
 @example
 # passwd-sort.awk --- simple program to sort by field position
@@ -26355,7 +26355,7 @@ $ @kbd{gawk -v POS=1 -F: -f sort.awk /etc/passwd}
 
 The comparison should normally always return the same value when given a
 specific pair of array elements as its arguments.  If inconsistent
-results are returned then the order is undefined.  This behavior can be
+results are returned, then the order is undefined.  This behavior can be
 exploited to introduce random order into otherwise seemingly
 ordered data:
 
@@ -26367,7 +26367,7 @@ function cmp_randomize(i1, v1, i2, v2)
 @}
 @end example
 
-As mentioned above, the order of the indices is arbitrary if two
+As already mentioned, the order of the indices is arbitrary if two
 elements compare equal.  This is usually not a problem, but letting
 the tied elements come out in arbitrary order can be an issue, especially
 when comparing item values.  The partial ordering of the equal elements
@@ -26408,10 +26408,10 @@ When string comparisons are made during a sort, either for element
 values where one or both aren't numbers, or for element indices
 handled as strings, the value of @code{IGNORECASE}
 (@pxref{Built-in Variables}) controls whether
-the comparisons treat corresponding uppercase and lowercase letters as
+the comparisons treat corresponding upper- and lowercase letters as
 equivalent or distinct.
 
-Another point to keep in mind is that in the case of subarrays
+Another point to keep in mind is that in the case of subarrays,
 the element values can themselves be arrays; a production comparison
 function should use the @code{isarray()} function
 (@pxref{Type Functions}),
@@ -26419,7 +26419,7 @@ to check for this, and choose a defined sorting order for subarrays.
 
 All sorting based on @code{PROCINFO["sorted_in"]}
 is disabled in POSIX mode,
-since the @code{PROCINFO} array is not special in that case.
+because the @code{PROCINFO} array is not special in that case.
 
 As a side note, sorting the array indices before traversing
 the array has been reported to add 15% to 20% overhead to the
@@ -26440,8 +26440,8 @@ sorted array traversal is not the default.
 @cindex @code{asorti()} function (@command{gawk}), arrays@comma{} sorting
 @cindex sort function, arrays, sorting
 In most @command{awk} implementations, sorting an array requires writing
-a @code{sort()} function.  While this can be educational for exploring
-different sorting algorithms, usually that's not the point of the program.
+a @code{sort()} function.  This can be educational for exploring
+different sorting algorithms, but usually that's not the point of the program.
 @command{gawk} provides the built-in @code{asort()} and @code{asorti()}
 functions (@pxref{String Functions}) for sorting arrays.  For example:
 
@@ -26537,8 +26537,8 @@ Because @code{IGNORECASE} affects string comparisons, the value
 of @code{IGNORECASE} also affects sorting for both @code{asort()} and @code{asorti()}.
 Note also that the locale's sorting order does @emph{not}
 come into play; comparisons are based on character values only.@footnote{This
-is true because locale-based comparison occurs only when in POSIX
-compatibility mode, and since @code{asort()} and @code{asorti()} are
+is true because locale-based comparison occurs only when in
+POSIX-compatibility mode, and becasue @code{asort()} and @code{asorti()} are
 @command{gawk} extensions, they are not available in that case.}
 
 @node Two-way I/O
@@ -26614,7 +26614,7 @@ remain more difficult to use than two-way pipes.} @c 8/2014
 @cindex @command{csh} utility, @code{|&} operator, comparison with
 However, with @command{gawk}, it is possible to
 open a @emph{two-way} pipe to another process.  The second process is
-termed a @dfn{coprocess}, since it runs in parallel with @command{gawk}.
+termed a @dfn{coprocess}, as it runs in parallel with @command{gawk}.
 The two-way connection is created using the @samp{|&} operator
 (borrowed from the Korn shell, @command{ksh}):@footnote{This is very
 different from the same operator in the C shell and in Bash.}
@@ -26774,7 +26774,7 @@ You can think of this as just a @emph{very long} two-way pipeline to
 a coprocess.
 The way @command{gawk} decides that you want to use TCP/IP networking is
 by recognizing special @value{FN}s that begin with one of @samp{/inet/},
-@samp{/inet4/} or @samp{/inet6/}.
+@samp{/inet4/}, or @samp{/inet6/}.
 
 The full syntax of the special @value{FN} is
 @file{/@var{net-type}/@var{protocol}/@var{local-port}/@var{remote-host}/@var{remote-port}}.
@@ -26803,7 +26803,7 @@ or @samp{http}, in which case @command{gawk} attempts to determine
 the predefined port number using the C @code{getaddrinfo()} function.
 
 @item remote-host
-The IP address or fully-qualified domain name of the Internet
+The IP address or fully qualified domain name of the Internet
 host to which you want to connect.
 
 @item remote-port
@@ -26877,12 +26877,12 @@ gawk --profile=myprog.prof -f myprog.awk data1 data2
 @end example
 
 @noindent
-In the above example, @command{gawk} places the profile in
+In the preceding example, @command{gawk} places the profile in
 @file{myprog.prof} instead of in @file{awkprof.out}.
 
-Here is a sample session showing a simple @command{awk} program, its input data, and the
-results from running @command{gawk} with the @option{--profile} option.
-First, the @command{awk} program:
+Here is a sample session showing a simple @command{awk} program,
+its input data, and the results from running @command{gawk} with the
+@option{--profile} option.  First, the @command{awk} program:
 
 @example
 BEGIN @{ print "First BEGIN rule" @}
@@ -27040,7 +27040,7 @@ the body of an @code{if}, @code{else}, or loop is only a single statement.
 @item
 Parentheses are used only where needed, as indicated by the structure
 of the program and the precedence rules.
-For example, @samp{(3 + 5) * 4} means add three plus five, then multiply
+For example, @samp{(3 + 5) * 4} means add three and five, then multiply
 the total by four.  However, @samp{3 + 5 * 4} has no parentheses, and
 means @samp{3 + (5 * 4)}.
 
@@ -27299,8 +27299,7 @@ following steps, in this order:
 
 @enumerate
 @item
-The programmer goes
-through the source for all of @command{guide}'s components
+The programmer reviews the source for all of @command{guide}'s components
 and marks each string that is a candidate for translation.
 For example, @code{"`-F': option required"} is a good candidate for translation.
 A table with strings of option names is not (e.g., @command{gawk}'s
@@ -27420,8 +27419,8 @@ if necessary.  (It is almost never necessary to supply a different category.)
 @cindex sorting characters in different languages
 @cindex @code{LC_COLLATE} locale category
 @item LC_COLLATE
-Text-collation information; i.e., how different characters
-and/or groups of characters sort in a given language.
+Text-collation information (i.e., how different characters
+and/or groups of characters sort in a given language).
 
 @cindex @code{LC_CTYPE} locale category
 @item LC_CTYPE
@@ -27640,7 +27639,7 @@ BEGIN @{
 
 @end enumerate
 
-@xref{I18N Example},
+@DBXREF{I18N Example}
 for an example program showing the steps to create
 and use translations from @command{awk}.
 
@@ -27701,7 +27700,7 @@ second argument to @code{dcngettext()}.@footnote{The
 You should distribute the generated @file{.pot} file with
 your @command{awk} program; translators will eventually use it
 to provide you translations that you can also then distribute.
-@xref{I18N Example},
+@DBXREF{I18N Example}
 for the full list of steps to go through to create and test
 translations for @command{guide}.
 @c ENDOFRANGE portobfi
@@ -27829,7 +27828,7 @@ change:
 @cindex @code{TEXTDOMAIN} variable, portability and
 @item
 Assignments to @code{TEXTDOMAIN} won't have any effect,
-since @code{TEXTDOMAIN} is not special in other @command{awk} implementations.
+because @code{TEXTDOMAIN} is not special in other @command{awk} implementations.
 
 @item
 Non-GNU versions of @command{awk} treat marked strings
@@ -27877,8 +27876,8 @@ enough arguments are supplied in the function call.  Many versions of
 underlying C library version of @code{sprintf()}, but only one format and
 argument at a time.  What happens if a positional specification is
 used is anybody's guess.
-However, since the positional specifications are primarily for use in
-@emph{translated} format strings, and since non-GNU @command{awk}s never
+However, because the positional specifications are primarily for use in
+@emph{translated} format strings, and because non-GNU @command{awk}s never
 retrieve the translated string, this should not be a problem in practice.
 @end itemize
 @c ENDOFRANGE inap
@@ -27967,7 +27966,7 @@ msgstr "Like, the scoop is"
 The next step is to make the directory to hold the binary message object
 file and then to create the @file{guide.mo} file.
 We pretend that our file is to be used in the @code{en_US.UTF-8} locale,
-since we have to use a locale name known to the C @command{gettext} routines.
+because we have to use a locale name known to the C @command{gettext} routines.
 The directory layout shown here is standard for GNU @command{gettext} on
 GNU/Linux systems.  Other versions of @command{gettext} may use a different
 layout:
@@ -28004,7 +28003,7 @@ $ @kbd{gawk -f guide.awk}
 @print{} Pardon me, Zaphod who?
 @end example
 
-If the three replacement functions for @code{dcgettext()}, @code{dcngettext()}
+If the three replacement functions for @code{dcgettext()}, @code{dcngettext()},
 and @code{bindtextdomain()}
 (@pxref{I18N Portability})
 are in a file named @file{libintl.awk},
@@ -28106,7 +28105,7 @@ how to use @command{gawk} for debugging your program is easy.
 @end menu
 
 @node Debugging
-@section Introduction to The @command{gawk} Debugger
+@section Introduction to the @command{gawk} Debugger
 
 This @value{SECTION} introduces debugging in general and begins
 the discussion of debugging in @command{gawk}.
@@ -28124,8 +28123,8 @@ the discussion of debugging in @command{gawk}.
 ahead to the next section on the specific features of the @command{gawk}
 debugger.)
 
-Of course, a debugging program cannot remove bugs for you, since it has
-no way of knowing what you or your users consider a ``bug'' and what is a
+Of course, a debugging program cannot remove bugs for you, because it has
+no way of knowing what you or your users consider a ``bug'' versus a
 ``feature.''  (Sometimes, we humans have a hard time with this ourselves.)
 In that case, what can you expect from such a tool?  The answer to that
 depends on the language being debugged, but in general, you can expect at
@@ -28146,7 +28145,7 @@ having to change your source files.
 @item
 The chance to see the values of data in the program at any point in
 execution, and also to change that data on the fly, to see how that
-affects what happens afterwards.  (This often includes the ability
+affects what happens afterward.  (This often includes the ability
 to look at internal data structures besides the variables you actually
 defined in your code.)
 
@@ -28166,11 +28165,11 @@ functional program that you or someone else wrote).
 Before diving in to the details, we need to introduce several
 important concepts that apply to just about all debuggers.
 The following list defines terms used throughout the rest of
-this @value{CHAPTER}.
+this @value{CHAPTER}:
 
 @table @dfn
 @cindex stack frame
-@item Stack Frame
+@item Stack frame
 Programs generally call functions during the course of their execution.
 One function can call another, or a function can call itself (recursion).
 You can view the chain of called functions (main program calls A, which
@@ -28205,7 +28204,7 @@ as many breakpoints as you like.
 A watchpoint is similar to a breakpoint.  The difference is that
 breakpoints are oriented around the code: stop when a certain point in the
 code is reached.  A watchpoint, however, specifies that program execution
-should stop when a @emph{data value} is changed.  This is useful, since
+should stop when a @emph{data value} is changed.  This is useful, as
 sometimes it happens that a variable receives an erroneous value, and it's
 hard to track down where this happens just by looking at the code.
 By using a watchpoint, you can stop whenever a variable is assigned to,
@@ -28219,13 +28218,13 @@ Debugging an @command{awk} program has some specific aspects that are
 not shared with other programming languages.
 
 First of all, the fact that @command{awk} programs usually take input
-line-by-line from a file or files and operate on those lines using specific
+line by line from a file or files and operate on those lines using specific
 rules makes it especially useful to organize viewing the execution of
 the program in terms of these rules.  As we will see, each @command{awk}
 rule is treated almost like a function call, with its own specific block
 of instructions.
 
-In addition, since @command{awk} is by design a very concise language,
+In addition, because @command{awk} is by design a very concise language,
 it is easy to lose sight of everything that is going on ``inside''
 each line of @command{awk} code.  The debugger provides the opportunity
 to look at the individual primitive instructions carried out
@@ -28352,7 +28351,7 @@ gawk> @kbd{bt}
 @end example
 
 This tells us that @code{are_equal()} was called by the main program at
-line 88 of @file{uniq.awk}.  (This is not a big surprise, since this
+line 88 of @file{uniq.awk}.  (This is not a big surprise, because this
 is the only call to @code{are_equal()} in the program, but in more complex
 programs, knowing who called a function and with what parameters can be
 the key to finding the source of the problem.)
@@ -28369,7 +28368,7 @@ gawk> @kbd{p n}
 @end example
 
 @noindent
-In this case, @code{n} is an uninitialized local variable, since the
+In this case, @code{n} is an uninitialized local variable, because the
 function was called without arguments (@pxref{Function Calls}).
 
 A more useful variable to display might be the current record:
@@ -28380,8 +28379,8 @@ gawk> @kbd{p $0}
 @end example
 
 @noindent
-This might be a bit puzzling at first since this is the second line of
-our test input above.  Let's look at @code{NR}:
+This might be a bit puzzling at first, as this is the second line of
+our test input.  Let's look at @code{NR}:
 
 @example
 gawk> @kbd{p NR}
@@ -28421,7 +28420,7 @@ gawk> @kbd{n}
 This tells us that @command{gawk} is now ready to execute line 66, which
 decides whether to give the lines the special ``field skipping'' treatment
 indicated by the @option{-1} command-line option.  (Notice that we skipped
-from where we were before at line 63 to here, since the condition in line 63
+from where we were before at line 63 to here, because the condition in line 63
 @samp{if (fcount == 0 && charcount == 0)} was false.)
 
 Continuing to step, we now get to the splitting of the current and
@@ -28451,7 +28450,7 @@ gawk> @kbd{p n m alast aline}
 
 This is kind of disappointing, though.  All we found out is that there
 are five elements in @code{alast}; @code{m} and @code{aline} don't have
-values since we are at line 68 but haven't executed it yet.
+values because we are at line 68 but haven't executed it yet.
 This information is useful enough (we now know that
 none of the words were accidentally left out), but what if we want to see
 inside the array?
@@ -28560,8 +28559,9 @@ show the abbreviation on a second description line.
 A debugger command name may also be truncated if that partial
 name is unambiguous. The debugger has the built-in capability to
 automatically repeat the previous command just by hitting @key{Enter}.
-This works for the commands @code{list}, @code{next}, @code{nexti}, @code{step}, @code{stepi}
-and @code{continue} executed without any argument.
+This works for the commands @code{list}, @code{next}, @code{nexti},
+@code{step}, @code{stepi}, and @code{continue} executed without any
+argument.
 
 @menu
 * Breakpoint Control::          Control of Breakpoints.
@@ -28576,9 +28576,9 @@ and @code{continue} executed without any argument.
 @node Breakpoint Control
 @subsection Control of Breakpoints
 
-As we saw above, the first thing you probably want to do in a debugging
-session is to get your breakpoints set up, since otherwise your program
-will just run as if it was not under the debugger.  The commands for
+As we saw earlier, the first thing you probably want to do in a debugging
+session is to get your breakpoints set up, because your program
+will otherwise just run as if it was not under the debugger.  The commands for
 controlling breakpoints are:
 
 @table @asis
@@ -28649,8 +28649,8 @@ that the debugger evaluates
 whenever the breakpoint or watchpoint is reached. If the condition is true, then
 the debugger stops execution and prompts for a command. Otherwise,
 the debugger continues executing the program. If the condition expression is
-not specified, any existing condition is removed; i.e., the breakpoint or
-watchpoint is made unconditional. 
+not specified, any existing condition is removed (i.e., the breakpoint or
+watchpoint is made unconditional).
 
 @cindex debugger commands, @code{d} (@code{delete})
 @cindex debugger commands, @code{delete}
@@ -28791,7 +28791,7 @@ Execute one (or @var{count}) instruction(s), stepping over function calls.
 @item @code{return} [@var{value}]
 Cancel execution of a function call. If @var{value} (either a string or a
 number) is specified, it is used as the function's return value. If used in a
-frame other than the innermost one (the currently executing function, i.e.,
+frame other than the innermost one (the currently executing function; i.e.,
 frame number 0), discard all inner frames in addition to the selected one,
 and the caller of that frame becomes the innermost frame.
 
@@ -28857,7 +28857,7 @@ gawk> @kbd{display x}
 @end example
 
 @noindent
-displays the assigned item number, the variable name and its current value.
+This displays the assigned item number, the variable name, and its current value.
 If the display variable refers to a function parameter, it is silently
 deleted from the list as soon as the execution reaches a context where
 no such variable of the given name exists.
@@ -28925,7 +28925,7 @@ or field.
 String values must be enclosed between double quotes (@code{"}@dots{}@code{"}).
 
 You can also set special @command{awk} variables, such as @code{FS},
-@code{NF}, @code{NR}, etc.
+@code{NF}, @code{NR}, and son on.
 
 @cindex debugger commands, @code{w} (@code{watch})
 @cindex debugger commands, @code{watch}
@@ -29017,7 +29017,7 @@ Then select and print the frame.
 @end table
 
 @node Debugger Info
-@subsection Obtaining Information about the Program and the Debugger State
+@subsection Obtaining Information About the Program and the Debugger State
 
 Besides looking at the values of variables, there is often a need to get
 other sorts of information about the state of your program and of the
@@ -29185,51 +29185,51 @@ partial dump of Davide Brini's obfuscated code
 @smallexample
 gawk> @kbd{dump}
 @print{}        # BEGIN
-@print{} 
-@print{} [     1:0xfcd340] Op_rule             : [in_rule = BEGIN] [source_file = brini.awk]
-@print{} [     1:0xfcc240] Op_push_i           : "~" [MALLOC|STRING|STRCUR]
-@print{} [     1:0xfcc2a0] Op_push_i           : "~" [MALLOC|STRING|STRCUR]
-@print{} [     1:0xfcc280] Op_match            : 
-@print{} [     1:0xfcc1e0] Op_store_var        : O
-@print{} [     1:0xfcc2e0] Op_push_i           : "==" [MALLOC|STRING|STRCUR]
-@print{} [     1:0xfcc340] Op_push_i           : "==" [MALLOC|STRING|STRCUR]
-@print{} [     1:0xfcc320] Op_equal            : 
-@print{} [     1:0xfcc200] Op_store_var        : o
-@print{} [     1:0xfcc380] Op_push             : o
-@print{} [     1:0xfcc360] Op_plus_i           : 0 [MALLOC|NUMCUR|NUMBER]
-@print{} [     1:0xfcc220] Op_push_lhs         : o [do_reference = true]
-@print{} [     1:0xfcc300] Op_assign_plus      : 
-@print{} [      :0xfcc2c0] Op_pop              : 
-@print{} [     1:0xfcc400] Op_push             : O
-@print{} [     1:0xfcc420] Op_push_i           : "" [MALLOC|STRING|STRCUR]
-@print{} [      :0xfcc4a0] Op_no_op            : 
-@print{} [     1:0xfcc480] Op_push             : O
-@print{} [      :0xfcc4c0] Op_concat           : [expr_count = 3] [concat_flag = 0]
-@print{} [     1:0xfcc3c0] Op_store_var        : x
-@print{} [     1:0xfcc440] Op_push_lhs         : X [do_reference = true]
-@print{} [     1:0xfcc3a0] Op_postincrement    : 
-@print{} [     1:0xfcc4e0] Op_push             : x
-@print{} [     1:0xfcc540] Op_push             : o
-@print{} [     1:0xfcc500] Op_plus             : 
-@print{} [     1:0xfcc580] Op_push             : o
-@print{} [     1:0xfcc560] Op_plus             : 
-@print{} [     1:0xfcc460] Op_leq              : 
-@print{} [      :0xfcc5c0] Op_jmp_false        : [target_jmp = 0xfcc5e0]
-@print{} [     1:0xfcc600] Op_push_i           : "%c" [MALLOC|STRING|STRCUR]
-@print{} [      :0xfcc660] Op_no_op            : 
-@print{} [     1:0xfcc520] Op_assign_concat    : c
-@print{} [      :0xfcc620] Op_jmp              : [target_jmp = 0xfcc440]
-@print{} 
-@dots{} 
-@print{} 
+@print{}
+@print{} [  1:0xfcd340] Op_rule           : [in_rule = BEGIN] [source_file = brini.awk]
+@print{} [  1:0xfcc240] Op_push_i         : "~" [MALLOC|STRING|STRCUR]
+@print{} [  1:0xfcc2a0] Op_push_i         : "~" [MALLOC|STRING|STRCUR]
+@print{} [  1:0xfcc280] Op_match          :
+@print{} [  1:0xfcc1e0] Op_store_var      : O
+@print{} [  1:0xfcc2e0] Op_push_i         : "==" [MALLOC|STRING|STRCUR]
+@print{} [  1:0xfcc340] Op_push_i         : "==" [MALLOC|STRING|STRCUR]
+@print{} [  1:0xfcc320] Op_equal          :
+@print{} [  1:0xfcc200] Op_store_var      : o
+@print{} [  1:0xfcc380] Op_push           : o
+@print{} [  1:0xfcc360] Op_plus_i         : 0 [MALLOC|NUMCUR|NUMBER]
+@print{} [  1:0xfcc220] Op_push_lhs       : o [do_reference = true]
+@print{} [  1:0xfcc300] Op_assign_plus    :
+@print{} [   :0xfcc2c0] Op_pop            :
+@print{} [  1:0xfcc400] Op_push           : O
+@print{} [  1:0xfcc420] Op_push_i         : "" [MALLOC|STRING|STRCUR]
+@print{} [   :0xfcc4a0] Op_no_op          :
+@print{} [  1:0xfcc480] Op_push           : O
+@print{} [   :0xfcc4c0] Op_concat         : [expr_count = 3] [concat_flag = 0]
+@print{} [  1:0xfcc3c0] Op_store_var      : x
+@print{} [  1:0xfcc440] Op_push_lhs       : X [do_reference = true]
+@print{} [  1:0xfcc3a0] Op_postincrement  :
+@print{} [  1:0xfcc4e0] Op_push           : x
+@print{} [  1:0xfcc540] Op_push           : o
+@print{} [  1:0xfcc500] Op_plus           :
+@print{} [  1:0xfcc580] Op_push           : o
+@print{} [  1:0xfcc560] Op_plus           :
+@print{} [  1:0xfcc460] Op_leq            :
+@print{} [   :0xfcc5c0] Op_jmp_false      : [target_jmp = 0xfcc5e0]
+@print{} [  1:0xfcc600] Op_push_i         : "%c" [MALLOC|STRING|STRCUR]
+@print{} [   :0xfcc660] Op_no_op          :
+@print{} [  1:0xfcc520] Op_assign_concat  : c
+@print{} [   :0xfcc620] Op_jmp            : [target_jmp = 0xfcc440]
+@print{}
+@dots{}
+@print{}
 @print{} [     2:0xfcc5a0] Op_K_printf         : [expr_count = 17] [redir_type = ""]
-@print{} [      :0xfcc140] Op_no_op            : 
-@print{} [      :0xfcc1c0] Op_atexit           : 
-@print{} [      :0xfcc640] Op_stop             : 
-@print{} [      :0xfcc180] Op_no_op            : 
-@print{} [      :0xfcd150] Op_after_beginfile  : 
-@print{} [      :0xfcc160] Op_no_op            : 
-@print{} [      :0xfcc1a0] Op_after_endfile    : 
+@print{} [      :0xfcc140] Op_no_op            :
+@print{} [      :0xfcc1c0] Op_atexit           :
+@print{} [      :0xfcc640] Op_stop             :
+@print{} [      :0xfcc180] Op_no_op            :
+@print{} [      :0xfcd150] Op_after_beginfile  :
+@print{} [      :0xfcc160] Op_no_op            :
+@print{} [      :0xfcc1a0] Op_after_endfile    :
 gawk>
 @end smallexample
 
@@ -29286,7 +29286,7 @@ function @var{function}. This command may change the current source file.
 @itemx @code{q}
 Exit the debugger.  Debugging is great fun, but sometimes we all have
 to tend to other obligations in life, and sometimes we find the bug,
-and are free to go on to the next one!  As we saw above, if you are
+and are free to go on to the next one!  As we saw earlier, if you are
 running a program, the debugger warns you if you accidentally type
 @samp{q} or @samp{quit}, to make sure you really want to quit.
 
@@ -29363,7 +29363,7 @@ If you perused the dump of opcodes in @ref{Miscellaneous Debugger Commands}
 (or if you are already familiar with @command{gawk} internals),
 you will realize that much of the internal manipulation of data
 in @command{gawk}, as in many interpreters, is done on a stack.
-@code{Op_push}, @code{Op_pop}, etc., are the ``bread and butter'' of
+@code{Op_push}, @code{Op_pop}, and the like, are the ``bread and butter'' of
 most @command{gawk} code.
 
 Unfortunately, as of now, the @command{gawk}
@@ -29377,8 +29377,8 @@ change back to obscure, perhaps more optimal code later.
 @item
 There is no way to look ``inside'' the process of compiling
 regular expressions to see if you got it right.  As an @command{awk}
-programmer, you are expected to know what @code{/[^[:alnum:][:blank:]]/}
-means.
+programmer, you are expected to know the meaning of
+@code{/[^[:alnum:][:blank:]]/}.
 
 @item
 The @command{gawk} debugger is designed to be used by running a program (with all its
@@ -29656,7 +29656,7 @@ field values for the basic IEEE 754 binary formats:
 @caption{Basic IEEE Format Values}
 @multitable @columnfractions .20 .20 .20 .20 .20
 @headitem Name @tab Total bits @tab Precision @tab Minimum exponent @tab Maximum exponent
-@item Single @tab 32 @tab 24 @tab @minus{}126 @tab +127 
+@item Single @tab 32 @tab 24 @tab @minus{}126 @tab +127
 @item Double @tab 64 @tab 53 @tab @minus{}1022 @tab +1023
 @item Quadruple @tab 128 @tab 113 @tab @minus{}16382 @tab +16383
 @end multitable
@@ -29798,7 +29798,7 @@ Because the underlying representation can be a little bit off from the exact val
 comparing floating-point values to see if they are exactly equal is generally a bad idea.
 Here is an example where it does not work like you would expect:
 
-@example 
+@example
 $ @kbd{gawk 'BEGIN @{ print (0.1 + 12.2 == 12.3) @}'}
 @print{} 0
 @end example
@@ -29889,7 +29889,7 @@ it decides that they are not equal!  (@xref{Comparing FP Values}.)
 You can get the result you want by increasing the precision; 56 bits in
 this case does the job:
 
-@example 
+@example
 $ @kbd{gawk -M -v PREC=56 'BEGIN @{ print (0.1 + 12.2 == 12.3) @}'}
 @print{} 1
 @end example
@@ -29898,7 +29898,7 @@ If adding more bits is good, perhaps adding even more bits of
 precision is better?
 Here is what happens if we use an even larger value of @code{PREC}:
 
-@example 
+@example
 $ @kbd{gawk -M -v PREC=201 'BEGIN @{ print (0.1 + 12.2 == 12.3) @}'}
 @print{} 0
 @end example
@@ -30019,7 +30019,7 @@ differences among various ways to print a floating-point constant:
 
 @example
 $ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", 0.1) @}'}
-@print{} 0.1000000000000000055511151 
+@print{} 0.1000000000000000055511151
 $ @kbd{gawk -M -v PREC=113 'BEGIN @{ printf("%0.25f\n", 0.1) @}'}
 @print{} 0.1000000000000000000000000
 $ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", "0.1") @}'}
@@ -30740,7 +30740,7 @@ corresponding standard header file @emph{before} including @file{gawkapi.h}:
 @item @code{memset()} @tab @code{<string.h>}
 @item @code{size_t} @tab @code{<sys/types.h>}
 @item @code{struct stat} @tab @code{<sys/stat.h>}
-@end multitable 
+@end multitable
 
 Due to portability concerns, especially to systems that are not
 fully standards-compliant, it is your responsibility
@@ -30875,7 +30875,7 @@ It is used in the following @code{struct}.
 @itemx @ @ @ @ @ @ @ @ awk_value_cookie_t@ vc;
 @itemx @ @ @ @ @} u;
 @itemx @} awk_value_t;
-An ``@command{awk} value.''  
+An ``@command{awk} value.''
 The @code{val_type} member indicates what kind of value the
 @code{union} holds, and each member is of the appropriate type.
 
@@ -31303,7 +31303,7 @@ The name of the file.
 
 @item int fd;
 A file descriptor for the file.  If @command{gawk} was able to
-open the file, then @code{fd} will @emph{not} be equal to 
+open the file, then @code{fd} will @emph{not} be equal to
 @code{INVALID_HANDLE}. Otherwise, it will.
 
 @item struct stat sbuf;
@@ -32052,7 +32052,7 @@ my_extension_init()
     size_t long_string_len;
 
     /* code from earlier */
-    @dots{} 
+    @dots{}
     /* @dots{} fill in long_string and long_string_len @dots{} */
     make_malloced_string(long_string, long_string_len, & value);
     create_value(& value, & answer_cookie);    /* create cookie */
@@ -32785,7 +32785,7 @@ The others should not change during execution.
 As mentioned earlier (@pxref{Extension Mechanism Outline}), the function
 definitions as presented are really macros. To use these macros, your
 extension must provide a small amount of boilerplate code (variables and
-functions) towards the top of your source file, using pre-defined names
+functions) towards the top of your source file, using predefined names
 as described below.  The boilerplate needed is also provided in comments
 in the @file{gawkapi.h} header file:
 
@@ -33090,7 +33090,7 @@ in the @command{gawk} distribution for the complete version.}
 
 The file includes a number of standard header files, and then includes
 the @file{gawkapi.h} header file which provides the API definitions.
-Those are followed by the necessary variable declarations 
+Those are followed by the necessary variable declarations
 to make use of the API macros and boilerplate code
 (@pxref{Extension API Boilerplate}).
 
@@ -35644,7 +35644,7 @@ load @command{awk} library files.
 @item
 The @option{-l} and @option{--load} options load compiled dynamic extensions.
 
-@item 
+@item
 The @option{-M} and @option{--bignum} options enable MPFR.
 
 @item
@@ -39749,7 +39749,7 @@ record or a string.
 @end docbook
 
 @c This file is intended to be included within another document,
-@c hence no sectioning command or @node.  
+@c hence no sectioning command or @node.
 
 @display
 Copyright @copyright{} 2007 Free Software Foundation, Inc. @url{http://fsf.org/}
@@ -39971,7 +39971,7 @@ terms of section 4, provided that you also meet all of these
 conditions:
 
 @enumerate a
-@item 
+@item
 The work must carry prominent notices stating that you modified it,
 and giving a relevant date.
 
@@ -40421,7 +40421,7 @@ state the exclusion of warranty; and each file should have at least
 the ``copyright'' line and a pointer to where the full notice is found.
 
 @smallexample
-@var{one line to give the program's name and a brief idea of what it does.}  
+@var{one line to give the program's name and a brief idea of what it does.}
 Copyright (C) @var{year} @var{name of author}
 
 This program is free software: you can redistribute it and/or modify
@@ -40444,7 +40444,7 @@ If the program does terminal interaction, make it output a short
 notice like this when it starts in an interactive mode:
 
 @smallexample
-@var{program} Copyright (C) @var{year} @var{name of author} 
+@var{program} Copyright (C) @var{year} @var{name of author}
 This program comes with ABSOLUTELY NO WARRANTY; for details type @samp{show w}.
 This is free software, and you are welcome to redistribute it
 under certain conditions; type @samp{show c} for details.
