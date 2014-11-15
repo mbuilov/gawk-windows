@@ -29430,7 +29430,7 @@ and editing.
 @end itemize
 
 @node Arbitrary Precision Arithmetic
-@chapter Arithmetic and Arbitrary Precision Arithmetic with @command{gawk}
+@chapter Arithmetic and Arbitrary-Precision Arithmetic with @command{gawk}
 @cindex arbitrary precision
 @cindex multiple precision
 @cindex infinite precision
@@ -29440,9 +29440,9 @@ This @value{CHAPTER} introduces some basic concepts relating to
 how computers do arithmetic and defines some important terms.
 It then proceeds to describe floating-point arithmetic,
 which is what @command{awk} uses for all its computations, including a
-discussion of arbitrary precision floating point arithmetic, which is
+discussion of arbitrary-precision floating-point arithmetic, which is
 a feature available only in @command{gawk}. It continues on to present
-arbitrary precision integers, and concludes with a description of some
+arbitrary-precision integers, and concludes with a description of some
 points where @command{gawk} and the POSIX standard are not quite in
 agreement.
 
@@ -29505,51 +29505,51 @@ The disadvantage is that their range is limited.
 @cindex integers, unsigned
 In computers, integer values come in two flavors: @dfn{signed} and
 @dfn{unsigned}.  Signed values may be negative or positive, whereas
-unsigned values are always positive (that is, greater than or equal
+unsigned values are always positive (i.e., greater than or equal
 to zero).
 
 In computer systems, integer arithmetic is exact, but the possible
 range of values is limited.  Integer arithmetic is generally faster than
-floating point arithmetic.
+floating-point arithmetic.
 
-@item Floating point arithmetic
+@item Floating-point arithmetic
 Floating-point numbers represent what were called in school ``real''
-numbers; i.e., those that have a fractional part, such as 3.1415927.
+numbers (i.e., those that have a fractional part, such as 3.1415927).
 The advantage to floating-point numbers is that they can represent a
 much larger range of values than can integers.  The disadvantage is that
 there are numbers that they cannot represent exactly.
 
-Modern systems support floating point arithmetic in hardware, with a
+Modern systems support floating-point arithmetic in hardware, with a
 limited range of values.  There are software libraries that allow
-the use of arbitrary precision floating point calculations.
+the use of arbitrary-precision floating-point calculations.
 
-POSIX @command{awk} uses @dfn{double precision} floating-point numbers, which
-can hold more digits than @dfn{single precision} floating-point numbers.
-@command{gawk} has facilities for performing arbitrary precision floating
-point arithmetic, which we describe in more detail shortly.
+POSIX @command{awk} uses @dfn{double-precision} floating-point numbers, which
+can hold more digits than @dfn{single-precision} floating-point numbers.
+@command{gawk} has facilities for performing arbitrary-precision
+floating-point arithmetic, which we describe in more detail shortly.
 @end table
 
-Computers work with integer and floating point values of different
-ranges. Integer values are usually either 32 or 64 bits in size.  Single
-precision floating point values occupy 32 bits, whereas double precision
-floating point values occupy 64 bits.  Floating point values are always
+Computers work with integer and floating-point values of different
+ranges. Integer values are usually either 32 or 64 bits in size.
+Single-precision floating-point values occupy 32 bits, whereas double-precision
+floating-point values occupy 64 bits.  Floating-point values are always
 signed. The possible ranges of values are shown in @ref{table-numeric-ranges}.
 
 @float Table,table-numeric-ranges
-@caption{Value Ranges for Different Numeric Representations}
+@caption{Value ranges for different numeric representations}
 @multitable @columnfractions .34 .33 .33
 @headitem Numeric representation @tab Minimum value @tab Maximum value
 @item 32-bit signed integer @tab @minus{}2,147,483,648 @tab 2,147,483,647
 @item 32-bit unsigned integer @tab 0 @tab 4,294,967,295
 @item 64-bit signed integer @tab @minus{}9,223,372,036,854,775,808 @tab 9,223,372,036,854,775,807
 @item 64-bit unsigned integer @tab 0 @tab 18,446,744,073,709,551,615
-@item Single precision floating point (approximate) @tab @code{1.175494e-38} @tab @code{3.402823e+38}
-@item Double precision floating point (approximate) @tab @code{2.225074e-308} @tab @code{1.797693e+308}
+@item Single-precision floating point (approximate) @tab @code{1.175494e-38} @tab @code{3.402823e+38}
+@item Double-precision floating point (approximate) @tab @code{2.225074e-308} @tab @code{1.797693e+308}
 @end multitable
 @end float
 
 @node Math Definitions
-@section Other Stuff To Know
+@section Other Stuff to Know
 
 The rest of this @value{CHAPTER} uses a number of terms. Here are some
 informal definitions that should help you work your way through the material
@@ -29626,7 +29626,7 @@ How numbers are rounded up or down when necessary.
 More details are provided later.
 
 @item Significand
-A floating point value consists the significand multiplied by 10
+A floating-point value consists the significand multiplied by 10
 to the power of the exponent. For example, in @code{1.2345e67},
 the significand is @code{1.2345}.
 
@@ -29644,16 +29644,16 @@ on some of those terms.
 On modern systems, floating-point hardware uses the representation and
 operations defined by the IEEE 754 standard.
 Three of the standard IEEE 754 types are 32-bit single precision,
-64-bit double precision and 128-bit quadruple precision.
+64-bit double precision, and 128-bit quadruple precision.
 The standard also specifies extended precision formats
 to allow greater precisions and larger exponent ranges.
-(@command{awk} uses only the 64-bit double precision format.)
+(@command{awk} uses only the 64-bit double-precision format.)
 
 @ref{table-ieee-formats} lists the precision and exponent
 field values for the basic IEEE 754 binary formats:
 
 @float Table,table-ieee-formats
-@caption{Basic IEEE Format Values}
+@caption{Basic IEEE format values}
 @multitable @columnfractions .20 .20 .20 .20 .20
 @headitem Name @tab Total bits @tab Precision @tab Minimum exponent @tab Maximum exponent
 @item Single @tab 32 @tab 24 @tab @minus{}126 @tab +127
@@ -29668,14 +29668,14 @@ one extra bit of significand.
 @end quotation
 
 @node MPFR features
-@section Arbitrary Precision Arithmetic Features In @command{gawk}
+@section Arbitrary-Precision Arithmetic Features in @command{gawk}
 
-By default, @command{gawk} uses the double precision floating-point values
+By default, @command{gawk} uses the double-precision floating-point values
 supplied by the hardware of the system it runs on.  However, if it was
-compiled to do so, @command{gawk} uses the @uref{http://www.mpfr.org
-GNU MPFR} and @uref{http://gmplib.org, GNU MP} (GMP) libraries for arbitrary
-precision arithmetic on numbers.  You can see if MPFR support is available
-like so:
+compiled to do so, @command{gawk} uses the @uref{http://www.mpfr.org,
+GNU MPFR} and @uref{http://gmplib.org, GNU MP} (GMP) libraries for
+arbitrary-precision arithmetic on numbers.  You can see if MPFR support
+is available like so:
 
 @example
 $ @kbd{gawk --version}
@@ -29703,11 +29703,11 @@ Two predefined variables, @code{PREC} and @code{ROUNDMODE},
 provide control over the working precision and the rounding mode.
 The precision and the rounding mode are set globally for every operation
 to follow.
-@xref{Setting precision}, and @ref{Setting the rounding mode},
+@DBXREF{Setting precision} and @DBREF{Setting the rounding mode}
 for more information.
 
 @node FP Math Caution
-@section Floating Point Arithmetic: Caveat Emptor!
+@section Floating-Point Arithmetic: Caveat Emptor!
 
 @quotation
 @i{Math class is tough!}
@@ -29740,17 +29740,17 @@ rely just on what we tell you.
 @end menu
 
 @node Inexactness of computations
-@subsection Floating Point Arithmetic Is Not Exact
+@subsection Floating-Point Arithmetic Is Not Exact
 
 Binary floating-point representations and arithmetic are inexact.
 Simple values like 0.1 cannot be precisely represented using
 binary floating-point numbers, and the limited precision of
 floating-point numbers means that slight changes in
 the order of operations or the precision of intermediate storage
-can change the result. To make matters worse, with arbitrary precision
-floating-point, you can set the precision before starting a computation,
-but then you cannot be sure of the number of significant decimal places
-in the final result.
+can change the result. To make matters worse, with arbitrary-precision
+floating-point arithmetic, you can set the precision before starting a
+computation, but then you cannot be sure of the number of significant
+decimal places in the final result.
 
 @menu
 * Inexact representation::      Numbers are not exactly represented.
@@ -29772,7 +29772,7 @@ y = 0.425
 
 Unlike the number in @code{y}, the number stored in @code{x}
 is exactly representable
-in binary since it can be written as a finite sum of one or
+in binary because it can be written as a finite sum of one or
 more fractions whose denominators are all powers of two.
 When @command{gawk} reads a floating-point number from
 program source, it automatically rounds that number to whatever
@@ -29807,7 +29807,7 @@ The general wisdom when comparing floating-point values is to see if
 they are within some small range of each other (called a @dfn{delta},
 or @dfn{tolerance}).
 You have to decide how small a delta is important to you. Code to do
-this looks something like this:
+this looks something like the following:
 
 @example
 delta = 0.00001                 # for example
@@ -29827,7 +29827,7 @@ else
 
 The loss of accuracy during a single computation with floating-point
 numbers usually isn't enough to worry about. However, if you compute a
-value which is the result of a sequence of floating point operations,
+value which is the result of a sequence of floating-point operations,
 the error can accumulate and greatly affect the computation itself.
 Here is an attempt to compute the value of @value{PI} using one of its
 many series representations:
@@ -29873,9 +29873,9 @@ $ @kbd{gawk 'BEGIN @{}
 @end example
 
 @node Getting Accuracy
-@subsection Getting The Accuracy You Need
+@subsection Getting the Accuracy You Need
 
-Can arbitrary precision arithmetic give exact results? There are
+Can arbitrary-precision arithmetic give exact results? There are
 no easy answers. The standard rules of algebra often do not apply
 when using floating-point arithmetic.
 Among other things, the distributive and associative laws
@@ -29884,7 +29884,7 @@ for your computation. Rounding error, cumulative precision loss
 and underflow are often troublesome.
 
 When @command{gawk} tests the expressions @samp{0.1 + 12.2} and
-@samp{12.3} for equality using the machine double precision arithmetic,
+@samp{12.3} for equality using the machine double-precision arithmetic,
 it decides that they are not equal!  (@xref{Comparing FP Values}.)
 You can get the result you want by increasing the precision; 56 bits in
 this case does the job:
@@ -29907,15 +29907,15 @@ This is not a bug in @command{gawk} or in the MPFR library.
 It is easy to forget that the finite number of bits used to store the value
 is often just an approximation after proper rounding.
 The test for equality succeeds if and only if @emph{all} bits in the two operands
-are exactly the same. Since this is not necessarily true after floating-point
+are exactly the same. Because this is not necessarily true after floating-point
 computations with a particular precision and effective rounding mode,
 a straight test for equality may not work. Instead, compare the
 two numbers to see if they are within the desirable delta of each other.
 
 In applications where 15 or fewer decimal places suffice,
-hardware double precision arithmetic can be adequate, and is usually much faster.
+hardware double-precision arithmetic can be adequate, and is usually much faster.
 But you need to keep in mind that every floating-point operation
-can suffer a new rounding error with catastrophic consequences as illustrated
+can suffer a new rounding error with catastrophic consequences, as illustrated
 by our earlier attempt to compute the value of @value{PI}.
 Extra precision can greatly enhance the stability and the accuracy
 of your computation in such cases.
@@ -29939,9 +29939,9 @@ an arbitrarily large value for @code{PREC}. Reformulation of
 the problem at hand is often the correct approach in such situations.
 
 @node Try To Round
-@subsection Try A Few Extra Bits of Precision and Rounding
+@subsection Try a Few Extra Bits of Precision and Rounding
 
-Instead of arbitrary precision floating-point arithmetic,
+Instead of arbitrary-precision floating-point arithmetic,
 often all you need is an adjustment of your logic
 or a different order for the operations in your calculation.
 The stability and the accuracy of the computation of @value{PI}
@@ -29953,7 +29953,7 @@ simple algebraic transformation:
 @end example
 
 @noindent
-After making this, change the program converges to
+After making this change, the program converges to
 @value{PI} in under 30 iterations:
 
 @example
@@ -29969,7 +29969,7 @@ $ @kbd{gawk -f pi2.awk}
 @end example
 
 @node Setting precision
-@subsection Setting The Precision
+@subsection Setting the Precision
 
 @command{gawk} uses a global working precision; it does not keep track of
 the precision or accuracy of individual numbers. Performing an arithmetic
@@ -29981,14 +29981,14 @@ shown in @ref{table-predefined-precision-strings},
 to emulate an IEEE 754 binary format.
 
 @float Table,table-predefined-precision-strings
-@caption{Predefined Precision Strings For @code{PREC}}
+@caption{Predefined precision strings for @code{PREC}}
 @multitable {@code{"double"}} {12345678901234567890123456789012345}
 @headitem @code{PREC} @tab IEEE 754 Binary Format
-@item @code{"half"} @tab 16-bit half-precision.
-@item @code{"single"} @tab Basic 32-bit single precision.
-@item @code{"double"} @tab Basic 64-bit double precision.
-@item @code{"quad"} @tab Basic 128-bit quadruple precision.
-@item @code{"oct"} @tab 256-bit octuple precision.
+@item @code{"half"} @tab 16-bit half-precision
+@item @code{"single"} @tab Basic 32-bit single precision
+@item @code{"double"} @tab Basic 64-bit double precision
+@item @code{"quad"} @tab Basic 128-bit quadruple precision
+@item @code{"oct"} @tab 256-bit octuple precision
 @end multitable
 @end float
 
@@ -30029,7 +30029,7 @@ $ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", 1/10) @}'}
 @end example
 
 @node Setting the rounding mode
-@subsection Setting The Rounding Mode
+@subsection Setting the Rounding Mode
 
 The @code{ROUNDMODE} variable provides
 program level control over the rounding mode.
@@ -30037,7 +30037,7 @@ The correspondence between @code{ROUNDMODE} and the IEEE
 rounding modes is shown in @ref{table-gawk-rounding-modes}.
 
 @float Table,table-gawk-rounding-modes
-@caption{@command{gawk} Rounding Modes}
+@caption{@command{gawk} rounding modes}
 @multitable @columnfractions .45 .30 .25
 @headitem Rounding Mode @tab IEEE Name @tab @code{ROUNDMODE}
 @item Round to nearest, ties to even @tab @code{roundTiesToEven} @tab @code{"N"} or @code{"n"}
@@ -30052,7 +30052,7 @@ rounding modes is shown in @ref{table-gawk-rounding-modes}.
 selects the IEEE 754 rounding mode @code{roundTiesToEven}.
 In @ref{table-gawk-rounding-modes}, the value @code{"A"} selects
 @code{roundTiesToAway}.  This is only available if your version of the
-MPFR library supports it; otherwise setting @code{ROUNDMODE} to @code{"A"}
+MPFR library supports it; otherwise, setting @code{ROUNDMODE} to @code{"A"}
 has no effect.
 
 The default mode @code{roundTiesToEven} is the most preferred,
@@ -30123,14 +30123,14 @@ accumulation of round-off error, look for a significant difference in
 output when you change the rounding mode to be sure.
 
 @node Arbitrary Precision Integers
-@section Arbitrary Precision Integer Arithmetic with @command{gawk}
+@section Arbitrary-Precision Integer Arithmetic with @command{gawk}
 @cindex integers, arbitrary precision
 @cindex arbitrary precision integers
 
 When given the @option{-M} option,
-@command{gawk} performs all integer arithmetic using GMP arbitrary
-precision integers.  Any number that looks like an integer in a source
-or @value{DF} is stored as an arbitrary precision integer.  The size
+@command{gawk} performs all integer arithmetic using GMP arbitrary-precision
+integers.  Any number that looks like an integer in a source
+or @value{DF} is stored as an arbitrary-precision integer.  The size
 of the integer is limited only by the available memory.  For example,
 the following computes
 @iftex
@@ -30145,7 +30145,7 @@ the following computes
 5<superscript>4<superscript>3<superscript>2</superscript></superscript></superscript>, @c
 @end docbook
 the result of which is beyond the
-limits of ordinary hardware double precision floating point values:
+limits of ordinary hardware double-precision floating-point values:
 
 @example
 $ @kbd{gawk -M 'BEGIN @{}
@@ -30157,7 +30157,7 @@ $ @kbd{gawk -M 'BEGIN @{}
 @print{} 62060698786608744707 ... 92256259918212890625
 @end example
 
-If instead you were to compute the same value using arbitrary precision
+If instead you were to compute the same value using arbitrary-precision
 floating-point values, the precision needed for correct output (using
 the formula
 @iftex
@@ -30202,10 +30202,10 @@ floating-point results exactly. You can either increase the precision
 @samp{2.0} with an integer, to perform all computations using integer
 arithmetic to get the correct output.
 
-Sometimes @command{gawk} must implicitly convert an arbitrary precision
-integer into an arbitrary precision floating-point value.  This is
+Sometimes @command{gawk} must implicitly convert an arbitrary-precision
+integer into an arbitrary-precision floating-point value.  This is
 primarily because the MPFR library does not always provide the relevant
-interface to process arbitrary precision integers or mixed-mode numbers
+interface to process arbitrary-precision integers or mixed-mode numbers
 as needed by an operation or function.  In such a case, the precision is
 set to the minimum value necessary for exact conversion, and the working
 precision is not used for this purpose.  If this is not what you need or
@@ -30223,7 +30223,7 @@ to begin with:
 gawk -M 'BEGIN @{ n = 13.0; print n % 2.0 @}'
 @end example
 
-Note that for the particular example above, it is likely best
+Note that for this particular example, it is likely best
 to just use the following:
 
 @example
@@ -30245,13 +30245,13 @@ should support additional features.  These features are:
 
 @itemize @value{BULLET}
 @item
-Interpretation of floating point data values specified in hexadecimal
+Interpretation of floating-point data values specified in hexadecimal
 notation (e.g., @code{0xDEADBEEF}). (Note: data values, @emph{not}
 source code constants.)
 
 @item
-Support for the special IEEE 754 floating point values ``Not A Number''
-(NaN), positive Infinity (``inf'') and negative Infinity (``@minus{}inf'').
+Support for the special IEEE 754 floating-point values ``Not A Number''
+(NaN), positive Infinity (``inf''), and negative Infinity (``@minus{}inf'').
 In particular, the format for these values is as specified by the ISO 1999
 C standard, which ignores case and can allow implementation-dependent additional
 characters after the @samp{nan} and allow either @samp{inf} or @samp{infinity}.
@@ -30262,8 +30262,8 @@ practice:
 
 @itemize @value{BULLET}
 @item
-The @command{gawk} maintainer feels that supporting hexadecimal floating
-point values, in particular, is ugly, and was never intended by the
+The @command{gawk} maintainer feels that supporting hexadecimal
+floating-point values, in particular, is ugly, and was never intended by the
 original designers to be part of the language.
 
 @item
@@ -30277,10 +30277,10 @@ interpretation of the standard, which requires a certain amount of
 intended by the standard developers.  In other words, ``we see how you
 got where you are, but we don't think that that's where you want to be.''
 
-Recognizing the above issues, but attempting to provide compatibility
+Recognizing these issues, but attempting to provide compatibility
 with the earlier versions of the standard,
 the 2008 POSIX standard added explicit wording to allow, but not require,
-that @command{awk} support hexadecimal floating point values and
+that @command{awk} support hexadecimal floating-point values and
 special values for ``Not A Number'' and infinity.
 
 Although the @command{gawk} maintainer continues to feel that
@@ -30337,12 +30337,12 @@ Thus @samp{+nan} and @samp{+NaN} are the same.
 @itemize @value{BULLET}
 @item
 Most computer arithmetic is done using either integers or floating-point
-values.  Standard @command{awk} uses double precision
+values.  Standard @command{awk} uses double-precision
 floating-point values.
 
 @item
-In the early 1990's, Barbie mistakenly said ``Math class is tough!''
-While math isn't tough, floating-point arithmetic isn't the same
+In the early 1990s, Barbie mistakenly said ``Math class is tough!''
+Although math isn't tough, floating-point arithmetic isn't the same
 as pencil and paper math, and care must be taken:
 
 @c nested list
@@ -30375,7 +30375,7 @@ arithmetic. Use @code{PREC} to set the precision in bits, and
 
 @item
 With @option{-M}, @command{gawk} performs
-arbitrary precision integer arithmetic using the GMP library.
+arbitrary-precision integer arithmetic using the GMP library.
 This is faster and more space efficient than using MPFR for
 the same calculations.
 
@@ -30388,7 +30388,7 @@ It pays to be aware of them.
 Overall, there is no need to be unduly suspicious about the results from
 floating-point arithmetic. The lesson to remember is that floating-point
 arithmetic is always more complex than arithmetic using pencil and
-paper. In order to take advantage of the power of computer floating-point,
+paper. In order to take advantage of the power of computer floating point,
 you need to know its limitations and work within them. For most casual
 use of floating-point arithmetic, you will often get the expected result
 if you simply round the display of your final results to the correct number
@@ -30452,8 +30452,8 @@ C library routines that could be of use.  As with most software,
 ``the sky is the limit;'' if you can imagine something that you might
 want to do and can write in C or C++, you can write an extension to do it!
 
-Extensions are written in C or C++, using the @dfn{Application Programming
-Interface} (API) defined for this purpose by the @command{gawk}
+Extensions are written in C or C++, using the @dfn{application programming
+interface} (API) defined for this purpose by the @command{gawk}
 developers.  The rest of this @value{CHAPTER} explains
 the facilities that the API provides and how to use
 them, and presents a small example extension.  In addition, it documents
@@ -30490,7 +30490,7 @@ int plugin_is_GPL_compatible;
 @end example
 
 @node Extension Mechanism Outline
-@section At A High Level How It Works
+@section How It Works at a High Level
 
 Communication between
 @command{gawk} and an extension is two-way.  First, when an extension
@@ -30510,10 +30510,10 @@ This is shown in @inlineraw{docbook, <xref linkend="figure-load-extension"/>}.
 @c but rather just the one without the "txt" final argument.
 @c This applies to the other figures as well.
 @ifinfo
-@center @image{api-figure1, , , Loading The Extension, txt}
+@center @image{api-figure1, , , Loading the extension, txt}
 @end ifinfo
 @ifnotinfo
-@center @image{api-figure1, , , Loading The Extension}
+@center @image{api-figure1, , , Loading the extension}
 @end ifnotinfo
 @end float
 @end ifnotdocbook
@@ -30540,19 +30540,19 @@ This is shown in @inlineraw{docbook, <xref linkend="figure-register-new-function
 
 @ifnotdocbook
 @float Figure,figure-register-new-function
-@caption{Registering A New Function}
+@caption{Registering a new function}
 @ifinfo
-@center @image{api-figure2, , , Registering A New Function, txt}
+@center @image{api-figure2, , , Registering a new Function, txt}
 @end ifinfo
 @ifnotinfo
-@center @image{api-figure2, , , Registering A New Function}
+@center @image{api-figure2, , , Registering a new Function}
 @end ifnotinfo
 @end float
 @end ifnotdocbook
 
 @docbook
 <figure id="figure-register-new-function" float="0">
-<title>Registering A New Function</title>
+<title>Registering a new function</title>
 <mediaobject>
 <imageobject role="web"><imagedata fileref="api-figure2.png" format="PNG"/></imageobject>
 </mediaobject>
@@ -30573,7 +30573,7 @@ This is shown in @inlineraw{docbook, <xref linkend="figure-call-new-function"/>}
 
 @ifnotdocbook
 @float Figure,figure-call-new-function
-@caption{Calling The New Function}
+@caption{Calling the new function}
 @ifinfo
 @center @image{api-figure3, , , Calling the new function, txt}
 @end ifinfo
@@ -30585,7 +30585,7 @@ This is shown in @inlineraw{docbook, <xref linkend="figure-call-new-function"/>}
 
 @docbook
 <figure id="figure-call-new-function" float="0">
-<title>Calling The New Function</title>
+<title>Calling the new function</title>
 <mediaobject>
 <imageobject role="web"><imagedata fileref="api-figure3.png" format="PNG"/></imageobject>
 </mediaobject>
@@ -30621,9 +30621,8 @@ The API also provides major and minor version numbers, so that an
 extension can check if the @command{gawk} it is loaded with supports the
 facilities it was compiled with.  (Version mismatches ``shouldn't''
 happen, but we all know how @emph{that} goes.)
-@xref{Extension Versioning}, for details.
+@DBXREF{Extension Versioning} for details.
 @end itemize
-
 
 @node Extension API Description
 @section API Description
@@ -30666,20 +30665,23 @@ Allocating, reallocating, and releasing memory.
 
 @item
 Registration functions. You may register:
+
+@c nested list
 @itemize @value{MINUS}
 @item
-extension functions,
+Extension functions
 @item
-exit callbacks,
+Exit callbacks
 @item
-a version string,
+A version string
 @item
-input parsers,
+Input parsers
 @item
-output wrappers,
+Output wrappers
 @item
-and two-way processors.
+Two-way processors
 @end itemize
+
 All of these are discussed in detail, later in this @value{CHAPTER}.
 
 @item
@@ -30726,7 +30728,7 @@ Some points about using the API:
 
 @itemize @value{BULLET}
 @item
-The following types and/or macros and/or functions are referenced
+The following types, macros, and/or functions are referenced
 in @file{gawkapi.h}.  For correct use, you must therefore include the
 corresponding standard header file @emph{before} including @file{gawkapi.h}:
 
@@ -30772,7 +30774,7 @@ and is managed by @command{gawk} from then on.
 The API defines several simple @code{struct}s that map values as seen
 from @command{awk}.  A value can be a @code{double}, a string, or an
 array (as in multidimensional arrays, or when creating a new array).
-String values maintain both pointer and length since embedded @sc{nul}
+String values maintain both pointer and length, because embedded @sc{nul}
 characters are allowed.
 
 @quotation NOTE
@@ -30797,14 +30799,14 @@ so that the extension can, e.g., print an error message
 @c The table there should be presented here
 @end itemize
 
-While you may call the API functions by using the function pointers
-directly, the interface is not so pretty. To make extension code look
+You may call the API functions by using the function pointers
+directly, but the interface is not so pretty. To make extension code look
 more like regular code, the @file{gawkapi.h} header file defines several
 macros that you should use in your code.  This @value{SECTION} presents
 the macros as if they were functions.
 
 @node General Data Types
-@subsection General Purpose Data Types
+@subsection General-Purpose Data Types
 
 @cindex Robbins, Arnold
 @cindex Ramey, Chet
@@ -30819,9 +30821,10 @@ can accommodate both love and hate.}
 @author Chet Ramey
 @end quotation
 
-The extension API defines a number of simple types and structures for general
-purpose use. Additional, more specialized, data structures are introduced
-in subsequent @value{SECTION}s, together with the functions that use them.
+The extension API defines a number of simple types and structures for
+general-purpose use. Additional, more specialized, data structures are
+introduced in subsequent @value{SECTION}s, together with the functions
+that use them.
 
 @table @code
 @item typedef void *awk_ext_id_t;
@@ -30888,13 +30891,14 @@ These macros make accessing the fields of the @code{awk_value_t} more
 readable.
 
 @item typedef void *awk_scalar_t;
-Scalars can be represented as an opaque type. These values are obtained from
-@command{gawk} and then passed back into it. This is discussed in a general fashion below,
-and in more detail in @ref{Symbol table by cookie}.
+Scalars can be represented as an opaque type. These values are obtained
+from @command{gawk} and then passed back into it. This is discussed
+in a general fashion in the text following this list, and in more detail in
+@ref{Symbol table by cookie}.
 
 @item typedef void *awk_value_cookie_t;
 A ``value cookie'' is an opaque type representing a cached value.
-This is also discussed in a general fashion below,
+This is also discussed in a general fashion in the text following this list,
 and in more detail in @ref{Cached values}.
 
 @end table
@@ -30904,7 +30908,7 @@ Scalar values in @command{awk} are either numbers or strings. The
 indicates what is in the @code{union}.
 
 Representing numbers is easy---the API uses a C @code{double}.  Strings
-require more work. Since @command{gawk} allows embedded @sc{nul} bytes
+require more work. Because @command{gawk} allows embedded @sc{nul} bytes
 in string values, a string must be represented as a pair containing a
 data-pointer and length. This is the @code{awk_string_t} type.
 
@@ -30917,13 +30921,13 @@ itself be an array.  Discussion of arrays is delayed until
 The various macros listed earlier make it easier to use the elements
 of the @code{union} as if they were fields in a @code{struct}; this
 is a common coding practice in C.  Such code is easier to write and to
-read, however it remains @emph{your} responsibility to make sure that
+read, but it remains @emph{your} responsibility to make sure that
 the @code{val_type} member correctly reflects the type of the value in
 the @code{awk_value_t}.
 
 Conceptually, the first three members of the @code{union} (number, string,
 and array) are all that is needed for working with @command{awk} values.
-However, since the API provides routines for accessing and changing
+However, because the API provides routines for accessing and changing
 the value of global scalar variables only by using the variable's name,
 there is a performance penalty: @command{gawk} must find the variable
 each time it is accessed and changed.  This turns out to be a real issue,
@@ -30963,7 +30967,7 @@ The API provides a number of @dfn{memory allocation} functions for
 allocating memory that can be passed to @command{gawk}, as well as a number of
 convenience macros.
 This @value{SUBSECTION} presents them all as function prototypes, in
-the way that extension code would use them.
+the way that extension code would use them:
 
 @table @code
 @item void *gawk_malloc(size_t size);
@@ -31008,7 +31012,8 @@ The arguments to this macro are as follows:
 The pointer variable to point at the allocated storage.
 
 @item type
-The type of the pointer variable, used to create a cast for the call to @code{gawk_malloc()}.
+The type of the pointer variable.  This is used to create a cast for
+the call to @code{gawk_malloc()}.
 
 @item size
 The total number of bytes to be allocated.
@@ -31043,7 +31048,7 @@ The arguments are the same as for the @code{emalloc()} macro.
 The API provides a number of @dfn{constructor} functions for creating
 string and numeric values, as well as a number of convenience macros.
 This @value{SUBSECTION} presents them all as function prototypes, in
-the way that extension code would use them.
+the way that extension code would use them:
 
 @table @code
 @item static inline awk_value_t *
@@ -31122,8 +31127,8 @@ This is a pointer to the C function that provides the extension's
 functionality.
 The function must fill in @code{*result} with either a number
 or a string. @command{gawk} takes ownership of any string memory.
-As mentioned earlier, string memory @strong{must} come from one of @code{gawk_malloc()},
-@code{gawk_calloc()} or @code{gawk_realloc()}.
+As mentioned earlier, string memory @strong{must} come from one of
+@code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()}.
 
 The @code{num_actual_args} argument tells the C function how many
 actual parameters were passed from the calling @command{awk} code.
@@ -31158,7 +31163,7 @@ Such functions are useful if you have general ``cleanup'' tasks
 that should be performed in your extension (such as closing database
 connections or other resource deallocations).
 You can register such
-a function with @command{gawk} using the following function.
+a function with @command{gawk} using the following function:
 
 @table @code
 @item void awk_atexit(void (*funcp)(void *data, int exit_status),
@@ -31179,8 +31184,9 @@ the function pointed to by @code{funcp}.
 @end table
 @end table
 
-Exit callback functions are called in Last-In-First-Out (LIFO) order---that is, in
-the reverse order in which they are registered with @command{gawk}.
+Exit callback functions are called in last-in-first-out (LIFO)
+order---that is, in the reverse order in which they are registered with
+@command{gawk}.
 
 @node Extension Version String
 @subsubsection Registering An Extension Version String
@@ -31191,7 +31197,7 @@ version of your extension, with @command{gawk}, as follows:
 @table @code
 @item void register_ext_version(const char *version);
 Register the string pointed to by @code{version} with @command{gawk}.
-@command{gawk} does @emph{not} copy the @code{version} string, so
+Note that @command{gawk} does @emph{not} copy the @code{version} string, so
 it should not be changed.
 @end table
 
@@ -31273,7 +31279,7 @@ appropriately.
 @item
 When your extension is loaded, register your input parser with
 @command{gawk} using the @code{register_input_parser()} API function
-(described below).
+(described next).
 @end enumerate
 
 An @code{awk_input_buf_t} looks like this:
@@ -31317,15 +31323,15 @@ The decision can be made based upon @command{gawk} state (the value
 of a variable defined previously by the extension and set by
 @command{awk} code), the name of the
 file, whether or not the file descriptor is valid, the information
-in the @code{struct stat}, or any combination of the above.
+in the @code{struct stat}, or any combination of these factors.
 
 Once @code{@var{XXX}_can_take_file()} has returned true, and
 @command{gawk} has decided to use your input parser, it calls
 @code{@var{XXX}_take_control_of()}.  That function then fills one of
 either the @code{get_record} field or the @code{read_func} field in
 the @code{awk_input_buf_t}.  It must also ensure that @code{fd} is @emph{not}
-set to @code{INVALID_HANDLE}.  All of the fields that may be filled by
-@code{@var{XXX}_take_control_of()} are as follows:
+set to @code{INVALID_HANDLE}.  The following list describes the fields that
+may be filled by @code{@var{XXX}_take_control_of()}:
 
 @table @code
 @item void *opaque;
@@ -31340,13 +31346,13 @@ is not required to use this pointer.
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ size_t *rt_len);
 This function pointer should point to a function that creates the input
 records.  Said function is the core of the input parser.  Its behavior
-is described below.
+is described in the text following this list.
 
 @item ssize_t (*read_func)();
 This function pointer should point to function that has the
 same behavior as the standard POSIX @code{read()} system call.
 It is an alternative to the @code{get_record} pointer.  Its behavior
-is also described below.
+is also described in the text following this list.
 
 @item void (*close_func)(struct awk_input *iobuf);
 This function pointer should point to a function that does
@@ -31484,7 +31490,7 @@ values, etc.) within @command{gawk}.
 The function pointed to by this field is called when @command{gawk}
 decides to let the output wrapper take control of the file. It should
 fill in appropriate members of the @code{awk_output_buf_t} structure,
-as described below, and return true if successful, false otherwise.
+as described next, and return true if successful, false otherwise.
 
 @item awk_const struct output_wrapper *awk_const next;
 This is for use by @command{gawk};
@@ -31627,9 +31633,9 @@ Register the two-way processor pointed to by @code{two_way_processor} with
 @cindex messages from extensions
 
 You can print different kinds of warning messages from your
-extension, as described below.  Note that for these functions,
+extension, as described here.  Note that for these functions,
 you must pass in the extension id received from @command{gawk}
-when the extension was loaded.@footnote{Because the API uses only ISO C 90
+when the extension was loaded:@footnote{Because the API uses only ISO C 90
 features, it cannot make use of the ISO C 99 variadic macro feature to hide
 that parameter. More's the pity.}
 
@@ -31686,7 +31692,7 @@ value type, as appropriate.  This behavior is summarized in
 @ref{table-value-types-returned}.
 
 @float Table,table-value-types-returned
-@caption{API Value Types Returned}
+@caption{API value types returned}
 @docbook
 <informaltable>
 <tgroup cols="6">
@@ -31698,7 +31704,7 @@ value type, as appropriate.  This behavior is summarized in
   <colspec colwidth="16.6*" colname="c6"/>
   <spanspec spanname="hspan" namest="c3" nameend="c6" align="center"/>
   <thead>
-    <row><entry></entry><entry spanname="hspan"><para>Type of Actual Value:</para></entry></row>
+    <row><entry></entry><entry spanname="hspan"><para>Type of Actual Value</para></entry></row>
     <row>
       <entry></entry>
       <entry></entry>
@@ -31734,7 +31740,7 @@ value type, as appropriate.  This behavior is summarized in
       <entry><para>false</para></entry>
     </row>
     <row>
-      <entry><para><emphasis role="bold">Requested:</emphasis></para></entry>
+      <entry><para><emphasis role="bold">Requested</emphasis></para></entry>
       <entry><para><emphasis role="bold">Scalar</emphasis></para></entry>
       <entry><para>Scalar</para></entry>
       <entry><para>Scalar</para></entry>
@@ -31765,7 +31771,7 @@ value type, as appropriate.  This behavior is summarized in
 @ifnotplaintext
 @ifnotdocbook
 @multitable @columnfractions .50 .50
-@headitem @tab Type of Actual Value:
+@headitem @tab Type of Actual Value
 @end multitable
 @c 10/2014: Thanks to Karl Berry for this bit to reduce the space:
 @tex
@@ -31776,7 +31782,7 @@ value type, as appropriate.  This behavior is summarized in
 @item @tab @b{String} @tab String @tab String @tab false @tab false
 @item @tab @b{Number} @tab Number if can be converted, else false @tab Number @tab false @tab false
 @item @b{Type} @tab @b{Array} @tab false @tab false @tab Array @tab false
-@item @b{Requested:} @tab @b{Scalar} @tab Scalar @tab Scalar @tab false @tab false
+@item @b{Requested} @tab @b{Scalar} @tab Scalar @tab Scalar @tab false @tab false
 @item @tab @b{Undefined} @tab String @tab Number @tab Array @tab Undefined
 @item @tab @b{Value Cookie} @tab false @tab false @tab false @tab false
 @end multitable
@@ -31830,7 +31836,7 @@ indicates the type of value expected.
 @item awk_bool_t set_argument(size_t count, awk_array_t array);
 Convert a parameter that was undefined into an array; this provides
 call-by-reference for arrays.  Return false if @code{count} is too big,
-or if the argument's type is not undefined.  @xref{Array Manipulation},
+or if the argument's type is not undefined.  @DBXREF{Array Manipulation}
 for more information on creating arrays.
 @end table
 
@@ -31885,7 +31891,7 @@ cannot change any of those variables.
 @quotation CAUTION
 It is possible for the lookup of @code{PROCINFO} to fail. This happens if
 the @command{awk} program being run does not reference @code{PROCINFO};
-in this case @command{gawk} doesn't bother to create the array and
+in this case, @command{gawk} doesn't bother to create the array and
 populate it.
 @end quotation
 
@@ -31895,9 +31901,9 @@ populate it.
 A @dfn{scalar cookie} is an opaque handle that provides access
 to a global variable or array. It is an optimization that
 avoids looking up variables in @command{gawk}'s symbol table every time
-access is needed. This was discussed earlier, in @ref{General Data Types}.
+access is needed. This was discussed earlier in @ref{General Data Types}.
 
-The following functions let you work with scalar cookies.
+The following functions let you work with scalar cookies:
 
 @table @code
 @item awk_bool_t sym_lookup_scalar(awk_scalar_t cookie,
@@ -31942,18 +31948,21 @@ do_magic(int nargs, awk_value_t *result)
 @noindent
 This code looks (and is) simple and straightforward. So what's the problem?
 
-Consider what happens if @command{awk}-level code associated with your
-extension calls the @code{magic()} function (implemented in C by @code{do_magic()}),
-once per record, while processing hundreds of thousands or millions of records.
-The @code{MAGIC_VAR} variable is looked up in the symbol table once or twice per function call!
+Well, consider what happens if @command{awk}-level code associated
+with your extension calls the @code{magic()} function (implemented in
+C by @code{do_magic()}), once per record, while processing hundreds
+of thousands or millions of records.  The @code{MAGIC_VAR} variable is
+looked up in the symbol table once or twice per function call!
 
-The symbol table lookup is really pure overhead; it is considerably more efficient
-to get a cookie that represents the variable, and use that to get the variable's
-value and update it as needed.@footnote{The difference is measurable and quite real. Trust us.}
+The symbol table lookup is really pure overhead; it is considerably
+more efficient to get a cookie that represents the variable, and use
+that to get the variable's value and update it as needed.@footnote{The
+difference is measurable and quite real. Trust us.}
 
-Thus, the way to use cookies is as follows.  First, install your extension's variable
-in @command{gawk}'s symbol table using @code{sym_update()}, as usual. Then get a
-scalar cookie for the variable using @code{sym_lookup()}:
+Thus, the way to use cookies is as follows.  First, install
+your extension's variable in @command{gawk}'s symbol table using
+@code{sym_update()}, as usual. Then get a scalar cookie for the variable
+using @code{sym_lookup()}:
 
 @example
 static awk_scalar_t magic_var_cookie;    /* cookie for MAGIC_VAR */
@@ -32016,7 +32025,7 @@ or @code{sym_update_scalar()}, as you like.
 
 However, you can understand the point of cached values if you remember that
 @emph{every} string value's storage @emph{must} come from @code{gawk_malloc()},
-@code{gawk_calloc()} or @code{gawk_realloc()}.
+@code{gawk_calloc()}, or @code{gawk_realloc()}.
 If you have 20 variables, all of which have the same string value, you
 must create 20 identical copies of the string.@footnote{Numeric values
 are clearly less problematic, requiring only a C @code{double} to store.}
@@ -32027,11 +32036,11 @@ is what the routines in this section let you do.  The functions are as follows:
 
 @table @code
 @item awk_bool_t create_value(awk_value_t *value, awk_value_cookie_t *result);
-Create a cached string or numeric value from @code{value} for efficient later
-assignment.
-Only values of type @code{AWK_NUMBER} and @code{AWK_STRING} are allowed.  Any other type
-is rejected.  While @code{AWK_UNDEFINED} could be allowed, doing so would
-result in inferior performance.
+Create a cached string or numeric value from @code{value} for
+efficient later assignment.  Only values of type @code{AWK_NUMBER}
+and @code{AWK_STRING} are allowed.  Any other type is rejected.
+@code{AWK_UNDEFINED} could be allowed, but doing so would result in
+inferior performance.
 
 @item awk_bool_t release_value(awk_value_cookie_t vc);
 Release the memory associated with a value cookie obtained
@@ -32082,7 +32091,7 @@ do_magic(int nargs, awk_value_t *result)
 @end example
 
 @noindent
-Using value cookies in this way saves considerable storage, since all of
+Using value cookies in this way saves considerable storage, as all of
 @code{VAR1} through @code{VAR100} share the same value.
 
 You might be wondering, ``Is this sharing problematic?
@@ -32104,7 +32113,7 @@ you should release any cached values that you created, using
 @subsection Array Manipulation
 @cindex array manipulation in extensions
 
-The primary data structure@footnote{Okay, the only data structure.} in @command{awk}
+The primary data structure@footnote{OK, the only data structure.} in @command{awk}
 is the associative array (@pxref{Arrays}).
 Extensions need to be able to manipulate @command{awk} arrays.
 The API provides a number of data structures for working with arrays,
@@ -32125,7 +32134,7 @@ both work with and create true arrays of arrays (@pxref{General Data Types}).
 @node Array Data Types
 @subsubsection Array Data Types
 
-The data types associated with arrays are listed below.
+The data types associated with arrays are as follows:
 
 @table @code
 @item typedef void *awk_array_t;
@@ -32244,7 +32253,7 @@ The following functions relate to arrays as a whole:
 @table @code
 @item awk_array_t create_array(void);
 Create a new array to which elements may be added.
-@xref{Creating Arrays}, for a discussion of how to
+@DBXREF{Creating Arrays} for a discussion of how to
 create a new array and add elements to it.
 
 @item awk_bool_t clear_array(awk_array_t a_cookie);
@@ -32279,7 +32288,7 @@ The function returns true upon success, false otherwise.
 @node Flattening Arrays
 @subsubsection Working With All The Elements of an Array
 
-To @dfn{flatten} an array is create a structure that
+To @dfn{flatten} an array is to create a structure that
 represents the full array in a fashion that makes it easy
 for C code to traverse the entire array.  Test code
 in @file{extension/testext.c} does this, and also serves
@@ -32447,7 +32456,7 @@ code) once you have called @code{release_flattened_array()}:
     @}
 @end example
 
-Finally, since everything was successful, the function sets the
+Finally, because everything was successful, the function sets the
 return value to success, and returns:
 
 @example
@@ -32482,7 +32491,7 @@ code can access them and manipulate them.
 
 There are two important points about creating arrays from extension code:
 
-@enumerate 1
+@itemize @value{BULLET}
 @item
 You must install a new array into @command{gawk}'s symbol
 table immediately upon creating it.  Once you have done so,
@@ -32524,7 +32533,7 @@ new_array = val.array_cookie;    /* YOU MUST DO THIS */
 
 If installing an array as a subarray, you must also retrieve the value
 of the array cookie after the call to @code{set_element()}.
-@end enumerate
+@end itemize
 
 The following C code is a simple test extension to create an array
 with two regular elements and with a subarray. The leading @code{#include}
@@ -32643,7 +32652,7 @@ dl_load_func(func_table, testarray, "")
 @end ignore
 @end example
 
-Here is sample script that loads the extension
+Here is a sample script that loads the extension
 and then dumps the array:
 
 @example
@@ -32673,7 +32682,7 @@ $ @kbd{AWKLIBPATH=$PWD ./gawk -f subarray.awk}
 @end example
 
 @noindent
-(@xref{Finding Extensions}, for more information on the
+(@DBXREF{Finding Extensions} for more information on the
 @env{AWKLIBPATH} environment variable.)
 
 @node Extension API Variables
@@ -32785,8 +32794,8 @@ The others should not change during execution.
 As mentioned earlier (@pxref{Extension Mechanism Outline}), the function
 definitions as presented are really macros. To use these macros, your
 extension must provide a small amount of boilerplate code (variables and
-functions) towards the top of your source file, using predefined names
-as described below.  The boilerplate needed is also provided in comments
+functions) toward the top of your source file, using predefined names
+as described here.  The boilerplate needed is also provided in comments
 in the @file{gawkapi.h} header file:
 
 @example
@@ -32874,7 +32883,7 @@ This macro expands to a @code{dl_load()} function that performs
 all the necessary initializations.
 @end table
 
-The point of the all the variables and arrays is to let the
+The point of all the variables and arrays is to let the
 @code{dl_load()} function (from the @code{dl_load_func()}
 macro) do all the standard work. It does the following:
 
@@ -32909,7 +32918,7 @@ Compiled extensions have to be installed in a directory where
 built in the default fashion, the directory in which to find
 extensions is @file{/usr/local/lib/gawk}.  You can also specify a search
 path with a list of directories to search for compiled extensions.
-@xref{AWKLIBPATH Variable}, for more information.
+@DBXREF{AWKLIBPATH Variable} for more information.
 
 @node Extension Example
 @section Example: Some File Functions
@@ -32917,7 +32926,7 @@ path with a list of directories to search for compiled extensions.
 
 @quotation
 @i{No matter where you go, there you are.}
-@author Buckaroo Bonzai
+@author Buckaroo Banzai
 @end quotation
 
 @c It's enough to show chdir and stat, no need for fts
@@ -33092,7 +33101,7 @@ The file includes a number of standard header files, and then includes
 the @file{gawkapi.h} header file which provides the API definitions.
 Those are followed by the necessary variable declarations
 to make use of the API macros and boilerplate code
-(@pxref{Extension API Boilerplate}).
+(@pxref{Extension API Boilerplate}):
 
 @example
 #ifdef HAVE_CONFIG_H
@@ -33133,7 +33142,7 @@ that implements it is called @code{do_foo()}.  The function should have
 two arguments: the first is an @code{int} usually called @code{nargs},
 that represents the number of actual arguments for the function.
 The second is a pointer to an @code{awk_value_t}, usually named
-@code{result}.
+@code{result}:
 
 @example
 /*  do_chdir --- provide dynamically loaded chdir() function for gawk */
@@ -33153,13 +33162,13 @@ do_chdir(int nargs, awk_value_t *result)
 @end example
 
 The @code{newdir}
-variable represents the new directory to change to, retrieved
+variable represents the new directory to change to, which is retrieved
 with @code{get_argument()}.  Note that the first argument is
 numbered zero.
 
 If the argument is retrieved successfully, the function calls the
 @code{chdir()} system call. If the @code{chdir()} fails, @code{ERRNO}
-is updated.
+is updated:
 
 @example
     if (get_argument(0, AWK_STRING, & newdir)) @{
@@ -33360,7 +33369,7 @@ of @code{stat()}) to get the file information, in case the file is a
 symbolic link. However, if there were three arguments, @code{statfunc}
 is set point to @code{stat()}, instead.
 
-Here is the @code{do_stat()} function. It starts with
+Here is the @code{do_stat()} function, which starts with
 variable declarations and argument checking:
 
 @ignore
@@ -33475,7 +33484,7 @@ dl_load_func(func_table, filefuncs, "")
 And that's it!
 
 @node Using Internal File Ops
-@subsection Integrating The Extensions
+@subsection Integrating the Extensions
 
 @cindex @command{gawk}, interpreter@comma{} adding code to
 Now that the code is written, it must be possible to add it at
@@ -33484,9 +33493,9 @@ code must be compiled.  Assuming that the functions are in
 a file named @file{filefuncs.c}, and @var{idir} is the location
 of the @file{gawkapi.h} header file,
 the following steps@footnote{In practice, you would probably want to
-use the GNU Autotools---Automake, Autoconf, Libtool, and @command{gettext}---to
+use the GNU Autotools (Automake, Autoconf, Libtool, and @command{gettext}) to
 configure and build your libraries. Instructions for doing so are beyond
-the scope of this @value{DOCUMENT}. @xref{gawkextlib}, for Internet links to
+the scope of this @value{DOCUMENT}. @DBXREF{gawkextlib} for Internet links to
 the tools.} create a GNU/Linux shared library:
 
 @example
@@ -33494,7 +33503,7 @@ $ @kbd{gcc -fPIC -shared -DHAVE_CONFIG_H -c -O -g -I@var{idir} filefuncs.c}
 $ @kbd{gcc -o filefuncs.so -shared filefuncs.o}
 @end example
 
-Once the library exists, it is loaded by using the @code{@@load} keyword.
+Once the library exists, it is loaded by using the @code{@@load} keyword:
 
 @example
 # file testff.awk
@@ -33558,13 +33567,14 @@ $ @kbd{AWKLIBPATH=$PWD gawk -f testff.awk}
 @end example
 
 @node Extension Samples
-@section The Sample Extensions In The @command{gawk} Distribution
+@section The Sample Extensions in the @command{gawk} Distribution
 @cindex extensions distributed with @command{gawk}
 
 This @value{SECTION} provides brief overviews of the sample extensions
 that come in the @command{gawk} distribution. Some of them are intended
-for production use, such the @code{filefuncs}, @code{readdir} and @code{inplace} extensions.
-Others mainly provide example code that shows how to use the extension API.
+for production use (e.g., the @code{filefuncs}, @code{readdir} and
+@code{inplace} extensions).  Others mainly provide example code that
+shows how to use the extension API.
 
 @menu
 * Extension Sample File Functions::   The file functions sample.
@@ -33585,7 +33595,7 @@ Others mainly provide example code that shows how to use the extension API.
 @end menu
 
 @node Extension Sample File Functions
-@subsection File Related Functions
+@subsection File-Related Functions
 
 The @code{filefuncs} extension provides three different functions, as follows:
 The usage is:
