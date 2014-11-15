@@ -4321,7 +4321,6 @@ static const struct token tokentab[] = {
 {"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_xor,	MPF(xor)},
 };
 
-#if MBS_SUPPORT
 /* Variable containing the current shift state.  */
 static mbstate_t cur_mbstate;
 /* Ring buffer containing current characters.  */
@@ -4333,10 +4332,6 @@ static int cur_ring_idx;
 /* This macro means that last nextc() return a singlebyte character
    or 1st byte of a multibyte character.  */
 #define nextc_is_1stbyte (cur_char_ring[cur_ring_idx] == 1)
-#else /* MBS_SUPPORT */
-/* a dummy */
-#define nextc_is_1stbyte 1
-#endif /* MBS_SUPPORT */
 
 /* getfname --- return name of a builtin function (for pretty printing) */
 
@@ -5238,8 +5233,6 @@ check_bad_char(int c)
 
 /* nextc --- get the next input character */
 
-#if MBS_SUPPORT
-
 static int
 nextc(bool check_for_bad)
 {
@@ -5310,35 +5303,14 @@ again:
 	}
 }
 
-#else /* MBS_SUPPORT */
-
-int
-nextc(bool check_for_bad)
-{
-	do {
-		if (lexeof)
-			return END_FILE;
-		if (lexptr && lexptr < lexend) {
-			if (check_for_bad)
-				check_bad_char(*lexptr);
-			return ((int) (unsigned char) *lexptr++);
-		}
-	} while (get_src_buf());
-	return END_SRC;
-}
-
-#endif /* MBS_SUPPORT */
-
 /* pushback --- push a character back on the input */
 
 static inline void
 pushback(void)
 {
-#if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1)
 		cur_ring_idx = (cur_ring_idx == 0)? RING_BUFFER_SIZE - 1 :
 			cur_ring_idx - 1;
-#endif
 	(! lexeof && lexptr && lexptr > lexptr_begin ? lexptr-- : lexptr);
 }
 
@@ -5626,9 +5598,7 @@ retry:
 	thisline = NULL;
 	tok = tokstart;
 
-#if MBS_SUPPORT
 	if (gawk_mb_cur_max == 1 || nextc_is_1stbyte)
-#endif
 	switch (c) {
 	case END_SRC:
 		return 0;

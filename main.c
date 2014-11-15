@@ -155,9 +155,7 @@ static const char *locale = "";		/* default value to setlocale */
 
 int use_lc_numeric = false;	/* obey locale for decimal point */
 
-#if MBS_SUPPORT
 int gawk_mb_cur_max;		/* MB_CUR_MAX value, see comment in main() */
-#endif
 
 FILE *output_fp;		/* default gawk output, can be redirected in the debugger */
 bool output_is_tty = false;	/* control flushing of output */
@@ -290,7 +288,6 @@ main(int argc, char **argv)
 
 	set_locale_stuff();
 
-#if MBS_SUPPORT
 	/*
 	 * In glibc, MB_CUR_MAX is actually a function.  This value is
 	 * tested *a lot* in many speed-critical places in gawk. Caching
@@ -300,8 +297,6 @@ main(int argc, char **argv)
 
 	/* init the cache for checking bytes if they're characters */
 	init_btowc_cache();
-#endif
-
 
 	if (do_nostalgia)
 		nostalgia();
@@ -334,7 +329,6 @@ main(int argc, char **argv)
 	if (do_lint && os_is_setuid())
 		warning(_("running %s setuid root may be a security problem"), myname);
 
-#if MBS_SUPPORT
 	if (do_binary) {
 		if (do_posix)
 			warning(_("`--posix' overrides `--characters-as-bytes'"));
@@ -344,7 +338,6 @@ main(int argc, char **argv)
 		setlocale(LC_ALL, "C");
 #endif
 	}
-#endif
 
 	if (do_debug)	/* Need to register the debugger pre-exec hook before any other */
 		init_debug();

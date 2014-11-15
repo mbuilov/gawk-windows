@@ -58,14 +58,14 @@
 #include "gettext.h"
 #define _(str) gettext (str)
 
-#include "mbsupport.h" /* Define MBS_SUPPORT to 1 or 0, as appropriate.  */
-#if MBS_SUPPORT
-/* We can handle multibyte strings.  */
-# include <wchar.h>
-# include <wctype.h>
-#endif
+#include <wchar.h>
+#include <wctype.h>
 
 #include "xalloc.h"
+
+#if defined(__DJGPP__)
+#include "mbsupport.h"
+#endif
 
 #include "dfa.h"
 
@@ -391,12 +391,10 @@ struct dfa
    */
   int *multibyte_prop;
 
-#if MBS_SUPPORT
   /* A table indexed by byte values that contains the corresponding wide
      character (if any) for that byte.  WEOF means the byte is not a
      valid single-byte character.  */
   wint_t mbrtowc_cache[NOTCHAR];
-#endif
 
   /* Array of the bracket expression in the DFA.  */
   struct mb_char_classes *mbcsets;
@@ -481,7 +479,6 @@ static void regexp (void);
 static void
 dfambcache (struct dfa *d)
 {
-#if MBS_SUPPORT
   int i;
   for (i = CHAR_MIN; i <= CHAR_MAX; ++i)
     {
@@ -491,10 +488,8 @@ dfambcache (struct dfa *d)
       wchar_t wc;
       d->mbrtowc_cache[uc] = mbrtowc (&wc, &c, 1, &s) <= 1 ? wc : WEOF;
     }
-#endif
 }
 
-#if MBS_SUPPORT
 /* Store into *PWC the result of converting the leading bytes of the
    multibyte buffer S of length N bytes, using the mbrtowc_cache in *D
    and updating the conversion state in *D.  On conversion error,
@@ -533,9 +528,6 @@ mbs_to_wchar (wint_t *pwc, char const *s, size_t n, struct dfa *d)
   *pwc = wc;
   return 1;
 }
-#else
-#define mbs_to_wchar(pwc, s, n, d) (WEOF)
-#endif
 
 #ifdef DEBUG
 
@@ -730,7 +722,7 @@ static charclass newline;
 #ifdef __GLIBC__
 # define is_valid_unibyte_character(c) 1
 #else
-# define is_valid_unibyte_character(c) (! (MBS_SUPPORT && btowc (c) == WEOF))
+# define is_valid_unibyte_character(c) (btowc (c) != WEOF)
 #endif
 
 /* C is a "word-constituent" byte.  */
@@ -791,17 +783,12 @@ dfasyntax (reg_syntax_t bits, int fold, unsigned char eol)
 static bool
 setbit_wc (wint_t wc, charclass c)
 {
-#if MBS_SUPPORT
   int b = wctob (wc);
   if (b == EOF)
     return false;
 
   setbit (b, c);
   return true;
-#else
-  abort ();
-   /*NOTREACHED*/ return false;
-#endif
 }
 
 /* Set a bit for B and its case variants in the charclass C.
@@ -895,7 +882,6 @@ static wint_t wctok;		/* Wide character representation of the current
                                    MB_CUR_MAX > 1.  */
 
 
-#if MBS_SUPPORT
 /* Fetch the next lexical input character.  Set C (of type int) to the
    next input byte, except set C to EOF if the input is a multibyte
    character of length greater than 1.  Set WC (of type wint_t) to the
@@ -923,23 +909,6 @@ static wint_t wctok;		/* Wide character representation of the current
         lexleft -= nbytes;			\
       }						\
   } while (0)
-
-#else
-/* Note that characters become unsigned here.  */
-# define FETCH_WC(c, unused, eoferr)  \
-  do {				      \
-    if (! lexleft)		      \
-      {				      \
-        if ((eoferr) != 0)	      \
-          dfaerror (eoferr);	      \
-        else			      \
-          return lasttok = END;	      \
-      }				      \
-    (c) = to_uchar (*lexptr++);       \
-    --lexleft;			      \
-  } while (0)
-
-#endif /* MBS_SUPPORT */
 
 #ifndef MIN
 # define MIN(a,b) ((a) < (b) ? (a) : (b))
@@ -1752,7 +1721,6 @@ addtok (token t)
     }
 }
 
-#if MBS_SUPPORT
 /* We treat a multibyte character as a single atom, so that DFA
    can treat a multibyte character as a single expression.
 
@@ -1784,17 +1752,10 @@ addtok_wc (wint_t wc)
       addtok (CAT);
     }
 }
-#else
-static void
-addtok_wc (wint_t wc)
-{
-}
-#endif
 
 static void
 add_utf8_anychar (void)
 {
-#if MBS_SUPPORT
   static const charclass utf8_classes[5] = {
     /* 80-bf: non-leading bytes.  */
     {0, 0, 0, 0, CHARCLASS_WORD_MASK, CHARCLASS_WORD_MASK, 0, 0},
@@ -1849,7 +1810,6 @@ add_utf8_anychar (void)
       addtok (CAT);
       addtok (OR);
     }
-#endif
 }
 
 /* The grammar understood by the parser is as follows.
@@ -1890,7 +1850,7 @@ add_utf8_anychar (void)
 static void
 atom (void)
 {
-  if (MBS_SUPPORT && tok == WCHAR)
+  if (tok == WCHAR)
     {
       if (wctok == WEOF)
         addtok (BACKREF);
@@ -1912,7 +1872,7 @@ atom (void)
 
       tok = lex ();
     }
-  else if (MBS_SUPPORT && tok == ANYCHAR && using_utf8 ())
+  else if (tok == ANYCHAR && using_utf8 ())
     {
       /* For UTF-8 expand the period to a series of CSETs that define a valid
          UTF-8 character.  This avoids using the slow multibyte path.  I'm
@@ -1926,9 +1886,7 @@ atom (void)
     }
   else if ((tok >= 0 && tok < NOTCHAR) || tok >= CSET || tok == BACKREF
            || tok == BEGLINE || tok == ENDLINE || tok == BEGWORD
-#if MBS_SUPPORT
            || tok == ANYCHAR || tok == MBCSET
-#endif /* MBS_SUPPORT */
            || tok == ENDWORD || tok == LIMWORD || tok == NOTLIMWORD)
     {
       addtok (tok);
@@ -2261,10 +2219,8 @@ epsclosure (position_set *s, struct dfa const *d, char *visited)
   for (i = 0; i < s->nelem; ++i)
     if (d->tokens[s->elems[i].index] >= NOTCHAR
         && d->tokens[s->elems[i].index] != BACKREF
-#if MBS_SUPPORT
         && d->tokens[s->elems[i].index] != ANYCHAR
         && d->tokens[s->elems[i].index] != MBCSET
-#endif
         && d->tokens[s->elems[i].index] < CSET)
       {
         if (!initialized)
@@ -2583,9 +2539,7 @@ dfaanalyze (struct dfa *d, int searchflag)
      it with its epsilon closure.  */
   for (i = 0; i < d->tindex; ++i)
     if (d->tokens[i] < NOTCHAR || d->tokens[i] == BACKREF
-#if MBS_SUPPORT
         || d->tokens[i] == ANYCHAR || d->tokens[i] == MBCSET
-#endif
         || d->tokens[i] >= CSET)
       {
 #ifdef DEBUG
@@ -2695,9 +2649,8 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
         copyset (d->charclasses[d->tokens[pos.index] - CSET], matches);
       else
         {
-          if (MBS_SUPPORT
-               && (d->tokens[pos.index] == MBCSET
-              || d->tokens[pos.index] == ANYCHAR))
+          if (d->tokens[pos.index] == MBCSET
+              || d->tokens[pos.index] == ANYCHAR)
             {
               /* MB_CUR_MAX > 1 */
               if (d->tokens[pos.index] == MBCSET)
@@ -3672,7 +3625,7 @@ dfaoptimize (struct dfa *d)
   size_t i;
   bool have_backref = false;
 
-  if (!MBS_SUPPORT || !using_utf8 ())
+  if (!using_utf8 ())
     return;
 
   for (i = 0; i < d->tindex; ++i)

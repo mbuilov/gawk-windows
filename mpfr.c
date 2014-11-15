@@ -121,10 +121,8 @@ mpg_node(unsigned int tp)
 	r->flags |= MALLOC|NUMBER|NUMCUR;
 	r->stptr = NULL;
 	r->stlen = 0;
-#if MBS_SUPPORT
 	r->wstptr = NULL;
 	r->wstlen = 0;
-#endif /* defined MBS_SUPPORT */
 	return r;
 }
 
