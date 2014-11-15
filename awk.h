@@ -95,13 +95,11 @@ extern int errno;
 #include "missing_d/gawkbool.h"
 #endif
 
-#include "mbsupport.h" /* defines MBS_SUPPORT */
-
-#if MBS_SUPPORT
 /* We can handle multibyte strings.  */
 #include <wchar.h>
 #include <wctype.h>
-#endif
+
+#include "mbsupport.h" /* defines stuff for DJGPP to fake MBS */
 
 #ifdef STDC_HEADERS
 #include <float.h>
@@ -395,10 +393,8 @@ typedef struct exp_node {
 			size_t slen;
 			long sref;
 			int idx;
-#if MBS_SUPPORT
 			wchar_t *wsp;
 			size_t wslen;
-#endif
 		} val;
 	} sub;
 	NODETYPE type;
@@ -1104,11 +1100,7 @@ extern int exit_val;
 #define do_lint             (do_flags & (DO_LINT_INVALID|DO_LINT_ALL))
 #define do_lint_old         (do_flags & DO_LINT_OLD)
 #endif
-#if MBS_SUPPORT
 extern int gawk_mb_cur_max;
-#else
-#define gawk_mb_cur_max	(1)
-#endif
 
 #if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 extern GETGROUPS_T *groupset;
@@ -1416,10 +1408,8 @@ extern AWKNUM nondec2awknum(char *str, size_t len);
 extern NODE *do_dcgettext(int nargs);
 extern NODE *do_dcngettext(int nargs);
 extern NODE *do_bindtextdomain(int nargs);
-#if MBS_SUPPORT
 extern int strncasecmpmbs(const unsigned char *,
 			  const unsigned char *, size_t);
-#endif
 /* eval.c */
 extern void PUSH_CODE(INSTRUCTION *cp);
 extern INSTRUCTION *POP_CODE(void);
@@ -1602,7 +1592,6 @@ extern NODE *r_dupnode(NODE *n);
 extern NODE *make_str_node(const char *s, size_t len, int flags);
 extern void *more_blocks(int id);
 extern int parse_escape(const char **string_ptr);
-#if MBS_SUPPORT
 extern NODE *str2wstr(NODE *n, size_t **ptr);
 extern NODE *wstr2str(NODE *n);
 #define force_wstring(n)	str2wstr(n, NULL)
@@ -1616,9 +1605,6 @@ extern wint_t btowc_cache[];
 #define btowc_cache(x) btowc_cache[(x)&0xFF]
 extern void init_btowc_cache();
 #define is_valid_character(b)	(btowc_cache[(b)&0xFF] != WEOF)
-#else
-#define free_wstr(NODE)	/* empty */
-#endif
 /* re.c */
 extern Regexp *make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal);
 extern int research(Regexp *rp, char *str, int start, size_t len, int flags);

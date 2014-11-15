@@ -1,3 +1,11 @@
+2014-11-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* array.c, awk.h, awkgram.y, builtin.c, dfa.c, eval.c, field.c,
+	interpret.h, io.c, main.c, mpfr.c, node.c, re.c, regex_internal.h,
+	replace.c: Remove all uses of MBS_SUPPORT.
+	* regex_internal.h: Disable wide characters on DJGPP.
+	* mbsupport.h: Rework to be needed only for DJGPP.
+
 2014-11-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Don't let memory used increase linearly in the size of

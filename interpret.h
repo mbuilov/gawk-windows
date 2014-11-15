@@ -711,7 +711,6 @@ mod:
 				t1->stptr[nlen] = '\0';
 				t1->flags &= ~(NUMCUR|NUMBER|NUMINT);
 
-#if MBS_SUPPORT
 				if ((t1->flags & WSTRCUR) != 0 && (t2->flags & WSTRCUR) != 0) {
 					size_t wlen = t1->wstlen + t2->wstlen;
 
@@ -723,7 +722,6 @@ mod:
 					t1->flags |= WSTRCUR;
 				} else
 					free_wstr(*lhs);
-#endif
 			} else {
 				size_t nlen = t1->stlen + t2->stlen;  
 				char *p;

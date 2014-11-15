@@ -111,6 +111,6 @@
 #include "missing_d/strcoll.c"
 #endif
 
-#if ! MBS_SUPPORT
+#if defined(__DJGPP__)
 #include "missing_d/wcmisc.c"
 #endif

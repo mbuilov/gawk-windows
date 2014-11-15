@@ -3073,10 +3073,8 @@ rs1scan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state)
 {
 	char *bp;
 	char rs;
-#if MBS_SUPPORT
 	size_t mbclen = 0;
 	mbstate_t mbs;
-#endif
 
 	memset(recm, '\0', sizeof(struct recmatch));
 	rs = RS->stptr[0];
@@ -3087,7 +3085,6 @@ rs1scan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state)
 	if (*state == INDATA)   /* skip over data we've already seen */
 		bp += iop->scanoff;
 
-#if MBS_SUPPORT
 	/*
 	 * From: Bruno Haible <bruno@clisp.org>
 	 * To: Aharon Robbins <arnold@skeeve.com>, gnits@gnits.org
@@ -3184,7 +3181,7 @@ rs1scan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state)
 			return NOTERM;
 		}
 	}
-#endif
+
 	while (*bp != rs)
 		bp++;
 
