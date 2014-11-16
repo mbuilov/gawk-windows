@@ -340,12 +340,7 @@ uninitialized_scalar:
 			lhs = r_get_field(t1, (Func_ptr *) 0, true);
 			decr_sp();
 			DEREF(t1);
-			/* only for $0, up ref count */
-			if (*lhs == fields_arr[0]) {
-				r = *lhs;
-				UPREF(r);
-			} else
-				r = dupnode(*lhs);
+			r = dupnode(*lhs);     /* can't use UPREF here */
 			PUSH(r);
 			break;
 
@@ -654,22 +649,11 @@ mod:
 			lhs = get_lhs(pc->memory, false);
 			unref(*lhs);
 			r = pc->initval;	/* constant initializer */
-			if (r != NULL) {
+			if (r == NULL)
+				*lhs = POP_SCALAR();
+			else {
 				UPREF(r);
 				*lhs = r;
-			} else {
-				r = POP_SCALAR();
-
-				/* if was a field, turn it into a var */
-				if ((r->flags & FIELD) == 0) {
-					*lhs = r;
-				} else if (r->valref == 1) {
-					r->flags &= ~FIELD;
-					*lhs = r;
-				} else {
-					*lhs = dupnode(r);
-					DEREF(r);
-				}
 			}
 			break;
 
