@@ -62,17 +62,19 @@ Changes from 4.1.1 to 4.1.2
 5. Indirect function calls now work for both built-in and
    extension functions.
 
-6. In non-English locales, it was accidentally possible to use "letters"
+6. Built-in functions are now included in FUNCTAB.
+
+7. In non-English locales, it was accidentally possible to use "letters"
    beside those of the English alphabet in identifiers.  This has
    been fixed.  (isalpha and isalnum are NOT our friends.)
 
    If you feel that you must have this misfeature, use `configure --help'
    to see what option to use when configuring gawk to reenable it.
 
-7. The "where" command has been added to the debugger as an alias
+8. The "where" command has been added to the debugger as an alias
    for "backtrace". This will make life easier for long-time GDB users.
 
-8. Gawk no longer explicitly checks the current directory after doing
+9. Gawk no longer explicitly checks the current directory after doing
    a path search of AWKPATH.  The default value continues to have "." at
    the front, so most people should not be affected.  If you have your own
    AWKPATH setting, be sure to put "." in it somewhere. The documentation
