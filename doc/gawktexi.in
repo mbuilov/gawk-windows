@@ -30851,8 +30851,9 @@ A simple boolean type.
 This represents a mutable string. @command{gawk}
 owns the memory pointed to if it supplied
 the value. Otherwise, it takes ownership of the memory pointed to.
-@strong{Such memory must come from calling one of the
-@code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()} functions!}
+@emph{Such memory must come from calling one of the
+@code{gawk_malloc()}, @code{gawk_calloc()}, or
+@code{gawk_realloc()} functions!}
 
 As mentioned earlier, strings are maintained using the current
 multibyte encoding.
@@ -33597,7 +33598,7 @@ shows how to use the extension API.
 @node Extension Sample File Functions
 @subsection File-Related Functions
 
-The @code{filefuncs} extension provides three different functions, as follows:
+The @code{filefuncs} extension provides three different functions, as follows.
 The usage is:
 
 @table @asis
@@ -33608,7 +33609,7 @@ This is how you load the extension.
 @item @code{result = chdir("/some/directory")}
 The @code{chdir()} function is a direct hook to the @code{chdir()}
 system call to change the current directory.  It returns zero
-upon success or less than zero upon error.  In the latter case it updates
+upon success or less than zero upon error.  In the latter case, it updates
 @code{ERRNO}.
 
 @cindex @code{stat()} extension function
@@ -33616,7 +33617,7 @@ upon success or less than zero upon error.  In the latter case it updates
 The @code{stat()} function provides a hook into the
 @code{stat()} system call.
 It returns zero upon success or less than zero upon error.
-In the latter case it updates @code{ERRNO}.
+In the latter case, it updates @code{ERRNO}.
 
 By default, it uses the @code{lstat()} system call.  However, if passed
 a third argument, it uses @code{stat()} instead.
@@ -33663,8 +33664,8 @@ Not all systems support all file types. @tab All
 @item @code{flags = or(FTS_PHYSICAL, ...)}
 @itemx @code{result = fts(pathlist, flags, filedata)}
 Walk the file trees provided in @code{pathlist} and fill in the
-@code{filedata} array as described below.  @code{flags} is the bitwise
-OR of several predefined values, also described below.
+@code{filedata} array as described next.  @code{flags} is the bitwise
+OR of several predefined values, also described in a moment.
 Return zero if there were no errors, otherwise return @minus{}1.
 @end table
 
@@ -33712,7 +33713,7 @@ whether or not @code{FTS_LOGICAL} is set.
 By default, the C library @code{fts()} routines do not return entries for
 @file{.} (dot) and @file{..} (dot-dot).  This option causes entries for
 dot-dot to also be included.  (The extension always includes an entry
-for dot, see below.)
+for dot; more on this in a moment.)
 
 @item FTS_XDEV
 During a traversal, do not cross onto a different mounted filesystem.
@@ -33722,7 +33723,7 @@ During a traversal, do not cross onto a different mounted filesystem.
 The @code{filedata} array is first cleared.  Then, @code{fts()} creates
 an element in @code{filedata} for every element in @code{pathlist}.
 The index is the name of the directory or file given in @code{pathlist}.
-The element for this index is itself an array.  There are two cases.
+The element for this index is itself an array.  There are two cases:
 
 @c nested table
 @table @emph
@@ -33748,8 +33749,8 @@ contain an element named @code{"error"}, which is a string describing the error.
 
 @item The path is a directory
 In this case, the array contains one element for each entry in the
-directory.  If an entry is a file, that element is as for files, just
-described.  If the entry is a directory, that element is (recursively),
+directory.  If an entry is a file, that element is the same as for files, just
+described.  If the entry is a directory, that element is (recursively)
 an array describing the subdirectory.  If @code{FTS_SEEDOT} was provided
 in the flags, then there will also be an element named @code{".."}.  This
 element will be an array containing the data as provided by @code{stat()}.
@@ -33768,8 +33769,8 @@ The @code{fts()} extension does not exactly mimic the
 interface of the C library @code{fts()} routines, choosing instead to
 provide an interface that is based on associative arrays, which is
 more comfortable to use from an @command{awk} program.  This includes the
-lack of a comparison function, since @command{gawk} already provides
-powerful array sorting facilities.  While an @code{fts_read()}-like
+lack of a comparison function, because @command{gawk} already provides
+powerful array sorting facilities.  Although an @code{fts_read()}-like
 interface could have been provided, this felt less natural than simply
 creating a multidimensional array to represent the file hierarchy and
 its information.
@@ -33779,7 +33780,7 @@ See @file{test/fts.awk} in the @command{gawk} distribution for an example
 use of the @code{fts()} extension function.
 
 @node Extension Sample Fnmatch
-@subsection Interface To @code{fnmatch()}
+@subsection Interface to @code{fnmatch()}
 
 This extension provides an interface to the C library
 @code{fnmatch()} function.  The usage is:
@@ -33792,10 +33793,10 @@ This is how you load the extension.
 @item result = fnmatch(pattern, string, flags)
 The return value is zero on success, @code{FNM_NOMATCH}
 if the string did not match the pattern, or
-a different non-zero value if an error occurred.
+a different nonzero value if an error occurred.
 @end table
 
-Besides the @code{fnmatch()} function, the @code{fnmatch} extension
+In addition to the @code{fnmatch()} function, the @code{fnmatch} extension
 adds one constant (@code{FNM_NOMATCH}), and an array of flag values
 named @code{FNM}.
 
@@ -33813,7 +33814,7 @@ Either zero, or the bitwise OR of one or more of the
 flags in the @code{FNM} array.
 @end table
 
-The flags are follows:
+The flags are as follows:
 
 @multitable @columnfractions .25 .75
 @headitem Array element @tab Corresponding flag defined by @code{fnmatch()}
@@ -33836,9 +33837,9 @@ if (fnmatch("*.a", "foo.c", flags) == FNM_NOMATCH)
 @end example
 
 @node Extension Sample Fork
-@subsection Interface To @code{fork()}, @code{wait()} and @code{waitpid()}
+@subsection Interface to @code{fork()}, @code{wait()}, and @code{waitpid()}
 
-The @code{fork} extension adds three functions, as follows.
+The @code{fork} extension adds three functions, as follows:
 
 @table @code
 @item @@load "fork"
@@ -33936,7 +33937,7 @@ $ @kbd{gawk -i inplace -v INPLACE_SUFFIX=.bak '@{ gsub(/foo/, "bar") @}}
 @subsection Character and Numeric values: @code{ord()} and @code{chr()}
 
 The @code{ordchr} extension adds two functions, named
-@code{ord()} and @code{chr()}, as follows.
+@code{ord()} and @code{chr()}, as follows:
 
 @table @code
 @item @@load "ordchr"
@@ -33984,7 +33985,7 @@ indicating the type of the file. The letters and their corresponding file
 types are shown in @ref{table-readdir-file-types}.
 
 @float Table,table-readdir-file-types
-@caption{File Types Returned By The @code{readdir} Extension}
+@caption{File types returned by the @code{readdir} extension}
 @multitable @columnfractions .1 .9
 @headitem Letter @tab File Type
 @item @code{b} @tab Block device
@@ -34021,7 +34022,7 @@ BEGIN @{ FS = "/" @}
 @subsection Reversing Output
 
 The @code{revoutput} extension adds a simple output wrapper that reverses
-the characters in each output line.  It's main purpose is to show how to
+the characters in each output line.  Its main purpose is to show how to
 write an output wrapper, although it may be mildly amusing for the unwary.
 Here is an example:
 
@@ -34043,7 +34044,7 @@ The output from this program is:
 
 The @code{revtwoway} extension adds a simple two-way processor that
 reverses the characters in each line sent to it for reading back by
-the @command{awk} program.  It's main purpose is to show how to write
+the @command{awk} program.  Its main purpose is to show how to write
 a two-way processor, although it may also be mildly amusing.
 The following example shows how to use it:
 
@@ -34070,7 +34071,7 @@ is:
 @samp{cinap t'nod}.
 
 @node Extension Sample Read write array
-@subsection Dumping and Restoring An Array
+@subsection Dumping and Restoring an Array
 
 The @code{rwarray} extension adds two functions,
 named @code{writea()} and @code{reada()}, as follows:
@@ -34096,7 +34097,7 @@ Here too, the return value is one on success and zero upon failure.
 
 The array created by @code{reada()} is identical to that written by
 @code{writea()} in the sense that the contents are the same. However,
-due to implementation issues, the array traversal order of the recreated
+due to implementation issues, the array traversal order of the re-created
 array is likely to be different from that of the original array.  As array
 traversal order in @command{awk} is by default undefined, this is (technically)
 not a problem.  If you need to guarantee a particular traversal
@@ -34104,7 +34105,7 @@ order, use the array sorting features in @command{gawk} to do so
 (@pxref{Array Sorting}).
 
 The file contains binary data.  All integral values are written in network
-byte order.  However, double precision floating-point values are written
+byte order.  However, double-precision floating-point values are written
 as native binary data.  Thus, arrays containing only string data can
 theoretically be dumped on systems with one byte order and restored on
 systems with a different one, but this has not been tried.
@@ -34120,7 +34121,7 @@ ret = reada("arraydump.bin", array)
 @end example
 
 @node Extension Sample Readfile
-@subsection Reading An Entire File
+@subsection Reading an Entire File
 
 The @code{readfile} extension adds a single function
 named @code{readfile()}, and an input parser:
@@ -34167,7 +34168,7 @@ This is how you load the extension.
 @cindex @code{gettimeofday()} extension function
 @item the_time = gettimeofday()
 Return the time in seconds that has elapsed since 1970-01-01 UTC as a
-floating point value.  If the time is unavailable on this platform, return
+floating-point value.  If the time is unavailable on this platform, return
 @minus{}1 and set @code{ERRNO}.  The returned time should have sub-second
 precision, but the actual precision may vary based on the platform.
 If the standard C @code{gettimeofday()} system call is available on this
@@ -34210,22 +34211,22 @@ As of this writing, there are five extensions:
 
 @itemize @value{BULLET}
 @item
-GD graphics library extension.
+GD graphics library extension
 
 @item
-PDF extension.
+PDF extension
 
 @item
-PostgreSQL extension.
+PostgreSQL extension
 
 @item
-MPFR library extension.
-This provides access to a number of MPFR functions which @command{gawk}'s
-native MPFR support does not.
+MPFR library extension
+(this provides access to a number of MPFR functions which @command{gawk}'s
+native MPFR support does not)
 
 @item
 XML parser extension, using the @uref{http://expat.sourceforge.net, Expat}
-XML parsing library.
+XML parsing library
 @end itemize
 
 @cindex @command{git} utility
@@ -34276,9 +34277,9 @@ to install both @command{gawk} and @code{gawkextlib}, depending upon
 how your system works.
 
 If you write an extension that you wish to share with other
-@command{gawk} users, please consider doing so through the
+@command{gawk} users, consider doing so through the
 @code{gawkextlib} project.
-See the project's web site for more information.
+See the project's website for more information.
 
 @node Extension summary
 @section Summary
@@ -34286,7 +34287,7 @@ See the project's web site for more information.
 @itemize @value{BULLET}
 @item
 You can write extensions (sometimes called plug-ins) for @command{gawk}
-in C or C++ using the Application Programming Interface (API) defined
+in C or C++ using the application programming interface (API) defined
 by the @command{gawk} developers.
 
 @item
@@ -34317,44 +34318,44 @@ API function pointers are provided for the following kinds of operations:
 
 @itemize @value{BULLET}
 @item
-Allocating, reallocating, and releasing memory.
+Allocating, reallocating, and releasing memory
 
 @item
-Registration functions. You may register
+Registration functions (you may register
 extension functions,
 exit callbacks,
 a version string,
 input parsers,
 output wrappers,
-and two-way processors.
+and two-way processors)
 
 @item
-Printing fatal, warning, and ``lint'' warning messages.
+Printing fatal, warning, and ``lint'' warning messages
 
 @item
-Updating @code{ERRNO}, or unsetting it.
+Updating @code{ERRNO}, or unsetting it
 
 @item
 Accessing parameters, including converting an undefined parameter into
-an array.
+an array
 
 @item
-Symbol table access: retrieving a global variable, creating one,
-or changing one.
+Symbol table access (retrieving a global variable, creating one,
+or changing one)
 
 @item
 Creating and releasing cached values; this provides an
 efficient way to use values for multiple variables and
-can be a big performance win.
+can be a big performance win
 
 @item
-Manipulating arrays:
-retrieving, adding, deleting, and modifying elements;
+Manipulating arrays
+(retrieving, adding, deleting, and modifying elements;
 getting the count of elements in an array;
 creating a new array;
 clearing an array;
 and
-flattening an array for easy C style looping over all its indices and elements.
+flattening an array for easy C style looping over all its indices and elements)
 @end itemize
 
 @item
@@ -34433,34 +34434,34 @@ and the Glossary:
 @end ifclear
 
 @ifset FOR_PRINT
-Part IV contains two appendices and the license that
+Part IV contains three appendices, the last of which is the license that
 covers the @command{gawk} source code:
 @end ifset
 
 @itemize @value{BULLET}
 @item
-@ref{Language History}.
+@ref{Language History}
 
 @item
-@ref{Installation}.
+@ref{Installation}
 
 @ifclear FOR_PRINT
 @item
-@ref{Notes}.
+@ref{Notes}
 
 @item
-@ref{Basic Concepts}.
+@ref{Basic Concepts}
 
 @item
-@ref{Glossary}.
+@ref{Glossary}
 @end ifclear
 
 @item
-@ref{Copying}.
+@ref{Copying}
 
 @ifclear FOR_PRINT
 @item
-@ref{GNU Free Documentation License}.
+@ref{GNU Free Documentation License}
 @end ifclear
 @end itemize
 @end ifdocbook
@@ -34469,7 +34470,7 @@ covers the @command{gawk} source code:
 @appendix The Evolution of the @command{awk} Language
 
 This @value{DOCUMENT} describes the GNU implementation of @command{awk},
-which follows the POSIX specification.  Many long-time @command{awk}
+which follows the POSIX specification.  Many longtime @command{awk}
 users learned @command{awk} programming with the original @command{awk}
 implementation in Version 7 Unix.  (This implementation was the basis for
 @command{awk} in Berkeley Unix, through 4.3-Reno.  Subsequent versions
@@ -34704,7 +34705,7 @@ The ability to delete all of an array at once with @samp{delete @var{array}}
 
 @end itemize
 
-@xref{Common Extensions}, for a list of common extensions
+@DBXREF{Common Extensions} for a list of common extensions
 not permitted by the POSIX standard.
 
 The 2008 POSIX standard can be found online at
@@ -34724,7 +34725,7 @@ has made his version available via his home page
 (@pxref{Other Versions}).
 
 This @value{SECTION} describes common extensions that
-originally appeared in his version of @command{awk}.
+originally appeared in his version of @command{awk}:
 
 @itemize @value{BULLET}
 @item
@@ -34750,7 +34751,7 @@ or array elements through it.
 @end ignore
 @end itemize
 
-@xref{Common Extensions}, for a full list of the extensions
+@DBXREF{Common Extensions} for a full list of the extensions
 available in his @command{awk}.
 
 @node POSIX/GNU
@@ -34806,7 +34807,7 @@ The @file{/dev/stdin}, @file{/dev/stdout}, @file{/dev/stderr} and
 @item
 The @file{/inet}, @file{/inet4}, and @samp{/inet6} special files for
 TCP/IP networking using @samp{|&} to specify which version of the
-IP protocol to use.
+IP protocol to use
 (@pxref{TCP/IP Networking}).
 @end itemize
 
@@ -34854,7 +34855,7 @@ New keywords:
 
 @itemize @value{MINUS}
 @item
-The @code{BEGINFILE} and @code{ENDFILE} special patterns.
+The @code{BEGINFILE} and @code{ENDFILE} special patterns
 (@pxref{BEGINFILE/ENDFILE}).
 
 @item
@@ -34891,7 +34892,7 @@ making translations easier
 
 @item
 The @code{split()} function's additional optional fourth
-argument which is an array to hold the text of the field separators.
+argument which is an array to hold the text of the field separators
 (@pxref{String Functions}).
 @end itemize
 
@@ -35693,7 +35694,7 @@ The dynamic extension interface was completely redone
 @cindex extensions, @command{mawk}
 The following table summarizes the common extensions supported
 by @command{gawk}, Brian Kernighan's @command{awk}, and @command{mawk},
-the three most widely-used freely available versions of @command{awk}
+the three most widely used freely available versions of @command{awk}
 (@pxref{Other Versions}).
 
 @multitable {@file{/dev/stderr} special file} {BWK Awk} {Mawk} {GNU Awk} {Now standard}
@@ -35711,7 +35712,7 @@ the three most widely-used freely available versions of @command{awk}
 @item @code{func} keyword @tab X @tab @tab X @tab
 @item @code{BINMODE} variable @tab @tab X @tab X @tab
 @item @code{RS} as regexp @tab @tab X @tab X @tab
-@item Time related functions @tab @tab X @tab X @tab
+@item Time-related functions @tab @tab X @tab X @tab
 @end multitable
 
 @node Ranges and Locales
@@ -35727,7 +35728,7 @@ the first character in the range and the last character in the range,
 inclusive.  Ordering was based on the numeric value of each character
 in the machine's native character set.  Thus, on ASCII-based systems,
 @samp{[a-z]} matched all the lowercase letters, and only the lowercase
-letters, since the numeric values for the letters from @samp{a} through
+letters, as the numeric values for the letters from @samp{a} through
 @samp{z} were contiguous.  (On an EBCDIC system, the range @samp{[a-z]}
 includes additional, non-alphabetic characters as well.)
 
@@ -35738,8 +35739,8 @@ that @samp{[A-Z]} was the ``correct'' way to match uppercase letters.
 And indeed, this was true.@footnote{And Life was good.}
 
 The 1992 POSIX standard introduced the idea of locales (@pxref{Locales}).
-Since many locales include other letters besides the plain twenty-six
-letters of the American English alphabet, the POSIX standard added
+Because many locales include other letters besides the plain 26
+letters of the English alphabet, the POSIX standard added
 character classes (@pxref{Bracket Expressions}) as a way to match
 different kinds of characters besides the traditional ones in the ASCII
 character set.
@@ -35756,7 +35757,7 @@ In other words, these locales sort characters in dictionary order,
 and @samp{[a-dx-z]} is typically not equivalent to @samp{[abcdxyz]};
 instead it might be equivalent to @samp{[ABCXYabcdxyz]}, for example.
 
-This point needs to be emphasized: Much literature teaches that you should
+This point needs to be emphasized: much literature teaches that you should
 use @samp{[a-z]} to match a lowercase character.  But on systems with
 non-ASCII locales, this also matches all of the uppercase characters
 except @samp{A} or @samp{Z}!  This was a continuous cause of confusion, even well
@@ -35772,7 +35773,7 @@ $ @kbd{echo something1234abc | gawk-3.1.8 '@{ sub("[A-Z]*$", ""); print @}'}
 @end example
 
 @noindent
-This output is unexpected, since the @samp{bc} at the end of
+This output is unexpected, as the @samp{bc} at the end of
 @samp{something1234abc} should not normally match @samp{[A-Z]*}.
 This result is due to the locale setting (and thus you may not see
 it on your system).
@@ -35794,7 +35795,7 @@ like ``why does @samp{[A-Z]} match lowercase letters?!?''
 @cindex Berry, Karl
 This situation existed for close to 10 years, if not more, and
 the @command{gawk} maintainer grew weary of trying to explain that
-@command{gawk} was being nicely standards-compliant, and that the issue
+@command{gawk} was being nicely standards compliant, and that the issue
 was in the user's locale.  During the development of @value{PVERSION} 4.0,
 he modified @command{gawk} to always treat ranges in the original,
 pre-POSIX fashion, unless @option{--posix} was used (@pxref{Options}).@footnote{And
@@ -36007,7 +36008,7 @@ Michael Benzinger contributed the initial code for @code{switch} statements.
 @cindex McPhee, Patrick
 Patrick T.J.@: McPhee contributed the code for dynamic loading in Windows32
 environments.
-(This is no longer supported)
+(This is no longer supported.)
 
 @item
 @cindex Wallin, Anders
@@ -36031,7 +36032,7 @@ into a byte-code interpreter, including the debugger.
 The addition of true arrays of arrays.
 
 @item
-The additional modifications for support of arbitrary precision arithmetic.
+The additional modifications for support of arbitrary-precision arithmetic.
 
 @item
 The initial text of
@@ -36087,7 +36088,7 @@ helping David Trueman, and as the primary maintainer since around 1994.
 @itemize @value{BULLET}
 @item
 The @command{awk} language has evolved over time. The first release
-was with V7 Unix circa 1978.  In 1987 for System V Release 3.1,
+was with V7 Unix circa 1978.  In 1987, for System V Release 3.1,
 major additions, including user-defined functions, were made to the language.
 Additional changes were made for System V Release 4, in 1989.
 Since then, further minor changes happen under the auspices of the
@@ -36129,8 +36130,8 @@ This appendix provides instructions for installing @command{gawk} on the
 various platforms that are supported by the developers.  The primary
 developer supports GNU/Linux (and Unix), whereas the other ports are
 contributed.
-@xref{Bugs},
-for the electronic mail addresses of the people who maintain
+@DBXREF{Bugs}
+for the email addresses of the people who maintain
 the respective ports.
 
 @menu
@@ -36184,7 +36185,7 @@ wget http://ftp.gnu.org/gnu/gawk/gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz
 
 The GNU software archive is mirrored around the world.
 The up-to-date list of mirror sites is available from
-@uref{http://www.gnu.org/order/ftp.html, the main FSF web site}.
+@uref{http://www.gnu.org/order/ftp.html, the main FSF website}.
 Try to use one of the mirrors; they
 will be less busy, and you can usually find one closer to your site.
 
@@ -36195,7 +36196,7 @@ different compression programs: @command{gzip}, @command{bzip2},
 and @command{xz}. For simplicity, the rest of these instructions assume
 you are using the one compressed with the GNU Zip program, @code{gzip}.
 
-Once you have the distribution (for example,
+Once you have the distribution (e.g.,
 @file{gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz}),
 use @code{gzip} to expand the
 file and then use @code{tar} to extract it.  You can use the following
@@ -36288,7 +36289,7 @@ as a list of things that the POSIX standard should describe but does not.
 @item doc/awkforai.txt
 Pointers to the original draft of
 a short article describing why @command{gawk} is a good language for
-Artificial Intelligence (AI) programming.
+artificial intelligence (AI) programming.
 
 @item doc/bc_notes
 A brief description of @command{gawk}'s ``byte code'' internals.
@@ -36394,7 +36395,7 @@ source file for this @value{DOCUMENT}. It also contains a @file{Makefile.in} fil
 The library functions from
 @ref{Library Functions},
 and the @command{igawk} program from
-@ref{Igawk Program},
+@DBREF{Igawk Program}
 are included as ready-to-use files in the @command{gawk} distribution.
 They are installed as part of the installation process.
 The rest of the programs in this @value{DOCUMENT} are available in appropriate
@@ -36413,11 +36414,11 @@ Files needed for building @command{gawk} under MS-Windows
 @ifclear FOR_PRINT
 and OS/2
 @end ifclear
-(@pxref{PC Installation}, for details).
+(@DBPXREF{PC Installation} for details).
 
 @item vms/*
 Files needed for building @command{gawk} under Vax/VMS and OpenVMS
-(@pxref{VMS Installation}, for details).
+(@DBPXREF{VMS Installation} for details).
 
 @item test/*
 A test suite for
@@ -36429,7 +36430,7 @@ be confident of a successful port.
 @c ENDOFRANGE gawdis
 
 @node Unix Installation
-@appendixsec Compiling and Installing @command{gawk} on Unix-like Systems
+@appendixsec Compiling and Installing @command{gawk} on Unix-Like Systems
 
 Usually, you can compile and install @command{gawk} by typing only two
 commands.  However, if you use an unusual system, you may need
@@ -36442,7 +36443,7 @@ to configure @command{gawk} for your system yourself.
 @end menu
 
 @node Quick Installation
-@appendixsubsec Compiling @command{gawk} for Unix-like Systems
+@appendixsubsec Compiling @command{gawk} for Unix-Like Systems
 
 The normal installation steps should work on all modern commercial
 Unix-derived systems, GNU/Linux, BSD-based systems, and the Cygwin
@@ -36459,7 +36460,7 @@ described fully in
 @cite{Autoconf---Generating Automatic Configuration Scripts},
 which can be found online at
 @uref{http://www.gnu.org/software/autoconf/manual/index.html,
-the Free Software Foundation's web site}.)
+the Free Software Foundation's website}.)
 @end ifnotinfo
 @ifinfo
 (The Autoconf software is described fully starting with
@@ -36506,7 +36507,7 @@ run @samp{make check}.  All of the tests should succeed.
 If these steps do not work, or if any of the tests fail,
 check the files in the @file{README_d} directory to see if you've
 found a known problem.  If the failure is not described there,
-please send in a bug report (@pxref{Bugs}).
+send in a bug report (@pxref{Bugs}).
 
 Of course, once you've built @command{gawk}, it is likely that you will
 wish to install it.  To do so, you need to run the command @samp{make
@@ -36570,7 +36571,7 @@ function for deficient systems.
 @end table
 
 Use the command @samp{./configure --help} to see the full list of
-options that @command{configure} supplies.
+options supplied by @command{configure}.
 
 @node Configuration Philosophy
 @appendixsubsec The Configuration Process
@@ -36604,19 +36605,19 @@ facts about your operating system.  For example, there may not be an
 @cindex @code{custom.h} file
 It is possible for your C compiler to lie to @command{configure}. It may
 do so by not exiting with an error when a library function is not
-available.  To get around this, edit the file @file{custom.h}.
+available.  To get around this, edit the @file{custom.h} file.
 Use an @samp{#ifdef} that is appropriate for your system, and either
 @code{#define} any constants that @command{configure} should have defined but
 didn't, or @code{#undef} any constants that @command{configure} defined and
-should not have.  @file{custom.h} is automatically included by
-@file{config.h}.
+should not have.  The @file{custom.h} file is automatically included by
+the @file{config.h} file.
 
 It is also possible that the @command{configure} program generated by
 Autoconf will not work on your system in some other fashion.
-If you do have a problem, the file @file{configure.ac} is the input for
+If you do have a problem, the @file{configure.ac} file is the input for
 Autoconf.  You may be able to change this file and generate a
 new version of @command{configure} that works on your system
-(@pxref{Bugs},
+(@DBPXREF{Bugs}
 for information on how to report problems in configuring @command{gawk}).
 The same mechanism may be used to send in updates to @file{configure.ac}
 and/or @file{custom.h}.
@@ -36656,7 +36657,7 @@ The limitations of MS-DOS (and MS-DOS shells under the other operating
 systems) has meant that various ``DOS extenders'' are often used with
 programs such as @command{gawk}.  The varying capabilities of Microsoft
 Windows 3.1 and Windows32 can add to the confusion.  For an overview
-of the considerations, please refer to @file{README_d/README.pc} in
+of the considerations, refer to @file{README_d/README.pc} in
 the distribution.
 
 @menu
@@ -37029,7 +37030,7 @@ need to use the @code{BINMODE} variable.
 
 This can cause problems with other Unix-like components that have
 been ported to MS-Windows that expect @command{gawk} to do automatic
-translation of @code{"\r\n"}, since it won't.
+translation of @code{"\r\n"}, because it won't.
 
 @node VMS Installation
 @appendixsubsec Compiling and Installing @command{gawk} on Vax/VMS and OpenVMS
@@ -37093,14 +37094,14 @@ The most recent builds used HP C V7.3 on Alpha VMS 8.3 and both
 Alpha and IA64 VMS 8.4 used HP C 7.3.@footnote{The IA64 architecture
 is also known as ``Itanium.''}
 
-@xref{VMS GNV}, for information on building
+@DBXREF{VMS GNV} for information on building
 @command{gawk} as a PCSI kit that is compatible with the GNV product.
 
 @node VMS Dynamic Extensions
 @appendixsubsubsec Compiling @command{gawk} Dynamic Extensions on VMS
 
 The extensions that have been ported to VMS can be built using one of
-the following commands.
+the following commands:
 
 @example
 $ @kbd{MMS/DESCRIPTION=[.vms]descrip.mms extensions}
@@ -37117,7 +37118,7 @@ $ @kbd{MMK/DESCRIPTION=[.vms]descrip.mms extensions}
 or a logical name to find the dynamic extensions.
 
 Dynamic extensions need to be compiled with the same compiler options for
-floating point, pointer size, and symbol name handling as were used
+floating-point, pointer size, and symbol name handling as were used
 to compile @command{gawk} itself.
 Alpha and Itanium should use IEEE floating point.  The pointer size is 32 bits,
 and the symbol name handling should be exact case with CRC shortening for
@@ -37247,7 +37248,7 @@ Note that uppercase and mixed-case text must be quoted.
 The VMS port of @command{gawk} includes a @code{DCL}-style interface in addition
 to the original shell-style interface (see the help entry for details).
 One side effect of dual command-line parsing is that if there is only a
-single parameter (as in the quoted string program above), the command
+single parameter (as in the quoted string program), the command
 becomes ambiguous.  To work around this, the normally optional @option{--}
 flag is required to force Unix-style parsing rather than @code{DCL} parsing.  If any
 other dash-type options (or multiple parameters such as @value{DF}s to
@@ -37370,7 +37371,7 @@ recommend compiling and using the current version.
 @cindex archaeologists
 @quotation
 @i{There is nothing more dangerous than a bored archaeologist.}
-@author The Hitchhiker's Guide to the Galaxy
+@author Douglas Adams, @cite{The Hitchhiker's Guide to the Galaxy}
 @end quotation
 @c the radio show, not the book. :-)
 
@@ -37379,10 +37380,10 @@ recommend compiling and using the current version.
 @c STARTOFRANGE tblgawb
 @cindex troubleshooting, @command{gawk}, bug reports
 If you have problems with @command{gawk} or think that you have found a bug,
-please report it to the developers; we cannot promise to do anything
+report it to the developers; we cannot promise to do anything
 but we might well want to fix it.
 
-Before reporting a bug, please make sure you have really found a genuine bug.
+Before reporting a bug, make sure you have really found a genuine bug.
 Carefully reread the documentation and see if it says you can do
 what you're trying to do.  If it's not clear whether you should be able
 to do something or not, report that too; it's a bug in the documentation!
@@ -37395,7 +37396,7 @@ the compiler you used to compile @command{gawk}, and the exact results
 @command{gawk} gave you.  Also say what you expected to occur; this helps
 us decide whether the problem is really in the documentation.
 
-Please include the version number of @command{gawk} you are using.
+Make sure to include the version number of @command{gawk} you are using.
 You can get this information with the command @samp{gawk --version}.
 
 @cindex @code{bug-gawk@@gnu.org} bug reporting address
@@ -37407,7 +37408,7 @@ Once you have a precise problem description, send email to
 The @command{gawk} maintainers subscribe to this address and
 thus they will receive your bug report.
 Although you can send mail to the maintainers directly,
-the bug reporting address is preferred since the
+the bug reporting address is preferred because the
 email list is archived at the GNU Project.
 @emph{All email must be in English. This is the only language
 understood in common by all the maintainers.}
@@ -37416,19 +37417,19 @@ understood in common by all the maintainers.}
 @quotation CAUTION
 Do @emph{not} try to report bugs in @command{gawk} by
 posting to the Usenet/Internet newsgroup @code{comp.lang.awk}.
-While the @command{gawk} developers do occasionally read this newsgroup,
-there is no guarantee that we will see your posting.  The steps described
-above are the only official recognized way for reporting bugs.
+The @command{gawk} developers do occasionally read this newsgroup,
+but there is no guarantee that we will see your posting.  The steps described
+here are the only officially recognized way for reporting bugs.
 Really.
 @end quotation
 
 @quotation NOTE
 Many distributions of GNU/Linux and the various BSD-based operating systems
 have their own bug reporting systems.  If you report a bug using your distribution's
-bug reporting system, @emph{please} also send a copy to
+bug reporting system, you should also send a copy to
 @EMAIL{bug-gawk@@gnu.org,bug-gawk at gnu dot org}.
 
-This is for two reasons.  First, while some distributions forward
+This is for two reasons.  First, although some distributions forward
 bug reports ``upstream'' to the GNU mailing list, many don't, so there is a good
 chance that the @command{gawk}  maintainers won't even see the bug report!  Second,
 mail to the GNU list is archived, and having everything at the GNU project
@@ -37439,8 +37440,8 @@ Non-bug suggestions are always welcome as well.  If you have questions
 about things that are unclear in the documentation or are just obscure
 features, ask on the bug list; we will try to help you out if we can.
 
-If you find bugs in one of the non-Unix ports of @command{gawk}, please
-send an electronic mail message to the bug list, with a copy to the
+If you find bugs in one of the non-Unix ports of @command{gawk},
+send an email to the bug list, with a copy to the
 person who maintains that port.  They are named in the following list,
 as well as in the @file{README} file in the @command{gawk} distribution.
 Information in the @file{README} file should be considered authoritative
@@ -37471,7 +37472,7 @@ The people maintaining the various @command{gawk} ports are:
 @item z/OS (OS/390) @tab Dave Pitts, @EMAIL{dpitts@@cozx.com,dpitts at cozx dot com}.
 @end multitable
 
-If your bug is also reproducible under Unix, please send a copy of your
+If your bug is also reproducible under Unix, send a copy of your
 report to the @EMAIL{bug-gawk@@gnu.org,bug-gawk at gnu dot org} email list as well.
 @c ENDOFRANGE dbugg
 @c ENDOFRANGE tblgawb
@@ -37515,7 +37516,7 @@ This @value{SECTION} briefly describes where to get them:
 Brian Kernighan, one of the original designers of Unix @command{awk},
 has made his implementation of
 @command{awk} freely available.
-You can retrieve this version via the World Wide Web from
+You can retrieve this version via
 @uref{http://www.cs.princeton.edu/~bwk, his home page}.
 It is available in several archive formats:
 
@@ -37538,7 +37539,7 @@ git clone git://github.com/onetrueawk/awk bwkawk
 @end example
 
 @noindent
-The above command creates a copy of the @uref{http://www.git-scm.com, Git}
+This command creates a copy of the @uref{http://www.git-scm.com, Git}
 repository in a directory named @file{bwkawk}.  If you leave that argument
 off the @command{git} command line, the repository copy is created in a
 directory named @file{awk}.
