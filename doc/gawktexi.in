@@ -322,7 +322,7 @@ A copy of the license is included in the section entitled
 A copy of the license
 may be found on the Internet at
 @uref{http://www.gnu.org/software/gawk/manual/html_node/GNU-Free-Documentation-License.html,
-the GNU Project's web site}.
+the GNU Project's website}.
 @end ifset
 
 @enumerate a
@@ -2038,13 +2038,13 @@ contributed code: the archive did not grow and the domain went unused
 for several years.
 
 Late in 2008, a volunteer took on the task of setting up
-an @command{awk}-related web site---@uref{http://awk.info}---and did a very
+an @command{awk}-related website---@uref{http://awk.info}---and did a very
 nice job.
 
 If you have written an interesting @command{awk} program, or have written
 a @command{gawk} extension that you would like to share with the rest
 of the world, please see @uref{http://awk.info/?contribute} for how to
-contribute it to the web site.
+contribute it to the website.
 
 @ignore
 As of this writing, this website is in search of a maintainer; please
@@ -2609,7 +2609,7 @@ according to the instructions in your program. (This is different
 from a @dfn{compiled} language such as C, where your program is first
 compiled into machine code that is executed directly by your system's
 processor.)  The @command{awk} utility is thus termed an @dfn{interpreter}.
-Many modern languages are interperted.
+Many modern languages are interpreted.
 
 The line beginning with @samp{#!} lists the full @value{FN} of an
 interpreter to run and a single optional initial command-line argument
@@ -5081,7 +5081,7 @@ undefined results. (The @samp{\x} escape sequence is not allowed in
 POSIX @command{awk}.)
 
 @quotation CAUTION
-The next major relase of @command{gawk} will change, such
+The next major release of @command{gawk} will change, such
 that a maximum of two hexadecimal digits following the
 @samp{\x} will be used.
 @end quotation
@@ -7401,7 +7401,7 @@ is so-called @dfn{comma-separated values} (CSV) data. Many spreadsheet programs,
 for example, can export their data into text files, where each record is
 terminated with a newline, and fields are separated by commas. If only
 commas separated the data, there wouldn't be an issue. The problem comes when
-one of the fields contains an @emph{embedded} comma. Altough there is no
+one of the fields contains an @emph{embedded} comma. Although there is no
 formal standard specification for CSV data,@footnote{At least, we don't know of one.}
 in such cases, most programs embed the field in double quotes. So we might
 have data like this:
@@ -8407,7 +8407,7 @@ command line, but otherwise ignores it.  This makes it easier to use
 shell wildcards with your @command{awk} program:
 
 @example
-$ @kbd{gawk -f whizprog.awk *}        @ii{Directories could kill this progam}
+$ @kbd{gawk -f whizprog.awk *}        @ii{Directories could kill this program}
 @end example
 
 If either of the @option{--posix}
@@ -26538,7 +26538,7 @@ of @code{IGNORECASE} also affects sorting for both @code{asort()} and @code{asor
 Note also that the locale's sorting order does @emph{not}
 come into play; comparisons are based on character values only.@footnote{This
 is true because locale-based comparison occurs only when in
-POSIX-compatibility mode, and becasue @code{asort()} and @code{asorti()} are
+POSIX-compatibility mode, and because @code{asort()} and @code{asorti()} are
 @command{gawk} extensions, they are not available in that case.}
 
 @node Two-way I/O
@@ -36820,7 +36820,7 @@ Ancient OS/2 ports of GNU @command{make} are not able to handle
 the Makefiles of this package.  If you encounter any problems with
 @command{make}, try GNU Make 3.79.1 or later versions.  You should
 find the latest version on
-@uref{ftp://hobbes.nmsu.edu/pub/os2/}.@footnote{As of May, 2014,
+@uref{ftp://hobbes.nmsu.edu/pub/os2/}.@footnote{As of November 2014,
 this site is still there, but the author could not find a package
 for GNU Make.}
 @end quotation
@@ -37547,8 +37547,12 @@ directory named @file{awk}.
 This version requires an ISO C (1990 standard) compiler; the C compiler
 from GCC (the GNU Compiler Collection) works quite nicely.
 
-@xref{Common Extensions},
+@DBXREF{Common Extensions}
 for a list of extensions in this @command{awk} that are not in POSIX @command{awk}.
+
+As a side note, Dan Bornstein has created a Git repository tracking
+all the versions of BWK @command{awk} that he could find. It's
+available at @uref{git://github.com/onetrueawk/awk}.
 
 @cindex Brennan, Michael
 @cindex @command{mawk} utility
@@ -37579,7 +37583,7 @@ Once you have it,
 is similar to @command{gawk}'s
 (@pxref{Unix Installation}).
 
-@xref{Common Extensions},
+@DBXREF{Common Extensions}
 for a list of extensions in @command{mawk} that are not in POSIX @command{awk}.
 
 @cindex Sumner, Andrew
@@ -37641,8 +37645,8 @@ has not been done, at least to our knowledge.
 @cindex Illumos
 @cindex Illumos, POSIX-compliant @command{awk}
 @cindex source code, Illumos @command{awk}
-The source code used to be available from the OpenSolaris web site.
-However, that project was ended and the web site shut down.  Fortunately, the
+The source code used to be available from the OpenSolaris website.
+However, that project was ended and the website shut down.  Fortunately, the
 @uref{http://wiki.illumos.org/display/illumos/illumos+Home, Illumos project}
 makes this implementation available.  You can view the files one at a time from
 @uref{https://github.com/joyent/illumos-joyent/blob/master/usr/src/cmd/awk_xpg4}.
@@ -37661,7 +37665,7 @@ from POSIX @command{awk}.  More information is available on the
 @cindex libmawk
 @cindex source code, libmawk
 This is an embeddable @command{awk} interpreter derived from
-@command{mawk}. For more information see
+@command{mawk}. For more information, see
 @uref{http://repo.hu/projects/libmawk/}.
 
 @item @code{pawk}
@@ -37675,7 +37679,7 @@ modified version of BWK @command{awk}, described earlier.)
 @item @w{QSE Awk}
 @cindex QSE Awk
 @cindex source code, QSE Awk
-This is an embeddable @command{awk} interpreter. For more information
+This is an embeddable @command{awk} interpreter. For more information,
 see @uref{http://code.google.com/p/qse/} and @uref{http://awk.info/?tools/qse}.
 
 @item @command{QTawk}
@@ -37690,9 +37694,10 @@ including the manual and a download link.
 The project may also be frozen; no new code changes have been made
 since approximately 2008.
 
-@item Other Versions
-See also the @uref{http://en.wikipedia.org/wiki/Awk_language#Versions_and_implementations,
-Wikipedia article}, for information on additional versions.
+@item Other versions
+See also the ``Versions and Implementations'' section of the
+@uref{http://en.wikipedia.org/wiki/Awk_language#Versions_and_implementations,
+Wikipedia article} for information on additional versions.
 
 @end table
 @c ENDOFRANGE awkim
@@ -37894,7 +37899,7 @@ This document describes how GNU software should be written. If you haven't
 read it, please do so, preferably @emph{before} starting to modify @command{gawk}.
 (The @cite{GNU Coding Standards} are available from
 the GNU Project's
-@uref{http://www.gnu.org/prep/standards_toc.html, web site}.
+@uref{http://www.gnu.org/prep/standards_toc.html, website}.
 Texinfo, Info, and DVI versions are also available.)
 
 @cindex @command{gawk}, coding style in
