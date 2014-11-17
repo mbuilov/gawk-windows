@@ -1,4 +1,4 @@
-# ftrans.awk --- handle data file transitions
+# ftrans.awk --- handle datafile transitions
 #
 # user supplies beginfile() and endfile() functions
 #
