@@ -27,7 +27,7 @@ function do_sort(first, last, compare,      data, i, retval)
     retval = data[1]
     for (i = 2; i in data; i++)
         retval = retval " " data[i]
-    
+
     return retval
 }
 # sort --- sort the data in ascending order and return it as a string
