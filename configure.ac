@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk], 4.1.1a, bug-gawk@gnu.org, gawk)
+AC_INIT([GNU Awk], 4.1.1b, bug-gawk@gnu.org, gawk)
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -40,7 +40,7 @@ then
 fi
 
 AC_PREREQ(2.69)
-AM_INIT_AUTOMAKE([1.13 dist-xz dist-lzip])
+AM_INIT_AUTOMAKE([1.14 dist-xz dist-lzip])
 
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -138,7 +138,7 @@ AC_LANG([C])
 
 dnl initialize GNU gettext
 AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.18.1])
+AM_GNU_GETTEXT_VERSION([0.19.3])
 AM_LANGINFO_CODESET
 gt_LC_MESSAGES
 
