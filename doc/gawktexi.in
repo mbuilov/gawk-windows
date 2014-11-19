@@ -7402,10 +7402,12 @@ is so-called @dfn{comma-separated values} (CSV) data. Many spreadsheet programs,
 for example, can export their data into text files, where each record is
 terminated with a newline, and fields are separated by commas. If only
 commas separated the data, there wouldn't be an issue. The problem comes when
-one of the fields contains an @emph{embedded} comma. Although there is no
-formal standard specification for CSV data,@footnote{At least, we don't know of one.}
-in such cases, most programs embed the field in double quotes. So we might
-have data like this:
+one of the fields contains an @emph{embedded} comma.
+In such cases, most programs embed the field in double quotes.@footnote{The
+CSV format lacked a formal standard definition for many years.
+@uref{http://www.ietf.org/rfc/rfc4180.txt, RFC 4180}
+standardizes the most common practices.}
+So we might have data like this:
 
 @example
 @c file eg/misc/addresses.csv
