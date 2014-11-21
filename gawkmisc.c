@@ -51,8 +51,7 @@ extern pointer xmalloc(size_t bytes);	/* get rid of gcc warning */
 pointer
 xmalloc(size_t bytes)
 {
-	pointer p = malloc(bytes);
-	if (!p && bytes)
-		xalloc_die ();	  
+	pointer p;
+	emalloc(p, pointer, bytes, "xmalloc");
 	return p;
 }
