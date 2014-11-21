@@ -352,16 +352,12 @@ uninitialized_scalar:
 			lhs = r_get_field(t1, (Func_ptr *) 0, true);
 			decr_sp();
 			DEREF(t1);
-			if (do_old_mem) {
+			/* only for $0, up ref count */
+			if (*lhs == fields_arr[0]) {
+				r = *lhs;
+				UPREF(r);
+			} else
 				r = dupnode(*lhs);
-			} else {
-				/* only for $0, up ref count */
-				if (*lhs == fields_arr[0]) {
-					r = *lhs;
-					UPREF(r);
-				} else
-					r = dupnode(*lhs);
-			}
 			PUSH(r);
 			break;
 
@@ -652,12 +648,8 @@ mod:
 			}
 
 			unref(*lhs);
-			if (do_old_mem) {
-				*lhs = POP_SCALAR();
-			} else {
-				r = POP_SCALAR();
-				UNFIELD(*lhs, r);
-			}
+			r = POP_SCALAR();
+			UNFIELD(*lhs, r);
 
 			/* execute post-assignment routine if any */
 			if (t1->astore != NULL)
@@ -675,21 +667,12 @@ mod:
 			lhs = get_lhs(pc->memory, false);
 			unref(*lhs);
 			r = pc->initval;	/* constant initializer */
-			if (do_old_mem) {
-				if (r == NULL)
-					*lhs = POP_SCALAR();
-				else {
-					UPREF(r);
-					*lhs = r;
-				}
+			if (r != NULL) {
+				UPREF(r);
+				*lhs = r;
 			} else {
-				if (r != NULL) {
-					UPREF(r);
-					*lhs = r;
-				} else {
-					r = POP_SCALAR();
-					UNFIELD(*lhs, r);
-				}
+				r = POP_SCALAR();
+				UNFIELD(*lhs, r);
 			}
 			break;
 
@@ -705,12 +688,8 @@ mod:
 			decr_sp();
 			DEREF(t1);
 			unref(*lhs);
-			if (do_old_mem) {
-				*lhs = POP_SCALAR();
-			} else {
-				r = POP_SCALAR();
-				UNFIELD(*lhs, r);
-			}
+			r = POP_SCALAR();
+			UNFIELD(*lhs, r);
 			assert(assign != NULL);
 			assign();
 		}
@@ -764,13 +743,8 @@ mod:
 			lhs = POP_ADDRESS();
 			r = TOP_SCALAR();
 			unref(*lhs);
-			if (do_old_mem) {
-				*lhs = r;
-				UPREF(r);
-			} else {
-				UPREF(r);
-				UNFIELD(*lhs, r);
-			}
+			UPREF(r);
+			UNFIELD(*lhs, r);
 			REPLACE(r);
 			break;
 

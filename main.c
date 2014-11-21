@@ -170,8 +170,6 @@ GETGROUPS_T *groupset;		/* current group set */
 int ngroups;			/* size of said set */
 #endif
 
-bool do_old_mem = false;	/* XXX temporary */
-
 void (*lintfunc)(const char *mesg, ...) = r_warning;
 
 /* Sorted by long option name! */
@@ -232,9 +230,6 @@ main(int argc, char **argv)
 		mtrace();
 #endif /* HAVE_MTRACE */
 #endif /* HAVE_MCHECK_H */
-
-	if (getenv("OLDMEM") != NULL)
-		do_old_mem = true;	/* XXX temporary */
 
 	myname = gawk_name(argv[0]);
 	os_arg_fixup(&argc, &argv); /* emulate redirection, expand wildcards */

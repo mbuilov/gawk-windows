@@ -1056,8 +1056,6 @@ extern bool field0_valid;
 
 extern int do_flags;
 
-extern bool do_old_mem;	/* XXX temporary */
-
 extern SRCFILE *srcfiles; /* source files */
 
 enum do_flag_values {
