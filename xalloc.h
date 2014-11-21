@@ -156,7 +156,7 @@ void *
 xrealloc(void *p, size_t size)
 {
    void *new_p = realloc(p, size);
-   if (!new_p && size)
+   if (new_p ==  0)
      xalloc_die ();
 
    return new_p;
