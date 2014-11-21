@@ -1,3 +1,12 @@
+2014-11-20  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Port to systems where malloc (0) and/or realloc(P, 0) returns NULL.
+	* gawkmisc.c (xmalloc):
+	* xalloc.h (realloc):
+	Do not fail if malloc(0) or realloc(P, 0) returns NULL.
+	Fail only when the allocator returns null when attempting to
+	allocate a nonzero number of bytes.
+
 2014-11-19         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Infrastructure upgrades:
