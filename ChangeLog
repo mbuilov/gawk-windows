@@ -8,6 +8,11 @@
 	Revert changes of 2014-11-20 from Paul Eggert. Causes failures
 	on z/OS.
 
+	Unrelated: Avoid unnecessary copying of $0.
+
+	* interpret.h (UNFIELD): New macro.
+	(r_interpret): Use it where *lhs is assigned to.
+
 2014-11-20  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Port to systems where malloc (0) and/or realloc(P, 0) returns NULL.
