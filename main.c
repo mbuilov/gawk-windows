@@ -480,8 +480,7 @@ main(int argc, char **argv)
 	if (use_lc_numeric)
 		setlocale(LC_NUMERIC, locale);
 #endif
-// fprintf(stderr, "locale is <%s>\n", locale); fflush(stderr);
-	
+
 	init_io();
 	output_fp = stdout;
 
