@@ -1246,13 +1246,42 @@ DEREF(NODE *r)
 #define	cant_happen()	r_fatal("internal error line %d, file: %s", \
 				__LINE__, __FILE__)
 
-#define	emalloc(var,ty,x,str)	(void)((var=(ty)malloc((size_t)(x))) ||\
-				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
-					(str), #var, (long) (x), strerror(errno)),0))
-#define	erealloc(var,ty,x,str)	(void)((var = (ty)realloc((char *)var, (size_t)(x))) \
-				||\
-				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
-					(str), #var, (long) (x), strerror(errno)),0))
+#define fatal		set_loc(__FILE__, __LINE__), r_fatal
+
+static inline void *
+emalloc_real(size_t count, const char *where, const char *var, const char *file, int line)
+{
+	void *ret;
+
+	if (count == 0)
+		fatal("%s:%d: emalloc called with zero bytes", file, line);
+
+	ret = (void *) malloc(count);
+	if (ret == NULL)
+		fatal(_("%s:%d:%s: %s: can't allocate %ld bytes of memory (%s)"),
+			file, line, where, var, (long) count, strerror(errno));
+
+	return ret;
+}
+
+static inline void *
+erealloc_real(void *ptr, size_t count, const char *where, const char *var, const char *file, int line)
+{
+	void *ret;
+
+	if (count == 0)
+		fatal("%s:%d: erealloc called with zero bytes", file, line);
+
+	ret = (void *) realloc(ptr, count);
+	if (ret == NULL)
+		fatal(_("%s:%d:%s: %s: can't reallocate %ld bytes of memory (%s)"),
+			file, line, where, var, (long) count, strerror(errno));
+
+	return ret;
+}
+
+#define	emalloc(var,ty,x,str)	(void) (var = (ty) emalloc_real((size_t)(x), str, #var, __FILE__, __LINE__))
+#define	erealloc(var,ty,x,str)	(void) (var = (ty) erealloc_real((void *) var, (size_t)(x), str, #var, __FILE__, __LINE__))
 
 #define efree(p)	free(p)
 
@@ -1285,8 +1314,6 @@ force_number(NODE *n)
 }
 
 #endif /* GAWKDEBUG */
-
-#define fatal		set_loc(__FILE__, __LINE__), r_fatal
 
 extern jmp_buf fatal_tag;
 extern bool fatal_tag_valid;

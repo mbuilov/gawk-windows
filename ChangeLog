@@ -1,3 +1,11 @@
+2014-11-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (emalloc, realloc): Redefine in terms of ...
+	(emalloc_real, eralloc_real): New static inline functions.
+	(fatal): Move definition up.
+	* gawkmisc.c (xmalloc): If count is zero, make it one for older
+	mallocs that require size > 0 (such as z/OS).
+
 2014-11-21         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* main.c: Remove a debugging // comment.
