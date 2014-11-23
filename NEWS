@@ -9,7 +9,8 @@ Changes from 4.1.x to 4.2.0
 
 1. If not in POSIX mode, changes to ENVIRON are reflected into
    gawk's environment, affecting any programs run by system()
-   or for piped redirections.
+   or for piped redirections. This can also affect built-in routines, such
+   as mktime(), which is typically influenced by the TZ environment variable.
 
 2. The series of numbers returned by rand() should now be "more
    random" than previously.  Gawk's rand() remains repeatable; you will

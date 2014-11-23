@@ -14225,6 +14225,12 @@ that it creates.  You should therefore be especially careful if you
 modify @code{ENVIRON["PATH"]"}, which is the search path for finding
 executable programs.
 
+This can also affect the running @command{gawk} program, since some of the
+built-in functions may pay attention to certain environment variables.
+The most notable instance of this is @code{mktime()} (@pxref{Time
+Functions}), which pays attention the value of the @env{TZ} environment
+variable on many systems.
+
 Some operating systems may not have environment variables.
 On such systems, the @code{ENVIRON} array is empty (except for
 @w{@code{ENVIRON["AWKPATH"]}} and
