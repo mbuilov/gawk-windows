@@ -123,7 +123,7 @@ END {
 			printf "WARNING: --lint-old target `%s' is missing.\n", x > "/dev/stderr"
 	for (x in files)
 		if (!(x in unused) && \
-		    !(gensub(/\.(awk|in)$/,"","",x) in targets))
+		    !(gensub(/\.(awk|in)$/,"",1,x) in targets))
 			printf "WARNING: unused file `%s'.\n", x > "/dev/stderr"
 }
 
