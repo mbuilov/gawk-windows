@@ -2696,7 +2696,7 @@ do_sub(int nargs, unsigned int flags)
 				if ((t1->flags & NUMCUR) != 0)
 					goto set_how_many;
 
-				warning(_("gensub: third argument of `%.*s' treated as 1"),
+				warning(_("gensub: third argument `%.*s' treated as 1"),
 						(int) t1->stlen, t1->stptr);
 				how_many = 1;
 			}
@@ -2711,7 +2711,7 @@ set_how_many:
 			else
 				how_many = LONG_MAX;
 			if (d <= 0)
-				warning(_("gensub: third argument of %g treated as 1"), d);
+				warning(_("gensub: third argument %g treated as 1"), d);
 		}
 		DEREF(t1);
 
