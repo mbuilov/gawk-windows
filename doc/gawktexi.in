@@ -2201,7 +2201,7 @@ the fourth edition and for his support during the work.
 Thanks to Jasmine Kwityn for her copy-editing work.
 @end ifset
 
-Thanks to Michael Brennan for the Foreword.
+Thanks to Michael Brennan for the Forewords.
 
 @cindex Duman, Patrice
 @cindex Berry, Karl
@@ -3844,7 +3844,13 @@ Command-line variable assignments of the form
 This option is particularly necessary for World Wide Web CGI applications
 that pass arguments through the URL; using this option prevents a malicious
 (or other) user from passing in options, assignments, or @command{awk} source
-code (via @option{-e}) to the CGI application.  This option should be used
+code (via @option{-e}) to the CGI application.@footnote{For more detail,
+please see Section 4.4 of @uref{http://www.ietf.org/rfc/rfc3875,
+RFC 3875}. Also see the
+@uref{http://lists.gnu.org/archive/html/bug-gawk/2014-11/msg00022.html,
+explanatory note sent to the @command{gawk} bug
+mailing list}.}
+This option should be used
 with @samp{#!} scripts (@pxref{Executable Scripts}), like so:
 
 @example
@@ -7188,7 +7194,7 @@ on an incorrect implementation of @command{awk}, while @command{gawk}
 prints the full first line of the file, something like:
 
 @example
-root:nSijPlPhZZwgE:0:0:Root:/:
+root:x:0:0:Root:/:
 @end example
 @end sidebar
 
@@ -7488,7 +7494,7 @@ will be @code{"FPAT"} if content-based field splitting is being used.
 @quotation NOTE
 Some programs export CSV data that contains embedded newlines between
 the double quotes.  @command{gawk} provides no way to deal with this.
-Because no formal specification for CSV data exists, there isn't much
+Even though a formal specification for CSV data exists, there isn't much
 more to be done;
 the @code{FPAT} mechanism provides an elegant solution for the majority
 of cases, and the @command{gawk} developers are satisfied with that.
@@ -8220,7 +8226,7 @@ Using @code{FILENAME} with @code{getline}
 is likely to be a source for
 confusion.  @command{awk} opens a separate input stream from the
 current input file.  However, by not using a variable, @code{$0}
-and @code{NR} are still updated.  If you're doing this, it's
+and @code{NF} are still updated.  If you're doing this, it's
 probably by accident, and you should reconsider what it is you're
 trying to accomplish.
 
@@ -8363,7 +8369,7 @@ for the input to arrive:
 PROCINFO[Service, "READ_TIMEOUT"] = 1000
 while ((Service |& getline) > 0) @{
     print $0
-    PROCINFO[S, "READ_TIMEOUT"] -= 100
+    PROCINFO[Service, "READ_TIMEOUT"] -= 100
 @}
 @end example
 
@@ -21659,7 +21665,7 @@ A few lines representative of @command{pwcat}'s output are as follows:
 @cindex Robbins, Miriam
 @example
 $ @kbd{pwcat}
-@print{} root:3Ov02d5VaUPB6:0:1:Operator:/:/bin/sh
+@print{} root:x:0:1:Operator:/:/bin/sh
 @print{} nobody:*:65534:65534::/:
 @print{} daemon:*:1:1::/:
 @print{} sys:*:2:2::/:/bin/csh
@@ -34372,7 +34378,7 @@ project provides a number of @command{gawk} extensions, including one for
 processing XML files.  This is the evolution of the original @command{xgawk}
 (XML @command{gawk}) project.
 
-As of this writing, there are five extensions:
+As of this writing, there are six extensions:
 
 @itemize @value{BULLET}
 @item
@@ -34388,6 +34394,9 @@ PostgreSQL extension
 MPFR library extension
 (this provides access to a number of MPFR functions which @command{gawk}'s
 native MPFR support does not)
+
+@item
+Redis extension
 
 @item
 XML parser extension, using the @uref{http://expat.sourceforge.net, Expat}
@@ -39198,6 +39207,13 @@ pattern matches an input record, @command{awk} executes the
 rule's action.  Actions are always enclosed in braces.
 (@xref{Action Overview}.)
 
+@cindex Ada programming language
+@cindex programming languages, Ada
+@item Ada
+A programming language originally defined by the U.S.@: Department of
+Defense for embedded programming. It was designed to enforce good
+Software Engineering practices.
+
 @cindex Spencer, Henry
 @cindex @command{sed} utility
 @cindex amazing @command{awk} assembler (@command{aaa})
@@ -39208,13 +39224,6 @@ of lines long, including machine descriptions for several eight-bit
 microcomputers.  It is a good example of a program that would have been
 better written in another language.
 You can get it from @uref{http://awk.info/?awk100/aaa}.
-
-@cindex Ada programming language
-@cindex programming languages, Ada
-@item Ada
-A programming language originally defined by the U.S.@: Department of
-Defense for embedded programming. It was designed to enforce good
-Software Engineering practices.
 
 @cindex amazingly workable formatter (@command{awf})
 @cindex @command{awf} (amazingly workable formatter) program
