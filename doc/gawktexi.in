@@ -6372,7 +6372,7 @@ the beginning and end of a @emph{line}.  As a result, something like
 @samp{RS = "^[[:upper:]]"} can only match at the beginning of a file.
 This is because @command{gawk} views the input file as one long string
 that happens to contain newline characters.
-It is thus best to avoid anchor characters in the value of @code{RS}.
+It is thus best to avoid anchor metacharacters in the value of @code{RS}.
 @end quotation
 
 @cindex differences in @command{awk} and @command{gawk}, @code{RS}/@code{RT} variables
@@ -8435,7 +8435,7 @@ Input is split into records based on the value of @code{RS}.
 The possibilities are as follows:
 
 @multitable @columnfractions .25 .35 .40
-@headitem Value of @code{RS} @tab Records are split on @tab @command{awk} / @command{gawk}
+@headitem Value of @code{RS} @tab Records are split on @dots{} @tab @command{awk} / @command{gawk}
 @item Any single character @tab That character @tab @command{awk}
 @item The empty string (@code{""}) @tab Runs of two or more newlines @tab @command{awk}
 @item A regexp @tab Text that matches the regexp @tab @command{gawk}
@@ -8978,7 +8978,7 @@ representing negative
 infinity are formatted as
 @samp{-inf} or @samp{-infinity},
 and positive infinity as
-@samp{inf} and @samp{infinity}.
+@samp{inf} or @samp{infinity}.
 The special ``not a number'' value formats as @samp{-nan} or @samp{nan}
 (@pxref{Math Definitions}).
 
