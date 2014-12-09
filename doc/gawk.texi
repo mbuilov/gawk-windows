@@ -9343,7 +9343,7 @@ a single byte (0--255).
 @item @code{%d}, @code{%i}
 Print a decimal integer.
 The two control letters are equivalent.
-(The @code{%i} specification is for compatibility with ISO C.)
+(The @samp{%i} specification is for compatibility with ISO C.)
 
 @item @code{%e}, @code{%E}
 Print a number in scientific (exponential) notation;
@@ -9358,7 +9358,7 @@ prints @samp{1.950e+03}, with a total of four significant figures, three of
 which follow the decimal point.
 (The @samp{4.3} represents two modifiers,
 discussed in the next @value{SUBSECTION}.)
-@code{%E} uses @samp{E} instead of @samp{e} in the output.
+@samp{%E} uses @samp{E} instead of @samp{e} in the output.
 
 @item @code{%f}
 Print a number in floating-point notation.
@@ -9384,16 +9384,16 @@ The special ``not a number'' value formats as @samp{-nan} or @samp{nan}
 (@pxref{Math Definitions}).
 
 @item @code{%F}
-Like @code{%f} but the infinity and ``not a number'' values are spelled
+Like @samp{%f} but the infinity and ``not a number'' values are spelled
 using uppercase letters.
 
-The @code{%F} format is a POSIX extension to ISO C; not all systems
-support it.  On those that don't, @command{gawk} uses @code{%f} instead.
+The @samp{%F} format is a POSIX extension to ISO C; not all systems
+support it.  On those that don't, @command{gawk} uses @samp{%f} instead.
 
 @item @code{%g}, @code{%G}
 Print a number in either scientific notation or in floating-point
 notation, whichever uses fewer characters; if the result is printed in
-scientific notation, @code{%G} uses @samp{E} instead of @samp{e}.
+scientific notation, @samp{%G} uses @samp{E} instead of @samp{e}.
 
 @item @code{%o}
 Print an unsigned octal integer
@@ -9409,7 +9409,7 @@ are floating point; it is provided primarily for compatibility with C.)
 
 @item @code{%x}, @code{%X}
 Print an unsigned hexadecimal integer;
-@code{%X} uses the letters @samp{A} through @samp{F}
+@samp{%X} uses the letters @samp{A} through @samp{F}
 instead of @samp{a} through @samp{f}
 (@pxref{Nondecimal-numbers}).
 
@@ -9424,7 +9424,7 @@ argument and it ignores any modifiers.
 @quotation NOTE
 When using the integer format-control letters for values that are
 outside the range of the widest C integer type, @command{gawk} switches to
-the @code{%g} format specifier. If @option{--lint} is provided on the
+the @samp{%g} format specifier. If @option{--lint} is provided on the
 command line (@pxref{Options}), @command{gawk}
 warns about this.  Other versions of @command{awk} may print invalid
 values or do something else entirely.
@@ -9499,12 +9499,12 @@ to format is positive. The @samp{+} overrides the space modifier.
 
 @item #
 Use an ``alternative form'' for certain control letters.
-For @code{%o}, supply a leading zero.
-For @code{%x} and @code{%X}, supply a leading @code{0x} or @samp{0X} for
+For @samp{%o}, supply a leading zero.
+For @samp{%x} and @samp{%X}, supply a leading @samp{0x} or @samp{0X} for
 a nonzero result.
-For @code{%e}, @code{%E}, @code{%f}, and @code{%F}, the result always
+For @samp{%e}, @samp{%E}, @samp{%f}, and @samp{%F}, the result always
 contains a decimal point.
-For @code{%g} and @code{%G}, trailing zeros are not removed from the result.
+For @samp{%g} and @samp{%G}, trailing zeros are not removed from the result.
 
 @item 0
 A leading @samp{0} (zero) acts as a flag indicating that output should be
@@ -13022,7 +13022,7 @@ character}, to find the record terminator.
 Locales can affect how dates and times are formatted (@pxref{Time
 Functions}).  For example, a common way to abbreviate the date September
 4, 2015, in the United States is ``9/4/15.''  In many countries in
-Europe, however, it is abbreviated ``4.9.15.''  Thus, the @code{%x}
+Europe, however, it is abbreviated ``4.9.15.''  Thus, the @samp{%x}
 specification in a @code{"US"} locale might produce @samp{9/4/15},
 while in a @code{"EUROPE"} locale, it might produce @samp{4.9.15}.
 
@@ -13249,9 +13249,8 @@ $ @kbd{awk '$1 ~ /li/ @{ print $2 @}' mail-list}
 
 @cindex regexp constants, as patterns
 @cindex patterns, regexp constants as
-A regexp constant as a pattern is also a special case of an expression
-pattern.  The expression @samp{/li/} has the value one if @samp{li}
-appears in the current input record. Thus, as a pattern, @samp{/li/}
+pattern.  The expression @code{/li/} has the value one if @samp{li}
+appears in the current input record. Thus, as a pattern, @code{/li/}
 matches any record containing @samp{li}.
 
 @cindex Boolean expressions, as patterns
@@ -16920,7 +16919,8 @@ This @value{CHAPTER} describes @command{awk}'s built-in functions,
 which fall into three categories: numeric, string, and I/O.
 @command{gawk} provides additional groups of functions
 to work with values that represent time, do
-bit manipulation, sort arrays, and internationalize and localize programs.
+bit manipulation, sort arrays,
+provide type information, and internationalize and localize programs.
 
 Besides the built-in functions, @command{awk} has provisions for
 writing new functions that the rest of a program can use.
@@ -18826,7 +18826,7 @@ of its ISO week number is 2013, even though its year is 2012.
 The full year of the ISO week number, as a decimal number.
 
 @item %h
-Equivalent to @code{%b}.
+Equivalent to @samp{%b}.
 
 @item %H
 The hour (24-hour clock) as a decimal number (00--23).
@@ -18895,7 +18895,7 @@ The locale's ``appropriate'' date representation.
 
 @item %X
 The locale's ``appropriate'' time representation.
-(This is @code{%T} in the @code{"C"} locale.)
+(This is @samp{%T} in the @code{"C"} locale.)
 
 @item %y
 The year modulo 100 as a decimal number (00--99).
@@ -18916,7 +18916,7 @@ no time zone is determinable.
 @item %Ec %EC %Ex %EX %Ey %EY %Od %Oe %OH
 @itemx %OI %Om %OM %OS %Ou %OU %OV %Ow %OW %Oy
 ``Alternative representations'' for the specifications
-that use only the second letter (@code{%c}, @code{%C},
+that use only the second letter (@samp{%c}, @samp{%C},
 and so on).@footnote{If you don't understand any of this, don't worry about
 it; these facilities are meant to make it easier to ``internationalize''
 programs.
@@ -18955,11 +18955,11 @@ Single-digit numbers are padded with a space.
 @ignore
 @item %N
 The ``Emperor/Era'' name.
-Equivalent to @code{%C}.
+Equivalent to @samp{%C}.
 
 @item %o
 The ``Emperor/Era'' year.
-Equivalent to @code{%y}.
+Equivalent to @samp{%y}.
 @end ignore
 
 @item %s
@@ -20265,7 +20265,7 @@ saving it in @code{start}.
 The last part of the code loops through each function name (from @code{$2} up to
 the marker, @samp{data:}), calling the function named by the field. The indirect
 function call itself occurs as a parameter in the call to @code{printf}.
-(The @code{printf} format string uses @code{%s} as the format specifier so that we
+(The @code{printf} format string uses @samp{%s} as the format specifier so that we
 can use functions that return strings, as well as numbers. Note that the result
 from the indirect call is concatenated with the empty string, in order to force
 it to be a string value.)
@@ -25558,8 +25558,8 @@ END @{
 @}
 @end example
 
-The regexp @samp{/[^[:alnum:]_[:blank:]]/} might have been written
-@samp{/[[:punct:]]/}, but then underscores would also be removed,
+The regexp @code{/[^[:alnum:]_[:blank:]]/} might have been written
+@code{/[[:punct:]]/}, but then underscores would also be removed,
 and we want to keep them.
 
 Assuming we have saved this program in a file named @file{wordfreq.awk},
@@ -27668,7 +27668,7 @@ like so:
 @example
 command = "sort -nr"           # command, save in convenience variable
 PROCINFO[command, "pty"] = 1   # update PROCINFO
-print @dots{} |& command       # start two-way pipe
+print @dots{} |& command           # start two-way pipe
 @dots{}
 @end example
 
@@ -35719,7 +35719,7 @@ for case translation
 (@pxref{String Functions}).
 
 @item
-A cleaner specification for the @code{%c} format-control letter in the
+A cleaner specification for the @samp{%c} format-control letter in the
 @code{printf} function
 (@pxref{Control Letters}).
 
