@@ -3484,13 +3484,23 @@ dfaexec_main (struct dfa *d, char const *begin, char *end,
             }
         }
 
-      if ((char *) p > end)
+      if (s < 0)
         {
-          p = NULL;
-          goto done;
+          if ((char *) p > end || p[-1] != eol || d->newlines[s1] < 0)
+            {
+              p = NULL;
+              goto done;
+            }
+
+          /* The previous character was a newline, count it, and skip
+             checking of multibyte character boundary until here.  */
+          nlcount++;
+          mbp = p;
+
+          s = allow_nl ? d->newlines[s1] : 0;
         }
 
-      if (s >= 0 && d->fails[s])
+      if (d->fails[s])
         {
           if (d->success[s] & sbit[*p])
             {
@@ -3504,32 +3514,13 @@ dfaexec_main (struct dfa *d, char const *begin, char *end,
             State_transition();
           else
             s = d->fails[s][*p++];
-          continue;
         }
-
-      /* If the previous character was a newline, count it, and skip
-         checking of multibyte character boundary until here.  */
-      if (p[-1] == eol)
-        {
-          nlcount++;
-          mbp = p;
-        }
-
-      if (s >= 0)
+      else
         {
           if (!d->trans[s])
             build_state (s, d);
           trans = d->trans;
-          continue;
         }
-
-      if (p[-1] == eol && allow_nl)
-        {
-          s = d->newlines[s1];
-          continue;
-        }
-
-      s = 0;
     }
 
  done:
