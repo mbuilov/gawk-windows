@@ -9471,7 +9471,7 @@ messages at runtime.
 which describes how and why to use positional specifiers.
 For now, we ignore them.
 
-@item -
+@item - (Minus)
 The minus sign, used before the width modifier (see later on in
 this list),
 says to left-justify
@@ -32139,14 +32139,14 @@ To provide an input parser, you must first provide two functions
 (where @var{XXX} is a prefix name for your extension):
 
 @table @code
-@item awk_bool_t @var{XXX}_can_take_file(const awk_input_buf_t *iobuf)
+@item awk_bool_t @var{XXX}_can_take_file(const awk_input_buf_t *iobuf);
 This function examines the information available in @code{iobuf}
 (which we discuss shortly).  Based on the information there, it
 decides if the input parser should be used for this file.
 If so, it should return true. Otherwise, it should return false.
 It should not change any state (variable values, etc.) within @command{gawk}.
 
-@item awk_bool_t @var{XXX}_take_control_of(awk_input_buf_t *iobuf)
+@item awk_bool_t @var{XXX}_take_control_of(awk_input_buf_t *iobuf);
 When @command{gawk} decides to hand control of the file over to the
 input parser, it calls this function.  This function in turn must fill
 in certain fields in the @code{awk_input_buf_t} structure, and ensure
@@ -33430,7 +33430,7 @@ using @code{sym_update()}, or install it as an element in a previously
 existing array using @code{set_array_element()}.  We show example code shortly.
 
 @item
-Due to gawk internals, after using @code{sym_update()} to install an array
+Due to @command{gawk} internals, after using @code{sym_update()} to install an array
 into @command{gawk}, you have to retrieve the array cookie from the value
 passed in to @command{sym_update()} before doing anything else with it, like so:
 
@@ -33685,8 +33685,7 @@ whether the corresponding command-line options were enabled when
 This variable is true if @command{gawk} was invoked with @option{--debug} option.
 
 @item do_lint
-This variable is true if @command{gawk} was invoked with @option{--lint} option
-(@pxref{Options}).
+This variable is true if @command{gawk} was invoked with @option{--lint} option.
 
 @item do_mpfr
 This variable is true if @command{gawk} was invoked with @option{--bignum} option.
@@ -35303,8 +35302,8 @@ that loaded it.
 
 @item
 It is easiest to start a new extension by copying the boilerplate code
-described in this @value{CHAPTER}.  Macros in the @file{gawkapi.h} make
-this easier to do.
+described in this @value{CHAPTER}.  Macros in the @file{gawkapi.h} header
+file make this easier to do.
 
 @item
 The @command{gawk} distribution includes a number of small but useful
@@ -38471,7 +38470,7 @@ for a list of extensions in this @command{awk} that are not in POSIX @command{aw
 
 As a side note, Dan Bornstein has created a Git repository tracking
 all the versions of BWK @command{awk} that he could find. It's
-available at @uref{git://github.com/onetrueawk/awk}.
+available at @uref{git://github.com/danfuzz/one-true-awk}.
 
 @cindex Brennan, Michael
 @cindex @command{mawk} utility
