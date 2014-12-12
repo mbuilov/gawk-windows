@@ -11865,7 +11865,7 @@ undefined.  Thus, avoid writing programs that assume that parameters
 are evaluated from left to right or from right to left.  For example:
 
      i = 5
-     j = atan2(i++, i *= 2)
+     j = atan2(++i, i *= 2)
 
    If the order of evaluation is left to right, then `i' first becomes
 6, and then 12, and `atan2()' is called with the two arguments 6 and
