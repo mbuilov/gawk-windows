@@ -530,6 +530,11 @@ typedef struct exp_node {
 #define adepth     sub.nodep.l.ll
 #define alevel     sub.nodep.x.xl
 
+/* Op_comment	*/
+#define comment_type	sub.val.idx
+#define EOL_COMMENT 1
+#define FULL_COMMENT 2
+
 /* --------------------------------lint warning types----------------------------*/
 typedef enum lintvals {
 	LINT_illegal,

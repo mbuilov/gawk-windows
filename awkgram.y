@@ -88,6 +88,7 @@ static void check_funcs(void);
 static ssize_t read_one_line(int fd, void *buffer, size_t count);
 static int one_line_close(int fd);
 static void split_comment(void);
+static void check_comment(void);
 
 static bool want_source = false;
 static bool want_regexp = false;	/* lexical scanning kludge */
@@ -150,8 +151,10 @@ static INSTRUCTION *ip_beginfile;
 static INSTRUCTION *comment = NULL;
 static INSTRUCTION *program_comment = NULL;
 static INSTRUCTION *function_comment = NULL;
+static INSTRUCTION *block_comment = NULL;
 
 static bool func_first = true;
+static bool first_rule = true;
 
 static inline INSTRUCTION *list_create(INSTRUCTION *x);
 static inline INSTRUCTION *list_append(INSTRUCTION *l, INSTRUCTION *x);
@@ -334,7 +337,11 @@ pattern
 			($1->nexti + 1)->condpair_left = $1->lasti;
 			($1->nexti + 1)->condpair_right = $4->lasti;
 		}
-		$$ = list_append(list_merge($1, $4), tp);
+		if (comment != NULL) {
+			$$ = list_append(list_merge(list_prepend($1, comment), $4), tp);
+			comment = NULL;
+		} else
+			$$ = list_append(list_merge($1, $4), tp);
 		rule = Rule;
 	  }
 	| LEX_BEGIN
@@ -348,6 +355,7 @@ pattern
 
 		$1->in_rule = rule = BEGIN;
 		$1->source_file = source;
+		check_comment();
 		$$ = $1;
 	  }
 	| LEX_END
@@ -361,6 +369,7 @@ pattern
 
 		$1->in_rule = rule = END;
 		$1->source_file = source;
+		check_comment();
 		$$ = $1;
 	  }
 	| LEX_BEGINFILE
@@ -368,6 +377,7 @@ pattern
 		func_first = false;
 		$1->in_rule = rule = BEGINFILE;
 		$1->source_file = source;
+		check_comment();
 		$$ = $1;
 	  }
 	| LEX_ENDFILE
@@ -375,6 +385,7 @@ pattern
 		func_first = false;
 		$1->in_rule = rule = ENDFILE;
 		$1->source_file = source;
+		check_comment();
 		$$ = $1;
 	  }
 	;
@@ -2282,11 +2293,9 @@ mk_program()
 				cp = end_block;
 			else
 				cp = list_merge(begin_block, end_block);
-			/*
-			 * We don't need to clear the comment variables
-			 * since they're not used anymore after this
-			 * function is called.
-			 */
+			if (program_comment != NULL) {
+				(void) list_prepend(cp, program_comment);
+			}  
 			if (comment != NULL)
 				(void) list_append(cp, comment);
 			(void) list_append(cp, ip_atexit);
@@ -2334,6 +2343,10 @@ out:
 	/* delete the Op_list, not needed */
 	tmp = cp->nexti;
 	bcfree(cp);
+	/* these variables are not used again but zap them anyway.  */
+	comment = NULL;
+	function_comment = NULL;
+	program_comment = NULL;
 	return tmp;
 
 #undef begin_block
@@ -2976,11 +2989,29 @@ pushback(void)
 	(! lexeof && lexptr && lexptr > lexptr_begin ? lexptr-- : lexptr);
 }
 
+/* check_comment --- check for block comment */
 
-/* get_comment --- collect comment text */
+void
+check_comment(void)
+{
+	if (comment != NULL) {
+		if (first_rule) {
+			program_comment = comment;
+		} else 
+			block_comment = comment;
+		comment = NULL;
+	}
+	first_rule = false;
+}
+
+/*
+ * get_comment --- collect comment text.
+ * 	Flag = EOL_COMMENT for end-of-line comments.
+ * 	Flag = FULL_COMMENT for self-contained comments.
+ */
 
 int
-get_comment(void)
+get_comment(int flag)
 {
 	int c;
 	int sl;
@@ -2991,6 +3022,12 @@ get_comment(void)
 	while (true) {
 		while ((c = nextc(false)) != '\n' && c != END_FILE) {
 			tokadd(c);
+		}
+		if (flag == EOL_COMMENT) {
+			/* comment at end of line.  */
+			if (c == '\n')
+				tokadd(c);
+			break;
 		}
 		if (c == '\n') {
 			tokadd(c);
@@ -3006,6 +3043,7 @@ get_comment(void)
 				break;
 			else if (c != '#') {
 				pushback();
+				sourceline--;
 				break;
 			} else
 				tokadd(c);
@@ -3015,6 +3053,7 @@ get_comment(void)
 	comment = bcalloc(Op_comment, 1, sl);
 	comment->source_file = source;
 	comment->memory = make_str_node(tokstart, tok - tokstart, 0);
+	comment->memory->comment_type = flag;
 
 	return c;
 }
@@ -3066,7 +3105,7 @@ allow_newline(void)
 		if (c == '#') {
 			if (do_pretty_print && ! do_profile) {
 			/* collect comment byte code iff doing pretty print but not profiling.  */
-				c = get_comment();
+				c = get_comment(EOL_COMMENT);
 			} else {
 				while ((c = nextc(false)) != '\n' && c != END_FILE)
 					continue;
@@ -3278,7 +3317,10 @@ retry:
 			 * Collect comment byte code iff doing pretty print
 			 * but not profiling.
 			 */
-			c = get_comment();
+			if (lasttok == NEWLINE || lasttok == 0)
+				c = get_comment(FULL_COMMENT);
+			else
+				c = get_comment(EOL_COMMENT);
 
 			if (c == END_FILE)
 				return lasttok = NEWLINE_EOF;
@@ -3315,7 +3357,7 @@ retry:
 		_("use of `\\ #...' line continuation is not portable"));
 				}
 				if (do_pretty_print && ! do_profile)
-					c = get_comment();
+					c = get_comment(EOL_COMMENT);
 				else {
 					while ((c = nextc(false)) != '\n')
 						if (c == END_FILE)
@@ -5170,7 +5212,11 @@ append_rule(INSTRUCTION *pattern, INSTRUCTION *action)
 		(rp + 1)->lasti = action->lasti;
 		(rp + 2)->first_line = pattern->source_line;
 		(rp + 2)->last_line = lastline;
-		ip = list_prepend(action, rp);
+		if (block_comment != NULL) {
+			ip = list_prepend(list_prepend(action, block_comment), rp);
+			block_comment = NULL;
+		} else
+			ip = list_prepend(action, rp);
 
 	} else {
 		rp = bcalloc(Op_rule, 3, 0);

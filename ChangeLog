@@ -1,3 +1,20 @@
+2014-12-12        Stephen Davies         <sdavies@sdc.com.au>
+
+	Improve comment handling in pretty printing.
+
+	* awk.h (comment_type): New field in the node.
+	(EOL_COMMENT, FULL_COMMENT): New defines.
+	* awkgram.y (block_comment): New variable.
+	(check_comment): New function.
+	(grammar): Add code to handle comments as needed.
+	(get_comment): Now takes a flag indicating kind of comment.
+	(yylex): Collect comments appropriately.
+	(append_rule): Ditto.
+	* profile.c (pprint): Smarten up comment handling.
+	Have printing \n take comments into account.
+	(end_line): New function.
+	(pp_func): Better handling of function comments.
+
 2014-12-10         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with GNU grep.
