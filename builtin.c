@@ -247,7 +247,6 @@ do_fflush(int nargs)
 	return make_number((AWKNUM) status);
 }
 
-#if MBS_SUPPORT
 /* strncasecmpmbs --- like strncasecmp (multibyte string version)  */
 
 int
@@ -327,14 +326,6 @@ index_multibyte_buffer(char* src, char* dest, int len)
 		dest[idx] = mbclen;
     }
 }
-#else
-/* a dummy function */
-static void
-index_multibyte_buffer(char* src ATTRIBUTE_UNUSED, char* dest ATTRIBUTE_UNUSED, int len ATTRIBUTE_UNUSED)
-{
-	cant_happen();
-}
-#endif
 
 /* do_index --- find index of a string */
 
@@ -345,7 +336,6 @@ do_index(int nargs)
 	const char *p1, *p2;
 	size_t l1, l2;
 	long ret;
-#if MBS_SUPPORT
 	bool do_single_byte = false;
 	mbstate_t mbs1, mbs2;
 
@@ -353,7 +343,6 @@ do_index(int nargs)
 		memset(& mbs1, 0, sizeof(mbstate_t));
 		memset(& mbs2, 0, sizeof(mbstate_t));
 	}
-#endif
 
 	POP_TWO_SCALARS(s1, s2);
 
@@ -383,7 +372,6 @@ do_index(int nargs)
 		goto out;
 	}
 
-#if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1) {
 		s1 = force_wstring(s1);
 		s2 = force_wstring(s2);
@@ -394,14 +382,12 @@ do_index(int nargs)
 		do_single_byte = ((s1->wstlen == 0 && s1->stlen > 0) 
 					|| (s2->wstlen == 0 && s2->stlen > 0));
 	}
-#endif
 
 	/* IGNORECASE will already be false if posix */
 	if (IGNORECASE) {
 		while (l1 > 0) {
 			if (l2 > l1)
 				break;
-#if MBS_SUPPORT
 			if (! do_single_byte && gawk_mb_cur_max > 1) {
 				const wchar_t *pos;
 
@@ -412,21 +398,18 @@ do_index(int nargs)
 					ret = pos - s1->wstptr + 1;	/* 1-based */
 				goto out;
 			} else {
-#endif
-			/*
-			 * Could use tolower(*p1) == tolower(*p2) here.
-			 * See discussion in eval.c as to why not.
-			 */
-			if (casetable[(unsigned char)*p1] == casetable[(unsigned char)*p2]
-			    && (l2 == 1 || strncasecmp(p1, p2, l2) == 0)) {
-				ret = 1 + s1->stlen - l1;
-				break;
+				/*
+				 * Could use tolower(*p1) == tolower(*p2) here.
+				 * See discussion in eval.c as to why not.
+				 */
+				if (casetable[(unsigned char)*p1] == casetable[(unsigned char)*p2]
+				    && (l2 == 1 || strncasecmp(p1, p2, l2) == 0)) {
+					ret = 1 + s1->stlen - l1;
+					break;
+				}
+				l1--;
+				p1++;
 			}
-			l1--;
-			p1++;
-#if MBS_SUPPORT
-			}
-#endif
 		}
 	} else {
 		while (l1 > 0) {
@@ -437,7 +420,6 @@ do_index(int nargs)
 				ret = 1 + s1->stlen - l1;
 				break;
 			}
-#if MBS_SUPPORT
 			if (! do_single_byte && gawk_mb_cur_max > 1) {
 				const wchar_t *pos;
 
@@ -451,10 +433,6 @@ do_index(int nargs)
 				l1--;
 				p1++;
 			}
-#else
-			l1--;
-			p1++;
-#endif
 		}
 	}
 out:
@@ -544,7 +522,6 @@ do_length(int nargs)
 		lintwarn(_("length: received non-string argument"));
 	tmp = force_string(tmp);
 
-#if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1) {
 		tmp = force_wstring(tmp);
 		len = tmp->wstlen;
@@ -555,7 +532,6 @@ do_length(int nargs)
 		 if (len == 0 && tmp->stlen > 0)
 			 len = tmp->stlen;
 	} else
-#endif
 		len = tmp->stlen;
 
 	DEREF(tmp);
@@ -1058,7 +1034,6 @@ check_pos:
 				(void) force_number(arg);
 			if ((arg->flags & NUMBER) != 0) {
 				uval = get_number_uj(arg);
-#if MBS_SUPPORT
 				if (gawk_mb_cur_max > 1) {
 					char buf[100];
 					wchar_t wc;
@@ -1099,7 +1074,7 @@ out0:
 				;
 				/* else,
 					fall through */
-#endif
+
 				cpbuf[0] = uval;
 				prec = 1;
 				cp = cpbuf;
@@ -1113,7 +1088,6 @@ out0:
 			 */
 			cp = arg->stptr;
 			prec = 1;
-#if MBS_SUPPORT
 			/*
 			 * First character can be multiple bytes if
 			 * it's a multibyte character. Grr.
@@ -1131,7 +1105,6 @@ out0:
 						fw += count - 1;
 				}
 			}
-#endif
 			goto pr_tail;
 		case 's':
 			need_format = false;
@@ -1805,13 +1778,11 @@ do_substr(int nargs)
 	if (nargs == 2) {	/* third arg. missing */
 		/* use remainder of string */
 		length = t1->stlen - indx;	/* default to bytes */
-#if MBS_SUPPORT
 		if (gawk_mb_cur_max > 1) {
 			t1 = force_wstring(t1);
 			if (t1->wstlen > 0)	/* use length of wide char string if we have one */
 				length = t1->wstlen - indx;
 		}
-#endif
 		d_length = length;	/* set here in case used in diagnostics, below */
 	}
 
@@ -1824,12 +1795,10 @@ do_substr(int nargs)
 	}
 
 	/* get total len of input string, for following checks */
-#if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1) {
 		t1 = force_wstring(t1);
 		src_len = t1->wstlen;
 	} else
-#endif
 		src_len = t1->stlen;
 
 	if (indx >= src_len) {
@@ -1847,7 +1816,6 @@ do_substr(int nargs)
 		length = src_len - indx;
 	}
 
-#if MBS_SUPPORT
 	/* force_wstring() already called */
 	if (gawk_mb_cur_max == 1 || t1->wstlen == t1->stlen)
 		/* single byte case */
@@ -1877,9 +1845,6 @@ do_substr(int nargs)
 		*cp = '\0';
 		r = make_str_node(substr, cp - substr, ALREADY_MALLOCED);
 	}
-#else
-	r = make_string(t1->stptr + indx, length);
-#endif
 
 	DEREF(t1);
 	return r;
@@ -2211,7 +2176,6 @@ do_print_rec(int nargs, int redirtype)
 		rp->output.gawk_fflush(rp->output.fp, rp->output.opaque);
 }
 
-#if MBS_SUPPORT
 
 /* is_wupper --- function version of iswupper for passing function pointers */
 
@@ -2276,7 +2240,6 @@ wide_tolower(wchar_t *wstr, size_t wlen)
 {
 	wide_change_case(wstr, wlen, is_wupper, to_wlower);
 }
-#endif
 
 /* do_tolower --- lower case a string */
 
@@ -2299,14 +2262,11 @@ do_tolower(int nargs)
 			cp < cp2; cp++)
 			if (isupper(*cp))
 				*cp = tolower(*cp);
-	}
-#if MBS_SUPPORT
-	else {
+	} else {
 		force_wstring(t2);
 		wide_tolower(t2->wstptr, t2->wstlen);
 		wstr2str(t2);
 	}
-#endif
 
 	DEREF(t1);
 	return t2;
@@ -2333,14 +2293,11 @@ do_toupper(int nargs)
 			cp < cp2; cp++)
 			if (islower(*cp))
 				*cp = toupper(*cp);
-	}
-#if MBS_SUPPORT
-	else {
+	} else {
 		force_wstring(t2);
 		wide_toupper(t2->wstptr, t2->wstlen);
 		wstr2str(t2);
 	}
-#endif
 
 	DEREF(t1);
 	return t2;
@@ -2551,13 +2508,12 @@ do_match(int nargs)
 		size_t *wc_indices = NULL;
 
 		rlength = REEND(rp, t1->stptr) - RESTART(rp, t1->stptr);	/* byte length */
-#if MBS_SUPPORT
 		if (rlength > 0 && gawk_mb_cur_max > 1) {
 			t1 = str2wstr(t1, & wc_indices);
 			rlength = wc_indices[rstart + rlength - 1] - wc_indices[rstart] + 1;
 			rstart = wc_indices[rstart];
 		}
-#endif
+
 		rstart++;	/* now it's 1-based indexing */
 	
 		/* Build the array only if the caller wants the optional subpatterns */
@@ -2579,12 +2535,10 @@ do_match(int nargs)
 					start = t1->stptr + s;
 					subpat_start = s;
 					subpat_len = len = SUBPATEND(rp, t1->stptr, ii) - s;
-#if MBS_SUPPORT
 					if (len > 0 && gawk_mb_cur_max > 1) {
 						subpat_start = wc_indices[s];
 						subpat_len = wc_indices[s + len - 1] - subpat_start + 1;
 					}
-#endif
 	
 					it = make_string(start, len);
 					it->flags |= MAYBE_NUM;	/* user input */
@@ -2803,6 +2757,8 @@ do_sub(int nargs, unsigned int flags)
 				if ((t1->flags & NUMCUR) != 0)
 					goto set_how_many;
 
+				warning(_("gensub: third argument `%.*s' treated as 1"),
+						(int) t1->stlen, t1->stptr);
 				how_many = 1;
 			}
 		} else {
@@ -2815,8 +2771,8 @@ set_how_many:
 				how_many = d;
 			else
 				how_many = LONG_MAX;
-			if (d == 0)
-				warning(_("gensub: third argument of 0 treated as 1"));
+			if (d <= 0)
+				warning(_("gensub: third argument %g treated as 1"), d);
 		}
 		DEREF(t1);
 
@@ -3705,7 +3661,6 @@ do_div(int nargs)
 static size_t
 mbc_byte_count(const char *ptr, size_t numchars)
 {
-#if MBS_SUPPORT
 	mbstate_t cur_state;
 	size_t sum = 0;
 	int mb_len;
@@ -3726,9 +3681,6 @@ mbc_byte_count(const char *ptr, size_t numchars)
 	}
 
 	return sum;
-#else
-	return numchars;
-#endif
 }
 
 /* mbc_char_count --- return number of m.b. chars in string, up to numbytes bytes */
@@ -3736,7 +3688,6 @@ mbc_byte_count(const char *ptr, size_t numchars)
 static size_t
 mbc_char_count(const char *ptr, size_t numbytes)
 {
-#if MBS_SUPPORT
 	mbstate_t cur_state;
 	size_t sum = 0;
 	int mb_len;
@@ -3759,7 +3710,4 @@ mbc_char_count(const char *ptr, size_t numbytes)
 	}
 
 	return sum;
-#else
-	return numbytes;
-#endif
 }

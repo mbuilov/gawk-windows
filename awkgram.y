@@ -88,6 +88,7 @@ static void check_funcs(void);
 static ssize_t read_one_line(int fd, void *buffer, size_t count);
 static int one_line_close(int fd);
 static void split_comment(void);
+static void check_comment(void);
 
 static bool want_source = false;
 static bool want_regexp = false;	/* lexical scanning kludge */
@@ -151,8 +152,10 @@ INSTRUCTION *main_beginfile;
 static INSTRUCTION *comment = NULL;
 static INSTRUCTION *program_comment = NULL;
 static INSTRUCTION *function_comment = NULL;
+static INSTRUCTION *block_comment = NULL;
 
 static bool func_first = true;
+static bool first_rule = true;
 
 static inline INSTRUCTION *list_create(INSTRUCTION *x);
 static inline INSTRUCTION *list_append(INSTRUCTION *l, INSTRUCTION *x);
@@ -335,7 +338,11 @@ pattern
 			($1->nexti + 1)->condpair_left = $1->lasti;
 			($1->nexti + 1)->condpair_right = $4->lasti;
 		}
-		$$ = list_append(list_merge($1, $4), tp);
+		if (comment != NULL) {
+			$$ = list_append(list_merge(list_prepend($1, comment), $4), tp);
+			comment = NULL;
+		} else
+			$$ = list_append(list_merge($1, $4), tp);
 		rule = Rule;
 	  }
 	| LEX_BEGIN
@@ -349,6 +356,7 @@ pattern
 
 		$1->in_rule = rule = BEGIN;
 		$1->source_file = source;
+		check_comment();
 		$$ = $1;
 	  }
 	| LEX_END
@@ -362,6 +370,7 @@ pattern
 
 		$1->in_rule = rule = END;
 		$1->source_file = source;
+		check_comment();
 		$$ = $1;
 	  }
 	| LEX_BEGINFILE
@@ -369,6 +378,7 @@ pattern
 		func_first = false;
 		$1->in_rule = rule = BEGINFILE;
 		$1->source_file = source;
+		check_comment();
 		$$ = $1;
 	  }
 	| LEX_ENDFILE
@@ -376,6 +386,7 @@ pattern
 		func_first = false;
 		$1->in_rule = rule = ENDFILE;
 		$1->source_file = source;
+		check_comment();
 		$$ = $1;
 	  }
 	;
@@ -1984,7 +1995,6 @@ static const struct token tokentab[] = {
 {"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_xor,	MPF(xor)},
 };
 
-#if MBS_SUPPORT
 /* Variable containing the current shift state.  */
 static mbstate_t cur_mbstate;
 /* Ring buffer containing current characters.  */
@@ -1996,10 +2006,6 @@ static int cur_ring_idx;
 /* This macro means that last nextc() return a singlebyte character
    or 1st byte of a multibyte character.  */
 #define nextc_is_1stbyte (cur_char_ring[cur_ring_idx] == 1)
-#else /* MBS_SUPPORT */
-/* a dummy */
-#define nextc_is_1stbyte 1
-#endif /* MBS_SUPPORT */
 
 /* getfname --- return name of a builtin function (for pretty printing) */
 
@@ -2288,11 +2294,9 @@ mk_program()
 				cp = end_block;
 			else
 				cp = list_merge(begin_block, end_block);
-			/*
-			 * We don't need to clear the comment variables
-			 * since they're not used anymore after this
-			 * function is called.
-			 */
+			if (program_comment != NULL) {
+				(void) list_prepend(cp, program_comment);
+			}  
 			if (comment != NULL)
 				(void) list_append(cp, comment);
 			(void) list_append(cp, ip_atexit);
@@ -2340,6 +2344,10 @@ out:
 	/* delete the Op_list, not needed */
 	tmp = cp->nexti;
 	bcfree(cp);
+	/* these variables are not used again but zap them anyway.  */
+	comment = NULL;
+	function_comment = NULL;
+	program_comment = NULL;
 	return tmp;
 
 #undef begin_block
@@ -2901,8 +2909,6 @@ check_bad_char(int c)
 
 /* nextc --- get the next input character */
 
-#if MBS_SUPPORT
-
 static int
 nextc(bool check_for_bad)
 {
@@ -2973,43 +2979,40 @@ again:
 	}
 }
 
-#else /* MBS_SUPPORT */
-
-int
-nextc(bool check_for_bad)
-{
-	do {
-		if (lexeof)
-			return END_FILE;
-		if (lexptr && lexptr < lexend) {
-			if (check_for_bad)
-				check_bad_char(*lexptr);
-			return ((int) (unsigned char) *lexptr++);
-		}
-	} while (get_src_buf());
-	return END_SRC;
-}
-
-#endif /* MBS_SUPPORT */
-
 /* pushback --- push a character back on the input */
 
 static inline void
 pushback(void)
 {
-#if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1)
 		cur_ring_idx = (cur_ring_idx == 0)? RING_BUFFER_SIZE - 1 :
 			cur_ring_idx - 1;
-#endif
 	(! lexeof && lexptr && lexptr > lexptr_begin ? lexptr-- : lexptr);
 }
 
+/* check_comment --- check for block comment */
 
-/* get_comment --- collect comment text */
+void
+check_comment(void)
+{
+	if (comment != NULL) {
+		if (first_rule) {
+			program_comment = comment;
+		} else 
+			block_comment = comment;
+		comment = NULL;
+	}
+	first_rule = false;
+}
+
+/*
+ * get_comment --- collect comment text.
+ * 	Flag = EOL_COMMENT for end-of-line comments.
+ * 	Flag = FULL_COMMENT for self-contained comments.
+ */
 
 int
-get_comment(void)
+get_comment(int flag)
 {
 	int c;
 	int sl;
@@ -3020,6 +3023,12 @@ get_comment(void)
 	while (true) {
 		while ((c = nextc(false)) != '\n' && c != END_FILE) {
 			tokadd(c);
+		}
+		if (flag == EOL_COMMENT) {
+			/* comment at end of line.  */
+			if (c == '\n')
+				tokadd(c);
+			break;
 		}
 		if (c == '\n') {
 			tokadd(c);
@@ -3035,6 +3044,7 @@ get_comment(void)
 				break;
 			else if (c != '#') {
 				pushback();
+				sourceline--;
 				break;
 			} else
 				tokadd(c);
@@ -3044,6 +3054,7 @@ get_comment(void)
 	comment = bcalloc(Op_comment, 1, sl);
 	comment->source_file = source;
 	comment->memory = make_str_node(tokstart, tok - tokstart, 0);
+	comment->memory->comment_type = flag;
 
 	return c;
 }
@@ -3095,7 +3106,7 @@ allow_newline(void)
 		if (c == '#') {
 			if (do_pretty_print && ! do_profile) {
 			/* collect comment byte code iff doing pretty print but not profiling.  */
-				c = get_comment();
+				c = get_comment(EOL_COMMENT);
 			} else {
 				while ((c = nextc(false)) != '\n' && c != END_FILE)
 					continue;
@@ -3289,9 +3300,7 @@ retry:
 	thisline = NULL;
 	tok = tokstart;
 
-#if MBS_SUPPORT
 	if (gawk_mb_cur_max == 1 || nextc_is_1stbyte)
-#endif
 	switch (c) {
 	case END_SRC:
 		return 0;
@@ -3309,7 +3318,10 @@ retry:
 			 * Collect comment byte code iff doing pretty print
 			 * but not profiling.
 			 */
-			c = get_comment();
+			if (lasttok == NEWLINE || lasttok == 0)
+				c = get_comment(FULL_COMMENT);
+			else
+				c = get_comment(EOL_COMMENT);
 
 			if (c == END_FILE)
 				return lasttok = NEWLINE_EOF;
@@ -3346,7 +3358,7 @@ retry:
 		_("use of `\\ #...' line continuation is not portable"));
 				}
 				if (do_pretty_print && ! do_profile)
-					c = get_comment();
+					c = get_comment(EOL_COMMENT);
 				else {
 					while ((c = nextc(false)) != '\n')
 						if (c == END_FILE)
@@ -5201,7 +5213,11 @@ append_rule(INSTRUCTION *pattern, INSTRUCTION *action)
 		(rp + 1)->lasti = action->lasti;
 		(rp + 2)->first_line = pattern->source_line;
 		(rp + 2)->last_line = lastline;
-		ip = list_prepend(action, rp);
+		if (block_comment != NULL) {
+			ip = list_prepend(list_prepend(action, block_comment), rp);
+			block_comment = NULL;
+		} else
+			ip = list_prepend(action, rp);
 
 	} else {
 		rp = bcalloc(Op_rule, 3, 0);

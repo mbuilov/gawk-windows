@@ -530,7 +530,7 @@ posix_compare(NODE *s1, NODE *s2)
 		 * In either case, ret will be the right thing to return.
 		 */
 	}
-#if MBS_SUPPORT
+#if ! defined(__DJGPP__)
 	else {
 		/* Similar logic, using wide characters */
 		(void) force_wstring(s1);
@@ -610,15 +610,14 @@ cmp_nodes(NODE *t1, NODE *t2)
 		const unsigned char *cp1 = (const unsigned char *) t1->stptr;
 		const unsigned char *cp2 = (const unsigned char *) t2->stptr;
 
-#if MBS_SUPPORT
 		if (gawk_mb_cur_max > 1) {
 			ret = strncasecmpmbs((const unsigned char *) cp1,
 					     (const unsigned char *) cp2, l);
-		} else
-#endif
-		/* Could use tolower() here; see discussion above. */
-		for (ret = 0; l-- > 0 && ret == 0; cp1++, cp2++)
-			ret = casetable[*cp1] - casetable[*cp2];
+		} else {
+			/* Could use tolower() here; see discussion above. */
+			for (ret = 0; l-- > 0 && ret == 0; cp1++, cp2++)
+				ret = casetable[*cp1] - casetable[*cp2];
+		}
 	} else
 		ret = memcmp(t1->stptr, t2->stptr, l);
 

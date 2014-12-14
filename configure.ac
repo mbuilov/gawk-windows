@@ -40,7 +40,7 @@ then
 fi
 
 AC_PREREQ(2.69)
-AM_INIT_AUTOMAKE([1.13 dist-xz dist-lzip])
+AM_INIT_AUTOMAKE([1.14 dist-xz dist-lzip])
 
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -87,7 +87,7 @@ AC_MSG_CHECKING([for special development options])
 if test -f $srcdir/.developing
 then
 	# add other debug flags as appropriate, save GAWKDEBUG for emergencies
-	CFLAGS="$CFLAGS -DARRAYDEBUG -DYYDEBUG"
+	CFLAGS="$CFLAGS -DARRAYDEBUG -DYYDEBUG -DLOCALEDEBUG"
 	if grep dbug $srcdir/.developing
 	then
 		CFLAGS="$CFLAGS -DDBUG"
@@ -131,7 +131,7 @@ AC_LANG([C])
 
 dnl initialize GNU gettext
 AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.18.1])
+AM_GNU_GETTEXT_VERSION([0.19.3])
 AM_LANGINFO_CODESET
 gt_LC_MESSAGES
 

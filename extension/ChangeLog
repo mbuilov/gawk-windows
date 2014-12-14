@@ -1,3 +1,8 @@
+2014-11-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* inplace.c (do_inplace_begin): Jump through hoops to silence
+	GCC warnings about return value of chown.
+
 2014-11-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* select.c (do_input_fd): New function to return the input file
@@ -26,6 +31,17 @@
 	(do_set_non_blocking): If called with a file name as opposed to a file
 	descriptor, call the set_retry function to configure PROCINFO to tell
 	io.c to retry I/O for temporary failures.
+
+2014-10-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (uninstall-so): Remove *.lib too, per suggestion
+	from Andreas Buening.
+
+2014-10-12         KO Myung-Hun          <komh78@gmail.com>
+
+	Fixes for OS/2:
+
+	* Makefile.am (uninstall-so): Remove *.dll and *.a, also.
 
 2014-10-08         Arnold D. Robbins     <arnold@skeeve.com>
 

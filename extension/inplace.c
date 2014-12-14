@@ -170,8 +170,12 @@ do_inplace_begin(int nargs, awk_value_t *result)
 			state.tname, strerror(errno));
 
 	/* N.B. chown/chmod should be more portable than fchown/fchmod */
-	if (chown(state.tname, sbuf.st_uid, sbuf.st_gid) < 0)
-		(void) chown(state.tname, -1, sbuf.st_gid);
+	if (chown(state.tname, sbuf.st_uid, sbuf.st_gid) < 0) {
+		/* jumping through hoops to silence gcc. :-( */
+		int junk;
+		junk = chown(state.tname, -1, sbuf.st_gid);
+		junk = junk;
+	}
 
 	if (chmod(state.tname, sbuf.st_mode) < 0)
 		fatal(ext_id, _("inplace_begin: chmod failed (%s)"),

@@ -277,6 +277,12 @@ set_record(const char *buf, int cnt)
 	/* copy the data */
 	memcpy(databuf, buf, cnt);
 
+	/*
+	 * Add terminating '\0' so that C library routines 
+	 * will know when to stop.
+	 */
+	databuf[cnt] = '\0';
+
 	/* manage field 0: */
 	unref(fields_arr[0]);
 	getnode(n);
@@ -386,12 +392,10 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 	char *end = scan + len;
 	int regex_flags = RE_NEED_START;
 	char *sep;
-#if MBS_SUPPORT
 	size_t mbclen = 0;
 	mbstate_t mbs;
-	if (gawk_mb_cur_max > 1)
-		memset(&mbs, 0, sizeof(mbstate_t));
-#endif
+
+	memset(&mbs, 0, sizeof(mbstate_t));
 
 	if (in_middle)
 		regex_flags |= RE_NO_BOL;
@@ -418,7 +422,6 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 	       && nf < up_to) {
 		regex_flags |= RE_NO_BOL;
 		if (REEND(rp, scan) == RESTART(rp, scan)) {   /* null match */
-#if MBS_SUPPORT
 			if (gawk_mb_cur_max > 1)	{
 				mbclen = mbrlen(scan, end-scan, &mbs);
 				if ((mbclen == 1) || (mbclen == (size_t) -1)
@@ -428,8 +431,7 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 				}
 				scan += mbclen;
 			} else
-#endif
-			scan++;
+				scan++;
 			if (scan == end) {
 				(*set)(++nf, field, (long)(scan - field), n);
 				up_to = nf;
@@ -630,7 +632,6 @@ null_parse_field(long up_to,	/* parse only up to this field number */
 	if (len == 0)
 		return nf;
 
-#if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1) {
 		mbstate_t mbs;
 		memset(&mbs, 0, sizeof(mbstate_t));
@@ -646,12 +647,12 @@ null_parse_field(long up_to,	/* parse only up to this field number */
 			(*set)(++nf, scan, mbclen, n);
 			scan += mbclen;
 		}
-	} else
-#endif
-	for (; nf < up_to && scan < end; scan++) {
-		if (sep_arr != NULL && nf > 0)
-			set_element(nf, scan, 0L, sep_arr);
-		(*set)(++nf, scan, 1L, n);
+	} else {
+		for (; nf < up_to && scan < end; scan++) {
+			if (sep_arr != NULL && nf > 0)
+				set_element(nf, scan, 0L, sep_arr);
+			(*set)(++nf, scan, 1L, n);
+		}
 	}
 
 	*buf = scan;
@@ -682,12 +683,10 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 	char *field;
 	char *end = scan + len;
 	char sav;
-#if MBS_SUPPORT
 	size_t mbclen = 0;
 	mbstate_t mbs;
-	if (gawk_mb_cur_max > 1)
-		memset(&mbs, 0, sizeof(mbstate_t));
-#endif
+
+	memset(&mbs, 0, sizeof(mbstate_t));
 
 	if (up_to == UNLIMITED)
 		nf = 0;
@@ -706,7 +705,6 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 
 	for (; nf < up_to;) {
 		field = scan;
-#if MBS_SUPPORT
 		if (gawk_mb_cur_max > 1) {
 			while (*scan != fschar) {
 				mbclen = mbrlen(scan, end-scan, &mbs);
@@ -717,10 +715,10 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 				}
 				scan += mbclen;
 			}
-		} else
-#endif
-		while (*scan != fschar)
-			scan++;
+		} else {
+			while (*scan != fschar)
+				scan++;
+		}
 		(*set)(++nf, field, (long)(scan - field), n);
 		if (scan == end)
 			break;
@@ -760,7 +758,6 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 	char *scan = *buf;
 	long nf = parse_high_water;
 	char *end = scan + len;
-#if MBS_SUPPORT
 	int nmbc;
 	size_t mbclen;
 	size_t mbslen;
@@ -769,14 +766,12 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 	mbstate_t mbs;
 
 	memset(&mbs, 0, sizeof(mbstate_t));
-#endif
 
 	if (up_to == UNLIMITED)
 		nf = 0;
 	if (len == 0)
 		return nf;
 	for (; nf < up_to && (len = FIELDWIDTHS[nf+1]) != -1; ) {
-#if MBS_SUPPORT
 		if (gawk_mb_cur_max > 1) {
 			nmbc = 0;
 			mbslen = 0;
@@ -799,10 +794,7 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 	    		}
 			(*set)(++nf, scan, (long) mbslen, n);
 			scan += mbslen;
-		}
-		else
-#endif
-		{
+		} else {
 			if (len > end - scan)
 				len = end - scan;
 			(*set)(++nf, scan, (long) len, n);
@@ -1445,13 +1437,8 @@ set_fpat_function:
  * 			Implementation varies if doing MBS or not.
  */
 
-#if MBS_SUPPORT
 #define increment_scan(scanp, len) incr_scan(scanp, len, & mbs)
-#else
-#define increment_scan(scanp, len) ((*scanp)++)
-#endif
 
-#if MBS_SUPPORT
 /* incr_scan --- MBS version of increment_scan() */
 
 static void
@@ -1472,7 +1459,6 @@ incr_scan(char **scanp, size_t len, mbstate_t *mbs)
 	} else
 		(*scanp)++;
 }
-#endif
 
 /*
  * fpat_parse_field --- parse fields using a regexp.
@@ -1597,12 +1583,9 @@ fpat_parse_field(long up_to,	/* parse only up to this field number */
 	bool need_to_set_sep;
 	bool non_empty;
 	bool eosflag;
-#if MBS_SUPPORT
 	mbstate_t mbs;
 
-	if (gawk_mb_cur_max > 1)
-		memset(&mbs, 0, sizeof(mbstate_t));
-#endif
+	memset(&mbs, 0, sizeof(mbstate_t));
 
 	if (up_to == UNLIMITED)
 		nf = 0;

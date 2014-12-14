@@ -9,7 +9,8 @@ Changes from 4.1.x to 4.2.0
 
 1. If not in POSIX mode, changes to ENVIRON are reflected into
    gawk's environment, affecting any programs run by system()
-   or for piped redirections.
+   or for piped redirections. This can also affect built-in routines, such
+   as mktime(), which is typically influenced by the TZ environment variable.
 
 2. The series of numbers returned by rand() should now be "more
    random" than previously.  Gawk's rand() remains repeatable; you will
@@ -62,21 +63,25 @@ Changes from 4.1.1 to 4.1.2
 5. Indirect function calls now work for both built-in and
    extension functions.
 
-6. In non-English locales, it was accidentally possible to use "letters"
+6. Built-in functions are now included in FUNCTAB.
+
+7. In non-English locales, it was accidentally possible to use "letters"
    beside those of the English alphabet in identifiers.  This has
    been fixed.  (isalpha and isalnum are NOT our friends.)
 
    If you feel that you must have this misfeature, use `configure --help'
    to see what option to use when configuring gawk to reenable it.
 
-7. The "where" command has been added to the debugger as an alias
+8. The "where" command has been added to the debugger as an alias
    for "backtrace". This will make life easier for long-time GDB users.
 
-8. Gawk no longer explicitly checks the current directory after doing
+9. Gawk no longer explicitly checks the current directory after doing
    a path search of AWKPATH.  The default value continues to have "." at
    the front, so most people should not be affected.  If you have your own
    AWKPATH setting, be sure to put "." in it somewhere. The documentation
    has been updated and clarified.
+
+10. Infrastructure upgrades: Automake 1.14.1, Gettext 0.19.3, Libtool 2.4.3.
 
 XX. A number of bugs have been fixed. See the ChangeLog.
 

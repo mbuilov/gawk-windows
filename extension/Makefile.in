@@ -107,9 +107,9 @@ DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(srcdir)/configh.in ABOUT-NLS $(top_srcdir)/build-aux/depcomp \
 	$(dist_man_MANS) COPYING build-aux/ChangeLog build-aux/ar-lib \
-	build-aux/config.guess build-aux/config.rpath \
-	build-aux/config.sub build-aux/depcomp build-aux/install-sh \
-	build-aux/missing build-aux/ltmain.sh \
+	build-aux/compile build-aux/config.guess \
+	build-aux/config.rpath build-aux/config.sub build-aux/depcomp \
+	build-aux/install-sh build-aux/missing build-aux/ltmain.sh \
 	$(top_srcdir)/build-aux/ar-lib \
 	$(top_srcdir)/build-aux/config.guess \
 	$(top_srcdir)/build-aux/config.rpath \
@@ -1272,6 +1272,9 @@ install-data-hook:
 # Keep the uninstall check working:
 uninstall-so:
 	$(RM) $(DESTDIR)$(pkgextensiondir)/*.so
+	$(RM) $(DESTDIR)$(pkgextensiondir)/*.dll
+	$(RM) $(DESTDIR)$(pkgextensiondir)/*.a
+	$(RM) $(DESTDIR)$(pkgextensiondir)/*.lib
 
 uninstall-recursive: uninstall-so
 

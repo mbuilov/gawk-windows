@@ -833,6 +833,9 @@ EXTRA_DIST = \
 	sortfor.awk \
 	sortfor.in \
 	sortfor.ok \
+	sortglos.awk \
+	sortglos.in \
+	sortglos.ok \
 	sortu.awk \
 	sortu.ok \
 	space.ok \
@@ -998,7 +1001,7 @@ BASIC_TESTS = \
 	rand randtest range1 rebt8b1 redfilnm regeq regexprange regrange reindops \
 	reparse resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
-	scalar sclforin sclifin sortempty splitargv splitarr splitdef \
+	scalar sclforin sclifin sortempty sortglos splitargv splitarr splitdef \
 	splitvar splitwht strcat1 strnum1 strtod subamp subi18n \
 	subsepnm subslash substr swaplns synerr1 synerr2 tradanch tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs \

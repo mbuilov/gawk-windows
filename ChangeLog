@@ -1,3 +1,118 @@
+2014-12-12        Stephen Davies         <sdavies@sdc.com.au>
+
+	Improve comment handling in pretty printing.
+
+	* awk.h (comment_type): New field in the node.
+	(EOL_COMMENT, FULL_COMMENT): New defines.
+	* awkgram.y (block_comment): New variable.
+	(check_comment): New function.
+	(grammar): Add code to handle comments as needed.
+	(get_comment): Now takes a flag indicating kind of comment.
+	(yylex): Collect comments appropriately.
+	(append_rule): Ditto.
+	* profile.c (pprint): Smarten up comment handling.
+	Have printing \n take comments into account.
+	(end_line): New function.
+	(pp_func): Better handling of function comments.
+
+2014-12-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+
+2014-11-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_sub): Improve wording of gensub warnings.
+
+2014-11-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_sub): For gensub, add more warnings for invalid
+	third argument.
+
+2014-11-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h: Move all inline functions to the bottom of the file.
+	Keeps modern GCC happier.
+
+2014-11-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (emalloc, realloc): Redefine in terms of ...
+	(emalloc_real, eralloc_real): New static inline functions.
+	(fatal): Move definition up.
+	* gawkmisc.c (xmalloc): If count is zero, make it one for older
+	mallocs that require size > 0 (such as z/OS).
+
+2014-11-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c: Remove a debugging // comment.
+	* NOTES: Removed.
+
+	Unrelated:
+
+	Revert changes of 2014-11-20 from Paul Eggert. Causes failures
+	on z/OS.
+
+	Unrelated: Avoid unnecessary copying of $0.
+
+	* interpret.h (UNFIELD): New macro.
+	(r_interpret): Use it where *lhs is assigned to.
+
+2014-11-20  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Port to systems where malloc (0) and/or realloc(P, 0) returns NULL.
+	* gawkmisc.c (xmalloc):
+	* xalloc.h (realloc):
+	Do not fail if malloc(0) or realloc(P, 0) returns NULL.
+	Fail only when the allocator returns null when attempting to
+	allocate a nonzero number of bytes.
+
+2014-11-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Infrastructure upgrades:
+
+	* Automake 1.14.1, Gettext 0.19.3, Libtool 2.4.3.
+	* compile, extension/build-aux/compile: New files.
+
+2014-11-19  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* configure.ac (AM_GNU_GETTEXT_VERSION): Bump to 0.19.3.
+
+2014-11-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* interpret.h: Revert change of 2014-11-11 since it breaks
+	certain uses.
+
+	Unrelated:
+
+	* dfa.c: Sync with GNU grep.
+
+2014-11-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* array.c, awk.h, awkgram.y, builtin.c, dfa.c, eval.c, field.c,
+	interpret.h, io.c, main.c, mpfr.c, node.c, re.c, regex_internal.h,
+	replace.c: Remove all uses of MBS_SUPPORT.
+	* regex_internal.h: Disable wide characters on DJGPP.
+	* mbsupport.h: Rework to be needed only for DJGPP.
+
+2014-11-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Don't let memory used increase linearly in the size of
+	the input.  Problem reported by dragan legic
+	<dragan.legic@yandex.ru>.
+
+	* field.c (set_record): NUL-terminate the buffer.
+	* interpret.h (r_interpret): Op_field_spec: if it's $0, increment
+	the valref.  Op_store_var: if we got $0, handle it appropriately.
+
+2014-11-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Reorder main.c activities so that we can set a locale on the
+	command line with the new, for now undocumented, -Z option.
+
+	* main.c (parse_args, set_locale_stuff): New functions.
+	(stopped_early): Made file level static.
+	(optlist, optab): Add new argument.
+	(main): Adjust ordering and move inline code into new functions.
+
 2014-11-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.c (node_to_awk_value): When the type wanted is AWK_UNDEFINED
@@ -105,6 +220,15 @@
 	* regcomp.c (__re_error_msgid): Make error message for REG_EBRACK
 	more helpful - also used for unmatched [:, [., [=.
 	Thanks to Davide Brini for raising the issue.
+
+2014-10-12         KO Myung-Hun          <komh78@gmail.com>
+
+	Fixes for OS/2:
+
+	* Makefile.am (install-exec-hook, uninstall-links): Use $(EXEEXT).
+	* getopt.h: Redefinitions if using KLIBC.
+	* io.c (_S_IFDIR, _S_IRWXU): Define if the more standard versions
+	are available.
 
 2014-10-12         Arnold D. Robbins     <arnold@skeeve.com>
 

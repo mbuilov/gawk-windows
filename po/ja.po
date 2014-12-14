@@ -1,15 +1,15 @@
 # Japanese messages for gawk.
-# Copyright (C) 2003, 2011 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2014 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gawk package.
 # Makoto Hosoya <mhosoya@ozemail.com.au>, 2003.
-# Yasuaki Taniguchi <yasuakit@gmail.com>, 2011.
+# Yasuaki Taniguchi <yasuakit@gmail.com>, 2011, 2014.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gawk 4.0.0\n"
+"Project-Id-Version: gawk 4.1.0b\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
 "POT-Creation-Date: 2014-04-08 19:23+0300\n"
-"PO-Revision-Date: 2011-07-17 08:28+0900\n"
+"PO-Revision-Date: 2014-11-07 12:26+0000\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
@@ -55,9 +55,8 @@ msgid "attempt to use scalar `%s[\"%.*s\"]' as an array"
 msgstr "スカラー `%s[\"%.*s\"]' を配列として使用する試みです"
 
 #: array.c:776
-#, fuzzy
 msgid "adump: first argument not an array"
-msgstr "adump: 引数が配列ではありません"
+msgstr "adump: 第一引数が配列ではありません"
 
 #: array.c:815
 msgid "asort: second argument not an array"
@@ -250,9 +249,9 @@ msgid "can't open source file `%s' for reading (%s)"
 msgstr "ソースファイル `%s' を読み込み用に開けません (%s)"
 
 #: awkgram.y:2384 awkgram.y:2509
-#, fuzzy, c-format
+#, c-format
 msgid "can't open shared library `%s' for reading (%s)"
-msgstr "ソースファイル `%s' を読み込み用に開けません (%s)"
+msgstr "共有ライブラリ `%s' を読み込み用に開けません (%s)"
 
 #: awkgram.y:2386 awkgram.y:2460 awkgram.y:2510 builtin.c:135 debug.c:5206
 msgid "reason unknown"
@@ -269,9 +268,9 @@ msgid "already included source file `%s'"
 msgstr "ソースファイル `%s' は既に読み込まれています"
 
 #: awkgram.y:2409
-#, fuzzy, c-format
+#, c-format
 msgid "already loaded shared library `%s'"
-msgstr "ソースファイル `%s' は既に読み込まれています"
+msgstr "共有ライブラリ `%s' は既に読み込まれています"
 
 #: awkgram.y:2444
 msgid "@include is a gawk extension"
@@ -282,14 +281,12 @@ msgid "empty filename after @include"
 msgstr "@include の後に空のファイル名があります"
 
 #: awkgram.y:2494
-#, fuzzy
 msgid "@load is a gawk extension"
-msgstr "@include は gawk 拡張です"
+msgstr "@load は gawk 拡張です"
 
 #: awkgram.y:2500
-#, fuzzy
 msgid "empty filename after @load"
-msgstr "@include の後に空のファイル名があります"
+msgstr "@load の後に空のファイル名があります"
 
 #: awkgram.y:2634
 msgid "empty program text on command line"
@@ -684,9 +681,8 @@ msgid "too many arguments supplied for format string"
 msgstr "書式文字列に与えられている引数が多すぎます"
 
 #: builtin.c:1634
-#, fuzzy
 msgid "sprintf: no arguments"
-msgstr "printf: 引数がありません"
+msgstr "sprintf: 引数がありません"
 
 #: builtin.c:1657 builtin.c:1668
 msgid "printf: no arguments"
@@ -834,19 +830,19 @@ msgid "lshift: received non-numeric second argument"
 msgstr "lshift: 非数値の第二引数を受け取りました"
 
 #: builtin.c:3038
-#, fuzzy, c-format
+#, c-format
 msgid "lshift(%f, %f): negative values will give strange results"
-msgstr "lshift(%lf, %lf): 負の数値を使用すると異常な結果になります"
+msgstr "lshift(%f, %f): 負の数値を使用すると異常な結果になります"
 
 #: builtin.c:3040
-#, fuzzy, c-format
+#, c-format
 msgid "lshift(%f, %f): fractional values will be truncated"
-msgstr "lshift(%lf, %lf): 小数点以下は切り捨てられます"
+msgstr "lshift(%f, %f): 小数点以下は切り捨てられます"
 
 #: builtin.c:3042
-#, fuzzy, c-format
+#, c-format
 msgid "lshift(%f, %f): too large shift value will give strange results"
-msgstr "lshift(%lf, %lf): シフト値が大き過ぎると異常な結果になります"
+msgstr "lshift(%f, %f): シフト値が大き過ぎると異常な結果になります"
 
 #: builtin.c:3067
 msgid "rshift: received non-numeric first argument"
@@ -857,29 +853,28 @@ msgid "rshift: received non-numeric second argument"
 msgstr "rshift: 非数値の第二引数を受け取りました"
 
 #: builtin.c:3075
-#, fuzzy, c-format
+#, c-format
 msgid "rshift(%f, %f): negative values will give strange results"
-msgstr "rshift(%lf, %lf): 負の数値を使用すると異常な結果になります"
+msgstr "rshift(%f, %f): 負の数値を使用すると異常な結果になります"
 
 #: builtin.c:3077
-#, fuzzy, c-format
+#, c-format
 msgid "rshift(%f, %f): fractional values will be truncated"
-msgstr "rshift(%lf, %lf): 小数点以下は切り捨てられます"
+msgstr "rshift(%f, %f): 小数点以下は切り捨てられます"
 
 #: builtin.c:3079
-#, fuzzy, c-format
+#, c-format
 msgid "rshift(%f, %f): too large shift value will give strange results"
-msgstr "rshift(%lf, %lf): シフト値が大き過ぎると異常な結果になります"
+msgstr "rshift(%f, %f): シフト値が大き過ぎると異常な結果になります"
 
 #: builtin.c:3104 mpfr.c:968
-#, fuzzy
 msgid "and: called with less than two arguments"
-msgstr "sqrt: 負の値 %g を引数に使用して呼び出されました"
+msgstr "and: 2個未満の引数で呼び出されました"
 
 #: builtin.c:3109
-#, fuzzy, c-format
+#, c-format
 msgid "and: argument %d is non-numeric"
-msgstr "exp: 引数 %g が範囲外です"
+msgstr "and: 引数 %d が非数値です"
 
 #: builtin.c:3113
 #, fuzzy, c-format
@@ -887,14 +882,13 @@ msgid "and: argument %d negative value %g will give strange results"
 msgstr "and(%lf, %lf): 負の数値を使用すると異常な結果になります"
 
 #: builtin.c:3136 mpfr.c:1000
-#, fuzzy
 msgid "or: called with less than two arguments"
-msgstr "sqrt: 負の値 %g を引数に使用して呼び出されました"
+msgstr "or: 2個未満の引数で呼び出されました"
 
 #: builtin.c:3141
-#, fuzzy, c-format
+#, c-format
 msgid "or: argument %d is non-numeric"
-msgstr "exp: 引数 %g が範囲外です"
+msgstr "or: 引数 %d が非数値です"
 
 #: builtin.c:3145
 #, fuzzy, c-format
@@ -904,12 +898,12 @@ msgstr "compl(%lf): 負の数値を使用すると異常な結果になります
 #: builtin.c:3167 mpfr.c:1031
 #, fuzzy
 msgid "xor: called with less than two arguments"
-msgstr "sqrt: 負の値 %g を引数に使用して呼び出されました"
+msgstr "xor: 2個未満の引数で呼び出されました"
 
 #: builtin.c:3173
-#, fuzzy, c-format
+#, c-format
 msgid "xor: argument %d is non-numeric"
-msgstr "exp: 引数 %g が範囲外です"
+msgstr "xor: 引数 %d が非数値です"
 
 #: builtin.c:3177
 #, fuzzy, c-format
@@ -921,14 +915,14 @@ msgid "compl: received non-numeric argument"
 msgstr "compl: 非数値の引数を受け取りました"
 
 #: builtin.c:3208
-#, fuzzy, c-format
+#, c-format
 msgid "compl(%f): negative value will give strange results"
-msgstr "compl(%lf): 負の数値を使用すると異常な結果になります"
+msgstr "compl(%f): 負の数値を使用すると異常な結果になります"
 
 #: builtin.c:3210
-#, fuzzy, c-format
+#, c-format
 msgid "compl(%f): fractional value will be truncated"
-msgstr "compl(%lf): 小数点以下は切り捨てられます"
+msgstr "compl(%f): 小数点以下は切り捨てられます"
 
 #: builtin.c:3379
 #, c-format
@@ -941,24 +935,24 @@ msgid "Type (g)awk statement(s). End with the command \"end\"\n"
 msgstr ""
 
 #: command.y:289
-#, fuzzy, c-format
+#, c-format
 msgid "invalid frame number: %d"
-msgstr "無効な範囲終了です"
+msgstr "無効なフレーム番号です: %d"
 
 #: command.y:295
 #, fuzzy, c-format
 msgid "info: invalid option - \"%s\""
-msgstr "%s: 無効なオプション -- '%c'\n"
+msgstr "info: 無効なオプション - \"%s\""
 
 #: command.y:321
 #, c-format
 msgid "source \"%s\": already sourced."
-msgstr ""
+msgstr "source \"%s\": 既に読み込まれて(source)います。"
 
 #: command.y:326
 #, c-format
 msgid "save \"%s\": command not permitted."
-msgstr ""
+msgstr "save \"%s\": コマンドは許可されていません。"
 
 #: command.y:339
 msgid "Can't use command `commands' for breakpoint/watchpoint commands"
@@ -966,11 +960,11 @@ msgstr ""
 
 #: command.y:341
 msgid "no breakpoint/watchpoint has been set yet"
-msgstr ""
+msgstr "まだ一つもブレークポイント/ウオッチポイントは設定されていません"
 
 #: command.y:343
 msgid "invalid breakpoint/watchpoint number"
-msgstr ""
+msgstr "無効なブレークポイント/ウオッチポイント番号です"
 
 #: command.y:348
 #, c-format
@@ -991,51 +985,49 @@ msgid "`silent' valid only in command `commands'"
 msgstr ""
 
 #: command.y:373
-#, fuzzy, c-format
+#, c-format
 msgid "trace: invalid option - \"%s\""
-msgstr "%s: 無効なオプション -- '%c'\n"
+msgstr "trace: 無効なオプション - \"%s\""
 
 #: command.y:387
 msgid "condition: invalid breakpoint/watchpoint number"
 msgstr ""
 
 #: command.y:449
-#, fuzzy
 msgid "argument not a string"
-msgstr "exp: 引数 %g が範囲外です"
+msgstr "引数が文字列ではありません"
 
 #: command.y:459 command.y:464
 #, c-format
 msgid "option: invalid parameter - \"%s\""
-msgstr ""
+msgstr "option: 無効なパラメーター - \"%s\""
 
 #: command.y:474
 #, c-format
 msgid "no such function - \"%s\""
-msgstr ""
+msgstr "そのような関数はありません - \"%s\""
 
 #: command.y:531
-#, fuzzy, c-format
+#, c-format
 msgid "enable: invalid option - \"%s\""
-msgstr "%s: 無効なオプション -- '%c'\n"
+msgstr "enable: 無効なオプション - \"%s\""
 
 #: command.y:597
-#, fuzzy, c-format
+#, c-format
 msgid "invalid range specification: %d - %d"
-msgstr "無効な範囲終了です"
+msgstr "無効な範囲指定: %d - %d"
 
 #: command.y:659
-#, fuzzy
 msgid "non-numeric value for field number"
-msgstr "フィールド指定に不明な値があります: %d\n"
+msgstr "フィールド番号に対して非数値が指定されています"
 
 #: command.y:680 command.y:687
 msgid "non-numeric value found, numeric expected"
-msgstr ""
+msgstr "非数値が見つかりました。数値が予期されます。"
 
 #: command.y:712 command.y:718
 msgid "non-zero integer value"
-msgstr ""
+msgstr "非ゼロ整数"
 
 #: command.y:817
 msgid ""
@@ -1243,9 +1235,8 @@ msgid "%s"
 msgstr ""
 
 #: command.y:1284
-#, fuzzy
 msgid "invalid character"
-msgstr "無効な照合文字です"
+msgstr "無効な文字です"
 
 #: command.y:1455
 #, c-format
@@ -1417,9 +1408,9 @@ msgid ""
 msgstr ""
 
 #: debug.c:1029
-#, fuzzy, c-format
+#, c-format
 msgid "no symbol `%s' in current context\n"
-msgstr "`next' は `%s' から呼び出すことが出来ません"
+msgstr ""
 
 #: debug.c:1041 debug.c:1427
 #, fuzzy, c-format
@@ -1709,7 +1700,7 @@ msgstr ""
 #: debug.c:3424
 #, fuzzy, c-format
 msgid "element not in array\n"
-msgstr "delete: 配列 `%2$s' 内にインデックス `%1$s' がありません"
+msgstr "adump: 引数が配列ではありません"
 
 #: debug.c:3424
 #, c-format
@@ -1754,14 +1745,13 @@ msgid "invalid number"
 msgstr ""
 
 #: debug.c:5381
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' not allowed in current context; statement ignored"
-msgstr "`next' は `%s' から呼び出すことが出来ません"
+msgstr ""
 
 #: debug.c:5389
-#, fuzzy
 msgid "`return' not allowed in current context; statement ignored"
-msgstr "`next' は `%s' から呼び出すことが出来ません"
+msgstr ""
 
 #: debug.c:5590
 #, c-format
@@ -2002,32 +1992,31 @@ msgid "make_builtin: negative argument count for function `%s'"
 msgstr "make_builtin: 関数 `%s' の引数の数が負です"
 
 #: ext.c:276
-#, fuzzy
 msgid "extension: missing function name"
 msgstr "extension: 関数名がありません"
 
 #: ext.c:279 ext.c:283
-#, fuzzy, c-format
+#, c-format
 msgid "extension: illegal character `%c' in function name `%s'"
 msgstr "extension: 関数名 `%2$s' の中で不正な文字 `%1$c' が使用されています"
 
 #: ext.c:291
-#, fuzzy, c-format
+#, c-format
 msgid "extension: can't redefine function `%s'"
 msgstr "extension: 関数 `%s' を再定義できません"
 
 #: ext.c:295
-#, fuzzy, c-format
+#, c-format
 msgid "extension: function `%s' already defined"
 msgstr "extension: 関数 `%s' は既に定義されています"
 
 #: ext.c:299
-#, fuzzy, c-format
+#, c-format
 msgid "extension: function name `%s' previously defined"
-msgstr "関数名 `%s' は前に定義されています"
+msgstr "extension: 関数名 `%s' は前に定義されています"
 
 #: ext.c:301
-#, fuzzy, c-format
+#, c-format
 msgid "extension: can't use gawk built-in `%s' as function name"
 msgstr "extension: gawk に組み込まれている `%s' は関数名として使用出来ません"
 
@@ -2076,9 +2065,9 @@ msgid "stat: bad parameters"
 msgstr "%s: 仮引数です\n"
 
 #: extension/filefuncs.c:533
-#, fuzzy, c-format
+#, c-format
 msgid "fts init: could not create variable %s"
-msgstr "index: 文字列では無い第二引数を受け取りました"
+msgstr ""
 
 #: extension/filefuncs.c:554
 #, fuzzy
@@ -2094,9 +2083,8 @@ msgid "fill_stat_element: could not set element"
 msgstr ""
 
 #: extension/filefuncs.c:597
-#, fuzzy
 msgid "fill_path_element: could not set element"
-msgstr "index: 文字列では無い第二引数を受け取りました"
+msgstr ""
 
 #: extension/filefuncs.c:613
 msgid "fill_error_element: could not set element"
@@ -2108,9 +2096,8 @@ msgstr ""
 
 #: extension/filefuncs.c:670 extension/filefuncs.c:717
 #: extension/filefuncs.c:735
-#, fuzzy
 msgid "fts-process: could not set element"
-msgstr "index: 文字列では無い第二引数を受け取りました"
+msgstr ""
 
 #: extension/filefuncs.c:784
 #, fuzzy
@@ -2133,9 +2120,8 @@ msgid "fts: bad third parameter"
 msgstr "%s: 仮引数です\n"
 
 #: extension/filefuncs.c:806
-#, fuzzy
 msgid "fts: could not flatten array\n"
-msgstr "`%s' は不正な変数名です"
+msgstr ""
 
 #: extension/filefuncs.c:824
 msgid "fts: ignoring sneaky FTS_NOSTAT flag. nyah, nyah, nyah."
@@ -2234,9 +2220,9 @@ msgid "inplace_begin: Cannot stat `%s' (%s)"
 msgstr "致命的: extension: `%s' を開くことが出来ません (%s)\n"
 
 #: extension/inplace.c:158
-#, fuzzy, c-format
+#, c-format
 msgid "inplace_begin: `%s' is not a regular file"
-msgstr "`%s' は不正な変数名です"
+msgstr ""
 
 #: extension/inplace.c:169
 #, c-format
@@ -2379,7 +2365,7 @@ msgstr "exp: 引数 %g が範囲外です"
 #: extension/rwarray.c:293
 #, fuzzy, c-format
 msgid "do_reada: argument 1 is not an array\n"
-msgstr "match: 第三引数が配列ではありません"
+msgstr "adump: 引数が配列ではありません"
 
 #: extension/rwarray.c:337
 #, c-format
@@ -3288,17 +3274,17 @@ msgstr ""
 #: mpfr.c:857
 #, fuzzy
 msgid "%s: argument #%d negative value %Rg will give strange results"
-msgstr "compl(%lf): 負の数値を使用すると異常な結果になります"
+msgstr "and(%lf, %lf): 負の数値を使用すると異常な結果になります"
 
 #: mpfr.c:863
 #, fuzzy
 msgid "%s: argument #%d fractional value %Rg will be truncated"
-msgstr "or(%lf, %lf): 小数点以下は切り捨てられます"
+msgstr "and(%lf, %lf): 小数点以下は切り捨てられます"
 
 #: mpfr.c:878
 #, fuzzy, c-format
 msgid "%s: argument #%d negative value %Zd will give strange results"
-msgstr "compl(%lf): 負の数値を使用すると異常な結果になります"
+msgstr "and(%lf, %lf): 負の数値を使用すると異常な結果になります"
 
 #: msg.c:68
 #, c-format
@@ -3490,78 +3476,6 @@ msgstr "以前に正規表現がありません"
 msgid "can not pop main context"
 msgstr ""
 
-#, fuzzy
-#~ msgid "range of the form `[%c-%c]' is locale dependent"
-#~ msgstr "`[%c-%c]' 形式の範囲はロケール依存です"
-
-#, fuzzy
-#~ msgid "[s]printf called with no arguments"
-#~ msgstr "sqrt: 負の値 %g を引数に使用して呼び出されました"
-
-#~ msgid "`-m[fr]' option irrelevant in gawk"
-#~ msgstr "gawk ではオプション `-m[fr]' に効果はありません。"
-
-#~ msgid "-m option usage: `-m[fr] nnn'"
-#~ msgstr "-m オプションの使用法: `-m[fr] 数値'"
-
-#, fuzzy
-#~ msgid "%s: received non-numeric first argument"
-#~ msgstr "or: 非数値の第一引数を受け取りました"
-
-#, fuzzy
-#~ msgid "%s: received non-numeric second argument"
-#~ msgstr "or: 非数値の第二引数を受け取りました"
-
-#, fuzzy
-#~ msgid "%s(%Rg, ..): negative values will give strange results"
-#~ msgstr "or(%lf, %lf): 負の数値を使用すると異常な結果になります"
-
-#, fuzzy
-#~ msgid "%s(%Rg, ..): fractional values will be truncated"
-#~ msgstr "or(%lf, %lf): 小数点以下は切り捨てられます"
-
-#, fuzzy
-#~ msgid "%s(%Zd, ..): negative values will give strange results"
-#~ msgstr "or(%lf, %lf): 負の数値を使用すると異常な結果になります"
-
-#, fuzzy
-#~ msgid "%s(.., %Rg): negative values will give strange results"
-#~ msgstr "or(%lf, %lf): 負の数値を使用すると異常な結果になります"
-
-#, fuzzy
-#~ msgid "%s(.., %Zd): negative values will give strange results"
-#~ msgstr "or(%lf, %lf): 負の数値を使用すると異常な結果になります"
-
-#~ msgid "`%s' is a Bell Labs extension"
-#~ msgstr "`%s' はベル研究所による拡張です"
-
-#~ msgid "`nextfile' is a gawk extension"
-#~ msgstr "`nextfile' は gawk 拡張です"
-
-#~ msgid "`delete array' is a gawk extension"
-#~ msgstr "`delete array' は gawk 拡張です"
-
-#~ msgid "and: received non-numeric first argument"
-#~ msgstr "and: 非数値の第一引数を受け取りました"
-
-#~ msgid "and: received non-numeric second argument"
-#~ msgstr "and: 非数値の第二引数を受け取りました"
-
-#~ msgid "and(%lf, %lf): fractional values will be truncated"
-#~ msgstr "and(%lf, %lf): 小数点以下は切り捨てられます"
-
-#~ msgid "xor: received non-numeric first argument"
-#~ msgstr "xor: 非数値の第一引数を受け取りました"
-
-#~ msgid "xor: received non-numeric second argument"
-#~ msgstr "xor: 非数値の第二引数を受け取りました"
-
-#~ msgid "xor(%lf, %lf): fractional values will be truncated"
-#~ msgstr "xor(%lf, %lf): 小数点以下は切り捨てられます"
-
-#~ msgid "Operation Not Supported"
-#~ msgstr "この操作はサポートされていません"
-
 #~ msgid "attempt to use function `%s' as an array"
 #~ msgstr "関数 `%s' を配列として使用する試みです"
 
@@ -3584,11 +3498,50 @@ msgstr ""
 #~ msgid "%s: array_ref to %s\n"
 #~ msgstr "%s: %s への配列参照 (array_ref) です\n"
 
+#~ msgid "`nextfile' is a gawk extension"
+#~ msgstr "`nextfile' は gawk 拡張です"
+
+#~ msgid "`delete array' is a gawk extension"
+#~ msgstr "`delete array' は gawk 拡張です"
+
 #~ msgid "use of non-array as array"
 #~ msgstr "配列でないものを配列として使用しています"
 
+#~ msgid "`%s' is a Bell Labs extension"
+#~ msgstr "`%s' はベル研究所による拡張です"
+
+#~ msgid "and: received non-numeric first argument"
+#~ msgstr "and: 非数値の第一引数を受け取りました"
+
+#~ msgid "and: received non-numeric second argument"
+#~ msgstr "and: 非数値の第二引数を受け取りました"
+
+#~ msgid "or: received non-numeric first argument"
+#~ msgstr "or: 非数値の第一引数を受け取りました"
+
+#~ msgid "or: received non-numeric second argument"
+#~ msgstr "or: 非数値の第二引数を受け取りました"
+
+#~ msgid "or(%lf, %lf): negative values will give strange results"
+#~ msgstr "or(%lf, %lf): 負の数値を使用すると異常な結果になります"
+
+#~ msgid "or(%lf, %lf): fractional values will be truncated"
+#~ msgstr "or(%lf, %lf): 小数点以下は切り捨てられます"
+
+#~ msgid "xor: received non-numeric first argument"
+#~ msgstr "xor: 非数値の第一引数を受け取りました"
+
+#~ msgid "xor: received non-numeric second argument"
+#~ msgstr "xor: 非数値の第二引数を受け取りました"
+
+#~ msgid "xor(%lf, %lf): fractional values will be truncated"
+#~ msgstr "xor(%lf, %lf): 小数点以下は切り捨てられます"
+
 #~ msgid "can't use function name `%s' as variable or array"
 #~ msgstr "関数名 `%s' は変数または配列として使用出来ません"
+
+#~ msgid "assignment is not allowed to result of builtin function"
+#~ msgstr "組込関数の戻り値への代入は許可されていません"
 
 #~ msgid "assignment used in conditional context"
 #~ msgstr "条件コンテキスト内で代入が使用されました"
@@ -3620,11 +3573,20 @@ msgstr ""
 #~ msgid "Sorry, don't know how to interpret `%s'"
 #~ msgstr "申し訳ありませんが `%s' をどのように解釈するか分かりません"
 
+#~ msgid "Operation Not Supported"
+#~ msgstr "この操作はサポートされていません"
+
+#~ msgid "`-m[fr]' option irrelevant in gawk"
+#~ msgstr "gawk ではオプション `-m[fr]' に効果はありません。"
+
+#~ msgid "-m option usage: `-m[fr] nnn'"
+#~ msgstr "-m オプションの使用法: `-m[fr] 数値'"
+
 #~ msgid "\t-R file\t\t\t--command=file\n"
 #~ msgstr "\t-R file\t\t\t--command=file\n"
 
 #~ msgid "could not find groups: %s"
 #~ msgstr "グループが見つかりません: %s"
 
-#~ msgid "assignment is not allowed to result of builtin function"
-#~ msgstr "組込関数の戻り値への代入は許可されていません"
+#~ msgid "range of the form `[%c-%c]' is locale dependant"
+#~ msgstr "`[%c-%c]' 形式の範囲はロケール依存です"

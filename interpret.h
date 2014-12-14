@@ -23,7 +23,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-
+#define UNFIELD(l, r) \
+{ \
+	/* if was a field, turn it into a var */ \
+	if ((r->flags & FIELD) == 0) { \
+		l = r; \
+	} else if (r->valref == 1) { \
+		r->flags &= ~FIELD; \
+		l = r; \
+	} else { \
+		l = dupnode(r); \
+		DEREF(r); \
+	} \
+}
 int
 r_interpret(INSTRUCTION *code)
 {
@@ -340,7 +352,12 @@ uninitialized_scalar:
 			lhs = r_get_field(t1, (Func_ptr *) 0, true);
 			decr_sp();
 			DEREF(t1);
-			r = dupnode(*lhs);     /* can't use UPREF here */
+			/* only for $0, up ref count */
+			if (*lhs == fields_arr[0]) {
+				r = *lhs;
+				UPREF(r);
+			} else
+				r = dupnode(*lhs);
 			PUSH(r);
 			break;
 
@@ -631,7 +648,8 @@ mod:
 			}
 
 			unref(*lhs);
-			*lhs = POP_SCALAR();
+			r = POP_SCALAR();
+			UNFIELD(*lhs, r);
 
 			/* execute post-assignment routine if any */
 			if (t1->astore != NULL)
@@ -649,11 +667,12 @@ mod:
 			lhs = get_lhs(pc->memory, false);
 			unref(*lhs);
 			r = pc->initval;	/* constant initializer */
-			if (r == NULL)
-				*lhs = POP_SCALAR();
-			else {
+			if (r != NULL) {
 				UPREF(r);
 				*lhs = r;
+			} else {
+				r = POP_SCALAR();
+				UNFIELD(*lhs, r);
 			}
 			break;
 
@@ -669,7 +688,8 @@ mod:
 			decr_sp();
 			DEREF(t1);
 			unref(*lhs);
-			*lhs = POP_SCALAR();
+			r = POP_SCALAR();
+			UNFIELD(*lhs, r);
 			assert(assign != NULL);
 			assign();
 		}
@@ -695,7 +715,6 @@ mod:
 				t1->stptr[nlen] = '\0';
 				t1->flags &= ~(NUMCUR|NUMBER|NUMINT);
 
-#if MBS_SUPPORT
 				if ((t1->flags & WSTRCUR) != 0 && (t2->flags & WSTRCUR) != 0) {
 					size_t wlen = t1->wstlen + t2->wstlen;
 
@@ -707,7 +726,6 @@ mod:
 					t1->flags |= WSTRCUR;
 				} else
 					free_wstr(*lhs);
-#endif
 			} else {
 				size_t nlen = t1->stlen + t2->stlen;  
 				char *p;
@@ -725,8 +743,8 @@ mod:
 			lhs = POP_ADDRESS();
 			r = TOP_SCALAR();
 			unref(*lhs);
-			*lhs = r;
 			UPREF(r);
+			UNFIELD(*lhs, r);
 			REPLACE(r);
 			break;
 

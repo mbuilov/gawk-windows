@@ -364,6 +364,7 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 POSUB = @POSUB@
+SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 SOCKET_LIBS = @SOCKET_LIBS@
@@ -1165,14 +1166,14 @@ uninstall-am: uninstall-binPROGRAMS uninstall-includeHEADERS
 install-exec-hook:
 	(cd $(DESTDIR)$(bindir); \
 	$(LN) gawk$(EXEEXT) gawk-$(VERSION)$(EXEEXT) 2>/dev/null ; \
-	if [ ! -f awk ]; \
-	then	$(LN_S) gawk$(EXEEXT) awk; \
+	if [ ! -f awk$(EXEEXT) ]; \
+	then	$(LN_S) gawk$(EXEEXT) awk$(EXEEXT); \
 	fi; exit 0)
 
 # Undo the above when uninstalling
 uninstall-links:
 	(cd $(DESTDIR)$(bindir); \
-	if [ -f awk ] && cmp awk gawk$(EXEEXT) > /dev/null; then rm -f awk; fi ; \
+	if [ -f awk$(EXEEXT) ] && cmp awk$(EXEEXT) gawk$(EXEEXT) > /dev/null; then rm -f awk$(EXEEXT); fi ; \
 	rm -f gawk-$(VERSION)$(EXEEXT); exit 0)
 
 uninstall-recursive: uninstall-links
