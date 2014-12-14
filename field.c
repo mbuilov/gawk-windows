@@ -163,7 +163,7 @@ rebuild_record()
 	tlen += (NF - 1) * OFSlen;
 	if ((long) tlen < 0)
 		tlen = 0;
-	emalloc(ops, char *, tlen + 2, "rebuild_record");
+	emalloc(ops, char *, tlen + 1, "rebuild_record");
 	cops = ops;
 	ops[0] = '\0';
 	for (i = 1;  i <= NF; i++) {

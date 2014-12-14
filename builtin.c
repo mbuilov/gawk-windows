@@ -1833,7 +1833,7 @@ do_substr(int nargs)
 		 * way to do things.
 		 */
 		memset(& mbs, 0, sizeof(mbs));
-		emalloc(substr, char *, (length * gawk_mb_cur_max) + 2, "do_substr");
+		emalloc(substr, char *, (length * gawk_mb_cur_max) + 1, "do_substr");
 		wp = t1->wstptr + indx;
 		for (cp = substr; length > 0; length--) {
 			result = wcrtomb(cp, *wp, & mbs);

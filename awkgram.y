@@ -1442,7 +1442,7 @@ common_exp
 			n1 = force_string(n1);
 			n2 = force_string(n2);
 			nlen = n1->stlen + n2->stlen;
-			erealloc(n1->stptr, char *, nlen + 2, "constant fold");
+			erealloc(n1->stptr, char *, nlen + 1, "constant fold");
 			memcpy(n1->stptr + n1->stlen, n2->stptr, n2->stlen);
 			n1->stlen = nlen;
 			n1->stptr[nlen] = '\0';

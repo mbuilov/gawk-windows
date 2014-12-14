@@ -82,8 +82,8 @@ read_file_to_buffer(int fd, const struct stat *sbuf)
 		goto done;
 	}
 
-	emalloc(text, char *, sbuf->st_size + 2, "do_readfile");
-	memset(text, '\0', sbuf->st_size + 2);
+	emalloc(text, char *, sbuf->st_size + 1, "do_readfile");
+	memset(text, '\0', sbuf->st_size + 1);
 
 	if ((ret = read(fd, text, sbuf->st_size)) != sbuf->st_size) {
 		update_ERRNO_int(errno);
