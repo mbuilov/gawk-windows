@@ -1337,7 +1337,7 @@ pp_string(const char *in_str, size_t len, int delim)
 		osiz *= 2; \
 	} ofre -= (l)
 
-	osiz = len + 3 + 2; 	/* initial size; 3 for delim + terminating null */
+	osiz = len + 3 + 1; 	/* initial size; 3 for delim + terminating null */
 	emalloc(obuf, char *, osiz, "pp_string");
 	obufout = obuf;
 	ofre = osiz - 1;
@@ -1505,7 +1505,7 @@ pp_concat(int nargs)
 	len = -delimlen;
 	for (i = nargs; i >= 1; i--) {
 		r = pp_args[i] = pp_pop();
-		len += r->pp_len + delimlen + 2;
+		len += r->pp_len + delimlen + 1;
 	}
 
 	emalloc(str, char *, len + 1, "pp_concat");
@@ -1571,7 +1571,7 @@ pp_group3(const char *s1, const char *s2, const char *s3)
 	len1 = strlen(s1);
 	len2 = strlen(s2);
 	len3 = strlen(s3);
-	l = len1 + len2 + len3 + 2;
+	l = len1 + len2 + len3 + 1;
 	emalloc(str, char *, l, "pp_group3");
 	s = str;
 	if (len1 > 0) {

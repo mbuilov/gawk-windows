@@ -2554,7 +2554,7 @@ init_awkpath(path_info *pi)
 			end++;
 		len = end - start;
 		if (len > 0) {
-			emalloc(p, char *, len + 2, "init_awkpath");
+			emalloc(p, char *, len + 1, "init_awkpath");
 			memcpy(p, start, len);
 
 			/* add directory punctuation if necessary */
@@ -3040,10 +3040,10 @@ grow_iop_buffer(IOBUF *iop)
 	size_t newsize;
 
 	/*
-	 * Lop off original extra two bytes, double the size,
-	 * add them back.
+	 * Lop off original extra byte, double the size,
+	 * add it back.
 	 */
-	newsize = ((iop->size - 2) * 2) + 2;
+	newsize = ((iop->size - 1) * 2) + 1;
 
 	/* Check for overflow */
 	if (newsize <= iop->size)
@@ -3051,7 +3051,7 @@ grow_iop_buffer(IOBUF *iop)
 
 	/* Make sure there's room for a disk block */
 	if (newsize - valid < iop->readsize)
-		newsize += iop->readsize + 2;
+		newsize += iop->readsize + 1;
 
 	/* Check for overflow, again */
 	if (newsize <= iop->size)

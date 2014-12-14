@@ -2554,7 +2554,7 @@ do_match(int nargs)
 
 					sprintf(buff, "%d", ii);
 					ilen = strlen(buff);
-					amt = ilen + subseplen + strlen("length") + 2;
+					amt = ilen + subseplen + strlen("length") + 1;
 	
 					if (oldamt == 0) {
 						emalloc(buf, char *, amt, "do_match");
@@ -2876,9 +2876,8 @@ set_how_many:
 
 	/* guesstimate how much room to allocate; +2 forces > 0 */
 	buflen = textlen + (ampersands + 1) * repllen + 2;
-	emalloc(buf, char *, buflen + 2, "do_sub");
+	emalloc(buf, char *, buflen + 1, "do_sub");
 	buf[buflen] = '\0';
-	buf[buflen + 1] = '\0';
 
 	bp = buf;
 	for (current = 1;; current++) {
@@ -3006,7 +3005,7 @@ set_how_many:
 	}
 	sofar = bp - buf;
 	if (buflen - sofar - textlen - 1) {
-		buflen = sofar + textlen + 2;
+		buflen = sofar + textlen + 1;
 		erealloc(buf, char *, buflen, "do_sub");
 		bp = buf + sofar;
 	}

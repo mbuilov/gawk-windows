@@ -1,3 +1,13 @@
+2014-12-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (yyerror): Do not waste a byte at the end of a string.
+	* builtin.c (do_match): Ditto.
+	* command.y (append_statement): Ditto.
+	* debug.c (gprintf, serialize): Ditto.
+	* field.c (set_FIELDWIDTHS): Ditto.
+	* io.c.c (init_awkpath, grow_iop_buffer): Ditto.
+	* profile.c (pp_string, pp_concat, pp_group3): Ditto.
+
 2014-12-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* array.c (concat_exp): Do not waste a byte at the end of a string.

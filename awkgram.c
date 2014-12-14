@@ -4548,7 +4548,7 @@ yyerror(const char *m, ...)
 	if (mesg == NULL)
 		mesg = m;
 
-	count = (bp - thisline) + strlen(mesg) + 2 + 1;
+	count = (bp - thisline) + strlen(mesg) + 1 + 1;
 	emalloc(buf, char *, count, "yyerror");
 
 	bp = buf;

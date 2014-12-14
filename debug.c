@@ -4205,10 +4205,10 @@ gprintf(FILE *fp, const char *format, ...)
 #define GPRINTF_BUFSIZ 512
 	if (buf == NULL) {
 		buflen = GPRINTF_BUFSIZ;
-		emalloc(buf, char *, (buflen + 2) * sizeof(char), "gprintf");
+		emalloc(buf, char *, (buflen + 1) * sizeof(char), "gprintf");
 	} else if (buflen - bl < GPRINTF_BUFSIZ/2) {
 		buflen += GPRINTF_BUFSIZ;
-		erealloc(buf, char *, (buflen + 2) * sizeof(char), "gprintf");
+		erealloc(buf, char *, (buflen + 1) * sizeof(char), "gprintf");
 	}	 
 #undef GPRINTF_BUFSIZ
 	
@@ -4227,7 +4227,7 @@ gprintf(FILE *fp, const char *format, ...)
 
 		/* enlarge buffer, and try again */ 
 		buflen *= 2;
-		erealloc(buf, char *, (buflen + 2) * sizeof(char), "gprintf");
+		erealloc(buf, char *, (buflen + 1) * sizeof(char), "gprintf");
 	}
 
 	bl = 0;
@@ -4356,7 +4356,7 @@ serialize(int type)
 
 	if (buf == NULL) {	/* first time */
 		buflen = SERIALIZE_BUFSIZ;
-		emalloc(buf, char *, buflen + 2, "serialize");
+		emalloc(buf, char *, buflen + 1, "serialize");
 	}
 	bl = 0;
 
@@ -4365,7 +4365,7 @@ serialize(int type)
 		if (buflen - bl < SERIALIZE_BUFSIZ/2) {
 enlarge_buffer:
 			buflen *= 2;
-			erealloc(buf, char *, buflen + 2, "serialize");
+			erealloc(buf, char *, buflen + 1, "serialize");
 		}
 
 #undef SERIALIZE_BUFSIZ
@@ -4466,7 +4466,7 @@ enlarge_buffer:
 			}
 
 			if (nchar > 0) {	/* non-empty commands list */
-				nchar += (strlen("commands ") + 20 + strlen("end") + 2); /* 20 for cnum (an int) */
+				nchar += (strlen("commands ") + 20 + strlen("end") + 1); /* 20 for cnum (an int) */
 				if (nchar > buflen - bl) {
 					buflen = bl + nchar;
 					erealloc(buf, char *, buflen + 3, "serialize");
