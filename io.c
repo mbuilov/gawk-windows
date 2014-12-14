@@ -2554,7 +2554,8 @@ init_awkpath(path_info *pi)
 			end++;
 		len = end - start;
 		if (len > 0) {
-			emalloc(p, char *, len + 1, "init_awkpath");
+			/* +2 is correct here; leave room for / */
+			emalloc(p, char *, len + 2, "init_awkpath");
 			memcpy(p, start, len);
 
 			/* add directory punctuation if necessary */

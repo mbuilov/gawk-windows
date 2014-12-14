@@ -1505,7 +1505,7 @@ pp_concat(int nargs)
 	len = -delimlen;
 	for (i = nargs; i >= 1; i--) {
 		r = pp_args[i] = pp_pop();
-		len += r->pp_len + delimlen + 1;
+		len += r->pp_len + delimlen + 2;
 	}
 
 	emalloc(str, char *, len + 1, "pp_concat");
