@@ -1,3 +1,11 @@
+2014-12-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Remove the errno extension, since it is now part of gawkextlib.
+	* errno.c, errlist.h: Deleted.
+	* Makefile.am (pkgextension_LTLIBRARIES): Remove errno.la.
+	(errno_la_SOURCES, errno_la_LDFLAGS, errno_la_LIBADD): Remove.
+	(EXTRA_DIST): Remove errlist.h.
+
 2014-11-23         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* inplace.c (do_inplace_begin): Jump through hoops to silence

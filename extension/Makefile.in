@@ -167,19 +167,13 @@ am__installdirs = "$(DESTDIR)$(pkgextensiondir)" \
 LTLIBRARIES = $(pkgextension_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
-errno_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
-am_errno_la_OBJECTS = errno.lo
-errno_la_OBJECTS = $(am_errno_la_OBJECTS)
+filefuncs_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_filefuncs_la_OBJECTS = filefuncs.lo stack.lo gawkfts.lo
+filefuncs_la_OBJECTS = $(am_filefuncs_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-errno_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(errno_la_LDFLAGS) $(LDFLAGS) -o $@
-filefuncs_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
-am_filefuncs_la_OBJECTS = filefuncs.lo stack.lo gawkfts.lo
-filefuncs_la_OBJECTS = $(am_filefuncs_la_OBJECTS)
 filefuncs_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(filefuncs_la_LDFLAGS) $(LDFLAGS) -o $@
@@ -289,18 +283,18 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(errno_la_SOURCES) $(filefuncs_la_SOURCES) \
-	$(fnmatch_la_SOURCES) $(fork_la_SOURCES) $(inplace_la_SOURCES) \
-	$(ordchr_la_SOURCES) $(readdir_la_SOURCES) \
-	$(readfile_la_SOURCES) $(revoutput_la_SOURCES) \
-	$(revtwoway_la_SOURCES) $(rwarray_la_SOURCES) \
-	$(select_la_SOURCES) $(testext_la_SOURCES) $(time_la_SOURCES)
-DIST_SOURCES = $(errno_la_SOURCES) $(filefuncs_la_SOURCES) \
-	$(fnmatch_la_SOURCES) $(fork_la_SOURCES) $(inplace_la_SOURCES) \
-	$(ordchr_la_SOURCES) $(readdir_la_SOURCES) \
-	$(readfile_la_SOURCES) $(revoutput_la_SOURCES) \
-	$(revtwoway_la_SOURCES) $(rwarray_la_SOURCES) \
-	$(select_la_SOURCES) $(testext_la_SOURCES) $(time_la_SOURCES)
+SOURCES = $(filefuncs_la_SOURCES) $(fnmatch_la_SOURCES) \
+	$(fork_la_SOURCES) $(inplace_la_SOURCES) $(ordchr_la_SOURCES) \
+	$(readdir_la_SOURCES) $(readfile_la_SOURCES) \
+	$(revoutput_la_SOURCES) $(revtwoway_la_SOURCES) \
+	$(rwarray_la_SOURCES) $(select_la_SOURCES) \
+	$(testext_la_SOURCES) $(time_la_SOURCES)
+DIST_SOURCES = $(filefuncs_la_SOURCES) $(fnmatch_la_SOURCES) \
+	$(fork_la_SOURCES) $(inplace_la_SOURCES) $(ordchr_la_SOURCES) \
+	$(readdir_la_SOURCES) $(readfile_la_SOURCES) \
+	$(revoutput_la_SOURCES) $(revtwoway_la_SOURCES) \
+	$(rwarray_la_SOURCES) $(select_la_SOURCES) \
+	$(testext_la_SOURCES) $(time_la_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
 	ctags-recursive dvi-recursive html-recursive info-recursive \
 	install-data-recursive install-dvi-recursive \
@@ -532,7 +526,6 @@ RM = rm -f
 
 # Note: rwarray does not currently compile.
 pkgextension_LTLIBRARIES = \
-	errno.la	\
 	filefuncs.la	\
 	fnmatch.la	\
 	fork.la		\
@@ -550,9 +543,6 @@ pkgextension_LTLIBRARIES = \
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 # on Cygwin, gettext requires that we link with -lintl 
 MY_LIBS = $(LTLIBINTL)
-errno_la_SOURCES = errno.c
-errno_la_LDFLAGS = $(MY_MODULE_FLAGS)
-errno_la_LIBADD = $(MY_LIBS)
 filefuncs_la_SOURCES = filefuncs.c stack.h stack.c gawkfts.h \
 			gawkfts.c gawkdirfd.h
 
@@ -597,7 +587,6 @@ testext_la_LIBADD = $(MY_LIBS)
 EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
 	ChangeLog.0 \
-	errlist.h \
 	fts.3 \
 	README.fts \
 	siglist.h
@@ -700,9 +689,6 @@ clean-pkgextensionLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-errno.la: $(errno_la_OBJECTS) $(errno_la_DEPENDENCIES) $(EXTRA_errno_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(errno_la_LINK) -rpath $(pkgextensiondir) $(errno_la_OBJECTS) $(errno_la_LIBADD) $(LIBS)
-
 filefuncs.la: $(filefuncs_la_OBJECTS) $(filefuncs_la_DEPENDENCIES) $(EXTRA_filefuncs_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(filefuncs_la_LINK) -rpath $(pkgextensiondir) $(filefuncs_la_OBJECTS) $(filefuncs_la_LIBADD) $(LIBS)
 
@@ -748,7 +734,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/errno.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filefuncs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fnmatch.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fork.Plo@am__quote@

@@ -35,7 +35,6 @@ RM = rm -f
 # Note: rwarray does not currently compile.
 
 pkgextension_LTLIBRARIES =	\
-	errno.la	\
 	filefuncs.la	\
 	fnmatch.la	\
 	fork.la		\
@@ -53,10 +52,6 @@ pkgextension_LTLIBRARIES =	\
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 # on Cygwin, gettext requires that we link with -lintl 
 MY_LIBS = $(LTLIBINTL)
-
-errno_la_SOURCES     = errno.c
-errno_la_LDFLAGS     = $(MY_MODULE_FLAGS)
-errno_la_LIBADD      = $(MY_LIBS)
 
 filefuncs_la_SOURCES  = filefuncs.c stack.h stack.c gawkfts.h \
 			gawkfts.c gawkdirfd.h
@@ -128,7 +123,6 @@ uninstall-recursive: uninstall-so
 EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
 	ChangeLog.0 \
-	errlist.h \
 	fts.3 \
 	README.fts \
 	siglist.h
