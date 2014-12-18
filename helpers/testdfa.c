@@ -392,14 +392,14 @@ setup_pattern(const char *pattern, size_t *len)
 	 * from that. 
 	 */
 	if (buf == NULL) {
-		buf = (char *) malloc(*len + 2);
+		buf = (char *) malloc(*len + 1);
 		if (buf == NULL) {
 			fprintf(stderr, "%s: malloc failed\n", __func__);
 			exit(EXIT_FAILURE);
 		}
 		buflen = *len;
 	} else if (*len > buflen) {
-		buf = (char *) realloc(buf, *len + 2);
+		buf = (char *) realloc(buf, *len + 1);
 		if (buf == NULL) {
 			fprintf(stderr, "%s: realloc failed\n", __func__);
 			exit(EXIT_FAILURE);

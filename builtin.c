@@ -2874,8 +2874,8 @@ set_how_many:
 
 	lastmatchnonzero = false;
 
-	/* guesstimate how much room to allocate; +2 forces > 0 */
-	buflen = textlen + (ampersands + 1) * repllen + 2;
+	/* guesstimate how much room to allocate; +1 forces > 0 */
+	buflen = textlen + (ampersands + 1) * repllen + 1;
 	emalloc(buf, char *, buflen + 1, "do_sub");
 	buf[buflen] = '\0';
 
