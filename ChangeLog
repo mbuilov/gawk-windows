@@ -1,3 +1,19 @@
+2014-12-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Enable non-fatal output on per-file or global basis,
+	via PROCINFO.
+
+	* awk.h (RED_NON_FATAL): New redirection flag.
+	* builtin.c (efwrite): If RED_NON_FATAL set, just set ERRNO and return.
+	(do_printf): Check errflg and if set, set ERRNO and return.
+	(do_print): Ditto.
+	(do_print_rec): Ditto.
+	* io.c (redflags2str): Update table.
+	(redirect): Check for global PROCINFO["nonfatal"] or for
+	PROCINFO[file, "nonfatal"] and don't fail on open if set.
+	Add RED_NON_FATAL to flags.
+	(in_PROCINFO): Make smarter and more general.
+
 2014-12-12        Stephen Davies         <sdavies@sdc.com.au>
 
 	Improve comment handling in pretty printing.

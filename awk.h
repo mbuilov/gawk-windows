@@ -918,6 +918,7 @@ struct redirect {
 #		define	RED_PTY		512
 #		define	RED_SOCKET	1024
 #		define	RED_TCP		2048
+#		define	RED_NON_FATAL	4096
 	char *value;
 	FILE *ifp;	/* input fp, needed for PIPES_SIMULATED */
 	IOBUF *iop;

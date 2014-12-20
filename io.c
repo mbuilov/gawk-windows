@@ -718,6 +718,7 @@ redflags2str(int flags)
 		{ RED_PTY,	"RED_PTY" },
 		{ RED_SOCKET,	"RED_SOCKET" },
 		{ RED_TCP,	"RED_TCP" },
+		{ RED_NON_FATAL,	"RED_NON_FATAL" },
 		{ 0, NULL }
 	};
 
@@ -744,6 +745,8 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 	static struct redirect *save_rp = NULL;	/* hold onto rp that should
 	                                         * be freed for reuse
 	                                         */
+	bool is_output = false;
+	bool is_non_fatal = false;
 
 	if (do_sandbox)
 		fatal(_("redirection not allowed in sandbox mode"));
@@ -753,6 +756,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 		tflag = RED_APPEND;
 		/* FALL THROUGH */
 	case redirect_output:
+		is_output = true;
 		outflag = (RED_FILE|RED_WRITE);
 		tflag |= outflag;
 		if (redirtype == redirect_output)
@@ -761,6 +765,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			what = ">>";
 		break;
 	case redirect_pipe:
+		is_output = true;
 		tflag = (RED_PIPE|RED_WRITE);
 		what = "|";
 		break;
@@ -773,6 +778,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 		what = "<";
 		break;
 	case redirect_twoway:
+		is_output = true;
 		tflag = (RED_READ|RED_WRITE|RED_TWOWAY);
 		what = "|&";
 		break;
@@ -793,6 +799,14 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			|| strncmp(str, "1", redir_exp->stlen) == 0))
 		lintwarn(_("filename `%s' for `%s' redirection may be result of logical expression"),
 				str, what);
+
+	/* input files/pipes are automatically nonfatal */
+	if (is_output) {
+		is_non_fatal = (in_PROCINFO("nonfatal", NULL, NULL) != NULL
+				|| in_PROCINFO(str, "nonfatal", NULL) != NULL);
+		if (is_non_fatal)
+			tflag |= RED_NON_FATAL;
+	}
 
 #ifdef HAVE_SOCKETS
 	/*
@@ -892,6 +906,12 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			(void) flush_io();
 
 			os_restore_mode(fileno(stdin));
+			/*
+			 * Don't check is_non_fatal; see input pipe below.
+			 * Note that the failure happens upon failure to fork,
+			 * using a non-existant program will still succeed the
+			 * popen().
+			 */
 			if ((rp->output.fp = popen(str, binmode("w"))) == NULL)
 				fatal(_("can't open pipe `%s' for output (%s)"),
 						str, strerror(errno));
@@ -929,6 +949,10 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			if (! two_way_open(str, rp)) {
 #ifdef HAVE_SOCKETS
 				if (inetfile(str, NULL)) {
+					*errflg = errno;
+					/* do not free rp, saving it for reuse (save_rp = rp) */
+					return NULL;
+				} else if (is_non_fatal) {
 					*errflg = errno;
 					/* do not free rp, saving it for reuse (save_rp = rp) */
 					return NULL;
@@ -1009,11 +1033,14 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 				 * can return -1.  For output to file,
 				 * complain. The shell will complain on
 				 * a bad command to a pipe.
+				 *
+				 * 12/2014: Take nonfatal settings in PROCINFO into account.
 				 */
 				if (errflg != NULL)
 					*errflg = errno;
-				if (   redirtype == redirect_output
-				    || redirtype == redirect_append) {
+				if (! is_non_fatal &&
+				    (redirtype == redirect_output
+				     || redirtype == redirect_append)) {
 					/* multiple messages make life easier for translators */
 					if (*direction == 'f')
 						fatal(_("can't redirect from `%s' (%s)"),
@@ -3799,12 +3826,21 @@ in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx)
 	NODE *r, *sub = NULL; 
 	NODE *subsep = SUBSEP_node->var_value;
 
+	if (PROCINFO_node == NULL || (pidx1 == NULL && pidx2 == NULL))
+		return NULL;
+
 	/* full_idx is in+out parameter */
 
 	if (full_idx)
 		sub = *full_idx;
 
-	str_len = strlen(pidx1) + subsep->stlen	+ strlen(pidx2);
+	if (pidx1 != NULL && pidx2 == NULL)
+		str_len = strlen(pidx1);
+	else if (pidx1 == NULL && pidx2 != NULL)
+		str_len = strlen(pidx2);
+	else
+		str_len = strlen(pidx1) + subsep->stlen	+ strlen(pidx2);
+
 	if (sub == NULL) {
 		emalloc(str, char *, str_len + 1, "in_PROCINFO");
 		sub = make_str_node(str, str_len, ALREADY_MALLOCED);
@@ -3818,8 +3854,14 @@ in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx)
 		sub->stlen = str_len;
 	}
 
-	sprintf(sub->stptr, "%s%.*s%s", pidx1, (int)subsep->stlen,
-			subsep->stptr, pidx2);
+	if (pidx1 != NULL && pidx2 == NULL)
+		strcpy(sub->stptr, pidx1);
+	else if (pidx1 == NULL && pidx2 != NULL)
+		strcpy(sub->stptr, pidx2);
+	else
+		sprintf(sub->stptr, "%s%.*s%s", pidx1, (int)subsep->stlen,
+				subsep->stptr, pidx2);
+
 	r = in_array(PROCINFO_node, sub);
 	if (! full_idx)
 		unref(sub);
