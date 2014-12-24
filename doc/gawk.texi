@@ -632,6 +632,7 @@ particular records in a file and perform operations upon them.
 * Special Caveats::                     Things to watch out for.
 * Close Files And Pipes::               Closing Input and Output Files and
                                         Pipes.
+* Nonfatal::                            Enabling Nonfatal Output.
 * Output Summary::                      Output summary.
 * Output Exercises::                    Exercises.
 * Values::                              Constants, Variables, and Regular
@@ -8967,6 +8968,7 @@ and discusses the @code{close()} built-in function.
                                 @command{gawk} allows access to inherited file
                                 descriptors.
 * Close Files And Pipes::       Closing Input and Output Files and Pipes.
+* Nonfatal::                    Enabling Nonfatal Output.
 * Output Summary::              Output summary.
 * Output Exercises::            Exercises.
 @end menu
@@ -10484,6 +10486,58 @@ when closing a pipe.
 @c ENDOFRANGE pc
 @c ENDOFRANGE cc
 
+@node Nonfatal
+@section Enabling Nonfatal Output
+
+This @value{SECTION} describes a @command{gawk}-specific feature.
+
+In standard @command{awk}, output with @code{print} or @code{printf}
+to a nonexistent file, or some other I/O error (such as filling up the
+disk) is a fatal error.
+
+@example
+$ @kbd{gawk 'BEGIN @{ print "hi" > "/no/such/file" @}'}
+@error{} gawk: cmd. line:1: fatal: can't redirect to `/no/such/file' (No such file or directory)
+@end example
+
+@command{gawk} makes it possible to detect that an error has
+occurred, allowing you to possibly recover from the error, or
+at least print an error message of your choosing before exiting.
+You can do this in one of two ways:
+
+@itemize @bullet
+@item
+For all output files, by assigning any value to @code{PROCINFO["nonfatal"]}.
+
+@item
+On a per-file basis, by assigning any value to
+@code{PROCINFO[@var{filename}, "nonfatal"]}.
+Here, @var{filename} is the name of the file to which
+you wish output to be nonfatal.
+@end itemize
+
+Once you have enabled nonfatal output, you must check @code{ERRNO}
+after every relevant @code{print} or @code{printf} statement to
+see if something went wrong.  It is also a good idea to initialize
+@code{ERRNO} to zero before attempting the output. For example:
+
+@example
+$ @kbd{gawk '}
+> @kbd{BEGIN @{}
+> @kbd{    PROCINFO["nonfatal"] = 1}
+> @kbd{    ERRNO = 0}
+> @kbd{    print "hi" > "/no/such/file"}
+> @kbd{    if (ERRNO) @{}
+> @kbd{        print("Output failed:", ERRNO) > "/dev/stderr"}
+> @kbd{        exit 1}
+> @kbd{    @}}
+> @kbd{@}'}
+@error{} Output failed: No such file or directory
+@end example
+
+Here, @command{gawk} did not produce a fatal error; instead
+it let the @command{awk} program code detect the problem and handle it.
+
 @node Output Summary
 @section Summary
 
@@ -10511,6 +10565,12 @@ output, and error, and for network communications.
 Use @code{close()} to close open file, pipe, and coprocess redirections.
 For coprocesses, it is possible to close only one direction of the
 communications.
+
+@item
+Normally errors with @code{print} or @code{printf} are fatal.
+@command{gawk} lets you make output errors be nonfatal either for
+all files or on a per-file basis. You must then check for errors
+after every relevant output statement.
 
 @end itemize
 
@@ -36769,6 +36829,38 @@ with a minimum of two
 The dynamic extension interface was completely redone
 (@pxref{Dynamic Extensions}).
 
+@end itemize
+
+Version @strong{FIXME} XXXX introduced the following changes:
+
+@itemize @bullet
+@item
+Changes to @code{ENVIRON} are reflected into @command{gawk}'s
+environment and that of programs that it runs.
+@xref{Auto-set}.
+
+@item
+The @option{--pretty-print} option no longer runs the @command{awk}
+program too.
+FIXME: Add xref.
+
+@item
+The @command{igawk} program and its manual page are no longer
+installed when @command{gawk} is built.
+FIXME: Add xref.
+
+@item
+The @code{div()} function.
+FIXME: Add xref.
+
+@item
+The maximum number of hexdecimal digits in @samp{\x} escapes
+is now two.
+FIXME: Add xref.
+
+@item
+Nonfatal output with @code{print} and @code{printf}.
+@xref{Nonfatal}.
 @end itemize
 
 @c XXX ADD MORE STUFF HERE
