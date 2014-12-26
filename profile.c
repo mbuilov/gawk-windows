@@ -246,6 +246,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 				} else {
 					fprintf(prof_fp, "{\n");
 					ip1 = (pc + 1)->firsti;
+					ip2 = (pc + 1)->lasti;
 				}
 				ip1 = ip1->nexti;
 			}
