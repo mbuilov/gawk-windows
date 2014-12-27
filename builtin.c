@@ -129,8 +129,10 @@ wrerror:
 	if (fp == stdout && errno == EPIPE)
 		gawk_exit(EXIT_FATAL);
 
+
 	/* otherwise die verbosely */
-	if ((rp->flag & RED_NON_FATAL) != 0) {
+	if (   (rp != NULL && (rp->flag & RED_NON_FATAL) != 0)
+	    || is_non_fatal_std(fp)) {
 		update_ERRNO_int(errno);
 	} else
 		fatal(_("%s to \"%s\" failed (%s)"), from,

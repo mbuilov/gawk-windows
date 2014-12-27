@@ -5089,13 +5089,12 @@ letters or numbers.  @value{COMMONEXT}
 @quotation CAUTION
 In ISO C, the escape sequence continues until the first nonhexadecimal
 digit is seen.
-@c FIXME: Add exact version here.
 For many years, @command{gawk} would continue incorporating
 hexadecimal digits into the value until a non-hexadecimal digit
 or the end of the string was encountered.
 However, using more than two hexadecimal digits produced
 undefined results.
-As of @value{PVERSION} @strong{FIXME:} 4.3.0, only two digits
+As of @value{PVERSION} 4.2, only two digits
 are processed.
 @end quotation
 
@@ -10034,6 +10033,11 @@ $ @kbd{gawk '}
 
 Here, @command{gawk} did not produce a fatal error; instead
 it let the @command{awk} program code detect the problem and handle it.
+
+This mechanism works also for standard output and standard error.
+For standard output, you may use @code{PROCINFO["-", "nonfatal"]}
+or @code{PROCINFO["/dev/stdout", "nonfatal"]}.  For standard error, use
+@code{PROCINFO["/dev/stderr", "nonfatal"]}.
 
 @node Output Summary
 @section Summary
@@ -35084,6 +35088,10 @@ Indirect function calls
 @item
 Directories on the command line produce a warning and are skipped
 (@pxref{Command-line directories}).
+
+@item
+Output with @code{print} and @code{printf} need not be fatal
+(@pxref{Nonfatal}).
 @end itemize
 
 @item
@@ -35171,6 +35179,11 @@ The @code{isarray()} function to check if a variable is an array or not
 The @code{bindtextdomain()}, @code{dcgettext()} and @code{dcngettext()}
 functions for internationalization
 (@pxref{Programmer i18n}).
+
+@item
+The @code{div()} function for doing integer
+division and remainder
+(@pxref{Numeric Functions}).
 @end itemize
 
 @item
@@ -35304,8 +35317,14 @@ Ultrix
 @end itemize
 
 @item
-@c FIXME: Verify the version here.
-Support for MirBSD was removed at @command{gawk} @value{PVERSION} 4.2.
+Support for the following systems was removed from the code
+for @command{gawk} @value{PVERSION} 4.2:
+
+@c nested table
+@itemize @value{MINUS}
+@item
+MirBSD
+@end itemize
 
 @end itemize
 
@@ -35922,9 +35941,12 @@ with a minimum of two
 The dynamic extension interface was completely redone
 (@pxref{Dynamic Extensions}).
 
+@item
+Support for Ultrix was removed.
+
 @end itemize
 
-Version @strong{FIXME} XXXX introduced the following changes:
+Version 4.2 introduced the following changes:
 
 @itemize @bullet
 @item
@@ -35935,25 +35957,28 @@ environment and that of programs that it runs.
 @item
 The @option{--pretty-print} option no longer runs the @command{awk}
 program too.
-FIXME: Add xref.
+@xref{Options}.
 
 @item
 The @command{igawk} program and its manual page are no longer
 installed when @command{gawk} is built.
-FIXME: Add xref.
+@xref{Igawk Program}.
 
 @item
 The @code{div()} function.
-FIXME: Add xref.
+@xref{Numeric Functions}.
 
 @item
 The maximum number of hexdecimal digits in @samp{\x} escapes
 is now two.
-FIXME: Add xref.
+@xref{Escape Sequences}.
 
 @item
 Nonfatal output with @code{print} and @code{printf}.
 @xref{Nonfatal}.
+
+@item
+Support for MirBSD was removed.
 @end itemize
 
 @c XXX ADD MORE STUFF HERE
