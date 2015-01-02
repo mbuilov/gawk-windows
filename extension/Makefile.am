@@ -45,7 +45,6 @@ pkgextension_LTLIBRARIES =	\
 	revoutput.la	\
 	revtwoway.la	\
 	rwarray.la	\
-	select.la	\
 	testext.la	\
 	time.la
 
@@ -94,10 +93,6 @@ rwarray_la_SOURCES    = rwarray.c
 rwarray_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 rwarray_la_LIBADD     = $(MY_LIBS)
 
-select_la_SOURCES     = select.c
-select_la_LDFLAGS     = $(MY_MODULE_FLAGS)
-select_la_LIBADD      = $(MY_LIBS)
-
 time_la_SOURCES       = time.c
 time_la_LDFLAGS       = $(MY_MODULE_FLAGS)
 time_la_LIBADD        = $(MY_LIBS)
@@ -124,8 +119,7 @@ EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
 	ChangeLog.0 \
 	fts.3 \
-	README.fts \
-	siglist.h
+	README.fts
 
 dist_man_MANS = \
 	filefuncs.3am fnmatch.3am fork.3am inplace.3am \

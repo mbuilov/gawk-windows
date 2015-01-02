@@ -1,3 +1,13 @@
+2015-01-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Remove the select extension, since it will be part of gawkextlib.
+	* select.c, siglist.h: Deleted.
+	* Makefile.am (pkgextension_LTLIBRARIES): Remove select.la.
+	(select_la_SOURCES, select_la_LDFLAGS, select_la_LIBADD): Remove.
+	(EXTRA_DIST): Remove siglist.h.
+	* configure.ac (AC_CHECK_HEADERS): Remove signal.h.
+	(AC_CHECK_FUNCS): Remove fcntl, kill, sigaction, and sigprocmask.
+
 2014-12-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	Remove the errno extension, since it is now part of gawkextlib.
