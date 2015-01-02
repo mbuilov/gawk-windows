@@ -790,7 +790,7 @@ test_get_file(int nargs, awk_value_t *result)
 		printf("%s: open(%s) failed\n", "test_get_file", filename.str_value.str);
 		return make_number(-1.0, result);
 	}
-	if (! get_file(alias.str_value.str, strlen(alias.str_value.str), "<", 1, fd, &ibuf, &obuf)) {
+	if (! get_file(alias.str_value.str, strlen(alias.str_value.str), "<", fd, &ibuf, &obuf)) {
 		printf("%s: get_file(%s) failed\n", "test_get_file", alias.str_value.str);
 		return make_number(-1.0, result);
 	}

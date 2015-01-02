@@ -1043,7 +1043,7 @@ api_release_value(awk_ext_id_t id, awk_value_cookie_t value)
 /* api_get_file --- return a handle to an existing or newly opened file */
 
 static awk_bool_t
-api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *filetype, size_t typelen, int fd, const awk_input_buf_t **ibufp, const awk_output_buf_t **obufp)
+api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *filetype, int fd, const awk_input_buf_t **ibufp, const awk_output_buf_t **obufp)
 {
 	const struct redirect *f;
 	int flag;	/* not used, sigh */
@@ -1080,24 +1080,24 @@ api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *file
 		return awk_true;
 	}
 	redirtype = redirect_none;
-	switch (typelen) {
-	case 1:
-		switch (*filetype) {
-		case '<':
+	switch (filetype[0]) {
+	case '<':
+		if (filetype[1] == '\0')
 			redirtype = redirect_input;
+		break;
+	case '>':
+		switch (filetype[1]) {
+		case '\0':
+			redirtype = redirect_output;
 			break;
 		case '>':
-			redirtype = redirect_output;
+			if (filetype[2] == '\0')
+				redirtype = redirect_append;
 			break;
 		}
 		break;
-	case 2:
-		switch (*filetype) {
-		case '>':
-			if (filetype[1] == '>')
-				redirtype = redirect_append;
-			break;
-		case '|':
+	case '|':
+		if (filetype[2] == '\0') {
 			switch (filetype[1]) {
 			case '>':
 				redirtype = redirect_pipe;
@@ -1109,8 +1109,8 @@ api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *file
 				redirtype = redirect_twoway;
 				break;
 			}
-			break;
 		}
+		break;
 	}
 	if (redirtype == redirect_none) {
 		warning(_("cannot open unrecognized file type `%s' for `%s'"),

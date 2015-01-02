@@ -678,8 +678,8 @@ typedef struct gawk_api {
         /*
 	 * Look up a file.  If the name is NULL or name_len is 0, it returns
 	 * data for the currently open input file corresponding to FILENAME
-	 * (and it will not access the filetype or typelen arguments, so those
-	 * may be undefined).  
+	 * (and it will not access the filetype argument, so that may be
+	 * undefined).  
 	 * If the file is not already open, it tries to open it.
 	 * The "filetype" argument should be one of:
 	 *    ">", ">>", "<", "|>", "|<", and "|&"
@@ -700,7 +700,7 @@ typedef struct gawk_api {
 			const char *name,
 			size_t name_len,
 			const char *filetype,
-			size_t typelen, int fd,
+			int fd,
 			/*
 			 * Return values (on success, one or both should
 			 * be non-NULL):
@@ -789,8 +789,8 @@ typedef struct gawk_api {
 #define release_value(value) \
 	(api->api_release_value(ext_id, value))
 
-#define get_file(name, namelen, filetype, typelen, fd, ibuf, obuf) \
-	(api->api_get_file(ext_id, name, namelen, filetype, typelen, fd, ibuf, obuf))
+#define get_file(name, namelen, filetype, fd, ibuf, obuf) \
+	(api->api_get_file(ext_id, name, namelen, filetype, fd, ibuf, obuf))
 
 #define register_ext_version(version) \
 	(api->api_register_ext_version(ext_id, version))
