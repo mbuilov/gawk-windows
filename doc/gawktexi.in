@@ -1265,6 +1265,9 @@ the C/C++ module as a dynamic plug-in.
 has all the
 details, and as expected, many examples to help you learn the ins and outs.
 
+I enjoy programming in AWK and had fun (re)reading this book.
+I think you will too.
+
 @ifnotdocbook
 @cindex Brennan, Michael
 @display
@@ -11230,7 +11233,7 @@ The post-increment @samp{foo++} is nearly the same as writing @samp{(foo
 not necessarily equal @code{foo}.  But the difference is minute as
 long as you stick to numbers that are fairly small (less than
 @iftex
-@math{10^12}).
+@math{10^{12}}).
 @end iftex
 @ifnottex
 @ifnotdocbook
@@ -39398,6 +39401,39 @@ It was written in @command{awk}
 by Brian Kernighan and Jon Bentley, and is available from
 @uref{http://netlib.sandia.gov/netlib/typesetting/chem.gz}.
 
+@item Comparison Expression
+A relation that is either true or false, such as @samp{a < b}.
+Comparison expressions are used in @code{if}, @code{while}, @code{do},
+and @code{for}
+statements, and in patterns to select which input records to process.
+(@xref{Typing and Comparison}.)
+
+@cindex compiled programs
+@item Compiler
+A program that translates human-readable source code into
+machine-executable object code.  The object code is then executed
+directly by the computer.
+See also ``Interpreter.''
+
+@item Compound Statement
+A series of @command{awk} statements, enclosed in curly braces.  Compound
+statements may be nested.
+(@xref{Statements}.)
+
+@item Concatenation
+Concatenating two strings means sticking them together, one after another,
+producing a new string.  For example, the string @samp{foo} concatenated with
+the string @samp{bar} gives the string @samp{foobar}.
+(@xref{Concatenation}.)
+
+@item Conditional Expression
+An expression using the @samp{?:} ternary operator, such as
+@samp{@var{expr1} ? @var{expr2} : @var{expr3}}.  The expression
+@var{expr1} is evaluated; if the result is true, the value of the whole
+expression is the value of @var{expr2}; otherwise the value is
+@var{expr3}.  In either case, only one of @var{expr2} and @var{expr3}
+is evaluated. (@xref{Conditional Exp}.)
+
 @cindex McIlroy, Doug
 @cindex cookie
 @item Cookie
@@ -39446,39 +39482,6 @@ Doug
 @item Coprocess
 A subordinate program with which two-way communications is possible.
 
-@cindex compiled programs
-@item Compiler
-A program that translates human-readable source code into
-machine-executable object code.  The object code is then executed
-directly by the computer.
-See also ``Interpreter.''
-
-@item Compound Statement
-A series of @command{awk} statements, enclosed in curly braces.  Compound
-statements may be nested.
-(@xref{Statements}.)
-
-@item Concatenation
-Concatenating two strings means sticking them together, one after another,
-producing a new string.  For example, the string @samp{foo} concatenated with
-the string @samp{bar} gives the string @samp{foobar}.
-(@xref{Concatenation}.)
-
-@item Conditional Expression
-An expression using the @samp{?:} ternary operator, such as
-@samp{@var{expr1} ? @var{expr2} : @var{expr3}}.  The expression
-@var{expr1} is evaluated; if the result is true, the value of the whole
-expression is the value of @var{expr2}; otherwise the value is
-@var{expr3}.  In either case, only one of @var{expr2} and @var{expr3}
-is evaluated. (@xref{Conditional Exp}.)
-
-@item Comparison Expression
-A relation that is either true or false, such as @samp{a < b}.
-Comparison expressions are used in @code{if}, @code{while}, @code{do},
-and @code{for}
-statements, and in patterns to select which input records to process.
-(@xref{Typing and Comparison}.)
-
 @item Curly Braces
 See ``Braces.''
 
@@ -39524,14 +39527,14 @@ ordinary expression.  It could be a string constant, such as
 @code{"foo"}, but it may also be an expression whose value can vary.
 (@xref{Computed Regexps}.)
 
+@item Empty String
+See ``Null String.''
+
 @item Environment
 A collection of strings, of the form @samp{@var{name}=@var{val}}, that each
 program has available to it. Users generally place values into the
 environment in order to provide information to various programs. Typical
 examples are the environment variables @env{HOME} and @env{PATH}.
-
-@item Empty String
-See ``Null String.''
 
 @cindex epoch, definition of
 @item Epoch
@@ -39589,15 +39592,6 @@ are controlled by the format strings contained in the predefined variables
 This document describes the terms under which this @value{DOCUMENT}
 is published and may be copied. (@xref{GNU Free Documentation License}.)
 
-@item Function
-A specialized group of statements used to encapsulate general
-or program-specific tasks.  @command{awk} has a number of built-in
-functions, and also allows you to define your own.
-(@xref{Functions}.)
-
-@item FSF
-See ``Free Software Foundation.''
-
 @cindex FSF (Free Software Foundation)
 @cindex Free Software Foundation (FSF)
 @cindex Stallman, Richard
@@ -39606,6 +39600,15 @@ A nonprofit organization dedicated
 to the production and distribution of freely distributable software.
 It was founded by Richard M.@: Stallman, the author of the original
 Emacs editor.  GNU Emacs is the most widely used version of Emacs today.
+
+@item FSF
+See ``Free Software Foundation.''
+
+@item Function
+A specialized group of statements used to encapsulate general
+or program-specific tasks.  @command{awk} has a number of built-in
+functions, and also allows you to define your own.
+(@xref{Functions}.)
 
 @item @command{gawk}
 The GNU implementation of @command{awk}.
@@ -39737,11 +39740,11 @@ This document describes the terms under which binary library archives
 or shared objects,
 and their source code may be distributed.
 
-@item Linux
-See ``GNU/Linux.''
-
 @item LGPL
 See ``Lesser General Public License.''
+
+@item Linux
+See ``GNU/Linux.''
 
 @item Localization
 The process of providing the data necessary for an
@@ -39880,11 +39883,11 @@ Regular variables are scalars; arrays and functions are not.
 In @command{gawk}, a list of directories to search for @command{awk} program source files.
 In the shell, a list of directories to search for executable programs.
 
-@item Seed
-The initial value, or starting point, for a sequence of random numbers.
-
 @item @command{sed}
 See ``Stream Editor.''
+
+@item Seed
+The initial value, or starting point, for a sequence of random numbers.
 
 @item Shell
 The command interpreter for Unix and POSIX-compliant systems.
