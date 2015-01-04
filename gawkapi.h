@@ -504,7 +504,7 @@ typedef struct gawk_api {
 					  awk_value_t *result);
 
 	/*
-	 * Convert a paramter that was undefined into an array
+	 * Convert a parameter that was undefined into an array
 	 * (provide call-by-reference for arrays).  Returns false
 	 * if count is too big, or if the argument's type is
 	 * not undefined.

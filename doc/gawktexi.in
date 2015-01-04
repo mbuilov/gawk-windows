@@ -598,6 +598,7 @@ particular records in a file and perform operations upon them.
                                         @code{getline}.
 * Getline Summary::                     Summary of @code{getline} Variants.
 * Read Timeout::                        Reading input with a timeout.
+* Retrying I/O::                        Retrying I/O after certain errors.
 * Command-line directories::            What happens if you put a directory on
                                         the command line.
 * Input Summary::                       Input summary.
@@ -6119,6 +6120,7 @@ used with it do not have to be named on the @command{awk} command line
 * Getline::                     Reading files under explicit program control
                                 using the @code{getline} function.
 * Read Timeout::                Reading input with a timeout.
+* Retrying I/O::                Retrying I/O after certain errors.
 * Command-line directories::    What happens if you put a directory on the
                                 command line.
 * Input Summary::               Input summary.
@@ -7743,6 +7745,11 @@ it encounters the end of the file.  If there is some error in getting
 a record, such as a file that cannot be opened, then @code{getline}
 returns @minus{}1.  In this case, @command{gawk} sets the variable
 @code{ERRNO} to a string describing the error that occurred.
+If the @code{errno} variable indicates that the I/O operation may be
+retried, and @code{PROCINFO["input", "RETRY"]} is set, then @minus{}2
+will be returned instead of @minus{}1, and further calls to @code{getline}
+may be attemped.  @DBXREF{Retrying I/O} for further information about
+this feature.
 
 In the following examples, @var{command} stands for a string value that
 represents a shell command.
@@ -8395,7 +8402,8 @@ on a per command or connection basis.
 the attempt to read from the underlying device may
 succeed in a later attempt. This is a limitation, and it also
 means that you cannot use this to multiplex input from
-two or more sources.
+two or more sources.  @DBXREF{Retrying I/O} for a way to enable 
+later I/O attempts to succeed.
 
 Assigning a timeout value prevents read operations from
 blocking indefinitely. But bear in mind that there are other ways
@@ -8404,6 +8412,35 @@ A network client can sometimes take a long time to establish
 a connection before it can start reading any data,
 or the attempt to open a FIFO special file for reading can block
 indefinitely until some other process opens it for writing.
+
+@node Retrying I/O
+@section Retrying I/O on Certain Input Errors
+@cindex retrying I/O
+
+@cindex differences in @command{awk} and @command{gawk}, retrying I/O
+This @value{SECTION} describes a feature that is specific to @command{gawk}.
+
+When @command{gawk} encounters an error while reading input, it will by default
+return @minus{}1 from getline, and subsequent attempts to read from that file
+will result in an end-of-file indication.  However, you may optionally instruct
+@command{gawk} to allow I/O to be retried when certain errors are encountered
+by setting setting a special element
+in the @code{PROCINFO} array (@pxref{Auto-set}):
+
+@example
+PROCINFO["input_name", "RETRY"]
+@end example
+
+When set, this causes @command{gawk} to check the value of the system
+@code{errno} variable when an I/O error occurs.  If @code{errno} indicates
+a subsequent I/O attempt may succeed, @code{getline} will instead return
+@minus{}2 and
+further calls to @code{getline} may succeed.  This applies to @code{errno}
+values EAGAIN, EWOULDBLOCK, EINTR, or ETIMEDOUT.
+
+This feature is useful in conjunction with
+@code{PROCINFO["input_name", "READ_TIMEOUT"]} or situations where a file
+descriptor has been configured to behave in a non-blocking fashion.
 
 @node Command-line directories
 @section Directories on the Command Line
@@ -14271,6 +14308,11 @@ value to be meaningful when an I/O operation returns a failure value,
 such as @code{getline} returning @minus{}1.  You are, of course, free
 to clear it yourself before doing an I/O operation.
 
+If the value of @code{ERRNO} corresponds to a system error in the C
+@code{errno} variable, then @code{PROCINFO["errno"]} will be set to the value
+of @code{errno}.  For non-system errors, @code{PROCINFO["errno"]} will
+be zero.
+
 @cindex @code{FILENAME} variable
 @cindex dark corner, @code{FILENAME} variable
 @item @code{FILENAME}
@@ -14338,6 +14380,10 @@ are guaranteed to be available:
 @cindex effective group ID of @command{gawk} user
 @item PROCINFO["egid"]
 The value of the @code{getegid()} system call.
+
+@item PROCINFO["errno"]
+The value of the C @code{errno} variable when @code{ERRNO} is set to
+the associated error message.
 
 @item PROCINFO["euid"]
 @cindex effective user ID of @command{gawk} user
@@ -14476,6 +14522,11 @@ The @code{PROCINFO} array has the following additional uses:
 It may be used to provide a timeout when reading from any
 open input file, pipe, or coprocess.
 @DBXREF{Read Timeout} for more information.
+
+@item
+It may be used to indicate that I/O may be retried when it fails due to
+certain errors.
+@DBXREF{Retrying I/O} for more information.
 
 @item
 It may be used to cause coprocesses to communicate over pseudo-ttys
