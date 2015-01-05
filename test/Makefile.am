@@ -337,6 +337,8 @@ EXTRA_DIST = \
 	gensub.ok \
 	gensub2.awk \
 	gensub2.ok \
+	getfile.awk \
+	getfile.ok \
 	getline.awk \
 	getline.in \
 	getline.ok \
@@ -1057,7 +1059,7 @@ LOCALE_CHARSET_TESTS = \
 	mbprintf1 mbprintf2 mbprintf3 mbprintf4 rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
-	fnmatch filefuncs fork fork2 fts functab4 inplace1 inplace2 inplace3 \
+	fnmatch filefuncs fork fork2 fts functab4 getfile inplace1 inplace2 inplace3 \
 	ordchr ordchr2 readdir readfile readfile2 revout revtwoway rwarray testext time
 
 # List of the tests which should be run with --lint option:
@@ -1897,6 +1899,11 @@ testext::
 	@$(AWK) '/^(@load|BEGIN)/,/^}/' "$(top_srcdir)"/extension/testext.c > testext.awk
 	@$(AWK) -f ./testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ testext.awk
+
+getfile:
+	@echo $@
+	@$(AWK) -v TESTEXT_QUIET=1 -ltestext -f $(srcdir)/$@.awk $(srcdir)/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 readdir:
 	@if [ "`uname`" = Linux ] && [ "`stat -f . 2>/dev/null | awk 'NR == 2 { print $$NF }'`" = nfs ];  then \
