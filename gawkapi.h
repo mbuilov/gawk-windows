@@ -692,7 +692,7 @@ typedef struct gawk_api {
 	 * supplying a file descriptor is currently NOT supported for pipes.
 	 * It should work for input, output, append, and two-way (coprocess)
 	 * sockets.  If the filetype is two-way, we assume that it is a socket!
-	 * Note that in the two-way case, the intput and output file descriptors
+	 * Note that in the two-way case, the input and output file descriptors
 	 * may differ.  To check for success, one must check that either of
 	 * them matches.
 	 */

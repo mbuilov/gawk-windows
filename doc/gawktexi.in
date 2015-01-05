@@ -939,6 +939,7 @@ particular records in a file and perform operations upon them.
 * Array Functions::                     Functions for working with arrays.
 * Flattening Arrays::                   How to flatten arrays.
 * Creating Arrays::                     How to create and populate arrays.
+* Redirection API::                     How to access and manipulate redirections.
 * Extension API Variables::             Variables provided by the API.
 * Extension Versioning::                API Version information.
 * Extension API Informational Variables:: Variables providing information about
@@ -30872,6 +30873,7 @@ This (rather large) @value{SECTION} describes the API in detail.
 * Symbol Table Access::                  Functions for accessing global
                                          variables.
 * Array Manipulation::                   Functions for working with arrays.
+* Redirection API::                      How to access and manipulate redirections.
 * Extension API Variables::              Variables provided by the API.
 * Extension API Boilerplate::            Boilerplate code for using the API.
 @end menu
@@ -30947,6 +30949,10 @@ Clearing an array
 @item
 Flattening an array for easy C style looping over all its indices and elements
 @end itemize
+
+@item
+Accessing and manipulating redirections.
+
 @end itemize
 
 Some points about using the API:
@@ -32910,6 +32916,54 @@ $ @kbd{AWKLIBPATH=$PWD ./gawk -f subarray.awk}
 @noindent
 (@DBXREF{Finding Extensions} for more information on the
 @env{AWKLIBPATH} environment variable.)
+
+@node Redirection API
+@subsection Accessing and Manipulating Redirections
+
+The following function allows extensions to access and manipulate redirections.
+
+@table @code
+@item awk_bool_t get_file(const char *name,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ size_t name_len,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const char *filetype,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ int fd,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const awk_input_buf_t **ibufp,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const awk_output_buf_t **obufp);
+Look up a file in @command{gawk}'s internal redirection table.  If @code{name} is NULL or @code{name_len} is 0, it returns
+data for the currently open input file corresponding to @code{FILENAME}
+(and it will not access the @code{filetype} argument, so that may be
+undefined).  
+If the file is not already open, it tries to open it.
+The @code{filetype} argument must be NUL-terminated and should be one of:
+@table @code
+@item >
+A file opened for output.
+@item >>
+A file opened for append.
+@item <
+A file opened for input.
+@item |>
+A pipe opened for output.
+@item |<
+A pipe opened for input.
+@item |&
+A two-way coprocess.
+@end table
+If the file is not already open, and the fd argument is non-negative,
+@command{gawk} will use that file descriptor instead of opening the file
+in the usual way.  If the fd is non-negative, but the file exists
+already, @command{gawk} ignores the fd and returns the existing file.  It is
+the caller's responsibility to notice that neither the fd in the returned
+@code{awk_input_buf_t} nor the fd in the returned @code{awk_output_buf_t} matches the requested value.  Note that
+supplying a file descriptor is currently NOT supported for pipes.
+It should work for input, output, append, and two-way (coprocess)
+sockets.  If @code{filetype} is two-way, we assume that it is a socket!
+Note that in the two-way case, the input and output file descriptors
+may differ.  To check for success, one must check whether either matches.
+@end table
+
+For example, this API function can be used to implement I/O multiplexing or a
+socket library.
 
 @node Extension API Variables
 @subsection API Variables
