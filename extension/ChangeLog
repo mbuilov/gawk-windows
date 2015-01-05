@@ -1,3 +1,12 @@
+2015-01-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* testext.c (test_get_file): Fix error message.
+	(do_get_file): Implement new function providing low-level access
+	to the get_file API.
+	(func_table): Add "get_file" -> do_get_file.
+	(init_testext): If TESTEXT_QUIET has been set to a numeric value,
+	return quietly.
+
 2015-01-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* testext.c (test_get_file): The get_file hook no longer takes a

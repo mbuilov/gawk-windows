@@ -783,7 +783,7 @@ test_get_file(int nargs, awk_value_t *result)
 		return make_number(-1.0, result);
 	}
 	if (! get_argument(1, AWK_STRING, & alias)) {
-		printf("%s: cannot get first arg\n", "test_get_file");
+		printf("%s: cannot get second arg\n", "test_get_file");
 		return make_number(-1.0, result);
 	}
 	if ((fd = open(filename.str_value.str, O_RDONLY)) < 0) {
@@ -799,6 +799,68 @@ test_get_file(int nargs, awk_value_t *result)
 		return make_number(-1.0, result);
 	}
 	return make_number(0.0, result);
+}
+
+/* do_get_file --- provide access to get_file API */
+
+static awk_value_t *
+do_get_file(int nargs, awk_value_t *result)
+{
+	awk_value_t filename, filetype, fd, res;
+	const awk_input_buf_t *ibuf;
+	const awk_output_buf_t *obuf;
+	awk_array_t array;
+
+	if (nargs != 4) {
+		printf("%s: nargs not right (%d should be 4)\n", "get_file", nargs);
+		return make_number(-1.0, result);
+	}
+
+	if (! get_argument(0, AWK_STRING, & filename)) {
+		printf("%s: cannot get first arg\n", "get_file");
+		return make_number(-1.0, result);
+	}
+	if (! get_argument(1, AWK_STRING, & filetype)) {
+		printf("%s: cannot get second arg\n", "get_file");
+		return make_number(-1.0, result);
+	}
+	if (! get_argument(2, AWK_NUMBER, & fd)) {
+		printf("%s: cannot get third arg\n", "get_file");
+		return make_number(-1.0, result);
+	}
+	if (! get_argument(3, AWK_ARRAY, & res)) {
+		printf("%s: cannot get fourth arg\n", "get_file");
+		return make_number(-1.0, result);
+	}
+	clear_array(res.array_cookie);
+
+	if (! get_file(filename.str_value.str, strlen(filename.str_value.str), filetype.str_value.str, fd.num_value, &ibuf, &obuf)) {
+		printf("%s: get_file(%s, %s, %d) failed\n", "get_file", filename.str_value.str, filetype.str_value.str, (int)(fd.num_value));
+		return make_number(0.0, result);
+	}
+
+	if (ibuf) {
+		awk_value_t idx, val;
+		set_array_element(res.array_cookie, 
+				  make_const_string("input", 5, & idx),
+				  make_number(ibuf->fd, & val));
+		if (ibuf->name)
+			set_array_element(res.array_cookie, 
+					  make_const_string("input_name", 10, & idx),
+					  make_const_string(ibuf->name, strlen(ibuf->name), & val));
+	}
+	if (obuf) {
+		awk_value_t idx, val;
+		set_array_element(res.array_cookie, 
+				  make_const_string("output", 6, & idx),
+				  make_number(obuf->fp ? fileno(obuf->fp) : -1,
+				  	      & val));
+		if (obuf->name)
+			set_array_element(res.array_cookie, 
+					  make_const_string("output_name", 11, & idx),
+					  make_const_string(obuf->name, strlen(obuf->name), & val));
+	}
+	return make_number(1.0, result);
 }
 
 /* fill_in_array --- fill in a new array */
@@ -897,6 +959,7 @@ static awk_ext_func_t func_table[] = {
 	{ "test_scalar_reserved", test_scalar_reserved, 0 },
 	{ "test_indirect_vars", test_indirect_vars, 0 },
 	{ "test_get_file", test_get_file, 2 },
+	{ "get_file", do_get_file, 4 },
 };
 
 /* init_testext --- additional initialization function */
@@ -906,6 +969,9 @@ static awk_bool_t init_testext(void)
 	awk_value_t value;
 	static const char message[] = "hello, world";	/* of course */
 	static const char message2[] = "i am a scalar";
+
+	if (sym_lookup("TESTEXT_QUIET", AWK_NUMBER, & value))
+		return awk_true;
 
 	/* add at_exit functions */
 	awk_atexit(at_exit0, NULL);
