@@ -598,7 +598,7 @@ particular records in a file and perform operations upon them.
                                         @code{getline}.
 * Getline Summary::                     Summary of @code{getline} Variants.
 * Read Timeout::                        Reading input with a timeout.
-* Retrying I/O::                        Retrying I/O after certain errors.
+* Retrying Input::                      Retrying input after certain errors.
 * Command-line directories::            What happens if you put a directory on
                                         the command line.
 * Input Summary::                       Input summary.
@@ -6121,7 +6121,7 @@ used with it do not have to be named on the @command{awk} command line
 * Getline::                     Reading files under explicit program control
                                 using the @code{getline} function.
 * Read Timeout::                Reading input with a timeout.
-* Retrying I/O::                Retrying I/O after certain errors.
+* Retrying Input::              Retrying input after certain errors.
 * Command-line directories::    What happens if you put a directory on the
                                 command line.
 * Input Summary::               Input summary.
@@ -7749,7 +7749,7 @@ returns @minus{}1.  In this case, @command{gawk} sets the variable
 If the @code{errno} variable indicates that the I/O operation may be
 retried, and @code{PROCINFO["input", "RETRY"]} is set, then @minus{}2
 will be returned instead of @minus{}1, and further calls to @code{getline}
-may be attemped.  @DBXREF{Retrying I/O} for further information about
+may be attemped.  @DBXREF{Retrying Input} for further information about
 this feature.
 
 In the following examples, @var{command} stands for a string value that
@@ -8403,7 +8403,7 @@ on a per command or connection basis.
 the attempt to read from the underlying device may
 succeed in a later attempt. This is a limitation, and it also
 means that you cannot use this to multiplex input from
-two or more sources.  @DBXREF{Retrying I/O} for a way to enable 
+two or more sources.  @DBXREF{Retrying Input} for a way to enable 
 later I/O attempts to succeed.
 
 Assigning a timeout value prevents read operations from
@@ -8414,11 +8414,11 @@ a connection before it can start reading any data,
 or the attempt to open a FIFO special file for reading can block
 indefinitely until some other process opens it for writing.
 
-@node Retrying I/O
-@section Retrying I/O on Certain Input Errors
-@cindex retrying I/O
+@node Retrying Input
+@section Retrying Reads After Certain Input Errors
+@cindex retrying input
 
-@cindex differences in @command{awk} and @command{gawk}, retrying I/O
+@cindex differences in @command{awk} and @command{gawk}, retrying input
 This @value{SECTION} describes a feature that is specific to @command{gawk}.
 
 When @command{gawk} encounters an error while reading input, it will by default
@@ -14525,9 +14525,9 @@ open input file, pipe, or coprocess.
 @DBXREF{Read Timeout} for more information.
 
 @item
-It may be used to indicate that I/O may be retried when it fails due to
+It may be used to indicate that input may be retried when it fails due to
 certain errors.
-@DBXREF{Retrying I/O} for more information.
+@DBXREF{Retrying Input} for more information.
 
 @item
 It may be used to cause coprocesses to communicate over pseudo-ttys
