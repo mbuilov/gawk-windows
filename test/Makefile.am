@@ -923,6 +923,8 @@ EXTRA_DIST = \
 	testext.ok \
 	time.awk \
 	time.ok \
+	timeout.awk \
+	timeout.ok \
 	tradanch.awk \
 	tradanch.in \
 	tradanch.ok \
@@ -986,7 +988,7 @@ BASIC_TESTS = \
 	childin clobber closebad clsflnam compare compare2 concat1 concat2 \
 	concat3 concat4 convfmt \
 	datanonl defref delargv delarpm2 delarprm delfunc dfamb1 dfastress dynlj \
-	eofsplit errno exit2 exitval1 exitval2 \
+	eofsplit exit2 exitval1 exitval2 \
 	fcall_exit fcall_exit2 fldchg fldchgnf fnamedat fnarray fnarray2 \
 	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsrs fsspcoln \
 	fstabplus funsemnl funsmnam funstack \
@@ -1021,7 +1023,7 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
-	colonwarn clos1way dbugeval delsub devfd devfd1 devfd2 dumpvars exit \
+	colonwarn clos1way dbugeval delsub devfd devfd1 devfd2 dumpvars errno exit \
 	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
 	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
@@ -1037,7 +1039,8 @@ GAWK_EXT_TESTS = \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
 	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
-	symtab7 symtab8 symtab9
+	symtab7 symtab8 symtab9 \
+	timeout
 
 EXTRA_TESTS = inftest regtest
 
