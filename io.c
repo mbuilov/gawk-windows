@@ -2250,7 +2250,12 @@ wait_any(int interesting)	/* pid of interest, if any */
 #endif
 	for (;;) {
 # if defined(HAVE_WAITPID) && defined(WNOHANG)
-		if ((pid = waitpid(-1, & status, WNOHANG)) == 0)
+		/*
+		 * N.B. If the caller wants status for a specific child process
+		 * (i.e. interesting is non-zero), then we must hang until we
+		 * get exit status for that child.
+		 */
+		if ((pid = waitpid(-1, & status, (interesting ? 0 : WNOHANG))) == 0)
 			/* No children have exited */
 			break;
 # elif defined(HAVE_SYS_WAIT_H)	/* POSIX compatible sys/wait.h */

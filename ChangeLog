@@ -1,3 +1,10 @@
+2015-01-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (wait_any): If the `interesting' argument is non-zero, then we
+	must not return until that child process has exited, since the caller
+	gawk_pclose depends on our returning its exit status.  So in that case,
+	do not pass WNOHANG to waitpid.
+
 2015-01-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.h: Fix another comment typo.
