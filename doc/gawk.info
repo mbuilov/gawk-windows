@@ -24715,22 +24715,30 @@ redirections.
 
     `|&'
           A two-way coprocess.
-     If the file is not already open, and the fd argument is
-     non-negative, `gawk' will use that file descriptor instead of
-     opening the file in the usual way.  If the fd is non-negative, but
-     the file exists already, `gawk' ignores the fd and returns the
-     existing file.  It is the caller's responsibility to notice that
-     neither the fd in the returned `awk_input_buf_t' nor the fd in the
-     returned `awk_output_buf_t' matches the requested value.  Note that
-     supplying a file descriptor is currently NOT supported for pipes.
-     It should work for input, output, append, and two-way (coprocess)
-     sockets.  If `filetype' is two-way, we assume that it is a socket!
-     Note that in the two-way case, the input and output file
-     descriptors may differ.  To check for success, one must check
-     whether either matches.
+     On error, a `false' value is returned.  Otherwise, the return
+     status is `true', and additional information about the redirection
+     is returned in the `ibufp' and `obufp' pointers.  For input
+     redirections, the `*ibufp' value should be non-NULL, and `*obufp'
+     should be NULL.  For output redirections, the `*obufp' value
+     should be non-NULL, and `*ibufp' should be NULL.  For two-way
+     coprocesses, both values should be non-NULL.  In the usual case,
+     the extension is interested in `(*ibufp)->fd' and/or
+     `fileno((*obufp)->fp)'.  If the file is not already open, and the
+     fd argument is non-negative, `gawk' will use that file descriptor
+     instead of opening the file in the usual way.  If the fd is
+     non-negative, but the file exists already, `gawk' ignores the fd
+     and returns the existing file.  It is the caller's responsibility
+     to notice that neither the fd in the returned `awk_input_buf_t'
+     nor the fd in the returned `awk_output_buf_t' matches the
+     requested value.  Note that supplying a file descriptor is
+     currently NOT supported for pipes.  It should work for input,
+     output, append, and two-way (coprocess) sockets.  If `filetype' is
+     two-way, we assume that it is a socket!  Note that in the two-way
+     case, the input and output file descriptors may differ.  To check
+     for success, one must check whether either matches.
 
-   For example, this API function can be used to implement I/O
-multiplexing or a socket library.
+   It is anticipated that this API function will be used to implement
+I/O multiplexing and a socket library.
 
 
 File: gawk.info,  Node: Extension API Variables,  Next: Extension API Boilerplate,  Prev: Redirection API,  Up: Extension API Description
@@ -35017,108 +35025,108 @@ Node: Array Functions984184
 Node: Flattening Arrays988038
 Node: Creating Arrays994930
 Node: Redirection API999701
-Node: Extension API Variables1001897
-Node: Extension Versioning1002530
-Node: Extension API Informational Variables1004431
-Node: Extension API Boilerplate1005496
-Node: Finding Extensions1009305
-Node: Extension Example1009865
-Node: Internal File Description1010637
-Node: Internal File Ops1014704
-Ref: Internal File Ops-Footnote-11026374
-Node: Using Internal File Ops1026514
-Ref: Using Internal File Ops-Footnote-11028897
-Node: Extension Samples1029170
-Node: Extension Sample File Functions1030696
-Node: Extension Sample Fnmatch1038334
-Node: Extension Sample Fork1039825
-Node: Extension Sample Inplace1041040
-Node: Extension Sample Ord1042715
-Node: Extension Sample Readdir1043551
-Ref: table-readdir-file-types1044427
-Node: Extension Sample Revout1045238
-Node: Extension Sample Rev2way1045828
-Node: Extension Sample Read write array1046568
-Node: Extension Sample Readfile1048508
-Node: Extension Sample Time1049603
-Node: Extension Sample API Tests1050952
-Node: gawkextlib1051443
-Node: Extension summary1054101
-Node: Extension Exercises1057790
-Node: Language History1058512
-Node: V7/SVR3.11060168
-Node: SVR41062349
-Node: POSIX1063794
-Node: BTL1065183
-Node: POSIX/GNU1065917
-Node: Feature History1071541
-Node: Common Extensions1084639
-Node: Ranges and Locales1085963
-Ref: Ranges and Locales-Footnote-11090581
-Ref: Ranges and Locales-Footnote-21090608
-Ref: Ranges and Locales-Footnote-31090842
-Node: Contributors1091063
-Node: History summary1096604
-Node: Installation1097974
-Node: Gawk Distribution1098920
-Node: Getting1099404
-Node: Extracting1100227
-Node: Distribution contents1101862
-Node: Unix Installation1107927
-Node: Quick Installation1108610
-Node: Shell Startup Files1111021
-Node: Additional Configuration Options1112100
-Node: Configuration Philosophy1113839
-Node: Non-Unix Installation1116208
-Node: PC Installation1116666
-Node: PC Binary Installation1117985
-Node: PC Compiling1119833
-Ref: PC Compiling-Footnote-11122854
-Node: PC Testing1122963
-Node: PC Using1124139
-Node: Cygwin1128254
-Node: MSYS1129077
-Node: VMS Installation1129577
-Node: VMS Compilation1130369
-Ref: VMS Compilation-Footnote-11131591
-Node: VMS Dynamic Extensions1131649
-Node: VMS Installation Details1133333
-Node: VMS Running1135585
-Node: VMS GNV1138421
-Node: VMS Old Gawk1139155
-Node: Bugs1139625
-Node: Other Versions1143508
-Node: Installation summary1149936
-Node: Notes1150992
-Node: Compatibility Mode1151857
-Node: Additions1152639
-Node: Accessing The Source1153564
-Node: Adding Code1155000
-Node: New Ports1161165
-Node: Derived Files1165647
-Ref: Derived Files-Footnote-11171122
-Ref: Derived Files-Footnote-21171156
-Ref: Derived Files-Footnote-31171752
-Node: Future Extensions1171866
-Node: Implementation Limitations1172472
-Node: Extension Design1173720
-Node: Old Extension Problems1174874
-Ref: Old Extension Problems-Footnote-11176391
-Node: Extension New Mechanism Goals1176448
-Ref: Extension New Mechanism Goals-Footnote-11179808
-Node: Extension Other Design Decisions1179997
-Node: Extension Future Growth1182105
-Node: Old Extension Mechanism1182941
-Node: Notes summary1184703
-Node: Basic Concepts1185889
-Node: Basic High Level1186570
-Ref: figure-general-flow1186842
-Ref: figure-process-flow1187441
-Ref: Basic High Level-Footnote-11190670
-Node: Basic Data Typing1190855
-Node: Glossary1194183
-Node: Copying1219341
-Node: GNU Free Documentation License1256897
-Node: Index1282033
+Node: Extension API Variables1002472
+Node: Extension Versioning1003105
+Node: Extension API Informational Variables1005006
+Node: Extension API Boilerplate1006071
+Node: Finding Extensions1009880
+Node: Extension Example1010440
+Node: Internal File Description1011212
+Node: Internal File Ops1015279
+Ref: Internal File Ops-Footnote-11026949
+Node: Using Internal File Ops1027089
+Ref: Using Internal File Ops-Footnote-11029472
+Node: Extension Samples1029745
+Node: Extension Sample File Functions1031271
+Node: Extension Sample Fnmatch1038909
+Node: Extension Sample Fork1040400
+Node: Extension Sample Inplace1041615
+Node: Extension Sample Ord1043290
+Node: Extension Sample Readdir1044126
+Ref: table-readdir-file-types1045002
+Node: Extension Sample Revout1045813
+Node: Extension Sample Rev2way1046403
+Node: Extension Sample Read write array1047143
+Node: Extension Sample Readfile1049083
+Node: Extension Sample Time1050178
+Node: Extension Sample API Tests1051527
+Node: gawkextlib1052018
+Node: Extension summary1054676
+Node: Extension Exercises1058365
+Node: Language History1059087
+Node: V7/SVR3.11060743
+Node: SVR41062924
+Node: POSIX1064369
+Node: BTL1065758
+Node: POSIX/GNU1066492
+Node: Feature History1072116
+Node: Common Extensions1085214
+Node: Ranges and Locales1086538
+Ref: Ranges and Locales-Footnote-11091156
+Ref: Ranges and Locales-Footnote-21091183
+Ref: Ranges and Locales-Footnote-31091417
+Node: Contributors1091638
+Node: History summary1097179
+Node: Installation1098549
+Node: Gawk Distribution1099495
+Node: Getting1099979
+Node: Extracting1100802
+Node: Distribution contents1102437
+Node: Unix Installation1108502
+Node: Quick Installation1109185
+Node: Shell Startup Files1111596
+Node: Additional Configuration Options1112675
+Node: Configuration Philosophy1114414
+Node: Non-Unix Installation1116783
+Node: PC Installation1117241
+Node: PC Binary Installation1118560
+Node: PC Compiling1120408
+Ref: PC Compiling-Footnote-11123429
+Node: PC Testing1123538
+Node: PC Using1124714
+Node: Cygwin1128829
+Node: MSYS1129652
+Node: VMS Installation1130152
+Node: VMS Compilation1130944
+Ref: VMS Compilation-Footnote-11132166
+Node: VMS Dynamic Extensions1132224
+Node: VMS Installation Details1133908
+Node: VMS Running1136160
+Node: VMS GNV1138996
+Node: VMS Old Gawk1139730
+Node: Bugs1140200
+Node: Other Versions1144083
+Node: Installation summary1150511
+Node: Notes1151567
+Node: Compatibility Mode1152432
+Node: Additions1153214
+Node: Accessing The Source1154139
+Node: Adding Code1155575
+Node: New Ports1161740
+Node: Derived Files1166222
+Ref: Derived Files-Footnote-11171697
+Ref: Derived Files-Footnote-21171731
+Ref: Derived Files-Footnote-31172327
+Node: Future Extensions1172441
+Node: Implementation Limitations1173047
+Node: Extension Design1174295
+Node: Old Extension Problems1175449
+Ref: Old Extension Problems-Footnote-11176966
+Node: Extension New Mechanism Goals1177023
+Ref: Extension New Mechanism Goals-Footnote-11180383
+Node: Extension Other Design Decisions1180572
+Node: Extension Future Growth1182680
+Node: Old Extension Mechanism1183516
+Node: Notes summary1185278
+Node: Basic Concepts1186464
+Node: Basic High Level1187145
+Ref: figure-general-flow1187417
+Ref: figure-process-flow1188016
+Ref: Basic High Level-Footnote-11191245
+Node: Basic Data Typing1191430
+Node: Glossary1194758
+Node: Copying1219916
+Node: GNU Free Documentation License1257472
+Node: Index1282608
 
 End Tag Table

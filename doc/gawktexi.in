@@ -32949,6 +32949,14 @@ A pipe opened for input.
 @item |&
 A two-way coprocess.
 @end table
+On error, a @code{false} value is returned.  Otherwise, the return status
+is @code{true}, and additional information about the redirection is
+returned in the @code{ibufp} and @code{obufp} pointers.  For input redirections,
+the @code{*ibufp} value should be non-NULL, and @code{*obufp} should be NULL.
+For output redirections,
+the @code{*obufp} value should be non-NULL, and @code{*ibufp} should be NULL.
+For two-way coprocesses, both values should be non-NULL.  In the usual case,
+the extension is interested in @code{(*ibufp)->fd} and/or @code{fileno((*obufp)->fp)}.
 If the file is not already open, and the fd argument is non-negative,
 @command{gawk} will use that file descriptor instead of opening the file
 in the usual way.  If the fd is non-negative, but the file exists
@@ -32962,8 +32970,8 @@ Note that in the two-way case, the input and output file descriptors
 may differ.  To check for success, one must check whether either matches.
 @end table
 
-For example, this API function can be used to implement I/O multiplexing or a
-socket library.
+It is anticipated that this API function will be used to implement I/O
+multiplexing and a socket library.
 
 @node Extension API Variables
 @subsection API Variables
