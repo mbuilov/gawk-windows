@@ -208,6 +208,9 @@ EXTRA_DIST = \
 	dynlj.ok \
 	eofsplit.awk \
 	eofsplit.ok \
+	errno.awk \
+	errno.in \
+	errno.ok \
 	exit.ok \
 	exit.sh \
 	exit2.awk \
@@ -983,7 +986,7 @@ BASIC_TESTS = \
 	childin clobber closebad clsflnam compare compare2 concat1 concat2 \
 	concat3 concat4 convfmt \
 	datanonl defref delargv delarpm2 delarprm delfunc dfamb1 dfastress dynlj \
-	eofsplit exit2 exitval1 exitval2 \
+	eofsplit errno exit2 exitval1 exitval2 \
 	fcall_exit fcall_exit2 fldchg fldchgnf fnamedat fnarray fnarray2 \
 	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsrs fsspcoln \
 	fstabplus funsemnl funsmnam funstack \
@@ -1308,6 +1311,11 @@ litoct::
 devfd::
 	@echo $@
 	@$(AWK) 1 /dev/fd/4 /dev/fd/5 4<"$(srcdir)"/devfd.in4 5<"$(srcdir)"/devfd.in5 >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+errno:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 fflush::
