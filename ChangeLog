@@ -1,3 +1,16 @@
+2015-01-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (variable_create): Declare new function.
+	* awkgram.y (variable_create): New function to create a variable
+	taking the deferred variable list into consideration.
+	(variable): Call new function variable_create if the variable is
+	not found.
+	* gawkapi.c (api_sym_update): If an array is being created, then
+	call new function variable_create instead of install_symbol.  If this
+	is the first reference to a deferred variable, than the new array
+	may contain elements that must be merged into the array provided by
+	the extension.
+
 2015-01-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* io.c (wait_any): If the `interesting' argument is non-zero, then we

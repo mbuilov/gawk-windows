@@ -579,10 +579,34 @@ api_sym_update(awk_ext_id_t id,
 	if (node == NULL) {
 		/* new value to be installed */
 		if (value->val_type == AWK_ARRAY) {
+			unsigned long nel;
+
 			array_node = awk_value_to_node(value);
-			node = install_symbol(estrdup((char *) name, strlen(name)),
-					Node_var_array);
+			/*
+			 * use variable_create instead of install_symbol in
+			 * case this is a deferred variable such as PROCINFO
+			 * or ENVIRON
+			 */
+			node = variable_create(estrdup((char *) name, strlen(name)), Node_var_array);
 			array_node->vname = node->vname;
+			if ((nel = assoc_length(node)) > 0) {
+				/* merge the 2 arrays */
+				NODE **list;
+				NODE akind;
+				unsigned long i;
+
+				akind.flags = (AINDEX|AVALUE);
+				list = node->alist(node, & akind);
+				for (i = 0; i < nel; i++) {
+					NODE **aptr;
+					aptr = assoc_lookup(array_node, list[2*i]);
+					unref(*aptr);
+					unref(list[2*i]); /* alist duped it */
+					*aptr = dupnode(list[2*i+1]);
+				}
+				efree(list);
+				assoc_clear(node);
+			}
 			*node = *array_node;
 			freenode(array_node);
 			value->array_cookie = node;	/* pass new cookie back to extension */

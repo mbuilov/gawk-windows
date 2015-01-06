@@ -4714,6 +4714,20 @@ is_deferred_variable(const char *name)
 	return false;
 }
 
+/* variable_create --- create a new variable */
+NODE *
+variable_create(char *name, NODETYPE type)
+{
+	struct deferred_variable *dv;
+
+	for (dv = deferred_variables; dv != NULL; dv = dv->next) {
+		if (strcmp(name, dv->name) == 0) {
+			efree(name);
+			return (*dv->load_func)();
+		}
+	}
+	return install_symbol(name, type);
+}
 
 /* variable --- make sure NAME is in the symbol table */
 
@@ -4728,25 +4742,11 @@ variable(int location, char *name, NODETYPE type)
 				r->vname);
 		if (r == symbol_table)
 			symtab_used = true;
-	} else {
-		/* not found */
-		struct deferred_variable *dv;
-
-		for (dv = deferred_variables; true; dv = dv->next) {
-			if (dv == NULL) {
-				/*
-				 * This is the only case in which we may not free the string.
-				 */
-				return install_symbol(name, type);
-			}
-			if (strcmp(name, dv->name) == 0) {
-				r = (*dv->load_func)();
-				break;
-			}
-		}
+		efree(name);
+		return r;
 	}
-	efree(name);
-	return r;
+	/* not found */
+	return variable_create(name, type);
 }
 
 /* process_deferred --- if the program uses SYMTAB, load deferred variables */
