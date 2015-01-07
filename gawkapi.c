@@ -831,7 +831,6 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 		elem->parent_array = array;
 		elem->vname = estrdup(index->str_value.str,
 					index->str_value.len);
-		make_aname(elem);
 	}
 	if (array->astore != NULL)
 		(*array->astore)(array, tmp);
