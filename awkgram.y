@@ -4716,16 +4716,18 @@ is_deferred_variable(const char *name)
 
 /* variable_create --- create a new variable */
 NODE *
-variable_create(char *name, NODETYPE type)
+variable_create(char *name, NODETYPE type, bool *is_deferred)
 {
 	struct deferred_variable *dv;
 
 	for (dv = deferred_variables; dv != NULL; dv = dv->next) {
 		if (strcmp(name, dv->name) == 0) {
 			efree(name);
+			*is_deferred = true;
 			return (*dv->load_func)();
 		}
 	}
+	*is_deferred = false;
 	return install_symbol(name, type);
 }
 
@@ -4735,6 +4737,7 @@ NODE *
 variable(int location, char *name, NODETYPE type)
 {
 	NODE *r;
+	bool is_deferred;
 
 	if ((r = lookup(name)) != NULL) {
 		if (r->type == Node_func || r->type == Node_ext_func )
@@ -4746,7 +4749,7 @@ variable(int location, char *name, NODETYPE type)
 		return r;
 	}
 	/* not found */
-	return variable_create(name, type);
+	return variable_create(name, type, & is_deferred);
 }
 
 /* process_deferred --- if the program uses SYMTAB, load deferred variables */

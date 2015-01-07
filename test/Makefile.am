@@ -174,6 +174,8 @@ EXTRA_DIST = \
 	dbugeval.ok \
 	defref.awk \
 	defref.ok \
+	defvar.awk \
+	defvar.ok \
 	delargv.awk \
 	delargv.ok \
 	delarpm2.awk \
@@ -1059,7 +1061,7 @@ LOCALE_CHARSET_TESTS = \
 	mbprintf1 mbprintf2 mbprintf3 mbprintf4 rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
-	fnmatch filefuncs fork fork2 fts functab4 getfile inplace1 inplace2 inplace3 \
+	defvar fnmatch filefuncs fork fork2 fts functab4 getfile inplace1 inplace2 inplace3 \
 	ordchr ordchr2 readdir readfile readfile2 revout revtwoway rwarray testext time
 
 # List of the tests which should be run with --lint option:
@@ -1899,6 +1901,11 @@ testext::
 	@$(AWK) '/^(@load|BEGIN)/,/^}/' "$(top_srcdir)"/extension/testext.c > testext.awk
 	@$(AWK) -f ./testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ testext.awk
+
+defvar:
+	@echo $@
+	@$(AWK) -v TESTEXT_QUIET=1 -ltestext -f $(srcdir)/$@.awk $(srcdir)/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 getfile:
 	@echo $@

@@ -374,6 +374,75 @@ out:
 	return result;
 }
 
+static awk_value_t *
+test_deferred(int nargs, awk_value_t *result)
+{
+	awk_value_t arr;
+	awk_value_t index, value;
+	const struct nval {
+		const char *name;
+		double val;
+	} seed[] = {
+		{ "fubar", 9.0, },
+		{ "rumpus", -5.0, },
+	};
+	struct nval sysval[] = {
+		{ "uid", getuid(), },
+		{ "api_major", GAWK_API_MAJOR_VERSION, },
+	};
+	size_t i;
+
+	assert(result != NULL);
+	make_number(0.0, result);
+
+	if (nargs != 0) {
+		printf("test_deferred: nargs not right (%d should be 0)\n", nargs);
+		goto out;
+	}
+	arr.val_type = AWK_ARRAY;
+	arr.array_cookie = create_array();
+
+	for (i = 0; i < sizeof(seed)/sizeof(seed[0]); i++) {
+		make_const_string(seed[i].name, strlen(seed[i].name), & index);
+		make_number(seed[i].val, & value);
+		if (! set_array_element(arr.array_cookie, & index, & value)) {
+			printf("test_deferred: %d: set_array_element(%s) failed\n", __LINE__, seed[i].name);
+			goto out;
+		}
+	}
+
+	if (! sym_update("PROCINFO", & arr)) {
+		printf("test_deferred: %d: sym_update failed\n", __LINE__);
+		goto out;
+	}
+
+	/* test that it still contains the values we loaded */
+	for (i = 0; i < sizeof(seed)/sizeof(seed[0]); i++) {
+		make_const_string(seed[i].name, strlen(seed[i].name), & index);
+		make_null_string(& value);
+		if (! get_array_element(arr.array_cookie, &index, AWK_NUMBER, & value)) {
+			printf("test_deferred: %d: get_array_element(%s) failed\n", __LINE__, seed[i].name);
+			goto out;
+		}
+		printf("%s = %g\n", seed[i].name, value.num_value);
+	}
+
+	/* check a few automatically-supplied values */
+	for (i = 0; i < sizeof(sysval)/sizeof(sysval[0]); i++) {
+		make_const_string(sysval[i].name, strlen(sysval[i].name), & index);
+		make_null_string(& value);
+		if (! get_array_element(arr.array_cookie, &index, AWK_NUMBER, & value)) {
+			printf("test_deferred: %d: get_array_element(%s) failed\n", __LINE__, sysval[i].name);
+			goto out;
+		}
+		printf("%s matches %d\n", sysval[i].name, (value.num_value == sysval[i].val));
+	}
+
+	make_number(1.0, result);
+out:
+	return result;
+}
+
 /*
 BEGIN {
 	for (i = 1; i <= 10; i++)
@@ -809,7 +878,6 @@ do_get_file(int nargs, awk_value_t *result)
 	awk_value_t filename, filetype, fd, res;
 	const awk_input_buf_t *ibuf;
 	const awk_output_buf_t *obuf;
-	awk_array_t array;
 
 	if (nargs != 4) {
 		printf("%s: nargs not right (%d should be 4)\n", "get_file", nargs);
@@ -950,6 +1018,7 @@ static awk_ext_func_t func_table[] = {
 	{ "dump_array_and_delete", dump_array_and_delete, 2 },
 	{ "try_modify_environ", try_modify_environ, 0 },
 	{ "var_test", var_test, 1 },
+	{ "test_deferred", test_deferred, 0 },
 	{ "test_errno", test_errno, 0 },
 	{ "test_array_size", test_array_size, 1 },
 	{ "test_array_elem", test_array_elem, 2 },
