@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2014 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2015 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -904,7 +904,10 @@ check_pos:
 		case '*':
 			if (cur == NULL)
 				break;
-			if (! do_traditional && isdigit((unsigned char) *s1)) {
+			if (! do_traditional && used_dollar && ! isdigit((unsigned char) *s1)) {
+				fatal(_("fatal: must use `count$' on all formats or none"));
+				break;	/* silence warnings */
+			} else if (! do_traditional && isdigit((unsigned char) *s1)) {
 				int val = 0;
 
 				for (; n0 > 0 && *s1 && isdigit((unsigned char) *s1); s1++, n0--) {

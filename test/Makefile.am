@@ -692,6 +692,8 @@ EXTRA_DIST = \
 	printfbad2.ok \
 	printfbad3.awk \
 	printfbad3.ok \
+	printfbad4.awk \
+	printfbad4.ok \
 	printfloat.awk \
 	printhuge.awk \
 	printhuge.ok \
@@ -1029,7 +1031,7 @@ GAWK_EXT_TESTS = \
 	lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm next nondec nondec2 \
-	patsplit posix printfbad1 printfbad2 printfbad3 printhuge procinfs \
+	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge procinfs \
 	profile1 profile2 profile3 profile4 profile5 profile6 profile7 pty1 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
