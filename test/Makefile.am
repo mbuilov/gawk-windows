@@ -1,7 +1,7 @@
 #
 # test/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1988-2014 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2015 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -692,6 +692,8 @@ EXTRA_DIST = \
 	printfbad2.ok \
 	printfbad3.awk \
 	printfbad3.ok \
+	printfbad4.awk \
+	printfbad4.ok \
 	printfloat.awk \
 	printhuge.awk \
 	printhuge.ok \
@@ -744,6 +746,9 @@ EXTRA_DIST = \
 	regeq.awk \
 	regeq.in \
 	regeq.ok \
+	regexpbrack.awk \
+	regexpbrack.in \
+	regexpbrack.ok \
 	regexprange.awk \
 	regexprange.ok \
 	reginttrad.awk \
@@ -1001,7 +1006,7 @@ BASIC_TESTS = \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
 	pcntplus posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
 	prt1eval prtoeval \
-	rand randtest range1 rebt8b1 redfilnm regeq regexprange regrange reindops \
+	rand randtest range1 rebt8b1 redfilnm regeq regexpbrack regexprange regrange reindops \
 	reparse resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin sortempty sortglos splitargv splitarr splitdef \
@@ -1028,7 +1033,7 @@ GAWK_EXT_TESTS = \
 	lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm next nondec nondec2 \
-	patsplit posix printfbad1 printfbad2 printfbad3 printhuge procinfs \
+	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge procinfs \
 	profile1 profile2 profile3 profile4 profile5 profile6 profile7 pty1 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
