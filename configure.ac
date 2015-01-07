@@ -1,7 +1,7 @@
 dnl
 dnl configure.ac --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995-2014 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995-2015 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Programming Language.
@@ -97,7 +97,7 @@ then
 	# enable debugging using macros also
 	if test "$GCC" = yes
 	then
-		CFLAGS="$CFLAGS -Wall -fno-builtin -g3 -gdwarf-2"
+		CFLAGS="$CFLAGS -Wall -fno-builtin -g3"
 	fi
 	AC_MSG_RESULT([yes])
 else

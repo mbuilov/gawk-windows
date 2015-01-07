@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2014 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2015 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -122,6 +122,7 @@ static int lasttok = 0;
 static bool eof_warned = false;	/* GLOBAL: want warning for each file */
 static int break_allowed;	/* kludge for break */
 static int continue_allowed;	/* kludge for continue */
+static bool extensions_used = false;	/* program uses extensions */
 
 #define END_FILE	-1000
 #define END_SRC  	-2000
@@ -282,6 +283,7 @@ source
 library
 	: FILENAME
 	  {
+		extensions_used = true;
 		if (load_library($1) < 0)
 			YYABORT;
 		efree($1->lextok);
@@ -2437,6 +2439,8 @@ do_add_srcfile(enum srctype stype, char *src, char *path, SRCFILE *thisfile)
 	s->prev = thisfile->prev;
 	thisfile->prev->next = s;
 	thisfile->prev = s;
+	if (stype == SRC_EXTLIB)
+		extensions_used = true;
 	return s;
 }
 
@@ -3233,10 +3237,8 @@ yylex(void)
 				pushback();
 				break;
 			case ']':
-				if (tokstart[0] == '['
-				    && (tok == tokstart + 1
-					|| (tok == tokstart + 2
-					    && tokstart[1] == '^')))
+				if (tok[-1] == '['
+				    || (tok[-2] == '[' && tok[-1] == '^'))
 					/* do nothing */;
 				else
 					in_brack--;
@@ -4707,6 +4709,7 @@ static bool
 is_deferred_variable(const char *name)
 {
 	struct deferred_variable *dv;
+
 	for (dv = deferred_variables; dv != NULL; dv = dv->next)
 		if (strcmp(name, dv->name) == 0)
 			return true;
@@ -4748,18 +4751,17 @@ variable(int location, char *name, NODETYPE type)
 	return r;
 }
 
-/* process_deferred --- if the program uses SYMTAB, load deferred variables */
+/* process_deferred --- if the program uses SYMTAB or extensions, load deferred variables */
 
 static void
 process_deferred()
 {
 	struct deferred_variable *dv;
 
-	if (! symtab_used)
-		return;
-
-	for (dv = deferred_variables; dv != NULL; dv = dv->next) {
-		(void) dv->load_func();
+	if (symtab_used || extensions_used) {
+		for (dv = deferred_variables; dv != NULL; dv = dv->next) {
+			(void) dv->load_func();
+		}
 	}
 }
 

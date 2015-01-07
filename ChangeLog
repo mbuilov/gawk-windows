@@ -1,3 +1,21 @@
+2015-01-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Update debug flags if developing.
+	* awkgram.y (yylex): Regex parsing bug fix for bracket expressions.
+	Thanks to Mike Brennan for the report.
+	* builtin.c (format_tree): Catch non-use of count$ for dynamic
+	field width or precision.
+
+	Unrelated:
+
+	Load deferred variables if extensions are used; they might
+	want to access PROCINFO and/or ENVIRON. Thanks to Andrew Schorr
+	for pointing out the issue.
+
+	* awkgram.y (extensions_used): New variable. Set it on @load.
+	(do_add_scrfile): Set it on -l.
+	(process_deferred): Check it also.
+
 2014-12-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* profile.c (pprint): Be sure to set ip2 in all paths
