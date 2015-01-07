@@ -1,5 +1,11 @@
 2015-01-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* gawkapi.c (api_sym_update): If copying a subarray, must update
+	the parent_array pointer.  Also, call the astore hook if non-NULL.
+	(api_set_array_element): Call the astore hook if non-NULL.
+
+2015-01-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* awk.h (variable_create): Now takes a 3rd argument to tell caller
 	whether this is a deferred variable.
 	* awkgram.y (variable_create): Return indicator of whether this is

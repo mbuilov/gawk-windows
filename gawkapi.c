@@ -605,10 +605,15 @@ api_sym_update(awk_ext_id_t id,
 				list = array_node->alist(array_node, & akind);
 				for (i = 0; i < nel; i++) {
 					NODE **aptr;
+					NODE *elem;
 					aptr = assoc_lookup(node, list[2*i]);
 					unref(*aptr);
+					elem = *aptr = dupnode(list[2*i+1]);
+					if (elem->type == Node_var_array)
+						elem->parent_array = node;
+					if (node->astore != NULL)
+						(*node->astore)(node, list[2*i]);
 					unref(list[2*i]); /* alist duped it */
-					*aptr = dupnode(list[2*i+1]);
 				}
 				efree(list);
 				assoc_clear(array_node);
@@ -820,7 +825,6 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 
 	tmp = awk_value_to_node(index);
 	aptr = assoc_lookup(array, tmp);
-	unref(tmp);
 	unref(*aptr);
 	elem = *aptr = awk_value_to_node(value);
 	if (elem->type == Node_var_array) {
@@ -829,6 +833,9 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 					index->str_value.len);
 		make_aname(elem);
 	}
+	if (array->astore != NULL)
+		(*array->astore)(array, tmp);
+	unref(tmp);
 
 	return awk_true;
 }
