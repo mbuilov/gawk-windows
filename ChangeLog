@@ -1,5 +1,14 @@
 2015-01-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* awk.h (deferred_create): Declare new function.
+	* awkgram.y (deferred_create): New function.
+	* gawkapi.c (lookup_deferred): New helper function to call lookup and
+	then deferred_create if lookup fails.
+	(api_sym_lookup, api_sym_update): Call lookup_deferred instead of
+	lookup.
+
+2015-01-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	Revert changes to API deferred variable creation -- these variables
 	should be created when lookup is called, not when update is called.
 	* awk.h (variable_create): Remove function declaration.

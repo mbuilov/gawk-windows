@@ -303,11 +303,11 @@ var_test(int nargs, awk_value_t *result)
 		goto out;
 	}
 
-	/* look up PROCINFO - should fail */
+	/* look up PROCINFO - should succeed */
 	if (sym_lookup("PROCINFO", AWK_ARRAY, & value))
-		printf("var_test: sym_lookup of PROCINFO failed - got a value!\n");
+		printf("var_test: sym_lookup of PROCINFO passed - got a value!\n");
 	else
-		printf("var_test: sym_lookup of PROCINFO passed - did not get a value\n");
+		printf("var_test: sym_lookup of PROCINFO failed - did not get a value\n");
 
 	/* look up a reserved variable - should pass */
 	if (sym_lookup("ARGC", AWK_NUMBER, & value))
@@ -399,8 +399,11 @@ test_deferred(int nargs, awk_value_t *result)
 		printf("test_deferred: nargs not right (%d should be 0)\n", nargs);
 		goto out;
 	}
-	arr.val_type = AWK_ARRAY;
-	arr.array_cookie = create_array();
+
+	if (! sym_lookup("PROCINFO", AWK_ARRAY, & arr)) {
+		printf("test_deferred: %d: sym_lookup failed\n", __LINE__);
+		goto out;
+	}
 
 	for (i = 0; i < sizeof(seed)/sizeof(seed[0]); i++) {
 		make_const_string(seed[i].name, strlen(seed[i].name), & index);
@@ -409,11 +412,6 @@ test_deferred(int nargs, awk_value_t *result)
 			printf("test_deferred: %d: set_array_element(%s) failed\n", __LINE__, seed[i].name);
 			goto out;
 		}
-	}
-
-	if (! sym_update("PROCINFO", & arr)) {
-		printf("test_deferred: %d: sym_update failed\n", __LINE__);
-		goto out;
 	}
 
 	/* test that it still contains the values we loaded */
