@@ -1,3 +1,13 @@
+2015-01-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Revert changes to API deferred variable creation -- these variables
+	should be created when lookup is called, not when update is called.
+	* awk.h (variable_create): Remove function declaration.
+	* awkgram.y (variable_create): Remove function.
+	(variable): Restore variable_create functionality inline.
+	* gawkapi.c (api_sym_update): Revert to using install_symbol, since the
+	deferred variable check should be done when lookup is called, not here.
+
 2015-01-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.c (api_set_array_element): Remove stray call to

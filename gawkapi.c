@@ -579,48 +579,11 @@ api_sym_update(awk_ext_id_t id,
 	if (node == NULL) {
 		/* new value to be installed */
 		if (value->val_type == AWK_ARRAY) {
-			bool is_deferred;
-
 			array_node = awk_value_to_node(value);
-			/*
-			 * use variable_create instead of install_symbol in
-			 * case this is a deferred variable such as PROCINFO
-			 * or ENVIRON
-			 */
-			node = variable_create(estrdup((char *) name, strlen(name)), Node_var_array, & is_deferred);
-			if (is_deferred) {
-				/*
-				 * merge the user-supplied elements into the
-				 * already-existing array.  Since ENVIRON
-				 * has special array_funcs, we need to retain
-				 * the auto-created array!
-				 */
-				unsigned long nel;
-				NODE **list;
-				NODE akind;
-				unsigned long i;
-
-				nel = assoc_length(array_node);
-				akind.flags = (AINDEX|AVALUE);
-				list = array_node->alist(array_node, & akind);
-				for (i = 0; i < nel; i++) {
-					NODE **aptr;
-					NODE *elem;
-					aptr = assoc_lookup(node, list[2*i]);
-					unref(*aptr);
-					elem = *aptr = dupnode(list[2*i+1]);
-					if (elem->type == Node_var_array)
-						elem->parent_array = node;
-					if (node->astore != NULL)
-						(*node->astore)(node, list[2*i]);
-					unref(list[2*i]); /* alist duped it */
-				}
-				efree(list);
-				assoc_clear(array_node);
-			} else {
-				array_node->vname = node->vname;
-				*node = *array_node;
-			}
+			node = install_symbol(estrdup((char *) name, strlen(name)),
+					Node_var_array);
+			array_node->vname = node->vname;
+			*node = *array_node;
 			freenode(array_node);
 			value->array_cookie = node;	/* pass new cookie back to extension */
 		} else {
