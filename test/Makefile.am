@@ -1681,7 +1681,7 @@ beginfile2:
 dumpvars::
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) --dump-variables 1 < "$(srcdir)"/$@.in >/dev/null 2>&1 || echo EXIT CODE: $$? >>_$@
-	@mv awkvars.out _$@
+	@grep -v ENVIRON < awkvars.out | grep -v PROCINFO > _$@; rm awkvars.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile1:
