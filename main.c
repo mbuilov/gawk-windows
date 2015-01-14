@@ -807,10 +807,10 @@ init_vars()
 			(*(vp->assign))();
 	}
 
-	/* Set up deferred variables (loaded only when accessed). */
+	/* Load PROCINFO and ENVIRON */
 	if (! do_traditional)
-		register_deferred_variable("PROCINFO", load_procinfo);
-	register_deferred_variable("ENVIRON", load_environ);
+		load_procinfo();
+	load_environ();
 }
 
 /* path_environ --- put path variable into environment if not already there */

@@ -1,3 +1,14 @@
+2015-01-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Remove deferred variables.
+
+	* awk.h (register_deferred_variable): Remove declaration.
+	* awkgram.y (is_deferred_variable, process_deferred,
+	symtab_used, extensions_used, deferred_variables,
+	process_deferred): Remove declarations, bodies, and uses.
+	* builtin.c (do_length): Update comment.
+	* main.c (init_vars): Just call load_procinfo() and `load_environ()'.
+
 2015-01-07         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Update debug flags if developing.

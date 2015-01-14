@@ -57,7 +57,6 @@ static int include_source(INSTRUCTION *file);
 static int load_library(INSTRUCTION *file);
 static void next_sourcefile(void);
 static char *tokexpand(void);
-static bool is_deferred_variable(const char *name);
 
 #define instruction(t)	bcalloc(t, 1, 0)
 
@@ -79,8 +78,6 @@ static int count_expressions(INSTRUCTION **list, bool isarg);
 static INSTRUCTION *optimize_assignment(INSTRUCTION *exp);
 static void add_lint(INSTRUCTION *list, LINTTYPE linttype);
 
-static void process_deferred();
-
 enum defref { FUNC_DEFINE, FUNC_USE, FUNC_EXT };
 static void func_use(const char *name, enum defref how);
 static void check_funcs(void);
@@ -91,7 +88,6 @@ static int one_line_close(int fd);
 static bool want_source = false;
 static bool want_regexp = false;	/* lexical scanning kludge */
 static char *in_function;		/* parsing kludge */
-static bool symtab_used = false;	/* program used SYMTAB */
 static int rule = 0;
 
 const char *const ruletab[] = {
@@ -120,7 +116,6 @@ static int lasttok = 0;
 static bool eof_warned = false;	/* GLOBAL: want warning for each file */
 static int break_allowed;	/* kludge for break */
 static int continue_allowed;	/* kludge for continue */
-static bool extensions_used = false;	/* program uses extensions */
 
 #define END_FILE	-1000
 #define END_SRC  	-2000
@@ -207,8 +202,6 @@ program
 	| program LEX_EOF
 	  {
 		next_sourcefile();
-		if (sourcefile == srcfiles)
-			process_deferred();
 	  }
 	| program error
 	  {
@@ -273,7 +266,6 @@ source
 library
 	: FILENAME
 	  {
-		extensions_used = true;
 		if (load_library($1) < 0)
 			YYABORT;
 		efree($1->lextok);
@@ -2346,8 +2338,6 @@ do_add_srcfile(enum srctype stype, char *src, char *path, SRCFILE *thisfile)
 	s->prev = thisfile->prev;
 	thisfile->prev->next = s;
 	thisfile->prev = s;
-	if (stype == SRC_EXTLIB)
-		extensions_used = true;
 	return s;
 }
 
@@ -4246,7 +4236,7 @@ install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist)
 	int pcount = 0;
 
 	r = lookup(fname);
-	if (r != NULL || is_deferred_variable(fname)) {
+	if (r != NULL) {
 		error_ln(fi->source_line, _("function name `%s' previously defined"), fname);
 		return -1;
 	}
@@ -4439,51 +4429,6 @@ param_sanity(INSTRUCTION *arglist)
 	}
 }
 
-/* deferred variables --- those that are only defined if needed. */
-
-/*
- * Is there any reason to use a hash table for deferred variables?  At the
- * moment, there are only 1 to 3 such variables, so it may not be worth
- * the overhead.  If more modules start using this facility, it should
- * probably be converted into a hash table.
- */
-
-static struct deferred_variable {
-	NODE *(*load_func)(void);
-	struct deferred_variable *next;
-	char name[1];	/* variable-length array */
-} *deferred_variables;
-
-/* register_deferred_variable --- add a var name and loading function to the list */
-
-void
-register_deferred_variable(const char *name, NODE *(*load_func)(void))
-{
-	struct deferred_variable *dv;
-	size_t sl = strlen(name);
-
-	emalloc(dv, struct deferred_variable *, sizeof(*dv)+sl,
-		"register_deferred_variable");
-	dv->load_func = load_func;
-	dv->next = deferred_variables;
-	memcpy(dv->name, name, sl+1);
-	deferred_variables = dv;
-}
-
-/* is_deferred_variable --- check if NAME is a deferred variable */
-
-static bool
-is_deferred_variable(const char *name)
-{
-	struct deferred_variable *dv;
-
-	for (dv = deferred_variables; dv != NULL; dv = dv->next)
-		if (strcmp(name, dv->name) == 0)
-			return true;
-	return false;
-}
-
-
 /* variable --- make sure NAME is in the symbol table */
 
 NODE *
@@ -4495,41 +4440,12 @@ variable(int location, char *name, NODETYPE type)
 		if (r->type == Node_func || r->type == Node_ext_func )
 			error_ln(location, _("function `%s' called with space between name and `(',\nor used as a variable or an array"),
 				r->vname);
-		if (r == symbol_table)
-			symtab_used = true;
 	} else {
 		/* not found */
-		struct deferred_variable *dv;
-
-		for (dv = deferred_variables; true; dv = dv->next) {
-			if (dv == NULL) {
-				/*
-				 * This is the only case in which we may not free the string.
-				 */
-				return install_symbol(name, type);
-			}
-			if (strcmp(name, dv->name) == 0) {
-				r = (*dv->load_func)();
-				break;
-			}
-		}
+		return install_symbol(name, type);
 	}
 	efree(name);
 	return r;
-}
-
-/* process_deferred --- if the program uses SYMTAB or extensions, load deferred variables */
-
-static void
-process_deferred()
-{
-	struct deferred_variable *dv;
-
-	if (symtab_used || extensions_used) {
-		for (dv = deferred_variables; dv != NULL; dv = dv->next) {
-			(void) dv->load_func();
-		}
-	}
 }
 
 /* make_regnode --- make a regular expression node */
