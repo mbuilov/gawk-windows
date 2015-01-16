@@ -1727,6 +1727,11 @@ profile7:
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+profile8:
+	@echo $@
+	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 posix2008sub:
 	@echo $@
 	@$(AWK) --posix -f "$(srcdir)"/$@.awk > _$@ 2>&1

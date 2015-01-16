@@ -228,6 +228,7 @@ rule
 	: pattern action
 	  {
 		(void) append_rule($1, $2);
+		first_rule = false;
 	  }
 	| pattern statement_term
 	  {
