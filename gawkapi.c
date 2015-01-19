@@ -486,16 +486,6 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 	return ret;
 }
 
-static NODE *
-lookup_deferred(const char *name)
-{
-	NODE *node;
-
-	if ((node = lookup(name)) != NULL)
-		return node;
-	return deferred_create(name);
-}
-
 /*
  * Symbol table access:
  * 	- No access to special variables (NF, etc.)
@@ -526,7 +516,7 @@ api_sym_lookup(awk_ext_id_t id,
 	if (   name == NULL
 	    || *name == '\0'
 	    || result == NULL
-	    || (node = lookup_deferred(name)) == NULL)
+	    || (node = lookup(name)) == NULL)
 		return awk_false;
 
 	if (is_off_limits_var(name))	/* a built-in variable */
@@ -584,7 +574,7 @@ api_sym_update(awk_ext_id_t id,
 		return awk_false;
 	}
 
-	node = lookup_deferred(name);
+	node = lookup(name);
 
 	if (node == NULL) {
 		/* new value to be installed */

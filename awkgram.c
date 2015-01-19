@@ -7052,15 +7052,6 @@ is_deferred_variable(const char *name)
 	return false;
 }
 
-NODE *
-deferred_create(const char *name)
-{
-	struct deferred_variable *dv;
-	for (dv = deferred_variables; dv != NULL; dv = dv->next)
-		if (strcmp(name, dv->name) == 0)
-			return (*dv->load_func)();
-	return NULL;
-}
 
 /* variable --- make sure NAME is in the symbol table */
 
