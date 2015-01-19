@@ -2,7 +2,7 @@
    NOTE: getopt is part of the C library, so if you don't know what
    "Keep this file name-space clean" means, talk to drepper@gnu.org
    before changing it!
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright (C) 1987-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -613,7 +613,7 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 
 		  fputc_unlocked ('\n', fp);
 
-		  if (__builtin_expect (fclose (fp) != EOF, 1))
+		  if (__glibc_likely (fclose (fp) != EOF))
 		    {
 		      _IO_flockfile (stderr);
 

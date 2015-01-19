@@ -202,7 +202,7 @@
 @set FFN Filename
 @set DF datafile
 @set DDF Datafile
-@set PVERSION Version
+@set PVERSION version
 @end ifset
 
 @c For HTML, spell out email addresses, to avoid problems with
@@ -299,7 +299,7 @@ All Rights Reserved.</literallayout>
 @end docbook
 
 @ifnotdocbook
-Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2014 @*
+Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2015 @*
 Free Software Foundation, Inc.
 @end ifnotdocbook
 @sp 2
@@ -1167,7 +1167,7 @@ interface to network protocols via special @file{/inet} files.
 The programs in this book make clear that an AWK program is
 typically much smaller and faster to develop than
 a counterpart written in C.
-Consequently, there is often a payoff to prototype an
+Consequently, there is often a payoff to prototyping an
 algorithm or design in AWK to get it running quickly and expose
 problems early. Often, the interpreted performance is adequate
 and the AWK prototype becomes the product.
@@ -1244,15 +1244,15 @@ March 2001
 
 Some things don't change.  Thirteen years ago I wrote:
 ``If you use AWK or want to learn how, then read this book.''
-True then and still true today.
+True then, and still true today.
 
-Learning to use a programming language is more than mastering the
+Learning to use a programming language is about more than mastering the
 syntax.  One needs to acquire an understanding of how to use the
 features of the language to solve practical programming problems.
 A focus of this book is many examples that show how to use AWK.
 
 Some things do change. Our computers are much faster and have more memory.
-Consequently, speed and storage inefficiencies of a high level language
+Consequently, speed and storage inefficiencies of a high-level language
 matter less.  Prototyping in AWK and then rewriting in C for performance
 reasons happens less, because more often the prototype is fast enough.
 
@@ -1260,12 +1260,12 @@ Of course, there are computing operations that are best done in C or C++.
 With @command{gawk} 4.1 and later, you do not have to choose between writing
 your program in AWK or in C/C++.  You can write most of your
 program in AWK and the aspects that require C/C++ capabilities can be written
-in C/C++ and then the pieces glued together when the @command{gawk} module loads
+in C/C++, and then the pieces glued together when the @command{gawk} module loads
 the C/C++ module as a dynamic plug-in.
 @c Chapter 16
 @ref{Dynamic Extensions},
 has all the
-details, and as expected, many examples to help you learn the ins and outs.
+details, and, as expected, many examples to help you learn the ins and outs.
 
 I enjoy programming in AWK and had fun (re)reading this book.
 I think you will too.
@@ -1340,7 +1340,7 @@ Generate reports
 Validate data
 
 @item
-Produce indexes and perform other document preparation tasks
+Produce indexes and perform other document-preparation tasks
 
 @item
 Experiment with algorithms that you can adapt later to other computer
@@ -1459,7 +1459,7 @@ help from me, thoroughly reworked @command{gawk} for compatibility
 with the newer @command{awk}.
 Circa 1994, I became the primary maintainer.
 Current development focuses on bug fixes,
-performance improvements, standards compliance and, occasionally, new features.
+performance improvements, standards compliance, and, occasionally, new features.
 
 In May 1997, J@"urgen Kahrs felt the need for network access
 from @command{awk}, and with a little help from me, set about adding
@@ -1472,10 +1472,10 @@ with @command{gawk} @value{PVERSION} 3.1.
 
 John Haque rewrote the @command{gawk} internals, in the process providing
 an @command{awk}-level debugger. This version became available as
-@command{gawk} @value{PVERSION} 4.0, in 2011.
+@command{gawk} @value{PVERSION} 4.0 in 2011.
 
 @DBXREF{Contributors}
-for a full list of those who made important contributions to @command{gawk}.
+for a full list of those who have made important contributions to @command{gawk}.
 
 @node Names
 @unnumberedsec A Rose by Any Other Name
@@ -1488,7 +1488,7 @@ is often referred to as ``new @command{awk}.''
 By analogy, the original version of @command{awk} is
 referred to as ``old @command{awk}.''
 
-Today, on most systems, when you run the @command{awk} utility,
+Today, on most systems, when you run the @command{awk} utility
 you get some version of new @command{awk}.@footnote{Only
 Solaris systems still use an old @command{awk} for the
 default @command{awk} utility. A more modern @command{awk} lives in
@@ -1548,7 +1548,9 @@ the POSIX standard for @command{awk}.
 This @value{DOCUMENT} has the difficult task of being both a tutorial and a reference.
 If you are a novice, feel free to skip over details that seem too complex.
 You should also ignore the many cross-references; they are for the
-expert user and for the online Info and HTML versions of the @value{DOCUMENT}.
+expert user and for the Info and
+@ulink{http://www.gnu.org/software/gawk/manual/, HTML}
+versions of the @value{DOCUMENT}.
 @end ifnotinfo
 
 There are sidebars
@@ -1581,7 +1583,7 @@ This @value{DOCUMENT} is split into several parts, as follows:
 
 @itemize @value{BULLET}
 @item
-Part I describes the @command{awk} language and @command{gawk} program in detail.
+Part I describes the @command{awk} language and the @command{gawk} program in detail.
 It starts with the basics, and continues through all of the features of @command{awk}.
 It contains the following chapters:
 
@@ -1628,7 +1630,7 @@ doing something when a record is matched, and the predefined variables
 
 @item
 @ref{Arrays},
-covers @command{awk}'s one-and-only data structure: associative arrays.
+covers @command{awk}'s one-and-only data structure: the associative array.
 Deleting array elements and whole arrays is also described, as well as
 sorting arrays in @command{gawk}.  It also describes how @command{gawk}
 provides arrays of arrays.
