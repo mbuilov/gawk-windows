@@ -56,7 +56,7 @@
 @set PATCHLEVEL 2
 
 @ifset FOR_PRINT
-@set TITLE Effective Awk Programming
+@set TITLE Effective awk Programming
 @end ifset
 @ifclear FOR_PRINT
 @set TITLE GAWK: Effective AWK Programming
@@ -1580,7 +1580,7 @@ This @value{DOCUMENT} has the difficult task of being both a tutorial and a refe
 If you are a novice, feel free to skip over details that seem too complex.
 You should also ignore the many cross-references; they are for the
 expert user and for the Info and
-@ulink{http://www.gnu.org/software/gawk/manual/, HTML}
+@uref{http://www.gnu.org/software/gawk/manual/, HTML}
 versions of the @value{DOCUMENT}.
 @end ifnotinfo
 
@@ -1662,9 +1662,9 @@ doing something when a record is matched, and the predefined variables
 @item
 @ref{Arrays},
 covers @command{awk}'s one-and-only data structure: the associative array.
-Deleting array elements and whole arrays is also described, as well as
-sorting arrays in @command{gawk}.  It also describes how @command{gawk}
-provides arrays of arrays.
+Deleting array elements and whole arrays is described, as well as
+sorting arrays in @command{gawk}.  The @value{CHAPTER} also describes how
+@command{gawk} provides arrays of arrays.
 
 @item
 @ref{Functions},
@@ -1676,17 +1676,17 @@ as well as how to define your own functions.  It also discusses how
 @item
 Part II shows how to use @command{awk} and @command{gawk} for problem solving.
 There is lots of code here for you to read and learn from.
-It contains the following chapters:
+This part contains the following chapters:
 
 @c nested
 @itemize @value{MINUS}
 @item
-@ref{Library Functions}, which provides a number of functions meant to
+@ref{Library Functions}, provides a number of functions meant to
 be used from main @command{awk} programs.
 
 @item
 @ref{Sample Programs},
-which provides many sample @command{awk} programs.
+provides many sample @command{awk} programs.
 @end itemize
 
 Reading these two chapters allows you to see @command{awk}
@@ -1739,7 +1739,7 @@ including the GNU General Public License:
 @item
 @ref{Language History},
 describes how the @command{awk} language has evolved since
-its first release to present.  It also describes how @command{gawk}
+its first release to the present.  It also describes how @command{gawk}
 has acquired features over time.
 
 @item
@@ -1782,7 +1782,7 @@ are completely unfamiliar with computer programming.
 @item
 @uref{http://www.gnu.org/software/gawk/manual/html_node/Glossary.html,
 The Glossary}
-defines most, if not all of, the significant terms used
+defines most, if not all, of the significant terms used
 throughout the @value{DOCUMENT}.  If you find terms that you aren't familiar with,
 try looking them up here.
 
@@ -1809,7 +1809,7 @@ and some possible future directions for @command{gawk} development.
 provides some very cursory background material for those who
 are completely unfamiliar with computer programming.
 
-The @ref{Glossary}, defines most, if not all of, the significant terms used
+The @ref{Glossary}, defines most, if not all, of the significant terms used
 throughout the @value{DOCUMENT}.  If you find terms that you aren't familiar with,
 try looking them up here.
 
@@ -1852,7 +1852,7 @@ This typically represents the command's standard output.
 Output from the command, usually its standard output, appears
 @code{like this}.
 @end ifset
-Error messages, and other output on the command's standard error, are preceded
+Error messages and other output on the command's standard error are preceded
 by the glyph ``@error{}''.  For example:
 
 @example
@@ -1879,7 +1879,7 @@ there are special characters called ``control characters.''  These are
 characters that you type by holding down both the @kbd{CONTROL} key and
 another key, at the same time.  For example, a @kbd{Ctrl-d} is typed
 by first pressing and holding the @kbd{CONTROL} key, next
-pressing the @kbd{d} key and finally releasing both keys.
+pressing the @kbd{d} key, and finally releasing both keys.
 
 For the sake of brevity, throughout this @value{DOCUMENT}, we refer to
 Brian Kernighan's version of @command{awk} as ``BWK @command{awk}.''
@@ -1915,7 +1915,7 @@ the picture of a flashlight in the margin, as shown here.
 @value{DARKCORNER}
 @end iftex
 @ifnottex
-``(d.c.)''.
+``(d.c.).''
 @end ifnottex
 @ifclear FOR_PRINT
 They also appear in the index under the heading ``dark corner.''
@@ -1950,12 +1950,12 @@ Emacs editor.  GNU Emacs is the most widely used version of Emacs today.
 @cindex GPL (General Public License)
 @cindex General Public License, See GPL
 @cindex documentation, online
-The GNU@footnote{GNU stands for ``GNU's not Unix.''}
+The GNU@footnote{GNU stands for ``GNU's Not Unix.''}
 Project is an ongoing effort on the part of the Free Software
 Foundation to create a complete, freely distributable, POSIX-compliant
 computing environment.
-The FSF uses the ``GNU General Public License'' (GPL) to ensure that
-their software's
+The FSF uses the GNU General Public License (GPL) to ensure that
+its software's
 source code is always available to the end user.
 @ifclear FOR_PRINT
 A copy of the GPL is included
@@ -2015,7 +2015,7 @@ version of @command{awk}.
 I started working with that version in the fall of 1988.
 As work on it progressed,
 the FSF published several preliminary versions (numbered 0.@var{x}).
-In 1996, Edition 1.0 was released with @command{gawk} 3.0.0.
+In 1996, edition 1.0 was released with @command{gawk} 3.0.0.
 The FSF published the first two editions under
 the title @cite{The GNU Awk User's Guide}.
 @ifset FOR_PRINT
@@ -2027,7 +2027,7 @@ the third edition in 2001.
 This edition maintains the basic structure of the previous editions.
 For FSF edition 4.0, the content was thoroughly reviewed and updated. All
 references to @command{gawk} versions prior to 4.0 were removed.
-Of significant note for that edition was @ref{Debugger}.
+Of significant note for that edition was the addition of @ref{Debugger}.
 
 For FSF edition
 @ifclear FOR_PRINT
@@ -2042,7 +2042,7 @@ and the major new additions are @ref{Arbitrary Precision Arithmetic},
 and @ref{Dynamic Extensions}.
 
 This @value{DOCUMENT} will undoubtedly continue to evolve.  If you
-find an error in this @value{DOCUMENT}, please report it!  @DBXREF{Bugs}
+find an error in the @value{DOCUMENT}, please report it!  @DBXREF{Bugs}
 for information on submitting problem reports electronically.
 
 @ifset FOR_PRINT
@@ -2052,7 +2052,7 @@ for information on submitting problem reports electronically.
 You may have a newer version of @command{gawk} than the
 one described here.  To find out what has changed,
 you should first look at the @file{NEWS} file in the @command{gawk}
-distribution, which provides a high-level summary of what changed in
+distribution, which provides a high-level summary of the changes in
 each release.
 
 You can then look at the @uref{http://www.gnu.org/software/gawk/manual/,
@@ -2106,7 +2106,7 @@ The initial draft of @cite{The GAWK Manual} had the following acknowledgments:
 Many people need to be thanked for their assistance in producing this
 manual.  Jay Fenlason contributed many ideas and sample programs.  Richard
 Mlynarik and Robert Chassell gave helpful comments on drafts of this
-manual.  The paper @cite{A Supplemental Document for @command{awk}} by John W.@:
+manual.  The paper @cite{A Supplemental Document for AWK} by John W.@:
 Pierce of the Chemistry Department at UC San Diego, pinpointed several
 issues relevant both to @command{awk} implementation and to this manual, that
 would otherwise have escaped us.
@@ -2117,12 +2117,18 @@ I would like to acknowledge Richard M.@: Stallman, for his vision of a
 better world and for his courage in founding the FSF and starting the
 GNU Project.
 
+@ifclear FOR_PRINT
 Earlier editions of this @value{DOCUMENT} had the following acknowledgements:
+@end ifclear
+@ifset FOR_PRINT
+The previous edition of this @value{DOCUMENT} had
+the following acknowledgements:
+@end ifset
 
 @quotation
 The following people (in alphabetical order)
 provided helpful comments on various
-versions of this book,
+versions of this book:
 Rick Adams,
 Dr.@: Nelson H.F. Beebe,
 Karl Berry,
@@ -2150,7 +2156,7 @@ Robert J.@: Chassell provided much valuable advice on
 the use of Texinfo.
 He also deserves special thanks for
 convincing me @emph{not} to title this @value{DOCUMENT}
-@cite{How To Gawk Politely}.
+@cite{How to Gawk Politely}.
 Karl Berry helped significantly with the @TeX{} part of Texinfo.
 
 @cindex Hartholz, Marshall
@@ -2234,9 +2240,9 @@ a number of people. @DBXREF{Contributors} for the full list.
 
 @ifset FOR_PRINT
 @cindex Oram, Andy
-Thanks to Andy Oram, of O'Reilly Media, for initiating
+Thanks to Andy Oram of O'Reilly Media for initiating
 the fourth edition and for his support during the work.
-Thanks to Jasmine Kwityn for her copy-editing work.
+Thanks to Jasmine Kwityn for her copyediting work.
 @end ifset
 
 Thanks to Michael Brennan for the Forewords.
@@ -2244,7 +2250,7 @@ Thanks to Michael Brennan for the Forewords.
 @cindex Duman, Patrice
 @cindex Berry, Karl
 Thanks to Patrice Dumas for the new @command{makeinfo} program.
-Thanks to Karl Berry who continues to work to keep
+Thanks to Karl Berry, who continues to work to keep
 the Texinfo markup language sane.
 
 @cindex Kernighan, Brian
@@ -2254,8 +2260,8 @@ Robert P.J.@: Day, Michael Brennan, and Brian Kernighan kindly acted as
 reviewers for the 2015 edition of this @value{DOCUMENT}. Their feedback
 helped improve the final work.
 
-I would like to thank Brian Kernighan for invaluable assistance during the
-testing and debugging of @command{gawk}, and for ongoing
+I would also like to thank Brian Kernighan for his invaluable assistance during the
+testing and debugging of @command{gawk}, and for his ongoing
 help and advice in clarifying numerous points about the language.
 We could not have done nearly as good a job on either @command{gawk}
 or its documentation without his help.
@@ -2366,9 +2372,9 @@ an advanced feature that we will ignore for now;
 pattern to search for and one action to perform
 upon finding the pattern.
 
-Syntactically, a rule consists of a pattern followed by an action.  The
-action is enclosed in braces to separate it from the pattern.
-Newlines usually separate rules.  Therefore, an @command{awk}
+Syntactically, a rule consists of a @dfn{pattern} followed by an
+@dfn{action}.  The action is enclosed in braces to separate it from the
+pattern.  Newlines usually separate rules.  Therefore, an @command{awk}
 program looks like this:
 
 @example
@@ -2442,8 +2448,8 @@ awk '@var{program}' @var{input-file1} @var{input-file2} @dots{}
 @end example
 
 @noindent
-where @var{program} consists of a series of @var{patterns} and
-@var{actions}, as described earlier.
+where @var{program} consists of a series of patterns and
+actions, as described earlier.
 
 @cindex single quote (@code{'})
 @cindex @code{'} (single quote)
@@ -2462,12 +2468,12 @@ programs from shell scripts, because it avoids the need for a separate
 file for the @command{awk} program.  A self-contained shell script is more
 reliable because there are no other files to misplace.
 
-Later in this chapter,
+Later in this chapter, in
 @ifdocbook
 the section
 @end ifdocbook
 @ref{Very Simple},
-presents several short,
+we'll see examples of several short,
 self-contained programs.
 
 @node Read Terminal
@@ -2488,10 +2494,10 @@ awk '@var{program}'
 which usually means whatever you type on the keyboard.  This continues
 until you indicate end-of-file by typing @kbd{Ctrl-d}.
 @ifset FOR_PRINT
-(On other operating systems, the end-of-file character may be different.)
+(On non-POSIX operating systems, the end-of-file character may be different.)
 @end ifset
 @ifclear FOR_PRINT
-(On other operating systems, the end-of-file character may be different.
+(On non-POSIX operating systems, the end-of-file character may be different.
 For example, on OS/2, it is @kbd{Ctrl-z}.)
 @end ifclear
 
@@ -2595,7 +2601,7 @@ text, instead of the magic @samp{\47}.)
 @cindex single quote (@code{'}) in @command{gawk} command lines
 @c STARTOFRANGE qs2x
 @cindex @code{'} (single quote) in @command{gawk} command lines
-If you want to clearly identify your @command{awk} program files as such,
+If you want to clearly identify an @command{awk} program file as such,
 you can add the extension @file{.awk} to the @value{FN}.  This doesn't
 affect the execution of the @command{awk} program but it does make
 ``housekeeping'' easier.
@@ -2809,7 +2815,7 @@ The next @value{SUBSECTION} describes the shell's quoting rules.
 @end quotation
 
 @node Quoting
-@subsection Shell-Quoting Issues
+@subsection Shell Quoting Issues
 @cindex shell quoting, rules for
 
 @menu
@@ -2946,7 +2952,7 @@ $ @kbd{awk 'BEGIN @{ print "Here is a single quote <'"'"'>" @}'}
 
 @noindent
 This program consists of three concatenated quoted strings.  The first and the
-third are single quoted, the second is double quoted.
+third are single-quoted, and the second is double-quoted.
 
 This can be ``simplified'' to:
 
@@ -2985,7 +2991,7 @@ $ @kbd{awk 'BEGIN @{ print "Here is a double quote <\42>" @}'}
 @end example
 
 @noindent
-This works nicely, except that you should comment clearly what the
+This works nicely, but you should comment clearly what the
 escapes mean.
 
 A fourth option is to use command-line variable assignment, like this:
@@ -2996,11 +3002,11 @@ $ @kbd{awk -v sq="'" 'BEGIN @{ print "Here is a single quote <" sq ">" @}'}
 @end example
 
 (Here, the two string constants and the value of @code{sq} are concatenated
-into a single string which is printed by @code{print}.)
+into a single string that is printed by @code{print}.)
 
 If you really need both single and double quotes in your @command{awk}
 program, it is probably best to move it into a separate file, where
-the shell won't be part of the picture, and you can say what you mean.
+the shell won't be part of the picture and you can say what you mean.
 
 @node DOS Quoting
 @subsubsection Quoting in MS-Windows Batch Files
@@ -3099,7 +3105,7 @@ of green crates shipped, the number of red boxes shipped, the number of
 orange bags shipped, and the number of blue packages shipped,
 respectively.  There are 16 entries, covering the 12 months of last year
 and the first four months of the current year.
-An empty line separates the data for the two years.
+An empty line separates the data for the two years:
 
 @example
 @c file eg/data/inventory-shipped
@@ -3133,7 +3139,7 @@ The following command runs a simple @command{awk} program that searches the
 input file @file{mail-list} for the character string @samp{li} (a
 grouping of characters is usually called a @dfn{string};
 the term @dfn{string} is based on similar usage in English, such
-as ``a string of pearls,'' or ``a string of cars in a train''):
+as ``a string of pearls'' or ``a string of cars in a train''):
 
 @example
 awk '/li/ @{ print $0 @}' mail-list
@@ -3180,7 +3186,7 @@ omitting the @code{print} statement but retaining the braces makes an
 empty action that does nothing (i.e., no lines are printed).
 
 @cindex @command{awk} programs, one-line examples
-Many practical @command{awk} programs are just a line or two.  Following is a
+Many practical @command{awk} programs are just a line or two long.  Following is a
 collection of useful, short programs to get you started.  Some of these
 programs contain constructs that haven't been covered yet. (The description
 of the program will give you a good idea of what is going on, but you'll
@@ -3201,7 +3207,7 @@ Print every line that is longer than 80 characters:
 awk 'length($0) > 80' data
 @end example
 
-The sole rule has a relational expression as its pattern and it has no
+The sole rule has a relational expression as its pattern and has no
 action---so it uses the default action, printing the record.
 
 @item
@@ -3288,7 +3294,7 @@ Print the even-numbered lines in the @value{DF}:
 awk 'NR % 2 == 0' data
 @end example
 
-If you use the expression @samp{NR % 2 == 1} instead,
+If you used the expression @samp{NR % 2 == 1} instead,
 the program would print the odd-numbered lines.
 @end itemize
 
@@ -8750,7 +8756,7 @@ loop that reads input records and matches them against patterns,
 like so:
 
 @example
-$ @kbd{ gawk 'BEGIN @{ PROCINFO["-", "READ_TIMEOUT"] = 5000 @}}
+$ @kbd{gawk 'BEGIN @{ PROCINFO["-", "READ_TIMEOUT"] = 5000 @}}
 > @kbd{@{ print "You entered: " $0 @}'}
 @kbd{gawk}
 @print{} You entered: gawk

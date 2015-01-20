@@ -1,3 +1,10 @@
+2015-01-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.c (api_set_array_element): Remove useless call to
+	make_aname.
+	* symbol.c (load_symbols): Ditto.
+	Thanks to Andrew Schorr for pointing out the problem.
+
 2015-01-19         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.c: Update to bison 3.0.3.
@@ -1798,7 +1805,7 @@
 2012-12-25         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Remove sym-constant from API after discussions with John
-	Haque and Andy Schorr.
+	Haque and Andrew Schorr.
 
 	* gawkapi.h (api_sym_constant): Removed field in API struct.
 	(sym_constant): Remove macro.
