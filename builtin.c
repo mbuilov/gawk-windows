@@ -510,6 +510,9 @@ do_length(int nargs)
 		 * Support for deferred loading of array elements requires that
 		 * we use the array length interface even though it isn't 
 		 * necessary for the built-in array types.
+		 *
+		 * 1/2015: The deferred arrays are gone, but this is probably
+		 * still a good idea.
 		 */
 
 		size = assoc_length(tmp);

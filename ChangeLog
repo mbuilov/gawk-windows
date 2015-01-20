@@ -1,3 +1,38 @@
+2015-01-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.c (api_set_array_element): Remove useless call to
+	make_aname.
+	* symbol.c (load_symbols): Ditto.
+	Thanks to Andrew Schorr for pointing out the problem.
+
+2015-01-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.c: Update to bison 3.0.3.
+	* command.c: Ditto.
+	* NEWS: Note same.
+
+2015-01-16         Stephen Davies        <sdavies@sdc.com.au>
+
+	* awkgram.y (rule): Set first_rule to false. Catches more cases
+	for gathering comments. Thanks to Hermann Peifer for the test case.
+
+2015-01-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: Sync with grep. Mainly copyright updates.
+	* getopt.c, getopt.h, getopt1.c getopt_int.h: Sync with GLIBC.
+	Mainly copyright updates, one minor code fix.
+
+2015-01-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Remove deferred variables.
+
+	* awk.h (register_deferred_variable): Remove declaration.
+	* awkgram.y (is_deferred_variable, process_deferred,
+	symtab_used, extensions_used, deferred_variables,
+	process_deferred): Remove declarations, bodies, and uses.
+	* builtin.c (do_length): Update comment.
+	* main.c (init_vars): Just call load_procinfo() and `load_environ()'.
+
 2015-01-07         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Update debug flags if developing.
@@ -1797,7 +1832,7 @@
 2012-12-25         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Remove sym-constant from API after discussions with John
-	Haque and Andy Schorr.
+	Haque and Andrew Schorr.
 
 	* gawkapi.h (api_sym_constant): Removed field in API struct.
 	(sym_constant): Remove macro.
