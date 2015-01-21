@@ -3220,8 +3220,13 @@ no actions run.
 
 After processing all the rules that match the line (and perhaps there are none),
 @command{awk} reads the next line.  (However,
-@pxref{Next Statement},
+@DBPXREF{Next Statement}
+@ifdocbook
+and @DBREF{Nextfile Statement}.)
+@end ifdocbook
+@ifnotdocbook
 and also @pxref{Nextfile Statement}.)
+@end ifnotdocbook
 This continues until the program reaches the end of the file.
 For example, the following @command{awk} program contains two rules:
 
@@ -3486,7 +3491,7 @@ performing bit manipulation, for runtime string translation (internationalizatio
 determining the type of a variable,
 and array sorting.
 
-As we develop our presentation of the @command{awk} language, we introduce
+As we develop our presentation of the @command{awk} language, we will introduce
 most of the variables and many of the functions. They are described
 systematically in @DBREF{Built-in Variables} and in
 @ref{Built-in}.
@@ -3540,7 +3545,7 @@ and Perl.}
 @c FIXME: Review this chapter for summary of builtin functions called.
 @itemize @value{BULLET}
 @item
-Programs in @command{awk} consist of @var{pattern}-@var{action} pairs.
+Programs in @command{awk} consist of @var{pattern}--@var{action} pairs.
 
 @item
 An @var{action} without a @var{pattern} always runs.  The default
@@ -3569,7 +3574,7 @@ part of a larger shell script (or MS-Windows batch file).
 You may use backslash continuation to continue a source line.
 Lines are automatically continued after
 a comma, open brace, question mark, colon,
-@samp{||}, @samp{&&}, @code{do} and @code{else}.
+@samp{||}, @samp{&&}, @code{do}, and @code{else}.
 @end itemize
 
 @node Invoking Gawk
@@ -3656,8 +3661,8 @@ warning that the program is empty.
 Options begin with a dash and consist of a single character.
 GNU-style long options consist of two dashes and a keyword.
 The keyword can be abbreviated, as long as the abbreviation allows the option
-to be uniquely identified.  If the option takes an argument, then the
-keyword is either immediately followed by an equals sign (@samp{=}) and the
+to be uniquely identified.  If the option takes an argument, either the
+keyword is immediately followed by an equals sign (@samp{=}) and the
 argument's value, or the keyword and the argument's value are separated
 by whitespace.
 If a particular option with a value is given more than once, it is the
@@ -3684,7 +3689,7 @@ Set the @code{FS} variable to @var{fs}
 @cindex @option{-f} option
 @cindex @option{--file} option
 @cindex @command{awk} programs, location of
-Read @command{awk} program source from @var{source-file}
+Read the @command{awk} program source from @var{source-file}
 instead of in the first nonoption argument.
 This option may be given multiple times; the @command{awk}
 program consists of the concatenation of the contents of
@@ -3752,14 +3757,14 @@ The following list describes @command{gawk}-specific options:
 @cindex @option{--characters-as-bytes} option
 Cause @command{gawk} to treat all input data as single-byte characters.
 In addition, all output written with @code{print} or @code{printf}
-are treated as single-byte characters.
+is treated as single-byte characters.
 
 Normally, @command{gawk} follows the POSIX standard and attempts to process
 its input data according to the current locale (@pxref{Locales}). This can often involve
 converting multibyte characters into wide characters (internally), and
 can lead to problems or confusion if the input data does not contain valid
-multibyte characters. This option is an easy way to tell @command{gawk}:
-``hands off my data!''.
+multibyte characters. This option is an easy way to tell @command{gawk},
+``Hands off my data!''
 
 @item @option{-c}
 @itemx @option{--traditional}
@@ -3816,7 +3821,7 @@ Enable debugging of @command{awk} programs
 By default, the debugger reads commands interactively from the keyboard
 (standard input).
 The optional @var{file} argument allows you to specify a file with a list
-of commands for the debugger to execute non-interactively.
+of commands for the debugger to execute noninteractively.
 No space is allowed between the @option{-D} and @var{file}, if
 @var{file} is supplied.
 
@@ -3876,7 +3881,7 @@ with @samp{#!} scripts (@pxref{Executable Scripts}), like so:
 @cindex portable object files, generating
 @cindex files, portable object, generating
 Analyze the source program and
-generate a GNU @command{gettext} Portable Object Template file on standard
+generate a GNU @command{gettext} portable object template file on standard
 output for all string constants that have been marked for translation.
 @xref{Internationalization},
 for information about this option.
@@ -3888,7 +3893,7 @@ for information about this option.
 @cindex GNU long options, printing list of
 @cindex options, printing list of
 @cindex printing, list of options
-Print a ``usage'' message summarizing the short and long style options
+Print a ``usage'' message summarizing the short- and long-style options
 that @command{gawk} accepts and then exit.
 
 @item @option{-i} @var{source-file}
@@ -3898,7 +3903,7 @@ that @command{gawk} accepts and then exit.
 @cindex @command{awk} programs, location of
 Read an @command{awk} source library from @var{source-file}.  This option
 is completely equivalent to using the @code{@@include} directive inside
-your program.  This option is very similar to the @option{-f} option,
+your program.  It is very similar to the @option{-f} option,
 but there are two important differences.  First, when @option{-i} is
 used, the program source is not loaded if it has been previously
 loaded, whereas with @option{-f}, @command{gawk} always loads the file.
@@ -3983,7 +3988,7 @@ when parsing numeric input data (@pxref{Locales}).
 @cindex @option{-o} option
 @cindex @option{--pretty-print} option
 Enable pretty-printing of @command{awk} programs.
-By default, output program is created in a file named @file{awkprof.out}
+By default, the output program is created in a file named @file{awkprof.out}
 (@pxref{Profiling}).
 The optional @var{file} argument allows you to specify a different
 @value{FN} for the output.
@@ -3992,8 +3997,8 @@ No space is allowed between the @option{-o} and @var{file}, if
 
 @quotation NOTE
 Due to the way @command{gawk} has evolved, with this option
-your program is still executed.  This will change in the
-next major release such that @command{gawk} will only
+your program still executes.  This will change in the
+next major release, such that @command{gawk} will only
 pretty-print the program and not run it.
 @end quotation
 
@@ -4029,7 +4034,7 @@ in the left margin, and function call counts for each function.
 Operate in strict POSIX mode.  This disables all @command{gawk}
 extensions (just like @option{--traditional}) and
 disables all extensions not allowed by POSIX.
-@xref{Common Extensions}, for a summary of the extensions
+@DBXREF{Common Extensions} for a summary of the extensions
 in @command{gawk} that are disabled by this option.
 Also,
 the following additional
@@ -4150,7 +4155,7 @@ source of data.)
 Because it is clumsy using the standard @command{awk} mechanisms to mix
 source file and command-line @command{awk} programs, @command{gawk}
 provides the @option{-e} option.  This does not require you to
-pre-empt the standard input for your source code; it allows you to easily
+preempt the standard input for your source code; it allows you to easily
 mix command-line and library source code (@pxref{AWKPATH Variable}).
 As with @option{-f}, the @option{-e} and @option{-i}
 options may also be used multiple times on the command line.
@@ -4340,7 +4345,7 @@ file, unless the file is in the current directory.
 But with @command{gawk}, if the @value{FN} supplied to the @option{-f}
 or @option{-i} options
 does not contain a directory separator @samp{/}, then @command{gawk} searches a list of
-directories (called the @dfn{search path}), one by one, looking for a
+directories (called the @dfn{search path}) one by one, looking for a
 file with the specified name.
 
 The search path is a string consisting of directory names
@@ -4381,9 +4386,9 @@ as an entry in the path or write a null entry in the path.
 
 Different past versions of @command{gawk} would also look explicitly in
 the current directory, either before or after the path search.  As of
-@value{PVERSION} 4.1.2, this no longer happens, and if you wish to look
+@value{PVERSION} 4.1.2, this no longer happens; if you wish to look
 in the current directory, you must include @file{.} either as a separate
-entry, or as a null entry in the search path.
+entry or as a null entry in the search path.
 @end quotation
 
 The default value for @env{AWKPATH} is
@@ -4493,7 +4498,7 @@ If this variable exists, @command{gawk} includes the @value{FN}
 and line number within the @command{gawk} source code
 from which warning and/or fatal messages
 are generated.  Its purpose is to help isolate the source of a
-message, as there are multiple places which produce the
+message, as there are multiple places that produce the
 same warning or error message.
 
 @item GAWK_NO_DFA
@@ -4517,16 +4522,16 @@ This specifies the amount by which @command{gawk} should grow its
 internal evaluation stack, when needed.
 
 @item INT_CHAIN_MAX
-The intended maximum number of items @command{gawk} will maintain on a
+This specifies intended maximum number of items @command{gawk} will maintain on a
 hash chain for managing arrays indexed by integers.
 
 @item STR_CHAIN_MAX
-The intended maximum number of items @command{gawk} will maintain on a
+This specifies intended maximum number of items @command{gawk} will maintain on a
 hash chain for managing arrays indexed by strings.
 
 @item TIDYMEM
 If this variable exists, @command{gawk} uses the @code{mtrace()} library
-calls from GNU LIBC to help track down possible memory leaks.
+calls from the GNU C library to help track down possible memory leaks.
 @end table
 
 @node Exit Status
@@ -4563,7 +4568,7 @@ The @code{@@include} keyword can be used to read external @command{awk} source
 files.  This gives you the ability to split large @command{awk} source files
 into smaller, more manageable pieces, and also lets you reuse common @command{awk}
 code from various @command{awk} scripts.  In other words, you can group
-together @command{awk} functions, used to carry out specific tasks,
+together @command{awk} functions used to carry out specific tasks
 into external files. These files can be used just like function libraries,
 using the @code{@@include} keyword in conjunction with the @env{AWKPATH}
 environment variable.  Note that source files may also be included
@@ -4653,11 +4658,12 @@ of the @env{AWKPATH} variable in command-line file searches
 This is very helpful in constructing @command{gawk} function libraries.
 If you have a large script with useful, general-purpose @command{awk}
 functions, you can break it down into library files and put those files
-in a special directory.  You can then include those ``libraries,'' using
-either the full pathnames of the files, or by setting the @env{AWKPATH}
+in a special directory.  You can then include those ``libraries,''
+either by using the full pathnames of the files, or by setting the @env{AWKPATH}
 environment variable accordingly and then using @code{@@include} with
-just the file part of the full pathname. Of course, you can have more
-than one directory to keep library files; the more complex the working
+just the file part of the full pathname. Of course,
+you can keep library files in more than one directory;
+the more complex the working
 environment is, the more directories you may need to organize the files
 to be included.
 
@@ -4670,8 +4676,8 @@ In particular, @code{@@include} is very useful for writing CGI scripts
 to be run from web pages.
 
 As mentioned in @ref{AWKPATH Variable}, the current directory is always
-searched first for source files, before searching in @env{AWKPATH},
-and this also applies to files named with @code{@@include}.
+searched first for source files, before searching in @env{AWKPATH};
+this also applies to files named with @code{@@include}.
 
 @node Loading Shared Libraries
 @section Loading Dynamic Extensions into Your Program
@@ -4725,8 +4731,8 @@ It also describes the @code{ordchr} extension.
 @cindex features, deprecated
 @cindex obsolete features
 This @value{SECTION} describes features and/or command-line options from
-previous releases of @command{gawk} that are either not available in the
-current version or that are still supported but deprecated (meaning that
+previous releases of @command{gawk} that either are not available in the
+current version or are still supported but deprecated (meaning that
 they will @emph{not} be in the next release).
 
 The process-related special files @file{/dev/pid}, @file{/dev/ppid},
@@ -4823,7 +4829,7 @@ to run @command{awk}.
 
 @item
 The three standard options for all versions of @command{awk} are
-@option{-f}, @option{-F} and @option{-v}.  @command{gawk} supplies these
+@option{-f}, @option{-F}, and @option{-v}.  @command{gawk} supplies these
 and many others, as well as corresponding GNU-style long options.
 
 @item
@@ -4860,7 +4866,7 @@ and @option{-f} command-line options.
 @item
 @command{gawk} allows you to load additional functions written in C
 or C++ using the @code{@@load} statement and/or the @option{-l} option.
-(This advanced feature is described later on in @ref{Dynamic Extensions}.)
+(This advanced feature is described later, in @ref{Dynamic Extensions}.)
 @end itemize
 
 @node Regexp
@@ -5073,7 +5079,7 @@ Horizontal TAB, @kbd{Ctrl-i}, ASCII code 9 (HT).
 @cindex @code{\} (backslash), @code{\v} escape sequence
 @cindex backslash (@code{\}), @code{\v} escape sequence
 @item \v
-Vertical tab, @kbd{Ctrl-k}, ASCII code 11 (VT).
+Vertical TAB, @kbd{Ctrl-k}, ASCII code 11 (VT).
 
 @cindex @code{\} (backslash), @code{\}@var{nnn} escape sequence
 @cindex backslash (@code{\}), @code{\}@var{nnn} escape sequence
@@ -5143,7 +5149,7 @@ characters @samp{a+b}.
 @cindex @code{\} (backslash), in escape sequences
 @cindex portability
 For complete portability, do not use a backslash before any character not
-shown in the previous list and that is not an operator.
+shown in the previous list or that is not an operator.
 
 @c 11/2014: Moved so as to not stack sidebars
 @sidebar Backslash Before Regular Characters
@@ -5240,7 +5246,7 @@ are recognized and converted into corresponding real characters as
 the very first step in processing regexps.
 
 Here is a list of metacharacters.  All characters that are not escape
-sequences and that are not listed in the following stand for themselves:
+sequences and that are not listed here stand for themselves:
 
 @c Use @asis so the docbook comes out ok. Sigh.
 @table @asis
@@ -5363,7 +5369,7 @@ just @samp{p} if no @samp{h}s are present.
 There are two subtle points to understand about how @samp{*} works.
 First, the @samp{*} applies only to the single preceding regular expression
 component (e.g., in @samp{ph*}, it applies just to the @samp{h}).
-To cause @samp{*} to apply to a larger sub-expression, use parentheses:
+To cause @samp{*} to apply to a larger subexpression, use parentheses:
 @samp{(ph)*} matches @samp{ph}, @samp{phph}, @samp{phphph}, and so on.
 
 Second, @samp{*} finds as many repetitions as possible. If the text
@@ -5402,10 +5408,10 @@ is repeated at least @var{n} times:
 Matches @samp{whhhy}, but not @samp{why} or @samp{whhhhy}.
 
 @item wh@{3,5@}y
-Matches @samp{whhhy}, @samp{whhhhy}, or @samp{whhhhhy}, only.
+Matches @samp{whhhy}, @samp{whhhhy}, or @samp{whhhhhy} only.
 
 @item wh@{2,@}y
-Matches @samp{whhy} or @samp{whhhy}, and so on.
+Matches @samp{whhy}, @samp{whhhy}, and so on.
 @end table
 
 @cindex POSIX @command{awk}, interval expressions in
@@ -5534,7 +5540,7 @@ POSIX standard.
 (a space is printable but not visible, whereas an @samp{a} is both)
 @item @code{[:lower:]} @tab Lowercase alphabetic characters
 @item @code{[:print:]} @tab Printable characters (characters that are not control characters)
-@item @code{[:punct:]} @tab Punctuation characters (characters that are not letters, digits
+@item @code{[:punct:]} @tab Punctuation characters (characters that are not letters, digits,
 control characters, or space characters)
 @item @code{[:space:]} @tab Space characters (such as space, TAB, and formfeed, to name a few)
 @item @code{[:upper:]} @tab Uppercase alphabetic characters
@@ -28051,8 +28057,8 @@ complete detail in
 @cite{GNU gettext tools}}.)
 @end ifnotinfo
 As of this writing, the latest version of GNU @command{gettext} is
-@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.19.3.tar.gz,
-@value{PVERSION} 0.19.3}.
+@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.19.4.tar.gz,
+@value{PVERSION} 0.19.4}.
 
 If a translation of @command{gawk}'s messages exists,
 then @command{gawk} produces usage messages, warnings,
@@ -29700,7 +29706,7 @@ is available like so:
 @example
 $ @kbd{gawk --version}
 @print{} GNU Awk 4.1.2, API: 1.1 (GNU MPFR 3.1.0-p3, GNU MP 5.0.2)
-@print{} Copyright (C) 1989, 1991-2014 Free Software Foundation.
+@print{} Copyright (C) 1989, 1991-2015 Free Software Foundation.
 @dots{}
 @end example
 
@@ -37561,7 +37567,7 @@ git clone git://github.com/onetrueawk/awk bwkawk
 @end example
 
 @noindent
-This command creates a copy of the @uref{http://www.git-scm.com, Git}
+This command creates a copy of the @uref{http://git-scm.com, Git}
 repository in a directory named @file{bwkawk}.  If you leave that argument
 off the @command{git} command line, the repository copy is created in a
 directory named @file{awk}.
@@ -37844,7 +37850,7 @@ However, if you want to modify @command{gawk} and contribute back your
 changes, you will probably wish to work with the development version.
 To do so, you will need to access the @command{gawk} source code
 repository.  The code is maintained using the
-@uref{http://git-scm.com/, Git distributed version control system}.
+@uref{http://git-scm.com, Git distributed version control system}.
 You will need to install it if your system doesn't have it.
 Once you have done so, use the command:
 
