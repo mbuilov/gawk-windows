@@ -565,7 +565,6 @@ load_symbols()
 
 	sym_array->parent_array = PROCINFO_node;
 	sym_array->vname = estrdup("identifiers", 11);
-	make_aname(sym_array);
 
 	user = make_string("user", 4);
 	extension = make_string("extension", 9);
