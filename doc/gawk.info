@@ -29443,6 +29443,21 @@ ANSI
      C++ programming languages.  These standards often become
      international standards as well. See also "ISO."
 
+Argument
+     An argument can be two different things.  It can be an option or a
+     file name passed to a command while invoking it from the command
+     line, or it can be something passed to a "function" inside a
+     program, e.g.  inside `awk'.
+
+     In the latter case, an argument can be passed to a function in two
+     ways.  Either it is given to the called function by value, i.e., a
+     copy of the value of the variable is made available to the called
+     function, but the original variable cannot be modified by the
+     function itself; or it is given by reference, i.e., a pointer to
+     the interested variable is passed to the function, which can then
+     directly modify it. In `awk' scalars are passed by value, and
+     arrays are passed by reference.  See "Pass By Value/Reference."
+
 Array
      A grouping of multiple values under the same name.  Most languages
      just provide sequential arrays.  `awk' provides associative arrays.
@@ -29478,6 +29493,26 @@ Bash
      The GNU version of the standard shell (the Bourne-Again SHell).
      See also "Bourne Shell."
 
+Binary
+     Base-two notation, where the digits are `0'-`1'. Since electronic
+     circuitry works "naturally" in base 2 (just think of Off/On),
+     everything inside a computer is calculated using base 2. Each digit
+     represents the presence (or absence) of a power of 2 and is called
+     a "bit". So, for example, the base-two number `10101' is the same
+     as decimal 21, ((1 x 16) + (1 x 4) + (1 x 1)).
+
+     Since base-two numbers quickly become very long to read and write,
+     they are usually grouped by 3 (i.e., they are read as octal
+     numbers), or by 4 (i.e., they are read as hexadecimal numbers).
+     There is no direct way to insert base 2 numbers in a C program.
+     If need arises, such numbers are usually inserted as octal or
+     hexadecimal numbers. The number of base-two digits that fit into
+     registers used for representing integer numbers in computers is a
+     rough indication of the computing power of the computer itself.
+     Most computers nowadays use 64 bits for representing integer
+     numbers in their registers, but 32-bit, 16-bit and 8-bit registers
+     have been widely used in the past.  *Note Nondecimal-numbers::.
+
 Bit
      Short for "Binary Digit."  All values in computer memory
      ultimately reduce to binary digits: values that are either zero or
@@ -29506,6 +29541,19 @@ Braces
      The characters `{' and `}'.  Braces are used in `awk' for
      delimiting actions, compound statements, and function bodies.
 
+Bracket Expression
+     Inside a "regular expression", an expression included in square
+     brackets, meant to designate a single character as belonging to a
+     specified character class. A bracket expression can contain a list
+     of one or more characters, like `[abc]', a range of characters,
+     like `[A-Z]', or a name, delimited by `:', that designates a known
+     set of characters, like `[:digit:]'. The form of bracket expression
+     enclosed between `:' is independent of the underlying
+     representation of the character themselves, which could utilize
+     the ASCII, ECBDIC, or Unicode codesets, depending on the
+     architecture of the computer system, and on localization.  See
+     also "Regular Expression."
+
 Built-in Function
      The `awk' language provides built-in functions that perform various
      numerical, I/O-related, and string computations.  Examples are
@@ -29533,8 +29581,24 @@ C
      In general, `gawk' attempts to be as similar to the 1990 version
      of ISO C as makes sense.
 
+C Shell
+     The C Shell (`csh' or its improved version, `tcsh') is a Unix
+     shell that was created by Bill Joy in the late 1970s. The C shell
+     was differentiated from other shells by its interactive features
+     and overall style, which looks more like C. The C Shell is not
+     backward compatible with the Bourne Shell, so special attention is
+     required when converting scripts written for other Unix shells to
+     the C shell, especially with regard to the management of shell
+     variables.  See also "Bourne Shell."
+
 C++
      A popular object-oriented programming language derived from C.
+
+Character Class
+     See "Bracket Expression."
+
+Character List
+     See "Bracket Expression."
 
 Character Set
      The set of numeric codes used by a computer system to represent the
@@ -29563,9 +29627,20 @@ Compiler
      machine-executable object code.  The object code is then executed
      directly by the computer.  See also "Interpreter."
 
+Complemented Bracket Expression
+     The negation of a "bracket expression".  All that is _not_
+     described by a given bracket expression. The symbol `^' precedes
+     the negated bracket expression.  E.g.: `[[^:digit:]' designates
+     whatever character is not a digit. `[^bad]' designates whatever
+     character is not one of the letters `b', `a', or `d'.  See
+     "Bracket Expression."
+
 Compound Statement
      A series of `awk' statements, enclosed in curly braces.  Compound
      statements may be nested.  (*Note Statements::.)
+
+Computed Regexps
+     See "Dynamic Regular Expressions."
 
 Concatenation
      Concatenating two strings means sticking them together, one after
@@ -29579,6 +29654,12 @@ Conditional Expression
      is true, the value of the whole expression is the value of EXPR2;
      otherwise the value is EXPR3.  In either case, only one of EXPR2
      and EXPR3 is evaluated. (*Note Conditional Exp::.)
+
+Control Statement
+     A control statement is an instruction to perform a given operation
+     or a set of operations inside an `awk' program, if a given
+     condition is true. Control statements are: `if', `for', `while',
+     and `do' (*note Statements::).
 
 Cookie
      A peculiar goodie, token, saying or remembrance produced by or
@@ -29686,6 +29767,12 @@ Format
      are controlled by the format strings contained in the predefined
      variables `CONVFMT' and `OFMT'. (*Note Control Letters::.)
 
+Fortran
+     Shorthand for FORmula TRANslator, one of the first programming
+     languages available for scientific calculations. It was created by
+     John Backus, and has been available since 1957. It is still in use
+     today.
+
 Free Documentation License
      This document describes the terms under which this Info file is
      published and may be copied. (*Note GNU Free Documentation
@@ -29701,9 +29788,16 @@ FSF
      See "Free Software Foundation."
 
 Function
-     A specialized group of statements used to encapsulate general or
-     program-specific tasks.  `awk' has a number of built-in functions,
-     and also allows you to define your own.  (*Note Functions::.)
+     A part of an `awk' program that can be invoked from every point of
+     the program, to perform a task.  `awk' has several built-in
+     functions.  Users can define their own functions in every part of
+     the program.  Function can be recursive, i.e., they may invoke
+     themselves.  *Note Functions::.  In `gawk' it is also possible to
+     have functions shared among different programs, and included where
+     required using the `@include' directive (*note Include Files::).
+     In `gawk' the name of the function that should be invoked can be
+     generated at run time, i.e., dynamically.  The `gawk' extension
+     API provides constructor functions (*note Constructor Functions::).
 
 `gawk'
      The GNU implementation of `awk'.
@@ -29799,6 +29893,12 @@ Keyword
      `else', `exit', `for...in', `for', `function', `func', `if',
      `next', `nextfile', `switch', and `while'.
 
+Korn Shell
+     The Korn Shell (`ksh') is a Unix shell which was developed by
+     David Korn at Bell Laboratories in the early 1980s. The Korn Shell
+     is backward-compatible with the Bourne shell and includes many
+     features of the C shell.  See also "Bourne Shell."
+
 Lesser General Public License
      This document describes the terms under which binary library
      archives or shared objects, and their source code may be
@@ -29836,6 +29936,13 @@ Metacharacters
      Instead, they denote regular expression operations, such as
      repetition, grouping, or alternation.
 
+Nesting
+     Nesting is where information is organized in layers, or where
+     objects contain other similar objects.  In `gawk' the `@include'
+     directive can be nested. The "natural" nesting of arithmetic and
+     logical operations can be changed using parentheses (*note
+     Precedence::).
+
 No-op
      An operation that does nothing.
 
@@ -29855,6 +29962,11 @@ Octal
      are written in C using a leading `0', to indicate their base.
      Thus, `013' is 11 ((1 x 8) + 3).  *Note Nondecimal-numbers::.
 
+Output Record
+     A single chunk of data that is written out by `awk'.  Usually, an
+     `awk' output record consists of one or more lines of text.  *Note
+     Records::.
+
 Pattern
      Patterns tell `awk' which input records are interesting to which
      rules.
@@ -29869,6 +29981,9 @@ PEBKAC
      An acronym describing what is possibly the most frequent source of
      computer usage problems. (Problem Exists Between Keyboard And
      Chair.)
+
+Plug-in
+     See "Extensions."
 
 POSIX
      The name for a series of standards that specify a Portable
@@ -29893,6 +30008,9 @@ Range (of input lines)
      can specify ranges of input lines for `awk' to process or it can
      specify single lines. (*Note Pattern Overview::.)
 
+Record
+     See "Input record" and "Output record."
+
 Recursion
      When a function calls itself, either directly or indirectly.  If
      this is clear, stop, and proceed to the next entry.  Otherwise,
@@ -29908,6 +30026,16 @@ Redirection
      `print' and `printf' statements to a file or a system command,
      using the `>', `>>', `|', and `|&' operators.  (*Note Getline::,
      and *note Redirection::.)
+
+Reference Counts
+     An internal mechanism in `gawk' to minimize the amount of memory
+     needed to store the value of string variables. If the value
+     assumed by a variable is used in more than one place, only one
+     copy of the value itself is kept, and the associated reference
+     count is increased when the same value is used by an additional
+     variable, and decresed when the related variable is no longer in
+     use. When the reference count goes to zero, the memory space used
+     to store the value of the variable is freed.
 
 Regexp
      See "Regular Expression."
@@ -29926,6 +30054,15 @@ Regular Expression Constant
      within slashes, such as `/foo/'.  This regular expression is chosen
      when you write the `awk' program and cannot be changed during its
      execution. (*Note Regexp Usage::.)
+
+Regular Expression Operators
+     See "Metacharacters."
+
+Rounding
+     Rounding the result of an arithmetic operation can be tricky.
+     More than one way of rounding exists, and in `gawk' it is possible
+     to choose which method should be used in a program.  *Note Setting
+     the rounding mode::.
 
 Rule
      A segment of an `awk' program that specifies how to process single
@@ -29988,6 +30125,11 @@ Special File
      handed directly to the underlying operating system--for example,
      `/dev/stderr'.  (*Note Special Files::.)
 
+Statement
+     An expression inside an `awk' program in the action part of a
+     pattern-action rule, or inside an `awk' function. A statement can
+     be a variable assignment, an array operation, a loop, etc.
+
 Stream Editor
      A program that reads records from an input stream and processes
      them one or more at a time.  This is in contrast with batch
@@ -30030,9 +30172,14 @@ UTC
      reference time for day and date calculations.  See also "Epoch"
      and "GMT."
 
+Variable
+     A name for a value. In `awk', variables may be either scalars or
+     arrays.
+
 Whitespace
      A sequence of space, TAB, or newline characters occurring inside
      an input record or a string.
+
 
 
 File: gawk.info,  Node: Copying,  Next: GNU Free Documentation License,  Prev: Glossary,  Up: Top
@@ -31629,7 +31776,7 @@ Index
                                                               (line  18)
 * artificial intelligence, gawk and:     Distribution contents.
                                                               (line  52)
-* ASCII <1>:                             Glossary.            (line 133)
+* ASCII <1>:                             Glossary.            (line 197)
 * ASCII:                                 Ordinal Functions.   (line  45)
 * asort <1>:                             Array Sorting Functions.
                                                               (line   6)
@@ -31801,7 +31948,7 @@ Index
 * BEGINFILE pattern, Boolean patterns and: Expression Patterns.
                                                               (line  69)
 * beginfile() user-defined function:     Filetrans Function.  (line  61)
-* Bentley, Jon:                          Glossary.            (line 143)
+* Bentley, Jon:                          Glossary.            (line 207)
 * Benzinger, Michael:                    Contributors.        (line  97)
 * Berry, Karl <1>:                       Ranges and Locales.  (line  74)
 * Berry, Karl:                           Acknowledgments.     (line  33)
@@ -31883,7 +32030,7 @@ Index
 * Brink, Jeroen:                         DOS Quoting.         (line  10)
 * Broder, Alan J.:                       Contributors.        (line  88)
 * Brown, Martin:                         Contributors.        (line  82)
-* BSD-based operating systems:           Glossary.            (line 611)
+* BSD-based operating systems:           Glossary.            (line 753)
 * bt debugger command (alias for backtrace): Execution Stack. (line  13)
 * Buening, Andreas <1>:                  Bugs.                (line  70)
 * Buening, Andreas <2>:                  Contributors.        (line  92)
@@ -31925,7 +32072,7 @@ Index
                                                               (line  56)
 * character lists in regular expression: Bracket Expressions. (line   6)
 * character lists, See bracket expressions: Regexp Operators. (line  56)
-* character sets (machine character encodings) <1>: Glossary. (line 133)
+* character sets (machine character encodings) <1>: Glossary. (line 197)
 * character sets (machine character encodings): Ordinal Functions.
                                                               (line  45)
 * character sets, See Also bracket expressions: Regexp Operators.
@@ -31936,7 +32083,7 @@ Index
 * Chassell, Robert J.:                   Acknowledgments.     (line  33)
 * chdir() extension function:            Extension Sample File Functions.
                                                               (line  12)
-* chem utility:                          Glossary.            (line 143)
+* chem utility:                          Glossary.            (line 207)
 * chr() extension function:              Extension Sample Ord.
                                                               (line  15)
 * chr() user-defined function:           Ordinal Functions.   (line  16)
@@ -32013,7 +32160,7 @@ Index
 * compatibility mode (gawk), octal numbers: Nondecimal-numbers.
                                                               (line  60)
 * compatibility mode (gawk), specifying: Options.             (line  81)
-* compiled programs <1>:                 Glossary.            (line 155)
+* compiled programs <1>:                 Glossary.            (line 219)
 * compiled programs:                     Basic High Level.    (line  15)
 * compiling gawk for Cygwin:             Cygwin.              (line   6)
 * compiling gawk for MS-DOS and MS-Windows: PC Compiling.     (line  13)
@@ -32059,7 +32206,7 @@ Index
 * CONVFMT variable:                      Strings And Numbers. (line  29)
 * CONVFMT variable, and array subscripts: Numeric Array Subscripts.
                                                               (line   6)
-* cookie:                                Glossary.            (line 177)
+* cookie:                                Glossary.            (line 258)
 * coprocesses <1>:                       Two-way I/O.         (line  25)
 * coprocesses:                           Redirection.         (line  96)
 * coprocesses, closing:                  Close Files And Pipes.
@@ -32083,7 +32230,7 @@ Index
 * cut.awk program:                       Cut Program.         (line  45)
 * d debugger command (alias for delete): Breakpoint Control.  (line  64)
 * d.c., See dark corner:                 Conventions.         (line  42)
-* dark corner <1>:                       Glossary.            (line 188)
+* dark corner <1>:                       Glossary.            (line 269)
 * dark corner:                           Conventions.         (line  42)
 * dark corner, "0" is actually true:     Truth Values.        (line  24)
 * dark corner, /= operator vs. /=.../ regexp constant: Assignment Ops.
@@ -32429,7 +32576,7 @@ Index
 * environment variables used by gawk:    Environment Variables.
                                                               (line   6)
 * environment variables, in ENVIRON array: Auto-set.          (line  60)
-* epoch, definition of:                  Glossary.            (line 234)
+* epoch, definition of:                  Glossary.            (line 315)
 * equals sign (=), = operator:           Assignment Ops.      (line   6)
 * equals sign (=), == operator <1>:      Precedence.          (line  65)
 * equals sign (=), == operator:          Comparison Operators.
@@ -32675,10 +32822,10 @@ Index
 * frame debugger command:                Execution Stack.     (line  27)
 * Free Documentation License (FDL):      GNU Free Documentation License.
                                                               (line   7)
-* Free Software Foundation (FSF) <1>:    Glossary.            (line 288)
+* Free Software Foundation (FSF) <1>:    Glossary.            (line 375)
 * Free Software Foundation (FSF) <2>:    Getting.             (line  10)
 * Free Software Foundation (FSF):        Manual History.      (line   6)
-* FreeBSD:                               Glossary.            (line 611)
+* FreeBSD:                               Glossary.            (line 753)
 * FS variable <1>:                       User-modified.       (line  50)
 * FS variable:                           Field Separators.    (line  15)
 * FS variable, --field-separator option and: Options.         (line  21)
@@ -32692,7 +32839,7 @@ Index
 * FS, containing ^:                      Regexp Field Splitting.
                                                               (line  59)
 * FS, in multiline records:              Multiple Line.       (line  41)
-* FSF (Free Software Foundation) <1>:    Glossary.            (line 288)
+* FSF (Free Software Foundation) <1>:    Glossary.            (line 375)
 * FSF (Free Software Foundation) <2>:    Getting.             (line  10)
 * FSF (Free Software Foundation):        Manual History.      (line   6)
 * fts() extension function:              Extension Sample File Functions.
@@ -32839,7 +32986,7 @@ Index
                                                               (line  63)
 * gawkextlib:                            gawkextlib.          (line   6)
 * gawkextlib project:                    gawkextlib.          (line   6)
-* General Public License (GPL):          Glossary.            (line 305)
+* General Public License (GPL):          Glossary.            (line 399)
 * General Public License, See GPL:       Manual History.      (line  11)
 * generate time values:                  Time Functions.      (line  25)
 * gensub <1>:                            String Functions.    (line  90)
@@ -32897,18 +33044,18 @@ Index
 * GNU awk, See gawk:                     Preface.             (line  51)
 * GNU Free Documentation License:        GNU Free Documentation License.
                                                               (line   7)
-* GNU General Public License:            Glossary.            (line 305)
-* GNU Lesser General Public License:     Glossary.            (line 396)
+* GNU General Public License:            Glossary.            (line 399)
+* GNU Lesser General Public License:     Glossary.            (line 496)
 * GNU long options <1>:                  Options.             (line   6)
 * GNU long options:                      Command Line.        (line  13)
 * GNU long options, printing list of:    Options.             (line 154)
-* GNU Project <1>:                       Glossary.            (line 314)
+* GNU Project <1>:                       Glossary.            (line 408)
 * GNU Project:                           Manual History.      (line  11)
-* GNU/Linux <1>:                         Glossary.            (line 611)
+* GNU/Linux <1>:                         Glossary.            (line 753)
 * GNU/Linux <2>:                         I18N Example.        (line  55)
 * GNU/Linux:                             Manual History.      (line  28)
 * Gordon, Assaf:                         Contributors.        (line 105)
-* GPL (General Public License) <1>:      Glossary.            (line 305)
+* GPL (General Public License) <1>:      Glossary.            (line 399)
 * GPL (General Public License):          Manual History.      (line  11)
 * GPL (General Public License), printing: Options.            (line  88)
 * grcat program:                         Group Functions.     (line  16)
@@ -33040,20 +33187,20 @@ Index
 * internationalization, localization, portability and: I18N Portability.
                                                               (line   6)
 * internationalizing a program:          Explaining gettext.  (line   6)
-* interpreted programs <1>:              Glossary.            (line 356)
+* interpreted programs <1>:              Glossary.            (line 450)
 * interpreted programs:                  Basic High Level.    (line  15)
 * interval expressions, regexp operator: Regexp Operators.    (line 116)
 * inventory-shipped file:                Sample Data Files.   (line  32)
 * invoke shell command:                  I/O Functions.       (line 106)
 * isarray:                               Type Functions.      (line  11)
-* ISO:                                   Glossary.            (line 367)
-* ISO 8859-1:                            Glossary.            (line 133)
-* ISO Latin-1:                           Glossary.            (line 133)
+* ISO:                                   Glossary.            (line 461)
+* ISO 8859-1:                            Glossary.            (line 197)
+* ISO Latin-1:                           Glossary.            (line 197)
 * Jacobs, Andrew:                        Passwd Functions.    (line  90)
 * Jaegermann, Michal <1>:                Contributors.        (line  45)
 * Jaegermann, Michal:                    Acknowledgments.     (line  60)
 * Java implementation of awk:            Other Versions.      (line 117)
-* Java programming language:             Glossary.            (line 379)
+* Java programming language:             Glossary.            (line 473)
 * jawk:                                  Other Versions.      (line 117)
 * Jedi knights:                          Undocumented.        (line   6)
 * Johansen, Chris:                       Signature Program.   (line  25)
@@ -33062,7 +33209,7 @@ Index
 * Kahrs, Ju"rgen:                        Acknowledgments.     (line  60)
 * Kasal, Stepan:                         Acknowledgments.     (line  60)
 * Kenobi, Obi-Wan:                       Undocumented.        (line   6)
-* Kernighan, Brian <1>:                  Glossary.            (line 143)
+* Kernighan, Brian <1>:                  Glossary.            (line 207)
 * Kernighan, Brian <2>:                  Basic Data Typing.   (line  54)
 * Kernighan, Brian <3>:                  Other Versions.      (line  13)
 * Kernighan, Brian <4>:                  Contributors.        (line  11)
@@ -33103,8 +33250,8 @@ Index
 * length:                                String Functions.    (line 171)
 * length of input record:                String Functions.    (line 178)
 * length of string:                      String Functions.    (line 171)
-* Lesser General Public License (LGPL):  Glossary.            (line 396)
-* LGPL (Lesser General Public License):  Glossary.            (line 396)
+* Lesser General Public License (LGPL):  Glossary.            (line 496)
+* LGPL (Lesser General Public License):  Glossary.            (line 496)
 * libmawk:                               Other Versions.      (line 125)
 * libraries of awk functions:            Library Functions.   (line   6)
 * libraries of awk functions, assertions: Assert Function.    (line   6)
@@ -33149,7 +33296,7 @@ Index
 * lint checking, undefined functions:    Pass By Value/Reference.
                                                               (line  85)
 * LINT variable:                         User-modified.       (line  88)
-* Linux <1>:                             Glossary.            (line 611)
+* Linux <1>:                             Glossary.            (line 753)
 * Linux <2>:                             I18N Example.        (line  55)
 * Linux:                                 Manual History.      (line  28)
 * list all global variables, in debugger: Debugger Info.      (line  48)
@@ -33211,7 +33358,7 @@ Index
 * mawk utility <4>:                      Getline/Pipe.        (line  62)
 * mawk utility:                          Escape Sequences.    (line 117)
 * maximum precision supported by MPFR library: Auto-set.      (line 221)
-* McIlroy, Doug:                         Glossary.            (line 177)
+* McIlroy, Doug:                         Glossary.            (line 258)
 * McPhee, Patrick:                       Contributors.        (line 100)
 * message object files:                  Explaining gettext.  (line  42)
 * message object files, converting from portable object files: I18N Example.
@@ -33239,7 +33386,7 @@ Index
 * names, functions:                      Definition Syntax.   (line  23)
 * namespace issues:                      Library Names.       (line   6)
 * namespace issues, functions:           Definition Syntax.   (line  23)
-* NetBSD:                                Glossary.            (line 611)
+* NetBSD:                                Glossary.            (line 753)
 * networks, programming:                 TCP/IP Networking.   (line   6)
 * networks, support for:                 Special Network.     (line   6)
 * newlines <1>:                          Boolean Ops.         (line  69)
@@ -33327,7 +33474,7 @@ Index
 * OFS variable <1>:                      User-modified.       (line 113)
 * OFS variable <2>:                      Output Separators.   (line   6)
 * OFS variable:                          Changing Fields.     (line  64)
-* OpenBSD:                               Glossary.            (line 611)
+* OpenBSD:                               Glossary.            (line 753)
 * OpenSolaris:                           Other Versions.      (line 100)
 * operating systems, BSD-based:          Manual History.      (line  28)
 * operating systems, PC, gawk on:        PC Using.            (line   6)
@@ -33600,7 +33747,7 @@ Index
 * programming languages, Ada:            Glossary.            (line  11)
 * programming languages, data-driven vs. procedural: Getting Started.
                                                               (line  12)
-* programming languages, Java:           Glossary.            (line 379)
+* programming languages, Java:           Glossary.            (line 473)
 * programming, basic steps:              Basic High Level.    (line  20)
 * programming, concepts:                 Basic Concepts.      (line   6)
 * pwcat program:                         Passwd Functions.    (line  23)
@@ -33962,7 +34109,7 @@ Index
 * square root:                           Numeric Functions.   (line  77)
 * srand:                                 Numeric Functions.   (line  81)
 * stack frame:                           Debugging Terms.     (line  10)
-* Stallman, Richard <1>:                 Glossary.            (line 288)
+* Stallman, Richard <1>:                 Glossary.            (line 375)
 * Stallman, Richard <2>:                 Contributors.        (line  23)
 * Stallman, Richard <3>:                 Acknowledgments.     (line  18)
 * Stallman, Richard:                     Manual History.      (line   6)
@@ -34147,14 +34294,14 @@ Index
 * undisplay debugger command:            Viewing And Changing Data.
                                                               (line  80)
 * undocumented features:                 Undocumented.        (line   6)
-* Unicode <1>:                           Glossary.            (line 133)
+* Unicode <1>:                           Glossary.            (line 197)
 * Unicode <2>:                           Ranges and Locales.  (line  61)
 * Unicode:                               Ordinal Functions.   (line  45)
 * uninitialized variables, as array subscripts: Uninitialized Subscripts.
                                                               (line   6)
 * uniq utility:                          Uniq Program.        (line   6)
 * uniq.awk program:                      Uniq Program.        (line  65)
-* Unix:                                  Glossary.            (line 611)
+* Unix:                                  Glossary.            (line 753)
 * Unix awk, backslashes in escape sequences: Escape Sequences.
                                                               (line 117)
 * Unix awk, close() function and:        Close Files And Pipes.
@@ -34854,8 +35001,8 @@ Ref: figure-process-flow1177224
 Ref: Basic High Level-Footnote-11180453
 Node: Basic Data Typing1180638
 Node: Glossary1183966
-Node: Copying1209124
-Node: GNU Free Documentation License1246680
-Node: Index1271816
+Node: Copying1215912
+Node: GNU Free Documentation License1253468
+Node: Index1278604
 
 End Tag Table
