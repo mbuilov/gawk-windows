@@ -3803,8 +3803,9 @@ Collating symbols
 Equivalence classes
      Locale-specific names for a list of characters that are equal. The
      name is enclosed between `[=' and `=]'.  For example, the name `e'
-     might be used to represent all of "e," "e`," and "e'." In this
-     case, `[[=e=]]' is a regexp that matches any of `e', `e'', or `e`'.
+     might be used to represent all of "e," "e^," "e`," and "e'." In
+     this case, `[[=e=]]' is a regexp that matches any of `e', `e^',
+     `e'', or `e`'.
 
    These features are very valuable in non-English-speaking locales.
 
@@ -3826,7 +3827,7 @@ Consider the following:
    This example uses the `sub()' function to make a change to the input
 record.  (`sub()' replaces the first instance of any text matched by
 the first argument with the string provided as the second argument;
-*note String Functions::).  Here, the regexp `/a+/' indicates "one or
+*note String Functions::.)  Here, the regexp `/a+/' indicates "one or
 more `a' characters," and the replacement text is `<A>'.
 
    The input contains four `a' characters.  `awk' (and POSIX) regular
@@ -3863,15 +3864,16 @@ regexp":
 This sets `digits_regexp' to a regexp that describes one or more digits,
 and tests whether the input record matches this regexp.
 
-     NOTE: When using the `~' and `!~' operators, there is a difference
-     between a regexp constant enclosed in slashes and a string
-     constant enclosed in double quotes.  If you are going to use a
-     string constant, you have to understand that the string is, in
-     essence, scanned _twice_: the first time when `awk' reads your
+     NOTE: When using the `~' and `!~' operators, be aware that there
+     is a difference between a regexp constant enclosed in slashes and
+     a string constant enclosed in double quotes.  If you are going to
+     use a string constant, you have to understand that the string is,
+     in essence, scanned _twice_: the first time when `awk' reads your
      program, and the second time when it goes to match the string on
      the lefthand side of the operator with the pattern on the right.
      This is true of any string-valued expression (such as
-     `digits_regexp', shown previously), not just string constants.
+     `digits_regexp', shown in the previous example), not just string
+     constants.
 
    What difference does it make if the string is scanned twice? The
 answer has to do with escape sequences, and particularly with
@@ -3968,7 +3970,7 @@ letters, digits, or underscores (`_'):
 
 `\B'
      Matches the empty string that occurs between two word-constituent
-     characters. For example, `/\Brat\B/' matches `crate' but it does
+     characters. For example, `/\Brat\B/' matches `crate', but it does
      not match `dirty rat'.  `\B' is essentially the opposite of `\y'.
 
    There are two other operators that work on buffers.  In Emacs, a
@@ -3977,10 +3979,10 @@ letters, digits, or underscores (`_'):
 operators are:
 
 `\`'
-     Matches the empty string at the beginning of a buffer (string).
+     Matches the empty string at the beginning of a buffer (string)
 
 `\''
-     Matches the empty string at the end of a buffer (string).
+     Matches the empty string at the end of a buffer (string)
 
    Because `^' and `$' always work in terms of the beginning and end of
 strings, these operators don't add any new capabilities for `awk'.
@@ -4151,7 +4153,7 @@ one line.  Each record is automatically split into chunks called
 parts of a record.
 
    On rare occasions, you may need to use the `getline' command.  The
-`getline' command is valuable, both because it can do explicit input
+`getline' command is valuable both because it can do explicit input
 from any number of files, and because the files used with it do not
 have to be named on the `awk' command line (*note Getline::).
 
@@ -4200,8 +4202,8 @@ File: gawk.info,  Node: awk split records,  Next: gawk split records,  Up: Recor
 
 Records are separated by a character called the "record separator".  By
 default, the record separator is the newline character.  This is why
-records are, by default, single lines.  A different character can be
-used for the record separator by assigning the character to the
+records are, by default, single lines.  To use a different character
+for the record separator, simply assign that character to the
 predefined variable `RS'.
 
    Like any other variable, the value of `RS' can be changed in the
@@ -4216,14 +4218,14 @@ BEGIN/END::).  For example:
      awk 'BEGIN { RS = "u" }
           { print $0 }' mail-list
 
-changes the value of `RS' to `u', before reading any input.  This is a
-string whose first character is the letter "u"; as a result, records
-are separated by the letter "u."  Then the input file is read, and the
-second rule in the `awk' program (the action with no pattern) prints
-each record.  Because each `print' statement adds a newline at the end
-of its output, this `awk' program copies the input with each `u'
-changed to a newline.  Here are the results of running the program on
-`mail-list':
+changes the value of `RS' to `u', before reading any input.  The new
+value is a string whose first character is the letter "u"; as a result,
+records are separated by the letter "u".  Then the input file is read,
+and the second rule in the `awk' program (the action with no pattern)
+prints each record.  Because each `print' statement adds a newline at
+the end of its output, this `awk' program copies the input with each
+`u' changed to a newline.  Here are the results of running the program
+on `mail-list':
 
      $ awk 'BEGIN { RS = "u" }
      >      { print $0 }' mail-list
@@ -4271,11 +4273,11 @@ data file (*note Sample Data Files::), the line looks like this:
 
      Bill         555-1675     bill.drowning@hotmail.com       A
 
-It contains no `u' so there is no reason to split the record, unlike
-the others which have one or more occurrences of the `u'.  In fact,
-this record is treated as part of the previous record; the newline
-separating them in the output is the original newline in the data file,
-not the one added by `awk' when it printed the record!
+It contains no `u', so there is no reason to split the record, unlike
+the others, which each have one or more occurrences of the `u'.  In
+fact, this record is treated as part of the previous record; the
+newline separating them in the output is the original newline in the
+data file, not the one added by `awk' when it printed the record!
 
    Another way to change the record separator is on the command line,
 using the variable-assignment feature (*note Other Arguments::):
@@ -4341,8 +4343,8 @@ part of either record.
 character. However, when `RS' is a regular expression, `RT' contains
 the actual input text that matched the regular expression.
 
-   If the input file ended without any text that matches `RS', `gawk'
-sets `RT' to the null string.
+   If the input file ends without any text matching `RS', `gawk' sets
+`RT' to the null string.
 
    The following example illustrates both of these features.  It sets
 `RS' equal to a regular expression that matches either a newline or a
@@ -4440,12 +4442,12 @@ to these pieces of the record.  You don't have to use them--you can
 operate on the whole record if you want--but fields are what make
 simple `awk' programs so powerful.
 
-   You use a dollar-sign (`$') to refer to a field in an `awk' program,
+   You use a dollar sign (`$') to refer to a field in an `awk' program,
 followed by the number of the field you want.  Thus, `$1' refers to the
-first field, `$2' to the second, and so on.  (Unlike the Unix shells,
-the field numbers are not limited to single digits.  `$127' is the
-127th field in the record.)  For example, suppose the following is a
-line of input:
+first field, `$2' to the second, and so on.  (Unlike in the Unix
+shells, the field numbers are not limited to single digits.  `$127' is
+the 127th field in the record.)  For example, suppose the following is
+a line of input:
 
      This seems like a pretty nice example.
 
@@ -4462,10 +4464,9 @@ as `$7', which is `example.'.  If you try to reference a field beyond
 the last one (such as `$8' when the record has only seven fields), you
 get the empty string.  (If used in a numeric operation, you get zero.)
 
-   The use of `$0', which looks like a reference to the "zero-th"
-field, is a special case: it represents the whole input record. Use it
-when you are not interested in specific fields.  Here are some more
-examples:
+   The use of `$0', which looks like a reference to the "zeroth" field,
+is a special case: it represents the whole input record. Use it when
+you are not interested in specific fields.  Here are some more examples:
 
      $ awk '$1 ~ /li/ { print $0 }' mail-list
      -| Amelia       555-5553     amelia.zodiacusque@gmail.com    F
@@ -4513,8 +4514,8 @@ is another example of using expressions as field numbers:
      awk '{ print $(2*2) }' mail-list
 
    `awk' evaluates the expression `(2*2)' and uses its value as the
-number of the field to print.  The `*' sign represents multiplication,
-so the expression `2*2' evaluates to four.  The parentheses are used so
+number of the field to print.  The `*' represents multiplication, so
+the expression `2*2' evaluates to four.  The parentheses are used so
 that the multiplication is done before the `$' operation; they are
 necessary whenever there is a binary operator(1) in the field-number
 expression.  This example, then, prints the type of relationship (the
@@ -4538,7 +4539,7 @@ field number.
    ---------- Footnotes ----------
 
    (1) A "binary operator", such as `*' for multiplication, is one that
-takes two operands. The distinction is required, because `awk' also has
+takes two operands. The distinction is required because `awk' also has
 unary (one-operand) and ternary (three-operand) operators.
 
 
@@ -4660,7 +4661,7 @@ value of `NF' and recomputes `$0'.  (d.c.)  Here is an example:
      decremented.
 
    Finally, there are times when it is convenient to force `awk' to
-rebuild the entire record, using the current value of the fields and
+rebuild the entire record, using the current values of the fields and
 `OFS'.  To do this, use the seemingly innocuous assignment:
 
      $1 = $1   # force record to be reconstituted
@@ -4680,7 +4681,7 @@ built-in function that updates `$0', such as `sub()' and `gsub()'
    It is important to remember that `$0' is the _full_ record, exactly
 as it was read from the input.  This includes any leading or trailing
 whitespace, and the exact whitespace (or other characters) that
-separate the fields.
+separates the fields.
 
    It is a common error to try to change the field separators in a
 record simply by setting `FS' and `OFS', and then expecting a plain
@@ -4748,7 +4749,7 @@ attached, such as:
 
      John Q. Smith, LXIX, 29 Oak St., Walamazoo, MI 42139
 
-The same program would extract `*LXIX', instead of `*29*Oak*St.'.  If
+The same program would extract `*LXIX' instead of `*29*Oak*St.'.  If
 you were expecting the program to print the address, you would be
 surprised.  The moral is to choose your data layout and separator
 characters carefully to prevent such problems.  (If the data is not in
@@ -4947,11 +4948,11 @@ your field and record separators.
    Perhaps the most common use of a single character as the field
 separator occurs when processing the Unix system password file.  On
 many Unix systems, each user has a separate entry in the system
-password file, one line per user.  The information in these lines is
-separated by colons.  The first field is the user's login name and the
-second is the user's encrypted or shadow password.  (A shadow password
-is indicated by the presence of a single `x' in the second field.)  A
-password file entry might look like this:
+password file, with one line per user.  The information in these lines
+is separated by colons.  The first field is the user's login name and
+the second is the user's encrypted or shadow password.  (A shadow
+password is indicated by the presence of a single `x' in the second
+field.)  A password file entry might look like this:
 
      arnold:x:2076:10:Arnold Robbins:/home/arnold:/bin/bash
 
@@ -4979,15 +4980,14 @@ When you do this, `$1' is the same as `$0'.
    According to the POSIX standard, `awk' is supposed to behave as if
 each record is split into fields at the time it is read.  In
 particular, this means that if you change the value of `FS' after a
-record is read, the value of the fields (i.e., how they were split)
+record is read, the values of the fields (i.e., how they were split)
 should reflect the old value of `FS', not the new one.
 
    However, many older implementations of `awk' do not work this way.
 Instead, they defer splitting the fields until a field is actually
 referenced.  The fields are split using the _current_ value of `FS'!
 (d.c.)  This behavior can be difficult to diagnose. The following
-example illustrates the difference between the two methods.  (The
-`sed'(2) command prints just the first line of `/etc/passwd'.)
+example illustrates the difference between the two methods:
 
      sed 1q /etc/passwd | awk '{ FS = ":" ; print $1 }'
 
@@ -4999,6 +4999,8 @@ on an incorrect implementation of `awk', while `gawk' prints the full
 first line of the file, something like:
 
      root:x:0:0:Root:/:
+
+   (The `sed'(2) command prints just the first line of `/etc/passwd'.)
 
    ---------- Footnotes ----------
 
@@ -5153,7 +5155,7 @@ run on a system with card readers is another story!)
 splitting again.  Use `FS = FS' to make this happen, without having to
 know the current value of `FS'.  In order to tell which kind of field
 splitting is in effect, use `PROCINFO["FS"]' (*note Auto-set::).  The
-value is `"FS"' if regular field splitting is being used, or it is
+value is `"FS"' if regular field splitting is being used, or
 `"FIELDWIDTHS"' if fixed-width field splitting is being used:
 
      if (PROCINFO["FS"] == "FS")
@@ -5186,10 +5188,10 @@ what they are, and not by what they are not.
    The most notorious such case is so-called "comma-separated values"
 (CSV) data. Many spreadsheet programs, for example, can export their
 data into text files, where each record is terminated with a newline,
-and fields are separated by commas. If only commas separated the data,
+and fields are separated by commas. If commas only separated the data,
 there wouldn't be an issue. The problem comes when one of the fields
 contains an _embedded_ comma.  In such cases, most programs embed the
-field in double quotes.(1) So we might have data like this:
+field in double quotes.(1) So, we might have data like this:
 
      Robbins,Arnold,"1234 A Pretty Street, NE",MyTown,MyState,12345-6789,USA
 
@@ -5256,9 +5258,9 @@ being used.
      provides an elegant solution for the majority of cases, and the
      `gawk' developers are satisfied with that.
 
-   As written, the regexp used for `FPAT' requires that each field have
-a least one character.  A straightforward modification (changing
-changed the first `+' to `*') allows fields to be empty:
+   As written, the regexp used for `FPAT' requires that each field
+contain at least one character.  A straightforward modification
+(changing the first `+' to `*') allows fields to be empty:
 
      FPAT = "([^,]*)|(\"[^\"]+\")"
 
@@ -5266,9 +5268,8 @@ changed the first `+' to `*') allows fields to be empty:
 available for splitting regular strings (*note String Functions::).
 
    To recap, `gawk' provides three independent methods to split input
-records into fields. `gawk' uses whichever mechanism was last chosen
-based on which of the three variables--`FS', `FIELDWIDTHS', and
-`FPAT'--was last assigned to.
+records into fields.  The mechanism used is based on which of the three
+variables--`FS', `FIELDWIDTHS', or `FPAT'--was last assigned to.
 
    ---------- Footnotes ----------
 
@@ -5306,7 +5307,7 @@ empty; lines that contain only whitespace do not count.)
 `"\n\n+"' to `RS'. This regexp matches the newline at the end of the
 record and one or more blank lines after the record.  In addition, a
 regular expression always matches the longest possible sequence when
-there is a choice (*note Leftmost Longest::).  So the next record
+there is a choice (*note Leftmost Longest::).  So, the next record
 doesn't start until the first nonblank line that follows--no matter how
 many blank lines appear in a row, they are considered one record
 separator.
@@ -5318,12 +5319,12 @@ last record, the final newline is removed from the record.  In the
 second case, this special processing is not done.  (d.c.)
 
    Now that the input is separated into records, the second step is to
-separate the fields in the record.  One way to do this is to divide each
-of the lines into fields in the normal manner.  This happens by default
-as the result of a special feature.  When `RS' is set to the empty
-string, _and_ `FS' is set to a single character, the newline character
-_always_ acts as a field separator.  This is in addition to whatever
-field separations result from `FS'.(1)
+separate the fields in the records.  One way to do this is to divide
+each of the lines into fields in the normal manner.  This happens by
+default as the result of a special feature.  When `RS' is set to the
+empty string _and_ `FS' is set to a single character, the newline
+character _always_ acts as a field separator.  This is in addition to
+whatever field separations result from `FS'.(1)
 
    The original motivation for this special exception was probably to
 provide useful behavior in the default case (i.e., `FS' is equal to
@@ -5331,17 +5332,17 @@ provide useful behavior in the default case (i.e., `FS' is equal to
 newline character to separate fields, because there is no way to
 prevent it.  However, you can work around this by using the `split()'
 function to break up the record manually (*note String Functions::).
-If you have a single character field separator, you can work around the
+If you have a single-character field separator, you can work around the
 special feature in a different way, by making `FS' into a regexp for
 that single character.  For example, if the field separator is a
 percent character, instead of `FS = "%"', use `FS = "[%]"'.
 
    Another way to separate fields is to put each field on a separate
 line: to do this, just set the variable `FS' to the string `"\n"'.
-(This single character separator matches a single newline.)  A
+(This single-character separator matches a single newline.)  A
 practical example of a data file organized this way might be a mailing
-list, where each entry is separated by blank lines.  Consider a mailing
-list in a file named `addresses', which looks like this:
+list, where blank lines separate the entries.  Consider a mailing list
+in a file named `addresses', which looks like this:
 
      Jane Doe
      123 Main Street
@@ -5424,7 +5425,7 @@ File: gawk.info,  Node: Getline,  Next: Read Timeout,  Prev: Multiple Line,  Up:
 
 So far we have been getting our input data from `awk''s main input
 stream--either the standard input (usually your keyboard, sometimes the
-output from another program) or from the files specified on the command
+output from another program) or the files specified on the command
 line.  The `awk' language has a special built-in command called
 `getline' that can be used to read input under your explicit control.
 
@@ -5562,7 +5563,7 @@ and produces these results:
      free
 
    The `getline' command used in this way sets only the variables `NR',
-`FNR', and `RT' (and of course, VAR).  The record is not split into
+`FNR', and `RT' (and, of course, VAR).  The record is not split into
 fields, so the values of the fields (including `$0') and the value of
 `NF' do not change.
 
@@ -5572,8 +5573,8 @@ File: gawk.info,  Node: Getline/File,  Next: Getline/Variable/File,  Prev: Getli
 4.9.3 Using `getline' from a File
 ---------------------------------
 
-Use `getline < FILE' to read the next record from FILE.  Here FILE is a
-string-valued expression that specifies the file name.  `< FILE' is
+Use `getline < FILE' to read the next record from FILE.  Here, FILE is
+a string-valued expression that specifies the file name.  `< FILE' is
 called a "redirection" because it directs input to come from a
 different place.  For example, the following program reads its input
 record from the file `secondary.input' when it encounters a first field
@@ -5709,8 +5710,8 @@ all `awk' implementations.
      treatment of a construct like `"echo " "date" | getline'.  Most
      versions, including the current version, treat it at as `("echo "
      "date") | getline'.  (This is also how BWK `awk' behaves.)  Some
-     versions changed and treated it as `"echo " ("date" | getline)'.
-     (This is how `mawk' behaves.)  In short, _always_ use explicit
+     versions instead treat it as `"echo " ("date" | getline)'.  (This
+     is how `mawk' behaves.)  In short, _always_ use explicit
      parentheses, and then you won't have to worry.
 
 
@@ -5746,15 +5747,16 @@ File: gawk.info,  Node: Getline/Coprocess,  Next: Getline/Variable/Coprocess,  P
 4.9.7 Using `getline' from a Coprocess
 --------------------------------------
 
-Input into `getline' from a pipe is a one-way operation.  The command
-that is started with `COMMAND | getline' only sends data _to_ your
-`awk' program.
+Reading input into `getline' from a pipe is a one-way operation.  The
+command that is started with `COMMAND | getline' only sends data _to_
+your `awk' program.
 
    On occasion, you might want to send data to another program for
 processing and then read the results back.  `gawk' allows you to start
 a "coprocess", with which two-way communications are possible.  This is
 done with the `|&' operator.  Typically, you write data to the
-coprocess first and then read results back, as shown in the following:
+coprocess first and then read the results back, as shown in the
+following:
 
      print "SOME QUERY" |& "db_server"
      "db_server" |& getline
@@ -5816,7 +5818,7 @@ in mind:
      files.  (d.c.)  (See *note BEGIN/END::; also *note Auto-set::.)
 
    * Using `FILENAME' with `getline' (`getline < FILENAME') is likely
-     to be a source for confusion.  `awk' opens a separate input stream
+     to be a source of confusion.  `awk' opens a separate input stream
      from the current input file.  However, by not using a variable,
      `$0' and `NF' are still updated.  If you're doing this, it's
      probably by accident, and you should reconsider what it is you're
@@ -5824,15 +5826,15 @@ in mind:
 
    * *note Getline Summary::, presents a table summarizing the
      `getline' variants and which variables they can affect.  It is
-     worth noting that those variants which do not use redirection can
+     worth noting that those variants that do not use redirection can
      cause `FILENAME' to be updated if they cause `awk' to start
      reading a new input file.
 
    * If the variable being assigned is an expression with side effects,
      different versions of `awk' behave differently upon encountering
      end-of-file.  Some versions don't evaluate the expression; many
-     versions (including `gawk') do.  Here is an example, due to Duncan
-     Moore:
+     versions (including `gawk') do.  Here is an example, courtesy of
+     Duncan Moore:
 
           BEGIN {
               system("echo 1 > f")
@@ -5840,8 +5842,8 @@ in mind:
               print c
           }
 
-     Here, the side effect is the `++c'.  Is `c' incremented if end of
-     file is encountered, before the element in `a' is assigned?
+     Here, the side effect is the `++c'.  Is `c' incremented if
+     end-of-file is encountered before the element in `a' is assigned?
 
      `gawk' treats `getline' like a function call, and evaluates the
      expression `a[++c]' before attempting to read from `f'.  However,
@@ -5885,8 +5887,8 @@ This minor node describes a feature that is specific to `gawk'.
 
    You may specify a timeout in milliseconds for reading input from the
 keyboard, a pipe, or two-way communication, including TCP/IP sockets.
-This can be done on a per input, command, or connection basis, by
-setting a special element in the `PROCINFO' array (*note Auto-set::):
+This can be done on a per-input, per-command, or per-connection basis,
+by setting a special element in the `PROCINFO' array (*note Auto-set::):
 
      PROCINFO["input_name", "READ_TIMEOUT"] = TIMEOUT IN MILLISECONDS
 
@@ -5910,7 +5912,7 @@ for more than five seconds:
          print $0
 
    `gawk' terminates the read operation if input does not arrive after
-waiting for the timeout period, returns failure and sets `ERRNO' to an
+waiting for the timeout period, returns failure, and sets `ERRNO' to an
 appropriate string value.  A negative or zero value for the timeout is
 the same as specifying no timeout at all.
 
@@ -5950,7 +5952,7 @@ input to arrive:
 environment variable exists, `gawk' uses its value to initialize the
 timeout value.  The exclusive use of the environment variable to
 specify timeout has the disadvantage of not being able to control it on
-a per command or connection basis.
+a per-command or per-connection basis.
 
    `gawk' considers a timeout event to be an error even though the
 attempt to read from the underlying device may succeed in a later
@@ -6018,7 +6020,7 @@ File: gawk.info,  Node: Input Summary,  Next: Input Exercises,  Prev: Command-li
    * `gawk' sets `RT' to the text matched by `RS'.
 
    * After splitting the input into records, `awk' further splits the
-     record into individual fields, named `$1', `$2', and so on. `$0'
+     records into individual fields, named `$1', `$2', and so on. `$0'
      is the whole record, and `NF' indicates how many fields there are.
      The default way to split fields is between whitespace characters.
 
@@ -6032,19 +6034,21 @@ File: gawk.info,  Node: Input Summary,  Next: Input Exercises,  Prev: Command-li
 
    * Field splitting is more complicated than record splitting:
 
-     Field separator value       Fields are split ...           `awk' /
-                                                                `gawk'
+     Field separator value       Fields are split ...        `awk' /
+                                                             `gawk'
      ---------------------------------------------------------------------- 
-     `FS == " "'                 On runs of whitespace          `awk'
-     `FS == ANY SINGLE           On that character              `awk'
-     CHARACTER'                                                 
-     `FS == REGEXP'              On text matching the regexp    `awk'
-     `FS == ""'                  Each individual character is   `gawk'
-                                 a separate field               
-     `FIELDWIDTHS == LIST OF     Based on character position    `gawk'
-     COLUMNS'                                                   
-     `FPAT == REGEXP'            On the text surrounding text   `gawk'
-                                 matching the regexp            
+     `FS == " "'                 On runs of whitespace       `awk'
+     `FS == ANY SINGLE           On that character           `awk'
+     CHARACTER'                                              
+     `FS == REGEXP'              On text matching the        `awk'
+                                 regexp                      
+     `FS == ""'                  Such that each individual   `gawk'
+                                 character is a separate     
+                                 field                       
+     `FIELDWIDTHS == LIST OF     Based on character          `gawk'
+     COLUMNS'                    position                    
+     `FPAT == REGEXP'            On the text surrounding     `gawk'
+                                 text matching the regexp    
 
    * Using `FS = "\n"' causes the entire record to be a single field
      (assuming that newlines separate records).
@@ -6054,12 +6058,11 @@ File: gawk.info,  Node: Input Summary,  Next: Input Exercises,  Prev: Command-li
 
    * Use `PROCINFO["FS"]' to see how fields are being split.
 
-   * Use `getline' in its various forms to read additional records,
-     from the default input stream, from a file, or from a pipe or
-     coprocess.
+   * Use `getline' in its various forms to read additional records from
+     the default input stream, from a file, or from a pipe or coprocess.
 
-   * Use `PROCINFO[FILE, "READ_TIMEOUT"]' to cause reads to timeout for
-     FILE.
+   * Use `PROCINFO[FILE, "READ_TIMEOUT"]' to cause reads to time out
+     for FILE.
 
    * Directories on the command line are fatal for standard `awk';
      `gawk' ignores them if not in POSIX mode.
@@ -6153,7 +6156,7 @@ you will probably get an error.  Keep in mind that a space is printed
 between any two items.
 
    Note that the `print' statement is a statement and not an
-expression--you can't use it in the pattern part of a PATTERN-ACTION
+expression--you can't use it in the pattern part of a pattern-action
 statement, for example.
 
 
@@ -6301,7 +6304,7 @@ File: gawk.info,  Node: OFMT,  Next: Printf,  Prev: Output Separators,  Up: Prin
 ===========================================
 
 When printing numeric values with the `print' statement, `awk'
-internally converts the number to a string of characters and prints
+internally converts each number to a string of characters and prints
 that string.  `awk' uses the `sprintf()' function to do this conversion
 (*note String Functions::).  For now, it suffices to say that the
 `sprintf()' function accepts a "format specification" that tells it how
@@ -6356,7 +6359,7 @@ A simple `printf' statement looks like this:
 
 As for `print', the entire list of arguments may optionally be enclosed
 in parentheses. Here too, the parentheses are necessary if any of the
-item expressions use the `>' relational operator; otherwise, it can be
+item expressions uses the `>' relational operator; otherwise, it can be
 confused with an output redirection (*note Redirection::).
 
    The difference between `printf' and `print' is the FORMAT argument.
@@ -6383,7 +6386,7 @@ statements. For example:
      > }'
      -| Don't Panic!
 
-Here, neither the `+' nor the `OUCH!' appear in the output message.
+Here, neither the `+' nor the `OUCH!' appears in the output message.
 
 
 File: gawk.info,  Node: Control Letters,  Next: Format Modifiers,  Prev: Basic Printf,  Up: Printf
@@ -6422,7 +6425,7 @@ width.  Here is a list of the format-control letters:
      (The `%i' specification is for compatibility with ISO C.)
 
 `%e', `%E'
-     Print a number in scientific (exponential) notation; for example:
+     Print a number in scientific (exponential) notation.  For example:
 
           printf "%4.3e\n", 1950
 
@@ -6447,7 +6450,7 @@ width.  Here is a list of the format-control letters:
      Math Definitions::).
 
 `%F'
-     Like `%f' but the infinity and "not a number" values are spelled
+     Like `%f', but the infinity and "not a number" values are spelled
      using uppercase letters.
 
      The `%F' format is a POSIX extension to ISO C; not all systems
@@ -6641,7 +6644,7 @@ string, like so:
      s = "abcdefg"
      printf "%" w "." p "s\n", s
 
-This is not particularly easy to read but it does work.
+This is not particularly easy to read, but it does work.
 
    C programmers may be used to supplying additional modifiers (`h',
 `j', `l', `L', `t', and `z') in `printf' format strings. These are not
@@ -6680,7 +6683,7 @@ an aligned two-column table of names and phone numbers, as shown here:
      -| Jean-Paul  555-2127
 
    In this case, the phone numbers had to be printed as strings because
-the numbers are separated by a dash.  Printing the phone numbers as
+the numbers are separated by dashes.  Printing the phone numbers as
 numbers would have produced just the first three digits: `555'.  This
 would have been pretty confusing.
 
@@ -6728,7 +6731,7 @@ output, usually the screen.  Both `print' and `printf' can also send
 their output to other places.  This is called "redirection".
 
      NOTE: When `--sandbox' is specified (*note Options::), redirecting
-     output to files, pipes and coprocesses is disabled.
+     output to files, pipes, and coprocesses is disabled.
 
    A redirection appears after the `print' or `printf' statement.
 Redirections in `awk' are written just like redirections in shell
@@ -6768,7 +6771,7 @@ work identically for `printf':
      Each output file contains one name or number per line.
 
 `print ITEMS >> OUTPUT-FILE'
-     This redirection prints the items into the pre-existing output file
+     This redirection prints the items into the preexisting output file
      named OUTPUT-FILE.  The difference between this and the single-`>'
      redirection is that the old contents (if any) of OUTPUT-FILE are
      not erased.  Instead, the `awk' output is appended to the file.
@@ -6816,8 +6819,8 @@ work identically for `printf':
 `print ITEMS |& COMMAND'
      This redirection prints the items to the input of COMMAND.  The
      difference between this and the single-`|' redirection is that the
-     output from COMMAND can be read with `getline'.  Thus COMMAND is a
-     "coprocess", which works together with, but subsidiary to, the
+     output from COMMAND can be read with `getline'.  Thus, COMMAND is
+     a "coprocess", which works together with but is subsidiary to the
      `awk' program.
 
      This feature is a `gawk' extension, and is not available in POSIX
@@ -6841,7 +6844,7 @@ a file, and then to use `>>' for subsequent output:
 This is indeed how redirections must be used from the shell.  But in
 `awk', it isn't necessary.  In this kind of case, a program should use
 `>' for all the `print' statements, because the output file is only
-opened once. (It happens that if you mix `>' and `>>' that output is
+opened once. (It happens that if you mix `>' and `>>' output is
 produced in the expected order. However, mixing the operators for the
 same file is definitely poor style, and is confusing to readers of your
 program.)
@@ -6874,14 +6877,14 @@ command lines to be fed to the shell.
 
 File: gawk.info,  Node: Special FD,  Next: Special Files,  Prev: Redirection,  Up: Printing
 
-5.7 Special Files for Standard Pre-Opened Data Streams
-======================================================
+5.7 Special Files for Standard Preopened Data Streams
+=====================================================
 
 Running programs conventionally have three input and output streams
 already available to them for reading and writing.  These are known as
 the "standard input", "standard output", and "standard error output".
-These open streams (and any other open file or pipe) are often referred
-to by the technical term "file descriptors".
+These open streams (and any other open files or pipes) are often
+referred to by the technical term "file descriptors".
 
    These streams are, by default, connected to your keyboard and
 screen, but they are often redirected with the shell, via the `<', `<<',
@@ -6906,7 +6909,7 @@ error messages to the screen, like this:
 (`/dev/tty' is a special file supplied by the operating system that is
 connected to your keyboard and screen. It represents the "terminal,"(1)
 which on modern systems is a keyboard and screen, not a serial console.)
-This generally has the same effect but not always: although the
+This generally has the same effect, but not always: although the
 standard error stream is usually the screen, it can be redirected; when
 that happens, writing to the screen is not correct.  In fact, if `awk'
 is run from a background job, it may not have a terminal at all.  Then
@@ -6933,7 +6936,7 @@ becomes:
 
      print "Serious error detected!" > "/dev/stderr"
 
-   Note the use of quotes around the file name.  Like any other
+   Note the use of quotes around the file name.  Like with any other
 redirection, the value must be a string.  It is a common error to omit
 the quotes, which leads to confusing results.
 
@@ -6966,7 +6969,7 @@ there are special file names reserved for TCP/IP networking.
 
 File: gawk.info,  Node: Other Inherited Files,  Next: Special Network,  Up: Special Files
 
-5.8.1 Accessing Other Open Files With `gawk'
+5.8.1 Accessing Other Open Files with `gawk'
 --------------------------------------------
 
 Besides the `/dev/stdin', `/dev/stdout', and `/dev/stderr' special file
@@ -7016,7 +7019,7 @@ File: gawk.info,  Node: Special Caveats,  Prev: Special Network,  Up: Special Fi
 Here are some things to bear in mind when using the special file names
 that `gawk' provides:
 
-   * Recognition of the file names for the three standard pre-opened
+   * Recognition of the file names for the three standard preopened
      files is disabled only in POSIX mode.
 
    * Recognition of the other special file names is disabled if `gawk'
@@ -7025,7 +7028,7 @@ that `gawk' provides:
 
    * `gawk' _always_ interprets these special file names.  For example,
      using `/dev/fd/4' for output actually writes on file descriptor 4,
-     and not on a new file descriptor that is `dup()''ed from file
+     and not on a new file descriptor that is `dup()'ed from file
      descriptor 4.  Most of the time this does not matter; however, it
      is important to _not_ close any of the files related to file
      descriptors 0, 1, and 2.  Doing so results in unpredictable
@@ -7185,8 +7188,8 @@ closing input or output files, respectively.  This value is zero if the
 close succeeds, or -1 if it fails.
 
    The POSIX standard is very vague; it says that `close()' returns
-zero on success and nonzero otherwise.  In general, different
-implementations vary in what they report when closing pipes; thus the
+zero on success and a nonzero value otherwise.  In general, different
+implementations vary in what they report when closing pipes; thus, the
 return value cannot be used portably.  (d.c.)  In POSIX mode (*note
 Options::), `gawk' just returns zero when closing a pipe.
 
@@ -7212,8 +7215,8 @@ File: gawk.info,  Node: Output Summary,  Next: Output Exercises,  Prev: Close Fi
      numeric values for the `print' statement.
 
    * The `printf' statement provides finer-grained control over output,
-     with format control letters for different data types and various
-     flags that modify the behavior of the format control letters.
+     with format-control letters for different data types and various
+     flags that modify the behavior of the format-control letters.
 
    * Output from both `print' and `printf' may be redirected to files,
      pipes, and coprocesses.
@@ -28464,7 +28467,7 @@ Unix `awk'
      To get `awka', go to `http://sourceforge.net/projects/awka'.
 
      The project seems to be frozen; no new code changes have been made
-     since approximately 2003.
+     since approximately 2001.
 
 `pawk'
      Nelson H.F. Beebe at the University of Utah has modified BWK `awk'
@@ -28704,7 +28707,7 @@ possible to include them:
      document describes how GNU software should be written. If you
      haven't read it, please do so, preferably _before_ starting to
      modify `gawk'.  (The `GNU Coding Standards' are available from the
-     GNU Project's website (http://www.gnu.org/prep/standards_toc.html).
+     GNU Project's website (http://www.gnu.org/prep/standards/).
      Texinfo, Info, and DVI versions are also available.)
 
   5. Use the `gawk' coding style.  The C code for `gawk' follows the
@@ -31409,7 +31412,7 @@ Index
 * ! (exclamation point), !~ operator <5>: Case-sensitivity.   (line  26)
 * ! (exclamation point), !~ operator <6>: Computed Regexps.   (line   6)
 * ! (exclamation point), !~ operator:    Regexp Usage.        (line  19)
-* " (double quote), in regexp constants: Computed Regexps.    (line  29)
+* " (double quote), in regexp constants: Computed Regexps.    (line  30)
 * " (double quote), in shell commands:   Quoting.             (line  54)
 * # (number sign), #! (executable scripts): Executable Scripts.
                                                               (line   6)
@@ -31644,7 +31647,7 @@ Index
 * \ (backslash), in escape sequences:    Escape Sequences.    (line   6)
 * \ (backslash), in escape sequences, POSIX and: Escape Sequences.
                                                               (line 108)
-* \ (backslash), in regexp constants:    Computed Regexps.    (line  29)
+* \ (backslash), in regexp constants:    Computed Regexps.    (line  30)
 * \ (backslash), in shell commands:      Quoting.             (line  48)
 * \ (backslash), regexp operator:        Regexp Operators.    (line  18)
 * ^ (caret), ^ operator:                 Precedence.          (line  49)
@@ -31913,7 +31916,7 @@ Index
 * backslash (\), in escape sequences:    Escape Sequences.    (line   6)
 * backslash (\), in escape sequences, POSIX and: Escape Sequences.
                                                               (line 108)
-* backslash (\), in regexp constants:    Computed Regexps.    (line  29)
+* backslash (\), in regexp constants:    Computed Regexps.    (line  30)
 * backslash (\), in shell commands:      Quoting.             (line  48)
 * backslash (\), regexp operator:        Regexp Operators.    (line  18)
 * backtrace debugger command:            Execution Stack.     (line  13)
@@ -32511,7 +32514,7 @@ Index
 * dollar sign ($), incrementing fields and arrays: Increment Ops.
                                                               (line  30)
 * dollar sign ($), regexp operator:      Regexp Operators.    (line  35)
-* double quote ("), in regexp constants: Computed Regexps.    (line  29)
+* double quote ("), in regexp constants: Computed Regexps.    (line  30)
 * double quote ("), in shell commands:   Quoting.             (line  54)
 * down debugger command:                 Execution Stack.     (line  23)
 * Drepper, Ulrich:                       Acknowledgments.     (line  52)
@@ -32897,7 +32900,7 @@ Index
 * gawk, awk and:                         Preface.             (line  21)
 * gawk, bitwise operations in:           Bitwise Functions.   (line  40)
 * gawk, break statement in:              Break Statement.     (line  51)
-* gawk, character classes and:           Bracket Expressions. (line 100)
+* gawk, character classes and:           Bracket Expressions. (line 101)
 * gawk, coding style in:                 Adding Code.         (line  38)
 * gawk, command-line options, and regular expressions: GNU Regexp Operators.
                                                               (line  70)
@@ -33180,7 +33183,7 @@ Index
                                                               (line  13)
 * internationalization, localization:    User-modified.       (line 151)
 * internationalization, localization, character classes: Bracket Expressions.
-                                                              (line 100)
+                                                              (line 101)
 * internationalization, localization, gawk and: Internationalization.
                                                               (line  13)
 * internationalization, localization, locale categories: Explaining gettext.
@@ -33398,8 +33401,8 @@ Index
 * newlines, as field separators:         Default Field Splitting.
                                                               (line   6)
 * newlines, as record separators:        awk split records.   (line  12)
-* newlines, in dynamic regexps:          Computed Regexps.    (line  59)
-* newlines, in regexp constants:         Computed Regexps.    (line  69)
+* newlines, in dynamic regexps:          Computed Regexps.    (line  60)
+* newlines, in regexp constants:         Computed Regexps.    (line  70)
 * newlines, printing:                    Print Examples.      (line  12)
 * newlines, separating statements in actions <1>: Statements. (line  10)
 * newlines, separating statements in actions: Action Overview.
@@ -33825,8 +33828,8 @@ Index
 * regexp constants, as patterns:         Expression Patterns. (line  34)
 * regexp constants, in gawk:             Using Constant Regexps.
                                                               (line  28)
-* regexp constants, slashes vs. quotes:  Computed Regexps.    (line  29)
-* regexp constants, vs. string constants: Computed Regexps.   (line  39)
+* regexp constants, slashes vs. quotes:  Computed Regexps.    (line  30)
+* regexp constants, vs. string constants: Computed Regexps.   (line  40)
 * register extension:                    Registration Functions.
                                                               (line   6)
 * regular expressions:                   Regexp.              (line   6)
@@ -33845,7 +33848,7 @@ Index
                                                               (line  57)
 * regular expressions, dynamic:          Computed Regexps.    (line   6)
 * regular expressions, dynamic, with embedded newlines: Computed Regexps.
-                                                              (line  59)
+                                                              (line  60)
 * regular expressions, gawk, command-line options: GNU Regexp Operators.
                                                               (line  70)
 * regular expressions, interval expressions and: Options.     (line 279)
@@ -34042,7 +34045,7 @@ Index
 * sidebar, Understanding #!:             Executable Scripts.  (line  31)
 * sidebar, Understanding $0:             Changing Fields.     (line 134)
 * sidebar, Using \n in Bracket Expressions of Dynamic Regexps: Computed Regexps.
-                                                              (line  57)
+                                                              (line  58)
 * sidebar, Using close()'s Return Value: Close Files And Pipes.
                                                               (line 131)
 * SIGHUP signal, for dynamic profiling:  Profiling.           (line 210)
@@ -34136,7 +34139,7 @@ Index
 * stream editors:                        Full Line Fields.    (line  22)
 * strftime:                              Time Functions.      (line  48)
 * string constants:                      Scalar Constants.    (line  15)
-* string constants, vs. regexp constants: Computed Regexps.   (line  39)
+* string constants, vs. regexp constants: Computed Regexps.   (line  40)
 * string extraction (internationalization): String Extraction.
                                                               (line   6)
 * string length:                         String Functions.    (line 171)
@@ -34271,7 +34274,7 @@ Index
 * troubleshooting, quotes with file names: Special FD.        (line  62)
 * troubleshooting, readable data files:  File Checking.       (line   6)
 * troubleshooting, regexp constants vs. string constants: Computed Regexps.
-                                                              (line  39)
+                                                              (line  40)
 * troubleshooting, string concatenation: Concatenation.       (line  26)
 * troubleshooting, substr() function:    String Functions.    (line 499)
 * troubleshooting, system() function:    I/O Functions.       (line 128)
@@ -34517,496 +34520,496 @@ Ref: Regexp Operators-Footnote-1170640
 Ref: Regexp Operators-Footnote-2170787
 Node: Bracket Expressions170885
 Ref: table-char-classes172900
-Node: Leftmost Longest175825
-Node: Computed Regexps177127
-Node: GNU Regexp Operators180524
-Node: Case-sensitivity184197
-Ref: Case-sensitivity-Footnote-1187082
-Ref: Case-sensitivity-Footnote-2187317
-Node: Regexp Summary187425
-Node: Reading Files188892
-Node: Records190986
-Node: awk split records191719
-Node: gawk split records196634
-Ref: gawk split records-Footnote-1201178
-Node: Fields201215
-Ref: Fields-Footnote-1203991
-Node: Nonconstant Fields204077
-Ref: Nonconstant Fields-Footnote-1206320
-Node: Changing Fields206524
-Node: Field Separators212453
-Node: Default Field Splitting215158
-Node: Regexp Field Splitting216275
-Node: Single Character Fields219625
-Node: Command Line Field Separator220684
-Node: Full Line Fields223896
-Ref: Full Line Fields-Footnote-1225413
-Ref: Full Line Fields-Footnote-2225459
-Node: Field Splitting Summary225560
-Node: Constant Size227634
-Node: Splitting By Content232223
-Ref: Splitting By Content-Footnote-1236217
-Node: Multiple Line236380
-Ref: Multiple Line-Footnote-1242266
-Node: Getline242445
-Node: Plain Getline244657
-Node: Getline/Variable247297
-Node: Getline/File248445
-Node: Getline/Variable/File249829
-Ref: Getline/Variable/File-Footnote-1251432
-Node: Getline/Pipe251519
-Node: Getline/Variable/Pipe254202
-Node: Getline/Coprocess255333
-Node: Getline/Variable/Coprocess256585
-Node: Getline Notes257324
-Node: Getline Summary260116
-Ref: table-getline-variants260528
-Node: Read Timeout261357
-Ref: Read Timeout-Footnote-1265181
-Node: Command-line directories265239
-Node: Input Summary266144
-Node: Input Exercises269445
-Node: Printing270173
-Node: Print271950
-Node: Print Examples273407
-Node: Output Separators276186
-Node: OFMT278204
-Node: Printf279558
-Node: Basic Printf280343
-Node: Control Letters281913
-Node: Format Modifiers285896
-Node: Printf Examples291905
-Node: Redirection294391
-Node: Special FD301232
-Ref: Special FD-Footnote-1304392
-Node: Special Files304466
-Node: Other Inherited Files305083
-Node: Special Network306083
-Node: Special Caveats306945
-Node: Close Files And Pipes307896
-Ref: Close Files And Pipes-Footnote-1315078
-Ref: Close Files And Pipes-Footnote-2315226
-Node: Output Summary315376
-Node: Output Exercises316374
-Node: Expressions317054
-Node: Values318239
-Node: Constants318917
-Node: Scalar Constants319608
-Ref: Scalar Constants-Footnote-1320467
-Node: Nondecimal-numbers320717
-Node: Regexp Constants323735
-Node: Using Constant Regexps324260
-Node: Variables327403
-Node: Using Variables328058
-Node: Assignment Options329969
-Node: Conversion331844
-Node: Strings And Numbers332368
-Ref: Strings And Numbers-Footnote-1335433
-Node: Locale influences conversions335542
-Ref: table-locale-affects338289
-Node: All Operators338877
-Node: Arithmetic Ops339507
-Node: Concatenation342012
-Ref: Concatenation-Footnote-1344831
-Node: Assignment Ops344937
-Ref: table-assign-ops349916
-Node: Increment Ops351188
-Node: Truth Values and Conditions354626
-Node: Truth Values355711
-Node: Typing and Comparison356760
-Node: Variable Typing357570
-Node: Comparison Operators361223
-Ref: table-relational-ops361633
-Node: POSIX String Comparison365128
-Ref: POSIX String Comparison-Footnote-1366200
-Node: Boolean Ops366338
-Ref: Boolean Ops-Footnote-1370817
-Node: Conditional Exp370908
-Node: Function Calls372635
-Node: Precedence376515
-Node: Locales380176
-Node: Expressions Summary381808
-Node: Patterns and Actions384368
-Node: Pattern Overview385488
-Node: Regexp Patterns387167
-Node: Expression Patterns387710
-Node: Ranges391420
-Node: BEGIN/END394526
-Node: Using BEGIN/END395287
-Ref: Using BEGIN/END-Footnote-1398021
-Node: I/O And BEGIN/END398127
-Node: BEGINFILE/ENDFILE400441
-Node: Empty403342
-Node: Using Shell Variables403659
-Node: Action Overview405932
-Node: Statements408258
-Node: If Statement410106
-Node: While Statement411601
-Node: Do Statement413630
-Node: For Statement414774
-Node: Switch Statement417931
-Node: Break Statement420313
-Node: Continue Statement422354
-Node: Next Statement424181
-Node: Nextfile Statement426562
-Node: Exit Statement429192
-Node: Built-in Variables431595
-Node: User-modified432728
-Ref: User-modified-Footnote-1440409
-Node: Auto-set440471
-Ref: Auto-set-Footnote-1454163
-Ref: Auto-set-Footnote-2454368
-Node: ARGC and ARGV454424
-Node: Pattern Action Summary458642
-Node: Arrays461069
-Node: Array Basics462398
-Node: Array Intro463242
-Ref: figure-array-elements465206
-Ref: Array Intro-Footnote-1467732
-Node: Reference to Elements467860
-Node: Assigning Elements470312
-Node: Array Example470803
-Node: Scanning an Array472561
-Node: Controlling Scanning475577
-Ref: Controlling Scanning-Footnote-1480773
-Node: Numeric Array Subscripts481089
-Node: Uninitialized Subscripts483274
-Node: Delete484891
-Ref: Delete-Footnote-1487634
-Node: Multidimensional487691
-Node: Multiscanning490788
-Node: Arrays of Arrays492377
-Node: Arrays Summary497136
-Node: Functions499228
-Node: Built-in500127
-Node: Calling Built-in501205
-Node: Numeric Functions503196
-Ref: Numeric Functions-Footnote-1508015
-Ref: Numeric Functions-Footnote-2508372
-Ref: Numeric Functions-Footnote-3508420
-Node: String Functions508692
-Ref: String Functions-Footnote-1532167
-Ref: String Functions-Footnote-2532296
-Ref: String Functions-Footnote-3532544
-Node: Gory Details532631
-Ref: table-sub-escapes534412
-Ref: table-sub-proposed535932
-Ref: table-posix-sub537296
-Ref: table-gensub-escapes538832
-Ref: Gory Details-Footnote-1539664
-Node: I/O Functions539815
-Ref: I/O Functions-Footnote-1547033
-Node: Time Functions547180
-Ref: Time Functions-Footnote-1557668
-Ref: Time Functions-Footnote-2557736
-Ref: Time Functions-Footnote-3557894
-Ref: Time Functions-Footnote-4558005
-Ref: Time Functions-Footnote-5558117
-Ref: Time Functions-Footnote-6558344
-Node: Bitwise Functions558610
-Ref: table-bitwise-ops559172
-Ref: Bitwise Functions-Footnote-1563481
-Node: Type Functions563650
-Node: I18N Functions564801
-Node: User-defined566446
-Node: Definition Syntax567251
-Ref: Definition Syntax-Footnote-1572658
-Node: Function Example572729
-Ref: Function Example-Footnote-1575648
-Node: Function Caveats575670
-Node: Calling A Function576188
-Node: Variable Scope577146
-Node: Pass By Value/Reference580134
-Node: Return Statement583629
-Node: Dynamic Typing586610
-Node: Indirect Calls587539
-Ref: Indirect Calls-Footnote-1598841
-Node: Functions Summary598969
-Node: Library Functions601671
-Ref: Library Functions-Footnote-1605280
-Ref: Library Functions-Footnote-2605423
-Node: Library Names605594
-Ref: Library Names-Footnote-1609048
-Ref: Library Names-Footnote-2609271
-Node: General Functions609357
-Node: Strtonum Function610460
-Node: Assert Function613482
-Node: Round Function616806
-Node: Cliff Random Function618347
-Node: Ordinal Functions619363
-Ref: Ordinal Functions-Footnote-1622426
-Ref: Ordinal Functions-Footnote-2622678
-Node: Join Function622889
-Ref: Join Function-Footnote-1624658
-Node: Getlocaltime Function624858
-Node: Readfile Function628602
-Node: Shell Quoting630572
-Node: Data File Management631973
-Node: Filetrans Function632605
-Node: Rewind Function636661
-Node: File Checking638048
-Ref: File Checking-Footnote-1639380
-Node: Empty Files639581
-Node: Ignoring Assigns641560
-Node: Getopt Function643111
-Ref: Getopt Function-Footnote-1654573
-Node: Passwd Functions654773
-Ref: Passwd Functions-Footnote-1663610
-Node: Group Functions663698
-Ref: Group Functions-Footnote-1671592
-Node: Walking Arrays671805
-Node: Library Functions Summary673408
-Node: Library Exercises674809
-Node: Sample Programs676089
-Node: Running Examples676859
-Node: Clones677587
-Node: Cut Program678811
-Node: Egrep Program688530
-Ref: Egrep Program-Footnote-1696028
-Node: Id Program696138
-Node: Split Program699783
-Ref: Split Program-Footnote-1703231
-Node: Tee Program703359
-Node: Uniq Program706148
-Node: Wc Program713567
-Ref: Wc Program-Footnote-1717817
-Node: Miscellaneous Programs717911
-Node: Dupword Program719124
-Node: Alarm Program721155
-Node: Translate Program725959
-Ref: Translate Program-Footnote-1730524
-Node: Labels Program730794
-Ref: Labels Program-Footnote-1734145
-Node: Word Sorting734229
-Node: History Sorting738300
-Node: Extract Program740136
-Node: Simple Sed747661
-Node: Igawk Program750729
-Ref: Igawk Program-Footnote-1765053
-Ref: Igawk Program-Footnote-2765254
-Ref: Igawk Program-Footnote-3765376
-Node: Anagram Program765491
-Node: Signature Program768548
-Node: Programs Summary769795
-Node: Programs Exercises770988
-Ref: Programs Exercises-Footnote-1775119
-Node: Advanced Features775210
-Node: Nondecimal Data777158
-Node: Array Sorting778748
-Node: Controlling Array Traversal779445
-Ref: Controlling Array Traversal-Footnote-1787778
-Node: Array Sorting Functions787896
-Ref: Array Sorting Functions-Footnote-1791785
-Node: Two-way I/O791981
-Ref: Two-way I/O-Footnote-1796926
-Ref: Two-way I/O-Footnote-2797112
-Node: TCP/IP Networking797194
-Node: Profiling800067
-Node: Advanced Features Summary808344
-Node: Internationalization810277
-Node: I18N and L10N811757
-Node: Explaining gettext812443
-Ref: Explaining gettext-Footnote-1817468
-Ref: Explaining gettext-Footnote-2817652
-Node: Programmer i18n817817
-Ref: Programmer i18n-Footnote-1822683
-Node: Translator i18n822732
-Node: String Extraction823526
-Ref: String Extraction-Footnote-1824657
-Node: Printf Ordering824743
-Ref: Printf Ordering-Footnote-1827529
-Node: I18N Portability827593
-Ref: I18N Portability-Footnote-1830048
-Node: I18N Example830111
-Ref: I18N Example-Footnote-1832914
-Node: Gawk I18N832986
-Node: I18N Summary833624
-Node: Debugger834963
-Node: Debugging835985
-Node: Debugging Concepts836426
-Node: Debugging Terms838279
-Node: Awk Debugging840851
-Node: Sample Debugging Session841745
-Node: Debugger Invocation842265
-Node: Finding The Bug843649
-Node: List of Debugger Commands850124
-Node: Breakpoint Control851457
-Node: Debugger Execution Control855153
-Node: Viewing And Changing Data858517
-Node: Execution Stack861895
-Node: Debugger Info863532
-Node: Miscellaneous Debugger Commands867549
-Node: Readline Support872578
-Node: Limitations873470
-Node: Debugging Summary875584
-Node: Arbitrary Precision Arithmetic876752
-Node: Computer Arithmetic878168
-Ref: table-numeric-ranges881766
-Ref: Computer Arithmetic-Footnote-1882625
-Node: Math Definitions882682
-Ref: table-ieee-formats885970
-Ref: Math Definitions-Footnote-1886574
-Node: MPFR features886679
-Node: FP Math Caution888350
-Ref: FP Math Caution-Footnote-1889400
-Node: Inexactness of computations889769
-Node: Inexact representation890728
-Node: Comparing FP Values892085
-Node: Errors accumulate893167
-Node: Getting Accuracy894600
-Node: Try To Round897262
-Node: Setting precision898161
-Ref: table-predefined-precision-strings898845
-Node: Setting the rounding mode900634
-Ref: table-gawk-rounding-modes900998
-Ref: Setting the rounding mode-Footnote-1904453
-Node: Arbitrary Precision Integers904632
-Ref: Arbitrary Precision Integers-Footnote-1909531
-Node: POSIX Floating Point Problems909680
-Ref: POSIX Floating Point Problems-Footnote-1913553
-Node: Floating point summary913591
-Node: Dynamic Extensions915785
-Node: Extension Intro917337
-Node: Plugin License918603
-Node: Extension Mechanism Outline919400
-Ref: figure-load-extension919828
-Ref: figure-register-new-function921308
-Ref: figure-call-new-function922312
-Node: Extension API Description924298
-Node: Extension API Functions Introduction925748
-Node: General Data Types930572
-Ref: General Data Types-Footnote-1936311
-Node: Memory Allocation Functions936610
-Ref: Memory Allocation Functions-Footnote-1939449
-Node: Constructor Functions939545
-Node: Registration Functions941279
-Node: Extension Functions941964
-Node: Exit Callback Functions944261
-Node: Extension Version String945509
-Node: Input Parsers946174
-Node: Output Wrappers956053
-Node: Two-way processors960568
-Node: Printing Messages962772
-Ref: Printing Messages-Footnote-1963848
-Node: Updating `ERRNO'964000
-Node: Requesting Values964740
-Ref: table-value-types-returned965468
-Node: Accessing Parameters966425
-Node: Symbol Table Access967656
-Node: Symbol table by name968170
-Node: Symbol table by cookie970151
-Ref: Symbol table by cookie-Footnote-1974295
-Node: Cached values974358
-Ref: Cached values-Footnote-1977857
-Node: Array Manipulation977948
-Ref: Array Manipulation-Footnote-1979046
-Node: Array Data Types979083
-Ref: Array Data Types-Footnote-1981738
-Node: Array Functions981830
-Node: Flattening Arrays985684
-Node: Creating Arrays992576
-Node: Extension API Variables997347
-Node: Extension Versioning997983
-Node: Extension API Informational Variables999884
-Node: Extension API Boilerplate1000949
-Node: Finding Extensions1004758
-Node: Extension Example1005318
-Node: Internal File Description1006090
-Node: Internal File Ops1010157
-Ref: Internal File Ops-Footnote-11021827
-Node: Using Internal File Ops1021967
-Ref: Using Internal File Ops-Footnote-11024350
-Node: Extension Samples1024623
-Node: Extension Sample File Functions1026149
-Node: Extension Sample Fnmatch1033787
-Node: Extension Sample Fork1035278
-Node: Extension Sample Inplace1036493
-Node: Extension Sample Ord1038168
-Node: Extension Sample Readdir1039004
-Ref: table-readdir-file-types1039880
-Node: Extension Sample Revout1040691
-Node: Extension Sample Rev2way1041281
-Node: Extension Sample Read write array1042021
-Node: Extension Sample Readfile1043961
-Node: Extension Sample Time1045056
-Node: Extension Sample API Tests1046405
-Node: gawkextlib1046896
-Node: Extension summary1049554
-Node: Extension Exercises1053243
-Node: Language History1053965
-Node: V7/SVR3.11055621
-Node: SVR41057802
-Node: POSIX1059247
-Node: BTL1060636
-Node: POSIX/GNU1061370
-Node: Feature History1066994
-Node: Common Extensions1080092
-Node: Ranges and Locales1081416
-Ref: Ranges and Locales-Footnote-11086034
-Ref: Ranges and Locales-Footnote-21086061
-Ref: Ranges and Locales-Footnote-31086295
-Node: Contributors1086516
-Node: History summary1092057
-Node: Installation1093427
-Node: Gawk Distribution1094373
-Node: Getting1094857
-Node: Extracting1095680
-Node: Distribution contents1097315
-Node: Unix Installation1103380
-Node: Quick Installation1104063
-Node: Shell Startup Files1106474
-Node: Additional Configuration Options1107553
-Node: Configuration Philosophy1109292
-Node: Non-Unix Installation1111661
-Node: PC Installation1112119
-Node: PC Binary Installation1113438
-Node: PC Compiling1115286
-Ref: PC Compiling-Footnote-11118307
-Node: PC Testing1118416
-Node: PC Using1119592
-Node: Cygwin1123707
-Node: MSYS1124530
-Node: VMS Installation1125030
-Node: VMS Compilation1125822
-Ref: VMS Compilation-Footnote-11127044
-Node: VMS Dynamic Extensions1127102
-Node: VMS Installation Details1128786
-Node: VMS Running1131038
-Node: VMS GNV1133874
-Node: VMS Old Gawk1134608
-Node: Bugs1135078
-Node: Other Versions1138961
-Node: Installation summary1145385
-Node: Notes1146441
-Node: Compatibility Mode1147306
-Node: Additions1148088
-Node: Accessing The Source1149013
-Node: Adding Code1150448
-Node: New Ports1156613
-Node: Derived Files1161095
-Ref: Derived Files-Footnote-11166570
-Ref: Derived Files-Footnote-21166604
-Ref: Derived Files-Footnote-31167200
-Node: Future Extensions1167314
-Node: Implementation Limitations1167920
-Node: Extension Design1169168
-Node: Old Extension Problems1170322
-Ref: Old Extension Problems-Footnote-11171839
-Node: Extension New Mechanism Goals1171896
-Ref: Extension New Mechanism Goals-Footnote-11175256
-Node: Extension Other Design Decisions1175445
-Node: Extension Future Growth1177553
-Node: Old Extension Mechanism1178389
-Node: Notes summary1180151
-Node: Basic Concepts1181337
-Node: Basic High Level1182018
-Ref: figure-general-flow1182290
-Ref: figure-process-flow1182889
-Ref: Basic High Level-Footnote-11186118
-Node: Basic Data Typing1186303
-Node: Glossary1189631
-Node: Copying1214789
-Node: GNU Free Documentation License1252345
-Node: Index1277481
+Node: Leftmost Longest175842
+Node: Computed Regexps177144
+Node: GNU Regexp Operators180573
+Node: Case-sensitivity184245
+Ref: Case-sensitivity-Footnote-1187130
+Ref: Case-sensitivity-Footnote-2187365
+Node: Regexp Summary187473
+Node: Reading Files188940
+Node: Records191033
+Node: awk split records191766
+Node: gawk split records196695
+Ref: gawk split records-Footnote-1201234
+Node: Fields201271
+Ref: Fields-Footnote-1204049
+Node: Nonconstant Fields204135
+Ref: Nonconstant Fields-Footnote-1206373
+Node: Changing Fields206576
+Node: Field Separators212507
+Node: Default Field Splitting215211
+Node: Regexp Field Splitting216328
+Node: Single Character Fields219678
+Node: Command Line Field Separator220737
+Node: Full Line Fields223954
+Ref: Full Line Fields-Footnote-1225475
+Ref: Full Line Fields-Footnote-2225521
+Node: Field Splitting Summary225622
+Node: Constant Size227696
+Node: Splitting By Content232279
+Ref: Splitting By Content-Footnote-1236244
+Node: Multiple Line236407
+Ref: Multiple Line-Footnote-1242288
+Node: Getline242467
+Node: Plain Getline244674
+Node: Getline/Variable247314
+Node: Getline/File248463
+Node: Getline/Variable/File249848
+Ref: Getline/Variable/File-Footnote-1251451
+Node: Getline/Pipe251538
+Node: Getline/Variable/Pipe254216
+Node: Getline/Coprocess255347
+Node: Getline/Variable/Coprocess256611
+Node: Getline Notes257350
+Node: Getline Summary260144
+Ref: table-getline-variants260556
+Node: Read Timeout261385
+Ref: Read Timeout-Footnote-1265222
+Node: Command-line directories265280
+Node: Input Summary266185
+Node: Input Exercises269570
+Node: Printing270298
+Node: Print272075
+Node: Print Examples273532
+Node: Output Separators276311
+Node: OFMT278329
+Node: Printf279684
+Node: Basic Printf280469
+Node: Control Letters282041
+Node: Format Modifiers286026
+Node: Printf Examples292036
+Node: Redirection294522
+Node: Special FD301360
+Ref: Special FD-Footnote-1304526
+Node: Special Files304600
+Node: Other Inherited Files305217
+Node: Special Network306217
+Node: Special Caveats307079
+Node: Close Files And Pipes308028
+Ref: Close Files And Pipes-Footnote-1315219
+Ref: Close Files And Pipes-Footnote-2315367
+Node: Output Summary315517
+Node: Output Exercises316515
+Node: Expressions317195
+Node: Values318380
+Node: Constants319058
+Node: Scalar Constants319749
+Ref: Scalar Constants-Footnote-1320608
+Node: Nondecimal-numbers320858
+Node: Regexp Constants323876
+Node: Using Constant Regexps324401
+Node: Variables327544
+Node: Using Variables328199
+Node: Assignment Options330110
+Node: Conversion331985
+Node: Strings And Numbers332509
+Ref: Strings And Numbers-Footnote-1335574
+Node: Locale influences conversions335683
+Ref: table-locale-affects338430
+Node: All Operators339018
+Node: Arithmetic Ops339648
+Node: Concatenation342153
+Ref: Concatenation-Footnote-1344972
+Node: Assignment Ops345078
+Ref: table-assign-ops350057
+Node: Increment Ops351329
+Node: Truth Values and Conditions354767
+Node: Truth Values355852
+Node: Typing and Comparison356901
+Node: Variable Typing357711
+Node: Comparison Operators361364
+Ref: table-relational-ops361774
+Node: POSIX String Comparison365269
+Ref: POSIX String Comparison-Footnote-1366341
+Node: Boolean Ops366479
+Ref: Boolean Ops-Footnote-1370958
+Node: Conditional Exp371049
+Node: Function Calls372776
+Node: Precedence376656
+Node: Locales380317
+Node: Expressions Summary381949
+Node: Patterns and Actions384509
+Node: Pattern Overview385629
+Node: Regexp Patterns387308
+Node: Expression Patterns387851
+Node: Ranges391561
+Node: BEGIN/END394667
+Node: Using BEGIN/END395428
+Ref: Using BEGIN/END-Footnote-1398162
+Node: I/O And BEGIN/END398268
+Node: BEGINFILE/ENDFILE400582
+Node: Empty403483
+Node: Using Shell Variables403800
+Node: Action Overview406073
+Node: Statements408399
+Node: If Statement410247
+Node: While Statement411742
+Node: Do Statement413771
+Node: For Statement414915
+Node: Switch Statement418072
+Node: Break Statement420454
+Node: Continue Statement422495
+Node: Next Statement424322
+Node: Nextfile Statement426703
+Node: Exit Statement429333
+Node: Built-in Variables431736
+Node: User-modified432869
+Ref: User-modified-Footnote-1440550
+Node: Auto-set440612
+Ref: Auto-set-Footnote-1454304
+Ref: Auto-set-Footnote-2454509
+Node: ARGC and ARGV454565
+Node: Pattern Action Summary458783
+Node: Arrays461210
+Node: Array Basics462539
+Node: Array Intro463383
+Ref: figure-array-elements465347
+Ref: Array Intro-Footnote-1467873
+Node: Reference to Elements468001
+Node: Assigning Elements470453
+Node: Array Example470944
+Node: Scanning an Array472702
+Node: Controlling Scanning475718
+Ref: Controlling Scanning-Footnote-1480914
+Node: Numeric Array Subscripts481230
+Node: Uninitialized Subscripts483415
+Node: Delete485032
+Ref: Delete-Footnote-1487775
+Node: Multidimensional487832
+Node: Multiscanning490929
+Node: Arrays of Arrays492518
+Node: Arrays Summary497277
+Node: Functions499369
+Node: Built-in500268
+Node: Calling Built-in501346
+Node: Numeric Functions503337
+Ref: Numeric Functions-Footnote-1508156
+Ref: Numeric Functions-Footnote-2508513
+Ref: Numeric Functions-Footnote-3508561
+Node: String Functions508833
+Ref: String Functions-Footnote-1532308
+Ref: String Functions-Footnote-2532437
+Ref: String Functions-Footnote-3532685
+Node: Gory Details532772
+Ref: table-sub-escapes534553
+Ref: table-sub-proposed536073
+Ref: table-posix-sub537437
+Ref: table-gensub-escapes538973
+Ref: Gory Details-Footnote-1539805
+Node: I/O Functions539956
+Ref: I/O Functions-Footnote-1547174
+Node: Time Functions547321
+Ref: Time Functions-Footnote-1557809
+Ref: Time Functions-Footnote-2557877
+Ref: Time Functions-Footnote-3558035
+Ref: Time Functions-Footnote-4558146
+Ref: Time Functions-Footnote-5558258
+Ref: Time Functions-Footnote-6558485
+Node: Bitwise Functions558751
+Ref: table-bitwise-ops559313
+Ref: Bitwise Functions-Footnote-1563622
+Node: Type Functions563791
+Node: I18N Functions564942
+Node: User-defined566587
+Node: Definition Syntax567392
+Ref: Definition Syntax-Footnote-1572799
+Node: Function Example572870
+Ref: Function Example-Footnote-1575789
+Node: Function Caveats575811
+Node: Calling A Function576329
+Node: Variable Scope577287
+Node: Pass By Value/Reference580275
+Node: Return Statement583770
+Node: Dynamic Typing586751
+Node: Indirect Calls587680
+Ref: Indirect Calls-Footnote-1598982
+Node: Functions Summary599110
+Node: Library Functions601812
+Ref: Library Functions-Footnote-1605421
+Ref: Library Functions-Footnote-2605564
+Node: Library Names605735
+Ref: Library Names-Footnote-1609189
+Ref: Library Names-Footnote-2609412
+Node: General Functions609498
+Node: Strtonum Function610601
+Node: Assert Function613623
+Node: Round Function616947
+Node: Cliff Random Function618488
+Node: Ordinal Functions619504
+Ref: Ordinal Functions-Footnote-1622567
+Ref: Ordinal Functions-Footnote-2622819
+Node: Join Function623030
+Ref: Join Function-Footnote-1624799
+Node: Getlocaltime Function624999
+Node: Readfile Function628743
+Node: Shell Quoting630713
+Node: Data File Management632114
+Node: Filetrans Function632746
+Node: Rewind Function636802
+Node: File Checking638189
+Ref: File Checking-Footnote-1639521
+Node: Empty Files639722
+Node: Ignoring Assigns641701
+Node: Getopt Function643252
+Ref: Getopt Function-Footnote-1654714
+Node: Passwd Functions654914
+Ref: Passwd Functions-Footnote-1663751
+Node: Group Functions663839
+Ref: Group Functions-Footnote-1671733
+Node: Walking Arrays671946
+Node: Library Functions Summary673549
+Node: Library Exercises674950
+Node: Sample Programs676230
+Node: Running Examples677000
+Node: Clones677728
+Node: Cut Program678952
+Node: Egrep Program688671
+Ref: Egrep Program-Footnote-1696169
+Node: Id Program696279
+Node: Split Program699924
+Ref: Split Program-Footnote-1703372
+Node: Tee Program703500
+Node: Uniq Program706289
+Node: Wc Program713708
+Ref: Wc Program-Footnote-1717958
+Node: Miscellaneous Programs718052
+Node: Dupword Program719265
+Node: Alarm Program721296
+Node: Translate Program726100
+Ref: Translate Program-Footnote-1730665
+Node: Labels Program730935
+Ref: Labels Program-Footnote-1734286
+Node: Word Sorting734370
+Node: History Sorting738441
+Node: Extract Program740277
+Node: Simple Sed747802
+Node: Igawk Program750870
+Ref: Igawk Program-Footnote-1765194
+Ref: Igawk Program-Footnote-2765395
+Ref: Igawk Program-Footnote-3765517
+Node: Anagram Program765632
+Node: Signature Program768689
+Node: Programs Summary769936
+Node: Programs Exercises771129
+Ref: Programs Exercises-Footnote-1775260
+Node: Advanced Features775351
+Node: Nondecimal Data777299
+Node: Array Sorting778889
+Node: Controlling Array Traversal779586
+Ref: Controlling Array Traversal-Footnote-1787919
+Node: Array Sorting Functions788037
+Ref: Array Sorting Functions-Footnote-1791926
+Node: Two-way I/O792122
+Ref: Two-way I/O-Footnote-1797067
+Ref: Two-way I/O-Footnote-2797253
+Node: TCP/IP Networking797335
+Node: Profiling800208
+Node: Advanced Features Summary808485
+Node: Internationalization810418
+Node: I18N and L10N811898
+Node: Explaining gettext812584
+Ref: Explaining gettext-Footnote-1817609
+Ref: Explaining gettext-Footnote-2817793
+Node: Programmer i18n817958
+Ref: Programmer i18n-Footnote-1822824
+Node: Translator i18n822873
+Node: String Extraction823667
+Ref: String Extraction-Footnote-1824798
+Node: Printf Ordering824884
+Ref: Printf Ordering-Footnote-1827670
+Node: I18N Portability827734
+Ref: I18N Portability-Footnote-1830189
+Node: I18N Example830252
+Ref: I18N Example-Footnote-1833055
+Node: Gawk I18N833127
+Node: I18N Summary833765
+Node: Debugger835104
+Node: Debugging836126
+Node: Debugging Concepts836567
+Node: Debugging Terms838420
+Node: Awk Debugging840992
+Node: Sample Debugging Session841886
+Node: Debugger Invocation842406
+Node: Finding The Bug843790
+Node: List of Debugger Commands850265
+Node: Breakpoint Control851598
+Node: Debugger Execution Control855294
+Node: Viewing And Changing Data858658
+Node: Execution Stack862036
+Node: Debugger Info863673
+Node: Miscellaneous Debugger Commands867690
+Node: Readline Support872719
+Node: Limitations873611
+Node: Debugging Summary875725
+Node: Arbitrary Precision Arithmetic876893
+Node: Computer Arithmetic878309
+Ref: table-numeric-ranges881907
+Ref: Computer Arithmetic-Footnote-1882766
+Node: Math Definitions882823
+Ref: table-ieee-formats886111
+Ref: Math Definitions-Footnote-1886715
+Node: MPFR features886820
+Node: FP Math Caution888491
+Ref: FP Math Caution-Footnote-1889541
+Node: Inexactness of computations889910
+Node: Inexact representation890869
+Node: Comparing FP Values892226
+Node: Errors accumulate893308
+Node: Getting Accuracy894741
+Node: Try To Round897403
+Node: Setting precision898302
+Ref: table-predefined-precision-strings898986
+Node: Setting the rounding mode900775
+Ref: table-gawk-rounding-modes901139
+Ref: Setting the rounding mode-Footnote-1904594
+Node: Arbitrary Precision Integers904773
+Ref: Arbitrary Precision Integers-Footnote-1909672
+Node: POSIX Floating Point Problems909821
+Ref: POSIX Floating Point Problems-Footnote-1913694
+Node: Floating point summary913732
+Node: Dynamic Extensions915926
+Node: Extension Intro917478
+Node: Plugin License918744
+Node: Extension Mechanism Outline919541
+Ref: figure-load-extension919969
+Ref: figure-register-new-function921449
+Ref: figure-call-new-function922453
+Node: Extension API Description924439
+Node: Extension API Functions Introduction925889
+Node: General Data Types930713
+Ref: General Data Types-Footnote-1936452
+Node: Memory Allocation Functions936751
+Ref: Memory Allocation Functions-Footnote-1939590
+Node: Constructor Functions939686
+Node: Registration Functions941420
+Node: Extension Functions942105
+Node: Exit Callback Functions944402
+Node: Extension Version String945650
+Node: Input Parsers946315
+Node: Output Wrappers956194
+Node: Two-way processors960709
+Node: Printing Messages962913
+Ref: Printing Messages-Footnote-1963989
+Node: Updating `ERRNO'964141
+Node: Requesting Values964881
+Ref: table-value-types-returned965609
+Node: Accessing Parameters966566
+Node: Symbol Table Access967797
+Node: Symbol table by name968311
+Node: Symbol table by cookie970292
+Ref: Symbol table by cookie-Footnote-1974436
+Node: Cached values974499
+Ref: Cached values-Footnote-1977998
+Node: Array Manipulation978089
+Ref: Array Manipulation-Footnote-1979187
+Node: Array Data Types979224
+Ref: Array Data Types-Footnote-1981879
+Node: Array Functions981971
+Node: Flattening Arrays985825
+Node: Creating Arrays992717
+Node: Extension API Variables997488
+Node: Extension Versioning998124
+Node: Extension API Informational Variables1000025
+Node: Extension API Boilerplate1001090
+Node: Finding Extensions1004899
+Node: Extension Example1005459
+Node: Internal File Description1006231
+Node: Internal File Ops1010298
+Ref: Internal File Ops-Footnote-11021968
+Node: Using Internal File Ops1022108
+Ref: Using Internal File Ops-Footnote-11024491
+Node: Extension Samples1024764
+Node: Extension Sample File Functions1026290
+Node: Extension Sample Fnmatch1033928
+Node: Extension Sample Fork1035419
+Node: Extension Sample Inplace1036634
+Node: Extension Sample Ord1038309
+Node: Extension Sample Readdir1039145
+Ref: table-readdir-file-types1040021
+Node: Extension Sample Revout1040832
+Node: Extension Sample Rev2way1041422
+Node: Extension Sample Read write array1042162
+Node: Extension Sample Readfile1044102
+Node: Extension Sample Time1045197
+Node: Extension Sample API Tests1046546
+Node: gawkextlib1047037
+Node: Extension summary1049695
+Node: Extension Exercises1053384
+Node: Language History1054106
+Node: V7/SVR3.11055762
+Node: SVR41057943
+Node: POSIX1059388
+Node: BTL1060777
+Node: POSIX/GNU1061511
+Node: Feature History1067135
+Node: Common Extensions1080233
+Node: Ranges and Locales1081557
+Ref: Ranges and Locales-Footnote-11086175
+Ref: Ranges and Locales-Footnote-21086202
+Ref: Ranges and Locales-Footnote-31086436
+Node: Contributors1086657
+Node: History summary1092198
+Node: Installation1093568
+Node: Gawk Distribution1094514
+Node: Getting1094998
+Node: Extracting1095821
+Node: Distribution contents1097456
+Node: Unix Installation1103521
+Node: Quick Installation1104204
+Node: Shell Startup Files1106615
+Node: Additional Configuration Options1107694
+Node: Configuration Philosophy1109433
+Node: Non-Unix Installation1111802
+Node: PC Installation1112260
+Node: PC Binary Installation1113579
+Node: PC Compiling1115427
+Ref: PC Compiling-Footnote-11118448
+Node: PC Testing1118557
+Node: PC Using1119733
+Node: Cygwin1123848
+Node: MSYS1124671
+Node: VMS Installation1125171
+Node: VMS Compilation1125963
+Ref: VMS Compilation-Footnote-11127185
+Node: VMS Dynamic Extensions1127243
+Node: VMS Installation Details1128927
+Node: VMS Running1131179
+Node: VMS GNV1134015
+Node: VMS Old Gawk1134749
+Node: Bugs1135219
+Node: Other Versions1139102
+Node: Installation summary1145526
+Node: Notes1146582
+Node: Compatibility Mode1147447
+Node: Additions1148229
+Node: Accessing The Source1149154
+Node: Adding Code1150589
+Node: New Ports1156746
+Node: Derived Files1161228
+Ref: Derived Files-Footnote-11166703
+Ref: Derived Files-Footnote-21166737
+Ref: Derived Files-Footnote-31167333
+Node: Future Extensions1167447
+Node: Implementation Limitations1168053
+Node: Extension Design1169301
+Node: Old Extension Problems1170455
+Ref: Old Extension Problems-Footnote-11171972
+Node: Extension New Mechanism Goals1172029
+Ref: Extension New Mechanism Goals-Footnote-11175389
+Node: Extension Other Design Decisions1175578
+Node: Extension Future Growth1177686
+Node: Old Extension Mechanism1178522
+Node: Notes summary1180284
+Node: Basic Concepts1181470
+Node: Basic High Level1182151
+Ref: figure-general-flow1182423
+Ref: figure-process-flow1183022
+Ref: Basic High Level-Footnote-11186251
+Node: Basic Data Typing1186436
+Node: Glossary1189764
+Node: Copying1214922
+Node: GNU Free Documentation License1252478
+Node: Index1277614
 
 End Tag Table

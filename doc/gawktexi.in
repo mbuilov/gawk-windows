@@ -5546,11 +5546,11 @@ and numeric characters in your character set.
 @c Date: Tue, 01 Jul 2014 07:39:51 +0200
 @c From: Hermann Peifer <peifer@gmx.eu>
 Some utilities that match regular expressions provide a nonstandard
-@code{[:ascii:]} character class; @command{awk} does not. However, you
-can simulate such a construct using @code{[\x00-\x7F]}.  This matches
+@samp{[:ascii:]} character class; @command{awk} does not. However, you
+can simulate such a construct using @samp{[\x00-\x7F]}.  This matches
 all values numerically between zero and 127, which is the defined
 range of the ASCII character set.  Use a complemented character list
-(@code{[^\x00-\x7F]}) to match any single-byte characters that are not
+(@samp{[^\x00-\x7F]}) to match any single-byte characters that are not
 in the ASCII range.
 
 @cindex bracket expressions, collating elements
@@ -5579,8 +5579,8 @@ Locale-specific names for a list of
 characters that are equal. The name is enclosed between
 @samp{[=} and @samp{=]}.
 For example, the name @samp{e} might be used to represent all of
-``e,'' ``@`e,'' and ``@'e.'' In this case, @samp{[[=e=]]} is a regexp
-that matches any of @samp{e}, @samp{@'e}, or @samp{@`e}.
+``e,'' ``@^e,'' ``@`e,'' and ``@'e.'' In this case, @samp{[[=e=]]} is a regexp
+that matches any of @samp{e}, @samp{@^e}, @samp{@'e}, or @samp{@`e}.
 @end table
 
 These features are very valuable in non-English-speaking locales.
@@ -5609,7 +5609,7 @@ echo aaaabcd | awk '@{ sub(/a+/, "<A>"); print @}'
 This example uses the @code{sub()} function to make a change to the input
 record.  (@code{sub()} replaces the first instance of any text matched
 by the first argument with the string provided as the second argument;
-@pxref{String Functions}).  Here, the regexp @code{/a+/} indicates ``one
+@pxref{String Functions}.)  Here, the regexp @code{/a+/} indicates ``one
 or more @samp{a} characters,'' and the replacement text is @samp{<A>}.
 
 The input contains four @samp{a} characters.
@@ -5663,14 +5663,14 @@ and tests whether the input record matches this regexp.
 
 @quotation NOTE
 When using the @samp{~} and @samp{!~}
-operators, there is a difference between a regexp constant
+operators, be aware that there is a difference between a regexp constant
 enclosed in slashes and a string constant enclosed in double quotes.
 If you are going to use a string constant, you have to understand that
 the string is, in essence, scanned @emph{twice}: the first time when
 @command{awk} reads your program, and the second time when it goes to
 match the string on the lefthand side of the operator with the pattern
 on the right.  This is true of any string-valued expression (such as
-@code{digits_regexp}, shown previously), not just string constants.
+@code{digits_regexp}, shown in the previous example), not just string constants.
 @end quotation
 
 @cindex regexp constants, slashes vs.@: quotes
@@ -5826,7 +5826,7 @@ matches either @samp{ball} or @samp{balls}, as a separate word.
 @item \B
 Matches the empty string that occurs between two
 word-constituent characters. For example,
-@code{/\Brat\B/} matches @samp{crate} but it does not match @samp{dirty rat}.
+@code{/\Brat\B/} matches @samp{crate}, but it does not match @samp{dirty rat}.
 @samp{\B} is essentially the opposite of @samp{\y}.
 @end table
 
@@ -5845,14 +5845,14 @@ The operators are:
 @cindex backslash (@code{\}), @code{\`} operator (@command{gawk})
 @cindex @code{\} (backslash), @code{\`} operator (@command{gawk})
 Matches the empty string at the
-beginning of a buffer (string).
+beginning of a buffer (string)
 
 @c @cindex operators, @code{\'} (@command{gawk})
 @cindex backslash (@code{\}), @code{\'} operator (@command{gawk})
 @cindex @code{\} (backslash), @code{\'} operator (@command{gawk})
 @item \'
 Matches the empty string at the
-end of a buffer (string).
+end of a buffer (string)
 @end table
 
 @cindex @code{^} (caret), regexp operator
@@ -6085,7 +6085,7 @@ This makes it more convenient for programs to work on the parts of a record.
 
 @cindex @code{getline} command
 On rare occasions, you may need to use the @code{getline} command.
-The  @code{getline} command is valuable, both because it
+The  @code{getline} command is valuable both because it
 can do explicit input from any number of files, and because the files
 used with it do not have to be named on the @command{awk} command line
 (@pxref{Getline}).
@@ -6136,8 +6136,8 @@ never automatically reset to zero.
 Records are separated by a character called the @dfn{record separator}.
 By default, the record separator is the newline character.
 This is why records are, by default, single lines.
-A different character can be used for the record separator by
-assigning the character to the predefined variable @code{RS}.
+To use a different character for the record separator,
+simply assign that character to the predefined variable @code{RS}.
 
 @cindex newlines, as record separators
 @cindex @code{RS} variable
@@ -6160,8 +6160,8 @@ awk 'BEGIN @{ RS = "u" @}
 
 @noindent
 changes the value of @code{RS} to @samp{u}, before reading any input.
-This is a string whose first character is the letter ``u''; as a result, records
-are separated by the letter ``u.''  Then the input file is read, and the second
+The new value is a string whose first character is the letter ``u''; as a result, records
+are separated by the letter ``u''.  Then the input file is read, and the second
 rule in the @command{awk} program (the action with no pattern) prints each
 record.  Because each @code{print} statement adds a newline at the end of
 its output, this @command{awk} program copies the input
@@ -6222,8 +6222,8 @@ Bill         555-1675     bill.drowning@@hotmail.com       A
 @end example
 
 @noindent
-It contains no @samp{u} so there is no reason to split the record,
-unlike the others which have one or more occurrences of the @samp{u}.
+It contains no @samp{u}, so there is no reason to split the record,
+unlike the others, which each have one or more occurrences of the @samp{u}.
 In fact, this record is treated as part of the previous record;
 the newline separating them in the output
 is the original newline in the @value{DF}, not the one added by
@@ -6318,7 +6318,7 @@ contains the same single character. However, when @code{RS} is a
 regular expression, @code{RT} contains
 the actual input text that matched the regular expression.
 
-If the input file ended without any text that matches @code{RS},
+If the input file ends without any text matching @code{RS},
 @command{gawk} sets @code{RT} to the null string.
 
 The following example illustrates both of these features.
@@ -6442,11 +6442,11 @@ simple @command{awk} programs so powerful.
 @cindex @code{$} (dollar sign), @code{$} field operator
 @cindex dollar sign (@code{$}), @code{$} field operator
 @cindex field operators@comma{} dollar sign as
-You use a dollar-sign (@samp{$})
+You use a dollar sign (@samp{$})
 to refer to a field in an @command{awk} program,
 followed by the number of the field you want.  Thus, @code{$1}
 refers to the first field, @code{$2} to the second, and so on.
-(Unlike the Unix shells, the field numbers are not limited to single digits.
+(Unlike in the Unix shells, the field numbers are not limited to single digits.
 @code{$127} is the 127th field in the record.)
 For example, suppose the following is a line of input:
 
@@ -6472,7 +6472,7 @@ If you try to reference a field beyond the last
 one (such as @code{$8} when the record has only seven fields), you get
 the empty string.  (If used in a numeric operation, you get zero.)
 
-The use of @code{$0}, which looks like a reference to the ``zero-th'' field, is
+The use of @code{$0}, which looks like a reference to the ``zeroth'' field, is
 a special case: it represents the whole input record. Use it
 when you are not interested in specific fields.
 Here are some more examples:
@@ -6527,13 +6527,13 @@ awk '@{ print $(2*2) @}' mail-list
 @end example
 
 @command{awk} evaluates the expression @samp{(2*2)} and uses
-its value as the number of the field to print.  The @samp{*} sign
+its value as the number of the field to print.  The @samp{*}
 represents multiplication, so the expression @samp{2*2} evaluates to four.
 The parentheses are used so that the multiplication is done before the
 @samp{$} operation; they are necessary whenever there is a binary
 operator@footnote{A @dfn{binary operator}, such as @samp{*} for
 multiplication, is one that takes two operands. The distinction
-is required, because @command{awk} also has unary (one-operand)
+is required because @command{awk} also has unary (one-operand)
 and ternary (three-operand) operators.}
 in the field-number expression.  This example, then, prints the
 type of relationship (the fourth field) for every line of the file
@@ -6713,7 +6713,7 @@ rebuild @code{$0} when @code{NF} is decremented.
 
 Finally, there are times when it is convenient to force
 @command{awk} to rebuild the entire record, using the current
-value of the fields and @code{OFS}.  To do this, use the
+values of the fields and @code{OFS}.  To do this, use the
 seemingly innocuous assignment:
 
 @example
@@ -6737,7 +6737,7 @@ such as @code{sub()} and @code{gsub()}
 It is important to remember that @code{$0} is the @emph{full}
 record, exactly as it was read from the input.  This includes
 any leading or trailing whitespace, and the exact whitespace (or other
-characters) that separate the fields.
+characters) that separates the fields.
 
 It is a common error to try to change the field separators
 in a record simply by setting @code{FS} and @code{OFS}, and then
@@ -6830,7 +6830,7 @@ John Q. Smith, LXIX, 29 Oak St., Walamazoo, MI 42139
 @end example
 
 @noindent
-The same program would extract @samp{@bullet{}LXIX}, instead of
+The same program would extract @samp{@bullet{}LXIX} instead of
 @samp{@bullet{}29@bullet{}Oak@bullet{}St.}.
 If you were expecting the program to print the
 address, you would be surprised.  The moral is to choose your data layout and
@@ -7091,7 +7091,7 @@ choosing your field and record separators.
 @cindex Unix @command{awk}, password files@comma{} field separators and
 Perhaps the most common use of a single character as the field separator
 occurs when processing the Unix system password file.  On many Unix
-systems, each user has a separate entry in the system password file, one
+systems, each user has a separate entry in the system password file, with one
 line per user.  The information in these lines is separated by colons.
 The first field is the user's login name and the second is the user's
 encrypted or shadow password.  (A shadow password is indicated by the
@@ -7132,7 +7132,7 @@ When you do this, @code{$1} is the same as @code{$0}.
 According to the POSIX standard, @command{awk} is supposed to behave
 as if each record is split into fields at the time it is read.
 In particular, this means that if you change the value of @code{FS}
-after a record is read, the value of the fields (i.e., how they were split)
+after a record is read, the values of the fields (i.e., how they were split)
 should reflect the old value of @code{FS}, not the new one.
 
 @cindex dark corner, field separators
@@ -7145,10 +7145,7 @@ using the @emph{current} value of @code{FS}!
 @value{DARKCORNER}
 This behavior can be difficult
 to diagnose. The following example illustrates the difference
-between the two methods.
-(The @command{sed}@footnote{The @command{sed} utility is a ``stream editor.''
-Its behavior is also defined by the POSIX standard.}
-command prints just the first line of @file{/etc/passwd}.)
+between the two methods:
 
 @example
 sed 1q /etc/passwd | awk '@{ FS = ":" ; print $1 @}'
@@ -7168,6 +7165,10 @@ prints the full first line of the file, something like:
 @example
 root:x:0:0:Root:/:
 @end example
+
+(The @command{sed}@footnote{The @command{sed} utility is a ``stream editor.''
+Its behavior is also defined by the POSIX standard.}
+command prints just the first line of @file{/etc/passwd}.)
 @end sidebar
 
 @node Field Splitting Summary
@@ -7342,7 +7343,7 @@ In order to tell which kind of field splitting is in effect,
 use @code{PROCINFO["FS"]}
 (@pxref{Auto-set}).
 The value is @code{"FS"} if regular field splitting is being used,
-or it is @code{"FIELDWIDTHS"} if fixed-width field splitting is being used:
+or @code{"FIELDWIDTHS"} if fixed-width field splitting is being used:
 
 @example
 if (PROCINFO["FS"] == "FS")
@@ -7378,14 +7379,14 @@ what they are, and not by what they are not.
 The most notorious such case
 is so-called @dfn{comma-separated values} (CSV) data. Many spreadsheet programs,
 for example, can export their data into text files, where each record is
-terminated with a newline, and fields are separated by commas. If only
-commas separated the data, there wouldn't be an issue. The problem comes when
+terminated with a newline, and fields are separated by commas. If
+commas only separated the data, there wouldn't be an issue. The problem comes when
 one of the fields contains an @emph{embedded} comma.
 In such cases, most programs embed the field in double quotes.@footnote{The
 CSV format lacked a formal standard definition for many years.
 @uref{http://www.ietf.org/rfc/rfc4180.txt, RFC 4180}
 standardizes the most common practices.}
-So we might have data like this:
+So, we might have data like this:
 
 @example
 @c file eg/misc/addresses.csv
@@ -7471,8 +7472,8 @@ of cases, and the @command{gawk} developers are satisfied with that.
 @end quotation
 
 As written, the regexp used for @code{FPAT} requires that each field
-have a least one character.  A straightforward modification
-(changing changed the first @samp{+} to @samp{*}) allows fields to be empty:
+contain at least one character.  A straightforward modification
+(changing the first @samp{+} to @samp{*}) allows fields to be empty:
 
 @example
 FPAT = "([^,]*)|(\"[^\"]+\")"
@@ -7482,9 +7483,9 @@ Finally, the @code{patsplit()} function makes the same functionality
 available for splitting regular strings (@pxref{String Functions}).
 
 To recap, @command{gawk} provides three independent methods
-to split input records into fields. @command{gawk} uses whichever
-mechanism was last chosen based on which of the three
-variables---@code{FS}, @code{FIELDWIDTHS}, and @code{FPAT}---was
+to split input records into fields.
+The mechanism used is based on which of the three
+variables---@code{FS}, @code{FIELDWIDTHS}, or @code{FPAT}---was
 last assigned to.
 
 @node Multiple Line
@@ -7527,7 +7528,7 @@ at the end of the record and one or more blank lines after the record.
 In addition, a regular expression always matches the longest possible
 sequence when there is a choice
 (@pxref{Leftmost Longest}).
-So the next record doesn't start until
+So, the next record doesn't start until
 the first nonblank line that follows---no matter how many blank lines
 appear in a row, they are considered one record separator.
 
@@ -7542,10 +7543,10 @@ In the second case, this special processing is not done.
 @cindex field separator, in multiline records
 @cindex @code{FS}, in multiline records
 Now that the input is separated into records, the second step is to
-separate the fields in the record.  One way to do this is to divide each
+separate the fields in the records.  One way to do this is to divide each
 of the lines into fields in the normal manner.  This happens by default
 as the result of a special feature.  When @code{RS} is set to the empty
-string, @emph{and} @code{FS} is set to a single character,
+string @emph{and} @code{FS} is set to a single character,
 the newline character @emph{always} acts as a field separator.
 This is in addition to whatever field separations result from
 @code{FS}.@footnote{When @code{FS} is the null string (@code{""})
@@ -7560,7 +7561,7 @@ want the newline character to separate fields, because there is no way to
 prevent it.  However, you can work around this by using the @code{split()}
 function to break up the record manually
 (@pxref{String Functions}).
-If you have a single character field separator, you can work around
+If you have a single-character field separator, you can work around
 the special feature in a different way, by making @code{FS} into a
 regexp for that single character.  For example, if the field
 separator is a percent character, instead of
@@ -7568,10 +7569,10 @@ separator is a percent character, instead of
 
 Another way to separate fields is to
 put each field on a separate line: to do this, just set the
-variable @code{FS} to the string @code{"\n"}.  (This single
-character separator matches a single newline.)
+variable @code{FS} to the string @code{"\n"}.
+(This single-character separator matches a single newline.)
 A practical example of a @value{DF} organized this way might be a mailing
-list, where each entry is separated by blank lines.  Consider a mailing
+list, where blank lines separate the entries.  Consider a mailing
 list in a file named @file{addresses}, which looks like this:
 
 @example
@@ -7667,7 +7668,7 @@ then @command{gawk} sets @code{RT} to the null string.
 @cindex input, explicit
 So far we have been getting our input data from @command{awk}'s main
 input stream---either the standard input (usually your keyboard, sometimes
-the output from another program) or from the
+the output from another program) or the
 files specified on the command line.  The @command{awk} language has a
 special built-in command called @code{getline} that
 can be used to read input under your explicit control.
@@ -7851,7 +7852,7 @@ free
 @end example
 
 The @code{getline} command used in this way sets only the variables
-@code{NR}, @code{FNR}, and @code{RT} (and of course, @var{var}).
+@code{NR}, @code{FNR}, and @code{RT} (and, of course, @var{var}).
 The record is not
 split into fields, so the values of the fields (including @code{$0}) and
 the value of @code{NF} do not change.
@@ -7866,7 +7867,7 @@ the value of @code{NF} do not change.
 @cindex left angle bracket (@code{<}), @code{<} operator (I/O)
 @cindex operators, input/output
 Use @samp{getline < @var{file}} to read the next record from @var{file}.
-Here @var{file} is a string-valued expression that
+Here, @var{file} is a string-valued expression that
 specifies the @value{FN}.  @samp{< @var{file}} is called a @dfn{redirection}
 because it directs input to come from a different place.
 For example, the following
@@ -8044,7 +8045,7 @@ of a construct like @samp{@w{"echo "} "date" | getline}.
 Most versions, including the current version, treat it at as
 @samp{@w{("echo "} "date") | getline}.
 (This is also how BWK @command{awk} behaves.)
-Some versions changed and treated it as
+Some versions instead treat it as
 @samp{@w{"echo "} ("date" | getline)}.
 (This is how @command{mawk} behaves.)
 In short, @emph{always} use explicit parentheses, and then you won't
@@ -8092,7 +8093,7 @@ program to be portable to other @command{awk} implementations.
 @cindex operators, input/output
 @cindex differences in @command{awk} and @command{gawk}, input/output operators
 
-Input into @code{getline} from a pipe is a one-way operation.
+Reading input into @code{getline} from a pipe is a one-way operation.
 The command that is started with @samp{@var{command} | getline} only
 sends data @emph{to} your @command{awk} program.
 
@@ -8102,7 +8103,7 @@ for processing and then read the results back.
 communications are possible.  This is done with the @samp{|&}
 operator.
 Typically, you write data to the coprocess first and then
-read results back, as shown in the following:
+read the results back, as shown in the following:
 
 @example
 print "@var{some query}" |& "db_server"
@@ -8185,7 +8186,7 @@ also @pxref{Auto-set}.)
 @item
 Using @code{FILENAME} with @code{getline}
 (@samp{getline < FILENAME})
-is likely to be a source for
+is likely to be a source of
 confusion.  @command{awk} opens a separate input stream from the
 current input file.  However, by not using a variable, @code{$0}
 and @code{NF} are still updated.  If you're doing this, it's
@@ -8193,9 +8194,15 @@ probably by accident, and you should reconsider what it is you're
 trying to accomplish.
 
 @item
-@DBREF{Getline Summary} presents a table summarizing the
+@ifdocbook
+The next section
+@end ifdocbook
+@ifnotdocbook
+@ref{Getline Summary},
+@end ifnotdocbook
+presents a table summarizing the
 @code{getline} variants and which variables they can affect.
-It is worth noting that those variants which do not use redirection
+It is worth noting that those variants that do not use redirection
 can cause @code{FILENAME} to be updated if they cause
 @command{awk} to start reading a new input file.
 
@@ -8204,7 +8211,7 @@ can cause @code{FILENAME} to be updated if they cause
 If the variable being assigned is an expression with side effects,
 different versions of @command{awk} behave differently upon encountering
 end-of-file.  Some versions don't evaluate the expression; many versions
-(including @command{gawk}) do.  Here is an example, due to Duncan Moore:
+(including @command{gawk}) do.  Here is an example, courtesy of Duncan Moore:
 
 @ignore
 Date: Sun, 01 Apr 2012 11:49:33 +0100
@@ -8221,7 +8228,7 @@ BEGIN @{
 
 @noindent
 Here, the side effect is the @samp{++c}.  Is @code{c} incremented if
-end of file is encountered, before the element in @code{a} is assigned?
+end-of-file is encountered before the element in @code{a} is assigned?
 
 @command{gawk} treats @code{getline} like a function call, and evaluates
 the expression @samp{a[++c]} before attempting to read from @file{f}.
@@ -8263,8 +8270,8 @@ This @value{SECTION} describes a feature that is specific to @command{gawk}.
 
 You may specify a timeout in milliseconds for reading input from the keyboard,
 a pipe, or two-way communication, including TCP/IP sockets. This can be done
-on a per input, command, or connection basis, by setting a special element
-in the @code{PROCINFO} array (@pxref{Auto-set}):
+on a per-input, per-command, or per-connection basis, by setting a special
+element in the @code{PROCINFO} array (@pxref{Auto-set}):
 
 @example
 PROCINFO["input_name", "READ_TIMEOUT"] = @var{timeout in milliseconds}
@@ -8295,7 +8302,7 @@ while ((getline < "/dev/stdin") > 0)
 @end example
 
 @command{gawk} terminates the read operation if input does not
-arrive after waiting for the timeout period, returns failure
+arrive after waiting for the timeout period, returns failure,
 and sets @code{ERRNO} to an appropriate string value.
 A negative or zero value for the timeout is the same as specifying
 no timeout at all.
@@ -8345,7 +8352,7 @@ If the @code{PROCINFO} element is not present and the
 @command{gawk} uses its value to initialize the timeout value.
 The exclusive use of the environment variable to specify timeout
 has the disadvantage of not being able to control it
-on a per command or connection basis.
+on a per-command or per-connection basis.
 
 @command{gawk} considers a timeout event to be an error even though
 the attempt to read from the underlying device may
@@ -8411,7 +8418,7 @@ The possibilities are as follows:
 
 @item
 After splitting the input into records, @command{awk} further splits
-the record into individual fields, named @code{$1}, @code{$2}, and so
+the records into individual fields, named @code{$1}, @code{$2}, and so
 on. @code{$0} is the whole record, and @code{NF} indicates how many
 fields there are.  The default way to split fields is between whitespace
 characters.
@@ -8427,12 +8434,12 @@ thing. Decrementing @code{NF} throws away fields and rebuilds the record.
 @item
 Field splitting is more complicated than record splitting:
 
-@multitable @columnfractions .40 .45 .15
+@multitable @columnfractions .40 .40 .20
 @headitem Field separator value @tab Fields are split @dots{} @tab @command{awk} / @command{gawk}
 @item @code{FS == " "} @tab On runs of whitespace @tab @command{awk}
 @item @code{FS == @var{any single character}} @tab On that character @tab @command{awk}
 @item @code{FS == @var{regexp}} @tab On text matching the regexp @tab @command{awk}
-@item @code{FS == ""}  @tab Each individual character is a separate field @tab @command{gawk}
+@item @code{FS == ""}  @tab Such that each individual character is a separate field @tab @command{gawk}
 @item @code{FIELDWIDTHS == @var{list of columns}} @tab Based on character position @tab @command{gawk}
 @item @code{FPAT == @var{regexp}} @tab On the text surrounding text matching the regexp @tab @command{gawk}
 @end multitable
@@ -8449,11 +8456,11 @@ This can also be done using command-line variable assignment.
 Use @code{PROCINFO["FS"]} to see how fields are being split.
 
 @item
-Use @code{getline} in its various forms to read additional records,
+Use @code{getline} in its various forms to read additional records
 from the default input stream, from a file, or from a pipe or coprocess.
 
 @item
-Use @code{PROCINFO[@var{file}, "READ_TIMEOUT"]} to cause reads to timeout
+Use @code{PROCINFO[@var{file}, "READ_TIMEOUT"]} to cause reads to time out
 for @var{file}.
 
 @item
@@ -8562,7 +8569,7 @@ space is printed between any two items.
 
 Note that the @code{print} statement is a statement and not an
 expression---you can't use it in the pattern part of a
-@var{pattern}-@var{action} statement, for example.
+pattern--action statement, for example.
 
 @node Print Examples
 @section @code{print} Statement Examples
@@ -8753,7 +8760,7 @@ runs together on a single line.
 @cindex numeric, output format
 @cindex formats@comma{} numeric output
 When printing numeric values with the @code{print} statement,
-@command{awk} internally converts the number to a string of characters
+@command{awk} internally converts each number to a string of characters
 and prints that string.  @command{awk} uses the @code{sprintf()} function
 to do this conversion
 (@pxref{String Functions}).
@@ -8824,7 +8831,7 @@ printf @var{format}, @var{item1}, @var{item2}, @dots{}
 @noindent
 As for @code{print}, the entire list of arguments may optionally be
 enclosed in parentheses. Here too, the parentheses are necessary if any
-of the item expressions use the @samp{>} relational operator; otherwise,
+of the item expressions uses the @samp{>} relational operator; otherwise,
 it can be confused with an output redirection (@pxref{Redirection}).
 
 @cindex format specifiers
@@ -8855,7 +8862,7 @@ $ @kbd{awk 'BEGIN @{}
 @end example
 
 @noindent
-Here, neither the @samp{+} nor the @samp{OUCH!} appear in
+Here, neither the @samp{+} nor the @samp{OUCH!} appears in
 the output message.
 
 @node Control Letters
@@ -8902,8 +8909,8 @@ The two control letters are equivalent.
 (The @samp{%i} specification is for compatibility with ISO C.)
 
 @item @code{%e}, @code{%E}
-Print a number in scientific (exponential) notation;
-for example:
+Print a number in scientific (exponential) notation.
+For example:
 
 @example
 printf "%4.3e\n", 1950
@@ -8940,7 +8947,7 @@ The special ``not a number'' value formats as @samp{-nan} or @samp{nan}
 (@pxref{Math Definitions}).
 
 @item @code{%F}
-Like @samp{%f} but the infinity and ``not a number'' values are spelled
+Like @samp{%f}, but the infinity and ``not a number'' values are spelled
 using uppercase letters.
 
 The @samp{%F} format is a POSIX extension to ISO C; not all systems
@@ -9184,7 +9191,7 @@ printf "%" w "." p "s\n", s
 @end example
 
 @noindent
-This is not particularly easy to read but it does work.
+This is not particularly easy to read, but it does work.
 
 @c @cindex lint checks
 @cindex troubleshooting, fatal errors, @code{printf} format strings
@@ -9230,7 +9237,7 @@ $ @kbd{awk '@{ printf "%-10s %s\n", $1, $2 @}' mail-list}
 @end example
 
 In this case, the phone numbers had to be printed as strings because
-the numbers are separated by a dash.  Printing the phone numbers as
+the numbers are separated by dashes.  Printing the phone numbers as
 numbers would have produced just the first three digits: @samp{555}.
 This would have been pretty confusing.
 
@@ -9290,7 +9297,7 @@ This is called @dfn{redirection}.
 
 @quotation NOTE
 When @option{--sandbox} is specified (@pxref{Options}),
-redirecting output to files, pipes and coprocesses is disabled.
+redirecting output to files, pipes, and coprocesses is disabled.
 @end quotation
 
 A redirection appears after the @code{print} or @code{printf} statement.
@@ -9343,7 +9350,7 @@ Each output file contains one name or number per line.
 @cindex @code{>} (right angle bracket), @code{>>} operator (I/O)
 @cindex right angle bracket (@code{>}), @code{>>} operator (I/O)
 @item print @var{items} >> @var{output-file}
-This redirection prints the items into the pre-existing output file
+This redirection prints the items into the preexisting output file
 named @var{output-file}.  The difference between this and the
 single-@samp{>} redirection is that the old contents (if any) of
 @var{output-file} are not erased.  Instead, the @command{awk} output is
@@ -9382,7 +9389,7 @@ The unsorted list is written with an ordinary redirection, while
 the sorted list is written by piping through the @command{sort} utility.
 
 The next example uses redirection to mail a message to the mailing
-list @samp{bug-system}.  This might be useful when trouble is encountered
+list @code{bug-system}.  This might be useful when trouble is encountered
 in an @command{awk} script run periodically for system maintenance:
 
 @example
@@ -9413,15 +9420,23 @@ This redirection prints the items to the input of @var{command}.
 The difference between this and the
 single-@samp{|} redirection is that the output from @var{command}
 can be read with @code{getline}.
-Thus @var{command} is a @dfn{coprocess}, which works together with,
-but subsidiary to, the @command{awk} program.
+Thus, @var{command} is a @dfn{coprocess}, which works together with
+but is subsidiary to the @command{awk} program.
 
 This feature is a @command{gawk} extension, and is not available in
 POSIX @command{awk}.
-@DBXREF{Getline/Coprocess}
+@ifnotdocbook
+@xref{Getline/Coprocess},
 for a brief discussion.
-@DBXREF{Two-way I/O}
+@xref{Two-way I/O},
 for a more complete discussion.
+@end ifnotdocbook
+@ifdocbook
+@DBXREF{Getline/Coprocess}
+for a brief discussion and
+@DBREF{Two-way I/O}
+for a more complete discussion.
+@end ifdocbook
 @end table
 
 Redirecting output using @samp{>}, @samp{>>}, @samp{|}, or @samp{|&}
@@ -9446,7 +9461,7 @@ This is indeed how redirections must be used from the shell.  But in
 @command{awk}, it isn't necessary.  In this kind of case, a program should
 use @samp{>} for all the @code{print} statements, because the output file
 is only opened once. (It happens that if you mix @samp{>} and @samp{>>}
-that output is produced in the expected order. However, mixing the operators
+output is produced in the expected order. However, mixing the operators
 for the same file is definitely poor style, and is confusing to readers
 of your program.)
 
@@ -9498,7 +9513,7 @@ command lines to be fed to the shell.
 @end sidebar
 
 @node Special FD
-@section Special Files for Standard Pre-Opened Data Streams
+@section Special Files for Standard Preopened Data Streams
 @cindex standard input
 @cindex input, standard
 @cindex standard output
@@ -9511,7 +9526,7 @@ command lines to be fed to the shell.
 Running programs conventionally have three input and output streams
 already available to them for reading and writing.  These are known
 as the @dfn{standard input}, @dfn{standard output}, and @dfn{standard
-error output}.  These open streams (and any other open file or pipe)
+error output}.  These open streams (and any other open files or pipes)
 are often referred to by the technical term @dfn{file descriptors}.
 
 These streams are, by default, connected to your keyboard and screen, but
@@ -9549,7 +9564,7 @@ that is connected to your keyboard and screen. It represents the
 ``terminal,''@footnote{The ``tty'' in @file{/dev/tty} stands for
 ``Teletype,'' a serial terminal.} which on modern systems is a keyboard
 and screen, not a serial console.)
-This generally has the same effect but not always: although the
+This generally has the same effect, but not always: although the
 standard error stream is usually the screen, it can be redirected; when
 that happens, writing to the screen is not correct.  In fact, if
 @command{awk} is run from a background job, it may not have a
@@ -9594,7 +9609,7 @@ print "Serious error detected!" > "/dev/stderr"
 
 @cindex troubleshooting, quotes with file names
 Note the use of quotes around the @value{FN}.
-Like any other redirection, the value must be a string.
+Like with any other redirection, the value must be a string.
 It is a common error to omit the quotes, which leads
 to confusing results.
 
@@ -9620,7 +9635,7 @@ TCP/IP networking.
 @end menu
 
 @node Other Inherited Files
-@subsection Accessing Other Open Files With @command{gawk}
+@subsection Accessing Other Open Files with @command{gawk}
 
 Besides the @code{/dev/stdin}, @code{/dev/stdout}, and @code{/dev/stderr}
 special @value{FN}s mentioned earlier, @command{gawk} provides syntax
@@ -9677,7 +9692,7 @@ special @value{FN}s that @command{gawk} provides:
 @cindex compatibility mode (@command{gawk}), file names
 @cindex file names, in compatibility mode
 @item
-Recognition of the @value{FN}s for the three standard pre-opened
+Recognition of the @value{FN}s for the three standard preopened
 files is disabled only in POSIX mode.
 
 @item
@@ -9690,7 +9705,7 @@ compatibility mode (either @option{--traditional} or @option{--posix};
 interprets these special @value{FN}s.
 For example, using @samp{/dev/fd/4}
 for output actually writes on file descriptor 4, and not on a new
-file descriptor that is @code{dup()}'ed from file descriptor 4.  Most of
+file descriptor that is @code{dup()}ed from file descriptor 4.  Most of
 the time this does not matter; however, it is important to @emph{not}
 close any of the files related to file descriptors 0, 1, and 2.
 Doing so results in unpredictable behavior.
@@ -9907,9 +9922,9 @@ This value is zero if the close succeeds, or @minus{}1 if
 it fails.
 
 The POSIX standard is very vague; it says that @code{close()}
-returns zero on success and nonzero otherwise.  In general,
+returns zero on success and a nonzero value otherwise.  In general,
 different implementations vary in what they report when closing
-pipes; thus the return value cannot be used portably.
+pipes; thus, the return value cannot be used portably.
 @value{DARKCORNER}
 In POSIX mode (@pxref{Options}), @command{gawk} just returns zero
 when closing a pipe.
@@ -9928,8 +9943,8 @@ for numeric values for the @code{print} statement.
 
 @item
 The @code{printf} statement provides finer-grained control over output,
-with format control letters for different data types and various flags
-that modify the behavior of the format control letters.
+with format-control letters for different data types and various flags
+that modify the behavior of the format-control letters.
 
 @item
 Output from both @code{print} and @code{printf} may be redirected to
@@ -37495,7 +37510,7 @@ To get @command{awka}, go to @url{http://sourceforge.net/projects/awka}.
 @c andrewsumner@@yahoo.net
 
 The project seems to be frozen; no new code changes have been made
-since approximately 2003.
+since approximately 2001.
 
 @cindex Beebe, Nelson H.F.@:
 @cindex @command{pawk} (profiling version of Brian Kernighan's @command{awk})
@@ -37773,7 +37788,7 @@ for information on getting the latest version of @command{gawk}.)
 
 @item
 @ifnotinfo
-Follow the @uref{http://www.gnu.org/prep/standards/, @cite{GNU Coding Standards}}.
+Follow the @cite{GNU Coding Standards}.
 @end ifnotinfo
 @ifinfo
 See @inforef{Top, , Version, standards, GNU Coding Standards}.
@@ -37782,7 +37797,7 @@ This document describes how GNU software should be written. If you haven't
 read it, please do so, preferably @emph{before} starting to modify @command{gawk}.
 (The @cite{GNU Coding Standards} are available from
 the GNU Project's
-@uref{http://www.gnu.org/prep/standards_toc.html, website}.
+@uref{http://www.gnu.org/prep/standards/, website}.
 Texinfo, Info, and DVI versions are also available.)
 
 @cindex @command{gawk}, coding style in
