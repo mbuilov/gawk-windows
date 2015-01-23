@@ -9035,7 +9035,7 @@ messages at runtime.
 which describes how and why to use positional specifiers.
 For now, we ignore them.
 
-@item - (Minus)
+@item - @r{(Minus)}
 The minus sign, used before the width modifier (see later on in
 this list),
 says to left-justify
@@ -38912,6 +38912,21 @@ languages.
 These standards often become international standards as well. See also
 ``ISO.''
 
+@item Argument
+An argument can be two different things.  It can be an option or a
+@value{FN} passed to a command while invoking it from the command line, or
+it can be something passed to a @dfn{function} inside a program, e.g.
+inside @command{awk}.
+
+In the latter case, an argument can be passed to a function in two ways.
+Either it is given to the called function by value, i.e., a copy of the
+value of the variable is made available to the called function, but the
+original variable cannot be modified by the function itself; or it is
+given by reference, i.e., a pointer to the interested variable is passed to
+the function, which can then directly modify it. In @command{awk}
+scalars are passed by value, and arrays are passed by reference.
+See ``Pass By Value/Reference.''
+
 @item Array
 A grouping of multiple values under the same name.
 Most languages just provide sequential arrays.
@@ -38953,6 +38968,25 @@ The GNU version of the standard shell
 @end ifinfo
 See also ``Bourne Shell.''
 
+@item Binary
+Base-two notation, where the digits are @code{0}--@code{1}. Since
+electronic circuitry works ``naturally'' in base 2 (just think of Off/On),
+everything inside a computer is calculated using base 2. Each digit
+represents the presence (or absence) of a power of 2 and is called a
+@dfn{bit}. So, for example, the base-two number @code{10101} is
+the same as decimal 21, ((1 x 16) + (1 x 4) + (1 x 1)).
+
+Since base-two numbers quickly become
+very long to read and write, they are usually grouped by 3 (i.e., they are
+read as octal numbers), or by 4 (i.e., they are read as hexadecimal
+numbers). There is no direct way to insert base 2 numbers in a C program.
+If need arises, such numbers are usually inserted as octal or hexadecimal
+numbers. The number of base-two digits that fit into registers used for
+representing integer numbers in computers is a rough indication of the
+computing power of the computer itself.  Most computers nowadays use 64
+bits for representing integer numbers in their registers, but 32-bit,
+16-bit and 8-bit registers have been widely used in the past.
+@xref{Nondecimal-numbers}.
 @item Bit
 Short for ``Binary Digit.''
 All values in computer memory ultimately reduce to binary digits: values
@@ -38983,6 +39017,19 @@ generally upwardly compatible with the Bourne shell.
 The characters @samp{@{} and @samp{@}}.  Braces are used in
 @command{awk} for delimiting actions, compound statements, and function
 bodies.
+
+@item Bracket Expression
+Inside a @dfn{regular expression}, an expression included in square
+brackets, meant to designate a single character as belonging to a
+specified character class. A bracket expression can contain a list of one
+or more characters, like @samp{[abc]}, a range of characters, like
+@samp{[A-Z]}, or a name, delimited by @samp{:}, that designates a known set
+of characters, like @samp{[:digit:]}. The form of bracket expression
+enclosed between @samp{:} is independent of the underlying representation
+of the character themselves, which could utilize the ASCII, ECBDIC, or
+Unicode codesets, depending on the architecture of the computer system, and on
+localization.
+See also ``Regular Expression.''
 
 @item Built-in Function
 The @command{awk} language provides built-in functions that perform various
@@ -39037,8 +39084,24 @@ points out similarities between @command{awk} and C when appropriate.
 In general, @command{gawk} attempts to be as similar to the 1990 version
 of ISO C as makes sense.
 
+@item C Shell
+The C Shell (@command{csh} or its improved version, @command{tcsh}) is a Unix shell that was
+created by Bill Joy in the late 1970s. The C shell was differentiated from
+other shells by its interactive features and overall style, which
+looks more like C. The C Shell is not backward compatible with the Bourne
+Shell, so special attention is required when converting scripts
+written for other Unix shells to the C shell, especially with regard to the management of
+shell variables.
+See also ``Bourne Shell.''
+
 @item C++
 A popular object-oriented programming language derived from C.
+
+@item Character Class
+See ``Bracket Expression.''
+
+@item Character List
+See ``Bracket Expression.''
 
 @cindex ASCII
 @cindex ISO 8859-1
@@ -39079,10 +39142,22 @@ machine-executable object code.  The object code is then executed
 directly by the computer.
 See also ``Interpreter.''
 
+@item Complemented Bracket Expression
+The negation of a @dfn{bracket expression}.  All that is @emph{not}
+described by a given bracket expression. The symbol @samp{^} precedes
+the negated bracket expression.  E.g.: @samp{[[^:digit:]}
+designates whatever character is not a digit. @samp{[^bad]}
+designates whatever character is not one of the letters @samp{b}, @samp{a},
+or @samp{d}.
+See ``Bracket Expression.''
+
 @item Compound Statement
 A series of @command{awk} statements, enclosed in curly braces.  Compound
 statements may be nested.
 (@xref{Statements}.)
+
+@item Computed Regexps
+See ``Dynamic Regular Expressions.''
 
 @item Concatenation
 Concatenating two strings means sticking them together, one after another,
@@ -39097,6 +39172,13 @@ An expression using the @samp{?:} ternary operator, such as
 expression is the value of @var{expr2}; otherwise the value is
 @var{expr3}.  In either case, only one of @var{expr2} and @var{expr3}
 is evaluated. (@xref{Conditional Exp}.)
+
+@item Control Statement
+A control statement is an instruction to perform a given operation or a set
+of operations inside an @command{awk} program, if a given condition is
+true. Control statements are: @code{if}, @code{for}, @code{while}, and
+@code{do}
+(@pxref{Statements}).
 
 @cindex McIlroy, Doug
 @cindex cookie
@@ -39252,6 +39334,11 @@ Format strings control the appearance of output in the
 are controlled by the format strings contained in the predefined variables
 @code{CONVFMT} and @code{OFMT}. (@xref{Control Letters}.)
 
+@item Fortran
+Shorthand for FORmula TRANslator, one of the first programming languages
+available for scientific calculations. It was created by John Backus,
+and has been available since 1957. It is still in use today.
+
 @item Free Documentation License
 This document describes the terms under which this @value{DOCUMENT}
 is published and may be copied. (@xref{GNU Free Documentation License}.)
@@ -39269,10 +39356,21 @@ Emacs editor.  GNU Emacs is the most widely used version of Emacs today.
 See ``Free Software Foundation.''
 
 @item Function
-A specialized group of statements used to encapsulate general
-or program-specific tasks.  @command{awk} has a number of built-in
-functions, and also allows you to define your own.
-(@xref{Functions}.)
+A part of an @command{awk} program that can be invoked from every point of
+the program, to perform a task.  @command{awk} has several built-in
+functions.
+Users can define their own functions in every part of the program.
+Function can be recursive, i.e., they may invoke themselves.
+@xref{Functions}.
+In @command{gawk} it is also possible to have functions shared
+among different programs, and included where required using the
+@code{@@include} directive
+(@pxref{Include Files}).
+In @command{gawk} the name of the function that should be invoked
+can be generated at run time, i.e., dynamically.
+The @command{gawk} extension API provides constructor functions
+(@pxref{Constructor Functions}).
+
 
 @item @command{gawk}
 The GNU implementation of @command{awk}.
@@ -39396,6 +39494,12 @@ meaning.  Keywords are reserved and may not be used as variable names.
 and
 @code{while}.
 
+@item Korn Shell
+The Korn Shell (@command{ksh}) is a Unix shell which was developed by David Korn at Bell
+Laboratories in the early 1980s. The Korn Shell is backward-compatible with the Bourne
+shell and includes many features of the C shell.
+See also ``Bourne Shell.''
+
 @cindex LGPL (Lesser General Public License)
 @cindex Lesser General Public License (LGPL)
 @cindex GNU Lesser General Public License
@@ -39435,6 +39539,14 @@ Characters used within a regexp that do not stand for themselves.
 Instead, they denote regular expression operations, such as repetition,
 grouping, or alternation.
 
+@item Nesting
+Nesting is where information is organized in layers, or where objects
+contain other similar objects.
+In @command{gawk} the @code{@@include}
+directive can be nested. The ``natural'' nesting of arithmetic and
+logical operations can be changed using parentheses
+(@pxref{Precedence}).
+
 @item No-op
 An operation that does nothing.
 
@@ -39455,6 +39567,11 @@ Octal numbers are written in C using a leading @samp{0},
 to indicate their base.  Thus, @code{013} is 11 ((1 x 8) + 3).
 @xref{Nondecimal-numbers}.
 
+@item Output Record
+A single chunk of data that is written out by @command{awk}.  Usually, an
+@command{awk} output record consists of one or more lines of text.
+@xref{Records}.
+
 @item Pattern
 Patterns tell @command{awk} which input records are interesting to which
 rules.
@@ -39468,6 +39585,9 @@ a regular expression. (@xref{Pattern Overview}.)
 An acronym describing what is possibly the most frequent
 source of computer usage problems. (Problem Exists Between
 Keyboard And Chair.)
+
+@item Plug-in
+See ``Extensions.''
 
 @item POSIX
 The name for a series of standards
@@ -39493,6 +39613,9 @@ A sequence of consecutive lines from the input file(s).  A pattern
 can specify ranges of input lines for @command{awk} to process or it can
 specify single lines. (@xref{Pattern Overview}.)
 
+@item Record
+See ``Input record'' and ``Output record.''
+
 @item Recursion
 When a function calls itself, either directly or indirectly.
 If this is clear, stop, and proceed to the next entry.
@@ -39510,6 +39633,15 @@ operators.
 (@xref{Getline},
 and @ref{Redirection}.)
 
+@item Reference Counts
+An internal mechanism in @command{gawk} to minimize the amount of memory
+needed to store the value of string variables. If the value assumed by
+a variable is used in more than one place, only one copy of the value
+itself is kept, and the associated reference count is increased when the
+same value is used by an additional variable, and decresed when the related
+variable is no longer in use. When the reference count goes to zero,
+the memory space used to store the value of the variable is freed.
+
 @item Regexp
 See ``Regular Expression.''
 
@@ -39526,6 +39658,15 @@ A regular expression constant is a regular expression written within
 slashes, such as @code{/foo/}.  This regular expression is chosen
 when you write the @command{awk} program and cannot be changed during
 its execution. (@xref{Regexp Usage}.)
+
+@item Regular Expression Operators
+See ``Metacharacters.''
+
+@item Rounding
+Rounding the result of an arithmetic operation can be tricky.
+More than one way of rounding exists, and in @command{gawk}
+it is possible to choose which method should be used in a program.
+@xref{Setting the rounding mode}.
 
 @item Rule
 A segment of an @command{awk} program that specifies how to process single
@@ -39586,6 +39727,12 @@ A @value{FN} interpreted internally by @command{gawk}, instead of being handed
 directly to the underlying operating system---for example, @file{/dev/stderr}.
 (@xref{Special Files}.)
 
+@item Statement
+An expression inside an @command{awk} program in the action part
+of a pattern--action rule, or inside an
+@command{awk} function. A statement can be a variable assignment,
+an array operation, a loop, etc.
+
 @item Stream Editor
 A program that reads records from an input stream and processes them one
 or more at a time.  This is in contrast with batch programs, which may
@@ -39636,9 +39783,14 @@ This is standard time in Greenwich, England, which is used as a
 reference time for day and date calculations.
 See also ``Epoch'' and ``GMT.''
 
+@item Variable
+A name for a value. In @command{awk}, variables may be either scalars
+or arrays.
+
 @item Whitespace
 A sequence of space, TAB, or newline characters occurring inside an input
 record or a string.
+
 @end table
 
 @end ifclear
