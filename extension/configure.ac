@@ -35,9 +35,6 @@ export INSTALL
 
 AM_INIT_AUTOMAKE([1.15 -Wall -Werror])
 
-AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.18.1])
-
 dnl checks for structure members
 AC_CHECK_MEMBERS([struct stat.st_blksize])
 
