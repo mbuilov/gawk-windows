@@ -33,7 +33,7 @@ AC_USE_SYSTEM_EXTENSIONS
 INSTALL="$ac_aux_dir/install-sh -c"
 export INSTALL
 
-AM_INIT_AUTOMAKE([-Wall -Werror])
+AM_INIT_AUTOMAKE([1.15 -Wall -Werror])
 
 AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION([0.18.1])
