@@ -10004,7 +10004,7 @@ can assign a new value to a variable or a field by using an assignment operator.
 An expression can serve as a pattern or action statement on its own.
 Most other kinds of
 statements contain one or more expressions that specify the data on which to
-operate.  As in other languages, expressions in @command{awk} include
+operate.  As in other languages, expressions in @command{awk} can include
 variables, array references, constants, and function calls, as well as
 combinations of these with various operators.
 
@@ -10023,7 +10023,7 @@ combinations of these with various operators.
 
 Expressions are built up from values and the operations performed
 upon them. This @value{SECTION} describes the elementary objects
-which provide the values used in expressions.
+that provide the values used in expressions.
 
 @menu
 * Constants::                   String, numeric and regexp constants.
@@ -10073,7 +10073,7 @@ have the same value:
 @end example
 
 @cindex string constants
-A string constant consists of a sequence of characters enclosed in
+A @dfn{string constant} consists of a sequence of characters enclosed in
 double quotation marks.  For example:
 
 @example
@@ -10085,7 +10085,7 @@ double quotation marks.  For example:
 @cindex strings, length limitations
 represents the string whose contents are @samp{parrot}.  Strings in
 @command{gawk} can be of any length, and they can contain any of the possible
-eight-bit ASCII characters including ASCII @sc{nul} (character code zero).
+eight-bit ASCII characters, including ASCII @sc{nul} (character code zero).
 Other @command{awk}
 implementations may have difficulty with some character codes.
 
@@ -10100,15 +10100,15 @@ In @command{awk}, all numbers are in decimal (i.e., base 10).  Many other
 programming languages allow you to specify numbers in other bases, often
 octal (base 8) and hexadecimal (base 16).
 In octal, the numbers go 0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, and so on.
-Just as @samp{11}, in decimal, is 1 times 10 plus 1, so
-@samp{11}, in octal, is 1 times 8, plus 1. This equals 9 in decimal.
+Just as @samp{11} in decimal is 1 times 10 plus 1, so
+@samp{11} in octal is 1 times 8 plus 1. This equals 9 in decimal.
 In hexadecimal, there are 16 digits. Because the everyday decimal
 number system only has ten digits (@samp{0}--@samp{9}), the letters
 @samp{a} through @samp{f} are used to represent the rest.
 (Case in the letters is usually irrelevant; hexadecimal @samp{a} and @samp{A}
 have the same value.)
-Thus, @samp{11}, in
-hexadecimal, is 1 times 16 plus 1, which equals 17 in decimal.
+Thus, @samp{11} in
+hexadecimal is 1 times 16 plus 1, which equals 17 in decimal.
 
 Just by looking at plain @samp{11}, you can't tell what base it's in.
 So, in C, C++, and other languages derived from C,
@@ -10119,13 +10119,13 @@ and hexadecimal numbers start with a leading @samp{0x} or @samp{0X}:
 
 @table @code
 @item 11
-Decimal value 11.
+Decimal value 11
 
 @item 011
-Octal 11, decimal value 9.
+Octal 11, decimal value 9
 
 @item 0x11
-Hexadecimal 11, decimal value 17.
+Hexadecimal 11, decimal value 17
 @end table
 
 This example shows the difference:
@@ -10153,11 +10153,11 @@ you can use the @code{strtonum()} function
 (@pxref{String Functions})
 to convert the data into a number.
 Most of the time, you will want to use octal or hexadecimal constants
-when working with the built-in bit manipulation functions;
+when working with the built-in bit-manipulation functions;
 see @DBREF{Bitwise Functions}
 for more information.
 
-Unlike some early C implementations, @samp{8} and @samp{9} are not
+Unlike in some early C implementations, @samp{8} and @samp{9} are not
 valid in octal constants.  For example, @command{gawk} treats @samp{018}
 as decimal 18:
 
@@ -10197,12 +10197,12 @@ $ @kbd{gawk 'BEGIN @{ printf "0x11 is <%s>\n", 0x11 @}'}
 @cindex tilde (@code{~}), @code{~} operator
 @cindex @code{!} (exclamation point), @code{!~} operator
 @cindex exclamation point (@code{!}), @code{!~} operator
-A regexp constant is a regular expression description enclosed in
+A @dfn{regexp constant} is a regular expression description enclosed in
 slashes, such as @code{@w{/^beginning and end$/}}.  Most regexps used in
 @command{awk} programs are constant, but the @samp{~} and @samp{!~}
 matching operators can also match computed or dynamic regexps
 (which are typically just ordinary strings or variables that contain a regexp,
-but could be a more complex expression).
+but could be more complex expressions).
 
 @node Using Constant Regexps
 @subsection Using Regular Expression Constants
@@ -10282,7 +10282,7 @@ the third argument of @code{split()} to be a regexp constant, but some
 older implementations do not.
 @value{DARKCORNER}
 Because some built-in functions accept regexp constants as arguments,
-it can be confusing when attempting to use regexp constants as arguments
+confusion can arise when attempting to use regexp constants as arguments
 to user-defined functions (@pxref{User-defined}).  For example:
 
 @example
@@ -10308,7 +10308,7 @@ function mysub(pat, repl, str, global)
 In this example, the programmer wants to pass a regexp constant to the
 user-defined function @code{mysub()}, which in turn passes it on to
 either @code{sub()} or @code{gsub()}.  However, what really happens is that
-the @code{pat} parameter is either one or zero, depending upon whether
+the @code{pat} parameter is assigned a value of either one or zero, depending upon whether
 or not @code{$0} matches @code{/hi/}.
 @command{gawk} issues a warning when it sees a regexp constant used as
 a parameter to a user-defined function, because passing a truth value in
@@ -10319,7 +10319,7 @@ this way is probably not what was intended.
 
 @cindex variables, user-defined
 @cindex user-defined, variables
-Variables are ways of storing values at one point in your program for
+@dfn{Variables} are ways of storing values at one point in your program for
 use later in another part of your program.  They can be manipulated
 entirely within the program text, and they can also be assigned values
 on the @command{awk} command line.
@@ -10347,17 +10347,17 @@ are distinct variables.
 A variable name is a valid expression by itself; it represents the
 variable's current value.  Variables are given new values with
 @dfn{assignment operators}, @dfn{increment operators}, and
-@dfn{decrement operators}.
-@xref{Assignment Ops}.
+@dfn{decrement operators}
+(@pxref{Assignment Ops}).
 In addition, the @code{sub()} and @code{gsub()} functions can
 change a variable's value, and the @code{match()}, @code{split()},
 and @code{patsplit()} functions can change the contents of their
-array parameters. @xref{String Functions}.
+array parameters (@pxref{String Functions}).
 
 @cindex variables, built-in
 @cindex variables, initializing
 A few variables have special built-in meanings, such as @code{FS} (the
-field separator), and @code{NF} (the number of fields in the current input
+field separator) and @code{NF} (the number of fields in the current input
 record).  @DBXREF{Built-in Variables} for a list of the predefined variables.
 These predefined variables can be used and assigned just like all other
 variables, but their values are also used or changed automatically by
@@ -10585,7 +10585,7 @@ point, so the default behavior was restored to use a period as the
 decimal point character.  You can use the @option{--use-lc-numeric}
 option (@pxref{Options}) to force @command{gawk} to use the locale's
 decimal point character.  (@command{gawk} also uses the locale's decimal
-point character when in POSIX mode, either via @option{--posix}, or the
+point character when in POSIX mode, either via @option{--posix} or the
 @env{POSIXLY_CORRECT} environment variable, as shown previously.)
 
 @ref{table-locale-affects} describes the cases in which the locale's decimal
@@ -10603,7 +10603,7 @@ features have not been described yet.
 @end multitable
 @end float
 
-Finally, modern day formal standards and IEEE standard floating-point
+Finally, modern-day formal standards and the IEEE standard floating-point
 representation can have an unusual but important effect on the way
 @command{gawk} converts some special string values to numbers.  The details
 are presented in @ref{POSIX Floating Point Problems}.
@@ -10611,7 +10611,7 @@ are presented in @ref{POSIX Floating Point Problems}.
 @node All Operators
 @section Operators: Doing Something with Values
 
-This @value{SECTION} introduces the @dfn{operators} which make use
+This @value{SECTION} introduces the @dfn{operators} that make use
 of the values provided by constants and variables.
 
 @menu
@@ -10789,7 +10789,7 @@ print "something meaningful" > file name
 @noindent
 This produces a syntax error with some versions of Unix
 @command{awk}.@footnote{It happens that BWK
-@command{awk}, @command{gawk} and @command{mawk} all ``get it right,''
+@command{awk}, @command{gawk}, and @command{mawk} all ``get it right,''
 but you should not rely on this.}
 It is necessary to use the following:
 
@@ -11039,7 +11039,7 @@ and
 @ifdocbook
 @DBREF{Numeric Functions}
 @end ifdocbook
-for more information).
+for more information.)
 This example illustrates an important fact about assignment
 operators: the lefthand expression is only evaluated @emph{once}.
 
@@ -11075,17 +11075,17 @@ to a number.
 @caption{Arithmetic assignment operators}
 @multitable @columnfractions .30 .70
 @headitem Operator @tab Effect
-@item @var{lvalue} @code{+=} @var{increment} @tab Add @var{increment} to the value of @var{lvalue}
-@item @var{lvalue} @code{-=} @var{decrement} @tab Subtract @var{decrement} from the value of @var{lvalue}
-@item @var{lvalue} @code{*=} @var{coefficient} @tab Multiply the value of @var{lvalue} by @var{coefficient}
-@item @var{lvalue} @code{/=} @var{divisor} @tab Divide the value of @var{lvalue} by @var{divisor}
-@item @var{lvalue} @code{%=} @var{modulus} @tab Set @var{lvalue} to its remainder by @var{modulus}
+@item @var{lvalue} @code{+=} @var{increment} @tab Add @var{increment} to the value of @var{lvalue}.
+@item @var{lvalue} @code{-=} @var{decrement} @tab Subtract @var{decrement} from the value of @var{lvalue}.
+@item @var{lvalue} @code{*=} @var{coefficient} @tab Multiply the value of @var{lvalue} by @var{coefficient}.
+@item @var{lvalue} @code{/=} @var{divisor} @tab Divide the value of @var{lvalue} by @var{divisor}.
+@item @var{lvalue} @code{%=} @var{modulus} @tab Set @var{lvalue} to its remainder by @var{modulus}.
 @cindex common extensions, @code{**=} operator
 @cindex extensions, common@comma{} @code{**=} operator
 @cindex @command{awk} language, POSIX version
 @cindex POSIX @command{awk}
-@item @var{lvalue} @code{^=} @var{power} @tab
-@item @var{lvalue} @code{**=} @var{power} @tab Raise @var{lvalue} to the power @var{power} @value{COMMONEXT}
+@item @var{lvalue} @code{^=} @var{power} @tab Raise @var{lvalue} to the power @var{power}.
+@item @var{lvalue} @code{**=} @var{power} @tab Raise @var{lvalue} to the power @var{power}. @value{COMMONEXT}
 @end multitable
 @end float
 
@@ -11224,8 +11224,8 @@ like @samp{@var{lvalue}++}, but instead of adding, it subtracts.)
 @cindex evaluation order
 @cindex Marx, Groucho
 @quotation
-@i{Doctor, doctor!  It hurts when I do this!@*
-So don't do that!}
+@i{Doctor, it hurts when I do this!@*
+Then don't do that!}
 @author Groucho Marx
 @end quotation
 
@@ -11249,7 +11249,7 @@ print b
 @cindex side effects
 In other words, when do the various side effects prescribed by the
 postfix operators (@samp{b++}) take effect?
-When side effects happen is @dfn{implementation defined}.
+When side effects happen is @dfn{implementation-defined}.
 In other words, it is up to the particular version of @command{awk}.
 The result for the first example may be 12 or 13, and for the second, it
 may be 22 or 23.
@@ -11264,8 +11264,8 @@ You should avoid such things in your own programs.
 @node Truth Values and Conditions
 @section Truth Values and Conditions
 
-In certain contexts, expression values also serve as ``truth values''; (i.e.,
-they determine what should happen next as the program runs). This
+In certain contexts, expression values also serve as ``truth values''; i.e.,
+they determine what should happen next as the program runs. This
 @value{SECTION} describes how @command{awk} defines ``true'' and ``false''
 and how values are compared.
 
@@ -11332,7 +11332,7 @@ the string constant @code{"0"} is actually true, because it is non-null.
 @cindex operators, relational, See operators@comma{} comparison
 @cindex variable typing
 @cindex variables, types of, comparison expressions and
-Unlike other programming languages, @command{awk} variables do not have a
+Unlike in other programming languages, in @command{awk} variables do not have a
 fixed type. Instead, they can be either a number or a string, depending
 upon the value that is assigned to them.
 We look now at how variables are typed, and how @command{awk}
@@ -11361,20 +11361,20 @@ Variable typing follows these rules:
 
 @itemize @value{BULLET}
 @item
-A numeric constant or the result of a numeric operation has the @var{numeric}
+A numeric constant or the result of a numeric operation has the @dfn{numeric}
 attribute.
 
 @item
-A string constant or the result of a string operation has the @var{string}
+A string constant or the result of a string operation has the @dfn{string}
 attribute.
 
 @item
 Fields, @code{getline} input, @code{FILENAME}, @code{ARGV} elements,
 @code{ENVIRON} elements, and the elements of an array created by
 @code{match()}, @code{split()}, and @code{patsplit()} that are numeric
-strings have the @var{strnum} attribute.  Otherwise, they have
-the @var{string} attribute.  Uninitialized variables also have the
-@var{strnum} attribute.
+strings have the @dfn{strnum} attribute.  Otherwise, they have
+the @dfn{string} attribute.  Uninitialized variables also have the
+@dfn{strnum} attribute.
 
 @item
 Attributes propagate across assignments but are not changed by
@@ -11518,13 +11518,13 @@ constant, then a string comparison is performed.  Otherwise, a
 numeric comparison is performed.
 
 This point bears additional emphasis: All user input is made of characters,
-and so is first and foremost of @var{string} type; input strings
-that look numeric are additionally given the @var{strnum} attribute.
+and so is first and foremost of string type; input strings
+that look numeric are additionally given the strnum attribute.
 Thus, the six-character input string @w{@samp{ +3.14}} receives the
-@var{strnum} attribute. In contrast, the eight characters
+strnum attribute. In contrast, the eight characters
 @w{@code{" +3.14"}} appearing in program text comprise a string constant.
 The following examples print @samp{1} when the comparison between
-the two different constants is true, @samp{0} otherwise:
+the two different constants is true, and @samp{0} otherwise:
 
 @c 22.9.2014: Tested with mawk and BWK awk, got same results.
 @example
@@ -11654,7 +11654,7 @@ $ @kbd{echo 1e2 3 | awk '@{ print ($1 < $2) ? "true" : "false" @}'}
 @noindent
 the result is @samp{false} because both @code{$1} and @code{$2}
 are user input.  They are numeric strings---therefore both have
-the @var{strnum} attribute, dictating a numeric comparison.
+the strnum attribute, dictating a numeric comparison.
 The purpose of the comparison rules and the use of numeric strings is
 to attempt to produce the behavior that is ``least surprising,'' while
 still ``doing the right thing.''
@@ -11713,7 +11713,7 @@ characters sort, as defined by the locale (for more discussion,
 @pxref{Locales}).  This order is usually very different
 from the results obtained when doing straight character-by-character
 comparison.@footnote{Technically, string comparison is supposed
-to behave the same way as if the strings are compared with the C
+to behave the same way as if the strings were compared with the C
 @code{strcoll()} function.}
 
 Because this behavior differs considerably from existing practice,
@@ -11820,7 +11820,7 @@ BEGIN @{ if (! ("HOME" in ENVIRON))
 @cindex vertical bar (@code{|}), @code{||} operator
 The @samp{&&} and @samp{||} operators are called @dfn{short-circuit}
 operators because of the way they work.  Evaluation of the full expression
-is ``short-circuited'' if the result can be determined part way through
+is ``short-circuited'' if the result can be determined partway through
 its evaluation.
 
 @cindex line continuations
@@ -11892,8 +11892,8 @@ The reason it's there is to avoid printing the bracketing
 A @dfn{conditional expression} is a special kind of expression that has
 three operands.  It allows you to use one expression's value to select
 one of two other expressions.
-The conditional expression is the same as in the C language,
-as shown here:
+The conditional expression in @command{awk} is the same as in the C
+language, as shown here:
 
 @example
 @var{selector} ? @var{if-true-exp} : @var{if-false-exp}
@@ -11902,8 +11902,8 @@ as shown here:
 @noindent
 There are three subexpressions.  The first, @var{selector}, is always
 computed first.  If it is ``true'' (not zero or not null), then
-@var{if-true-exp} is computed next and its value becomes the value of
-the whole expression.  Otherwise, @var{if-false-exp} is computed next
+@var{if-true-exp} is computed next, and its value becomes the value of
+the whole expression.  Otherwise, @var{if-false-exp} is computed next,
 and its value becomes the value of the whole expression.
 For example, the following expression produces the absolute value of @code{x}:
 
@@ -11951,7 +11951,7 @@ ask for it by name at any point in the program.  For
 example, the function @code{sqrt()} computes the square root of a number.
 
 @cindex functions, built-in
-A fixed set of functions are @dfn{built-in}, which means they are
+A fixed set of functions are @dfn{built in}, which means they are
 available in every @command{awk} program.  The @code{sqrt()} function is one
 of these.  @DBXREF{Built-in} for a list of built-in
 functions and their descriptions.  In addition, you can define
@@ -12125,7 +12125,7 @@ Increment, decrement.
 @cindex @code{*} (asterisk), @code{**} operator
 @cindex asterisk (@code{*}), @code{**} operator
 @item @code{^ **}
-Exponentiation.  These operators group right-to-left.
+Exponentiation.  These operators group right to left.
 
 @cindex @code{+} (plus sign), @code{+} operator
 @cindex plus sign (@code{+}), @code{+} operator
@@ -12191,7 +12191,7 @@ statements belong to the statement level, not to expressions.  The
 redirection does not produce an expression that could be the operand of
 another operator.  As a result, it does not make sense to use a
 redirection operator near another operator of lower precedence without
-parentheses.  Such combinations (e.g., @samp{print foo > a ? b : c}),
+parentheses.  Such combinations (e.g., @samp{print foo > a ? b : c})
 result in syntax errors.
 The correct way to write this statement is @samp{print foo > (a ? b : c)}.
 
@@ -12209,17 +12209,17 @@ Array membership.
 @cindex @code{&} (ampersand), @code{&&} operator
 @cindex ampersand (@code{&}), @code{&&} operator
 @item @code{&&}
-Logical ``and''.
+Logical ``and.''
 
 @cindex @code{|} (vertical bar), @code{||} operator
 @cindex vertical bar (@code{|}), @code{||} operator
 @item @code{||}
-Logical ``or''.
+Logical ``or.''
 
 @cindex @code{?} (question mark), @code{?:} operator
 @cindex question mark (@code{?}), @code{?:} operator
 @item @code{?:}
-Conditional.  This operator groups right-to-left.
+Conditional.  This operator groups right to left.
 
 @cindex @code{+} (plus sign), @code{+=} operator
 @cindex plus sign (@code{+}), @code{+=} operator
@@ -12236,7 +12236,7 @@ Conditional.  This operator groups right-to-left.
 @cindex @code{^} (caret), @code{^=} operator
 @cindex caret (@code{^}), @code{^=} operator
 @item @code{= += -= *= /= %= ^= **=}
-Assignment.  These operators group right-to-left.
+Assignment.  These operators group right to left.
 @end table
 
 @cindex POSIX @command{awk}, @code{**} operator and
@@ -12310,8 +12310,8 @@ Locales can influence the conversions.
 @item
 @command{awk} provides the usual arithmetic operators (addition,
 subtraction, multiplication, division, modulus), and unary plus and minus.
-It also provides comparison operators, boolean operators, array membership
-testing, and regexp
+It also provides comparison operators, Boolean operators, an array membership
+testing operator, and regexp
 matching operators.  String concatenation is accomplished by placing
 two expressions next to each other; there is no explicit operator.
 The three-operand @samp{?:} operator provides an ``if-else'' test within
@@ -12322,7 +12322,7 @@ Assignment operators provide convenient shorthands for common arithmetic
 operations.
 
 @item
-In @command{awk}, a value is considered to be true if it is non-zero
+In @command{awk}, a value is considered to be true if it is nonzero
 @emph{or} non-null. Otherwise, the value is false.
 
 @item
@@ -12331,7 +12331,7 @@ lifetime.  The type determines how it behaves in comparisons (string
 or numeric).
 
 @item
-Function calls return a value which may be used as part of a larger
+Function calls return a value that may be used as part of a larger
 expression.  Expressions used to pass parameter values are fully
 evaluated before the function is called.  @command{awk} provides
 built-in and user-defined functions; this is described in
@@ -12358,7 +12358,7 @@ a pattern with an associated action.  This @value{CHAPTER} describes how
 you build patterns and actions, what kinds of things you can do within
 actions, and @command{awk}'s predefined variables.
 
-The pattern-action rules and the statements available for use
+The pattern--action rules and the statements available for use
 within actions form the core of @command{awk} programming.
 In a sense, everything covered
 up to here has been the foundation
@@ -12549,7 +12549,7 @@ patterns.  Likewise, the special patterns @code{BEGIN}, @code{END},
 which never match any input record, are not expressions and cannot
 appear inside Boolean patterns.
 
-The precedence of the different operators which can appear in
+The precedence of the different operators that can appear in
 patterns is described in @ref{Precedence}.
 
 @node Ranges
@@ -12575,7 +12575,7 @@ prints every record in @file{myfile} between @samp{on}/@samp{off} pairs, inclusi
 
 A range pattern starts out by matching @var{begpat} against every
 input record.  When a record matches @var{begpat}, the range pattern is
-@dfn{turned on} and the range pattern matches this record as well.  As long as
+@dfn{turned on}, and the range pattern matches this record as well.  As long as
 the range pattern stays turned on, it automatically matches every input
 record read.  The range pattern also matches @var{endpat} against every
 input record; when this succeeds, the range pattern is @dfn{turned off} again
@@ -12719,7 +12719,7 @@ using library functions.
 for a number of useful library functions.
 
 If an @command{awk} program has only @code{BEGIN} rules and no
-other rules, then the program exits after the @code{BEGIN} rule is
+other rules, then the program exits after the @code{BEGIN} rules are
 run.@footnote{The original version of @command{awk} kept
 reading and ignoring input until the end of the file was seen.}  However, if an
 @code{END} rule exists, then the input is read, even if there are
@@ -12747,7 +12747,7 @@ Another way is simply to assign a value to @code{$0}.
 @cindex @code{print} statement, @code{BEGIN}/@code{END} patterns and
 @cindex @code{BEGIN} pattern, @code{print} statement and
 @cindex @code{END} pattern, @code{print} statement and
-The second point is similar to the first but from the other direction.
+The second point is similar to the first, but from the other direction.
 Traditionally, due largely to implementation issues, @code{$0} and
 @code{NF} were @emph{undefined} inside an @code{END} rule.
 The POSIX standard specifies that @code{NF} is available in an @code{END}
@@ -12836,7 +12836,7 @@ fatal error.
 
 @item
 If you have written extensions that modify the record handling (by
-inserting an ``input parser,'' @pxref{Input Parsers}), you can invoke
+inserting an ``input parser''; @pxref{Input Parsers}), you can invoke
 them at this point, before @command{gawk} has started processing the file.
 (This is a @emph{very} advanced feature, currently used only by the
 @uref{http://gawkextlib.sourceforge.net, @code{gawkextlib} project}.)
@@ -12847,8 +12847,8 @@ the last record in an input file.  For the last input file,
 it will be called before any @code{END} rules.
 The @code{ENDFILE} rule is executed even for empty input files.
 
-Normally, when an error occurs when reading input in the normal input
-processing loop, the error is fatal.  However, if an @code{ENDFILE}
+Normally, when an error occurs when reading input in the normal
+input-processing loop, the error is fatal.  However, if an @code{ENDFILE}
 rule is present, the error becomes non-fatal, and instead @code{ERRNO}
 is set.  This makes it possible to catch and process I/O errors at the
 level of the @command{awk} program.
@@ -12857,7 +12857,7 @@ level of the @command{awk} program.
 The @code{next} statement (@pxref{Next Statement}) is not allowed inside
 either a @code{BEGINFILE} or an @code{ENDFILE} rule.  The @code{nextfile}
 statement is allowed only inside a
-@code{BEGINFILE} rule, but not inside an @code{ENDFILE} rule.
+@code{BEGINFILE} rule, not inside an @code{ENDFILE} rule.
 
 @cindex @code{getline} statement, @code{BEGINFILE}/@code{ENDFILE} patterns and
 The @code{getline} statement (@pxref{Getline}) is restricted inside
@@ -12933,11 +12933,11 @@ awk "/$pattern/ "'@{ nmatches++ @}
 @noindent
 The @command{awk} program consists of two pieces of quoted text
 that are concatenated together to form the program.
-The first part is double quoted, which allows substitution of
+The first part is double-quoted, which allows substitution of
 the @code{pattern} shell variable inside the quotes.
-The second part is single quoted.
+The second part is single-quoted.
 
-Variable substitution via quoting works, but can be potentially
+Variable substitution via quoting works, but can potentially be
 messy.  It requires a good understanding of the shell's quoting rules
 (@pxref{Quoting}),
 and it's often difficult to correctly
@@ -13196,13 +13196,13 @@ The body of this loop is a compound statement enclosed in braces,
 containing two statements.
 The loop works in the following manner: first, the value of @code{i} is set to one.
 Then, the @code{while} statement tests whether @code{i} is less than or equal to
-three.  This is true when @code{i} equals one, so the @code{i}-th
+three.  This is true when @code{i} equals one, so the @code{i}th
 field is printed.  Then the @samp{i++} increments the value of @code{i}
 and the loop repeats.  The loop terminates when @code{i} reaches four.
 
 A newline is not required between the condition and the
 body; however, using one makes the program clearer unless the body is a
-compound statement or else is very simple.  The newline after the open-brace
+compound statement or else is very simple.  The newline after the open brace
 that begins the compound statement is not required either, but the
 program is harder to read without it.
 
@@ -13232,9 +13232,9 @@ while (@var{condition})
 @end example
 
 @noindent
-This statement does not execute @var{body} even once if the @var{condition}
-is false to begin with.
-The following is an example of a @code{do} statement:
+This statement does not execute the @var{body} even once if the
+@var{condition} is false to begin with.  The following is an example of
+a @code{do} statement:
 
 @example
 @{
@@ -13301,7 +13301,7 @@ their assignments as separate statements preceding the @code{for} loop.)
 The same is true of the @var{increment} part. Incrementing additional
 variables requires separate statements at the end of the loop.
 The C compound expression, using C's comma operator, is useful in
-this context but it is not supported in @command{awk}.
+this context, but it is not supported in @command{awk}.
 
 Most often, @var{increment} is an increment expression, as in the previous
 example.  But this is not required; it can be any expression
@@ -13392,7 +13392,7 @@ default:
 Control flow in
 the @code{switch} statement works as it does in C. Once a match to a given
 case is made, the case statement bodies execute until a @code{break},
-@code{continue}, @code{next}, @code{nextfile}  or @code{exit} is encountered,
+@code{continue}, @code{next}, @code{nextfile}, or @code{exit} is encountered,
 or the end of the @code{switch} statement itself. For example:
 
 @example
@@ -13566,7 +13566,12 @@ body of a loop.  Historical versions of @command{awk} treated a @code{continue}
 statement outside a loop the same way they treated a @code{break}
 statement outside a loop: as if it were a @code{next}
 statement
+@ifset FOR_PRINT
+(discussed in the following section).
+@end ifset
+@ifclear FOR_PRINT
 (@pxref{Next Statement}).
+@end ifclear
 @value{DARKCORNER}
 Recent versions of BWK @command{awk} no longer work this way, nor
 does @command{gawk}.
@@ -13694,7 +13699,7 @@ See @uref{http://austingroupbugs.net/view.php?id=607, the Austin Group website}.
 @cindex @code{nextfile} statement, user-defined functions and
 @cindex Brian Kernighan's @command{awk}
 @cindex @command{mawk} utility
-The current version of BWK @command{awk}, and @command{mawk}
+The current version of BWK @command{awk} and @command{mawk}
 also support @code{nextfile}.  However, they don't allow the
 @code{nextfile} statement inside function bodies (@pxref{User-defined}).
 @command{gawk} does; a @code{nextfile} inside a function body reads the
@@ -13732,7 +13737,7 @@ any @code{ENDFILE} rules; they do not execute.
 
 In such a case,
 if you don't want the @code{END} rule to do its job, set a variable
-to nonzero before the @code{exit} statement and check that variable in
+to a nonzero value before the @code{exit} statement and check that variable in
 the @code{END} rule.
 @DBXREF{Assert Function}
 for an example that does this.
@@ -13800,7 +13805,7 @@ their areas of activity.
 @end menu
 
 @node User-modified
-@subsection Built-In Variables That Control @command{awk}
+@subsection Built-in Variables That Control @command{awk}
 @cindex predefined variables, user-modifiable
 @cindex user-modifiable variables
 
