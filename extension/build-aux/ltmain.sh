@@ -2,11 +2,11 @@
 ## DO NOT EDIT - This file generated from ./build-aux/ltmain.in
 ##               by inline-source v2014-01-03.01
 
-# libtool (GNU libtool) 2.4.3
+# libtool (GNU libtool) 2.4.5
 # Provide generalized library-building support services.
 # Written by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
 
-# Copyright (C) 1996-2014 Free Software Foundation, Inc.
+# Copyright (C) 1996-2015 Free Software Foundation, Inc.
 # This is free software; see the source for copying conditions.  There is NO
 # warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
@@ -31,8 +31,8 @@
 
 PROGRAM=libtool
 PACKAGE=libtool
-VERSION=2.4.3
-package_revision=2.4.3
+VERSION=2.4.5
+package_revision=2.4.5
 
 
 ## ------ ##
@@ -69,7 +69,7 @@ scriptversion=2014-01-03.01; # UTC
 # General shell script boiler plate, and helper functions.
 # Written by Gary V. Vaughan, 2004
 
-# Copyright (C) 2004-2014 Free Software Foundation, Inc.
+# Copyright (C) 2004-2015 Free Software Foundation, Inc.
 # This is free software; see the source for copying conditions.  There is NO
 # warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
@@ -1375,7 +1375,7 @@ scriptversion=2014-01-07.03; # UTC
 # A portable, pluggable option parser for Bourne shell.
 # Written by Gary V. Vaughan, 2010
 
-# Copyright (C) 2010-2014 Free Software Foundation, Inc.
+# Copyright (C) 2010-2015 Free Software Foundation, Inc.
 # This is free software; see the source for copying conditions.  There is NO
 # warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
@@ -1977,7 +1977,7 @@ func_version ()
 # End:
 
 # Set a version string.
-scriptversion='(GNU libtool) 2.4.3'
+scriptversion='(GNU libtool) 2.4.5'
 
 
 # func_echo ARG...
@@ -2063,7 +2063,7 @@ include the following information:
        compiler:       $LTCC
        compiler flags: $LTCFLAGS
        linker:         $LD (gnu? $with_gnu_ld)
-       version:        $progname (GNU libtool) 2.4.3
+       version:        $progname (GNU libtool) 2.4.5
        automake:       `($AUTOMAKE --version) 2>/dev/null |$SED 1q`
        autoconf:       `($AUTOCONF --version) 2>/dev/null |$SED 1q`
 
@@ -2411,7 +2411,7 @@ libtool_validate_options ()
     case $host in
       # Solaris2 added to fix http://debbugs.gnu.org/cgi/bugreport.cgi?bug=16452
       # see also: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=59788
-      *cygwin* | *mingw* | *pw32* | *cegcc* | *solaris2*)
+      *cygwin* | *mingw* | *pw32* | *cegcc* | *solaris2* | *os2*)
         # don't eliminate duplications in $postdeps and $predeps
         opt_duplicate_compiler_generated_deps=:
         ;;
@@ -3730,7 +3730,8 @@ The following components of LINK-COMMAND are treated specially:
   -no-install       link a not-installable executable
   -no-undefined     declare that a library does not refer to external symbols
   -o OUTPUT-FILE    create OUTPUT-FILE from the specified objects
-  -objectlist FILE  Use a list of object files found in FILE to specify objects
+  -objectlist FILE  use a list of object files found in FILE to specify objects
+  -os2dllname NAME  force a short DLL name on OS/2 (no effect on other OSes)
   -precious-files-regex REGEX
                     don't remove output files matching REGEX
   -release RELEASE  specify package release information
@@ -4308,6 +4309,13 @@ func_mode_install ()
 	  cygwin* | mingw* | pw32* | cegcc*)
 	    case $realname in
 	    *.dll.a)
+	      tstripme=
+	      ;;
+	    esac
+	    ;;
+	  os2*)
+	    case $realname in
+	    *_dll.a)
 	      tstripme=
 	      ;;
 	    esac
@@ -5153,7 +5161,7 @@ func_extract_archives ()
 	      $RM "unfat-$$/$darwin_base_archive-$darwin_arch/$darwin_base_archive"
 	    done # $darwin_arches
             ## Okay now we've a bunch of thin objects, gotta fatten them up :)
-	    darwin_filelist=`find unfat-$$ -type f -name \*.o -print -o -name \*.lo -print | $SED -e "$basename" | sort -u`
+	    darwin_filelist=`find unfat-$$ -type f -name \*.o -print -o -name \*.lo -print | $SED -e "$sed_basename" | sort -u`
 	    darwin_file=
 	    darwin_files=
 	    for darwin_file in $darwin_filelist; do
@@ -6453,6 +6461,24 @@ func_win32_import_lib_p ()
     esac
 }
 
+# func_suncc_cstd_abi
+# !!ONLY CALL THIS FOR SUN CC AFTER $compile_command IS FULLY EXPANDED!!
+# Several compiler flags select an ABI that is incompatible with the
+# Cstd library. Avoid specifying it if any are in CXXFLAGS.
+func_suncc_cstd_abi ()
+{
+    $debug_cmd
+
+    case " $compile_command " in
+    *" -compat=g "*|*\ -std=c++[0-9][0-9]\ *|*" -library=stdcxx4 "*|*" -library=stlport4 "*)
+      suncc_use_cstd_abi=no
+      ;;
+    *)
+      suncc_use_cstd_abi=yes
+      ;;
+    esac
+}
+
 # func_mode_link arg...
 func_mode_link ()
 {
@@ -6511,6 +6537,7 @@ func_mode_link ()
     module=no
     no_install=no
     objs=
+    os2dllname=
     non_pic_objects=
     precious_files_regex=
     prefer_static_libs=no
@@ -6765,6 +6792,11 @@ func_mode_link ()
 	    func_fatal_error "link input file '$arg' does not exist"
 	  fi
 	  arg=$save_arg
+	  prev=
+	  continue
+	  ;;
+	os2dllname)
+	  os2dllname=$arg
 	  prev=
 	  continue
 	  ;;
@@ -7077,6 +7109,11 @@ func_mode_link ()
 	continue
 	;;
 
+      -os2dllname)
+	prev=os2dllname
+	continue
+	;;
+
       -o) prev=output ;;
 
       -precious-files-regex)
@@ -7240,6 +7277,25 @@ func_mode_link ()
         continue
         ;;
 
+      -Z*)
+        if test os2 = "`expr $host : '.*\(os2\)'`"; then
+          # OS/2 uses -Zxxx to specify OS/2-specific options
+	  compiler_flags="$compiler_flags $arg"
+	  func_append compile_command " $arg"
+	  func_append finalize_command " $arg"
+	  case $arg in
+	  -Zlinker | -Zstack)
+	    prev=xcompiler
+	    ;;
+	  esac
+	  continue
+        else
+	  # Otherwise treat like 'Some other compiler flag' below
+	  func_quote_for_eval "$arg"
+	  arg=$func_quote_for_eval_result
+        fi
+	;;
+
       # Some other compiler flag.
       -* | +*)
         func_quote_for_eval "$arg"
@@ -7398,6 +7454,9 @@ func_mode_link ()
     fi
     eval sys_lib_search_path=\"$sys_lib_search_path_spec\"
     eval sys_lib_dlsearch_path=\"$sys_lib_dlsearch_path_spec\"
+
+    # Definition is injected by LT_CONFIG during libtool generation.
+    func_munge_path_list sys_lib_dlsearch_path "$LT_SYS_LIBRARY_PATH"
 
     func_dirname "$output" "/" ""
     output_objdir=$func_dirname_result$objdir
@@ -8066,7 +8125,7 @@ func_mode_link ()
 	if test -n "$library_names" &&
 	   { test no = "$use_static_libs" || test -z "$old_library"; }; then
 	  case $host in
-	  *cygwin* | *mingw* | *cegcc*)
+	  *cygwin* | *mingw* | *cegcc* | *os2*)
 	      # No point in relinking DLLs because paths are not encoded
 	      func_append notinst_deplibs " $lib"
 	      need_relink=no
@@ -8136,7 +8195,7 @@ func_mode_link ()
 	    elif test -n "$soname_spec"; then
 	      # bleh windows
 	      case $host in
-	      *cygwin* | mingw* | *cegcc*)
+	      *cygwin* | mingw* | *cegcc* | *os2*)
 	        func_arith $current - $age
 		major=$func_arith_result
 		versuffix=-$major
@@ -8561,6 +8620,37 @@ func_mode_link ()
 	  eval $var=\"$tmp_libs\"
 	done # for var
       fi
+
+      # Add Sun CC postdeps if required:
+      test CXX = "$tagname" && {
+        case $host_os in
+        linux*)
+          case `$CC -V 2>&1 | sed 5q` in
+          *Sun\ C*) # Sun C++ 5.9
+            func_suncc_cstd_abi
+
+            if test no != "$suncc_use_cstd_abi"; then
+              func_append postdeps ' -library=Cstd -library=Crun'
+            fi
+            ;;
+          esac
+          ;;
+
+        solaris*)
+          func_cc_basename "$CC"
+          case $func_cc_basename_result in
+          CC* | sunCC*)
+            func_suncc_cstd_abi
+
+            if test no != "$suncc_use_cstd_abi"; then
+              func_append postdeps ' -library=Cstd -library=Crun'
+            fi
+            ;;
+          esac
+          ;;
+        esac
+      }
+
       # Last step: remove runtime libs from dependency_libs
       # (they stay in deplibs)
       tmp_libs=
@@ -8708,13 +8798,13 @@ func_mode_link ()
 	  #
 	  case $version_type in
 	  # correct linux to gnu/linux during the next big refactor
-	  darwin|linux|osf|windows|none)
+	  darwin|freebsd-elf|linux|osf|windows|none)
 	    func_arith $number_major + $number_minor
 	    current=$func_arith_result
 	    age=$number_minor
 	    revision=$number_revision
 	    ;;
-	  freebsd-aout|freebsd-elf|qnx|sunos)
+	  freebsd-aout|qnx|sunos)
 	    current=$number_major
 	    revision=$number_minor
 	    age=0
@@ -8800,8 +8890,9 @@ func_mode_link ()
 	  ;;
 
 	freebsd-elf)
-	  major=.$current
-	  versuffix=.$current
+	  func_arith $current - $age
+	  major=.$func_arith_result
+	  versuffix=$major.$age.$revision
 	  ;;
 
 	irix | nonstopux)
@@ -8860,6 +8951,11 @@ func_mode_link ()
 	  ;;
 
 	qnx)
+	  major=.$current
+	  versuffix=.$current
+	  ;;
+
+	sco)
 	  major=.$current
 	  versuffix=.$current
 	  ;;
