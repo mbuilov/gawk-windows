@@ -14506,7 +14506,7 @@ respectively, should use binary I/O.  A string value of @code{"rw"} or
 @code{"wr"} indicates that all files should use binary I/O.  Any other
 string value is treated the same as @code{"rw"}, but causes @command{gawk}
 to generate a warning message.  @code{BINMODE} is described in more
-detail in @ref{PC Using}.  @command{mawk} (@pxref{Other Versions}),
+detail in @ref{PC Using}.  @command{mawk} (@pxref{Other Versions})
 also supports this variable, but only using numeric values.
 
 @cindex @code{CONVFMT} variable
@@ -14514,7 +14514,7 @@ also supports this variable, but only using numeric values.
 @cindex numbers, converting, to strings
 @cindex strings, converting, numbers to
 @item @code{CONVFMT}
-This string controls conversion of numbers to
+A string that controls the conversion of numbers to
 strings (@pxref{Conversion}).
 It works by being passed, in effect, as the first argument to the
 @code{sprintf()} function
@@ -14589,7 +14589,7 @@ is to simply say @samp{FS = FS}, perhaps with an explanatory comment.
 @cindex regular expressions, case sensitivity
 @item IGNORECASE #
 If @code{IGNORECASE} is nonzero or non-null, then all string comparisons
-and all regular expression matching are case independent.  Thus, regexp
+and all regular expression matching are case-independent.  Thus, regexp
 matching with @samp{~} and @samp{!~}, as well as the @code{gensub()},
 @code{gsub()}, @code{index()}, @code{match()}, @code{patsplit()},
 @code{split()}, and @code{sub()}
@@ -14615,7 +14615,7 @@ Any other true value prints nonfatal warnings.
 Assigning a false value to @code{LINT} turns off the lint warnings.
 
 This variable is a @command{gawk} extension.  It is not special
-in other @command{awk} implementations.  Unlike the other special variables,
+in other @command{awk} implementations.  Unlike with the other special variables,
 changing @code{LINT} does affect the production of lint warnings,
 even if @command{gawk} is in compatibility mode.  Much as
 the @option{--lint} and @option{--traditional} options independently
@@ -14627,7 +14627,7 @@ of @command{awk} being executed.
 @cindex numbers, converting, to strings
 @cindex strings, converting, numbers to
 @item OFMT
-Controls conversion of numbers to
+A string that controls conversion of numbers to
 strings (@pxref{Conversion}) for
 printing with the @code{print} statement.  It works by being passed
 as the first argument to the @code{sprintf()} function
@@ -14642,7 +14642,7 @@ strings in general expressions; this is now done by @code{CONVFMT}.
 @cindex separators, field
 @cindex field separators
 @item OFS
-This is the output field separator (@pxref{Output Separators}).  It is
+The output field separator (@pxref{Output Separators}).  It is
 output between the fields printed by a @code{print} statement.  Its
 default value is @w{@code{" "}}, a string consisting of a single space.
 
@@ -14660,7 +14660,7 @@ The working precision of arbitrary-precision floating-point numbers,
 @cindex @code{ROUNDMODE} variable
 @item ROUNDMODE #
 The rounding mode to use for arbitrary-precision arithmetic on
-numbers, by default @code{"N"} (@samp{roundTiesToEven} in
+numbers, by default @code{"N"} (@code{roundTiesToEven} in
 the IEEE 754 standard; @pxref{Setting the rounding mode}).
 
 @cindex @code{RS} variable
@@ -14689,7 +14689,7 @@ just the first character of @code{RS}'s value is used.
 @item @code{SUBSEP}
 The subscript separator.  It has the default value of
 @code{"\034"} and is used to separate the parts of the indices of a
-multidimensional array.  Thus, the expression @code{@w{foo["A", "B"]}}
+multidimensional array.  Thus, the expression @samp{@w{foo["A", "B"]}}
 really accesses @code{foo["A\034B"]}
 (@pxref{Multidimensional}).
 
@@ -14707,7 +14707,7 @@ The default value of @code{TEXTDOMAIN} is @code{"messages"}.
 @end table
 
 @node Auto-set
-@subsection Built-In Variables That Convey Information
+@subsection Built-in Variables That Convey Information
 
 @cindex predefined variables, conveying information
 @cindex variables, predefined conveying information
@@ -14851,12 +14851,12 @@ input file.
 @item @code{NF}
 The number of fields in the current input record.
 @code{NF} is set each time a new record is read, when a new field is
-created or when @code{$0} changes (@pxref{Fields}).
+created, or when @code{$0} changes (@pxref{Fields}).
 
 Unlike most of the variables described in this @value{SUBSECTION},
 assigning a value to @code{NF} has the potential to affect
 @command{awk}'s internal workings.  In particular, assignments
-to @code{NF} can be used to create or remove fields from the
+to @code{NF} can be used to create fields in or remove fields from the
 current record. @xref{Changing Fields}.
 
 @cindex @code{FUNCTAB} array
@@ -14906,7 +14906,7 @@ or @code{"FPAT"} if field matching with @code{FPAT} is in effect.
 @item PROCINFO["identifiers"]
 @cindex program identifiers
 A subarray, indexed by the names of all identifiers used in the text of
-the AWK program.  An @dfn{identifier} is simply the name of a variable
+the @command{awk} program.  An @dfn{identifier} is simply the name of a variable
 (be it scalar or array), built-in function, user-defined function, or
 extension function.  For each identifier, the value of the element is
 one of the following:
@@ -14926,7 +14926,7 @@ The identifier is an extension function loaded via
 The identifier is a scalar.
 
 @item "untyped"
-The identifier is untyped (could be used as a scalar or array,
+The identifier is untyped (could be used as a scalar or an array;
 @command{gawk} doesn't know yet).
 
 @item "user"
@@ -15047,7 +15047,7 @@ is the length of the matched string, or @minus{}1 if no match is found.
 
 @cindex @code{RSTART} variable
 @item @code{RSTART}
-The start-index in characters of the substring that is matched by the
+The start index in characters of the substring that is matched by the
 @code{match()} function
 (@pxref{String Functions}).
 @code{RSTART} is set by invoking the @code{match()} function.  Its value
@@ -15114,7 +15114,7 @@ function multiply(variable, amount)
 @quotation NOTE
 In order to avoid severe time-travel paradoxes,@footnote{Not to mention difficult
 implementation issues.} neither @code{FUNCTAB} nor @code{SYMTAB}
-are available as elements within the @code{SYMTAB} array.
+is available as an element within the @code{SYMTAB} array.
 @end quotation
 @end table
 
@@ -15334,7 +15334,7 @@ When designing your program, you should choose options that don't
 conflict with @command{gawk}'s, because it will process any options
 that it accepts before passing the rest of the command line on to
 your program.  Using @samp{#!} with the @option{-E} option may help
-(@DBXREF{Executable Scripts}
+(@DBPXREF{Executable Scripts}
 and
 @ifnotdocbook
 @DBPXREF{Options}).
@@ -15348,15 +15348,15 @@ and
 
 @itemize @value{BULLET}
 @item
-Pattern-action pairs make up the basic elements of an @command{awk}
+Pattern--action pairs make up the basic elements of an @command{awk}
 program.  Patterns are either normal expressions, range expressions,
-regexp constants, one of the special keywords @code{BEGIN}, @code{END},
-@code{BEGINFILE}, @code{ENDFILE}, or empty.  The action executes if
+or regexp constants; one of the special keywords @code{BEGIN}, @code{END},
+@code{BEGINFILE}, or @code{ENDFILE}; or empty.  The action executes if
 the current record matches the pattern.  Empty (missing) patterns match
 all records.
 
 @item
-I/O from @code{BEGIN} and @code{END} rules have certain constraints.
+I/O from @code{BEGIN} and @code{END} rules has certain constraints.
 This is also true, only more so, for @code{BEGINFILE} and @code{ENDFILE}
 rules.  The latter two give you ``hooks'' into @command{gawk}'s file
 processing, allowing you to recover from a file that otherwise would
@@ -15386,12 +15386,12 @@ iteration of a loop (or get out of a @code{switch}).
 
 @item
 @code{next} and @code{nextfile} let you read the next record and start
-over at the top of your program, or skip to the next input file and
+over at the top of your program or skip to the next input file and
 start over, respectively.
 
 @item
 The @code{exit} statement terminates your program. When executed
-from an action (or function body) it transfers control to the
+from an action (or function body), it transfers control to the
 @code{END} statements. From an @code{END} statement body, it exits
 immediately.  You may pass an optional numeric value to be used
 as @command{awk}'s exit status.
