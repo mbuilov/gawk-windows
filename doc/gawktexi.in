@@ -14792,15 +14792,17 @@ the declaration.
 indices---e.g., @samp{15 .. 27}---but the size of the array is still fixed when
 the array is declared.)
 
-A contiguous array of four elements might look like the following example,
-conceptually, if the element values are 8, @code{"foo"},
-@code{""}, and 30
+@c 1/2015: Do not put the numeric values into @code. Array element
+@c values are no different than scalar variable values.
+A contiguous array of four elements might look like
 @ifnotdocbook
-as shown in @ref{figure-array-elements}:
+@ref{figure-array-elements},
 @end ifnotdocbook
 @ifdocbook
-as shown in @inlineraw{docbook, <xref linkend="figure-array-elements"/>}:
+@inlineraw{docbook, <xref linkend="figure-array-elements"/>},
 @end ifdocbook
+conceptually, if the element values are eight, @code{"foo"},
+@code{""}, and 30.
 
 @ifnotdocbook
 @float Figure,figure-array-elements
@@ -14825,7 +14827,7 @@ as shown in @inlineraw{docbook, <xref linkend="figure-array-elements"/>}:
 
 @noindent
 Only the values are stored; the indices are implicit from the order of
-the values. Here, 8 is the value at index zero, because 8 appears in the
+the values. Here, eight is the value at index zero, because eight appears in the
 position with zero elements before it.
 
 @cindex arrays, indexing
@@ -14837,19 +14839,21 @@ that each array is a collection of pairs---an index and its corresponding
 array element value:
 
 @ifnotdocbook
-@example
-@r{Index} 3     @r{Value} 30
-@r{Index} 1     @r{Value} "foo"
-@r{Index} 0     @r{Value} 8
-@r{Index} 2     @r{Value} ""
-@end example
+@c extra empty column to indent it right
+@multitable @columnfractions .1 .1 .1
+@headitem @tab Index @tab Value
+@item @tab @code{3} @tab @code{30}
+@item @tab @code{1} @tab @code{"foo"}
+@item @tab @code{0} @tab @code{8}
+@item @tab @code{2} @tab @code{""}
+@end multitable
 @end ifnotdocbook
 
 @docbook
 <informaltable>
 <tgroup cols="2">
-<colspec colname="1" align="center"/>
-<colspec colname="2" align="center"/>
+<colspec colname="1" align="left"/>
+<colspec colname="2" align="left"/>
 <thead>
 <row>
 <entry>Index</entry>
@@ -14895,20 +14899,22 @@ at any time.  For example, suppose a tenth element is added to the array
 whose value is @w{@code{"number ten"}}.  The result is:
 
 @ifnotdocbook
-@example
-@r{Index} 10    @r{Value} "number ten"
-@r{Index} 3     @r{Value} 30
-@r{Index} 1     @r{Value} "foo"
-@r{Index} 0     @r{Value} 8
-@r{Index} 2     @r{Value} ""
-@end example
+@c extra empty column to indent it right
+@multitable @columnfractions .1 .1 .2
+@headitem @tab Index @tab Value
+@item @tab @code{10} @tab @code{"number ten"}
+@item @tab @code{3} @tab @code{30}
+@item @tab @code{1} @tab @code{"foo"}
+@item @tab @code{0} @tab @code{8}
+@item @tab @code{2} @tab @code{""}
+@end multitable
 @end ifnotdocbook
 
 @docbook
 <informaltable>
 <tgroup cols="2">
-<colspec colname="1" align="center"/>
-<colspec colname="2" align="center"/>
+<colspec colname="1" align="left"/>
+<colspec colname="2" align="left"/>
 <thead>
 <row>
 <entry>Index</entry>
@@ -14960,19 +14966,20 @@ an index.  For example, the following is an array that translates words from
 English to French:
 
 @ifnotdocbook
-@example
-@r{Index} "dog" @r{Value} "chien"
-@r{Index} "cat" @r{Value} "chat"
-@r{Index} "one" @r{Value} "un"
-@r{Index} 1     @r{Value} "un"
-@end example
+@multitable @columnfractions .1 .1 .1
+@headitem @tab Index @tab Value
+@item @tab @code{"dog"} @tab @code{"chien"}
+@item @tab @code{"cat"} @tab @code{"chat"}
+@item @tab @code{"one"} @tab @code{"un"}
+@item @tab @code{1} @tab @code{"un"}
+@end multitable
 @end ifnotdocbook
 
 @docbook
 <informaltable>
 <tgroup cols="2">
-<colspec colname="1" align="center"/>
-<colspec colname="2" align="center"/>
+<colspec colname="1" align="left"/>
+<colspec colname="2" align="left"/>
 <thead>
 <row>
 <entry>Index</entry>
@@ -15014,7 +15021,7 @@ numbers and strings as indices.
 There are some subtleties to how numbers work when used as
 array subscripts; this is discussed in more detail in
 @ref{Numeric Array Subscripts}.)
-Here, the number @code{1} isn't double quoted, because @command{awk}
+Here, the number @code{1} isn't double-quoted, because @command{awk}
 automatically converts it to a string.
 
 @cindex @command{gawk}, @code{IGNORECASE} variable in
@@ -15039,7 +15046,7 @@ is independent of the number of elements in the array.
 @cindex elements of arrays
 
 The principal way to use an array is to refer to one of its elements.
-An array reference is an expression as follows:
+An @dfn{array reference} is an expression as follows:
 
 @example
 @var{array}[@var{index-expression}]
@@ -15049,8 +15056,11 @@ An array reference is an expression as follows:
 Here, @var{array} is the name of an array.  The expression @var{index-expression} is
 the index of the desired element of the array.
 
+@c 1/2015: Having the 4.3 in @samp is a little iffy. It's essentially
+@c an expression though, so leave be. It's to early in the discussion
+@c to mention that it's really a string.
 The value of the array reference is the current value of that array
-element.  For example, @code{foo[4.3]} is an expression for the element
+element.  For example, @code{foo[4.3]} is an expression referencing the element
 of array @code{foo} at index @samp{4.3}.
 
 @cindex arrays, unassigned elements
@@ -15142,7 +15152,7 @@ assign to that element of the array.
 
 The following program takes a list of lines, each beginning with a line
 number, and prints them out in order of line number.  The line numbers
-are not in order when they are first read---instead they
+are not in order when they are first read---instead, they
 are scrambled.  This program sorts the lines by making an array using
 the line numbers as subscripts.  The program then prints out the lines
 in sorted order of their numbers.  It is a very simple program and gets
@@ -15236,7 +15246,7 @@ program has previously used, with the variable @var{var} set to that index.
 The following program uses this form of the @code{for} statement.  The
 first rule scans the input records and notes which words appear (at
 least once) in the input, by storing a one into the array @code{used} with
-the word as index.  The second rule scans the elements of @code{used} to
+the word as the index.  The second rule scans the elements of @code{used} to
 find all the distinct words that appear in the input.  It prints each
 word that is more than 10 characters long and also prints the number of
 such words.
@@ -15333,7 +15343,7 @@ and will vary from one version of @command{awk} to the next.
 Often, though, you may wish to do something simple, such as
 ``traverse the array by comparing the indices in ascending order,''
 or ``traverse the array by comparing the values in descending order.''
-@command{gawk} provides two mechanisms which give you this control.
+@command{gawk} provides two mechanisms that give you this control:
 
 @itemize @value{BULLET}
 @item
@@ -15390,21 +15400,26 @@ across different environments.} which @command{gawk} uses internally
 to perform the sorting.
 
 @item "@@ind_str_desc"
-String indices ordered from high to low.
+Like @code{"@@ind_str_asc"}, but the
+string indices are ordered from high to low.
 
 @item "@@ind_num_desc"
-Numeric indices ordered from high to low.
+Like @code{"@@ind_num_asc"}, but the
+numeric indices are ordered from high to low.
 
 @item "@@val_type_desc"
-Element values, based on type, ordered from high to low.
+Like @code{"@@val_type_asc"}, but the
+element values, based on type, are ordered from high to low.
 Subarrays, if present, come out first.
 
 @item "@@val_str_desc"
-Element values, treated as strings, ordered from high to low.
+Like @code{"@@val_str_asc"}, but the
+element values, treated as strings, are ordered from high to low.
 Subarrays, if present, come out first.
 
 @item "@@val_num_desc"
-Element values, treated as numbers, ordered from high to low.
+Like @code{"@@val_num_asc"}, but the
+element values, treated as numbers, are ordered from high to low.
 Subarrays, if present, come out first.
 @end table
 
@@ -15627,7 +15642,7 @@ for (i in frequencies)
 @noindent
 This example removes all the elements from the array @code{frequencies}.
 Once an element is deleted, a subsequent @code{for} statement to scan the array
-does not report that element and the @code{in} operator to check for
+does not report that element and using the @code{in} operator to check for
 the presence of that element returns zero (i.e., false):
 
 @example
@@ -15887,7 +15902,7 @@ a[1][2] = 2
 This simulates a true two-dimensional array. Each subarray element can
 contain another subarray as a value, which in turn can hold other arrays
 as well. In this way, you can create arrays of three or more dimensions.
-The indices can be any @command{awk} expression, including scalars
+The indices can be any @command{awk} expressions, including scalars
 separated by commas (i.e., a regular @command{awk} simulated
 multidimensional subscript). So the following is valid in
 @command{gawk}:
@@ -15899,7 +15914,7 @@ a[1][3][1, "name"] = "barney"
 Each subarray and the main array can be of different length. In fact, the
 elements of an array or its subarray do not all have to have the same
 type. This means that the main array and any of its subarrays can be
-non-rectangular, or jagged in structure. You can assign a scalar value to
+nonrectangular, or jagged in structure. You can assign a scalar value to
 the index @code{4} of the main array @code{a}, even though @code{a[1]}
 is itself an array and not a scalar:
 
@@ -15923,7 +15938,8 @@ a[4][5][6][7] = "An element in a four-dimensional array"
 
 @noindent
 This removes the scalar value from index @code{4} and then inserts a
-subarray of subarray of subarray containing a scalar. You can also
+three-level nested subarray
+containing a scalar. You can also
 delete an entire subarray or subarray of subarrays:
 
 @example
@@ -15934,7 +15950,7 @@ a[4][5] = "An element in subarray a[4]"
 But recall that you can not delete the main array @code{a} and then use it
 as a scalar.
 
-The built-in functions which take array arguments can also be used
+The built-in functions that take array arguments can also be used
 with subarrays. For example, the following code fragment uses @code{length()}
 (@pxref{String Functions})
 to determine the number of elements in the main array @code{a} and
@@ -15964,7 +15980,7 @@ can be nested to scan all the
 elements of an array of arrays if it is rectangular in structure. In order
 to print the contents (scalar values) of a two-dimensional array of arrays
 (i.e., in which each first-level element is itself an
-array, not necessarily of the same length)
+array, not necessarily of the same length),
 you could use the following code:
 
 @example
@@ -16064,9 +16080,9 @@ versions of @command{awk}.
 
 @item
 Standard @command{awk} simulates multidimensional arrays by separating
-subscript values with a comma.  The values are concatenated into a
+subscript values with commas.  The values are concatenated into a
 single string, separated by the value of @code{SUBSEP}.  The fact
-that such a subscript was created in this way is not retained; thus
+that such a subscript was created in this way is not retained; thus,
 changing @code{SUBSEP} may have unexpected consequences.  You can use
 @samp{(@var{sub1}, @var{sub2}, @dots{}) in @var{array}} to see if such
 a multidimensional subscript exists in @var{array}.
@@ -16075,7 +16091,7 @@ a multidimensional subscript exists in @var{array}.
 @command{gawk} provides true arrays of arrays. You use a separate
 set of square brackets for each dimension in such an array:
 @code{data[row][col]}, for example. Array elements may thus be either
-scalar values (number or string) or another array.
+scalar values (number or string) or other arrays.
 
 @item
 Use the @code{isarray()} built-in function to determine if an array
@@ -16813,7 +16829,7 @@ split("cul-de-sac", a, "-", seps)
 
 @noindent
 @cindex strings splitting, example
-splits the string @samp{cul-de-sac} into three fields using @samp{-} as the
+splits the string @code{"cul-de-sac"} into three fields using @samp{-} as the
 separator.  It sets the contents of the array @code{a} as follows:
 
 @example
