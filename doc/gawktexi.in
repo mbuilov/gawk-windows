@@ -467,7 +467,7 @@ particular records in a file and perform operations upon them.
                                    @command{gawk}.
 * Internationalization::           Getting @command{gawk} to speak your
                                    language.
-* Debugger::                       The @code{gawk} debugger.
+* Debugger::                       The @command{gawk} debugger.
 * Arbitrary Precision Arithmetic:: Arbitrary precision arithmetic with
                                    @command{gawk}.
 * Dynamic Extensions::             Adding new built-in functions to
@@ -950,7 +950,7 @@ particular records in a file and perform operations upon them.
 * Internal File Ops::                   The code for internal file operations.
 * Using Internal File Ops::             How to use an external extension.
 * Extension Samples::                   The sample extensions that ship with
-                                        @code{gawk}.
+                                        @command{gawk}.
 * Extension Sample File Functions::     The file functions sample.
 * Extension Sample Fnmatch::            An interface to @code{fnmatch()}.
 * Extension Sample Fork::               An interface to @code{fork()} and
@@ -4591,7 +4591,7 @@ $ @kbd{gawk -f test2}
 @print{} This is script test2.
 @end example
 
-@code{gawk} runs the @file{test2} script, which includes @file{test1}
+@command{gawk} runs the @file{test2} script, which includes @file{test1}
 using the @code{@@include}
 keyword.  So, to include external @command{awk} source files, you just
 use @code{@@include} followed by the name of the file to be included,
@@ -4800,7 +4800,7 @@ This seems to have been a long-undocumented feature in Unix @command{awk}.
 
 Similarly, you may use @code{print} or @code{printf} statements in the
 @var{init} and @var{increment} parts of a @code{for} loop.  This is another
-long-undocumented ``feature'' of Unix @code{awk}.
+long-undocumented ``feature'' of Unix @command{awk}.
 
 @end ignore
 
@@ -16100,6 +16100,9 @@ Besides the built-in functions, @command{awk} has provisions for
 writing new functions that the rest of a program can use.
 The second half of this @value{CHAPTER} describes these
 @dfn{user-defined} functions.
+Finally, we explore indirect function calls, a @command{gawk}-specific
+extension that lets you determine at runtime what function is to
+be called.
 
 @menu
 * Built-in::                    Summarizes the built-in functions.
@@ -16109,7 +16112,7 @@ The second half of this @value{CHAPTER} describes these
 @end menu
 
 @node Built-in
-@section Built-In Functions
+@section Built-in Functions
 
 @dfn{Built-in} functions are always available for
 your @command{awk} program to call.  This @value{SECTION} defines all
@@ -16132,7 +16135,7 @@ but are summarized here for your convenience.
 @end menu
 
 @node Calling Built-in
-@subsection Calling Built-In Functions
+@subsection Calling Built-in Functions
 
 To call one of @command{awk}'s built-in functions, write the name of
 the function followed
@@ -16183,7 +16186,7 @@ j = atan2(++i, i *= 2)
 @end example
 
 If the order of evaluation is left to right, then @code{i} first becomes
-6, and then 12, and @code{atan2()} is called with the two arguments 6
+six, and then 12, and @code{atan2()} is called with the two arguments six
 and 12.  But if the order of evaluation is right to left, @code{i}
 first becomes 10, then 11, and @code{atan2()} is called with the
 two arguments 11 and 10.
@@ -16247,7 +16250,7 @@ In fact, @command{gawk} uses the BSD @code{random()} function, which is
 considerably better than @code{rand()}, to produce random numbers.}
 
 Often random integers are needed instead.  Following is a user-defined function
-that can be used to obtain a random non-negative integer less than @var{n}:
+that can be used to obtain a random nonnegative integer less than @var{n}:
 
 @example
 function randint(n)
@@ -16342,7 +16345,7 @@ implementations.
 The functions in this @value{SECTION} look at or change the text of one
 or more strings.
 
-@code{gawk} understands locales (@pxref{Locales}), and does all
+@command{gawk} understands locales (@pxref{Locales}) and does all
 string processing in terms of @emph{characters}, not @emph{bytes}.
 This distinction is particularly important to understand for locales
 where one character may be represented by multiple bytes.  Thus, for
@@ -16431,7 +16434,7 @@ a[2] = "de"
 a[3] = "sac"
 @end example
 
-The @code{asorti()} function works similarly to @code{asort()}, however,
+The @code{asorti()} function works similarly to @code{asort()}; however,
 the @emph{indices} are sorted, instead of the values. Thus, in the
 previous example, starting with the same initial set of indices and
 values in @code{a}, calling @samp{asorti(a)} would yield:
@@ -16546,7 +16549,7 @@ If @var{find} is not found, @code{index()} returns zero.
 With BWK @command{awk} and @command{gawk},
 it is a fatal error to use a regexp constant for @var{find}.
 Other implementations allow it, simply treating the regexp
-constant as an expression meaning @samp{$0 ~ /regexp/}. @value{DARKCORNER}.
+constant as an expression meaning @samp{$0 ~ /regexp/}. @value{DARKCORNER}
 
 @item @code{length(}[@var{string}]@code{)}
 @cindexawkfunc{length}
@@ -16629,7 +16632,7 @@ If @option{--posix} is supplied, using an array argument is a fatal error
 @cindex string, regular expression match
 @cindex match regexp in string
 Search @var{string} for the
-longest, leftmost substring matched by the regular expression,
+longest, leftmost substring matched by the regular expression
 @var{regexp} and return the character position (index)
 at which that substring begins (one, if it starts at the beginning of
 @var{string}).  If no match is found, return zero.
@@ -16641,7 +16644,7 @@ In the latter case, the string is treated as a regexp to be matched.
 discussion of the difference between the two forms, and the
 implications for writing your program correctly.
 
-The order of the first two arguments is backwards from most other string
+The order of the first two arguments is the opposite of most other string
 functions that work with regular expressions, such as
 @code{sub()} and @code{gsub()}.  It might help to remember that
 for @code{match()}, the order is the same as for the @samp{~} operator:
@@ -16730,7 +16733,7 @@ $ @kbd{echo foooobazbarrrrr |}
 @end example
 
 There may not be subscripts for the start and index for every parenthesized
-subexpression, because they may not all have matched text; thus they
+subexpression, because they may not all have matched text; thus, they
 should be tested for with the @code{in} operator
 (@pxref{Reference to Elements}).
 
@@ -16777,13 +16780,13 @@ a regexp describing where to split @var{string} (much as @code{FS} can
 be a regexp describing where to split input records).
 If @var{fieldsep} is omitted, the value of @code{FS} is used.
 @code{split()} returns the number of elements created.
-@var{seps} is a @command{gawk} extension with @code{@var{seps}[@var{i}]}
+@var{seps} is a @command{gawk} extension, with @code{@var{seps}[@var{i}]}
 being the separator string
 between @code{@var{array}[@var{i}]} and @code{@var{array}[@var{i}+1]}.
 If @var{fieldsep} is a single
-space then any leading whitespace goes into @code{@var{seps}[0]} and
+space, then any leading whitespace goes into @code{@var{seps}[0]} and
 any trailing
-whitespace goes into @code{@var{seps}[@var{n}]} where @var{n} is the
+whitespace goes into @code{@var{seps}[@var{n}]}, where @var{n} is the
 return value of
 @code{split()} (i.e., the number of elements in @var{array}).
 
@@ -16821,19 +16824,18 @@ As with input field-splitting, when the value of @var{fieldsep} is
 the elements of
 @var{array} but not in @var{seps}, and the elements
 are separated by runs of whitespace.
-Also, as with input field-splitting, if @var{fieldsep} is the null string, each
+Also, as with input field splitting, if @var{fieldsep} is the null string, each
 individual character in the string is split into its own array element.
 @value{COMMONEXT}
 
 Note, however, that @code{RS} has no effect on the way @code{split()}
-works. Even though @samp{RS = ""} causes newline to also be an input
+works. Even though @samp{RS = ""} causes the newline character to also be an input
 field separator, this does not affect how @code{split()} splits strings.
 
 @cindex dark corner, @code{split()} function
 Modern implementations of @command{awk}, including @command{gawk}, allow
-the third argument to be a regexp constant (@code{/abc/}) as well as a
-string.
-@value{DARKCORNER}
+the third argument to be a regexp constant (@w{@code{/}@dots{}@code{/}})
+as well as a string.  @value{DARKCORNER}
 The POSIX standard allows this as well.
 @DBXREF{Computed Regexps} for a
 discussion of the difference between using a string constant or a regexp constant,
@@ -16970,7 +16972,7 @@ an @samp{&}:
 @cindex @code{sub()} function, arguments of
 @cindex @code{gsub()} function, arguments of
 As mentioned, the third argument to @code{sub()} must
-be a variable, field or array element.
+be a variable, field, or array element.
 Some versions of @command{awk} allow the third argument to
 be an expression that is not an lvalue.  In such a case, @code{sub()}
 still searches for the pattern and returns zero or one, but the result of
@@ -17129,8 +17131,8 @@ example, @code{"a\qb"} is treated as @code{"aqb"}.
 
 At the runtime level, the various functions handle sequences of
 @samp{\} and @samp{&} differently.  The situation is (sadly) somewhat complex.
-Historically, the @code{sub()} and @code{gsub()} functions treated the two
-character sequence @samp{\&} specially; this sequence was replaced in
+Historically, the @code{sub()} and @code{gsub()} functions treated the
+two-character sequence @samp{\&} specially; this sequence was replaced in
 the generated text with a single @samp{&}.  Any other @samp{\} within
 the @var{replacement} string that did not precede an @samp{&} was passed
 through unchanged.  This is illustrated in @ref{table-sub-escapes}.
@@ -17188,7 +17190,7 @@ _bigskip}
 @end float
 
 @noindent
-This table shows both the lexical-level processing, where
+This table shows the lexical-level processing, where
 an odd number of backslashes becomes an even number at the runtime level,
 as well as the runtime processing done by @code{sub()}.
 (For the sake of simplicity, the rest of the following tables only show the
@@ -17209,7 +17211,7 @@ This is shown in
 @ref{table-sub-proposed}.
 
 @float Table,table-sub-proposed
-@caption{GNU @command{awk} rules for @code{sub()} and backslash}
+@caption{@command{gawk} rules for @code{sub()} and backslash}
 @tex
 \vbox{\bigskip
 % We need more characters for escape and tab ...
@@ -17254,7 +17256,7 @@ _bigskip}
 @end float
 
 In a nutshell, at the runtime level, there are now three special sequences
-of characters (@samp{\\\&}, @samp{\\&} and @samp{\&}) whereas historically
+of characters (@samp{\\\&}, @samp{\\&}, and @samp{\&}) whereas historically
 there was only one.  However, as in the historical case, any @samp{\} that
 is not part of one of these three sequences is not special and appears
 in the output literally.
@@ -17320,7 +17322,7 @@ The only case where the difference is noticeable is the last one: @samp{\\\\}
 is seen as @samp{\\} and produces @samp{\} instead of @samp{\\}.
 
 Starting with @value{PVERSION} 3.1.4, @command{gawk} followed the POSIX rules
-when @option{--posix} is specified (@pxref{Options}). Otherwise,
+when @option{--posix} was specified (@pxref{Options}). Otherwise,
 it continued to follow the proposed rules, as
 that had been its behavior for many years.
 
@@ -17388,7 +17390,7 @@ _bigskip}
 @end ifnottex
 @end float
 
-Because of the complexity of the lexical and runtime level processing
+Because of the complexity of the lexical- and runtime-level processing
 and the special cases for @code{sub()} and @code{gsub()},
 we recommend the use of @command{gawk} and @code{gensub()} when you have
 to do substitutions.
@@ -17414,6 +17416,7 @@ for more information.
 When closing a coprocess, it is occasionally useful to first close
 one end of the two-way pipe and then to close the other.  This is done
 by providing a second argument to @code{close()}.  This second argument
+(@var{how})
 should be one of the two string values @code{"to"} or @code{"from"},
 indicating which end of the pipe to close.  Case in the string does
 not matter.
@@ -17440,7 +17443,7 @@ every little bit of information as soon as it is ready.  However, sometimes
 it is necessary to force a program to @dfn{flush} its buffers (i.e.,
 write the information to its destination, even if a buffer is not full).
 This is the purpose of the @code{fflush()} function---@command{gawk} also
-buffers its output and the @code{fflush()} function forces
+buffers its output, and the @code{fflush()} function forces
 @command{gawk} to flush its buffers.
 
 @cindex extensions, common@comma{} @code{fflush()} function
@@ -17461,7 +17464,7 @@ would flush only the standard output if there was no argument,
 and flush all output files and pipes if the argument was the null
 string. This was changed in order to be compatible with Brian
 Kernighan's @command{awk}, in the hope that standardizing this
-feature in POSIX would then be easier (which indeed helped).
+feature in POSIX would then be easier (which indeed proved to be the case).
 
 With @command{gawk},
 you can use @samp{fflush("/dev/stdout")} if you wish to flush
@@ -17472,7 +17475,7 @@ only the standard output.
 @c @cindex warnings, automatic
 @cindex troubleshooting, @code{fflush()} function
 @code{fflush()} returns zero if the buffer is successfully flushed;
-otherwise, it returns non-zero. (@command{gawk} returns @minus{}1.)
+otherwise, it returns a nonzero value. (@command{gawk} returns @minus{}1.)
 In the case where all buffers are flushed, the return value is zero
 only if all buffers were flushed successfully.  Otherwise, it is
 @minus{}1, and @command{gawk} warns about the problem @var{filename}.
@@ -17485,8 +17488,8 @@ In such a case, @code{fflush()} returns @minus{}1, as well.
 @sidebar Interactive Versus Noninteractive Buffering
 @cindex buffering, interactive vs.@: noninteractive
 
-As a side point, buffering issues can be even more confusing, depending
-upon whether your program is @dfn{interactive} (i.e., communicating
+As a side point, buffering issues can be even more confusing if
+your program is @dfn{interactive} (i.e., communicating
 with a user sitting at a keyboard).@footnote{A program is interactive
 if the standard output is connected to a terminal device. On modern
 systems, this means your keyboard and screen.}
@@ -17529,7 +17532,7 @@ it is all buffered and sent down the pipe to @command{cat} in one shot.
 @cindexawkfunc{system}
 @cindex invoke shell command
 @cindex interacting with other programs
-Execute the operating-system
+Execute the operating system
 command @var{command} and then return to the @command{awk} program.
 Return @var{command}'s exit status.
 
@@ -17638,9 +17641,9 @@ you would see the latter (undesirable) output.
 @cindex files, log@comma{} timestamps in
 @cindex @command{gawk}, timestamps
 @cindex POSIX @command{awk}, timestamps and
-@code{awk} programs are commonly used to process log files
+@command{awk} programs are commonly used to process log files
 containing timestamp information, indicating when a
-particular log record was written.  Many programs log their timestamp
+particular log record was written.  Many programs log their timestamps
 in the form returned by the @code{time()} system call, which is the
 number of seconds since a particular epoch.  On POSIX-compliant systems,
 it is the number of seconds since
@@ -17701,7 +17704,7 @@ The values of these numbers need not be within the ranges specified;
 for example, an hour of @minus{}1 means 1 hour before midnight.
 The origin-zero Gregorian calendar is assumed, with year 0 preceding
 year 1 and year @minus{}1 preceding year 0.
-The time is assumed to be in the local timezone.
+The time is assumed to be in the local time zone.
 If the daylight-savings flag is positive, the time is assumed to be
 daylight savings time; if zero, the time is assumed to be standard
 time; and if negative (the default), @code{mktime()} attempts to determine
@@ -17861,12 +17864,12 @@ Equivalent to specifying @samp{%H:%M:%S}.
 The weekday as a decimal number (1--7).  Monday is day one.
 
 @item %U
-The week number of the year (the first Sunday as the first day of week one)
+The week number of the year (with the first Sunday as the first day of week one)
 as a decimal number (00--53).
 
 @c @cindex ISO 8601
 @item %V
-The week number of the year (the first Monday as the first
+The week number of the year (with the first Monday as the first
 day of week one) as a decimal number (01--53).
 The method for determining the week number is as specified by ISO 8601.
 (To wit: if the week containing January 1 has four or more days in the
@@ -17877,7 +17880,7 @@ and the next week is week one.)
 The weekday as a decimal number (0--6).  Sunday is day zero.
 
 @item %W
-The week number of the year (the first Monday as the first day of week one)
+The week number of the year (with the first Monday as the first day of week one)
 as a decimal number (00--53).
 
 @item %x
@@ -17897,8 +17900,8 @@ The full year as a decimal number (e.g., 2015).
 @c @cindex RFC 822
 @c @cindex RFC 1036
 @item %z
-The timezone offset in a +HHMM format (e.g., the format necessary to
-produce RFC 822/RFC 1036 date headers).
+The time zone offset in a @samp{+@var{HHMM}} format (e.g., the format
+necessary to produce RFC 822/RFC 1036 date headers).
 
 @item %Z
 The time zone name or abbreviation; no characters if
@@ -18038,7 +18041,7 @@ The operations are described in @ref{table-bitwise-ops}.
 @ifnottex
 @ifnotdocbook
 @display
-                Bit Operator
+                Bit operator
           |  AND  |   OR  |  XOR
           |---+---+---+---+---+---
 Operands  | 0 | 1 | 0 | 1 | 0 | 1
@@ -18096,7 +18099,7 @@ Operands  | 0 | 1 | 0 | 1 | 0 | 1
 <tbody>
 <row>
 <entry colsep="0"></entry>
-<entry spanname="optitle"><emphasis role="bold">Bit Operator</emphasis></entry>
+<entry spanname="optitle"><emphasis role="bold">Bit operator</emphasis></entry>
 </row>
 
 <row rowsep="1">
@@ -18160,10 +18163,9 @@ of a given value.
 Finally, two other common operations are to shift the bits left or right.
 For example, if you have a bit string @samp{10111001} and you shift it
 right by three bits, you end up with @samp{00010111}.@footnote{This example
-shows that 0's come in on the left side. For @command{gawk}, this is
+shows that zeros come in on the left side. For @command{gawk}, this is
 always true, but in some languages, it's possible to have the left side
-fill with 1's.}
-@c Purposely decided to use   0's   and   1's   here.  2/2001.
+fill with ones.}
 If you start over again with @samp{10111001} and shift it left by three
 bits, you end up with @samp{11001000}.  The following list describes
 @command{gawk}'s built-in functions that implement the bitwise operations.
@@ -18217,7 +18219,7 @@ that illustrates the use of these functions:
 @example
 @group
 @c file eg/lib/bits2str.awk
-# bits2str --- turn a byte into readable 1's and 0's
+# bits2str --- turn a byte into readable ones and zeros
 
 function bits2str(bits,        data, mask)
 @{
@@ -19511,7 +19513,7 @@ for (i = 1; i <= n; i++)
 @end example
 
 @noindent
-@code{gawk} looks up the actual function to call only once.
+@command{gawk} looks up the actual function to call only once.
 
 @node Functions Summary
 @section Summary
@@ -30009,7 +30011,7 @@ Allowing completely alphabetic strings to have valid numeric
 values is also a very severe departure from historical practice.
 @end itemize
 
-The second problem is that the @code{gawk} maintainer feels that this
+The second problem is that the @command{gawk} maintainer feels that this
 interpretation of the standard, which requires a certain amount of
 ``language lawyering'' to arrive at in the first place, was not even
 intended by the standard developers.  In other words, ``we see how you
@@ -30168,7 +30170,7 @@ When @option{--sandbox} is specified, extensions are disabled
 * Finding Extensions::          How @command{gawk} finds compiled extensions.
 * Extension Example::           Example C code for an extension.
 * Extension Samples::           The sample extensions that ship with
-                                @code{gawk}.
+                                @command{gawk}.
 * gawkextlib::                  The @code{gawkextlib} project.
 * Extension summary::           Extension summary.
 * Extension Exercises::         Exercises.
@@ -31132,7 +31134,7 @@ If the concept of a ``record terminator'' makes sense, then
 @code{*rt_start} should be set to point to the data to be used for
 @code{RT}, and @code{*rt_len} should be set to the length of the
 data. Otherwise, @code{*rt_len} should be set to zero.
-@code{gawk} makes its own copy of this data, so the
+@command{gawk} makes its own copy of this data, so the
 extension must manage this storage.
 @end table
 
@@ -31178,7 +31180,7 @@ When writing an input parser, you should think about (and document)
 how it is expected to interact with @command{awk} code.  You may want
 it to always be called, and take effect as appropriate (as the
 @code{readdir} extension does).  Or you may want it to take effect
-based upon the value of an @code{awk} variable, as the XML extension
+based upon the value of an @command{awk} variable, as the XML extension
 from the @code{gawkextlib} project does (@pxref{gawkextlib}).
 In the latter case, code in a @code{BEGINFILE} section
 can look at @code{FILENAME} and @code{ERRNO} to decide whether or
@@ -31961,7 +31963,7 @@ converts it to a string. Using non-integral values is possible, but
 requires that you understand how such values are converted to strings
 (@pxref{Conversion}); thus using integral values is safest.
 
-As with @emph{all} strings passed into @code{gawk} from an extension,
+As with @emph{all} strings passed into @command{gawk} from an extension,
 the string value of @code{index} must come from @code{gawk_malloc()},
 @code{gawk_calloc()} or @code{gawk_realloc()}, and
 @command{gawk} releases the storage.
@@ -36265,7 +36267,7 @@ can be configured and compiled.
 @cindex @option{--disable-lint} configuration option
 @cindex configuration option, @code{--disable-lint}
 @item --disable-lint
-Disable all lint checking within @code{gawk}.  The
+Disable all lint checking within @command{gawk}.  The
 @option{--lint} and @option{--lint-old} options
 (@pxref{Options})
 are accepted, but silently do nothing.
