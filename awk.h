@@ -1607,6 +1607,7 @@ extern void free_context(AWK_CONTEXT *ctxt, bool keep_globals);
 extern NODE **variable_list();
 extern NODE **function_list(bool sort);
 extern void print_vars(NODE **table, Func_print print_func, FILE *fp);
+extern bool check_param_names(void);
 
 /* floatcomp.c */
 #ifdef HAVE_UINTMAX_T

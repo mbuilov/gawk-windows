@@ -13,6 +13,7 @@ Changes from 4.1.1 to 4.1.2
 	- Chapter 15 on MPFR reworked.
 	- Summary sections added to all chapters.
 	- Exercises added in several chapters.
+	- Heavily proof-read and copyedited.
 
 2. The debugger's "restart" command now works again.
 
@@ -25,9 +26,10 @@ Changes from 4.1.1 to 4.1.2
 
 6. Built-in functions are now included in FUNCTAB.
 
-7. In non-English locales, it was accidentally possible to use "letters"
-   beside those of the English alphabet in identifiers.  This has
-   been fixed.  (isalpha and isalnum are NOT our friends.)
+7. POSIX and historical practice require the exclusive use of the English
+   alphabet in identifiers.  In non-English locales, it was accidentally
+   possible to use "letters" beside those of the English alphabet.  This
+   has been fixed. (isalpha and isalnum are NOT our friends.)
 
    If you feel that you must have this misfeature, use `configure --help'
    to see what option to use when configuring gawk to reenable it.
@@ -43,6 +45,11 @@ Changes from 4.1.1 to 4.1.2
 
 10. Infrastructure upgrades: Automake 1.15, Gettext 0.19.4, Libtool 2.4.5,
     Bison 3.0.4.
+
+11. POSIX requires that the names of function parameters not be the
+    same as any of the special built-in variables and also not conflict
+    with the names of any functions. Gawk has checked for the former
+    since 3.1.7. It now also checks for the latter.
 
 XX. A number of bugs have been fixed. See the ChangeLog.
 

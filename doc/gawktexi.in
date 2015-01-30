@@ -18457,10 +18457,15 @@ the call.
 
 A function cannot have two parameters with the same name, nor may it
 have a parameter with the same name as the function itself.
-In addition, according to the POSIX standard, function parameters
+
+@quotation CAUTION
+According to the POSIX standard, function parameters
 cannot have the same name as one of the special predefined variables
-(@pxref{Built-in Variables}).  Not all versions of @command{awk} enforce
-this restriction.
+(@pxref{Built-in Variables}), nor may a function parameter have the
+same name as another function.
+Not all versions of @command{awk} enforce
+these restrictions.
+@end quotation
 
 Local variables act like the empty string if referenced where a string
 value is required, and like zero if referenced where a numeric value
@@ -19177,13 +19182,13 @@ using indirect function calls:
 @c file eg/prog/indirectcall.awk
 # average --- return the average of the values in fields $first - $last
 
-function average(first, last,   sum, i)
+function average(first, last,   the_sum, i)
 @{
-    sum = 0;
+    the_sum = 0;
     for (i = first; i <= last; i++)
-        sum += $i
+        the_sum += $i
 
-    return sum / (last - first + 1)
+    return the_sum / (last - first + 1)
 @}
 
 # sum --- return the sum of the values in fields $first - $last
