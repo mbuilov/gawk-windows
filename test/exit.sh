@@ -30,7 +30,7 @@ x='function f(){ exit}; BEGINFILE {f()}; NR>1{ f()}; END{print NR}'
 $AWK 'BEGIN { print "a\nb" }' | $AWK "$x"
 echo "-- 5"
 
-y='function strip(f) { sub(/.*\//, "", f); return f };'
+y='function strip(val) { sub(/.*\//, "", val); return val };'
 
 x='BEGINFILE{if(++i==1) exit;}; END{print i, strip(FILENAME)}'
 $AWK "$y$x" /dev/null $0
