@@ -18326,15 +18326,16 @@ $ @kbd{gawk -f testbits.awk}
 @cindex converting, numbers to strings
 @cindex number as string of bits
 The @code{bits2str()} function turns a binary number into a string.
-The number @code{1} represents a binary value where the rightmost bit
-is set to 1.  Using this mask,
+Initializing @code{mask} to one creates
+a binary value where the rightmost bit
+is set to one.  Using this mask,
 the function repeatedly checks the rightmost bit.
 ANDing the mask with the value indicates whether the
-rightmost bit is 1 or not. If so, a @code{"1"} is concatenated onto the front
+rightmost bit is one or not. If so, a @code{"1"} is concatenated onto the front
 of the string.
 Otherwise, a @code{"0"} is added.
 The value is then shifted right by one bit and the loop continues
-until there are no more 1 bits.
+until there are no more one bits.
 
 If the initial value is zero, it returns a simple @code{"0"}.
 Otherwise, at the end, it pads the value with zeros to represent multiples
@@ -18358,7 +18359,7 @@ that traverses every element of an array of arrays
 @cindexgawkfunc{isarray}
 @cindex scalar or array
 @item isarray(@var{x})
-Return a true value if @var{x} is an array. Otherwise return false.
+Return a true value if @var{x} is an array. Otherwise, return false.
 @end table
 
 @code{isarray()} is meant for use in two circumstances. The first is when
@@ -18419,7 +18420,7 @@ The default value for @var{category} is @code{"LC_MESSAGES"}.
 Return the plural form used for @var{number} of the
 translation of @var{string1} and @var{string2} in text domain
 @var{domain} for locale category @var{category}. @var{string1} is the
-English singular variant of a message, and @var{string2} the English plural
+English singular variant of a message, and @var{string2} is the English plural
 variant of the same message.
 The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
 The default value for @var{category} is @code{"LC_MESSAGES"}.
@@ -18448,7 +18449,7 @@ them (i.e., to tell @command{awk} what they should do).
 @subsection Function Definition Syntax
 
 @quotation
-@i{It's entirely fair to say that the @command{awk} syntax for local
+@i{It's entirely fair to say that the awk syntax for local
 variable definitions is appallingly awful.}
 @author Brian Kernighan
 @end quotation
@@ -18506,7 +18507,7 @@ it also enforces the second restriction.
 
 Local variables act like the empty string if referenced where a string
 value is required, and like zero if referenced where a numeric value
-is required. This is the same as regular variables that have never been
+is required. This is the same as the behavior of regular variables that have never been
 assigned a value.  (There is more to understand about local variables;
 @pxref{Dynamic Typing}.)
 
@@ -18540,7 +18541,7 @@ During execution of the function body, the arguments and local variable
 values hide, or @dfn{shadow}, any variables of the same names used in the
 rest of the program.  The shadowed variables are not accessible in the
 function definition, because there is no way to name them while their
-names have been taken away for the local variables.  All other variables
+names have been taken away for the arguments and local variables.  All other variables
 used in the @command{awk} program can be referenced or set normally in the
 function's body.
 
@@ -18607,7 +18608,7 @@ function myprint(num)
 @end example
 
 @noindent
-To illustrate, here is an @command{awk} rule that uses our @code{myprint}
+To illustrate, here is an @command{awk} rule that uses our @code{myprint()}
 function:
 
 @example
@@ -18648,13 +18649,13 @@ in an array and start over with a new list of elements
 (@pxref{Delete}).
 Instead of having
 to repeat this loop everywhere that you need to clear out
-an array, your program can just call @code{delarray}.
+an array, your program can just call @code{delarray()}.
 (This guarantees portability.  The use of @samp{delete @var{array}} to delete
 the contents of an entire array is a relatively recent@footnote{Late in 2012.}
 addition to the POSIX standard.)
 
 The following is an example of a recursive function.  It takes a string
-as an input parameter and returns the string in backwards order.
+as an input parameter and returns the string in reverse order.
 Recursive functions must always have a test that stops the recursion.
 In this case, the recursion terminates when the input string is
 already empty:
@@ -18751,7 +18752,7 @@ an error.
 
 @cindex local variables, in a function
 @cindex variables, local to a function
-Unlike many languages,
+Unlike in many languages,
 there is no way to make a variable local to a @code{@{} @dots{} @code{@}} block in
 @command{awk}, but you can make a variable local to a function. It is
 good practice to do so whenever a variable is needed only in that
@@ -18760,7 +18761,7 @@ function.
 To make a variable local to a function, simply declare the variable as
 an argument after the actual function arguments
 (@pxref{Definition Syntax}).
-Look at the following example where variable
+Look at the following example, where variable
 @code{i} is a global variable used by both functions @code{foo()} and
 @code{bar()}:
 
@@ -18801,7 +18802,7 @@ foo's i=3
 top's i=3
 @end example
 
-If you want @code{i} to be local to both @code{foo()} and @code{bar()} do as
+If you want @code{i} to be local to both @code{foo()} and @code{bar()}, do as
 follows (the extra space before @code{i} is a coding convention to
 indicate that @code{i} is a local variable, not an argument):
 
@@ -18889,7 +18890,7 @@ declare explicitly whether the arguments are passed @dfn{by value} or
 @dfn{by reference}.
 
 Instead, the passing convention is determined at runtime when
-the function is called according to the following rule:
+the function is called, according to the following rule:
 if the argument is an array variable, then it is passed by reference.
 Otherwise, the argument is passed by value.
 
@@ -18966,7 +18967,7 @@ prints @samp{a[1] = 1, a[2] = two, a[3] = 3}, because
 @cindex undefined functions
 @cindex functions, undefined
 Some @command{awk} implementations allow you to call a function that
-has not been defined. They only report a problem at runtime when the
+has not been defined. They only report a problem at runtime, when the
 program actually tries to call the function. For example:
 
 @example
@@ -19025,15 +19026,15 @@ makes the returned value undefined, and therefore, unpredictable.
 In practice, though, all versions of @command{awk} simply return the
 null string, which acts like zero if used in a numeric context.
 
-A @code{return} statement with no value expression is assumed at the end of
-every function definition.  So if control reaches the end of the function
-body, then technically, the function returns an unpredictable value.
+A @code{return} statement without an @var{expression} is assumed at the end of
+every function definition.  So, if control reaches the end of the function
+body, then technically the function returns an unpredictable value.
 In practice, it returns the empty string.  @command{awk}
 does @emph{not} warn you if you use the return value of such a function.
 
 Sometimes, you want to write a function for what it does, not for
 what it returns.  Such a function corresponds to a @code{void} function
-in C, C++ or Java, or to a @code{procedure} in Ada.  Thus, it may be appropriate to not
+in C, C++, or Java, or to a @code{procedure} in Ada.  Thus, it may be appropriate to not
 return any value; simply bear in mind that you should not be using the
 return value of such a function.
 
@@ -19152,13 +19153,15 @@ function calls, you can specify the name of the function to call as a
 string variable, and then call the function.  Let's look at an example.
 
 Suppose you have a file with your test scores for the classes you
-are taking.  The first field is the class name. The following fields
+are taking, and
+you wish to get the sum and the average of
+your test scores.
+The first field is the class name. The following fields
 are the functions to call to process the data, up to a ``marker''
 field @samp{data:}.  Following the marker, to the end of the record,
 are the various numeric test scores.
 
-Here is the initial file; you wish to get the sum and the average of
-your test scores:
+Here is the initial file:
 
 @example
 @c file eg/data/class_data1
@@ -19241,9 +19244,9 @@ function sum(first, last,   ret, i)
 @c endfile
 @end example
 
-These two functions expect to work on fields; thus the parameters
+These two functions expect to work on fields; thus, the parameters
 @code{first} and @code{last} indicate where in the fields to start and end.
-Otherwise they perform the expected computations and are not unusual:
+Otherwise, they perform the expected computations and are not unusual:
 
 @example
 @c file eg/prog/indirectcall.awk
@@ -19302,8 +19305,8 @@ The ability to use indirect function calls is more powerful than you may
 think at first.  The C and C++ languages provide ``function pointers,'' which
 are a mechanism for calling a function chosen at runtime.  One of the most
 well-known uses of this ability is the C @code{qsort()} function, which sorts
-an array using the famous ``quick sort'' algorithm
-(see @uref{http://en.wikipedia.org/wiki/Quick_sort, the Wikipedia article}
+an array using the famous ``quicksort'' algorithm
+(see @uref{http://en.wikipedia.org/wiki/Quicksort, the Wikipedia article}
 for more information).  To use this function, you supply a pointer to a comparison
 function.  This mechanism allows you to sort arbitrary data in an arbitrary
 fashion.
@@ -19322,11 +19325,11 @@ We can do something similar using @command{gawk}, like this:
 # January 2009
 
 @c endfile
-
 @end ignore
 @c file eg/lib/quicksort.awk
-# quicksort --- C.A.R. Hoare's quick sort algorithm. See Wikipedia
-#               or almost any algorithms or computer science text
+
+# quicksort --- C.A.R. Hoare's quicksort algorithm. See Wikipedia
+#               or almost any algorithms or computer science text.
 @c endfile
 @ignore
 @c file eg/lib/quicksort.awk
@@ -19364,7 +19367,7 @@ function quicksort_swap(data, i, j,      temp)
 
 The @code{quicksort()} function receives the @code{data} array, the starting and ending
 indices to sort (@code{left} and @code{right}), and the name of a function that
-performs a ``less than'' comparison.  It then implements the quick sort algorithm.
+performs a ``less than'' comparison.  It then implements the quicksort algorithm.
 
 To make use of the sorting function, we return to our previous example. The
 first thing to do is write some comparison functions:
