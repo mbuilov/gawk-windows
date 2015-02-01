@@ -19427,8 +19427,12 @@ According to the POSIX standard, function parameters
 cannot have the same name as one of the special predefined variables
 (@pxref{Built-in Variables}), nor may a function parameter have the
 same name as another function.
+
 Not all versions of @command{awk} enforce
 these restrictions.
+@command{gawk} always enforces the first restriction.
+With @option{--posix} (@pxref{Options}),
+it also enforces the second restriction.
 @end quotation
 
 Local variables act like the empty string if referenced where a string
@@ -20146,13 +20150,13 @@ using indirect function calls:
 @c file eg/prog/indirectcall.awk
 # average --- return the average of the values in fields $first - $last
 
-function average(first, last,   the_sum, i)
+function average(first, last,   sum, i)
 @{
-    the_sum = 0;
+    sum = 0;
     for (i = first; i <= last; i++)
-        the_sum += $i
+        sum += $i
 
-    return the_sum / (last - first + 1)
+    return sum / (last - first + 1)
 @}
 
 # sum --- return the sum of the values in fields $first - $last

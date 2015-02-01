@@ -1,3 +1,16 @@
+2015-02-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Move POSIX requirement for disallowing paramater names with the
+	same name as a function into --posix.
+
+	* NEWS: Document it.
+	* awkgram.y (parse_program): Check do_posix before calling
+	check_param_names().
+	* symbol.c (check_param_names): Set up a fake node and call
+	in_array() for function parameter names instead of linear
+	searching the function list a second time. Thanks to Andrew
+	Schorr for the motivation.
+
 2015-01-30         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Don't allow function parameter names to be the same as function
