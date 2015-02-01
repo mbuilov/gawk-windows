@@ -1,3 +1,27 @@
+2015-01-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Don't allow function parameter names to be the same as function
+	names - required by POSIX. Bug first reported in comp.lang.awk.
+
+	In addition, don't allow use of a parameter as a function name
+	in a call (but it's ok in indirect calls).
+
+	* NEWS: Updated.
+	* awk.h (check_param_names): Add declaration.
+	* awkgram.y (at_seen): New variable. Communicates between
+	yylex() and the parser.
+	(FUNC_CALL production): Check at_seen and check that the identifier
+	is a function name.
+	(parse_program): Call check_param_names() and set errcount.
+	(yylex): Set at_seen after seeing an at-sign.
+	* symbol.c (check_param_names): New function.
+
+2015-01-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Infrastructure updates.
+
+	Bison 3.0.4. Automake 1.15. Gettext 0.19.4.
+
 2015-01-20         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkapi.c (api_set_array_element): Remove useless call to
