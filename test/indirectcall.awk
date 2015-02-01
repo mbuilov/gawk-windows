@@ -5,13 +5,13 @@
 
 # average --- return the average of the values in fields $first - $last
 
-function average(first, last,	the_sum, i)
+function average(first, last,	sum, i)
 {
-	the_sum = 0;
+	sum = 0;
 	for (i = first; i <= last; i++)
-		the_sum += $i
+		sum += $i
 
-	return the_sum / (last - first + 1)
+	return sum / (last - first + 1)
 }
 
 # sum --- return the average of the values in fields $first - $last

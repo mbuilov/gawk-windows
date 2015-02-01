@@ -2416,7 +2416,7 @@ parse_program(INSTRUCTION **pcode)
 	if (ret == 0)	/* avoid spurious warning if parser aborted with YYABORT */
 		check_funcs();
 
-	if (! check_param_names())
+	if (do_posix && ! check_param_names())
 		errcount++;
 
 	if (args_array == NULL)

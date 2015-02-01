@@ -630,13 +630,22 @@ load_symbols()
 bool
 check_param_names(void)
 {
-	int i, j, k;
+	int i, j;
 	NODE **list;
 	NODE *f;
 	long max;
 	bool result = true;
+	NODE n;
+
+	if (func_table->table_size == 0)
+		return result;
 
 	max = func_table->table_size * 2;
+
+	memset(& n, sizeof n, 0);
+	n.type = Node_val;
+	n.flags = STRING|STRCUR;
+	n.stfmt = -1;
 
 	/*
 	 * assoc_list() returns an array with two elements per awk array
@@ -650,10 +659,6 @@ check_param_names(void)
 
 	list = assoc_list(func_table, "@unsorted", ASORTI);
 
-	/*
-	 * You want linear searches?
-	 * Have we got linear searches!
-	 */
 	for (i = 0; i < max; i += 2) {
 		f = list[i+1];
 		if (f->type == Node_builtin_func || f->param_cnt == 0)
@@ -662,16 +667,17 @@ check_param_names(void)
 		/* loop over each param in function i */
 		for (j = 0; j < f->param_cnt; j++) {
 			/* compare to function names */
-			for (k = 0; k < max; k += 2) {
-				if (k == i)
-					continue;
-				if (strcmp(f->fparms[j].param, list[k]->stptr) == 0) {
-					error(
-				_("function `%s': can't use function `%s' as a parameter name"),
-						list[i]->stptr,
-						list[k]->stptr);
-					result = false;
-				}
+
+			/* use a fake node to avoid malloc/free of make_string */
+			n.stptr = f->fparms[j].param;
+			n.stlen = strlen(f->fparms[j].param);
+
+			if (in_array(func_table, & n)) {
+				error(
+			_("function `%s': can't use function `%s' as a parameter name"),
+					list[i]->stptr,
+					f->fparms[j].param);
+				result = false;
 			}
 		}
 	}
