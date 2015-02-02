@@ -20533,7 +20533,7 @@ It contains the following chapters:
 your own @command{awk} functions.  Writing functions is important, because
 it allows you to encapsulate algorithms and program tasks in a single
 place.  It simplifies programming, making program development more
-manageable, and making programs more readable.
+manageable and making programs more readable.
 
 @cindex Kernighan, Brian
 @cindex Plauger, P.J.@:
@@ -20662,7 +20662,7 @@ often use variable names like these for their own purposes.
 The example programs shown in this @value{CHAPTER} all start the names of their
 private variables with an underscore (@samp{_}).  Users generally don't use
 leading underscores in their variable names, so this convention immediately
-decreases the chances that the variable name will be accidentally shared
+decreases the chances that the variable names will be accidentally shared
 with the user's program.
 
 @cindex @code{_} (underscore), in names of private variables
@@ -20680,8 +20680,8 @@ show how our own @command{awk} programming style has evolved and to
 provide some basis for this discussion.}
 
 As a final note on variable naming, if a function makes global variables
-available for use by a main program, it is a good convention to start that
-variable's name with a capital letter---for
+available for use by a main program, it is a good convention to start those
+variables' names with a capital letter---for
 example, @code{getopt()}'s @code{Opterr} and @code{Optind} variables
 (@pxref{Getopt Function}).
 The leading capital letter indicates that it is global, while the fact that
@@ -20692,7 +20692,7 @@ not one of @command{awk}'s predefined variables, such as @code{FS}.
 It is also important that @emph{all} variables in library
 functions that do not need to save state are, in fact, declared
 local.@footnote{@command{gawk}'s @option{--dump-variables} command-line
-option is useful for verifying this.} If this is not done, the variable
+option is useful for verifying this.} If this is not done, the variables
 could accidentally be used in the user's program, leading to bugs that
 are very difficult to track down:
 
@@ -20890,7 +20890,7 @@ Following is the function:
 
 @example
 @c file eg/lib/assert.awk
-# assert --- assert that a condition is true. Otherwise exit.
+# assert --- assert that a condition is true. Otherwise, exit.
 
 @c endfile
 @ignore
@@ -20926,7 +20926,7 @@ is false, it prints a message to standard error, using the @code{string}
 parameter to describe the failed condition.  It then sets the variable
 @code{_assert_exit} to one and executes the @code{exit} statement.
 The @code{exit} statement jumps to the @code{END} rule. If the @code{END}
-rules finds @code{_assert_exit} to be true, it exits immediately.
+rule finds @code{_assert_exit} to be true, it exits immediately.
 
 The purpose of the test in the @code{END} rule is to
 keep any other @code{END} rules from running.  When an assertion fails, the
@@ -21218,7 +21218,7 @@ all the strings in an array into one long string.  The following function,
 the application programs
 (@pxref{Sample Programs}).
 
-Good function design is important; this function needs to be general but it
+Good function design is important; this function needs to be general, but it
 should also have a reasonable default behavior.  It is called with an array
 as well as the beginning and ending indices of the elements in the array to be
 merged.  This assumes that the array indices are numeric---a reasonable
@@ -21366,7 +21366,7 @@ allowed the user to supply an optional timestamp value to use instead
 of the current time.
 
 @node Readfile Function
-@subsection Reading a Whole File At Once
+@subsection Reading a Whole File at Once
 
 Often, it is convenient to have the entire contents of a file available
 in memory as a single string. A straightforward but naive way to
@@ -21423,13 +21423,13 @@ function readfile(file,     tmp, save_rs)
 
 It works by setting @code{RS} to @samp{^$}, a regular expression that
 will never match if the file has contents.  @command{gawk} reads data from
-the file into @code{tmp} attempting to match @code{RS}.  The match fails
+the file into @code{tmp}, attempting to match @code{RS}.  The match fails
 after each read, but fails quickly, such that @command{gawk} fills
 @code{tmp} with the entire contents of the file.
 (@DBXREF{Records} for information on @code{RT} and @code{RS}.)
 
 In the case that @code{file} is empty, the return value is the null
-string.  Thus calling code may use something like:
+string.  Thus, calling code may use something like:
 
 @example
 contents = readfile("/some/path")
@@ -21440,7 +21440,7 @@ if (length(contents) == 0)
 This tests the result to see if it is empty or not. An equivalent
 test would be @samp{contents == ""}.
 
-@xref{Extension Sample Readfile}, for an extension function that
+@DBXREF{Extension Sample Readfile} for an extension function that
 also reads an entire file into memory.
 
 @node Shell Quoting
@@ -21547,8 +21547,8 @@ The @code{BEGIN} and @code{END} rules are each executed exactly once, at
 the beginning and end of your @command{awk} program, respectively
 (@pxref{BEGIN/END}).
 We (the @command{gawk} authors) once had a user who mistakenly thought that the
-@code{BEGIN} rule is executed at the beginning of each @value{DF} and the
-@code{END} rule is executed at the end of each @value{DF}.
+@code{BEGIN} rules were executed at the beginning of each @value{DF} and the
+@code{END} rules were executed at the end of each @value{DF}.
 
 When informed
 that this was not the case, the user requested that we add new special
@@ -21588,7 +21588,7 @@ END @{ endfile(FILENAME) @}
 This file must be loaded before the user's ``main'' program, so that the
 rule it supplies is executed first.
 
-This rule relies on @command{awk}'s @code{FILENAME} variable that
+This rule relies on @command{awk}'s @code{FILENAME} variable, which
 automatically changes for each new @value{DF}.  The current @value{FN} is
 saved in a private variable, @code{_oldfilename}.  If @code{FILENAME} does
 not equal @code{_oldfilename}, then a new @value{DF} is being processed and
@@ -21604,7 +21604,7 @@ first @value{DF}.
 The program also supplies an @code{END} rule to do the final processing for
 the last file.  Because this @code{END} rule comes before any @code{END} rules
 supplied in the ``main'' program, @code{endfile()} is called first.  Once
-again the value of multiple @code{BEGIN} and @code{END} rules should be clear.
+again, the value of multiple @code{BEGIN} and @code{END} rules should be clear.
 
 @cindex @code{beginfile()} user-defined function
 @cindex @code{endfile()} user-defined function
@@ -21652,7 +21652,7 @@ how it simplifies writing the main program.
 
 You are probably wondering, if @code{beginfile()} and @code{endfile()}
 functions can do the job, why does @command{gawk} have
-@code{BEGINFILE} and @code{ENDFILE} patterns (@pxref{BEGINFILE/ENDFILE})?
+@code{BEGINFILE} and @code{ENDFILE} patterns?
 
 Good question.  Normally, if @command{awk} cannot open a file, this
 causes an immediate fatal error.  In this case, there is no way for a
@@ -21661,6 +21661,7 @@ calling it relies on the file being open and at the first record.  Thus,
 the main reason for @code{BEGINFILE} is to give you a ``hook'' to catch
 files that cannot be processed.  @code{ENDFILE} exists for symmetry,
 and because it provides an easy way to do per-file cleanup processing.
+For more information, refer to @ref{BEGINFILE/ENDFILE}.
 
 @docbook
 </sidebar>
@@ -21675,7 +21676,7 @@ and because it provides an easy way to do per-file cleanup processing.
 
 You are probably wondering, if @code{beginfile()} and @code{endfile()}
 functions can do the job, why does @command{gawk} have
-@code{BEGINFILE} and @code{ENDFILE} patterns (@pxref{BEGINFILE/ENDFILE})?
+@code{BEGINFILE} and @code{ENDFILE} patterns?
 
 Good question.  Normally, if @command{awk} cannot open a file, this
 causes an immediate fatal error.  In this case, there is no way for a
@@ -21684,6 +21685,7 @@ calling it relies on the file being open and at the first record.  Thus,
 the main reason for @code{BEGINFILE} is to give you a ``hook'' to catch
 files that cannot be processed.  @code{ENDFILE} exists for symmetry,
 and because it provides an easy way to do per-file cleanup processing.
+For more information, refer to @ref{BEGINFILE/ENDFILE}.
 @end cartouche
 @end ifnotdocbook
 
@@ -21691,7 +21693,7 @@ and because it provides an easy way to do per-file cleanup processing.
 @subsection Rereading the Current File
 
 @cindex files, reading
-Another request for a new built-in function was for a @code{rewind()}
+Another request for a new built-in function was for a
 function that would make it possible to reread the current file.
 The requesting user didn't want to have to use @code{getline}
 (@pxref{Getline})
@@ -21700,7 +21702,7 @@ inside a loop.
 However, as long as you are not in the @code{END} rule, it is
 quite easy to arrange to immediately close the current input file
 and then start over with it from the top.
-For lack of a better name, we'll call it @code{rewind()}:
+For lack of a better name, we'll call the function @code{rewind()}:
 
 @cindex @code{rewind()} user-defined function
 @example
@@ -21793,16 +21795,16 @@ See also @ref{ARGC and ARGV}.
 Because @command{awk} variable names only allow the English letters,
 the regular expression check purposely does not use character classes
 such as @samp{[:alpha:]} and @samp{[:alnum:]}
-(@pxref{Bracket Expressions})
+(@pxref{Bracket Expressions}).
 
 @node Empty Files
-@subsection Checking for Zero-length Files
+@subsection Checking for Zero-Length Files
 
 All known @command{awk} implementations silently skip over zero-length files.
 This is a by-product of @command{awk}'s implicit
 read-a-record-and-match-against-the-rules loop: when @command{awk}
 tries to read a record from an empty file, it immediately receives an
-end of file indication, closes the file, and proceeds on to the next
+end-of-file indication, closes the file, and proceeds on to the next
 command-line @value{DF}, @emph{without} executing any user-level
 @command{awk} program code.
 
@@ -21867,7 +21869,7 @@ Occasionally, you might not want @command{awk} to process command-line
 variable assignments
 (@pxref{Assignment Options}).
 In particular, if you have a @value{FN} that contains an @samp{=} character,
-@command{awk} treats the @value{FN} as an assignment, and does not process it.
+@command{awk} treats the @value{FN} as an assignment and does not process it.
 
 Some users have suggested an additional command-line option for @command{gawk}
 to disable command-line assignments.  However, some simple programming with
@@ -22229,8 +22231,8 @@ BEGIN @{
 @c endfile
 @end example
 
-The rest of the @code{BEGIN} rule is a simple test program.  Here is the
-result of two sample runs of the test program:
+The rest of the @code{BEGIN} rule is a simple test program.  Here are the
+results of two sample runs of the test program:
 
 @example
 $ @kbd{awk -f getopt.awk -v _getopt_test=1 -- -a -cbARG bax -x}
@@ -22288,7 +22290,7 @@ use @code{getopt()} to process their arguments.
 The @code{PROCINFO} array
 (@pxref{Built-in Variables})
 provides access to the current user's real and effective user and group ID
-numbers, and if available, the user's supplementary group set.
+numbers, and, if available, the user's supplementary group set.
 However, because these are numbers, they do not provide very useful
 information to the average user.  There needs to be some way to find the
 user information associated with the user and group ID numbers.  This
@@ -22308,7 +22310,7 @@ kept.  Instead, it provides the @code{<pwd.h>} header file
 and several C language subroutines for obtaining user information.
 The primary function is @code{getpwent()}, for ``get password entry.''
 The ``password'' comes from the original user database file,
-@file{/etc/passwd}, which stores user information, along with the
+@file{/etc/passwd}, which stores user information along with the
 encrypted passwords (hence the name).
 
 @cindex @command{pwcat} program
@@ -22407,7 +22409,7 @@ The user's encrypted password.  This may not be available on some systems.
 
 @item User-ID
 The user's numeric user ID number.
-(On some systems, it's a C @code{long}, and not an @code{int}.  Thus
+(On some systems, it's a C @code{long}, and not an @code{int}.  Thus,
 we cast it to @code{long} for all cases.)
 
 @item Group-ID
@@ -22534,7 +22536,7 @@ The code that checks for using @code{FPAT}, using @code{using_fpat}
 and @code{PROCINFO["FS"]}, is similar.
 
 The main part of the function uses a loop to read database lines, split
-the line into fields, and then store the line into each array as necessary.
+the lines into fields, and then store the lines into each array as necessary.
 When the loop is done, @code{@w{_pw_init()}} cleans up by closing the pipeline,
 setting @code{@w{_pw_inited}} to one, and restoring @code{FS}
 (and @code{FIELDWIDTHS} or @code{FPAT}
@@ -22751,7 +22753,7 @@ it is usually empty or set to @samp{*}.
 @item Group ID Number
 The group's numeric group ID number;
 the association of name to number must be unique within the file.
-(On some systems it's a C @code{long}, and not an @code{int}.  Thus
+(On some systems it's a C @code{long}, and not an @code{int}.  Thus,
 we cast it to @code{long} for all cases.)
 
 @item Group Member List
@@ -22865,32 +22867,32 @@ The @code{@w{_gr_init()}} function first saves @code{FS},
 @code{$0}, and then sets @code{FS} and @code{RS} to the correct values for
 scanning the group information.
 It also takes care to note whether @code{FIELDWIDTHS} or @code{FPAT}
-is being used, and to restore the appropriate field splitting mechanism.
+is being used, and to restore the appropriate field-splitting mechanism.
 
-The group information is stored is several associative arrays.
+The group information is stored in several associative arrays.
 The arrays are indexed by group name (@code{@w{_gr_byname}}), by group ID number
 (@code{@w{_gr_bygid}}), and by position in the database (@code{@w{_gr_bycount}}).
 There is an additional array indexed by username (@code{@w{_gr_groupsbyuser}}),
 which is a space-separated list of groups to which each user belongs.
 
-Unlike the user database, it is possible to have multiple records in the
+Unlike in the user database, it is possible to have multiple records in the
 database for the same group.  This is common when a group has a large number
 of members.  A pair of such entries might look like the following:
 
 @example
-tvpeople:*:101:johny,jay,arsenio
+tvpeople:*:101:johnny,jay,arsenio
 tvpeople:*:101:david,conan,tom,joan
 @end example
 
 For this reason, @code{_gr_init()} looks to see if a group name or
-group ID number is already seen.  If it is, the usernames are
-simply concatenated onto the previous list of users.@footnote{There is actually a
+group ID number is already seen.  If so, the usernames are
+simply concatenated onto the previous list of users.@footnote{There is a
 subtle problem with the code just presented.  Suppose that
 the first time there were no names. This code adds the names with
 a leading comma. It also doesn't check that there is a @code{$4}.}
 
 Finally, @code{_gr_init()} closes the pipeline to @command{grcat}, restores
-@code{FS} (and @code{FIELDWIDTHS} or @code{FPAT} if necessary), @code{RS}, and @code{$0},
+@code{FS} (and @code{FIELDWIDTHS} or @code{FPAT}, if necessary), @code{RS}, and @code{$0},
 initializes @code{_gr_count} to zero
 (it is used later), and makes @code{_gr_inited} nonzero.
 
@@ -22990,12 +22992,12 @@ uses these functions.
 
 @DBREF{Arrays of Arrays} described how @command{gawk}
 provides arrays of arrays.  In particular, any element of
-an array may be either a scalar, or another array. The
+an array may be either a scalar or another array. The
 @code{isarray()} function (@pxref{Type Functions})
 lets you distinguish an array
 from a scalar.
 The following function, @code{walk_array()}, recursively traverses
-an array, printing each element's indices and value.
+an array, printing the element indices and values.
 You call it with the array and a string representing the name
 of the array:
 
@@ -23067,24 +23069,24 @@ The functions presented here fit into the following categories:
 @c nested list
 @table @asis
 @item General problems
-Number-to-string conversion, assertions, rounding, random number
+Number-to-string conversion, testing assertions, rounding, random number
 generation, converting characters to numbers, joining strings, getting
 easily usable time-of-day information, and reading a whole file in
-one shot.
+one shot
 
 @item Managing @value{DF}s
 Noting @value{DF} boundaries, rereading the current file, checking for
 readable files, checking for zero-length files, and treating assignments
-as @value{FN}s.
+as @value{FN}s
 
 @item Processing command-line options
-An @command{awk} version of the standard C @code{getopt()} function.
+An @command{awk} version of the standard C @code{getopt()} function
 
 @item Reading the user and group databases
-Two sets of routines that parallel the C library versions.
+Two sets of routines that parallel the C library versions
 
 @item Traversing arrays of arrays
-A simple function to traverse an array of arrays to any depth.
+A simple function to traverse an array of arrays to any depth
 @end table
 @c end nested list
 
