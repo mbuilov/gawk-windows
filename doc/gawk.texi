@@ -5178,13 +5178,12 @@ letters or numbers.  @value{COMMONEXT}
 @quotation CAUTION
 In ISO C, the escape sequence continues until the first nonhexadecimal
 digit is seen.
-@c FIXME: Add exact version here.
 For many years, @command{gawk} would continue incorporating
 hexadecimal digits into the value until a non-hexadecimal digit
 or the end of the string was encountered.
 However, using more than two hexadecimal digits produced
 undefined results.
-As of @value{PVERSION} @strong{FIXME:} 4.3.0, only two digits
+As of @value{PVERSION} 4.2, only two digits
 are processed.
 @end quotation
 
@@ -26543,7 +26542,7 @@ the separator can considerably simplify such tasks.
 
 @item
 The examples here demonstrate the usefulness of the library
-functions from @ref{Library Functions}
+functions from @DBREF{Library Functions}
 for a number of real (if small) programs.
 
 @item
@@ -35740,6 +35739,11 @@ The @code{isarray()} function to check if a variable is an array or not
 The @code{bindtextdomain()}, @code{dcgettext()} and @code{dcngettext()}
 functions for internationalization
 (@pxref{Programmer i18n}).
+
+@item
+The @code{div()} function for doing integer
+division and remainder
+(@pxref{Numeric Functions}).
 @end itemize
 
 @item
@@ -35873,8 +35877,14 @@ Ultrix
 @end itemize
 
 @item
-@c FIXME: Verify the version here.
-Support for MirBSD was removed at @command{gawk} @value{PVERSION} 4.2.
+Support for the following systems was removed from the code
+for @command{gawk} @value{PVERSION} 4.2:
+
+@c nested table
+@itemize @value{MINUS}
+@item
+MirBSD
+@end itemize
 
 @end itemize
 
@@ -36488,6 +36498,40 @@ with a minimum of two
 The dynamic extension interface was completely redone
 (@pxref{Dynamic Extensions}).
 
+@item
+Support for Ultrix was removed.
+
+@end itemize
+
+Version 4.2 introduced the following changes:
+
+@itemize @bullet
+@item
+Changes to @code{ENVIRON} are reflected into @command{gawk}'s
+environment and that of programs that it runs.
+@xref{Auto-set}.
+
+@item
+The @option{--pretty-print} option no longer runs the @command{awk}
+program too.
+@xref{Options}.
+
+@item
+The @command{igawk} program and its manual page are no longer
+installed when @command{gawk} is built.
+@xref{Igawk Program}.
+
+@item
+The @code{div()} function.
+@xref{Numeric Functions}.
+
+@item
+The maximum number of hexdecimal digits in @samp{\x} escapes
+is now two.
+@xref{Escape Sequences}.
+
+@item
+Support for MirBSD was removed.
 @end itemize
 
 @c XXX ADD MORE STUFF HERE
