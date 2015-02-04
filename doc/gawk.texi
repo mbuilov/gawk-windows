@@ -23181,10 +23181,10 @@ in this @value{CHAPTER}.
 The second presents @command{awk}
 versions of several common POSIX utilities.
 These are programs that you are hopefully already familiar with,
-and therefore, whose problems are understood.
+and therefore whose problems are understood.
 By reimplementing these programs in @command{awk},
 you can focus on the @command{awk}-related aspects of solving
-the programming problem.
+the programming problems.
 
 The third is a grab bag of interesting programs.
 These solve a number of different data-manipulation and management
@@ -23244,7 +23244,7 @@ It should be noted that these programs are not necessarily intended to
 replace the installed versions on your system.
 Nor may all of these programs be fully compliant with the most recent
 POSIX standard.  This is not a problem; their
-purpose is to illustrate @command{awk} language programming for ``real world''
+purpose is to illustrate @command{awk} language programming for ``real-world''
 tasks.
 
 The programs are presented in alphabetical order.
@@ -23273,7 +23273,7 @@ but you may supply a command-line option to change the field
 @dfn{delimiter} (i.e., the field-separator character). @command{cut}'s
 definition of fields is less general than @command{awk}'s.
 
-A common use of @command{cut} might be to pull out just the login name of
+A common use of @command{cut} might be to pull out just the login names of
 logged-on users from the output of @command{who}.  For example, the following
 pipeline generates a sorted, unique list of the logged-on users:
 
@@ -23782,7 +23782,7 @@ successful or unsuccessful match.  If the line does not match, the
 @code{next} statement just moves on to the next record.
 
 A number of additional tests are made, but they are only done if we
-are not counting lines.  First, if the user only wants exit status
+are not counting lines.  First, if the user only wants the exit status
 (@code{no_print} is true), then it is enough to know that @emph{one}
 line in this file matched, and we can skip on to the next file with
 @code{nextfile}.  Similarly, if we are only printing @value{FN}s, we can
@@ -23823,7 +23823,7 @@ if necessary:
 @end example
 
 The @code{END} rule takes care of producing the correct exit status. If
-there are no matches, the exit status is one; otherwise it is zero:
+there are no matches, the exit status is one; otherwise, it is zero:
 
 @example
 @c file eg/prog/egrep.awk
@@ -23875,7 +23875,8 @@ Here is a simple version of @command{id} written in @command{awk}.
 It uses the user database library functions
 (@pxref{Passwd Functions})
 and the group database library functions
-(@pxref{Group Functions}):
+(@pxref{Group Functions})
+from @ref{Library Functions}.
 
 The program is fairly straightforward.  All the work is done in the
 @code{BEGIN} rule.  The user and group ID numbers are obtained from
@@ -24002,8 +24003,8 @@ By default,
 the output files are named @file{xaa}, @file{xab}, and so on. Each file has
 1,000 lines in it, with the likely exception of the last file. To change the
 number of lines in each file, supply a number on the command line
-preceded with a minus (e.g., @samp{-500} for files with 500 lines in them
-instead of 1,000).  To change the name of the output files to something like
+preceded with a minus sign (e.g., @samp{-500} for files with 500 lines in them
+instead of 1,000).  To change the names of the output files to something like
 @file{myfileaa}, @file{myfileab}, and so on, supply an additional
 argument that specifies the @value{FN} prefix.
 
@@ -24842,7 +24843,7 @@ checking and setting of defaults: the delay, the count, and the message to
 print.  If the user supplied a message without the ASCII BEL
 character (known as the ``alert'' character, @code{"\a"}), then it is added to
 the message.  (On many systems, printing the ASCII BEL generates an
-audible alert. Thus when the alarm goes off, the system calls attention
+audible alert. Thus, when the alarm goes off, the system calls attention
 to itself in case the user is not looking at the computer.)
 Just for a change, this program uses a @code{switch} statement
 (@pxref{Switch Statement}), but the processing could be done with a series of
@@ -25011,7 +25012,7 @@ to @command{gawk}.
 @c at least theoretically
 The following program was written to
 prove that character transliteration could be done with a user-level
-function.  This program is not as complete as the system @command{tr} utility
+function.  This program is not as complete as the system @command{tr} utility,
 but it does most of the job.
 
 The @command{translate} program was written long before @command{gawk}
@@ -25023,13 +25024,13 @@ takes three arguments:
 
 @table @code
 @item from
-A list of characters from which to translate.
+A list of characters from which to translate
 
 @item to
-A list of characters to which to translate.
+A list of characters to which to translate
 
 @item target
-The string on which to do the translation.
+The string on which to do the translation
 @end table
 
 Associative arrays make the translation part fairly easy. @code{t_ar} holds
@@ -25038,7 +25039,7 @@ loop goes through @code{from}, one character at a time.  For each character
 in @code{from}, if the character appears in @code{target},
 it is replaced with the corresponding @code{to} character.
 
-The @code{translate()} function calls @code{stranslate()} using @code{$0}
+The @code{translate()} function calls @code{stranslate()}, using @code{$0}
 as the target.  The main program sets two global variables, @code{FROM} and
 @code{TO}, from the command line, and then changes @code{ARGV} so that
 @command{awk} reads from the standard input.
@@ -25060,7 +25061,7 @@ Finally, the processing rule simply calls @code{translate()} for each record:
 @c endfile
 @end ignore
 @c file eg/prog/translate.awk
-# Bugs: does not handle things like: tr A-Z a-z, it has
+# Bugs: does not handle things like tr A-Z a-z; it has
 # to be spelled out. However, if `to' is shorter than `from',
 # the last character in `to' is used for the rest of `from'.
 
@@ -25136,7 +25137,7 @@ for inspiration.
 
 @cindex printing, mailing labels
 @cindex mailing labels@comma{} printing
-Here is a ``real world''@footnote{``Real world'' is defined as
+Here is a ``real-world''@footnote{``Real world'' is defined as
 ``a program actually used to get something done.''}
 program.  This
 script reads lists of names and
@@ -25145,7 +25146,7 @@ on it, two across and 10 down.  The addresses are guaranteed to be no more
 than five lines of data.  Each address is separated from the next by a blank
 line.
 
-The basic idea is to read 20 labels worth of data.  Each line of each label
+The basic idea is to read 20 labels' worth of data.  Each line of each label
 is stored in the @code{line} array.  The single rule takes care of filling
 the @code{line} array and printing the page when 20 labels have been read.
 
@@ -25168,12 +25169,12 @@ of lines on the page
 
 Most of the work is done in the @code{printpage()} function.
 The label lines are stored sequentially in the @code{line} array.  But they
-have to print horizontally; @code{line[1]} next to @code{line[6]},
+have to print horizontally: @code{line[1]} next to @code{line[6]},
 @code{line[2]} next to @code{line[7]}, and so on.  Two loops
 accomplish this.  The outer loop, controlled by @code{i}, steps through
 every 10 lines of data; this is each row of labels.  The inner loop,
 controlled by @code{j}, goes through the lines within the row.
-As @code{j} goes from 0 to 4, @samp{i+j} is the @code{j}-th line in
+As @code{j} goes from 0 to 4, @samp{i+j} is the @code{j}th line in
 the row, and @samp{i+j+5} is the entry next to it.  The output ends up
 looking something like this:
 
@@ -25291,8 +25292,8 @@ END @{
 @}
 @end example
 
-The program relies on @command{awk}'s default field splitting
-mechanism to break each line up into ``words,'' and uses an
+The program relies on @command{awk}'s default field-splitting
+mechanism to break each line up into ``words'' and uses an
 associative array named @code{freq}, indexed by each word, to count
 the number of times the word occurs. In the @code{END} rule,
 it prints the counts.
@@ -25397,7 +25398,7 @@ to use the @command{sort} program.
 
 @cindex lines, duplicate@comma{} removing
 The @command{uniq} program
-(@pxref{Uniq Program}),
+(@pxref{Uniq Program})
 removes duplicate lines from @emph{sorted} data.
 
 Suppose, however, you need to remove duplicate lines from a @value{DF} but
@@ -25484,7 +25485,7 @@ Texinfo input file into separate files.
 
 @cindex Texinfo
 This @value{DOCUMENT} is written in @uref{http://www.gnu.org/software/texinfo/, Texinfo},
-the GNU project's document formatting language.
+the GNU Project's document formatting language.
 A single Texinfo source file can be used to produce both
 printed documentation, with @TeX{}, and online documentation.
 @ifnotinfo
@@ -25543,7 +25544,7 @@ The Texinfo file looks something like this:
 
 @example
 @dots{}
-This program has a @@code@{BEGIN@} rule,
+This program has a @@code@{BEGIN@} rule
 that prints a nice message:
 
 @@example
@@ -25572,7 +25573,7 @@ exits with a zero exit status, signifying OK:
 @cindex @code{extract.awk} program
 @example
 @c file eg/prog/extract.awk
-# extract.awk --- extract files and run programs from texinfo files
+# extract.awk --- extract files and run programs from Texinfo files
 @c endfile
 @ignore
 @c file eg/prog/extract.awk
@@ -25613,12 +25614,12 @@ The second rule handles moving data into files.  It verifies that a
 @value{FN} is given in the directive.  If the file named is not the
 current file, then the current file is closed.  Keeping the current file
 open until a new file is encountered allows the use of the @samp{>}
-redirection for printing the contents, keeping open file management
+redirection for printing the contents, keeping open-file management
 simple.
 
 The @code{for} loop does the work.  It reads lines using @code{getline}
 (@pxref{Getline}).
-For an unexpected end of file, it calls the @code{@w{unexpected_eof()}}
+For an unexpected end-of-file, it calls the @code{@w{unexpected_eof()}}
 function.  If the line is an ``endfile'' line, then it breaks out of
 the loop.
 If the line is an @samp{@@group} or @samp{@@end group} line, then it
@@ -25720,7 +25721,7 @@ END @{
 
 @cindex @command{sed} utility
 @cindex stream editors
-The @command{sed} utility is a stream editor, a program that reads a
+The @command{sed} utility is a @dfn{stream editor}, a program that reads a
 stream of data, makes changes to it, and passes it on.
 It is often used to make global changes to a large file or to a stream
 of data generated by a pipeline of commands.
@@ -25865,7 +25866,7 @@ includes don't accidentally include a library function twice.
 @command{igawk} should behave just like @command{gawk} externally.  This
 means it should accept all of @command{gawk}'s command-line arguments,
 including the ability to have multiple source files specified via
-@option{-f}, and the ability to mix command-line and library source files.
+@option{-f} and the ability to mix command-line and library source files.
 
 The program is written using the POSIX Shell (@command{sh}) command
 language.@footnote{Fully explaining the @command{sh} language is beyond
@@ -25904,7 +25905,7 @@ Run the expanded program with @command{gawk} and any other original command-line
 arguments that the user supplied (such as the @value{DF} names).
 @end enumerate
 
-This program uses shell variables extensively: for storing command-line arguments,
+This program uses shell variables extensively: for storing command-line arguments and
 the text of the @command{awk} program that will expand the user's program, for the
 user's original program, and for the expanded program.  Doing so removes some
 potential problems that might arise were we to use temporary files instead,
@@ -26221,22 +26222,7 @@ Save the results of this processing in the shell variable
 
 The last step is to call @command{gawk} with the expanded program,
 along with the original
-options and command-line arguments that the user supplied.
-
-@c this causes more problems than it solves, so leave it out.
-@ignore
-The special file @file{/dev/null} is passed as a @value{DF} to @command{gawk}
-to handle an interesting case. Suppose that the user's program only has
-a @code{BEGIN} rule and there are no @value{DF}s to read.
-The program should exit without reading any @value{DF}s.
-However, suppose that an included library file defines an @code{END}
-rule of its own. In this case, @command{gawk} will hang, reading standard
-input. In order to avoid this, @file{/dev/null} is explicitly added to the
-command line. Reading from @file{/dev/null} always returns an immediate
-end of file indication.
-
-@c Hmm. Add /dev/null if $# is 0?  Still messes up ARGV. Sigh.
-@end ignore
+options and command-line arguments that the user supplied:
 
 @example
 @c file eg/prog/igawk.sh
@@ -26302,8 +26288,8 @@ the same letters
 Column 2, Problem C, of Jon Bentley's @cite{Programming Pearls}, Second
 Edition, presents an elegant algorithm.  The idea is to give words that
 are anagrams a common signature, sort all the words together by their
-signature, and then print them.  Dr.@: Bentley observes that taking the
-letters in each word and sorting them produces that common signature.
+signatures, and then print them.  Dr.@: Bentley observes that taking the
+letters in each word and sorting them produces those common signatures.
 
 The following program uses arrays of arrays to bring together
 words with the same signature and array sorting to print the words
@@ -26312,8 +26298,8 @@ in sorted order:
 @cindex @code{anagram.awk} program
 @example
 @c file eg/prog/anagram.awk
-# anagram.awk --- An implementation of the anagram finding algorithm
-#                 from Jon Bentley's "Programming Pearls", 2nd edition.
+# anagram.awk --- An implementation of the anagram-finding algorithm
+#                 from Jon Bentley's "Programming Pearls," 2nd edition.
 #                 Addison Wesley, 2000, ISBN 0-201-65788-0.
 #                 Column 2, Problem C, section 2.8, pp 18-20.
 @c endfile
@@ -26361,7 +26347,7 @@ sorts the letters, and then joins them back together:
 
 @example
 @c file eg/prog/anagram.awk
-# word2key --- split word apart into letters, sort, joining back together
+# word2key --- split word apart into letters, sort, and join back together
 
 function word2key(word,     a, i, n, result)
 @{
@@ -26556,12 +26542,13 @@ characters.  The ability to use @code{split()} with the empty string as
 the separator can considerably simplify such tasks.
 
 @item
-The library functions from @ref{Library Functions}, proved their
-usefulness for a number of real (if small) programs.
+The examples here demonstrate the usefulness of the library
+functions from @ref{Library Functions}
+for a number of real (if small) programs.
 
 @item
 Besides reinventing POSIX wheels, other programs solved a selection of
-interesting problems, such as finding duplicates words in text, printing
+interesting problems, such as finding duplicate words in text, printing
 mailing labels, and finding anagrams.
 
 @end itemize
