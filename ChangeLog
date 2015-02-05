@@ -1,3 +1,10 @@
+2015-02-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* eval.c (set_IGNORECASE): If IGNORECASE has a numeric value, try
+	using that before treating it as a string.  This fixes a problem
+	where setting -v IGNORECASE=0 on the command line was not working
+	properly.
+
 2015-02-01         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Move POSIX requirement for disallowing paramater names with the
