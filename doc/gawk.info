@@ -19133,16 +19133,16 @@ File: gawk.info,  Node: Advanced Features,  Next: Internationalization,  Prev: S
 
    This major node discusses advanced features in `gawk'.  It's a bit
 of a "grab bag" of items that are otherwise unrelated to each other.
-First, a command-line option allows `gawk' to recognize nondecimal
-numbers in input data, not just in `awk' programs.  Then, `gawk''s
-special features for sorting arrays are presented.  Next, two-way I/O,
-discussed briefly in earlier parts of this Info file, is described in
-full detail, along with the basics of TCP/IP networking.  Finally,
-`gawk' can "profile" an `awk' program, making it possible to tune it
-for performance.
+First, we look at a command-line option that allows `gawk' to recognize
+nondecimal numbers in input data, not just in `awk' programs.  Then,
+`gawk''s special features for sorting arrays are presented.  Next,
+two-way I/O, discussed briefly in earlier parts of this Info file, is
+described in full detail, along with the basics of TCP/IP networking.
+Finally, we see how `gawk' can "profile" an `awk' program, making it
+possible to tune it for performance.
 
-   A number of advanced features require separate major nodes of their
-own:
+   Additional advanced features are discussed in separate major nodes
+of their own:
 
    * *note Internationalization::, discusses how to internationalize
      your `awk' programs, so that they can speak multiple national
@@ -19216,7 +19216,7 @@ File: gawk.info,  Node: Array Sorting,  Next: Two-way I/O,  Prev: Nondecimal Dat
 12.2 Controlling Array Traversal and Array Sorting
 ==================================================
 
-`gawk' lets you control the order in which a `for (i in array)' loop
+`gawk' lets you control the order in which a `for (INDX in ARRAY)' loop
 traverses an array.
 
    In addition, two built-in functions, `asort()' and `asorti()', let
@@ -19235,9 +19235,9 @@ File: gawk.info,  Node: Controlling Array Traversal,  Next: Array Sorting Functi
 12.2.1 Controlling Array Traversal
 ----------------------------------
 
-By default, the order in which a `for (i in array)' loop scans an array
-is not defined; it is generally based upon the internal implementation
-of arrays inside `awk'.
+By default, the order in which a `for (INDX in ARRAY)' loop scans an
+array is not defined; it is generally based upon the internal
+implementation of arrays inside `awk'.
 
    Often, though, it is desirable to be able to loop over the elements
 in a particular order that you, the programmer, choose.  `gawk' lets
@@ -19259,21 +19259,22 @@ arguments:
          RETURN < 0; 0; OR > 0
      }
 
-   Here, I1 and I2 are the indices, and V1 and V2 are the corresponding
-values of the two elements being compared.  Either V1 or V2, or both,
-can be arrays if the array being traversed contains subarrays as values.
-(*Note Arrays of Arrays::, for more information about subarrays.)  The
-three possible return values are interpreted as follows:
+   Here, `i1' and `i2' are the indices, and `v1' and `v2' are the
+corresponding values of the two elements being compared.  Either `v1'
+or `v2', or both, can be arrays if the array being traversed contains
+subarrays as values.  (*Note Arrays of Arrays::, for more information
+about subarrays.)  The three possible return values are interpreted as
+follows:
 
 `comp_func(i1, v1, i2, v2) < 0'
-     Index I1 comes before index I2 during loop traversal.
+     Index `i1' comes before index `i2' during loop traversal.
 
 `comp_func(i1, v1, i2, v2) == 0'
-     Indices I1 and I2 come together but the relative order with
+     Indices `i1' and `i2' come together, but the relative order with
      respect to each other is undefined.
 
 `comp_func(i1, v1, i2, v2) > 0'
-     Index I1 comes after index I2 during loop traversal.
+     Index `i1' comes after index `i2' during loop traversal.
 
    Our first comparison function can be used to scan an array in
 numerical order of the indices:
@@ -19416,7 +19417,7 @@ elements compare equal.  This is usually not a problem, but letting the
 tied elements come out in arbitrary order can be an issue, especially
 when comparing item values.  The partial ordering of the equal elements
 may change the next time the array is traversed, if other elements are
-added or removed from the array.  One way to resolve ties when
+added to or removed from the array.  One way to resolve ties when
 comparing elements with otherwise equal values is to include the
 indices in the comparison rules.  Note that doing this may make the
 loop traversal less efficient, so consider it only if necessary.  The
@@ -19450,14 +19451,14 @@ lowercase letters as equivalent or distinct.
 
    Another point to keep in mind is that in the case of subarrays, the
 element values can themselves be arrays; a production comparison
-function should use the `isarray()' function (*note Type Functions::),
+function should use the `isarray()' function (*note Type Functions::)
 to check for this, and choose a defined sorting order for subarrays.
 
    All sorting based on `PROCINFO["sorted_in"]' is disabled in POSIX
 mode, because the `PROCINFO' array is not special in that case.
 
    As a side note, sorting the array indices before traversing the
-array has been reported to add 15% to 20% overhead to the execution
+array has been reported to add a 15% to 20% overhead to the execution
 time of `awk' programs. For this reason, sorted array traversal is not
 the default.
 
@@ -19506,8 +19507,8 @@ array is not affected.
    Often, what's needed is to sort on the values of the _indices_
 instead of the values of the elements.  To do that, use the `asorti()'
 function.  The interface and behavior are identical to that of
-`asort()', except that the index values are used for sorting, and
-become the values of the result array:
+`asort()', except that the index values are used for sorting and become
+the values of the result array:
 
      { source[$0] = some_func($0) }
 
@@ -19539,8 +19540,8 @@ chooses_, taking into account just the indices, just the values, or
 both.  This is extremely powerful.
 
    Once the array is sorted, `asort()' takes the _values_ in their
-final order, and uses them to fill in the result array, whereas
-`asorti()' takes the _indices_ in their final order, and uses them to
+final order and uses them to fill in the result array, whereas
+`asorti()' takes the _indices_ in their final order and uses them to
 fill in the result array.
 
      NOTE: Copying array indices and elements isn't expensive in terms
@@ -19738,7 +19739,7 @@ REMOTE-PORT
      name.
 
      NOTE: Failure in opening a two-way socket will result in a
-     non-fatal error being returned to the calling code. The value of
+     nonfatal error being returned to the calling code. The value of
      `ERRNO' indicates the error (*note Auto-set::).
 
    Consider the following very simple example:
@@ -19819,8 +19820,8 @@ First, the `awk' program:
      junk
 
    Here is the `awkprof.out' that results from running the `gawk'
-profiler on this program and data. (This example also illustrates that
-`awk' programmers sometimes get up very early in the morning to work.)
+profiler on this program and data (this example also illustrates that
+`awk' programmers sometimes get up very early in the morning to work):
 
          # gawk profile, created Mon Sep 29 05:16:21 2014
 
@@ -19873,7 +19874,7 @@ profiler on this program and data. (This example also illustrates that
 output.  They are as follows:
 
    * The program is printed in the order `BEGIN' rules, `BEGINFILE'
-     rules, pattern/action rules, `ENDFILE' rules, `END' rules and
+     rules, pattern-action rules, `ENDFILE' rules, `END' rules, and
      functions, listed alphabetically.  Multiple `BEGIN' and `END'
      rules retain their separate identities, as do multiple `BEGINFILE'
      and `ENDFILE' rules.
@@ -19918,13 +19919,13 @@ output.  They are as follows:
      scalar, it gets parenthesized.
 
    * `gawk' supplies leading comments in front of the `BEGIN' and `END'
-     rules, the `BEGINFILE' and `ENDFILE' rules, the pattern/action
+     rules, the `BEGINFILE' and `ENDFILE' rules, the pattern-action
      rules, and the functions.
 
 
    The profiled version of your program may not look exactly like what
 you typed when you wrote it.  This is because `gawk' creates the
-profiled version by "pretty printing" its internal representation of
+profiled version by "pretty-printing" its internal representation of
 the program.  The advantage to this is that `gawk' can produce a
 standard representation.  Also, things such as:
 
@@ -19974,15 +19975,15 @@ output profile file.
 produces the profile and the function call trace and then exits.
 
    When `gawk' runs on MS-Windows systems, it uses the `INT' and `QUIT'
-signals for producing the profile and, in the case of the `INT' signal,
+signals for producing the profile, and in the case of the `INT' signal,
 `gawk' exits.  This is because these systems don't support the `kill'
 command, so the only signals you can deliver to a program are those
 generated by the keyboard.  The `INT' signal is generated by the
-`Ctrl-<C>' or `Ctrl-<BREAK>' key, while the `QUIT' signal is generated
-by the `Ctrl-<\>' key.
+`Ctrl-c' or `Ctrl-BREAK' key, while the `QUIT' signal is generated by
+the `Ctrl-\' key.
 
    Finally, `gawk' also accepts another option, `--pretty-print'.  When
-called this way, `gawk' "pretty prints" the program into `awkprof.out',
+called this way, `gawk' "pretty-prints" the program into `awkprof.out',
 without any execution counts.
 
      NOTE: Once upon a time, the `--pretty-print' option would also run
@@ -20034,7 +20035,7 @@ File: gawk.info,  Node: Advanced Features Summary,  Prev: Profiling,  Up: Advanc
      two-way communications.
 
    * By using special file names with the `|&' operator, you can open a
-     TCP/IP (or UDP/IP) connection to remote hosts in the Internet.
+     TCP/IP (or UDP/IP) connection to remote hosts on the Internet.
      `gawk' supports both IPv4 and IPv6.
 
    * You can generate statement count profiles of your program. This
@@ -20043,7 +20044,7 @@ File: gawk.info,  Node: Advanced Features Summary,  Prev: Profiling,  Up: Advanc
      `USR1' signal while profiling causes `gawk' to dump the profile
      and keep going, including a function call stack.
 
-   * You can also just "pretty print" the program. This currently also
+   * You can also just "pretty-print" the program. This currently also
      runs the program, but that will change in the next major release.
 
 
@@ -34994,222 +34995,222 @@ Node: Programs Summary770933
 Node: Programs Exercises772154
 Ref: Programs Exercises-Footnote-1776285
 Node: Advanced Features776376
-Node: Nondecimal Data778324
-Node: Array Sorting779914
-Node: Controlling Array Traversal780611
-Ref: Controlling Array Traversal-Footnote-1788944
-Node: Array Sorting Functions789062
-Ref: Array Sorting Functions-Footnote-1792951
-Node: Two-way I/O793147
-Ref: Two-way I/O-Footnote-1798092
-Ref: Two-way I/O-Footnote-2798278
-Node: TCP/IP Networking798360
-Node: Profiling801233
-Node: Advanced Features Summary809510
-Node: Internationalization811443
-Node: I18N and L10N812923
-Node: Explaining gettext813609
-Ref: Explaining gettext-Footnote-1818634
-Ref: Explaining gettext-Footnote-2818818
-Node: Programmer i18n818983
-Ref: Programmer i18n-Footnote-1823849
-Node: Translator i18n823898
-Node: String Extraction824692
-Ref: String Extraction-Footnote-1825823
-Node: Printf Ordering825909
-Ref: Printf Ordering-Footnote-1828695
-Node: I18N Portability828759
-Ref: I18N Portability-Footnote-1831214
-Node: I18N Example831277
-Ref: I18N Example-Footnote-1834080
-Node: Gawk I18N834152
-Node: I18N Summary834790
-Node: Debugger836129
-Node: Debugging837151
-Node: Debugging Concepts837592
-Node: Debugging Terms839445
-Node: Awk Debugging842017
-Node: Sample Debugging Session842911
-Node: Debugger Invocation843431
-Node: Finding The Bug844815
-Node: List of Debugger Commands851290
-Node: Breakpoint Control852623
-Node: Debugger Execution Control856319
-Node: Viewing And Changing Data859683
-Node: Execution Stack863061
-Node: Debugger Info864698
-Node: Miscellaneous Debugger Commands868715
-Node: Readline Support873744
-Node: Limitations874636
-Node: Debugging Summary876750
-Node: Arbitrary Precision Arithmetic877918
-Node: Computer Arithmetic879334
-Ref: table-numeric-ranges882932
-Ref: Computer Arithmetic-Footnote-1883791
-Node: Math Definitions883848
-Ref: table-ieee-formats887136
-Ref: Math Definitions-Footnote-1887740
-Node: MPFR features887845
-Node: FP Math Caution889516
-Ref: FP Math Caution-Footnote-1890566
-Node: Inexactness of computations890935
-Node: Inexact representation891894
-Node: Comparing FP Values893251
-Node: Errors accumulate894333
-Node: Getting Accuracy895766
-Node: Try To Round898428
-Node: Setting precision899327
-Ref: table-predefined-precision-strings900011
-Node: Setting the rounding mode901800
-Ref: table-gawk-rounding-modes902164
-Ref: Setting the rounding mode-Footnote-1905619
-Node: Arbitrary Precision Integers905798
-Ref: Arbitrary Precision Integers-Footnote-1910698
-Node: POSIX Floating Point Problems910847
-Ref: POSIX Floating Point Problems-Footnote-1914720
-Node: Floating point summary914758
-Node: Dynamic Extensions916952
-Node: Extension Intro918504
-Node: Plugin License919770
-Node: Extension Mechanism Outline920567
-Ref: figure-load-extension920995
-Ref: figure-register-new-function922475
-Ref: figure-call-new-function923479
-Node: Extension API Description925465
-Node: Extension API Functions Introduction926915
-Node: General Data Types931739
-Ref: General Data Types-Footnote-1937478
-Node: Memory Allocation Functions937777
-Ref: Memory Allocation Functions-Footnote-1940616
-Node: Constructor Functions940712
-Node: Registration Functions942446
-Node: Extension Functions943131
-Node: Exit Callback Functions945428
-Node: Extension Version String946676
-Node: Input Parsers947341
-Node: Output Wrappers957220
-Node: Two-way processors961735
-Node: Printing Messages963939
-Ref: Printing Messages-Footnote-1965015
-Node: Updating `ERRNO'965167
-Node: Requesting Values965907
-Ref: table-value-types-returned966635
-Node: Accessing Parameters967592
-Node: Symbol Table Access968823
-Node: Symbol table by name969337
-Node: Symbol table by cookie971318
-Ref: Symbol table by cookie-Footnote-1975462
-Node: Cached values975525
-Ref: Cached values-Footnote-1979024
-Node: Array Manipulation979115
-Ref: Array Manipulation-Footnote-1980213
-Node: Array Data Types980250
-Ref: Array Data Types-Footnote-1982905
-Node: Array Functions982997
-Node: Flattening Arrays986851
-Node: Creating Arrays993743
-Node: Extension API Variables998514
-Node: Extension Versioning999150
-Node: Extension API Informational Variables1001051
-Node: Extension API Boilerplate1002116
-Node: Finding Extensions1005925
-Node: Extension Example1006485
-Node: Internal File Description1007257
-Node: Internal File Ops1011324
-Ref: Internal File Ops-Footnote-11022994
-Node: Using Internal File Ops1023134
-Ref: Using Internal File Ops-Footnote-11025517
-Node: Extension Samples1025790
-Node: Extension Sample File Functions1027316
-Node: Extension Sample Fnmatch1034954
-Node: Extension Sample Fork1036445
-Node: Extension Sample Inplace1037660
-Node: Extension Sample Ord1039335
-Node: Extension Sample Readdir1040171
-Ref: table-readdir-file-types1041047
-Node: Extension Sample Revout1041858
-Node: Extension Sample Rev2way1042448
-Node: Extension Sample Read write array1043188
-Node: Extension Sample Readfile1045128
-Node: Extension Sample Time1046223
-Node: Extension Sample API Tests1047572
-Node: gawkextlib1048063
-Node: Extension summary1050721
-Node: Extension Exercises1054410
-Node: Language History1055132
-Node: V7/SVR3.11056788
-Node: SVR41058969
-Node: POSIX1060414
-Node: BTL1061803
-Node: POSIX/GNU1062537
-Node: Feature History1068326
-Node: Common Extensions1082052
-Node: Ranges and Locales1083376
-Ref: Ranges and Locales-Footnote-11087994
-Ref: Ranges and Locales-Footnote-21088021
-Ref: Ranges and Locales-Footnote-31088255
-Node: Contributors1088476
-Node: History summary1094017
-Node: Installation1095387
-Node: Gawk Distribution1096333
-Node: Getting1096817
-Node: Extracting1097640
-Node: Distribution contents1099275
-Node: Unix Installation1105340
-Node: Quick Installation1106023
-Node: Shell Startup Files1108434
-Node: Additional Configuration Options1109513
-Node: Configuration Philosophy1111252
-Node: Non-Unix Installation1113621
-Node: PC Installation1114079
-Node: PC Binary Installation1115398
-Node: PC Compiling1117246
-Ref: PC Compiling-Footnote-11120267
-Node: PC Testing1120376
-Node: PC Using1121552
-Node: Cygwin1125667
-Node: MSYS1126490
-Node: VMS Installation1126990
-Node: VMS Compilation1127782
-Ref: VMS Compilation-Footnote-11129004
-Node: VMS Dynamic Extensions1129062
-Node: VMS Installation Details1130746
-Node: VMS Running1132998
-Node: VMS GNV1135834
-Node: VMS Old Gawk1136568
-Node: Bugs1137038
-Node: Other Versions1140921
-Node: Installation summary1147345
-Node: Notes1148401
-Node: Compatibility Mode1149266
-Node: Additions1150048
-Node: Accessing The Source1150973
-Node: Adding Code1152408
-Node: New Ports1158565
-Node: Derived Files1163047
-Ref: Derived Files-Footnote-11168522
-Ref: Derived Files-Footnote-21168556
-Ref: Derived Files-Footnote-31169152
-Node: Future Extensions1169266
-Node: Implementation Limitations1169872
-Node: Extension Design1171120
-Node: Old Extension Problems1172274
-Ref: Old Extension Problems-Footnote-11173791
-Node: Extension New Mechanism Goals1173848
-Ref: Extension New Mechanism Goals-Footnote-11177208
-Node: Extension Other Design Decisions1177397
-Node: Extension Future Growth1179505
-Node: Old Extension Mechanism1180341
-Node: Notes summary1182103
-Node: Basic Concepts1183289
-Node: Basic High Level1183970
-Ref: figure-general-flow1184242
-Ref: figure-process-flow1184841
-Ref: Basic High Level-Footnote-11188070
-Node: Basic Data Typing1188255
-Node: Glossary1191583
-Node: Copying1223512
-Node: GNU Free Documentation License1261068
-Node: Index1286204
+Node: Nondecimal Data778358
+Node: Array Sorting779948
+Node: Controlling Array Traversal780648
+Ref: Controlling Array Traversal-Footnote-1789014
+Node: Array Sorting Functions789132
+Ref: Array Sorting Functions-Footnote-1793018
+Node: Two-way I/O793214
+Ref: Two-way I/O-Footnote-1798159
+Ref: Two-way I/O-Footnote-2798345
+Node: TCP/IP Networking798427
+Node: Profiling801299
+Node: Advanced Features Summary809570
+Node: Internationalization811503
+Node: I18N and L10N812983
+Node: Explaining gettext813669
+Ref: Explaining gettext-Footnote-1818694
+Ref: Explaining gettext-Footnote-2818878
+Node: Programmer i18n819043
+Ref: Programmer i18n-Footnote-1823909
+Node: Translator i18n823958
+Node: String Extraction824752
+Ref: String Extraction-Footnote-1825883
+Node: Printf Ordering825969
+Ref: Printf Ordering-Footnote-1828755
+Node: I18N Portability828819
+Ref: I18N Portability-Footnote-1831274
+Node: I18N Example831337
+Ref: I18N Example-Footnote-1834140
+Node: Gawk I18N834212
+Node: I18N Summary834850
+Node: Debugger836189
+Node: Debugging837211
+Node: Debugging Concepts837652
+Node: Debugging Terms839505
+Node: Awk Debugging842077
+Node: Sample Debugging Session842971
+Node: Debugger Invocation843491
+Node: Finding The Bug844875
+Node: List of Debugger Commands851350
+Node: Breakpoint Control852683
+Node: Debugger Execution Control856379
+Node: Viewing And Changing Data859743
+Node: Execution Stack863121
+Node: Debugger Info864758
+Node: Miscellaneous Debugger Commands868775
+Node: Readline Support873804
+Node: Limitations874696
+Node: Debugging Summary876810
+Node: Arbitrary Precision Arithmetic877978
+Node: Computer Arithmetic879394
+Ref: table-numeric-ranges882992
+Ref: Computer Arithmetic-Footnote-1883851
+Node: Math Definitions883908
+Ref: table-ieee-formats887196
+Ref: Math Definitions-Footnote-1887800
+Node: MPFR features887905
+Node: FP Math Caution889576
+Ref: FP Math Caution-Footnote-1890626
+Node: Inexactness of computations890995
+Node: Inexact representation891954
+Node: Comparing FP Values893311
+Node: Errors accumulate894393
+Node: Getting Accuracy895826
+Node: Try To Round898488
+Node: Setting precision899387
+Ref: table-predefined-precision-strings900071
+Node: Setting the rounding mode901860
+Ref: table-gawk-rounding-modes902224
+Ref: Setting the rounding mode-Footnote-1905679
+Node: Arbitrary Precision Integers905858
+Ref: Arbitrary Precision Integers-Footnote-1910758
+Node: POSIX Floating Point Problems910907
+Ref: POSIX Floating Point Problems-Footnote-1914780
+Node: Floating point summary914818
+Node: Dynamic Extensions917012
+Node: Extension Intro918564
+Node: Plugin License919830
+Node: Extension Mechanism Outline920627
+Ref: figure-load-extension921055
+Ref: figure-register-new-function922535
+Ref: figure-call-new-function923539
+Node: Extension API Description925525
+Node: Extension API Functions Introduction926975
+Node: General Data Types931799
+Ref: General Data Types-Footnote-1937538
+Node: Memory Allocation Functions937837
+Ref: Memory Allocation Functions-Footnote-1940676
+Node: Constructor Functions940772
+Node: Registration Functions942506
+Node: Extension Functions943191
+Node: Exit Callback Functions945488
+Node: Extension Version String946736
+Node: Input Parsers947401
+Node: Output Wrappers957280
+Node: Two-way processors961795
+Node: Printing Messages963999
+Ref: Printing Messages-Footnote-1965075
+Node: Updating `ERRNO'965227
+Node: Requesting Values965967
+Ref: table-value-types-returned966695
+Node: Accessing Parameters967652
+Node: Symbol Table Access968883
+Node: Symbol table by name969397
+Node: Symbol table by cookie971378
+Ref: Symbol table by cookie-Footnote-1975522
+Node: Cached values975585
+Ref: Cached values-Footnote-1979084
+Node: Array Manipulation979175
+Ref: Array Manipulation-Footnote-1980273
+Node: Array Data Types980310
+Ref: Array Data Types-Footnote-1982965
+Node: Array Functions983057
+Node: Flattening Arrays986911
+Node: Creating Arrays993803
+Node: Extension API Variables998574
+Node: Extension Versioning999210
+Node: Extension API Informational Variables1001111
+Node: Extension API Boilerplate1002176
+Node: Finding Extensions1005985
+Node: Extension Example1006545
+Node: Internal File Description1007317
+Node: Internal File Ops1011384
+Ref: Internal File Ops-Footnote-11023054
+Node: Using Internal File Ops1023194
+Ref: Using Internal File Ops-Footnote-11025577
+Node: Extension Samples1025850
+Node: Extension Sample File Functions1027376
+Node: Extension Sample Fnmatch1035014
+Node: Extension Sample Fork1036505
+Node: Extension Sample Inplace1037720
+Node: Extension Sample Ord1039395
+Node: Extension Sample Readdir1040231
+Ref: table-readdir-file-types1041107
+Node: Extension Sample Revout1041918
+Node: Extension Sample Rev2way1042508
+Node: Extension Sample Read write array1043248
+Node: Extension Sample Readfile1045188
+Node: Extension Sample Time1046283
+Node: Extension Sample API Tests1047632
+Node: gawkextlib1048123
+Node: Extension summary1050781
+Node: Extension Exercises1054470
+Node: Language History1055192
+Node: V7/SVR3.11056848
+Node: SVR41059029
+Node: POSIX1060474
+Node: BTL1061863
+Node: POSIX/GNU1062597
+Node: Feature History1068386
+Node: Common Extensions1082112
+Node: Ranges and Locales1083436
+Ref: Ranges and Locales-Footnote-11088054
+Ref: Ranges and Locales-Footnote-21088081
+Ref: Ranges and Locales-Footnote-31088315
+Node: Contributors1088536
+Node: History summary1094077
+Node: Installation1095447
+Node: Gawk Distribution1096393
+Node: Getting1096877
+Node: Extracting1097700
+Node: Distribution contents1099335
+Node: Unix Installation1105400
+Node: Quick Installation1106083
+Node: Shell Startup Files1108494
+Node: Additional Configuration Options1109573
+Node: Configuration Philosophy1111312
+Node: Non-Unix Installation1113681
+Node: PC Installation1114139
+Node: PC Binary Installation1115458
+Node: PC Compiling1117306
+Ref: PC Compiling-Footnote-11120327
+Node: PC Testing1120436
+Node: PC Using1121612
+Node: Cygwin1125727
+Node: MSYS1126550
+Node: VMS Installation1127050
+Node: VMS Compilation1127842
+Ref: VMS Compilation-Footnote-11129064
+Node: VMS Dynamic Extensions1129122
+Node: VMS Installation Details1130806
+Node: VMS Running1133058
+Node: VMS GNV1135894
+Node: VMS Old Gawk1136628
+Node: Bugs1137098
+Node: Other Versions1140981
+Node: Installation summary1147405
+Node: Notes1148461
+Node: Compatibility Mode1149326
+Node: Additions1150108
+Node: Accessing The Source1151033
+Node: Adding Code1152468
+Node: New Ports1158625
+Node: Derived Files1163107
+Ref: Derived Files-Footnote-11168582
+Ref: Derived Files-Footnote-21168616
+Ref: Derived Files-Footnote-31169212
+Node: Future Extensions1169326
+Node: Implementation Limitations1169932
+Node: Extension Design1171180
+Node: Old Extension Problems1172334
+Ref: Old Extension Problems-Footnote-11173851
+Node: Extension New Mechanism Goals1173908
+Ref: Extension New Mechanism Goals-Footnote-11177268
+Node: Extension Other Design Decisions1177457
+Node: Extension Future Growth1179565
+Node: Old Extension Mechanism1180401
+Node: Notes summary1182163
+Node: Basic Concepts1183349
+Node: Basic High Level1184030
+Ref: figure-general-flow1184302
+Ref: figure-process-flow1184901
+Ref: Basic High Level-Footnote-11188130
+Node: Basic Data Typing1188315
+Node: Glossary1191643
+Node: Copying1223572
+Node: GNU Free Documentation License1261128
+Node: Index1286264
 
 End Tag Table

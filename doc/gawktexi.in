@@ -50,6 +50,7 @@
 @set VERSION 4.1
 @set PATCHLEVEL 2
 
+@set GAWKINETTITLE TCP/IP Internetworking with @command{gawk}
 @ifset FOR_PRINT
 @set TITLE Effective awk Programming
 @end ifset
@@ -1463,7 +1464,7 @@ In May 1997, J@"urgen Kahrs felt the need for network access
 from @command{awk}, and with a little help from me, set about adding
 features to do this for @command{gawk}.  At that time, he also
 wrote the bulk of
-@cite{TCP/IP Internetworking with @command{gawk}}
+@cite{@value{GAWKINETTITLE}}
 (a separate document, available as part of the @command{gawk} distribution).
 His code finally became part of the main @command{gawk} distribution
 with @command{gawk} @value{PVERSION} 3.1.
@@ -25834,18 +25835,18 @@ a violent psychopath who knows where you live.}
 This @value{CHAPTER} discusses advanced features in @command{gawk}.
 It's a bit of a ``grab bag'' of items that are otherwise unrelated
 to each other.
-First, a command-line option allows @command{gawk} to recognize
+First, we look at a command-line option that allows @command{gawk} to recognize
 nondecimal numbers in input data, not just in @command{awk}
 programs.
 Then, @command{gawk}'s special features for sorting arrays are presented.
 Next, two-way I/O, discussed briefly in earlier parts of this
 @value{DOCUMENT}, is described in full detail, along with the basics
-of TCP/IP networking.  Finally, @command{gawk}
+of TCP/IP networking.  Finally, we see how @command{gawk}
 can @dfn{profile} an @command{awk} program, making it possible to tune
 it for performance.
 
 @c FULLXREF ON
-A number of advanced features require separate @value{CHAPTER}s of their
+Additional advanced features are discussed in separate @value{CHAPTER}s of their
 own:
 
 @itemize @value{BULLET}
@@ -25939,7 +25940,8 @@ This option may disappear in a future version of @command{gawk}.
 @node Array Sorting
 @section Controlling Array Traversal and Array Sorting
 
-@command{gawk} lets you control the order in which a @samp{for (i in array)}
+@command{gawk} lets you control the order in which a
+@samp{for (@var{indx} in @var{array})}
 loop traverses an array.
 
 In addition, two built-in functions, @code{asort()} and @code{asorti()},
@@ -25955,7 +25957,7 @@ to order the elements during sorting.
 @node Controlling Array Traversal
 @subsection Controlling Array Traversal
 
-By default, the order in which a @samp{for (i in array)} loop
+By default, the order in which a @samp{for (@var{indx} in @var{array})} loop
 scans an array is not defined; it is generally based upon
 the internal implementation of arrays inside @command{awk}.
 
@@ -25984,23 +25986,23 @@ function comp_func(i1, v1, i2, v2)
 @}
 @end example
 
-Here, @var{i1} and @var{i2} are the indices, and @var{v1} and @var{v2}
+Here, @code{i1} and @code{i2} are the indices, and @code{v1} and @code{v2}
 are the corresponding values of the two elements being compared.
-Either @var{v1} or @var{v2}, or both, can be arrays if the array being
+Either @code{v1} or @code{v2}, or both, can be arrays if the array being
 traversed contains subarrays as values.
 (@DBXREF{Arrays of Arrays} for more information about subarrays.)
 The three possible return values are interpreted as follows:
 
 @table @code
 @item comp_func(i1, v1, i2, v2) < 0
-Index @var{i1} comes before index @var{i2} during loop traversal.
+Index @code{i1} comes before index @code{i2} during loop traversal.
 
 @item comp_func(i1, v1, i2, v2) == 0
-Indices @var{i1} and @var{i2}
-come together but the relative order with respect to each other is undefined.
+Indices @code{i1} and @code{i2}
+come together, but the relative order with respect to each other is undefined.
 
 @item comp_func(i1, v1, i2, v2) > 0
-Index @var{i1} comes after index @var{i2} during loop traversal.
+Index @code{i1} comes after index @code{i2} during loop traversal.
 @end table
 
 Our first comparison function can be used to scan an array in
@@ -26161,7 +26163,7 @@ As already mentioned, the order of the indices is arbitrary if two
 elements compare equal.  This is usually not a problem, but letting
 the tied elements come out in arbitrary order can be an issue, especially
 when comparing item values.  The partial ordering of the equal elements
-may change the next time the array is traversed, if other elements are added or
+may change the next time the array is traversed, if other elements are added to or
 removed from the array.  One way to resolve ties when comparing elements
 with otherwise equal values is to include the indices in the comparison
 rules.  Note that doing this may make the loop traversal less efficient,
@@ -26204,7 +26206,7 @@ equivalent or distinct.
 Another point to keep in mind is that in the case of subarrays,
 the element values can themselves be arrays; a production comparison
 function should use the @code{isarray()} function
-(@pxref{Type Functions}),
+(@pxref{Type Functions})
 to check for this, and choose a defined sorting order for subarrays.
 
 All sorting based on @code{PROCINFO["sorted_in"]}
@@ -26212,7 +26214,7 @@ is disabled in POSIX mode,
 because the @code{PROCINFO} array is not special in that case.
 
 As a side note, sorting the array indices before traversing
-the array has been reported to add 15% to 20% overhead to the
+the array has been reported to add a 15% to 20% overhead to the
 execution time of @command{awk} programs. For this reason,
 sorted array traversal is not the default.
 
@@ -26271,7 +26273,7 @@ However, the @code{source} array is not affected.
 Often, what's needed is to sort on the values of the @emph{indices}
 instead of the values of the elements.  To do that, use the
 @code{asorti()} function.  The interface and behavior are identical to
-that of @code{asort()}, except that the index values are used for sorting,
+that of @code{asort()}, except that the index values are used for sorting
 and become the values of the result array:
 
 @example
@@ -26306,8 +26308,8 @@ it chooses}, taking into account just the indices, just the values,
 or both.  This is extremely powerful.
 
 Once the array is sorted, @code{asort()} takes the @emph{values} in
-their final order, and uses them to fill in the result array, whereas
-@code{asorti()} takes the @emph{indices} in their final order, and uses
+their final order and uses them to fill in the result array, whereas
+@code{asorti()} takes the @emph{indices} in their final order and uses
 them to fill in the result array.
 
 @cindex reference counting, sorting arrays
@@ -26604,7 +26606,7 @@ service name.
 @cindex @command{gawk}, @code{ERRNO} variable in
 @cindex @code{ERRNO} variable
 @quotation NOTE
-Failure in opening a two-way socket will result in a non-fatal error
+Failure in opening a two-way socket will result in a nonfatal error
 being returned to the calling code. The value of @code{ERRNO} indicates
 the error (@pxref{Auto-set}).
 @end quotation
@@ -26621,19 +26623,19 @@ BEGIN @{
 @end example
 
 This program reads the current date and time from the local system's
-TCP @samp{daytime} server.
+TCP @code{daytime} server.
 It then prints the results and closes the connection.
 
 Because this topic is extensive, the use of @command{gawk} for
 TCP/IP programming is documented separately.
 @ifinfo
 See
-@inforef{Top, , General Introduction, gawkinet, TCP/IP Internetworking with @command{gawk}},
+@inforef{Top, , General Introduction, gawkinet, @value{GAWKINETTITLE}},
 @end ifinfo
 @ifnotinfo
 See
 @uref{http://www.gnu.org/software/gawk/manual/gawkinet/,
-@cite{TCP/IP Internetworking with @command{gawk}}},
+@cite{@value{GAWKINETTITLE}}},
 which comes as part of the @command{gawk} distribution,
 @end ifnotinfo
 for a much more complete introduction and discussion, as well as
@@ -26709,9 +26711,9 @@ junk
 @end example
 
 Here is the @file{awkprof.out} that results from running the
-@command{gawk} profiler on this program and data. (This example also
+@command{gawk} profiler on this program and data (this example also
 illustrates that @command{awk} programmers sometimes get up very early
-in the morning to work.)
+in the morning to work):
 
 @cindex @code{BEGIN} pattern, and profiling
 @cindex @code{END} pattern, and profiling
@@ -26771,8 +26773,8 @@ They are as follows:
 @item
 The program is printed in the order @code{BEGIN} rules,
 @code{BEGINFILE} rules,
-pattern/action rules,
-@code{ENDFILE} rules, @code{END} rules and functions, listed
+pattern--action rules,
+@code{ENDFILE} rules, @code{END} rules, and functions, listed
 alphabetically.
 Multiple @code{BEGIN} and @code{END} rules retain their
 separate identities, as do
@@ -26780,7 +26782,7 @@ multiple @code{BEGINFILE} and @code{ENDFILE} rules.
 
 @cindex patterns, counts, in a profile
 @item
-Pattern-action rules have two counts.
+Pattern--action rules have two counts.
 The first count, to the left of the rule, shows how many times
 the rule's pattern was @emph{tested}.
 The second count, to the right of the rule's opening left brace
@@ -26847,13 +26849,13 @@ the target of a redirection isn't a scalar, it gets parenthesized.
 @command{gawk} supplies leading comments in
 front of the @code{BEGIN} and @code{END} rules,
 the @code{BEGINFILE} and @code{ENDFILE} rules,
-the pattern/action rules, and the functions.
+the pattern--action rules, and the functions.
 
 @end itemize
 
 The profiled version of your program may not look exactly like what you
 typed when you wrote it.  This is because @command{gawk} creates the
-profiled version by ``pretty printing'' its internal representation of
+profiled version by ``pretty-printing'' its internal representation of
 the program.  The advantage to this is that @command{gawk} can produce
 a standard representation.
 Also, things such as:
@@ -26936,16 +26938,16 @@ If you use the @code{HUP} signal instead of the @code{USR1} signal,
 @cindex @code{SIGQUIT} signal (MS-Windows)
 @cindex signals, @code{QUIT}/@code{SIGQUIT} (MS-Windows)
 When @command{gawk} runs on MS-Windows systems, it uses the
-@code{INT} and @code{QUIT} signals for producing the profile and, in
+@code{INT} and @code{QUIT} signals for producing the profile, and in
 the case of the @code{INT} signal, @command{gawk} exits.  This is
 because these systems don't support the @command{kill} command, so the
 only signals you can deliver to a program are those generated by the
 keyboard.  The @code{INT} signal is generated by the
-@kbd{Ctrl-@key{C}} or @kbd{Ctrl-@key{BREAK}} key, while the
-@code{QUIT} signal is generated by the @kbd{Ctrl-@key{\}} key.
+@kbd{Ctrl-c} or @kbd{Ctrl-BREAK} key, while the
+@code{QUIT} signal is generated by the @kbd{Ctrl-\} key.
 
 Finally, @command{gawk} also accepts another option, @option{--pretty-print}.
-When called this way, @command{gawk} ``pretty prints'' the program into
+When called this way, @command{gawk} ``pretty-prints'' the program into
 @file{awkprof.out}, without any execution counts.
 
 @quotation NOTE
@@ -26999,7 +27001,7 @@ optionally, close off one side of the two-way communications.
 
 @item
 By using special @value{FN}s with the @samp{|&} operator, you can open a
-TCP/IP (or UDP/IP) connection to remote hosts in the Internet. @command{gawk}
+TCP/IP (or UDP/IP) connection to remote hosts on the Internet. @command{gawk}
 supports both IPv4 and IPv6.
 
 @item
@@ -27009,7 +27011,7 @@ you tune them more easily.  Sending the @code{USR1} signal while profiling cause
 @command{gawk} to dump the profile and keep going, including a function call stack.
 
 @item
-You can also just ``pretty print'' the program. This currently also runs
+You can also just ``pretty-print'' the program. This currently also runs
 the program, but that will change in the next major release.
 
 @end itemize
@@ -36270,10 +36272,10 @@ The generated Info file for this @value{DOCUMENT}.
 @item doc/gawkinet.texi
 The Texinfo source file for
 @ifinfo
-@inforef{Top, , General Introduction, gawkinet, TCP/IP Internetworking with @command{gawk}}.
+@inforef{Top, , General Introduction, gawkinet, @value{GAWKINETTITLE}}.
 @end ifinfo
 @ifnotinfo
-@cite{TCP/IP Internetworking with @command{gawk}}.
+@cite{@value{GAWKINETTITLE}}.
 @end ifnotinfo
 It should be processed with @TeX{}
 (via @command{texi2dvi} or @command{texi2pdf})
@@ -36282,7 +36284,7 @@ with @command{makeinfo} to produce an Info or HTML file.
 
 @item doc/gawkinet.info
 The generated Info file for
-@cite{TCP/IP Internetworking with @command{gawk}}.
+@cite{@value{GAWKINETTITLE}}.
 
 @item doc/igawk.1
 The @command{troff} source for a manual page describing the @command{igawk}
