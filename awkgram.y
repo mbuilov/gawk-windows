@@ -87,6 +87,7 @@ static int one_line_close(int fd);
 static void split_comment(void);
 static void check_comment(void);
 
+static bool at_seen = false;
 static bool want_source = false;
 static bool want_regexp = false;	/* lexical scanning kludge */
 static char *in_function;		/* parsing kludge */
@@ -250,11 +251,13 @@ rule
 	| '@' LEX_INCLUDE source statement_term
 	  {
 		want_source = false;
+		at_seen = false;
 		yyerrok;
 	  }
 	| '@' LEX_LOAD library statement_term
 	  {
 		want_source = false;
+		at_seen = false;
 		yyerrok;
 	  }
 	;
@@ -409,7 +412,10 @@ func_name
 		YYABORT;
 	  }
 	| '@' LEX_EVAL
-	  { $$ = $2; }
+	  {
+		$$ = $2;
+		at_seen = false;
+	  }
 	;
 
 lex_builtin
@@ -1690,12 +1696,24 @@ func_call
 		 */
 
 		$$ = list_prepend($2, t);
+		at_seen = false;
 	  }
 	;
 
 direct_func_call
 	: FUNC_CALL '(' opt_expression_list r_paren
 	  {
+		NODE *n;
+
+		if (! at_seen) {
+			n = lookup($1->func_name);
+			if (n != NULL && n->type != Node_func
+			    && n->type != Node_ext_func && n->type != Node_old_ext_func) {
+				error_ln($1->source_line,
+					_("attempt to use non-function `%s' in function call"),
+						$1->func_name);
+			}
+		}
 		param_sanity($3);
 		$1->opcode = Op_func_call;
 		$1->func_body = NULL;
@@ -2397,6 +2415,9 @@ parse_program(INSTRUCTION **pcode)
 	sourceline = 0;
 	if (ret == 0)	/* avoid spurious warning if parser aborted with YYABORT */
 		check_funcs();
+
+	if (do_posix && ! check_param_names())
+		errcount++;
 
 	if (args_array == NULL)
 		emalloc(args_array, NODE **, (max_args + 2) * sizeof(NODE *), "parse_program");
@@ -3327,6 +3348,7 @@ retry:
 		return lasttok = NEWLINE;
 
 	case '@':
+		at_seen = true;
 		return lasttok = '@';
 
 	case '\\':

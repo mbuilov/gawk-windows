@@ -708,6 +708,8 @@ set_IGNORECASE()
 	load_casetable();
 	if (do_traditional)
 		IGNORECASE = false;
+	else if ((n->flags & (NUMCUR|NUMBER)) != 0)
+		IGNORECASE = ! iszero(n);
 	else if ((n->flags & (STRING|STRCUR)) != 0) {
 		if ((n->flags & MAYBE_NUM) == 0) {
 			(void) force_string(n);
@@ -716,9 +718,7 @@ set_IGNORECASE()
 			(void) force_number(n);
 			IGNORECASE = ! iszero(n);
 		}
-	} else if ((n->flags & (NUMCUR|NUMBER)) != 0)
-		IGNORECASE = ! iszero(n);
-	else
+	} else
 		IGNORECASE = false;		/* shouldn't happen */
                  
 	set_RS();	/* set_RS() calls set_FS() if need be, for us */
