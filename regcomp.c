@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -16,6 +16,14 @@
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+
+#ifdef _LIBC
+# include <locale/weight.h>
+#endif
 
 static reg_errcode_t re_compile_internal (regex_t *preg, const char * pattern,
 					  size_t length, reg_syntax_t syntax);
@@ -3175,6 +3183,7 @@ parse_bracket_exp (re_string_t *regexp, re_dfa_t *dfa, re_token_t *token,
       re_token_t token2;
 
       start_elem.opr.name = start_name_buf;
+      start_elem.type = COLL_SYM;
       ret = parse_bracket_element (&start_elem, regexp, token, token_len, dfa,
 				   syntax, first_round);
       if (BE (ret != REG_NOERROR, 0))
@@ -3218,6 +3227,7 @@ parse_bracket_exp (re_string_t *regexp, re_dfa_t *dfa, re_token_t *token,
       if (is_range_exp == 1)
 	{
 	  end_elem.opr.name = end_name_buf;
+	  end_elem.type = COLL_SYM;
 	  ret = parse_bracket_element (&end_elem, regexp, &token2, token_len2,
 				       dfa, syntax, 1);
 	  if (BE (ret != REG_NOERROR, 0))
@@ -3491,8 +3501,6 @@ build_equiv_class (bitset_t sbcset, const unsigned char *name)
       int32_t idx1, idx2;
       unsigned int ch;
       size_t len;
-      /* This #include defines a local function!  */
-# include <locale/weight.h>
       /* Calculate the index for equivalence class.  */
       cp = name;
       table = (const int32_t *) _NL_CURRENT (LC_COLLATE, _NL_COLLATE_TABLEMB);
@@ -3502,7 +3510,7 @@ build_equiv_class (bitset_t sbcset, const unsigned char *name)
 						   _NL_COLLATE_EXTRAMB);
       indirect = (const int32_t *) _NL_CURRENT (LC_COLLATE,
 						_NL_COLLATE_INDIRECTMB);
-      idx1 = findidx (&cp, -1);
+      idx1 = findidx (table, indirect, extra, &cp, -1);
       if (BE (idx1 == 0 || *cp != '\0', 0))
 	/* This isn't a valid character.  */
 	return REG_ECOLLATE;
@@ -3514,7 +3522,7 @@ build_equiv_class (bitset_t sbcset, const unsigned char *name)
 	{
 	  char_buf[0] = ch;
 	  cp = char_buf;
-	  idx2 = findidx (&cp, 1);
+	  idx2 = findidx (table, indirect, extra, &cp, 1);
 /*
 	  idx2 = table[ch];
 */
