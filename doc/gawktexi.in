@@ -9954,11 +9954,11 @@ You can do this in one of two ways:
 
 @itemize @bullet
 @item
-For all output files, by assigning any value to @code{PROCINFO["nonfatal"]}.
+For all output files, by assigning any value to @code{PROCINFO["NONFATAL"]}.
 
 @item
 On a per-file basis, by assigning any value to
-@code{PROCINFO[@var{filename}, "nonfatal"]}.
+@code{PROCINFO[@var{filename}, "NONFATAL"]}.
 Here, @var{filename} is the name of the file to which
 you wish output to be nonfatal.
 @end itemize
@@ -9971,7 +9971,7 @@ see if something went wrong.  It is also a good idea to initialize
 @example
 $ @kbd{gawk '}
 > @kbd{BEGIN @{}
-> @kbd{    PROCINFO["nonfatal"] = 1}
+> @kbd{    PROCINFO["NONFATAL"] = 1}
 > @kbd{    ERRNO = 0}
 > @kbd{    print "hi" > "/no/such/file"}
 > @kbd{    if (ERRNO) @{}
@@ -9986,9 +9986,9 @@ Here, @command{gawk} did not produce a fatal error; instead
 it let the @command{awk} program code detect the problem and handle it.
 
 This mechanism works also for standard output and standard error.
-For standard output, you may use @code{PROCINFO["-", "nonfatal"]}
-or @code{PROCINFO["/dev/stdout", "nonfatal"]}.  For standard error, use
-@code{PROCINFO["/dev/stderr", "nonfatal"]}.
+For standard output, you may use @code{PROCINFO["-", "NONFATAL"]}
+or @code{PROCINFO["/dev/stdout", "NONFATAL"]}.  For standard error, use
+@code{PROCINFO["/dev/stderr", "NONFATAL"]}.
 
 @node Output Summary
 @section Summary

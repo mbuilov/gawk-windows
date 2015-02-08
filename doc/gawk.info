@@ -7226,10 +7226,10 @@ error message of your choosing before exiting.  You can do this in one
 of two ways:
 
    * For all output files, by assigning any value to
-     `PROCINFO["nonfatal"]'.
+     `PROCINFO["NONFATAL"]'.
 
    * On a per-file basis, by assigning any value to `PROCINFO[FILENAME,
-     "nonfatal"]'.  Here, FILENAME is the name of the file to which you
+     "NONFATAL"]'.  Here, FILENAME is the name of the file to which you
      wish output to be nonfatal.
 
    Once you have enabled nonfatal output, you must check `ERRNO' after
@@ -7239,7 +7239,7 @@ attempting the output. For example:
 
      $ gawk '
      > BEGIN {
-     >     PROCINFO["nonfatal"] = 1
+     >     PROCINFO["NONFATAL"] = 1
      >     ERRNO = 0
      >     print "hi" > "/no/such/file"
      >     if (ERRNO) {
@@ -7253,9 +7253,9 @@ attempting the output. For example:
 program code detect the problem and handle it.
 
    This mechanism works also for standard output and standard error.
-For standard output, you may use `PROCINFO["-", "nonfatal"]' or
-`PROCINFO["/dev/stdout", "nonfatal"]'.  For standard error, use
-`PROCINFO["/dev/stderr", "nonfatal"]'.
+For standard output, you may use `PROCINFO["-", "NONFATAL"]' or
+`PROCINFO["/dev/stdout", "NONFATAL"]'.  For standard error, use
+`PROCINFO["/dev/stderr", "NONFATAL"]'.
 
 
 File: gawk.info,  Node: Output Summary,  Next: Output Exercises,  Prev: Nonfatal,  Up: Printing

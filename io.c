@@ -1069,15 +1069,17 @@ getredirect(const char *str, int len)
 bool
 is_non_fatal_std(FILE *fp)
 {
-	if (in_PROCINFO("nonfatal", NULL, NULL))
+	static const char nonfatal[] = "NONFATAL";
+
+	if (in_PROCINFO(nonfatal, NULL, NULL))
 		return true;
 
 	/* yucky logic. sigh. */
 	if (fp == stdout) {
-		return (   in_PROCINFO("-", "nonfatal", NULL) != NULL
-		        || in_PROCINFO("/dev/stdout", "nonfatal", NULL) != NULL);
+		return (   in_PROCINFO("-", nonfatal, NULL) != NULL
+		        || in_PROCINFO("/dev/stdout", nonfatal, NULL) != NULL);
 	} else if (fp == stderr) {
-		return (in_PROCINFO("/dev/stderr", "nonfatal", NULL) != NULL);
+		return (in_PROCINFO("/dev/stderr", nonfatal, NULL) != NULL);
 	}
 
 	return false;
@@ -1088,8 +1090,8 @@ is_non_fatal_std(FILE *fp)
 bool
 is_non_fatal_redirect(const char *str)
 {
-	return in_PROCINFO("nonfatal", NULL, NULL) != NULL
-	       || in_PROCINFO(str, "nonfatal", NULL) != NULL;
+	return in_PROCINFO("NONFATAL", NULL, NULL) != NULL
+	       || in_PROCINFO(str, "NONFATAL", NULL) != NULL;
 }
 
 /* close_one --- temporarily close an open file to re-use the fd */
