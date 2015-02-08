@@ -27969,7 +27969,7 @@ a requirement.
 @cindex localization
 @dfn{Internationalization} means writing (or modifying) a program once,
 in such a way that it can use multiple languages without requiring
-further source-code changes.
+further source code changes.
 @dfn{Localization} means providing the data necessary for an
 internationalized program to work in a particular language.
 Most typically, these terms refer to features such as the language
@@ -27984,7 +27984,7 @@ monetary values are printed and read.
 @cindex @command{gettext} library
 @command{gawk} uses GNU @command{gettext} to provide its internationalization
 features.
-The facilities in GNU @command{gettext} focus on messages; strings printed
+The facilities in GNU @command{gettext} focus on messages: strings printed
 by a program, either directly or via formatting with @code{printf} or
 @code{sprintf()}.@footnote{For some operating systems, the @command{gawk}
 port doesn't support GNU @command{gettext}.
@@ -28175,7 +28175,7 @@ All of the above.  (Not too useful in the context of @command{gettext}.)
 @section Internationalizing @command{awk} Programs
 @cindex @command{awk} programs, internationalizing
 
-@command{gawk} provides the following variables and functions for
+@command{gawk} provides the following variables for
 internationalization:
 
 @table @code
@@ -28191,7 +28191,12 @@ value is @code{"messages"}.
 String constants marked with a leading underscore
 are candidates for translation at runtime.
 String constants without a leading underscore are not translated.
+@end table
 
+@command{gawk} provides the following functions for
+internationalization:
+
+@table @code
 @cindexgawkfunc{dcgettext}
 @item @code{dcgettext(@var{string}} [@code{,} @var{domain} [@code{,} @var{category}]]@code{)}
 Return the translation of @var{string} in
@@ -28248,15 +28253,7 @@ If @var{directory} is the null string (@code{""}), then
 given @var{domain}.
 @end table
 
-To use these facilities in your @command{awk} program, follow the steps
-outlined in
-@ifnotinfo
-the previous @value{SECTION},
-@end ifnotinfo
-@ifinfo
-@ref{Explaining gettext},
-@end ifinfo
-like so:
+To use these facilities in your @command{awk} program, follow these steps:
 
 @enumerate
 @cindex @code{BEGIN} pattern, @code{TEXTDOMAIN} variable and
@@ -28539,7 +28536,7 @@ the null string (@code{""}) as its value, leaving the original string constant a
 the result.
 
 @item
-By defining ``dummy'' functions to replace @code{dcgettext()}, @code{dcngettext()}
+By defining ``dummy'' functions to replace @code{dcgettext()}, @code{dcngettext()},
 and @code{bindtextdomain()}, the @command{awk} program can be made to run, but
 all the messages are output in the original language.
 For example:
@@ -28723,11 +28720,11 @@ using the GNU @command{gettext} package.
 (GNU @command{gettext} is described in
 complete detail in
 @ifinfo
-@inforef{Top, , GNU @command{gettext} utilities, gettext, GNU gettext tools}.)
+@inforef{Top, , GNU @command{gettext} utilities, gettext, GNU @command{gettext} utilities}.)
 @end ifinfo
 @ifnotinfo
 @uref{http://www.gnu.org/software/gettext/manual/,
-@cite{GNU gettext tools}}.)
+@cite{GNU @command{gettext} utilities}}.)
 @end ifnotinfo
 As of this writing, the latest version of GNU @command{gettext} is
 @uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.19.4.tar.gz,
@@ -28743,7 +28740,7 @@ and fatal errors in the local language.
 @itemize @value{BULLET}
 @item
 Internationalization means writing a program such that it can use multiple
-languages without requiring source-code changes.  Localization means
+languages without requiring source code changes.  Localization means
 providing the data necessary for an internationalized program to work
 in a particular language.
 
@@ -28760,9 +28757,9 @@ file, and the @file{.po} files are compiled into @file{.gmo} files for
 use at runtime.
 
 @item
-You can use position specifications with @code{sprintf()} and
+You can use positional specifications with @code{sprintf()} and
 @code{printf} to rearrange the placement of argument values in formatted
-strings and output. This is useful for the translations of format
+strings and output. This is useful for the translation of format
 control strings.
 
 @item
@@ -28818,8 +28815,7 @@ the discussion of debugging in @command{gawk}.
 @subsection Debugging in General
 
 (If you have used debuggers in other languages, you may want to skip
-ahead to the next section on the specific features of the @command{gawk}
-debugger.)
+ahead to @ref{Awk Debugging}.)
 
 Of course, a debugging program cannot remove bugs for you, because it has
 no way of knowing what you or your users consider a ``bug'' versus a
@@ -28910,10 +28906,10 @@ and usually find the errant code quite quickly.
 @end table
 
 @node Awk Debugging
-@subsection Awk Debugging
+@subsection @command{awk} Debugging
 
 Debugging an @command{awk} program has some specific aspects that are
-not shared with other programming languages.
+not shared with programs written in other languages.
 
 First of all, the fact that @command{awk} programs usually take input
 line by line from a file or files and operate on those lines using specific
@@ -28929,7 +28925,7 @@ to look at the individual primitive instructions carried out
 by the higher-level @command{awk} commands.
 
 @node Sample Debugging Session
-@section Sample Debugging Session
+@section Sample @command{gawk} Debugging Session
 @cindex sample debugging session
 
 In order to illustrate the use of @command{gawk} as a debugger, let's look at a sample
@@ -28948,8 +28944,8 @@ as our example.
 @cindex debugger, how to start
 
 Starting the debugger is almost exactly like running @command{gawk} normally,
-except you have to pass an additional option @option{--debug}, or the
-corresponding short option @option{-D}.  The file(s) containing the
+except you have to pass an additional option, @option{--debug}, or the
+corresponding short option, @option{-D}.  The file(s) containing the
 program and any supporting code are given on the command line as arguments
 to one or more @option{-f} options. (@command{gawk} is not designed
 to debug command-line programs, only programs contained in files.)
@@ -28962,7 +28958,7 @@ $ @kbd{gawk -D -f getopt.awk -f join.awk -f uniq.awk -1 inputfile}
 @noindent
 where both @file{getopt.awk} and @file{uniq.awk} are in @env{$AWKPATH}.
 (Experienced users of GDB or similar debuggers should note that
-this syntax is slightly different from what they are used to.
+this syntax is slightly different from what you are used to.
 With the @command{gawk} debugger, you give the arguments for running the program
 in the command line to the debugger rather than as part of the @code{run}
 command at the debugger prompt.)
@@ -29116,10 +29112,10 @@ gawk> @kbd{n}
 @end example
 
 This tells us that @command{gawk} is now ready to execute line 66, which
-decides whether to give the lines the special ``field skipping'' treatment
+decides whether to give the lines the special ``field-skipping'' treatment
 indicated by the @option{-1} command-line option.  (Notice that we skipped
-from where we were before at line 63 to here, because the condition in line 63
-@samp{if (fcount == 0 && charcount == 0)} was false.)
+from where we were before, at line 63, to here, because the condition
+in line 63, @samp{if (fcount == 0 && charcount == 0)}, was false.)
 
 Continuing to step, we now get to the splitting of the current and
 last records:
@@ -29193,7 +29189,7 @@ gawk> @kbd{n}
 
 Well, here we are at our error (sorry to spoil the suspense).  What we
 had in mind was to join the fields starting from the second one to make
-the virtual record to compare, and if the first field was numbered zero,
+the virtual record to compare, and if the first field were numbered zero,
 this would work.  Let's look at what we've got:
 
 @example
@@ -29202,7 +29198,7 @@ gawk> @kbd{p cline clast}
 @print{} clast = "awk is a wonderful program!"
 @end example
 
-Hey, those look pretty familiar!  They're just our original, unaltered,
+Hey, those look pretty familiar!  They're just our original, unaltered
 input records.  A little thinking (the human brain is still the best
 debugging tool), and we realize that we were off by one!
 
@@ -29252,11 +29248,11 @@ Miscellaneous
 @end itemize
 
 Each of these are discussed in the following subsections.
-In the following descriptions, commands which may be abbreviated
+In the following descriptions, commands that may be abbreviated
 show the abbreviation on a second description line.
 A debugger command name may also be truncated if that partial
 name is unambiguous. The debugger has the built-in capability to
-automatically repeat the previous command just by hitting @key{Enter}.
+automatically repeat the previous command just by hitting @kbd{Enter}.
 This works for the commands @code{list}, @code{next}, @code{nexti},
 @code{step}, @code{stepi}, and @code{continue} executed without any
 argument.
@@ -29306,7 +29302,7 @@ Set a breakpoint at entry to (the first instruction of)
 function @var{function}.
 @end table
 
-Each breakpoint is assigned a number which can be used to delete it from
+Each breakpoint is assigned a number that can be used to delete it from
 the breakpoint list using the @code{delete} command.
 
 With a breakpoint, you may also supply a condition.  This is an
@@ -29358,7 +29354,7 @@ watchpoint is made unconditional).
 @cindex breakpoint, delete by number
 @item @code{delete} [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 @itemx @code{d} [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
-Delete specified breakpoints or a range of breakpoints. Deletes
+Delete specified breakpoints or a range of breakpoints. Delete
 all defined breakpoints if no argument is supplied.
 
 @cindex debugger commands, @code{disable}
@@ -29367,7 +29363,7 @@ all defined breakpoints if no argument is supplied.
 @cindex breakpoint, how to disable or enable
 @item @code{disable} [@var{n1 n2} @dots{} | @var{n}--@var{m}]
 Disable specified breakpoints or a range of breakpoints. Without
-any argument, disables all breakpoints.
+any argument, disable all breakpoints.
 
 @cindex debugger commands, @code{e} (@code{enable})
 @cindex debugger commands, @code{enable}
@@ -29377,18 +29373,18 @@ any argument, disables all breakpoints.
 @item @code{enable} [@code{del} | @code{once}] [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 @itemx @code{e} [@code{del} | @code{once}] [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 Enable specified breakpoints or a range of breakpoints. Without
-any argument, enables all breakpoints.
-Optionally, you can specify how to enable the breakpoint:
+any argument, enable all breakpoints.
+Optionally, you can specify how to enable the breakpoints:
 
 @c nested table
 @table @code
 @item del
-Enable the breakpoint(s) temporarily, then delete it when
-the program stops at the breakpoint.
+Enable the breakpoints temporarily, then delete each one when
+the program stops at it.
 
 @item once
-Enable the breakpoint(s) temporarily, then disable it when
-the program stops at the breakpoint.
+Enable the breakpoints temporarily, then disable each one when
+the program stops at it.
 @end table
 
 @cindex debugger commands, @code{ignore}
@@ -29456,7 +29452,7 @@ gawk>
 @item @code{continue} [@var{count}]
 @itemx @code{c} [@var{count}]
 Resume program execution. If continued from a breakpoint and @var{count} is
-specified, ignores the breakpoint at that location the next @var{count} times
+specified, ignore the breakpoint at that location the next @var{count} times
 before stopping.
 
 @cindex debugger commands, @code{finish}
@@ -29510,7 +29506,7 @@ automatic display variables, and debugger options.
 @item @code{step} [@var{count}]
 @itemx @code{s} [@var{count}]
 Continue execution until control reaches a different source line in the
-current stack frame. @code{step} steps inside any function called within
+current stack frame, stepping inside any function called within
 the line.  If the argument @var{count} is supplied, steps that many times before
 stopping, unless it encounters a breakpoint or watchpoint.
 
@@ -29623,7 +29619,7 @@ or field.
 String values must be enclosed between double quotes (@code{"}@dots{}@code{"}).
 
 You can also set special @command{awk} variables, such as @code{FS},
-@code{NF}, @code{NR}, and son on.
+@code{NF}, @code{NR}, and so on.
 
 @cindex debugger commands, @code{w} (@code{watch})
 @cindex debugger commands, @code{watch}
@@ -29635,7 +29631,7 @@ You can also set special @command{awk} variables, such as @code{FS},
 Add variable @var{var} (or field @code{$@var{n}}) to the watch list.
 The debugger then stops whenever
 the value of the variable or field changes. Each watched item is assigned a
-number which can be used to delete it from the watch list using the
+number that can be used to delete it from the watch list using the
 @code{unwatch} command.
 
 With a watchpoint, you may also supply a condition.  This is an
@@ -29663,11 +29659,11 @@ watch list.
 @node Execution Stack
 @subsection Working with the Stack
 
-Whenever you run a program which contains any function calls,
+Whenever you run a program that contains any function calls,
 @command{gawk} maintains a stack of all of the function calls leading up
 to where the program is right now.  You can see how you got to where you are,
 and also move around in the stack to see what the state of things was in the
-functions which called the one you are in.  The commands for doing this are:
+functions that called the one you are in.  The commands for doing this are:
 
 @table @asis
 @cindex debugger commands, @code{bt} (@code{backtrace})
@@ -29702,8 +29698,8 @@ Then select and print the frame.
 @item @code{frame} [@var{n}]
 @itemx @code{f} [@var{n}]
 Select and print stack frame @var{n}.  Frame 0 is the currently executing,
-or @dfn{innermost}, frame (function call), frame 1 is the frame that
-called the innermost one. The highest numbered frame is the one for the
+or @dfn{innermost}, frame (function call); frame 1 is the frame that
+called the innermost one. The highest-numbered frame is the one for the
 main program.  The printed information consists of the frame number,
 function and argument names, source file, and the source line.
 
@@ -29719,7 +29715,7 @@ Then select and print the frame.
 
 Besides looking at the values of variables, there is often a need to get
 other sorts of information about the state of your program and of the
-debugging environment itself.  The @command{gawk} debugger has one command which
+debugging environment itself.  The @command{gawk} debugger has one command that
 provides this information, appropriately called @code{info}.  @code{info}
 is used with one of a number of arguments that tell it exactly what
 you want to know:
@@ -29807,12 +29803,12 @@ The available options are:
 @table @asis
 @item @code{history_size}
 @cindex debugger history size
-The maximum number of lines to keep in the history file @file{./.gawk_history}.
-The default is 100.
+Set the maximum number of lines to keep in the history file
+@file{./.gawk_history}.  The default is 100.
 
 @item @code{listsize}
 @cindex debugger default list amount
-The number of lines that @code{list} prints. The default is 15.
+Specify the number of lines that @code{list} prints. The default is 15.
 
 @item @code{outfile}
 @cindex redirect @command{gawk} output, in debugger
@@ -29822,7 +29818,7 @@ standard output.
 
 @item @code{prompt}
 @cindex debugger prompt
-The debugger prompt. The default is @samp{@w{gawk> }}.
+Change the debugger prompt. The default is @samp{@w{gawk> }}.
 
 @item @code{save_history} [@code{on} | @code{off}]
 @cindex debugger history file
@@ -29833,7 +29829,7 @@ The default is @code{on}.
 @cindex save debugger options
 Save current options to file @file{./.gawkrc} upon exit.
 The default is @code{on}.
-Options are read back in to the next session upon startup.
+Options are read back into the next session upon startup.
 
 @item @code{trace} [@code{on} | @code{off}]
 @cindex instruction tracing, in debugger
@@ -29856,7 +29852,7 @@ command in the file. Also, the list of commands may include additional
 @code{source} commands; however, the @command{gawk} debugger will not source the
 same file more than once in order to avoid infinite recursion.
 
-In addition to, or instead of the @code{source} command, you can use
+In addition to, or instead of, the @code{source} command, you can use
 the @option{-D @var{file}} or @option{--debug=@var{file}} command-line
 options to execute commands from a file non-interactively
 (@pxref{Options}).
@@ -29865,16 +29861,16 @@ options to execute commands from a file non-interactively
 @node Miscellaneous Debugger Commands
 @subsection Miscellaneous Commands
 
-There are a few more commands which do not fit into the
+There are a few more commands that do not fit into the
 previous categories, as follows:
 
 @table @asis
 @cindex debugger commands, @code{dump}
 @cindex @code{dump} debugger command
 @item @code{dump} [@var{filename}]
-Dump bytecode of the program to standard output or to the file
+Dump byte code of the program to standard output or to the file
 named in @var{filename}.  This prints a representation of the internal
-instructions which @command{gawk} executes to implement the @command{awk}
+instructions that @command{gawk} executes to implement the @command{awk}
 commands in a program.  This can be very enlightening, as the following
 partial dump of Davide Brini's obfuscated code
 (@pxref{Signature Program}) demonstrates:
@@ -29971,7 +29967,7 @@ Print lines centered around line number @var{n} in
 source file @var{filename}. This command may change the current source file.
 
 @item @var{function}
-Print lines centered around beginning of the
+Print lines centered around the beginning of the
 function @var{function}. This command may change the current source file.
 @end table
 
@@ -29983,16 +29979,16 @@ function @var{function}. This command may change the current source file.
 @item @code{quit}
 @itemx @code{q}
 Exit the debugger.  Debugging is great fun, but sometimes we all have
-to tend to other obligations in life, and sometimes we find the bug,
+to tend to other obligations in life, and sometimes we find the bug
 and are free to go on to the next one!  As we saw earlier, if you are
-running a program, the debugger warns you if you accidentally type
+running a program, the debugger warns you when you type
 @samp{q} or @samp{quit}, to make sure you really want to quit.
 
 @cindex debugger commands, @code{trace}
 @cindex @code{trace} debugger command
 @item @code{trace} [@code{on} | @code{off}]
-Turn on or off a continuous printing of instructions which are about to
-be executed, along with printing the @command{awk} line which they
+Turn on or off continuous printing of the instructions that are about to
+be executed, along with the @command{awk} lines they
 implement.  The default is @code{off}.
 
 It is to be hoped that most of the ``opcodes'' in these instructions are
@@ -30008,7 +30004,7 @@ fairly self-explanatory, and using @code{stepi} and @code{nexti} while
 
 If @command{gawk} is compiled with
 @uref{http://cnswww.cns.cwru.edu/php/chet/readline/readline.html,
-the @code{readline} library}, you can take advantage of that library's
+the GNU Readline library}, you can take advantage of that library's
 command completion and history expansion features. The following types
 of completion are available:
 
@@ -30045,7 +30041,7 @@ and
 
 We hope you find the @command{gawk} debugger useful and enjoyable to work with,
 but as with any program, especially in its early releases, it still has
-some limitations.  A few which are worth being aware of are:
+some limitations.  A few that it's worth being aware of are:
 
 @itemize @value{BULLET}
 @item
@@ -30061,13 +30057,13 @@ If you perused the dump of opcodes in @ref{Miscellaneous Debugger Commands}
 (or if you are already familiar with @command{gawk} internals),
 you will realize that much of the internal manipulation of data
 in @command{gawk}, as in many interpreters, is done on a stack.
-@code{Op_push}, @code{Op_pop}, and the like, are the ``bread and butter'' of
+@code{Op_push}, @code{Op_pop}, and the like are the ``bread and butter'' of
 most @command{gawk} code.
 
 Unfortunately, as of now, the @command{gawk}
 debugger does not allow you to examine the stack's contents.
 That is, the intermediate results of expression evaluation are on the
-stack, but cannot be printed.  Rather, only variables which are defined
+stack, but cannot be printed.  Rather, only variables that are defined
 in the program can be printed.  Of course, a workaround for
 this is to use more explicit variables at the debugging stage and then
 change back to obscure, perhaps more optimal code later.
@@ -30081,12 +30077,12 @@ programmer, you are expected to know the meaning of
 @item
 The @command{gawk} debugger is designed to be used by running a program (with all its
 parameters) on the command line, as described in @ref{Debugger Invocation}.
-There is no way (as of now) to attach or ``break in'' to a running program.
-This seems reasonable for a language which is used mainly for quickly
+There is no way (as of now) to attach or ``break into'' a running program.
+This seems reasonable for a language that is used mainly for quickly
 executing, short programs.
 
 @item
-The @command{gawk} debugger only accepts source supplied with the @option{-f} option.
+The @command{gawk} debugger only accepts source code supplied with the @option{-f} option.
 @end itemize
 
 @ignore
@@ -30100,8 +30096,8 @@ be added, and of course feel free to try to add them yourself!
 @itemize @value{BULLET}
 @item
 Programs rarely work correctly the first time.  Finding bugs
-is @dfn{debugging} and a program that helps you find bugs is a
-@dfn{debugger}.  @command{gawk} has a built-in debugger that works very
+is called debugging, and a program that helps you find bugs is a
+debugger.  @command{gawk} has a built-in debugger that works very
 similarly to the GNU Debugger, GDB.
 
 @item
@@ -30121,7 +30117,7 @@ breakpoints, execution, viewing and changing data, working with the stack,
 getting information, and other tasks.
 
 @item
-If the @code{readline} library is available when @command{gawk} is
+If the GNU Readline library is available when @command{gawk} is
 compiled, it is used by the debugger to provide command-line history
 and editing.
 

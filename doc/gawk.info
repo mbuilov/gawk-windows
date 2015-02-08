@@ -20088,7 +20088,7 @@ File: gawk.info,  Node: I18N and L10N,  Next: Explaining gettext,  Up: Internati
 
 "Internationalization" means writing (or modifying) a program once, in
 such a way that it can use multiple languages without requiring further
-source-code changes.  "Localization" means providing the data necessary
+source code changes.  "Localization" means providing the data necessary
 for an internationalized program to work in a particular language.
 Most typically, these terms refer to features such as the language used
 for printing error messages, the language used to read responses, and
@@ -20102,7 +20102,7 @@ File: gawk.info,  Node: Explaining gettext,  Next: Programmer i18n,  Prev: I18N 
 ==================
 
 `gawk' uses GNU `gettext' to provide its internationalization features.
-The facilities in GNU `gettext' focus on messages; strings printed by a
+The facilities in GNU `gettext' focus on messages: strings printed by a
 program, either directly or via formatting with `printf' or
 `sprintf()'.(1)
 
@@ -20231,8 +20231,7 @@ File: gawk.info,  Node: Programmer i18n,  Next: Translator i18n,  Prev: Explaini
 13.3 Internationalizing `awk' Programs
 ======================================
 
-`gawk' provides the following variables and functions for
-internationalization:
+`gawk' provides the following variables for internationalization:
 
 `TEXTDOMAIN'
      This variable indicates the application's text domain.  For
@@ -20243,6 +20242,8 @@ internationalization:
      String constants marked with a leading underscore are candidates
      for translation at runtime.  String constants without a leading
      underscore are not translated.
+
+   `gawk' provides the following functions for internationalization:
 
 ``dcgettext(STRING' [`,' DOMAIN [`,' CATEGORY]]`)''
      Return the translation of STRING in text domain DOMAIN for locale
@@ -20282,8 +20283,7 @@ internationalization:
      the null string (`""'), then `bindtextdomain()' returns the
      current binding for the given DOMAIN.
 
-   To use these facilities in your `awk' program, follow the steps
-outlined in *note Explaining gettext::, like so:
+   To use these facilities in your `awk' program, follow these steps:
 
   1. Set the variable `TEXTDOMAIN' to the text domain of your program.
      This is best done in a `BEGIN' rule (*note BEGIN/END::), or it can
@@ -20505,7 +20505,7 @@ actually almost portable, requiring very little change:
      its value, leaving the original string constant as the result.
 
    * By defining "dummy" functions to replace `dcgettext()',
-     `dcngettext()' and `bindtextdomain()', the `awk' program can be
+     `dcngettext()', and `bindtextdomain()', the `awk' program can be
      made to run, but all the messages are output in the original
      language.  For example:
 
@@ -20640,8 +20640,8 @@ File: gawk.info,  Node: Gawk I18N,  Next: I18N Summary,  Prev: I18N Example,  Up
 
 `gawk' itself has been internationalized using the GNU `gettext'
 package.  (GNU `gettext' is described in complete detail in *note (GNU
-`gettext' utilities)Top:: gettext, GNU gettext tools.)  As of this
-writing, the latest version of GNU `gettext' is version 0.19.4
+`gettext' utilities)Top:: gettext, GNU `gettext' utilities.)  As of
+this writing, the latest version of GNU `gettext' is version 0.19.4
 (ftp://ftp.gnu.org/gnu/gettext/gettext-0.19.4.tar.gz).
 
    If a translation of `gawk''s messages exists, then `gawk' produces
@@ -20654,7 +20654,7 @@ File: gawk.info,  Node: I18N Summary,  Prev: Gawk I18N,  Up: Internationalizatio
 ============
 
    * Internationalization means writing a program such that it can use
-     multiple languages without requiring source-code changes.
+     multiple languages without requiring source code changes.
      Localization means providing the data necessary for an
      internationalized program to work in a particular language.
 
@@ -20668,10 +20668,10 @@ File: gawk.info,  Node: I18N Summary,  Prev: Gawk I18N,  Up: Internationalizatio
      file, and the `.po' files are compiled into `.gmo' files for use
      at runtime.
 
-   * You can use position specifications with `sprintf()' and `printf'
-     to rearrange the placement of argument values in formatted strings
-     and output. This is useful for the translations of format control
-     strings.
+   * You can use positional specifications with `sprintf()' and
+     `printf' to rearrange the placement of argument values in formatted
+     strings and output. This is useful for the translation of format
+     control strings.
 
    * The internationalization features have been designed so that they
      can be easily worked around in a standard `awk'.
@@ -20727,8 +20727,7 @@ File: gawk.info,  Node: Debugging Concepts,  Next: Debugging Terms,  Up: Debuggi
 ---------------------------
 
 (If you have used debuggers in other languages, you may want to skip
-ahead to the next section on the specific features of the `gawk'
-debugger.)
+ahead to *note Awk Debugging::.)
 
    Of course, a debugging program cannot remove bugs for you, because
 it has no way of knowing what you or your users consider a "bug" versus
@@ -20815,11 +20814,11 @@ defines terms used throughout the rest of this major node:
 
 File: gawk.info,  Node: Awk Debugging,  Prev: Debugging Terms,  Up: Debugging
 
-14.1.3 Awk Debugging
---------------------
+14.1.3 `awk' Debugging
+----------------------
 
 Debugging an `awk' program has some specific aspects that are not
-shared with other programming languages.
+shared with programs written in other languages.
 
    First of all, the fact that `awk' programs usually take input line
 by line from a file or files and operate on those lines using specific
@@ -20837,8 +20836,8 @@ commands.
 
 File: gawk.info,  Node: Sample Debugging Session,  Next: List of Debugger Commands,  Prev: Debugging,  Up: Debugger
 
-14.2 Sample Debugging Session
-=============================
+14.2 Sample `gawk' Debugging Session
+====================================
 
 In order to illustrate the use of `gawk' as a debugger, let's look at a
 sample debugging session.  We will use the `awk' implementation of the
@@ -20857,8 +20856,8 @@ File: gawk.info,  Node: Debugger Invocation,  Next: Finding The Bug,  Up: Sample
 --------------------------------
 
 Starting the debugger is almost exactly like running `gawk' normally,
-except you have to pass an additional option `--debug', or the
-corresponding short option `-D'.  The file(s) containing the program
+except you have to pass an additional option, `--debug', or the
+corresponding short option, `-D'.  The file(s) containing the program
 and any supporting code are given on the command line as arguments to
 one or more `-f' options. (`gawk' is not designed to debug command-line
 programs, only programs contained in files.)  In our case, we invoke
@@ -20868,7 +20867,7 @@ the debugger like this:
 
 where both `getopt.awk' and `uniq.awk' are in `$AWKPATH'.  (Experienced
 users of GDB or similar debuggers should note that this syntax is
-slightly different from what they are used to.  With the `gawk'
+slightly different from what you are used to.  With the `gawk'
 debugger, you give the arguments for running the program in the command
 line to the debugger rather than as part of the `run' command at the
 debugger prompt.)  The `-1' is an option to `uniq.awk'.
@@ -20992,10 +20991,10 @@ typing `n' (for "next"):
      -| 66          if (fcount > 0) {
 
    This tells us that `gawk' is now ready to execute line 66, which
-decides whether to give the lines the special "field skipping" treatment
+decides whether to give the lines the special "field-skipping" treatment
 indicated by the `-1' command-line option.  (Notice that we skipped
-from where we were before at line 63 to here, because the condition in
-line 63 `if (fcount == 0 && charcount == 0)' was false.)
+from where we were before, at line 63, to here, because the condition
+in line 63, `if (fcount == 0 && charcount == 0)', was false.)
 
    Continuing to step, we now get to the splitting of the current and
 last records:
@@ -21053,15 +21052,15 @@ mentioned):
 
    Well, here we are at our error (sorry to spoil the suspense).  What
 we had in mind was to join the fields starting from the second one to
-make the virtual record to compare, and if the first field was numbered
-zero, this would work.  Let's look at what we've got:
+make the virtual record to compare, and if the first field were
+numbered zero, this would work.  Let's look at what we've got:
 
      gawk> p cline clast
      -| cline = "gawk is a wonderful program!"
      -| clast = "awk is a wonderful program!"
 
    Hey, those look pretty familiar!  They're just our original,
-unaltered, input records.  A little thinking (the human brain is still
+unaltered input records.  A little thinking (the human brain is still
 the best debugging tool), and we realize that we were off by one!
 
    We get out of the debugger:
@@ -21098,11 +21097,11 @@ categories:
    * Miscellaneous
 
    Each of these are discussed in the following subsections.  In the
-following descriptions, commands which may be abbreviated show the
+following descriptions, commands that may be abbreviated show the
 abbreviation on a second description line.  A debugger command name may
 also be truncated if that partial name is unambiguous. The debugger has
 the built-in capability to automatically repeat the previous command
-just by hitting <Enter>.  This works for the commands `list', `next',
+just by hitting `Enter'.  This works for the commands `list', `next',
 `nexti', `step', `stepi', and `continue' executed without any argument.
 
 * Menu:
@@ -21142,8 +21141,8 @@ The commands for controlling breakpoints are:
           Set a breakpoint at entry to (the first instruction of)
           function FUNCTION.
 
-     Each breakpoint is assigned a number which can be used to delete
-     it from the breakpoint list using the `delete' command.
+     Each breakpoint is assigned a number that can be used to delete it
+     from the breakpoint list using the `delete' command.
 
      With a breakpoint, you may also supply a condition.  This is an
      `awk' expression (enclosed in double quotes) that the debugger
@@ -21181,26 +21180,26 @@ The commands for controlling breakpoints are:
 
 `delete' [N1 N2 ...] [N-M]
 `d' [N1 N2 ...] [N-M]
-     Delete specified breakpoints or a range of breakpoints. Deletes
-     all defined breakpoints if no argument is supplied.
+     Delete specified breakpoints or a range of breakpoints. Delete all
+     defined breakpoints if no argument is supplied.
 
 `disable' [N1 N2 ... | N-M]
      Disable specified breakpoints or a range of breakpoints. Without
-     any argument, disables all breakpoints.
+     any argument, disable all breakpoints.
 
 `enable' [`del' | `once'] [N1 N2 ...] [N-M]
 `e' [`del' | `once'] [N1 N2 ...] [N-M]
      Enable specified breakpoints or a range of breakpoints. Without
-     any argument, enables all breakpoints.  Optionally, you can
-     specify how to enable the breakpoint:
+     any argument, enable all breakpoints.  Optionally, you can specify
+     how to enable the breakpoints:
 
     `del'
-          Enable the breakpoint(s) temporarily, then delete it when the
-          program stops at the breakpoint.
+          Enable the breakpoints temporarily, then delete each one when
+          the program stops at it.
 
     `once'
-          Enable the breakpoint(s) temporarily, then disable it when
-          the program stops at the breakpoint.
+          Enable the breakpoints temporarily, then disable each one when
+          the program stops at it.
 
 `ignore' N COUNT
      Ignore breakpoint number N the next COUNT times it is hit.
@@ -21246,7 +21245,7 @@ execution of the program than we saw in our earlier example:
 `continue' [COUNT]
 `c' [COUNT]
      Resume program execution. If continued from a breakpoint and COUNT
-     is specified, ignores the breakpoint at that location the next
+     is specified, ignore the breakpoint at that location the next
      COUNT times before stopping.
 
 `finish'
@@ -21281,10 +21280,10 @@ execution of the program than we saw in our earlier example:
 `step' [COUNT]
 `s' [COUNT]
      Continue execution until control reaches a different source line
-     in the current stack frame. `step' steps inside any function
-     called within the line.  If the argument COUNT is supplied, steps
-     that many times before stopping, unless it encounters a breakpoint
-     or watchpoint.
+     in the current stack frame, stepping inside any function called
+     within the line.  If the argument COUNT is supplied, steps that
+     many times before stopping, unless it encounters a breakpoint or
+     watchpoint.
 
 `stepi' [COUNT]
 `si' [COUNT]
@@ -21365,13 +21364,13 @@ AWK STATEMENTS
      (`"'...`"').
 
      You can also set special `awk' variables, such as `FS', `NF',
-     `NR', and son on.
+     `NR', and so on.
 
 `watch' VAR | `$'N [`"EXPRESSION"']
 `w' VAR | `$'N [`"EXPRESSION"']
      Add variable VAR (or field `$N') to the watch list.  The debugger
      then stops whenever the value of the variable or field changes.
-     Each watched item is assigned a number which can be used to delete
+     Each watched item is assigned a number that can be used to delete
      it from the watch list using the `unwatch' command.
 
      With a watchpoint, you may also supply a condition.  This is an
@@ -21395,11 +21394,11 @@ File: gawk.info,  Node: Execution Stack,  Next: Debugger Info,  Prev: Viewing An
 14.3.4 Working with the Stack
 -----------------------------
 
-Whenever you run a program which contains any function calls, `gawk'
+Whenever you run a program that contains any function calls, `gawk'
 maintains a stack of all of the function calls leading up to where the
 program is right now.  You can see how you got to where you are, and
 also move around in the stack to see what the state of things was in the
-functions which called the one you are in.  The commands for doing this
+functions that called the one you are in.  The commands for doing this
 are:
 
 `backtrace' [COUNT]
@@ -21419,8 +21418,8 @@ are:
 `frame' [N]
 `f' [N]
      Select and print stack frame N.  Frame 0 is the currently
-     executing, or "innermost", frame (function call), frame 1 is the
-     frame that called the innermost one. The highest numbered frame is
+     executing, or "innermost", frame (function call); frame 1 is the
+     frame that called the innermost one. The highest-numbered frame is
      the one for the main program.  The printed information consists of
      the frame number, function and argument names, source file, and
      the source line.
@@ -21437,7 +21436,7 @@ File: gawk.info,  Node: Debugger Info,  Next: Miscellaneous Debugger Commands,  
 
 Besides looking at the values of variables, there is often a need to get
 other sorts of information about the state of your program and of the
-debugging environment itself.  The `gawk' debugger has one command which
+debugging environment itself.  The `gawk' debugger has one command that
 provides this information, appropriately called `info'.  `info' is used
 with one of a number of arguments that tell it exactly what you want to
 know:
@@ -21494,11 +21493,12 @@ from a file.  The commands are:
      option.  The available options are:
 
     `history_size'
-          The maximum number of lines to keep in the history file
+          Set the maximum number of lines to keep in the history file
           `./.gawk_history'.  The default is 100.
 
     `listsize'
-          The number of lines that `list' prints. The default is 15.
+          Specify the number of lines that `list' prints. The default
+          is 15.
 
     `outfile'
           Send `gawk' output to a file; debugger output still goes to
@@ -21506,7 +21506,7 @@ from a file.  The commands are:
           standard output.
 
     `prompt'
-          The debugger prompt. The default is `gawk> '.
+          Change the debugger prompt. The default is `gawk> '.
 
     `save_history' [`on' | `off']
           Save command history to file `./.gawk_history'.  The default
@@ -21514,8 +21514,8 @@ from a file.  The commands are:
 
     `save_options' [`on' | `off']
           Save current options to file `./.gawkrc' upon exit.  The
-          default is `on'.  Options are read back in to the next
-          session upon startup.
+          default is `on'.  Options are read back into the next session
+          upon startup.
 
     `trace' [`on' | `off']
           Turn instruction tracing on or off. The default is `off'.
@@ -21534,7 +21534,7 @@ from a file.  The commands are:
      commands; however, the `gawk' debugger will not source the same
      file more than once in order to avoid infinite recursion.
 
-     In addition to, or instead of the `source' command, you can use
+     In addition to, or instead of, the `source' command, you can use
      the `-D FILE' or `--debug=FILE' command-line options to execute
      commands from a file non-interactively (*note Options::).
 
@@ -21544,13 +21544,13 @@ File: gawk.info,  Node: Miscellaneous Debugger Commands,  Prev: Debugger Info,  
 14.3.6 Miscellaneous Commands
 -----------------------------
 
-There are a few more commands which do not fit into the previous
+There are a few more commands that do not fit into the previous
 categories, as follows:
 
 `dump' [FILENAME]
-     Dump bytecode of the program to standard output or to the file
+     Dump byte code of the program to standard output or to the file
      named in FILENAME.  This prints a representation of the internal
-     instructions which `gawk' executes to implement the `awk' commands
+     instructions that `gawk' executes to implement the `awk' commands
      in a program.  This can be very enlightening, as the following
      partial dump of Davide Brini's obfuscated code (*note Signature
      Program::) demonstrates:
@@ -21634,22 +21634,21 @@ categories, as follows:
           FILENAME. This command may change the current source file.
 
     FUNCTION
-          Print lines centered around beginning of the function
+          Print lines centered around the beginning of the function
           FUNCTION. This command may change the current source file.
 
 `quit'
 `q'
      Exit the debugger.  Debugging is great fun, but sometimes we all
      have to tend to other obligations in life, and sometimes we find
-     the bug, and are free to go on to the next one!  As we saw
-     earlier, if you are running a program, the debugger warns you if
-     you accidentally type `q' or `quit', to make sure you really want
-     to quit.
+     the bug and are free to go on to the next one!  As we saw earlier,
+     if you are running a program, the debugger warns you when you type
+     `q' or `quit', to make sure you really want to quit.
 
 `trace' [`on' | `off']
-     Turn on or off a continuous printing of instructions which are
-     about to be executed, along with printing the `awk' line which they
-     implement.  The default is `off'.
+     Turn on or off continuous printing of the instructions that are
+     about to be executed, along with the `awk' lines they implement.
+     The default is `off'.
 
      It is to be hoped that most of the "opcodes" in these instructions
      are fairly self-explanatory, and using `stepi' and `nexti' while
@@ -21662,7 +21661,7 @@ File: gawk.info,  Node: Readline Support,  Next: Limitations,  Prev: List of Deb
 14.4 Readline Support
 =====================
 
-If `gawk' is compiled with the `readline' library
+If `gawk' is compiled with the GNU Readline library
 (http://cnswww.cns.cwru.edu/php/chet/readline/readline.html), you can
 take advantage of that library's command completion and history
 expansion features. The following types of completion are available:
@@ -21692,7 +21691,7 @@ File: gawk.info,  Node: Limitations,  Next: Debugging Summary,  Prev: Readline S
 
 We hope you find the `gawk' debugger useful and enjoyable to work with,
 but as with any program, especially in its early releases, it still has
-some limitations.  A few which are worth being aware of are:
+some limitations.  A few that it's worth being aware of are:
 
    * At this point, the debugger does not give a detailed explanation of
      what you did wrong when you type in something it doesn't like.
@@ -21703,13 +21702,13 @@ some limitations.  A few which are worth being aware of are:
      Commands:: (or if you are already familiar with `gawk' internals),
      you will realize that much of the internal manipulation of data in
      `gawk', as in many interpreters, is done on a stack.  `Op_push',
-     `Op_pop', and the like, are the "bread and butter" of most `gawk'
+     `Op_pop', and the like are the "bread and butter" of most `gawk'
      code.
 
      Unfortunately, as of now, the `gawk' debugger does not allow you
      to examine the stack's contents.  That is, the intermediate
      results of expression evaluation are on the stack, but cannot be
-     printed.  Rather, only variables which are defined in the program
+     printed.  Rather, only variables that are defined in the program
      can be printed.  Of course, a workaround for this is to use more
      explicit variables at the debugging stage and then change back to
      obscure, perhaps more optimal code later.
@@ -21721,12 +21720,12 @@ some limitations.  A few which are worth being aware of are:
    * The `gawk' debugger is designed to be used by running a program
      (with all its parameters) on the command line, as described in
      *note Debugger Invocation::.  There is no way (as of now) to
-     attach or "break in" to a running program.  This seems reasonable
-     for a language which is used mainly for quickly executing, short
+     attach or "break into" a running program.  This seems reasonable
+     for a language that is used mainly for quickly executing, short
      programs.
 
-   * The `gawk' debugger only accepts source supplied with the `-f'
-     option.
+   * The `gawk' debugger only accepts source code supplied with the
+     `-f' option.
 
 
 File: gawk.info,  Node: Debugging Summary,  Prev: Limitations,  Up: Debugger
@@ -21735,8 +21734,8 @@ File: gawk.info,  Node: Debugging Summary,  Prev: Limitations,  Up: Debugger
 ============
 
    * Programs rarely work correctly the first time.  Finding bugs is
-     "debugging" and a program that helps you find bugs is a
-     "debugger".  `gawk' has a built-in debugger that works very
+     called debugging, and a program that helps you find bugs is a
+     debugger.  `gawk' has a built-in debugger that works very
      similarly to the GNU Debugger, GDB.
 
    * Debuggers let you step through your program one statement at a
@@ -21752,8 +21751,8 @@ File: gawk.info,  Node: Debugging Summary,  Prev: Limitations,  Up: Debugger
      breakpoints, execution, viewing and changing data, working with
      the stack, getting information, and other tasks.
 
-   * If the `readline' library is available when `gawk' is compiled, it
-     is used by the debugger to provide command-line history and
+   * If the GNU Readline library is available when `gawk' is compiled,
+     it is used by the debugger to provide command-line history and
      editing.
 
 
@@ -31747,7 +31746,7 @@ Index
 * -W option:                             Options.             (line  46)
 * . (period), regexp operator:           Regexp Operators.    (line  44)
 * .gmo files:                            Explaining gettext.  (line  42)
-* .gmo files, specifying directory of <1>: Programmer i18n.   (line  47)
+* .gmo files, specifying directory of <1>: Programmer i18n.   (line  48)
 * .gmo files, specifying directory of:   Explaining gettext.  (line  54)
 * .mo files, converting from .po:        I18N Example.        (line  64)
 * .po files <1>:                         Translator i18n.     (line   6)
@@ -32153,7 +32152,7 @@ Index
 * Berry, Karl <1>:                       Ranges and Locales.  (line  74)
 * Berry, Karl:                           Acknowledgments.     (line  33)
 * binary input/output:                   User-modified.       (line  15)
-* bindtextdomain <1>:                    Programmer i18n.     (line  47)
+* bindtextdomain <1>:                    Programmer i18n.     (line  48)
 * bindtextdomain:                        I18N Functions.      (line  12)
 * bindtextdomain() function (C library): Explaining gettext.  (line  50)
 * bindtextdomain() function (gawk), portability and: I18N Portability.
@@ -32487,11 +32486,11 @@ Index
 * Davies, Stephen <1>:                   Contributors.        (line  74)
 * Davies, Stephen:                       Acknowledgments.     (line  60)
 * Day, Robert P.J.:                      Acknowledgments.     (line  78)
-* dcgettext <1>:                         Programmer i18n.     (line  19)
+* dcgettext <1>:                         Programmer i18n.     (line  20)
 * dcgettext:                             I18N Functions.      (line  22)
 * dcgettext() function (gawk), portability and: I18N Portability.
                                                               (line  33)
-* dcngettext <1>:                        Programmer i18n.     (line  36)
+* dcngettext <1>:                        Programmer i18n.     (line  37)
 * dcngettext:                            I18N Functions.      (line  28)
 * dcngettext() function (gawk), portability and: I18N Portability.
                                                               (line  33)
@@ -32578,7 +32577,7 @@ Index
 * debugger commands, t (tbreak):         Breakpoint Control.  (line  90)
 * debugger commands, tbreak:             Breakpoint Control.  (line  90)
 * debugger commands, trace:              Miscellaneous Debugger Commands.
-                                                              (line 108)
+                                                              (line 107)
 * debugger commands, u (until):          Debugger Execution Control.
                                                               (line  83)
 * debugger commands, undisplay:          Viewing And Changing Data.
@@ -32594,12 +32593,12 @@ Index
                                                               (line  67)
 * debugger commands, where (backtrace):  Execution Stack.     (line  13)
 * debugger default list amount:          Debugger Info.       (line  69)
-* debugger history file:                 Debugger Info.       (line  80)
+* debugger history file:                 Debugger Info.       (line  81)
 * debugger history size:                 Debugger Info.       (line  65)
 * debugger options:                      Debugger Info.       (line  57)
-* debugger prompt:                       Debugger Info.       (line  77)
+* debugger prompt:                       Debugger Info.       (line  78)
 * debugger, how to start:                Debugger Invocation. (line   6)
-* debugger, read commands from a file:   Debugger Info.       (line  96)
+* debugger, read commands from a file:   Debugger Info.       (line  97)
 * debugging awk programs:                Debugger.            (line   6)
 * debugging gawk, bug reports:           Bugs.                (line   9)
 * decimal point character, locale specific: Options.          (line 270)
@@ -32930,7 +32929,7 @@ Index
 * FILENAME variable, getline, setting with: Getline Notes.    (line  19)
 * filenames, assignments as:             Ignoring Assigns.    (line   6)
 * files, .gmo:                           Explaining gettext.  (line  42)
-* files, .gmo, specifying directory of <1>: Programmer i18n.  (line  47)
+* files, .gmo, specifying directory of <1>: Programmer i18n.  (line  48)
 * files, .gmo, specifying directory of:  Explaining gettext.  (line  54)
 * files, .mo, converting from .po:       I18N Example.        (line  64)
 * files, .po <1>:                        Translator i18n.     (line   6)
@@ -32957,7 +32956,7 @@ Index
 * files, message object, converting from portable object files: I18N Example.
                                                               (line  64)
 * files, message object, specifying directory of <1>: Programmer i18n.
-                                                              (line  47)
+                                                              (line  48)
 * files, message object, specifying directory of: Explaining gettext.
                                                               (line  54)
 * files, multiple passes over:           Other Arguments.     (line  56)
@@ -33369,7 +33368,7 @@ Index
 * insomnia, cure for:                    Alarm Program.       (line   6)
 * installation, VMS:                     VMS Installation.    (line   6)
 * installing gawk:                       Installation.        (line   6)
-* instruction tracing, in debugger:      Debugger Info.       (line  89)
+* instruction tracing, in debugger:      Debugger Info.       (line  90)
 * int:                                   Numeric Functions.   (line  38)
 * INT signal (MS-Windows):               Profiling.           (line 213)
 * integer array indices:                 Numeric Array Subscripts.
@@ -33390,7 +33389,7 @@ Index
 * internationalization, localization, locale categories: Explaining gettext.
                                                               (line  81)
 * internationalization, localization, marked strings: Programmer i18n.
-                                                              (line  14)
+                                                              (line  13)
 * internationalization, localization, portability and: I18N Portability.
                                                               (line   6)
 * internationalizing a program:          Explaining gettext.  (line   6)
@@ -33571,7 +33570,7 @@ Index
 * message object files, converting from portable object files: I18N Example.
                                                               (line  64)
 * message object files, specifying directory of <1>: Programmer i18n.
-                                                              (line  47)
+                                                              (line  48)
 * message object files, specifying directory of: Explaining gettext.
                                                               (line  54)
 * messages from extensions:              Printing Messages.   (line   6)
@@ -34015,7 +34014,7 @@ Index
 * records, terminating:                  awk split records.   (line 125)
 * records, treating files as:            gawk split records.  (line  93)
 * recursive functions:                   Definition Syntax.   (line  88)
-* redirect gawk output, in debugger:     Debugger Info.       (line  72)
+* redirect gawk output, in debugger:     Debugger Info.       (line  73)
 * redirection of input:                  Getline/File.        (line   6)
 * redirection of output:                 Redirection.         (line   6)
 * reference counting, sorting arrays:    Array Sorting Functions.
@@ -34134,7 +34133,7 @@ Index
 * sample debugging session:              Sample Debugging Session.
                                                               (line   6)
 * sandbox mode:                          Options.             (line 286)
-* save debugger options:                 Debugger Info.       (line  84)
+* save debugger options:                 Debugger Info.       (line  85)
 * scalar or array:                       Type Functions.      (line  11)
 * scalar values:                         Basic Data Typing.   (line  13)
 * scanning arrays:                       Scanning an Array.   (line   6)
@@ -34356,7 +34355,7 @@ Index
 * strings, converting, numbers to:       User-modified.       (line  30)
 * strings, empty, See null strings:      awk split records.   (line 115)
 * strings, extracting:                   String Extraction.   (line   6)
-* strings, for localization:             Programmer i18n.     (line  14)
+* strings, for localization:             Programmer i18n.     (line  13)
 * strings, length limitations:           Scalar Constants.    (line  20)
 * strings, merging arrays into:          Join Function.       (line   6)
 * strings, null:                         Regexp Field Splitting.
@@ -34416,7 +34415,7 @@ Index
                                                               (line   6)
 * text, printing:                        Print.               (line  22)
 * text, printing, unduplicated lines of: Uniq Program.        (line   6)
-* TEXTDOMAIN variable <1>:               Programmer i18n.     (line   9)
+* TEXTDOMAIN variable <1>:               Programmer i18n.     (line   8)
 * TEXTDOMAIN variable:                   User-modified.       (line 152)
 * TEXTDOMAIN variable, BEGIN pattern and: Programmer i18n.    (line  60)
 * TEXTDOMAIN variable, portability and:  I18N Portability.    (line  20)
@@ -34444,7 +34443,7 @@ Index
 * toupper:                               String Functions.    (line 530)
 * tr utility:                            Translate Program.   (line   6)
 * trace debugger command:                Miscellaneous Debugger Commands.
-                                                              (line 108)
+                                                              (line 107)
 * traceback, display in debugger:        Execution Stack.     (line  13)
 * translate string:                      I18N Functions.      (line  22)
 * translate.awk program:                 Translate Program.   (line  55)
@@ -35013,204 +35012,204 @@ Node: Explaining gettext813669
 Ref: Explaining gettext-Footnote-1818694
 Ref: Explaining gettext-Footnote-2818878
 Node: Programmer i18n819043
-Ref: Programmer i18n-Footnote-1823909
-Node: Translator i18n823958
-Node: String Extraction824752
-Ref: String Extraction-Footnote-1825883
-Node: Printf Ordering825969
-Ref: Printf Ordering-Footnote-1828755
-Node: I18N Portability828819
-Ref: I18N Portability-Footnote-1831274
-Node: I18N Example831337
-Ref: I18N Example-Footnote-1834140
-Node: Gawk I18N834212
-Node: I18N Summary834850
-Node: Debugger836189
-Node: Debugging837211
-Node: Debugging Concepts837652
-Node: Debugging Terms839505
-Node: Awk Debugging842077
-Node: Sample Debugging Session842971
-Node: Debugger Invocation843491
-Node: Finding The Bug844875
-Node: List of Debugger Commands851350
-Node: Breakpoint Control852683
-Node: Debugger Execution Control856379
-Node: Viewing And Changing Data859743
-Node: Execution Stack863121
-Node: Debugger Info864758
-Node: Miscellaneous Debugger Commands868775
-Node: Readline Support873804
-Node: Limitations874696
-Node: Debugging Summary876810
-Node: Arbitrary Precision Arithmetic877978
-Node: Computer Arithmetic879394
-Ref: table-numeric-ranges882992
-Ref: Computer Arithmetic-Footnote-1883851
-Node: Math Definitions883908
-Ref: table-ieee-formats887196
-Ref: Math Definitions-Footnote-1887800
-Node: MPFR features887905
-Node: FP Math Caution889576
-Ref: FP Math Caution-Footnote-1890626
-Node: Inexactness of computations890995
-Node: Inexact representation891954
-Node: Comparing FP Values893311
-Node: Errors accumulate894393
-Node: Getting Accuracy895826
-Node: Try To Round898488
-Node: Setting precision899387
-Ref: table-predefined-precision-strings900071
-Node: Setting the rounding mode901860
-Ref: table-gawk-rounding-modes902224
-Ref: Setting the rounding mode-Footnote-1905679
-Node: Arbitrary Precision Integers905858
-Ref: Arbitrary Precision Integers-Footnote-1910758
-Node: POSIX Floating Point Problems910907
-Ref: POSIX Floating Point Problems-Footnote-1914780
-Node: Floating point summary914818
-Node: Dynamic Extensions917012
-Node: Extension Intro918564
-Node: Plugin License919830
-Node: Extension Mechanism Outline920627
-Ref: figure-load-extension921055
-Ref: figure-register-new-function922535
-Ref: figure-call-new-function923539
-Node: Extension API Description925525
-Node: Extension API Functions Introduction926975
-Node: General Data Types931799
-Ref: General Data Types-Footnote-1937538
-Node: Memory Allocation Functions937837
-Ref: Memory Allocation Functions-Footnote-1940676
-Node: Constructor Functions940772
-Node: Registration Functions942506
-Node: Extension Functions943191
-Node: Exit Callback Functions945488
-Node: Extension Version String946736
-Node: Input Parsers947401
-Node: Output Wrappers957280
-Node: Two-way processors961795
-Node: Printing Messages963999
-Ref: Printing Messages-Footnote-1965075
-Node: Updating `ERRNO'965227
-Node: Requesting Values965967
-Ref: table-value-types-returned966695
-Node: Accessing Parameters967652
-Node: Symbol Table Access968883
-Node: Symbol table by name969397
-Node: Symbol table by cookie971378
-Ref: Symbol table by cookie-Footnote-1975522
-Node: Cached values975585
-Ref: Cached values-Footnote-1979084
-Node: Array Manipulation979175
-Ref: Array Manipulation-Footnote-1980273
-Node: Array Data Types980310
-Ref: Array Data Types-Footnote-1982965
-Node: Array Functions983057
-Node: Flattening Arrays986911
-Node: Creating Arrays993803
-Node: Extension API Variables998574
-Node: Extension Versioning999210
-Node: Extension API Informational Variables1001111
-Node: Extension API Boilerplate1002176
-Node: Finding Extensions1005985
-Node: Extension Example1006545
-Node: Internal File Description1007317
-Node: Internal File Ops1011384
-Ref: Internal File Ops-Footnote-11023054
-Node: Using Internal File Ops1023194
-Ref: Using Internal File Ops-Footnote-11025577
-Node: Extension Samples1025850
-Node: Extension Sample File Functions1027376
-Node: Extension Sample Fnmatch1035014
-Node: Extension Sample Fork1036505
-Node: Extension Sample Inplace1037720
-Node: Extension Sample Ord1039395
-Node: Extension Sample Readdir1040231
-Ref: table-readdir-file-types1041107
-Node: Extension Sample Revout1041918
-Node: Extension Sample Rev2way1042508
-Node: Extension Sample Read write array1043248
-Node: Extension Sample Readfile1045188
-Node: Extension Sample Time1046283
-Node: Extension Sample API Tests1047632
-Node: gawkextlib1048123
-Node: Extension summary1050781
-Node: Extension Exercises1054470
-Node: Language History1055192
-Node: V7/SVR3.11056848
-Node: SVR41059029
-Node: POSIX1060474
-Node: BTL1061863
-Node: POSIX/GNU1062597
-Node: Feature History1068386
-Node: Common Extensions1082112
-Node: Ranges and Locales1083436
-Ref: Ranges and Locales-Footnote-11088054
-Ref: Ranges and Locales-Footnote-21088081
-Ref: Ranges and Locales-Footnote-31088315
-Node: Contributors1088536
-Node: History summary1094077
-Node: Installation1095447
-Node: Gawk Distribution1096393
-Node: Getting1096877
-Node: Extracting1097700
-Node: Distribution contents1099335
-Node: Unix Installation1105400
-Node: Quick Installation1106083
-Node: Shell Startup Files1108494
-Node: Additional Configuration Options1109573
-Node: Configuration Philosophy1111312
-Node: Non-Unix Installation1113681
-Node: PC Installation1114139
-Node: PC Binary Installation1115458
-Node: PC Compiling1117306
-Ref: PC Compiling-Footnote-11120327
-Node: PC Testing1120436
-Node: PC Using1121612
-Node: Cygwin1125727
-Node: MSYS1126550
-Node: VMS Installation1127050
-Node: VMS Compilation1127842
-Ref: VMS Compilation-Footnote-11129064
-Node: VMS Dynamic Extensions1129122
-Node: VMS Installation Details1130806
-Node: VMS Running1133058
-Node: VMS GNV1135894
-Node: VMS Old Gawk1136628
-Node: Bugs1137098
-Node: Other Versions1140981
-Node: Installation summary1147405
-Node: Notes1148461
-Node: Compatibility Mode1149326
-Node: Additions1150108
-Node: Accessing The Source1151033
-Node: Adding Code1152468
-Node: New Ports1158625
-Node: Derived Files1163107
-Ref: Derived Files-Footnote-11168582
-Ref: Derived Files-Footnote-21168616
-Ref: Derived Files-Footnote-31169212
-Node: Future Extensions1169326
-Node: Implementation Limitations1169932
-Node: Extension Design1171180
-Node: Old Extension Problems1172334
-Ref: Old Extension Problems-Footnote-11173851
-Node: Extension New Mechanism Goals1173908
-Ref: Extension New Mechanism Goals-Footnote-11177268
-Node: Extension Other Design Decisions1177457
-Node: Extension Future Growth1179565
-Node: Old Extension Mechanism1180401
-Node: Notes summary1182163
-Node: Basic Concepts1183349
-Node: Basic High Level1184030
-Ref: figure-general-flow1184302
-Ref: figure-process-flow1184901
-Ref: Basic High Level-Footnote-11188130
-Node: Basic Data Typing1188315
-Node: Glossary1191643
-Node: Copying1223572
-Node: GNU Free Documentation License1261128
-Node: Index1286264
+Ref: Programmer i18n-Footnote-1823919
+Node: Translator i18n823968
+Node: String Extraction824762
+Ref: String Extraction-Footnote-1825893
+Node: Printf Ordering825979
+Ref: Printf Ordering-Footnote-1828765
+Node: I18N Portability828829
+Ref: I18N Portability-Footnote-1831285
+Node: I18N Example831348
+Ref: I18N Example-Footnote-1834151
+Node: Gawk I18N834223
+Node: I18N Summary834867
+Node: Debugger836207
+Node: Debugging837229
+Node: Debugging Concepts837670
+Node: Debugging Terms839480
+Node: Awk Debugging842052
+Node: Sample Debugging Session842958
+Node: Debugger Invocation843492
+Node: Finding The Bug844877
+Node: List of Debugger Commands851356
+Node: Breakpoint Control852688
+Node: Debugger Execution Control856365
+Node: Viewing And Changing Data859724
+Node: Execution Stack863100
+Node: Debugger Info864735
+Node: Miscellaneous Debugger Commands868780
+Node: Readline Support873781
+Node: Limitations874675
+Node: Debugging Summary876790
+Node: Arbitrary Precision Arithmetic877964
+Node: Computer Arithmetic879380
+Ref: table-numeric-ranges882978
+Ref: Computer Arithmetic-Footnote-1883837
+Node: Math Definitions883894
+Ref: table-ieee-formats887182
+Ref: Math Definitions-Footnote-1887786
+Node: MPFR features887891
+Node: FP Math Caution889562
+Ref: FP Math Caution-Footnote-1890612
+Node: Inexactness of computations890981
+Node: Inexact representation891940
+Node: Comparing FP Values893297
+Node: Errors accumulate894379
+Node: Getting Accuracy895812
+Node: Try To Round898474
+Node: Setting precision899373
+Ref: table-predefined-precision-strings900057
+Node: Setting the rounding mode901846
+Ref: table-gawk-rounding-modes902210
+Ref: Setting the rounding mode-Footnote-1905665
+Node: Arbitrary Precision Integers905844
+Ref: Arbitrary Precision Integers-Footnote-1910744
+Node: POSIX Floating Point Problems910893
+Ref: POSIX Floating Point Problems-Footnote-1914766
+Node: Floating point summary914804
+Node: Dynamic Extensions916998
+Node: Extension Intro918550
+Node: Plugin License919816
+Node: Extension Mechanism Outline920613
+Ref: figure-load-extension921041
+Ref: figure-register-new-function922521
+Ref: figure-call-new-function923525
+Node: Extension API Description925511
+Node: Extension API Functions Introduction926961
+Node: General Data Types931785
+Ref: General Data Types-Footnote-1937524
+Node: Memory Allocation Functions937823
+Ref: Memory Allocation Functions-Footnote-1940662
+Node: Constructor Functions940758
+Node: Registration Functions942492
+Node: Extension Functions943177
+Node: Exit Callback Functions945474
+Node: Extension Version String946722
+Node: Input Parsers947387
+Node: Output Wrappers957266
+Node: Two-way processors961781
+Node: Printing Messages963985
+Ref: Printing Messages-Footnote-1965061
+Node: Updating `ERRNO'965213
+Node: Requesting Values965953
+Ref: table-value-types-returned966681
+Node: Accessing Parameters967638
+Node: Symbol Table Access968869
+Node: Symbol table by name969383
+Node: Symbol table by cookie971364
+Ref: Symbol table by cookie-Footnote-1975508
+Node: Cached values975571
+Ref: Cached values-Footnote-1979070
+Node: Array Manipulation979161
+Ref: Array Manipulation-Footnote-1980259
+Node: Array Data Types980296
+Ref: Array Data Types-Footnote-1982951
+Node: Array Functions983043
+Node: Flattening Arrays986897
+Node: Creating Arrays993789
+Node: Extension API Variables998560
+Node: Extension Versioning999196
+Node: Extension API Informational Variables1001097
+Node: Extension API Boilerplate1002162
+Node: Finding Extensions1005971
+Node: Extension Example1006531
+Node: Internal File Description1007303
+Node: Internal File Ops1011370
+Ref: Internal File Ops-Footnote-11023040
+Node: Using Internal File Ops1023180
+Ref: Using Internal File Ops-Footnote-11025563
+Node: Extension Samples1025836
+Node: Extension Sample File Functions1027362
+Node: Extension Sample Fnmatch1035000
+Node: Extension Sample Fork1036491
+Node: Extension Sample Inplace1037706
+Node: Extension Sample Ord1039381
+Node: Extension Sample Readdir1040217
+Ref: table-readdir-file-types1041093
+Node: Extension Sample Revout1041904
+Node: Extension Sample Rev2way1042494
+Node: Extension Sample Read write array1043234
+Node: Extension Sample Readfile1045174
+Node: Extension Sample Time1046269
+Node: Extension Sample API Tests1047618
+Node: gawkextlib1048109
+Node: Extension summary1050767
+Node: Extension Exercises1054456
+Node: Language History1055178
+Node: V7/SVR3.11056834
+Node: SVR41059015
+Node: POSIX1060460
+Node: BTL1061849
+Node: POSIX/GNU1062583
+Node: Feature History1068372
+Node: Common Extensions1082098
+Node: Ranges and Locales1083422
+Ref: Ranges and Locales-Footnote-11088040
+Ref: Ranges and Locales-Footnote-21088067
+Ref: Ranges and Locales-Footnote-31088301
+Node: Contributors1088522
+Node: History summary1094063
+Node: Installation1095433
+Node: Gawk Distribution1096379
+Node: Getting1096863
+Node: Extracting1097686
+Node: Distribution contents1099321
+Node: Unix Installation1105386
+Node: Quick Installation1106069
+Node: Shell Startup Files1108480
+Node: Additional Configuration Options1109559
+Node: Configuration Philosophy1111298
+Node: Non-Unix Installation1113667
+Node: PC Installation1114125
+Node: PC Binary Installation1115444
+Node: PC Compiling1117292
+Ref: PC Compiling-Footnote-11120313
+Node: PC Testing1120422
+Node: PC Using1121598
+Node: Cygwin1125713
+Node: MSYS1126536
+Node: VMS Installation1127036
+Node: VMS Compilation1127828
+Ref: VMS Compilation-Footnote-11129050
+Node: VMS Dynamic Extensions1129108
+Node: VMS Installation Details1130792
+Node: VMS Running1133044
+Node: VMS GNV1135880
+Node: VMS Old Gawk1136614
+Node: Bugs1137084
+Node: Other Versions1140967
+Node: Installation summary1147391
+Node: Notes1148447
+Node: Compatibility Mode1149312
+Node: Additions1150094
+Node: Accessing The Source1151019
+Node: Adding Code1152454
+Node: New Ports1158611
+Node: Derived Files1163093
+Ref: Derived Files-Footnote-11168568
+Ref: Derived Files-Footnote-21168602
+Ref: Derived Files-Footnote-31169198
+Node: Future Extensions1169312
+Node: Implementation Limitations1169918
+Node: Extension Design1171166
+Node: Old Extension Problems1172320
+Ref: Old Extension Problems-Footnote-11173837
+Node: Extension New Mechanism Goals1173894
+Ref: Extension New Mechanism Goals-Footnote-11177254
+Node: Extension Other Design Decisions1177443
+Node: Extension Future Growth1179551
+Node: Old Extension Mechanism1180387
+Node: Notes summary1182149
+Node: Basic Concepts1183335
+Node: Basic High Level1184016
+Ref: figure-general-flow1184288
+Ref: figure-process-flow1184887
+Ref: Basic High Level-Footnote-11188116
+Node: Basic Data Typing1188301
+Node: Glossary1191629
+Node: Copying1223558
+Node: GNU Free Documentation License1261114
+Node: Index1286250
 
 End Tag Table
