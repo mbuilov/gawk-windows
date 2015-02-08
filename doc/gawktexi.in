@@ -29272,7 +29272,7 @@ paper and pencil (and/or a calculator). In theory, numbers can have an
 arbitrary number of digits on either side (or both sides) of the decimal
 point, and the results of a computation are always exact.
 
-Some modern system can do decimal arithmetic in hardware, but usually you
+Some modern systems can do decimal arithmetic in hardware, but usually you
 need a special software library to provide access to these instructions.
 There are also libraries that do decimal arithmetic entirely in software.
 
@@ -29328,8 +29328,34 @@ signed. The possible ranges of values are shown in @ref{table-numeric-ranges}.
 @item 32-bit unsigned integer @tab 0 @tab 4,294,967,295
 @item 64-bit signed integer @tab @minus{}9,223,372,036,854,775,808 @tab 9,223,372,036,854,775,807
 @item 64-bit unsigned integer @tab 0 @tab 18,446,744,073,709,551,615
-@item Single-precision floating point (approximate) @tab @code{1.175494e-38} @tab @code{3.402823e+38}
-@item Double-precision floating point (approximate) @tab @code{2.225074e-308} @tab @code{1.797693e+308}
+@iftex
+@item Single-precision floating point (approximate) @tab @math{1.175494^{-38}} @tab @math{3.402823^{38}}
+@item Double-precision floating point (approximate) @tab @math{2.225074^{-308}} @tab @math{1.797693^{308}}
+@end iftex
+@ifnottex
+@ifnotdocbook
+@item Single-precision floating point (approximate) @tab 1.175494e-38 @tab 3.402823e38
+@item Double-precision floating point (approximate) @tab 2.225074e-308 @tab 1.797693e308
+@end ifnotdocbook
+@end ifnottex
+@ifdocbook
+@item Single-precision floating point (approximate) @tab
+@docbook
+1.175494<superscript>-38</superscript>
+@end docbook
+@tab
+@docbook
+3.402823<superscript>38</superscript>
+@end docbook
+@item Double-precision floating point (approximate) @tab
+@docbook
+2.225074<superscript>-308</superscript>
+@end docbook
+@tab
+@docbook
+1.797693<superscript>308</superscript>
+@end docbook
+@end ifdocbook
 @end multitable
 @end float
 
@@ -29338,7 +29364,7 @@ signed. The possible ranges of values are shown in @ref{table-numeric-ranges}.
 
 The rest of this @value{CHAPTER} uses a number of terms. Here are some
 informal definitions that should help you work your way through the material
-here.
+here:
 
 @table @dfn
 @item Accuracy
@@ -29359,7 +29385,7 @@ A special value representing infinity. Operations involving another
 number and infinity produce infinity.
 
 @item NaN
-``Not A Number.''@footnote{Thanks to Michael Brennan for this description,
+``Not a number.''@footnote{Thanks to Michael Brennan for this description,
 which we have paraphrased, and for the examples.} A special value that
 results from attempting a calculation that has no answer as a real number.
 In such a case, programs can either receive a floating-point exception,
@@ -29402,8 +29428,8 @@ formula:
 @end display
 
 @noindent
-Here, @var{prec} denotes the binary precision
-(measured in bits) and @var{dps} (short for decimal places)
+Here, @emph{prec} denotes the binary precision
+(measured in bits) and @emph{dps} (short for decimal places)
 is the decimal digits.
 
 @item Rounding mode
@@ -29411,7 +29437,7 @@ How numbers are rounded up or down when necessary.
 More details are provided later.
 
 @item Significand
-A floating-point value consists the significand multiplied by 10
+A floating-point value consists of the significand multiplied by 10
 to the power of the exponent. For example, in @code{1.2345e67},
 the significand is @code{1.2345}.
 
@@ -29435,7 +29461,7 @@ to allow greater precisions and larger exponent ranges.
 (@command{awk} uses only the 64-bit double-precision format.)
 
 @ref{table-ieee-formats} lists the precision and exponent
-field values for the basic IEEE 754 binary formats:
+field values for the basic IEEE 754 binary formats.
 
 @float Table,table-ieee-formats
 @caption{Basic IEEE format values}
@@ -29499,12 +29525,12 @@ for more information.
 @author Teen Talk Barbie, July 1992
 @end quotation
 
-This @value{SECTION} provides a high level overview of the issues
+This @value{SECTION} provides a high-level overview of the issues
 involved when doing lots of floating-point arithmetic.@footnote{There
 is a very nice @uref{http://www.validlab.com/goldberg/paper.pdf,
 paper on floating-point arithmetic} by David Goldberg, ``What Every
-Computer Scientist Should Know About Floating-point Arithmetic,''
-@cite{ACM Computing Surveys} @strong{23}, 1 (1991-03), 5-48.  This is
+Computer Scientist Should Know About Floating-Point Arithmetic,''
+@cite{ACM Computing Surveys} @strong{23}, 1 (1991-03): 5-48.  This is
 worth reading if you are interested in the details, but it does require
 a background in computer science.}
 The discussion applies to both hardware and arbitrary-precision
@@ -29573,7 +29599,7 @@ $ @kbd{gawk 'BEGIN @{ x = 0.875; y = 0.425}
 
 Often the error is so small you do not even notice it, and if you do,
 you can always specify how much precision you would like in your output.
-Usually this is a format string like @code{"%.15g"}, which when
+Usually this is a format string like @code{"%.15g"}, which, when
 used in the previous example, produces an output identical to the input.
 
 @node Comparing FP Values
@@ -29612,7 +29638,7 @@ else
 
 The loss of accuracy during a single computation with floating-point
 numbers usually isn't enough to worry about. However, if you compute a
-value which is the result of a sequence of floating-point operations,
+value that is the result of a sequence of floating-point operations,
 the error can accumulate and greatly affect the computation itself.
 Here is an attempt to compute the value of @value{PI} using one of its
 many series representations:
@@ -29665,7 +29691,7 @@ no easy answers. The standard rules of algebra often do not apply
 when using floating-point arithmetic.
 Among other things, the distributive and associative laws
 do not hold completely, and order of operation may be important
-for your computation. Rounding error, cumulative precision loss
+for your computation. Rounding error, cumulative precision loss,
 and underflow are often troublesome.
 
 When @command{gawk} tests the expressions @samp{0.1 + 12.2} and
@@ -29705,7 +29731,8 @@ by our earlier attempt to compute the value of @value{PI}.
 Extra precision can greatly enhance the stability and the accuracy
 of your computation in such cases.
 
-Repeated addition is not necessarily equivalent to multiplication
+Additionally, you should understand that
+repeated addition is not necessarily equivalent to multiplication
 in floating-point arithmetic. In the example in
 @ref{Errors accumulate}:
 
@@ -29768,7 +29795,7 @@ to emulate an IEEE 754 binary format.
 @float Table,table-predefined-precision-strings
 @caption{Predefined precision strings for @code{PREC}}
 @multitable {@code{"double"}} {12345678901234567890123456789012345}
-@headitem @code{PREC} @tab IEEE 754 Binary Format
+@headitem @code{PREC} @tab IEEE 754 binary format
 @item @code{"half"} @tab 16-bit half-precision
 @item @code{"single"} @tab Basic 32-bit single precision
 @item @code{"double"} @tab Basic 64-bit double precision
@@ -29800,7 +29827,6 @@ than the default and cannot use a command-line assignment to @code{PREC},
 you should either specify the constant as a string, or as a rational
 number, whenever possible. The following example illustrates the
 differences among various ways to print a floating-point constant:
-@end quotation
 
 @example
 $ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", 0.1) @}'}
@@ -29812,22 +29838,23 @@ $ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", "0.1") @}'}
 $ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", 1/10) @}'}
 @print{} 0.1000000000000000000000000
 @end example
+@end quotation
 
 @node Setting the rounding mode
 @subsection Setting the Rounding Mode
 
 The @code{ROUNDMODE} variable provides
-program level control over the rounding mode.
+program-level control over the rounding mode.
 The correspondence between @code{ROUNDMODE} and the IEEE
 rounding modes is shown in @ref{table-gawk-rounding-modes}.
 
 @float Table,table-gawk-rounding-modes
 @caption{@command{gawk} rounding modes}
 @multitable @columnfractions .45 .30 .25
-@headitem Rounding Mode @tab IEEE Name @tab @code{ROUNDMODE}
+@headitem Rounding mode @tab IEEE name @tab @code{ROUNDMODE}
 @item Round to nearest, ties to even @tab @code{roundTiesToEven} @tab @code{"N"} or @code{"n"}
-@item Round toward plus Infinity @tab @code{roundTowardPositive} @tab @code{"U"} or @code{"u"}
-@item Round toward negative Infinity @tab @code{roundTowardNegative} @tab @code{"D"} or @code{"d"}
+@item Round toward positive infinity @tab @code{roundTowardPositive} @tab @code{"U"} or @code{"u"}
+@item Round toward negative infinity @tab @code{roundTowardNegative} @tab @code{"D"} or @code{"d"}
 @item Round toward zero @tab @code{roundTowardZero} @tab @code{"Z"} or @code{"z"}
 @item Round to nearest, ties away from zero @tab @code{roundTiesToAway} @tab @code{"A"} or @code{"a"}
 @end multitable
@@ -29888,8 +29915,8 @@ distributes upward and downward rounds of exact halves, which might
 cause any accumulating round-off error to cancel itself out. This is the
 default rounding mode for IEEE 754 computing functions and operators.
 
-The other rounding modes are rarely used.  Round toward positive infinity
-(@code{roundTowardPositive}) and round toward negative infinity
+The other rounding modes are rarely used.  Rounding toward positive infinity
+(@code{roundTowardPositive}) and toward negative infinity
 (@code{roundTowardNegative}) are often used to implement interval
 arithmetic, where you adjust the rounding mode to calculate upper and
 lower bounds for the range of output. The @code{roundTowardZero} mode can
@@ -29946,17 +29973,17 @@ If instead you were to compute the same value using arbitrary-precision
 floating-point values, the precision needed for correct output (using
 the formula
 @iftex
-@math{prec = 3.322 @cdot dps}),
+@math{prec = 3.322 @cdot dps})
 would be @math{3.322 @cdot 183231},
 @end iftex
 @ifnottex
 @ifnotdocbook
-@samp{prec = 3.322 * dps}),
+@samp{prec = 3.322 * dps})
 would be 3.322 x 183231,
 @end ifnotdocbook
 @end ifnottex
 @docbook
-<emphasis>prec</emphasis> = 3.322 &sdot; <emphasis>dps</emphasis>),
+<emphasis>prec</emphasis> = 3.322 &sdot; <emphasis>dps</emphasis>)
 would be
 <emphasis>prec</emphasis> = 3.322 &sdot; 183231, @c
 @end docbook
@@ -29994,7 +30021,7 @@ interface to process arbitrary-precision integers or mixed-mode numbers
 as needed by an operation or function.  In such a case, the precision is
 set to the minimum value necessary for exact conversion, and the working
 precision is not used for this purpose.  If this is not what you need or
-want, you can employ a subterfuge, and convert the integer to floating
+want, you can employ a subterfuge and convert the integer to floating
 point first, like this:
 
 @example
@@ -30131,7 +30158,7 @@ word sizes. See
 @node POSIX Floating Point Problems
 @section Standards Versus Existing Practice
 
-Historically, @command{awk} has converted any non-numeric looking string
+Historically, @command{awk} has converted any nonnumeric-looking string
 to the numeric value zero, when required.  Furthermore, the original
 definition of the language and the original POSIX standards specified that
 @command{awk} only understands decimal numbers (base 10), and not octal
@@ -30148,8 +30175,8 @@ notation (e.g., @code{0xDEADBEEF}). (Note: data values, @emph{not}
 source code constants.)
 
 @item
-Support for the special IEEE 754 floating-point values ``Not A Number''
-(NaN), positive Infinity (``inf''), and negative Infinity (``@minus{}inf'').
+Support for the special IEEE 754 floating-point values ``not a number''
+(NaN), positive infinity (``inf''), and negative infinity (``@minus{}inf'').
 In particular, the format for these values is as specified by the ISO 1999
 C standard, which ignores case and can allow implementation-dependent additional
 characters after the @samp{nan} and allow either @samp{inf} or @samp{infinity}.
@@ -30170,21 +30197,21 @@ values is also a very severe departure from historical practice.
 @end itemize
 
 The second problem is that the @command{gawk} maintainer feels that this
-interpretation of the standard, which requires a certain amount of
+interpretation of the standard, which required a certain amount of
 ``language lawyering'' to arrive at in the first place, was not even
-intended by the standard developers.  In other words, ``we see how you
+intended by the standard developers.  In other words, ``We see how you
 got where you are, but we don't think that that's where you want to be.''
 
 Recognizing these issues, but attempting to provide compatibility
 with the earlier versions of the standard,
 the 2008 POSIX standard added explicit wording to allow, but not require,
 that @command{awk} support hexadecimal floating-point values and
-special values for ``Not A Number'' and infinity.
+special values for ``not a number'' and infinity.
 
 Although the @command{gawk} maintainer continues to feel that
 providing those features is inadvisable,
 nevertheless, on systems that support IEEE floating point, it seems
-reasonable to provide @emph{some} way to support NaN and Infinity values.
+reasonable to provide @emph{some} way to support NaN and infinity values.
 The solution implemented in @command{gawk} is as follows:
 
 @itemize @value{BULLET}
@@ -30204,7 +30231,7 @@ $ @kbd{echo 0xDeadBeef | gawk --posix '@{ print $1 + 0 @}'}
 @end example
 
 @item
-Without @option{--posix}, @command{gawk} interprets the four strings
+Without @option{--posix}, @command{gawk} interprets the four string values
 @samp{+inf},
 @samp{-inf},
 @samp{+nan},
@@ -30226,7 +30253,7 @@ $ @kbd{echo 0xDeadBeef | gawk '@{ print $1 + 0 @}'}
 @end example
 
 @command{gawk} ignores case in the four special values.
-Thus @samp{+nan} and @samp{+NaN} are the same.
+Thus, @samp{+nan} and @samp{+NaN} are the same.
 @end itemize
 
 @node Floating point summary
@@ -30239,9 +30266,9 @@ values.  Standard @command{awk} uses double-precision
 floating-point values.
 
 @item
-In the early 1990s, Barbie mistakenly said ``Math class is tough!''
+In the early 1990s Barbie mistakenly said, ``Math class is tough!''
 Although math isn't tough, floating-point arithmetic isn't the same
-as pencil and paper math, and care must be taken:
+as pencil-and-paper math, and care must be taken:
 
 @c nested list
 @itemize @value{MINUS}
@@ -30274,7 +30301,7 @@ arithmetic. Use @code{PREC} to set the precision in bits, and
 @item
 With @option{-M}, @command{gawk} performs
 arbitrary-precision integer arithmetic using the GMP library.
-This is faster and more space efficient than using MPFR for
+This is faster and more space-efficient than using MPFR for
 the same calculations.
 
 @item
@@ -30286,7 +30313,7 @@ It pays to be aware of them.
 Overall, there is no need to be unduly suspicious about the results from
 floating-point arithmetic. The lesson to remember is that floating-point
 arithmetic is always more complex than arithmetic using pencil and
-paper. In order to take advantage of the power of computer floating point,
+paper. In order to take advantage of the power of floating-point arithmetic,
 you need to know its limitations and work within them. For most casual
 use of floating-point arithmetic, you will often get the expected result
 if you simply round the display of your final results to the correct number
