@@ -261,7 +261,6 @@ struct recmatch {
 
 
 static int iop_close(IOBUF *iop);
-struct redirect *redirect(NODE *redir_exp, int redirtype, int *errflg);
 static void close_one(void);
 static int close_redir(struct redirect *rp, bool exitwarn, two_way_close_type how);
 #ifndef PIPES_SIMULATED
@@ -718,7 +717,6 @@ redflags2str(int flags)
 		{ RED_PTY,	"RED_PTY" },
 		{ RED_SOCKET,	"RED_SOCKET" },
 		{ RED_TCP,	"RED_TCP" },
-		{ RED_NON_FATAL,	"RED_NON_FATAL" },
 		{ 0, NULL }
 	};
 
@@ -728,7 +726,7 @@ redflags2str(int flags)
 /* redirect --- Redirection for printf and print commands */
 
 struct redirect *
-redirect(NODE *redir_exp, int redirtype, int *errflg)
+redirect(NODE *redir_exp, int redirtype, int *errflg, bool failure_fatal)
 {
 	struct redirect *rp;
 	char *str;
@@ -745,8 +743,6 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 	static struct redirect *save_rp = NULL;	/* hold onto rp that should
 	                                         * be freed for reuse
 	                                         */
-	bool is_output = false;
-	bool is_non_fatal = false;
 
 	if (do_sandbox)
 		fatal(_("redirection not allowed in sandbox mode"));
@@ -756,7 +752,6 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 		tflag = RED_APPEND;
 		/* FALL THROUGH */
 	case redirect_output:
-		is_output = true;
 		outflag = (RED_FILE|RED_WRITE);
 		tflag |= outflag;
 		if (redirtype == redirect_output)
@@ -765,7 +760,6 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			what = ">>";
 		break;
 	case redirect_pipe:
-		is_output = true;
 		tflag = (RED_PIPE|RED_WRITE);
 		what = "|";
 		break;
@@ -778,7 +772,6 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 		what = "<";
 		break;
 	case redirect_twoway:
-		is_output = true;
 		tflag = (RED_READ|RED_WRITE|RED_TWOWAY);
 		what = "|&";
 		break;
@@ -799,14 +792,6 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			|| strncmp(str, "1", redir_exp->stlen) == 0))
 		lintwarn(_("filename `%s' for `%s' redirection may be result of logical expression"),
 				str, what);
-
-	/* input files/pipes are automatically nonfatal */
-	if (is_output) {
-		is_non_fatal = (in_PROCINFO("nonfatal", NULL, NULL) != NULL
-				|| in_PROCINFO(str, "nonfatal", NULL) != NULL);
-		if (is_non_fatal)
-			tflag |= RED_NON_FATAL;
-	}
 
 #ifdef HAVE_SOCKETS
 	/*
@@ -907,7 +892,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 
 			os_restore_mode(fileno(stdin));
 			/*
-			 * Don't check is_non_fatal; see input pipe below.
+			 * Don't check failure_fatal; see input pipe below.
 			 * Note that the failure happens upon failure to fork,
 			 * using a non-existant program will still succeed the
 			 * popen().
@@ -947,17 +932,11 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 		case redirect_twoway:
 			direction = "to/from";
 			if (! two_way_open(str, rp)) {
-#ifdef HAVE_SOCKETS
-				if (inetfile(str, NULL)) {
-					*errflg = errno;
-					/* do not free rp, saving it for reuse (save_rp = rp) */
-					return NULL;
-				} else if (is_non_fatal) {
+				if (! failure_fatal || is_non_fatal_redirect(str)) {
 					*errflg = errno;
 					/* do not free rp, saving it for reuse (save_rp = rp) */
 					return NULL;
 				} else
-#endif
 					fatal(_("can't open two way pipe `%s' for input/output (%s)"),
 							str, strerror(errno));
 			}
@@ -1038,7 +1017,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 				 */
 				if (errflg != NULL)
 					*errflg = errno;
-				if (! is_non_fatal &&
+				if (failure_fatal && ! is_non_fatal_redirect(str) &&
 				    (redirtype == redirect_output
 				     || redirtype == redirect_append)) {
 					/* multiple messages make life easier for translators */
@@ -1102,6 +1081,15 @@ is_non_fatal_std(FILE *fp)
 	}
 
 	return false;
+}
+
+/* is_non_fatal_redirect --- return true if redirected I/O should be nonfatal */
+
+bool
+is_non_fatal_redirect(const char *str)
+{
+	return in_PROCINFO("nonfatal", NULL, NULL) != NULL
+	       || in_PROCINFO(str, "nonfatal", NULL) != NULL;
 }
 
 /* close_one --- temporarily close an open file to re-use the fd */
@@ -2467,7 +2455,7 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 
 	assert(redirtype != redirect_none);
 	redir_exp = TOP();
-	rp = redirect(redir_exp, redirtype, & redir_error);
+	rp = redirect(redir_exp, redirtype, & redir_error, false);
 	DEREF(redir_exp);
 	decr_sp();
 	if (rp == NULL) {

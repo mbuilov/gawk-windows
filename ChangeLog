@@ -1,3 +1,16 @@
+2015-02-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (RED_NON_FATAL): Removed.
+	(redirect): Add new failure_fatal parameter.
+	(is_non_fatal_redirect): Add declaration.
+	* builtin.c (efwrite): Rework check for non-fatal.
+	(do_printf): Adjust calls to redirect.
+	(do_print_rec): Ditto. Move check for redirection error up.
+	* io.c (redflags2str): Remove RED_NON_FATAL.
+	(redirect): Add new failure_fatal parameter. Simplify the code.
+	(is_non_fatal_redirect): New function.
+	(do_getline_redir): Adjust calls to redirect.
+
 2014-12-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h (is_non_fatal_std): Declare new function.
