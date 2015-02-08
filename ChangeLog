@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 2015-02-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* awk.h (RED_NON_FATAL): Removed.
@@ -16,6 +17,109 @@
 	* awk.h (is_non_fatal_std): Declare new function.
 	* io.c (is_non_fatal_std): New function.
 	* builtin.c (efwrite): Call it.
+=======
+2015-02-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regcomp.c, regex.c, regex.h, regex_internal.c, regex_internal.h,
+	regexec.c: Sync with GLIBC. Mostly copyright date updates.
+
+2015-02-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* eval.c (set_IGNORECASE): If IGNORECASE has a numeric value, try
+	using that before treating it as a string.  This fixes a problem
+	where setting -v IGNORECASE=0 on the command line was not working
+	properly.
+
+2015-02-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Move POSIX requirement for disallowing paramater names with the
+	same name as a function into --posix.
+
+	* NEWS: Document it.
+	* awkgram.y (parse_program): Check do_posix before calling
+	check_param_names().
+	* symbol.c (check_param_names): Set up a fake node and call
+	in_array() for function parameter names instead of linear
+	searching the function list a second time. Thanks to Andrew
+	Schorr for the motivation.
+
+2015-01-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Don't allow function parameter names to be the same as function
+	names - required by POSIX. Bug first reported in comp.lang.awk.
+
+	In addition, don't allow use of a parameter as a function name
+	in a call (but it's ok in indirect calls).
+
+	* NEWS: Updated.
+	* awk.h (check_param_names): Add declaration.
+	* awkgram.y (at_seen): New variable. Communicates between
+	yylex() and the parser.
+	(FUNC_CALL production): Check at_seen and check that the identifier
+	is a function name.
+	(parse_program): Call check_param_names() and set errcount.
+	(yylex): Set at_seen after seeing an at-sign.
+	* symbol.c (check_param_names): New function.
+
+2015-01-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Infrastructure updates.
+
+	Bison 3.0.4. Automake 1.15. Gettext 0.19.4.
+
+2015-01-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.c (api_set_array_element): Remove useless call to
+	make_aname.
+	* symbol.c (load_symbols): Ditto.
+	Thanks to Andrew Schorr for pointing out the problem.
+
+2015-01-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.c: Update to bison 3.0.3.
+	* command.c: Ditto.
+	* NEWS: Note same.
+
+2015-01-16         Stephen Davies        <sdavies@sdc.com.au>
+
+	* awkgram.y (rule): Set first_rule to false. Catches more cases
+	for gathering comments. Thanks to Hermann Peifer for the test case.
+
+2015-01-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: Sync with grep. Mainly copyright updates.
+	* getopt.c, getopt.h, getopt1.c getopt_int.h: Sync with GLIBC.
+	Mainly copyright updates, one minor code fix.
+
+2015-01-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Remove deferred variables.
+
+	* awk.h (register_deferred_variable): Remove declaration.
+	* awkgram.y (is_deferred_variable, process_deferred,
+	symtab_used, extensions_used, deferred_variables,
+	process_deferred): Remove declarations, bodies, and uses.
+	* builtin.c (do_length): Update comment.
+	* main.c (init_vars): Just call load_procinfo() and `load_environ()'.
+
+2015-01-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Update debug flags if developing.
+	* awkgram.y (yylex): Regex parsing bug fix for bracket expressions.
+	Thanks to Mike Brennan for the report.
+	* builtin.c (format_tree): Catch non-use of count$ for dynamic
+	field width or precision.
+
+	Unrelated:
+
+	Load deferred variables if extensions are used; they might
+	want to access PROCINFO and/or ENVIRON. Thanks to Andrew Schorr
+	for pointing out the issue.
+
+	* awkgram.y (extensions_used): New variable. Set it on @load.
+	(do_add_scrfile): Set it on -l.
+	(process_deferred): Check it also.
+>>>>>>> master
 
 2014-12-24         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -1787,7 +1891,7 @@
 2012-12-25         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Remove sym-constant from API after discussions with John
-	Haque and Andy Schorr.
+	Haque and Andrew Schorr.
 
 	* gawkapi.h (api_sym_constant): Removed field in API struct.
 	(sym_constant): Remove macro.

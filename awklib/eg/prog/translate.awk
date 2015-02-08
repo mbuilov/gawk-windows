@@ -4,7 +4,7 @@
 # August 1989
 # February 2009 - bug fix
 
-# Bugs: does not handle things like: tr A-Z a-z, it has
+# Bugs: does not handle things like tr A-Z a-z; it has
 # to be spelled out. However, if `to' is shorter than `from',
 # the last character in `to' is used for the rest of `from'.
 

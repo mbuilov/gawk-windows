@@ -4,6 +4,49 @@
 	* nonfatal1.awk, nonfatal1.ok: New files.
 	* nonfatal2.awk, nonfatal2.ok: New files.
 
+2015-02-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (paramasfunc1, paramasfunc2): Now need --posix.
+	* indirectcall.awk: Restore after code change.
+
+2015-01-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (callparam, paramasfunc1, paramasfunc2): New tests.
+	* callparam.awk, callparam.ok: New files.
+	* paramasfunc1.awk, paramasfunc1.ok: New files.
+	* paramasfunc2.awk, paramasfunc2.ok: New files.
+	* exit.sh, indirectcall.awk: Update after code change.
+
+2015-01-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (profile8): Actually add the test and the files.
+	Thanks to Hermann Peifer for the report.
+
+2015-01-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (profile8): New test.
+	* profile8.awk, profile8.ok: New files.
+
+2015-01-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (dumpvars): Grep out ENVIRON and PROCINFO since
+	those can be different depending on who runs the test.
+	* dumpvars.ok, id.ok: Updated after code changes.
+
+2015-01-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (regexpbrack): New test.
+	* regexpbrack.awk, regexpbrack.in, regexpbrack.ok: New files.
+
+	Unrelated:
+
+	* Makefile.am (printfbad4): New test.
+	* printfbad4.awk, printfbad4.ok: New files.
+
+	Unrelated:
+
+	* testext.ok: Adjust for code changes.
+
 2014-12-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (badbuild): New test.

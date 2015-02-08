@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 2012, 2013, 2014
+ * Copyright (C) 2012, 2013, 2014, 2015
  * the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
@@ -302,11 +302,11 @@ var_test(int nargs, awk_value_t *result)
 		goto out;
 	}
 
-	/* look up PROCINFO - should fail */
+	/* look up PROCINFO - should succeed fail */
 	if (sym_lookup("PROCINFO", AWK_ARRAY, & value))
-		printf("var_test: sym_lookup of PROCINFO failed - got a value!\n");
+		printf("var_test: sym_lookup of PROCINFO passed - got a value!\n");
 	else
-		printf("var_test: sym_lookup of PROCINFO passed - did not get a value\n");
+		printf("var_test: sym_lookup of PROCINFO failed - did not get a value\n");
 
 	/* look up a reserved variable - should pass */
 	if (sym_lookup("ARGC", AWK_NUMBER, & value))

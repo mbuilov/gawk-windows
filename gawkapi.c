@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 2012-2014 the Free Software Foundation, Inc.
+ * Copyright (C) 2012-2015 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -790,7 +790,6 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 		elem->parent_array = array;
 		elem->vname = estrdup(index->str_value.str,
 					index->str_value.len);
-		make_aname(elem);
 	}
 
 	return awk_true;

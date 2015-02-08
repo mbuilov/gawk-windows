@@ -4,8 +4,9 @@
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # January 2009
 
-# quicksort --- C.A.R. Hoare's quick sort algorithm. See Wikipedia
-#               or almost any algorithms or computer science text
+
+# quicksort --- C.A.R. Hoare's quicksort algorithm. See Wikipedia
+#               or almost any algorithms or computer science text.
 #
 # Adapted from K&R-II, page 110
 
