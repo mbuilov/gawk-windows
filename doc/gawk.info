@@ -21768,7 +21768,7 @@ Decimal arithmetic
      sides) of the decimal point, and the results of a computation are
      always exact.
 
-     Some modern system can do decimal arithmetic in hardware, but
+     Some modern systems can do decimal arithmetic in hardware, but
      usually you need a special software library to provide access to
      these instructions.  There are also libraries that do decimal
      arithmetic entirely in software.
@@ -21822,12 +21822,6 @@ Numeric representation   Minimum value            Maximum value
 32-bit unsigned integer  0                        4,294,967,295
 64-bit signed integer    -9,223,372,036,854,775,8089,223,372,036,854,775,807
 64-bit unsigned integer  0                        18,446,744,073,709,551,615
-Single-precision         `1.175494e-38'           `3.402823e+38'
-floating point                                    
-(approximate)                                     
-Double-precision         `2.225074e-308'          `1.797693e+308'
-floating point                                    
-(approximate)                                     
 
 Table 15.1: Value ranges for different numeric representations
 
@@ -21843,7 +21837,7 @@ File: gawk.info,  Node: Math Definitions,  Next: MPFR features,  Prev: Computer 
 
 The rest of this major node uses a number of terms. Here are some
 informal definitions that should help you work your way through the
-material here.
+material here:
 
 "Accuracy"
      A floating-point calculation's accuracy is how close it comes to
@@ -21863,7 +21857,7 @@ material here.
      number and infinity produce infinity.
 
 "NaN"
-     "Not A Number."(1) A special value that results from attempting a
+     "Not a number."(1) A special value that results from attempting a
      calculation that has no answer as a real number.  In such a case,
      programs can either receive a floating-point exception, or get
      `NaN' back as the result. The IEEE 754 standard recommends that
@@ -21889,15 +21883,15 @@ material here.
 
           PREC = 3.322 * DPS
 
-     Here, PREC denotes the binary precision (measured in bits) and DPS
-     (short for decimal places) is the decimal digits.
+     Here, _prec_ denotes the binary precision (measured in bits) and
+     _dps_ (short for decimal places) is the decimal digits.
 
 "Rounding mode"
      How numbers are rounded up or down when necessary.  More details
      are provided later.
 
 "Significand"
-     A floating-point value consists the significand multiplied by 10
+     A floating-point value consists of the significand multiplied by 10
      to the power of the exponent. For example, in `1.2345e67', the
      significand is `1.2345'.
 
@@ -21919,7 +21913,7 @@ precision formats to allow greater precisions and larger exponent
 ranges.  (`awk' uses only the 64-bit double-precision format.)
 
    *note table-ieee-formats:: lists the precision and exponent field
-values for the basic IEEE 754 binary formats:
+values for the basic IEEE 754 binary formats.
 
 Name           Total bits     Precision      Minimum        Maximum
                                              exponent       exponent
@@ -21984,7 +21978,7 @@ File: gawk.info,  Node: FP Math Caution,  Next: Arbitrary Precision Integers,  P
 
      Math class is tough!  -- Teen Talk Barbie, July 1992
 
-   This minor node provides a high level overview of the issues
+   This minor node provides a high-level overview of the issues
 involved when doing lots of floating-point arithmetic.(1) The
 discussion applies to both hardware and arbitrary-precision
 floating-point arithmetic.
@@ -22005,8 +21999,8 @@ floating-point arithmetic.
 
    (1) There is a very nice paper on floating-point arithmetic
 (http://www.validlab.com/goldberg/paper.pdf) by David Goldberg, "What
-Every Computer Scientist Should Know About Floating-point Arithmetic,"
-`ACM Computing Surveys' *23*, 1 (1991-03), 5-48.  This is worth reading
+Every Computer Scientist Should Know About Floating-Point Arithmetic,"
+`ACM Computing Surveys' *23*, 1 (1991-03): 5-48.  This is worth reading
 if you are interested in the details, but it does require a background
 in computer science.
 
@@ -22060,7 +22054,7 @@ number as you assigned to it:
 
    Often the error is so small you do not even notice it, and if you do,
 you can always specify how much precision you would like in your output.
-Usually this is a format string like `"%.15g"', which when used in the
+Usually this is a format string like `"%.15g"', which, when used in the
 previous example, produces an output identical to the input.
 
 
@@ -22100,7 +22094,7 @@ File: gawk.info,  Node: Errors accumulate,  Prev: Comparing FP Values,  Up: Inex
 
 The loss of accuracy during a single computation with floating-point
 numbers usually isn't enough to worry about. However, if you compute a
-value which is the result of a sequence of floating-point operations,
+value that is the result of a sequence of floating-point operations,
 the error can accumulate and greatly affect the computation itself.
 Here is an attempt to compute the value of pi using one of its many
 series representations:
@@ -22151,7 +22145,7 @@ easy answers. The standard rules of algebra often do not apply when
 using floating-point arithmetic.  Among other things, the distributive
 and associative laws do not hold completely, and order of operation may
 be important for your computation. Rounding error, cumulative precision
-loss and underflow are often troublesome.
+loss, and underflow are often troublesome.
 
    When `gawk' tests the expressions `0.1 + 12.2' and `12.3' for
 equality using the machine double-precision arithmetic, it decides that
@@ -22186,8 +22180,9 @@ illustrated by our earlier attempt to compute the value of pi.  Extra
 precision can greatly enhance the stability and the accuracy of your
 computation in such cases.
 
-   Repeated addition is not necessarily equivalent to multiplication in
-floating-point arithmetic. In the example in *note Errors accumulate:::
+   Additionally, you should understand that repeated addition is not
+necessarily equivalent to multiplication in floating-point arithmetic.
+In the example in *note Errors accumulate:::
 
      $ gawk 'BEGIN {
      >   for (d = 1.1; d <= 1.5; d += 0.1)    # loop five times (?)
@@ -22242,7 +22237,7 @@ set the value to one of the predefined case-insensitive strings shown
 in *note table-predefined-precision-strings::, to emulate an IEEE 754
 binary format.
 
-`PREC'       IEEE 754 Binary Format
+`PREC'       IEEE 754 binary format
 --------------------------------------------------- 
 `"half"'     16-bit half-precision
 `"single"'   Basic 32-bit single precision
@@ -22275,14 +22270,14 @@ on arithmetic operations:
      example illustrates the differences among various ways to print a
      floating-point constant:
 
-     $ gawk -M 'BEGIN { PREC = 113; printf("%0.25f\n", 0.1) }'
-     -| 0.1000000000000000055511151
-     $ gawk -M -v PREC=113 'BEGIN { printf("%0.25f\n", 0.1) }'
-     -| 0.1000000000000000000000000
-     $ gawk -M 'BEGIN { PREC = 113; printf("%0.25f\n", "0.1") }'
-     -| 0.1000000000000000000000000
-     $ gawk -M 'BEGIN { PREC = 113; printf("%0.25f\n", 1/10) }'
-     -| 0.1000000000000000000000000
+          $ gawk -M 'BEGIN { PREC = 113; printf("%0.25f\n", 0.1) }'
+          -| 0.1000000000000000055511151
+          $ gawk -M -v PREC=113 'BEGIN { printf("%0.25f\n", 0.1) }'
+          -| 0.1000000000000000000000000
+          $ gawk -M 'BEGIN { PREC = 113; printf("%0.25f\n", "0.1") }'
+          -| 0.1000000000000000000000000
+          $ gawk -M 'BEGIN { PREC = 113; printf("%0.25f\n", 1/10) }'
+          -| 0.1000000000000000000000000
 
 
 File: gawk.info,  Node: Setting the rounding mode,  Prev: Setting precision,  Up: FP Math Caution
@@ -22290,15 +22285,15 @@ File: gawk.info,  Node: Setting the rounding mode,  Prev: Setting precision,  Up
 15.4.5 Setting the Rounding Mode
 --------------------------------
 
-The `ROUNDMODE' variable provides program level control over the
+The `ROUNDMODE' variable provides program-level control over the
 rounding mode.  The correspondence between `ROUNDMODE' and the IEEE
 rounding modes is shown in *note table-gawk-rounding-modes::.
 
-Rounding Mode                    IEEE Name              `ROUNDMODE'
+Rounding mode                    IEEE name              `ROUNDMODE'
 --------------------------------------------------------------------------- 
 Round to nearest, ties to even   `roundTiesToEven'      `"N"' or `"n"'
-Round toward plus Infinity       `roundTowardPositive'  `"U"' or `"u"'
-Round toward negative Infinity   `roundTowardNegative'  `"D"' or `"d"'
+Round toward positive infinity   `roundTowardPositive'  `"U"' or `"u"'
+Round toward negative infinity   `roundTowardNegative'  `"D"' or `"d"'
 Round toward zero                `roundTowardZero'      `"Z"' or `"z"'
 Round to nearest, ties away      `roundTiesToAway'      `"A"' or `"a"'
 from zero                                               
@@ -22349,8 +22344,8 @@ distributes upward and downward rounds of exact halves, which might
 cause any accumulating round-off error to cancel itself out. This is the
 default rounding mode for IEEE 754 computing functions and operators.
 
-   The other rounding modes are rarely used.  Round toward positive
-infinity (`roundTowardPositive') and round toward negative infinity
+   The other rounding modes are rarely used.  Rounding toward positive
+infinity (`roundTowardPositive') and toward negative infinity
 (`roundTowardNegative') are often used to implement interval
 arithmetic, where you adjust the rounding mode to calculate upper and
 lower bounds for the range of output. The `roundTowardZero' mode can be
@@ -22398,7 +22393,7 @@ floating-point values:
 
    If instead you were to compute the same value using
 arbitrary-precision floating-point values, the precision needed for
-correct output (using the formula `prec = 3.322 * dps'), would be 3.322
+correct output (using the formula `prec = 3.322 * dps') would be 3.322
 x 183231, or 608693.
 
    The result from an arithmetic operation with an integer and a
@@ -22429,7 +22424,7 @@ interface to process arbitrary-precision integers or mixed-mode numbers
 as needed by an operation or function.  In such a case, the precision is
 set to the minimum value necessary for exact conversion, and the working
 precision is not used for this purpose.  If this is not what you need or
-want, you can employ a subterfuge, and convert the integer to floating
+want, you can employ a subterfuge and convert the integer to floating
 point first, like this:
 
      gawk -M 'BEGIN { n = 13; print (n + 0.0) % 2.0 }'
@@ -22456,7 +22451,7 @@ File: gawk.info,  Node: POSIX Floating Point Problems,  Next: Floating point sum
 15.6 Standards Versus Existing Practice
 =======================================
 
-Historically, `awk' has converted any non-numeric looking string to the
+Historically, `awk' has converted any nonnumeric-looking string to the
 numeric value zero, when required.  Furthermore, the original
 definition of the language and the original POSIX standards specified
 that `awk' only understands decimal numbers (base 10), and not octal
@@ -22470,8 +22465,8 @@ These features are:
      hexadecimal notation (e.g., `0xDEADBEEF'). (Note: data values,
      _not_ source code constants.)
 
-   * Support for the special IEEE 754 floating-point values "Not A
-     Number" (NaN), positive Infinity ("inf"), and negative Infinity
+   * Support for the special IEEE 754 floating-point values "not a
+     number" (NaN), positive infinity ("inf"), and negative infinity
      ("-inf").  In particular, the format for these values is as
      specified by the ISO 1999 C standard, which ignores case and can
      allow implementation-dependent additional characters after the
@@ -22488,21 +22483,21 @@ historical practice:
      values is also a very severe departure from historical practice.
 
    The second problem is that the `gawk' maintainer feels that this
-interpretation of the standard, which requires a certain amount of
+interpretation of the standard, which required a certain amount of
 "language lawyering" to arrive at in the first place, was not even
-intended by the standard developers.  In other words, "we see how you
+intended by the standard developers.  In other words, "We see how you
 got where you are, but we don't think that that's where you want to be."
 
    Recognizing these issues, but attempting to provide compatibility
 with the earlier versions of the standard, the 2008 POSIX standard
 added explicit wording to allow, but not require, that `awk' support
-hexadecimal floating-point values and special values for "Not A Number"
+hexadecimal floating-point values and special values for "not a number"
 and infinity.
 
    Although the `gawk' maintainer continues to feel that providing
 those features is inadvisable, nevertheless, on systems that support
 IEEE floating point, it seems reasonable to provide _some_ way to
-support NaN and Infinity values.  The solution implemented in `gawk' is
+support NaN and infinity values.  The solution implemented in `gawk' is
 as follows:
 
    * With the `--posix' command-line option, `gawk' becomes "hands
@@ -22517,7 +22512,7 @@ as follows:
           $ echo 0xDeadBeef | gawk --posix '{ print $1 + 0 }'
           -| 3735928559
 
-   * Without `--posix', `gawk' interprets the four strings `+inf',
+   * Without `--posix', `gawk' interprets the four string values `+inf',
      `-inf', `+nan', and `-nan' specially, producing the corresponding
      special numeric values.  The leading sign acts a signal to `gawk'
      (and the user) that the value is really numeric.  Hexadecimal
@@ -22531,7 +22526,7 @@ as follows:
           $ echo 0xDeadBeef | gawk '{ print $1 + 0 }'
           -| 0
 
-     `gawk' ignores case in the four special values.  Thus `+nan' and
+     `gawk' ignores case in the four special values.  Thus, `+nan' and
      `+NaN' are the same.
 
    ---------- Footnotes ----------
@@ -22548,9 +22543,9 @@ File: gawk.info,  Node: Floating point summary,  Prev: POSIX Floating Point Prob
      floating-point values.  Standard `awk' uses double-precision
      floating-point values.
 
-   * In the early 1990s, Barbie mistakenly said "Math class is tough!"
+   * In the early 1990s Barbie mistakenly said, "Math class is tough!"
      Although math isn't tough, floating-point arithmetic isn't the same
-     as pencil and paper math, and care must be taken:
+     as pencil-and-paper math, and care must be taken:
 
         - Not all numbers can be represented exactly.
 
@@ -22571,7 +22566,7 @@ File: gawk.info,  Node: Floating point summary,  Prev: POSIX Floating Point Prob
      rounding mode.
 
    * With `-M', `gawk' performs arbitrary-precision integer arithmetic
-     using the GMP library.  This is faster and more space efficient
+     using the GMP library.  This is faster and more space-efficient
      than using MPFR for the same calculations.
 
    * There are several "dark corners" with respect to floating-point
@@ -22582,7 +22577,7 @@ File: gawk.info,  Node: Floating point summary,  Prev: POSIX Floating Point Prob
      results from floating-point arithmetic. The lesson to remember is
      that floating-point arithmetic is always more complex than
      arithmetic using pencil and paper. In order to take advantage of
-     the power of computer floating point, you need to know its
+     the power of floating-point arithmetic, you need to know its
      limitations and work within them. For most casual use of
      floating-point arithmetic, you will often get the expected result
      if you simply round the display of your final results to the
@@ -34865,171 +34860,171 @@ Node: Limitations872342
 Node: Debugging Summary874457
 Node: Arbitrary Precision Arithmetic875631
 Node: Computer Arithmetic877047
-Ref: table-numeric-ranges880645
-Ref: Computer Arithmetic-Footnote-1881504
-Node: Math Definitions881561
-Ref: table-ieee-formats884849
-Ref: Math Definitions-Footnote-1885453
-Node: MPFR features885558
-Node: FP Math Caution887229
-Ref: FP Math Caution-Footnote-1888279
-Node: Inexactness of computations888648
-Node: Inexact representation889607
-Node: Comparing FP Values890964
-Node: Errors accumulate892046
-Node: Getting Accuracy893479
-Node: Try To Round896141
-Node: Setting precision897040
-Ref: table-predefined-precision-strings897724
-Node: Setting the rounding mode899513
-Ref: table-gawk-rounding-modes899877
-Ref: Setting the rounding mode-Footnote-1903332
-Node: Arbitrary Precision Integers903511
-Ref: Arbitrary Precision Integers-Footnote-1906497
-Node: POSIX Floating Point Problems906646
-Ref: POSIX Floating Point Problems-Footnote-1910519
-Node: Floating point summary910557
-Node: Dynamic Extensions912751
-Node: Extension Intro914303
-Node: Plugin License915569
-Node: Extension Mechanism Outline916366
-Ref: figure-load-extension916794
-Ref: figure-register-new-function918274
-Ref: figure-call-new-function919278
-Node: Extension API Description921264
-Node: Extension API Functions Introduction922714
-Node: General Data Types927538
-Ref: General Data Types-Footnote-1933277
-Node: Memory Allocation Functions933576
-Ref: Memory Allocation Functions-Footnote-1936415
-Node: Constructor Functions936511
-Node: Registration Functions938245
-Node: Extension Functions938930
-Node: Exit Callback Functions941227
-Node: Extension Version String942475
-Node: Input Parsers943140
-Node: Output Wrappers953019
-Node: Two-way processors957534
-Node: Printing Messages959738
-Ref: Printing Messages-Footnote-1960814
-Node: Updating `ERRNO'960966
-Node: Requesting Values961706
-Ref: table-value-types-returned962434
-Node: Accessing Parameters963391
-Node: Symbol Table Access964622
-Node: Symbol table by name965136
-Node: Symbol table by cookie967117
-Ref: Symbol table by cookie-Footnote-1971261
-Node: Cached values971324
-Ref: Cached values-Footnote-1974823
-Node: Array Manipulation974914
-Ref: Array Manipulation-Footnote-1976012
-Node: Array Data Types976049
-Ref: Array Data Types-Footnote-1978704
-Node: Array Functions978796
-Node: Flattening Arrays982650
-Node: Creating Arrays989542
-Node: Extension API Variables994313
-Node: Extension Versioning994949
-Node: Extension API Informational Variables996850
-Node: Extension API Boilerplate997915
-Node: Finding Extensions1001724
-Node: Extension Example1002284
-Node: Internal File Description1003056
-Node: Internal File Ops1007123
-Ref: Internal File Ops-Footnote-11018793
-Node: Using Internal File Ops1018933
-Ref: Using Internal File Ops-Footnote-11021316
-Node: Extension Samples1021589
-Node: Extension Sample File Functions1023115
-Node: Extension Sample Fnmatch1030753
-Node: Extension Sample Fork1032244
-Node: Extension Sample Inplace1033459
-Node: Extension Sample Ord1035134
-Node: Extension Sample Readdir1035970
-Ref: table-readdir-file-types1036846
-Node: Extension Sample Revout1037657
-Node: Extension Sample Rev2way1038247
-Node: Extension Sample Read write array1038987
-Node: Extension Sample Readfile1040927
-Node: Extension Sample Time1042022
-Node: Extension Sample API Tests1043371
-Node: gawkextlib1043862
-Node: Extension summary1046520
-Node: Extension Exercises1050209
-Node: Language History1050931
-Node: V7/SVR3.11052587
-Node: SVR41054768
-Node: POSIX1056213
-Node: BTL1057602
-Node: POSIX/GNU1058336
-Node: Feature History1063900
-Node: Common Extensions1076998
-Node: Ranges and Locales1078322
-Ref: Ranges and Locales-Footnote-11082940
-Ref: Ranges and Locales-Footnote-21082967
-Ref: Ranges and Locales-Footnote-31083201
-Node: Contributors1083422
-Node: History summary1088963
-Node: Installation1090333
-Node: Gawk Distribution1091279
-Node: Getting1091763
-Node: Extracting1092586
-Node: Distribution contents1094221
-Node: Unix Installation1099938
-Node: Quick Installation1100555
-Node: Additional Configuration Options1102979
-Node: Configuration Philosophy1104717
-Node: Non-Unix Installation1107086
-Node: PC Installation1107544
-Node: PC Binary Installation1108863
-Node: PC Compiling1110711
-Ref: PC Compiling-Footnote-11113732
-Node: PC Testing1113841
-Node: PC Using1115017
-Node: Cygwin1119132
-Node: MSYS1119955
-Node: VMS Installation1120455
-Node: VMS Compilation1121247
-Ref: VMS Compilation-Footnote-11122469
-Node: VMS Dynamic Extensions1122527
-Node: VMS Installation Details1124211
-Node: VMS Running1126463
-Node: VMS GNV1129299
-Node: VMS Old Gawk1130033
-Node: Bugs1130503
-Node: Other Versions1134386
-Node: Installation summary1140810
-Node: Notes1141866
-Node: Compatibility Mode1142731
-Node: Additions1143513
-Node: Accessing The Source1144438
-Node: Adding Code1145873
-Node: New Ports1152030
-Node: Derived Files1156512
-Ref: Derived Files-Footnote-11161987
-Ref: Derived Files-Footnote-21162021
-Ref: Derived Files-Footnote-31162617
-Node: Future Extensions1162731
-Node: Implementation Limitations1163337
-Node: Extension Design1164585
-Node: Old Extension Problems1165739
-Ref: Old Extension Problems-Footnote-11167256
-Node: Extension New Mechanism Goals1167313
-Ref: Extension New Mechanism Goals-Footnote-11170673
-Node: Extension Other Design Decisions1170862
-Node: Extension Future Growth1172970
-Node: Old Extension Mechanism1173806
-Node: Notes summary1175568
-Node: Basic Concepts1176754
-Node: Basic High Level1177435
-Ref: figure-general-flow1177707
-Ref: figure-process-flow1178306
-Ref: Basic High Level-Footnote-11181535
-Node: Basic Data Typing1181720
-Node: Glossary1185048
-Node: Copying1216977
-Node: GNU Free Documentation License1254533
-Node: Index1279669
+Ref: table-numeric-ranges880646
+Ref: Computer Arithmetic-Footnote-1881170
+Node: Math Definitions881227
+Ref: table-ieee-formats884522
+Ref: Math Definitions-Footnote-1885126
+Node: MPFR features885231
+Node: FP Math Caution886902
+Ref: FP Math Caution-Footnote-1887952
+Node: Inexactness of computations888321
+Node: Inexact representation889280
+Node: Comparing FP Values890638
+Node: Errors accumulate891720
+Node: Getting Accuracy893152
+Node: Try To Round895856
+Node: Setting precision896755
+Ref: table-predefined-precision-strings897439
+Node: Setting the rounding mode899268
+Ref: table-gawk-rounding-modes899632
+Ref: Setting the rounding mode-Footnote-1903084
+Node: Arbitrary Precision Integers903263
+Ref: Arbitrary Precision Integers-Footnote-1906247
+Node: POSIX Floating Point Problems906396
+Ref: POSIX Floating Point Problems-Footnote-1910275
+Node: Floating point summary910313
+Node: Dynamic Extensions912509
+Node: Extension Intro914061
+Node: Plugin License915327
+Node: Extension Mechanism Outline916124
+Ref: figure-load-extension916552
+Ref: figure-register-new-function918032
+Ref: figure-call-new-function919036
+Node: Extension API Description921022
+Node: Extension API Functions Introduction922472
+Node: General Data Types927296
+Ref: General Data Types-Footnote-1933035
+Node: Memory Allocation Functions933334
+Ref: Memory Allocation Functions-Footnote-1936173
+Node: Constructor Functions936269
+Node: Registration Functions938003
+Node: Extension Functions938688
+Node: Exit Callback Functions940985
+Node: Extension Version String942233
+Node: Input Parsers942898
+Node: Output Wrappers952777
+Node: Two-way processors957292
+Node: Printing Messages959496
+Ref: Printing Messages-Footnote-1960572
+Node: Updating `ERRNO'960724
+Node: Requesting Values961464
+Ref: table-value-types-returned962192
+Node: Accessing Parameters963149
+Node: Symbol Table Access964380
+Node: Symbol table by name964894
+Node: Symbol table by cookie966875
+Ref: Symbol table by cookie-Footnote-1971019
+Node: Cached values971082
+Ref: Cached values-Footnote-1974581
+Node: Array Manipulation974672
+Ref: Array Manipulation-Footnote-1975770
+Node: Array Data Types975807
+Ref: Array Data Types-Footnote-1978462
+Node: Array Functions978554
+Node: Flattening Arrays982408
+Node: Creating Arrays989300
+Node: Extension API Variables994071
+Node: Extension Versioning994707
+Node: Extension API Informational Variables996608
+Node: Extension API Boilerplate997673
+Node: Finding Extensions1001482
+Node: Extension Example1002042
+Node: Internal File Description1002814
+Node: Internal File Ops1006881
+Ref: Internal File Ops-Footnote-11018551
+Node: Using Internal File Ops1018691
+Ref: Using Internal File Ops-Footnote-11021074
+Node: Extension Samples1021347
+Node: Extension Sample File Functions1022873
+Node: Extension Sample Fnmatch1030511
+Node: Extension Sample Fork1032002
+Node: Extension Sample Inplace1033217
+Node: Extension Sample Ord1034892
+Node: Extension Sample Readdir1035728
+Ref: table-readdir-file-types1036604
+Node: Extension Sample Revout1037415
+Node: Extension Sample Rev2way1038005
+Node: Extension Sample Read write array1038745
+Node: Extension Sample Readfile1040685
+Node: Extension Sample Time1041780
+Node: Extension Sample API Tests1043129
+Node: gawkextlib1043620
+Node: Extension summary1046278
+Node: Extension Exercises1049967
+Node: Language History1050689
+Node: V7/SVR3.11052345
+Node: SVR41054526
+Node: POSIX1055971
+Node: BTL1057360
+Node: POSIX/GNU1058094
+Node: Feature History1063658
+Node: Common Extensions1076756
+Node: Ranges and Locales1078080
+Ref: Ranges and Locales-Footnote-11082698
+Ref: Ranges and Locales-Footnote-21082725
+Ref: Ranges and Locales-Footnote-31082959
+Node: Contributors1083180
+Node: History summary1088721
+Node: Installation1090091
+Node: Gawk Distribution1091037
+Node: Getting1091521
+Node: Extracting1092344
+Node: Distribution contents1093979
+Node: Unix Installation1099696
+Node: Quick Installation1100313
+Node: Additional Configuration Options1102737
+Node: Configuration Philosophy1104475
+Node: Non-Unix Installation1106844
+Node: PC Installation1107302
+Node: PC Binary Installation1108621
+Node: PC Compiling1110469
+Ref: PC Compiling-Footnote-11113490
+Node: PC Testing1113599
+Node: PC Using1114775
+Node: Cygwin1118890
+Node: MSYS1119713
+Node: VMS Installation1120213
+Node: VMS Compilation1121005
+Ref: VMS Compilation-Footnote-11122227
+Node: VMS Dynamic Extensions1122285
+Node: VMS Installation Details1123969
+Node: VMS Running1126221
+Node: VMS GNV1129057
+Node: VMS Old Gawk1129791
+Node: Bugs1130261
+Node: Other Versions1134144
+Node: Installation summary1140568
+Node: Notes1141624
+Node: Compatibility Mode1142489
+Node: Additions1143271
+Node: Accessing The Source1144196
+Node: Adding Code1145631
+Node: New Ports1151788
+Node: Derived Files1156270
+Ref: Derived Files-Footnote-11161745
+Ref: Derived Files-Footnote-21161779
+Ref: Derived Files-Footnote-31162375
+Node: Future Extensions1162489
+Node: Implementation Limitations1163095
+Node: Extension Design1164343
+Node: Old Extension Problems1165497
+Ref: Old Extension Problems-Footnote-11167014
+Node: Extension New Mechanism Goals1167071
+Ref: Extension New Mechanism Goals-Footnote-11170431
+Node: Extension Other Design Decisions1170620
+Node: Extension Future Growth1172728
+Node: Old Extension Mechanism1173564
+Node: Notes summary1175326
+Node: Basic Concepts1176512
+Node: Basic High Level1177193
+Ref: figure-general-flow1177465
+Ref: figure-process-flow1178064
+Ref: Basic High Level-Footnote-11181293
+Node: Basic Data Typing1181478
+Node: Glossary1184806
+Node: Copying1216735
+Node: GNU Free Documentation License1254291
+Node: Index1279427
 
 End Tag Table
