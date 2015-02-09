@@ -12494,6 +12494,7 @@ $ @kbd{awk '$1 ~ /li/ @{ print $2 @}' mail-list}
 
 @cindex regexp constants, as patterns
 @cindex patterns, regexp constants as
+A regexp constant as a pattern is also a special case of an expression
 pattern.  The expression @code{/li/} has the value one if @samp{li}
 appears in the current input record. Thus, as a pattern, @code{/li/}
 matches any record containing @samp{li}.
@@ -30214,7 +30215,7 @@ Extensions are useful because they allow you (of course) to extend
 @command{gawk}'s functionality. For example, they can provide access to
 system calls (such as @code{chdir()} to change directory) and to other
 C library routines that could be of use.  As with most software,
-``the sky is the limit;'' if you can imagine something that you might
+``the sky is the limit''; if you can imagine something that you might
 want to do and can write in C or C++, you can write an extension to do it!
 
 Extensions are written in C or C++, using the @dfn{application programming
@@ -30222,7 +30223,7 @@ interface} (API) defined for this purpose by the @command{gawk}
 developers.  The rest of this @value{CHAPTER} explains
 the facilities that the API provides and how to use
 them, and presents a small example extension.  In addition, it documents
-the sample extensions included in the @command{gawk} distribution,
+the sample extensions included in the @command{gawk} distribution
 and describes the @code{gawkextlib} project.
 @ifclear FOR_PRINT
 @xref{Extension Design}, for a discussion of the extension mechanism
@@ -30375,7 +30376,7 @@ Some other bits and pieces:
 @itemize @value{BULLET}
 @item
 The API provides access to @command{gawk}'s @code{do_@var{xxx}} values,
-reflecting command-line options, like @code{do_lint}, @code{do_profiling}
+reflecting command-line options, like @code{do_lint}, @code{do_profiling},
 and so on (@pxref{Extension API Variables}).
 These are informational: an extension cannot affect their values
 inside @command{gawk}.  In addition, attempting to assign to them
@@ -30419,7 +30420,7 @@ This (rather large) @value{SECTION} describes the API in detail.
 @node Extension API Functions Introduction
 @subsection Introduction
 
-Access to facilities within @command{gawk} are made available
+Access to facilities within @command{gawk} is achieved
 by calling through function pointers passed into your extension.
 
 API function pointers are provided for the following kinds of operations:
@@ -30447,7 +30448,7 @@ Output wrappers
 Two-way processors
 @end itemize
 
-All of these are discussed in detail, later in this @value{CHAPTER}.
+All of these are discussed in detail later in this @value{CHAPTER}.
 
 @item
 Printing fatal, warning, and ``lint'' warning messages.
@@ -30485,7 +30486,7 @@ Creating a new array
 Clearing an array
 
 @item
-Flattening an array for easy C style looping over all its indices and elements
+Flattening an array for easy C-style looping over all its indices and elements
 @end itemize
 @end itemize
 
@@ -30497,8 +30498,9 @@ The following types, macros, and/or functions are referenced
 in @file{gawkapi.h}.  For correct use, you must therefore include the
 corresponding standard header file @emph{before} including @file{gawkapi.h}:
 
+@c FIXME: Make this is a float at some point.
 @multitable {@code{memset()}, @code{memcpy()}} {@code{<sys/types.h>}}
-@headitem C Entity @tab Header File
+@headitem C entity @tab Header file
 @item @code{EOF} @tab @code{<stdio.h>}
 @item Values for @code{errno} @tab @code{<errno.h>}
 @item @code{FILE} @tab @code{<stdio.h>}
@@ -30524,7 +30526,7 @@ Doing so, however, is poor coding practice.
 Although the API only uses ISO C 90 features, there is an exception; the
 ``constructor'' functions use the @code{inline} keyword. If your compiler
 does not support this keyword, you should either place
-@samp{-Dinline=''} on your command line, or use the GNU Autotools and include a
+@samp{-Dinline=''} on your command line or use the GNU Autotools and include a
 @file{config.h} file in your extensions.
 
 @item
@@ -30532,7 +30534,7 @@ All pointers filled in by @command{gawk} point to memory
 managed by @command{gawk} and should be treated by the extension as
 read-only.  Memory for @emph{all} strings passed into @command{gawk}
 from the extension @emph{must} come from calling one of
-@code{gawk_malloc()}, @code{gawk_calloc()} or @code{gawk_realloc()},
+@code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()},
 and is managed by @command{gawk} from then on.
 
 @item
@@ -30546,7 +30548,7 @@ characters are allowed.
 By intent, strings are maintained using the current multibyte encoding (as
 defined by @env{LC_@var{xxx}} environment variables) and not using wide
 characters.  This matches how @command{gawk} stores strings internally
-and also how characters are likely to be input and output from files.
+and also how characters are likely to be input into and output from files.
 @end quotation
 
 @item
@@ -30591,6 +30593,8 @@ general-purpose use. Additional, more specialized, data structures are
 introduced in subsequent @value{SECTION}s, together with the functions
 that use them.
 
+The general-purpose types and structures are as follows:
+
 @table @code
 @item typedef void *awk_ext_id_t;
 A value of this type is received from @command{gawk} when an extension is loaded.
@@ -30607,7 +30611,7 @@ while allowing @command{gawk} to use them as it needs to.
 @itemx @ @ @ @ awk_false = 0,
 @itemx @ @ @ @ awk_true
 @itemx @} awk_bool_t;
-A simple boolean type.
+A simple Boolean type.
 
 @item typedef struct awk_string @{
 @itemx @ @ @ @ char *str;@ @ @ @ @ @ /* data */
@@ -30653,7 +30657,7 @@ The @code{val_type} member indicates what kind of value the
 @itemx #define array_cookie@ @ @ u.a
 @itemx #define scalar_cookie@ @ u.scl
 @itemx #define value_cookie@ @ @ u.vc
-These macros make accessing the fields of the @code{awk_value_t} more
+Using these macros makes accessing the fields of the @code{awk_value_t} more
 readable.
 
 @item typedef void *awk_scalar_t;
