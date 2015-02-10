@@ -710,6 +710,8 @@ EXTRA_DIST = \
 	prmreuse.ok \
 	procinfs.awk \
 	procinfs.ok \
+	profile0.awk \
+	profile0.ok \
 	profile2.ok \
 	profile3.awk \
 	profile3.ok \
@@ -1043,7 +1045,7 @@ GAWK_EXT_TESTS = \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm next nondec nondec2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge procinfs \
-	profile1 profile2 profile3 profile4 profile5 profile6 profile7 \
+	profile0 profile1 profile2 profile3 profile4 profile5 profile6 profile7 \
 	profile8 pty1 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
@@ -1692,6 +1694,12 @@ dumpvars::
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) --dump-variables 1 < "$(srcdir)"/$@.in >/dev/null 2>&1 || echo EXIT CODE: $$? >>_$@
 	@grep -v ENVIRON < awkvars.out | grep -v PROCINFO > _$@; rm awkvars.out
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile0:
+	@echo $@
+	@$(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in > /dev/null
+	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile1:
