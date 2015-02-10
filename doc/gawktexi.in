@@ -1295,7 +1295,7 @@ October 2014
       <affiliation><jobtitle>Nof Ayalon</jobtitle></affiliation>
       <affiliation><jobtitle>Israel</jobtitle></affiliation>
     </author>
-    <date>December 2014</date>
+    <date>February 2015</date>
    </prefaceinfo>
 @end docbook
 
@@ -2251,14 +2251,14 @@ which they raised and educated me.
 Finally, I also must acknowledge my gratitude to G-d, for the many opportunities
 He has sent my way, as well as for the gifts He has given me with which to
 take advantage of those opportunities.
-@iftex
+@ifnotdocbook
 @sp 2
 @noindent
 Arnold Robbins @*
 Nof Ayalon @*
 Israel @*
-December 2014
-@end iftex
+February 2015
+@end ifnotdocbook
 
 @ifnotinfo
 @part @value{PART1}The @command{awk} Language
@@ -30680,7 +30680,7 @@ indicates what is in the @code{union}.
 Representing numbers is easy---the API uses a C @code{double}.  Strings
 require more work. Because @command{gawk} allows embedded @sc{nul} bytes
 in string values, a string must be represented as a pair containing a
-data-pointer and length. This is the @code{awk_string_t} type.
+data pointer and length. This is the @code{awk_string_t} type.
 
 Identifiers (i.e., the names of global variables) can be associated
 with either scalar values or with arrays.  In addition, @command{gawk}
@@ -30693,12 +30693,12 @@ of the @code{union} as if they were fields in a @code{struct}; this
 is a common coding practice in C.  Such code is easier to write and to
 read, but it remains @emph{your} responsibility to make sure that
 the @code{val_type} member correctly reflects the type of the value in
-the @code{awk_value_t}.
+the @code{awk_value_t} struct.
 
 Conceptually, the first three members of the @code{union} (number, string,
 and array) are all that is needed for working with @command{awk} values.
 However, because the API provides routines for accessing and changing
-the value of global scalar variables only by using the variable's name,
+the value of a global scalar variable only by using the variable's name,
 there is a performance penalty: @command{gawk} must find the variable
 each time it is accessed and changed.  This turns out to be a real issue,
 not just a theoretical one.
@@ -30716,7 +30716,9 @@ See also the entry for ``Cookie'' in the @ref{Glossary}.
 object for that variable, and then use
 the cookie for getting the variable's value or for changing the variable's
 value.
-This is the @code{awk_scalar_t} type and @code{scalar_cookie} macro.
+The @code{awk_scalar_t} type holds a scalar cookie, and the
+@code{scalar_cookie} macro provides access to the value of that type
+in the @code{awk_value_t} struct.
 Given a scalar cookie, @command{gawk} can directly retrieve or
 modify the value, as required, without having to find it first.
 
@@ -30725,8 +30727,8 @@ If you know that you wish to
 use the same numeric or string @emph{value} for one or more variables,
 you can create the value once, retaining a @dfn{value cookie} for it,
 and then pass in that value cookie whenever you wish to set the value of a
-variable.  This saves both storage space within the running @command{gawk}
-process as well as the time needed to create the value.
+variable.  This both storage space within the running @command{gawk}
+process and reduces the time needed to create the value.
 
 @node Memory Allocation Functions
 @subsection Memory Allocation Functions and Convenience Macros
