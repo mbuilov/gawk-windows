@@ -23172,7 +23172,7 @@ first.
 If you know that you wish to use the same numeric or string _value_ for
 one or more variables, you can create the value once, retaining a
 "value cookie" for it, and then pass in that value cookie whenever you
-wish to set the value of a variable.  This both storage space within
+wish to set the value of a variable.  This saves storage space within
 the running `gawk' process and reduces the time needed to create the
 value.
 
@@ -23209,7 +23209,7 @@ prototypes, in the way that extension code would use them:
 
 `void gawk_free(void *ptr);'
      Call the correct version of `free()' to release storage that was
-     allocated with `gawk_malloc()', `gawk_calloc()' or
+     allocated with `gawk_malloc()', `gawk_calloc()', or
      `gawk_realloc()'.
 
    The API has to provide these functions because it is possible for an
@@ -23221,7 +23221,7 @@ version of `malloc()', unexpected behavior would likely result.
    Two convenience macros may be used for allocating storage from
 `gawk_malloc()' and `gawk_realloc()'. If the allocation fails, they
 cause `gawk' to exit with a fatal error message.  They should be used
-as if they were procedure calls that do not return a value.
+as if they were procedure calls that do not return a value:
 
 `#define emalloc(pointer, type, size, message) ...'
      The arguments to this macro are as follows:
@@ -23251,13 +23251,13 @@ as if they were procedure calls that do not return a value.
           make_malloced_string(message, strlen(message), & result);
 
 `#define erealloc(pointer, type, size, message) ...'
-     This is like `emalloc()', but it calls `gawk_realloc()', instead
-     of `gawk_malloc()'.  The arguments are the same as for the
+     This is like `emalloc()', but it calls `gawk_realloc()' instead of
+     `gawk_malloc()'.  The arguments are the same as for the
      `emalloc()' macro.
 
    ---------- Footnotes ----------
 
-   (1) This is more common on MS-Windows systems, but can happen on
+   (1) This is more common on MS-Windows systems, but it can happen on
 Unix-like systems as well.
 
 
@@ -23283,7 +23283,7 @@ extension code would use them:
      This function creates a string value in the `awk_value_t' variable
      pointed to by `result'. It expects `string' to be a `char *' value
      pointing to data previously obtained from `gawk_malloc()',
-     `gawk_calloc()' or `gawk_realloc()'. The idea here is that the
+     `gawk_calloc()', or `gawk_realloc()'. The idea here is that the
      data is passed directly to `gawk', which assumes responsibility
      for it. It returns `result'.
 
@@ -23333,7 +23333,7 @@ Extension functions are described by the following record:
    The fields are:
 
 `const char *name;'
-     The name of the new function.  `awk' level code calls the function
+     The name of the new function.  `awk'-level code calls the function
      by this name.  This is a regular C string.
 
      Function names must obey the rules for `awk' identifiers. That is,
@@ -23345,7 +23345,7 @@ Extension functions are described by the following record:
      This is a pointer to the C function that provides the extension's
      functionality.  The function must fill in `*result' with either a
      number or a string. `gawk' takes ownership of any string memory.
-     As mentioned earlier, string memory *must* come from one of
+     As mentioned earlier, string memory _must_ come from one of
      `gawk_malloc()', `gawk_calloc()', or `gawk_realloc()'.
 
      The `num_actual_args' argument tells the C function how many
@@ -23392,10 +23392,10 @@ function with `gawk' using the following function:
           `gawk' intends to pass to the `exit()' system call.
 
     `arg0'
-          A pointer to private data which `gawk' saves in order to pass
+          A pointer to private data that `gawk' saves in order to pass
           to the function pointed to by `funcp'.
 
-   Exit callback functions are called in last-in-first-out (LIFO)
+   Exit callback functions are called in last-in, first-out (LIFO)
 order--that is, in the reverse order in which they are registered with
 `gawk'.
 
@@ -23405,8 +23405,8 @@ File: gawk.info,  Node: Extension Version String,  Next: Input Parsers,  Prev: E
 16.4.5.3 Registering An Extension Version String
 ................................................
 
-You can register a version string which indicates the name and version
-of your extension, with `gawk', as follows:
+You can register a version string that indicates the name and version
+of your extension with `gawk', as follows:
 
 `void register_ext_version(const char *version);'
      Register the string pointed to by `version' with `gawk'.  Note
@@ -23429,7 +23429,7 @@ Files::).  Additionally, it sets the value of `RT' (*note Built-in
 Variables::).
 
    If you want, you can provide your own custom input parser.  An input
-parser's job is to return a record to the `gawk' record processing
+parser's job is to return a record to the `gawk' record-processing
 code, along with indicators for the value and length of the data to be
 used for `RT', if any.
 
@@ -23446,10 +23446,10 @@ used for `RT', if any.
 `awk_bool_t XXX_take_control_of(awk_input_buf_t *iobuf);'
      When `gawk' decides to hand control of the file over to the input
      parser, it calls this function.  This function in turn must fill
-     in certain fields in the `awk_input_buf_t' structure, and ensure
+     in certain fields in the `awk_input_buf_t' structure and ensure
      that certain conditions are true.  It should then return true. If
-     an error of some kind occurs, it should not fill in any fields,
-     and should return false; then `gawk' will not use the input parser.
+     an error of some kind occurs, it should not fill in any fields and
+     should return false; then `gawk' will not use the input parser.
      The details are presented shortly.
 
    Your extension should package these functions inside an
@@ -23526,10 +23526,10 @@ the `struct stat', or any combination of these factors.
 
    Once `XXX_can_take_file()' has returned true, and `gawk' has decided
 to use your input parser, it calls `XXX_take_control_of()'.  That
-function then fills one of either the `get_record' field or the
-`read_func' field in the `awk_input_buf_t'.  It must also ensure that
-`fd' is _not_ set to `INVALID_HANDLE'.  The following list describes
-the fields that may be filled by `XXX_take_control_of()':
+function then fills either the `get_record' field or the `read_func'
+field in the `awk_input_buf_t'.  It must also ensure that `fd' is _not_
+set to `INVALID_HANDLE'.  The following list describes the fields that
+may be filled by `XXX_take_control_of()':
 
 `void *opaque;'
      This is used to hold any state information needed by the input
@@ -23546,22 +23546,22 @@ the fields that may be filled by `XXX_take_control_of()':
      Its behavior is described in the text following this list.
 
 `ssize_t (*read_func)();'
-     This function pointer should point to function that has the same
+     This function pointer should point to a function that has the same
      behavior as the standard POSIX `read()' system call.  It is an
      alternative to the `get_record' pointer.  Its behavior is also
      described in the text following this list.
 
 `void (*close_func)(struct awk_input *iobuf);'
      This function pointer should point to a function that does the
-     "tear down." It should release any resources allocated by
+     "teardown." It should release any resources allocated by
      `XXX_take_control_of()'.  It may also close the file. If it does
      so, it should set the `fd' field to `INVALID_HANDLE'.
 
      If `fd' is still not `INVALID_HANDLE' after the call to this
      function, `gawk' calls the regular `close()' system call.
 
-     Having a "tear down" function is optional. If your input parser
-     does not need it, do not set this field.  Then, `gawk' calls the
+     Having a "teardown" function is optional. If your input parser does
+     not need it, do not set this field.  Then, `gawk' calls the
      regular `close()' system call on the file descriptor, so it should
      be valid.
 
@@ -23569,7 +23569,7 @@ the fields that may be filled by `XXX_take_control_of()':
 records.  The parameters are as follows:
 
 `char **out'
-     This is a pointer to a `char *' variable which is set to point to
+     This is a pointer to a `char *' variable that is set to point to
      the record.  `gawk' makes its own copy of the data, so the
      extension must manage this storage.
 
@@ -23618,16 +23618,16 @@ explicitly.
      NOTE: You must choose one method or the other: either a function
      that returns a record, or one that returns raw data.  In
      particular, if you supply a function to get a record, `gawk' will
-     call it, and never call the raw read function.
+     call it, and will never call the raw read function.
 
    `gawk' ships with a sample extension that reads directories,
-returning records for each entry in the directory (*note Extension
-Sample Readdir::).  You may wish to use that code as a guide for writing
-your own input parser.
+returning records for each entry in a directory (*note Extension Sample
+Readdir::).  You may wish to use that code as a guide for writing your
+own input parser.
 
    When writing an input parser, you should think about (and document)
 how it is expected to interact with `awk' code.  You may want it to
-always be called, and take effect as appropriate (as the `readdir'
+always be called, and to take effect as appropriate (as the `readdir'
 extension does).  Or you may want it to take effect based upon the
 value of an `awk' variable, as the XML extension from the `gawkextlib'
 project does (*note gawkextlib::).  In the latter case, code in a
@@ -23727,17 +23727,17 @@ in the `awk_output_buf_t'.  The data members are as follows:
      These pointers should be set to point to functions that perform
      the equivalent function as the `<stdio.h>' functions do, if
      appropriate.  `gawk' uses these function pointers for all output.
-     `gawk' initializes the pointers to point to internal, "pass
-     through" functions that just call the regular `<stdio.h>'
-     functions, so an extension only needs to redefine those functions
-     that are appropriate for what it does.
+     `gawk' initializes the pointers to point to internal "pass-through"
+     functions that just call the regular `<stdio.h>' functions, so an
+     extension only needs to redefine those functions that are
+     appropriate for what it does.
 
    The `XXX_can_take_file()' function should make a decision based upon
 the `name' and `mode' fields, and any additional state (such as `awk'
 variable values) that is appropriate.
 
    When `gawk' calls `XXX_take_control_of()', that function should fill
-in the other fields, as appropriate, except for `fp', which it should
+in the other fields as appropriate, except for `fp', which it should
 just use normally.
 
    You register your output wrapper with the following function:
@@ -23774,16 +23774,17 @@ structures as described earlier.
      The name of the two-way processor.
 
 `awk_bool_t (*can_take_two_way)(const char *name);'
-     This function returns true if it wants to take over two-way I/O
-     for this file name.  It should not change any state (variable
-     values, etc.) within `gawk'.
+     The function pointed to by this field should return true if it
+     wants to take over two-way I/O for this file name.  It should not
+     change any state (variable values, etc.) within `gawk'.
 
 `awk_bool_t (*take_control_of)(const char *name,'
 `                              awk_input_buf_t *inbuf,'
 `                              awk_output_buf_t *outbuf);'
-     This function should fill in the `awk_input_buf_t' and
-     `awk_outut_buf_t' structures pointed to by `inbuf' and `outbuf',
-     respectively.  These structures were described earlier.
+     The function pointed to by this field should fill in the
+     `awk_input_buf_t' and `awk_outut_buf_t' structures pointed to by
+     `inbuf' and `outbuf', respectively.  These structures were
+     described earlier.
 
 `awk_const struct two_way_processor *awk_const next;'
      This is for use by `gawk'; therefore it is marked `awk_const' so
@@ -23807,7 +23808,7 @@ File: gawk.info,  Node: Printing Messages,  Next: Updating `ERRNO',  Prev: Regis
 
 You can print different kinds of warning messages from your extension,
 as described here.  Note that for these functions, you must pass in the
-extension id received from `gawk' when the extension was loaded:(1)
+extension ID received from `gawk' when the extension was loaded:(1)
 
 `void fatal(awk_ext_id_t id, const char *format, ...);'
      Print a message and then cause `gawk' to exit immediately.
@@ -23863,7 +23864,7 @@ value you expect.  If the actual value matches what you requested, the
 function returns true and fills in the `awk_value_t' result.
 Otherwise, the function returns false, and the `val_type' member
 indicates the type of the actual value.  You may then print an error
-message, or reissue the request for the actual value type, as
+message or reissue the request for the actual value type, as
 appropriate.  This behavior is summarized in *note
 table-value-types-returned::.
 
@@ -23872,15 +23873,15 @@ table-value-types-returned::.
 
                           String         Number      Array       Undefined
 ------------------------------------------------------------------------------ 
-             String       String         String      false       false
-             Number       Number if can  Number      false       false
+             String       String         String      False       False
+             Number       Number if can  Number      False       False
                           be converted,                          
                           else false                             
-Type         Array        false          false       Array       false
-Requested    Scalar       Scalar         Scalar      false       false
+Type         Array        False          False       Array       False
+Requested    Scalar       Scalar         Scalar      False       False
              Undefined    String         Number      Array       Undefined
-             Value        false          false       false       false
-             Cookie                                              
+             Value        False          False       False       False
+             cookie                                              
 
 Table 16.1: API value types returned
 
@@ -23897,16 +23898,16 @@ your extension function. They are:
 `                        awk_valtype_t wanted,'
 `                        awk_value_t *result);'
      Fill in the `awk_value_t' structure pointed to by `result' with
-     the `count''th argument.  Return true if the actual type matches
-     `wanted', false otherwise.  In the latter case, `result->val_type'
-     indicates the actual type (*note Table 16.1:
-     table-value-types-returned.).  Counts are zero based--the first
+     the `count'th argument.  Return true if the actual type matches
+     `wanted', and false otherwise.  In the latter case,
+     `result->val_type' indicates the actual type (*note Table 16.1:
+     table-value-types-returned.).  Counts are zero-based--the first
      argument is numbered zero, the second one, and so on. `wanted'
      indicates the type of value expected.
 
 `awk_bool_t set_argument(size_t count, awk_array_t array);'
      Convert a parameter that was undefined into an array; this provides
-     call-by-reference for arrays.  Return false if `count' is too big,
+     call by reference for arrays.  Return false if `count' is too big,
      or if the argument's type is not undefined.  *Note Array
      Manipulation::, for more information on creating arrays.
 
@@ -23934,8 +23935,8 @@ File: gawk.info,  Node: Symbol table by name,  Next: Symbol table by cookie,  Up
 The following routines provide the ability to access and update global
 `awk'-level variables by name.  In compiler terminology, identifiers of
 different kinds are termed "symbols", thus the "sym" in the routines'
-names.  The data structure which stores information about symbols is
-termed a "symbol table".
+names.  The data structure that stores information about symbols is
+termed a "symbol table".  The functions are as follows:
 
 `awk_bool_t sym_lookup(const char *name,'
 `                      awk_valtype_t wanted,'
@@ -23943,14 +23944,14 @@ termed a "symbol table".
      Fill in the `awk_value_t' structure pointed to by `result' with
      the value of the variable named by the string `name', which is a
      regular C string.  `wanted' indicates the type of value expected.
-     Return true if the actual type matches `wanted', false otherwise.
-     In the latter case, `result->val_type' indicates the actual type
-     (*note Table 16.1: table-value-types-returned.).
+     Return true if the actual type matches `wanted', and false
+     otherwise.  In the latter case, `result->val_type' indicates the
+     actual type (*note Table 16.1: table-value-types-returned.).
 
 `awk_bool_t sym_update(const char *name, awk_value_t *value);'
      Update the variable named by the string `name', which is a regular
      C string.  The variable is added to `gawk''s symbol table if it is
-     not there.  Return true if everything worked, false otherwise.
+     not there.  Return true if everything worked, and false otherwise.
 
      Changing types (scalar to array or vice versa) of an existing
      variable is _not_ allowed, nor may this routine be used to update
@@ -23975,7 +23976,7 @@ File: gawk.info,  Node: Symbol table by cookie,  Next: Cached values,  Prev: Sym
 A "scalar cookie" is an opaque handle that provides access to a global
 variable or array. It is an optimization that avoids looking up
 variables in `gawk''s symbol table every time access is needed. This
-was discussed earlier in *note General Data Types::.
+was discussed earlier, in *note General Data Types::.
 
    The following functions let you work with scalar cookies:
 
@@ -24086,7 +24087,7 @@ File: gawk.info,  Node: Cached values,  Prev: Symbol table by cookie,  Up: Symbo
 ..........................................
 
 The routines in this section allow you to create and release cached
-values.  As with scalar cookies, in theory, cached values are not
+values.  Like scalar cookies, in theory, cached values are not
 necessary. You can create numbers and strings using the functions in
 *note Constructor Functions::. You can then assign those values to
 variables using `sym_update()' or `sym_update_scalar()', as you like.
@@ -24157,7 +24158,7 @@ Using value cookies in this way saves considerable storage, as all of
 `VAR1' through `VAR100' share the same value.
 
    You might be wondering, "Is this sharing problematic?  What happens
-if `awk' code assigns a new value to `VAR1', are all the others changed
+if `awk' code assigns a new value to `VAR1'; are all the others changed
 too?"
 
    That's a great question. The answer is that no, it's not a problem.
@@ -24276,7 +24277,7 @@ File: gawk.info,  Node: Array Functions,  Next: Flattening Arrays,  Prev: Array 
 16.4.11.2 Array Functions
 .........................
 
-The following functions relate to individual array elements.
+The following functions relate to individual array elements:
 
 `awk_bool_t get_element_count(awk_array_t a_cookie, size_t *count);'
      For the array represented by `a_cookie', place in `*count' the
@@ -24294,13 +24295,14 @@ The following functions relate to individual array elements.
      (*note Table 16.1: table-value-types-returned.).
 
      The value for `index' can be numeric, in which case `gawk'
-     converts it to a string. Using non-integral values is possible, but
+     converts it to a string. Using nonintegral values is possible, but
      requires that you understand how such values are converted to
-     strings (*note Conversion::); thus using integral values is safest.
+     strings (*note Conversion::); thus, using integral values is
+     safest.
 
      As with _all_ strings passed into `gawk' from an extension, the
      string value of `index' must come from `gawk_malloc()',
-     `gawk_calloc()' or `gawk_realloc()', and `gawk' releases the
+     `gawk_calloc()', or `gawk_realloc()', and `gawk' releases the
      storage.
 
 `awk_bool_t set_array_element(awk_array_t a_cookie,'
@@ -24344,9 +24346,9 @@ The following functions relate to individual array elements.
 `awk_bool_t release_flattened_array(awk_array_t a_cookie,'
 `                                   awk_flat_array_t *data);'
      When done with a flattened array, release the storage using this
-     function.  You must pass in both the original array cookie, and
-     the address of the created `awk_flat_array_t' structure.  The
-     function returns true upon success, false otherwise.
+     function.  You must pass in both the original array cookie and the
+     address of the created `awk_flat_array_t' structure.  The function
+     returns true upon success, false otherwise.
 
 
 File: gawk.info,  Node: Flattening Arrays,  Next: Creating Arrays,  Prev: Array Functions,  Up: Array Manipulation
@@ -24356,8 +24358,8 @@ File: gawk.info,  Node: Flattening Arrays,  Next: Creating Arrays,  Prev: Array 
 
 To "flatten" an array is to create a structure that represents the full
 array in a fashion that makes it easy for C code to traverse the entire
-array.  Test code in `extension/testext.c' does this, and also serves
-as a nice example showing how to use the APIs.
+array.  Some of the code in `extension/testext.c' does this, and also
+serves as a nice example showing how to use the APIs.
 
    We walk through that part of the code one step at a time.  First,
 the `gawk' script that drives the test extension:
@@ -24406,9 +24408,8 @@ number of arguments:
          }
 
    The function then proceeds in steps, as follows. First, retrieve the
-name of the array, passed as the first argument. Then retrieve the
-array itself. If either operation fails, print error messages and
-return:
+name of the array, passed as the first argument, followed by the array
+itself. If either operation fails, print an error message and return:
 
          /* get argument named array as flat array and print it */
          if (get_argument(0, AWK_STRING, & value)) {
@@ -24438,9 +24439,9 @@ count of elements in the array and print it:
          printf("dump_array_and_delete: incoming size is %lu\n",
                 (unsigned long) count);
 
-   The third step is to actually flatten the array, and then to double
-check that the count in the `awk_flat_array_t' is the same as the count
-just retrieved:
+   The third step is to actually flatten the array, and then to
+double-check that the count in the `awk_flat_array_t' is the same as
+the count just retrieved:
 
          if (! flatten_array(value2.array_cookie, & flat_array)) {
              printf("dump_array_and_delete: could not flatten array\n");
@@ -24457,7 +24458,7 @@ just retrieved:
 
    The fourth step is to retrieve the index of the element to be
 deleted, which was passed as the second argument.  Remember that
-argument counts passed to `get_argument()' are zero-based, thus the
+argument counts passed to `get_argument()' are zero-based, and thus the
 second argument is numbered one:
 
          if (! get_argument(1, AWK_STRING, & value3)) {
@@ -24470,7 +24471,7 @@ over every element in the array, printing the index and element values.
 In addition, upon finding the element with the index that is supposed
 to be deleted, the function sets the `AWK_ELEMENT_DELETE' bit in the
 `flags' field of the element.  When the array is released, `gawk'
-traverses the flattened array, and deletes any elements which have this
+traverses the flattened array, and deletes any elements that have this
 flag bit set:
 
          for (i = 0; i < flat_array->count; i++) {
@@ -24688,10 +24689,10 @@ The API provides both a "major" and a "minor" version number.  The API
 versions are available at compile time as constants:
 
 `GAWK_API_MAJOR_VERSION'
-     The major version of the API.
+     The major version of the API
 
 `GAWK_API_MINOR_VERSION'
-     The minor version of the API.
+     The minor version of the API
 
    The minor version increases when new functions are added to the API.
 Such new functions are always added to the end of the API `struct'.
@@ -24706,13 +24707,13 @@ For this reason, the major and minor API versions of the running `gawk'
 are included in the API `struct' as read-only constant integers:
 
 `api->major_version'
-     The major version of the running `gawk'.
+     The major version of the running `gawk'
 
 `api->minor_version'
-     The minor version of the running `gawk'.
+     The minor version of the running `gawk'
 
    It is up to the extension to decide if there are API
-incompatibilities.  Typically a check like this is enough:
+incompatibilities.  Typically, a check like this is enough:
 
      if (api->major_version != GAWK_API_MAJOR_VERSION
          || api->minor_version < GAWK_API_MINOR_VERSION) {
@@ -24724,7 +24725,7 @@ incompatibilities.  Typically a check like this is enough:
      }
 
    Such code is included in the boilerplate `dl_load_func()' macro
-provided in `gawkapi.h' (discussed later, in *note Extension API
+provided in `gawkapi.h' (discussed in *note Extension API
 Boilerplate::).
 
 
@@ -24775,7 +24776,7 @@ functions) toward the top of your source file, using predefined names
 as described here.  The boilerplate needed is also provided in comments
 in the `gawkapi.h' header file:
 
-     /* Boiler plate code: */
+     /* Boilerplate code: */
      int plugin_is_GPL_compatible;
 
      static gawk_api_t *const api;
@@ -24825,7 +24826,7 @@ in the `gawkapi.h' header file:
      to point to a string giving the name and version of your extension.
 
 `static awk_ext_func_t func_table[] = { ... };'
-     This is an array of one or more `awk_ext_func_t' structures as
+     This is an array of one or more `awk_ext_func_t' structures, as
      described earlier (*note Extension Functions::).  It can then be
      looped over for multiple calls to `add_ext_func()'.
 
@@ -24938,7 +24939,7 @@ appropriate information:
 `stat()' fails.  It fills in the following elements:
 
 `"name"'
-     The name of the file that was `stat()''ed.
+     The name of the file that was `stat()'ed.
 
 `"dev"'
 `"ino"'
@@ -24986,7 +24987,7 @@ appropriate information:
           The file is a directory.
 
     `"fifo"'
-          The file is a named-pipe (also known as a FIFO).
+          The file is a named pipe (also known as a FIFO).
 
     `"file"'
           The file is just a regular file.
@@ -25006,7 +25007,7 @@ appropriate information:
      systems, "a priori" knowledge is used to provide a value. Where no
      value can be determined, it defaults to 512.
 
-   Several additional elements may be present depending upon the
+   Several additional elements may be present, depending upon the
 operating system and the type of the file.  You can test for them in
 your `awk' program by using the `in' operator (*note Reference to
 Elements::):
@@ -25035,9 +25036,9 @@ File: gawk.info,  Node: Internal File Ops,  Next: Using Internal File Ops,  Prev
 Here is the C code for these extensions.(1)
 
    The file includes a number of standard header files, and then
-includes the `gawkapi.h' header file which provides the API definitions.
-Those are followed by the necessary variable declarations to make use
-of the API macros and boilerplate code (*note Extension API
+includes the `gawkapi.h' header file, which provides the API
+definitions.  Those are followed by the necessary variable declarations
+to make use of the API macros and boilerplate code (*note Extension API
 Boilerplate::):
 
      #ifdef HAVE_CONFIG_H
@@ -25073,9 +25074,9 @@ Boilerplate::):
 
    By convention, for an `awk' function `foo()', the C function that
 implements it is called `do_foo()'.  The function should have two
-arguments: the first is an `int' usually called `nargs', that
+arguments. The first is an `int', usually called `nargs', that
 represents the number of actual arguments for the function.  The second
-is a pointer to an `awk_value_t', usually named `result':
+is a pointer to an `awk_value_t' structure, usually named `result':
 
      /*  do_chdir --- provide dynamically loaded chdir() function for gawk */
 
@@ -25111,8 +25112,8 @@ is numbered zero.
      }
 
    The `stat()' extension is more involved.  First comes a function
-that turns a numeric mode into a printable representation (e.g., 644
-becomes `-rw-r--r--'). This is omitted here for brevity:
+that turns a numeric mode into a printable representation (e.g., octal
+`0644' becomes `-rw-r--r--'). This is omitted here for brevity:
 
      /* format_mode --- turn a stat mode field into something readable */
 
@@ -25162,8 +25163,8 @@ contain the result of the `stat()':
 
    The following function does most of the work to fill in the
 `awk_array_t' result array with values obtained from a valid `struct
-stat'. It is done in a separate function to support the `stat()'
-function for `gawk' and also to support the `fts()' extension which is
+stat'. This work is done in a separate function to support the `stat()'
+function for `gawk' and also to support the `fts()' extension, which is
 included in the same file but whose code is not shown here (*note
 Extension Sample File Functions::).
 
@@ -25275,8 +25276,8 @@ argument is optional. If present, it causes `do_stat()' to use the
 `stat()' system call instead of the `lstat()' system call.  This is
 done by using a function pointer: `statfunc'.  `statfunc' is
 initialized to point to `lstat()' (instead of `stat()') to get the file
-information, in case the file is a symbolic link. However, if there
-were three arguments, `statfunc' is set point to `stat()', instead.
+information, in case the file is a symbolic link. However, if the third
+argument is included, `statfunc' is set to point to `stat()', instead.
 
    Here is the `do_stat()' function, which starts with variable
 declarations and argument checking:
@@ -25325,7 +25326,7 @@ returns:
          /* always empty out the array */
          clear_array(array);
 
-         /* stat the file, if error, set ERRNO and return */
+         /* stat the file; if error, set ERRNO and return */
          ret = statfunc(name, & sbuf);
          if (ret < 0) {
              update_ERRNO_int(errno);
@@ -25344,7 +25345,8 @@ When done, the function returns the result from `fill_stat_array()':
 function(s) into `gawk'.
 
    The `filefuncs' extension also provides an `fts()' function, which
-we omit here. For its sake there is an initialization function:
+we omit here (*note Extension Sample File Functions::).  For its sake,
+there is an initialization function:
 
      /* init_filefuncs --- initialization routine */
 
@@ -25468,9 +25470,9 @@ File: gawk.info,  Node: Extension Samples,  Next: gawkextlib,  Prev: Extension E
 16.7 The Sample Extensions in the `gawk' Distribution
 =====================================================
 
-This minor node provides brief overviews of the sample extensions that
+This minor node provides a brief overview of the sample extensions that
 come in the `gawk' distribution. Some of them are intended for
-production use (e.g., the `filefuncs', `readdir' and `inplace'
+production use (e.g., the `filefuncs', `readdir', and `inplace'
 extensions).  Others mainly provide example code that shows how to use
 the extension API.
 
@@ -25507,13 +25509,13 @@ follows.  The usage is:
 `result = chdir("/some/directory")'
      The `chdir()' function is a direct hook to the `chdir()' system
      call to change the current directory.  It returns zero upon
-     success or less than zero upon error.  In the latter case, it
-     updates `ERRNO'.
+     success or a value less than zero upon error.  In the latter case,
+     it updates `ERRNO'.
 
 `result = stat("/some/path", statdata' [`, follow']`)'
      The `stat()' function provides a hook into the `stat()' system
-     call.  It returns zero upon success or less than zero upon error.
-     In the latter case, it updates `ERRNO'.
+     call.  It returns zero upon success or a value less than zero upon
+     error.  In the latter case, it updates `ERRNO'.
 
      By default, it uses the `lstat()' system call.  However, if passed
      a third argument, it uses `stat()' instead.
@@ -25540,23 +25542,23 @@ follows.  The usage is:
      `"minor"'  `st_minor'                         Device files
      `"blksize"'`st_blksize'                       All
      `"pmode"'  A human-readable version of the    All
-                mode value, such as printed by     
-                `ls'.  For example,                
-                `"-rwxr-xr-x"'                     
+                mode value, like that printed by   
+                `ls' (for example,                 
+                `"-rwxr-xr-x"')                    
      `"linkval"'The value of the symbolic link     Symbolic
                                                    links
-     `"type"'   The type of the file as a string.  All
-                One of `"file"', `"blockdev"',     
-                `"chardev"', `"directory"',        
-                `"socket"', `"fifo"', `"symlink"', 
-                `"door"', or `"unknown"'.  Not     
-                all systems support all file       
-                types.                             
+     `"type"'   The type of the file as a          All
+                string--one of `"file"',           
+                `"blockdev"', `"chardev"',         
+                `"directory"', `"socket"',         
+                `"fifo"', `"symlink"', `"door"',   
+                or `"unknown"' (not all systems    
+                support all file types)            
 
 `flags = or(FTS_PHYSICAL, ...)'
 `result = fts(pathlist, flags, filedata)'
      Walk the file trees provided in `pathlist' and fill in the
-     `filedata' array as described next.  `flags' is the bitwise OR of
+     `filedata' array, as described next.  `flags' is the bitwise OR of
      several predefined values, also described in a moment.  Return
      zero if there were no errors, otherwise return -1.
 
@@ -25609,10 +25611,11 @@ requested hierarchies.
           filesystem.
 
 `filedata'
-     The `filedata' array is first cleared.  Then, `fts()' creates an
-     element in `filedata' for every element in `pathlist'.  The index
-     is the name of the directory or file given in `pathlist'.  The
-     element for this index is itself an array.  There are two cases:
+     The `filedata' array holds the results.  `fts()' first clears it.
+     Then it creates an element in `filedata' for every element in
+     `pathlist'.  The index is the name of the directory or file given
+     in `pathlist'.  The element for this index is itself an array.
+     There are two cases:
 
     _The path is a file_
           In this case, the array contains two or three elements:
@@ -25648,7 +25651,7 @@ requested hierarchies.
           elements as for a file: `"path"', `"stat"', and `"error"'.
 
    The `fts()' function returns zero if there were no errors.
-Otherwise it returns -1.
+Otherwise, it returns -1.
 
      NOTE: The `fts()' extension does not exactly mimic the interface
      of the C library `fts()' routines, choosing instead to provide an
@@ -25687,14 +25690,14 @@ adds one constant (`FNM_NOMATCH'), and an array of flag values named
    The arguments to `fnmatch()' are:
 
 `pattern'
-     The file name wildcard to match.
+     The file name wildcard to match
 
 `string'
-     The file name string.
+     The file name string
 
 `flag'
      Either zero, or the bitwise OR of one or more of the flags in the
-     `FNM' array.
+     `FNM' array
 
    The flags are as follows:
 
@@ -25728,13 +25731,13 @@ The `fork' extension adds three functions, as follows:
 
 `pid = fork()'
      This function creates a new process. The return value is zero in
-     the child and the process-ID number of the child in the parent, or
+     the child and the process ID number of the child in the parent, or
      -1 upon error. In the latter case, `ERRNO' indicates the problem.
      In the child, `PROCINFO["pid"]' and `PROCINFO["ppid"]' are updated
      to reflect the correct values.
 
 `ret = waitpid(pid)'
-     This function takes a numeric argument, which is the process-ID to
+     This function takes a numeric argument, which is the process ID to
      wait for. The return value is that of the `waitpid()' system call.
 
 `ret = wait()'
@@ -25758,8 +25761,8 @@ File: gawk.info,  Node: Extension Sample Inplace,  Next: Extension Sample Ord,  
 16.7.4 Enabling In-Place File Editing
 -------------------------------------
 
-The `inplace' extension emulates GNU `sed''s `-i' option which performs
-"in place" editing of each input file.  It uses the bundled
+The `inplace' extension emulates GNU `sed''s `-i' option, which
+performs "in-place" editing of each input file.  It uses the bundled
 `inplace.awk' include file to invoke the extension properly:
 
      # inplace --- load and invoke the inplace extension.
@@ -25842,11 +25845,11 @@ returned as a record.
    The record consists of three fields. The first two are the inode
 number and the file name, separated by a forward slash character.  On
 systems where the directory entry contains the file type, the record
-has a third field (also separated by a slash) which is a single letter
+has a third field (also separated by a slash), which is a single letter
 indicating the type of the file. The letters and their corresponding
 file types are shown in *note table-readdir-file-types::.
 
-Letter  File Type
+Letter  File type
 -------------------------------------------------------------------------- 
 `b'     Block device
 `c'     Character device
@@ -25893,7 +25896,7 @@ unwary.  Here is an example:
          print "don't panic" > "/dev/stdout"
      }
 
-   The output from this program is: `cinap t'nod'.
+   The output from this program is `cinap t'nod'.
 
 
 File: gawk.info,  Node: Extension Sample Rev2way,  Next: Extension Sample Read write array,  Prev: Extension Sample Revout,  Up: Extension Samples
@@ -25941,7 +25944,7 @@ The `rwarray' extension adds two functions, named `writea()' and
      `reada()' is the inverse of `writea()'; it reads the file named as
      its first argument, filling in the array named as the second
      argument. It clears the array first.  Here too, the return value
-     is one on success and zero upon failure.
+     is one on success, or zero upon failure.
 
    The array created by `reada()' is identical to that written by
 `writea()' in the sense that the contents are the same. However, due to
@@ -26025,7 +26028,7 @@ The `time' extension adds two functions, named `gettimeofday()' and
      Attempt to sleep for SECONDS seconds.  If SECONDS is negative, or
      the attempt to sleep fails, return -1 and set `ERRNO'.  Otherwise,
      return zero after sleeping for the indicated amount of time.  Note
-     that SECONDS may be a floating-point (non-integral) value.
+     that SECONDS may be a floating-point (nonintegral) value.
      Implementation details: depending on platform availability, this
      function tries to use `nanosleep()' or `select()' to implement the
      delay.
@@ -26053,7 +26056,9 @@ provides a number of `gawk' extensions, including one for processing
 XML files.  This is the evolution of the original `xgawk' (XML `gawk')
 project.
 
-   As of this writing, there are six extensions:
+   As of this writing, there are seven extensions:
+
+   * `errno' extension
 
    * GD graphics library extension
 
@@ -26062,7 +26067,7 @@ project.
    * PostgreSQL extension
 
    * MPFR library extension (this provides access to a number of MPFR
-     functions which `gawk''s native MPFR support does not)
+     functions that `gawk''s native MPFR support does not)
 
    * Redis extension
 
@@ -26103,7 +26108,7 @@ follows.  First, build and install `gawk':
 
    If you have installed `gawk' in the standard way, then you will
 likely not need the `--with-gawk' option when configuring `gawkextlib'.
-You may also need to use the `sudo' utility to install both `gawk' and
+You may need to use the `sudo' utility to install both `gawk' and
 `gawkextlib', depending upon how your system works.
 
    If you write an extension that you wish to share with other `gawk'
@@ -26125,7 +26130,7 @@ File: gawk.info,  Node: Extension summary,  Next: Extension Exercises,  Prev: ga
      a variable named `plugin_is_GPL_compatible'.
 
    * Communication between `gawk' and an extension is two-way.  `gawk'
-     passes a `struct' to the extension which contains various data
+     passes a `struct' to the extension that contains various data
      fields and function pointers.  The extension can then call into
      `gawk' via the supplied function pointers to accomplish certain
      tasks.
@@ -26136,7 +26141,7 @@ File: gawk.info,  Node: Extension summary,  Next: Extension Exercises,  Prev: ga
      convention, implementation functions are named `do_XXXX()' for
      some `awk'-level function `XXXX()'.
 
-   * The API is defined in a header file named `gawkpi.h'. You must
+   * The API is defined in a header file named `gawkapi.h'. You must
      include a number of standard header files _before_ including it in
      your source file.
 
@@ -26166,16 +26171,16 @@ File: gawk.info,  Node: Extension summary,  Next: Extension Exercises,  Prev: ga
         * Manipulating arrays (retrieving, adding, deleting, and
           modifying elements; getting the count of elements in an array;
           creating a new array; clearing an array; and flattening an
-          array for easy C style looping over all its indices and
+          array for easy C-style looping over all its indices and
           elements)
 
    * The API defines a number of standard data types for representing
      `awk' values, array elements, and arrays.
 
-   * The API provide convenience functions for constructing values.  It
-     also provides memory management functions to ensure compatibility
-     between memory allocated by `gawk' and memory allocated by an
-     extension.
+   * The API provides convenience functions for constructing values.
+     It also provides memory management functions to ensure
+     compatibility between memory allocated by `gawk' and memory
+     allocated by an extension.
 
    * _All_ memory passed from `gawk' to an extension must be treated as
      read-only by the extension.
@@ -26193,8 +26198,8 @@ File: gawk.info,  Node: Extension summary,  Next: Extension Exercises,  Prev: ga
      header file make this easier to do.
 
    * The `gawk' distribution includes a number of small but useful
-     sample extensions. The `gawkextlib' project includes several more,
-     larger, extensions.  If you wish to write an extension and
+     sample extensions. The `gawkextlib' project includes several more
+     (larger) extensions.  If you wish to write an extension and
      contribute it to the community of `gawk' users, the `gawkextlib'
      project is the place to do so.
 
@@ -32830,7 +32835,7 @@ Index
                                                               (line  99)
 * exp:                                   Numeric Functions.   (line  33)
 * expand utility:                        Very Simple.         (line  73)
-* Expat XML parser library:              gawkextlib.          (line  33)
+* Expat XML parser library:              gawkextlib.          (line  35)
 * exponent:                              Numeric Functions.   (line  33)
 * expressions:                           Expressions.         (line   6)
 * expressions, as patterns:              Expression Patterns. (line   6)
@@ -33250,7 +33255,7 @@ Index
 * git utility <2>:                       Accessing The Source.
                                                               (line  10)
 * git utility <3>:                       Other Versions.      (line  29)
-* git utility:                           gawkextlib.          (line  27)
+* git utility:                           gawkextlib.          (line  29)
 * Git, use of for gawk source code:      Derived Files.       (line   6)
 * GNITS mailing list:                    Acknowledgments.     (line  52)
 * GNU awk, See gawk:                     Preface.             (line  51)
@@ -35084,138 +35089,138 @@ Ref: figure-call-new-function923402
 Node: Extension API Description925389
 Node: Extension API Functions Introduction926839
 Node: General Data Types931660
-Ref: General Data Types-Footnote-1937559
-Node: Memory Allocation Functions937858
-Ref: Memory Allocation Functions-Footnote-1940697
-Node: Constructor Functions940793
-Node: Registration Functions942527
-Node: Extension Functions943212
-Node: Exit Callback Functions945509
-Node: Extension Version String946757
-Node: Input Parsers947422
-Node: Output Wrappers957301
-Node: Two-way processors961816
-Node: Printing Messages964020
-Ref: Printing Messages-Footnote-1965096
-Node: Updating `ERRNO'965248
-Node: Requesting Values965988
-Ref: table-value-types-returned966716
-Node: Accessing Parameters967673
-Node: Symbol Table Access968904
-Node: Symbol table by name969418
-Node: Symbol table by cookie971399
-Ref: Symbol table by cookie-Footnote-1975543
-Node: Cached values975606
-Ref: Cached values-Footnote-1979105
-Node: Array Manipulation979196
-Ref: Array Manipulation-Footnote-1980294
-Node: Array Data Types980331
-Ref: Array Data Types-Footnote-1982986
-Node: Array Functions983078
-Node: Flattening Arrays986932
-Node: Creating Arrays993824
-Node: Extension API Variables998595
-Node: Extension Versioning999231
-Node: Extension API Informational Variables1001132
-Node: Extension API Boilerplate1002197
-Node: Finding Extensions1006006
-Node: Extension Example1006566
-Node: Internal File Description1007338
-Node: Internal File Ops1011405
-Ref: Internal File Ops-Footnote-11023075
-Node: Using Internal File Ops1023215
-Ref: Using Internal File Ops-Footnote-11025598
-Node: Extension Samples1025871
-Node: Extension Sample File Functions1027397
-Node: Extension Sample Fnmatch1035035
-Node: Extension Sample Fork1036526
-Node: Extension Sample Inplace1037741
-Node: Extension Sample Ord1039416
-Node: Extension Sample Readdir1040252
-Ref: table-readdir-file-types1041128
-Node: Extension Sample Revout1041939
-Node: Extension Sample Rev2way1042529
-Node: Extension Sample Read write array1043269
-Node: Extension Sample Readfile1045209
-Node: Extension Sample Time1046304
-Node: Extension Sample API Tests1047653
-Node: gawkextlib1048144
-Node: Extension summary1050802
-Node: Extension Exercises1054491
-Node: Language History1055213
-Node: V7/SVR3.11056869
-Node: SVR41059050
-Node: POSIX1060495
-Node: BTL1061884
-Node: POSIX/GNU1062618
-Node: Feature History1068407
-Node: Common Extensions1082133
-Node: Ranges and Locales1083457
-Ref: Ranges and Locales-Footnote-11088075
-Ref: Ranges and Locales-Footnote-21088102
-Ref: Ranges and Locales-Footnote-31088336
-Node: Contributors1088557
-Node: History summary1094098
-Node: Installation1095468
-Node: Gawk Distribution1096414
-Node: Getting1096898
-Node: Extracting1097721
-Node: Distribution contents1099356
-Node: Unix Installation1105421
-Node: Quick Installation1106104
-Node: Shell Startup Files1108515
-Node: Additional Configuration Options1109594
-Node: Configuration Philosophy1111333
-Node: Non-Unix Installation1113702
-Node: PC Installation1114160
-Node: PC Binary Installation1115479
-Node: PC Compiling1117327
-Ref: PC Compiling-Footnote-11120348
-Node: PC Testing1120457
-Node: PC Using1121633
-Node: Cygwin1125748
-Node: MSYS1126571
-Node: VMS Installation1127071
-Node: VMS Compilation1127863
-Ref: VMS Compilation-Footnote-11129085
-Node: VMS Dynamic Extensions1129143
-Node: VMS Installation Details1130827
-Node: VMS Running1133079
-Node: VMS GNV1135915
-Node: VMS Old Gawk1136649
-Node: Bugs1137119
-Node: Other Versions1141002
-Node: Installation summary1147426
-Node: Notes1148482
-Node: Compatibility Mode1149347
-Node: Additions1150129
-Node: Accessing The Source1151054
-Node: Adding Code1152489
-Node: New Ports1158646
-Node: Derived Files1163128
-Ref: Derived Files-Footnote-11168603
-Ref: Derived Files-Footnote-21168637
-Ref: Derived Files-Footnote-31169233
-Node: Future Extensions1169347
-Node: Implementation Limitations1169953
-Node: Extension Design1171201
-Node: Old Extension Problems1172355
-Ref: Old Extension Problems-Footnote-11173872
-Node: Extension New Mechanism Goals1173929
-Ref: Extension New Mechanism Goals-Footnote-11177289
-Node: Extension Other Design Decisions1177478
-Node: Extension Future Growth1179586
-Node: Old Extension Mechanism1180422
-Node: Notes summary1182184
-Node: Basic Concepts1183370
-Node: Basic High Level1184051
-Ref: figure-general-flow1184323
-Ref: figure-process-flow1184922
-Ref: Basic High Level-Footnote-11188151
-Node: Basic Data Typing1188336
-Node: Glossary1191664
-Node: Copying1223593
-Node: GNU Free Documentation License1261149
-Node: Index1286285
+Ref: General Data Types-Footnote-1937560
+Node: Memory Allocation Functions937859
+Ref: Memory Allocation Functions-Footnote-1940698
+Node: Constructor Functions940797
+Node: Registration Functions942532
+Node: Extension Functions943217
+Node: Exit Callback Functions945514
+Node: Extension Version String946762
+Node: Input Parsers947425
+Node: Output Wrappers957300
+Node: Two-way processors961813
+Node: Printing Messages964076
+Ref: Printing Messages-Footnote-1965152
+Node: Updating `ERRNO'965304
+Node: Requesting Values966044
+Ref: table-value-types-returned966771
+Node: Accessing Parameters967728
+Node: Symbol Table Access968962
+Node: Symbol table by name969476
+Node: Symbol table by cookie971496
+Ref: Symbol table by cookie-Footnote-1975641
+Node: Cached values975704
+Ref: Cached values-Footnote-1979200
+Node: Array Manipulation979291
+Ref: Array Manipulation-Footnote-1980389
+Node: Array Data Types980426
+Ref: Array Data Types-Footnote-1983081
+Node: Array Functions983173
+Node: Flattening Arrays987032
+Node: Creating Arrays993934
+Node: Extension API Variables998705
+Node: Extension Versioning999341
+Node: Extension API Informational Variables1001232
+Node: Extension API Boilerplate1002297
+Node: Finding Extensions1006106
+Node: Extension Example1006666
+Node: Internal File Description1007438
+Node: Internal File Ops1011505
+Ref: Internal File Ops-Footnote-11023256
+Node: Using Internal File Ops1023396
+Ref: Using Internal File Ops-Footnote-11025779
+Node: Extension Samples1026052
+Node: Extension Sample File Functions1027580
+Node: Extension Sample Fnmatch1035261
+Node: Extension Sample Fork1036749
+Node: Extension Sample Inplace1037964
+Node: Extension Sample Ord1039640
+Node: Extension Sample Readdir1040476
+Ref: table-readdir-file-types1041353
+Node: Extension Sample Revout1042164
+Node: Extension Sample Rev2way1042753
+Node: Extension Sample Read write array1043493
+Node: Extension Sample Readfile1045433
+Node: Extension Sample Time1046528
+Node: Extension Sample API Tests1047876
+Node: gawkextlib1048367
+Node: Extension summary1051045
+Node: Extension Exercises1054734
+Node: Language History1055456
+Node: V7/SVR3.11057112
+Node: SVR41059293
+Node: POSIX1060738
+Node: BTL1062127
+Node: POSIX/GNU1062861
+Node: Feature History1068650
+Node: Common Extensions1082376
+Node: Ranges and Locales1083700
+Ref: Ranges and Locales-Footnote-11088318
+Ref: Ranges and Locales-Footnote-21088345
+Ref: Ranges and Locales-Footnote-31088579
+Node: Contributors1088800
+Node: History summary1094341
+Node: Installation1095711
+Node: Gawk Distribution1096657
+Node: Getting1097141
+Node: Extracting1097964
+Node: Distribution contents1099599
+Node: Unix Installation1105664
+Node: Quick Installation1106347
+Node: Shell Startup Files1108758
+Node: Additional Configuration Options1109837
+Node: Configuration Philosophy1111576
+Node: Non-Unix Installation1113945
+Node: PC Installation1114403
+Node: PC Binary Installation1115722
+Node: PC Compiling1117570
+Ref: PC Compiling-Footnote-11120591
+Node: PC Testing1120700
+Node: PC Using1121876
+Node: Cygwin1125991
+Node: MSYS1126814
+Node: VMS Installation1127314
+Node: VMS Compilation1128106
+Ref: VMS Compilation-Footnote-11129328
+Node: VMS Dynamic Extensions1129386
+Node: VMS Installation Details1131070
+Node: VMS Running1133322
+Node: VMS GNV1136158
+Node: VMS Old Gawk1136892
+Node: Bugs1137362
+Node: Other Versions1141245
+Node: Installation summary1147669
+Node: Notes1148725
+Node: Compatibility Mode1149590
+Node: Additions1150372
+Node: Accessing The Source1151297
+Node: Adding Code1152732
+Node: New Ports1158889
+Node: Derived Files1163371
+Ref: Derived Files-Footnote-11168846
+Ref: Derived Files-Footnote-21168880
+Ref: Derived Files-Footnote-31169476
+Node: Future Extensions1169590
+Node: Implementation Limitations1170196
+Node: Extension Design1171444
+Node: Old Extension Problems1172598
+Ref: Old Extension Problems-Footnote-11174115
+Node: Extension New Mechanism Goals1174172
+Ref: Extension New Mechanism Goals-Footnote-11177532
+Node: Extension Other Design Decisions1177721
+Node: Extension Future Growth1179829
+Node: Old Extension Mechanism1180665
+Node: Notes summary1182427
+Node: Basic Concepts1183613
+Node: Basic High Level1184294
+Ref: figure-general-flow1184566
+Ref: figure-process-flow1185165
+Ref: Basic High Level-Footnote-11188394
+Node: Basic Data Typing1188579
+Node: Glossary1191907
+Node: Copying1223836
+Node: GNU Free Documentation License1261392
+Node: Index1286528
 
 End Tag Table
