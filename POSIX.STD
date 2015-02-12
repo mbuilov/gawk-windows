@@ -5,7 +5,7 @@
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 --------------------------------------------------------------------------
-Thu Mar 31 22:31:57 IST 2011
+Thu Feb 12 08:51:22 IST 2015
 ============================
 This file documents several things related to the 2008 POSIX standard
 that I noted after reviewing it.
@@ -29,6 +29,19 @@ that I noted after reviewing it.
 3. String comparison with <, <= etc is supposed to take the locale's collating
    sequence into account.  By default gawk doesn't do this. Rather, gawk
    will do this only if --posix is in effect.
+
+4. According to POSIX, the function parameters of one function may not have
+   the same name as another function, making this invalid:
+
+	function foo() { ... }
+	function bar(foo) { ...}
+
+   Or even:
+
+	function bar(foo) { ...}
+	function foo() { ... }
+
+   Gawk enforces this only with --posix.
 
 The following things aren't described by POSIX but ought to be:
 
