@@ -26328,56 +26328,56 @@ available in System V Release 3.1 (1987).  This minor node summarizes
 the changes, with cross-references to further details:
 
    * The requirement for `;' to separate rules on a line (*note
-     Statements/Lines::).
+     Statements/Lines::)
 
    * User-defined functions and the `return' statement (*note
-     User-defined::).
+     User-defined::)
 
    * The `delete' statement (*note Delete::).
 
-   * The `do'-`while' statement (*note Do Statement::).
+   * The `do'-`while' statement (*note Do Statement::)
 
    * The built-in functions `atan2()', `cos()', `sin()', `rand()', and
-     `srand()' (*note Numeric Functions::).
+     `srand()' (*note Numeric Functions::)
 
    * The built-in functions `gsub()', `sub()', and `match()' (*note
-     String Functions::).
+     String Functions::)
 
    * The built-in functions `close()' and `system()' (*note I/O
-     Functions::).
+     Functions::)
 
    * The `ARGC', `ARGV', `FNR', `RLENGTH', `RSTART', and `SUBSEP'
-     predefined variables (*note Built-in Variables::).
+     predefined variables (*note Built-in Variables::)
 
-   * Assignable `$0' (*note Changing Fields::).
+   * Assignable `$0' (*note Changing Fields::)
 
    * The conditional expression using the ternary operator `?:' (*note
-     Conditional Exp::).
+     Conditional Exp::)
 
-   * The expression `INDEX-VARIABLE in ARRAY' outside of `for'
-     statements (*note Reference to Elements::).
+   * The expression `INDX in ARRAY' outside of `for' statements (*note
+     Reference to Elements::)
 
    * The exponentiation operator `^' (*note Arithmetic Ops::) and its
-     assignment operator form `^=' (*note Assignment Ops::).
+     assignment operator form `^=' (*note Assignment Ops::)
 
    * C-compatible operator precedence, which breaks some old `awk'
-     programs (*note Precedence::).
+     programs (*note Precedence::)
 
    * Regexps as the value of `FS' (*note Field Separators::) and as the
      third argument to the `split()' function (*note String
-     Functions::), rather than using only the first character of `FS'.
+     Functions::), rather than using only the first character of `FS'
 
    * Dynamic regexps as operands of the `~' and `!~' operators (*note
-     Computed Regexps::).
+     Computed Regexps::)
 
    * The escape sequences `\b', `\f', and `\r' (*note Escape
-     Sequences::).
+     Sequences::)
 
-   * Redirection of input for the `getline' function (*note Getline::).
+   * Redirection of input for the `getline' function (*note Getline::)
 
-   * Multiple `BEGIN' and `END' rules (*note BEGIN/END::).
+   * Multiple `BEGIN' and `END' rules (*note BEGIN/END::)
 
-   * Multidimensional arrays (*note Multidimensional::).
+   * Multidimensional arrays (*note Multidimensional::)
 
 
 File: gawk.info,  Node: SVR4,  Next: POSIX,  Prev: V7/SVR3.1,  Up: Language History
@@ -26388,37 +26388,37 @@ A.2 Changes Between SVR3.1 and SVR4
 The System V Release 4 (1989) version of Unix `awk' added these features
 (some of which originated in `gawk'):
 
-   * The `ENVIRON' array (*note Built-in Variables::).
+   * The `ENVIRON' array (*note Built-in Variables::)
 
-   * Multiple `-f' options on the command line (*note Options::).
+   * Multiple `-f' options on the command line (*note Options::)
 
    * The `-v' option for assigning variables before program execution
-     begins (*note Options::).
+     begins (*note Options::)
 
-   * The `--' signal for terminating command-line options.
+   * The `--' signal for terminating command-line options
 
    * The `\a', `\v', and `\x' escape sequences (*note Escape
-     Sequences::).
+     Sequences::)
 
    * A defined return value for the `srand()' built-in function (*note
-     Numeric Functions::).
+     Numeric Functions::)
 
    * The `toupper()' and `tolower()' built-in string functions for case
-     translation (*note String Functions::).
+     translation (*note String Functions::)
 
    * A cleaner specification for the `%c' format-control letter in the
-     `printf' function (*note Control Letters::).
+     `printf' function (*note Control Letters::)
 
    * The ability to dynamically pass the field width and precision
      (`"%*.*d"') in the argument list of `printf' and `sprintf()'
-     (*note Control Letters::).
+     (*note Control Letters::)
 
    * The use of regexp constants, such as `/foo/', as expressions, where
      they are equivalent to using the matching operator, as in `$0 ~
-     /foo/' (*note Using Constant Regexps::).
+     /foo/' (*note Using Constant Regexps::)
 
    * Processing of escape sequences inside command-line variable
-     assignments (*note Assignment Options::).
+     assignments (*note Assignment Options::)
 
 
 File: gawk.info,  Node: POSIX,  Next: BTL,  Prev: SVR4,  Up: Language History
@@ -26430,30 +26430,30 @@ The POSIX Command Language and Utilities standard for `awk' (1992)
 introduced the following changes into the language:
 
    * The use of `-W' for implementation-specific options (*note
-     Options::).
+     Options::)
 
    * The use of `CONVFMT' for controlling the conversion of numbers to
-     strings (*note Conversion::).
+     strings (*note Conversion::)
 
    * The concept of a numeric string and tighter comparison rules to go
-     with it (*note Typing and Comparison::).
+     with it (*note Typing and Comparison::)
 
    * The use of predefined variables as function parameter names is
-     forbidden (*note Definition Syntax::).
+     forbidden (*note Definition Syntax::)
 
    * More complete documentation of many of the previously undocumented
-     features of the language.
+     features of the language
 
    In 2012, a number of extensions that had been commonly available for
 many years were finally added to POSIX. They are:
 
    * The `fflush()' built-in function for flushing buffered output
-     (*note I/O Functions::).
+     (*note I/O Functions::)
 
-   * The `nextfile' statement (*note Nextfile Statement::).
+   * The `nextfile' statement (*note Nextfile Statement::)
 
    * The ability to delete all of an array at once with `delete ARRAY'
-     (*note Delete::).
+     (*note Delete::)
 
 
    *Note Common Extensions::, for a list of common extensions not
@@ -26475,13 +26475,13 @@ Other Versions::).
 in his version of `awk':
 
    * The `**' and `**=' operators (*note Arithmetic Ops:: and *note
-     Assignment Ops::).
+     Assignment Ops::)
 
    * The use of `func' as an abbreviation for `function' (*note
-     Definition Syntax::).
+     Definition Syntax::)
 
    * The `fflush()' built-in function for flushing buffered output
-     (*note I/O Functions::).
+     (*note I/O Functions::)
 
 
    *Note Common Extensions::, for a full list of the extensions
@@ -26503,110 +26503,108 @@ the current version of `gawk'.
 
    * Additional predefined variables:
 
-        - The `ARGIND' `BINMODE', `ERRNO', `FIELDWIDTHS', `FPAT',
+        - The `ARGIND', `BINMODE', `ERRNO', `FIELDWIDTHS', `FPAT',
           `IGNORECASE', `LINT', `PROCINFO', `RT', and `TEXTDOMAIN'
-          variables (*note Built-in Variables::).
+          variables (*note Built-in Variables::)
 
    * Special files in I/O redirections:
 
-        - The `/dev/stdin', `/dev/stdout', `/dev/stderr' and
-          `/dev/fd/N' special file names (*note Special Files::).
+        - The `/dev/stdin', `/dev/stdout', `/dev/stderr', and
+          `/dev/fd/N' special file names (*note Special Files::)
 
         - The `/inet', `/inet4', and `/inet6' special files for TCP/IP
           networking using `|&' to specify which version of the IP
-          protocol to use (*note TCP/IP Networking::).
+          protocol to use (*note TCP/IP Networking::)
 
    * Changes and/or additions to the language:
 
-        - The `\x' escape sequence (*note Escape Sequences::).
+        - The `\x' escape sequence (*note Escape Sequences::)
 
-        - Full support for both POSIX and GNU regexps (*note Regexp::).
+        - Full support for both POSIX and GNU regexps (*note Regexp::)
 
         - The ability for `FS' and for the third argument to `split()'
-          to be null strings (*note Single Character Fields::).
+          to be null strings (*note Single Character Fields::)
 
-        - The ability for `RS' to be a regexp (*note Records::).
+        - The ability for `RS' to be a regexp (*note Records::)
 
         - The ability to use octal and hexadecimal constants in `awk'
-          program source code (*note Nondecimal-numbers::).
+          program source code (*note Nondecimal-numbers::)
 
         - The `|&' operator for two-way I/O to a coprocess (*note
-          Two-way I/O::).
+          Two-way I/O::)
 
-        - Indirect function calls (*note Indirect Calls::).
+        - Indirect function calls (*note Indirect Calls::)
 
         - Directories on the command line produce a warning and are
-          skipped (*note Command-line directories::).
+          skipped (*note Command-line directories::)
 
         - Output with `print' and `printf' need not be fatal (*note
-          Nonfatal::).
+          Nonfatal::)
 
    * New keywords:
 
         - The `BEGINFILE' and `ENDFILE' special patterns (*note
-          BEGINFILE/ENDFILE::).
+          BEGINFILE/ENDFILE::)
 
-        - The `switch' statement (*note Switch Statement::).
+        - The `switch' statement (*note Switch Statement::)
 
    * Changes to standard `awk' functions:
 
         - The optional second argument to `close()' that allows closing
-          one end of a two-way pipe to a coprocess (*note Two-way
-          I/O::).
+          one end of a two-way pipe to a coprocess (*note Two-way I/O::)
 
-        - POSIX compliance for `gsub()' and `sub()' with `--posix'.
+        - POSIX compliance for `gsub()' and `sub()' with `--posix'
 
         - The `length()' function accepts an array argument and returns
-          the number of elements in the array (*note String
-          Functions::).
+          the number of elements in the array (*note String Functions::)
 
         - The optional third argument to the `match()' function for
           capturing text-matching subexpressions within a regexp (*note
-          String Functions::).
+          String Functions::)
 
         - Positional specifiers in `printf' formats for making
-          translations easier (*note Printf Ordering::).
+          translations easier (*note Printf Ordering::)
 
-        - The `split()' function's additional optional fourth argument
+        - The `split()' function's additional optional fourth argument,
           which is an array to hold the text of the field separators
-          (*note String Functions::).
+          (*note String Functions::)
 
    * Additional functions only in `gawk':
 
         - The `gensub()', `patsplit()', and `strtonum()' functions for
-          more powerful text manipulation (*note String Functions::).
+          more powerful text manipulation (*note String Functions::)
 
         - The `asort()' and `asorti()' functions for sorting arrays
-          (*note Array Sorting::).
+          (*note Array Sorting::)
 
         - The `mktime()', `systime()', and `strftime()' functions for
-          working with timestamps (*note Time Functions::).
+          working with timestamps (*note Time Functions::)
 
         - The `and()', `compl()', `lshift()', `or()', `rshift()', and
           `xor()' functions for bit manipulation (*note Bitwise
-          Functions::).
+          Functions::)
 
         - The `isarray()' function to check if a variable is an array
-          or not (*note Type Functions::).
+          or not (*note Type Functions::)
 
-        - The `bindtextdomain()', `dcgettext()' and `dcngettext()'
-          functions for internationalization (*note Programmer i18n::).
+        - The `bindtextdomain()', `dcgettext()', and `dcngettext()'
+          functions for internationalization (*note Programmer i18n::)
 
         - The `div()' function for doing integer division and remainder
-          (*note Numeric Functions::).
+          (*note Numeric Functions::)
 
    * Changes and/or additions in the command-line options:
 
         - The `AWKPATH' environment variable for specifying a path
-          search for the `-f' command-line option (*note Options::).
+          search for the `-f' command-line option (*note Options::)
 
         - The `AWKLIBPATH' environment variable for specifying a path
-          search for the `-l' command-line option (*note Options::).
+          search for the `-l' command-line option (*note Options::)
 
         - The `-b', `-c', `-C', `-d', `-D', `-e', `-E', `-g', `-h',
           `-i', `-l', `-L', `-M', `-n', `-N', `-o', `-O', `-p', `-P',
           `-r', `-S', `-t', and `-V' short options. Also, the ability
-          to use GNU-style long-named options that start with `--' and
+          to use GNU-style long-named options that start with `--', and
           the `--assign', `--bignum', `--characters-as-bytes',
           `--copyright', `--debug', `--dump-variables', `--exec',
           `--field-separator', `--file', `--gen-pot', `--help',
@@ -26644,8 +26642,8 @@ the current version of `gawk'.
         - GCC for VAX and Alpha has not been tested for a while.
 
 
-   * Support for the following obsolete systems was removed from the
-     code for `gawk' version 4.1:
+   * Support for the following obsolete system was removed from the code
+     for `gawk' version 4.1:
 
         - Ultrix
 
@@ -27072,22 +27070,22 @@ The following table summarizes the common extensions supported by
 `gawk', Brian Kernighan's `awk', and `mawk', the three most widely used
 freely available versions of `awk' (*note Other Versions::).
 
-Feature                      BWK Awk   Mawk   GNU Awk   Now standard
------------------------------------------------------------------------ 
-`\x' Escape sequence         X         X      X         
-`FS' as null string          X         X      X         
-`/dev/stdin' special file    X         X      X         
-`/dev/stdout' special file   X         X      X         
-`/dev/stderr' special file   X         X      X         
-`delete' without subscript   X         X      X         X
-`fflush()' function          X         X      X         X
-`length()' of an array       X         X      X         
-`nextfile' statement         X         X      X         X
-`**' and `**=' operators     X                X         
-`func' keyword               X                X         
-`BINMODE' variable                     X      X         
-`RS' as regexp                         X      X         
-Time-related functions                 X      X         
+Feature                      BWK `awk'   `mawk'   `gawk'   Now standard
+-------------------------------------------------------------------------- 
+`\x' escape sequence         X           X        X        
+`FS' as null string          X           X        X        
+`/dev/stdin' special file    X           X        X        
+`/dev/stdout' special file   X           X        X        
+`/dev/stderr' special file   X           X        X        
+`delete' without subscript   X           X        X        X
+`fflush()' function          X           X        X        X
+`length()' of an array       X           X        X        
+`nextfile' statement         X           X        X        X
+`**' and `**=' operators     X                    X        
+`func' keyword               X                    X        
+`BINMODE' variable                       X        X        
+`RS' as regexp                           X        X        
+Time-related functions                   X        X        
 
 
 File: gawk.info,  Node: Ranges and Locales,  Next: Contributors,  Prev: Common Extensions,  Up: Language History
@@ -27107,7 +27105,7 @@ in the machine's native character set.  Thus, on ASCII-based systems,
 `[a-z]' matched all the lowercase letters, and only the lowercase
 letters, as the numeric values for the letters from `a' through `z'
 were contiguous.  (On an EBCDIC system, the range `[a-z]' includes
-additional, non-alphabetic characters as well.)
+additional nonalphabetic characters as well.)
 
    Almost all introductory Unix literature explained range expressions
 as working in this fashion, and in particular, would teach that the
@@ -27131,7 +27129,7 @@ outside those locales, the ordering was defined to be based on
    What does that mean?  In many locales, `A' and `a' are both less
 than `B'.  In other words, these locales sort characters in dictionary
 order, and `[a-dx-z]' is typically not equivalent to `[abcdxyz]';
-instead it might be equivalent to `[ABCXYabcdxyz]', for example.
+instead, it might be equivalent to `[ABCXYabcdxyz]', for example.
 
    This point needs to be emphasized: much literature teaches that you
 should use `[a-z]' to match a lowercase character.  But on systems with
@@ -27155,17 +27153,17 @@ is perfectly valid in ASCII, but is not valid in many Unicode locales,
 such as `en_US.UTF-8'.
 
    Early versions of `gawk' used regexp matching code that was not
-locale aware, so ranges had their traditional interpretation.
+locale-aware, so ranges had their traditional interpretation.
 
    When `gawk' switched to using locale-aware regexp matchers, the
 problems began; especially as both GNU/Linux and commercial Unix
 vendors started implementing non-ASCII locales, _and making them the
 default_.  Perhaps the most frequently asked question became something
-like "why does `[A-Z]' match lowercase letters?!?"
+like, "Why does `[A-Z]' match lowercase letters?!?"
 
    This situation existed for close to 10 years, if not more, and the
 `gawk' maintainer grew weary of trying to explain that `gawk' was being
-nicely standards compliant, and that the issue was in the user's
+nicely standards-compliant, and that the issue was in the user's
 locale.  During the development of version 4.0, he modified `gawk' to
 always treat ranges in the original, pre-POSIX fashion, unless
 `--posix' was used (*note Options::).(2)
@@ -27177,18 +27175,18 @@ of range expressions was _undefined_.(3)
 
    By using this lovely technical term, the standard gives license to
 implementors to implement ranges in whatever way they choose.  The
-`gawk' maintainer chose to apply the pre-POSIX meaning in all cases:
-the default regexp matching; with `--traditional' and with `--posix';
-in all cases, `gawk' remains POSIX compliant.
+`gawk' maintainer chose to apply the pre-POSIX meaning both with the
+default regexp matching and when `--traditional' or `--posix' are used.
+In all cases `gawk' remains POSIX-compliant.
 
    ---------- Footnotes ----------
 
    (1) And Life was good.
 
    (2) And thus was born the Campaign for Rational Range Interpretation
-(or RRI). A number of GNU tools have either implemented this change, or
-will soon.  Thanks to Karl Berry for coining the phrase "Rational Range
-Interpretation."
+(or RRI). A number of GNU tools have already implemented this change,
+or will soon.  Thanks to Karl Berry for coining the phrase "Rational
+Range Interpretation."
 
    (3) See the standard
 (http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html#tag_09_03_05)
@@ -27220,7 +27218,7 @@ Info file, in approximate chronological order:
 
    * Richard Stallman helped finish the implementation and the initial
      draft of this Info file.  He is also the founder of the FSF and
-     the GNU project.
+     the GNU Project.
 
    * John Woods contributed parts of the code (mostly fixes) in the
      initial version of `gawk'.
@@ -27306,22 +27304,22 @@ Info file, in approximate chronological order:
    * John Haque made the following contributions:
 
         - The modifications to convert `gawk' into a byte-code
-          interpreter, including the debugger.
+          interpreter, including the debugger
 
-        - The addition of true arrays of arrays.
+        - The addition of true arrays of arrays
 
         - The additional modifications for support of
-          arbitrary-precision arithmetic.
+          arbitrary-precision arithmetic
 
-        - The initial text of *note Arbitrary Precision Arithmetic::.
+        - The initial text of *note Arbitrary Precision Arithmetic::
 
         - The work to merge the three versions of `gawk' into one, for
-          the 4.1 release.
+          the 4.1 release
 
-        - Improved array internals for arrays indexed by integers.
+        - Improved array internals for arrays indexed by integers
 
-        - The improved array sorting features were driven by John
-          together with Pat Rankin.
+        - The improved array sorting features were also driven by John,
+          together with Pat Rankin
 
    * Panos Papadopoulos contributed the original text for *note Include
      Files::.
@@ -27350,11 +27348,11 @@ A.10 Summary
 ============
 
    * The `awk' language has evolved over time. The first release was
-     with V7 Unix circa 1978.  In 1987, for System V Release 3.1, major
-     additions, including user-defined functions, were made to the
-     language.  Additional changes were made for System V Release 4, in
-     1989.  Since then, further minor changes happen under the auspices
-     of the POSIX standard.
+     with V7 Unix, circa 1978.  In 1987, for System V Release 3.1,
+     major additions, including user-defined functions, were made to
+     the language.  Additional changes were made for System V Release
+     4, in 1989.  Since then, further minor changes have happened under
+     the auspices of the POSIX standard.
 
    * Brian Kernighan's `awk' provides a small number of extensions that
      are implemented in common with other versions of `awk'.
@@ -27367,7 +27365,7 @@ A.10 Summary
      been confusing over the years. Today, `gawk' implements Rational
      Range Interpretation, where ranges of the form `[a-z]' match
      _only_ the characters numerically between `a' through `z' in the
-     machine's native character set.  Usually this is ASCII but it can
+     machine's native character set.  Usually this is ASCII, but it can
      be EBCDIC on IBM S/390 systems.
 
    * Many people have contributed to `gawk' development over the years.
@@ -27445,7 +27443,7 @@ B.1.2 Extracting the Distribution
 `gawk' is distributed as several `tar' files compressed with different
 compression programs: `gzip', `bzip2', and `xz'. For simplicity, the
 rest of these instructions assume you are using the one compressed with
-the GNU Zip program, `gzip'.
+the GNU Gzip program (`gzip').
 
    Once you have the distribution (e.g., `gawk-4.1.2.tar.gz'), use
 `gzip' to expand the file and then use `tar' to extract it.  You can
@@ -27485,10 +27483,10 @@ files, subdirectories, and files related to the configuration process
 to different non-Unix operating systems:
 
 Various `.c', `.y', and `.h' files
-     The actual `gawk' source code.
+     These files contain the actual `gawk' source code.
 
 `ABOUT-NLS'
-     Information about GNU `gettext' and translations.
+     A file containing information about GNU `gettext' and translations.
 
 `AUTHORS'
      A file with some information about the authorship of `gawk'.  It
@@ -27520,7 +27518,7 @@ Various `.c', `.y', and `.h' files
      The GNU General Public License.
 
 `POSIX.STD'
-     A description of behaviors in the POSIX standard for `awk' which
+     A description of behaviors in the POSIX standard for `awk' that
      are left undefined, or where `gawk' may not comply fully, as well
      as a list of things that the POSIX standard should describe but
      does not.
@@ -27784,14 +27782,16 @@ command line when compiling `gawk' from scratch, including:
      do nothing.  Similarly, setting the `LINT' variable (*note
      User-modified::) has no effect on the running `awk' program.
 
-     When used with GCC's automatic dead-code-elimination, this option
-     cuts almost 23K bytes off the size of the `gawk' executable on
-     GNU/Linux x86_64 systems.  Results on other systems and with other
-     compilers are likely to vary.  Using this option may bring you
-     some slight performance improvement.
+     When used with the GNU Compiler Collection's (GCC's) automatic
+     dead-code-elimination, this option cuts almost 23K bytes off the
+     size of the `gawk' executable on GNU/Linux x86_64 systems.
+     Results on other systems and with other compilers are likely to
+     vary.  Using this option may bring you some slight performance
+     improvement.
 
-     Using this option will cause some of the tests in the test suite
-     to fail.  This option may be removed at a later date.
+          CAUTION: Using this option will cause some of the tests in
+          the test suite to fail.  This option may be removed at a
+          later date.
 
 `--disable-nls'
      Disable all message-translation facilities.  This is usually not
@@ -27875,10 +27875,10 @@ B.3.1 Installation on PC Operating Systems
 This minor node covers installation and usage of `gawk' on Intel
 architecture machines running MS-DOS, any version of MS-Windows, or
 OS/2.  In this minor node, the term "Windows32" refers to any of
-Microsoft Windows-95/98/ME/NT/2000/XP/Vista/7/8.
+Microsoft Windows 95/98/ME/NT/2000/XP/Vista/7/8.
 
    The limitations of MS-DOS (and MS-DOS shells under the other
-operating systems) has meant that various "DOS extenders" are often
+operating systems) have meant that various "DOS extenders" are often
 used with programs such as `gawk'.  The varying capabilities of
 Microsoft Windows 3.1 and Windows32 can add to the confusion.  For an
 overview of the considerations, refer to `README_d/README.pc' in the
@@ -28073,7 +28073,7 @@ The DJGPP collection of tools includes an MS-DOS port of Bash, and
 several shells are available for OS/2, including `ksh'.
 
    Under MS-Windows, OS/2 and MS-DOS, `gawk' (and many other text
-programs) silently translate end-of-line `\r\n' to `\n' on input and
+programs) silently translates end-of-line `\r\n' to `\n' on input and
 `\n' to `\r\n' on output.  A special `BINMODE' variable (c.e.)  allows
 control over these translations and is interpreted as follows:
 
@@ -28095,7 +28095,7 @@ The modes for standard input and standard output are set one time only
 program).  Setting `BINMODE' for standard input or standard output is
 accomplished by using an appropriate `-v BINMODE=N' option on the
 command line.  `BINMODE' is set at the time a file or pipe is opened
-and cannot be changed mid-stream.
+and cannot be changed midstream.
 
    The name `BINMODE' was chosen to match `mawk' (*note Other
 Versions::).  `mawk' and `gawk' handle `BINMODE' similarly; however,
@@ -28139,10 +28139,9 @@ B.3.1.5 Using `gawk' In The Cygwin Environment
 
 `gawk' can be built and used "out of the box" under MS-Windows if you
 are using the Cygwin environment (http://www.cygwin.com).  This
-environment provides an excellent simulation of GNU/Linux, using the
-GNU tools, such as Bash, the GNU Compiler Collection (GCC), GNU Make,
-and other GNU programs.  Compilation and installation for Cygwin is the
-same as for a Unix system:
+environment provides an excellent simulation of GNU/Linux, using Bash,
+GCC, GNU Make, and other GNU programs.  Compilation and installation
+for Cygwin is the same as for a Unix system:
 
      tar -xvpzf gawk-4.1.2.tar.gz
      cd gawk-4.1.2
@@ -28160,7 +28159,7 @@ B.3.1.6 Using `gawk' In The MSYS Environment
 ............................................
 
 In the MSYS environment under MS-Windows, `gawk' automatically uses
-binary mode for reading and writing files.  Thus there is no need to
+binary mode for reading and writing files.  Thus, there is no need to
 use the `BINMODE' variable.
 
    This can cause problems with other Unix-like components that have
@@ -28215,9 +28214,9 @@ available from `https://github.com/endlesssoftware/mmk'.
 target parameter may need to be exact.
 
    `gawk' has been tested under VAX/VMS 7.3 and Alpha/VMS 7.3-1 using
-Compaq C V6.4, and Alpha/VMS 7.3, Alpha/VMS 7.3-2, and IA64/VMS 8.3.
-The most recent builds used HP C V7.3 on Alpha VMS 8.3 and both Alpha
-and IA64 VMS 8.4 used HP C 7.3.(1)
+Compaq C V6.4, and under Alpha/VMS 7.3, Alpha/VMS 7.3-2, and IA64/VMS
+8.3.  The most recent builds used HP C V7.3 on Alpha VMS 8.3 and both
+Alpha and IA64 VMS 8.4 used HP C 7.3.(1)
 
    *Note VMS GNV::, for information on building `gawk' as a PCSI kit
 that is compatible with the GNV product.
@@ -28260,7 +28259,7 @@ than 32 bits.
 
      /name=(as_is,short)
 
-   Compile time macros need to be defined before the first VMS-supplied
+   Compile-time macros need to be defined before the first VMS-supplied
 header file is included, as follows:
 
      #if (__CRTL_VER >= 70200000) && !defined (__VAX)
@@ -28304,14 +28303,14 @@ directory tree, the program will be known as
 `GNV$GNU:[vms_help]gawk.hlp'.
 
    The PCSI kit also installs a `GNV$GNU:[vms_bin]gawk_verb.cld' file
-which can be used to add `gawk' and `awk' as DCL commands.
+that can be used to add `gawk' and `awk' as DCL commands.
 
    For just the current process you can use:
 
      $ set command gnv$gnu:[vms_bin]gawk_verb.cld
 
    Or the system manager can use `GNV$GNU:[vms_bin]gawk_verb.cld' to
-add the `gawk' and `awk' to the system wide `DCLTABLES'.
+add the `gawk' and `awk' to the system-wide `DCLTABLES'.
 
    The DCL syntax is documented in the `gawk.hlp' file.
 
@@ -28371,14 +28370,14 @@ process) are present, there is no ambiguity and `--' can be omitted.
 status value when the program exits.
 
    The VMS severity bits will be set based on the `exit' value.  A
-failure is indicated by 1 and VMS sets the `ERROR' status.  A fatal
-error is indicated by 2 and VMS sets the `FATAL' status.  All other
+failure is indicated by 1, and VMS sets the `ERROR' status.  A fatal
+error is indicated by 2, and VMS sets the `FATAL' status.  All other
 values will have the `SUCCESS' status.  The exit value is encoded to
 comply with VMS coding standards and will have the `C_FACILITY_NO' of
 `0x350000' with the constant `0xA000' added to the number shifted over
 by 3 bits to make room for the severity codes.
 
-   To extract the actual `gawk' exit code from the VMS status use:
+   To extract the actual `gawk' exit code from the VMS status, use:
 
      unix_status = (vms_status .and. &x7f8) / 8
 
@@ -28394,7 +28393,7 @@ Function::.
 
    VMS reports time values in GMT unless one of the `SYS$TIMEZONE_RULE'
 or `TZ' logical names is set.  Older versions of VMS, such as VAX/VMS
-7.3 do not set these logical names.
+7.3, do not set these logical names.
 
    The default search path, when looking for `awk' program files
 specified by the `-f' option, is `"SYS$DISK:[],AWK_LIBRARY:"'.  The
@@ -28411,7 +28410,7 @@ B.3.2.5 The VMS GNV Project
 
 The VMS GNV package provides a build environment similar to POSIX with
 ports of a collection of open source tools.  The `gawk' found in the GNV
-base kit is an older port.  Currently the GNV project is being
+base kit is an older port.  Currently, the GNV project is being
 reorganized to supply individual PCSI packages for each component.  See
 `https://sourceforge.net/p/gnv/wiki/InstallingGNVPackages/'.
 
@@ -28445,7 +28444,7 @@ B.4 Reporting Problems and Bugs
      Douglas Adams, `The Hitchhiker's Guide to the Galaxy'
 
    If you have problems with `gawk' or think that you have found a bug,
-report it to the developers; we cannot promise to do anything but we
+report it to the developers; we cannot promise to do anything, but we
 might well want to fix it.
 
    Before reporting a bug, make sure you have really found a genuine
@@ -28456,7 +28455,7 @@ documentation!
 
    Before reporting a bug or trying to fix it yourself, try to isolate
 it to the smallest possible `awk' program and input data file that
-reproduces the problem.  Then send us the program and data file, some
+reproduce the problem.  Then send us the program and data file, some
 idea of what kind of Unix system you're using, the compiler you used to
 compile `gawk', and the exact results `gawk' gave you.  Also say what
 you expected to occur; this helps us decide whether the problem is
@@ -28468,7 +28467,7 @@ You can get this information with the command `gawk --version'.
    Once you have a precise problem description, send email to
 <bug-gawk@gnu.org>.
 
-   The `gawk' maintainers subscribe to this address and thus they will
+   The `gawk' maintainers subscribe to this address, and thus they will
 receive your bug report.  Although you can send mail to the maintainers
 directly, the bug reporting address is preferred because the email list
 is archived at the GNU Project.  _All email must be in English. This is
@@ -28489,8 +28488,8 @@ the only language understood in common by all the maintainers._
      forward bug reports "upstream" to the GNU mailing list, many
      don't, so there is a good chance that the `gawk'  maintainers
      won't even see the bug report!  Second, mail to the GNU list is
-     archived, and having everything at the GNU project keeps things
-     self-contained and not dependant on other organizations.
+     archived, and having everything at the GNU Project keeps things
+     self-contained and not dependent on other organizations.
 
    Non-bug suggestions are always welcome as well.  If you have
 questions about things that are unclear in the documentation or are
@@ -28499,18 +28498,19 @@ if we can.
 
    If you find bugs in one of the non-Unix ports of `gawk', send an
 email to the bug list, with a copy to the person who maintains that
-port.  They are named in the following list, as well as in the `README'
-file in the `gawk' distribution.  Information in the `README' file
-should be considered authoritative if it conflicts with this Info file.
+port.  The maintainers are named in the following list, as well as in
+the `README' file in the `gawk' distribution.  Information in the
+`README' file should be considered authoritative if it conflicts with
+this Info file.
 
    The people maintaining the various `gawk' ports are:
 
-Unix and POSIX systems  Arnold Robbins, <arnold@skeeve.com>.
-MS-DOS with DJGPP       Scott Deifik, <scottd.mail@sbcglobal.net>.
-MS-Windows with MinGW   Eli Zaretskii, <eliz@gnu.org>.
-OS/2                    Andreas Buening, <andreas.buening@nexgo.de>.
-VMS                     John Malmberg, <wb8tyw@qsl.net>.
-z/OS (OS/390)           Dave Pitts, <dpitts@cozx.com>.
+Unix and POSIX systems  Arnold Robbins, <arnold@skeeve.com>
+MS-DOS with DJGPP       Scott Deifik, <scottd.mail@sbcglobal.net>
+MS-Windows with MinGW   Eli Zaretskii, <eliz@gnu.org>
+OS/2                    Andreas Buening, <andreas.buening@nexgo.de>
+VMS                     John Malmberg, <wb8tyw@qsl.net>
+z/OS (OS/390)           Dave Pitts, <dpitts@cozx.com>
 
    If your bug is also reproducible under Unix, send a copy of your
 report to the <bug-gawk@gnu.org> email list as well.
@@ -28521,7 +28521,7 @@ File: gawk.info,  Node: Other Versions,  Next: Installation summary,  Prev: Bugs
 B.5 Other Freely Available `awk' Implementations
 ================================================
 
-     It's kind of fun to put comments like this in your awk code.
+     It's kind of fun to put comments like this in your awk code:
      `// Do C++ comments work? answer: yes! of course' -- Michael
      Brennan
 
@@ -28544,7 +28544,7 @@ Unix `awk'
     Zip file
           `http://www.cs.princeton.edu/~bwk/btl.mirror/awk.zip'
 
-     You can also retrieve it from Git Hub:
+     You can also retrieve it from GitHub:
 
           git clone git://github.com/onetrueawk/awk bwkawk
 
@@ -28586,7 +28586,7 @@ Unix `awk'
 `awka'
      Written by Andrew Sumner, `awka' translates `awk' programs into C,
      compiles them, and links them with a library of functions that
-     provides the core `awk' functionality.  It also has a number of
+     provide the core `awk' functionality.  It also has a number of
      extensions.
 
      The `awk' translator is released under the GPL, and the library is
@@ -28600,14 +28600,14 @@ Unix `awk'
 `pawk'
      Nelson H.F. Beebe at the University of Utah has modified BWK `awk'
      to provide timing and profiling information.  It is different from
-     `gawk' with the `--profile' option (*note Profiling::), in that it
+     `gawk' with the `--profile' option (*note Profiling::) in that it
      uses CPU-based profiling, not line-count profiling.  You may find
      it at either
      `ftp://ftp.math.utah.edu/pub/pawk/pawk-20030606.tar.gz' or
      `http://www.math.utah.edu/pub/pawk/pawk-20030606.tar.gz'.
 
-Busybox Awk
-     Busybox is a GPL-licensed program providing small versions of many
+BusyBox `awk'
+     BusyBox is a GPL-licensed program providing small versions of many
      applications within a single executable. It is aimed at embedded
      systems.  It includes a full implementation of POSIX `awk'.  When
      building it, be careful not to do `make install' as it will
@@ -28617,7 +28617,7 @@ Busybox Awk
 
 The OpenSolaris POSIX `awk'
      The versions of `awk' in `/usr/xpg4/bin' and `/usr/xpg6/bin' on
-     Solaris are more-or-less POSIX-compliant.  They are based on the
+     Solaris are more or less POSIX-compliant.  They are based on the
      `awk' from Mortice Kern Systems for PCs.  We were able to make
      this code compile and work under GNU/Linux with 1-2 hours of work.
      Making it more generally portable (using GNU Autoconf and/or
@@ -28649,7 +28649,7 @@ Libmawk
      information. (This is not related to Nelson Beebe's modified
      version of BWK `awk', described earlier.)
 
-QSE Awk
+QSE `awk'
      This is an embeddable `awk' interpreter. For more information, see
      `http://code.google.com/p/qse/' and `http://awk.info/?tools/qse'.
 
@@ -28667,7 +28667,7 @@ Other versions
      See also the "Versions and implementations" section of the
      Wikipedia article
      (http://en.wikipedia.org/wiki/Awk_language#Versions_and_implementations)
-     for information on additional versions.
+     on `awk' for information on additional versions.
 
 
 
@@ -28676,7 +28676,7 @@ File: gawk.info,  Node: Installation summary,  Prev: Other Versions,  Up: Instal
 B.6 Summary
 ===========
 
-   * The `gawk' distribution is available from GNU project's main
+   * The `gawk' distribution is available from the GNU Project's main
      distribution site, `ftp.gnu.org'.  The canonical build recipe is:
 
           wget http://ftp.gnu.org/gnu/gawk/gawk-4.1.2.tar.gz
@@ -28685,17 +28685,17 @@ B.6 Summary
           ./configure && make && make check
 
    * `gawk' may be built on non-POSIX systems as well. The currently
-     supported systems are MS-Windows using DJGPP, MSYS, MinGW and
+     supported systems are MS-Windows using DJGPP, MSYS, MinGW, and
      Cygwin, OS/2 using EMX, and both Vax/VMS and OpenVMS.
      Instructions for each system are included in this major node.
 
    * Bug reports should be sent via email to <bug-gawk@gnu.org>.  Bug
-     reports should be in English, and should include the version of
+     reports should be in English and should include the version of
      `gawk', how it was compiled, and a short program and data file
-     which demonstrate the problem.
+     that demonstrate the problem.
 
    * There are a number of other freely available `awk'
-     implementations.  Many are POSIX compliant; others are less so.
+     implementations.  Many are POSIX-compliant; others are less so.
 
 
 
@@ -31747,7 +31747,7 @@ Index
 * --disable-lint configuration option:   Additional Configuration Options.
                                                               (line  15)
 * --disable-nls configuration option:    Additional Configuration Options.
-                                                              (line  30)
+                                                              (line  32)
 * --dump-variables option:               Options.             (line  93)
 * --dump-variables option, using for library functions: Library Names.
                                                               (line  45)
@@ -31785,7 +31785,7 @@ Index
 * --use-lc-numeric option:               Options.             (line 220)
 * --version option:                      Options.             (line 300)
 * --with-whiny-user-strftime configuration option: Additional Configuration Options.
-                                                              (line  35)
+                                                              (line  37)
 * -b option:                             Options.             (line  68)
 * -C option:                             Options.             (line  88)
 * -c option:                             Options.             (line  81)
@@ -32306,7 +32306,7 @@ Index
 * Brown, Martin:                         Contributors.        (line  82)
 * BSD-based operating systems:           Glossary.            (line 753)
 * bt debugger command (alias for backtrace): Execution Stack. (line  13)
-* Buening, Andreas <1>:                  Bugs.                (line  70)
+* Buening, Andreas <1>:                  Bugs.                (line  71)
 * Buening, Andreas <2>:                  Contributors.        (line  92)
 * Buening, Andreas:                      Acknowledgments.     (line  60)
 * buffering, input/output <1>:           Two-way I/O.         (line  52)
@@ -32319,7 +32319,7 @@ Index
 * bug-gawk@gnu.org bug reporting address: Bugs.               (line  30)
 * built-in functions:                    Functions.           (line   6)
 * built-in functions, evaluation order:  Calling Built-in.    (line  30)
-* Busybox Awk:                           Other Versions.      (line  92)
+* BusyBox Awk:                           Other Versions.      (line  92)
 * c.e., See common extensions:           Conventions.         (line  51)
 * call by reference:                     Pass By Value/Reference.
                                                               (line  44)
@@ -32451,9 +32451,9 @@ Index
 * configuration option, --disable-lint:  Additional Configuration Options.
                                                               (line  15)
 * configuration option, --disable-nls:   Additional Configuration Options.
-                                                              (line  30)
+                                                              (line  32)
 * configuration option, --with-whiny-user-strftime: Additional Configuration Options.
-                                                              (line  35)
+                                                              (line  37)
 * configuration options, gawk:           Additional Configuration Options.
                                                               (line   6)
 * constant regexps:                      Regexp Usage.        (line  57)
@@ -32679,7 +32679,7 @@ Index
 * decimal point character, locale specific: Options.          (line 270)
 * decrement operators:                   Increment Ops.       (line  35)
 * default keyword:                       Switch Statement.    (line   6)
-* Deifik, Scott <1>:                     Bugs.                (line  70)
+* Deifik, Scott <1>:                     Bugs.                (line  71)
 * Deifik, Scott <2>:                     Contributors.        (line  53)
 * Deifik, Scott:                         Acknowledgments.     (line  60)
 * delete ARRAY:                          Delete.              (line  39)
@@ -33617,7 +33617,7 @@ Index
 * mail-list file:                        Sample Data Files.   (line   6)
 * mailing labels, printing:              Labels Program.      (line   6)
 * mailing list, GNITS:                   Acknowledgments.     (line  52)
-* Malmberg, John <1>:                    Bugs.                (line  70)
+* Malmberg, John <1>:                    Bugs.                (line  71)
 * Malmberg, John:                        Acknowledgments.     (line  60)
 * Malmberg, John E.:                     Contributors.        (line 137)
 * mark parity:                           Ordinal Functions.   (line  45)
@@ -33856,7 +33856,7 @@ Index
                                                               (line   6)
 * pipe, input:                           Getline/Pipe.        (line   9)
 * pipe, output:                          Redirection.         (line  57)
-* Pitts, Dave <1>:                       Bugs.                (line  70)
+* Pitts, Dave <1>:                       Bugs.                (line  71)
 * Pitts, Dave:                           Acknowledgments.     (line  60)
 * Plauger, P.J.:                         Library Functions.   (line  12)
 * plug-in:                               Extension Intro.     (line   6)
@@ -34034,7 +34034,7 @@ Index
 * pwcat program:                         Passwd Functions.    (line  23)
 * q debugger command (alias for quit):   Miscellaneous Debugger Commands.
                                                               (line  99)
-* QSE Awk:                               Other Versions.      (line 135)
+* QSE awk:                               Other Versions.      (line 135)
 * Quanstrom, Erik:                       Alarm Program.       (line   8)
 * question mark (?), ?: operator:        Precedence.          (line  92)
 * question mark (?), regexp operator <1>: GNU Regexp Operators.
@@ -34169,7 +34169,7 @@ Index
 * RLENGTH variable:                      Auto-set.            (line 266)
 * RLENGTH variable, match() function and: String Functions.   (line 228)
 * Robbins, Arnold <1>:                   Future Extensions.   (line   6)
-* Robbins, Arnold <2>:                   Bugs.                (line  70)
+* Robbins, Arnold <2>:                   Bugs.                (line  71)
 * Robbins, Arnold <3>:                   Contributors.        (line 144)
 * Robbins, Arnold <4>:                   General Data Types.  (line   6)
 * Robbins, Arnold <5>:                   Alarm Program.       (line   6)
@@ -34360,7 +34360,7 @@ Index
                                                               (line  94)
 * source code, awka:                     Other Versions.      (line  68)
 * source code, Brian Kernighan's awk:    Other Versions.      (line  13)
-* source code, Busybox Awk:              Other Versions.      (line  92)
+* source code, BusyBox Awk:              Other Versions.      (line  92)
 * source code, gawk:                     Gawk Distribution.   (line   6)
 * source code, Illumos awk:              Other Versions.      (line 109)
 * source code, jawk:                     Other Versions.      (line 117)
@@ -34369,7 +34369,7 @@ Index
 * source code, mixing:                   Options.             (line 117)
 * source code, pawk:                     Other Versions.      (line  82)
 * source code, pawk (Python version):    Other Versions.      (line 129)
-* source code, QSE Awk:                  Other Versions.      (line 135)
+* source code, QSE awk:                  Other Versions.      (line 135)
 * source code, QuikTrim Awk:             Other Versions.      (line 139)
 * source code, Solaris awk:              Other Versions.      (line 100)
 * source files, search path for:         Programs Exercises.  (line  70)
@@ -34698,7 +34698,7 @@ Index
 * xor:                                   Bitwise Functions.   (line  56)
 * XOR bitwise operation:                 Bitwise Functions.   (line   6)
 * Yawitz, Efraim:                        Contributors.        (line 131)
-* Zaretskii, Eli <1>:                    Bugs.                (line  70)
+* Zaretskii, Eli <1>:                    Bugs.                (line  71)
 * Zaretskii, Eli <2>:                    Contributors.        (line  55)
 * Zaretskii, Eli:                        Acknowledgments.     (line  60)
 * zerofile.awk program:                  Empty Files.         (line  21)
@@ -35214,78 +35214,78 @@ Node: Extension summary1053309
 Node: Extension Exercises1056998
 Node: Language History1057720
 Node: V7/SVR3.11059376
-Node: SVR41061557
-Node: POSIX1063002
-Node: BTL1064391
-Node: POSIX/GNU1065125
-Node: Feature History1071006
-Node: Common Extensions1084800
-Node: Ranges and Locales1086124
-Ref: Ranges and Locales-Footnote-11090742
-Ref: Ranges and Locales-Footnote-21090769
-Ref: Ranges and Locales-Footnote-31091003
-Node: Contributors1091224
-Node: History summary1096765
-Node: Installation1098135
-Node: Gawk Distribution1099081
-Node: Getting1099565
-Node: Extracting1100388
-Node: Distribution contents1102023
-Node: Unix Installation1108088
-Node: Quick Installation1108771
-Node: Shell Startup Files1111182
-Node: Additional Configuration Options1112261
-Node: Configuration Philosophy1114000
-Node: Non-Unix Installation1116369
-Node: PC Installation1116827
-Node: PC Binary Installation1118146
-Node: PC Compiling1119994
-Ref: PC Compiling-Footnote-11123015
-Node: PC Testing1123124
-Node: PC Using1124300
-Node: Cygwin1128415
-Node: MSYS1129238
-Node: VMS Installation1129738
-Node: VMS Compilation1130530
-Ref: VMS Compilation-Footnote-11131752
-Node: VMS Dynamic Extensions1131810
-Node: VMS Installation Details1133494
-Node: VMS Running1135746
-Node: VMS GNV1138582
-Node: VMS Old Gawk1139316
-Node: Bugs1139786
-Node: Other Versions1143669
-Node: Installation summary1150093
-Node: Notes1151149
-Node: Compatibility Mode1152014
-Node: Additions1152796
-Node: Accessing The Source1153721
-Node: Adding Code1155156
-Node: New Ports1161313
-Node: Derived Files1165795
-Ref: Derived Files-Footnote-11171270
-Ref: Derived Files-Footnote-21171304
-Ref: Derived Files-Footnote-31171900
-Node: Future Extensions1172014
-Node: Implementation Limitations1172620
-Node: Extension Design1173868
-Node: Old Extension Problems1175022
-Ref: Old Extension Problems-Footnote-11176539
-Node: Extension New Mechanism Goals1176596
-Ref: Extension New Mechanism Goals-Footnote-11179956
-Node: Extension Other Design Decisions1180145
-Node: Extension Future Growth1182253
-Node: Old Extension Mechanism1183089
-Node: Notes summary1184851
-Node: Basic Concepts1186037
-Node: Basic High Level1186718
-Ref: figure-general-flow1186990
-Ref: figure-process-flow1187589
-Ref: Basic High Level-Footnote-11190818
-Node: Basic Data Typing1191003
-Node: Glossary1194331
-Node: Copying1226260
-Node: GNU Free Documentation License1263816
-Node: Index1288952
+Node: SVR41061529
+Node: POSIX1062963
+Node: BTL1064344
+Node: POSIX/GNU1065075
+Node: Feature History1070911
+Node: Common Extensions1084705
+Node: Ranges and Locales1086077
+Ref: Ranges and Locales-Footnote-11090696
+Ref: Ranges and Locales-Footnote-21090723
+Ref: Ranges and Locales-Footnote-31090958
+Node: Contributors1091179
+Node: History summary1096719
+Node: Installation1098098
+Node: Gawk Distribution1099044
+Node: Getting1099528
+Node: Extracting1100351
+Node: Distribution contents1101988
+Node: Unix Installation1108090
+Node: Quick Installation1108773
+Node: Shell Startup Files1111184
+Node: Additional Configuration Options1112263
+Node: Configuration Philosophy1114067
+Node: Non-Unix Installation1116436
+Node: PC Installation1116894
+Node: PC Binary Installation1118214
+Node: PC Compiling1120062
+Ref: PC Compiling-Footnote-11123083
+Node: PC Testing1123192
+Node: PC Using1124368
+Node: Cygwin1128483
+Node: MSYS1129253
+Node: VMS Installation1129754
+Node: VMS Compilation1130546
+Ref: VMS Compilation-Footnote-11131775
+Node: VMS Dynamic Extensions1131833
+Node: VMS Installation Details1133517
+Node: VMS Running1135768
+Node: VMS GNV1138608
+Node: VMS Old Gawk1139343
+Node: Bugs1139813
+Node: Other Versions1143702
+Node: Installation summary1150136
+Node: Notes1151195
+Node: Compatibility Mode1152060
+Node: Additions1152842
+Node: Accessing The Source1153767
+Node: Adding Code1155202
+Node: New Ports1161359
+Node: Derived Files1165841
+Ref: Derived Files-Footnote-11171316
+Ref: Derived Files-Footnote-21171350
+Ref: Derived Files-Footnote-31171946
+Node: Future Extensions1172060
+Node: Implementation Limitations1172666
+Node: Extension Design1173914
+Node: Old Extension Problems1175068
+Ref: Old Extension Problems-Footnote-11176585
+Node: Extension New Mechanism Goals1176642
+Ref: Extension New Mechanism Goals-Footnote-11180002
+Node: Extension Other Design Decisions1180191
+Node: Extension Future Growth1182299
+Node: Old Extension Mechanism1183135
+Node: Notes summary1184897
+Node: Basic Concepts1186083
+Node: Basic High Level1186764
+Ref: figure-general-flow1187036
+Ref: figure-process-flow1187635
+Ref: Basic High Level-Footnote-11190864
+Node: Basic Data Typing1191049
+Node: Glossary1194377
+Node: Copying1226306
+Node: GNU Free Documentation License1263862
+Node: Index1288998
 
 End Tag Table
