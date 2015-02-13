@@ -5837,11 +5837,7 @@ if test -f $srcdir/.developing
 then
 	# add other debug flags as appropriate, save GAWKDEBUG for emergencies
 	CFLAGS="$CFLAGS -DARRAYDEBUG -DYYDEBUG -DLOCALEDEBUG"
-	if grep dbug $srcdir/.developing
-	then
-		CFLAGS="$CFLAGS -DDBUG"
-		LIBS="$LIBS dbug/libdbug.a"
-	fi
+
 	# turn on compiler warnings if we're doing development
 	# enable debugging using macros also
 	if test "$GCC" = yes

@@ -1301,7 +1301,7 @@ October 2014
       <affiliation><jobtitle>Nof Ayalon</jobtitle></affiliation>
       <affiliation><jobtitle>Israel</jobtitle></affiliation>
     </author>
-    <date>December 2014</date>
+    <date>February 2015</date>
    </prefaceinfo>
 @end docbook
 
@@ -2285,14 +2285,14 @@ which they raised and educated me.
 Finally, I also must acknowledge my gratitude to G-d, for the many opportunities
 He has sent my way, as well as for the gifts He has given me with which to
 take advantage of those opportunities.
-@iftex
+@ifnotdocbook
 @sp 2
 @noindent
 Arnold Robbins @*
 Nof Ayalon @*
 Israel @*
-December 2014
-@end iftex
+February 2015
+@end ifnotdocbook
 
 @ifnotinfo
 @part @value{PART1}The @command{awk} Language
@@ -13167,6 +13167,7 @@ $ @kbd{awk '$1 ~ /li/ @{ print $2 @}' mail-list}
 
 @cindex regexp constants, as patterns
 @cindex patterns, regexp constants as
+A regexp constant as a pattern is also a special case of an expression
 pattern.  The expression @code{/li/} has the value one if @samp{li}
 appears in the current input record. Thus, as a pattern, @code{/li/}
 matches any record containing @samp{li}.
@@ -27969,7 +27970,7 @@ a requirement.
 @cindex localization
 @dfn{Internationalization} means writing (or modifying) a program once,
 in such a way that it can use multiple languages without requiring
-further source-code changes.
+further source code changes.
 @dfn{Localization} means providing the data necessary for an
 internationalized program to work in a particular language.
 Most typically, these terms refer to features such as the language
@@ -27984,7 +27985,7 @@ monetary values are printed and read.
 @cindex @command{gettext} library
 @command{gawk} uses GNU @command{gettext} to provide its internationalization
 features.
-The facilities in GNU @command{gettext} focus on messages; strings printed
+The facilities in GNU @command{gettext} focus on messages: strings printed
 by a program, either directly or via formatting with @code{printf} or
 @code{sprintf()}.@footnote{For some operating systems, the @command{gawk}
 port doesn't support GNU @command{gettext}.
@@ -28175,7 +28176,7 @@ All of the above.  (Not too useful in the context of @command{gettext}.)
 @section Internationalizing @command{awk} Programs
 @cindex @command{awk} programs, internationalizing
 
-@command{gawk} provides the following variables and functions for
+@command{gawk} provides the following variables for
 internationalization:
 
 @table @code
@@ -28191,7 +28192,12 @@ value is @code{"messages"}.
 String constants marked with a leading underscore
 are candidates for translation at runtime.
 String constants without a leading underscore are not translated.
+@end table
 
+@command{gawk} provides the following functions for
+internationalization:
+
+@table @code
 @cindexgawkfunc{dcgettext}
 @item @code{dcgettext(@var{string}} [@code{,} @var{domain} [@code{,} @var{category}]]@code{)}
 Return the translation of @var{string} in
@@ -28248,15 +28254,7 @@ If @var{directory} is the null string (@code{""}), then
 given @var{domain}.
 @end table
 
-To use these facilities in your @command{awk} program, follow the steps
-outlined in
-@ifnotinfo
-the previous @value{SECTION},
-@end ifnotinfo
-@ifinfo
-@ref{Explaining gettext},
-@end ifinfo
-like so:
+To use these facilities in your @command{awk} program, follow these steps:
 
 @enumerate
 @cindex @code{BEGIN} pattern, @code{TEXTDOMAIN} variable and
@@ -28539,7 +28537,7 @@ the null string (@code{""}) as its value, leaving the original string constant a
 the result.
 
 @item
-By defining ``dummy'' functions to replace @code{dcgettext()}, @code{dcngettext()}
+By defining ``dummy'' functions to replace @code{dcgettext()}, @code{dcngettext()},
 and @code{bindtextdomain()}, the @command{awk} program can be made to run, but
 all the messages are output in the original language.
 For example:
@@ -28723,11 +28721,11 @@ using the GNU @command{gettext} package.
 (GNU @command{gettext} is described in
 complete detail in
 @ifinfo
-@inforef{Top, , GNU @command{gettext} utilities, gettext, GNU gettext tools}.)
+@inforef{Top, , GNU @command{gettext} utilities, gettext, GNU @command{gettext} utilities}.)
 @end ifinfo
 @ifnotinfo
 @uref{http://www.gnu.org/software/gettext/manual/,
-@cite{GNU gettext tools}}.)
+@cite{GNU @command{gettext} utilities}}.)
 @end ifnotinfo
 As of this writing, the latest version of GNU @command{gettext} is
 @uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.19.4.tar.gz,
@@ -28743,7 +28741,7 @@ and fatal errors in the local language.
 @itemize @value{BULLET}
 @item
 Internationalization means writing a program such that it can use multiple
-languages without requiring source-code changes.  Localization means
+languages without requiring source code changes.  Localization means
 providing the data necessary for an internationalized program to work
 in a particular language.
 
@@ -28760,9 +28758,9 @@ file, and the @file{.po} files are compiled into @file{.gmo} files for
 use at runtime.
 
 @item
-You can use position specifications with @code{sprintf()} and
+You can use positional specifications with @code{sprintf()} and
 @code{printf} to rearrange the placement of argument values in formatted
-strings and output. This is useful for the translations of format
+strings and output. This is useful for the translation of format
 control strings.
 
 @item
@@ -28818,8 +28816,7 @@ the discussion of debugging in @command{gawk}.
 @subsection Debugging in General
 
 (If you have used debuggers in other languages, you may want to skip
-ahead to the next section on the specific features of the @command{gawk}
-debugger.)
+ahead to @ref{Awk Debugging}.)
 
 Of course, a debugging program cannot remove bugs for you, because it has
 no way of knowing what you or your users consider a ``bug'' versus a
@@ -28910,10 +28907,10 @@ and usually find the errant code quite quickly.
 @end table
 
 @node Awk Debugging
-@subsection Awk Debugging
+@subsection @command{awk} Debugging
 
 Debugging an @command{awk} program has some specific aspects that are
-not shared with other programming languages.
+not shared with programs written in other languages.
 
 First of all, the fact that @command{awk} programs usually take input
 line by line from a file or files and operate on those lines using specific
@@ -28929,7 +28926,7 @@ to look at the individual primitive instructions carried out
 by the higher-level @command{awk} commands.
 
 @node Sample Debugging Session
-@section Sample Debugging Session
+@section Sample @command{gawk} Debugging Session
 @cindex sample debugging session
 
 In order to illustrate the use of @command{gawk} as a debugger, let's look at a sample
@@ -28948,8 +28945,8 @@ as our example.
 @cindex debugger, how to start
 
 Starting the debugger is almost exactly like running @command{gawk} normally,
-except you have to pass an additional option @option{--debug}, or the
-corresponding short option @option{-D}.  The file(s) containing the
+except you have to pass an additional option, @option{--debug}, or the
+corresponding short option, @option{-D}.  The file(s) containing the
 program and any supporting code are given on the command line as arguments
 to one or more @option{-f} options. (@command{gawk} is not designed
 to debug command-line programs, only programs contained in files.)
@@ -28962,7 +28959,7 @@ $ @kbd{gawk -D -f getopt.awk -f join.awk -f uniq.awk -1 inputfile}
 @noindent
 where both @file{getopt.awk} and @file{uniq.awk} are in @env{$AWKPATH}.
 (Experienced users of GDB or similar debuggers should note that
-this syntax is slightly different from what they are used to.
+this syntax is slightly different from what you are used to.
 With the @command{gawk} debugger, you give the arguments for running the program
 in the command line to the debugger rather than as part of the @code{run}
 command at the debugger prompt.)
@@ -29116,10 +29113,10 @@ gawk> @kbd{n}
 @end example
 
 This tells us that @command{gawk} is now ready to execute line 66, which
-decides whether to give the lines the special ``field skipping'' treatment
+decides whether to give the lines the special ``field-skipping'' treatment
 indicated by the @option{-1} command-line option.  (Notice that we skipped
-from where we were before at line 63 to here, because the condition in line 63
-@samp{if (fcount == 0 && charcount == 0)} was false.)
+from where we were before, at line 63, to here, because the condition
+in line 63, @samp{if (fcount == 0 && charcount == 0)}, was false.)
 
 Continuing to step, we now get to the splitting of the current and
 last records:
@@ -29193,7 +29190,7 @@ gawk> @kbd{n}
 
 Well, here we are at our error (sorry to spoil the suspense).  What we
 had in mind was to join the fields starting from the second one to make
-the virtual record to compare, and if the first field was numbered zero,
+the virtual record to compare, and if the first field were numbered zero,
 this would work.  Let's look at what we've got:
 
 @example
@@ -29202,7 +29199,7 @@ gawk> @kbd{p cline clast}
 @print{} clast = "awk is a wonderful program!"
 @end example
 
-Hey, those look pretty familiar!  They're just our original, unaltered,
+Hey, those look pretty familiar!  They're just our original, unaltered
 input records.  A little thinking (the human brain is still the best
 debugging tool), and we realize that we were off by one!
 
@@ -29252,11 +29249,11 @@ Miscellaneous
 @end itemize
 
 Each of these are discussed in the following subsections.
-In the following descriptions, commands which may be abbreviated
+In the following descriptions, commands that may be abbreviated
 show the abbreviation on a second description line.
 A debugger command name may also be truncated if that partial
 name is unambiguous. The debugger has the built-in capability to
-automatically repeat the previous command just by hitting @key{Enter}.
+automatically repeat the previous command just by hitting @kbd{Enter}.
 This works for the commands @code{list}, @code{next}, @code{nexti},
 @code{step}, @code{stepi}, and @code{continue} executed without any
 argument.
@@ -29306,7 +29303,7 @@ Set a breakpoint at entry to (the first instruction of)
 function @var{function}.
 @end table
 
-Each breakpoint is assigned a number which can be used to delete it from
+Each breakpoint is assigned a number that can be used to delete it from
 the breakpoint list using the @code{delete} command.
 
 With a breakpoint, you may also supply a condition.  This is an
@@ -29358,7 +29355,7 @@ watchpoint is made unconditional).
 @cindex breakpoint, delete by number
 @item @code{delete} [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 @itemx @code{d} [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
-Delete specified breakpoints or a range of breakpoints. Deletes
+Delete specified breakpoints or a range of breakpoints. Delete
 all defined breakpoints if no argument is supplied.
 
 @cindex debugger commands, @code{disable}
@@ -29367,7 +29364,7 @@ all defined breakpoints if no argument is supplied.
 @cindex breakpoint, how to disable or enable
 @item @code{disable} [@var{n1 n2} @dots{} | @var{n}--@var{m}]
 Disable specified breakpoints or a range of breakpoints. Without
-any argument, disables all breakpoints.
+any argument, disable all breakpoints.
 
 @cindex debugger commands, @code{e} (@code{enable})
 @cindex debugger commands, @code{enable}
@@ -29377,18 +29374,18 @@ any argument, disables all breakpoints.
 @item @code{enable} [@code{del} | @code{once}] [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 @itemx @code{e} [@code{del} | @code{once}] [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 Enable specified breakpoints or a range of breakpoints. Without
-any argument, enables all breakpoints.
-Optionally, you can specify how to enable the breakpoint:
+any argument, enable all breakpoints.
+Optionally, you can specify how to enable the breakpoints:
 
 @c nested table
 @table @code
 @item del
-Enable the breakpoint(s) temporarily, then delete it when
-the program stops at the breakpoint.
+Enable the breakpoints temporarily, then delete each one when
+the program stops at it.
 
 @item once
-Enable the breakpoint(s) temporarily, then disable it when
-the program stops at the breakpoint.
+Enable the breakpoints temporarily, then disable each one when
+the program stops at it.
 @end table
 
 @cindex debugger commands, @code{ignore}
@@ -29456,7 +29453,7 @@ gawk>
 @item @code{continue} [@var{count}]
 @itemx @code{c} [@var{count}]
 Resume program execution. If continued from a breakpoint and @var{count} is
-specified, ignores the breakpoint at that location the next @var{count} times
+specified, ignore the breakpoint at that location the next @var{count} times
 before stopping.
 
 @cindex debugger commands, @code{finish}
@@ -29510,7 +29507,7 @@ automatic display variables, and debugger options.
 @item @code{step} [@var{count}]
 @itemx @code{s} [@var{count}]
 Continue execution until control reaches a different source line in the
-current stack frame. @code{step} steps inside any function called within
+current stack frame, stepping inside any function called within
 the line.  If the argument @var{count} is supplied, steps that many times before
 stopping, unless it encounters a breakpoint or watchpoint.
 
@@ -29623,7 +29620,7 @@ or field.
 String values must be enclosed between double quotes (@code{"}@dots{}@code{"}).
 
 You can also set special @command{awk} variables, such as @code{FS},
-@code{NF}, @code{NR}, and son on.
+@code{NF}, @code{NR}, and so on.
 
 @cindex debugger commands, @code{w} (@code{watch})
 @cindex debugger commands, @code{watch}
@@ -29635,7 +29632,7 @@ You can also set special @command{awk} variables, such as @code{FS},
 Add variable @var{var} (or field @code{$@var{n}}) to the watch list.
 The debugger then stops whenever
 the value of the variable or field changes. Each watched item is assigned a
-number which can be used to delete it from the watch list using the
+number that can be used to delete it from the watch list using the
 @code{unwatch} command.
 
 With a watchpoint, you may also supply a condition.  This is an
@@ -29663,11 +29660,11 @@ watch list.
 @node Execution Stack
 @subsection Working with the Stack
 
-Whenever you run a program which contains any function calls,
+Whenever you run a program that contains any function calls,
 @command{gawk} maintains a stack of all of the function calls leading up
 to where the program is right now.  You can see how you got to where you are,
 and also move around in the stack to see what the state of things was in the
-functions which called the one you are in.  The commands for doing this are:
+functions that called the one you are in.  The commands for doing this are:
 
 @table @asis
 @cindex debugger commands, @code{bt} (@code{backtrace})
@@ -29702,8 +29699,8 @@ Then select and print the frame.
 @item @code{frame} [@var{n}]
 @itemx @code{f} [@var{n}]
 Select and print stack frame @var{n}.  Frame 0 is the currently executing,
-or @dfn{innermost}, frame (function call), frame 1 is the frame that
-called the innermost one. The highest numbered frame is the one for the
+or @dfn{innermost}, frame (function call); frame 1 is the frame that
+called the innermost one. The highest-numbered frame is the one for the
 main program.  The printed information consists of the frame number,
 function and argument names, source file, and the source line.
 
@@ -29719,7 +29716,7 @@ Then select and print the frame.
 
 Besides looking at the values of variables, there is often a need to get
 other sorts of information about the state of your program and of the
-debugging environment itself.  The @command{gawk} debugger has one command which
+debugging environment itself.  The @command{gawk} debugger has one command that
 provides this information, appropriately called @code{info}.  @code{info}
 is used with one of a number of arguments that tell it exactly what
 you want to know:
@@ -29807,12 +29804,12 @@ The available options are:
 @table @asis
 @item @code{history_size}
 @cindex debugger history size
-The maximum number of lines to keep in the history file @file{./.gawk_history}.
-The default is 100.
+Set the maximum number of lines to keep in the history file
+@file{./.gawk_history}.  The default is 100.
 
 @item @code{listsize}
 @cindex debugger default list amount
-The number of lines that @code{list} prints. The default is 15.
+Specify the number of lines that @code{list} prints. The default is 15.
 
 @item @code{outfile}
 @cindex redirect @command{gawk} output, in debugger
@@ -29822,7 +29819,7 @@ standard output.
 
 @item @code{prompt}
 @cindex debugger prompt
-The debugger prompt. The default is @samp{@w{gawk> }}.
+Change the debugger prompt. The default is @samp{@w{gawk> }}.
 
 @item @code{save_history} [@code{on} | @code{off}]
 @cindex debugger history file
@@ -29833,7 +29830,7 @@ The default is @code{on}.
 @cindex save debugger options
 Save current options to file @file{./.gawkrc} upon exit.
 The default is @code{on}.
-Options are read back in to the next session upon startup.
+Options are read back into the next session upon startup.
 
 @item @code{trace} [@code{on} | @code{off}]
 @cindex instruction tracing, in debugger
@@ -29856,7 +29853,7 @@ command in the file. Also, the list of commands may include additional
 @code{source} commands; however, the @command{gawk} debugger will not source the
 same file more than once in order to avoid infinite recursion.
 
-In addition to, or instead of the @code{source} command, you can use
+In addition to, or instead of, the @code{source} command, you can use
 the @option{-D @var{file}} or @option{--debug=@var{file}} command-line
 options to execute commands from a file non-interactively
 (@pxref{Options}).
@@ -29865,16 +29862,16 @@ options to execute commands from a file non-interactively
 @node Miscellaneous Debugger Commands
 @subsection Miscellaneous Commands
 
-There are a few more commands which do not fit into the
+There are a few more commands that do not fit into the
 previous categories, as follows:
 
 @table @asis
 @cindex debugger commands, @code{dump}
 @cindex @code{dump} debugger command
 @item @code{dump} [@var{filename}]
-Dump bytecode of the program to standard output or to the file
+Dump byte code of the program to standard output or to the file
 named in @var{filename}.  This prints a representation of the internal
-instructions which @command{gawk} executes to implement the @command{awk}
+instructions that @command{gawk} executes to implement the @command{awk}
 commands in a program.  This can be very enlightening, as the following
 partial dump of Davide Brini's obfuscated code
 (@pxref{Signature Program}) demonstrates:
@@ -29971,7 +29968,7 @@ Print lines centered around line number @var{n} in
 source file @var{filename}. This command may change the current source file.
 
 @item @var{function}
-Print lines centered around beginning of the
+Print lines centered around the beginning of the
 function @var{function}. This command may change the current source file.
 @end table
 
@@ -29983,16 +29980,16 @@ function @var{function}. This command may change the current source file.
 @item @code{quit}
 @itemx @code{q}
 Exit the debugger.  Debugging is great fun, but sometimes we all have
-to tend to other obligations in life, and sometimes we find the bug,
+to tend to other obligations in life, and sometimes we find the bug
 and are free to go on to the next one!  As we saw earlier, if you are
-running a program, the debugger warns you if you accidentally type
+running a program, the debugger warns you when you type
 @samp{q} or @samp{quit}, to make sure you really want to quit.
 
 @cindex debugger commands, @code{trace}
 @cindex @code{trace} debugger command
 @item @code{trace} [@code{on} | @code{off}]
-Turn on or off a continuous printing of instructions which are about to
-be executed, along with printing the @command{awk} line which they
+Turn on or off continuous printing of the instructions that are about to
+be executed, along with the @command{awk} lines they
 implement.  The default is @code{off}.
 
 It is to be hoped that most of the ``opcodes'' in these instructions are
@@ -30008,7 +30005,7 @@ fairly self-explanatory, and using @code{stepi} and @code{nexti} while
 
 If @command{gawk} is compiled with
 @uref{http://cnswww.cns.cwru.edu/php/chet/readline/readline.html,
-the @code{readline} library}, you can take advantage of that library's
+the GNU Readline library}, you can take advantage of that library's
 command completion and history expansion features. The following types
 of completion are available:
 
@@ -30045,7 +30042,7 @@ and
 
 We hope you find the @command{gawk} debugger useful and enjoyable to work with,
 but as with any program, especially in its early releases, it still has
-some limitations.  A few which are worth being aware of are:
+some limitations.  A few that it's worth being aware of are:
 
 @itemize @value{BULLET}
 @item
@@ -30061,13 +30058,13 @@ If you perused the dump of opcodes in @ref{Miscellaneous Debugger Commands}
 (or if you are already familiar with @command{gawk} internals),
 you will realize that much of the internal manipulation of data
 in @command{gawk}, as in many interpreters, is done on a stack.
-@code{Op_push}, @code{Op_pop}, and the like, are the ``bread and butter'' of
+@code{Op_push}, @code{Op_pop}, and the like are the ``bread and butter'' of
 most @command{gawk} code.
 
 Unfortunately, as of now, the @command{gawk}
 debugger does not allow you to examine the stack's contents.
 That is, the intermediate results of expression evaluation are on the
-stack, but cannot be printed.  Rather, only variables which are defined
+stack, but cannot be printed.  Rather, only variables that are defined
 in the program can be printed.  Of course, a workaround for
 this is to use more explicit variables at the debugging stage and then
 change back to obscure, perhaps more optimal code later.
@@ -30081,12 +30078,12 @@ programmer, you are expected to know the meaning of
 @item
 The @command{gawk} debugger is designed to be used by running a program (with all its
 parameters) on the command line, as described in @ref{Debugger Invocation}.
-There is no way (as of now) to attach or ``break in'' to a running program.
-This seems reasonable for a language which is used mainly for quickly
+There is no way (as of now) to attach or ``break into'' a running program.
+This seems reasonable for a language that is used mainly for quickly
 executing, short programs.
 
 @item
-The @command{gawk} debugger only accepts source supplied with the @option{-f} option.
+The @command{gawk} debugger only accepts source code supplied with the @option{-f} option.
 @end itemize
 
 @ignore
@@ -30100,8 +30097,8 @@ be added, and of course feel free to try to add them yourself!
 @itemize @value{BULLET}
 @item
 Programs rarely work correctly the first time.  Finding bugs
-is @dfn{debugging} and a program that helps you find bugs is a
-@dfn{debugger}.  @command{gawk} has a built-in debugger that works very
+is called debugging, and a program that helps you find bugs is a
+debugger.  @command{gawk} has a built-in debugger that works very
 similarly to the GNU Debugger, GDB.
 
 @item
@@ -30121,7 +30118,7 @@ breakpoints, execution, viewing and changing data, working with the stack,
 getting information, and other tasks.
 
 @item
-If the @code{readline} library is available when @command{gawk} is
+If the GNU Readline library is available when @command{gawk} is
 compiled, it is used by the debugger to provide command-line history
 and editing.
 
@@ -30185,7 +30182,7 @@ paper and pencil (and/or a calculator). In theory, numbers can have an
 arbitrary number of digits on either side (or both sides) of the decimal
 point, and the results of a computation are always exact.
 
-Some modern system can do decimal arithmetic in hardware, but usually you
+Some modern systems can do decimal arithmetic in hardware, but usually you
 need a special software library to provide access to these instructions.
 There are also libraries that do decimal arithmetic entirely in software.
 
@@ -30241,8 +30238,34 @@ signed. The possible ranges of values are shown in @ref{table-numeric-ranges}.
 @item 32-bit unsigned integer @tab 0 @tab 4,294,967,295
 @item 64-bit signed integer @tab @minus{}9,223,372,036,854,775,808 @tab 9,223,372,036,854,775,807
 @item 64-bit unsigned integer @tab 0 @tab 18,446,744,073,709,551,615
-@item Single-precision floating point (approximate) @tab @code{1.175494e-38} @tab @code{3.402823e+38}
-@item Double-precision floating point (approximate) @tab @code{2.225074e-308} @tab @code{1.797693e+308}
+@iftex
+@item Single-precision floating point (approximate) @tab @math{1.175494^{-38}} @tab @math{3.402823^{38}}
+@item Double-precision floating point (approximate) @tab @math{2.225074^{-308}} @tab @math{1.797693^{308}}
+@end iftex
+@ifnottex
+@ifnotdocbook
+@item Single-precision floating point (approximate) @tab 1.175494e-38 @tab 3.402823e38
+@item Double-precision floating point (approximate) @tab 2.225074e-308 @tab 1.797693e308
+@end ifnotdocbook
+@end ifnottex
+@ifdocbook
+@item Single-precision floating point (approximate) @tab
+@docbook
+1.175494<superscript>-38</superscript>
+@end docbook
+@tab
+@docbook
+3.402823<superscript>38</superscript>
+@end docbook
+@item Double-precision floating point (approximate) @tab
+@docbook
+2.225074<superscript>-308</superscript>
+@end docbook
+@tab
+@docbook
+1.797693<superscript>308</superscript>
+@end docbook
+@end ifdocbook
 @end multitable
 @end float
 
@@ -30251,7 +30274,7 @@ signed. The possible ranges of values are shown in @ref{table-numeric-ranges}.
 
 The rest of this @value{CHAPTER} uses a number of terms. Here are some
 informal definitions that should help you work your way through the material
-here.
+here:
 
 @table @dfn
 @item Accuracy
@@ -30272,7 +30295,7 @@ A special value representing infinity. Operations involving another
 number and infinity produce infinity.
 
 @item NaN
-``Not A Number.''@footnote{Thanks to Michael Brennan for this description,
+``Not a number.''@footnote{Thanks to Michael Brennan for this description,
 which we have paraphrased, and for the examples.} A special value that
 results from attempting a calculation that has no answer as a real number.
 In such a case, programs can either receive a floating-point exception,
@@ -30315,8 +30338,8 @@ formula:
 @end display
 
 @noindent
-Here, @var{prec} denotes the binary precision
-(measured in bits) and @var{dps} (short for decimal places)
+Here, @emph{prec} denotes the binary precision
+(measured in bits) and @emph{dps} (short for decimal places)
 is the decimal digits.
 
 @item Rounding mode
@@ -30324,7 +30347,7 @@ How numbers are rounded up or down when necessary.
 More details are provided later.
 
 @item Significand
-A floating-point value consists the significand multiplied by 10
+A floating-point value consists of the significand multiplied by 10
 to the power of the exponent. For example, in @code{1.2345e67},
 the significand is @code{1.2345}.
 
@@ -30348,7 +30371,7 @@ to allow greater precisions and larger exponent ranges.
 (@command{awk} uses only the 64-bit double-precision format.)
 
 @ref{table-ieee-formats} lists the precision and exponent
-field values for the basic IEEE 754 binary formats:
+field values for the basic IEEE 754 binary formats.
 
 @float Table,table-ieee-formats
 @caption{Basic IEEE format values}
@@ -30412,12 +30435,12 @@ for more information.
 @author Teen Talk Barbie, July 1992
 @end quotation
 
-This @value{SECTION} provides a high level overview of the issues
+This @value{SECTION} provides a high-level overview of the issues
 involved when doing lots of floating-point arithmetic.@footnote{There
 is a very nice @uref{http://www.validlab.com/goldberg/paper.pdf,
 paper on floating-point arithmetic} by David Goldberg, ``What Every
-Computer Scientist Should Know About Floating-point Arithmetic,''
-@cite{ACM Computing Surveys} @strong{23}, 1 (1991-03), 5-48.  This is
+Computer Scientist Should Know About Floating-Point Arithmetic,''
+@cite{ACM Computing Surveys} @strong{23}, 1 (1991-03): 5-48.  This is
 worth reading if you are interested in the details, but it does require
 a background in computer science.}
 The discussion applies to both hardware and arbitrary-precision
@@ -30486,7 +30509,7 @@ $ @kbd{gawk 'BEGIN @{ x = 0.875; y = 0.425}
 
 Often the error is so small you do not even notice it, and if you do,
 you can always specify how much precision you would like in your output.
-Usually this is a format string like @code{"%.15g"}, which when
+Usually this is a format string like @code{"%.15g"}, which, when
 used in the previous example, produces an output identical to the input.
 
 @node Comparing FP Values
@@ -30525,7 +30548,7 @@ else
 
 The loss of accuracy during a single computation with floating-point
 numbers usually isn't enough to worry about. However, if you compute a
-value which is the result of a sequence of floating-point operations,
+value that is the result of a sequence of floating-point operations,
 the error can accumulate and greatly affect the computation itself.
 Here is an attempt to compute the value of @value{PI} using one of its
 many series representations:
@@ -30578,7 +30601,7 @@ no easy answers. The standard rules of algebra often do not apply
 when using floating-point arithmetic.
 Among other things, the distributive and associative laws
 do not hold completely, and order of operation may be important
-for your computation. Rounding error, cumulative precision loss
+for your computation. Rounding error, cumulative precision loss,
 and underflow are often troublesome.
 
 When @command{gawk} tests the expressions @samp{0.1 + 12.2} and
@@ -30618,7 +30641,8 @@ by our earlier attempt to compute the value of @value{PI}.
 Extra precision can greatly enhance the stability and the accuracy
 of your computation in such cases.
 
-Repeated addition is not necessarily equivalent to multiplication
+Additionally, you should understand that
+repeated addition is not necessarily equivalent to multiplication
 in floating-point arithmetic. In the example in
 @ref{Errors accumulate}:
 
@@ -30681,7 +30705,7 @@ to emulate an IEEE 754 binary format.
 @float Table,table-predefined-precision-strings
 @caption{Predefined precision strings for @code{PREC}}
 @multitable {@code{"double"}} {12345678901234567890123456789012345}
-@headitem @code{PREC} @tab IEEE 754 Binary Format
+@headitem @code{PREC} @tab IEEE 754 binary format
 @item @code{"half"} @tab 16-bit half-precision
 @item @code{"single"} @tab Basic 32-bit single precision
 @item @code{"double"} @tab Basic 64-bit double precision
@@ -30713,7 +30737,6 @@ than the default and cannot use a command-line assignment to @code{PREC},
 you should either specify the constant as a string, or as a rational
 number, whenever possible. The following example illustrates the
 differences among various ways to print a floating-point constant:
-@end quotation
 
 @example
 $ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", 0.1) @}'}
@@ -30725,22 +30748,23 @@ $ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", "0.1") @}'}
 $ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", 1/10) @}'}
 @print{} 0.1000000000000000000000000
 @end example
+@end quotation
 
 @node Setting the rounding mode
 @subsection Setting the Rounding Mode
 
 The @code{ROUNDMODE} variable provides
-program level control over the rounding mode.
+program-level control over the rounding mode.
 The correspondence between @code{ROUNDMODE} and the IEEE
 rounding modes is shown in @ref{table-gawk-rounding-modes}.
 
 @float Table,table-gawk-rounding-modes
 @caption{@command{gawk} rounding modes}
 @multitable @columnfractions .45 .30 .25
-@headitem Rounding Mode @tab IEEE Name @tab @code{ROUNDMODE}
+@headitem Rounding mode @tab IEEE name @tab @code{ROUNDMODE}
 @item Round to nearest, ties to even @tab @code{roundTiesToEven} @tab @code{"N"} or @code{"n"}
-@item Round toward plus Infinity @tab @code{roundTowardPositive} @tab @code{"U"} or @code{"u"}
-@item Round toward negative Infinity @tab @code{roundTowardNegative} @tab @code{"D"} or @code{"d"}
+@item Round toward positive infinity @tab @code{roundTowardPositive} @tab @code{"U"} or @code{"u"}
+@item Round toward negative infinity @tab @code{roundTowardNegative} @tab @code{"D"} or @code{"d"}
 @item Round toward zero @tab @code{roundTowardZero} @tab @code{"Z"} or @code{"z"}
 @item Round to nearest, ties away from zero @tab @code{roundTiesToAway} @tab @code{"A"} or @code{"a"}
 @end multitable
@@ -30801,8 +30825,8 @@ distributes upward and downward rounds of exact halves, which might
 cause any accumulating round-off error to cancel itself out. This is the
 default rounding mode for IEEE 754 computing functions and operators.
 
-The other rounding modes are rarely used.  Round toward positive infinity
-(@code{roundTowardPositive}) and round toward negative infinity
+The other rounding modes are rarely used.  Rounding toward positive infinity
+(@code{roundTowardPositive}) and toward negative infinity
 (@code{roundTowardNegative}) are often used to implement interval
 arithmetic, where you adjust the rounding mode to calculate upper and
 lower bounds for the range of output. The @code{roundTowardZero} mode can
@@ -30859,17 +30883,17 @@ If instead you were to compute the same value using arbitrary-precision
 floating-point values, the precision needed for correct output (using
 the formula
 @iftex
-@math{prec = 3.322 @cdot dps}),
+@math{prec = 3.322 @cdot dps})
 would be @math{3.322 @cdot 183231},
 @end iftex
 @ifnottex
 @ifnotdocbook
-@samp{prec = 3.322 * dps}),
+@samp{prec = 3.322 * dps})
 would be 3.322 x 183231,
 @end ifnotdocbook
 @end ifnottex
 @docbook
-<emphasis>prec</emphasis> = 3.322 &sdot; <emphasis>dps</emphasis>),
+<emphasis>prec</emphasis> = 3.322 &sdot; <emphasis>dps</emphasis>)
 would be
 <emphasis>prec</emphasis> = 3.322 &sdot; 183231, @c
 @end docbook
@@ -30907,7 +30931,7 @@ interface to process arbitrary-precision integers or mixed-mode numbers
 as needed by an operation or function.  In such a case, the precision is
 set to the minimum value necessary for exact conversion, and the working
 precision is not used for this purpose.  If this is not what you need or
-want, you can employ a subterfuge, and convert the integer to floating
+want, you can employ a subterfuge and convert the integer to floating
 point first, like this:
 
 @example
@@ -31044,7 +31068,7 @@ word sizes. See
 @node POSIX Floating Point Problems
 @section Standards Versus Existing Practice
 
-Historically, @command{awk} has converted any non-numeric looking string
+Historically, @command{awk} has converted any nonnumeric-looking string
 to the numeric value zero, when required.  Furthermore, the original
 definition of the language and the original POSIX standards specified that
 @command{awk} only understands decimal numbers (base 10), and not octal
@@ -31061,8 +31085,8 @@ notation (e.g., @code{0xDEADBEEF}). (Note: data values, @emph{not}
 source code constants.)
 
 @item
-Support for the special IEEE 754 floating-point values ``Not A Number''
-(NaN), positive Infinity (``inf''), and negative Infinity (``@minus{}inf'').
+Support for the special IEEE 754 floating-point values ``not a number''
+(NaN), positive infinity (``inf''), and negative infinity (``@minus{}inf'').
 In particular, the format for these values is as specified by the ISO 1999
 C standard, which ignores case and can allow implementation-dependent additional
 characters after the @samp{nan} and allow either @samp{inf} or @samp{infinity}.
@@ -31083,21 +31107,21 @@ values is also a very severe departure from historical practice.
 @end itemize
 
 The second problem is that the @command{gawk} maintainer feels that this
-interpretation of the standard, which requires a certain amount of
+interpretation of the standard, which required a certain amount of
 ``language lawyering'' to arrive at in the first place, was not even
-intended by the standard developers.  In other words, ``we see how you
+intended by the standard developers.  In other words, ``We see how you
 got where you are, but we don't think that that's where you want to be.''
 
 Recognizing these issues, but attempting to provide compatibility
 with the earlier versions of the standard,
 the 2008 POSIX standard added explicit wording to allow, but not require,
 that @command{awk} support hexadecimal floating-point values and
-special values for ``Not A Number'' and infinity.
+special values for ``not a number'' and infinity.
 
 Although the @command{gawk} maintainer continues to feel that
 providing those features is inadvisable,
 nevertheless, on systems that support IEEE floating point, it seems
-reasonable to provide @emph{some} way to support NaN and Infinity values.
+reasonable to provide @emph{some} way to support NaN and infinity values.
 The solution implemented in @command{gawk} is as follows:
 
 @itemize @value{BULLET}
@@ -31117,7 +31141,7 @@ $ @kbd{echo 0xDeadBeef | gawk --posix '@{ print $1 + 0 @}'}
 @end example
 
 @item
-Without @option{--posix}, @command{gawk} interprets the four strings
+Without @option{--posix}, @command{gawk} interprets the four string values
 @samp{+inf},
 @samp{-inf},
 @samp{+nan},
@@ -31139,7 +31163,7 @@ $ @kbd{echo 0xDeadBeef | gawk '@{ print $1 + 0 @}'}
 @end example
 
 @command{gawk} ignores case in the four special values.
-Thus @samp{+nan} and @samp{+NaN} are the same.
+Thus, @samp{+nan} and @samp{+NaN} are the same.
 @end itemize
 
 @node Floating point summary
@@ -31152,9 +31176,9 @@ values.  Standard @command{awk} uses double-precision
 floating-point values.
 
 @item
-In the early 1990s, Barbie mistakenly said ``Math class is tough!''
+In the early 1990s Barbie mistakenly said, ``Math class is tough!''
 Although math isn't tough, floating-point arithmetic isn't the same
-as pencil and paper math, and care must be taken:
+as pencil-and-paper math, and care must be taken:
 
 @c nested list
 @itemize @value{MINUS}
@@ -31187,7 +31211,7 @@ arithmetic. Use @code{PREC} to set the precision in bits, and
 @item
 With @option{-M}, @command{gawk} performs
 arbitrary-precision integer arithmetic using the GMP library.
-This is faster and more space efficient than using MPFR for
+This is faster and more space-efficient than using MPFR for
 the same calculations.
 
 @item
@@ -31199,7 +31223,7 @@ It pays to be aware of them.
 Overall, there is no need to be unduly suspicious about the results from
 floating-point arithmetic. The lesson to remember is that floating-point
 arithmetic is always more complex than arithmetic using pencil and
-paper. In order to take advantage of the power of computer floating point,
+paper. In order to take advantage of the power of floating-point arithmetic,
 you need to know its limitations and work within them. For most casual
 use of floating-point arithmetic, you will often get the expected result
 if you simply round the display of your final results to the correct number
@@ -31260,7 +31284,7 @@ Extensions are useful because they allow you (of course) to extend
 @command{gawk}'s functionality. For example, they can provide access to
 system calls (such as @code{chdir()} to change directory) and to other
 C library routines that could be of use.  As with most software,
-``the sky is the limit;'' if you can imagine something that you might
+``the sky is the limit''; if you can imagine something that you might
 want to do and can write in C or C++, you can write an extension to do it!
 
 Extensions are written in C or C++, using the @dfn{application programming
@@ -31268,7 +31292,7 @@ interface} (API) defined for this purpose by the @command{gawk}
 developers.  The rest of this @value{CHAPTER} explains
 the facilities that the API provides and how to use
 them, and presents a small example extension.  In addition, it documents
-the sample extensions included in the @command{gawk} distribution,
+the sample extensions included in the @command{gawk} distribution
 and describes the @code{gawkextlib} project.
 @ifclear FOR_PRINT
 @xref{Extension Design}, for a discussion of the extension mechanism
@@ -31421,7 +31445,7 @@ Some other bits and pieces:
 @itemize @value{BULLET}
 @item
 The API provides access to @command{gawk}'s @code{do_@var{xxx}} values,
-reflecting command-line options, like @code{do_lint}, @code{do_profiling}
+reflecting command-line options, like @code{do_lint}, @code{do_profiling},
 and so on (@pxref{Extension API Variables}).
 These are informational: an extension cannot affect their values
 inside @command{gawk}.  In addition, attempting to assign to them
@@ -31465,7 +31489,7 @@ This (rather large) @value{SECTION} describes the API in detail.
 @node Extension API Functions Introduction
 @subsection Introduction
 
-Access to facilities within @command{gawk} are made available
+Access to facilities within @command{gawk} is achieved
 by calling through function pointers passed into your extension.
 
 API function pointers are provided for the following kinds of operations:
@@ -31493,7 +31517,7 @@ Output wrappers
 Two-way processors
 @end itemize
 
-All of these are discussed in detail, later in this @value{CHAPTER}.
+All of these are discussed in detail later in this @value{CHAPTER}.
 
 @item
 Printing fatal, warning, and ``lint'' warning messages.
@@ -31531,7 +31555,7 @@ Creating a new array
 Clearing an array
 
 @item
-Flattening an array for easy C style looping over all its indices and elements
+Flattening an array for easy C-style looping over all its indices and elements
 @end itemize
 @end itemize
 
@@ -31543,8 +31567,9 @@ The following types, macros, and/or functions are referenced
 in @file{gawkapi.h}.  For correct use, you must therefore include the
 corresponding standard header file @emph{before} including @file{gawkapi.h}:
 
+@c FIXME: Make this is a float at some point.
 @multitable {@code{memset()}, @code{memcpy()}} {@code{<sys/types.h>}}
-@headitem C Entity @tab Header File
+@headitem C entity @tab Header file
 @item @code{EOF} @tab @code{<stdio.h>}
 @item Values for @code{errno} @tab @code{<errno.h>}
 @item @code{FILE} @tab @code{<stdio.h>}
@@ -31570,7 +31595,7 @@ Doing so, however, is poor coding practice.
 Although the API only uses ISO C 90 features, there is an exception; the
 ``constructor'' functions use the @code{inline} keyword. If your compiler
 does not support this keyword, you should either place
-@samp{-Dinline=''} on your command line, or use the GNU Autotools and include a
+@samp{-Dinline=''} on your command line or use the GNU Autotools and include a
 @file{config.h} file in your extensions.
 
 @item
@@ -31578,7 +31603,7 @@ All pointers filled in by @command{gawk} point to memory
 managed by @command{gawk} and should be treated by the extension as
 read-only.  Memory for @emph{all} strings passed into @command{gawk}
 from the extension @emph{must} come from calling one of
-@code{gawk_malloc()}, @code{gawk_calloc()} or @code{gawk_realloc()},
+@code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()},
 and is managed by @command{gawk} from then on.
 
 @item
@@ -31592,7 +31617,7 @@ characters are allowed.
 By intent, strings are maintained using the current multibyte encoding (as
 defined by @env{LC_@var{xxx}} environment variables) and not using wide
 characters.  This matches how @command{gawk} stores strings internally
-and also how characters are likely to be input and output from files.
+and also how characters are likely to be input into and output from files.
 @end quotation
 
 @item
@@ -31637,6 +31662,8 @@ general-purpose use. Additional, more specialized, data structures are
 introduced in subsequent @value{SECTION}s, together with the functions
 that use them.
 
+The general-purpose types and structures are as follows:
+
 @table @code
 @item typedef void *awk_ext_id_t;
 A value of this type is received from @command{gawk} when an extension is loaded.
@@ -31653,7 +31680,7 @@ while allowing @command{gawk} to use them as it needs to.
 @itemx @ @ @ @ awk_false = 0,
 @itemx @ @ @ @ awk_true
 @itemx @} awk_bool_t;
-A simple boolean type.
+A simple Boolean type.
 
 @item typedef struct awk_string @{
 @itemx @ @ @ @ char *str;@ @ @ @ @ @ /* data */
@@ -31699,7 +31726,7 @@ The @code{val_type} member indicates what kind of value the
 @itemx #define array_cookie@ @ @ u.a
 @itemx #define scalar_cookie@ @ u.scl
 @itemx #define value_cookie@ @ @ u.vc
-These macros make accessing the fields of the @code{awk_value_t} more
+Using these macros makes accessing the fields of the @code{awk_value_t} more
 readable.
 
 @item typedef void *awk_scalar_t;
@@ -31722,7 +31749,7 @@ indicates what is in the @code{union}.
 Representing numbers is easy---the API uses a C @code{double}.  Strings
 require more work. Because @command{gawk} allows embedded @sc{nul} bytes
 in string values, a string must be represented as a pair containing a
-data-pointer and length. This is the @code{awk_string_t} type.
+data pointer and length. This is the @code{awk_string_t} type.
 
 Identifiers (i.e., the names of global variables) can be associated
 with either scalar values or with arrays.  In addition, @command{gawk}
@@ -31735,12 +31762,12 @@ of the @code{union} as if they were fields in a @code{struct}; this
 is a common coding practice in C.  Such code is easier to write and to
 read, but it remains @emph{your} responsibility to make sure that
 the @code{val_type} member correctly reflects the type of the value in
-the @code{awk_value_t}.
+the @code{awk_value_t} struct.
 
 Conceptually, the first three members of the @code{union} (number, string,
 and array) are all that is needed for working with @command{awk} values.
 However, because the API provides routines for accessing and changing
-the value of global scalar variables only by using the variable's name,
+the value of a global scalar variable only by using the variable's name,
 there is a performance penalty: @command{gawk} must find the variable
 each time it is accessed and changed.  This turns out to be a real issue,
 not just a theoretical one.
@@ -31758,7 +31785,9 @@ See also the entry for ``Cookie'' in the @ref{Glossary}.
 object for that variable, and then use
 the cookie for getting the variable's value or for changing the variable's
 value.
-This is the @code{awk_scalar_t} type and @code{scalar_cookie} macro.
+The @code{awk_scalar_t} type holds a scalar cookie, and the
+@code{scalar_cookie} macro provides access to the value of that type
+in the @code{awk_value_t} struct.
 Given a scalar cookie, @command{gawk} can directly retrieve or
 modify the value, as required, without having to find it first.
 
@@ -31767,8 +31796,8 @@ If you know that you wish to
 use the same numeric or string @emph{value} for one or more variables,
 you can create the value once, retaining a @dfn{value cookie} for it,
 and then pass in that value cookie whenever you wish to set the value of a
-variable.  This saves both storage space within the running @command{gawk}
-process as well as the time needed to create the value.
+variable.  This saves storage space within the running @command{gawk}
+process and reduces the time needed to create the value.
 
 @node Memory Allocation Functions
 @subsection Memory Allocation Functions and Convenience Macros
@@ -31796,13 +31825,13 @@ be passed to @command{gawk}.
 
 @item void gawk_free(void *ptr);
 Call the correct version of @code{free()} to release storage that was
-allocated with @code{gawk_malloc()}, @code{gawk_calloc()} or @code{gawk_realloc()}.
+allocated with @code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()}.
 @end table
 
 The API has to provide these functions because it is possible
 for an extension to be compiled and linked against a different
 version of the C library than was used for the @command{gawk}
-executable.@footnote{This is more common on MS-Windows systems, but
+executable.@footnote{This is more common on MS-Windows systems, but it
 can happen on Unix-like systems as well.} If @command{gawk} were
 to use its version of @code{free()} when the memory came from an
 unrelated version of @code{malloc()}, unexpected behavior would
@@ -31812,7 +31841,7 @@ Two convenience macros may be used for allocating storage
 from @code{gawk_malloc()} and
 @code{gawk_realloc()}. If the allocation fails, they cause @command{gawk}
 to exit with a fatal error message.  They should be used as if they were
-procedure calls that do not return a value.
+procedure calls that do not return a value:
 
 @table @code
 @item #define emalloc(pointer, type, size, message) @dots{}
@@ -31849,7 +31878,7 @@ make_malloced_string(message, strlen(message), & result);
 @end example
 
 @item #define erealloc(pointer, type, size, message) @dots{}
-This is like @code{emalloc()}, but it calls @code{gawk_realloc()},
+This is like @code{emalloc()}, but it calls @code{gawk_realloc()}
 instead of @code{gawk_malloc()}.
 The arguments are the same as for the @code{emalloc()} macro.
 @end table
@@ -31874,7 +31903,7 @@ for storage in @code{result}. It returns @code{result}.
 @itemx make_malloced_string(const char *string, size_t length, awk_value_t *result)
 This function creates a string value in the @code{awk_value_t} variable
 pointed to by @code{result}. It expects @code{string} to be a @samp{char *}
-value pointing to data previously obtained from @code{gawk_malloc()}, @code{gawk_calloc()} or @code{gawk_realloc()}. The idea here
+value pointing to data previously obtained from @code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()}. The idea here
 is that the data is passed directly to @command{gawk}, which assumes
 responsibility for it. It returns @code{result}.
 
@@ -31925,7 +31954,7 @@ The fields are:
 @table @code
 @item const char *name;
 The name of the new function.
-@command{awk} level code calls the function by this name.
+@command{awk}-level code calls the function by this name.
 This is a regular C string.
 
 Function names must obey the rules for @command{awk}
@@ -31939,7 +31968,7 @@ This is a pointer to the C function that provides the extension's
 functionality.
 The function must fill in @code{*result} with either a number
 or a string. @command{gawk} takes ownership of any string memory.
-As mentioned earlier, string memory @strong{must} come from one of
+As mentioned earlier, string memory @emph{must} come from one of
 @code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()}.
 
 The @code{num_actual_args} argument tells the C function how many
@@ -31991,20 +32020,20 @@ The @code{exit_status} parameter is the exit status value that
 @command{gawk} intends to pass to the @code{exit()} system call.
 
 @item arg0
-A pointer to private data which @command{gawk} saves in order to pass to
+A pointer to private data that @command{gawk} saves in order to pass to
 the function pointed to by @code{funcp}.
 @end table
 @end table
 
-Exit callback functions are called in last-in-first-out (LIFO)
+Exit callback functions are called in last-in, first-out (LIFO)
 order---that is, in the reverse order in which they are registered with
 @command{gawk}.
 
 @node Extension Version String
 @subsubsection Registering An Extension Version String
 
-You can register a version string which indicates the name and
-version of your extension, with @command{gawk}, as follows:
+You can register a version string that indicates the name and
+version of your extension with @command{gawk}, as follows:
 
 @table @code
 @item void register_ext_version(const char *version);
@@ -32026,7 +32055,7 @@ of @code{RS} to find the end of the record, and then uses @code{FS}
 Additionally, it sets the value of @code{RT} (@pxref{Built-in Variables}).
 
 If you want, you can provide your own custom input parser.  An input
-parser's job is to return a record to the @command{gawk} record processing
+parser's job is to return a record to the @command{gawk} record-processing
 code, along with indicators for the value and length of the data to be
 used for @code{RT}, if any.
 
@@ -32044,9 +32073,9 @@ It should not change any state (variable values, etc.) within @command{gawk}.
 @item awk_bool_t @var{XXX}_take_control_of(awk_input_buf_t *iobuf);
 When @command{gawk} decides to hand control of the file over to the
 input parser, it calls this function.  This function in turn must fill
-in certain fields in the @code{awk_input_buf_t} structure, and ensure
+in certain fields in the @code{awk_input_buf_t} structure and ensure
 that certain conditions are true.  It should then return true. If an
-error of some kind occurs, it should not fill in any fields, and should
+error of some kind occurs, it should not fill in any fields and should
 return false; then @command{gawk} will not use the input parser.
 The details are presented shortly.
 @end table
@@ -32139,7 +32168,7 @@ in the @code{struct stat}, or any combination of these factors.
 
 Once @code{@var{XXX}_can_take_file()} has returned true, and
 @command{gawk} has decided to use your input parser, it calls
-@code{@var{XXX}_take_control_of()}.  That function then fills one of
+@code{@var{XXX}_take_control_of()}.  That function then fills
 either the @code{get_record} field or the @code{read_func} field in
 the @code{awk_input_buf_t}.  It must also ensure that @code{fd} is @emph{not}
 set to @code{INVALID_HANDLE}.  The following list describes the fields that
@@ -32161,21 +32190,21 @@ records.  Said function is the core of the input parser.  Its behavior
 is described in the text following this list.
 
 @item ssize_t (*read_func)();
-This function pointer should point to function that has the
+This function pointer should point to a function that has the
 same behavior as the standard POSIX @code{read()} system call.
 It is an alternative to the @code{get_record} pointer.  Its behavior
 is also described in the text following this list.
 
 @item void (*close_func)(struct awk_input *iobuf);
 This function pointer should point to a function that does
-the ``tear down.'' It should release any resources allocated by
+the ``teardown.'' It should release any resources allocated by
 @code{@var{XXX}_take_control_of()}.  It may also close the file. If it
 does so, it should set the @code{fd} field to @code{INVALID_HANDLE}.
 
 If @code{fd} is still not @code{INVALID_HANDLE} after the call to this
 function, @command{gawk} calls the regular @code{close()} system call.
 
-Having a ``tear down'' function is optional. If your input parser does
+Having a ``teardown'' function is optional. If your input parser does
 not need it, do not set this field.  Then, @command{gawk} calls the
 regular @code{close()} system call on the file descriptor, so it should
 be valid.
@@ -32186,7 +32215,7 @@ input records.  The parameters are as follows:
 
 @table @code
 @item char **out
-This is a pointer to a @code{char *} variable which is set to point
+This is a pointer to a @code{char *} variable that is set to point
 to the record.  @command{gawk} makes its own copy of the data, so
 the extension must manage this storage.
 
@@ -32239,17 +32268,17 @@ set this field explicitly.
 You must choose one method or the other: either a function that
 returns a record, or one that returns raw data.  In particular,
 if you supply a function to get a record, @command{gawk} will
-call it, and never call the raw read function.
+call it, and will never call the raw read function.
 @end quotation
 
 @command{gawk} ships with a sample extension that reads directories,
-returning records for each entry in the directory (@pxref{Extension
+returning records for each entry in a directory (@pxref{Extension
 Sample Readdir}).  You may wish to use that code as a guide for writing
 your own input parser.
 
 When writing an input parser, you should think about (and document)
 how it is expected to interact with @command{awk} code.  You may want
-it to always be called, and take effect as appropriate (as the
+it to always be called, and to take effect as appropriate (as the
 @code{readdir} extension does).  Or you may want it to take effect
 based upon the value of an @command{awk} variable, as the XML extension
 from the @code{gawkextlib} project does (@pxref{gawkextlib}).
@@ -32359,7 +32388,7 @@ a pointer to any private data associated with the file.
 These pointers should be set to point to functions that perform
 the equivalent function as the @code{<stdio.h>} functions do, if appropriate.
 @command{gawk} uses these function pointers for all output.
-@command{gawk} initializes the pointers to point to internal, ``pass through''
+@command{gawk} initializes the pointers to point to internal ``pass-through''
 functions that just call the regular @code{<stdio.h>} functions, so an
 extension only needs to redefine those functions that are appropriate for
 what it does.
@@ -32370,7 +32399,7 @@ upon the @code{name} and @code{mode} fields, and any additional state
 (such as @command{awk} variable values) that is appropriate.
 
 When @command{gawk} calls @code{@var{XXX}_take_control_of()}, that function should fill
-in the other fields, as appropriate, except for @code{fp}, which it should just
+in the other fields as appropriate, except for @code{fp}, which it should just
 use normally.
 
 You register your output wrapper with the following function:
@@ -32410,14 +32439,14 @@ The fields are as follows:
 The name of the two-way processor.
 
 @item awk_bool_t (*can_take_two_way)(const char *name);
-This function returns true if it wants to take over two-way I/O for this @value{FN}.
+The function pointed to by this field should return true if it wants to take over two-way I/O for this @value{FN}.
 It should not change any state (variable
 values, etc.) within @command{gawk}.
 
 @item awk_bool_t (*take_control_of)(const char *name,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_input_buf_t *inbuf,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_output_buf_t *outbuf);
-This function should fill in the @code{awk_input_buf_t} and
+The function pointed to by this field should fill in the @code{awk_input_buf_t} and
 @code{awk_outut_buf_t} structures pointed to by @code{inbuf} and
 @code{outbuf}, respectively.  These structures were described earlier.
 
@@ -32446,7 +32475,7 @@ Register the two-way processor pointed to by @code{two_way_processor} with
 
 You can print different kinds of warning messages from your
 extension, as described here.  Note that for these functions,
-you must pass in the extension id received from @command{gawk}
+you must pass in the extension ID received from @command{gawk}
 when the extension was loaded:@footnote{Because the API uses only ISO C 90
 features, it cannot make use of the ISO C 99 variadic macro feature to hide
 that parameter. More's the pity.}
@@ -32499,7 +32528,7 @@ matches what you requested, the function returns true and fills
 in the @code{awk_value_t} result.
 Otherwise, the function returns false, and the @code{val_type}
 member indicates the type of the actual value.  You may then
-print an error message, or reissue the request for the actual
+print an error message or reissue the request for the actual
 value type, as appropriate.  This behavior is summarized in
 @ref{table-value-types-returned}.
 
@@ -32532,32 +32561,32 @@ value type, as appropriate.  This behavior is summarized in
       <entry><para><emphasis role="bold">String</emphasis></para></entry>
       <entry><para>String</para></entry>
       <entry><para>String</para></entry>
-      <entry><para>false</para></entry>
-      <entry><para>false</para></entry>
+      <entry><para>False</para></entry>
+      <entry><para>False</para></entry>
     </row>
     <row>
       <entry></entry>
       <entry><para><emphasis role="bold">Number</emphasis></para></entry>
       <entry><para>Number if can be converted, else false</para></entry>
       <entry><para>Number</para></entry>
-      <entry><para>false</para></entry>
-      <entry><para>false</para></entry>
+      <entry><para>False</para></entry>
+      <entry><para>False</para></entry>
     </row>
     <row>
       <entry><para><emphasis role="bold">Type</emphasis></para></entry>
       <entry><para><emphasis role="bold">Array</emphasis></para></entry>
-      <entry><para>false</para></entry>
-      <entry><para>false</para></entry>
+      <entry><para>False</para></entry>
+      <entry><para>False</para></entry>
       <entry><para>Array</para></entry>
-      <entry><para>false</para></entry>
+      <entry><para>False</para></entry>
     </row>
     <row>
       <entry><para><emphasis role="bold">Requested</emphasis></para></entry>
       <entry><para><emphasis role="bold">Scalar</emphasis></para></entry>
       <entry><para>Scalar</para></entry>
       <entry><para>Scalar</para></entry>
-      <entry><para>false</para></entry>
-      <entry><para>false</para></entry>
+      <entry><para>False</para></entry>
+      <entry><para>False</para></entry>
     </row>
     <row>
       <entry></entry>
@@ -32569,11 +32598,11 @@ value type, as appropriate.  This behavior is summarized in
     </row>
     <row>
       <entry></entry>
-      <entry><para><emphasis role="bold">Value Cookie</emphasis></para></entry>
-      <entry><para>false</para></entry>
-      <entry><para>false</para></entry>
-      <entry><para>false</para>
-      </entry><entry><para>false</para></entry>
+      <entry><para><emphasis role="bold">Value cookie</emphasis></para></entry>
+      <entry><para>False</para></entry>
+      <entry><para>False</para></entry>
+      <entry><para>False</para>
+      </entry><entry><para>False</para></entry>
     </row>
   </tbody>
 </tgroup>
@@ -32591,12 +32620,12 @@ value type, as appropriate.  This behavior is summarized in
 @end tex
 @multitable @columnfractions .166 .166 .198 .15 .15 .166
 @headitem @tab @tab String @tab Number @tab Array @tab Undefined
-@item @tab @b{String} @tab String @tab String @tab false @tab false
-@item @tab @b{Number} @tab Number if can be converted, else false @tab Number @tab false @tab false
-@item @b{Type} @tab @b{Array} @tab false @tab false @tab Array @tab false
-@item @b{Requested} @tab @b{Scalar} @tab Scalar @tab Scalar @tab false @tab false
+@item @tab @b{String} @tab String @tab String @tab False @tab False
+@item @tab @b{Number} @tab Number if can be converted, else false @tab Number @tab False @tab False
+@item @b{Type} @tab @b{Array} @tab False @tab False @tab Array @tab False
+@item @b{Requested} @tab @b{Scalar} @tab Scalar @tab Scalar @tab False @tab False
 @item @tab @b{Undefined} @tab String @tab Number @tab Array @tab Undefined
-@item @tab @b{Value Cookie} @tab false @tab false @tab false @tab false
+@item @tab @b{Value cookie} @tab False @tab False @tab False @tab False
 @end multitable
 @end ifnotdocbook
 @end ifnotplaintext
@@ -32607,21 +32636,21 @@ value type, as appropriate.  This behavior is summarized in
                         +------------+------------+-----------+-----------+
                         |   String   |   Number   | Array     | Undefined |
 +-----------+-----------+------------+------------+-----------+-----------+
-|           | String    |   String   |   String   | false     | false     |
+|           | String    |   String   |   String   | False     | False     |
 |           |-----------+------------+------------+-----------+-----------+
-|           | Number    | Number if  |   Number   | false     | false     |
+|           | Number    | Number if  |   Number   | False     | False     |
 |           |           | can be     |            |           |           |
 |           |           | converted, |            |           |           |
 |           |           | else false |            |           |           |
 |           |-----------+------------+------------+-----------+-----------+
-|   Type    | Array     |   false    |   false    | Array     | false     |
+|   Type    | Array     |   False    |   False    | Array     | False     |
 | Requested |-----------+------------+------------+-----------+-----------+
-|           | Scalar    |   Scalar   |   Scalar   | false     | false     |
+|           | Scalar    |   Scalar   |   Scalar   | False     | False     |
 |           |-----------+------------+------------+-----------+-----------+
 |           | Undefined |  String    |   Number   | Array     | Undefined |
 |           |-----------+------------+------------+-----------+-----------+
-|           | Value     |   false    |   false    | false     | false     |
-|           | Cookie    |            |            |           |           |
+|           | Value     |   False    |   False    | False     | False     |
+|           | cookie    |            |            |           |           |
 +-----------+-----------+------------+------------+-----------+-----------+
 @end example
 @end ifplaintext
@@ -32638,16 +32667,16 @@ passed to your extension function. They are:
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_valtype_t wanted,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_value_t *result);
 Fill in the @code{awk_value_t} structure pointed to by @code{result}
-with the @code{count}'th argument.  Return true if the actual
-type matches @code{wanted}, false otherwise.  In the latter
+with the @code{count}th argument.  Return true if the actual
+type matches @code{wanted}, and false otherwise.  In the latter
 case, @code{result@w{->}val_type} indicates the actual type
-(@pxref{table-value-types-returned}).  Counts are zero based---the first
+(@pxref{table-value-types-returned}).  Counts are zero-based---the first
 argument is numbered zero, the second one, and so on. @code{wanted}
 indicates the type of value expected.
 
 @item awk_bool_t set_argument(size_t count, awk_array_t array);
 Convert a parameter that was undefined into an array; this provides
-call-by-reference for arrays.  Return false if @code{count} is too big,
+call by reference for arrays.  Return false if @code{count} is too big,
 or if the argument's type is not undefined.  @DBXREF{Array Manipulation}
 for more information on creating arrays.
 @end table
@@ -32671,8 +32700,9 @@ allows you to create and release cached values.
 The following routines provide the ability to access and update
 global @command{awk}-level variables by name.  In compiler terminology,
 identifiers of different kinds are termed @dfn{symbols}, thus the ``sym''
-in the routines' names.  The data structure which stores information
+in the routines' names.  The data structure that stores information
 about symbols is termed a @dfn{symbol table}.
+The functions are as follows:
 
 @table @code
 @item awk_bool_t sym_lookup(const char *name,
@@ -32681,14 +32711,14 @@ about symbols is termed a @dfn{symbol table}.
 Fill in the @code{awk_value_t} structure pointed to by @code{result}
 with the value of the variable named by the string @code{name}, which is
 a regular C string.  @code{wanted} indicates the type of value expected.
-Return true if the actual type matches @code{wanted}, false otherwise.
+Return true if the actual type matches @code{wanted}, and false otherwise.
 In the latter case, @code{result->val_type} indicates the actual type
 (@pxref{table-value-types-returned}).
 
 @item awk_bool_t sym_update(const char *name, awk_value_t *value);
 Update the variable named by the string @code{name}, which is a regular
 C string.  The variable is added to @command{gawk}'s symbol table
-if it is not there.  Return true if everything worked, false otherwise.
+if it is not there.  Return true if everything worked, and false otherwise.
 
 Changing types (scalar to array or vice versa) of an existing variable
 is @emph{not} allowed, nor may this routine be used to update an array.
@@ -32713,7 +32743,7 @@ populate it.
 A @dfn{scalar cookie} is an opaque handle that provides access
 to a global variable or array. It is an optimization that
 avoids looking up variables in @command{gawk}'s symbol table every time
-access is needed. This was discussed earlier in @ref{General Data Types}.
+access is needed. This was discussed earlier, in @ref{General Data Types}.
 
 The following functions let you work with scalar cookies:
 
@@ -32829,7 +32859,7 @@ and carefully check the return values from the API functions.
 @subsubsection Creating and Using Cached Values
 
 The routines in this section allow you to create and release
-cached values.  As with scalar cookies, in theory, cached values
+cached values.  Like scalar cookies, in theory, cached values
 are not necessary. You can create numbers and strings using
 the functions in @ref{Constructor Functions}. You can then
 assign those values to variables using @code{sym_update()}
@@ -32907,7 +32937,7 @@ Using value cookies in this way saves considerable storage, as all of
 @code{VAR1} through @code{VAR100} share the same value.
 
 You might be wondering, ``Is this sharing problematic?
-What happens if @command{awk} code assigns a new value to @code{VAR1},
+What happens if @command{awk} code assigns a new value to @code{VAR1};
 are all the others changed too?''
 
 That's a great question. The answer is that no, it's not a problem.
@@ -33011,7 +33041,7 @@ modify them.
 @node Array Functions
 @subsubsection Array Functions
 
-The following functions relate to individual array elements.
+The following functions relate to individual array elements:
 
 @table @code
 @item awk_bool_t get_element_count(awk_array_t a_cookie, size_t *count);
@@ -33030,13 +33060,13 @@ Return false if @code{wanted} does not match the actual type or if
 @code{index} is not in the array (@pxref{table-value-types-returned}).
 
 The value for @code{index} can be numeric, in which case @command{gawk}
-converts it to a string. Using non-integral values is possible, but
+converts it to a string. Using nonintegral values is possible, but
 requires that you understand how such values are converted to strings
-(@pxref{Conversion}); thus using integral values is safest.
+(@pxref{Conversion}); thus, using integral values is safest.
 
 As with @emph{all} strings passed into @command{gawk} from an extension,
 the string value of @code{index} must come from @code{gawk_malloc()},
-@code{gawk_calloc()} or @code{gawk_realloc()}, and
+@code{gawk_calloc()}, or @code{gawk_realloc()}, and
 @command{gawk} releases the storage.
 
 @item awk_bool_t set_array_element(awk_array_t a_cookie,
@@ -33092,7 +33122,7 @@ flatten an array and work with it.
 @item awk_bool_t release_flattened_array(awk_array_t a_cookie,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_flat_array_t *data);
 When done with a flattened array, release the storage using this function.
-You must pass in both the original array cookie, and the address of
+You must pass in both the original array cookie and the address of
 the created @code{awk_flat_array_t} structure.
 The function returns true upon success, false otherwise.
 @end table
@@ -33102,7 +33132,7 @@ The function returns true upon success, false otherwise.
 
 To @dfn{flatten} an array is to create a structure that
 represents the full array in a fashion that makes it easy
-for C code to traverse the entire array.  Test code
+for C code to traverse the entire array.  Some of the code
 in @file{extension/testext.c} does this, and also serves
 as a nice example showing how to use the APIs.
 
@@ -33159,9 +33189,9 @@ dump_array_and_delete(int nargs, awk_value_t *result)
 @end example
 
 The function then proceeds in steps, as follows. First, retrieve
-the name of the array, passed as the first argument. Then
-retrieve the array itself. If either operation fails, print
-error messages and return:
+the name of the array, passed as the first argument, followed by
+the array itself. If either operation fails, print an
+error message and return:
 
 @example
     /* get argument named array as flat array and print it */
@@ -33197,7 +33227,7 @@ and print it:
 @end example
 
 The third step is to actually flatten the array, and then
-to double check that the count in the @code{awk_flat_array_t}
+to double-check that the count in the @code{awk_flat_array_t}
 is the same as the count just retrieved:
 
 @example
@@ -33218,7 +33248,7 @@ is the same as the count just retrieved:
 The fourth step is to retrieve the index of the element
 to be deleted, which was passed as the second argument.
 Remember that argument counts passed to @code{get_argument()}
-are zero-based, thus the second argument is numbered one:
+are zero-based, and thus the second argument is numbered one:
 
 @example
     if (! get_argument(1, AWK_STRING, & value3)) @{
@@ -33233,7 +33263,7 @@ element values. In addition, upon finding the element with the
 index that is supposed to be deleted, the function sets the
 @code{AWK_ELEMENT_DELETE} bit in the @code{flags} field
 of the element.  When the array is released, @command{gawk}
-traverses the flattened array, and deletes any elements which
+traverses the flattened array, and deletes any elements that
 have this flag bit set:
 
 @example
@@ -33521,10 +33551,10 @@ The API versions are available at compile time as constants:
 
 @table @code
 @item GAWK_API_MAJOR_VERSION
-The major version of the API.
+The major version of the API
 
 @item GAWK_API_MINOR_VERSION
-The minor version of the API.
+The minor version of the API
 @end table
 
 The minor version increases when new functions are added to the API. Such
@@ -33542,14 +33572,14 @@ constant integers:
 
 @table @code
 @item api->major_version
-The major version of the running @command{gawk}.
+The major version of the running @command{gawk}
 
 @item api->minor_version
-The minor version of the running @command{gawk}.
+The minor version of the running @command{gawk}
 @end table
 
 It is up to the extension to decide if there are API incompatibilities.
-Typically a check like this is enough:
+Typically, a check like this is enough:
 
 @example
 if (api->major_version != GAWK_API_MAJOR_VERSION
@@ -33563,7 +33593,7 @@ if (api->major_version != GAWK_API_MAJOR_VERSION
 @end example
 
 Such code is included in the boilerplate @code{dl_load_func()} macro
-provided in @file{gawkapi.h} (discussed later, in
+provided in @file{gawkapi.h} (discussed in
 @ref{Extension API Boilerplate}).
 
 @node Extension API Informational Variables
@@ -33610,7 +33640,7 @@ as described here.  The boilerplate needed is also provided in comments
 in the @file{gawkapi.h} header file:
 
 @example
-/* Boiler plate code: */
+/* Boilerplate code: */
 int plugin_is_GPL_compatible;
 
 static gawk_api_t *const api;
@@ -33669,7 +33699,7 @@ to @code{NULL}, or to point to a string giving the name and version of
 your extension.
 
 @item static awk_ext_func_t func_table[] = @{ @dots{} @};
-This is an array of one or more @code{awk_ext_func_t} structures
+This is an array of one or more @code{awk_ext_func_t} structures,
 as described earlier (@pxref{Extension Functions}).
 It can then be looped over for multiple calls to
 @code{add_ext_func()}.
@@ -33800,7 +33830,7 @@ the @code{stat()} fails.  It fills in the following elements:
 
 @table @code
 @item "name"
-The name of the file that was @code{stat()}'ed.
+The name of the file that was @code{stat()}ed.
 
 @item "dev"
 @itemx "ino"
@@ -33856,7 +33886,7 @@ interprocess communications).
 The file is a directory.
 
 @item "fifo"
-The file is a named-pipe (also known as a FIFO).
+The file is a named pipe (also known as a FIFO).
 
 @item "file"
 The file is just a regular file.
@@ -33879,7 +33909,7 @@ For some other systems, @dfn{a priori} knowledge is used to provide
 a value. Where no value can be determined, it defaults to 512.
 @end table
 
-Several additional elements may be present depending upon the operating
+Several additional elements may be present, depending upon the operating
 system and the type of the file.  You can test for them in your @command{awk}
 program by using the @code{in} operator
 (@pxref{Reference to Elements}):
@@ -33909,7 +33939,7 @@ edited slightly for presentation.  See @file{extension/filefuncs.c}
 in the @command{gawk} distribution for the complete version.}
 
 The file includes a number of standard header files, and then includes
-the @file{gawkapi.h} header file which provides the API definitions.
+the @file{gawkapi.h} header file, which provides the API definitions.
 Those are followed by the necessary variable declarations
 to make use of the API macros and boilerplate code
 (@pxref{Extension API Boilerplate}):
@@ -33950,9 +33980,9 @@ int plugin_is_GPL_compatible;
 @cindex programming conventions, @command{gawk} extensions
 By convention, for an @command{awk} function @code{foo()}, the C function
 that implements it is called @code{do_foo()}.  The function should have
-two arguments: the first is an @code{int} usually called @code{nargs},
+two arguments. The first is an @code{int}, usually called @code{nargs},
 that represents the number of actual arguments for the function.
-The second is a pointer to an @code{awk_value_t}, usually named
+The second is a pointer to an @code{awk_value_t} structure, usually named
 @code{result}:
 
 @example
@@ -33998,7 +34028,7 @@ Finally, the function returns the return value to the @command{awk} level:
 
 The @code{stat()} extension is more involved.  First comes a function
 that turns a numeric mode into a printable representation
-(e.g., 644 becomes @samp{-rw-r--r--}). This is omitted here for brevity:
+(e.g., octal @code{0644} becomes @samp{-rw-r--r--}). This is omitted here for brevity:
 
 @example
 /* format_mode --- turn a stat mode field into something readable */
@@ -34054,9 +34084,9 @@ array_set_numeric(awk_array_t array, const char *sub, double num)
 
 The following function does most of the work to fill in
 the @code{awk_array_t} result array with values obtained
-from a valid @code{struct stat}. It is done in a separate function
+from a valid @code{struct stat}. This work is done in a separate function
 to support the @code{stat()} function for @command{gawk} and also
-to support the @code{fts()} extension which is included in
+to support the @code{fts()} extension, which is included in
 the same file but whose code is not shown here
 (@pxref{Extension Sample File Functions}).
 
@@ -34177,8 +34207,8 @@ the @code{stat()} system call instead of the @code{lstat()} system
 call.  This is done by using a function pointer: @code{statfunc}.
 @code{statfunc} is initialized to point to @code{lstat()} (instead
 of @code{stat()}) to get the file information, in case the file is a
-symbolic link. However, if there were three arguments, @code{statfunc}
-is set point to @code{stat()}, instead.
+symbolic link. However, if the third argument is included, @code{statfunc}
+is set to point to @code{stat()}, instead.
 
 Here is the @code{do_stat()} function, which starts with
 variable declarations and argument checking:
@@ -34234,7 +34264,7 @@ Next, it gets the information for the file.  If the called function
     /* always empty out the array */
     clear_array(array);
 
-    /* stat the file, if error, set ERRNO and return */
+    /* stat the file; if error, set ERRNO and return */
     ret = statfunc(name, & sbuf);
     if (ret < 0) @{
         update_ERRNO_int(errno);
@@ -34256,7 +34286,9 @@ Finally, it's necessary to provide the ``glue'' that loads the
 new function(s) into @command{gawk}.
 
 The @code{filefuncs} extension also provides an @code{fts()}
-function, which we omit here. For its sake there is an initialization
+function, which we omit here
+(@pxref{Extension Sample File Functions}).
+For its sake, there is an initialization
 function:
 
 @example
@@ -34381,9 +34413,9 @@ $ @kbd{AWKLIBPATH=$PWD gawk -f testff.awk}
 @section The Sample Extensions in the @command{gawk} Distribution
 @cindex extensions distributed with @command{gawk}
 
-This @value{SECTION} provides brief overviews of the sample extensions
+This @value{SECTION} provides a brief overview of the sample extensions
 that come in the @command{gawk} distribution. Some of them are intended
-for production use (e.g., the @code{filefuncs}, @code{readdir} and
+for production use (e.g., the @code{filefuncs}, @code{readdir}, and
 @code{inplace} extensions).  Others mainly provide example code that
 shows how to use the extension API.
 
@@ -34419,14 +34451,14 @@ This is how you load the extension.
 @item @code{result = chdir("/some/directory")}
 The @code{chdir()} function is a direct hook to the @code{chdir()}
 system call to change the current directory.  It returns zero
-upon success or less than zero upon error.  In the latter case, it updates
-@code{ERRNO}.
+upon success or a value less than zero upon error.
+In the latter case, it updates @code{ERRNO}.
 
 @cindex @code{stat()} extension function
 @item @code{result = stat("/some/path", statdata} [@code{, follow}]@code{)}
 The @code{stat()} function provides a hook into the
 @code{stat()} system call.
-It returns zero upon success or less than zero upon error.
+It returns zero upon success or a value less than zero upon error.
 In the latter case, it updates @code{ERRNO}.
 
 By default, it uses the @code{lstat()} system call.  However, if passed
@@ -34453,10 +34485,10 @@ array with information retrieved from the filesystem, as follows:
 @item @code{"major"} @tab @code{st_major} @tab Device files
 @item @code{"minor"} @tab @code{st_minor} @tab Device files
 @item @code{"blksize"} @tab @code{st_blksize} @tab All
-@item @code{"pmode"} @tab A human-readable version of the mode value, such as printed by
-@command{ls}.  For example, @code{"-rwxr-xr-x"} @tab All
+@item @code{"pmode"} @tab A human-readable version of the mode value, like that printed by
+@command{ls} (for example, @code{"-rwxr-xr-x"}) @tab All
 @item @code{"linkval"} @tab The value of the symbolic link @tab Symbolic links
-@item @code{"type"} @tab The type of the file as a string. One of
+@item @code{"type"} @tab The type of the file as a string---one of
 @code{"file"},
 @code{"blockdev"},
 @code{"chardev"},
@@ -34466,15 +34498,15 @@ array with information retrieved from the filesystem, as follows:
 @code{"symlink"},
 @code{"door"},
 or
-@code{"unknown"}.
-Not all systems support all file types. @tab All
+@code{"unknown"}
+(not all systems support all file types) @tab All
 @end multitable
 
 @cindex @code{fts()} extension function
 @item @code{flags = or(FTS_PHYSICAL, ...)}
 @itemx @code{result = fts(pathlist, flags, filedata)}
 Walk the file trees provided in @code{pathlist} and fill in the
-@code{filedata} array as described next.  @code{flags} is the bitwise
+@code{filedata} array, as described next.  @code{flags} is the bitwise
 OR of several predefined values, also described in a moment.
 Return zero if there were no errors, otherwise return @minus{}1.
 @end table
@@ -34530,7 +34562,8 @@ During a traversal, do not cross onto a different mounted filesystem.
 @end table
 
 @item filedata
-The @code{filedata} array is first cleared.  Then, @code{fts()} creates
+The @code{filedata} array holds the results.
+@code{fts()} first clears it.  Then it creates
 an element in @code{filedata} for every element in @code{pathlist}.
 The index is the name of the directory or file given in @code{pathlist}.
 The element for this index is itself an array.  There are two cases:
@@ -34572,7 +34605,7 @@ for a file: @code{"path"}, @code{"stat"}, and @code{"error"}.
 @end table
 
 The @code{fts()} function returns zero if there were no errors.
-Otherwise it returns @minus{}1.
+Otherwise, it returns @minus{}1.
 
 @quotation NOTE
 The @code{fts()} extension does not exactly mimic the
@@ -34614,14 +34647,14 @@ The arguments to @code{fnmatch()} are:
 
 @table @code
 @item pattern
-The @value{FN} wildcard to match.
+The @value{FN} wildcard to match
 
 @item string
-The @value{FN} string.
+The @value{FN} string
 
 @item flag
 Either zero, or the bitwise OR of one or more of the
-flags in the @code{FNM} array.
+flags in the @code{FNM} array
 @end table
 
 The flags are as follows:
@@ -34658,14 +34691,14 @@ This is how you load the extension.
 @cindex @code{fork()} extension function
 @item pid = fork()
 This function creates a new process. The return value is zero in the
-child and the process-ID number of the child in the parent, or @minus{}1
+child and the process ID number of the child in the parent, or @minus{}1
 upon error. In the latter case, @code{ERRNO} indicates the problem.
 In the child, @code{PROCINFO["pid"]} and @code{PROCINFO["ppid"]} are
 updated to reflect the correct values.
 
 @cindex @code{waitpid()} extension function
 @item ret = waitpid(pid)
-This function takes a numeric argument, which is the process-ID to
+This function takes a numeric argument, which is the process ID to
 wait for. The return value is that of the
 @code{waitpid()} system call.
 
@@ -34693,8 +34726,8 @@ else
 @subsection Enabling In-Place File Editing
 
 @cindex @code{inplace} extension
-The @code{inplace} extension emulates GNU @command{sed}'s @option{-i} option
-which performs ``in place'' editing of each input file.
+The @code{inplace} extension emulates GNU @command{sed}'s @option{-i} option,
+which performs ``in-place'' editing of each input file.
 It uses the bundled @file{inplace.awk} include file to invoke the extension
 properly:
 
@@ -34790,14 +34823,14 @@ they are read, with each entry returned as a record.
 The record consists of three fields. The first two are the inode number and the
 @value{FN}, separated by a forward slash character.
 On systems where the directory entry contains the file type, the record
-has a third field (also separated by a slash) which is a single letter
+has a third field (also separated by a slash), which is a single letter
 indicating the type of the file. The letters and their corresponding file
 types are shown in @ref{table-readdir-file-types}.
 
 @float Table,table-readdir-file-types
 @caption{File types returned by the @code{readdir} extension}
 @multitable @columnfractions .1 .9
-@headitem Letter @tab File Type
+@headitem Letter @tab File type
 @item @code{b} @tab Block device
 @item @code{c} @tab Character device
 @item @code{d} @tab Directory
@@ -34825,7 +34858,7 @@ Here is an example:
 @@load "readdir"
 @dots{}
 BEGIN @{ FS = "/" @}
-@{ print "file name is", $2 @}
+@{ print "@value{FN} is", $2 @}
 @end example
 
 @node Extension Sample Revout
@@ -34846,8 +34879,7 @@ BEGIN @{
 @}
 @end example
 
-The output from this program is:
-@samp{cinap t'nod}.
+The output from this program is @samp{cinap t'nod}.
 
 @node Extension Sample Rev2way
 @subsection Two-Way I/O Example
@@ -34902,7 +34934,7 @@ success, or zero upon failure.
 @code{reada()} is the inverse of @code{writea()};
 it reads the file named as its first argument, filling in
 the array named as the second argument. It clears the array first.
-Here too, the return value is one on success and zero upon failure.
+Here too, the return value is one on success, or zero upon failure.
 @end table
 
 The array created by @code{reada()} is identical to that written by
@@ -34990,7 +35022,7 @@ it tries to use @code{GetSystemTimeAsFileTime()}.
 Attempt to sleep for @var{seconds} seconds.  If @var{seconds} is negative,
 or the attempt to sleep fails, return @minus{}1 and set @code{ERRNO}.
 Otherwise, return zero after sleeping for the indicated amount of time.
-Note that @var{seconds} may be a floating-point (non-integral) value.
+Note that @var{seconds} may be a floating-point (nonintegral) value.
 Implementation details: depending on platform availability, this function
 tries to use @code{nanosleep()} or @code{select()} to implement the delay.
 @end table
@@ -35017,9 +35049,12 @@ project provides a number of @command{gawk} extensions, including one for
 processing XML files.  This is the evolution of the original @command{xgawk}
 (XML @command{gawk}) project.
 
-As of this writing, there are six extensions:
+As of this writing, there are seven extensions:
 
 @itemize @value{BULLET}
+@item
+@code{errno} extension
+
 @item
 GD graphics library extension
 
@@ -35031,7 +35066,7 @@ PostgreSQL extension
 
 @item
 MPFR library extension
-(this provides access to a number of MPFR functions which @command{gawk}'s
+(this provides access to a number of MPFR functions that @command{gawk}'s
 native MPFR support does not)
 
 @item
@@ -35085,7 +35120,7 @@ make install                          @ii{Install the extensions}
 
 If you have installed @command{gawk} in the standard way, then you
 will likely not need the @option{--with-gawk} option when configuring
-@code{gawkextlib}.  You may also need to use the @command{sudo} utility
+@code{gawkextlib}.  You may need to use the @command{sudo} utility
 to install both @command{gawk} and @code{gawkextlib}, depending upon
 how your system works.
 
@@ -35110,7 +35145,7 @@ named @code{plugin_is_GPL_compatible}.
 
 @item
 Communication between @command{gawk} and an extension is two-way.
-@command{gawk} passes a @code{struct} to the extension which contains
+@command{gawk} passes a @code{struct} to the extension that contains
 various data fields and function pointers.  The extension can then call
 into @command{gawk} via the supplied function pointers to accomplish
 certain tasks.
@@ -35123,7 +35158,7 @@ By convention, implementation functions are named @code{do_@var{XXXX}()}
 for some @command{awk}-level function @code{@var{XXXX}()}.
 
 @item
-The API is defined in a header file named @file{gawkpi.h}. You must include
+The API is defined in a header file named @file{gawkapi.h}. You must include
 a number of standard header files @emph{before} including it in your source file.
 
 @item
@@ -35168,7 +35203,7 @@ getting the count of elements in an array;
 creating a new array;
 clearing an array;
 and
-flattening an array for easy C style looping over all its indices and elements)
+flattening an array for easy C-style looping over all its indices and elements)
 @end itemize
 
 @item
@@ -35176,7 +35211,7 @@ The API defines a number of standard data types for representing
 @command{awk} values, array elements, and arrays.
 
 @item
-The API provide convenience functions for constructing values.
+The API provides convenience functions for constructing values.
 It also provides memory management functions to ensure compatibility
 between memory allocated by @command{gawk} and memory allocated by an
 extension.
@@ -35202,8 +35237,8 @@ file make this easier to do.
 
 @item
 The @command{gawk} distribution includes a number of small but useful
-sample extensions. The @code{gawkextlib} project includes several more,
-larger, extensions.  If you wish to write an extension and contribute it
+sample extensions. The @code{gawkextlib} project includes several more
+(larger) extensions.  If you wish to write an extension and contribute it
 to the community of @command{gawk} users, the @code{gawkextlib} project
 is the place to do so.
 
@@ -35331,81 +35366,81 @@ cross-references to further details:
 @itemize @value{BULLET}
 @item
 The requirement for @samp{;} to separate rules on a line
-(@pxref{Statements/Lines}).
+(@pxref{Statements/Lines})
 
 @item
 User-defined functions and the @code{return} statement
-(@pxref{User-defined}).
+(@pxref{User-defined})
 
 @item
 The @code{delete} statement (@pxref{Delete}).
 
 @item
 The @code{do}-@code{while} statement
-(@pxref{Do Statement}).
+(@pxref{Do Statement})
 
 @item
 The built-in functions @code{atan2()}, @code{cos()}, @code{sin()}, @code{rand()}, and
-@code{srand()} (@pxref{Numeric Functions}).
+@code{srand()} (@pxref{Numeric Functions})
 
 @item
 The built-in functions @code{gsub()}, @code{sub()}, and @code{match()}
-(@pxref{String Functions}).
+(@pxref{String Functions})
 
 @item
 The built-in functions @code{close()} and @code{system()}
-(@pxref{I/O Functions}).
+(@pxref{I/O Functions})
 
 @item
 The @code{ARGC}, @code{ARGV}, @code{FNR}, @code{RLENGTH}, @code{RSTART},
-and @code{SUBSEP} predefined variables (@pxref{Built-in Variables}).
+and @code{SUBSEP} predefined variables (@pxref{Built-in Variables})
 
 @item
-Assignable @code{$0} (@pxref{Changing Fields}).
+Assignable @code{$0} (@pxref{Changing Fields})
 
 @item
 The conditional expression using the ternary operator @samp{?:}
-(@pxref{Conditional Exp}).
+(@pxref{Conditional Exp})
 
 @item
-The expression @samp{@var{index-variable} in @var{array}} outside of @code{for}
-statements (@pxref{Reference to Elements}).
+The expression @samp{@var{indx} in @var{array}} outside of @code{for}
+statements (@pxref{Reference to Elements})
 
 @item
 The exponentiation operator @samp{^}
 (@pxref{Arithmetic Ops}) and its assignment operator
-form @samp{^=} (@pxref{Assignment Ops}).
+form @samp{^=} (@pxref{Assignment Ops})
 
 @item
 C-compatible operator precedence, which breaks some old @command{awk}
-programs (@pxref{Precedence}).
+programs (@pxref{Precedence})
 
 @item
 Regexps as the value of @code{FS}
 (@pxref{Field Separators}) and as the
 third argument to the @code{split()} function
 (@pxref{String Functions}), rather than using only the first character
-of @code{FS}.
+of @code{FS}
 
 @item
 Dynamic regexps as operands of the @samp{~} and @samp{!~} operators
-(@pxref{Computed Regexps}).
+(@pxref{Computed Regexps})
 
 @item
 The escape sequences @samp{\b}, @samp{\f}, and @samp{\r}
-(@pxref{Escape Sequences}).
+(@pxref{Escape Sequences})
 
 @item
 Redirection of input for the @code{getline} function
-(@pxref{Getline}).
+(@pxref{Getline})
 
 @item
 Multiple @code{BEGIN} and @code{END} rules
-(@pxref{BEGIN/END}).
+(@pxref{BEGIN/END})
 
 @item
 Multidimensional arrays
-(@pxref{Multidimensional}).
+(@pxref{Multidimensional})
 @end itemize
 
 @node SVR4
@@ -35417,54 +35452,54 @@ The System V Release 4 (1989) version of Unix @command{awk} added these features
 
 @itemize @value{BULLET}
 @item
-The @code{ENVIRON} array (@pxref{Built-in Variables}).
+The @code{ENVIRON} array (@pxref{Built-in Variables})
 @c gawk and MKS awk
 
 @item
 Multiple @option{-f} options on the command line
-(@pxref{Options}).
+(@pxref{Options})
 @c MKS awk
 
 @item
 The @option{-v} option for assigning variables before program execution begins
-(@pxref{Options}).
+(@pxref{Options})
 @c GNU, Bell Laboratories & MKS together
 
 @item
-The @option{--} signal for terminating command-line options.
+The @option{--} signal for terminating command-line options
 
 @item
 The @samp{\a}, @samp{\v}, and @samp{\x} escape sequences
-(@pxref{Escape Sequences}).
+(@pxref{Escape Sequences})
 @c GNU, for ANSI C compat
 
 @item
 A defined return value for the @code{srand()} built-in function
-(@pxref{Numeric Functions}).
+(@pxref{Numeric Functions})
 
 @item
 The @code{toupper()} and @code{tolower()} built-in string functions
 for case translation
-(@pxref{String Functions}).
+(@pxref{String Functions})
 
 @item
 A cleaner specification for the @samp{%c} format-control letter in the
 @code{printf} function
-(@pxref{Control Letters}).
+(@pxref{Control Letters})
 
 @item
 The ability to dynamically pass the field width and precision (@code{"%*.*d"})
 in the argument list of @code{printf} and @code{sprintf()}
-(@pxref{Control Letters}).
+(@pxref{Control Letters})
 
 @item
 The use of regexp constants, such as @code{/foo/}, as expressions, where
 they are equivalent to using the matching operator, as in @samp{$0 ~ /foo/}
-(@pxref{Using Constant Regexps}).
+(@pxref{Using Constant Regexps})
 
 @item
 Processing of escape sequences inside command-line variable assignments
-(@pxref{Assignment Options}).
+(@pxref{Assignment Options})
 @end itemize
 
 @node POSIX
@@ -35478,23 +35513,23 @@ introduced the following changes into the language:
 @itemize @value{BULLET}
 @item
 The use of @option{-W} for implementation-specific options
-(@pxref{Options}).
+(@pxref{Options})
 
 @item
 The use of @code{CONVFMT} for controlling the conversion of numbers
-to strings (@pxref{Conversion}).
+to strings (@pxref{Conversion})
 
 @item
 The concept of a numeric string and tighter comparison rules to go
-with it (@pxref{Typing and Comparison}).
+with it (@pxref{Typing and Comparison})
 
 @item
 The use of predefined variables as function parameter names is forbidden
-(@pxref{Definition Syntax}).
+(@pxref{Definition Syntax})
 
 @item
 More complete documentation of many of the previously undocumented
-features of the language.
+features of the language
 @end itemize
 
 In 2012, a number of extensions that had been commonly available for
@@ -35503,15 +35538,15 @@ many years were finally added to POSIX. They are:
 @itemize @value{BULLET}
 @item
 The @code{fflush()} built-in function for flushing buffered output
-(@pxref{I/O Functions}).
+(@pxref{I/O Functions})
 
 @item
 The @code{nextfile} statement
-(@pxref{Nextfile Statement}).
+(@pxref{Nextfile Statement})
 
 @item
 The ability to delete all of an array at once with @samp{delete @var{array}}
-(@pxref{Delete}).
+(@pxref{Delete})
 
 @end itemize
 
@@ -35541,22 +35576,22 @@ originally appeared in his version of @command{awk}:
 The @samp{**} and @samp{**=} operators
 (@pxref{Arithmetic Ops}
 and
-@ref{Assignment Ops}).
+@ref{Assignment Ops})
 
 @item
 The use of @code{func} as an abbreviation for @code{function}
-(@pxref{Definition Syntax}).
+(@pxref{Definition Syntax})
 
 @item
 The @code{fflush()} built-in function for flushing buffered output
-(@pxref{I/O Functions}).
+(@pxref{I/O Functions})
 
 @ignore
 @item
 The @code{SYMTAB} array, that allows access to @command{awk}'s internal symbol
 table. This feature was never documented for his @command{awk}, largely because
 it is somewhat shakily implemented. For instance, you cannot access arrays
-or array elements through it.
+or array elements through it
 @end ignore
 @end itemize
 
@@ -35586,7 +35621,7 @@ Additional predefined variables:
 @itemize @value{MINUS}
 @item
 The
-@code{ARGIND}
+@code{ARGIND},
 @code{BINMODE},
 @code{ERRNO},
 @code{FIELDWIDTHS},
@@ -35598,7 +35633,7 @@ The
 and
 @code{TEXTDOMAIN}
 variables
-(@pxref{Built-in Variables}).
+(@pxref{Built-in Variables})
 @end itemize
 
 @item
@@ -35606,15 +35641,15 @@ Special files in I/O redirections:
 
 @itemize @value{MINUS}
 @item
-The @file{/dev/stdin}, @file{/dev/stdout}, @file{/dev/stderr} and
+The @file{/dev/stdin}, @file{/dev/stdout}, @file{/dev/stderr}, and
 @file{/dev/fd/@var{N}} special @value{FN}s
-(@pxref{Special Files}).
+(@pxref{Special Files})
 
 @item
 The @file{/inet}, @file{/inet4}, and @samp{/inet6} special files for
 TCP/IP networking using @samp{|&} to specify which version of the
 IP protocol to use
-(@pxref{TCP/IP Networking}).
+(@pxref{TCP/IP Networking})
 @end itemize
 
 @item
@@ -35623,37 +35658,37 @@ Changes and/or additions to the language:
 @itemize @value{MINUS}
 @item
 The @samp{\x} escape sequence
-(@pxref{Escape Sequences}).
+(@pxref{Escape Sequences})
 
 @item
 Full support for both POSIX and GNU regexps
-(@pxref{Regexp}).
+(@pxref{Regexp})
 
 @item
 The ability for @code{FS} and for the third
 argument to @code{split()} to be null strings
-(@pxref{Single Character Fields}).
+(@pxref{Single Character Fields})
 
 @item
 The ability for @code{RS} to be a regexp
-(@pxref{Records}).
+(@pxref{Records})
 
 @item
 The ability to use octal and hexadecimal constants in @command{awk}
 program source code
-(@pxref{Nondecimal-numbers}).
+(@pxref{Nondecimal-numbers})
 
 @item
 The @samp{|&} operator for two-way I/O to a coprocess
-(@pxref{Two-way I/O}).
+(@pxref{Two-way I/O})
 
 @item
 Indirect function calls
-(@pxref{Indirect Calls}).
+(@pxref{Indirect Calls})
 
 @item
 Directories on the command line produce a warning and are skipped
-(@pxref{Command-line directories}).
+(@pxref{Command-line directories})
 @end itemize
 
 @item
@@ -35662,11 +35697,11 @@ New keywords:
 @itemize @value{MINUS}
 @item
 The @code{BEGINFILE} and @code{ENDFILE} special patterns
-(@pxref{BEGINFILE/ENDFILE}).
+(@pxref{BEGINFILE/ENDFILE})
 
 @item
 The @code{switch} statement
-(@pxref{Switch Statement}).
+(@pxref{Switch Statement})
 @end itemize
 
 @item
@@ -35676,30 +35711,30 @@ Changes to standard @command{awk} functions:
 @item
 The optional second argument to @code{close()} that allows closing one end
 of a two-way pipe to a coprocess
-(@pxref{Two-way I/O}).
+(@pxref{Two-way I/O})
 
 @item
-POSIX compliance for @code{gsub()} and @code{sub()} with @option{--posix}.
+POSIX compliance for @code{gsub()} and @code{sub()} with @option{--posix}
 
 @item
 The @code{length()} function accepts an array argument
 and returns the number of elements in the array
-(@pxref{String Functions}).
+(@pxref{String Functions})
 
 @item
 The optional third argument to the @code{match()} function
 for capturing text-matching subexpressions within a regexp
-(@pxref{String Functions}).
+(@pxref{String Functions})
 
 @item
 Positional specifiers in @code{printf} formats for
 making translations easier
-(@pxref{Printf Ordering}).
+(@pxref{Printf Ordering})
 
 @item
 The @code{split()} function's additional optional fourth
-argument which is an array to hold the text of the field separators
-(@pxref{String Functions}).
+argument, which is an array to hold the text of the field separators
+(@pxref{String Functions})
 @end itemize
 
 @item
@@ -35709,16 +35744,16 @@ Additional functions only in @command{gawk}:
 @item
 The @code{gensub()}, @code{patsplit()}, and @code{strtonum()} functions
 for more powerful text manipulation
-(@pxref{String Functions}).
+(@pxref{String Functions})
 
 @item
 The @code{asort()} and @code{asorti()} functions for sorting arrays
-(@pxref{Array Sorting}).
+(@pxref{Array Sorting})
 
 @item
 The @code{mktime()}, @code{systime()}, and @code{strftime()}
 functions for working with timestamps
-(@pxref{Time Functions}).
+(@pxref{Time Functions})
 
 @item
 The
@@ -35730,22 +35765,22 @@ The
 and
 @code{xor()}
 functions for bit manipulation
-(@pxref{Bitwise Functions}).
+(@pxref{Bitwise Functions})
 @c In 4.1, and(), or() and xor() grew the ability to take > 2 arguments
 
 @item
 The @code{isarray()} function to check if a variable is an array or not
-(@pxref{Type Functions}).
+(@pxref{Type Functions})
 
 @item
-The @code{bindtextdomain()}, @code{dcgettext()} and @code{dcngettext()}
+The @code{bindtextdomain()}, @code{dcgettext()}, and @code{dcngettext()}
 functions for internationalization
-(@pxref{Programmer i18n}).
+(@pxref{Programmer i18n})
 
 @item
 The @code{div()} function for doing integer
 division and remainder
-(@pxref{Numeric Functions}).
+(@pxref{Numeric Functions})
 @end itemize
 
 @item
@@ -35755,12 +35790,12 @@ Changes and/or additions in the command-line options:
 @item
 The @env{AWKPATH} environment variable for specifying a path search for
 the @option{-f} command-line option
-(@pxref{Options}).
+(@pxref{Options})
 
 @item
 The @env{AWKLIBPATH} environment variable for specifying a path search for
 the @option{-l} command-line option
-(@pxref{Options}).
+(@pxref{Options})
 
 @item
 The
@@ -35789,7 +35824,7 @@ The
 and
 @option{-V}
 short options. Also, the
-ability to use GNU-style long-named options that start with @option{--}
+ability to use GNU-style long-named options that start with @option{--},
 and the
 @option{--assign},
 @option{--bignum},
@@ -35869,7 +35904,7 @@ GCC for VAX and Alpha has not been tested for a while.
 @end itemize
 
 @item
-Support for the following obsolete systems was removed from the code
+Support for the following obsolete system was removed from the code
 for @command{gawk} @value{PVERSION} 4.1:
 
 @c nested table
@@ -36549,9 +36584,9 @@ by @command{gawk}, Brian Kernighan's @command{awk}, and @command{mawk},
 the three most widely used freely available versions of @command{awk}
 (@pxref{Other Versions}).
 
-@multitable {@file{/dev/stderr} special file} {BWK Awk} {Mawk} {GNU Awk} {Now standard}
-@headitem Feature @tab BWK Awk @tab Mawk @tab GNU Awk @tab Now standard
-@item @samp{\x} Escape sequence @tab X @tab X @tab X @tab
+@multitable {@file{/dev/stderr} special file} {BWK @command{awk}} {@command{mawk}} {@command{gawk}} {Now standard}
+@headitem Feature @tab BWK @command{awk} @tab @command{mawk} @tab @command{gawk} @tab Now standard
+@item @samp{\x} escape sequence @tab X @tab X @tab X @tab
 @item @code{FS} as null string @tab X @tab X @tab X @tab
 @item @file{/dev/stdin} special file @tab X @tab X @tab X @tab
 @item @file{/dev/stdout} special file @tab X @tab X @tab X @tab
@@ -36582,7 +36617,7 @@ in the machine's native character set.  Thus, on ASCII-based systems,
 @samp{[a-z]} matched all the lowercase letters, and only the lowercase
 letters, as the numeric values for the letters from @samp{a} through
 @samp{z} were contiguous.  (On an EBCDIC system, the range @samp{[a-z]}
-includes additional, non-alphabetic characters as well.)
+includes additional nonalphabetic characters as well.)
 
 Almost all introductory Unix literature explained range expressions
 as working in this fashion, and in particular, would teach that the
@@ -36607,7 +36642,7 @@ What does that mean?
 In many locales, @samp{A} and @samp{a} are both less than @samp{B}.
 In other words, these locales sort characters in dictionary order,
 and @samp{[a-dx-z]} is typically not equivalent to @samp{[abcdxyz]};
-instead it might be equivalent to @samp{[ABCXYabcdxyz]}, for example.
+instead, it might be equivalent to @samp{[ABCXYabcdxyz]}, for example.
 
 This point needs to be emphasized: much literature teaches that you should
 use @samp{[a-z]} to match a lowercase character.  But on systems with
@@ -36636,23 +36671,23 @@ is perfectly valid in ASCII, but is not valid in many Unicode locales,
 such as @code{en_US.UTF-8}.
 
 Early versions of @command{gawk} used regexp matching code that was not
-locale aware, so ranges had their traditional interpretation.
+locale-aware, so ranges had their traditional interpretation.
 
 When @command{gawk} switched to using locale-aware regexp matchers,
 the problems began; especially as both GNU/Linux and commercial Unix
 vendors started implementing non-ASCII locales, @emph{and making them
 the default}.  Perhaps the most frequently asked question became something
-like ``why does @samp{[A-Z]} match lowercase letters?!?''
+like, ``Why does @samp{[A-Z]} match lowercase letters?!?''
 
 @cindex Berry, Karl
 This situation existed for close to 10 years, if not more, and
 the @command{gawk} maintainer grew weary of trying to explain that
-@command{gawk} was being nicely standards compliant, and that the issue
+@command{gawk} was being nicely standards-compliant, and that the issue
 was in the user's locale.  During the development of @value{PVERSION} 4.0,
 he modified @command{gawk} to always treat ranges in the original,
 pre-POSIX fashion, unless @option{--posix} was used (@pxref{Options}).@footnote{And
 thus was born the Campaign for Rational Range Interpretation (or
-RRI). A number of GNU tools have either implemented this change,
+RRI). A number of GNU tools have already implemented this change,
 or will soon.  Thanks to Karl Berry for coining the phrase ``Rational
 Range Interpretation.''}
 
@@ -36666,9 +36701,10 @@ and
 
 By using this lovely technical term, the standard gives license
 to implementors to implement ranges in whatever way they choose.
-The @command{gawk} maintainer chose to apply the pre-POSIX meaning in all
-cases: the default regexp matching; with @option{--traditional} and with
-@option{--posix}; in all cases, @command{gawk} remains POSIX compliant.
+The @command{gawk} maintainer chose to apply the pre-POSIX meaning
+both with the default regexp matching and when @option{--traditional} or
+@option{--posix} are used.
+In all cases @command{gawk} remains POSIX-compliant.
 
 @node Contributors
 @appendixsec Major Contributors to @command{gawk}
@@ -36714,7 +36750,7 @@ to around 90 pages.
 Richard Stallman
 helped finish the implementation and the initial draft of this
 @value{DOCUMENT}.
-He is also the founder of the FSF and the GNU project.
+He is also the founder of the FSF and the GNU Project.
 
 @item
 @cindex Woods, John
@@ -36878,28 +36914,28 @@ John Haque made the following contributions:
 @itemize @value{MINUS}
 @item
 The modifications to convert @command{gawk}
-into a byte-code interpreter, including the debugger.
+into a byte-code interpreter, including the debugger
 
 @item
-The addition of true arrays of arrays.
+The addition of true arrays of arrays
 
 @item
-The additional modifications for support of arbitrary-precision arithmetic.
+The additional modifications for support of arbitrary-precision arithmetic
 
 @item
 The initial text of
-@ref{Arbitrary Precision Arithmetic}.
+@ref{Arbitrary Precision Arithmetic}
 
 @item
 The work to merge the three versions of @command{gawk}
-into one, for the 4.1 release.
+into one, for the 4.1 release
 
 @item
-Improved array internals for arrays indexed by integers.
+Improved array internals for arrays indexed by integers
 
 @item
-The improved array sorting features were driven by John together
-with Pat Rankin.
+The improved array sorting features were also driven by John, together
+with Pat Rankin
 @end itemize
 
 @cindex Papadopoulos, Panos
@@ -36940,10 +36976,10 @@ helping David Trueman, and as the primary maintainer since around 1994.
 @itemize @value{BULLET}
 @item
 The @command{awk} language has evolved over time. The first release
-was with V7 Unix circa 1978.  In 1987, for System V Release 3.1,
+was with V7 Unix, circa 1978.  In 1987, for System V Release 3.1,
 major additions, including user-defined functions, were made to the language.
 Additional changes were made for System V Release 4, in 1989.
-Since then, further minor changes happen under the auspices of the
+Since then, further minor changes have happened under the auspices of the
 POSIX standard.
 
 @item
@@ -36959,7 +36995,7 @@ options.
 The interaction of POSIX locales and regexp matching in @command{gawk} has been confusing over
 the years. Today, @command{gawk} implements Rational Range Interpretation, where
 ranges of the form @samp{[a-z]} match @emph{only} the characters numerically between
-@samp{a} through @samp{z} in the machine's native character set.  Usually this is ASCII
+@samp{a} through @samp{z} in the machine's native character set.  Usually this is ASCII,
 but it can be EBCDIC on IBM S/390 systems.
 
 @item
@@ -37044,7 +37080,7 @@ will be less busy, and you can usually find one closer to your site.
 @command{gawk} is distributed as several @code{tar} files compressed with
 different compression programs: @command{gzip}, @command{bzip2},
 and @command{xz}. For simplicity, the rest of these instructions assume
-you are using the one compressed with the GNU Zip program, @code{gzip}.
+you are using the one compressed with the GNU Gzip program (@command{gzip}).
 
 Once you have the distribution (e.g.,
 @file{gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz}),
@@ -37095,12 +37131,12 @@ operating systems:
 
 @table @asis
 @item Various @samp{.c}, @samp{.y}, and @samp{.h} files
-The actual @command{gawk} source code.
+These files contain the actual @command{gawk} source code.
 @end table
 
 @table @file
 @item ABOUT-NLS
-Information about GNU @command{gettext} and translations.
+A file containing information about GNU @command{gettext} and translations.
 
 @item AUTHORS
 A file with some information about the authorship of @command{gawk}.
@@ -37130,7 +37166,7 @@ An older list of changes to @command{gawk}.
 The GNU General Public License.
 
 @item POSIX.STD
-A description of behaviors in the POSIX standard for @command{awk} which
+A description of behaviors in the POSIX standard for @command{awk} that
 are left undefined, or where @command{gawk} may not comply fully, as well
 as a list of things that the POSIX standard should describe but does not.
 
@@ -37440,14 +37476,17 @@ Similarly, setting the @code{LINT} variable
 (@pxref{User-modified})
 has no effect on the running @command{awk} program.
 
-When used with GCC's automatic dead-code-elimination, this option
+When used with the GNU Compiler Collection's (GCC's)
+automatic dead-code-elimination, this option
 cuts almost 23K bytes off the size of the @command{gawk}
 executable on GNU/Linux x86_64 systems.  Results on other systems and
 with other compilers are likely to vary.
 Using this option may bring you some slight performance improvement.
 
+@quotation CAUTION
 Using this option will cause some of the tests in the test suite
 to fail.  This option may be removed at a later date.
+@end quotation
 
 @cindex @option{--disable-nls} configuration option
 @cindex configuration option, @code{--disable-nls}
@@ -37544,10 +37583,10 @@ running MS-DOS, any version of MS-Windows, or OS/2.
 running MS-DOS and any version of MS-Windows.
 @end ifset
 In this @value{SECTION}, the term ``Windows32''
-refers to any of Microsoft Windows-95/98/ME/NT/2000/XP/Vista/7/8.
+refers to any of Microsoft Windows 95/98/ME/NT/2000/XP/Vista/7/8.
 
 The limitations of MS-DOS (and MS-DOS shells under the other operating
-systems) has meant that various ``DOS extenders'' are often used with
+systems) have meant that various ``DOS extenders'' are often used with
 programs such as @command{gawk}.  The varying capabilities of Microsoft
 Windows 3.1 and Windows32 can add to the confusion.  For an overview
 of the considerations, refer to @file{README_d/README.pc} in
@@ -37806,7 +37845,7 @@ Under MS-Windows, OS/2 and MS-DOS,
 Under MS-Windows and MS-DOS,
 @end ifset
 @command{gawk} (and many other text programs) silently
-translate end-of-line @samp{\r\n} to @samp{\n} on input and @samp{\n}
+translates end-of-line @samp{\r\n} to @samp{\n} on input and @samp{\n}
 to @samp{\r\n} on output.  A special @code{BINMODE} variable @value{COMMONEXT}
 allows control over these translations and is interpreted as follows:
 
@@ -37840,7 +37879,7 @@ Setting @code{BINMODE} for standard input or
 standard output is accomplished by using an
 appropriate @samp{-v BINMODE=@var{N}} option on the command line.
 @code{BINMODE} is set at the time a file or pipe is opened and cannot be
-changed mid-stream.
+changed midstream.
 
 The name @code{BINMODE} was chosen to match @command{mawk}
 (@pxref{Other Versions}).
@@ -37896,8 +37935,8 @@ moved into the @code{BEGIN} rule.
 
 @command{gawk} can be built and used ``out of the box'' under MS-Windows
 if you are using the @uref{http://www.cygwin.com, Cygwin environment}.
-This environment provides an excellent simulation of GNU/Linux, using the
-GNU tools, such as Bash, the GNU Compiler Collection (GCC), GNU Make,
+This environment provides an excellent simulation of GNU/Linux, using
+Bash, GCC, GNU Make,
 and other GNU programs.  Compilation and installation for Cygwin is the
 same as for a Unix system:
 
@@ -37916,7 +37955,7 @@ and then the @samp{make} proceeds as usual.
 @appendixsubsubsec Using @command{gawk} In The MSYS Environment
 
 In the MSYS environment under MS-Windows, @command{gawk} automatically
-uses binary mode for reading and writing files.  Thus there is no
+uses binary mode for reading and writing files.  Thus, there is no
 need to use the @code{BINMODE} variable.
 
 This can cause problems with other Unix-like components that have
@@ -37980,7 +38019,7 @@ With ODS-5 volumes and extended parsing enabled, the case of the target
 parameter may need to be exact.
 
 @command{gawk} has been tested under VAX/VMS 7.3 and Alpha/VMS 7.3-1
-using Compaq C V6.4, and Alpha/VMS 7.3, Alpha/VMS 7.3-2, and IA64/VMS 8.3.
+using Compaq C V6.4, and under Alpha/VMS 7.3, Alpha/VMS 7.3-2, and IA64/VMS 8.3.
 The most recent builds used HP C V7.3 on Alpha VMS 8.3 and both
 Alpha and IA64 VMS 8.4 used HP C 7.3.@footnote{The IA64 architecture
 is also known as ``Itanium.''}
@@ -38028,7 +38067,7 @@ For VAX:
 /name=(as_is,short)
 @end example
 
-Compile time macros need to be defined before the first VMS-supplied
+Compile-time macros need to be defined before the first VMS-supplied
 header file is included, as follows:
 
 @example
@@ -38075,7 +38114,7 @@ If your @command{gawk} was installed by a PCSI kit into the
 @file{GNV$GNU:[vms_help]gawk.hlp}.
 
 The PCSI kit also installs a @file{GNV$GNU:[vms_bin]gawk_verb.cld} file
-which can be used to add @command{gawk} and @command{awk} as DCL commands.
+that can be used to add @command{gawk} and @command{awk} as DCL commands.
 
 For just the current process you can use:
 
@@ -38084,7 +38123,7 @@ $ @kbd{set command gnv$gnu:[vms_bin]gawk_verb.cld}
 @end example
 
 Or the system manager can use @file{GNV$GNU:[vms_bin]gawk_verb.cld} to
-add the @command{gawk} and @command{awk} to the system wide @samp{DCLTABLES}.
+add the @command{gawk} and @command{awk} to the system-wide @samp{DCLTABLES}.
 
 The DCL syntax is documented in the @file{gawk.hlp} file.
 
@@ -38150,14 +38189,14 @@ The @code{exit} value is a Unix-style value and is encoded into a VMS exit
 status value when the program exits.
 
 The VMS severity bits will be set based on the @code{exit} value.
-A failure is indicated by 1 and VMS sets the @code{ERROR} status.
-A fatal error is indicated by 2 and VMS sets the @code{FATAL} status.
+A failure is indicated by 1, and VMS sets the @code{ERROR} status.
+A fatal error is indicated by 2, and VMS sets the @code{FATAL} status.
 All other values will have the @code{SUCCESS} status.  The exit value is
 encoded to comply with VMS coding standards and will have the
 @code{C_FACILITY_NO} of @code{0x350000} with the constant @code{0xA000}
 added to the number shifted over by 3 bits to make room for the severity codes.
 
-To extract the actual @command{gawk} exit code from the VMS status use:
+To extract the actual @command{gawk} exit code from the VMS status, use:
 
 @example
 unix_status = (vms_status .and. &x7f8) / 8
@@ -38176,7 +38215,7 @@ VAX/VMS floating point uses unbiased rounding. @xref{Round Function}.
 
 VMS reports time values in GMT unless one of the @code{SYS$TIMEZONE_RULE}
 or @code{TZ} logical names is set.  Older versions of VMS, such as VAX/VMS
-7.3 do not set these logical names.
+7.3, do not set these logical names.
 
 @c @cindex directory search
 @c @cindex path, search
@@ -38194,7 +38233,7 @@ translation and not a multitranslation @code{RMS} searchlist.
 
 The VMS GNV package provides a build environment similar to POSIX with ports
 of a collection of open source tools.  The @command{gawk} found in the GNV
-base kit is an older port.  Currently the GNV project is being reorganized
+base kit is an older port.  Currently, the GNV project is being reorganized
 to supply individual PCSI packages for each component.
 See @w{@uref{https://sourceforge.net/p/gnv/wiki/InstallingGNVPackages/}.}
 
@@ -38267,7 +38306,7 @@ recommend compiling and using the current version.
 @cindex debugging @command{gawk}, bug reports
 @cindex troubleshooting, @command{gawk}, bug reports
 If you have problems with @command{gawk} or think that you have found a bug,
-report it to the developers; we cannot promise to do anything
+report it to the developers; we cannot promise to do anything,
 but we might well want to fix it.
 
 Before reporting a bug, make sure you have really found a genuine bug.
@@ -38277,7 +38316,7 @@ to do something or not, report that too; it's a bug in the documentation!
 
 Before reporting a bug or trying to fix it yourself, try to isolate it
 to the smallest possible @command{awk} program and input @value{DF} that
-reproduces the problem.  Then send us the program and @value{DF},
+reproduce the problem.  Then send us the program and @value{DF},
 some idea of what kind of Unix system you're using,
 the compiler you used to compile @command{gawk}, and the exact results
 @command{gawk} gave you.  Also say what you expected to occur; this helps
@@ -38292,7 +38331,7 @@ You can get this information with the command @samp{gawk --version}.
 Once you have a precise problem description, send email to
 @EMAIL{bug-gawk@@gnu.org,bug-gawk at gnu dot org}.
 
-The @command{gawk} maintainers subscribe to this address and
+The @command{gawk} maintainers subscribe to this address, and
 thus they will receive your bug report.
 Although you can send mail to the maintainers directly,
 the bug reporting address is preferred because the
@@ -38319,8 +38358,8 @@ bug reporting system, you should also send a copy to
 This is for two reasons.  First, although some distributions forward
 bug reports ``upstream'' to the GNU mailing list, many don't, so there is a good
 chance that the @command{gawk}  maintainers won't even see the bug report!  Second,
-mail to the GNU list is archived, and having everything at the GNU project
-keeps things self-contained and not dependant on other organizations.
+mail to the GNU list is archived, and having everything at the GNU Project
+keeps things self-contained and not dependent on other organizations.
 @end quotation
 
 Non-bug suggestions are always welcome as well.  If you have questions
@@ -38329,7 +38368,7 @@ features, ask on the bug list; we will try to help you out if we can.
 
 If you find bugs in one of the non-Unix ports of @command{gawk},
 send an email to the bug list, with a copy to the
-person who maintains that port.  They are named in the following list,
+person who maintains that port.  The maintainers are named in the following list,
 as well as in the @file{README} file in the @command{gawk} distribution.
 Information in the @file{README} file should be considered authoritative
 if it conflicts with this @value{DOCUMENT}.
@@ -38344,19 +38383,19 @@ The people maintaining the various @command{gawk} ports are:
 @cindex Robbins, Arnold
 @cindex Zaretskii, Eli
 @multitable {MS-Windows with MinGW} {123456789012345678901234567890123456789001234567890}
-@item Unix and POSIX systems @tab Arnold Robbins, @EMAIL{arnold@@skeeve.com,arnold at skeeve dot com}.
+@item Unix and POSIX systems @tab Arnold Robbins, @EMAIL{arnold@@skeeve.com,arnold at skeeve dot com}
 
-@item MS-DOS with DJGPP @tab Scott Deifik, @EMAIL{scottd.mail@@sbcglobal.net,scottd dot mail at sbcglobal dot net}.
+@item MS-DOS with DJGPP @tab Scott Deifik, @EMAIL{scottd.mail@@sbcglobal.net,scottd dot mail at sbcglobal dot net}
 
-@item MS-Windows with MinGW @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}.
+@item MS-Windows with MinGW @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}
 
 @c Leave this in the print version on purpose.
 @c OS/2 is not mentioned anywhere else in the print version though.
-@item OS/2 @tab Andreas Buening, @EMAIL{andreas.buening@@nexgo.de,andreas dot buening at nexgo dot de}.
+@item OS/2 @tab Andreas Buening, @EMAIL{andreas.buening@@nexgo.de,andreas dot buening at nexgo dot de}
 
-@item VMS @tab John Malmberg, @EMAIL{wb8tyw@@qsl.net,wb8tyw at qsl.net}.
+@item VMS @tab John Malmberg, @EMAIL{wb8tyw@@qsl.net,wb8tyw at qsl.net}
 
-@item z/OS (OS/390) @tab Dave Pitts, @EMAIL{dpitts@@cozx.com,dpitts at cozx dot com}.
+@item z/OS (OS/390) @tab Dave Pitts, @EMAIL{dpitts@@cozx.com,dpitts at cozx dot com}
 @end multitable
 
 If your bug is also reproducible under Unix, send a copy of your
@@ -38375,7 +38414,7 @@ Date: Wed, 4 Sep 1996 08:11:48 -0700 (PDT)
 @cindex Brennan, Michael
 @ifnotdocbook
 @quotation
-@i{It's kind of fun to put comments like this in your awk code.}@*
+@i{It's kind of fun to put comments like this in your awk code:}@*
 @ @ @ @ @ @ @code{// Do C++ comments work? answer: yes! of course}
 @author Michael Brennan
 @end quotation
@@ -38416,7 +38455,7 @@ It is available in several archive formats:
 @end table
 
 @cindex @command{git} utility
-You can also retrieve it from Git Hub:
+You can also retrieve it from GitHub:
 
 @example
 git clone git://github.com/onetrueawk/awk bwkawk
@@ -38476,7 +38515,7 @@ for a list of extensions in @command{mawk} that are not in POSIX @command{awk}.
 @item @command{awka}
 Written by Andrew Sumner,
 @command{awka} translates @command{awk} programs into C, compiles them,
-and links them with a library of functions that provides the core
+and links them with a library of functions that provide the core
 @command{awk} functionality.
 It also has a number of extensions.
 
@@ -38497,17 +38536,17 @@ since approximately 2001.
 Nelson H.F.@: Beebe at the University of Utah has modified
 BWK @command{awk} to provide timing and profiling information.
 It is different from @command{gawk} with the @option{--profile} option
-(@pxref{Profiling}),
+(@pxref{Profiling})
 in that it uses CPU-based profiling, not line-count
 profiling.  You may find it at either
 @uref{ftp://ftp.math.utah.edu/pub/pawk/pawk-20030606.tar.gz}
 or
 @uref{http://www.math.utah.edu/pub/pawk/pawk-20030606.tar.gz}.
 
-@item Busybox Awk
-@cindex Busybox Awk
-@cindex source code, Busybox Awk
-Busybox is a GPL-licensed program providing small versions of many
+@item BusyBox @command{awk}
+@cindex BusyBox Awk
+@cindex source code, BusyBox Awk
+BusyBox is a GPL-licensed program providing small versions of many
 applications within a single executable. It is aimed at embedded systems.
 It includes a full implementation of POSIX @command{awk}.  When building
 it, be careful not to do @samp{make install} as it will overwrite
@@ -38519,7 +38558,7 @@ information, see the @uref{http://busybox.net, project's home page}.
 @cindex source code, Solaris @command{awk}
 @item The OpenSolaris POSIX @command{awk}
 The versions of @command{awk} in @file{/usr/xpg4/bin} and
-@file{/usr/xpg6/bin} on Solaris are more-or-less POSIX-compliant.
+@file{/usr/xpg6/bin} on Solaris are more or less POSIX-compliant.
 They are based on the @command{awk} from Mortice Kern Systems for PCs.
 We were able to make this code compile and work under GNU/Linux
 with 1--2 hours of work.  Making it more generally portable (using
@@ -38560,9 +38599,9 @@ features to Python. See @uref{https://github.com/alecthomas/pawk}
 for more information. (This is not related to Nelson Beebe's
 modified version of BWK @command{awk}, described earlier.)
 
-@item @w{QSE Awk}
-@cindex QSE Awk
-@cindex source code, QSE Awk
+@item @w{QSE @command{awk}}
+@cindex QSE @command{awk}
+@cindex source code, QSE @command{awk}
 This is an embeddable @command{awk} interpreter. For more information,
 see @uref{http://code.google.com/p/qse/} and @uref{http://awk.info/?tools/qse}.
 
@@ -38581,7 +38620,7 @@ since approximately 2008.
 @item Other versions
 See also the ``Versions and implementations'' section of the
 @uref{http://en.wikipedia.org/wiki/Awk_language#Versions_and_implementations,
-Wikipedia article} for information on additional versions.
+Wikipedia article} on @command{awk} for information on additional versions.
 
 @end table
 
@@ -38590,7 +38629,7 @@ Wikipedia article} for information on additional versions.
 
 @itemize @value{BULLET}
 @item
-The @command{gawk} distribution is available from GNU project's main
+The @command{gawk} distribution is available from the GNU Project's main
 distribution site, @code{ftp.gnu.org}.  The canonical build recipe is:
 
 @example
@@ -38602,22 +38641,22 @@ cd gawk-@value{VERSION}.@value{PATCHLEVEL}
 
 @item
 @command{gawk} may be built on non-POSIX systems as well. The currently
-supported systems are MS-Windows using DJGPP, MSYS, MinGW and Cygwin,
+supported systems are MS-Windows using DJGPP, MSYS, MinGW, and Cygwin,
 @ifclear FOR_PRINT
 OS/2 using EMX,
 @end ifclear
 and both Vax/VMS and OpenVMS.
-Instructions for each system are included in this @value{CHAPTER}.
+Instructions for each system are included in this @value{APPENDIX}.
 
 @item
 Bug reports should be sent via email to @email{bug-gawk@@gnu.org}.
-Bug reports should be in English, and should include the version of @command{gawk},
-how it was compiled, and a short program and @value{DF} which demonstrate
+Bug reports should be in English and should include the version of @command{gawk},
+how it was compiled, and a short program and @value{DF} that demonstrate
 the problem.
 
 @item
 There are a number of other freely available @command{awk}
-implementations.  Many are POSIX compliant; others are less so.
+implementations.  Many are POSIX-compliant; others are less so.
 
 @end itemize
 

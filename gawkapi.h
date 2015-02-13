@@ -846,7 +846,7 @@ make_number(double num, awk_value_t *result)
 extern int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id);
 
 #if 0
-/* Boiler plate code: */
+/* Boilerplate code: */
 int plugin_is_GPL_compatible;
 
 static gawk_api_t *const api;

@@ -1,3 +1,25 @@
+2015-02-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (yylex): Be more careful about passing true to
+	nextc() when collecting a regexp.  Some systems' iscntrl()
+	are not as forgiving as GLIBC's. E.g., Solaris.
+	Thanks to Dagobert Michelsen <dam@baltic-online.de> for
+	the bug report and access to systems to check the fix.
+
+2015-02-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* POSIX.STD: Update with info about function parameters.
+	* configure.ac: Remove test for / use of dbug library.
+
+2015-02-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h: Fix spelling error in comment.
+
+2015-02-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pprint): Restore printing of count for rules.
+	Bug report by Hermann Peifer.
+
 2015-02-07         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regcomp.c, regex.c, regex.h, regex_internal.c, regex_internal.h,

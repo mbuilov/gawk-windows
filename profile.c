@@ -226,6 +226,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 				if (do_profile && ! rule_count[rule]++)
 					fprintf(prof_fp, _("\t# Rule(s)\n\n"));
 				ip1 = pc->nexti;
+				indent(ip1->exec_count);
 				if (ip1 != (pc + 1)->firsti) {		/* non-empty pattern */
 					pprint(ip1->nexti, (pc + 1)->firsti, false);
 					/* Allow for case where the "pattern" is just a comment  */
