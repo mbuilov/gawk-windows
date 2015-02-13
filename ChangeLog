@@ -1,3 +1,11 @@
+2015-02-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (yylex): Be more careful about passing true to
+	nextc() when collecting a regexp.  Some systems' iscntrl()
+	are not as forgiving as GLIBC's. E.g., Solaris.
+	Thanks to Dagobert Michelsen <dam@baltic-online.de> for
+	the bug report and access to systems to check the fix.
+
 2015-02-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* POSIX.STD: Update with info about function parameters.

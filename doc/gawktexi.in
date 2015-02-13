@@ -34457,81 +34457,81 @@ cross-references to further details:
 @itemize @value{BULLET}
 @item
 The requirement for @samp{;} to separate rules on a line
-(@pxref{Statements/Lines}).
+(@pxref{Statements/Lines})
 
 @item
 User-defined functions and the @code{return} statement
-(@pxref{User-defined}).
+(@pxref{User-defined})
 
 @item
 The @code{delete} statement (@pxref{Delete}).
 
 @item
 The @code{do}-@code{while} statement
-(@pxref{Do Statement}).
+(@pxref{Do Statement})
 
 @item
 The built-in functions @code{atan2()}, @code{cos()}, @code{sin()}, @code{rand()}, and
-@code{srand()} (@pxref{Numeric Functions}).
+@code{srand()} (@pxref{Numeric Functions})
 
 @item
 The built-in functions @code{gsub()}, @code{sub()}, and @code{match()}
-(@pxref{String Functions}).
+(@pxref{String Functions})
 
 @item
 The built-in functions @code{close()} and @code{system()}
-(@pxref{I/O Functions}).
+(@pxref{I/O Functions})
 
 @item
 The @code{ARGC}, @code{ARGV}, @code{FNR}, @code{RLENGTH}, @code{RSTART},
-and @code{SUBSEP} predefined variables (@pxref{Built-in Variables}).
+and @code{SUBSEP} predefined variables (@pxref{Built-in Variables})
 
 @item
-Assignable @code{$0} (@pxref{Changing Fields}).
+Assignable @code{$0} (@pxref{Changing Fields})
 
 @item
 The conditional expression using the ternary operator @samp{?:}
-(@pxref{Conditional Exp}).
+(@pxref{Conditional Exp})
 
 @item
-The expression @samp{@var{index-variable} in @var{array}} outside of @code{for}
-statements (@pxref{Reference to Elements}).
+The expression @samp{@var{indx} in @var{array}} outside of @code{for}
+statements (@pxref{Reference to Elements})
 
 @item
 The exponentiation operator @samp{^}
 (@pxref{Arithmetic Ops}) and its assignment operator
-form @samp{^=} (@pxref{Assignment Ops}).
+form @samp{^=} (@pxref{Assignment Ops})
 
 @item
 C-compatible operator precedence, which breaks some old @command{awk}
-programs (@pxref{Precedence}).
+programs (@pxref{Precedence})
 
 @item
 Regexps as the value of @code{FS}
 (@pxref{Field Separators}) and as the
 third argument to the @code{split()} function
 (@pxref{String Functions}), rather than using only the first character
-of @code{FS}.
+of @code{FS}
 
 @item
 Dynamic regexps as operands of the @samp{~} and @samp{!~} operators
-(@pxref{Computed Regexps}).
+(@pxref{Computed Regexps})
 
 @item
 The escape sequences @samp{\b}, @samp{\f}, and @samp{\r}
-(@pxref{Escape Sequences}).
+(@pxref{Escape Sequences})
 
 @item
 Redirection of input for the @code{getline} function
-(@pxref{Getline}).
+(@pxref{Getline})
 
 @item
 Multiple @code{BEGIN} and @code{END} rules
-(@pxref{BEGIN/END}).
+(@pxref{BEGIN/END})
 
 @item
 Multidimensional arrays
-(@pxref{Multidimensional}).
+(@pxref{Multidimensional})
 @end itemize
 
 @node SVR4
@@ -34543,54 +34543,54 @@ The System V Release 4 (1989) version of Unix @command{awk} added these features
 
 @itemize @value{BULLET}
 @item
-The @code{ENVIRON} array (@pxref{Built-in Variables}).
+The @code{ENVIRON} array (@pxref{Built-in Variables})
 @c gawk and MKS awk
 
 @item
 Multiple @option{-f} options on the command line
-(@pxref{Options}).
+(@pxref{Options})
 @c MKS awk
 
 @item
 The @option{-v} option for assigning variables before program execution begins
-(@pxref{Options}).
+(@pxref{Options})
 @c GNU, Bell Laboratories & MKS together
 
 @item
-The @option{--} signal for terminating command-line options.
+The @option{--} signal for terminating command-line options
 
 @item
 The @samp{\a}, @samp{\v}, and @samp{\x} escape sequences
-(@pxref{Escape Sequences}).
+(@pxref{Escape Sequences})
 @c GNU, for ANSI C compat
 
 @item
 A defined return value for the @code{srand()} built-in function
-(@pxref{Numeric Functions}).
+(@pxref{Numeric Functions})
 
 @item
 The @code{toupper()} and @code{tolower()} built-in string functions
 for case translation
-(@pxref{String Functions}).
+(@pxref{String Functions})
 
 @item
 A cleaner specification for the @samp{%c} format-control letter in the
 @code{printf} function
-(@pxref{Control Letters}).
+(@pxref{Control Letters})
 
 @item
 The ability to dynamically pass the field width and precision (@code{"%*.*d"})
 in the argument list of @code{printf} and @code{sprintf()}
-(@pxref{Control Letters}).
+(@pxref{Control Letters})
 
 @item
 The use of regexp constants, such as @code{/foo/}, as expressions, where
 they are equivalent to using the matching operator, as in @samp{$0 ~ /foo/}
-(@pxref{Using Constant Regexps}).
+(@pxref{Using Constant Regexps})
 
 @item
 Processing of escape sequences inside command-line variable assignments
-(@pxref{Assignment Options}).
+(@pxref{Assignment Options})
 @end itemize
 
 @node POSIX
@@ -34604,23 +34604,23 @@ introduced the following changes into the language:
 @itemize @value{BULLET}
 @item
 The use of @option{-W} for implementation-specific options
-(@pxref{Options}).
+(@pxref{Options})
 
 @item
 The use of @code{CONVFMT} for controlling the conversion of numbers
-to strings (@pxref{Conversion}).
+to strings (@pxref{Conversion})
 
 @item
 The concept of a numeric string and tighter comparison rules to go
-with it (@pxref{Typing and Comparison}).
+with it (@pxref{Typing and Comparison})
 
 @item
 The use of predefined variables as function parameter names is forbidden
-(@pxref{Definition Syntax}).
+(@pxref{Definition Syntax})
 
 @item
 More complete documentation of many of the previously undocumented
-features of the language.
+features of the language
 @end itemize
 
 In 2012, a number of extensions that had been commonly available for
@@ -34629,15 +34629,15 @@ many years were finally added to POSIX. They are:
 @itemize @value{BULLET}
 @item
 The @code{fflush()} built-in function for flushing buffered output
-(@pxref{I/O Functions}).
+(@pxref{I/O Functions})
 
 @item
 The @code{nextfile} statement
-(@pxref{Nextfile Statement}).
+(@pxref{Nextfile Statement})
 
 @item
 The ability to delete all of an array at once with @samp{delete @var{array}}
-(@pxref{Delete}).
+(@pxref{Delete})
 
 @end itemize
 
@@ -34667,22 +34667,22 @@ originally appeared in his version of @command{awk}:
 The @samp{**} and @samp{**=} operators
 (@pxref{Arithmetic Ops}
 and
-@ref{Assignment Ops}).
+@ref{Assignment Ops})
 
 @item
 The use of @code{func} as an abbreviation for @code{function}
-(@pxref{Definition Syntax}).
+(@pxref{Definition Syntax})
 
 @item
 The @code{fflush()} built-in function for flushing buffered output
-(@pxref{I/O Functions}).
+(@pxref{I/O Functions})
 
 @ignore
 @item
 The @code{SYMTAB} array, that allows access to @command{awk}'s internal symbol
 table. This feature was never documented for his @command{awk}, largely because
 it is somewhat shakily implemented. For instance, you cannot access arrays
-or array elements through it.
+or array elements through it
 @end ignore
 @end itemize
 
@@ -34712,7 +34712,7 @@ Additional predefined variables:
 @itemize @value{MINUS}
 @item
 The
-@code{ARGIND}
+@code{ARGIND},
 @code{BINMODE},
 @code{ERRNO},
 @code{FIELDWIDTHS},
@@ -34724,7 +34724,7 @@ The
 and
 @code{TEXTDOMAIN}
 variables
-(@pxref{Built-in Variables}).
+(@pxref{Built-in Variables})
 @end itemize
 
 @item
@@ -34732,15 +34732,15 @@ Special files in I/O redirections:
 
 @itemize @value{MINUS}
 @item
-The @file{/dev/stdin}, @file{/dev/stdout}, @file{/dev/stderr} and
+The @file{/dev/stdin}, @file{/dev/stdout}, @file{/dev/stderr}, and
 @file{/dev/fd/@var{N}} special @value{FN}s
-(@pxref{Special Files}).
+(@pxref{Special Files})
 
 @item
 The @file{/inet}, @file{/inet4}, and @samp{/inet6} special files for
 TCP/IP networking using @samp{|&} to specify which version of the
 IP protocol to use
-(@pxref{TCP/IP Networking}).
+(@pxref{TCP/IP Networking})
 @end itemize
 
 @item
@@ -34749,37 +34749,37 @@ Changes and/or additions to the language:
 @itemize @value{MINUS}
 @item
 The @samp{\x} escape sequence
-(@pxref{Escape Sequences}).
+(@pxref{Escape Sequences})
 
 @item
 Full support for both POSIX and GNU regexps
-(@pxref{Regexp}).
+(@pxref{Regexp})
 
 @item
 The ability for @code{FS} and for the third
 argument to @code{split()} to be null strings
-(@pxref{Single Character Fields}).
+(@pxref{Single Character Fields})
 
 @item
 The ability for @code{RS} to be a regexp
-(@pxref{Records}).
+(@pxref{Records})
 
 @item
 The ability to use octal and hexadecimal constants in @command{awk}
 program source code
-(@pxref{Nondecimal-numbers}).
+(@pxref{Nondecimal-numbers})
 
 @item
 The @samp{|&} operator for two-way I/O to a coprocess
-(@pxref{Two-way I/O}).
+(@pxref{Two-way I/O})
 
 @item
 Indirect function calls
-(@pxref{Indirect Calls}).
+(@pxref{Indirect Calls})
 
 @item
 Directories on the command line produce a warning and are skipped
-(@pxref{Command-line directories}).
+(@pxref{Command-line directories})
 @end itemize
 
 @item
@@ -34788,11 +34788,11 @@ New keywords:
 @itemize @value{MINUS}
 @item
 The @code{BEGINFILE} and @code{ENDFILE} special patterns
-(@pxref{BEGINFILE/ENDFILE}).
+(@pxref{BEGINFILE/ENDFILE})
 
 @item
 The @code{switch} statement
-(@pxref{Switch Statement}).
+(@pxref{Switch Statement})
 @end itemize
 
 @item
@@ -34802,30 +34802,30 @@ Changes to standard @command{awk} functions:
 @item
 The optional second argument to @code{close()} that allows closing one end
 of a two-way pipe to a coprocess
-(@pxref{Two-way I/O}).
+(@pxref{Two-way I/O})
 
 @item
-POSIX compliance for @code{gsub()} and @code{sub()} with @option{--posix}.
+POSIX compliance for @code{gsub()} and @code{sub()} with @option{--posix}
 
 @item
 The @code{length()} function accepts an array argument
 and returns the number of elements in the array
-(@pxref{String Functions}).
+(@pxref{String Functions})
 
 @item
 The optional third argument to the @code{match()} function
 for capturing text-matching subexpressions within a regexp
-(@pxref{String Functions}).
+(@pxref{String Functions})
 
 @item
 Positional specifiers in @code{printf} formats for
 making translations easier
-(@pxref{Printf Ordering}).
+(@pxref{Printf Ordering})
 
 @item
 The @code{split()} function's additional optional fourth
-argument which is an array to hold the text of the field separators
-(@pxref{String Functions}).
+argument, which is an array to hold the text of the field separators
+(@pxref{String Functions})
 @end itemize
 
 @item
@@ -34835,16 +34835,16 @@ Additional functions only in @command{gawk}:
 @item
 The @code{gensub()}, @code{patsplit()}, and @code{strtonum()} functions
 for more powerful text manipulation
-(@pxref{String Functions}).
+(@pxref{String Functions})
 
 @item
 The @code{asort()} and @code{asorti()} functions for sorting arrays
-(@pxref{Array Sorting}).
+(@pxref{Array Sorting})
 
 @item
 The @code{mktime()}, @code{systime()}, and @code{strftime()}
 functions for working with timestamps
-(@pxref{Time Functions}).
+(@pxref{Time Functions})
 
 @item
 The
@@ -34856,22 +34856,22 @@ The
 and
 @code{xor()}
 functions for bit manipulation
-(@pxref{Bitwise Functions}).
+(@pxref{Bitwise Functions})
 @c In 4.1, and(), or() and xor() grew the ability to take > 2 arguments
 
 @item
 The @code{isarray()} function to check if a variable is an array or not
-(@pxref{Type Functions}).
+(@pxref{Type Functions})
 
 @item
-The @code{bindtextdomain()}, @code{dcgettext()} and @code{dcngettext()}
+The @code{bindtextdomain()}, @code{dcgettext()}, and @code{dcngettext()}
 functions for internationalization
-(@pxref{Programmer i18n}).
+(@pxref{Programmer i18n})
 
 @item
 The @code{div()} function for doing integer
 division and remainder
-(@pxref{Numeric Functions}).
+(@pxref{Numeric Functions})
 @end itemize
 
 @item
@@ -34881,12 +34881,12 @@ Changes and/or additions in the command-line options:
 @item
 The @env{AWKPATH} environment variable for specifying a path search for
 the @option{-f} command-line option
-(@pxref{Options}).
+(@pxref{Options})
 
 @item
 The @env{AWKLIBPATH} environment variable for specifying a path search for
 the @option{-l} command-line option
-(@pxref{Options}).
+(@pxref{Options})
 
 @item
 The
@@ -34915,7 +34915,7 @@ The
 and
 @option{-V}
 short options. Also, the
-ability to use GNU-style long-named options that start with @option{--}
+ability to use GNU-style long-named options that start with @option{--},
 and the
 @option{--assign},
 @option{--bignum},
@@ -34995,7 +34995,7 @@ GCC for VAX and Alpha has not been tested for a while.
 @end itemize
 
 @item
-Support for the following obsolete systems was removed from the code
+Support for the following obsolete system was removed from the code
 for @command{gawk} @value{PVERSION} 4.1:
 
 @c nested table
@@ -35675,9 +35675,9 @@ by @command{gawk}, Brian Kernighan's @command{awk}, and @command{mawk},
 the three most widely used freely available versions of @command{awk}
 (@pxref{Other Versions}).
 
-@multitable {@file{/dev/stderr} special file} {BWK Awk} {Mawk} {GNU Awk} {Now standard}
-@headitem Feature @tab BWK Awk @tab Mawk @tab GNU Awk @tab Now standard
-@item @samp{\x} Escape sequence @tab X @tab X @tab X @tab
+@multitable {@file{/dev/stderr} special file} {BWK @command{awk}} {@command{mawk}} {@command{gawk}} {Now standard}
+@headitem Feature @tab BWK @command{awk} @tab @command{mawk} @tab @command{gawk} @tab Now standard
+@item @samp{\x} escape sequence @tab X @tab X @tab X @tab
 @item @code{FS} as null string @tab X @tab X @tab X @tab
 @item @file{/dev/stdin} special file @tab X @tab X @tab X @tab
 @item @file{/dev/stdout} special file @tab X @tab X @tab X @tab
@@ -35708,7 +35708,7 @@ in the machine's native character set.  Thus, on ASCII-based systems,
 @samp{[a-z]} matched all the lowercase letters, and only the lowercase
 letters, as the numeric values for the letters from @samp{a} through
 @samp{z} were contiguous.  (On an EBCDIC system, the range @samp{[a-z]}
-includes additional, non-alphabetic characters as well.)
+includes additional nonalphabetic characters as well.)
 
 Almost all introductory Unix literature explained range expressions
 as working in this fashion, and in particular, would teach that the
@@ -35733,7 +35733,7 @@ What does that mean?
 In many locales, @samp{A} and @samp{a} are both less than @samp{B}.
 In other words, these locales sort characters in dictionary order,
 and @samp{[a-dx-z]} is typically not equivalent to @samp{[abcdxyz]};
-instead it might be equivalent to @samp{[ABCXYabcdxyz]}, for example.
+instead, it might be equivalent to @samp{[ABCXYabcdxyz]}, for example.
 
 This point needs to be emphasized: much literature teaches that you should
 use @samp{[a-z]} to match a lowercase character.  But on systems with
@@ -35762,23 +35762,23 @@ is perfectly valid in ASCII, but is not valid in many Unicode locales,
 such as @code{en_US.UTF-8}.
 
 Early versions of @command{gawk} used regexp matching code that was not
-locale aware, so ranges had their traditional interpretation.
+locale-aware, so ranges had their traditional interpretation.
 
 When @command{gawk} switched to using locale-aware regexp matchers,
 the problems began; especially as both GNU/Linux and commercial Unix
 vendors started implementing non-ASCII locales, @emph{and making them
 the default}.  Perhaps the most frequently asked question became something
-like ``why does @samp{[A-Z]} match lowercase letters?!?''
+like, ``Why does @samp{[A-Z]} match lowercase letters?!?''
 
 @cindex Berry, Karl
 This situation existed for close to 10 years, if not more, and
 the @command{gawk} maintainer grew weary of trying to explain that
-@command{gawk} was being nicely standards compliant, and that the issue
+@command{gawk} was being nicely standards-compliant, and that the issue
 was in the user's locale.  During the development of @value{PVERSION} 4.0,
 he modified @command{gawk} to always treat ranges in the original,
 pre-POSIX fashion, unless @option{--posix} was used (@pxref{Options}).@footnote{And
 thus was born the Campaign for Rational Range Interpretation (or
-RRI). A number of GNU tools have either implemented this change,
+RRI). A number of GNU tools have already implemented this change,
 or will soon.  Thanks to Karl Berry for coining the phrase ``Rational
 Range Interpretation.''}
 
@@ -35792,9 +35792,10 @@ and
 
 By using this lovely technical term, the standard gives license
 to implementors to implement ranges in whatever way they choose.
-The @command{gawk} maintainer chose to apply the pre-POSIX meaning in all
-cases: the default regexp matching; with @option{--traditional} and with
-@option{--posix}; in all cases, @command{gawk} remains POSIX compliant.
+The @command{gawk} maintainer chose to apply the pre-POSIX meaning
+both with the default regexp matching and when @option{--traditional} or
+@option{--posix} are used.
+In all cases @command{gawk} remains POSIX-compliant.
 
 @node Contributors
 @appendixsec Major Contributors to @command{gawk}
@@ -35840,7 +35841,7 @@ to around 90 pages.
 Richard Stallman
 helped finish the implementation and the initial draft of this
 @value{DOCUMENT}.
-He is also the founder of the FSF and the GNU project.
+He is also the founder of the FSF and the GNU Project.
 
 @item
 @cindex Woods, John
@@ -36004,28 +36005,28 @@ John Haque made the following contributions:
 @itemize @value{MINUS}
 @item
 The modifications to convert @command{gawk}
-into a byte-code interpreter, including the debugger.
+into a byte-code interpreter, including the debugger
 
 @item
-The addition of true arrays of arrays.
+The addition of true arrays of arrays
 
 @item
-The additional modifications for support of arbitrary-precision arithmetic.
+The additional modifications for support of arbitrary-precision arithmetic
 
 @item
 The initial text of
-@ref{Arbitrary Precision Arithmetic}.
+@ref{Arbitrary Precision Arithmetic}
 
 @item
 The work to merge the three versions of @command{gawk}
-into one, for the 4.1 release.
+into one, for the 4.1 release
 
 @item
-Improved array internals for arrays indexed by integers.
+Improved array internals for arrays indexed by integers
 
 @item
-The improved array sorting features were driven by John together
-with Pat Rankin.
+The improved array sorting features were also driven by John, together
+with Pat Rankin
 @end itemize
 
 @cindex Papadopoulos, Panos
@@ -36066,10 +36067,10 @@ helping David Trueman, and as the primary maintainer since around 1994.
 @itemize @value{BULLET}
 @item
 The @command{awk} language has evolved over time. The first release
-was with V7 Unix circa 1978.  In 1987, for System V Release 3.1,
+was with V7 Unix, circa 1978.  In 1987, for System V Release 3.1,
 major additions, including user-defined functions, were made to the language.
 Additional changes were made for System V Release 4, in 1989.
-Since then, further minor changes happen under the auspices of the
+Since then, further minor changes have happened under the auspices of the
 POSIX standard.
 
 @item
@@ -36085,7 +36086,7 @@ options.
 The interaction of POSIX locales and regexp matching in @command{gawk} has been confusing over
 the years. Today, @command{gawk} implements Rational Range Interpretation, where
 ranges of the form @samp{[a-z]} match @emph{only} the characters numerically between
-@samp{a} through @samp{z} in the machine's native character set.  Usually this is ASCII
+@samp{a} through @samp{z} in the machine's native character set.  Usually this is ASCII,
 but it can be EBCDIC on IBM S/390 systems.
 
 @item
@@ -36170,7 +36171,7 @@ will be less busy, and you can usually find one closer to your site.
 @command{gawk} is distributed as several @code{tar} files compressed with
 different compression programs: @command{gzip}, @command{bzip2},
 and @command{xz}. For simplicity, the rest of these instructions assume
-you are using the one compressed with the GNU Zip program, @code{gzip}.
+you are using the one compressed with the GNU Gzip program (@command{gzip}).
 
 Once you have the distribution (e.g.,
 @file{gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz}),
@@ -36221,12 +36222,12 @@ operating systems:
 
 @table @asis
 @item Various @samp{.c}, @samp{.y}, and @samp{.h} files
-The actual @command{gawk} source code.
+These files contain the actual @command{gawk} source code.
 @end table
 
 @table @file
 @item ABOUT-NLS
-Information about GNU @command{gettext} and translations.
+A file containing information about GNU @command{gettext} and translations.
 
 @item AUTHORS
 A file with some information about the authorship of @command{gawk}.
@@ -36256,7 +36257,7 @@ An older list of changes to @command{gawk}.
 The GNU General Public License.
 
 @item POSIX.STD
-A description of behaviors in the POSIX standard for @command{awk} which
+A description of behaviors in the POSIX standard for @command{awk} that
 are left undefined, or where @command{gawk} may not comply fully, as well
 as a list of things that the POSIX standard should describe but does not.
 
@@ -36566,14 +36567,17 @@ Similarly, setting the @code{LINT} variable
 (@pxref{User-modified})
 has no effect on the running @command{awk} program.
 
-When used with GCC's automatic dead-code-elimination, this option
+When used with the GNU Compiler Collection's (GCC's)
+automatic dead-code-elimination, this option
 cuts almost 23K bytes off the size of the @command{gawk}
 executable on GNU/Linux x86_64 systems.  Results on other systems and
 with other compilers are likely to vary.
 Using this option may bring you some slight performance improvement.
 
+@quotation CAUTION
 Using this option will cause some of the tests in the test suite
 to fail.  This option may be removed at a later date.
+@end quotation
 
 @cindex @option{--disable-nls} configuration option
 @cindex configuration option, @code{--disable-nls}
@@ -36670,10 +36674,10 @@ running MS-DOS, any version of MS-Windows, or OS/2.
 running MS-DOS and any version of MS-Windows.
 @end ifset
 In this @value{SECTION}, the term ``Windows32''
-refers to any of Microsoft Windows-95/98/ME/NT/2000/XP/Vista/7/8.
+refers to any of Microsoft Windows 95/98/ME/NT/2000/XP/Vista/7/8.
 
 The limitations of MS-DOS (and MS-DOS shells under the other operating
-systems) has meant that various ``DOS extenders'' are often used with
+systems) have meant that various ``DOS extenders'' are often used with
 programs such as @command{gawk}.  The varying capabilities of Microsoft
 Windows 3.1 and Windows32 can add to the confusion.  For an overview
 of the considerations, refer to @file{README_d/README.pc} in
@@ -36932,7 +36936,7 @@ Under MS-Windows, OS/2 and MS-DOS,
 Under MS-Windows and MS-DOS,
 @end ifset
 @command{gawk} (and many other text programs) silently
-translate end-of-line @samp{\r\n} to @samp{\n} on input and @samp{\n}
+translates end-of-line @samp{\r\n} to @samp{\n} on input and @samp{\n}
 to @samp{\r\n} on output.  A special @code{BINMODE} variable @value{COMMONEXT}
 allows control over these translations and is interpreted as follows:
 
@@ -36966,7 +36970,7 @@ Setting @code{BINMODE} for standard input or
 standard output is accomplished by using an
 appropriate @samp{-v BINMODE=@var{N}} option on the command line.
 @code{BINMODE} is set at the time a file or pipe is opened and cannot be
-changed mid-stream.
+changed midstream.
 
 The name @code{BINMODE} was chosen to match @command{mawk}
 (@pxref{Other Versions}).
@@ -37022,8 +37026,8 @@ moved into the @code{BEGIN} rule.
 
 @command{gawk} can be built and used ``out of the box'' under MS-Windows
 if you are using the @uref{http://www.cygwin.com, Cygwin environment}.
-This environment provides an excellent simulation of GNU/Linux, using the
-GNU tools, such as Bash, the GNU Compiler Collection (GCC), GNU Make,
+This environment provides an excellent simulation of GNU/Linux, using
+Bash, GCC, GNU Make,
 and other GNU programs.  Compilation and installation for Cygwin is the
 same as for a Unix system:
 
@@ -37042,7 +37046,7 @@ and then the @samp{make} proceeds as usual.
 @appendixsubsubsec Using @command{gawk} In The MSYS Environment
 
 In the MSYS environment under MS-Windows, @command{gawk} automatically
-uses binary mode for reading and writing files.  Thus there is no
+uses binary mode for reading and writing files.  Thus, there is no
 need to use the @code{BINMODE} variable.
 
 This can cause problems with other Unix-like components that have
@@ -37106,7 +37110,7 @@ With ODS-5 volumes and extended parsing enabled, the case of the target
 parameter may need to be exact.
 
 @command{gawk} has been tested under VAX/VMS 7.3 and Alpha/VMS 7.3-1
-using Compaq C V6.4, and Alpha/VMS 7.3, Alpha/VMS 7.3-2, and IA64/VMS 8.3.
+using Compaq C V6.4, and under Alpha/VMS 7.3, Alpha/VMS 7.3-2, and IA64/VMS 8.3.
 The most recent builds used HP C V7.3 on Alpha VMS 8.3 and both
 Alpha and IA64 VMS 8.4 used HP C 7.3.@footnote{The IA64 architecture
 is also known as ``Itanium.''}
@@ -37154,7 +37158,7 @@ For VAX:
 /name=(as_is,short)
 @end example
 
-Compile time macros need to be defined before the first VMS-supplied
+Compile-time macros need to be defined before the first VMS-supplied
 header file is included, as follows:
 
 @example
@@ -37201,7 +37205,7 @@ If your @command{gawk} was installed by a PCSI kit into the
 @file{GNV$GNU:[vms_help]gawk.hlp}.
 
 The PCSI kit also installs a @file{GNV$GNU:[vms_bin]gawk_verb.cld} file
-which can be used to add @command{gawk} and @command{awk} as DCL commands.
+that can be used to add @command{gawk} and @command{awk} as DCL commands.
 
 For just the current process you can use:
 
@@ -37210,7 +37214,7 @@ $ @kbd{set command gnv$gnu:[vms_bin]gawk_verb.cld}
 @end example
 
 Or the system manager can use @file{GNV$GNU:[vms_bin]gawk_verb.cld} to
-add the @command{gawk} and @command{awk} to the system wide @samp{DCLTABLES}.
+add the @command{gawk} and @command{awk} to the system-wide @samp{DCLTABLES}.
 
 The DCL syntax is documented in the @file{gawk.hlp} file.
 
@@ -37276,14 +37280,14 @@ The @code{exit} value is a Unix-style value and is encoded into a VMS exit
 status value when the program exits.
 
 The VMS severity bits will be set based on the @code{exit} value.
-A failure is indicated by 1 and VMS sets the @code{ERROR} status.
-A fatal error is indicated by 2 and VMS sets the @code{FATAL} status.
+A failure is indicated by 1, and VMS sets the @code{ERROR} status.
+A fatal error is indicated by 2, and VMS sets the @code{FATAL} status.
 All other values will have the @code{SUCCESS} status.  The exit value is
 encoded to comply with VMS coding standards and will have the
 @code{C_FACILITY_NO} of @code{0x350000} with the constant @code{0xA000}
 added to the number shifted over by 3 bits to make room for the severity codes.
 
-To extract the actual @command{gawk} exit code from the VMS status use:
+To extract the actual @command{gawk} exit code from the VMS status, use:
 
 @example
 unix_status = (vms_status .and. &x7f8) / 8
@@ -37302,7 +37306,7 @@ VAX/VMS floating point uses unbiased rounding. @xref{Round Function}.
 
 VMS reports time values in GMT unless one of the @code{SYS$TIMEZONE_RULE}
 or @code{TZ} logical names is set.  Older versions of VMS, such as VAX/VMS
-7.3 do not set these logical names.
+7.3, do not set these logical names.
 
 @c @cindex directory search
 @c @cindex path, search
@@ -37320,7 +37324,7 @@ translation and not a multitranslation @code{RMS} searchlist.
 
 The VMS GNV package provides a build environment similar to POSIX with ports
 of a collection of open source tools.  The @command{gawk} found in the GNV
-base kit is an older port.  Currently the GNV project is being reorganized
+base kit is an older port.  Currently, the GNV project is being reorganized
 to supply individual PCSI packages for each component.
 See @w{@uref{https://sourceforge.net/p/gnv/wiki/InstallingGNVPackages/}.}
 
@@ -37393,7 +37397,7 @@ recommend compiling and using the current version.
 @cindex debugging @command{gawk}, bug reports
 @cindex troubleshooting, @command{gawk}, bug reports
 If you have problems with @command{gawk} or think that you have found a bug,
-report it to the developers; we cannot promise to do anything
+report it to the developers; we cannot promise to do anything,
 but we might well want to fix it.
 
 Before reporting a bug, make sure you have really found a genuine bug.
@@ -37403,7 +37407,7 @@ to do something or not, report that too; it's a bug in the documentation!
 
 Before reporting a bug or trying to fix it yourself, try to isolate it
 to the smallest possible @command{awk} program and input @value{DF} that
-reproduces the problem.  Then send us the program and @value{DF},
+reproduce the problem.  Then send us the program and @value{DF},
 some idea of what kind of Unix system you're using,
 the compiler you used to compile @command{gawk}, and the exact results
 @command{gawk} gave you.  Also say what you expected to occur; this helps
@@ -37418,7 +37422,7 @@ You can get this information with the command @samp{gawk --version}.
 Once you have a precise problem description, send email to
 @EMAIL{bug-gawk@@gnu.org,bug-gawk at gnu dot org}.
 
-The @command{gawk} maintainers subscribe to this address and
+The @command{gawk} maintainers subscribe to this address, and
 thus they will receive your bug report.
 Although you can send mail to the maintainers directly,
 the bug reporting address is preferred because the
@@ -37445,8 +37449,8 @@ bug reporting system, you should also send a copy to
 This is for two reasons.  First, although some distributions forward
 bug reports ``upstream'' to the GNU mailing list, many don't, so there is a good
 chance that the @command{gawk}  maintainers won't even see the bug report!  Second,
-mail to the GNU list is archived, and having everything at the GNU project
-keeps things self-contained and not dependant on other organizations.
+mail to the GNU list is archived, and having everything at the GNU Project
+keeps things self-contained and not dependent on other organizations.
 @end quotation
 
 Non-bug suggestions are always welcome as well.  If you have questions
@@ -37455,7 +37459,7 @@ features, ask on the bug list; we will try to help you out if we can.
 
 If you find bugs in one of the non-Unix ports of @command{gawk},
 send an email to the bug list, with a copy to the
-person who maintains that port.  They are named in the following list,
+person who maintains that port.  The maintainers are named in the following list,
 as well as in the @file{README} file in the @command{gawk} distribution.
 Information in the @file{README} file should be considered authoritative
 if it conflicts with this @value{DOCUMENT}.
@@ -37470,19 +37474,19 @@ The people maintaining the various @command{gawk} ports are:
 @cindex Robbins, Arnold
 @cindex Zaretskii, Eli
 @multitable {MS-Windows with MinGW} {123456789012345678901234567890123456789001234567890}
-@item Unix and POSIX systems @tab Arnold Robbins, @EMAIL{arnold@@skeeve.com,arnold at skeeve dot com}.
+@item Unix and POSIX systems @tab Arnold Robbins, @EMAIL{arnold@@skeeve.com,arnold at skeeve dot com}
 
-@item MS-DOS with DJGPP @tab Scott Deifik, @EMAIL{scottd.mail@@sbcglobal.net,scottd dot mail at sbcglobal dot net}.
+@item MS-DOS with DJGPP @tab Scott Deifik, @EMAIL{scottd.mail@@sbcglobal.net,scottd dot mail at sbcglobal dot net}
 
-@item MS-Windows with MinGW @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}.
+@item MS-Windows with MinGW @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}
 
 @c Leave this in the print version on purpose.
 @c OS/2 is not mentioned anywhere else in the print version though.
-@item OS/2 @tab Andreas Buening, @EMAIL{andreas.buening@@nexgo.de,andreas dot buening at nexgo dot de}.
+@item OS/2 @tab Andreas Buening, @EMAIL{andreas.buening@@nexgo.de,andreas dot buening at nexgo dot de}
 
-@item VMS @tab John Malmberg, @EMAIL{wb8tyw@@qsl.net,wb8tyw at qsl.net}.
+@item VMS @tab John Malmberg, @EMAIL{wb8tyw@@qsl.net,wb8tyw at qsl.net}
 
-@item z/OS (OS/390) @tab Dave Pitts, @EMAIL{dpitts@@cozx.com,dpitts at cozx dot com}.
+@item z/OS (OS/390) @tab Dave Pitts, @EMAIL{dpitts@@cozx.com,dpitts at cozx dot com}
 @end multitable
 
 If your bug is also reproducible under Unix, send a copy of your
@@ -37501,7 +37505,7 @@ Date: Wed, 4 Sep 1996 08:11:48 -0700 (PDT)
 @cindex Brennan, Michael
 @ifnotdocbook
 @quotation
-@i{It's kind of fun to put comments like this in your awk code.}@*
+@i{It's kind of fun to put comments like this in your awk code:}@*
 @ @ @ @ @ @ @code{// Do C++ comments work? answer: yes! of course}
 @author Michael Brennan
 @end quotation
@@ -37542,7 +37546,7 @@ It is available in several archive formats:
 @end table
 
 @cindex @command{git} utility
-You can also retrieve it from Git Hub:
+You can also retrieve it from GitHub:
 
 @example
 git clone git://github.com/onetrueawk/awk bwkawk
@@ -37602,7 +37606,7 @@ for a list of extensions in @command{mawk} that are not in POSIX @command{awk}.
 @item @command{awka}
 Written by Andrew Sumner,
 @command{awka} translates @command{awk} programs into C, compiles them,
-and links them with a library of functions that provides the core
+and links them with a library of functions that provide the core
 @command{awk} functionality.
 It also has a number of extensions.
 
@@ -37623,17 +37627,17 @@ since approximately 2001.
 Nelson H.F.@: Beebe at the University of Utah has modified
 BWK @command{awk} to provide timing and profiling information.
 It is different from @command{gawk} with the @option{--profile} option
-(@pxref{Profiling}),
+(@pxref{Profiling})
 in that it uses CPU-based profiling, not line-count
 profiling.  You may find it at either
 @uref{ftp://ftp.math.utah.edu/pub/pawk/pawk-20030606.tar.gz}
 or
 @uref{http://www.math.utah.edu/pub/pawk/pawk-20030606.tar.gz}.
 
-@item Busybox Awk
-@cindex Busybox Awk
-@cindex source code, Busybox Awk
-Busybox is a GPL-licensed program providing small versions of many
+@item BusyBox @command{awk}
+@cindex BusyBox Awk
+@cindex source code, BusyBox Awk
+BusyBox is a GPL-licensed program providing small versions of many
 applications within a single executable. It is aimed at embedded systems.
 It includes a full implementation of POSIX @command{awk}.  When building
 it, be careful not to do @samp{make install} as it will overwrite
@@ -37645,7 +37649,7 @@ information, see the @uref{http://busybox.net, project's home page}.
 @cindex source code, Solaris @command{awk}
 @item The OpenSolaris POSIX @command{awk}
 The versions of @command{awk} in @file{/usr/xpg4/bin} and
-@file{/usr/xpg6/bin} on Solaris are more-or-less POSIX-compliant.
+@file{/usr/xpg6/bin} on Solaris are more or less POSIX-compliant.
 They are based on the @command{awk} from Mortice Kern Systems for PCs.
 We were able to make this code compile and work under GNU/Linux
 with 1--2 hours of work.  Making it more generally portable (using
@@ -37686,9 +37690,9 @@ features to Python. See @uref{https://github.com/alecthomas/pawk}
 for more information. (This is not related to Nelson Beebe's
 modified version of BWK @command{awk}, described earlier.)
 
-@item @w{QSE Awk}
-@cindex QSE Awk
-@cindex source code, QSE Awk
+@item @w{QSE @command{awk}}
+@cindex QSE @command{awk}
+@cindex source code, QSE @command{awk}
 This is an embeddable @command{awk} interpreter. For more information,
 see @uref{http://code.google.com/p/qse/} and @uref{http://awk.info/?tools/qse}.
 
@@ -37707,7 +37711,7 @@ since approximately 2008.
 @item Other versions
 See also the ``Versions and implementations'' section of the
 @uref{http://en.wikipedia.org/wiki/Awk_language#Versions_and_implementations,
-Wikipedia article} for information on additional versions.
+Wikipedia article} on @command{awk} for information on additional versions.
 
 @end table
 
@@ -37716,7 +37720,7 @@ Wikipedia article} for information on additional versions.
 
 @itemize @value{BULLET}
 @item
-The @command{gawk} distribution is available from GNU project's main
+The @command{gawk} distribution is available from the GNU Project's main
 distribution site, @code{ftp.gnu.org}.  The canonical build recipe is:
 
 @example
@@ -37728,22 +37732,22 @@ cd gawk-@value{VERSION}.@value{PATCHLEVEL}
 
 @item
 @command{gawk} may be built on non-POSIX systems as well. The currently
-supported systems are MS-Windows using DJGPP, MSYS, MinGW and Cygwin,
+supported systems are MS-Windows using DJGPP, MSYS, MinGW, and Cygwin,
 @ifclear FOR_PRINT
 OS/2 using EMX,
 @end ifclear
 and both Vax/VMS and OpenVMS.
-Instructions for each system are included in this @value{CHAPTER}.
+Instructions for each system are included in this @value{APPENDIX}.
 
 @item
 Bug reports should be sent via email to @email{bug-gawk@@gnu.org}.
-Bug reports should be in English, and should include the version of @command{gawk},
-how it was compiled, and a short program and @value{DF} which demonstrate
+Bug reports should be in English and should include the version of @command{gawk},
+how it was compiled, and a short program and @value{DF} that demonstrate
 the problem.
 
 @item
 There are a number of other freely available @command{awk}
-implementations.  Many are POSIX compliant; others are less so.
+implementations.  Many are POSIX-compliant; others are less so.
 
 @end itemize
 
