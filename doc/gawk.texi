@@ -9407,12 +9407,12 @@ represent
 spaces in the output. Here are the possible modifiers, in the order in
 which they may appear:
 
-@table @code
+@table @asis
 @cindex differences in @command{awk} and @command{gawk}, @code{print}/@code{printf} statements
 @cindex @code{printf} statement, positional specifiers
 @c the code{} does NOT start a secondary
 @cindex positional specifiers, @code{printf} statement
-@item @var{N}$
+@item @code{@var{N}$}
 An integer constant followed by a @samp{$} is a @dfn{positional specifier}.
 Normally, format specifications are applied to arguments in the order
 given in the format string.  With a positional specifier, the format
@@ -9435,7 +9435,7 @@ messages at runtime.
 which describes how and why to use positional specifiers.
 For now, we ignore them.
 
-@item - @r{(Minus)}
+@item @code{-} (Minus)
 The minus sign, used before the width modifier (see later on in
 this list),
 says to left-justify
@@ -9453,13 +9453,13 @@ prints @samp{foo@bullet{}}.
 For numeric conversions, prefix positive values with a space and
 negative values with a minus sign.
 
-@item +
+@item @code{+}
 The plus sign, used before the width modifier (see later on in
 this list),
 says to always supply a sign for numeric conversions, even if the data
 to format is positive. The @samp{+} overrides the space modifier.
 
-@item #
+@item @code{#}
 Use an ``alternative form'' for certain control letters.
 For @samp{%o}, supply a leading zero.
 For @samp{%x} and @samp{%X}, supply a leading @samp{0x} or @samp{0X} for
@@ -9468,14 +9468,14 @@ For @samp{%e}, @samp{%E}, @samp{%f}, and @samp{%F}, the result always
 contains a decimal point.
 For @samp{%g} and @samp{%G}, trailing zeros are not removed from the result.
 
-@item 0
+@item @code{0}
 A leading @samp{0} (zero) acts as a flag indicating that output should be
 padded with zeros instead of spaces.
 This applies only to the numeric output formats.
 This flag only has an effect when the field width is wider than the
 value to print.
 
-@item '
+@item @code{'}
 A single quote or apostrophe character is a POSIX extension to ISO C.
 It indicates that the integer part of a floating-point value, or the
 entire part of an integer decimal value, should have a thousands-separator
@@ -9528,7 +9528,7 @@ prints @samp{foobar}.
 Preceding the @var{width} with a minus sign causes the output to be
 padded with spaces on the right, instead of on the left.
 
-@item .@var{prec}
+@item @code{.@var{prec}}
 A period followed by an integer constant
 specifies the precision to use when printing.
 The meaning of the precision varies by control letter:
@@ -31893,14 +31893,14 @@ the way that extension code would use them:
 
 @table @code
 @item static inline awk_value_t *
-@itemx make_const_string(const char *string, size_t length, awk_value_t *result)
+@itemx make_const_string(const char *string, size_t length, awk_value_t *result);
 This function creates a string value in the @code{awk_value_t} variable
 pointed to by @code{result}. It expects @code{string} to be a C string constant
 (or other string data), and automatically creates a @emph{copy} of the data
 for storage in @code{result}. It returns @code{result}.
 
 @item static inline awk_value_t *
-@itemx make_malloced_string(const char *string, size_t length, awk_value_t *result)
+@itemx make_malloced_string(const char *string, size_t length, awk_value_t *result);
 This function creates a string value in the @code{awk_value_t} variable
 pointed to by @code{result}. It expects @code{string} to be a @samp{char *}
 value pointing to data previously obtained from @code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()}. The idea here
@@ -31908,13 +31908,13 @@ is that the data is passed directly to @command{gawk}, which assumes
 responsibility for it. It returns @code{result}.
 
 @item static inline awk_value_t *
-@itemx make_null_string(awk_value_t *result)
+@itemx make_null_string(awk_value_t *result);
 This specialized function creates a null string (the ``undefined'' value)
 in the @code{awk_value_t} variable pointed to by @code{result}.
 It returns @code{result}.
 
 @item static inline awk_value_t *
-@itemx make_number(double num, awk_value_t *result)
+@itemx make_number(double num, awk_value_t *result);
 This function simply creates a numeric value in the @code{awk_value_t} variable
 pointed to by @code{result}.
 @end table
