@@ -14592,12 +14592,13 @@ is to simply say @samp{FS = FS}, perhaps with an explanatory comment.
 @cindex regular expressions, case sensitivity
 @item IGNORECASE #
 If @code{IGNORECASE} is nonzero or non-null, then all string comparisons
-and all regular expression matching are case-independent.  Thus, regexp
-matching with @samp{~} and @samp{!~}, as well as the @code{gensub()},
-@code{gsub()}, @code{index()}, @code{match()}, @code{patsplit()},
-@code{split()}, and @code{sub()}
-functions, record termination with @code{RS}, and field splitting with
-@code{FS} and @code{FPAT}, all ignore case when doing their particular regexp operations.
+and all regular expression matching are case-independent.
+This applies to
+regexp matching with @samp{~} and @samp{!~},
+the @code{gensub()}, @code{gsub()}, @code{index()}, @code{match()},
+@code{patsplit()}, @code{split()}, and @code{sub()} functions,
+record termination with @code{RS}, and field splitting with
+@code{FS} and @code{FPAT}.
 However, the value of @code{IGNORECASE} does @emph{not} affect array subscripting
 and it does not affect field splitting when using a single-character
 field separator.
@@ -20358,67 +20359,7 @@ $ @kbd{gawk -f quicksort.awk -f indirectcall.awk class_data2}
 @end example
 
 Another example where indirect functions calls are useful can be found in
-processing arrays.  @DBREF{Walking Arrays} presented a simple function
-for ``walking'' an array of arrays.  That function simply printed the
-name and value of each scalar array element. However, it is easy to
-generalize that function, by passing in the name of a function to call
-when walking an array. The modified function looks like this:
-
-@example
-@c file eg/lib/processarray.awk
-function process_array(arr, name, process, do_arrays,   i, new_name)
-@{
-    for (i in arr) @{
-        new_name = (name "[" i "]")
-        if (isarray(arr[i])) @{
-            if (do_arrays)
-                @@process(new_name, arr[i])
-            process_array(arr[i], new_name, process, do_arrays)
-        @} else
-            @@process(new_name, arr[i])
-    @}
-@}
-@c endfile
-@end example
-
-The arguments are as follows:
-
-@table @code
-@item arr
-The array.
-
-@item name
-The name of the array (a string).
-
-@item process
-The name of the function to call.
-
-@item do_arrays
-If this is true, the function can handle elements that are subarrays.
-@end table
-
-If subarrays are to be processed, that is done before walking them further.
-
-When run with the following scaffolding, the function produces the same
-results as does the earlier @code{walk_array()} function:
-
-@example
-BEGIN @{
-    a[1] = 1
-    a[2][1] = 21
-    a[2][2] = 22
-    a[3] = 3
-    a[4][1][1] = 411
-    a[4][2] = 42
-
-    process_array(a, "a", "do_print", 0)
-@}
-
-function do_print(name, element)
-@{
-    printf "%s = %s\n", name, element
-@}
-@end example
+processing arrays. This is described in @ref{Walking Arrays}.
 
 Remember that you must supply a leading @samp{@@} in front of an indirect function call.
 
@@ -23049,6 +22990,66 @@ $ @kbd{gawk -f walk_array.awk}
 @print{} a[4][2] = 42
 @end example
 
+The function just presented simply prints the
+name and value of each scalar array element. However, it is easy to
+generalize it, by passing in the name of a function to call
+when walking an array. The modified function looks like this:
+
+@example
+@c file eg/lib/processarray.awk
+function process_array(arr, name, process, do_arrays,   i, new_name)
+@{
+    for (i in arr) @{
+        new_name = (name "[" i "]")
+        if (isarray(arr[i])) @{
+            if (do_arrays)
+                @@process(new_name, arr[i])
+            process_array(arr[i], new_name, process, do_arrays)
+        @} else
+            @@process(new_name, arr[i])
+    @}
+@}
+@c endfile
+@end example
+
+The arguments are as follows:
+
+@table @code
+@item arr
+The array.
+
+@item name
+The name of the array (a string).
+
+@item process
+The name of the function to call.
+
+@item do_arrays
+If this is true, the function can handle elements that are subarrays.
+@end table
+
+If subarrays are to be processed, that is done before walking them further.
+
+When run with the following scaffolding, the function produces the same
+results as does the earlier version of @code{walk_array()}:
+
+@example
+BEGIN @{
+    a[1] = 1
+    a[2][1] = 21
+    a[2][2] = 22
+    a[3] = 3
+    a[4][1][1] = 411
+    a[4][2] = 42
+
+    process_array(a, "a", "do_print", 0)
+@}
+
+function do_print(name, element)
+@{
+    printf "%s = %s\n", name, element
+@}
+@end example
 
 @node Library Functions Summary
 @section Summary
@@ -23087,7 +23088,7 @@ An @command{awk} version of the standard C @code{getopt()} function
 Two sets of routines that parallel the C library versions
 
 @item Traversing arrays of arrays
-A simple function to traverse an array of arrays to any depth
+Two functions that traverse an array of arrays to any depth
 @end table
 @c end nested list
 
