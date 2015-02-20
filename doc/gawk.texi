@@ -198,9 +198,9 @@
 
 @ifclear FOR_PRINT
 @set FN file name
-@set FFN File Name
+@set FFN File name
 @set DF data file
-@set DDF Data File
+@set DDF Data file
 @set PVERSION version
 @end ifclear
 @ifset FOR_PRINT
@@ -1750,15 +1750,39 @@ and how to compile and use it on different
 non-POSIX systems.  It also describes how to report bugs
 in @command{gawk} and where to get other freely
 available @command{awk} implementations.
-@end itemize
 
 @ifset FOR_PRINT
-@itemize @value{MINUS}
 @item
 @ref{Copying},
 presents the license that covers the @command{gawk} source code.
+@end ifset
+
+@ifclear FOR_PRINT
+@item
+@ref{Notes},
+describes how to disable @command{gawk}'s extensions, as
+well as how to contribute new code to @command{gawk},
+and some possible future directions for @command{gawk} development.
+
+@item
+@ref{Basic Concepts},
+provides some very cursory background material for those who
+are completely unfamiliar with computer programming.
+
+The @ref{Glossary}, defines most, if not all, of the significant terms used
+throughout the @value{DOCUMENT}.  If you find terms that you aren't familiar with,
+try looking them up here.
+
+@item
+@ref{Copying}, and
+@ref{GNU Free Documentation License},
+present the licenses that cover the @command{gawk} source code
+and this @value{DOCUMENT}, respectively.
+@end ifclear
+@end itemize
 @end itemize
 
+@ifset FOR_PRINT
 The version of this @value{DOCUMENT} distributed with @command{gawk}
 contains additional appendices and other end material.
 To save space, we have omitted them from the
@@ -1795,32 +1819,6 @@ is the license that covers this @value{DOCUMENT}.
 Some of the chapters have exercise sections; these have also been
 omitted from the print edition but are available online.
 @end ifset
-
-@ifclear FOR_PRINT
-@itemize @value{MINUS}
-@item
-@ref{Notes},
-describes how to disable @command{gawk}'s extensions, as
-well as how to contribute new code to @command{gawk},
-and some possible future directions for @command{gawk} development.
-
-@item
-@ref{Basic Concepts},
-provides some very cursory background material for those who
-are completely unfamiliar with computer programming.
-
-The @ref{Glossary}, defines most, if not all, of the significant terms used
-throughout the @value{DOCUMENT}.  If you find terms that you aren't familiar with,
-try looking them up here.
-
-@item
-@ref{Copying}, and
-@ref{GNU Free Documentation License},
-present the licenses that cover the @command{gawk} source code
-and this @value{DOCUMENT}, respectively.
-@end itemize
-@end ifclear
-@end itemize
 
 @c FULLXREF OFF
 
@@ -1863,15 +1861,23 @@ $ @kbd{echo hello on stderr 1>&2}
 @end example
 
 @ifnotinfo
-In the text, command names appear in @code{this font}, while code segments
+In the text, almost anything related to programming, such as
+command names,
+variable and function names, and string, numeric and regexp constants
+appear in @code{this font}. Code fragments
 appear in the same font and quoted, @samp{like this}.
+Things that are replaced by the user or programmer
+appear in @var{this font}.
 Options look like this: @option{-f}.
+@value{FFN}s are indicated like this: @file{/path/to/ourfile}.
+@ifclear FOR_PRINT
 Some things are
 emphasized @emph{like this}, and if a point needs to be made
-strongly, it is done @strong{like this}.  The first occurrence of
+strongly, it is done @strong{like this}.
+@end ifclear
+The first occurrence of
 a new term is usually its @dfn{definition} and appears in the same
 font as the previous occurrence of ``definition'' in this sentence.
-Finally, @value{FN}s are indicated like this: @file{/path/to/ourfile}.
 @end ifnotinfo
 
 Characters that you type at the keyboard look @kbd{like this}.  In particular,
@@ -31056,7 +31062,7 @@ This is faster and more space-efficient than using MPFR for
 the same calculations.
 
 @item
-There are several ``dark corners'' with respect to floating-point
+There are several areas with respect to floating-point
 numbers where @command{gawk} disagrees with the POSIX standard.
 It pays to be aware of them.
 
