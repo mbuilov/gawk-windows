@@ -13453,12 +13453,12 @@ numbers:
 # find smallest divisor of num
 @{
     num = $1
-    for (div = 2; div * div <= num; div++) @{
-        if (num % div == 0)
+    for (divisor = 2; divisor * divisor <= num; divisor++) @{
+        if (num % divisor == 0)
             break
     @}
-    if (num % div == 0)
-        printf "Smallest divisor of %d is %d\n", num, div
+    if (num % divisor == 0)
+        printf "Smallest divisor of %d is %d\n", num, divisor
     else
         printf "%d is prime\n", num
 @}
@@ -13479,12 +13479,12 @@ an @code{if}:
 # find smallest divisor of num
 @{
     num = $1
-    for (div = 2; ; div++) @{
-        if (num % div == 0) @{
-            printf "Smallest divisor of %d is %d\n", num, div
+    for (divisor = 2; ; divisor++) @{
+        if (num % divisor == 0) @{
+            printf "Smallest divisor of %d is %d\n", num, divisor
             break
         @}
-        if (div * div > num) @{
+        if (divisor * divisor > num) @{
             printf "%d is prime\n", num
             break
         @}
