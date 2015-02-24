@@ -169,6 +169,8 @@ EXTRA_DIST = \
 	concat4.ok \
 	convfmt.awk \
 	convfmt.ok \
+	crlf.awk \
+	crlf.ok \
 	datanonl.awk \
 	datanonl.in \
 	datanonl.ok \
@@ -1030,7 +1032,7 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
-	colonwarn clos1way dbugeval delsub devfd devfd1 devfd2 dumpvars exit \
+	colonwarn clos1way crlf dbugeval delsub devfd devfd1 devfd2 dumpvars exit \
 	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
 	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops \

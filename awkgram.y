@@ -3061,7 +3061,10 @@ yylex(void)
 					pushback();
 					yyerror(_("unterminated regexp ends with `\\' at end of file"));
 					goto end_regexp; /* kludge */
-				} else if (c == '\n') {
+				}
+				if (c == '\r')	/* allow MS-DOS files. bleah */
+					c = nextc(true);
+				if (c == '\n') {
 					sourceline++;
 					continue;
 				} else {
@@ -3392,6 +3395,8 @@ retry:
 			if ((gawk_mb_cur_max == 1 || nextc_is_1stbyte) &&
 			    c == '\\') {
 				c = nextc(true);
+				if (c == '\r')	/* allow MS-DOS files. bleah */
+					c = nextc(true);
 				if (c == '\n') {
 					sourceline++;
 					continue;
