@@ -713,6 +713,7 @@ EXTRA_DIST = \
 	procinfs.awk \
 	procinfs.ok \
 	profile0.awk \
+	profile0.in \
 	profile0.ok \
 	profile2.ok \
 	profile3.awk \
