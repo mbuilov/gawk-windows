@@ -1466,7 +1466,7 @@ str2mode(const char *mode)
 
 static int
 socketopen(int family, int type, const char *localpname,
-	const char *remotepname, const char *remotehostname)
+	const char *remotepname, const char *remotehostname, bool *hard_error)
 {
 	struct addrinfo *lres, *lres0;
 	struct addrinfo lhints;
@@ -1485,8 +1485,11 @@ socketopen(int family, int type, const char *localpname,
 
 	lerror = getaddrinfo(NULL, localpname, & lhints, & lres);
 	if (lerror) {
-		if (strcmp(localpname, "0") != 0)
-			fatal(_("local port %s invalid in `/inet'"), localpname);
+		if (strcmp(localpname, "0") != 0) {
+			warning(_("local port %s invalid in `/inet'"), localpname);
+			*hard_error = true;
+			return INVALID_HANDLE;
+		}
 		lres0 = NULL;
 		lres = & lhints;
 	} else
@@ -1504,7 +1507,9 @@ socketopen(int family, int type, const char *localpname,
 		if (rerror) {
 			if (lres0 != NULL)
 				freeaddrinfo(lres0);
-			fatal(_("remote host and port information (%s, %s) invalid"), remotehostname, remotepname);
+			warning(_("remote host and port information (%s, %s) invalid"), remotehostname, remotepname);
+			*hard_error = true;
+			return INVALID_HANDLE;
 		}
 		rres0 = rres;
 		socket_fd = INVALID_HANDLE;
@@ -1668,6 +1673,7 @@ devopen(const char *name, const char *mode)
 		static bool first_time = true;
 		unsigned long retries = 0;
 		static long msleep = 1000;
+		bool hard_error = false;
 
 		if (first_time) {
 			char *cp, *end;
@@ -1697,9 +1703,9 @@ devopen(const char *name, const char *mode)
 		retries = def_retries;
 
 		do {
-			openfd = socketopen(isi.family, isi.protocol, name+isi.localport.offset, name+isi.remoteport.offset, name+isi.remotehost.offset);
+			openfd = socketopen(isi.family, isi.protocol, name+isi.localport.offset, name+isi.remoteport.offset, name+isi.remotehost.offset, & hard_error);
 			retries--;
-		} while (openfd == INVALID_HANDLE && retries > 0 && usleep(msleep) == 0);
+		} while (openfd == INVALID_HANDLE && ! hard_error && retries > 0 && usleep(msleep) == 0);
 	}
 
 	/* restore original name string */
