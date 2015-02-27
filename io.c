@@ -1618,6 +1618,7 @@ devopen(const char *name, const char *mode)
 	char *ptr;
 	int flag = 0;
 	struct inet_socket_info isi;
+	int save_errno = 0;
 
 	if (strcmp(name, "-") == 0)
 		return fileno(stdin);
@@ -1702,10 +1703,12 @@ devopen(const char *name, const char *mode)
 		}
 		retries = def_retries;
 
+		errno = 0;
 		do {
 			openfd = socketopen(isi.family, isi.protocol, name+isi.localport.offset, name+isi.remoteport.offset, name+isi.remotehost.offset, & hard_error);
 			retries--;
 		} while (openfd == INVALID_HANDLE && ! hard_error && retries > 0 && usleep(msleep) == 0);
+		save_errno = errno;
 	}
 
 	/* restore original name string */
@@ -1717,8 +1720,11 @@ devopen(const char *name, const char *mode)
 	}
 
 strictopen:
-	if (openfd == INVALID_HANDLE)
+	if (openfd == INVALID_HANDLE) {
 		openfd = open(name, flag, 0666);
+		if (openfd == INVALID_HANDLE && save_errno)
+			errno = save_errno;
+	}
 #if defined(__EMX__) || defined(__MINGW32__)
 	if (openfd == INVALID_HANDLE && errno == EACCES) {
 		/* On OS/2 and Windows directory access via open() is

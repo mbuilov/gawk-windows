@@ -4,6 +4,8 @@
 	getaddrinfo() fails. Change fatals to warnings.
 	(devopen): Pass in address of boolean hard_error variable
 	and stop trying to open the file if hard_error is true.
+	Save and restore errno around call to socketopen() and
+	use restored errno if open() fails at strictopen.
 
 2015-02-24         Arnold D. Robbins     <arnold@skeeve.com>
 
