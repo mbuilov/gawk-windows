@@ -277,6 +277,7 @@ typedef enum nodevals {
 	Node_val,		/* node is a value - type in flags */
 	Node_regex,		/* a regexp, text, compiled, flags, etc */
 	Node_dynregex,		/* a dynamic regexp */
+	Node_hardregex,		/* like Node_regex, but is a real type */
 
 	/* symbol table values */
 	Node_var,		/* scalar variable, lnode is value */
@@ -1380,6 +1381,7 @@ extern NODE *do_dcgettext(int nargs);
 extern NODE *do_dcngettext(int nargs);
 extern NODE *do_bindtextdomain(int nargs);
 extern NODE *do_div(int nargs);
+extern NODE *do_typeof(int nargs);
 extern int strncasecmpmbs(const unsigned char *,
 			  const unsigned char *, size_t);
 /* eval.c */

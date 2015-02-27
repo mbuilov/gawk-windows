@@ -235,6 +235,7 @@ static const char *const nodetypes[] = {
 	"Node_val",
 	"Node_regex",
 	"Node_dynregex",
+	"Node_hardregex",
 	"Node_var",
 	"Node_var_array",
 	"Node_var_new",

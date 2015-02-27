@@ -351,7 +351,7 @@ re_update(NODE *t)
 		/* regex was compiled with settings matching IGNORECASE */
 		if ((t->re_flags & CONSTANT) != 0) {
 			/* it's a constant, so just return it as is */
-			assert(t->type == Node_regex);
+			assert(t->type == Node_regex || t->type == Node_hardregex);
 			return t->re_reg;
 		}
 		t1 = t->re_exp;

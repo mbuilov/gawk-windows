@@ -1,3 +1,17 @@
+2015-02-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Start on making regexp a real type.
+
+	* awk.h (Node_hardregex): New node type.
+	(do_typeof): Add declaration.
+	* awkgram.y: Make @/.../ a hard regex.
+	(tokentab): New entry for typeof() function.
+	(snode): Try to handle typeof().
+	(make_regnode): Handle Node_hardregex.
+	* builtin.c (do_typeof): New function.
+	* eval.c (nodetypes): Add Node_hardregex.
+	* re.c (re_update): Check for hardregex too in assert.
+
 2015-02-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* POSIX.STD: Update copyright year.

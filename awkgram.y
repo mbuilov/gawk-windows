@@ -454,6 +454,16 @@ function_prologue
 	;
 
 regexp
+	: normal_regexp
+		{ $$ = $1; }
+	| '@' normal_regexp
+	  {
+		$2->memory->type = Node_hardregex;
+		$$ = $2;
+	  }
+	;
+
+normal_regexp
 	/*
 	 * In this rule, want_regexp tells yylex that the next thing
 	 * is a regexp so it should read up to the closing slash.
@@ -1186,7 +1196,10 @@ case_value
 	  {	$$ = $1; }
 	| regexp  
 	  {
-		$1->opcode = Op_push_re;
+		if ($1->memory->type == Node_regex)
+			$1->opcode = Op_push_re;
+		else
+			$1->opcode = Op_push;
 		$$ = $1;
 	  }
 	;
@@ -2003,6 +2016,7 @@ static const struct token tokentab[] = {
 {"systime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(0),	do_systime,	0},
 {"tolower",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_tolower,	0},
 {"toupper",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_toupper,	0},
+{"typeof",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_typeof,	0},
 {"while",	Op_K_while,	 LEX_WHILE,	BREAK|CONTINUE,	0,	0},
 {"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_xor,	MPF(xor)},
 };
@@ -4139,7 +4153,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 			if (arg->nexti == arg->lasti && arg->nexti->opcode == Op_push)
 				arg->nexti->opcode = Op_push_arg;	/* argument may be array */
  		}
-	} else if (r->builtin == do_isarray) {
+	} else if (r->builtin == do_isarray || r->builtin == do_typeof) {
 		arg = subn->nexti;
 		if (arg->nexti == arg->lasti && arg->nexti->opcode == Op_push)
 			arg->nexti->opcode = Op_push_arg;	/* argument may be array */
@@ -4721,7 +4735,7 @@ make_regnode(int type, NODE *exp)
 	n->type = type;
 	n->re_cnt = 1;
 
-	if (type == Node_regex) {
+	if (type == Node_regex || type == Node_hardregex) {
 		n->re_reg = make_regexp(exp->stptr, exp->stlen, false, true, false);
 		if (n->re_reg == NULL) {
 			freenode(n);

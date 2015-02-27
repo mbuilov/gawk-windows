@@ -3661,6 +3661,41 @@ do_div(int nargs)
 	return make_number((AWKNUM) 0.0);
 }
 
+/* do_typeof --- return a string with the type of the arg */
+
+NODE *
+do_typeof(int nargs)
+{
+	NODE *arg;
+	char *res = "unknown";
+
+	arg = POP();
+	switch (arg->type) {
+	case Node_var_array:
+		res = "array";
+		break;
+	case Node_hardregex:
+		res = "regexp";
+		break;
+	case Node_val:
+	case Node_var:
+		if ((arg->flags & STRING) != 0)
+			res = "scalar_s";
+		else if ((arg->flags & NUMBER) != 0)
+			res = "scalar_n";
+		break;
+	case Node_var_new:
+		res = "untyped";
+		break;
+	default:
+		fatal(_("typeof: unknown argument type `%s'"),
+				nodetype2str(arg->type));
+		break;
+	}
+
+	DEREF(arg);
+	return make_string(res, strlen(res));
+}
 
 /* mbc_byte_count --- return number of bytes for corresponding numchars multibyte characters */
 
