@@ -3704,8 +3704,10 @@ pty_vs_pipe(const char *command)
 #ifdef HAVE_TERMIOS_H
 	NODE *val;
 
-	if (PROCINFO_node == NULL)
-		return false;
+	/*
+	 * N.B. No need to check for NULL PROCINFO_node, since the
+	 * in_PROCINFO function now checks that for us.
+	 */
 	val = in_PROCINFO(command, "pty", NULL);
 	if (val) {
 		if ((val->flags & MAYBE_NUM) != 0)
