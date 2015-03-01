@@ -254,9 +254,9 @@ AC_CHECK_FUNC(getaddrinfo, [AC_DEFINE(HAVE_GETADDRINFO, 1, [have getaddrinfo])],
 			    [AC_DEFINE(HAVE_GETADDRINFO, 1,
 				       [have getaddrinfo])])])
 
-AC_CHECK_LIB(m, fmod)
-AC_CHECK_LIB(m, isinf)
-AC_CHECK_LIB(m, ismod)
+AC_SEARCH_LIBS(fmod, m)
+AC_SEARCH_LIBS(isinf, m)
+AC_SEARCH_LIBS(ismod, m)
 dnl Don't look for libsigsegv on OSF/1, gives us severe headaches
 case $host_os in
 osf1)	: ;;

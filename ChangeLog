@@ -12,6 +12,13 @@
 	Save and restore errno around call to socketopen() and
 	use restored errno if open() fails at strictopen.
 
+2015-02-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* symbol.c (check_param_names): Fix argument order in memset() call.
+	* configure.ac: Use AC_SEARCH_LIBS instead of AC_CHECK_LIB. This fixes
+	a long-standing problem where `-lm' was used twice in the final
+	compilation line.
+
 2015-02-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* POSIX.STD: Update copyright year.

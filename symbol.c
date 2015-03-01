@@ -642,7 +642,7 @@ check_param_names(void)
 
 	max = func_table->table_size * 2;
 
-	memset(& n, sizeof n, 0);
+	memset(& n, 0, sizeof n);
 	n.type = Node_val;
 	n.flags = STRING|STRCUR;
 	n.stfmt = -1;
