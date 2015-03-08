@@ -29,3 +29,5 @@ void freeaddrinfo(struct xaddrinfo * res);
 
 int getaddrinfo(const char * hostname, const char * portname,
 	struct xaddrinfo * hints, struct xaddrinfo ** res);
+
+const char *gai_strerror(int errcode);

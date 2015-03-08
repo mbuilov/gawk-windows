@@ -9592,13 +9592,12 @@ fi
 fi
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for fmod in -lm" >&5
-$as_echo_n "checking for fmod in -lm... " >&6; }
-if ${ac_cv_lib_m_fmod+:} false; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing fmod" >&5
+$as_echo_n "checking for library containing fmod... " >&6; }
+if ${ac_cv_search_fmod+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lm  $LIBS"
+  ac_func_search_save_LIBS=$LIBS
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -9617,33 +9616,44 @@ return fmod ();
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_m_fmod=yes
-else
-  ac_cv_lib_m_fmod=no
+for ac_lib in '' m; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_fmod=$ac_res
 fi
 rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
+    conftest$ac_exeext
+  if ${ac_cv_search_fmod+:} false; then :
+  break
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_fmod" >&5
-$as_echo "$ac_cv_lib_m_fmod" >&6; }
-if test "x$ac_cv_lib_m_fmod" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBM 1
-_ACEOF
+done
+if ${ac_cv_search_fmod+:} false; then :
 
-  LIBS="-lm $LIBS"
+else
+  ac_cv_search_fmod=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_fmod" >&5
+$as_echo "$ac_cv_search_fmod" >&6; }
+ac_res=$ac_cv_search_fmod
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for isinf in -lm" >&5
-$as_echo_n "checking for isinf in -lm... " >&6; }
-if ${ac_cv_lib_m_isinf+:} false; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing isinf" >&5
+$as_echo_n "checking for library containing isinf... " >&6; }
+if ${ac_cv_search_isinf+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lm  $LIBS"
+  ac_func_search_save_LIBS=$LIBS
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -9662,33 +9672,44 @@ return isinf ();
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_m_isinf=yes
-else
-  ac_cv_lib_m_isinf=no
+for ac_lib in '' m; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_isinf=$ac_res
 fi
 rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
+    conftest$ac_exeext
+  if ${ac_cv_search_isinf+:} false; then :
+  break
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_isinf" >&5
-$as_echo "$ac_cv_lib_m_isinf" >&6; }
-if test "x$ac_cv_lib_m_isinf" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBM 1
-_ACEOF
+done
+if ${ac_cv_search_isinf+:} false; then :
 
-  LIBS="-lm $LIBS"
+else
+  ac_cv_search_isinf=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_isinf" >&5
+$as_echo "$ac_cv_search_isinf" >&6; }
+ac_res=$ac_cv_search_isinf
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ismod in -lm" >&5
-$as_echo_n "checking for ismod in -lm... " >&6; }
-if ${ac_cv_lib_m_ismod+:} false; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing ismod" >&5
+$as_echo_n "checking for library containing ismod... " >&6; }
+if ${ac_cv_search_ismod+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lm  $LIBS"
+  ac_func_search_save_LIBS=$LIBS
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -9707,23 +9728,35 @@ return ismod ();
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_m_ismod=yes
-else
-  ac_cv_lib_m_ismod=no
+for ac_lib in '' m; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_ismod=$ac_res
 fi
 rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
+    conftest$ac_exeext
+  if ${ac_cv_search_ismod+:} false; then :
+  break
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_ismod" >&5
-$as_echo "$ac_cv_lib_m_ismod" >&6; }
-if test "x$ac_cv_lib_m_ismod" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBM 1
-_ACEOF
+done
+if ${ac_cv_search_ismod+:} false; then :
 
-  LIBS="-lm $LIBS"
+else
+  ac_cv_search_ismod=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_ismod" >&5
+$as_echo "$ac_cv_search_ismod" >&6; }
+ac_res=$ac_cv_search_ismod
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 fi
 

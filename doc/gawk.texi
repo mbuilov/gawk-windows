@@ -51,7 +51,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH September, 2014
+@set UPDATE-MONTH February, 2015
 @set VERSION 4.1
 @set PATCHLEVEL 2
 
@@ -198,9 +198,9 @@
 
 @ifclear FOR_PRINT
 @set FN file name
-@set FFN File Name
+@set FFN File name
 @set DF data file
-@set DDF Data File
+@set DDF Data file
 @set PVERSION version
 @end ifclear
 @ifset FOR_PRINT
@@ -299,7 +299,7 @@ Fax: +1-617-542-2652
 Email: <email>gnu@@gnu.org</email>
 URL: <ulink url="http://www.gnu.org">http://www.gnu.org/</ulink></literallayout>
 
-<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2014
+<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2015
 Free Software Foundation, Inc.
 All Rights Reserved.</literallayout>
 @end docbook
@@ -633,6 +633,7 @@ particular records in a file and perform operations upon them.
 * Special Caveats::                     Things to watch out for.
 * Close Files And Pipes::               Closing Input and Output Files and
                                         Pipes.
+* Nonfatal::                            Enabling Nonfatal Output.
 * Output Summary::                      Output summary.
 * Output Exercises::                    Exercises.
 * Values::                              Constants, Variables, and Regular
@@ -1520,7 +1521,7 @@ is often referred to as ``new @command{awk}.''
 By analogy, the original version of @command{awk} is
 referred to as ``old @command{awk}.''
 
-Today, on most systems, when you run the @command{awk} utility
+On most current systems, when you run the @command{awk} utility
 you get some version of new @command{awk}.@footnote{Only
 Solaris systems still use an old @command{awk} for the
 default @command{awk} utility. A more modern @command{awk} lives in
@@ -1751,15 +1752,39 @@ and how to compile and use it on different
 non-POSIX systems.  It also describes how to report bugs
 in @command{gawk} and where to get other freely
 available @command{awk} implementations.
-@end itemize
 
 @ifset FOR_PRINT
-@itemize @value{MINUS}
 @item
 @ref{Copying},
 presents the license that covers the @command{gawk} source code.
+@end ifset
+
+@ifclear FOR_PRINT
+@item
+@ref{Notes},
+describes how to disable @command{gawk}'s extensions, as
+well as how to contribute new code to @command{gawk},
+and some possible future directions for @command{gawk} development.
+
+@item
+@ref{Basic Concepts},
+provides some very cursory background material for those who
+are completely unfamiliar with computer programming.
+
+The @ref{Glossary}, defines most, if not all, of the significant terms used
+throughout the @value{DOCUMENT}.  If you find terms that you aren't familiar with,
+try looking them up here.
+
+@item
+@ref{Copying}, and
+@ref{GNU Free Documentation License},
+present the licenses that cover the @command{gawk} source code
+and this @value{DOCUMENT}, respectively.
+@end ifclear
+@end itemize
 @end itemize
 
+@ifset FOR_PRINT
 The version of this @value{DOCUMENT} distributed with @command{gawk}
 contains additional appendices and other end material.
 To save space, we have omitted them from the
@@ -1796,32 +1821,6 @@ is the license that covers this @value{DOCUMENT}.
 Some of the chapters have exercise sections; these have also been
 omitted from the print edition but are available online.
 @end ifset
-
-@ifclear FOR_PRINT
-@itemize @value{MINUS}
-@item
-@ref{Notes},
-describes how to disable @command{gawk}'s extensions, as
-well as how to contribute new code to @command{gawk},
-and some possible future directions for @command{gawk} development.
-
-@item
-@ref{Basic Concepts},
-provides some very cursory background material for those who
-are completely unfamiliar with computer programming.
-
-The @ref{Glossary}, defines most, if not all, of the significant terms used
-throughout the @value{DOCUMENT}.  If you find terms that you aren't familiar with,
-try looking them up here.
-
-@item
-@ref{Copying}, and
-@ref{GNU Free Documentation License},
-present the licenses that cover the @command{gawk} source code
-and this @value{DOCUMENT}, respectively.
-@end itemize
-@end ifclear
-@end itemize
 
 @c FULLXREF OFF
 
@@ -1864,15 +1863,23 @@ $ @kbd{echo hello on stderr 1>&2}
 @end example
 
 @ifnotinfo
-In the text, command names appear in @code{this font}, while code segments
+In the text, almost anything related to programming, such as
+command names,
+variable and function names, and string, numeric and regexp constants
+appear in @code{this font}. Code fragments
 appear in the same font and quoted, @samp{like this}.
+Things that are replaced by the user or programmer
+appear in @var{this font}.
 Options look like this: @option{-f}.
+@value{FFN}s are indicated like this: @file{/path/to/ourfile}.
+@ifclear FOR_PRINT
 Some things are
 emphasized @emph{like this}, and if a point needs to be made
-strongly, it is done @strong{like this}.  The first occurrence of
+strongly, it is done @strong{like this}.
+@end ifclear
+The first occurrence of
 a new term is usually its @dfn{definition} and appears in the same
 font as the previous occurrence of ``definition'' in this sentence.
-Finally, @value{FN}s are indicated like this: @file{/path/to/ourfile}.
 @end ifnotinfo
 
 Characters that you type at the keyboard look @kbd{like this}.  In particular,
@@ -4543,6 +4550,8 @@ wait for input before returning with an error.
 Controls the number of times @command{gawk} attempts to
 retry a two-way TCP/IP (socket) connection before giving up.
 @xref{TCP/IP Networking}.
+Note that when nonfatal I/O is enabled (@pxref{Nonfatal}),
+@command{gawk} only tries to open a TCP/IP socket once.
 
 @item POSIXLY_CORRECT
 Causes @command{gawk} to switch to POSIX-compatibility
@@ -8929,6 +8938,7 @@ and discusses the @code{close()} built-in function.
                                 @command{gawk} allows access to inherited file
                                 descriptors.
 * Close Files And Pipes::       Closing Input and Output Files and Pipes.
+* Nonfatal::                    Enabling Nonfatal Output.
 * Output Summary::              Output summary.
 * Output Exercises::            Exercises.
 @end menu
@@ -9407,12 +9417,12 @@ represent
 spaces in the output. Here are the possible modifiers, in the order in
 which they may appear:
 
-@table @code
+@table @asis
 @cindex differences in @command{awk} and @command{gawk}, @code{print}/@code{printf} statements
 @cindex @code{printf} statement, positional specifiers
 @c the code{} does NOT start a secondary
 @cindex positional specifiers, @code{printf} statement
-@item @var{N}$
+@item @code{@var{N}$}
 An integer constant followed by a @samp{$} is a @dfn{positional specifier}.
 Normally, format specifications are applied to arguments in the order
 given in the format string.  With a positional specifier, the format
@@ -9435,7 +9445,7 @@ messages at runtime.
 which describes how and why to use positional specifiers.
 For now, we ignore them.
 
-@item - @r{(Minus)}
+@item @code{-} (Minus)
 The minus sign, used before the width modifier (see later on in
 this list),
 says to left-justify
@@ -9453,13 +9463,13 @@ prints @samp{foo@bullet{}}.
 For numeric conversions, prefix positive values with a space and
 negative values with a minus sign.
 
-@item +
+@item @code{+}
 The plus sign, used before the width modifier (see later on in
 this list),
 says to always supply a sign for numeric conversions, even if the data
 to format is positive. The @samp{+} overrides the space modifier.
 
-@item #
+@item @code{#}
 Use an ``alternative form'' for certain control letters.
 For @samp{%o}, supply a leading zero.
 For @samp{%x} and @samp{%X}, supply a leading @samp{0x} or @samp{0X} for
@@ -9468,14 +9478,14 @@ For @samp{%e}, @samp{%E}, @samp{%f}, and @samp{%F}, the result always
 contains a decimal point.
 For @samp{%g} and @samp{%G}, trailing zeros are not removed from the result.
 
-@item 0
+@item @code{0}
 A leading @samp{0} (zero) acts as a flag indicating that output should be
 padded with zeros instead of spaces.
 This applies only to the numeric output formats.
 This flag only has an effect when the field width is wider than the
 value to print.
 
-@item '
+@item @code{'}
 A single quote or apostrophe character is a POSIX extension to ISO C.
 It indicates that the integer part of a floating-point value, or the
 entire part of an integer decimal value, should have a thousands-separator
@@ -9528,7 +9538,7 @@ prints @samp{foobar}.
 Preceding the @var{width} with a minus sign causes the output to be
 padded with spaces on the right, instead of on the left.
 
-@item .@var{prec}
+@item @code{.@var{prec}}
 A period followed by an integer constant
 specifies the precision to use when printing.
 The meaning of the precision varies by control letter:
@@ -10435,6 +10445,71 @@ when closing a pipe.
 @end ifnotdocbook
 
 
+@node Nonfatal
+@section Enabling Nonfatal Output
+
+This @value{SECTION} describes a @command{gawk}-specific feature.
+
+In standard @command{awk}, output with @code{print} or @code{printf}
+to a nonexistent file, or some other I/O error (such as filling up the
+disk) is a fatal error.
+
+@example
+$ @kbd{gawk 'BEGIN @{ print "hi" > "/no/such/file" @}'}
+@error{} gawk: cmd. line:1: fatal: can't redirect to `/no/such/file' (No such file or directory)
+@end example
+
+@command{gawk} makes it possible to detect that an error has
+occurred, allowing you to possibly recover from the error, or
+at least print an error message of your choosing before exiting.
+You can do this in one of two ways:
+
+@itemize @bullet
+@item
+For all output files, by assigning any value to @code{PROCINFO["NONFATAL"]}.
+
+@item
+On a per-file basis, by assigning any value to
+@code{PROCINFO[@var{filename}, "NONFATAL"]}.
+Here, @var{filename} is the name of the file to which
+you wish output to be nonfatal.
+@end itemize
+
+Once you have enabled nonfatal output, you must check @code{ERRNO}
+after every relevant @code{print} or @code{printf} statement to
+see if something went wrong.  It is also a good idea to initialize
+@code{ERRNO} to zero before attempting the output. For example:
+
+@example
+$ @kbd{gawk '}
+> @kbd{BEGIN @{}
+> @kbd{    PROCINFO["NONFATAL"] = 1}
+> @kbd{    ERRNO = 0}
+> @kbd{    print "hi" > "/no/such/file"}
+> @kbd{    if (ERRNO) @{}
+> @kbd{        print("Output failed:", ERRNO) > "/dev/stderr"}
+> @kbd{        exit 1}
+> @kbd{    @}}
+> @kbd{@}'}
+@error{} Output failed: No such file or directory
+@end example
+
+Here, @command{gawk} did not produce a fatal error; instead
+it let the @command{awk} program code detect the problem and handle it.
+
+This mechanism works also for standard output and standard error.
+For standard output, you may use @code{PROCINFO["-", "NONFATAL"]}
+or @code{PROCINFO["/dev/stdout", "NONFATAL"]}.  For standard error, use
+@code{PROCINFO["/dev/stderr", "NONFATAL"]}.
+
+When attempting to open a TCP/IP socket (@pxref{TCP/IP Networking}),
+@command{gawk} tries multiple times. The @env{GAWK_SOCK_RETRIES}
+environment variable (@pxref{Other Environment Variables}) allows you to
+override @command{gawk}'s builtin default number of attempts.  However,
+once nonfatal I/O is enabled for a given socket, @command{gawk} only
+retries once, relying on @command{awk}-level code to notice that there
+was a problem.
+
 @node Output Summary
 @section Summary
 
@@ -10462,6 +10537,12 @@ output, and error, and for network communications.
 Use @code{close()} to close open file, pipe, and coprocess redirections.
 For coprocesses, it is possible to close only one direction of the
 communications.
+
+@item
+Normally errors with @code{print} or @code{printf} are fatal.
+@command{gawk} lets you make output errors be nonfatal either for
+all files or on a per-file basis. You must then check for errors
+after every relevant output statement.
 
 @end itemize
 
@@ -11777,6 +11858,7 @@ has the value four, but it changes the value of @code{foo} to five.
 In other words, the operator returns the old value of the variable,
 but with the side effect of incrementing it.
 
+@c FIXME: Use @sup here for superscript
 The post-increment @samp{foo++} is nearly the same as writing @samp{(foo
 += 1) - 1}.  It is not perfectly equivalent because all numbers in
 @command{awk} are floating point---in floating point, @samp{foo + 1 - 1} does
@@ -11997,6 +12079,9 @@ the string constant @code{"0"} is actually true, because it is non-null.
 @i{The Guide is definitive. Reality is frequently inaccurate.}
 @author Douglas Adams, @cite{The Hitchhiker's Guide to the Galaxy}
 @end quotation
+@c 2/2015: Antonio Colombo points out that this is really from
+@c The Restaurant at the End of the Universe. But I'm going to
+@c leave it alone.
 
 @cindex comparison expressions
 @cindex expressions, comparison
@@ -14119,12 +14204,12 @@ numbers:
 # find smallest divisor of num
 @{
     num = $1
-    for (div = 2; div * div <= num; div++) @{
-        if (num % div == 0)
+    for (divisor = 2; divisor * divisor <= num; divisor++) @{
+        if (num % divisor == 0)
             break
     @}
-    if (num % div == 0)
-        printf "Smallest divisor of %d is %d\n", num, div
+    if (num % divisor == 0)
+        printf "Smallest divisor of %d is %d\n", num, divisor
     else
         printf "%d is prime\n", num
 @}
@@ -14145,12 +14230,12 @@ an @code{if}:
 # find smallest divisor of num
 @{
     num = $1
-    for (div = 2; ; div++) @{
-        if (num % div == 0) @{
-            printf "Smallest divisor of %d is %d\n", num, div
+    for (divisor = 2; ; divisor++) @{
+        if (num % divisor == 0) @{
+            printf "Smallest divisor of %d is %d\n", num, divisor
             break
         @}
-        if (div * div > num) @{
+        if (divisor * divisor > num) @{
             printf "%d is prime\n", num
             break
         @}
@@ -14592,12 +14677,13 @@ is to simply say @samp{FS = FS}, perhaps with an explanatory comment.
 @cindex regular expressions, case sensitivity
 @item IGNORECASE #
 If @code{IGNORECASE} is nonzero or non-null, then all string comparisons
-and all regular expression matching are case-independent.  Thus, regexp
-matching with @samp{~} and @samp{!~}, as well as the @code{gensub()},
-@code{gsub()}, @code{index()}, @code{match()}, @code{patsplit()},
-@code{split()}, and @code{sub()}
-functions, record termination with @code{RS}, and field splitting with
-@code{FS} and @code{FPAT}, all ignore case when doing their particular regexp operations.
+and all regular expression matching are case-independent.
+This applies to
+regexp matching with @samp{~} and @samp{!~},
+the @code{gensub()}, @code{gsub()}, @code{index()}, @code{match()},
+@code{patsplit()}, @code{split()}, and @code{sub()} functions,
+record termination with @code{RS}, and field splitting with
+@code{FS} and @code{FPAT}.
 However, the value of @code{IGNORECASE} does @emph{not} affect array subscripting
 and it does not affect field splitting when using a single-character
 field separator.
@@ -17065,7 +17151,7 @@ for generating random numbers to the value @var{x}.
 
 Each seed value leads to a particular sequence of random
 numbers.@footnote{Computer-generated random numbers really are not truly
-random.  They are technically known as ``pseudorandom.''  This means
+random.  They are technically known as @dfn{pseudorandom}.  This means
 that although the numbers in a sequence appear to be random, you can in
 fact generate the same sequence of random numbers over and over again.}
 Thus, if the seed is set to the same value a second time,
@@ -18583,6 +18669,7 @@ which is sufficient to represent times through
 2038-01-19 03:14:07 UTC.  Many systems support a wider range of timestamps,
 including negative timestamps that represent times before the
 epoch.
+@c FIXME: Use @sup here for superscript
 
 @cindex @command{date} utility, GNU
 @cindex time, retrieving
@@ -20358,67 +20445,7 @@ $ @kbd{gawk -f quicksort.awk -f indirectcall.awk class_data2}
 @end example
 
 Another example where indirect functions calls are useful can be found in
-processing arrays.  @DBREF{Walking Arrays} presented a simple function
-for ``walking'' an array of arrays.  That function simply printed the
-name and value of each scalar array element. However, it is easy to
-generalize that function, by passing in the name of a function to call
-when walking an array. The modified function looks like this:
-
-@example
-@c file eg/lib/processarray.awk
-function process_array(arr, name, process, do_arrays,   i, new_name)
-@{
-    for (i in arr) @{
-        new_name = (name "[" i "]")
-        if (isarray(arr[i])) @{
-            if (do_arrays)
-                @@process(new_name, arr[i])
-            process_array(arr[i], new_name, process, do_arrays)
-        @} else
-            @@process(new_name, arr[i])
-    @}
-@}
-@c endfile
-@end example
-
-The arguments are as follows:
-
-@table @code
-@item arr
-The array.
-
-@item name
-The name of the array (a string).
-
-@item process
-The name of the function to call.
-
-@item do_arrays
-If this is true, the function can handle elements that are subarrays.
-@end table
-
-If subarrays are to be processed, that is done before walking them further.
-
-When run with the following scaffolding, the function produces the same
-results as does the earlier @code{walk_array()} function:
-
-@example
-BEGIN @{
-    a[1] = 1
-    a[2][1] = 21
-    a[2][2] = 22
-    a[3] = 3
-    a[4][1][1] = 411
-    a[4][2] = 42
-
-    process_array(a, "a", "do_print", 0)
-@}
-
-function do_print(name, element)
-@{
-    printf "%s = %s\n", name, element
-@}
-@end example
+processing arrays. This is described in @ref{Walking Arrays}.
 
 Remember that you must supply a leading @samp{@@} in front of an indirect function call.
 
@@ -23049,6 +23076,66 @@ $ @kbd{gawk -f walk_array.awk}
 @print{} a[4][2] = 42
 @end example
 
+The function just presented simply prints the
+name and value of each scalar array element. However, it is easy to
+generalize it, by passing in the name of a function to call
+when walking an array. The modified function looks like this:
+
+@example
+@c file eg/lib/processarray.awk
+function process_array(arr, name, process, do_arrays,   i, new_name)
+@{
+    for (i in arr) @{
+        new_name = (name "[" i "]")
+        if (isarray(arr[i])) @{
+            if (do_arrays)
+                @@process(new_name, arr[i])
+            process_array(arr[i], new_name, process, do_arrays)
+        @} else
+            @@process(new_name, arr[i])
+    @}
+@}
+@c endfile
+@end example
+
+The arguments are as follows:
+
+@table @code
+@item arr
+The array.
+
+@item name
+The name of the array (a string).
+
+@item process
+The name of the function to call.
+
+@item do_arrays
+If this is true, the function can handle elements that are subarrays.
+@end table
+
+If subarrays are to be processed, that is done before walking them further.
+
+When run with the following scaffolding, the function produces the same
+results as does the earlier version of @code{walk_array()}:
+
+@example
+BEGIN @{
+    a[1] = 1
+    a[2][1] = 21
+    a[2][2] = 22
+    a[3] = 3
+    a[4][1][1] = 411
+    a[4][2] = 42
+
+    process_array(a, "a", "do_print", 0)
+@}
+
+function do_print(name, element)
+@{
+    printf "%s = %s\n", name, element
+@}
+@end example
 
 @node Library Functions Summary
 @section Summary
@@ -23087,7 +23174,7 @@ An @command{awk} version of the standard C @code{getopt()} function
 Two sets of routines that parallel the C library versions
 
 @item Traversing arrays of arrays
-A simple function to traverse an array of arrays to any depth
+Two functions that traverse an array of arrays to any depth
 @end table
 @c end nested list
 
@@ -30250,6 +30337,7 @@ signed. The possible ranges of values are shown in @ref{table-numeric-ranges}.
 @end ifnottex
 @ifdocbook
 @item Single-precision floating point (approximate) @tab
+@c FIXME: Use @sup here for superscript
 @docbook
 1.175494<superscript>-38</superscript>
 @end docbook
@@ -30868,6 +30956,7 @@ the following computes
 @end docbook
 the result of which is beyond the
 limits of ordinary hardware double-precision floating-point values:
+@c FIXME: Use @sup here for superscript
 
 @example
 $ @kbd{gawk -M 'BEGIN @{}
@@ -31215,7 +31304,7 @@ This is faster and more space-efficient than using MPFR for
 the same calculations.
 
 @item
-There are several ``dark corners'' with respect to floating-point
+There are several areas with respect to floating-point
 numbers where @command{gawk} disagrees with the POSIX standard.
 It pays to be aware of them.
 
@@ -31893,14 +31982,14 @@ the way that extension code would use them:
 
 @table @code
 @item static inline awk_value_t *
-@itemx make_const_string(const char *string, size_t length, awk_value_t *result)
+@itemx make_const_string(const char *string, size_t length, awk_value_t *result);
 This function creates a string value in the @code{awk_value_t} variable
 pointed to by @code{result}. It expects @code{string} to be a C string constant
 (or other string data), and automatically creates a @emph{copy} of the data
 for storage in @code{result}. It returns @code{result}.
 
 @item static inline awk_value_t *
-@itemx make_malloced_string(const char *string, size_t length, awk_value_t *result)
+@itemx make_malloced_string(const char *string, size_t length, awk_value_t *result);
 This function creates a string value in the @code{awk_value_t} variable
 pointed to by @code{result}. It expects @code{string} to be a @samp{char *}
 value pointing to data previously obtained from @code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()}. The idea here
@@ -31908,13 +31997,13 @@ is that the data is passed directly to @command{gawk}, which assumes
 responsibility for it. It returns @code{result}.
 
 @item static inline awk_value_t *
-@itemx make_null_string(awk_value_t *result)
+@itemx make_null_string(awk_value_t *result);
 This specialized function creates a null string (the ``undefined'' value)
 in the @code{awk_value_t} variable pointed to by @code{result}.
 It returns @code{result}.
 
 @item static inline awk_value_t *
-@itemx make_number(double num, awk_value_t *result)
+@itemx make_number(double num, awk_value_t *result);
 This function simply creates a numeric value in the @code{awk_value_t} variable
 pointed to by @code{result}.
 @end table
@@ -35689,6 +35778,10 @@ Indirect function calls
 @item
 Directories on the command line produce a warning and are skipped
 (@pxref{Command-line directories})
+
+@item
+Output with @code{print} and @code{printf} need not be fatal
+(@pxref{Nonfatal})
 @end itemize
 
 @item
@@ -36566,6 +36659,10 @@ The @code{div()} function.
 The maximum number of hexdecimal digits in @samp{\x} escapes
 is now two.
 @xref{Escape Sequences}.
+
+@item
+Nonfatal output with @code{print} and @code{printf}.
+@xref{Nonfatal}.
 
 @item
 Support for MirBSD was removed.
