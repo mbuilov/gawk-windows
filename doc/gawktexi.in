@@ -4461,6 +4461,8 @@ wait for input before returning with an error.
 Controls the number of times @command{gawk} attempts to
 retry a two-way TCP/IP (socket) connection before giving up.
 @xref{TCP/IP Networking}.
+Note that when nonfatal I/O is enabled (@pxref{Nonfatal}),
+@command{gawk} only tries to open a TCP/IP socket once.
 
 @item POSIXLY_CORRECT
 Causes @command{gawk} to switch to POSIX-compatibility
@@ -9995,6 +9997,14 @@ This mechanism works also for standard output and standard error.
 For standard output, you may use @code{PROCINFO["-", "NONFATAL"]}
 or @code{PROCINFO["/dev/stdout", "NONFATAL"]}.  For standard error, use
 @code{PROCINFO["/dev/stderr", "NONFATAL"]}.
+
+When attempting to open a TCP/IP socket (@pxref{TCP/IP Networking}),
+@command{gawk} tries multiple times. The @env{GAWK_SOCK_RETRIES}
+environment variable (@pxref{Other Environment Variables}) allows you to
+override @command{gawk}'s builtin default number of attempts.  However,
+once nonfatal I/O is enabled for a given socket, @command{gawk} only
+retries once, relying on @command{awk}-level code to notice that there
+was a problem.
 
 @node Output Summary
 @section Summary

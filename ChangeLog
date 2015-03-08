@@ -1,3 +1,11 @@
+2015-03-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (devopen): Change the logic such that if nonfatal is true
+	for the socket, don't do retries.  Also clean up the formatting
+	some.  At strictopen, check if errno is ENOENT and if so, propagate
+	the error from getaddrinfo() up to the caller. Add explanatory
+	comments.
+
 2015-02-28         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* io.c (pty_vs_pipe): Remove check for NULL PROCINFO_node, since

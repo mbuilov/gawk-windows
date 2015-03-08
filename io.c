@@ -1661,20 +1661,20 @@ devopen(const char *name, const char *mode)
 		goto strictopen;
 	} else if (inetfile(name, & isi)) {
 #ifdef HAVE_SOCKETS
-		cp = (char *) name;
-
-		/* socketopen requires NUL-terminated strings */
-		cp[isi.localport.offset+isi.localport.len] = '\0';
-		cp[isi.remotehost.offset+isi.remotehost.len] = '\0';
-		/* remoteport comes last, so already NUL-terminated */
-
-		{
 #define DEFAULT_RETRIES 20
 		static unsigned long def_retries = DEFAULT_RETRIES;
 		static bool first_time = true;
 		unsigned long retries = 0;
 		static long msleep = 1000;
 		bool hard_error = false;
+		bool non_fatal = is_non_fatal_redirect(name);
+
+		cp = (char *) name;
+
+		/* socketopen requires NUL-terminated strings */
+		cp[isi.localport.offset+isi.localport.len] = '\0';
+		cp[isi.remotehost.offset+isi.remotehost.len] = '\0';
+		/* remoteport comes last, so already NUL-terminated */
 
 		if (first_time) {
 			char *cp, *end;
@@ -1701,28 +1701,39 @@ devopen(const char *name, const char *mode)
 					msleep *= 1000;
 			}
 		}
-		retries = def_retries;
+		/*
+		 * PROCINFO["NONFATAL"] or PROCINFO[name, "NONFATAL"] overrrides
+		 * GAWK_SOCK_RETRIES.  The explicit code in the program carries
+		 * a bigger stick than the environment variable does.
+		 */
+		retries = non_fatal ? 1 : def_retries;
 
 		errno = 0;
 		do {
-			openfd = socketopen(isi.family, isi.protocol, name+isi.localport.offset, name+isi.remoteport.offset, name+isi.remotehost.offset, & hard_error);
+			openfd = socketopen(isi.family, isi.protocol, name+isi.localport.offset,
+					name+isi.remoteport.offset, name+isi.remotehost.offset,
+					& hard_error);
 			retries--;
 		} while (openfd == INVALID_HANDLE && ! hard_error && retries > 0 && usleep(msleep) == 0);
 		save_errno = errno;
-	}
 
-	/* restore original name string */
-	cp[isi.localport.offset+isi.localport.len] = '/';
-	cp[isi.remotehost.offset+isi.remotehost.len] = '/';
+		/* restore original name string */
+		cp[isi.localport.offset+isi.localport.len] = '/';
+		cp[isi.remotehost.offset+isi.remotehost.len] = '/';
 #else /* ! HAVE_SOCKETS */
-	fatal(_("TCP/IP communications are not supported"));
+		fatal(_("TCP/IP communications are not supported"));
 #endif /* HAVE_SOCKETS */
 	}
 
 strictopen:
 	if (openfd == INVALID_HANDLE) {
 		openfd = open(name, flag, 0666);
-		if (openfd == INVALID_HANDLE && save_errno)
+		/*
+		 * ENOENT means there is no such name in the filesystem.
+		 * Therefore it's ok to propagate up the error from
+		 * getaddrinfo() that's in save_errno.
+		 */
+		if (openfd == INVALID_HANDLE && errno == ENOENT && save_errno)
 			errno = save_errno;
 	}
 #if defined(__EMX__) || defined(__MINGW32__)
