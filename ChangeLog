@@ -1,5 +1,7 @@
 2015-03-08         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* re.c (regexflags2str): Removed. It was redundant.
+
 	* io.c (devopen): Change the logic such that if nonfatal is true
 	for the socket, don't do retries.  Also clean up the formatting
 	some.  At strictopen, check if errno is ENOENT and if so, propagate
