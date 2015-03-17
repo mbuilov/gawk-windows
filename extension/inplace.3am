@@ -1,4 +1,4 @@
-.TH INPLACE 3am "Jan 15 2013" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH INPLACE 3am "Mar 16 2015" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
 inplace \- emulate sed/perl/ruby in-place editing
 .SH SYNOPSIS
@@ -45,7 +45,10 @@ extension concatenates that suffix onto the original
 filename and uses the result as a filename for renaming
 the original.
 ... .SH NOTES
-... .SH BUGS
+.SH BUGS
+As currently written, output from an \f(CWENDFILE\fP
+rule does not get redirected into the replacement file.
+Neither does output from an \f(CWEND\fP rule.
 .SH EXAMPLE
 .ft CW
 .nf
