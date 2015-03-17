@@ -537,6 +537,8 @@ EXTRA_DIST = \
 	mpfrexprange.ok \
 	mpfrieee.awk \
 	mpfrieee.ok \
+	mpfrmemok1.awk \
+	mpfrmemok1.ok \
 	mpfrnegzero.awk \
 	mpfrnegzero.ok \
 	mpfrnr.awk \
@@ -1059,8 +1061,8 @@ INET_TESTS = inetdayu inetdayt inetechu inetecht
 
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 
-MPFR_TESTS = mpfrnr mpfrnegzero mpfrrem mpfrrnd mpfrieee mpfrexprange \
-	mpfrsort mpfrsqrt mpfrbigint
+MPFR_TESTS = mpfrnr mpfrnegzero mpfrmemok1 mpfrrem mpfrrnd mpfrieee \
+	mpfrexprange mpfrsort mpfrsqrt mpfrbigint
 
 LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
@@ -1810,6 +1812,11 @@ mpfrsqrt:
 mpfrrem:
 	@echo $@
 	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfrmemok1:
+	@echo $@
+	@$(AWK) -p/dev/stdout -M -f "$(srcdir)"/$@.awk 2>&1 | sed 1d > _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 jarebug::
