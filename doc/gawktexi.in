@@ -7271,7 +7271,7 @@ variable @code{FIELDWIDTHS}.  Each number specifies the width of the field,
 @emph{including} columns between fields.  If you want to ignore the columns
 between fields, you can specify the width as a separate field that is
 subsequently ignored.
-It is a fatal error to supply a field width that is not a positive number.
+It is a fatal error to supply a field width that has a negative value.
 The following data is the output of the Unix @command{w} utility.  It is useful
 to illustrate the use of @code{FIELDWIDTHS}:
 
@@ -14778,7 +14778,7 @@ In most other languages, arrays must be @dfn{declared} before use,
 including a specification of
 how many elements or components they contain.  In such languages, the
 declaration causes a contiguous block of memory to be allocated for that
-many elements.  Usually, an index in the array must be a positive integer.
+many elements.  Usually, an index in the array must be a nonnegative integer.
 For example, the index zero specifies the first element in the array, which is
 actually stored at the beginning of the block of memory.  Index one
 specifies the second element, which is stored in memory right after the
@@ -14958,7 +14958,7 @@ Now the array is @dfn{sparse}, which just means some indices are missing.
 It has elements 0--3 and 10, but doesn't have elements 4, 5, 6, 7, 8, or 9.
 
 Another consequence of associative arrays is that the indices don't
-have to be positive integers.  Any number, or even a string, can be
+have to be nonnegative integers.  Any number, or even a string, can be
 an index.  For example, the following is an array that translates words from
 English to French:
 
@@ -15221,7 +15221,7 @@ END @{
 
 In programs that use arrays, it is often necessary to use a loop that
 executes once for each element of an array.  In other languages, where
-arrays are contiguous and indices are limited to positive integers,
+arrays are contiguous and indices are limited to nonnegative integers,
 this is easy: all the valid indices can be found by counting from
 the lowest index up to the highest.  This technique won't do the job
 in @command{awk}, because any number or string can be an array index.
@@ -29256,8 +29256,8 @@ The disadvantage is that their range is limited.
 @cindex integers, unsigned
 In computers, integer values come in two flavors: @dfn{signed} and
 @dfn{unsigned}.  Signed values may be negative or positive, whereas
-unsigned values are always positive (i.e., greater than or equal
-to zero).
+unsigned values are always greater than or equal
+to zero.
 
 In computer systems, integer arithmetic is exact, but the possible
 range of values is limited.  Integer arithmetic is generally faster than
