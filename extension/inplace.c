@@ -171,10 +171,10 @@ do_inplace_begin(int nargs, awk_value_t *result)
 
 	/* N.B. chown/chmod should be more portable than fchown/fchmod */
 	if (chown(state.tname, sbuf.st_uid, sbuf.st_gid) < 0) {
-		/* jumping through hoops to silence gcc. :-( */
+		/* jumping through hoops to silence gcc and clang. :-( */
 		int junk;
 		junk = chown(state.tname, -1, sbuf.st_gid);
-		junk = junk;
+		++junk;
 	}
 
 	if (chmod(state.tname, sbuf.st_mode) < 0)

@@ -1,3 +1,9 @@
+2015-03-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pp_number): Allocate enough room to print the number
+	in all cases. Was a problem mixing -M with profiling with a really
+	big number. Thanks to Hermann Peifer for the bug report.
+
 2015-03-08         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* re.c (regexflags2str): Removed. It was redundant.
