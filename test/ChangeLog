@@ -1,5 +1,43 @@
+2015-03-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (mpfrmemok1): New test.
+	* mpfrmemok1.awk, mpfrmemok1.ok: New files.
+
+2015-03-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (fpat4): New test.
+	* fpat4.awk, fpat4.ok: New files.
+
+2015-03-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* nonfatal3.awk, nonfatal3.ok: Adjust for portability.
+	Thanks to Hermann Peifer for the report.
+
+2015-03-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* charasbytes.awk, ofs1.awk, range1.awk, sortglos.awk,
+	sortglos.in: Remove execute permission.
+
+2015-03-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* nonfatal1.awk: Do not print ERRNO, since the value appears to be
+	platform-dependent.  Instead, print (ERRNO != "").
+	* nonfatal1.ok: Update.
+
+2015-02-28         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (EXTRA_DIST): Add nonfatal3.{awk,ok}.
+	(GAWK_EXT_TESTS): Add nonfatal3.
+	* nonfatal1.awk: Replace "ti10/357" with "local:host/25", since
+	"local:host" should be a universally bad hostname due to the
+	invalid ":" character.
+	* nonfatal1.ok: Update.
+	* nonfatal3.{awk,ok}: New test for connecting to a TCP port where
+	nobody is listening.
+
 2015-02-27         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* nonfatal1.ok: Update after code changes.
 	* id.ok: Updated after code change.
 
 2015-02-26         Arnold D. Robbins     <arnold@skeeve.com>
@@ -16,6 +54,16 @@
 
 	* Makefile.am (profile0): New test.
 	* profile0.awk, profile0.in, profile0.ok: New files.
+
+2015-02-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* nonfatal1.awk, nonfatal2.awk: String is now "NONFATAL".
+
+2015-02-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (nonfatal1, nonfatal2): New tests.
+	* nonfatal1.awk, nonfatal1.ok: New files.
+	* nonfatal2.awk, nonfatal2.ok: New files.
 
 2015-02-01         Arnold D. Robbins     <arnold@skeeve.com>
 

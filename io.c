@@ -261,7 +261,6 @@ struct recmatch {
 
 
 static int iop_close(IOBUF *iop);
-struct redirect *redirect(NODE *redir_exp, int redirtype, int *errflg);
 static void close_one(void);
 static int close_redir(struct redirect *rp, bool exitwarn, two_way_close_type how);
 #ifndef PIPES_SIMULATED
@@ -727,7 +726,7 @@ redflags2str(int flags)
 /* redirect --- Redirection for printf and print commands */
 
 struct redirect *
-redirect(NODE *redir_exp, int redirtype, int *errflg)
+redirect(NODE *redir_exp, int redirtype, int *errflg, bool failure_fatal)
 {
 	struct redirect *rp;
 	char *str;
@@ -892,6 +891,12 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			(void) flush_io();
 
 			os_restore_mode(fileno(stdin));
+			/*
+			 * Don't check failure_fatal; see input pipe below.
+			 * Note that the failure happens upon failure to fork,
+			 * using a non-existant program will still succeed the
+			 * popen().
+			 */
 			if ((rp->output.fp = popen(str, binmode("w"))) == NULL)
 				fatal(_("can't open pipe `%s' for output (%s)"),
 						str, strerror(errno));
@@ -927,13 +932,11 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 		case redirect_twoway:
 			direction = "to/from";
 			if (! two_way_open(str, rp)) {
-#ifdef HAVE_SOCKETS
-				if (inetfile(str, NULL)) {
+				if (! failure_fatal || is_non_fatal_redirect(str)) {
 					*errflg = errno;
 					/* do not free rp, saving it for reuse (save_rp = rp) */
 					return NULL;
 				} else
-#endif
 					fatal(_("can't open two way pipe `%s' for input/output (%s)"),
 							str, strerror(errno));
 			}
@@ -1009,11 +1012,14 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 				 * can return -1.  For output to file,
 				 * complain. The shell will complain on
 				 * a bad command to a pipe.
+				 *
+				 * 12/2014: Take nonfatal settings in PROCINFO into account.
 				 */
 				if (errflg != NULL)
 					*errflg = errno;
-				if (   redirtype == redirect_output
-				    || redirtype == redirect_append) {
+				if (failure_fatal && ! is_non_fatal_redirect(str) &&
+				    (redirtype == redirect_output
+				     || redirtype == redirect_append)) {
 					/* multiple messages make life easier for translators */
 					if (*direction == 'f')
 						fatal(_("can't redirect from `%s' (%s)"),
@@ -1056,6 +1062,36 @@ getredirect(const char *str, int len)
 			return rp;
 
 	return NULL;
+}
+
+/* is_non_fatal_std --- return true if fp is stdout/stderr and nonfatal */
+
+bool
+is_non_fatal_std(FILE *fp)
+{
+	static const char nonfatal[] = "NONFATAL";
+
+	if (in_PROCINFO(nonfatal, NULL, NULL))
+		return true;
+
+	/* yucky logic. sigh. */
+	if (fp == stdout) {
+		return (   in_PROCINFO("-", nonfatal, NULL) != NULL
+		        || in_PROCINFO("/dev/stdout", nonfatal, NULL) != NULL);
+	} else if (fp == stderr) {
+		return (in_PROCINFO("/dev/stderr", nonfatal, NULL) != NULL);
+	}
+
+	return false;
+}
+
+/* is_non_fatal_redirect --- return true if redirected I/O should be nonfatal */
+
+bool
+is_non_fatal_redirect(const char *str)
+{
+	return in_PROCINFO("NONFATAL", NULL, NULL) != NULL
+	       || in_PROCINFO(str, "NONFATAL", NULL) != NULL;
 }
 
 /* close_one --- temporarily close an open file to re-use the fd */
@@ -1430,7 +1466,7 @@ str2mode(const char *mode)
 
 static int
 socketopen(int family, int type, const char *localpname,
-	const char *remotepname, const char *remotehostname)
+	const char *remotepname, const char *remotehostname, bool *hard_error)
 {
 	struct addrinfo *lres, *lres0;
 	struct addrinfo lhints;
@@ -1449,8 +1485,11 @@ socketopen(int family, int type, const char *localpname,
 
 	lerror = getaddrinfo(NULL, localpname, & lhints, & lres);
 	if (lerror) {
-		if (strcmp(localpname, "0") != 0)
-			fatal(_("local port %s invalid in `/inet'"), localpname);
+		if (strcmp(localpname, "0") != 0) {
+			warning(_("local port %s invalid in `/inet'"), localpname);
+			*hard_error = true;
+			return INVALID_HANDLE;
+		}
 		lres0 = NULL;
 		lres = & lhints;
 	} else
@@ -1468,7 +1507,9 @@ socketopen(int family, int type, const char *localpname,
 		if (rerror) {
 			if (lres0 != NULL)
 				freeaddrinfo(lres0);
-			fatal(_("remote host and port information (%s, %s) invalid"), remotehostname, remotepname);
+			warning(_("remote host and port information (%s, %s) invalid"), remotehostname, remotepname);
+			*hard_error = true;
+			return INVALID_HANDLE;
 		}
 		rres0 = rres;
 		socket_fd = INVALID_HANDLE;
@@ -1577,6 +1618,7 @@ devopen(const char *name, const char *mode)
 	char *ptr;
 	int flag = 0;
 	struct inet_socket_info isi;
+	int save_errno = 0;
 
 	if (strcmp(name, "-") == 0)
 		return fileno(stdin);
@@ -1619,19 +1661,20 @@ devopen(const char *name, const char *mode)
 		goto strictopen;
 	} else if (inetfile(name, & isi)) {
 #ifdef HAVE_SOCKETS
+#define DEFAULT_RETRIES 20
+		static unsigned long def_retries = DEFAULT_RETRIES;
+		static bool first_time = true;
+		unsigned long retries = 0;
+		static long msleep = 1000;
+		bool hard_error = false;
+		bool non_fatal = is_non_fatal_redirect(name);
+
 		cp = (char *) name;
 
 		/* socketopen requires NUL-terminated strings */
 		cp[isi.localport.offset+isi.localport.len] = '\0';
 		cp[isi.remotehost.offset+isi.remotehost.len] = '\0';
 		/* remoteport comes last, so already NUL-terminated */
-
-		{
-#define DEFAULT_RETRIES 20
-		static unsigned long def_retries = DEFAULT_RETRIES;
-		static bool first_time = true;
-		unsigned long retries = 0;
-		static long msleep = 1000;
 
 		if (first_time) {
 			char *cp, *end;
@@ -1658,25 +1701,41 @@ devopen(const char *name, const char *mode)
 					msleep *= 1000;
 			}
 		}
-		retries = def_retries;
+		/*
+		 * PROCINFO["NONFATAL"] or PROCINFO[name, "NONFATAL"] overrrides
+		 * GAWK_SOCK_RETRIES.  The explicit code in the program carries
+		 * a bigger stick than the environment variable does.
+		 */
+		retries = non_fatal ? 1 : def_retries;
 
+		errno = 0;
 		do {
-			openfd = socketopen(isi.family, isi.protocol, name+isi.localport.offset, name+isi.remoteport.offset, name+isi.remotehost.offset);
+			openfd = socketopen(isi.family, isi.protocol, name+isi.localport.offset,
+					name+isi.remoteport.offset, name+isi.remotehost.offset,
+					& hard_error);
 			retries--;
-		} while (openfd == INVALID_HANDLE && retries > 0 && usleep(msleep) == 0);
-	}
+		} while (openfd == INVALID_HANDLE && ! hard_error && retries > 0 && usleep(msleep) == 0);
+		save_errno = errno;
 
-	/* restore original name string */
-	cp[isi.localport.offset+isi.localport.len] = '/';
-	cp[isi.remotehost.offset+isi.remotehost.len] = '/';
+		/* restore original name string */
+		cp[isi.localport.offset+isi.localport.len] = '/';
+		cp[isi.remotehost.offset+isi.remotehost.len] = '/';
 #else /* ! HAVE_SOCKETS */
-	fatal(_("TCP/IP communications are not supported"));
+		fatal(_("TCP/IP communications are not supported"));
 #endif /* HAVE_SOCKETS */
 	}
 
 strictopen:
-	if (openfd == INVALID_HANDLE)
+	if (openfd == INVALID_HANDLE) {
 		openfd = open(name, flag, 0666);
+		/*
+		 * ENOENT means there is no such name in the filesystem.
+		 * Therefore it's ok to propagate up the error from
+		 * getaddrinfo() that's in save_errno.
+		 */
+		if (openfd == INVALID_HANDLE && errno == ENOENT && save_errno)
+			errno = save_errno;
+	}
 #if defined(__EMX__) || defined(__MINGW32__)
 	if (openfd == INVALID_HANDLE && errno == EACCES) {
 		/* On OS/2 and Windows directory access via open() is
@@ -2421,7 +2480,7 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 
 	assert(redirtype != redirect_none);
 	redir_exp = TOP();
-	rp = redirect(redir_exp, redirtype, & redir_error);
+	rp = redirect(redir_exp, redirtype, & redir_error, false);
 	DEREF(redir_exp);
 	decr_sp();
 	if (rp == NULL) {
@@ -3656,8 +3715,10 @@ pty_vs_pipe(const char *command)
 #ifdef HAVE_TERMIOS_H
 	NODE *val;
 
-	if (PROCINFO_node == NULL)
-		return false;
+	/*
+	 * N.B. No need to check for NULL PROCINFO_node, since the
+	 * in_PROCINFO function now checks that for us.
+	 */
 	val = in_PROCINFO(command, "pty", NULL);
 	if (val) {
 		if ((val->flags & MAYBE_NUM) != 0)
@@ -3799,12 +3860,21 @@ in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx)
 	NODE *r, *sub = NULL; 
 	NODE *subsep = SUBSEP_node->var_value;
 
+	if (PROCINFO_node == NULL || (pidx1 == NULL && pidx2 == NULL))
+		return NULL;
+
 	/* full_idx is in+out parameter */
 
 	if (full_idx)
 		sub = *full_idx;
 
-	str_len = strlen(pidx1) + subsep->stlen	+ strlen(pidx2);
+	if (pidx1 != NULL && pidx2 == NULL)
+		str_len = strlen(pidx1);
+	else if (pidx1 == NULL && pidx2 != NULL)
+		str_len = strlen(pidx2);
+	else
+		str_len = strlen(pidx1) + subsep->stlen	+ strlen(pidx2);
+
 	if (sub == NULL) {
 		emalloc(str, char *, str_len + 1, "in_PROCINFO");
 		sub = make_str_node(str, str_len, ALREADY_MALLOCED);
@@ -3818,8 +3888,14 @@ in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx)
 		sub->stlen = str_len;
 	}
 
-	sprintf(sub->stptr, "%s%.*s%s", pidx1, (int)subsep->stlen,
-			subsep->stptr, pidx2);
+	if (pidx1 != NULL && pidx2 == NULL)
+		strcpy(sub->stptr, pidx1);
+	else if (pidx1 == NULL && pidx2 != NULL)
+		strcpy(sub->stptr, pidx2);
+	else
+		sprintf(sub->stptr, "%s%.*s%s", pidx1, (int)subsep->stlen,
+				subsep->stptr, pidx2);
+
 	r = in_array(PROCINFO_node, sub);
 	if (! full_idx)
 		unref(sub);

@@ -1,3 +1,40 @@
+2015-03-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pp_number): Allocate enough room to print the number
+	in all cases. Was a problem mixing -M with profiling with a really
+	big number. Thanks to Hermann Peifer for the bug report.
+
+2015-03-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* re.c (regexflags2str): Removed. It was redundant.
+
+	* io.c (devopen): Change the logic such that if nonfatal is true
+	for the socket, don't do retries.  Also clean up the formatting
+	some.  At strictopen, check if errno is ENOENT and if so, propagate
+	the error from getaddrinfo() up to the caller. Add explanatory
+	comments.
+
+2015-02-28         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (pty_vs_pipe): Remove check for NULL PROCINFO_node, since
+	this is now checked inside in_PROCINFO.
+
+2015-02-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (socketopen): New parameter hard_error; set it if
+	getaddrinfo() fails. Change fatals to warnings.
+	(devopen): Pass in address of boolean hard_error variable
+	and stop trying to open the file if hard_error is true.
+	Save and restore errno around call to socketopen() and
+	use restored errno if open() fails at strictopen.
+
+2015-02-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* symbol.c (check_param_names): Fix argument order in memset() call.
+	* configure.ac: Use AC_SEARCH_LIBS instead of AC_CHECK_LIB. This fixes
+	a long-standing problem where `-lm' was used twice in the final
+	compilation line.
+
 2015-02-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Start on making regexp a real type.
@@ -39,6 +76,29 @@
 
 	* profile.c (pprint): Restore printing of count for rules.
 	Bug report by Hermann Peifer.
+
+2015-02-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c: Make it "NONFATAL" everywhere.
+
+2015-02-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (RED_NON_FATAL): Removed.
+	(redirect): Add new failure_fatal parameter.
+	(is_non_fatal_redirect): Add declaration.
+	* builtin.c (efwrite): Rework check for non-fatal.
+	(do_printf): Adjust calls to redirect.
+	(do_print_rec): Ditto. Move check for redirection error up.
+	* io.c (redflags2str): Remove RED_NON_FATAL.
+	(redirect): Add new failure_fatal parameter. Simplify the code.
+	(is_non_fatal_redirect): New function.
+	(do_getline_redir): Adjust calls to redirect.
+
+2014-12-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (is_non_fatal_std): Declare new function.
+	* io.c (is_non_fatal_std): New function.
+	* builtin.c (efwrite): Call it.
 
 2015-02-07         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -146,6 +206,22 @@
 
 	* profile.c (pprint): Be sure to set ip2 in all paths
 	through the code. Thanks to GCC 4.9 for the warning.
+
+2014-12-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Enable non-fatal output on per-file or global basis,
+	via PROCINFO.
+
+	* awk.h (RED_NON_FATAL): New redirection flag.
+	* builtin.c (efwrite): If RED_NON_FATAL set, just set ERRNO and return.
+	(do_printf): Check errflg and if set, set ERRNO and return.
+	(do_print): Ditto.
+	(do_print_rec): Ditto.
+	* io.c (redflags2str): Update table.
+	(redirect): Check for global PROCINFO["nonfatal"] or for
+	PROCINFO[file, "nonfatal"] and don't fail on open if set.
+	Add RED_NON_FATAL to flags.
+	(in_PROCINFO): Make smarter and more general.
 
 2014-12-12        Stephen Davies         <sdavies@sdc.com.au>
 

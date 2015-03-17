@@ -633,6 +633,7 @@ particular records in a file and perform operations upon them.
 * Special Caveats::                     Things to watch out for.
 * Close Files And Pipes::               Closing Input and Output Files and
                                         Pipes.
+* Nonfatal::                            Enabling Nonfatal Output.
 * Output Summary::                      Output summary.
 * Output Exercises::                    Exercises.
 * Values::                              Constants, Variables, and Regular
@@ -4549,6 +4550,8 @@ wait for input before returning with an error.
 Controls the number of times @command{gawk} attempts to
 retry a two-way TCP/IP (socket) connection before giving up.
 @xref{TCP/IP Networking}.
+Note that when nonfatal I/O is enabled (@pxref{Nonfatal}),
+@command{gawk} only tries to open a TCP/IP socket once.
 
 @item POSIXLY_CORRECT
 Causes @command{gawk} to switch to POSIX-compatibility
@@ -7672,7 +7675,7 @@ variable @code{FIELDWIDTHS}.  Each number specifies the width of the field,
 @emph{including} columns between fields.  If you want to ignore the columns
 between fields, you can specify the width as a separate field that is
 subsequently ignored.
-It is a fatal error to supply a field width that is not a positive number.
+It is a fatal error to supply a field width that has a negative value.
 The following data is the output of the Unix @command{w} utility.  It is useful
 to illustrate the use of @code{FIELDWIDTHS}:
 
@@ -8935,6 +8938,7 @@ and discusses the @code{close()} built-in function.
                                 @command{gawk} allows access to inherited file
                                 descriptors.
 * Close Files And Pipes::       Closing Input and Output Files and Pipes.
+* Nonfatal::                    Enabling Nonfatal Output.
 * Output Summary::              Output summary.
 * Output Exercises::            Exercises.
 @end menu
@@ -10441,6 +10445,71 @@ when closing a pipe.
 @end ifnotdocbook
 
 
+@node Nonfatal
+@section Enabling Nonfatal Output
+
+This @value{SECTION} describes a @command{gawk}-specific feature.
+
+In standard @command{awk}, output with @code{print} or @code{printf}
+to a nonexistent file, or some other I/O error (such as filling up the
+disk) is a fatal error.
+
+@example
+$ @kbd{gawk 'BEGIN @{ print "hi" > "/no/such/file" @}'}
+@error{} gawk: cmd. line:1: fatal: can't redirect to `/no/such/file' (No such file or directory)
+@end example
+
+@command{gawk} makes it possible to detect that an error has
+occurred, allowing you to possibly recover from the error, or
+at least print an error message of your choosing before exiting.
+You can do this in one of two ways:
+
+@itemize @bullet
+@item
+For all output files, by assigning any value to @code{PROCINFO["NONFATAL"]}.
+
+@item
+On a per-file basis, by assigning any value to
+@code{PROCINFO[@var{filename}, "NONFATAL"]}.
+Here, @var{filename} is the name of the file to which
+you wish output to be nonfatal.
+@end itemize
+
+Once you have enabled nonfatal output, you must check @code{ERRNO}
+after every relevant @code{print} or @code{printf} statement to
+see if something went wrong.  It is also a good idea to initialize
+@code{ERRNO} to zero before attempting the output. For example:
+
+@example
+$ @kbd{gawk '}
+> @kbd{BEGIN @{}
+> @kbd{    PROCINFO["NONFATAL"] = 1}
+> @kbd{    ERRNO = 0}
+> @kbd{    print "hi" > "/no/such/file"}
+> @kbd{    if (ERRNO) @{}
+> @kbd{        print("Output failed:", ERRNO) > "/dev/stderr"}
+> @kbd{        exit 1}
+> @kbd{    @}}
+> @kbd{@}'}
+@error{} Output failed: No such file or directory
+@end example
+
+Here, @command{gawk} did not produce a fatal error; instead
+it let the @command{awk} program code detect the problem and handle it.
+
+This mechanism works also for standard output and standard error.
+For standard output, you may use @code{PROCINFO["-", "NONFATAL"]}
+or @code{PROCINFO["/dev/stdout", "NONFATAL"]}.  For standard error, use
+@code{PROCINFO["/dev/stderr", "NONFATAL"]}.
+
+When attempting to open a TCP/IP socket (@pxref{TCP/IP Networking}),
+@command{gawk} tries multiple times. The @env{GAWK_SOCK_RETRIES}
+environment variable (@pxref{Other Environment Variables}) allows you to
+override @command{gawk}'s builtin default number of attempts.  However,
+once nonfatal I/O is enabled for a given socket, @command{gawk} only
+retries once, relying on @command{awk}-level code to notice that there
+was a problem.
+
 @node Output Summary
 @section Summary
 
@@ -10468,6 +10537,12 @@ output, and error, and for network communications.
 Use @code{close()} to close open file, pipe, and coprocess redirections.
 For coprocesses, it is possible to close only one direction of the
 communications.
+
+@item
+Normally errors with @code{print} or @code{printf} are fatal.
+@command{gawk} lets you make output errors be nonfatal either for
+all files or on a per-file basis. You must then check for errors
+after every relevant output statement.
 
 @end itemize
 
@@ -12004,6 +12079,9 @@ the string constant @code{"0"} is actually true, because it is non-null.
 @i{The Guide is definitive. Reality is frequently inaccurate.}
 @author Douglas Adams, @cite{The Hitchhiker's Guide to the Galaxy}
 @end quotation
+@c 2/2015: Antonio Colombo points out that this is really from
+@c The Restaurant at the End of the Universe. But I'm going to
+@c leave it alone.
 
 @cindex comparison expressions
 @cindex expressions, comparison
@@ -15508,7 +15586,7 @@ In most other languages, arrays must be @dfn{declared} before use,
 including a specification of
 how many elements or components they contain.  In such languages, the
 declaration causes a contiguous block of memory to be allocated for that
-many elements.  Usually, an index in the array must be a positive integer.
+many elements.  Usually, an index in the array must be a nonnegative integer.
 For example, the index zero specifies the first element in the array, which is
 actually stored at the beginning of the block of memory.  Index one
 specifies the second element, which is stored in memory right after the
@@ -15688,7 +15766,7 @@ Now the array is @dfn{sparse}, which just means some indices are missing.
 It has elements 0--3 and 10, but doesn't have elements 4, 5, 6, 7, 8, or 9.
 
 Another consequence of associative arrays is that the indices don't
-have to be positive integers.  Any number, or even a string, can be
+have to be nonnegative integers.  Any number, or even a string, can be
 an index.  For example, the following is an array that translates words from
 English to French:
 
@@ -15951,7 +16029,7 @@ END @{
 
 In programs that use arrays, it is often necessary to use a loop that
 executes once for each element of an array.  In other languages, where
-arrays are contiguous and indices are limited to positive integers,
+arrays are contiguous and indices are limited to nonnegative integers,
 this is easy: all the valid indices can be found by counting from
 the lowest index up to the highest.  This technique won't do the job
 in @command{awk}, because any number or string can be an array index.
@@ -17073,7 +17151,7 @@ for generating random numbers to the value @var{x}.
 
 Each seed value leads to a particular sequence of random
 numbers.@footnote{Computer-generated random numbers really are not truly
-random.  They are technically known as ``pseudorandom.''  This means
+random.  They are technically known as @dfn{pseudorandom}.  This means
 that although the numbers in a sequence appear to be random, you can in
 fact generate the same sequence of random numbers over and over again.}
 Thus, if the seed is set to the same value a second time,
@@ -30209,8 +30287,8 @@ The disadvantage is that their range is limited.
 @cindex integers, unsigned
 In computers, integer values come in two flavors: @dfn{signed} and
 @dfn{unsigned}.  Signed values may be negative or positive, whereas
-unsigned values are always positive (i.e., greater than or equal
-to zero).
+unsigned values are always greater than or equal
+to zero.
 
 In computer systems, integer arithmetic is exact, but the possible
 range of values is limited.  Integer arithmetic is generally faster than
@@ -35700,6 +35778,10 @@ Indirect function calls
 @item
 Directories on the command line produce a warning and are skipped
 (@pxref{Command-line directories})
+
+@item
+Output with @code{print} and @code{printf} need not be fatal
+(@pxref{Nonfatal})
 @end itemize
 
 @item
@@ -36577,6 +36659,10 @@ The @code{div()} function.
 The maximum number of hexdecimal digits in @samp{\x} escapes
 is now two.
 @xref{Escape Sequences}.
+
+@item
+Nonfatal output with @code{print} and @code{printf}.
+@xref{Nonfatal}.
 
 @item
 Support for MirBSD was removed.

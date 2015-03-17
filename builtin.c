@@ -129,10 +129,14 @@ wrerror:
 	if (fp == stdout && errno == EPIPE)
 		gawk_exit(EXIT_FATAL);
 
+
 	/* otherwise die verbosely */
-	fatal(_("%s to \"%s\" failed (%s)"), from,
-		rp ? rp->value : _("standard output"),
-		errno ? strerror(errno) : _("reason unknown"));
+	if ((rp != NULL) ? is_non_fatal_redirect(rp->value) : is_non_fatal_std(fp))
+		update_ERRNO_int(errno);
+	else
+		fatal(_("%s to \"%s\" failed (%s)"), from,
+			rp ? rp->value : _("standard output"),
+			errno ? strerror(errno) : _("reason unknown"));
 }
 
 /* do_exp --- exponential function */
@@ -1639,7 +1643,7 @@ do_printf(int nargs, int redirtype)
 	FILE *fp = NULL;
 	NODE *tmp;
 	struct redirect *rp = NULL;
-	int errflg;	/* not used, sigh */
+	int errflg = 0;
 	NODE *redir_exp = NULL;
 
 	if (nargs == 0) {
@@ -1650,7 +1654,7 @@ do_printf(int nargs, int redirtype)
 				redir_exp = TOP();
 				if (redir_exp->type != Node_val)
 					fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
-				rp = redirect(redir_exp, redirtype, & errflg);
+				rp = redirect(redir_exp, redirtype, & errflg, true);
 				DEREF(redir_exp);
 				decr_sp();
 			}
@@ -1663,9 +1667,13 @@ do_printf(int nargs, int redirtype)
 		redir_exp = PEEK(nargs);
 		if (redir_exp->type != Node_val)
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
-		rp = redirect(redir_exp, redirtype, & errflg);
+		rp = redirect(redir_exp, redirtype, & errflg, true);
 		if (rp != NULL)
 			fp = rp->output.fp;
+		else if (errflg) {
+			update_ERRNO_int(errflg);
+			return;
+		}
 	} else if (do_debug)	/* only the debugger can change the default output */
 		fp = output_fp;
 	else
@@ -2078,7 +2086,7 @@ void
 do_print(int nargs, int redirtype)
 {
 	struct redirect *rp = NULL;
-	int errflg;	/* not used, sigh */
+	int errflg = 0;
 	FILE *fp = NULL;
 	int i;
 	NODE *redir_exp = NULL;
@@ -2090,9 +2098,13 @@ do_print(int nargs, int redirtype)
 		redir_exp = PEEK(nargs);
 		if (redir_exp->type != Node_val)
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
-		rp = redirect(redir_exp, redirtype, & errflg);
+		rp = redirect(redir_exp, redirtype, & errflg, true);
 		if (rp != NULL)
 			fp = rp->output.fp;
+		else if (errflg) {
+			update_ERRNO_int(errflg);
+			return;
+		}
 	} else if (do_debug)	/* only the debugger can change the default output */
 		fp = output_fp;
 	else
@@ -2148,19 +2160,24 @@ do_print_rec(int nargs, int redirtype)
 	FILE *fp = NULL;
 	NODE *f0;
 	struct redirect *rp = NULL;
-	int errflg;	/* not used, sigh */
+	int errflg = 0;
 	NODE *redir_exp = NULL;
 
 	assert(nargs == 0);
 	if (redirtype != 0) {
 		redir_exp = TOP();
-		rp = redirect(redir_exp, redirtype, & errflg);
+		rp = redirect(redir_exp, redirtype, & errflg, true);
 		if (rp != NULL)
 			fp = rp->output.fp;
 		DEREF(redir_exp);
 		decr_sp();
 	} else
 		fp = output_fp;
+
+	if (errflg) {
+		update_ERRNO_int(errflg);
+		return;
+	}
 
 	if (fp == NULL)
 		return;

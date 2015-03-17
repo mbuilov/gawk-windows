@@ -285,6 +285,8 @@ EXTRA_DIST = \
 	fpat3.awk \
 	fpat3.in \
 	fpat3.ok \
+	fpat4.awk \
+	fpat4.ok \
 	fpatnull.awk \
 	fpatnull.in \
 	fpatnull.ok \
@@ -535,6 +537,8 @@ EXTRA_DIST = \
 	mpfrexprange.ok \
 	mpfrieee.awk \
 	mpfrieee.ok \
+	mpfrmemok1.awk \
+	mpfrmemok1.ok \
 	mpfrnegzero.awk \
 	mpfrnegzero.ok \
 	mpfrnr.awk \
@@ -599,6 +603,12 @@ EXTRA_DIST = \
 	nondec.ok \
 	nondec2.awk \
 	nondec2.ok \
+	nonfatal1.awk \
+	nonfatal1.ok \
+	nonfatal2.awk \
+	nonfatal2.ok \
+	nonfatal3.awk \
+	nonfatal3.ok \
 	nonl.awk \
 	nonl.ok \
 	noparms.awk \
@@ -1038,7 +1048,7 @@ GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
 	colonwarn clos1way crlf dbugeval delsub devfd devfd1 devfd2 dumpvars exit \
-	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
+	fieldwdth fpat1 fpat2 fpat3 fpat4 fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
 	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcase \
@@ -1047,6 +1057,7 @@ GAWK_EXT_TESTS = \
 	lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm next nondec nondec2 \
+	nonfatal1 nonfatal2 nonfatal3 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge procinfs \
 	profile0 profile1 profile2 profile3 profile4 profile5 profile6 profile7 \
 	profile8 pty1 \
@@ -1062,8 +1073,8 @@ INET_TESTS = inetdayu inetdayt inetechu inetecht
 
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 
-MPFR_TESTS = mpfrnr mpfrnegzero mpfrrem mpfrrnd mpfrieee mpfrexprange \
-	mpfrsort mpfrsqrt mpfrbigint
+MPFR_TESTS = mpfrnr mpfrnegzero mpfrmemok1 mpfrrem mpfrrnd mpfrieee \
+	mpfrexprange mpfrsort mpfrsqrt mpfrbigint
 
 LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
@@ -1817,6 +1828,11 @@ mpfrsqrt:
 mpfrrem:
 	@echo $@
 	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfrmemok1:
+	@echo $@
+	@$(AWK) -p/dev/stdout -M -f "$(srcdir)"/$@.awk 2>&1 | sed 1d > _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 jarebug::
