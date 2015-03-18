@@ -1,5 +1,16 @@
 2015-03-18         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* builtin.c (do_typeof): Be smarter about checking for uninitialized
+	values; can now detect and return "untyped" for such values.
+	* awkgram.y (yylex): Collect @/.../ entirely in the lexer and return
+	a new terminal (HARD_REGEX).
+	(regexp): Reverted to just a regular awk regexp constant.
+	(hard_regexp): New nonterminal, can be used only in direct
+	assignment and as an argument in function call. New set of nonterminals
+	for function call expression lists.  More work still to do.
+
+2015-03-18         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* config.guess, config.sub: Updated, from libtool 2.4.6.
 
 2015-03-17         Arnold D. Robbins     <arnold@skeeve.com>

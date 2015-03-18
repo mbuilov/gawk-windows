@@ -164,7 +164,7 @@ extern double fmod(double x, double y);
 %}
 
 %token FUNC_CALL NAME REGEXP FILENAME
-%token YNUMBER YSTRING
+%token YNUMBER YSTRING HARD_REGEXP
 %token RELOP IO_OUT IO_IN
 %token ASSIGNOP ASSIGN MATCHOP CONCAT_OP
 %token SUBSCRIPT
@@ -192,7 +192,7 @@ extern double fmod(double x, double y);
 %left MATCHOP
 %nonassoc RELOP '<' '>' IO_IN IO_OUT
 %left CONCAT_OP
-%left YSTRING YNUMBER
+%left YSTRING YNUMBER HARD_REGEXP
 %left '+' '-'
 %left '*' '/' '%'
 %right '!' UNARY
@@ -454,16 +454,6 @@ function_prologue
 	;
 
 regexp
-	: normal_regexp
-		{ $$ = $1; }
-	| '@' normal_regexp
-	  {
-		$2->memory->type = Node_hardregex;
-		$$ = $2;
-	  }
-	;
-
-normal_regexp
 	/*
 	 * In this rule, want_regexp tells yylex that the next thing
 	 * is a regexp so it should read up to the closing slash.
@@ -500,6 +490,33 @@ normal_regexp
 		  $$->memory = n;
 		}
 	;
+
+hard_regexp
+	: HARD_REGEXP
+		{
+		  NODE *n, *exp;
+		  char *re;
+		  size_t len;
+
+		  re = $1->lextok;
+		  $1->lextok = NULL;
+		  len = strlen(re);
+
+		  exp = make_str_node(re, len, ALREADY_MALLOCED);
+		  n = make_regnode(Node_hardregex, exp);
+		  if (n == NULL) {
+			unref(exp);
+			YYABORT;
+		  }
+		  $$ = $1;
+#if 0
+		  /* Don't set this, on purpose */
+		  /* $$->opcode = Op_match_rec; */
+#else
+		  $$->opcode = Op_push_re;
+#endif
+		  $$->memory = n;
+		}
 
 a_slash
 	: '/'
@@ -1202,6 +1219,12 @@ case_value
 			$1->opcode = Op_push;
 		$$ = $1;
 	  }
+	| hard_regexp  
+	  {
+		assert($1->memory->type == Node_hardregex);
+		$1->opcode = Op_push_re;
+		$$ = $1;
+	  }
 	;
 
 print
@@ -1344,6 +1367,48 @@ expression_list
 	  }
 	;
 
+opt_fcall_expression_list
+	: /* empty */
+	  { $$ = NULL; }
+	| fcall_expression_list
+	  { $$ = $1; }
+	;
+
+fcall_expression_list
+	: fcall_exp
+	  {	$$ = mk_expression_list(NULL, $1); }
+	| fcall_expression_list comma fcall_exp
+	  {
+		$$ = mk_expression_list($1, $3);
+		yyerrok;
+	  }
+	| error
+	  { $$ = NULL; }
+	| fcall_expression_list error
+	  {
+		/*
+		 * Returning the expression list instead of NULL lets
+		 * snode get a list of arguments that it can count.
+		 */
+		$$ = $1;
+	  }
+	| fcall_expression_list error fcall_exp
+	  {
+		/* Ditto */
+		$$ = mk_expression_list($1, $3);
+	  }
+	| fcall_expression_list comma error
+	  {
+		/* Ditto */
+		$$ = $1;
+	  }
+	;
+
+fcall_exp
+	: exp { $$ = $1; }
+	| hard_regexp { $$ = list_create($1); }
+	;
+
 /* Expressions, not including the comma operator.  */
 exp
 	: variable assign_operator exp %prec ASSIGNOP
@@ -1352,6 +1417,11 @@ exp
 			lintwarn_ln($2->source_line,
 				_("regular expression on right of assignment"));
 		$$ = mk_assignment($1, $3, $2);
+	  }
+	| variable ASSIGN hard_regexp %prec ASSIGNOP
+	  {
+		stopme(0);
+		$$ = mk_assignment($1, list_create($3), $2);
 	  }
 	| exp LEX_AND exp
 	  {	$$ = mk_boolean($1, $3, $2); }
@@ -1599,13 +1669,13 @@ non_post_simp_exp
 	   }
 	| '(' exp r_paren
 	  { $$ = $2; }
-	| LEX_BUILTIN '(' opt_expression_list r_paren
+	| LEX_BUILTIN '(' opt_fcall_expression_list r_paren
 	  {
 		$$ = snode($3, $1);
 		if ($$ == NULL)
 			YYABORT;
 	  }
-	| LEX_LENGTH '(' opt_expression_list r_paren
+	| LEX_LENGTH '(' opt_fcall_expression_list r_paren
 	  {
 		$$ = snode($3, $1);
 		if ($$ == NULL)
@@ -1714,7 +1784,7 @@ func_call
 	;
 
 direct_func_call
-	: FUNC_CALL '(' opt_expression_list r_paren
+	: FUNC_CALL '(' opt_fcall_expression_list r_paren
 	  {
 		NODE *n;
 
@@ -3197,6 +3267,7 @@ yylex(void)
 	bool inhex = false;
 	bool intlstr = false;
 	AWKNUM d;
+	bool collecting_hard_regexp = false;
 
 #define GET_INSTRUCTION(op) bcalloc(op, 1, sourceline)
 
@@ -3231,6 +3302,7 @@ yylex(void)
 
 	lexeme = lexptr;
 	thisline = NULL;
+collect_regexp:
 	if (want_regexp) {
 		int in_brack = 0;	/* count brackets, [[:alnum:]] allowed */
 		/*
@@ -3307,7 +3379,13 @@ end_regexp:
 								peek);
 					}
 				}
-				return lasttok = REGEXP;
+				if (collecting_hard_regexp) {
+					collecting_hard_regexp = false;
+					lasttok = HARD_REGEXP;
+				} else
+					lasttok = REGEXP;
+
+				return lasttok;
 			case '\n':
 				pushback();
 				yyerror(_("unterminated regexp"));
@@ -3365,6 +3443,13 @@ retry:
 		return lasttok = NEWLINE;
 
 	case '@':
+		c = nextc(true);
+		if (c == '/') {
+			want_regexp = true;
+			collecting_hard_regexp = true;
+			goto collect_regexp;
+		}
+		pushback();
 		at_seen = true;
 		return lasttok = '@';
 
