@@ -34830,11 +34830,16 @@ properly:
 # Please set INPLACE_SUFFIX to make a backup copy.  For example, you may
 # want to set INPLACE_SUFFIX to .bak on the command line or in a BEGIN rule.
 
+# N.B. We call inplace_end() in the BEGINFILE and END rules so that any
+# actions in an ENDFILE rule will be redirected as expected.
+
 BEGINFILE @{
-    inplace_begin(FILENAME, INPLACE_SUFFIX)
+    if (_inplace_filename != "")
+        inplace_end(_inplace_filename, INPLACE_SUFFIX)
+    inplace_begin(_inplace_filename = FILENAME, INPLACE_SUFFIX)
 @}
 
-ENDFILE @{
+END @{
     inplace_end(FILENAME, INPLACE_SUFFIX)
 @}
 @end group
@@ -34848,6 +34853,10 @@ the extension restores standard output to its original destination.
 If @code{INPLACE_SUFFIX} is not an empty string, the original file is
 linked to a backup @value{FN} created by appending that suffix.  Finally,
 the temporary file is renamed to the original @value{FN}.
+
+The @code{_inplace_filename} variable serves to keep track of the
+current filename so as to not invoke @code{inplace_end()} before
+processing the first file.
 
 If any error occurs, the extension issues a fatal error to terminate
 processing immediately without damaging the original file.
