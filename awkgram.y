@@ -1219,7 +1219,7 @@ case_value
 			$1->opcode = Op_push;
 		$$ = $1;
 	  }
-	| hard_regexp  
+	| hard_regexp
 	  {
 		assert($1->memory->type == Node_hardregex);
 		$1->opcode = Op_push_re;
@@ -1420,13 +1420,27 @@ exp
 	  }
 	| variable ASSIGN hard_regexp %prec ASSIGNOP
 	  {
-		stopme(0);
 		$$ = mk_assignment($1, list_create($3), $2);
 	  }
 	| exp LEX_AND exp
 	  {	$$ = mk_boolean($1, $3, $2); }
 	| exp LEX_OR exp
 	  {	$$ = mk_boolean($1, $3, $2); }
+	| exp MATCHOP hard_regexp
+	  {
+		if ($1->lasti->opcode == Op_match_rec)
+			warning_ln($2->source_line,
+				_("regular expression on left of `~' or `!~' operator"));
+
+		assert($3->lasti == $3->nexti
+		   && $3->nexti->opcode == Op_push_re
+		   && $3->nexti->memory->type == Node_hardregex);
+		/* RHS is @/.../ */
+		$2->memory = $3->nexti->memory;
+		bcfree($3->nexti);	/* Op_push_re */
+		bcfree($3);			/* Op_list */
+		$$ = list_append($1, $2);
+	  }
 	| exp MATCHOP exp
 	  {
 		if ($1->lasti->opcode == Op_match_rec)
@@ -1434,6 +1448,7 @@ exp
 				_("regular expression on left of `~' or `!~' operator"));
 
 		if ($3->lasti == $3->nexti && $3->nexti->opcode == Op_match_rec) {
+			/* RHS is /.../ */
 			$2->memory = $3->nexti->memory;
 			bcfree($3->nexti);	/* Op_match_rec */
 			bcfree($3);			/* Op_list */
@@ -4843,6 +4858,8 @@ mk_rexp(INSTRUCTION *list)
 	ip = list->nexti;
 	if (ip == list->lasti && ip->opcode == Op_match_rec)
 		ip->opcode = Op_push_re;
+	else if (ip == list->lasti && ip->opcode == Op_push_re)
+		; /* do nothing --- @/.../ */
 	else {
 		ip = instruction(Op_push_re);
 		ip->memory = make_regnode(Node_dynregex, NULL);

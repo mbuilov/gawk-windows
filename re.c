@@ -355,6 +355,10 @@ re_update(NODE *t)
 			return t->re_reg;
 		}
 		t1 = t->re_exp;
+		if (t1->type == Node_hardregex) {
+			assert((t1->re_flags & CONSTANT) != 0);
+			return t1->re_reg;
+		}
 		if (t->re_text != NULL) {
 			/* if contents haven't changed, just return it */
 			if (cmp_nodes(t->re_text, t1) == 0)
