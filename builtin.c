@@ -2994,6 +2994,29 @@ done:
 	return make_number((AWKNUM) matches);
 }
 
+/* call_sub_func --- call do_sub indirectly */
+
+NODE *
+call_sub_func(const char *name, int nargs)
+{
+	unsigned int flags = 0;
+	NODE *tmp;
+
+	if (name[0] == 'g') {
+		if (name[1] == 'e')
+			flags = GENSUB;
+		else
+			flags = GSUB;
+	}
+
+	tmp = PEEK(1);
+	if (tmp->type == Node_val) {
+		flags |= LITERAL;
+	}
+
+	return do_sub(nargs, flags);
+}
+
 
 /* make_integer - Convert an integer to a number node.  */
 

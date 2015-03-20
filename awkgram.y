@@ -5630,12 +5630,25 @@ lookup_builtin(const char *name)
 {
 	int mid = check_special(name);
 
-	if (mid == -1 || tokentab[mid].class != LEX_BUILTIN)
+	if (mid == -1)
 		return NULL;
+
+	switch (tokentab[mid].class) {
+	case LEX_BUILTIN:
+	case LEX_LENGTH:
+		break;
+	default:
+		return NULL;
+	}
+
 #ifdef HAVE_MPFR
 	if (do_mpfr)
 		return tokentab[mid].ptr2;
 #endif
+
+	/* And another special case... */
+	if (tokentab[mid].value == Op_sub_builtin)
+		return (builtin_func_t) do_sub;
 
 	return tokentab[mid].ptr;
 }
@@ -5649,7 +5662,8 @@ install_builtins(void)
 
 	j = sizeof(tokentab) / sizeof(tokentab[0]);
 	for (i = 0; i < j; i++) {
-		if (    tokentab[i].class == LEX_BUILTIN
+		if (    (tokentab[i].class == LEX_BUILTIN
+		         || tokentab[i].class == LEX_LENGTH)
 		    && (tokentab[i].flags & DEBUG_USE) == 0) {
 			(void) install_symbol(tokentab[i].operator, Node_builtin_func);
 		}

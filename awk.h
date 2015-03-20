@@ -1360,6 +1360,7 @@ extern NODE *do_rand(int nargs);
 extern NODE *do_srand(int nargs);
 extern NODE *do_match(int nargs);
 extern NODE *do_sub(int nargs, unsigned int flags);
+extern NODE *call_sub_func(const char *name, int nargs);
 extern NODE *format_tree(const char *, size_t, NODE **, long);
 extern NODE *do_lshift(int nargs);
 extern NODE *do_rshift(int nargs);

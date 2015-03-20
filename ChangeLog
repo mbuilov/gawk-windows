@@ -1,3 +1,14 @@
+2015-03-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Start on fixing indirect calls of builtins.
+
+	* awk.h (call_sub_func): Add declaration.
+	* awkgram.y (lookup_builtin): Handle length, sub functions.
+	(install_builtin): Handle length function.
+	* builtin.c (call_sub_func): New function.
+	* interpret.h (r_interpret): If calling do_sub, do it through
+	call_sub_func().
+
 2015-03-18         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* config.guess, config.sub: Updated, from libtool 2.4.6.
