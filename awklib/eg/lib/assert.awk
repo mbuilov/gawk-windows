@@ -1,4 +1,4 @@
-# assert --- assert that a condition is true. Otherwise exit.
+# assert --- assert that a condition is true. Otherwise, exit.
 
 #
 # Arnold Robbins, arnold@skeeve.com, Public Domain

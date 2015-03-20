@@ -1,4 +1,5 @@
-   Copyright (C) 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015,
+   Free Software Foundation, Inc.
    
    Copying and distribution of this file, with or without modification,
    are permitted in any medium without royalty provided the copyright
@@ -61,8 +62,7 @@ Changes from 4.1.1 to 4.1.2
 
 4. A number of bugs have been fixed in the MPFR code.
 
-5. Indirect function calls now work for both built-in and
-   extension functions.
+5. Indirect function calls now work for both built-in and extension functions.
 
 6. Built-in functions are now included in FUNCTAB.
 
@@ -83,10 +83,14 @@ Changes from 4.1.1 to 4.1.2
    AWKPATH setting, be sure to put "." in it somewhere. The documentation
    has been updated and clarified.
 
-10. Infrastructure upgrades: Automake 1.15, Gettext 0.19.4, Libtool 2.4.5,
+10. Infrastructure upgrades: Automake 1.15, Gettext 0.19.4, Libtool 2.4.6,
     Bison 3.0.4.
 
-11. POSIX requires that the names of function parameters not be the
+11. If a user-defined function has a parameter with the same name as another
+    user-defined function, it is no longer possible to call the second
+    function from inside the first.
+
+12. POSIX requires that the names of function parameters not be the
     same as any of the special built-in variables and also not conflict
     with the names of any functions. Gawk has checked for the former
     since 3.1.7. With --posix, it now also checks for the latter.

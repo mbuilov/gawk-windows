@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 2012-2014 the Free Software Foundation, Inc.
+ * Copyright (C) 2012-2015 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -1118,7 +1118,7 @@ api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *file
 			filetype, name);
 		return awk_false;
 	}
-	if ((f = redirect_string(name, namelen, 0, redirtype, &flag, fd)) == NULL)
+	if ((f = redirect_string(name, namelen, 0, redirtype, &flag, fd, false)) == NULL)
 		return awk_false;
 	*ibufp = f->iop ? & f->iop->public : NULL;
 	*obufp = f->output.fp ? & f->output : NULL;

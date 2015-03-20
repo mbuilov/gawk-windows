@@ -226,6 +226,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 				if (do_profile && ! rule_count[rule]++)
 					fprintf(prof_fp, _("\t# Rule(s)\n\n"));
 				ip1 = pc->nexti;
+				indent(ip1->exec_count);
 				if (ip1 != (pc + 1)->firsti) {		/* non-empty pattern */
 					pprint(ip1->nexti, (pc + 1)->firsti, false);
 					/* Allow for case where the "pattern" is just a comment  */
@@ -1389,16 +1390,30 @@ pp_number(NODE *n)
 {
 #define PP_PRECISION 6
 	char *str;
+	size_t count;
 
-	emalloc(str, char *, PP_PRECISION + 10, "pp_number");
 #ifdef HAVE_MPFR
-	if (is_mpg_float(n))
-		mpfr_sprintf(str, "%0.*R*g", PP_PRECISION, ROUND_MODE, n->mpg_numbr);
-	else if (is_mpg_integer(n))
+	if (is_mpg_float(n)) {
+		count = mpfr_get_prec(n->mpg_numbr) / 3;	/* ~ 3.22 binary digits per decimal digit */
+		emalloc(str, char *, count, "pp_number");
+		/*
+		 * 3/2015: Format string used to be "%0.*R*g". That padded
+		 * with leading zeros. But it doesn't do that for regular
+		 * numbers in the non-MPFR case.
+		 */
+		mpfr_sprintf(str, "%.*R*g", PP_PRECISION, ROUND_MODE, n->mpg_numbr);
+	} else if (is_mpg_integer(n)) {
+		count = mpz_sizeinbase(n->mpg_i, 10) + 2;	/* +1 for sign, +1 for NUL at end */
+		emalloc(str, char *, count, "pp_number");
 		mpfr_sprintf(str, "%Zd", n->mpg_i);
-	else
+	} else
 #endif
-	sprintf(str, "%0.*g", PP_PRECISION, n->numbr);
+	{
+		count = PP_PRECISION + 10;
+		emalloc(str, char *, count, "pp_number");
+		sprintf(str, "%0.*g", PP_PRECISION, n->numbr);
+	}
+
 	return str;
 #undef PP_PRECISION
 }

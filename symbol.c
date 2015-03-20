@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2013 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2015 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -642,7 +642,7 @@ check_param_names(void)
 
 	max = func_table->table_size * 2;
 
-	memset(& n, sizeof n, 0);
+	memset(& n, 0, sizeof n);
 	n.type = Node_val;
 	n.flags = STRING|STRCUR;
 	n.stfmt = -1;

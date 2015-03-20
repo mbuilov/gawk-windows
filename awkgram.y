@@ -3198,7 +3198,7 @@ yylex(void)
 	if (lasttok == LEX_EOF)		/* error earlier in current source, must give up !! */
 		return 0;
 
-	c = nextc(true);
+	c = nextc(! want_regexp);
 	if (c == END_SRC)
 		return 0;
 	if (c == END_FILE)
@@ -3240,12 +3240,12 @@ yylex(void)
 		want_regexp = false;
 		tok = tokstart;
 		for (;;) {
-			c = nextc(true);
+			c = nextc(false);
 
 			if (gawk_mb_cur_max == 1 || nextc_is_1stbyte) switch (c) {
 			case '[':
 				/* one day check for `.' and `=' too */
-				if (nextc(true) == ':' || in_brack == 0)
+				if (nextc(false) == ':' || in_brack == 0)
 					in_brack++;
 				pushback();
 				break;
@@ -3257,11 +3257,14 @@ yylex(void)
 					in_brack--;
 				break;
 			case '\\':
-				if ((c = nextc(true)) == END_FILE) {
+				if ((c = nextc(false)) == END_FILE) {
 					pushback();
 					yyerror(_("unterminated regexp ends with `\\' at end of file"));
 					goto end_regexp; /* kludge */
-				} else if (c == '\n') {
+				}
+				if (c == '\r')	/* allow MS-DOS files. bleah */
+					c = nextc(true);
+				if (c == '\n') {
 					sourceline++;
 					continue;
 				} else {
@@ -3475,7 +3478,7 @@ retry:
 		return lasttok = '*';
 
 	case '/':
-		if (nextc(true) == '=') {
+		if (nextc(false) == '=') {
 			pushback();
 			return lasttok = SLASH_BEFORE_EQUAL;
 		}
@@ -3610,6 +3613,8 @@ retry:
 			if ((gawk_mb_cur_max == 1 || nextc_is_1stbyte) &&
 			    c == '\\') {
 				c = nextc(true);
+				if (c == '\r')	/* allow MS-DOS files. bleah */
+					c = nextc(true);
 				if (c == '\n') {
 					sourceline++;
 					continue;

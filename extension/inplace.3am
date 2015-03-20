@@ -1,21 +1,10 @@
-.TH INPLACE 3am "Jan 15 2013" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH INPLACE 3am "Mar 18 2015" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
 inplace \- emulate sed/perl/ruby in-place editing
 .SH SYNOPSIS
 .ft CW
 .nf
-@load "inplace"
-
-# Please set INPLACE_SUFFIX to make a backup copy.  For example, you may
-# want to set INPLACE_SUFFIX to .bak on the command line or in a BEGIN rule.
-
-BEGINFILE {
-    inplace_begin(FILENAME, INPLACE_SUFFIX)
-}
-
-ENDFILE {
-    inplace_end(FILENAME, INPLACE_SUFFIX)
-}
+gawk -i inplace ...
 .fi
 .ft R
 .SH DESCRIPTION
@@ -27,8 +16,7 @@ and
 .BR inplace_end() .
 These functions are meant to be invoked from the
 .I inplace.awk
-wrapper (whose contents are displayed above)
-which is installed when
+wrapper which is installed when
 .I gawk
 is.
 .PP

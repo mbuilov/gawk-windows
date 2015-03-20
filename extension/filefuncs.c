@@ -490,7 +490,7 @@ do_stat(int nargs, awk_value_t *result)
 	/* always empty out the array */
 	clear_array(array);
 
-	/* stat the file, if error, set ERRNO and return */
+	/* stat the file; if error, set ERRNO and return */
 	ret = statfunc(name, & sbuf);
 	if (ret < 0) {
 		update_ERRNO_int(errno);
