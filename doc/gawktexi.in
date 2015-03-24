@@ -14284,7 +14284,7 @@ while the program runs.
 The value of the @code{getgid()} system call.
 
 @item PROCINFO["pgrpid"]
-@cindex process group idIDof @command{gawk} process
+@cindex process group ID of @command{gawk} process
 The process group ID of the current process.
 
 @item PROCINFO["pid"]
@@ -14336,7 +14336,7 @@ The version of the GNU MP library.
 The maximum precision supported by MPFR.
 
 @item PROCINFO["prec_min"]
-@cindex minimum precision supported by MPFR library
+@cindex minimum precision required by MPFR library
 The minimum precision required by MPFR.
 @end table
 
@@ -34207,6 +34207,24 @@ is the place to do so.
 Add functions to implement system calls such as @code{chown()},
 @code{chmod()}, and @code{umask()} to the file operations extension
 presented in @ref{Internal File Ops}.
+
+@c Idea from comp.lang.awk, February 2015
+@item
+Write an input parser that prints a prompt if the input is
+a from a ``terminal'' device.  You can use the @code{isatty()}
+function to tell if the input file is a terminal. (Hint: this function
+is usually expensive to call; try to call it just once.)
+The content of the prompt should come from a variable settable
+by @command{awk}-level code.
+You can write the prompt to stanard error. However,
+for best results, open a new file descriptor (or file pointer)
+on @file{/dev/tty} and print the prompt there, in case standard
+error has been redirected.
+
+Why is standard error a better
+choice than standard output for writing the prompt?
+Which reading mechanism should you replace, the one to get
+a record, or the one to read raw bytes?
 
 @item
 (Hard.)

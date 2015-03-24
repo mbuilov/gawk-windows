@@ -26121,12 +26121,26 @@ File: gawk.info,  Node: Extension Exercises,  Prev: Extension summary,  Up: Dyna
      `chmod()', and `umask()' to the file operations extension
      presented in *note Internal File Ops::.
 
-  2. (Hard.)  How would you provide namespaces in `gawk', so that the
+  2. Write an input parser that prints a prompt if the input is a from
+     a "terminal" device.  You can use the `isatty()' function to tell
+     if the input file is a terminal. (Hint: this function is usually
+     expensive to call; try to call it just once.)  The content of the
+     prompt should come from a variable settable by `awk'-level code.
+     You can write the prompt to stanard error. However, for best
+     results, open a new file descriptor (or file pointer) on
+     `/dev/tty' and print the prompt there, in case standard error has
+     been redirected.
+
+     Why is standard error a better choice than standard output for
+     writing the prompt?  Which reading mechanism should you replace,
+     the one to get a record, or the one to read raw bytes?
+
+  3. (Hard.)  How would you provide namespaces in `gawk', so that the
      names of functions in different extensions don't conflict with
      each other?  If you come up with a really good scheme, contact the
      `gawk' maintainer to tell him about it.
 
-  3. Write a wrapper script that provides an interface similar to `sed
+  4. Write a wrapper script that provides an interface similar to `sed
      -i' for the "inplace" extension presented in *note Extension
      Sample Inplace::.
 
@@ -33416,7 +33430,7 @@ Index
 * messages from extensions:              Printing Messages.   (line   6)
 * metacharacters in regular expressions: Regexp Operators.    (line   6)
 * metacharacters, escape sequences for:  Escape Sequences.    (line 136)
-* minimum precision supported by MPFR library: Auto-set.      (line 224)
+* minimum precision required by MPFR library: Auto-set.       (line 224)
 * mktime:                                Time Functions.      (line  25)
 * modifiers, in format specifiers:       Format Modifiers.    (line   6)
 * monetary information, localization:    Explaining gettext.  (line 104)
@@ -33756,7 +33770,7 @@ Index
 * printing, unduplicated lines of text:  Uniq Program.        (line   6)
 * printing, user information:            Id Program.          (line   6)
 * private variables:                     Library Names.       (line  11)
-* process group idIDof gawk process:     Auto-set.            (line 183)
+* process group ID of gawk process:      Auto-set.            (line 183)
 * process ID of gawk process:            Auto-set.            (line 186)
 * processes, two-way communications with: Two-way I/O.        (line   6)
 * processing data:                       Basic High Level.    (line   6)
@@ -34976,79 +34990,79 @@ Node: Extension Sample API Tests1043960
 Node: gawkextlib1044451
 Node: Extension summary1047129
 Node: Extension Exercises1050818
-Node: Language History1051540
-Node: V7/SVR3.11053196
-Node: SVR41055349
-Node: POSIX1056783
-Node: BTL1058164
-Node: POSIX/GNU1058895
-Node: Feature History1064416
-Node: Common Extensions1077514
-Node: Ranges and Locales1078886
-Ref: Ranges and Locales-Footnote-11083505
-Ref: Ranges and Locales-Footnote-21083532
-Ref: Ranges and Locales-Footnote-31083767
-Node: Contributors1083988
-Node: History summary1089528
-Node: Installation1090907
-Node: Gawk Distribution1091853
-Node: Getting1092337
-Node: Extracting1093160
-Node: Distribution contents1094797
-Node: Unix Installation1100551
-Node: Quick Installation1101168
-Node: Additional Configuration Options1103592
-Node: Configuration Philosophy1105395
-Node: Non-Unix Installation1107764
-Node: PC Installation1108222
-Node: PC Binary Installation1109542
-Node: PC Compiling1111390
-Ref: PC Compiling-Footnote-11114411
-Node: PC Testing1114520
-Node: PC Using1115696
-Node: Cygwin1119811
-Node: MSYS1120581
-Node: VMS Installation1121082
-Node: VMS Compilation1121874
-Ref: VMS Compilation-Footnote-11123103
-Node: VMS Dynamic Extensions1123161
-Node: VMS Installation Details1124845
-Node: VMS Running1127096
-Node: VMS GNV1129936
-Node: VMS Old Gawk1130671
-Node: Bugs1131141
-Node: Other Versions1135030
-Node: Installation summary1141464
-Node: Notes1142523
-Node: Compatibility Mode1143388
-Node: Additions1144170
-Node: Accessing The Source1145095
-Node: Adding Code1146530
-Node: New Ports1152687
-Node: Derived Files1157169
-Ref: Derived Files-Footnote-11162644
-Ref: Derived Files-Footnote-21162678
-Ref: Derived Files-Footnote-31163274
-Node: Future Extensions1163388
-Node: Implementation Limitations1163994
-Node: Extension Design1165242
-Node: Old Extension Problems1166396
-Ref: Old Extension Problems-Footnote-11167913
-Node: Extension New Mechanism Goals1167970
-Ref: Extension New Mechanism Goals-Footnote-11171330
-Node: Extension Other Design Decisions1171519
-Node: Extension Future Growth1173627
-Node: Old Extension Mechanism1174463
-Node: Notes summary1176225
-Node: Basic Concepts1177411
-Node: Basic High Level1178092
-Ref: figure-general-flow1178364
-Ref: figure-process-flow1178963
-Ref: Basic High Level-Footnote-11182192
-Node: Basic Data Typing1182377
-Node: Glossary1185705
-Node: Copying1217634
-Node: GNU Free Documentation License1255190
-Node: Index1280326
+Node: Language History1052314
+Node: V7/SVR3.11053970
+Node: SVR41056123
+Node: POSIX1057557
+Node: BTL1058938
+Node: POSIX/GNU1059669
+Node: Feature History1065190
+Node: Common Extensions1078288
+Node: Ranges and Locales1079660
+Ref: Ranges and Locales-Footnote-11084279
+Ref: Ranges and Locales-Footnote-21084306
+Ref: Ranges and Locales-Footnote-31084541
+Node: Contributors1084762
+Node: History summary1090302
+Node: Installation1091681
+Node: Gawk Distribution1092627
+Node: Getting1093111
+Node: Extracting1093934
+Node: Distribution contents1095571
+Node: Unix Installation1101325
+Node: Quick Installation1101942
+Node: Additional Configuration Options1104366
+Node: Configuration Philosophy1106169
+Node: Non-Unix Installation1108538
+Node: PC Installation1108996
+Node: PC Binary Installation1110316
+Node: PC Compiling1112164
+Ref: PC Compiling-Footnote-11115185
+Node: PC Testing1115294
+Node: PC Using1116470
+Node: Cygwin1120585
+Node: MSYS1121355
+Node: VMS Installation1121856
+Node: VMS Compilation1122648
+Ref: VMS Compilation-Footnote-11123877
+Node: VMS Dynamic Extensions1123935
+Node: VMS Installation Details1125619
+Node: VMS Running1127870
+Node: VMS GNV1130710
+Node: VMS Old Gawk1131445
+Node: Bugs1131915
+Node: Other Versions1135804
+Node: Installation summary1142238
+Node: Notes1143297
+Node: Compatibility Mode1144162
+Node: Additions1144944
+Node: Accessing The Source1145869
+Node: Adding Code1147304
+Node: New Ports1153461
+Node: Derived Files1157943
+Ref: Derived Files-Footnote-11163418
+Ref: Derived Files-Footnote-21163452
+Ref: Derived Files-Footnote-31164048
+Node: Future Extensions1164162
+Node: Implementation Limitations1164768
+Node: Extension Design1166016
+Node: Old Extension Problems1167170
+Ref: Old Extension Problems-Footnote-11168687
+Node: Extension New Mechanism Goals1168744
+Ref: Extension New Mechanism Goals-Footnote-11172104
+Node: Extension Other Design Decisions1172293
+Node: Extension Future Growth1174401
+Node: Old Extension Mechanism1175237
+Node: Notes summary1176999
+Node: Basic Concepts1178185
+Node: Basic High Level1178866
+Ref: figure-general-flow1179138
+Ref: figure-process-flow1179737
+Ref: Basic High Level-Footnote-11182966
+Node: Basic Data Typing1183151
+Node: Glossary1186479
+Node: Copying1218408
+Node: GNU Free Documentation License1255964
+Node: Index1281100
 
 End Tag Table
