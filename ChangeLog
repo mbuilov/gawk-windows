@@ -1,3 +1,12 @@
+2015-03-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (make_regnode): Make extern.
+	* awk.h (make_regnode): Declare.
+	* builtin.c (call_sub_func): Start on reworking the stack to
+	be what do_sub() expects. Still needs work.
+	* interpret.h (r_interpret): Add a cast in comparison with do_sub().
+	* node.c (r_unref): Handle Node_regex nodes.
+
 2015-03-20         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Start on fixing indirect calls of builtins.

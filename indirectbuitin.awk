@@ -8,12 +8,13 @@ function print_result(category, fname, builtin_result, indirect_result)
 }
 
 BEGIN {
-
 	fun = "sub"
-	x = "ff11bb"
-	b1 = sub("f", "q", x)
-	i1 = @fun("f", "q", x)
+	$0 = "ff11bb"
+	b1 = sub("f", "q")
+	$0 = "ff11bb"
+	i1 = @fun("f", "q")
 	print_result("string", fun, b1, i1)
+	exit
 }
 
 

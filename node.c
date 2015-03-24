@@ -431,6 +431,13 @@ r_unref(NODE *tmp)
 #ifdef GAWKDEBUG
 	if (tmp == NULL)
 		return;
+	if (tmp->type == Node_regex) {
+		if (tmp->re_reg != NULL)
+			refree(tmp->re_reg);
+		if (tmp->re_text != NULL)
+			unref(tmp->re_text);
+		goto free_the_node;
+	}
 	if ((tmp->flags & MALLOC) != 0) {
 		if (tmp->valref > 1) {
 			tmp->valref--;
@@ -447,6 +454,7 @@ r_unref(NODE *tmp)
 	mpfr_unset(tmp);
 
 	free_wstr(tmp);
+free_the_node:
 	freenode(tmp);
 }
 

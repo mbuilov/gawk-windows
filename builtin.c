@@ -3000,7 +3000,7 @@ NODE *
 call_sub_func(const char *name, int nargs)
 {
 	unsigned int flags = 0;
-	NODE *tmp;
+	NODE *regex, *replace;
 
 	if (name[0] == 'g') {
 		if (name[1] == 'e')
@@ -3009,10 +3009,15 @@ call_sub_func(const char *name, int nargs)
 			flags = GSUB;
 	}
 
-	tmp = PEEK(1);
-	if (tmp->type == Node_val) {
-		flags |= LITERAL;
-	}
+	if ((flags == 0 || flags == GSUB) && nargs != 2)
+		fatal(_("%s: can be called indirectly only with two arguments"), name);
+
+	replace = POP();
+
+	regex = POP();	/* the regex */
+	regex = make_regnode(Node_regex, regex);
+	PUSH(regex);
+	PUSH(replace);
 
 	return do_sub(nargs, flags);
 }

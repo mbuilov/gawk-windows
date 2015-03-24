@@ -1066,7 +1066,7 @@ match_re:
 				assert(the_func != NULL);
 
 				/* call it */
-				if (the_func == do_sub)
+				if (the_func == (builtin_func_t) do_sub)
 					r = call_sub_func(t1->stptr, arg_count);
 				else
 					r = the_func(arg_count);
