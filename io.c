@@ -724,7 +724,7 @@ redflags2str(int flags)
 	return genflags2str(flags, redtab);
 }
 
-/* redirect --- Redirection for printf and print commands */
+/* redirect_string --- Redirection for printf and print commands, use string info */
 
 struct redirect *
 redirect_string(const char *str, size_t explen, bool not_string,
@@ -1064,6 +1064,8 @@ redirect_string(const char *str, size_t explen, bool not_string,
 	save_rp = NULL;
 	return rp;
 }
+
+/* redirect --- Redirection for printf and print commands */
 
 struct redirect *
 redirect(NODE *redir_exp, int redirtype, int *errflg, bool failure_fatal)
@@ -2303,7 +2305,7 @@ wait_any(int interesting)	/* pid of interest, if any */
 				break;
 			}
 	}
-#else
+#else /* ! __MINGW32__ */
 #ifndef HAVE_SIGPROCMASK
 	hstat = signal(SIGHUP, SIG_IGN);
 	qstat = signal(SIGQUIT, SIG_IGN);
@@ -2340,7 +2342,7 @@ wait_any(int interesting)	/* pid of interest, if any */
 	signal(SIGHUP, hstat);
 	signal(SIGQUIT, qstat);
 #endif
-#endif
+#endif /* ! __MINGW32__ */
 #ifndef HAVE_SIGPROCMASK
 	signal(SIGINT, istat);
 #else
@@ -3509,14 +3511,15 @@ find_longest_terminator:
 	return REC_OK;
 }
 
-/* return true if PROCINFO[<filename>, "RETRY"] exists */
+/* retryable --- return true if PROCINFO[<filename>, "RETRY"] exists */
+
 static inline int
 retryable(IOBUF *iop)
 {
 	return PROCINFO_node && in_PROCINFO(iop->public.name, "RETRY", NULL);
 }
 
-/* Does the I/O error indicate that the operation should be retried later? */
+/* errno_io_retry --- Does the I/O error indicate that the operation should be retried later? */
 
 static inline int
 errno_io_retry(void)

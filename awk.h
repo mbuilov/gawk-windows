@@ -1483,7 +1483,9 @@ extern void set_FNR(void);
 extern void set_NR(void);
 
 extern struct redirect *redirect(NODE *redir_exp, int redirtype, int *errflg, bool failure_fatal);
-extern struct redirect *redirect_string(const char *redir_exp_str, size_t redir_exp_len, bool not_string_flag, int redirtype, int *errflg, int extfd, bool failure_fatal);
+extern struct redirect *redirect_string(const char *redir_exp_str,
+		size_t redir_exp_len, bool not_string_flag, int redirtype,
+		int *errflg, int extfd, bool failure_fatal);
 extern NODE *do_close(int nargs);
 extern int flush_io(void);
 extern int close_io(bool *stdio_problem);

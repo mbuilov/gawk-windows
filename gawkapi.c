@@ -1044,42 +1044,48 @@ api_release_value(awk_ext_id_t id, awk_value_cookie_t value)
 /* api_get_file --- return a handle to an existing or newly opened file */
 
 static awk_bool_t
-api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *filetype, int fd, const awk_input_buf_t **ibufp, const awk_output_buf_t **obufp)
+api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *filetype,
+		int fd, const awk_input_buf_t **ibufp, const awk_output_buf_t **obufp)
 {
 	const struct redirect *f;
 	int flag;	/* not used, sigh */
 	enum redirval redirtype;
 
-	if ((name == NULL) || (namelen == 0)) {
+	if (name == NULL || namelen == 0) {
 		if (curfile == NULL) {
+			INSTRUCTION *pc;
+			int save_rule;
+			char *save_source;
+
 			if (nextfile(& curfile, false) <= 0)
 				return awk_false;
-			{
-				INSTRUCTION *pc = main_beginfile;
-				/* save execution state */
-				int save_rule = currule;
-				char *save_source = source;
 
-				while (1) {
-					if (!pc)
-						fatal(_("cannot find end of BEGINFILE rule"));
-					if (pc->opcode == Op_after_beginfile)
-						break;
-					pc = pc->nexti;
-				}
-				pc->opcode = Op_stop;
-			        (void) (*interpret)(main_beginfile);
-				pc->opcode = Op_after_beginfile;
-				after_beginfile(& curfile);
-				/* restore execution state */
-				currule = save_rule;
-				source = save_source;
+			pc = main_beginfile;
+			/* save execution state */
+			save_rule = currule;
+			save_source = source;
+
+			while (1) {
+				if (!pc)
+					fatal(_("cannot find end of BEGINFILE rule"));
+				if (pc->opcode == Op_after_beginfile)
+					break;
+				pc = pc->nexti;
 			}
+			pc->opcode = Op_stop;
+		        (void) (*interpret)(main_beginfile);
+			pc->opcode = Op_after_beginfile;
+			after_beginfile(& curfile);
+			/* restore execution state */
+			currule = save_rule;
+			source = save_source;
 		}
 		*ibufp = &curfile->public;
 		*obufp = NULL;
+
 		return awk_true;
 	}
+
 	redirtype = redirect_none;
 	switch (filetype[0]) {
 	case '<':
@@ -1113,13 +1119,16 @@ api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *file
 		}
 		break;
 	}
+
 	if (redirtype == redirect_none) {
 		warning(_("cannot open unrecognized file type `%s' for `%s'"),
 			filetype, name);
 		return awk_false;
 	}
+
 	if ((f = redirect_string(name, namelen, 0, redirtype, &flag, fd, false)) == NULL)
 		return awk_false;
+
 	*ibufp = f->iop ? & f->iop->public : NULL;
 	*obufp = f->output.fp ? & f->output : NULL;
 	return awk_true;
