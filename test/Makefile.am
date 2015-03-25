@@ -221,6 +221,8 @@ EXTRA_DIST = \
 	exitval2.awk \
 	exitval2.ok \
 	exitval2.w32 \
+	exitval3.awk \
+	exitval3.ok \
 	fcall_exit.awk \
 	fcall_exit.ok \
 	fcall_exit2.awk \
@@ -1001,7 +1003,7 @@ BASIC_TESTS = \
 	callparam childin clobber closebad clsflnam compare compare2 concat1 concat2 \
 	concat3 concat4 convfmt \
 	datanonl defref delargv delarpm2 delarprm delfunc dfamb1 dfastress dynlj \
-	eofsplit exit2 exitval1 exitval2 \
+	eofsplit exit2 exitval1 exitval2 exitval3 \
 	fcall_exit fcall_exit2 fldchg fldchgnf fnamedat fnarray fnarray2 \
 	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsrs fsspcoln \
 	fstabplus funsemnl funsmnam funstack \
