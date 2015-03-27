@@ -1,3 +1,21 @@
+2015-03-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am: Remove defvar test and reference to files; test
+	code moved into extension/testext.c.
+	* defvar.awk, defvar.ok: Removed.
+	* testext.ok: Updated.
+
+2015-03-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (EXTRA_DIST): Add exitval3.awk and exitval3.ok.
+	(BASIC_TESTS): Add new test exitval3.
+	* exitval3.awk, exitval3.ok: New files.
+
+2015-03-17         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* inplace1.ok, inplace2.ok, inplace3.ok: Update error message line
+	numbers to reflect changes to inplace.awk.
+
 2015-03-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (mpfrmemok1): New test.
@@ -107,6 +125,34 @@
 
 	* testext.ok: Adjust for code changes.
 
+2015-01-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (EXTRA_DIST): Add defvar.awk and defvar.ok.
+	(SHLIB_TESTS): Add defvar.
+	(defvar): New test.
+	* defvar.awk, defvar.ok: New files.
+
+2015-01-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (EXTRA_DIST): Add getfile.awk and getfile.ok.
+	(SHLIB_TESTS): Add getfile.
+	(getfile): New test.
+	* getfile.awk, getfile.ok: New files.
+
+2015-01-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (EXTRA_DIST): Add timeout.awk and timeout.ok.
+	(BASIC_TESTS): Remove errno.
+	(GAWK_EXT_TESTS): Add errno and timeout.
+	* timeout.awk, timeout.ok: New files.
+
+2015-01-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (EXTRA_DIST): Add errno.awk, errno.in, and errno.ok.
+	(BASIC_TESTS): Add errno.
+	(errno): New test.
+	* errno.awk, errno.in, errno.ok: New files.
+
 2014-12-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (badbuild): New test.
@@ -140,6 +186,10 @@
 
 	* mbprintf4.awk: Add record and line number for debugging.
 	* mpprint4.ok: Adjust.
+
+2014-11-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* testext.ok: Add results from new test_get_file test.
 
 2014-11-02         Arnold D. Robbins     <arnold@skeeve.com>
 

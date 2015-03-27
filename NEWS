@@ -1,4 +1,5 @@
-   Copyright (C) 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015,
+   Free Software Foundation, Inc.
    
    Copying and distribution of this file, with or without modification,
    are permitted in any medium without royalty provided the copyright
@@ -44,6 +45,12 @@ Changes from 4.1.x to 4.2.0
     system, these files belong in /etc/profile.d, but the appropriate location
     may be different on other platforms.
 
+11. Gawk now supports retryable I/O via PROCINFO[input-file, "RETRY"]; see
+    the manual.
+
+12. The API minor version has been increased to two; the get_file()
+    API provides access to open redirections. Also see the manual.
+
 Changes from 4.1.1 to 4.1.2
 ---------------------------
 
@@ -82,7 +89,7 @@ Changes from 4.1.1 to 4.1.2
    AWKPATH setting, be sure to put "." in it somewhere. The documentation
    has been updated and clarified.
 
-10. Infrastructure upgrades: Automake 1.15, Gettext 0.19.4, Libtool 2.4.5,
+10. Infrastructure upgrades: Automake 1.15, Gettext 0.19.4, Libtool 2.4.6,
     Bison 3.0.4.
 
 11. If a user-defined function has a parameter with the same name as another

@@ -1,3 +1,22 @@
+2015-03-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (redirect): Change not_string from int to bool.
+	* gawkapi.c (api_get_file): Minor stylistic improvements.
+	* NEWS: Updated for retryable I/O and new API function.
+
+2015-03-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* interpret.h (r_interpret): When Op_K_exit has an argument of
+	Nnull_string, do not update exit_val, since no value was supplied.
+
+2015-03-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h, gawkapi.c, io.c: Minor code reformatting.
+
+2015-03-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* config.guess, config.sub: Updated, from libtool 2.4.6.
+
 2015-03-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* profile.c (pp_number): Allocate enough room to print the number
@@ -170,6 +189,22 @@
 	* builtin.c (do_length): Update comment.
 	* main.c (init_vars): Just call load_procinfo() and `load_environ()'.
 
+2015-01-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Revert changes to API deferred variable creation -- these variables
+	should be created when lookup is called, not when update is called.
+	* awk.h (variable_create): Remove function declaration.
+	* awkgram.y (variable_create): Remove function.
+	(variable): Restore variable_create functionality inline.
+	* gawkapi.c (api_sym_update): Revert to using install_symbol, since the
+	deferred variable check should be done when lookup is called, not here.
+
+2015-01-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (api_set_array_element): Remove stray call to
+	make_aname.  I cannot see what purpose this served.  Maybe I am
+	missing something.
+
 2015-01-07         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Update debug flags if developing.
@@ -187,6 +222,59 @@
 	* awkgram.y (extensions_used): New variable. Set it on @load.
 	(do_add_scrfile): Set it on -l.
 	(process_deferred): Check it also.
+
+2015-01-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (api_sym_update): If copying a subarray, must update
+	the parent_array pointer.  Also, call the astore hook if non-NULL.
+	(api_set_array_element): Call the astore hook if non-NULL.
+
+2015-01-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (variable_create): Now takes a 3rd argument to tell caller
+	whether this is a deferred variable.
+	* awkgram.y (variable_create): Return indicator of whether this is
+	a deferred variable in a newly added 3rd arg.
+	(variable): Pass 3rd arg to variable_create.
+	* gawkapi.c (api_sym_update): If we triggered the creation of a deferred
+	variable, we must merge the extension's array elements into the deffered
+	array, not the other way around.  The ENVIRON array has special funcs
+	to call setenv and unsetenv.
+
+2015-01-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (variable_create): Declare new function.
+	* awkgram.y (variable_create): New function to create a variable
+	taking the deferred variable list into consideration.
+	(variable): Call new function variable_create if the variable is
+	not found.
+	* gawkapi.c (api_sym_update): If an array is being created, then
+	call new function variable_create instead of install_symbol.  If this
+	is the first reference to a deferred variable, than the new array
+	may contain elements that must be merged into the array provided by
+	the extension.
+
+2015-01-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (wait_any): If the `interesting' argument is non-zero, then we
+	must not return until that child process has exited, since the caller
+	gawk_pclose depends on our returning its exit status.  So in that case,
+	do not pass WNOHANG to waitpid.
+
+2015-01-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h: Fix another comment typo.
+
+2015-01-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h: Fix typo in comment.
+
+2015-01-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (gawk_api): Modify api_get_file to remove the typelen
+	argument.
+	(get_file): Remove typelen argument from the macro.
+	* gawkapi.c (api_get_file): Remove typelen argument.
 
 2014-12-24         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -356,6 +444,36 @@
 	* gawkapi.c (node_to_awk_value): When the type wanted is AWK_UNDEFINED
 	and a it's a Node_val set to Nnull_string, return AWK_UNDEFINED instead
 	of AWK_NUMBER 0.
+
+2014-11-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (redirect_string): First argument should be const.  Add a new
+	extfd argument to enable extensions to create files with pre-opened
+	file descriptors.
+	(after_beginfile): Declare function used in both eval.c and gawkapi.c.
+	* eval.c (after_beginfile): Remove extern declaration now in awk.h.
+	* gawkapi.c (api_get_file): Implement API changes to return
+	awk_input_buf_t and/or awk_output_buf_t info, as well as accept an
+	fd for inserting an opened file into the table.
+	* gawkapi.h (gawk_api): Modify the api_get_file declaration to
+	return awk_bool_t and add 3 new arguments -- a file descriptor
+	for inserting an already opened file, and awk_input_buf_t and
+	awk_output_buf_t to return info about both input and output.
+	(get_file): Add new arguments to the macro.
+	* io.c (redirect_string): First arg should be const, and add a new
+	extfd arg so extensions can pass in a file that has already been
+	opened by the extension.  Use the passed-in fd when appropriate,
+	and pass it into two_way_open.
+	(redirect): Pass new fd -1 arg to redirect_string.
+	(two_way_open): Accept new extension fd parameter and open it
+	as a socket.
+
+2014-11-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (retryable): New function to indicate whether I/O can be
+	retried for this file instead of throwing a hard error.
+	(get_a_record) Check whether this file is configured for retryable
+	I/O before returning nonstandard -2.
 
 2014-11-03         Norihiro Tanaka       <noritnk@kcn.ne.jp>
 
@@ -1525,6 +1643,45 @@
 	* io.c (get_a_record): Change `min' to `MIN' for consistency with
 	other files and general practice.
 
+2013-07-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac (AC_CHECK_FUNCS): Check for sigprocmask.
+	* io.c (wait_any): If sigprocmask is available, block signals instead
+	of ignoring them temporarily.
+
+2013-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (gawk_api): Document that the api_get_file function will not
+	access the file type and length arguments if the file name is empty.
+
+2013-07-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac (AC_CHECK_FUNCS): Add a check for waitpid.
+	* io.c (wait_any): Enhance comment to explain why we loop reaping all
+	exited children when the argument is zero.  When available, use waitpid
+	with WNOHANG to avoid blocking.  Remove my previous incorrect patch to
+	exit after reaping the first child.  The function is intended to
+	wait for all children, since we are not careful about reaping children
+	as soon as they die.
+
+2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (gawk_api): Remove unused api_lookup_file hook.
+	(lookup_file): Remove associated macro.
+	* gawkapi.c (api_lookup_file): Remove unused function.
+	(api_impl):  Remove unused api_lookup_file hook.
+
+2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awkgram.y (main_beginfile): Declare new global INSTRUCTION *.
+	(parse_program): Set main_beginfile to point to the BEGINFILE
+	instruction block.
+	* gawkapi.c (api_get_file): After nextfile starts a new file,
+	we need to run the BEGINFILE actions.  We retrieve the
+	instruction pointer from main_beginfile and execute it until
+	we reach the Op_after_beginfile opcode.  We then run after_beginfile
+	manually and restore the value of currule and source.
+
 2013-07-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.h (awk_element_t): Add comment indicating that the array
@@ -1534,6 +1691,45 @@
 	appear as strings to the extensions.  This makes the call to
 	force_string redundant, since node_to_awk_value does that internally
 	when we request a string.
+
+2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* eval.c (update_ERRNO_string): Set PROCINFO["errno"] to 0.
+	* io.c (inrec): Since get_a_record may now return -2, be sure
+	to throw an error in that case as well.
+	(wait_any): Fix what appears to be a bug.  The old logic repeatedly
+	called wait until it failed.  When a process has multiple children,
+	this causes it to stall until all of them have exited.  Instead,
+	we now exit the function after the first successful wait call.
+	(do_getline_redir, do_getline): Handle case where get_a_record
+	returns -2.
+	(errno_io_retry): New function to decide whether an I/O operation should
+	be retried.
+	(get_a_record): When read returns an error, call errno_io_retry to
+	decide whether the operation should be retried.  If so, return -2
+	instead of setting the IOP_AT_EOF flag.
+
+2013-07-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* eval.c (update_ERRNO_int, unset_ERRNO): Update PROCINFO["errno"].
+
+2013-06-30         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (redirect_string): Declare new function that provides API access
+	to the redirection mechanism.
+	* gawkapi.h (GAWK_API_MINOR_VERSION): Bump from 0 to 1 since 2 new
+	hooks were added to the api.
+	(gawk_api_t): Add 2 new functions api_lookup_file and api_get_file.
+	(lookup_file, get_file): New macros to wrap the new API functions.
+	* gawkapi.c (curfile): Declare this extern, since it is needed
+	by lookup_file and get_flie.
+	(api_lookup_file): Find an open file using curfile or getredirect().
+	(api_get_file): Find or open a file using curfile or redirect_string().
+	(api_impl): Add api_lookup_file and api_get_file.
+	* io.c (redirect_string): Renamed from redirect and changed arguments
+	to take a string instead of a 'NODE *'.  This allows it to be called
+	through the API's new get_file hook.
+	(redirect): Now implemented by calling redirect_string backend function.
 
 2013-07-04         Arnold D. Robbins     <arnold@skeeve.com>
 

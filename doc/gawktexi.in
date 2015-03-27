@@ -599,6 +599,7 @@ particular records in a file and perform operations upon them.
                                         @code{getline}.
 * Getline Summary::                     Summary of @code{getline} Variants.
 * Read Timeout::                        Reading input with a timeout.
+* Retrying Input::                      Retrying input after certain errors.
 * Command-line directories::            What happens if you put a directory on
                                         the command line.
 * Input Summary::                       Input summary.
@@ -940,6 +941,7 @@ particular records in a file and perform operations upon them.
 * Array Functions::                     Functions for working with arrays.
 * Flattening Arrays::                   How to flatten arrays.
 * Creating Arrays::                     How to create and populate arrays.
+* Redirection API::                     How to access and manipulate redirections.
 * Extension API Variables::             Variables provided by the API.
 * Extension Versioning::                API Version information.
 * Extension API Informational Variables:: Variables providing information about
@@ -6111,6 +6113,7 @@ used with it do not have to be named on the @command{awk} command line
 * Getline::                     Reading files under explicit program control
                                 using the @code{getline} function.
 * Read Timeout::                Reading input with a timeout.
+* Retrying Input::              Retrying input after certain errors.
 * Command-line directories::    What happens if you put a directory on the
                                 command line.
 * Input Summary::               Input summary.
@@ -7713,6 +7716,13 @@ a record, such as a file that cannot be opened, then @code{getline}
 returns @minus{}1.  In this case, @command{gawk} sets the variable
 @code{ERRNO} to a string describing the error that occurred.
 
+If @code{ERRNO} indicates that the I/O operation may be
+retried, and @code{PROCINFO["@var{input}", "RETRY"]} is set,
+then @code{getline} returns @minus{}2
+instead of @minus{}1, and further calls to @code{getline}
+may be attemped.  @DBXREF{Retrying Input} for further information about
+this feature.
+
 In the following examples, @var{command} stands for a string value that
 represents a shell command.
 
@@ -8367,7 +8377,8 @@ on a per-command or per-connection basis.
 the attempt to read from the underlying device may
 succeed in a later attempt. This is a limitation, and it also
 means that you cannot use this to multiplex input from
-two or more sources.
+two or more sources.  @DBXREF{Retrying Input} for a way to enable 
+later I/O attempts to succeed.
 
 Assigning a timeout value prevents read operations from
 blocking indefinitely. But bear in mind that there are other ways
@@ -8376,6 +8387,35 @@ A network client can sometimes take a long time to establish
 a connection before it can start reading any data,
 or the attempt to open a FIFO special file for reading can block
 indefinitely until some other process opens it for writing.
+
+@node Retrying Input
+@section Retrying Reads After Certain Input Errors
+@cindex retrying input
+
+@cindex differences in @command{awk} and @command{gawk}, retrying input
+This @value{SECTION} describes a feature that is specific to @command{gawk}.
+
+When @command{gawk} encounters an error while reading input, by
+default @code{getline} returns @minus{}1, and subsequent attempts to
+read from that file result in an end-of-file indication.  However, you
+may optionally instruct @command{gawk} to allow I/O to be retried when
+certain errors are encountered by setting a special element in
+the @code{PROCINFO} array (@pxref{Auto-set}):
+
+@example
+PROCINFO["@var{input_name}", "RETRY"] = 1
+@end example
+
+When this element exists, @command{gawk} checks the value of the system
+@code{errno} variable when an I/O error occurs.  If @code{errno} indicates
+a subsequent I/O attempt may succeed, @code{getline} instead returns
+@minus{}2 and
+further calls to @code{getline} may succeed.  This applies to the @code{errno}
+values @code{EAGAIN}, @code{EWOULDBLOCK}, @code{EINTR}, or @code{ETIMEDOUT}.
+
+This feature is useful in conjunction with
+@code{PROCINFO["@var{input_name}", "READ_TIMEOUT"]} or situations where a file
+descriptor has been configured to behave in a non-blocking fashion.
 
 @node Command-line directories
 @section Directories on the Command Line
@@ -14256,6 +14296,11 @@ value to be meaningful when an I/O operation returns a failure value,
 such as @code{getline} returning @minus{}1.  You are, of course, free
 to clear it yourself before doing an I/O operation.
 
+If the value of @code{ERRNO} corresponds to a system error in the C
+@code{errno} variable, then @code{PROCINFO["errno"]} will be set to the value
+of @code{errno}.  For non-system errors, @code{PROCINFO["errno"]} will
+be zero.
+
 @cindex @code{FILENAME} variable
 @cindex dark corner, @code{FILENAME} variable
 @item @code{FILENAME}
@@ -14324,6 +14369,10 @@ are guaranteed to be available:
 @item PROCINFO["egid"]
 The value of the @code{getegid()} system call.
 
+@item PROCINFO["errno"]
+The value of the C @code{errno} variable when @code{ERRNO} is set to
+the associated error message.
+
 @item PROCINFO["euid"]
 @cindex effective user ID of @command{gawk} user
 The value of the @code{geteuid()} system call.
@@ -14374,7 +14423,7 @@ while the program runs.
 The value of the @code{getgid()} system call.
 
 @item PROCINFO["pgrpid"]
-@cindex process group idIDof @command{gawk} process
+@cindex process group ID of @command{gawk} process
 The process group ID of the current process.
 
 @item PROCINFO["pid"]
@@ -14426,7 +14475,7 @@ The version of the GNU MP library.
 The maximum precision supported by MPFR.
 
 @item PROCINFO["prec_min"]
-@cindex minimum precision supported by MPFR library
+@cindex minimum precision required by MPFR library
 The minimum precision required by MPFR.
 @end table
 
@@ -14461,6 +14510,11 @@ The @code{PROCINFO} array has the following additional uses:
 It may be used to provide a timeout when reading from any
 open input file, pipe, or coprocess.
 @DBXREF{Read Timeout} for more information.
+
+@item
+It may be used to indicate that input may be retried when it fails due to
+certain errors.
+@DBXREF{Retrying Input} for more information.
 
 @item
 It may be used to cause coprocesses to communicate over pseudo-ttys
@@ -30662,6 +30716,7 @@ This (rather large) @value{SECTION} describes the API in detail.
 * Symbol Table Access::                  Functions for accessing global
                                          variables.
 * Array Manipulation::                   Functions for working with arrays.
+* Redirection API::                      How to access and manipulate redirections.
 * Extension API Variables::              Variables provided by the API.
 * Extension API Boilerplate::            Boilerplate code for using the API.
 @end menu
@@ -30737,6 +30792,10 @@ Clearing an array
 @item
 Flattening an array for easy C-style looping over all its indices and elements
 @end itemize
+
+@item
+Accessing and manipulating redirections.
+
 @end itemize
 
 Some points about using the API:
@@ -32707,6 +32766,75 @@ $ @kbd{AWKLIBPATH=$PWD ./gawk -f subarray.awk}
 (@DBXREF{Finding Extensions} for more information on the
 @env{AWKLIBPATH} environment variable.)
 
+@node Redirection API
+@subsection Accessing and Manipulating Redirections
+
+The following function allows extensions to access and manipulate redirections.
+
+@table @code
+@item awk_bool_t get_file(const char *name,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ size_t name_len,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const char *filetype,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ int fd,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const awk_input_buf_t **ibufp,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const awk_output_buf_t **obufp);
+Look up a file in @command{gawk}'s internal redirection table.
+If @code{name} is @code{NULL} or @code{name_len} is zero, return
+data for the currently open input file corresponding to @code{FILENAME}.
+(This does not access the @code{filetype} argument, so that may be undefined).  
+If the file is not already open, attempt to open it.
+The @code{filetype} argument must be zero-terminated and should be one of:
+
+@table @code
+@item ">"
+A file opened for output.
+
+@item ">>"
+A file opened for append.
+
+@item "<"
+A file opened for input.
+
+@item "|>"
+A pipe opened for output.
+
+@item "|<"
+A pipe opened for input.
+
+@item "|&"
+A two-way coprocess.
+@end table
+
+On error, return a @code{false} value.  Otherwise, return
+@code{true}, and return additional information about the redirection
+in the @code{ibufp} and @code{obufp} pointers.  For input
+redirections, the @code{*ibufp} value should be non-@code{NULL},
+and @code{*obufp} should be @code{NULL}.  For output redirections,
+the @code{*obufp} value should be non-@code{NULL}, and @code{*ibufp}
+should be @code{NULL}.  For two-way coprocesses, both values should
+be non-@code{NULL}.
+
+In the usual case, the extension is interested in @code{(*ibufp)->fd}
+and/or @code{fileno((*obufp)->fp)}.  If the file is not already
+open, and the @code{fd} argument is non-negative, @command{gawk}
+will use that file descriptor instead of opening the file in the
+usual way.  If @code{fd} is non-negative, but the file exists already,
+@command{gawk} ignores @code{fd} and returns the existing file.  It is
+the caller's responsibility to notice that neither the @code{fd} in
+the returned @code{awk_input_buf_t} nor the @code{fd} in the returned
+@code{awk_output_buf_t} matches the requested value.
+
+Note that supplying a file descriptor is currently @emph{not} supported
+for pipes.  However, supplying a file descriptor should work for input,
+output, append, and two-way (coprocess) sockets.  If @code{filetype}
+is two-way, @command{gawk} assumes that it is a socket!  Note that in
+the two-way case, the input and output file descriptors may differ.
+To check for success, you must check whether either matches.
+@end table
+
+It is anticipated that this API function will be used to implement I/O
+multiplexing and a socket library.
+
 @node Extension API Variables
 @subsection API Variables
 
@@ -33921,11 +34049,16 @@ properly:
 # Please set INPLACE_SUFFIX to make a backup copy.  For example, you may
 # want to set INPLACE_SUFFIX to .bak on the command line or in a BEGIN rule.
 
+# N.B. We call inplace_end() in the BEGINFILE and END rules so that any
+# actions in an ENDFILE rule will be redirected as expected.
+
 BEGINFILE @{
-    inplace_begin(FILENAME, INPLACE_SUFFIX)
+    if (_inplace_filename != "")
+        inplace_end(_inplace_filename, INPLACE_SUFFIX)
+    inplace_begin(_inplace_filename = FILENAME, INPLACE_SUFFIX)
 @}
 
-ENDFILE @{
+END @{
     inplace_end(FILENAME, INPLACE_SUFFIX)
 @}
 @end group
@@ -33939,6 +34072,10 @@ the extension restores standard output to its original destination.
 If @code{INPLACE_SUFFIX} is not an empty string, the original file is
 linked to a backup @value{FN} created by appending that suffix.  Finally,
 the temporary file is renamed to the original @value{FN}.
+
+The @code{_inplace_filename} variable serves to keep track of the
+current filename so as to not invoke @code{inplace_end()} before
+processing the first file.
 
 If any error occurs, the extension issues a fatal error to terminate
 processing immediately without damaging the original file.
@@ -34433,6 +34570,24 @@ is the place to do so.
 Add functions to implement system calls such as @code{chown()},
 @code{chmod()}, and @code{umask()} to the file operations extension
 presented in @ref{Internal File Ops}.
+
+@c Idea from comp.lang.awk, February 2015
+@item
+Write an input parser that prints a prompt if the input is
+a from a ``terminal'' device.  You can use the @code{isatty()}
+function to tell if the input file is a terminal. (Hint: this function
+is usually expensive to call; try to call it just once.)
+The content of the prompt should come from a variable settable
+by @command{awk}-level code.
+You can write the prompt to stanard error. However,
+for best results, open a new file descriptor (or file pointer)
+on @file{/dev/tty} and print the prompt there, in case standard
+error has been redirected.
+
+Why is standard error a better
+choice than standard output for writing the prompt?
+Which reading mechanism should you replace, the one to get
+a record, or the one to read raw bytes?
 
 @item
 (Hard.)

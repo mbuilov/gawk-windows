@@ -1314,17 +1314,18 @@ match_re:
 				fatal(_("`exit' cannot be called in the current context"));
 
 			exiting = true;
-			t1 = POP_NUMBER();
-			exit_val = (int) get_number_si(t1);
-			DEREF(t1);
+			if ((t1 = POP_NUMBER()) != Nnull_string) {
+				exit_val = (int) get_number_si(t1);
 #ifdef VMS
-			if (exit_val == 0)
-				exit_val = EXIT_SUCCESS;
-			else if (exit_val == 1)
-				exit_val = EXIT_FAILURE;
-			/* else
-				just pass anything else on through */
+				if (exit_val == 0)
+					exit_val = EXIT_SUCCESS;
+				else if (exit_val == 1)
+					exit_val = EXIT_FAILURE;
+				/* else
+					just pass anything else on through */
 #endif
+			}
+			DEREF(t1);
 
 			if (currule == BEGINFILE || currule == ENDFILE) {
 

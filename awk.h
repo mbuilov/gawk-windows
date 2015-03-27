@@ -1483,6 +1483,9 @@ extern void set_FNR(void);
 extern void set_NR(void);
 
 extern struct redirect *redirect(NODE *redir_exp, int redirtype, int *errflg, bool failure_fatal);
+extern struct redirect *redirect_string(const char *redir_exp_str,
+		size_t redir_exp_len, bool not_string_flag, int redirtype,
+		int *errflg, int extfd, bool failure_fatal);
 extern NODE *do_close(int nargs);
 extern int flush_io(void);
 extern int close_io(bool *stdio_problem);
@@ -1503,6 +1506,7 @@ extern int is_off_limits_var(const char *var);
 extern char *estrdup(const char *str, size_t len);
 extern void update_global_values();
 extern long getenv_long(const char *name);
+extern void after_beginfile(IOBUF **curfile);
 
 /* mpfr.c */
 extern void set_PREC(void);
