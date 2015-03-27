@@ -374,6 +374,17 @@ out:
 	return result;
 }
 
+/*
+ * 3/2015: This test is no longer strictly necessary,
+ * since PROCINFO is no longer a deferred variable.
+ * But we leave it in for safety, anyway.
+ */
+/*
+BEGIN {
+	print "test_deferred returns", test_deferred()
+	print ""
+}
+*/
 static awk_value_t *
 test_deferred(int nargs, awk_value_t *result)
 {
@@ -1037,6 +1048,7 @@ static awk_bool_t init_testext(void)
 	static const char message[] = "hello, world";	/* of course */
 	static const char message2[] = "i am a scalar";
 
+	/* This is used by the getfile test */
 	if (sym_lookup("TESTEXT_QUIET", AWK_NUMBER, & value))
 		return awk_true;
 

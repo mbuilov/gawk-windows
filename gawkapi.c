@@ -1065,8 +1065,8 @@ api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *file
 			save_rule = currule;
 			save_source = source;
 
-			while (1) {
-				if (!pc)
+			for (;;) {
+				if (pc == NULL)
 					fatal(_("cannot find end of BEGINFILE rule"));
 				if (pc->opcode == Op_after_beginfile)
 					break;

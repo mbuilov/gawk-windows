@@ -1070,7 +1070,8 @@ redirect_string(const char *str, size_t explen, bool not_string,
 struct redirect *
 redirect(NODE *redir_exp, int redirtype, int *errflg, bool failure_fatal)
 {
-	int not_string = ((redir_exp->flags & STRCUR) == 0);
+	bool not_string = ((redir_exp->flags & STRCUR) == 0);
+
 	redir_exp = force_string(redir_exp);
 	return redirect_string(redir_exp->stptr, redir_exp->stlen, not_string,
 				redirtype, errflg, -1, failure_fatal);

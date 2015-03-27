@@ -5451,11 +5451,12 @@ how `awk' works.
 encounters the end of the file.  If there is some error in getting a
 record, such as a file that cannot be opened, then `getline' returns
 -1.  In this case, `gawk' sets the variable `ERRNO' to a string
-describing the error that occurred.  If `ERRNO' indicates that the I/O
-operation may be retried, and `PROCINFO["input", "RETRY"]' is set, then
--2 will be returned instead of -1, and further calls to `getline' may
-be attemped.  *Note Retrying Input::, for further information about
-this feature.
+describing the error that occurred.
+
+   If `ERRNO' indicates that the I/O operation may be retried, and
+`PROCINFO["INPUT", "RETRY"]' is set, then `getline' returns -2 instead
+of -1, and further calls to `getline' may be attemped.  *Note Retrying
+Input::, for further information about this feature.
 
    In the following examples, COMMAND stands for a string value that
 represents a shell command.
@@ -5999,16 +6000,16 @@ This minor node describes a feature that is specific to `gawk'.
 `getline' returns -1, and subsequent attempts to read from that file
 result in an end-of-file indication.  However, you may optionally
 instruct `gawk' to allow I/O to be retried when certain errors are
-encountered by setting setting a special element in the `PROCINFO'
-array (*note Auto-set::):
+encountered by setting a special element in the `PROCINFO' array (*note
+Auto-set::):
 
      PROCINFO["INPUT_NAME", "RETRY"] = 1
 
    When this element exists, `gawk' checks the value of the system
 `errno' variable when an I/O error occurs.  If `errno' indicates a
 subsequent I/O attempt may succeed, `getline' instead returns -2 and
-further calls to `getline' may succeed.  This applies to `errno' values
-`EAGAIN', `EWOULDBLOCK', `EINTR', or `ETIMEDOUT'.
+further calls to `getline' may succeed.  This applies to the `errno'
+values `EAGAIN', `EWOULDBLOCK', `EINTR', or `ETIMEDOUT'.
 
    This feature is useful in conjunction with `PROCINFO["INPUT_NAME",
 "READ_TIMEOUT"]' or situations where a file descriptor has been
@@ -34981,21 +34982,21 @@ Ref: Splitting By Content-Footnote-1236687
 Node: Multiple Line236850
 Ref: Multiple Line-Footnote-1242731
 Node: Getline242910
-Node: Plain Getline245376
-Node: Getline/Variable248016
-Node: Getline/File249165
-Node: Getline/Variable/File250550
-Ref: Getline/Variable/File-Footnote-1252153
-Node: Getline/Pipe252240
-Node: Getline/Variable/Pipe254918
-Node: Getline/Coprocess256049
-Node: Getline/Variable/Coprocess257313
-Node: Getline Notes258052
-Node: Getline Summary260846
-Ref: table-getline-variants261258
-Node: Read Timeout262087
-Ref: Read Timeout-Footnote-1265990
-Node: Retrying Input266048
+Node: Plain Getline245380
+Node: Getline/Variable248020
+Node: Getline/File249169
+Node: Getline/Variable/File250554
+Ref: Getline/Variable/File-Footnote-1252157
+Node: Getline/Pipe252244
+Node: Getline/Variable/Pipe254922
+Node: Getline/Coprocess256053
+Node: Getline/Variable/Coprocess257317
+Node: Getline Notes258056
+Node: Getline Summary260850
+Ref: table-getline-variants261262
+Node: Read Timeout262091
+Ref: Read Timeout-Footnote-1265994
+Node: Retrying Input266052
 Node: Command-line directories267238
 Node: Input Summary268145
 Node: Input Exercises271530

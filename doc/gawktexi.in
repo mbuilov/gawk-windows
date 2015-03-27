@@ -7715,9 +7715,11 @@ it encounters the end of the file.  If there is some error in getting
 a record, such as a file that cannot be opened, then @code{getline}
 returns @minus{}1.  In this case, @command{gawk} sets the variable
 @code{ERRNO} to a string describing the error that occurred.
+
 If @code{ERRNO} indicates that the I/O operation may be
-retried, and @code{PROCINFO["input", "RETRY"]} is set, then @minus{}2
-will be returned instead of @minus{}1, and further calls to @code{getline}
+retried, and @code{PROCINFO["@var{input}", "RETRY"]} is set,
+then @code{getline} returns @minus{}2
+instead of @minus{}1, and further calls to @code{getline}
 may be attemped.  @DBXREF{Retrying Input} for further information about
 this feature.
 
@@ -8397,7 +8399,7 @@ When @command{gawk} encounters an error while reading input, by
 default @code{getline} returns @minus{}1, and subsequent attempts to
 read from that file result in an end-of-file indication.  However, you
 may optionally instruct @command{gawk} to allow I/O to be retried when
-certain errors are encountered by setting setting a special element in
+certain errors are encountered by setting a special element in
 the @code{PROCINFO} array (@pxref{Auto-set}):
 
 @example
@@ -8408,7 +8410,7 @@ When this element exists, @command{gawk} checks the value of the system
 @code{errno} variable when an I/O error occurs.  If @code{errno} indicates
 a subsequent I/O attempt may succeed, @code{getline} instead returns
 @minus{}2 and
-further calls to @code{getline} may succeed.  This applies to @code{errno}
+further calls to @code{getline} may succeed.  This applies to the @code{errno}
 values @code{EAGAIN}, @code{EWOULDBLOCK}, @code{EINTR}, or @code{ETIMEDOUT}.
 
 This feature is useful in conjunction with
