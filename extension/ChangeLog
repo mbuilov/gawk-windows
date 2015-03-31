@@ -1,3 +1,7 @@
+2015-03-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* testext.c: Move test for deferred variables here.
+
 2015-03-18         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure: Updated to libtool 2.4.6.
@@ -34,10 +38,78 @@
 
 	* testext.c (var_test): Adjust for PROCINFO now being there.
 
+2015-01-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* testext.c (test_deferred): New function to help with testing
+	of deferred variable instantiation.
+	(do_get_file): Remove unused variable array.
+	(func_table): Add test_deferred.
+
+2015-01-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* testext.c (test_get_file): Fix error message.
+	(do_get_file): Implement new function providing low-level access
+	to the get_file API.
+	(func_table): Add "get_file" -> do_get_file.
+	(init_testext): If TESTEXT_QUIET has been set to a numeric value,
+	return quietly.
+
+2015-01-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* testext.c (test_get_file): The get_file hook no longer takes a
+	typelen argument.
+
+2015-01-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Remove the select extension, since it will be part of gawkextlib.
+	* select.c, siglist.h: Deleted.
+	* Makefile.am (pkgextension_LTLIBRARIES): Remove select.la.
+	(select_la_SOURCES, select_la_LDFLAGS, select_la_LIBADD): Remove.
+	(EXTRA_DIST): Remove siglist.h.
+	* configure.ac (AC_CHECK_HEADERS): Remove signal.h.
+	(AC_CHECK_FUNCS): Remove fcntl, kill, sigaction, and sigprocmask.
+
+2014-12-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Remove the errno extension, since it is now part of gawkextlib.
+	* errno.c, errlist.h: Deleted.
+	* Makefile.am (pkgextension_LTLIBRARIES): Remove errno.la.
+	(errno_la_SOURCES, errno_la_LDFLAGS, errno_la_LIBADD): Remove.
+	(EXTRA_DIST): Remove errlist.h.
+
 2014-11-23         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* inplace.c (do_inplace_begin): Jump through hoops to silence
 	GCC warnings about return value of chown.
+
+2014-11-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* select.c (do_input_fd): New function to return the input file
+	descriptor associated with a file/command.
+	(do_output_fd): New function to return the output file descriptor
+	associated with a file/command.
+	(func_table): Add new functions "input_fd" and "output_fd".
+	* testext.c (test_get_file): Do not use __func__, since it is a C99
+	feature, and gawk does not assume C99.
+
+2014-11-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* errno.c (do_errno2name, do_name2errno): Remove unused variable 'str'.
+	* select.c (do_signal): Remove unused variable 'override'.
+	(grabfd): New helper function to map a gawk file to the appropriate
+	fd for use in the arguments to selectd.
+	(do_select): get_file has 3 new arguments and returns info about both
+	the input and output buf.
+	(do_set_non_blocking): Support changes to get_file API.
+	* testext.c (test_get_file): New test function to check that extension
+	file creation via the get_file API is working.
+
+2014-11-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* select.c (set_retry): New function to set PROCINFO[<name>, "RETRY"].
+	(do_set_non_blocking): If called with a file name as opposed to a file
+	descriptor, call the set_retry function to configure PROCINFO to tell
+	io.c to retry I/O for temporary failures.
 
 2014-10-12         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -209,6 +281,108 @@
 
 	* gawkdirfd.h (FAKE_FD_VALUE): Move definition up in the file to give
 	clean compile on MinGW.
+
+2013-07-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac (AC_CHECK_FUNCS): Check for fcntl.
+	* select.c (set_non_blocking): Check that fcntl and O_NONBLOCK are
+	available.
+
+2013-07-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* select.c (signal_handler): On platforms lacking sigaction, reset
+	the signal handler each time a signal is trapped to protect in case
+	the system resets it to default.
+
+2013-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* select.c (signal_result): New function to set result string from
+	signal function and detect when we need to roll back.
+	(do_signal): Now takes an optional 3rd override argument.  Instead
+	of returning -1 or 0, we now return information about the previously
+	installed signal handler: default, ignore, trap, or unknown.  An
+	empty string is returned on error.  If it is an unknown handler,
+	and override is not non-zero, we roll back the handler and return "".
+
+2013-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* select.c (set_non_blocking): Do not attempt F_SETFL if F_GETFL fails.
+	(do_set_non_blocking): Add support for case when called with a single
+	"" argument.
+
+2013-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* select.c (do_signal): If sigaction is unavailable, fall back to
+	signal and hope that it does the right thing.
+
+2013-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac (AC_CHECK_FUNCS): Add kill and sigprocmask.
+	* select.c (get_signal_number): Change error messages since now may
+	be called by "kill" as well as "select_signal".
+	(do_signal): Add a lint warning if there are more than 2 args.
+	(do_kill): Add new function to send a signal.
+	(do_select): Support platforms where sigprocmask is not available.
+	There will be a race condition on such platforms, but that is not
+	easily avoided.
+
+2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* select.c (do_select): Now that the API flatten_array call has been
+	patched to ensure that the index values are strings, we can remove
+	the code to check for the AWK_NUMBER case.
+
+2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* select.c (do_select): Do not treat a numeric command value as a
+	file descriptor unless the command type is empty.
+
+2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (EXTRA_DIST): Add errlist.h and siglist.h.
+
+2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* select.c (set_non_blocking): New helper function to call fcntl.
+	(do_set_non_blocking): Add support for the case where there's a single
+	integer fd argument.
+
+2013-07-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* select.c (do_set_non_blocking): Implement new set_non_blocking
+	function.
+	(func_table): Add set_non_blocking.
+
+2013-07-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* errlist.h: New file containing a list of all the errno values I could
+	find.
+	* errno.c: Implement a new errno extension providing strerror,
+	errno2name, and name2errno.
+	* Makefile.am (pkgextension_LTLIBRARIES): Add errno.la.
+	(errno_la_SOURCES, errno_la_LDFLAGS, errno_la_LIBADD): Build new errno
+	extension.
+	* select.c (ext_version): Fix version string.
+	* siglist.h: Update to newest glibc version.
+
+2013-07-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* siglist.h: New file copied from glibc to provide a mapping between
+	signal number and name.
+	* select.c: Add a new "select_signal" function and provide support
+	for trapping signals.
+	(do_select): Add support for a 5th argument to contain an array
+	of returned signals.  Improve the argument processing, and add
+	better warning messages.
+
+2013-06-30         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (pkgextension_LTLIBRARIES): Add select.la.
+	(select_la_SOURCES, select_la_LDFLAGS, select_la_LIBADD): Build new
+	select extension.
+	* configure.ac (AC_CHECK_HEADERS): Add signal.h.
+	(AC_CHECK_FUNCS): Add sigaction.
+	* select.c: Implement the new select extension.
 
 2013-06-10         Arnold D. Robbins     <arnold@skeeve.com>
 
