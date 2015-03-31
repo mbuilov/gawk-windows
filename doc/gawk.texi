@@ -17153,8 +17153,8 @@ function randint(n)
 @end example
 
 @noindent
-The multiplication produces a random number greater than zero and less
-than @code{n}.  Using @code{int()}, this result is made into
+The multiplication produces a random number greater than or equal to
+zero and less than @code{n}.  Using @code{int()}, this result is made into
 an integer between zero and @code{n} @minus{} 1, inclusive.
 
 The following example uses a similar function to produce random integers
@@ -20506,10 +20506,23 @@ Remember that you must supply a leading @samp{@@} in front of an indirect functi
 
 Starting with @value{PVERSION} 4.1.2 of @command{gawk}, indirect function
 calls may also be used with built-in functions and with extension functions
-(@pxref{Dynamic Extensions}).  The only thing you cannot do is pass a regular
-expression constant to a built-in function through an indirect function
-call.@footnote{This may change in a future version; recheck the documentation that
-comes with your version of @command{gawk} to see if it has.}
+(@pxref{Dynamic Extensions}). There are some limitations when calling
+built-in functions indirectly, as follows.
+
+@itemize @value{BULLET}
+@item
+You cannot pass a regular expression constant to a built-in function
+through an indirect function call.@footnote{This may change in a future
+version; recheck the documentation that comes with your version of
+@command{gawk} to see if it has.} This applies to the @code{sub()},
+@code{gsub()}, @code{gensub()}, @code{match()}, @code{split()} and
+@code{patsplit()} functions.
+
+@item
+If calling @code{sub()} or @code{gsub()}, you may only pass two arguments,
+since those functions are unusual in that they update their third argument.
+This means that @code{$0} will be updated.
+@end itemize
 
 @command{gawk} does its best to make indirect function calls efficient.
 For example, in the following case:

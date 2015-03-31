@@ -1338,6 +1338,7 @@ extern void install_builtins(void);
 extern bool is_alpha(int c);
 extern bool is_alnum(int c);
 extern bool is_identchar(int c);
+extern NODE *make_regnode(int type, NODE *exp);
 /* builtin.c */
 extern double double_to_int(double d);
 extern NODE *do_exp(int nargs);
@@ -1367,6 +1368,9 @@ extern NODE *do_rand(int nargs);
 extern NODE *do_srand(int nargs);
 extern NODE *do_match(int nargs);
 extern NODE *do_sub(int nargs, unsigned int flags);
+extern NODE *call_sub(const char *name, int nargs);
+extern NODE *call_match(int nargs);
+extern NODE *call_split_func(const char *name, int nargs);
 extern NODE *format_tree(const char *, size_t, NODE **, long);
 extern NODE *do_lshift(int nargs);
 extern NODE *do_rshift(int nargs);
@@ -1414,6 +1418,7 @@ extern NODE **r_get_lhs(NODE *n, bool reference);
 extern STACK_ITEM *grow_stack(void);
 extern void dump_fcall_stack(FILE *fp);
 extern int register_exec_hook(Func_pre_exec preh, Func_post_exec posth);
+extern NODE **r_get_field(NODE *n, Func_ptr *assign, bool reference);
 /* ext.c */
 extern NODE *do_ext(int nargs);
 void load_ext(const char *lib_name);	/* temporary */
