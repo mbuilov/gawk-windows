@@ -1067,7 +1067,11 @@ match_re:
 
 				/* call it */
 				if (the_func == (builtin_func_t) do_sub)
-					r = call_sub_func(t1->stptr, arg_count);
+					r = call_sub(t1->stptr, arg_count);
+				else if (the_func == do_match)
+					r = call_match(arg_count);
+				else if (the_func == do_split || the_func == do_patsplit)
+					r = call_split_func(t1->stptr, arg_count);
 				else
 					r = the_func(arg_count);
 

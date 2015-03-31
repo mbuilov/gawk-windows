@@ -2,9 +2,11 @@ function print_result(category, fname, builtin_result, indirect_result)
 {
 	if (builtin_result == indirect_result)
 		printf("%s: %s: pass\n", category, fname)
-	else
+	else {
 		printf("%s: %s: fail: builtin: %s \tindirect: %s\n", category, fname,
 				builtin_result, indirect_result)
+		exit 1
+	}
 }
 
 
@@ -189,14 +191,129 @@ BEGIN {
 
 # regexp functions
 
-#	fun = "match"
-#	print_result("regexp", fun, b1, i1)
+	fun = "match"
+	b1 = match("o+", "fooob")
+	rstart = RSTART
+	rlength = RLENGTH
+	i1 = @fun("o+", "fooob")
+	print_result("regexp", fun, b1, i1)
+	if (rstart != RSTART) {
+		printf("match: failure: biRSTART (%d) != iRSTART (%d)\n",
+			rstart, RSTART)
+		exit 1
+	}
+	if (rlength != RLENGTH) {
+		printf("match: failure: biRLENGTH (%d) != iRLENGTH (%d)\n",
+			rlength, RLENGTH)
+		exit 1
+	}
 
-#	fun = "patsplit"
-#	print_result("regexp", fun, b1, i1)
+	############## start patsplit ##############
+	fun = "patsplit"
+	delete data
+	delete data2
+	delete seps
+	delete seps2
+	b1 = patsplit("a:b:c:d", data, ":", seps)
+	i1 = @fun("a:b:c:d", data2, ":", seps2)
+	print_result("regexp", fun, b1, i1)
+	for (i in data) {
+		if ((! (i in data2)) || data[i] != data2[i]) {
+			printf("patsplit1a: fail: builtin data[%d] (%s) != indirect data[%d] (%s)\n",
+				i, data[i], i, data2[i])
+			exit 1
+		}
+	}
+	for (i in seps) {
+		if ((! (i in seps2)) || seps[i] != seps2[i]) {
+			printf("patsplit1b: fail: builtin seps[%d] (%s) != indirect seps[%d] (%s)\n",
+				i, seps[i], i, seps2[i])
+			exit 1
+		}
+	}
 
-#	fun = "split"
-#	print_result("regexp", fun, b1, i1)
+	fun = "patsplit"
+	delete data
+	delete data2
+	b1 = patsplit("a:b:c:d", data, ":")
+	i1 = @fun("a:b:c:d", data2, ":")
+	print_result("regexp", fun, b1, i1)
+	for (i in data) {
+		if ((! (i in data2)) || data[i] != data2[i]) {
+			printf("patsplit2: fail: builtin data[%d] (%s) != indirect data[%d] (%s)\n",
+				i, data[i], i, data2[i])
+			exit 1
+		}
+	}
+
+	fun = "patsplit"
+	delete data
+	delete data2
+	FPAT = "[a-z]+"
+	b1 = patsplit("a b c d", data)
+	i1 = @fun("a b c d", data2)
+	print_result("regexp", fun, b1, i1)
+	for (i in data) {
+		if ((! (i in data2)) || data[i] != data2[i]) {
+			printf("patsplit3: fail: builtin data[%d] (%s) != indirect data[%d] (%s)\n",
+				i, data[i], i, data2[i])
+			exit 1
+		}
+	}
+	############## end patsplit ##############
+
+	############## start split ##############
+	fun = "split"
+	delete data
+	delete data2
+	delete seps
+	delete seps2
+	b1 = split("a:b:c:d", data, ":", seps)
+	i1 = @fun("a:b:c:d", data2, ":", seps2)
+	print_result("regexp", fun, b1, i1)
+	for (i in data) {
+		if ((! (i in data2)) || data[i] != data2[i]) {
+			printf("split1a: fail: builtin data[%d] (%s) != indirect data[%d] (%s)\n",
+				i, data[i], i, data2[i])
+			exit 1
+		}
+	}
+	for (i in seps) {
+		if ((! (i in seps2)) || seps[i] != seps2[i]) {
+			printf("split1b: fail: builtin seps[%d] (%s) != indirect seps[%d] (%s)\n",
+				i, seps[i], i, seps2[i])
+			exit 1
+		}
+	}
+
+	fun = "split"
+	delete data
+	delete data2
+	b1 = split("a:b:c:d", data, ":")
+	i1 = @fun("a:b:c:d", data2, ":")
+	print_result("regexp", fun, b1, i1)
+	for (i in data) {
+		if ((! (i in data2)) || data[i] != data2[i]) {
+			printf("split2: fail: builtin data[%d] (%s) != indirect data[%d] (%s)\n",
+				i, data[i], i, data2[i])
+			exit 1
+		}
+	}
+
+	fun = "split"
+	delete data
+	delete data2
+	b1 = split("a b c d", data)
+	i1 = @fun("a b c d", data2)
+	print_result("regexp", fun, b1, i1)
+	for (i in data) {
+		if ((! (i in data2)) || data[i] != data2[i]) {
+			printf("split3: fail: builtin data[%d] (%s) != indirect data[%d] (%s)\n",
+				i, data[i], i, data2[i])
+			exit 1
+		}
+	}
+	############## end split ##############
 
 # array functions
 

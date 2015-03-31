@@ -1,5 +1,14 @@
 2015-03-31         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* awk.h (call_sub): Renamed from call_sub_func.
+	(call_match, call_split_func): Declare.
+	* builtin.c (call_sub): Renamed from call_sub_func.
+	(call_match, call_split_func): New functions.
+	* interpret.h (r_interpret): Call new functions as appropriate.
+	* node.c (r_unref): Revert change to handle Node_regex, not needed.
+
+2015-03-31         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* awk.h (r_get_field): Declare.
 	* builtin.c (call_sub_func): Rearrange the stack to be what
 	the buitin function expects.

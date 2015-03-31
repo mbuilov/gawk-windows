@@ -2994,10 +2994,10 @@ done:
 	return make_number((AWKNUM) matches);
 }
 
-/* call_sub_func --- call do_sub indirectly */
+/* call_sub --- call do_sub indirectly */
 
 NODE *
-call_sub_func(const char *name, int nargs)
+call_sub(const char *name, int nargs)
 {
 	unsigned int flags = 0;
 	NODE *regex, *replace, *glob_flag;
@@ -3070,6 +3070,70 @@ call_sub_func(const char *name, int nargs)
 	return result;
 }
 
+/* call_match --- call do_match indirectly */
+
+NODE *
+call_match(int nargs)
+{
+	NODE *regex, *text, *array;
+	NODE *result;
+
+	regex = text = array = NULL;
+	if (nargs == 3)
+		array = POP();
+	regex = POP();
+
+	/* Don't need to pop the string just to push it back ... */
+
+	regex = make_regnode(Node_regex, regex);
+	PUSH(regex);
+
+	if (array)
+		PUSH(array);
+
+	result = do_match(nargs);
+	return result;
+}
+
+/* call_split_func --- call do_split or do_pat_split indirectly */
+
+NODE *
+call_split_func(const char *name, int nargs)
+{
+	NODE *regex, *seps;
+	NODE *result;
+
+	regex = seps = NULL;
+	if (nargs < 2)
+		fatal(_("indirect call to %s requires at least two arguments"),
+				name);
+
+	if (nargs == 4)
+		seps = POP();
+
+	if (nargs >= 3) {
+		regex = POP_STRING();
+		regex = make_regnode(Node_regex, regex);
+	} else {
+		if (name[0] == 's') {
+			regex = make_regnode(Node_regex, FS_node->var_value);
+			regex->re_flags |= FS_DFLT;
+		} else
+			regex = make_regnode(Node_regex, FPAT_node->var_value);
+		nargs++;
+	}
+
+	/* Don't need to pop the string or the data array */
+
+	PUSH(regex);
+
+	if (seps)
+		PUSH(seps);
+
+	result = (name[0] == 's') ? do_split(nargs) : do_patsplit(nargs);
+
+	return result;
+}
 
 /* make_integer - Convert an integer to a number node.  */
 
