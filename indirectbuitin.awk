@@ -7,16 +7,6 @@ function print_result(category, fname, builtin_result, indirect_result)
 				builtin_result, indirect_result)
 }
 
-BEGIN {
-	fun = "sub"
-	$0 = "ff11bb"
-	b1 = sub("f", "q")
-	$0 = "ff11bb"
-	i1 = @fun("f", "q")
-	print_result("string", fun, b1, i1)
-	exit
-}
-
 
 BEGIN {
 # math functions
@@ -101,16 +91,24 @@ BEGIN {
 
 # string functions
 
-#	fun = "gensub"
-#	b1 = gensub("f", "q","g", "ff11bb")
-#	i1 = @fun("f", "q", "g", "ff11bb")
-#	print_result("string", fun, b1, i1)
+	fun = "gensub"
+	b1 = gensub("f", "q", "g", "ff11bb")
+	i1 = @fun("f", "q", "g", "ff11bb")
+	print_result("string", fun, b1, i1)
 
-#	fun = "gsub"
-#	x = "ff11bb"
-#	b1 = gsub("f", "q", x)
-#	i1 = @fun("f", "q", x)
-#	print_result("string", fun, b1, i1)
+	fun = "gsub"
+	$0 = "ff11bb"
+	b1 = gsub("f", "q")
+	b2 = $0
+	$0 = "ff11bb"
+	i1 = @fun("f", "q")
+	i2 = $0
+	print_result("string", fun, b1, i1)
+	if (b2 != i2) {
+		printf("string: %s: fail: $0 (%s) != $0 (%s)\n",
+			fun, b2, i2)
+		exit 1
+	}
 
 	fun = "index"
 	b1 = index("hi, how are you", "how")
@@ -143,10 +141,18 @@ BEGIN {
 	print_result("string", fun, b1, i1)
 
 	fun = "sub"
-	x = "ff11bb"
-	b1 = sub("f", "q", x)
-	i1 = @fun("f", "q", x)
+	$0 = "ff11bb"
+	b1 = sub("f", "q")
+	b2 = $0
+	$0 = "ff11bb"
+	i1 = @fun("f", "q")
+	i2 = $0
 	print_result("string", fun, b1, i1)
+	if (b2 != i2) {
+		printf("string: %s: fail: $0 (%s) != $0 (%s)\n",
+			fun, b2, i2)
+		exit 1
+	}
 
 	fun = "substr"
 	b1 = substr("0xdeadbeef", 7, 4)
@@ -210,12 +216,12 @@ BEGIN {
 		data2[data[i]] = i
 
 	fun = "asorti"
-	asort(data2, newdata)
+	asorti(data2, newdata)
 	@fun(data2, newdata2)
 	print_result("array", fun, b1, i1)
 	for (i in newdata) {
 		if (! (i in newdata2) || newdata[i] != newdata2[i]) {
-			print fun ": failed, index", i
+			print fun ": failed, index", i, "value", newdata[i], newdata2[i]
 			exit
 		}
 	}

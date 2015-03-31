@@ -432,6 +432,7 @@ r_unref(NODE *tmp)
 	if (tmp == NULL)
 		return;
 	if (tmp->type == Node_regex) {
+fprintf(stderr, "got here!\n"); fflush(stderr);
 		if (tmp->re_reg != NULL)
 			refree(tmp->re_reg);
 		if (tmp->re_text != NULL)

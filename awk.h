@@ -1408,6 +1408,7 @@ extern NODE **r_get_lhs(NODE *n, bool reference);
 extern STACK_ITEM *grow_stack(void);
 extern void dump_fcall_stack(FILE *fp);
 extern int register_exec_hook(Func_pre_exec preh, Func_post_exec posth);
+extern NODE **r_get_field(NODE *n, Func_ptr *assign, bool reference);
 /* ext.c */
 extern NODE *do_ext(int nargs);
 void load_ext(const char *lib_name);	/* temporary */

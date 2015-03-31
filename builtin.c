@@ -3000,7 +3000,10 @@ NODE *
 call_sub_func(const char *name, int nargs)
 {
 	unsigned int flags = 0;
-	NODE *regex, *replace;
+	NODE *regex, *replace, *glob_flag;
+	NODE **lhs, *rhs;
+	NODE *zero = make_number(0.0);
+	NODE *result;
 
 	if (name[0] == 'g') {
 		if (name[1] == 'e')
@@ -3009,17 +3012,62 @@ call_sub_func(const char *name, int nargs)
 			flags = GSUB;
 	}
 
-	if ((flags == 0 || flags == GSUB) && nargs != 2)
-		fatal(_("%s: can be called indirectly only with two arguments"), name);
+	if (flags == 0 || flags == GSUB) {
+		/* sub or gsub */
+		if (nargs != 2)
+			fatal(_("%s: can be called indirectly only with two arguments"), name);
 
-	replace = POP();
+		replace = POP_STRING();
+		regex = POP();	/* the regex */
+		/*
+		 * push regex
+		 * push replace
+		 * push $0
+		 */
+		regex = make_regnode(Node_regex, regex);
+		PUSH(regex);
+		PUSH(replace);
+		lhs = r_get_field(zero, (Func_ptr *) 0, true);
+		nargs++;
+		PUSH_ADDRESS(lhs);
+	} else {
+		/* gensub */
+		if (nargs == 4)
+			rhs = POP();
+		else
+			rhs = NULL;
+		glob_flag = POP_STRING();
+		replace = POP_STRING();
+		regex = POP();	/* the regex */
+		/*
+		 * push regex
+		 * push replace
+		 * push glob_flag
+		 * if (nargs = 3) {
+		 *	 push $0
+		 *	 nargs++
+		 * }
+		 */
+		regex = make_regnode(Node_regex, regex);
+		PUSH(regex);
+		PUSH(replace);
+		PUSH(glob_flag);
+		if (rhs == NULL) {
+			lhs = r_get_field(zero, (Func_ptr *) 0, true);
+			rhs = *lhs;
+			UPREF(rhs);
+			PUSH(rhs);
+			nargs++;
+		}
+		PUSH(rhs);
+	}
 
-	regex = POP();	/* the regex */
-	regex = make_regnode(Node_regex, regex);
-	PUSH(regex);
-	PUSH(replace);
 
-	return do_sub(nargs, flags);
+	unref(zero);
+	result = do_sub(nargs, flags);
+	if (flags != GENSUB)
+		reset_record();
+	return result;
 }
 
 
