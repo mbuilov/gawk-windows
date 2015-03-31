@@ -8407,6 +8407,7 @@ PROCINFO["@var{input_name}", "RETRY"] = 1
 @end example
 
 When this element exists, @command{gawk} checks the value of the system
+(C language)
 @code{errno} variable when an I/O error occurs.  If @code{errno} indicates
 a subsequent I/O attempt may succeed, @code{getline} instead returns
 @minus{}2 and
@@ -34376,18 +34377,21 @@ As of this writing, there are seven extensions:
 GD graphics library extension
 
 @item
+MPFR library extension
+(this provides access to a number of MPFR functions that @command{gawk}'s
+native MPFR support does not)
+
+@item
 PDF extension
 
 @item
 PostgreSQL extension
 
 @item
-MPFR library extension
-(this provides access to a number of MPFR functions that @command{gawk}'s
-native MPFR support does not)
+Redis extension
 
 @item
-Redis extension
+Select extension
 
 @item
 XML parser extension, using the @uref{http://expat.sourceforge.net, Expat}
