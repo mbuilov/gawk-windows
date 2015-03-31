@@ -431,6 +431,8 @@ EXTRA_DIST = \
 	include.awk \
 	include.ok \
 	include2.ok \
+	indirectbuiltin.awk \
+	indirectbuiltin.ok \
 	indirectcall.awk \
 	indirectcall.in \
 	indirectcall.ok \
@@ -1045,7 +1047,7 @@ GAWK_EXT_TESTS = \
 	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcase \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
-	include include2 indirectcall indirectcall2 \
+	include include2 indirectbuiltin indirectcall indirectcall2 \
 	lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm next nondec nondec2 \
