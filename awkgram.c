@@ -4459,7 +4459,6 @@ static const struct token tokentab[] = {
 {"dcngettext",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3)|A(4)|A(5),	do_dcngettext,	0},
 {"default",	Op_K_default,	 LEX_DEFAULT,	GAWKX,		0,	0},
 {"delete",	Op_K_delete,	 LEX_DELETE,	NOT_OLD,	0,	0},
-{"div",		Op_builtin,	 LEX_BUILTIN,	GAWKX|A(3),	do_div,	MPF(div)},
 {"do",		Op_K_do,	 LEX_DO,	NOT_OLD|BREAK|CONTINUE,	0,	0},
 {"else",	Op_K_else,	 LEX_ELSE,	0,		0,	0},
 {"eval",	Op_symbol,	 LEX_EVAL,	0,		0,	0},
@@ -4480,6 +4479,7 @@ static const struct token tokentab[] = {
 {"include",	Op_symbol,	 LEX_INCLUDE,	GAWKX,	0,	0},
 {"index",	Op_builtin,	 LEX_BUILTIN,	A(2),		do_index,	0},
 {"int",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_int,	MPF(int)},
+{"intdiv",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(3),	do_intdiv,	MPF(intdiv)},
 {"isarray",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_isarray,	0},
 {"length",	Op_builtin,	 LEX_LENGTH,	A(0)|A(1),	do_length,	0},
 {"load",  	Op_symbol,	 LEX_LOAD,	GAWKX,		0,	0},
@@ -6669,9 +6669,9 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		arg = subn->nexti;
 		if (arg->nexti == arg->lasti && arg->nexti->opcode == Op_push)
 			arg->nexti->opcode = Op_push_arg;	/* argument may be array */
-	} else if (r->builtin == do_div
+	} else if (r->builtin == do_intdiv
 #ifdef HAVE_MPFR
-		   || r->builtin == MPF(div)
+		   || r->builtin == MPF(intdiv)
 #endif
 			) {
 		arg = subn->nexti->lasti->nexti->lasti->nexti;	/* 3rd arg list */

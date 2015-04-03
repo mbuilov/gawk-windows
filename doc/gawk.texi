@@ -17089,23 +17089,6 @@ You can use @samp{pi = atan2(0, -1)} to retrieve the value of
 @cindex cosine
 Return the cosine of @var{x}, with @var{x} in radians.
 
-@item @code{div(@var{numerator}, @var{denominator}, @var{result})}
-@cindexawkfunc{div}
-@cindex div
-Perform integer division, similar to the standard C function of the
-same name.  First, truncate @code{numerator} and @code{denominator}
-towards zero, creating integer values.  Clear the @code{result}
-array, and then set @code{result["quotient"]} to the result of
-@samp{numerator / denominator}, truncated towards zero to an integer,
-and set @code{result["remainder"]} to the result of @samp{numerator %
-denominator}, truncated towards zero to an integer.  This function is
-primarily intended for use with arbitrary length integers; it avoids
-creating MPFR arbitrary precision floating-point values (@pxref{Arbitrary
-Precision Integers}).
-
-This function is a @code{gawk} extension.  It is not available in
-compatibility mode (@pxref{Options}).
-
 @item @code{exp(@var{x})}
 @cindexawkfunc{exp}
 @cindex exponent
@@ -17120,6 +17103,23 @@ Return the nearest integer to @var{x}, located between @var{x} and zero and
 truncated toward zero.
 For example, @code{int(3)} is 3, @code{int(3.9)} is 3, @code{int(-3.9)}
 is @minus{}3, and @code{int(-3)} is @minus{}3 as well.
+
+@item @code{intdiv(@var{numerator}, @var{denominator}, @var{result})}
+@cindexawkfunc{intdiv}
+@cindex intdiv
+Perform integer division, similar to the standard C function of the
+same name.  First, truncate @code{numerator} and @code{denominator}
+towards zero, creating integer values.  Clear the @code{result}
+array, and then set @code{result["quotient"]} to the result of
+@samp{numerator / denominator}, truncated towards zero to an integer,
+and set @code{result["remainder"]} to the result of @samp{numerator %
+denominator}, truncated towards zero to an integer.  This function is
+primarily intended for use with arbitrary length integers; it avoids
+creating MPFR arbitrary precision floating-point values (@pxref{Arbitrary
+Precision Integers}).
+
+This function is a @code{gawk} extension.  It is not available in
+compatibility mode (@pxref{Options}).
 
 @item @code{log(@var{x})}
 @cindexawkfunc{log}
@@ -31114,27 +31114,30 @@ When dividing two arbitrary precision integers with either
 precision floating point value (unless the denominator evenly
 divides into the numerator).  In order to do integer division
 or remainder with arbitrary precision integers, use the built-in
-@code{div()} function (@pxref{Numeric Functions}).
+@code{intdiv()} function (@pxref{Numeric Functions}).
 
-You can simulate the @code{div()} function in standard @command{awk}
+You can simulate the @code{intdiv()} function in standard @command{awk}
 using this user-defined function:
 
 @example
-@c file eg/lib/div.awk
-# div --- do integer division
+@c file eg/lib/intdiv.awk
+# intdiv --- do integer division
 
 @c endfile
 @ignore
-@c file eg/lib/div.awk
+@c file eg/lib/intdiv.awk
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # July, 2014
+#
+# Name changed from div() to intdiv()
+# April, 2015
 
 @c endfile
 
 @end ignore
-@c file eg/lib/div.awk
-function div(numerator, denominator, result)
+@c file eg/lib/intdiv.awk
+function intdiv(numerator, denominator, result)
 @{
     split("", result)
 
@@ -31149,7 +31152,7 @@ function div(numerator, denominator, result)
 @end example
 
 The following example program, contributed by Katie Wasserman,
-uses @code{div()} to
+uses @code{intdiv()} to
 compute the digits of @value{PI} to as many places as you
 choose to set:
 
@@ -31174,7 +31177,7 @@ BEGIN @{
     for (m = digits * 4; m > 0; --m) @{
         d = m * 2 + 1
         x = pi * m
-        div(x, d, result)
+        intdiv(x, d, result)
         pi = result["quotient"]
         pi = pi + two
     @}
@@ -36043,7 +36046,7 @@ functions for internationalization
 (@pxref{Programmer i18n})
 
 @item
-The @code{div()} function for doing integer
+The @code{intdiv()} function for doing integer
 division and remainder
 (@pxref{Numeric Functions})
 @end itemize
@@ -36824,7 +36827,7 @@ installed when @command{gawk} is built.
 @xref{Igawk Program}.
 
 @item
-The @code{div()} function.
+The @code{intdiv()} function.
 @xref{Numeric Functions}.
 
 @item

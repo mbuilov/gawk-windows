@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Mar 24 2015" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Apr 02 2015" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -2680,7 +2680,13 @@ Return the cosine of
 .IR expr ,
 which is in radians.
 .TP
-.BI div( num ", " denom ", " result )
+.BI exp( expr )
+The exponential function.
+.TP
+.BI int( expr )
+Truncate to integer.
+.TP
+.BI intdiv( num ", " denom ", " result )
 Truncate
 .I num
 and
@@ -2696,12 +2702,6 @@ This is a
 .I gawk
 extension, primarily of value when working with
 arbitrarily large integers.
-.TP
-.BI exp( expr )
-The exponential function.
-.TP
-.BI int( expr )
-Truncate to integer.
 .TP
 .BI log( expr )
 The natural logarithm function.
