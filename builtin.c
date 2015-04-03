@@ -3752,7 +3752,7 @@ do_bindtextdomain(int nargs)
 	return make_string(the_result, strlen(the_result));
 }
 
-/* do_div --- do integer division, return quotient and remainder in dest array */
+/* do_intdiv --- do integer division, return quotient and remainder in dest array */
 
 /*
  * We define the semantics as:
@@ -3763,7 +3763,7 @@ do_bindtextdomain(int nargs)
  */
 
 NODE *
-do_div(int nargs)
+do_intdiv(int nargs)
 {
 	NODE *numerator, *denominator, *result;
 	double num, denom, quotient, remainder;
@@ -3771,7 +3771,7 @@ do_div(int nargs)
 
 	result = POP_PARAM();
 	if (result->type != Node_var_array)
-		fatal(_("div: third argument is not an array"));
+		fatal(_("intdiv: third argument is not an array"));
 	assoc_clear(result);
 
 	denominator = POP_SCALAR();
@@ -3779,9 +3779,9 @@ do_div(int nargs)
 
 	if (do_lint) {
 		if ((numerator->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("div: received non-numeric first argument"));
+			lintwarn(_("intdiv: received non-numeric first argument"));
 		if ((denominator->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("div: received non-numeric second argument"));
+			lintwarn(_("intdiv: received non-numeric second argument"));
 	}
 
 	(void) force_number(numerator);
@@ -3790,7 +3790,7 @@ do_div(int nargs)
 	denom = double_to_int(get_number_d(denominator));
 
 	if (denom == 0.0)
-		fatal(_("div: division by zero attempted"));
+		fatal(_("intdiv: division by zero attempted"));
 
 	quotient = double_to_int(num / denom);
 	/*
