@@ -3071,6 +3071,146 @@ done:
 	return make_number((AWKNUM) matches);
 }
 
+/* call_sub --- call do_sub indirectly */
+
+NODE *
+call_sub(const char *name, int nargs)
+{
+	unsigned int flags = 0;
+	NODE *regex, *replace, *glob_flag;
+	NODE **lhs, *rhs;
+	NODE *zero = make_number(0.0);
+	NODE *result;
+
+	if (name[0] == 'g') {
+		if (name[1] == 'e')
+			flags = GENSUB;
+		else
+			flags = GSUB;
+	}
+
+	if (flags == 0 || flags == GSUB) {
+		/* sub or gsub */
+		if (nargs != 2)
+			fatal(_("%s: can be called indirectly only with two arguments"), name);
+
+		replace = POP_STRING();
+		regex = POP();	/* the regex */
+		/*
+		 * push regex
+		 * push replace
+		 * push $0
+		 */
+		regex = make_regnode(Node_regex, regex);
+		PUSH(regex);
+		PUSH(replace);
+		lhs = r_get_field(zero, (Func_ptr *) 0, true);
+		nargs++;
+		PUSH_ADDRESS(lhs);
+	} else {
+		/* gensub */
+		if (nargs == 4)
+			rhs = POP();
+		else
+			rhs = NULL;
+		glob_flag = POP_STRING();
+		replace = POP_STRING();
+		regex = POP();	/* the regex */
+		/*
+		 * push regex
+		 * push replace
+		 * push glob_flag
+		 * if (nargs = 3) {
+		 *	 push $0
+		 *	 nargs++
+		 * }
+		 */
+		regex = make_regnode(Node_regex, regex);
+		PUSH(regex);
+		PUSH(replace);
+		PUSH(glob_flag);
+		if (rhs == NULL) {
+			lhs = r_get_field(zero, (Func_ptr *) 0, true);
+			rhs = *lhs;
+			UPREF(rhs);
+			PUSH(rhs);
+			nargs++;
+		}
+		PUSH(rhs);
+	}
+
+
+	unref(zero);
+	result = do_sub(nargs, flags);
+	if (flags != GENSUB)
+		reset_record();
+	return result;
+}
+
+/* call_match --- call do_match indirectly */
+
+NODE *
+call_match(int nargs)
+{
+	NODE *regex, *text, *array;
+	NODE *result;
+
+	regex = text = array = NULL;
+	if (nargs == 3)
+		array = POP();
+	regex = POP();
+
+	/* Don't need to pop the string just to push it back ... */
+
+	regex = make_regnode(Node_regex, regex);
+	PUSH(regex);
+
+	if (array)
+		PUSH(array);
+
+	result = do_match(nargs);
+	return result;
+}
+
+/* call_split_func --- call do_split or do_pat_split indirectly */
+
+NODE *
+call_split_func(const char *name, int nargs)
+{
+	NODE *regex, *seps;
+	NODE *result;
+
+	regex = seps = NULL;
+	if (nargs < 2)
+		fatal(_("indirect call to %s requires at least two arguments"),
+				name);
+
+	if (nargs == 4)
+		seps = POP();
+
+	if (nargs >= 3) {
+		regex = POP_STRING();
+		regex = make_regnode(Node_regex, regex);
+	} else {
+		if (name[0] == 's') {
+			regex = make_regnode(Node_regex, FS_node->var_value);
+			regex->re_flags |= FS_DFLT;
+		} else
+			regex = make_regnode(Node_regex, FPAT_node->var_value);
+		nargs++;
+	}
+
+	/* Don't need to pop the string or the data array */
+
+	PUSH(regex);
+
+	if (seps)
+		PUSH(seps);
+
+	result = (name[0] == 's') ? do_split(nargs) : do_patsplit(nargs);
+
+	return result;
+}
 
 /* make_integer - Convert an integer to a number node.  */
 
@@ -3611,7 +3751,7 @@ do_bindtextdomain(int nargs)
 	return make_string(the_result, strlen(the_result));
 }
 
-/* do_div --- do integer division, return quotient and remainder in dest array */
+/* do_intdiv --- do integer division, return quotient and remainder in dest array */
 
 /*
  * We define the semantics as:
@@ -3622,7 +3762,7 @@ do_bindtextdomain(int nargs)
  */
 
 NODE *
-do_div(int nargs)
+do_intdiv(int nargs)
 {
 	NODE *numerator, *denominator, *result;
 	double num, denom, quotient, remainder;
@@ -3630,7 +3770,7 @@ do_div(int nargs)
 
 	result = POP_PARAM();
 	if (result->type != Node_var_array)
-		fatal(_("div: third argument is not an array"));
+		fatal(_("intdiv: third argument is not an array"));
 	assoc_clear(result);
 
 	denominator = POP_SCALAR();
@@ -3638,9 +3778,9 @@ do_div(int nargs)
 
 	if (do_lint) {
 		if ((numerator->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("div: received non-numeric first argument"));
+			lintwarn(_("intdiv: received non-numeric first argument"));
 		if ((denominator->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("div: received non-numeric second argument"));
+			lintwarn(_("intdiv: received non-numeric second argument"));
 	}
 
 	(void) force_number(numerator);
@@ -3649,7 +3789,7 @@ do_div(int nargs)
 	denom = double_to_int(get_number_d(denominator));
 
 	if (denom == 0.0)
-		fatal(_("div: division by zero attempted"));
+		fatal(_("intdiv: division by zero attempted"));
 
 	quotient = double_to_int(num / denom);
 	/*

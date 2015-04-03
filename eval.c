@@ -1183,7 +1183,7 @@ r_get_lhs(NODE *n, bool reference)
 
 /* r_get_field --- get the address of a field node */
  
-static inline NODE **
+NODE **
 r_get_field(NODE *n, Func_ptr *assign, bool reference)
 {
 	long field_num;

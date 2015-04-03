@@ -1,8 +1,42 @@
+2015-04-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Rename div() to intdiv().
+
+	* builtin.c (do_intdiv): Renamed from do_div.
+	* mfpr.c (do_mpfr_intdiv): Renamed from do_mpfr_div.
+	* awk.h: Update declarations.
+	* awkgram.y (tokentab, snode): Revise accordingly.
+
+2015-03-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (call_sub): Renamed from call_sub_func.
+	(call_match, call_split_func): Declare.
+	* builtin.c (call_sub): Renamed from call_sub_func.
+	(call_match, call_split_func): New functions.
+	* interpret.h (r_interpret): Call new functions as appropriate.
+	* node.c (r_unref): Revert change to handle Node_regex, not needed.
+
+2015-03-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (r_get_field): Declare.
+	* builtin.c (call_sub_func): Rearrange the stack to be what
+	the buitin function expects.
+	* eval.c (r_get_field): Make extern.
+
 2015-03-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c (redirect): Change not_string from int to bool.
 	* gawkapi.c (api_get_file): Minor stylistic improvements.
 	* NEWS: Updated for retryable I/O and new API function.
+
+2015-03-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (make_regnode): Make extern.
+	* awk.h (make_regnode): Declare.
+	* builtin.c (call_sub_func): Start on reworking the stack to
+	be what do_sub() expects. Still needs work.
+	* interpret.h (r_interpret): Add a cast in comparison with do_sub().
+	* node.c (r_unref): Handle Node_regex nodes.
 
 2015-03-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
@@ -12,6 +46,17 @@
 2015-03-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h, gawkapi.c, io.c: Minor code reformatting.
+
+2015-03-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Start on fixing indirect calls of builtins.
+
+	* awk.h (call_sub_func): Add declaration.
+	* awkgram.y (lookup_builtin): Handle length, sub functions.
+	(install_builtin): Handle length function.
+	* builtin.c (call_sub_func): New function.
+	* interpret.h (r_interpret): If calling do_sub, do it through
+	call_sub_func().
 
 2015-03-18         Arnold D. Robbins     <arnold@skeeve.com>
 
