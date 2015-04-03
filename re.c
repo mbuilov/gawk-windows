@@ -433,6 +433,15 @@ avoid_dfa(NODE *re, char *str, size_t len)
 {
 	char *end;
 
+	/*
+	 * f = @/.../
+	 * if ("foo" ~ f) ...
+	 *
+	 * This creates a Node_dynregex with NULL re_reg.
+	 */
+	if (re->re_reg == NULL)
+		return false;
+
 	if (! re->re_reg->has_anchor)
 		return false;
 

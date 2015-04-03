@@ -1432,13 +1432,11 @@ exp
 			warning_ln($2->source_line,
 				_("regular expression on left of `~' or `!~' operator"));
 
-		assert($3->lasti == $3->nexti
-		   && $3->nexti->opcode == Op_push_re
-		   && $3->nexti->memory->type == Node_hardregex);
+		assert($3->opcode == Op_push_re
+			&& $3->memory->type == Node_hardregex);
 		/* RHS is @/.../ */
-		$2->memory = $3->nexti->memory;
-		bcfree($3->nexti);	/* Op_push_re */
-		bcfree($3);			/* Op_list */
+		$2->memory = $3->memory;
+		bcfree($3);
 		$$ = list_append($1, $2);
 	  }
 	| exp MATCHOP exp

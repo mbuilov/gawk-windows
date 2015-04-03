@@ -1,3 +1,11 @@
+2015-04-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (force_string): If hard_regex, return string text of the regex.
+	(force_string, force_number): If hard_regex, return Nnull_string.
+	* awkgram.y: Fix ~ and !~ with @/.../.
+	* eval.c (setup_frame): Handle a hard regex.
+	* re.c (avoid_dfa): Ditto.
+
 2015-04-02         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Rename div() to intdiv().

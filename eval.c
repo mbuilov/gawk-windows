@@ -1357,6 +1357,11 @@ setup_frame(INSTRUCTION *pc)
 			r->var_value = m;
 			break;
 
+		case Node_hardregex:
+			r->type = Node_var;
+			r->var_value = m;
+			break;
+
 		default:
 			cant_happen();
 		}

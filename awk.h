@@ -1764,6 +1764,9 @@ dupnode(NODE *n)
 static inline NODE *
 force_string(NODE *s)
 {
+	if (s->type == Node_hardregex)
+		return s->re_exp;
+
 	if ((s->flags & STRCUR) != 0
 		    && (s->stfmt == -1 || s->stfmt == CONVFMTidx)
 	)
@@ -1786,6 +1789,9 @@ unref(NODE *r)
 static inline NODE *
 force_number(NODE *n)
 {
+	if (n->type == Node_hardregex)
+		return Nnull_string;
+
 	return (n->flags & NUMCUR) ? n : str2number(n);
 }
 
