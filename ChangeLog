@@ -1,3 +1,13 @@
+2015-04-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (install_builtins): If do_traditional is true, do not
+	install gawk extensions flagged with GAWKX.  Similarly, if do_posix
+	is true, do not install functions flagged with NOT_POSIX.
+	This fixes a problem with spurious lint complaints about shadowing
+	a global variable that is not valid in traditional or posix mode.
+	Thanks to Andrew Schorr for finding the problem and supplying
+	initial code; I did it slightly differently.
+
 2015-04-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* NEWS: Rename div to intdiv.
