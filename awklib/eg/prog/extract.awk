@@ -1,4 +1,4 @@
-# extract.awk --- extract files and run programs from texinfo files
+# extract.awk --- extract files and run programs from Texinfo files
 #
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993

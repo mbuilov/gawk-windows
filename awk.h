@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2014 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2015 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -95,13 +95,11 @@ extern int errno;
 #include "missing_d/gawkbool.h"
 #endif
 
-#include "mbsupport.h" /* defines MBS_SUPPORT */
-
-#if MBS_SUPPORT
 /* We can handle multibyte strings.  */
 #include <wchar.h>
 #include <wctype.h>
-#endif
+
+#include "mbsupport.h" /* defines stuff for DJGPP to fake MBS */
 
 #ifdef STDC_HEADERS
 #include <float.h>
@@ -395,10 +393,8 @@ typedef struct exp_node {
 			size_t slen;
 			long sref;
 			int idx;
-#if MBS_SUPPORT
 			wchar_t *wsp;
 			size_t wslen;
-#endif
 		} val;
 	} sub;
 	NODETYPE type;
@@ -533,6 +529,11 @@ typedef struct exp_node {
 /* Node_array_print */
 #define adepth     sub.nodep.l.ll
 #define alevel     sub.nodep.x.xl
+
+/* Op_comment	*/
+#define comment_type	sub.val.idx
+#define EOL_COMMENT 1
+#define FULL_COMMENT 2
 
 /* --------------------------------lint warning types----------------------------*/
 typedef enum lintvals {
@@ -1105,11 +1106,7 @@ extern int exit_val;
 #define do_lint             (do_flags & (DO_LINT_INVALID|DO_LINT_ALL))
 #define do_lint_old         (do_flags & DO_LINT_OLD)
 #endif
-#if MBS_SUPPORT
 extern int gawk_mb_cur_max;
-#else
-#define gawk_mb_cur_max	(1)
-#endif
 
 #if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 extern GETGROUPS_T *groupset;
@@ -1254,45 +1251,10 @@ DEREF(NODE *r)
 #define	cant_happen()	r_fatal("internal error line %d, file: %s", \
 				__LINE__, __FILE__)
 
-#define	emalloc(var,ty,x,str)	(void)((var=(ty)malloc((size_t)(x))) ||\
-				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
-					(str), #var, (long) (x), strerror(errno)),0))
-#define	erealloc(var,ty,x,str)	(void)((var = (ty)realloc((char *)var, (size_t)(x))) \
-				||\
-				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
-					(str), #var, (long) (x), strerror(errno)),0))
+#define	emalloc(var,ty,x,str)	(void) (var = (ty) emalloc_real((size_t)(x), str, #var, __FILE__, __LINE__))
+#define	erealloc(var,ty,x,str)	(void) (var = (ty) erealloc_real((void *) var, (size_t)(x), str, #var, __FILE__, __LINE__))
 
 #define efree(p)	free(p)
-
-static inline NODE *
-force_string(NODE *s)
-{
-	if ((s->flags & STRCUR) != 0
-		    && (s->stfmt == -1 || s->stfmt == CONVFMTidx)
-	)
-		return s;
-	return format_val(CONVFMT, CONVFMTidx, s);
-}
-
-#ifdef GAWKDEBUG
-#define unref	r_unref
-#define	force_number	str2number
-#else /* not GAWKDEBUG */
-
-static inline void
-unref(NODE *r)
-{
-	if (r != NULL && --r->valref <= 0)
-		r_unref(r);
-}
-
-static inline NODE *
-force_number(NODE *n)
-{
-	return (n->flags & NUMCUR) ? n : str2number(n);
-}
-
-#endif /* GAWKDEBUG */
 
 #define fatal		set_loc(__FILE__, __LINE__), r_fatal
 
@@ -1367,7 +1329,6 @@ extern void shadow_funcs(void);
 extern int check_special(const char *name);
 extern SRCFILE *add_srcfile(enum srctype stype, char *src, SRCFILE *curr, bool *already_included, int *errcode);
 extern void free_srcfile(SRCFILE *thisfile);
-extern void register_deferred_variable(const char *name, NODE *(*load_func)(void));
 extern int files_are_same(char *path, SRCFILE *src);
 extern void valinfo(NODE *n, Func_print print_func, FILE *fp);
 extern void negate_num(NODE *n);
@@ -1377,6 +1338,7 @@ extern void install_builtins(void);
 extern bool is_alpha(int c);
 extern bool is_alnum(int c);
 extern bool is_identchar(int c);
+extern NODE *make_regnode(int type, NODE *exp);
 /* builtin.c */
 extern double double_to_int(double d);
 extern NODE *do_exp(int nargs);
@@ -1406,6 +1368,9 @@ extern NODE *do_rand(int nargs);
 extern NODE *do_srand(int nargs);
 extern NODE *do_match(int nargs);
 extern NODE *do_sub(int nargs, unsigned int flags);
+extern NODE *call_sub(const char *name, int nargs);
+extern NODE *call_match(int nargs);
+extern NODE *call_split_func(const char *name, int nargs);
 extern NODE *format_tree(const char *, size_t, NODE **, long);
 extern NODE *do_lshift(int nargs);
 extern NODE *do_rshift(int nargs);
@@ -1418,11 +1383,9 @@ extern AWKNUM nondec2awknum(char *str, size_t len);
 extern NODE *do_dcgettext(int nargs);
 extern NODE *do_dcngettext(int nargs);
 extern NODE *do_bindtextdomain(int nargs);
-extern NODE *do_div(int nargs);
-#if MBS_SUPPORT
+extern NODE *do_intdiv(int nargs);
 extern int strncasecmpmbs(const unsigned char *,
 			  const unsigned char *, size_t);
-#endif
 /* eval.c */
 extern void PUSH_CODE(INSTRUCTION *cp);
 extern INSTRUCTION *POP_CODE(void);
@@ -1455,6 +1418,7 @@ extern NODE **r_get_lhs(NODE *n, bool reference);
 extern STACK_ITEM *grow_stack(void);
 extern void dump_fcall_stack(FILE *fp);
 extern int register_exec_hook(Func_pre_exec preh, Func_post_exec posth);
+extern NODE **r_get_field(NODE *n, Func_ptr *assign, bool reference);
 /* ext.c */
 extern NODE *do_ext(int nargs);
 void load_ext(const char *lib_name);	/* temporary */
@@ -1523,7 +1487,10 @@ extern void register_two_way_processor(awk_two_way_processor_t *processor);
 extern void set_FNR(void);
 extern void set_NR(void);
 
-extern struct redirect *redirect(NODE *redir_exp, int redirtype, int *errflg);
+extern struct redirect *redirect(NODE *redir_exp, int redirtype, int *errflg, bool failure_fatal);
+extern struct redirect *redirect_string(const char *redir_exp_str,
+		size_t redir_exp_len, bool not_string_flag, int redirtype,
+		int *errflg, int extfd, bool failure_fatal);
 extern NODE *do_close(int nargs);
 extern int flush_io(void);
 extern int close_io(bool *stdio_problem);
@@ -1535,6 +1502,8 @@ extern NODE *do_getline(int intovar, IOBUF *iop);
 extern struct redirect *getredirect(const char *str, int len);
 extern bool inrec(IOBUF *iop, int *errcode);
 extern int nextfile(IOBUF **curfile, bool skipping);
+extern bool is_non_fatal_std(FILE *fp);
+extern bool is_non_fatal_redirect(const char *str);
 /* main.c */
 extern int arg_assign(char *arg, bool initing);
 extern int is_std_var(const char *var);
@@ -1542,6 +1511,7 @@ extern int is_off_limits_var(const char *var);
 extern char *estrdup(const char *str, size_t len);
 extern void update_global_values();
 extern long getenv_long(const char *name);
+extern void after_beginfile(IOBUF **curfile);
 
 /* mpfr.c */
 extern void set_PREC(void);
@@ -1556,9 +1526,9 @@ extern NODE *do_mpfr_and(int);
 extern NODE *do_mpfr_atan2(int);
 extern NODE *do_mpfr_compl(int);
 extern NODE *do_mpfr_cos(int);
-extern NODE *do_mpfr_div(int);
 extern NODE *do_mpfr_exp(int);
 extern NODE *do_mpfr_int(int);
+extern NODE *do_mpfr_intdiv(int);
 extern NODE *do_mpfr_log(int);
 extern NODE *do_mpfr_lshift(int);
 extern NODE *do_mpfr_or(int);
@@ -1606,7 +1576,6 @@ extern NODE *r_dupnode(NODE *n);
 extern NODE *make_str_node(const char *s, size_t len, int flags);
 extern void *more_blocks(int id);
 extern int parse_escape(const char **string_ptr);
-#if MBS_SUPPORT
 extern NODE *str2wstr(NODE *n, size_t **ptr);
 extern NODE *wstr2str(NODE *n);
 #define force_wstring(n)	str2wstr(n, NULL)
@@ -1620,9 +1589,6 @@ extern wint_t btowc_cache[];
 #define btowc_cache(x) btowc_cache[(x)&0xFF]
 extern void init_btowc_cache();
 #define is_valid_character(b)	(btowc_cache[(b)&0xFF] != WEOF)
-#else
-#define free_wstr(NODE)	/* empty */
-#endif
 /* re.c */
 extern Regexp *make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal);
 extern int research(Regexp *rp, char *str, int start, size_t len, int flags);
@@ -1661,6 +1627,7 @@ extern void free_context(AWK_CONTEXT *ctxt, bool keep_globals);
 extern NODE **variable_list();
 extern NODE **function_list(bool sort);
 extern void print_vars(NODE **table, Func_print print_func, FILE *fp);
+extern bool check_param_names(void);
 
 /* floatcomp.c */
 #ifdef HAVE_UINTMAX_T
@@ -1791,3 +1758,65 @@ dupnode(NODE *n)
 	return r_dupnode(n);
 }
 #endif
+
+static inline NODE *
+force_string(NODE *s)
+{
+	if ((s->flags & STRCUR) != 0
+		    && (s->stfmt == -1 || s->stfmt == CONVFMTidx)
+	)
+		return s;
+	return format_val(CONVFMT, CONVFMTidx, s);
+}
+
+#ifdef GAWKDEBUG
+#define unref	r_unref
+#define	force_number	str2number
+#else /* not GAWKDEBUG */
+
+static inline void
+unref(NODE *r)
+{
+	if (r != NULL && --r->valref <= 0)
+		r_unref(r);
+}
+
+static inline NODE *
+force_number(NODE *n)
+{
+	return (n->flags & NUMCUR) ? n : str2number(n);
+}
+
+#endif /* GAWKDEBUG */
+
+static inline void *
+emalloc_real(size_t count, const char *where, const char *var, const char *file, int line)
+{
+	void *ret;
+
+	if (count == 0)
+		fatal("%s:%d: emalloc called with zero bytes", file, line);
+
+	ret = (void *) malloc(count);
+	if (ret == NULL)
+		fatal(_("%s:%d:%s: %s: can't allocate %ld bytes of memory (%s)"),
+			file, line, where, var, (long) count, strerror(errno));
+
+	return ret;
+}
+
+static inline void *
+erealloc_real(void *ptr, size_t count, const char *where, const char *var, const char *file, int line)
+{
+	void *ret;
+
+	if (count == 0)
+		fatal("%s:%d: erealloc called with zero bytes", file, line);
+
+	ret = (void *) realloc(ptr, count);
+	if (ret == NULL)
+		fatal(_("%s:%d:%s: %s: can't reallocate %ld bytes of memory (%s)"),
+			file, line, where, var, (long) count, strerror(errno));
+
+	return ret;
+}

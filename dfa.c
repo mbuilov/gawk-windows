@@ -1,5 +1,5 @@
 /* dfa.c - deterministic extended regexp routines for GNU
-   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2014 Free Software
+   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2015 Free Software
    Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -58,14 +58,14 @@
 #include "gettext.h"
 #define _(str) gettext (str)
 
-#include "mbsupport.h" /* Define MBS_SUPPORT to 1 or 0, as appropriate.  */
-#if MBS_SUPPORT
-/* We can handle multibyte strings.  */
-# include <wchar.h>
-# include <wctype.h>
-#endif
+#include <wchar.h>
+#include <wctype.h>
 
 #include "xalloc.h"
+
+#if defined(__DJGPP__)
+#include "mbsupport.h"
+#endif
 
 #include "dfa.h"
 
@@ -391,12 +391,10 @@ struct dfa
    */
   int *multibyte_prop;
 
-#if MBS_SUPPORT
   /* A table indexed by byte values that contains the corresponding wide
      character (if any) for that byte.  WEOF means the byte is not a
      valid single-byte character.  */
   wint_t mbrtowc_cache[NOTCHAR];
-#endif
 
   /* Array of the bracket expression in the DFA.  */
   struct mb_char_classes *mbcsets;
@@ -432,6 +430,10 @@ struct dfa
                                    slots so far, not counting trans[-1].  */
   int trcount;                  /* Number of transition tables that have
                                    actually been built.  */
+  int min_trcount;              /* Minimum of number of transition tables.
+                                   Always keep the number, even after freeing
+                                   the transition tables.  It is also the
+                                   number of initial states.  */
   state_num **trans;            /* Transition tables for states that can
                                    never accept.  If the transitions for a
                                    state have not yet been computed, or the
@@ -450,6 +452,8 @@ struct dfa
                                    newline is stored separately and handled
                                    as a special case.  Newline is also used
                                    as a sentinel at the end of the buffer.  */
+  state_num initstate_letter;   /* Initial state for letter context.  */
+  state_num initstate_others;   /* Initial state for other contexts.  */
   struct dfamust *musts;        /* List of strings, at least one of which
                                    is known to appear in any r.e. matching
                                    the dfa.  */
@@ -475,7 +479,6 @@ static void regexp (void);
 static void
 dfambcache (struct dfa *d)
 {
-#if MBS_SUPPORT
   int i;
   for (i = CHAR_MIN; i <= CHAR_MAX; ++i)
     {
@@ -485,10 +488,8 @@ dfambcache (struct dfa *d)
       wchar_t wc;
       d->mbrtowc_cache[uc] = mbrtowc (&wc, &c, 1, &s) <= 1 ? wc : WEOF;
     }
-#endif
 }
 
-#if MBS_SUPPORT
 /* Store into *PWC the result of converting the leading bytes of the
    multibyte buffer S of length N bytes, using the mbrtowc_cache in *D
    and updating the conversion state in *D.  On conversion error,
@@ -527,9 +528,6 @@ mbs_to_wchar (wint_t *pwc, char const *s, size_t n, struct dfa *d)
   *pwc = wc;
   return 1;
 }
-#else
-#define mbs_to_wchar(pwc, s, n, d) (WEOF)
-#endif
 
 #ifdef DEBUG
 
@@ -724,7 +722,7 @@ static charclass newline;
 #ifdef __GLIBC__
 # define is_valid_unibyte_character(c) 1
 #else
-# define is_valid_unibyte_character(c) (! (MBS_SUPPORT && btowc (c) == WEOF))
+# define is_valid_unibyte_character(c) (btowc (c) != WEOF)
 #endif
 
 /* C is a "word-constituent" byte.  */
@@ -785,17 +783,12 @@ dfasyntax (reg_syntax_t bits, int fold, unsigned char eol)
 static bool
 setbit_wc (wint_t wc, charclass c)
 {
-#if MBS_SUPPORT
   int b = wctob (wc);
   if (b == EOF)
     return false;
 
   setbit (b, c);
   return true;
-#else
-  abort ();
-   /*NOTREACHED*/ return false;
-#endif
 }
 
 /* Set a bit for B and its case variants in the charclass C.
@@ -889,7 +882,6 @@ static wint_t wctok;		/* Wide character representation of the current
                                    MB_CUR_MAX > 1.  */
 
 
-#if MBS_SUPPORT
 /* Fetch the next lexical input character.  Set C (of type int) to the
    next input byte, except set C to EOF if the input is a multibyte
    character of length greater than 1.  Set WC (of type wint_t) to the
@@ -917,23 +909,6 @@ static wint_t wctok;		/* Wide character representation of the current
         lexleft -= nbytes;			\
       }						\
   } while (0)
-
-#else
-/* Note that characters become unsigned here.  */
-# define FETCH_WC(c, unused, eoferr)  \
-  do {				      \
-    if (! lexleft)		      \
-      {				      \
-        if ((eoferr) != 0)	      \
-          dfaerror (eoferr);	      \
-        else			      \
-          return lasttok = END;	      \
-      }				      \
-    (c) = to_uchar (*lexptr++);       \
-    --lexleft;			      \
-  } while (0)
-
-#endif /* MBS_SUPPORT */
 
 #ifndef MIN
 # define MIN(a,b) ((a) < (b) ? (a) : (b))
@@ -1299,6 +1274,20 @@ parse_bracket_exp (void)
   return CSET + charclass_index (ccl);
 }
 
+#define PUSH_LEX_STATE(s)			\
+  do						\
+    {						\
+      char const *lexptr_saved = lexptr;	\
+      size_t lexleft_saved = lexleft;		\
+      lexptr = (s);				\
+      lexleft = strlen (lexptr)
+
+#define POP_LEX_STATE()				\
+      lexptr = lexptr_saved;			\
+      lexleft = lexleft_saved;			\
+    }						\
+  while (0)
+
 static token
 lex (void)
 {
@@ -1546,20 +1535,6 @@ lex (void)
               return lasttok = CSET + charclass_index (ccl);
             }
 
-#define PUSH_LEX_STATE(s)			\
-  do						\
-    {						\
-      char const *lexptr_saved = lexptr;	\
-      size_t lexleft_saved = lexleft;		\
-      lexptr = (s);				\
-      lexleft = strlen (lexptr)
-
-#define POP_LEX_STATE()				\
-      lexptr = lexptr_saved;			\
-      lexleft = lexleft_saved;			\
-    }						\
-  while (0)
-
           /* FIXME: see if optimizing this, as is done with ANYCHAR and
              add_utf8_anychar, makes sense.  */
 
@@ -1579,14 +1554,33 @@ lex (void)
         case 'W':
           if (!backslash || (syntax_bits & RE_NO_GNU_OPS))
             goto normal_char;
-          zeroset (ccl);
-          for (c2 = 0; c2 < NOTCHAR; ++c2)
-            if (IS_WORD_CONSTITUENT (c2))
-              setbit (c2, ccl);
-          if (c == 'W')
-            notset (ccl);
+
+          if (!dfa->multibyte)
+            {
+              zeroset (ccl);
+              for (c2 = 0; c2 < NOTCHAR; ++c2)
+                if (IS_WORD_CONSTITUENT (c2))
+                  setbit (c2, ccl);
+              if (c == 'W')
+                notset (ccl);
+              laststart = false;
+              return lasttok = CSET + charclass_index (ccl);
+            }
+
+          /* FIXME: see if optimizing this, as is done with ANYCHAR and
+             add_utf8_anychar, makes sense.  */
+
+          /* \w and \W are documented to be equivalent to [_[:alnum:]] and
+             [^_[:alnum:]] respectively, so tell the lexer to process those
+             strings, each minus its "already processed" '['.  */
+          PUSH_LEX_STATE (c == 'w' ? "_[:alnum:]]" : "^_[:alnum:]]");
+
+          lasttok = parse_bracket_exp ();
+
+          POP_LEX_STATE ();
+
           laststart = false;
-          return lasttok = CSET + charclass_index (ccl);
+          return lasttok;
 
         case '[':
           if (backslash)
@@ -1727,7 +1721,6 @@ addtok (token t)
     }
 }
 
-#if MBS_SUPPORT
 /* We treat a multibyte character as a single atom, so that DFA
    can treat a multibyte character as a single expression.
 
@@ -1759,17 +1752,10 @@ addtok_wc (wint_t wc)
       addtok (CAT);
     }
 }
-#else
-static void
-addtok_wc (wint_t wc)
-{
-}
-#endif
 
 static void
 add_utf8_anychar (void)
 {
-#if MBS_SUPPORT
   static const charclass utf8_classes[5] = {
     /* 80-bf: non-leading bytes.  */
     {0, 0, 0, 0, CHARCLASS_WORD_MASK, CHARCLASS_WORD_MASK, 0, 0},
@@ -1824,7 +1810,6 @@ add_utf8_anychar (void)
       addtok (CAT);
       addtok (OR);
     }
-#endif
 }
 
 /* The grammar understood by the parser is as follows.
@@ -1865,7 +1850,7 @@ add_utf8_anychar (void)
 static void
 atom (void)
 {
-  if (MBS_SUPPORT && tok == WCHAR)
+  if (tok == WCHAR)
     {
       if (wctok == WEOF)
         addtok (BACKREF);
@@ -1887,7 +1872,7 @@ atom (void)
 
       tok = lex ();
     }
-  else if (MBS_SUPPORT && tok == ANYCHAR && using_utf8 ())
+  else if (tok == ANYCHAR && using_utf8 ())
     {
       /* For UTF-8 expand the period to a series of CSETs that define a valid
          UTF-8 character.  This avoids using the slow multibyte path.  I'm
@@ -1901,9 +1886,7 @@ atom (void)
     }
   else if ((tok >= 0 && tok < NOTCHAR) || tok >= CSET || tok == BACKREF
            || tok == BEGLINE || tok == ENDLINE || tok == BEGWORD
-#if MBS_SUPPORT
            || tok == ANYCHAR || tok == MBCSET
-#endif /* MBS_SUPPORT */
            || tok == ENDWORD || tok == LIMWORD || tok == NOTLIMWORD)
     {
       addtok (tok);
@@ -2236,10 +2219,8 @@ epsclosure (position_set *s, struct dfa const *d, char *visited)
   for (i = 0; i < s->nelem; ++i)
     if (d->tokens[s->elems[i].index] >= NOTCHAR
         && d->tokens[s->elems[i].index] != BACKREF
-#if MBS_SUPPORT
         && d->tokens[s->elems[i].index] != ANYCHAR
         && d->tokens[s->elems[i].index] != MBCSET
-#endif
         && d->tokens[s->elems[i].index] < CSET)
       {
         if (!initialized)
@@ -2558,9 +2539,7 @@ dfaanalyze (struct dfa *d, int searchflag)
      it with its epsilon closure.  */
   for (i = 0; i < d->tindex; ++i)
     if (d->tokens[i] < NOTCHAR || d->tokens[i] == BACKREF
-#if MBS_SUPPORT
         || d->tokens[i] == ANYCHAR || d->tokens[i] == MBCSET
-#endif
         || d->tokens[i] >= CSET)
       {
 #ifdef DEBUG
@@ -2588,9 +2567,16 @@ dfaanalyze (struct dfa *d, int searchflag)
 
   /* Build the initial state.  */
   separate_contexts = state_separate_contexts (&merged);
-  state_index (d, &merged,
-               (separate_contexts & CTX_NEWLINE
-                ? CTX_NEWLINE : separate_contexts ^ CTX_ANY));
+  if (separate_contexts & CTX_NEWLINE)
+    state_index (d, &merged, CTX_NEWLINE);
+  d->initstate_others = d->min_trcount
+    = state_index (d, &merged, separate_contexts ^ CTX_ANY);
+  if (separate_contexts & CTX_LETTER)
+    d->initstate_letter = d->min_trcount
+      = state_index (d, &merged, CTX_LETTER);
+  else
+    d->initstate_letter = d->initstate_others;
+  d->min_trcount++;
 
   free (posalloc);
   free (stkalloc);
@@ -2663,9 +2649,8 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
         copyset (d->charclasses[d->tokens[pos.index] - CSET], matches);
       else
         {
-          if (MBS_SUPPORT
-               && (d->tokens[pos.index] == MBCSET
-              || d->tokens[pos.index] == ANYCHAR))
+          if (d->tokens[pos.index] == MBCSET
+              || d->tokens[pos.index] == ANYCHAR)
             {
               /* MB_CUR_MAX > 1 */
               if (d->tokens[pos.index] == MBCSET)
@@ -2927,17 +2912,17 @@ build_state (state_num s, struct dfa *d)
   /* Set an upper limit on the number of transition tables that will ever
      exist at once.  1024 is arbitrary.  The idea is that the frequently
      used transition tables will be quickly rebuilt, whereas the ones that
-     were only needed once or twice will be cleared away.  However, do
-     not clear the initial state, as it's always used.  */
+     were only needed once or twice will be cleared away.  However, do not
+     clear the initial D->min_trcount states, since they are always used.  */
   if (d->trcount >= 1024)
     {
-      for (i = 1; i < d->tralloc; ++i)
+      for (i = d->min_trcount; i < d->tralloc; ++i)
         {
           free (d->trans[i]);
           free (d->fails[i]);
           d->trans[i] = d->fails[i] = NULL;
         }
-      d->trcount = 1;
+      d->trcount = d->min_trcount;
     }
 
   ++d->trcount;
@@ -3070,17 +3055,7 @@ match_mb_charset (struct dfa *d, state_num s, position pos,
   int context;
 
   /* Check syntax bits.  */
-  if (wc == (wchar_t) eolbyte)
-    {
-      if (!(syntax_bits & RE_DOT_NEWLINE))
-        return 0;
-    }
-  else if (wc == (wchar_t) '\0')
-    {
-      if (syntax_bits & RE_DOT_NOT_NULL)
-        return 0;
-    }
-  else if (wc == WEOF)
+  if (wc == WEOF)
     return 0;
 
   context = wchar_context (wc);
@@ -3318,15 +3293,22 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
    expression "\\" accepts the codepoint 0x5c, but should not accept the second
    byte of the codepoint 0x815c.  Then the initial state must skip the bytes
    that are not a single byte character nor the first byte of a multibyte
-   character.  */
+   character.
+
+   Given DFA state d, use mbs_to_wchar to advance MBP until it reaches or
+   exceeds P.  If WCP is non-NULL, set *WCP to the final wide character
+   processed, or if no wide character is processed, set it to WEOF.
+   Both P and MBP must be no larger than END.  */
 static unsigned char const *
 skip_remains_mb (struct dfa *d, unsigned char const *p,
-                 unsigned char const *mbp, char const *end)
+                 unsigned char const *mbp, char const *end, wint_t *wcp)
 {
-  wint_t wc;
+  wint_t wc = WEOF;
   while (mbp < p)
     mbp += mbs_to_wchar (&wc, (char const *) mbp,
                          end - (char const *) mbp, d);
+  if (wcp != NULL)
+    *wcp = wc;
   return mbp;
 }
 
@@ -3388,20 +3370,44 @@ dfaexec_main (struct dfa *d, char const *begin, char *end,
             {
               s1 = s;
 
-              if (s == 0)
+              if (s < d->min_trcount)
                 {
-                  if (d->states[s].mbps.nelem == 0)
+                  if (d->min_trcount == 1)
                     {
-                      do
+                      if (d->states[s].mbps.nelem == 0)
                         {
-                          while (t[*p] == 0)
-                            p++;
-                          p = mbp = skip_remains_mb (d, p, mbp, end);
+                          do
+                            {
+                              while (t[*p] == 0)
+                                p++;
+                              p = mbp = skip_remains_mb (d, p, mbp, end, NULL);
+                            }
+                          while (t[*p] == 0);
                         }
-                      while (t[*p] == 0);
+                      else
+                        p = mbp = skip_remains_mb (d, p, mbp, end, NULL);
                     }
                   else
-                    p = mbp = skip_remains_mb (d, p, mbp, end);
+                    {
+                      wint_t wc;
+                      mbp = skip_remains_mb (d, p, mbp, end, &wc);
+
+                      /* If d->min_trcount is greater than 1, maybe
+                         transit to another initial state after skip.  */
+                      if (p < mbp)
+                        {
+                          int context = wchar_context (wc);
+                          if (context == CTX_LETTER)
+                            s = d->initstate_letter;
+                          else
+                            /* It's CTX_NONE.  CTX_NEWLINE cannot happen,
+                               as we assume that a newline is always a
+                               single byte character.  */
+                            s = d->initstate_others;
+                          p = mbp;
+                          s1 = s;
+                        }
+                    }
                 }
 
               if (d->states[s].mbps.nelem == 0)
@@ -3410,20 +3416,20 @@ dfaexec_main (struct dfa *d, char const *begin, char *end,
                   continue;
                 }
 
-              /* Falling back to the glibc matcher in this case gives
-                 better performance (up to 25% better on [a-z], for
-                 example) and enables support for collating symbols and
-                 equivalence classes.  */
-              if (d->states[s].has_mbcset && backref)
-                {
-                  *backref = 1;
-                  goto done;
-                }
-
               /* The following code is used twice.
                  Use a macro to avoid the risk that they diverge.  */
 #define State_transition()                                              \
   do {                                                                  \
+              /* Falling back to the glibc matcher in this case gives   \
+                 better performance (up to 25% better on [a-z], for     \
+                 example) and enables support for collating symbols and \
+                 equivalence classes.  */                               \
+              if (d->states[s].has_mbcset && backref)                   \
+                {                                                       \
+                  *backref = 1;                                         \
+                  goto done;                                            \
+                }                                                       \
+                                                                        \
               /* Can match with a multibyte character (and multi-character \
                  collating element).  Transition table might be updated.  */ \
               s = transit_state (d, s, &p, (unsigned char *) end);      \
@@ -3460,6 +3466,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end,
             {
               while (t[*p] == 0)
                 p++;
+              s1 = 0;
               s = t[*p++];
             }
 
@@ -3477,13 +3484,23 @@ dfaexec_main (struct dfa *d, char const *begin, char *end,
             }
         }
 
-      if ((char *) p > end)
+      if (s < 0)
         {
-          p = NULL;
-          goto done;
+          if ((char *) p > end || p[-1] != eol || d->newlines[s1] < 0)
+            {
+              p = NULL;
+              goto done;
+            }
+
+          /* The previous character was a newline, count it, and skip
+             checking of multibyte character boundary until here.  */
+          nlcount++;
+          mbp = p;
+
+          s = allow_nl ? d->newlines[s1] : 0;
         }
 
-      if (s >= 0 && d->fails[s])
+      if (d->fails[s])
         {
           if (d->success[s] & sbit[*p])
             {
@@ -3497,32 +3514,13 @@ dfaexec_main (struct dfa *d, char const *begin, char *end,
             State_transition();
           else
             s = d->fails[s][*p++];
-          continue;
         }
-
-      /* If the previous character was a newline, count it, and skip
-         checking of multibyte character boundary until here.  */
-      if (p[-1] == eol)
-        {
-          nlcount++;
-          mbp = p;
-        }
-
-      if (s >= 0)
+      else
         {
           if (!d->trans[s])
             build_state (s, d);
           trans = d->trans;
-          continue;
         }
-
-      if (p[-1] == eol && allow_nl)
-        {
-          s = d->newlines[s1];
-          continue;
-        }
-
-      s = 0;
     }
 
  done:
@@ -3618,7 +3616,7 @@ dfaoptimize (struct dfa *d)
   size_t i;
   bool have_backref = false;
 
-  if (!MBS_SUPPORT || !using_utf8 ())
+  if (!using_utf8 ())
     return;
 
   for (i = 0; i < d->tindex; ++i)
@@ -3678,8 +3676,11 @@ dfassbuild (struct dfa *d)
   sup->musts = NULL;
 
   sup->charclasses = xnmalloc (sup->calloc, sizeof *sup->charclasses);
-  memcpy (sup->charclasses, d->charclasses,
-          d->cindex * sizeof *sup->charclasses);
+  if (d->cindex)
+    {
+      memcpy (sup->charclasses, d->charclasses,
+              d->cindex * sizeof *sup->charclasses);
+    }
 
   sup->tokens = xnmalloc (d->tindex, 2 * sizeof *sup->tokens);
   sup->talloc = d->tindex * 2;

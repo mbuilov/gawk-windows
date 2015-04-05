@@ -14,7 +14,7 @@ a=11111111111111111111111111111111111111111111111111111111111
 print sqrt(a^2)
 #print sq_root(a^2)
 
-# ADR: Added for gawk-4.1-stable which doesn't have built-in div() function
+# ADR: Added for gawk-4.1-stable which doesn't have built-in intdiv() function
 if (PROCINFO["version"] < "4.1.60")
   print sq_root2(a^2)
 else
@@ -27,9 +27,9 @@ function sq_root(x, temp,r,z)
    z=0
    while (abs(z-temp)>1)
     { z=temp
-      div(x,temp,r)
+      intdiv(x,temp,r)
       temp=r["quotient"] + temp
-      div(temp,2,r)
+      intdiv(temp,2,r)
       temp=r["quotient"]
     }
    return temp

@@ -52,6 +52,8 @@ pointer
 xmalloc(size_t bytes)
 {
 	pointer p;
+	if (bytes == 0)
+		bytes = 1;	/* avoid dfa.c mishegos */
 	emalloc(p, pointer, bytes, "xmalloc");
 	return p;
 }

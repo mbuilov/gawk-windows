@@ -110,6 +110,14 @@
 
 #ifdef __EMX__
 #include <process.h>
+
+#if !defined(_S_IFDIR) && defined(S_IFDIR)
+#define _S_IFDIR	S_IFDIR
+#endif
+
+#if !defined(_S_IRWXU) && defined(S_IRWXU)
+#define _S_IRWXU	S_IRWXU
+#endif
 #endif
 
 #ifndef ENFILE
@@ -253,7 +261,6 @@ struct recmatch {
 
 
 static int iop_close(IOBUF *iop);
-struct redirect *redirect(NODE *redir_exp, int redirtype, int *errflg);
 static void close_one(void);
 static int close_redir(struct redirect *rp, bool exitwarn, two_way_close_type how);
 #ifndef PIPES_SIMULATED
@@ -264,7 +271,7 @@ static IOBUF *iop_alloc(int fd, const char *name, int errno_val);
 static IOBUF *iop_finish(IOBUF *iop);
 static int gawk_pclose(struct redirect *rp);
 static int str2mode(const char *mode);
-static int two_way_open(const char *str, struct redirect *rp);
+static int two_way_open(const char *str, struct redirect *rp, int extfd);
 static int pty_vs_pipe(const char *command);
 static void find_input_parser(IOBUF *iop);
 static bool find_output_wrapper(awk_output_buf_t *outbuf);
@@ -588,7 +595,8 @@ inrec(IOBUF *iop, int *errcode)
 	else 
 		cnt = get_a_record(& begin, iop, errcode);
 
-	if (cnt == EOF) {
+	/* Note that get_a_record may return -2 when I/O would block */
+	if (cnt < 0) {
 		retval = false;
 	} else {
 		INCREMENT_REC(NR);
@@ -716,13 +724,13 @@ redflags2str(int flags)
 	return genflags2str(flags, redtab);
 }
 
-/* redirect --- Redirection for printf and print commands */
+/* redirect_string --- Redirection for printf and print commands, use string info */
 
 struct redirect *
-redirect(NODE *redir_exp, int redirtype, int *errflg)
+redirect_string(const char *str, size_t explen, bool not_string,
+		int redirtype, int *errflg, int extfd, bool failure_fatal)
 {
 	struct redirect *rp;
-	char *str;
 	int tflag = 0;
 	int outflag = 0;
 	const char *direction = "to";
@@ -771,18 +779,16 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 	default:
 		cant_happen();
 	}
-	if (do_lint && (redir_exp->flags & STRCUR) == 0)
+	if (do_lint && not_string)
 		lintwarn(_("expression in `%s' redirection only has numeric value"),
 			what);
-	redir_exp = force_string(redir_exp);
-	str = redir_exp->stptr;
 
 	if (str == NULL || *str == '\0')
 		fatal(_("expression for `%s' redirection has null string value"),
 			what);
 
-	if (do_lint && (strncmp(str, "0", redir_exp->stlen) == 0
-			|| strncmp(str, "1", redir_exp->stlen) == 0))
+	if (do_lint && (strncmp(str, "0", explen) == 0
+			|| strncmp(str, "1", explen) == 0))
 		lintwarn(_("filename `%s' for `%s' redirection may be result of logical expression"),
 				str, what);
 
@@ -820,8 +826,8 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 #endif /* PIPES_SIMULATED */
 
 		/* now check for a match */
-		if (strlen(rp->value) == redir_exp->stlen
-		    && memcmp(rp->value, str, redir_exp->stlen) == 0
+		if (strlen(rp->value) == explen
+		    && memcmp(rp->value, str, explen) == 0
 		    && ((rp->flag & ~(RED_NOBUF|RED_EOF|RED_PTY)) == tflag
 			|| (outflag != 0
 			    && (rp->flag & (RED_FILE|RED_WRITE)) == outflag))) {
@@ -832,23 +838,25 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			if (do_lint && rpflag != newflag)
 				lintwarn(
 		_("unnecessary mixing of `>' and `>>' for file `%.*s'"),
-					(int) redir_exp->stlen, rp->value);
+					(int) explen, rp->value);
 
 			break;
 		}
 	}
 
 	if (rp == NULL) {
+		char *newstr;
 		new_rp = true;
 		if (save_rp != NULL) {
 			rp = save_rp;
 			efree(rp->value);
 		} else
 			emalloc(rp, struct redirect *, sizeof(struct redirect), "redirect");
-		emalloc(str, char *, redir_exp->stlen + 1, "redirect");
-		memcpy(str, redir_exp->stptr, redir_exp->stlen);
-		str[redir_exp->stlen] = '\0';
-		rp->value = str;
+		emalloc(newstr, char *, explen + 1, "redirect");
+		memcpy(newstr, str, explen);
+		newstr[explen] = '\0';
+		str = newstr;
+		rp->value = newstr;
 		rp->flag = tflag;
 		init_output_wrapper(& rp->output);
 		rp->output.name = str;
@@ -880,10 +888,20 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			mode = binmode("a");
 			break;
 		case redirect_pipe:
+			if (extfd >= 0) {
+				warning(_("get_file cannot create pipe `%s' with fd %d"), str, extfd);
+				return NULL;
+			}
 			/* synchronize output before new pipe */
 			(void) flush_io();
 
 			os_restore_mode(fileno(stdin));
+			/*
+			 * Don't check failure_fatal; see input pipe below.
+			 * Note that the failure happens upon failure to fork,
+			 * using a non-existant program will still succeed the
+			 * popen().
+			 */
 			if ((rp->output.fp = popen(str, binmode("w"))) == NULL)
 				fatal(_("can't open pipe `%s' for output (%s)"),
 						str, strerror(errno));
@@ -893,6 +911,10 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			rp->flag |= RED_NOBUF;
 			break;
 		case redirect_pipein:
+			if (extfd >= 0) {
+				warning(_("get_file cannot create pipe `%s' with fd %d"), str, extfd);
+				return NULL;
+			}
 			direction = "from";
 			if (gawk_popen(str, rp) == NULL)
 				fatal(_("can't open pipe `%s' for input (%s)"),
@@ -900,7 +922,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			break;
 		case redirect_input:
 			direction = "from";
-			fd = devopen(str, binmode("r"));
+			fd = (extfd >= 0) ? extfd : devopen(str, binmode("r"));
 			if (fd == INVALID_HANDLE && errno == EISDIR) {
 				*errflg = EISDIR;
 				/* do not free rp, saving it for reuse (save_rp = rp) */
@@ -917,15 +939,19 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			}
 			break;
 		case redirect_twoway:
+#ifndef HAVE_SOCKETS
+			if (extfd >= 0) {
+				warning(_("get_file socket creation not supported on this platform for `%s' with fd %d"), str, extfd);
+				return NULL;
+			}
+#endif
 			direction = "to/from";
-			if (! two_way_open(str, rp)) {
-#ifdef HAVE_SOCKETS
-				if (inetfile(str, NULL)) {
+			if (! two_way_open(str, rp, extfd)) {
+				if (! failure_fatal || is_non_fatal_redirect(str)) {
 					*errflg = errno;
 					/* do not free rp, saving it for reuse (save_rp = rp) */
 					return NULL;
 				} else
-#endif
 					fatal(_("can't open two way pipe `%s' for input/output (%s)"),
 							str, strerror(errno));
 			}
@@ -937,7 +963,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 		if (mode != NULL) {
 			errno = 0;
 			rp->output.mode = mode;
-			fd = devopen(str, mode);
+			fd = (extfd >= 0) ? extfd : devopen(str, mode);
 
 			if (fd > INVALID_HANDLE) {
 				if (fd == fileno(stdin))
@@ -1001,11 +1027,14 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 				 * can return -1.  For output to file,
 				 * complain. The shell will complain on
 				 * a bad command to a pipe.
+				 *
+				 * 12/2014: Take nonfatal settings in PROCINFO into account.
 				 */
 				if (errflg != NULL)
 					*errflg = errno;
-				if (   redirtype == redirect_output
-				    || redirtype == redirect_append) {
+				if (failure_fatal && ! is_non_fatal_redirect(str) &&
+				    (redirtype == redirect_output
+				     || redirtype == redirect_append)) {
 					/* multiple messages make life easier for translators */
 					if (*direction == 'f')
 						fatal(_("can't redirect from `%s' (%s)"),
@@ -1036,6 +1065,18 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 	return rp;
 }
 
+/* redirect --- Redirection for printf and print commands */
+
+struct redirect *
+redirect(NODE *redir_exp, int redirtype, int *errflg, bool failure_fatal)
+{
+	bool not_string = ((redir_exp->flags & STRCUR) == 0);
+
+	redir_exp = force_string(redir_exp);
+	return redirect_string(redir_exp->stptr, redir_exp->stlen, not_string,
+				redirtype, errflg, -1, failure_fatal);
+}
+
 /* getredirect --- find the struct redirect for this file or pipe */
 
 struct redirect *
@@ -1048,6 +1089,36 @@ getredirect(const char *str, int len)
 			return rp;
 
 	return NULL;
+}
+
+/* is_non_fatal_std --- return true if fp is stdout/stderr and nonfatal */
+
+bool
+is_non_fatal_std(FILE *fp)
+{
+	static const char nonfatal[] = "NONFATAL";
+
+	if (in_PROCINFO(nonfatal, NULL, NULL))
+		return true;
+
+	/* yucky logic. sigh. */
+	if (fp == stdout) {
+		return (   in_PROCINFO("-", nonfatal, NULL) != NULL
+		        || in_PROCINFO("/dev/stdout", nonfatal, NULL) != NULL);
+	} else if (fp == stderr) {
+		return (in_PROCINFO("/dev/stderr", nonfatal, NULL) != NULL);
+	}
+
+	return false;
+}
+
+/* is_non_fatal_redirect --- return true if redirected I/O should be nonfatal */
+
+bool
+is_non_fatal_redirect(const char *str)
+{
+	return in_PROCINFO("NONFATAL", NULL, NULL) != NULL
+	       || in_PROCINFO(str, "NONFATAL", NULL) != NULL;
 }
 
 /* close_one --- temporarily close an open file to re-use the fd */
@@ -1422,7 +1493,7 @@ str2mode(const char *mode)
 
 static int
 socketopen(int family, int type, const char *localpname,
-	const char *remotepname, const char *remotehostname)
+	const char *remotepname, const char *remotehostname, bool *hard_error)
 {
 	struct addrinfo *lres, *lres0;
 	struct addrinfo lhints;
@@ -1441,8 +1512,11 @@ socketopen(int family, int type, const char *localpname,
 
 	lerror = getaddrinfo(NULL, localpname, & lhints, & lres);
 	if (lerror) {
-		if (strcmp(localpname, "0") != 0)
-			fatal(_("local port %s invalid in `/inet'"), localpname);
+		if (strcmp(localpname, "0") != 0) {
+			warning(_("local port %s invalid in `/inet'"), localpname);
+			*hard_error = true;
+			return INVALID_HANDLE;
+		}
 		lres0 = NULL;
 		lres = & lhints;
 	} else
@@ -1460,7 +1534,9 @@ socketopen(int family, int type, const char *localpname,
 		if (rerror) {
 			if (lres0 != NULL)
 				freeaddrinfo(lres0);
-			fatal(_("remote host and port information (%s, %s) invalid"), remotehostname, remotepname);
+			warning(_("remote host and port information (%s, %s) invalid"), remotehostname, remotepname);
+			*hard_error = true;
+			return INVALID_HANDLE;
 		}
 		rres0 = rres;
 		socket_fd = INVALID_HANDLE;
@@ -1569,6 +1645,7 @@ devopen(const char *name, const char *mode)
 	char *ptr;
 	int flag = 0;
 	struct inet_socket_info isi;
+	int save_errno = 0;
 
 	if (strcmp(name, "-") == 0)
 		return fileno(stdin);
@@ -1611,19 +1688,20 @@ devopen(const char *name, const char *mode)
 		goto strictopen;
 	} else if (inetfile(name, & isi)) {
 #ifdef HAVE_SOCKETS
+#define DEFAULT_RETRIES 20
+		static unsigned long def_retries = DEFAULT_RETRIES;
+		static bool first_time = true;
+		unsigned long retries = 0;
+		static long msleep = 1000;
+		bool hard_error = false;
+		bool non_fatal = is_non_fatal_redirect(name);
+
 		cp = (char *) name;
 
 		/* socketopen requires NUL-terminated strings */
 		cp[isi.localport.offset+isi.localport.len] = '\0';
 		cp[isi.remotehost.offset+isi.remotehost.len] = '\0';
 		/* remoteport comes last, so already NUL-terminated */
-
-		{
-#define DEFAULT_RETRIES 20
-		static unsigned long def_retries = DEFAULT_RETRIES;
-		static bool first_time = true;
-		unsigned long retries = 0;
-		static long msleep = 1000;
 
 		if (first_time) {
 			char *cp, *end;
@@ -1650,25 +1728,41 @@ devopen(const char *name, const char *mode)
 					msleep *= 1000;
 			}
 		}
-		retries = def_retries;
+		/*
+		 * PROCINFO["NONFATAL"] or PROCINFO[name, "NONFATAL"] overrrides
+		 * GAWK_SOCK_RETRIES.  The explicit code in the program carries
+		 * a bigger stick than the environment variable does.
+		 */
+		retries = non_fatal ? 1 : def_retries;
 
+		errno = 0;
 		do {
-			openfd = socketopen(isi.family, isi.protocol, name+isi.localport.offset, name+isi.remoteport.offset, name+isi.remotehost.offset);
+			openfd = socketopen(isi.family, isi.protocol, name+isi.localport.offset,
+					name+isi.remoteport.offset, name+isi.remotehost.offset,
+					& hard_error);
 			retries--;
-		} while (openfd == INVALID_HANDLE && retries > 0 && usleep(msleep) == 0);
-	}
+		} while (openfd == INVALID_HANDLE && ! hard_error && retries > 0 && usleep(msleep) == 0);
+		save_errno = errno;
 
-	/* restore original name string */
-	cp[isi.localport.offset+isi.localport.len] = '/';
-	cp[isi.remotehost.offset+isi.remotehost.len] = '/';
+		/* restore original name string */
+		cp[isi.localport.offset+isi.localport.len] = '/';
+		cp[isi.remotehost.offset+isi.remotehost.len] = '/';
 #else /* ! HAVE_SOCKETS */
-	fatal(_("TCP/IP communications are not supported"));
+		fatal(_("TCP/IP communications are not supported"));
 #endif /* HAVE_SOCKETS */
 	}
 
 strictopen:
-	if (openfd == INVALID_HANDLE)
+	if (openfd == INVALID_HANDLE) {
 		openfd = open(name, flag, 0666);
+		/*
+		 * ENOENT means there is no such name in the filesystem.
+		 * Therefore it's ok to propagate up the error from
+		 * getaddrinfo() that's in save_errno.
+		 */
+		if (openfd == INVALID_HANDLE && errno == ENOENT && save_errno)
+			errno = save_errno;
+	}
 #if defined(__EMX__) || defined(__MINGW32__)
 	if (openfd == INVALID_HANDLE && errno == EACCES) {
 		/* On OS/2 and Windows directory access via open() is
@@ -1691,16 +1785,16 @@ strictopen:
 /* two_way_open --- open a two way communications channel */
 
 static int
-two_way_open(const char *str, struct redirect *rp)
+two_way_open(const char *str, struct redirect *rp, int extfd)
 {
 	static bool no_ptys = false;
 
 #ifdef HAVE_SOCKETS
 	/* case 1: socket */
-	if (inetfile(str, NULL)) {
+	if (extfd >= 0 || inetfile(str, NULL)) {
 		int fd, newfd;
 
-		fd = devopen(str, "rw");
+		fd = (extfd >= 0) ? extfd : devopen(str, "rw");
 		if (fd == INVALID_HANDLE)
 			return false;
 		if ((BINMODE & BINMODE_OUTPUT) != 0)
@@ -2160,17 +2254,43 @@ use_pipes:
 
 #ifndef PIPES_SIMULATED		/* real pipes */
 
-/* wait_any --- wait for a child process, close associated pipe */
+/*
+ * wait_any --- if the argument pid is 0, wait for all child processes that
+ * have exited.  We loop to make sure to reap all children that have exited to
+ * minimize the risk of running out of process slots.  Since we don't process
+ * SIGCHLD, we do not immediately reap exited children.  So when we get here,
+ * we want to reap any that have piled up.
+ *
+ * Note: on platforms that do not support waitpid with WNOHANG, when called with
+ * a zero argument, this function will hang until all children have exited.
+ *
+ * AJS, 2013-07-07: I do not see why we need to ignore signals during this
+ * function.  This function just waits and updates the pid and status fields.
+ * I don't see why that should interfere with any signal handlers.  But I am
+ * reluctant to remove this protection.  So I changed to use sigprocmask to
+ * block signals instead to avoid interfering with installed signal handlers.
+ */
 
 static int
 wait_any(int interesting)	/* pid of interest, if any */
 {
-	RETSIGTYPE (*hstat)(int), (*istat)(int), (*qstat)(int);
 	int pid;
 	int status = 0;
 	struct redirect *redp;
+#ifdef HAVE_SIGPROCMASK
+	sigset_t set, oldset;
+
+	/* I have no idea why we are blocking signals during this function... */
+	sigemptyset(& set);
+	sigaddset(& set, SIGINT);
+	sigaddset(& set, SIGHUP);
+	sigaddset(& set, SIGQUIT);
+	sigprocmask(SIG_BLOCK, & set, & oldset);
+#else
+	RETSIGTYPE (*hstat)(int), (*istat)(int), (*qstat)(int);
 
 	istat = signal(SIGINT, SIG_IGN);
+#endif
 #ifdef __MINGW32__
 	if (interesting < 0) {
 		status = -1;
@@ -2186,11 +2306,22 @@ wait_any(int interesting)	/* pid of interest, if any */
 				break;
 			}
 	}
-#else
+#else /* ! __MINGW32__ */
+#ifndef HAVE_SIGPROCMASK
 	hstat = signal(SIGHUP, SIG_IGN);
 	qstat = signal(SIGQUIT, SIG_IGN);
+#endif
 	for (;;) {
-# ifdef HAVE_SYS_WAIT_H	/* POSIX compatible sys/wait.h */
+# if defined(HAVE_WAITPID) && defined(WNOHANG)
+		/*
+		 * N.B. If the caller wants status for a specific child process
+		 * (i.e. interesting is non-zero), then we must hang until we
+		 * get exit status for that child.
+		 */
+		if ((pid = waitpid(-1, & status, (interesting ? 0 : WNOHANG))) == 0)
+			/* No children have exited */
+			break;
+# elif defined(HAVE_SYS_WAIT_H)	/* POSIX compatible sys/wait.h */
 		pid = wait(& status);
 # else
 		pid = wait((union wait *) & status);
@@ -2208,10 +2339,16 @@ wait_any(int interesting)	/* pid of interest, if any */
 		if (pid == -1 && errno == ECHILD)
 			break;
 	}
+#ifndef HAVE_SIGPROCMASK
 	signal(SIGHUP, hstat);
 	signal(SIGQUIT, qstat);
 #endif
+#endif /* ! __MINGW32__ */
+#ifndef HAVE_SIGPROCMASK
 	signal(SIGINT, istat);
+#else
+	sigprocmask(SIG_SETMASK, & oldset, NULL);
+#endif
 	return status;
 }
 
@@ -2413,7 +2550,7 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 
 	assert(redirtype != redirect_none);
 	redir_exp = TOP();
-	rp = redirect(redir_exp, redirtype, & redir_error);
+	rp = redirect(redir_exp, redirtype, & redir_error, false);
 	DEREF(redir_exp);
 	decr_sp();
 	if (rp == NULL) {
@@ -2432,7 +2569,7 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 	if (errcode != 0) {
 		if (! do_traditional && (errcode != -1))
 			update_ERRNO_int(errcode);
-		return make_number((AWKNUM) -1.0);
+		return make_number((AWKNUM) cnt);
 	}
 
 	if (cnt == EOF) {
@@ -2482,7 +2619,7 @@ do_getline(int into_variable, IOBUF *iop)
 			update_ERRNO_int(errcode);
 		if (into_variable)
 			(void) POP_ADDRESS();
-		return make_number((AWKNUM) -1.0); 
+		return make_number((AWKNUM) cnt); 
 	}
 
 	if (cnt == EOF)
@@ -2505,7 +2642,6 @@ do_getline(int into_variable, IOBUF *iop)
 typedef struct {
 	const char *envname;
 	char **dfltp;		/* pointer to address of default path */
-	char try_cwd;		/* always search current directory? */
 	char **awkpath;		/* array containing library search paths */ 
 	int max_pathlen;	/* length of the longest item in awkpath */ 
 } path_info;
@@ -2513,13 +2649,11 @@ typedef struct {
 static path_info pi_awkpath = {
 	/* envname */	"AWKPATH",
 	/* dfltp */	& defpath,
-	/* try_cwd */	true,
 };
 
 static path_info pi_awklibpath = {
 	/* envname */	"AWKLIBPATH",
 	/* dfltp */	& deflibpath,
-	/* try_cwd */	false,
 };
 
 /* init_awkpath --- split path(=$AWKPATH) into components */
@@ -2577,30 +2711,6 @@ init_awkpath(path_info *pi)
 #undef INC_PATH
 }
 
-/* get_cwd -- get current working directory */
-
-static char *
-get_cwd ()
-{
-#define BSIZE	100
-	char *buf;
-	size_t bsize = BSIZE;
-
-	emalloc(buf, char *, bsize * sizeof(char), "get_cwd");
-	while (true) {
-		if (getcwd(buf, bsize) == buf)
-			return buf;
-		if (errno != ERANGE) {
-			efree(buf);
-			return NULL;
-		}
-		bsize *= 2;
-		erealloc(buf, char *, bsize * sizeof(char), "get_cwd");
-	}
-#undef BSIZE
-}
-
-
 /* do_find_source --- search $AWKPATH for file, return NULL if not found */ 
 
 static char *
@@ -2620,24 +2730,6 @@ do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 		*errcode = errno;
 		efree(path);
 		return NULL;
-	}
-
-	/* try current directory before $AWKPATH search */
-	if (pi->try_cwd && stat(src, stb) == 0) {
-		path = get_cwd();
-		if (path == NULL) {
-			*errcode = errno;
-			return NULL;
-		}
-		erealloc(path, char *, strlen(path) + strlen(src) + 2, "do_find_source");
-#ifdef VMS
-		if (strcspn(path,">]:") == strlen(path))
-			strcat(path, "/");
-#else
-		strcat(path, "/");
-#endif
-		strcat(path, src);
-		return path;
 	}
 
 	if (pi->awkpath == NULL)
@@ -3110,10 +3202,8 @@ rs1scan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state)
 {
 	char *bp;
 	char rs;
-#if MBS_SUPPORT
 	size_t mbclen = 0;
 	mbstate_t mbs;
-#endif
 
 	memset(recm, '\0', sizeof(struct recmatch));
 	rs = RS->stptr[0];
@@ -3124,7 +3214,6 @@ rs1scan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state)
 	if (*state == INDATA)   /* skip over data we've already seen */
 		bp += iop->scanoff;
 
-#if MBS_SUPPORT
 	/*
 	 * From: Bruno Haible <bruno@clisp.org>
 	 * To: Aharon Robbins <arnold@skeeve.com>, gnits@gnits.org
@@ -3221,7 +3310,7 @@ rs1scan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state)
 			return NOTERM;
 		}
 	}
-#endif
+
 	while (*bp != rs)
 		bp++;
 
@@ -3423,10 +3512,45 @@ find_longest_terminator:
 	return REC_OK;
 }
 
+/* retryable --- return true if PROCINFO[<filename>, "RETRY"] exists */
+
+static inline int
+retryable(IOBUF *iop)
+{
+	return PROCINFO_node && in_PROCINFO(iop->public.name, "RETRY", NULL);
+}
+
+/* errno_io_retry --- Does the I/O error indicate that the operation should be retried later? */
+
+static inline int
+errno_io_retry(void)
+{
+	switch (errno) {
+#ifdef EAGAIN
+	case EAGAIN:
+#endif
+#ifdef EWOULDBLOCK
+#if !defined(EAGAIN) || (EWOULDBLOCK != EAGAIN)
+	case EWOULDBLOCK:
+#endif
+#endif
+#ifdef EINTR
+	case EINTR:
+#endif
+#ifdef ETIMEDOUT
+	case ETIMEDOUT:
+#endif
+		return 1;
+	default:
+		return 0;
+	}
+}
+
 /*
  * get_a_record --- read a record from IOP into out,
  * return length of EOF, set RT.
  * Note that errcode is never NULL, and the caller initializes *errcode to 0.
+ * If I/O would block, return -2.
  */
 
 static int
@@ -3470,8 +3594,10 @@ get_a_record(char **out,        /* pointer to pointer to data */
 			iop->flag |= IOP_AT_EOF;
 			return EOF;
 		} else if (iop->count == -1) {
-			iop->flag |= IOP_AT_EOF; 
 			*errcode = errno;
+			if (errno_io_retry() && retryable(iop))
+				return -2;
+			iop->flag |= IOP_AT_EOF; 
 			return EOF;
 		} else {
 			iop->dataend = iop->buf + iop->count;
@@ -3545,6 +3671,8 @@ get_a_record(char **out,        /* pointer to pointer to data */
 		iop->count = iop->public.read_func(iop->public.fd, iop->dataend, amt_to_read);
 		if (iop->count == -1) {
 			*errcode = errno;
+			if (errno_io_retry() && retryable(iop))
+				return -2;
 			iop->flag |= IOP_AT_EOF;
 			break;
 		} else if (iop->count == 0) {
@@ -3696,8 +3824,10 @@ pty_vs_pipe(const char *command)
 #ifdef HAVE_TERMIOS_H
 	NODE *val;
 
-	if (PROCINFO_node == NULL)
-		return false;
+	/*
+	 * N.B. No need to check for NULL PROCINFO_node, since the
+	 * in_PROCINFO function now checks that for us.
+	 */
 	val = in_PROCINFO(command, "pty", NULL);
 	if (val) {
 		if ((val->flags & MAYBE_NUM) != 0)
@@ -3839,12 +3969,21 @@ in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx)
 	NODE *r, *sub = NULL; 
 	NODE *subsep = SUBSEP_node->var_value;
 
+	if (PROCINFO_node == NULL || (pidx1 == NULL && pidx2 == NULL))
+		return NULL;
+
 	/* full_idx is in+out parameter */
 
 	if (full_idx)
 		sub = *full_idx;
 
-	str_len = strlen(pidx1) + subsep->stlen	+ strlen(pidx2);
+	if (pidx1 != NULL && pidx2 == NULL)
+		str_len = strlen(pidx1);
+	else if (pidx1 == NULL && pidx2 != NULL)
+		str_len = strlen(pidx2);
+	else
+		str_len = strlen(pidx1) + subsep->stlen	+ strlen(pidx2);
+
 	if (sub == NULL) {
 		emalloc(str, char *, str_len + 1, "in_PROCINFO");
 		sub = make_str_node(str, str_len, ALREADY_MALLOCED);
@@ -3858,8 +3997,14 @@ in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx)
 		sub->stlen = str_len;
 	}
 
-	sprintf(sub->stptr, "%s%.*s%s", pidx1, (int)subsep->stlen,
-			subsep->stptr, pidx2);
+	if (pidx1 != NULL && pidx2 == NULL)
+		strcpy(sub->stptr, pidx1);
+	else if (pidx1 == NULL && pidx2 != NULL)
+		strcpy(sub->stptr, pidx2);
+	else
+		sprintf(sub->stptr, "%s%.*s%s", pidx1, (int)subsep->stlen,
+				subsep->stptr, pidx2);
+
 	r = in_array(PROCINFO_node, sub);
 	if (! full_idx)
 		unref(sub);

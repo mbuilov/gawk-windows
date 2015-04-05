@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Aug 03 2014" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Apr 02 2015" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -231,7 +231,8 @@ and so on.)
 .PD
 \fB\-\^\-debug\fR[\fB=\fIfile\fR]
 Enable debugging of \*(AK programs.
-By default, the debugger reads commands interactively from the terminal.
+By default, the debugger reads commands interactively from the keyboard
+(standard input).
 The optional
 .IR file
 argument specifies a file with a list
@@ -626,7 +627,7 @@ specifies a search path to use when finding source files named with
 the
 .B \-l
 option.  If this variable does not exist, the default path is
-\fB".:/usr/local/lib/gawk"\fR.
+\fB"/usr/local/lib/gawk"\fR.
 (The actual directory may vary, depending upon how
 .I gawk
 was built and installed.)
@@ -941,6 +942,15 @@ then
 will contain
 a string describing the error.
 The value is subject to translation in non-English locales.
+If the string in
+.B ERRNO
+corresponds to a system error in the
+.IR errno (3)
+variable, then the numeric value can be found in
+.B PROCINFO["errno"].
+For non-system errors,
+.B PROCINFO["errno"]
+will be zero.
 .TP
 .B FIELDWIDTHS
 A whitespace separated list of field widths.  When set,
@@ -1102,6 +1112,13 @@ system call.
 The default time format string for
 .BR strftime() .
 .TP
+\fBPROCINFO["errno"]\fP
+The value of
+.IR errno (3)
+when
+.BR ERRNO
+is set to the associated error message.
+.TP
 \fBPROCINFO["euid"]\fP
 The value of the
 .IR geteuid (2)
@@ -1219,6 +1236,28 @@ where
 .I input
 is a redirection string or a filename. A value of zero or
 less than zero means no timeout.
+.TP
+\fBPROCINFO["input", "RETRY"]\fP
+If an I/O error that may be retried occurs when reading data from
+.IR input ,
+and this array entry exists, then
+.B getline
+will return \-2 instead of following the default behavior of returning \-1
+and configuring
+.IR input
+to return no further data.
+An I/O error that may be retried is one where
+.IR errno (3)
+has the value
+.IR EAGAIN ,
+.IR EWOULDBLOCK ,
+.IR EINTR ,
+or
+.IR ETIMEDOUT .
+This may be useful in conjunction with
+\fBPROCINFO["input", "READ_TIMEOUT"]\fP
+or situations where a file descriptor has been configured to behave in a
+non-blocking fashion.
 .TP
 \fBPROCINFO["mpfr_version"]\fP
 The version of the GNU MPFR library used for arbitrary precision
@@ -2288,6 +2327,13 @@ below.)
 The
 .B getline
 command returns 1 on success, 0 on end of file, and \-1 on an error.
+If the
+.IR errno (3)
+value indicates that the I/O operation may be retried,
+and \fBPROCINFO["input", "RETRY"]\fP
+is set, then \-2 will be returned instead of \-1, and further calls to
+.B getline
+may be attempted.
 Upon an error,
 .B ERRNO
 is set to a string describing the problem.
@@ -2634,7 +2680,13 @@ Return the cosine of
 .IR expr ,
 which is in radians.
 .TP
-.BI div( num ", " denom ", " result )
+.BI exp( expr )
+The exponential function.
+.TP
+.BI int( expr )
+Truncate to integer.
+.TP
+.BI intdiv( num ", " denom ", " result )
 Truncate
 .I num
 and
@@ -2650,12 +2702,6 @@ This is a
 .I gawk
 extension, primarily of value when working with
 arbitrarily large integers.
-.TP
-.BI exp( expr )
-The exponential function.
-.TP
-.BI int( expr )
-Truncate to integer.
 .TP
 .BI log( expr )
 The natural logarithm function.

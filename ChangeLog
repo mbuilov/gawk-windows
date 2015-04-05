@@ -1,8 +1,592 @@
+2015-04-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (install_builtins): If do_traditional is true, do not
+	install gawk extensions flagged with GAWKX.  Similarly, if do_posix
+	is true, do not install functions flagged with NOT_POSIX.
+	This fixes a problem with spurious lint complaints about shadowing
+	a global variable that is not valid in traditional or posix mode.
+	Thanks to Andrew Schorr for finding the problem and supplying
+	initial code; I did it slightly differently.
+
+2015-04-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* NEWS: Rename div to intdiv.
+
+2015-04-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Rename div() to intdiv().
+
+	* builtin.c (do_intdiv): Renamed from do_div.
+	* mfpr.c (do_mpfr_intdiv): Renamed from do_mpfr_div.
+	* awk.h: Update declarations.
+	* awkgram.y (tokentab, snode): Revise accordingly.
+
+2015-03-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (call_sub): Renamed from call_sub_func.
+	(call_match, call_split_func): Declare.
+	* builtin.c (call_sub): Renamed from call_sub_func.
+	(call_match, call_split_func): New functions.
+	* interpret.h (r_interpret): Call new functions as appropriate.
+	* node.c (r_unref): Revert change to handle Node_regex, not needed.
+
+2015-03-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (r_get_field): Declare.
+	* builtin.c (call_sub_func): Rearrange the stack to be what
+	the buitin function expects.
+	* eval.c (r_get_field): Make extern.
+
+2015-03-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (redirect): Change not_string from int to bool.
+	* gawkapi.c (api_get_file): Minor stylistic improvements.
+	* NEWS: Updated for retryable I/O and new API function.
+
+2015-03-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (make_regnode): Make extern.
+	* awk.h (make_regnode): Declare.
+	* builtin.c (call_sub_func): Start on reworking the stack to
+	be what do_sub() expects. Still needs work.
+	* interpret.h (r_interpret): Add a cast in comparison with do_sub().
+	* node.c (r_unref): Handle Node_regex nodes.
+
+2015-03-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* interpret.h (r_interpret): When Op_K_exit has an argument of
+	Nnull_string, do not update exit_val, since no value was supplied.
+
+2015-03-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h, gawkapi.c, io.c: Minor code reformatting.
+
+2015-03-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Start on fixing indirect calls of builtins.
+
+	* awk.h (call_sub_func): Add declaration.
+	* awkgram.y (lookup_builtin): Handle length, sub functions.
+	(install_builtin): Handle length function.
+	* builtin.c (call_sub_func): New function.
+	* interpret.h (r_interpret): If calling do_sub, do it through
+	call_sub_func().
+
+2015-03-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* config.guess, config.sub: Updated, from libtool 2.4.6.
+
+2015-03-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pp_number): Allocate enough room to print the number
+	in all cases. Was a problem mixing -M with profiling with a really
+	big number. Thanks to Hermann Peifer for the bug report.
+
+2015-03-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* re.c (regexflags2str): Removed. It was redundant.
+
+	* io.c (devopen): Change the logic such that if nonfatal is true
+	for the socket, don't do retries.  Also clean up the formatting
+	some.  At strictopen, check if errno is ENOENT and if so, propagate
+	the error from getaddrinfo() up to the caller. Add explanatory
+	comments.
+
+2015-02-28         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (pty_vs_pipe): Remove check for NULL PROCINFO_node, since
+	this is now checked inside in_PROCINFO.
+
+2015-02-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (socketopen): New parameter hard_error; set it if
+	getaddrinfo() fails. Change fatals to warnings.
+	(devopen): Pass in address of boolean hard_error variable
+	and stop trying to open the file if hard_error is true.
+	Save and restore errno around call to socketopen() and
+	use restored errno if open() fails at strictopen.
+
+2015-02-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* symbol.c (check_param_names): Fix argument order in memset() call.
+	* configure.ac: Use AC_SEARCH_LIBS instead of AC_CHECK_LIB. This fixes
+	a long-standing problem where `-lm' was used twice in the final
+	compilation line.
+
+2015-02-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* POSIX.STD: Update copyright year.
+	* awkgram.y (yylex): Allow \r after \\ line continuation everywhere.
+	Thanks to Scott Rush <scott.rush@honeywell.com> for the report.
+
+2015-02-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (yylex): Be more careful about passing true to
+	nextc() when collecting a regexp.  Some systems' iscntrl()
+	are not as forgiving as GLIBC's. E.g., Solaris.
+	Thanks to Dagobert Michelsen <dam@baltic-online.de> for
+	the bug report and access to systems to check the fix.
+
+2015-02-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* POSIX.STD: Update with info about function parameters.
+	* configure.ac: Remove test for / use of dbug library.
+
+2015-02-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h: Fix spelling error in comment.
+
+2015-02-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pprint): Restore printing of count for rules.
+	Bug report by Hermann Peifer.
+
+2015-02-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c: Make it "NONFATAL" everywhere.
+
+2015-02-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (RED_NON_FATAL): Removed.
+	(redirect): Add new failure_fatal parameter.
+	(is_non_fatal_redirect): Add declaration.
+	* builtin.c (efwrite): Rework check for non-fatal.
+	(do_printf): Adjust calls to redirect.
+	(do_print_rec): Ditto. Move check for redirection error up.
+	* io.c (redflags2str): Remove RED_NON_FATAL.
+	(redirect): Add new failure_fatal parameter. Simplify the code.
+	(is_non_fatal_redirect): New function.
+	(do_getline_redir): Adjust calls to redirect.
+
+2014-12-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (is_non_fatal_std): Declare new function.
+	* io.c (is_non_fatal_std): New function.
+	* builtin.c (efwrite): Call it.
+
+2015-02-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regcomp.c, regex.c, regex.h, regex_internal.c, regex_internal.h,
+	regexec.c: Sync with GLIBC. Mostly copyright date updates.
+
+2015-02-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* eval.c (set_IGNORECASE): If IGNORECASE has a numeric value, try
+	using that before treating it as a string.  This fixes a problem
+	where setting -v IGNORECASE=0 on the command line was not working
+	properly.
+
+2015-02-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Move POSIX requirement for disallowing paramater names with the
+	same name as a function into --posix.
+
+	* NEWS: Document it.
+	* awkgram.y (parse_program): Check do_posix before calling
+	check_param_names().
+	* symbol.c (check_param_names): Set up a fake node and call
+	in_array() for function parameter names instead of linear
+	searching the function list a second time. Thanks to Andrew
+	Schorr for the motivation.
+
+2015-01-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Don't allow function parameter names to be the same as function
+	names - required by POSIX. Bug first reported in comp.lang.awk.
+
+	In addition, don't allow use of a parameter as a function name
+	in a call (but it's ok in indirect calls).
+
+	* NEWS: Updated.
+	* awk.h (check_param_names): Add declaration.
+	* awkgram.y (at_seen): New variable. Communicates between
+	yylex() and the parser.
+	(FUNC_CALL production): Check at_seen and check that the identifier
+	is a function name.
+	(parse_program): Call check_param_names() and set errcount.
+	(yylex): Set at_seen after seeing an at-sign.
+	* symbol.c (check_param_names): New function.
+
+2015-01-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Infrastructure updates.
+
+	Bison 3.0.4. Automake 1.15. Gettext 0.19.4.
+
+2015-01-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.c (api_set_array_element): Remove useless call to
+	make_aname.
+	* symbol.c (load_symbols): Ditto.
+	Thanks to Andrew Schorr for pointing out the problem.
+
+2015-01-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.c: Update to bison 3.0.3.
+	* command.c: Ditto.
+	* NEWS: Note same.
+
+2015-01-16         Stephen Davies        <sdavies@sdc.com.au>
+
+	* awkgram.y (rule): Set first_rule to false. Catches more cases
+	for gathering comments. Thanks to Hermann Peifer for the test case.
+
+2015-01-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: Sync with grep. Mainly copyright updates.
+	* getopt.c, getopt.h, getopt1.c getopt_int.h: Sync with GLIBC.
+	Mainly copyright updates, one minor code fix.
+
+2015-01-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Remove deferred variables.
+
+	* awk.h (register_deferred_variable): Remove declaration.
+	* awkgram.y (is_deferred_variable, process_deferred,
+	symtab_used, extensions_used, deferred_variables,
+	process_deferred): Remove declarations, bodies, and uses.
+	* builtin.c (do_length): Update comment.
+	* main.c (init_vars): Just call load_procinfo() and `load_environ()'.
+
+2015-01-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Revert changes to API deferred variable creation -- these variables
+	should be created when lookup is called, not when update is called.
+	* awk.h (variable_create): Remove function declaration.
+	* awkgram.y (variable_create): Remove function.
+	(variable): Restore variable_create functionality inline.
+	* gawkapi.c (api_sym_update): Revert to using install_symbol, since the
+	deferred variable check should be done when lookup is called, not here.
+
+2015-01-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (api_set_array_element): Remove stray call to
+	make_aname.  I cannot see what purpose this served.  Maybe I am
+	missing something.
+
+2015-01-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Update debug flags if developing.
+	* awkgram.y (yylex): Regex parsing bug fix for bracket expressions.
+	Thanks to Mike Brennan for the report.
+	* builtin.c (format_tree): Catch non-use of count$ for dynamic
+	field width or precision.
+
+	Unrelated:
+
+	Load deferred variables if extensions are used; they might
+	want to access PROCINFO and/or ENVIRON. Thanks to Andrew Schorr
+	for pointing out the issue.
+
+	* awkgram.y (extensions_used): New variable. Set it on @load.
+	(do_add_scrfile): Set it on -l.
+	(process_deferred): Check it also.
+
+2015-01-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (api_sym_update): If copying a subarray, must update
+	the parent_array pointer.  Also, call the astore hook if non-NULL.
+	(api_set_array_element): Call the astore hook if non-NULL.
+
+2015-01-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (variable_create): Now takes a 3rd argument to tell caller
+	whether this is a deferred variable.
+	* awkgram.y (variable_create): Return indicator of whether this is
+	a deferred variable in a newly added 3rd arg.
+	(variable): Pass 3rd arg to variable_create.
+	* gawkapi.c (api_sym_update): If we triggered the creation of a deferred
+	variable, we must merge the extension's array elements into the deffered
+	array, not the other way around.  The ENVIRON array has special funcs
+	to call setenv and unsetenv.
+
+2015-01-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (variable_create): Declare new function.
+	* awkgram.y (variable_create): New function to create a variable
+	taking the deferred variable list into consideration.
+	(variable): Call new function variable_create if the variable is
+	not found.
+	* gawkapi.c (api_sym_update): If an array is being created, then
+	call new function variable_create instead of install_symbol.  If this
+	is the first reference to a deferred variable, than the new array
+	may contain elements that must be merged into the array provided by
+	the extension.
+
+2015-01-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (wait_any): If the `interesting' argument is non-zero, then we
+	must not return until that child process has exited, since the caller
+	gawk_pclose depends on our returning its exit status.  So in that case,
+	do not pass WNOHANG to waitpid.
+
+2015-01-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h: Fix another comment typo.
+
+2015-01-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h: Fix typo in comment.
+
+2015-01-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (gawk_api): Modify api_get_file to remove the typelen
+	argument.
+	(get_file): Remove typelen argument from the macro.
+	* gawkapi.c (api_get_file): Remove typelen argument.
+
+2014-12-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pprint): Be sure to set ip2 in all paths
+	through the code. Thanks to GCC 4.9 for the warning.
+
+2014-12-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Enable non-fatal output on per-file or global basis,
+	via PROCINFO.
+
+	* awk.h (RED_NON_FATAL): New redirection flag.
+	* builtin.c (efwrite): If RED_NON_FATAL set, just set ERRNO and return.
+	(do_printf): Check errflg and if set, set ERRNO and return.
+	(do_print): Ditto.
+	(do_print_rec): Ditto.
+	* io.c (redflags2str): Update table.
+	(redirect): Check for global PROCINFO["nonfatal"] or for
+	PROCINFO[file, "nonfatal"] and don't fail on open if set.
+	Add RED_NON_FATAL to flags.
+	(in_PROCINFO): Make smarter and more general.
+
+2014-12-12        Stephen Davies         <sdavies@sdc.com.au>
+
+	Improve comment handling in pretty printing.
+
+	* awk.h (comment_type): New field in the node.
+	(EOL_COMMENT, FULL_COMMENT): New defines.
+	* awkgram.y (block_comment): New variable.
+	(check_comment): New function.
+	(grammar): Add code to handle comments as needed.
+	(get_comment): Now takes a flag indicating kind of comment.
+	(yylex): Collect comments appropriately.
+	(append_rule): Ditto.
+	* profile.c (pprint): Smarten up comment handling.
+	Have printing \n take comments into account.
+	(end_line): New function.
+	(pp_func): Better handling of function comments.
+
+2014-12-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+
+2014-11-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_sub): Improve wording of gensub warnings.
+
+2014-11-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_sub): For gensub, add more warnings for invalid
+	third argument.
+
+2014-11-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h: Move all inline functions to the bottom of the file.
+	Keeps modern GCC happier.
+
+2014-11-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (emalloc, realloc): Redefine in terms of ...
+	(emalloc_real, eralloc_real): New static inline functions.
+	(fatal): Move definition up.
+	* gawkmisc.c (xmalloc): If count is zero, make it one for older
+	mallocs that require size > 0 (such as z/OS).
+
+2014-11-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c: Remove a debugging // comment.
+	* NOTES: Removed.
+
+	Unrelated:
+
+	Revert changes of 2014-11-20 from Paul Eggert. Causes failures
+	on z/OS.
+
+	Unrelated: Avoid unnecessary copying of $0.
+
+	* interpret.h (UNFIELD): New macro.
+	(r_interpret): Use it where *lhs is assigned to.
+
+2014-11-20  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Port to systems where malloc (0) and/or realloc(P, 0) returns NULL.
+	* gawkmisc.c (xmalloc):
+	* xalloc.h (realloc):
+	Do not fail if malloc(0) or realloc(P, 0) returns NULL.
+	Fail only when the allocator returns null when attempting to
+	allocate a nonzero number of bytes.
+
+2014-11-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Infrastructure upgrades:
+
+	* Automake 1.14.1, Gettext 0.19.3, Libtool 2.4.3.
+	* compile, extension/build-aux/compile: New files.
+
+2014-11-19  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* configure.ac (AM_GNU_GETTEXT_VERSION): Bump to 0.19.3.
+
+2014-11-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* interpret.h: Revert change of 2014-11-11 since it breaks
+	certain uses.
+
+	Unrelated:
+
+	* dfa.c: Sync with GNU grep.
+
+2014-11-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* array.c, awk.h, awkgram.y, builtin.c, dfa.c, eval.c, field.c,
+	interpret.h, io.c, main.c, mpfr.c, node.c, re.c, regex_internal.h,
+	replace.c: Remove all uses of MBS_SUPPORT.
+	* regex_internal.h: Disable wide characters on DJGPP.
+	* mbsupport.h: Rework to be needed only for DJGPP.
+
+2014-11-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Don't let memory used increase linearly in the size of
+	the input.  Problem reported by dragan legic
+	<dragan.legic@yandex.ru>.
+
+	* field.c (set_record): NUL-terminate the buffer.
+	* interpret.h (r_interpret): Op_field_spec: if it's $0, increment
+	the valref.  Op_store_var: if we got $0, handle it appropriately.
+
+2014-11-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Reorder main.c activities so that we can set a locale on the
+	command line with the new, for now undocumented, -Z option.
+
+	* main.c (parse_args, set_locale_stuff): New functions.
+	(stopped_early): Made file level static.
+	(optlist, optab): Add new argument.
+	(main): Adjust ordering and move inline code into new functions.
+
+2014-11-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (node_to_awk_value): When the type wanted is AWK_UNDEFINED
+	and a it's a Node_val set to Nnull_string, return AWK_UNDEFINED instead
+	of AWK_NUMBER 0.
+
+2014-11-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (redirect_string): First argument should be const.  Add a new
+	extfd argument to enable extensions to create files with pre-opened
+	file descriptors.
+	(after_beginfile): Declare function used in both eval.c and gawkapi.c.
+	* eval.c (after_beginfile): Remove extern declaration now in awk.h.
+	* gawkapi.c (api_get_file): Implement API changes to return
+	awk_input_buf_t and/or awk_output_buf_t info, as well as accept an
+	fd for inserting an opened file into the table.
+	* gawkapi.h (gawk_api): Modify the api_get_file declaration to
+	return awk_bool_t and add 3 new arguments -- a file descriptor
+	for inserting an already opened file, and awk_input_buf_t and
+	awk_output_buf_t to return info about both input and output.
+	(get_file): Add new arguments to the macro.
+	* io.c (redirect_string): First arg should be const, and add a new
+	extfd arg so extensions can pass in a file that has already been
+	opened by the extension.  Use the passed-in fd when appropriate,
+	and pass it into two_way_open.
+	(redirect): Pass new fd -1 arg to redirect_string.
+	(two_way_open): Accept new extension fd parameter and open it
+	as a socket.
+
+2014-11-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (retryable): New function to indicate whether I/O can be
+	retried for this file instead of throwing a hard error.
+	(get_a_record) Check whether this file is configured for retryable
+	I/O before returning nonstandard -2.
+
+2014-11-03         Norihiro Tanaka       <noritnk@kcn.ne.jp>
+
+	* re.c (research): Use dfa superset to improve matching speed.
+
+2014-11-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (div_on_left_mul_on_right): New function.
+	(parenthesize): Call it.
+
+2014-10-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure: Regenerated after fix to m4/readline.m4.
+
+	Unrelated; fixes to profiling. Thanks to Hermann Peifer and
+	Manuel Collado for pointing out problems:
+
+	* profile.c (pprint): For Op_unary_minus, parenthesize -(-x)
+	correctly.
+	(prec_level): Get the levels right (checked the grammar).
+	(is_unary_minus): New function.
+	(pp_concat): Add checks for unary minus; needs to be parenthesized.
+
+2014-10-30         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* NEWS: Mention installation of /etc/profile.d/gawk.{csh,sh}.
+
+2014-10-29         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac (AC_CONFIG_FILES): Add extras/Makefile.
+	* Makefile.am (SUBDIRS): Add extras.
+	* extras: Add new subdirectory.
+
+2014-10-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep. Again, again.
+
+2014-10-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep. Again.
+
+2014-10-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+
+2014-10-17         John E. Malmberg      <wb8tyw@qsl.net>
+
+	* ext.c (close_extensions): Test for null pointer since
+	since this can be called by signal handler before the
+	pointers are initialized.
+
+2014-10-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Make sane the handling of AWKPATH and AWKLIBPATH:
+
+	1. Don't explicitly search "."; it must be in the path either
+	physically or as null element a la the shell's $PATH
+	2. If environment's value was empty, use built-in default value.
+	3. Set ENVIRON["AWK*PATH"] to the path used.
+
+	* io.c (path_info): Remove try_cwd member.
+	(get_cwd): Removed, not needed anymore.
+	(do_find_source): Don't do explicit check in current directory.
+	It must come from the AWKPATH or AWKLIBPATH variable.
+	* main.c (path_environ): If value from environment was empty,
+	set it to the default.  This is how gawk has behaved since 2.10.
+
 2014-10-13         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regcomp.c (__re_error_msgid): Make error message for REG_EBRACK
 	more helpful - also used for unmatched [:, [., [=.
 	Thanks to Davide Brini for raising the issue.
+
+2014-10-12         KO Myung-Hun          <komh78@gmail.com>
+
+	Fixes for OS/2:
+
+	* Makefile.am (install-exec-hook, uninstall-links): Use $(EXEEXT).
+	* getopt.h: Redefinitions if using KLIBC.
+	* io.c (_S_IFDIR, _S_IRWXU): Define if the more standard versions
+	are available.
 
 2014-10-12         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -10,7 +594,7 @@
 
 2014-10-08         Arnold D. Robbins     <arnold@skeeve.com>
 
-	* dfa.c: Sync wit GNU grep.
+	* dfa.c: Sync with GNU grep.
 
 2014-10-05         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -1091,6 +1675,45 @@
 	* io.c (get_a_record): Change `min' to `MIN' for consistency with
 	other files and general practice.
 
+2013-07-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac (AC_CHECK_FUNCS): Check for sigprocmask.
+	* io.c (wait_any): If sigprocmask is available, block signals instead
+	of ignoring them temporarily.
+
+2013-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (gawk_api): Document that the api_get_file function will not
+	access the file type and length arguments if the file name is empty.
+
+2013-07-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac (AC_CHECK_FUNCS): Add a check for waitpid.
+	* io.c (wait_any): Enhance comment to explain why we loop reaping all
+	exited children when the argument is zero.  When available, use waitpid
+	with WNOHANG to avoid blocking.  Remove my previous incorrect patch to
+	exit after reaping the first child.  The function is intended to
+	wait for all children, since we are not careful about reaping children
+	as soon as they die.
+
+2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (gawk_api): Remove unused api_lookup_file hook.
+	(lookup_file): Remove associated macro.
+	* gawkapi.c (api_lookup_file): Remove unused function.
+	(api_impl):  Remove unused api_lookup_file hook.
+
+2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awkgram.y (main_beginfile): Declare new global INSTRUCTION *.
+	(parse_program): Set main_beginfile to point to the BEGINFILE
+	instruction block.
+	* gawkapi.c (api_get_file): After nextfile starts a new file,
+	we need to run the BEGINFILE actions.  We retrieve the
+	instruction pointer from main_beginfile and execute it until
+	we reach the Op_after_beginfile opcode.  We then run after_beginfile
+	manually and restore the value of currule and source.
+
 2013-07-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.h (awk_element_t): Add comment indicating that the array
@@ -1100,6 +1723,45 @@
 	appear as strings to the extensions.  This makes the call to
 	force_string redundant, since node_to_awk_value does that internally
 	when we request a string.
+
+2013-07-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* eval.c (update_ERRNO_string): Set PROCINFO["errno"] to 0.
+	* io.c (inrec): Since get_a_record may now return -2, be sure
+	to throw an error in that case as well.
+	(wait_any): Fix what appears to be a bug.  The old logic repeatedly
+	called wait until it failed.  When a process has multiple children,
+	this causes it to stall until all of them have exited.  Instead,
+	we now exit the function after the first successful wait call.
+	(do_getline_redir, do_getline): Handle case where get_a_record
+	returns -2.
+	(errno_io_retry): New function to decide whether an I/O operation should
+	be retried.
+	(get_a_record): When read returns an error, call errno_io_retry to
+	decide whether the operation should be retried.  If so, return -2
+	instead of setting the IOP_AT_EOF flag.
+
+2013-07-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* eval.c (update_ERRNO_int, unset_ERRNO): Update PROCINFO["errno"].
+
+2013-06-30         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (redirect_string): Declare new function that provides API access
+	to the redirection mechanism.
+	* gawkapi.h (GAWK_API_MINOR_VERSION): Bump from 0 to 1 since 2 new
+	hooks were added to the api.
+	(gawk_api_t): Add 2 new functions api_lookup_file and api_get_file.
+	(lookup_file, get_file): New macros to wrap the new API functions.
+	* gawkapi.c (curfile): Declare this extern, since it is needed
+	by lookup_file and get_flie.
+	(api_lookup_file): Find an open file using curfile or getredirect().
+	(api_get_file): Find or open a file using curfile or redirect_string().
+	(api_impl): Add api_lookup_file and api_get_file.
+	* io.c (redirect_string): Renamed from redirect and changed arguments
+	to take a string instead of a 'NODE *'.  This allows it to be called
+	through the API's new get_file hook.
+	(redirect): Now implemented by calling redirect_string backend function.
 
 2013-07-04         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -1551,7 +2213,7 @@
 2012-12-25         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Remove sym-constant from API after discussions with John
-	Haque and Andy Schorr.
+	Haque and Andrew Schorr.
 
 	* gawkapi.h (api_sym_constant): Removed field in API struct.
 	(sym_constant): Remove macro.

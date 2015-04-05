@@ -121,10 +121,8 @@ mpg_node(unsigned int tp)
 	r->flags |= MALLOC|NUMBER|NUMCUR;
 	r->stptr = NULL;
 	r->stlen = 0;
-#if MBS_SUPPORT
 	r->wstptr = NULL;
 	r->wstlen = 0;
-#endif /* defined MBS_SUPPORT */
 	return r;
 }
 
@@ -1188,7 +1186,7 @@ do_mpfr_srand(int nargs)
 	return res;
 }
 
-/* do_mpfr_div --- do integer division, return quotient and remainder in dest array */
+/* do_mpfr_intdiv --- do integer division, return quotient and remainder in dest array */
 
 /*
  * We define the semantics as:
@@ -1199,7 +1197,7 @@ do_mpfr_srand(int nargs)
  */
 
 NODE *
-do_mpfr_div(int nargs)
+do_mpfr_intdiv(int nargs)
 {
 	NODE *numerator, *denominator, *result;
 	NODE *num, *denom;
@@ -1208,7 +1206,7 @@ do_mpfr_div(int nargs)
 
 	result = POP_PARAM();
 	if (result->type != Node_var_array)
-		fatal(_("div: third argument is not an array"));
+		fatal(_("intdiv: third argument is not an array"));
 	assoc_clear(result);
 
 	denominator = POP_SCALAR();
@@ -1216,9 +1214,9 @@ do_mpfr_div(int nargs)
 
 	if (do_lint) {
 		if ((numerator->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("div: received non-numeric first argument"));
+			lintwarn(_("intdiv: received non-numeric first argument"));
 		if ((denominator->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("div: received non-numeric second argument"));
+			lintwarn(_("intdiv: received non-numeric second argument"));
 	}
 
 	(void) force_number(numerator);
@@ -1252,7 +1250,7 @@ do_mpfr_div(int nargs)
 	}
 
 	if (mpz_sgn(denom->mpg_i) == 0)
-		fatal(_("div: division by zero attempted"));
+		fatal(_("intdiv: division by zero attempted"));
 
 	quotient = mpg_integer();
 	remainder = mpg_integer();

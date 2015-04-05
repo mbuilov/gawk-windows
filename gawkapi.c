@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 2012-2014 the Free Software Foundation, Inc.
+ * Copyright (C) 2012-2015 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -24,6 +24,11 @@
  */
 
 #include "awk.h"
+
+/* Declare some globals used by api_get_file: */
+extern IOBUF *curfile;
+extern INSTRUCTION *main_beginfile;
+extern int currule;
 
 static awk_bool_t node_to_awk_value(NODE *node, awk_value_t *result, awk_valtype_t wanted);
 
@@ -441,7 +446,10 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 
 		case AWK_UNDEFINED:
 			/* return true and actual type for request of undefined */
-			if ((node->flags & NUMBER) != 0) {
+			if (node == Nnull_string) {
+				val->val_type = AWK_UNDEFINED;
+				ret = awk_true;
+			} else if ((node->flags & NUMBER) != 0) {
 				val->val_type = AWK_NUMBER;
 				val->num_value = get_number_d(node);
 				ret = awk_true;
@@ -780,15 +788,16 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 
 	tmp = awk_value_to_node(index);
 	aptr = assoc_lookup(array, tmp);
-	unref(tmp);
 	unref(*aptr);
 	elem = *aptr = awk_value_to_node(value);
 	if (elem->type == Node_var_array) {
 		elem->parent_array = array;
 		elem->vname = estrdup(index->str_value.str,
 					index->str_value.len);
-		make_aname(elem);
 	}
+	if (array->astore != NULL)
+		(*array->astore)(array, tmp);
+	unref(tmp);
 
 	return awk_true;
 }
@@ -1032,6 +1041,99 @@ api_release_value(awk_ext_id_t id, awk_value_cookie_t value)
 	return awk_true;
 }
 
+/* api_get_file --- return a handle to an existing or newly opened file */
+
+static awk_bool_t
+api_get_file(awk_ext_id_t id, const char *name, size_t namelen, const char *filetype,
+		int fd, const awk_input_buf_t **ibufp, const awk_output_buf_t **obufp)
+{
+	const struct redirect *f;
+	int flag;	/* not used, sigh */
+	enum redirval redirtype;
+
+	if (name == NULL || namelen == 0) {
+		if (curfile == NULL) {
+			INSTRUCTION *pc;
+			int save_rule;
+			char *save_source;
+
+			if (nextfile(& curfile, false) <= 0)
+				return awk_false;
+
+			pc = main_beginfile;
+			/* save execution state */
+			save_rule = currule;
+			save_source = source;
+
+			for (;;) {
+				if (pc == NULL)
+					fatal(_("cannot find end of BEGINFILE rule"));
+				if (pc->opcode == Op_after_beginfile)
+					break;
+				pc = pc->nexti;
+			}
+			pc->opcode = Op_stop;
+		        (void) (*interpret)(main_beginfile);
+			pc->opcode = Op_after_beginfile;
+			after_beginfile(& curfile);
+			/* restore execution state */
+			currule = save_rule;
+			source = save_source;
+		}
+		*ibufp = &curfile->public;
+		*obufp = NULL;
+
+		return awk_true;
+	}
+
+	redirtype = redirect_none;
+	switch (filetype[0]) {
+	case '<':
+		if (filetype[1] == '\0')
+			redirtype = redirect_input;
+		break;
+	case '>':
+		switch (filetype[1]) {
+		case '\0':
+			redirtype = redirect_output;
+			break;
+		case '>':
+			if (filetype[2] == '\0')
+				redirtype = redirect_append;
+			break;
+		}
+		break;
+	case '|':
+		if (filetype[2] == '\0') {
+			switch (filetype[1]) {
+			case '>':
+				redirtype = redirect_pipe;
+				break;
+			case '<':
+				redirtype = redirect_pipein;
+				break;
+			case '&':
+				redirtype = redirect_twoway;
+				break;
+			}
+		}
+		break;
+	}
+
+	if (redirtype == redirect_none) {
+		warning(_("cannot open unrecognized file type `%s' for `%s'"),
+			filetype, name);
+		return awk_false;
+	}
+
+	if ((f = redirect_string(name, namelen, 0, redirtype, &flag, fd, false)) == NULL)
+		return awk_false;
+
+	*ibufp = f->iop ? & f->iop->public : NULL;
+	*obufp = f->output.fp ? & f->output : NULL;
+	return awk_true;
+}
+
 /*
  * Register a version string for this extension with gawk.
  */
@@ -1117,6 +1219,9 @@ gawk_api_t api_impl = {
 	calloc,
 	realloc,
 	free,
+
+	/* Find/open a file */
+	api_get_file,
 };
 
 /* init_ext_api --- init the extension API */

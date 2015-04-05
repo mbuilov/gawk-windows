@@ -978,14 +978,13 @@ cmp_strings(const NODE *n1, const NODE *n2)
 		const unsigned char *cp1 = (const unsigned char *) s1;
 		const unsigned char *cp2 = (const unsigned char *) s2;
 
-#if MBS_SUPPORT
 		if (gawk_mb_cur_max > 1) {
 			ret = strncasecmpmbs((const unsigned char *) cp1,
 					     (const unsigned char *) cp2, lmin);
-		} else
-#endif
-		for (ret = 0; lmin-- > 0 && ret == 0; cp1++, cp2++)
-			ret = casetable[*cp1] - casetable[*cp2];
+		} else {
+			for (ret = 0; lmin-- > 0 && ret == 0; cp1++, cp2++)
+				ret = casetable[*cp1] - casetable[*cp2];
+		}
 		if (ret != 0)
 			return ret;
 		/*

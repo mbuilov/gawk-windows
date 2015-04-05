@@ -1,4 +1,5 @@
-   Copyright (C) 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015,
+   Free Software Foundation, Inc.
    
    Copying and distribution of this file, with or without modification,
    are permitted in any medium without royalty provided the copyright
@@ -9,7 +10,8 @@ Changes from 4.1.x to 4.2.0
 
 1. If not in POSIX mode, changes to ENVIRON are reflected into
    gawk's environment, affecting any programs run by system()
-   or for piped redirections.
+   or for piped redirections. This can also affect built-in routines, such
+   as mktime(), which is typically influenced by the TZ environment variable.
 
 2. The series of numbers returned by rand() should now be "more
    random" than previously.  Gawk's rand() remains repeatable; you will
@@ -21,7 +23,7 @@ Changes from 4.1.x to 4.2.0
 4. The igawk script and igawk.1 man page are no longer installed by
    `make install'.  They have been obsolete since gawk 4.0.0.
 
-5. Gawk now has a `div()' function to perform integer division; this is
+5. Gawk now has a `intdiv()' function to perform integer division; this is
    primarily useful for the -M option to avoid MPFR division when all
    values involved are integers.
 
@@ -37,6 +39,18 @@ Changes from 4.1.x to 4.2.0
 9. Pretty printing now preserves comments and places them into the
    pretty-printed file.
 
+10. `make install' now installs shell startup files
+    $sysconfdir/profile.d/gawk.{csh,sh} containing shell functions to
+    manipulate the AWKPATH and AWKLIBPATH environment variables.  On a Fedora
+    system, these files belong in /etc/profile.d, but the appropriate location
+    may be different on other platforms.
+
+11. Gawk now supports retryable I/O via PROCINFO[input-file, "RETRY"]; see
+    the manual.
+
+12. The API minor version has been increased to two; the get_file()
+    API provides access to open redirections. Also see the manual.
+
 Changes from 4.1.1 to 4.1.2
 ---------------------------
 
@@ -46,6 +60,7 @@ Changes from 4.1.1 to 4.1.2
 	- Chapter 15 on MPFR reworked.
 	- Summary sections added to all chapters.
 	- Exercises added in several chapters.
+	- Heavily proof-read and copyedited.
 
 2. The debugger's "restart" command now works again.
 
@@ -53,18 +68,38 @@ Changes from 4.1.1 to 4.1.2
 
 4. A number of bugs have been fixed in the MPFR code.
 
-5. Indirect function calls now work for both built-in and
-   extension functions.
+5. Indirect function calls now work for both built-in and extension functions.
 
-6. In non-English locales, it was accidentally possible to use "letters"
-   beside those of the English alphabet in identifiers.  This has
-   been fixed.  (isalpha and isalnum are NOT our friends.)
+6. Built-in functions are now included in FUNCTAB.
+
+7. POSIX and historical practice require the exclusive use of the English
+   alphabet in identifiers.  In non-English locales, it was accidentally
+   possible to use "letters" beside those of the English alphabet.  This
+   has been fixed. (isalpha and isalnum are NOT our friends.)
 
    If you feel that you must have this misfeature, use `configure --help'
    to see what option to use when configuring gawk to reenable it.
 
-7. The "where" command has been added to the debugger as an alias
+8. The "where" command has been added to the debugger as an alias
    for "backtrace". This will make life easier for long-time GDB users.
+
+9. Gawk no longer explicitly checks the current directory after doing
+   a path search of AWKPATH.  The default value continues to have "." at
+   the front, so most people should not be affected.  If you have your own
+   AWKPATH setting, be sure to put "." in it somewhere. The documentation
+   has been updated and clarified.
+
+10. Infrastructure upgrades: Automake 1.15, Gettext 0.19.4, Libtool 2.4.6,
+    Bison 3.0.4.
+
+11. If a user-defined function has a parameter with the same name as another
+    user-defined function, it is no longer possible to call the second
+    function from inside the first.
+
+12. POSIX requires that the names of function parameters not be the
+    same as any of the special built-in variables and also not conflict
+    with the names of any functions. Gawk has checked for the former
+    since 3.1.7. With --posix, it now also checks for the latter.
 
 XX. A number of bugs have been fixed. See the ChangeLog.
 

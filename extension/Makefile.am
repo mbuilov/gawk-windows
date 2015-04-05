@@ -109,6 +109,9 @@ install-data-hook:
 # Keep the uninstall check working:
 uninstall-so:
 	$(RM) $(DESTDIR)$(pkgextensiondir)/*.so
+	$(RM) $(DESTDIR)$(pkgextensiondir)/*.dll
+	$(RM) $(DESTDIR)$(pkgextensiondir)/*.a
+	$(RM) $(DESTDIR)$(pkgextensiondir)/*.lib
 
 uninstall-recursive: uninstall-so
 
@@ -116,7 +119,8 @@ EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
 	ChangeLog.0 \
 	fts.3 \
-	README.fts
+	README.fts \
+	rwarray0.c
 
 dist_man_MANS = \
 	filefuncs.3am fnmatch.3am fork.3am inplace.3am \

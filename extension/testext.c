@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 2012, 2013, 2014
+ * Copyright (C) 2012, 2013, 2014, 2015
  * the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
@@ -37,6 +37,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include "gawkapi.h"
 
@@ -302,11 +303,11 @@ var_test(int nargs, awk_value_t *result)
 		goto out;
 	}
 
-	/* look up PROCINFO - should fail */
+	/* look up PROCINFO - should succeed fail */
 	if (sym_lookup("PROCINFO", AWK_ARRAY, & value))
-		printf("var_test: sym_lookup of PROCINFO failed - got a value!\n");
+		printf("var_test: sym_lookup of PROCINFO passed - got a value!\n");
 	else
-		printf("var_test: sym_lookup of PROCINFO passed - did not get a value\n");
+		printf("var_test: sym_lookup of PROCINFO failed - did not get a value\n");
 
 	/* look up a reserved variable - should pass */
 	if (sym_lookup("ARGC", AWK_NUMBER, & value))
@@ -367,6 +368,84 @@ test_errno(int nargs, awk_value_t *result)
 	}
 
 	update_ERRNO_int(ECHILD);
+
+	make_number(1.0, result);
+out:
+	return result;
+}
+
+/*
+ * 3/2015: This test is no longer strictly necessary,
+ * since PROCINFO is no longer a deferred variable.
+ * But we leave it in for safety, anyway.
+ */
+/*
+BEGIN {
+	print "test_deferred returns", test_deferred()
+	print ""
+}
+*/
+static awk_value_t *
+test_deferred(int nargs, awk_value_t *result)
+{
+	awk_value_t arr;
+	awk_value_t index, value;
+	const struct nval {
+		const char *name;
+		double val;
+	} seed[] = {
+		{ "fubar", 9.0, },
+		{ "rumpus", -5.0, },
+	};
+	struct nval sysval[] = {
+		{ "uid", getuid(), },
+		{ "api_major", GAWK_API_MAJOR_VERSION, },
+	};
+	size_t i;
+
+	assert(result != NULL);
+	make_number(0.0, result);
+
+	if (nargs != 0) {
+		printf("test_deferred: nargs not right (%d should be 0)\n", nargs);
+		goto out;
+	}
+
+	if (! sym_lookup("PROCINFO", AWK_ARRAY, & arr)) {
+		printf("test_deferred: %d: sym_lookup failed\n", __LINE__);
+		goto out;
+	}
+
+	for (i = 0; i < sizeof(seed)/sizeof(seed[0]); i++) {
+		make_const_string(seed[i].name, strlen(seed[i].name), & index);
+		make_number(seed[i].val, & value);
+		if (! set_array_element(arr.array_cookie, & index, & value)) {
+			printf("test_deferred: %d: set_array_element(%s) failed\n", __LINE__, seed[i].name);
+			goto out;
+		}
+	}
+
+	/* test that it still contains the values we loaded */
+	for (i = 0; i < sizeof(seed)/sizeof(seed[0]); i++) {
+		make_const_string(seed[i].name, strlen(seed[i].name), & index);
+		make_null_string(& value);
+		if (! get_array_element(arr.array_cookie, &index, AWK_NUMBER, & value)) {
+			printf("test_deferred: %d: get_array_element(%s) failed\n", __LINE__, seed[i].name);
+			goto out;
+		}
+		printf("%s = %g\n", seed[i].name, value.num_value);
+	}
+
+	/* check a few automatically-supplied values */
+	for (i = 0; i < sizeof(sysval)/sizeof(sysval[0]); i++) {
+		make_const_string(sysval[i].name, strlen(sysval[i].name), & index);
+		make_null_string(& value);
+		if (! get_array_element(arr.array_cookie, &index, AWK_NUMBER, & value)) {
+			printf("test_deferred: %d: get_array_element(%s) failed\n", __LINE__, sysval[i].name);
+			goto out;
+		}
+		printf("%s matches %d\n", sysval[i].name, (value.num_value == sysval[i].val));
+	}
 
 	make_number(1.0, result);
 out:
@@ -710,6 +789,7 @@ BEGIN {
 	ret = test_indirect_vars()	# should get correct value of NR
 	printf("test_indirect_var() return %d\n", ret)
 	delete ARGV[1]
+	print ""
 }
 */
 
@@ -740,6 +820,124 @@ test_indirect_vars(int nargs, awk_value_t *result)
 	make_number(1.0, result);
 out:
 	return result;
+}
+
+/*
+BEGIN {
+	outfile = "testexttmp.txt"
+	alias = ".test.alias"
+	print "line 1" > outfile
+	print "line 2" > outfile
+	print "line 3" > outfile
+	close(outfile)
+	ret = test_get_file(outfile, alias)
+	printf "test_get_file returned %d\n", ret
+	nr = 0
+	while ((getline < alias) > 0)
+		printf "File [%s] nr [%s]: %s\n", alias, ++nr, $0
+	close(alias)
+	system("rm " outfile)
+	print ""
+}
+*/
+
+/* test_get_file --- test that we can create a file */
+
+static awk_value_t *
+test_get_file(int nargs, awk_value_t *result)
+{
+	awk_value_t filename, alias;
+	int fd;
+	const awk_input_buf_t *ibuf;
+	const awk_output_buf_t *obuf;
+
+	if (nargs != 2) {
+		printf("%s: nargs not right (%d should be 2)\n", "test_get_file", nargs);
+		return make_number(-1.0, result);
+	}
+
+	if (! get_argument(0, AWK_STRING, & filename)) {
+		printf("%s: cannot get first arg\n", "test_get_file");
+		return make_number(-1.0, result);
+	}
+	if (! get_argument(1, AWK_STRING, & alias)) {
+		printf("%s: cannot get second arg\n", "test_get_file");
+		return make_number(-1.0, result);
+	}
+	if ((fd = open(filename.str_value.str, O_RDONLY)) < 0) {
+		printf("%s: open(%s) failed\n", "test_get_file", filename.str_value.str);
+		return make_number(-1.0, result);
+	}
+	if (! get_file(alias.str_value.str, strlen(alias.str_value.str), "<", fd, &ibuf, &obuf)) {
+		printf("%s: get_file(%s) failed\n", "test_get_file", alias.str_value.str);
+		return make_number(-1.0, result);
+	}
+	if (! ibuf || ibuf->fd != fd) {
+		printf("%s: get_file(%s) returned fd %d instead of %d\n", "test_get_file", alias.str_value.str, ibuf ? ibuf->fd : -1, fd);
+		return make_number(-1.0, result);
+	}
+	return make_number(0.0, result);
+}
+
+/* do_get_file --- provide access to get_file API */
+
+static awk_value_t *
+do_get_file(int nargs, awk_value_t *result)
+{
+	awk_value_t filename, filetype, fd, res;
+	const awk_input_buf_t *ibuf;
+	const awk_output_buf_t *obuf;
+
+	if (nargs != 4) {
+		printf("%s: nargs not right (%d should be 4)\n", "get_file", nargs);
+		return make_number(-1.0, result);
+	}
+
+	if (! get_argument(0, AWK_STRING, & filename)) {
+		printf("%s: cannot get first arg\n", "get_file");
+		return make_number(-1.0, result);
+	}
+	if (! get_argument(1, AWK_STRING, & filetype)) {
+		printf("%s: cannot get second arg\n", "get_file");
+		return make_number(-1.0, result);
+	}
+	if (! get_argument(2, AWK_NUMBER, & fd)) {
+		printf("%s: cannot get third arg\n", "get_file");
+		return make_number(-1.0, result);
+	}
+	if (! get_argument(3, AWK_ARRAY, & res)) {
+		printf("%s: cannot get fourth arg\n", "get_file");
+		return make_number(-1.0, result);
+	}
+	clear_array(res.array_cookie);
+
+	if (! get_file(filename.str_value.str, strlen(filename.str_value.str), filetype.str_value.str, fd.num_value, &ibuf, &obuf)) {
+		printf("%s: get_file(%s, %s, %d) failed\n", "get_file", filename.str_value.str, filetype.str_value.str, (int)(fd.num_value));
+		return make_number(0.0, result);
+	}
+
+	if (ibuf) {
+		awk_value_t idx, val;
+		set_array_element(res.array_cookie, 
+				  make_const_string("input", 5, & idx),
+				  make_number(ibuf->fd, & val));
+		if (ibuf->name)
+			set_array_element(res.array_cookie, 
+					  make_const_string("input_name", 10, & idx),
+					  make_const_string(ibuf->name, strlen(ibuf->name), & val));
+	}
+	if (obuf) {
+		awk_value_t idx, val;
+		set_array_element(res.array_cookie, 
+				  make_const_string("output", 6, & idx),
+				  make_number(obuf->fp ? fileno(obuf->fp) : -1,
+				  	      & val));
+		if (obuf->name)
+			set_array_element(res.array_cookie, 
+					  make_const_string("output_name", 11, & idx),
+					  make_const_string(obuf->name, strlen(obuf->name), & val));
+	}
+	return make_number(1.0, result);
 }
 
 /* fill_in_array --- fill in a new array */
@@ -829,6 +1027,7 @@ static awk_ext_func_t func_table[] = {
 	{ "dump_array_and_delete", dump_array_and_delete, 2 },
 	{ "try_modify_environ", try_modify_environ, 0 },
 	{ "var_test", var_test, 1 },
+	{ "test_deferred", test_deferred, 0 },
 	{ "test_errno", test_errno, 0 },
 	{ "test_array_size", test_array_size, 1 },
 	{ "test_array_elem", test_array_elem, 2 },
@@ -837,6 +1036,8 @@ static awk_ext_func_t func_table[] = {
 	{ "test_scalar", test_scalar, 1 },
 	{ "test_scalar_reserved", test_scalar_reserved, 0 },
 	{ "test_indirect_vars", test_indirect_vars, 0 },
+	{ "test_get_file", test_get_file, 2 },
+	{ "get_file", do_get_file, 4 },
 };
 
 /* init_testext --- additional initialization function */
@@ -846,6 +1047,10 @@ static awk_bool_t init_testext(void)
 	awk_value_t value;
 	static const char message[] = "hello, world";	/* of course */
 	static const char message2[] = "i am a scalar";
+
+	/* This is used by the getfile test */
+	if (sym_lookup("TESTEXT_QUIET", AWK_NUMBER, & value))
+		return awk_true;
 
 	/* add at_exit functions */
 	awk_atexit(at_exit0, NULL);

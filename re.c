@@ -54,12 +54,9 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	 * It is 0, when the current character is a singlebyte character.
 	 */
 	size_t is_multibyte = 0;
-#if MBS_SUPPORT
 	mbstate_t mbs;
 
-	if (gawk_mb_cur_max > 1)
-		memset(&mbs, 0, sizeof(mbstate_t)); /* Initialize.  */
-#endif
+	memset(&mbs, 0, sizeof(mbstate_t)); /* Initialize.  */
 
 	if (first) {
 		first = false;
@@ -87,7 +84,6 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	dest = buf;
 
 	while (src < end) {
-#if MBS_SUPPORT
 		if (gawk_mb_cur_max > 1 && ! is_multibyte) {
 			/* The previous byte is a singlebyte character, or last byte
 			   of a multibyte character.  We check the next character.  */
@@ -100,7 +96,6 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 				is_multibyte = 0;
 			}
 		}
-#endif
 
 		/* We skip multibyte character, since it must not be a special
 		   character.  */
@@ -284,13 +279,18 @@ research(Regexp *rp, char *str, int start,
 	if (rp->dfa && ! no_bol && ! need_start) {
 		char save;
 		size_t count = 0;
+		struct dfa *superset = dfasuperset(rp->dfareg);
 		/*
 		 * dfa likes to stick a '\n' right after the matched
 		 * text.  So we just save and restore the character.
 		 */
 		save = str[start+len];
-		ret = dfaexec(rp->dfareg, str+start, str+start+len, true,
-					&count, &try_backref);
+		if (superset)
+			ret = dfaexec(superset, str+start, str+start+len,
+							true, NULL, NULL);
+		if (ret)
+			ret = dfaexec(rp->dfareg, str+start, str+start+len,
+						true, &count, &try_backref);
 		str[start+len] = save;
 	}
 
@@ -615,41 +615,4 @@ again:
 	}
 done:
 	s[length] = save;
-}
-
-/* regexflags2str --- make regex flags printable */
-
-const char *
-regexflags2str(int flags)
-{
-	static const struct flagtab regextab[] = {
-		{ RE_BACKSLASH_ESCAPE_IN_LISTS,	"RE_BACKSLASH_ESCAPE_IN_LISTS" },
-		{ RE_BK_PLUS_QM,		"RE_BK_PLUS_QM" },
-		{ RE_CHAR_CLASSES,		"RE_CHAR_CLASSES" },
-		{ RE_CONTEXT_INDEP_ANCHORS,	"RE_CONTEXT_INDEP_ANCHORS" },
-		{ RE_CONTEXT_INDEP_OPS,		"RE_CONTEXT_INDEP_OPS" },
-		{ RE_CONTEXT_INVALID_OPS,	"RE_CONTEXT_INVALID_OPS" },
-		{ RE_DOT_NEWLINE,		"RE_DOT_NEWLINE" },
-		{ RE_DOT_NOT_NULL,		"RE_DOT_NOT_NULL" },
-		{ RE_HAT_LISTS_NOT_NEWLINE,	"RE_HAT_LISTS_NOT_NEWLINE" },
-		{ RE_INTERVALS,			"RE_INTERVALS" },
-		{ RE_LIMITED_OPS,		"RE_LIMITED_OPS" },
-		{ RE_NEWLINE_ALT,		"RE_NEWLINE_ALT" },
-		{ RE_NO_BK_BRACES,		"RE_NO_BK_BRACES" },
-		{ RE_NO_BK_PARENS,		"RE_NO_BK_PARENS" },
-		{ RE_NO_BK_REFS,		"RE_NO_BK_REFS" },
-		{ RE_NO_BK_VBAR,		"RE_NO_BK_VBAR" },
-		{ RE_NO_EMPTY_RANGES,		"RE_NO_EMPTY_RANGES" },
-		{ RE_UNMATCHED_RIGHT_PAREN_ORD,	"RE_UNMATCHED_RIGHT_PAREN_ORD" },
-		{ RE_NO_POSIX_BACKTRACKING,	"RE_NO_POSIX_BACKTRACKING" },
-		{ RE_NO_GNU_OPS,		"RE_NO_GNU_OPS" },
-		{ RE_DEBUG,			"RE_DEBUG" },
-		{ RE_INVALID_INTERVAL_ORD,	"RE_INVALID_INTERVAL_ORD" },
-		{ RE_ICASE,			"RE_ICASE" },
-		{ RE_CARET_ANCHORS_HERE,	"RE_CARET_ANCHORS_HERE" },
-		{ RE_CONTEXT_INVALID_DUP,	"RE_CONTEXT_INVALID_DUP" },
-		{ 0,				NULL }
-	};
-
-	return genflags2str(flags, regextab);
 }

@@ -1,5 +1,5 @@
 /* Declarations for getopt.
-   Copyright (C) 1989-2014 Free Software Foundation, Inc.
+   Copyright (C) 1989-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -47,6 +47,21 @@
 #ifdef	__cplusplus
 extern "C" {
 #endif
+
+#ifdef __KLIBC__
+/* OS/2 kLIBC has already getopt(). So to avoid name clash, rename
+   them here. */
+
+# define optarg		gawk_optarg
+# define optind		gawk_optind
+# define opterr		gawk_opterr
+# define optopt		gawk_optopt
+
+# define getopt				gawk_getopt
+# define getopt_long		gawk_getopt_long
+# define getopt_long_only	gawk_getopt_long_only
+#endif
+
 
 /* For communication from `getopt' to the caller.
    When `getopt' finds an option that takes an argument,

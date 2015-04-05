@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2013 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2015 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -565,7 +565,6 @@ load_symbols()
 
 	sym_array->parent_array = PROCINFO_node;
 	sym_array->vname = estrdup("identifiers", 11);
-	make_aname(sym_array);
 
 	user = make_string("user", 4);
 	extension = make_string("extension", 9);
@@ -624,6 +623,67 @@ load_symbols()
 	unref(scalar);
 	unref(untyped);
 	unref(array);
+}
+
+/* check_param_names --- make sure no parameter is the name of a function */
+
+bool
+check_param_names(void)
+{
+	int i, j;
+	NODE **list;
+	NODE *f;
+	long max;
+	bool result = true;
+	NODE n;
+
+	if (func_table->table_size == 0)
+		return result;
+
+	max = func_table->table_size * 2;
+
+	memset(& n, 0, sizeof n);
+	n.type = Node_val;
+	n.flags = STRING|STRCUR;
+	n.stfmt = -1;
+
+	/*
+	 * assoc_list() returns an array with two elements per awk array
+	 * element. Elements i and i+1 in the C array represent the key
+	 * and value of element j in the awk array. Thus the loops use += 2
+	 * to go through the awk array.
+	 *
+	 * In this case, the name is in list[i], and the function is
+	 * in list[i+1]. Just what we need.
+	 */
+
+	list = assoc_list(func_table, "@unsorted", ASORTI);
+
+	for (i = 0; i < max; i += 2) {
+		f = list[i+1];
+		if (f->type == Node_builtin_func || f->param_cnt == 0)
+			continue;
+
+		/* loop over each param in function i */
+		for (j = 0; j < f->param_cnt; j++) {
+			/* compare to function names */
+
+			/* use a fake node to avoid malloc/free of make_string */
+			n.stptr = f->fparms[j].param;
+			n.stlen = strlen(f->fparms[j].param);
+
+			if (in_array(func_table, & n)) {
+				error(
+			_("function `%s': can't use function `%s' as a parameter name"),
+					list[i]->stptr,
+					f->fparms[j].param);
+				result = false;
+			}
+		}
+	}
+
+	efree(list);
+	return result;
 }
 
 #define pool_size	d.dl

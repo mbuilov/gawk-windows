@@ -1,7 +1,7 @@
 #
 # test/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1988-2014 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2015 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -123,12 +123,17 @@ EXTRA_DIST = \
 	badargs.ok \
 	badassign1.awk \
 	badassign1.ok \
+	badbuild.awk \
+	badbuild.in \
+	badbuild.ok \
 	beginfile1.awk \
 	beginfile1.ok \
 	beginfile2.in \
 	beginfile2.ok \
 	beginfile2.sh \
 	binmode1.ok \
+	callparam.awk \
+	callparam.ok \
 	charasbytes.awk \
 	charasbytes.in \
 	charasbytes.ok \
@@ -164,6 +169,8 @@ EXTRA_DIST = \
 	concat4.ok \
 	convfmt.awk \
 	convfmt.ok \
+	crlf.awk \
+	crlf.ok \
 	datanonl.awk \
 	datanonl.in \
 	datanonl.ok \
@@ -205,6 +212,9 @@ EXTRA_DIST = \
 	dynlj.ok \
 	eofsplit.awk \
 	eofsplit.ok \
+	errno.awk \
+	errno.in \
+	errno.ok \
 	exit.ok \
 	exit.sh \
 	exit2.awk \
@@ -214,6 +224,8 @@ EXTRA_DIST = \
 	exitval2.awk \
 	exitval2.ok \
 	exitval2.w32 \
+	exitval3.awk \
+	exitval3.ok \
 	fcall_exit.awk \
 	fcall_exit.ok \
 	fcall_exit2.awk \
@@ -278,6 +290,8 @@ EXTRA_DIST = \
 	fpat3.awk \
 	fpat3.in \
 	fpat3.ok \
+	fpat4.awk \
+	fpat4.ok \
 	fpatnull.awk \
 	fpatnull.in \
 	fpatnull.ok \
@@ -331,6 +345,8 @@ EXTRA_DIST = \
 	gensub.ok \
 	gensub2.awk \
 	gensub2.ok \
+	getfile.awk \
+	getfile.ok \
 	getline.awk \
 	getline.in \
 	getline.ok \
@@ -420,6 +436,8 @@ EXTRA_DIST = \
 	include.awk \
 	include.ok \
 	include2.ok \
+	indirectbuiltin.awk \
+	indirectbuiltin.ok \
 	indirectcall.awk \
 	indirectcall.in \
 	indirectcall.ok \
@@ -528,6 +546,8 @@ EXTRA_DIST = \
 	mpfrexprange.ok \
 	mpfrieee.awk \
 	mpfrieee.ok \
+	mpfrmemok1.awk \
+	mpfrmemok1.ok \
 	mpfrnegzero.awk \
 	mpfrnegzero.ok \
 	mpfrnr.awk \
@@ -592,6 +612,12 @@ EXTRA_DIST = \
 	nondec.ok \
 	nondec2.awk \
 	nondec2.ok \
+	nonfatal1.awk \
+	nonfatal1.ok \
+	nonfatal2.awk \
+	nonfatal2.ok \
+	nonfatal3.awk \
+	nonfatal3.ok \
 	nonl.awk \
 	nonl.ok \
 	noparms.awk \
@@ -639,6 +665,10 @@ EXTRA_DIST = \
 	out1.ok \
 	out2.ok \
 	out3.ok \
+	paramasfunc1.awk \
+	paramasfunc1.ok \
+	paramasfunc2.awk \
+	paramasfunc2.ok \
 	paramdup.awk \
 	paramdup.ok \
 	paramres.awk \
@@ -689,6 +719,8 @@ EXTRA_DIST = \
 	printfbad2.ok \
 	printfbad3.awk \
 	printfbad3.ok \
+	printfbad4.awk \
+	printfbad4.ok \
 	printfloat.awk \
 	printhuge.awk \
 	printhuge.ok \
@@ -699,6 +731,9 @@ EXTRA_DIST = \
 	prmreuse.ok \
 	procinfs.awk \
 	procinfs.ok \
+	profile0.awk \
+	profile0.in \
+	profile0.ok \
 	profile2.ok \
 	profile3.awk \
 	profile3.ok \
@@ -706,6 +741,12 @@ EXTRA_DIST = \
 	profile4.ok \
 	profile5.awk \
 	profile5.ok \
+	profile6.awk \
+	profile6.ok \
+	profile7.awk \
+	profile7.ok \
+	profile8.awk \
+	profile8.ok \
 	prt1eval.awk \
 	prt1eval.ok \
 	prtoeval.awk \
@@ -737,6 +778,9 @@ EXTRA_DIST = \
 	regeq.awk \
 	regeq.in \
 	regeq.ok \
+	regexpbrack.awk \
+	regexpbrack.in \
+	regexpbrack.ok \
 	regexprange.awk \
 	regexprange.ok \
 	reginttrad.awk \
@@ -829,6 +873,9 @@ EXTRA_DIST = \
 	sortfor.awk \
 	sortfor.in \
 	sortfor.ok \
+	sortglos.awk \
+	sortglos.in \
+	sortglos.ok \
 	sortu.awk \
 	sortu.ok \
 	space.ok \
@@ -910,6 +957,8 @@ EXTRA_DIST = \
 	testext.ok \
 	time.awk \
 	time.ok \
+	timeout.awk \
+	timeout.ok \
 	tradanch.awk \
 	tradanch.in \
 	tradanch.ok \
@@ -969,11 +1018,11 @@ BASIC_TESTS = \
 	arrayref arrymem1 arryref2 arryref3 arryref4 arryref5 arynasty \
 	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
 	aryprm8 arysubnm asgext awkpath \
-	back89 backgsub badassign1 \
-	childin clobber closebad clsflnam compare compare2 concat1 concat2 \
+	back89 backgsub badassign1 badbuild \
+	callparam childin clobber closebad clsflnam compare compare2 concat1 concat2 \
 	concat3 concat4 convfmt \
 	datanonl defref delargv delarpm2 delarprm delfunc dfamb1 dfastress dynlj \
-	eofsplit exit2 exitval1 exitval2 \
+	eofsplit exit2 exitval1 exitval2 exitval3 \
 	fcall_exit fcall_exit2 fldchg fldchgnf fnamedat fnarray fnarray2 \
 	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsrs fsspcoln \
 	fstabplus funsemnl funsmnam funstack \
@@ -988,13 +1037,14 @@ BASIC_TESTS = \
 	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl \
 	noparms nors nulrsend numindex numsubstr \
 	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofs1 onlynl opasnidx opasnslf \
+	paramasfunc1 paramasfunc2 \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
 	pcntplus posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
 	prt1eval prtoeval \
-	rand randtest range1 rebt8b1 redfilnm regeq regexprange regrange reindops \
+	rand randtest range1 rebt8b1 redfilnm regeq regexpbrack regexprange regrange reindops \
 	reparse resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
-	scalar sclforin sclifin sortempty splitargv splitarr splitdef \
+	scalar sclforin sclifin sortempty sortglos splitargv splitarr splitdef \
 	splitvar splitwht strcat1 strnum1 strtod subamp subi18n \
 	subsepnm subslash substr swaplns synerr1 synerr2 tradanch tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs \
@@ -1008,23 +1058,26 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
-	colonwarn clos1way dbugeval delsub devfd devfd1 devfd2 dumpvars exit \
-	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
+	colonwarn clos1way crlf dbugeval delsub devfd devfd1 devfd2 dumpvars errno exit \
+	fieldwdth fpat1 fpat2 fpat3 fpat4 fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
 	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcase \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
-	include include2 indirectcall indirectcall2 \
+	include include2 indirectbuiltin indirectcall indirectcall2 \
 	lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm next nondec nondec2 \
-	patsplit posix printfbad1 printfbad2 printfbad3 printhuge procinfs \
-	profile1 profile2 profile3 profile4 profile5 pty1 \
+	nonfatal1 nonfatal2 nonfatal3 \
+	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge procinfs \
+	profile0 profile1 profile2 profile3 profile4 profile5 profile6 profile7 \
+	profile8 pty1 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
 	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
-	symtab7 symtab8 symtab9
+	symtab7 symtab8 symtab9 \
+	timeout
 
 EXTRA_TESTS = inftest regtest
 
@@ -1032,8 +1085,8 @@ INET_TESTS = inetdayu inetdayt inetechu inetecht
 
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 
-MPFR_TESTS = mpfrnr mpfrnegzero mpfrrem mpfrrnd mpfrieee mpfrexprange \
-	mpfrsort mpfrsqrt mpfrbigint
+MPFR_TESTS = mpfrnr mpfrnegzero mpfrmemok1 mpfrrem mpfrrnd mpfrieee \
+	mpfrexprange mpfrsort mpfrsqrt mpfrbigint
 
 LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
@@ -1041,7 +1094,7 @@ LOCALE_CHARSET_TESTS = \
 	mbprintf1 mbprintf2 mbprintf3 mbprintf4 rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
-	fnmatch filefuncs fork fork2 fts functab4 inplace1 inplace2 inplace3 \
+	fnmatch filefuncs fork fork2 fts functab4 getfile inplace1 inplace2 inplace3 \
 	ordchr ordchr2 readdir readfile readfile2 revout revtwoway rwarray testext time
 
 # List of the tests which should be run with --lint option:
@@ -1095,7 +1148,7 @@ check:	msg \
 	charset-msg-start charset-tests charset-msg-end \
 	shlib-msg-start  shlib-tests     shlib-msg-end \
 	mpfr-msg-start   mpfr-tests      mpfr-msg-end
-	@$(MAKE) pass-fail
+	@$(MAKE) pass-fail || { $(MAKE) diffout; exit 1; }
 
 basic:	$(BASIC_TESTS)
 
@@ -1298,6 +1351,11 @@ litoct::
 devfd::
 	@echo $@
 	@$(AWK) 1 /dev/fd/4 /dev/fd/5 4<"$(srcdir)"/devfd.in4 5<"$(srcdir)"/devfd.in5 >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+errno:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 fflush::
@@ -1666,14 +1724,20 @@ beginfile2:
 dumpvars::
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) --dump-variables 1 < "$(srcdir)"/$@.in >/dev/null 2>&1 || echo EXIT CODE: $$? >>_$@
-	@mv awkvars.out _$@
+	@grep -v ENVIRON < awkvars.out | grep -v PROCINFO > _$@; rm awkvars.out
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile0:
+	@echo $@
+	@$(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in > /dev/null
+	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile1:
 	@echo $@
 	@$(AWK) -f "$(srcdir)"/xref.awk "$(srcdir)"/dtdgport.awk > _$@.out1
 	@$(AWK) --pretty-print=ap-$@.out -f "$(srcdir)"/xref.awk
-	@$(AWK) -f ap-$@.out "$(srcdir)"/dtdgport.awk > _$@.out2 ; rm ap-$@.out
+	@$(AWK) -f ./ap-$@.out "$(srcdir)"/dtdgport.awk > _$@.out2 ; rm ap-$@.out
 	@$(CMP) _$@.out1 _$@.out2 && rm _$@.out[12] || { echo EXIT CODE: $$? >>_$@ ; \
 	cp "$(srcdir)"/dtdgport.awk $@.ok ; }
 	
@@ -1696,6 +1760,23 @@ profile4:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile5:
+	@echo $@
+	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile6:
+	@echo $@
+	@$(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
+	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile7:
+	@echo $@
+	@$(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
+	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile8:
 	@echo $@
 	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -1764,6 +1845,11 @@ mpfrsqrt:
 mpfrrem:
 	@echo $@
 	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfrmemok1:
+	@echo $@
+	@$(AWK) -p/dev/stdout -M -f "$(srcdir)"/$@.awk 2>&1 | sed 1d > _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 jarebug::
@@ -1862,8 +1948,13 @@ inplace3::
 testext::
 	@echo $@
 	@$(AWK) '/^(@load|BEGIN)/,/^}/' "$(top_srcdir)"/extension/testext.c > testext.awk
-	@$(AWK) -f testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@$(AWK) -f ./testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ testext.awk
+
+getfile:
+	@echo $@
+	@$(AWK) -v TESTEXT_QUIET=1 -ltestext -f $(srcdir)/$@.awk $(srcdir)/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 readdir:
 	@if [ "`uname`" = Linux ] && [ "`stat -f . 2>/dev/null | awk 'NR == 2 { print $$NF }'`" = nfs ];  then \
@@ -1984,6 +2075,15 @@ genpot:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --gen-pot >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+paramasfunc1::
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+paramasfunc2::
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
 include Maketests

@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2014 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -26,18 +26,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "mbsupport.h" /* gawk */
-
 #if defined HAVE_LANGINFO_H || defined HAVE_LANGINFO_CODESET || defined _LIBC
 # include <langinfo.h>
 #endif
 #if defined HAVE_LOCALE_H || defined _LIBC
 # include <locale.h>
 #endif
-#if MBS_SUPPORT && (defined HAVE_WCHAR_H || defined _LIBC)
+#if defined HAVE_WCHAR_H || defined _LIBC
 # include <wchar.h>
 #endif /* HAVE_WCHAR_H || _LIBC */
-#if MBS_SUPPORT && (defined HAVE_WCTYPE_H || defined _LIBC)
+#if defined HAVE_WCTYPE_H || defined _LIBC
 # include <wctype.h>
 #endif /* HAVE_WCTYPE_H || _LIBC */
 #if defined HAVE_STDBOOL_H || defined _LIBC
@@ -81,7 +79,6 @@ is_blank (int c)
 # ifndef _RE_DEFINE_LOCALE_FUNCTIONS
 #  define _RE_DEFINE_LOCALE_FUNCTIONS 1
 #   include <locale/localeinfo.h>
-#   include <locale/elem-hash.h>
 #   include <locale/coll-lookup.h>
 # endif
 #endif
@@ -109,7 +106,7 @@ is_blank (int c)
 # define SIZE_MAX ((size_t) -1)
 #endif
 
-#if MBS_SUPPORT || _LIBC
+#if ! defined(__DJGPP__) && (defined(GAWK) || _LIBC)
 # define RE_ENABLE_I18N
 #endif
 
@@ -794,7 +791,7 @@ re_string_elem_size_at (const re_string_t *pstr, int idx)
       indirect = (const int32_t *) _NL_CURRENT (LC_COLLATE,
 						_NL_COLLATE_INDIRECTMB);
       p = pstr->mbs + idx;
-      findidx (&p, pstr->len - idx);
+      findidx (table, indirect, extra, &p, pstr->len - idx);
       return p - pstr->mbs - idx;
     }
   else
