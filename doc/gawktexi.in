@@ -12968,7 +12968,7 @@ If you have written extensions that modify the record handling (by
 inserting an ``input parser''; @pxref{Input Parsers}), you can invoke
 them at this point, before @command{gawk} has started processing the file.
 (This is a @emph{very} advanced feature, currently used only by the
-@uref{http://gawkextlib.sourceforge.net, @code{gawkextlib} project}.)
+@uref{http://sourceforge.net/projects/gawkextlib, @code{gawkextlib} project}.)
 @end itemize
 
 The @code{ENDFILE} rule is called when @command{gawk} has finished processing
@@ -14256,7 +14256,7 @@ However, beginning with version 4.2, if not in POSIX
 compatibility mode, @command{gawk} does update its own environment when
 @code{ENVIRON} is changed, thus changing the environment seen by programs
 that it creates.  You should therefore be especially careful if you
-modify @code{ENVIRON["PATH"]"}, which is the search path for finding
+modify @code{ENVIRON["PATH"]}, which is the search path for finding
 executable programs.
 
 This can also affect the running @command{gawk} program, since some of the
@@ -14950,10 +14950,10 @@ conceptually, if the element values are eight, @code{"foo"},
 @float Figure,figure-array-elements
 @caption{A contiguous array}
 @ifinfo
-@center @image{array-elements, , , Basic Program Stages, txt}
+@center @image{array-elements, , , A Contiguous Array, txt}
 @end ifinfo
 @ifnotinfo
-@center @image{array-elements, , , Basic Program Stages}
+@center @image{array-elements, , , A Contiguous Array}
 @end ifnotinfo
 @end float
 @end ifnotdocbook
@@ -34444,20 +34444,12 @@ make && make check                    @ii{Build and check that all is OK}
 make install                          @ii{Install gawk}
 @end example
 
-Next, build @code{gawkextlib} and test it:
-
-@example
-cd .../path/to/gawkextlib-code
-./update-autotools                    @ii{Generate configure, etc.}
-                                      @ii{You may have to run this command twice}
-./configure --with-gawk=/tmp/newgawk  @ii{Configure, point at ``installed'' gawk}
-make && make check                    @ii{Build and check that all is OK}
-make install                          @ii{Install the extensions}
-@end example
-
-If you have installed @command{gawk} in the standard way, then you
-will likely not need the @option{--with-gawk} option when configuring
-@code{gawkextlib}.  You may need to use the @command{sudo} utility
+Next, go to @url{http://sourceforge.net/projects/gawkextlib/files} to
+download @code{gawkextlib} and any extensions that you would like to build.
+The @file{README} file at that site explains how to build the code.  If you
+installed @command{gawk} in a non-standard location, you will need to
+specify @code{./configure --with-gawk=@var{/path/to/gawk}} to find it.
+You may need to use the @command{sudo} utility
 to install both @command{gawk} and @code{gawkextlib}, depending upon
 how your system works.
 
