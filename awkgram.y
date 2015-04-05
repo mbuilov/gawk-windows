@@ -5658,12 +5658,20 @@ void
 install_builtins(void)
 {
 	int i, j;
+	int flags_that_must_be_clear = DEBUG_USE;
+
+	if (do_traditional)
+		flags_that_must_be_clear |= GAWKX;
+
+	if (do_posix)
+		flags_that_must_be_clear |= NOT_POSIX;
+
 
 	j = sizeof(tokentab) / sizeof(tokentab[0]);
 	for (i = 0; i < j; i++) {
-		if (    (tokentab[i].class == LEX_BUILTIN
-		         || tokentab[i].class == LEX_LENGTH)
-		    && (tokentab[i].flags & DEBUG_USE) == 0) {
+		if (   (tokentab[i].class == LEX_BUILTIN
+		        || tokentab[i].class == LEX_LENGTH)
+		    && (tokentab[i].flags & flags_that_must_be_clear) == 0) {
 			(void) install_symbol(tokentab[i].operator, Node_builtin_func);
 		}
 	}
