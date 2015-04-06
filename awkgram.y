@@ -1342,7 +1342,7 @@ common_exp
 
 		if ($1->lasti->opcode == Op_concat) {
 			/* multiple (> 2) adjacent strings optimization */
-			is_simple_var = ($1->lasti->concat_flag & CSVAR);
+			is_simple_var = ($1->lasti->concat_flag & CSVAR) != 0;
 			count = $1->lasti->expr_count + 1;
 			$1->lasti->opcode = Op_no_op;
 		} else {
@@ -2380,7 +2380,7 @@ add_srcfile(enum srctype stype, char *src, SRCFILE *thisfile, bool *already_incl
 	if (stype == SRC_CMDLINE || stype == SRC_STDIN)
 		return do_add_srcfile(stype, src, NULL, thisfile);
 
-	path = find_source(src, & sbuf, &errno_val, stype == SRC_EXTLIB);
+	path = find_source(src, & sbuf, & errno_val, stype == SRC_EXTLIB);
 	if (path == NULL) {
 		if (errcode) {
 			*errcode = errno_val;
@@ -4110,10 +4110,10 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 {
 	if (n == Nnull_string)
 		print_func(fp, "uninitialized scalar\n");
-	else if (n->flags & STRING) {
+	else if ((n->flags & STRING) != 0) {
 		pp_string_fp(print_func, fp, n->stptr, n->stlen, '"', false);
 		print_func(fp, "\n");
-	} else if (n->flags & NUMBER) {
+	} else if ((n->flags & NUMBER) != 0) {
 #ifdef HAVE_MPFR
 		if (is_mpg_float(n))
 			print_func(fp, "%s\n", mpg_fmt("%.17R*g", ROUND_MODE, n->mpg_numbr));
@@ -4122,10 +4122,10 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 		else
 #endif
 		print_func(fp, "%.17g\n", n->numbr);
-	} else if (n->flags & STRCUR) {
+	} else if ((n->flags & STRCUR) != 0) {
 		pp_string_fp(print_func, fp, n->stptr, n->stlen, '"', false);
 		print_func(fp, "\n");
-	} else if (n->flags & NUMCUR) {
+	} else if ((n->flags & NUMCUR) != 0) {
 #ifdef HAVE_MPFR
 		if (is_mpg_float(n))
 			print_func(fp, "%s\n", mpg_fmt("%.17R*g", ROUND_MODE, n->mpg_numbr));
@@ -5082,7 +5082,7 @@ optimize_assignment(INSTRUCTION *exp)
 		switch (i2->opcode) {
 		case Op_concat:
 			if (i2->nexti->opcode == Op_push_lhs    /* l.h.s is a simple variable */
-				&& (i2->concat_flag & CSVAR)        /* 1st exp in r.h.s is a simple variable;
+				&& (i2->concat_flag & CSVAR) != 0   /* 1st exp in r.h.s is a simple variable;
 				                                     * see Op_concat in the grammer above.
 				                                     */
 				&& i2->nexti->memory == exp->nexti->memory	 /* and the same as in l.h.s */
@@ -5542,6 +5542,7 @@ check_special(const char *name)
 {
 	int low, high, mid;
 	int i;
+	int non_standard_flags = 0;
 #if 'a' == 0x81 /* it's EBCDIC */
 	static bool did_sort = false;
 
@@ -5552,6 +5553,11 @@ check_special(const char *name)
 		did_sort = true;
 	}
 #endif
+
+	if (do_traditional)
+		non_standard_flags |= GAWKX;
+	if (do_posix)
+		non_standard_flags |= NOT_POSIX;
 
 	low = 0;
 	high = (sizeof(tokentab) / sizeof(tokentab[0])) - 1;
@@ -5566,8 +5572,7 @@ check_special(const char *name)
 		else if (i > 0)		/* token > mid */
 			low = mid + 1;
 		else {
-			if ((do_traditional && (tokentab[mid].flags & GAWKX))
-					|| (do_posix && (tokentab[mid].flags & NOT_POSIX)))
+			if ((tokentab[mid].flags & non_standard_flags) != 0)
 				return -1;
 			return mid;
 		}

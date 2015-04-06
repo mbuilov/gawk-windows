@@ -1769,7 +1769,7 @@ unref(NODE *r)
 static inline NODE *
 force_number(NODE *n)
 {
-	return (n->flags & NUMCUR) ? n : str2number(n);
+	return (n->flags & NUMCUR) != 0 ? n : str2number(n);
 }
 
 #endif /* GAWKDEBUG */
