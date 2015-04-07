@@ -1,6 +1,6 @@
 # Makefile for GNU Awk test suite.
 #
-# Copyright (C) 1988-2014 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2015 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -141,11 +141,11 @@ BASIC_TESTS = \
 	arrayref arrymem1 arryref2 arryref3 arryref4 arryref5 arynasty \
 	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
 	aryprm8 arysubnm asgext awkpath \
-	back89 backgsub badassign1 \
-	childin clobber closebad clsflnam compare compare2 concat1 concat2 \
+	back89 backgsub badassign1 badbuild \
+	callparam childin clobber closebad clsflnam compare compare2 concat1 concat2 \
 	concat3 concat4 convfmt \
 	datanonl defref delargv delarpm2 delarprm delfunc dfamb1 dfastress dynlj \
-	eofsplit exit2 exitval1 exitval2 \
+	eofsplit exit2 exitval1 exitval2 exitval3 \
 	fcall_exit fcall_exit2 fldchg fldchgnf fnamedat fnarray fnarray2 \
 	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsrs fsspcoln \
 	fstabplus funsemnl funsmnam funstack \
@@ -160,13 +160,14 @@ BASIC_TESTS = \
 	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl \
 	noparms nors nulrsend numindex numsubstr \
 	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofs1 onlynl opasnidx opasnslf \
+	paramasfunc1 paramasfunc2 \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
 	pcntplus posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
 	prt1eval prtoeval \
-	rand range1 rebt8b1 redfilnm regeq regexprange regrange reindops \
+	rand range1 rebt8b1 redfilnm regeq regexpbrack regexprange regrange reindops \
 	reparse resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
-	scalar sclforin sclifin sortempty splitargv splitarr splitdef \
+	scalar sclforin sclifin sortempty sortglos splitargv splitarr splitdef \
 	splitvar splitwht strcat1 strnum1 strtod subamp subi18n \
 	subsepnm subslash substr swaplns synerr1 synerr2 tradanch tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs \
@@ -180,18 +181,18 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
-	colonwarn clos1way dbugeval delsub devfd devfd1 devfd2 dumpvars exit \
-	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
+	colonwarn clos1way crlf dbugeval delsub devfd devfd1 devfd2 dumpvars exit \
+	fieldwdth fpat1 fpat2 fpat3 fpat4 fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
 	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcase \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
-	include include2 indirectcall indirectcall2 \
+	include include2 indirectbuiltin indirectcall indirectcall2 \
 	lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm next nondec nondec2 \
-	patsplit posix printfbad1 printfbad2 printfbad3 printhuge procinfs \
-	profile1 profile2 profile3 profile4 profile5 profile6 profile7 pty1 \
+	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge procinfs \
+	profile0 profile1 profile2 profile3 profile4 profile5 profile6 profile7 pty1 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
 	splitarg4 strftime \
@@ -201,8 +202,8 @@ GAWK_EXT_TESTS = \
 EXTRA_TESTS = inftest regtest
 INET_TESTS = inetdayu inetdayt inetechu inetecht
 MACHINE_TESTS = double1 double2 fmtspcl intformat
-MPFR_TESTS = mpfrnr mpfrnegzero mpfrrem mpfrrnd mpfrieee mpfrexprange \
-	mpfrsort mpfrsqrt mpfrbigint
+MPFR_TESTS = mpfrnr mpfrnegzero mpfrmemok1 mpfrrem mpfrrnd mpfrieee \
+	mpfrexprange mpfrsort mpfrsqrt mpfrbigint
 
 LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
@@ -248,8 +249,8 @@ check:	msg \
 	machine-msg-start machine-tests machine-msg-end \
 	charset-msg-start charset-tests charset-msg-end \
 	shlib-msg-start  shlib-tests     shlib-msg-end \
-	mpfr-msg-start   mpfr-tests      mpfr-msg-end \
-	pass-fail
+	mpfr-msg-start   mpfr-tests      mpfr-msg-end
+	@$(MAKE) pass-fail || { $(MAKE) diffout; exit 1; }
 
 basic:	$(BASIC_TESTS)
 
@@ -856,8 +857,13 @@ beginfile2:
 dumpvars::
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) --dump-variables 1 < "$(srcdir)"/$@.in >/dev/null 2>&1 || echo EXIT CODE: $$? >>_$@
-#	@mv awkvars.out _$@
-	@$(MV) awkvars.out _$@
+	@grep -v ENVIRON < awkvars.out | grep -v PROCINFO > _$@; rm awkvars.out
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile0:
+	@echo $@
+	@$(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in > /dev/null
+	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile1:
@@ -969,6 +975,11 @@ mpfrsqrt:
 mpfrrem:
 	@echo $@
 	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfrmemok1:
+	@echo $@
+	@$(AWK) -p/dev/stdout -M -f "$(srcdir)"/$@.awk 2>&1 | sed 1d > _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 jarebug::
@@ -1195,6 +1206,16 @@ genpot:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --gen-pot >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+paramasfunc1::
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+paramasfunc2::
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
 addcomma:
@@ -1322,6 +1343,16 @@ badassign1:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+badbuild:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+callparam:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 childin:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -1415,6 +1446,11 @@ exit2:
 exitval2:
 	@echo $@
 	@echo Expect exitval2 to fail with MinGW
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+exitval3:
+	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1892,6 +1928,11 @@ regeq:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+regexpbrack:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 regexprange:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -1977,6 +2018,11 @@ sclifin:
 sortempty:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+sortglos:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 splitargv:
@@ -2146,6 +2192,11 @@ backw:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+crlf:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 delsub:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -2169,6 +2220,11 @@ fpat2:
 fpat3:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+fpat4:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 fpatnull:
@@ -2283,6 +2339,11 @@ include:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+indirectbuiltin:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 indirectcall:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -2350,6 +2411,11 @@ printfbad1:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 printfbad3:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+printfbad4:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -2585,6 +2651,7 @@ pass-fail:
 	fi
 
 # This target for my convenience to look at all the results
+# Don't use POSIX or bash-isms so that it'll work on !@#$%^&*() Solaris.
 diffout:
 	for i in _* ; \
 	do  \
