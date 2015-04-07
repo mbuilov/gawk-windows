@@ -117,9 +117,6 @@
 /* Define to 1 if you have the <libintl.h> header file. */
 #undef HAVE_LIBINTL_H
 
-/* Define to 1 if you have the `m' library (-lm). */
-#define HAVE_LIBM 1
-
 /* Define to 1 if you have a fully functional readline library. */
 /* #undef HAVE_LIBREADLINE */
 
