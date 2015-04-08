@@ -2257,7 +2257,7 @@ mpfrrem:
 
 mpfrmemok1:
 	@echo $@
-	@$(AWK) -p/dev/stdout -M -f "$(srcdir)"/$@.awk 2>&1 | sed 1d > _$@
+	@$(AWK) -p- -M -f "$(srcdir)"/$@.awk 2>&1 | sed 1d > _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 jarebug::
