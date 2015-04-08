@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1999-2013 the Free Software Foundation, Inc.
+ * Copyright (C) 1999-2015 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -67,9 +67,29 @@ static long indent_level = 0;
 void
 set_prof_file(const char *file)
 {
+	int fd;
+
 	assert(file != NULL);
-	prof_fp = fopen(file, "w");
+	fd = devopen_simple(file, "w", true);
+	if (fd == INVALID_HANDLE)
+		prof_fp = NULL;
+	else if (fd == fileno(stdout))
+		prof_fp = stdout;
+	else if (fd == fileno(stderr))
+		prof_fp = stderr;
+	else
+		prof_fp = fdopen(fd, "w");
+
 	if (prof_fp == NULL) {
+		/* don't leak file descriptors */
+		int e = errno;
+
+		if (   fd != INVALID_HANDLE
+		    && fd != fileno(stdout)
+		    && fd != fileno(stderr))
+			(void) close(fd);
+
+		errno = e;
 		warning(_("could not open `%s' for writing: %s"),
 				file, strerror(errno));
 		warning(_("sending profile to standard error"));

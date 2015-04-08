@@ -570,6 +570,10 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-h\t\t\t--help\n"), fp);
 	fputs(_("\t-i includefile\t\t--include=includefile\n"), fp);
 	fputs(_("\t-l library\t\t--load=library\n"), fp);
+	/*
+	 * TRANSLATORS: the "fatal" and "invalid" here are literal
+	 * values, they should not be translated. Thanks.
+	 */
 	fputs(_("\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"), fp);
 	fputs(_("\t-M\t\t\t--bignum\n"), fp);
 	fputs(_("\t-N\t\t\t--use-lc-numeric\n"), fp);
