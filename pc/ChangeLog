@@ -1,5 +1,12 @@
 2015-04-08  Eli Zaretskii  <eliz@gnu.org>
 
+	* Makefile.ext (fnmatch.$(SOEXT), readdir.$(SOEXT), rwarray.$(SOEXT))
+	(filefuncs.$(SOEXT), time.$(SOEXT), $(SIMPLE_EXTENSIONS)): Use
+	-static-libgcc, to avoid run-time dependency on libgcc DLL.  This
+	makes the extensions independent of non-system DLLs, and also
+	prevents an abort at exit due to a known upstream bug in
+	libgcc_s_dw2-1.dll.
+
 	* Makefile.tst (mpfrmemok1): Use -p- instead of -p/dev/stdout, for
 	more portability.
 
