@@ -1483,6 +1483,7 @@ extern struct redirect *redirect(NODE *redir_exp, int redirtype, int *errflg);
 extern NODE *do_close(int nargs);
 extern int flush_io(void);
 extern int close_io(bool *stdio_problem);
+extern int devopen_simple(const char *name, const char *mode, bool try_real_open);
 extern int devopen(const char *name, const char *mode);
 extern int srcopen(SRCFILE *s);
 extern char *find_source(const char *src, struct stat *stb, int *errcode, int is_extlib);
