@@ -1,3 +1,19 @@
+2015-04-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Factor out opening of /dev/XXX files from /inet.
+	Enable interpretation of special filenames for profiling output.
+
+	* awk.h (devopen_simple): Add declaration.
+	* io.c (devopen_simple): New routine.
+	(devopen): Call devopen_simple as appropriate.
+	* profile.c (set_prof_file): Call devopen_simple as appropriate,
+	some additonal logic to hande fd to fp conversion.
+
+2015-04-08  Eli Zaretskii  <eliz@gnu.org>
+
+	* profile.c (set_prof_file): Interpret a file name of "-" to mean
+	standard output.
+
 2015-04-06         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h (force_number): Add `!= 0' check to bitwise operation.

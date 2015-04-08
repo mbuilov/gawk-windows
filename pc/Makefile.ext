@@ -32,19 +32,19 @@ ALL_EXTENSIONS = filefuncs.$(SOEXT) fnmatch.$(SOEXT) inplace.$(SOEXT)\
 extensions: $(ALL_EXTENSIONS)
 
 fnmatch.$(SOEXT): fnmatch.c
-	gcc -I.. -I../missing_d -DHAVE_FNMATCH_H -shared -gdwarf-2 -g3 -o $@ fnmatch.c
+	gcc -I.. -I../missing_d -DHAVE_FNMATCH_H -shared -gdwarf-2 -g3 -static-libgcc -o $@ fnmatch.c
 
 readdir.$(SOEXT): readdir.c gawkdirfd.h
-	gcc -I.. -DHAVE_DIRENT_H -shared -gdwarf-2 -g3 -o $@ readdir.c
+	gcc -I.. -DHAVE_DIRENT_H -shared -gdwarf-2 -g3 -static-libgcc -o $@ readdir.c
 
 rwarray.$(SOEXT): rwarray.c
-	gcc -I.. -shared -gdwarf-2 -g3 -o $@ rwarray.c -lws2_32
+	gcc -I.. -shared -gdwarf-2 -g3 -static-libgcc -o $@ rwarray.c -lws2_32
 
 filefuncs.$(SOEXT): filefuncs.c stack.c stack.h gawkfts.h
-	gcc -I.. -shared -gdwarf-2 -g3 -o $@ filefuncs.c stack.c
+	gcc -I.. -shared -gdwarf-2 -g3 -static-libgcc -o $@ filefuncs.c stack.c
 
 time.$(SOEXT): time.c
-	gcc -DHAVE_GETSYSTEMTIMEASFILETIME -I.. -shared -gdwarf-2 -g3 -o $@ time.c
+	gcc -DHAVE_GETSYSTEMTIMEASFILETIME -I.. -shared -gdwarf-2 -g3 -static-libgcc -o $@ time.c
 
 $(SIMPLE_EXTENSIONS):
 	gcc -I.. -shared -gdwarf-2 -g3 -o $@ $(@:.$(SOEXT)=.c)

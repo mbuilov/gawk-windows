@@ -1619,12 +1619,8 @@ nextrres:
 }
 #endif /* HAVE_SOCKETS */
 
-/* devopen --- handle /dev/std{in,out,err}, /dev/fd/N, regular files */
 
-/*
- * Strictly speaking, "name" is not a "const char *" because we temporarily
- * change the string.
- */
+/* devopen_simple --- handle "-", /dev/std{in,out,err}, /dev/fd/N */
 
 /*
  * 9/2014: Flow here is a little messy.
@@ -1638,23 +1634,25 @@ nextrres:
  */
 
 int
-devopen(const char *name, const char *mode)
+devopen_simple(const char *name, const char *mode, bool try_real_open)
 {
 	int openfd;
 	char *cp;
 	char *ptr;
 	int flag = 0;
-	struct inet_socket_info isi;
-	int save_errno = 0;
 
-	if (strcmp(name, "-") == 0)
-		return fileno(stdin);
+	if (strcmp(name, "-") == 0) {
+		if (mode[0] == 'r')
+			return fileno(stdin);
+		else
+			return fileno(stdout);
+	}
 
 	flag = str2mode(mode);
 	openfd = INVALID_HANDLE;
 
 	if (do_posix)
-		goto strictopen;
+		goto done;
 
 	if ((openfd = os_devopen(name, flag)) != INVALID_HANDLE) {
 		os_close_on_exec(openfd, name, "file", "");
@@ -1671,7 +1669,7 @@ devopen(const char *name, const char *mode)
 		else if (strcmp(cp, "stderr") == 0 && (flag & O_ACCMODE) == O_WRONLY)
 			openfd = fileno(stderr);
 		else if (do_traditional)
-			goto strictopen;
+			goto done;
 		else if (strncmp(cp, "fd/", 3) == 0) {
 			struct stat sbuf;
 
@@ -1682,9 +1680,37 @@ devopen(const char *name, const char *mode)
 				openfd = INVALID_HANDLE;
 		}
 		/* do not set close-on-exec for inherited fd's */
-		if (openfd != INVALID_HANDLE)
-			return openfd;
-	} else if (do_traditional) {
+	}
+done:
+	if (try_real_open)
+		openfd = open(name, flag, 0666);
+
+	return openfd;
+}
+
+/* devopen --- handle /dev/std{in,out,err}, /dev/fd/N, /inet, regular files */
+
+/*
+ * Strictly speaking, "name" is not a "const char *" because we temporarily
+ * change the string.
+ */
+
+int
+devopen(const char *name, const char *mode)
+{
+	int openfd;
+	char *cp;
+	int flag;
+	struct inet_socket_info isi;
+	int save_errno = 0;
+
+	openfd = devopen_simple(name, mode, false);
+	if (openfd != INVALID_HANDLE)
+		return openfd;
+
+	flag = str2mode(mode);
+
+	if (do_traditional) {
 		goto strictopen;
 	} else if (inetfile(name, & isi)) {
 #ifdef HAVE_SOCKETS
@@ -1769,7 +1795,7 @@ strictopen:
 		   not permitted.  */
 		struct stat buf;
 
-		if (!inetfile(name, NULL)
+		if (! inetfile(name, NULL)
 		    && stat(name, & buf) == 0 && S_ISDIR(buf.st_mode))
 			errno = EISDIR;
 	}
