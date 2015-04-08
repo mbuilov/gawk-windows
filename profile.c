@@ -66,7 +66,10 @@ void
 set_prof_file(const char *file)
 {
 	assert(file != NULL);
-	prof_fp = fopen(file, "w");
+	if (strcmp(file, "-") == 0)
+		prof_fp = stdout;
+	else
+		prof_fp = fopen(file, "w");
 	if (prof_fp == NULL) {
 		warning(_("could not open `%s' for writing: %s"),
 				file, strerror(errno));
