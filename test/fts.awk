@@ -69,7 +69,9 @@ function traverse(data,         i)
 				traverse(data[i])
 			}
 			Level--
-		} else {
+		} else if (data[i] != "atime") {
+			# 4/2015: skip for atime, since there can
+			# occasionally be small differences.
 			indent()
 			printf("%s --> %s\n", i, data[i]) > output
 		}
