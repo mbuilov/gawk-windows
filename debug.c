@@ -4205,10 +4205,10 @@ gprintf(FILE *fp, const char *format, ...)
 #define GPRINTF_BUFSIZ 512
 	if (buf == NULL) {
 		buflen = GPRINTF_BUFSIZ;
-		emalloc(buf, char *, (buflen + 1) * sizeof(char), "gprintf");
+		emalloc(buf, char *, buflen * sizeof(char), "gprintf");
 	} else if (buflen - bl < GPRINTF_BUFSIZ/2) {
 		buflen += GPRINTF_BUFSIZ;
-		erealloc(buf, char *, (buflen + 1) * sizeof(char), "gprintf");
+		erealloc(buf, char *, buflen * sizeof(char), "gprintf");
 	}	 
 #undef GPRINTF_BUFSIZ
 	
@@ -4227,7 +4227,7 @@ gprintf(FILE *fp, const char *format, ...)
 
 		/* enlarge buffer, and try again */ 
 		buflen *= 2;
-		erealloc(buf, char *, (buflen + 1) * sizeof(char), "gprintf");
+		erealloc(buf, char *, buflen * sizeof(char), "gprintf");
 	}
 
 	bl = 0;
@@ -4267,7 +4267,7 @@ gprintf(FILE *fp, const char *format, ...)
 static int
 serialize_subscript(char *buf, int buflen, struct list_item *item)
 {
-	int bl = 0, nchar, i;
+	int bl, nchar, i;
 	NODE *sub;
 
 	nchar = snprintf(buf, buflen, "%d%c%d%c%s%c%d%c",
@@ -4277,7 +4277,7 @@ serialize_subscript(char *buf, int buflen, struct list_item *item)
 		return 0;
 	else if (nchar >= buflen)	/* need larger buffer */
 		return nchar;
- 	bl += nchar;
+ 	bl = nchar;
 	for (i = 0; i < item->num_subs; i++) {
 		sub = item->subs[i];
 		nchar = snprintf(buf + bl, buflen - bl, "%lu%c%s%c",

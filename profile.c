@@ -1371,10 +1371,9 @@ pp_string(const char *in_str, size_t len, int delim)
 			*obufout++ = '\\';
 			*obufout++ = delim;
 		} else if (*str == '\0') {
-			chksize(4);
-
 			*obufout++ = '\\';
 			*obufout++ = '0';
+			chksize(2);	/* need 2 more chars for this case */
 			*obufout++ = '0';
 			*obufout++ = '0';
 		} else if ((cp = strchr(escapes, *str)) != NULL) {
@@ -1384,7 +1383,7 @@ pp_string(const char *in_str, size_t len, int delim)
 		/* NB: Deliberate use of lower-case versions. */
 		} else if (isascii(*str) && isprint(*str)) {
 			*obufout++ = *str;
-			ofre += 1;
+			ofre += 1;	/* used 1 less than expected */
 		} else {
 			size_t len;
 

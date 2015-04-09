@@ -4516,7 +4516,6 @@ yyerror(const char *m, ...)
 	char *buf;
 	int count;
 	static char end_of_file_line[] = "(END OF FILE)";
-	char save;
 
 	print_included_from();
 
@@ -4544,24 +4543,15 @@ yyerror(const char *m, ...)
 		bp = thisline + strlen(thisline);
 	}
 
-	/*
-	 * Saving and restoring *bp keeps valgrind happy,
-	 * since the guts of glibc uses strlen, even though
-	 * we're passing an explict precision. Sigh.
-	 *
-	 * 8/2003: We may not need this anymore.
-	 */
-	save = *bp;
-	*bp = '\0';
-
 	msg("%.*s", (int) (bp - thisline), thisline);
 
-	*bp = save;
 	va_start(args, m);
 	if (mesg == NULL)
 		mesg = m;
 
-	count = (bp - thisline) + strlen(mesg) + 1 + 1;
+	count = strlen(mesg) + 1;
+	if (lexptr != NULL)
+		count += (lexeme - thisline) + 2;
 	emalloc(buf, char *, count, "yyerror");
 
 	bp = buf;

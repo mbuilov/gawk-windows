@@ -3164,7 +3164,7 @@ iop_finish(IOBUF *iop)
 		lintwarn(_("data file `%s' is empty"), iop->public.name);
 	iop->errcode = errno = 0;
 	iop->count = iop->scanoff = 0;
-	emalloc(iop->buf, char *, iop->size += 2, "iop_finish");
+	emalloc(iop->buf, char *, iop->size += 1, "iop_finish");
 	iop->off = iop->buf;
 	iop->dataend = NULL;
 	iop->end = iop->buf + iop->size;
