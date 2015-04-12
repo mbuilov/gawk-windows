@@ -203,7 +203,7 @@ command.c: command.y
 
 # This is for my development & testing.
 efence: gawk
-	$(CC) $(LDFLAGS) -o gawk $$(ls *.o | grep -v '_p.o$$') $(LIBS) -lefence
+	$(CC) $(LDFLAGS) -o gawk $$(ls *.o | grep -v '_p.o$$') $(LDADD) $(LIBS) -lefence
 
 diffout valgrind-scan:
 	@cd test && $(MAKE) $(AM_MAKEFLAGS) $@
