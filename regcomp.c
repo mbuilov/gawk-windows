@@ -1217,7 +1217,12 @@ analyze (regex_t *preg)
 	  || dfa->eclosures == NULL, 0))
     return REG_ESPACE;
 
-  dfa->subexp_map = re_malloc (int, preg->re_nsub);
+  /* some malloc()-checkers don't like zero allocations */
+  if (preg->re_nsub > 0)
+    dfa->subexp_map = re_malloc (int, preg->re_nsub);
+  else
+    dfa->subexp_map = NULL;
+
   if (dfa->subexp_map != NULL)
     {
       int i;

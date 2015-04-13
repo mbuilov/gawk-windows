@@ -1,3 +1,12 @@
+2015-04-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regcomp.c (analyze): Prevent malloc(0).
+	* regex_internal.h (test_malloc, test_realloc): New functions
+	that check for zero count.
+	(re_malloc, re_realloc): Adjust to call the new functions for gawk.
+	* regexec.c (buid_trtable, match_ctx_clean): Replace malloc/free
+	with re_malloc/re_free.
+
 2015-04-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (efence): Make this link again.
