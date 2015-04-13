@@ -569,6 +569,8 @@ EXTRA_DIST = \
 	negexp.ok \
 	negrange.awk \
 	negrange.ok \
+	negtime.awk \
+	negtime.ok \
 	nested.awk \
 	nested.in \
 	nested.ok \
@@ -1050,7 +1052,7 @@ GAWK_EXT_TESTS = \
 	include include2 indirectbuiltin indirectcall indirectcall2 \
 	lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
-	nastyparm next nondec nondec2 \
+	nastyparm negtime next nondec nondec2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge procinfs \
 	profile0 profile1 profile2 profile3 profile4 profile5 profile6 profile7 pty1 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
@@ -2054,6 +2056,12 @@ paramasfunc2::
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+negtime::
+	@echo $@
+	@TZ=GMT AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 
 # Targets generated for other tests:
 include Maketests
