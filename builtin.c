@@ -2920,8 +2920,16 @@ set_how_many:
 		 * create the result, copying in parts of the original
 		 * string 
 		 */
-		len = matchstart - text + repllen
-		      + ampersands * (matchend - matchstart);
+
+		/*
+		 * add 1 to len to handle "empty" case where
+		 * matchend == matchstart and we force a match on a single
+		 * char.  Use 'matchend - text' instead of 'matchstart - text'
+		 * because we may not actually make any substitution depending
+		 * on the 'global' and 'how_many' values.
+		 */
+		len = matchend - text + repllen
+		      + ampersands * (matchend - matchstart) + 1;
 		sofar = bp - buf;
 		while (buflen < (sofar + len + 1)) {
 			buflen *= 2;
@@ -3028,6 +3036,11 @@ set_how_many:
 		textlen = text + textlen - matchend;
 		text = matchend;
 
+#if 0
+		if (bp - buf > sofar + len)
+			fprintf(stderr, "debug: len = %zu, but used %ld\n", len, (long)((bp - buf) - (long)sofar));
+#endif
+
 		if ((current >= how_many && ! global)
 		    || ((long) textlen <= 0 && matchstart == matchend)
 		    || research(rp, t->stptr, text - t->stptr, textlen, RE_NEED_START) == -1)
@@ -3035,12 +3048,17 @@ set_how_many:
 
 	}
 	sofar = bp - buf;
-	if (buflen - sofar - textlen - 1) {
+	if (buflen < (sofar + textlen + 1)) {
 		buflen = sofar + textlen + 1;
 		erealloc(buf, char *, buflen, "do_sub");
 		bp = buf + sofar;
 	}
-	for (scan = matchend; scan < text + textlen; scan++)
+	/*
+	 * Note that text == matchend, since that assignment is made before
+	 * exiting the 'for' loop above. Thus we copy in the rest of the
+	 * original string.
+	 */
+	for (scan = text; scan < text + textlen; scan++)
 		*bp++ = *scan;
 	*bp = '\0';
 	textlen = bp - buf;
