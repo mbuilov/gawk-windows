@@ -467,8 +467,38 @@ static unsigned int re_string_context_at (const re_string_t *input, int idx,
 # endif
 #endif
 
+/*
+ * GAWK checks for zero-size allocations everywhere else,
+ * do it here too.
+ */
+#ifndef GAWK
 #define re_malloc(t,n) ((t *) malloc ((n) * sizeof (t)))
 #define re_realloc(p,t,n) ((t *) realloc (p, (n) * sizeof (t)))
+#else
+static void *
+test_malloc(size_t count, const char *file, size_t line)
+{
+	if (count == 0) {
+		fprintf(stderr, "%s:%d: allocation of zero bytes\n",
+				file, line);
+		exit(1);
+	}
+	return malloc(count);
+}
+
+static void *
+test_realloc(void *p, size_t count, const char *file, size_t line)
+{
+	if (count == 0) {
+		fprintf(stderr, "%s:%d: reallocation of zero bytes\n",
+				file, line);
+		exit(1);
+	}
+	return realloc(p, count);
+}
+#define re_malloc(t,n) ((t *) test_malloc (((n) * sizeof (t)), __FILE__, __LINE__))
+#define re_realloc(p,t,n) ((t *) test_realloc (p, (n) * sizeof (t), __FILE__, __LINE__))
+#endif
 #define re_free(p) free (p)
 
 struct bin_tree_t

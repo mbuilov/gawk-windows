@@ -287,6 +287,9 @@ $ write cvh "        vms_status |= STS$K_SUCCESS;"
 $ write cvh "    }"
 $ write cvh "    decc$exit(vms_status);"
 $ write cvh "}"
+$ write cvh ""
+$ write cvh "#include ""custom.h"""
+$ write cvh ""
 $!
 $! Close out the file
 $!
