@@ -59,8 +59,8 @@
 #define _TZSET 1
 #endif
 
-/* For z/OS, from Dave Pitts */
-#ifdef ZOS_USS
+/* For z/OS, from Dave Pitts - VMS using some ZOS_USS code paths */
+#if defined(ZOS_USS) && !defined(__VMS)
 #undef HAVE_DLFCN_H
 #undef HAVE_SYS_PARAM_H
 #undef HAVE_MCHECK_H
