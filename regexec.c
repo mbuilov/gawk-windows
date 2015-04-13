@@ -3381,7 +3381,7 @@ build_trtable (const re_dfa_t *dfa, re_dfastate_t *state)
   if (BE (ndests <= 0, 0))
     {
       if (dests_node_malloced)
-	free (dests_alloc);
+	re_free (dests_alloc);
       /* Return 0 in case of an error, 1 otherwise.  */
       if (ndests == 0)
 	{
@@ -3413,18 +3413,18 @@ build_trtable (const re_dfa_t *dfa, re_dfastate_t *state)
   else
 #endif
     {
-      dest_states = (re_dfastate_t **)
-	malloc (ndests * 3 * sizeof (re_dfastate_t *));
+      dest_states =
+	re_malloc (re_dfastate_t *, ndests * 3);
       if (BE (dest_states == NULL, 0))
 	{
 out_free:
 	  if (dest_states_malloced)
-	    free (dest_states);
+	    re_free (dest_states);
 	  re_node_set_free (&follows);
 	  for (i = 0; i < ndests; ++i)
 	    re_node_set_free (dests_node + i);
 	  if (dests_node_malloced)
-	    free (dests_alloc);
+	    re_free (dests_alloc);
 	  return 0;
 	}
       dest_states_malloced = true;
@@ -3555,14 +3555,14 @@ out_free:
     }
 
   if (dest_states_malloced)
-    free (dest_states);
+    re_free (dest_states);
 
   re_node_set_free (&follows);
   for (i = 0; i < ndests; ++i)
     re_node_set_free (dests_node + i);
 
   if (dests_node_malloced)
-    free (dests_alloc);
+    re_free (dests_alloc);
 
   return 1;
 }
@@ -4225,7 +4225,7 @@ match_ctx_clean (re_match_context_t *mctx)
 	  re_free (top->path->array);
 	  re_free (top->path);
 	}
-      free (top);
+      re_free (top);
     }
 
   mctx->nsub_tops = 0;
