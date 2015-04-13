@@ -7,6 +7,13 @@
 	* regexec.c (buid_trtable, match_ctx_clean): Replace malloc/free
 	with re_malloc/re_free.
 
+	Unrelated:
+
+	* builtin.c (do_strftime): Disable checking timestamp value for less
+	than zero. Allows times before the epoch to work with strftime.
+	Thanks to Glaudiston Gomes da Silva <glaudistong@gmail.com>
+	for raising the issue.
+
 2015-04-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (efence): Make this link again.
