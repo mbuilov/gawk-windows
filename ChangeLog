@@ -1,3 +1,10 @@
+2015-04-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_strftime): Restore checking for negative result and
+	add check that time_t is > 0 --- means we're assigning a negative value
+	to an unsigned time_t. Thanks again to Glaudiston Gomes da Silva
+	<glaudistong@gmail.com>.
+
 2015-04-13         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regcomp.c (analyze): Prevent malloc(0).
@@ -6,6 +13,13 @@
 	(re_malloc, re_realloc): Adjust to call the new functions for gawk.
 	* regexec.c (buid_trtable, match_ctx_clean): Replace malloc/free
 	with re_malloc/re_free.
+
+	Unrelated:
+
+	* builtin.c (do_strftime): Disable checking timestamp value for less
+	than zero. Allows times before the epoch to work with strftime.
+	Thanks to Glaudiston Gomes da Silva <glaudistong@gmail.com>
+	for raising the issue.
 
 2015-04-12         Arnold D. Robbins     <arnold@skeeve.com>
 

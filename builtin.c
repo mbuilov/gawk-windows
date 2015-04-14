@@ -1921,9 +1921,13 @@ do_strftime(int nargs)
 				lintwarn(_("strftime: received non-numeric second argument"));
 			(void) force_number(t2);
 			clock_val = get_number_si(t2);
-			if (clock_val < 0)
-				fatal(_("strftime: second argument less than 0 or too big for time_t"));
 			fclock = (time_t) clock_val;
+			/*
+			 * 4/2015: Protect against negative value being assigned
+			 * to unsigned time_t.
+			 */
+			if (clock_val < 0 && fclock > 0)
+				fatal(_("strftime: second argument less than 0 or too big for time_t"));
 			DEREF(t2);
 		}
 
