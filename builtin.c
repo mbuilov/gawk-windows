@@ -3106,7 +3106,8 @@ call_sub(const char *name, int nargs)
 		 * push replace
 		 * push $0
 		 */
-		regex = make_regnode(Node_regex, regex);
+		if (regex->type != Node_hardregex)
+			regex = make_regnode(Node_regex, regex);
 		PUSH(regex);
 		PUSH(replace);
 		lhs = r_get_field(zero, (Func_ptr *) 0, true);
@@ -3130,7 +3131,8 @@ call_sub(const char *name, int nargs)
 		 *	 nargs++
 		 * }
 		 */
-		regex = make_regnode(Node_regex, regex);
+		if (regex->type != Node_hardregex)
+			regex = make_regnode(Node_regex, regex);
 		PUSH(regex);
 		PUSH(replace);
 		PUSH(glob_flag);
@@ -3167,7 +3169,8 @@ call_match(int nargs)
 
 	/* Don't need to pop the string just to push it back ... */
 
-	regex = make_regnode(Node_regex, regex);
+	if (regex->type != Node_hardregex)
+		regex = make_regnode(Node_regex, regex);
 	PUSH(regex);
 
 	if (array)
@@ -3195,7 +3198,8 @@ call_split_func(const char *name, int nargs)
 
 	if (nargs >= 3) {
 		regex = POP_STRING();
-		regex = make_regnode(Node_regex, regex);
+		if (regex->type != Node_hardregex)
+			regex = make_regnode(Node_regex, regex);
 	} else {
 		if (name[0] == 's') {
 			regex = make_regnode(Node_regex, FS_node->var_value);
