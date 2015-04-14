@@ -1,3 +1,10 @@
+2015-04-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_strftime): Restore checking for negative result and
+	add check that time_t is > 0 --- means we're assigning a negative value
+	to an unsigned time_t. Thanks again to Glaudiston Gomes da Silva
+	<glaudistong@gmail.com>.
+
 2015-04-13         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regcomp.c (analyze): Prevent malloc(0).
