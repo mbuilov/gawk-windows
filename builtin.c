@@ -3141,9 +3141,9 @@ call_sub(const char *name, int nargs)
 			PUSH(rhs);
 			nargs++;
 		}
-		PUSH(rhs);
+		else
+			PUSH(rhs);
 	}
-
 
 	unref(zero);
 	result = do_sub(nargs, flags);
