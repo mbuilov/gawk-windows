@@ -1951,6 +1951,9 @@ do_strftime(int nargs)
 	else
 		tm = localtime(& fclock);
 
+	if (tm == NULL)
+		return make_string("", 0);
+
 	bufp = buf;
 	bufsize = sizeof(buf);
 	for (;;) {
