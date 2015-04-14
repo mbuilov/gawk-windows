@@ -2759,42 +2759,42 @@ do_sub(int nargs, unsigned int flags)
 	int ampersands;
 	int matches = 0;
 	Regexp *rp;
-	NODE *s;		/* subst. pattern */
-	NODE *t;		/* string to make sub. in; $0 if none given */
+	NODE *rep_node;		/* replacement text */
+	NODE *target;		/* string to make sub. in; $0 if none given */
 	NODE *tmp;
 	NODE **lhs = NULL;
 	long how_many = 1;	/* one substitution for sub, also gensub default */
-	int global;
+	bool global;
 	long current;
 	bool lastmatchnonzero;
 	char *mb_indices = NULL;
 	
 	if ((flags & GENSUB) != 0) {
 		double d;
-		NODE *t1;
+		NODE *glob_flag;
 
 		tmp = PEEK(3);
 		rp = re_update(tmp);
 
-		t = POP_STRING();	/* original string */
+		target = POP_STRING();	/* original string */
 
-		t1 = POP_SCALAR();	/* value of global flag */
-		if ((t1->flags & (STRCUR|STRING)) != 0) {
-			if (t1->stlen > 0 && (t1->stptr[0] == 'g' || t1->stptr[0] == 'G'))
+		glob_flag = POP_SCALAR();	/* value of global flag */
+		if ((glob_flag->flags & (STRCUR|STRING)) != 0) {
+			if (glob_flag->stlen > 0 && (glob_flag->stptr[0] == 'g' || glob_flag->stptr[0] == 'G'))
 				how_many = -1;
 			else {
-				(void) force_number(t1);
-				d = get_number_d(t1);
-				if ((t1->flags & NUMCUR) != 0)
+				(void) force_number(glob_flag);
+				d = get_number_d(glob_flag);
+				if ((glob_flag->flags & NUMCUR) != 0)
 					goto set_how_many;
 
 				warning(_("gensub: third argument `%.*s' treated as 1"),
-						(int) t1->stlen, t1->stptr);
+						(int) glob_flag->stlen, glob_flag->stptr);
 				how_many = 1;
 			}
 		} else {
-			(void) force_number(t1);
-			d = get_number_d(t1);
+			(void) force_number(glob_flag);
+			d = get_number_d(glob_flag);
 set_how_many:
 			if (d < 1)
 				how_many = 1;
@@ -2805,10 +2805,8 @@ set_how_many:
 			if (d <= 0)
 				warning(_("gensub: third argument %g treated as 1"), d);
 		}
-		DEREF(t1);
-
+		DEREF(glob_flag);
 	} else {
-
 		/* take care of regexp early, in case re_update is fatal */
 
 		tmp = PEEK(2);
@@ -2820,30 +2818,30 @@ set_how_many:
 		/* original string */
 
 		if ((flags & LITERAL) != 0)
-			t = POP_STRING();
+			target = POP_STRING();
 		else {
 			lhs = POP_ADDRESS();
-			t = force_string(*lhs);
+			target = force_string(*lhs);
 		}
 	}
 
 	global = (how_many == -1);
 
-	s = POP_STRING();	/* replacement text */
+	rep_node = POP_STRING();	/* replacement text */
 	decr_sp();		/* regexp, already updated above */
 
 	/* do the search early to avoid work on non-match */
-	if (research(rp, t->stptr, 0, t->stlen, RE_NEED_START) == -1 ||
-			RESTART(rp, t->stptr) > t->stlen)
+	if (research(rp, target->stptr, 0, target->stlen, RE_NEED_START) == -1 ||
+			RESTART(rp, target->stptr) > target->stlen)
 		goto done;
 
-	t->flags |= STRING;
+	target->flags |= STRING;
 
-	text = t->stptr;
-	textlen = t->stlen;
+	text = target->stptr;
+	textlen = target->stlen;
 
-	repl = s->stptr;
-	replend = repl + s->stlen;
+	repl = rep_node->stptr;
+	replend = repl + rep_node->stlen;
 	repllen = replend - repl;
 
 	ampersands = 0;
@@ -2861,6 +2859,7 @@ set_how_many:
 		index_multibyte_buffer(repl, mb_indices, repllen);
 	}
 
+	/* compute length of replacement string, number of ampersands */
 	for (scan = repl; scan < replend; scan++) {
 		if ((gawk_mb_cur_max == 1 || (repllen > 0 && mb_indices[scan - repl] == 1))
 		    && (*scan == '&')) {
@@ -2913,12 +2912,13 @@ set_how_many:
 	bp = buf;
 	for (current = 1;; current++) {
 		matches++;
-		matchstart = t->stptr + RESTART(rp, t->stptr);
-		matchend = t->stptr + REEND(rp, t->stptr);
+		matchstart = target->stptr + RESTART(rp, target->stptr);
+		matchend = target->stptr + REEND(rp, target->stptr);
 
 		/*
 		 * create the result, copying in parts of the original
-		 * string 
+		 * string. note that length of replacement string can
+		 * vary since ampersand is actual text of regexp match.
 		 */
 
 		/*
@@ -2976,13 +2976,13 @@ set_how_many:
 					if (flags & GENSUB) {	/* gensub, behave sanely */
 						if (isdigit((unsigned char) scan[1])) {
 							int dig = scan[1] - '0';
-							if (dig < NUMSUBPATS(rp, t->stptr) && SUBPATSTART(rp, tp->stptr, dig) != -1) {
+							if (dig < NUMSUBPATS(rp, target->stptr) && SUBPATSTART(rp, tp->stptr, dig) != -1) {
 								char *start, *end;
 		
-								start = t->stptr
-								      + SUBPATSTART(rp, t->stptr, dig);
-								end = t->stptr
-								      + SUBPATEND(rp, t->stptr, dig);
+								start = target->stptr
+								      + SUBPATSTART(rp, target->stptr, dig);
+								end = target->stptr
+								      + SUBPATEND(rp, target->stptr, dig);
 
 								for (cp = start; cp < end; cp++)
 									*bp++ = *cp;
@@ -3043,7 +3043,7 @@ set_how_many:
 
 		if ((current >= how_many && ! global)
 		    || ((long) textlen <= 0 && matchstart == matchend)
-		    || research(rp, t->stptr, text - t->stptr, textlen, RE_NEED_START) == -1)
+		    || research(rp, target->stptr, text - target->stptr, textlen, RE_NEED_START) == -1)
 			break;
 
 	}
@@ -3067,7 +3067,7 @@ set_how_many:
 		efree(mb_indices);
 
 done:
-	DEREF(s);
+	DEREF(rep_node);
 
 	if ((matches == 0 || (flags & LITERAL) != 0) && buf != NULL) {
 		efree(buf); 
@@ -3077,18 +3077,18 @@ done:
 	if (flags & GENSUB) {
 		if (matches > 0) {
 			/* return the result string */
-			DEREF(t);
+			DEREF(target);
 			assert(buf != NULL);
 			return make_str_node(buf, textlen, ALREADY_MALLOCED);	
 		}
 
 		/* return the original string */
-		return t;
+		return target;
 	}
 
 	/* For a string literal, must not change the original string. */
 	if ((flags & LITERAL) != 0)
-		DEREF(t);
+		DEREF(target);
 	else if (matches > 0) {
 		unref(*lhs);
 		*lhs = make_str_node(buf, textlen, ALREADY_MALLOCED);	
