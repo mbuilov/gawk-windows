@@ -89,6 +89,7 @@ static void check_comment(void);
 static bool at_seen = false;
 static bool want_source = false;
 static bool want_regexp = false;	/* lexical scanning kludge */
+static bool want_param_names = false;	/* ditto */
 static char *in_function;		/* parsing kludge */
 static int rule = 0;
 
@@ -246,6 +247,7 @@ rule
 	  {
 		in_function = NULL;
 		(void) mk_function($1, $2);
+		want_param_names = false;
 		yyerrok;
 	  }
 	| '@' LEX_INCLUDE source statement_term
@@ -424,7 +426,7 @@ lex_builtin
 	;
 		
 function_prologue
-	: LEX_FUNCTION func_name '(' opt_param_list r_paren opt_nls
+	: LEX_FUNCTION func_name '(' { want_param_names = true; } opt_param_list r_paren opt_nls
 	  {
 		/*
 		 *  treat any comments between BOF and the first function
@@ -443,12 +445,12 @@ function_prologue
 		}
 		func_first = false;
 		$1->source_file = source;
-		if (install_function($2->lextok, $1, $4) < 0)
+		if (install_function($2->lextok, $1, $5) < 0)
 			YYABORT;
 		in_function = $2->lextok;
 		$2->lextok = NULL;
 		bcfree($2);
-		/* $4 already free'd in install_function */
+		/* $5 already free'd in install_function */
 		$$ = $1;
 	  }
 	;
@@ -3888,6 +3890,10 @@ retry:
 
 		if ((class == LEX_INCLUDE || class == LEX_LOAD || class == LEX_EVAL)
 				&& lasttok != '@')
+			goto out;
+
+		/* allow parameter names to shadow the names of gawk extension built-ins */
+		if (want_param_names && (tokentab[mid].flags & GAWKX) != 0)
 			goto out;
 
 		if (do_lint) {

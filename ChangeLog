@@ -1,3 +1,11 @@
+2015-04-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Let parameter names shadow the names of gawk additional built-ins.
+
+	* awkgram.y (want_param_names): New variable.
+	(yylex): Check it before returning a built-in token.
+	(grammar): Set and clear it in the right places.
+
 2015-04-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_strftime): Restore checking for negative result and
