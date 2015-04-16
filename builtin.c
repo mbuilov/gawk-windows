@@ -1872,7 +1872,7 @@ do_strftime(int nargs)
 	NODE *t1, *t2, *t3, *ret;
 	struct tm *tm;
 	time_t fclock;
-	long clock_val;
+	double clock_val;
 	char *bufp;
 	size_t buflen, bufsize;
 	char buf[BUFSIZ];
@@ -1881,6 +1881,8 @@ do_strftime(int nargs)
 	int do_gmt;
 	NODE *val = NULL;
 	NODE *sub = NULL;
+	static const time_t time_t_min = TYPE_MINIMUM(time_t);
+	static const time_t time_t_max = TYPE_MAXIMUM(time_t);
 
 	/* set defaults first */
 	format = def_strftime_format;	/* traditional date format */
@@ -1920,7 +1922,7 @@ do_strftime(int nargs)
 			if (do_lint && (t2->flags & (NUMCUR|NUMBER)) == 0)
 				lintwarn(_("strftime: received non-numeric second argument"));
 			(void) force_number(t2);
-			clock_val = get_number_si(t2);
+			clock_val = get_number_d(t2);
 			fclock = (time_t) clock_val;
 			/*
 			 * 4/2015: Protect against negative value being assigned
@@ -1928,6 +1930,11 @@ do_strftime(int nargs)
 			 */
 			if (clock_val < 0 && fclock > 0)
 				fatal(_("strftime: second argument less than 0 or too big for time_t"));
+
+			/* And check that the value is in range */
+			if (clock_val < time_t_min || clock_val > time_t_max)
+				fatal(_("strftime: second argument out of range for time_t"));
+
 			DEREF(t2);
 		}
 
@@ -1950,6 +1957,9 @@ do_strftime(int nargs)
 		tm = gmtime(& fclock);
 	else
 		tm = localtime(& fclock);
+
+	if (tm == NULL)
+		return make_string("", 0);
 
 	bufp = buf;
 	bufsize = sizeof(buf);
@@ -3158,9 +3168,9 @@ call_sub(const char *name, int nargs)
 			PUSH(rhs);
 			nargs++;
 		}
-		PUSH(rhs);
+		else
+			PUSH(rhs);
 	}
-
 
 	unref(zero);
 	result = do_sub(nargs, flags);

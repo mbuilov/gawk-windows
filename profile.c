@@ -48,8 +48,8 @@ const char *redir2str(int redirtype);
 #define DONT_FREE 1
 #define CAN_FREE  2
 
-static RETSIGTYPE dump_and_exit(int signum) ATTRIBUTE_NORETURN;
-static RETSIGTYPE just_dump(int signum);
+static void dump_and_exit(int signum) ATTRIBUTE_NORETURN;
+static void just_dump(int signum);
 
 /* pretty printing related functions and variables */
 
@@ -1002,7 +1002,7 @@ pp_string_fp(Func_print print_func, FILE *fp, const char *in_str,
 
 /* just_dump --- dump the profile and function stack and keep going */
 
-static RETSIGTYPE
+static void
 just_dump(int signum)
 {
 	extern INSTRUCTION *code_block;
@@ -1016,7 +1016,7 @@ just_dump(int signum)
 
 /* dump_and_exit --- dump the profile, the function stack, and exit */
 
-static RETSIGTYPE
+static void
 dump_and_exit(int signum)
 {
 	just_dump(signum);

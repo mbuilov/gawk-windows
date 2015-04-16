@@ -2313,7 +2313,7 @@ wait_any(int interesting)	/* pid of interest, if any */
 	sigaddset(& set, SIGQUIT);
 	sigprocmask(SIG_BLOCK, & set, & oldset);
 #else
-	RETSIGTYPE (*hstat)(int), (*istat)(int), (*qstat)(int);
+	void (*hstat)(int), (*istat)(int), (*qstat)(int);
 
 	istat = signal(SIGINT, SIG_IGN);
 #endif

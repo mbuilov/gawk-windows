@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk Bundled Extensions], 4.1.2, bug-gawk@gnu.org, gawk-extensions)
+AC_INIT([GNU Awk Bundled Extensions],[4.1.2],[bug-gawk@gnu.org],[gawk-extensions])
 
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -41,7 +41,7 @@ AC_CHECK_MEMBERS([struct stat.st_blksize])
 AM_PROG_AR
 AC_SYS_LARGEFILE
 AC_DISABLE_STATIC
-AC_PROG_LIBTOOL
+LT_INIT
 dnl AC_PROG_INSTALL
 
 AC_SUBST([pkgextensiondir], ['${libdir}/gawk'])
