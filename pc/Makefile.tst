@@ -190,7 +190,7 @@ GAWK_EXT_TESTS = \
 	include include2 indirectbuiltin indirectcall indirectcall2 \
 	lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
-	nastyparm next nondec nondec2 \
+	nastyparm negtime next nondec nondec2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge procinfs \
 	profile0 profile1 profile2 profile3 profile4 profile5 profile6 profile7 pty1 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
@@ -247,7 +247,7 @@ check:	msg \
 	unix-msg-start   unix-tests      unix-msg-end \
 	extend-msg-start gawk-extensions extend-msg-end \
 	machine-msg-start machine-tests machine-msg-end \
-	charset-msg-start charset-tests charset-msg-end \
+	charset-tests-all \
 	shlib-msg-start  shlib-tests     shlib-msg-end \
 	mpfr-msg-start   mpfr-tests      mpfr-msg-end
 	@$(MAKE) pass-fail || { $(MAKE) diffout; exit 1; }
@@ -257,6 +257,16 @@ basic:	$(BASIC_TESTS)
 unix-tests: $(UNIX_TESTS)
 
 gawk-extensions: $(GAWK_EXT_TESTS)
+
+charset-tests-all:
+	@if locale -a | grep -i 'en_US.UTF.*8' > /dev/null && \
+	    locale -a | grep -i 'ru_RU.UTF.*8' > /dev/null && \
+	    locale -a | grep -i 'ja_JP.UTF.*8' > /dev/null  ; \
+	then \
+		$(MAKE) charset-msg-start charset-tests charset-msg-end; \
+	else \
+		echo %%%%%%%%%% Inadequate locale support: skipping charset tests. ; \
+	fi
 
 charset-tests: $(LOCALE_CHARSET_TESTS)
 
@@ -320,12 +330,12 @@ machine-msg-end:
 
 charset-msg-start:
 	@echo "======== Starting tests that can vary based on character set or locale support ========"
-	@echo "************************************************"
-	@echo "** Some or all of these tests may fail if you **"
-	@echo "** have inadequate or missing locale support  **"
-	@echo "** At least en_US.UTF-8, ru_RU.UTF-8 and      **"
-	@echo "** ja_JP.UTF-8 are needed.                    **"
-	@echo "************************************************"
+	@echo "**************************************************************************"
+	@echo "* Some or all of these tests may fail if you have inadequate or missing  *"
+	@echo "* locale support At least en_US.UTF-8, ru_RU.UTF-8 and ja_JP.UTF-8 are   *"
+	@echo "* needed. However, if you see this message, the Makefile thinks you have *"
+	@echo "* what you need ...                                                      *"
+	@echo "**************************************************************************"
 
 charset-msg-end:
 	@echo "======== Done with tests that can vary based on character set or locale support ========"
@@ -1215,6 +1225,11 @@ paramasfunc1::
 paramasfunc2::
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+negtime::
+	@echo $@
+	@TZ=GMT AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
