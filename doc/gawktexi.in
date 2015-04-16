@@ -4811,6 +4811,13 @@ Similarly, you may use @code{print} or @code{printf} statements in the
 @var{init} and @var{increment} parts of a @code{for} loop.  This is another
 long-undocumented ``feature'' of Unix @command{awk}.
 
+@command{gawk} lets you use the names of built-in functions that are
+@command{gawk} extensions as the names of parameters in user-defined functions.
+This is intended to ``future-proof'' old code that happens to use
+function names added by @command{gawk} after the code was written.
+Standard @command{awk} built-in functions, such as @code{sin()} or
+@code{substr()} are @emph{not} shadowed in this way.
+
 @end ignore
 
 @node Invoking Summary
