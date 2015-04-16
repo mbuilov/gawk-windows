@@ -58,7 +58,7 @@ static void init_args(int argc0, int argc, const char *argv0, char **argv);
 static void init_vars(void);
 static NODE *load_environ(void);
 static NODE *load_procinfo(void);
-static RETSIGTYPE catchsig(int sig);
+static void catchsig(int sig);
 #ifdef HAVE_LIBSIGSEGV
 static int catchsegv(void *fault_address, int serious);
 static void catchstackoverflow(int emergency, stackoverflow_context_t scp);
@@ -1159,7 +1159,7 @@ arg_assign(char *arg, bool initing)
 
 /* catchsig --- catch signals */
 
-static RETSIGTYPE
+static void
 catchsig(int sig)
 {
 	if (sig == SIGFPE) {
