@@ -7,6 +7,27 @@
 	(grammar): Set states properly.
 	(yylex): Improve checking logic.
 
+2015-04-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Updated by autoupdate.
+	* configure, aclocal.m4: Regenerated.
+	* io.c, main.c, profile.c: Removed use of RETSIGTYPE.
+
+2015-04-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_strftime): Use a double for the timestamp and
+	check that the value is within range for a time_t.
+
+	Unrelated:
+
+	* regex_internal.h (test_malloc, test_realloc): Use %lu in printf
+	format for error messages. Thanks to Michal Jaegermann for
+	pointing this out.
+
+	Unrelated:
+
+	* NEWS: Updated.
+
 2015-04-15         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Let parameter names shadow the names of gawk additional built-ins.
