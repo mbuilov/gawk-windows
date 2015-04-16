@@ -115,14 +115,14 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/arch.m4 \
 	$(top_srcdir)/m4/codeset.m4 $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/intlmacosx.m4 \
-	$(top_srcdir)/m4/isc-posix.m4 $(top_srcdir)/m4/lcmessage.m4 \
-	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
-	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/libsigsegv.m4 \
-	$(top_srcdir)/m4/longlong.m4 $(top_srcdir)/m4/mpfr.m4 \
-	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/noreturn.m4 \
-	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
-	$(top_srcdir)/m4/readline.m4 $(top_srcdir)/m4/socket.m4 \
-	$(top_srcdir)/m4/ulonglong.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/lcmessage.m4 $(top_srcdir)/m4/lib-ld.m4 \
+	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
+	$(top_srcdir)/m4/libsigsegv.m4 $(top_srcdir)/m4/longlong.m4 \
+	$(top_srcdir)/m4/mpfr.m4 $(top_srcdir)/m4/nls.m4 \
+	$(top_srcdir)/m4/noreturn.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/m4/readline.m4 \
+	$(top_srcdir)/m4/socket.m4 $(top_srcdir)/m4/ulonglong.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
@@ -831,6 +831,8 @@ EXTRA_DIST = \
 	negexp.ok \
 	negrange.awk \
 	negrange.ok \
+	negtime.awk \
+	negtime.ok \
 	nested.awk \
 	nested.in \
 	nested.ok \
@@ -1323,7 +1325,7 @@ GAWK_EXT_TESTS = \
 	include include2 indirectbuiltin indirectcall indirectcall2 \
 	lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
-	nastyparm next nondec nondec2 \
+	nastyparm negtime next nondec nondec2 \
 	nonfatal1 nonfatal2 nonfatal3 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge procinfs \
 	profile0 profile1 profile2 profile3 profile4 profile5 profile6 profile7 \
@@ -2529,6 +2531,11 @@ paramasfunc1::
 paramasfunc2::
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+negtime::
+	@echo $@
+	@TZ=GMT AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program

@@ -98,6 +98,12 @@ BEGIN {
 	i1 = @fun("f", "q", "g", "ff11bb")
 	print_result("string", fun, b1, i1)
 
+	fun = "gensub"
+	$0 = "ff11bb"
+	b1 = gensub("f", "q", "g")
+	i1 = @fun("f", "q", "g")
+	print_result("string", fun " (3 args)", b1, i1)
+
 	fun = "gsub"
 	$0 = "ff11bb"
 	b1 = gsub("f", "q")
