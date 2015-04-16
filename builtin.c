@@ -1917,15 +1917,21 @@ do_strftime(int nargs)
 			clock_val = get_number_d(t2);
 			fclock = (time_t) clock_val;
 			/*
-			 * 4/2015: Protect against negative value being assigned
+			 * Protect against negative value being assigned
 			 * to unsigned time_t.
 			 */
-			if (clock_val < 0 && fclock > 0)
-				fatal(_("strftime: second argument less than 0 or too big for time_t"));
+			if (clock_val < 0 && fclock > 0) {
+				if (do_lint)
+					lintwarn(_("strftime: second argument less than 0 or too big for time_t"));
+				return make_string("", 0);
+			}
 
 			/* And check that the value is in range */
-			if (clock_val < time_t_min || clock_val > time_t_max)
-				fatal(_("strftime: second argument out of range for time_t"));
+			if (clock_val < time_t_min || clock_val > time_t_max) {
+				if (do_lint)
+					lintwarn(_("strftime: second argument out of range for time_t"));
+				return make_string("", 0);
+			}
 
 			DEREF(t2);
 		}
