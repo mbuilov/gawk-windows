@@ -3,6 +3,12 @@
 	* builtin.c (do_strftime): Use a double for the timestamp and
 	check that the value is within range for a time_t.
 
+	Unrelated:
+
+	* regex_internal.h (test_malloc, test_realloc): Use %lu in printf
+	format for error messages. Thanks to Michal Jaegermann for
+	pointing this out.
+
 2015-04-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_strftime): Restore checking for negative result and
