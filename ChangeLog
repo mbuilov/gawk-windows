@@ -1,3 +1,10 @@
+2015-04-16         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* node.c (r_force_number): If strtod sets errno, then force the
+	numeric value in node->numbr to zero. For subnormal values, strtod
+	sets errno but does not return zero, and we don't want to retain
+	those subnormal values.
+
 2015-04-16         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_strftime): Use a double for the timestamp and
