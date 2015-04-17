@@ -1230,6 +1230,7 @@ paramasfunc2::
 
 negtime::
 	@echo $@
+	@echo Expect negtime to fail with MinGW
 	@TZ=GMT AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 Gt-dummy:
