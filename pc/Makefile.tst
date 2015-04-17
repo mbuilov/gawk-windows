@@ -131,6 +131,7 @@ srcdir = .
 abs_srcdir = .
 abs_builddir = .
 top_srcdir = "$(srcdir)"/..
+abs_top_builddir = "$(top_srcdir)"
 
 # Get rid of core files when cleaning and generated .ok file
 CLEANFILES = core core.* fmtspcl.ok
