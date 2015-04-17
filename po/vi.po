@@ -7,10 +7,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gawk 4.1.1c\n"
+"Project-Id-Version: gawk 4.1.1d\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2015-04-07 17:32+0300\n"
-"PO-Revision-Date: 2015-04-08 08:06+0700\n"
+"POT-Creation-Date: 2015-04-16 17:16+0300\n"
+"PO-Revision-Date: 2015-04-17 07:37+0700\n"
 "Last-Translator: Trần Ngọc Quân <vnwildman@gmail.com>\n"
 "Language-Team: Vietnamese <translation-team-vi@lists.sourceforge.net>\n"
 "Language: vi\n"
@@ -39,7 +39,7 @@ msgid "attempt to use scalar `%s' as an array"
 msgstr "cố dùng “%s” vô hướng như là mảng"
 
 #: array.c:409 array.c:576 builtin.c:85 builtin.c:1606 builtin.c:1652
-#: builtin.c:1665 builtin.c:2092 builtin.c:2106 eval.c:1149 eval.c:1153
+#: builtin.c:1665 builtin.c:2106 builtin.c:2120 eval.c:1149 eval.c:1153
 #: eval.c:1558
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
@@ -305,11 +305,11 @@ msgstr "tập tin nguồn “%s” là rỗng"
 #: awkgram.y:2827
 #, c-format
 msgid "PEBKAC error: invalid character '\\%03o' in source code"
-msgstr "lỗi PEBKAC: gặp ký tự không hợp lệ “\\%03o” trong mã nguồn"
+msgstr "Lỗi PEBKAC: gặp ký tự không hợp lệ “\\%03o” trong mã nguồn"
 
 #: awkgram.y:2958
 msgid "source file does not end in newline"
-msgstr "tập tin nguồn không kết thúc với một dòng mới"
+msgstr "tập tin nguồn không kết thúc bằng một dòng trống"
 
 #: awkgram.y:3061
 msgid "unterminated regexp ends with `\\' at end of file"
@@ -744,202 +744,206 @@ msgstr "substr: (chuỗi con) chỉ số đầu %g nằm sau kết thúc của c
 msgid "substr: length %g at start index %g exceeds length of first argument (%lu)"
 msgstr "substr: (chuỗi con) độ dài %g chỉ số đầu %g vượt quá độ dài của đối số đầu (%lu)"
 
-#: builtin.c:1890
+#: builtin.c:1892
 msgid "strftime: format value in PROCINFO[\"strftime\"] has numeric type"
 msgstr "strftime: giá trị định dạng trong PROCINFO[\"strftime\"] phải thuộc kiểu số"
 
-#: builtin.c:1913
+#: builtin.c:1915
 msgid "strftime: received non-numeric second argument"
 msgstr "strftime: đã nhận đối số thứ hai khác thuộc số"
 
-#: builtin.c:1917
+#: builtin.c:1924
 msgid "strftime: second argument less than 0 or too big for time_t"
 msgstr "strftime: tham số thứ hai nhỏ hơn 0 hay quá lớn dành cho time_t"
 
-#: builtin.c:1924
+#: builtin.c:1928
+msgid "strftime: second argument out of range for time_t"
+msgstr "strftime: tham số thứ hai nằm ngoài phạm vi cho phép của kiểu time_t"
+
+#: builtin.c:1935
 msgid "strftime: received non-string first argument"
 msgstr "strftime: đã nhận đối số thứ nhất khác chuỗi"
 
-#: builtin.c:1931
+#: builtin.c:1942
 msgid "strftime: received empty format string"
 msgstr "strftime: đã nhận chuỗi định dạng rỗng"
 
-#: builtin.c:1997
+#: builtin.c:2011
 msgid "mktime: received non-string argument"
 msgstr "mktime: đã nhận đối số khác chuỗi"
 
-#: builtin.c:2014
+#: builtin.c:2028
 msgid "mktime: at least one of the values is out of the default range"
 msgstr "mktime: ít nhất một của những giá trị nằm ở ngoại phạm vi mặc định"
 
-#: builtin.c:2049
+#: builtin.c:2063
 msgid "'system' function not allowed in sandbox mode"
 msgstr "hàm “system” không cho phép ở chế độ khuôn đúc"
 
-#: builtin.c:2054
+#: builtin.c:2068
 msgid "system: received non-string argument"
 msgstr "system: (hệ thống) đã nhận đối số khác chuỗi"
 
-#: builtin.c:2174
+#: builtin.c:2188
 #, c-format
 msgid "reference to uninitialized field `$%d'"
 msgstr "gặp tham chiếu đến trường chưa được khởi tạo “$%d”"
 
-#: builtin.c:2259
+#: builtin.c:2273
 msgid "tolower: received non-string argument"
 msgstr "tolower: (thành chư thường) đã nhận đối số khác chuỗi"
 
-#: builtin.c:2290
+#: builtin.c:2304
 msgid "toupper: received non-string argument"
 msgstr "toupper: (thành chữ HOA) đã nhận đối số khác chuỗi"
 
-#: builtin.c:2323 mpfr.c:679
+#: builtin.c:2337 mpfr.c:679
 msgid "atan2: received non-numeric first argument"
 msgstr "atan2: đã nhận đối số thứ nhất khác thuộc số"
 
-#: builtin.c:2325 mpfr.c:681
+#: builtin.c:2339 mpfr.c:681
 msgid "atan2: received non-numeric second argument"
 msgstr "atan2: đã nhận đối số thứ hai khác thuộc số"
 
-#: builtin.c:2344
+#: builtin.c:2358
 msgid "sin: received non-numeric argument"
 msgstr "sin: đã nhận đối số không thuộc kiểu số học"
 
-#: builtin.c:2360
+#: builtin.c:2374
 msgid "cos: received non-numeric argument"
 msgstr "cos: đã nhận đối số không thuộc kiểu số học"
 
-#: builtin.c:2413 mpfr.c:1176
+#: builtin.c:2427 mpfr.c:1176
 msgid "srand: received non-numeric argument"
 msgstr "srand: đã nhận đối số không thuộc kiểu số học"
 
-#: builtin.c:2444
+#: builtin.c:2458
 msgid "match: third argument is not an array"
 msgstr "match: (khớp) đối số thứ ba không phải là mảng"
 
-#: builtin.c:2705
+#: builtin.c:2719
 #, c-format
 msgid "gensub: third argument `%.*s' treated as 1"
 msgstr "gensub: đối số thứ ba “%.*s” được xử lý như 1"
 
-#: builtin.c:2720
+#: builtin.c:2734
 #, c-format
 msgid "gensub: third argument %g treated as 1"
 msgstr "gensub: đối số thứ ba %g được xử lý như 1"
 
-#: builtin.c:3018
+#: builtin.c:3032
 #, c-format
 msgid "%s: can be called indirectly only with two arguments"
 msgstr "%s: được gọi một cách gián tiếp với ít hơn hai đối số"
 
-#: builtin.c:3108
+#: builtin.c:3122
 #, c-format
 msgid "indirect call to %s requires at least two arguments"
 msgstr "cú gọi gián tiếp đến %s cần ít nhất hai đối số"
 
-#: builtin.c:3160
+#: builtin.c:3174
 msgid "lshift: received non-numeric first argument"
 msgstr "lshift: đã nhận đối số đầu không phải thuộc số"
 
-#: builtin.c:3162
+#: builtin.c:3176
 msgid "lshift: received non-numeric second argument"
 msgstr "lshift: (dịch bên trái) đã nhận đối số thứ hai khác thuộc số"
 
-#: builtin.c:3168
+#: builtin.c:3182
 #, c-format
 msgid "lshift(%f, %f): negative values will give strange results"
 msgstr "lshift(%f, %f): giá trị âm sẽ gây ra kết quả không như mong muốn"
 
-#: builtin.c:3170
+#: builtin.c:3184
 #, c-format
 msgid "lshift(%f, %f): fractional values will be truncated"
 msgstr "lshift(%f, %f): giá trị thuộc phân số sẽ bị cắt ngắn"
 
-#: builtin.c:3172
+#: builtin.c:3186
 #, c-format
 msgid "lshift(%f, %f): too large shift value will give strange results"
 msgstr "lshift(%f, %f): giá trị dịch quá lớn sẽ gây ra kết quả không như mong muốn"
 
-#: builtin.c:3197
+#: builtin.c:3211
 msgid "rshift: received non-numeric first argument"
 msgstr "rshift: đã nhận đối số thứ nhất khác thuộc số"
 
-#: builtin.c:3199
+#: builtin.c:3213
 msgid "rshift: received non-numeric second argument"
 msgstr "rshift: (dịch phải) đã nhận đối số thứ hai khác thuộc số"
 
-#: builtin.c:3205
+#: builtin.c:3219
 #, c-format
 msgid "rshift(%f, %f): negative values will give strange results"
 msgstr "rshift(%f, %f): giá trị âm sẽ gây ra kết quả không như mong muốn"
 
-#: builtin.c:3207
+#: builtin.c:3221
 #, c-format
 msgid "rshift(%f, %f): fractional values will be truncated"
 msgstr "rshift(%f, %f): giá trị thuộc kiểu phân số sẽ bị xén ngắn"
 
-#: builtin.c:3209
+#: builtin.c:3223
 #, c-format
 msgid "rshift(%f, %f): too large shift value will give strange results"
 msgstr "rshift(%f, %f): giá trị dịch quá lớn sẽ gây ra kết quả không như mong muốn"
 
-#: builtin.c:3234 mpfr.c:988
+#: builtin.c:3248 mpfr.c:988
 msgid "and: called with less than two arguments"
 msgstr "and: được gọi với ít hơn hai đối số"
 
-#: builtin.c:3239
+#: builtin.c:3253
 #, c-format
 msgid "and: argument %d is non-numeric"
 msgstr "and: đối số %d không phải thuộc số"
 
-#: builtin.c:3243
+#: builtin.c:3257
 #, c-format
 msgid "and: argument %d negative value %g will give strange results"
 msgstr "and: (và) đối số %d giá trị âm %g sẽ đưa lại kết quả không như mong muốn"
 
-#: builtin.c:3266 mpfr.c:1020
+#: builtin.c:3280 mpfr.c:1020
 msgid "or: called with less than two arguments"
 msgstr "or: (hoặc) được gọi với ít hơn hai đối số"
 
-#: builtin.c:3271
+#: builtin.c:3285
 #, c-format
 msgid "or: argument %d is non-numeric"
 msgstr "or: (hoặc) đối số %d không thuộc kiểu số"
 
-#: builtin.c:3275
+#: builtin.c:3289
 #, c-format
 msgid "or: argument %d negative value %g will give strange results"
 msgstr "or: (hoặc) đối số %d giá trị âm %g sẽ đưa lại kết quả không như mong muốn"
 
-#: builtin.c:3297 mpfr.c:1051
+#: builtin.c:3311 mpfr.c:1051
 msgid "xor: called with less than two arguments"
 msgstr "xor: được gọi với ít hơn hai đối số"
 
-#: builtin.c:3303
+#: builtin.c:3317
 #, c-format
 msgid "xor: argument %d is non-numeric"
 msgstr "xor: đối số %d không thuộc kiểu số"
 
-#: builtin.c:3307
+#: builtin.c:3321
 #, c-format
 msgid "xor: argument %d negative value %g will give strange results"
 msgstr "xor: đối số %d giá trị âm %g sẽ đưa lại kết quả không như mong muốn"
 
-#: builtin.c:3332 mpfr.c:807
+#: builtin.c:3346 mpfr.c:807
 msgid "compl: received non-numeric argument"
 msgstr "compl: (biên dịch) đã nhận được đối số không-phải-số"
 
-#: builtin.c:3338
+#: builtin.c:3352
 #, c-format
 msgid "compl(%f): negative value will give strange results"
 msgstr "compl(%f): giá trị âm sẽ gây ra kết quả không như mong đợi"
 
-#: builtin.c:3340
+#: builtin.c:3354
 #, c-format
 msgid "compl(%f): fractional value will be truncated"
 msgstr "compl(%f): giá trị thuộc phân số sẽ bị cắt ngắn"
 
-#: builtin.c:3509
+#: builtin.c:3523
 #, c-format
 msgid "dcgettext: `%s' is not a valid locale category"
 msgstr "dcgettext: “%s” không phải là một phân loại miền địa phương hợp lệ"
@@ -2667,12 +2671,12 @@ msgstr "không cung cấp lệnh đóng đường ống dẫn lệnh “%s” r�
 msgid "no explicit close of file `%s' provided"
 msgstr "không cung cấp lệnh đóng tập tin “%s” rõ ràng"
 
-#: io.c:1317 io.c:1375 main.c:628 main.c:670
+#: io.c:1317 io.c:1375 main.c:632 main.c:674
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "gặp lỗi khi ghi đầu ra tiêu chuẩn (%s)"
 
-#: io.c:1322 io.c:1381 main.c:630
+#: io.c:1322 io.c:1381 main.c:634
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "gặp lỗi khi ghi thiết bị lỗi chuẩn (%s)"
@@ -2702,138 +2706,138 @@ msgstr "cổng cục bộ %s không hợp lệ trong “/inet”"
 msgid "remote host and port information (%s, %s) invalid"
 msgstr "thông tin về máy/cổng ở xa (%s, %s) không phải hợp lệ"
 
-#: io.c:1673
+#: io.c:1699
 msgid "TCP/IP communications are not supported"
 msgstr "truyền thông TCP/IP không được hỗ trợ"
 
-#: io.c:1854
+#: io.c:1880
 #, c-format
 msgid "could not open `%s', mode `%s'"
 msgstr "không mở được “%s”, chế độ “%s”"
 
-#: io.c:1904
+#: io.c:1930
 #, c-format
 msgid "close of master pty failed (%s)"
 msgstr "gặp lỗi khi đóng thiết bị cuối giả (%s)"
 
-#: io.c:1906 io.c:2092 io.c:2293
+#: io.c:1932 io.c:2118 io.c:2319
 #, c-format
 msgid "close of stdout in child failed (%s)"
 msgstr "lỗi đóng đầu ra tiêu chuẩn trong tiến trình con (%s)"
 
-#: io.c:1909
+#: io.c:1935
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
 msgstr "gặp lỗi khi di chuyển pty (thiết bị cuối giả) phụ thuộc đến thiết bị đầu ra tiêu chuẩn trong con (trùng: %s)"
 
-#: io.c:1911 io.c:2097
+#: io.c:1937 io.c:2123
 #, c-format
 msgid "close of stdin in child failed (%s)"
 msgstr "lỗi đóng thiết bị nhập chuẩn trong tiến trình con (%s)"
 
-#: io.c:1914
+#: io.c:1940
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
 msgstr "lỗi di chuyển pty (thiết bị cuối giả) phụ tới thiết bị nhập chuẩn trong điều con (nhân đôi: %s)"
 
-#: io.c:1916 io.c:1938
+#: io.c:1942 io.c:1964
 #, c-format
 msgid "close of slave pty failed (%s)"
 msgstr "đóng pty (thiết bị cuối giả) phụ thuộc gặp lỗi (%s)"
 
-#: io.c:2027 io.c:2095 io.c:2264 io.c:2296
+#: io.c:2053 io.c:2121 io.c:2290 io.c:2322
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
 msgstr "lỗi di chuyển ống dẫn đến thiết bị xuất chuẩn trong tiến trình con (trùng: %s)"
 
-#: io.c:2034 io.c:2100
+#: io.c:2060 io.c:2126
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
 msgstr "lỗi di chuyển ống dẫn đến thiết bị nhập chuẩn trong tiến trình con (trùng: %s)"
 
-#: io.c:2060 io.c:2286
+#: io.c:2086 io.c:2312
 msgid "restoring stdout in parent process failed\n"
 msgstr "phục hồi đầu ra tiêu chuẩn trong tiến trình mẹ gặp lỗi\n"
 
-#: io.c:2068
+#: io.c:2094
 msgid "restoring stdin in parent process failed\n"
 msgstr "phục hồi đầu vào tiêu chuẩn trong tiến trình mẹ gặp lỗi\n"
 
-#: io.c:2103 io.c:2298 io.c:2313
+#: io.c:2129 io.c:2324 io.c:2339
 #, c-format
 msgid "close of pipe failed (%s)"
 msgstr "đóng ống dẫn gặp lỗi (%s)"
 
-#: io.c:2162
+#: io.c:2188
 msgid "`|&' not supported"
 msgstr "“|&” không được hỗ trợ"
 
-#: io.c:2249
+#: io.c:2275
 #, c-format
 msgid "cannot open pipe `%s' (%s)"
 msgstr "không thể mở ống dẫn “%s” (%s)"
 
-#: io.c:2307
+#: io.c:2333
 #, c-format
 msgid "cannot create child process for `%s' (fork: %s)"
 msgstr "không thể tạo tiến trình con cho “%s” (fork: %s)"
 
-#: io.c:2734
+#: io.c:2760
 msgid "register_input_parser: received NULL pointer"
 msgstr "register_input_parser: nhận được con trỏ NULL"
 
-#: io.c:2762
+#: io.c:2788
 #, c-format
 msgid "input parser `%s' conflicts with previously installed input parser `%s'"
 msgstr "bộ phân tích đầu vào “%s” xung đột với bộ phân tích đầu vào được cài đặt trước đó “%s”"
 
-#: io.c:2769
+#: io.c:2795
 #, c-format
 msgid "input parser `%s' failed to open `%s'"
 msgstr "bộ phân tích đầu vào “%s” gặp lỗi khi mở “%s”"
 
-#: io.c:2789
+#: io.c:2815
 msgid "register_output_wrapper: received NULL pointer"
 msgstr "register_output_wrapper: nhận được con trỏ NULL"
 
-#: io.c:2817
+#: io.c:2843
 #, c-format
 msgid "output wrapper `%s' conflicts with previously installed output wrapper `%s'"
 msgstr "bộ bao kết xuất “%s” xung đột với bộ bao kết xuất được cài đặt trước đó “%s”"
 
-#: io.c:2824
+#: io.c:2850
 #, c-format
 msgid "output wrapper `%s' failed to open `%s'"
 msgstr "bộ bao kết xuất “%s” gặp lỗi khi mở “%s”"
 
-#: io.c:2845
+#: io.c:2871
 msgid "register_output_processor: received NULL pointer"
 msgstr "register_output_processor: nhận được con trỏ NULL"
 
-#: io.c:2874
+#: io.c:2900
 #, c-format
 msgid "two-way processor `%s' conflicts with previously installed two-way processor `%s'"
 msgstr "bộ xử lý hai hướng “%s” xung đột với bộ xử lý hai hướng đã được cài đặt trước đó “%s”"
 
-#: io.c:2883
+#: io.c:2909
 #, c-format
 msgid "two way processor `%s' failed to open `%s'"
 msgstr "bộ xử lý hai hướng “%s” gặp lỗi khi mở “%s”"
 
-#: io.c:3008
+#: io.c:3034
 #, c-format
 msgid "data file `%s' is empty"
 msgstr "tập tin dữ liệu “%s” là rỗng"
 
-#: io.c:3050 io.c:3058
+#: io.c:3076 io.c:3084
 msgid "could not allocate more input memory"
 msgstr "không thể cấp phát bộ nhớ nhập thêm nữa"
 
-#: io.c:3636
+#: io.c:3662
 msgid "multicharacter value of `RS' is a gawk extension"
 msgstr "giá trị đa ký tự của “RS” là phần mở rộng gawk"
 
-#: io.c:3783
+#: io.c:3809
 msgid "IPv6 communication is not supported"
 msgstr "Truyền thông trên IPv6 không được hỗ trợ"
 
@@ -2953,61 +2957,64 @@ msgstr "\t-i includefile\t\t--include=tập-tin-bao-gồm\n"
 msgid "\t-l library\t\t--load=library\n"
 msgstr "\t-l library\t\t--load=thư-viện\n"
 
-#: main.c:586
+#. TRANSLATORS: the "fatal" and "invalid" here are literal
+#. values, they should not be translated. Thanks.
+#.
+#: main.c:590
 msgid "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
 msgstr "\t-L [fatal|invalid]\t--lint[=fatal|invalid]\n"
 
-#: main.c:587
+#: main.c:591
 msgid "\t-M\t\t\t--bignum\n"
 msgstr "\t-M\t\t\t--bignum\n"
 
-#: main.c:588
+#: main.c:592
 msgid "\t-N\t\t\t--use-lc-numeric\n"
 msgstr "\t-N\t\t\t--use-lc-numeric\n"
 
-#: main.c:589
+#: main.c:593
 msgid "\t-n\t\t\t--non-decimal-data\n"
 msgstr "\t-n\t\t\t--non-decimal-data\n"
 
-#: main.c:590
+#: main.c:594
 msgid "\t-o[file]\t\t--pretty-print[=file]\n"
 msgstr "\t-o[tập_tin]\t\t--pretty-print[=tập_tin]\n"
 
-#: main.c:591
+#: main.c:595
 msgid "\t-O\t\t\t--optimize\n"
 msgstr "\t-O\t\t\t--optimize (tối_ưu_hóa)\n"
 
-#: main.c:592
+#: main.c:596
 msgid "\t-p[file]\t\t--profile[=file]\n"
 msgstr "\t-p[tập_tin]\t\t--profile[=tập_tin]\n"
 
-#: main.c:593
+#: main.c:597
 msgid "\t-P\t\t\t--posix\n"
 msgstr "\t-P\t\t\t--posix\n"
 
-#: main.c:594
+#: main.c:598
 msgid "\t-r\t\t\t--re-interval\n"
 msgstr "\t-r\t\t\t--re-interval\n"
 
-#: main.c:595
+#: main.c:599
 msgid "\t-S\t\t\t--sandbox\n"
 msgstr "\t-S\t\t\t--sandbox\n"
 
-#: main.c:596
+#: main.c:600
 msgid "\t-t\t\t\t--lint-old\n"
 msgstr "\t-t\t\t\t--lint-old\n"
 
-#: main.c:597
+#: main.c:601
 msgid "\t-V\t\t\t--version\n"
 msgstr "\t-V\t\t\t--version\n"
 
-#: main.c:599
+#: main.c:603
 msgid "\t-W nostalgia\t\t--nostalgia\n"
 msgstr ""
 "\t-W nostalgia\t\t--nostalgia\n"
 "(nỗi luyến tiếc quá khứ)\n"
 
-#: main.c:602
+#: main.c:606
 msgid "\t-Y\t\t--parsedebug\n"
 msgstr "\t-Y\t\t--parsedebug\n"
 
@@ -3016,7 +3023,7 @@ msgstr "\t-Y\t\t--parsedebug\n"
 #. for this application.  Please add _another line_ with the
 #. address for translation bugs.
 #. no-wrap
-#: main.c:611
+#: main.c:615
 msgid ""
 "\n"
 "To report bugs, see node `Bugs' in `gawk.info', which is\n"
@@ -3030,7 +3037,7 @@ msgstr ""
 "Thông báo lỗi dịch cho: <http://translationproject.org/team/vi.html>.\n"
 "\n"
 
-#: main.c:615
+#: main.c:619
 msgid ""
 "gawk is a pattern scanning and processing language.\n"
 "By default it reads standard input and writes standard output.\n"
@@ -3040,7 +3047,7 @@ msgstr ""
 "Mặc định, nó đọc từ đầu vào tiêu chuẩn và ghi ra đầu ra tiêu chuẩn.\n"
 "\n"
 
-#: main.c:619
+#: main.c:623
 msgid ""
 "Examples:\n"
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
@@ -3050,7 +3057,7 @@ msgstr ""
 "\tgawk \"{ sum += $1 }; END { print sum }\" tập_tin\n"
 "\tgawk -F: \"{ print $1 }\" /etc/passwd\n"
 
-#: main.c:644
+#: main.c:648
 #, c-format
 msgid ""
 "Copyright (C) 1989, 1991-%d Free Software Foundation.\n"
@@ -3069,7 +3076,7 @@ msgstr ""
 "của Giấy Phép này, hoặc là (tùy chọn) bất kỳ phiên bản mới hơn.\n"
 "\n"
 
-#: main.c:652
+#: main.c:656
 msgid ""
 "This program is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
@@ -3083,7 +3090,7 @@ msgstr ""
 "Hãy xem Giấy phép Công Chung GNU (GPL) để biết chi tiết.\n"
 "\n"
 
-#: main.c:658
+#: main.c:662
 msgid ""
 "You should have received a copy of the GNU General Public License\n"
 "along with this program. If not, see http://www.gnu.org/licenses/.\n"
@@ -3091,16 +3098,16 @@ msgstr ""
 "Bạn nên nhận một bản sao của Giấy Phép Công Cộng GNU cùng với chương\n"
 "trình này. Nếu chưa có, bạn xem tại <http://www.gnu.org/licenses/>.\n"
 
-#: main.c:695
+#: main.c:699
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "-Ft không đặt FS (hệ thống tập tin?) vào tab trong awk POSIX"
 
-#: main.c:982
+#: main.c:986
 #, c-format
 msgid "unknown value for field spec: %d\n"
 msgstr "không hiểu giá trị dành cho đặc tả trường: %d\n"
 
-#: main.c:1080
+#: main.c:1084
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
@@ -3109,66 +3116,66 @@ msgstr ""
 "%s: đối số “%s” cho “-v” không có dạng “biến=giá_trị”\n"
 "\n"
 
-#: main.c:1106
+#: main.c:1110
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "“%s” không phải là tên biến hợp lệ"
 
-#: main.c:1109
+#: main.c:1113
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "“%s” không phải là tên biến; đang tìm tập tin “%s=%s”"
 
-#: main.c:1113
+#: main.c:1117
 #, c-format
 msgid "cannot use gawk builtin `%s' as variable name"
 msgstr "không thể dùng builtin (dựng sẵn) của gawk “%s” như là tên biến"
 
-#: main.c:1118
+#: main.c:1122
 #, c-format
 msgid "cannot use function `%s' as variable name"
 msgstr "không thể dùng hàm “%s” như là tên biến"
 
-#: main.c:1171
+#: main.c:1175
 msgid "floating point exception"
 msgstr "ngoại lệ số thực dấu chấm động"
 
-#: main.c:1178
+#: main.c:1182
 msgid "fatal error: internal error"
 msgstr "lỗi nghiêm trọng: lỗi nội bộ"
 
-#: main.c:1193
+#: main.c:1197
 msgid "fatal error: internal error: segfault"
 msgstr "lỗi nghiêm trọng: lỗi nội bộ: lỗi phân đoạn"
 
-#: main.c:1205
+#: main.c:1209
 msgid "fatal error: internal error: stack overflow"
 msgstr "lỗi nghiêm trọng: lỗi nội bộ: tràn ngăn xếp"
 
-#: main.c:1264
+#: main.c:1268
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "không có fd (bộ mô tả tập tin) %d đã mở trước"
 
-#: main.c:1271
+#: main.c:1275
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "không thể mở trước “/dev/null” cho fd %d"
 
-#: main.c:1485
+#: main.c:1489
 msgid "empty argument to `-e/--source' ignored"
 msgstr "đối số rỗng cho tùy chọn “-e/--source” bị bỏ qua"
 
-#: main.c:1556
+#: main.c:1560
 msgid "-M ignored: MPFR/GMP support not compiled in"
 msgstr "-M bị bỏ qua: chưa biên dịch phần hỗ trợ MPFR/GMP"
 
-#: main.c:1577
+#: main.c:1581
 #, c-format
 msgid "%s: option `-W %s' unrecognized, ignored\n"
 msgstr "%s: tùy chọn “-W %s” không được nhận diện nên bị bỏ qua\n"
 
-#: main.c:1630
+#: main.c:1634
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: tùy chọn cần đến đối số “-- %c”\n"
@@ -3269,16 +3276,16 @@ msgstr "%s %s “%s”: không thể lấy cờ mô tả (fd): (fcntl F_GETFD: %
 msgid "%s %s `%s': could not set close-on-exec: (fcntl F_SETFD: %s)"
 msgstr "%s %s “%s”: không thể đặt “close-on-exec” (đóng một khi thực hiện): (fcntl F_SETFD: %s)"
 
-#: profile.c:71
+#: profile.c:91
 #, c-format
 msgid "could not open `%s' for writing: %s"
 msgstr "không thể mở “%s” để ghi: %s"
 
-#: profile.c:73
+#: profile.c:93
 msgid "sending profile to standard error"
 msgstr "đang gửi hồ sơ cho thiết bị lỗi chuẩn"
 
-#: profile.c:193
+#: profile.c:213
 #, c-format
 msgid ""
 "\t# %s rule(s)\n"
@@ -3287,7 +3294,7 @@ msgstr ""
 "\t# Quy tắc %s\n"
 "\n"
 
-#: profile.c:198
+#: profile.c:218
 #, c-format
 msgid ""
 "\t# Rule(s)\n"
@@ -3296,16 +3303,16 @@ msgstr ""
 "\t# Quy tắc\n"
 "\n"
 
-#: profile.c:272
+#: profile.c:292
 #, c-format
 msgid "internal error: %s with null vname"
 msgstr "lỗi nội bộ: %s với vname (tên biến?) vô giá trị"
 
-#: profile.c:538
+#: profile.c:558
 msgid "internal error: builtin with null fname"
 msgstr "lỗi nội bộ: phần dựng sẵn với fname là null"
 
-#: profile.c:958
+#: profile.c:978
 #, c-format
 msgid ""
 "\t# Loaded extensions (-l and/or @load)\n"
@@ -3314,12 +3321,12 @@ msgstr ""
 "\t# Các phần mở rộng được tải (-l và/hoặc @load)\n"
 "\n"
 
-#: profile.c:981
+#: profile.c:1001
 #, c-format
 msgid "\t# gawk profile, created %s\n"
 msgstr "\t# hồ sơ gawk, được tạo %s\n"
 
-#: profile.c:1535
+#: profile.c:1555
 #, c-format
 msgid ""
 "\n"
@@ -3328,7 +3335,7 @@ msgstr ""
 "\n"
 "\t# Danh sách các hàm theo thứ tự abc\n"
 
-#: profile.c:1573
+#: profile.c:1593
 #, c-format
 msgid "redir2str: unknown redirection type %d"
 msgstr "redir2str: không hiểu kiểu chuyển hướng %d"
