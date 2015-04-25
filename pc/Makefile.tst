@@ -250,8 +250,8 @@ check:	msg \
 	machine-msg-start machine-tests machine-msg-end \
 	charset-tests-all \
 	shlib-msg-start  shlib-tests     shlib-msg-end \
-	mpfr-msg-start   mpfr-tests      mpfr-msg-end
-	@$(MAKE) pass-fail || { $(MAKE) diffout; exit 1; }
+	mpfr-msg-start   mpfr-tests      mpfr-msg-end \
+	pass-fail
 
 basic:	$(BASIC_TESTS)
 
@@ -1231,7 +1231,7 @@ paramasfunc2::
 
 negtime::
 	@echo $@
-	@echo Expect negtime to fail with MinGW
+	@echo Expect negtime to fail with MinGW and DJGPP
 	@TZ=GMT AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 Gt-dummy:
