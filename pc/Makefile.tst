@@ -131,6 +131,7 @@ srcdir = .
 abs_srcdir = .
 abs_builddir = .
 top_srcdir = "$(srcdir)"/..
+abs_top_builddir = "$(top_srcdir)"
 
 # Get rid of core files when cleaning and generated .ok file
 CLEANFILES = core core.* fmtspcl.ok
@@ -249,8 +250,8 @@ check:	msg \
 	machine-msg-start machine-tests machine-msg-end \
 	charset-tests-all \
 	shlib-msg-start  shlib-tests     shlib-msg-end \
-	mpfr-msg-start   mpfr-tests      mpfr-msg-end
-	@$(MAKE) pass-fail || { $(MAKE) diffout; exit 1; }
+	mpfr-msg-start   mpfr-tests      mpfr-msg-end \
+	pass-fail
 
 basic:	$(BASIC_TESTS)
 
@@ -903,10 +904,10 @@ profile4:
 
 profile5:
 	@echo $@
-	@echo Expect profile5 to fail with MinGW due to 3 digits in %e output
 	@GAWK_NO_PP_RUN=1 $(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+#	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+	@-$(TESTOUTCMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile6:
 	@echo $@
@@ -934,7 +935,8 @@ exit:
 	@echo $@
 	@echo Expect exit to fail with MinGW due to null vs nul difference
 	@-AWK="$(AWKPROG)" "$(srcdir)"/$@.sh > _$@ 2>&1
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+#	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+	@-$(TESTOUTCMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 rri1::
 	@echo $@
@@ -1229,6 +1231,7 @@ paramasfunc2::
 
 negtime::
 	@echo $@
+	@echo Expect negtime to fail with MinGW and DJGPP
 	@TZ=GMT AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 Gt-dummy:
@@ -1636,9 +1639,9 @@ hex:
 
 hsprint:
 	@echo $@
-	@echo Expect hsprint to fail with MinGW due to 3 digits in %e output
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+#	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+	@-$(TESTOUTCMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 inputred:
 	@echo $@
@@ -2416,9 +2419,9 @@ patsplit:
 
 posix:
 	@echo $@
-	@echo Expect posix to fail with MinGW due to 3 digits in e+NNN exponent
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+#	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+	@-$(TESTOUTCMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 printfbad1:
 	@echo $@
@@ -2543,9 +2546,9 @@ double1:
 
 double2:
 	@echo $@
-	@echo Expect double2 to fail with MinGW due to 3 digits in e+NNN exponents
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+#	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+	@-$(TESTOUTCMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 intformat:
 	@echo $@
@@ -2564,9 +2567,9 @@ asorti:
 
 fmttest:
 	@echo $@
-	@echo Expect fmttest to fail with MinGW due to 3 digits in e+NNN exponents
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+#	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+	@-$(TESTOUTCMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 fnarydel:
 	@echo $@
@@ -2679,7 +2682,7 @@ diffout:
 		diff -c "$(srcdir)"/$${base}.ok  $$i ; \
 		fi ; \
 		fi ; \
-	done | more
+	done | less
 
 # convenient way to scan valgrind results for errors
 valgrind-scan:

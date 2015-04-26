@@ -138,11 +138,20 @@ r_force_number(NODE *n)
 		ptr++;
 	*cpend = save;
 finish:
-	if (errno == 0 && ptr == cpend) {
-		n->flags |= newflags;
-		n->flags |= NUMCUR;
+	if (errno == 0) {
+		if (ptr == cpend) {
+			n->flags |= newflags;
+			n->flags |= NUMCUR;
+		}
+		/* else keep the leading numeric value without updating flags */
 	} else {
 		errno = 0;
+		/*
+		 * N.B. For subnormal values, strtod may return the
+		 * floating-point representation while setting errno to ERANGE.
+		 * We force the numeric value to 0 in such cases.
+		 */
+		n->numbr = 0;
 	}
 
 	return n;

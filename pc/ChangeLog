@@ -1,3 +1,26 @@
+2015-04-22         Scott Deifik  <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Don't do 'make diffout' after pass-fail.
+	* negtime: Add expect failure for DJGPP.
+
+2015-04-17  Eli Zaretskii  <eliz@gnu.org>
+
+	* testoutcmp.awk (END): Attempt a series of massages on the actual
+	output to match it to the expected result, when the number of
+	exponent digits is different.  Also, edit "nul" into "null", to
+	account for the difference in the null device name.  This removes
+	"failures" due to Windows-specific issues that do not indicate
+	real problems in Gawk, just some non-portable assumptions about
+	the expected results.
+
+	* Makefile.tst (abs_top_builddir): Define.
+	(negtime): Mark this test as an expected failure with MinGW.
+	(profile5, exit, hsprint, posix, double2, fmttest): Remove the
+	"expect to fail" message for MinGW, and use the testoutcmp.awk
+	script to loosely compare actual output to expected one.
+
+	* Makefile.ext ($(SIMPLE_EXTENSIONS)): Really use -static-libgcc.
+
 2015-04-16         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.tst: Sync with mainline.
