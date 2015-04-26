@@ -6,13 +6,13 @@
 # Christer Andersson <klamm@comhem.se>, 2007.
 # Göran Uddeborg <goeran@uddeborg.se>, 2011, 2012, 2013, 2014, 2015.
 #
-# $Revision: 1.17 $
+# $Revision: 1.19 $
 msgid ""
 msgstr ""
-"Project-Id-Version: gawk 4.1.1c\n"
+"Project-Id-Version: gawk 4.1.1d\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2015-04-07 17:32+0300\n"
-"PO-Revision-Date: 2015-04-10 22:33+0200\n"
+"POT-Creation-Date: 2015-04-16 17:16+0300\n"
+"PO-Revision-Date: 2015-04-16 21:44+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -40,7 +40,7 @@ msgid "attempt to use scalar `%s' as an array"
 msgstr "försök att använda skalären ”%s” som en vektor"
 
 #: array.c:409 array.c:576 builtin.c:85 builtin.c:1606 builtin.c:1652
-#: builtin.c:1665 builtin.c:2092 builtin.c:2106 eval.c:1149 eval.c:1153
+#: builtin.c:1665 builtin.c:2106 builtin.c:2120 eval.c:1149 eval.c:1153
 #: eval.c:1558
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
@@ -745,202 +745,206 @@ msgstr "substr: startindex %g är bortom strängens slut"
 msgid "substr: length %g at start index %g exceeds length of first argument (%lu)"
 msgstr "substr: längden %g vid startindex %g överskrider det första argumentets längd (%lu)"
 
-#: builtin.c:1890
+#: builtin.c:1892
 msgid "strftime: format value in PROCINFO[\"strftime\"] has numeric type"
 msgstr "strftime: formatvärde i PROCINFO[\"strftime\"] har numerisk typ"
 
-#: builtin.c:1913
+#: builtin.c:1915
 msgid "strftime: received non-numeric second argument"
 msgstr "strftime: fick ett ickenumeriskt andra argument"
 
-#: builtin.c:1917
+#: builtin.c:1924
 msgid "strftime: second argument less than 0 or too big for time_t"
 msgstr "strftime: andra argumentet mindre än 0 eller för stort för time_t"
 
-#: builtin.c:1924
+#: builtin.c:1928
+msgid "strftime: second argument out of range for time_t"
+msgstr "strftime: andra argumentet utanför intervallet för för time_t"
+
+#: builtin.c:1935
 msgid "strftime: received non-string first argument"
 msgstr "strftime: fick ett första argument som inte är en sträng"
 
-#: builtin.c:1931
+#: builtin.c:1942
 msgid "strftime: received empty format string"
 msgstr "strftime: fick en tom formatsträng"
 
-#: builtin.c:1997
+#: builtin.c:2011
 msgid "mktime: received non-string argument"
 msgstr "mktime: fick ett argument som inte är en sträng"
 
-#: builtin.c:2014
+#: builtin.c:2028
 msgid "mktime: at least one of the values is out of the default range"
 msgstr "mktime: åtminstone ett av värdena är utanför standardintervallet"
 
-#: builtin.c:2049
+#: builtin.c:2063
 msgid "'system' function not allowed in sandbox mode"
 msgstr "funktionen \"system\" är inte tillåten i sandlådeläge"
 
-#: builtin.c:2054
+#: builtin.c:2068
 msgid "system: received non-string argument"
 msgstr "system: fick ett argument som inte är en sträng"
 
-#: builtin.c:2174
+#: builtin.c:2188
 #, c-format
 msgid "reference to uninitialized field `$%d'"
 msgstr "referens till icke initierat fält \"$%d\""
 
-#: builtin.c:2259
+#: builtin.c:2273
 msgid "tolower: received non-string argument"
 msgstr "tolower: fick ett argument som inte är en sträng"
 
-#: builtin.c:2290
+#: builtin.c:2304
 msgid "toupper: received non-string argument"
 msgstr "toupper: fick ett argument som inte är en sträng"
 
-#: builtin.c:2323 mpfr.c:679
+#: builtin.c:2337 mpfr.c:679
 msgid "atan2: received non-numeric first argument"
 msgstr "atan2: fick ett ickenumeriskt första argument"
 
-#: builtin.c:2325 mpfr.c:681
+#: builtin.c:2339 mpfr.c:681
 msgid "atan2: received non-numeric second argument"
 msgstr "atan2: fick ett ickenumeriskt andra argument"
 
-#: builtin.c:2344
+#: builtin.c:2358
 msgid "sin: received non-numeric argument"
 msgstr "sin: fick ett ickenumeriskt argument"
 
-#: builtin.c:2360
+#: builtin.c:2374
 msgid "cos: received non-numeric argument"
 msgstr "cos: fick ett ickenumeriskt argument"
 
-#: builtin.c:2413 mpfr.c:1176
+#: builtin.c:2427 mpfr.c:1176
 msgid "srand: received non-numeric argument"
 msgstr "srand: fick ett ickenumeriskt argument"
 
-#: builtin.c:2444
+#: builtin.c:2458
 msgid "match: third argument is not an array"
 msgstr "match: tredje argumentet är inte en vektor"
 
-#: builtin.c:2705
+#: builtin.c:2719
 #, c-format
 msgid "gensub: third argument `%.*s' treated as 1"
 msgstr "gensub: tredje argumentet ”%.*s” behandlat som 1"
 
-#: builtin.c:2720
+#: builtin.c:2734
 #, c-format
 msgid "gensub: third argument %g treated as 1"
 msgstr "gensub: tredje argumentet %g behandlat som 1"
 
-#: builtin.c:3018
+#: builtin.c:3032
 #, c-format
 msgid "%s: can be called indirectly only with two arguments"
 msgstr "%s: kan anropas indirekt endast med två argument"
 
-#: builtin.c:3108
+#: builtin.c:3122
 #, c-format
 msgid "indirect call to %s requires at least two arguments"
 msgstr "indirekt anrop till %s kräver åtminstone två argument"
 
-#: builtin.c:3160
+#: builtin.c:3174
 msgid "lshift: received non-numeric first argument"
 msgstr "lshift: fick ett ickenumeriskt första argument"
 
-#: builtin.c:3162
+#: builtin.c:3176
 msgid "lshift: received non-numeric second argument"
 msgstr "lshift: fick ett ickenumeriskt andra argument"
 
-#: builtin.c:3168
+#: builtin.c:3182
 #, c-format
 msgid "lshift(%f, %f): negative values will give strange results"
 msgstr "lshift(%f, %f): negativa värden kommer ge konstiga resultat"
 
-#: builtin.c:3170
+#: builtin.c:3184
 #, c-format
 msgid "lshift(%f, %f): fractional values will be truncated"
 msgstr "lshift(%f, %f): flyttalsvärden kommer huggas av"
 
-#: builtin.c:3172
+#: builtin.c:3186
 #, c-format
 msgid "lshift(%f, %f): too large shift value will give strange results"
 msgstr "lshift(%f, %f): för stort skiftvärde kommer ge konstiga resultat"
 
-#: builtin.c:3197
+#: builtin.c:3211
 msgid "rshift: received non-numeric first argument"
 msgstr "rshift: fick ett ickenumeriskt första argument"
 
-#: builtin.c:3199
+#: builtin.c:3213
 msgid "rshift: received non-numeric second argument"
 msgstr "rshift: fick ett ickenumeriskt andra argument"
 
-#: builtin.c:3205
+#: builtin.c:3219
 #, c-format
 msgid "rshift(%f, %f): negative values will give strange results"
 msgstr "rshift(%f, %f): negativa värden kommer ge konstiga resultat"
 
-#: builtin.c:3207
+#: builtin.c:3221
 #, c-format
 msgid "rshift(%f, %f): fractional values will be truncated"
 msgstr "rshift(%f, %f): flyttalsvärden kommer huggas av"
 
-#: builtin.c:3209
+#: builtin.c:3223
 #, c-format
 msgid "rshift(%f, %f): too large shift value will give strange results"
 msgstr "rshift(%f, %f): för stor skiftvärde kommer ge konstiga resultat"
 
-#: builtin.c:3234 mpfr.c:988
+#: builtin.c:3248 mpfr.c:988
 msgid "and: called with less than two arguments"
 msgstr "and: anropad med mindre än två argument"
 
-#: builtin.c:3239
+#: builtin.c:3253
 #, c-format
 msgid "and: argument %d is non-numeric"
 msgstr "and: argument %d är inte numeriskt"
 
-#: builtin.c:3243
+#: builtin.c:3257
 #, c-format
 msgid "and: argument %d negative value %g will give strange results"
 msgstr "and: argument %d med negativt värde %g kommer ge konstiga resultat"
 
-#: builtin.c:3266 mpfr.c:1020
+#: builtin.c:3280 mpfr.c:1020
 msgid "or: called with less than two arguments"
 msgstr "or: anropad med färre än två argument"
 
-#: builtin.c:3271
+#: builtin.c:3285
 #, c-format
 msgid "or: argument %d is non-numeric"
 msgstr "or: argument %d är inte numeriskt"
 
-#: builtin.c:3275
+#: builtin.c:3289
 #, c-format
 msgid "or: argument %d negative value %g will give strange results"
 msgstr "or: argument %d med negativt värde %g kommer ge konstiga resultat"
 
-#: builtin.c:3297 mpfr.c:1051
+#: builtin.c:3311 mpfr.c:1051
 msgid "xor: called with less than two arguments"
 msgstr "xor: anropad med färre än två argument"
 
-#: builtin.c:3303
+#: builtin.c:3317
 #, c-format
 msgid "xor: argument %d is non-numeric"
 msgstr "xor: argument %d är inte numeriskt"
 
-#: builtin.c:3307
+#: builtin.c:3321
 #, c-format
 msgid "xor: argument %d negative value %g will give strange results"
 msgstr "xor: argument %d med negativt värde %g kommer ge konstiga resultat"
 
-#: builtin.c:3332 mpfr.c:807
+#: builtin.c:3346 mpfr.c:807
 msgid "compl: received non-numeric argument"
 msgstr "compl: fick ett ickenumeriskt argument"
 
-#: builtin.c:3338
+#: builtin.c:3352
 #, c-format
 msgid "compl(%f): negative value will give strange results"
 msgstr "compl(%f): negativt värde kommer ge konstiga resultat"
 
-#: builtin.c:3340
+#: builtin.c:3354
 #, c-format
 msgid "compl(%f): fractional value will be truncated"
 msgstr "compl(%f): flyttalsvärde kommer huggas av"
 
-#: builtin.c:3509
+#: builtin.c:3523
 #, c-format
 msgid "dcgettext: `%s' is not a valid locale category"
 msgstr "dcgettext: \"%s\" är inte en giltig lokalkategori"
@@ -2668,12 +2672,12 @@ msgstr "ingen explicit stängning av röret \"%s\" tillhandahållen"
 msgid "no explicit close of file `%s' provided"
 msgstr "ingen explicit stängning av filen \"%s\" tillhandahållen"
 
-#: io.c:1317 io.c:1375 main.c:628 main.c:670
+#: io.c:1317 io.c:1375 main.c:632 main.c:674
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "fel vid skrivning till standard ut (%s)"
 
-#: io.c:1322 io.c:1381 main.c:630
+#: io.c:1322 io.c:1381 main.c:634
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "fel vid skrivning till standard fel (%s)"
@@ -2703,138 +2707,138 @@ msgstr "lokal port %s ogiltig i \"/inet\""
 msgid "remote host and port information (%s, %s) invalid"
 msgstr "ogiltig information (%s, %s) för fjärrvärd och fjärrport"
 
-#: io.c:1673
+#: io.c:1699
 msgid "TCP/IP communications are not supported"
 msgstr "TCP/IP-kommunikation stöds inte"
 
-#: io.c:1854
+#: io.c:1880
 #, c-format
 msgid "could not open `%s', mode `%s'"
 msgstr "kunde inte öppna \"%s\", läge \"%s\""
 
-#: io.c:1904
+#: io.c:1930
 #, c-format
 msgid "close of master pty failed (%s)"
 msgstr "stängning av huvudpty misslyckades (%s)"
 
-#: io.c:1906 io.c:2092 io.c:2293
+#: io.c:1932 io.c:2118 io.c:2319
 #, c-format
 msgid "close of stdout in child failed (%s)"
 msgstr "stängning av standard ut i barnet misslyckades (%s)"
 
-#: io.c:1909
+#: io.c:1935
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
 msgstr "flyttandet av slavpty till standard ut i barnet misslyckades (dup: %s)"
 
-#: io.c:1911 io.c:2097
+#: io.c:1937 io.c:2123
 #, c-format
 msgid "close of stdin in child failed (%s)"
 msgstr "stängning av standard in i barnet misslyckades (%s)"
 
-#: io.c:1914
+#: io.c:1940
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
 msgstr "flyttandet av slavpty till standard in i barnet misslyckades (dup: %s)"
 
-#: io.c:1916 io.c:1938
+#: io.c:1942 io.c:1964
 #, c-format
 msgid "close of slave pty failed (%s)"
 msgstr "stängning av slavpty misslyckades (%s)"
 
-#: io.c:2027 io.c:2095 io.c:2264 io.c:2296
+#: io.c:2053 io.c:2121 io.c:2290 io.c:2322
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
 msgstr "flyttande av rör till standard ut i barnet misslyckades (dup: %s)"
 
-#: io.c:2034 io.c:2100
+#: io.c:2060 io.c:2126
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
 msgstr "flyttande av rör till standard in i barnet misslyckades (dup: %s)"
 
-#: io.c:2060 io.c:2286
+#: io.c:2086 io.c:2312
 msgid "restoring stdout in parent process failed\n"
 msgstr "återställande av standard ut i föräldraprocessen misslyckades\n"
 
-#: io.c:2068
+#: io.c:2094
 msgid "restoring stdin in parent process failed\n"
 msgstr "återställande av standard in i föräldraprocessen misslyckades\n"
 
-#: io.c:2103 io.c:2298 io.c:2313
+#: io.c:2129 io.c:2324 io.c:2339
 #, c-format
 msgid "close of pipe failed (%s)"
 msgstr "stängning av röret misslyckades (%s)"
 
-#: io.c:2162
+#: io.c:2188
 msgid "`|&' not supported"
 msgstr "\"|&\" stöds inte"
 
-#: io.c:2249
+#: io.c:2275
 #, c-format
 msgid "cannot open pipe `%s' (%s)"
 msgstr "kan inte öppna röret \"%s\" (%s)"
 
-#: io.c:2307
+#: io.c:2333
 #, c-format
 msgid "cannot create child process for `%s' (fork: %s)"
 msgstr "kan inte skapa barnprocess för \"%s\" (fork: %s)"
 
-#: io.c:2734
+#: io.c:2760
 msgid "register_input_parser: received NULL pointer"
 msgstr "register_input_parser: mottog NULL-pekare"
 
-#: io.c:2762
+#: io.c:2788
 #, c-format
 msgid "input parser `%s' conflicts with previously installed input parser `%s'"
 msgstr "inmatningstolken ”%s” står i konflikt med tidigare installerad inmatningstolk ”%s”"
 
-#: io.c:2769
+#: io.c:2795
 #, c-format
 msgid "input parser `%s' failed to open `%s'"
 msgstr "inmatningstolken ”%s” misslyckades att öppna ”%s”"
 
-#: io.c:2789
+#: io.c:2815
 msgid "register_output_wrapper: received NULL pointer"
 msgstr "register_output_wrapper: mottog NULL-pekare"
 
-#: io.c:2817
+#: io.c:2843
 #, c-format
 msgid "output wrapper `%s' conflicts with previously installed output wrapper `%s'"
 msgstr "utmatningsomslag ”%s” står i konflikt med tidigare installerat utmatningsomslag ”%s”"
 
-#: io.c:2824
+#: io.c:2850
 #, c-format
 msgid "output wrapper `%s' failed to open `%s'"
 msgstr "utmatningsomslag ”%s” misslyckades att öppna ”%s”"
 
-#: io.c:2845
+#: io.c:2871
 msgid "register_output_processor: received NULL pointer"
 msgstr "register_output_processor: mottog NULL-pekare"
 
-#: io.c:2874
+#: io.c:2900
 #, c-format
 msgid "two-way processor `%s' conflicts with previously installed two-way processor `%s'"
 msgstr "tvåvägsprocessorn ”%s” står i konflikt med tidigare installerad tvåvägsprocessor ”%s”"
 
-#: io.c:2883
+#: io.c:2909
 #, c-format
 msgid "two way processor `%s' failed to open `%s'"
 msgstr "tvåvägsprocessorn ”%s” misslyckades att öppna ”%s”"
 
-#: io.c:3008
+#: io.c:3034
 #, c-format
 msgid "data file `%s' is empty"
 msgstr "datafilen \"%s\" är tom"
 
-#: io.c:3050 io.c:3058
+#: io.c:3076 io.c:3084
 msgid "could not allocate more input memory"
 msgstr "kunde inte allokera mer indataminne"
 
-#: io.c:3636
+#: io.c:3662
 msgid "multicharacter value of `RS' is a gawk extension"
 msgstr "flerteckensvärdet av \"RS\" är en gawk-utökning"
 
-#: io.c:3783
+#: io.c:3809
 msgid "IPv6 communication is not supported"
 msgstr "IPv6-kommunikation stöds inte"
 
@@ -2952,59 +2956,62 @@ msgstr "\t-i inkluderingsfil\t--include=inkluderingsfil\n"
 msgid "\t-l library\t\t--load=library\n"
 msgstr "\t-l bibliotek\t\t--load=bibliotek\n"
 
-#: main.c:586
+#. TRANSLATORS: the "fatal" and "invalid" here are literal
+#. values, they should not be translated. Thanks.
+#.
+#: main.c:590
 msgid "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
 msgstr "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
 
-#: main.c:587
+#: main.c:591
 msgid "\t-M\t\t\t--bignum\n"
 msgstr "\t-M\t\t\t--bignum\n"
 
-#: main.c:588
+#: main.c:592
 msgid "\t-N\t\t\t--use-lc-numeric\n"
 msgstr "\t-N\t\t\t--use-lc-numeric\n"
 
-#: main.c:589
+#: main.c:593
 msgid "\t-n\t\t\t--non-decimal-data\n"
 msgstr "\t-n\t\t\t--non-decimal-data\n"
 
-#: main.c:590
+#: main.c:594
 msgid "\t-o[file]\t\t--pretty-print[=file]\n"
 msgstr "\t-o[fil]\t\t\t--pretty-print[=fil]\n"
 
-#: main.c:591
+#: main.c:595
 msgid "\t-O\t\t\t--optimize\n"
 msgstr "\t-O\t\t\t--optimize\n"
 
-#: main.c:592
+#: main.c:596
 msgid "\t-p[file]\t\t--profile[=file]\n"
 msgstr "\t-p[fil]\t\t\t--profile[=fil]\n"
 
-#: main.c:593
+#: main.c:597
 msgid "\t-P\t\t\t--posix\n"
 msgstr "\t-P\t\t\t--posix\n"
 
-#: main.c:594
+#: main.c:598
 msgid "\t-r\t\t\t--re-interval\n"
 msgstr "\t-r\t\t\t--re-interval\n"
 
-#: main.c:595
+#: main.c:599
 msgid "\t-S\t\t\t--sandbox\n"
 msgstr "\t-S\t\t\t--sandbox\n"
 
-#: main.c:596
+#: main.c:600
 msgid "\t-t\t\t\t--lint-old\n"
 msgstr "\t-t\t\t\t--lint-old\n"
 
-#: main.c:597
+#: main.c:601
 msgid "\t-V\t\t\t--version\n"
 msgstr "\t-V\t\t\t--version\n"
 
-#: main.c:599
+#: main.c:603
 msgid "\t-W nostalgia\t\t--nostalgia\n"
 msgstr "\t-W nostalgia\t\t--nostalgia\n"
 
-#: main.c:602
+#: main.c:606
 msgid "\t-Y\t\t--parsedebug\n"
 msgstr "\t-Y\t\t--parsedebug\n"
 
@@ -3013,7 +3020,7 @@ msgstr "\t-Y\t\t--parsedebug\n"
 #. for this application.  Please add _another line_ with the
 #. address for translation bugs.
 #. no-wrap
-#: main.c:611
+#: main.c:615
 msgid ""
 "\n"
 "To report bugs, see node `Bugs' in `gawk.info', which is\n"
@@ -3027,7 +3034,7 @@ msgstr ""
 "Rapportera synpunkter på översättningen till <tp-sv@listor.tp-sv.se>.\n"
 "\n"
 
-#: main.c:615
+#: main.c:619
 msgid ""
 "gawk is a pattern scanning and processing language.\n"
 "By default it reads standard input and writes standard output.\n"
@@ -3037,7 +3044,7 @@ msgstr ""
 "Normalt läser det från standard in och skriver till standard ut.\n"
 "\n"
 
-#: main.c:619
+#: main.c:623
 msgid ""
 "Examples:\n"
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
@@ -3047,7 +3054,7 @@ msgstr ""
 "\tgawk '{ sum += $1 }; END { print sum }' fil\n"
 "\tgawk -F: '{ print $1 }' /etc/passwd\n"
 
-#: main.c:644
+#: main.c:648
 #, c-format
 msgid ""
 "Copyright (C) 1989, 1991-%d Free Software Foundation.\n"
@@ -3066,7 +3073,7 @@ msgstr ""
 "någon senare version.\n"
 "\n"
 
-#: main.c:652
+#: main.c:656
 msgid ""
 "This program is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
@@ -3080,7 +3087,7 @@ msgstr ""
 "General Public License för ytterligare information.\n"
 "\n"
 
-#: main.c:658
+#: main.c:662
 msgid ""
 "You should have received a copy of the GNU General Public License\n"
 "along with this program. If not, see http://www.gnu.org/licenses/.\n"
@@ -3088,82 +3095,82 @@ msgstr ""
 "Du bör ha fått en kopia av GNU General Public License tillsammans\n"
 "med detta program.  Om inte, se http://www.gnu.org/licenses/.\n"
 
-#: main.c:695
+#: main.c:699
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "-Ft sätter inte FS till tab i POSIX-awk"
 
-#: main.c:982
+#: main.c:986
 #, c-format
 msgid "unknown value for field spec: %d\n"
 msgstr "okänt värde till fältspecifikation: %d\n"
 
-#: main.c:1080
+#: main.c:1084
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
 "\n"
 msgstr "%s: Argumentet \"%s\" till \"-v\" är inte på formatet \"var=värde\"\n"
 
-#: main.c:1106
+#: main.c:1110
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "\"%s\" är inte ett giltigt variabelnamn"
 
-#: main.c:1109
+#: main.c:1113
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "\"%s\" är inte ett variabelnamn, letar efter filen \"%s=%s\""
 
-#: main.c:1113
+#: main.c:1117
 #, c-format
 msgid "cannot use gawk builtin `%s' as variable name"
 msgstr "kan inte använda gawks inbyggda \"%s\" som ett funktionsnamn"
 
-#: main.c:1118
+#: main.c:1122
 #, c-format
 msgid "cannot use function `%s' as variable name"
 msgstr "kan inte använda funktionen \"%s\" som variabelnamn"
 
-#: main.c:1171
+#: main.c:1175
 msgid "floating point exception"
 msgstr "flyttalsundantag"
 
-#: main.c:1178
+#: main.c:1182
 msgid "fatal error: internal error"
 msgstr "ödesdigert fel: internt fel"
 
-#: main.c:1193
+#: main.c:1197
 msgid "fatal error: internal error: segfault"
 msgstr "ödesdigert fel: internt fel: segmenteringsfel"
 
-#: main.c:1205
+#: main.c:1209
 msgid "fatal error: internal error: stack overflow"
 msgstr "ödesdigert fel: internt fel: stackspill"
 
-#: main.c:1264
+#: main.c:1268
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "ingen föröppnad fd %d"
 
-#: main.c:1271
+#: main.c:1275
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "kunde inte föröppna /dev/null för fd %d"
 
-#: main.c:1485
+#: main.c:1489
 msgid "empty argument to `-e/--source' ignored"
 msgstr "tomt argument till \"-e/--source\" ignorerat"
 
-#: main.c:1556
+#: main.c:1560
 msgid "-M ignored: MPFR/GMP support not compiled in"
 msgstr "-M ignoreras: MPFR/GMP-stöd är inte inkompilerat"
 
-#: main.c:1577
+#: main.c:1581
 #, c-format
 msgid "%s: option `-W %s' unrecognized, ignored\n"
 msgstr "%s: flaggan \"-W %s\" okänd, ignorerad\n"
 
-#: main.c:1630
+#: main.c:1634
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: flaggan kräver ett argument -- %c\n"
@@ -3264,16 +3271,16 @@ msgstr "%s %s \"%s\": kunde inte hämta fb-flaggor: (fcntl F_GETFD: %s)"
 msgid "%s %s `%s': could not set close-on-exec: (fcntl F_SETFD: %s)"
 msgstr "%s %s \"%s\": kunde inte sätta stäng-vid-exec (fcntl F_SETFD: %s)"
 
-#: profile.c:71
+#: profile.c:91
 #, c-format
 msgid "could not open `%s' for writing: %s"
 msgstr "kunde inte öppna \"%s\" för skrivning: %s"
 
-#: profile.c:73
+#: profile.c:93
 msgid "sending profile to standard error"
 msgstr "skickar profilen till standard fel"
 
-#: profile.c:193
+#: profile.c:213
 #, c-format
 msgid ""
 "\t# %s rule(s)\n"
@@ -3282,7 +3289,7 @@ msgstr ""
 "\t# %s-regler\n"
 "\n"
 
-#: profile.c:198
+#: profile.c:218
 #, c-format
 msgid ""
 "\t# Rule(s)\n"
@@ -3291,16 +3298,16 @@ msgstr ""
 "\t# Regel/regler\n"
 "\n"
 
-#: profile.c:272
+#: profile.c:292
 #, c-format
 msgid "internal error: %s with null vname"
 msgstr "internt fel: %s med null vname"
 
-#: profile.c:538
+#: profile.c:558
 msgid "internal error: builtin with null fname"
 msgstr "internt fel: inbyggd med tomt fname"
 
-#: profile.c:958
+#: profile.c:978
 #, c-format
 msgid ""
 "\t# Loaded extensions (-l and/or @load)\n"
@@ -3309,12 +3316,12 @@ msgstr ""
 "\t# Laddade utvidgningar (-l och/eller @load)\n"
 "\n"
 
-#: profile.c:981
+#: profile.c:1001
 #, c-format
 msgid "\t# gawk profile, created %s\n"
 msgstr "\t# gawkprofil, skapad %s\n"
 
-#: profile.c:1535
+#: profile.c:1555
 #, c-format
 msgid ""
 "\n"
@@ -3323,7 +3330,7 @@ msgstr ""
 "\n"
 "\t# Funktioner, listade alfabetiskt\n"
 
-#: profile.c:1573
+#: profile.c:1593
 #, c-format
 msgid "redir2str: unknown redirection type %d"
 msgstr "redir2str: okänd omdirigeringstyp %d"
