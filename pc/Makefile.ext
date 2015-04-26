@@ -47,7 +47,7 @@ time.$(SOEXT): time.c
 	gcc -DHAVE_GETSYSTEMTIMEASFILETIME -I.. -shared -gdwarf-2 -g3 -static-libgcc -o $@ time.c
 
 $(SIMPLE_EXTENSIONS):
-	gcc -I.. -shared -gdwarf-2 -g3 -o $@ $(@:.$(SOEXT)=.c)
+	gcc -I.. -shared -gdwarf-2 -g3 -static-libgcc -o $@ $(@:.$(SOEXT)=.c)
 
 $(ALL_EXTENSIONS): ../gawkapi.h ../gettext.h
 
