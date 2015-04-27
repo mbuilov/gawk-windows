@@ -15,6 +15,15 @@
 
 2015-04-16         Arnold D. Robbins     <arnold@skeeve.com>
 
+	Let parameter names shadow the names of gawk additional built-ins.
+	Make it actually work.
+
+	* awkgram.y (want_param_names): Now an enum, there are three states.
+	(grammar): Set states properly.
+	(yylex): Improve checking logic.
+
+2015-04-16         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* configure.ac: Updated by autoupdate.
 	* configure, aclocal.m4: Regenerated.
 	* io.c, main.c, profile.c: Removed use of RETSIGTYPE.
@@ -33,6 +42,14 @@
 	Unrelated:
 
 	* NEWS: Updated.
+
+2015-04-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Let parameter names shadow the names of gawk additional built-ins.
+
+	* awkgram.y (want_param_names): New variable.
+	(yylex): Check it before returning a built-in token.
+	(grammar): Set and clear it in the right places.
 
 2015-04-14         Arnold D. Robbins     <arnold@skeeve.com>
 

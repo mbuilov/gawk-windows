@@ -89,6 +89,11 @@ static void check_comment(void);
 static bool at_seen = false;
 static bool want_source = false;
 static bool want_regexp = false;	/* lexical scanning kludge */
+static enum {
+	FUNC_HEADER,
+	FUNC_BODY,
+	DONT_CHECK
+} want_param_names = DONT_CHECK;	/* ditto */
 static char *in_function;		/* parsing kludge */
 static int rule = 0;
 
@@ -246,6 +251,7 @@ rule
 	  {
 		in_function = NULL;
 		(void) mk_function($1, $2);
+		want_param_names = DONT_CHECK;
 		yyerrok;
 	  }
 	| '@' LEX_INCLUDE source statement_term
@@ -424,7 +430,7 @@ lex_builtin
 	;
 		
 function_prologue
-	: LEX_FUNCTION func_name '(' opt_param_list r_paren opt_nls
+	: LEX_FUNCTION func_name '(' { want_param_names = FUNC_HEADER; } opt_param_list r_paren opt_nls
 	  {
 		/*
 		 *  treat any comments between BOF and the first function
@@ -443,13 +449,14 @@ function_prologue
 		}
 		func_first = false;
 		$1->source_file = source;
-		if (install_function($2->lextok, $1, $4) < 0)
+		if (install_function($2->lextok, $1, $5) < 0)
 			YYABORT;
 		in_function = $2->lextok;
 		$2->lextok = NULL;
 		bcfree($2);
-		/* $4 already free'd in install_function */
+		/* $5 already free'd in install_function */
 		$$ = $1;
+		want_param_names = FUNC_BODY;
 	  }
 	;
 
@@ -3879,6 +3886,27 @@ retry:
 		if ((class == LEX_INCLUDE || class == LEX_LOAD || class == LEX_EVAL)
 				&& lasttok != '@')
 			goto out;
+
+		/* allow parameter names to shadow the names of gawk extension built-ins */
+		if ((tokentab[mid].flags & GAWKX) != 0) {
+			switch (want_param_names) {
+			case FUNC_HEADER:
+				/* in header, defining parameter names */
+				goto out;
+			case FUNC_BODY:
+				/* in body, name must be in symbol table for it to be a parameter */
+				if (lookup(tokstart) != NULL)
+					goto out;
+				/* else
+					fall through */
+			case DONT_CHECK:
+				/* regular code */
+				break;
+			default:
+				cant_happen();
+				break;
+			}
+		}
 
 		if (do_lint) {
 			if ((tokentab[mid].flags & GAWKX) != 0 && (warntab[mid] & GAWKX) == 0) {
