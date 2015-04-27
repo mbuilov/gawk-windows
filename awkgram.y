@@ -3246,8 +3246,8 @@ yylex(void)
 				pushback();
 				break;
 			case ']':
-				if (tok[-1] == '['
-				    || (tok[-2] == '[' && tok[-1] == '^'))
+				if ((tok[-1] == '[' && tok[-2] != '\\')
+				    || (tok[-2] == '[' && tok[-3] != '\\' && tok[-1] == '^'))
 					/* do nothing */;
 				else
 					in_brack--;
