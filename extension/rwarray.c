@@ -468,8 +468,8 @@ read_value(FILE *fp, awk_value_t *value)
 		len = ntohl(len);
 		value->val_type = AWK_STRING;
 		value->str_value.len = len;
-		value->str_value.str = gawk_malloc(len + 2);
-		memset(value->str_value.str, '\0', len + 2);
+		value->str_value.str = gawk_malloc(len + 1);
+		memset(value->str_value.str, '\0', len + 1);
 
 		if (fread(value->str_value.str, 1, len, fp) != (ssize_t) len) {
 			gawk_free(value->str_value.str);

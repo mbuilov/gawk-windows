@@ -1,3 +1,27 @@
+2015-04-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with grep.
+
+2015-04-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_strftime): For bad time_t values, return "".
+
+2015-04-16         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* node.c (r_force_number): If strtod sets errno, then force the
+	numeric value in node->numbr to zero. For subnormal values, strtod
+	sets errno but does not return zero, and we don't want to retain
+	those subnormal values.
+
+2015-04-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Let parameter names shadow the names of gawk additional built-ins.
+	Make it actually work.
+
+	* awkgram.y (want_param_names): Now an enum, there are three states.
+	(grammar): Set states properly.
+	(yylex): Improve checking logic.
+
 2015-04-16         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Updated by autoupdate.
@@ -19,6 +43,14 @@
 
 	* NEWS: Updated.
 
+2015-04-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Let parameter names shadow the names of gawk additional built-ins.
+
+	* awkgram.y (want_param_names): New variable.
+	(yylex): Check it before returning a built-in token.
+	(grammar): Set and clear it in the right places.
+
 2015-04-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_strftime): Restore checking for negative result and
@@ -31,6 +63,18 @@
 
 	Unrelated:
 	* builtin.c (call_sub): Fix for indirect gensub, 3 args now works.
+
+	Unrelated:
+
+	* builtin.c (do_sub): Improve some variable names for readability
+	and add / expand some comments.
+
+2015-04-14         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+		   Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_sub): Make computations smarter; initial len
+	to malloc, test for final amount after all matches done and
+	need to copy in the final part of the original string.
 
 2015-04-13         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -52,6 +96,15 @@
 
 	* Makefile.am (efence): Make this link again.
 	Thanks to Michal Jaegermann for pointing out the problem.
+
+2015-04-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awkgram.y (yyerror): Rationalize buffer size computations. Remove
+	old valgrind workarounds.
+	* debug.c (gprintf): Rationalize buffer size computations.
+	(serialize_subscript): Ditto.
+	* io.c (iop_finish): Rationalize buffer size computations.
+	* profile.c (pp_string): Correct space allocation computation.
 
 2015-04-08        John E. Malmberg       <wb8tyw@qsl.net>
 
@@ -425,6 +478,33 @@
 
 	* profile.c (pprint): Be sure to set ip2 in all paths
 	through the code. Thanks to GCC 4.9 for the warning.
+
+2014-12-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_sub): Do not waste a byte at the end of a string.
+
+2014-12-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (yyerror): Do not waste a byte at the end of a string.
+	* builtin.c (do_match): Ditto.
+	* command.y (append_statement): Ditto.
+	* debug.c (gprintf, serialize): Ditto.
+	* field.c (set_FIELDWIDTHS): Ditto.
+	* io.c.c (grow_iop_buffer): Ditto.
+	* profile.c (pp_string, pp_group3): Ditto.
+
+2014-12-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* array.c (concat_exp): Do not waste a byte at the end of a string.
+	* awkgram.y (common_exp): Ditto.
+	* builtin.c (do_substr): Ditto.
+	* eval.c (set_OFS): Ditto.
+	* field.c (rebuild_record): Ditto.
+	* gawkapi.h (r_make_string): Ditto.
+	* interpret.h (r_interpret): Ditto for Op_assign_concat.
+	* node.c (r_format_val, r_dupnode, make_str_node, str2wstr, wstr2str):
+	Ditto.
+	* re.c (make_regexp): Ditto.
 
 2014-12-20         Arnold D. Robbins     <arnold@skeeve.com>
 

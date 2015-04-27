@@ -2709,6 +2709,7 @@ init_awkpath(path_info *pi)
 			end++;
 		len = end - start;
 		if (len > 0) {
+			/* +2 is correct here; leave room for / */
 			emalloc(p, char *, len + 2, "init_awkpath");
 			memcpy(p, start, len);
 
@@ -3163,7 +3164,7 @@ iop_finish(IOBUF *iop)
 		lintwarn(_("data file `%s' is empty"), iop->public.name);
 	iop->errcode = errno = 0;
 	iop->count = iop->scanoff = 0;
-	emalloc(iop->buf, char *, iop->size += 2, "iop_finish");
+	emalloc(iop->buf, char *, iop->size += 1, "iop_finish");
 	iop->off = iop->buf;
 	iop->dataend = NULL;
 	iop->end = iop->buf + iop->size;
@@ -3195,10 +3196,10 @@ grow_iop_buffer(IOBUF *iop)
 	size_t newsize;
 
 	/*
-	 * Lop off original extra two bytes, double the size,
-	 * add them back.
+	 * Lop off original extra byte, double the size,
+	 * add it back.
 	 */
-	newsize = ((iop->size - 2) * 2) + 2;
+	newsize = ((iop->size - 1) * 2) + 1;
 
 	/* Check for overflow */
 	if (newsize <= iop->size)
@@ -3206,7 +3207,7 @@ grow_iop_buffer(IOBUF *iop)
 
 	/* Make sure there's room for a disk block */
 	if (newsize - valid < iop->readsize)
-		newsize += iop->readsize + 2;
+		newsize += iop->readsize + 1;
 
 	/* Check for overflow, again */
 	if (newsize <= iop->size)

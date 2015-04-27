@@ -235,7 +235,7 @@ do_bind_array(int nargs)
 	}
 
 	/* copy the array -- this is passed as the second argument to the functions */
-	emalloc(aname, char *, strlen(t->vname) + 2, "do_bind_array");
+	emalloc(aname, char *, 1 + strlen(symbol->vname) + 1, "do_bind_array");
 	aname[0] = '~';		/* any illegal character */
 	strcpy(& aname[1], symbol->vname);
 	td = make_array();

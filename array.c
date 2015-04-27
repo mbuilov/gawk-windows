@@ -414,7 +414,7 @@ concat_exp(int nargs, bool do_subsep)
 	}
 	len += (nargs - 1) * subseplen;
 
-	emalloc(str, char *, len + 2, "concat_exp");
+	emalloc(str, char *, len + 1, "concat_exp");
 
 	r = args_array[nargs];
 	memcpy(str, r->stptr, r->stlen);

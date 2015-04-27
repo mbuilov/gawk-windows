@@ -1,7 +1,8 @@
 # cmp replacement program for PC where the error messages aren't
-# exactly the same.  should run even on old awk
+# exactly the same, and neither are e+NNN exponents.
+# should run even on old awk
 #
-# Copyright (C) 2011 the Free Software Foundation, Inc.
+# Copyright (C) 2011-2015 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -35,6 +36,7 @@ END {
 		exit 1
 	}
 
+	status = 0;
 	for (i = 1; i <= FNR; i++) {
 		good = lines[0, i]
 		actual = lines[1, i]
@@ -46,12 +48,33 @@ END {
 			l--
 		if (substr(good, 1, l) == substr(actual, 1, l))
 			continue
+
+		# For exponents
+		actual1 = gensub(/( ?)([-+]?[0-9.][0-9.]?+e[-+])0([0-9][0-9])/, " \\1\\2\\3", "g", actual)
+		if (good == actual1)
+		    continue
+		actual1 = gensub(/([-+]?0)([0-9.]+e[-+])0([0-9][0-9])/, "\\10\\2\\3", "g", actual)
+		if (good == actual1)
+		    continue
+		actual1 = gensub(/( ?)([-+]?)([1-9.][0-9.]?+e[-+])0([0-9][0-9])/, "\\1\\20\\3\\4", "g", actual)
+		if (good == actual1)
+		    continue
+		actual1 = gensub(/([-+]?[0-9.]+e[-+])0([0-9][0-9])/, "\\1\\2 ", "g", actual)
+		if (good == actual1)
+		    continue
+		actual1 = gensub(/([-+]?[0-9.]+e[-+])0([0-9][0-9])/, "\\1\\2", "g", actual)
+		if (good == actual1)
+		    continue
+		# For exit test
+		actual1 = gensub(/([01]) nul/, "\\1 null", "g", actual)
+		if (good == actual1)
+		    continue
 		else {
-			printf("%s and %s are not equal\n", ARGV[1],
-				ARGV[2]) > "/dev/stderr"
-			exit 1
+			printf("-%s\n", good) > "/dev/stderr"
+			printf("+%s\n", actual) > "/dev/stderr"
+			status = 1
 		}
 	}
 
-	exit 0
+	exit status
 }

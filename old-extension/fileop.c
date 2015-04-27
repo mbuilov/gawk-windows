@@ -55,7 +55,7 @@ do_fread(int nargs)
 	force_number(arg);
 	rlen = get_number_ui(arg);
 
-	emalloc(rbuf, char *, rlen + 2, "do_fread");
+	emalloc(rbuf, char *, rlen + 1, "do_fread");
 	if ((count = fread(rbuf, 1, rlen, f->fp)) < rlen) {
 		if (! feof(f->fp))
 			update_ERRNO_int(errno);
