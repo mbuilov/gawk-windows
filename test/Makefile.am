@@ -768,6 +768,9 @@ EXTRA_DIST = \
 	regexpbrack.awk \
 	regexpbrack.in \
 	regexpbrack.ok \
+	regexpbrack2.awk \
+	regexpbrack2.in \
+	regexpbrack2.ok \
 	regexprange.awk \
 	regexprange.ok \
 	reginttrad.awk \
@@ -1026,7 +1029,7 @@ BASIC_TESTS = \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
 	pcntplus posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
 	prt1eval prtoeval \
-	rand range1 rebt8b1 redfilnm regeq regexpbrack regexprange regrange reindops \
+	rand range1 rebt8b1 redfilnm regeq regexpbrack regexpbrack2 regexprange regrange reindops \
 	reparse resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin sortempty sortglos splitargv splitarr splitdef \
