@@ -1359,7 +1359,7 @@ pp_string(const char *in_str, size_t len, int delim)
 		osiz *= 2; \
 	} ofre -= (l)
 
-	osiz = len + 3 + 2; 	/* initial size; 3 for delim + terminating null */
+	osiz = len + 3 + 1; 	/* initial size; 3 for delim + terminating null */
 	emalloc(obuf, char *, osiz, "pp_string");
 	obufout = obuf;
 	ofre = osiz - 1;
@@ -1371,10 +1371,9 @@ pp_string(const char *in_str, size_t len, int delim)
 			*obufout++ = '\\';
 			*obufout++ = delim;
 		} else if (*str == '\0') {
-			chksize(4);
-
 			*obufout++ = '\\';
 			*obufout++ = '0';
+			chksize(2);	/* need 2 more chars for this case */
 			*obufout++ = '0';
 			*obufout++ = '0';
 		} else if ((cp = strchr(escapes, *str)) != NULL) {
@@ -1384,7 +1383,7 @@ pp_string(const char *in_str, size_t len, int delim)
 		/* NB: Deliberate use of lower-case versions. */
 		} else if (isascii(*str) && isprint(*str)) {
 			*obufout++ = *str;
-			ofre += 1;
+			ofre += 1;	/* used 1 less than expected */
 		} else {
 			size_t len;
 
@@ -1607,7 +1606,7 @@ pp_group3(const char *s1, const char *s2, const char *s3)
 	len1 = strlen(s1);
 	len2 = strlen(s2);
 	len3 = strlen(s3);
-	l = len1 + len2 + len3 + 2;
+	l = len1 + len2 + len3 + 1;
 	emalloc(str, char *, l, "pp_group3");
 	s = str;
 	if (len1 > 0) {

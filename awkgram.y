@@ -89,6 +89,11 @@ static void check_comment(void);
 static bool at_seen = false;
 static bool want_source = false;
 static bool want_regexp = false;	/* lexical scanning kludge */
+static enum {
+	FUNC_HEADER,
+	FUNC_BODY,
+	DONT_CHECK
+} want_param_names = DONT_CHECK;	/* ditto */
 static char *in_function;		/* parsing kludge */
 static int rule = 0;
 
@@ -246,6 +251,7 @@ rule
 	  {
 		in_function = NULL;
 		(void) mk_function($1, $2);
+		want_param_names = DONT_CHECK;
 		yyerrok;
 	  }
 	| '@' LEX_INCLUDE source statement_term
@@ -424,7 +430,7 @@ lex_builtin
 	;
 		
 function_prologue
-	: LEX_FUNCTION func_name '(' opt_param_list r_paren opt_nls
+	: LEX_FUNCTION func_name '(' { want_param_names = FUNC_HEADER; } opt_param_list r_paren opt_nls
 	  {
 		/*
 		 *  treat any comments between BOF and the first function
@@ -443,13 +449,14 @@ function_prologue
 		}
 		func_first = false;
 		$1->source_file = source;
-		if (install_function($2->lextok, $1, $4) < 0)
+		if (install_function($2->lextok, $1, $5) < 0)
 			YYABORT;
 		in_function = $2->lextok;
 		$2->lextok = NULL;
 		bcfree($2);
-		/* $4 already free'd in install_function */
+		/* $5 already free'd in install_function */
 		$$ = $1;
+		want_param_names = FUNC_BODY;
 	  }
 	;
 
@@ -1539,7 +1546,7 @@ common_exp
 			n1 = force_string(n1);
 			n2 = force_string(n2);
 			nlen = n1->stlen + n2->stlen;
-			erealloc(n1->stptr, char *, nlen + 2, "constant fold");
+			erealloc(n1->stptr, char *, nlen + 1, "constant fold");
 			memcpy(n1->stptr + n1->stlen, n2->stptr, n2->stlen);
 			n1->stlen = nlen;
 			n1->stptr[nlen] = '\0';
@@ -2275,7 +2282,6 @@ yyerror(const char *m, ...)
 	char *buf;
 	int count;
 	static char end_of_file_line[] = "(END OF FILE)";
-	char save;
 
 	print_included_from();
 
@@ -2303,24 +2309,15 @@ yyerror(const char *m, ...)
 		bp = thisline + strlen(thisline);
 	}
 
-	/*
-	 * Saving and restoring *bp keeps valgrind happy,
-	 * since the guts of glibc uses strlen, even though
-	 * we're passing an explict precision. Sigh.
-	 *
-	 * 8/2003: We may not need this anymore.
-	 */
-	save = *bp;
-	*bp = '\0';
-
 	msg("%.*s", (int) (bp - thisline), thisline);
 
-	*bp = save;
 	va_start(args, m);
 	if (mesg == NULL)
 		mesg = m;
 
-	count = (bp - thisline) + strlen(mesg) + 2 + 1;
+	count = strlen(mesg) + 1;
+	if (lexptr != NULL)
+		count += (lexeme - thisline) + 2;
 	emalloc(buf, char *, count, "yyerror");
 
 	bp = buf;
@@ -3318,21 +3315,24 @@ yylex(void)
 collect_regexp:
 	if (want_regexp) {
 		int in_brack = 0;	/* count brackets, [[:alnum:]] allowed */
+		int b_index = -1;
+		int cur_index = 0;
+
 		/*
-		 * Counting brackets is non-trivial. [[] is ok,
-		 * and so is [\]], with a point being that /[/]/ as a regexp
-		 * constant has to work.
+		 * Here is what's ok with brackets:
 		 *
-		 * Do not count [ or ] if either one is preceded by a \.
-		 * A `[' should be counted if
-		 *  a) it is the first one so far (in_brack == 0)
-		 *  b) it is the `[' in `[:'
-		 * A ']' should be counted if not preceded by a \, since
-		 * it is either closing `:]' or just a plain list.
-		 * According to POSIX, []] is how you put a ] into a set.
-		 * Try to handle that too.
+		 * [[] [^[] []] [^]] [.../...]
+		 * [...\[...] [...\]...] [...\/...]
+		 * 
+		 * (Remember that all of the above are inside /.../)
 		 *
-		 * The code for \ handles \[ and \].
+		 * The code for \ handles \[, \] and \/.
+		 *
+		 * Otherwise, track the first open [ position, and if
+		 * an embedded [ or ] occurs, allow it to pass through
+		 * if it's right after the first [ or after [^.
+		 *
+		 * Whew!
 		 */
 
 		want_regexp = false;
@@ -3342,17 +3342,21 @@ collect_regexp:
 
 			if (gawk_mb_cur_max == 1 || nextc_is_1stbyte) switch (c) {
 			case '[':
-				/* one day check for `.' and `=' too */
-				if (nextc(false) == ':' || in_brack == 0)
-					in_brack++;
-				pushback();
-				break;
 			case ']':
-				if (tok[-1] == '['
-				    || (tok[-2] == '[' && tok[-1] == '^'))
-					/* do nothing */;
-				else
+				cur_index = tok - tokstart;
+				if (in_brack > 0
+				    && (cur_index == b_index + 1 
+					|| (cur_index == b_index + 2 && tok[-1] == '^')))
+					; /* do nothing */
+				else if (c == '[') {
+					in_brack++;
+					if (in_brack == 1)
+						b_index = tok - tokstart;
+				} else {
 					in_brack--;
+					if (in_brack == 0)
+						b_index = -1;
+				}
 				break;
 			case '\\':
 				if ((c = nextc(false)) == END_FILE) {
@@ -4001,6 +4005,27 @@ retry:
 		if ((class == LEX_INCLUDE || class == LEX_LOAD || class == LEX_EVAL)
 				&& lasttok != '@')
 			goto out;
+
+		/* allow parameter names to shadow the names of gawk extension built-ins */
+		if ((tokentab[mid].flags & GAWKX) != 0) {
+			switch (want_param_names) {
+			case FUNC_HEADER:
+				/* in header, defining parameter names */
+				goto out;
+			case FUNC_BODY:
+				/* in body, name must be in symbol table for it to be a parameter */
+				if (lookup(tokstart) != NULL)
+					goto out;
+				/* else
+					fall through */
+			case DONT_CHECK:
+				/* regular code */
+				break;
+			default:
+				cant_happen();
+				break;
+			}
+		}
 
 		if (do_lint) {
 			if ((tokentab[mid].flags & GAWKX) != 0 && (warntab[mid] & GAWKX) == 0) {

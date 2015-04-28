@@ -709,7 +709,7 @@ mod:
 			if (t1 != t2 && t1->valref == 1 && (t1->flags & MPFN) == 0) {
 				size_t nlen = t1->stlen + t2->stlen;
 
-				erealloc(t1->stptr, char *, nlen + 2, "r_interpret");
+				erealloc(t1->stptr, char *, nlen + 1, "r_interpret");
 				memcpy(t1->stptr + t1->stlen, t2->stptr, t2->stlen);
 				t1->stlen = nlen;
 				t1->stptr[nlen] = '\0';
@@ -719,7 +719,7 @@ mod:
 					size_t wlen = t1->wstlen + t2->wstlen;
 
 					erealloc(t1->wstptr, wchar_t *,
-							sizeof(wchar_t) * (wlen + 2), "r_interpret");
+							sizeof(wchar_t) * (wlen + 1), "r_interpret");
 					memcpy(t1->wstptr + t1->wstlen, t2->wstptr, t2->wstlen);
 					t1->wstlen = wlen;
 					t1->wstptr[wlen] = L'\0';
@@ -730,9 +730,10 @@ mod:
 				size_t nlen = t1->stlen + t2->stlen;  
 				char *p;
 
-				emalloc(p, char *, nlen + 2, "r_interpret");
+				emalloc(p, char *, nlen + 1, "r_interpret");
 				memcpy(p, t1->stptr, t1->stlen);
 				memcpy(p + t1->stlen, t2->stptr, t2->stlen);
+				/* N.B. No NUL-termination required, since make_str_node will do it. */
 				unref(*lhs);
 				t1 = *lhs = make_str_node(p, nlen, ALREADY_MALLOCED); 
 			}

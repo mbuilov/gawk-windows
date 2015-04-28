@@ -86,6 +86,13 @@
 	(errno_la_SOURCES, errno_la_LDFLAGS, errno_la_LIBADD): Remove.
 	(EXTRA_DIST): Remove errlist.h.
 
+2014-12-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readfile.c (read_file_to_buffer): Do not waste a byte at the end of
+	a string.
+	* rwarray.c (read_value): Ditto.
+	* rwarray0.c (read_value): Ditto.
+
 2014-11-23         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* inplace.c (do_inplace_begin): Jump through hoops to silence

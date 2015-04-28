@@ -828,9 +828,9 @@ set_OFS()
 	new_ofs_len = OFS_node->var_value->stlen;
 
 	if (OFS == NULL)
-		emalloc(OFS, char *, new_ofs_len + 2, "set_OFS");
+		emalloc(OFS, char *, new_ofs_len + 1, "set_OFS");
 	else if (OFSlen < new_ofs_len)
-		erealloc(OFS, char *, new_ofs_len + 2, "set_OFS");
+		erealloc(OFS, char *, new_ofs_len + 1, "set_OFS");
 
 	memcpy(OFS, OFS_node->var_value->stptr, OFS_node->var_value->stlen);
 	OFSlen = new_ofs_len;
@@ -1329,7 +1329,13 @@ setup_frame(INSTRUCTION *pc)
 
 		if (m->type == Node_param_list)
 			m = GET_PARAM(m->param_cnt);
-			
+
+		/* $0 needs to be passed by value to a function */
+		if (m == fields_arr[0]) {
+			DEREF(m);
+			m = dupnode(m);
+		}
+
 		switch (m->type) {
 		case Node_var_new:
 		case Node_var_array:
