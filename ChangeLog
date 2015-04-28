@@ -1,3 +1,20 @@
+2015-04-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (yylex): Rework the bracket handling from zero.
+	Thanks to Michal Jaegermann for yet another test case.
+
+	Unrelated:
+
+	* eval.c (setup_frame): Restore call-by-value for $0. This was
+	necessitated by the changes on 2014-11-11 for conserving
+	memory use. Thanks to Andrew Schorr for the report and isolating
+	the cause of the problem.
+
+2015-04-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (yylex): Make change of Jan 7 for parsing regexps
+	work better. Thanks to Nelson Beebe.
+
 2015-04-26         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with grep.

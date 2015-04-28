@@ -411,6 +411,9 @@ EXTRA_DIST = \
 	icasers.awk \
 	icasers.in \
 	icasers.ok \
+	inpref.awk \
+	inpref.in \
+	inpref.ok \
 	id.awk \
 	id.ok \
 	igncdym.awk \
@@ -783,6 +786,9 @@ EXTRA_DIST = \
 	regexpbrack.awk \
 	regexpbrack.in \
 	regexpbrack.ok \
+	regexpbrack2.awk \
+	regexpbrack2.in \
+	regexpbrack2.ok \
 	regexprange.awk \
 	regexprange.ok \
 	reginttrad.awk \
@@ -1034,7 +1040,7 @@ BASIC_TESTS = \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
 	gsubtst7 gsubtst8 \
 	hex hsprint \
-	inputred intest intprec iobug1 \
+	inpref inputred intest intprec iobug1 \
 	leaddig leadnl litoct longsub longwrds \
 	manglprm math membug1 messages minusstr mmap8k mtchi18n \
 	nasty nasty2 negexp negrange nested nfldstr nfloop nfneg nfset nlfldsep \
@@ -1045,7 +1051,7 @@ BASIC_TESTS = \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
 	pcntplus posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
 	prt1eval prtoeval \
-	rand randtest range1 rebt8b1 redfilnm regeq regexpbrack regexprange regrange reindops \
+	rand randtest range1 rebt8b1 redfilnm regeq regexpbrack regexpbrack2 regexprange regrange reindops \
 	reparse resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin sortempty sortglos splitargv splitarr splitdef \

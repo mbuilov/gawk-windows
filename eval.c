@@ -1328,7 +1328,13 @@ setup_frame(INSTRUCTION *pc)
 
 		if (m->type == Node_param_list)
 			m = GET_PARAM(m->param_cnt);
-			
+
+		/* $0 needs to be passed by value to a function */
+		if (m == fields_arr[0]) {
+			DEREF(m);
+			m = dupnode(m);
+		}
+
 		switch (m->type) {
 		case Node_var_new:
 		case Node_var_array:
