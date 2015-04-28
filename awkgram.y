@@ -516,12 +516,7 @@ hard_regexp
 			YYABORT;
 		  }
 		  $$ = $1;
-#if 0
-		  /* Don't set this, on purpose */
-		  /* $$->opcode = Op_match_rec; */
-#else
 		  $$->opcode = Op_push_re;
-#endif
 		  $$->memory = n;
 		}
 
