@@ -411,6 +411,9 @@ EXTRA_DIST = \
 	icasers.awk \
 	icasers.in \
 	icasers.ok \
+	inpref.awk \
+	inpref.in \
+	inpref.ok \
 	id.awk \
 	id.ok \
 	igncdym.awk \
@@ -1037,7 +1040,7 @@ BASIC_TESTS = \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
 	gsubtst7 gsubtst8 \
 	hex hsprint \
-	inputred intest intprec iobug1 \
+	inpref inputred intest intprec iobug1 \
 	leaddig leadnl litoct longsub longwrds \
 	manglprm math membug1 messages minusstr mmap8k mtchi18n \
 	nasty nasty2 negexp negrange nested nfldstr nfloop nfneg nfset nlfldsep \

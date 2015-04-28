@@ -3216,21 +3216,24 @@ yylex(void)
 	thisline = NULL;
 	if (want_regexp) {
 		int in_brack = 0;	/* count brackets, [[:alnum:]] allowed */
+		int b_index = -1;
+		int cur_index = 0;
+
 		/*
-		 * Counting brackets is non-trivial. [[] is ok,
-		 * and so is [\]], with a point being that /[/]/ as a regexp
-		 * constant has to work.
+		 * Here is what's ok with brackets:
 		 *
-		 * Do not count [ or ] if either one is preceded by a \.
-		 * A `[' should be counted if
-		 *  a) it is the first one so far (in_brack == 0)
-		 *  b) it is the `[' in `[:'
-		 * A ']' should be counted if not preceded by a \, since
-		 * it is either closing `:]' or just a plain list.
-		 * According to POSIX, []] is how you put a ] into a set.
-		 * Try to handle that too.
+		 * [[] [^[] []] [^]] [.../...]
+		 * [...\[...] [...\]...] [...\/...]
+		 * 
+		 * (Remember that all of the above are inside /.../)
 		 *
-		 * The code for \ handles \[ and \].
+		 * The code for \ handles \[, \] and \/.
+		 *
+		 * Otherwise, track the first open [ position, and if
+		 * an embedded [ or ] occurs, allow it to pass through
+		 * if it's right after the first [ or after [^.
+		 *
+		 * Whew!
 		 */
 
 		want_regexp = false;
@@ -3240,17 +3243,21 @@ yylex(void)
 
 			if (gawk_mb_cur_max == 1 || nextc_is_1stbyte) switch (c) {
 			case '[':
-				/* one day check for `.' and `=' too */
-				if (nextc(false) == ':' || in_brack == 0)
-					in_brack++;
-				pushback();
-				break;
 			case ']':
-				if ((tok[-1] == '[' && tok[-2] != '\\')
-				    || (tok[-2] == '[' && tok[-3] != '\\' && tok[-1] == '^'))
-					/* do nothing */;
-				else
+				cur_index = tok - tokstart;
+				if (in_brack > 0
+				    && (cur_index == b_index + 1 
+					|| (cur_index == b_index + 2 && tok[-1] == '^')))
+					; /* do nothing */
+				else if (c == '[') {
+					in_brack++;
+					if (in_brack == 1)
+						b_index = tok - tokstart;
+				} else {
 					in_brack--;
+					if (in_brack == 0)
+						b_index = -1;
+				}
 				break;
 			case '\\':
 				if ((c = nextc(false)) == END_FILE) {
