@@ -1281,9 +1281,12 @@ param_list
 	  }
 	| param_list comma NAME
 	  {
-		$3->param_count =  $1->lasti->param_count + 1;
-		$$ = list_append($1, $3);
-		yyerrok;
+		if ($1 != NULL && $3 != NULL) {
+			$3->param_count =  $1->lasti->param_count + 1;
+			$$ = list_append($1, $3);
+			yyerrok;
+		} else
+			$$ = NULL;
 	  }
 	| error
 	  { $$ = NULL; }
