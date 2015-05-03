@@ -1281,9 +1281,12 @@ param_list
 	  }
 	| param_list comma NAME
 	  {
-		$3->param_count =  $1->lasti->param_count + 1;
-		$$ = list_append($1, $3);
-		yyerrok;
+		if ($1 != NULL && $3 != NULL) {
+			$3->param_count =  $1->lasti->param_count + 1;
+			$$ = list_append($1, $3);
+			yyerrok;
+		} else
+			$$ = NULL;
 	  }
 	| error
 	  { $$ = NULL; }
@@ -3222,7 +3225,7 @@ yylex(void)
 		/*
 		 * Here is what's ok with brackets:
 		 *
-		 * [[] [^[] []] [^]] [.../...]
+		 * [..[..] []] [^]] [.../...]
 		 * [...\[...] [...\]...] [...\/...]
 		 * 
 		 * (Remember that all of the above are inside /.../)
@@ -3230,7 +3233,7 @@ yylex(void)
 		 * The code for \ handles \[, \] and \/.
 		 *
 		 * Otherwise, track the first open [ position, and if
-		 * an embedded [ or ] occurs, allow it to pass through
+		 * an embedded ] occurs, allow it to pass through
 		 * if it's right after the first [ or after [^.
 		 *
 		 * Whew!
@@ -3241,19 +3244,21 @@ yylex(void)
 		for (;;) {
 			c = nextc(false);
 
+			cur_index = tok - tokstart;
 			if (gawk_mb_cur_max == 1 || nextc_is_1stbyte) switch (c) {
 			case '[':
+				if (nextc(false) == ':' || in_brack == 0)
+					in_brack++;
+				pushback();
+				if (in_brack == 1)
+					b_index = tok - tokstart;
+				break;
 			case ']':
-				cur_index = tok - tokstart;
 				if (in_brack > 0
 				    && (cur_index == b_index + 1 
 					|| (cur_index == b_index + 2 && tok[-1] == '^')))
 					; /* do nothing */
-				else if (c == '[') {
-					in_brack++;
-					if (in_brack == 1)
-						b_index = tok - tokstart;
-				} else {
+				else {
 					in_brack--;
 					if (in_brack == 0)
 						b_index = -1;
