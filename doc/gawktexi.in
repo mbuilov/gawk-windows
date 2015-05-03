@@ -557,6 +557,7 @@ particular records in a file and perform operations upon them.
 * Computed Regexps::                    Using Dynamic Regexps.
 * GNU Regexp Operators::                Operators specific to GNU software.
 * Case-sensitivity::                    How to do case-insensitive matching.
+* Strong Regexp Constants::             Strongly typed regexp constants.
 * Regexp Summary::                      Regular expressions summary.
 * Records::                             Controlling how data is split into
                                         records.
@@ -4910,6 +4911,7 @@ regular expressions work, we present more complicated instances.
 * Computed Regexps::            Using Dynamic Regexps.
 * GNU Regexp Operators::        Operators specific to GNU software.
 * Case-sensitivity::            How to do case-insensitive matching.
+* Strong Regexp Constants::     Strongly typed regexp constants.
 * Regexp Summary::              Regular expressions summary.
 @end menu
 
@@ -6030,6 +6032,85 @@ The value of @code{IGNORECASE} has no effect if @command{gawk} is in
 compatibility mode (@pxref{Options}).
 Case is always significant in compatibility mode.
 
+@node Strong Regexp Constants
+@section Strongly Typed Regexp Constants
+
+This @value{SECTION} describes a @command{gawk}-specific feature.
+
+Regexp constants (@code{/@dots{}/}) hold a strange position in the
+@command{awk} language. In most contexts, they act like an expression:
+@samp{$0 ~ /@dots{}/}. In other contexts, they denote only a regexp to
+be matched. In no case are they really a ``first class citizen'' of the
+language. That is, you cannot define a scalar variable whose type is
+``regexp'' in the same sense that you can define a variable to be a
+number or a string:
+
+@example
+num = 42        @ii{Numeric variable}
+str = "hi"      @ii{String variable}
+re = /foo/      @ii{Wrong!} re @ii{is the result of} $0 ~ /foo/
+@end example
+
+For a number of more advanced use cases (described later on in this
+@value{DOCUMENT}), it would be nice to have regexp constants that
+are @dfn{strongly typed}; in other words, that denote a regexp useful
+for matching, and not an expression.
+
+@command{gawk} provides this feature.  A strongly typed regexp constant
+looks almost like a regular regexp constant, except that it is preceded
+by an @samp{@@} sign:
+
+@example
+re = @@/foo/     @ii{Regexp variable}
+@end example
+
+Strongly typed regexp constants @emph{cannot} be used eveywhere that a
+regular regexp constant can, because this would make the language even more
+confusing.  Instead, you may use them only in certain contexts:
+
+@itemize @bullet
+@item
+On the righthand side of the @samp{~} and @samp{!~} operators: @samp{some_var ~ @@/foo/}
+(@pxref{Regexp Usage}).
+
+@item
+In the @code{case} part of a @code{switch} statement
+(@pxref{Switch Statement}).
+
+@item
+As an argument to one of the built-in functions that accept regexp constants:
+@code{gensub()},
+@code{gsub()},
+@code{match()},
+@code{patsplit()},
+@code{split()},
+and
+@code{sub()}
+(@pxref{String Functions}).
+
+@item
+As a parameter in a call to a user-defined function.
+(@pxref{User-defined}).
+
+@item
+On the righthand side of an assignment to a variable: @samp{some_var = @@/foo/}.
+In this case, the type of @code{some_var} is regexp. Additionally, @code{some_var}
+can be used with @samp{~} and @code{!~}, passed to one of the built-in functions
+listed above, or passed as a parameter to a user-defined function.
+@end itemize
+
+You may use the @code{typeof()} built-in function
+(@pxref{Type Functions})
+to determine if a variable or function parameter is
+a regexp variable.
+
+The true power of this feature comes from the ability to create variables that
+have regexp type. Such variables can be passed on to user-defined functions,
+without the confusing aspects of computed regular expressions created from
+strings or string constants. They may also be passed through indirect function
+calls (@pxref{Indirect Calls})
+onto the built-in functions that accept regexp constants.
+
 @node Regexp Summary
 @section Summary
 
@@ -6072,6 +6153,11 @@ treated as regular expressions).
 @command{gawk}'s @code{IGNORECASE} variable lets you control the
 case sensitivity of regexp matching.  In other @command{awk}
 versions, use @code{tolower()} or @code{toupper()}.
+
+@item
+Strongly typed regexp constants (@code{@@/.../}) enable
+certain advanced use cases to be described later on in the
+@value{DOCUMENT}.
 
 @end itemize
 
@@ -18505,16 +18591,41 @@ results of the @code{compl()}, @code{lshift()}, and @code{rshift()} functions.
 @node Type Functions
 @subsection Getting Type Information
 
-@command{gawk} provides a single function that lets you distinguish
-an array from a scalar variable.  This is necessary for writing code
+@command{gawk} provides two functions that lets you distinguish
+the type of a variable.
+This is necessary for writing code
 that traverses every element of an array of arrays
-(@pxref{Arrays of Arrays}).
+(@pxref{Arrays of Arrays}), and in other contexts.
 
 @table @code
 @cindexgawkfunc{isarray}
 @cindex scalar or array
 @item isarray(@var{x})
 Return a true value if @var{x} is an array. Otherwise, return false.
+
+@cindexgawkfunc{typeof}
+@cindex variable type
+@cindex type, of variable
+@item typeof(@var{x})
+Return one of the following strings, depending upon the type of @var{x}:
+
+@c nested table
+@table @code
+@item "array"
+@var{x} is an array.
+
+@item "regexp"
+@var{x} is a strongly typed regexp (@pxref{Strong Regexp Constants}).
+
+@item "scalar_n"
+@var{x} is a number.
+
+@item "scalar_s"
+@var{x} is a string.
+
+@item "untyped"
+@var{x} has not yet been given a type.
+@end table
 @end table
 
 @code{isarray()} is meant for use in two circumstances. The first is when
@@ -18531,6 +18642,14 @@ due to the way @command{gawk} works, if you pass the name of a variable
 that has not been previously used to @code{isarray()}, @command{gawk}
 ends up turning it into a scalar.
 @end quotation
+
+The @code{typeof()} function is general; it allows you to determine
+if a variable or function parameter is a scalar, an array, or a strongly
+typed regexp.
+
+@code{isarray()} is deprecated; you should use @code{typeof()} instead.
+You should replace any existing uses of @samp{isarray(var)} in your
+code with @samp{typeof(var) == "array"}.
 
 @node I18N Functions
 @subsection String-Translation Functions
