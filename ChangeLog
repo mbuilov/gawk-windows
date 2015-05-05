@@ -1,3 +1,13 @@
+2015-05-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Make profiling for hard regexes work.
+
+	* profile.c (pp_string_or_hard_regex): Renamed from pp_string.
+	Add bool param for hard regex and add @ if so.
+	(pp_string): New function, calls pp_string_or_hard_regex.
+	(pp_hard_regex): New function, calls pp_string_or_hard_regex.
+	(pprint): Adjust to print a hard regex correctly.
+
 2015-05-01         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y: Make sure values are not null in param list.
