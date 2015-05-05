@@ -5761,11 +5761,12 @@ collect_regexp:
 			cur_index = tok - tokstart;
 			if (gawk_mb_cur_max == 1 || nextc_is_1stbyte) switch (c) {
 			case '[':
-				if (nextc(false) == ':' || in_brack == 0)
+				if (nextc(false) == ':' || in_brack == 0) {
 					in_brack++;
+					if (in_brack == 1)
+						b_index = tok - tokstart;
+				}
 				pushback();
-				if (in_brack == 1)
-					b_index = tok - tokstart;
 				break;
 			case ']':
 				if (in_brack > 0
