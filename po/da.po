@@ -3,15 +3,15 @@
 # This file is distributed under the same license as the gawk package.
 # Martin Sjögren <md9ms@mdstud.chalmers.se>, 2001-2002.
 # Christer Andersson <klamm@comhem.se>, 2007.
-# Keld Simonsen <keld@keldix.com>, 2002,2011,2012.
+# Keld Simonsen <keld@keldix.com>, 2002,2011,2012,2015.
 # Review by Torben Grøn Helligsø <torben-dansk@thel.dk>, 2011.
 # Review by Ask Hjorth Larsen <asklarsen@gmail.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.1.1d\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2015-04-29 08:36+0300\n"
-"PO-Revision-Date: 2015-04-26 12:37+0200\n"
+"POT-Creation-Date: 2015-04-16 17:16+0300\n"
+"PO-Revision-Date: 2015-05-11 12:37+0200\n"
 "Last-Translator: Keld Simonsen <keld@keldix.com>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -41,8 +41,8 @@ msgid "attempt to use scalar `%s' as an array"
 msgstr "forsøg på at bruge skalar '%s' som et array"
 
 #: array.c:409 array.c:576 builtin.c:85 builtin.c:1606 builtin.c:1652
-#: builtin.c:1665 builtin.c:2112 builtin.c:2126 eval.c:1149 eval.c:1153
-#: eval.c:1564
+#: builtin.c:1665 builtin.c:2106 builtin.c:2120 eval.c:1149 eval.c:1153
+#: eval.c:1558
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "forsøg på at bruge array '%s' i skalarsammenhæng"
@@ -79,23 +79,19 @@ msgstr "asorti: første argument er ikke et array"
 
 #: array.c:831
 msgid "asort: cannot use a subarray of first arg for second arg"
-msgstr ""
-"asort: kan ikke bruge et underarray af første argument for andet argument"
+msgstr "asort: kan ikke bruge et underarray af første argument for andet argument"
 
 #: array.c:832
 msgid "asorti: cannot use a subarray of first arg for second arg"
-msgstr ""
-"asorti: kan ikke bruge et underarray af første argument for andet argument"
+msgstr "asorti: kan ikke bruge et underarray af første argument for andet argument"
 
 #: array.c:837
 msgid "asort: cannot use a subarray of second arg for first arg"
-msgstr ""
-"asort: kan ikke bruge et underarray af andet argument for første argument"
+msgstr "asort: kan ikke bruge et underarray af andet argument for første argument"
 
 #: array.c:838
 msgid "asorti: cannot use a subarray of second arg for first arg"
-msgstr ""
-"asorti: kan ikke bruge et underarray af andet argument for første argument"
+msgstr "asorti: kan ikke bruge et underarray af andet argument for første argument"
 
 #: array.c:1313
 #, c-format
@@ -118,8 +114,7 @@ msgstr "hver regel skal have et mønster eller en handlingsdel"
 
 #: awkgram.y:319 awkgram.y:330
 msgid "old awk does not support multiple `BEGIN' or `END' rules"
-msgstr ""
-"gamle versioner af awk understøtter ikke flere 'BEGIN'- eller 'END'-regler"
+msgstr "gamle versioner af awk understøtter ikke flere 'BEGIN'- eller 'END'-regler"
 
 #: awkgram.y:367
 #, c-format
@@ -144,11 +139,11 @@ msgstr "dublet case-værdier i switch-krop %s"
 msgid "duplicate `default' detected in switch body"
 msgstr "dublet 'default' opdaget i switch-krop"
 
-#: awkgram.y:793 awkgram.y:3757
+#: awkgram.y:793 awkgram.y:3750
 msgid "`break' is not allowed outside a loop or switch"
 msgstr "'break' uden for en løkke eller switch er ikke tilladt"
 
-#: awkgram.y:802 awkgram.y:3749
+#: awkgram.y:802 awkgram.y:3742
 msgid "`continue' is not allowed outside a loop"
 msgstr "'continue' uden for en løkke er ikke tilladt"
 
@@ -168,9 +163,7 @@ msgstr "'return' brugt uden for funktion"
 
 #: awkgram.y:919
 msgid "plain `print' in BEGIN or END rule should probably be `print \"\"'"
-msgstr ""
-"alenestående 'print' i BEGIN eller END-regel skulle muligvis være 'print "
-"\"\"'"
+msgstr "alenestående 'print' i BEGIN eller END-regel skulle muligvis være 'print \"\"'"
 
 #: awkgram.y:985 awkgram.y:1034
 msgid "`delete' is not allowed with SYMTAB"
@@ -198,8 +191,7 @@ msgstr "regulært udtryk på venstre side af en '~'- eller '!~'-operator"
 
 #: awkgram.y:1288 awkgram.y:1430
 msgid "old awk does not support the keyword `in' except after `for'"
-msgstr ""
-"gamle versioner af awk understøtter ikke nøgleordet 'in' undtagen efter 'for'"
+msgstr "gamle versioner af awk understøtter ikke nøgleordet 'in' undtagen efter 'for'"
 
 #: awkgram.y:1298
 msgid "regular expression on right of comparison"
@@ -321,194 +313,186 @@ msgstr ""
 msgid "source file does not end in newline"
 msgstr "kildefilen slutter ikke med en ny linje"
 
-#: awkgram.y:3068
+#: awkgram.y:3061
 msgid "unterminated regexp ends with `\\' at end of file"
 msgstr "uafsluttet regulært udtryk slutter med '\\' i slutningen af filen"
 
-#: awkgram.y:3095
+#: awkgram.y:3088
 #, c-format
 msgid "%s: %d: tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr "%s: %d: regex-ændringstegn '/.../%c' fra tawk virker ikke i gawk"
 
-#: awkgram.y:3099
+#: awkgram.y:3092
 #, c-format
 msgid "tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr "regex-ændringstegn '/.../%c' fra tawk virker ikke i gawk"
 
-#: awkgram.y:3106
+#: awkgram.y:3099
 msgid "unterminated regexp"
 msgstr "uafsluttet regulært udtryk"
 
-#: awkgram.y:3110
+#: awkgram.y:3103
 msgid "unterminated regexp at end of file"
 msgstr "uafsluttet regulært udtryk i slutningen af filen"
 
-#: awkgram.y:3168
+#: awkgram.y:3161
 msgid "use of `\\ #...' line continuation is not portable"
 msgstr "brug af '\\ #...' for linjefortsættelse er ikke portabelt"
 
-#: awkgram.y:3184
+#: awkgram.y:3177
 msgid "backslash not last character on line"
 msgstr "sidste tegn på linjen er ikke en omvendt skråstreg"
 
-#: awkgram.y:3245
+#: awkgram.y:3238
 msgid "POSIX does not allow operator `**='"
 msgstr "POSIX tillader ikke operatoren '**='"
 
-#: awkgram.y:3247
+#: awkgram.y:3240
 msgid "old awk does not support operator `**='"
 msgstr "gamle versioner af awk understøtter ikke operatoren '**='"
 
-#: awkgram.y:3256
+#: awkgram.y:3249
 msgid "POSIX does not allow operator `**'"
 msgstr "POSIX tillader ikke operatoren '**'"
 
-#: awkgram.y:3258
+#: awkgram.y:3251
 msgid "old awk does not support operator `**'"
 msgstr "gamle versioner af awk understøtter ikke operatoren '**'"
 
-#: awkgram.y:3293
+#: awkgram.y:3286
 msgid "operator `^=' is not supported in old awk"
 msgstr "operatoren '^=' understøttes ikke i gamle versioner af awk"
 
-#: awkgram.y:3301
+#: awkgram.y:3294
 msgid "operator `^' is not supported in old awk"
 msgstr "operatoren '^' understøttes ikke i gamle versioner af awk"
 
-#: awkgram.y:3398 awkgram.y:3416 command.y:1180
+#: awkgram.y:3391 awkgram.y:3409 command.y:1180
 msgid "unterminated string"
 msgstr "uafsluttet streng"
 
-#: awkgram.y:3637
+#: awkgram.y:3630
 #, c-format
 msgid "invalid char '%c' in expression"
 msgstr "ugyldigt tegn '%c' i udtryk"
 
-#: awkgram.y:3684
+#: awkgram.y:3677
 #, c-format
 msgid "`%s' is a gawk extension"
 msgstr "'%s' er en gawk-udvidelse"
 
-#: awkgram.y:3689
+#: awkgram.y:3682
 #, c-format
 msgid "POSIX does not allow `%s'"
 msgstr "POSIX tillader ikke '%s'"
 
-#: awkgram.y:3697
+#: awkgram.y:3690
 #, c-format
 msgid "`%s' is not supported in old awk"
 msgstr "'%s' understøttes ikke i gamle versioner af awk"
 
-#: awkgram.y:3787
+#: awkgram.y:3780
 msgid "`goto' considered harmful!\n"
 msgstr "'goto' anses for skadelig!\n"
 
-#: awkgram.y:3821
+#: awkgram.y:3814
 #, c-format
 msgid "%d is invalid as number of arguments for %s"
 msgstr "%d er et ugyldigt antal argumenter for %s"
 
-#: awkgram.y:3856
+#: awkgram.y:3849
 #, c-format
 msgid "%s: string literal as last arg of substitute has no effect"
-msgstr ""
-"%s: bogstavelig streng som sidste argument til erstatning har ingen effekt"
+msgstr "%s: bogstavelig streng som sidste argument til erstatning har ingen effekt"
 
-#: awkgram.y:3861
+#: awkgram.y:3854
 #, c-format
 msgid "%s third parameter is not a changeable object"
 msgstr "%s: tredje argument er ikke et ændringsbart objekt"
 
-#: awkgram.y:3944 awkgram.y:3947
+#: awkgram.y:3937 awkgram.y:3940
 msgid "match: third argument is a gawk extension"
 msgstr "match: tredje argument er en gawk-udvidelse"
 
-#: awkgram.y:4001 awkgram.y:4004
+#: awkgram.y:3994 awkgram.y:3997
 msgid "close: second argument is a gawk extension"
 msgstr "close: andet argument er en gawk-udvidelse"
 
-#: awkgram.y:4016
+#: awkgram.y:4009
 msgid "use of dcgettext(_\"...\") is incorrect: remove leading underscore"
-msgstr ""
-"brug af dcgettext(_\"...\") er forkert: fjern det indledende "
-"understregningstegn"
+msgstr "brug af dcgettext(_\"...\") er forkert: fjern det indledende understregningstegn"
 
-#: awkgram.y:4031
+#: awkgram.y:4024
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
-msgstr ""
-"brug af dcgettext(_\"...\") er forkert: fjern det indledende "
-"understregningstegn"
+msgstr "brug af dcgettext(_\"...\") er forkert: fjern det indledende understregningstegn"
 
-#: awkgram.y:4050
-#, fuzzy
+#: awkgram.y:4043
 msgid "index: regexp constant as second argument is not allowed"
-msgstr "indeks: andet argument er ikke en streng"
+msgstr "index: regexp-konstant som andet argument er ikke tilladt"
 
-#: awkgram.y:4103
+#: awkgram.y:4096
 #, c-format
 msgid "function `%s': parameter `%s' shadows global variable"
 msgstr "funktionen '%s': parameteren '%s' overskygger en global variabel"
 
-#: awkgram.y:4160 debug.c:4041 debug.c:4084 debug.c:5204
+#: awkgram.y:4153 debug.c:4041 debug.c:4084 debug.c:5204
 #, c-format
 msgid "could not open `%s' for writing (%s)"
 msgstr "kunne ikke åbne '%s' for skrivning (%s)"
 
-#: awkgram.y:4161
+#: awkgram.y:4154
 msgid "sending variable list to standard error"
 msgstr "sender variabelliste til standard fejl"
 
-#: awkgram.y:4169
+#: awkgram.y:4162
 #, c-format
 msgid "%s: close failed (%s)"
 msgstr "%s: lukning mislykkedes (%s)"
 
-#: awkgram.y:4194
+#: awkgram.y:4187
 msgid "shadow_funcs() called twice!"
 msgstr "shadow_funcs() kaldt to gange!"
 
-#: awkgram.y:4202
+#: awkgram.y:4195
 msgid "there were shadowed variables."
 msgstr "der var skyggede variable."
 
-#: awkgram.y:4273
+#: awkgram.y:4266
 #, c-format
 msgid "function name `%s' previously defined"
 msgstr "funktionsnavnet '%s' er allerede defineret"
 
-#: awkgram.y:4319
+#: awkgram.y:4312
 #, c-format
 msgid "function `%s': can't use function name as parameter name"
 msgstr "funktionen '%s': kan ikke bruge funktionsnavn som parameternavn"
 
-#: awkgram.y:4322
+#: awkgram.y:4315
 #, c-format
 msgid "function `%s': can't use special variable `%s' as a function parameter"
-msgstr ""
-"funktionen '%s': kan ikke bruge specialvariabel '%s' som en "
-"funktionsparameter"
+msgstr "funktionen '%s': kan ikke bruge specialvariabel '%s' som en funktionsparameter"
 
-#: awkgram.y:4330
+#: awkgram.y:4323
 #, c-format
 msgid "function `%s': parameter #%d, `%s', duplicates parameter #%d"
 msgstr "funktionen '%s': parameter %d, '%s', er samme som parameter %d"
 
-#: awkgram.y:4417 awkgram.y:4423
+#: awkgram.y:4410 awkgram.y:4416
 #, c-format
 msgid "function `%s' called but never defined"
 msgstr "funktionen '%s' kaldt, men aldrig defineret"
 
-#: awkgram.y:4427
+#: awkgram.y:4420
 #, c-format
 msgid "function `%s' defined but never called directly"
 msgstr "funktionen '%s' defineret, men aldrig kaldt direkte"
 
-#: awkgram.y:4459
+#: awkgram.y:4452
 #, c-format
 msgid "regexp constant for parameter #%d yields boolean value"
 msgstr "konstant regulært udtryk for parameter %d giver en boolesk værdi"
 
-#: awkgram.y:4474
+#: awkgram.y:4467
 #, c-format
 msgid ""
 "function `%s' called with space between name and `(',\n"
@@ -517,22 +501,22 @@ msgstr ""
 "funktionen '%s' kaldt med blanktegn mellem navnet og '(',\n"
 "eller brugt som en variabel eller et array"
 
-#: awkgram.y:4680
+#: awkgram.y:4673
 msgid "division by zero attempted"
 msgstr "forsøgte at dividere med nul"
 
-#: awkgram.y:4689
+#: awkgram.y:4682
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "forsøgte at dividere med nul i '%%'"
 
-#: awkgram.y:5009
-msgid ""
-"cannot assign a value to the result of a field post-increment expression"
+#: awkgram.y:5002
+msgid "cannot assign a value to the result of a field post-increment expression"
 msgstr ""
 
-#: awkgram.y:5012
+#: awkgram.y:5005
 #, fuzzy, c-format
+#| msgid "%d is invalid as number of arguments for %s"
 msgid "invalid target of assignment (opcode %s)"
 msgstr "%d er et ugyldigt antal argumenter for %s"
 
@@ -557,8 +541,7 @@ msgstr "exp: argumentet %g er uden for det tilladte område"
 #: builtin.c:229
 #, c-format
 msgid "fflush: cannot flush: pipe `%s' opened for reading, not writing"
-msgstr ""
-"fflush: kan ikke rense: datakanalen '%s' åbnet for læsning, ikke skrivning"
+msgstr "fflush: kan ikke rense: datakanalen '%s' åbnet for læsning, ikke skrivning"
 
 #: builtin.c:232
 #, c-format
@@ -641,8 +624,7 @@ msgstr "fatal: '$' tillades ikke efter et punktum i formatet"
 
 #: builtin.c:921
 msgid "fatal: no `$' supplied for positional field width or precision"
-msgstr ""
-"fatal: intet '$' angivet for bredde eller præcision af positionsangivet felt"
+msgstr "fatal: intet '$' angivet for bredde eller præcision af positionsangivet felt"
 
 #: builtin.c:991
 msgid "`l' is meaningless in awk formats; ignored"
@@ -686,8 +668,7 @@ msgstr "[s]printf: værdi %g er uden for område for '%%%c'-format"
 #: builtin.c:1552
 #, c-format
 msgid "ignoring unknown format specifier character `%c': no argument converted"
-msgstr ""
-"ignorerer ukendt formatspecificeringstegn '%c': intet argument konverteret"
+msgstr "ignorerer ukendt formatspecificeringstegn '%c': intet argument konverteret"
 
 #: builtin.c:1557
 msgid "fatal: not enough arguments to satisfy format string"
@@ -763,11 +744,8 @@ msgstr "substr: startindeks %g er forbi slutningen på strengen"
 
 #: builtin.c:1820
 #, c-format
-msgid ""
-"substr: length %g at start index %g exceeds length of first argument (%lu)"
-msgstr ""
-"substr: længden %g ved startindeks %g overskrider længden af første argument "
-"(%lu)"
+msgid "substr: length %g at start index %g exceeds length of first argument (%lu)"
+msgstr "substr: længden %g ved startindeks %g overskrider længden af første argument (%lu)"
 
 #: builtin.c:1892
 msgid "strftime: format value in PROCINFO[\"strftime\"] has numeric type"
@@ -777,198 +755,198 @@ msgstr "strftime: formatværdi i PROCINFO[\"strftime\"] har numerisk type"
 msgid "strftime: received non-numeric second argument"
 msgstr "strftime: fik et ikke-numerisk andet argument"
 
-#: builtin.c:1925
+#: builtin.c:1924
 msgid "strftime: second argument less than 0 or too big for time_t"
 msgstr "strftime: andet argument mindre end 0 eller for stort til time_t"
 
-#: builtin.c:1932
+#: builtin.c:1928
 msgid "strftime: second argument out of range for time_t"
 msgstr "strftime: andet argument uden for område for time_t"
 
-#: builtin.c:1941
+#: builtin.c:1935
 msgid "strftime: received non-string first argument"
 msgstr "strftime: fik et første argument som ikke er en streng"
 
-#: builtin.c:1948
+#: builtin.c:1942
 msgid "strftime: received empty format string"
 msgstr "strftime: fik en tom formatstreng"
 
-#: builtin.c:2017
+#: builtin.c:2011
 msgid "mktime: received non-string argument"
 msgstr "mktime: fik et argument som ikke er en streng"
 
-#: builtin.c:2034
+#: builtin.c:2028
 msgid "mktime: at least one of the values is out of the default range"
 msgstr "mktime: mindst én af værdierne er udenfor standardområdet"
 
-#: builtin.c:2069
+#: builtin.c:2063
 msgid "'system' function not allowed in sandbox mode"
 msgstr "'system'-funktion ikke tilladt i sandkasse-tilstand"
 
-#: builtin.c:2074
+#: builtin.c:2068
 msgid "system: received non-string argument"
 msgstr "system: fik et argument som ikke er en streng"
 
-#: builtin.c:2194
+#: builtin.c:2188
 #, c-format
 msgid "reference to uninitialized field `$%d'"
 msgstr "reference til ikke-initieret felt '$%d'"
 
-#: builtin.c:2279
+#: builtin.c:2273
 msgid "tolower: received non-string argument"
 msgstr "tolower: fik et argument som ikke er en streng"
 
-#: builtin.c:2310
+#: builtin.c:2304
 msgid "toupper: received non-string argument"
 msgstr "toupper: fik et argument som ikke er en streng"
 
-#: builtin.c:2343 mpfr.c:679
+#: builtin.c:2337 mpfr.c:679
 msgid "atan2: received non-numeric first argument"
 msgstr "atan2: fik et ikke-numerisk første argument"
 
-#: builtin.c:2345 mpfr.c:681
+#: builtin.c:2339 mpfr.c:681
 msgid "atan2: received non-numeric second argument"
 msgstr "atan2: fik et ikke-numerisk andet argument"
 
-#: builtin.c:2364
+#: builtin.c:2358
 msgid "sin: received non-numeric argument"
 msgstr "sin: fik et ikke-numerisk argument"
 
-#: builtin.c:2380
+#: builtin.c:2374
 msgid "cos: received non-numeric argument"
 msgstr "cos: fik et ikke-numerisk argument"
 
-#: builtin.c:2433 mpfr.c:1176
+#: builtin.c:2427 mpfr.c:1176
 msgid "srand: received non-numeric argument"
 msgstr "srand: fik et ikke-numerisk argument"
 
-#: builtin.c:2464
+#: builtin.c:2458
 msgid "match: third argument is not an array"
 msgstr "match: tredje argument er ikke et array"
 
-#: builtin.c:2725
+#: builtin.c:2719
 #, c-format
 msgid "gensub: third argument `%.*s' treated as 1"
 msgstr "gensub: tredje argument '%.*s' behandlet som 1"
 
-#: builtin.c:2740
+#: builtin.c:2734
 #, c-format
 msgid "gensub: third argument %g treated as 1"
 msgstr "gensub: tredje argument %g behandlet som 1"
 
-#: builtin.c:3038
+#: builtin.c:3032
 #, c-format
 msgid "%s: can be called indirectly only with two arguments"
 msgstr "%s: kan kun kaldes indirekte med to argumenter"
 
-#: builtin.c:3128
+#: builtin.c:3122
 #, c-format
 msgid "indirect call to %s requires at least two arguments"
 msgstr "indirekte kald til %s kræver mindst to argumenter"
 
-#: builtin.c:3180
+#: builtin.c:3174
 msgid "lshift: received non-numeric first argument"
 msgstr "lshift: fik et ikke-numerisk første argument"
 
-#: builtin.c:3182
+#: builtin.c:3176
 msgid "lshift: received non-numeric second argument"
 msgstr "lshift: fik et ikke-numerisk andet argument"
 
-#: builtin.c:3188
+#: builtin.c:3182
 #, c-format
 msgid "lshift(%f, %f): negative values will give strange results"
 msgstr "lshift(%f, %f): negative værdier vil give mærkelige resultater"
 
-#: builtin.c:3190
+#: builtin.c:3184
 #, c-format
 msgid "lshift(%f, %f): fractional values will be truncated"
 msgstr "lshift(%f, %f): kommatalsværdier vil blive trunkeret"
 
-#: builtin.c:3192
+#: builtin.c:3186
 #, c-format
 msgid "lshift(%f, %f): too large shift value will give strange results"
 msgstr "lshift(%f, %f): for stor skifteværdi vil give mærkelige resultater"
 
-#: builtin.c:3217
+#: builtin.c:3211
 msgid "rshift: received non-numeric first argument"
 msgstr "rshift: fik et ikke-numerisk første argument"
 
-#: builtin.c:3219
+#: builtin.c:3213
 msgid "rshift: received non-numeric second argument"
 msgstr "rshift: fik et ikke-numerisk andet argument"
 
-#: builtin.c:3225
+#: builtin.c:3219
 #, c-format
 msgid "rshift(%f, %f): negative values will give strange results"
 msgstr "rshift(%f, %f): negative værdier vil give mærkelige resultater"
 
-#: builtin.c:3227
+#: builtin.c:3221
 #, c-format
 msgid "rshift(%f, %f): fractional values will be truncated"
 msgstr "rshift(%f, %f): kommatalsværdier vil blive trunkeret"
 
-#: builtin.c:3229
+#: builtin.c:3223
 #, c-format
 msgid "rshift(%f, %f): too large shift value will give strange results"
 msgstr "rshift(%f, %f): for stor skifteværdi vil give mærkelige resultater"
 
-#: builtin.c:3254 mpfr.c:988
+#: builtin.c:3248 mpfr.c:988
 msgid "and: called with less than two arguments"
 msgstr "and: kaldt med mindre end to argumenter"
 
-#: builtin.c:3259
+#: builtin.c:3253
 #, c-format
 msgid "and: argument %d is non-numeric"
 msgstr "and: argumentet %d er ikke-numerisk"
 
-#: builtin.c:3263
-#, fuzzy, c-format
+#: builtin.c:3257
+#, c-format
 msgid "and: argument %d negative value %g will give strange results"
-msgstr "and(%lf, %lf): negative værdier vil give mærkelige resultater"
+msgstr "and: argument %d negativ værdi %g vil give mærkelige resultater"
 
-#: builtin.c:3286 mpfr.c:1020
+#: builtin.c:3280 mpfr.c:1020
 msgid "or: called with less than two arguments"
 msgstr "or: kaldt med mindre end to argumenter"
 
-#: builtin.c:3291
+#: builtin.c:3285
 #, c-format
 msgid "or: argument %d is non-numeric"
 msgstr "or: argumentet %d er ikke-numerisk"
 
-#: builtin.c:3295
+#: builtin.c:3289
 #, c-format
 msgid "or: argument %d negative value %g will give strange results"
 msgstr "or: argument %d negativ værdi %g vil give mærkelige resultater"
 
-#: builtin.c:3317 mpfr.c:1051
+#: builtin.c:3311 mpfr.c:1051
 msgid "xor: called with less than two arguments"
 msgstr "zor: kaldt med mindre end to argumenter"
 
-#: builtin.c:3323
+#: builtin.c:3317
 #, c-format
 msgid "xor: argument %d is non-numeric"
 msgstr "xor: argumentet %d er ikke-numerisk"
 
-#: builtin.c:3327
+#: builtin.c:3321
 #, c-format
 msgid "xor: argument %d negative value %g will give strange results"
 msgstr "xor: argument %d negativ værdi %g vil give mærkelige resultater"
 
-#: builtin.c:3352 mpfr.c:807
+#: builtin.c:3346 mpfr.c:807
 msgid "compl: received non-numeric argument"
 msgstr "compl: fik et ikke-numerisk argument"
 
-#: builtin.c:3358
+#: builtin.c:3352
 #, c-format
 msgid "compl(%f): negative value will give strange results"
 msgstr "compl(%f): negativ værdi vil give mærkelige resultater"
 
-#: builtin.c:3360
-#, fuzzy, c-format
+#: builtin.c:3354
+#, c-format
 msgid "compl(%f): fractional value will be truncated"
-msgstr "compl(%lf): kommatalsværdier vil blive trunkeret"
+msgstr "compl(%f): kommatalsværdi vil blive trunkeret"
 
-#: builtin.c:3529
+#: builtin.c:3523
 #, c-format
 msgid "dcgettext: `%s' is not a valid locale category"
 msgstr "dcgettext: '%s' er ikke en gyldig lokalitetskategori"
@@ -976,12 +954,12 @@ msgstr "dcgettext: '%s' er ikke en gyldig lokalitetskategori"
 #: command.y:225
 #, c-format
 msgid "Type (g)awk statement(s). End with the command \"end\"\n"
-msgstr ""
+msgstr "Indtast (g)awk sætninger. Slut med kommandoen \"end\"\n"
 
 #: command.y:289
-#, fuzzy, c-format
+#, c-format
 msgid "invalid frame number: %d"
-msgstr "Ugyldig intervalslutning"
+msgstr "ugyldigt rammenummer: %d"
 
 #: command.y:295
 #, c-format
@@ -1044,45 +1022,41 @@ msgstr "argument er ikke en streng"
 #: command.y:459 command.y:464
 #, c-format
 msgid "option: invalid parameter - \"%s\""
-msgstr ""
+msgstr "flag: ugyldig parameter - \"%s\""
 
 #: command.y:474
 #, c-format
 msgid "no such function - \"%s\""
-msgstr ""
+msgstr "ingen sådan funktion - \"%s\""
 
 #: command.y:531
-#, fuzzy, c-format
+#, c-format
 msgid "enable: invalid option - \"%s\""
-msgstr "%s: ugyldigt flag - '%c'\n"
+msgstr "enable: ugyldigt flag - '%s'"
 
 #: command.y:597
-#, fuzzy, c-format
+#, c-format
 msgid "invalid range specification: %d - %d"
-msgstr "Ugyldig intervalslutning"
+msgstr "Ugyldig intervalangivelse: %d - %d"
 
 #: command.y:659
-#, fuzzy
 msgid "non-numeric value for field number"
-msgstr "ukendt værdi for felt-spec: %d\n"
+msgstr "ikke-numerisk værdi for felt-nummer"
 
 #: command.y:680 command.y:687
 msgid "non-numeric value found, numeric expected"
-msgstr ""
+msgstr "ikke-numerisk værdi fundet, numerisk forventet"
 
 #: command.y:712 command.y:718
 msgid "non-zero integer value"
-msgstr ""
+msgstr "ikke-nul heltalsværdi"
 
 #: command.y:817
-msgid ""
-"backtrace [N] - print trace of all or N innermost (outermost if N < 0) "
-"frames."
+msgid "backtrace [N] - print trace of all or N innermost (outermost if N < 0) frames."
 msgstr ""
 
 #: command.y:819
-msgid ""
-"break [[filename:]N|function] - set breakpoint at the specified location."
+msgid "break [[filename:]N|function] - set breakpoint at the specified location."
 msgstr ""
 
 #: command.y:821
@@ -1090,9 +1064,7 @@ msgid "clear [[filename:]N|function] - delete breakpoints previously set."
 msgstr ""
 
 #: command.y:823
-msgid ""
-"commands [num] - starts a list of commands to be executed at a "
-"breakpoint(watchpoint) hit."
+msgid "commands [num] - starts a list of commands to be executed at a breakpoint(watchpoint) hit."
 msgstr ""
 
 #: command.y:825
@@ -1152,9 +1124,7 @@ msgid "ignore N COUNT - set ignore-count of breakpoint number N to COUNT."
 msgstr ""
 
 #: command.y:853
-msgid ""
-"info topic - source|sources|variables|functions|break|frame|args|locals|"
-"display|watch."
+msgid "info topic - source|sources|variables|functions|break|frame|args|locals|display|watch."
 msgstr ""
 
 #: command.y:855
@@ -1166,8 +1136,7 @@ msgid "next [COUNT] - step program, proceeding through subroutine calls."
 msgstr ""
 
 #: command.y:859
-msgid ""
-"nexti [COUNT] - step one instruction, but proceed through subroutine calls."
+msgid "nexti [COUNT] - step one instruction, but proceed through subroutine calls."
 msgstr ""
 
 #: command.y:861
@@ -1203,8 +1172,7 @@ msgid "set var = value - assign value to a scalar variable."
 msgstr ""
 
 #: command.y:879
-msgid ""
-"silent - suspends usual message when stopped at a breakpoint/watchpoint."
+msgid "silent - suspends usual message when stopped at a breakpoint/watchpoint."
 msgstr ""
 
 #: command.y:881
@@ -1232,9 +1200,7 @@ msgid "undisplay [N] - remove variable(s) from automatic display list."
 msgstr ""
 
 #: command.y:893
-msgid ""
-"until [[filename:]N|function] - execute until program reaches a different "
-"line or line N within current frame."
+msgid "until [[filename:]N|function] - execute until program reaches a different line or line N within current frame."
 msgstr ""
 
 #: command.y:895
@@ -1250,9 +1216,7 @@ msgid "watch var - set a watchpoint for a variable."
 msgstr ""
 
 #: command.y:901
-msgid ""
-"where [N] - (same as backtrace) print trace of all or N innermost (outermost "
-"if N < 0) frames."
+msgid "where [N] - (same as backtrace) print trace of all or N innermost (outermost if N < 0) frames."
 msgstr ""
 
 #: command.y:1013 debug.c:401 msg.c:135
@@ -1261,19 +1225,18 @@ msgid "error: "
 msgstr "fejl: "
 
 #: command.y:1053
-#, fuzzy, c-format
+#, c-format
 msgid "can't read command (%s)\n"
-msgstr "kan ikke omdirigere fra '%s' (%s)"
+msgstr "kan ikke læse kommando (%s)\n"
 
 #: command.y:1067
-#, fuzzy, c-format
+#, c-format
 msgid "can't read command (%s)"
-msgstr "kan ikke omdirigere fra '%s' (%s)"
+msgstr "kan ikke læse kommando (%s)"
 
 #: command.y:1118
-#, fuzzy
 msgid "invalid character in command"
-msgstr "Ugyldigt tegnklassenavn"
+msgstr "Ugyldigt tegn i kommando"
 
 #: command.y:1154
 #, c-format
@@ -1283,17 +1246,16 @@ msgstr ""
 #: command.y:1224
 #, c-format
 msgid "%s"
-msgstr ""
+msgstr "%s"
 
 #: command.y:1286
-#, fuzzy
 msgid "invalid character"
-msgstr "Ugyldigt sorteringstegn"
+msgstr "Ugyldigt tegn"
 
 #: command.y:1457
 #, c-format
 msgid "undefined command: %s\n"
-msgstr ""
+msgstr "ikke-defineret kommando: %s\n"
 
 #: debug.c:252
 msgid "set or show the number of lines to keep in history file."
@@ -1328,23 +1290,23 @@ msgid "program not running."
 msgstr ""
 
 #: debug.c:448 debug.c:606
-#, fuzzy, c-format
+#, c-format
 msgid "can't read source file `%s' (%s)"
-msgstr "kan ikke læse kildefilen '%s' (%s)"
+msgstr "kan ikke læse kildefil '%s' (%s)"
 
 #: debug.c:453
-#, fuzzy, c-format
+#, c-format
 msgid "source file `%s' is empty.\n"
-msgstr "kildefilen '%s' er tom"
+msgstr "kildefil '%s' er tom.\n"
 
 #: debug.c:480
 msgid "no current source file."
-msgstr ""
+msgstr "ingen aktuel kildefil."
 
 #: debug.c:505
-#, fuzzy, c-format
+#, c-format
 msgid "cannot find source file named `%s' (%s)"
-msgstr "kan ikke læse kildefilen '%s' (%s)"
+msgstr "kan ikke finde kildefil kaldet '%s' (%s)"
 
 #: debug.c:529
 #, c-format
@@ -1354,12 +1316,12 @@ msgstr ""
 #: debug.c:551
 #, c-format
 msgid "line number %d out of range; `%s' has %d lines"
-msgstr ""
+msgstr "linjenummer %d uden for område; '%s' har %d linjer"
 
 #: debug.c:611
-#, fuzzy, c-format
+#, c-format
 msgid "unexpected eof while reading file `%s', line %d"
-msgstr "uventet nylinjetegn eller strengafslutning"
+msgstr "uventet nylinjetegn ved læsning af fil '%s', lije %d"
 
 #: debug.c:620
 #, c-format
@@ -1367,9 +1329,9 @@ msgid "source file `%s' modified since start of program execution"
 msgstr ""
 
 #: debug.c:732
-#, fuzzy, c-format
+#, c-format
 msgid "Current source file: %s\n"
-msgstr "allerede inkluderet kildefil '%s'"
+msgstr "Aktuel kildefil %s\n"
 
 #: debug.c:733
 #, c-format
@@ -1427,13 +1389,12 @@ msgid "None in main().\n"
 msgstr ""
 
 #: debug.c:848
-#, fuzzy
 msgid "No arguments.\n"
-msgstr "printf: ingen argumenter"
+msgstr "Ingen argumenter.\n"
 
 #: debug.c:849
 msgid "No locals.\n"
-msgstr ""
+msgstr "Ingen lokale.\n"
 
 #: debug.c:857
 msgid ""
@@ -1446,68 +1407,74 @@ msgid ""
 "All defined functions:\n"
 "\n"
 msgstr ""
+"Alle definerede funktioner:\n"
+"\n"
 
 #: debug.c:886
 msgid ""
 "Auto-display variables:\n"
 "\n"
 msgstr ""
+"Vis variable automatisk:\n"
+"\n"
 
 #: debug.c:889
 msgid ""
 "Watch variables:\n"
 "\n"
 msgstr ""
+"Overvåg variable:\n"
+"\n"
 
 #: debug.c:1029
-#, fuzzy, c-format
+#, c-format
 msgid "no symbol `%s' in current context\n"
-msgstr "'exit' kan ikke kaldes i den aktuelle kontekst"
+msgstr "'intet symbol '%s' i den aktuelle kontekst\n"
 
 #: debug.c:1041 debug.c:1427
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is not an array\n"
-msgstr "'%s' er ikke et gyldigt variabelnavn"
+msgstr "'%s' er ikke et array\n"
 
 #: debug.c:1055
-#, fuzzy, c-format
+#, c-format
 msgid "$%ld = uninitialized field\n"
-msgstr "reference til ikke-initieret felt '$%d'"
+msgstr "$%ld = ikke-initieret felt\n"
 
 #: debug.c:1076
-#, fuzzy, c-format
+#, c-format
 msgid "array `%s' is empty\n"
-msgstr "datafilen '%s' er tom"
+msgstr "array '%s' er tomt\n"
 
 #: debug.c:1119 debug.c:1171
-#, fuzzy, c-format
+#, c-format
 msgid "[\"%s\"] not in array `%s'\n"
-msgstr "delete: indeks '%s' findes ikke i array '%s'"
+msgstr "[\"%s\"] findes ikke i array '%s'\n"
 
 #: debug.c:1175
 #, c-format
 msgid "`%s[\"%s\"]' is not an array\n"
-msgstr ""
+msgstr "`%s[\"%s\"]' er ikke et array\n"
 
 #: debug.c:1236 debug.c:4964
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is not a scalar variable"
-msgstr "'%s' er ikke et gyldigt variabelnavn"
+msgstr "'%s' er ikke en skalar variabel"
 
 #: debug.c:1258 debug.c:4994
-#, fuzzy, c-format
+#, c-format
 msgid "attempt to use array `%s[\"%s\"]' in a scalar context"
-msgstr "forsøg på at bruge array '%s[\"%.*s\"]' i skalarsammenhæng"
+msgstr "forsøg på at bruge array '%s[\"%s\"]' i skalarsammenhæng"
 
 #: debug.c:1280 debug.c:5005
-#, fuzzy, c-format
+#, c-format
 msgid "attempt to use scalar `%s[\"%s\"]' as array"
-msgstr "forsøg på at bruge skalaren '%s[\"%.*s\"]' som array"
+msgstr "forsøg på at bruge skalaren '%s[\"%s\"]' som array"
 
 #: debug.c:1423
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is a function"
-msgstr "'%s' er ugyldigt som funktionsnavn"
+msgstr "'%s' er en funktion"
 
 #: debug.c:1465
 #, c-format
@@ -1526,13 +1493,13 @@ msgstr ""
 
 #: debug.c:1528
 #, fuzzy, c-format
+#| msgid "delete: index `%s' not in array `%s'"
 msgid "%d: [\"%s\"] not in array `%s'\n"
-msgstr "delete: indeks '%s' findes ikke i array '%s'"
+msgstr "%d: [\"%s\"] findes ikke i array '%s'\n"
 
 #: debug.c:1767
-#, fuzzy
 msgid "attempt to use scalar value as array"
-msgstr "forsøg på at bruge en skalar som array"
+msgstr "forsøg på at bruge en skalarværdi som array"
 
 #: debug.c:1856
 #, c-format
@@ -1547,17 +1514,17 @@ msgstr ""
 #: debug.c:1900
 #, c-format
 msgid " in file `%s', line %d\n"
-msgstr ""
+msgstr " i fil `%s', linje %d\n"
 
 #: debug.c:1921
 #, c-format
 msgid " at `%s':%d"
-msgstr ""
+msgstr " ved '%s':%d"
 
 #: debug.c:1937 debug.c:2000
 #, c-format
 msgid "#%ld\tin "
-msgstr ""
+msgstr "#%ld\ti "
 
 #: debug.c:1974
 #, c-format
@@ -1565,9 +1532,8 @@ msgid "More stack frames follow ...\n"
 msgstr ""
 
 #: debug.c:2017
-#, fuzzy
 msgid "invalid frame number"
-msgstr "Ugyldig intervalslutning"
+msgstr "Ugyldigt rammenummer"
 
 #: debug.c:2200
 #, c-format
@@ -1600,14 +1566,14 @@ msgid "Can't set breakpoint in file `%s'\n"
 msgstr ""
 
 #: debug.c:2369 debug.c:2492 debug.c:3350
-#, fuzzy, c-format
+#, c-format
 msgid "line number %d in file `%s' out of range"
-msgstr "exp: argumentet %g er uden for det tilladte område"
+msgstr "linjenummer %d i fil %s er uden for det tilladte område"
 
 #: debug.c:2373
 #, c-format
 msgid "Can't find rule!!!\n"
-msgstr ""
+msgstr "Kan ikke finde regel!!!\n"
 
 #: debug.c:2375
 #, c-format
@@ -1636,6 +1602,7 @@ msgstr ""
 
 #: debug.c:2541
 #, fuzzy, c-format
+#| msgid "error reading input file `%s': %s"
 msgid "No breakpoint at file `%s', line #%d\n"
 msgstr "fejl ved læsning af inddatafilen '%s': %s"
 
@@ -1741,6 +1708,7 @@ msgstr ""
 
 #: debug.c:3377
 #, fuzzy, c-format
+#| msgid "already included source file `%s'"
 msgid "invalid source line %d in file `%s'"
 msgstr "allerede inkluderet kildefil '%s'"
 
@@ -1751,6 +1719,7 @@ msgstr ""
 
 #: debug.c:3424
 #, fuzzy, c-format
+#| msgid "adump: argument not an array"
 msgid "element not in array\n"
 msgstr "adump: argument er ikke et array"
 
@@ -1784,6 +1753,7 @@ msgstr ""
 
 #: debug.c:5001
 #, fuzzy, c-format
+#| msgid "delete: index `%s' not in array `%s'"
 msgid "[\"%s\"] not in array `%s'"
 msgstr "delete: indeks '%s' findes ikke i array '%s'"
 
@@ -1798,56 +1768,62 @@ msgstr ""
 
 #: debug.c:5381
 #, fuzzy, c-format
+#| msgid "`exit' cannot be called in the current context"
 msgid "`%s' not allowed in current context; statement ignored"
 msgstr "'exit' kan ikke kaldes i den aktuelle kontekst"
 
 #: debug.c:5389
 #, fuzzy
+#| msgid "`exit' cannot be called in the current context"
 msgid "`return' not allowed in current context; statement ignored"
 msgstr "'exit' kan ikke kaldes i den aktuelle kontekst"
 
 #: debug.c:5604
 #, fuzzy, c-format
+#| msgid "attempt to use array `%s' in scalar context"
 msgid "No symbol `%s' in current context"
 msgstr "forsøg på at bruge array '%s' i skalarsammenhæng"
 
-#: dfa.c:1062 dfa.c:1065 dfa.c:1084 dfa.c:1094 dfa.c:1106 dfa.c:1142
-#: dfa.c:1151 dfa.c:1154 dfa.c:1159 dfa.c:1173 dfa.c:1221
+#: dfa.c:1063 dfa.c:1066 dfa.c:1085 dfa.c:1095 dfa.c:1107 dfa.c:1143
+#: dfa.c:1152 dfa.c:1155 dfa.c:1160 dfa.c:1174 dfa.c:1222
 msgid "unbalanced ["
 msgstr ""
 
-#: dfa.c:1118
+#: dfa.c:1119
 #, fuzzy
+#| msgid "Invalid character class name"
 msgid "invalid character class"
 msgstr "Ugyldigt tegnklassenavn"
 
-#: dfa.c:1264
+#: dfa.c:1265
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr ""
 
-#: dfa.c:1326
+#: dfa.c:1327
 msgid "unfinished \\ escape"
 msgstr ""
 
-#: dfa.c:1473
+#: dfa.c:1474
 #, fuzzy
+#| msgid "Invalid content of \\{\\}"
 msgid "invalid content of \\{\\}"
 msgstr "Ugyldigt indhold i \\{\\}"
 
-#: dfa.c:1476
+#: dfa.c:1477
 #, fuzzy
+#| msgid "Regular expression too big"
 msgid "regular expression too big"
 msgstr "Regulært udtryk for stort"
 
-#: dfa.c:1911
+#: dfa.c:1912
 msgid "unbalanced ("
 msgstr ""
 
-#: dfa.c:2037
+#: dfa.c:2038
 msgid "no syntax specified"
 msgstr ""
 
-#: dfa.c:2045
+#: dfa.c:2046
 msgid "unbalanced )"
 msgstr ""
 
@@ -1936,16 +1912,16 @@ msgstr "reference til ikke-initieret felt '$%ld'"
 msgid "function `%s' called with more arguments than declared"
 msgstr "funktionen '%s' kaldt med flere argumenter end deklareret"
 
-#: eval.c:1506
+#: eval.c:1500
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr "unwind_stack: uventet type `%s'"
 
-#: eval.c:1602
+#: eval.c:1596
 msgid "division by zero attempted in `/='"
 msgstr "forsøgte at dividere med nul i '/='"
 
-#: eval.c:1609
+#: eval.c:1603
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "forsøgte at dividere med nul i '%%='"
@@ -1956,6 +1932,7 @@ msgstr "udvidelser er ikke tilladt i sandkasse-tilstand"
 
 #: ext.c:68
 #, fuzzy
+#| msgid "@include is a gawk extension"
 msgid "-l / @load are gawk extensions"
 msgstr "@include er en gawk-udvidelse"
 
@@ -1965,22 +1942,21 @@ msgstr ""
 
 #: ext.c:74
 #, fuzzy, c-format
+#| msgid "fatal: extension: cannot open `%s' (%s)\n"
 msgid "load_ext: cannot open library `%s' (%s)\n"
 msgstr "atalt: extension: kan ikke åbne '%s' (%s)\n"
 
 #: ext.c:80
 #, fuzzy, c-format
-msgid ""
-"load_ext: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"
-msgstr ""
-"fatalt: extension: bibliotek '%s': definer ikke "
-"'plugin_is_GPL_compatible' (%s)\n"
+#| msgid "fatal: extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"
+msgid "load_ext: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"
+msgstr "fatalt: extension: bibliotek '%s': definer ikke 'plugin_is_GPL_compatible' (%s)\n"
 
 #: ext.c:86
 #, fuzzy, c-format
+#| msgid "fatal: extension: library `%s': cannot call function `%s' (%s)\n"
 msgid "load_ext: library `%s': cannot call function `%s' (%s)\n"
-msgstr ""
-"fatalt: extension: bibliotek '%s': kan ikke kalde funktionen '%s' (%s)\n"
+msgstr "fatalt: extension: bibliotek '%s': kan ikke kalde funktionen '%s' (%s)\n"
 
 #: ext.c:90
 #, c-format
@@ -1997,45 +1973,49 @@ msgstr ""
 
 #: ext.c:156
 #, fuzzy, c-format
+#| msgid "fatal: extension: cannot open `%s' (%s)\n"
 msgid "extension: cannot open library `%s' (%s)"
 msgstr "atalt: extension: kan ikke åbne '%s' (%s)\n"
 
 #: ext.c:162
 #, fuzzy, c-format
-msgid ""
-"extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)"
-msgstr ""
-"fatalt: extension: bibliotek '%s': definer ikke "
-"'plugin_is_GPL_compatible' (%s)\n"
+#| msgid "fatal: extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"
+msgid "extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)"
+msgstr "fatalt: extension: bibliotek '%s': definer ikke 'plugin_is_GPL_compatible' (%s)\n"
 
 #: ext.c:166
 #, fuzzy, c-format
+#| msgid "fatal: extension: library `%s': cannot call function `%s' (%s)\n"
 msgid "extension: library `%s': cannot call function `%s' (%s)"
-msgstr ""
-"fatalt: extension: bibliotek '%s': kan ikke kalde funktionen '%s' (%s)\n"
+msgstr "fatalt: extension: bibliotek '%s': kan ikke kalde funktionen '%s' (%s)\n"
 
 #: ext.c:197
 #, fuzzy
+#| msgid "extension: missing function name"
 msgid "make_builtin: missing function name"
 msgstr "extension: mangler funktionsnavn"
 
 #: ext.c:212
 #, fuzzy, c-format
+#| msgid "extension: can't redefine function `%s'"
 msgid "make_builtin: can't redefine function `%s'"
 msgstr "extension: kan ikke omdefinere funktion '%s'"
 
 #: ext.c:216
 #, fuzzy, c-format
+#| msgid "extension: function `%s' already defined"
 msgid "make_builtin: function `%s' already defined"
 msgstr "extension: funktionen '%s' er allerede defineret"
 
 #: ext.c:220
 #, fuzzy, c-format
+#| msgid "extension: function name `%s' previously defined"
 msgid "make_builtin: function name `%s' previously defined"
 msgstr "extension: funktionsnavnet '%s' er defineret tidligere"
 
 #: ext.c:222
 #, fuzzy, c-format
+#| msgid "extension: can't use gawk built-in `%s' as function name"
 msgid "make_builtin: can't use gawk built-in `%s' as function name"
 msgstr "extension: kan ikke bruge gawk's indbyggede '%s' som funktionsnavn"
 
@@ -2086,14 +2066,12 @@ msgstr "funktion '%s': mangler argument nummer %d"
 #: ext.c:371
 #, c-format
 msgid "function `%s': argument #%d: attempt to use scalar as an array"
-msgstr ""
-"funktion '%s': argument nummer %d: forsøg på at bruge skalar som et array"
+msgstr "funktion '%s': argument nummer %d: forsøg på at bruge skalar som et array"
 
 #: ext.c:375
 #, c-format
 msgid "function `%s': argument #%d: attempt to use array as a scalar"
-msgstr ""
-"funktion '%s': argument nummer %d: forsøg på at bruge array som en skalar"
+msgstr "funktion '%s': argument nummer %d: forsøg på at bruge array som en skalar"
 
 #: ext.c:389
 msgid "dynamic loading of library not supported"
@@ -2101,6 +2079,7 @@ msgstr ""
 
 #: extension/filefuncs.c:159
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "chdir: called with incorrect number of arguments, expecting 1"
 msgstr "sqrt: kaldt med negativt argument %g"
 
@@ -2111,11 +2090,13 @@ msgstr ""
 
 #: extension/filefuncs.c:472
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "stat: called with wrong number of arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
 #: extension/filefuncs.c:479
 #, fuzzy
+#| msgid "%s: is parameter\n"
 msgid "stat: bad parameters"
 msgstr "%s: er parameter\n"
 
@@ -2126,6 +2107,7 @@ msgstr ""
 
 #: extension/filefuncs.c:554
 #, fuzzy
+#| msgid "`%s' is not supported in old awk"
 msgid "fts is not supported on this system"
 msgstr "'%s' understøttes ikke i gamle versioner af awk"
 
@@ -2156,21 +2138,25 @@ msgstr ""
 
 #: extension/filefuncs.c:784
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "fts: called with incorrect number of arguments, expecting 3"
 msgstr "sqrt: kaldt med negativt argument %g"
 
 #: extension/filefuncs.c:787
 #, fuzzy
+#| msgid "%s: is parameter\n"
 msgid "fts: bad first parameter"
 msgstr "%s: er parameter\n"
 
 #: extension/filefuncs.c:793
 #, fuzzy
+#| msgid "%s: is parameter\n"
 msgid "fts: bad second parameter"
 msgstr "%s: er parameter\n"
 
 #: extension/filefuncs.c:799
 #, fuzzy
+#| msgid "%s: is parameter\n"
 msgid "fts: bad third parameter"
 msgstr "%s: er parameter\n"
 
@@ -2188,21 +2174,25 @@ msgstr ""
 
 #: extension/fnmatch.c:112
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "fnmatch: called with less than three arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
 #: extension/fnmatch.c:115
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "fnmatch: called with more than three arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
 #: extension/fnmatch.c:118
 #, fuzzy
+#| msgid "strftime: received non-string first argument"
 msgid "fnmatch: could not get first argument"
 msgstr "strftime: fik et første argument som ikke er en streng"
 
 #: extension/fnmatch.c:123
 #, fuzzy
+#| msgid "index: received non-string second argument"
 msgid "fnmatch: could not get second argument"
 msgstr "indeks: andet argument er ikke en streng"
 
@@ -2229,6 +2219,7 @@ msgstr ""
 
 #: extension/fork.c:81
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "fork: called with too many arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
@@ -2238,16 +2229,19 @@ msgstr ""
 
 #: extension/fork.c:118
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "waitpid: called with too many arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
 #: extension/fork.c:126
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "wait: called with no arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
 #: extension/fork.c:143
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "wait: called with too many arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
@@ -2271,6 +2265,7 @@ msgstr ""
 
 #: extension/inplace.c:151
 #, fuzzy, c-format
+#| msgid "fatal: extension: cannot open `%s' (%s)\n"
 msgid "inplace_begin: Cannot stat `%s' (%s)"
 msgstr "atalt: extension: kan ikke åbne '%s' (%s)\n"
 
@@ -2286,6 +2281,7 @@ msgstr ""
 
 #: extension/inplace.c:181
 #, fuzzy, c-format
+#| msgid "%s: close failed (%s)"
 msgid "inplace_begin: chmod failed (%s)"
 msgstr "%s: lukning mislykkedes (%s)"
 
@@ -2301,6 +2297,7 @@ msgstr ""
 
 #: extension/inplace.c:194
 #, fuzzy, c-format
+#| msgid "%s: close failed (%s)"
 msgid "inplace_begin: close(%d) failed (%s)"
 msgstr "%s: lukning mislykkedes (%s)"
 
@@ -2319,6 +2316,7 @@ msgstr ""
 
 #: extension/inplace.c:229
 #, fuzzy, c-format
+#| msgid "%s: close failed (%s)"
 msgid "inplace_end: close(%d) failed (%s)"
 msgstr "%s: lukning mislykkedes (%s)"
 
@@ -2329,41 +2327,49 @@ msgstr ""
 
 #: extension/inplace.c:246
 #, fuzzy, c-format
+#| msgid "pipe flush of `%s' failed (%s)."
 msgid "inplace_end: link(`%s', `%s') failed (%s)"
 msgstr "datakanalsrensning af '%s' mislykkedes (%s)."
 
 #: extension/inplace.c:256
 #, fuzzy, c-format
+#| msgid "close of fd %d (`%s') failed (%s)"
 msgid "inplace_end: rename(`%s', `%s') failed (%s)"
 msgstr "lukning af fd %d ('%s') mislykkedes (%s)"
 
 #: extension/ordchr.c:69
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "ord: called with too many arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
 #: extension/ordchr.c:75
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "ord: called with no arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
 #: extension/ordchr.c:77
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "ord: called with inappropriate argument(s)"
 msgstr "sqrt: kaldt med negativt argument %g"
 
 #: extension/ordchr.c:99
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "chr: called with too many arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
 #: extension/ordchr.c:109
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "chr: called with no arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
 #: extension/ordchr.c:111
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "chr: called with inappropriate argument(s)"
 msgstr "sqrt: kaldt med negativt argument %g"
 
@@ -2374,11 +2380,13 @@ msgstr ""
 
 #: extension/readfile.c:113
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "readfile: called with too many arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
 #: extension/readfile.c:137
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "readfile: called with no arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
@@ -2388,16 +2396,19 @@ msgstr ""
 
 #: extension/rwarray.c:124 extension/rwarray0.c:109
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "writea: called with too many arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
 #: extension/rwarray.c:131 extension/rwarray0.c:116
 #, fuzzy, c-format
+#| msgid "exp: argument %g is out of range"
 msgid "do_writea: argument 0 is not a string\n"
 msgstr "exp: argumentet %g er uden for det tilladte område"
 
 #: extension/rwarray.c:137 extension/rwarray0.c:122
 #, fuzzy, c-format
+#| msgid "split: fourth argument is not an array"
 msgid "do_writea: argument 1 is not an array\n"
 msgstr "split: fjerde argument er ikke et array"
 
@@ -2413,16 +2424,19 @@ msgstr ""
 
 #: extension/rwarray.c:280 extension/rwarray0.c:265
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "reada: called with too many arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
 #: extension/rwarray.c:287 extension/rwarray0.c:272
 #, fuzzy, c-format
+#| msgid "exp: argument %g is out of range"
 msgid "do_reada: argument 0 is not a string\n"
 msgstr "exp: argumentet %g er uden for det tilladte område"
 
 #: extension/rwarray.c:293 extension/rwarray0.c:278
 #, fuzzy, c-format
+#| msgid "adump: argument not an array"
 msgid "do_reada: argument 1 is not an array\n"
 msgstr "adump: argument er ikke et array"
 
@@ -2438,6 +2452,7 @@ msgstr ""
 
 #: extension/time.c:113
 #, fuzzy
+#| msgid "mktime: received non-string argument"
 msgid "gettimeofday: ignoring arguments"
 msgstr "mktime: fik et argument som ikke er en streng"
 
@@ -2447,16 +2462,19 @@ msgstr ""
 
 #: extension/time.c:165
 #, fuzzy
+#| msgid "sqrt: called with negative argument %g"
 msgid "sleep: called with too many arguments"
 msgstr "sqrt: kaldt med negativt argument %g"
 
 #: extension/time.c:168
 #, fuzzy
+#| msgid "exp: received non-numeric argument"
 msgid "sleep: missing required numeric argument"
 msgstr "exp: fik et ikke-numerisk argument"
 
 #: extension/time.c:174
 #, fuzzy
+#| msgid "exp: argument %g is out of range"
 msgid "sleep: argument is negative"
 msgstr "exp: argumentet %g er uden for det tilladte område"
 
@@ -2486,13 +2504,11 @@ msgstr "split: kan ikke bruge det samme array som andet og fjerde argument"
 
 #: field.c:985
 msgid "split: cannot use a subarray of second arg for fourth arg"
-msgstr ""
-"split: kan ikke bruge et underarray af andet argument som fjerde argument"
+msgstr "split: kan ikke bruge et underarray af andet argument som fjerde argument"
 
 #: field.c:988
 msgid "split: cannot use a subarray of fourth arg for second arg"
-msgstr ""
-"split: kan ikke bruge et underarray af fjerde argument som andet argument"
+msgstr "split: kan ikke bruge et underarray af fjerde argument som andet argument"
 
 #: field.c:1019
 msgid "split: null string for third arg is a gawk extension"
@@ -2516,13 +2532,11 @@ msgstr "patsplit: kan ikke bruge det samme array som andet og fjerde argument"
 
 #: field.c:1079
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
-msgstr ""
-"patsplit: kan ikke bruge et underarray af andet argument som fjerde argument"
+msgstr "patsplit: kan ikke bruge et underarray af andet argument som fjerde argument"
 
 #: field.c:1082
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
-msgstr ""
-"patsplit: kan ikke bruge et underarray af fjerde argument som andet argument"
+msgstr "patsplit: kan ikke bruge et underarray af fjerde argument som andet argument"
 
 #: field.c:1120
 msgid "`FIELDWIDTHS' is a gawk extension"
@@ -2559,6 +2573,7 @@ msgstr ""
 
 #: gawkapi.c:809
 #, fuzzy
+#| msgid "length: received array argument"
 msgid "remove_element: received null array"
 msgstr "length: fik et array-argument"
 
@@ -2578,6 +2593,7 @@ msgstr ""
 
 #: getopt.c:604 getopt.c:633
 #, fuzzy, c-format
+#| msgid "%s: option '%s' is ambiguous\n"
 msgid "%s: option '%s' is ambiguous; possibilities:"
 msgstr "%s: flaget '%s' er flertydigt\n"
 
@@ -2663,8 +2679,7 @@ msgstr "udtrykket for '%s'-omdirigering har en tom streng som værdi"
 #: io.c:794
 #, c-format
 msgid "filename `%s' for `%s' redirection may be result of logical expression"
-msgstr ""
-"filnavnet '%s' for '%s'-omdirigering kan være resultatet af et logisk udtryk"
+msgstr "filnavnet '%s' for '%s'-omdirigering kan være resultatet af et logisk udtryk"
 
 #: io.c:842
 #, c-format
@@ -2697,11 +2712,8 @@ msgid "can't redirect to `%s' (%s)"
 msgstr "kan ikke omdirigere til '%s' (%s)"
 
 #: io.c:1073
-msgid ""
-"reached system limit for open files: starting to multiplex file descriptors"
-msgstr ""
-"nåede systembegrænsningen for åbne filer: begynder at multiplekse "
-"fildeskriptorer"
+msgid "reached system limit for open files: starting to multiplex file descriptors"
+msgstr "nåede systembegrænsningen for åbne filer: begynder at multiplekse fildeskriptorer"
 
 #: io.c:1089
 #, c-format
@@ -2728,8 +2740,7 @@ msgstr "lukning af omdirigering som aldrig blev åbnet"
 #: io.c:1238
 #, c-format
 msgid "close: redirection `%s' not opened with `|&', second argument ignored"
-msgstr ""
-"close: omdirigeringen '%s' blev ikke åbnet med '|&', andet argument ignoreret"
+msgstr "close: omdirigeringen '%s' blev ikke åbnet med '|&', andet argument ignoreret"
 
 #: io.c:1255
 #, c-format
@@ -2818,8 +2829,7 @@ msgstr "lukning af standard ud i underproces mislykkedes (%s)"
 #: io.c:1935
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
-msgstr ""
-"flytning af slave-pty til standard ud i underproces mislykkedes (dup: %s)"
+msgstr "flytning af slave-pty til standard ud i underproces mislykkedes (dup: %s)"
 
 #: io.c:1937 io.c:2123
 #, c-format
@@ -2829,8 +2839,7 @@ msgstr "lukning af standard ind i underproces mislykkedes (%s)"
 #: io.c:1940
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
-msgstr ""
-"flytning af slave-pty til standard ind i underproces mislykkedes (dup: %s)"
+msgstr "flytning af slave-pty til standard ind i underproces mislykkedes (dup: %s)"
 
 #: io.c:1942 io.c:1964
 #, c-format
@@ -2840,14 +2849,12 @@ msgstr "lukning af slave-pty mislykkedes (%s)"
 #: io.c:2053 io.c:2121 io.c:2290 io.c:2322
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
-msgstr ""
-"flytning af datakanal til standard ud i underproces mislykkedes (dup: %s)"
+msgstr "flytning af datakanal til standard ud i underproces mislykkedes (dup: %s)"
 
 #: io.c:2060 io.c:2126
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
-msgstr ""
-"flytning af datakanalen til standard ind i underproces mislykkedes (dup: %s)"
+msgstr "flytning af datakanalen til standard ind i underproces mislykkedes (dup: %s)"
 
 #: io.c:2086 io.c:2312
 msgid "restoring stdout in parent process failed\n"
@@ -2896,8 +2903,7 @@ msgstr ""
 
 #: io.c:2843
 #, c-format
-msgid ""
-"output wrapper `%s' conflicts with previously installed output wrapper `%s'"
+msgid "output wrapper `%s' conflicts with previously installed output wrapper `%s'"
 msgstr ""
 
 #: io.c:2850
@@ -2911,9 +2917,7 @@ msgstr ""
 
 #: io.c:2900
 #, c-format
-msgid ""
-"two-way processor `%s' conflicts with previously installed two-way processor "
-"`%s'"
+msgid "two-way processor `%s' conflicts with previously installed two-way processor `%s'"
 msgstr ""
 
 #: io.c:2909
@@ -2957,6 +2961,7 @@ msgstr "at køre %s setuid root kan være et sikkerhedsproblem"
 
 #: main.c:346
 #, fuzzy
+#| msgid "`--posix' overrides `--binary'"
 msgid "`--posix' overrides `--characters-as-bytes'"
 msgstr "'--posix' tilsidesætter '--binary'"
 
@@ -3027,6 +3032,7 @@ msgstr "\t-d[fil]\t\t--dump-variables[=fil]\n"
 
 #: main.c:579
 #, fuzzy
+#| msgid "\t-p[file]\t\t--profile[=file]\n"
 msgid "\t-D[file]\t\t--debug[=file]\n"
 msgstr "\t-p[fil]\t\t--profile[=fil]\n"
 
@@ -3059,11 +3065,13 @@ msgstr ""
 #.
 #: main.c:590
 #, fuzzy
+#| msgid "\t-L [fatal]\t\t--lint[=fatal]\n"
 msgid "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
 msgstr "\t-L [fatal]\t\t--lint[=fatal]\n"
 
 #: main.c:591
 #, fuzzy
+#| msgid "\t-g\t\t\t--gen-pot\n"
 msgid "\t-M\t\t\t--bignum\n"
 msgstr "\t-g\t\t\t--gen-pot\n"
 
@@ -3077,6 +3085,7 @@ msgstr "\t-n\t\t\t--non-decimal-data\n"
 
 #: main.c:594
 #, fuzzy
+#| msgid "\t-p[file]\t\t--profile[=file]\n"
 msgid "\t-o[file]\t\t--pretty-print[=file]\n"
 msgstr "\t-p[fil]\t\t--profile[=fil]\n"
 
@@ -3169,8 +3178,7 @@ msgstr ""
 "\n"
 "Dette program er frit programmel. Du kan distribuere det og/eller\n"
 "ændre det under betingelserne i GNU General Public License, offentliggjort\n"
-"af Free Software Foundation, enten version 3 af licensen, eller (hvis du "
-"vil)\n"
+"af Free Software Foundation, enten version 3 af licensen, eller (hvis du vil)\n"
 "enhver senere version.\n"
 "\n"
 
@@ -3280,36 +3288,43 @@ msgstr "%s: flaget kræver et argument -- %c\n"
 
 #: mpfr.c:557
 #, fuzzy, c-format
+#| msgid "BINMODE value `%s' is invalid, treated as 3"
 msgid "PREC value `%.*s' is invalid"
 msgstr "BINMODE værdi '%s' er ugyldig, behandles som 3"
 
 #: mpfr.c:615
 #, fuzzy, c-format
+#| msgid "BINMODE value `%s' is invalid, treated as 3"
 msgid "RNDMODE value `%.*s' is invalid"
 msgstr "BINMODE værdi '%s' er ugyldig, behandles som 3"
 
 #: mpfr.c:711
 #, fuzzy, c-format
+#| msgid "cos: received non-numeric argument"
 msgid "%s: received non-numeric argument"
 msgstr "cos: fik et ikke-numerisk argument"
 
 #: mpfr.c:820
 #, fuzzy
+#| msgid "compl(%lf): negative value will give strange results"
 msgid "compl(%Rg): negative value will give strange results"
 msgstr "compl(%lf): negative værdier vil give mærkelige resultater"
 
 #: mpfr.c:824
 #, fuzzy
+#| msgid "compl(%lf): fractional value will be truncated"
 msgid "comp(%Rg): fractional value will be truncated"
 msgstr "compl(%lf): kommatalsværdier vil blive trunkeret"
 
 #: mpfr.c:836
 #, fuzzy, c-format
+#| msgid "compl(%lf): negative value will give strange results"
 msgid "cmpl(%Zd): negative values will give strange results"
 msgstr "compl(%lf): negative værdier vil give mærkelige resultater"
 
 #: mpfr.c:855
 #, fuzzy, c-format
+#| msgid "cos: received non-numeric argument"
 msgid "%s: received non-numeric argument #%d"
 msgstr "cos: fik et ikke-numerisk argument"
 
@@ -3319,16 +3334,19 @@ msgstr ""
 
 #: mpfr.c:877
 #, fuzzy
+#| msgid "and(%lf, %lf): negative values will give strange results"
 msgid "%s: argument #%d negative value %Rg will give strange results"
 msgstr "and(%lf, %lf): negative værdier vil give mærkelige resultater"
 
 #: mpfr.c:883
 #, fuzzy
+#| msgid "and(%lf, %lf): fractional values will be truncated"
 msgid "%s: argument #%d fractional value %Rg will be truncated"
 msgstr "and(%lf, %lf): kommatalsværdier vil blive trunkeret"
 
 #: mpfr.c:898
 #, fuzzy, c-format
+#| msgid "and(%lf, %lf): negative values will give strange results"
 msgid "%s: argument #%d negative value %Zd will give strange results"
 msgstr "and(%lf, %lf): negative værdier vil give mærkelige resultater"
 
@@ -3337,44 +3355,36 @@ msgstr "and(%lf, %lf): negative værdier vil give mærkelige resultater"
 msgid "cmd. line:"
 msgstr "kommandolinje:"
 
-#: node.c:418
+#: node.c:409
 msgid "backslash at end of string"
 msgstr "omvendt skråstreg i slutningen af strengen"
 
-#: node.c:497
+#: node.c:488
 #, c-format
 msgid "old awk does not support the `\\%c' escape sequence"
 msgstr "gamle versioner af awk understøtter ikke '\\%c' undvigesekvens"
 
-#: node.c:548
+#: node.c:539
 msgid "POSIX does not allow `\\x' escapes"
 msgstr "POSIX tillader ikke '\\x'-kontrolsekvenser"
 
-#: node.c:554
+#: node.c:545
 msgid "no hex digits in `\\x' escape sequence"
 msgstr "ingen heksadecimale cifre i '\\x'-kontrolsekvenser"
 
-#: node.c:576
+#: node.c:567
 #, c-format
-msgid ""
-"hex escape \\x%.*s of %d characters probably not interpreted the way you "
-"expect"
-msgstr ""
-"den heksadecimale sekvens \\x%.*s på %d tegn nok ikke forstået som du "
-"forventer det"
+msgid "hex escape \\x%.*s of %d characters probably not interpreted the way you expect"
+msgstr "den heksadecimale sekvens \\x%.*s på %d tegn nok ikke forstået som du forventer det"
 
-#: node.c:591
+#: node.c:582
 #, c-format
 msgid "escape sequence `\\%c' treated as plain `%c'"
 msgstr "kontrolsekvensen '\\%c' behandlet som kun '%c'"
 
-#: node.c:735
-msgid ""
-"Invalid multibyte data detected. There may be a mismatch between your data "
-"and your locale."
-msgstr ""
-"Ugyldigt multibyte data fundet. Måske er der uoverensstemmelse mellem  dine "
-"data og dit locale."
+#: node.c:726
+msgid "Invalid multibyte data detected. There may be a mismatch between your data and your locale."
+msgstr "Ugyldigt multibyte data fundet. Måske er der uoverensstemmelse mellem  dine data og dit locale."
 
 #: posix/gawkmisc.c:177
 #, c-format
@@ -3397,6 +3407,9 @@ msgstr "sender profilen til standard fejl"
 
 #: profile.c:213
 #, fuzzy, c-format
+#| msgid ""
+#| "\t# Rule(s)\n"
+#| "\n"
 msgid ""
 "\t# %s rule(s)\n"
 "\n"
@@ -3420,6 +3433,7 @@ msgstr "intern fejl: %s med null vname"
 
 #: profile.c:558
 #, fuzzy
+#| msgid "internal error: %s with null vname"
 msgid "internal error: builtin with null fname"
 msgstr "intern fejl: %s med null vname"
 
@@ -3484,6 +3498,7 @@ msgstr "Ugyldig bagudreference"
 
 #: regcomp.c:160
 #, fuzzy
+#| msgid "Unmatched [ or [^"
 msgid "Unmatched [, [^, [:, [., or [="
 msgstr "Ubalanceret [ eller [^"
 
@@ -3529,6 +3544,7 @@ msgstr "Intet foregående regulært udtryk"
 
 #: symbol.c:677
 #, fuzzy, c-format
+#| msgid "function `%s': can't use function name as parameter name"
 msgid "function `%s': can't use function `%s' as a parameter name"
 msgstr "funktionen '%s': kan ikke bruge funktionsnavn som parameternavn"
 
@@ -3608,11 +3624,8 @@ msgstr ""
 #~ msgid "statement has no effect"
 #~ msgstr "kommandoen har ingen effekt"
 
-#~ msgid ""
-#~ "for loop: array `%s' changed size from %ld to %ld during loop execution"
-#~ msgstr ""
-#~ "for-løkke: array '%s' ændrede størrelse fra %ld til %ld under udførelse "
-#~ "af løkken"
+#~ msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
+#~ msgstr "for-løkke: array '%s' ændrede størrelse fra %ld til %ld under udførelse af løkken"
 
 #~ msgid "function called indirectly through `%s' does not exist"
 #~ msgstr "funktion kaldt indirekte via '%s' eksisterer ikke"
@@ -3705,11 +3718,8 @@ msgstr ""
 #~ msgid "`nextfile' cannot be called from a BEGIN rule"
 #~ msgstr "'nextfile' kan ikke kaldes fra en BEGIN-regel"
 
-#~ msgid ""
-#~ "concatenation: side effects in one expression have changed the length of "
-#~ "another!"
-#~ msgstr ""
-#~ "konkatenering: sideeffekter i et udtryk har ændret længden af et andet!"
+#~ msgid "concatenation: side effects in one expression have changed the length of another!"
+#~ msgstr "konkatenering: sideeffekter i et udtryk har ændret længden af et andet!"
 
 #~ msgid "illegal type (%s) in tree_eval"
 #~ msgstr "ugyldig type (%s) i tree_eval"
