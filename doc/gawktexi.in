@@ -6111,6 +6111,10 @@ strings or string constants. They may also be passed through indirect function
 calls (@pxref{Indirect Calls})
 onto the built-in functions that accept regexp constants.
 
+When used in numeric conversions, strongly typed regexp variables convert
+to zero. When used in string conversions, they convert to the string
+value of the original regexp text.
+
 @node Regexp Summary
 @section Summary
 
