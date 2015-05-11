@@ -3145,7 +3145,7 @@ call_sub(const char *name, int nargs)
 		 * push replace
 		 * push $0
 		 */
-		if (regex->type != Node_hardregex)
+		if (regex->type != Node_typedregex)
 			regex = make_regnode(Node_regex, regex);
 		PUSH(regex);
 		PUSH(replace);
@@ -3170,7 +3170,7 @@ call_sub(const char *name, int nargs)
 		 *	 nargs++
 		 * }
 		 */
-		if (regex->type != Node_hardregex)
+		if (regex->type != Node_typedregex)
 			regex = make_regnode(Node_regex, regex);
 		PUSH(regex);
 		PUSH(replace);
@@ -3208,7 +3208,7 @@ call_match(int nargs)
 
 	/* Don't need to pop the string just to push it back ... */
 
-	if (regex->type != Node_hardregex)
+	if (regex->type != Node_typedregex)
 		regex = make_regnode(Node_regex, regex);
 	PUSH(regex);
 
@@ -3237,7 +3237,7 @@ call_split_func(const char *name, int nargs)
 
 	if (nargs >= 3) {
 		regex = POP_STRING();
-		if (regex->type != Node_hardregex)
+		if (regex->type != Node_typedregex)
 			regex = make_regnode(Node_regex, regex);
 	} else {
 		if (name[0] == 's') {
@@ -3879,7 +3879,7 @@ do_typeof(int nargs)
 	case Node_var_array:
 		res = "array";
 		break;
-	case Node_hardregex:
+	case Node_typedregex:
 		res = "regexp";
 		break;
 	case Node_val:

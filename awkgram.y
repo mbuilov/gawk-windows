@@ -510,7 +510,7 @@ hard_regexp
 		  len = strlen(re);
 
 		  exp = make_str_node(re, len, ALREADY_MALLOCED);
-		  n = make_regnode(Node_hardregex, exp);
+		  n = make_regnode(Node_typedregex, exp);
 		  if (n == NULL) {
 			unref(exp);
 			YYABORT;
@@ -1223,7 +1223,7 @@ case_value
 	  }
 	| hard_regexp
 	  {
-		assert($1->memory->type == Node_hardregex);
+		assert($1->memory->type == Node_typedregex);
 		$1->opcode = Op_push_re;
 		$$ = $1;
 	  }
@@ -1438,7 +1438,7 @@ exp
 				_("regular expression on left of `~' or `!~' operator"));
 
 		assert($3->opcode == Op_push_re
-			&& $3->memory->type == Node_hardregex);
+			&& $3->memory->type == Node_typedregex);
 		/* RHS is @/.../ */
 		$2->memory = $3->memory;
 		bcfree($3);
@@ -4859,7 +4859,7 @@ make_regnode(int type, NODE *exp)
 	n->type = type;
 	n->re_cnt = 1;
 
-	if (type == Node_regex || type == Node_hardregex) {
+	if (type == Node_regex || type == Node_typedregex) {
 		n->re_reg = make_regexp(exp->stptr, exp->stlen, false, true, false);
 		if (n->re_reg == NULL) {
 			freenode(n);

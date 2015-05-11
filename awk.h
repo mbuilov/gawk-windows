@@ -277,7 +277,7 @@ typedef enum nodevals {
 	Node_val,		/* node is a value - type in flags */
 	Node_regex,		/* a regexp, text, compiled, flags, etc */
 	Node_dynregex,		/* a dynamic regexp */
-	Node_hardregex,		/* like Node_regex, but is a real type */
+	Node_typedregex,	/* like Node_regex, but is a real type */
 
 	/* symbol table values */
 	Node_var,		/* scalar variable, lnode is value */
@@ -1765,7 +1765,7 @@ dupnode(NODE *n)
 static inline NODE *
 force_string(NODE *s)
 {
-	if (s->type == Node_hardregex)
+	if (s->type == Node_typedregex)
 		return s->re_exp;
 
 	if ((s->flags & STRCUR) != 0
@@ -1790,7 +1790,7 @@ unref(NODE *r)
 static inline NODE *
 force_number(NODE *n)
 {
-	if (n->type == Node_hardregex)
+	if (n->type == Node_typedregex)
 		return Nnull_string;
 
 	return (n->flags & NUMCUR) != 0 ? n : str2number(n);

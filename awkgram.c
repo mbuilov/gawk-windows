@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.0.4.  */
+/* A Bison parser, made by GNU Bison 3.0.2.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.0.4"
+#define YYBISON_VERSION "3.0.2"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -2268,7 +2268,7 @@ yyreduce:
 		  len = strlen(re);
 
 		  exp = make_str_node(re, len, ALREADY_MALLOCED);
-		  n = make_regnode(Node_hardregex, exp);
+		  n = make_regnode(Node_typedregex, exp);
 		  if (n == NULL) {
 			unref(exp);
 			YYABORT;
@@ -3101,7 +3101,7 @@ regular_print:
   case 80:
 #line 1225 "awkgram.y" /* yacc.c:1646  */
     {
-		assert((yyvsp[0])->memory->type == Node_hardregex);
+		assert((yyvsp[0])->memory->type == Node_typedregex);
 		(yyvsp[0])->opcode = Op_push_re;
 		(yyval) = (yyvsp[0]);
 	  }
@@ -3428,7 +3428,7 @@ regular_print:
 				_("regular expression on left of `~' or `!~' operator"));
 
 		assert((yyvsp[0])->opcode == Op_push_re
-			&& (yyvsp[0])->memory->type == Node_hardregex);
+			&& (yyvsp[0])->memory->type == Node_typedregex);
 		/* RHS is @/.../ */
 		(yyvsp[-1])->memory = (yyvsp[0])->memory;
 		bcfree((yyvsp[0]));
@@ -7279,7 +7279,7 @@ make_regnode(int type, NODE *exp)
 	n->type = type;
 	n->re_cnt = 1;
 
-	if (type == Node_regex || type == Node_hardregex) {
+	if (type == Node_regex || type == Node_typedregex) {
 		n->re_reg = make_regexp(exp->stptr, exp->stlen, false, true, false);
 		if (n->re_reg == NULL) {
 			freenode(n);
