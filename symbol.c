@@ -560,6 +560,7 @@ load_symbols()
 	memset(sym_array, '\0', sizeof(NODE));	/* PPC Mac OS X wants this */
 	null_array(sym_array);
 
+	unref(tmp);
 	unref(*aptr);
 	*aptr = sym_array;
 
