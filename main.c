@@ -892,6 +892,33 @@ load_environ()
 	return ENVIRON_node;
 }
 
+static void
+load_procinfo_argv()
+{
+	NODE *tmp;
+	NODE **aptr;
+	NODE *argv_array;
+	int i;
+
+	tmp = make_string("argv", 4);
+	aptr = assoc_lookup(PROCINFO_node, tmp);
+	unref(tmp);
+	unref(*aptr);
+	getnode(argv_array);
+ 	memset(argv_array, '\0', sizeof(NODE));  /* valgrind wants this */
+	null_array(argv_array);
+	*aptr = argv_array;
+	argv_array->parent_array = PROCINFO_node;
+	argv_array->vname = estrdup("argv", 4);
+	for (i = 0; d_argv[i] != NULL; i++) {
+		tmp = make_number(i);
+		aptr = assoc_lookup(argv_array, tmp);
+		unref(tmp);
+		unref(*aptr);
+		*aptr = make_string(d_argv[i], strlen(d_argv[i]));
+	}
+}
+
 /* load_procinfo --- populate the PROCINFO array */
 
 static NODE *
@@ -991,6 +1018,7 @@ load_procinfo()
 		groupset = NULL;
 	}
 #endif
+	load_procinfo_argv();
 	return PROCINFO_node;
 }
 

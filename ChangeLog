@@ -1,3 +1,14 @@
+2015-05-15         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* symbol.c (load_symbols): Plug minor memory leak by calling unref(tmp)
+	on "identifiers" string after assoc_lookup is done with it.
+
+2015-05-15         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* main.c (load_procinfo_argv): New function to save argv array values
+	in PROCINFO["argv"][0..argc-1].
+	(load_procinfo): Call load_procinfo_argv.
+
 2015-05-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h, awkgram.y, builtin.c, eval.c profile.c, re.c:

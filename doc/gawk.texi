@@ -4908,6 +4908,25 @@ function names added by @command{gawk} after the code was written.
 Standard @command{awk} built-in functions, such as @code{sin()} or
 @code{substr()} are @emph{not} shadowed in this way.
 
+The @code{PROCINFO["argv"]} array contains all of the command-line arguments
+(after glob expansion and redirection processing on platforms where that must
+be done manually by the program) with subscripts ranging from 0 through
+@code{argc} @minus{} 1.  For example, @code{PROCINFO["argv"][0]} will contain
+the name by which @command{gawk} was invoked.  Here is an example of how this
+feature may be used:
+
+@example
+awk '
+BEGIN @{
+        for (i = 0; i < length(PROCINFO["argv"]); i++)
+                print i, PROCINFO["argv"][i]
+@}'
+@end example
+
+Please note that this differs from the standard @code{ARGV} array which does
+not include command-line arguments that have already been processed by
+@command{gawk} (@pxref{ARGC and ARGV}).
+
 @end ignore
 
 @node Invoking Summary
@@ -14606,8 +14625,8 @@ The current version of BWK @command{awk} and @command{mawk}
 also support @code{nextfile}.  However, they don't allow the
 @code{nextfile} statement inside function bodies (@pxref{User-defined}).
 @command{gawk} does; a @code{nextfile} inside a function body reads the
-next record and starts processing it with the first rule in the program,
-just as any other @code{nextfile} statement.
+first record from the next file and starts processing it with the first
+rule in the program, just as any other @code{nextfile} statement.
 
 @node Exit Statement
 @subsection The @code{exit} Statement
@@ -38746,6 +38765,8 @@ the bug reporting address is preferred because the
 email list is archived at the GNU Project.
 @emph{All email must be in English. This is the only language
 understood in common by all the maintainers.}
+In addition, please be sure to send all mail in @emph{plain text},
+not (or not exclusively) in HTML.
 
 @cindex @code{comp.lang.awk} newsgroup
 @quotation CAUTION
