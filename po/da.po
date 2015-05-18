@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gawk 4.1.1d\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
 "POT-Creation-Date: 2015-04-16 17:16+0300\n"
-"PO-Revision-Date: 2015-05-11 12:37+0200\n"
+"PO-Revision-Date: 2015-05-18 12:37+0200\n"
 "Last-Translator: Keld Simonsen <keld@keldix.com>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -1492,10 +1492,9 @@ msgid "No watch item numbered %ld"
 msgstr ""
 
 #: debug.c:1528
-#, fuzzy, c-format
-#| msgid "delete: index `%s' not in array `%s'"
+#, c-format
 msgid "%d: [\"%s\"] not in array `%s'\n"
-msgstr "%d: [\"%s\"] findes ikke i array '%s'\n"
+msgstr "%d: [\"%s\"] ikke i array '%s'\n"
 
 #: debug.c:1767
 msgid "attempt to use scalar value as array"
@@ -1583,7 +1582,7 @@ msgstr ""
 #: debug.c:2387
 #, c-format
 msgid "Can't set breakpoint in function `%s'\n"
-msgstr ""
+msgstr "Kan ikke sætte stoppunkt i funktion '%s'\n"
 
 #: debug.c:2403
 #, c-format
@@ -1593,7 +1592,7 @@ msgstr ""
 #: debug.c:2508 debug.c:2530
 #, c-format
 msgid "Deleted breakpoint %d"
-msgstr ""
+msgstr "Slettet stoppunkt %d"
 
 #: debug.c:2514
 #, c-format
@@ -1601,22 +1600,21 @@ msgid "No breakpoint(s) at entry to function `%s'\n"
 msgstr ""
 
 #: debug.c:2541
-#, fuzzy, c-format
-#| msgid "error reading input file `%s': %s"
+#, c-format
 msgid "No breakpoint at file `%s', line #%d\n"
-msgstr "fejl ved læsning af inddatafilen '%s': %s"
+msgstr "Intet stoppunkt ved fil `%s', linje #%d\n"
 
 #: debug.c:2596 debug.c:2637 debug.c:2657 debug.c:2700
 msgid "invalid breakpoint number"
-msgstr ""
+msgstr "Ugyldigt stoppunktsnummer"
 
 #: debug.c:2612
 msgid "Delete all breakpoints? (y or n) "
-msgstr ""
+msgstr "Slet alle stoppunkter? (j eller n) "
 
 #: debug.c:2613 debug.c:2923 debug.c:2976
 msgid "y"
-msgstr ""
+msgstr "j"
 
 #: debug.c:2662
 #, c-format
@@ -1636,7 +1634,7 @@ msgstr ""
 #: debug.c:2908
 #, c-format
 msgid "Failed to restart debugger"
-msgstr ""
+msgstr "Kunne ikke genstarte fejlsøger"
 
 #: debug.c:2922
 msgid "Program already running. Restart from beginning (y/n)? "
@@ -1645,7 +1643,7 @@ msgstr ""
 #: debug.c:2926
 #, c-format
 msgid "Program not restarted\n"
-msgstr ""
+msgstr "Program ikke genstartet\n"
 
 #: debug.c:2936
 #, c-format
@@ -1660,7 +1658,7 @@ msgstr ""
 #: debug.c:2950
 #, c-format
 msgid "Starting program: \n"
-msgstr ""
+msgstr "Starter program: \n"
 
 #: debug.c:2959
 #, c-format
@@ -1679,7 +1677,7 @@ msgstr ""
 #: debug.c:3015
 #, c-format
 msgid "invalid breakpoint number %d."
-msgstr ""
+msgstr "Ugyldigt stoppunktsnummer %d."
 
 #: debug.c:3020
 #, c-format
@@ -1694,7 +1692,7 @@ msgstr ""
 #: debug.c:3212
 #, c-format
 msgid "Run till return from "
-msgstr ""
+msgstr "Kør til returnering fra "
 
 #: debug.c:3255
 #, c-format
@@ -1726,12 +1724,12 @@ msgstr "adump: argument er ikke et array"
 #: debug.c:3424
 #, c-format
 msgid "untyped variable\n"
-msgstr ""
+msgstr "variabel uden type\n"
 
 #: debug.c:3466
 #, c-format
 msgid "Stopping in %s ...\n"
-msgstr ""
+msgstr "Stopper i %s ...\n"
 
 #: debug.c:3543
 #, c-format
@@ -1745,26 +1743,25 @@ msgstr ""
 
 #: debug.c:4185
 msgid "\t------[Enter] to continue or q [Enter] to quit------"
-msgstr ""
+msgstr "\t------[Retur] for at fortsætte eller q [Retur] for at afslutte------"
 
 #: debug.c:4186
 msgid "q"
-msgstr ""
+msgstr "q"
 
 #: debug.c:5001
-#, fuzzy, c-format
-#| msgid "delete: index `%s' not in array `%s'"
+#, c-format
 msgid "[\"%s\"] not in array `%s'"
-msgstr "delete: indeks '%s' findes ikke i array '%s'"
+msgstr "[\"%s\"] findes ikke i array '%s'"
 
 #: debug.c:5207
 #, c-format
 msgid "sending output to stdout\n"
-msgstr ""
+msgstr "sender uddata til stdout\n"
 
 #: debug.c:5247
 msgid "invalid number"
-msgstr ""
+msgstr "ugyldigt nummer"
 
 #: debug.c:5381
 #, fuzzy, c-format
@@ -1773,10 +1770,8 @@ msgid "`%s' not allowed in current context; statement ignored"
 msgstr "'exit' kan ikke kaldes i den aktuelle kontekst"
 
 #: debug.c:5389
-#, fuzzy
-#| msgid "`exit' cannot be called in the current context"
 msgid "`return' not allowed in current context; statement ignored"
-msgstr "'exit' kan ikke kaldes i den aktuelle kontekst"
+msgstr "'returnér' ikke tilladt i den aktuelle kontekst, sætning ignoreret"
 
 #: debug.c:5604
 #, fuzzy, c-format
@@ -1790,10 +1785,8 @@ msgid "unbalanced ["
 msgstr ""
 
 #: dfa.c:1119
-#, fuzzy
-#| msgid "Invalid character class name"
 msgid "invalid character class"
-msgstr "Ugyldigt tegnklassenavn"
+msgstr "Ugyldig tegnklasse"
 
 #: dfa.c:1265
 msgid "character class syntax is [[:space:]], not [:space:]"
@@ -1804,16 +1797,12 @@ msgid "unfinished \\ escape"
 msgstr ""
 
 #: dfa.c:1474
-#, fuzzy
-#| msgid "Invalid content of \\{\\}"
 msgid "invalid content of \\{\\}"
-msgstr "Ugyldigt indhold i \\{\\}"
+msgstr "ugyldigt indhold i \\{\\}"
 
 #: dfa.c:1477
-#, fuzzy
-#| msgid "Regular expression too big"
 msgid "regular expression too big"
-msgstr "Regulært udtryk for stort"
+msgstr "regulært udtryk for stort"
 
 #: dfa.c:1912
 msgid "unbalanced ("
@@ -1821,7 +1810,7 @@ msgstr ""
 
 #: dfa.c:2038
 msgid "no syntax specified"
-msgstr ""
+msgstr "ingen syntaks angivet"
 
 #: dfa.c:2046
 msgid "unbalanced )"
@@ -1931,20 +1920,17 @@ msgid "extensions are not allowed in sandbox mode"
 msgstr "udvidelser er ikke tilladt i sandkasse-tilstand"
 
 #: ext.c:68
-#, fuzzy
-#| msgid "@include is a gawk extension"
 msgid "-l / @load are gawk extensions"
-msgstr "@include er en gawk-udvidelse"
+msgstr "-l / @load er gawk-udvidelser"
 
 #: ext.c:71
 msgid "load_ext: received NULL lib_name"
 msgstr ""
 
 #: ext.c:74
-#, fuzzy, c-format
-#| msgid "fatal: extension: cannot open `%s' (%s)\n"
+#, c-format
 msgid "load_ext: cannot open library `%s' (%s)\n"
-msgstr "atalt: extension: kan ikke åbne '%s' (%s)\n"
+msgstr "load_ext: kan ikke åbne bibliotek '%s' (%s)\n"
 
 #: ext.c:80
 #, fuzzy, c-format
