@@ -13,9 +13,10 @@ $!						gawk 4.0.0 revd, May'11
 $!						gawk 4.1.0 revd, May'13
 $!						gawk 4.1.1 revd, Apr'14
 $!						gawk 4.1.2 revd, Apr'15
+$!						gawk 4.1.3 revd, May'15
 $!
 $ REL = "4.1"	!release version number
-$ PATCHLVL = "2"
+$ PATCHLVL = "3"
 $!
 $ if (f$getsyi("HW_MODEL") .lt. 1024)
 $ then
