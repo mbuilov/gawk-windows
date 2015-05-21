@@ -50,6 +50,11 @@ function sort_traverse(data,	sorted, i)
 {
 	asorti(data, sorted)
 	for (i = 1; i in sorted; i++) {
+		# 5/2015: skip for atime, since there can
+		# occasionally be small differences.
+		if (sorted[i] == "atime")
+			continue
+
 		indent()
 		printf("%s --> %s\n", sorted[i], data[sorted[i]]) > output
 	}
@@ -63,17 +68,20 @@ function traverse(data,         i)
 			printf("%s:\n", i) > output
 
 			Level++
-			if (("mtime" in data[i]) && ! isarray(data[i][mtime])) {
+			if (("mtime" in data[i]) && ! isarray(data[i]["mtime"])) {
 				sort_traverse(data[i])
 			} else {
 				traverse(data[i])
 			}
 			Level--
-		} else if (data[i] != "atime") {
-			# 4/2015: skip for atime, since there can
-			# occasionally be small differences.
-			indent()
-			printf("%s --> %s\n", i, data[i]) > output
+#		} else {
+#			JUNK = 1
+#			if (i != "atime") {
+#				# 4/2015: skip for atime, since there can
+#				# occasionally be small differences.
+#				indent()
+#				printf("%s --> %s\n", i, data[i]) > output
+#			}
 		}
 	}
 }
