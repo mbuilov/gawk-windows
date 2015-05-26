@@ -28,8 +28,6 @@
 @set DARKCORNER (d.c.)
 @end ifhtml
 
-@set FSF
-
 @set FN file name
 @set FFN File Name
 
@@ -71,7 +69,7 @@ This is Edition @value{EDITION} of @cite{@value{TITLE}},
 for the @value{VERSION}.@value{PATCHLEVEL} (or later) version of the GNU
 implementation of AWK.
 @sp 2
-Copyright (C) 2014 Free Software Foundation, Inc.
+Copyright (C) 2014, 2015 Free Software Foundation, Inc.
 @sp 2
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -196,6 +194,7 @@ Such stuff tends to become rather dry, and to prevent you from getting
 bored at this early stage, we will begin this @value{CHAPTER} with a
 brief introduction that shows you how to get the
 source code of the GNU Awk project compiled on your machine.
+
 We do this in order to get you motivated to follow us through the later
 steps that consist mainly of conceptual considerations.
 We hope that (in later, more abstract steps) you will always remember
@@ -212,32 +211,37 @@ later bizarre trickery is good for.
 @node Quick Start
 @section Quick Start: Compiling @command{gawk} in 5 Minutes
 
-The following steps will look familiar to you, they are not that much
+The following steps will look familiar to you; they are not that much
 different from the steps you used in the old days when you downloaded
 a tar ball, extracted it and compiled the source code. It is mainly
 the very first step that looks different; instead of downloading the
-tar ball you need the tool @command{git}.
-@footnote{If the command @command{git} does not exist on your machine,
+tar ball you need the tool @command{git}.@footnote{If the command
+@command{git} does not exist on your machine,
 you need adminstrator privileges to install it. By convention, the
-command is usuallay part of an installation package by the same name.}
+command is usually part of an installation package by the same name.}
 
 @example
 git clone git://git.savannah.gnu.org/gawk.git
 cd gawk
-git checkout master
+git checkout gawk-4.1-stable
 ./bootstrap.sh
 ./configure
 make
 ./gawk --version
 @end example
 
-FIXME: add bootstrap. Also default is master
-
-The only other difference to your working habits is the third step;
-you have to extract the @emph{master} branch of the current source
+There are two differences to your working habits. In the third step,,
+you have to extract (or @dfn{check out}) the @code{gawk-4.1-stable} branch of the current source
 code (there are other branches available, that's the point where
-things get interesting). Isn't this simple? No, it's not that simple.
-If you plan to go any step further (for example compile the source
+things get interesting).
+
+In the fourth step, you must run the @command{bootstrap.sh} script in
+order to set correctly timestamps on various files. Doing this is essential;
+it allows you to avoid having to install the correct versions of the
+various autotools as used by the @command{gawk} maintainer.
+
+Isn't this simple? No, it's not that simple.
+If you plan to go any further (for example compile the source
 code again next week, including next week's latest update), you will
 need to know what's going on when you use this seemingly simple
 @command{git} command (and that's the point where things get bizarre).
@@ -252,42 +256,48 @@ in your daily work in a reliable way.
 
 After the initial @emph{checkout} you have access to all the source code
 files that the maintainers have pushed through the official release procedure.
+
 You may not have noticed, but each change is well documented and traceable.
 This process of tracing the change history is so precise, reproducable and
 fine-grained that any dubious change may be kicked out later and the author
-of dubious stuff identified by name and change date. Some bookkeeping is
+of dubious stuff identified by name and change date.
+
+Some bookkeeping is
 necessary for this and that's why you need @command{git}. @command{git}
-will do all this for you. Developers who have used @command{svn} or
+does all this for you. Developers who have used @command{svn} or
 @command{cvs} in the past will not be surprised to hear that each change
 is traceable precisely (they know that @command{svn} and @command{cvs}
 can do this, too).
+
 But the first-time user of @command{git} (as well as the @command{svn} user)
 may still have failed to notice what he actually did earlier in this @value{CHAPTER}.
 It is not just a mere copy of the source code that you created,
-it is a full copy of the @emph{upstream} repository server that you created
-(or @emph{clone}d). This means that others could make their own copy of
+it is a full copy of the entire @dfn{upstream} repository server that you created
+(or @dfn{cloned}). This means that others could make their own copy of
 @emph{your} repository and treat it as @emph{their upstream} repository.
+
 This is the essential difference between working with @command{svn} and
-working with @command{git}: by @emph{clone}ing you become a repository
-administrator, if you like it or not. As such you have some duties that
-go beyond the duties of a @command{svn} user. For example, you have to
+working with @command{git}: by @emph{cloning} you become a repository
+administrator, whether you like it or not. As such you have some duties that
+go beyond the duties of an @command{svn} user. For example, you have to
 identify yourself properly as the owner of the repository by setting
 some global variables identifying you. The global settings will be used
-every time you connect again to the @emph{upstream} repository.
+every time you connect again to the upstream repository.
 
 @smallexample
-git config --global user.name "@emph{First-Name Last-Name}"
-git config --global user.email @emph{email@@address.site}
+git config --global user.name "@var{First-Name Last-Name}"
+git config --global user.email @var{email@@address.site}
 git config --global color.ui auto
 @end smallexample
 
 You may leave these variables unset, but then you are reduced to an
-anonymous consumer-only behaviour whenever you connect to the @emph{upstream}
+anonymous consumer-only behaviour whenever you connect to the upstream
 repository. Later you will learn that there are many other variables
 to be set, most of them serving as defaults that can be overridden if
 you like. Choosing to work with defaults makes work quick and easy for the most frequent
 use cases, but that comes at a cost: With so many helpful defaults
 you may be overwhelmed by the detail and complexity of the real inner working.
+Here is an example of one of the author's configuration variables:
 
 @smallexample
 $ @kbd{git config --list}
@@ -299,7 +309,7 @@ $ @kbd{git config --list}
 @print{}  gui.spellingdictionary=en_US
 @print{}  core.repositoryformatversion=0
 @print{}  core.filemode=true
-@print{}  core.logallrefupdates=true
+@print{}  core.logallrefupdaIsn't this simple? No, it's not that simple. tes=true
 @print{}  remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
 @print{}  remote.origin.url=ssh://jkahrs@@git.sv.gnu.org/srv/git/gawk.git
 @print{}  branch.master.remote=origin
@@ -310,7 +320,7 @@ $ @kbd{git config --list}
 
 Changing these variables with specialized variants of the @command{git} command
 may seem awkward to you and perhaps you prefer to use your favourite text editor
-to overview and change the variables.
+to overview and change the variables. That's easy: edit the file @file{.git/config}.
 
 @smallexample
 $ @kbd{cat .git/config}
@@ -332,11 +342,12 @@ $ @kbd{cat .git/config}
 
 Now you can see how variables are structured group-wise.
 But wait, where is the e-mail address in this list of variables?
-It is missing in the file @file{.git/config} because the file
+It is missing in the file @file{.git/config} because that file
 contains only the local settings of this one repository
 (while there may be others on your machine).
 The e-mail address is a variable of a more general kind that
 should be stored above all the repositories.
+These are referred to as the @dfn{global} variables:
 
 @smallexample
 $ @kbd{git config --list --global}
@@ -364,7 +375,7 @@ Whether you set any of these variables or not, sooner or later you will want
 to catch up with the changes that happened in the upstream repository.
 So, how can you update your copy of the repository and re-build the source code?
 The easiest way is to rely on defaults and use the @emph{pull} command to request
-updates from the upstream repository.
+updates from the upstream repository:
 
 @smallexample
 git pull
@@ -375,10 +386,13 @@ make
 
 When using the @emph{pull} command, all the changes available in all branches of
 the upstream repository will be copied (and merged) into your local repository.
-We assume here that we still have the @emph{master} branch checked out (as described earlier)
+We assume here that we still have the @emph{gawk-4.1-stable} branch checked out (as described earlier)
 and we are not interested in changes to other existing branches.
 The merging of changes will be done inside the branches only, so that changes in one
 branch are kept inside this branch and don't mix up other branches.
+
+@c ========================================
+
 But @emph{what is a branch?} you may wonder. It is the name given to a sequence of changes
 that were made to the master branch outside the master branch.
 It is easy to look up all the available branches
