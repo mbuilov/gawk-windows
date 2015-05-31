@@ -4044,11 +4044,6 @@ restrictions apply:
 @cindex newlines
 @cindex whitespace, newlines as
 @item
-Newlines do not act as whitespace to separate fields when @code{FS} is
-equal to a single space
-(@pxref{Fields}).
-
-@item
 Newlines are not allowed after @samp{?} or @samp{:}
 (@pxref{Conditional Exp}).
 
@@ -6457,16 +6452,12 @@ Readfile} for another option.
 @cindex fields
 @cindex accessing fields
 @cindex fields, examining
-@cindex POSIX @command{awk}, field separators and
-@cindex field separators, POSIX and
-@cindex separators, field, POSIX and
 When @command{awk} reads an input record, the record is
 automatically @dfn{parsed} or separated by the @command{awk} utility into chunks
 called @dfn{fields}.  By default, fields are separated by @dfn{whitespace},
 like words in a line.
 Whitespace in @command{awk} means any string of one or more spaces,
-TABs, or newlines;@footnote{In POSIX @command{awk}, newlines are not
-considered whitespace for separating fields.} other characters
+TABs, or newlines; other characters
 that are considered whitespace by other languages
 (such as formfeed, vertical tab, etc.) are @emph{not} considered
 whitespace by @command{awk}.
@@ -6880,7 +6871,6 @@ can massage it first with a separate @command{awk} program.)
 @node Default Field Splitting
 @subsection Whitespace Normally Separates Fields
 
-@cindex newlines, as field separators
 @cindex whitespace, as field separators
 Fields are normally separated by whitespace sequences
 (spaces, TABs, and newlines), not by single spaces.  Two spaces in a row do not
@@ -14048,12 +14038,11 @@ specify the behavior when @code{FS} is the null string.
 Nonetheless, some other versions of @command{awk} also treat
 @code{""} specially.)
 
-@cindex POSIX @command{awk}, @code{FS} variable and
 The default value is @w{@code{" "}}, a string consisting of a single
-space.  As a special exception, this value means that any
-sequence of spaces, TABs, and/or newlines is a single separator.@footnote{In
-POSIX @command{awk}, newline does not count as whitespace.}  It also causes
-spaces, TABs, and newlines at the beginning and end of a record to be ignored.
+space.  As a special exception, this value means that any sequence of
+spaces, TABs, and/or newlines is a single separator.  It also causes
+spaces, TABs, and newlines at the beginning and end of a record to
+be ignored.
 
 You can set the value of @code{FS} on the command line using the
 @option{-F} option:
@@ -35938,6 +35927,14 @@ is now two.
 @item
 Nonfatal output with @code{print} and @code{printf}.
 @xref{Nonfatal}.
+
+@item
+For many years, POSIX specified that default field splitting
+only allowed spaces and tabs to separate fields, and this was
+how @command{gawk} behaved with @option{--posix}. As of 2013,
+the standard restored historical behavior, and now default
+field splitting with @option{--posix} also allows newlines to
+separate fields.
 
 @item
 Support for MirBSD was removed.
