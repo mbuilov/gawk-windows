@@ -71,6 +71,20 @@ Please port the following code to your weird host;
 #define AWKNUM_FRACTION_BITS (AWKNUM_MANT_DIG * (FLT_RADIX == 2 ? 1 : 4))
 #define DBL_FRACTION_BITS (DBL_MANT_DIG * (FLT_RADIX == 2 ? 1 : 4))
 
+/* Return the number of trailing zeros in N.  N must be nonzero.  */
+static int
+count_trailing_zeros(uintmax_t n)
+{
+#if 3 < (__GNUC__ + (4 <= __GNUC_MINOR__)) && UINTMAX_MAX <= ULLONG_MAX
+	return __builtin_ctzll(n);
+#else
+	int i = 0;
+	for (; (n & 3) == 0; n >>= 2)
+		i += 2;
+	return i + (1 & ~n);
+#endif
+}
+
 /* adjust_uint --- fiddle with values, ask Paul Eggert to explain */
 
 uintmax_t
@@ -84,8 +98,15 @@ adjust_uint(uintmax_t n)
 	 * This is more desirable in practice, since it means the user sees
 	 * integers that are the same width as the AWKNUM fractions.
 	 */
-	if (AWKNUM_FRACTION_BITS < CHAR_BIT * sizeof n)
-		n &= ((uintmax_t) 1 << AWKNUM_FRACTION_BITS) - 1;
+	int wordbits = CHAR_BIT * sizeof n;
+	if (AWKNUM_FRACTION_BITS < wordbits) {
+		uintmax_t one = 1;
+		uintmax_t sentinel = one << (wordbits - AWKNUM_FRACTION_BITS);
+		int shift = count_trailing_zeros(n | sentinel);
+		uintmax_t mask = (one << AWKNUM_FRACTION_BITS) - 1;
+
+		n &= mask << shift;
+	}
 
 	return n;
 }

@@ -1,3 +1,13 @@
+2015-05-26  Paul Eggert  <eggert@Penguin.CS.UCLA.EDU>
+
+	* floatcomp.c (count_trailing_zeros): New function.
+	This compiles to a single TZCNT instruction on the x86-64.
+	(adjust_uint): Use it to keep more high-order bits when
+	some of the lowest-order bits are zero.  This implements
+	the documented behavior: "If the result cannot be represented
+	exactly as a C 'double', leading nonzero bits are removed one by
+	one until it can be represented exactly."
+
 2015-05-26         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regcomp.c: Fix offsets so error messages come out correct
