@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Apr 02 2015" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "May 31 2015" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -444,11 +444,6 @@ mode, with the following additional restrictions:
 escape sequences are not recognized.
 .TP
 \(bu
-Only space and tab act as field separators when
-.B FS
-is set to a single space, newline does not.
-.TP
-\(bu
 You cannot continue lines after
 .B ?
 and
@@ -785,9 +780,6 @@ In the special case that
 .B FS
 is a single space, fields are separated
 by runs of spaces and/or tabs and/or newlines.
-(But see the section
-.BR "POSIX COMPATIBILITY" ,
-below).
 .BR NOTE :
 The value of
 .B IGNORECASE

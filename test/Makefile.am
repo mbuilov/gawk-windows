@@ -137,6 +137,7 @@ EXTRA_DIST = \
 	charasbytes.awk \
 	charasbytes.in \
 	charasbytes.ok \
+	checknegtime.awk \
 	childin.awk \
 	childin.in \
 	childin.ok \
@@ -2116,8 +2117,7 @@ paramasfunc2::
 negtime::
 	@echo $@
 	@TZ=GMT AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
+	@AWKPATH="$(srcdir)" $(AWK) -f checknegtime.awk $@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
 include Maketests
