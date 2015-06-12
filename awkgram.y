@@ -169,7 +169,7 @@ extern double fmod(double x, double y);
 %}
 
 %token FUNC_CALL NAME REGEXP FILENAME
-%token YNUMBER YSTRING HARD_REGEXP
+%token YNUMBER YSTRING TYPED_REGEXP
 %token RELOP IO_OUT IO_IN
 %token ASSIGNOP ASSIGN MATCHOP CONCAT_OP
 %token SUBSCRIPT
@@ -197,7 +197,7 @@ extern double fmod(double x, double y);
 %left MATCHOP
 %nonassoc RELOP '<' '>' IO_IN IO_OUT
 %left CONCAT_OP
-%left YSTRING YNUMBER HARD_REGEXP
+%left YSTRING YNUMBER TYPED_REGEXP
 %left '+' '-'
 %left '*' '/' '%'
 %right '!' UNARY
@@ -498,8 +498,8 @@ regexp
 		}
 	;
 
-hard_regexp
-	: HARD_REGEXP
+typed_regexp
+	: TYPED_REGEXP
 		{
 		  NODE *n, *exp;
 		  char *re;
@@ -1221,7 +1221,7 @@ case_value
 			$1->opcode = Op_push;
 		$$ = $1;
 	  }
-	| hard_regexp
+	| typed_regexp
 	  {
 		assert($1->memory->type == Node_typedregex);
 		$1->opcode = Op_push_re;
@@ -1411,7 +1411,7 @@ fcall_expression_list
 
 fcall_exp
 	: exp { $$ = $1; }
-	| hard_regexp { $$ = list_create($1); }
+	| typed_regexp { $$ = list_create($1); }
 	;
 
 /* Expressions, not including the comma operator.  */
@@ -1423,7 +1423,7 @@ exp
 				_("regular expression on right of assignment"));
 		$$ = mk_assignment($1, $3, $2);
 	  }
-	| variable ASSIGN hard_regexp %prec ASSIGNOP
+	| variable ASSIGN typed_regexp %prec ASSIGNOP
 	  {
 		$$ = mk_assignment($1, list_create($3), $2);
 	  }
@@ -1431,7 +1431,7 @@ exp
 	  {	$$ = mk_boolean($1, $3, $2); }
 	| exp LEX_OR exp
 	  {	$$ = mk_boolean($1, $3, $2); }
-	| exp MATCHOP hard_regexp
+	| exp MATCHOP typed_regexp
 	  {
 		if ($1->lasti->opcode == Op_match_rec)
 			warning_ln($2->source_line,
@@ -3275,7 +3275,7 @@ yylex(void)
 	bool inhex = false;
 	bool intlstr = false;
 	AWKNUM d;
-	bool collecting_hard_regexp = false;
+	bool collecting_typed_regexp = false;
 
 #define GET_INSTRUCTION(op) bcalloc(op, 1, sourceline)
 
@@ -3397,9 +3397,9 @@ end_regexp:
 								peek);
 					}
 				}
-				if (collecting_hard_regexp) {
-					collecting_hard_regexp = false;
-					lasttok = HARD_REGEXP;
+				if (collecting_typed_regexp) {
+					collecting_typed_regexp = false;
+					lasttok = TYPED_REGEXP;
 				} else
 					lasttok = REGEXP;
 
@@ -3464,7 +3464,7 @@ retry:
 		c = nextc(true);
 		if (c == '/') {
 			want_regexp = true;
-			collecting_hard_regexp = true;
+			collecting_typed_regexp = true;
 			goto collect_regexp;
 		}
 		pushback();

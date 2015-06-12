@@ -245,7 +245,7 @@ extern int yydebug;
     FILENAME = 261,
     YNUMBER = 262,
     YSTRING = 263,
-    HARD_REGEXP = 264,
+    TYPED_REGEXP = 264,
     RELOP = 265,
     IO_OUT = 266,
     IO_IN = 267,
@@ -300,7 +300,7 @@ extern int yydebug;
 #define FILENAME 261
 #define YNUMBER 262
 #define YSTRING 263
-#define HARD_REGEXP 264
+#define TYPED_REGEXP 264
 #define RELOP 265
 #define IO_OUT 266
 #define IO_IN 267
@@ -695,7 +695,7 @@ static const yytype_uint16 yyrline[] =
 static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "FUNC_CALL", "NAME", "REGEXP",
-  "FILENAME", "YNUMBER", "YSTRING", "HARD_REGEXP", "RELOP", "IO_OUT",
+  "FILENAME", "YNUMBER", "YSTRING", "TYPED_REGEXP", "RELOP", "IO_OUT",
   "IO_IN", "ASSIGNOP", "ASSIGN", "MATCHOP", "CONCAT_OP", "SUBSCRIPT",
   "LEX_BEGIN", "LEX_END", "LEX_IF", "LEX_ELSE", "LEX_RETURN", "LEX_DELETE",
   "LEX_SWITCH", "LEX_CASE", "LEX_DEFAULT", "LEX_WHILE", "LEX_DO",
@@ -708,7 +708,7 @@ static const char *const yytname[] =
   "'!'", "UNARY", "'^'", "'$'", "'('", "')'", "'@'", "'['", "']'", "'{'",
   "'}'", "';'", "$accept", "program", "rule", "source", "library",
   "pattern", "action", "func_name", "lex_builtin", "function_prologue",
-  "$@1", "regexp", "$@2", "hard_regexp", "a_slash", "statements",
+  "$@1", "regexp", "$@2", "typed_regexp", "a_slash", "statements",
   "statement_term", "statement", "non_compound_stmt", "$@3", "simple_stmt",
   "$@4", "$@5", "opt_simple_stmt", "case_statements", "case_statement",
   "case_value", "print", "print_expression_list", "output_redir", "$@6",
@@ -5695,7 +5695,7 @@ yylex(void)
 	bool inhex = false;
 	bool intlstr = false;
 	AWKNUM d;
-	bool collecting_hard_regexp = false;
+	bool collecting_typed_regexp = false;
 
 #define GET_INSTRUCTION(op) bcalloc(op, 1, sourceline)
 
@@ -5817,9 +5817,9 @@ end_regexp:
 								peek);
 					}
 				}
-				if (collecting_hard_regexp) {
-					collecting_hard_regexp = false;
-					lasttok = HARD_REGEXP;
+				if (collecting_typed_regexp) {
+					collecting_typed_regexp = false;
+					lasttok = TYPED_REGEXP;
 				} else
 					lasttok = REGEXP;
 
@@ -5884,7 +5884,7 @@ retry:
 		c = nextc(true);
 		if (c == '/') {
 			want_regexp = true;
-			collecting_hard_regexp = true;
+			collecting_typed_regexp = true;
 			goto collect_regexp;
 		}
 		pushback();
