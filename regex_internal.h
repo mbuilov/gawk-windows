@@ -148,11 +148,8 @@ is_blank (int c)
 # define attribute_hidden
 #endif /* not _LIBC */
 
-#ifdef __GNUC__
-# define __attribute(arg) __attribute__ (arg)
-#else
-# define __attribute(arg)
-# define __attribute__(arg)	/* GAWK: They left this out. Duh. */
+#if __GNUC__ < 3 + (__GNUC_MINOR__ < 1)
+# define __attribute__(arg)
 #endif
 
 #ifdef GAWK
