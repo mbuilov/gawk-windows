@@ -92,7 +92,7 @@ dnl action if not found:
 
         if test $_found_readline = yes ; then
 	   case $host_os in
-	   *bsd* )	_combo="$_combo -ltermcap"
+	   *bsd* )	AC_CHECK_LIB(termcap, tgetent, _combo="$_combo -ltermcap")
 	  	 ;;
 	   esac
            AC_DEFINE(HAVE_LIBREADLINE,1,
