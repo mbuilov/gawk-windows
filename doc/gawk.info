@@ -25561,17 +25561,31 @@ The 'inplace' extension emulates GNU 'sed''s '-i' option, which performs
      # Please set INPLACE_SUFFIX to make a backup copy.  For example, you may
      # want to set INPLACE_SUFFIX to .bak on the command line or in a BEGIN rule.
 
+     # By default, each filename on the command line will be edited inplace.
+     # But you can selectively disable this by adding an inplace=0 argument
+     # prior to files that you do not want to process this way.  You can then
+     # reenable it later on the commandline by putting inplace=1 before files
+     # that you wish to be subject to inplace editing.
+
      # N.B. We call inplace_end() in the BEGINFILE and END rules so that any
      # actions in an ENDFILE rule will be redirected as expected.
+
+     BEGIN {
+         inplace = 1		# enabled by default
+     }
 
      BEGINFILE {
          if (_inplace_filename != "")
              inplace_end(_inplace_filename, INPLACE_SUFFIX)
-         inplace_begin(_inplace_filename = FILENAME, INPLACE_SUFFIX)
+         if (inplace)
+             inplace_begin(_inplace_filename = FILENAME, INPLACE_SUFFIX)
+         else
+             _inplace_filename = ""
      }
 
      END {
-         inplace_end(FILENAME, INPLACE_SUFFIX)
+         if (_inplace_filename != "")
+             inplace_end(_inplace_filename, INPLACE_SUFFIX)
      }
 
    For each regular file that is processed, the extension redirects
@@ -25581,6 +25595,12 @@ extension restores standard output to its original destination.  If
 'INPLACE_SUFFIX' is not an empty string, the original file is linked to
 a backup file name created by appending that suffix.  Finally, the
 temporary file is renamed to the original file name.
+
+   Note that the use of this feature can be controlled by placing
+'inplace=0' on the command-line prior to listing files that should not
+be processed this way.  You can reenable inplace editing by adding an
+'inplace=1' argument prior to files that should be subject to inplace
+editing.
 
    The '_inplace_filename' variable serves to keep track of the current
 filename so as to not invoke 'inplace_end()' before processing the first
@@ -34966,91 +34986,91 @@ Node: Extension Sample File Functions1023883
 Node: Extension Sample Fnmatch1031532
 Node: Extension Sample Fork1033019
 Node: Extension Sample Inplace1034237
-Node: Extension Sample Ord1036323
-Node: Extension Sample Readdir1037159
-Ref: table-readdir-file-types1038048
-Node: Extension Sample Revout1038853
-Node: Extension Sample Rev2way1039442
-Node: Extension Sample Read write array1040182
-Node: Extension Sample Readfile1042124
-Node: Extension Sample Time1043219
-Node: Extension Sample API Tests1044567
-Node: gawkextlib1045059
-Node: Extension summary1047483
-Node: Extension Exercises1051175
-Node: Language History1052672
-Node: V7/SVR3.11054328
-Node: SVR41056481
-Node: POSIX1057915
-Node: BTL1059295
-Node: POSIX/GNU1060025
-Node: Feature History1065546
-Node: Common Extensions1078876
-Node: Ranges and Locales1080159
-Ref: Ranges and Locales-Footnote-11084775
-Ref: Ranges and Locales-Footnote-21084802
-Ref: Ranges and Locales-Footnote-31085037
-Node: Contributors1085258
-Node: History summary1090827
-Node: Installation1092207
-Node: Gawk Distribution1093152
-Node: Getting1093636
-Node: Extracting1094459
-Node: Distribution contents1096097
-Node: Unix Installation1101850
-Node: Quick Installation1102466
-Node: Additional Configuration Options1104893
-Node: Configuration Philosophy1106697
-Node: Non-Unix Installation1109067
-Node: PC Installation1109525
-Node: PC Binary Installation1110845
-Node: PC Compiling1112697
-Ref: PC Compiling-Footnote-11115721
-Node: PC Testing1115830
-Node: PC Using1117010
-Node: Cygwin1121124
-Node: MSYS1121894
-Node: VMS Installation1122395
-Node: VMS Compilation1123186
-Ref: VMS Compilation-Footnote-11124416
-Node: VMS Dynamic Extensions1124474
-Node: VMS Installation Details1126159
-Node: VMS Running1128412
-Node: VMS GNV1131253
-Node: VMS Old Gawk1131988
-Node: Bugs1132459
-Node: Other Versions1136573
-Node: Installation summary1143047
-Node: Notes1144105
-Node: Compatibility Mode1144970
-Node: Additions1145752
-Node: Accessing The Source1146677
-Node: Adding Code1148113
-Node: New Ports1154268
-Node: Derived Files1158756
-Ref: Derived Files-Footnote-11164241
-Ref: Derived Files-Footnote-21164276
-Ref: Derived Files-Footnote-31164874
-Node: Future Extensions1164988
-Node: Implementation Limitations1165646
-Node: Extension Design1166829
-Node: Old Extension Problems1167983
-Ref: Old Extension Problems-Footnote-11169501
-Node: Extension New Mechanism Goals1169558
-Ref: Extension New Mechanism Goals-Footnote-11172922
-Node: Extension Other Design Decisions1173111
-Node: Extension Future Growth1175224
-Node: Old Extension Mechanism1176060
-Node: Notes summary1177823
-Node: Basic Concepts1179005
-Node: Basic High Level1179686
-Ref: figure-general-flow1179968
-Ref: figure-process-flow1180653
-Ref: Basic High Level-Footnote-11183954
-Node: Basic Data Typing1184139
-Node: Glossary1187467
-Node: Copying1219413
-Node: GNU Free Documentation License1256952
-Node: Index1282070
+Node: Extension Sample Ord1037166
+Node: Extension Sample Readdir1038002
+Ref: table-readdir-file-types1038891
+Node: Extension Sample Revout1039696
+Node: Extension Sample Rev2way1040285
+Node: Extension Sample Read write array1041025
+Node: Extension Sample Readfile1042967
+Node: Extension Sample Time1044062
+Node: Extension Sample API Tests1045410
+Node: gawkextlib1045902
+Node: Extension summary1048326
+Node: Extension Exercises1052018
+Node: Language History1053515
+Node: V7/SVR3.11055171
+Node: SVR41057324
+Node: POSIX1058758
+Node: BTL1060138
+Node: POSIX/GNU1060868
+Node: Feature History1066389
+Node: Common Extensions1079719
+Node: Ranges and Locales1081002
+Ref: Ranges and Locales-Footnote-11085618
+Ref: Ranges and Locales-Footnote-21085645
+Ref: Ranges and Locales-Footnote-31085880
+Node: Contributors1086101
+Node: History summary1091670
+Node: Installation1093050
+Node: Gawk Distribution1093995
+Node: Getting1094479
+Node: Extracting1095302
+Node: Distribution contents1096940
+Node: Unix Installation1102693
+Node: Quick Installation1103309
+Node: Additional Configuration Options1105736
+Node: Configuration Philosophy1107540
+Node: Non-Unix Installation1109910
+Node: PC Installation1110368
+Node: PC Binary Installation1111688
+Node: PC Compiling1113540
+Ref: PC Compiling-Footnote-11116564
+Node: PC Testing1116673
+Node: PC Using1117853
+Node: Cygwin1121967
+Node: MSYS1122737
+Node: VMS Installation1123238
+Node: VMS Compilation1124029
+Ref: VMS Compilation-Footnote-11125259
+Node: VMS Dynamic Extensions1125317
+Node: VMS Installation Details1127002
+Node: VMS Running1129255
+Node: VMS GNV1132096
+Node: VMS Old Gawk1132831
+Node: Bugs1133302
+Node: Other Versions1137416
+Node: Installation summary1143890
+Node: Notes1144948
+Node: Compatibility Mode1145813
+Node: Additions1146595
+Node: Accessing The Source1147520
+Node: Adding Code1148956
+Node: New Ports1155111
+Node: Derived Files1159599
+Ref: Derived Files-Footnote-11165084
+Ref: Derived Files-Footnote-21165119
+Ref: Derived Files-Footnote-31165717
+Node: Future Extensions1165831
+Node: Implementation Limitations1166489
+Node: Extension Design1167672
+Node: Old Extension Problems1168826
+Ref: Old Extension Problems-Footnote-11170344
+Node: Extension New Mechanism Goals1170401
+Ref: Extension New Mechanism Goals-Footnote-11173765
+Node: Extension Other Design Decisions1173954
+Node: Extension Future Growth1176067
+Node: Old Extension Mechanism1176903
+Node: Notes summary1178666
+Node: Basic Concepts1179848
+Node: Basic High Level1180529
+Ref: figure-general-flow1180811
+Ref: figure-process-flow1181496
+Ref: Basic High Level-Footnote-11184797
+Node: Basic Data Typing1184982
+Node: Glossary1188310
+Node: Copying1220256
+Node: GNU Free Documentation License1257795
+Node: Index1282913
 
 End Tag Table
