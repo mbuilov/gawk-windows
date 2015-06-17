@@ -148,11 +148,8 @@ is_blank (int c)
 # define attribute_hidden
 #endif /* not _LIBC */
 
-#ifdef __GNUC__
-# define __attribute(arg) __attribute__ (arg)
-#else
-# define __attribute(arg)
-# define __attribute__(arg)	/* GAWK: They left this out. Duh. */
+#if __GNUC__ < 3 + (__GNUC_MINOR__ < 1)
+# define __attribute__(arg)
 #endif
 
 #ifdef GAWK
@@ -803,6 +800,10 @@ re_string_wchar_at (const re_string_t *pstr, int idx)
 }
 
 # ifndef NOT_IN_libc
+#  ifdef _LIBC
+#   include <locale/weight.h>
+#  endif
+
 static int
 internal_function __attribute__ ((pure, unused))
 re_string_elem_size_at (const re_string_t *pstr, int idx)
@@ -810,7 +811,6 @@ re_string_elem_size_at (const re_string_t *pstr, int idx)
 #  ifdef _LIBC
   const unsigned char *p, *extra;
   const int32_t *table, *indirect;
-#   include <locale/weight.h>
   uint_fast32_t nrules = _NL_CURRENT_WORD (LC_COLLATE, _NL_COLLATE_NRULES);
 
   if (nrules != 0)
