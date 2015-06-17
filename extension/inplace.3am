@@ -40,7 +40,10 @@ One can reenable inplace editing by placing
 .B inplace=1
 prior to files that should be subject to inplace editing.
 ... .SH NOTES
-... .SH BUGS
+.SH BUGS
+While the extension does attempt to preserve ownership and permissions, it makes no attempt to copy the ACLs from the original file.
+.PP
+If the program dies prematurely, as might happen if an unhandled signal is received, a temporary file may be left behind.
 .SH EXAMPLE
 .ft CW
 .nf
