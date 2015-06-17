@@ -1,4 +1,4 @@
-.TH INPLACE 3am "Apr 08 2015" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH INPLACE 3am "Jun 17 2015" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
 inplace \- emulate sed/perl/ruby in-place editing
 .SH SYNOPSIS
@@ -32,6 +32,13 @@ rule or on the command line, then the
 extension concatenates that suffix onto the original
 filename and uses the result as a filename for renaming
 the original.
+.PP
+One can disable inplace editing selectively by placing
+.B inplace=0
+on the command line prior to files that should be processed normally.
+One can reenable inplace editing by placing
+.B inplace=1
+prior to files that should be subject to inplace editing.
 ... .SH NOTES
 ... .SH BUGS
 .SH EXAMPLE

@@ -25838,17 +25838,31 @@ The 'inplace' extension emulates GNU 'sed''s '-i' option, which performs
      # Please set INPLACE_SUFFIX to make a backup copy.  For example, you may
      # want to set INPLACE_SUFFIX to .bak on the command line or in a BEGIN rule.
 
+     # By default, each filename on the command line will be edited inplace.
+     # But you can selectively disable this by adding an inplace=0 argument
+     # prior to files that you do not want to process this way.  You can then
+     # reenable it later on the commandline by putting inplace=1 before files
+     # that you wish to be subject to inplace editing.
+
      # N.B. We call inplace_end() in the BEGINFILE and END rules so that any
      # actions in an ENDFILE rule will be redirected as expected.
+
+     BEGIN {
+         inplace = 1		# enabled by default
+     }
 
      BEGINFILE {
          if (_inplace_filename != "")
              inplace_end(_inplace_filename, INPLACE_SUFFIX)
-         inplace_begin(_inplace_filename = FILENAME, INPLACE_SUFFIX)
+         if (inplace)
+             inplace_begin(_inplace_filename = FILENAME, INPLACE_SUFFIX)
+         else
+             _inplace_filename = ""
      }
 
      END {
-         inplace_end(FILENAME, INPLACE_SUFFIX)
+         if (_inplace_filename != "")
+             inplace_end(_inplace_filename, INPLACE_SUFFIX)
      }
 
    For each regular file that is processed, the extension redirects
@@ -25858,6 +25872,12 @@ extension restores standard output to its original destination.  If
 'INPLACE_SUFFIX' is not an empty string, the original file is linked to
 a backup file name created by appending that suffix.  Finally, the
 temporary file is renamed to the original file name.
+
+   Note that the use of this feature can be controlled by placing
+'inplace=0' on the command-line prior to listing files that should not
+be processed this way.  You can reenable inplace editing by adding an
+'inplace=1' argument prior to files that should be subject to inplace
+editing.
 
    The '_inplace_filename' variable serves to keep track of the current
 filename so as to not invoke 'inplace_end()' before processing the first
@@ -35329,92 +35349,92 @@ Node: Extension Sample File Functions1035812
 Node: Extension Sample Fnmatch1043461
 Node: Extension Sample Fork1044948
 Node: Extension Sample Inplace1046166
-Node: Extension Sample Ord1048252
-Node: Extension Sample Readdir1049088
-Ref: table-readdir-file-types1049977
-Node: Extension Sample Revout1050782
-Node: Extension Sample Rev2way1051371
-Node: Extension Sample Read write array1052111
-Node: Extension Sample Readfile1054053
-Node: Extension Sample Time1055148
-Node: Extension Sample API Tests1056496
-Node: gawkextlib1056988
-Node: Extension summary1059435
-Node: Extension Exercises1063127
-Node: Language History1064624
-Node: V7/SVR3.11066280
-Node: SVR41068433
-Node: POSIX1069867
-Node: BTL1071247
-Node: POSIX/GNU1071977
-Node: Feature History1077816
-Node: Common Extensions1092135
-Node: Ranges and Locales1093418
-Ref: Ranges and Locales-Footnote-11098034
-Ref: Ranges and Locales-Footnote-21098061
-Ref: Ranges and Locales-Footnote-31098296
-Node: Contributors1098517
-Node: History summary1104086
-Node: Installation1105466
-Node: Gawk Distribution1106411
-Node: Getting1106895
-Node: Extracting1107718
-Node: Distribution contents1109356
-Node: Unix Installation1115452
-Node: Quick Installation1116134
-Node: Shell Startup Files1118548
-Node: Additional Configuration Options1119626
-Node: Configuration Philosophy1121431
-Node: Non-Unix Installation1123801
-Node: PC Installation1124259
-Node: PC Binary Installation1125579
-Node: PC Compiling1127431
-Ref: PC Compiling-Footnote-11130455
-Node: PC Testing1130564
-Node: PC Using1131744
-Node: Cygwin1135858
-Node: MSYS1136628
-Node: VMS Installation1137129
-Node: VMS Compilation1137920
-Ref: VMS Compilation-Footnote-11139150
-Node: VMS Dynamic Extensions1139208
-Node: VMS Installation Details1140893
-Node: VMS Running1143146
-Node: VMS GNV1145987
-Node: VMS Old Gawk1146722
-Node: Bugs1147193
-Node: Other Versions1151307
-Node: Installation summary1157781
-Node: Notes1158839
-Node: Compatibility Mode1159704
-Node: Additions1160486
-Node: Accessing The Source1161411
-Node: Adding Code1162847
-Node: New Ports1169002
-Node: Derived Files1173490
-Ref: Derived Files-Footnote-11178975
-Ref: Derived Files-Footnote-21179010
-Ref: Derived Files-Footnote-31179608
-Node: Future Extensions1179722
-Node: Implementation Limitations1180380
-Node: Extension Design1181563
-Node: Old Extension Problems1182717
-Ref: Old Extension Problems-Footnote-11184235
-Node: Extension New Mechanism Goals1184292
-Ref: Extension New Mechanism Goals-Footnote-11187656
-Node: Extension Other Design Decisions1187845
-Node: Extension Future Growth1189958
-Node: Old Extension Mechanism1190794
-Node: Notes summary1192557
-Node: Basic Concepts1193739
-Node: Basic High Level1194420
-Ref: figure-general-flow1194702
-Ref: figure-process-flow1195387
-Ref: Basic High Level-Footnote-11198688
-Node: Basic Data Typing1198873
-Node: Glossary1202201
-Node: Copying1234147
-Node: GNU Free Documentation License1271686
-Node: Index1296804
+Node: Extension Sample Ord1049095
+Node: Extension Sample Readdir1049931
+Ref: table-readdir-file-types1050820
+Node: Extension Sample Revout1051625
+Node: Extension Sample Rev2way1052214
+Node: Extension Sample Read write array1052954
+Node: Extension Sample Readfile1054896
+Node: Extension Sample Time1055991
+Node: Extension Sample API Tests1057339
+Node: gawkextlib1057831
+Node: Extension summary1060278
+Node: Extension Exercises1063970
+Node: Language History1065467
+Node: V7/SVR3.11067123
+Node: SVR41069276
+Node: POSIX1070710
+Node: BTL1072090
+Node: POSIX/GNU1072820
+Node: Feature History1078659
+Node: Common Extensions1092978
+Node: Ranges and Locales1094261
+Ref: Ranges and Locales-Footnote-11098877
+Ref: Ranges and Locales-Footnote-21098904
+Ref: Ranges and Locales-Footnote-31099139
+Node: Contributors1099360
+Node: History summary1104929
+Node: Installation1106309
+Node: Gawk Distribution1107254
+Node: Getting1107738
+Node: Extracting1108561
+Node: Distribution contents1110199
+Node: Unix Installation1116295
+Node: Quick Installation1116977
+Node: Shell Startup Files1119391
+Node: Additional Configuration Options1120469
+Node: Configuration Philosophy1122274
+Node: Non-Unix Installation1124644
+Node: PC Installation1125102
+Node: PC Binary Installation1126422
+Node: PC Compiling1128274
+Ref: PC Compiling-Footnote-11131298
+Node: PC Testing1131407
+Node: PC Using1132587
+Node: Cygwin1136701
+Node: MSYS1137471
+Node: VMS Installation1137972
+Node: VMS Compilation1138763
+Ref: VMS Compilation-Footnote-11139993
+Node: VMS Dynamic Extensions1140051
+Node: VMS Installation Details1141736
+Node: VMS Running1143989
+Node: VMS GNV1146830
+Node: VMS Old Gawk1147565
+Node: Bugs1148036
+Node: Other Versions1152150
+Node: Installation summary1158624
+Node: Notes1159682
+Node: Compatibility Mode1160547
+Node: Additions1161329
+Node: Accessing The Source1162254
+Node: Adding Code1163690
+Node: New Ports1169845
+Node: Derived Files1174333
+Ref: Derived Files-Footnote-11179818
+Ref: Derived Files-Footnote-21179853
+Ref: Derived Files-Footnote-31180451
+Node: Future Extensions1180565
+Node: Implementation Limitations1181223
+Node: Extension Design1182406
+Node: Old Extension Problems1183560
+Ref: Old Extension Problems-Footnote-11185078
+Node: Extension New Mechanism Goals1185135
+Ref: Extension New Mechanism Goals-Footnote-11188499
+Node: Extension Other Design Decisions1188688
+Node: Extension Future Growth1190801
+Node: Old Extension Mechanism1191637
+Node: Notes summary1193400
+Node: Basic Concepts1194582
+Node: Basic High Level1195263
+Ref: figure-general-flow1195545
+Ref: figure-process-flow1196230
+Ref: Basic High Level-Footnote-11199531
+Node: Basic Data Typing1199716
+Node: Glossary1203044
+Node: Copying1234990
+Node: GNU Free Documentation License1272529
+Node: Index1297647
 
 End Tag Table
