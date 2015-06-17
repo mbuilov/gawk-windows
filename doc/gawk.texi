@@ -35038,6 +35038,10 @@ $ @kbd{gawk -i inplace -v INPLACE_SUFFIX=.bak '@{ gsub(/foo/, "bar") @}}
 > @kbd{@{ print @}' file1 file2 file3}
 @end example
 
+Please note that, while the extension does attempt to preserve ownership and permissions, it makes no attempt to copy the ACLs from the original file.
+
+If the program dies prematurely, as might happen if an unhandled signal is received, a temporary file may be left behind.
+
 @node Extension Sample Ord
 @subsection Character and Numeric values: @code{ord()} and @code{chr()}
 
