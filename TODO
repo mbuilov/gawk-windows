@@ -1,4 +1,4 @@
-Wed Dec 24 20:41:38 IST 2014
+Fri Jun 19 12:44:56 IDT 2015
 ============================
 
 There were too many files tracking different thoughts and ideas for
@@ -14,10 +14,6 @@ TODO
 
 Minor Cleanups and Code Improvements
 ------------------------------------
-
-	Review the bash source script for working with shared libraries in
-	order to nuke the use of libtool. [ Partially started in the
-	nolibtool branch. ]
 
 	API:
 		??? #if !defined(GAWK) && !defined(GAWK_OMIT_CONVENIENCE_MACROS)
@@ -61,16 +57,6 @@ Major New Features
 	Also needed:
 
 		Indirect through array elements, not just scalar variables
-
-	Some way to make regexp constants first class citizens:
-		- Assign to variables
-		- Pass to functions
-	Tawk has this and it would also make indirect calling of builtins
-	work more reasonably.  Probably would use a special syntax like
-	@/.../ for such objects.
-
-	Consider a typeof() function that returns a string (scalar, array,
-	regexp).
 
 	Add ability to do decimal arithmetic.
 
@@ -133,6 +119,9 @@ Things To Think About That May Never Happen
 	Enhance FIELDWIDTHS with some way to indicate "the rest of the record".
 	E.g., a length of 0 or -1 or something.  Maybe "n"?
 
+	Review the bash source script for working with shared libraries in
+	order to nuke the use of libtool. [ Partially started in the
+	dead-branches/nolibtool branch. ]
 
 Things That We Decided We Will Never Do
 =======================================
@@ -163,7 +152,7 @@ Things That We Decided We Will Never Do
 	in a debugger is generally enough. Also, I would have to try to
 	track down the latest version of this.
 
-	"Make 	awk '/foo/' files...	run at egrep speeds (how?)"
+	"Make 	awk '/foo/' files...	run at egrep speeds" (How?)
 	This has been on the list since the early days (gawk 1.x or early
 	2.x).  But I am not sure how to really do this, nor have I done
 	timings, nor does there seem to be any real demand for this.
