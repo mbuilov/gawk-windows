@@ -485,7 +485,7 @@ do_isarray(int nargs)
 
 	if (do_lint && ! warned) {
 		warned = true;
-		lintwarn(_("isarray is deprecated. Use typeof() instead"));
+		lintwarn(_("`isarray' is deprecated. Use `typeof' instead"));
 	}
 
 	tmp = POP();
