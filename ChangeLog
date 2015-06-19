@@ -1,3 +1,7 @@
+2015-06-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_isarray): Minor edit to lint warning.
+
 2015-06-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regcomp.c, regex_internal.h, regexec.c: Sync with GLIBC.
@@ -10,6 +14,10 @@
 
 	* regex_internal.h: Clean up defines for non-GCC for attribute;
 	essentially sync it with GLIBC.
+
+2015-06-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y: Finish converting "hard" regex to "typed" regex.
 
 2015-05-31         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -47,6 +55,11 @@
 	in PROCINFO["argv"][0..argc-1].
 	(load_procinfo): Call load_procinfo_argv.
 
+2015-05-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h, awkgram.y, builtin.c, eval.c profile.c, re.c:
+	Change Node_hardregex to Node_typedregex everywhere.
+
 2015-05-05         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y (yylex): Yet Another Fix for parsing bracket
@@ -56,6 +69,14 @@
 	Unrelated:
 
 	* config.guess, config.sub: Get latest versions.
+
+	Make profiling for hard regexes work.
+
+	* profile.c (pp_string_or_hard_regex): Renamed from pp_string.
+	Add bool param for hard regex and add @ if so.
+	(pp_string): New function, calls pp_string_or_hard_regex.
+	(pp_hard_regex): New function, calls pp_string_or_hard_regex.
+	(pprint): Adjust to print a hard regex correctly.
 
 2015-05-01         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -78,6 +99,11 @@
 2015-04-29         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* 4.1.2: Release tar ball made.
+
+2015-04-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (isarray): Add lint warning that isarray()
+	is deprecated.
 
 2015-04-28         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -167,6 +193,11 @@
 	* builtin.c (do_sub): Improve some variable names for readability
 	and add / expand some comments.
 
+	Unrelated:
+
+	* builtin.c (call_sub, call_match, call_split_func): Allow for
+	regex to be Node_hardregex.
+
 2015-04-14         Andrew J. Schorr      <aschorr@telemetry-investments.com>
 		   Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -245,6 +276,14 @@
 	Thanks to Andrew Schorr for finding the problem and supplying
 	initial code; I did it slightly differently.
 
+2015-04-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (force_string): If hard_regex, return string text of the regex.
+	(force_string, force_number): If hard_regex, return Nnull_string.
+	* awkgram.y: Fix ~ and !~ with @/.../.
+	* eval.c (setup_frame): Handle a hard regex.
+	* re.c (avoid_dfa): Ditto.
+
 2015-04-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* NEWS: Rename div to intdiv.
@@ -309,6 +348,24 @@
 	* interpret.h (r_interpret): If calling do_sub, do it through
 	call_sub_func().
 
+2015-03-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* re.c (re_update): Handle hard regex - for sub/gsub/gensub.
+	* awkgram.y (grammar): Add support for hard_regex with ~ and !~;
+	allowed only on the right hand side.
+	(mk_rexp): Handle a hard regex.
+
+2015-03-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_typeof): Be smarter about checking for uninitialized
+	values; can now detect and return "untyped" for such values.
+	* awkgram.y (yylex): Collect @/.../ entirely in the lexer and return
+	a new terminal (HARD_REGEX).
+	(regexp): Reverted to just a regular awk regexp constant.
+	(hard_regexp): New nonterminal, can be used only in direct
+	assignment and as an argument in function call. New set of nonterminals
+	for function call expression lists.  More work still to do.
+
 2015-03-18         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* config.guess, config.sub: Updated, from libtool 2.4.6.
@@ -349,6 +406,20 @@
 	* configure.ac: Use AC_SEARCH_LIBS instead of AC_CHECK_LIB. This fixes
 	a long-standing problem where `-lm' was used twice in the final
 	compilation line.
+
+2015-02-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Start on making regexp a real type.
+
+	* awk.h (Node_hardregex): New node type.
+	(do_typeof): Add declaration.
+	* awkgram.y: Make @/.../ a hard regex.
+	(tokentab): New entry for typeof() function.
+	(snode): Try to handle typeof().
+	(make_regnode): Handle Node_hardregex.
+	* builtin.c (do_typeof): New function.
+	* eval.c (nodetypes): Add Node_hardregex.
+	* re.c (re_update): Check for hardregex too in assert.
 
 2015-02-24         Arnold D. Robbins     <arnold@skeeve.com>
 

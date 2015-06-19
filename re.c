@@ -351,10 +351,14 @@ re_update(NODE *t)
 		/* regex was compiled with settings matching IGNORECASE */
 		if ((t->re_flags & CONSTANT) != 0) {
 			/* it's a constant, so just return it as is */
-			assert(t->type == Node_regex);
+			assert(t->type == Node_regex || t->type == Node_typedregex);
 			return t->re_reg;
 		}
 		t1 = t->re_exp;
+		if (t1->type == Node_typedregex) {
+			assert((t1->re_flags & CONSTANT) != 0);
+			return t1->re_reg;
+		}
 		if (t->re_text != NULL) {
 			/* if contents haven't changed, just return it */
 			if (cmp_nodes(t->re_text, t1) == 0)
@@ -428,6 +432,15 @@ int
 avoid_dfa(NODE *re, char *str, size_t len)
 {
 	char *end;
+
+	/*
+	 * f = @/.../
+	 * if ("foo" ~ f) ...
+	 *
+	 * This creates a Node_dynregex with NULL re_reg.
+	 */
+	if (re->re_reg == NULL)
+		return false;
 
 	if (! re->re_reg->has_anchor)
 		return false;

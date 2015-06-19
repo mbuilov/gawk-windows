@@ -169,7 +169,7 @@ extern double fmod(double x, double y);
 %}
 
 %token FUNC_CALL NAME REGEXP FILENAME
-%token YNUMBER YSTRING
+%token YNUMBER YSTRING TYPED_REGEXP
 %token RELOP IO_OUT IO_IN
 %token ASSIGNOP ASSIGN MATCHOP CONCAT_OP
 %token SUBSCRIPT
@@ -197,7 +197,7 @@ extern double fmod(double x, double y);
 %left MATCHOP
 %nonassoc RELOP '<' '>' IO_IN IO_OUT
 %left CONCAT_OP
-%left YSTRING YNUMBER
+%left YSTRING YNUMBER TYPED_REGEXP
 %left '+' '-'
 %left '*' '/' '%'
 %right '!' UNARY
@@ -497,6 +497,28 @@ regexp
 		  $$->memory = n;
 		}
 	;
+
+typed_regexp
+	: TYPED_REGEXP
+		{
+		  NODE *n, *exp;
+		  char *re;
+		  size_t len;
+
+		  re = $1->lextok;
+		  $1->lextok = NULL;
+		  len = strlen(re);
+
+		  exp = make_str_node(re, len, ALREADY_MALLOCED);
+		  n = make_regnode(Node_typedregex, exp);
+		  if (n == NULL) {
+			unref(exp);
+			YYABORT;
+		  }
+		  $$ = $1;
+		  $$->opcode = Op_push_re;
+		  $$->memory = n;
+		}
 
 a_slash
 	: '/'
@@ -1193,6 +1215,15 @@ case_value
 	  {	$$ = $1; }
 	| regexp  
 	  {
+		if ($1->memory->type == Node_regex)
+			$1->opcode = Op_push_re;
+		else
+			$1->opcode = Op_push;
+		$$ = $1;
+	  }
+	| typed_regexp
+	  {
+		assert($1->memory->type == Node_typedregex);
 		$1->opcode = Op_push_re;
 		$$ = $1;
 	  }
@@ -1341,6 +1372,48 @@ expression_list
 	  }
 	;
 
+opt_fcall_expression_list
+	: /* empty */
+	  { $$ = NULL; }
+	| fcall_expression_list
+	  { $$ = $1; }
+	;
+
+fcall_expression_list
+	: fcall_exp
+	  {	$$ = mk_expression_list(NULL, $1); }
+	| fcall_expression_list comma fcall_exp
+	  {
+		$$ = mk_expression_list($1, $3);
+		yyerrok;
+	  }
+	| error
+	  { $$ = NULL; }
+	| fcall_expression_list error
+	  {
+		/*
+		 * Returning the expression list instead of NULL lets
+		 * snode get a list of arguments that it can count.
+		 */
+		$$ = $1;
+	  }
+	| fcall_expression_list error fcall_exp
+	  {
+		/* Ditto */
+		$$ = mk_expression_list($1, $3);
+	  }
+	| fcall_expression_list comma error
+	  {
+		/* Ditto */
+		$$ = $1;
+	  }
+	;
+
+fcall_exp
+	: exp { $$ = $1; }
+	| typed_regexp { $$ = list_create($1); }
+	;
+
 /* Expressions, not including the comma operator.  */
 exp
 	: variable assign_operator exp %prec ASSIGNOP
@@ -1350,10 +1423,27 @@ exp
 				_("regular expression on right of assignment"));
 		$$ = mk_assignment($1, $3, $2);
 	  }
+	| variable ASSIGN typed_regexp %prec ASSIGNOP
+	  {
+		$$ = mk_assignment($1, list_create($3), $2);
+	  }
 	| exp LEX_AND exp
 	  {	$$ = mk_boolean($1, $3, $2); }
 	| exp LEX_OR exp
 	  {	$$ = mk_boolean($1, $3, $2); }
+	| exp MATCHOP typed_regexp
+	  {
+		if ($1->lasti->opcode == Op_match_rec)
+			warning_ln($2->source_line,
+				_("regular expression on left of `~' or `!~' operator"));
+
+		assert($3->opcode == Op_push_re
+			&& $3->memory->type == Node_typedregex);
+		/* RHS is @/.../ */
+		$2->memory = $3->memory;
+		bcfree($3);
+		$$ = list_append($1, $2);
+	  }
 	| exp MATCHOP exp
 	  {
 		if ($1->lasti->opcode == Op_match_rec)
@@ -1361,6 +1451,7 @@ exp
 				_("regular expression on left of `~' or `!~' operator"));
 
 		if ($3->lasti == $3->nexti && $3->nexti->opcode == Op_match_rec) {
+			/* RHS is /.../ */
 			$2->memory = $3->nexti->memory;
 			bcfree($3->nexti);	/* Op_match_rec */
 			bcfree($3);			/* Op_list */
@@ -1596,13 +1687,13 @@ non_post_simp_exp
 	   }
 	| '(' exp r_paren
 	  { $$ = $2; }
-	| LEX_BUILTIN '(' opt_expression_list r_paren
+	| LEX_BUILTIN '(' opt_fcall_expression_list r_paren
 	  {
 		$$ = snode($3, $1);
 		if ($$ == NULL)
 			YYABORT;
 	  }
-	| LEX_LENGTH '(' opt_expression_list r_paren
+	| LEX_LENGTH '(' opt_fcall_expression_list r_paren
 	  {
 		$$ = snode($3, $1);
 		if ($$ == NULL)
@@ -1711,7 +1802,7 @@ func_call
 	;
 
 direct_func_call
-	: FUNC_CALL '(' opt_expression_list r_paren
+	: FUNC_CALL '(' opt_fcall_expression_list r_paren
 	  {
 		NODE *n;
 
@@ -2013,6 +2104,7 @@ static const struct token tokentab[] = {
 {"systime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(0),	do_systime,	0},
 {"tolower",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_tolower,	0},
 {"toupper",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_toupper,	0},
+{"typeof",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_typeof,	0},
 {"while",	Op_K_while,	 LEX_WHILE,	BREAK|CONTINUE,	0,	0},
 {"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_xor,	MPF(xor)},
 };
@@ -3183,6 +3275,7 @@ yylex(void)
 	bool inhex = false;
 	bool intlstr = false;
 	AWKNUM d;
+	bool collecting_typed_regexp = false;
 
 #define GET_INSTRUCTION(op) bcalloc(op, 1, sourceline)
 
@@ -3217,6 +3310,7 @@ yylex(void)
 
 	lexeme = lexptr;
 	thisline = NULL;
+collect_regexp:
 	if (want_regexp) {
 		int in_brack = 0;	/* count brackets, [[:alnum:]] allowed */
 		int b_index = -1;
@@ -3303,7 +3397,13 @@ end_regexp:
 								peek);
 					}
 				}
-				return lasttok = REGEXP;
+				if (collecting_typed_regexp) {
+					collecting_typed_regexp = false;
+					lasttok = TYPED_REGEXP;
+				} else
+					lasttok = REGEXP;
+
+				return lasttok;
 			case '\n':
 				pushback();
 				yyerror(_("unterminated regexp"));
@@ -3361,6 +3461,13 @@ retry:
 		return lasttok = NEWLINE;
 
 	case '@':
+		c = nextc(true);
+		if (c == '/') {
+			want_regexp = true;
+			collecting_typed_regexp = true;
+			goto collect_regexp;
+		}
+		pushback();
 		at_seen = true;
 		return lasttok = '@';
 
@@ -4170,7 +4277,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 			if (arg->nexti == arg->lasti && arg->nexti->opcode == Op_push)
 				arg->nexti->opcode = Op_push_arg;	/* argument may be array */
  		}
-	} else if (r->builtin == do_isarray) {
+	} else if (r->builtin == do_isarray || r->builtin == do_typeof) {
 		arg = subn->nexti;
 		if (arg->nexti == arg->lasti && arg->nexti->opcode == Op_push)
 			arg->nexti->opcode = Op_push_arg;	/* argument may be array */
@@ -4752,7 +4859,7 @@ make_regnode(int type, NODE *exp)
 	n->type = type;
 	n->re_cnt = 1;
 
-	if (type == Node_regex) {
+	if (type == Node_regex || type == Node_typedregex) {
 		n->re_reg = make_regexp(exp->stptr, exp->stlen, false, true, false);
 		if (n->re_reg == NULL) {
 			freenode(n);
@@ -4775,6 +4882,8 @@ mk_rexp(INSTRUCTION *list)
 	ip = list->nexti;
 	if (ip == list->lasti && ip->opcode == Op_match_rec)
 		ip->opcode = Op_push_re;
+	else if (ip == list->lasti && ip->opcode == Op_push_re)
+		; /* do nothing --- @/.../ */
 	else {
 		ip = instruction(Op_push_re);
 		ip->memory = make_regnode(Node_dynregex, NULL);

@@ -381,6 +381,8 @@ EXTRA_DIST = \
 	gnureops.ok \
 	gsubasgn.awk \
 	gsubasgn.ok \
+	gsubind.awk \
+	gsubind.ok \
 	gsubtest.awk \
 	gsubtest.ok \
 	gsubtst2.awk \
@@ -979,6 +981,10 @@ EXTRA_DIST = \
 	tweakfld.awk \
 	tweakfld.in \
 	tweakfld.ok \
+	typedregex1.awk \
+	typedregex1.ok \
+	typeof1.awk \
+	typeof1.ok \
 	uninit2.awk \
 	uninit2.ok \
 	uninit3.awk \
@@ -1076,7 +1082,7 @@ GAWK_EXT_TESTS = \
 	colonwarn clos1way crlf dbugeval delsub devfd devfd1 devfd2 dumpvars errno exit \
 	fieldwdth fpat1 fpat2 fpat3 fpat4 fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
-	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
+	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops gsubind \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcase \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
 	include include2 indirectbuiltin indirectcall indirectcall2 \
@@ -1093,6 +1099,7 @@ GAWK_EXT_TESTS = \
 	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
 	symtab7 symtab8 symtab9 \
+	typedregex1 typeof1
 	timeout
 
 EXTRA_TESTS = inftest regtest

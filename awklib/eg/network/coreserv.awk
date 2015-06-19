@@ -1,7 +1,7 @@
 # CGI Library and core of a web server
 #
 # Juergen Kahrs, Juergen.Kahrs@vr-web.de
-# with Arnold Robbins, arnold@gnu.org
+# with Arnold Robbins, arnold@skeeve.com
 # September 2000
 
 # Global arrays

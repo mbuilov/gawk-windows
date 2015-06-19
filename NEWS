@@ -48,12 +48,21 @@ Changes from 4.1.x to 4.2.0
 11. Gawk now supports retryable I/O via PROCINFO[input-file, "RETRY"]; see
     the manual.
 
-12. The API minor version has been increased to two; the get_file()
+12. The API minor version has been increased to 2; the get_file()
     API provides access to open redirections. Also see the manual.
 
 13. Revisions in the POSIX standard remove the special case for POSIX
     mode when FS = " " where newline was not a field separator. The code
     and doc have been updated.
+
+14. Gawk now supports strongly typed regexp constants. Such constants
+    look like @/.../.  You can assign them to variables, pass them to
+    functions, use them in ~, !~ and the case part of a switch statement.
+    More details are provided in the manual.
+
+15. The new typeof() function can be used to indicate if a variable or
+    array element is an array, regexp, string or number.  The isarray()
+    function is deprecated in favor of typeof().
 
 Changes from 4.1.2 to 4.1.3
 ---------------------------
