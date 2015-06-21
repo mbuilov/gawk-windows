@@ -338,6 +338,7 @@ static struct optypetab {
 	{ "Op_indirect_func_call", NULL },
 	{ "Op_push", NULL },
 	{ "Op_push_arg", NULL },
+	{ "Op_push_arg_untyped", NULL },
 	{ "Op_push_i", NULL },
 	{ "Op_push_re", NULL },
 	{ "Op_push_array", NULL },

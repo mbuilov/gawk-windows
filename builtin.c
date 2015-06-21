@@ -3872,7 +3872,6 @@ do_typeof(int nargs)
 {
 	NODE *arg;
 	char *res = "unknown";
-	int null_str_flags = (STRCUR|STRING|NUMCUR|NUMBER);
 
 	arg = POP();
 	switch (arg->type) {
@@ -3884,7 +3883,7 @@ do_typeof(int nargs)
 		break;
 	case Node_val:
 	case Node_var:
-		if ((arg->flags & null_str_flags) == null_str_flags)
+		if (arg == Nnull_string)
 			res = "untyped";
 		else if ((arg->flags & STRING) != 0)
 			res = "scalar_s";
