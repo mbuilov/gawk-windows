@@ -12,6 +12,11 @@
 	(initialize_watch_item): Ditto.
 	(print_memory): Ditto.
 
+	Fix typeof to work on subarrays.  Thanks, yet again, to
+	Hermann Peifer for the bug report.
+
+	* builtin.c (do_typeof): Don't deref Node_var_array.
+
 2015-06-21         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Fixes for typeof - Don't let typeof change an untyped variable

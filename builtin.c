@@ -3872,11 +3872,13 @@ do_typeof(int nargs)
 {
 	NODE *arg;
 	char *res = "unknown";
+	bool deref = true;
 
 	arg = POP();
 	switch (arg->type) {
 	case Node_var_array:
 		res = "array";
+		deref = false;
 		break;
 	case Node_typedregex:
 		res = "regexp";
@@ -3899,7 +3901,8 @@ do_typeof(int nargs)
 		break;
 	}
 
-	DEREF(arg);
+	if (deref)
+		DEREF(arg);
 	return make_string(res, strlen(res));
 }
 
