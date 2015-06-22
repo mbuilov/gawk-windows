@@ -4,6 +4,14 @@
 	also.
 	* profile.c (pprint): Add Op_push_arg_untyped.
 
+	Improve debugger support for typed regexps.
+	Thanks to Hermann Peifer for the bug report.
+
+	* awkgram.y (valinfo): Add support for Node_typedregex.
+	* debug.c (watchpoint_triggerred): Handle Node_typedregex.
+	(initialize_watch_item): Ditto.
+	(print_memory): Ditto.
+
 2015-06-21         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Fixes for typeof - Don't let typeof change an untyped variable

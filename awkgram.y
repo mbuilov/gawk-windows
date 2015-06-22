@@ -4475,6 +4475,8 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 {
 	if (n == Nnull_string)
 		print_func(fp, "uninitialized scalar\n");
+	else if (n->type == Node_typedregex)
+		print_func(fp, "@/%.*s/\n", n->re_exp->stlen, n->re_exp->stptr);
 	else if ((n->flags & STRING) != 0) {
 		pp_string_fp(print_func, fp, n->stptr, n->stlen, '"', false);
 		print_func(fp, "\n");
