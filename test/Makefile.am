@@ -2133,7 +2133,7 @@ paramasfunc2::
 negtime::
 	@echo $@
 	@TZ=GMT AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@AWKPATH="$(srcdir)" $(AWK) -f checknegtime.awk $@.ok _$@ && rm -f _$@
+	@AWKPATH="$(srcdir)" $(AWK) -f checknegtime.awk "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 dbugtypedre:
 	@echo $@
