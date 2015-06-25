@@ -177,6 +177,7 @@ top:
 			case Node_var_new:
 uninitialized_scalar:
 				if (op != Op_push_arg_untyped) {
+					/* convert untyped to scalar */
 					m->type = Node_var;
 					m->var_value = dupnode(Nnull_string);
 				}
@@ -185,7 +186,8 @@ uninitialized_scalar:
 						_("reference to uninitialized argument `%s'") :
 						_("reference to uninitialized variable `%s'"),
 								save_symbol->vname);
-				m = dupnode(Nnull_string);
+				if (op != Op_push_arg_untyped)
+					m = dupnode(Nnull_string);
 				PUSH(m);
 				break;
 

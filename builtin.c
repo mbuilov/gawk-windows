@@ -2144,7 +2144,9 @@ do_print(int nargs, int redirtype)
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(tmp));
 		}
 
-		if ((tmp->flags & (NUMBER|STRING)) == NUMBER) {
+		if (tmp->type == Node_typedregex)
+				args_array[i] = force_string(tmp);
+		else if ((tmp->flags & (NUMBER|STRING)) == NUMBER) {
 			if (OFMTidx == CONVFMTidx)
 				args_array[i] = force_string(tmp);
 			else
@@ -3877,11 +3879,14 @@ do_typeof(int nargs)
 	arg = POP();
 	switch (arg->type) {
 	case Node_var_array:
+		/* Node_var_array is never UPREF'ed */
 		res = "array";
 		deref = false;
 		break;
 	case Node_typedregex:
+		/* Op_push_re does not UPREF */
 		res = "regexp";
+		deref = false;
 		break;
 	case Node_val:
 	case Node_var:
@@ -3894,6 +3899,7 @@ do_typeof(int nargs)
 		break;
 	case Node_var_new:
 		res = "untyped";
+		deref = false;
 		break;
 	default:
 		fatal(_("typeof: unknown argument type `%s'"),

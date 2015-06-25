@@ -1182,6 +1182,7 @@ extern void r_unref(NODE *tmp);
 static inline void
 DEREF(NODE *r)
 {
+	assert(r->valref > 0);
 	if (--r->valref == 0)
 		r_unref(r);
 }

@@ -1,3 +1,18 @@
+2015-06-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Further work straightening out memory management for typeof.
+
+	* awk.h (DEREF): Add an assert.
+	* builtin.c (do_typeof): Add comments, cases where not to deref.
+	* debug.c (print_instruction): Add Op_push_arg_untyped.
+	* interpret.h (r_interpret): Additional comments / tweaks for
+	Op_push_arg_untyped.
+
+	Unrelated. Make `x = @/foo/ ; print x' print something.
+
+	* builtin.c (do_print): Check for Node_typedregex and handle it.
+	Needed for adding test code.
+
 2015-06-22         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y (snode): Make isarray not scalarize untyped parameters
