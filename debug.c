@@ -1794,7 +1794,7 @@ initialize_watch_item(struct list_item *w)
 			w->flags |= CUR_IS_ARRAY;
 			w->cur_size = assoc_length(symbol);
 		} else if (symbol->type == Node_typedregex) {
-			w->cur_value = dupnode(r);
+			w->cur_value = dupnode(symbol);
 		} /* else
 			can't happen */
 	}
