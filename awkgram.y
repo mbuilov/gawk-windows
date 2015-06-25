@@ -4280,7 +4280,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	} else if (r->builtin == do_isarray || r->builtin == do_typeof) {
 		arg = subn->nexti;
 		if (arg->nexti == arg->lasti && arg->nexti->opcode == Op_push)
-			arg->nexti->opcode = Op_push_arg;	/* argument may be array */
+			arg->nexti->opcode = Op_push_arg_untyped;	/* argument may be untyped */
 	} else if (r->builtin == do_intdiv
 #ifdef HAVE_MPFR
 		   || r->builtin == MPF(intdiv)
@@ -4475,6 +4475,8 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 {
 	if (n == Nnull_string)
 		print_func(fp, "uninitialized scalar\n");
+	else if (n->type == Node_typedregex)
+		print_func(fp, "@/%.*s/\n", n->re_exp->stlen, n->re_exp->stptr);
 	else if ((n->flags & STRING) != 0) {
 		pp_string_fp(print_func, fp, n->stptr, n->stlen, '"', false);
 		print_func(fp, "\n");

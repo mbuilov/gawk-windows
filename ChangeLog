@@ -1,3 +1,54 @@
+2015-06-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Further work straightening out memory management for typeof.
+
+	* awk.h (DEREF): Add an assert.
+	* builtin.c (do_typeof): Add comments, cases where not to deref.
+	* debug.c (print_instruction): Add Op_push_arg_untyped.
+	* interpret.h (r_interpret): Additional comments / tweaks for
+	Op_push_arg_untyped.
+
+	Unrelated. Make `x = @/foo/ ; print x' print something.
+
+	* builtin.c (do_print): Check for Node_typedregex and handle it.
+	Needed for adding test code.
+
+	Unrelated. Typo fix.
+
+	* debug.c (initialize_watch_item): Dupnode the right thing.
+
+2015-06-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (snode): Make isarray not scalarize untyped parameters
+	also.
+	* profile.c (pprint): Add Op_push_arg_untyped.
+
+	Improve debugger support for typed regexps.
+	Thanks to Hermann Peifer for the bug report.
+
+	* awkgram.y (valinfo): Add support for Node_typedregex.
+	* debug.c (watchpoint_triggerred): Handle Node_typedregex.
+	(initialize_watch_item): Ditto.
+	(print_memory): Ditto.
+
+	Fix typeof to work on subarrays.  Thanks, yet again, to
+	Hermann Peifer for the bug report.
+
+	* builtin.c (do_typeof): Don't deref Node_var_array.
+
+2015-06-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fixes for typeof - Don't let typeof change an untyped variable
+	into a scalar.
+
+	* awk.h (opcodeval): Add Op_push_arg_untyped.
+	* awkgram.y (snode): Separate out case for do_typeof, use
+	Op_push_arg_untyped.
+	* builtin.c (do_typeof): Arg will be equal to Nnull_string
+	if it's untyped.
+	* eval.c (optypes): Add Op_push_arg_untyped.
+	* interpret.h (r_interpret): Add Op_push_arg_untyped handling.
+
 2015-06-19         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_isarray): Minor edit to lint warning.

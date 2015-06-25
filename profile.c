@@ -317,6 +317,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 		case Op_push_array:
 		case Op_push:
 		case Op_push_arg:
+		case Op_push_arg_untyped:
 			m = pc->memory;
 			switch (m->type) {
 			case Node_param_list:

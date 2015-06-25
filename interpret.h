@@ -144,6 +144,7 @@ top:
 
 		case Op_push:
 		case Op_push_arg:
+		case Op_push_arg_untyped:
 		{
 			NODE *save_symbol;
 			bool isparam = false;
@@ -175,19 +176,23 @@ top:
 
 			case Node_var_new:
 uninitialized_scalar:
-				m->type = Node_var;
-				m->var_value = dupnode(Nnull_string);
+				if (op != Op_push_arg_untyped) {
+					/* convert untyped to scalar */
+					m->type = Node_var;
+					m->var_value = dupnode(Nnull_string);
+				}
 				if (do_lint)
 					lintwarn(isparam ?
 						_("reference to uninitialized argument `%s'") :
 						_("reference to uninitialized variable `%s'"),
 								save_symbol->vname);
-				m = dupnode(Nnull_string);
+				if (op != Op_push_arg_untyped)
+					m = dupnode(Nnull_string);
 				PUSH(m);
 				break;
 
 			case Node_var_array:
-				if (op == Op_push_arg)
+				if (op == Op_push_arg || op == Op_push_arg_untyped)
 					PUSH(m);
 				else
 					fatal(_("attempt to use array `%s' in a scalar context"),

@@ -177,6 +177,9 @@ EXTRA_DIST = \
 	datanonl.ok \
 	dbugeval.in \
 	dbugeval.ok \
+	dbugtypedre.awk \
+	dbugtypedre.in \
+	dbugtypedre.ok \
 	defref.awk \
 	defref.ok \
 	delargv.awk \
@@ -985,6 +988,12 @@ EXTRA_DIST = \
 	typedregex1.ok \
 	typeof1.awk \
 	typeof1.ok \
+	typeof2.awk \
+	typeof2.ok \
+	typeof3.awk \
+	typeof3.ok \
+	typeof4.awk \
+	typeof4.ok \
 	uninit2.awk \
 	uninit2.ok \
 	uninit3.awk \
@@ -1079,7 +1088,7 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
-	colonwarn clos1way crlf dbugeval delsub devfd devfd1 devfd2 dumpvars errno exit \
+	colonwarn clos1way crlf dbugeval dbugtypedre delsub devfd devfd1 devfd2 dumpvars errno exit \
 	fieldwdth fpat1 fpat2 fpat3 fpat4 fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
 	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops gsubind \
@@ -1099,7 +1108,7 @@ GAWK_EXT_TESTS = \
 	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
 	symtab7 symtab8 symtab9 \
-	typedregex1 typeof1
+	typedregex1 typeof1 typeof2 typeof3 typeof4
 	timeout
 
 EXTRA_TESTS = inftest regtest
@@ -2124,7 +2133,12 @@ paramasfunc2::
 negtime::
 	@echo $@
 	@TZ=GMT AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@AWKPATH="$(srcdir)" $(AWK) -f checknegtime.awk $@.ok _$@ && rm -f _$@
+	@AWKPATH="$(srcdir)" $(AWK) -f checknegtime.awk "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+dbugtypedre:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < $@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
 include Maketests

@@ -1736,6 +1736,8 @@ watchpoint_triggered(struct list_item *w)
 		/* new != NULL */
 		if (t2->type == Node_val)
 			w->cur_value = dupnode(t2);
+		else if (t2->type == Node_typedregex)
+			w->cur_value = dupnode(t2);
 		else {
 			w->flags |= CUR_IS_ARRAY;
 			w->cur_size = (t2->type == Node_var_array) ? assoc_length(t2) : 0;
@@ -1748,6 +1750,7 @@ watchpoint_triggered(struct list_item *w)
 			w->flags |= CUR_IS_ARRAY;
 			w->cur_size = assoc_length(t2);
 		} else
+			/* works for Node_typedregex too */
 			w->cur_value = dupnode(t2);
 	}
 
@@ -1790,6 +1793,8 @@ initialize_watch_item(struct list_item *w)
 		} else if (symbol->type == Node_var_array) {
 			w->flags |= CUR_IS_ARRAY;
 			w->cur_size = assoc_length(symbol);
+		} else if (symbol->type == Node_typedregex) {
+			w->cur_value = dupnode(symbol);
 		} /* else
 			can't happen */
 	}
@@ -3703,6 +3708,9 @@ print_memory(NODE *m, NODE *func, Func_print print_func, FILE *fp)
 		print_func(fp, " [%s]", flags2str(m->flags));
 		break;
 
+	case Node_typedregex:
+		print_func(fp, "@");
+		/* fall through */
 	case Node_regex:
 		pp_string_fp(print_func, fp, m->re_exp->stptr, m->re_exp->stlen, '/', false);
 		break;
@@ -3982,6 +3990,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 	case Op_push_i:
 	case Op_push:
 	case Op_push_arg:
+	case Op_push_arg_untyped:
 	case Op_push_param:
 	case Op_push_array:
 	case Op_push_re:

@@ -643,6 +643,7 @@ typedef enum opcodeval {
 
 	Op_push,		/* scalar variable */
 	Op_push_arg,		/* variable type (scalar or array) argument to built-in */
+	Op_push_arg_untyped,	/* like Op_push_arg, but for typeof */
 	Op_push_i,		/* number, string */
 	Op_push_re,		/* regex */
 	Op_push_array,
@@ -1181,6 +1182,7 @@ extern void r_unref(NODE *tmp);
 static inline void
 DEREF(NODE *r)
 {
+	assert(r->valref > 0);
 	if (--r->valref == 0)
 		r_unref(r);
 }
