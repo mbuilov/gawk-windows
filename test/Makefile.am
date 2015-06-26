@@ -177,9 +177,12 @@ EXTRA_DIST = \
 	datanonl.ok \
 	dbugeval.in \
 	dbugeval.ok \
-	dbugtypedre.awk \
-	dbugtypedre.in \
-	dbugtypedre.ok \
+	dbugtypedre1.awk \
+	dbugtypedre1.in \
+	dbugtypedre1.ok \
+	dbugtypedre2.awk \
+	dbugtypedre2.in \
+	dbugtypedre2.ok \
 	defref.awk \
 	defref.ok \
 	delargv.awk \
@@ -1088,7 +1091,8 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
-	colonwarn clos1way crlf dbugeval dbugtypedre delsub devfd devfd1 devfd2 dumpvars errno exit \
+	colonwarn clos1way crlf dbugeval dbugtypedre1 dbugtypedre2 delsub \
+	devfd devfd1 devfd2 dumpvars errno exit \
 	fieldwdth fpat1 fpat2 fpat3 fpat4 fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
 	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops gsubind \
@@ -2135,7 +2139,12 @@ negtime::
 	@TZ=GMT AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@AWKPATH="$(srcdir)" $(AWK) -f checknegtime.awk "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
-dbugtypedre:
+dbugtypedre1:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < $@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+dbugtypedre2:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < $@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
