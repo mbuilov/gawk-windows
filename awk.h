@@ -286,7 +286,6 @@ typedef enum nodevals {
 	Node_param_list,	/* lnode is a variable, rnode is more list */
 	Node_func,		/* lnode is param. list, rnode is body */
 	Node_ext_func,		/* extension function, code_ptr is builtin code */
-	Node_old_ext_func,	/* extension function, code_ptr is builtin code */
 	Node_builtin_func,	/* built-in function, main use is for FUNCTAB */
 
 	Node_array_ref,		/* array passed by ref as parameter */
@@ -634,7 +633,6 @@ typedef enum opcodeval {
 	Op_builtin,
 	Op_sub_builtin,		/* sub, gsub and gensub */
 	Op_ext_builtin,
-	Op_old_ext_builtin,	/* temporary */
 	Op_in_array,		/* boolean test of membership in array */
 
 	/* function call instruction */
@@ -1426,10 +1424,8 @@ extern NODE **r_get_field(NODE *n, Func_ptr *assign, bool reference);
 /* ext.c */
 extern NODE *do_ext(int nargs);
 void load_ext(const char *lib_name);	/* temporary */
-extern NODE *load_old_ext(SRCFILE *s, const char *init_func, const char *fini_func, NODE *obj);
 extern void close_extensions(void);
 #ifdef DYNAMIC
-extern void make_old_builtin(const char *, NODE *(*)(int), int);
 extern awk_bool_t make_builtin(const awk_ext_func_t *);
 extern NODE *get_argument(int);
 extern NODE *get_actual_argument(int, bool, bool);
