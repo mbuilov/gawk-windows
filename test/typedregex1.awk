@@ -69,7 +69,7 @@ function simple_tests(	fbre, numresult, strresult)
 	else
 		print "conversion to number: fail"
 
-	if (typeof(fbre) == "scalar_n")
+	if (typeof(fbre) == "number")
 		print "typeof variable after conversion: ok"
 	else
 		print "typeof variable after conversion: fail"
