@@ -948,7 +948,6 @@ arrayfor:
 			break;
 
 		case Op_ext_builtin:
-		case Op_old_ext_builtin:
 		{
 			int arg_count = pc->expr_count;
 			awk_value_t result;
@@ -991,6 +990,8 @@ arrayfor:
 				r = POP_STRING();
 				unref(m->re_exp);
 				m->re_exp = r;
+			} else if (m->type == Node_typedregex) {
+				UPREF(m);
 			}
 			PUSH(m);
 			break;
@@ -1084,8 +1085,7 @@ match_re:
 				PUSH(r);
 				break;
 			} else if (f->type != Node_func) {
-				if (   f->type == Node_ext_func
-				    || f->type == Node_old_ext_func) {
+				if (f->type == Node_ext_func) {
 					/* code copied from below, keep in sync */
 					INSTRUCTION *bc;
 					char *fname = pc->func_name;
@@ -1096,10 +1096,7 @@ match_re:
 
 					bc = f->code_ptr;
 					assert(bc->opcode == Op_symbol);
-					if (f->type == Node_ext_func)
-						npc[0].opcode = Op_ext_builtin;	/* self modifying code */
-					else
-						npc[0].opcode = Op_old_ext_builtin;	/* self modifying code */
+					npc[0].opcode = Op_ext_builtin;	/* self modifying code */
 					npc[0].extfunc = bc->extfunc;
 					npc[0].expr_count = arg_count;		/* actual argument count */
 					npc[1] = pc[1];
@@ -1125,12 +1122,12 @@ match_re:
 			f = pc->func_body;
 			if (f == NULL) {
 				f = lookup(pc->func_name);
-				if (f == NULL || (f->type != Node_func && f->type != Node_ext_func && f->type != Node_old_ext_func))
+				if (f == NULL || (f->type != Node_func && f->type != Node_ext_func))
 					fatal(_("function `%s' not defined"), pc->func_name);
 				pc->func_body = f;     /* save for next call */
 			}
 
-			if (f->type == Node_ext_func || f->type == Node_old_ext_func) {
+			if (f->type == Node_ext_func) {
 				/* keep in sync with indirect call code */
 				INSTRUCTION *bc;
 				char *fname = pc->func_name;
@@ -1138,10 +1135,7 @@ match_re:
 
 				bc = f->code_ptr;
 				assert(bc->opcode == Op_symbol);
-				if (f->type == Node_ext_func)
-					pc->opcode = Op_ext_builtin;	/* self modifying code */
-				else
-					pc->opcode = Op_old_ext_builtin;	/* self modifying code */
+				pc->opcode = Op_ext_builtin;	/* self modifying code */
 				pc->extfunc = bc->extfunc;
 				pc->expr_count = arg_count;		/* actual argument count */
 				(pc + 1)->func_name = fname;	/* name of the builtin */

@@ -3884,18 +3884,18 @@ do_typeof(int nargs)
 		deref = false;
 		break;
 	case Node_typedregex:
-		/* Op_push_re does not UPREF */
 		res = "regexp";
-		deref = false;
 		break;
 	case Node_val:
 	case Node_var:
 		if (arg == Nnull_string)
-			res = "untyped";
-		else if ((arg->flags & STRING) != 0)
-			res = "scalar_s";
-		else if ((arg->flags & NUMBER) != 0)
-			res = "scalar_n";
+			res = "unassigned";
+		else if ((arg->flags & STRING) != 0) {
+			res = "string";
+			if ((arg->flags & MAYBE_NUM) != 0)
+				res = "strnum";
+		} else if ((arg->flags & NUMBER) != 0)
+			res = "number";
 		break;
 	case Node_var_new:
 		res = "untyped";

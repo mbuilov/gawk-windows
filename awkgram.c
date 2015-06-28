@@ -3953,7 +3953,7 @@ regular_print:
 		if (! at_seen) {
 			n = lookup((yyvsp[-3])->func_name);
 			if (n != NULL && n->type != Node_func
-			    && n->type != Node_ext_func && n->type != Node_old_ext_func) {
+			    && n->type != Node_ext_func) {
 				error_ln((yyvsp[-3])->source_line,
 					_("attempt to use non-function `%s' in function call"),
 						(yyvsp[-3])->func_name);
@@ -4475,9 +4475,6 @@ static const struct token tokentab[] = {
 {"eval",	Op_symbol,	 LEX_EVAL,	0,		0,	0},
 {"exit",	Op_K_exit,	 LEX_EXIT,	0,		0,	0},
 {"exp",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_exp,	MPF(exp)},
-#ifdef DYNAMIC
-{"extension",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_ext,	0},
-#endif
 {"fflush",	Op_builtin,	 LEX_BUILTIN,	A(0)|A(1), do_fflush,	0},
 {"for",		Op_K_for,	 LEX_FOR,	BREAK|CONTINUE,	0,	0},
 {"func",	Op_func, LEX_FUNCTION,	NOT_POSIX|NOT_OLD,	0,	0},
@@ -7289,6 +7286,7 @@ make_regnode(int type, NODE *exp)
 		}
 		n->re_exp = exp;
 		n->re_flags = CONSTANT;
+		n->valref = 1;
 	}
 	return n;
 }

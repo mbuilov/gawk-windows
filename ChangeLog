@@ -1,3 +1,30 @@
+2015-06-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Improve memory tracking of typed regexps.
+
+	* awkgram.y (make_regnode): Set valref to 1.
+	* interpret.h (r_interpret): Have Op_push_re upref typed regexp.
+	* builtin.c (do_typeof): OK to deref typed regex.
+	* awk.h (force_string): Do dupnode on the regexp text.
+
+2015-06-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Remove support for old-style extensions.
+
+	* awk.h (Node_old_ext_func, Op_old_ext_func): Removed.
+	Remove all uses throughout the code.
+	(load_old_ext, make_old_builtin): Remove declarations.
+	* ext.c (load_old_ext, make_old_builtin): Removed.
+	* awkgram.y (tokentab): Remove "extension" entry.
+	* eval.c (Node_old_ext_funci, Op_old_ext_func): Remove from tables.
+	* interpret.h (interpret): Remove stuff for old extensions.
+
+	Unrelated:
+
+	* builtin.c (do_typeof): Add support for strnum, distinguish
+	untyped from unassigned, use "string" and "number". Thanks to
+	Hermann Peifer for suggesting inclusion of strnum.
+
 2015-06-25         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Further work straightening out memory management for typeof.

@@ -32,9 +32,6 @@ extern SRCFILE *srcfiles;
 
 #ifdef DYNAMIC
 
-#define OLD_INIT_FUNC	"dlload"
-#define OLD_FINI_FUNC	"dlunload"
-
 #include <dlfcn.h>
 
 /*
@@ -90,95 +87,6 @@ load_ext(const char *lib_name)
 		warning(_("load_ext: library `%s' initialization routine `%s' failed\n"),
 				lib_name, INIT_FUNC);
 }
-
-/* do_ext --- load an extension at run-time: interface to load_ext */
- 
-NODE *
-do_ext(int nargs)
-{
-	NODE *obj, *init = NULL, *fini = NULL, *ret = NULL;
-	SRCFILE *s;
-	char *init_func = NULL;
-	char *fini_func = NULL;
-
-	if (nargs == 3) {
-		fini = POP_STRING();
-		fini_func = fini->stptr;
-	}
-	if (nargs >= 2) { 
-		init = POP_STRING();
-		init_func = init->stptr;
-	}
-	obj = POP_STRING();
-
-	s = add_srcfile(SRC_EXTLIB, obj->stptr, srcfiles, NULL, NULL);
-	if (s != NULL)
-		ret = load_old_ext(s, init_func, fini_func, obj);
-
-	DEREF(obj);
-	if (fini != NULL)
-		DEREF(fini);
-	if (init != NULL)
-		DEREF(init);
-	if (ret == NULL)
-		ret = dupnode(Nnull_string);
-	return ret;
-}
-
-/* load_old_ext --- load an external library */
-
-NODE *
-load_old_ext(SRCFILE *s, const char *init_func, const char *fini_func, NODE *obj)
-{
-	NODE *(*func)(NODE *, void *);
-	NODE *tmp;
-	void *dl;
-	int flags = RTLD_LAZY;
-	int *gpl_compat;
-	const char *lib_name = s->fullpath;
-
-	if (init_func == NULL || init_func[0] == '\0')
-		init_func = OLD_INIT_FUNC;
-
-	if (fini_func == NULL || fini_func[0] == '\0')
-		fini_func = OLD_FINI_FUNC;
-
-	if (do_sandbox)
-		fatal(_("extensions are not allowed in sandbox mode"));
-
-	if (do_traditional || do_posix)
-		fatal(_("`extension' is a gawk extension"));
-
-	if (lib_name == NULL)
-		fatal(_("extension: received NULL lib_name"));
-
-	if ((dl = dlopen(lib_name, flags)) == NULL)
-		fatal(_("extension: cannot open library `%s' (%s)"), lib_name,
-		      dlerror());
-
-	/* Per the GNU Coding standards */
-	gpl_compat = (int *) dlsym(dl, "plugin_is_GPL_compatible");
-	if (gpl_compat == NULL)
-		fatal(_("extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)"),
-				lib_name, dlerror());
-	func = (NODE *(*)(NODE *, void *)) dlsym(dl, init_func);
-	if (func == NULL)
-		fatal(_("extension: library `%s': cannot call function `%s' (%s)"),
-				lib_name, init_func, dlerror());
-
-	if (obj == NULL) {
-		obj = make_string(lib_name, strlen(lib_name));
-		tmp = (*func)(obj, dl);
-		unref(tmp);
-		unref(obj);
-		tmp = NULL;
-	} else
-		tmp = (*func)(obj, dl);
-
-	s->fini_func = (void (*)(void)) dlsym(dl, fini_func);
-	return tmp;
-}
-
 
 /* make_builtin --- register name to be called as func with a builtin body */
 
@@ -236,61 +144,6 @@ make_builtin(const awk_ext_func_t *funcinfo)
 	track_ext_func(name);
 	return awk_true;
 }
-
-/* make_old_builtin --- register name to be called as func with a builtin body */
-
-void
-make_old_builtin(const char *name, NODE *(*func)(int), int count)	/* temporary */
-{
-	NODE *symbol, *f;
-	INSTRUCTION *b;
-	const char *sp;
-	char c;
-
-	sp = name;
-	if (sp == NULL || *sp == '\0')
-		fatal(_("extension: missing function name"));
-
-	if (! is_letter(*sp))
-		fatal(_("extension: illegal character `%c' in function name `%s'"), *sp, name);
-
-	for (sp++; (c = *sp++) != '\0';) {
-		if (! is_identchar(c))
-			fatal(_("extension: illegal character `%c' in function name `%s'"), c, name);
-	}
-
-	f = lookup(name);
-
-	if (f != NULL) {
-		if (f->type == Node_func) {
-			/* user-defined function */
-			fatal(_("extension: can't redefine function `%s'"), name);
-		} else if (f->type == Node_ext_func) {
-			/* multiple extension() calls etc. */ 
-			if (do_lint)
-				lintwarn(_("extension: function `%s' already defined"), name);
-			return;
-		} else
-			/* variable name etc. */ 
-			fatal(_("extension: function name `%s' previously defined"), name);
-	} else if (check_special(name) >= 0)
-		fatal(_("extension: can't use gawk built-in `%s' as function name"), name); 
-
-	if (count < 0)
-		fatal(_("make_builtin: negative argument count for function `%s'"),
-				name);
-
-	b = bcalloc(Op_symbol, 1, 0);
-	b->builtin = func;
-	b->expr_count = count;
-
-	/* NB: extension sub must return something */
-
-       	symbol = install_symbol(estrdup(name, strlen(name)), Node_old_ext_func);
-	symbol->code_ptr = b;
-	track_ext_func(name);
-}
-
 
 /* get_argument --- get the i'th argument of a dynamically linked function */
 

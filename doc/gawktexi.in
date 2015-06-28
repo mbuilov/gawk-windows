@@ -18624,14 +18624,43 @@ Return one of the following strings, depending upon the type of @var{x}:
 @item "regexp"
 @var{x} is a strongly typed regexp (@pxref{Strong Regexp Constants}).
 
-@item "scalar_n"
+@item "number"
 @var{x} is a number.
 
-@item "scalar_s"
+@item "string"
 @var{x} is a string.
 
+@item "strnum"
+@var{x} is a string that might be a number, such as a field or
+the result of calling @code{split()}. (I.e., @var{x} has the STRNUM
+attribute; @pxref{Variable Typing}.)
+
+@item "unassigned"
+@var{x} is a scalar variable that has not been assigned a value yet.
+For example:
+
+@example
+BEGIN @{
+    a[1]                # creates a[1] but it has no assigned value
+    print typeof(a[1])  # scalar_u
+@}
+@end example
+
 @item "untyped"
-@var{x} has not yet been given a type.
+@var{x} has not yet been used yet at all; it can become a scalar or an
+array.
+For example:
+
+@example
+BEGIN @{
+    print typeof(x)     # x never used --> untyped
+    mk_arr(x)
+    print typeof(x)     # x now an array --> array
+@}
+
+function mk_arr(a) @{ a[1] = 1 @}
+@end example
+
 @end table
 @end table
 

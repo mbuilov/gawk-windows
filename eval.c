@@ -241,7 +241,6 @@ static const char *const nodetypes[] = {
 	"Node_param_list",
 	"Node_func",
 	"Node_ext_func",
-	"Node_old_ext_func",
 	"Node_builtin_func",
 	"Node_array_ref",
 	"Node_array_tree",
@@ -332,7 +331,6 @@ static struct optypetab {
 	{ "Op_builtin", NULL },
 	{ "Op_sub_builtin", NULL },
 	{ "Op_ext_builtin", NULL },
-	{ "Op_old_ext_builtin", NULL },	/* temporary */
 	{ "Op_in_array", " in " },
 	{ "Op_func_call", NULL },
 	{ "Op_indirect_func_call", NULL },
