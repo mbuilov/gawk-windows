@@ -1764,7 +1764,7 @@ static inline NODE *
 force_string(NODE *s)
 {
 	if (s->type == Node_typedregex)
-		return s->re_exp;
+		return dupnode(s->re_exp);
 
 	if ((s->flags & STRCUR) != 0
 		    && (s->stfmt == -1 || s->stfmt == CONVFMTidx)

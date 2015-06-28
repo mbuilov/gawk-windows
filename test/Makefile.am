@@ -989,6 +989,8 @@ EXTRA_DIST = \
 	tweakfld.ok \
 	typedregex1.awk \
 	typedregex1.ok \
+	typedregex2.awk \
+	typedregex2.ok \
 	typeof1.awk \
 	typeof1.ok \
 	typeof2.awk \
@@ -1112,7 +1114,7 @@ GAWK_EXT_TESTS = \
 	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
 	symtab7 symtab8 symtab9 \
-	typedregex1 typeof1 typeof2 typeof3 typeof4
+	typedregex1 typedregex2 typeof1 typeof2 typeof3 typeof4
 	timeout
 
 EXTRA_TESTS = inftest regtest
