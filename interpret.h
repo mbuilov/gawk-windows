@@ -990,6 +990,8 @@ arrayfor:
 				r = POP_STRING();
 				unref(m->re_exp);
 				m->re_exp = r;
+			} else if (m->type == Node_typedregex) {
+				UPREF(m);
 			}
 			PUSH(m);
 			break;

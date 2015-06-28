@@ -3884,9 +3884,7 @@ do_typeof(int nargs)
 		deref = false;
 		break;
 	case Node_typedregex:
-		/* Op_push_re does not UPREF */
 		res = "regexp";
-		deref = false;
 		break;
 	case Node_val:
 	case Node_var:

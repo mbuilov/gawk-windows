@@ -4866,6 +4866,7 @@ make_regnode(int type, NODE *exp)
 		}
 		n->re_exp = exp;
 		n->re_flags = CONSTANT;
+		n->valref = 1;
 	}
 	return n;
 }
