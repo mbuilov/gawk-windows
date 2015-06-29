@@ -177,6 +177,9 @@ EXTRA_DIST = \
 	datanonl.ok \
 	dbugeval.in \
 	dbugeval.ok \
+	dbugeval2.awk \
+	dbugeval2.in \
+	dbugeval2.ok \
 	dbugtypedre1.awk \
 	dbugtypedre1.in \
 	dbugtypedre1.ok \
@@ -1093,7 +1096,7 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
-	colonwarn clos1way crlf dbugeval dbugtypedre1 dbugtypedre2 delsub \
+	colonwarn clos1way crlf dbugeval dbugeval2 dbugtypedre1 dbugtypedre2 delsub \
 	devfd devfd1 devfd2 dumpvars errno exit \
 	fieldwdth fpat1 fpat2 fpat3 fpat4 fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
@@ -2147,6 +2150,11 @@ dbugtypedre1:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 dbugtypedre2:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+dbugeval2:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@

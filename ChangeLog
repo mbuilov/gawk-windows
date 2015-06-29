@@ -1,3 +1,10 @@
+2015-06-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (yylex): If gawk extension function is found as
+	a function in a user-defined function body, treat it normally.
+	Makes eval "print and(a, 1)" work in the debugger again.
+	Thanks, yet again, to Hermann Peifer.
+
 2015-06-28         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Improve memory tracking of typed regexps.
