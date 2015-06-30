@@ -268,7 +268,7 @@ uninitialized_scalar:
 					r = r->var_value;
 			}
 
-			if (r->type == Node_val)
+			if (r->type == Node_val || r->type == Node_typedregex)
 				UPREF(r);
 			PUSH(r);
 			break;

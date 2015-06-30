@@ -177,6 +177,9 @@ EXTRA_DIST = \
 	datanonl.ok \
 	dbugeval.in \
 	dbugeval.ok \
+	dbugeval2.awk \
+	dbugeval2.in \
+	dbugeval2.ok \
 	dbugtypedre1.awk \
 	dbugtypedre1.in \
 	dbugtypedre1.ok \
@@ -991,6 +994,8 @@ EXTRA_DIST = \
 	typedregex1.ok \
 	typedregex2.awk \
 	typedregex2.ok \
+	typedregex3.awk \
+	typedregex3.ok \
 	typeof1.awk \
 	typeof1.ok \
 	typeof2.awk \
@@ -1093,7 +1098,7 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
-	colonwarn clos1way crlf dbugeval dbugtypedre1 dbugtypedre2 delsub \
+	colonwarn clos1way crlf dbugeval dbugeval2 dbugtypedre1 dbugtypedre2 delsub \
 	devfd devfd1 devfd2 dumpvars errno exit \
 	fieldwdth fpat1 fpat2 fpat3 fpat4 fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
@@ -1114,7 +1119,7 @@ GAWK_EXT_TESTS = \
 	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
 	symtab7 symtab8 symtab9 \
-	typedregex1 typedregex2 typeof1 typeof2 typeof3 typeof4
+	typedregex1 typedregex2 typedregex3 typeof1 typeof2 typeof3 typeof4
 	timeout
 
 EXTRA_TESTS = inftest regtest
@@ -2147,6 +2152,11 @@ dbugtypedre1:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 dbugtypedre2:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+dbugeval2:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@

@@ -6426,14 +6426,20 @@ retry:
 
 		/* allow parameter names to shadow the names of gawk extension built-ins */
 		if ((tokentab[mid].flags & GAWKX) != 0) {
+			NODE *f;
+
 			switch (want_param_names) {
 			case FUNC_HEADER:
 				/* in header, defining parameter names */
 				goto out;
 			case FUNC_BODY:
 				/* in body, name must be in symbol table for it to be a parameter */
-				if (lookup(tokstart) != NULL)
-					goto out;
+				if ((f = lookup(tokstart)) != NULL) {
+					if (f->type == Node_builtin_func)
+						break;
+					else
+						goto out;
+				}
 				/* else
 					fall through */
 			case DONT_CHECK:
