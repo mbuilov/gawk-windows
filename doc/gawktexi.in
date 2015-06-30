@@ -29502,6 +29502,65 @@ executing, short programs.
 The @command{gawk} debugger only accepts source code supplied with the @option{-f} option.
 @end itemize
 
+One other point is worth disucssing.  Conventional debuggers run in a
+separate process (and thus address space) from the programs that they
+debug (the @dfn{debuggee}, if you will).
+
+The @command{gawk} debugger is different; it is an integrated part
+of @command{gawk} itself.  This makes it possible, in rare cases,
+for @command{gawk} to become an excellent demonstrator of Heisenburg
+Uncertainty physics, where the mere act of observing something can change
+it. Consider the following:@footnote{Thanks to Hermann Peifer for
+this example.}
+
+@example
+$ @kbd{cat test.awk}
+@print{} @{ print typeof($1), typeof($2) @}
+$ @kbd{cat test.data}
+@print{} abc 123
+$ @kbd{gawk -f test.awk test.data}
+@print{} strnum strnum
+@end example
+
+This is all as expected: field data has the STRNUM attribute
+(@pxref{Variable Typing}).  Now watch what happens when we run
+this program under the debugger:
+
+@example
+$ @kbd{gawk -D -f test.awk test.data}
+gawk> @kbd{w $1}                        @ii{Set watchpoint on} $1
+@print{} Watchpoint 1: $1
+gawk> @kbd{w $2}                        @ii{Set watchpoint on} $2
+@print{} Watchpoint 2: $2
+gawk> @kbd{r}                           @ii{Start the program}
+@print{} Starting program:
+@print{} Stopping in Rule ...
+@print{} Watchpoint 1: $1               @ii{Watchpoint fires}
+@print{}   Old value: ""
+@print{}   New value: "abc"
+@print{} main() at `test.awk':1
+@print{} 1       @{ print typeof($1), typeof($2) @}
+gawk> @kbd{n}                           @ii{Keep going @dots{}}
+@print{} Watchpoint 2: $2               @ii{Watchpoint fires}
+@print{}   Old value: ""
+@print{}   New value: "123"
+@print{} main() at `test.awk':1
+@print{} 1       @{ print typeof($1), typeof($2) @}
+gawk> @kbd{n}                           @ii{Get result from} typeof()
+@print{} strnum string                  @ii{Result for} $2 @ii{isn't right}
+@print{} Program exited normally with exit value: 0
+gawk> @kbd{quit}
+@end example
+
+In this case, the act of comparing the new value of @code{$2}
+with the old one caused @command{gawk} to evaluate it and determine that it
+is indeed a string, and this is reflected in the result of
+@code{typeof()}.
+
+Cases like this where the debugger is not transparent to the program's
+execution should be rare. If you encounter one, please report it
+(@pxref{Bugs}).
+
 @ignore
 Look forward to a future release when these and other missing features may
 be added, and of course feel free to try to add them yourself!
@@ -29537,6 +29596,10 @@ getting information, and other tasks.
 If the GNU Readline library is available when @command{gawk} is
 compiled, it is used by the debugger to provide command-line history
 and editing.
+
+@item
+Usually, the debugger does not not affect the
+program being debugged, but occasionally it can.
 
 @end itemize
 
