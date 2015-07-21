@@ -536,8 +536,8 @@ prtok (token t)
     fprintf (stderr, "END");
   else if (t < NOTCHAR)
     {
-      int ch = t;
-      fprintf (stderr, "%c", ch);
+      unsigned int ch = t;
+      fprintf (stderr, "0x%02x", ch);
     }
   else
     {
@@ -2166,6 +2166,28 @@ state_index (struct dfa *d, position_set const *s, int context)
         return i;
     }
 
+#ifdef DEBUG
+  fprintf (stderr, "new state %zd\n nextpos:", i);
+  for (j = 0; j < s->nelem; ++j)
+    {
+      fprintf (stderr, " %zu:", s->elems[j].index);
+      prtok (d->tokens[s->elems[j].index]);
+    }
+  fprintf (stderr, "\n context:");
+  if (context ^ CTX_ANY)
+    {
+      if (context & CTX_NONE)
+        fprintf (stderr, " CTX_NONE");
+      if (context & CTX_LETTER)
+        fprintf (stderr, " CTX_LETTER");
+      if (context & CTX_NEWLINE)
+        fprintf (stderr, " CTX_NEWLINE");
+    }
+  else
+    fprintf (stderr, " CTX_ANY");
+  fprintf (stderr, "\n");
+#endif
+
   /* We'll have to create a new state.  */
   d->states = maybe_realloc (d->states, d->sindex, &d->salloc,
                              sizeof *d->states);
@@ -2396,7 +2418,7 @@ dfaanalyze (struct dfa *d, int searchflag)
   fprintf (stderr, "dfaanalyze:\n");
   for (i = 0; i < d->tindex; ++i)
     {
-      fprintf (stderr, " %zd:", i);
+      fprintf (stderr, " %zu:", i);
       prtok (d->tokens[i]);
     }
   putc ('\n', stderr);
@@ -2510,7 +2532,7 @@ dfaanalyze (struct dfa *d, int searchflag)
         }
 #ifdef DEBUG
       /* ... balance the above nonsyntactic #ifdef goo...  */
-      fprintf (stderr, "node %zd:", i);
+      fprintf (stderr, "node %zu:", i);
       prtok (d->tokens[i]);
       putc ('\n', stderr);
       fprintf (stderr,
@@ -2518,13 +2540,13 @@ dfaanalyze (struct dfa *d, int searchflag)
       fprintf (stderr, " firstpos:");
       for (j = stk[-1].nfirstpos; j-- > 0;)
         {
-          fprintf (stderr, " %zd:", firstpos[j].index);
+          fprintf (stderr, " %zu:", firstpos[j].index);
           prtok (d->tokens[firstpos[j].index]);
         }
       fprintf (stderr, "\n lastpos:");
       for (j = stk[-1].nlastpos; j-- > 0;)
         {
-          fprintf (stderr, " %zd:", lastpos[j].index);
+          fprintf (stderr, " %zu:", lastpos[j].index);
           prtok (d->tokens[lastpos[j].index]);
         }
       putc ('\n', stderr);
@@ -2539,12 +2561,12 @@ dfaanalyze (struct dfa *d, int searchflag)
         || d->tokens[i] >= CSET)
       {
 #ifdef DEBUG
-        fprintf (stderr, "follows(%zd:", i);
+        fprintf (stderr, "follows(%zu:", i);
         prtok (d->tokens[i]);
         fprintf (stderr, "):");
         for (j = d->follows[i].nelem; j-- > 0;)
           {
-            fprintf (stderr, " %zd:", d->follows[i].elems[j].index);
+            fprintf (stderr, " %zu:", d->follows[i].elems[j].index);
             prtok (d->tokens[d->follows[i].elems[j].index]);
           }
         putc ('\n', stderr);
@@ -2634,6 +2656,10 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
   bool next_isnt_1st_byte = false; /* We can't add state0.  */
   size_t i, j, k;
 
+#ifdef DEBUG
+  fprintf (stderr, "build state %td\n", s);
+#endif
+
   zeroset (matches);
 
   for (i = 0; i < d->states[s].elems.nelem; ++i)
@@ -2684,6 +2710,16 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
           if (j == CHARCLASS_WORDS)
             continue;
         }
+
+#ifdef DEBUG
+      fprintf (stderr, " nextpos %zu:", pos.index);
+      prtok (d->tokens[pos.index]);
+      fprintf (stderr, " of");
+      for (j = 0; j < NOTCHAR; j++)
+      if (tstbit (j,  matches))
+        fprintf (stderr, " 0x%02zx", j);
+      fprintf (stderr, "\n");
+#endif
 
       for (j = 0; j < ngrps; ++j)
         {
@@ -2845,6 +2881,29 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
       else
         state_letter = state;
 
+#ifdef DEBUG
+      fprintf (stderr, "group %zu\n nextpos:", i);
+      for (j = 0; j < grps[i].nelem; ++j)
+        {
+          fprintf (stderr, " %zu:", grps[i].elems[j]);
+          prtok (d->tokens[grps[i].elems[j]]);
+        }
+      fprintf (stderr, "\n follows:");
+      for (j = 0; j < follows.nelem; ++j)
+        {
+          fprintf (stderr, " %zu:", follows.elems[j].index);
+          prtok (d->tokens[follows.elems[j].index]);
+        }
+      fprintf (stderr, "\n states:");
+      if (possible_contexts & CTX_NEWLINE)
+        fprintf (stderr, " CTX_NEWLINE:%td", state_newline);
+      if (possible_contexts & CTX_LETTER)
+        fprintf (stderr, " CTX_LETTER:%td", state_letter);
+      if (possible_contexts & CTX_NONE)
+        fprintf (stderr, " CTX_NONE:%td", state);
+      fprintf (stderr, "\n");
+#endif
+
       /* Set the transitions for each character in the current label.  */
       for (j = 0; j < CHARCLASS_WORDS; ++j)
         for (k = 0; k < CHARCLASS_WORD_BITS; ++k)
@@ -2860,6 +2919,17 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
                 trans[c] = state;
             }
     }
+
+#ifdef DEBUG
+  fprintf (stderr, "trans table %td", s);
+  for (i = 0; i < NOTCHAR; ++i)
+    {
+      if (!(i & 0xf))
+        fprintf (stderr, "\n");
+      fprintf (stderr, " %2td", trans[i]);
+    }
+  fprintf (stderr, "\n");
+#endif
 
   for (i = 0; i < ngrps; ++i)
     free (grps[i].elems);
