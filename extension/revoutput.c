@@ -7,7 +7,7 @@
  */
 
 /*
- * Copyright (C) 2012, 2013 the Free Software Foundation, Inc.
+ * Copyright (C) 2012, 2013, 2015 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -47,7 +47,7 @@
 
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
-static const char *ext_version = "revoutput extension: version 1.0";
+static const char *ext_version = "revoutput extension: version 1.1";
 
 static awk_bool_t init_revoutput(void);
 static awk_bool_t (*init_func)(void) = init_revoutput;
@@ -120,11 +120,14 @@ init_revoutput()
 
 	register_output_wrapper(& output_wrapper);
 
-	make_number(0.0, & value);	/* init to false */
-	if (! sym_update("REVOUT", & value)) {
-		warning(ext_id, _("revoutput: could not initialize REVOUT variable"));
+	if (! sym_lookup("REVOUT", AWK_SCALAR, & value)) {
+		/* only install it if not there, e.g. -v REVOUT=1 */
+		make_number(0.0, & value);	/* init to false */
+		if (! sym_update("REVOUT", & value)) {
+			warning(ext_id, _("revoutput: could not initialize REVOUT variable"));
 
-		return awk_false;
+			return awk_false;
+		}
 	}
 
 	return awk_true;
