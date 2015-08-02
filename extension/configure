@@ -3660,6 +3660,36 @@ $as_echo "$ac_cv_safe_to_define___extensions__" >&6; }
 
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for z/OS USS compilation" >&5
+$as_echo_n "checking for z/OS USS compilation... " >&6; }
+if ${ac_cv_zos_uss+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+if test "OS/390" = "`uname`"
+then
+  CPPFLAGS="$CPPFLAGS -D_ALL_SOURCE -D_XOPEN_SOURCE=600"
+  if test "x$GCC" != "xyes"
+  then
+                        if echo " $CC " | $EGREP ' (/bin/)?(cc|c89) ' >/dev/null
+    then
+      as_fn_error $? "invalid-cc
+GNU Awk does not support the \"cc\" nor \"c89\" compiler frontends on z/OS.
+Please set CC to \"c99\" or one of the \"xlc\" frontends." "$LINENO" 5
+    fi
+    :    CFLAGS="$CFLAGS -qlanglvl=stdc99:libext"
+            :    CPPFLAGS="$CPPFLAGS -qhaltonmsg=CCN3296"
+  fi
+  ac_cv_zos_uss=yes
+else
+  ac_cv_zos_uss=no
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${ac_cv_zos_uss}" >&5
+$as_echo "${ac_cv_zos_uss}" >&6; }
+
+
 INSTALL="$ac_aux_dir/install-sh -c"
 export INSTALL
 

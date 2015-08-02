@@ -22305,11 +22305,7 @@ main(int argc, char **argv)
 @c endfile
 @ignore
 @c file eg/lib/pwcat.c
-#ifdef ZOS_USS
-        printf("%s:%ld:%ld:%s:%s\n",
-            p->pw_name, (long) p->pw_uid,
-            (long) p->pw_gid, p->pw_dir, p->pw_shell);
-#else
+#ifdef HAVE_STRUCT_PASSWD_PW_PASSWD
 @c endfile
 @end ignore
 @c file eg/lib/pwcat.c
@@ -22319,6 +22315,10 @@ main(int argc, char **argv)
 @c endfile
 @ignore
 @c file eg/lib/pwcat.c
+#else
+        printf("%s:*:%ld:%ld:%s:%s\n",
+            p->pw_name, (long) p->pw_uid,
+            (long) p->pw_gid, p->pw_dir, p->pw_shell);
 #endif
 @c endfile
 @end ignore
@@ -22638,9 +22638,7 @@ main(int argc, char **argv)
 @c endfile
 @ignore
 @c file eg/lib/grcat.c
-#ifdef ZOS_USS
-        printf("%s:%ld:", g->gr_name, (long) g->gr_gid);
-#else
+#ifdef HAVE_STRUCT_GROUP_GR_PASSWD
 @c endfile
 @end ignore
 @c file eg/lib/grcat.c
@@ -22649,6 +22647,8 @@ main(int argc, char **argv)
 @c endfile
 @ignore
 @c file eg/lib/grcat.c
+#else
+        printf("%s:*:%ld:", g->gr_name, (long) g->gr_gid);
 #endif
 @c endfile
 @end ignore

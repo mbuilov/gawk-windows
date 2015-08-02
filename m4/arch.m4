@@ -61,14 +61,34 @@ AC_MSG_RESULT([${gawk_cv_linux_alpha_hack}])
 dnl Check for z/OS Unix Systems Services
 AC_DEFUN([AC_ZOS_USS], [
 AC_MSG_CHECKING([for z/OS USS compilation])
+AC_CACHE_VAL(ac_cv_zos_uss, [
 if test "OS/390" = "`uname`"
 then
-  CFLAGS="$CFLAGS -D_ALL_SOURCE -DZOS_USS -DUSE_EBCDIC"
-  # Must rebuild awkgram.c and command.c from Bison for EBCDIC
-  rm -f awkgram.c command.c
+  CPPFLAGS="$CPPFLAGS -D_ALL_SOURCE -D_XOPEN_SOURCE=600"
+  if test "x$GCC" != "xyes"
+  then
+    dnl If the user is using the "cc" or "c89" compiler frontends, then
+    dnl give up. These do not accept standard XL C -qfoobar options, and
+    dnl instead use a devil's-spawn option syntax involving parentheses.
+    dnl (For example, the below CFLAGS addendum becomes
+    dnl "-W c,langlvl(stdc99,libext)". Good luck quoting that.)
+    if echo " $CC " | $EGREP ' (/bin/)?(cc|c89) ' >/dev/null
+    then
+      AC_MSG_ERROR([invalid-cc
+GNU Awk does not support the "cc" nor "c89" compiler frontends on z/OS.
+Please set CC to "c99" or one of the "xlc" frontends.])
+    fi
+    dnl This enables C99, and on z/OS 1.11, the setenv() prototype.
+:    CFLAGS="$CFLAGS -qlanglvl=stdc99:libext"
+    dnl This is needed so that xlc considers a missing header file to be an
+    dnl error and not a warning. (Yes, the latter is in fact the default
+    dnl behavior on z/OS.)
+:    CPPFLAGS="$CPPFLAGS -qhaltonmsg=CCN3296"
+  fi
   ac_cv_zos_uss=yes
 else
   ac_cv_zos_uss=no
 fi
+])dnl
 AC_MSG_RESULT([${ac_cv_zos_uss}])
 ])dnl

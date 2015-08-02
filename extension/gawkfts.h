@@ -45,7 +45,7 @@
 # endif
 #endif
 
-#ifdef ZOS_USS
+#ifdef __MVS__
 #include <limits.h>
 #define MAXPATHLEN FILENAME_MAX
 #endif
@@ -81,11 +81,7 @@ typedef struct _ftsent {
 	struct _ftsent *fts_cycle;	/* cycle node */
 	struct _ftsent *fts_parent;	/* parent directory */
 	struct _ftsent *fts_link;	/* next file in directory */
-#ifdef ZOS_USS
-	long fts_number;      		/* local numeric value */
-#else
-	long long fts_number;      /* local numeric value */
-#endif
+	long long fts_number;		/* local numeric value */
 	void *fts_pointer;	        /* local address value */
 	char *fts_accpath;		/* access path */
 	char *fts_path;			/* root path */

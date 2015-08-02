@@ -137,11 +137,7 @@ ftype(struct dirent *entry, const char *dirname)
 }
 
 /* get_inode --- get the inode of a file */
-#ifdef ZOS_USS
-static long
-#else
 static long long
-#endif
 get_inode(struct dirent *entry, const char *dirname)
 {
 #ifdef __MINGW32__
@@ -179,11 +175,7 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 	int len;
 	open_directory_t *the_dir;
 	const char *ftstr;
-#ifdef ZOS_USS
-	unsigned long ino;
-#else
 	unsigned long long ino;
-#endif
 
 	/*
 	 * The caller sets *errcode to 0, so we should set it only if an
@@ -208,9 +200,7 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 
 	ino = get_inode (dirent, iobuf->name);
 
-#if defined(ZOS_USS)
-	len = sprintf(the_dir->buf, "%lu/%s", ino, dirent->d_name);
-#elif __MINGW32__
+#if __MINGW32__
 	len = sprintf(the_dir->buf, "%I64u/%s", ino, dirent->d_name);
 #else
 	len = sprintf(the_dir->buf, "%llu/%s", ino, dirent->d_name);
