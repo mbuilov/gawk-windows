@@ -74,7 +74,7 @@ then
     dnl "-W c,langlvl(stdc99,libext)". Good luck quoting that.)
     if echo " $CC " | $EGREP ' (/bin/)?(cc|c89) ' >/dev/null
     then
-      AC_MSG_ERROR([invalid-cc
+:      AC_MSG_ERROR([invalid-cc
 GNU Awk does not support the "cc" nor "c89" compiler frontends on z/OS.
 Please set CC to "c99" or one of the "xlc" frontends.])
     fi
