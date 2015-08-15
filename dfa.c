@@ -3969,6 +3969,8 @@ dfamust (struct dfa const *d)
   bool exact = false;
   bool begline = false;
   bool endline = false;
+  size_t rj;
+  struct dfamust *dm;
 
   for (ri = 0; ri < d->tindex; ++ri)
     {
@@ -4141,7 +4143,7 @@ dfamust (struct dfa const *d)
                 }
             }
 
-          size_t rj = ri + 2;
+          rj = ri + 2;
           if (d->tokens[ri + 1] == CAT)
             {
               for (; rj < d->tindex - 1; rj += 2)
@@ -4172,7 +4174,7 @@ done:
   if (!*result)
     return NULL;
 
-  struct dfamust *dm = xmalloc (sizeof *dm);
+  dm = xmalloc (sizeof *dm);
   dm->exact = exact;
   dm->begline = begline;
   dm->endline = endline;
