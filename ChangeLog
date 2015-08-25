@@ -1,3 +1,21 @@
+2015-08-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* node.c (str2wstr): Upon finding an invalid character, if
+	using UTF-8, use the replacement character instead of skipping
+	it. Helps match() and other functions work better in the face
+	of unexpected data.  Make the lint warning an unconditional
+	warning.
+
+	Unrelated:
+
+	* awk.h: Add explanatory comment on the flags related to
+	types and values.
+	* mpfr.c (mpg_force_number): If setting NUMBER, clear STRING also
+	when clearing MAYBE_NUM.
+	(set_PREC): Check STRCUR instead of STRING.
+	* node.c (r_force_number): If setting NUMBER, clear STRING also
+	when clearing MAYBE_NUM.
+
 2015-08-15         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c (dfamust): Restore c90 compat by moving some

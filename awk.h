@@ -395,6 +395,37 @@ typedef struct exp_node {
 #		define	MALLOC	0x0001       /* can be free'd */
 
 /* type = Node_val */
+	/*
+	 * STRING and NUMBER are mutually exclusive. They represent the
+	 * type of a value as assigned.
+	 *
+	 * STRCUR and NUMCUR are not mutually exclusive. They represent that
+	 * the particular type of value is up to date.  For example,
+	 *
+	 * 	a = 5		# NUMBER | NUMCUR
+	 * 	b = a ""	# Adds STRCUR to a, since a string value
+	 * 			# is now available. But the type hasn't changed!
+	 *
+	 * 	a = "42"	# STRING | STRCUR
+	 * 	b = a + 0	# Adds NUMCUR to a, since numeric value
+	 * 			# is now available. But the type hasn't changed!
+	 *
+	 * MAYBE_NUM is the joker.  It means "this is string data, but
+	 * the user may have really wanted it to be a number. If we have
+	 * to guess, like in a comparison, turn it into a number."
+	 * For example,    gawk -v a=42 ....
+	 * Here, `a' gets STRING|STRCUR|MAYBE_NUM and then when used where
+	 * a number is needed, it gets turned into a NUMBER and STRING
+	 * is cleared.
+	 *
+	 * WSTRCUR is for efficiency. If in a multibyte locale, and we
+	 * need to do something character based (substr, length, etc.)
+	 * we create the corresponding wide character string and store it,
+	 * and add WSTRCUR to the flags so that we don't have to do the
+	 * conversion more than once.
+	 *
+	 * We hope that the rest of the flags are self-explanatory. :-)
+	 */
 #		define	STRING	0x0002       /* assigned as string */
 #		define	STRCUR	0x0004       /* string value is current */
 #		define	NUMCUR	0x0008       /* numeric value is current */

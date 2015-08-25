@@ -76,7 +76,7 @@ r_force_number(NODE *n)
 			return n;
 		} else if (n->stlen == 4 && is_ieee_magic_val(n->stptr)) {
 			if ((n->flags & MAYBE_NUM) != 0)
-				n->flags &= ~MAYBE_NUM;
+				n->flags &= ~(MAYBE_NUM|STRING);
 			n->flags |= NUMBER|NUMCUR;
 			n->numbr = get_ieee_magic_val(n->stptr);
 
@@ -103,7 +103,7 @@ r_force_number(NODE *n)
 
 	if ((n->flags & MAYBE_NUM) != 0) {
 		newflags = NUMBER;
-		n->flags &= ~MAYBE_NUM;
+		n->flags &= ~(MAYBE_NUM|STRING);
 	} else
 		newflags = 0;
 
@@ -717,22 +717,37 @@ str2wstr(NODE *n, size_t **ptr)
 		case (size_t) -2:
 		case (size_t) -1:
 			/*
-			 * Just skip the bad byte and keep going, so that
-			 * we get a more-or-less full string, instead of
-			 * stopping early. This is particularly important
-			 * for match() where we need to build the indices.
-			 */
-			sp++;
-			src_count--;
-			/*
 			 * mbrtowc(3) says the state of mbs becomes undefined
 			 * after a bad character, so reset it.
 			 */
 			memset(& mbs, 0, sizeof(mbs));
-			/* And warn the user something's wrong */
-			if (do_lint && ! warned) {
+
+			/* Warn the user something's wrong */
+			if (! warned) {
 				warned = true;
-				lintwarn(_("Invalid multibyte data detected. There may be a mismatch between your data and your locale."));
+				warning(_("Invalid multibyte data detected. There may be a mismatch between your data and your locale."));
+			}
+
+			/*
+			 * 8/2015: If we're using UTF, then instead of just
+			 * skipping the character, plug in the Unicode
+			 * replacement character. In most cases this gives
+			 * us "better" results, in that character counts
+			 * and string lengths tend to make more sense.
+			 *
+			 * Otherwise, just skip the bad byte and keep going,
+			 * so that we get a more-or-less full string, instead of
+			 * stopping early. This is particularly important
+			 * for match() where we need to build the indices.
+			 */
+			if (using_utf8()) {
+				count = 1;
+				wc = 0xFFFD;	/* unicode replacement character */
+				goto set_wc;
+			} else {
+				/* skip it and keep going */
+				sp++;
+				src_count--;
 			}
 			break;
 
@@ -740,6 +755,7 @@ str2wstr(NODE *n, size_t **ptr)
 			count = 1;
 			/* fall through */
 		default:
+		set_wc:
 			*wsp++ = wc;
 			src_count -= count;
 			while (count--)  {
