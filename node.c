@@ -76,7 +76,7 @@ r_force_number(NODE *n)
 			return n;
 		} else if (n->stlen == 4 && is_ieee_magic_val(n->stptr)) {
 			if ((n->flags & MAYBE_NUM) != 0)
-				n->flags &= ~MAYBE_NUM;
+				n->flags &= ~(MAYBE_NUM|STRING);
 			n->flags |= NUMBER|NUMCUR;
 			n->numbr = get_ieee_magic_val(n->stptr);
 
@@ -103,7 +103,7 @@ r_force_number(NODE *n)
 
 	if ((n->flags & MAYBE_NUM) != 0) {
 		newflags = NUMBER;
-		n->flags &= ~MAYBE_NUM;
+		n->flags &= ~(MAYBE_NUM|STRING);
 	} else
 		newflags = 0;
 
