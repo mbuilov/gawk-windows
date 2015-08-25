@@ -547,6 +547,9 @@ EXTRA_DIST = \
 	mbprintf4.ok \
 	mbstr1.awk \
 	mbstr1.ok \
+	mbstr2.awk \
+	mbstr2.in \
+	mbstr2.ok \
 	membug1.awk \
 	membug1.in \
 	membug1.ok \
@@ -1107,7 +1110,7 @@ GAWK_EXT_TESTS = \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
 	include include2 indirectbuiltin indirectcall indirectcall2 \
 	lint lintold lintwarn \
-	manyfiles match1 match2 match3 mbstr1 \
+	manyfiles match1 match2 match3 mbstr1 mbstr2 \
 	nastyparm negtime next nondec nondec2 \
 	nonfatal1 nonfatal2 nonfatal3 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge procinfs \
@@ -1758,6 +1761,12 @@ mbstr1::
 	@echo $@
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mbstr2::
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 printfbad2: printfbad2.ok
