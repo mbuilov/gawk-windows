@@ -152,10 +152,6 @@ typedef int off_t;
 #include <strings.h>
 #endif	/* HAVE_STRINGS_H */
 
-#ifdef HAVE_SYS_SELECT_H
-#include <sys/select.h>
-#endif	/* HAVE_SYS_SELECT_H */
-
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif	/* HAVE_UNISTD_H */

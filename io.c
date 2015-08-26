@@ -76,6 +76,10 @@
 #include <netdb.h>
 #endif /* HAVE_NETDB_H */
 
+#ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#endif	/* HAVE_SYS_SELECT_H */
+
 #ifndef HAVE_GETADDRINFO
 #include "missing_d/getaddrinfo.h"
 #endif
