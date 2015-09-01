@@ -3668,18 +3668,6 @@ else
 
 if test "OS/390" = "`uname`"
 then
-  CPPFLAGS="$CPPFLAGS -D_ALL_SOURCE -D_XOPEN_SOURCE=600"
-  if test "x$GCC" != "xyes"
-  then
-                        if echo " $CC " | $EGREP ' (/bin/)?(cc|c89) ' >/dev/null
-    then
-:      as_fn_error $? "invalid-cc
-GNU Awk does not support the \"cc\" nor \"c89\" compiler frontends on z/OS.
-Please set CC to \"c99\" or one of the \"xlc\" frontends." "$LINENO" 5
-    fi
-    :    CFLAGS="$CFLAGS -qlanglvl=stdc99:libext"
-            :    CPPFLAGS="$CPPFLAGS -qhaltonmsg=CCN3296"
-  fi
   ac_cv_zos_uss=yes
 else
   ac_cv_zos_uss=no
@@ -3688,6 +3676,37 @@ fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${ac_cv_zos_uss}" >&5
 $as_echo "${ac_cv_zos_uss}" >&6; }
+if test "x$ac_cv_zos_uss" = "xyes"
+then
+    CPPFLAGS="$CPPFLAGS -D_ALL_SOURCE -D_XOPEN_SOURCE=600"
+                    if test -n "$_C89_OPTIONS"
+  then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: _C89_OPTIONS = $_C89_OPTIONS" >&5
+$as_echo "$as_me: _C89_OPTIONS = $_C89_OPTIONS" >&6;}
+  elif test "x$GCC" != "xyes"
+  then
+    if echo " $CC " | $EGREP ' (/bin/)?cc ' >/dev/null
+    then
+      as_fn_error $? "cc-invalid
+The z/OS \"cc\" compiler does not build GNU Awk correctly.
+
+If the \"xlc\" or \"c89\" compiler is available, please set CC accordingly
+and reconfigure. (\"xlc\" is the recommended compiler on z/OS.)" "$LINENO" 5
+    fi
+    if echo " $CC " | $EGREP ' (/bin/)?c89 ' >/dev/null
+    then
+      as_fn_error $? "c89-setup-required
+To build GNU Awk using \"c89\", please set
+
+    _C89_OPTIONS=\"-W c,langlvl(stdc99,libext),haltonmsg(CCN3296)\"
+
+in your environment, and reconfigure. (The above flags cannot be specified
+in CFLAGS/CPPFLAGS, due to the parentheses.)" "$LINENO" 5
+    fi
+        CFLAGS="$CFLAGS -qlanglvl=stdc99:libext"
+                CPPFLAGS="$CPPFLAGS -qhaltonmsg=CCN3296"
+  fi
+fi
 
 
 INSTALL="$ac_aux_dir/install-sh -c"

@@ -64,31 +64,54 @@ AC_MSG_CHECKING([for z/OS USS compilation])
 AC_CACHE_VAL(ac_cv_zos_uss, [
 if test "OS/390" = "`uname`"
 then
-  CPPFLAGS="$CPPFLAGS -D_ALL_SOURCE -D_XOPEN_SOURCE=600"
-  if test "x$GCC" != "xyes"
-  then
-    dnl If the user is using the "cc" or "c89" compiler frontends, then
-    dnl give up. These do not accept standard XL C -qfoobar options, and
-    dnl instead use a devil's-spawn option syntax involving parentheses.
-    dnl (For example, the below CFLAGS addendum becomes
-    dnl "-W c,langlvl(stdc99,libext)". Good luck quoting that.)
-    if echo " $CC " | $EGREP ' (/bin/)?(cc|c89) ' >/dev/null
-    then
-:      AC_MSG_ERROR([invalid-cc
-GNU Awk does not support the "cc" nor "c89" compiler frontends on z/OS.
-Please set CC to "c99" or one of the "xlc" frontends.])
-    fi
-    dnl This enables C99, and on z/OS 1.11, the setenv() prototype.
-:    CFLAGS="$CFLAGS -qlanglvl=stdc99:libext"
-    dnl This is needed so that xlc considers a missing header file to be an
-    dnl error and not a warning. (Yes, the latter is in fact the default
-    dnl behavior on z/OS.)
-:    CPPFLAGS="$CPPFLAGS -qhaltonmsg=CCN3296"
-  fi
   ac_cv_zos_uss=yes
 else
   ac_cv_zos_uss=no
 fi
 ])dnl
 AC_MSG_RESULT([${ac_cv_zos_uss}])
+if test "x$ac_cv_zos_uss" = "xyes"
+then
+  dnl These feature test macros are needed on z/OS.
+  CPPFLAGS="$CPPFLAGS -D_ALL_SOURCE -D_XOPEN_SOURCE=600"
+  dnl If _C89_OPTIONS is set, then assume the user is building with the c89
+  dnl compiler frontend, and knows what they are doing. c89 (as well as cc)
+  dnl pre-dates xlc, and accepts an option syntax that involves parentheses
+  dnl and cannot be handled in the usual way in C(PP)FLAGS. However, c89
+  dnl will also accept options via the aforementioned environment variable,
+  dnl which gives the user one way around the problem. (If you're wondering
+  dnl about cc, it is meant for programs written in "Common Usage C"
+  dnl [a.k.a. K&R C] as opposed to "Standard C" [a.k.a. ANSI], and does not
+  dnl build gawk correctly.)
+  if test -n "$_C89_OPTIONS"
+  then
+    AC_MSG_NOTICE([_C89_OPTIONS = $_C89_OPTIONS])
+  elif test "x$GCC" != "xyes"
+  then
+    if echo " $CC " | $EGREP ' (/bin/)?cc ' >/dev/null
+    then
+      AC_MSG_ERROR([cc-invalid
+The z/OS "cc" compiler does not build GNU Awk correctly.
+
+If the "xlc" or "c89" compiler is available, please set CC accordingly
+and reconfigure. ("xlc" is the recommended compiler on z/OS.)])
+    fi
+    if echo " $CC " | $EGREP ' (/bin/)?c89 ' >/dev/null
+    then
+      AC_MSG_ERROR([c89-setup-required
+To build GNU Awk using "c89", please set
+
+    _C89_OPTIONS="-W c,langlvl(stdc99,libext),haltonmsg(CCN3296)"
+
+in your environment, and reconfigure. (The above flags cannot be specified
+in CFLAGS/CPPFLAGS, due to the parentheses.)])
+    fi
+    dnl This enables C99, and on z/OS 1.11, the setenv() prototype.
+    CFLAGS="$CFLAGS -qlanglvl=stdc99:libext"
+    dnl This is needed so that xlc considers a missing header file to be an
+    dnl error and not a warning. (Yes, the latter is in fact the default
+    dnl behavior on z/OS.)
+    CPPFLAGS="$CPPFLAGS -qhaltonmsg=CCN3296"
+  fi
+fi
 ])dnl
