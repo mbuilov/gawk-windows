@@ -1,3 +1,15 @@
+2015-08-28	Daniel Richard G.	<skunk@iSKUNK.ORG>
+
+	* arch.m4: Complete rewrite of AC_ZOS_USS. It no longer
+	deletes awkgram.c and command.c on a z/OS system, as these are
+	now usable in EBCDIC-land without regeneration; it sets some
+	important CFLAGS/CPPFLAGS to enable standard compiler
+	behavior, like giving an error instead of a warning when a
+	header file cannot be found (!); prevents the use of cc(1),
+	which on z/OS does not build gawk correctly; and gives some
+	help to the user if s/he is building with c89(1), which
+	presents some difficulties due to its option syntax.
+
 2015-08-02         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* codeset.m4, glibc2.m4, glibc21.m4, intdiv0.m4, intl.m4,

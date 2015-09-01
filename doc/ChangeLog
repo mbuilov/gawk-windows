@@ -1,3 +1,11 @@
+2015-08-28	Daniel Richard G.	<skunk@iSKUNK.ORG>
+
+	* doc/gawktexi.in: Check for the "struct passwd.pw_passwd" and
+	"struct group.gr_passwd" fields and conditionalize their use, as
+	they don't exist on z/OS.
+	* Makefile.am (pdf-local): Renamed from "pdf", as Automake already
+	defines "pdf" and warns us as much.
+
 2015-08-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawktexi.in: Typo fixes in Appendix A.
