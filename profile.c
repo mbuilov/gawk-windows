@@ -1343,9 +1343,19 @@ pp_number(NODE *n)
 	} else
 #endif
 	{
-		count = PP_PRECISION + 10;
-		emalloc(str, char *, count, "pp_number");
-		sprintf(str, "%0.*g", PP_PRECISION, n->numbr);
+		/* Use format_val() to get integral values printed as integers */
+		NODE *s;
+
+		getnode(s);
+		*s = *n;
+		s->flags &= ~STRCUR;
+
+		s = r_format_val("%.6g", 0, s);
+
+		s->stptr[s->stlen] = '\0';
+		str = s->stptr;
+
+		freenode(s);
 	}
 
 	return str;
