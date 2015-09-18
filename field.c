@@ -1598,9 +1598,8 @@ fpat_parse_field(long up_to,	/* parse only up to this field number */
 
 	if (in_middle) {
 		regex_flags |= RE_NO_BOL;
-		non_empty = rp->non_empty;
-	} else
-		non_empty = false;
+	}
+	non_empty = rp->non_empty;
 
 	eosflag = false;
 	need_to_set_sep = true;
