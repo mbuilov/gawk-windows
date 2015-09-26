@@ -5563,6 +5563,10 @@ retry:
 		c = nextc(true);
 		pushback();
 		if (c == '[') {
+			if (do_traditional)
+				fatal(_("multidimensional arrays are a gawk extension"));
+			if (do_lint)
+				lintwarn(_("multidimensional arrays are a gawk extension"));
 			yylval = GET_INSTRUCTION(Op_sub_array);
 			lasttok = ']';
 		} else {
