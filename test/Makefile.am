@@ -525,6 +525,8 @@ EXTRA_DIST = \
 	manglprm.ok \
 	manyfiles.awk \
 	manyfiles.ok \
+	muldimposix.awk \
+	muldimposix.ok \
 	match1.awk \
 	match1.ok \
 	match2.awk \
@@ -1114,6 +1116,7 @@ GAWK_EXT_TESTS = \
 	include include2 indirectbuiltin indirectcall indirectcall2 \
 	lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 mbstr2 \
+	muldimposix \
 	nastyparm negtime next nondec nondec2 \
 	nonfatal1 nonfatal2 nonfatal3 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge procinfs \
@@ -2171,6 +2174,11 @@ dbugtypedre2:
 dbugeval2:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+muldimposix::
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
