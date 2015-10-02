@@ -27876,6 +27876,12 @@ which comes as part of the @command{gawk} distribution,
 for a much more complete introduction and discussion, as well as
 extensive examples.
 
+@quotation NOTE
+@command{gawk} can only open direct sockets. There is currently
+no way to access services available over Secure Socket Layer
+(SSL); this includes any web service whose URL starts with @samp{https://}.
+@end quotation
+
 
 @node Profiling
 @section Profiling Your @command{awk} Programs
