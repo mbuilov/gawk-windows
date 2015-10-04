@@ -111,6 +111,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@ENABLE_EXTENSIONS_TRUE@am__append_1 = extension
 bin_PROGRAMS = gawk$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -261,7 +262,7 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
-DIST_SUBDIRS = $(SUBDIRS)
+DIST_SUBDIRS = . doc awklib po test extension
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/configh.in ABOUT-NLS \
 	AUTHORS COPYING ChangeLog INSTALL NEWS README awkgram.c \
 	command.c compile config.guess config.rpath config.sub depcomp \
@@ -480,14 +481,7 @@ EXTRA_DIST = \
 # that `make check' without a prior `make' works.
 # Build in awklib after in doc, since we want to extract
 # sample files if doc/gawk.texi changed.
-SUBDIRS = \
-	. \
-	doc \
-	awklib \
-	po \
-	extension \
-	test
-
+SUBDIRS = . doc awklib po test $(am__append_1)
 include_HEADERS = gawkapi.h
 
 # sources for both gawk and dgawk

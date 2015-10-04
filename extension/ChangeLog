@@ -1,3 +1,13 @@
+2015-08-28	Daniel Richard G.	<skunk@iSKUNK.ORG>
+
+	* rwarray.c: Removed z/OS-specific code that is no longer needed due
+	to improvements in Gawk's general Autotools support.
+	* Makefile.am, configure.ac: Make use of the AC_ZOS_USS macro so
+	that this sub-project can support that platform as well.
+	* gawkfts.h, readdir.c: Use a proper platform cpp symbol to guard
+	z/OS-specific code, and eliminate the z/OS-specific use of "long"
+	inode numbers as "long long" works perfectly well there.
+
 2015-08-02         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* revoutput.c (init_revoutput): Don't install REVOUT if it's

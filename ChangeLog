@@ -15,10 +15,51 @@
 	already parsed part of the record. Thanks to Ed Morton
 	for the bug report.
 
+2015-09-11	Daniel Richard G.	<skunk@iSKUNK.ORG>
+
+	* regcomp.h: Include strings.h, wrapped in ifdef. Revise
+	defines for BTOWC.
+	* regex_internal.h: Remove ZOS_USS bracketing ifdefs.
+
 2015-09-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* profile.c (pp_num): Use format_val to print integral values
 	as integers. Thanks to Hermann Peifer for the report.
+
+2015-08-28	Daniel Richard G.	<skunk@iSKUNK.ORG>
+
+	* Makefile.am, configure.ac: Use an Automake conditional to
+	enable/disable the "extensions" subdirectory instead of
+	producing a stub Makefile therein from the configure script.
+	* awk.h, custom.h, regex_internal.h: Removed z/OS-specific code
+	that is no longer needed due to improvements in Gawk's general
+	Autotools support.
+	* awk.h: Allow <strings.h> to be #included together with
+	<string.h> as this is required on some systems (z/OS).
+	* io.c, configure.ac: <sys/select.h> is needed for select()
+	and related bits on z/OS.
+	* awk.h: Handle the redefinition of EXIT_FAILURE on z/OS in a
+	more elegant/general way.
+	* awkgram.y, command.y, configure.ac, eval.c,
+	helpers/testdfa.c: Define and use the USE_EBCDIC cpp symbol
+	instead of checking the value of 'a' whenever we want to know
+	if we're on an EBCDIC system. Also, don't assume that z/OS
+	necessarily means EBCDIC, as the compiler does have an ASCII
+	mode (-qascii).
+	* awkgram.y, command.y, configure.ac: On EBCDIC systems,
+	convert singleton EBCDIC characters in the input stream to
+	ASCII on the fly so that the generated awkgram.c/command.c in
+	the distributed sources can be used, i.e. we don't have to
+	require the user to build Bison and re-generate those files
+	themselves. This implementation uses a z/OS-specific function
+	(__etoa_l()) to do the conversion, but support for other
+	systems can be added in the future as necessary.
+	* io.c: No need to protect this block of "#if
+	defined(HAVE_TERMIOS_H)" code from z/OS; it works just fine
+	there.
+	* configure.ac: Check for the "struct passwd.pw_passwd" and
+	"struct group.gr_passwd" fields and conditionalize their use,
+	as they don't exist on z/OS.  Needed for doc/gawktexi.in.
 
 2015-08-25         Arnold D. Robbins     <arnold@skeeve.com>
 

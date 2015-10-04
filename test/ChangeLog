@@ -12,6 +12,14 @@
 
 	* profile.ok: Updated after code change.
 
+2015-08-28	Daniel Richard G.	<skunk@iSKUNK.ORG>
+
+	* Makefile.am: Generate the Maketests file without
+	reference to its directory, because putting it directly into
+	srcdir can be problematic (e.g. srcdir could be read-only).
+	(clean-local): Renamed from "clean", as Automake already defines
+	"clean" and warns us as much.
+
 2015-08-25         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* mbstr1.ok: Updated after code change.

@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk], 4.1.3, bug-gawk@gnu.org, gawk)
+AC_INIT([GNU Awk], 4.1.3-zOS-2, bug-gawk@gnu.org, gawk)
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -115,6 +115,16 @@ AC_SYS_LARGEFILE
 GAWK_AC_AIX_TWEAK
 GAWK_AC_LINUX_ALPHA
 
+AC_MSG_CHECKING([if we are using EBCDIC])
+AC_EGREP_CPP([gnu_gawk_in_ebcdic],
+[#if 'a' == 0x81
+gnu_gawk_in_ebcdic
+#endif],
+[AC_DEFINE(USE_EBCDIC, 1, Define to 1 if the character set is EBCDIC)
+ use_ebcdic=yes],
+[use_ebcdic=no])
+AC_MSG_RESULT([$use_ebcdic])
+
 if test "$ISC" = 1	# will be set by test for ISC
 then
 dnl	need -D_SYSV3 for ISC
@@ -141,7 +151,7 @@ gt_LC_MESSAGES
 dnl checks for header files
 AC_CHECK_HEADERS(arpa/inet.h fcntl.h limits.h locale.h libintl.h mcheck.h \
 	netdb.h netinet/in.h stdarg.h stddef.h string.h \
-	sys/ioctl.h sys/param.h sys/socket.h sys/time.h unistd.h \
+	sys/ioctl.h sys/param.h sys/select.h sys/socket.h sys/time.h unistd.h \
 	termios.h stropts.h wchar.h wctype.h)
 AC_HEADER_STDC
 AC_HEADER_STDBOOL
@@ -273,7 +283,7 @@ osf1)	: ;;
 esac
 
 # Need the check for mkstemp and tmpfile for missing_d/snprintf.c.
-AC_CHECK_FUNCS(atexit btowc fmod getgrent getgroups grantpt \
+AC_CHECK_FUNCS(__etoa_l atexit btowc fmod getgrent getgroups grantpt \
 	isascii iswctype iswlower iswupper mbrlen \
 	memcmp memcpy memcpy_ulong memmove memset \
 	memset_ulong mkstemp posix_openpt setenv setlocale setsid snprintf strchr \
@@ -293,10 +303,6 @@ if test "x$enable_extensions" != "xno"; then
 	dnl On MirBSD (and probably other systems), don't even try.
 	case $host_os in
 	mirbsd* | openedition*)	# OS/390 z/OS POSIX layer
-		cat << \EOF > extension/Makefile
-all dist check clean distclean install uninstall distcheck:
-	@exit 0
-EOF
 		;;
 	*)
 	AC_CHECK_HEADER(dlfcn.h,
@@ -328,6 +334,7 @@ EOF
 		AC_MSG_ERROR([extension support requested, but unavailable])
 	fi
 	enable_extensions=$extensions_supported
+	AM_CONDITIONAL([ENABLE_EXTENSIONS], [test "x$enable_extensions" = "xyes"])
 fi
 
 dnl check for how to use getpgrp
@@ -380,6 +387,14 @@ GNUPG_CHECK_MPFR
 
 dnl checks for structure members
 AC_CHECK_MEMBERS([struct stat.st_blksize])
+AC_CHECK_MEMBERS([struct passwd.pw_passwd],,,[
+#include <sys/types.h>
+#include <pwd.h>
+])
+AC_CHECK_MEMBERS([struct group.gr_passwd],,,[
+#include <sys/types.h>
+#include <grp.h>
+])
 AC_STRUCT_TM
 AC_STRUCT_TIMEZONE
 

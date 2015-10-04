@@ -1,3 +1,15 @@
+2015-08-28	Daniel Richard G.	<skunk@iSKUNK.ORG>
+
+	* Makefile.am: Build pwcat.c and grcat.c with (copied)
+	source in the current directory, so that (1) we can use
+	Automake-generated build rules instead of rolling our own, and
+	(2) Automake doesn't then admonish us to enable subdir-objects
+	due to the source files being in another directory.
+	* Makefile.am: Make the $(srcdir)/stamp-eg rule depend
+	on gawktexi.in instead of the gawk.texi file that is generated
+	from same, so that the build doesn't break if the latter is
+	missing.
+
 2015-06-19         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* extract.awk: Sync with current version in the doc. Thanks to

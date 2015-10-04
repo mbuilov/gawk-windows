@@ -45,6 +45,8 @@ AUXAWK = passwd.awk group.awk
 nodist_grcat_SOURCES = grcat.c
 nodist_pwcat_SOURCES = pwcat.c
 
+CLEANFILES = $(nodist_grcat_SOURCES) $(nodist_pwcat_SOURCES)
+
 all: $(srcdir)/stamp-eg $(AUXPROGS) igawk $(AUXAWK)
 
 install-exec-hook: $(AUXAWK)
@@ -64,22 +66,24 @@ clean-local:
 	rm -fr eg.old
 	rm -fr grcat.dSYM pwcat.dSYM
 
-$(srcdir)/stamp-eg: $(srcdir)/../doc/gawk.texi $(srcdir)/../doc/gawkinet.texi
+$(srcdir)/stamp-eg: $(srcdir)/../doc/gawktexi.in $(srcdir)/../doc/gawkinet.texi
 	cd $(srcdir) && \
 	rm -fr eg && \
 	rm -fr stamp-eg && \
-	$(AWKPROG) -f ./extract.awk ../doc/gawk.texi ../doc/gawkinet.texi
+	$(AWKPROG) -f ./extract.awk ../doc/gawktexi.in ../doc/gawkinet.texi
 	@echo 'some makes are stupid and will not check a directory' > $(srcdir)/stamp-eg
 	@echo 'against a file, so this file is a place holder. gack.' >> $(srcdir)/stamp-eg
 
+pwcat.c: $(srcdir)/eg/lib/pwcat.c
+	rm -f $@
+	$(LN_S) $(srcdir)/eg/lib/pwcat.c .
+
+grcat.c: $(srcdir)/eg/lib/grcat.c
+	rm -f $@
+	$(LN_S) $(srcdir)/eg/lib/grcat.c .
+
 $(srcdir)/eg/lib/pwcat.c $(srcdir)/eg/lib/grcat.c $(srcdir)/eg/prog/igawk.sh \
 $(srcdir)/eg/lib/passwdawk.in $(srcdir)/eg/lib/groupawk.in: stamp-eg; @:
-
-pwcat$(EXEEXT): $(srcdir)/eg/lib/pwcat.c
-	$(COMPILE) $(srcdir)/eg/lib/pwcat.c $(LDFLAGS) -o $@
-
-grcat$(EXEEXT): $(srcdir)/eg/lib/grcat.c
-	$(COMPILE) $(srcdir)/eg/lib/grcat.c $(LDFLAGS) -o $@
 
 igawk: $(srcdir)/eg/prog/igawk.sh
 	cp $(srcdir)/eg/prog/igawk.sh $@ ; chmod 755 $@

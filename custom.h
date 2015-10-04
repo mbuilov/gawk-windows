@@ -59,18 +59,6 @@
 #define _TZSET 1
 #endif
 
-/* For z/OS, from Dave Pitts - VMS using some ZOS_USS code paths */
-#if defined(ZOS_USS) && !defined(__VMS)
-#undef HAVE_DLFCN_H
-#undef HAVE_SYS_PARAM_H
-#undef HAVE_MCHECK_H
-#undef HAVE_SETENV
-#define setenv zos_setenv
-#define unsetenv zos_unsetenv
-extern int setenv(const char *name, const char *value, int rewrite);
-extern int unsetenv(const char *name);
-#endif
-
 /* Junk for dfa.[ch] */
 /* The __pure__ attribute was added in gcc 2.96.  */
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)

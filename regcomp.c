@@ -21,6 +21,10 @@
 #include <stdint.h>
 #endif
 
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+
 #ifdef _LIBC
 # include <locale/weight.h>
 #endif
@@ -211,10 +215,7 @@ const size_t __re_error_msgid_idx[] attribute_hidden =
 /* Entry points for GNU code.  */
 
 
-#ifdef ZOS_USS
-
-/* For ZOS USS we must define btowc */
-
+#ifndef HAVE_BTOWC
 wchar_t 
 btowc (int c)
 {
