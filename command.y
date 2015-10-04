@@ -1022,7 +1022,11 @@ yyerror(const char *mesg, ...)
 /* yylex --- read a command and turn it into tokens */
 
 static int
+#ifdef USE_EBCDIC
+yylex_ebcdic(void)
+#else
 yylex(void)
+#endif
 {
 	static char *lexptr = NULL;
 	static char *lexend;
@@ -1297,6 +1301,39 @@ err:
 	append_cmdarg(yylval);
 	return D_VARIABLE;
 }
+
+/* Convert single-character tokens coming out of yylex() from EBCDIC to
+   ASCII values on-the-fly so that the parse tables need not be regenerated
+   for EBCDIC systems.  */
+#ifdef USE_EBCDIC
+static int
+yylex(void)
+{
+	static char etoa_xlate[256];
+	static int do_etoa_init = 1;
+	int tok;
+
+	if (do_etoa_init)
+	{
+		for (tok = 0; tok < 256; tok++)
+			etoa_xlate[tok] = (char) tok;
+#ifdef HAVE___ETOA_L
+		/* IBM helpfully provides this function.  */
+		__etoa_l(etoa_xlate, sizeof(etoa_xlate));
+#else
+# error "An EBCDIC-to-ASCII translation function is needed for this system"
+#endif
+		do_etoa_init = 0;
+	}
+
+	tok = yylex_ebcdic();
+
+	if (tok >= 0 && tok <= 0xFF)
+		tok = etoa_xlate[tok];
+
+	return tok;
+}
+#endif /* USE_EBCDIC */
 
 /* find_argument --- find index in 'argtab' for a command option */
 

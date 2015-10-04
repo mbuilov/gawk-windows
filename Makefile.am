@@ -68,9 +68,11 @@ SUBDIRS = \
 	doc \
 	awklib \
 	po \
-	extension \
-	extras \
 	test
+
+if ENABLE_EXTENSIONS
+SUBDIRS += extension
+endif
 
 # what to make and install
 bin_PROGRAMS = gawk

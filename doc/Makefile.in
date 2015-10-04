@@ -838,7 +838,9 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-aminfo mostlyclean-generic
 
-pdf-am: $(PDFS)
+pdf: pdf-am
+
+pdf-am: $(PDFS) pdf-local
 
 ps: ps-am
 
@@ -861,8 +863,8 @@ uninstall-man: uninstall-man1
 	install-ps-am install-strip installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-aminfo \
 	maintainer-clean-generic mostlyclean mostlyclean-aminfo \
-	mostlyclean-generic pdf pdf-am ps ps-am tags-am uninstall \
-	uninstall-am uninstall-dvi-am uninstall-html-am \
+	mostlyclean-generic pdf pdf-am pdf-local ps ps-am tags-am \
+	uninstall uninstall-am uninstall-dvi-am uninstall-html-am \
 	uninstall-info-am uninstall-man uninstall-man1 \
 	uninstall-pdf-am uninstall-ps-am
 
@@ -880,7 +882,7 @@ gawk.texi: $(srcdir)/gawktexi.in $(srcdir)/sidebar.awk
 
 postscript: gawk.ps gawkinet.ps gawk.1.ps $(AWKCARD)
 
-pdf: postscript gawk.pdf gawkinet.pdf awkcard.pdf gawk.1.pdf
+pdf-local: postscript gawk.pdf gawkinet.pdf awkcard.pdf gawk.1.pdf igawk.1.pdf
 
 gawk.ps: gawk.dvi
 	TEXINPUTS=$(srcdir): dvips -o gawk.ps gawk.dvi

@@ -76,6 +76,10 @@
 #include <netdb.h>
 #endif /* HAVE_NETDB_H */
 
+#ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#endif	/* HAVE_SYS_SELECT_H */
+
 #ifndef HAVE_GETADDRINFO
 #include "missing_d/getaddrinfo.h"
 #endif
@@ -1860,7 +1864,7 @@ two_way_open(const char *str, struct redirect *rp, int extfd)
 	if (find_two_way_processor(str, rp))
 		return true;
 
-#if defined(HAVE_TERMIOS_H) && ! defined(ZOS_USS)
+#if defined(HAVE_TERMIOS_H)
 	/* case 3: use ptys for two-way communications to child */
 	if (! no_ptys && pty_vs_pipe(str)) {
 		static bool initialized = false;
@@ -2086,7 +2090,7 @@ two_way_open(const char *str, struct redirect *rp, int extfd)
 		first_pty_letter = '\0';	/* reset for next command */
 		return true;
 	}
-#endif /* defined(HAVE_TERMIOS_H) && ! defined(ZOS_USS) */
+#endif /* defined(HAVE_TERMIOS_H) */
 
 use_pipes:
 #ifndef PIPES_SIMULATED		/* real pipes */

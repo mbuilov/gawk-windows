@@ -2177,6 +2177,7 @@ significant editorial help for this @value{DOCUMENT} for the
 @cindex Davies, Stephen
 @cindex Deifik, Scott
 @cindex Demaille, Akim
+@cindex G., Daniel Richard
 @cindex Hankerson, Darrel
 @cindex Jaegermann, Michal
 @cindex Kahrs, J@"urgen
@@ -2196,6 +2197,7 @@ Antonio Colombo,
 Stephen Davies,
 Scott Deifik,
 Akim Demaille,
+Daniel Richard G.,
 Darrel Hankerson,
 Michal Jaegermann,
 J@"urgen Kahrs,
@@ -21725,11 +21727,7 @@ main(int argc, char **argv)
 @c endfile
 @ignore
 @c file eg/lib/pwcat.c
-#ifdef ZOS_USS
-        printf("%s:%ld:%ld:%s:%s\n",
-            p->pw_name, (long) p->pw_uid,
-            (long) p->pw_gid, p->pw_dir, p->pw_shell);
-#else
+#ifdef HAVE_STRUCT_PASSWD_PW_PASSWD
 @c endfile
 @end ignore
 @c file eg/lib/pwcat.c
@@ -21739,6 +21737,10 @@ main(int argc, char **argv)
 @c endfile
 @ignore
 @c file eg/lib/pwcat.c
+#else
+        printf("%s:*:%ld:%ld:%s:%s\n",
+            p->pw_name, (long) p->pw_uid,
+            (long) p->pw_gid, p->pw_dir, p->pw_shell);
 #endif
 @c endfile
 @end ignore
@@ -22058,9 +22060,7 @@ main(int argc, char **argv)
 @c endfile
 @ignore
 @c file eg/lib/grcat.c
-#ifdef ZOS_USS
-        printf("%s:%ld:", g->gr_name, (long) g->gr_gid);
-#else
+#ifdef HAVE_STRUCT_GROUP_GR_PASSWD
 @c endfile
 @end ignore
 @c file eg/lib/grcat.c
@@ -22069,6 +22069,8 @@ main(int argc, char **argv)
 @c endfile
 @ignore
 @c file eg/lib/grcat.c
+#else
+        printf("%s:*:%ld:", g->gr_name, (long) g->gr_gid);
 #endif
 @c endfile
 @end ignore
@@ -38022,6 +38024,7 @@ The people maintaining the various @command{gawk} ports are:
 @cindex Deifik, Scott
 @cindex Malmberg, John
 @cindex Pitts, Dave
+@cindex G., Daniel Richard
 @cindex Robbins, Arnold
 @cindex Zaretskii, Eli
 @multitable {MS-Windows with MinGW} {123456789012345678901234567890123456789001234567890}
@@ -38037,7 +38040,8 @@ The people maintaining the various @command{gawk} ports are:
 
 @item VMS @tab John Malmberg, @EMAIL{wb8tyw@@qsl.net,wb8tyw at qsl.net}
 
-@item z/OS (OS/390) @tab Dave Pitts, @EMAIL{dpitts@@cozx.com,dpitts at cozx dot com}
+@item z/OS (OS/390) @tab Daniel Richard G.@: @EMAIL{skunk@@iSKUNK.ORG,skunk at iSKUNK.ORG}
+@item  @tab Dave Pitts (Maintainer Emeritus), @EMAIL{dpitts@@cozx.com,dpitts at cozx dot com}
 @end multitable
 
 If your bug is also reproducible under Unix, send a copy of your

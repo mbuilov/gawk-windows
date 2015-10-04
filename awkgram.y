@@ -2000,7 +2000,7 @@ struct token {
 	NODE *(*ptr2)(int);	/* alternate arbitrary-precision function */
 };
 
-#if 'a' == 0x81 /* it's EBCDIC */
+#ifdef USE_EBCDIC
 /* tokcompare --- lexicographically compare token names for sorting */
 
 static int
@@ -3259,7 +3259,11 @@ newline_eof()
 /* yylex --- Read the input and turn it into tokens. */
 
 static int
+#ifdef USE_EBCDIC
+yylex_ebcdic(void)
+#else
 yylex(void)
+#endif
 {
 	int c;
 	bool seen_e = false;		/* These are for numbers */
@@ -4148,6 +4152,41 @@ out:
 #undef GET_INSTRUCTION
 #undef NEWLINE_EOF
 }
+
+/* It's EBCDIC in a Bison grammar, run for the hills!
+
+   Or, convert single-character tokens coming out of yylex() from EBCDIC to
+   ASCII values on-the-fly so that the parse tables need not be regenerated
+   for EBCDIC systems.  */
+#ifdef USE_EBCDIC
+static int
+yylex(void)
+{
+	static char etoa_xlate[256];
+	static int do_etoa_init = 1;
+	int tok;
+
+	if (do_etoa_init)
+	{
+		for (tok = 0; tok < 256; tok++)
+			etoa_xlate[tok] = (char) tok;
+#ifdef HAVE___ETOA_L
+		/* IBM helpfully provides this function.  */
+		__etoa_l(etoa_xlate, sizeof(etoa_xlate));
+#else
+# error "An EBCDIC-to-ASCII translation function is needed for this system"
+#endif
+		do_etoa_init = 0;
+	}
+
+	tok = yylex_ebcdic();
+
+	if (tok >= 0 && tok <= 0xFF)
+		tok = etoa_xlate[tok];
+
+	return tok;
+}
+#endif /* USE_EBCDIC */
 
 /* snode --- instructions for builtin functions. Checks for arg. count
              and supplies defaults where possible. */
@@ -5931,7 +5970,7 @@ check_special(const char *name)
 	int low, high, mid;
 	int i;
 	int non_standard_flags = 0;
-#if 'a' == 0x81 /* it's EBCDIC */
+#ifdef USE_EBCDIC
 	static bool did_sort = false;
 
 	if (! did_sort) {

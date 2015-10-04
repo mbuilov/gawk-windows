@@ -2184,11 +2184,11 @@ muldimposix::
 # Targets generated for other tests:
 include Maketests
 
-$(srcdir)/Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
+Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
 	files=`cd "$(srcdir)" && echo *.awk *.in`; \
-	$(AWK) -f "$(srcdir)"/Gentests "$(srcdir)"/Makefile.am $$files > "$(srcdir)"/Maketests
+	$(AWK) -f "$(srcdir)"/Gentests "$(srcdir)"/Makefile.am $$files > $@
 
-clean:
+clean-local:
 	rm -fr _* core core.* fmtspcl.ok junk strftime.ok test1 test2 \
 	seq *~ readfile.ok fork.tmp.* testext.awk fts.ok readdir.ok \
 	mmap8k.ok profile1.ok

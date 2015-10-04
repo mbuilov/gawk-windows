@@ -27,7 +27,7 @@ AM_CPPFLAGS = -I$(srcdir)/..
 
 # This variable insures that aclocal runs
 # correctly after changing configure.ac
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I m4 -I ../m4
 
 # For some make's, e.g. OpenBSD, that don't define this
 RM = rm -f

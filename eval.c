@@ -121,7 +121,7 @@ char casetable[] = {
 	C('\360'), C('\361'), C('\362'), C('\363'), C('\364'), C('\365'), C('\366'), C('\367'),
 	C('\370'), C('\371'), C('\372'), C('\373'), C('\374'), C('\375'), C('\376'), C('\377'),
 };
-#elif 'a' == 0x81 /* it's EBCDIC */
+#elif defined(USE_EBCDIC)
 char casetable[] = {
  /*00  NU    SH    SX    EX    PF    HT    LC    DL */
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -214,7 +214,7 @@ load_casetable(void)
 	if (cp == NULL || strcmp(cp, "C") == 0 || strcmp(cp, "POSIX") == 0)
 		return;
 
-#ifndef ZOS_USS
+#ifndef USE_EBCDIC
 	/* use of isalpha is ok here (see is_alpha in awkgram.y) */
 	for (i = 0200; i <= 0377; i++) {
 		if (isalpha(i) && islower(i) && i != toupper(i))
