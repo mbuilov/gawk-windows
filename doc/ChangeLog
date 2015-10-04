@@ -1,3 +1,9 @@
+2015-10-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* texinfo.tex: Revert update. It stopped working. I should learn
+	to test these things. Thanks to Antonio Giovanni Colombo for
+	the report.
+
 2015-10-02         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawktexi.in: Note that there is no support for SSL.
@@ -5,6 +11,14 @@
 2015-09-25         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* texinfo.tex: Update to latest.
+
+2015-08-28	Daniel Richard G.	<skunk@iSKUNK.ORG>
+
+	* doc/gawktexi.in: Check for the "struct passwd.pw_passwd" and
+	"struct group.gr_passwd" fields and conditionalize their use, as
+	they don't exist on z/OS.
+	* Makefile.am (pdf-local): Renamed from "pdf", as Automake already
+	defines "pdf" and warns us as much.
 
 2015-08-14         Arnold D. Robbins     <arnold@skeeve.com>
 

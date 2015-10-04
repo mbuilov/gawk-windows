@@ -29,6 +29,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 
 AC_USE_SYSTEM_EXTENSIONS
+AC_ZOS_USS
 
 INSTALL="$ac_aux_dir/install-sh -c"
 export INSTALL

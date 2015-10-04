@@ -108,24 +108,12 @@ extern int errno;
 #undef CHARBITS
 #undef INTBITS
 
-#if !defined(ZOS_USS)
 #if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif
-#else /* ZOS_USS */
-#include <limits.h>
-#include <sys/time.h>
-#define INT32_MAX INT_MAX
-#define INT32_MIN INT_MIN
-#ifndef __uint32_t
-#define __uint32_t 1
-typedef  unsigned long uint32_t;
-#endif
-typedef  long int32_t;
-#endif /* !ZOS_USS */
 
 /* ----------------- System dependencies (with more includes) -----------*/
 
@@ -159,11 +147,10 @@ typedef int off_t;
 #ifdef NEED_MEMORY_H
 #include <memory.h>
 #endif	/* NEED_MEMORY_H */
-#else	/* not HAVE_STRING_H */
+#endif /* HAVE_STRING_H */
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
 #endif	/* HAVE_STRINGS_H */
-#endif	/* not HAVE_STRING_H */
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
@@ -1679,6 +1666,11 @@ extern uintmax_t adjust_uint(uintmax_t n);
 #endif /* ! defined(VMS)) */
 #endif /* WEXITSTATUS */
 
+/* For z/OS, from Dave Pitts. EXIT_FAILURE is normally 8, make it 1. */
+#if defined(EXIT_FAILURE) && EXIT_FAILURE == 8
+# undef EXIT_FAILURE
+#endif
+
 /* EXIT_SUCCESS and EXIT_FAILURE normally come from <stdlib.h> */
 #ifndef EXIT_SUCCESS
 # define EXIT_SUCCESS 0
@@ -1689,16 +1681,6 @@ extern uintmax_t adjust_uint(uintmax_t n);
 /* EXIT_FATAL is specific to gawk, not part of Standard C */
 #ifndef EXIT_FATAL
 # define EXIT_FATAL   2
-#endif
-
-/* For z/OS, from Dave Pitts. EXIT_FAILURE is normally 8, make it 1. */
-#ifdef ZOS_USS
-
-#ifdef EXIT_FAILURE
-#undef EXIT_FAILURE
-#endif
-
-#define EXIT_FAILURE 1
 #endif
 
 /* ------------------ Inline Functions ------------------ */

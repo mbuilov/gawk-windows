@@ -659,7 +659,7 @@ char casetable[] = {
 	C('\360'), C('\361'), C('\362'), C('\363'), C('\364'), C('\365'), C('\366'), C('\367'),
 	C('\370'), C('\371'), C('\372'), C('\373'), C('\374'), C('\375'), C('\376'), C('\377'),
 };
-#elif 'a' == 0x81 /* it's EBCDIC */
+#elif defined(USE_EBCDIC)
 char casetable[] = {
  /*00  NU    SH    SX    EX    PF    HT    LC    DL */
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,

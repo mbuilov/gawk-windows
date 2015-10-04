@@ -1,3 +1,11 @@
+2015-08-28	Daniel Richard G.	<skunk@iSKUNK.ORG>
+
+	* testdfa.c: Define and use the USE_EBCDIC cpp symbol
+	instead of checking the value of 'a' whenever we want to know
+	if we're on an EBCDIC system. Also, don't assume that z/OS
+	necessarily means EBCDIC, as the compiler does have an ASCII
+	mode (-qascii).
+
 2015-05-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* mb_cur_max.c, timeformat.c: New files.
