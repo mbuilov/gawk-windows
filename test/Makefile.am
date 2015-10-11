@@ -760,6 +760,8 @@ EXTRA_DIST = \
 	range1.awk \
 	range1.in \
 	range1.ok \
+	readbuf.awk \
+	readbuf.ok \
 	readdir.awk \
 	readdir0.awk \
 	readfile2.awk \
@@ -1044,7 +1046,8 @@ BASIC_TESTS = \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
 	pcntplus posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
 	prt1eval prtoeval \
-	rand range1 rebrackloc rebt8b1 redfilnm regeq regexpbrack regexpbrack2 \
+	rand range1 readbuf rebrackloc rebt8b1 redfilnm \
+	regeq regexpbrack regexpbrack2 \
 	regexprange regrange reindops \
 	reparse resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
