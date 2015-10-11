@@ -149,8 +149,8 @@ const char *const ruletab[] = {
 static bool in_print = false;	/* lexical scanning kludge for print */
 static int in_parens = 0;	/* lexical scanning kludge for print */
 static int sub_counter = 0;	/* array dimension counter for use in delete */
-static char *lexptr = NULL;		/* pointer to next char during parsing */
-static char *lexend;
+static char *lexptr;		/* pointer to next char during parsing */
+static char *lexend;		/* end of buffer */
 static char *lexptr_begin;	/* keep track of where we were for error msgs */
 static char *lexeme;		/* beginning of lexeme for debugging */
 static bool lexeof;		/* seen EOF for current source? */  
@@ -4706,7 +4706,8 @@ yyerror(const char *m, ...)
 		if (thisline == NULL) {
 			cp = lexeme;
 			if (*cp == '\n') {
-				cp--;
+				if (cp > lexptr_begin)
+					cp--;
 				mesg = _("unexpected newline or end of string");
 			}
 			for (; cp != lexptr_begin && *cp != '\n'; --cp)
@@ -4717,6 +4718,8 @@ yyerror(const char *m, ...)
 		}
 		/* NL isn't guaranteed */
 		bp = lexeme;
+		if (bp < thisline)
+			bp = thisline + 1;
 		while (bp < lexend && *bp && *bp != '\n')
 			bp++;
 	} else {
