@@ -262,7 +262,7 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
-DIST_SUBDIRS = . doc awklib po test extension
+DIST_SUBDIRS = . extension doc awklib po test
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/configh.in ABOUT-NLS \
 	AUTHORS COPYING ChangeLog INSTALL NEWS README awkgram.c \
 	command.c compile config.guess config.rpath config.sub depcomp \
@@ -477,11 +477,17 @@ EXTRA_DIST = \
 
 
 # The order to do things in.
+#
 # Build explicitly in "." in order to build gawk first, so
 # that `make check' without a prior `make' works.
+#
+# Build in extension before test so that
+# 	./configure && make check
+# works properly too.
+#
 # Build in awklib after in doc, since we want to extract
 # sample files if doc/gawk.texi changed.
-SUBDIRS = . doc awklib po test $(am__append_1)
+SUBDIRS = . $(am__append_1) doc awklib po test
 include_HEADERS = gawkapi.h
 
 # sources for both gawk and dgawk
