@@ -3982,6 +3982,9 @@ dfamust (struct dfa const *d)
   bool begline = false;
   bool endline = false;
   size_t rj;
+  bool need_begline = false;
+  bool need_endline = false;
+  bool case_fold_unibyte = case_fold && MB_CUR_MAX == 1;
   struct dfamust *dm;
 
   for (ri = 0; ri < d->tindex; ++ri)
@@ -3992,10 +3995,12 @@ dfamust (struct dfa const *d)
         case BEGLINE:
           mp = allocmust (mp, 2);
           mp->begline = true;
+          need_begline = true;
           break;
         case ENDLINE:
           mp = allocmust (mp, 2);
           mp->endline = true;
+          need_endline = true;
           break;
         case LPAREN:
         case RPAREN:
@@ -4072,7 +4077,9 @@ dfamust (struct dfa const *d)
               result = mp->in[i];
           if (STREQ (result, mp->is))
             {
-              exact = true;
+              if ((!need_begline || mp->begline) && (!need_endline
+                                                     || mp->endline))
+                exact = true;
               begline = mp->begline;
               endline = mp->endline;
             }
@@ -4145,7 +4152,7 @@ dfamust (struct dfa const *d)
               t = j;
               while (++j < NOTCHAR)
                 if (tstbit (j, *ccl)
-                    && ! (case_fold && MB_CUR_MAX == 1
+                    && ! (case_fold_unibyte
                           && toupper (j) == toupper (t)))
                   break;
               if (j < NOTCHAR)
@@ -4168,17 +4175,17 @@ dfamust (struct dfa const *d)
             }
           mp = allocmust (mp, ((rj - ri) >> 1) + 1);
           mp->is[0] = mp->left[0] = mp->right[0]
-            = case_fold && MB_CUR_MAX == 1 ? toupper (t) : t;
+            = case_fold_unibyte ? toupper (t) : t;
 
           for (i = 1; ri + 2 < rj; i++)
             {
               ri += 2;
               t = d->tokens[ri];
               mp->is[i] = mp->left[i] = mp->right[i]
-                = case_fold && MB_CUR_MAX == 1 ? toupper (t) : t;
+                = case_fold_unibyte ? toupper (t) : t;
             }
           mp->is[i] = mp->left[i] = mp->right[i] = '\0';
-          mp->in = enlist (mp->in, mp->is, i - 1);
+          mp->in = enlist (mp->in, mp->is, i);
           break;
         }
     }
