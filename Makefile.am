@@ -59,20 +59,23 @@ EXTRA_DIST = \
 	ylwrap
 
 # The order to do things in.
+#
 # Build explicitly in "." in order to build gawk first, so
 # that `make check' without a prior `make' works.
+#
+# Build in extension before test so that
+# 	./configure && make check
+# works properly too.
+#
 # Build in awklib after in doc, since we want to extract
 # sample files if doc/gawk.texi changed.
-SUBDIRS = \
-	. \
-	doc \
-	awklib \
-	po \
-	test
+SUBDIRS = .
 
 if ENABLE_EXTENSIONS
 SUBDIRS += extension
 endif
+
+SUBDIRS += doc awklib po test
 
 # what to make and install
 bin_PROGRAMS = gawk
