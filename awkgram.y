@@ -2316,7 +2316,8 @@ yyerror(const char *m, ...)
 	count = strlen(mesg) + 1;
 	if (lexptr != NULL)
 		count += (lexeme - thisline) + 2;
-	emalloc(buf, char *, count, "yyerror");
+	emalloc(buf, char *, count+1, "yyerror");
+	memset(buf, 0, count+1);
 
 	bp = buf;
 
