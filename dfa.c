@@ -4177,15 +4177,17 @@ dfamust (struct dfa const *d)
           break;
         }
     }
-done:
-  if (!*result)
-    return NULL;
+ done:;
 
-  dm = xmalloc (sizeof *dm);
-  dm->exact = exact;
-  dm->begline = begline;
-  dm->endline = endline;
-  dm->must = xstrdup (result);
+  dm = NULL;
+  if (*result)
+    {
+      dm = xmalloc (sizeof *dm);
+      dm->exact = exact;
+      dm->begline = begline;
+      dm->endline = endline;
+      dm->must = xstrdup (result);
+    }
 
   while (mp)
     {
