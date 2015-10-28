@@ -627,6 +627,8 @@ EXTRA_DIST = \
 	noparms.ok \
 	nors.in \
 	nors.ok \
+	nulinsrc.awk \
+	nulinsrc.ok \
 	nulrsend.awk \
 	nulrsend.in \
 	nulrsend.ok \
@@ -1040,7 +1042,7 @@ BASIC_TESTS = \
 	manglprm math membug1 messages minusstr mmap8k mtchi18n \
 	nasty nasty2 negexp negrange nested nfldstr nfloop nfneg nfset nlfldsep \
 	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl \
-	noparms nors nulrsend numindex numsubstr \
+	noparms nors nulinsrc nulrsend numindex numsubstr \
 	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofs1 onlynl opasnidx opasnslf \
 	paramasfunc1 paramasfunc2 \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
