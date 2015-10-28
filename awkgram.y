@@ -3069,7 +3069,7 @@ again:
 				0 : work_ring_idx + 1;
 			cur_char_ring[work_ring_idx] = 0;
 		}
-		if (check_for_bad)
+		if (check_for_bad || *lexptr == '\0')
 			check_bad_char(*lexptr);
 
 		return (int) (unsigned char) *lexptr++;
@@ -3078,7 +3078,7 @@ again:
 			if (lexeof)
 				return END_FILE;
 			if (lexptr && lexptr < lexend) {
-				if (check_for_bad)
+				if (check_for_bad || *lexptr == '\0')
 					check_bad_char(*lexptr);
 				return ((int) (unsigned char) *lexptr++);
 			}
