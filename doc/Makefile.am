@@ -78,7 +78,7 @@ gawk.texi: $(srcdir)/gawktexi.in $(srcdir)/sidebar.awk
 
 postscript: gawk.ps gawkinet.ps gawk.1.ps $(AWKCARD)
 
-pdf-local: postscript gawk.pdf gawkinet.pdf awkcard.pdf gawk.1.pdf igawk.1.pdf
+pdf-local: postscript gawk.pdf gawkinet.pdf awkcard.pdf gawk.1.pdf
 
 gawk.ps: gawk.dvi
 	TEXINPUTS=$(srcdir): dvips -o gawk.ps gawk.dvi
