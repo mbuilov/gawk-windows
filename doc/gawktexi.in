@@ -14330,13 +14330,13 @@ if your version of @command{gawk} supports arbitrary-precision arithmetic
 (@pxref{Arbitrary Precision Arithmetic}):
 
 @table @code
-@cindex version of GNU MPFR library
-@item PROCINFO["mpfr_version"]
-The version of the GNU MPFR library.
-
 @item PROCINFO["gmp_version"]
 @cindex version of GNU MP library
 The version of the GNU MP library.
+
+@cindex version of GNU MPFR library
+@item PROCINFO["mpfr_version"]
+The version of the GNU MPFR library.
 
 @item PROCINFO["prec_max"]
 @cindex maximum precision supported by MPFR library
@@ -36031,6 +36031,9 @@ The up-to-date list of mirror sites is available from
 Try to use one of the mirrors; they
 will be less busy, and you can usually find one closer to your site.
 
+You may also retrieve the @command{gawk} source code from the official
+Git repository; for more information see @ref{Accessing The Source}.
+
 @node Extracting
 @appendixsubsec Extracting the Distribution
 @command{gawk} is distributed as several @code{tar} files compressed with
@@ -37773,6 +37776,9 @@ Use ANSI/ISO style (prototype) function headers when defining functions.
 
 @item
 Put the name of the function at the beginning of its own line.
+
+@item
+Use @samp{#elif} instead of nesting @samp{#if} inside @samp{#else}.
 
 @item
 Put the return type of the function, even if it is @code{int}, on the
