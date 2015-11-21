@@ -2,13 +2,13 @@
 # Copyright (C) 2003 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gawk package.
 # Antoni Bella Perez <bella5@teleline.es>, 2003.
-# Walter Garcia-Fontes <walter.garcia@upf.edu>, 2014.
+# Walter Garcia-Fontes <walter.garcia@upf.edu>, 2015.
 msgid ""
 msgstr ""
-"Project-Id-Version: gawk 4.1.0b\n"
+"Project-Id-Version: gawk 4.1.1d\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2015-05-19 16:06+0300\n"
-"PO-Revision-Date: 2014-02-26 20:18+0100\n"
+"POT-Creation-Date: 2015-04-16 17:16+0300\n"
+"PO-Revision-Date: 2015-11-19 19:14+0100\n"
 "Last-Translator: Walter Garcia-Fontes <walter.garcia@upf.edu>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
 "Language: ca\n"
@@ -37,8 +37,8 @@ msgid "attempt to use scalar `%s' as an array"
 msgstr "s'ha intentat usar la dada escalar `%s' com a una matriu"
 
 #: array.c:409 array.c:576 builtin.c:85 builtin.c:1606 builtin.c:1652
-#: builtin.c:1665 builtin.c:2112 builtin.c:2126 eval.c:1149 eval.c:1153
-#: eval.c:1564
+#: builtin.c:1665 builtin.c:2106 builtin.c:2120 eval.c:1149 eval.c:1153
+#: eval.c:1558
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "s'ha intentat usar la matriu `%s' en un context escalar"
@@ -75,27 +75,19 @@ msgstr "asort: el primer argument no és una matriu"
 
 #: array.c:831
 msgid "asort: cannot use a subarray of first arg for second arg"
-msgstr ""
-"asort: no es pot usar una submatriu com a primer argument per al segon "
-"argument"
+msgstr "asort: no es pot usar una submatriu com a primer argument per al segon argument"
 
 #: array.c:832
 msgid "asorti: cannot use a subarray of first arg for second arg"
-msgstr ""
-"asorti: no es pot usar una submatriu com a primer argument per al segon "
-"argument"
+msgstr "asorti: no es pot usar una submatriu com a primer argument per al segon argument"
 
 #: array.c:837
 msgid "asort: cannot use a subarray of second arg for first arg"
-msgstr ""
-"asort: no es pot usar una submatriu com a segon argument per al primer "
-"argument"
+msgstr "asort: no es pot usar una submatriu com a segon argument per al primer argument"
 
 #: array.c:838
 msgid "asorti: cannot use a subarray of second arg for first arg"
-msgstr ""
-"asorti: no es pot usar una submatriu com a segon argument per al primer "
-"argument"
+msgstr "asorti: no es pot usar una submatriu com a segon argument per al primer argument"
 
 #: array.c:1313
 #, c-format
@@ -127,16 +119,12 @@ msgstr "`%s' és una funció interna, no pot ser redefinida"
 
 #: awkgram.y:416
 msgid "regexp constant `//' looks like a C++ comment, but is not"
-msgstr ""
-"la constant d'expressió regular `//' sembla un comentari en C++, però no ho "
-"és"
+msgstr "la constant d'expressió regular `//' sembla un comentari en C++, però no ho és"
 
 #: awkgram.y:420
 #, c-format
 msgid "regexp constant `/%s/' looks like a C comment, but is not"
-msgstr ""
-"la constant d'expressió regular `/%s/' sembla un comentari en C, però no ho "
-"és"
+msgstr "la constant d'expressió regular `/%s/' sembla un comentari en C, però no ho és"
 
 #: awkgram.y:512
 #, c-format
@@ -145,14 +133,13 @@ msgstr "valors duplicats de casos al cos de l'expressió switch: %s"
 
 #: awkgram.y:533
 msgid "duplicate `default' detected in switch body"
-msgstr ""
-"s'ha detectat el cas predeterminat `default' duplicat a l'expressió switch "
+msgstr "s'ha detectat el cas predeterminat `default' duplicat a l'expressió switch "
 
-#: awkgram.y:793 awkgram.y:3763
+#: awkgram.y:793 awkgram.y:3750
 msgid "`break' is not allowed outside a loop or switch"
 msgstr "no es permet `break' a fora d'un bucle o bifurcació"
 
-#: awkgram.y:802 awkgram.y:3755
+#: awkgram.y:802 awkgram.y:3742
 msgid "`continue' is not allowed outside a loop"
 msgstr "no es permet `continue' a fora d'un bucle"
 
@@ -172,9 +159,7 @@ msgstr "`return' és usat fora del context d'una funció"
 
 #: awkgram.y:919
 msgid "plain `print' in BEGIN or END rule should probably be `print \"\"'"
-msgstr ""
-"el `print'» simple en la regla BEGIN o END probablement ha de ser `print "
-"\"\"'"
+msgstr "el «print» simple en la regla BEGIN o END probablement ha de ser «print \"\"»"
 
 #: awkgram.y:985 awkgram.y:1034
 msgid "`delete' is not allowed with SYMTAB"
@@ -192,325 +177,318 @@ msgstr "`delete(array)' és una extensió tawk no portable"
 msgid "multistage two-way pipelines don't work"
 msgstr "les canonades bidireccionals multi-etapes no funcionen"
 
-#: awkgram.y:1264
+#: awkgram.y:1261
 msgid "regular expression on right of assignment"
 msgstr "expressió regular a la dreta d'una assignació"
 
-#: awkgram.y:1275
+#: awkgram.y:1272
 msgid "regular expression on left of `~' or `!~' operator"
 msgstr "expressió regular a l'esquerra de l'operador `~' o `!~'"
 
-#: awkgram.y:1291 awkgram.y:1433
+#: awkgram.y:1288 awkgram.y:1430
 msgid "old awk does not support the keyword `in' except after `for'"
-msgstr ""
-"l'antic awk no dóna suport a la paraula clau `in' excepte després de `for'"
+msgstr "l'antic awk no dóna suport a la paraula clau `in' excepte després de `for'"
 
-#: awkgram.y:1301
+#: awkgram.y:1298
 msgid "regular expression on right of comparison"
 msgstr "expressió regular a la dreta de la comparació"
 
-#: awkgram.y:1413
-#, fuzzy, c-format
+#: awkgram.y:1410
+#, c-format
 msgid "non-redirected `getline' invalid inside `%s' rule"
-msgstr "`getline' no és vàlid a dins de la regla `%s'"
+msgstr "`getline' sense redirigir no és vàlid a dins de la regla `%s'"
 
-#: awkgram.y:1416
+#: awkgram.y:1413
 msgid "non-redirected `getline' undefined inside END action"
 msgstr "`getline' no redirigit sense definir dintre de l'acció FINAL"
 
-#: awkgram.y:1435
+#: awkgram.y:1432
 msgid "old awk does not support multidimensional arrays"
 msgstr "l'antic awk no suporta matrius multidimensionals"
 
-#: awkgram.y:1532
+#: awkgram.y:1529
 msgid "call of `length' without parentheses is not portable"
 msgstr "la crida de `length' sense parèntesis no és portable"
 
-#: awkgram.y:1598
+#: awkgram.y:1595
 msgid "indirect function calls are a gawk extension"
 msgstr "les crides a funcions indirectes són una extensió gawk"
 
-#: awkgram.y:1611
+#: awkgram.y:1608
 #, c-format
 msgid "can not use special variable `%s' for indirect function call"
-msgstr ""
-"no es pot usar la variable especial `%s' per a una crida indirecta de funció"
+msgstr "no es pot usar la variable especial `%s' per a una crida indirecta de funció"
 
-#: awkgram.y:1637
-#, fuzzy, c-format
+#: awkgram.y:1634
+#, c-format
 msgid "attempt to use non-function `%s' in function call"
-msgstr "s'ha intentat usar la funció «%s» com a una matriu"
+msgstr "s'ha intentat usar la no-funció «%s» en una crida a funcions"
 
-#: awkgram.y:1701
+#: awkgram.y:1698
 msgid "invalid subscript expression"
 msgstr "expressió de subíndex no vàlida"
 
-#: awkgram.y:2047 awkgram.y:2067 gawkapi.c:206 gawkapi.c:224 msg.c:126
+#: awkgram.y:2044 awkgram.y:2064 gawkapi.c:206 gawkapi.c:224 msg.c:126
 msgid "warning: "
 msgstr "advertiment: "
 
-#: awkgram.y:2065 gawkapi.c:192 gawkapi.c:221 msg.c:158
+#: awkgram.y:2062 gawkapi.c:192 gawkapi.c:221 msg.c:158
 msgid "fatal: "
 msgstr "fatal: "
 
-#: awkgram.y:2115
+#: awkgram.y:2112
 msgid "unexpected newline or end of string"
 msgstr "nova línia inesperada o final d'una cadena de caràcters"
 
-#: awkgram.y:2394 awkgram.y:2470 awkgram.y:2693 debug.c:523 debug.c:539
+#: awkgram.y:2391 awkgram.y:2467 awkgram.y:2690 debug.c:523 debug.c:539
 #: debug.c:2812 debug.c:5055
 #, c-format
 msgid "can't open source file `%s' for reading (%s)"
 msgstr "no es pot obrir el fitxer font `%s' per a lectura (%s)"
 
-#: awkgram.y:2395 awkgram.y:2520
+#: awkgram.y:2392 awkgram.y:2517
 #, c-format
 msgid "can't open shared library `%s' for reading (%s)"
 msgstr "no es pot obrir la llibreria compartida `%s' per a lectura (%s)"
 
-#: awkgram.y:2397 awkgram.y:2471 awkgram.y:2521 builtin.c:135 debug.c:5206
+#: awkgram.y:2394 awkgram.y:2468 awkgram.y:2518 builtin.c:135 debug.c:5206
 msgid "reason unknown"
 msgstr "motiu desconegut"
 
-#: awkgram.y:2406 awkgram.y:2430
+#: awkgram.y:2403 awkgram.y:2427
 #, c-format
 msgid "can't include `%s' and use it as a program file"
 msgstr "no es pot incloure `%s' i usar-lo com un fitxer de programa"
 
-#: awkgram.y:2419
+#: awkgram.y:2416
 #, c-format
 msgid "already included source file `%s'"
 msgstr "ja s'ha inclòs el fitxer font `%s'"
 
-#: awkgram.y:2420
+#: awkgram.y:2417
 #, c-format
 msgid "already loaded shared library `%s'"
 msgstr "ja s'ha carregat la biblioteca compartida `%s'"
 
-#: awkgram.y:2455
+#: awkgram.y:2452
 msgid "@include is a gawk extension"
 msgstr "@include és una extensió de gawk"
 
-#: awkgram.y:2461
+#: awkgram.y:2458
 msgid "empty filename after @include"
 msgstr "nom de fitxer buit després de @include"
 
-#: awkgram.y:2505
+#: awkgram.y:2502
 msgid "@load is a gawk extension"
 msgstr "@load és una extensió de gawk"
 
-#: awkgram.y:2511
+#: awkgram.y:2508
 msgid "empty filename after @load"
 msgstr "fitxer buit després de @load"
 
-#: awkgram.y:2645
+#: awkgram.y:2642
 msgid "empty program text on command line"
 msgstr "el text del programa en la línia de comandaments està buit"
 
-#: awkgram.y:2760
+#: awkgram.y:2757
 #, c-format
 msgid "can't read sourcefile `%s' (%s)"
 msgstr "no es pot llegir el fitxer font `%s' (%s)"
 
-#: awkgram.y:2771
+#: awkgram.y:2768
 #, c-format
 msgid "source file `%s' is empty"
 msgstr "el fitxer font `%s' està buit"
 
-#: awkgram.y:2830
+#: awkgram.y:2827
 #, c-format
 msgid "PEBKAC error: invalid character '\\%03o' in source code"
-msgstr ""
+msgstr "Error PEBKAC: caràcter «\\%03o'» no vàlid al codi font"
 
-#: awkgram.y:2961
+#: awkgram.y:2958
 msgid "source file does not end in newline"
 msgstr "el fitxer font no finalitza amb un retorn de carro"
 
-#: awkgram.y:3074
+#: awkgram.y:3061
 msgid "unterminated regexp ends with `\\' at end of file"
 msgstr "expressió regular sense finalitzar acaba amb `\\' al final del fitxer"
 
-#: awkgram.y:3101
+#: awkgram.y:3088
 #, c-format
 msgid "%s: %d: tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr "%s: %d: el modificador regex tawk `/.../%c' no funciona a gawk"
 
-#: awkgram.y:3105
+#: awkgram.y:3092
 #, c-format
 msgid "tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr "el modificador regex tawk `/.../%c' no funciona a gawk"
 
-#: awkgram.y:3112
+#: awkgram.y:3099
 msgid "unterminated regexp"
 msgstr "expressió regular sense finalitzar"
 
-#: awkgram.y:3116
+#: awkgram.y:3103
 msgid "unterminated regexp at end of file"
 msgstr "expressió regular sense finalitzar al final del fitxer"
 
-#: awkgram.y:3174
+#: awkgram.y:3161
 msgid "use of `\\ #...' line continuation is not portable"
 msgstr "l'ús de `\\ #...' com a continuació de línia no és portable"
 
-#: awkgram.y:3190
+#: awkgram.y:3177
 msgid "backslash not last character on line"
 msgstr "la barra invertida no és l'últim caràcter en la línia"
 
-#: awkgram.y:3251
+#: awkgram.y:3238
 msgid "POSIX does not allow operator `**='"
 msgstr "POSIX no permet l'operador `**='"
 
-#: awkgram.y:3253
+#: awkgram.y:3240
 msgid "old awk does not support operator `**='"
 msgstr "l'antic awk no suporta l'operador `**='"
 
-#: awkgram.y:3262
+#: awkgram.y:3249
 msgid "POSIX does not allow operator `**'"
 msgstr "POSIX no permet l'operador `**'"
 
-#: awkgram.y:3264
+#: awkgram.y:3251
 msgid "old awk does not support operator `**'"
 msgstr "l'antic awk no suporta l'operador `**='"
 
-#: awkgram.y:3299
+#: awkgram.y:3286
 msgid "operator `^=' is not supported in old awk"
 msgstr "l'operador `^=' no està suportat en l'antic awk"
 
-#: awkgram.y:3307
+#: awkgram.y:3294
 msgid "operator `^' is not supported in old awk"
 msgstr "l'operador `^' no està suportat en l'antic awk"
 
-#: awkgram.y:3404 awkgram.y:3422 command.y:1180
+#: awkgram.y:3391 awkgram.y:3409 command.y:1180
 msgid "unterminated string"
 msgstr "cadena sense finalitzar"
 
-#: awkgram.y:3643
+#: awkgram.y:3630
 #, c-format
 msgid "invalid char '%c' in expression"
 msgstr "caràcter `%c' no vàlid en l'expressió"
 
-#: awkgram.y:3690
+#: awkgram.y:3677
 #, c-format
 msgid "`%s' is a gawk extension"
 msgstr "`%s' és una extensió de gawk"
 
-#: awkgram.y:3695
+#: awkgram.y:3682
 #, c-format
 msgid "POSIX does not allow `%s'"
 msgstr "POSIX no permet «%s»"
 
-#: awkgram.y:3703
+#: awkgram.y:3690
 #, c-format
 msgid "`%s' is not supported in old awk"
 msgstr "`%s' no està suportat en l'antic awk"
 
-#: awkgram.y:3793
+#: awkgram.y:3780
 msgid "`goto' considered harmful!\n"
 msgstr "`goto' es considera perjudicial!\n"
 
-#: awkgram.y:3827
+#: awkgram.y:3814
 #, c-format
 msgid "%d is invalid as number of arguments for %s"
 msgstr "%d no és vàlid com a nombre d'arguments per a %s"
 
-#: awkgram.y:3862
+#: awkgram.y:3849
 #, c-format
 msgid "%s: string literal as last arg of substitute has no effect"
 msgstr "%s: la cadena literal com a últim argument de substitució no té efecte"
 
-#: awkgram.y:3867
+#: awkgram.y:3854
 #, c-format
 msgid "%s third parameter is not a changeable object"
 msgstr "%s el tercer paràmetre no és un objecte intercanviable"
 
-#: awkgram.y:3950 awkgram.y:3953
+#: awkgram.y:3937 awkgram.y:3940
 msgid "match: third argument is a gawk extension"
 msgstr "match: el tercer argument és una extensió de gawk"
 
-#: awkgram.y:4007 awkgram.y:4010
+#: awkgram.y:3994 awkgram.y:3997
 msgid "close: second argument is a gawk extension"
 msgstr "close: el segon argument és una extensió de gawk"
 
-#: awkgram.y:4022
+#: awkgram.y:4009
 msgid "use of dcgettext(_\"...\") is incorrect: remove leading underscore"
-msgstr ""
-"l'ús de dcgettext(_\"...\") no és correcte: elimineu el guió baix inicial"
+msgstr "l'ús de dcgettext(_\"...\") no és correcte: elimineu el guió baix inicial"
 
-#: awkgram.y:4037
+#: awkgram.y:4024
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
-msgstr ""
-"l'ús de dcgettext(_\"...\") no és correcte: elimineu el guió baix inicial"
+msgstr "l'ús de dcgettext(_\"...\") no és correcte: elimineu el guió baix inicial"
 
-#: awkgram.y:4056
+#: awkgram.y:4043
 msgid "index: regexp constant as second argument is not allowed"
 msgstr "índex: no es permet una constant regexp com a segon argument"
 
-#: awkgram.y:4109
+#: awkgram.y:4096
 #, c-format
 msgid "function `%s': parameter `%s' shadows global variable"
 msgstr "funció `%s': paràmetre `%s' ofusca la variable global"
 
-#: awkgram.y:4166 debug.c:4041 debug.c:4084 debug.c:5204
+#: awkgram.y:4153 debug.c:4041 debug.c:4084 debug.c:5204
 #, c-format
 msgid "could not open `%s' for writing (%s)"
 msgstr "no es pot obrir `%s' per a escriptura (%s)"
 
-#: awkgram.y:4167
+#: awkgram.y:4154
 msgid "sending variable list to standard error"
 msgstr "s'està enviant la llista de variables a l'eixida d'error estàndard"
 
-#: awkgram.y:4175
+#: awkgram.y:4162
 #, c-format
 msgid "%s: close failed (%s)"
 msgstr "%s: tancament erroni (%s)"
 
-#: awkgram.y:4200
+#: awkgram.y:4187
 msgid "shadow_funcs() called twice!"
 msgstr "shadow_funcs() s'ha cridat dues vegades!"
 
-#: awkgram.y:4208
+#: awkgram.y:4195
 msgid "there were shadowed variables."
 msgstr "hi ha hagut variables a l'ombra"
 
-#: awkgram.y:4279
+#: awkgram.y:4266
 #, c-format
 msgid "function name `%s' previously defined"
 msgstr "nom de la funció `%s' definida prèviament"
 
-#: awkgram.y:4325
+#: awkgram.y:4312
 #, c-format
 msgid "function `%s': can't use function name as parameter name"
 msgstr "funció `%s»: no pot usar el nom de la funció com a paràmetre"
 
-#: awkgram.y:4328
+#: awkgram.y:4315
 #, c-format
 msgid "function `%s': can't use special variable `%s' as a function parameter"
-msgstr ""
-"funció `%s': no es pot usar la variable especial `%s' com a un paràmetre de "
-"funció"
+msgstr "funció `%s': no es pot usar la variable especial `%s' com a un paràmetre de funció"
 
-#: awkgram.y:4336
+#: awkgram.y:4323
 #, c-format
 msgid "function `%s': parameter #%d, `%s', duplicates parameter #%d"
 msgstr "funció `%s': paràmetre #%d, `%s', duplica al paràmetre #%d"
 
-#: awkgram.y:4423 awkgram.y:4429
+#: awkgram.y:4410 awkgram.y:4416
 #, c-format
 msgid "function `%s' called but never defined"
 msgstr "es crida a la funció `%s' però no s'ha definit"
 
-#: awkgram.y:4433
+#: awkgram.y:4420
 #, c-format
 msgid "function `%s' defined but never called directly"
 msgstr "la funció `%s' està definida però no s'ha cridat mai directament"
 
-#: awkgram.y:4465
+#: awkgram.y:4452
 #, c-format
 msgid "regexp constant for parameter #%d yields boolean value"
-msgstr ""
-"l'expressió regular constant per al paràmetre #%d condueix a un valor booleà"
+msgstr "l'expressió regular constant per al paràmetre #%d condueix a un valor booleà"
 
-#: awkgram.y:4480
+#: awkgram.y:4467
 #, c-format
 msgid ""
 "function `%s' called with space between name and `(',\n"
@@ -519,23 +497,20 @@ msgstr ""
 "s'ha cridat a la funció `%s' amb espai entre el nom i el '(',\n"
 "o s'ha usat com a variable o matriu"
 
-#: awkgram.y:4686
+#: awkgram.y:4673
 msgid "division by zero attempted"
 msgstr "s'ha intentat una divisió per zero"
 
-#: awkgram.y:4695
+#: awkgram.y:4682
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "s'ha intentat una divisió per zero en `%%'"
 
-#: awkgram.y:5015
-msgid ""
-"cannot assign a value to the result of a field post-increment expression"
-msgstr ""
-"no es pot assignar un valor al resultat d'una expressió post-increment de "
-"camp"
+#: awkgram.y:5002
+msgid "cannot assign a value to the result of a field post-increment expression"
+msgstr "no es pot assignar un valor al resultat d'una expressió post-increment de camp"
 
-#: awkgram.y:5018
+#: awkgram.y:5005
 #, c-format
 msgid "invalid target of assignment (opcode %s)"
 msgstr "destí no vàlid d'assignació (opcode %s)"
@@ -561,16 +536,12 @@ msgstr "exp: l'argument %g està fora de rang"
 #: builtin.c:229
 #, c-format
 msgid "fflush: cannot flush: pipe `%s' opened for reading, not writing"
-msgstr ""
-"fflush: no es pot netejar: la canonada `%s' s'ha obert per a lectura, no per "
-"a escriptura"
+msgstr "fflush: no es pot netejar: la canonada `%s' s'ha obert per a lectura, no per a escriptura"
 
 #: builtin.c:232
 #, c-format
 msgid "fflush: cannot flush: file `%s' opened for reading, not writing"
-msgstr ""
-"fflush: no es pot netejar: el fitxer `%s' s'ha obert per a lectura, no per a "
-"escriptura"
+msgstr "fflush: no es pot netejar: el fitxer `%s' s'ha obert per a lectura, no per a escriptura"
 
 #: builtin.c:244
 #, c-format
@@ -640,9 +611,7 @@ msgstr "fatal: el recompte d'arguments amb `$' ha de ser > 0"
 #: builtin.c:898
 #, c-format
 msgid "fatal: arg count %ld greater than total number of supplied arguments"
-msgstr ""
-"fatal: el recompte d'arguments %ld és major que el nombre total d'arguments "
-"proporcionats"
+msgstr "fatal: el recompte d'arguments %ld és major que el nombre total d'arguments proporcionats"
 
 #: builtin.c:902
 msgid "fatal: `$' not permitted after period in format"
@@ -650,8 +619,7 @@ msgstr "fatal: no es permet `$' després d'un punt en el format"
 
 #: builtin.c:921
 msgid "fatal: no `$' supplied for positional field width or precision"
-msgstr ""
-"fatal: no es proporciona `$' per a l'ample o precisió del camp de posició"
+msgstr "fatal: no es proporciona `$' per a l'ample o precisió del camp de posició"
 
 #: builtin.c:991
 msgid "`l' is meaningless in awk formats; ignored"
@@ -678,14 +646,14 @@ msgid "fatal: `h' is not permitted in POSIX awk formats"
 msgstr "fatal: `h' no està permès en els formats POSIX de awk"
 
 #: builtin.c:1055
-#, fuzzy, c-format
+#, c-format
 msgid "[s]printf: value %g is too big for %%c format"
-msgstr "[s]printf: el valor %g està fora de rang per al format `%%%c'"
+msgstr "[s]printf: el valor %g és massa gran per al format `%%c'"
 
 #: builtin.c:1068
-#, fuzzy, c-format
+#, c-format
 msgid "[s]printf: value %g is not a valid wide character"
-msgstr "[s]printf: el valor %g està fora de rang per al format `%%%c'"
+msgstr "[s]printf: el valor %g no és un caràcter ampli vàlid"
 
 #: builtin.c:1454
 #, c-format
@@ -695,9 +663,7 @@ msgstr "[s]printf: el valor %g està fora de rang per al format `%%%c'"
 #: builtin.c:1552
 #, c-format
 msgid "ignoring unknown format specifier character `%c': no argument converted"
-msgstr ""
-"s'ignorarà el caràcter especificador de format `%c': no s'ha convertit cap "
-"argument"
+msgstr "s'ignorarà el caràcter especificador de format `%c': no s'ha convertit cap argument"
 
 #: builtin.c:1557
 msgid "fatal: not enough arguments to satisfy format string"
@@ -750,9 +716,7 @@ msgstr "substr: la longitud sobre un nombre no enter %g serà truncada"
 #: builtin.c:1758
 #, c-format
 msgid "substr: length %g too big for string indexing, truncating to %g"
-msgstr ""
-"substr: la llargada %g és massa gran per a la indexació de cadenes de "
-"caràcters, es truncarà a %g"
+msgstr "substr: la llargada %g és massa gran per a la indexació de cadenes de caràcters, es truncarà a %g"
 
 #: builtin.c:1770
 #, c-format
@@ -775,11 +739,8 @@ msgstr "substr: l'índex d'inici %g sobrepassa l'acabament de la cadena"
 
 #: builtin.c:1820
 #, c-format
-msgid ""
-"substr: length %g at start index %g exceeds length of first argument (%lu)"
-msgstr ""
-"substr: la longitud %g a l'índex d'inici %g excedeix la longitud del primer "
-"argument (%lu)"
+msgid "substr: length %g at start index %g exceeds length of first argument (%lu)"
+msgstr "substr: la longitud %g a l'índex d'inici %g excedeix la longitud del primer argument (%lu)"
 
 #: builtin.c:1892
 msgid "strftime: format value in PROCINFO[\"strftime\"] has numeric type"
@@ -789,203 +750,198 @@ msgstr "strftime: el valor de format a PROCINFO[\"strftime\"] té tipus numèric"
 msgid "strftime: received non-numeric second argument"
 msgstr "strftime: s'ha rebut un segon argument no numèric"
 
-#: builtin.c:1925
+#: builtin.c:1924
 msgid "strftime: second argument less than 0 or too big for time_t"
-msgstr ""
-"strftime: el segon argument és més petit que 0 o massa gran per a time_t"
+msgstr "strftime: el segon argument és més petit que 0 o massa gran per a time_t"
 
-#: builtin.c:1932
-#, fuzzy
+#: builtin.c:1928
 msgid "strftime: second argument out of range for time_t"
-msgstr ""
-"strftime: el segon argument és més petit que 0 o massa gran per a time_t"
+msgstr "strftime: ssegon argument fora de rang per a time_t"
 
-#: builtin.c:1941
+#: builtin.c:1935
 msgid "strftime: received non-string first argument"
 msgstr "strftime: el primer argument rebut no és una cadena"
 
-#: builtin.c:1948
+#: builtin.c:1942
 msgid "strftime: received empty format string"
 msgstr "strftime: s'ha rebut una cadena de format buida"
 
-#: builtin.c:2017
+#: builtin.c:2011
 msgid "mktime: received non-string argument"
 msgstr "mktime: s'ha rebut un argument que no és una cadena"
 
-#: builtin.c:2034
+#: builtin.c:2028
 msgid "mktime: at least one of the values is out of the default range"
 msgstr "mktime: almenys un dels valors està forra del rang predeterminat"
 
-#: builtin.c:2069
+#: builtin.c:2063
 msgid "'system' function not allowed in sandbox mode"
 msgstr "la funció 'system' no es permet fora del mode entorn de proves"
 
-#: builtin.c:2074
+#: builtin.c:2068
 msgid "system: received non-string argument"
 msgstr "system: s'ha rebut un argument que no és una cadena"
 
-#: builtin.c:2194
+#: builtin.c:2188
 #, c-format
 msgid "reference to uninitialized field `$%d'"
 msgstr "referència a una variable sense inicialitzar `$%d'"
 
-#: builtin.c:2279
+#: builtin.c:2273
 msgid "tolower: received non-string argument"
 msgstr "tolower: s'ha rebut un argument que no és una cadena"
 
-#: builtin.c:2310
+#: builtin.c:2304
 msgid "toupper: received non-string argument"
 msgstr "toupper: s'ha rebut un argument que no és una cadena"
 
-#: builtin.c:2343 mpfr.c:679
+#: builtin.c:2337 mpfr.c:679
 msgid "atan2: received non-numeric first argument"
 msgstr "atan2: el primer argument rebut no és numèric"
 
-#: builtin.c:2345 mpfr.c:681
+#: builtin.c:2339 mpfr.c:681
 msgid "atan2: received non-numeric second argument"
 msgstr "atan2: el segon argument rebut no és numèric"
 
-#: builtin.c:2364
+#: builtin.c:2358
 msgid "sin: received non-numeric argument"
 msgstr "sin: s'ha rebut un argument que no és numèric"
 
-#: builtin.c:2380
+#: builtin.c:2374
 msgid "cos: received non-numeric argument"
 msgstr "cos: s'ha rebut un argument que no és numèric"
 
-#: builtin.c:2433 mpfr.c:1176
+#: builtin.c:2427 mpfr.c:1176
 msgid "srand: received non-numeric argument"
 msgstr "srand: s'ha rebut un argument que no és numèric"
 
-#: builtin.c:2464
+#: builtin.c:2458
 msgid "match: third argument is not an array"
 msgstr "match: el tercer argument no és una matriu"
 
-#: builtin.c:2725
-#, fuzzy, c-format
+#: builtin.c:2719
+#, c-format
 msgid "gensub: third argument `%.*s' treated as 1"
-msgstr "gensub: el tercer argument de 0 és tractat com a 1"
+msgstr "gensub: el tercer argument `%.*s' es tractarà com a 1"
 
-#: builtin.c:2740
-#, fuzzy, c-format
+#: builtin.c:2734
+#, c-format
 msgid "gensub: third argument %g treated as 1"
-msgstr "gensub: el tercer argument de 0 és tractat com a 1"
+msgstr "gensub: el tercer argument %g es tractarà com a 1"
 
-#: builtin.c:3038
-#, fuzzy, c-format
+#: builtin.c:3032
+#, c-format
 msgid "%s: can be called indirectly only with two arguments"
-msgstr "and: cridat amb menys de dos arguments"
+msgstr "%s: es pot cridar indirectament amb dos arguments"
 
-#: builtin.c:3128
-#, fuzzy, c-format
+#: builtin.c:3122
+#, c-format
 msgid "indirect call to %s requires at least two arguments"
-msgstr "and: cridat amb menys de dos arguments"
+msgstr "la crida indirecta a %s requereix almenys dos arguments"
 
-#: builtin.c:3180
+#: builtin.c:3174
 msgid "lshift: received non-numeric first argument"
 msgstr "lshift: el primer argument rebut no és numèric"
 
-#: builtin.c:3182
+#: builtin.c:3176
 msgid "lshift: received non-numeric second argument"
 msgstr "lshift: el segon argument rebut no és numèric"
 
-#: builtin.c:3188
+#: builtin.c:3182
 #, c-format
 msgid "lshift(%f, %f): negative values will give strange results"
 msgstr "lshift(%f, %f): els valors negatius donaran resultats estranys"
 
-#: builtin.c:3190
+#: builtin.c:3184
 #, c-format
 msgid "lshift(%f, %f): fractional values will be truncated"
 msgstr "lshift(%f, %f): els valors fraccionaris sernn truncats"
 
-#: builtin.c:3192
+#: builtin.c:3186
 #, c-format
 msgid "lshift(%f, %f): too large shift value will give strange results"
-msgstr ""
-"lshift(%f, %f): un valor de desplaçament massa gran donarà resultats estranys"
+msgstr "lshift(%f, %f): un valor de desplaçament massa gran donarà resultats estranys"
 
-#: builtin.c:3217
+#: builtin.c:3211
 msgid "rshift: received non-numeric first argument"
 msgstr "rshift: el primer argument rebut no és numèric"
 
-#: builtin.c:3219
+#: builtin.c:3213
 msgid "rshift: received non-numeric second argument"
 msgstr "rshift: el segon argument rebut no és numèric"
 
-#: builtin.c:3225
+#: builtin.c:3219
 #, c-format
 msgid "rshift(%f, %f): negative values will give strange results"
 msgstr "rshift(%f, %f): els valors negatius donaran resultats estranys"
 
-#: builtin.c:3227
+#: builtin.c:3221
 #, c-format
 msgid "rshift(%f, %f): fractional values will be truncated"
 msgstr "rshift(%f, %f): els valors fraccionaris seran truncats"
 
-#: builtin.c:3229
+#: builtin.c:3223
 #, c-format
 msgid "rshift(%f, %f): too large shift value will give strange results"
-msgstr ""
-"rshift(%f, %f): un valor de desplaçament massa gran donarà resultats estranys"
+msgstr "rshift(%f, %f): un valor de desplaçament massa gran donarà resultats estranys"
 
-#: builtin.c:3254 mpfr.c:988
+#: builtin.c:3248 mpfr.c:988
 msgid "and: called with less than two arguments"
 msgstr "and: cridat amb menys de dos arguments"
 
-#: builtin.c:3259
+#: builtin.c:3253
 #, c-format
 msgid "and: argument %d is non-numeric"
 msgstr "exp: l'argument %d no és numèric"
 
-#: builtin.c:3263
+#: builtin.c:3257
 #, c-format
 msgid "and: argument %d negative value %g will give strange results"
 msgstr "and: l'argument %d amb valor negatiu %g donarà resultats estranys"
 
-#: builtin.c:3286 mpfr.c:1020
+#: builtin.c:3280 mpfr.c:1020
 msgid "or: called with less than two arguments"
 msgstr "or: cridat amb menys de dos arguments"
 
-#: builtin.c:3291
+#: builtin.c:3285
 #, c-format
 msgid "or: argument %d is non-numeric"
 msgstr "or: l'argument %d no és numèric"
 
-#: builtin.c:3295
+#: builtin.c:3289
 #, c-format
 msgid "or: argument %d negative value %g will give strange results"
 msgstr "or: l'argument %d amb valor negatiu %g donarà resultats estranys"
 
-#: builtin.c:3317 mpfr.c:1051
+#: builtin.c:3311 mpfr.c:1051
 msgid "xor: called with less than two arguments"
 msgstr "xort: cridat amb menys de dos arguments"
 
-#: builtin.c:3323
+#: builtin.c:3317
 #, c-format
 msgid "xor: argument %d is non-numeric"
 msgstr "xor: l'argument %d no és numèric"
 
-#: builtin.c:3327
+#: builtin.c:3321
 #, c-format
 msgid "xor: argument %d negative value %g will give strange results"
 msgstr "xor: l'argument %d del valor negatiu %g donarà resultats estranys"
 
-#: builtin.c:3352 mpfr.c:807
+#: builtin.c:3346 mpfr.c:807
 msgid "compl: received non-numeric argument"
 msgstr "compl: s'ha rebut un argument que no és numèric"
 
-#: builtin.c:3358
+#: builtin.c:3352
 #, c-format
 msgid "compl(%f): negative value will give strange results"
 msgstr "compl(%f): el valor negatiu donarà resultats estranys"
 
-#: builtin.c:3360
+#: builtin.c:3354
 #, c-format
 msgid "compl(%f): fractional value will be truncated"
 msgstr "compl(%f): el valor fraccionari serà truncat"
 
-#: builtin.c:3529
+#: builtin.c:3523
 #, c-format
 msgid "dcgettext: `%s' is not a valid locale category"
 msgstr "dcgettext: `%s' no és una categoria local vàlida"
@@ -1017,9 +973,7 @@ msgstr "save \"%s\": ordre no permesa."
 
 #: command.y:339
 msgid "Can't use command `commands' for breakpoint/watchpoint commands"
-msgstr ""
-"No es pot usar l'ordre `commands' per a ordres de punt d'interrupció/"
-"inspecció"
+msgstr "No es pot usar l'ordre `commands' per a ordres de punt d'interrupció/inspecció"
 
 #: command.y:341
 msgid "no breakpoint/watchpoint has been set yet"
@@ -1093,38 +1047,24 @@ msgid "non-zero integer value"
 msgstr "valor enter no zero"
 
 #: command.y:817
-msgid ""
-"backtrace [N] - print trace of all or N innermost (outermost if N < 0) "
-"frames."
-msgstr ""
-"backtrace [N] - imprimeix la traça de tot els N marcs interiors (exteriors "
-"si N < 0)."
+msgid "backtrace [N] - print trace of all or N innermost (outermost if N < 0) frames."
+msgstr "backtrace [N] - imprimeix la traça de tot els N marcs interiors (exteriors si N < 0)."
 
 #: command.y:819
-msgid ""
-"break [[filename:]N|function] - set breakpoint at the specified location."
-msgstr ""
-"break [[fitxer:]N|funció] - estableix el punt d'interrupció a la ubicació "
-"especificada."
+msgid "break [[filename:]N|function] - set breakpoint at the specified location."
+msgstr "break [[fitxer:]N|funció] - estableix el punt d'interrupció a la ubicació especificada."
 
 #: command.y:821
 msgid "clear [[filename:]N|function] - delete breakpoints previously set."
-msgstr ""
-"clear [[fitxer:]N|funció] - suprimeix els punts  establerts prèviament."
+msgstr "clear [[fitxer:]N|funció] - suprimeix els punts  establerts prèviament."
 
 #: command.y:823
-msgid ""
-"commands [num] - starts a list of commands to be executed at a "
-"breakpoint(watchpoint) hit."
-msgstr ""
-"commands [num] - inicia una llista d'ordres a executar quan s'arribi a un "
-"punt d'interrupció/inspecció."
+msgid "commands [num] - starts a list of commands to be executed at a breakpoint(watchpoint) hit."
+msgstr "commands [num] - inicia una llista d'ordres a executar quan s'arribi a un punt d'interrupció/inspecció."
 
 #: command.y:825
 msgid "condition num [expr] - set or clear breakpoint or watchpoint condition."
-msgstr ""
-"condition num [expr] - estableix o neteja una condició de punt d'interrupció "
-"o d'inspecció."
+msgstr "condition num [expr] - estableix o neteja una condició de punt d'interrupció o d'inspecció."
 
 #: command.y:827
 msgid "continue [COUNT] - continue program being debugged."
@@ -1132,21 +1072,15 @@ msgstr "continue [RECOMPTE] - continua el programa que s'està depurant."
 
 #: command.y:829
 msgid "delete [breakpoints] [range] - delete specified breakpoints."
-msgstr ""
-"delete [punts d'interrupció] [rang] - esborra els punts d'interrupció "
-"especificats."
+msgstr "delete [punts d'interrupció] [rang] - esborra els punts d'interrupció especificats."
 
 #: command.y:831
 msgid "disable [breakpoints] [range] - disable specified breakpoints."
-msgstr ""
-"disable [punts d'interrupció] [rang] - deshabilita els punts d'interrupció "
-"especificats."
+msgstr "disable [punts d'interrupció] [rang] - deshabilita els punts d'interrupció especificats."
 
 #: command.y:833
 msgid "display [var] - print value of variable each time the program stops."
-msgstr ""
-"display [var] - imprimeix el valor de la variable cada cop que el programa "
-"s'atura"
+msgstr "display [var] - imprimeix el valor de la variable cada cop que el programa s'atura"
 
 #: command.y:835
 msgid "down [N] - move N frames down the stack."
@@ -1154,15 +1088,11 @@ msgstr "down [N] - mou N marcs cap a baix a la pila."
 
 #: command.y:837
 msgid "dump [filename] - dump instructions to file or stdout."
-msgstr ""
-"dump [filename] - aboca les instruccions a un fitxer o a la sortida "
-"estàndard."
+msgstr "dump [filename] - aboca les instruccions a un fitxer o a la sortida estàndard."
 
 #: command.y:839
 msgid "enable [once|del] [breakpoints] [range] - enable specified breakpoints."
-msgstr ""
-"enable [once|del] [punts d'interrupció] [rang] - habilita els punts "
-"d'interrupció especificats."
+msgstr "enable [once|del] [punts d'interrupció] [rang] - habilita els punts d'interrupció especificats."
 
 #: command.y:841
 msgid "end - end a list of commands or awk statements."
@@ -1174,8 +1104,7 @@ msgstr "eval stmt|[p1, p2, ...] - avalua la(es) declaració(ns) awk."
 
 #: command.y:845
 msgid "finish - execute until selected stack frame returns."
-msgstr ""
-"finish - executa fins que hi hagi un retorn del marc de pila seleccionat."
+msgstr "finish - executa fins que hi hagi un retorn del marc de pila seleccionat."
 
 #: command.y:847
 msgid "frame [N] - select and print stack frame number N."
@@ -1187,41 +1116,27 @@ msgstr "help [ordre] - imprimeix una llista d'ordres o una explica de l'ordre."
 
 #: command.y:851
 msgid "ignore N COUNT - set ignore-count of breakpoint number N to COUNT."
-msgstr ""
-"ignore N RECOMPTE - estableix ignore-count del punt d'interrupció número N "
-"fins RECOMPTE."
+msgstr "ignore N RECOMPTE - estableix ignore-count del punt d'interrupció número N fins RECOMPTE."
 
 #: command.y:853
-msgid ""
-"info topic - source|sources|variables|functions|break|frame|args|locals|"
-"display|watch."
-msgstr ""
-"info topic - source|sources|variables|functions|break|frame|args|locals|"
-"display|watch."
+msgid "info topic - source|sources|variables|functions|break|frame|args|locals|display|watch."
+msgstr "info topic - source|sources|variables|functions|break|frame|args|locals|display|watch."
 
 #: command.y:855
 msgid "list [-|+|[filename:]lineno|function|range] - list specified line(s)."
-msgstr ""
-"list [-|+|[fitxer:]número-de-línia|funció|rang] - fes una llista la(es) "
-"línia(es) especificada(es)."
+msgstr "list [-|+|[fitxer:]número-de-línia|funció|rang] - fes una llista la(es) línia(es) especificada(es)."
 
 #: command.y:857
 msgid "next [COUNT] - step program, proceeding through subroutine calls."
-msgstr ""
-"next [RECOMPTE] - avança el programa pas per pas, tot procedint a través de "
-"les crides de subrutines."
+msgstr "next [RECOMPTE] - avança el programa pas per pas, tot procedint a través de les crides de subrutines."
 
 #: command.y:859
-msgid ""
-"nexti [COUNT] - step one instruction, but proceed through subroutine calls."
-msgstr ""
-"nexti [RECOMPTE] - avança una instrucció, però procedeix a través de crides "
-"de subrutines."
+msgid "nexti [COUNT] - step one instruction, but proceed through subroutine calls."
+msgstr "nexti [RECOMPTE] - avança una instrucció, però procedeix a través de crides de subrutines."
 
 #: command.y:861
 msgid "option [name[=value]] - set or display debugger option(s)."
-msgstr ""
-"option [nom[=valor]] - estableix o mostra la(es) opció(ns) del depurador."
+msgstr "option [nom[=valor]] - estableix o mostra la(es) opció(ns) del depurador."
 
 #: command.y:863
 msgid "print var [var] - print value of a variable or array."
@@ -1237,9 +1152,7 @@ msgstr "quit - surt del depurador."
 
 #: command.y:869
 msgid "return [value] - make selected stack frame return to its caller."
-msgstr ""
-"return [valor] - fes que el marc seleccionat de pila retorni a l'element que "
-"l'ha cridat."
+msgstr "return [valor] - fes que el marc seleccionat de pila retorni a l'element que l'ha cridat."
 
 #: command.y:871
 msgid "run - start or restart executing program."
@@ -1254,11 +1167,8 @@ msgid "set var = value - assign value to a scalar variable."
 msgstr "set var = valor - assigna un valor a una variable escalar."
 
 #: command.y:879
-msgid ""
-"silent - suspends usual message when stopped at a breakpoint/watchpoint."
-msgstr ""
-"silent - suspèn els missatges habituals quan s'autra a un punt d'interrupció/"
-"inspecció."
+msgid "silent - suspends usual message when stopped at a breakpoint/watchpoint."
+msgstr "silent - suspèn els missatges habituals quan s'autra a un punt d'interrupció/inspecció."
 
 #: command.y:881
 msgid "source file - execute commands from file."
@@ -1266,9 +1176,7 @@ msgstr "source file - executa una ordre des d'un fitxer."
 
 #: command.y:883
 msgid "step [COUNT] - step program until it reaches a different source line."
-msgstr ""
-"step [RECOMPTE] - avança pas per pas pel programa fins que arribi a una "
-"línia diferent de la font."
+msgstr "step [RECOMPTE] - avança pas per pas pel programa fins que arribi a una línia diferent de la font."
 
 #: command.y:885
 msgid "stepi [COUNT] - step one instruction exactly."
@@ -1276,8 +1184,7 @@ msgstr "stepi [RECOMPTE] - avança exactament una instrucció."
 
 #: command.y:887
 msgid "tbreak [[filename:]N|function] - set a temporary breakpoint."
-msgstr ""
-"tbreak [[fitxer:]N|funció] - estableix un punt temporari d'interrupció."
+msgstr "tbreak [[fitxer:]N|funció] - estableix un punt temporari d'interrupció."
 
 #: command.y:889
 msgid "trace on|off - print instruction before executing."
@@ -1285,17 +1192,11 @@ msgstr "trace on|off - imprimeix la instrucció abans d'executar-la."
 
 #: command.y:891
 msgid "undisplay [N] - remove variable(s) from automatic display list."
-msgstr ""
-"undisplay [N] - remou la(es) variable(s) de la llista automàtica  "
-"visualització."
+msgstr "undisplay [N] - remou la(es) variable(s) de la llista automàtica  visualització."
 
 #: command.y:893
-msgid ""
-"until [[filename:]N|function] - execute until program reaches a different "
-"line or line N within current frame."
-msgstr ""
-"until [[fitxer:]N|funció] - executa fins que el programa arribi a una línia "
-"diferent a la línia N dins del marc actual."
+msgid "until [[filename:]N|function] - execute until program reaches a different line or line N within current frame."
+msgstr "until [[fitxer:]N|funció] - executa fins que el programa arribi a una línia diferent a la línia N dins del marc actual."
 
 #: command.y:895
 msgid "unwatch [N] - remove variable(s) from watch list."
@@ -1310,13 +1211,8 @@ msgid "watch var - set a watchpoint for a variable."
 msgstr "watch var - estableix un punt d'inspecció per a una variable."
 
 #: command.y:901
-#, fuzzy
-msgid ""
-"where [N] - (same as backtrace) print trace of all or N innermost (outermost "
-"if N < 0) frames."
-msgstr ""
-"backtrace [N] - imprimeix la traça de tot els N marcs interiors (exteriors "
-"si N < 0)."
+msgid "where [N] - (same as backtrace) print trace of all or N innermost (outermost if N < 0) frames."
+msgstr "on [N] - (igual que la traça inversa) imprimeix la traça de tots els N marcs interiors (exteriors si N < 0)."
 
 #: command.y:1013 debug.c:401 msg.c:135
 #, c-format
@@ -1358,8 +1254,7 @@ msgstr "ordre no definida: %s\n"
 
 #: debug.c:252
 msgid "set or show the number of lines to keep in history file."
-msgstr ""
-"estableix o mostra el número de línies a mantenir al fitxer d'història."
+msgstr "estableix o mostra el número de línies a mantenir al fitxer d'història."
 
 #: debug.c:254
 msgid "set or show the list command window size."
@@ -1375,9 +1270,7 @@ msgstr "estableix o mostra l'indicador del depurador."
 
 #: debug.c:260
 msgid "(un)set or show saving of command history (value=on|off)."
-msgstr ""
-"estableix(anul·la) o mostra el desament de la història d'ordres (valor=on|"
-"off)."
+msgstr "estableix(anul·la) o mostra el desament de la història d'ordres (valor=on|off)."
 
 #: debug.c:262
 msgid "(un)set or show saving of options (value=on|off)."
@@ -1385,8 +1278,7 @@ msgstr "estableix(anul·la) o mostra el desament d'opcions (valor=on|off)."
 
 #: debug.c:264
 msgid "(un)set or show instruction tracing (value=on|off)."
-msgstr ""
-"estableix(anul·la) o mostra el seguiment d'instruccions (valor=on|off)."
+msgstr "estableix(anul·la) o mostra el seguiment d'instruccions (valor=on|off)."
 
 #: debug.c:345
 msgid "program not running."
@@ -1414,9 +1306,7 @@ msgstr "no es pot trobar el fitxer font `%s' (%s)"
 #: debug.c:529
 #, c-format
 msgid "WARNING: source file `%s' modified since program compilation.\n"
-msgstr ""
-"ADVERTIMENT: el fitxer font `%s' s'ha modificat des de la compilació del "
-"programa.\n"
+msgstr "ADVERTIMENT: el fitxer font `%s' s'ha modificat des de la compilació del programa.\n"
 
 #: debug.c:551
 #, c-format
@@ -1426,14 +1316,12 @@ msgstr "línia número %d fora de rang; `%s' té %d línies"
 #: debug.c:611
 #, c-format
 msgid "unexpected eof while reading file `%s', line %d"
-msgstr ""
-"final de fitxer no esperat quan s'estava llegint el fitxer `%s', línia %d"
+msgstr "final de fitxer no esperat quan s'estava llegint el fitxer `%s', línia %d"
 
 #: debug.c:620
 #, c-format
 msgid "source file `%s' modified since start of program execution"
-msgstr ""
-"el fitxer font `%s' s'ha modificat des de l'inici de l'execució del programa"
+msgstr "el fitxer font `%s' s'ha modificat des de l'inici de l'execució del programa"
 
 #: debug.c:732
 #, c-format
@@ -1614,8 +1502,7 @@ msgstr "s'ha intentat usar una dada escalar com a una matriu"
 #: debug.c:1856
 #, c-format
 msgid "Watchpoint %d deleted because parameter is out of scope.\n"
-msgstr ""
-"El punt d'inspecció %d s'ha esborrat perquè el paràmetre està fora d'abast.\n"
+msgstr "El punt d'inspecció %d s'ha esborrat perquè el paràmetre està fora d'abast.\n"
 
 #: debug.c:1867
 #, c-format
@@ -1649,28 +1536,22 @@ msgstr "número no vàlid de rang"
 #: debug.c:2200
 #, c-format
 msgid "Note: breakpoint %d (enabled, ignore next %ld hits), also set at %s:%d"
-msgstr ""
-"Nota: el punt d'interrupció %d (habilitat, ignora els %ld accessos "
-"següents), també s'ha establert a %s:%d"
+msgstr "Nota: el punt d'interrupció %d (habilitat, ignora els %ld accessos següents), també s'ha establert a %s:%d"
 
 #: debug.c:2207
 #, c-format
 msgid "Note: breakpoint %d (enabled), also set at %s:%d"
-msgstr ""
-"Nota: el punt d'interrupció %d (habilitat), també s'ha establert a %s:%d"
+msgstr "Nota: el punt d'interrupció %d (habilitat), també s'ha establert a %s:%d"
 
 #: debug.c:2214
 #, c-format
 msgid "Note: breakpoint %d (disabled, ignore next %ld hits), also set at %s:%d"
-msgstr ""
-"Nota: el punt d'interrupció %d (deshabilitat, ignora els %ld accessos "
-"següents), també s'ha establert a %s:%d"
+msgstr "Nota: el punt d'interrupció %d (deshabilitat, ignora els %ld accessos següents), també s'ha establert a %s:%d"
 
 #: debug.c:2221
 #, c-format
 msgid "Note: breakpoint %d (disabled), also set at %s:%d"
-msgstr ""
-"Nota: el punt d'interrupció %d (deshabilitat), també s'ha establert a %s:%d"
+msgstr "Nota: el punt d'interrupció %d (deshabilitat), també s'ha establert a %s:%d"
 
 #: debug.c:2238
 #, c-format
@@ -1705,9 +1586,7 @@ msgstr "No est pot establir el punt d'interrupció a la funció `%s'\n"
 #: debug.c:2403
 #, c-format
 msgid "breakpoint %d set at file `%s', line %d is unconditional\n"
-msgstr ""
-"el punt d'interrupció %d establert al fitxer `%s', línia %d és "
-"incondicional\n"
+msgstr "el punt d'interrupció %d establert al fitxer `%s', línia %d és incondicional\n"
 
 #: debug.c:2508 debug.c:2530
 #, c-format
@@ -1739,14 +1618,12 @@ msgstr "s"
 #: debug.c:2662
 #, c-format
 msgid "Will ignore next %ld crossing(s) of breakpoint %d.\n"
-msgstr ""
-"S'ignoraran el(s) %ld creuament(s) següent(s) del punt d'interrupció %d.\n"
+msgstr "S'ignoraran el(s) %ld creuament(s) següent(s) del punt d'interrupció %d.\n"
 
 #: debug.c:2666
 #, c-format
 msgid "Will stop next time breakpoint %d is reached.\n"
-msgstr ""
-"S'aturarà la pròxima vegada que s'assoleixi el punt d'interrupció %d.\n"
+msgstr "S'aturarà la pròxima vegada que s'assoleixi el punt d'interrupció %d.\n"
 
 #: debug.c:2783
 #, c-format
@@ -1897,42 +1774,40 @@ msgstr "`return' no està permès al context actual; s'ignorarà la declaració"
 msgid "No symbol `%s' in current context"
 msgstr "No hi ha un símbol `%s' al context actual"
 
-#: dfa.c:1062 dfa.c:1065 dfa.c:1084 dfa.c:1094 dfa.c:1106 dfa.c:1142
-#: dfa.c:1151 dfa.c:1154 dfa.c:1159 dfa.c:1173 dfa.c:1221
+#: dfa.c:1063 dfa.c:1066 dfa.c:1085 dfa.c:1095 dfa.c:1107 dfa.c:1143
+#: dfa.c:1152 dfa.c:1155 dfa.c:1160 dfa.c:1174 dfa.c:1222
 msgid "unbalanced ["
 msgstr "[ sense aparellar"
 
-#: dfa.c:1118
+#: dfa.c:1119
 msgid "invalid character class"
 msgstr "classe no vàlida de caràcters"
 
-#: dfa.c:1264
+#: dfa.c:1265
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr "la sintaxi de la classe de caràcters és [[:espai:]], no [:espai:]"
 
-#: dfa.c:1326
+#: dfa.c:1327
 msgid "unfinished \\ escape"
 msgstr "seqüència d'escapada \\ sense finalitzar"
 
-#: dfa.c:1473
-#, fuzzy
+#: dfa.c:1474
 msgid "invalid content of \\{\\}"
-msgstr "Contingut no vàlid de \\{\\}"
+msgstr "contingut no vàlid de \\{\\}"
 
-#: dfa.c:1476
-#, fuzzy
+#: dfa.c:1477
 msgid "regular expression too big"
-msgstr "L'expressió regular és massa gran"
+msgstr "l'expressió regular és massa gran"
 
-#: dfa.c:1911
+#: dfa.c:1912
 msgid "unbalanced ("
 msgstr "( sense aparellar"
 
-#: dfa.c:2037
+#: dfa.c:2038
 msgid "no syntax specified"
 msgstr "no s'ha especificat una sintaxi"
 
-#: dfa.c:2045
+#: dfa.c:2046
 msgid "unbalanced )"
 msgstr ") sense aparellar"
 
@@ -2021,16 +1896,16 @@ msgstr "referència a una variable sense inicialitzar `$%ld'"
 msgid "function `%s' called with more arguments than declared"
 msgstr "s'ha cridat a la funció `%s' amb més arguments dels declarats"
 
-#: eval.c:1506
+#: eval.c:1500
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr "unwind_stack: tipus no esperat `%s'"
 
-#: eval.c:1602
+#: eval.c:1596
 msgid "division by zero attempted in `/='"
 msgstr "s'ha intentat una divisió per zero en `/='"
 
-#: eval.c:1609
+#: eval.c:1603
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "s'ha intentat una divisió per zero en `%%='"
@@ -2054,10 +1929,8 @@ msgstr "load_ext: no es pot obrir la llibreria `%s' (%s)\n"
 
 #: ext.c:80
 #, c-format
-msgid ""
-"load_ext: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"
-msgstr ""
-"load_ext: biblioteca `%s': no defineix `plugin_is_GPL_compatible' (%s)\n"
+msgid "load_ext: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"
+msgstr "load_ext: biblioteca `%s': no defineix `plugin_is_GPL_compatible' (%s)\n"
 
 #: ext.c:86
 #, c-format
@@ -2067,8 +1940,7 @@ msgstr "load_ext: biblioteca `%s': no es pot cridar a la funció `%s' (%s)\n"
 #: ext.c:90
 #, c-format
 msgid "load_ext: library `%s' initialization routine `%s' failed\n"
-msgstr ""
-"load_ext: la biblioteca `%s' amb rutina d'inicialització `%s' ha fallat\n"
+msgstr "load_ext: la biblioteca `%s' amb rutina d'inicialització `%s' ha fallat\n"
 
 #: ext.c:150
 msgid "`extension' is a gawk extension"
@@ -2085,10 +1957,8 @@ msgstr "extension: no es pot obrir la biblioteca `%s' (%s)"
 
 #: ext.c:162
 #, c-format
-msgid ""
-"extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)"
-msgstr ""
-"extension: biblioteca `%s': no defineix `plugin_is_GPL_compatible' (%s)"
+msgid "extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)"
+msgstr "extension: biblioteca `%s': no defineix `plugin_is_GPL_compatible' (%s)"
 
 #: ext.c:166
 #, c-format
@@ -2166,15 +2036,12 @@ msgstr "funció `%s': falta l'argument  #%d"
 #: ext.c:371
 #, c-format
 msgid "function `%s': argument #%d: attempt to use scalar as an array"
-msgstr ""
-"funció `%s': argument #%d: s'ha intentat usar una dada escalar com a una "
-"matriu"
+msgstr "funció `%s': argument #%d: s'ha intentat usar una dada escalar com a una matriu"
 
 #: ext.c:375
 #, c-format
 msgid "function `%s': argument #%d: attempt to use array as a scalar"
-msgstr ""
-"funció `%s': argument #%d: s'ha intentat usar una matriu com a un escalar"
+msgstr "funció `%s': argument #%d: s'ha intentat usar una matriu com a un escalar"
 
 #: ext.c:389
 msgid "dynamic loading of library not supported"
@@ -2327,16 +2194,12 @@ msgstr "inplace_begin: s'esperaven 2 arguments però s'ha cridat amb %d"
 
 #: extension/inplace.c:136
 msgid "inplace_begin: cannot retrieve 1st argument as a string filename"
-msgstr ""
-"inplace_begin: no es pot obtenir el primer argument com nom de fitxer cadena "
-"de caràcters"
+msgstr "inplace_begin: no es pot obtenir el primer argument com nom de fitxer cadena de caràcters"
 
 #: extension/inplace.c:144
 #, c-format
 msgid "inplace_begin: disabling in-place editing for invalid FILENAME `%s'"
-msgstr ""
-"inplace_begin: s'està deshabilitant l'edició in situ per al nom de fitxer no "
-"vàlid `%s'"
+msgstr "inplace_begin: s'està deshabilitant l'edició in situ per al nom de fitxer no vàlid `%s'"
 
 #: extension/inplace.c:151
 #, c-format
@@ -2375,9 +2238,7 @@ msgstr "inplace begin: close(%d) ha fallat (%s)"
 
 #: extension/inplace.c:213
 msgid "inplace_end: cannot retrieve 1st argument as a string filename"
-msgstr ""
-"inplace_end: no es pot obtenir el primer argument com un nom de fitxer "
-"cadena de caràcters"
+msgstr "inplace_end: no es pot obtenir el primer argument com un nom de fitxer cadena de caràcters"
 
 #: extension/inplace.c:220
 msgid "inplace_end: in-place editing not active"
@@ -2447,7 +2308,7 @@ msgstr "readfile: s'ha cridat amb cap argument"
 
 #: extension/revoutput.c:125
 msgid "revoutput: could not initialize REVOUT variable"
-msgstr ""
+msgstr "revoutput: no s'ha pogut inicialitzar la variable REVOUT"
 
 #: extension/rwarray.c:124 extension/rwarray0.c:109
 msgid "writea: called with too many arguments"
@@ -2539,18 +2400,15 @@ msgstr "split: el segon argument no és una matriu"
 
 #: field.c:980
 msgid "split: cannot use the same array for second and fourth args"
-msgstr ""
-"split: no es pot usar una submatriu de segon argument per a quart argument"
+msgstr "split: no es pot usar una submatriu de segon argument per a quart argument"
 
 #: field.c:985
 msgid "split: cannot use a subarray of second arg for fourth arg"
-msgstr ""
-"split: no es pot usar una submatriu de segon argument per a quart argument"
+msgstr "split: no es pot usar una submatriu de segon argument per a quart argument"
 
 #: field.c:988
 msgid "split: cannot use a subarray of fourth arg for second arg"
-msgstr ""
-"split: no est pot usar una submatriu de quart argument per a segon argument"
+msgstr "split: no est pot usar una submatriu de quart argument per a segon argument"
 
 #: field.c:1019
 msgid "split: null string for third arg is a gawk extension"
@@ -2570,18 +2428,15 @@ msgstr "patsplit: el segon argument no és una matriu"
 
 #: field.c:1074
 msgid "patsplit: cannot use the same array for second and fourth args"
-msgstr ""
-"patsplit: no es pot usar la mateixa matriu per a segon i quart argument"
+msgstr "patsplit: no es pot usar la mateixa matriu per a segon i quart argument"
 
 #: field.c:1079
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
-msgstr ""
-"patsplit: no es pot usar una submatriu de segon argument per a quart argument"
+msgstr "patsplit: no es pot usar una submatriu de segon argument per a quart argument"
 
 #: field.c:1082
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
-msgstr ""
-"patsplit: no es pot usar una submatriu de quart argument per a segon argument"
+msgstr "patsplit: no es pot usar una submatriu de quart argument per a segon argument"
 
 #: field.c:1120
 msgid "`FIELDWIDTHS' is a gawk extension"
@@ -2721,9 +2576,7 @@ msgstr "l'expressió per a la redirecció `%s' té un valor de cadena nul·la"
 #: io.c:794
 #, c-format
 msgid "filename `%s' for `%s' redirection may be result of logical expression"
-msgstr ""
-"el fitxer `%s' per a la redirecció `%s' pot ser resultat d'una expressió "
-"lògica"
+msgstr "el fitxer `%s' per a la redirecció `%s' pot ser resultat d'una expressió lògica"
 
 #: io.c:842
 #, c-format
@@ -2743,9 +2596,7 @@ msgstr "no es pot obrir la canonada `%s' per a l'entrada (%s)"
 #: io.c:937
 #, c-format
 msgid "can't open two way pipe `%s' for input/output (%s)"
-msgstr ""
-"no es pot obrir una canonada bidireccional `%s' per a les entrades/eixides "
-"(%s)"
+msgstr "no es pot obrir una canonada bidireccional `%s' per a les entrades/eixides (%s)"
 
 #: io.c:1019
 #, c-format
@@ -2758,11 +2609,8 @@ msgid "can't redirect to `%s' (%s)"
 msgstr "no es pot redirigir cap a `%s' (%s)"
 
 #: io.c:1073
-msgid ""
-"reached system limit for open files: starting to multiplex file descriptors"
-msgstr ""
-"s'ha arribat al límit del sistema per a fitxers oberts: es començarà a "
-"multiplexar els descriptors de fitxer"
+msgid "reached system limit for open files: starting to multiplex file descriptors"
+msgstr "s'ha arribat al límit del sistema per a fitxers oberts: es començarà a multiplexar els descriptors de fitxer"
 
 #: io.c:1089
 #, c-format
@@ -2789,8 +2637,7 @@ msgstr "finalització d'una redirecció que no s'ha obert"
 #: io.c:1238
 #, c-format
 msgid "close: redirection `%s' not opened with `|&', second argument ignored"
-msgstr ""
-"close: la redirecció `%s' no s'obre amb `|&', s'ignora el segon argument"
+msgstr "close: la redirecció `%s' no s'obre amb `|&', s'ignora el segon argument"
 
 #: io.c:1255
 #, c-format
@@ -2874,28 +2721,22 @@ msgstr "ha fallat el tancament del pty mestre (%s)"
 #: io.c:1932 io.c:2118 io.c:2319
 #, c-format
 msgid "close of stdout in child failed (%s)"
-msgstr ""
-"ha fallat la finalització de la sortida estàndard en els processos fills (%s)"
+msgstr "ha fallat la finalització de la sortida estàndard en els processos fills (%s)"
 
 #: io.c:1935
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
-msgstr ""
-"ha fallat el trasllat del pty esclau cap a l'eixida estàndard dels processos "
-"fills (dup: %s)"
+msgstr "ha fallat el trasllat del pty esclau cap a l'eixida estàndard dels processos fills (dup: %s)"
 
 #: io.c:1937 io.c:2123
 #, c-format
 msgid "close of stdin in child failed (%s)"
-msgstr ""
-"ha fallat la finalització de l'entrada estàndard en els processos fills (%s)"
+msgstr "ha fallat la finalització de l'entrada estàndard en els processos fills (%s)"
 
 #: io.c:1940
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
-msgstr ""
-"ha fallat el trasllat del pty esclau cap a l'entrada estàndard dels "
-"processos fills (dup: %s)"
+msgstr "ha fallat el trasllat del pty esclau cap a l'entrada estàndard dels processos fills (dup: %s)"
 
 #: io.c:1942 io.c:1964
 #, c-format
@@ -2905,16 +2746,12 @@ msgstr "ha fallat el tancament del pty esclau (%s)"
 #: io.c:2053 io.c:2121 io.c:2290 io.c:2322
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
-msgstr ""
-"ha fallat la redirecció cap a l'eixida estàndard dels processos fills (dup: "
-"%s)"
+msgstr "ha fallat la redirecció cap a l'eixida estàndard dels processos fills (dup: %s)"
 
 #: io.c:2060 io.c:2126
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
-msgstr ""
-"ha fallat la redirecció cap a l'entrada estàndard dels processos fills (dup: "
-"%s)"
+msgstr "ha fallat la redirecció cap a l'entrada estàndard dels processos fills (dup: %s)"
 
 #: io.c:2086 io.c:2312
 msgid "restoring stdout in parent process failed\n"
@@ -2950,9 +2787,7 @@ msgstr "register_input_parser: s'ha rebut un punter nul"
 #: io.c:2788
 #, c-format
 msgid "input parser `%s' conflicts with previously installed input parser `%s'"
-msgstr ""
-"l'analitzador d'entrades `%s' està en conflicte amb analitzador d'entrades `"
-"%s' instal·lat prèviament"
+msgstr "l'analitzador d'entrades `%s' està en conflicte amb analitzador d'entrades `%s' instal·lat prèviament"
 
 #: io.c:2795
 #, c-format
@@ -2965,11 +2800,8 @@ msgstr "register_output_wrapper: s'ha rebut un punter nul"
 
 #: io.c:2843
 #, c-format
-msgid ""
-"output wrapper `%s' conflicts with previously installed output wrapper `%s'"
-msgstr ""
-"l'embolcall de sortida `%s' està en conflicte amb l'embolcall de sortida `"
-"%s' instal·lat prèviament"
+msgid "output wrapper `%s' conflicts with previously installed output wrapper `%s'"
+msgstr "l'embolcall de sortida `%s' està en conflicte amb l'embolcall de sortida `%s' instal·lat prèviament"
 
 #: io.c:2850
 #, c-format
@@ -2982,12 +2814,8 @@ msgstr "register_output_processor: s'ha rebut un punter nul"
 
 #: io.c:2900
 #, c-format
-msgid ""
-"two-way processor `%s' conflicts with previously installed two-way processor "
-"`%s'"
-msgstr ""
-"el processsador de dues vies `%s' està en conflicte amb el processador de "
-"dues vies `%s' instal·lat prèviament"
+msgid "two-way processor `%s' conflicts with previously installed two-way processor `%s'"
+msgstr "el processsador de dues vies `%s' està en conflicte amb el processador de dues vies `%s' instal·lat prèviament"
 
 #: io.c:2909
 #, c-format
@@ -3013,8 +2841,7 @@ msgstr "la comunicació IPv6 no està suportada"
 
 #: main.c:321
 msgid "environment variable `POSIXLY_CORRECT' set: turning on `--posix'"
-msgstr ""
-"la variable d'entorn `POSIXLY_CORRECT' està establerta: usant `--posix'"
+msgstr "la variable d'entorn `POSIXLY_CORRECT' està establerta: usant `--posix'"
 
 #: main.c:327
 msgid "`--posix' overrides `--traditional'"
@@ -3126,10 +2953,12 @@ msgstr "\t-i includefile\t\t--include=fitxer a incloure\n"
 msgid "\t-l library\t\t--load=library\n"
 msgstr "\t-l library\t\t--load=biblioteca\n"
 
+#. TRANSLATORS: the "fatal" and "invalid" here are literal
+#. values, they should not be translated. Thanks.
+#.
 #: main.c:590
-#, fuzzy
 msgid "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
-msgstr "\t-L [fatal]\t\t--lint[=fatal]\n"
+msgstr "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
 
 #: main.c:591
 msgid "\t-M\t\t\t--bignum\n"
@@ -3207,8 +3036,7 @@ msgid ""
 "\n"
 msgstr ""
 "gawk és un llenguatge d'anàlisi i processament de patrons.\n"
-"De forma predeterminada llegeix l'entrada estàndard i escriu a la sortida "
-"estàndar.\n"
+"De forma predeterminada llegeix l'entrada estàndard i escriu a la sortida estàndar.\n"
 
 #: main.c:623
 msgid ""
@@ -3292,8 +3120,7 @@ msgstr "`%s' no és un valor de variable, s'esperava fitxer `%s=%s'"
 #: main.c:1117
 #, c-format
 msgid "cannot use gawk builtin `%s' as variable name"
-msgstr ""
-"no es pot usar el nom de la funció integrada `%s' com a nom de variable"
+msgstr "no es pot usar el nom de la funció integrada `%s' com a nom de variable"
 
 #: main.c:1122
 #, c-format
@@ -3332,7 +3159,7 @@ msgstr "s'ignonarà l'argument buit de `-e/--source'"
 
 #: main.c:1560
 msgid "-M ignored: MPFR/GMP support not compiled in"
-msgstr ""
+msgstr "-M ignorat: no s'ha compilat el suport MPFR/GMP"
 
 #: main.c:1581
 #, c-format
@@ -3399,50 +3226,41 @@ msgstr "%s: l'argument #%d amb valor negatiu %Zd donarà resultats estranys"
 msgid "cmd. line:"
 msgstr "línia cmd.:"
 
-#: node.c:418
+#: node.c:409
 msgid "backslash at end of string"
 msgstr "barra invertida al final de la cadena"
 
-#: node.c:497
+#: node.c:488
 #, c-format
 msgid "old awk does not support the `\\%c' escape sequence"
 msgstr "l'antic awk no dóna suport a la seqüencia d'escapada `\\%c'"
 
-#: node.c:548
+#: node.c:539
 msgid "POSIX does not allow `\\x' escapes"
 msgstr "POSIX no permet seqüències d'escapada `\\x'"
 
-#: node.c:554
+#: node.c:545
 msgid "no hex digits in `\\x' escape sequence"
 msgstr "no hi ha dígits hexadecimals en la seqüència d'escapada `\\x'"
 
-#: node.c:576
+#: node.c:567
 #, c-format
-msgid ""
-"hex escape \\x%.*s of %d characters probably not interpreted the way you "
-"expect"
-msgstr ""
-"probablement no s'han interpretat els caràcters hex escape \\x%.*s of %d de "
-"la manera que esperàveu"
+msgid "hex escape \\x%.*s of %d characters probably not interpreted the way you expect"
+msgstr "probablement no s'han interpretat els caràcters hex escape \\x%.*s of %d de la manera que esperàveu"
 
-#: node.c:591
+#: node.c:582
 #, c-format
 msgid "escape sequence `\\%c' treated as plain `%c'"
 msgstr "la seqüència d'escapada `\\%c' és tractada com a una simple `%c'"
 
-#: node.c:735
-msgid ""
-"Invalid multibyte data detected. There may be a mismatch between your data "
-"and your locale."
-msgstr ""
-"S'han detectat dades multibyte no vàlides. Pot haver-hi una discordança "
-"entre les vostres dades i la vostra configuració local"
+#: node.c:726
+msgid "Invalid multibyte data detected. There may be a mismatch between your data and your locale."
+msgstr "S'han detectat dades multibyte no vàlides. Pot haver-hi una discordança entre les vostres dades i la vostra configuració local"
 
 #: posix/gawkmisc.c:177
 #, c-format
 msgid "%s %s `%s': could not get fd flags: (fcntl F_GETFD: %s)"
-msgstr ""
-"%s %s `%s': no s'han pogut obtenir els indicadors fd: (fcntl F_GETFD: %s)"
+msgstr "%s %s `%s': no s'han pogut obtenir els indicadors fd: (fcntl F_GETFD: %s)"
 
 #: posix/gawkmisc.c:189
 #, c-format
@@ -3459,12 +3277,12 @@ msgid "sending profile to standard error"
 msgstr "enviant el perfil a l'eixida d'error estàndard"
 
 #: profile.c:213
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\t# %s rule(s)\n"
 "\n"
 msgstr ""
-"\t# Regla(es)\n"
+"\t# %s regla(es)\n"
 "\n"
 
 #: profile.c:218
@@ -3547,9 +3365,8 @@ msgid "Invalid back reference"
 msgstr "Referència cap endarrere no vàlida"
 
 #: regcomp.c:160
-#, fuzzy
 msgid "Unmatched [, [^, [:, [., or [="
-msgstr "[ o [^ desemparellats"
+msgstr "[, [^, [:, [., o [= sense concordança"
 
 #: regcomp.c:163
 msgid "Unmatched ( or \\("
@@ -3591,12 +3408,12 @@ msgstr ") o \\) desemparellats"
 msgid "No previous regular expression"
 msgstr "No hi ha una expressió regular prèvia"
 
-#: symbol.c:678
-#, fuzzy, c-format
+#: symbol.c:677
+#, c-format
 msgid "function `%s': can't use function `%s' as a parameter name"
-msgstr "funció `%s»: no pot usar el nom de la funció com a paràmetre"
+msgstr "funció %s»: no es pot usar la funció `%s' com a nom de paràmetre"
 
-#: symbol.c:810
+#: symbol.c:809
 msgid "can not pop main context"
 msgstr "no es pot mostrar el context principal"
 
@@ -3604,8 +3421,7 @@ msgstr "no es pot mostrar el context principal"
 #~ msgstr "`getline var' no és vàlid a dins de la regla `%s'"
 
 #~ msgid "no (known) protocol supplied in special filename `%s'"
-#~ msgstr ""
-#~ "no s'aporta cap protocol (conegut) en el nom del fitxer especial `%s'"
+#~ msgstr "no s'aporta cap protocol (conegut) en el nom del fitxer especial `%s'"
 
 #~ msgid "special file name `%s' is incomplete"
 #~ msgstr "el nom del fitxer especial `%s' està incomplet"
@@ -3691,8 +3507,7 @@ msgstr "no es pot mostrar el context principal"
 #~ "To report bugs, see node `Bugs' in `gawk.info', which is\n"
 #~ msgstr ""
 #~ "\n"
-#~ "Per a informar d'errors, consulteu el node «Bugs' en «gawk.info', que "
-#~ "està\n"
+#~ "Per a informar d'errors, consulteu el node «Bugs' en «gawk.info', que està\n"
 
 #~ msgid "invalid syntax in name `%s' for variable assignment"
 #~ msgstr "sintaxi no vàlida en el nom «%s' per a l'asignació de la variable"
@@ -3713,8 +3528,7 @@ msgstr "no es pot mostrar el context principal"
 #~ msgstr "«%s» és una funció, l'assignació no és permesa"
 
 #~ msgid "assignment is not allowed to result of builtin function"
-#~ msgstr ""
-#~ "no es permet l'assignació per a obtindre un resultat d'una funció interna"
+#~ msgstr "no es permet l'assignació per a obtindre un resultat d'una funció interna"
 
 #~ msgid ""
 #~ "\t# BEGIN block(s)\n"
@@ -3759,11 +3573,8 @@ msgstr "no es pot mostrar el context principal"
 #~ msgid "field %d in FIELDWIDTHS, must be > 0"
 #~ msgstr "el camp %d en FIELDWIDTHS, hauria de ser > 0"
 
-#~ msgid ""
-#~ "for loop: array `%s' changed size from %d to %d during loop execution"
-#~ msgstr ""
-#~ "bucle for: la matriu «%s» ha canviat de mida de %d a %d durant l'execució "
-#~ "del bucle"
+#~ msgid "for loop: array `%s' changed size from %d to %d during loop execution"
+#~ msgstr "bucle for: la matriu «%s» ha canviat de mida de %d a %d durant l'execució del bucle"
 
 #~ msgid "`break' outside a loop is not portable"
 #~ msgstr "«break» a fora d'un bucle no és portable"
@@ -3789,12 +3600,8 @@ msgstr "no es pot mostrar el context principal"
 #~ msgid "assignment used in conditional context"
 #~ msgstr "assignació usada en un context condicional"
 
-#~ msgid ""
-#~ "concatenation: side effects in one expression have changed the length of "
-#~ "another!"
-#~ msgstr ""
-#~ "concatenació: els efectes colaterals en una expressió han canviat la "
-#~ "longitud d'una altra!"
+#~ msgid "concatenation: side effects in one expression have changed the length of another!"
+#~ msgstr "concatenació: els efectes colaterals en una expressió han canviat la longitud d'una altra!"
 
 #~ msgid "function %s called\n"
 #~ msgstr "s'ha cridat a la funció %s\n"
@@ -3806,9 +3613,7 @@ msgstr "no es pot mostrar el context principal"
 #~ msgstr "tipus d'arbre %s no vàlid dintre de redirect()"
 
 #~ msgid "can't open two way socket `%s' for input/output (%s)"
-#~ msgstr ""
-#~ "no es pot obrir un socket bidireccional «%s» per a les entrades/eixides "
-#~ "(%s)"
+#~ msgstr "no es pot obrir un socket bidireccional «%s» per a les entrades/eixides (%s)"
 
 #~ msgid "/inet/raw client not ready yet, sorry"
 #~ msgstr "el client /inet/raw encara no està a punt, ho sento"
