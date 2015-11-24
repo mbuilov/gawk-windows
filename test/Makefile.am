@@ -1031,6 +1031,10 @@ EXTRA_DIST = \
 	uparrfs.awk \
 	uparrfs.in \
 	uparrfs.ok \
+	watchpoint1.awk \
+	watchpoint1.in \
+	watchpoint1.ok \
+	watchpoint1.script \
 	wideidx.awk \
 	wideidx.in \
 	wideidx.ok \
@@ -1133,8 +1137,9 @@ GAWK_EXT_TESTS = \
 	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
 	symtab7 symtab8 symtab9 \
-	typedregex1 typedregex2 typedregex3 typeof1 typeof2 typeof3 typeof4
-	timeout
+	typedregex1 typedregex2 typedregex3 typeof1 typeof2 typeof3 typeof4 \
+	timeout \
+	watchpoint1
 
 EXTRA_TESTS = inftest regtest
 
@@ -2184,6 +2189,11 @@ dbugeval2:
 muldimposix::
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+watchpoint1:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk $@.in < $@.script >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:

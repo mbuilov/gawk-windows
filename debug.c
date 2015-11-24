@@ -3658,8 +3658,20 @@ debug_pre_execute(INSTRUCTION **pi)
 
 	assert(sourceline > 0);
 
-	if (check_breakpoint(pi)
-			|| check_watchpoint()
+	/*
+	 * 11/2015: This used to check breakpoints first, but that could
+	 * produce strange behavior, where a watchpoint doesn't print until
+	 * some time after the data changed.  This reworks things so that
+	 * watchpoints are checked first. It's a bit of a hack, but
+	 * the behavior for the user is more logical.
+	 */
+	if (check_watchpoint()) {
+		next_command();	/* return to debugger interface */
+		if (stop.command == D_return)
+			*pi = stop.pc;	/* jump to this instruction */
+		else if (cur_pc->opcode == Op_breakpoint)
+			cur_pc = cur_pc->nexti;    /* skip past the breakpoint instruction */
+	} else if (check_breakpoint(pi)
 			|| (stop.check_func && stop.check_func(pi))) {
 		next_command();	/* return to debugger interface */
 		if (stop.command == D_return)
