@@ -841,6 +841,8 @@ struct cmdtoken cmdtab[] = {
 	gettext_noop("end - end a list of commands or awk statements.") },
 { "eval", "", D_eval, D_EVAL, do_eval,
 	gettext_noop("eval stmt|[p1, p2, ...] - evaluate awk statement(s).") },
+{ "exit", "", D_quit, D_QUIT, do_quit,
+	gettext_noop("exit - (same as quit) exit debugger.") },
 { "finish", "", D_finish, D_FINISH, do_finish,
 	gettext_noop("finish - execute until selected stack frame returns.") },
 { "frame", "f", D_frame, D_FRAME, do_frame,
