@@ -1,5 +1,10 @@
 2015-12-16         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* io.c (two_way_open): Remove unneeded close of slave in the
+	parent.
+
+2015-12-16         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* profile.c (pp_number): Move count into ifdef for MPFR. Avoids
 	an unused variable warning if not compiling for MPFR.
 

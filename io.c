@@ -1974,7 +1974,6 @@ two_way_open(const char *str, struct redirect *rp)
 		case -1:
 			save_errno = errno;
 			close(master);
-			close(slave);
 			errno = save_errno;
 			return false;
 
