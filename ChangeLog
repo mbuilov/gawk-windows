@@ -1,3 +1,8 @@
+2015-12-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pp_number): Move count into ifdef for MPFR. Avoids
+	an unused variable warning if not compiling for MPFR.
+
 2015-11-26         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* command.y (cmdtab): Add "exit" as synonym for "quit".

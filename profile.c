@@ -1324,9 +1324,10 @@ pp_number(NODE *n)
 {
 #define PP_PRECISION 6
 	char *str;
-	size_t count;
 
 #ifdef HAVE_MPFR
+	size_t count;
+
 	if (is_mpg_float(n)) {
 		count = mpfr_get_prec(n->mpg_numbr) / 3;	/* ~ 3.22 binary digits per decimal digit */
 		emalloc(str, char *, count, "pp_number");
