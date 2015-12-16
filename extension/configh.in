@@ -147,9 +147,6 @@
 #ifndef _GNU_SOURCE
 # undef _GNU_SOURCE
 #endif
-#if defined _GNU_SOURCE && !defined _DEFAULT_SOURCE
-# define _DEFAULT_SOURCE
-#endif
 /* Enable threading extensions on Solaris.  */
 #ifndef _POSIX_PTHREAD_SEMANTICS
 # undef _POSIX_PTHREAD_SEMANTICS
@@ -193,3 +190,5 @@
 #ifndef __cplusplus
 #undef inline
 #endif
+
+#include "ext_custom.h"

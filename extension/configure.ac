@@ -79,6 +79,7 @@ dnl checks for compiler characteristics
 AC_C_INLINE
 
 AC_CONFIG_HEADERS([config.h:configh.in])
+AH_BOTTOM([#include "ext_custom.h"])
 
 AC_CONFIG_FILES(Makefile)
 AC_OUTPUT
