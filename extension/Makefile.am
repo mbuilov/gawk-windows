@@ -118,6 +118,7 @@ uninstall-recursive: uninstall-so
 EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
 	ChangeLog.0 \
+	ext_custom.h \
 	fts.3 \
 	README.fts \
 	rwarray0.c
