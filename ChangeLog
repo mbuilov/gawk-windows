@@ -1,3 +1,13 @@
+2015-12-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pp_number): Move count into ifdef for MPFR. Avoids
+	an unused variable warning if not compiling for MPFR.
+
+	Unrelated:
+
+	* io.c (two_way_open): If using a pty instead of pipes, open the
+	slave in the child. Fixes AIX and doesn't seem to break GNU/Linux.
+
 2015-11-26         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* command.y (cmdtab): Add "exit" as synonym for "quit".

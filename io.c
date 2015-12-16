@@ -1965,56 +1965,75 @@ two_way_open(const char *str, struct redirect *rp, int extfd)
 		goto use_pipes;
 
 	got_the_pty:
-		if ((slave = open(slavenam, O_RDWR)) < 0) {
-			close(master);
-			fatal(_("could not open `%s', mode `%s'"),
-				slavenam, "r+");
-		}
 
-#ifdef I_PUSH
 		/*
-		 * Push the necessary modules onto the slave to
-		 * get terminal semantics.
+		 * We specifically open the slave only in the child. This allows
+		 * certain, er, "limited" systems to work.  The open is specifically
+		 * without O_NOCTTY in order to make the slave become the controlling
+		 * terminal.
 		 */
-		ioctl(slave, I_PUSH, "ptem");
-		ioctl(slave, I_PUSH, "ldterm");
-#endif
-
-		tcgetattr(slave, & st);
-		st.c_iflag &= ~(ISTRIP | IGNCR | INLCR | IXOFF);
-		st.c_iflag |= (ICRNL | IGNPAR | BRKINT | IXON);
-		st.c_oflag &= ~OPOST;
-		st.c_cflag &= ~CSIZE;
-		st.c_cflag |= CREAD | CS8 | CLOCAL;
-		st.c_lflag &= ~(ECHO | ECHOE | ECHOK | NOFLSH | TOSTOP);
-		st.c_lflag |= ISIG;
-
-		/* Set some control codes to default values */
-#ifdef VINTR
-		st.c_cc[VINTR] = '\003';        /* ^c */
-#endif
-#ifdef VQUIT
-		st.c_cc[VQUIT] = '\034';        /* ^| */
-#endif
-#ifdef VERASE
-		st.c_cc[VERASE] = '\177';       /* ^? */
-#endif
-#ifdef VKILL
-		st.c_cc[VKILL] = '\025';        /* ^u */
-#endif
-#ifdef VEOF
-		st.c_cc[VEOF] = '\004'; /* ^d */
-#endif
-		tcsetattr(slave, TCSANOW, & st);
 
 		switch (pid = fork()) {
 		case 0:
 			/* Child process */
 			setsid();
 
+			if ((slave = open(slavenam, O_RDWR)) < 0) {
+				close(master);
+				fatal(_("could not open `%s', mode `%s'"),
+					slavenam, "r+");
+			}
+
+#ifdef I_PUSH
+			/*
+			 * Push the necessary modules onto the slave to
+			 * get terminal semantics.  Check that they aren't
+			 * already there to avoid hangs on said "limited" systems.
+			 */
+#ifdef I_FIND
+			if (ioctl(slave, I_FIND, "ptem") == 0)
+#endif
+				ioctl(slave, I_PUSH, "ptem");
+#ifdef I_FIND
+			if (ioctl(slave, I_FIND, "ldterm") == 0)
+#endif
+				ioctl(slave, I_PUSH, "ldterm");
+#endif
+			tcgetattr(slave, & st);
+
+			st.c_iflag &= ~(ISTRIP | IGNCR | INLCR | IXOFF);
+			st.c_iflag |= (ICRNL | IGNPAR | BRKINT | IXON);
+			st.c_oflag &= ~OPOST;
+			st.c_cflag &= ~CSIZE;
+			st.c_cflag |= CREAD | CS8 | CLOCAL;
+			st.c_lflag &= ~(ECHO | ECHOE | ECHOK | NOFLSH | TOSTOP);
+			st.c_lflag |= ISIG;
+
+			/* Set some control codes to default values */
+#ifdef VINTR
+			st.c_cc[VINTR] = '\003';        /* ^c */
+#endif
+#ifdef VQUIT
+			st.c_cc[VQUIT] = '\034';        /* ^| */
+#endif
+#ifdef VERASE
+			st.c_cc[VERASE] = '\177';       /* ^? */
+#endif
+#ifdef VKILL
+			st.c_cc[VKILL] = '\025';        /* ^u */
+#endif
+#ifdef VEOF
+			st.c_cc[VEOF] = '\004'; /* ^d */
+#endif
+
 #ifdef TIOCSCTTY
+			/*
+			 * This may not necessary anymore given that we
+			 * open the slave in the child, but it doesn't hurt.
+			 */
 			ioctl(slave, TIOCSCTTY, 0);
 #endif
+			tcsetattr(slave, TCSANOW, & st);
 
 			if (close(master) == -1)
 				fatal(_("close of master pty failed (%s)"), strerror(errno));
@@ -2045,13 +2064,6 @@ two_way_open(const char *str, struct redirect *rp, int extfd)
 			errno = save_errno;
 			return false;
 
-		}
-
-		/* parent */
-		if (close(slave) != 0) {
-			close(master);
-			(void) kill(pid, SIGKILL);
-			fatal(_("close of slave pty failed (%s)"), strerror(errno));
 		}
 
 		rp->pid = pid;
