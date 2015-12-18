@@ -46,7 +46,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH May, 2015
+@set UPDATE-MONTH December, 2015
 @set VERSION 4.1
 @set PATCHLEVEL 3
 
@@ -14251,6 +14251,10 @@ This is
 @code{"FIELDWIDTHS"} if field splitting with @code{FIELDWIDTHS} is in effect,
 or @code{"FPAT"} if field matching with @code{FPAT} is in effect.
 
+@item PROCINFO["gid"]
+@cindex group ID of @command{gawk} user
+The value of the @code{getgid()} system call.
+
 @item PROCINFO["identifiers"]
 @cindex program identifiers
 A subarray, indexed by the names of all identifiers used in the text of
@@ -14286,10 +14290,6 @@ The values indicate what @command{gawk} knows about the identifiers
 after it has finished parsing the program; they are @emph{not} updated
 while the program runs.
 
-@item PROCINFO["gid"]
-@cindex group ID of @command{gawk} user
-The value of the @code{getgid()} system call.
-
 @item PROCINFO["pgrpid"]
 @cindex process group ID of @command{gawk} process
 The process group ID of the current process.
@@ -14301,14 +14301,6 @@ The process ID of the current process.
 @item PROCINFO["ppid"]
 @cindex parent process ID of @command{gawk} process
 The parent process ID of the current process.
-
-@item PROCINFO["sorted_in"]
-If this element exists in @code{PROCINFO}, its value controls the
-order in which array indices will be processed by
-@samp{for (@var{indx} in @var{array})} loops.
-This is an advanced feature, so we defer the
-full description until later; see
-@ref{Scanning an Array}.
 
 @item PROCINFO["strftime"]
 The default time format string for @code{strftime()}.
@@ -14369,21 +14361,26 @@ supplementary groups that the process has.  Use the @code{in} operator
 to test for these elements
 (@pxref{Reference to Elements}).
 
-@cindex @command{gawk}, @code{PROCINFO} array in
-@cindex @code{PROCINFO} array, uses
-The @code{PROCINFO} array has the following additional uses:
+The following elements allow you to change @command{gawk}'s behavior:
 
-@itemize @value{BULLET}
-@item
-It may be used to provide a timeout when reading from any
-open input file, pipe, or coprocess.
+@table @code
+@item PROCINFO["@var{command}", "pty"]
+For two-way communication to @var{command}, use a pseudo-tty instead
+of setting up a two-way pipe.
+@DBXREF{Two-way I/O} for more information.
+
+@item PROCINFO["@var{input_name}", "READ_TIMEOUT"]
+Set a timeout for reading from input redirection @var{input_name}.
 @DBXREF{Read Timeout} for more information.
 
-@item
-It may be used to cause coprocesses to communicate over pseudo-ttys
-instead of through two-way pipes; this is discussed further in
-@ref{Two-way I/O}.
-@end itemize
+@item PROCINFO["sorted_in"]
+If this element exists in @code{PROCINFO}, its value controls the
+order in which array indices will be processed by
+@samp{for (@var{indx} in @var{array})} loops.
+This is an advanced feature, so we defer the
+full description until later; see
+@ref{Scanning an Array}.
+@end table
 
 @cindex @code{RLENGTH} variable
 @item @code{RLENGTH}
