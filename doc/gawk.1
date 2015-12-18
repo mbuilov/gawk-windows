@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Nov 15 2015" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Dec 17 2015" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -1094,15 +1094,11 @@ Use the
 operator to test for these elements.
 The following elements are guaranteed to be available:
 .RS
-.TP \w'\fBPROCINFO["version"]\fR'u+1n
+.TP \w'\fBPROCINFO["strftime"]\fR'u+1n
 \fBPROCINFO["egid"]\fP
 The value of the
 .IR getegid (2)
 system call.
-.TP
-\fBPROCINFO["strftime"]\fP
-The default time format string for
-.BR strftime() .
 .TP
 \fBPROCINFO["errno"]\fP
 The value of
@@ -1126,6 +1122,11 @@ is in effect,
 or \fB"FIELDWIDTHS"\fP if field splitting with
 .B FIELDWIDTHS
 is in effect.
+.TP
+\fBPROCINFO["gid"]\fP
+The value of the
+.IR getgid (2)
+system call.
 .TP
 \fBPROCINFO["identifiers"]\fP
 A subarray, indexed by the names of all identifiers used in the
@@ -1162,11 +1163,6 @@ doesn't know yet).
 The identifier is a user-defined function.
 .RE
 .TP
-\fBPROCINFO["gid"]\fP
-The value of the
-.IR getgid (2)
-system call.
-.TP
 \fBPROCINFO["pgrpid"]\fP
 The process group ID of the current process.
 .TP
@@ -1176,10 +1172,67 @@ The process ID of the current process.
 \fBPROCINFO["ppid"]\fP
 The parent process ID of the current process.
 .TP
+\fBPROCINFO["strftime"]\fP
+The default time format string for
+.BR strftime() .
+.TP
 \fBPROCINFO["uid"]\fP
 The value of the
 .IR getuid (2)
 system call.
+.TP
+\fBPROCINFO["version"]\fP
+the version of
+.IR gawk .
+.PP
+The following elements are present if loading dynamic
+extensions is available:
+.TP
+\fBPROCINFO["api_major"]\fP
+The major version of the extension API.
+.TP
+\fBPROCINFO["api_minor"]\fP
+The minor version of the extension API.
+.PP
+The following elements are available if MPFR support is
+compiled into
+.IR gawk\^ :
+.TP
+\fBPROCINFO["gmp_version"]\fP
+The version of the GNU MP library used for arbitrary precision
+number support in
+.IR gawk .
+.TP
+\fBPROCINFO["mpfr_version"]\fP
+The version of the GNU MPFR library used for arbitrary precision
+number support in
+.IR gawk .
+.TP
+\fBPROCINFO["prec_max"]\fP
+The maximum precision supported by the GNU MPFR library for
+arbitrary precision floating-point numbers.
+.TP
+\fBPROCINFO["prec_min"]\fP
+The minimum precision allowed by the GNU MPFR library for
+arbitrary precision floating-point numbers.
+.PP
+The following elements may set by a program to
+change
+.IR gawk 's
+behavior:
+.TP
+\fBPROCINFO["\fIcommand\fB", "pty"]\fR
+Use a pseudo-tty for two-way communication with
+.I command
+instead of setting up two one-way pipes.
+.TP
+\fBPROCINFO["\fIinput\fB", "READ_TIMEOUT"]\fR
+The timeout in milliseconds for reading data from
+.IR input ,
+where
+.I input
+is a redirection string or a filename. A value of zero or
+less than zero means no timeout.
 .TP
 \fBPROCINFO["sorted_in"]\fP
 If this element exists in
@@ -1220,74 +1273,6 @@ are the
 corresponding values of the two elements being compared.
 It should return a number less than, equal to, or greater than 0,
 depending on how the elements of the array are to be ordered.
-.TP
-\fBPROCINFO["input", "READ_TIMEOUT"]\fP
-The timeout in milliseconds for reading data from
-.IR input ,
-where
-.I input
-is a redirection string or a filename. A value of zero or
-less than zero means no timeout.
-.TP
-\fBPROCINFO["input", "RETRY"]\fP
-If an I/O error that may be retried occurs when reading data from
-.IR input ,
-and this array entry exists, then
-.B getline
-will return \-2 instead of following the default behavior of returning \-1
-and configuring
-.IR input
-to return no further data.
-An I/O error that may be retried is one where
-.IR errno (3)
-has the value
-.IR EAGAIN ,
-.IR EWOULDBLOCK ,
-.IR EINTR ,
-or
-.IR ETIMEDOUT .
-This may be useful in conjunction with
-\fBPROCINFO["input", "READ_TIMEOUT"]\fP
-or situations where a file descriptor has been configured to behave in a
-non-blocking fashion.
-.TP
-\fBPROCINFO["mpfr_version"]\fP
-The version of the GNU MPFR library used for arbitrary precision
-number support in
-.IR gawk .
-This entry is not present if MPFR support is not compiled into
-.IR gawk .
-.TP
-\fBPROCINFO["gmp_version"]\fP
-The version of the GNU MP library used for arbitrary precision
-number support in
-.IR gawk .
-This entry is not present if MPFR support is not compiled into
-.IR gawk .
-.TP
-\fBPROCINFO["prec_max"]\fP
-The maximum precision supported by the GNU MPFR library for
-arbitrary precision floating-point numbers.
-This entry is not present if MPFR support is not compiled into
-.IR gawk .
-.TP
-\fBPROCINFO["prec_min"]\fP
-The minimum precision allowed by the GNU MPFR library for
-arbitrary precision floating-point numbers.
-This entry is not present if MPFR support is not compiled into
-.IR gawk .
-.TP
-\fBPROCINFO["api_major"]\fP
-The major version of the extension API.
-This entry is not present if loading dynamic extensions is not available.
-.TP
-\fBPROCINFO["api_minor"]\fP
-The minor version of the extension API.
-This entry is not present if loading dynamic extensions is not available.
-.TP
-\fBPROCINFO["version"]\fP
-the version of
-.IR gawk .
 .RE
 .TP
 .B ROUNDMODE
