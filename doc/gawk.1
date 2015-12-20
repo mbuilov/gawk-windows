@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Dec 17 2015" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Dec 20 2015" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -1220,6 +1220,14 @@ The following elements may set by a program to
 change
 .IR gawk 's
 behavior:
+.TP
+\fBPROCINFO["NONFATAL"]\fR
+If this exists, then I/O errors for all output redirections become nonfatal.
+Make output errors for
+.I output_name
+be nonfatal.
+.TP
+\fBPROCINFO["\fIoutput_command\fB", "NONFATAL"]\fR
 .TP
 \fBPROCINFO["\fIcommand\fB", "pty"]\fR
 Use a pseudo-tty for two-way communication with

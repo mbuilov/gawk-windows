@@ -323,6 +323,8 @@ static Regexp *RS_re_yes_case;	/* regexp for RS when ignoring case */
 static Regexp *RS_re_no_case;	/* regexp for RS when not ignoring case */
 static Regexp *RS_regexp;
 
+static const char nonfatal[] = "NONFATAL";
+
 bool RS_is_null;
 
 extern NODE *ARGC_node;
@@ -1100,8 +1102,6 @@ getredirect(const char *str, int len)
 bool
 is_non_fatal_std(FILE *fp)
 {
-	static const char nonfatal[] = "NONFATAL";
-
 	if (in_PROCINFO(nonfatal, NULL, NULL))
 		return true;
 
@@ -1121,8 +1121,8 @@ is_non_fatal_std(FILE *fp)
 bool
 is_non_fatal_redirect(const char *str)
 {
-	return in_PROCINFO("NONFATAL", NULL, NULL) != NULL
-	       || in_PROCINFO(str, "NONFATAL", NULL) != NULL;
+	return in_PROCINFO(nonfatal, NULL, NULL) != NULL
+	       || in_PROCINFO(str, nonfatal, NULL) != NULL;
 }
 
 /* close_one --- temporarily close an open file to re-use the fd */
