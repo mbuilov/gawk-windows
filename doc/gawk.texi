@@ -10598,7 +10598,6 @@ when closing a pipe.
 @end cartouche
 @end ifnotdocbook
 
-
 @node Nonfatal
 @section Enabling Nonfatal Output
 
@@ -15281,6 +15280,14 @@ to test for these elements
 The following elements allow you to change @command{gawk}'s behavior:
 
 @table @code
+@item PROCINFO["NONFATAL"]
+If this element exists, then I/O errors for all output redirections become nonfatal.
+@DBXREF{Nonfatal}.
+
+@item PROCINFO["@var{output_name}", "NONFATAL"]
+Make output errors for @var{output_name} be nonfatal.
+@DBXREF{Nonfatal}.
+
 @item PROCINFO["@var{command}", "pty"]
 For two-way communication to @var{command}, use a pseudo-tty instead
 of setting up a two-way pipe.
