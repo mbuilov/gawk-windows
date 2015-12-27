@@ -1,9 +1,4 @@
-# Some
-# header
-# comments
-
-# Add up
-{ sum += $1 }
-
-# Print sum
-END { print sum }
+{if(0){}else{}}
+{while(0){}}
+{do{}while(0)}
+{for(;;){}}
