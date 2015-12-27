@@ -7223,14 +7223,12 @@ mk_condition(INSTRUCTION *cond, INSTRUCTION *ifp, INSTRUCTION *true_branch,
 	 */
 
 	INSTRUCTION *ip;
+	bool setup_else_part = true;
 
 	if (false_branch == NULL) {
 		false_branch = list_create(instruction(Op_no_op));
-		if (elsep != NULL) {		/* else { } */
-			if (do_pretty_print)
-				(void) list_prepend(false_branch, elsep);
-			else
-				bcfree(elsep);
+		if (elsep == NULL) {		/* else { } */
+			setup_else_part = false;
 		}
 	} else {
 		/* assert(elsep != NULL); */
@@ -7238,6 +7236,9 @@ mk_condition(INSTRUCTION *cond, INSTRUCTION *ifp, INSTRUCTION *true_branch,
 		/* avoid a series of no_op's: if .. else if .. else if .. */
 		if (false_branch->lasti->opcode != Op_no_op)
 			(void) list_append(false_branch, instruction(Op_no_op));
+	}
+
+	if (setup_else_part) {
 		if (do_pretty_print) {
 			(void) list_prepend(false_branch, elsep);
 			false_branch->nexti->branch_end = false_branch->lasti;
