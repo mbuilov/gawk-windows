@@ -1,5 +1,5 @@
 /* dfa.c - deterministic extended regexp routines for GNU
-   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2015 Free Software
+   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2016 Free Software
    Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -1694,7 +1694,7 @@ addtok_wc (wint_t wc)
 static void
 add_utf8_anychar (void)
 {
-  static const charclass utf8_classes[5] = {
+  static charclass const utf8_classes[5] = {
     /* 80-bf: non-leading bytes.  */
     {0, 0, 0, 0, CHARCLASS_WORD_MASK, CHARCLASS_WORD_MASK, 0, 0},
 
