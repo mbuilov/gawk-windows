@@ -36,28 +36,6 @@ fi
 AC_MSG_RESULT([${gawk_cv_aix_hack}])
 ])dnl
 
-dnl Check for Alpha Linux systems
-AC_DEFUN([GAWK_AC_LINUX_ALPHA], [
-AC_MSG_CHECKING([for Linux/Alpha compilation hacks])
-AC_CACHE_VAL(gawk_cv_linux_alpha_hack, [
-if test "Linux" = "`uname`" && test "alpha" = "`uname -m`"
-then
-	# this isn't necessarily always true,
-	# the vendor's compiler is also often found
-	if test "$GCC" = yes
-	then
-		CFLAGS="$CFLAGS -mieee"
-		gawk_cv_linux_alpha_hack=yes
-	else
-		gawk_cv_linux_alpha_hack=no
-	fi
-else
-	gawk_cv_linux_alpha_hack=no
-fi
-])dnl
-AC_MSG_RESULT([${gawk_cv_linux_alpha_hack}])
-])dnl
-
 dnl Check for z/OS Unix Systems Services
 AC_DEFUN([AC_ZOS_USS], [
 AC_MSG_CHECKING([for z/OS USS compilation])

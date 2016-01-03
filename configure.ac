@@ -113,7 +113,6 @@ AC_ZOS_USS
 AC_SEARCH_LIBS([strerror],[cposix])
 AC_SYS_LARGEFILE
 GAWK_AC_AIX_TWEAK
-GAWK_AC_LINUX_ALPHA
 
 AC_MSG_CHECKING([if we are using EBCDIC])
 AC_EGREP_CPP([gnu_gawk_in_ebcdic],

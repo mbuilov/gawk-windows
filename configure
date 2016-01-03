@@ -6231,32 +6231,6 @@ fi
 $as_echo "${gawk_cv_aix_hack}" >&6; }
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for Linux/Alpha compilation hacks" >&5
-$as_echo_n "checking for Linux/Alpha compilation hacks... " >&6; }
-if ${gawk_cv_linux_alpha_hack+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-if test "Linux" = "`uname`" && test "alpha" = "`uname -m`"
-then
-	# this isn't necessarily always true,
-	# the vendor's compiler is also often found
-	if test "$GCC" = yes
-	then
-		CFLAGS="$CFLAGS -mieee"
-		gawk_cv_linux_alpha_hack=yes
-	else
-		gawk_cv_linux_alpha_hack=no
-	fi
-else
-	gawk_cv_linux_alpha_hack=no
-fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${gawk_cv_linux_alpha_hack}" >&5
-$as_echo "${gawk_cv_linux_alpha_hack}" >&6; }
-
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking if we are using EBCDIC" >&5
 $as_echo_n "checking if we are using EBCDIC... " >&6; }
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
