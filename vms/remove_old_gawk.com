@@ -24,6 +24,7 @@ $   file = f$element(i, ",", old_cutils)
 $   if file .eqs. "" then goto cutils_loop_end
 $   if file .eqs. "," then goto cutils_loop_end
 $   call update_old_image 'file'
+$   call update_old_image 'file' '[usr.bin]'
 $   i = i + 1
 $   goto cutils_loop
 $cutils_loop_end:
@@ -53,9 +54,11 @@ $!-------------------------------------------
 $update_old_image: subroutine
 $!
 $ file = p1
+$ fdir = p2
+$ if fdir .eqs. "" then fdir = "[bin]"
 $! First get the FID of the new gawk image.
 $! Don't remove anything that matches it.
-$ new_gawk = f$search("GNV$GNU:[BIN]GNV$''file'.EXE")
+$ new_gawk = f$search("GNV$GNU:[user.bin]GNV$''file'.EXE")
 $!
 $ new_gawk_fid = "No_new_gawk_fid"
 $ if new_gawk .nes. ""
@@ -71,9 +74,9 @@ $! Ok to delete and replace.
 $!
 $!
 $ old_gawk_fid = "No_old_gawk_fid"
-$ old_gawk = f$search("gnv$gnu:[bin]''file'.")
+$ old_gawk = f$search("gnv$gnu:''fdir'''file'.")
 $ old_gawk_exe_fid = "No_old_gawk_fid"
-$ old_gawk_exe = f$search("gnv$gnu:[bin]''file'.exe")
+$ old_gawk_exe = f$search("gnv$gnu:''fdir'''file'.exe")
 $ if old_gawk_exe .nes. ""
 $ then
 $   old_gawk_exe_fid = f$file_attributes(old_gawk_exe, "FID")
