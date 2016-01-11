@@ -22,10 +22,8 @@ $   set proc/parse=extended
 $ endif
 $!
 $!
-$ call do_alias "gawk" "[bin]"
-$ call do_alias "gawk" "[bin]" "awk"
-$ call do_alias "gawk" "[bin]" "gawk" "[usr.bin]"
-$ call do_alias "gawk" "[bin]" "awk" "[usr.bin]"
+$ call do_alias "gawk" "[usr.bin]"
+$ call do_alias "gawk" "[usr.bin]" "awk"
 $ call do_alias "gawk.1" "[usr.share.man.man1]" "awk.1"
 $!
 $ exit

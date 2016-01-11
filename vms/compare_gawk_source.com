@@ -269,6 +269,8 @@ $  if ref_fname .eqs. "nasty2.ok" then ref_skip = 1
 $  if ref_fname .eqs. "profile5.awk" then ref_skip = 1
 $  if ref_fname .eqs. "profile5.ok" then ref_skip = 1
 $  if ref_fname .eqs. "po.m4" then ref_skip = 1
+$  if ref_fname .eqs. "configure." then ref_skip = 1
+$  if ref_fname .eqs. "libtool.m4" then ref_skip = 1
 $!
 $!
 $  if ref_skip .ne. 0
