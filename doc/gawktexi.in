@@ -26329,6 +26329,58 @@ is true because locale-based comparison occurs only when in
 POSIX-compatibility mode, and because @code{asort()} and @code{asorti()} are
 @command{gawk} extensions, they are not available in that case.}
 
+The following example demonstrates the use of a comparison function
+with @code{asort()}.  The comparison function,
+@code{case_fold_compare()}, does a string comparison ignoring case
+(by mapping both values to lowercase).
+
+@example
+# case_fold_compare --- compare as strings, ignoring case
+
+function case_fold_compare(i1, v1, i2, v2,    l, r)
+@{
+    l = tolower(v1)
+    r = tolower(v2)
+
+    if (l < r)
+        return -1
+    else if (l == r)
+        return 0
+    else
+        return 1
+@}
+@end example
+
+And here is the test program for it:
+
+@example
+# Test program
+
+BEGIN @{
+    Letters = "abcdefghijklmnopqrstuvwxyz" \
+              "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    split(Letters, data, "")
+
+    asort(data, result, "case_fold_compare")
+
+    for (i = 1; i <= 52; i++) @{
+        printf("%s", result[i])
+        if (i % 26 == 0)
+            printf("\n")
+        else
+            printf(" ")
+    @}
+@}
+@end example
+
+When run, we get the following:
+
+@example
+$ @kbd{gawk -f case_fold_compare.awk}
+@print{} A a B b c C D d e E F f g G H h i I J j k K l L M m
+@print{} n N O o p P Q q r R S s t T u U V v w W X x y Y z Z
+@end example
+
 @node Two-way I/O
 @section Two-Way Communications with Another Process
 
