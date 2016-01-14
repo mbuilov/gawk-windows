@@ -93,6 +93,8 @@ EXTRA_DIST = \
 	aryprm7.ok \
 	aryprm8.awk \
 	aryprm8.ok \
+	aryprm9.awk \
+	aryprm9.ok \
 	arysubnm.awk \
 	arysubnm.ok \
 	asgext.awk \
@@ -1072,7 +1074,7 @@ BASIC_TESTS = \
 	addcomma anchgsub argarray arrayparm arrayprm2 arrayprm3 \
 	arrayref arrymem1 arryref2 arryref3 arryref4 arryref5 arynasty \
 	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
-	aryprm8 arysubnm asgext awkpath \
+	aryprm8 aryprm9 arysubnm asgext awkpath \
 	back89 backgsub badassign1 badbuild \
 	callparam childin clobber closebad clsflnam compare compare2 concat1 concat2 \
 	concat3 concat4 convfmt \

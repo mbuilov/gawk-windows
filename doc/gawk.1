@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Dec 20 2015" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Jan 14 2016" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -1138,7 +1138,7 @@ knows about the identifiers after it has finished parsing the program; they are
 updated while the program runs.
 For each identifier, the value of the element is one of the following:
 .RS
-.TP
+.TP \w'\fB"extension"\fR'u+1n
 \fB"array"\fR
 The identifier is an array.
 .TP
@@ -1223,11 +1223,11 @@ behavior:
 .TP
 \fBPROCINFO["NONFATAL"]\fR
 If this exists, then I/O errors for all output redirections become nonfatal.
+.TP
+\fBPROCINFO["\fIoutput_command\fB", "NONFATAL"]\fR
 Make output errors for
 .I output_name
 be nonfatal.
-.TP
-\fBPROCINFO["\fIoutput_command\fB", "NONFATAL"]\fR
 .TP
 \fBPROCINFO["\fIcommand\fB", "pty"]\fR
 Use a pseudo-tty for two-way communication with
@@ -1241,6 +1241,23 @@ where
 .I input
 is a redirection string or a filename. A value of zero or
 less than zero means no timeout.
+.TP
+\fBPROCINFO["\fIinput\^\fB", "RETRY"]\fR
+If an I/O error that may be retried occurs when reading data from
+.IR input ,
+and this array entry exists, then
+.B getline
+will return \-2 instead of following the default behavior of returning \-1
+and configuring
+.IR input
+to return no further data.
+An I/O error that may be retried is one where
+.IR errno (3)
+has the value EAGAIN, EWOULDBLOCK, EINTR, or ETIMEDOUT.
+This may be useful in conjunction with
+\fBPROCINFO["\fIinput\^\fB", "READ_TIMEOUT"]\fR
+or situations where a file descriptor has been configured to behave in a
+non-blocking fashion.
 .TP
 \fBPROCINFO["sorted_in"]\fP
 If this element exists in
@@ -1262,7 +1279,9 @@ Supported values are
 \fB"@val_num_desc"\fR,
 and
 \fB"@unsorted"\fR.
-The value can also be the name of any comparison function defined
+The value can also be the name (as a
+.IR string )
+of any comparison function defined
 as follows:
 .sp
 .in +5m
@@ -2315,7 +2334,7 @@ command returns 1 on success, 0 on end of file, and \-1 on an error.
 If the
 .IR errno (3)
 value indicates that the I/O operation may be retried,
-and \fBPROCINFO["input", "RETRY"]\fP
+and \fBPROCINFO["\fIinput\^\fP", "RETRY"]\fR
 is set, then \-2 will be returned instead of \-1, and further calls to
 .B getline
 may be attempted.
@@ -4032,7 +4051,7 @@ We thank him.
 .SH COPYING PERMISSIONS
 Copyright \(co 1989, 1991, 1992, 1993, 1994, 1995, 1996,
 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2007, 2009,
-2010, 2011, 2012, 2013, 2014
+2010, 2011, 2012, 2013, 2014, 2015, 2016
 Free Software Foundation, Inc.
 .PP
 Permission is granted to make and distribute verbatim copies of

@@ -1157,7 +1157,7 @@ r_get_lhs(NODE *n, bool reference)
 					array_vname(n));
 		if (n->orig_array->type != Node_var) {
 			n->orig_array->type = Node_var;
-			n->orig_array->var_value = Nnull_string;
+			n->orig_array->var_value = dupnode(Nnull_string);
 		}
 		/* fall through */
 	case Node_var_new:
