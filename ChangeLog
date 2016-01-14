@@ -1,3 +1,14 @@
+2016-01-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* eval.c (r_get_lhs): If original array was Node_var_new,
+	assign value that is dupnode of Nnull_string and not
+	Nnull_string directly. Fixes core dump reported by
+	ruyk <Lonely.ruyk@mail.ru>.
+
+	Unrelated:
+
+	* ChangeLog: Cleanup spurious extra whitespace.
+
 2016-01-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac (GAWK_AC_LINUX_ALPHA): Remove call.
@@ -55,7 +66,7 @@
 	is false. Fixes a problem reported by Hanno Boeck <hanno@hboeck.de>.
 
 	Unrelated:
-	
+
 	* dfa.c: Sync with GNU grep.
 
 2015-10-25         Arnold D. Robbins     <arnold@skeeve.com>
@@ -461,7 +472,7 @@
 	add check that time_t is > 0 --- means we're assigning a negative value
 	to an unsigned time_t. Thanks again to Glaudiston Gomes da Silva
 	<glaudistong@gmail.com>.
-	
+
 	If localtime() or gmtime() return NULL, return a null string.
 	Thanks to Andrew Schorr.
 
@@ -1510,7 +1521,7 @@
 
 	* builtin.c (format_tree): Don't need to check return value of
 	wctombr for -2. Thanks to Eli Zaretskii for pointing this out.
-	
+
 	Unrelated:
 
 	* gawkapi.h: Fix doc for API get_record - errcode needs to
@@ -3021,7 +3032,7 @@
 
 	* awk.h (SRCFILE): New field fini_func.
 	* ext.c (load_ext): Takes an additional argument to look up and
-	save the clean up routine in SRCFILE struct. 
+	save the clean up routine in SRCFILE struct.
 	(INIT_FUNC, FINI_FUNC): Defines for default init and fini routine
 	names.
 	(do_ext): Use default for the name of the init or fini routine if
@@ -3036,8 +3047,8 @@
 
 	Unrelated:
 
-	* interpret.h (Op_arrayfor_init): Use assoc_length for array size. 
-	
+	* interpret.h (Op_arrayfor_init): Use assoc_length for array size.
+
 2012-04-19         John Haque      <j.eh@mchsi.com>
 
 	Enhanced array interface to support transparent implementation
@@ -3063,7 +3074,7 @@
 	(null_array_func): Add length and store routine entries.
 	* str_array.c (str_array_func): Same.
 	* cint_array.c (cint_array_func): Same.
-	* int_array.c (int_array_func): Same. 
+	* int_array.c (int_array_func): Same.
 	* eval.c (optypetab): Add Op_subscript_assign.
 	* profile.c (pprint): Add case Op_subscript_assign.
 	* interpret.h (set_array, set_idx): New variables to keep track
@@ -4246,7 +4257,7 @@
 	* main.c: Change --arbitrary-precision to --bignum.
 
 2012-04-02         John Haque      <j.eh@mchsi.com>
-	
+
 	Add support for arbitrary-precision arithmetic.
 
 	* mpfr.c: New file.
@@ -4277,7 +4288,7 @@
 	* eval.c (register_exec_hook): New function to manage interpreter hooks.
 	(num_exec_hook, pre_execute, post_execute): New and adjusted definitions.
 	(h_interpret): Renamed from debug_interpret.
-	(init_interpret): Changed to use the new name.  
+	(init_interpret): Changed to use the new name.
 	(flags2str): New entries for MPFN and MPZN.
 	(cmp_nodes): Reworked to use seperate routine for numeric comparisons.
 	(set_IGNORECASE, set_BINMODE, set_LINT, update_NR, update_FNR,
@@ -4423,7 +4434,7 @@
 
 2012-01-13         Arnold D. Robbins     <arnold@skeeve.com>
 
-	* dfa.c [is_valid_unibtye_character]: Fix from GNU grep to 
+	* dfa.c [is_valid_unibtye_character]: Fix from GNU grep to
 	bug reported by me from Scott Deifik for DJGPP.
 
 2012-01-03         Arnold D. Robbins     <arnold@skeeve.com>
@@ -4767,7 +4778,7 @@
 	(do_traditional, do_posix, do_intervals, do_intl,
 	do_non_decimal_data, do_profiling, do_dump_vars,
 	do_tidy_mem, do_sandbox, do_lint,
-	do_lint_old): Defined as macros.	
+	do_lint_old): Defined as macros.
 	* main.c: Remove definitions of the do_XX variables. Add
 	do_flags definition.
 	* debug.c (execute_code, do_eval, parse_condition): Save
@@ -4799,7 +4810,7 @@
 	(Node_ahash, NUMIND): Nuked.
 	* eval.c (r_interpret): Adjust cases Op_subscript,
 	Op_subscript_lhs, Op_store_var and Op_arrayfor_incr.
-	* node.c (dupnode, unref): Removed code related to Node_ahash. 
+	* node.c (dupnode, unref): Removed code related to Node_ahash.
 	* str_array.c: New file to handle array with string indices.
 	* int_array.c: New file to handle array with integer indices.
 	* cint_array.c: New file. Special handling of arrays with
@@ -4852,7 +4863,7 @@
 	cases Op_K_getline, Op_after_beginfile, Op_after_endfile,
 	Op_newfile and Op_K_exit.
 	* io.c (after_beginfile): When skipping a file using nextfile,
-	return zero in case there was an error opening the file. 
+	return zero in case there was an error opening the file.
 	(has_endfile): Nuke global variable.
 	(inrec): Add a second argument to pass errno to the calling
 	routine.
@@ -4933,7 +4944,7 @@
 2011-07-15         John Haque      <j.eh@mchsi.com>
 
 	* awk.h (Op_sub_builtin): New opcode.
-	(GSUB, GENSUB, AFTER_ASSIGN, LITERAL): New flags for 
+	(GSUB, GENSUB, AFTER_ASSIGN, LITERAL): New flags for
 	Op_sub_builtin.
 	* awkgram.y (struct tokentab): Change opcode to	Op_sub_builtin
 	for sub, gsub and gensub.
@@ -4941,7 +4952,7 @@
 	* builtin.c (do_sub, do_gsub, do_gensub): Nuke.
 	(sub_common): Renamed to do_sub. Relocate gensub argument
 	handling code from do_gensub to here; Simplify the code a
-	little bit. 
+	little bit.
 	* eval.c (r_interpret): Handle Op_sub_builtin. Avoid field
 	re-splitting or $0 rebuilding if (g)sub target string is
 	a field and no substitutions were done.
@@ -4964,7 +4975,7 @@
 2011-07-15         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h: Typo fix: "loner" --> longer. Thanks to Nelson Beebe.
-	* builtin.c (efwrite): Fix flushing test back to what it was 
+	* builtin.c (efwrite): Fix flushing test back to what it was
 	in 3.1.8. Thanks to Strefil <strefil@yandex.ru> for the problem
 	report.
 	* configure.ac: Bump version to 4.0.0a for stable branch.
