@@ -1,3 +1,10 @@
+2016-01-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* eval.c (r_get_lhs): If original array was Node_var_new,
+	assign value that is dupnode of Nnull_string and not
+	Nnull_string directly. Fixes core dump reported by
+	ruyk <Lonely.ruyk@mail.ru>.
+
 2016-01-02         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c (add_utf8_anychar): Minor change in declaration of
