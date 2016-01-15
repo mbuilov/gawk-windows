@@ -27569,10 +27569,9 @@ is true because locale-based comparison occurs only when in
 POSIX-compatibility mode, and because @code{asort()} and @code{asorti()} are
 @command{gawk} extensions, they are not available in that case.}
 
-The following example demonstrates the use of a comparison function
-with @code{asort()}.  The comparison function,
-@code{case_fold_compare()}, does a string comparison ignoring case
-(by mapping both values to lowercase).
+The following example demonstrates the use of a comparison function with
+@code{asort()}.  The comparison function, @code{case_fold_compare()}, maps
+both values to lowercase in order to compare them ignoring case.
 
 @example
 # case_fold_compare --- compare as strings, ignoring case
@@ -27603,9 +27602,10 @@ BEGIN @{
 
     asort(data, result, "case_fold_compare")
 
-    for (i = 1; i <= 52; i++) @{
+    j = length(result)
+    for (i = 1; i <= j; i++) @{
         printf("%s", result[i])
-        if (i % 26 == 0)
+        if (i % (j/2) == 0)
             printf("\n")
         else
             printf(" ")
