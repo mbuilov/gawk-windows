@@ -5631,6 +5631,10 @@ they do not recognize collating symbols or equivalence classes.
 @end quotation
 @c maybe one day ...
 
+Inside a bracket expression, an opening bracket (@samp{[}) that does
+not start a character class, collating element or equivalence class is
+taken literally. This is also true of @samp{.} and @samp{*}.
+
 @node Leftmost Longest
 @section How Much Text Matches?
 
@@ -26895,10 +26899,27 @@ print @dots{} |& command           # start two-way pipe
 @end example
 
 @noindent
-Using ptys usually avoids the buffer deadlock issues described earlier, at some
-loss in performance.  If your system does not have ptys, or if all the
-system's ptys are in use, @command{gawk} automatically falls back to
-using regular pipes.
+If your system does not have ptys, or if all the system's ptys are in use,
+@command{gawk} automatically falls back to using regular pipes.
+
+Using ptys usually avoids the buffer deadlock issues described earlier,
+at some loss in performance. This is because the tty driver buffers
+and sends data line-by-line.  On systems with the @command{stdbuf}
+(part of the @uref{http://www.gnu.org/software/coreutils/coreutils.html,
+GNU Coreutils package}), you can use that program instead of ptys.
+
+Note also that ptys are not fully transparent. Certain binary control
+codes, such @kbd{Ctrl-d} for end-of-file, are interpreted by the tty
+driver and not passed through.
+
+@quotation CAUTION
+Finally, coprocesses open up the possibility of @dfn{deadlock} between
+@command{gawk} and the program running in the coprocess. This can occur
+if you send ``too much'' data to the coprocess before reading any back;
+each process is blocked writing data with noone available to read what
+they've already written.  There is no workaround for deadlock; careful
+programming and knowledge of the behavior of the coprocess are required.
+@end quotation
 
 @node TCP/IP Networking
 @section Using @command{gawk} for Network Programming
