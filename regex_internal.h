@@ -159,9 +159,6 @@ is_blank (int c)
 # define __attribute_warn_unused_result__
 #endif
 
-extern const char __re_error_msgid[] attribute_hidden;
-extern const size_t __re_error_msgid_idx[] attribute_hidden;
-
 /* An integer used to represent a set of bits.  It must be unsigned,
    and must be at least as wide as unsigned int.  */
 typedef unsigned long int bitset_word_t;
@@ -774,7 +771,7 @@ bitset_mask (bitset_t dest, const bitset_t src)
 }
 
 #ifdef RE_ENABLE_I18N
-/* Inline functions for re_string.  */
+/* Functions for re_string.  */
 static int
 internal_function __attribute__ ((pure, unused))
 re_string_char_size_at (const re_string_t *pstr, int idx)
