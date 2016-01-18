@@ -137,7 +137,7 @@ static reg_errcode_t mark_opt_subexp (void *extra, bin_tree_t *node);
    POSIX doesn't require that we do anything for REG_NOERROR,
    but why not be nice?  */
 
-const char __re_error_msgid[] attribute_hidden =
+static const char __re_error_msgid[] attribute_hidden =
   {
 #define REG_NOERROR_IDX	0
     gettext_noop ("Success")	/* REG_NOERROR */
@@ -191,7 +191,7 @@ const char __re_error_msgid[] attribute_hidden =
     gettext_noop ("Unmatched ) or \\)") /* REG_ERPAREN */
   };
 
-const size_t __re_error_msgid_idx[] attribute_hidden =
+static const size_t __re_error_msgid_idx[] attribute_hidden =
   {
     REG_NOERROR_IDX,
     REG_NOMATCH_IDX,
@@ -345,7 +345,8 @@ re_compile_fastmap_iter (regex_t *bufp, const re_dfastate_t *init_state,
 #ifdef RE_ENABLE_I18N
 	  if ((bufp->syntax & RE_ICASE) && dfa->mb_cur_max > 1)
 	    {
-	      unsigned char *buf = re_malloc (unsigned char, dfa->mb_cur_max), *p;
+	      unsigned char buf[MB_LEN_MAX];
+	      unsigned char *p;
 	      wchar_t wc;
 	      mbstate_t state;
 
@@ -361,7 +362,6 @@ re_compile_fastmap_iter (regex_t *bufp, const re_dfastate_t *init_state,
 		  && (__wcrtomb ((char *) buf, towlower (wc), &state)
 		      != (size_t) -1))
 		re_set_fastmap (fastmap, 0, buf[0]);
-	      re_free (buf);
 	    }
 #endif
 	}
@@ -809,7 +809,7 @@ re_compile_internal (regex_t *preg, const char * pattern, size_t length,
   __libc_lock_init (dfa->lock);
 
   err = re_string_construct (&regexp, pattern, length, preg->translate,
-			     syntax & RE_ICASE, dfa);
+			     (syntax & RE_ICASE) != 0, dfa);
   if (BE (err != REG_NOERROR, 0))
     {
     re_compile_internal_free_return:
@@ -2206,6 +2206,7 @@ parse_reg_exp (re_string_t *regexp, regex_t *preg, re_token_t *token,
 {
   re_dfa_t *dfa = (re_dfa_t *) preg->buffer;
   bin_tree_t *tree, *branch = NULL;
+  bitset_word_t initial_bkref_map = dfa->completed_bkref_map;
   tree = parse_branch (regexp, preg, token, syntax, nest, err);
   if (BE (*err != REG_NOERROR && tree == NULL, 0))
     return NULL;
@@ -2216,6 +2217,8 @@ parse_reg_exp (re_string_t *regexp, regex_t *preg, re_token_t *token,
       if (token->type != OP_ALT && token->type != END_OF_RE
 	  && (nest == 0 || token->type != OP_CLOSE_SUBEXP))
 	{
+	  bitset_word_t accumulated_bkref_map = dfa->completed_bkref_map;
+	  dfa->completed_bkref_map = initial_bkref_map;
 	  branch = parse_branch (regexp, preg, token, syntax, nest, err);
 	  if (BE (*err != REG_NOERROR && branch == NULL, 0))
 	    {
@@ -2223,6 +2226,7 @@ parse_reg_exp (re_string_t *regexp, regex_t *preg, re_token_t *token,
 		postorder (tree, free_tree, NULL);
 	      return NULL;
 	    }
+	  dfa->completed_bkref_map |= accumulated_bkref_map;
 	}
       else
 	branch = NULL;
@@ -2753,7 +2757,7 @@ build_range_exp (reg_syntax_t syntax, bitset_t sbcset,
 #endif
     if (start_wc == WEOF || end_wc == WEOF)
       return REG_ECOLLATE;
-    else if ((syntax & RE_NO_EMPTY_RANGES) && start_wc > end_wc)
+    else if (BE ((syntax & RE_NO_EMPTY_RANGES) && start_wc > end_wc, 0))
       return REG_ERANGE;
 
     /* Got valid collation sequence values, add them as a new entry.
@@ -3521,7 +3525,7 @@ build_equiv_class (bitset_t sbcset, const unsigned char *name)
 	/* This isn't a valid character.  */
 	return REG_ECOLLATE;
 
-      /* Build single byte matcing table for this equivalence class.  */
+      /* Build single byte matching table for this equivalence class.  */
       char_buf[1] = (unsigned char) '\0';
       len = weights[idx1 & 0xffffff];
       for (ch = 0; ch < SBC_MAX; ++ch)

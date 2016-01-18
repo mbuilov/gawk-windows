@@ -1,3 +1,19 @@
+2016-01-18         Paul Eggert  <eggert@cs.ucla.edu>
+
+	Diagnose ERE '()|\1'
+	Problem reported by Hanno Boeck in: http://bugs.gnu.org/21513
+
+	* lib/regcomp.c (parse_reg_exp): While parsing alternatives, keep
+	track of the set of previously-completed subexpressions available
+	before the first alternative, and restore this set just before
+	parsing each subsequent alternative.  This lets us diagnose the
+	invalid back-reference in the ERE '()|\1'.
+
+	Unrelated:  General minor cleanups (spelling, code) from Gnulib:
+
+	* regex.h, regex_internal.c, regex_internal.h, regexec.c: Minor
+	cleanups.
+
 2016-01-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* eval.c (r_get_lhs): If original array was Node_var_new,
