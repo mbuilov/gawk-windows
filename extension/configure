@@ -12602,7 +12602,7 @@ else
 $as_echo "no" >&6; }
 fi
 
-for ac_header in fnmatch.h limits.h sys/time.h sys/select.h sys/param.h
+for ac_header in fnmatch.h limits.h sys/time.h sys/select.h sys/param.h sys/statvfs.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -12860,7 +12860,7 @@ fi
 
 
 for ac_func in fdopendir fnmatch gettimeofday \
-		getdtablesize nanosleep select GetSystemTimeAsFileTime
+		getdtablesize nanosleep select statvfs GetSystemTimeAsFileTime
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
