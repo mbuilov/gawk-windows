@@ -471,7 +471,7 @@ test_malloc(size_t count, const char *file, size_t line)
 {
 	if (count == 0) {
 		fprintf(stderr, "%s:%lu: allocation of zero bytes\n",
-				file, line);
+				file, (unsigned long) line);
 		exit(1);
 	}
 	return malloc(count);
@@ -482,7 +482,7 @@ test_realloc(void *p, size_t count, const char *file, size_t line)
 {
 	if (count == 0) {
 		fprintf(stderr, "%s:%lu: reallocation of zero bytes\n",
-				file, line);
+				file, (unsigned long) line);
 		exit(1);
 	}
 	return realloc(p, count);

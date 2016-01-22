@@ -55,8 +55,7 @@ static int re_search_stub (struct re_pattern_buffer *bufp,
 			   int ret_len) internal_function;
 static unsigned re_copy_regs (struct re_registers *regs, regmatch_t *pmatch,
 			      int nregs, int regs_allocated) internal_function;
-static reg_errcode_t prune_impossible_nodes (re_match_context_t *mctx)
-     internal_function;
+static reg_errcode_t prune_impossible_nodes (re_match_context_t *mctx);
 static int check_matching (re_match_context_t *mctx, int fl_longest_match,
 			   int *p_match_first) internal_function;
 static int check_halt_state_context (const re_match_context_t *mctx,
@@ -963,7 +962,6 @@ re_search_internal (preg, string, length, start, range, stop, nmatch, pmatch,
 }
 
 static reg_errcode_t
-__attribute_warn_unused_result__
 prune_impossible_nodes (re_match_context_t *mctx)
 {
   const re_dfa_t *const dfa = mctx->dfa;
