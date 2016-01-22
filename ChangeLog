@@ -1,3 +1,12 @@
+2016-01-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regexec.c (prune_impossible_nodes): Remove all attributes, on
+	both declaration and definition.  Fixes a Linux Mint 17 compilation
+	braino reported by Antonio Colombo.
+	* regex_internal.h (test_malloc): Add cast to silence a warning
+	on the same system.
+	(test_realloc): Ditto.
+
 2016-01-20         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regex_internal.h [attribute_hidden]: Remove definition.
