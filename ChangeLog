@@ -1,3 +1,12 @@
+2016-01-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Regex: treat [x] as x if x is a unibyte encoding error.
+	This change removes an ifdef GAWK.
+
+	* lib/regcomp.c (parse_byte) [ !_LIBC && RE_ENABLE_I18N]: New function.
+	(build_range_exp) [ !_LIBC && RE_ENABLE_I18N]: Use it.
+	From Paul Eggert  <eggert@cs.ucla.edu>.
+
 2016-01-22         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regexec.c (prune_impossible_nodes): Remove all attributes, on
