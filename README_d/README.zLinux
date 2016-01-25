@@ -1,0 +1,16 @@
+Mon Jan 25 18:45:06 IST 2016
+============================
+
+For z/Linux (CentOS 4, at least), you must fix the optimization level
+before compiling:
+
+1. Run configure.
+2. Edit the top-level Makefile and extension/Makefile and change -O2 to -O1.
+3. Run `make && make' check as usual.
+
+If you don't change the optimization level, the testext test will fail.
+
+In any case, expect the fmtspcl test to fail.
+
+Arnold Robbins
+arnold@skeeve.com
