@@ -26,6 +26,7 @@ $	mv	= "rename/New_Vers"
 $	gawk = "$sys$disk:[-]gawk"
 $	AWKPATH_srcdir = "define/User AWKPATH sys$disk:[]"
 $	AWKLIBPATH_dir = "define/User AWKLIBPATH sys$disk:[-]"
+$	arch_name = f$edit(f$getsyi("arch_name"),"upcase,trim")
 $
 $!	Make sure that the default directory exists on a search list.
 $	def_dir = f$environment("default")
@@ -292,6 +293,12 @@ $	if $status then  rm _'test'.tmp;
 $	return
 $
 $! more common tests, without a data file: gawk -f 'test'.awk
+$ofmta:
+$  	if arch_name .eqs. "VAX"
+$	then
+$	    echo "''test' skipped on VAX."
+$	    return
+$	endif
 $aarray1:
 $aasort:
 $aasorti:
@@ -329,7 +336,6 @@ $negrange:
 $nlstrina:
 $nondec:
 $octsub:
-$ofmta:
 $paramtyp:
 $paramuninitglobal:
 $patsplit:
@@ -354,7 +360,7 @@ $zero2:
 $zeroflag:
 $! common without 'test'.in
 $	echo "''test'"
-$	gawk -f 'test'.awk >_'test'.tmp
+$	gawk -f 'test'.awk 2>&1 >_'test'.tmp
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
@@ -1604,7 +1610,7 @@ $
 $mbstr1:	echo "mbstr1"
 $	gosub define_gawklocale
 $	AWKPATH_srcdir
-$	gawk -f mbstr1.awk >_mbstr1.tmp
+$	gawk -f mbstr1.awk 2>&1 >_mbstr1.tmp
 $	cmp mbstr1.ok sys$disk:[]_mbstr1.tmp
 $	if $status then  rm _mbstr1.tmp;
 $	return
@@ -1657,11 +1663,22 @@ $	!  "no/such/file" yields syntax error rather than no such file
 $	!  when subdirectories no/ and no/such/ don't exist;
 $	!  vms test suite doesn't generate Makefile;
 $	!  "is a directory" and "no such file" aren't capitalized
-$	! gawk -f beginfile1.awk beginfile1.awk . ./no/such/file "Makefile" >_beginfile1.tmp 2>&1
-$	gawk -f beginfile1.awk beginfile1.awk [] ./no-such-file "Makefile.in" >_beginfile1.tmp 2>&1
-$	gawk -f - _beginfile1.tmp >_beginfile1.too
+$	! gawk -f beginfile1.awk beginfile1.awk . -
+$	!   ./no/such/file "Makefile" >_beginfile1.tmp 2>&1
+$	! And NFS on ODS2 encodes the case in the filename with
+$	! the $ character switching case.
+$	makefile_in = "Makefile.in"
+$	makefile_in_nfs_ods2 = "$M$akefile.in"
+$	if f$search(makefile_in_nfs_ods2) .nes. ""
+$	then
+$	    makefile_in = makefile_in_nfs_ods2
+$	endif
+$	gawk -f beginfile1.awk beginfile1.awk [] -
+	 ./no-such-file "''makefile_in'" >_beginfile1.tmp 2>&1
+$	    gawk -f - _beginfile1.tmp >_beginfile1.too
 { if (gsub("\\[\\]",".")) gsub("no such file or directory","is a directory")
-  gsub("no-such-file","file"); gsub("Makefile.in","Makefile"); print }
+  gsub("no-such-file","file"); gsub("Makefile.in","Makefile");
+  gsub("\\$M\\$akefile.in","Makefile"); print }
 $	rm _beginfile1.tmp;
 $	mv _beginfile1.too _beginfile1.tmp
 $	igncascmp beginfile1.ok sys$disk:[]_beginfile1.tmp
@@ -1671,6 +1688,9 @@ $
 $dumpvars: echo "dumpvars"
 $	gawk --dump-variables 1 <dumpvars.in >_NL: 2>&1
 $	mv awkvars.out _dumpvars.tmp
+$	gawk "!/ENVIRON|PROCINFO/" _dumpvars.tmp >_dumpvars.tmp1
+$	rm sys$disk:[]_dumpvars.tmp;*
+$	mv sys$disk:[]_dumpvars.tmp1 sys$disk:[]_dumpvars.tmp
 $	cmp dumpvars.ok sys$disk:[]_dumpvars.tmp
 $	if $status then  rm _dumpvars.tmp;
 $	return
@@ -1952,16 +1972,7 @@ $
 $! assign temporary value to logical name GAWKLOCALE unless it already has one
 $! [ -z "$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8
 $define_gawklocale:
-$	! gawk uses the C run-time libary's getenv() function to look up
-$	! GAWKLOCALE, so a symbol provides another way to supply the value;
-$	! we don't want to override logical or symbol if either is present
-$	if f$trnlnm("GAWKLOCALE").eqs.""
-$	then
-$	    if f$type(gawklocale).nes."STRING" .or. "''gawklocale'".eqs.""
-$	    then
-$		define/User GAWKLOCALE "en_US.UTF-8"
-$	    endif
-$	endif
+$	define/user LC_ALL "utf8-20"
 $	return
 $
 $! make sure that the specified file's longest-record-length field is set;
