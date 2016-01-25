@@ -201,28 +201,30 @@ replace.obj	: replace.c $(MISSNGD)system.c $(MISSNGD)memcmp.c \
 		  $(MISSNGD)usleep.c \
 		  $(MISSNGD)setenv.c $(MISSNGD)strcoll.c $(MISSNGD)wcmisc.c
 
+# bison or yacc have not been ported to current VMS versions
+# When that changes, this can be restored.
 # bison or yacc required
-awkgram.c	: awkgram.y	# foo.y :: yacc => y[_]tab.c, bison => foo_tab.c
-     @- if f$search("ytab.c")	.nes."" then  delete ytab.c;*	 !POSIX yacc
-     @- if f$search("y_tab.c")	.nes."" then  delete y_tab.c;*	 !DEC/Shell yacc
-     @- if f$search("awkgram_tab.c").nes."" then  delete awkgram_tab.c;* !bison
-      - $(PARSERINIT)
-	$(PARSER) $(YFLAGS) $<
-     @- if f$search("ytab.c")	.nes."" then  rename/new_vers ytab.c  $@
-     @- if f$search("y_tab.c")	.nes."" then  rename/new_vers y_tab.c $@
-     @- if f$search("awkgram_tab.c").nes."" then \
-            rename/new_vers awkgram_tab.c $@
+# awkgram.c	: awkgram.y	# foo.y :: yacc => y[_]tab.c, bison => foo_tab.c
+#     @- if f$search("ytab.c")	.nes."" then  delete ytab.c;*	 !POSIX yacc
+#     @- if f$search("y_tab.c")	.nes."" then  delete y_tab.c;*	 !DEC/Shell yacc
+#     @- if f$search("awkgram_tab.c").nes."" then  delete awkgram_tab.c;* !bison
+#      - $(PARSERINIT)
+#	$(PARSER) $(YFLAGS) $<
+#     @- if f$search("ytab.c")	.nes."" then  rename/new_vers ytab.c  $@
+#     @- if f$search("y_tab.c")	.nes."" then  rename/new_vers y_tab.c $@
+#     @- if f$search("awkgram_tab.c").nes."" then \
+#            rename/new_vers awkgram_tab.c $@
 
-command.c	: command.y
-     @- if f$search("ytab.c")	.nes."" then  delete ytab.c;*
-     @- if f$search("y_tab.c")	.nes."" then  delete y_tab.c;*
-     @- if f$search("command_tab.c").nes."" then  delete command_tab.c;*
-      - $(PARSERINIT)
-	$(PARSER) $(YFLAGS) $<
-     @- if f$search("ytab.c")	.nes."" then  rename/new_vers ytab.c  $@
-     @- if f$search("y_tab.c")	.nes."" then  rename/new_vers y_tab.c $@
-     @- if f$search("command_tab.c").nes."" then \
-            rename/new_vers command_tab.c $@
+# command.c	: command.y
+#     @- if f$search("ytab.c")	.nes."" then  delete ytab.c;*
+#     @- if f$search("y_tab.c")	.nes."" then  delete y_tab.c;*
+#     @- if f$search("command_tab.c").nes."" then  delete command_tab.c;*
+#      - $(PARSERINIT)
+#	$(PARSER) $(YFLAGS) $<
+#     @- if f$search("ytab.c")	.nes."" then  rename/new_vers ytab.c  $@
+#     @- if f$search("y_tab.c")	.nes."" then  rename/new_vers y_tab.c $@
+#     @- if f$search("command_tab.c").nes."" then \
+#            rename/new_vers command_tab.c $@
 
 config_vms.h : $(VMSDIR)generate_config_vms_h_gawk.com
      $ @$(VMSDIR)generate_config_vms_h_gawk.com

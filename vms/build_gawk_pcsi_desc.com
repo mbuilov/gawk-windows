@@ -415,11 +415,6 @@ $!
 $flst_loop_end:
 $ close flst
 $!
-$!   Add Link alias procedure file (N/A for gawk)
-$!-----------------------------------------------------
-$ write pdsc "   file ""[vms_bin]gawk_alias_setup.com"""
-$ write pdsc "     source [vms_bin]gawk_alias_setup.com ;"
-$!
 $!   Add [.SYS$STARTUP]gawk_startup file
 $!---------------------------------------
 $ write pdsc "   file ""[sys$startup]gnv$gawk_startup.com"""
