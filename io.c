@@ -1001,8 +1001,10 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
                                  (vaxc$errno == SS$_EXQUOTA ||
                                   vaxc$errno == SS$_EXBYTLM ||
                                   vaxc$errno == RMS$_ACC ||
-				  vaxc$errno == RMS$_SYN))
+				  vaxc$errno == RMS$_SYN)) {
 				close_one();
+				close_one();
+			}
 #endif
 			else {
 				/*
