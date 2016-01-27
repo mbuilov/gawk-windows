@@ -288,7 +288,7 @@ $ write cvh "    }"
 $ write cvh "    decc$exit(vms_status);"
 $ write cvh "}"
 $ write cvh ""
-$ write cvh "#pragma message disable questcompare
+$ write cvh "#define TIME_T_UNSIGNED 1"
 $ write cvh "#include ""custom.h"""
 $ write cvh ""
 $!

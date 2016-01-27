@@ -190,7 +190,7 @@
 #define setsid()	/* nothing */
 #endif /* HAVE_SETSID */
 
-#if defined(GAWK_AIX)
+#if defined(_AIX)
 #undef TANDEM	/* AIX defines this in one of its header files */
 #endif
 
@@ -1021,8 +1021,10 @@ redirect_string(const char *str, size_t explen, bool not_string,
                                  (vaxc$errno == SS$_EXQUOTA ||
                                   vaxc$errno == SS$_EXBYTLM ||
                                   vaxc$errno == RMS$_ACC ||
-				  vaxc$errno == RMS$_SYN))
+				  vaxc$errno == RMS$_SYN)) {
 				close_one();
+				close_one();
+			}
 #endif
 			else {
 				/*

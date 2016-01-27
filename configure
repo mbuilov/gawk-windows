@@ -6212,25 +6212,6 @@ rm -rf conftest*
 fi
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for AIX compilation hacks" >&5
-$as_echo_n "checking for AIX compilation hacks... " >&6; }
-if ${gawk_cv_aix_hack+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-if test -d /lpp
-then
-	CFLAGS="$CFLAGS -D_XOPEN_SOURCE_EXTENDED=1 -DGAWK_AIX=1"
-	gawk_cv_aix_hack=yes
-else
-	gawk_cv_aix_hack=no
-fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${gawk_cv_aix_hack}" >&5
-$as_echo "${gawk_cv_aix_hack}" >&6; }
-
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking if we are using EBCDIC" >&5
 $as_echo_n "checking if we are using EBCDIC... " >&6; }
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -6252,11 +6233,6 @@ rm -f conftest*
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_ebcdic" >&5
 $as_echo "$use_ebcdic" >&6; }
-
-if test "$ISC" = 1	# will be set by test for ISC
-then
-	CFLAGS="$CFLAGS -D_SYSV3"
-fi
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
