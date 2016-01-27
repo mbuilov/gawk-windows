@@ -556,7 +556,9 @@ do_statvfs(int nargs, awk_value_t *result)
 	array_set_numeric(array, "files", vfsbuf.f_files);	/* # inodes */
 	array_set_numeric(array, "ffree", vfsbuf.f_ffree);	/* # free inodes */
 	array_set_numeric(array, "favail", vfsbuf.f_favail);	/* # free inodes for unprivileged users */
+#ifndef _AIX
 	array_set_numeric(array, "fsid", vfsbuf.f_fsid);	/* filesystem ID */
+#endif
 	array_set_numeric(array, "flag", vfsbuf.f_flag);	/* mount flags */
 	array_set_numeric(array, "namemax", vfsbuf.f_namemax);	/* maximum filename length */
 	
