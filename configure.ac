@@ -123,12 +123,6 @@ gnu_gawk_in_ebcdic
 [use_ebcdic=no])
 AC_MSG_RESULT([$use_ebcdic])
 
-if test "$ISC" = 1	# will be set by test for ISC
-then
-dnl	need -D_SYSV3 for ISC
-	CFLAGS="$CFLAGS -D_SYSV3"
-fi
-
 dnl Set the programming language for checks. Fortunately,
 dnl this only needs to be set once, since everything is in C.
 AC_LANG([C])
