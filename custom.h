@@ -59,6 +59,10 @@
 #define _TZSET 1
 #endif
 
+#if defined(_AIX)
+#define _XOPEN_SOURCE_EXTENDED 1
+#endif
+
 /* Junk for dfa.[ch] */
 /* The __pure__ attribute was added in gcc 2.96.  */
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)

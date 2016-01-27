@@ -21,21 +21,6 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 dnl
 
-dnl Check for AIX and add _XOPEN_SOURCE_EXTENDED
-AC_DEFUN([GAWK_AC_AIX_TWEAK], [
-AC_MSG_CHECKING([for AIX compilation hacks])
-AC_CACHE_VAL(gawk_cv_aix_hack, [
-if test -d /lpp
-then
-	CFLAGS="$CFLAGS -D_XOPEN_SOURCE_EXTENDED=1 -DGAWK_AIX=1"
-	gawk_cv_aix_hack=yes
-else
-	gawk_cv_aix_hack=no
-fi
-])dnl
-AC_MSG_RESULT([${gawk_cv_aix_hack}])
-])dnl
-
 dnl Check for z/OS Unix Systems Services
 AC_DEFUN([AC_ZOS_USS], [
 AC_MSG_CHECKING([for z/OS USS compilation])

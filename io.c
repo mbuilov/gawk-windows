@@ -190,7 +190,7 @@
 #define setsid()	/* nothing */
 #endif /* HAVE_SETSID */
 
-#if defined(GAWK_AIX)
+#if defined(_AIX)
 #undef TANDEM	/* AIX defines this in one of its header files */
 #endif
 
