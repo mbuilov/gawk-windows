@@ -31,11 +31,11 @@
 #define HAVE_BTOWC 1
 #endif
 
-/* Define to 1 if you have the MacOS X function CFLocaleCopyCurrent in the
+/* Define to 1 if you have the Mac OS X function CFLocaleCopyCurrent in the
    CoreFoundation framework. */
 #undef HAVE_CFLOCALECOPYCURRENT
 
-/* Define to 1 if you have the MacOS X function CFPreferencesCopyAppValue in
+/* Define to 1 if you have the Mac OS X function CFPreferencesCopyAppValue in
    the CoreFoundation framework. */
 #undef HAVE_CFPREFERENCESCOPYAPPVALUE
 
@@ -131,7 +131,7 @@
 #define HAVE_LOCALE_H 1
 #endif
 
-/* Define to 1 if the system has the type `long long int'. */
+/* Define to 1 if the system has the type 'long long int'. */
 #undef HAVE_LONG_LONG_INT
 
 /* Define to 1 if you have the `mbrlen' function. */
@@ -202,6 +202,9 @@
 
 /* Define to 1 if you have the `setsid' function. */
 #undef HAVE_SETSID
+
+/* Define to 1 if you have the `sigprocmask' function. */
+#undef HAVE_SIGPROCMASK
 
 /* Define to 1 if you have the `snprintf' function. */
 #ifdef __MINGW32__
@@ -285,6 +288,12 @@
 #define HAVE_STRTOUL 1
 #endif
 
+/* Define to 1 if `gr_passwd' is a member of `struct group'. */
+#undef HAVE_STRUCT_GROUP_GR_PASSWD
+
+/* Define to 1 if `pw_passwd' is a member of `struct passwd'. */
+#undef HAVE_STRUCT_PASSWD_PW_PASSWD
+
 /* Define to 1 if `st_blksize' is a member of `struct stat'. */
 #undef HAVE_STRUCT_STAT_ST_BLKSIZE
 
@@ -301,6 +310,9 @@
 #ifndef __MINGW32__
 #define HAVE_SYS_PARAM_H 1
 #endif
+
+/* Define to 1 if you have the <sys/select.h> header file. */
+#undef HAVE_SYS_SELECT_H
 
 /* Define to 1 if you have the <sys/socket.h> header file. */
 #undef HAVE_SYS_SOCKET_H
@@ -369,6 +381,9 @@
 #define HAVE_USLEEP 1
 #endif
 
+/* Define to 1 if you have the `waitpid' function. */
+#undef HAVE_WAITPID
+
 /* Define to 1 if you have the <wchar.h> header file. */
 #ifdef __MINGW32__
 #define HAVE_WCHAR_H 1
@@ -407,11 +422,11 @@
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
 
+/* Define to 1 if you have the `__etoa_l' function. */
+#undef HAVE___ETOA_L
+
 /* enable severe portability problems */
 #undef I_DONT_KNOW_WHAT_IM_DOING
-
-/* libc is broken for regex handling */
-#undef LIBC_IS_BORKED
 
 /* disable lint checks */
 #undef NO_LINT
@@ -440,13 +455,6 @@
 /* Define to 1 if *printf supports %F format */
 #undef PRINTF_HAS_F_FORMAT
 
-/* Define as the return type of signal handlers (`int' or `void'). */
-#define RETSIGTYPE void
-
-#if defined(__DJGPP__) || defined(__MINGW32__)
-#include <limits.h>
-#endif
-
 /* The size of `unsigned int', as computed by sizeof. */
 #if UINT_MAX == 65536
 #define SIZEOF_UNSIGNED_INT 2
@@ -470,6 +478,9 @@
 
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 #undef TM_IN_SYS_TIME
+
+/* Define to 1 if the character set is EBCDIC */
+#undef USE_EBCDIC
 
 /* force use of our version of strftime */
 #undef USE_INCLUDED_STRFTIME

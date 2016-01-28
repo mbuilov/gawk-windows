@@ -776,6 +776,8 @@ EXTRA_DIST = \
 	profile7.ok \
 	profile8.awk \
 	profile8.ok \
+	profile9.awk \
+	profile9.ok \
 	prt1eval.awk \
 	prt1eval.ok \
 	prtoeval.awk \

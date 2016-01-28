@@ -75,7 +75,7 @@ if ENABLE_EXTENSIONS
 SUBDIRS += extension
 endif
 
-SUBDIRS += doc awklib po test
+SUBDIRS += extras doc awklib po test
 
 # what to make and install
 bin_PROGRAMS = gawk
