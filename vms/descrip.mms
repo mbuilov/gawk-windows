@@ -121,16 +121,22 @@ VMSOBJS = $(VMSCODE),$(VMSCMD)
 DOCS= $(DOCDIR)gawk.1,$(DOCDIR)gawk.texi,$(DOCDIR)texinfo.tex
 
 # generic target
-all : gawk
+all : gawk gawk_debug
       @	$(NOOP)
 
 # dummy target to allow building "gawk" in addition to explicit "gawk.exe"
 gawk : gawk.exe
       @	$(ECHO) "$< is upto date"
 
+gawk_debug : gawk_debug.exe
+      @	$(ECHO) "$< is upto date"
+
 # rules to build gawk
 gawk.exe : $(GAWKOBJ) $(AWKOBJS) $(VMSOBJS) gawk.opt
-	$(LINK) $(LINKFLAGS) gawk.opt/options
+	$(LINK) $(LINKFLAGS)/EXE=$(MMS$TARGET) gawk.opt/options
+
+gawk_debug.exe : $(GAWKOBJ) $(AWKOBJS) $(VMSOBJS) gawk.opt
+	$(LINK) $(LINKFLAGS)/DEBUG/EXE=$(MMS$TARGET) gawk.opt/options
 
 gawk.opt : $(MAKEFILE) config.h         # create linker options file
       @	open/write opt sys$disk:[]gawk.opt	! ~ 'cat <<close >gawk.opt'
