@@ -37218,27 +37218,27 @@ of @env{AWKPATH} is a comma-separated list of directory specifications.
 When defining it, the value should be quoted so that it retains a single
 translation and not a multitranslation @code{RMS} searchlist.
 
-@cindex redirection
+@cindex redirection on VMS
 
-This restriction also applies to running gawk under GNV, as redirection
-is always to a DCL command.
+This restriction also applies to running @command{gawk} under GNV,
+as redirection is always to a DCL command.
 
 If you are redirecting data to a VMS command or utility, the current
 implementation requires that setting up a VMS foreign command that runs
-a command file before invoking gawk.
+a command file before invoking @command{gawk}.
+(This restriction may be removed in a future release of @command{gawk} on VMS.)
 
-With out this command file, the input data will also appear pre-pended
+Without this command file, the input data will also appear prepended
 to the output data.
-
-This restriction may be removed in a future release of gawk on VMS.
 
 This also allows simulating POSIX commands that are not found on VMS or the
 use of GNV utilities.
 
-The example below is for gawk redirecting data to the VMS sort command.
+The example below is for @command{gawk} redirecting data to the VMS
+@command{sort} command.
 
 @example
-$ sort = "@device:[dir]vms_gawk_sort.com"
+$ sort = "@@device:[dir]vms_gawk_sort.com"
 @end example
 
 The command file needs to be of the format in the example below.
@@ -37249,11 +37249,12 @@ output.  It must be in the format in the example.
 The next line creates a foreign command that overrides the outer foreign
 command which prevents an infinite recursion of command files.
 
-The next to the last command redirects sys$input to be sys$command, in order
-to pick up the data that is being redirected to the command.
+The next to the last command redirects @code{sys$input} to be
+@code{sys$command}, in order to pick up the data that is being redirected
+to the command.
 
 The last line runs the actual command.  It must be the last command as the data
-redirected from gawk will be read when the command file ends.
+redirected from @command{gawk} will be read when the command file ends.
 
 @example
 $!'f$verify(0,0)'
