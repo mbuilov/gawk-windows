@@ -15,6 +15,32 @@ $!
 $! 4.0.75:  New  tests
 $!	basic:	rri1,getline5,incdupe4,incdupe5,incdupe6,incdupe7
 $!	ext:	colonwarn,reginttrad,symtab7,symtab8,symtab9
+$!
+$! 4.1.1: New tests implemented in 4.1.3a
+$!
+$!	basic:	badassign1,dfamb1,exit2,nfloop
+$!	ext:	profile4,profile5
+$!	locale:	backbigs1,backsmalls1,backsmalls2,mbprintf4
+$!              backgigs1 requires a locale not supplied with VMS.
+$!
+$! 4.1.2: New tests implemented in 4.1.3a
+$!	basic:	badbuild,callparam,exitval3,inpref,paramasfunc1,
+$!		paramasfunc2,regexpbrack,sortglos
+$!	ext:	crlf,dbugeval,fpat4,genpot,indirectbuiltin,
+$!		printfbad4,printhuge,profile0,profile6,profile7,
+$!		regnul1,regnul2,rsgetline,rsglstdin
+$!	charset_all: charset_msg_start,charset_tests,charset_msg_end
+$!
+$! 4.1.3: New tests - implemented in 4.1.3a
+$!	basic:	rebrackloc
+$!
+$! 4.1.3a: New tests
+$!	vms_debug: Not a test, switches to a debug gawk for following tests
+$!	basic:	aryprm9,exitval2,nulinsrc,rstest4,rstest5
+$!	ext:	mbstr2,profile8,watchpoint1
+$!      shlib:  inplace2,testext,lc_num1,mbprintf1
+$!		mbprintf2,mbfprintf3,mbfprintf4,mbfw1
+$
 $
 $	echo	= "write sys$output"
 $	cmp	= "diff/Output=_NL:/Maximum=1"
@@ -23,6 +49,7 @@ $	igncascmp = "''cmp'/Ignore=Case"
 $	sumslp  = "edit/Sum"
 $	rm	= "delete/noConfirm/noLog"
 $	mv	= "rename/New_Vers"
+$	sort	= "sort"
 $	gawk = "$sys$disk:[-]gawk"
 $	AWKPATH_srcdir = "define/User AWKPATH sys$disk:[]"
 $	AWKLIBPATH_dir = "define/User AWKLIBPATH sys$disk:[-]"
@@ -42,7 +69,12 @@ $	gosub list_of_tests
 $	echo "done."
 $	exit
 $
+$vms_debug:	echo "Switching to gawk_debug.exe"
+$		gawk = "$sys$disk:[-]gawk_debug.exe"
+$		return
+$!
 $all:
+$
 $bigtest:	echo "bigtest..."
 $		! omits "printlang" and "extra"
 $		list = "basic unix_tests gawk_ext vms_tests charset_tests" -
@@ -55,50 +87,63 @@ $		list = "msg addcomma anchgsub argarray arrayparm arrayref" -
 		  + " arrymem1 arrayprm2 arrayprm3 arryref2 arryref3" -
 		  + " arryref4 arryref5 arynasty arynocls aryprm1 aryprm2" -
 		  + " aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 aryprm8" -
-		  + " arysubnm asgext awkpath back89 backgsub childin" -
-		  + " clobber closebad clsflnam compare compare2 concat1"
+		  + " aryprm9 arysubnm asgext awkpath" -
+		  + " back89 backgsub badassign1 badbuild"
 $		gosub list_of_tests
-$		list = "concat2 concat3 concat4 convfmt datanonl defref" -
-		  + " delargv delarprm delarpm2 delfunc dfastress dynlj" -
-		  + " eofsplit exitval1" -
-		  + " exitval2 fcall_exit fcall_exit2 fldchg fldchgnf" -
+$		list = "callparam childin clobber closebad clsflnam" -
+		  + " compare compare2 concat1 concat2 concat3 concat4" -
+		  + " convfmt " -
+		  + " datanonl defref delargv delarprm delarpm2 delfunc" -
+		  + " dfamb1 dfastress dynlj" -
+		  + " eofsplit exit2 exitval1 exitval2 exitval3"
+$		gosub list_of_tests
+$		list = "fcall_exit fcall_exit2 fldchg fldchgnf" -
 		  + " fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc" -
 		  + " fordel forref forsimp fsbs fsspcoln fsrs fstabplus" -
-		  + " funsemnl funsmnam funstack getline getline2 getline3" -
-		  + " getline4 getline5"
+		  + " funsemnl funsmnam funstack"
 $		gosub list_of_tests
-$		list = "getlnbuf getnr2tb getnr2tm gsubasgn gsubtest" -
+$		list = "getline getline2 getline3 getline4 getline5 " -
+		  + " getlnbuf getnr2tb getnr2tm gsubasgn gsubtest" -
 		  + " gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6" -
-		  + " gsubtst7 gsubtst8 hex" -
-		  + " hsprint inputred intest intprec iobug1" -
+		  + " gsubtst7 gsubtst8" -
+		  + " hex hsprint" -
+		  + " inpref inputred intest intprec iobug1" -
 		  + " leaddig leadnl litoct longsub longwrds"-
 		  + " manglprm math membug1 messages minusstr mmap8k" -
-		  + " mtchi18n nasty nasty2 negexp negrange nested" -
-		  + " nfldstr nfneg"
+		  + " mtchi18n"
 $		gosub list_of_tests
-$		list = "nfset nlfldsep nlinstr nlstrina noeffect nofile" -
-		  + " nofmtch noloop1 noloop2 nonl noparms nors nulrsend" -
-		  + " numindex numsubstr octsub ofmt ofmtbig ofmtfidl" -
-		  + " ofmta ofmts ofs1 onlynl opasnidx opasnslf paramdup" -
-		  + " paramres paramtyp paramuninitglobal parse1 parsefld" -
-		  + " parseme pcntplus" -
-		  + " posix2008sub prdupval prec printf0 printf1 prmarscl"
+$		list = "nasty nasty2 negexp negrange nested nfldstr" -
+		  + " nfloop nfneg nfset nlfldsep nlinstr nlstrina" -
+		  + " noeffect nofile nofmtch noloop1 noloop2 nonl" -
+		  + " noparms nors nulinsrc nulrsend numindex numsubstr" -
+		  + " octsub ofmt ofmtbig ofmtfidl" -
+		  + " ofmta ofmts ofs1 onlynl opasnidx opasnslf
 $		gosub list_of_tests
-$		list = "prmreuse prt1eval prtoeval rand range1 rebt8b1" -
-		  + " redfilnm regeq regexprange regrange reindops reparse resplit rri1 rs rsnul1nl" -
-		  + " rsnulbig rsnulbig2 rstest1 rstest2 rstest3 rstest4" -
-		  + " rstest5 rswhite scalar sclforin sclifin sortempty" -
+$		list = "paramasfunc1 paramasfunc2 paramdup" -
+		  + " paramres paramtyp paramuninitglobal" -
+		  + " parse1 parsefld parseme pcntplus posix2008sub" -
+		  + " prdupval prec printf0 printf1 prmarscl prmreuse" -
+		  + " prt1eval prtoeval"
+$		gosub list_of_tests
+$		list = "rand range1 rebrackloc rebt8b1 redfilnm regeq" -
+		  + " regexpbrack regexprange regrange reindops reparse" -
+		  + " resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1" -
+		  + " rstest2 rstest3 rstest4 rstest5 rswhite"
+$		gosub list_of_tests
+$		list = "scalar sclforin sclifin sortempty sortglos" -
 		  + " splitargv splitarr splitdef splitvar splitwht" -
-		  + " strcat1 strtod strnum1 subamp subi18n"
+		  + " strcat1 strtod strnum1 subamp subi18n subsepnm" -
+		  + " subslash substr swaplns synerr1 synerr2"
 $		gosub list_of_tests
-$		list = "subsepnm subslash substr swaplns synerr1 synerr2" -
-		  + " tradanch tweakfld uninit2 uninit3 uninit4 uninit5" -
-		  + " uninitialized unterm uparrfs wideidx wideidx2" -
-		  + " widesub widesub2 widesub3 widesub4 wjposer1 zeroe0" -
-		  + " zeroflag zero2"
+$		list = "tradanch tweakfld" -
+		  + " uninit2 uninit3 uninit4 uninit5 uninitialized" -
+		  + " unterm uparrfs" -
+		  + " wideidx wideidx2 widesub widesub2 widesub3 widesub4" -
+		  + " wjposer1" -
+		  + " zeroe0 zeroflag zero2"
 $		gosub list_of_tests
 $		return
-$
+$!
 $unix:
 $unix_tests:	echo "unix_tests..."
 $		list = "fflush getlnhd localenl pid pipeio1 pipeio2" -
@@ -109,24 +154,35 @@ $
 $gnu:
 $gawk_ext:	echo "gawk_ext... (gawk.extensions)"
 $		list = "aadelete1 aadelete2 aarray1 aasort aasorti" -
-		  + " argtest arraysort backw badargs beginfile1 binmode1" -
-		  + " colonwarn clos1way charasbytes delsub devfd devfd1 devfd2 dumpvars exit" -
+		  + " argtest arraysort" -
+		  + " backw badargs beginfile1 binmode1" -
+		  + " colonwarn clos1way charasbytes crlf" -
+		  + " dbugeval delsub devfd devfd1 devfd2 dumpvars" -
+		  + " exit" -
 		  + " fieldwdth fpat1 fpat2 fpat3 fpatnull funlen functab1" -
-		  + " functab2 functab3 fsfwfs" -
-		  + " fwtest fwtest2 fwtest3" -
-		  + " gensub gensub2 getlndir gnuops2 gnuops3 gnureops" -
-		  + " icasefs id icasers igncdym igncfs ignrcase ignrcas2" -
-		  + " incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7"
+		  + " functab2 functab3 fsfwfs fwtest fwtest2 fwtest3"
 $		gosub list_of_tests
-$		list = "include2 indirectcall lint lintold lintwarn match1" -
-		  + " match2 match3 manyfiles mbprintf3 mbstr1" -
-		  + " nastyparm next nondec" -
-		  + " nondec2 patsplit posix profile1 procinfs printfbad1" -
-		  + " printfbad2 printfbad3 profile2 profile3 pty1" -
-		  + " regx8bit rebuf reginttrad reint reint2 rsstart1 rsstart2 rsstart3 rstest6" -
+$		list = "genpot gensub gensub2 getlndir gnuops2 gnuops3" -
+		  + " gnureops" -
+		  + " icasefs id icasers igncdym igncfs ignrcase ignrcas2" -
+		  + " incdupe incdupe2 incdupe3 incdupe4 incdupe5" -
+		  + " incdupe6 incdupe7 include2 indirectbuiltin indirectcall"
+$		gosub list_of_tests
+$		list = "lint lintold lintwarn" -
+		  + " match1 match2 match3 manyfiles mbprintf3 mbstr1 mbstr2" -
+		  + " nastyparm next nondec nondec2" -
+		  + " patsplit posix printfbad1 printfbad2 printfbad3" -
+		  + " printfbad4 printhuge procinfs profile0 profile1" -
+		  + " profile2 profile3 profile4 profile5 profile6" -
+		  + " profile7 profile8 pty1"
+$		gosub list_of_tests
+$		list = "regx8bit rebuf reginttrad regnul1 regnul2" -
+		  + " reint reint2 rsgetline rsglstdin rsstart1 rsstart2" -
+		  + " rsstart3 rstest6" -
 		  + " shadow sortfor sortu split_after_fpat splitarg4" -
 		  + " strtonum strftime switch2 symtab1 symtab2 symtab3" -
-		  + " symtab4 symtab5 symtab6 symtab7 symtab8 symtab9"
+		  + " symtab4 symtab5 symtab6 symtab7 symtab8 symtab9" -
+		  + " watchpoint1"
 $		gosub list_of_tests
 $		return
 $
@@ -140,8 +196,18 @@ $locale_tests:
 $charset_tests:	echo "charset_tests..."
 $		! without i18n kit, VMS only supports the C locale
 $		! and several of these fail
-$		list = "asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1" -
-		  + " mbprintf1 mbprintf2 rebt8b2 rtlenmb sort1 sprintfc"
+$		list = "asort asorti" -
+		  + " backbigs1 backsmalls1 backsmalls2" -
+		  + " fmttest fnarydel fnparydl" -
+		  + " lc_num1 mbfw1" -
+		  + " mbprintf1 mbprintf2 mbprintf4" -
+		  + " rebt8b2 rtlenmb" -
+		  + " sort1 sprintfc"
+$		gosub list_of_tests
+$		return
+$!
+$charset_all:  echo "All charset tests..."
+$		list = "charset_msg_start charset_tests charset_msg_end"
 $		gosub list_of_tests
 $		return
 $
@@ -166,13 +232,20 @@ $		list = "inetechu inetecht inetdayu inetdayt"
 $		gosub list_of_tests
 $		return
 $!
+$shlib:
 $extension:	echo "extension...."
-$		list = "inplace1 filefuncs fnmatch fts functab4 ordchr" -
-		+ " readdir revout revtwoway rwarray time"
-		gosub list_of_tests
-		return
-
-$
+$		list = "fnmatch filefuncs fork fork2 fts functab4" -
+		  + " inplace1 inplace2" -
+		  + " ordchr ordchr2" -
+		  + " readdir readfile readfile2 revout revtwoway rwarray" -
+		  + " testext time"
+$		gosub list_of_tests
+$		return
+$!
+$mpfr:		echo "mpfr... - Not yet implmented on VMS"
+$		! mpfr has not yet been ported to VMS.
+$		return
+$!
 $! list_of_tests: process 'list', a space-separated list of tests.
 $! Some tests assign their own 'list' and call us recursively,
 $! so we have to emulate a local stack to prevent the current list
@@ -198,20 +271,26 @@ $anchgsub:
 $arrayprm2:
 $arryref2:
 $aryprm8:
+$aryprm9:
 $asgext:
 $backgsub:
+$backsmalls2:
 $backw:
 $concat1:
 $concat2:
 $concat3:
+$crlf:
 $datanonl:
 $delarpm2:
+$dfamb1:
+$exit2:
 $fldchg:
 $fldchgnf:
 $fmttest:
 $fordel:
 $fpat1:
 $fpat3:
+$fpat4:
 $fpatnull:
 $fsfwfs:
 $fsrs:
@@ -236,12 +315,15 @@ $icasers:
 $igncfs:
 $igncdym:
 $indirectcall:
+$inpref:
 $inputred:
+$lc_num1:
 $leadnl:
 $manglprm:
 $match3:
 $membug1:
 $nested:
+$nfloop:
 $nfset:
 $nlfldsep:
 $nlinstr:
@@ -259,10 +341,15 @@ $prdupval:
 $prec:
 $prtoeval:
 $range1:
+$rebrackloc:
 $rebuf:
 $regeq:
+$regexpbrack:
+$regnul1:
+$regnul2:
 $reindops:
 $reparse:
+$rsgetline:
 $rsnul1nl:
 $rsstart1:
 $rstest1:
@@ -272,6 +359,7 @@ $rstest6:
 $rswhite:
 $sortempty:
 $sortfor:
+$sortglos:
 $split_after_fpat:
 $splitarg4:
 $splitargv:
@@ -291,6 +379,21 @@ $	gawk -f 'test'.awk 'test'.in >_'test'.tmp
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
+$!
+$indirectbuiltin: ! 4.1.2
+$	echo "''test'"
+$	! No shell simulation in gawk
+$	temp_file = "sys$disk:[]_'test'.tmp"
+$	if f$search(temp_file) .nes. "" then delete 'temp_file';*
+$	old_rm = rm
+$	rm = "continue ! "
+$	gawk -f 'test'.awk 'test'.in >_'test'.tmp
+$	rm = old_rm
+$	! gawk subprocesses creating new generation of stdout
+$	! instead of appending to open one.
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp;1
+$	if $status then  rm _'test'.tmp;*,x1.out;,x2.out;
+$	return
 $
 $! more common tests, without a data file: gawk -f 'test'.awk
 $ofmta:
@@ -309,6 +412,9 @@ $arynasty:
 $arysubnm:
 $asort:
 $asorti:
+$badassign1:
+$badbuild:
+$callparam:
 $closebad:
 $compare2:
 $convfmt:
@@ -333,6 +439,7 @@ $match1:
 $math:
 $minusstr:
 $negrange:
+$nulinsrc:
 $nlstrina:
 $nondec:
 $octsub:
@@ -360,7 +467,10 @@ $zero2:
 $zeroflag:
 $! common without 'test'.in
 $	echo "''test'"
+$	set noOn
 $	gawk -f 'test'.awk 2>&1 >_'test'.tmp
+$	if .not. $status then call exit_code '$status' _'test'.tmp
+$	set On
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
@@ -374,10 +484,89 @@ $	cmp 'test'.ok sys$disk:[]_'test'.tmp;1
 $	if $status then  rm _'test'*.tmp;*
 $	return
 $
+$dbugeval:
+$	echo "''test'"
+$	if f$getdvi("SYS$COMMAND", "TRM")
+$	then
+$	    set noOn
+$	    gawk --debug -f /dev/null < 'test'.in 2>&1 > _'test.tmp'
+$	    if .not. $status then call exit_code '$status' _'test'.tmp
+$	    set On
+$	    cmp 'test'.ok sys$disk:[]_'test'.tmp;1
+$	    if $status then  rm _'test'*.tmp;*
+$	    return
+$	else
+$	    echo "Skipping because not a terminal."
+$	endif
+$!
+$rsglstdin:
+$	echo "''test'"
+$	set noOn
+$	define/user sys$input rsgetline.in
+$	gawk -f rsgetline.awk 2>&1 > _'test'.tmp
+$	if .not. $status then call exit_code '$status' _'test'.tmp
+$	set On
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
+$	return
+$!
+$genpot:
+$	echo "''test'"
+$	set noOn
+$	gawk -f 'test'.awk --gen-pot 2>&1 >_'test'.tmp
+$	if .not. $status then call exit_code '$status' _'test'.tmp
+$	set On
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
+$	return
+$!
+$paramasfunc1:
+$paramasfunc2:
+$	echo "''test'"
+$	set noOn
+$	gawk -f 'test'.awk --posix 2>&1 >_'test'.tmp
+$	if .not. $status then call exit_code '$status' _'test'.tmp
+$	set On
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
+$	return
+$!
+$watchpoint1:
+$	echo "''test'"
+$	set noOn
+$	gawk "-D" -f 'test'.awk 'test'.in < 'test'.script 2>&1 >_'test'.tmp
+$	if .not. $status then call exit_code '$status' _'test'.tmp
+$	set On
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
+$	return
+$!
+$!
+$!
+$fork:		! 4.0.2
+$fork2:		! 4.0.2
+$	echo "''test' not implemented on VMS skipped"
+$	return
+$!
+$testext:
+$	set process/parse=extended ! ODS-5 only
+$	echo "''test'"
+$	gawk "/^(@load|BEGIN)/,/^}/" [-.extension]'test'.c > _'test'.awk
+$	set noOn
+$	AWKLIBPATH_dir
+$	gawk -f _'test'.awk >_'test'.tmp 2>&1
+$	if .not. $status then call exit_code '$status' _'test'.tmp
+$	gawk "{gsub(""no children"",""No child processes"")}1" -
+	    _'test'.tmp >_'test'.tmp1
+$	rm sys$disk:[]_'test'.tmp;*
+$	mv sys$disk:[]_'test'.tmp1 sys$disk:[]_'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then rm _'test'.tmp;
+$	set On
+$	return
+$!
 $double1:
 $double2:
-$lc_num1:
-$mbprintf1:
 $	echo "''test' skipped"
 $	return
 $
@@ -409,7 +598,25 @@ $	echo "some systems may omit a leading zero and the floating point"
 $	echo "precision may lead to slightly different output in a few cases."
 $	echo ""
 $	return
-$
+$!
+$charset_msg_start:
+$ echo "======== Starting tests that can vary based on character set ========"
+$ echo "======== or locale support                                   ========"
+$ echo "*********************************************************************"
+$ echo "* Some or all of these tests may fail if you have inadequate or     *"
+$ echo "* missing locale support. At least en_US.UTF-8, ru_RU.UTF-8 and     *"
+$ echo "* ja_JP.UTF-8 are needed. However, if you see this message, then    *"
+$ echo "* this test script thinks you have what you need ...                *"
+$ echo "*********************************************************************"
+$ echo ""
+$	return
+$!
+$charset_msg_end:
+$ echo "======== Done with tests that can vary based on character set ========"
+$ echo "======== or locale support                                    ========"
+$ echo ""
+$	return
+$!
 $printlang:
 $! the default locale is C, with LC_LANG and LC_ALL left empty;
 $! showing that at the very beginning may cause some confusion about
@@ -735,8 +942,11 @@ $symtab1:
 $symtab2:
 $symtab3:   echo "''test'"
 $   set noOn
+$   old_sort = sort
+$   sort = "@sys$disk:[-.vms]vms_sort.com"
 $   gawk -f 'test'.awk  >_'test'.tmp 2>&1
 $   if .not. $status then call exit_code '$status' _'test'.tmp
+$   sort = old_sort
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status then rm _'test'.tmp;*
 $   set On
@@ -831,6 +1041,7 @@ $	return
 $
 $getlnhd:
 $	echo "getlnhd skipped"
+$	!Expects a Unix shell
 $	return
 $!!getlnhd:	echo "getlnhd"
 $	gawk -f getlnhd.awk >_getlnhd.tmp
@@ -945,6 +1156,7 @@ $	return
 $
 $pipeio2:
 $	echo "pipeio2 skipped"
+$	! Expects the sed utility and Posix shell
 $	return
 $!!pipeio2:	echo "pipeio2"
 $	cat = "gawk -- {print}"
@@ -1178,14 +1390,43 @@ $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
 $
-$exitval2:	echo "exitval2 skipped"
+$exitval2:
+$	echo "''test'"
+$	cmdfile = "sys$disk:[]_''test'.com"
+$	if f$search(cmdfile) .nes. "" then delete 'cmdfile';*
+$	open/write xxx 'cmdfile'
+$	write xxx "$!'f$verify(0,0)'
+$	write xxx "$read := read"
+$	write xxx "$define/user sys$input sys$command"
+$	write xxx "$pipe read sys$input x ; write sys$output x ; exit %x003A151"
+$	close xxx
+$	! Unix exit 42 is VMS %x003A151
+$	read := "@''cmdfile' !"
+$	set noOn
+$	gawk -f 'test'.awk >_'test'.tmp
+$	if $status .ne. 1 then call exit_code '$status' _'test'.tmp
+$	delete/symbol/local read
+$	set On
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status
+$	then
+$	    rm _'test'.tmp;*
+$	    if f$search(cmdfile) .nes. "" then rm 'cmdfile';*
+$	endif
 $	return
-$!!exitval2:	echo "exitval2"
-$	gawk -f exitval2.awk exitval2.in >_exitval2.tmp
-$	cmp exitval2.ok sys$disk:[]_exitval2.tmp
-$	if $status then  rm _exitval2.tmp;
+$!
+$exitval3:
+$	echo "''test'"
+$	set noOn
+$	gawk -f 'test'.awk >_'test'.tmp
+$	! Unix exit 42 is VMS %x003A151
+$	if $status .ne. 1 then call exit_code '$status' _'test'.tmp
+$	set On
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
 $	return
-$
+$!
+$!
 $delfunc:
 $fcall_exit2:
 $fnamedat:
@@ -1204,6 +1445,7 @@ $	if $status then  rm _'test'.tmp;
 $	return
 $
 $getline:	echo "getline skipped"
+$	!Expects a Unix shell
 $	return
 $!!getline:	echo "getline"
 $	gawk -f getline.awk getline.in >_getline.tmp
@@ -1229,18 +1471,26 @@ $	cmp iobug1.ok sys$disk:[]_iobug1.tmp
 $	if $status then  rm _iobug1.tmp;
 $	return
 $
-$rstest4:	echo "rstest4 skipped"
-$	return
-$!!rstest4:	echo "rstest4"
-$	gawk -f rstest4.awk rstest4.in >_rstest4.tmp
+$rstest4:
+$	echo "rstest4"
+$	old_echo = echo
+$	echo = "write sys$output """
+$	gawk -f rstest4.awk >_rstest4.tmp1
+$	echo = old_echo
+$	gawk "{gsub(""< A>"",""<a>"")}1" _'test'.tmp1 >_'test'.tmp
+$	rm sys$disk:[]_'test'.tmp1;*
 $	cmp rstest4.ok sys$disk:[]_rstest4.tmp
 $	if $status then  rm _rstest4.tmp;
 $	return
 $
-$rstest5:	echo "rstest5 skipped"
-$	return
-$!!rstest5:	echo "rstest5"
-$	gawk -f rstest5.awk rstest5.in >_rstest5.tmp
+$rstest5:
+$	echo "rstest5"
+$	old_echo = echo
+$	echo = "write sys$output """
+$	gawk -f rstest5.awk >_rstest5.tmp1
+$	echo = old_echo
+$	gawk "{gsub("" '"","""");gsub(""'"","""")}1" _'test'.tmp1 >_'test'.tmp
+$	rm sys$disk:[]_'test'.tmp1;*
 $	cmp rstest5.ok sys$disk:[]_rstest5.tmp
 $	if $status then  rm _rstest5.tmp;
 $	return
@@ -1262,7 +1512,7 @@ $	set On
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
 $	return
-$
+$!
 $uninit2:
 $uninit3:
 $uninit4:
@@ -1334,6 +1584,25 @@ $	cmp rsnulbig2.ok sys$disk:[]_rsnulbig2.tmp
 $	if $status then  rm _rsnulbig2.tmp;
 $	return
 $
+$backbigs1:	! 4.1.1
+$	echo "''test' skipped'
+$	! needs a locale not on VMS currently
+$	return
+$!
+$backsmalls1:
+$	gosub define_gawklocale
+$	if f$trnlnm("LC_ALL") .nes. "utf8-50"
+$	then
+$	    echo "''test' skipping"
+$	    return
+$	else
+$	    echo "''test'"
+$	endif
+$	gawk -f 'test'.awk 'test'.in >_'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
+$	return
+$!
 $subamp:
 $wideidx:
 $widesub2:
@@ -1346,7 +1615,6 @@ $	if $status then  rm _'test'.tmp;
 $	return
 $
 $ignrcas2:
-$!!lc_num1:
 $wideidx2:
 $widesub:
 $widesub4:
@@ -1386,26 +1654,35 @@ $	cmp rsstart2.ok sys$disk:[]_rsstart2.tmp
 $	if $status then  rm _rsstart2.tmp;
 $	return
 $
-$! rsstart3 fails, presumeably due to PIPE's use of print file format
-$rsstart3:	echo "rsstart3 skipped"
-$	return
-$!!rsstart3:	echo "rsstart3"
-$	if .not.pipeok
-$	then	echo "Without the PIPE command, ''test' can't be run."
-$		On warning then  return
-$		pipe echo "With PIPE, ''test' will finish quickly."
-$		On warning then  $
-$		pipeok = 1
-$	endif
+$rsstart3:
+$	echo "rsstart3"
+$!      rsstart3 with pipe fails,
+$!	presumeably due to PIPE's use of print file format
+$!	if .not.pipeok
+$!	then	echo "Without the PIPE command, ''test' can't be run."
+$!		On warning then  return
+$!		pipe echo "With PIPE, ''test' will finish quickly."
+$!		On warning then  $
+$!		pipeok = 1
+$!	endif
 $	! head rsstart1.in | gawk -f rsstart2.awk >_rsstart3.tmp
 $	! splitting this into two steps would make it the same as rsstart2
 $	set noOn
-$	pipe -
-	gawk -- "FNR <= 10" rsstart1.in | -
-	gawk -f rsstart2.awk >_rsstart3.tmp
+$!$	pipe -
+$!	  gawk -- "FNR <= 10" rsstart1.in | -
+$!	  gawk -f rsstart2.awk >_rsstart3.tmp
+$!
+$	! DCL redirection to files is similar to pipes
+$	! But not quite the same.
+$	! DCL pipes are mailboxes, not the same as CRTL pipes,
+$	! So eventually someone should look into why CRTL pipes and
+$	! gawk are not always playing well together.
+$	gawk -- "FNR <= 10" rsstart1.in > _'test'.tmp1
+$	define/user sys$input _'test'.tmp1
+$	gawk -f rsstart2.awk >_rsstart3.tmp
 $	set On
 $	cmp rsstart3.ok sys$disk:[]_rsstart3.tmp
-$	if $status then  rm _rsstart3.tmp;
+$	if $status then  rm _rsstart3.tmp;, _rsstart3.tmp1;
 $	return
 $
 $rtlen:
@@ -1559,42 +1836,52 @@ $
 $localenl:	echo "localenl skipped"
 $	return
 $!!localenl:	echo "localenl"
+$	! localenl.com does not exist.
 $	@localenl.com /Output=_localenl.tmp	! sh ./localenl.sh >tmp.
 $	cmp localenl.ok sys$disk:[]_localenl.tmp
 $	if $status then  rm _localenl.tmp;
 $	return
 $
-$mbprintf1:	echo "mbprintf1 skipped"
-$	return
-$!!mbprintf1:	echo "mbprintf1"
+$mbprintf1:	echo "''test'"
 $! Makefile test exports this, but we don't want to impact user's environment
-$	define/User GAWKLOCALE "en_US.UTF-8"
+$!	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+$!	Only always have "utf8-20"
+$	gosub define_gawklocale
 $	gawk -f mbprintf1.awk mbprintf1.in >_mbprintf1.tmp
 $	cmp mbprintf1.ok sys$disk:[]_mbprintf1.tmp
 $	if $status then  rm _mbprintf1.tmp;
 $	return
 $
-$mbprintf2:	echo "mbprintf2"
+$mbprintf2:
+	echo "''test'"
 $! Makefile test exports this, ...
-$	define/User GAWKLOCALE "ja_JP.UTF-8"
-$	gawk -f mbprintf2.awk >_mbprintf2.tmp
-$	cmp mbprintf2.ok sys$disk:[]_mbprintf2.tmp
-$	if $status then  rm _mbprintf2.tmp;
+$!	@GAWKLOCALE=ja_JP.UTF-8 ; export GAWKLOCALE ; \
+$!	Only always have "utf8-20"
+$!      ja_jp_utf-8 is optional
+$	gosub define_gawklocale_ja_jp
+$	gawk -f 'test'.awk >_'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
 $	return
 $
-$mbprintf3:	echo "mbprintf3"
-$! Makefile test exports this, ...
-$	define/User GAWKLOCALE "en_US.UTF-8"
-$	gawk -f mbprintf3.awk mbprintf3.in >_mbprintf2.tmp
-$	cmp mbprintf3.ok sys$disk:[]_mbprintf2.tmp
-$	if $status then  rm _mbprintf2.tmp;
+$!
+$mbprintf3:
+$mbprintf4:
+	echo "''test'"
+$! Makefile test exports this
+$!	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+$!	Only always have "utf8-20"
+$	gosub define_gawklocale
+$	gawk -f 'test'.awk 'test'.in 2>&1 >_'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
 $	return
-$
-$mbfw1:		echo "mbfw1 skipped"
-$	return
-$!!mbfw1:		echo "mbfw1"
+$!
+$!
+$mbfw1:	echo "mbfw1"
 $! Makefile test exports this, ...
-$	define/User GAWKLOCALE "en_US.UTF-8"
+$	!define/User GAWKLOCALE "en_US.UTF-8"
+$	gosub define_gawklocale
 $	gawk -f mbfw1.awk mbfw1.in >_mbfw1.tmp
 $	cmp mbfw1.ok sys$disk:[]_mbfw1.tmp
 $	if $status then  rm _mbfw1.tmp;
@@ -1607,19 +1894,40 @@ $	cmp gsubtst6.ok sys$disk:[]_gsubtst6.tmp
 $	if $status then  rm _gsubtst6.tmp;
 $	return
 $
-$mbstr1:	echo "mbstr1"
+$mbstr1:
+$	echo "''test'"
 $	gosub define_gawklocale
 $	AWKPATH_srcdir
-$	gawk -f mbstr1.awk 2>&1 >_mbstr1.tmp
-$	cmp mbstr1.ok sys$disk:[]_mbstr1.tmp
-$	if $status then  rm _mbstr1.tmp;
+$	gawk -f 'test'.awk 2>&1 >_'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
 $	return
-$
+$!
+$mbstr2:
+$	echo "''test'"
+$	gosub define_gawklocale
+$	AWKPATH_srcdir
+$	gawk -f 'test'.awk < 'test'.in 2>&1 >_'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
+$	return
+$!
+$printhuge:
+$	echo "''test'"
+$	gosub define_gawklocale
+$	AWKPATH_srcdir
+$	gawk -f 'test'.awk 2>&1 >_'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
+$	return
+$!
 $printfbad2:
 $printfbad3:
+$printfbad4:
 $	echo "''test'"
 $	set noOn
 $	gawk --lint -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
+$	if .not. $status then call exit_code '$status' _'test'.tmp
 $	set On
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then	 rm _'test'.tmp;
@@ -1695,6 +2003,20 @@ $	cmp dumpvars.ok sys$disk:[]_dumpvars.tmp
 $	if $status then  rm _dumpvars.tmp;
 $	return
 $
+$!
+$profile0:
+$	gawk --profile=_ap-'test'.out -f 'test'.awk 'test'.in > _NL:
+$	! sed <awkprof.out 1,2d >_profile3.tmp
+$	gawk "NR>2" _ap-'test'.out > sys$disk:[]_awkprof.out
+$	convert/fdl=nla0: _awkprof.out sys$disk:[]_'test'.tmp
+$	convert/fdl=nla0: 'test'.ok _'test'.ok
+$	cmp _'test'.ok sys$disk:[]_'test'.tmp
+$	if $status
+$	then
+$	    rm _'test'.tmp;*,_'test'.ok;*,_ap-'test'.out;,_awkprof.out;
+$	endif
+$	return
+$!
 $profile1: echo "''test'"
 $ ! FIXME: for both gawk invocations which pipe output to SORT,
 $ ! two output files get created; the top version has real output
@@ -1725,15 +2047,35 @@ $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;*
 $	return
 $
+$profile4:
+$profile5:
+$	define/user GAWK_NO_PP_RUN 1
+$	gawk --profile -f 'test'.awk > _NL:
+$	! sed <awkprof.out 1,2d >_profile4.tmp
+$	gawk "NR>2" awkprof.out > sys$disk:[]_awkprof.out
+$	convert/fdl=nla0: _awkprof.out sys$disk:[]_'test'.tmp
+$	convert/fdl=nla0: 'test'.ok _'test'.ok
+$	cmp _'test'.ok sys$disk:[]_'test'.tmp
+$	if $status
+$	then
+$	    rm _'test'.tmp;*,_'test'.ok;*,awkprof.out;,_awkprof.out;
+$	endif
+$	return
+$!
+$profile6:
+$profile7:
+$profile8:
 $profile3: echo "''test'"
 $	gawk --profile -f 'test'.awk > _NL:
 $	! sed <awkprof.out 1,2d >_profile3.tmp
-$	sumslp awkprof.out /update=sys$input: /output=_'test'.tmp
--1,2
-/
-$	rm awkprof.out;
-$	cmp 'test'.ok sys$disk:[]_'test'.tmp
-$	if $status then  rm _'test'.tmp;*
+$	gawk "NR>2" awkprof.out > sys$disk:[]_awkprof.out
+$	convert/fdl=nla0: _awkprof.out sys$disk:[]_'test'.tmp
+$	convert/fdl=nla0: 'test'.ok _'test'.ok
+$	cmp _'test'.ok sys$disk:[]_'test'.tmp
+$	if $status
+$	then
+$	    rm _'test'.tmp;*,_'test'.ok;*,awkprof.out;,_awkprof.out;
+$	endif
 $	return
 $
 $next:	echo "next"
@@ -1858,6 +2200,7 @@ $	return
 $!
 $!
 $inplace1:
+$inplace2:
 $	set process/parse=extended ! ODS-5 only
 $	echo "''test'"
 $	filefunc_file = "[-]gawkapi.o"
@@ -1887,6 +2230,7 @@ $filefuncs:
 $fnmatch:
 $functab4:
 $ordchr:
+$ordchr2:
 $revout:
 $revtwoway:
 $time:
@@ -1938,10 +2282,58 @@ $	    if f$search("_''test'.") .nes. "" then rm _'test'.;*
 $	endif
 $	set On
 $	return
+$!
+$readfile:
+$	echo "''test'"
+$	if f$search("sys$disk:[-]readfile.exe") .eqs. ""
+$	then
+$	    echo "Readfile extension not currently building on VMS."
+$	    return
+$	else
+$	    echo "Surprise! Found the readfile extension so attempting test."
+$	endif
+$	set noOn
+$	AWKLIBPATH_dir
+$	gawk -l readfile -
+	    "BEGIN {printf-f ""%s"", readfile("Makefile.in")}" >_'test'.tmp 2>&1
+$	if .not. $status then call exit_code '$status' _'test'.tmp
+$	cmp Makefile.in sys$disk:[]_'test'.tmp
+$	if $status
+$	then
+$	    rm _'test'.tmp;
+$	else
+$	    copy Makefile.in 'test'.ok
+$	endif
+$	set On
+$	return
+$!
+$readfile2:
+$	echo "''test'"
+$	if f$search("sys$disk:[-]readfile.exe") .eqs. ""
+$	then
+$	    echo "Readfile extension not currently building on VMS."
+$	    return
+$	else
+$	    echo "Surprise! Found the readfile extension so attempting test."
+$	endif
+$	set noOn
+$	AWKLIBPATH_dir
+$	gawk -f 'test'.awk 'test'.awk >_'test'.tmp 2>&1
+$	if .not. $status then call exit_code '$status' _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then rm _'test'.tmp;
+$	set On
+$	return
 $
 $clean:
-$	if f$search("_*.*")	 .nes."" then  rm _*.tmp;*
+$	if f$search("_*.tmp")	 .nes."" then  rm _*.tmp;*
+$	if f$search("_*.out")	 .nes."" then  rm _*.out;*
+$	if f$search("_*.ok")	 .nes."" then  rm _*.ok;*
+$	if f$search("_*.1")	 .nes."" then  rm _*.1;*
+$	if f$search("_*.2")	 .nes."" then  rm _*.2;*
+$	if f$search("_*.awk")	 .nes."" then  rm _*.awk;*
 $	if f$search("_*.too")	 .nes."" then  rm _*.too;*
+$	if f$search("awkprofile.out") .nes."" then  rm awkprofile.out;*
 $	if f$search("out%.")	 .nes."" then  rm out%.;*
 $	if f$search("strftime.in").nes."" then  rm strftime.in;*
 $	if f$search("strftime.ok").nes."" then  rm strftime.ok;*
@@ -1972,7 +2364,23 @@ $
 $! assign temporary value to logical name GAWKLOCALE unless it already has one
 $! [ -z "$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8
 $define_gawklocale:
-$	define/user LC_ALL "utf8-20"
+$	if f$search("sys$i18n_locale:utf8-50.locale") .nes. ""
+$	then
+$	    define/user LC_ALL "utf8-50"
+$	else
+$	    define/user LC_ALL "utf8-20"
+$	endif
+$	return
+$!
+$define_gawklocale_ja_jp:
+$!	@GAWKLOCALE=ja_JP.UTF-8 ; export GAWKLOCALE ; \
+$	if f$search("sys$i18n_locale:ja_jp_utf-8.locale") .nes. ""
+$	then
+$	    define/user LC_ALL "ja_JP_utf-8"
+$	else
+$	    write sys$output "Substituting UTF8-20 for ja_JP.UTF-8"
+$	    define/user LC_ALL "utf8-20"
+$	endif
 $	return
 $
 $! make sure that the specified file's longest-record-length field is set;
