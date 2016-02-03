@@ -120,7 +120,7 @@ vms_open( const char *name, int mode, ... )
 	struct stat stb;
         int stat_result;
 	const char *mbc, *shr = "shr=get", *ctx = "ctx=stm";
- 
+
 	stat_result = stat((char *)name, &stb);
 	if ( stat_result < 0) {	/* assume DECnet */
 	    mbc = "mbc=8";
@@ -187,7 +187,9 @@ vms_gettimeofday(struct timeval *tv, void *timezone__not_used)
     /*
 	Emulate unix's gettimeofday call; timezone argument is ignored.
     */
-    static const Dsc epoch_dsc = { sizeof UNIX_EPOCH - sizeof "", UNIX_EPOCH };
+    static const struct dsc$descriptor_s epoch_dsc =
+       { sizeof UNIX_EPOCH - sizeof "",
+         DSC$K_DTYPE_T, DSC$K_CLASS_S, UNIX_EPOCH };
     static long epoch[2] = {0L,0L};	/* needs one time initialization */
     const long  thunk = VMS_UNITS_PER_SECOND;
     long        now[2], quad[2];

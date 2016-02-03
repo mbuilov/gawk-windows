@@ -15,7 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
- 
+
 
 /*
  * vms_cli.c - command line interface routines.
@@ -29,11 +29,12 @@
 #include <string.h>
 #endif
 
-extern U_Long CLI$PRESENT(const Dsc *);
-extern U_Long CLI$GET_VALUE(const Dsc *, Dsc *, short *);
-extern U_Long CLI$DCL_PARSE(const Dsc *, const void *, ...);
+extern U_Long CLI$PRESENT(const struct dsc$descriptor_s *);
+extern U_Long CLI$GET_VALUE(const struct dsc$descriptor_s *,
+                            struct dsc$descriptor_s *, short *);
+extern U_Long CLI$DCL_PARSE(const struct dsc$descriptor_s *, const void *, ...);
 extern U_Long SYS$CLI(void *, ...);
-extern U_Long SYS$FILESCAN(const Dsc *, void *, long *);
+extern U_Long SYS$FILESCAN(const struct dsc$descriptor_s *, void *, long *);
 extern void  *LIB$ESTABLISH(U_Long (*handler)(void *, void *));
 extern U_Long LIB$SIG_TO_RET(void *, void *);	/* condition handler */
 
@@ -42,10 +43,12 @@ extern U_Long LIB$SIG_TO_RET(void *, void *);	/* condition handler */
 U_Long
 Cli_Present( const char *item )
 {
-    Dsc item_dsc;
+    struct dsc$descriptor_s item_dsc;
     (void)LIB$ESTABLISH(LIB$SIG_TO_RET);
 
-    item_dsc.len = strlen(item_dsc.adr = (char *)item);
+    item_dsc.dsc$w_length = strlen(item_dsc.dsc$a_pointer = (char *)item);
+    item_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+    item_dsc.dsc$b_class = DSC$K_CLASS_S;
     return CLI$PRESENT(&item_dsc);
 }
 
@@ -54,13 +57,18 @@ Cli_Present( const char *item )
 U_Long
 Cli_Get_Value( const char *item, char *result, int size )
 {
-    Dsc item_dsc, res_dsc;
+    struct dsc$descriptor_s item_dsc, res_dsc;
     U_Long sts;
     short len = 0;
     (void)LIB$ESTABLISH(LIB$SIG_TO_RET);
 
-    item_dsc.len = strlen(item_dsc.adr = (char *)item);
-    res_dsc.len = size,  res_dsc.adr = result;
+    item_dsc.dsc$w_length = strlen(item_dsc.dsc$a_pointer = (char *)item);
+    item_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+    item_dsc.dsc$b_class = DSC$K_CLASS_S;
+    res_dsc.dsc$w_length = size;
+    res_dsc.dsc$a_pointer = result;
+    res_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+    res_dsc.dsc$b_class = DSC$K_CLASS_S;
     sts = CLI$GET_VALUE(&item_dsc, &res_dsc, &len);
     result[len] = '\0';
     return sts;
@@ -75,7 +83,8 @@ Cli_Parse_Command( const void *cmd_tables, const char *cmd_verb )
 {
     struct { short len, code; void *adr; } fscn[2];
     struct { char rqtype, rqindx, rqflags, rqstat; unsigned :32;
-	     Dsc rdesc; unsigned :32; unsigned :32; unsigned :32; } cmd;
+	     struct dsc$descriptor_s rdesc;
+             unsigned :32; unsigned :32; unsigned :32; } cmd;
     U_Long sts;
     int    ltmp;
     char   longbuf[8200];
@@ -93,15 +102,16 @@ Cli_Parse_Command( const void *cmd_tables, const char *cmd_verb )
 	    memset(fscn, 0, sizeof fscn);
 	    fscn[0].code = FSCN$_FILESPEC;	/* full file specification */
 	    (void)SYS$FILESCAN(&cmd.rdesc, fscn, (long *)0);
-	    cmd.rdesc.len -= fscn[0].len;	/* shrink size */
-	    cmd.rdesc.adr += fscn[0].len;	/* advance ptr */
+	    cmd.rdesc.dsc$w_length -= fscn[0].len;	/* shrink size */
+	    cmd.rdesc.dsc$a_pointer += fscn[0].len;	/* advance ptr */
 	}
 	/* prepend verb and then parse the command line */
 	strcat(strcpy(longbuf, cmd_verb), " "),  ltmp = strlen(longbuf);
-	if (cmd.rdesc.len + ltmp > sizeof longbuf)
-	    cmd.rdesc.len = sizeof longbuf - ltmp;
-	strncpy(&longbuf[ltmp], cmd.rdesc.adr, cmd.rdesc.len);
-	cmd.rdesc.len += ltmp,	cmd.rdesc.adr = longbuf;
+	if (cmd.rdesc.dsc$w_length + ltmp > sizeof longbuf)
+	    cmd.rdesc.dsc$w_length = sizeof longbuf - ltmp;
+	strncpy(&longbuf[ltmp],
+                cmd.rdesc.dsc$a_pointer, cmd.rdesc.dsc$w_length);
+	cmd.rdesc.dsc$w_length += ltmp,	cmd.rdesc.dsc$a_pointer = longbuf;
 	sts = CLI$DCL_PARSE(&cmd.rdesc, cmd_tables);
     }
 
