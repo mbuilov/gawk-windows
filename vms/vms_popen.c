@@ -71,8 +71,8 @@ extern char *mktemp(char *);
 
 static void push_logicals(void);
 static void pop_logicals(void);
-static Itm *save_translation(const Dsc *);
-static void restore_translation(const Dsc *, const Itm *);
+static Itm *save_translation(const struct dsc$descriptor_s *);
+static void restore_translation(const struct dsc$descriptor_s *, const Itm *);
 
 typedef enum { unopened = 0, reading, writing } pipemode;
 typedef struct pipe_info {
@@ -159,22 +159,30 @@ pclose( FILE *current )
 int
 vms_execute( const char *command, const char *input, const char *output )
 {
-    Dsc cmd, in, out, *in_p, *out_p;
+    struct dsc$descriptor_s cmd, in, out, *in_p, *out_p;
     U_Long sts, cmpltn_sts;
 
-    cmd.len = strlen(cmd.adr = (char *)command);
-    if (input)
-	in.len = strlen(in.adr = (char *)input),  in_p = &in;
-    else
+    cmd.dsc$w_length = strlen(cmd.dsc$a_pointer = (char *)command);
+    cmd.dsc$b_dtype = DSC$K_DTYPE_T;
+    cmd.dsc$b_class = DSC$K_CLASS_S;
+    if (input) {
+	in.dsc$w_length = strlen(in.dsc$a_pointer = (char *)input);
+	in_p = &in;
+	in.dsc$b_dtype = DSC$K_DTYPE_T;
+	in.dsc$b_class = DSC$K_CLASS_S;
+    } else
 	in_p = 0;
-    if (output)
-	out.len = strlen(out.adr = (char *)output),  out_p = &out;
-    else
+    if (output) {
+	out.dsc$w_length = strlen(out.dsc$a_pointer = (char *)output);
+	out_p = &out;
+	out.dsc$b_dtype = DSC$K_DTYPE_T;
+	out.dsc$b_class = DSC$K_CLASS_S;
+    } else
 	out_p = 0;
 
     push_logicals();	/* guard against user-mode definitions of sys$Xput */
     sts = LIB$SPAWN(&cmd, in_p, out_p, (U_Long *)0,
-		    (Dsc *)0, (U_Long *)0, &cmpltn_sts);
+		    (struct dsc$descriptor_s *)0, (U_Long *)0, &cmpltn_sts);
     pop_logicals();	/* restore environment */
 
     if (vmswork(sts) && vmsfail(cmpltn_sts))  sts = cmpltn_sts;
@@ -255,7 +263,7 @@ pop_logicals( void )		/* redefine sys$input and/or sys$output */
 }
 
 static Itm *
-save_translation( const Dsc *logname )
+save_translation( const struct dsc$descriptor_s *logname )
 {
     Itm trans[4], *itmlst;
     long trans_attr, max_trans_indx;	/* 0-based translation index count */
@@ -318,9 +326,10 @@ save_translation( const Dsc *logname )
 }
 
 static void
-restore_translation( const Dsc *logname, const Itm *itemlist )
+restore_translation( const struct dsc$descriptor_s *logname,
+                     const Itm *itemlist )
 {
-    Dsc trans_val;
+    struct dsc$descriptor_s trans_val;
     U_Long *attr_p;
 # define LOG_PROCESS_TABLE 2		/* <obsolete> */
 # define LOG_USERMODE PSL$C_USER
@@ -332,8 +341,10 @@ restore_translation( const Dsc *logname, const Itm *itemlist )
 	    so it'll be the first string entry in the itemlist.
 	 */
      /* assert( itemlist[2].code == LNM$_STRING ); */
-	trans_val.adr = itemlist[2].buffer;
-	trans_val.len = itemlist[2].len;
+	trans_val.dsc$a_pointer = itemlist[2].buffer;
+	trans_val.dsc$w_length = itemlist[2].len;
+	trans_val.dsc$b_dtype = DSC$K_DTYPE_T;
+	trans_val.dsc$b_class = DSC$K_CLASS_S;
 	(void) SYS$CRELOG(LOG_PROCESS_TABLE, logname, &trans_val, LOG_USERMODE);
     } else {
 	/* $crelnm definition; itemlist could specify multiple translations,
