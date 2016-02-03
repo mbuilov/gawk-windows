@@ -28697,7 +28697,7 @@ by 3 bits to make room for the severity codes.
 
    To extract the actual 'gawk' exit code from the VMS status, use:
 
-     unix_status = (vms_status .and. &x7f8) / 8
+     unix_status = (vms_status .and. %x7f8) / 8
 
 A C program that uses 'exec()' to call 'gawk' will get the original
 Unix-style exit value.
@@ -28719,6 +28719,46 @@ logical name 'AWKPATH' can be used to override this default.  The format
 of 'AWKPATH' is a comma-separated list of directory specifications.
 When defining it, the value should be quoted so that it retains a single
 translation and not a multitranslation 'RMS' searchlist.
+
+   This restriction also applies to running 'gawk' under GNV, as
+redirection is always to a DCL command.
+
+   If you are redirecting data to a VMS command or utility, the current
+implementation requires that setting up a VMS foreign command that runs
+a command file before invoking 'gawk'.  (This restriction may be removed
+in a future release of 'gawk' on VMS.)
+
+   Without this command file, the input data will also appear prepended
+to the output data.
+
+   This also allows simulating POSIX commands that are not found on VMS
+or the use of GNV utilities.
+
+   The example below is for 'gawk' redirecting data to the VMS 'sort'
+command.
+
+     $ sort = "@device:[dir]vms_gawk_sort.com"
+
+   The command file needs to be of the format in the example below.
+
+   The first line inhibits the passed input data from also showing up in
+the output.  It must be in the format in the example.
+
+   The next line creates a foreign command that overrides the outer
+foreign command which prevents an infinite recursion of command files.
+
+   The next to the last command redirects 'sys$input' to be
+'sys$command', in order to pick up the data that is being redirected to
+the command.
+
+   The last line runs the actual command.  It must be the last command
+as the data redirected from 'gawk' will be read when the command file
+ends.
+
+     $!'f$verify(0,0)'
+     $ sort := sort
+     $ define/user sys$input sys$command:
+     $ sort sys$input: sys$output:
 
 
 File: gawk.info,  Node: VMS GNV,  Next: VMS Old Gawk,  Prev: VMS Running,  Up: VMS Installation
@@ -34478,6 +34518,7 @@ Index
 * redirect gawk output, in debugger:     Debugger Info.       (line  73)
 * redirection of input:                  Getline/File.        (line   6)
 * redirection of output:                 Redirection.         (line   6)
+* redirection on VMS:                    VMS Running.         (line  64)
 * reference counting, sorting arrays:    Array Sorting Functions.
                                                               (line  77)
 * regexp:                                Regexp.              (line   6)
@@ -35626,41 +35667,41 @@ Ref: VMS Compilation-Footnote-11150091
 Node: VMS Dynamic Extensions1150149
 Node: VMS Installation Details1151834
 Node: VMS Running1154087
-Node: VMS GNV1156928
-Node: VMS Old Gawk1157663
-Node: Bugs1158134
-Node: Other Versions1162331
-Node: Installation summary1168917
-Node: Notes1169975
-Node: Compatibility Mode1170840
-Node: Additions1171622
-Node: Accessing The Source1172547
-Node: Adding Code1173983
-Node: New Ports1180202
-Node: Derived Files1184690
-Ref: Derived Files-Footnote-11190175
-Ref: Derived Files-Footnote-21190210
-Ref: Derived Files-Footnote-31190808
-Node: Future Extensions1190922
-Node: Implementation Limitations1191580
-Node: Extension Design1192763
-Node: Old Extension Problems1193917
-Ref: Old Extension Problems-Footnote-11195435
-Node: Extension New Mechanism Goals1195492
-Ref: Extension New Mechanism Goals-Footnote-11198856
-Node: Extension Other Design Decisions1199045
-Node: Extension Future Growth1201158
-Node: Old Extension Mechanism1201994
-Node: Notes summary1203757
-Node: Basic Concepts1204939
-Node: Basic High Level1205620
-Ref: figure-general-flow1205902
-Ref: figure-process-flow1206587
-Ref: Basic High Level-Footnote-11209888
-Node: Basic Data Typing1210073
-Node: Glossary1213401
-Node: Copying1245347
-Node: GNU Free Documentation License1282886
-Node: Index1308004
+Node: VMS GNV1158366
+Node: VMS Old Gawk1159101
+Node: Bugs1159572
+Node: Other Versions1163769
+Node: Installation summary1170355
+Node: Notes1171413
+Node: Compatibility Mode1172278
+Node: Additions1173060
+Node: Accessing The Source1173985
+Node: Adding Code1175421
+Node: New Ports1181640
+Node: Derived Files1186128
+Ref: Derived Files-Footnote-11191613
+Ref: Derived Files-Footnote-21191648
+Ref: Derived Files-Footnote-31192246
+Node: Future Extensions1192360
+Node: Implementation Limitations1193018
+Node: Extension Design1194201
+Node: Old Extension Problems1195355
+Ref: Old Extension Problems-Footnote-11196873
+Node: Extension New Mechanism Goals1196930
+Ref: Extension New Mechanism Goals-Footnote-11200294
+Node: Extension Other Design Decisions1200483
+Node: Extension Future Growth1202596
+Node: Old Extension Mechanism1203432
+Node: Notes summary1205195
+Node: Basic Concepts1206377
+Node: Basic High Level1207058
+Ref: figure-general-flow1207340
+Ref: figure-process-flow1208025
+Ref: Basic High Level-Footnote-11211326
+Node: Basic Data Typing1211511
+Node: Glossary1214839
+Node: Copying1246785
+Node: GNU Free Documentation License1284324
+Node: Index1309442
 
 End Tag Table

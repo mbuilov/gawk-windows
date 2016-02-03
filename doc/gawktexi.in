@@ -37881,8 +37881,8 @@ to the original shell-style interface (see the help entry for details).
 One side effect of dual command-line parsing is that if there is only a
 single parameter (as in the quoted string program), the command
 becomes ambiguous.  To work around this, the normally optional @option{--}
-flag is required to force Unix-style parsing rather than @code{DCL} parsing.  If any
-other dash-type options (or multiple parameters such as @value{DF}s to
+flag is required to force Unix-style parsing rather than @code{DCL} parsing.
+If any other dash-type options (or multiple parameters such as @value{DF}s to
 process) are present, there is no ambiguity and @option{--} can be omitted.
 
 @cindex exit status, of VMS
@@ -37900,15 +37900,15 @@ added to the number shifted over by 3 bits to make room for the severity codes.
 To extract the actual @command{gawk} exit code from the VMS status, use:
 
 @example
-unix_status = (vms_status .and. &x7f8) / 8
+unix_status = (vms_status .and. %x7f8) / 8
 @end example
 
 @noindent
 A C program that uses @code{exec()} to call @command{gawk} will get the original
 Unix-style exit value.
 
-Older versions of @command{gawk} for VMS treated a Unix exit code 0 as 1, a failure
-as 2, a fatal error as 4, and passed all the other numbers through.
+Older versions of @command{gawk} for VMS treated a Unix exit code 0 as 1,
+a failure as 2, a fatal error as 4, and passed all the other numbers through.
 This violated the VMS exit status coding requirements.
 
 @cindex floating-point, VAX/VMS
@@ -37928,6 +37928,52 @@ name @env{AWKPATH} can be used to override this default.  The format
 of @env{AWKPATH} is a comma-separated list of directory specifications.
 When defining it, the value should be quoted so that it retains a single
 translation and not a multitranslation @code{RMS} searchlist.
+
+@cindex redirection on VMS
+
+This restriction also applies to running @command{gawk} under GNV,
+as redirection is always to a DCL command.
+
+If you are redirecting data to a VMS command or utility, the current
+implementation requires that setting up a VMS foreign command that runs
+a command file before invoking @command{gawk}.
+(This restriction may be removed in a future release of @command{gawk} on VMS.)
+
+Without this command file, the input data will also appear prepended
+to the output data.
+
+This also allows simulating POSIX commands that are not found on VMS or the
+use of GNV utilities.
+
+The example below is for @command{gawk} redirecting data to the VMS
+@command{sort} command.
+
+@example
+$ sort = "@@device:[dir]vms_gawk_sort.com"
+@end example
+
+The command file needs to be of the format in the example below.
+
+The first line inhibits the passed input data from also showing up in the
+output.  It must be in the format in the example.
+
+The next line creates a foreign command that overrides the outer foreign
+command which prevents an infinite recursion of command files.
+
+The next to the last command redirects @code{sys$input} to be
+@code{sys$command}, in order to pick up the data that is being redirected
+to the command.
+
+The last line runs the actual command.  It must be the last command as the data
+redirected from @command{gawk} will be read when the command file ends.
+
+@example
+$!'f$verify(0,0)'
+$ sort := sort
+$ define/user sys$input sys$command:
+$ sort sys$input: sys$output:
+@end example
+
 
 @node VMS GNV
 @appendixsubsubsec The VMS GNV Project
@@ -41860,7 +41906,7 @@ Consistency issues:
 			awk '{
 				...
 			}'
-		
+
 	Do show it when showing command-line arguments, data files, etc, even
 		if there is no output shown.
 

@@ -1,3 +1,25 @@
+2016-02-02         John E. Malmberg      <wb8tyw@qsl.net>
+
+	* descrip.mms: Add gawk_debug target.
+	* vms_sort.com: Implement sort function for tests.
+	* vmstest.com: updates
+	  Reorganize test lists to make them easier to read and
+	  update.
+	(vms_debug): New command to switch to debug_gawk
+
+	New/fixed tests:
+	(basic): badassign1,dfamb1,exit2,nfloop,badbuild,
+		callparam,exitval2,exitval3,inpref,paramasfunc1,
+		paramasfunc2,regexpbrack,sortglos,rebrackloc
+		aryprm9,nulinsrc,rstest4,rstest5
+	(ext): id,profile4,profile5,crlf,dbugeval,fpat4,genpot,
+		indirectbuiltin,printfbad4,printhuge,profile0,
+		profile6,profile7,regnul1,regnul2,rsgetline,
+		rsglstdin,mbstr2,profile8,watchpoint1,rsstart3
+	(locale): backbigs1,backsmalls1,backsmalls2,mbprintf4
+	(shlib): inplace2,testext,lc_num1,mbprintf1,
+		mbprintf2,mbprintf3,mbprintf4,mbfw1,ordchr2
+
 2016-01-27         John E. Malmberg      <wb8tyw@qsl.net>
 
 	* generate_config_vms_h_gawk.com: Add missing define
@@ -17,7 +39,7 @@
 
 	* generate_config_vms_h_gawk.com: Supress compiler message
 	  about comparing an unsigned value to a negative number
-	  in w.missing_d/strftime.c.
+	  in missing_d/strftime.c.
 	* descrip.mms: Temporary comment out the use of bison or yacc
 	  until current ports are known to be available for VMS.
 	* build_gawk_pcsi_desc.com: Remove extra copy of a file being
