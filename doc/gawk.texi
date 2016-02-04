@@ -4049,7 +4049,7 @@ care to search for all occurrences of each inappropriate construct. As
 @itemx @option{--bignum}
 @cindex @option{-M} option
 @cindex @option{--bignum} option
-Force arbitrary-precision arithmetic on numbers. This option has no effect
+Select arbitrary-precision arithmetic on numbers. This option has no effect
 if @command{gawk} is not compiled to use the GNU MPFR and MP libraries
 (@pxref{Arbitrary Precision Arithmetic}).
 
@@ -30867,7 +30867,8 @@ one extra bit of significand.
 
 By default, @command{gawk} uses the double-precision floating-point values
 supplied by the hardware of the system it runs on.  However, if it was
-compiled to do so, @command{gawk} uses the @uref{http://www.mpfr.org,
+compiled to do so, and the @option{-M} command-line option is supplied,
+@command{gawk} uses the @uref{http://www.mpfr.org,
 GNU MPFR} and @uref{http://gmplib.org, GNU MP} (GMP) libraries for
 arbitrary-precision arithmetic on numbers.  You can see if MPFR support
 is available like so:
