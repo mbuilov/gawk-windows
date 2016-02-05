@@ -1541,6 +1541,11 @@ common_exp
 			NODE *n2 = $2->nexti->memory;
 			size_t nlen;
 
+			// 1.5 ""   # can't fold this if program mucks with CONVFMT.
+			// See test #12 in test/posix.awk.
+			if ((n1->flags & (NUMBER|NUMINT)) != 0 || (n2->flags & (NUMBER|NUMINT)) != 0)
+				goto plain_concat;
+
 			n1 = force_string(n1);
 			n2 = force_string(n2);
 			nlen = n1->stlen + n2->stlen;
@@ -1555,6 +1560,7 @@ common_exp
 			bcfree($2);
 			$$ = $1;
 		} else {
+	plain_concat:
 			$$ = list_append(list_merge($1, $2), instruction(Op_concat));
 			$$->lasti->concat_flag = (is_simple_var ? CSVAR : 0);
 			$$->lasti->expr_count = count;

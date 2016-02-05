@@ -1,3 +1,16 @@
+2016-02-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Make optimization (constant folding and tail call recursion)
+	be on by default.
+
+	* awkgram.y (common_exp): Only do concatenation of two strings(!)
+	* main.c (do_optimize): Init to true.
+	(optab): Add new -s/--no-optimize option.
+	(usage): Update message to include it.
+	(parse_args): Parse it. Set do_optimize to false if pretty
+	printing or profiling.
+	* NEWS: Updated.
+
 2016-01-28         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (SUBDIRS): Include extras. Otherwise dist does

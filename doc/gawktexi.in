@@ -3992,6 +3992,7 @@ when parsing numeric input data (@pxref{Locales}).
 @cindex @option{-o} option
 @cindex @option{--pretty-print} option
 Enable pretty-printing of @command{awk} programs.
+Implies @option{--no-optimize}.
 By default, the output program is created in a file named @file{awkprof.out}
 (@pxref{Profiling}).
 The optional @var{file} argument allows you to specify a different
@@ -4008,8 +4009,14 @@ This is no longer the case.
 @itemx @option{--optimize}
 @cindex @option{--optimize} option
 @cindex @option{-O} option
-Enable some optimizations on the internal representation of the program.
-At the moment, this includes just simple constant folding.
+Enable @command{gawk}'s default optimizations on the internal
+representation of the program.  At the moment, this includes simple
+constant folding and tail recursion elimination in function calls.
+
+These optimizations are enabled by default.
+This option remains primarily for backwards compatibilty. However, it may
+be used to cancel the effect of an earlier @option{-s} option
+(see later in this list).
 
 @item @option{-p}[@var{file}]
 @itemx @option{--profile}[@code{=}@var{file}]
@@ -4018,6 +4025,7 @@ At the moment, this includes just simple constant folding.
 @cindex @command{awk} profiling, enabling
 Enable profiling of @command{awk} programs
 (@pxref{Profiling}).
+Implies @option{--no-optimize}.
 By default, profiles are created in a file named @file{awkprof.out}.
 The optional @var{file} argument allows you to specify a different
 @value{FN} for the profile file.
@@ -4083,6 +4091,13 @@ in regexps.
 This is now @command{gawk}'s default behavior.
 Nevertheless, this option remains (both for backward compatibility
 and for use in combination with @option{--traditional}).
+
+@item @option{-s}
+@itemx @option{--no-optimize}
+@cindex @option{--no-optimize} option
+@cindex @option{-s} option
+Disable @command{gawk}'s default optimizations on the internal
+representation of the program.
 
 @item @option{-S}
 @itemx @option{--sandbox}
@@ -27377,6 +27392,10 @@ that the profiling output does. This makes it easy to pretty-print your
 code once development is completed, and then use the result as the final
 version of your program.
 
+Because the internal representation of your program is formatted to
+recreate an @command{awk} program, profiling and pretty-printing
+automatically disable @command{gawk}'s default optimizations.
+
 @node Advanced Features Summary
 @section Summary
 
@@ -35494,6 +35513,7 @@ The
 @option{-p},
 @option{-P},
 @option{-r},
+@option{-s},
 @option{-S},
 @option{-t},
 and
@@ -35518,6 +35538,7 @@ and the
 @option{--load},
 @option{--non-decimal-data},
 @option{--optimize},
+@option{--no-optimize},
 @option{--posix},
 @option{--pretty-print},
 @option{--profile},
