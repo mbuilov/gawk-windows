@@ -244,7 +244,7 @@ Overridden by \*(FC\-\^\-posix\*(FR.
 .TI "\*(FC\-c\*(FR, \*(FC\-\^\-traditional\*(FR
 Disable \*(GK-specific extensions.
 .TI "\*(FC\-C\*(FR, \*(FC\-\^\-copyright\*(FR
-Print the short version of the GNU
+Print the short GNU
 copyright information on \*(FCstdout\*(FR.
 .TI "\*(FC\-d\*(FR[\*(FIfile\*(FR], \*(FC\-\^\-dump-variables\*(FR[\*(FC=\*(FIfile\*(FR]
 Print a sorted list of global variables,
@@ -292,7 +292,7 @@ Force use of the locale's decimal point character when parsing input data.
 Output a pretty printed version of the program to \*(FIfile\*(FR
 (default: \*(FCawkprof.out\*(FR).
 .TI "\*(FC\-O\*(FR, \*(FC\-\^\-optimize\*(FR
-Enable some internal optimizations.
+Enable internal optimizations (default is on).
 .TI "\*(FC\-p\*(FR[\*(FC\*(FIfile\*(FR], \*(FC\-\^\-profile\*(FR[\*(FC=\*(FIfile\*(FR]
 Send profiling data to \*(FIfile\*(FR
 (default: \*(FCawkprof.out\*(FR).
@@ -300,6 +300,9 @@ The profile contains execution counts in the left margin
 of each statement in the program.
 .TI "\*(FC\-P\*(FR, \*(FC\-\^\-posix\*(FR
 Disable common and GNU extensions.\*(CB
+.TI "\*(FC\-r\*(FR, \*(FC\-\^\-re\-interval\*(FR
+Enable \*(FIinterval expressions\*(FR.
+(Needed with \*(FC\-c\*(FR.)
 .in -4n
 .EB "\s+2\f(HBCOMMAND LINE ARGUMENTS (\*(GK\f(HB)\*(FR\s0"
 
@@ -311,9 +314,8 @@ Disable common and GNU extensions.\*(CB
 .ES
 .fi
 .in +4n
-.TI "\*(FC\-r\*(FR, \*(FC\-\^\-re\-interval\*(FR
-Enable \*(FIinterval expressions\*(FR.
-(Needed with \*(FC\-c\*(FR.)
+.TI "\*(FC\-s\*(FR, \*(FC\-\^\-no\-optimize\*(FR
+Disable internal optimizations.
 .TI "\*(FC\-S\*(FR, \*(FC\-\^\-sandbox\*(FR
 Disable the \*(FCsystem()\*(FR function,
 input redirection with \*(FCgetline\*(FR,

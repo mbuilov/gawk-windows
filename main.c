@@ -147,7 +147,7 @@ static void set_locale_stuff(void);
 static bool stopped_early = false;
 
 int do_flags = false;
-bool do_optimize = false;		/* apply default optimizations */
+bool do_optimize = true;		/* apply default optimizations */
 static int do_nostalgia = false;	/* provide a blast from the past */
 static int do_binary = false;		/* hands off my data! */
 static int do_version = false;		/* print version info */
@@ -193,6 +193,7 @@ static const struct option optab[] = {
 	{ "locale",		required_argument,	NULL,	'Z' },
 #endif
 	{ "non-decimal-data",	no_argument,		NULL,	'n' },
+	{ "no-optimize",	no_argument,		NULL,	's' },
 	{ "nostalgia",		no_argument,		& do_nostalgia,	1 },
 	{ "optimize",		no_argument,		NULL,	'O' },
 #if defined(YYDEBUG) || defined(GAWKDEBUG)
@@ -583,6 +584,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-p[file]\t\t--profile[=file]\n"), fp);
 	fputs(_("\t-P\t\t\t--posix\n"), fp);
 	fputs(_("\t-r\t\t\t--re-interval\n"), fp);
+	fputs(_("\t-s\t\t\t--no-optimize\n"), fp);
 	fputs(_("\t-S\t\t\t--sandbox\n"), fp);
 	fputs(_("\t-t\t\t\t--lint-old\n"), fp);
 	fputs(_("\t-V\t\t\t--version\n"), fp);
@@ -1428,7 +1430,7 @@ parse_args(int argc, char **argv)
 	/*
 	 * The + on the front tells GNU getopt not to rearrange argv.
 	 */
-	const char *optlist = "+F:f:v:W;bcCd::D::e:E:ghi:l:L:nNo::Op::MPrStVYZ:";
+	const char *optlist = "+F:f:v:W;bcCd::D::e:E:ghi:l:L:nNo::Op::MPrSstVYZ:";
 	int old_optind;
 	int c;
 	char *scan;
@@ -1588,6 +1590,10 @@ parse_args(int argc, char **argv)
 			do_flags |= DO_INTERVALS;
  			break;
  
+		case 's':
+			do_optimize = false;
+			break;
+
 		case 'S':
 			do_flags |= DO_SANDBOX;
   			break;
@@ -1662,6 +1668,8 @@ parse_args(int argc, char **argv)
 			break;
 	}
 out:
+	do_optimize = (do_optimize && ! do_pretty_print);
+
 	return;
 }
 

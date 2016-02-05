@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Jan 14 2016" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Feb 04 2016" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -405,17 +405,20 @@ is provided,
 uses a file named
 .B awkprof.out
 in the current directory.
+Implies
+.BR \-\^\-no\-optimize .
 .TP
 .PD 0
 .B \-O
 .TP
 .PD
 .B \-\^\-optimize
-Enable optimizations upon the internal representation of the program.
+Enable
+.IR gawk 's
+default optimizations upon the internal representation of the program.
 Currently, this includes simple constant-folding, and tail call
-elimination for recursive functions. The
-.I gawk
-maintainer hopes to add additional optimizations over time.
+elimination for recursive functions.
+This option is on by default.
 .TP
 .PD 0
 \fB\-p\fR[\fIprof-file\fR]
@@ -428,6 +431,8 @@ The default is
 .BR awkprof.out .
 The profile contains execution counts of each statement in the program
 in the left margin and function call counts for each user-defined function.
+Implies
+.BR \-\^\-no\-optimize .
 .TP
 .PD 0
 .B \-P
@@ -486,6 +491,15 @@ and
 consistent with each other.
 They are enabled by default, but this option remains for use with
 .BR \-\^\-traditional .
+.TP
+.PD 0
+.B \-s
+.TP
+.PD
+.B \-\^\-no\-optimize
+Disable
+.IR gawk 's
+default optimizations upon the internal representation of the program.
 .TP
 .PD 0
 .BI \-S
