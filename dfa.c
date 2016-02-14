@@ -3508,8 +3508,7 @@ dfainit (struct dfa *d)
 static bool _GL_ATTRIBUTE_PURE
 dfa_supported (struct dfa const *d)
 {
-  size_t i;
-  for (i = 0; i < d->tindex; i++)
+  for (size_t i = 0; i < d->tindex; i++)
     {
       switch (d->tokens[i])
         {
@@ -3964,18 +3963,15 @@ dfamust (struct dfa const *d)
 {
   must *mp = NULL;
   char const *result = "";
-  size_t ri;
   size_t i;
   bool exact = false;
   bool begline = false;
   bool endline = false;
-  size_t rj;
   bool need_begline = false;
   bool need_endline = false;
   bool case_fold_unibyte = case_fold && MB_CUR_MAX == 1;
-  struct dfamust *dm;
 
-  for (ri = 0; ri < d->tindex; ++ri)
+  for (size_t ri = 0; ri < d->tindex; ++ri)
     {
       token t = d->tokens[ri];
       switch (t)
@@ -4150,7 +4146,7 @@ dfamust (struct dfa const *d)
                 }
             }
 
-          rj = ri + 2;
+          size_t rj = ri + 2;
           if (d->tokens[ri + 1] == CAT)
             {
               for (; rj < d->tindex - 1; rj += 2)
@@ -4179,7 +4175,7 @@ dfamust (struct dfa const *d)
     }
  done:;
 
-  dm = NULL;
+  struct dfamust *dm = NULL;
   if (*result)
     {
       dm = xmalloc (sizeof *dm);
