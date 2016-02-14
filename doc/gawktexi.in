@@ -166,31 +166,6 @@
 @end macro
 @end ifdocbook
 
-@c hack for docbook, where comma shouldn't always follow an @ref{}
-@ifdocbook
-@macro DBREF{text}
-@ref{\text\}
-@end macro
-@macro DBXREF{text}
-@xref{\text\}
-@end macro
-@macro DBPXREF{text}
-@pxref{\text\}
-@end macro
-@end ifdocbook
-
-@ifnotdocbook
-@macro DBREF{text}
-@ref{\text\},
-@end macro
-@macro DBXREF{text}
-@xref{\text\},
-@end macro
-@macro DBPXREF{text}
-@pxref{\text\},
-@end macro
-@end ifnotdocbook
-
 @ifclear FOR_PRINT
 @set FN file name
 @set FFN File name
@@ -1194,7 +1169,7 @@ $\sim\! Cn^2$
 @end ifnotdocbook
 @end ifnottex
 @docbook
-<emphasis>&sim; Cn<superscript>2</superscript></emphasis> @c
+<emphasis>&sim; Cn<superscript>2</superscript></emphasis>
 @end docbook
 performance, while
 theory predicted
@@ -1207,7 +1182,7 @@ $\sim\! Cn\log n$
 @end ifnotdocbook
 @end ifnottex
 @docbook
-<emphasis>&sim; Cn log n</emphasis> @c
+<emphasis>&sim; Cn log n</emphasis>
 @end docbook
 behavior. A few minutes poring
 over the @file{awkprof.out} profile pinpointed the problem to
@@ -1477,7 +1452,7 @@ John Haque rewrote the @command{gawk} internals, in the process providing
 an @command{awk}-level debugger. This version became available as
 @command{gawk} @value{PVERSION} 4.0 in 2011.
 
-@DBXREF{Contributors}
+@xref{Contributors}
 for a full list of those who have made important contributions to @command{gawk}.
 
 @node Names
@@ -1861,7 +1836,7 @@ pressing the @kbd{d} key, and finally releasing both keys.
 
 For the sake of brevity, throughout this @value{DOCUMENT}, we refer to
 Brian Kernighan's version of @command{awk} as ``BWK @command{awk}.''
-(@DBXREF{Other Versions} for information on his and other versions.)
+(@xref{Other Versions} for information on his and other versions.)
 
 @ifset FOR_PRINT
 @quotation NOTE
@@ -2020,7 +1995,7 @@ and the major new additions are @ref{Arbitrary Precision Arithmetic},
 and @ref{Dynamic Extensions}.
 
 This @value{DOCUMENT} will undoubtedly continue to evolve.  If you
-find an error in the @value{DOCUMENT}, please report it!  @DBXREF{Bugs}
+find an error in the @value{DOCUMENT}, please report it!  @xref{Bugs}
 for information on submitting problem reports electronically.
 
 @ifset FOR_PRINT
@@ -2216,7 +2191,7 @@ portable program it is today.  It has been and continues to be a pleasure
 working with this team of fine people.
 
 Notable code and documentation contributions were made by
-a number of people. @DBXREF{Contributors} for the full list.
+a number of people. @xref{Contributors} for the full list.
 
 @ifset FOR_PRINT
 @cindex Oram, Andy
@@ -2802,7 +2777,7 @@ The shell does no interpretation of the quoted text, passing it on verbatim
 to the command.
 It is @emph{impossible} to embed a single quote inside single-quoted text.
 Refer back to
-@DBREF{Comments}
+@ref{Comments}
 for an example of what happens if you try.
 
 @item
@@ -3230,9 +3205,9 @@ no actions run.
 
 After processing all the rules that match the line (and perhaps there are none),
 @command{awk} reads the next line.  (However,
-@DBPXREF{Next Statement}
+@pxref{Next Statement}
 @ifdocbook
-and @DBREF{Nextfile Statement}.)
+and @ref{Nextfile Statement}.)
 @end ifdocbook
 @ifnotdocbook
 and also @pxref{Nextfile Statement}.)
@@ -3503,7 +3478,7 @@ and array sorting.
 
 As we develop our presentation of the @command{awk} language, we will introduce
 most of the variables and many of the functions. They are described
-systematically in @DBREF{Built-in Variables} and in
+systematically in @ref{Built-in Variables} and in
 @ref{Built-in}.
 
 @node When
@@ -4044,7 +4019,7 @@ in the left margin, and function call counts for each function.
 Operate in strict POSIX mode.  This disables all @command{gawk}
 extensions (just like @option{--traditional}) and
 disables all extensions not allowed by POSIX.
-@DBXREF{Common Extensions} for a summary of the extensions
+@xref{Common Extensions} for a summary of the extensions
 in @command{gawk} that are disabled by this option.
 Also,
 the following additional
@@ -5180,7 +5155,7 @@ with a backslash have special meaning in regexps.
 
 In a regexp, a backslash before any character that is not in the previous list
 and not listed in
-@DBREF{GNU Regexp Operators}
+@ref{GNU Regexp Operators}
 means that the next character should be taken literally, even if it would
 normally be a regexp operator.  For example, @code{/a\+b/} matches the three
 characters @samp{a+b}.
@@ -5279,7 +5254,7 @@ The escape sequences described
 @ifnotinfo
 earlier
 @end ifnotinfo
-in @DBREF{Escape Sequences}
+in @ref{Escape Sequences}
 are valid inside a regexp.  They are introduced by a @samp{\} and
 are recognized and converted into corresponding real characters as
 the very first step in processing regexps.
@@ -5514,7 +5489,7 @@ Within a bracket expression, a @dfn{range expression} consists of two
 characters separated by a hyphen.  It matches any single character that
 sorts between the two characters, based upon the system's native character
 set.  For example, @samp{[0-9]} is equivalent to @samp{[0123456789]}.
-(See @DBREF{Ranges and Locales} for an explanation of how the POSIX
+(See @ref{Ranges and Locales} for an explanation of how the POSIX
 standard and @command{gawk} have changed over time.  This is mainly
 of historical interest.)
 
@@ -6420,7 +6395,7 @@ The empty string @code{""} (a string without any characters)
 has a special meaning
 as the value of @code{RS}. It means that records are separated
 by one or more blank lines and nothing else.
-@DBXREF{Multiple Line} for more details.
+@xref{Multiple Line} for more details.
 
 If you change the value of @code{RS} in the middle of an @command{awk} run,
 the new value is used to delimit subsequent records, but the record
@@ -6484,7 +6459,7 @@ $ @kbd{echo record 1 AAAA record 2 BBBB record 3 |}
 The square brackets delineate the contents of @code{RT}, letting you
 see the leading and trailing whitespace. The final value of
 @code{RT} is a newline.
-@DBXREF{Simple Sed} for a more useful example
+@xref{Simple Sed} for a more useful example
 of @code{RS} as a regexp and @code{RT}.
 
 If you set @code{RS} to a regular expression that allows optional
@@ -6551,8 +6526,8 @@ character as a record separator. However, this is a special case:
 
 @cindex records, treating files as
 @cindex treating files, as single records
-@DBXREF{Readfile Function} for an interesting way to read
-whole files.  If you are using @command{gawk}, see @DBREF{Extension Sample
+@xref{Readfile Function} for an interesting way to read
+whole files.  If you are using @command{gawk}, see @ref{Extension Sample
 Readfile} for another option.
 @end sidebar
 
@@ -6797,9 +6772,9 @@ else
 
 @noindent
 should print @samp{everything is normal}, because @code{NF+1} is certain
-to be out of range.  (@DBXREF{If Statement}
+to be out of range.  (@xref{If Statement}
 for more information about @command{awk}'s @code{if-else} statements.
-@DBXREF{Typing and Comparison}
+@xref{Typing and Comparison}
 for more information about the @samp{!=} operator.)
 
 It is important to note that making an assignment to an existing field
@@ -7496,7 +7471,7 @@ else
 This information is useful when writing a function
 that needs to temporarily change @code{FS} or @code{FIELDWIDTHS},
 read some records, and then restore the original settings
-(@DBPXREF{Passwd Functions}
+(@pxref{Passwd Functions}
 for an example of such a function).
 
 @node Splitting By Content
@@ -7763,7 +7738,7 @@ $ @kbd{awk -f addrs.awk addresses}
 @dots{}
 @end example
 
-@DBXREF{Labels Program} for a more realistic program dealing with
+@xref{Labels Program} for a more realistic program dealing with
 address lists.  The following list summarizes how records are split,
 based on the value of
 @ifinfo
@@ -7852,7 +7827,7 @@ If @code{ERRNO} indicates that the I/O operation may be
 retried, and @code{PROCINFO["@var{input}", "RETRY"]} is set,
 then @code{getline} returns @minus{}2
 instead of @minus{}1, and further calls to @code{getline}
-may be attemped.  @DBXREF{Retrying Input} for further information about
+may be attemped.  @xref{Retrying Input} for further information about
 this feature.
 
 In the following examples, @var{command} stands for a string value that
@@ -8093,7 +8068,7 @@ One deficiency of this program is that it does not process nested
 @code{@@include} statements
 (i.e., @code{@@include} statements in included files)
 the way a true macro preprocessor would.
-@DBXREF{Igawk Program} for a program
+@xref{Igawk Program} for a program
 that does handle nested @code{@@include} statements.
 
 @node Getline/Pipe
@@ -8509,7 +8484,7 @@ on a per-command or per-connection basis.
 the attempt to read from the underlying device may
 succeed in a later attempt. This is a limitation, and it also
 means that you cannot use this to multiplex input from
-two or more sources.  @DBXREF{Retrying Input} for a way to enable 
+two or more sources.  @xref{Retrying Input} for a way to enable 
 later I/O attempts to succeed.
 
 Assigning a timeout value prevents read operations from
@@ -8573,7 +8548,7 @@ If either of the @option{--posix}
 or @option{--traditional} options is given, then @command{gawk} reverts
 to treating a directory on the command line as a fatal error.
 
-@DBXREF{Extension Sample Readdir} for a way to treat directories
+@xref{Extension Sample Readdir} for a way to treat directories
 as usable data from an @command{awk} program.
 
 @node Input Summary
@@ -8686,7 +8661,7 @@ The @code{print} statement is not limited when
 computing @emph{which} values to print. However, with two exceptions,
 you cannot specify @emph{how} to print them---how many
 columns, whether to use exponential notation or not, and so on.
-(For the exceptions, @DBPXREF{Output Separators} and
+(For the exceptions, @pxref{Output Separators} and
 @ref{OFMT}.)
 For printing with specifications, you need the @code{printf} statement
 (@pxref{Printf}).
@@ -9584,7 +9559,7 @@ close(report)
 
 The @code{close()} function is called here because it's a good idea to close
 the pipe as soon as all the intended output has been sent to it.
-@DBXREF{Close Files And Pipes}
+@xref{Close Files And Pipes}
 for more information.
 
 This example also illustrates the use of a variable to represent
@@ -9615,9 +9590,9 @@ for a brief discussion.
 for a more complete discussion.
 @end ifnotdocbook
 @ifdocbook
-@DBXREF{Getline/Coprocess}
+@xref{Getline/Coprocess}
 for a brief discussion and
-@DBREF{Two-way I/O}
+@ref{Two-way I/O}
 for a more complete discussion.
 @end ifdocbook
 @end table
@@ -9691,7 +9666,7 @@ The program builds up a list of command lines,
 using the @command{mv} utility to rename the files.
 It then sends the list to the shell for execution.
 
-@DBXREF{Shell Quoting} for a function that can help in generating
+@xref{Shell Quoting} for a function that can help in generating
 command lines to be fed to the shell.
 @end sidebar
 
@@ -10409,7 +10384,7 @@ you can use the @code{strtonum()} function
 to convert the data into a number.
 Most of the time, you will want to use octal or hexadecimal constants
 when working with the built-in bit-manipulation functions;
-see @DBREF{Bitwise Functions}
+see @ref{Bitwise Functions}
 for more information.
 
 Unlike in some early C implementations, @samp{8} and @samp{9} are not
@@ -10613,7 +10588,7 @@ array parameters (@pxref{String Functions}).
 @cindex variables, initializing
 A few variables have special built-in meanings, such as @code{FS} (the
 field separator) and @code{NF} (the number of fields in the current input
-record).  @DBXREF{Built-in Variables} for a list of the predefined variables.
+record).  @xref{Built-in Variables} for a list of the predefined variables.
 These predefined variables can be used and assigned just like all other
 variables, but their values are also used or changed automatically by
 @command{awk}.  All predefined variables' names are entirely uppercase.
@@ -10654,7 +10629,7 @@ as in the following:
 the variable is set at the very beginning, even before the
 @code{BEGIN} rules execute.  The @option{-v} option and its assignment
 must precede all the @value{FN} arguments, as well as the program text.
-(@DBXREF{Options} for more information about
+(@xref{Options} for more information about
 the @option{-v} option.)
 Otherwise, the variable assignment is performed at a time determined by
 its position among the input file arguments---after the processing of the
@@ -10788,7 +10763,7 @@ specifies the output format to use when printing numbers with @code{print}.
 conversion from the semantics of printing.  Both @code{CONVFMT} and
 @code{OFMT} have the same default value: @code{"%.6g"}.  In the vast majority
 of cases, old @command{awk} programs do not change their behavior.
-@DBXREF{Print} for more information on the @code{print} statement.
+@xref{Print} for more information on the @code{print} statement.
 @end sidebar
 
 @node Locale influences conversions
@@ -11289,10 +11264,10 @@ The indices of @code{bar} are practically guaranteed to be different, because
 @xref{Arrays},
 and
 @ifnotdocbook
-@DBPXREF{Numeric Functions}
+@pxref{Numeric Functions}
 @end ifnotdocbook
 @ifdocbook
-@DBREF{Numeric Functions}
+@ref{Numeric Functions}
 @end ifdocbook
 for more information.)
 This example illustrates an important fact about assignment
@@ -11416,7 +11391,6 @@ has the value four, but it changes the value of @code{foo} to five.
 In other words, the operator returns the old value of the variable,
 but with the side effect of incrementing it.
 
-@c FIXME: Use @sup here for superscript
 The post-increment @samp{foo++} is nearly the same as writing @samp{(foo
 += 1) - 1}.  It is not perfectly equivalent because all numbers in
 @command{awk} are floating point---in floating point, @samp{foo + 1 - 1} does
@@ -11425,14 +11399,14 @@ long as you stick to numbers that are fairly small (less than
 @iftex
 @math{10^{12}}).
 @end iftex
-@ifnottex
-@ifnotdocbook
+@ifinfo
 10e12).
-@end ifnotdocbook
+@end ifinfo
+@ifnottex
+@ifnotinfo
+10@sup{12}).
+@end ifnotinfo
 @end ifnottex
-@docbook
-10<superscript>12</superscript>). @c
-@end docbook
 
 @cindex @code{$} (dollar sign), incrementing fields and arrays
 @cindex dollar sign (@code{$}), incrementing fields and arrays
@@ -12212,10 +12186,10 @@ example, the function @code{sqrt()} computes the square root of a number.
 @cindex functions, built-in
 A fixed set of functions are @dfn{built in}, which means they are
 available in every @command{awk} program.  The @code{sqrt()} function is one
-of these.  @DBXREF{Built-in} for a list of built-in
+of these.  @xref{Built-in} for a list of built-in
 functions and their descriptions.  In addition, you can define
 functions for use in your program.
-@DBXREF{User-defined}
+@xref{User-defined}
 for instructions on how to do this.
 Finally, @command{gawk} lets you write functions in C or C++
 that may be called from your program (@pxref{Dynamic Extensions}).
@@ -12258,7 +12232,7 @@ Some of the built-in functions have one or
 more optional arguments.
 If those arguments are not supplied, the functions
 use a reasonable default value.
-@DBXREF{Built-in} for full details.  If arguments
+@xref{Built-in} for full details.  If arguments
 are omitted in calls to user-defined functions, then those arguments are
 treated as local variables. Such local variables act like the
 empty string if referenced where a string value is required,
@@ -12973,7 +12947,7 @@ The order in which library functions are named on the command line
 controls the order in which their @code{BEGIN} and @code{END} rules are
 executed.  Therefore, you have to be careful when writing such rules in
 library files so that the order in which they are executed doesn't matter.
-@DBXREF{Options} for more information on
+@xref{Options} for more information on
 using library functions.
 @xref{Library Functions},
 for a number of useful library functions.
@@ -13037,12 +13011,12 @@ Finally, the @code{next} and @code{nextfile} statements are not allowed
 in a @code{BEGIN} rule, because the implicit
 read-a-record-and-match-against-the-rules loop has not started yet.  Similarly, those statements
 are not valid in an @code{END} rule, because all the input has been read.
-(@DBXREF{Next Statement} and
+(@xref{Next Statement} and
 @ifnotdocbook
-@DBPXREF{Nextfile Statement}.)
+@pxref{Nextfile Statement}.)
 @end ifnotdocbook
 @ifdocbook
-@DBREF{Nextfile Statement}.)
+@ref{Nextfile Statement}.)
 @end ifdocbook
 
 @node BEGINFILE/ENDFILE
@@ -13614,7 +13588,7 @@ for (i in array)
 @end example
 
 @noindent
-@DBXREF{Scanning an Array}
+@xref{Scanning an Array}
 for more information on this version of the @code{for} loop.
 
 @node Switch Statement
@@ -13999,7 +13973,7 @@ In such a case,
 if you don't want the @code{END} rule to do its job, set a variable
 to a nonzero value before the @code{exit} statement and check that variable in
 the @code{END} rule.
-@DBXREF{Assert Function}
+@xref{Assert Function}
 for an example that does this.
 
 @cindex dark corner, @code{exit} statement
@@ -14010,7 +13984,7 @@ In the case where an argument
 is supplied to a first @code{exit} statement, and then @code{exit} is
 called a second time from an @code{END} rule with no argument,
 @command{awk} uses the previously supplied exit value.  @value{DARKCORNER}
-@DBXREF{Exit Status} for more information.
+@xref{Exit Status} for more information.
 
 @cindex programming conventions, @code{exit} statement
 For example, suppose an error condition occurs that is difficult or
@@ -14120,7 +14094,7 @@ A space-separated list of columns that tells @command{gawk}
 how to split input with fixed columnar boundaries.
 Assigning a value to @code{FIELDWIDTHS}
 overrides the use of @code{FS} and @code{FPAT} for field splitting.
-@DBXREF{Constant Size} for more information.
+@xref{Constant Size} for more information.
 
 @cindex @command{gawk}, @code{FPAT} variable in
 @cindex @code{FPAT} variable
@@ -14132,7 +14106,7 @@ A regular expression (as a string) that tells @command{gawk}
 to create the fields based on text that matches the regular expression.
 Assigning a value to @code{FPAT}
 overrides the use of @code{FS} and @code{FIELDWIDTHS} for field splitting.
-@DBXREF{Splitting By Content} for more information.
+@xref{Splitting By Content} for more information.
 
 @cindex @code{FS} variable
 @cindex separators, field
@@ -14347,7 +14321,7 @@ method of accessing command-line arguments.
 The value of @code{ARGV[0]} can vary from system to system.
 Also, you should note that the program text is @emph{not} included in
 @code{ARGV}, nor are any of @command{awk}'s command-line options.
-@DBXREF{ARGC and ARGV} for information
+@xref{ARGC and ARGV} for information
 about how @command{awk} uses these variables.
 @value{DARKCORNER}
 
@@ -14399,9 +14373,9 @@ Some operating systems may not have environment variables.
 On such systems, the @code{ENVIRON} array is empty (except for
 @w{@code{ENVIRON["AWKPATH"]}} and
 @w{@code{ENVIRON["AWKLIBPATH"]}};
-@DBPXREF{AWKPATH Variable} and
+@pxref{AWKPATH Variable} and
 @ifdocbook
-@DBREF{AWKLIBPATH Variable}).
+@ref{AWKLIBPATH Variable}).
 @end ifdocbook
 @ifnotdocbook
 @pxref{AWKLIBPATH Variable}).
@@ -14629,20 +14603,20 @@ The following elements allow you to change @command{gawk}'s behavior:
 @table @code
 @item PROCINFO["NONFATAL"]
 If this element exists, then I/O errors for all output redirections become nonfatal.
-@DBXREF{Nonfatal}.
+@xref{Nonfatal}.
 
 @item PROCINFO["@var{output_name}", "NONFATAL"]
 Make output errors for @var{output_name} be nonfatal.
-@DBXREF{Nonfatal}.
+@xref{Nonfatal}.
 
 @item PROCINFO["@var{command}", "pty"]
 For two-way communication to @var{command}, use a pseudo-tty instead
 of setting up a two-way pipe.
-@DBXREF{Two-way I/O} for more information.
+@xref{Two-way I/O} for more information.
 
 @item PROCINFO["@var{input_name}", "READ_TIMEOUT"]
 Set a timeout for reading from input redirection @var{input_name}.
-@DBXREF{Read Timeout} for more information.
+@xref{Read Timeout} for more information.
 
 @item PROCINFO["sorted_in"]
 If this element exists in @code{PROCINFO}, its value controls the
@@ -14772,7 +14746,7 @@ changed.
 @cindex arguments, command-line
 @cindex command line, arguments
 
-@DBREF{Auto-set}
+@ref{Auto-set}
 presented the following program describing the information contained in @code{ARGC}
 and @code{ARGV}:
 
@@ -14842,12 +14816,12 @@ use the @code{delete} statement to remove elements from
 
 All of these actions are typically done in the @code{BEGIN} rule,
 before actual processing of the input begins.
-@DBXREF{Split Program} and
+@xref{Split Program} and
 @ifnotdocbook
-@DBPXREF{Tee Program}
+@pxref{Tee Program}
 @end ifnotdocbook
 @ifdocbook
-@DBREF{Tee Program}
+@ref{Tee Program}
 @end ifdocbook
 for examples
 of each way of removing elements from @code{ARGV}.
@@ -14897,20 +14871,20 @@ gawk -f myprog.awk -q -v file1 file2 @dots{}
 @noindent
 Because @option{-q} is not a valid @command{gawk} option, it and the
 following @option{-v} are passed on to the @command{awk} program.
-(@DBXREF{Getopt Function} for an @command{awk} library function that
+(@xref{Getopt Function} for an @command{awk} library function that
 parses command-line options.)
 
 When designing your program, you should choose options that don't
 conflict with @command{gawk}'s, because it will process any options
 that it accepts before passing the rest of the command line on to
 your program.  Using @samp{#!} with the @option{-E} option may help
-(@DBPXREF{Executable Scripts}
+(@pxref{Executable Scripts}
 and
 @ifnotdocbook
-@DBPXREF{Options}).
+@pxref{Options}).
 @end ifnotdocbook
 @ifdocbook
-@DBREF{Options}).
+@ref{Options}).
 @end ifdocbook
 
 @node Pattern Action Summary
@@ -15517,7 +15491,7 @@ the word as the index.  The second rule scans the elements of @code{used} to
 find all the distinct words that appear in the input.  It prints each
 word that is more than 10 characters long and also prints the number of
 such words.
-@DBXREF{String Functions}
+@xref{String Functions}
 for more information on the built-in function @code{length()}.
 
 @example
@@ -15540,7 +15514,7 @@ END @{
 @end example
 
 @noindent
-@DBXREF{Word Sorting}
+@xref{Word Sorting}
 for a more detailed example of this type.
 
 @cindex arrays, elements, order of access by @code{in} operator
@@ -16288,7 +16262,7 @@ for (i in a) @{
 @end example
 
 @noindent
-@DBXREF{Walking Arrays} for a user-defined function that ``walks'' an
+@xref{Walking Arrays} for a user-defined function that ``walks'' an
 arbitrarily dimensioned array of arrays.
 
 Recall that a reference to an uninitialized array element yields a value
@@ -16693,7 +16667,7 @@ together.
 The following description ignores the third argument, @var{how}, as it
 requires understanding features that we have not discussed yet.  Thus,
 the discussion here is a deliberate simplification.  (We do provide all
-the details later on; see @DBREF{Array Sorting Functions} for the full story.)
+the details later on; see @ref{Array Sorting Functions} for the full story.)
 @end quotation
 
 Both functions return the number of elements in the array @var{source}.
@@ -16868,7 +16842,7 @@ contrast, @code{length(15 * 35)} works out to three. In this example,
 @end ifnotdocbook
 @end ifnottex
 @docbook
-15 &sdot; 35 = 525, @c
+15 &sdot; 35 = 525,
 @end docbook
 and 525 is then converted to the string @code{"525"}, which has
 three characters.
@@ -16940,7 +16914,7 @@ at which that substring begins (one, if it starts at the beginning of
 The @var{regexp} argument may be either a regexp constant
 (@code{/}@dots{}@code{/}) or a string constant (@code{"}@dots{}@code{"}).
 In the latter case, the string is treated as a regexp to be matched.
-@DBXREF{Computed Regexps} for a
+@xref{Computed Regexps} for a
 discussion of the difference between the two forms, and the
 implications for writing your program correctly.
 
@@ -17137,7 +17111,7 @@ Modern implementations of @command{awk}, including @command{gawk}, allow
 the third argument to be a regexp constant (@w{@code{/}@dots{}@code{/}})
 as well as a string.  @value{DARKCORNER}
 The POSIX standard allows this as well.
-@DBXREF{Computed Regexps} for a
+@xref{Computed Regexps} for a
 discussion of the difference between using a string constant or a regexp constant,
 and the implications for writing your program correctly.
 
@@ -17188,7 +17162,7 @@ Using the @code{strtonum()} function is @emph{not} the same as adding zero
 to a string value; the automatic coercion of strings to numbers
 works only for decimal data, not for octal or hexadecimal.@footnote{Unless
 you use the @option{--non-decimal-data} option, which isn't recommended.
-@DBXREF{Nondecimal Data} for more information.}
+@xref{Nondecimal Data} for more information.}
 
 Note also that @code{strtonum()} uses the current locale's decimal point
 for recognizing numbers (@pxref{Locales}).
@@ -17206,7 +17180,7 @@ Return the number of substitutions made (zero or one).
 The @var{regexp} argument may be either a regexp constant
 (@code{/}@dots{}@code{/}) or a string constant (@code{"}@dots{}@code{"}).
 In the latter case, the string is treated as a regexp to be matched.
-@DBXREF{Computed Regexps} for a
+@xref{Computed Regexps} for a
 discussion of the difference between the two forms, and the
 implications for writing your program correctly.
 
@@ -17710,7 +17684,7 @@ Optional parameters are enclosed in square brackets ([ ]):
 Close the file @var{filename} for input or output. Alternatively, the
 argument may be a shell command that was used for creating a coprocess, or
 for redirecting to or from a pipe; then the coprocess or pipe is closed.
-@DBXREF{Close Files And Pipes}
+@xref{Close Files And Pipes}
 for more information.
 
 When closing a coprocess, it is occasionally useful to first close
@@ -17958,19 +17932,18 @@ All known POSIX-compliant systems support timestamps from 0 through
 @iftex
 @math{2^{31} - 1},
 @end iftex
-@ifnottex
-@ifnotdocbook
+@ifinfo
 2^31 - 1,
-@end ifnotdocbook
+@end ifinfo
+@ifnottex
+@ifnotinfo
+2@sup{31} @minus{} 1,
+@end ifnotinfo
 @end ifnottex
-@docbook
-2<superscript>31</superscript> &minus; 1, @c
-@end docbook
 which is sufficient to represent times through
 2038-01-19 03:14:07 UTC.  Many systems support a wider range of timestamps,
 including negative timestamps that represent times before the
 epoch.
-@c FIXME: Use @sup here for superscript
 
 @cindex @command{date} utility, GNU
 @cindex time, retrieving
@@ -19933,7 +19906,7 @@ It contains the following chapters:
 @cindex functions, library
 @cindex functions, user-defined, library of
 
-@DBREF{User-defined} describes how to write
+@ref{User-defined} describes how to write
 your own @command{awk} functions.  Writing functions is important, because
 it allows you to encapsulate algorithms and program tasks in a single
 place.  It simplifies programming, making program development more
@@ -19966,7 +19939,7 @@ use these functions.
 The functions are presented here in a progression from simple to complex.
 
 @cindex Texinfo
-@DBREF{Extract Program}
+@ref{Extract Program}
 presents a program that you can use to extract the source code for
 these example library functions and programs from the Texinfo source
 for this @value{DOCUMENT}.
@@ -20118,7 +20091,7 @@ A different convention, common in the Tcl community, is to use a single
 associative array to hold the values needed by the library function(s), or
 ``package.''  This significantly decreases the number of actual global names
 in use.  For example, the functions described in
-@DBREF{Passwd Functions}
+@ref{Passwd Functions}
 might have used array elements @code{@w{PW_data["inited"]}}, @code{@w{PW_data["total"]}},
 @code{@w{PW_data["count"]}}, and @code{@w{PW_data["awklib"]}}, instead of
 @code{@w{_pw_inited}}, @code{@w{_pw_awklib}}, @code{@w{_pw_total}},
@@ -20677,7 +20650,7 @@ more difficult than they really need to be.}
 @cindex timestamps, formatted
 @cindex time, managing
 The @code{systime()} and @code{strftime()} functions described in
-@DBREF{Time Functions}
+@ref{Time Functions}
 provide the minimum functionality necessary for dealing with the time of day
 in human-readable form.  Although @code{strftime()} is extensive, the control
 formats are not necessarily easy to remember or intuitively obvious when
@@ -20763,7 +20736,7 @@ function getlocaltime(time,    ret, now, i)
 
 The string indices are easier to use and read than the various formats
 required by @code{strftime()}.  The @code{alarm} program presented in
-@DBREF{Alarm Program}
+@ref{Alarm Program}
 uses this function.
 A more general design for the @code{getlocaltime()} function would have
 allowed the user to supply an optional timestamp value to use instead
@@ -20830,7 +20803,7 @@ will never match if the file has contents.  @command{gawk} reads data from
 the file into @code{tmp}, attempting to match @code{RS}.  The match fails
 after each read, but fails quickly, such that @command{gawk} fills
 @code{tmp} with the entire contents of the file.
-(@DBXREF{Records} for information on @code{RT} and @code{RS}.)
+(@xref{Records} for information on @code{RT} and @code{RS}.)
 
 In the case that @code{file} is empty, the return value is the null
 string.  Thus, calling code may use something like:
@@ -20844,7 +20817,7 @@ if (length(contents) == 0)
 This tests the result to see if it is empty or not. An equivalent
 test would be @samp{contents == ""}.
 
-@DBXREF{Extension Sample Readfile} for an extension function that
+@xref{Extension Sample Readfile} for an extension function that
 also reads an entire file into memory.
 
 @node Shell Quoting
@@ -21043,7 +21016,7 @@ END @{ endfile(_filename_) @}
 @c endfile
 @end example
 
-@DBREF{Wc Program}
+@ref{Wc Program}
 shows how this library function can be used and
 how it simplifies writing the main program.
 
@@ -21641,7 +21614,7 @@ Using @samp{#!} with the @option{-E} option may help avoid
 conflicts between your program's options and @command{gawk}'s options,
 as @option{-E} causes @command{gawk} to abandon processing of
 further options
-(@DBPXREF{Executable Scripts} and
+(@pxref{Executable Scripts} and
 @ifnotdocbook
 @pxref{Options}).
 @end ifnotdocbook
@@ -21669,7 +21642,7 @@ However, because these are numbers, they do not provide very useful
 information to the average user.  There needs to be some way to find the
 user information associated with the user and group ID numbers.  This
 @value{SECTION} presents a suite of functions for retrieving information from the
-user database.  @DBXREF{Group Functions}
+user database.  @xref{Group Functions}
 for a similar suite that retrieves information from the group database.
 
 @cindex @code{getpwent()} function (C library)
@@ -22003,7 +21976,7 @@ once.  If you are worried about squeezing every last cycle out of your
 this is not necessary, as most @command{awk} programs are I/O-bound,
 and such a change would clutter up the code.
 
-The @command{id} program in @DBREF{Id Program}
+The @command{id} program in @ref{Id Program}
 uses these functions.
 
 @node Group Functions
@@ -22021,7 +21994,7 @@ uses these functions.
 @cindex group file
 @cindex files, group
 Much of the discussion presented in
-@DBREF{Passwd Functions}
+@ref{Passwd Functions}
 applies to the group database as well.  Although there has traditionally
 been a well-known file (@file{/etc/group}) in a well-known format, the POSIX
 standard only provides a set of C library routines
@@ -22358,13 +22331,13 @@ Most of the work is in scanning the database and building the various
 associative arrays.  The functions that the user calls are themselves very
 simple, relying on @command{awk}'s associative arrays to do work.
 
-The @command{id} program in @DBREF{Id Program}
+The @command{id} program in @ref{Id Program}
 uses these functions.
 
 @node Walking Arrays
 @section Traversing Arrays of Arrays
 
-@DBREF{Arrays of Arrays} described how @command{gawk}
+@ref{Arrays of Arrays} described how @command{gawk}
 provides arrays of arrays.  In particular, any element of
 an array may be either a scalar or another array. The
 @code{isarray()} function (@pxref{Type Functions})
@@ -22577,7 +22550,7 @@ an intervening value in @code{ARGV} is a variable assignment.
 @ignore
 @c June 13 2015: Antonio points out that this is answered in the text. Ooops.
 @item
-@DBREF{Walking Arrays} presented a function that walked a multidimensional
+@ref{Walking Arrays} presented a function that walked a multidimensional
 array to print it out.  However, walking an array and processing
 each element is a general-purpose operation.  Generalize the
 @code{walk_array()} function by adding an additional parameter named
@@ -24601,7 +24574,7 @@ of lines on the page
 @end ifnotdocbook
 @end ifnottex
 @docbook
-(20 &sdot; 5 = 100). @c
+(20 &sdot; 5 = 100).
 @end docbook
 
 Most of the work is done in the @code{printpage()} function.
@@ -25980,7 +25953,7 @@ the separator can considerably simplify such tasks.
 
 @item
 The examples here demonstrate the usefulness of the library
-functions from @DBREF{Library Functions}
+functions from @ref{Library Functions}
 for a number of real (if small) programs.
 
 @item
@@ -26311,7 +26284,7 @@ Often, though, it is desirable to be able to loop over the elements
 in a particular order that you, the programmer, choose.  @command{gawk}
 lets you do this.
 
-@DBREF{Controlling Scanning} describes how you can assign special,
+@ref{Controlling Scanning} describes how you can assign special,
 predefined values to @code{PROCINFO["sorted_in"]} in order to
 control the order in which @command{gawk} traverses an array
 during a @code{for} loop.
@@ -26336,7 +26309,7 @@ Here, @code{i1} and @code{i2} are the indices, and @code{v1} and @code{v2}
 are the corresponding values of the two elements being compared.
 Either @code{v1} or @code{v2}, or both, can be arrays if the array being
 traversed contains subarrays as values.
-(@DBXREF{Arrays of Arrays} for more information about subarrays.)
+(@xref{Arrays of Arrays} for more information about subarrays.)
 The three possible return values are interpreted as follows:
 
 @table @code
@@ -27853,7 +27826,7 @@ BEGIN @{
 
 @end enumerate
 
-@DBXREF{I18N Example}
+@xref{I18N Example}
 for an example program showing the steps to create
 and use translations from @command{awk}.
 
@@ -27914,7 +27887,7 @@ second argument to @code{dcngettext()}.@footnote{The
 You should distribute the generated @file{.pot} file with
 your @command{awk} program; translators will eventually use it
 to provide you translations that you can also then distribute.
-@DBXREF{I18N Example}
+@xref{I18N Example}
 for the full list of steps to go through to create and test
 translations for @command{guide}.
 
@@ -29825,31 +29798,16 @@ signed. The possible ranges of values are shown in @ref{table-numeric-ranges}.
 @item Single-precision floating point (approximate) @tab @math{1.175494^{-38}} @tab @math{3.402823^{38}}
 @item Double-precision floating point (approximate) @tab @math{2.225074^{-308}} @tab @math{1.797693^{308}}
 @end iftex
-@ifnottex
-@ifnotdocbook
+@ifinfo
 @item Single-precision floating point (approximate) @tab 1.175494e-38 @tab 3.402823e38
 @item Double-precision floating point (approximate) @tab 2.225074e-308 @tab 1.797693e308
-@end ifnotdocbook
+@end ifinfo
+@ifnottex
+@ifnotinfo
+@item Single-precision floating point (approximate) @tab 1.175494@sup{-38} @tab 3.402823@sup{38}
+@item Double-precision floating point (approximate) @tab 2.225074@sup{-308} @tab 1.797693@sup{308}
+@end ifnotinfo
 @end ifnottex
-@ifdocbook
-@item Single-precision floating point (approximate) @tab
-@c FIXME: Use @sup here for superscript
-@docbook
-1.175494<superscript>-38</superscript>
-@end docbook
-@tab
-@docbook
-3.402823<superscript>38</superscript>
-@end docbook
-@item Double-precision floating point (approximate) @tab
-@docbook
-2.225074<superscript>-308</superscript>
-@end docbook
-@tab
-@docbook
-1.797693<superscript>308</superscript>
-@end docbook
-@end ifdocbook
 @end multitable
 @end float
 
@@ -29917,7 +29875,7 @@ formula:
 @end ifnotdocbook
 @end ifnottex
 @docbook
-<emphasis>prec</emphasis> = 3.322 &sdot; <emphasis>dps</emphasis> @c
+<emphasis>prec</emphasis> = 3.322 &sdot; <emphasis>dps</emphasis>
 @end docbook
 @end display
 
@@ -30009,7 +29967,7 @@ Two predefined variables, @code{PREC} and @code{ROUNDMODE},
 provide control over the working precision and the rounding mode.
 The precision and the rounding mode are set globally for every operation
 to follow.
-@DBXREF{Setting precision} and @DBREF{Setting the rounding mode}
+@xref{Setting precision} and @ref{Setting the rounding mode}
 for more information.
 
 @node FP Math Caution
@@ -30443,17 +30401,16 @@ the following computes
 @iftex
 @math{5^{4^{3^{2}}}},
 @end iftex
-@ifnottex
-@ifnotdocbook
+@ifinfo
 5^4^3^2,
-@end ifnotdocbook
+@end ifinfo
+@ifnottex
+@ifnotinfo
+5@sup{4@sup{3@sup{2}}},
+@end ifnotinfo
 @end ifnottex
-@docbook
-5<superscript>4<superscript>3<superscript>2</superscript></superscript></superscript>, @c
-@end docbook
 the result of which is beyond the
 limits of ordinary hardware double-precision floating-point values:
-@c FIXME: Use @sup here for superscript
 
 @example
 $ @kbd{gawk -M 'BEGIN @{}
@@ -30481,7 +30438,7 @@ would be 3.322 x 183231,
 @docbook
 <emphasis>prec</emphasis> = 3.322 &sdot; <emphasis>dps</emphasis>)
 would be
-<emphasis>prec</emphasis> = 3.322 &sdot; 183231, @c
+<emphasis>prec</emphasis> = 3.322 &sdot; 183231,
 @end docbook
 or 608693.
 
@@ -31027,7 +30984,7 @@ The API also provides major and minor version numbers, so that an
 extension can check if the @command{gawk} it is loaded with supports the
 facilities it was compiled with.  (Version mismatches ``shouldn't''
 happen, but we all know how @emph{that} goes.)
-@DBXREF{Extension Versioning} for details.
+@xref{Extension Versioning} for details.
 @end itemize
 
 @node Extension API Description
@@ -32253,7 +32210,7 @@ indicates the type of value expected.
 @item awk_bool_t set_argument(size_t count, awk_array_t array);
 Convert a parameter that was undefined into an array; this provides
 call by reference for arrays.  Return false if @code{count} is too big,
-or if the argument's type is not undefined.  @DBXREF{Array Manipulation}
+or if the argument's type is not undefined.  @xref{Array Manipulation}
 for more information on creating arrays.
 @end table
 
@@ -32671,7 +32628,7 @@ The following functions relate to arrays as a whole:
 @table @code
 @item awk_array_t create_array(void);
 Create a new array to which elements may be added.
-@DBXREF{Creating Arrays} for a discussion of how to
+@xref{Creating Arrays} for a discussion of how to
 create a new array and add elements to it.
 
 @item awk_bool_t clear_array(awk_array_t a_cookie);
@@ -33100,7 +33057,7 @@ $ @kbd{AWKLIBPATH=$PWD ./gawk -f subarray.awk}
 @end example
 
 @noindent
-(@DBXREF{Finding Extensions} for more information on the
+(@xref{Finding Extensions} for more information on the
 @env{AWKLIBPATH} environment variable.)
 
 @node Redirection API
@@ -33404,7 +33361,7 @@ Compiled extensions have to be installed in a directory where
 built in the default fashion, the directory in which to find
 extensions is @file{/usr/local/lib/gawk}.  You can also specify a search
 path with a list of directories to search for compiled extensions.
-@DBXREF{AWKLIBPATH Variable} for more information.
+@xref{AWKLIBPATH Variable} for more information.
 
 @node Extension Example
 @section Example: Some File Functions
@@ -33983,7 +33940,7 @@ of the @file{gawkapi.h} header file,
 the following steps@footnote{In practice, you would probably want to
 use the GNU Autotools (Automake, Autoconf, Libtool, and @command{gettext}) to
 configure and build your libraries. Instructions for doing so are beyond
-the scope of this @value{DOCUMENT}. @DBXREF{gawkextlib} for Internet links to
+the scope of this @value{DOCUMENT}. @xref{gawkextlib} for Internet links to
 the tools.} create a GNU/Linux shared library:
 
 @example
@@ -35240,7 +35197,7 @@ The ability to delete all of an array at once with @samp{delete @var{array}}
 
 @end itemize
 
-@DBXREF{Common Extensions} for a list of common extensions
+@xref{Common Extensions} for a list of common extensions
 not permitted by the POSIX standard.
 
 The 2008 POSIX standard can be found online at
@@ -35285,7 +35242,7 @@ or array elements through it
 @end ignore
 @end itemize
 
-@DBXREF{Common Extensions} for a full list of the extensions
+@xref{Common Extensions} for a full list of the extensions
 available in his @command{awk}.
 
 @node POSIX/GNU
@@ -36736,7 +36693,7 @@ This appendix provides instructions for installing @command{gawk} on the
 various platforms that are supported by the developers.  The primary
 developer supports GNU/Linux (and Unix), whereas the other ports are
 contributed.
-@DBXREF{Bugs}
+@xref{Bugs}
 for the email addresses of the people who maintain
 the respective ports.
 
@@ -37028,11 +36985,11 @@ Files needed for building @command{gawk} under MS-Windows
 @ifclear FOR_PRINT
 and OS/2
 @end ifclear
-(@DBPXREF{PC Installation} for details).
+(@pxref{PC Installation} for details).
 
 @item vms/*
 Files needed for building @command{gawk} under Vax/VMS and OpenVMS
-(@DBPXREF{VMS Installation} for details).
+(@pxref{VMS Installation} for details).
 
 @item test/*
 A test suite for
@@ -37272,7 +37229,7 @@ Autoconf will not work on your system in some other fashion.
 If you do have a problem, the @file{configure.ac} file is the input for
 Autoconf.  You may be able to change this file and generate a
 new version of @command{configure} that works on your system
-(@DBPXREF{Bugs}
+(@pxref{Bugs}
 for information on how to report problems in configuring @command{gawk}).
 The same mechanism may be used to send in updates to @file{configure.ac}
 and/or @file{custom.h}.
@@ -37747,7 +37704,7 @@ The most recent builds used HP C V7.3 on Alpha VMS 8.3 and both
 Alpha and IA64 VMS 8.4 used HP C 7.3.@footnote{The IA64 architecture
 is also known as ``Itanium.''}
 
-@DBXREF{VMS GNV} for information on building
+@xref{VMS GNV} for information on building
 @command{gawk} as a PCSI kit that is compatible with the GNV product.
 
 @node VMS Dynamic Extensions
@@ -38267,7 +38224,7 @@ directory named @file{awk}.
 This version requires an ISO C (1990 standard) compiler; the C compiler
 from GCC (the GNU Compiler Collection) works quite nicely.
 
-@DBXREF{Common Extensions}
+@xref{Common Extensions}
 for a list of extensions in this @command{awk} that are not in POSIX @command{awk}.
 
 As a side note, Dan Bornstein has created a Git repository tracking
@@ -38303,7 +38260,7 @@ Once you have it,
 is similar to @command{gawk}'s
 (@pxref{Unix Installation}).
 
-@DBXREF{Common Extensions}
+@xref{Common Extensions}
 for a list of extensions in @command{mawk} that are not in POSIX @command{awk}.
 
 @cindex Sumner, Andrew
@@ -38531,7 +38488,7 @@ as well as any considerations you should bear in mind.
 @appendixsubsec Accessing The @command{gawk} Git Repository
 
 As @command{gawk} is Free Software, the source code is always available.
-@DBREF{Gawk Distribution} describes how to get and build the formal,
+@ref{Gawk Distribution} describes how to get and build the formal,
 released versions of @command{gawk}.
 
 @cindex @command{git} utility
