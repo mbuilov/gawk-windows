@@ -25,7 +25,7 @@
 
 #include "awk.h"
 
-static void pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header);
+static void pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags);
 static void end_line(INSTRUCTION *ip);
 static void pp_parenthesize(NODE *n);
 static void parenthesize(int type, NODE *left, NODE *right);
@@ -39,7 +39,6 @@ static bool is_scalar(int type);
 static int prec_level(int type);
 static void pp_push(int type, char *s, int flag);
 static NODE *pp_pop(void);
-static void pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header);
 static void print_comment(INSTRUCTION *pc, long in);
 const char *redir2str(int redirtype);
 
@@ -61,8 +60,11 @@ static FILE *prof_fp;	/* where to send the profile */
 
 static long indent_level = 0;
 
-
 #define SPACEOVER	0
+
+#define NO_PPRINT_FLAGS	0
+#define IN_FOR_HEADER	1
+#define IN_ELSE_IF	2
 
 /* set_prof_file --- set the output file for profiling or pretty-printing */
 
@@ -193,7 +195,7 @@ pp_free(NODE *n)
 /* pprint --- pretty print a program segment */
 
 static void
-pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
+pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 {
 	INSTRUCTION *pc;
 	NODE *t1;
@@ -250,7 +252,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 				ip1 = pc->nexti;
 				indent(ip1->exec_count);
 				if (ip1 != (pc + 1)->firsti) {		/* non-empty pattern */
-					pprint(ip1->nexti, (pc + 1)->firsti, false);
+					pprint(ip1->nexti, (pc + 1)->firsti, NO_PPRINT_FLAGS);
 					/* Allow for case where the "pattern" is just a comment  */
 					if (ip1->nexti->nexti->nexti != (pc +1)->firsti
 					    || ip1->nexti->opcode != Op_comment) {
@@ -274,7 +276,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 				ip1 = ip1->nexti;
 			}
 			indent_in();
-			pprint(ip1, ip2, false);
+			pprint(ip1, ip2, NO_PPRINT_FLAGS);
 			indent_out();
 			if (do_profile)
 				indent(0);
@@ -363,7 +365,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 cleanup:
 				pp_free(t2);
 				pp_free(t1);
-				if (! in_for_header)
+				if ((flags & IN_FOR_HEADER) == 0)
 					end_line(pc);
 				break;
 
@@ -385,7 +387,7 @@ cleanup:
 
 		case Op_and:
 		case Op_or:
-			pprint(pc->nexti, pc->target_jmp, in_for_header);
+			pprint(pc->nexti, pc->target_jmp, flags);
 			t2 = pp_pop();
 			t1 = pp_pop();
 			parenthesize(pc->opcode, t1, t2);
@@ -489,7 +491,7 @@ cleanup:
 			fprintf(prof_fp, "$%s%s%s", t1->pp_str, op2str(pc->opcode), t2->pp_str);
 			pp_free(t2);
 			pp_free(t1);
-			if (! in_for_header)
+			if ((flags & IN_FOR_HEADER) == 0)
 				end_line(pc);
 			break; 
 
@@ -510,7 +512,7 @@ cleanup:
 				efree(sub);
 			} else 				
 				fprintf(prof_fp, "%s %s", op2str(Op_K_delete), array);
-			if (! in_for_header)
+			if ((flags & IN_FOR_HEADER) == 0)
 				end_line(pc);
 			pp_free(t1);
 		}
@@ -622,7 +624,7 @@ cleanup:
 			} else
 				fprintf(prof_fp, "%s%s", op2str(pc->opcode), tmp);
 			efree(tmp);
-			if (! in_for_header)
+			if ((flags & IN_FOR_HEADER) == 0)
 				end_line(pc);
 			break;
 
@@ -748,15 +750,15 @@ cleanup:
 		case Op_pop:
 			t1 = pp_pop();
 			fprintf(prof_fp, "%s", t1->pp_str);
-			if (! in_for_header)
+			if ((flags & IN_FOR_HEADER) == 0)
 				end_line(pc);
 			pp_free(t1);
 			break;
 
 		case Op_line_range:
 			ip1 = pc + 1;
-			pprint(pc->nexti, ip1->condpair_left, false);
-			pprint(ip1->condpair_left->nexti, ip1->condpair_right, false);
+			pprint(pc->nexti, ip1->condpair_left, NO_PPRINT_FLAGS);
+			pprint(ip1->condpair_left->nexti, ip1->condpair_right, NO_PPRINT_FLAGS);
 			t2 = pp_pop();
 			t1 = pp_pop();
 			str = pp_group3(t1->pp_str, ", ", t2->pp_str);
@@ -770,12 +772,12 @@ cleanup:
 			ip1 = pc + 1;
 			indent(ip1->while_body->exec_count);
 			fprintf(prof_fp, "%s (", op2str(pc->opcode));
-			pprint(pc->nexti, ip1->while_body, false);
+			pprint(pc->nexti, ip1->while_body, NO_PPRINT_FLAGS);
 			t1 = pp_pop();
 			fprintf(prof_fp, "%s) {\n", t1->pp_str);
 			pp_free(t1);
 			indent_in();
-			pprint(ip1->while_body->nexti, pc->target_break, false);
+			pprint(ip1->while_body->nexti, pc->target_break, NO_PPRINT_FLAGS);
 			indent_out();
 			indent(SPACEOVER);
 			fprintf(prof_fp, "}\n");
@@ -787,9 +789,9 @@ cleanup:
 			indent(pc->nexti->exec_count);
 			fprintf(prof_fp, "%s {\n", op2str(pc->opcode));
 			indent_in();
-			pprint(pc->nexti->nexti, ip1->doloop_cond, false);
+			pprint(pc->nexti->nexti, ip1->doloop_cond, NO_PPRINT_FLAGS);
 			indent_out();
-			pprint(ip1->doloop_cond, pc->target_break, false);
+			pprint(ip1->doloop_cond, pc->target_break, NO_PPRINT_FLAGS);
 			indent(SPACEOVER);
 			t1 = pp_pop();
 			fprintf(prof_fp, "} %s (%s)\n", op2str(Op_K_while), t1->pp_str);
@@ -808,24 +810,24 @@ cleanup:
 			    && pc->target_continue->opcode == Op_jmp) {
 				fprintf(prof_fp, ";;");
 			} else {
-				pprint(pc->nexti, ip1->forloop_cond, true);
+				pprint(pc->nexti, ip1->forloop_cond, IN_FOR_HEADER);
 				fprintf(prof_fp, "; ");
 
 				if (ip1->forloop_cond->opcode == Op_no_op &&
 						ip1->forloop_cond->nexti == ip1->forloop_body)
 					fprintf(prof_fp, "; ");
 				else {
-					pprint(ip1->forloop_cond, ip1->forloop_body, true);
+					pprint(ip1->forloop_cond, ip1->forloop_body, IN_FOR_HEADER);
 					t1 = pp_pop();
 					fprintf(prof_fp, "%s; ", t1->pp_str);
 					pp_free(t1);
 				}
 
-				pprint(pc->target_continue, pc->target_break, true);
+				pprint(pc->target_continue, pc->target_break, IN_FOR_HEADER);
 			}
 			fprintf(prof_fp, ") {\n");
 			indent_in();
-			pprint(ip1->forloop_body->nexti, pc->target_continue, false);
+			pprint(ip1->forloop_body->nexti, pc->target_continue, NO_PPRINT_FLAGS);
 			indent_out();
 			indent(SPACEOVER);
 			fprintf(prof_fp, "}\n");
@@ -850,7 +852,7 @@ cleanup:
 						item, op2str(Op_in_array), array);
 			indent_in();
 			pp_free(t1);
-			pprint(ip1->forloop_body->nexti, pc->target_break, false);
+			pprint(ip1->forloop_body->nexti, pc->target_break, NO_PPRINT_FLAGS);
 			indent_out();
 			indent(SPACEOVER);
 			fprintf(prof_fp, "}\n");			
@@ -861,11 +863,11 @@ cleanup:
 		case Op_K_switch:
 			ip1 = pc + 1;
 			fprintf(prof_fp, "%s (", op2str(pc->opcode));
-			pprint(pc->nexti, ip1->switch_start, false);
+			pprint(pc->nexti, ip1->switch_start, NO_PPRINT_FLAGS);
 			t1 = pp_pop();
 			fprintf(prof_fp, "%s) {\n", t1->pp_str);
 			pp_free(t1);
-			pprint(ip1->switch_start, ip1->switch_end, false);
+			pprint(ip1->switch_start, ip1->switch_end, NO_PPRINT_FLAGS);
 			indent(SPACEOVER);
 			fprintf(prof_fp, "}\n");
 			pc = pc->target_break;
@@ -881,13 +883,13 @@ cleanup:
 			} else
 				fprintf(prof_fp, "%s:\n", op2str(pc->opcode));
 			indent_in();
-			pprint(pc->stmt_start->nexti, pc->stmt_end->nexti, false);
+			pprint(pc->stmt_start->nexti, pc->stmt_end->nexti, NO_PPRINT_FLAGS);
 			indent_out();
 			break;
 
 		case Op_K_if:
 			fprintf(prof_fp, "%s (", op2str(pc->opcode));
-			pprint(pc->nexti, pc->branch_if, false);
+			pprint(pc->nexti, pc->branch_if, NO_PPRINT_FLAGS);
 			t1 = pp_pop();
 			fprintf(prof_fp, "%s) {", t1->pp_str);
 			pp_free(t1);
@@ -897,22 +899,47 @@ cleanup:
 				fprintf(prof_fp, " # %ld", ip1->exec_count);
 			end_line(pc);
 			indent_in();
-			pprint(ip1->nexti, pc->branch_else, false);
+			pprint(ip1->nexti, pc->branch_else, NO_PPRINT_FLAGS);
 			indent_out();
 			pc = pc->branch_else;
-			if (pc->nexti->opcode == Op_no_op) {
+			if (pc->nexti->opcode == Op_no_op) {	/* no following else */
 				indent(SPACEOVER);
 				fprintf(prof_fp, "}\n");
 			}
+			/*
+			 * See next case; turn off the flag so that the
+			 * following else is correctly indented.
+			 */
+			flags &= ~IN_ELSE_IF;
 			break;
 
 		case Op_K_else:
-			fprintf(prof_fp, "} %s {\n", op2str(pc->opcode));
-			indent_in();
-			pprint(pc->nexti, pc->branch_end, false);
-			indent_out();
-			indent(SPACEOVER);
-			fprintf(prof_fp, "}\n");
+			/*
+			 * If possible, chain else-if's together on the
+			 * same line.
+			 *
+			 * See awkgram.y:mk_condition to understand
+			 * what is being checked here.
+			 *
+			 * Op_exec_count follows Op_K_else, check the
+			 * opcode of the following instruction.
+			 * Additionally, check that the subsequent if
+			 * terminates where this else does; in that case
+			 * it's ok to compact the if to follow the else.
+			 */
+
+			fprintf(prof_fp, "} %s ", op2str(pc->opcode));
+			if (pc->nexti->nexti->opcode == Op_K_if
+			    && pc->branch_end == pc->nexti->nexti->branch_else->lasti) {
+				pprint(pc->nexti, pc->branch_end, IN_ELSE_IF);
+			} else {
+				fprintf(prof_fp, "{\n", op2str(pc->opcode));
+				indent_in();
+				pprint(pc->nexti, pc->branch_end, NO_PPRINT_FLAGS);
+				indent_out();
+				indent(SPACEOVER);
+				fprintf(prof_fp, "}\n");
+			}
 			pc = pc->branch_end;
 			break;
 
@@ -921,14 +948,14 @@ cleanup:
 			NODE *f, *t, *cond;
 			size_t len;
 
-			pprint(pc->nexti, pc->branch_if, false);
+			pprint(pc->nexti, pc->branch_if, NO_PPRINT_FLAGS);
 			ip1 = pc->branch_if;
-			pprint(ip1->nexti, pc->branch_else, false);
+			pprint(ip1->nexti, pc->branch_else, NO_PPRINT_FLAGS);
 			ip1 = pc->branch_else->nexti;
 
 			pc = ip1->nexti;
 			assert(pc->opcode == Op_cond_exp);
-			pprint(pc->nexti, pc->branch_end, false);	
+			pprint(pc->nexti, pc->branch_end, NO_PPRINT_FLAGS);	
 
 			f = pp_pop();
 			t = pp_pop();
@@ -947,7 +974,7 @@ cleanup:
 			break;			
 
 		case Op_exec_count:
-			if (! in_for_header)
+			if (flags == NO_PPRINT_FLAGS)
 				indent(pc->exec_count);
 			break;
 
@@ -1097,7 +1124,7 @@ dump_prog(INSTRUCTION *code)
 	if (do_profile)
 		fprintf(prof_fp, _("\t# gawk profile, created %s\n"), ctime(& now));
 	print_lib_list(prof_fp);
-	pprint(code, NULL, false);
+	pprint(code, NULL, NO_PPRINT_FLAGS);
 }
 
 /* prec_level --- return the precedence of an operator, for paren tests */
@@ -1708,7 +1735,7 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 		indent(0);
 	fprintf(prof_fp, "{\n");
 	indent_in();
-	pprint(fp, NULL, false);	/* function body */
+	pprint(fp, NULL, NO_PPRINT_FLAGS);	/* function body */
 	indent_out();
 	if (do_profile)
 		indent(0);

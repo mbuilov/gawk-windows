@@ -773,15 +773,11 @@ function _BASE(c, t, P, A)
 		if (match(t, /^((--([Vv])ersion)|(-([Vv])))[ \t]*/, A)) {
 			t = substr(t, RLENGTH + 1)
 			_cmdln_version = A[3] A[5]
-		} else {
-			if (match(t, /^((-?\?)|(--help))[ \t]*/)) {
-				t = substr(t, RLENGTH + 1)
-				_cmdln_help = 1
-			} else {
-				if (match(t, /^--[ \t]*/)) {
-					return _endpass(substr(t, RLENGTH + 1))
-				}
-			}
+		} else if (match(t, /^((-?\?)|(--help))[ \t]*/)) {
+			t = substr(t, RLENGTH + 1)
+			_cmdln_help = 1
+		} else if (match(t, /^--[ \t]*/)) {
+			return _endpass(substr(t, RLENGTH + 1))
 		}
 		return t
 		#___________________________________________________________
@@ -1389,11 +1385,9 @@ function _Zimport(t, p, A, c, i, n, B)
 				_tLOG[n = _wLCHLD(p, _N())][""]
 				delete _tLOG[n][""]
 				_Zimparr(_tLOG[n], substr(t, 10))
-			} else {
-				if ((t = _pass(_IMPORT, t, p, A)) != "") {
-					gsub(/\x1B\x3B/, "\033", t)
-					_wLCHLD(p, _N(_tSTR, t))
-				}
+			} else if ((t = _pass(_IMPORT, t, p, A)) != "") {
+				gsub(/\x1B\x3B/, "\033", t)
+				_wLCHLD(p, _N(_tSTR, t))
 			}
 		}
 		return p
@@ -1622,10 +1616,8 @@ function _cfguid(p, optr, pfx, sfx, hstrcnt, lstrchr)
 		if (optr == p) {
 			delete _UIDOBLV[p]
 			delete _UIDOBLV[_UIDOBLV[_UIDOBL[p] = p][""] = p][""]
-		} else {
-			if (optr in _UIDOBL) {
-				_UIDOBL[p] = _UIDOBL[optr]
-			}
+		} else if (optr in _UIDOBL) {
+			_UIDOBL[p] = _UIDOBL[optr]
 		}
 	}
 	_UIDPFX[p] = (_istr(pfx) ? pfx : "")
@@ -1723,11 +1715,9 @@ function _cmparr(A0, A1, R, a, i)
 		if (! (i in A1)) {
 			a++
 			R[i] = 0
-		} else {
-			if (A0[i] != A1[i]) {
-				a++
-				R[i] = 2
-			}
+		} else if (A0[i] != A1[i]) {
+			a++
+			R[i] = 2
 		}
 	}
 	for (i in A1) {
@@ -1909,10 +1899,8 @@ function _defescarr(D, r, S, i, c, t)
 			if ((c = _CHR[i]) ~ r) {
 				D[c] = "\\" S[c]
 				t = t c
-			} else {
-				if (D[c] == "") {
-					D[c] = c
-				}
+			} else if (D[c] == "") {
+				D[c] = c
 			}
 		}
 	} else {
@@ -1922,10 +1910,8 @@ function _defescarr(D, r, S, i, c, t)
 				if (S != "") {
 					t = t c
 				}
-			} else {
-				if (D[c] == "") {
-					D[c] = c
-				}
+			} else if (D[c] == "") {
+				D[c] = c
 			}
 		}
 	}
@@ -2106,10 +2092,8 @@ function _dirtree_i0(B, i, c, A, f, lf, a, C)
 			} else {
 				return i
 			}
-		} else {
-			if (match(B[i++], /^([^ \t\-]+)\-([^ \t\-]+)\-([^ \t]+)[ \t]+([^ \t]+)[ \t]+([0-9]+)[ \t]+(.+)$/, C)) {
-				A[f][f C[6]] = C[5] " " C[1] "/" _CHR["MONTH"][C[2]] "/" C[3] " " C[4]
-			}
+		} else if (match(B[i++], /^([^ \t\-]+)\-([^ \t\-]+)\-([^ \t]+)[ \t]+([^ \t]+)[ \t]+([0-9]+)[ \t]+(.+)$/, C)) {
+			A[f][f C[6]] = C[5] " " C[1] "/" _CHR["MONTH"][C[2]] "/" C[3] " " C[4]
 		}
 	}
 	return i
@@ -2125,13 +2109,11 @@ function _dll_check(pp)
 		if (_dllchktv != _[pp][".Product Version"]) {
 			_dllerr(_[pp]["AGENT"], "agent version (" _[pp][".Product Version"] ") do not match all lib versions: " _dllchktv "'")
 		}
+	} else if (! _missfl) {
+		_creport(pp, "agent not detected in registry")
 	} else {
-		if (! _missfl) {
-			_creport(pp, "agent not detected in registry")
-		} else {
-			_dllerr(pp, "agent not detected in registry but some registry entries exist:")
-			_tframe("_dll_check_i1", pp, pp)
-		}
+		_dllerr(pp, "agent not detected in registry but some registry entries exist:")
+		_tframe("_dll_check_i1", pp, pp)
 	}
 }
 
@@ -2168,10 +2150,8 @@ function _dll_check_i0(p, R, pp, p2, i, i2, r, f, v, rs, d, tv, tf)
 				} else {
 					if (_dllchktv == "") {
 						_dllchktv = v
-					} else {
-						if (v != _dllchktv) {
-							return _dllerr(p, "different versions detected: " _dllchktv "!=" v "'")
-						}
+					} else if (v != _dllchktv) {
+						return _dllerr(p, "different versions detected: " _dllchktv "!=" v "'")
 					}
 					ERRNO = ""
 					if (_th1(_[p]["DATA"] = _rdfile(f), ERRNO)) {
@@ -2652,13 +2632,11 @@ function _file_check_i0(p, pp, p1, p2, f, v)
 			return _dllerr(p, " file version mismatch: ==`" _[p]["VERSION"] "'; !=`" v "'", f)
 		}
 		_creport(p, substr("OK:    FILE DETECTED" ((v == "" ? "" : "(" v ")")) ": " f, 1, 122))
-	} else {
-		if (_[p]["TYPE"] == "defdir") {
-			if (_filexist(f = _[p]["DIR"])) {
-				_creport(p, substr("OK:    DIR DETECTED: " f, 1, 112))
-			} else {
-				_dllerr(p, "directory " f " is not detected")
-			}
+	} else if (_[p]["TYPE"] == "defdir") {
+		if (_filexist(f = _[p]["DIR"])) {
+			_creport(p, substr("OK:    DIR DETECTED: " f, 1, 112))
+		} else {
+			_dllerr(p, "directory " f " is not detected")
 		}
 	}
 }
@@ -3450,14 +3428,12 @@ function _inituid(p, cs, dptr, pfx, sfx, hstr, lstr, A)
 			lstr = A[3] "+"
 			hstr = ""
 		}
+	} else if (match(cs, /^(([^'\xB4\|]*\xB4.)*[^'\xB4\|]*)(\|(.*))?/, A)) {
+		hstr = A[1]
+		lstr = A[4]
 	} else {
-		if (match(cs, /^(([^'\xB4\|]*\xB4.)*[^'\xB4\|]*)(\|(.*))?/, A)) {
-			hstr = A[1]
-			lstr = A[4]
-		} else {
-			ERRNO = "_inituid(): bad parameters"
-			return 
-		}
+		ERRNO = "_inituid(): bad parameters"
+		return 
 	}
 	_conl(dptr ":" pfx "'" hstr "|" lstr "'" sfx)
 	return _cfguid(p, dptr, pfx, sfx, hstr, lstr)
@@ -3831,24 +3807,18 @@ function _nN_i0(p, F, v)
 			F[p][""]
 			delete F[p][""]
 			_copyarr(F[p], v)
-		} else {
-			if (! (v == 0 && v == "")) {
-				F[p] = v
-			}
+		} else if (! (v == 0 && v == "")) {
+			F[p] = v
 		}
-	} else {
-		if (! (F == 0 && F == "")) {
-			if (isarray(v)) {
-				_[p][F][""]
-				delete _[p][F][""]
-				_copyarr(_[p][F], v)
-			} else {
-				if (v == 0 && v == "") {
-					_mpu(F, p)
-				} else {
-					_[p][F] = v
-				}
-			}
+	} else if (! (F == 0 && F == "")) {
+		if (isarray(v)) {
+			_[p][F][""]
+			delete _[p][F][""]
+			_copyarr(_[p][F], v)
+		} else if (v == 0 && v == "") {
+			_mpu(F, p)
+		} else {
+			_[p][F] = v
 		}
 	}
 	return p
@@ -4049,24 +4019,22 @@ function _patharr0(D, q, i, h, A, B)
 		if (RLENGTH > 0) {
 			D["type"] = toupper(substr(A[1], 1, RLENGTH - 1))
 			_patharr0_i0(i, D, "site", "port")
-		} else {
-			if (A[1] == "") {
-				D["type"] = "UNC"
-				if (h > 2) {
-					D["host"]
-					A[2] = _patharr0_i0(A[2], D, "drive", "", "FILE")
-					return _patharr0_i1(D, A, 2, q)
-				}
-				if (i == "") {
-					return 1
-				}
-				D["host"] = i
-				A[3] = _patharr0_i0(A[3], D, "drive", "", "FILE")
-			} else {
-				D["type"] = "FILE"
-				A[1] = _patharr0_i0(A[1], D, "drive")
-				return _patharr0_i1(D, A, 1, q)
+		} else if (A[1] == "") {
+			D["type"] = "UNC"
+			if (h > 2) {
+				D["host"]
+				A[2] = _patharr0_i0(A[2], D, "drive", "", "FILE")
+				return _patharr0_i1(D, A, 2, q)
 			}
+			if (i == "") {
+				return 1
+			}
+			D["host"] = i
+			A[3] = _patharr0_i0(A[3], D, "drive", "", "FILE")
+		} else {
+			D["type"] = "FILE"
+			A[1] = _patharr0_i0(A[1], D, "drive")
+			return _patharr0_i1(D, A, 1, q)
 		}
 		return _patharr0_i1(D, A, 3, q)
 	}
@@ -4086,10 +4054,8 @@ function _patharr0_i0(t, D, l, r, d, i)
 			D[r] = t
 		}
 		return t
-	} else {
-		if (t && r) {
-			D[l] = t
-		}
+	} else if (t && r) {
+		D[l] = t
 	}
 	return t
 }
@@ -4113,10 +4079,8 @@ function _patharr0_i1(D, A, i, q, t, c)
 				D["name"] = substr(t, 1, RSTART - 1)
 			}
 			D["ext"] = substr(t, RSTART, RLENGTH)
-		} else {
-			if (t != "") {
-				D["name"] = t
-			}
+		} else if (t != "") {
+			D["name"] = t
 		}
 	}
 	return 1
@@ -4244,12 +4208,10 @@ function _qparam(qm, p0, p1, p2, p3, p4, p5, p6, p7)
 {
 	if (qm == qm + 0 && qm > 0) {
 		_qparamim = substr("        ", 1, qm)
+	} else if (qm != "") {
+		_qparamim = qm
 	} else {
-		if (qm != "") {
-			_qparamim = qm
-		} else {
-			_qparamim = "        "
-		}
+		_qparamim = "        "
 	}
 	_qparamask = ""
 	return _qparam_i0(p0, p1, p2, p3, p4, p5, p6, p7)
@@ -4266,16 +4228,12 @@ function _qparam_i0(p0, p1, p2, p3, p4, p5, p6, p7)
 	default:
 		if (isarray(p0)) {
 			_qparama0 = "A"
+		} else if (p0 == "" && p0 == 0) {
+			_qparama0 = " "
+		} else if (_isptr(p0)) {
+			_qparama0 = "P"
 		} else {
-			if (p0 == "" && p0 == 0) {
-				_qparama0 = " "
-			} else {
-				if (_isptr(p0)) {
-					_qparama0 = "P"
-				} else {
-					_qparama0 = "S"
-				}
-			}
+			_qparama0 = "S"
 		}
 	case ".":
 		_qparamask = _qparamask _qparama0
@@ -4593,11 +4551,9 @@ function _rdreg_i0(D, A)
 			} else {
 				break
 			}
-		} else {
-			if (_rdregp0 ~ /^HK/) {
-				++_rdregkey
-				return D[_rdregp0 = _rdregp0 "\\"]
-			}
+		} else if (_rdregp0 ~ /^HK/) {
+			++_rdregkey
+			return D[_rdregp0 = _rdregp0 "\\"]
 		}
 	}
 	return 1
@@ -4686,12 +4642,10 @@ function _reg_check_i0(p, pp, p1, p2)
 				} else {
 					_dllerr(p, substr("REGENTRY NOT MATCH(!=" _[p]["VALUE"] "): " _[p]["REGPATH"], 1, 126))
 				}
+			} else if (_VAR[_[p]["REGPATH"]] == _REG[_[p]["REGPATH"]]) {
+				_creport(p, substr("OK:    REGPATH MATCH(==" _VAR[_[p]["REGPATH"]] "): " _[p]["REGPATH"], 1, 126))
 			} else {
-				if (_VAR[_[p]["REGPATH"]] == _REG[_[p]["REGPATH"]]) {
-					_creport(p, substr("OK:    REGPATH MATCH(==" _VAR[_[p]["REGPATH"]] "): " _[p]["REGPATH"], 1, 126))
-				} else {
-					_dllerr(p, substr("REGPATH NOT MATCH(!=" _VAR[_[p]["REGPATH"]] "): " _[p]["REGPATH"], 1, 126))
-				}
+				_dllerr(p, substr("REGPATH NOT MATCH(!=" _VAR[_[p]["REGPATH"]] "): " _[p]["REGPATH"], 1, 126))
 			}
 		} else {
 			_dllerr(p, substr("REGPATH NOT FOUND: " _[p]["REGPATH"], 1, 126))
@@ -4952,26 +4906,24 @@ function _rrdreg(DD, p, k, t, v, c, i, q, tT, A, B, C, D)
 				if (D[7]) {
 					t = "STR"
 					v = _unstr(D[8])
+				} else if (D[10]) {
+					t = "W32"
+					v = D[11]
 				} else {
-					if (D[10]) {
-						t = "W32"
-						v = D[11]
-					} else {
-						v = D[15]
-						if (D[13]) {
-							switch (D[14]) {
-							case "2":
-								t = "XSZ"
-								break
-							case "7":
-								t = "MSZ"
-								break
-							default:
-								t = "W64"
-							}
-						} else {
-							t = "BIN"
+					v = D[15]
+					if (D[13]) {
+						switch (D[14]) {
+						case "2":
+							t = "XSZ"
+							break
+						case "7":
+							t = "MSZ"
+							break
+						default:
+							t = "W64"
 						}
+					} else {
+						t = "BIN"
 					}
 				}
 				DD[gensub(/(\\)\\+/, "\\1", "G", p "\\" _unstr(D[3] ((D[5] ? "(Default)" : ""))) "." t)] = v
@@ -5202,56 +5154,34 @@ function _shortcut(D, S)
 	if (isarray(D)) {
 		if (isarray(S)) {
 			_addarrmask(D, S, _SHORTCUTWSTRUC)
-		} else {
-			if (S == 0 && S == "") {
-				_addarrmask(D, _SHORTCUTDEFAULT, _SHORTCUTWSTRUC)
-			} else {
-				if (_isnotfileptr(S)) {
-					_addarrmask(D, _[S], _SHORTCUTWSTRUC)
-				} else {
-					if (_rd_shortcut(D, S)) {
-						return 
-					}
-				}
-			}
+		} else if (S == 0 && S == "") {
+			_addarrmask(D, _SHORTCUTDEFAULT, _SHORTCUTWSTRUC)
+		} else if (_isnotfileptr(S)) {
+			_addarrmask(D, _[S], _SHORTCUTWSTRUC)
+		} else if (_rd_shortcut(D, S)) {
+			return 
+		}
+	} else if (D == 0 && D == "") {
+		return _NOP
+	} else if (_isnotfileptr(D)) {
+		if (isarray(S)) {
+			_addarrmask(_[D], S, _SHORTCUTWSTRUC)
+		} else if (S == 0 && S == "") {
+			_addarrmask(_[D], _SHORTCUTDEFAULT, _SHORTCUTWSTRUC)
+		} else if (_isnotfileptr(S)) {
+			_addarrmask(_[D], _[S], _SHORTCUTWSTRUC)
+		} else if (_rd_shortcut(_[D], S)) {
+			return 
 		}
 	} else {
-		if (D == 0 && D == "") {
-			return _NOP
-		} else {
-			if (_isnotfileptr(D)) {
-				if (isarray(S)) {
-					_addarrmask(_[D], S, _SHORTCUTWSTRUC)
-				} else {
-					if (S == 0 && S == "") {
-						_addarrmask(_[D], _SHORTCUTDEFAULT, _SHORTCUTWSTRUC)
-					} else {
-						if (_isnotfileptr(S)) {
-							_addarrmask(_[D], _[S], _SHORTCUTWSTRUC)
-						} else {
-							if (_rd_shortcut(_[D], S)) {
-								return 
-							}
-						}
-					}
-				}
-			} else {
-				if (isarray(S) && _wr_shortcut(D, S)) {
-					return 
-				} else {
-					if (S == 0 && S == "" && _wr_shortcut(D, _SHORTCUTDEFAULT)) {
-						return 
-					} else {
-						if (_isnotfileptr(S) && _wr_shortcut(D, _[S])) {
-							return 
-						} else {
-							if (_rd_shortcut(_SHRTCUTA1, S) || _wr_shortcut(D, _SHRTCUTA1)) {
-								return 
-							}
-						}
-					}
-				}
-			}
+		if (isarray(S) && _wr_shortcut(D, S)) {
+			return 
+		} else if (S == 0 && S == "" && _wr_shortcut(D, _SHORTCUTDEFAULT)) {
+			return 
+		} else if (_isnotfileptr(S) && _wr_shortcut(D, _[S])) {
+			return 
+		} else if (_rd_shortcut(_SHRTCUTA1, S) || _wr_shortcut(D, _SHRTCUTA1)) {
+			return 
 		}
 	}
 	return 1
@@ -5273,14 +5203,12 @@ function _shortcut_init(A, B, q)
 		if (match(_SHRTCUTA0[q], /^([^\t]+)\t+([^\t]+)(\t+([^\t]+)(\t+([^\t]+))?)?/, B)) {
 			if (B[3] == "") {
 				_SHORTCUTRSTRUC[B[2]] = B[1]
+			} else if (B[5] == "") {
+				_SHORTCUTWSTRUC[_SHORTCUTRSTRUC[B[4]] = B[1]] = B[2]
+				delete _SHORTCUTDEFAULT[B[1]]
 			} else {
-				if (B[5] == "") {
-					_SHORTCUTWSTRUC[_SHORTCUTRSTRUC[B[4]] = B[1]] = B[2]
-					delete _SHORTCUTDEFAULT[B[1]]
-				} else {
-					_SHORTCUTWSTRUC[_SHORTCUTRSTRUC[B[4]] = B[1]] = B[2]
-					_SHORTCUTDEFAULT[B[1]] = B[6]
-				}
+				_SHORTCUTWSTRUC[_SHORTCUTRSTRUC[B[4]] = B[1]] = B[2]
+				_SHORTCUTDEFAULT[B[1]] = B[6]
 			}
 		} else {
 			_fatal("_shortcut.init: _shortcut_struc: syntax error: `" _SHRTCUTA0[q] "'")
@@ -5825,46 +5753,38 @@ function _tbrochld(p, f, pp)
 				}
 				return f
 			}
-		} else {
-			if (p in _tPARENT) {
-				pp = _tPARENT[p]
-				delete _tPARENT[p]
-				if (p in _tPREV) {
-					if (p in _tNEXT) {
-						_tNEXT[_tPREV[f] = _tPREV[p]] = f = _tNEXT[p]
-						delete _tNEXT[p]
-					} else {
-						delete _tNEXT[_tLCHLD[pp] = _tPREV[p]]
-					}
-					delete _tPREV[p]
-					_tQCHLD[pp]--
+		} else if (p in _tPARENT) {
+			pp = _tPARENT[p]
+			delete _tPARENT[p]
+			if (p in _tPREV) {
+				if (p in _tNEXT) {
+					_tNEXT[_tPREV[f] = _tPREV[p]] = f = _tNEXT[p]
+					delete _tNEXT[p]
 				} else {
-					if (p in _tNEXT) {
-						delete _tPREV[_tFCHLD[pp] = _tNEXT[p]]
-						delete _tNEXT[p]
-						_tQCHLD[pp]--
-					} else {
-						delete _tFCHLD[pp]
-						delete _tLCHLD[pp]
-						delete _tQCHLD[pp]
-					}
+					delete _tNEXT[_tLCHLD[pp] = _tPREV[p]]
 				}
+				delete _tPREV[p]
+				_tQCHLD[pp]--
+			} else if (p in _tNEXT) {
+				delete _tPREV[_tFCHLD[pp] = _tNEXT[p]]
+				delete _tNEXT[p]
+				_tQCHLD[pp]--
 			} else {
-				if (p in _tPREV) {
-					if (p in _tNEXT) {
-						_tNEXT[_tPREV[f] = _tPREV[p]] = f = _tNEXT[p]
-						delete _tNEXT[p]
-					} else {
-						delete _tNEXT[_tPREV[p]]
-					}
-					delete _tPREV[p]
-				} else {
-					if (p in _tNEXT) {
-						delete _tPREV[_tNEXT[p]]
-						delete _tNEXT[p]
-					}
-				}
+				delete _tFCHLD[pp]
+				delete _tLCHLD[pp]
+				delete _tQCHLD[pp]
 			}
+		} else if (p in _tPREV) {
+			if (p in _tNEXT) {
+				_tNEXT[_tPREV[f] = _tPREV[p]] = f = _tNEXT[p]
+				delete _tNEXT[p]
+			} else {
+				delete _tNEXT[_tPREV[p]]
+			}
+			delete _tPREV[p]
+		} else if (p in _tNEXT) {
+			delete _tPREV[_tNEXT[p]]
+			delete _tNEXT[p]
 		}
 	}
 	return p
@@ -5902,10 +5822,8 @@ function _tdel(p, i)
 		for (i in _ptr[p]) {
 			if (isarray(_ptr[p][i])) {
 				_tdel_i1(_ptr[p][i])
-			} else {
-				if (i = _ptr[p][i]) {
-					_tdel(i)
-				}
+			} else if (i = _ptr[p][i]) {
+				_tdel(i)
 			}
 		}
 		if (p in _tFCHLD) {
@@ -5925,10 +5843,8 @@ function _tdel_i0(p, i)
 	for (i in _ptr[p]) {
 		if (isarray(_ptr[p][i])) {
 			_tdel_i1(_ptr[p][i])
-		} else {
-			if (i = _ptr[p][i]) {
-				_tdel(i)
-			}
+		} else if (i = _ptr[p][i]) {
+			_tdel(i)
 		}
 	}
 	if (p in _tFCHLD) {
@@ -5947,10 +5863,8 @@ function _tdel_i1(A, i)
 	for (i in A) {
 		if (isarray(A[i])) {
 			_tdel_i1(A[i])
-		} else {
-			if (i = A[i]) {
-				_tdel(i)
-			}
+		} else if (i = A[i]) {
+			_tdel(i)
 		}
 	}
 }
@@ -6001,33 +5915,27 @@ function _texclude(p, v, pp)
 					delete _tNEXT[_tLCHLD[pp] = _tPREV[p]]
 				}
 				delete _tPREV[p]
+			} else if (p in _tNEXT) {
+				delete _tPREV[_tFCHLD[pp] = _tNEXT[p]]
+				delete _tNEXT[p]
 			} else {
-				if (p in _tNEXT) {
-					delete _tPREV[_tFCHLD[pp] = _tNEXT[p]]
-					delete _tNEXT[p]
-				} else {
-					delete _tFCHLD[pp]
-					delete _tLCHLD[pp]
-					delete _tQCHLD[pp]
-					return p
-				}
+				delete _tFCHLD[pp]
+				delete _tLCHLD[pp]
+				delete _tQCHLD[pp]
+				return p
 			}
 			--_tQCHLD[pp]
-		} else {
-			if (p in _tPREV) {
-				if (p in _tNEXT) {
-					_tPREV[_tNEXT[v] = _tNEXT[p]] = v = _tPREV[p]
-					delete _tNEXT[p]
-				} else {
-					delete _tNEXT[_tPREV[p]]
-				}
-				delete _tPREV[p]
+		} else if (p in _tPREV) {
+			if (p in _tNEXT) {
+				_tPREV[_tNEXT[v] = _tNEXT[p]] = v = _tPREV[p]
+				delete _tNEXT[p]
 			} else {
-				if (p in _tNEXT) {
-					delete _tPREV[_tNEXT[p]]
-					delete _tNEXT[p]
-				}
+				delete _tNEXT[_tPREV[p]]
 			}
+			delete _tPREV[p]
+		} else if (p in _tNEXT) {
+			delete _tPREV[_tNEXT[p]]
+			delete _tNEXT[p]
 		}
 		return p
 	}
@@ -6403,14 +6311,12 @@ function _tframex_p1(A, v, i, r, B)
 		if (r != "") {
 			A[".~"] = A["`~"] = A["^~"] = r
 		}
+	} else if (match(v, /!/)) {
+		delete A[i]
 	} else {
-		if (match(v, /!/)) {
-			delete A[i]
-		} else {
-			A[i] = v
-			if (r != "") {
-				A[i "~"] = r
-			}
+		A[i] = v
+		if (r != "") {
+			A[i "~"] = r
 		}
 	}
 }
@@ -7344,16 +7250,14 @@ function _wFBRO(p, v, a)
 							}
 							--_tQCHLD[a]
 						}
-					} else {
-						if (v in _tPARENT) {
-							if (p == (a = _tPARENT[v])) {
-								return v
-							}
-							delete _tPREV[_tFCHLD[a] = _tNEXT[v]]
-							--_tQCHLD[a]
-						} else {
-							delete _tPREV[_tNEXT[v]]
+					} else if (v in _tPARENT) {
+						if (p == (a = _tPARENT[v])) {
+							return v
 						}
+						delete _tPREV[_tFCHLD[a] = _tNEXT[v]]
+						--_tQCHLD[a]
+					} else {
+						delete _tPREV[_tNEXT[v]]
 					}
 					++_tQCHLD[p]
 					return (_tFCHLD[p] = _tPREV[_tNEXT[v] = _tFCHLD[_tPARENT[v] = p]] = v)
@@ -7370,15 +7274,13 @@ function _wFBRO(p, v, a)
 							delete _tNEXT[_tPREV[v]]
 						}
 						delete _tPREV[v]
-					} else {
-						if (v in _tPARENT) {
-							if (p == (a = _tPARENT[v])) {
-								return v
-							}
-							delete _tFCHLD[a]
-							delete _tLCHLD[a]
-							delete _tQCHLD[a]
+					} else if (v in _tPARENT) {
+						if (p == (a = _tPARENT[v])) {
+							return v
 						}
+						delete _tFCHLD[a]
+						delete _tLCHLD[a]
+						delete _tQCHLD[a]
 					}
 					++_tQCHLD[p]
 					return (_tFCHLD[p] = _tPREV[_tNEXT[v] = _tFCHLD[_tPARENT[v] = p]] = v)
@@ -7396,12 +7298,10 @@ function _wFBRO(p, v, a)
 						} else {
 							delete _tNEXT[_tLCHLD[a] = _tPREV[v]]
 						}
+					} else if (v in _tNEXT) {
+						_tNEXT[_tPREV[a] = _tPREV[v]] = a = _tNEXT[v]
 					} else {
-						if (v in _tNEXT) {
-							_tNEXT[_tPREV[a] = _tPREV[v]] = a = _tNEXT[v]
-						} else {
-							delete _tNEXT[_tPREV[v]]
-						}
+						delete _tNEXT[_tPREV[v]]
 					}
 					delete _tPREV[v]
 				} else {
@@ -7418,10 +7318,8 @@ function _wFBRO(p, v, a)
 							delete _tQCHLD[a]
 						}
 						delete _tPARENT[v]
-					} else {
-						if (v in _tNEXT) {
-							delete _tPREV[_tNEXT[v]]
-						}
+					} else if (v in _tNEXT) {
+						delete _tPREV[_tNEXT[v]]
 					}
 				}
 				return (_tPREV[_tNEXT[v] = p] = v)
@@ -7466,16 +7364,14 @@ function _wFCHLD(p, v, a)
 						}
 						--_tQCHLD[a]
 					}
-				} else {
-					if (v in _tPARENT) {
-						if (p == (a = _tPARENT[v])) {
-							return v
-						}
-						delete _tPREV[_tFCHLD[a] = _tNEXT[v]]
-						--_tQCHLD[a]
-					} else {
-						delete _tPREV[_tNEXT[v]]
+				} else if (v in _tPARENT) {
+					if (p == (a = _tPARENT[v])) {
+						return v
 					}
+					delete _tPREV[_tFCHLD[a] = _tNEXT[v]]
+					--_tQCHLD[a]
+				} else {
+					delete _tPREV[_tNEXT[v]]
 				}
 				if (p in _tFCHLD) {
 					++_tQCHLD[p]
@@ -7495,15 +7391,13 @@ function _wFCHLD(p, v, a)
 						delete _tNEXT[_tPREV[v]]
 					}
 					delete _tPREV[v]
-				} else {
-					if (v in _tPARENT) {
-						if (p == (a = _tPARENT[v])) {
-							return v
-						}
-						delete _tFCHLD[a]
-						delete _tLCHLD[a]
-						delete _tQCHLD[a]
+				} else if (v in _tPARENT) {
+					if (p == (a = _tPARENT[v])) {
+						return v
 					}
+					delete _tFCHLD[a]
+					delete _tLCHLD[a]
+					delete _tQCHLD[a]
 				}
 				if (p in _tFCHLD) {
 					++_tQCHLD[p]
@@ -7556,16 +7450,14 @@ function _wLBRO(p, v, a)
 							}
 							--_tQCHLD[a]
 						}
-					} else {
-						if (v in _tPARENT) {
-							if (p == (a = _tPARENT[v])) {
-								return v
-							}
-							delete _tNEXT[_tLCHLD[a] = _tPREV[v]]
-							--_tQCHLD[a]
-						} else {
-							delete _tNEXT[_tPREV[v]]
+					} else if (v in _tPARENT) {
+						if (p == (a = _tPARENT[v])) {
+							return v
 						}
+						delete _tNEXT[_tLCHLD[a] = _tPREV[v]]
+						--_tQCHLD[a]
+					} else {
+						delete _tNEXT[_tPREV[v]]
 					}
 					++_tQCHLD[p]
 					return (_tLCHLD[p] = _tNEXT[_tPREV[v] = _tLCHLD[_tPARENT[v] = p]] = v)
@@ -7582,15 +7474,13 @@ function _wLBRO(p, v, a)
 							delete _tPREV[_tNEXT[v]]
 						}
 						delete _tNEXT[v]
-					} else {
-						if (v in _tPARENT) {
-							if (p == (a = _tPARENT[v])) {
-								return v
-							}
-							delete _tLCHLD[a]
-							delete _tFCHLD[a]
-							delete _tQCHLD[a]
+					} else if (v in _tPARENT) {
+						if (p == (a = _tPARENT[v])) {
+							return v
 						}
+						delete _tLCHLD[a]
+						delete _tFCHLD[a]
+						delete _tQCHLD[a]
 					}
 					++_tQCHLD[p]
 					return (_tLCHLD[p] = _tNEXT[_tPREV[v] = _tLCHLD[_tPARENT[v] = p]] = v)
@@ -7608,12 +7498,10 @@ function _wLBRO(p, v, a)
 						} else {
 							delete _tPREV[_tFCHLD[a] = _tNEXT[v]]
 						}
+					} else if (v in _tPREV) {
+						_tPREV[_tNEXT[a] = _tNEXT[v]] = a = _tPREV[v]
 					} else {
-						if (v in _tPREV) {
-							_tPREV[_tNEXT[a] = _tNEXT[v]] = a = _tPREV[v]
-						} else {
-							delete _tPREV[_tNEXT[v]]
-						}
+						delete _tPREV[_tNEXT[v]]
 					}
 					delete _tNEXT[v]
 				} else {
@@ -7630,10 +7518,8 @@ function _wLBRO(p, v, a)
 							delete _tQCHLD[a]
 						}
 						delete _tPARENT[v]
-					} else {
-						if (v in _tPREV) {
-							delete _tNEXT[_tPREV[v]]
-						}
+					} else if (v in _tPREV) {
+						delete _tNEXT[_tPREV[v]]
 					}
 				}
 				return (_tNEXT[_tPREV[v] = p] = v)
@@ -7678,16 +7564,14 @@ function _wLCHLD(p, v, a)
 						}
 						--_tQCHLD[a]
 					}
-				} else {
-					if (v in _tPARENT) {
-						if (p == (a = _tPARENT[v])) {
-							return v
-						}
-						delete _tNEXT[_tLCHLD[a] = _tPREV[v]]
-						--_tQCHLD[a]
-					} else {
-						delete _tNEXT[_tPREV[v]]
+				} else if (v in _tPARENT) {
+					if (p == (a = _tPARENT[v])) {
+						return v
 					}
+					delete _tNEXT[_tLCHLD[a] = _tPREV[v]]
+					--_tQCHLD[a]
+				} else {
+					delete _tNEXT[_tPREV[v]]
 				}
 				if (p in _tLCHLD) {
 					++_tQCHLD[p]
@@ -7707,15 +7591,13 @@ function _wLCHLD(p, v, a)
 						delete _tPREV[_tNEXT[v]]
 					}
 					delete _tNEXT[v]
-				} else {
-					if (v in _tPARENT) {
-						if (p == (a = _tPARENT[v])) {
-							return v
-						}
-						delete _tLCHLD[a]
-						delete _tFCHLD[a]
-						delete _tQCHLD[a]
+				} else if (v in _tPARENT) {
+					if (p == (a = _tPARENT[v])) {
+						return v
 					}
+					delete _tLCHLD[a]
+					delete _tFCHLD[a]
+					delete _tQCHLD[a]
 				}
 				if (p in _tLCHLD) {
 					++_tQCHLD[p]
@@ -7781,21 +7663,17 @@ function _wNEXT(p, v, a, b)
 						--_tQCHLD[b]
 					}
 				}
-			} else {
-				if (v in _tNEXT) {
-					if (v in _tPARENT) {
-						delete _tPREV[_tFCHLD[a = _tPARENT[v]] = _tNEXT[v]]
-						--_tQCHLD[a]
-					} else {
-						delete _tPREV[_tNEXT[v]]
-					}
+			} else if (v in _tNEXT) {
+				if (v in _tPARENT) {
+					delete _tPREV[_tFCHLD[a = _tPARENT[v]] = _tNEXT[v]]
+					--_tQCHLD[a]
 				} else {
-					if (v in _tPARENT) {
-						delete _tFCHLD[a = _tPARENT[v]]
-						delete _tLCHLD[a]
-						delete _tQCHLD[a]
-					}
+					delete _tPREV[_tNEXT[v]]
 				}
+			} else if (v in _tPARENT) {
+				delete _tFCHLD[a = _tPARENT[v]]
+				delete _tLCHLD[a]
+				delete _tQCHLD[a]
 			}
 			if (p in _tNEXT) {
 				_tPREV[_tNEXT[v] = _tNEXT[p]] = v
@@ -7865,21 +7743,17 @@ function _wPREV(p, v, a, b)
 						--_tQCHLD[b]
 					}
 				}
-			} else {
-				if (v in _tPREV) {
-					if (v in _tPARENT) {
-						delete _tNEXT[_tLCHLD[a = _tPARENT[v]] = _tPREV[v]]
-						--_tQCHLD[a]
-					} else {
-						delete _tNEXT[_tPREV[v]]
-					}
+			} else if (v in _tPREV) {
+				if (v in _tPARENT) {
+					delete _tNEXT[_tLCHLD[a = _tPARENT[v]] = _tPREV[v]]
+					--_tQCHLD[a]
 				} else {
-					if (v in _tPARENT) {
-						delete _tLCHLD[a = _tPARENT[v]]
-						delete _tFCHLD[a]
-						delete _tQCHLD[a]
-					}
+					delete _tNEXT[_tPREV[v]]
 				}
+			} else if (v in _tPARENT) {
+				delete _tLCHLD[a = _tPARENT[v]]
+				delete _tFCHLD[a]
+				delete _tQCHLD[a]
 			}
 			if (p in _tPREV) {
 				_tNEXT[_tPREV[v] = _tPREV[p]] = v
