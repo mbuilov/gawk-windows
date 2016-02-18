@@ -1,3 +1,13 @@
+2016-02-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix profile / pretty-printing to chain else-ifs.
+
+	* profile.c (pprint): Change third argument into a set of flags
+	for in the for header or in an else if. Adjust case Op_K_else to
+	make the right checks and format the code properly. In Op_K_if
+	clear the flag so that any following else gets indented properly.
+	Adjust all calls.
+
 2016-02-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* README, NEWS: Updated to reflect use of Texinfo 6.1.
