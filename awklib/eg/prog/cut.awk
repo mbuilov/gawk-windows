@@ -35,7 +35,7 @@ BEGIN {
                        " for delimiter\n", Optarg) > "/dev/stderr"
                 Optarg = substr(Optarg, 1, 1)
             }
-            FS = Optarg
+            fs = FS = Optarg
             OFS = FS
             if (FS == " ")    # defeat awk semantics
                 FS = "[ ]"
@@ -123,7 +123,7 @@ function set_charlist(    field, i, j, f, g, n, m, t,
     nfields = j - 1
 }
 {
-    if (by_fields && suppress && index($0, FS) == 0)
+    if (by_fields && suppress && index($0, fs) == 0)
         next
 
     for (i = 1; i <= nfields; i++) {
