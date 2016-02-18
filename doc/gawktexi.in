@@ -29617,7 +29617,7 @@ debug (the @dfn{debuggee}, if you will).
 
 The @command{gawk} debugger is different; it is an integrated part
 of @command{gawk} itself.  This makes it possible, in rare cases,
-for @command{gawk} to become an excellent demonstrator of Heisenburg
+for @command{gawk} to become an excellent demonstrator of Heisenberg
 Uncertainty physics, where the mere act of observing something can change
 it. Consider the following:@footnote{Thanks to Hermann Peifer for
 this example.}
@@ -29656,14 +29656,14 @@ gawk> @kbd{n}                           @ii{Keep going @dots{}}
 @print{} main() at `test.awk':1
 @print{} 1       @{ print typeof($1), typeof($2) @}
 gawk> @kbd{n}                           @ii{Get result from} typeof()
-@print{} strnum string                  @ii{Result for} $2 @ii{isn't right}
+@print{} strnum number                  @ii{Result for} $2 @ii{isn't right}
 @print{} Program exited normally with exit value: 0
 gawk> @kbd{quit}
 @end example
 
 In this case, the act of comparing the new value of @code{$2}
 with the old one caused @command{gawk} to evaluate it and determine that it
-is indeed a string, and this is reflected in the result of
+is indeed a number, and this is reflected in the result of
 @code{typeof()}.
 
 Cases like this where the debugger is not transparent to the program's

@@ -21991,7 +21991,7 @@ debug (the "debuggee", if you will).
 
    The 'gawk' debugger is different; it is an integrated part of 'gawk'
 itself.  This makes it possible, in rare cases, for 'gawk' to become an
-excellent demonstrator of Heisenburg Uncertainty physics, where the mere
+excellent demonstrator of Heisenberg Uncertainty physics, where the mere
 act of observing something can change it.  Consider the following:(1)
 
      $ cat test.awk
@@ -22025,13 +22025,13 @@ under the debugger:
      -| main() at `test.awk':1
      -| 1       { print typeof($1), typeof($2) }
      gawk> n                           Get result from typeof()
-     -| strnum string                  Result for $2 isn't right
+     -| strnum number                  Result for $2 isn't right
      -| Program exited normally with exit value: 0
      gawk> quit
 
    In this case, the act of comparing the new value of '$2' with the old
 one caused 'gawk' to evaluate it and determine that it is indeed a
-string, and this is reflected in the result of 'typeof()'.
+number, and this is reflected in the result of 'typeof()'.
 
    Cases like this where the debugger is not transparent to the
 program's execution should be rare.  If you encounter one, please report
