@@ -30,7 +30,7 @@ BEGIN {
     if (! do_lines && ! do_words && ! do_chars)
         do_lines = do_words = do_chars = 1
 
-    print_total = (ARGC - i > 2)
+    print_total = (ARGC - i > 1)
 }
 function beginfile(file)
 {

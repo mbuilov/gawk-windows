@@ -220,10 +220,7 @@
 
 @ignore
 Some comments on the layout for TeX.
-1. Use at least texinfo.tex 2014-01-30.15
-2. When using @docbook, if the last line is part of a paragraph, end
-it with a space and @c so that the lines won't run together. This is a
-quirk of the language / makeinfo, and isn't going to change.
+1. Use at least texinfo.tex 2016-02-05.07.
 @end ignore
 
 @c merge the function and variable indexes into the concept index
@@ -21090,6 +21087,36 @@ Because of this, you should not call it from an @code{ENDFILE} rule.
 (This isn't necessary anyway, because @command{gawk} goes to the next
 file as soon as an @code{ENDFILE} rule finishes!)
 
+You need to be careful calling @code{rewind()}.  You can end up
+causing infinite recursion if you don't pay attenion. Here is an
+example use:
+
+@example
+$ @kbd{cat data}
+@print{} a
+@print{} b
+@print{} c
+@print{} d
+@print{} e
+
+$ cat @kbd{test.awk}
+@print{} FNR == 3 && ! rewound @{
+@print{} 	rewound = 1
+@print{} 	rewind()
+@print{} @}
+@print{} 
+@print{} @{ print FILENAME, FNR, $0 @}
+
+$ @kbd{gawk -f rewind.awk -f test.awk data }
+@print{} data 1 a
+@print{} data 2 b
+@print{} data 1 a
+@print{} data 2 b
+@print{} data 3 c
+@print{} data 4 d
+@print{} data 5 e
+@end example
+
 @node File Checking
 @subsection Checking for Readable @value{DDF}s
 
@@ -22786,7 +22813,7 @@ BEGIN @{
                        " for delimiter\n", Optarg) > "/dev/stderr"
                 Optarg = substr(Optarg, 1, 1)
             @}
-            FS = Optarg
+            fs = FS = Optarg
             OFS = FS
             if (FS == " ")    # defeat awk semantics
                 FS = "[ ]"
@@ -22808,7 +22835,12 @@ special care when the field delimiter is a space.  Using
 a single space (@code{@w{" "}}) for the value of @code{FS} is
 incorrect---@command{awk} would separate fields with runs of spaces,
 TABs, and/or newlines, and we want them to be separated with individual
-spaces.  Also remember that after @code{getopt()} is through
+spaces.
+To this end, we save the original space character in the variable
+@code{fs} for later use; after setting @code{FS} to @code{"[ ]"} we can't
+use it directly to see if the field delimiter character is in the string.
+
+Also remember that after @code{getopt()} is through
 (as described in @ref{Getopt Function}),
 we have to
 clear out all the elements of @code{ARGV} from 1 to @code{Optind},
@@ -22960,7 +22992,7 @@ written out between the fields:
 @example
 @c file eg/prog/cut.awk
 @{
-    if (by_fields && suppress && index($0, FS) == 0)
+    if (by_fields && suppress && index($0, fs) == 0)
         next
 
     for (i = 1; i <= nfields; i++) @{
@@ -24025,7 +24057,7 @@ BEGIN @{
     if (! do_lines && ! do_words && ! do_chars)
         do_lines = do_words = do_chars = 1
 
-    print_total = (ARGC - i > 2)
+    print_total = (ARGC - i > 1)
 @}
 @c endfile
 @end example
@@ -29585,7 +29617,7 @@ debug (the @dfn{debuggee}, if you will).
 
 The @command{gawk} debugger is different; it is an integrated part
 of @command{gawk} itself.  This makes it possible, in rare cases,
-for @command{gawk} to become an excellent demonstrator of Heisenburg
+for @command{gawk} to become an excellent demonstrator of Heisenberg
 Uncertainty physics, where the mere act of observing something can change
 it. Consider the following:@footnote{Thanks to Hermann Peifer for
 this example.}
@@ -29624,14 +29656,14 @@ gawk> @kbd{n}                           @ii{Keep going @dots{}}
 @print{} main() at `test.awk':1
 @print{} 1       @{ print typeof($1), typeof($2) @}
 gawk> @kbd{n}                           @ii{Get result from} typeof()
-@print{} strnum string                  @ii{Result for} $2 @ii{isn't right}
+@print{} strnum number                  @ii{Result for} $2 @ii{isn't right}
 @print{} Program exited normally with exit value: 0
 gawk> @kbd{quit}
 @end example
 
 In this case, the act of comparing the new value of @code{$2}
 with the old one caused @command{gawk} to evaluate it and determine that it
-is indeed a string, and this is reflected in the result of
+is indeed a number, and this is reflected in the result of
 @code{typeof()}.
 
 Cases like this where the debugger is not transparent to the program's
