@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2015 Free Software Foundation, Inc.
+   Copyright (C) 2002-2016 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -45,7 +45,7 @@
 # include <stdint.h>
 #endif /* HAVE_STDINT_H || _LIBC */
 #if defined _LIBC
-# include <bits/libc-lock.h>
+# include <libc-lock.h>
 #else
 # define __libc_lock_define(CLASS,NAME)
 # define __libc_lock_init(NAME) do { } while (0)
@@ -770,7 +770,7 @@ bitset_mask (bitset_t dest, const bitset_t src)
 }
 
 #ifdef RE_ENABLE_I18N
-/* Functions for re_string.  */
+/* Inline functions for re_string.  */
 static int
 internal_function __attribute__ ((pure, unused))
 re_string_char_size_at (const re_string_t *pstr, int idx)
