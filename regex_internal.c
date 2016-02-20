@@ -320,12 +320,13 @@ build_wcs_upper_buffer (re_string_t *pstr)
 			       + byte_idx), remain_len, &pstr->cur_state);
 	  if (BE (mbclen + 2 > 2, 1))
 	    {
-	      wchar_t wcu = towupper (wc);
-	      if (wcu != wc)
+	      wchar_t wcu = wc;
+	      if (iswlower (wc))
 		{
 		  size_t mbcdlen;
 
-		  mbcdlen = wcrtomb (buf, wcu, &prev_st);
+		  wcu = towupper (wc);
+		  mbcdlen = __wcrtomb (buf, wcu, &prev_st);
 		  if (BE (mbclen == mbcdlen, 1))
 		    memcpy (pstr->mbs + byte_idx, buf, mbclen);
 		  else
@@ -389,11 +390,12 @@ build_wcs_upper_buffer (re_string_t *pstr)
 	mbclen = __mbrtowc (&wc, p, remain_len, &pstr->cur_state);
 	if (BE (mbclen + 2 > 2, 1))
 	  {
-	    wchar_t wcu = towupper (wc);
-	    if (wcu != wc)
+	    wchar_t wcu = wc;
+	    if (iswlower (wc))
 	      {
 		size_t mbcdlen;
 
+		wcu = towupper (wc);
 		mbcdlen = wcrtomb ((char *) buf, wcu, &prev_st);
 		if (BE (mbclen == mbcdlen, 1))
 		  memcpy (pstr->mbs + byte_idx, buf, mbclen);
@@ -838,7 +840,7 @@ re_string_reconstruct (re_string_t *pstr, int idx, int eflags)
 }
 
 static unsigned char
-internal_function __attribute__ ((pure))
+internal_function __attribute ((pure))
 re_string_peek_byte_case (const re_string_t *pstr, int idx)
 {
   int ch, off;
@@ -1370,7 +1372,7 @@ re_node_set_insert_last (re_node_set *set, int elem)
    return 1 if SET1 and SET2 are equivalent, return 0 otherwise.  */
 
 static int
-internal_function __attribute__ ((pure))
+internal_function __attribute ((pure))
 re_node_set_compare (const re_node_set *set1, const re_node_set *set2)
 {
   int i;
@@ -1385,7 +1387,7 @@ re_node_set_compare (const re_node_set *set1, const re_node_set *set2)
 /* Return (idx + 1) if SET contains the element ELEM, return 0 otherwise.  */
 
 static int
-internal_function __attribute__ ((pure))
+internal_function __attribute ((pure))
 re_node_set_contains (const re_node_set *set, int elem)
 {
   unsigned int idx, right, mid;
