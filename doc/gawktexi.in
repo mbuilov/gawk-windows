@@ -5490,6 +5490,15 @@ set.  For example, @samp{[0-9]} is equivalent to @samp{[0123456789]}.
 standard and @command{gawk} have changed over time.  This is mainly
 of historical interest.)
 
+With the increasing popularity of the
+@uref{http://www.unicode.org, Unicode character standard},
+there is an additional wrinkle to consider. Octal and hexadecimal
+escape sequences inside bracket expressions are taken to represent
+only single-byte characters (characters whose values fit within
+the range 0--256).  To match a range of characters where the endpoints
+of the range are larger than 256, enter the multibyte encodings of
+the characters directly.
+
 @cindex @code{\} (backslash), in bracket expressions
 @cindex backslash (@code{\}), in bracket expressions
 @cindex @code{^} (caret), in bracket expressions
