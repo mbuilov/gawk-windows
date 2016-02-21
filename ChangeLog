@@ -1407,6 +1407,15 @@
 
 	* configure.ac (AM_GNU_GETTEXT_VERSION): Bump to 0.19.7.
 
+2016-02-21         Nelson H.F. Beebe     <beebe@math.utah.edu>
+
+	* random.c [SHUFFLE_BITS, SHUFFLE_MAX, SHUFFLE_MASK]: New macros.
+	(shuffle_init, shuffle_buffer): New static variables.
+	(random_old): Renamed from random.
+	(random): New function wrapping random_old and providing a
+	shuffle buffer to increase the period. See the literature citations
+	and other notes in the code.
+
 2016-02-21         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regexec.c (prune_impossible_nodes): Remove attribute that
