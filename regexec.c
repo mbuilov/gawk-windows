@@ -937,7 +937,6 @@ re_search_internal (const regex_t *preg, const char *string, int length,
 }
 
 static reg_errcode_t
-internal_function __attribute_warn_unused_result__
 prune_impossible_nodes (re_match_context_t *mctx)
 {
   const re_dfa_t *const dfa = mctx->dfa;
