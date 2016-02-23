@@ -28,14 +28,14 @@ BEGIN {
 }
 
 /^@sidebar/ {
-	sub(/^@sidebar[[:space:]]+/, "", $0)
+	sub(/^@sidebar[ \t]+/, "", $0)
 	title = $0
 	body = ""
 	collecting = 1
 	next
 }
 
-/^@end[[:space:]]+sidebar[[:space:]]*$/ {
+/^@end[ \t]+sidebar[ \t]*$/ {
 	collecting = 0
 	printf "@cindex sidebar, %s\n", title
 	printf "@ifdocbook\n"
