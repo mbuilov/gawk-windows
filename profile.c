@@ -933,7 +933,7 @@ cleanup:
 			    && pc->branch_end == pc->nexti->nexti->branch_else->lasti) {
 				pprint(pc->nexti, pc->branch_end, IN_ELSE_IF);
 			} else {
-				fprintf(prof_fp, "{\n", op2str(pc->opcode));
+				fprintf(prof_fp, "{\n");
 				indent_in();
 				pprint(pc->nexti, pc->branch_end, NO_PPRINT_FLAGS);
 				indent_out();
