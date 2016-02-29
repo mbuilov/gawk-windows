@@ -1538,34 +1538,40 @@ pp_list(int nargs, const char *paren, const char *delim)
 		erealloc(pp_args, NODE **, (nargs + 2) * sizeof(NODE *), "pp_list");
 	}
 
-	delimlen = strlen(delim);
-	len = -delimlen;
-	for (i = 1; i <= nargs; i++) {
-		r = pp_args[i] = pp_pop();
-		len += r->pp_len + delimlen;
-	}
-	if (paren != NULL) {
-		assert(strlen(paren) == 2);
-		len += 2;
+	if (nargs == 0)
+		len = 2;
+	else {
+		delimlen = strlen(delim);
+		len = -delimlen;
+		for (i = 1; i <= nargs; i++) {
+			r = pp_args[i] = pp_pop();
+			len += r->pp_len + delimlen;
+		}
+		if (paren != NULL) {
+			assert(strlen(paren) == 2);
+			len += 2;
+		}
 	}
 
 	emalloc(str, char *, len + 1, "pp_list");
 	s = str;
 	if (paren != NULL)
 		*s++ = paren[0];  
-	r = pp_args[nargs];
-	memcpy(s, r->pp_str, r->pp_len);
-	s += r->pp_len;
-	pp_free(r);
-	for (i = nargs - 1; i > 0; i--) {
-		if (delimlen > 0) {
-			memcpy(s, delim, delimlen);
-			s += delimlen;
-		}
-		r = pp_args[i];
+	if (nargs > 0) {
+		r = pp_args[nargs];
 		memcpy(s, r->pp_str, r->pp_len);
 		s += r->pp_len;
 		pp_free(r);
+		for (i = nargs - 1; i > 0; i--) {
+			if (delimlen > 0) {
+				memcpy(s, delim, delimlen);
+				s += delimlen;
+			}
+			r = pp_args[i];
+			memcpy(s, r->pp_str, r->pp_len);
+			s += r->pp_len;
+			pp_free(r);
+		}
 	}
 	if (paren != NULL)
 		*s++ = paren[1];
