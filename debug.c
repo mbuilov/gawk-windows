@@ -3998,7 +3998,14 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		print_func(fp, " [do_reference = %s]\n",
 		                pc->do_reference ? "true" : "false");
 		break;
-				
+
+	case Op_comment:
+		print_memory(pc->memory, func, print_func, fp);
+		fprintf(fp, " {%s}\n",
+			pc->memory->comment_type == EOL_COMMENT ?
+						"eol" : "full");
+		break;
+
 	case Op_push_i:
 	case Op_push:
 	case Op_push_arg:
@@ -4016,7 +4023,6 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 	case Op_quotient_i:
 	case Op_mod_i:
 	case Op_assign_concat:
-	case Op_comment:
 		print_memory(pc->memory, func, print_func, fp);
 		/* fall through */
 	default:
