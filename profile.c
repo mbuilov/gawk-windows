@@ -192,6 +192,22 @@ pp_free(NODE *n)
 	freenode(n);
 }
 
+/* get_next_real_inst --- skip Op_comment */
+
+static INSTRUCTION *
+get_next_real_inst(INSTRUCTION *pc)
+{
+	if (pc == NULL)
+		return pc;
+
+	for (; pc != NULL && pc->opcode == Op_comment; pc = pc->nexti) {
+fprintf(stderr, "%s: opcode is %s\n", __func__, opcode2str(pc->opcode));
+		continue;
+	}
+
+	return pc;
+}
+
 /* pprint --- pretty print a program segment */
 
 static void
@@ -207,6 +223,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 	char *tmp;
 	int rule;
 	static int rule_count[MAXRULE];
+	INSTRUCTION *next_real;
 
 	for (pc = startp; pc != endp; pc = pc->nexti) {
 		if (pc->source_line > 0)
@@ -742,8 +759,16 @@ cleanup:
 			t1 = pp_pop();
 			if (is_binary(t1->type))
 				pp_parenthesize(t1);
-			if (pc->source_line > 0)	/* don't print implicit 'return' at end of function */
-				fprintf(prof_fp, "%s %s\n", op2str(pc->opcode), t1->pp_str);
+			if (pc->source_line > 0) {	/* don't print implicit 'return' at end of function */
+				if (pc->nexti->opcode != Op_comment || pc->nexti->memory->comment_type != EOL_COMMENT)
+					fprintf(prof_fp, "%s %s\n", op2str(pc->opcode), t1->pp_str);
+				else {
+					fprintf(prof_fp, "%s %s", op2str(pc->opcode), t1->pp_str);
+					// print the comment
+					print_comment(pc->nexti, 0);
+					pc = pc->nexti;		/* skip it */
+				}
+			}
 			pp_free(t1);
 			break;
 
@@ -929,8 +954,9 @@ cleanup:
 			 */
 
 			fprintf(prof_fp, "} %s ", op2str(pc->opcode));
-			if (pc->nexti->nexti->opcode == Op_K_if
-			    && pc->branch_end == pc->nexti->nexti->branch_else->lasti) {
+			next_real = get_next_real_inst(pc->nexti);
+			if (next_real->nexti->opcode == Op_K_if
+			    && pc->branch_end == next_real->nexti->branch_else->nexti) {
 				pprint(pc->nexti, pc->branch_end, IN_ELSE_IF);
 			} else {
 				fprintf(prof_fp, "{\n");
