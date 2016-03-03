@@ -151,6 +151,8 @@ static INSTRUCTION *ip_beginfile;
 INSTRUCTION *main_beginfile;
 
 static INSTRUCTION *comment = NULL;
+static INSTRUCTION *prior_comment = NULL;
+static INSTRUCTION *comment_to_save = NULL;
 static INSTRUCTION *program_comment = NULL;
 static INSTRUCTION *function_comment = NULL;
 static INSTRUCTION *block_comment = NULL;
@@ -162,6 +164,7 @@ static inline INSTRUCTION *list_create(INSTRUCTION *x);
 static inline INSTRUCTION *list_append(INSTRUCTION *l, INSTRUCTION *x);
 static inline INSTRUCTION *list_prepend(INSTRUCTION *l, INSTRUCTION *x);
 static inline INSTRUCTION *list_merge(INSTRUCTION *l1, INSTRUCTION *l2);
+static inline INSTRUCTION *add_pending_comment(INSTRUCTION *stmt);
 
 extern double fmod(double x, double y);
 
@@ -439,13 +442,22 @@ function_prologue
 		 *  than one such comments, treat the last as a function
 		 *  comment.
 		 */
-		if (comment != NULL && func_first
-		    && strstr(comment->memory->stptr, "\n\n") != NULL)
+		if (prior_comment != NULL) {
+			comment_to_save = prior_comment;
+			prior_comment = NULL;
+		} else if (comment != NULL) {
+			comment_to_save = comment;
+			comment = NULL;
+		} else
+			comment_to_save = NULL;
+
+		if (comment_to_save != NULL && func_first
+		    && strstr(comment_to_save->memory->stptr, "\n\n") != NULL)
 			split_comment();
 		/* save any other pre-function comment as function comment  */
-		if (comment != NULL) {
-			function_comment = comment;
-			comment = NULL;
+		if (comment_to_save != NULL) {
+			function_comment = comment_to_save;
+			comment_to_save = NULL;
 		}
 		func_first = false;
 		$1->source_file = source;
@@ -890,6 +902,7 @@ regular_loop:
 			$$ = list_prepend($1, instruction(Op_exec_count));
 		else
 			$$ = $1;
+		$$ = add_pending_comment($$);
 	  }
 	;
 
@@ -901,6 +914,7 @@ non_compound_stmt
 				_("`break' is not allowed outside a loop or switch"));
 		$1->target_jmp = NULL;
 		$$ = list_create($1);
+		$$ = add_pending_comment($$);
 
 	  }
 	| LEX_CONTINUE statement_term
@@ -910,6 +924,7 @@ non_compound_stmt
 				_("`continue' is not allowed outside a loop"));
 		$1->target_jmp = NULL;
 		$$ = list_create($1);
+		$$ = add_pending_comment($$);
 
 	  }
 	| LEX_NEXT statement_term
@@ -920,6 +935,7 @@ non_compound_stmt
 				_("`next' used in %s action"), ruletab[rule]);
 		$1->target_jmp = ip_rec;
 		$$ = list_create($1);
+		$$ = add_pending_comment($$);
 	  }
 	| LEX_NEXTFILE statement_term
 	  {
@@ -931,6 +947,7 @@ non_compound_stmt
 		$1->target_newfile = ip_newfile;
 		$1->target_endfile = ip_endfile;
 		$$ = list_create($1);
+		$$ = add_pending_comment($$);
 	  }
 	| LEX_EXIT opt_exp statement_term
 	  {
@@ -946,6 +963,7 @@ non_compound_stmt
 			$$->nexti->memory = dupnode(Nnull_string);
 		} else
 			$$ = list_append($2, $1);
+		$$ = add_pending_comment($$);
 	  }
 	| LEX_RETURN
 	  {
@@ -970,6 +988,7 @@ non_compound_stmt
 
 			$$ = list_append($3, $1);
 		}
+		$$ = add_pending_comment($$);
 	  }
 	| simple_stmt statement_term
 	;
@@ -1079,6 +1098,7 @@ regular_print:
 				}
 			}
 		}
+		$$ = add_pending_comment($$);
 	  }
 
 	| LEX_DELETE NAME { sub_counter = 0; } delete_subscript_list
@@ -1113,6 +1133,7 @@ regular_print:
 			$1->expr_count = sub_counter;
 			$$ = list_append(list_append($4, $2), $1);
 		}
+		$$ = add_pending_comment($$);
 	  }	
 	| LEX_DELETE '(' NAME ')'
 		  /*
@@ -1143,9 +1164,13 @@ regular_print:
 			else if ($3->memory == func_table)
 				fatal(_("`delete' is not allowed with FUNCTAB"));
 		}
+		$$ = add_pending_comment($$);
 	  }
 	| exp
-	  {	$$ = optimize_assignment($1); }
+	  {
+		$$ = optimize_assignment($1);
+		$$ = add_pending_comment($$);
+	  }
 	;
 
 opt_simple_stmt
@@ -3165,6 +3190,10 @@ get_comment(int flag)
 		} else
 			break;
 	}
+
+	if (comment != NULL)
+		prior_comment = comment;
+
 	comment = bcalloc(Op_comment, 1, sl);
 	comment->source_file = source;
 	comment->memory = make_str_node(tokstart, tok - tokstart, 0);
@@ -3182,20 +3211,20 @@ split_comment(void)
 	int l;
 	NODE *n;
 
-	p = comment->memory->stptr;
-	l = comment->memory->stlen - 3;
+	p = comment_to_save->memory->stptr;
+	l = comment_to_save->memory->stlen - 3;
 	/* have at least two comments so split at last blank line (\n\n)  */
 	while (l >= 0) {
 		if (p[l] == '\n' && p[l+1] == '\n') {
-			function_comment = comment;
+			function_comment = comment_to_save;
 			n = function_comment->memory;
 			function_comment->memory = make_str_node(p + l + 2, n->stlen - l - 2, 0);
 			/* create program comment  */
 			program_comment = bcalloc(Op_comment, 1, sourceline);
-			program_comment->source_file = comment->source_file;
+			program_comment->source_file = comment_to_save->source_file;
 			p[l + 2] = 0;
 			program_comment->memory = make_str_node(p, l + 2, 0);
-			comment = NULL;
+			comment_to_save = NULL;
 			freenode(n);
 			break;
 		}
@@ -5971,6 +6000,26 @@ list_merge(INSTRUCTION *l1, INSTRUCTION *l2)
 	l1->lasti = l2->lasti;
 	bcfree(l2);
 	return l1;
+}
+
+/* add_pending_comment --- add a pending comment to a statement */
+
+static inline INSTRUCTION *
+add_pending_comment(INSTRUCTION *stmt)
+{
+	INSTRUCTION *ret = stmt;
+
+	if (prior_comment != NULL) {
+		if (function_comment != prior_comment)
+			ret = list_append(stmt, prior_comment);
+		prior_comment = NULL;
+	} else if (comment != NULL && comment->memory->comment_type == EOL_COMMENT) {
+		if (function_comment != comment)
+			ret = list_append(stmt, comment);
+		comment = NULL;
+	}
+
+	return ret;
 }
 
 /* See if name is a special token. */
