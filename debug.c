@@ -3788,6 +3788,15 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 
 			
 	switch (pc->opcode) {
+	case Op_K_if:
+		print_func(fp, "[branch_if = %p] [branch_else = %p] [branch_else->lasti = %p]\n",
+				pc->branch_if, pc->branch_else, pc->branch_else->lasti);
+		break;
+
+	case Op_K_else:
+		print_func(fp, "[branch_end = %p]\n", pc->branch_end);
+		break;
+
 	case Op_var_update:
 		print_func(fp, "[update_%s()]\n", get_spec_varname(pc->update_var));
 		break;
