@@ -3796,6 +3796,15 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 
 			
 	switch (pc->opcode) {
+	case Op_K_if:
+		print_func(fp, "[branch_if = %p] [branch_else = %p] [branch_else->lasti = %p]\n",
+				pc->branch_if, pc->branch_else, pc->branch_else->lasti);
+		break;
+
+	case Op_K_else:
+		print_func(fp, "[branch_end = %p]\n", pc->branch_end);
+		break;
+
 	case Op_var_update:
 		print_func(fp, "[update_%s()]\n", get_spec_varname(pc->update_var));
 		break;
@@ -3998,7 +4007,14 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		print_func(fp, " [do_reference = %s]\n",
 		                pc->do_reference ? "true" : "false");
 		break;
-				
+
+	case Op_comment:
+		print_memory(pc->memory, func, print_func, fp);
+		fprintf(fp, " {%s}\n",
+			pc->memory->comment_type == EOL_COMMENT ?
+						"eol" : "full");
+		break;
+
 	case Op_push_i:
 	case Op_push:
 	case Op_push_arg:
@@ -4016,7 +4032,6 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 	case Op_quotient_i:
 	case Op_mod_i:
 	case Op_assign_concat:
-	case Op_comment:
 		print_memory(pc->memory, func, print_func, fp);
 		/* fall through */
 	default:
