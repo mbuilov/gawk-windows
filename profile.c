@@ -1538,10 +1538,10 @@ pp_list(int nargs, const char *paren, const char *delim)
 		erealloc(pp_args, NODE **, (nargs + 2) * sizeof(NODE *), "pp_list");
 	}
 
+	delimlen = strlen(delim);
 	if (nargs == 0)
 		len = 2;
 	else {
-		delimlen = strlen(delim);
 		len = -delimlen;
 		for (i = 1; i <= nargs; i++) {
 			r = pp_args[i] = pp_pop();
