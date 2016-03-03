@@ -34,42 +34,46 @@ Changes from 4.1.x to 4.2.0
 7. Gawk now processes a maximum of two hexadecimal digits in \x
    escape sequences inside strings.
 
-8. MirBSD is no longer supported.
+8. Setting PROCINFO["redirection", "NONFATAL"] to true makes I/O
+   errors for "redirection" not fatal, setting ERRNO. Setting
+   PROCINFO["NONFATAL"] makes all I/O nonfatal.
 
-9. Pretty printing now preserves comments and places them into the
-   pretty-printed file.
+9. MirBSD is no longer supported.
 
-10. `make install' now installs shell startup files
+10. Pretty printing now preserves comments and places them into the
+    pretty-printed file.
+
+11. `make install' now installs shell startup files
     $sysconfdir/profile.d/gawk.{csh,sh} containing shell functions to
     manipulate the AWKPATH and AWKLIBPATH environment variables.  On a Fedora
     system, these files belong in /etc/profile.d, but the appropriate location
     may be different on other platforms.
 
-11. Gawk now supports retryable I/O via PROCINFO[input-file, "RETRY"]; see
+12. Gawk now supports retryable I/O via PROCINFO[input-file, "RETRY"]; see
     the manual.
 
-12. The API minor version has been increased to 2; the get_file()
+13. The API minor version has been increased to 2; the get_file()
     API provides access to open redirections. Also see the manual.
 
-13. Revisions in the POSIX standard remove the special case for POSIX
+14. Revisions in the POSIX standard remove the special case for POSIX
     mode when FS = " " where newline was not a field separator. The code
     and doc have been updated.
 
-14. Gawk now supports strongly typed regexp constants. Such constants
+15. Gawk now supports strongly typed regexp constants. Such constants
     look like @/.../.  You can assign them to variables, pass them to
     functions, use them in ~, !~ and the case part of a switch statement.
     More details are provided in the manual.
 
-15. The new typeof() function can be used to indicate if a variable or
+16. The new typeof() function can be used to indicate if a variable or
     array element is an array, regexp, string or number.  The isarray()
     function is deprecated in favor of typeof().
 
-16. As promised when 4.1 was released, the old extension mechanism,
+17. As promised when 4.1 was released, the old extension mechanism,
     using the `extension' function, is now gone.
 
-17. Support for GNU/Linux on Alpha systems has been removed.
+18. Support for GNU/Linux on Alpha systems has been removed.
 
-18. Optimizations are now enabled by default. Use the new -s/--no-optimize
+19. Optimizations are now enabled by default. Use the new -s/--no-optimize
     option(s) to disable them.  Pretty printing and profiling automatically
     disable optimizations so that the output program is the same as the
     original input program.
