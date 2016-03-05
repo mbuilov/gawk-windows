@@ -911,7 +911,7 @@ cleanup:
 			ip1 = pc->branch_if;
 			if (ip1->exec_count > 0)
 				fprintf(prof_fp, " # %ld", ip1->exec_count);
-			end_line(pc);
+			ip1 = end_line(ip1);
 			indent_in();
 			pprint(ip1->nexti, pc->branch_else, NO_PPRINT_FLAGS);
 			indent_out();
@@ -947,7 +947,9 @@ cleanup:
 			    && pc->branch_end == pc->nexti->nexti->branch_else->lasti) {
 				pprint(pc->nexti, pc->branch_end, IN_ELSE_IF);
 			} else {
-				fprintf(prof_fp, "{\n");
+				fprintf(prof_fp, "{");
+				end_line(pc);
+				skip_comment = true;
 				indent_in();
 				pprint(pc->nexti, pc->branch_end, NO_PPRINT_FLAGS);
 				indent_out();
