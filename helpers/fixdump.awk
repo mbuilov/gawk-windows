@@ -65,5 +65,7 @@ function translate(line,	n, data, seps, i, newline)
 		gsub(seps[i], Newaddr[seps[i]], newline)
 	}
 
+	gsub(/ =  +/, " = ", newline)
+
 	print newline
 }

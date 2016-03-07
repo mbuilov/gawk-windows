@@ -3805,6 +3805,31 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		print_func(fp, "[branch_end = %p]\n", pc->branch_end);
 		break;
 
+	case Op_K_while:
+		print_func(fp, "[while_body = %p] [target_break = %p]\n", (pc+1)->while_body, pc->target_break);
+		break;
+
+	case Op_K_do:
+		print_func(fp, "[doloop_cond = %p] [target_break = %p]\n", (pc+1)->doloop_cond, pc->target_break);
+		break;
+
+	case Op_K_for:
+		print_func(fp, "[forloop_cond = %p] ", (pc+1)->forloop_cond);
+		/* fall through */
+	case Op_K_arrayfor:
+		print_func(fp, "[forloop_body = %p] ", (pc+1)->forloop_body);
+		print_func(fp, "[target_break = %p] [target_continue = %p]\n", pc->target_break, pc->target_continue);
+		break;
+
+	case Op_K_switch:
+		print_func(fp, "[switch_start = %p] [switch_end = %p]\n", (pc+1)->switch_start, (pc+1)->switch_end);
+		break;
+
+	case Op_K_case:
+	case Op_K_default:
+		print_func(fp, "[stmt_start = %p] [stmt_end = %p]\n", pc->stmt_start, pc->stmt_end);
+		break;
+
 	case Op_var_update:
 		print_func(fp, "[update_%s()]\n", get_spec_varname(pc->update_var));
 		break;
