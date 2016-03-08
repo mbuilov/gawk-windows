@@ -3825,7 +3825,6 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		print_func(fp, "[switch_start = %p] [switch_end = %p]\n", (pc+1)->switch_start, (pc+1)->switch_end);
 		break;
 
-	case Op_K_case:
 	case Op_K_default:
 		print_func(fp, "[stmt_start = %p] [stmt_end = %p]\n", pc->stmt_start, pc->stmt_end);
 		break;
@@ -3912,6 +3911,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 	case Op_K_continue:
 		print_func(fp, "[target_jmp = %p]\n", pc->target_jmp);
 		break;
+
 	case Op_K_exit:
 		print_func(fp, "[target_end = %p] [target_atexit = %p]\n",
 						pc->target_end, pc->target_atexit);
