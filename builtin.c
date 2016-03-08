@@ -2081,8 +2081,26 @@ do_system(int nargs)
 
 		os_restore_mode(fileno(stdin));
 		ret = system(cmd);
-		if (ret != -1)
-			ret = WEXITSTATUS(ret);
+		/*
+		 * 3/2016. What to do with ret? It's never simple.
+		 * POSIX says to use the full return value. BWK awk
+		 * uses just the exit status. That seems more useful to
+		 * me, but then death by signal info gets lost.
+		 * So we compromise as follows:
+		 */
+		if (ret != -1) {
+			if (do_posix)
+				;	/* leave it alone, full 16 bits */
+			else if (WIFEXITED(ret))
+				ret = WEXITSTATUS(ret);	/* normal exit */
+			else if (do_traditional)
+				ret = 0;	/* ignore signal death */
+			else if (WIFSIGNALED(ret))
+				/* use 256 since exit values are 8 bits */
+				ret = WTERMSIG(ret) + 256;
+			else
+				ret = 0;	/* shouldn't get here */
+		}
 		if ((BINMODE & BINMODE_INPUT) != 0)
 			os_setbinmode(fileno(stdin), O_BINARY);
 
