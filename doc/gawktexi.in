@@ -17572,17 +17572,19 @@ When @option{--sandbox} is specified, the @code{system()} function is disabled
 On POSIX systems, a command's exit status is a 16-bit number. The exit
 value passed to the C @code{exit()} function is held in the high-order
 eight bits. The low-order bits indicate if the process was killed by a
-signal (bit 7) and if so, the signal number (bits 0--6).
+signal (bit 7) and if so, the guilty signal number (bits 0--6).
 
 Traditionally, @command{awk}'s @code{system()} function has simply
-returned the exit status value and ignored death-by-signal. POSIX
-states that @command{awk}'s @code{system()} should return the full
-16-bit value.
+returned the exit status value divided by 256. In the normal case this
+gives the exit status but in the case of death-by-signal it yields
+a fractional floating-point value. POSIX states that @command{awk}'s
+@code{system()} should return the full 16-bit value.
 
-@command{gawk} steers a middle ground. With @option{--posix}, it returns
-the full 16-bit value. By default, it returns just the exit status. The
-@option{--traditional} option forces @command{gawk} to ignore
-death-by-signal, in which case @code{system()} returns zero.
+@command{gawk} steers a middle ground.
+By default, it returns just the exit status. The
+@option{--traditional} option causes @command{gawk} to divide
+the return vaue by 356, just as Brian Kernighan's @command{awk} does.
+With @option{--posix}, it returns the full 16-bit value.
 
 If the process was killed by a signal, @command{gawk}'s @code{system()}
 returns 256 + @var{sig}, where @var{sig} is the number of the signal

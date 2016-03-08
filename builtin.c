@@ -2061,7 +2061,7 @@ NODE *
 do_system(int nargs)
 {
 	NODE *tmp;
-	int ret = 0;
+	AWKNUM ret = 0;		/* floating point on purpose, compat Unix awk */
 	char *cmd;
 	char save;
 
@@ -2084,17 +2084,17 @@ do_system(int nargs)
 		/*
 		 * 3/2016. What to do with ret? It's never simple.
 		 * POSIX says to use the full return value. BWK awk
-		 * uses just the exit status. That seems more useful to
-		 * me, but then death by signal info gets lost.
+		 * divides the result by 256.  That normally gives the
+		 * exit status but gives a weird result for death-by-signal.
 		 * So we compromise as follows:
 		 */
 		if (ret != -1) {
 			if (do_posix)
 				;	/* leave it alone, full 16 bits */
+			else if (do_traditional)
+				ret /= 256.0;
 			else if (WIFEXITED(ret))
 				ret = WEXITSTATUS(ret);	/* normal exit */
-			else if (do_traditional)
-				ret = 0;	/* ignore signal death */
 			else if (WIFSIGNALED(ret))
 				/* use 256 since exit values are 8 bits */
 				ret = WTERMSIG(ret) + 256;
