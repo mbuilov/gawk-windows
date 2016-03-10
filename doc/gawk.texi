@@ -18385,13 +18385,15 @@ signal (bit 7) and if so, the guilty signal number (bits 0--6).
 Traditionally, @command{awk}'s @code{system()} function has simply
 returned the exit status value divided by 256. In the normal case this
 gives the exit status but in the case of death-by-signal it yields
-a fractional floating-point value. POSIX states that @command{awk}'s
+a fractional floating-point value.@footnote{In private correspondance,
+Dr.@: Kernighan has indicated to me that the way this was done
+was probably a mistake.} POSIX states that @command{awk}'s
 @code{system()} should return the full 16-bit value.
 
 @command{gawk} steers a middle ground.
 By default, it returns just the exit status. The
 @option{--traditional} option causes @command{gawk} to divide
-the return vaue by 356, just as Brian Kernighan's @command{awk} does.
+the return vaue by 256, just as Brian Kernighan's @command{awk} does.
 With @option{--posix}, it returns the full 16-bit value.
 
 If the process was killed by a signal, @command{gawk}'s @code{system()}
