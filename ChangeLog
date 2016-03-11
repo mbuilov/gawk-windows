@@ -1,3 +1,12 @@
+2016-03-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_system): Further improvements. Catch core dump
+	flag.
+
+2016-03-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_system): Improve return values of system().
+
 2016-03-08         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* profile.c (print_instruction): Fix duplicate case not caught
@@ -7,6 +16,8 @@
 
 	* profile.c (print_instruction): Further improvements in
 	instruction dump, especially for when pretty-printing.
+	* builtin.c (do_system): Augment the logic for the return
+	value so that death-by-signal info is available too.
 
 2016-03-03         Arnold D. Robbins     <arnold@skeeve.com>
 
