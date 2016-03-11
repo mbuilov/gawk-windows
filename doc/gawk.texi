@@ -18391,19 +18391,20 @@ was probably a mistake.} POSIX states that @command{awk}'s
 @code{system()} should return the full 16-bit value.
 
 @command{gawk} steers a middle ground.
-By default, it returns just the exit status. The
-@option{--traditional} option causes @command{gawk} to divide
-the return vaue by 256, just as Brian Kernighan's @command{awk} does.
-With @option{--posix}, it returns the full 16-bit value.
+The return values are summarized in @ref{table-system-return-values}.
 
-If the process was killed by a signal, @command{gawk}'s @code{system()}
-returns 256 + @var{sig}, where @var{sig} is the number of the signal
-that killed the process.  Since exit values are eight bits, where the
-values range from 0--255, using 256 + @var{sig} lets you clearly distinguish
-normal exit from death-by-signal.
-
-If some kind of error occurred, @code{system()} returns @minus{}1.
-
+@float Table,table-system-return-values
+@caption{Return values from @code{system()}}
+@multitable @columnfractions .40 .60
+@headitem Situation @tab Return value from @code{system()}
+@item @option{--traditional} @tab C @code{system()}'s value divided by 256
+@item @option{--posix} @tab C @code{system()}'s value
+@item Normal exit of command @tab Command's exit status
+@item Death by signal of command @tab 256 + number of murderous signal
+@item Death by signal of command with core dump @tab 512 + number of murderous signal
+@item Some kind of error @tab @minus{}1
+@end multitable
+@end float
 @end table
 
 @cindex sidebar, Controlling Output Buffering with @code{system()}
