@@ -18622,7 +18622,7 @@ it is all buffered and sent down the pipe to @command{cat} in one shot.
 @cindex interacting with other programs
 Execute the operating system
 command @var{command} and then return to the @command{awk} program.
-Return @var{command}'s exit status.
+Return @var{command}'s exit status (see further on).
 
 For example, if the following fragment of code is put in your @command{awk}
 program:
@@ -18661,6 +18661,34 @@ When @option{--sandbox} is specified, the @code{system()} function is disabled
 (@pxref{Options}).
 @end quotation
 
+On POSIX systems, a command's exit status is a 16-bit number. The exit
+value passed to the C @code{exit()} function is held in the high-order
+eight bits. The low-order bits indicate if the process was killed by a
+signal (bit 7) and if so, the guilty signal number (bits 0--6).
+
+Traditionally, @command{awk}'s @code{system()} function has simply
+returned the exit status value divided by 256. In the normal case this
+gives the exit status but in the case of death-by-signal it yields
+a fractional floating-point value.@footnote{In private correspondance,
+Dr.@: Kernighan has indicated to me that the way this was done
+was probably a mistake.} POSIX states that @command{awk}'s
+@code{system()} should return the full 16-bit value.
+
+@command{gawk} steers a middle ground.
+The return values are summarized in @ref{table-system-return-values}.
+
+@float Table,table-system-return-values
+@caption{Return values from @code{system()}}
+@multitable @columnfractions .40 .60
+@headitem Situation @tab Return value from @code{system()}
+@item @option{--traditional} @tab C @code{system()}'s value divided by 256
+@item @option{--posix} @tab C @code{system()}'s value
+@item Normal exit of command @tab Command's exit status
+@item Death by signal of command @tab 256 + number of murderous signal
+@item Death by signal of command with core dump @tab 512 + number of murderous signal
+@item Some kind of error @tab @minus{}1
+@end multitable
+@end float
 @end table
 
 @cindex sidebar, Controlling Output Buffering with @code{system()}

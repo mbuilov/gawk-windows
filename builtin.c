@@ -2075,9 +2075,10 @@ NODE *
 do_system(int nargs)
 {
 	NODE *tmp;
-	int ret = 0;
+	AWKNUM ret = 0;		/* floating point on purpose, compat Unix awk */
 	char *cmd;
 	char save;
+	int status;
 
 	if (do_sandbox)
 		fatal(_("'system' function not allowed in sandbox mode"));
@@ -2094,9 +2095,33 @@ do_system(int nargs)
 		cmd[tmp->stlen] = '\0';
 
 		os_restore_mode(fileno(stdin));
-		ret = system(cmd);
-		if (ret != -1)
-			ret = WEXITSTATUS(ret);
+		status = system(cmd);
+		/*
+		 * 3/2016. What to do with ret? It's never simple.
+		 * POSIX says to use the full return value. BWK awk
+		 * divides the result by 256.  That normally gives the
+		 * exit status but gives a weird result for death-by-signal.
+		 * So we compromise as follows:
+		 */
+		ret = status;
+		if (status != -1) {
+			if (do_posix)
+				;	/* leave it alone, full 16 bits */
+			else if (do_traditional)
+				ret = (status / 256.0);
+			else if (WIFEXITED(status))
+				ret = WEXITSTATUS(status); /* normal exit */
+			else if (WIFSIGNALED(status)) {
+				bool coredumped = false;
+#ifdef WCOREDUMP
+				coredumped = WCOREDUMP(status);
+#endif
+				/* use 256 since exit values are 8 bits */
+				ret = WTERMSIG(status) +
+					(coredumped ? 512 : 256);
+			} else
+				ret = 0;	/* shouldn't get here */
+		}
 		if ((BINMODE & BINMODE_INPUT) != 0)
 			os_setbinmode(fileno(stdin), O_BINARY);
 
