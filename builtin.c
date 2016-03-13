@@ -1664,8 +1664,12 @@ do_printf(int nargs, int redirtype)
 		if (redir_exp->type != Node_val)
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
 		rp = redirect(redir_exp, redirtype, & errflg);
-		if (rp != NULL)
+		if (rp != NULL) {
+			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.fp == NULL) {
+				fatal(_("printf: attempt to write to closed write end of two-way pipe"));
+			}
 			fp = rp->output.fp;
+		}
 	} else if (do_debug)	/* only the debugger can change the default output */
 		fp = output_fp;
 	else
@@ -2136,8 +2140,12 @@ do_print(int nargs, int redirtype)
 		if (redir_exp->type != Node_val)
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
 		rp = redirect(redir_exp, redirtype, & errflg);
-		if (rp != NULL)
+		if (rp != NULL) {
+			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.fp == NULL) {
+				fatal(_("print: attempt to write to closed write end of two-way pipe"));
+			}
 			fp = rp->output.fp;
+		}
 	} else if (do_debug)	/* only the debugger can change the default output */
 		fp = output_fp;
 	else

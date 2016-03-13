@@ -2473,6 +2473,8 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 				update_ERRNO_int(redir_error);
 		}
 		return make_number((AWKNUM) -1.0);
+	} else if ((rp->flag & RED_TWOWAY) != 0 && rp->iop == NULL) {
+		fatal(_("getline: attempt to read from closed read end of two-way pipe"));
 	}
 	iop = rp->iop;
 	if (iop == NULL)		/* end of input */
