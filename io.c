@@ -1593,7 +1593,7 @@ socketopen(int family, int type, const char *localpname,
 #ifdef MSG_PEEK
 					char buf[10];
 					struct sockaddr_storage remote_addr;
-					socklen_t read_len = 0;
+					socklen_t read_len = sizeof(remote_addr);
 
 					if (recvfrom(socket_fd, buf, 1, MSG_PEEK,
 						(struct sockaddr *) & remote_addr,
