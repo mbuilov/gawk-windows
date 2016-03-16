@@ -584,6 +584,9 @@ unsetenv (const char *name)
   return setenv (name, "", 1);
 }
 
+/* MinGW 3.21 and later defines usleep as an inline function in
+   unistd.h, which conflicts with the version below.  */
+#if __MINGW32_MAJOR_VERSION + (__MINGW32_MINOR_VERSION > 20) < 4
 int
 usleep(unsigned int usec)
 {
@@ -593,6 +596,7 @@ usleep(unsigned int usec)
 
   return usec - msecf * 1000 < 0 ? 0 : (int)(usec - msecf * 1000);
 }
+#endif
 
 /* The implementation of wctob in the MS runtime is problematic
    because it doesn't allow to distinguish between WEOF and 0xff, due
