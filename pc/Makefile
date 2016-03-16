@@ -168,28 +168,28 @@ LMINGW32 = $(CC) $(LF) -o $@ $(GAWKOBJS) $(LF2)
 
 mingw32:
 	$(MAK) all \
-	CC=gcc O=.o CF="-D__USE_MINGW_ANSI_STDIO -O2 -gdwarf-2 -g3" \
+	CC=gcc O=.o CF="-D__USE_MINGW_ANSI_STDIO -O2 -gdwarf-2 -g3 -Wno-deprecated-declarations" \
 	OBJ=popen.o LNK=LMINGW32 LF="-gdwarf-2 -g3" \
         LF2="-lws2_32 -lmsvcp60" RSP=
 
 mingw32-readline:
 	$(MAK) all \
 	CC=gcc O=.o \
-	CF="-D__USE_MINGW_ANSI_STDIO -DHAVE_LIBREADLINE -O2 -gdwarf-2 -g3" \
+	CF="-D__USE_MINGW_ANSI_STDIO -DHAVE_LIBREADLINE -O2 -gdwarf-2 -g3 -Wno-deprecated-declarations" \
 	OBJ=popen.o LNK=LMINGW32 LF="-gdwarf-2 -g3" \
 	LF2="-lreadline -lws2_32 -lmsvcp60 -Wl,--enable-auto-import" RSP=
 
 mingw32-mpfr:
 	$(MAK) all \
 	CC=gcc O=.o \
-	CF="-D__USE_MINGW_ANSI_STDIO -DHAVE_MPFR -O2 -gdwarf-2 -g3" \
+	CF="-D__USE_MINGW_ANSI_STDIO -DHAVE_MPFR -O2 -gdwarf-2 -g3 -Wno-deprecated-declarations" \
 	OBJ=popen.o LNK=LMINGW32 LF="-gdwarf-2 -g3" \
 	LF2="-lmpfr -lgmp -lws2_32 -lmsvcp60 -Wl,--enable-auto-import" RSP=
 
 mingw32-readline-mpfr:
 	$(MAK) all \
 	CC=gcc O=.o \
-	CF="-D__USE_MINGW_ANSI_STDIO -DHAVE_LIBREADLINE -DHAVE_MPFR -O2 -gdwarf-2 -g3" \
+	CF="-D__USE_MINGW_ANSI_STDIO -DHAVE_LIBREADLINE -DHAVE_MPFR -O2 -gdwarf-2 -g3 -Wno-deprecated-declarations" \
 	OBJ=popen.o LNK=LMINGW32 LF="-gdwarf-2 -g3" \
 	LF2="-lmpfr -lgmp -lreadline -lws2_32 -lmsvcp60 -Wl,--enable-auto-import" RSP=
 
