@@ -454,6 +454,7 @@ function_prologue
 		if (comment_to_save != NULL && func_first
 		    && strstr(comment_to_save->memory->stptr, "\n\n") != NULL)
 			split_comment();
+
 		/* save any other pre-function comment as function comment  */
 		if (comment_to_save != NULL) {
 			function_comment = comment_to_save;
@@ -541,31 +542,54 @@ a_slash
 statements
 	: /* empty */
 	  {
-		if (comment != NULL) {
+		if (prior_comment != NULL) {
+			$$ = list_create(prior_comment);
+			prior_comment = NULL;
+		} else if (comment != NULL) {
 			$$ = list_create(comment);
 			comment = NULL;
-		} else $$ = NULL;
+		} else
+			$$ = NULL;
 	  }
 	| statements statement
 	  {
 		if ($2 == NULL) {
-			if (comment == NULL)
-				$$ = $1;
-			else {
+			if (prior_comment != NULL) {
+				$$ = list_append($1, prior_comment);
+				prior_comment = NULL;
+				if (comment != NULL) {
+					$$ = list_append($$, comment);
+					comment = NULL;
+				}
+			} else if (comment != NULL) {
 				$$ = list_append($1, comment);
 				comment = NULL;
-			}
+			} else
+				$$ = $1;
 		} else {
 			add_lint($2, LINT_no_effect);
 			if ($1 == NULL) {
-				if (comment == NULL)
-					$$ = $2;
-				else {
+				if (prior_comment != NULL) {
+					$$ = list_append($2, prior_comment);
+					prior_comment = NULL;
+					if (comment != NULL) {
+						$$ = list_append($$, comment);
+						comment = NULL;
+					}
+				} else if (comment != NULL) {
 					$$ = list_append($2, comment);
 					comment = NULL;
-				}
+				} else
+					$$ = $2;
 			} else {
-				if (comment != NULL) {
+				if (prior_comment != NULL) {
+					list_append($2, prior_comment);
+					prior_comment = NULL;
+					if (comment != NULL) {
+						list_append($2, comment);
+						comment = NULL;
+					}
+				} else if (comment != NULL) {
 					list_append($2, comment);
 					comment = NULL;
 				}

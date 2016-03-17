@@ -785,28 +785,33 @@ cleanup:
 			fprintf(prof_fp, "%s (", op2str(pc->opcode));
 			pprint(pc->nexti, ip1->while_body, NO_PPRINT_FLAGS);
 			t1 = pp_pop();
-			fprintf(prof_fp, "%s) {\n", t1->pp_str);
+			fprintf(prof_fp, "%s) {", t1->pp_str);
 			pp_free(t1);
+			ip1->while_body = end_line(ip1->while_body);
 			indent_in();
 			pprint(ip1->while_body->nexti, pc->target_break, NO_PPRINT_FLAGS);
 			indent_out();
 			indent(SPACEOVER);
-			fprintf(prof_fp, "}\n");
-			pc = pc->target_break;
+			fprintf(prof_fp, "}");
+			pc = end_line(pc->target_break);
 			break;
 
 		case Op_K_do:
 			ip1 = pc + 1;
 			indent(pc->nexti->exec_count);
-			fprintf(prof_fp, "%s {\n", op2str(pc->opcode));
+			fprintf(prof_fp, "%s {", op2str(pc->opcode));
+			end_line(pc->nexti);
+			skip_comment = true;
 			indent_in();
 			pprint(pc->nexti->nexti, ip1->doloop_cond, NO_PPRINT_FLAGS);
 			indent_out();
 			pprint(ip1->doloop_cond, pc->target_break, NO_PPRINT_FLAGS);
 			indent(SPACEOVER);
 			t1 = pp_pop();
-			fprintf(prof_fp, "} %s (%s)\n", op2str(Op_K_while), t1->pp_str);
+			fprintf(prof_fp, "} %s (%s)", op2str(Op_K_while), t1->pp_str);
 			pp_free(t1);
+			end_line(pc->target_break);
+			skip_comment = true;
 			pc = pc->target_break;
 			break;
 
@@ -836,12 +841,16 @@ cleanup:
 
 				pprint(pc->target_continue, pc->target_break, IN_FOR_HEADER);
 			}
-			fprintf(prof_fp, ") {\n");
+			fprintf(prof_fp, ") {");
+			end_line(ip1->forloop_body);
+			skip_comment = true;
 			indent_in();
 			pprint(ip1->forloop_body->nexti, pc->target_continue, NO_PPRINT_FLAGS);
 			indent_out();
 			indent(SPACEOVER);
-			fprintf(prof_fp, "}\n");
+			fprintf(prof_fp, "}");
+			end_line(pc->target_break);
+			skip_comment = true;
 			pc = pc->target_break;
 			break;
 
@@ -859,14 +868,18 @@ cleanup:
 			else
 				item = m->vname;
 			indent(ip1->forloop_body->exec_count);
-			fprintf(prof_fp, "%s (%s%s%s) {\n", op2str(Op_K_arrayfor),
+			fprintf(prof_fp, "%s (%s%s%s) {", op2str(Op_K_arrayfor),
 						item, op2str(Op_in_array), array);
+			end_line(ip1->forloop_body);
+			skip_comment = true;
 			indent_in();
 			pp_free(t1);
 			pprint(ip1->forloop_body->nexti, pc->target_break, NO_PPRINT_FLAGS);
 			indent_out();
 			indent(SPACEOVER);
-			fprintf(prof_fp, "}\n");			
+			fprintf(prof_fp, "}");
+			end_line(pc->target_break);
+			skip_comment = true;
 			pc = pc->target_break;
 		}
 			break;
@@ -918,7 +931,10 @@ cleanup:
 			pc = pc->branch_else;
 			if (pc->nexti->opcode == Op_no_op) {	/* no following else */
 				indent(SPACEOVER);
-				fprintf(prof_fp, "}\n");
+				fprintf(prof_fp, "}");
+//				pc = end_line(pc->nexti);
+				end_line(pc->nexti);
+				skip_comment = true;
 			}
 			/*
 			 * See next case; turn off the flag so that the
@@ -954,8 +970,15 @@ cleanup:
 				pprint(pc->nexti, pc->branch_end, NO_PPRINT_FLAGS);
 				indent_out();
 				indent(SPACEOVER);
-				fprintf(prof_fp, "}\n");
+				fprintf(prof_fp, "}");
+				end_line(pc->branch_end);
+				skip_comment = true;
 			}
+			/*
+			 * Don't do end_line() here, we get multiple blank lines after
+			 * the final else in a chain of else-ifs since they all point
+			 * to the same branch_end.
+			 */
 			pc = pc->branch_end;
 			break;
 
