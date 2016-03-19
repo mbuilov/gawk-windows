@@ -999,12 +999,12 @@ function _FILEIO(c, t, P, A)
 ############################################################
 function _FILEVER(c, t, P, a, A)
 {
-	#################################################
+	#_____________________________________________________________________________
 	switch (c) {
 	case "_lib_CMDLN":
-		#___________________________________________________________
+		#################################################
 		return t
-		#_____________________________________________________________________________
+		#___________________________________________________________
 		#_____________________________________________________
 	case "_lib_APPLY":
 		return 
@@ -1591,10 +1591,9 @@ function _addlist(A, v)
 ############################################
 function _bearray(A)
 {
-	####################################################
+	#_______________________________________________________________________
 	if (isarray(A) || A == 0 && A == "") {
-		return 1
-		#_______________________________________________________________________
+		return 1	####################################################
 	}
 }
 
@@ -2185,8 +2184,7 @@ function _dll_check_i0(p, R, pp, p2, i, i2, r, f, v, rs, d, tv, tf)
 					}
 				}
 			}
-		}
-		#{ rs=_missfl=1; _[p]["." gensub(/^([^\\]+\\)+(.*)\..../,"\\2","G",i)]=R[i] } }
+		}	#{ rs=_missfl=1; _[p]["." gensub(/^([^\\]+\\)+(.*)\..../,"\\2","G",i)]=R[i] } }
 		if (rs) {
 			if ((i = ".Install Path") in _[p] && (i = ".Product Version") in _[p]) {
 				_[p]["STATUS"] = "PRESENT"
@@ -2649,9 +2647,8 @@ function _ffaccr(A, t, p, P)
 ##################
 function _fframe(A, t, p)
 {
-	#################################################
-	return _fframe_i0(A, t, p, A[""])
 	#_______________________________________________________________________
+	return _fframe_i0(A, t, p, A[""])	#################################################
 }
 
 #___________________________________________________________
@@ -3149,8 +3146,7 @@ function _getchrln(s, w)
 	#################################################
 	if (s == "") {
 		return 
-	}
-	#if ( w!=w+0 || w<0 )	w=_CON_WIDTH
+	}	#if ( w!=w+0 || w<0 )	w=_CON_WIDTH
 	if (length(s) < w) {
 		if (s in _GETCHRLN) {
 			if (length(_getchrlnt0 = _GETCHRLN[s]) >= w) {
@@ -4383,12 +4379,12 @@ function _qstrq(t)
 ################################################################
 function _rEG(c, t, P, a, A)
 {
-	#####################################################
+	#_____________________________________________________________________________
 	switch (c) {
 	case "_lib_CMDLN":
-		#___________________________________________________________
+		#####################################################
 		return t
-		#_____________________________________________________________________________
+		#___________________________________________________________
 		#_____________________________________________________
 	case "_lib_APPLY":
 		return 
@@ -4436,11 +4432,10 @@ function _rFCHLD(p)
 ######################## p="", !v
 function _rLBRO(p)
 {
-	######################################################
-	if (p) {
+	#_______________________________________________________________________
+	if (p) {	######################################################
 		if (p in _tPARENT) {
 			return _tLCHLD[_tPARENT[p]]
-			#_______________________________________________________________________
 		}
 		while (p in _tNEXT) {
 			p = _tNEXT[p]
@@ -4453,10 +4448,9 @@ function _rLBRO(p)
 ######################## p=""
 function _rLCHLD(p)
 {
-	#####################################################
-	if (p && p in _tLCHLD) {
+	#_______________________________________________________________________
+	if (p && p in _tLCHLD) {	#####################################################
 		return _tLCHLD[p]
-		#_______________________________________________________________________
 	}
 	return ""
 }
@@ -4471,10 +4465,9 @@ function _rLINK(p)
 ######################## p=""
 function _rNEXT(p)
 {
-	######################################################
-	if (p && p in _tNEXT) {
+	#_______________________________________________________________________
+	if (p && p in _tNEXT) {	######################################################
 		return _tNEXT[p]
-		#_______________________________________________________________________
 	}
 	return ""
 }
@@ -4482,10 +4475,9 @@ function _rNEXT(p)
 ######################## p=""
 function _rPARENT(p)
 {
-	####################################################
-	if (p && p in _tPARENT) {
+	#_______________________________________________________________________
+	if (p && p in _tPARENT) {	####################################################
 		return _tPARENT[p]
-		#_______________________________________________________________________
 	}
 	return ""
 }
@@ -4493,10 +4485,9 @@ function _rPARENT(p)
 ######################## p=""
 function _rPREV(p)
 {
-	######################################################
-	if (p && p in _tPREV) {
+	#_______________________________________________________________________
+	if (p && p in _tPREV) {	######################################################
 		return _tPREV[p]
-		#_______________________________________________________________________
 	}
 	return ""
 }
@@ -4504,11 +4495,10 @@ function _rPREV(p)
 ######################## p=""
 function _rQBRO(p, c, p1)
 {
-	################################################
-	if (p) {
+	#_______________________________________________________________________
+	if (p) {	################################################
 		if (p in _tPARENT) {
 			return _tQCHLD[_tPARENT[p]]
-			#_______________________________________________________________________
 		}
 		c = 1
 		p1 = p
@@ -4528,10 +4518,9 @@ function _rQBRO(p, c, p1)
 ######################## p=""
 function _rQCHLD(p)
 {
-	#####################################################
-	if (p && p in _tQCHLD) {
+	#_______________________________________________________________________
+	if (p && p in _tQCHLD) {	#####################################################
 		return _tQCHLD[p]
-		#_______________________________________________________________________
 	}
 	return ""
 }
@@ -5155,12 +5144,12 @@ function _rxpfn(R, t, p, i, f, A)
 ##############################################################
 function _sHARE(c, t, P, a, A)
 {
-	###################################################
+	#_____________________________________________________________________________
 	switch (c) {
 	case "_lib_CMDLN":
-		#___________________________________________________________
+		###################################################
 		return t
-		#_____________________________________________________________________________
+		#___________________________________________________________
 		#_____________________________________________________
 	case "_lib_APPLY":
 		return 
@@ -5182,12 +5171,12 @@ function _sHARE(c, t, P, a, A)
 ################################################################
 function _sYS(c, t, P, a, A)
 {
-	#####################################################
+	#_____________________________________________________________________________
 	switch (c) {
 	case "_lib_CMDLN":
-		#___________________________________________________________
+		#####################################################
 		return t
-		#_____________________________________________________________________________
+		#___________________________________________________________
 		#_____________________________________________________
 	case "_lib_APPLY":
 		return 
@@ -5248,8 +5237,7 @@ function _setmpath(p, a)
 	if (p && (a = _filerd(p))) {
 		if (_FILEIO_TMPRD) {
 			_FILEIO_TMPATHS[_FILEIO_TMPRD]
-		}
-		#if ( _filexist(a) ) _del(a)
+		}		#if ( _filexist(a) ) _del(a)
 		#_cmd("rd " a " /S /Q 2>NUL"); _cmd("del " a " /Q 2>NUL")
 		return (_FILEIO_TMPRD = a)
 	} else {
@@ -5315,11 +5303,9 @@ function _shortcut(D, S)
 	if (isarray(D)) {
 		if (isarray(S)) {
 			_addarrmask(D, S, _SHORTCUTWSTRUC)
-		} else if (S == 0 && S == "") {
-			# array,array2*		- copy from array2 to array shorcut-specific elements
+		} else if (S == 0 && S == "") {	# array,array2*		- copy from array2 to array shorcut-specific elements
 			_addarrmask(D, _SHORTCUTDEFAULT, _SHORTCUTWSTRUC)
-		} else if (_isnotfileptr(S)) {
-			# array*			- define shortcut-specific elements in array by default values
+		} else if (_isnotfileptr(S)) {	# array*			- define shortcut-specific elements in array by default values
 			_addarrmask(D, _[S], _SHORTCUTWSTRUC)
 		} else if (_rd_shortcut(D, S)) {
 			return 	# array,ptr*		- copy from array _[ptr] to array shorcut-specific elements
@@ -5330,17 +5316,14 @@ function _shortcut(D, S)
 	} else if (_isnotfileptr(D)) {
 		if (isarray(S)) {
 			_addarrmask(_[D], S, _SHORTCUTWSTRUC)
-		} else if (S == 0 && S == "") {
-			# ptr,array*		- copy from array to array _[ptr] shorcut-specific elements
+		} else if (S == 0 && S == "") {	# ptr,array*		- copy from array to array _[ptr] shorcut-specific elements
 			_addarrmask(_[D], _SHORTCUTDEFAULT, _SHORTCUTWSTRUC)
-		} else if (_isnotfileptr(S)) {
-			# ptr*			- define shortcut-specifc elements in array _[ptr] by default values
+		} else if (_isnotfileptr(S)) {	# ptr*			- define shortcut-specifc elements in array _[ptr] by default values
 			_addarrmask(_[D], _[S], _SHORTCUTWSTRUC)
 		} else if (_rd_shortcut(_[D], S)) {
 			return 	# ptr,ptr2*			- copy from array _[ptr2] to array _[ptr] shorcut-specific elements
 		}
-	} else {
-		# ptr,filepath*		- define in array _[ptr] shortcut-specific elements by reading its from shortcut file filepath(load shortcut)
+	} else {	# ptr,filepath*		- define in array _[ptr] shortcut-specific elements by reading its from shortcut file filepath(load shortcut)
 		if (isarray(S) && _wr_shortcut(D, S)) {
 			return 	# filepath,array*		- [over]write shorcut file filepath; shortcut parameters will be defined by shortcut-specific elements in array(save shortcut)
 		} else if (S == 0 && S == "" && _wr_shortcut(D, _SHORTCUTDEFAULT)) {
@@ -5349,9 +5332,7 @@ function _shortcut(D, S)
 			return 	# filepath,ptr*		- [over]write shorcut file filepath; shortcut parameters will be defined by shortcut-specific elements in array _[ptr](save shortcut)
 		} else if (_rd_shortcut(_SHRTCUTA1, S) || _wr_shortcut(D, _SHRTCUTA1)) {
 			return 
-		}
-	}
-	# filepath,filepath2*	- [over]write shorcut file filepath; shortcut parameters will be defined from shortcut file filepath2(copy shortcut)
+		}	}	# filepath,filepath2*	- [over]write shorcut file filepath; shortcut parameters will be defined from shortcut file filepath2(copy shortcut)
 	return 1
 }
 
@@ -7459,8 +7440,7 @@ function _wFBRO(p, v, a)
 				if ((a = _tPARENT[a]) == v) {
 					return v
 				}
-			}
-			######################## v is parentesis of p
+			}	######################## v is parentesis of p
 			if (p in _tPARENT) {
 				p = _tPARENT[p]
 				if (v in _tNEXT) {
@@ -7550,12 +7530,10 @@ function _wFBRO(p, v, a)
 		} else {
 			if (v == 0) {
 				return v
-			}
-			######################## p=ptr, v=0
+			}			######################## p=ptr, v=0
 			return v
 		}
-	} else {
-		######################## p=ptr, v=""
+	} else {	######################## p=ptr, v=""
 		if (p == 0) {
 			return v	######################## p=0
 		}
@@ -7574,14 +7552,12 @@ function _wFCHLD(p, v, a)
 		if (v) {
 			if (p == v) {
 				return v
-			}
-			######################## p=v=ptr
+			}			######################## p=v=ptr
 			for (a = p; a in _tPARENT; ) {
 				if ((a = _tPARENT[a]) == v) {
 					return v
 				}
-			}
-			######################## v is parentesis of p
+			}	######################## v is parentesis of p
 			if (v in _tNEXT) {
 				if (v in _tPREV) {
 					_tPREV[_tNEXT[a] = _tNEXT[v]] = a = _tPREV[v]
@@ -7636,8 +7612,7 @@ function _wFCHLD(p, v, a)
 			return (_tFCHLD[_tPARENT[v] = p] = _tLCHLD[p] = v)
 		} else {
 			if (v == 0) {
-				if (p in _tFCHLD) {
-					######################## p=ptr, v=0 > delete all chld
+				if (p in _tFCHLD) {	######################## p=ptr, v=0 > delete all chld
 					v = _tFCHLD[p]
 					delete _tFCHLD[p]
 					delete _tLCHLD[p]
@@ -7649,8 +7624,7 @@ function _wFCHLD(p, v, a)
 			}
 			return v
 		}
-	} else {
-		######################## p=ptr, v="" > ignore action
+	} else {	######################## p=ptr, v="" > ignore action
 		if (p == 0) {
 			return v	######################## p=0
 		}
@@ -7668,8 +7642,7 @@ function _wLBRO(p, v, a)
 				if ((a = _tPARENT[a]) == v) {
 					return v
 				}
-			}
-			######################## v is parentesis of p
+			}	######################## v is parentesis of p
 			if (p in _tPARENT) {
 				p = _tPARENT[p]
 				if (v in _tPREV) {
@@ -7759,12 +7732,10 @@ function _wLBRO(p, v, a)
 		} else {
 			if (v == 0) {
 				return v
-			}
-			######################## p=ptr, v=0
+			}			######################## p=ptr, v=0
 			return v
 		}
-	} else {
-		######################## p=ptr, v=""
+	} else {	######################## p=ptr, v=""
 		if (p == 0) {
 			return v	######################## p=0
 		}
@@ -7783,14 +7754,12 @@ function _wLCHLD(p, v, a)
 		if (v) {
 			if (p == v) {
 				return v
-			}
-			######################## p=v=ptr
+			}			######################## p=v=ptr
 			for (a = p; a in _tPARENT; ) {
 				if ((a = _tPARENT[a]) == v) {
 					return v
 				}
-			}
-			######################## v is parentesis of p
+			}	######################## v is parentesis of p
 			if (v in _tPREV) {
 				if (v in _tNEXT) {
 					_tNEXT[_tPREV[a] = _tPREV[v]] = a = _tNEXT[v]
@@ -7845,8 +7814,7 @@ function _wLCHLD(p, v, a)
 			return (_tLCHLD[_tPARENT[v] = p] = _tFCHLD[p] = v)
 		} else {
 			if (v == 0) {
-				if (p in _tFCHLD) {
-					######################## p=ptr, v=0 > delete all chld
+				if (p in _tFCHLD) {	######################## p=ptr, v=0 > delete all chld
 					v = _tFCHLD[p]
 					delete _tFCHLD[p]
 					delete _tLCHLD[p]
@@ -7858,8 +7826,7 @@ function _wLCHLD(p, v, a)
 			}
 			return v
 		}
-	} else {
-		######################## p=ptr, v="" > ignore action
+	} else {	######################## p=ptr, v="" > ignore action
 		if (p == 0) {
 			return v	######################## p=0
 		}
@@ -7882,14 +7849,12 @@ function _wNEXT(p, v, a, b)
 		if (v) {
 			if (p == v) {
 				return v
-			}
-			######################## p=v=ptr
+			}			######################## p=v=ptr
 			for (a = p; a in _tPARENT; ) {
 				if ((a = _tPARENT[a]) == v) {
 					return v
 				}
-			}
-			######################## v is parentesis of p
+			}	######################## v is parentesis of p
 			if (v in _tPREV) {
 				if (p == (a = _tPREV[v])) {
 					return v
@@ -7937,12 +7902,10 @@ function _wNEXT(p, v, a, b)
 		} else {
 			if (v == 0) {
 				return v
-			}
-			######################## p=ptr, v=0
+			}			######################## p=ptr, v=0
 			return v
 		}
-	} else {
-		######################## p=ptr, v=""
+	} else {	######################## p=ptr, v=""
 		if (p == 0) {
 			return v	######################## p=0
 		}
@@ -7968,14 +7931,12 @@ function _wPREV(p, v, a, b)
 		if (v) {
 			if (p == v) {
 				return v
-			}
-			######################## p=v=ptr
+			}			######################## p=v=ptr
 			for (a = p; a in _tPARENT; ) {
 				if ((a = _tPARENT[a]) == v) {
 					return v
 				}
-			}
-			######################## v is parentesis of p
+			}	######################## v is parentesis of p
 			if (v in _tNEXT) {
 				if (p == (a = _tNEXT[v])) {
 					return v
@@ -8023,12 +7984,10 @@ function _wPREV(p, v, a, b)
 		} else {
 			if (v == 0) {
 				return v
-			}
-			######################## p=ptr, v=0
+			}			######################## p=ptr, v=0
 			return v
 		}
-	} else {
-		######################## p=ptr, v=""
+	} else {	######################## p=ptr, v=""
 		if (p == 0) {
 			return v	######################## p=0
 		}
@@ -8052,11 +8011,9 @@ function _wQCHLD(p, v)
 	#############################################
 	if (p) {
 		if (v) {
-		} else {
-			######################## p=ptr, v=ptr
+		} else {	######################## p=ptr, v=ptr
 			if (v == 0) {
-				if (p in _tFCHLD) {
-					######################## p=ptr, v=0 > delete all chld
+				if (p in _tFCHLD) {	######################## p=ptr, v=0 > delete all chld
 					v = _tFCHLD[p]
 					delete _tFCHLD[p]
 					delete _tLCHLD[p]
@@ -8068,12 +8025,10 @@ function _wQCHLD(p, v)
 			}
 			return v
 		}
-	} else {
-		######################## p=ptr, v="" > ignore action
+	} else {	######################## p=ptr, v="" > ignore action
 		if (p == 0) {
 			return v
-		}
-		######################## p=0
+		}		######################## p=0
 		return v
 	}
 }
