@@ -34,6 +34,9 @@ BEGIN {			# Comment 0
 		print "foo"
 	}		# Comment 25
 
+	if (2) {
+		print "bar"
+	}
 	# Comment 26
 }
 # Comment 27

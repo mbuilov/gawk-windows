@@ -932,7 +932,8 @@ cleanup:
 			if (pc->nexti->opcode == Op_no_op) {	/* no following else */
 				indent(SPACEOVER);
 				fprintf(prof_fp, "}");
-				if (pc->nexti->nexti->opcode != Op_comment)
+				if (pc->nexti->nexti->opcode != Op_comment
+				    || pc->nexti->nexti->memory->comment_type == FULL_COMMENT)
 					fprintf(prof_fp, "\n");
 				/* else
 				 	It will be printed at the top. */

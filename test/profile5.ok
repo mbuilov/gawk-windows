@@ -3146,7 +3146,8 @@ function _getchrln(s, w)
 	#################################################
 	if (s == "") {
 		return 
-	}	#if ( w!=w+0 || w<0 )	w=_CON_WIDTH
+	}
+	#if ( w!=w+0 || w<0 )	w=_CON_WIDTH
 	if (length(s) < w) {
 		if (s in _GETCHRLN) {
 			if (length(_getchrlnt0 = _GETCHRLN[s]) >= w) {
@@ -5237,7 +5238,8 @@ function _setmpath(p, a)
 	if (p && (a = _filerd(p))) {
 		if (_FILEIO_TMPRD) {
 			_FILEIO_TMPATHS[_FILEIO_TMPRD]
-		}		#if ( _filexist(a) ) _del(a)
+		}
+		#if ( _filexist(a) ) _del(a)
 		#_cmd("rd " a " /S /Q 2>NUL"); _cmd("del " a " /Q 2>NUL")
 		return (_FILEIO_TMPRD = a)
 	} else {
