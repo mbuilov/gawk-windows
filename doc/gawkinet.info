@@ -1,11 +1,11 @@
-This is gawkinet.info, produced by makeinfo version 5.2 from
+This is gawkinet.info, produced by makeinfo version 6.1 from
 gawkinet.texi.
 
-This is Edition 1.3 of 'TCP/IP Internetworking with 'gawk'', for the
-4.0.0 (or later) version of the GNU implementation of AWK.
+This is Edition 1.4 of 'TCP/IP Internetworking with 'gawk'', for the
+4.1.4 (or later) version of the GNU implementation of AWK.
 
 
-   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010 Free Software
+   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016 Free Software
 Foundation, Inc.
 
 
@@ -29,11 +29,11 @@ END-INFO-DIR-ENTRY
 
    This file documents the networking features in GNU 'awk'.
 
-   This is Edition 1.3 of 'TCP/IP Internetworking with 'gawk'', for the
-4.0.0 (or later) version of the GNU implementation of AWK.
+   This is Edition 1.4 of 'TCP/IP Internetworking with 'gawk'', for the
+4.1.4 (or later) version of the GNU implementation of AWK.
 
 
-   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010 Free Software
+   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016 Free Software
 Foundation, Inc.
 
 
@@ -60,11 +60,11 @@ General Introduction
 This file documents the networking features in GNU Awk ('gawk') version
 4.0 and later.
 
-   This is Edition 1.3 of 'TCP/IP Internetworking with 'gawk'', for the
-4.0.0 (or later) version of the GNU implementation of AWK.
+   This is Edition 1.4 of 'TCP/IP Internetworking with 'gawk'', for the
+4.1.4 (or later) version of the GNU implementation of AWK.
 
 
-   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010 Free Software
+   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016 Free Software
 Foundation, Inc.
 
 
@@ -477,8 +477,8 @@ File: gawkinet.info,  Node: Gawk Special Files,  Next: TCP Connecting,  Prev: Us
 
 The '|&' operator for use in communicating with a "coprocess" is
 described in *note Two-way Communications With Another Process:
-(gawk)Two-way I/O.  It shows how to do two-way I/O to a separate
-process, sending it data with 'print' or 'printf' and reading data with
+(gawk)Two-way I/O. It shows how to do two-way I/O to a separate process,
+sending it data with 'print' or 'printf' and reading data with
 'getline'.  If you haven't read it already, you should detour there to
 do so.
 
@@ -686,17 +686,33 @@ started first:
 
      # Client
      BEGIN {
+       print "hi!" |& "/inet/udp/0/localhost/8888"
        "/inet/udp/0/localhost/8888" |& getline
        print $0
        close("/inet/udp/0/localhost/8888")
      }
+
+   In the case of UDP, the initial 'print' command is the one that
+actually sends data so that there is a connection.  UDP and "connection"
+sounds strange to anyone who has learned that UDP is a connectionless
+protocol.  Here, "connection" means that the 'connect()' system call has
+completed its work and completed the "association" between a certain
+socket and an IP address.  Thus there are subtle differences between
+'connect()' for TCP and UDP; see the man page for details.(1)
 
    UDP cannot guarantee that the datagrams at the receiving end will
 arrive in exactly the same order they were sent.  Some datagrams could
 be lost, some doubled, and some out of order.  But no overhead is
 necessary to accomplish this.  This unreliable behavior is good enough
 for tasks such as data acquisition, logging, and even stateless services
-like NFS.
+like the original versions of NFS.
+
+   ---------- Footnotes ----------
+
+   (1) This subtlety is just one of many details that are hidden in the
+socket API, invisible and intractable for the 'gawk' user.  The
+developers are currently considering how to rework the network
+facilities to make them easier to understand and use.
 
 
 File: gawkinet.info,  Node: TCP Connecting,  Next: Troubleshooting,  Prev: Gawk Special Files,  Up: Using Networking
@@ -4143,10 +4159,10 @@ Index
  [index ]
 * Menu:
 
-* '/inet/' files ('gawk'):               Gawk Special Files.  (line  34)
-* '/inet/tcp' special files ('gawk'):    File /inet/tcp.      (line   6)
-* '/inet/udp' special files ('gawk'):    File /inet/udp.      (line   6)
-* '|' (vertical bar), '|&' operator (I/O): TCP Connecting.    (line  25)
+* /inet/ files (gawk):                   Gawk Special Files.  (line  34)
+* /inet/tcp special files (gawk):        File /inet/tcp.      (line   6)
+* /inet/udp special files (gawk):        File /inet/udp.      (line   6)
+* | (vertical bar), |& operator (I/O):   TCP Connecting.      (line  25)
 * advanced features, network connections: Troubleshooting.    (line   6)
 * agent:                                 Challenges.          (line  75)
 * agent <1>:                             MOBAGWHO.            (line   6)
@@ -4166,7 +4182,7 @@ Index
 * Common Gateway Interface, See CGI:     Web page.            (line  45)
 * Computational Biology:                 PROTBASE.            (line 227)
 * contest:                               Challenges.          (line   6)
-* 'cron' utility:                        STOXPRED.            (line  23)
+* cron utility:                          STOXPRED.            (line  23)
 * CSV format:                            STOXPRED.            (line 128)
 * Dow Jones Industrial Index:            STOXPRED.            (line  44)
 * ELIZA program:                         Simple Server.       (line  11)
@@ -4176,22 +4192,22 @@ Index
 * FDL (Free Documentation License):      GNU Free Documentation License.
                                                               (line   6)
 * filenames, for network access:         Gawk Special Files.  (line  29)
-* files, '/inet/' ('gawk'):              Gawk Special Files.  (line  34)
-* files, '/inet/tcp' ('gawk'):           File /inet/tcp.      (line   6)
-* files, '/inet/udp' ('gawk'):           File /inet/udp.      (line   6)
-* 'finger' utility:                      Setting Up.          (line  22)
+* files, /inet/ (gawk):                  Gawk Special Files.  (line  34)
+* files, /inet/tcp (gawk):               File /inet/tcp.      (line   6)
+* files, /inet/udp (gawk):               File /inet/udp.      (line   6)
+* finger utility:                        Setting Up.          (line  22)
 * Free Documentation License (FDL):      GNU Free Documentation License.
                                                               (line   6)
 * FTP (File Transfer Protocol):          Basic Protocols.     (line  45)
-* 'gawk', networking:                    Using Networking.    (line   6)
-* 'gawk', networking, connections:       Special File Fields. (line  53)
-* 'gawk', networking, connections <1>:   TCP Connecting.      (line   6)
-* 'gawk', networking, filenames:         Gawk Special Files.  (line  29)
-* 'gawk', networking, See Also email:    Email.               (line   6)
-* 'gawk', networking, service, establishing: Setting Up.      (line   6)
-* 'gawk', networking, troubleshooting:   Caveats.             (line   6)
-* 'gawk', web and, See web service:      Interacting Service. (line   6)
-* 'getline' command:                     TCP Connecting.      (line  11)
+* gawk, networking:                      Using Networking.    (line   6)
+* gawk, networking, connections:         Special File Fields. (line  53)
+* gawk, networking, connections <1>:     TCP Connecting.      (line   6)
+* gawk, networking, filenames:           Gawk Special Files.  (line  29)
+* gawk, networking, See Also email:      Email.               (line   6)
+* gawk, networking, service, establishing: Setting Up.        (line   6)
+* gawk, networking, troubleshooting:     Caveats.             (line   6)
+* gawk, web and, See web service:        Interacting Service. (line   6)
+* getline command:                       TCP Connecting.      (line  11)
 * GETURL program:                        GETURL.              (line   6)
 * GIF image format:                      Web page.            (line  45)
 * GIF image format <1>:                  STATIST.             (line   6)
@@ -4218,7 +4234,7 @@ Index
 * image format:                          STATIST.             (line   6)
 * images, in web pages:                  Interacting Service. (line 189)
 * images, retrieving over networks:      Web page.            (line  45)
-* input/output, two-way, See Also 'gawk', networking: Gawk Special Files.
+* input/output, two-way, See Also gawk, networking: Gawk Special Files.
                                                               (line  19)
 * Internet, See networks:                Interacting.         (line  48)
 * JavaScript:                            STATIST.             (line  56)
@@ -4238,22 +4254,22 @@ Index
 * NCBI, National Center for Biotechnology Information: PROTBASE.
                                                               (line   6)
 * network type field:                    Special File Fields. (line  11)
-* networks, 'gawk' and:                  Using Networking.    (line   6)
-* networks, 'gawk' and, connections:     Special File Fields. (line  53)
-* networks, 'gawk' and, connections <1>: TCP Connecting.      (line   6)
-* networks, 'gawk' and, filenames:       Gawk Special Files.  (line  29)
-* networks, 'gawk' and, See Also email:  Email.               (line   6)
-* networks, 'gawk' and, service, establishing: Setting Up.    (line   6)
-* networks, 'gawk' and, troubleshooting: Caveats.             (line   6)
+* networks, gawk and:                    Using Networking.    (line   6)
+* networks, gawk and, connections:       Special File Fields. (line  53)
+* networks, gawk and, connections <1>:   TCP Connecting.      (line   6)
+* networks, gawk and, filenames:         Gawk Special Files.  (line  29)
+* networks, gawk and, See Also email:    Email.               (line   6)
+* networks, gawk and, service, establishing: Setting Up.      (line   6)
+* networks, gawk and, troubleshooting:   Caveats.             (line   6)
 * networks, ports, reserved:             Setting Up.          (line  37)
 * networks, ports, specifying:           Special File Fields. (line  24)
 * networks, See Also web pages:          PANIC.               (line   6)
 * Numerical Recipes:                     STATIST.             (line  24)
-* 'ORS' variable, HTTP and:              Web page.            (line  29)
-* 'ORS' variable, POP and:               Email.               (line  36)
+* ORS variable, HTTP and:                Web page.            (line  29)
+* ORS variable, POP and:                 Email.               (line  36)
 * PANIC program:                         PANIC.               (line   6)
 * Perl:                                  Using Networking.    (line  14)
-* Perl, 'gawk' networking and:           Using Networking.    (line  24)
+* Perl, gawk networking and:             Using Networking.    (line  24)
 * Perlis, Alan:                          MAZE.                (line   6)
 * pipes, networking and:                 TCP Connecting.      (line  30)
 * PNG image format:                      Web page.            (line  45)
@@ -4267,15 +4283,15 @@ Index
 * protocol field:                        Special File Fields. (line  17)
 * PS image format:                       STATIST.             (line   6)
 * Python:                                Using Networking.    (line  14)
-* Python, 'gawk' networking and:         Using Networking.    (line  24)
+* Python, gawk networking and:           Using Networking.    (line  24)
 * record separators, HTTP and:           Web page.            (line  29)
 * record separators, POP and:            Email.               (line  36)
 * REMCONF program:                       REMCONF.             (line   6)
 * remoteport field:                      Gawk Special Files.  (line  34)
 * robot:                                 Challenges.          (line  84)
 * robot <1>:                             WEBGRAB.             (line   6)
-* 'RS' variable, HTTP and:               Web page.            (line  29)
-* 'RS' variable, POP and:                Email.               (line  36)
+* RS variable, HTTP and:                 Web page.            (line  29)
+* RS variable, POP and:                  Email.               (line  36)
 * servers:                               Making Connections.  (line  14)
 * servers <1>:                           Setting Up.          (line  22)
 * servers, as hosts:                     Special File Fields. (line  34)
@@ -4288,8 +4304,8 @@ Index
 * STOXPRED program:                      STOXPRED.            (line   6)
 * synchronous communications:            Making Connections.  (line  35)
 * Tcl/Tk:                                Using Networking.    (line  14)
-* Tcl/Tk, 'gawk' and:                    Using Networking.    (line  24)
-* Tcl/Tk, 'gawk' and <1>:                Some Applications and Techniques.
+* Tcl/Tk, gawk and:                      Using Networking.    (line  24)
+* Tcl/Tk, gawk and <1>:                  Some Applications and Techniques.
                                                               (line  22)
 * TCP (Transmission Control Protocol):   Using Networking.    (line  29)
 * TCP (Transmission Control Protocol) <1>: File /inet/tcp.    (line   6)
@@ -4300,7 +4316,7 @@ Index
 * TCP/IP, protocols, selecting:          Special File Fields. (line  17)
 * TCP/IP, sockets and:                   Gawk Special Files.  (line  19)
 * Transmission Control Protocol, See TCP: Using Networking.   (line  29)
-* troubleshooting, 'gawk', networks:     Caveats.             (line   6)
+* troubleshooting, gawk, networks:       Caveats.             (line   6)
 * troubleshooting, networks, connections: Troubleshooting.    (line   6)
 * troubleshooting, networks, timeouts:   Caveats.             (line  18)
 * UDP (User Datagram Protocol):          File /inet/udp.      (line   6)
@@ -4308,7 +4324,7 @@ Index
 * Unix, network ports and:               Setting Up.          (line  37)
 * URLCHK program:                        URLCHK.              (line   6)
 * User Datagram Protocol, See UDP:       File /inet/udp.      (line   6)
-* vertical bar ('|'), '|&' operator (I/O): TCP Connecting.    (line  25)
+* vertical bar (|), |& operator (I/O):   TCP Connecting.      (line  25)
 * VRML:                                  MAZE.                (line   6)
 * web browsers, See web service:         Interacting Service. (line   6)
 * web pages:                             Web page.            (line   6)
@@ -4326,57 +4342,58 @@ Index
 
 
 Tag Table:
-Node: Top2010
-Node: Preface5647
-Node: Introduction7022
-Node: Stream Communications8048
-Node: Datagram Communications9222
-Node: The TCP/IP Protocols10852
-Ref: The TCP/IP Protocols-Footnote-111536
-Node: Basic Protocols11693
-Ref: Basic Protocols-Footnote-113738
-Node: Ports13767
-Node: Making Connections15174
-Ref: Making Connections-Footnote-117732
-Ref: Making Connections-Footnote-217779
-Node: Using Networking17960
-Node: Gawk Special Files20283
-Node: Special File Fields22093
-Ref: table-inet-components25986
-Node: Comparing Protocols27295
-Node: File /inet/tcp27829
-Node: File /inet/udp28857
-Node: TCP Connecting29960
-Node: Troubleshooting32306
-Ref: Troubleshooting-Footnote-135365
-Node: Interacting35938
-Node: Setting Up38676
-Node: Email42179
-Node: Web page44511
-Ref: Web page-Footnote-147328
-Node: Primitive Service47526
-Node: Interacting Service50267
-Ref: Interacting Service-Footnote-159424
-Node: CGI Lib59456
-Node: Simple Server66420
-Ref: Simple Server-Footnote-174149
-Node: Caveats74250
-Node: Challenges75395
-Node: Some Applications and Techniques84093
-Node: PANIC86554
-Node: GETURL88278
-Node: REMCONF90911
-Node: URLCHK96398
-Node: WEBGRAB100247
-Node: STATIST104707
-Ref: STATIST-Footnote-1116444
-Node: MAZE116889
-Node: MOBAGWHO123088
-Ref: MOBAGWHO-Footnote-1137080
-Node: STOXPRED137135
-Node: PROTBASE151417
-Node: Links164533
-Node: GNU Free Documentation License167966
-Node: Index193086
+Node: Top2022
+Node: Preface5665
+Node: Introduction7040
+Node: Stream Communications8066
+Node: Datagram Communications9240
+Node: The TCP/IP Protocols10870
+Ref: The TCP/IP Protocols-Footnote-111554
+Node: Basic Protocols11711
+Ref: Basic Protocols-Footnote-113756
+Node: Ports13785
+Node: Making Connections15192
+Ref: Making Connections-Footnote-117750
+Ref: Making Connections-Footnote-217797
+Node: Using Networking17978
+Node: Gawk Special Files20301
+Node: Special File Fields22110
+Ref: table-inet-components26003
+Node: Comparing Protocols27312
+Node: File /inet/tcp27846
+Node: File /inet/udp28874
+Ref: File /inet/udp-Footnote-130573
+Node: TCP Connecting30827
+Node: Troubleshooting33173
+Ref: Troubleshooting-Footnote-136232
+Node: Interacting36805
+Node: Setting Up39543
+Node: Email43046
+Node: Web page45378
+Ref: Web page-Footnote-148195
+Node: Primitive Service48393
+Node: Interacting Service51134
+Ref: Interacting Service-Footnote-160291
+Node: CGI Lib60323
+Node: Simple Server67287
+Ref: Simple Server-Footnote-175016
+Node: Caveats75117
+Node: Challenges76262
+Node: Some Applications and Techniques84960
+Node: PANIC87421
+Node: GETURL89145
+Node: REMCONF91778
+Node: URLCHK97265
+Node: WEBGRAB101114
+Node: STATIST105574
+Ref: STATIST-Footnote-1117311
+Node: MAZE117756
+Node: MOBAGWHO123955
+Ref: MOBAGWHO-Footnote-1137947
+Node: STOXPRED138002
+Node: PROTBASE152284
+Node: Links165400
+Node: GNU Free Documentation License168833
+Node: Index193953
 
 End Tag Table
