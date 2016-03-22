@@ -2208,8 +2208,12 @@ do_print_rec(int nargs, int redirtype)
 	if (redirtype != 0) {
 		redir_exp = TOP();
 		rp = redirect(redir_exp, redirtype, & errflg);
-		if (rp != NULL)
+		if (rp != NULL) {
+			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.fp == NULL) {
+				fatal(_("print: attempt to write to closed write end of two-way pipe"));
+			}
 			fp = rp->output.fp;
+		}
 		DEREF(redir_exp);
 		decr_sp();
 	} else
