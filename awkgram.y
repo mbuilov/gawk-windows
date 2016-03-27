@@ -3182,10 +3182,14 @@ get_comment(int flag)
 	tok = tokstart;
 	tokadd('#');
 	sl = sourceline;
+	char *p1;
+	char *p2;
 
 	while (true) {
 		while ((c = nextc(false)) != '\n' && c != END_FILE) {
-			tokadd(c);
+			/* ignore \r characters */
+			if (c != '\r')
+				tokadd(c);
 		}
 		if (flag == EOL_COMMENT) {
 			/* comment at end of line.  */
@@ -3217,6 +3221,15 @@ get_comment(int flag)
 
 	if (comment != NULL)
 		prior_comment = comment;
+
+	/* remove any trailing blank lines (consecutive \n) from comment */
+	p1 = tok - 1;
+	p2 = tok - 2;
+	while (*p1 == '\n' && *p2 == '\n') {
+		p1--;
+		p2--;
+		tok--;
+	}
 
 	comment = bcalloc(Op_comment, 1, sl);
 	comment->source_file = source;

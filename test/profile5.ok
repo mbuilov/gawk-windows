@@ -52,12 +52,10 @@ BEGIN {
 		_XCHR[_CHR[i]] = sprintf("%c", (i < 128 ? i + 128 : i - 128))
 	}
 	#_____________________________________________________________________________
-	
 	for (i = 0; i < 256; i++) {
 		_QSTRQ[_CHR[i]] = "\\" sprintf("%.3o", i)
 	}
 	#_______________________________________________________________________
-	
 	for (i = 0; i < 32; i++) {
 		_QSTR[_CHR[i]] = _QSTRQ[_CHR[i]]
 	}
@@ -69,13 +67,11 @@ BEGIN {
 	}
 	_QSTR["\\"] = "\\\\"	#; _QSTR["\""]="\\\""
 	#_____________________________________________________________________________
-	
 	_CHR["CR"] = "\r"
 	_CHR["EOL"] = "\r\n"
 	_CHR["EOF"] = "\032"
 	_QSTR[_CHR["EOL"]] = "\\015\\012"
 	#_______________________________________________________________________
-	
 	_CHR["MONTH"][_CHR["MONTH"]["Jan"] = "01"] = "Jan"
 	_CHR["MONTH"][_CHR["MONTH"]["Feb"] = "02"] = "Feb"
 	_CHR["MONTH"][_CHR["MONTH"]["Mar"] = "03"] = "Mar"
@@ -89,10 +85,8 @@ BEGIN {
 	_CHR["MONTH"][_CHR["MONTH"]["Nov"] = "11"] = "Nov"
 	_CHR["MONTH"][_CHR["MONTH"]["Dec"] = "12"] = "Dec"
 	#_____________________________________________________________________________
-	
 	_TAB_STEP_DEFAULT = 8
 	#_____________________________________________________________________________
-	
 	for (i = 0; i < 32; i++) {
 		_REXPSTR[_CHR[i]] = _QSTRQ[_CHR[i]]
 	}
@@ -288,19 +282,6 @@ BEGIN {
 
 #BootDevice               BuildNumber  BuildType            Caption                                      CodeSet  CountryCode  CreationClassName      CSCreationClassName   CSDVersion      CSName  CurrentTimeZone  DataExecutionPrevention_32BitApplications  DataExecutionPrevention_Available  DataExecutionPrevention_Drivers  DataExecutionPrevention_SupportPolicy  Debug  Description  Distributed  EncryptionLevel  ForegroundApplicationBoost  FreePhysicalMemory  FreeSpaceInPagingFiles  FreeVirtualMemory  InstallDate                LargeSystemCache  LastBootUpTime             LocalDateTime              Locale  Manufacturer           MaxNumberOfProcesses  MaxProcessMemorySize  MUILanguages  Name                                                                                  NumberOfLicensedUsers  NumberOfProcesses  NumberOfUsers  OperatingSystemSKU  Organization  OSArchitecture  OSLanguage  OSProductSuite  OSType  OtherTypeDescription  PAEEnabled  PlusProductID  PlusVersionNumber  Primary  ProductType  RegisteredUser  SerialNumber             ServicePackMajorVersion  ServicePackMinorVersion  SizeStoredInPagingFiles  Status  SuiteMask  SystemDevice             SystemDirectory      SystemDrive  TotalSwapSpaceSize  TotalVirtualMemorySize  TotalVisibleMemorySize  Version   WindowsDirectory
 #\Device\HarddiskVolume1  7601         Multiprocessor Free  Microsoft Windows Server 2008 R2 Enterprise  1252     1            Win32_OperatingSystem  Win32_ComputerSystem  Service Pack 1  CPU     180              TRUE                                       TRUE                               TRUE                             3                                      FALSE               FALSE        256              0                           6925316             33518716                41134632           20110502192745.000000+180                    20130426120425.497469+180  20130510134606.932000+180  0409    Microsoft Corporation  -1                    8589934464            {"en-US"}     Microsoft Windows Server 2008 R2 Enterprise |C:\Windows|\Device\Harddisk0\Partition2  0                      116                2              10                                64-bit          1033        274             18                                                                          TRUE     3            Windows User    55041-507-2389175-84833  1                        0                        33554432                 OK      274        \Device\HarddiskVolume2  C:\Windows\system32  C:                               50311020                16758448                6.1.7601  C:\Windows
-
-
-
-
-
-
-
-
-
-
-
-
-
 BEGIN {
 	a = ENVIRON["EGAWK_CMDLINE"]
 	gsub(/^[ \t]*/, "", a)
@@ -327,37 +308,6 @@ END {
 
 #_______________________________________________________________________
 ########################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 END {
 	if (_gawk_scriptlevel < 1) {
 		close(_errlog_file)
@@ -700,7 +650,6 @@ END {
 # try different key combinations
 # add lib-specified to all libs
 
-
 #_______________________________________________________________________
 function W(p, p0, p1)
 {
@@ -744,23 +693,18 @@ function _ARR(c, t, P)
 	case "_lib_CMDLN":
 		return t
 		#___________________________________________________________
-		
 	case "_lib_APPLY":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_HELP":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_NAMEVER":
 		return _ln("_ARR 1.0")
 		#___________________________________________________________
-		
 	case "_lib_BEGIN":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_END":
 		return 
 	}
@@ -782,7 +726,6 @@ function _BASE(c, t, P, A)
 		}
 		return t
 		#___________________________________________________________
-		
 	case "_lib_APPLY":
 		if (_cmdln_help) {
 			match(_fbaccr(_LIBAPI, "_lib_HELP"), /^([^\x00]*)\x00([^\x01]*)\x01(.*)/, A)
@@ -795,19 +738,15 @@ function _BASE(c, t, P, A)
 		}
 		return 
 		#___________________________________________________________
-		
 	case "_lib_HELP":
 		return ("\000" _ln(_PRODUCT_NAME " v" _PRODUCT_VERSION) _ln(_PRODUCT_COPYRIGHT) _ln() _ln(" Usage:") _ln() _ln("    " _PRODUCT_FILENAME " [/key1 /key2...] [-- cmdline]") _ln() _ln(" keys:") _ln() "\001" _ln("    -v -V --version                    - output product version and (if /V) all modules") _ln("    ? -? --help                        - output this help page") _ln("    --                                 - command line string edge"))
 		#___________________________________________________________
-		
 	case "_lib_NAMEVER":
 		return _ln("_BASE 3.0")
 		#___________________________________________________________
-		
 	case "_lib_BEGIN":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_END":
 		return 
 	}
@@ -856,7 +795,6 @@ function _ERRLOG(c, t, P, a, b, A)
 		}
 		return t
 		#_______________________________________________________________________
-		
 	case "_lib_APPLY":
 		if (_errlog_errflkey) {
 			split(_errlog_errflkey, A, "")
@@ -893,15 +831,12 @@ function _ERRLOG(c, t, P, a, b, A)
 		}
 		return 
 		#_______________________________________________________________________
-		
 	case "_lib_HELP":
 		return (_ln("    -L:TtVvIiWwEeFf                    - enable(upcase: TVIWEF) or disable(lowcase: tviwef) allowable type of") _ln("                                         log messages. Trace/Verbose/Informational/Warning/Error/Fatal.") _ln())
 		#_______________________________________________________________________
-		
 	case "_lib_NAMEVER":
 		return _ln("_ERRLOG 1.0")
 		#_______________________________________________________________________
-		
 	case "_lib_BEGIN":
 		P["_ERRLOG_TF"] = _ERRLOG_TF
 		P["_ERRLOG_VF"] = _ERRLOG_VF
@@ -927,23 +862,18 @@ function _EXTFN(c, t, P)
 	case "_lib_CMDLN":
 		return t
 		#___________________________________________________________
-		
 	case "_lib_APPLY":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_HELP":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_NAMEVER":
 		return _ln("_EXTFN 1.0")
 		#___________________________________________________________
-		
 	case "_lib_BEGIN":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_END":
 		return 
 	}
@@ -964,22 +894,18 @@ function _FILEIO(c, t, P, A)
 		}
 		return t
 		#___________________________________________________________
-		
 	case "_lib_APPLY":
 		if (_fileio_notdeltmpflag) {
 			_info("Temporary objects deletion DISABLED (inherited)")
 		}
 		return 
 		#___________________________________________________________
-		
 	case "_lib_HELP":
 		return (_ln("    -[Tt][+-]                          - inherited: +enable\\-disable temporary files\\dirs deletion") _ln())
 		#___________________________________________________________
-		
 	case "_lib_NAMEVER":
 		return _ln("_FILEIO 2.1")
 		#___________________________________________________________
-		
 	case "_lib_BEGIN":
 		P["ENVIRON"]["CD"] = ENVIRON["CD"]
 		P["_FILEIO_RD"] = _FILEIO_RD
@@ -990,7 +916,6 @@ function _FILEIO(c, t, P, A)
 		}
 		return 
 		#___________________________________________________________
-		
 	case "_lib_END":
 		return 
 	}
@@ -1048,23 +973,18 @@ function _INSTRUC(c, t, P)
 	case "_lib_CMDLN":
 		return t
 		#___________________________________________________________
-		
 	case "_lib_APPLY":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_HELP":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_NAMEVER":
 		return _ln("_INSTRUC 1.0")
 		#___________________________________________________________
-		
 	case "_lib_BEGIN":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_END":
 		return 
 	}
@@ -1094,23 +1014,18 @@ function _SHORTCUT(c, t, P)
 	case "_lib_CMDLN":
 		return t
 		#___________________________________________________________
-		
 	case "_lib_APPLY":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_HELP":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_NAMEVER":
 		return _ln("_shortcut 1.0")
 		#___________________________________________________________
-		
 	case "_lib_BEGIN":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_END":
 		return 
 	}
@@ -1182,7 +1097,6 @@ function _START(t, i, A)
 	_wrfile("rego.txt", _dumparr(_REG))
 	_conl("fF")
 	#_______________________________________________________________________
-	
 	c = _getreg_i1(DDD, "HKEY_LOCAL_MACHINE\\SOFTWARE\\Altiris\\Altiris Agent\\Plugin Objects\\\204~.*\224Install path", _REG)
 	#_________________________________________________________________________________________
 	pp = _n("NAME", "NS")
@@ -1220,10 +1134,8 @@ function _START(t, i, A)
 	_defreg(p, "Deployment Automation reg.File", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Altiris\\AutoUtil\\File.XSZ", "autoutil.exe")
 	_defreg(p, "Deployment Automation reg.Path", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Altiris\\AutoUtil\\Path.XSZ", "%systemdrive%\\boot\\altiris\\iso")
 	#_________________________________________________________________________________________
-	
 	_check(pp)
 	#_________________________________________________________________________________________
-	
 	_conl(_report(pp))
 	_wrfile("report.txt", _report(pp))
 }
@@ -1235,23 +1147,18 @@ function _SYSIO(c, t, P)
 	case "_lib_CMDLN":
 		return t
 		#___________________________________________________________
-		
 	case "_lib_APPLY":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_HELP":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_NAMEVER":
 		return _ln("_SYSIO 1.0")
 		#___________________________________________________________
-		
 	case "_lib_BEGIN":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_END":
 		return 
 	}
@@ -1259,8 +1166,6 @@ function _SYSIO(c, t, P)
 
 #_______________________________________________________________________
 ########################################################################
-
-
 function _W(p, A, v)
 {
 	if (isarray(v)) {
@@ -1835,9 +1740,6 @@ function _conline(t, ts)
 
 #___________________________________________________________________________________
 ####################################################################################
-
-
-
 function _conlq(t, ts)
 {
 	return _conl("`" t "'", ts)
@@ -2474,23 +2376,18 @@ function _eXTFN(c, t, P)
 	case "_lib_CMDLN":
 		return t
 		#___________________________________________________________
-		
 	case "_lib_APPLY":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_HELP":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_NAMEVER":
 		return _ln("_extfn 1.0")
 		#___________________________________________________________
-		
 	case "_lib_BEGIN":
 		return 
 		#___________________________________________________________
-		
 	case "_lib_END":
 		return 
 	}
@@ -2570,14 +2467,6 @@ function _expout(t, d, a, b)
 
 #_________________________________________________________________________________________
 ##########################################################################################
-
-
-
-
-
-
-
-
 function _extfn_init()
 {
 	##############################################################
@@ -3024,15 +2913,6 @@ function _fpp(q, D, S)
 
 #_______________________________________________________________________
 ########################################################################
-
-
-
-
-
-
-
-
-
 function _fthru(A, c, p, B)
 {
 	return _fthru_i0(A, c, p, B, A[""])
@@ -3286,27 +3166,6 @@ function _getperf_not(o, t, a)
 
 #_________________________________________________________________________________________
 ##########################################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function _getreg_i1(D, r, R, a, i, il, ir, rc, B)
 {
 	a = IGNORECASE
@@ -3436,7 +3295,6 @@ function _info(t, d, A)
 
 # test with the different path types
 #	_conl(_ln("SRC:") _dumparr(S)); _conl();
-
 function _ini(p, cs, dptr, pfx, sfx, hstr, lstr)
 {
 	return _inituid(p, cs, dptr, pfx, sfx, hstr, lstr, A)
@@ -3787,40 +3645,6 @@ function _mpu(t, F, p1, p2, p3, D, C)
 #	(\x00\t\+)*	->	28 00 09 5B 2B 29
 #
 # unesc all non-rexp characters: replace unesc of rexp-characters but do not remove it: \* -> \*, \x2A -> \*, \052 -> \*, \\ -> \#
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function _mpudefaulthnd(F, D, C, p1, p2, p3)
 {
 	_mpuretsub(D, _mpucc0)
@@ -4697,62 +4521,6 @@ function _rdreg_i0(D, A)
 
 #_____________________________________________________________________________________________________
 ######################################################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function _rdsafe(A, i, d)
 {
 	if (i in A) {
@@ -4966,7 +4734,6 @@ function _retarrd_i0(A, i)
 #_______________________________________________________________________
 ########################################################################
 #EXPERIMENTAL
-
 function _rexpfn(R, t, p)
 {
 	_REXPFN[""] = ""
@@ -5017,7 +4784,6 @@ function _rpp(q, D, S)
 	_conl()
 	_regpath0(D, q)
 	#_conl(_dumparr(D))
-	
 	_conl(_ln("DEST:") _dumparr(D))
 	_conl()
 	return q
@@ -5249,26 +5015,6 @@ function _setmpath(p, a)
 
 #_________________________________________________________________________________________
 ##########################################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function _sharelist(D, h, q, c, l, A, B)
 {
 	#################################################
@@ -5669,29 +5415,6 @@ function _subseqon(B, r, F, f, s, e, q, i, A)
 
 #___________________________________________________________________________________
 ####################################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function _sysinfo(D, h)
 {
 	##############################################################
@@ -5771,13 +5494,6 @@ function _tabtospc(t, ts, xc, a, c, n, A, B)
 
 #___________________________________________________________________________________
 ####################################################################################
-
-
-
-
-
-
-
 function _tapi(p, f, p0, p1, p2, p3, c)
 {
 	c = p
@@ -6701,17 +6417,6 @@ function _tinit_i0(D, S, i)
 # modify everywhere checking ptr not by `if ( ptr )...', but by `if ( ptr in _ )...'
 # _TMP0, _TMP1 name change to something like _DATA name ???
 # think about redesigning routines for not depending if ptr is exist in tsysarrs: reason: performance\light code
-
-
-
-
-
-
-
-
-
-
-
 function _tlist(L, p, f)
 {
 	_tlisti1 = _tlisti0 = L[_ARRLEN] + 0
@@ -6981,7 +6686,6 @@ function _tpush(p, aA, a)
 # sechr	- aware character `.' as the first char of sechr, and character `}'
 # suffix	- aware character `]'
 # cntptr	- aware character `]'
-
 function _tr(n, cs, H)
 {
 	#_tuidinitcs[p]=cs
@@ -7115,9 +6819,6 @@ function _tsetsp(p, v)
 # _tUIDCHRH
 
 # create default class basic `new' and `del' functions
-
-
-
 function _tstini()
 {
 	_ini("uidel:pfx'hstr|lstr'sfx")
@@ -7362,8 +7063,6 @@ function _uninit_del(A, i, p0)
 #_______________________________________________________________________
 #	var	_constatstr
 ####################################################################################
-
-
 function _unstr(t)
 {
 	return gensub(/\\(.)/, "\\1", "G", t)
@@ -8379,7 +8078,6 @@ function test_uid(p, i)
 {
 	#test_cfg()
 	#return
-	
 	_fclass = _cfguid(p = _getuid(_classys), p, "pfx", "sfx", "abc")
 	#_fclass=_cfguid(p=_getuid(_classys),_NOP,_NOP,_NOP,"",_classys)
 	_conl("_fclass uid: " _getuid(_fclass))
@@ -8427,7 +8125,6 @@ function tts(p, uidel, psfx, cnt, chr, p5, p6, p7, im)
 # ptr				_typ(p)=="`"	_typ(p)<"`"  ?
 # ptr/arr			_typ(p)+0!=_t0
 # arr				_typ(p)=="#"	_typ(p)>"#"  ?
-
 function zorr(A, i, r)
 {
 	if (i in A) {
