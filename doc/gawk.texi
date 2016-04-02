@@ -27507,6 +27507,11 @@ As a side note, the assignment @samp{LC_ALL=C} in the @command{sort}
 command ensures traditional Unix (ASCII) sorting from @command{sort}.
 This is not strictly necessary here, but it's good to know how to do this.
 
+Be careful when closing the @code{"from"} end of a two-way pipe; in this
+case @command{gawk} waits for the child process to exit, which may cause
+your program to hang.  (Thus, this particular feature is of much less
+use in practice than being able to close the @code{"to"} end.)
+
 @cindex @command{gawk}, @code{PROCINFO} array in
 @cindex @code{PROCINFO} array, and communications via ptys
 You may also use pseudo-ttys (ptys) for
