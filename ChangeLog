@@ -1,3 +1,36 @@
+2016-03-27         Stephen Davies        <sdavies@sdc.com.au>
+
+	* awkgram.y (get_comment): Strip CRs from comment. Strip
+	off trailing newlines.
+
+2016-03-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (pprint): Improve handling of comment after
+	and if statement without an else.
+
+2016-03-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Considerable improvements to handling of comments when pretty
+	printing, particularly for end-of-line comments.
+
+	* awkgram.y (prior_comment, comment_to_save): New variables.
+	(add_pending_comment): New function.
+	(grammar): Jump through lots more hoops to capture comments.
+	Due to shift-reduce parsing, there can be up to two comments
+	captured and waiting to be saved; be sure to get them both and
+	at the right times.  This is difficult since comments have no
+	real syntactic exisitence. Call add_pending_comment on most of
+	the simple statements.
+	(get_comment): Save a pre-existing comment in prior_comment.
+	(split_comment): Use comment_to_save instead of `comment'.
+	* profile.c (end_line): Change to return the instruction after
+	the comment that gets printed; adjust return type.
+	(pprint): Add skip_comment static variable. Adjust logic for
+	skipping an end-of-line comment; only do it if skip_comment is
+	true. This is set to true in places where we can't use the
+	return value from end_line().  Call end_line() in many more places.
+	(pp_func): Handle end-of-line comments after a function header.
+
 2016-03-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* debug.c (print_instruction): For Op_comment, improve notation as

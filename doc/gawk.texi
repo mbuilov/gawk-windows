@@ -28331,7 +28331,12 @@ There is a significant difference between the output created when
 profiling, and that created when pretty-printing.  Pretty-printed output
 preserves the original comments that were in the program, although their
 placement may not correspond exactly to their original locations in the
-source code.
+source code.@footnote{@command{gawk} does the best it can to preserve
+the distinction between comments at the end of a statement and comments
+on lines by themselves. Due to implementation constraints, it does not
+always do so correctly, particularly for @code{switch} statements. The
+@command{gawk} maintainers hope to improve this in a subsequent
+release.}
 
 However, as a deliberate design decision, profiling output @emph{omits}
 the original program's comments. This allows you to focus on the

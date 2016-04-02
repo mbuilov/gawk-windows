@@ -778,6 +778,8 @@ EXTRA_DIST = \
 	profile8.ok \
 	profile9.awk \
 	profile9.ok \
+	profile10.awk \
+	profile10.ok \
 	prt1eval.awk \
 	prt1eval.ok \
 	prtoeval.awk \
@@ -1134,7 +1136,7 @@ GAWK_EXT_TESTS = \
 	nonfatal1 nonfatal2 nonfatal3 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge procinfs \
 	profile0 profile1 profile2 profile3 profile4 profile5 profile6 profile7 \
-	profile8 profile9 pty1 \
+	profile8 profile9 profile10 pty1 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow shadowbuiltin \
 	sortfor sortu split_after_fpat \
@@ -1865,6 +1867,11 @@ profile8:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile9:
+	@echo $@
+	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile10:
 	@echo $@
 	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
