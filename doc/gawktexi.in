@@ -26603,6 +26603,12 @@ case @command{gawk} waits for the child process to exit, which may cause
 your program to hang.  (Thus, this particular feature is of much less
 use in practice than being able to close the @code{"to"} end.)
 
+@quotation CAUTION
+It is a fatal error to write to the @code{"to"} end of a two-way
+pipe which has been closed. It is also a fatal error to read
+from the @code{"from"} end of a two-way pipe that has been closed.
+@end quotation
+
 @cindex @command{gawk}, @code{PROCINFO} array in
 @cindex @code{PROCINFO} array, and communications via ptys
 You may also use pseudo-ttys (ptys) for
