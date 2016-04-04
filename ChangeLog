@@ -1,3 +1,9 @@
+2016-04-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_fflush): Add warning for flush to two-way
+	pipe where write end was closed.
+	* io.c (flush_io): Add some braces for the for loop.
+
 2016-04-02         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_printf): If the redirection is two way but the

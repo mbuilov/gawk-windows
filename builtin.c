@@ -237,6 +237,9 @@ do_fflush(int nargs)
 		fp = rp->output.fp;
 		if (fp != NULL)
 			status = rp->output.gawk_fflush(fp, rp->output.opaque);
+		else if ((rp->flag & RED_TWOWAY) != 0)
+				warning(_("fflush: cannot flush: two-way pipe `%s' has closed write end"),
+					file);
 	} else if ((fp = stdfile(tmp->stptr, tmp->stlen)) != NULL) {
 		status = fflush(fp);
 	} else {

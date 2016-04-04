@@ -1328,7 +1328,7 @@ flush_io()
 			warning(_("error writing standard error (%s)"), strerror(errno));
 		status++;
 	}
-	for (rp = red_head; rp != NULL; rp = rp->next)
+	for (rp = red_head; rp != NULL; rp = rp->next) {
 		/* flush both files and pipes, what the heck */
 		if ((rp->flag & RED_WRITE) != 0 && rp->output.fp != NULL) {
 			if (rp->output.gawk_fflush(rp->output.fp, rp->output.opaque)) {
@@ -1344,6 +1344,7 @@ flush_io()
 				status++;
 			}
 		}
+	}
 	if (status != 0)
 		status = -1;	/* canonicalize it */
 	return status;
