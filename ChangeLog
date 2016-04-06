@@ -1,3 +1,29 @@
+2016-04-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_printf): Allow a write to the closed write-end of
+	a two-way pipe to be nonfatal if NONFATAL is set for it.
+	(do_print): Ditto.
+	(do_print_rec): Ditto.
+	* io.c (do_getline_redir): Same thing for reading from a closed
+	read end of a two-way pipe. Fatal error.
+
+2016-04-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_fflush): Add warning for flush to two-way
+	pipe where write end was closed.
+	* io.c (flush_io): Add some braces for the for loop.
+
+2016-04-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_printf): If the redirection is two way but the
+	fp is NULL, it means we're writing to the closed write-end of
+	a two-way pipe. Issue a fatal error message.
+	(do_print): Ditto.
+	(do_print_rec): Ditto.
+	* io.c (do_getline_redir): Same thing for reading from a closed
+	read end of a two-way pipe. Fatal error.
+	* NEWS: Updated.
+
 2016-03-27         Stephen Davies        <sdavies@sdc.com.au>
 
 	* awkgram.y (get_comment): Strip CRs from comment. Strip

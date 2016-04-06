@@ -1391,7 +1391,7 @@ flush_io()
 			warning(_("error writing standard error (%s)"), strerror(errno));
 		status++;
 	}
-	for (rp = red_head; rp != NULL; rp = rp->next)
+	for (rp = red_head; rp != NULL; rp = rp->next) {
 		/* flush both files and pipes, what the heck */
 		if ((rp->flag & RED_WRITE) != 0 && rp->output.fp != NULL) {
 			if (rp->output.gawk_fflush(rp->output.fp, rp->output.opaque)) {
@@ -1407,6 +1407,7 @@ flush_io()
 				status++;
 			}
 		}
+	}
 	if (status != 0)
 		status = -1;	/* canonicalize it */
 	return status;
@@ -2602,6 +2603,12 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 				update_ERRNO_int(redir_error);
 		}
 		return make_number((AWKNUM) -1.0);
+	} else if ((rp->flag & RED_TWOWAY) != 0 && rp->iop == NULL) {
+		if (is_non_fatal_redirect(redir_exp->stptr)) {
+			update_ERRNO_int(EBADF);
+			return make_number((AWKNUM) -1.0);
+		}
+		fatal(_("getline: attempt to read from closed read end of two-way pipe"));
 	}
 	iop = rp->iop;
 	if (iop == NULL)		/* end of input */

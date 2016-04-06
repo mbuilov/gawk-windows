@@ -147,6 +147,17 @@ EXTRA_DIST = \
 	clobber.ok \
 	clos1way.awk \
 	clos1way.ok \
+	clos1way2.awk \
+	clos1way2.in \
+	clos1way2.ok \
+	clos1way3.awk \
+	clos1way3.ok \
+	clos1way4.awk \
+	clos1way4.ok \
+	clos1way5.awk \
+	clos1way5.ok \
+	clos1way6.awk \
+	clos1way6.ok \
 	closebad.awk \
 	closebad.ok \
 	clsflnam.awk \
@@ -1121,7 +1132,8 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
-	colonwarn clos1way crlf dbugeval dbugeval2 dbugtypedre1 dbugtypedre2 delsub \
+	colonwarn clos1way clos1way2 clos1way3 clos1way4 clos1way5 clos1way6 \
+	crlf dbugeval dbugeval2 dbugtypedre1 dbugtypedre2 delsub \
 	devfd devfd1 devfd2 dumpvars errno exit \
 	fieldwdth fpat1 fpat2 fpat3 fpat4 fpat5 fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \

@@ -103,6 +103,10 @@ Changes from 4.1.3 to 4.1.x
 8. The return value of system() has been enhanced to convey more information.
    See the doc.
 
+9. Attempting to write to the "to" end of a two-way pipe that has been
+   closed is now a fatal error. Similarly, so is reading from the "from"
+   end that has been closed.
+
 Changes from 4.1.2 to 4.1.3
 ---------------------------
 

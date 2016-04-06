@@ -241,6 +241,9 @@ do_fflush(int nargs)
 		fp = rp->output.fp;
 		if (fp != NULL)
 			status = rp->output.gawk_fflush(fp, rp->output.opaque);
+		else if ((rp->flag & RED_TWOWAY) != 0)
+				warning(_("fflush: cannot flush: two-way pipe `%s' has closed write end"),
+					file);
 	} else if ((fp = stdfile(tmp->stptr, tmp->stlen)) != NULL) {
 		status = fflush(fp);
 	} else {
@@ -1674,8 +1677,16 @@ do_printf(int nargs, int redirtype)
 		if (redir_exp->type != Node_val)
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
 		rp = redirect(redir_exp, redirtype, & errflg, true);
-		if (rp != NULL)
+		if (rp != NULL) {
+			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.fp == NULL) {
+				if (is_non_fatal_redirect(redir_exp->stptr)) {
+					update_ERRNO_int(EBADF);
+					return;
+				}
+				fatal(_("printf: attempt to write to closed write end of two-way pipe"));
+			}
 			fp = rp->output.fp;
+		}
 		else if (errflg) {
 			update_ERRNO_int(errflg);
 			return;
@@ -2150,8 +2161,16 @@ do_print(int nargs, int redirtype)
 		if (redir_exp->type != Node_val)
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
 		rp = redirect(redir_exp, redirtype, & errflg, true);
-		if (rp != NULL)
+		if (rp != NULL) {
+			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.fp == NULL) {
+				if (is_non_fatal_redirect(redir_exp->stptr)) {
+					update_ERRNO_int(EBADF);
+					return;
+				}
+				fatal(_("print: attempt to write to closed write end of two-way pipe"));
+			}
 			fp = rp->output.fp;
+		}
 		else if (errflg) {
 			update_ERRNO_int(errflg);
 			return;
@@ -2220,8 +2239,16 @@ do_print_rec(int nargs, int redirtype)
 	if (redirtype != 0) {
 		redir_exp = TOP();
 		rp = redirect(redir_exp, redirtype, & errflg, true);
-		if (rp != NULL)
+		if (rp != NULL) {
+			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.fp == NULL) {
+				if (is_non_fatal_redirect(redir_exp->stptr)) {
+					update_ERRNO_int(EBADF);
+					return;
+				}
+				fatal(_("print: attempt to write to closed write end of two-way pipe"));
+			}
 			fp = rp->output.fp;
+		}
 		DEREF(redir_exp);
 		decr_sp();
 	} else
