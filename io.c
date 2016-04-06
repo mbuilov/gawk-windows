@@ -2604,6 +2604,10 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 		}
 		return make_number((AWKNUM) -1.0);
 	} else if ((rp->flag & RED_TWOWAY) != 0 && rp->iop == NULL) {
+		if (is_non_fatal_redirect(redir_exp->stptr)) {
+			update_ERRNO_int(EBADF);
+			return make_number((AWKNUM) -1.0);
+		}
 		fatal(_("getline: attempt to read from closed read end of two-way pipe"));
 	}
 	iop = rp->iop;
