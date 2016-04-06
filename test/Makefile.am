@@ -156,6 +156,8 @@ EXTRA_DIST = \
 	clos1way4.ok \
 	clos1way5.awk \
 	clos1way5.ok \
+	clos1way6.awk \
+	clos1way6.ok \
 	closebad.awk \
 	closebad.ok \
 	clsflnam.awk \
@@ -1130,7 +1132,7 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
-	colonwarn clos1way clos1way2 clos1way3 clos1way4 clos1way5 \
+	colonwarn clos1way clos1way2 clos1way3 clos1way4 clos1way5 clos1way6 \
 	crlf dbugeval dbugeval2 dbugtypedre1 dbugtypedre2 delsub \
 	devfd devfd1 devfd2 dumpvars errno exit \
 	fieldwdth fpat1 fpat2 fpat3 fpat4 fpat5 fpatnull fsfwfs funlen \
