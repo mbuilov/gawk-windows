@@ -1512,6 +1512,8 @@ extern struct redirect *redirect_string(const char *redir_exp_str,
 extern NODE *do_close(int nargs);
 extern int flush_io(void);
 extern int close_io(bool *stdio_problem);
+typedef enum { CLOSE_ALL, CLOSE_TO, CLOSE_FROM } two_way_close_type;
+extern int close_rp(struct redirect *rp, two_way_close_type how);
 extern int devopen_simple(const char *name, const char *mode, bool try_real_open);
 extern int devopen(const char *name, const char *mode);
 extern int srcopen(SRCFILE *s);

@@ -1,3 +1,25 @@
+2016-04-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (two_way_close_type): Move here from io.c.
+	(close_rp): Add declaration.
+	* builtin.c (do_printf): Call close_rp before fatal message when
+	attempting to write the closed write end of a two way pipe.
+	(do_print): Ditto.
+	(do_print_rec): Ditto.
+	* io.c (do_getline_redir): Same, for reading closed read end.
+	(close_rp): Make not static.
+
+2016-04-07  Eli Zaretskii  <eliz@gnu.org>
+
+	* nonposix.h (WEXITSTATUS, WIFEXITED, WIFSIGNALED, WTERMSIG)
+	(WIFSTOPPED, WSTOPSIG) [__MINGW32__]: New macros to replace the
+	missing header sys/wait.h.
+	(w32_status_to_termsig): Add prototype.
+
+	* builtin.c (do_system) [__MINGW32__]: Compute the exit status of
+	'system' differently under --traditional, as the low 8 bits are
+	the most interesting.
+
 2016-04-06         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_printf): Allow a write to the closed write-end of

@@ -212,8 +212,6 @@
 #define INCREMENT_REC(X)	X++
 #endif
 
-typedef enum { CLOSE_ALL, CLOSE_TO, CLOSE_FROM } two_way_close_type;
-
 /* Several macros to make the code a bit clearer. */
 #define at_eof(iop)     (((iop)->flag & IOP_AT_EOF) != 0)
 #define has_no_data(iop)        ((iop)->dataend == NULL)
@@ -1233,7 +1231,7 @@ do_close(int nargs)
 
 /* close_rp --- separate function to just do closing */
 
-static int
+int
 close_rp(struct redirect *rp, two_way_close_type how)
 {
 	int status = 0;
@@ -2608,6 +2606,7 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 			update_ERRNO_int(EBADF);
 			return make_number((AWKNUM) -1.0);
 		}
+		(void) close_rp(rp, CLOSE_ALL);
 		fatal(_("getline: attempt to read from closed read end of two-way pipe"));
 	}
 	iop = rp->iop;

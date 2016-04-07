@@ -629,7 +629,3 @@ typedef int int32_t;
 #define strcasecmp stricmp
 #define strncasecmp strnicmp
 #endif
-
-#if defined(__MINGW32__)
-# define WEXITSTATUS(stat_val)  ((stat_val) & ~0xC0000000)
-#endif

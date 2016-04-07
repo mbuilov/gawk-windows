@@ -1,3 +1,13 @@
+2016-04-07  Eli Zaretskii  <eliz@gnu.org>
+
+	* config.h: Don't define WEXITSTATUS, it is now defined in
+	nonposix.h.
+
+	* config.sed: Don't define WEXITSTATUS, it is now defined in
+	nonposix.h.
+
+	* gawkmisc.pc (w32_status_to_termsig) [__MINGW32__]: New function.
+
 2016-03-16  Eli Zaretskii  <eliz@gnu.org>
 
 	* gawkmisc.pc (usleep): Condition on MinGW runtime version older
