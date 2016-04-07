@@ -1683,6 +1683,7 @@ do_printf(int nargs, int redirtype)
 					update_ERRNO_int(EBADF);
 					return;
 				}
+				(void) close_rp(rp, CLOSE_ALL);
 				fatal(_("printf: attempt to write to closed write end of two-way pipe"));
 			}
 			fp = rp->output.fp;
@@ -2119,7 +2120,11 @@ do_system(int nargs)
 			if (do_posix)
 				;	/* leave it alone, full 16 bits */
 			else if (do_traditional)
+#ifdef __MINGW32__
+			  ret = (((unsigned)status) & ~0xC0000000);
+#else
 				ret = (status / 256.0);
+#endif
 			else if (WIFEXITED(status))
 				ret = WEXITSTATUS(status); /* normal exit */
 			else if (WIFSIGNALED(status)) {
@@ -2167,6 +2172,7 @@ do_print(int nargs, int redirtype)
 					update_ERRNO_int(EBADF);
 					return;
 				}
+				(void) close_rp(rp, CLOSE_ALL);
 				fatal(_("print: attempt to write to closed write end of two-way pipe"));
 			}
 			fp = rp->output.fp;
@@ -2245,6 +2251,7 @@ do_print_rec(int nargs, int redirtype)
 					update_ERRNO_int(EBADF);
 					return;
 				}
+				(void) close_rp(rp, CLOSE_ALL);
 				fatal(_("print: attempt to write to closed write end of two-way pipe"));
 			}
 			fp = rp->output.fp;
