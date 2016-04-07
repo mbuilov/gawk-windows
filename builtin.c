@@ -1669,6 +1669,7 @@ do_printf(int nargs, int redirtype)
 		rp = redirect(redir_exp, redirtype, & errflg);
 		if (rp != NULL) {
 			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.fp == NULL) {
+				(void) close_rp(rp, CLOSE_ALL);
 				fatal(_("printf: attempt to write to closed write end of two-way pipe"));
 			}
 			fp = rp->output.fp;
@@ -2149,6 +2150,7 @@ do_print(int nargs, int redirtype)
 		rp = redirect(redir_exp, redirtype, & errflg);
 		if (rp != NULL) {
 			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.fp == NULL) {
+				(void) close_rp(rp, CLOSE_ALL);
 				fatal(_("print: attempt to write to closed write end of two-way pipe"));
 			}
 			fp = rp->output.fp;
@@ -2217,6 +2219,7 @@ do_print_rec(int nargs, int redirtype)
 		rp = redirect(redir_exp, redirtype, & errflg);
 		if (rp != NULL) {
 			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.fp == NULL) {
+				(void) close_rp(rp, CLOSE_ALL);
 				fatal(_("print: attempt to write to closed write end of two-way pipe"));
 			}
 			fp = rp->output.fp;

@@ -1,3 +1,14 @@
+2016-04-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (two_way_close_type): Move here from io.c.
+	(close_rp): Add declaration.
+	* builtin.c (do_printf): Call close_rp before fatal message when
+	attempting to write the closed write end of a two way pipe.
+	(do_print): Ditto.
+	(do_print_rec): Ditto.
+	* io.c (do_getline_redir): Same, for reading closed read end.
+	(close_rp): Make not static.
+
 2016-04-07  Eli Zaretskii  <eliz@gnu.org>
 
 	* nonposix.h (WEXITSTATUS, WIFEXITED, WIFSIGNALED, WTERMSIG)
