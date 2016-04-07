@@ -852,6 +852,50 @@ w32_shutdown (int fd, int how)
 
 #endif	/* HAVE_SOCKETS */
 
+/* Translate abnormal exit status of Windows programs into the signal
+   that terminated the program.  This is required to support scm_kill
+   and WTERMSIG.  */
+
+#include <signal.h>
+
+struct signal_and_status {
+  int sig;
+  unsigned status;
+};
+
+static const struct signal_and_status sigtbl[] = {
+  {SIGSEGV, 0xC0000005},	/* access to invalid address */
+  {SIGSEGV, 0xC0000008},	/* invalid handle */
+  {SIGILL,  0xC000001D},	/* illegal instruction */
+  {SIGILL,  0xC0000025},	/* non-continuable instruction */
+  {SIGSEGV, 0xC000008C},	/* array bounds exceeded */
+  {SIGFPE,  0xC000008D},	/* float denormal */
+  {SIGFPE,  0xC000008E},	/* float divide by zero */
+  {SIGFPE,  0xC000008F},	/* float inexact */
+  {SIGFPE,  0xC0000090},	/* float invalid operation */
+  {SIGFPE,  0xC0000091},	/* float overflow */
+  {SIGFPE,  0xC0000092},	/* float stack check */
+  {SIGFPE,  0xC0000093},	/* float underflow */
+  {SIGFPE,  0xC0000094},	/* integer divide by zero */
+  {SIGFPE,  0xC0000095},	/* integer overflow */
+  {SIGILL,  0xC0000096},	/* privileged instruction */
+  {SIGSEGV, 0xC00000FD},	/* stack overflow */
+  {SIGTERM, 0xC000013A},	/* Ctrl-C exit */
+  {SIGINT,  0xC000013A}
+};
+
+int
+w32_status_to_termsig (unsigned status)
+{
+  int i;
+
+  for (i = 0; i < sizeof (sigtbl) / sizeof (sigtbl[0]); i++)
+    if (status == sigtbl[i].status)
+      return sigtbl[i].sig;
+
+  return SIGTERM;
+}
+
 #endif	/* __MINGW32__ */
 
 #if defined(__DJGPP__) || defined(__MINGW32__) || defined(__EMX__)

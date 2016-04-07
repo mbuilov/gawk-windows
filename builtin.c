@@ -2101,7 +2101,11 @@ do_system(int nargs)
 			if (do_posix)
 				;	/* leave it alone, full 16 bits */
 			else if (do_traditional)
+#ifdef __MINGW32__
+			  ret = (((unsigned)status) & ~0xC0000000);
+#else
 				ret = (status / 256.0);
+#endif
 			else if (WIFEXITED(status))
 				ret = WEXITSTATUS(status); /* normal exit */
 			else if (WIFSIGNALED(status)) {
