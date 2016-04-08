@@ -2221,7 +2221,7 @@ muldimposix::
 
 watchpoint1:
 	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk $@.in < $@.script >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk $(srcdir)/$@.in < $(srcdir)/$@.script >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
