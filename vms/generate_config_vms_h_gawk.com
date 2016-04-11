@@ -291,6 +291,9 @@ $ write cvh ""
 $ write cvh "#define TIME_T_UNSIGNED 1"
 $ write cvh "#include ""custom.h"""
 $ write cvh ""
+$ write cvh "#define __attribute(a)"
+$ write cvh ""
+$
 $!
 $! Close out the file
 $!

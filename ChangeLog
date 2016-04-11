@@ -1,3 +1,16 @@
+2016-04-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regexec.c: Stamp out last remaining use of __attribute.
+	* regcomp.c: Undo change of 2016-01-24 when parsing single-byte
+	ranges. Go back to treating them as bytes and not as characters.
+	The change broke things on Windows in non-UTF-8 character sets.
+	* mbsupport.h (mbstate_t): Define to int.
+	Update copyright.
+
+2016-04-10         John E. Malmberg      <wb8tyw@qsl.net>
+
+	* regex_internal.c: Use _GL_ATTRIBUTE_PURE macro
+
 2016-04-07         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h (two_way_close_type): Move here from io.c.
@@ -87,7 +100,7 @@
 2016-03-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c (socketopen): For SOCK_DGRAM, set read_len to sizeof
-	remote_addr. Makes UDP more or less work again. 
+	remote_addr. Makes UDP more or less work again.
 	Thanks to Juergen Kahrs for the fix.
 
 2016-03-10         Arnold D. Robbins     <arnold@skeeve.com>

@@ -2670,19 +2670,6 @@ parse_dup_op (bin_tree_t *elem, re_string_t *regexp, re_dfa_t *dfa,
 #define BRACKET_NAME_BUF_SIZE 32
 
 #ifndef _LIBC
-
-# ifdef RE_ENABLE_I18N
-/* Convert the byte B to the corresponding wide character.  In a
-   unibyte locale, treat B as itself if it is an encoding error.
-   In a multibyte locale, return WEOF if B is an encoding error.  */
-static wint_t
-parse_byte (unsigned char b, re_charset_t *mbcset)
-{
-  wint_t wc = __btowc (b);
-  return wc == WEOF && !mbcset ? b : wc;
-}
-#endif
-
   /* Local function for parse_bracket_exp only used in case of NOT _LIBC.
      Build the range expression which starts from START_ELEM, and ends
      at END_ELEM.  The result are written to MBCSET and SBCSET.
@@ -2728,10 +2715,22 @@ build_range_exp (reg_syntax_t syntax, bitset_t sbcset,
     end_ch = ((end_elem->type == SB_CHAR) ? end_elem->opr.ch
 	      : ((end_elem->type == COLL_SYM) ? end_elem->opr.name[0]
 		 : 0));
+#ifdef GAWK
+    /*
+     * Fedora Core 2, maybe others, have broken `btowc' that returns -1
+     * for any value > 127. Sigh. Note that `start_ch' and `end_ch' are
+     * unsigned, so we don't have sign extension problems.
+     */
     start_wc = ((start_elem->type == SB_CHAR || start_elem->type == COLL_SYM)
-		? parse_byte (start_ch, mbcset) : start_elem->opr.wch);
+		? start_ch : start_elem->opr.wch);
     end_wc = ((end_elem->type == SB_CHAR || end_elem->type == COLL_SYM)
-	      ? parse_byte (end_ch, mbcset) : end_elem->opr.wch);
+	      ? end_ch : end_elem->opr.wch);
+#else
+    start_wc = ((start_elem->type == SB_CHAR || start_elem->type == COLL_SYM)
+		? __btowc (start_ch) : start_elem->opr.wch);
+    end_wc = ((end_elem->type == SB_CHAR || end_elem->type == COLL_SYM)
+	      ? __btowc (end_ch) : end_elem->opr.wch);
+#endif
     if (start_wc == WEOF || end_wc == WEOF)
       return REG_ECOLLATE;
     else if (BE ((syntax & RE_NO_EMPTY_RANGES) && start_wc > end_wc, 0))

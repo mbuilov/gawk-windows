@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 2004, 2005, 2011, 2012 the Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005, 2011, 2012, 2016 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -42,6 +42,8 @@
 #define wcrtomb(wc, b, mbs)	(-1)
 #define wcslen		strlen
 #define wctob(wc)	(EOF)
+
+#define mbstate_t	int
 
 extern wctype_t wctype(const char *name);
 extern int iswctype(wint_t wc, wctype_t desc);

@@ -2224,6 +2224,14 @@ watchpoint1:
 	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk $(srcdir)/$@.in < $(srcdir)/$@.script >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+pty1:
+	@echo $@
+	@case `uname` in \
+	openedition*) : ;; \
+	*) AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
+	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ;; \
+	esac
+
 # Targets generated for other tests:
 include Maketests
 
