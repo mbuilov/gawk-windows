@@ -1,3 +1,18 @@
+2016-04-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* clos1way2.ok, clos1way3.ok, clos1way4.ok, clos1way5.ok: Update
+	after Eli's code changes.
+	* Makefile.am (pty1): Disable test on z/OS.
+
+2016-04-08  Eli Zaretskii  <eliz@gnu.org>
+
+	* clos1way2.awk:
+	* clos1way3.awk:
+	* clos1way4.awk:
+	* clos1way5.awk: Use "&&" instead of ";" to chain commands, so
+	that it works with stock MS-Windows shells as well.
+	* clos1way2.ok: Adjust the error message to the change in command.
+
 2016-04-08         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* watchpoint1: Use $(srcdir) on input file so out-of-tree
