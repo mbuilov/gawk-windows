@@ -871,7 +871,7 @@ also closes the connection.  Try replacing '"NAME"' with your login name
 (or the name of someone else logged in).  For a list of all users
 currently logged in, replace NAME with an empty string ('""').
 
-   The final 'close' command could be safely deleted from the above
+   The final 'close()' command could be safely deleted from the above
 script, because the operating system closes any open connection by
 default when a script reaches the end of execution.  In order to avoid
 portability problems, it is best to always close connections explicitly.
@@ -1227,11 +1227,11 @@ the HTML content of the web pages to refer to the home system.
 
    Each server that is built around this core has to initialize some
 application-dependent variables (such as the default home page) in a
-procedure 'SetUpServer', which is called immediately before entering the
-infinite loop of the server.  For now, we will write an instance that
-initiates a trivial interaction.  With this home page, the client user
-can click on two possible choices, and receive the current date either
-in human-readable format or in seconds since 1970:
+procedure 'SetUpServer()', which is called immediately before entering
+the infinite loop of the server.  For now, we will write an instance
+that initiates a trivial interaction.  With this home page, the client
+user can click on two possible choices, and receive the current date
+either in human-readable format or in seconds since 1970:
 
      function SetUpServer() {
        TopHeader = "<HTML><HEAD>"
@@ -1267,12 +1267,12 @@ same time of day although time advances each second.
 document stored in the parameter 'Prompt', it closes the connection and
 waits for the next request.  When the request comes, a log line is
 printed that allows us to see which request the server receives.  The
-final step in the loop is to call the function 'CGI_setup', which reads
-all the lines of the request (coming from the browser), processes them,
-and stores the transmitted parameters in the array 'PARAM'.  The
+final step in the loop is to call the function 'CGI_setup()', which
+reads all the lines of the request (coming from the browser), processes
+them, and stores the transmitted parameters in the array 'PARAM'.  The
 complete text of these application-independent functions can be found in
 *note A Simple CGI Library: CGI Lib.  For now, we use a simplified
-version of 'CGI_setup':
+version of 'CGI_setup()':
 
      function CGI_setup(   method, uri, version, i) {
        delete GETARG;         delete MENU;        delete PARAM
@@ -1314,7 +1314,7 @@ as well as the body.
    On each subsequent run through the main loop, one request from a
 browser is received, evaluated, and answered according to the user's
 choice.  This can be done by letting the value of the HTTP method guide
-the main loop into execution of the procedure 'HandleGET', which
+the main loop into execution of the procedure 'HandleGET()', which
 evaluates the user's choice.  In this case, we have only one
 hierarchical level of menus, but in the general case, menus are nested.
 The menu choices at each level are separated by '/', just as in file
@@ -1341,7 +1341,7 @@ browsers support the not very well-known '.xbm' format, which may
 contain only monochrome pictures but is an ASCII format.  Binary images
 are possible but not so easy to handle.  Another way of including images
 is to generate them with a tool such as GNUPlot, by calling the tool
-with the 'system' function or through a pipe.
+with the 'system()' function or through a pipe.
 
    ---------- Footnotes ----------
 
@@ -1359,7 +1359,7 @@ File: gawkinet.info,  Node: CGI Lib,  Prev: Interacting Service,  Up: Interactin
      <http://www.netfunny.com/rhf/jokes/99/Mar/http.html>
 
    In *note A Web Service with Interaction: Interacting Service, we saw
-the function 'CGI_setup' as part of the web server "core logic"
+the function 'CGI_setup()' as part of the web server "core logic"
 framework.  The code presented there handles almost everything necessary
 for CGI requests.  One thing it doesn't do is handle encoded characters
 in the requests.  For example, an '&' is encoded as a percent sign
@@ -1459,11 +1459,11 @@ is the code:
                  MENU[i] = _CGI_decode(MENU[i])
      }
 
-   This isolates details in a single function, 'CGI_setup'.  Decoding of
-encoded characters is pushed off to a helper function, '_CGI_decode'.
-The use of the leading underscore ('_') in the function name is intended
-to indicate that it is an "internal" function, although there is nothing
-to enforce this:
+   This isolates details in a single function, 'CGI_setup()'.  Decoding
+of encoded characters is pushed off to a helper function,
+'_CGI_decode()'.  The use of the leading underscore ('_') in the
+function name is intended to indicate that it is an "internal" function,
+although there is nothing to enforce this:
 
      function _CGI_decode(str,   hexdigs, i, pre, code1, code2,
                                  val, result)
@@ -1496,9 +1496,9 @@ to enforce this:
    This works by splitting the string apart around an encoded character.
 The two digits are converted to lowercase characters and looked up in a
 string of hex digits.  Note that '0' is not in the string on purpose;
-'index' returns zero when it's not found, automatically giving the
+'index()' returns zero when it's not found, automatically giving the
 correct value!  Once the hexadecimal value is converted from characters
-in a string into a numerical value, 'sprintf' converts the value back
+in a string into a numerical value, 'sprintf()' converts the value back
 into a real character.  The following is a simple test harness for the
 above functions:
 
@@ -1574,19 +1574,19 @@ and append the following code:
        TopFooter = "</BODY></HTML>"
      }
 
-   'SetUpServer' is similar to the previous example, except for calling
-another function, 'SetUpEliza'.  This approach can be used to implement
-other kinds of servers.  The only changes needed to do so are hidden in
-the functions 'SetUpServer' and 'HandleGET'.  Perhaps it might be
-necessary to implement other HTTP methods.  The 'igawk' program that
-comes with 'gawk' may be useful for this process.
+   'SetUpServer()' is similar to the previous example, except for
+calling another function, 'SetUpEliza()'.  This approach can be used to
+implement other kinds of servers.  The only changes needed to do so are
+hidden in the functions 'SetUpServer()' and 'HandleGET()'.  Perhaps it
+might be necessary to implement other HTTP methods.  The 'igawk' program
+that comes with 'gawk' may be useful for this process.
 
    When extending this example to a complete application, the first
-thing to do is to implement the function 'SetUpServer' to initialize the
-HTML pages and some variables.  These initializations determine the way
-your HTML pages look (colors, titles, menu items, etc.).
+thing to do is to implement the function 'SetUpServer()' to initialize
+the HTML pages and some variables.  These initializations determine the
+way your HTML pages look (colors, titles, menu items, etc.).
 
-   The function 'HandleGET' is a nested case selection that decides
+   The function 'HandleGET()' is a nested case selection that decides
 which page the user wants to see next.  Each nesting level refers to a
 menu level of the GUI. Each case implements a certain action of the
 menu.  On the deepest level of case selection, the handler essentially
@@ -1675,8 +1675,8 @@ the set of possible answers:
        return answer
      }
 
-   In the long but simple function 'SetUpEliza', you can see tables for
-conjugation, keywords, and answers.(1)  The associative array 'k'
+   In the long but simple function 'SetUpEliza()', you can see tables
+for conjugation, keywords, and answers.(1)  The associative array 'k'
 contains indices into the array of answers 'r'.  To choose an answer,
 ELIZA just picks an index randomly:
 
@@ -1909,7 +1909,7 @@ may shape the future of networking.
    We often refer to the site-independent core of the server that we
 built in *note A Simple Web Server: Simple Server.  When building new
 and nontrivial servers, we always copy this building block and append
-new instances of the two functions 'SetUpServer' and 'HandleGET'.
+new instances of the two functions 'SetUpServer()' and 'HandleGET()'.
 
    This makes a lot of sense, since this scheme of event-driven
 execution provides 'gawk' with an interface to the most widely accepted
@@ -2073,7 +2073,7 @@ variables in a file, and a concurrent process in the embedded system may
 read the file.  The program uses the site-independent part of the simple
 web server that we developed in *note A Web Service with Interaction:
 Interacting Service.  As mentioned there, all we have to do is to write
-two new procedures 'SetUpServer' and 'HandleGET':
+two new procedures 'SetUpServer()' and 'HandleGET()':
 
      function SetUpServer() {
        TopHeader = "<HTML><title>Remote Configuration</title>"
@@ -2090,14 +2090,14 @@ two new procedures 'SetUpServer' and 'HandleGET':
        if (ConfigFile == "") ConfigFile = "config.asc"
      }
 
-   The function 'SetUpServer' initializes the top level HTML texts as
+   The function 'SetUpServer()' initializes the top level HTML texts as
 usual.  It also initializes the name of the file that contains the
 configuration parameters and their values.  In case the user supplies a
 name from the command line, that name is used.  The file is expected to
 contain one parameter per line, with the name of the parameter in column
 one and the value in column two.
 
-   The function 'HandleGET' reflects the structure of the menu tree as
+   The function 'HandleGET()' reflects the structure of the menu tree as
 usual.  The first menu choice tells the user what this is all about.
 The second choice reads the configuration file line by line and stores
 the parameters and their values.  Notice that the record separator for
@@ -2223,12 +2223,12 @@ those lines that differ in their second and third columns:
    Another thing that may look strange is the way GETURL is called.
 Before calling GETURL, we have to check if the proxy variables need to
 be passed on.  If so, we prepare strings that will become part of the
-command line later.  In 'GetHeader', we store these strings together
+command line later.  In 'GetHeader()', we store these strings together
 with the longest part of the command line.  Later, in the loop over the
-URLs, 'GetHeader' is appended with the URL and a redirection operator to
-form the command that reads the URL's header over the Internet.  GETURL
-always produces the headers over '/dev/stderr'.  That is the reason why
-we need the redirection operator to have the header piped in.
+URLs, 'GetHeader()' is appended with the URL and a redirection operator
+to form the command that reads the URL's header over the Internet.
+GETURL always produces the headers over '/dev/stderr'.  That is the
+reason why we need the redirection operator to have the header piped in.
 
    This program is not perfect because it assumes that changing URLs
 results in changed lengths, which is not necessarily true.  A more
@@ -2268,7 +2268,7 @@ record separators.  With 'RS' set to a regular expression that matches
 links, the second action is executed each time a non-empty link is
 found.  We can find the matching link itself in 'RT'.
 
-   The action could use the 'system' function to let another GETURL
+   The action could use the 'system()' function to let another GETURL
 retrieve the page, but here we use a different approach.  This simple
 program prints shell commands that can be piped into 'sh' for execution.
 This way it is possible to first extract the links, wrap shell commands
@@ -2346,14 +2346,14 @@ an image of the distributions.  The statistical computation follows
 'Numerical Recipes in C: The Art of Scientific Computing' by William H.
 Press, Saul A. Teukolsky, William T. Vetterling, and Brian P. Flannery.
 Since 'gawk' does not have a built-in function for the computation of
-the beta function, we use the 'ibeta' function of GNUPlot.  As a side
+the beta function, we use the 'ibeta()' function of GNUPlot.  As a side
 effect, we learn how to use GNUPlot as a sophisticated calculator.  The
 comparison of means is done as in 'tutest', paragraph 14.2, page 613,
 and the comparison of variances is done as in 'ftest', page 611 in
 'Numerical Recipes'.
 
    As usual, we take the site-independent code for servers and append
-our own functions 'SetUpServer' and 'HandleGET':
+our own functions 'SetUpServer()' and 'HandleGET()':
 
      function SetUpServer() {
        TopHeader = "<HTML><title>Statistics with GAWK</title>"
@@ -2369,7 +2369,7 @@ our own functions 'SetUpServer' and 'HandleGET':
      }
 
    Here, you see the menu structure that the user sees.  Later, we will
-see how the program structure of the 'HandleGET' function reflects the
+see how the program structure of the 'HandleGET()' function reflects the
 menu structure.  What is missing here is the link for the image we
 generate.  In an event-driven environment, request, generation, and
 delivery of images are separated.
@@ -2382,7 +2382,7 @@ output, enabling us to read results of calculations with 'getline'.  By
 initializing the statistical parameters with some meaningful defaults,
 we make sure the user gets an image the first time he uses the program.
 
-   Following is the rather long function 'HandleGET', which implements
+   Following is the rather long function 'HandleGET()', which implements
 the contents of this service by reacting to the different kinds of
 requests from the browser.  Before you start playing with this script,
 make sure that your browser supports JavaScript and that it also has
@@ -2500,9 +2500,9 @@ the server should be ready for serving the next request.
 
    But there is one more subtlety in the JavaScript code.  Each time the
 JavaScript code opens a window for the image, the name of the image is
-appended with a timestamp ('systime').  Why this constant change of name
-for the image?  Initially, we always named the image 'Image', but then
-the Netscape browser noticed the name had _not_ changed since the
+appended with a timestamp ('systime()').  Why this constant change of
+name for the image?  Initially, we always named the image 'Image', but
+then the Netscape browser noticed the name had _not_ changed since the
 previous request and displayed the previous image (caching behavior).
 The server core is implemented so that browsers are told _not_ to cache
 anything.  Obviously HTTP requests do not always work as expected.  One
@@ -2579,10 +2579,10 @@ those boring 'Hello world' examples here, that are usually presented
 when introducing novices to VRML. If you have never written any VRML
 code, have a look at the VRML FAQ. Presenting a static VRML scene is a
 bit trivial; in order to expose 'gawk''s new capabilities, we will
-present a dynamically generated VRML scene.  The function 'SetUpServer'
-is very simple because it only sets the default HTML page and
-initializes the random number generator.  As usual, the surrounding
-server lets you browse the maze.
+present a dynamically generated VRML scene.  The function
+'SetUpServer()' is very simple because it only sets the default HTML
+page and initializes the random number generator.  As usual, the
+surrounding server lets you browse the maze.
 
      function SetUpServer() {
        TopHeader = "<HTML><title>Walk through a maze</title>"
@@ -2596,14 +2596,14 @@ server lets you browse the maze.
        srand()
      }
 
-   The function 'HandleGET' is a bit longer because it first computes
+   The function 'HandleGET()' is a bit longer because it first computes
 the maze and afterwards generates the VRML code that is sent across the
 network.  As shown in the STATIST example (*note STATIST::), we set the
 type of the content to VRML and then store the VRML representation of
 the maze as the page content.  We assume that the maze is stored in a 2D
 array.  Initially, the maze consists of walls only.  Then, we add an
 entry and an exit to the maze and let the rest of the work be done by
-the function 'MakeMaze'.  Now, only the wall fields are left in the
+the function 'MakeMaze()'.  Now, only the wall fields are left in the
 maze.  By iterating over the these fields, we generate one line of VRML
 code for each wall field.
 
@@ -2653,7 +2653,7 @@ code for each wall field.
        }
      }
 
-   Finally, we have a look at 'MakeMaze', the function that generates
+   Finally, we have a look at 'MakeMaze()', the function that generates
 the 'Maze' array.  When entered, this function assumes that the array
 has been initialized so that each element represents a wall element and
 the maze is initially full of wall elements.  Only the entrance and the
@@ -2862,34 +2862,34 @@ mobile agent:
        close(HttpService)
      }
 
-   The 'migrate' function prepares the aforementioned strings containing
-the program code and transmits them to a server.  A consequence of this
-modular approach is that the 'migrate' function takes some parameters
-that aren't needed in this application, but that will be in future ones.
-Its mandatory parameter 'Destination' holds the name (or IP address) of
-the server that the agent wants as a host for its code.  The optional
-parameter 'MobCode' may contain some 'gawk' code that is inserted during
-migration in front of all other code.  The optional parameter 'Label'
-may contain a string that tells the agent what to do in program
-execution after arrival at its new home site.  One of the serious
-obstacles in implementing a framework for mobile agents is that it does
-not suffice to migrate the code.  It is also necessary to migrate the
-state of execution of the agent.  In contrast to 'Agent Tcl', this
-program does not try to migrate the complete set of variables.  The
-following conventions are used:
+   The 'migrate()' function prepares the aforementioned strings
+containing the program code and transmits them to a server.  A
+consequence of this modular approach is that the 'migrate()' function
+takes some parameters that aren't needed in this application, but that
+will be in future ones.  Its mandatory parameter 'Destination' holds the
+name (or IP address) of the server that the agent wants as a host for
+its code.  The optional parameter 'MobCode' may contain some 'gawk' code
+that is inserted during migration in front of all other code.  The
+optional parameter 'Label' may contain a string that tells the agent
+what to do in program execution after arrival at its new home site.  One
+of the serious obstacles in implementing a framework for mobile agents
+is that it does not suffice to migrate the code.  It is also necessary
+to migrate the state of execution of the agent.  In contrast to 'Agent
+Tcl', this program does not try to migrate the complete set of
+variables.  The following conventions are used:
 
    * Each variable in an agent program is local to the current host and
      does _not_ migrate.
 
    * The array 'MOBFUN' shown above is an exception.  It is handled by
-     the function 'migrate' and does migrate with the application.
+     the function 'migrate()' and does migrate with the application.
 
    * The other exception is the array 'MOBVAR'.  Each variable that
      takes part in migration has to be an element of this array.
-     'migrate' also takes care of this.
+     'migrate()' also takes care of this.
 
    Now it's clear what happens to the 'Label' parameter of the function
-'migrate'.  It is copied into 'MOBVAR["Label"]' and travels alongside
+'migrate()'.  It is copied into 'MOBVAR["Label"]' and travels alongside
 the other data.  Since travelling takes place via HTTP, records must be
 separated with '"\r\n"' in 'RS' and 'ORS' as usual.  The code assembly
 for migration takes place in three steps:
@@ -2908,8 +2908,8 @@ for migration takes place in three steps:
 follows is the 'END' pattern that is executed when the mobile agent has
 finished reading its own code.  First, it checks whether it is already
 running on a remote host or not.  In case initialization has not yet
-taken place, it starts 'MyInit'.  Otherwise (later, on a remote host),
-it starts 'MyJob':
+taken place, it starts 'MyInit()'.  Otherwise (later, on a remote host),
+it starts 'MyJob()':
 
      END {
        if (ARGC != 2) exit    # stop when called with wrong parameters
@@ -2920,9 +2920,9 @@ it starts 'MyJob':
      }
 
    All that's left to extend the framework into a complete application
-is to write two application-specific functions: 'MyInit' and 'MyJob'.
-Keep in mind that the former is executed once on the originating host,
-while the latter is executed after each migration:
+is to write two application-specific functions: 'MyInit()' and
+'MyJob()'.  Keep in mind that the former is executed once on the
+originating host, while the latter is executed after each migration:
 
      function MyInit() {
        MOBVAR["MyOrigin"] = MyOrigin
@@ -2938,8 +2938,8 @@ while the latter is executed after each migration:
 ('MyOrigin') with it.  Then, it takes the name of its first destination
 and goes there for further work.  Notice that this name has the port
 number of the web server appended to the name of the server, because the
-function 'migrate' needs it this way to create the 'HttpService'
-variable.  Finally, it waits for the result to arrive.  The 'MyJob'
+function 'migrate()' needs it this way to create the 'HttpService'
+variable.  Finally, it waits for the result to arrive.  The 'MyJob()'
 function runs on the remote host:
 
      function MyJob() {
@@ -2959,7 +2959,7 @@ function runs on the remote host:
        }
      }
 
-   After migrating, the first thing to do in 'MyJob' is to delete the
+   After migrating, the first thing to do in 'MyJob()' is to delete the
 name of the current host from the list of hosts to visit.  Now, it is
 time to start the real work by appending the host's name to the result
 string, and reading line by line who is logged in on this host.  A very
@@ -3071,7 +3071,7 @@ structure of the script is as follows:
      }
 
    The earlier parts store data into variables and arrays which are
-subsequently used by later parts of the script.  The 'Init' function
+subsequently used by later parts of the script.  The 'Init()' function
 first checks if the script is invoked correctly (without any
 parameters).  If not, it informs the user of the correct usage.  What
 follows are preparations for the retrieval of the historical quote data.
@@ -3229,7 +3229,7 @@ could have made in the year before.
 
    At this point the hard work has been done: the array 'predict'
 contains the predictions for all the ticker symbols.  It is up to the
-function 'Report' to find some nice words to introduce the desired
+function 'Report()' to find some nice words to introduce the desired
 information.
 
      function Report() {
@@ -3266,9 +3266,9 @@ information.
        report = report "you should visit a doctor who can treat your ailment."
      }
 
-   The function 'SendMail' goes through the list of customers and opens
-a pipe to the 'mail' command for each of them.  Each one receives an
-email message with a proper subject heading and is addressed with his
+   The function 'SendMail()' goes through the list of customers and
+opens a pipe to the 'mail' command for each of them.  Each one receives
+an email message with a proper subject heading and is addressed with his
 full name.
 
      function SendMail() {
@@ -4288,6 +4288,13 @@ Index
 * record separators, POP and:            Email.               (line  36)
 * REMCONF program:                       REMCONF.             (line   6)
 * remoteport field:                      Gawk Special Files.  (line  34)
+* RFC 1939:                              Email.               (line   6)
+* RFC 1939 <1>:                          Email.               (line  36)
+* RFC 1945:                              Web page.            (line  29)
+* RFC 2068:                              Web page.            (line   6)
+* RFC 2068 <1>:                          Interacting Service. (line 104)
+* RFC 2616:                              Web page.            (line   6)
+* RFC 821:                               Email.               (line   6)
 * robot:                                 Challenges.          (line  84)
 * robot <1>:                             WEBGRAB.             (line   6)
 * RS variable, HTTP and:                 Web page.            (line  29)
@@ -4367,33 +4374,33 @@ Node: TCP Connecting30827
 Node: Troubleshooting33173
 Ref: Troubleshooting-Footnote-136232
 Node: Interacting36805
-Node: Setting Up39543
-Node: Email43046
-Node: Web page45378
-Ref: Web page-Footnote-148195
-Node: Primitive Service48393
-Node: Interacting Service51134
-Ref: Interacting Service-Footnote-160291
-Node: CGI Lib60323
-Node: Simple Server67287
-Ref: Simple Server-Footnote-175016
-Node: Caveats75117
-Node: Challenges76262
-Node: Some Applications and Techniques84960
-Node: PANIC87421
-Node: GETURL89145
-Node: REMCONF91778
-Node: URLCHK97265
-Node: WEBGRAB101114
-Node: STATIST105574
-Ref: STATIST-Footnote-1117311
-Node: MAZE117756
-Node: MOBAGWHO123955
-Ref: MOBAGWHO-Footnote-1137947
-Node: STOXPRED138002
-Node: PROTBASE152284
-Node: Links165400
-Node: GNU Free Documentation License168833
-Node: Index193953
+Node: Setting Up39545
+Node: Email43048
+Node: Web page45380
+Ref: Web page-Footnote-148197
+Node: Primitive Service48395
+Node: Interacting Service51136
+Ref: Interacting Service-Footnote-160303
+Node: CGI Lib60335
+Node: Simple Server67310
+Ref: Simple Server-Footnote-175053
+Node: Caveats75154
+Node: Challenges76299
+Node: Some Applications and Techniques84997
+Node: PANIC87462
+Node: GETURL89186
+Node: REMCONF91819
+Node: URLCHK97314
+Node: WEBGRAB101166
+Node: STATIST105628
+Ref: STATIST-Footnote-1117377
+Node: MAZE117822
+Node: MOBAGWHO124029
+Ref: MOBAGWHO-Footnote-1138047
+Node: STOXPRED138102
+Node: PROTBASE152390
+Node: Links165506
+Node: GNU Free Documentation License168939
+Node: Index194059
 
 End Tag Table
