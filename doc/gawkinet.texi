@@ -67,7 +67,7 @@
 
 @set TITLE TCP/IP Internetworking with @command{gawk}
 @set EDITION 1.4
-@set UPDATE-MONTH March, 2016
+@set UPDATE-MONTH April, 2016
 @c gawk versions:
 @set VERSION 4.1
 @set PATCHLEVEL 4
@@ -961,32 +961,6 @@ connects to other services that should give you some response. If you are
 curious, you should have a look at your @file{/etc/services} file. It could
 look like this:
 
-@ignore
-@multitable {1234567890123} {1234567890123} {123456789012345678901234567890123456789012}
-@item Service @strong{name} @tab Service @strong{number}
-@item echo @tab 7/tcp @tab echo sends back each line it receives
-@item echo @tab 7/udp @tab echo is good for testing purposes
-@item discard @tab 9/tcp @tab discard behaves like @file{/dev/null}
-@item discard @tab 9/udp @tab discard just throws away each line
-@item daytime @tab 13/tcp @tab daytime sends date & time once per connection
-@item daytime @tab 13/udp
-@item chargen @tab 19/tcp @tab chargen infinitely produces character sets
-@item chargen @tab 19/udp @tab chargen is good for testing purposes
-@item ftp @tab 21/tcp @tab ftp is the usual file transfer protocol
-@item telnet @tab 23/tcp @tab telnet is the usual login facility
-@item smtp @tab 25/tcp @tab smtp is the Simple Mail Transfer Protocol
-@item finger @tab 79/tcp @tab finger tells you who is logged in
-@item www @tab 80/tcp @tab www is the HyperText Transfer Protocol
-@item pop2 @tab 109/tcp @tab pop2 is an older version of pop3
-@item pop2 @tab 109/udp
-@item pop3 @tab 110/tcp @tab pop3 is the Post Office Protocol
-@item pop3 @tab 110/udp @tab pop3 is used for receiving email
-@item nntp @tab 119/tcp @tab nntp is the USENET News Transfer Protocol
-@item irc @tab 194/tcp @tab irc is the Internet Relay Chat
-@item irc @tab 194/udp
-@end multitable
-@end ignore
-
 @smallexample
 # /etc/services:
 #
@@ -1076,66 +1050,13 @@ of all users currently logged in, replace @var{name} with an empty string
 
 @cindex Linux
 @cindex GNU/Linux
-The final @code{close} command could be safely deleted from
+The final @code{close()} command could be safely deleted from
 the above script, because the operating system closes any open connection
 by default when a script reaches the end of execution. In order to avoid
 portability problems, it is best to always close connections explicitly.
 With the Linux kernel,
 for example, proper closing results in flushing of buffers. Letting
 the close happen by default may result in discarding buffers.
-
-@ignore
-@c Chuck comments that this seems out of place.  He's right.  I dunno
-@c where to put it though.
-@cindex @command{finger} utility
-@cindex RFC 1288
-In the early days of the Internet (up until about 1992), you could use
-such a program to check if some user in another country was logged in on
-a specific machine.
-RFC 1288@footnote{@uref{http://www.cis.ohio-state.edu/htbin/rfc/rfc1288.html}}
-provides the exact definition of the @command{finger} protocol.
-Every contemporary Unix system also has a command named @command{finger},
-which functions as a client for the protocol of the same name.
-Still today, some people maintain simple information systems
-with this ancient protocol. For example, by typing
-@samp{finger quake@@seismo.unr.edu}
-you get the latest @dfn{Earthquake Bulletin} for the state of Nevada.
-
-@cindex Earthquake Bulletin
-@smallexample
-$ finger quake@@seismo.unr.edu
-
-[@dots{}]
-
-DATE-(UTC)-TIME   LAT    LON      DEP   MAG    COMMENTS
-yy/mm/dd hh:mm:ss   deg.   deg.    km
-
-98/12/14 21:09:22  37.47N 116.30W   0.0 2.3Md  76.4 km   S of WARM SPRINGS, NEVA
-98/12/14 22:05:09  39.69N 120.41W  11.9 2.1Md  53.8 km WNW of RENO, NEVADA
-98/12/15 14:14:19  38.04N 118.60W   2.0 2.3Md  51.0 km   S of HAWTHORNE, NEVADA
-98/12/17 01:49:02  36.06N 117.58W  13.9 3.0Md  74.9 km  SE of LONE PINE, CALIFOR
-98/12/17 05:39:26  39.95N 120.87W   6.2 2.6Md 101.6 km WNW of RENO, NEVADA
-98/12/22 06:07:42  38.68N 119.82W   5.2 2.3Md  50.7 km   S of CARSON CITY, NEVAD
-@end smallexample
-
-@noindent
-This output from @command{finger} contains the time, location, depth,
-magnitude, and a short comment about
-the earthquakes registered in that region during the last 10 days.
-In many places today the use of such services is restricted
-because most networks have firewalls and proxy servers between them
-and the Internet. Most firewalls are programmed to not let
-@command{finger} requests go beyond the local network.
-
-@cindex Coke machine
-Another (ab)use of the @command{finger} protocol are several Coke machines
-that are connected to the Internet. There is a short list of such
-Coke machines.@footnote{@uref{http://ca.yahoo.com/Computers_and_Internet/Internet/Devices_Connected_to_the_Internet/Soda_Machines/}}
-You can access them either from the command-line or with a simple
-@command{gawk} script. They usually tell you about the different
-flavors of Coke and beer available there. If you have an account there,
-you can even order some drink this way.
-@end ignore
 
 When looking at @file{/etc/services} you may have noticed that the
 @samp{daytime} service is also available with @samp{udp}. In the earlier
@@ -1258,8 +1179,8 @@ execute arbitrary commands, anyone would be free to do @samp{rm -rf *}.
 
 @node Email, Web page, Setting Up, Using Networking
 @section Reading Email
-@c @cindex RFC 1939
-@c @cindex RFC 821
+@cindex RFC 1939
+@cindex RFC 821
 @cindex @command{gawk}, networking, See Also email
 @cindex networks, @command{gawk} and, See Also email
 @cindex POP (Post Office Protocol)
@@ -1270,11 +1191,6 @@ The distribution of email is usually done by dedicated email servers that
 communicate with your machine using special protocols. To receive email, we
 will use the Post Office Protocol (POP).  Sending can be done with the much
 older Simple Mail Transfer Protocol (SMTP).
-@ignore
-@footnote{RFC 1939 defines POP.
-RFC 821 defines SMTP.  See
-@uref{http://rfc.fh-koeln.de/doc/rfc/html/rfc.html, RFCs in HTML}.}
-@end ignore
 
 @cindex email
 When you type in the following program, replace the @var{emailhost} by the
@@ -1304,7 +1220,7 @@ BEGIN @{
 @}
 @end example
 
-@c @cindex RFC 1939
+@cindex RFC 1939
 @cindex record separators, POP and
 @cindex @code{RS} variable, POP and
 @cindex @code{ORS} variable, POP and
@@ -1328,8 +1244,8 @@ message it reads, but instead leaves it on the server.
 @cindex web pages
 @cindex HTTP (Hypertext Transfer Protocol)
 @cindex Hypertext Transfer Protocol, See HTTP
-@c @cindex RFC 2068
-@c @cindex RFC 2616
+@cindex RFC 2068
+@cindex RFC 2616
 
 Retrieving a web page from a web server is as simple as
 retrieving email from an email server. We only have to use a
@@ -1338,41 +1254,6 @@ protocol is HyperText Transfer Protocol (HTTP) and the port number is usually
 80.  As in the preceding @value{SECTION}, ask your administrator about the
 name of your local web server or proxy web server and its port number
 for HTTP requests.
-
-@ignore
-@c Chuck says this stuff isn't necessary
-More detailed information about HTTP can be found at
-the home of the web protocols,@footnote{@uref{http://www.w3.org/pub/WWW/Protocols}}
-including the specification of HTTP in RFC 2068. The protocol specification
-in RFC 2068 is concise and you can get it for free. If you need more
-explanation and you are willing to pay for a book, you might be
-interested in one of these books:
-
-@enumerate
-
-@item
-When we started writing web clients and servers with @command{gawk},
-the only book available with details about HTTP was the one by Paul Hethmon
-called
-@cite{Illustrated Guide to HTTP}.@footnote{@uref{http://www.browsebooks.com/Hethmon/?882}}
-Hethmon not only describes HTTP,
-he also implements a simple web server in C++.
-
-@item
-Since July 2000, O'Reilly offers the book by Clinton Wong called
-@cite{HTTP Pocket Reference}.@footnote{@uref{http://www.oreilly.com/catalog/httppr}}
-It only has 75 pages but its
-focus definitely is HTTP. This pocket reference is not a replacement
-for the RFC, but I wish I had had it back in 1997 when I started writing
-scripts to handle HTTP.
-
-@item
-Another small booklet about HTTP is the one by Toexcell Incorporated Staff,
-ISBN 1-58348-270-9, called
-@cite{Hypertext Transfer Protocol Http 1.0 Specifications}
-
-@end enumerate
-@end ignore
 
 The following program employs a rather crude approach toward retrieving a
 web page. It uses the prehistoric syntax of HTTP 0.9, which almost all
@@ -1391,7 +1272,7 @@ BEGIN @{
 @}
 @end example
 
-@c @cindex RFC 1945
+@cindex RFC 1945
 @cindex record separators, HTTP and
 @cindex @code{RS} variable, HTTP and
 @cindex @code{ORS} variable, HTTP and
@@ -1439,17 +1320,6 @@ print get |& HttpService
 @end example
 
 You can also request weather reports this way.
-@ignore
-@cindex Boutell, Thomas
-A good book to go on with is
-the
-@cite{HTML Source Book}.@footnote{@uref{http://www.utoronto.ca/webdocs/HTMLdocs/NewHTML/book.html}}
-There are also some books on CGI programming
-like @cite{CGI Programming in C & Perl},
-by Thomas Boutell@footnote{@uref{http://cseng.aw.com/bookdetail.qry?ISBN=0-201-42219-0&ptype=0}},
-and @cite{The CGI Book}.@footnote{@uref{http://www.cgibook.com}}
-Another good source is @cite{The CGI Resource Index}}.@footnote{@uref{http://www.cgi-resources.com}}
-@end ignore
 
 @node Primitive Service, Interacting Service, Web page, Using Networking
 @section A Primitive Web Service
@@ -1606,7 +1476,7 @@ HTML content of the web pages to refer to the home system.
 
 Each server that is built around this core has to initialize some
 application-dependent variables (such as the default home page) in a procedure
-@code{SetUpServer}, which is called immediately before entering the
+@code{SetUpServer()}, which is called immediately before entering the
 infinite loop of the server. For now, we will write an instance that
 initiates a trivial interaction.  With this home page, the client user
 can click on two possible choices, and receive the current date either
@@ -1631,7 +1501,7 @@ is the first run, @code{GETARG["Method"]} is not initialized yet, hence the
 case selection over the method does nothing. Now that the home page is
 initialized, the server can start communicating to a client browser.
 
-@c @cindex RFC 2068
+@cindex RFC 2068
 It does so by printing the HTTP header into the network connection
 (@samp{print @dots{} |& HttpService}). This command blocks execution of
 the server script until a client connects. If this server
@@ -1648,12 +1518,12 @@ Having supplied the initial home page to the browser with a valid document
 stored in the parameter @code{Prompt}, it closes the connection and waits
 for the next request.  When the request comes, a log line is printed that
 allows us to see which request the server receives. The final step in the
-loop is to call the function @code{CGI_setup}, which reads all the lines
+loop is to call the function @code{CGI_setup()}, which reads all the lines
 of the request (coming from the browser), processes them, and stores the
 transmitted parameters in the array @code{PARAM}. The complete
 text of these application-independent functions can be found in
 @ref{CGI Lib, ,A Simple CGI Library}.
-For now, we use a simplified version of @code{CGI_setup}:
+For now, we use a simplified version of @code{CGI_setup()}:
 
 @example
 function CGI_setup(   method, uri, version, i) @{
@@ -1700,7 +1570,7 @@ array as well as the body.
 On each subsequent run through the main loop, one request from a browser is
 received, evaluated, and answered according to the user's choice. This can be
 done by letting the value of the HTTP method guide the main loop into
-execution of the procedure @code{HandleGET}, which evaluates the user's
+execution of the procedure @code{HandleGET()}, which evaluates the user's
 choice. In this case, we have only one hierarchical level of menus,
 but in the general case,
 menus are nested.
@@ -1738,7 +1608,7 @@ which may contain only
 monochrome pictures but is an ASCII format. Binary images are possible but
 not so easy to handle. Another way of including images is to generate them
 with a tool such as GNUPlot,
-by calling the tool with the @code{system} function or through a pipe.
+by calling the tool with the @code{system()} function or through a pipe.
 
 @node CGI Lib, , Interacting Service, Interacting Service
 @subsection A Simple CGI Library
@@ -1752,7 +1622,7 @@ Phil Smith III,@*
 @c STARTOFRANGE cgilib
 @cindex CGI (Common Gateway Interface), library
 In @ref{Interacting Service, ,A Web Service with Interaction},
-we saw the function @code{CGI_setup} as part of the web server
+we saw the function @code{CGI_setup()} as part of the web server
 ``core logic'' framework. The code presented there handles almost
 everything necessary for CGI requests.
 One thing it doesn't do is handle encoded characters in the requests.
@@ -1875,9 +1745,9 @@ function CGI_setup(   method, uri, version, i)
 @c endfile
 @end example
 
-This isolates details in a single function, @code{CGI_setup}.
+This isolates details in a single function, @code{CGI_setup()}.
 Decoding of encoded characters is pushed off to a helper function,
-@code{_CGI_decode}. The use of the leading underscore (@samp{_}) in
+@code{_CGI_decode()}. The use of the leading underscore (@samp{_}) in
 the function name is intended to indicate that it is an ``internal''
 function, although there is nothing to enforce this:
 
@@ -1916,9 +1786,9 @@ function _CGI_decode(str,   hexdigs, i, pre, code1, code2,
 This works by splitting the string apart around an encoded character.
 The two digits are converted to lowercase characters and looked up in a string
 of hex digits.  Note that @code{0} is not in the string on purpose;
-@code{index} returns zero when it's not found, automatically giving
+@code{index()} returns zero when it's not found, automatically giving
 the correct value!  Once the hexadecimal value is converted from
-characters in a string into a numerical value, @code{sprintf}
+characters in a string into a numerical value, @code{sprintf()}
 converts the value back into a real character.
 The following is a simple test harness for the above functions:
 
@@ -2007,22 +1877,22 @@ function SetUpServer() @{
 @c endfile
 @end example
 
-@code{SetUpServer} is similar to the previous example,
-except for calling another function, @code{SetUpEliza}.
+@code{SetUpServer()} is similar to the previous example,
+except for calling another function, @code{SetUpEliza()}.
 This approach can be used to implement other kinds of servers.
 The only changes needed to do so are hidden in the functions
-@code{SetUpServer} and @code{HandleGET}. Perhaps it might be necessary to
+@code{SetUpServer()} and @code{HandleGET()}. Perhaps it might be necessary to
 implement other HTTP methods.
 The @command{igawk} program that comes with @command{gawk}
 may be useful for this process.
 
 When extending this example to a complete application, the first
-thing to do is to implement the function @code{SetUpServer} to
+thing to do is to implement the function @code{SetUpServer()} to
 initialize the HTML pages and some variables. These initializations
 determine the way your HTML pages look (colors, titles, menu
 items, etc.).
 
-The function @code{HandleGET} is a nested case selection that decides
+The function @code{HandleGET()} is a nested case selection that decides
 which page the user wants to see next.  Each nesting level refers to a menu
 level of the GUI. Each case implements a certain action of the menu. On the
 deepest level of case selection, the handler essentially knows what the
@@ -2119,7 +1989,7 @@ function ElizaSays(YouSay) @{
 @c endfile
 @end smallexample
 
-In the long but simple function @code{SetUpEliza}, you can see tables
+In the long but simple function @code{SetUpEliza()}, you can see tables
 for conjugation, keywords, and answers.@footnote{The version shown
 here is abbreviated.  The full version comes with the @command{gawk}
 distribution.} The associative array @code{k}
@@ -2537,7 +2407,7 @@ we built in
 @ref{Simple Server, ,A Simple Web Server}.
 When building new and nontrivial servers, we
 always copy this building block and append new instances of the two
-functions @code{SetUpServer} and @code{HandleGET}.
+functions @code{SetUpServer()} and @code{HandleGET()}.
 
 This makes a lot of sense, since
 this scheme of event-driven
@@ -2716,7 +2586,7 @@ process in the embedded system may read the file. The program uses the
 site-independent part of the simple web server that we developed in
 @ref{Interacting Service, ,A Web Service with Interaction}.
 As mentioned there, all we have to do is to write two new procedures
-@code{SetUpServer} and @code{HandleGET}:
+@code{SetUpServer()} and @code{HandleGET()}:
 
 @smallexample
 @c file eg/network/remconf.awk
@@ -2737,14 +2607,14 @@ function SetUpServer() @{
 @c endfile
 @end smallexample
 
-The function @code{SetUpServer} initializes the top level HTML texts
+The function @code{SetUpServer()} initializes the top level HTML texts
 as usual. It also initializes the name of the file that contains the
 configuration parameters and their values. In case the user supplies
 a name from the command line, that name is used. The file is expected to
 contain one parameter per line, with the name of the parameter in
 column one and the value in column two.
 
-The function @code{HandleGET} reflects the structure of the menu
+The function @code{HandleGET()} reflects the structure of the menu
 tree as usual. The first menu choice tells the user what this is all
 about. The second choice reads the configuration file line by line
 and stores the parameters and their values. Notice that the record
@@ -2884,9 +2754,9 @@ BEGIN @{
 Another thing that may look strange is the way GETURL is called.
 Before calling GETURL, we have to check if the proxy variables need
 to be passed on. If so, we prepare strings that will become part
-of the command line later. In @code{GetHeader}, we store these strings
+of the command line later. In @code{GetHeader()}, we store these strings
 together with the longest part of the command line. Later, in the loop
-over the URLs, @code{GetHeader} is appended with the URL and a redirection
+over the URLs, @code{GetHeader()} is appended with the URL and a redirection
 operator to form the command that reads the URL's header over the Internet.
 GETURL always produces the headers over @file{/dev/stderr}. That is
 the reason why we need the redirection operator to have the header
@@ -2933,7 +2803,7 @@ separators. With @code{RS} set to a regular expression that matches links,
 the second action is executed each time a non-empty link is found.
 We can find the matching link itself in @code{RT}.
 
-The action could use the @code{system} function to let another GETURL
+The action could use the @code{system()} function to let another GETURL
 retrieve the page, but here we use a different approach.
 This simple program prints shell commands that can be piped into @command{sh}
 for execution.  This way it is possible to first extract
@@ -3044,7 +2914,7 @@ distributions. The statistical computation follows
 @cite{Numerical Recipes in C: The Art of Scientific Computing}
 by William H.@: Press, Saul A.@: Teukolsky, William T.@: Vetterling, and Brian P. Flannery.
 Since @command{gawk} does not have a built-in function
-for the computation of the beta function, we use the @code{ibeta} function
+for the computation of the beta function, we use the @code{ibeta()} function
 of GNUPlot. As a side effect, we learn how to use GNUPlot as a
 sophisticated calculator. The comparison of means is done as in @code{tutest},
 paragraph 14.2, page 613, and the comparison of variances is done as in @code{ftest},
@@ -3052,7 +2922,7 @@ page 611 in @cite{Numerical Recipes}.
 @cindex Numerical Recipes
 
 As usual, we take the site-independent code for servers and append
-our own functions @code{SetUpServer} and @code{HandleGET}:
+our own functions @code{SetUpServer()} and @code{HandleGET()}:
 
 @smallexample
 @c file eg/network/statist.awk
@@ -3072,7 +2942,7 @@ function SetUpServer() @{
 @end smallexample
 
 Here, you see the menu structure that the user sees. Later, we
-will see how the program structure of the @code{HandleGET} function
+will see how the program structure of the @code{HandleGET()} function
 reflects the menu structure. What is missing here is the link for the
 image we generate. In an event-driven environment, request,
 generation, and delivery of images are separated.
@@ -3088,7 +2958,7 @@ defaults, we make sure the user gets an image the first time
 he uses the program.
 
 @cindex JavaScript
-Following is the rather long function @code{HandleGET}, which
+Following is the rather long function @code{HandleGET()}, which
 implements the contents of this service by reacting to the different
 kinds of requests from the browser. Before you start playing with
 this script, make sure that your browser supports JavaScript and that it also
@@ -3212,7 +3082,7 @@ By this time, the server should be ready for serving the next request.
 
 But there is one more subtlety in the JavaScript code.
 Each time the JavaScript code opens a window for the image, the
-name of the image is appended with a timestamp (@code{systime}).
+name of the image is appended with a timestamp (@code{systime()}).
 Why this constant change of name for the image? Initially, we always named
 the image @code{Image}, but then the Netscape browser noticed the name
 had @emph{not} changed since the previous request and displayed the
@@ -3289,7 +3159,7 @@ any VRML code, have a look at
 the VRML FAQ.
 Presenting a static VRML scene is a bit trivial; in order to expose
 @command{gawk}'s new capabilities, we will present a dynamically generated
-VRML scene. The function @code{SetUpServer} is very simple because it
+VRML scene. The function @code{SetUpServer()} is very simple because it
 only sets the default HTML page and initializes the random number
 generator. As usual, the surrounding server lets you browse the maze.
 
@@ -3309,7 +3179,7 @@ function SetUpServer() @{
 @c endfile
 @end smallexample
 
-The function @code{HandleGET} is a bit longer because it first computes
+The function @code{HandleGET()} is a bit longer because it first computes
 the maze and afterwards generates the VRML code that is sent across
 the network. As shown in the STATIST example
 (@pxref{STATIST}),
@@ -3317,7 +3187,7 @@ we set the type of the
 content to VRML and then store the VRML representation of the maze as the
 page content. We assume that the maze is stored in a 2D array. Initially,
 the maze consists of walls only. Then, we add an entry and an exit to the
-maze and let the rest of the work be done by the function @code{MakeMaze}.
+maze and let the rest of the work be done by the function @code{MakeMaze()}.
 Now, only the wall fields are left in the maze. By iterating over the these
 fields, we generate one line of VRML code for each wall field.
 
@@ -3371,7 +3241,7 @@ Group @{\n\
 @c endfile
 @end smallexample
 
-Finally, we have a look at @code{MakeMaze}, the function that generates
+Finally, we have a look at @code{MakeMaze()}, the function that generates
 the @code{Maze} array. When entered, this function assumes that the array
 has been initialized so that each element represents a wall element and
 the maze is initially full of wall elements. Only the entrance and the exit
@@ -3439,94 +3309,6 @@ of our work. Mobile agents could become the mediators between users and
 the networking world. For an unbiased view at this technology,
 see the remarkable paper @cite{Mobile Agents: Are they a good
 idea?}.@footnote{@uref{http://www.research.ibm.com/massive/mobag.ps}}
-
-@ignore
-@c Chuck says to take all of this out.
-@cindex Tcl/Tk
-A good instance of this paradigm is
-@cite{Agent Tcl},@footnote{@uref{http://agent.cs.dartmouth.edu/software/agent2.0/}}
-an extension of the Tcl language. After introducing a typical
-development environment, the aforementioned paper shows a nice little
-example application that we will try to rebuild in @command{gawk}. The
-@command{who} agent takes a list of servers and wanders from one server
-to the next one, always looking to see who is logged in.
-Having reached the last
-one, it sends back a message with a list of all users it found on each
-machine.
-
-But before implementing something that might or might not be a mobile
-agent, let us clarify the concept and some important terms. The agent
-paradigm in general is such a young scientific discipline that it has
-not yet developed a widely-accepted terminology. Some authors try to
-give precise definitions, but their scope is often not wide enough
-to be generally accepted. Franklin and Graesser ask
-@cite{Is it an Agent or just a Program: A Taxonomy for Autonomous
-Agents}@footnote{@uref{http://www.msci.memphis.edu/~franklin/AgentProg.html}}
-and give even better answers than Caglayan and Harrison in their
-@cite{Agent Sourcebook}.@footnote{@uref{http://www.aminda.com/mazzu/sourcebook/}}
-
-@itemize @minus
-@item
-@i{An autonomous agent is a system situated within and a part of
-an environment that senses that environment and acts on it, over time, in
-pursuit of its own agenda and so as to effect what it senses in the future.}
-(Quoted from Franklin and Graesser.)
-@item
-A mobile agent is able to transport itself from one machine to another.
-@item
-The term @dfn{migration} often denotes this process of moving.
-But neither of the two sources above even mentions this term, while others
-use it regularly.
-@end itemize
-
-Before delving into the (rather demanding) details of
-implementation, let us give just one more quotation as a final
-motivation. Steven Farley published an excellent paper called
-@cite{Mobile Agent System Architecture},@footnote{This often
-cited text originally appeared as a conference paper here:
-@uref{http://www.sigs.com/publications/docs/java/9705/farley.html}
-Many bibliographies on the Internet point to this dead link. Meanwhile,
-the paper appeared as a contribution to a book called More Java Gems here:
-@uref{http://uk.cambridge.org/computerscience/object/catalogue/0521774772/default.htm}}
-in which he asks ``Why use an agent architecture?''
-
-@quotation
-If client-server systems are the currently established norm and distributed
-object systems such as CORBA are defining the future standards, why bother
-with agents? Agent architectures have certain advantages over these other
-types. Three of the most important advantages are:
-@cindex CORBA
-
-@enumerate
-@item
-An agent performs much processing at the server where local bandwidth
-is high, thus reducing the amount of network bandwidth consumed and increasing
-overall performance. In contrast, a CORBA client object with the equivalent
-functionality of a given agent must make repeated remote method calls to
-the server object because CORBA objects cannot move across the network
-at runtime.
-
-@item
-An agent operates independently of the application from which the
-agent was invoked. The agent operates asynchronously, meaning that the
-client application does not need to wait for the results. This is especially
-important for mobile users who are not always connected to the network.
-
-@item
-The use of agents allows for the injection of new functionality into
-a system at run time. An agent system essentially contains its own automatic
-software distribution mechanism. Since CORBA has no built-in support for
-mobile code, new functionality generally has to be installed manually.
-
-@end enumerate
-
-Of course a non-agent system can exhibit these same features with some
-work. But the mobile code paradigm supports the transfer of executable
-code to a remote location for asynchronous execution from the start. An
-agent architecture should be considered for systems where the above features
-are primary requirements.
-@end quotation
-@end ignore
 
 When trying to migrate a process from one system to another,
 a server process is needed on the receiving side. Depending on the kind
@@ -3703,9 +3485,9 @@ function migrate(Destination, MobCode, Label) @{
 @c endfile
 @end smallexample
 
-The @code{migrate} function prepares the
+The @code{migrate()} function prepares the
 aforementioned strings containing the program code and transmits them to a
-server. A consequence of this modular approach is that the @code{migrate}
+server. A consequence of this modular approach is that the @code{migrate()}
 function takes some parameters that aren't needed in this application,
 but that will be in future ones. Its mandatory parameter @code{Destination} holds the
 name (or IP address) of the server that the agent wants as a host for its
@@ -3726,16 +3508,16 @@ Each variable in an agent program is local to the current host and does
 
 @item
 The array @code{MOBFUN} shown above is an exception. It is handled
-by the function @code{migrate} and does migrate with the application.
+by the function @code{migrate()} and does migrate with the application.
 
 @item
 The other exception is the array @code{MOBVAR}. Each variable that
 takes part in migration has to be an element of this array.
-@code{migrate} also takes care of this.
+@code{migrate()} also takes care of this.
 @end itemize
 
 Now it's clear what happens to the @code{Label} parameter of the
-function @code{migrate}. It is copied into @code{MOBVAR["Label"]} and
+function @code{migrate()}. It is copied into @code{MOBVAR["Label"]} and
 travels alongside the other data. Since travelling takes place via HTTP,
 records must be separated with @code{"\r\n"} in @code{RS} and
 @code{ORS} as usual. The code assembly for migration takes place in
@@ -3760,8 +3542,8 @@ The application-independent framework is now almost complete. What follows
 is the @code{END} pattern that is executed  when the mobile agent has
 finished reading its own code. First, it checks whether it is already
 running on a remote host or not. In case initialization has not yet taken
-place, it starts @code{MyInit}. Otherwise (later, on a remote host), it
-starts @code{MyJob}:
+place, it starts @code{MyInit()}. Otherwise (later, on a remote host), it
+starts @code{MyJob()}:
 
 @smallexample
 @c file eg/network/mobag.awk
@@ -3776,8 +3558,8 @@ END @{
 @end smallexample
 
 All that's left to extend the framework into a complete application
-is to write two application-specific functions: @code{MyInit} and
-@code{MyJob}. Keep in mind that the former is executed once on the
+is to write two application-specific functions: @code{MyInit()} and
+@code{MyJob()}. Keep in mind that the former is executed once on the
 originating host, while the latter is executed after each migration:
 
 @smallexample
@@ -3798,9 +3580,9 @@ As mentioned earlier, this agent takes the name of its origin
 (@code{MyOrigin}) with it. Then, it takes the name of its first
 destination and goes there for further work. Notice that this name has
 the port number of the web server appended to the name of the server,
-because the function @code{migrate} needs it this way to create
+because the function @code{migrate()} needs it this way to create
 the @code{HttpService} variable. Finally, it waits for the result to arrive.
-The @code{MyJob} function runs on the remote host:
+The @code{MyJob()} function runs on the remote host:
 
 @smallexample
 @c file eg/network/mobag.awk
@@ -3823,7 +3605,7 @@ function MyJob() @{
 @c endfile
 @end smallexample
 
-After migrating, the first thing to do in @code{MyJob} is to delete
+After migrating, the first thing to do in @code{MyJob()} is to delete
 the name of the current host from the list of hosts to visit. Now, it
 is time to start the real work by appending the host's name to the
 result string, and reading line by line who is logged in on this host.
@@ -3923,16 +3705,6 @@ The stock shares to avoid today are these:
         @dots{}
 @end smallexample
 
-@ignore
-@c Chuck suggests removing this paragraph
-If you are not into stock market prediction but want to earn money
-with a more humane service, you might prefer to send out horoscopes
-to your customers. Or, once every refrigerator in every household on this side
-of the Chinese Wall is connected to the Internet, such a service could
-inspect the contents of your customer's refrigerators each day and
-advise them on nutrition. Big Brother is watching them.
-@end ignore
-
 The script as a whole is rather long. In order to ease the pain of
 studying other people's source code, we have broken the script
 up into meaningful parts which are invoked one after the other.
@@ -3952,7 +3724,7 @@ BEGIN @{
 @end example
 
 The earlier parts store data into variables and arrays which are
-subsequently used by later parts of the script. The @code{Init} function
+subsequently used by later parts of the script. The @code{Init()} function
 first checks if the script is invoked correctly (without any parameters).
 If not, it informs the user of the correct usage. What follows are preparations
 for the retrieval of the historical quote data. The names of the 30 stock
@@ -4131,7 +3903,7 @@ function Prediction() @{
 
 At this point the hard work has been done: the array @code{predict}
 contains the predictions for all the ticker symbols. It is up to the
-function @code{Report} to find some nice words to introduce the
+function @code{Report()} to find some nice words to introduce the
 desired information.
 
 @smallexample
@@ -4172,7 +3944,7 @@ function Report() @{
 @c endfile
 @end smallexample
 
-The function @code{SendMail} goes through the list of customers and opens
+The function @code{SendMail()} goes through the list of customers and opens
 a pipe to the @code{mail} command for each of them. Each one receives an
 email message with a proper subject heading and is addressed with his full name.
 
@@ -4205,50 +3977,6 @@ The quality of the prediction algorithm is likely to be disappointing.
 Try to find a better one.
 Should you find one with a success rate of more than 50%, please tell
 us about it! It is only for the sake of curiosity, of course. @code{:-)}
-
-@ignore
-@c chuck says to remove this
-Let us give you one final indication as to what one can expect from
-a prediction of stock data, which is sometimes said to contain much
-randomness. One theory says that all relevant information to be taken
-into account when estimating the price of a stock is contained in the
-stock quotes. Every bit of useful information has influenced the
-fair price. Therefore (the theory says) temporary changes (i.e., fluctuations
-within a minute) have to be purely random. But what is the cause of
-short-term changes in stock prices?
-
-Stock prices are fixed when supply and demand meet each other.
-What people are willing to pay reflects human expectations.
-Human expectations are not necessarily random. On the Internet,
-you can find an elucidating paper about predictability and human
-expectations:
-@uref{http://it.ucsd.edu/IT/Newsletter/archives/meir/05meir.html,
-@cite{Reflections on ``Universal Prediction of Individual Sequences''}}
-The authors (Feder, Merhav, Gutman) introduce the reader to the subject
-by telling a thrilling anecdote.
-@cindex Shannon, Claude
-@quotation
-In the early 50's, at Bell Laboratories, David Hagelbarger built a
-simple ``mind reading'' machine, whose purpose was to play the ``penny
-matching'' game. In this game, a player chooses head or tail, while a
-``mind reading'' machine tries to predict and match his choice.
-Surprisingly, as Robert Lucky tells in his book ``Silicon Dreams'',
-Hagelbarger's simple, 8-state machine, was able to match the ``pennies''
-of its human opponent 5,218 times over the course of 9,795 plays.
-Random guessing would lead to such a high success rate with a probability
-less than one out of 10 billion! Shannon, who was interested in prediction,
-information, and thinking machines, closely followed Hagelbarger's
-machine, and eventually built his own stripped-down version of the machine,
-having the same states, but one that used a simpler strategy at each state.
-As the legend goes, in a duel between the two machines, Shannon's machine
-won by a slight margin! No one knows if this was due to a superior algorithm
-or just a chance happening associated with the specific sequence at that game.
-In any event, the success of both these machines against ``untrained'' human
-opponents was explained by the fact that the human opponents cannot draw
-completely random
-bits.
-@end quotation
-@end ignore
 
 @node PROTBASE, , STOXPRED, Some Applications and Techniques
 @section PROTBASE: Searching Through A Protein Database
@@ -4549,8 +4277,8 @@ books on Bioinformatics is
 The sequences @emph{gawk} and @emph{gnuawk} are in widespread use in
 the genetic material of virtually every earthly living being. Let us
 take this as a clear indication that the divine creator has intended
-@code{gawk} to prevail over other scripting languages such as @code{perl},
-@code{tcl}, or @code{python} which are not even proper sequences. (:-)
+@command{gawk} to prevail over other scripting languages such as @command{perl},
+@command{tcl}, or @command{python} which are not even proper sequences. (:-)
 @end enumerate
 
 @node Links, GNU Free Documentation License, Some Applications and Techniques, Top
@@ -5200,7 +4928,7 @@ to permit their use in free software.
 @bye
 
 Conventions:
-1. Functions, built-in or otherwise, do NOT have () after them.
+1. Functions, built-in or otherwise, do have () after them.
 2. Gawk built-in vars and functions are in @code.  Also program vars and
    functions.
 3. HTTP method names are in @code.
