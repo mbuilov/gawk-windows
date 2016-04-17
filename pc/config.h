@@ -27,9 +27,7 @@
 #define HAVE_ATEXIT 1
 
 /* Define to 1 if you have the `btowc' function. */
-#ifdef _WIN32
 #define HAVE_BTOWC 1
-#endif
 
 /* Define to 1 if you have the Mac OS X function CFLocaleCopyCurrent in the
    CoreFoundation framework. */
@@ -331,7 +329,9 @@
 #define HAVE_SYS_TYPES_H 1
 
 /* Define to 1 if you have <sys/wait.h> that is POSIX.1 compatible. */
-#undef HAVE_SYS_WAIT_H
+#ifdef __DJGPP__
+#define HAVE_SYS_WAIT_H 1
+#endif
 
 /* Define to 1 if you have the <termios.h> header file. */
 #undef HAVE_TERMIOS_H
