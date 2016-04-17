@@ -165,7 +165,8 @@ BASIC_TESTS = \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
 	pcntplus posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
 	prt1eval prtoeval \
-	rand range1 rebrackloc rebt8b1 redfilnm regeq regexpbrack regexpbrack2 \
+	rand range1 readbuf rebrackloc rebt8b1 redfilnm \
+	regeq regexpbrack regexpbrack2 \
 	regexprange regrange reindops \
 	reparse resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
@@ -220,6 +221,7 @@ SHLIB_TESTS = \
 	fnmatch filefuncs fork fork2 fts functab4 inplace1 inplace2 inplace3 \
 	ordchr ordchr2 readdir readfile readfile2 revout revtwoway rwarray testext time
 
+
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
 	defref fmtspcl lintwarn noeffect nofmtch shadow \
@@ -272,6 +274,7 @@ charset-tests-all:
 		$(MAKE) charset-msg-start charset-tests charset-msg-end; \
 	else \
 		echo %%%%%%%%%% Inadequate locale support: skipping charset tests. ; \
+		echo %%%%%%%%%% At least en_US.UTF-8, ru_RU.UTF-8 and ja_JP.UTF-8 are needed. ; \
 	fi
 
 charset-tests: $(LOCALE_CHARSET_TESTS)
@@ -338,7 +341,7 @@ charset-msg-start:
 	@echo "======== Starting tests that can vary based on character set or locale support ========"
 	@echo "**************************************************************************"
 	@echo "* Some or all of these tests may fail if you have inadequate or missing  *"
-	@echo "* locale support At least en_US.UTF-8, ru_RU.UTF-8 and ja_JP.UTF-8 are   *"
+	@echo "* locale support. At least en_US.UTF-8, ru_RU.UTF-8 and ja_JP.UTF-8 are  *"
 	@echo "* needed. However, if you see this message, the Makefile thinks you have *"
 	@echo "* what you need ...                                                      *"
 	@echo "**************************************************************************"
@@ -853,6 +856,7 @@ mbstr1::
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 mbstr2::
 	@echo $@
 	@echo Expect mbstr2 to fail with MinGW.
@@ -916,7 +920,7 @@ profile4:
 
 profile5:
 	@echo $@
-	@-GAWK_NO_PP_RUN=1 $(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
+	@GAWK_NO_PP_RUN=1 $(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 #	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 	@-$(TESTOUTCMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -1252,7 +1256,7 @@ paramasfunc2::
 negtime::
 	@echo $@
 	@TZ=GMT AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@AWKPATH="$(srcdir)" $(AWK) -f checknegtime.awk $@.ok _$@ && rm -f _$@
+	@AWKPATH="$(srcdir)" $(AWK) -f checknegtime.awk "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 muldimposix::
 	@echo $@
@@ -1261,8 +1265,17 @@ muldimposix::
 
 watchpoint1:
 	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk $@.in < $@.script >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk $(srcdir)/$@.in < $(srcdir)/$@.script >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+pty1:
+	@echo $@
+	@echo Expect pty1 to fail with DJGPP and MinGW.
+	@case `uname` in \
+	*[Oo][Ss]/390*) : ;; \
+	*) AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
+	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ;; \
+	esac
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
 addcomma:
@@ -2527,12 +2540,6 @@ procinfs:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
-pty1:
-	@echo $@
-	@echo Expect pty1 to fail with DJGPP and MinGW.
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
 regnul1:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -2735,11 +2742,11 @@ time:
 
 # Targets generated for other tests:
 
-$(srcdir)/Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
+Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
 	files=`cd "$(srcdir)" && echo *.awk *.in`; \
-	$(AWK) -f "$(srcdir)"/Gentests "$(srcdir)"/Makefile.am $$files > "$(srcdir)"/Maketests
+	$(AWK) -f "$(srcdir)"/Gentests "$(srcdir)"/Makefile.am $$files > $@
 
-clean:
+clean-local:
 	rm -fr _* core core.* fmtspcl.ok junk strftime.ok test1 test2 \
 	seq *~ readfile.ok fork.tmp.* testext.awk fts.ok readdir.ok \
 	mmap8k.ok profile1.ok
@@ -2766,7 +2773,7 @@ diffout:
 		diff -c "$(srcdir)"/$${base}.ok  $$i ; \
 		fi ; \
 		fi ; \
-	done | less
+	done | more
 
 # convenient way to scan valgrind results for errors
 valgrind-scan:
