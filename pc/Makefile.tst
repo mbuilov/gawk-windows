@@ -1271,7 +1271,7 @@ watchpoint1:
 pty1:
 	@echo $@
 	@echo Expect pty1 to fail with DJGPP and MinGW.
-	@case `uname` in \
+	@-case `uname` in \
 	*[Oo][Ss]/390*) : ;; \
 	*) AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
 	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ;; \
