@@ -271,6 +271,7 @@ pkgextensiondir = @pkgextensiondir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -2664,7 +2665,7 @@ watchpoint1:
 
 pty1:
 	@echo $@
-	@case `uname` in \
+	@-case `uname` in \
 	*[Oo][Ss]/390*) : ;; \
 	*) AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
 	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ;; \
