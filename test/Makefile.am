@@ -871,6 +871,9 @@ EXTRA_DIST = \
 	rs.awk \
 	rs.in \
 	rs.ok \
+	rscompat.awk \
+	rscompat.in \
+	rscompat.ok \
 	rsgetline.awk \
 	rsgetline.in \
 	rsgetline.ok \
@@ -1116,7 +1119,7 @@ BASIC_TESTS = \
 	rand randtest range1 readbuf rebrackloc rebt8b1 redfilnm \
 	regeq regexpbrack regexpbrack2 \
 	regexprange regrange reindops \
-	reparse resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
+	reparse resplit rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin sortempty sortglos splitargv splitarr splitdef \
 	splitvar splitwht strcat1 strnum1 strtod subamp subi18n \
@@ -2231,6 +2234,11 @@ pty1:
 	*) AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
 	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ;; \
 	esac
+
+rscompat:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) --traditional -f $@.awk "$(srcdir)/$@.in" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
 include Maketests
