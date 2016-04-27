@@ -3841,7 +3841,7 @@ set_RS()
 	if (RS->stlen == 0) {
 		RS_is_null = true;
 		matchrec = rsnullscan;
-	} else if (RS->stlen > 1) {
+	} else if (RS->stlen > 1 && ! do_traditional) {
 		static bool warned = false;
 
 		RS_re_yes_case = make_regexp(RS->stptr, RS->stlen, false, true, true);
