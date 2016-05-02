@@ -354,7 +354,8 @@ struct dfa
   mbstate_t mbs;		/* Multibyte conversion state.  */
 
   /* dfaexec implementation.  */
-  char *(*dfaexec) (struct dfa *, char const *, char *, int, size_t *, int *);
+  char *(*dfaexec) (struct dfa *, char const *, char *,
+                    bool, size_t *, bool *);
 
   /* The following are valid only if MB_CUR_MAX > 1.  */
 
@@ -667,7 +668,8 @@ charclass_index (charclass const s)
 }
 
 /* Syntax bits controlling the behavior of the lexical analyzer.  */
-static reg_syntax_t syntax_bits, syntax_bits_set;
+static reg_syntax_t syntax_bits;
+static bool syntax_bits_set;
 
 /* Flag for case-folding letters into sets.  */
 static bool case_fold;
@@ -677,6 +679,10 @@ static unsigned char eolbyte;
 
 /* Cache of char-context values.  */
 static int sbit[NOTCHAR];
+
+/* If never_trail[B], the byte B cannot be a non-initial byte in a
+   multibyte character.  */
+static bool never_trail[NOTCHAR];
 
 /* Set of characters considered letters.  */
 static charclass letters;
@@ -712,12 +718,12 @@ wchar_context (wint_t wc)
 
 /* Entry point to set syntax options.  */
 void
-dfasyntax (reg_syntax_t bits, int fold, unsigned char eol)
+dfasyntax (reg_syntax_t bits, bool fold, unsigned char eol)
 {
   int i;
-  syntax_bits_set = 1;
+  syntax_bits_set = true;
   syntax_bits = bits;
-  case_fold = fold != 0;
+  case_fold = fold;
   eolbyte = eol;
 
   for (i = CHAR_MIN; i <= CHAR_MAX; ++i)
@@ -739,6 +745,11 @@ dfasyntax (reg_syntax_t bits, int fold, unsigned char eol)
           setbit (uc, newline);
           break;
         }
+
+      /* POSIX requires that the five bytes in "\n\r./" (including the
+         terminating NUL) cannot occur inside a multibyte character.  */
+      never_trail[uc] = (using_utf8 () ? (uc & 0xc0) != 0x80
+                         : strchr ("\n\r./", uc) != NULL);
     }
 }
 
@@ -774,7 +785,7 @@ setbit_case_fold_c (int b, charclass c)
 
 /* UTF-8 encoding allows some optimizations that we can't otherwise
    assume in a multibyte encoding.  */
-int
+bool
 using_utf8 (void)
 {
   static int utf8 = -1;
@@ -875,7 +886,7 @@ static wint_t wctok;		/* Wide character representation of the current
         lexptr += nbytes;			\
         lexleft -= nbytes;			\
       }						\
-  } while (0)
+  } while (false)
 
 #ifndef MIN
 # define MIN(a,b) ((a) < (b) ? (a) : (b))
@@ -1228,7 +1239,7 @@ parse_bracket_exp (void)
       lexptr = lexptr_saved;			\
       lexleft = lexleft_saved;			\
     }						\
-  while (0)
+  while (false)
 
 static token
 lex (void)
@@ -1930,7 +1941,7 @@ regexp (void)
 /* Main entry point for the parser.  S is a string to be parsed, len is the
    length of the string, so s can include NUL characters.  D is a pointer to
    the struct dfa to parse into.  */
-void
+static void
 dfaparse (char const *s, size_t len, struct dfa *d)
 {
   dfa = d;
@@ -2309,8 +2320,8 @@ state_separate_contexts (position_set const *s)
    Sets are stored as arrays of the elements, obeying a stack-like allocation
    scheme; the number of elements in each set deeper in the stack can be
    used to determine the address of a particular set's array.  */
-void
-dfaanalyze (struct dfa *d, int searchflag)
+static void
+dfaanalyze (struct dfa *d, bool searchflag)
 {
   /* Array allocated to hold position sets.  */
   position *posalloc = xnmalloc (d->nleaves, 2 * sizeof *posalloc);
@@ -2346,7 +2357,7 @@ dfaanalyze (struct dfa *d, int searchflag)
   putc ('\n', stderr);
 #endif
 
-  d->searchflag = searchflag != 0;
+  d->searchflag = searchflag;
   alloc_position_set (&merged, d->nleaves);
   d->follows = xcalloc (d->tindex, sizeof *d->follows);
 
@@ -2555,7 +2566,7 @@ dfaanalyze (struct dfa *d, int searchflag)
    If after comparing with every group there are characters remaining in C,
    create a new group labeled with the characters of C and insert this
    position in that group.  */
-void
+static void
 dfastate (state_num s, struct dfa *d, state_num trans[])
 {
   leaf_set grps[NOTCHAR];       /* As many as will ever be needed.  */
@@ -3186,15 +3197,20 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
    that are not a single byte character nor the first byte of a multibyte
    character.
 
-   Given DFA state d, use mbs_to_wchar to advance MBP until it reaches or
-   exceeds P.  If WCP is non-NULL, set *WCP to the final wide character
-   processed, or if no wide character is processed, set it to WEOF.
+   Given DFA state d, use mbs_to_wchar to advance MBP until it reaches
+   or exceeds P, and return the advanced MBP.  If WCP is non-NULL and
+   the result is greater than P, set *WCP to the final wide character
+   processed, or to WEOF if no wide character is processed.  Otherwise,
+   if WCP is non-NULL, *WCP may or may not be updated.
+
    Both P and MBP must be no larger than END.  */
 static unsigned char const *
 skip_remains_mb (struct dfa *d, unsigned char const *p,
                  unsigned char const *mbp, char const *end, wint_t *wcp)
 {
   wint_t wc = WEOF;
+  if (never_trail[*p])
+    return p;
   while (mbp < p)
     mbp += mbs_to_wchar (&wc, (char const *) mbp,
                          end - (char const *) mbp, d);
@@ -3223,7 +3239,7 @@ skip_remains_mb (struct dfa *d, unsigned char const *p,
     - word-delimiter-in-MB-locale: \<, \>, \b
     */
 static inline char *
-dfaexec_main (struct dfa *d, char const *begin, char *end, int allow_nl,
+dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
              size_t *count, bool multibyte)
 {
   state_num s, s1;              /* Current state.  */
@@ -3339,7 +3355,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, int allow_nl,
                                                                         \
               mbp = p;                                                  \
               trans = d->trans;                                         \
-  } while (0)
+  } while (false)
 
               State_transition();
             }
@@ -3415,14 +3431,14 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, int allow_nl,
 
 static char *
 dfaexec_mb (struct dfa *d, char const *begin, char *end,
-            int allow_nl, size_t *count, int *backref)
+            bool allow_nl, size_t *count, bool *backref)
 {
   return dfaexec_main (d, begin, end, allow_nl, count, true);
 }
 
 static char *
 dfaexec_sb (struct dfa *d, char const *begin, char *end,
-            int allow_nl, size_t *count, int *backref)
+            bool allow_nl, size_t *count, bool *backref)
 {
   return dfaexec_main (d, begin, end, allow_nl, count, false);
 }
@@ -3431,9 +3447,9 @@ dfaexec_sb (struct dfa *d, char const *begin, char *end,
    any regexp that uses a construct not supported by this code.  */
 static char *
 dfaexec_noop (struct dfa *d, char const *begin, char *end,
-              int allow_nl, size_t *count, int *backref)
+              bool allow_nl, size_t *count, bool *backref)
 {
-  *backref = 1;
+  *backref = true;
   return (char *) begin;
 }
 
@@ -3442,7 +3458,7 @@ dfaexec_noop (struct dfa *d, char const *begin, char *end,
 
 char *
 dfaexec (struct dfa *d, char const *begin, char *end,
-         int allow_nl, size_t *count, int *backref)
+         bool allow_nl, size_t *count, bool *backref)
 {
   return d->dfaexec (d, begin, end, allow_nl, count, backref);
 }
@@ -3480,7 +3496,7 @@ free_mbdata (struct dfa *d)
 
 /* Initialize the components of a dfa that the other routines don't
    initialize for themselves.  */
-void
+static void
 dfainit (struct dfa *d)
 {
   memset (d, 0, sizeof *d);
@@ -3635,7 +3651,7 @@ dfassbuild (struct dfa *d)
 
 /* Parse and analyze a single string of the given length.  */
 void
-dfacomp (char const *s, size_t len, struct dfa *d, int searchflag)
+dfacomp (char const *s, size_t len, struct dfa *d, bool searchflag)
 {
   dfainit (d);
   dfaparse (s, len, d);
