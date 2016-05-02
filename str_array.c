@@ -96,7 +96,7 @@ str_array_init(NODE *symbol ATTRIBUTE_UNUSED, NODE *subs ATTRIBUTE_UNUSED)
 	} else
 		null_array(symbol);
 
-	return (NODE **) ! NULL;
+	return & success_node;
 }
 
 
@@ -273,7 +273,7 @@ str_remove(NODE *symbol, NODE *subs)
 				symbol->ainit(symbol, NULL);	/* re-initialize symbol */
 			}
 
-			return (NODE **) ! NULL;	/* return success */
+			return & success_node;	/* return success */
 		}
 	}
 

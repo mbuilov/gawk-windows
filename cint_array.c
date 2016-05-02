@@ -162,7 +162,7 @@ cint_array_init(NODE *symbol ATTRIBUTE_UNUSED, NODE *subs ATTRIBUTE_UNUSED)
 	} else
 		null_array(symbol);
 
-	return (NODE **) ! NULL;
+	return & success_node;
 }
 
 
@@ -172,7 +172,7 @@ NODE **
 is_uinteger(NODE *symbol, NODE *subs)
 {
 	if (is_integer(symbol, subs) != NULL && subs->numbr >= 0)
-		return (NODE **) ! NULL;
+		return & success_node;
 	return NULL;
 }
 
@@ -358,7 +358,7 @@ cint_remove(NODE *symbol, NODE *subs)
 		freenode(xn);
 	}
 
-	return (NODE **) ! NULL;
+	return & success_node;
 
 xremove:
 	xn = symbol->xarray;
@@ -371,7 +371,7 @@ xremove:
 	symbol->table_size--;
 	assert(symbol->table_size > 0);
 
-	return (NODE **) ! NULL;
+	return & success_node;
 }
 
 
