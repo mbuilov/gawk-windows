@@ -254,7 +254,7 @@ research(Regexp *rp, char *str, int start,
 	 size_t len, int flags)
 {
 	const char *ret = str;
-	int try_backref = false;
+	bool try_backref = false;
 	int need_start;
 	int no_bol;
 	int res;
