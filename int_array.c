@@ -74,7 +74,7 @@ int_array_init(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
 	} else
 		null_array(symbol);
 
-	return (NODE **) ! NULL;
+	return & success_node;
 }
 
 /* is_integer --- check if subscript is an integer */
@@ -89,13 +89,13 @@ is_integer(NODE *symbol, NODE *subs)
 		return NULL;
 
 	if ((subs->flags & NUMINT) != 0)
-		return (NODE **) ! NULL;
+		return & success_node;
 
 	if ((subs->flags & NUMBER) != 0) {
 		d = subs->numbr;
 		if (d <= INT32_MAX && d >= INT32_MIN && d == (int32_t) d) {
 			subs->flags |= NUMINT;
-			return (NODE **) ! NULL;
+			return & success_node;
 		}
 		return NULL;
 	}
@@ -126,7 +126,7 @@ is_integer(NODE *symbol, NODE *subs)
 				subs->flags |= NUMBER;
 			}
 			subs->flags |= (NUMCUR|NUMINT);
-			return (NODE **) ! NULL;
+			return & success_node;
 		}
 
 		cpend = cp + len;
@@ -146,7 +146,7 @@ is_integer(NODE *symbol, NODE *subs)
 		subs->flags |= NUMCUR;
 		if (l <= INT32_MAX && l >= INT32_MIN) {
 			subs->flags |= NUMINT;
-			return (NODE **) ! NULL;
+			return & success_node;
 		}
 	}
 	return NULL;
@@ -303,7 +303,7 @@ int_remove(NODE *symbol, NODE *subs)
 		}
 		symbol->table_size--;
 		assert(symbol->table_size > 0);
-		return (NODE **) ! NULL;
+		return & success_node;
 	}
 
 	k = subs->numbr;
@@ -372,7 +372,7 @@ removed:
 		freenode(xn);
 	}
 
-	return (NODE **) ! NULL;	/* return success */
+	return & success_node;	/* return success */
 }
 
 

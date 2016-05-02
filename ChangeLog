@@ -1,7 +1,16 @@
+2016-05-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (success_node): Declare.
+	* array.c (success_node): Define.
+	* cint_array.c, int_array.c, str_array.c: Use `& success_node'
+	instead of `(NODE **) ! NULL' to indicate success throughout.
+	Thanks to Pat Rankin for the cleanup suggestion.
+
 2016-04-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c (set_RS): Use rs1scan if do_traditional, even if length
-	of RS is > 1.
+	of RS is > 1.  Bug reported by Glauco Ciullini
+	<glauco.ciullini6245@gmail.com>.
 
 2016-04-24         Arnold D. Robbins     <arnold@skeeve.com>
 
