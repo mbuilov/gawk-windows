@@ -28,6 +28,8 @@
 extern FILE *output_fp;
 extern NODE **fmt_list;          /* declared in eval.c */
 
+NODE *success_node;
+
 static size_t SUBSEPlen;
 static char *SUBSEP;
 static char indent_char[] = "    ";

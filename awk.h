@@ -1075,6 +1075,9 @@ extern afunc_t str_array_func[];
 extern afunc_t cint_array_func[];
 extern afunc_t int_array_func[];
 
+/* special node used to indicate success in array routines (not NULL) */
+extern NODE *success_node;
+
 extern BLOCK nextfree[];
 extern bool field0_valid;
 
