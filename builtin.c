@@ -722,7 +722,7 @@ format_tree(
 	emalloc(obuf, char *, INITIAL_OUT_SIZE, "format_tree");
 	obufout = obuf;
 	osiz = INITIAL_OUT_SIZE;
-	ofre = osiz - 2;
+	ofre = osiz - 1;
 
 	cur_arg = 1;
 
@@ -1584,7 +1584,7 @@ mpf1:
 	bchunk(s0, s1 - s0);
 	olen_final = obufout - obuf;
 	if (ofre > 0)
-		erealloc(obuf, char *, olen_final + 2, "format_tree");
+		erealloc(obuf, char *, olen_final + 1, "format_tree");
 	r = make_str_node(obuf, olen_final, ALREADY_MALLOCED);
 	obuf = NULL;
 out:
