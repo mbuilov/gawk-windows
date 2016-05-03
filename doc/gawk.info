@@ -24634,13 +24634,16 @@ File: gawk.info,  Node: Extension Versioning,  Next: Extension API Informational
 .............................................
 
 The API provides both a "major" and a "minor" version number.  The API
-versions are available at compile time as constants:
+versions are available at compile time as C preprocessor defines to
+support conditional compilation, and as enum constants to facilitate
+debugging:
 
-'GAWK_API_MAJOR_VERSION'
-     The major version of the API
+API Version              C preprocessor define    enum constant
+---------------------------------------------------------------------------
+Major                    gawk_api_major_version   GAWK_API_MAJOR_VERSION
+Minor                    gawk_api_minor_version   GAWK_API_MINOR_VERSION
 
-'GAWK_API_MINOR_VERSION'
-     The minor version of the API
+Table 16.2: gawk API version constants
 
    The minor version increases when new functions are added to the API.
 Such new functions are always added to the end of the API 'struct'.
@@ -25828,7 +25831,7 @@ number and the file name, separated by a forward slash character.  On
 systems where the directory entry contains the file type, the record has
 a third field (also separated by a slash), which is a single letter
 indicating the type of the file.  The letters and their corresponding
-file types are shown in *note Table 16.2: table-readdir-file-types.
+file types are shown in *note Table 16.3: table-readdir-file-types.
 
 Letter  File type
 --------------------------------------------------------------------------
@@ -25841,7 +25844,7 @@ Letter  File type
 's'     Socket
 'u'     Anything else (unknown)
 
-Table 16.2: File types returned by the 'readdir' extension
+Table 16.3: File types returned by the 'readdir' extension
 
    On systems without the file type information, the third field is
 always 'u'.
@@ -35127,105 +35130,106 @@ Node: Flattening Arrays988937
 Node: Creating Arrays995845
 Node: Extension API Variables1000616
 Node: Extension Versioning1001252
-Node: Extension API Informational Variables1003143
-Node: Extension API Boilerplate1004207
-Node: Finding Extensions1008021
-Node: Extension Example1008580
-Node: Internal File Description1009378
-Node: Internal File Ops1013458
-Ref: Internal File Ops-Footnote-11025220
-Node: Using Internal File Ops1025360
-Ref: Using Internal File Ops-Footnote-11027743
-Node: Extension Samples1028017
-Node: Extension Sample File Functions1029546
-Node: Extension Sample Fnmatch1037195
-Node: Extension Sample Fork1038682
-Node: Extension Sample Inplace1039900
-Node: Extension Sample Ord1043110
-Node: Extension Sample Readdir1043946
-Ref: table-readdir-file-types1044835
-Node: Extension Sample Revout1045640
-Node: Extension Sample Rev2way1046229
-Node: Extension Sample Read write array1046969
-Node: Extension Sample Readfile1048911
-Node: Extension Sample Time1050006
-Node: Extension Sample API Tests1051354
-Node: gawkextlib1051846
-Node: Extension summary1054270
-Node: Extension Exercises1057962
-Node: Language History1059459
-Node: V7/SVR3.11061115
-Node: SVR41063267
-Node: POSIX1064701
-Node: BTL1066080
-Node: POSIX/GNU1066809
-Node: Feature History1072330
-Node: Common Extensions1085659
-Node: Ranges and Locales1086942
-Ref: Ranges and Locales-Footnote-11091558
-Ref: Ranges and Locales-Footnote-21091585
-Ref: Ranges and Locales-Footnote-31091820
-Node: Contributors1092041
-Node: History summary1097610
-Node: Installation1098990
-Node: Gawk Distribution1099934
-Node: Getting1100418
-Node: Extracting1101379
-Node: Distribution contents1103017
-Node: Unix Installation1108768
-Node: Quick Installation1109384
-Node: Additional Configuration Options1111811
-Node: Configuration Philosophy1113615
-Node: Non-Unix Installation1115984
-Node: PC Installation1116442
-Node: PC Binary Installation1117762
-Node: PC Compiling1119614
-Ref: PC Compiling-Footnote-11122638
-Node: PC Testing1122747
-Node: PC Using1123927
-Node: Cygwin1128041
-Node: MSYS1128811
-Node: VMS Installation1129312
-Node: VMS Compilation1130103
-Ref: VMS Compilation-Footnote-11131332
-Node: VMS Dynamic Extensions1131390
-Node: VMS Installation Details1133075
-Node: VMS Running1135328
-Node: VMS GNV1139607
-Node: VMS Old Gawk1140342
-Node: Bugs1140813
-Node: Other Versions1145010
-Node: Installation summary1151594
-Node: Notes1152652
-Node: Compatibility Mode1153517
-Node: Additions1154299
-Node: Accessing The Source1155224
-Node: Adding Code1156659
-Node: New Ports1162878
-Node: Derived Files1167366
-Ref: Derived Files-Footnote-11172851
-Ref: Derived Files-Footnote-21172886
-Ref: Derived Files-Footnote-31173484
-Node: Future Extensions1173598
-Node: Implementation Limitations1174256
-Node: Extension Design1175439
-Node: Old Extension Problems1176593
-Ref: Old Extension Problems-Footnote-11178111
-Node: Extension New Mechanism Goals1178168
-Ref: Extension New Mechanism Goals-Footnote-11181532
-Node: Extension Other Design Decisions1181721
-Node: Extension Future Growth1183834
-Node: Old Extension Mechanism1184670
-Node: Notes summary1186433
-Node: Basic Concepts1187615
-Node: Basic High Level1188296
-Ref: figure-general-flow1188578
-Ref: figure-process-flow1189263
-Ref: Basic High Level-Footnote-11192564
-Node: Basic Data Typing1192749
-Node: Glossary1196077
-Node: Copying1228023
-Node: GNU Free Documentation License1265562
-Node: Index1290680
+Ref: gawk-api-version1001689
+Node: Extension API Informational Variables1003445
+Node: Extension API Boilerplate1004509
+Node: Finding Extensions1008323
+Node: Extension Example1008882
+Node: Internal File Description1009680
+Node: Internal File Ops1013760
+Ref: Internal File Ops-Footnote-11025522
+Node: Using Internal File Ops1025662
+Ref: Using Internal File Ops-Footnote-11028045
+Node: Extension Samples1028319
+Node: Extension Sample File Functions1029848
+Node: Extension Sample Fnmatch1037497
+Node: Extension Sample Fork1038984
+Node: Extension Sample Inplace1040202
+Node: Extension Sample Ord1043412
+Node: Extension Sample Readdir1044248
+Ref: table-readdir-file-types1045137
+Node: Extension Sample Revout1045942
+Node: Extension Sample Rev2way1046531
+Node: Extension Sample Read write array1047271
+Node: Extension Sample Readfile1049213
+Node: Extension Sample Time1050308
+Node: Extension Sample API Tests1051656
+Node: gawkextlib1052148
+Node: Extension summary1054572
+Node: Extension Exercises1058264
+Node: Language History1059761
+Node: V7/SVR3.11061417
+Node: SVR41063569
+Node: POSIX1065003
+Node: BTL1066382
+Node: POSIX/GNU1067111
+Node: Feature History1072632
+Node: Common Extensions1085961
+Node: Ranges and Locales1087244
+Ref: Ranges and Locales-Footnote-11091860
+Ref: Ranges and Locales-Footnote-21091887
+Ref: Ranges and Locales-Footnote-31092122
+Node: Contributors1092343
+Node: History summary1097912
+Node: Installation1099292
+Node: Gawk Distribution1100236
+Node: Getting1100720
+Node: Extracting1101681
+Node: Distribution contents1103319
+Node: Unix Installation1109070
+Node: Quick Installation1109686
+Node: Additional Configuration Options1112113
+Node: Configuration Philosophy1113917
+Node: Non-Unix Installation1116286
+Node: PC Installation1116744
+Node: PC Binary Installation1118064
+Node: PC Compiling1119916
+Ref: PC Compiling-Footnote-11122940
+Node: PC Testing1123049
+Node: PC Using1124229
+Node: Cygwin1128343
+Node: MSYS1129113
+Node: VMS Installation1129614
+Node: VMS Compilation1130405
+Ref: VMS Compilation-Footnote-11131634
+Node: VMS Dynamic Extensions1131692
+Node: VMS Installation Details1133377
+Node: VMS Running1135630
+Node: VMS GNV1139909
+Node: VMS Old Gawk1140644
+Node: Bugs1141115
+Node: Other Versions1145312
+Node: Installation summary1151896
+Node: Notes1152954
+Node: Compatibility Mode1153819
+Node: Additions1154601
+Node: Accessing The Source1155526
+Node: Adding Code1156961
+Node: New Ports1163180
+Node: Derived Files1167668
+Ref: Derived Files-Footnote-11173153
+Ref: Derived Files-Footnote-21173188
+Ref: Derived Files-Footnote-31173786
+Node: Future Extensions1173900
+Node: Implementation Limitations1174558
+Node: Extension Design1175741
+Node: Old Extension Problems1176895
+Ref: Old Extension Problems-Footnote-11178413
+Node: Extension New Mechanism Goals1178470
+Ref: Extension New Mechanism Goals-Footnote-11181834
+Node: Extension Other Design Decisions1182023
+Node: Extension Future Growth1184136
+Node: Old Extension Mechanism1184972
+Node: Notes summary1186735
+Node: Basic Concepts1187917
+Node: Basic High Level1188598
+Ref: figure-general-flow1188880
+Ref: figure-process-flow1189565
+Ref: Basic High Level-Footnote-11192866
+Node: Basic Data Typing1193051
+Node: Glossary1196379
+Node: Copying1228325
+Node: GNU Free Documentation License1265864
+Node: Index1290982
 
 End Tag Table
