@@ -670,7 +670,7 @@ format_tree(
 	int i, nc;
 	bool toofew = false;
 	char *obuf, *obufout;
-	size_t osiz, ofre;
+	size_t osiz, ofre, olen_final;
 	const char *chbuf;
 	const char *s0, *s1;
 	int cs1;
@@ -722,7 +722,7 @@ format_tree(
 	emalloc(obuf, char *, INITIAL_OUT_SIZE, "format_tree");
 	obufout = obuf;
 	osiz = INITIAL_OUT_SIZE;
-	ofre = osiz - 2;
+	ofre = osiz - 1;
 
 	cur_arg = 1;
 
@@ -1582,7 +1582,10 @@ mpf1:
 			_("too many arguments supplied for format string"));
 	}
 	bchunk(s0, s1 - s0);
-	r = make_str_node(obuf, obufout - obuf, ALREADY_MALLOCED);
+	olen_final = obufout - obuf;
+	if (ofre > 0)
+		erealloc(obuf, char *, olen_final + 1, "format_tree");
+	r = make_str_node(obuf, olen_final, ALREADY_MALLOCED);
 	obuf = NULL;
 out:
 	{

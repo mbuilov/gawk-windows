@@ -1,3 +1,19 @@
+2016-05-03         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* builtin.c (format_tree): Do not waste a byte at the end of a string.
+
+2016-05-03         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* builtin.c (format_tree): After the string has been rendered, use
+	realloc to shrink the buffer to the needed size. Otherwise, the minimum
+	buffer size of 512 bytes can result in lots of wasted memory if many
+	sprintf results are stored in an array.
+
+2016-05-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (gawk_api_major_version, gawk_api_minor_version): Add
+	CPP #define values to support conditional compilation.
+
 2016-05-02         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.h, dfa.c: Sync with grep.
