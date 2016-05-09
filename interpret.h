@@ -953,10 +953,7 @@ arrayfor:
 			awk_value_t result;
 
 			PUSH_CODE(pc);
-			if (op == Op_ext_builtin)
-				r = awk_value_to_node(pc->extfunc(arg_count, & result));
-			else
-				r = pc->builtin(arg_count);
+			r = awk_value_to_node(pc->extfunc(arg_count, & result));
 			(void) POP_CODE();
 			while (arg_count-- > 0) {
 				t1 = POP();
