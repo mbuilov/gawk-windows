@@ -894,6 +894,8 @@ EXTRA_DIST = \
 	sclifin.ok \
 	shadow.awk \
 	shadow.ok \
+	sigpipe1.awk \
+	sigpipe1.ok \
 	sort1.awk \
 	sort1.ok \
 	sortempty.awk \
@@ -1076,7 +1078,7 @@ BASIC_TESTS = \
 	regexprange regrange reindops \
 	reparse resplit rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
-	scalar sclforin sclifin sortempty sortglos splitargv splitarr splitdef \
+	scalar sclforin sclifin sigpipe1 sortempty sortglos splitargv splitarr splitdef \
 	splitvar splitwht strcat1 strnum1 strtod subamp subi18n \
 	subsepnm subslash substr swaplns synerr1 synerr2 tradanch tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs \

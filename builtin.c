@@ -2092,6 +2092,10 @@ do_system(int nargs)
 		cmd[tmp->stlen] = '\0';
 
 		os_restore_mode(fileno(stdin));
+#ifdef SIGPIPE
+		signal(SIGPIPE, SIG_DFL);
+#endif
+
 		status = system(cmd);
 		/*
 		 * 3/2016. What to do with ret? It's never simple.
@@ -2123,8 +2127,12 @@ do_system(int nargs)
 			} else
 				ret = 0;	/* shouldn't get here */
 		}
+
 		if ((BINMODE & BINMODE_INPUT) != 0)
 			os_setbinmode(fileno(stdin), O_BINARY);
+#ifdef SIGPIPE
+		signal(SIGPIPE, SIG_IGN);
+#endif
 
 		cmd[tmp->stlen] = save;
 	}

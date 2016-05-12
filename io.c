@@ -894,9 +894,15 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			(void) flush_io();
 
 			os_restore_mode(fileno(stdin));
+#ifdef SIGPIPE
+			signal(SIGPIPE, SIG_DFL);
+#endif
 			if ((rp->output.fp = popen(str, binmode("w"))) == NULL)
 				fatal(_("can't open pipe `%s' for output (%s)"),
 						str, strerror(errno));
+#ifdef SIGPIPE
+			signal(SIGPIPE, SIG_IGN);
+#endif
 
 			/* set close-on-exec */
 			os_close_on_exec(fileno(rp->output.fp), str, "pipe", "to");
@@ -2403,9 +2409,18 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	FILE *current;
 
 	os_restore_mode(fileno(stdin));
+#ifdef SIGPIPE
+	signal(SIGPIPE, SIG_DFL);
+#endif
+
 	current = popen(cmd, binmode("r"));
+
 	if ((BINMODE & BINMODE_INPUT) != 0)
 		os_setbinmode(fileno(stdin), O_BINARY);
+#ifdef SIGPIPE
+	signal(SIGPIPE, SIG_IGN);
+#endif
+
 	if (current == NULL)
 		return NULL;
 	os_close_on_exec(fileno(current), cmd, "pipe", "from");
