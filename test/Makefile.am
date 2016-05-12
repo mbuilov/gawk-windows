@@ -52,6 +52,9 @@ EXTRA_DIST = \
 	argarray.ok \
 	argtest.awk \
 	argtest.ok \
+	arrayind1.awk \
+	arrayind1.in \
+	arrayind1.ok \
 	arrayparm.awk \
 	arrayparm.ok \
 	arrayprm2.awk \
@@ -923,6 +926,8 @@ EXTRA_DIST = \
 	shadow.ok \
 	shadowbuiltin.awk \
 	shadowbuiltin.ok \
+	sigpipe1.awk \
+	sigpipe1.ok \
 	sort1.awk \
 	sort1.ok \
 	sortempty.awk \
@@ -1089,7 +1094,7 @@ CLEANFILES = core core.* fmtspcl.ok
 
 # try to keep these sorted. each letter starts a new line
 BASIC_TESTS = \
-	addcomma anchgsub argarray arrayparm arrayprm2 arrayprm3 \
+	addcomma anchgsub argarray arrayind1 arrayparm arrayprm2 arrayprm3 \
 	arrayref arrymem1 arryref2 arryref3 arryref4 arryref5 arynasty \
 	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
 	aryprm8 aryprm9 arysubnm asgext awkpath \
@@ -1121,7 +1126,7 @@ BASIC_TESTS = \
 	regexprange regrange reindops \
 	reparse resplit rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
-	scalar sclforin sclifin sortempty sortglos splitargv splitarr splitdef \
+	scalar sclforin sclifin sigpipe1 sortempty sortglos splitargv splitarr splitdef \
 	splitvar splitwht strcat1 strnum1 strtod subamp subi18n \
 	subsepnm subslash substr swaplns synerr1 synerr2 tradanch tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs \

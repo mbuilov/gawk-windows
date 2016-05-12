@@ -242,7 +242,7 @@ $(RSPFILE) : $(GAWKOBJS)
 #    included by awk.h.
 # 2. custom.h is not mentioned because pc ports don't use it.
 $(ALLOBJS) $(LIBOBJS): \
-  awk.h regex.h config.h gettext.h mbsupport.h protos.h dfa.h getopt.h
+  awk.h regex.h config.h gettext.h mbsupport.h protos.h dfa.h getopt.h nonposix.h
 
 builtin$O:	floatmagic.h random.h popen.h
 
