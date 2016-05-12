@@ -43,4 +43,22 @@
 
 int w32_status_to_termsig (unsigned);
 
+/* Prototypes of for Posix functions for which we define replacements
+   in pc/ files.  */
+
+/* getid.c */
+unsigned int getuid (void);
+unsigned int geteuid (void);
+unsigned int getgid (void);
+unsigned int getegid (void);
+
+/* gawkmisc.pc */
+int unsetenv (const char *);
+int setenv (const char *, const char *, int);
+#endif	/* __MINGW32__ */
+
+int getpgrp(void);
+
+#if defined(__DJGPP__) || defined(__MINGW32__)
+int getppid(void);
 #endif
