@@ -187,6 +187,15 @@ str_lookup(NODE *symbol, NODE *subs)
 		subs = dupnode(subs);
 	}
 
+	/*
+	 * Repeat after me: "Array indices are always strings."
+	 * "Array indices are always strings."
+	 * "Array indices are always strings."
+	 * "Array indices are always strings."
+	 * ....
+	 */
+	subs->flags &= ~MAYBE_NUM;
+
 	getbucket(b);
 	b->ahnext = symbol->buckets[hash1];
 	symbol->buckets[hash1] = b;

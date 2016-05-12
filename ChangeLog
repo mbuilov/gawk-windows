@@ -1,3 +1,25 @@
+2016-05-12         Arnold Robbins       <arnold@skeeve.com>
+
+	* str_array.c (str_lookup): Remove MAYBE_NUM from subscript flags.
+	Bug reported by Andres Legarra <Andres.Legarra@toulouse.inra.fr>.
+
+	Unrelated: Fix issues with SIGPIPE. Reported by
+	Ian Jackson <ijackson@chiark.greenend.org.uk>.
+
+	* builtin.c (do_system): Reset/restore SIGPIPE to/from default around
+	call to system.
+	* io.c (redirect, gawk_popen [PIPES_SIMULATED]): Same.
+
+2016-05-12  Eli Zaretskii  <eliz@gnu.org>
+
+	* nonposix.h: Add prototypes for Posix functions emulated in pc/*
+	files.
+
+2016-05-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* interpret.h (r_interpret): Op_ext_builtin. No need to test whether
+	op == Op_ext_builtin, since we wouldn't be here otherwise.
+
 2016-05-03         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* builtin.c (format_tree): Do not waste a byte at the end of a string.
