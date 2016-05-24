@@ -198,7 +198,21 @@ api_fatal(awk_ext_id_t id, const char *format, ...)
 	va_end(args);
 }
 
-/* api_warning --- print a warning message and exit */
+/* api_nonfatal --- print a non fatal error message */
+
+static void
+api_nonfatal(awk_ext_id_t id, const char *format, ...)
+{
+	va_list args;
+
+	(void) id;
+
+	va_start(args, format);
+	err(false, _("error: "), format, args);
+	va_end(args);
+}
+
+/* api_warning --- print a warning message */
 
 static void
 api_warning(awk_ext_id_t id, const char *format, ...)
@@ -1222,6 +1236,9 @@ gawk_api_t api_impl = {
 
 	/* Find/open a file */
 	api_get_file,
+
+	/* Print nonfatal error message */
+	api_nonfatal,
 };
 
 /* init_ext_api --- init the extension API */
