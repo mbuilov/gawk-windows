@@ -85,6 +85,7 @@ END{
 		iter++
 		#-->
 		printf("%s%16s\n","in the loop: ",posout["00000779770060"]) > "/dev/stderr"
+		fflush("/dev/stderr")
 		#-->
 		#printf("%10s%10s%10s%10s%16s%16s\n","round",iter,"included",posout[last],"last ",last) > "/dev/stderr"
 	}
@@ -95,5 +96,6 @@ END{
 	    }
 	#--> this is the guilty line
 	printf("%s%16s\n","at the end:  ",posout["00000779770060"]) > "/dev/stderr"
+	fflush("/dev/stderr")
 	#-->
 }
