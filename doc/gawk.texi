@@ -33023,6 +33023,9 @@ that parameter. More's the pity.}
 @item void fatal(awk_ext_id_t id, const char *format, ...);
 Print a message and then cause @command{gawk} to exit immediately.
 
+@item void nonfatal(awk_ext_id_t id, const char *format, ...);
+Print a nonfatal error message.
+
 @item void warning(awk_ext_id_t id, const char *format, ...);
 Print a warning message.
 
@@ -33899,7 +33902,7 @@ into @command{gawk}, you have to retrieve the array cookie from the value
 passed in to @command{sym_update()} before doing anything else with it, like so:
 
 @example
-awk_value_t value;
+awk_value_t val;
 awk_array_t new_array;
 
 new_array = create_array();
@@ -35816,7 +35819,7 @@ output wrappers,
 and two-way processors)
 
 @item
-Printing fatal, warning, and ``lint'' warning messages
+Printing fatal, nonfatal, warning, and ``lint'' warning messages
 
 @item
 Updating @code{ERRNO}, or unsetting it

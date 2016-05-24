@@ -710,6 +710,10 @@ typedef struct gawk_api {
 			 */
 			const awk_input_buf_t **ibufp,
 			const awk_output_buf_t **obufp);
+
+	/* Print nonfatal error message */
+	void (*api_nonfatal)(awk_ext_id_t id, const char *format, ...);
+
 } gawk_api_t;
 
 #ifndef GAWK	/* these are not for the gawk code itself! */
@@ -731,6 +735,7 @@ typedef struct gawk_api {
 	(api->api_set_argument(ext_id, count, new_array))
 
 #define fatal		api->api_fatal
+#define nonfatal	api->api_nonfatal
 #define warning		api->api_warning
 #define lintwarn	api->api_lintwarn
 
