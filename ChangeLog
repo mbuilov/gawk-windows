@@ -3,6 +3,10 @@
 	* awk.h [fatal]: Make parentheses and use of indirection
 	consistent with warning and lintwarn. Thanks to Andrew Schorr
 	for pointing this out.
+	* str_array.c (str_lookup): Move test for MAYBE_NUM to where
+	we duplicate the subscript. Removing it across the board is
+	wrong if there are multiple references to the value. Thanks
+	to Andrew Schorr for discussion and test case.
 
 2016-05-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
