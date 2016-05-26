@@ -1271,7 +1271,7 @@ DEREF(NODE *r)
 
 #define efree(p)	free(p)
 
-#define fatal		set_loc(__FILE__, __LINE__), r_fatal
+#define fatal		(*(set_loc(__FILE__, __LINE__), r_fatal))
 
 extern jmp_buf fatal_tag;
 extern bool fatal_tag_valid;
