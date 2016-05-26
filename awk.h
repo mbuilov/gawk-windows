@@ -1278,7 +1278,7 @@ DEREF(NODE *r)
 
 #define efree(p)	free(p)
 
-#define fatal		set_loc(__FILE__, __LINE__), r_fatal
+#define fatal		(*(set_loc(__FILE__, __LINE__), r_fatal))
 
 extern jmp_buf fatal_tag;
 extern bool fatal_tag_valid;
@@ -1449,9 +1449,9 @@ extern void close_extensions(void);
 #ifdef DYNAMIC
 extern awk_bool_t make_builtin(const awk_ext_func_t *);
 extern NODE *get_argument(int);
-extern NODE *get_actual_argument(int, bool, bool);
-#define get_scalar_argument(i, opt)  get_actual_argument((i), (opt), false)
-#define get_array_argument(i, opt)   get_actual_argument((i), (opt), true)
+extern NODE *get_actual_argument(NODE *, int, bool, bool);
+#define get_scalar_argument(n, i, opt)  get_actual_argument((n), (i), (opt), false)
+#define get_array_argument(n, i, opt)   get_actual_argument((n), (i), (opt), true)
 #endif
 /* field.c */
 extern void init_fields(void);

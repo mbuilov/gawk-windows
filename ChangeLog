@@ -1,3 +1,29 @@
+2016-05-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h [fatal]: Make parentheses and use of indirection
+	consistent with warning and lintwarn. Thanks to Andrew Schorr
+	for pointing this out.
+	* str_array.c (str_lookup): Move test for MAYBE_NUM to where
+	we duplicate the subscript. Removing it across the board is
+	wrong if there are multiple references to the value. Thanks
+	to Andrew Schorr for discussion and test case.
+
+2016-05-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (get_actual_argument): Add an initial argument containing 
+	the (NODE *) previously returned by get_argument. This allows us to
+	eliminate a call to get_argument from inside get_actual_argument.
+	(get_scalar_argument, get_array_argument): Change macro definition to
+	add an initial node argument to pass through to get_actual_argument.
+	* ext.c (get_actual_argument): Add initial (NODE *) argument to contain
+	the value previously returned by get_argument. This allows us to
+	avoid repeating the call to get_argument. We can also eliminate the
+	check for a NULL value, since the caller did that already.
+	* gawkapi.c (api_get_argument): Pass (NODE *) returned by get_argument
+	to get_array_argument and get_scalar_argument.
+	(api_set_argument): Pass (NODE *) returned by get_argument to
+	get_array_argument.
+
 2016-05-25         Manuel Collado        <mcollado2011@gmail.com>.
 
 	* gawkapi.c (api_nonfatal): New function.

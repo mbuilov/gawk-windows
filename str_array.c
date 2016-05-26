@@ -156,7 +156,18 @@ str_lookup(NODE *symbol, NODE *subs)
 		hash1 = code1 % (unsigned long) symbol->array_size;
 	}
 
-	if (subs->stfmt != -1) {
+
+	/*
+	 * Repeat after me: "Array indices are always strings."
+	 * "Array indices are always strings."
+	 * "Array indices are always strings."
+	 * "Array indices are always strings."
+	 * ....
+	 * If subs is a STRNUM, copy it; don't clear the MAYBE_NUM
+	 * flag on it since other variables could be using the same
+	 * reference-counted value.
+	 */
+	if (subs->stfmt != -1 || (subs->flags & MAYBE_NUM) != 0) {
 		NODE *tmp;
 
 		/*
@@ -187,14 +198,7 @@ str_lookup(NODE *symbol, NODE *subs)
 		subs = dupnode(subs);
 	}
 
-	/*
-	 * Repeat after me: "Array indices are always strings."
-	 * "Array indices are always strings."
-	 * "Array indices are always strings."
-	 * "Array indices are always strings."
-	 * ....
-	 */
-	subs->flags &= ~MAYBE_NUM;
+	assert((subs->flags & MAYBE_NUM) == 0);
 
 	getbucket(b);
 	b->ahnext = symbol->buckets[hash1];

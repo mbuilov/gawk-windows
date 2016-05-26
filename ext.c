@@ -187,28 +187,14 @@ get_argument(int i)
  */
 
 NODE *
-get_actual_argument(int i, bool optional, bool want_array)
+get_actual_argument(NODE *t, int i, bool optional, bool want_array)
 {
-	NODE *t;
 	char *fname;
-	int pcount;
 	INSTRUCTION *pc;
 	
 	pc = TOP()->code_ptr;	/* Op_ext_builtin instruction */
 	fname = (pc + 1)->func_name;
-	pcount = (pc + 1)->expr_count;
  
-	t = get_argument(i);
-	if (t == NULL) {
-		if (i >= pcount)                /* must be fatal */
-			fatal(_("function `%s' defined to take no more than %d argument(s)"),
-					fname, pcount);
-		if (! optional)
-			fatal(_("function `%s': missing argument #%d"),
-					fname, i + 1);
-		return NULL;
-	}
-
 	if (t->type == Node_var_new) {
 		if (want_array)
 			return force_array(t, false);
