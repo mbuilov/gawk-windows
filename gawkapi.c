@@ -82,7 +82,7 @@ api_get_argument(awk_ext_id_t id, size_t count,
 
 array:
 	/* get the array here */
-	arg = get_array_argument(arg, count, false);
+	arg = get_array_argument(arg, count);
 	if (arg == NULL)
 		return awk_false;
 
@@ -90,7 +90,7 @@ array:
 
 scalar:
 	/* at this point we have a real type that is not an array */
-	arg = get_scalar_argument(arg, count, false);
+	arg = get_scalar_argument(arg, count);
 	if (arg == NULL)
 		return awk_false;
 
@@ -120,7 +120,7 @@ api_set_argument(awk_ext_id_t id,
 	    || arg->type != Node_var_new)
 		return awk_false;
 
-	arg = get_array_argument(arg, count, false);
+	arg = get_array_argument(arg, count);
 	if (arg == NULL)
 		return awk_false;
 

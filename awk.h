@@ -1441,9 +1441,9 @@ extern void close_extensions(void);
 extern void make_old_builtin(const char *, NODE *(*)(int), int);
 extern awk_bool_t make_builtin(const awk_ext_func_t *);
 extern NODE *get_argument(int);
-extern NODE *get_actual_argument(NODE *, int, bool, bool);
-#define get_scalar_argument(n, i, opt)  get_actual_argument((n), (i), (opt), false)
-#define get_array_argument(n, i, opt)   get_actual_argument((n), (i), (opt), true)
+extern NODE *get_actual_argument(NODE *, int, bool);
+#define get_scalar_argument(n, i)  get_actual_argument((n), (i), false)
+#define get_array_argument(n, i)   get_actual_argument((n), (i), true)
 #endif
 /* field.c */
 extern void init_fields(void);
