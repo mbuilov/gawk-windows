@@ -1,3 +1,13 @@
+2016-05-30         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (awk_ext_func_t): Rename num_expected_args to
+	max_expected_args, and explain in the comment that it doesn't really
+	matter.
+	* ext.c (make_builtin): Replace num_expected_args with
+	max_expected_args.
+	(get_argument): Do not check whether the argument number exceeds
+	the maximum expected by the function.
+
 2016-05-30         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* main.c (arg_assign): Fully bracket ifdefs around call
