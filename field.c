@@ -1270,8 +1270,12 @@ choose_fs_function:
 			} else if (fs->stptr[0] == '\\') {
 				/* yet another special case */
 				strcpy(buf, "[\\\\\n]");
-			} else if (fs->stptr[0] != '\n')
+			} else if (fs->stptr[0] == '\0') {
+				/* and yet another special case */
+				strcpy(buf, "[\\000\n]");
+			} else if (fs->stptr[0] != '\n') {
 				sprintf(buf, "[%c\n]", fs->stptr[0]);
+			}
 		}
 	} else {
 		if (do_posix)
