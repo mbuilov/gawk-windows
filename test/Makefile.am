@@ -332,6 +332,9 @@ EXTRA_DIST = \
 	fsfwfs.awk \
 	fsfwfs.in \
 	fsfwfs.ok \
+	fsnul1.awk \
+	fsnul1.in \
+	fsnul1.ok \
 	fsrs.awk \
 	fsrs.in \
 	fsrs.ok \
@@ -1106,7 +1109,7 @@ BASIC_TESTS = \
 	datanonl defref delargv delarpm2 delarprm delfunc dfamb1 dfastress dynlj \
 	eofsplit exit2 exitval1 exitval2 exitval3 \
 	fcall_exit fcall_exit2 fldchg fldchgnf fnamedat fnarray fnarray2 \
-	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsrs fsspcoln \
+	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsnul1 fsrs fsspcoln \
 	fstabplus funsemnl funsmnam funstack \
 	getline getline2 getline3 getline4 getline5 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
