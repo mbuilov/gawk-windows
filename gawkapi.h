@@ -374,11 +374,15 @@ typedef struct awk_flat_array {
  * Each extension function may decide what to do if the number of
  * arguments isn't what it expected.  Following awk functions, it
  * is likely OK to ignore extra arguments.
+
+ * Note that the 'max_expected_args' value should be used by the
+ * extension function itself only to trigger a lint warning if more
+ * arguments are passed to the function.
  */
 typedef struct awk_ext_func {
 	const char *name;
 	awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
-	size_t num_expected_args;
+	size_t max_expected_args;
 } awk_ext_func_t;
 
 typedef void *awk_ext_id_t;	/* opaque type for extension id */

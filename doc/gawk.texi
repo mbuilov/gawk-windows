@@ -32484,7 +32484,7 @@ Extension functions are described by the following record:
 typedef struct awk_ext_func @{
 @ @ @ @ const char *name;
 @ @ @ @ awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
-@ @ @ @ size_t num_expected_args;
+@ @ @ @ size_t max_expected_args;
 @} awk_ext_func_t;
 @end example
 
@@ -32516,11 +32516,17 @@ actual parameters were passed from the calling @command{awk} code.
 The function must return the value of @code{result}.
 This is for the convenience of the calling code inside @command{gawk}.
 
-@item size_t num_expected_args;
-This is the number of arguments the function expects to receive.
+@item size_t max_expected_args;
+This is the maximum number of arguments the function expects to receive.
 Each extension function may decide what to do if the number of
 arguments isn't what it expected.  As with real @command{awk} functions, it
-is likely OK to ignore extra arguments.
+is likely OK to ignore extra arguments.  This value does not affect
+actual program execution.
+
+Extension functions should compare this value to the number of actual
+arguments passed and possibly issue a lint warning if there is an
+undesirable mismatch.  Of course, if
+@samp{--lint=fatal} is used, this would cause the program to exit.
 @end table
 
 Once you have a record representing your extension function, you register
