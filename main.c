@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2015 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2016 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -1155,7 +1155,9 @@ arg_assign(char *arg, bool initing)
 		 */
 		if (do_posix)
 			setlocale(LC_NUMERIC, "C");
+#endif /* LC_NUMERIC */
 		(void) force_number(it);
+#ifdef LC_NUMERIC
 		if (do_posix)
 			setlocale(LC_NUMERIC, locale);
 #endif /* LC_NUMERIC */

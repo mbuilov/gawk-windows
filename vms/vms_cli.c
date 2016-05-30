@@ -1,6 +1,7 @@
 /* vms_cli.c -- interface to CLI$xxx routines for fetching command line components
 
-   Copyright (C) 1991-1993, 2003, 2011, 2014 the Free Software Foundation, Inc.
+   Copyright (C) 1991-1993, 2003, 2011, 2014, 2016
+   the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

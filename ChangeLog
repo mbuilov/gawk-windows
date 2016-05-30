@@ -1,5 +1,11 @@
+2016-05-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c (arg_assign): Fully bracket ifdefs around call
+	to force_number. Thanks to Andrew Schorr for pointing out
+	that force_number was called only if LC_NUMERIC was defined.
+
 2016-05-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
- 
+
 	* awk.h (get_actual_argument): Remove unused "optional" argument.
 	(get_scalar_argument, get_array_argument): Change macro definition to
 	remove 3rd "optional" argument.
@@ -350,7 +356,7 @@
 	Regex: treat [x] as x if x is a unibyte encoding error.
 	This change removes an ifdef GAWK.
 
-	* lib/regcomp.c (parse_byte) [ !_LIBC && RE_ENABLE_I18N]: New function.
+	* regcomp.c (parse_byte) [ !_LIBC && RE_ENABLE_I18N]: New function.
 	(build_range_exp) [ !_LIBC && RE_ENABLE_I18N]: Use it.
 	From Paul Eggert  <eggert@cs.ucla.edu>.
 
@@ -502,7 +508,7 @@
 
 2015-09-11	Daniel Richard G.	<skunk@iSKUNK.ORG>
 
-	* regcomp.h: Include strings.h, wrapped in ifdef. Revise
+	* regcomp.c: Include strings.h, wrapped in ifdef. Revise
 	defines for BTOWC.
 	* regex_internal.h: Remove ZOS_USS bracketing ifdefs.
 
