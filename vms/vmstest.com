@@ -46,6 +46,9 @@ $!      ext:	clos1way2, clos1way3, clos1way4, clos1way5
 $!
 $! 4.1.3f: New tests
 $!      basic:  arrayind1,rscompat,sigpipe1
+$!
+$! 4.1.3.g: New tests
+$!      basic:  fsnul1
 $
 $
 $	echo	= "write sys$output"
@@ -106,8 +109,8 @@ $		list = "callparam childin clobber closebad clsflnam" -
 $		gosub list_of_tests
 $		list = "fcall_exit fcall_exit2 fldchg fldchgnf" -
 		  + " fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc" -
-		  + " fordel forref forsimp fsbs fsspcoln fsrs fstabplus" -
-		  + " funsemnl funsmnam funstack"
+		  + " fordel forref forsimp fsbs fsnul1 fsspcoln fsrs" -
+		  + " fstabplus funsemnl funsmnam funstack"
 $		gosub list_of_tests
 $		list = "getline getline2 getline3 getline4 getline5 " -
 		  + " getlnbuf getnr2tb getnr2tm gsubasgn gsubtest" -
@@ -301,6 +304,7 @@ $fpat3:
 $fpat4:
 $fpatnull:
 $fsfwfs:
+$fsnul1:
 $fsrs:
 $funlen:
 $funstack:
