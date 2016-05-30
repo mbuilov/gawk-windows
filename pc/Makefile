@@ -6,7 +6,7 @@
 
 # Tested with GNU make on Windows, OS/2 and DOS.
 
-# Copyright (C) 1989-2014 Free Software Foundation, Inc.
+# Copyright (C) 1989-2016 Free Software Foundation, Inc.
 
 # This Makefile is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,

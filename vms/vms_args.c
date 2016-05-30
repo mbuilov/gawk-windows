@@ -1,7 +1,8 @@
 /* vms_args.c -- command line parsing, to emulate shell i/o redirection.
   		[ Escape sequence parsing now suppressed. ]
 
-   Copyright (C) 1991-1996, 1997, 2011, 2014 the Free Software Foundation, Inc.
+   Copyright (C) 1991-1996, 1997, 2011, 2014, 2016
+   the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

@@ -1,7 +1,8 @@
 dnl
 dnl arch.m4 --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995, 1996, 1998, 1999, 2000, 2003, 2004 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995, 1996, 1998, 1999, 2000, 2003, 2004, 2015
+dnl the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Progamming Language.
