@@ -183,11 +183,11 @@ get_argument(int i)
 
 /*
  * get_actual_argument --- get the i'th scalar or array argument of a
- *	dynamically linked function, allowed to be optional.
+ *	dynamically linked function.
  */
 
 NODE *
-get_actual_argument(NODE *t, int i, bool optional, bool want_array)
+get_actual_argument(NODE *t, int i, bool want_array)
 {
 	char *fname;
 	INSTRUCTION *pc;

@@ -40,6 +40,12 @@ $!	basic:	aryprm9,exitval2,nulinsrc,rstest4,rstest5
 $!	ext:	mbstr2,profile8,watchpoint1
 $!      shlib:  inplace2,testext,lc_num1,mbprintf1
 $!		mbprintf2,mbfprintf3,mbfprintf4,mbfw1
+$!
+$! 4.1.3c: New tests
+$!      ext:	clos1way2, clos1way3, clos1way4, clos1way5
+$!
+$! 4.1.3f: New tests
+$!      basic:  arrayind1,rscompat,sigpipe1
 $
 $
 $	echo	= "write sys$output"
@@ -83,11 +89,12 @@ $		gosub list_of_tests
 $		return
 $
 $basic:		echo "basic..."
-$		list = "msg addcomma anchgsub argarray arrayparm arrayref" -
-		  + " arrymem1 arrayprm2 arrayprm3 arryref2 arryref3" -
-		  + " arryref4 arryref5 arynasty arynocls aryprm1 aryprm2" -
-		  + " aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 aryprm8" -
-		  + " aryprm9 arysubnm asgext awkpath" -
+$		list = "msg addcomma anchgsub argarray arrayind1" -
+		  + " arrayparm arrayref arrayprm2 arrayprm3 arrymem1" -
+		  + " arryref2 arryref3 arryref4 arryref5 arynasty" -
+		  + " arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5" -
+		  + " aryprm6 aryprm7 aryprm8 aryprm9 arysubnm asgext" -
+		  + " awkpath" -
 		  + " back89 backgsub badassign1 badbuild"
 $		gosub list_of_tests
 $		list = "callparam childin clobber closebad clsflnam" -
@@ -127,10 +134,10 @@ $		list = "paramasfunc1 paramasfunc2 paramdup" -
 $		gosub list_of_tests
 $		list = "rand range1 rebrackloc rebt8b1 redfilnm regeq" -
 		  + " regexpbrack regexprange regrange reindops reparse" -
-		  + " resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1" -
-		  + " rstest2 rstest3 rstest4 rstest5 rswhite"
+		  + " resplit rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2" -
+		  + " rstest1 rstest2 rstest3 rstest4 rstest5 rswhite"
 $		gosub list_of_tests
-$		list = "scalar sclforin sclifin sortempty sortglos" -
+$		list = "scalar sclforin sclifin sigpipe1 sortempty sortglos" -
 		  + " splitargv splitarr splitdef splitvar splitwht" -
 		  + " strcat1 strtod strnum1 subamp subi18n subsepnm" -
 		  + " subslash substr swaplns synerr1 synerr2"
@@ -156,7 +163,8 @@ $gawk_ext:	echo "gawk_ext... (gawk.extensions)"
 $		list = "aadelete1 aadelete2 aarray1 aasort aasorti" -
 		  + " argtest arraysort" -
 		  + " backw badargs beginfile1 binmode1" -
-		  + " colonwarn clos1way charasbytes crlf" -
+		  + " colonwarn clos1way clos1way2 clos1way3 clos1way4" -
+		  + " clos1way5 charasbytes crlf" -
 		  + " dbugeval delsub devfd devfd1 devfd2 dumpvars" -
 		  + " exit" -
 		  + " fieldwdth fpat1 fpat2 fpat3 fpatnull funlen functab1" -
@@ -374,10 +382,20 @@ $uparrfs:
 $wjposer1:
 $zeroe0:
 $! common with 'test'.in
+$!
 $	echo "''test'"
 $	gawk -f 'test'.awk 'test'.in >_'test'.tmp
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
+$	return
+$!
+$arrayind1:
+$	echo "''test'"
+$       define/user sys$error _'test'.tmp
+$	gawk -f 'test'.awk 'test'.in >_'test'.tmp2
+$       append _'test'.tmp2 _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then rm _'test'.tmp;,_'test'.tmp2;
 $	return
 $!
 $indirectbuiltin: ! 4.1.2
@@ -628,6 +646,14 @@ $poundbang:
 $pty1:
 $	echo "''test': not supported"
 $	return
+$!
+$rscompat:
+$	echo "''test'"
+$	gawk --traditional -f 'test'.awk 'test'.in >_'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status then  rm _'test'.tmp;
+$	return
+$!
 $
 $
 $messages:	echo "''test'"
@@ -1308,9 +1334,13 @@ $	if $status then  rm _leaddig.tmp;
 $	return
 $
 $clos1way:
-$	echo "clos1way: not supported"
+$clos1way2:
+$clos1way3:
+$clos1way4:
+$clos1way5:
+$	echo "''test': not supported"
 $	return
-$!!clos1way:	echo "clos1way"
+$#clos1way:	echo "''test'"
 $	gawk -f clos1way.awk >_clos1way.tmp
 $	cmp clos1way.ok sys$disk:[]_clos1way.tmp
 $	if $status then  rm _clos1way.tmp;
@@ -1376,6 +1406,10 @@ $	if .not. $status then call exit_code '$status' _'test'.tmp
 $	set On
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status then  rm _'test'.tmp;
+$	return
+$!
+$sigpipe1:
+$	echo "''test': not supported"
 $	return
 $
 $   !
