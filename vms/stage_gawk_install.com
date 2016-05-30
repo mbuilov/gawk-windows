@@ -39,7 +39,7 @@ $   create/dir new_gnu:[usr.share.awk]/prot=o:rwed
 $   create/dir new_gnu:[usr.share.doc.gawk]/prot=o:rwed
 $   create/dir new_gnu:[usr.share.info]/prot=o:rwed
 $   create/dir new_gnu:[usr.src.gawk.extension.vms]/prot=o:rwed
-$   create/dir new_gnu:[usr.share.doc.man.man1]/prot=o:rwed
+$   create/dir new_gnu:[usr.share.man.man1]/prot=o:rwed
 $ endif
 $!
 $ if mode .eqs. "install"
