@@ -38,6 +38,20 @@ NODE *(*str2number)(NODE *) = r_force_number;
 NODE *(*format_val)(const char *, int, NODE *) = r_format_val;
 int (*cmp_numbers)(const NODE *, const NODE *) = cmp_awknums;
 
+/* is_hex --- return true if a string looks like a hex value */
+
+static bool
+is_hex(const char *str)
+{
+	if (*str == '-' || *str == '+')
+		str++;
+
+	if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+		return true;
+
+	return false;
+}
+
 /* force_number --- force a value to be numeric */
 
 NODE *
@@ -96,8 +110,7 @@ r_force_number(NODE *n)
 	    || (! do_posix		/* not POSIXLY paranoid and */
 	        && (is_alpha((unsigned char) *cp)	/* letter, or */
 					/* CANNOT do non-decimal and saw 0x */
-		    || (! do_non_decimal_data && cp[0] == '0'
-		        && (cp[1] == 'x' || cp[1] == 'X'))))) {
+		    || (! do_non_decimal_data && is_hex(cp))))) {
 		return n;
 	}
 
