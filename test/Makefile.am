@@ -440,6 +440,9 @@ EXTRA_DIST = \
 	hello.awk \
 	hex.awk \
 	hex.ok \
+	hex2.awk \
+	hex2.in \
+	hex2.ok \
 	hsprint.awk \
 	hsprint.ok \
 	icasefs.awk \
@@ -1114,7 +1117,7 @@ BASIC_TESTS = \
 	getline getline2 getline3 getline4 getline5 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
 	gsubtst7 gsubtst8 \
-	hex hsprint \
+	hex hex2 hsprint \
 	inpref inputred intest intprec iobug1 \
 	leaddig leadnl litoct longsub longwrds \
 	manglprm math membug1 messages minusstr mmap8k mtchi18n \

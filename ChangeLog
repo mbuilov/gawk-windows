@@ -1,3 +1,12 @@
+2016-06-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* nonposix.h (getpgrp): Wrap declaration in ifdef so it doesn't
+	mess things up on POSIX systems (like Solaris). Thanks to
+	Nelson Beebe for the report.
+	* node.c (is_hex): New function to check for 0x preceded by
+	optional sign.
+	(r_force_number): Use it. Thanks to Mike Brennan for the report.
+
 2016-05-30         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.h (awk_ext_func_t): Rename num_expected_args to
