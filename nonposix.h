@@ -57,7 +57,9 @@ int unsetenv (const char *);
 int setenv (const char *, const char *, int);
 #endif	/* __MINGW32__ */
 
+#if defined(VMS) || defined(__DJGPP__) || defined(__MINGW32__)
 int getpgrp(void);
+#endif
 
 #if defined(__DJGPP__) || defined(__MINGW32__)
 int getppid(void);

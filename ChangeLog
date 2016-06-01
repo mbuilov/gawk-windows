@@ -1,3 +1,9 @@
+2016-06-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* nonposix.h (getpgrp): Wrap declaration in ifdef so it doesn't
+	mess things up on POSIX systems (like Solaris). Thanks to
+	Nelson Beebe for the report.
+
 2016-05-30         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* main.c (arg_assign): Fully bracket ifdefs around call
