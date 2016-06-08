@@ -1020,6 +1020,9 @@ EXTRA_DIST = \
 	symtab8.ok \
 	symtab9.awk \
 	symtab9.ok \
+	symtab10.awk \
+	symtab10.in \
+	symtab10.ok \
 	synerr1.awk \
 	synerr1.ok \
 	synerr2.awk \
@@ -1170,7 +1173,7 @@ GAWK_EXT_TESTS = \
 	sortfor sortu split_after_fpat \
 	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
-	symtab7 symtab8 symtab9 \
+	symtab7 symtab8 symtab9 symtab10 \
 	typedregex1 typedregex2 typedregex3 typeof1 typeof2 typeof3 typeof4 \
 	timeout \
 	watchpoint1
@@ -2251,6 +2254,11 @@ pty1:
 rscompat:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) --traditional -f $@.awk "$(srcdir)/$@.in" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+symtab10:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < "$(srcdir)/$@.in" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
