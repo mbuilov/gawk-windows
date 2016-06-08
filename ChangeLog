@@ -1,3 +1,10 @@
+2016-06-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* symbol.c (lookup): If got Node_val, it's a non-variable
+	in SYMTAB, return NULL. Can affect watchpoints in the debugger,
+	maybe other places. Thanks to Hermann Peifer for the
+	test case and report.
+
 2016-06-05         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with GNU grep.
