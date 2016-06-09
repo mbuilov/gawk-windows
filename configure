@@ -9971,7 +9971,8 @@ fi
 		as_fn_error $? "extension support requested, but unavailable" "$LINENO" 5
 	fi
 	enable_extensions=$extensions_supported
-	 if test "x$enable_extensions" = "xyes"; then
+fi
+ if test "x$enable_extensions" = "xyes"; then
   ENABLE_EXTENSIONS_TRUE=
   ENABLE_EXTENSIONS_FALSE='#'
 else
@@ -9979,7 +9980,6 @@ else
   ENABLE_EXTENSIONS_FALSE=
 fi
 
-fi
 
 case $host_os in
 vms*|beos*|os2*|msdos)
