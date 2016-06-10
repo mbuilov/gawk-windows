@@ -24,7 +24,7 @@
  */
 
 /* FIX THIS BEFORE EVERY RELEASE: */
-#define UPDATE_YEAR	2015
+#define UPDATE_YEAR	2016
 
 #include "awk.h"
 #include "getopt.h"
