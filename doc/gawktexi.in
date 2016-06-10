@@ -51,9 +51,9 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH December, 2015
+@set UPDATE-MONTH June, 2016
 @set VERSION 4.1
-@set PATCHLEVEL 3
+@set PATCHLEVEL 4
 
 @set GAWKINETTITLE TCP/IP Internetworking with @command{gawk}
 @ifset FOR_PRINT
@@ -1542,7 +1542,7 @@ All appear in the index, under the heading ``sidebar.''
 @end ifclear
 
 Most of the time, the examples use complete @command{awk} programs.
-Some of the more advanced sections show only the part of the @command{awk}
+Some of the more advanced @value{SECTION}s show only the part of the @command{awk}
 program that illustrates the concept being described.
 
 Although this @value{DOCUMENT} is aimed principally at people who have not been
@@ -1765,6 +1765,7 @@ The GNU FDL}
 is the license that covers this @value{DOCUMENT}.
 @end itemize
 
+@c ok not to use CHAPTER / SECTION here
 Some of the chapters have exercise sections; these have also been
 omitted from the print edition but are available online.
 @end ifset
@@ -2427,7 +2428,7 @@ reliable because there are no other files to misplace.
 
 Later in this chapter, in
 @ifdocbook
-the section
+the @value{SECTION}
 @end ifdocbook
 @ref{Very Simple},
 we'll see examples of several short,
@@ -3310,7 +3311,8 @@ After the last line of output from @command{ls} has been processed, the
 @code{END} rule executes and prints the value of @code{sum}.
 In this example, the value of @code{sum} is 80600.
 
-These more advanced @command{awk} techniques are covered in later sections
+These more advanced @command{awk} techniques are covered in later
+@value{SECTION}s
 (@pxref{Action Overview}).  Before you can move on to more
 advanced @command{awk} programming, you have to know how @command{awk} interprets
 your input and displays your output.  By manipulating fields and using
@@ -8332,7 +8334,7 @@ trying to accomplish.
 
 @item
 @ifdocbook
-The next section
+The next @value{SECTION}
 @end ifdocbook
 @ifnotdocbook
 @ref{Getline Summary},
@@ -13047,10 +13049,10 @@ As with the @code{BEGIN} and @code{END} rules
 @end ifnotdocbook
 @end ifnottex
 @iftex
-(see the previous section),
+(see the previous @value{SECTION}),
 @end iftex
 @ifdocbook
-(see the previous section),
+(see the previous @value{SECTION}),
 @end ifdocbook
 all @code{BEGINFILE} rules in a program are merged, in the order they are
 read by @command{gawk}, and all @code{ENDFILE} rules are merged as well.
@@ -13812,7 +13814,7 @@ statement outside a loop the same way they treated a @code{break}
 statement outside a loop: as if it were a @code{next}
 statement
 @ifset FOR_PRINT
-(discussed in the following section).
+(discussed in the following @value{SECTION}).
 @end ifset
 @ifclear FOR_PRINT
 (@pxref{Next Statement}).
@@ -16382,10 +16384,9 @@ be called.
 @node Built-in
 @section Built-in Functions
 
-@dfn{Built-in} functions are always available for
-your @command{awk} program to call.  This @value{SECTION} defines all
-the built-in
-functions in @command{awk}; some of these are mentioned in other sections
+@dfn{Built-in} functions are always available for your @command{awk}
+program to call.  This @value{SECTION} defines all the built-in functions
+in @command{awk}; some of these are mentioned in other @value{SECTION}s
 but are summarized here for your convenience.
 
 @menu
@@ -17614,7 +17615,7 @@ that had been its behavior for many years.
 When @value{PVERSION} 4.0.0 was released, the @command{gawk} maintainer
 made the POSIX rules the default, breaking well over a decade's worth
 of backward compatibility.@footnote{This was rather naive of him, despite
-there being a note in this section indicating that the next major version
+there being a note in this @value{SECTION} indicating that the next major version
 would move to the POSIX rules.} Needless to say, this was a bad idea,
 and as of @value{PVERSION} 4.0.1, @command{gawk} resumed its historical
 behavior, and only follows the POSIX rules when @option{--posix} is given.
@@ -22653,7 +22654,7 @@ presenting a potpourri of @command{awk} programs for your reading
 enjoyment.
 @c FULLXREF OFF
 @ifnotinfo
-There are three sections.
+There are three @value{SECTION}s.
 The first describes how to run the programs presented
 in this @value{CHAPTER}.
 
@@ -31918,7 +31919,7 @@ it to always be called, and to take effect as appropriate (as the
 @code{readdir} extension does).  Or you may want it to take effect
 based upon the value of an @command{awk} variable, as the XML extension
 from the @code{gawkextlib} project does (@pxref{gawkextlib}).
-In the latter case, code in a @code{BEGINFILE} section
+In the latter case, code in a @code{BEGINFILE} rule
 can look at @code{FILENAME} and @code{ERRNO} to decide whether or
 not to activate an input parser (@pxref{BEGINFILE/ENDFILE}).
 
@@ -32083,7 +32084,7 @@ values, etc.) within @command{gawk}.
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_input_buf_t *inbuf,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_output_buf_t *outbuf);
 The function pointed to by this field should fill in the @code{awk_input_buf_t} and
-@code{awk_outut_buf_t} structures pointed to by @code{inbuf} and
+@code{awk_output_buf_t} structures pointed to by @code{inbuf} and
 @code{outbuf}, respectively.  These structures were described earlier.
 
 @item awk_const struct two_way_processor *awk_const next;
@@ -32465,7 +32466,7 @@ my_extension_init()
 @}
 @end example
 
-Next, use the routines in this section for retrieving and updating
+Next, use the routines in this @value{SECTION} for retrieving and updating
 the value through the cookie.  Thus, @code{do_magic()} now becomes
 something like this:
 
@@ -32497,7 +32498,7 @@ and carefully check the return values from the API functions.
 @node Cached values
 @subsubsection Creating and Using Cached Values
 
-The routines in this section allow you to create and release
+The routines in this @value{SECTION} allow you to create and release
 cached values.  Like scalar cookies, in theory, cached values
 are not necessary. You can create numbers and strings using
 the functions in @ref{Constructor Functions}. You can then
@@ -32513,7 +32514,7 @@ are clearly less problematic, requiring only a C @code{double} to store.}
 
 It is clearly more efficient, if possible, to create a value once, and
 then tell @command{gawk} to reuse the value for multiple variables. That
-is what the routines in this section let you do.  The functions are as follows:
+is what the routines in this @value{SECTION} let you do.  The functions are as follows:
 
 @table @code
 @item awk_bool_t create_value(awk_value_t *value, awk_value_cookie_t *result);
@@ -32750,7 +32751,7 @@ structure and fill it in. Set the pointer whose address is passed as @code{data}
 to point to this structure.
 Return true upon success, or false otherwise.
 @ifset FOR_PRINT
-See the next section
+See the next @value{SECTION}
 @end ifset
 @ifclear FOR_PRINT
 @xref{Flattening Arrays},
