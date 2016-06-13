@@ -152,7 +152,7 @@ NODE *
 get_argument(int i)
 {
 	NODE *t;
-	int arg_count, pcount;
+	int arg_count;
 	INSTRUCTION *pc;
 	
 	pc = TOP()->code_ptr;		/* Op_ext_builtin instruction */

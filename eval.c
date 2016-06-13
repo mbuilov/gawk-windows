@@ -582,14 +582,8 @@ cmp_nodes(NODE *t1, NODE *t2)
 	if (t1 == t2)
 		return 0;
 
-	if ((t1->flags & MAYBE_NUM) != 0)
-		(void) force_number(t1);
-	if ((t2->flags & MAYBE_NUM) != 0)
-		(void) force_number(t2);
-	if ((t1->flags & INTIND) != 0)
-		t1 = force_string(t1);
-	if ((t2->flags & INTIND) != 0)
-		t2 = force_string(t2);
+	(void) fixtype(t1);
+	(void) fixtype(t2);
 
 	if ((t1->flags & NUMBER) != 0 && (t2->flags & NUMBER) != 0)
 		return cmp_numbers(t1, t2);
@@ -698,7 +692,7 @@ void
 set_IGNORECASE()
 {
 	static bool warned = false;
-	NODE *n = IGNORECASE_node->var_value;
+	NODE *n;
 
 	if ((do_lint || do_traditional) && ! warned) {
 		warned = true;
@@ -707,19 +701,13 @@ set_IGNORECASE()
 	load_casetable();
 	if (do_traditional)
 		IGNORECASE = false;
-	else if ((n->flags & (NUMCUR|NUMBER)) != 0)
-		IGNORECASE = ! iszero(n);
-	else if ((n->flags & (STRING|STRCUR)) != 0) {
-		if ((n->flags & MAYBE_NUM) == 0) {
-			(void) force_string(n);
-			IGNORECASE = (n->stlen > 0);
-		} else {
-			(void) force_number(n);
+   	else {
+		n = fixtype(IGNORECASE_node->var_value);
+		if ((n->flags & NUMBER) != 0)
 			IGNORECASE = ! iszero(n);
-		}
-	} else
-		IGNORECASE = false;		/* shouldn't happen */
-                 
+		else
+			IGNORECASE = (n->stlen > 0);
+	}
 	set_RS();	/* set_RS() calls set_FS() if need be, for us */
 }
 
@@ -947,49 +935,32 @@ set_LINT()
 {
 #ifndef NO_LINT
 	int old_lint = do_lint;
-	NODE *n = LINT_node->var_value;
+	NODE *n = fixtype(LINT_node->var_value);
 
-	if ((n->flags & (STRING|STRCUR)) != 0) {
-		if ((n->flags & MAYBE_NUM) == 0) {
-			const char *lintval;
-			size_t lintlen;
+	lintfunc = r_warning;	/* reset to default */
+	if ((n->flags & STRING) != 0) {
+		const char *lintval;
+		size_t lintlen;
 
-			n = force_string(LINT_node->var_value);
-			lintval = n->stptr;
-			lintlen = n->stlen;
-			if (lintlen > 0) {
-				do_flags |= DO_LINT_ALL;
-				if (lintlen == 5 && strncmp(lintval, "fatal", 5) == 0)
-					lintfunc = r_fatal;
-				else if (lintlen == 7 && strncmp(lintval, "invalid", 7) == 0) {
-					do_flags &= ~ DO_LINT_ALL;
-					do_flags |= DO_LINT_INVALID;
-				} else
-					lintfunc = warning;
-			} else {
-				do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);
-				lintfunc = warning;
+		lintval = n->stptr;
+		lintlen = n->stlen;
+		if (lintlen > 0) {
+			do_flags |= DO_LINT_ALL;
+			if (lintlen == 5 && strncmp(lintval, "fatal", 5) == 0)
+				lintfunc = r_fatal;
+			else if (lintlen == 7 && strncmp(lintval, "invalid", 7) == 0) {
+				do_flags &= ~ DO_LINT_ALL;
+				do_flags |= DO_LINT_INVALID;
 			}
 		} else {
-			(void) force_number(n);
-			if (! iszero(n))
-				do_flags |= DO_LINT_ALL;
-			else
-				do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);
-			lintfunc = warning;
+			do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);
 		}
-	} else if ((n->flags & (NUMCUR|NUMBER)) != 0) {
-		(void) force_number(n);
+	} else {
 		if (! iszero(n))
 			do_flags |= DO_LINT_ALL;
 		else
 			do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);
-		lintfunc = warning;
-	} else
-		do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);	/* shouldn't happen */
-
-	if (! do_lint)
-		lintfunc = warning;
+	}
 
 	/* explicitly use warning() here, in case lintfunc == r_fatal */
 	if (old_lint != do_lint && old_lint && ! do_lint)
@@ -1546,10 +1517,7 @@ eval_condition(NODE *t)
 	if (t == node_Boolean[true])
 		return true;
 
-	if ((t->flags & MAYBE_NUM) != 0)
-		force_number(t);
-	else if ((t->flags & INTIND) != 0)
-		force_string(t);
+	(void) fixtype(t);
 
 	if ((t->flags & NUMBER) != 0)
 		return ! iszero(t);

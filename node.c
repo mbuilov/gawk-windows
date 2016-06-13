@@ -45,23 +45,25 @@ r_force_number(NODE *n)
 {
 	char *cp;
 	char *cpend;
-	char save;
 	char *ptr;
-	unsigned int newflags;
 	extern double strtod();
 
 	if ((n->flags & NUMCUR) != 0)
 		return n;
 
+	/*
+	 * we should always set NUMCUR and clear MAYBE_NUM, and we may possibly
+	 * change STRING to NUMBER of MAYBE_NUM was set and it's a good numeric
+	 * string.
+	 */
+
 	/* all the conditionals are an attempt to avoid the expensive strtod */
 
-	/* Note: only set NUMCUR if we actually convert some digits */
-
+	n->flags |= NUMCUR;
 	n->numbr = 0.0;
 
-	if (n->stlen == 0) {
-		return n;
-	}
+	if (n->stlen == 0)
+		goto badnum;
 
 	cp = n->stptr;
 	/*
@@ -72,20 +74,16 @@ r_force_number(NODE *n)
 	 * This also allows hexadecimal floating point. Ugh.
 	 */
 	if (! do_posix) {
-		if (is_alpha((unsigned char) *cp)) {
-			return n;
-		} else if (n->stlen == 4 && is_ieee_magic_val(n->stptr)) {
-			if ((n->flags & MAYBE_NUM) != 0)
-				n->flags &= ~(MAYBE_NUM|STRING);
-			n->flags |= NUMBER|NUMCUR;
+		if (is_alpha((unsigned char) *cp))
+			goto badnum;
+		else if (n->stlen == 4 && is_ieee_magic_val(n->stptr)) {
 			n->numbr = get_ieee_magic_val(n->stptr);
-
-			return n;
+			goto goodnum;
 		}
 		/* else
 			fall through */
 	}
-	/* else not POSIX, so
+	/* else POSIX, so
 		fall through */
 
 	cpend = cp + n->stlen;
@@ -98,52 +96,36 @@ r_force_number(NODE *n)
 					/* CANNOT do non-decimal and saw 0x */
 		    || (! do_non_decimal_data && cp[0] == '0'
 		        && (cp[1] == 'x' || cp[1] == 'X'))))) {
-		return n;
+		goto badnum;
 	}
-
-	if ((n->flags & MAYBE_NUM) != 0) {
-		newflags = NUMBER;
-		n->flags &= ~(MAYBE_NUM|STRING);
-	} else
-		newflags = 0;
 
 	if (cpend - cp == 1) {		/* only one character */
 		if (isdigit((unsigned char) *cp)) {	/* it's a digit! */
 			n->numbr = (AWKNUM)(*cp - '0');
-			n->flags |= newflags;
-			n->flags |= NUMCUR;
 			if (cp == n->stptr)		/* no leading spaces */
 				n->flags |= NUMINT;
+			goto goodnum;
 		}
-		return n;
+		goto badnum;
 	}
 
-	if (do_non_decimal_data) {	/* main.c assures false if do_posix */
+	if (do_non_decimal_data		/* main.c assures false if do_posix */
+		&& ! do_traditional && get_numbase(cp, true) != 10) {
 		errno = 0;
-		if (! do_traditional && get_numbase(cp, true) != 10) {
-			n->numbr = nondec2awknum(cp, cpend - cp);
-			n->flags |= NUMCUR;
-			ptr = cpend;
-			goto finish;
-		}
+		n->numbr = nondec2awknum(cp, cpend - cp, &ptr);
+	} else {
+		errno = 0;
+		n->numbr = (AWKNUM) strtod((const char *) cp, &ptr);
 	}
-
-	errno = 0;
-	save = *cpend;
-	*cpend = '\0';
-	n->numbr = (AWKNUM) strtod((const char *) cp, &ptr);
 
 	/* POSIX says trailing space is OK for NUMBER */
 	while (isspace((unsigned char) *ptr))
 		ptr++;
-	*cpend = save;
-finish:
 	if (errno == 0) {
-		if (ptr == cpend) {
-			n->flags |= newflags;
-			n->flags |= NUMCUR;
-		}
+		if (ptr == cpend)
+			goto goodnum;
 		/* else keep the leading numeric value without updating flags */
+		/* fall through to badnum*/
 	} else {
 		errno = 0;
 		/*
@@ -152,8 +134,21 @@ finish:
 		 * We force the numeric value to 0 in such cases.
 		 */
 		n->numbr = 0;
+		/*
+		 * Or should we accept it as a NUMBER even though strtod
+		 * threw an error?
+		 */
+		/* fall through to badnum*/
 	}
+badnum:
+	n->flags &= ~MAYBE_NUM;
+	return n;
 
+goodnum:
+	if ((n->flags & MAYBE_NUM) != 0) {
+		n->flags &= ~(MAYBE_NUM|STRING);
+		n->flags |= NUMBER;
+	}
 	return n;
 }
 

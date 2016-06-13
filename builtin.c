@@ -148,7 +148,7 @@ do_exp(int nargs)
 	double d, res;
 
 	tmp = POP_SCALAR();
-	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
+	if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
 		lintwarn(_("exp: received non-numeric argument"));
 	d = force_number(tmp)->numbr;
 	DEREF(tmp);
@@ -354,9 +354,9 @@ do_index(int nargs)
 	POP_TWO_SCALARS(s1, s2);
 
 	if (do_lint) {
-		if ((s1->flags & (STRING|STRCUR)) == 0)
+		if ((fixtype(s1)->flags & STRING) == 0)
 			lintwarn(_("index: received non-string first argument"));
-		if ((s2->flags & (STRING|STRCUR)) == 0)
+		if ((fixtype(s2)->flags & STRING) == 0)
 			lintwarn(_("index: received non-string second argument"));
 	}
 
@@ -469,7 +469,7 @@ do_int(int nargs)
 	double d;
 
 	tmp = POP_SCALAR();
-	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
+	if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
 		lintwarn(_("int: received non-numeric argument"));
 	d = force_number(tmp)->numbr;
 	d = double_to_int(d);
@@ -532,9 +532,9 @@ do_length(int nargs)
 		return make_number(size);
 	}
 
-	assert(tmp->type == Node_val);
+	assert(tmp->type == Node_val || tmp->type == Node_typedregex);
 
-	if (do_lint && (tmp->flags & (STRING|STRCUR)) == 0)
+	if (do_lint && (fixtype(tmp)->flags & STRING) == 0)
 		lintwarn(_("length: received non-string argument"));
 	tmp = force_string(tmp);
 
@@ -563,7 +563,7 @@ do_log(int nargs)
 	double d, arg;
 
 	tmp = POP_SCALAR();
-	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
+	if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
 		lintwarn(_("log: received non-numeric argument"));
 	arg = force_number(tmp)->numbr;
 	if (arg < 0.0)
@@ -1048,9 +1048,7 @@ check_pos:
 		case 'c':
 			need_format = false;
 			parse_next_arg();
-			/* user input that looks numeric is numeric */
-			if ((arg->flags & (MAYBE_NUM|NUMBER)) == MAYBE_NUM)
-				(void) force_number(arg);
+			fixtype(arg);
 			if ((arg->flags & NUMBER) != 0) {
 				uval = get_number_uj(arg);
 				if (gawk_mb_cur_max > 1) {
@@ -1727,7 +1725,7 @@ do_sqrt(int nargs)
 	double arg;
 
 	tmp = POP_SCALAR();
-	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
+	if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
 		lintwarn(_("sqrt: received non-numeric argument"));
 	arg = (double) force_number(tmp)->numbr;
 	DEREF(tmp);
@@ -1940,7 +1938,7 @@ do_strftime(int nargs)
 
 		if (nargs >= 2) {
 			t2 = POP_SCALAR();
-			if (do_lint && (t2->flags & (NUMCUR|NUMBER)) == 0)
+			if (do_lint && (fixtype(t2)->flags & NUMBER) == 0)
 				lintwarn(_("strftime: received non-numeric second argument"));
 			(void) force_number(t2);
 			clock_val = get_number_d(t2);
@@ -1966,7 +1964,7 @@ do_strftime(int nargs)
 		}
 
 		tmp = POP_SCALAR();
-		if (do_lint && (tmp->flags & (STRING|STRCUR)) == 0)
+		if (do_lint && (fixtype(tmp)->flags & STRING) == 0)
 			lintwarn(_("strftime: received non-string first argument"));
 	
 		t1 = force_string(tmp);
@@ -2039,15 +2037,11 @@ do_mktime(int nargs)
 	int month, day, hour, minute, second, count;
 	int dst = -1; /* default is unknown */
 	time_t then_stamp;
-	char save;
 
 	t1 = POP_SCALAR();
-	if (do_lint && (t1->flags & (STRING|STRCUR)) == 0)
+	if (do_lint && (fixtype(t1)->flags & STRING) == 0)
 		lintwarn(_("mktime: received non-string argument"));
 	t1 = force_string(t1);
-
-	save = t1->stptr[t1->stlen];
-	t1->stptr[t1->stlen] = '\0';
 
 	count = sscanf(t1->stptr, "%ld %d %d %d %d %d %d",
 		        & year, & month, & day,
@@ -2062,7 +2056,6 @@ do_mktime(int nargs)
 		|| (month < 1 || month > 12) ))
 			lintwarn(_("mktime: at least one of the values is out of the default range"));
 
-	t1->stptr[t1->stlen] = save;
 	DEREF(t1);
 
 	if (count < 6
@@ -2100,7 +2093,7 @@ do_system(int nargs)
 
 	(void) flush_io();     /* so output is synchronous with gawk's */
 	tmp = POP_SCALAR();
-	if (do_lint && (tmp->flags & (STRING|STRCUR)) == 0)
+	if (do_lint && (fixtype(tmp)->flags & STRING) == 0)
 		lintwarn(_("system: received non-string argument"));
 	cmd = force_string(tmp)->stptr;
 
@@ -2370,7 +2363,7 @@ do_tolower(int nargs)
 	NODE *t1, *t2;
 
 	t1 = POP_SCALAR();
-	if (do_lint && (t1->flags & (STRING|STRCUR)) == 0)
+	if (do_lint && (fixtype(t1)->flags & STRING) == 0)
 		lintwarn(_("tolower: received non-string argument"));
 	t1 = force_string(t1);
 	t2 = make_string(t1->stptr, t1->stlen);
@@ -2401,7 +2394,7 @@ do_toupper(int nargs)
 	NODE *t1, *t2;
 
 	t1 = POP_SCALAR();
-	if (do_lint && (t1->flags & (STRING|STRCUR)) == 0)
+	if (do_lint && (fixtype(t1)->flags & STRING) == 0)
 		lintwarn(_("toupper: received non-string argument"));
 	t1 = force_string(t1);
 	t2 = make_string(t1->stptr, t1->stlen);
@@ -2434,9 +2427,9 @@ do_atan2(int nargs)
 
 	POP_TWO_SCALARS(t1, t2);
 	if (do_lint) {
-		if ((t1->flags & (NUMCUR|NUMBER)) == 0)
+		if ((fixtype(t1)->flags & NUMBER) == 0)
 			lintwarn(_("atan2: received non-numeric first argument"));
-		if ((t2->flags & (NUMCUR|NUMBER)) == 0)
+		if ((fixtype(t2)->flags & NUMBER) == 0)
 			lintwarn(_("atan2: received non-numeric second argument"));
 	}
 	d1 = force_number(t1)->numbr;
@@ -2455,7 +2448,7 @@ do_sin(int nargs)
 	double d;
 
 	tmp = POP_SCALAR();
-	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
+	if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
 		lintwarn(_("sin: received non-numeric argument"));
 	d = sin((double) force_number(tmp)->numbr);
 	DEREF(tmp);
@@ -2471,7 +2464,7 @@ do_cos(int nargs)
 	double d;
 
 	tmp = POP_SCALAR();
-	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
+	if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
 		lintwarn(_("cos: received non-numeric argument"));
 	d = cos((double) force_number(tmp)->numbr);
 	DEREF(tmp);
@@ -2585,7 +2578,7 @@ do_srand(int nargs)
 		srandom((unsigned int) (save_seed = (long) time((time_t *) 0)));
 	else {
 		tmp = POP_SCALAR();
-		if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
+		if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
 			lintwarn(_("srand: received non-numeric argument"));
 		srandom((unsigned int) (save_seed = (long) force_number(tmp)->numbr));
 		DEREF(tmp);
@@ -2869,31 +2862,24 @@ do_sub(int nargs, unsigned int flags)
 		target = POP_STRING();	/* original string */
 
 		glob_flag = POP_SCALAR();	/* value of global flag */
-		if ((glob_flag->flags & (STRCUR|STRING)) != 0) {
-			if (glob_flag->stlen > 0 && (glob_flag->stptr[0] == 'g' || glob_flag->stptr[0] == 'G'))
-				how_many = -1;
-			else {
-				(void) force_number(glob_flag);
-				d = get_number_d(glob_flag);
-				if ((glob_flag->flags & NUMCUR) != 0)
-					goto set_how_many;
-
-				warning(_("gensub: third argument `%.*s' treated as 1"),
-						(int) glob_flag->stlen, glob_flag->stptr);
-				how_many = 1;
-			}
-		} else {
+		if (((glob_flag->flags & STRING) != 0)
+			&& (glob_flag->stlen > 0
+				&& (glob_flag->stptr[0] == 'g'
+					|| glob_flag->stptr[0] == 'G')))
+			how_many = -1;
+		else {
 			(void) force_number(glob_flag);
 			d = get_number_d(glob_flag);
-set_how_many:
 			if (d < 1)
 				how_many = 1;
 			else if (d < LONG_MAX)
 				how_many = d;
 			else
 				how_many = LONG_MAX;
-			if (d <= 0)
-				warning(_("gensub: third argument %g treated as 1"), d);
+			if (d <= 0) {
+				(void) force_string(glob_flag);
+				warning(_("gensub: third argument `%s' treated as 1"), glob_flag->stptr);
+			}
 		}
 		DEREF(glob_flag);
 	} else {
@@ -3353,9 +3339,9 @@ do_lshift(int nargs)
 
 	POP_TWO_SCALARS(s1, s2);
 	if (do_lint) {
-		if ((s1->flags & (NUMCUR|NUMBER)) == 0)
+		if ((fixtype(s1)->flags & NUMBER) == 0)
 			lintwarn(_("lshift: received non-numeric first argument"));
-		if ((s2->flags & (NUMCUR|NUMBER)) == 0)
+		if ((fixtype(s2)->flags & NUMBER) == 0)
 			lintwarn(_("lshift: received non-numeric second argument"));
 	}
 	val = force_number(s1)->numbr;
@@ -3390,9 +3376,9 @@ do_rshift(int nargs)
 
 	POP_TWO_SCALARS(s1, s2);
 	if (do_lint) {
-		if ((s1->flags & (NUMCUR|NUMBER)) == 0)
+		if ((fixtype(s1)->flags & NUMBER) == 0)
 			lintwarn(_("rshift: received non-numeric first argument"));
-		if ((s2->flags & (NUMCUR|NUMBER)) == 0)
+		if ((fixtype(s2)->flags & NUMBER) == 0)
 			lintwarn(_("rshift: received non-numeric second argument"));
 	}
 	val = force_number(s1)->numbr;
@@ -3432,7 +3418,7 @@ do_and(int nargs)
 
 	for (i = 1; nargs > 0; nargs--, i++) {
 		s1 = POP_SCALAR();
-		if (do_lint && (s1->flags & (NUMCUR|NUMBER)) == 0)
+		if (do_lint && (fixtype(s1)->flags & NUMBER) == 0)
 			lintwarn(_("and: argument %d is non-numeric"), i);
 
 		val = force_number(s1)->numbr;
@@ -3464,7 +3450,7 @@ do_or(int nargs)
 
 	for (i = 1; nargs > 0; nargs--, i++) {
 		s1 = POP_SCALAR();
-		if (do_lint && (s1->flags & (NUMCUR|NUMBER)) == 0)
+		if (do_lint && (fixtype(s1)->flags & NUMBER) == 0)
 			lintwarn(_("or: argument %d is non-numeric"), i);
 
 		val = force_number(s1)->numbr;
@@ -3496,7 +3482,7 @@ do_xor(int nargs)
 	res = 0;	/* silence compiler warning */
 	for (i = 1; nargs > 0; nargs--, i++) {
 		s1 = POP_SCALAR();
-		if (do_lint && (s1->flags & (NUMCUR|NUMBER)) == 0)
+		if (do_lint && (fixtype(s1)->flags & NUMBER) == 0)
 			lintwarn(_("xor: argument %d is non-numeric"), i);
 
 		val = force_number(s1)->numbr;
@@ -3525,7 +3511,7 @@ do_compl(int nargs)
 	uintmax_t uval;
 
 	tmp = POP_SCALAR();
-	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
+	if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
 		lintwarn(_("compl: received non-numeric argument"));
 	d = force_number(tmp)->numbr;
 	DEREF(tmp);
@@ -3550,11 +3536,11 @@ do_strtonum(int nargs)
 	NODE *tmp;
 	AWKNUM d;
 
-	tmp = POP_SCALAR();
-	if ((tmp->flags & (NUMBER|NUMCUR)) != 0)
-		d = (AWKNUM) force_number(tmp)->numbr;
+	tmp = fixtype(POP_SCALAR());
+	if ((tmp->flags & NUMBER) != 0)
+		d = (AWKNUM) tmp->numbr;
 	else if (get_numbase(tmp->stptr, use_lc_numeric) != 10)
-		d = nondec2awknum(tmp->stptr, tmp->stlen);
+		d = nondec2awknum(tmp->stptr, tmp->stlen, NULL);
 	else
 		d = (AWKNUM) force_number(tmp)->numbr;
 
@@ -3571,10 +3557,9 @@ do_strtonum(int nargs)
  */
 
 AWKNUM
-nondec2awknum(char *str, size_t len)
+nondec2awknum(char *str, size_t len, char **endptr)
 {
 	AWKNUM retval = 0.0;
-	char save;
 	short val;
 	char *start = str;
 
@@ -3583,8 +3568,11 @@ nondec2awknum(char *str, size_t len)
 		 * User called strtonum("0x") or some such,
 		 * so just quit early.
 		 */
-		if (len <= 2)
+		if (len <= 2) {
+			if (endptr)
+				*endptr = start;
 			return (AWKNUM) 0.0;
+		}
 
 		for (str += 2, len -= 2; len > 0; len--, str++) {
 			switch (*str) {
@@ -3617,14 +3605,21 @@ nondec2awknum(char *str, size_t len)
 				val = *str - 'A' + 10;
 				break;
 			default:
+				if (endptr)
+					*endptr = str;
 				goto done;
 			}
 			retval = (retval * 16) + val;
 		}
+		if (endptr)
+			*endptr = str;
 	} else if (*str == '0') {
 		for (; len > 0; len--) {
-			if (! isdigit((unsigned char) *str))
+			if (! isdigit((unsigned char) *str)) {
+				if (endptr)
+					*endptr = str;
 				goto done;
+			}
 			else if (*str == '8' || *str == '9') {
 				str = start;
 				goto decimal;
@@ -3632,11 +3627,11 @@ nondec2awknum(char *str, size_t len)
 			retval = (retval * 8) + (*str - '0');
 			str++;
 		}
+		if (endptr)
+			*endptr = str;
 	} else {
 decimal:
-		save = str[len];
-		retval = strtod(str, NULL);
-		str[len] = save;
+		retval = strtod(str, endptr);
 	}
 done:
 	return retval;
@@ -3897,9 +3892,9 @@ do_intdiv(int nargs)
 	numerator = POP_SCALAR();
 
 	if (do_lint) {
-		if ((numerator->flags & (NUMCUR|NUMBER)) == 0)
+		if ((fixtype(numerator)->flags & NUMBER) == 0)
 			lintwarn(_("intdiv: received non-numeric first argument"));
-		if ((denominator->flags & (NUMCUR|NUMBER)) == 0)
+		if ((fixtype(denominator)->flags & NUMBER) == 0)
 			lintwarn(_("intdiv: received non-numeric second argument"));
 	}
 
@@ -3958,14 +3953,26 @@ do_typeof(int nargs)
 		break;
 	case Node_val:
 	case Node_var:
-		if (arg == Nnull_string)
-			res = "unassigned";
-		else if ((arg->flags & STRING) != 0) {
+		switch (arg->flags & (STRING|NUMBER|MAYBE_NUM)) {
+		case STRING:
 			res = "string";
-			if ((arg->flags & MAYBE_NUM) != 0)
-				res = "strnum";
-		} else if ((arg->flags & NUMBER) != 0)
+			break;
+		case NUMBER:
 			res = "number";
+			break;
+		case STRING|MAYBE_NUM:
+			res = "strnum";
+			break;
+		case NUMBER|STRING:
+			if (arg == Nnull_string) {
+				res = "unassigned";
+				break;
+			}
+			/* fall through */
+		default:
+			warning(_("typeof detected invalid flags combination `%s'; please file a bug report."), flags2str(arg->flags));
+			break;
+		}
 		break;
 	case Node_var_new:
 		res = "untyped";

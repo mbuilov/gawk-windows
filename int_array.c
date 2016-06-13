@@ -89,6 +89,21 @@ is_integer(NODE *symbol, NODE *subs)
 	if (subs == Nnull_string || do_mpfr)
 		return NULL;
 
+	/*
+	 * Protect against MAYBE_NUM values where the string may not regenerate
+	 * correctly. There could be white space and/or a non-decimal value.
+	 */
+	if ((subs->flags & STRCUR) != 0) {
+		char *cp = subs->stptr;
+
+		if ((cp[0] == '0') || isspace((unsigned char) cp[0])
+			|| (subs->stlen < 1)
+			|| isspace((unsigned char) cp[subs->stlen - 1])
+			|| ((subs->stlen >= 2) && (cp[0] == '-')
+				&& (cp[1] == '0')))
+			return NULL;
+	}
+
 	if ((subs->flags & NUMINT) != 0)
 		return & success_node;
 
@@ -107,7 +122,8 @@ is_integer(NODE *symbol, NODE *subs)
 	 * a[-3]=1; print "-3" in a  -- true
 	 */
 
-	if ((subs->flags & (STRING|STRCUR)) != 0) {
+	{
+		/* must be a STRING */
 		char *cp = subs->stptr, *cpend, *ptr;
 		char save;
 		size_t len = subs->stlen;
@@ -123,7 +139,7 @@ is_integer(NODE *symbol, NODE *subs)
 		if (len == 1 && *cp != '-') {	/* single digit */
 			subs->numbr = (long) (*cp - '0');
 			if ((subs->flags & MAYBE_NUM) != 0) {
-				subs->flags &= ~MAYBE_NUM;
+				subs->flags &= ~(MAYBE_NUM|STRING);
 				subs->flags |= NUMBER;
 			}
 			subs->flags |= (NUMCUR|NUMINT);
@@ -141,7 +157,7 @@ is_integer(NODE *symbol, NODE *subs)
 			return NULL;
 		subs->numbr = l;
 		if ((subs->flags & MAYBE_NUM) != 0) {
-			subs->flags &= ~MAYBE_NUM;
+			subs->flags &= ~(MAYBE_NUM|STRING);
 			subs->flags |= NUMBER;
 		}
 		subs->flags |= NUMCUR;

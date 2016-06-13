@@ -341,20 +341,17 @@ done:
 static NODE *
 mpg_force_number(NODE *n)
 {
-	unsigned int newflags = 0;
-
-	if (is_mpg_number(n) && (n->flags & NUMCUR) != 0)
+	if ((n->flags & NUMCUR) != 0)
 		return n;
-
-	if ((n->flags & MAYBE_NUM) != 0) {
-		n->flags &= ~(MAYBE_NUM|STRING);
-		newflags = NUMBER;
-	}
+	n->flags |= NUMCUR;
 
 	if (force_mpnum(n, (do_non_decimal_data && ! do_traditional), true)) {
-		n->flags |= newflags;
-		n->flags |= NUMCUR;
-	}
+		if ((n->flags & MAYBE_NUM) != 0) {
+			n->flags &= ~(MAYBE_NUM|STRING);
+			n->flags |= NUMBER;
+		}
+	} else
+		n->flags &= ~MAYBE_NUM;
 	return n;
 }
 
@@ -521,11 +518,9 @@ set_PREC()
 	if (! do_mpfr)
 		return;
 
-	val = PREC_node->var_value;
-	if ((val->flags & MAYBE_NUM) != 0)
-		force_number(val);
+	val = fixtype(PREC_node->var_value);
 
-	if ((val->flags & STRCUR) != 0) {
+	if ((val->flags & STRING) != 0) {
 		int i, j;
 
 		/* emulate IEEE-754 binary format */
@@ -675,9 +670,9 @@ do_mpfr_atan2(int nargs)
 	t1 = POP_SCALAR();
 
 	if (do_lint) {
-		if ((t1->flags & (NUMCUR|NUMBER)) == 0)
+		if ((fixtype(t1)->flags & NUMBER) == 0)
 			lintwarn(_("atan2: received non-numeric first argument"));
-		if ((t2->flags & (NUMCUR|NUMBER)) == 0)
+		if ((fixtype(t2)->flags & NUMBER) == 0)
 			lintwarn(_("atan2: received non-numeric second argument"));
 	}
 	force_number(t1);
@@ -707,7 +702,7 @@ do_mpfr_func(const char *name,
 	int tval;
 
 	t1 = POP_SCALAR();
-	if (do_lint && (t1->flags & (NUMCUR|NUMBER)) == 0)
+	if (do_lint && (fixtype(t1)->flags & NUMBER) == 0)
 		lintwarn(_("%s: received non-numeric argument"), name);
 
 	force_number(t1);
@@ -773,7 +768,7 @@ do_mpfr_int(int nargs)
 	NODE *tmp, *r;
 
 	tmp = POP_SCALAR();
-	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
+	if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
 		lintwarn(_("int: received non-numeric argument"));
 	force_number(tmp);
 
@@ -803,7 +798,7 @@ do_mpfr_compl(int nargs)
 	mpz_ptr zptr;
 
 	tmp = POP_SCALAR();
-	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
+	if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
 		lintwarn(_("compl: received non-numeric argument"));
 
 	force_number(tmp);
@@ -851,7 +846,7 @@ get_intval(NODE *t1, int argnum, const char *op)
 {
 	mpz_ptr pz;
 
-	if (do_lint && (t1->flags & (NUMCUR|NUMBER)) == 0)
+	if (do_lint && (fixtype(t1)->flags & NUMBER) == 0)
 		lintwarn(_("%s: received non-numeric argument #%d"), op, argnum);
 
 	(void) force_number(t1);
@@ -1076,8 +1071,8 @@ do_mpfr_strtonum(int nargs)
 {
 	NODE *tmp, *r;
 
-	tmp = POP_SCALAR();
-	if ((tmp->flags & (NUMBER|NUMCUR)) == 0) {
+	tmp = fixtype(POP_SCALAR());
+	if ((tmp->flags & NUMBER) == 0) {
 		r = mpg_integer();	/* will be changed to MPFR float if necessary in force_mpnum() */
 		r->stptr = tmp->stptr;
 		r->stlen = tmp->stlen;
@@ -1085,7 +1080,6 @@ do_mpfr_strtonum(int nargs)
 		r->stptr = NULL;
 		r->stlen = 0;
 	} else {
-		(void) force_number(tmp);
 		if (is_mpg_float(tmp)) {
 			int tval;
 			r = mpg_float();
@@ -1172,7 +1166,7 @@ do_mpfr_srand(int nargs)
 	else {
 		NODE *tmp;
 		tmp = POP_SCALAR();
-		if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
+		if (do_lint && (fixtype(tmp)->flags & NUMBER) == 0)
 			lintwarn(_("srand: received non-numeric argument"));
 		force_number(tmp);
 		if (is_mpg_float(tmp))
@@ -1213,9 +1207,9 @@ do_mpfr_intdiv(int nargs)
 	numerator = POP_SCALAR();
 
 	if (do_lint) {
-		if ((numerator->flags & (NUMCUR|NUMBER)) == 0)
+		if ((fixtype(numerator)->flags & NUMBER) == 0)
 			lintwarn(_("intdiv: received non-numeric first argument"));
-		if ((denominator->flags & (NUMCUR|NUMBER)) == 0)
+		if ((fixtype(denominator)->flags & NUMBER) == 0)
 			lintwarn(_("intdiv: received non-numeric second argument"));
 	}
 

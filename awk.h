@@ -392,8 +392,11 @@ typedef struct exp_node {
 
 /* type = Node_val */
 	/*
-	 * STRING and NUMBER are mutually exclusive. They represent the
-	 * type of a value as assigned.
+	 * STRING and NUMBER are mutually exclusive, except for the special
+	 * case of an uninitialized value, represented internally by
+	 * Nnull_string. They represent the type of a value as assigned.
+	 * Nnull_string has both STRING and NUMBER attributes, but all other
+	 * scalar values should have precisely one of these bits set.
 	 *
 	 * STRCUR and NUMCUR are not mutually exclusive. They represent that
 	 * the particular type of value is up to date.  For example,
@@ -408,7 +411,8 @@ typedef struct exp_node {
 	 *
 	 * MAYBE_NUM is the joker.  It means "this is string data, but
 	 * the user may have really wanted it to be a number. If we have
-	 * to guess, like in a comparison, turn it into a number."
+	 * to guess, like in a comparison, turn it into a number if the string
+	 * is indeed numeric."
 	 * For example,    gawk -v a=42 ....
 	 * Here, `a' gets STRING|STRCUR|MAYBE_NUM and then when used where
 	 * a number is needed, it gets turned into a NUMBER and STRING
@@ -1401,7 +1405,7 @@ extern NODE *do_or(int nargs);
 extern NODE *do_xor(int nargs);
 extern NODE *do_compl(int nargs);
 extern NODE *do_strtonum(int nargs);
-extern AWKNUM nondec2awknum(char *str, size_t len);
+extern AWKNUM nondec2awknum(char *str, size_t len, char **endptr);
 extern NODE *do_dcgettext(int nargs);
 extern NODE *do_dcngettext(int nargs);
 extern NODE *do_bindtextdomain(int nargs);
@@ -1813,6 +1817,31 @@ force_number(NODE *n)
 }
 
 #endif /* GAWKDEBUG */
+
+/*
+ * In certain contexts, the true type of a scalar value matters, and we
+ * must ascertain whether it is a a NUMBER or a STRING. In such situations,
+ * please use this function to resolve the type.
+ *
+ * It is safe to assume that the return value will be the same NODE,
+ * since force_number on a MAYBE_NUM should always returns the same NODE,
+ * and force_string on an INTIND should as well.
+ *
+ * There is no way to handle a Node_typedregex correctly, so we ignore
+ * that case.
+ */
+static inline NODE *
+fixtype(NODE *n)
+{
+	assert((n->type == Node_val) || (n->type == Node_typedregex));
+	if (n->type == Node_val) {
+		if ((n->flags & MAYBE_NUM) != 0)
+			return force_number(n);
+		if ((n->flags & INTIND) != 0)
+			return force_string(n);
+	}
+	return n;
+}
 
 static inline void *
 emalloc_real(size_t count, const char *where, const char *var, const char *file, int line)

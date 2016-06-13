@@ -4002,7 +4002,7 @@ retry:
 		}
 #endif
 		if (base != 10)
-			d = nondec2awknum(tokstart, strlen(tokstart));
+			d = nondec2awknum(tokstart, strlen(tokstart), NULL);
 		else
 			d = atof(tokstart);
 		yylval->memory = make_number(d);
@@ -4603,18 +4603,6 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 		pp_string_fp(print_func, fp, n->stptr, n->stlen, '"', false);
 		print_func(fp, "\n");
 	} else if ((n->flags & NUMBER) != 0) {
-#ifdef HAVE_MPFR
-		if (is_mpg_float(n))
-			print_func(fp, "%s\n", mpg_fmt("%.17R*g", ROUND_MODE, n->mpg_numbr));
-		else if (is_mpg_integer(n))
-			print_func(fp, "%s\n", mpg_fmt("%Zd", n->mpg_i));
-		else
-#endif
-		print_func(fp, "%.17g\n", n->numbr);
-	} else if ((n->flags & STRCUR) != 0) {
-		pp_string_fp(print_func, fp, n->stptr, n->stlen, '"', false);
-		print_func(fp, "\n");
-	} else if ((n->flags & NUMCUR) != 0) {
 #ifdef HAVE_MPFR
 		if (is_mpg_float(n))
 			print_func(fp, "%s\n", mpg_fmt("%.17R*g", ROUND_MODE, n->mpg_numbr));

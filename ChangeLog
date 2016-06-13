@@ -1,3 +1,77 @@
+2016-06-12         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+	
+	* awk.h: Improve comment about STRING and NUMBER type assignment.
+	(nondec2awknum): Add endptr argument.
+	(fixtype): New inline function to clarify a scalar's type.
+	* array.c (sort_up_value_type): Call fixtype before checking the value
+	types.
+	* awkgram.y (yylex): Pass NULL endptr argument to nondec2awknum.
+	(valinfo): Remove dead tests: either STRING or NUMBER or both
+	must be set, so there's no reason to continue with checks for NUMCUR or
+	STRCUR.
+	* builtin.c (do_exp, do_int, do_log, do_sqrt, do_sin, do_cos, do_srand):
+	Fix lint check for non-numeric argument.
+	(do_string): Fix lint check for 1st and 2nd args being strings.
+	(do_length): Fix assert to allow for Node_typedregex.
+	Fix lint check for non-string argument.
+	(format_tree): Fix type detection for '%c' arguments.
+	(do_strftime): Fix lint check for non-numeric 2nd argument and
+	lint check for non-string 1st argument.
+	(do_mktime): Fix lint check for non-string argument. Eliminate useless
+	logic to save and restore terminating NUL.
+	(do_system, do_tolower, do_toupper): Fix lint check for non-string
+	argument.
+	(do_atan2, do_lshift, do_rshift, do_and, do_or, do_xor, do_compl,
+	do_intdiv): Fix lint checks for non-numeric args.
+	(do_sub): Attempt to clean up treatment of 3rd argument to gensub
+	despite vague documentation of expected behavior.
+	(do_strnum): Fix bug in number detection logic, and pass new endptr
+	arg to nondec2awknum.
+	(nondec2awknum): Add endptr argument so caller can detect how much
+	of the string was consumed. Eliminate unnecessary logic to save
+	and restore terminating NUL char.
+	(do_typeof): Use a switch to specify which cases are supported, and
+	issue a warning message when a corrupt type is detected.
+	* debug.c (print_memory): At least one of NUMBER and STRING should
+	be set, so no need to check for NUMCUR or STRCUR in addition.
+	* eval.c (cmp_nodes): Use fixtype function to fix arg types.
+	(set_IGNORECASE): Fix logic for acting on value type. Note that
+	setting IGNORECASE to a string value of "0" with NUMCUR set now enables
+	ignorecase, so that's a subtle change in behavior that seems to match
+	the docs.
+	(set_LINT): Try to clean up configuration logic based on type.
+	* ext.c (get_argument): Remove unused variable pcount.
+	* gawkapi.c (node_to_awk_value): Remove pointless test for NUMCUR
+	after calling force_number. Similarly, no need to test for STRCUR
+	after calling force_string.
+	* int_array.c (is_integer): Reject cases where a string value is
+	present that will not be correctly regenerated from the integer;
+	in particular, this could happen where blank space padding is present,
+	leading zeroes are present, or for hex or octal values.
+	Also fix some bugs where a strnum was converted to a NUMBER without
+	turning off the STRING bit.
+	* io.c (redirect_string): Make lint warning message more accurate.
+	(redirect): Change not_string test to use STRING bit, not STRCUR.
+	(pty_vs_pipe): Use fixtype to correct logic for detecting whether a
+	value is anumber.
+	* mpfr.c (mpg_force_number): If NUMCUR is set, there's no need to
+	test is_mpg_number. If it's not, the NODE is corrupt and we've got
+	bigger problems. Fix flag manipulation logic. Always set NUMCUR and
+	clear MAYBE_NUM, 
+	(set_PREC): Fix logic using fixtype function.
+	(do_mpfr_atan2, do_mpfr_intdiv): Fix lint check for non-numeric
+	arguments.
+	(do_mpfr_func, do_mpfr_int, do_mpfr_compl, get_intval, do_mpfr_srand):
+	Fix lint check for non-numeric argument.
+	(do_mpfr_strtonum): Use fixtype and stop testing for NUMCUR bit.
+	* node.c (r_force_number): Eliminate pointless save and restore of
+	terminating NUL char. Always set NUMCUR and clear MAYBE_NUM, and
+	convert STRING to NUMBER if appropriate, fixing bugs in flag
+	manipulations. For non-decimal data, need to consider whether there
+	is trailing non-numeric data in deciding whether a MAYBE_NUM should
+	be converted to a NUMBER, so take advantage of new endptr arg
+	to nondec2awknum.
+
 2016-05-30         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.h (awk_ext_func_t): Rename num_expected_args to

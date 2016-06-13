@@ -431,21 +431,17 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 			val->val_type = AWK_NUMBER;
 
 			(void) force_number(node);
-			if ((node->flags & NUMCUR) != 0) {
-				val->num_value = get_number_d(node);
-				ret = awk_true;
-			}
+			val->num_value = get_number_d(node);
+			ret = awk_true;
 			break;
 
 		case AWK_STRING:
 			val->val_type = AWK_STRING;
 
 			(void) force_string(node);
-			if ((node->flags & STRCUR) != 0) {
-				val->str_value.str = node->stptr;
-				val->str_value.len = node->stlen;
-				ret = awk_true;
-			}
+			val->str_value.str = node->stptr;
+			val->str_value.len = node->stlen;
+			ret = awk_true;
 			break;
 
 		case AWK_SCALAR:
