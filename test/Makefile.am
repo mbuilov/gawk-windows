@@ -1154,7 +1154,10 @@ NEED_LINT_OLD = lintold
 
 # List of the tests which fail with EXIT CODE 1
 FAIL_CODE1 = \
-	fnarray2 fnmisc gsubasgn mixed1 noparms paramdup synerr1 synerr2 unterm
+	badassign1 badbuild callparam delfunc fcall_exit fcall_exit2 \
+	fnamedat fnarray fnarray2 fnasgnm fnmisc funsmnam gsubasgn \
+	incdupe2 lintwarn match2 mixed1 noparms paramasfunc1 paramasfunc2 \
+	paramdup paramres parseme readbuf synerr1 synerr2 unterm
 
 # List of files which have .ok versions for MPFR
 CHECK_MPFR = \
