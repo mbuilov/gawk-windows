@@ -1242,6 +1242,9 @@ EXTRA_DIST = \
 	subamp.awk \
 	subamp.in \
 	subamp.ok \
+	subback.awk \
+	subback.in \
+	subback.ok \
 	subi18n.awk \
 	subi18n.ok \
 	subsepnm.awk \
@@ -1394,7 +1397,7 @@ BASIC_TESTS = \
 	reparse resplit rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin sigpipe1 sortempty sortglos splitargv splitarr splitdef \
-	splitvar splitwht strcat1 strnum1 strtod subamp subi18n \
+	splitvar splitwht strcat1 strnum1 strtod subamp subback subi18n \
 	subsepnm subslash substr swaplns synerr1 synerr2 tradanch tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs \
 	wideidx wideidx2 widesub widesub2 widesub3 widesub4 wjposer1 \
@@ -1417,7 +1420,7 @@ GAWK_EXT_TESTS = \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
 	include include2 indirectbuiltin indirectcall indirectcall2 \
 	lint lintold lintwarn \
-	manyfiles match1 match2 match3 mbstr1 mbstr2 \
+	mixed1 manyfiles match1 match2 match3 mbstr1 mbstr2 \
 	muldimposix \
 	nastyparm negtime next nondec nondec2 \
 	nonfatal1 nonfatal2 nonfatal3 \
@@ -1461,7 +1464,10 @@ NEED_LINT_OLD = lintold
 
 # List of the tests which fail with EXIT CODE 1
 FAIL_CODE1 = \
-	fnarray2 fnmisc gsubasgn mixed1 noparms paramdup synerr1 synerr2 unterm
+	badassign1 badbuild callparam delfunc fcall_exit fcall_exit2 \
+	fnamedat fnarray fnarray2 fnasgnm fnmisc funsmnam gsubasgn \
+	incdupe2 lintwarn match2 mixed1 noparms paramasfunc1 paramasfunc2 \
+	paramdup paramres parseme readbuf synerr1 synerr2 unterm
 
 
 # List of files which have .ok versions for MPFR
@@ -3593,6 +3599,11 @@ strnum1:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 strtod:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+subback:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
