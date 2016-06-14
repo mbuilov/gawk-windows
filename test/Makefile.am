@@ -1110,7 +1110,7 @@ GAWK_EXT_TESTS = \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
 	include include2 indirectbuiltin indirectcall indirectcall2 \
 	lint lintold lintwarn \
-	manyfiles match1 match2 match3 mbstr1 mbstr2 \
+	mixed1 manyfiles match1 match2 match3 mbstr1 mbstr2 \
 	muldimposix \
 	nastyparm negtime next nondec nondec2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge procinfs \
