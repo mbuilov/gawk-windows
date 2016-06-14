@@ -1928,9 +1928,9 @@ do_strftime(int nargs)
 		NODE *tmp;
 
 		if (nargs == 3) {
-			t3 = POP_SCALAR();
-			if ((t3->flags & (NUMCUR|NUMBER)) != 0)
-				do_gmt = (t3->numbr != 0);
+			t3 = fixtype(POP_SCALAR());
+			if ((t3->flags & NUMBER) != 0)
+				do_gmt = ! iszero(t3);
 			else
 				do_gmt = (t3->stlen > 0);
 			DEREF(t3);

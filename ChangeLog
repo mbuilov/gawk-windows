@@ -1,5 +1,10 @@
 2016-06-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* builtin.c (do_strftime): Fix handling of 3rd argument to work
+	as a standard boolean: non-null or non-zero.
+
+2016-06-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* gawkapi.c (node_to_awk_value): When caller requests AWK_SCALAR
 	or AWK_UNDEFINED, we need to call fixtype before we check the type.
 
