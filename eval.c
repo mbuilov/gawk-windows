@@ -692,7 +692,6 @@ void
 set_IGNORECASE()
 {
 	static bool warned = false;
-	NODE *n;
 
 	if ((do_lint || do_traditional) && ! warned) {
 		warned = true;
@@ -701,13 +700,8 @@ set_IGNORECASE()
 	load_casetable();
 	if (do_traditional)
 		IGNORECASE = false;
-   	else {
-		n = fixtype(IGNORECASE_node->var_value);
-		if ((n->flags & NUMBER) != 0)
-			IGNORECASE = ! iszero(n);
-		else
-			IGNORECASE = (n->stlen > 0);
-	}
+   	else
+		IGNORECASE = boolval(IGNORECASE_node->var_value);
 	set_RS();	/* set_RS() calls set_FS() if need be, for us */
 }
 
@@ -1517,12 +1511,7 @@ eval_condition(NODE *t)
 	if (t == node_Boolean[true])
 		return true;
 
-	(void) fixtype(t);
-
-	if ((t->flags & NUMBER) != 0)
-		return ! iszero(t);
-
-	return (t->stlen != 0);
+	return boolval(t);
 }
 
 /* cmp_scalars -- compare two nodes on the stack */

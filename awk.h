@@ -1843,6 +1843,19 @@ fixtype(NODE *n)
 	return n;
 }
 
+/*
+ * In `awk', a value is considered to be true if it is nonzero _or_
+ * non-null. Otherwise, the value is false.
+ */
+static inline int
+boolval(NODE *t)
+{
+	(void) fixtype(t);
+	if ((t->flags & NUMBER) != 0)
+		return ! iszero(t);
+	return (t->stlen > 0);
+}
+
 static inline void *
 emalloc_real(size_t count, const char *where, const char *var, const char *file, int line)
 {

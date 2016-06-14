@@ -3895,13 +3895,8 @@ pty_vs_pipe(const char *command)
 	 * in_PROCINFO function now checks that for us.
 	 */
 	val = in_PROCINFO(command, "pty", NULL);
-	if (val) {
-		val = fixtype(val);
-		if ((val->flags & NUMBER) != 0)
-			return ! iszero(val);
-		else
-			return (val->stlen != 0);
-	}
+	if (val)
+		return boolval(val);
 #endif /* HAVE_TERMIOS_H */
 	return false;
 }

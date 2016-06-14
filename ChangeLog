@@ -1,5 +1,13 @@
 2016-06-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* awk.h (boolval): New inline function to standardize testing whether
+	a node's value is true.
+	* builtin.c (do_strftime): Use boolval to handle 3rd argument.
+	* eval.c (set_IGNORECASE, eval_condition): Use new boolval function.
+	* io.c (pty_vs_pipe): Use new boolval function.
+
+2016-06-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* builtin.c (do_strftime): Fix handling of 3rd argument to work
 	as a standard boolean: non-null or non-zero.
 
