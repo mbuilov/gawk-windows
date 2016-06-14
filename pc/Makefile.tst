@@ -171,7 +171,7 @@ BASIC_TESTS = \
 	reparse resplit rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin sigpipe1 sortempty sortglos splitargv splitarr splitdef \
-	splitvar splitwht strcat1 strnum1 strtod subamp subi18n \
+	splitvar splitwht strcat1 strnum1 strtod subamp subback subi18n \
 	subsepnm subslash substr swaplns synerr1 synerr2 tradanch tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs \
 	wideidx wideidx2 widesub widesub2 widesub3 widesub4 wjposer1 \
@@ -193,7 +193,7 @@ GAWK_EXT_TESTS = \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
 	include include2 indirectbuiltin indirectcall indirectcall2 \
 	lint lintold lintwarn \
-	manyfiles match1 match2 match3 mbstr1 mbstr2 \
+	mixed1 manyfiles match1 match2 match3 mbstr1 mbstr2 \
 	muldimposix \
 	nastyparm negtime next nondec nondec2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge procinfs \
@@ -203,7 +203,7 @@ GAWK_EXT_TESTS = \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
 	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
-	symtab7 symtab8 symtab9 \
+	symtab7 symtab8 symtab9 symtab10 \
 	watchpoint1
 
 EXTRA_TESTS = inftest regtest
@@ -233,7 +233,10 @@ NEED_LINT_OLD = lintold
 
 # List of the tests which fail with EXIT CODE 1
 FAIL_CODE1 = \
-	fnarray2 fnmisc gsubasgn mixed1 noparms paramdup synerr1 synerr2 unterm
+	badassign1 badbuild callparam delfunc fcall_exit fcall_exit2 \
+	fnamedat fnarray fnarray2 fnasgnm fnmisc funsmnam gsubasgn \
+	incdupe2 lintwarn match2 mixed1 noparms paramasfunc1 paramasfunc2 \
+	paramdup paramres parseme readbuf synerr1 synerr2 unterm
 
 
 # List of files which have .ok versions for MPFR
@@ -1281,6 +1284,12 @@ rscompat:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) --traditional -f $@.awk "$(srcdir)/$@.in" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+symtab10:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < "$(srcdir)/$@.in" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
 addcomma:
@@ -2168,6 +2177,11 @@ strnum1:
 strtod:
 	@echo $@
 	@echo Expect strtod to fail with DJGPP.
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+subback:
+	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
