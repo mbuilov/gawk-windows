@@ -1,3 +1,8 @@
+2016-06-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (node_to_awk_value): When caller requests AWK_SCALAR
+	or AWK_UNDEFINED, we need to call fixtype before we check the type.
+
 2016-06-13         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* awkgram.y: Eliminate STRCUR tests. Must use STRING to test whether

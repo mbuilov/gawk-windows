@@ -445,6 +445,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 			break;
 
 		case AWK_SCALAR:
+			fixtype(node);
 			if ((node->flags & NUMBER) != 0) {
 				val->val_type = AWK_NUMBER;
 			} else if ((node->flags & STRING) != 0) {
@@ -456,6 +457,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 
 		case AWK_UNDEFINED:
 			/* return true and actual type for request of undefined */
+			fixtype(node);
 			if (node == Nnull_string) {
 				val->val_type = AWK_UNDEFINED;
 				ret = awk_true;
