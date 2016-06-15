@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Mar 7 2016" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Jun 15 2016" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -3213,13 +3213,28 @@ bits.
 Return the bitwise XOR of the values provided in the argument list.
 There must be at least two.
 .PP
-.SS Type Function
+.SS Type Functions
 The following function is for use with multidimensional arrays.
 .TP
 \fBisarray(\fIx\fB)\fR
 Return true if
 .I x
 is an array, false otherwise.
+.PP
+You can tell the type of any variable or array element with the
+following function:
+.TP
+\fBtypeof(\fIx\fB)\fR
+Return a string indicating the type of
+.IR x .
+The string will be one of
+\fB"array"\fP,
+\fB"number"\fP,
+\fB"regexp"\fP,
+\fB"string"\fP,
+\fB"strnum"\fP,
+or
+\fB"undefined"\fP.
 .SS Internationalization Functions
 The following functions may be used from within your AWK program for
 translating strings at run-time.
