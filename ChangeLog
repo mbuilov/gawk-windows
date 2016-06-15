@@ -1,3 +1,7 @@
+2016-06-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* config.sub: Update from GNULIB.
+
 2016-06-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* awk.h (boolval): New inline function to standardize testing whether
@@ -94,6 +98,49 @@
 	is trailing non-numeric data in deciding whether a MAYBE_NUM should
 	be converted to a NUMBER, so take advantage of new endptr arg
 	to nondec2awknum.
+
+2016-06-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_sub): Fix sub for long runs of backslashes.
+	Thanks to Mike Brennan for the report.
+	
+	Unrelated:
+	* ext.c (get_argument): Remove unused variable pcount.
+
+2016-06-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* config.guess, config.sub: Get latest from Gnulib master.
+	* main.c (UPDATE_YEAR): Bump to 2016.
+
+2016-06-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+
+	Unrelated:
+
+	* configure.ac: Move AM_CONDITIONAL[ENABLE_EXTENSIONS] outside
+	the enclosing if. Thanks to Assaf Gordon <assafgordon@gmail.com>
+	for the report.
+
+2016-06-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* symbol.c (lookup): If got Node_val, it's a non-variable
+	in SYMTAB, return NULL. Can affect watchpoints in the debugger,
+	maybe other places. Thanks to Hermann Peifer for the
+	test case and report.
+
+2016-06-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+
+2016-06-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* nonposix.h (getpgrp): Wrap declaration in ifdef so it doesn't
+	mess things up on POSIX systems (like Solaris). Thanks to
+	Nelson Beebe for the report.
+	* node.c (is_hex): New function to check for 0x preceded by
+	optional sign.
+	(r_force_number): Use it. Thanks to Mike Brennan for the report.
 
 2016-05-30         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 

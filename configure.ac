@@ -315,8 +315,8 @@ if test "x$enable_extensions" != "xno"; then
 		AC_MSG_ERROR([extension support requested, but unavailable])
 	fi
 	enable_extensions=$extensions_supported
-	AM_CONDITIONAL([ENABLE_EXTENSIONS], [test "x$enable_extensions" = "xyes"])
 fi
+AM_CONDITIONAL([ENABLE_EXTENSIONS], [test "x$enable_extensions" = "xyes"])
 
 dnl check for how to use getpgrp
 dnl have to hardwire it for VMS POSIX. Sigh.

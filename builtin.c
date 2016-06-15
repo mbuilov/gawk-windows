@@ -2956,8 +2956,10 @@ do_sub(int nargs, unsigned int flags)
 					leave alone, it goes into the output */
 			} else {
 				/* gawk default behavior since 1996 */
-				if (strncmp(scan, "\\\\\\&", 4) == 0) {
+				if (strncmp(scan, "\\\\\\&", 4) == 0
+				    || strncmp(scan, "\\\\\\\\", 4) == 0) {	/* 2016: fixed */
 					/* \\\& --> \& */
+					/* \\\\ --> \\ */
 					repllen -= 2;
 					scan += 3;
 				} else if (strncmp(scan, "\\\\&", 3) == 0) {
@@ -3070,10 +3072,12 @@ do_sub(int nargs, unsigned int flags)
 						*bp++ = *scan;
 					} else {
 						/* gawk default behavior since 1996 */
-						if (strncmp(scan, "\\\\\\&", 4) == 0) {
+						if (strncmp(scan, "\\\\\\&", 4) == 0
+						    || strncmp(scan, "\\\\\\\\", 4) == 0) {	/* 2016: fixed */
 							/* \\\& --> \& */
+							/* \\\\ --> \\ */
 							*bp++ = '\\';
-							*bp++ = '&';
+							*bp++ = scan[3];
 							scan += 3;
 						} else if (strncmp(scan, "\\\\&", 3) == 0) {
 							/* \\& --> \<string> */

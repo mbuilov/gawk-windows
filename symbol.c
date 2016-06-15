@@ -117,7 +117,9 @@ lookup(const char *name)
 	}
 
 	unref(tmp);
-	return n;	/* NULL or new place */
+	if (n == NULL || n->type == Node_val)	/* non-variable in SYMTAB */
+		return NULL;
+	return n;	/* new place */
 }
 
 /* make_params --- allocate function parameters for the symbol table */

@@ -1210,7 +1210,7 @@ parse_bracket_exp (void)
 
   if (dfa->multibyte)
     {
-      static charclass zeroclass;
+      static charclass const zeroclass;
       work_mbc->invert = invert;
       work_mbc->cset = equal (ccl, zeroclass) ? -1 : charclass_index (ccl);
       return MBCSET;
@@ -3399,8 +3399,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
 
           s = allow_nl ? d->newlines[s1] : 0;
         }
-
-      if (d->fails[s])
+      else if (d->fails[s])
         {
           if (d->success[s] & sbit[*p])
             goto done;
@@ -3413,8 +3412,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
         }
       else
         {
-          if (!d->trans[s])
-            build_state (s, d);
+          build_state (s, d);
           trans = d->trans;
         }
     }
