@@ -1782,6 +1782,8 @@ dupnode(NODE *n)
 }
 #endif
 
+/* force_string --- force a node to have a string value */
+
 static inline NODE *
 force_string(NODE *s)
 {
@@ -1800,12 +1802,16 @@ force_string(NODE *s)
 #define	force_number	str2number
 #else /* not GAWKDEBUG */
 
+/* unref --- decrease the reference count and/or free a node */
+
 static inline void
 unref(NODE *r)
 {
 	if (r != NULL && --r->valref <= 0)
 		r_unref(r);
 }
+
+/* force_number --- force a  node to have a numeric value */
 
 static inline NODE *
 force_number(NODE *n)
@@ -1817,6 +1823,7 @@ force_number(NODE *n)
 }
 
 #endif /* GAWKDEBUG */
+
 
 /*
  * In certain contexts, the true type of a scalar value matters, and we
@@ -1856,6 +1863,8 @@ boolval(NODE *t)
 	return (t->stlen > 0);
 }
 
+/* emalloc_real --- malloc with error checking */
+
 static inline void *
 emalloc_real(size_t count, const char *where, const char *var, const char *file, int line)
 {
@@ -1871,6 +1880,8 @@ emalloc_real(size_t count, const char *where, const char *var, const char *file,
 
 	return ret;
 }
+
+/* erealloc_real --- realloc with error checking */
 
 static inline void *
 erealloc_real(void *ptr, size_t count, const char *where, const char *var, const char *file, int line)
