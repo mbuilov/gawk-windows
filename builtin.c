@@ -3639,6 +3639,7 @@ nondec2awknum(char *str, size_t len)
 	} else {
 decimal:
 		save = str[len];
+		str[len] = '\0';
 		retval = strtod(str, NULL);
 		str[len] = save;
 	}
