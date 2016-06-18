@@ -67,7 +67,7 @@ r_force_number(NODE *n)
 
 	/*
 	 * we should always set NUMCUR and clear MAYBE_NUM, and we may possibly
-	 * change STRING to NUMBER of MAYBE_NUM was set and it's a good numeric
+	 * change STRING to NUMBER if MAYBE_NUM was set and it's a good numeric
 	 * string.
 	 */
 
