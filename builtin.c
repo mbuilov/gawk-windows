@@ -1915,7 +1915,7 @@ do_strftime(int nargs)
 		unref(sub);
 
 		if (val != NULL) {
-			if (do_lint && (val->flags & STRING) == 0)
+			if (do_lint && (fixtype(val)->flags & STRING) == 0)
 				lintwarn(_("strftime: format value in PROCINFO[\"strftime\"] has numeric type"));
 			val = force_string(val);
 			format = val->stptr;
@@ -2197,7 +2197,7 @@ do_print(int nargs, int redirtype)
 
 		if (tmp->type == Node_typedregex)
 				args_array[i] = force_string(tmp);
-		else if ((tmp->flags & (NUMBER|STRING)) == NUMBER) {
+		else if ((fixtype(tmp)->flags & (NUMBER|STRING)) == NUMBER) {
 			if (OFMTidx == CONVFMTidx)
 				args_array[i] = force_string(tmp);
 			else

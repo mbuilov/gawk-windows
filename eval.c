@@ -712,7 +712,7 @@ set_BINMODE()
 {
 	static bool warned = false;
 	char *p;
-	NODE *v = BINMODE_node->var_value;
+	NODE *v = fixtype(BINMODE_node->var_value);
 
 	if ((do_lint || do_traditional) && ! warned) {
 		warned = true;
@@ -721,7 +721,6 @@ set_BINMODE()
 	if (do_traditional)
 		BINMODE = TEXT_TRANSLATE;
 	else if ((v->flags & NUMBER) != 0) {
-		(void) force_number(v);
 		BINMODE = get_number_si(v);
 		/* Make sure the value is rational. */
 		if (BINMODE < TEXT_TRANSLATE)
@@ -1157,7 +1156,7 @@ r_get_field(NODE *n, Func_ptr *assign, bool reference)
 	if (assign)
 		*assign = NULL;
 	if (do_lint) {
-		if ((n->flags & NUMBER) == 0) {
+		if ((fixtype(n)->flags & NUMBER) == 0) {
 			lintwarn(_("attempt to field reference from non-numeric value"));
 			if (n->stlen == 0)
 				lintwarn(_("attempt to field reference from null string"));

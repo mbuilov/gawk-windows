@@ -1,3 +1,13 @@
+2016-06-20         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* builtin.c (do_strftime): Call fixtype before checking flags for
+	STRING type.
+	(do_print): Call fixtype before checking whether argument is a NUMBER.
+	* eval.c (set_BINMODE): Call fixtype before checking value type.
+	No need to call force_number if the flags say it's a number.
+	(r_get_field): Fix lint check for non-numeric argument.
+	* io.c (redirect): Call fixtype before checking whether it's a string.
+
 2016-06-18         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* node.c (r_force_number): Fix typo in comment.
