@@ -347,7 +347,7 @@ mpg_force_number(NODE *n)
 		return n;
 
 	if ((n->flags & MAYBE_NUM) != 0) {
-		n->flags &= ~(MAYBE_NUM|STRING);
+		n->flags &= ~MAYBE_NUM;
 		newflags = NUMBER;
 	}
 
