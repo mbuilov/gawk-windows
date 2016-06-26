@@ -1,3 +1,13 @@
+2016-06-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Repair change of 2015-08-25 to handling of MAYBE_NUM.
+	* mpfr.c (mpg_force_number): Just clear MAYBE_NUM.
+	* node.c (r_force_number): Clear STRING separately after
+	setting NUMBER.
+
+	Thanks to Andrew Schorr for reporting the problem.
+	A test case will eventually be merged into master.
+
 2016-06-16         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h: Add comment headers for several functions.
