@@ -90,8 +90,9 @@ r_force_number(NODE *n)
 			return n;
 		} else if (n->stlen == 4 && is_ieee_magic_val(n->stptr)) {
 			if ((n->flags & MAYBE_NUM) != 0)
-				n->flags &= ~(MAYBE_NUM|STRING);
+				n->flags &= ~MAYBE_NUM;
 			n->flags |= NUMBER|NUMCUR;
+			n->flags &= ~STRING;
 			n->numbr = get_ieee_magic_val(n->stptr);
 
 			return n;
@@ -116,7 +117,7 @@ r_force_number(NODE *n)
 
 	if ((n->flags & MAYBE_NUM) != 0) {
 		newflags = NUMBER;
-		n->flags &= ~(MAYBE_NUM|STRING);
+		n->flags &= ~MAYBE_NUM;
 	} else
 		newflags = 0;
 
@@ -125,6 +126,7 @@ r_force_number(NODE *n)
 			n->numbr = (AWKNUM)(*cp - '0');
 			n->flags |= newflags;
 			n->flags |= NUMCUR;
+			n->flags &= ~STRING;
 			if (cp == n->stptr)		/* no leading spaces */
 				n->flags |= NUMINT;
 		}
@@ -136,6 +138,7 @@ r_force_number(NODE *n)
 		if (! do_traditional && get_numbase(cp, true) != 10) {
 			n->numbr = nondec2awknum(cp, cpend - cp);
 			n->flags |= NUMCUR;
+			n->flags &= ~STRING;
 			ptr = cpend;
 			goto finish;
 		}
