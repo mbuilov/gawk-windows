@@ -1079,16 +1079,14 @@ do_mpfr_strtonum(int nargs)
 		force_mpnum(r, true, use_lc_numeric);
 		r->stptr = NULL;
 		r->stlen = 0;
+	} else if (is_mpg_float(tmp)) {
+		int tval;
+		r = mpg_float();
+		tval = mpfr_set(r->mpg_numbr, tmp->mpg_numbr, ROUND_MODE);
+		IEEE_FMT(r->mpg_numbr, tval);
 	} else {
-		if (is_mpg_float(tmp)) {
-			int tval;
-			r = mpg_float();
-			tval = mpfr_set(r->mpg_numbr, tmp->mpg_numbr, ROUND_MODE);
-			IEEE_FMT(r->mpg_numbr, tval);
-		} else {
-			r = mpg_integer();
-			mpz_set(r->mpg_i, tmp->mpg_i);
-		}
+		r = mpg_integer();
+		mpz_set(r->mpg_i, tmp->mpg_i);
 	}
 
 	DEREF(tmp);

@@ -1825,22 +1825,25 @@ force_number(NODE *n)
 #endif /* GAWKDEBUG */
 
 
+/* fixtype --- make a node decide if it's a number or a string */
+
 /*
  * In certain contexts, the true type of a scalar value matters, and we
- * must ascertain whether it is a a NUMBER or a STRING. In such situations,
+ * must ascertain whether it is a NUMBER or a STRING. In such situations,
  * please use this function to resolve the type.
  *
  * It is safe to assume that the return value will be the same NODE,
- * since force_number on a MAYBE_NUM should always returns the same NODE,
+ * since force_number on a MAYBE_NUM should always return the same NODE,
  * and force_string on an INTIND should as well.
  *
  * There is no way to handle a Node_typedregex correctly, so we ignore
  * that case.
  */
+
 static inline NODE *
 fixtype(NODE *n)
 {
-	assert((n->type == Node_val) || (n->type == Node_typedregex));
+	assert(n->type == Node_val || n->type == Node_typedregex);
 	if (n->type == Node_val) {
 		if ((n->flags & MAYBE_NUM) != 0)
 			return force_number(n);
@@ -1850,10 +1853,13 @@ fixtype(NODE *n)
 	return n;
 }
 
+/* boolval --- return true/false based on awk's criteria */
+
 /*
- * In `awk', a value is considered to be true if it is nonzero _or_
+ * In awk, a value is considered to be true if it is nonzero _or_
  * non-null. Otherwise, the value is false.
  */
+
 static inline int
 boolval(NODE *t)
 {

@@ -1048,6 +1048,7 @@ check_pos:
 		case 'c':
 			need_format = false;
 			parse_next_arg();
+			/* user input that looks numeric is numeric */
 			fixtype(arg);
 			if ((arg->flags & NUMBER) != 0) {
 				uval = get_number_uj(arg);
@@ -2034,11 +2035,15 @@ do_mktime(int nargs)
 	int month, day, hour, minute, second, count;
 	int dst = -1; /* default is unknown */
 	time_t then_stamp;
+	char save;
 
 	t1 = POP_SCALAR();
 	if (do_lint && (fixtype(t1)->flags & STRING) == 0)
 		lintwarn(_("mktime: received non-string argument"));
 	t1 = force_string(t1);
+
+	save = t1->stptr[t1->stlen];
+	t1->stptr[t1->stlen] = '\0';
 
 	count = sscanf(t1->stptr, "%ld %d %d %d %d %d %d",
 		        & year, & month, & day,
@@ -2053,6 +2058,7 @@ do_mktime(int nargs)
 		|| (month < 1 || month > 12) ))
 			lintwarn(_("mktime: at least one of the values is out of the default range"));
 
+	t1->stptr[t1->stlen] = save;
 	DEREF(t1);
 
 	if (count < 6
@@ -2859,10 +2865,9 @@ do_sub(int nargs, unsigned int flags)
 		target = POP_STRING();	/* original string */
 
 		glob_flag = POP_SCALAR();	/* value of global flag */
-		if (((glob_flag->flags & STRING) != 0)
-			&& (glob_flag->stlen > 0
-				&& (glob_flag->stptr[0] == 'g'
-					|| glob_flag->stptr[0] == 'G')))
+		if (   (glob_flag->flags & STRING) != 0
+		    && glob_flag->stlen > 0
+		    && (glob_flag->stptr[0] == 'g' || glob_flag->stptr[0] == 'G'))
 			how_many = -1;
 		else {
 			(void) force_number(glob_flag);
@@ -2875,7 +2880,9 @@ do_sub(int nargs, unsigned int flags)
 				how_many = LONG_MAX;
 			if (d <= 0) {
 				(void) force_string(glob_flag);
-				warning(_("gensub: third argument `%s' treated as 1"), glob_flag->stptr);
+				warning(_("gensub: third argument `%.*s' treated as 1"),
+						(int) glob_flag->stlen,
+						glob_flag->stptr);
 			}
 		}
 		DEREF(glob_flag);
@@ -3561,6 +3568,7 @@ AWKNUM
 nondec2awknum(char *str, size_t len, char **endptr)
 {
 	AWKNUM retval = 0.0;
+	char save;
 	short val;
 	char *start = str;
 
@@ -3632,7 +3640,10 @@ nondec2awknum(char *str, size_t len, char **endptr)
 			*endptr = str;
 	} else {
 decimal:
+		save = str[len];
+		str[len] = '\0';
 		retval = strtod(str, endptr);
+		str[len] = save;
 	}
 done:
 	return retval;

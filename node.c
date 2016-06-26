@@ -59,6 +59,7 @@ r_force_number(NODE *n)
 {
 	char *cp;
 	char *cpend;
+	char save;
 	char *ptr;
 	extern double strtod();
 
@@ -66,12 +67,12 @@ r_force_number(NODE *n)
 		return n;
 
 	/*
-	 * we should always set NUMCUR and clear MAYBE_NUM, and we may possibly
+	 * We should always set NUMCUR and clear MAYBE_NUM, and we may possibly
 	 * change STRING to NUMBER if MAYBE_NUM was set and it's a good numeric
 	 * string.
 	 */
 
-	/* all the conditionals are an attempt to avoid the expensive strtod */
+	/* All the conditionals are an attempt to avoid the expensive strtod */
 
 	n->flags |= NUMCUR;
 	n->numbr = 0.0;
@@ -122,23 +123,27 @@ r_force_number(NODE *n)
 		goto badnum;
 	}
 
+	errno = 0;
 	if (do_non_decimal_data		/* main.c assures false if do_posix */
 		&& ! do_traditional && get_numbase(cp, true) != 10) {
-		errno = 0;
+		/* nondec2awknum() saves and restores the byte after the string itself */
 		n->numbr = nondec2awknum(cp, cpend - cp, &ptr);
 	} else {
-		errno = 0;
+		save = *cpend;
+		*cpend = '\0';
 		n->numbr = (AWKNUM) strtod((const char *) cp, &ptr);
+		*cpend = save;
 	}
 
 	/* POSIX says trailing space is OK for NUMBER */
 	while (isspace((unsigned char) *ptr))
 		ptr++;
+
 	if (errno == 0) {
 		if (ptr == cpend)
 			goto goodnum;
 		/* else keep the leading numeric value without updating flags */
-		/* fall through to badnum*/
+		/* fall through to badnum */
 	} else {
 		errno = 0;
 		/*
@@ -151,7 +156,7 @@ r_force_number(NODE *n)
 		 * Or should we accept it as a NUMBER even though strtod
 		 * threw an error?
 		 */
-		/* fall through to badnum*/
+		/* fall through to badnum */
 	}
 badnum:
 	n->flags &= ~MAYBE_NUM;
