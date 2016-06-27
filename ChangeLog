@@ -1,3 +1,10 @@
+2016-06-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* node.c (r_format_val): Do not free stptr unless STRCUR is set.
+	This is safer than testing for non-NULL stptr, since, for example,
+	pp_number copies a node and calls r_format_val, but does not bother
+	to set stptr to NULL beforehand.
+
 2016-06-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* node.c (r_force_number): When checking for trailing spaces, protect

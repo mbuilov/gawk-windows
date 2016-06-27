@@ -272,7 +272,7 @@ r_format_val(const char *format, int index, NODE *s)
 			s->flags |= STRING;
 		}
 	}
-	if (s->stptr != NULL)
+	if ((s->flags & STRCUR) != 0)
 		efree(s->stptr);
 	emalloc(s->stptr, char *, s->stlen + 1, "format_val");
 	memcpy(s->stptr, sp, s->stlen + 1);
