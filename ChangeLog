@@ -1,5 +1,11 @@
 2016-06-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* builtin.c (do_print): There's actually no reason to test whether a
+	value is a number, since the STRCUR flag and stfmt value contain all
+	the necessary info, as in awk.h:force_string.
+
+2016-06-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* builtin.c (do_print): Do not use OFMT to print strnum values. We
 	accomplish this by calling format_val for a NUMBER only
 	if there is no string currently available, or if stfmt equals
