@@ -136,7 +136,7 @@ r_force_number(NODE *n)
 	}
 
 	/* POSIX says trailing space is OK for NUMBER */
-	while (isspace((unsigned char) *ptr))
+	while (ptr < cpend && isspace((unsigned char) *ptr))
 		ptr++;
 
 	if (errno == 0) {

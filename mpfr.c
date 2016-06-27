@@ -327,7 +327,7 @@ force_mpnum(NODE *n, int do_nondec, int use_locale)
 	IEEE_FMT(n->mpg_numbr, tval);
 done:
 	/* trailing space is OK for NUMBER */
-	while (isspace((unsigned char) *ptr))
+	while (ptr < cpend && isspace((unsigned char) *ptr))
 		ptr++;
 	*cpend = save;
 	if (errno == 0 && ptr == cpend)

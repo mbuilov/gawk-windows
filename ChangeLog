@@ -1,5 +1,11 @@
 2016-06-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* node.c (r_force_number): When checking for trailing spaces, protect
+	against running off the end of the string.
+	* mpfr.c (force_mpnum): Ditto.
+
+2016-06-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* builtin.c (do_print): There's actually no reason to test whether a
 	value is a number, since the STRCUR flag and stfmt value contain all
 	the necessary info, as in awk.h:force_string.
