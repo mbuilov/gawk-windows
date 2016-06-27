@@ -1,3 +1,10 @@
+2016-06-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* builtin.c (do_print): Do not use OFMT to print strnum values. We
+	accomplish this by calling format_val for a NUMBER only
+	if there is no string currently available, or if stfmt equals
+	neither -1 nor OFMTidx.
+
 2016-06-26         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h: Edit some comments. Add others. Minor coding style changes.
