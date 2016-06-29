@@ -30,7 +30,7 @@
 
 static int is_ieee_magic_val(const char *val);
 static NODE *r_make_number(double x);
-static AWKNUM get_ieee_magic_val(const char *val);
+static AWKNUM get_ieee_magic_val(char *val);
 extern NODE **fmt_list;          /* declared in eval.c */
 
 NODE *(*make_number)(double) = r_make_number;
@@ -77,10 +77,21 @@ r_force_number(NODE *n)
 	n->flags |= NUMCUR;
 	n->numbr = 0.0;
 
-	if (n->stlen == 0)
-		goto badnum;
-
+	/* Trim leading white space, bailing out if there's nothing else */
 	cp = n->stptr;
+	cpend = cp + n->stlen;
+	while (1) {
+		if (cp == cpend)
+			goto badnum;
+		if (!isspace((unsigned char) *cp))
+			break;
+		cp++;
+	}
+	/* At this point, we know the string is not entirely white space */
+	/* Trim trailing white space */
+	while (isspace((unsigned char) cpend[-1]))
+		cpend--;
+
 	/*
 	 * 2/2007:
 	 * POSIX, by way of severe language lawyering, seems to
@@ -91,8 +102,8 @@ r_force_number(NODE *n)
 	if (! do_posix) {
 		if (is_alpha((unsigned char) *cp))
 			goto badnum;
-		else if (n->stlen == 4 && is_ieee_magic_val(n->stptr)) {
-			n->numbr = get_ieee_magic_val(n->stptr);
+		else if (cpend == cp+4 && is_ieee_magic_val(cp)) {
+			n->numbr = get_ieee_magic_val(cp);
 			goto goodnum;
 		}
 		/* else
@@ -101,12 +112,7 @@ r_force_number(NODE *n)
 	/* else POSIX, so
 		fall through */
 
-	cpend = cp + n->stlen;
-	while (cp < cpend && isspace((unsigned char) *cp))
-		cp++;
-
-	if (   cp == cpend		/* only spaces, or */
-	    || (! do_posix		/* not POSIXLY paranoid and */
+	if (   (! do_posix		/* not POSIXLY paranoid and */
 	        && (is_alpha((unsigned char) *cp)	/* letter, or */
 					/* CANNOT do non-decimal and saw 0x */
 		    || (! do_non_decimal_data && is_hex(cp))))) {
@@ -116,7 +122,7 @@ r_force_number(NODE *n)
 	if (cpend - cp == 1) {		/* only one character */
 		if (isdigit((unsigned char) *cp)) {	/* it's a digit! */
 			n->numbr = (AWKNUM)(*cp - '0');
-			if (cp == n->stptr)		/* no leading spaces */
+			if (n->stlen == 1)		/* no white space */
 				n->flags |= NUMINT;
 			goto goodnum;
 		}
@@ -134,10 +140,6 @@ r_force_number(NODE *n)
 		n->numbr = (AWKNUM) strtod((const char *) cp, &ptr);
 		*cpend = save;
 	}
-
-	/* POSIX says trailing space is OK for NUMBER */
-	while (ptr < cpend && isspace((unsigned char) *ptr))
-		ptr++;
 
 	if (errno == 0) {
 		if (ptr == cpend)
@@ -937,14 +939,18 @@ is_ieee_magic_val(const char *val)
 /* get_ieee_magic_val --- return magic value for string */
 
 static AWKNUM
-get_ieee_magic_val(const char *val)
+get_ieee_magic_val(char *val)
 {
 	static bool first = true;
 	static AWKNUM inf;
 	static AWKNUM nan;
+	char save;
 
 	char *ptr;
+	save = val[4];
+	val[4] = '\0';
 	AWKNUM v = strtod(val, &ptr);
+	val[4] = save;
 
 	if (val == ptr) { /* Older strtod implementations don't support inf or nan. */
 		if (first) {

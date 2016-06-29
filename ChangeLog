@@ -1,3 +1,10 @@
+2016-06-29         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* node.c (r_force_number): Optimize by trimming leading and trailing
+	white space before we inspect the string contents.
+	(get_ieee_magic_val): Must terminate the string with '\0' before
+	calling strtod.
+
 2016-06-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.h (awk_string): Add comment about the potential lack of
