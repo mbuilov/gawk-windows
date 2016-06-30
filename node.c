@@ -78,15 +78,13 @@ r_force_number(NODE *n)
 	n->numbr = 0.0;
 
 	/* Trim leading white space, bailing out if there's nothing else */
-	cp = n->stptr;
-	cpend = cp + n->stlen;
-	while (1) {
-		if (cp == cpend)
-			goto badnum;
-		if (!isspace((unsigned char) *cp))
-			break;
-		cp++;
-	}
+	for (cp = n->stptr, cpend = cp + n->stlen;
+	     cp < cpend && isspace((unsigned char) *cp); cp++)
+		continue;
+
+	if (cp == cpend)
+		goto badnum;
+
 	/* At this point, we know the string is not entirely white space */
 	/* Trim trailing white space */
 	while (isspace((unsigned char) cpend[-1]))
