@@ -1,3 +1,20 @@
+2016-06-30         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (STFMT_UNUSED): New define indicating that the string
+	representation does not depend on CONVFMT or OFMT.
+	(force_string): Use STFMT_UNUSED to improve code clarity.
+	* array.c (value_info): Fix stfmt logic.
+	* builtin.c (do_print): Use STFMT_UNUSED to improve code clarity.
+	* field.c (set_record): Ditto.
+	* gawkapi.c (api_sym_update_scalar): Ditto.
+	* int_array.c (is_integer): Check stfmt equals STFMT_UNUSED before
+	bothering to inspect the string.
+	* mpfr.c (mpg_format_val): Use STFMT_UNUSED to improve code clarity.
+	Remove buggy cast to char in stfmt assignment.
+	* node.c (r_format_val): Ditto.
+	* str_array.c (str_lookup): Use STFMT_UNUSED to improve code clarity.
+	* symbol.c (check_param_names): Ditto.
+
 2016-06-29         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* node.c (r_force_number): Optimize by trimming leading and trailing

@@ -686,7 +686,7 @@ api_sym_update_scalar(awk_ext_id_t id,
 			/* make_str_node(s, l, ALREADY_MALLOCED): */
 			r->numbr = 0;
 			r->flags = (MALLOC|STRING|STRCUR);
-			r->stfmt = -1;
+			r->stfmt = STFMT_UNUSED;
 			r->stptr = value->str_value.str;
 			r->stlen = value->str_value.len;
 			return awk_true;

@@ -2204,7 +2204,7 @@ do_print(int nargs, int redirtype)
 		if (tmp->type == Node_typedregex)
 			args_array[i] = force_string(tmp);
 		else if (!((tmp->flags & STRCUR) != 0
-				&& (tmp->stfmt == -1 || tmp->stfmt == OFMTidx)))
+				&& (tmp->stfmt == STFMT_UNUSED || tmp->stfmt == OFMTidx)))
 			args_array[i] = format_val(OFMT, OFMTidx, tmp);
 	}
 

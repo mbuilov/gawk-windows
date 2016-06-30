@@ -497,6 +497,16 @@ typedef struct exp_node {
 #define numbr		sub.val.fltnum
 #endif
 
+/*
+ * If stfmt is set to STFMT_UNUSED, it means that the string representation
+ * stored in stptr is not a function of the value of CONVFMT or OFMT. That
+ * indicates that either the string value was explicitly assigned, or it
+ * was converted from a NUMBER that has an integer value. When stfmt is not
+ * set to STFMT_UNUSED, it is an offset into the fmt_list array of distinct
+ * CONVFMT and OFMT node pointers.
+ */
+#define STFMT_UNUSED	-1
+
 /* Node_arrayfor */
 #define for_list	sub.nodep.r.av
 #define for_list_size	sub.nodep.reflags
@@ -1798,7 +1808,7 @@ force_string(NODE *s)
 		return dupnode(s->re_exp);
 
 	if ((s->flags & STRCUR) != 0
-		    && (s->stfmt == -1 || s->stfmt == CONVFMTidx)
+		    && (s->stfmt == STFMT_UNUSED || s->stfmt == CONVFMTidx)
 	)
 		return s;
 	return format_val(CONVFMT, CONVFMTidx, s);

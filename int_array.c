@@ -92,8 +92,10 @@ is_integer(NODE *symbol, NODE *subs)
 	/*
 	 * Protect against MAYBE_NUM values where the string may not regenerate
 	 * correctly. There could be white space and/or a non-decimal value.
+	 * If stfmt is not STFMT_UNUSED, it means that the string value was
+	 * generated using CONVFMT or OFMT, so there is no info there.
 	 */
-	if ((subs->flags & STRCUR) != 0) {
+	if ((subs->flags & STRCUR) != 0 && subs->stfmt == STFMT_UNUSED) {
 		char *cp = subs->stptr;
 
 		if (       subs->stlen == 0

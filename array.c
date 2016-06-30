@@ -704,7 +704,14 @@ value_info(NODE *n)
 	if ((n->flags & (STRING|STRCUR)) == STRCUR) {
 		fprintf(output_fp, "][");
 		fprintf(output_fp, "stfmt=%d, ", n->stfmt);	
-		fprintf(output_fp, "CONVFMT=\"%s\"", n->stfmt <= -1 ? "%ld"
+		/*
+		 * If not STFMT_UNUSED, could be CONVFMT or OFMT if last
+		 * used in a print statement. If immutable, could be that it
+		 * was originally set as a string, or it's a number that has
+		 * an integer value.
+		 */
+		fprintf(output_fp, "FMT=\"%s\"",
+					n->stfmt == STFMT_UNUSED ? "%s"
 					: fmt_list[n->stfmt]->stptr);
 	}
 

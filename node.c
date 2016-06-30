@@ -226,7 +226,7 @@ r_format_val(const char *format, int index, NODE *s)
 		 * Once upon a time, we just blindly did this:
 		 *	sprintf(sp, format, s->numbr);
 		 *	s->stlen = strlen(sp);
-		 *	s->stfmt = (char) index;
+		 *	s->stfmt = index;
 		 * but that's no good if, e.g., OFMT is %s. So we punt,
 		 * and just always format the value ourselves.
 		 */
@@ -241,11 +241,11 @@ r_format_val(const char *format, int index, NODE *s)
 		if (val == s->numbr) {
 			/* integral value, but outside range of %ld, use %.0f */
 			r = format_tree("%.0f", 4, dummy, 2);
-			s->stfmt = -1;
+			s->stfmt = STFMT_UNUSED;
 		} else {
 			r = format_tree(format, fmt_list[index]->stlen, dummy, 2);
 			assert(r != NULL);
-			s->stfmt = (char) index;
+			s->stfmt = index;
 		}
 		s->flags = oflags;
 		s->stlen = r->stlen;
@@ -268,7 +268,7 @@ r_format_val(const char *format, int index, NODE *s)
 			(void) sprintf(sp, "%ld", num);
 			s->stlen = strlen(sp);
 		}
-		s->stfmt = -1;
+		s->stfmt = STFMT_UNUSED;
 		if ((s->flags & INTIND) != 0) {
 			s->flags &= ~(INTIND|NUMBER);
 			s->flags |= STRING;
@@ -385,7 +385,7 @@ make_str_node(const char *s, size_t len, int flags)
 	r->numbr = 0;
 	r->flags = (MALLOC|STRING|STRCUR);
 	r->valref = 1;
-	r->stfmt = -1;
+	r->stfmt = STFMT_UNUSED;
 	r->wstptr = NULL;
 	r->wstlen = 0;
 
