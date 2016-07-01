@@ -193,7 +193,7 @@ api_fatal(awk_ext_id_t id, const char *format, ...)
 	va_end(args);
 }
 
-/* api_warning --- print a warning message and exit */
+/* api_warning --- print a warning message */
 
 static void
 api_warning(awk_ext_id_t id, const char *format, ...)
@@ -219,11 +219,10 @@ api_lintwarn(awk_ext_id_t id, const char *format, ...)
 	va_start(args, format);
 	if (lintwarn == r_fatal) {
 		err(true, _("fatal: "), format, args);
-		va_end(args);
 	} else {
 		err(false, _("warning: "), format, args);
-		va_end(args);
 	}
+	va_end(args);
 }
 
 /* api_register_input_parser --- register an input_parser; for opening files read-only */
