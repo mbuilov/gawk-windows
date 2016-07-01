@@ -1,3 +1,12 @@
+2016-07-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* inplace.c (do_inplace_begin): Flush stdout at the start to
+	try to avoid flushing problems on some obscure BSD systems.
+	* revtwoway.c (gawk_getdtablesize): Renamed from getdtablesize.
+	(getdtablesize): New macro. Avoids problems on FreeBSD 10
+	where configure didn't work correctly. Thanks to Nelson Beebe.
+	Update copyright year.
+
 2016-05-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* filefuncs.c (func_table): Update "stat" to indicate that the

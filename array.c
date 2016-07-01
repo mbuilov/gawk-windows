@@ -711,7 +711,7 @@ value_info(NODE *n)
 		 * an integer value.
 		 */
 		fprintf(output_fp, "FMT=\"%s\"",
-					n->stfmt == STFMT_UNUSED ? "%s"
+					n->stfmt == STFMT_UNUSED ? "<unused>"
 					: fmt_list[n->stfmt]->stptr);
 	}
 
