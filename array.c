@@ -704,7 +704,7 @@ value_info(NODE *n)
 	if ((n->flags & (STRING|STRCUR)) == STRCUR) {
 		fprintf(output_fp, "][");
 		fprintf(output_fp, "stfmt=%d, ", n->stfmt);	
-		fprintf(output_fp, "CONVFMT=\"%s\"", n->stfmt <= -1 ? "%ld"
+		fprintf(output_fp, "CONVFMT=\"%s\"", n->stfmt <= -1 ? "<unused>"
 					: fmt_list[n->stfmt]->stptr);
 	}
 

@@ -377,7 +377,7 @@ mpg_format_val(const char *format, int index, NODE *s)
 	} else {
 		r = format_tree(format, fmt_list[index]->stlen, dummy, 2);
 		assert(r != NULL);
-		s->stfmt = (char) index;
+		s->stfmt = index;
 	}
 	s->flags = oflags;
 	s->stlen = r->stlen;
