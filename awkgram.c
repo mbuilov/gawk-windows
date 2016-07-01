@@ -7058,6 +7058,8 @@ dump_vars(const char *fname)
 
 	if (fname == NULL)
 		fp = stderr;
+	else if (strcmp(fname, "-") == 0)
+		fp = stdout;
 	else if ((fp = fopen(fname, "w")) == NULL) {
 		warning(_("could not open `%s' for writing (%s)"), fname, strerror(errno));
 		warning(_("sending variable list to standard error"));
@@ -7067,7 +7069,7 @@ dump_vars(const char *fname)
 	vars = variable_list();
 	print_vars(vars, fprintf, fp);
 	efree(vars);
-	if (fp != stderr && fclose(fp) != 0)
+	if (fp != stdout && fp != stderr && fclose(fp) != 0)
 		warning(_("%s: close failed (%s)"), fname, strerror(errno));
 }
 
