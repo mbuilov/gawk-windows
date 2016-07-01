@@ -7,7 +7,7 @@
  */
 
 /*
- * Copyright (C) 2012-2014 the Free Software Foundation, Inc.
+ * Copyright (C) 2012-2014, 2016 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -64,10 +64,10 @@ int plugin_is_GPL_compatible;
 static size_t max_fds;
 
 #ifndef HAVE_GETDTABLESIZE
-/* getdtablesize --- replacement version that should be good enough */
+/* gawk_getdtablesize --- replacement version that should be good enough */
 
 static inline int
-getdtablesize()
+gawk_getdtablesize()
 {
 	/*
 	 * Algorithm for the GNULIB folks:
@@ -89,6 +89,8 @@ getdtablesize()
 	/* In the meantime, this is good enough for us: */
 	return 1024;
 }
+
+#define getdtablesize() gawk_getdtablesize()
 #endif
 
 /*

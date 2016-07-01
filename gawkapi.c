@@ -238,11 +238,10 @@ api_lintwarn(awk_ext_id_t id, const char *format, ...)
 	va_start(args, format);
 	if (lintwarn == r_fatal) {
 		err(true, _("fatal: "), format, args);
-		va_end(args);
 	} else {
 		err(false, _("warning: "), format, args);
-		va_end(args);
 	}
+	va_end(args);
 }
 
 /* api_register_input_parser --- register an input_parser; for opening files read-only */

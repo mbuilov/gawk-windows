@@ -57,7 +57,7 @@ END{
 	#printf("%10s%16s%10s%16s%10s%10s%10s\n","group",last," included as",posout[x]," as sire, as dam",cum[x,"sire"],cum[x,"dam"]) > "/dev/stderr"
     }
     # regular individuals
-	printf("%16s\n","recoding animals") > "/dev/stderr"
+#	printf("%16s\n","recoding animals") > "/dev/stderr"
 	iter=1
 	#--> comment next line and this element of the associative array becomes null
 	#printf("%s%16s\n","at the beginning it should be empty: ",posout["00000779770060"]) > "/dev/stderr"
@@ -84,8 +84,8 @@ END{
         	}
 		iter++
 		#-->
-		printf("%s%16s\n","in the loop: ",posout["00000779770060"]) > "/dev/stderr"
-		fflush("/dev/stderr")
+#		printf("%s%16s\n","in the loop: ",posout["00000779770060"]) > "/dev/stderr"
+#		fflush("/dev/stderr")
 		#-->
 		#printf("%10s%10s%10s%10s%16s%16s\n","round",iter,"included",posout[last],"last ",last) > "/dev/stderr"
 	}
@@ -95,7 +95,7 @@ END{
 		#printf("%10s%16s%10s%16s\n","pseudogeneration:",x," including: ",cumgen[x]) > "/dev/stderr"
 	    }
 	#--> this is the guilty line
-	printf("%s%16s\n","at the end:  ",posout["00000779770060"]) > "/dev/stderr"
-	fflush("/dev/stderr")
+#	printf("%s%16s\n","at the end:  ",posout["00000779770060"]) > "/dev/stderr"
+#	fflush("/dev/stderr")
 	#-->
 }
