@@ -125,6 +125,7 @@ do_inplace_begin(int nargs, awk_value_t *result)
 	int fd;
 
 	assert(result != NULL);
+	fflush(stdout);
 
 	if (state.tname)
 		fatal(ext_id, _("inplace_begin: in-place editing already active"));
