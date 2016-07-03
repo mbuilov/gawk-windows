@@ -854,6 +854,9 @@ EXTRA_DIST = \
 	rebuf.awk \
 	rebuf.in \
 	rebuf.ok \
+	rebuild.awk \
+	rebuild.in \
+	rebuild.ok \
 	redfilnm.awk \
 	redfilnm.in \
 	redfilnm.ok \
@@ -1161,7 +1164,7 @@ BASIC_TESTS = \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
 	pcntplus posix2008sub prdupval prec printf0 printf1 printfchar prmarscl prmreuse \
 	prt1eval prtoeval \
-	rand randtest range1 readbuf rebrackloc rebt8b1 redfilnm \
+	rand randtest range1 readbuf rebrackloc rebt8b1 rebuild redfilnm \
 	regeq regexpbrack regexpbrack2 \
 	regexprange regrange reindops \
 	reparse resplit rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
