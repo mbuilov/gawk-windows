@@ -216,11 +216,7 @@ rebuild_record()
 				}
 			} else {
 				*n = *r;
-				if (n->flags & MALLOC) {
-					/* unexpected, since FIELD is on! */
-					warning(_("invalid flags combination `%s' detected while rebuilding record; please file a bug report."), flags2str(n->flags));
-					n->flags &= ~MALLOC;
-				}
+				n->flags &= ~MALLOC;
 			}
 
 			n->stptr = cops;

@@ -1,5 +1,11 @@
 2016-07-03         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* field.c (rebuild_record): Revert warning message regarding flags,
+	since I'm not yet totally confident that it is invalid to have FIELD
+	and MALLOC set at the same time.
+
+2016-07-03         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* field.c (rebuild_record): Do not turn off the STRING flag when
 	copying a FIELD node, and issue a warning if MALLOC is enabled.
 
