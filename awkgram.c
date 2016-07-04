@@ -3822,7 +3822,7 @@ regular_print:
 					&& ((yyvsp[0])->nexti->memory->flags & (MPFN|MPZN)) == 0
 			) {
 				NODE *n = (yyvsp[0])->nexti->memory;
-				if ((n->flags & (STRCUR|STRING)) != 0) {
+				if ((n->flags & STRING) != 0) {
 					n->numbr = (AWKNUM) (n->stlen == 0);
 					n->flags &= ~(STRCUR|STRING);
 					n->flags |= (NUMCUR|NUMBER);
@@ -3924,7 +3924,7 @@ regular_print:
 #line 1791 "awkgram.y" /* yacc.c:1646  */
     {
 		if ((yyvsp[0])->lasti->opcode == Op_push_i
-			&& ((yyvsp[0])->lasti->memory->flags & (STRCUR|STRING)) == 0
+			&& ((yyvsp[0])->lasti->memory->flags & STRING) == 0
 		) {
 			NODE *n = (yyvsp[0])->lasti->memory;
 			(void) force_number(n);
@@ -6422,7 +6422,7 @@ retry:
 		}
 #endif
 		if (base != 10)
-			d = nondec2awknum(tokstart, strlen(tokstart));
+			d = nondec2awknum(tokstart, strlen(tokstart), NULL);
 		else
 			d = atof(tokstart);
 		yylval->memory = make_number(d);
@@ -6908,7 +6908,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	} else if (do_intl					/* --gen-po */
 			&& r->builtin == do_dcgettext		/* dcgettext(...) */
 			&& subn->nexti->lasti->opcode == Op_push_i	/* 1st arg is constant */
-			&& (subn->nexti->lasti->memory->flags & STRCUR) != 0) {	/* it's a string constant */
+			&& (subn->nexti->lasti->memory->flags & STRING) != 0) {	/* it's a string constant */
 		/* ala xgettext, dcgettext("some string" ...) dumps the string */
 		NODE *str = subn->nexti->lasti->memory;
 
@@ -6920,9 +6920,9 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	} else if (do_intl					/* --gen-po */
 			&& r->builtin == do_dcngettext		/* dcngettext(...) */
 			&& subn->nexti->lasti->opcode == Op_push_i	/* 1st arg is constant */
-			&& (subn->nexti->lasti->memory->flags & STRCUR) != 0	/* it's a string constant */
+			&& (subn->nexti->lasti->memory->flags & STRING) != 0	/* it's a string constant */
 			&& subn->nexti->lasti->nexti->lasti->opcode == Op_push_i	/* 2nd arg is constant too */
-			&& (subn->nexti->lasti->nexti->lasti->memory->flags & STRCUR) != 0) {	/* it's a string constant */
+			&& (subn->nexti->lasti->nexti->lasti->memory->flags & STRING) != 0) {	/* it's a string constant */
 		/* ala xgettext, dcngettext("some string", "some plural" ...) dumps the string */
 		NODE *str1 = subn->nexti->lasti->memory;
 		NODE *str2 = subn->nexti->lasti->nexti->lasti->memory;
@@ -7023,18 +7023,6 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 		pp_string_fp(print_func, fp, n->stptr, n->stlen, '"', false);
 		print_func(fp, "\n");
 	} else if ((n->flags & NUMBER) != 0) {
-#ifdef HAVE_MPFR
-		if (is_mpg_float(n))
-			print_func(fp, "%s\n", mpg_fmt("%.17R*g", ROUND_MODE, n->mpg_numbr));
-		else if (is_mpg_integer(n))
-			print_func(fp, "%s\n", mpg_fmt("%Zd", n->mpg_i));
-		else
-#endif
-		print_func(fp, "%.17g\n", n->numbr);
-	} else if ((n->flags & STRCUR) != 0) {
-		pp_string_fp(print_func, fp, n->stptr, n->stlen, '"', false);
-		print_func(fp, "\n");
-	} else if ((n->flags & NUMCUR) != 0) {
 #ifdef HAVE_MPFR
 		if (is_mpg_float(n))
 			print_func(fp, "%s\n", mpg_fmt("%.17R*g", ROUND_MODE, n->mpg_numbr));

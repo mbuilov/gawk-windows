@@ -300,6 +300,8 @@ EXTRA_DIST = \
 	fnparydl-mpfr.ok \
 	fnparydl.awk \
 	fnparydl.ok \
+	forcenum.awk \
+	forcenum.ok \
 	fordel.awk \
 	fordel.ok \
 	fork.awk \
@@ -463,6 +465,8 @@ EXTRA_DIST = \
 	igncfs.ok \
 	ignrcas2.awk \
 	ignrcas2.ok \
+	ignrcas3.awk \
+	ignrcas3.ok \
 	ignrcase.awk \
 	ignrcase.in \
 	ignrcase.ok \
@@ -505,6 +509,8 @@ EXTRA_DIST = \
 	inplace3.2.bak.ok \
 	inputred.awk \
 	inputred.ok \
+	intarray.awk \
+	intarray.ok \
 	intest.awk \
 	intest.ok \
 	intformat.awk \
@@ -526,9 +532,19 @@ EXTRA_DIST = \
 	leadnl.ok \
 	lint.awk \
 	lint.ok \
+	lintexp.awk \
+	lintexp.ok \
+	lintindex.awk \
+	lintindex.ok \
+	lintint.awk \
+	lintint.ok \
+	lintlength.awk \
+	lintlength.ok \
 	lintold.awk \
 	lintold.in \
 	lintold.ok \
+	lintset.awk \
+	lintset.ok \
 	lintwarn.awk \
 	lintwarn.ok \
 	litoct.awk \
@@ -608,6 +624,10 @@ EXTRA_DIST = \
 	mpfrsort.ok \
 	mpfrsqrt.awk \
 	mpfrsqrt.ok \
+	mpfrstrtonum.awk \
+	mpfrstrtonum.ok \
+	mpgforcenum.awk \
+	mpgforcenum.ok \
 	mtchi18n.awk \
 	mtchi18n.in \
 	mtchi18n.ok \
@@ -772,6 +792,8 @@ EXTRA_DIST = \
 	printfbad3.ok \
 	printfbad4.awk \
 	printfbad4.ok \
+	printfchar.awk \
+	printfchar.ok \
 	printfloat.awk \
 	printhuge.awk \
 	printhuge.ok \
@@ -832,6 +854,9 @@ EXTRA_DIST = \
 	rebuf.awk \
 	rebuf.in \
 	rebuf.ok \
+	rebuild.awk \
+	rebuild.in \
+	rebuild.ok \
 	redfilnm.awk \
 	redfilnm.in \
 	redfilnm.ok \
@@ -977,11 +1002,15 @@ EXTRA_DIST = \
 	strftlng.ok \
 	strnum1.awk \
 	strnum1.ok \
+	strnum2.awk \
+	strnum2.ok \
 	strtod.awk \
 	strtod.in \
 	strtod.ok \
 	strtonum.awk \
 	strtonum.ok \
+	strtonum1.awk \
+	strtonum1.ok \
 	subamp.awk \
 	subamp.in \
 	subamp.ok \
@@ -1133,15 +1162,15 @@ BASIC_TESTS = \
 	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofs1 onlynl opasnidx opasnslf \
 	paramasfunc1 paramasfunc2 \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
-	pcntplus posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
+	pcntplus posix2008sub prdupval prec printf0 printf1 printfchar prmarscl prmreuse \
 	prt1eval prtoeval \
-	rand randtest range1 readbuf rebrackloc rebt8b1 redfilnm \
+	rand randtest range1 readbuf rebrackloc rebt8b1 rebuild redfilnm \
 	regeq regexpbrack regexpbrack2 \
 	regexprange regrange reindops \
 	reparse resplit rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin sigpipe1 sortempty sortglos splitargv splitarr splitdef \
-	splitvar splitwht strcat1 strnum1 strtod subamp subback subi18n \
+	splitvar splitwht strcat1 strnum1 strnum2 strtod subamp subback subi18n \
 	subsepnm subslash substr swaplns synerr1 synerr2 tradanch tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs \
 	wideidx wideidx2 widesub widesub2 widesub3 widesub4 wjposer1 \
@@ -1157,13 +1186,13 @@ GAWK_EXT_TESTS = \
 	colonwarn clos1way clos1way2 clos1way3 clos1way4 clos1way5 clos1way6 \
 	crlf dbugeval dbugeval2 dbugtypedre1 dbugtypedre2 delsub \
 	devfd devfd1 devfd2 dumpvars errno exit \
-	fieldwdth fpat1 fpat2 fpat3 fpat4 fpat5 fpatnull fsfwfs funlen \
+	fieldwdth forcenum fpat1 fpat2 fpat3 fpat4 fpat5 fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
 	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops gsubind \
-	icasefs icasers id igncdym igncfs ignrcas2 ignrcase \
+	icasefs icasers id igncdym igncfs ignrcas2 ignrcas3 ignrcase \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
-	include include2 indirectbuiltin indirectcall indirectcall2 \
-	lint lintold lintwarn \
+	include include2 indirectbuiltin indirectcall indirectcall2 intarray \
+	lint lintexp lintindex lintint lintlength lintold lintset lintwarn \
 	mixed1 manyfiles match1 match2 match3 mbstr1 mbstr2 \
 	muldimposix \
 	nastyparm negtime next nondec nondec2 \
@@ -1175,7 +1204,7 @@ GAWK_EXT_TESTS = \
 	rsstart2 rsstart3 rstest6 shadow shadowbuiltin \
 	sortfor sortu split_after_fpat \
 	splitarg4 strftime \
-	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
+	strtonum strtonum1 switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
 	symtab7 symtab8 symtab9 symtab10 \
 	typedregex1 typedregex2 typedregex3 typeof1 typeof2 typeof3 typeof4 \
 	timeout \
@@ -1188,7 +1217,7 @@ INET_TESTS = inetdayu inetdayt inetechu inetecht
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 
 MPFR_TESTS = mpfrnr mpfrnegzero mpfrmemok1 mpfrrem mpfrrnd mpfrieee \
-	mpfrexprange mpfrsort mpfrsqrt mpfrbigint
+	mpfrexprange mpfrsort mpfrsqrt mpfrbigint mpfrstrtonum mpgforcenum
 
 LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
@@ -1201,7 +1230,7 @@ SHLIB_TESTS = \
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
-	defref fmtspcl lintwarn noeffect nofmtch shadow \
+	defref fmtspcl lintexp lintindex lintint lintlength lintwarn noeffect nofmtch shadow \
 	uninit2 uninit3 uninit4 uninit5 uninitialized
 
 # List of the tests which should be run with --lint-old option:
@@ -1728,6 +1757,16 @@ nondec2::
 	@$(AWK) --non-decimal-data -v a=0x1 -f "$(srcdir)"/$@.awk >_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+intarray::
+	@echo $@
+	@$(AWK) --non-decimal-data -f "$(srcdir)"/$@.awk >_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+forcenum::
+	@echo $@
+	@$(AWK) --non-decimal-data -f "$(srcdir)"/$@.awk >_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 nofile::
 	@echo $@
 	@$(AWK) '{}' no/such/file >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -1970,6 +2009,16 @@ mpfrbigint:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mpfrsqrt:
+	@echo $@
+	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfrstrtonum:
+	@echo $@
+	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpgforcenum:
 	@echo $@
 	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@

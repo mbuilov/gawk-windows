@@ -3704,17 +3704,6 @@ print_memory(NODE *m, NODE *func, Func_print print_func, FILE *fp)
 				print_func(fp, "%g", m->numbr);
 		} else if ((m->flags & STRING) != 0)
 			pp_string_fp(print_func, fp, m->stptr, m->stlen, '"', false);
-		else if ((m->flags & NUMCUR) != 0) {
-#ifdef HAVE_MPFR
-			if ((m->flags & MPFN) != 0)
-				print_func(fp, "%s", mpg_fmt("%R*g", ROUND_MODE, m->mpg_numbr));
-			else if ((m->flags & MPZN) != 0)
-				print_func(fp, "%s", mpg_fmt("%Zd", m->mpg_i));
-			else
-#endif
-				print_func(fp, "%g", m->numbr);
-		} else if ((m->flags & STRCUR) != 0)
-			pp_string_fp(print_func, fp, m->stptr, m->stlen, '"', false);
 		else
 			print_func(fp, "-?-");
 		print_func(fp, " [%s]", flags2str(m->flags));

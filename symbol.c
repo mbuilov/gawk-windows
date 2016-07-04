@@ -652,7 +652,7 @@ check_param_names(void)
 	memset(& n, 0, sizeof n);
 	n.type = Node_val;
 	n.flags = STRING|STRCUR;
-	n.stfmt = -1;
+	n.stfmt = STFMT_UNUSED;
 
 	/*
 	 * assoc_list() returns an array with two elements per awk array

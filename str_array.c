@@ -168,7 +168,7 @@ str_lookup(NODE *symbol, NODE *subs)
 	 * flag on it since other variables could be using the same
 	 * reference-counted value.
 	 */
-	if (subs->stfmt != -1 || (subs->flags & MAYBE_NUM) != 0) {
+	if (subs->stfmt != STFMT_UNUSED || (subs->flags & MAYBE_NUM) != 0) {
 		NODE *tmp;
 
 		/*

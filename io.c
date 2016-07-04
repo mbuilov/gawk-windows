@@ -785,7 +785,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 		cant_happen();
 	}
 	if (do_lint && not_string)
-		lintwarn(_("expression in `%s' redirection only has numeric value"),
+		lintwarn(_("expression in `%s' redirection is a number"),
 			what);
 
 	if (str == NULL || *str == '\0')
@@ -1083,7 +1083,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 struct redirect *
 redirect(NODE *redir_exp, int redirtype, int *errflg, bool failure_fatal)
 {
-	bool not_string = ((redir_exp->flags & STRCUR) == 0);
+	bool not_string = ((fixtype(redir_exp)->flags & STRING) == 0);
 
 	redir_exp = force_string(redir_exp);
 	return redirect_string(redir_exp->stptr, redir_exp->stlen, not_string,
@@ -3895,14 +3895,8 @@ pty_vs_pipe(const char *command)
 	 * in_PROCINFO function now checks that for us.
 	 */
 	val = in_PROCINFO(command, "pty", NULL);
-	if (val) {
-		if ((val->flags & MAYBE_NUM) != 0)
-			(void) force_number(val);
-		if ((val->flags & NUMBER) != 0)
-			return ! iszero(val);
-		else
-			return (val->stlen != 0);
-	}
+	if (val)
+		return boolval(val);
 #endif /* HAVE_TERMIOS_H */
 	return false;
 }

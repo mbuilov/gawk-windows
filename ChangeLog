@@ -1,3 +1,14 @@
+2016-07-03         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* field.c (rebuild_record): Revert warning message regarding flags,
+	since I'm not yet totally confident that it is invalid to have FIELD
+	and MALLOC set at the same time.
+
+2016-07-03         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* field.c (rebuild_record): Do not turn off the STRING flag when
+	copying a FIELD node, and issue a warning if MALLOC is enabled.
+
 2016-07-01         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* array.c (value_info): Print something reasonable when stfmt
@@ -18,6 +29,86 @@
 	* awkgram.y (dump_vars): Allow "-" to mean print to stdout.
 	Thanks to Hermann Peifer for the reports.
 
+2016-06-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* node.c (r_force_number): Coding style change.
+
+2016-06-30         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (STFMT_UNUSED): New define indicating that the string
+	representation does not depend on CONVFMT or OFMT.
+	(force_string): Use STFMT_UNUSED to improve code clarity.
+	* array.c (value_info): Fix stfmt logic.
+	* builtin.c (do_print): Use STFMT_UNUSED to improve code clarity.
+	* field.c (set_record): Ditto.
+	* gawkapi.c (api_sym_update_scalar): Ditto.
+	* int_array.c (is_integer): Check stfmt equals STFMT_UNUSED before
+	bothering to inspect the string.
+	* mpfr.c (mpg_format_val): Use STFMT_UNUSED to improve code clarity.
+	Remove buggy cast to char in stfmt assignment.
+	* node.c (r_format_val): Ditto.
+	* str_array.c (str_lookup): Use STFMT_UNUSED to improve code clarity.
+	* symbol.c (check_param_names): Ditto.
+
+2016-06-29         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* node.c (r_force_number): Optimize by trimming leading and trailing
+	white space before we inspect the string contents.
+	(get_ieee_magic_val): Must terminate the string with '\0' before
+	calling strtod.
+
+2016-06-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (awk_string): Add comment about the potential lack of
+	NUL-termination.
+
+2016-06-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h: Add a comment regarding the potential lack of NUL-termination
+	for Node_val strings.
+
+2016-06-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* node.c (r_format_val): Do not free stptr unless STRCUR is set.
+	This is safer than testing for non-NULL stptr, since, for example,
+	pp_number copies a node and calls r_format_val, but does not bother
+	to set stptr to NULL beforehand.
+
+2016-06-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* node.c (r_force_number): When checking for trailing spaces, protect
+	against running off the end of the string.
+	* mpfr.c (force_mpnum): Ditto.
+
+2016-06-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* builtin.c (do_print): There's actually no reason to test whether a
+	value is a number, since the STRCUR flag and stfmt value contain all
+	the necessary info, as in awk.h:force_string.
+
+2016-06-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* builtin.c (do_print): Do not use OFMT to print strnum values. We
+	accomplish this by calling format_val for a NUMBER only
+	if there is no string currently available, or if stfmt equals
+	neither -1 nor OFMTidx.
+
+2016-06-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h: Edit some comments. Add others. Minor coding style changes.
+	* builtin.c (format_tree): Restore a comment.
+	(do_mktime): Restore saving/restoring of byte after format string.
+	(do_sub): Coding style. Use %.*s in warning message.
+	(nondec2awknum): Restore saving/restoring of byte after string value
+	being converted.
+	* eval.c: Minor coding style edits.
+	* int_array.c (is_integer): Fix order of checks for not
+	updating string value: check length == 0 before testing values.
+	Coding style edits.
+	* mpfr.c (do_mpfr_strtonum): Coding style edits.
+	* node.c (r_force_number): Restore saving/restoring of byte after
+	string value being converted. Edit comments some.
+
 2016-06-26         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Repair change of 2015-08-25 to handling of MAYBE_NUM.
@@ -28,6 +119,22 @@
 	Thanks to Andrew Schorr for reporting the problem.
 	A test case will eventually be merged into master.
 
+	Only in stable and master.
+
+2016-06-20         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* builtin.c (do_strftime): Call fixtype before checking flags for
+	STRING type.
+	(do_print): Call fixtype before checking whether argument is a NUMBER.
+	* eval.c (set_BINMODE): Call fixtype before checking value type.
+	No need to call force_number if the flags say it's a number.
+	(r_get_field): Fix lint check for non-numeric argument.
+	* io.c (redirect): Call fixtype before checking whether it's a string.
+
+2016-06-18         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* node.c (r_force_number): Fix typo in comment.
+
 2016-06-16         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h: Add comment headers for several functions.
@@ -37,6 +144,103 @@
 2016-06-15         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* config.sub: Update from GNULIB.
+
+2016-06-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (boolval): New inline function to standardize testing whether
+	a node's value is true.
+	* builtin.c (do_strftime): Use boolval to handle 3rd argument.
+	* eval.c (set_IGNORECASE, eval_condition): Use new boolval function.
+	* io.c (pty_vs_pipe): Use new boolval function.
+
+2016-06-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* builtin.c (do_strftime): Fix handling of 3rd argument to work
+	as a standard boolean: non-null or non-zero.
+
+2016-06-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (node_to_awk_value): When caller requests AWK_SCALAR
+	or AWK_UNDEFINED, we need to call fixtype before we check the type.
+
+2016-06-13         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awkgram.y: Eliminate STRCUR tests. Must use STRING to test whether
+	a scalar is a string.
+
+2016-06-12         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+	
+	* awk.h: Improve comment about STRING and NUMBER type assignment.
+	(nondec2awknum): Add endptr argument.
+	(fixtype): New inline function to clarify a scalar's type.
+	* array.c (sort_up_value_type): Call fixtype before checking the value
+	types.
+	* awkgram.y (yylex): Pass NULL endptr argument to nondec2awknum.
+	(valinfo): Remove dead tests: either STRING or NUMBER or both
+	must be set, so there's no reason to continue with checks for NUMCUR or
+	STRCUR.
+	* builtin.c (do_exp, do_int, do_log, do_sqrt, do_sin, do_cos, do_srand):
+	Fix lint check for non-numeric argument.
+	(do_string): Fix lint check for 1st and 2nd args being strings.
+	(do_length): Fix assert to allow for Node_typedregex.
+	Fix lint check for non-string argument.
+	(format_tree): Fix type detection for '%c' arguments.
+	(do_strftime): Fix lint check for non-numeric 2nd argument and
+	lint check for non-string 1st argument.
+	(do_mktime): Fix lint check for non-string argument. Eliminate useless
+	logic to save and restore terminating NUL.
+	(do_system, do_tolower, do_toupper): Fix lint check for non-string
+	argument.
+	(do_atan2, do_lshift, do_rshift, do_and, do_or, do_xor, do_compl,
+	do_intdiv): Fix lint checks for non-numeric args.
+	(do_sub): Attempt to clean up treatment of 3rd argument to gensub
+	despite vague documentation of expected behavior.
+	(do_strnum): Fix bug in number detection logic, and pass new endptr
+	arg to nondec2awknum.
+	(nondec2awknum): Add endptr argument so caller can detect how much
+	of the string was consumed. Eliminate unnecessary logic to save
+	and restore terminating NUL char.
+	(do_typeof): Use a switch to specify which cases are supported, and
+	issue a warning message when a corrupt type is detected.
+	* debug.c (print_memory): At least one of NUMBER and STRING should
+	be set, so no need to check for NUMCUR or STRCUR in addition.
+	* eval.c (cmp_nodes): Use fixtype function to fix arg types.
+	(set_IGNORECASE): Fix logic for acting on value type. Note that
+	setting IGNORECASE to a string value of "0" with NUMCUR set now enables
+	ignorecase, so that's a subtle change in behavior that seems to match
+	the docs.
+	(set_LINT): Try to clean up configuration logic based on type.
+	* ext.c (get_argument): Remove unused variable pcount.
+	* gawkapi.c (node_to_awk_value): Remove pointless test for NUMCUR
+	after calling force_number. Similarly, no need to test for STRCUR
+	after calling force_string.
+	* int_array.c (is_integer): Reject cases where a string value is
+	present that will not be correctly regenerated from the integer;
+	in particular, this could happen where blank space padding is present,
+	leading zeroes are present, or for hex or octal values.
+	Also fix some bugs where a strnum was converted to a NUMBER without
+	turning off the STRING bit.
+	* io.c (redirect_string): Make lint warning message more accurate.
+	(redirect): Change not_string test to use STRING bit, not STRCUR.
+	(pty_vs_pipe): Use fixtype to correct logic for detecting whether a
+	value is anumber.
+	* mpfr.c (mpg_force_number): If NUMCUR is set, there's no need to
+	test is_mpg_number. If it's not, the NODE is corrupt and we've got
+	bigger problems. Fix flag manipulation logic. Always set NUMCUR and
+	clear MAYBE_NUM, 
+	(set_PREC): Fix logic using fixtype function.
+	(do_mpfr_atan2, do_mpfr_intdiv): Fix lint check for non-numeric
+	arguments.
+	(do_mpfr_func, do_mpfr_int, do_mpfr_compl, get_intval, do_mpfr_srand):
+	Fix lint check for non-numeric argument.
+	(do_mpfr_strtonum): Use fixtype and stop testing for NUMCUR bit.
+	* node.c (r_force_number): Eliminate pointless save and restore of
+	terminating NUL char. Always set NUMCUR and clear MAYBE_NUM, and
+	convert STRING to NUMBER if appropriate, fixing bugs in flag
+	manipulations. For non-decimal data, need to consider whether there
+	is trailing non-numeric data in deciding whether a MAYBE_NUM should
+	be converted to a NUMBER, so take advantage of new endptr arg
+	to nondec2awknum.
 
 2016-06-14         Arnold D. Robbins     <arnold@skeeve.com>
 

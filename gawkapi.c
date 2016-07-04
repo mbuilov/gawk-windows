@@ -430,24 +430,21 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 			val->val_type = AWK_NUMBER;
 
 			(void) force_number(node);
-			if ((node->flags & NUMCUR) != 0) {
-				val->num_value = get_number_d(node);
-				ret = awk_true;
-			}
+			val->num_value = get_number_d(node);
+			ret = awk_true;
 			break;
 
 		case AWK_STRING:
 			val->val_type = AWK_STRING;
 
 			(void) force_string(node);
-			if ((node->flags & STRCUR) != 0) {
-				val->str_value.str = node->stptr;
-				val->str_value.len = node->stlen;
-				ret = awk_true;
-			}
+			val->str_value.str = node->stptr;
+			val->str_value.len = node->stlen;
+			ret = awk_true;
 			break;
 
 		case AWK_SCALAR:
+			fixtype(node);
 			if ((node->flags & NUMBER) != 0) {
 				val->val_type = AWK_NUMBER;
 			} else if ((node->flags & STRING) != 0) {
@@ -459,6 +456,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 
 		case AWK_UNDEFINED:
 			/* return true and actual type for request of undefined */
+			fixtype(node);
 			if (node == Nnull_string) {
 				val->val_type = AWK_UNDEFINED;
 				ret = awk_true;
@@ -687,7 +685,7 @@ api_sym_update_scalar(awk_ext_id_t id,
 			/* make_str_node(s, l, ALREADY_MALLOCED): */
 			r->numbr = 0;
 			r->flags = (MALLOC|STRING|STRCUR);
-			r->stfmt = -1;
+			r->stfmt = STFMT_UNUSED;
 			r->stptr = value->str_value.str;
 			r->stlen = value->str_value.len;
 			return awk_true;

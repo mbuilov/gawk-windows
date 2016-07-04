@@ -704,7 +704,14 @@ value_info(NODE *n)
 	if ((n->flags & (STRING|STRCUR)) == STRCUR) {
 		fprintf(output_fp, "][");
 		fprintf(output_fp, "stfmt=%d, ", n->stfmt);	
-		fprintf(output_fp, "CONVFMT=\"%s\"", n->stfmt <= -1 ? "<unused>"
+		/*
+		 * If not STFMT_UNUSED, could be CONVFMT or OFMT if last
+		 * used in a print statement. If immutable, could be that it
+		 * was originally set as a string, or it's a number that has
+		 * an integer value.
+		 */
+		fprintf(output_fp, "FMT=\"%s\"",
+					n->stfmt == STFMT_UNUSED ? "<unused>"
 					: fmt_list[n->stfmt]->stptr);
 	}
 
@@ -1157,17 +1164,8 @@ sort_up_value_type(const void *p1, const void *p2)
 	}
 
 	/* two scalars */
-	/* 2. Resolve MAYBE_NUM, so that have only NUMBER or STRING */
-	if ((n1->flags & MAYBE_NUM) != 0)
-		(void) force_number(n1);
-	if ((n2->flags & MAYBE_NUM) != 0)
-		(void) force_number(n2);
-
-	/* 2.5. Resolve INTIND, so that is STRING, and not NUMBER */
-	if ((n1->flags & INTIND) != 0)
-		(void) force_string(n1);
-	if ((n2->flags & INTIND) != 0)
-		(void) force_string(n2);
+	(void) fixtype(n1);
+	(void) fixtype(n2);
 
 	if ((n1->flags & NUMBER) != 0 && (n2->flags & NUMBER) != 0) {
 		return cmp_numbers(n1, n2);

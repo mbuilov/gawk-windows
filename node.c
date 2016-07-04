@@ -30,7 +30,7 @@
 
 static int is_ieee_magic_val(const char *val);
 static NODE *r_make_number(double x);
-static AWKNUM get_ieee_magic_val(const char *val);
+static AWKNUM get_ieee_magic_val(char *val);
 extern NODE **fmt_list;          /* declared in eval.c */
 
 NODE *(*make_number)(double) = r_make_number;
@@ -61,23 +61,35 @@ r_force_number(NODE *n)
 	char *cpend;
 	char save;
 	char *ptr;
-	unsigned int newflags;
 	extern double strtod();
 
 	if ((n->flags & NUMCUR) != 0)
 		return n;
 
-	/* all the conditionals are an attempt to avoid the expensive strtod */
+	/*
+	 * We should always set NUMCUR and clear MAYBE_NUM, and we may possibly
+	 * change STRING to NUMBER if MAYBE_NUM was set and it's a good numeric
+	 * string.
+	 */
 
-	/* Note: only set NUMCUR if we actually convert some digits */
+	/* All the conditionals are an attempt to avoid the expensive strtod */
 
+	n->flags |= NUMCUR;
 	n->numbr = 0.0;
 
-	if (n->stlen == 0) {
-		return n;
-	}
+	/* Trim leading white space, bailing out if there's nothing else */
+	for (cp = n->stptr, cpend = cp + n->stlen;
+	     cp < cpend && isspace((unsigned char) *cp); cp++)
+		continue;
 
-	cp = n->stptr;
+	if (cp == cpend)
+		goto badnum;
+
+	/* At this point, we know the string is not entirely white space */
+	/* Trim trailing white space */
+	while (isspace((unsigned char) cpend[-1]))
+		cpend--;
+
 	/*
 	 * 2/2007:
 	 * POSIX, by way of severe language lawyering, seems to
@@ -86,80 +98,52 @@ r_force_number(NODE *n)
 	 * This also allows hexadecimal floating point. Ugh.
 	 */
 	if (! do_posix) {
-		if (is_alpha((unsigned char) *cp)) {
-			return n;
-		} else if (n->stlen == 4 && is_ieee_magic_val(n->stptr)) {
-			if ((n->flags & MAYBE_NUM) != 0)
-				n->flags &= ~MAYBE_NUM;
-			n->flags |= NUMBER|NUMCUR;
-			n->flags &= ~STRING;
-			n->numbr = get_ieee_magic_val(n->stptr);
-
-			return n;
+		if (is_alpha((unsigned char) *cp))
+			goto badnum;
+		else if (cpend == cp+4 && is_ieee_magic_val(cp)) {
+			n->numbr = get_ieee_magic_val(cp);
+			goto goodnum;
 		}
 		/* else
 			fall through */
 	}
-	/* else not POSIX, so
+	/* else POSIX, so
 		fall through */
 
-	cpend = cp + n->stlen;
-	while (cp < cpend && isspace((unsigned char) *cp))
-		cp++;
-
-	if (   cp == cpend		/* only spaces, or */
-	    || (! do_posix		/* not POSIXLY paranoid and */
+	if (   (! do_posix		/* not POSIXLY paranoid and */
 	        && (is_alpha((unsigned char) *cp)	/* letter, or */
 					/* CANNOT do non-decimal and saw 0x */
 		    || (! do_non_decimal_data && is_hex(cp))))) {
-		return n;
+		goto badnum;
 	}
-
-	if ((n->flags & MAYBE_NUM) != 0) {
-		newflags = NUMBER;
-		n->flags &= ~MAYBE_NUM;
-	} else
-		newflags = 0;
 
 	if (cpend - cp == 1) {		/* only one character */
 		if (isdigit((unsigned char) *cp)) {	/* it's a digit! */
 			n->numbr = (AWKNUM)(*cp - '0');
-			n->flags |= newflags;
-			n->flags |= NUMCUR;
-			n->flags &= ~STRING;
-			if (cp == n->stptr)		/* no leading spaces */
+			if (n->stlen == 1)		/* no white space */
 				n->flags |= NUMINT;
+			goto goodnum;
 		}
-		return n;
-	}
-
-	if (do_non_decimal_data) {	/* main.c assures false if do_posix */
-		errno = 0;
-		if (! do_traditional && get_numbase(cp, true) != 10) {
-			n->numbr = nondec2awknum(cp, cpend - cp);
-			n->flags |= NUMCUR;
-			n->flags &= ~STRING;
-			ptr = cpend;
-			goto finish;
-		}
+		goto badnum;
 	}
 
 	errno = 0;
-	save = *cpend;
-	*cpend = '\0';
-	n->numbr = (AWKNUM) strtod((const char *) cp, &ptr);
+	if (do_non_decimal_data		/* main.c assures false if do_posix */
+		&& ! do_traditional && get_numbase(cp, true) != 10) {
+		/* nondec2awknum() saves and restores the byte after the string itself */
+		n->numbr = nondec2awknum(cp, cpend - cp, &ptr);
+	} else {
+		save = *cpend;
+		*cpend = '\0';
+		n->numbr = (AWKNUM) strtod((const char *) cp, &ptr);
+		*cpend = save;
+	}
 
-	/* POSIX says trailing space is OK for NUMBER */
-	while (isspace((unsigned char) *ptr))
-		ptr++;
-	*cpend = save;
-finish:
 	if (errno == 0) {
-		if (ptr == cpend) {
-			n->flags |= newflags;
-			n->flags |= NUMCUR;
-		}
+		if (ptr == cpend)
+			goto goodnum;
 		/* else keep the leading numeric value without updating flags */
+		/* fall through to badnum */
 	} else {
 		errno = 0;
 		/*
@@ -168,8 +152,21 @@ finish:
 		 * We force the numeric value to 0 in such cases.
 		 */
 		n->numbr = 0;
+		/*
+		 * Or should we accept it as a NUMBER even though strtod
+		 * threw an error?
+		 */
+		/* fall through to badnum */
 	}
+badnum:
+	n->flags &= ~MAYBE_NUM;
+	return n;
 
+goodnum:
+	if ((n->flags & MAYBE_NUM) != 0) {
+		n->flags &= ~(MAYBE_NUM|STRING);
+		n->flags |= NUMBER;
+	}
 	return n;
 }
 
@@ -227,7 +224,7 @@ r_format_val(const char *format, int index, NODE *s)
 		 * Once upon a time, we just blindly did this:
 		 *	sprintf(sp, format, s->numbr);
 		 *	s->stlen = strlen(sp);
-		 *	s->stfmt = (char) index;
+		 *	s->stfmt = index;
 		 * but that's no good if, e.g., OFMT is %s. So we punt,
 		 * and just always format the value ourselves.
 		 */
@@ -242,7 +239,7 @@ r_format_val(const char *format, int index, NODE *s)
 		if (val == s->numbr) {
 			/* integral value, but outside range of %ld, use %.0f */
 			r = format_tree("%.0f", 4, dummy, 2);
-			s->stfmt = -1;
+			s->stfmt = STFMT_UNUSED;
 		} else {
 			r = format_tree(format, fmt_list[index]->stlen, dummy, 2);
 			assert(r != NULL);
@@ -269,13 +266,13 @@ r_format_val(const char *format, int index, NODE *s)
 			(void) sprintf(sp, "%ld", num);
 			s->stlen = strlen(sp);
 		}
-		s->stfmt = -1;
+		s->stfmt = STFMT_UNUSED;
 		if ((s->flags & INTIND) != 0) {
 			s->flags &= ~(INTIND|NUMBER);
 			s->flags |= STRING;
 		}
 	}
-	if (s->stptr != NULL)
+	if ((s->flags & STRCUR) != 0)
 		efree(s->stptr);
 	emalloc(s->stptr, char *, s->stlen + 1, "format_val");
 	memcpy(s->stptr, sp, s->stlen + 1);
@@ -386,7 +383,7 @@ make_str_node(const char *s, size_t len, int flags)
 	r->numbr = 0;
 	r->flags = (MALLOC|STRING|STRCUR);
 	r->valref = 1;
-	r->stfmt = -1;
+	r->stfmt = STFMT_UNUSED;
 	r->wstptr = NULL;
 	r->wstlen = 0;
 
@@ -940,14 +937,18 @@ is_ieee_magic_val(const char *val)
 /* get_ieee_magic_val --- return magic value for string */
 
 static AWKNUM
-get_ieee_magic_val(const char *val)
+get_ieee_magic_val(char *val)
 {
 	static bool first = true;
 	static AWKNUM inf;
 	static AWKNUM nan;
+	char save;
 
 	char *ptr;
+	save = val[4];
+	val[4] = '\0';
 	AWKNUM v = strtod(val, &ptr);
+	val[4] = save;
 
 	if (val == ptr) { /* Older strtod implementations don't support inf or nan. */
 		if (first) {

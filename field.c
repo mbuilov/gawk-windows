@@ -216,7 +216,7 @@ rebuild_record()
 				}
 			} else {
 				*n = *r;
-				n->flags &= ~(MALLOC|STRING);
+				n->flags &= ~MALLOC;
 			}
 
 			n->stptr = cops;
@@ -288,7 +288,7 @@ set_record(const char *buf, int cnt)
 	n->stlen = cnt;
 	n->valref = 1;
 	n->type = Node_val;
-	n->stfmt = -1;
+	n->stfmt = STFMT_UNUSED;
 	n->flags = (STRING|STRCUR|MAYBE_NUM|FIELD);
 	fields_arr[0] = n;
 

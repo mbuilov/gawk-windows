@@ -392,8 +392,11 @@ typedef struct exp_node {
 
 /* type = Node_val */
 	/*
-	 * STRING and NUMBER are mutually exclusive. They represent the
-	 * type of a value as assigned.
+	 * STRING and NUMBER are mutually exclusive, except for the special
+	 * case of an uninitialized value, represented internally by
+	 * Nnull_string. They represent the type of a value as assigned.
+	 * Nnull_string has both STRING and NUMBER attributes, but all other
+	 * scalar values should have precisely one of these bits set.
 	 *
 	 * STRCUR and NUMCUR are not mutually exclusive. They represent that
 	 * the particular type of value is up to date.  For example,
@@ -408,7 +411,8 @@ typedef struct exp_node {
 	 *
 	 * MAYBE_NUM is the joker.  It means "this is string data, but
 	 * the user may have really wanted it to be a number. If we have
-	 * to guess, like in a comparison, turn it into a number."
+	 * to guess, like in a comparison, turn it into a number if the string
+	 * is indeed numeric."
 	 * For example,    gawk -v a=42 ....
 	 * Here, `a' gets STRING|STRCUR|MAYBE_NUM and then when used where
 	 * a number is needed, it gets turned into a NUMBER and STRING
@@ -472,6 +476,13 @@ typedef struct exp_node {
 #define re_cnt	flags
 
 /* Node_val */
+/*
+ * Note that the string in stptr may not be NUL-terminated, but it is
+ * guaranteed to have at least one extra byte that may be temporarily set
+ * to '\0'. This is helpful when calling functions such as strtod that require
+ * a NUL-terminated argument. In particular, field values $n for n > 0 and
+ * n < NF will not have a NUL terminator, since they point into the $0 buffer.
+ */
 #define stptr	sub.val.sp
 #define stlen	sub.val.slen
 #define valref	sub.val.sref
@@ -485,6 +496,16 @@ typedef struct exp_node {
 #else
 #define numbr		sub.val.fltnum
 #endif
+
+/*
+ * If stfmt is set to STFMT_UNUSED, it means that the string representation
+ * stored in stptr is not a function of the value of CONVFMT or OFMT. That
+ * indicates that either the string value was explicitly assigned, or it
+ * was converted from a NUMBER that has an integer value. When stfmt is not
+ * set to STFMT_UNUSED, it is an offset into the fmt_list array of distinct
+ * CONVFMT and OFMT node pointers.
+ */
+#define STFMT_UNUSED	-1
 
 /* Node_arrayfor */
 #define for_list	sub.nodep.r.av
@@ -1401,7 +1422,7 @@ extern NODE *do_or(int nargs);
 extern NODE *do_xor(int nargs);
 extern NODE *do_compl(int nargs);
 extern NODE *do_strtonum(int nargs);
-extern AWKNUM nondec2awknum(char *str, size_t len);
+extern AWKNUM nondec2awknum(char *str, size_t len, char **endptr);
 extern NODE *do_dcgettext(int nargs);
 extern NODE *do_dcngettext(int nargs);
 extern NODE *do_bindtextdomain(int nargs);
@@ -1787,7 +1808,7 @@ force_string(NODE *s)
 		return dupnode(s->re_exp);
 
 	if ((s->flags & STRCUR) != 0
-		    && (s->stfmt == -1 || s->stfmt == CONVFMTidx)
+		    && (s->stfmt == STFMT_UNUSED || s->stfmt == CONVFMTidx)
 	)
 		return s;
 	return format_val(CONVFMT, CONVFMTidx, s);
@@ -1819,6 +1840,51 @@ force_number(NODE *n)
 }
 
 #endif /* GAWKDEBUG */
+
+
+/* fixtype --- make a node decide if it's a number or a string */
+
+/*
+ * In certain contexts, the true type of a scalar value matters, and we
+ * must ascertain whether it is a NUMBER or a STRING. In such situations,
+ * please use this function to resolve the type.
+ *
+ * It is safe to assume that the return value will be the same NODE,
+ * since force_number on a MAYBE_NUM should always return the same NODE,
+ * and force_string on an INTIND should as well.
+ *
+ * There is no way to handle a Node_typedregex correctly, so we ignore
+ * that case.
+ */
+
+static inline NODE *
+fixtype(NODE *n)
+{
+	assert(n->type == Node_val || n->type == Node_typedregex);
+	if (n->type == Node_val) {
+		if ((n->flags & MAYBE_NUM) != 0)
+			return force_number(n);
+		if ((n->flags & INTIND) != 0)
+			return force_string(n);
+	}
+	return n;
+}
+
+/* boolval --- return true/false based on awk's criteria */
+
+/*
+ * In awk, a value is considered to be true if it is nonzero _or_
+ * non-null. Otherwise, the value is false.
+ */
+
+static inline int
+boolval(NODE *t)
+{
+	(void) fixtype(t);
+	if ((t->flags & NUMBER) != 0)
+		return ! iszero(t);
+	return (t->stlen > 0);
+}
 
 /* emalloc_real --- malloc with error checking */
 
