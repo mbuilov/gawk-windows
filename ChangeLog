@@ -1,5 +1,14 @@
 2016-07-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* awk.h (force_string_fmt): New inline function to get the string
+	representation in a requested format.
+	(force_string): Reimplement as a macro using force_string_fmt function.
+	(force_string_ofmt): New macro to get a value's OFMT representation.
+	* builtin.c (do_print): Use new force_string_ofmt macro instead of
+	duplicating the logic inline.
+
+2016-07-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* str_array.c (str_lookup): There is no need to worry about the
 	MAYBE_NUM flag, since the code has been patched to make sure to
 	preserve the string value of strnum values, and the integer array

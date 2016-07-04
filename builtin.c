@@ -2200,12 +2200,7 @@ do_print(int nargs, int redirtype)
 				DEREF(args_array[i]);
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(tmp));
 		}
-
-		if (tmp->type == Node_typedregex)
-			args_array[i] = force_string(tmp);
-		else if (!((tmp->flags & STRCUR) != 0
-				&& (tmp->stfmt == STFMT_UNUSED || tmp->stfmt == OFMTidx)))
-			args_array[i] = format_val(OFMT, OFMTidx, tmp);
+		args_array[i] = force_string_ofmt(tmp);
 	}
 
 	if (redir_exp != NULL) {

@@ -1799,20 +1799,32 @@ dupnode(NODE *n)
 }
 #endif
 
-/* force_string --- force a node to have a string value */
+/*
+ * force_string_fmt --- force a node to have a string value in a given format.
+ * The string representation of a number may change due to whether it was most
+ * recently rendered with CONVFMT or OFMT, or due to changes in the CONVFMT
+ * and OFMT values. But if the value entered gawk as a string or strnum, then
+ * stfmt should be set to STFMT_UNUSED, and the string representation should
+ * not change.
+ */
 
 static inline NODE *
-force_string(NODE *s)
+force_string_fmt(NODE *s, const char *fmtstr, int fmtidx)
 {
 	if (s->type == Node_typedregex)
 		return dupnode(s->re_exp);
 
 	if ((s->flags & STRCUR) != 0
-		    && (s->stfmt == STFMT_UNUSED || s->stfmt == CONVFMTidx)
+		    && (s->stfmt == STFMT_UNUSED || s->stfmt == fmtidx)
 	)
 		return s;
-	return format_val(CONVFMT, CONVFMTidx, s);
+	return format_val(fmtstr, fmtidx, s);
 }
+
+/* conceptually should be force_string_convfmt, but this is the typical case */
+#define force_string(s)		force_string_fmt((s), CONVFMT, CONVFMTidx)
+
+#define force_string_ofmt(s)	force_string_fmt((s), OFMT, OFMTidx)
 
 #ifdef GAWKDEBUG
 #define unref	r_unref
