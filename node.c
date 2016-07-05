@@ -300,7 +300,6 @@ r_dupnode(NODE *n)
 
 	getnode(r);
 	*r = *n;
-	r->flags &= ~FIELD;
 	r->flags |= MALLOC;
 	r->valref = 1;
 	/*

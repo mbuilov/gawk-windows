@@ -93,7 +93,7 @@ init_fields()
 	getnode(Null_field);
 	*Null_field = *Nnull_string;
 	Null_field->valref = 1;
-	Null_field->flags = (FIELD|STRCUR|STRING|NULL_FIELD);
+	Null_field->flags = (STRCUR|STRING|NULL_FIELD); /* do not set MALLOC */
 
 	field0_valid = true;
 }
@@ -131,7 +131,7 @@ set_field(long num,
 	n = fields_arr[num];
 	n->stptr = str;
 	n->stlen = len;
-	n->flags = (STRCUR|STRING|MAYBE_NUM|FIELD);
+	n->flags = (STRCUR|STRING|MAYBE_NUM);	/* do not set MALLOC */
 }
 
 /* rebuild_record --- Someone assigned a value to $(something).
@@ -198,7 +198,7 @@ rebuild_record()
 			NODE *n;
 			getnode(n);
 
-			if ((r->flags & FIELD) == 0) {
+			if ((r->flags & MALLOC) != 0) {
 				*n = *Null_field;
 				n->stlen = r->stlen;
 				if ((r->flags & (NUMCUR|NUMBER)) != 0) {
@@ -216,7 +216,19 @@ rebuild_record()
 				}
 			} else {
 				*n = *r;
-				n->flags &= ~MALLOC;
+				if (r->valref > 1) {
+					/*
+					 * XXX This probably should never
+					 * happen, but we can't leave r with
+					 * stptr pointing into the old $0
+					 * buffer. Perhaps we should issue a
+					 * warning message about memory
+					 * corruption...
+					 */
+					emalloc(r->stptr, char *, r->stlen + 1, "rebuild_record");
+					memcpy(r->stptr, cops, r->stlen);
+					r->stptr[r->stlen] = '\0';
+				}
 			}
 
 			n->stptr = cops;
@@ -289,7 +301,7 @@ set_record(const char *buf, int cnt)
 	n->valref = 1;
 	n->type = Node_val;
 	n->stfmt = STFMT_UNUSED;
-	n->flags = (STRING|STRCUR|MAYBE_NUM|FIELD);
+	n->flags = (STRING|STRCUR|MAYBE_NUM);	/* do not set MALLOC */
 	fields_arr[0] = n;
 
 #undef INITIAL_SIZE

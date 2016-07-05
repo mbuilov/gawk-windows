@@ -387,9 +387,6 @@ typedef struct exp_node {
 	NODETYPE type;
 	unsigned int flags;
 
-/* any type */
-#		define	MALLOC	0x0001       /* can be free'd */
-
 /* type = Node_val */
 	/*
 	 * STRING and NUMBER are mutually exclusive, except for the special
@@ -426,13 +423,13 @@ typedef struct exp_node {
 	 *
 	 * We hope that the rest of the flags are self-explanatory. :-)
 	 */
+#		define	MALLOC	0x0001       /* stptr can be free'd, i.e. not a field node pointing into a shared buffer */
 #		define	STRING	0x0002       /* assigned as string */
 #		define	STRCUR	0x0004       /* string value is current */
 #		define	NUMCUR	0x0008       /* numeric value is current */
 #		define	NUMBER	0x0010       /* assigned as number */
 #		define	MAYBE_NUM 0x0020     /* user input: if NUMERIC then
 		                              * a NUMBER */
-#		define	FIELD	0x0040       /* this is a field */
 #		define	INTLSTR	0x0080       /* use localized version */
 #		define	NUMINT	0x0100       /* numeric value is an integer */
 #		define	INTIND	0x0200	     /* integral value is array index;

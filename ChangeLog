@@ -1,3 +1,21 @@
+2016-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (FIELD): Remove unnecessary flag.
+	(MALLOC): Move definition to join the others, and improve the comment.
+	* array.c (value_info): Replace FIELD test with MALLOC test.
+	* eval.c (flags2str): Remove FIELD flag.
+	* field.c (init_fields): Remove FIELD bit from Null_field->flags.
+	(set_field): Remove FIELD bit from flags.
+	(rebuild_record): Test against MALLOC instead of FIELD. If a field
+	node has valref > 1, we should make a copy, although I don't think
+	it is valid for this to happen.
+	(set_record): Remove FIELD bit from flags.
+	* interpret.h (UNFIELD): Add comment, and test MALLOC flag instead of
+	FIELD. Remove probably buggy code to disable the FIELD flag when
+	valref is 1; that would have created a node where neither the FIELD
+	nor MALLOC flag was set, which seems invalid.
+	* node.c (r_dupnode): Remove code disabling FIELD flag.
+
 2016-07-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* awk.h (force_string_fmt): New inline function to get the string

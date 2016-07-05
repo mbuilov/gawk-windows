@@ -435,7 +435,6 @@ flags2str(int flagval)
 		{ NUMCUR, "NUMCUR" },
 		{ NUMBER, "NUMBER" },
 		{ MAYBE_NUM, "MAYBE_NUM" },
-		{ FIELD, "FIELD" },
 		{ INTLSTR, "INTLSTR" },
 		{ NUMINT, "NUMINT" },
 		{ INTIND, "INTIND" },
