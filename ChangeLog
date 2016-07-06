@@ -1,5 +1,27 @@
 2016-07-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	Make sure that all field values, and therefore all strings inside gawk,
+	are terminated with a '\0' character!
+	* field.c (databuf): New static struct to hold info about our buffer to
+	contain the field string values.
+	(allocate_databuf): New function to make sure the databuf is large
+	enough to hold $0 and copies of $1 through $NF.
+	(set_field): Copy $n into free space previously allocated in databuf
+	and add a '\0' at the end.
+	(rebuild_record): Call allocate_databuf to ensure sufficient space
+	for copying non-malloced field values. When copying field values,
+	use databuf to create a NUL-terminated copy.
+	(purge_record): New function extracted from reset_record to initialize
+	$1 through $NF to null values.
+	(set_record): Buffer management moved to new allocate_databuf function.
+	Call purge_record instead of reset_record, since reset_record contains
+	some extra logic not needed in this case.
+	(reset_record): Call purge_record to do most of the work, and call
+	allocate_databuf to make sure we have a big enough buffer to contain
+	copies of the $1 through $NF.
+
+2016-07-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* awk.h: Renumber flags to remove gap created when FIELD was removed.
 
 2016-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>

@@ -55,6 +55,8 @@ static long fpat_parse_field(long, char **, int, NODE *,
 static void set_element(long num, char * str, long len, NODE *arr);
 static void grow_fields_arr(long num);
 static void set_field(long num, char *str, long len, NODE *dummy);
+static void purge_record(void);
+static void allocate_databuf(size_t, bool);
 
 static char *parse_extent;	/* marks where to restart parse of record */
 static long parse_high_water = 0; /* field number that we have parsed so far */
@@ -115,6 +117,15 @@ grow_fields_arr(long num)
 	nf_high_water = num;
 }
 
+static struct {
+	char *p;	/* buffer for $0 and field copies */
+	size_t size;	/* buffer size */
+	char *space;	/*
+			 * Pointer to free space in databuf.p for making
+			 * NUL-terminated copies of $1 thru $NF
+			 */
+} databuf;
+
 /* set_field --- set the value of a particular field */
 
 /*ARGSUSED*/
@@ -129,7 +140,18 @@ set_field(long num,
 	if (num > nf_high_water)
 		grow_fields_arr(num);
 	n = fields_arr[num];
-	n->stptr = str;
+	/*
+	 * Make a NUL-terminated copy. It is tempting to do this only if
+	 * str[len] != '\0', but the parse methods cannot be relied upon to
+	 * avoid altering the contents of the record during parsing. For
+	 * example, def_parse_field changes the final NUL to a space. In
+	 * principle, the method could change other characters, so it does
+	 * not seem safe to rely upon the value of str[len].
+	 */
+	memcpy(databuf.space, str, len);
+	databuf.space[len] = '\0';
+	n->stptr = databuf.space;
+	databuf.space += len+1;
 	n->stlen = len;
 	n->flags = (STRCUR|STRING|MAYBE_NUM);	/* do not set MALLOC */
 }
@@ -185,6 +207,8 @@ rebuild_record()
 		}
 	}
 	tmp = make_str_node(ops, tlen, ALREADY_MALLOCED);
+	allocate_databuf(tlen, false);
+	databuf.space = databuf.p;
 
 	/*
 	 * Since we are about to unref fields_arr[0], we want to find
@@ -195,25 +219,26 @@ rebuild_record()
 	for (cops = ops, i = 1; i <= NF; i++) {
 		NODE *r = fields_arr[i];
 		/*
-		 * I see no reason to copy malloc'ed fields to point into
-		 * the new $0 buffer, but that's how previous versions did it.
-		 * It seems faster to leave the malloc'ed fields in place.
+		 * There is no reason to copy malloc'ed fields to point into
+		 * the new $0 buffer, although that's how previous versions did
+		 * it. It seems faster to leave the malloc'ed fields in place.
 		 */
-		if (r->stlen > 0 && (r->flags & MALLOC) == 0) {
+		if ((r->flags & MALLOC) == 0) {
 			NODE *n;
 			getnode(n);
 
 			*n = *r;
 			if (r->valref > 1) {
 				/*
-				 * I don't think this should happen, since it
+				 * This probably never happens, since it
 				 * was not considered by previous versions of
-				 * this function. But it seems clear to me that
+				 * this function. But it seems clear that
 				 * we can't leave r's stptr pointing into the
 				 * old $0 buffer that we are about to unref.
-				 * It's not obvious to me that valref must be
+				 * It's not a priori obvious that valref must be
 				 * 1 in all cases, so it seems wise to suppport
-				 * this corner case.
+				 * this corner case. The only question is
+				 * whether to add a warning message.
 				 */
 				emalloc(r->stptr, char *, r->stlen + 1, "rebuild_record");
 				memcpy(r->stptr, cops, r->stlen);
@@ -221,7 +246,16 @@ rebuild_record()
 				r->flags |= MALLOC;
 			}
 
-			n->stptr = cops;
+			if (cops[n->stlen] == '\0')
+				/* should be the case for $NF */
+				n->stptr = cops;
+			else {
+				/* make a NUL-terminated copy */
+				memcpy(databuf.space, cops, n->stlen);
+				databuf.space[n->stlen] = '\0';
+				n->stptr = databuf.space;
+				databuf.space += n->stlen+1;
+			}
 			unref(r);
 			fields_arr[i] = n;
 			assert((n->flags & WSTRCUR) == 0);
@@ -229,10 +263,65 @@ rebuild_record()
 		cops += fields_arr[i]->stlen + OFSlen;
 	}
 
+#ifndef NDEBUG
+	if ((fields_arr[0]->flags & MALLOC) == 0)
+		assert(fields_arr[0]->valref == 1);
+#endif
 	unref(fields_arr[0]);
 
 	fields_arr[0] = tmp;
 	field0_valid = true;
+}
+
+static void
+allocate_databuf(size_t reclen, bool need_zero)
+{
+	size_t needed;
+#define INITIAL_SIZE	512
+#define MAX_SIZE	((size_t) ~0)	/* maximally portable ... */
+
+	/* buffer management: */
+	if (databuf.size == 0) {	/* first time */
+		emalloc(databuf.p, char *, INITIAL_SIZE, "set_record");
+		databuf.size = INITIAL_SIZE;
+
+	}
+	/*
+	 * Make sure there's enough room. We need space for $0 plus a NUL
+	 * terminator plus room for NUL-terminated copies of $1 through $NF.
+	 * We use reclen as an upper bound for NF, assuming at least 1 byte
+	 * for a field and its field separator (or fixed-width column). So our
+	 * total requirement is reclen + 1 + 2*reclen -> 3*reclen + 1.
+	 * It is tempting to skip the copy if the field value is already
+	 * terminated with a NUL; this should normally be the case for $NF.
+	 * Unfortunately, the parse methods often alter the string while
+	 * parsing, typically changing the final NUL to a sentinel. So when
+	 * set_field is called, the value of the character after the string
+	 * in question may not be the actual value once parsing is complete.
+	 * To be safe, it is prudent to copy all of the fields.
+	 */
+	needed = 2*reclen;	/* for copying $1..$NF */
+	if (need_zero)
+		needed += reclen + 1;	/* for $0 plus '\0' */
+#ifdef GAWKDEBUG
+	/* malloc precise size so we can check for overruns with valgrind */
+	if (needed == 0)
+		needed = 1;	/* erealloc requires non-zero bytes */
+	databuf.size = needed;
+	erealloc(databuf.p, char *, databuf.size, "set_record");
+#else
+	if (needed > databuf.size) {
+		do {
+			if (databuf.size > MAX_SIZE/2)
+				fatal(_("input record too large"));
+			databuf.size *= 2;
+		} while (needed > databuf.size);
+		erealloc(databuf.p, char *, databuf.size, "set_record");
+	}
+#endif
+
+#undef INITIAL_SIZE
+#undef MAX_SIZE
 }
 
 /*
@@ -249,53 +338,34 @@ void
 set_record(const char *buf, int cnt)
 {
 	NODE *n;
-	static char *databuf;
-	static unsigned long databuf_size;
-#define INITIAL_SIZE	512
-#define MAX_SIZE	((unsigned long) ~0)	/* maximally portable ... */
 
-	reset_record();
+	purge_record();
+	allocate_databuf(cnt, true);
 
-	/* buffer management: */
-	if (databuf_size == 0) {	/* first time */
-		emalloc(databuf, char *, INITIAL_SIZE, "set_record");
-		databuf_size = INITIAL_SIZE;
-		memset(databuf, '\0', INITIAL_SIZE);
-
-	}
-	/*
-	 * Make sure there's enough room. Since we sometimes need
-	 * to place a sentinel at the end, we make sure
-	 * databuf_size is > cnt after allocation.
-	 */
-	if (cnt >= databuf_size) {
-		while (cnt >= databuf_size && databuf_size <= MAX_SIZE)
-			databuf_size *= 2;
-		erealloc(databuf, char *, databuf_size, "set_record");
-		memset(databuf, '\0', databuf_size);
-	}
 	/* copy the data */
-	memcpy(databuf, buf, cnt);
+	memcpy(databuf.p, buf, cnt);
 
 	/*
 	 * Add terminating '\0' so that C library routines 
 	 * will know when to stop.
 	 */
-	databuf[cnt] = '\0';
+	databuf.p[cnt] = '\0';
+	databuf.space = databuf.p + cnt + 1;
 
 	/* manage field 0: */
+#ifndef NDEBUG
+	if ((fields_arr[0]->flags & MALLOC) == 0)
+		assert(fields_arr[0]->valref == 1);
+#endif
 	unref(fields_arr[0]);
 	getnode(n);
-	n->stptr = databuf;
+	n->stptr = databuf.p;
 	n->stlen = cnt;
 	n->valref = 1;
 	n->type = Node_val;
 	n->stfmt = STFMT_UNUSED;
 	n->flags = (STRING|STRCUR|MAYBE_NUM);	/* do not set MALLOC */
 	fields_arr[0] = n;
-
-#undef INITIAL_SIZE
-#undef MAX_SIZE
 }
 
 /* reset_record --- start over again with current $0 */
@@ -303,13 +373,32 @@ set_record(const char *buf, int cnt)
 void
 reset_record()
 {
+	fields_arr[0] = force_string(fields_arr[0]);
+	purge_record();
+	if ((fields_arr[0]->flags & MALLOC) != 0) {
+		allocate_databuf(fields_arr[0]->stlen, false);
+		databuf.space = databuf.p;
+	}
+	else {
+		allocate_databuf(fields_arr[0]->stlen, true);
+		/* may have been realloced, so set stptr */
+		fields_arr[0]->stptr = databuf.p;
+		databuf.space = databuf.p + fields_arr[0]->stlen + 1;
+	}
+}
+
+static void
+purge_record()
+{
 	int i;
 	NODE *n;
 
-	fields_arr[0] = force_string(fields_arr[0]);
-
 	NF = -1;
 	for (i = 1; i <= parse_high_water; i++) {
+#ifndef NDEBUG
+		if ((fields_arr[i]->flags & MALLOC) == 0)
+			assert(fields_arr[i]->valref == 1);
+#endif
 		unref(fields_arr[i]);
 		getnode(n);
 		*n = *Null_field;
