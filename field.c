@@ -194,41 +194,30 @@ rebuild_record()
 	 */
 	for (cops = ops, i = 1; i <= NF; i++) {
 		NODE *r = fields_arr[i];
-		if (r->stlen > 0) {
+		/*
+		 * I see no reason to copy malloc'ed fields to point into
+		 * the new $0 buffer, but that's how previous versions did it.
+		 * It seems faster to leave the malloc'ed fields in place.
+		 */
+		if (r->stlen > 0 && (r->flags & MALLOC) == 0) {
 			NODE *n;
 			getnode(n);
 
-			if ((r->flags & MALLOC) != 0) {
-				*n = *Null_field;
-				n->stlen = r->stlen;
-				if ((r->flags & (NUMCUR|NUMBER)) != 0) {
-					n->flags |= (r->flags & (MPFN|MPZN|NUMCUR|NUMBER));
-#ifdef HAVE_MPFR
-					if (is_mpg_float(r)) {
-					        mpfr_init(n->mpg_numbr);
-						mpfr_set(n->mpg_numbr, r->mpg_numbr, ROUND_MODE);
-					} else if (is_mpg_integer(r)) {
-					        mpz_init(n->mpg_i);
-						mpz_set(n->mpg_i, r->mpg_i);
-					} else
-#endif
-					n->numbr = r->numbr;
-				}
-			} else {
-				*n = *r;
-				if (r->valref > 1) {
-					/*
-					 * XXX This probably should never
-					 * happen, but we can't leave r with
-					 * stptr pointing into the old $0
-					 * buffer. Perhaps we should issue a
-					 * warning message about memory
-					 * corruption...
-					 */
-					emalloc(r->stptr, char *, r->stlen + 1, "rebuild_record");
-					memcpy(r->stptr, cops, r->stlen);
-					r->stptr[r->stlen] = '\0';
-				}
+			*n = *r;
+			if (r->valref > 1) {
+				/*
+				 * I don't think this should happen, since it
+				 * was not considered by previous versions of
+				 * this function. But it seems clear to me that
+				 * we can't leave r's stptr pointing into the
+				 * old $0 buffer that we are about to unref.
+				 * It's not obvious to me that valref must be
+				 * 1 in all cases, so it seems wise to suppport
+				 * this corner case.
+				 */
+				emalloc(r->stptr, char *, r->stlen + 1, "rebuild_record");
+				memcpy(r->stptr, cops, r->stlen);
+				r->stptr[r->stlen] = '\0';
 			}
 
 			n->stptr = cops;
