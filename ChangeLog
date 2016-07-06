@@ -1,5 +1,10 @@
 2016-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* field.c (rebuild_record): Need to set MALLOC flag if we allocate
+	memory for a residual field node with valref > 1.
+
+2016-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* field.c (rebuild_record): Do not bother to create new field nodes
 	to replace malloc'ed nodes when rebuilding $0.
 

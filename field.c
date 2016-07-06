@@ -218,6 +218,7 @@ rebuild_record()
 				emalloc(r->stptr, char *, r->stlen + 1, "rebuild_record");
 				memcpy(r->stptr, cops, r->stlen);
 				r->stptr[r->stlen] = '\0';
+				r->flags |= MALLOC;
 			}
 
 			n->stptr = cops;
