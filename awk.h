@@ -430,22 +430,22 @@ typedef struct exp_node {
 #		define	NUMBER	0x0010       /* assigned as number */
 #		define	MAYBE_NUM 0x0020     /* user input: if NUMERIC then
 		                              * a NUMBER */
-#		define	INTLSTR	0x0080       /* use localized version */
-#		define	NUMINT	0x0100       /* numeric value is an integer */
-#		define	INTIND	0x0200	     /* integral value is array index;
+#		define	INTLSTR	0x0040       /* use localized version */
+#		define	NUMINT	0x0080       /* numeric value is an integer */
+#		define	INTIND	0x0100	     /* integral value is array index;
 		                              * lazy conversion to string.
 		                              */
-#		define	WSTRCUR	0x0400       /* wide str value is current */
-#		define	MPFN	0x0800       /* arbitrary-precision floating-point number */
-#		define	MPZN	0x1000       /* arbitrary-precision integer */
-#		define	NO_EXT_SET 0x2000    /* extension cannot set a value for this variable */
-#		define	NULL_FIELD 0x4000    /* this is the null field */
+#		define	WSTRCUR	0x0200       /* wide str value is current */
+#		define	MPFN	0x0400       /* arbitrary-precision floating-point number */
+#		define	MPZN	0x0800       /* arbitrary-precision integer */
+#		define	NO_EXT_SET 0x1000    /* extension cannot set a value for this variable */
+#		define	NULL_FIELD 0x2000    /* this is the null field */
 
 /* type = Node_var_array */
-#		define	ARRAYMAXED	0x8000       /* array is at max size */
-#		define	HALFHAT		0x10000       /* half-capacity Hashed Array Tree;
+#		define	ARRAYMAXED	0x4000       /* array is at max size */
+#		define	HALFHAT		0x8000       /* half-capacity Hashed Array Tree;
 		                                      * See cint_array.c */
-#		define	XARRAY		0x20000
+#		define	XARRAY		0x10000
 } NODE;
 
 #define vname sub.nodep.name
