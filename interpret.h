@@ -363,12 +363,8 @@ uninitialized_scalar:
 			lhs = r_get_field(t1, (Func_ptr *) 0, true);
 			decr_sp();
 			DEREF(t1);
-			/* only for $0, up ref count */
-			if (*lhs == fields_arr[0]) {
-				r = *lhs;
-				UPREF(r);
-			} else
-				r = dupnode(*lhs);
+			r = *lhs;
+			UPREF(r);
 			PUSH(r);
 			break;
 

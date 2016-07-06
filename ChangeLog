@@ -1,5 +1,15 @@
 2016-07-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* interpret.h (Op_field_spec): Now that all $n field values are
+	NUL-terminated, there is no reason to call dupnode for $n where n > 0.
+	This saves malloc and copying overhead, thereby more than offsetting the
+	performance hit of the additional copying and NUL-termination in the
+	last patch to field.c. It also eliminates repeated parsing in cases
+	where $n, for n > 1, was accessed more than once in a numeric context,
+	so the new approach should be a performance win.
+
+2016-07-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	Make sure that all field values, and therefore all strings inside gawk,
 	are terminated with a '\0' character!
 	* field.c (databuf): New static struct to hold info about our buffer to
