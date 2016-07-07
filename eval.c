@@ -493,14 +493,7 @@ static int
 posix_compare(NODE *s1, NODE *s2)
 {
 	int ret = 0;
-	char save1, save2;
 	size_t l = 0;
-
-	save1 = s1->stptr[s1->stlen];
-	s1->stptr[s1->stlen] = '\0';
-
-	save2 = s2->stptr[s2->stlen];
-	s2->stptr[s2->stlen] = '\0';
 
 	if (gawk_mb_cur_max == 1) {
 		if (strlen(s1->stptr) == s1->stlen && strlen(s2->stptr) == s2->stlen)
@@ -563,8 +556,6 @@ posix_compare(NODE *s1, NODE *s2)
 	}
 #endif
 
-	s1->stptr[s1->stlen] = save1;
-	s2->stptr[s2->stlen] = save2;
 	return ret;
 }
 
@@ -824,7 +815,6 @@ set_ORS()
 	ORS_node->var_value = force_string(ORS_node->var_value);
 	ORS = ORS_node->var_value->stptr;
 	ORSlen = ORS_node->var_value->stlen;
-	ORS[ORSlen] = '\0';
 }
 
 /* fmt_ok --- is the conversion format a valid one? */
@@ -887,7 +877,6 @@ fmt_index(NODE *n)
 		ix++;
 	}
 	/* not found */
-	n->stptr[n->stlen] = '\0';
 	if (do_lint && ! fmt_ok(n))
 		lintwarn(_("bad `%sFMT' specification `%s'"),
 			    n == CONVFMT_node->var_value ? "CONV"
@@ -972,7 +961,6 @@ set_TEXTDOMAIN()
 	tmp = TEXTDOMAIN_node->var_value = force_string(TEXTDOMAIN_node->var_value);
 	TEXTDOMAIN = tmp->stptr;
 	len = tmp->stlen;
-	TEXTDOMAIN[len] = '\0';
 	/*
 	 * Note: don't call textdomain(); this value is for
 	 * the awk program, not for gawk itself.

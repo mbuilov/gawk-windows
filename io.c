@@ -480,7 +480,6 @@ nextfile(IOBUF **curfile, bool skipping)
 		if (arg == NULL || arg->stlen == 0)
 			continue;
 		arg = force_string(arg);
-		arg->stptr[arg->stlen] = '\0';
 		if (! do_traditional) {
 			unref(ARGIND_node->var_value);
 			ARGIND_node->var_value = make_number((AWKNUM) i);

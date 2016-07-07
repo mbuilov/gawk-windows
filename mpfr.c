@@ -275,7 +275,6 @@ static int
 force_mpnum(NODE *n, int do_nondec, int use_locale)
 {
 	char *cp, *cpend, *ptr, *cp1;
-	char save;
 	int tval, base = 10;
 
 	if (n->stlen == 0) {
@@ -291,9 +290,6 @@ force_mpnum(NODE *n, int do_nondec, int use_locale)
 		mpg_zero(n);
 		return false;
 	}
-
-	save = *cpend;
-	*cpend = '\0';
 
 	if (*cp == '+' || *cp == '-')
 		cp1 = cp + 1;
@@ -329,7 +325,6 @@ done:
 	/* trailing space is OK for NUMBER */
 	while (ptr < cpend && isspace((unsigned char) *ptr))
 		ptr++;
-	*cpend = save;
 	if (errno == 0 && ptr == cpend)
 		return true;
 	errno = 0;

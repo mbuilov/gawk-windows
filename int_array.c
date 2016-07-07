@@ -128,7 +128,6 @@ is_integer(NODE *symbol, NODE *subs)
 
 	/* must be a STRING */
 	char *cp = subs->stptr, *cpend, *ptr;
-	char save;
 	size_t len = subs->stlen;
 
 	if (len == 0 || (! isdigit((unsigned char) *cp) && *cp != '-'))
@@ -151,12 +150,9 @@ is_integer(NODE *symbol, NODE *subs)
 	}
 
 	cpend = cp + len;
-	save = *cpend;
-	*cpend = '\0';
 
 	errno = 0;
 	l = strtol(cp, & ptr, 10);
-	*cpend = save;
 	if (errno != 0 || ptr != cpend)
 		return NULL;
 

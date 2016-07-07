@@ -1,5 +1,39 @@
 2016-07-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* awk.h: Modify stptr comment to indicate that all strings are now
+	NUL-terminated.
+	* builtin.c (do_mktime): Remove unnecessary logic to terminate
+	the string with '\0' temporarily.
+	(do_system) Ditto.
+	(nondec2awknum): Add a comment about termination.
+	* eval.c (posix_compare): Remove logic to terminate strings temporarily.
+	(set_ORS): No need to terminate ORS, since the string node is already
+	terminated. What gave us the right to modify that node anyway?
+	(fmt_index): Remove code to terminate string. This seems to have been
+	invalid anyway, since we don't own that memory.
+	(set_TEXTDOMAIN): Do not terminate TEXTDOMAIN string, since the node
+	is already terminated. We didn't have the right to modify that node
+	anyway.
+	* gawkapi.c (node_to_awk_value): Add assert checks to confirm that the
+	string is NUL-terminated.
+	* gawkapi.h: Modify awk_string comment to indicate that strings are
+	always terminated with '\0'.
+	* int_array.c (isinteger): Remove unnecessary logic to terminate string
+	with '\0' temporarily.
+	* interpret.h (Op_push_i): Ditto.
+	* io.c (nextfile): Remove string termination. We didn't own that memory
+	anyway.
+	* mpfr.c (force_mpnum): Remove unnecessary logic to terminate the
+	string with '\0' temporarily.
+	* node.c (r_force_number): Remove NUL termination around strtod call,
+	since we already know that there is either a white space or '\0'
+	character there. Either one will stop strtod.
+	(get_ieee_magic_val): Ditto.
+	* profile.c (pp_number): No need to terminate string returned by
+	r_format_val.
+
+2016-07-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* interpret.h (Op_field_spec): Now that all $n field values are
 	NUL-terminated, there is no reason to call dupnode for $n where n > 0.
 	This saves malloc and copying overhead, thereby more than offsetting the

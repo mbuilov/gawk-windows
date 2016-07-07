@@ -440,6 +440,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 			(void) force_string(node);
 			val->str_value.str = node->stptr;
 			val->str_value.len = node->stlen;
+			assert(val->str_value.str[val->str_value.len] == '\0');
 			ret = awk_true;
 			break;
 
@@ -468,6 +469,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				val->val_type = AWK_STRING;
 				val->str_value.str = node->stptr;
 				val->str_value.len = node->stlen;
+				assert(val->str_value.str[val->str_value.len] == '\0');
 				ret = awk_true;
 			} else
 				val->val_type = AWK_UNDEFINED;

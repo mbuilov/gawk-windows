@@ -2035,15 +2035,11 @@ do_mktime(int nargs)
 	int month, day, hour, minute, second, count;
 	int dst = -1; /* default is unknown */
 	time_t then_stamp;
-	char save;
 
 	t1 = POP_SCALAR();
 	if (do_lint && (fixtype(t1)->flags & STRING) == 0)
 		lintwarn(_("mktime: received non-string argument"));
 	t1 = force_string(t1);
-
-	save = t1->stptr[t1->stlen];
-	t1->stptr[t1->stlen] = '\0';
 
 	count = sscanf(t1->stptr, "%ld %d %d %d %d %d %d",
 		        & year, & month, & day,
@@ -2058,7 +2054,6 @@ do_mktime(int nargs)
 		|| (month < 1 || month > 12) ))
 			lintwarn(_("mktime: at least one of the values is out of the default range"));
 
-	t1->stptr[t1->stlen] = save;
 	DEREF(t1);
 
 	if (count < 6
@@ -2088,7 +2083,6 @@ do_system(int nargs)
 	NODE *tmp;
 	AWKNUM ret = 0;		/* floating point on purpose, compat Unix awk */
 	char *cmd;
-	char save;
 	int status;
 
 	if (do_sandbox)
@@ -2101,10 +2095,6 @@ do_system(int nargs)
 	cmd = force_string(tmp)->stptr;
 
 	if (cmd && *cmd) {
-		/* insure arg to system is zero-terminated */
-		save = cmd[tmp->stlen];
-		cmd[tmp->stlen] = '\0';
-
 		os_restore_mode(fileno(stdin));
 #ifdef SIGPIPE
 		signal(SIGPIPE, SIG_DFL);
@@ -2148,7 +2138,6 @@ do_system(int nargs)
 		signal(SIGPIPE, SIG_IGN);
 #endif
 
-		cmd[tmp->stlen] = save;
 	}
 	DEREF(tmp);
 	return make_number((AWKNUM) ret);
@@ -3632,6 +3621,11 @@ nondec2awknum(char *str, size_t len, char **endptr)
 			*endptr = str;
 	} else {
 decimal:
+		/*
+		 * Terminating is probably unnecessary, since the caller always
+		 * passes a string ending with '\0' or white space, but it
+		 * seems safest to leave this to avoid future problems.
+		 */
 		save = str[len];
 		str[len] = '\0';
 		retval = strtod(str, endptr);

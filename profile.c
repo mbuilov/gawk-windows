@@ -1541,7 +1541,6 @@ pp_number(NODE *n)
 
 		s = r_format_val("%.6g", 0, s);
 
-		s->stptr[s->stlen] = '\0';
 		str = s->stptr;
 
 		freenode(s);

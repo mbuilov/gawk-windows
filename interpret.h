@@ -135,13 +135,10 @@ top:
 		case Op_push_i:
 			m = pc->memory;
 			if (! do_traditional && (m->flags & INTLSTR) != 0) {
-				char *orig, *trans, save;
+				char *orig, *trans;
 
-				save = m->stptr[m->stlen];
-				m->stptr[m->stlen] = '\0';
 				orig = m->stptr;
 				trans = dgettext(TEXTDOMAIN, orig);
-				m->stptr[m->stlen] = save;
 				m = make_string(trans, strlen(trans));
 			} else
 				UPREF(m);
