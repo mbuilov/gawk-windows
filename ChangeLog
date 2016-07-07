@@ -1,5 +1,23 @@
 2016-07-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* awk.h: Modify comments to indicate that MAYBE_NUM will now be
+	left enabled to indicate strnum values by the NUMBER|MAYBE_NUM
+	combination, whereas STRING|MAYBE_NUM indicates a potential strnum.
+	(fixtype): Modify MAYBE_NUM test to avoid calling force_number if
+	NUMCUR is already set.
+	* builtin.c (do_typeof): Call fixtype to resolve argument type.
+	This forces parsing of numeric strings, so there's a performance
+	penalty, but we must do this to give a correct result. The meaning
+	of "strnum" changes from "potential strnum" to "actual strnum".
+	* eval.c (set_TEXTDOMAIN): Remove some dead code left over from last
+	patch.
+	* int_array.c (is_integer): When a MAYBE_NUM is converted successfully
+	to a NUMBER, leave the MAYBE_NUM flag enabled.
+	* mpfr.c (mpg_force_number): Ditto.
+	* node.c (r_force_number): Ditto.
+
+2016-07-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* awk.h: Modify stptr comment to indicate that all strings are now
 	NUL-terminated.
 	* builtin.c (do_mktime): Remove unnecessary logic to terminate

@@ -955,12 +955,10 @@ set_LINT()
 void
 set_TEXTDOMAIN()
 {
-	int len;
 	NODE *tmp;
 
 	tmp = TEXTDOMAIN_node->var_value = force_string(TEXTDOMAIN_node->var_value);
 	TEXTDOMAIN = tmp->stptr;
-	len = tmp->stlen;
 	/*
 	 * Note: don't call textdomain(); this value is for
 	 * the awk program, not for gawk itself.

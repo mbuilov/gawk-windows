@@ -3951,14 +3951,14 @@ do_typeof(int nargs)
 		break;
 	case Node_val:
 	case Node_var:
-		switch (arg->flags & (STRING|NUMBER|MAYBE_NUM)) {
+		switch (fixtype(arg)->flags & (STRING|NUMBER|MAYBE_NUM)) {
 		case STRING:
 			res = "string";
 			break;
 		case NUMBER:
 			res = "number";
 			break;
-		case STRING|MAYBE_NUM:
+		case NUMBER|MAYBE_NUM:
 			res = "strnum";
 			break;
 		case NUMBER|STRING:

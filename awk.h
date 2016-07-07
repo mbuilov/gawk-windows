@@ -406,14 +406,16 @@ typedef struct exp_node {
 	 * 	b = a + 0	# Adds NUMCUR to a, since numeric value
 	 * 			# is now available. But the type hasn't changed!
 	 *
-	 * MAYBE_NUM is the joker.  It means "this is string data, but
-	 * the user may have really wanted it to be a number. If we have
-	 * to guess, like in a comparison, turn it into a number if the string
-	 * is indeed numeric."
+	 * MAYBE_NUM is the joker.  When STRING|MAYBE_NUM is set, it means
+	 * "this is string data, but the user may have really wanted it to be a
+	 * number. If we have to guess, like in a comparison, turn it into a
+	 * number if the string is indeed numeric."
 	 * For example,    gawk -v a=42 ....
 	 * Here, `a' gets STRING|STRCUR|MAYBE_NUM and then when used where
 	 * a number is needed, it gets turned into a NUMBER and STRING
-	 * is cleared.
+	 * is cleared. In that case, we leave the MAYBE_NUM in place, so
+	 * the combination NUMBER|MAYBE_NUM means it is a strnum a.k.a. a
+	 * "numeric string".
 	 *
 	 * WSTRCUR is for efficiency. If in a multibyte locale, and we
 	 * need to do something character based (substr, length, etc.)
@@ -1865,7 +1867,7 @@ fixtype(NODE *n)
 {
 	assert(n->type == Node_val || n->type == Node_typedregex);
 	if (n->type == Node_val) {
-		if ((n->flags & MAYBE_NUM) != 0)
+		if ((n->flags & (NUMCUR|MAYBE_NUM)) == MAYBE_NUM)
 			return force_number(n);
 		if ((n->flags & INTIND) != 0)
 			return force_string(n);

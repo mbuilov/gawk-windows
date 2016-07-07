@@ -342,7 +342,8 @@ mpg_force_number(NODE *n)
 
 	if (force_mpnum(n, (do_non_decimal_data && ! do_traditional), true)) {
 		if ((n->flags & MAYBE_NUM) != 0) {
-			n->flags &= ~(MAYBE_NUM|STRING);
+			/* leave MAYBE_NUM set to indicate a strnum */
+			n->flags &= ~STRING;
 			n->flags |= NUMBER;
 		}
 	} else
