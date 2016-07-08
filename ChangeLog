@@ -1,3 +1,35 @@
+2016-07-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h: Restore previous comment about unterminated strings, since
+	I am removing the string termination patches from field.c
+	(free_api_string_copies): Declare new gawkapi function.
+	* builtin.c (do_mktime, do_system): Restore temporary string
+	termination to protect against unterminated field values.
+	(nondec2awknum): Remove comment about unnecessary termination.
+	* eval.c (posix_compare): Restore temporary string termination.
+	* field.c (databuf): Remove struct no longer needed.
+	(set_field): Remove memcpy for string termination, since we will support
+	unterminated field string values.
+	(rebuild_record): Ditto. Also no need to allocate space for terminated
+	string copies.
+	(allocate_databuf): Remove function, since memory management can again
+	be done inside set_record.
+	(set_record): Restore inline buffer management logic.
+	(reset_record): Remove calls to allocate_databuf, since we no longer
+	need space for making terminated copies of field strings.
+	* gawkapi.c (free_api_string_copies): New function to free strings
+	that we made to provide terminated copies to API functions.
+	(assign_string): New function to convert a string to an awk_value,
+	making sure to copy it if we need to terminate it.
+	(node_to_awk_value): Use assign_string to return string values with
+	NUL termination protection.
+	* int_array.c (is_integer): Restore temporary string termination.
+	* interpret.h (Op_push_i): Ditto.
+	(Op_ext_builtin): After external function returns, call
+	free_api_string_copies to free temporary string copies.
+	* mpfr.c (force_mpnum): Restore temporary string termination.
+	* node.c (r_force_number, get_ieee_magic_val): Ditto.
+
 2016-07-08         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with GNU grep.

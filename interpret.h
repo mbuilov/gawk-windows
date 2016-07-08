@@ -135,10 +135,13 @@ top:
 		case Op_push_i:
 			m = pc->memory;
 			if (! do_traditional && (m->flags & INTLSTR) != 0) {
-				char *orig, *trans;
+				char *orig, *trans, save;
 
+				save = m->stptr[m->stlen];
+				m->stptr[m->stlen] = '\0';
 				orig = m->stptr;
 				trans = dgettext(TEXTDOMAIN, orig);
+				m->stptr[m->stlen] = save;
 				m = make_string(trans, strlen(trans));
 			} else
 				UPREF(m);
@@ -959,6 +962,7 @@ arrayfor:
 				if (t1->type == Node_val)
 					DEREF(t1);
 			}
+			free_api_string_copies();
 			PUSH(r);
 		}
 			break;

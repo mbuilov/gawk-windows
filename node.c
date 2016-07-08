@@ -59,6 +59,7 @@ r_force_number(NODE *n)
 {
 	char *cp;
 	char *cpend;
+	char save;
 	char *ptr;
 	extern double strtod();
 
@@ -132,13 +133,10 @@ r_force_number(NODE *n)
 		/* nondec2awknum() saves and restores the byte after the string itself */
 		n->numbr = nondec2awknum(cp, cpend - cp, &ptr);
 	} else {
-		/*
-		 * There is no need to set *cpend to '\0' because it is either
-		 * pointing to white space or the '\0' at the end of the string.
-		 * In either case, strtod should terminate on that character
-		 * or earlier due to non-numeric characters.
-		 */
+		save = *cpend;
+		*cpend = '\0';
 		n->numbr = (AWKNUM) strtod((const char *) cp, &ptr);
+		*cpend = save;
 	}
 
 	if (errno == 0) {
@@ -944,14 +942,13 @@ get_ieee_magic_val(char *val)
 	static bool first = true;
 	static AWKNUM inf;
 	static AWKNUM nan;
+	char save;
 
 	char *ptr;
-	/*
-	 * There is no need to set val[4] to '\0' because it is either white
-	 * space or the NUL character at the end of the string. Either way,
-	 * strtod should terminate on that character.
-	 */
+	save = val[4];
+	val[4] = '\0';
 	AWKNUM v = strtod(val, &ptr);
+	val[4] = save;
 
 	if (val == ptr) { /* Older strtod implementations don't support inf or nan. */
 		if (first) {

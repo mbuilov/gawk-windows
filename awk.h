@@ -475,7 +475,14 @@ typedef struct exp_node {
 #define re_cnt	flags
 
 /* Node_val */
-/* Note that the string in stptr will always be NUL-terminated. */
+/*
+ * Note that the string in stptr may not be NUL-terminated, but it is
+ * guaranteed to have at least one extra byte that may be temporarily set
+ * to '\0'. This is helpful when calling functions such as strtod that require
+ * a NUL-terminated argument. In particular, field values $n for n > 0 and
+ * n < NF will not have a NUL terminator, since they point into the $0 buffer.
+ * All other strings are NUL-terminated.
+ */
 #define stptr	sub.val.sp
 #define stlen	sub.val.slen
 #define valref	sub.val.sref
@@ -1497,6 +1504,7 @@ extern void update_ext_api(void);
 extern NODE *awk_value_to_node(const awk_value_t *);
 extern void run_ext_exit_handlers(int exitval);
 extern void print_ext_versions(void);
+extern void free_api_string_copies(void);
 
 /* gawkmisc.c */
 extern char *gawk_name(const char *filespec);
