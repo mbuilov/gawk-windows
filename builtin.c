@@ -2203,9 +2203,10 @@ do_print(int nargs, int redirtype)
 
 		if (tmp->type == Node_typedregex)
 			args_array[i] = force_string(tmp);
-		else if (!((tmp->flags & STRCUR) != 0
-				&& (tmp->stfmt == STFMT_UNUSED || tmp->stfmt == OFMTidx)))
-			args_array[i] = format_val(OFMT, OFMTidx, tmp);
+		else if (   (tmp->flags & STRCUR) == 0
+			 || (   tmp->stfmt != STFMT_UNUSED
+			     && tmp->stfmt != OFMTidx))
+				args_array[i] = format_val(OFMT, OFMTidx, tmp);
 	}
 
 	if (redir_exp != NULL) {
