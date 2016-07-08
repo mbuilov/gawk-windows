@@ -434,13 +434,12 @@ struct dfa
                                    newline is stored separately and handled
                                    as a special case.  Newline is also used
                                    as a sentinel at the end of the buffer.  */
-  state_num initstate_letter;   /* Initial state for letter context.  */
-  state_num initstate_others;   /* Initial state for other contexts.  */
-  position_set mb_follows;	/* Follow set added by ANYCHAR and/or MBCSET
+  state_num initstate_notbol;   /* Initial state for CTX_LETTER and CTX_NONE
+                                   context in multibyte locales, in which we
+                                   do not distinguish between their contexts,
+                                   as not supported word.  */
+  position_set mb_follows;      /* Follow set added by ANYCHAR and/or MBCSET
                                    on demand.  */
-  int *mb_match_lens;           /* Array of length reduced by ANYCHAR and/or
-                                   MBCSET.  Null if mb_follows.elems has not
-                                   been allocated.  */
 };
 
 /* Some macros for user access to dfa internals.  */
@@ -702,16 +701,6 @@ char_context (unsigned char c)
   if (c == eolbyte)
     return CTX_NEWLINE;
   if (unibyte_word_constituent (c))
-    return CTX_LETTER;
-  return CTX_NONE;
-}
-
-static int
-wchar_context (wint_t wc)
-{
-  if (wc == (wchar_t) eolbyte || wc == 0)
-    return CTX_NEWLINE;
-  if (wc == L'_' || iswalnum (wc))
     return CTX_LETTER;
   return CTX_NONE;
 }
@@ -2520,13 +2509,10 @@ dfaanalyze (struct dfa *d, bool searchflag)
   separate_contexts = state_separate_contexts (&merged);
   if (separate_contexts & CTX_NEWLINE)
     state_index (d, &merged, CTX_NEWLINE);
-  d->initstate_others = d->min_trcount
+  d->initstate_notbol = d->min_trcount
     = state_index (d, &merged, separate_contexts ^ CTX_ANY);
   if (separate_contexts & CTX_LETTER)
-    d->initstate_letter = d->min_trcount
-      = state_index (d, &merged, CTX_LETTER);
-  else
-    d->initstate_letter = d->initstate_others;
+    d->min_trcount = state_index (d, &merged, CTX_LETTER);
   d->min_trcount++;
 
   free (posalloc);
@@ -2957,132 +2943,62 @@ build_state (state_num s, struct dfa *d)
 
 /* Multibyte character handling sub-routines for dfaexec.  */
 
-/* Return values of transit_state_singlebyte, and
-   transit_state_consume_1char.  */
-typedef enum
-{
-  TRANSIT_STATE_IN_PROGRESS,    /* State transition has not finished.  */
-  TRANSIT_STATE_DONE,           /* State transition has finished.  */
-  TRANSIT_STATE_END_BUFFER      /* Reach the end of the buffer.  */
-} status_transit_state;
-
 /* Consume a single byte and transit state from 's' to '*next_state'.
    This function is almost same as the state transition routin in dfaexec.
    But state transition is done just once, otherwise matching succeed or
    reach the end of the buffer.  */
-static status_transit_state
-transit_state_singlebyte (struct dfa *d, state_num s, unsigned char const *p,
-                          state_num * next_state)
+static state_num
+transit_state_singlebyte (struct dfa *d, state_num s, unsigned char const **pp)
 {
   state_num *t;
-  state_num works = s;
 
-  status_transit_state rval = TRANSIT_STATE_IN_PROGRESS;
-
-  while (rval == TRANSIT_STATE_IN_PROGRESS)
+  if (**pp == eolbyte)
     {
-      if ((t = d->trans[works]) != NULL)
-        {
-          works = t[*p];
-          rval = TRANSIT_STATE_DONE;
-          if (works < 0)
-            works = 0;
-        }
-      else if (works < 0)
-        works = 0;
-      else if (d->fails[works])
-        {
-          works = d->fails[works][*p];
-          rval = TRANSIT_STATE_DONE;
-        }
+      /* S is always an initial state in transit_state, so the
+         transition table for the state must have been built already.  */
+      assert (d->trans[s] || d->fails[s]);
+
+      ++*pp;
+      return d->newlines[s];
+    }
+
+  if (d->trans[s])
+    t = d->trans[s];
+  else if (d->fails[s])
+    t = d->fails[s];
+  else
+    {
+      build_state (s, d);
+      if (d->trans[s])
+        t = d->trans[s];
       else
         {
-          build_state (works, d);
+          t = d->fails[s];
+          assert (t);
         }
     }
-  *next_state = works;
-  return rval;
+
+  return t[*(*pp)++];
 }
 
-/* Match a "." against the current context.  Return the length of the
-   match, in bytes.  POS is the position of the ".".  */
-static int
-match_anychar (struct dfa *d, state_num s, position pos,
-               wint_t wc, size_t mbclen)
+/* Transit state from s, then return new state and update the pointer of
+   the buffer.  This function is for a period operator which can match a
+   multi-byte character.  */
+static state_num
+transit_state (struct dfa *d, state_num s, unsigned char const **pp,
+               unsigned char const *end)
 {
-  int context;
-
-  /* Check syntax bits.  */
-  if (wc == (wchar_t) '\n')
-    {
-      if (!(syntax_bits & RE_DOT_NEWLINE))
-        return 0;
-    }
-  else if (wc == (wchar_t) '\0')
-    {
-      if (syntax_bits & RE_DOT_NOT_NULL)
-        return 0;
-    }
-  else if (wc == WEOF)
-    return 0;
-
-  context = wchar_context (wc);
-  if (!SUCCEEDS_IN_CONTEXT (pos.constraint, d->states[s].context, context))
-    return 0;
-
-  return mbclen;
-}
-
-/* Check whether each of 'd->states[s].mbps.elem' can match.  Then return the
-   array which corresponds to 'd->states[s].mbps.elem'; each element of the
-   array contains the number of bytes with which the element can match.
-
-   The caller MUST free the array which this function return.  */
-static int *
-check_matching_with_multibyte_ops (struct dfa *d, state_num s,
-                                   char const *p, wint_t wc, size_t mbclen)
-{
-  size_t i;
-  int *rarray;
-
-  rarray = d->mb_match_lens;
-  for (i = 0; i < d->states[s].mbps.nelem; ++i)
-    {
-      position pos = d->states[s].mbps.elems[i];
-      switch (d->tokens[pos.index])
-        {
-        case ANYCHAR:
-          rarray[i] = match_anychar (d, s, pos, wc, mbclen);
-          break;
-        default:
-          break;                /* cannot happen.  */
-        }
-    }
-  return rarray;
-}
-
-/* Consume a single character and enumerate all of the positions which can
-   be the next position from the state 's'.
-
-   'match_lens' is the input.  It can be NULL, but it can also be the output
-   of check_matching_with_multibyte_ops for optimization.
-
-   'mbclen' and 'pps' are the output.  'mbclen' is the length of the
-   character consumed, and 'pps' is the set this function enumerates.  */
-static status_transit_state
-transit_state_consume_1char (struct dfa *d, state_num s,
-                             unsigned char const **pp,
-                             wint_t wc, size_t mbclen,
-                             int *match_lens)
-{
+  state_num s1, s2;
+  wint_t wc;
   size_t i, j;
   int k;
-  state_num s1, s2;
-  status_transit_state rs = TRANSIT_STATE_DONE;
+  int separate_contexts;
 
-  if (! match_lens && d->states[s].mbps.nelem != 0)
-    match_lens = check_matching_with_multibyte_ops (d, s, (char const *) *pp,
-                                                    wc, mbclen);
+  int mbclen = mbs_to_wchar (&wc, (char const *) *pp, end - *pp, d);
+  int context = wc == eolbyte ? CTX_NEWLINE : CTX_NONE;
+
+  /* This state has some operators which can match a multibyte character.  */
+  d->mb_follows.nelem = 0;
 
   /* Calculate the state which can be reached from the state 's' by
      consuming 'mbclen' single bytes from the buffer.  */
@@ -3090,7 +3006,7 @@ transit_state_consume_1char (struct dfa *d, state_num s,
   for (k = 0; k < mbclen; k++)
     {
       s2 = s1;
-      rs = transit_state_singlebyte (d, s2, (*pp)++, &s1);
+      s1 = transit_state_singlebyte (d, s2, pp);
     }
   copy (&d->states[s1].elems, &d->mb_follows);
 
@@ -3098,94 +3014,20 @@ transit_state_consume_1char (struct dfa *d, state_num s,
      a single character.  */
   for (i = 0; i < d->states[s].mbps.nelem; i++)
     {
-      if (match_lens[i] == mbclen)
-        for (j = 0; j < d->follows[d->states[s].mbps.elems[i].index].nelem;
-             j++)
-          insert (d->follows[d->states[s].mbps.elems[i].index].elems[j],
-                  &d->mb_follows);
+      if (!SUCCEEDS_IN_CONTEXT (d->states[s].mbps.elems[i].constraint,
+                                d->states[s].context, context))
+        continue;
+      for (j = 0; j < d->follows[d->states[s].mbps.elems[i].index].nelem; j++)
+        insert (d->follows[d->states[s].mbps.elems[i].index].elems[j],
+                &d->mb_follows);
     }
 
-  /* FIXME: this return value is always ignored.  */
-  return rs;
-}
-
-/* Transit state from s, then return new state and update the pointer of the
-   buffer.  This function is for some operator which can match with a multi-
-   byte character or a collating element (which may be multi characters).  */
-static state_num
-transit_state (struct dfa *d, state_num s, unsigned char const **pp,
-               unsigned char const *end)
-{
-  state_num s1;
-  int mbclen;  /* The length of current input multibyte character.  */
-  int maxlen = 0;
-  size_t i, j;
-  int *match_lens = NULL;
-  size_t nelem = d->states[s].mbps.nelem;       /* Just a alias.  */
-  unsigned char const *p1 = *pp;
-  wint_t wc;
-
-  if (nelem > 0)
-    /* This state has (a) multibyte operator(s).
-       We check whether each of them can match or not.  */
-    {
-      /* Note: caller must free the return value of this function.  */
-      mbclen = mbs_to_wchar (&wc, (char const *) *pp, end - *pp, d);
-      match_lens = check_matching_with_multibyte_ops (d, s, (char const *) *pp,
-                                                      wc, mbclen);
-
-      for (i = 0; i < nelem; i++)
-        /* Search the operator which match the longest string,
-           in this state.  */
-        {
-          if (match_lens[i] > maxlen)
-            maxlen = match_lens[i];
-        }
-    }
-
-  if (nelem == 0 || maxlen == 0)
-    /* This state has no multibyte operator which can match.
-       We need to check only one single byte character.  */
-    {
-      status_transit_state rs;
-      rs = transit_state_singlebyte (d, s, *pp, &s1);
-
-      /* We must update the pointer if state transition succeeded.  */
-      if (rs == TRANSIT_STATE_DONE)
-        ++*pp;
-
-      return s1;
-    }
-
-  /* This state has some operators which can match a multibyte character.  */
-  d->mb_follows.nelem = 0;
-
-  /* 'maxlen' may be longer than the length of a character, because it may
-     not be a character but a (multi character) collating element.
-     We enumerate all of the positions which 's' can reach by consuming
-     'maxlen' bytes.  */
-  transit_state_consume_1char (d, s, pp, wc, mbclen, match_lens);
-
-  s1 = state_index (d, &d->mb_follows, wchar_context (wc));
+  separate_contexts = state_separate_contexts (&d->mb_follows);
+  if (! (context == CTX_NEWLINE || separate_contexts & CTX_NEWLINE))
+    context = separate_contexts ^ CTX_ANY;
+  s1 = state_index (d, &d->mb_follows, context);
   realloc_trans_if_necessary (d, s1);
 
-  while (*pp - p1 < maxlen)
-    {
-      mbclen = mbs_to_wchar (&wc, (char const *) *pp, end - *pp, d);
-      transit_state_consume_1char (d, s1, pp, wc, mbclen, NULL);
-
-      for (i = 0; i < nelem; i++)
-        {
-          if (match_lens[i] == *pp - p1)
-            for (j = 0;
-                 j < d->follows[d->states[s1].mbps.elems[i].index].nelem; j++)
-              insert (d->follows[d->states[s1].mbps.elems[i].index].elems[j],
-                      &d->mb_follows);
-        }
-
-      s1 = state_index (d, &d->mb_follows, wchar_context (wc));
-      realloc_trans_if_necessary (d, s1);
-    }
   return s1;
 }
 
@@ -3219,28 +3061,29 @@ skip_remains_mb (struct dfa *d, unsigned char const *p,
   return mbp;
 }
 
-/* Search through a buffer looking for a match to the given struct dfa.
+/* Search through a buffer looking for a match to the struct dfa *D.
    Find the first occurrence of a string matching the regexp in the
    buffer, and the shortest possible version thereof.  Return a pointer to
    the first character after the match, or NULL if none is found.  BEGIN
    points to the beginning of the buffer, and END points to the first byte
    after its end.  Note however that we store a sentinel byte (usually
    newline) in *END, so the actual buffer must be one byte longer.
-   When ALLOW_NL is nonzero, newlines may appear in the matching string.
+   When ALLOW_NL, newlines may appear in the matching string.
    If COUNT is non-NULL, increment *COUNT once for each newline processed.
-   Finally, if BACKREF is non-NULL set *BACKREF to indicate whether we
-   encountered a DFA-unfriendly construct.  The caller may use this to
-   decide whether to fall back on a matcher like regex.  If MULTIBYTE,
-   the input consists of multibyte characters and/or encoding-error bytes.
-   Otherwise, the input consists of single-byte characters.
+   If MULTIBYTE, the input consists of multibyte characters and/or
+   encoding-error bytes.  Otherwise, it consists of single-byte characters.
    Here is the list of features that make this DFA matcher punt:
-    - [M-N]-range-in-MB-locale: regex is up to 25% faster on [a-z]
+    - [M-N] range in non-simple locale: regex is up to 25% faster on [a-z]
+    - [^...] in non-simple locale
+    - [[=foo=]] or [[.foo.]]
+    - [[:alpha:]] etc. in multibyte locale (except [[:digit:]] works OK)
     - back-reference: (.)\1
-    - word-delimiter-in-MB-locale: \<, \>, \b
-    */
+    - word-delimiter in multibyte locale: \<, \>, \b, \B
+   See using_simple_locale for the definition of "simple locale".  */
+
 static inline char *
 dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
-             size_t *count, bool multibyte)
+              size_t *count, bool multibyte)
 {
   state_num s, s1;              /* Current state.  */
   unsigned char const *p, *mbp; /* Current input character.  */
@@ -3265,11 +3108,8 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
   if (multibyte)
     {
       memset (&d->mbs, 0, sizeof d->mbs);
-      if (! d->mb_match_lens)
-        {
-          d->mb_match_lens = xnmalloc (d->nleaves, sizeof *d->mb_match_lens);
-          alloc_position_set (&d->mb_follows, d->nleaves);
-        }
+      if (d->mb_follows.alloc == 0)
+        alloc_position_set (&d->mb_follows, d->nleaves);
     }
 
   for (;;)
@@ -3306,58 +3146,32 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
                          transit to another initial state after skip.  */
                       if (p < mbp)
                         {
-                          int context = wchar_context (wc);
-                          if (context == CTX_LETTER)
-                            s = d->initstate_letter;
-                          else
-                            /* It's CTX_NONE.  CTX_NEWLINE cannot happen,
-                               as we assume that a newline is always a
-                               single byte character.  */
-                            s = d->initstate_others;
+                          /* It's CTX_LETTER or CTX_NONE.  CTX_NEWLINE
+                             cannot happen, as we assume that a newline
+                             is always a single byte character.  */
+                          s1 = s = d->initstate_notbol;
                           p = mbp;
-                          s1 = s;
                         }
                     }
                 }
 
-              if (d->states[s].mbps.nelem == 0)
+              if (d->states[s].mbps.nelem == 0 || (*p == eol && !allow_nl)
+                  || (*p == '\n' && !(syntax_bits & RE_DOT_NEWLINE))
+                  || (*p == '\0' && (syntax_bits & RE_DOT_NOT_NULL))
+                  || (char *) p >= end)
                 {
+                  /* If an input character does not match ANYCHAR, do it
+                     like a single-byte character.  */
                   s = t[*p++];
-                  continue;
                 }
-
-              /* The following code is used twice.
-                 Use a macro to avoid the risk that they diverge.  */
-#define State_transition()                                              \
-  do {                                                                  \
-              /* Can match with a multibyte character (and multi-character \
-                 collating element).  Transition table might be updated.  */ \
-              s = transit_state (d, s, &p, (unsigned char *) end);      \
-                                                                        \
-              /* If previous character is newline after a transition    \
-                 for ANYCHAR or MBCSET in non-UTF8 multibyte locales,   \
-                 check whether current position is beyond the end of    \
-                 the input buffer.  Also, transit to initial state if   \
-                 !ALLOW_NL, even if RE_DOT_NEWLINE is set. */           \
-              if (p[-1] == eol)                                         \
-                {                                                       \
-                  if ((char *) p > end)                                 \
-                    {                                                   \
-                      p = NULL;                                         \
-                      goto done;                                        \
-                    }                                                   \
-                                                                        \
-                  nlcount++;                                            \
-                                                                        \
-                  if (!allow_nl)                                        \
-                    s = 0;                                              \
-                }                                                       \
-                                                                        \
-              mbp = p;                                                  \
-              trans = d->trans;                                         \
-  } while (false)
-
-              State_transition();
+              else
+                {
+                  s = transit_state (d, s, &p, (unsigned char *) end);
+                  if (s >= 0 && p[-1] == eol)
+                    nlcount++;
+                  mbp = p;
+                  trans = d->trans;
+                }
             }
         }
       else
@@ -3405,10 +3219,24 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
             goto done;
 
           s1 = s;
-          if (multibyte)
-            State_transition();
+          if (!multibyte || d->states[s].mbps.nelem == 0
+              || (*p == eol && !allow_nl)
+              || (*p == '\n' && !(syntax_bits & RE_DOT_NEWLINE))
+              || (*p == '\0' && (syntax_bits & RE_DOT_NOT_NULL))
+              || (char *) p >= end)
+            {
+              /* If a input character does not match ANYCHAR, do it
+                 like a single-byte character.  */
+              s = d->fails[s][*p++];
+            }
           else
-            s = d->fails[s][*p++];
+            {
+              s = transit_state (d, s, &p, (unsigned char *) end);
+              if (s >= 0 && p[-1] == eol)
+                nlcount++;
+              mbp = p;
+              trans = d->trans;
+            }
         }
       else
         {
@@ -3424,8 +3252,8 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
   return (char *) p;
 }
 
-/* Specialized versions of dfaexec_main for multibyte and single-byte
-   cases.  This is for performance.  */
+/* Specialized versions of dfaexec for multibyte and single-byte cases.
+   This is for performance, as dfaexec_main is an inline function.  */
 
 static char *
 dfaexec_mb (struct dfa *d, char const *begin, char *end,
@@ -3451,8 +3279,9 @@ dfaexec_noop (struct dfa *d, char const *begin, char *end,
   return (char *) begin;
 }
 
-/* Like dfaexec_main (D, BEGIN, END, ALLOW_NL, COUNT, BACKREF, D->multibyte),
-   but faster.  */
+/* Like dfaexec_main (D, BEGIN, END, ALLOW_NL, COUNT, D->multibyte),
+   but faster and set *BACKREF if the DFA code does not support this
+   regexp usage.  */
 
 char *
 dfaexec (struct dfa *d, char const *begin, char *end,
@@ -3488,8 +3317,6 @@ free_mbdata (struct dfa *d)
 
   free (d->mbcsets);
   free (d->mb_follows.elems);
-  free (d->mb_match_lens);
-  d->mb_match_lens = NULL;
 }
 
 /* Initialize the components of a dfa that the other routines don't
