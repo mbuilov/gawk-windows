@@ -15386,9 +15386,28 @@ function multiply(variable, amount)
 @}
 @end example
 
+@noindent
+You would use it like this:
+
+@example
+BEGIN @{
+    answer = 10.5
+    multiply("answer", 4)
+    print "The answer is", answer
+@}
+@end example
+
+@noindent
+When run, this produces:
+
+@example
+$ @kbd{gawk -f answer.awk}
+@print{} The answer is 42
+@end example
+
 @quotation NOTE
-In order to avoid severe time-travel paradoxes,@footnote{Not to mention difficult
-implementation issues.} neither @code{FUNCTAB} nor @code{SYMTAB}
+In order to avoid severe time-travel paradoxes,@footnote{Not to mention
+difficult implementation issues.} neither @code{FUNCTAB} nor @code{SYMTAB}
 is available as an element within the @code{SYMTAB} array.
 @end quotation
 @end table
