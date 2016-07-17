@@ -964,6 +964,7 @@ set_LINT()
 				else if (lintlen == 7 && strncmp(lintval, "invalid", 7) == 0) {
 					do_flags &= ~ DO_LINT_ALL;
 					do_flags |= DO_LINT_INVALID;
+					lintfunc = warning;
 				} else
 					lintfunc = warning;
 			} else {
