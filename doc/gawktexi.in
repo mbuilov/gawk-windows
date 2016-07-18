@@ -4498,6 +4498,11 @@ are generated.  Its purpose is to help isolate the source of a
 message, as there are multiple places that produce the
 same warning or error message.
 
+@item GAWK_LOCALE_DIR
+Specifies the location of compiled message object files
+for @command{gawk} itself. This is passed to the @code{bindtextdomain()}
+function when @command{gawk} starts up.
+
 @item GAWK_NO_DFA
 If this variable exists, @command{gawk} does not use the DFA regexp matcher
 for ``does it match'' kinds of tests. This can cause @command{gawk}
@@ -27775,6 +27780,26 @@ before or after the day in a date, local month abbreviations, and so on.
 @item LC_ALL
 All of the above.  (Not too useful in the context of @command{gettext}.)
 @end table
+
+@quotation NOTE
+@cindex @env{LANGUAGE} environment variable
+As described in @ref{Locales}, environment variables with the same
+name as the locale categories (@env{LC_CTYPE}, @env{LC_ALL}, etc.)
+influence @command{gawk}'s behavior (and that of other utilities).
+
+Normally, these variables also affect how the @code{gettext} library
+finds translations.  However, the @env{LANGUAGE} environment variable
+overrides the @env{LC_@var{xxx}} variables. Many GNU/Linux systems
+may define this variable without your knowledge, causing @command{gawk}
+to not find the correct translations.  If this happens to you,
+look to see if @env{LANGAUGE} is defined, and if so, use the shell's
+@command{unset} command to remove it.
+@end quotation
+
+For testing translations of @command{gawk} itself, you can set
+the @env{GAWK_LOCALE_DIR} environment variable. See the documentation
+for the C @code{bindtextdomain()} function and also see
+@ref{Other Environment Variables}.
 
 @node Programmer i18n
 @section Internationalizing @command{awk} Programs

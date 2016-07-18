@@ -1,3 +1,23 @@
+2016-07-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c (locale_dir): New variable, init to LOCALEDIR (set by
+	configure).
+	(set_locale_stuff): Move calls to bindtextdomain and
+	textdomain to here; they must be done after calling setlocale.
+	Use locale_dir instead of LOCALEDIR.
+	(main): Move call to set_locale_stuff() to before parsing arguments.
+	Check for GAWK_LOCALE_DIR env var and use it if there. If doing
+	locale debugging, call set_locale_stuff again if arg parsing changed
+	the locale.
+
+	Unrelated:
+
+	* dfa.c: Sync with GNU grep.
+
+	Unrelated:
+
+	* config.sub: Updated from GNULIB.
+
 2016-07-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* eval.c (set_LINT): Reset lintfunc to `warning' for LINT="invalid".

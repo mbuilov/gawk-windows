@@ -152,6 +152,7 @@ static int do_nostalgia = false;	/* provide a blast from the past */
 static int do_binary = false;		/* hands off my data! */
 static int do_version = false;		/* print version info */
 static const char *locale = "";		/* default value to setlocale */
+static char *locale_dir = LOCALEDIR;	/* default locale dir */
 
 int use_lc_numeric = false;	/* obey locale for decimal point */
 
@@ -220,6 +221,10 @@ main(int argc, char **argv)
 	char *extra_stack;
 	int have_srcfile = 0;
 	SRCFILE *s;
+	char *cp;
+#if defined(LOCALEDEBUG)
+	const char *initial_locale;
+#endif
 
 	/* do these checks early */
 	if (getenv("TIDYMEM") != NULL)
@@ -238,8 +243,13 @@ main(int argc, char **argv)
 	if (argc < 2)
 		usage(EXIT_FAILURE, stderr);
 
-	(void) bindtextdomain(PACKAGE, LOCALEDIR);
-	(void) textdomain(PACKAGE);
+	if ((cp = getenv("GAWK_LOCALE_DIR")) != NULL)
+		locale_dir = cp;
+
+#if defined(LOCALEDEBUG)
+	initial_locale = locale;
+#endif
+	set_locale_stuff();
 
 	(void) signal(SIGFPE, catchsig);
 #ifdef SIGBUS
@@ -287,7 +297,10 @@ main(int argc, char **argv)
 
 	parse_args(argc, argv);
 
-	set_locale_stuff();
+#if defined(LOCALEDEBUG)
+	if (locale != initial_locale)
+		set_locale_stuff();
+#endif
 
 	/*
 	 * In glibc, MB_CUR_MAX is actually a function.  This value is
@@ -1710,4 +1723,8 @@ set_locale_stuff(void)
 #if defined(LC_TIME)
 	setlocale(LC_TIME, locale);
 #endif
+
+	/* These must be done after calling setlocale */
+	(void) bindtextdomain(PACKAGE, locale_dir);
+	(void) textdomain(PACKAGE);
 }
