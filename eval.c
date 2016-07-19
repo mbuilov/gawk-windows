@@ -949,6 +949,10 @@ set_LINT()
 	int old_lint = do_lint;
 	NODE *n = LINT_node->var_value;
 
+	/* start with clean defaults */
+	lintfunc = r_warning;
+	do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);
+
 	if ((n->flags & (STRING|STRCUR)) != 0) {
 		if ((n->flags & MAYBE_NUM) == 0) {
 			const char *lintval;
@@ -958,39 +962,24 @@ set_LINT()
 			lintval = n->stptr;
 			lintlen = n->stlen;
 			if (lintlen > 0) {
-				do_flags |= DO_LINT_ALL;
-				if (lintlen == 5 && strncmp(lintval, "fatal", 5) == 0)
-					lintfunc = r_fatal;
-				else if (lintlen == 7 && strncmp(lintval, "invalid", 7) == 0) {
-					do_flags &= ~ DO_LINT_ALL;
+				if (lintlen == 7 && strncmp(lintval, "invalid", 7) == 0)
 					do_flags |= DO_LINT_INVALID;
-					lintfunc = warning;
-				} else
-					lintfunc = warning;
-			} else {
-				do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);
-				lintfunc = warning;
+				else {
+					do_flags |= DO_LINT_ALL;
+					if (lintlen == 5 && strncmp(lintval, "fatal", 5) == 0)
+						lintfunc = r_fatal;
+				}
 			}
 		} else {
 			(void) force_number(n);
 			if (! iszero(n))
 				do_flags |= DO_LINT_ALL;
-			else
-				do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);
-			lintfunc = warning;
 		}
 	} else if ((n->flags & (NUMCUR|NUMBER)) != 0) {
 		(void) force_number(n);
 		if (! iszero(n))
 			do_flags |= DO_LINT_ALL;
-		else
-			do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);
-		lintfunc = warning;
-	} else
-		do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);	/* shouldn't happen */
-
-	if (! do_lint)
-		lintfunc = warning;
+	}
 
 	/* explicitly use warning() here, in case lintfunc == r_fatal */
 	if (old_lint != do_lint && old_lint && ! do_lint)
