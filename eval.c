@@ -930,7 +930,10 @@ set_LINT()
 	int old_lint = do_lint;
 	NODE *n = fixtype(LINT_node->var_value);
 
-	lintfunc = r_warning;	/* reset to default */
+	/* start with clean defaults */
+	lintfunc = r_warning;
+	do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);
+
 	if ((n->flags & STRING) != 0) {
 		const char *lintval;
 		size_t lintlen;
@@ -938,20 +941,18 @@ set_LINT()
 		lintval = n->stptr;
 		lintlen = n->stlen;
 		if (lintlen > 0) {
-			do_flags |= DO_LINT_ALL;
-			if (lintlen == 5 && strncmp(lintval, "fatal", 5) == 0)
-				lintfunc = r_fatal;
-			else if (lintlen == 7 && strncmp(lintval, "invalid", 7) == 0) {
-				do_flags &= ~DO_LINT_ALL;
+			if (lintlen == 7 && strncmp(lintval, "invalid", 7) == 0)
 				do_flags |= DO_LINT_INVALID;
+			else {
+				do_flags |= DO_LINT_ALL;
+				if (lintlen == 5 && strncmp(lintval, "fatal", 5) == 0)
+					lintfunc = r_fatal;
 			}
-		} else {
-			do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);
 		}
-	} else if (! iszero(n))
-		do_flags |= DO_LINT_ALL;
-	else
-		do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);
+	} else {
+		if (! iszero(n))
+			do_flags |= DO_LINT_ALL;
+	}
 
 	/* explicitly use warning() here, in case lintfunc == r_fatal */
 	if (old_lint != do_lint && old_lint && ! do_lint)
