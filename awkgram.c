@@ -7090,7 +7090,7 @@ shadow_funcs()
 	efree(funcs);
 
 	/* End with fatal if the user requested it.  */
-	if (shadow && lintfunc != warning)
+	if (shadow && lintfunc == r_fatal)
 		lintwarn(_("there were shadowed variables."));
 }
 
