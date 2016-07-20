@@ -3,5 +3,5 @@ BEGIN {
 	PROCINFO[cmd, "NONFATAL"] = 1
 	print "test1" |& cmd; close(cmd, "to")
 	fflush(cmd)
-	print "test2" |& cmd; print ERRNO
+	print "test2" |& cmd; print gensub(/number/, "descriptor", 1, ERRNO)
 }

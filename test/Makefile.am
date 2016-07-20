@@ -163,7 +163,6 @@ EXTRA_DIST = \
 	clos1way5.ok \
 	clos1way6.awk \
 	clos1way6.ok \
-	clos1way6.ok2 \
 	closebad.awk \
 	closebad.ok \
 	clsflnam.awk \
@@ -2316,11 +2315,6 @@ symtab10:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < "$(srcdir)/$@.in" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-clos1way6:
-	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-($(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@) || ($(CMP) "$(srcdir)"/$@.ok2 _$@ && rm -f _$@)
 
 # Targets generated for other tests:
 include Maketests
