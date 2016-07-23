@@ -10531,17 +10531,26 @@ a system problem closing the file or process.
 In these cases, @command{gawk} sets the predefined variable
 @code{ERRNO} to a string describing the problem.
 
-In @command{gawk},
-when closing a pipe or coprocess (input or output),
-the return value is the exit status of the command.@footnote{
-This is a full 16-bit value as returned by the @code{wait()}
-system call. See the system manual pages for information on
-how to decode this value.}
-Otherwise, it is the return value from the system's @code{close()} or
-@code{fclose()} C functions when closing input or output
-files, respectively.
-This value is zero if the close succeeds, or @minus{}1 if
-it fails.
+In @command{gawk}, starting with version 4.2, when closing a pipe or
+coprocess (input or output), the return value is the exit status of the
+command, as described in @ref{table-close-pipe-return-values}.@footnote{Prior
+to version 4.2, the return value from closing a pipe or co-process
+was the full 16-bit exit value as defined by the @code{wait()} system
+call.} Otherwise, it is the return value from the system's @code{close()}
+or @code{fclose()} C functions when closing input or output files,
+respectively.  This value is zero if the close succeeds, or @minus{}1
+if it fails.
+
+@float Table,table-close-pipe-return-values
+@caption{Return values from @code{close()} of a pipe}
+@multitable @columnfractions .40 .60
+@headitem Situation @tab Return value from @code{close()}
+@item Normal exit of command @tab Command's exit status
+@item Death by signal of command @tab 256 + number of murderous signal
+@item Death by signal of command with core dump @tab 512 + number of murderous signal
+@item Some kind of error @tab @minus{}1
+@end multitable
+@end float
 
 The POSIX standard is very vague; it says that @code{close()}
 returns zero on success and a nonzero value otherwise.  In general,
@@ -10588,17 +10597,26 @@ a system problem closing the file or process.
 In these cases, @command{gawk} sets the predefined variable
 @code{ERRNO} to a string describing the problem.
 
-In @command{gawk},
-when closing a pipe or coprocess (input or output),
-the return value is the exit status of the command.@footnote{
-This is a full 16-bit value as returned by the @code{wait()}
-system call. See the system manual pages for information on
-how to decode this value.}
-Otherwise, it is the return value from the system's @code{close()} or
-@code{fclose()} C functions when closing input or output
-files, respectively.
-This value is zero if the close succeeds, or @minus{}1 if
-it fails.
+In @command{gawk}, starting with version 4.2, when closing a pipe or
+coprocess (input or output), the return value is the exit status of the
+command, as described in @ref{table-close-pipe-return-values}.@footnote{Prior
+to version 4.2, the return value from closing a pipe or co-process
+was the full 16-bit exit value as defined by the @code{wait()} system
+call.} Otherwise, it is the return value from the system's @code{close()}
+or @code{fclose()} C functions when closing input or output files,
+respectively.  This value is zero if the close succeeds, or @minus{}1
+if it fails.
+
+@float Table,table-close-pipe-return-values
+@caption{Return values from @code{close()} of a pipe}
+@multitable @columnfractions .40 .60
+@headitem Situation @tab Return value from @code{close()}
+@item Normal exit of command @tab Command's exit status
+@item Death by signal of command @tab 256 + number of murderous signal
+@item Death by signal of command with core dump @tab 512 + number of murderous signal
+@item Some kind of error @tab @minus{}1
+@end multitable
+@end float
 
 The POSIX standard is very vague; it says that @code{close()}
 returns zero on success and a nonzero value otherwise.  In general,

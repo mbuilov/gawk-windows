@@ -997,6 +997,8 @@ EXTRA_DIST = \
 	sprintfc.awk \
 	sprintfc.in \
 	sprintfc.ok \
+	status-close.awk \
+	status-close.ok \
 	strcat1.awk \
 	strcat1.ok \
 	strftime.awk \
@@ -1173,7 +1175,7 @@ BASIC_TESTS = \
 	reparse resplit rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin sigpipe1 sortempty sortglos splitargv splitarr splitdef \
-	splitvar splitwht strcat1 strnum1 strnum2 strtod subamp subback subi18n \
+	splitvar splitwht status-close strcat1 strnum1 strnum2 strtod subamp subback subi18n \
 	subsepnm subslash substr swaplns synerr1 synerr2 tradanch tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs \
 	wideidx wideidx2 widesub widesub2 widesub3 widesub4 wjposer1 \
