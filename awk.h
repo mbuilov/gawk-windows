@@ -1430,6 +1430,7 @@ extern NODE *do_intdiv(int nargs);
 extern NODE *do_typeof(int nargs);
 extern int strncasecmpmbs(const unsigned char *,
 			  const unsigned char *, size_t);
+extern int sanitize_exit_status(int status);
 /* eval.c */
 extern void PUSH_CODE(INSTRUCTION *cp);
 extern INSTRUCTION *POP_CODE(void);

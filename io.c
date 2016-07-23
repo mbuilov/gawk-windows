@@ -1226,7 +1226,8 @@ do_close(int nargs)
 	 * POSIX says close() returns 0 on success, non-zero otherwise.
 	 * For POSIX, at this point we just return 0.  Otherwise we
 	 * return the exit status of the process or of pclose(), depending.
-	 * This whole business is a mess.
+	 * Down in the call tree of close_redir(), we rationalize the
+	 * value like we do for system().
 	 */
 	if (do_posix) {
 		unref(tmp);
@@ -1268,13 +1269,14 @@ close_rp(struct redirect *rp, two_way_close_type how)
 #endif /* HAVE_SOCKETS */
 				(void) iop_close(rp->iop);
 			} else
+				/* status already sanitized */
 				status = gawk_pclose(rp);
 
 			rp->iop = NULL;
 		}
 	} else if ((rp->flag & (RED_PIPE|RED_WRITE)) == (RED_PIPE|RED_WRITE)) {
 		/* write to pipe */
-		status = pclose(rp->output.fp);
+		status = sanitize_exit_status(pclose(rp->output.fp));
 		if ((BINMODE & BINMODE_INPUT) != 0)
 			os_setbinmode(fileno(stdin), O_BINARY);
 
@@ -2518,7 +2520,7 @@ gawk_pclose(struct redirect *rp)
 	/* process previously found, return stored status */
 	if (rp->pid == -1)
 		return rp->status;
-	rp->status = wait_any(rp->pid);
+	rp->status = sanitize_exit_status(wait_any(rp->pid));
 	rp->pid = -1;
 	return rp->status;
 }
