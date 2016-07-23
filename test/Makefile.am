@@ -720,6 +720,8 @@ EXTRA_DIST = \
 	ofmts.awk \
 	ofmts.in \
 	ofmts.ok \
+	ofmtstrnum.awk \
+	ofmtstrnum.ok \
 	ofs1.awk \
 	ofs1.in \
 	ofs1.ok \
@@ -1159,7 +1161,8 @@ BASIC_TESTS = \
 	nasty nasty2 negexp negrange nested nfldstr nfloop nfneg nfset nlfldsep \
 	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl \
 	noparms nors nulinsrc nulrsend numindex numsubstr \
-	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofs1 onlynl opasnidx opasnslf \
+	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofmtstrnum ofs1 onlynl \
+	opasnidx opasnslf \
 	paramasfunc1 paramasfunc2 \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
 	pcntplus posix2008sub prdupval prec printf0 printf1 printfchar prmarscl prmreuse \
