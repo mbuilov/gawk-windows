@@ -2179,12 +2179,8 @@ do_print(int nargs, int redirtype)
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(tmp));
 		}
 
-		if ((tmp->flags & (NUMBER|STRING)) == NUMBER) {
-			if (OFMTidx == CONVFMTidx)
-				args_array[i] = force_string(tmp);
-			else
-				args_array[i] = format_val(OFMT, OFMTidx, tmp);
-		}
+		if ((tmp->flags & STRCUR) == 0 || (tmp->stfmt != -1 && tmp->stfmt != OFMTidx))
+			args_array[i] = format_val(OFMT, OFMTidx, tmp);
 	}
 
 	if (redir_exp != NULL) {
