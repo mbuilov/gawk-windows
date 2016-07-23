@@ -2124,22 +2124,12 @@ do_system(int nargs)
 				;	/* leave it alone, full 16 bits */
 			else if (do_traditional)
 #ifdef __MINGW32__
-			  ret = (((unsigned)status) & ~0xC0000000);
+				ret = (((unsigned)status) & ~0xC0000000);
 #else
 				ret = (status / 256.0);
 #endif
-			else if (WIFEXITED(status))
-				ret = WEXITSTATUS(status); /* normal exit */
-			else if (WIFSIGNALED(status)) {
-				bool coredumped = false;
-#ifdef WCOREDUMP
-				coredumped = WCOREDUMP(status);
-#endif
-				/* use 256 since exit values are 8 bits */
-				ret = WTERMSIG(status) +
-					(coredumped ? 512 : 256);
-			} else
-				ret = 0;	/* shouldn't get here */
+			else
+				ret = sanitize_exit_status(status);
 		}
 
 		if ((BINMODE & BINMODE_INPUT) != 0)
@@ -4053,4 +4043,25 @@ mbc_char_count(const char *ptr, size_t numbytes)
 	}
 
 	return sum;
+}
+
+/* sanitize_exit_status --- convert a 16 bit Unix exit status into something reasonable */
+
+int sanitize_exit_status(int status)
+{
+	int ret = 0;
+
+	if (WIFEXITED(status))
+		ret = WEXITSTATUS(status); /* normal exit */
+	else if (WIFSIGNALED(status)) {
+		bool coredumped = false;
+#ifdef WCOREDUMP
+		coredumped = WCOREDUMP(status);
+#endif
+		/* use 256 since exit values are 8 bits */
+		ret = WTERMSIG(status) + (coredumped ? 512 : 256);
+	} else
+		ret = 0;	/* shouldn't get here */
+
+	return ret;
 }

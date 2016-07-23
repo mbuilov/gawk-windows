@@ -720,6 +720,8 @@ EXTRA_DIST = \
 	ofmts.awk \
 	ofmts.in \
 	ofmts.ok \
+	ofmtstrnum.awk \
+	ofmtstrnum.ok \
 	ofs1.awk \
 	ofs1.in \
 	ofs1.ok \
@@ -995,6 +997,8 @@ EXTRA_DIST = \
 	sprintfc.awk \
 	sprintfc.in \
 	sprintfc.ok \
+	status-close.awk \
+	status-close.ok \
 	strcat1.awk \
 	strcat1.ok \
 	strftime.awk \
@@ -1159,7 +1163,8 @@ BASIC_TESTS = \
 	nasty nasty2 negexp negrange nested nfldstr nfloop nfneg nfset nlfldsep \
 	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl \
 	noparms nors nulinsrc nulrsend numindex numsubstr \
-	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofs1 onlynl opasnidx opasnslf \
+	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofmtstrnum ofs1 onlynl \
+	opasnidx opasnslf \
 	paramasfunc1 paramasfunc2 \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
 	pcntplus posix2008sub prdupval prec printf0 printf1 printfchar prmarscl prmreuse \
@@ -1170,7 +1175,7 @@ BASIC_TESTS = \
 	reparse resplit rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin sigpipe1 sortempty sortglos splitargv splitarr splitdef \
-	splitvar splitwht strcat1 strnum1 strnum2 strtod subamp subback subi18n \
+	splitvar splitwht status-close strcat1 strnum1 strnum2 strtod subamp subback subi18n \
 	subsepnm subslash substr swaplns synerr1 synerr2 tradanch tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs \
 	wideidx wideidx2 widesub widesub2 widesub3 widesub4 wjposer1 \

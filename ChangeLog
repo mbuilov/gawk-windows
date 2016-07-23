@@ -1,3 +1,19 @@
+2016-07-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Make result of close on a pipe match result of system.
+	Thanks to Mike Brennan for the encouragement.
+
+	* awk.h (sanitize_exit_status): Declare routine.
+	* builtin.c (sanitize_exit_status): New routine.
+	(do_system): Use it.
+	* io.c (close_rp): Use it on pclose result.
+	(gawk_pclose): Use it.
+
+2016-07-23         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* builtin.c (do_print): Improve logic for formatting
+	numeric values.
+
 2016-07-19         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* eval.c (set_LINT): Simplify the code considerably.
