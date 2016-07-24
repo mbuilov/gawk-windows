@@ -1,3 +1,10 @@
+2016-07-24         Norihiro Tanaka      <noritnk@kcn.ne.jp>
+
+	* re.c (research): Now that the dfa matcher correctly runs even
+	in multibyte locales, try it if even if need_start is true.
+	However, if start > 0, avoid dfa matcher, since it can't handle
+	the case where the search starts in the middle of a string.
+
 2016-07-23         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* builtin.c (do_print): Improve logic for formatting
