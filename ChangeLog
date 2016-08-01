@@ -4,6 +4,11 @@
 
 2016-08-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* mpfr.c (mpg_tofloat): Always set precision to avoid hysteresis effects
+	from previous calculations using the same temporary mpfr variables.
+
+2016-08-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* mpfr.c (default_prec): Add new static variable to show current PREC
 	setting in effect.
 	(init_mpfr, set_PREC): Save mpfr_set_default_prec argument in
