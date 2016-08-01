@@ -26230,7 +26230,7 @@ File: gawk.info,  Node: Extension Exercises,  Prev: Extension summary,  Up: Dyna
      the input file is a terminal.  (Hint: this function is usually
      expensive to call; try to call it just once.)  The content of the
      prompt should come from a variable settable by 'awk'-level code.
-     You can write the prompt to stanard error.  However, for best
+     You can write the prompt to standard error.  However, for best
      results, open a new file descriptor (or file pointer) on '/dev/tty'
      and print the prompt there, in case standard error has been
      redirected.
@@ -27181,7 +27181,7 @@ Info file, in approximate chronological order:
    * Fred Fish provided the port to Amiga systems and its documentation.
      (With Fred's sad passing, this is no longer supported.)
 
-   * Scott Deifik currently maintains the MS-DOS port using DJGPP.
+   * Scott Deifik maintained the MS-DOS port using DJGPP.
 
    * Eli Zaretskii currently maintains the MS-Windows port using MinGW.
 
@@ -27832,8 +27832,7 @@ File: gawk.info,  Node: PC Compiling,  Next: PC Testing,  Prev: PC Binary Instal
 B.3.1.2 Compiling 'gawk' for PC Operating Systems
 .................................................
 
-'gawk' can be compiled for MS-DOS, Windows32, and OS/2 using the GNU
-development tools from DJ Delorie (DJGPP: MS-DOS only), MinGW
+'gawk' can be compiled for MS-DOS, Windows32, and OS/2 using MinGW
 (Windows32) or Eberhard Mattes (EMX: MS-DOS, Windows32 and OS/2).  The
 file 'README_d/README.pc' in the 'gawk' distribution contains additional
 notes, and 'pc/Makefile' contains important information on compilation
@@ -27848,11 +27847,9 @@ be edited in order to work with your 'make' utility.
 
    The 'Makefile' supports a number of targets for building various
 MS-DOS and Windows32 versions.  A list of targets is printed if the
-'make' command is given without a target.  As an example, to build
-'gawk' using the DJGPP tools, enter 'make djgpp'.  (The DJGPP tools
-needed for the build may be found at
-<ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/>.)  To build a native
-MS-Windows binary of 'gawk' using the MinGW tools, type 'make mingw32'.
+'make' command is given without a target.  As an example, to build a
+native MS-Windows binary of 'gawk' using the MinGW tools, type 'make
+mingw32'.
 
    The 32 bit EMX version of 'gawk' works "out of the box" under OS/2.
 However, it is highly recommended to use GCC 2.95.3 for the compilation.
@@ -27961,7 +27958,7 @@ is set to 'e:' the complete default search path is
 
    An 'sh'-like shell (as opposed to 'command.com' under MS-DOS or
 'cmd.exe' under MS-Windows or OS/2) may be useful for 'awk' programming.
-The DJGPP collection of tools includes an MS-DOS port of Bash, and
+The DJGPP collection of tools(1) includes an MS-DOS port of Bash, and
 several shells are available for OS/2, including 'ksh'.
 
    Under MS-Windows, OS/2 and MS-DOS, 'gawk' (and many other text
@@ -28022,6 +28019,10 @@ or:
 
 With proper quoting, in the first example the setting of 'RS' can be
 moved into the 'BEGIN' rule.
+
+   ---------- Footnotes ----------
+
+   (1) Available from <ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/>.
 
 
 File: gawk.info,  Node: Cygwin,  Next: MSYS,  Prev: PC Using,  Up: PC Installation
@@ -28439,8 +28440,6 @@ this Info file.
 
 Unix and POSIX          Arnold Robbins, <arnold@skeeve.com>
 systems                 
-MS-DOS with DJGPP       Scott Deifik, <scottd.mail@sbcglobal.net>
-                        
 MS-Windows with MinGW   Eli Zaretskii, <eliz@gnu.org>
                         
 OS/2                    Andreas Buening, <andreas.buening@nexgo.de>
@@ -28452,6 +28451,10 @@ z/OS (OS/390)           Daniel Richard G. <skunk@iSKUNK.ORG>
 
    If your bug is also reproducible under Unix, send a copy of your
 report to the <bug-gawk@gnu.org> email list as well.
+
+   The DJGPP port is no longer supported; it will remain in the code
+base for a while in case a volunteer wishes to take it over.  If this
+does not happen, then eventually code for this port will be removed.
 
 
 File: gawk.info,  Node: Other Versions,  Next: Installation summary,  Prev: Bugs,  Up: Installation
@@ -28624,9 +28627,9 @@ B.6 Summary
           ./configure && make && make check
 
    * 'gawk' may be built on non-POSIX systems as well.  The currently
-     supported systems are MS-Windows using DJGPP, MSYS, MinGW, and
-     Cygwin, OS/2 using EMX, and both Vax/VMS and OpenVMS. Instructions
-     for each system are included in this major node.
+     supported systems are MS-Windows using MSYS, MinGW, and Cygwin,
+     OS/2 using EMX, and both Vax/VMS and OpenVMS. Instructions for each
+     system are included in this major node.
 
    * Bug reports should be sent via email to <bug-gawk@gnu.org>.  Bug
      reports should be in English and should include the version of
@@ -32401,9 +32404,9 @@ Index
 * compiled programs:                     Basic High Level.    (line  13)
 * compiled programs <1>:                 Glossary.            (line 218)
 * compiling gawk for Cygwin:             Cygwin.              (line   6)
-* compiling gawk for MS-DOS and MS-Windows: PC Compiling.     (line  13)
+* compiling gawk for MS-DOS and MS-Windows: PC Compiling.     (line  12)
 * compiling gawk for VMS:                VMS Compilation.     (line   6)
-* compiling gawk with EMX for OS/2:      PC Compiling.        (line  28)
+* compiling gawk with EMX for OS/2:      PC Compiling.        (line  25)
 * compl:                                 Bitwise Functions.   (line  44)
 * complement, bitwise:                   Bitwise Functions.   (line  25)
 * compound statements, control statements and: Statements.    (line  10)
@@ -35193,79 +35196,80 @@ Node: Extension Sample API Tests1052991
 Node: gawkextlib1053483
 Node: Extension summary1055907
 Node: Extension Exercises1059599
-Node: Language History1061096
-Node: V7/SVR3.11062752
-Node: SVR41064904
-Node: POSIX1066338
-Node: BTL1067717
-Node: POSIX/GNU1068446
-Node: Feature History1073967
-Node: Common Extensions1087296
-Node: Ranges and Locales1088579
-Ref: Ranges and Locales-Footnote-11093195
-Ref: Ranges and Locales-Footnote-21093222
-Ref: Ranges and Locales-Footnote-31093457
-Node: Contributors1093678
-Node: History summary1099247
-Node: Installation1100627
-Node: Gawk Distribution1101571
-Node: Getting1102055
-Node: Extracting1103016
-Node: Distribution contents1104654
-Node: Unix Installation1110405
-Node: Quick Installation1111021
-Node: Additional Configuration Options1113448
-Node: Configuration Philosophy1115252
-Node: Non-Unix Installation1117621
-Node: PC Installation1118079
-Node: PC Binary Installation1119399
-Node: PC Compiling1121251
-Ref: PC Compiling-Footnote-11124275
-Node: PC Testing1124384
-Node: PC Using1125564
-Node: Cygwin1129678
-Node: MSYS1130448
-Node: VMS Installation1130949
-Node: VMS Compilation1131740
-Ref: VMS Compilation-Footnote-11132969
-Node: VMS Dynamic Extensions1133027
-Node: VMS Installation Details1134712
-Node: VMS Running1136965
-Node: VMS GNV1141244
-Node: VMS Old Gawk1141979
-Node: Bugs1142450
-Node: Other Versions1146647
-Node: Installation summary1153231
-Node: Notes1154289
-Node: Compatibility Mode1155154
-Node: Additions1155936
-Node: Accessing The Source1156861
-Node: Adding Code1158296
-Node: New Ports1164515
-Node: Derived Files1169003
-Ref: Derived Files-Footnote-11174488
-Ref: Derived Files-Footnote-21174523
-Ref: Derived Files-Footnote-31175121
-Node: Future Extensions1175235
-Node: Implementation Limitations1175893
-Node: Extension Design1177076
-Node: Old Extension Problems1178230
-Ref: Old Extension Problems-Footnote-11179748
-Node: Extension New Mechanism Goals1179805
-Ref: Extension New Mechanism Goals-Footnote-11183169
-Node: Extension Other Design Decisions1183358
-Node: Extension Future Growth1185471
-Node: Old Extension Mechanism1186307
-Node: Notes summary1188070
-Node: Basic Concepts1189252
-Node: Basic High Level1189933
-Ref: figure-general-flow1190215
-Ref: figure-process-flow1190900
-Ref: Basic High Level-Footnote-11194201
-Node: Basic Data Typing1194386
-Node: Glossary1197714
-Node: Copying1229660
-Node: GNU Free Documentation License1267199
-Node: Index1292317
+Node: Language History1061097
+Node: V7/SVR3.11062753
+Node: SVR41064905
+Node: POSIX1066339
+Node: BTL1067718
+Node: POSIX/GNU1068447
+Node: Feature History1073968
+Node: Common Extensions1087297
+Node: Ranges and Locales1088580
+Ref: Ranges and Locales-Footnote-11093196
+Ref: Ranges and Locales-Footnote-21093223
+Ref: Ranges and Locales-Footnote-31093458
+Node: Contributors1093679
+Node: History summary1099239
+Node: Installation1100619
+Node: Gawk Distribution1101563
+Node: Getting1102047
+Node: Extracting1103008
+Node: Distribution contents1104646
+Node: Unix Installation1110397
+Node: Quick Installation1111013
+Node: Additional Configuration Options1113440
+Node: Configuration Philosophy1115244
+Node: Non-Unix Installation1117613
+Node: PC Installation1118071
+Node: PC Binary Installation1119391
+Node: PC Compiling1121243
+Ref: PC Compiling-Footnote-11124037
+Node: PC Testing1124146
+Node: PC Using1125326
+Ref: PC Using-Footnote-11129479
+Node: Cygwin1129552
+Node: MSYS1130322
+Node: VMS Installation1130823
+Node: VMS Compilation1131614
+Ref: VMS Compilation-Footnote-11132843
+Node: VMS Dynamic Extensions1132901
+Node: VMS Installation Details1134586
+Node: VMS Running1136839
+Node: VMS GNV1141118
+Node: VMS Old Gawk1141853
+Node: Bugs1142324
+Node: Other Versions1146639
+Node: Installation summary1153223
+Node: Notes1154274
+Node: Compatibility Mode1155139
+Node: Additions1155921
+Node: Accessing The Source1156846
+Node: Adding Code1158281
+Node: New Ports1164500
+Node: Derived Files1168988
+Ref: Derived Files-Footnote-11174473
+Ref: Derived Files-Footnote-21174508
+Ref: Derived Files-Footnote-31175106
+Node: Future Extensions1175220
+Node: Implementation Limitations1175878
+Node: Extension Design1177061
+Node: Old Extension Problems1178215
+Ref: Old Extension Problems-Footnote-11179733
+Node: Extension New Mechanism Goals1179790
+Ref: Extension New Mechanism Goals-Footnote-11183154
+Node: Extension Other Design Decisions1183343
+Node: Extension Future Growth1185456
+Node: Old Extension Mechanism1186292
+Node: Notes summary1188055
+Node: Basic Concepts1189237
+Node: Basic High Level1189918
+Ref: figure-general-flow1190200
+Ref: figure-process-flow1190885
+Ref: Basic High Level-Footnote-11194186
+Node: Basic Data Typing1194371
+Node: Glossary1197699
+Node: Copying1229645
+Node: GNU Free Documentation License1267184
+Node: Index1292302
 
 End Tag Table
