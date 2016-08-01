@@ -5,6 +5,12 @@
 	However, if start > 0, avoid dfa matcher, since it can't handle
 	the case where the search starts in the middle of a string.
 
+	Unrelated:
+
+	* eval.c (load_casetable): Reset casetable[i] to `i' if i
+	should not be mapped to upper case. Fixes inconsistencies between
+	dfa and regex in some single bytes locales; notably el_GR.iso88597.
+
 2016-07-23         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* builtin.c (do_print): Improve logic for formatting
