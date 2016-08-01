@@ -911,6 +911,9 @@ EXTRA_DIST = \
 	sortfor.awk \
 	sortfor.in \
 	sortfor.ok \
+	sortfor2.awk \
+	sortfor2.in \
+	sortfor2.ok \
 	sortglos.awk \
 	sortglos.in \
 	sortglos.ok \
@@ -1123,7 +1126,7 @@ GAWK_EXT_TESTS = \
 	profile0 profile1 profile2 profile3 profile4 profile5 profile6 \
 	profile7 profile8 pty1 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
-	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
+	rsstart2 rsstart3 rstest6 shadow sortfor sortfor2 sortu split_after_fpat \
 	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
 	symtab7 symtab8 symtab9 symtab10 \
