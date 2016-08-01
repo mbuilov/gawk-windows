@@ -1218,9 +1218,17 @@ mpg_tofloat(mpfr_ptr mf, mpz_ptr mz)
 		prec -= (size_t) mpz_scan1(mz, 0);	/* least significant 1 bit index starting at 0 */
 		if (prec > MPFR_PREC_MAX)
 			prec = MPFR_PREC_MAX;
-		if (prec > PRECISION_MIN) 
-			mpfr_set_prec(mf, prec);
+		else if (prec < PRECISION_MIN)
+			prec = PRECISION_MIN;
 	}
+	else
+		prec = PRECISION_MIN;
+	/*
+	 * Always set the precision to avoid hysteresis, since do_mpfr_func 
+	 * may copy our precision.
+	 */
+	if (prec != mpfr_get_prec(mf))
+		mpfr_set_prec(mf, prec);
 
 	mpfr_set_z(mf, mz, ROUND_MODE);
 	return mf;
