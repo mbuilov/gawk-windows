@@ -266,17 +266,17 @@ research(Regexp *rp, char *str, int start,
 		rp->pat.not_bol = 1;
 
 	/*
-	 * Always do dfa search if can; if it fails, then even if
-	 * need_start is true, we won't bother with the regex search.
+	 * Always do dfa search if can; if it fails, we won't bother
+	 * with the regex search.
 	 *
 	 * The dfa matcher doesn't have a no_bol flag, so don't bother
 	 * trying it in that case.
 	 *
-	 * 7/2008: Skip the dfa matcher if need_start. The dfa matcher
-	 * has bugs in certain multibyte cases and it's too difficult
-	 * to try to special case things.
+	 * 7/2016: The dfa matcher can't handle a case where searching
+	 * starts in the middle of a string, so don't bother trying it
+	 * in that case.
 	 */
-	if (rp->dfa && ! no_bol && ! need_start) {
+	if (rp->dfa && ! no_bol && start == 0) {
 		char save;
 		size_t count = 0;
 		struct dfa *superset = dfasuperset(rp->dfareg);

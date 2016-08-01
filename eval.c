@@ -219,6 +219,8 @@ load_casetable(void)
 	for (i = 0200; i <= 0377; i++) {
 		if (isalpha(i) && islower(i) && i != toupper(i))
 			casetable[i] = toupper(i);
+		else
+			casetable[i] = i;
 	}
 #endif
 #endif
