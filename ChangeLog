@@ -1,3 +1,14 @@
+2016-08-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* mpfr.c (default_prec): Add new static variable to show current PREC
+	setting in effect.
+	(init_mpfr, set_PREC): Save mpfr_set_default_prec argument in
+	default_prec.
+	(do_mpfr_func): If the argument's precision exceeds the default precision,
+	boost the result's precision to match it. This fixes a bug where
+	we used to copy the argument's precision, regardless of whether it
+	was higher or lower than the PREC setting.
+
 2016-07-23         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* builtin.c (do_print): Improve logic for formatting

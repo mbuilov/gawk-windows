@@ -39,6 +39,8 @@ mpz_t MFNR;
 bool do_ieee_fmt;	/* IEEE-754 floating-point emulation */
 mpfr_rnd_t ROUND_MODE;
 
+static mpfr_prec_t default_prec;
+
 static mpfr_rnd_t get_rnd_mode(const char rmode);
 static NODE *mpg_force_number(NODE *n);
 static NODE *mpg_make_number(double);
@@ -70,7 +72,7 @@ static inline mpfr_ptr mpg_tofloat(mpfr_ptr mf, mpz_ptr mz);
 void
 init_mpfr(mpfr_prec_t prec, const char *rmode)
 {
-	mpfr_set_default_prec(prec);
+	mpfr_set_default_prec(default_prec = prec);
 	ROUND_MODE = get_rnd_mode(rmode[0]);
 	mpfr_set_default_rounding_mode(ROUND_MODE);
 	make_number = mpg_make_number;
@@ -561,7 +563,7 @@ set_PREC()
 	}
 
 	if (prec > 0)
-		mpfr_set_default_prec(prec);
+		mpfr_set_default_prec(default_prec = prec);
 }
 
 
@@ -705,6 +707,7 @@ do_mpfr_func(const char *name,
 	NODE *t1, *res;
 	mpfr_ptr p1;
 	int tval;
+	mpfr_prec_t argprec;
 
 	t1 = POP_SCALAR();
 	if (do_lint && (t1->flags & (NUMCUR|NUMBER)) == 0)
@@ -713,7 +716,8 @@ do_mpfr_func(const char *name,
 	force_number(t1);
 	p1 = MP_FLOAT(t1);
 	res = mpg_float();
-	mpfr_set_prec(res->mpg_numbr, mpfr_get_prec(p1));	/* needed at least for sqrt() */
+	if ((argprec = mpfr_get_prec(p1)) > default_prec)
+		mpfr_set_prec(res->mpg_numbr, argprec);	/* needed at least for sqrt() */
 	tval = mpfr_func(res->mpg_numbr, p1, ROUND_MODE);
 	IEEE_FMT(res->mpg_numbr, tval);
 	DEREF(t1);
