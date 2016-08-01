@@ -1,3 +1,36 @@
+2016-08-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* README, NEWS: Mark DJGPP port as unsupported.
+
+2016-08-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* mpfr.c (mpg_tofloat): Always set precision to avoid hysteresis effects
+	from previous calculations using the same temporary mpfr variables.
+
+2016-08-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* mpfr.c (default_prec): Add new static variable to show current PREC
+	setting in effect.
+	(init_mpfr, set_PREC): Save mpfr_set_default_prec argument in
+	default_prec.
+	(do_mpfr_func): If the argument's precision exceeds the default
+	precision, boost the result's precision to match it. This fixes a
+	bug where we used to copy the argument's precision, regardless of
+	whether it was higher or lower than the PREC setting.
+
+2016-07-24         Norihiro Tanaka      <noritnk@kcn.ne.jp>
+
+	* re.c (research): Now that the dfa matcher correctly runs even
+	in multibyte locales, try it if even if need_start is true.
+	However, if start > 0, avoid dfa matcher, since it can't handle
+	the case where the search starts in the middle of a string.
+
+	Unrelated:
+
+	* eval.c (load_casetable): Reset casetable[i] to `i' if i
+	should not be mapped to upper case. Fixes inconsistencies between
+	dfa and regex in some single bytes locales; notably el_GR.iso88597.
+
 2016-07-23         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Make result of close on a pipe match result of system.
