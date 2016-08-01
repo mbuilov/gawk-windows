@@ -35972,7 +35972,7 @@ function to tell if the input file is a terminal. (Hint: this function
 is usually expensive to call; try to call it just once.)
 The content of the prompt should come from a variable settable
 by @command{awk}-level code.
-You can write the prompt to stanard error. However,
+You can write the prompt to standard error. However,
 for best results, open a new file descriptor (or file pointer)
 on @file{/dev/tty} and print the prompt there, in case standard
 error has been redirected.
@@ -37568,13 +37568,12 @@ provided the port to Amiga systems and its documentation.
 @item
 @cindex Deifik, Scott
 Scott Deifik
-currently maintains the MS-DOS port using DJGPP.
+maintained the MS-DOS port using DJGPP.
 
 @item
 @cindex Zaretskii, Eli
 Eli Zaretskii
 currently maintains the MS-Windows port using MinGW.
-
 
 @item
 @cindex Grigera, Juan
@@ -38410,13 +38409,13 @@ or more detailed installation instructions.
 @appendixsubsubsec Compiling @command{gawk} for PC Operating Systems
 
 @ifclear FOR_PRINT
-@command{gawk} can be compiled for MS-DOS, Windows32, and OS/2 using the GNU
-development tools from DJ Delorie (DJGPP: MS-DOS only), MinGW (Windows32) or Eberhard
+@command{gawk} can be compiled for MS-DOS, Windows32, and OS/2 using
+MinGW (Windows32) or Eberhard
 Mattes (EMX: MS-DOS, Windows32 and OS/2).
 @end ifclear
 @ifset FOR_PRINT
-@command{gawk} can be compiled for MS-DOS and Windows32 using the GNU
-development tools from DJ Delorie (DJGPP: MS-DOS only) or MinGW (Windows32).
+@command{gawk} can be compiled for Windows32 using
+MinGW.
 @end ifset
 The file
 @file{README_d/README.pc} in the @command{gawk} distribution contains
@@ -38434,10 +38433,8 @@ to be edited in order to work with your @command{make} utility.
 
 The @file{Makefile} supports a number of targets for building various
 MS-DOS and Windows32 versions.  A list of targets is printed if the
-@command{make} command is given without a target.  As an example, to
-build @command{gawk} using the DJGPP tools, enter @samp{make djgpp}.
-(The DJGPP tools needed for the build may be found at
-@uref{ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/}.)  To build a
+@command{make} command is given without a target.  As an example,
+to build a
 native MS-Windows binary of @command{gawk} using the MinGW tools,
 type @samp{make mingw32}.
 
@@ -38586,13 +38583,16 @@ E.g., if @env{UNIXROOT} is set to @file{e:} the complete default search path is
 
 An @command{sh}-like shell (as opposed to @command{command.com} under MS-DOS
 or @command{cmd.exe} under MS-Windows or OS/2) may be useful for @command{awk} programming.
-The DJGPP collection of tools includes an MS-DOS port of Bash,
+The DJGPP collection of tools@footnote{Available from
+@uref{ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/}.}
+includes an MS-DOS port of Bash,
 and several shells are available for OS/2, including @command{ksh}.
 @end ifclear
 @ifset FOR_PRINT
 An @command{sh}-like shell (as opposed to @command{command.com} under MS-DOS
 or @command{cmd.exe} under MS-Windows) may be useful for @command{awk} programming.
-The DJGPP collection of tools includes an MS-DOS port of Bash.
+The DJGPP collection of tools@footnote{Available from
+@uref{ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/}.} includes an MS-DOS port of Bash.
 @end ifset
 
 @cindex common extensions, @code{BINMODE} variable
@@ -39219,7 +39219,7 @@ The people maintaining the various @command{gawk} ports are:
 @multitable {MS-Windows with MinGW} {123456789012345678901234567890123456789001234567890}
 @item Unix and POSIX systems @tab Arnold Robbins, @EMAIL{arnold@@skeeve.com,arnold at skeeve dot com}
 
-@item MS-DOS with DJGPP @tab Scott Deifik, @EMAIL{scottd.mail@@sbcglobal.net,scottd dot mail at sbcglobal dot net}
+@c @item MS-DOS with DJGPP @tab Scott Deifik, @EMAIL{scottd.mail@@sbcglobal.net,scottd dot mail at sbcglobal dot net}
 
 @item MS-Windows with MinGW @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}
 
@@ -39235,6 +39235,10 @@ The people maintaining the various @command{gawk} ports are:
 
 If your bug is also reproducible under Unix, send a copy of your
 report to the @EMAIL{bug-gawk@@gnu.org,bug-gawk at gnu dot org} email list as well.
+
+The DJGPP port is no longer supported; it will remain in the code base for a while in case
+a volunteer wishes to take it over. If this does not happen, then eventually code for this
+port will be removed.
 
 @node Other Versions
 @appendixsec Other Freely Available @command{awk} Implementations
@@ -39478,7 +39482,8 @@ cd gawk-@value{VERSION}.@value{PATCHLEVEL}
 
 @item
 @command{gawk} may be built on non-POSIX systems as well. The currently
-supported systems are MS-Windows using DJGPP, MSYS, MinGW, and Cygwin,
+supported systems are MS-Windows using
+MSYS, MinGW, and Cygwin,
 @ifclear FOR_PRINT
 OS/2 using EMX,
 @end ifclear

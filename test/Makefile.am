@@ -467,6 +467,8 @@ EXTRA_DIST = \
 	ignrcas2.ok \
 	ignrcas3.awk \
 	ignrcas3.ok \
+	ignrcas4.awk \
+	ignrcas4.ok \
 	ignrcase.awk \
 	ignrcase.in \
 	ignrcase.ok \
@@ -970,6 +972,9 @@ EXTRA_DIST = \
 	sortfor.awk \
 	sortfor.in \
 	sortfor.ok \
+	sortfor2.awk \
+	sortfor2.in \
+	sortfor2.ok \
 	sortglos.awk \
 	sortglos.in \
 	sortglos.ok \
@@ -1194,7 +1199,7 @@ GAWK_EXT_TESTS = \
 	fieldwdth forcenum fpat1 fpat2 fpat3 fpat4 fpat5 fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
 	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops gsubind \
-	icasefs icasers id igncdym igncfs ignrcas2 ignrcas3 ignrcase \
+	icasefs icasers id igncdym igncfs ignrcas2 ignrcas3 ignrcas4 ignrcase \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
 	include include2 indirectbuiltin indirectcall indirectcall2 intarray \
 	lint lintexp lintindex lintint lintlength lintold lintset lintwarn \
@@ -1207,7 +1212,7 @@ GAWK_EXT_TESTS = \
 	profile8 profile9 profile10 pty1 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow shadowbuiltin \
-	sortfor sortu split_after_fpat \
+	sortfor sortfor2 sortu split_after_fpat \
 	splitarg4 strftime \
 	strtonum strtonum1 switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
 	symtab7 symtab8 symtab9 symtab10 \
@@ -2319,6 +2324,12 @@ rscompat:
 symtab10:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < "$(srcdir)/$@.in" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+ignrcas3::
+	@echo $@
+	@GAWKLOCALE=el_GR.iso88597 \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
