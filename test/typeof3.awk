@@ -1,13 +1,13 @@
-BEGIN {
-	x = @/xx/
-	print typeof(x)
-	print x
-}
+#BEGIN {
+#	x = @/xx/
+#	print typeof(x)
+#	print x
+#}
 
 # this set may not really be needed for the test
 BEGIN {
 	x = 4
-	print typeof(@/xxx/)
+#	print typeof(@/xxx/)
 	print typeof(3)
 	print x
 }

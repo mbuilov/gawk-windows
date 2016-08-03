@@ -236,7 +236,6 @@ static const char *const nodetypes[] = {
 	"Node_val",
 	"Node_regex",
 	"Node_dynregex",
-	"Node_typedregex",
 	"Node_var",
 	"Node_var_array",
 	"Node_var_new",
@@ -1323,11 +1322,6 @@ setup_frame(INSTRUCTION *pc)
 			break;
 
 		case Node_val:
-			r->type = Node_var;
-			r->var_value = m;
-			break;
-
-		case Node_typedregex:
 			r->type = Node_var;
 			r->var_value = m;
 			break;

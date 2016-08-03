@@ -1,3 +1,25 @@
+2016-08-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Remove typed regexes until they can be done properly.
+
+	* NEWS: Updated.
+	* awk.h (enum nodevals): Remove Node_typedregex.
+	(force_string, force_number): Remove check for Node_typedregex.
+	* awkgram.y (TYPED_REGEXP): Remove token.
+	(grammar): Remove productions related to typed regexps. 
+	(yylex): Don't find a typed regex or return it.
+	(valinfo): Remove code for Node_typedregex.
+	* builtin.c (do_length, do_print, call_sub, call_match,
+	call_split_func, do_typeof): Remove code for Node_typedregex.
+	* debug.c (watchpoint_triggered, print_memory): Remove code
+	for Node_typedregex.
+	* eval.c (nodetypes, setup_frame): Remove code for Node_typedregex.
+	* interpret.h (r_interpret): Remove code for Node_typedregex.
+	* profile.c (pprint): Remove code for Node_typedregex.
+	(pp_strong_regex): Removed.
+	(pp_string_or_strong_regex): Remove code for Node_typedregex.
+	* re.c (re_update): Remove code for Node_typedregex.
+
 2016-08-01         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* README, NEWS: Mark DJGPP port as unsupported.
