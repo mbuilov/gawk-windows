@@ -1446,11 +1446,15 @@ UNIX_TESTS = \
 	fflush getlnhd localenl pid pipeio1 pipeio2 poundbang \
 	rtlen rtlen01 space strftlng
 
+TYPED_RE_TESTS = \
+	dbugtypedre1 dbugtypedre2 \
+	typedregex1 typedregex2 typedregex3
+
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
 	colonwarn clos1way clos1way2 clos1way3 clos1way4 clos1way5 clos1way6 \
-	crlf dbugeval dbugeval2 dbugtypedre1 dbugtypedre2 delsub \
+	crlf dbugeval dbugeval2 delsub \
 	devfd devfd1 devfd2 dumpvars errno exit \
 	fieldwdth forcenum fpat1 fpat2 fpat3 fpat4 fpat5 fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
@@ -1472,7 +1476,7 @@ GAWK_EXT_TESTS = \
 	splitarg4 strftime \
 	strtonum strtonum1 switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
 	symtab7 symtab8 symtab9 symtab10 \
-	typedregex1 typedregex2 typedregex3 typeof1 typeof2 typeof3 typeof4 \
+	typeof1 typeof2 typeof3 typeof4 \
 	timeout \
 	watchpoint1
 
@@ -3790,6 +3794,21 @@ getlnhd:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+typedregex1:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+typedregex2:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+typedregex3:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 aadelete1:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -4238,21 +4257,6 @@ symtab5:
 symtab7:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-typedregex1:
-	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-typedregex2:
-	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-typedregex3:
-	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 typeof1:

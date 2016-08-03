@@ -172,7 +172,7 @@ extern double fmod(double x, double y);
 %}
 
 %token FUNC_CALL NAME REGEXP FILENAME
-%token YNUMBER YSTRING TYPED_REGEXP
+%token YNUMBER YSTRING
 %token RELOP IO_OUT IO_IN
 %token ASSIGNOP ASSIGN MATCHOP CONCAT_OP
 %token SUBSCRIPT
@@ -200,7 +200,7 @@ extern double fmod(double x, double y);
 %left MATCHOP
 %nonassoc RELOP '<' '>' IO_IN IO_OUT
 %left CONCAT_OP
-%left YSTRING YNUMBER TYPED_REGEXP
+%left YSTRING YNUMBER
 %left '+' '-'
 %left '*' '/' '%'
 %right '!' UNARY
@@ -510,28 +510,6 @@ regexp
 		  $$->memory = n;
 		}
 	;
-
-typed_regexp
-	: TYPED_REGEXP
-		{
-		  NODE *n, *exp;
-		  char *re;
-		  size_t len;
-
-		  re = $1->lextok;
-		  $1->lextok = NULL;
-		  len = strlen(re);
-
-		  exp = make_str_node(re, len, ALREADY_MALLOCED);
-		  n = make_regnode(Node_typedregex, exp);
-		  if (n == NULL) {
-			unref(exp);
-			YYABORT;
-		  }
-		  $$ = $1;
-		  $$->opcode = Op_push_re;
-		  $$->memory = n;
-		}
 
 a_slash
 	: '/'
@@ -1270,12 +1248,6 @@ case_value
 			$1->opcode = Op_push;
 		$$ = $1;
 	  }
-	| typed_regexp
-	  {
-		assert($1->memory->type == Node_typedregex);
-		$1->opcode = Op_push_re;
-		$$ = $1;
-	  }
 	;
 
 print
@@ -1460,7 +1432,6 @@ fcall_expression_list
 
 fcall_exp
 	: exp { $$ = $1; }
-	| typed_regexp { $$ = list_create($1); }
 	;
 
 /* Expressions, not including the comma operator.  */
@@ -1472,27 +1443,10 @@ exp
 				_("regular expression on right of assignment"));
 		$$ = mk_assignment($1, $3, $2);
 	  }
-	| variable ASSIGN typed_regexp %prec ASSIGNOP
-	  {
-		$$ = mk_assignment($1, list_create($3), $2);
-	  }
 	| exp LEX_AND exp
 	  {	$$ = mk_boolean($1, $3, $2); }
 	| exp LEX_OR exp
 	  {	$$ = mk_boolean($1, $3, $2); }
-	| exp MATCHOP typed_regexp
-	  {
-		if ($1->lasti->opcode == Op_match_rec)
-			warning_ln($2->source_line,
-				_("regular expression on left of `~' or `!~' operator"));
-
-		assert($3->opcode == Op_push_re
-			&& $3->memory->type == Node_typedregex);
-		/* RHS is @/.../ */
-		$2->memory = $3->memory;
-		bcfree($3);
-		$$ = list_append($1, $2);
-	  }
 	| exp MATCHOP exp
 	  {
 		if ($1->lasti->opcode == Op_match_rec)
@@ -3352,7 +3306,6 @@ yylex(void)
 	bool inhex = false;
 	bool intlstr = false;
 	AWKNUM d;
-	bool collecting_typed_regexp = false;
 
 #define GET_INSTRUCTION(op) bcalloc(op, 1, sourceline)
 
@@ -3387,7 +3340,7 @@ yylex(void)
 
 	lexeme = lexptr;
 	thisline = NULL;
-collect_regexp:
+
 	if (want_regexp) {
 		int in_brack = 0;	/* count brackets, [[:alnum:]] allowed */
 		int b_index = -1;
@@ -3474,11 +3427,7 @@ end_regexp:
 								peek);
 					}
 				}
-				if (collecting_typed_regexp) {
-					collecting_typed_regexp = false;
-					lasttok = TYPED_REGEXP;
-				} else
-					lasttok = REGEXP;
+				lasttok = REGEXP;
 
 				return lasttok;
 			case '\n':
@@ -3538,13 +3487,6 @@ retry:
 		return lasttok = NEWLINE;
 
 	case '@':
-		c = nextc(true);
-		if (c == '/') {
-			want_regexp = true;
-			collecting_typed_regexp = true;
-			goto collect_regexp;
-		}
-		pushback();
 		at_seen = true;
 		return lasttok = '@';
 
@@ -4597,8 +4539,6 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 {
 	if (n == Nnull_string)
 		print_func(fp, "uninitialized scalar\n");
-	else if (n->type == Node_typedregex)
-		print_func(fp, "@/%.*s/\n", n->re_exp->stlen, n->re_exp->stptr);
 	else if ((n->flags & STRING) != 0) {
 		pp_string_fp(print_func, fp, n->stptr, n->stlen, '"', false);
 		print_func(fp, "\n");
@@ -4973,7 +4913,7 @@ make_regnode(int type, NODE *exp)
 	n->type = type;
 	n->re_cnt = 1;
 
-	if (type == Node_regex || type == Node_typedregex) {
+	if (type == Node_regex) {
 		n->re_reg = make_regexp(exp->stptr, exp->stlen, false, true, false);
 		if (n->re_reg == NULL) {
 			freenode(n);

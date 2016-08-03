@@ -532,7 +532,7 @@ do_length(int nargs)
 		return make_number(size);
 	}
 
-	assert(tmp->type == Node_val || tmp->type == Node_typedregex);
+	assert(tmp->type == Node_val);
 
 	if (do_lint && (fixtype(tmp)->flags & STRING) == 0)
 		lintwarn(_("length: received non-string argument"));
@@ -2191,12 +2191,10 @@ do_print(int nargs, int redirtype)
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(tmp));
 		}
 
-		if (tmp->type == Node_typedregex)
-			args_array[i] = force_string(tmp);
-		else if (   (tmp->flags & STRCUR) == 0
-			 || (   tmp->stfmt != STFMT_UNUSED
-			     && tmp->stfmt != OFMTidx))
-				args_array[i] = format_val(OFMT, OFMTidx, tmp);
+		if (   (tmp->flags & STRCUR) == 0
+		    || (   tmp->stfmt != STFMT_UNUSED
+		        && tmp->stfmt != OFMTidx))
+		   	args_array[i] = format_val(OFMT, OFMTidx, tmp);
 	}
 
 	if (redir_exp != NULL) {
@@ -3199,8 +3197,7 @@ call_sub(const char *name, int nargs)
 		 * push replace
 		 * push $0
 		 */
-		if (regex->type != Node_typedregex)
-			regex = make_regnode(Node_regex, regex);
+		regex = make_regnode(Node_regex, regex);
 		PUSH(regex);
 		PUSH(replace);
 		lhs = r_get_field(zero, (Func_ptr *) 0, true);
@@ -3224,8 +3221,7 @@ call_sub(const char *name, int nargs)
 		 *	 nargs++
 		 * }
 		 */
-		if (regex->type != Node_typedregex)
-			regex = make_regnode(Node_regex, regex);
+		regex = make_regnode(Node_regex, regex);
 		PUSH(regex);
 		PUSH(replace);
 		PUSH(glob_flag);
@@ -3262,8 +3258,7 @@ call_match(int nargs)
 
 	/* Don't need to pop the string just to push it back ... */
 
-	if (regex->type != Node_typedregex)
-		regex = make_regnode(Node_regex, regex);
+	regex = make_regnode(Node_regex, regex);
 	PUSH(regex);
 
 	if (array)
@@ -3291,8 +3286,7 @@ call_split_func(const char *name, int nargs)
 
 	if (nargs >= 3) {
 		regex = POP_STRING();
-		if (regex->type != Node_typedregex)
-			regex = make_regnode(Node_regex, regex);
+		regex = make_regnode(Node_regex, regex);
 	} else {
 		if (name[0] == 's') {
 			regex = make_regnode(Node_regex, FS_node->var_value);
@@ -3947,9 +3941,6 @@ do_typeof(int nargs)
 		/* Node_var_array is never UPREF'ed */
 		res = "array";
 		deref = false;
-		break;
-	case Node_typedregex:
-		res = "regexp";
 		break;
 	case Node_val:
 	case Node_var:
