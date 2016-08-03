@@ -33,7 +33,6 @@ static char *pp_list(int nargs, const char *paren, const char *delim);
 static char *pp_group3(const char *s1, const char *s2, const char *s3);
 static char *pp_concat(int nargs);
 static char *pp_string_or_strong_regex(const char *in_str, size_t len, int delim, bool strong_regex);
-static char *pp_strong_regex(const char *in_str, size_t len, int delim);
 static bool is_binary(int type);
 static bool is_scalar(int type);
 static int prec_level(int type);
@@ -637,17 +636,14 @@ cleanup:
 			break;
 
 		case Op_push_re:
-			if (pc->memory->type != Node_regex && pc->memory->type != Node_typedregex)
+			if (pc->memory->type != Node_regex)
 				break;
 			/* else 
 				fall through */
 		case Op_match_rec:
 		{
 			NODE *re = pc->memory->re_exp;
-			if (pc->memory->type == Node_regex)
-				str = pp_string(re->stptr, re->stlen, '/');
-			else
-				str = pp_strong_regex(re->stptr, re->stlen, '/');
+			str = pp_string(re->stptr, re->stlen, '/');
 			pp_push(pc->opcode, str, CAN_FREE);
 		}
 			break;
@@ -669,11 +665,6 @@ cleanup:
 				txt = t2->pp_str;
 				str = pp_group3(txt, op2str(pc->opcode), restr);
 				pp_free(t2);
-			} else if (m->type == Node_typedregex) {
-				NODE *re = m->re_exp;
-				restr = pp_strong_regex(re->stptr, re->stlen, '/');
-				str = pp_group3(txt, op2str(pc->opcode), restr);
-				efree(restr);
 			} else {
 				NODE *re = m->re_exp;
 				restr = pp_string(re->stptr, re->stlen, '/');
@@ -1414,13 +1405,6 @@ pp_string(const char *in_str, size_t len, int delim)
 	return pp_string_or_strong_regex(in_str, len, delim, false);
 }
 
-/* pp_strong_regex --- pretty format a hard regex constant */
-
-static char *
-pp_strong_regex(const char *in_str, size_t len, int delim)
-{
-	return pp_string_or_strong_regex(in_str, len, delim, true);
-}
 
 /* pp_string_or_strong_regex --- pretty format a string, regex, or hard regex constant */
 
@@ -1463,9 +1447,6 @@ pp_string_or_strong_regex(const char *in_str, size_t len, int delim, bool strong
 	emalloc(obuf, char *, osiz, "pp_string");
 	obufout = obuf;
 	ofre = osiz - 1;
-
-	if (strong_regex)
-		*obufout++ = '@';
 
 	*obufout++ = delim;
 	for (; len > 0; len--, str++) {
