@@ -420,6 +420,14 @@ typedef struct exp_node {
 	 * and add WSTRCUR to the flags so that we don't have to do the
 	 * conversion more than once.
 	 *
+	 * The NUMINT flag may be used with a value of any type -- NUMBER,
+	 * STRING, or STRNUM. It indicates that the string representation
+	 * equals the result of sprintf("%ld", <numeric value>). So, for
+	 * example, NUMINT should NOT be set if it's a strnum or string value
+	 * where the string is " 1" or "01" or "+1" or "1.0" or "0.1E1". This
+	 * is a hint to indicate that an integer array optimization may be
+	 * used when this value appears as a subscript.
+	 *
 	 * We hope that the rest of the flags are self-explanatory. :-)
 	 */
 #		define	STRING	0x0002       /* assigned as string */
