@@ -50,8 +50,11 @@ $!
 $! 4.1.3.g: New tests
 $!      basic:  fsnul1, hex2, mixed1, subback
 $!	ext:    fpat4, symtab10
-$
-$
+$!
+$! 4.1.3.i: New tests
+$!	basic:  ofmtstrnum
+$!	extra:  ignrcas3
+$!
 $	echo	= "write sys$output"
 $	cmp	= "diff/Output=_NL:/Maximum=1"
 $	delsym  = "delete/symbol/local/nolog"
@@ -302,7 +305,7 @@ $		gosub list_of_tests
 $		return
 $
 $extra:		echo "extra..."
-$		list = "regtest inftest inet"
+$		list = "regtest inftest inet ignrcas3"
 $		gosub list_of_tests
 $		return
 $
@@ -563,6 +566,7 @@ $negrange:
 $nulinsrc:
 $nlstrina:
 $octsub:
+$ofmtstrnum:
 $paramtyp:
 $paramuninitglobal:
 $pcntplus:
@@ -1614,7 +1618,23 @@ $	gosub junit_report_fail_diff
 $   endif
 $   set On
 $   return
-$
+$!
+$ignrcas3:	echo "''test'"
+$   test_class = "extra"
+$   if f$search("sys$i18n_locale:el_gr_iso8859-7.locale") .nes. ""
+$   then
+$	define/user LC_ALL "el_gr_iso8859-7"
+$	define/user GAWKLOCALE "el_gr_iso8859-7"
+	AWKPATH_srcdir
+$!	goto common_without_test_in
+$	skip_reason = "VMS EL_GR_ISO8859-7 locale fails test"
+$	gosub junit_report_skip
+$   else
+$	skip_reason = "EL_GR_ISO8859-7 locale not installed"
+$	gosub junit_report_skip
+$   endif
+$   return
+$!
 $childin:	echo "''test'"
 $	test_class = "basic"
 $	cat = "type sys$input"
@@ -2712,6 +2732,10 @@ $	else
 $	    echo "''test'"
 $	endif
 $	gawk -f 'test'.awk 'test'.in >_'test'.tmp
+$	if f$search("sys$disk:[]_''test'.tmp;2") .nes. ""
+$	then
+$	    delete sys$disk:[]_'test'.tmp;2
+$	endif
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status
 $	then
@@ -3794,10 +3818,31 @@ $	endif
 $	return
 $!
 $filefuncs:
+$	echo "''test'"
+$	test_class = "shlib"
+$	filefunc_file = "[-]gawkapi.o"
+$	open/write gapi 'filefunc_file'
+$	close gapi
+$	set noOn
+$	AWKLIBPATH_dir
+$	gawk -v builddir="sys$disk:[-]" -
+	    -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
+$	if .not. $status then call exit_code '$status' _'test'.tmp
+$	set On
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status
+$	then
+$	    rm _'test'.tmp;
+$	    gosub junit_report_pass
+$	else
+$	    gosub junit_report_fail_diff
+$	endif
+$	if f$search(filefunc_file) .nes. "" then rm 'filefunc_file';*
+$	return
+$!
 $fnmatch:
 $functab4:
 $ordchr:
-$ordchr2:
 $revout:
 $revtwoway:
 $time:
@@ -3821,6 +3866,29 @@ $	    gosub junit_report_fail_diff
 $	endif
 $	if f$search(filefunc_file) .nes. "" then rm 'filefunc_file';*
 $	return
+$!
+$ordchr2:
+$	echo "''test'"
+$	test_class = "shlib"
+$	filefunc_file = "[-]gawkapi.o"
+$	open/write gapi 'filefunc_file'
+$	close gapi
+$	set noOn
+$	AWKLIBPATH_dir
+$	gawk --load ordchr "BEGIN {print chr(ord(""z""))}" > _'test'.tmp 2>&1
+$	if .not. $status then call exit_code '$status' _'test'.tmp
+$	set On
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status
+$	then
+$	    rm _'test'.tmp;
+$	    gosub junit_report_pass
+$	else
+$	    gosub junit_report_fail_diff
+$	endif
+$	if f$search(filefunc_file) .nes. "" then rm 'filefunc_file';*
+$	return
+$
 $!
 $rwarray:
 $	echo "''test'"

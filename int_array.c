@@ -78,13 +78,49 @@ int_array_init(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
 	return & success_node;
 }
 
+/*
+ * standard_integer_string -- check whether the string matches what
+ * sprintf("%ld", <value>) would produce. This is accomplished by accepting
+ * only strings that look like /^0$/ or /^-?[1-9][0-9]*$/. This should be
+ * faster than comparing vs. the results of actually calling sprintf.
+ */
+
+static bool
+standard_integer_string(const char *s, size_t len)
+{
+	const char *end;
+
+	if (len == 0)
+		return false;
+	if (*s == '0' && len == 1)
+		return true;
+	end = s + len;
+	/* ignore leading minus sign */
+	if (*s == '-' && ++s == end)
+		return false;
+	/* check first char is [1-9] */
+	if (*s < '1' || *s > '9')
+		return false;
+	while (++s < end) {
+		if (*s < '0' || *s > '9')
+			return false;
+	}
+	return true;
+}
+
 /* is_integer --- check if subscript is an integer */
 
 NODE **
 is_integer(NODE *symbol, NODE *subs)
 {
+#ifndef CHECK_INTEGER_USING_FORCE_NUMBER
 	long l;
+#endif
 	AWKNUM d;
+
+	if ((subs->flags & NUMINT) != 0)
+		/* quick exit */
+		return & success_node;
 
 	if (subs == Nnull_string || do_mpfr)
 		return NULL;
@@ -111,13 +147,40 @@ is_integer(NODE *symbol, NODE *subs)
 	if ((subs->flags & NUMINT) != 0)
 		return & success_node;
 
-	if ((subs->flags & NUMBER) != 0) {
+#ifdef CHECK_INTEGER_USING_FORCE_NUMBER
+	/*
+	 * This approach is much simpler, because we remove all of the strtol
+	 * logic below. But this may be slower in some usage cases.
+	 */
+	if ((subs->flags & NUMCUR) == 0) {
+		str2number(subs);
+
+		/* check again in case force_number set NUMINT */
+		if ((subs->flags & NUMINT) != 0)
+			return & success_node;
+	}
+#else /* CHECK_INTEGER_USING_FORCE_NUMBER */
+	if ((subs->flags & NUMCUR) != 0) {
+#endif /* CHECK_INTEGER_USING_FORCE_NUMBER */
 		d = subs->numbr;
 		if (d <= INT32_MAX && d >= INT32_MIN && d == (int32_t) d) {
-			subs->flags |= NUMINT;
-			return & success_node;
+			/*
+			 * The numeric value is an integer, but we must
+			 * protect against strings that cannot be generated
+			 * from sprintf("%ld", <subscript>). This can happen
+			 * with strnum or string values. We could skip this
+			 * check for pure NUMBER values, but unfortunately the
+			 * code does not currently distinguish between NUMBER
+			 * and strnum values.
+			 */
+			if (   (subs->flags & STRCUR) == 0
+			    || standard_integer_string(subs->stptr, subs->stlen)) {
+				subs->flags |= NUMINT;
+				return & success_node;
+			}
 		}
 		return NULL;
+#ifndef CHECK_INTEGER_USING_FORCE_NUMBER
 	}
 
 	/* a[3]=1; print "3" in a    -- true
@@ -172,6 +235,7 @@ is_integer(NODE *symbol, NODE *subs)
 	}
 
 	return NULL;
+#endif /* CHECK_INTEGER_USING_FORCE_NUMBER */
 }
 
 
