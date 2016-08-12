@@ -143,7 +143,7 @@ is_integer(NODE *symbol, NODE *subs)
 		d = subs->numbr;
 		if (d <= INT32_MAX && d >= INT32_MIN && d == (int32_t) d) {
 			/*
-			 * the numeric value is an integer, but we must
+			 * The numeric value is an integer, but we must
 			 * protect against strings that cannot be generated
 			 * from sprintf("%ld", <subscript>). This can happen
 			 * with strnum or string values. We could skip this
@@ -151,7 +151,8 @@ is_integer(NODE *symbol, NODE *subs)
 			 * code does not currently distinguish between NUMBER
 			 * and strnum values.
 			 */
-			if ((subs->flags & STRCUR) == 0 || standard_integer_string(subs->stptr, subs->stlen)) {
+			if (   (subs->flags & STRCUR) == 0
+			    || standard_integer_string(subs->stptr, subs->stlen)) {
 				subs->flags |= NUMINT;
 				return & success_node;
 			}
