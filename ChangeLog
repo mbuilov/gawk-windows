@@ -1,3 +1,23 @@
+2016-08-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+
+	Unrelated:
+
+	* int_array.c: Minor text and formatting edits.
+
+2016-08-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h: Add a comment explaining the NUMINT flag in more detail.
+	* int_array.c (standard_integer_string): New function to test whether
+	a string matches what would be produced by sprintf("%ld", <value>).
+	(is_integer): Fix bug -- if NUMBER was set, then the function was
+	accepting strnum values with nonstandard string representations. We
+	now call standard_integer_string to check that the string looks OK.
+	Also added ifdef'ed code to simplify the function by relying upon
+	force_number to parse the string, but this is disabled due to possible
+	negative performance impact.
+
 2016-08-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Remove typed regexes until they can be done properly.
