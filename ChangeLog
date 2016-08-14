@@ -1,3 +1,9 @@
+2016-08-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* re.c (make_regexp): Only call dfasyntax if actually using
+	dfa. Gives a 14% speedup on this test: https://raw.githubusercontent.com/chadbrewbaker/awka/master/benchmark/regexp.awk.
+	From blathering in comp.lang.awk.
+
 2016-08-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with GNU grep.

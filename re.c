@@ -203,10 +203,14 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 		syn &= ~RE_ICASE;
 	}
 
-	dfa_syn = syn;
-	if (ignorecase)
-		dfa_syn |= RE_ICASE;
-	dfasyntax(dfa_syn, ignorecase, '\n');
+	/* only call dfasyntax if we're using dfa; saves time */
+	if (dfa && ! no_dfa) {
+		dfa_syn = syn;
+		/* FIXME: dfa doesn't pay attention RE_ICASE */
+		if (ignorecase)
+			dfa_syn |= RE_ICASE;
+		dfasyntax(dfa_syn, ignorecase, '\n');
+	}
 	re_set_syntax(syn);
 
 	if ((rerr = re_compile_pattern(buf, len, &(rp->pat))) != NULL) {
