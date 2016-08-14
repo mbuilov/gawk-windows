@@ -160,7 +160,8 @@ BASIC_TESTS = \
 	nasty nasty2 negexp negrange nested nfldstr nfloop nfneg nfset nlfldsep \
 	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl \
 	noparms nors nulinsrc nulrsend numindex numsubstr \
-	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofs1 onlynl opasnidx opasnslf \
+	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofmtstrnum ofs1 onlynl \
+	opasnidx opasnslf \
 	paramasfunc1 paramasfunc2 \
 	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
 	pcntplus posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
@@ -189,7 +190,7 @@ GAWK_EXT_TESTS = \
 	fieldwdth fpat1 fpat2 fpat3 fpat4 fpat5 fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
 	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
-	icasefs icasers id igncdym igncfs ignrcas2 ignrcase \
+	icasefs icasers id igncdym igncfs ignrcas2 ignrcas3 ignrcase \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
 	include include2 indirectbuiltin indirectcall indirectcall2 \
 	lint lintold lintwarn \
@@ -200,7 +201,7 @@ GAWK_EXT_TESTS = \
 	profile0 profile1 profile2 profile3 profile4 profile5 profile6 \
 	profile7 profile8 pty1 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
-	rsstart2 rsstart3 rstest6 shadow sortfor sortu split_after_fpat \
+	rsstart2 rsstart3 rstest6 shadow sortfor sortfor2 sortu split_after_fpat \
 	splitarg4 strftime \
 	strtonum switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
 	symtab7 symtab8 symtab9 symtab10 \
@@ -1289,6 +1290,15 @@ symtab10:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < "$(srcdir)/$@.in" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+ignrcas3::
+	@echo $@
+	@echo Expect ignrcas3 to fail with MinGW and DJGPP
+	@if locale -a | grep ell_GRC.1253 > /dev/null ; then \
+	@GAWKLOCALE=ell_GRC.1253 \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; \
+	fi
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
 addcomma:
@@ -1912,6 +1922,11 @@ ofmtfidl:
 ofmts:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+ofmtstrnum:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 ofs1:
@@ -2609,6 +2624,11 @@ shadow:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 sortfor:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+sortfor2:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
