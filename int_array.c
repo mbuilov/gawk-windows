@@ -125,28 +125,6 @@ is_integer(NODE *symbol, NODE *subs)
 	if (subs == Nnull_string || do_mpfr)
 		return NULL;
 
-	/*
-	 * Protect against MAYBE_NUM values where the string may not regenerate
-	 * correctly. There could be white space and/or a non-decimal value.
-	 * If stfmt is not STFMT_UNUSED, it means that the string value was
-	 * generated using CONVFMT or OFMT, so there is no info there.
-	 */
-	if ((subs->flags & STRCUR) != 0 && subs->stfmt == STFMT_UNUSED) {
-		char *cp = subs->stptr;
-
-		if (       subs->stlen == 0
-			|| cp[0] == '0'
-			|| isspace((unsigned char) cp[0])
-			|| isspace((unsigned char) cp[subs->stlen - 1])
-			|| (       subs->stlen >= 2
-				&& (cp[0] == '-' || cp[0] == '+')
-				&& cp[1] == '0'))
-			return NULL;
-	}
-
-	if ((subs->flags & NUMINT) != 0)
-		return & success_node;
-
 #ifdef CHECK_INTEGER_USING_FORCE_NUMBER
 	/*
 	 * This approach is much simpler, because we remove all of the strtol
