@@ -67,6 +67,7 @@ EXTRA_DIST = \
 	arrayref.ok \
 	arraysort.awk \
 	arraysort.ok \
+	arrdbg.awk \
 	arrymem1.awk \
 	arrymem1.ok \
 	arryref2.awk \
@@ -1224,6 +1225,8 @@ GAWK_EXT_TESTS = \
 	timeout \
 	watchpoint1
 
+ARRAYDEBUG_TESTS = arrdbg
+
 EXTRA_TESTS = inftest regtest ignrcas3 
 
 INET_TESTS = inetdayu inetdayt inetechu inetecht
@@ -1291,7 +1294,7 @@ check:	msg \
 	printlang \
 	basic-msg-start  basic           basic-msg-end \
 	unix-msg-start   unix-tests      unix-msg-end \
-	extend-msg-start gawk-extensions extend-msg-end \
+	extend-msg-start gawk-extensions arraydebug-tests extend-msg-end \
 	machine-msg-start machine-tests machine-msg-end \
 	charset-tests-all \
 	shlib-msg-start  shlib-tests     shlib-msg-end \
@@ -1331,6 +1334,12 @@ mpfr-tests:
 	@if $(AWK) --version | $(AWK) ' /MPFR/ { exit 1 }' ; then \
 	echo MPFR tests not supported on this system ; \
 	else $(MAKE) $(MPFR_TESTS) ; \
+	fi
+
+arraydebug-tests:
+	@if echo $(CFLAGS) | grep ARRAYDEBUG > /dev/null ; then \
+	$(MAKE) $(ARRAYDEBUG_TESTS) ; \
+	else echo gawk is not compiled to support the array debug tests ; \
 	fi
 
 shlib-tests:
@@ -2337,6 +2346,12 @@ ignrcas3::
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
 	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; \
 	fi
+
+arrdbg:
+	@echo $@
+	@$(AWK) -v "okfile=$(srcdir)/$@.ok" -f "$(srcdir)"/$@.awk | grep array_f >_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ "$(srcdir)"/$@.ok
+#	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ "$(srcdir)"/$@.ok || exit 0
 
 # Targets generated for other tests:
 include Maketests
