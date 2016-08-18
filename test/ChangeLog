@@ -1,3 +1,12 @@
+2016-08-16         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (arrdbg): New test using adump.
+	(ARRAYDEBUG_TESTS): New test group requiring ARRAYDEBUG compilation.
+	(check): Add arraydebug-tests.
+	(arraydebug-tests): Check $(ARRAYDEBUG_TESTS) when compiled with
+	ARRAYDEBUG.
+	* arrdbg.awk: New test using adump to check array type.
+
 2016-08-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* intarray.awk, intarray.ok: Updated.
