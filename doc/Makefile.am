@@ -47,6 +47,7 @@ EXTRA_DIST = ChangeLog ChangeLog.0 README.card ad.block setter.outline \
 	lflashlight-small.xpic lflashlight.eps lflashlight.pdf \
 	rflashlight-small.xpic rflashlight.eps rflashlight.pdf \
 	statist.jpg statist.eps statist.pdf \
+	wordlist \
 	bc_notes
 
 # Get rid of generated files when cleaning
@@ -103,3 +104,7 @@ awkcard.nc: $(CARDFILES)
 
 awkcard.pdf: awkcard.ps
 	ps2pdf awkcard.ps awkcard.pdf
+
+spell:
+	export LC_ALL=C ; spell "$(srcdir)"/gawktexi.in | \
+	sort -u | comm -23 - "$(srcdir)"/wordlist
