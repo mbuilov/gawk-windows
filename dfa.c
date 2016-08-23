@@ -355,13 +355,84 @@ struct mb_char_classes
   size_t nchars;
 };
 
+struct regex_syntax
+{
+  /* Syntax bits controlling the behavior of the lexical analyzer.  */
+  reg_syntax_t syntax_bits;
+  bool syntax_bits_set;
+
+  /* Flag for case-folding letters into sets.  */
+  bool case_fold;
+
+  /* End-of-line byte in data.  */
+  unsigned char eolbyte;
+
+  /* Cache of char-context values.  */
+  int sbit[NOTCHAR];
+
+  /* If never_trail[B], the byte B cannot be a non-initial byte in a
+     multibyte character.  */
+  bool never_trail[NOTCHAR];
+
+  /* Set of characters considered letters.  */
+  charclass letters;
+
+  /* Set of characters that are newline.  */
+  charclass newline;
+};
+
+/* Lexical analyzer.  All the dross that deals with the obnoxious
+   GNU Regex syntax bits is located here.  The poor, suffering
+   reader is referred to the GNU Regex documentation for the
+   meaning of the @#%!@#%^!@ syntax bits.  */
+struct lexer_state
+{
+  char const *lexptr;	/* Pointer to next input character.  */
+  size_t lexleft;	/* Number of characters remaining.  */
+  token lasttok;	/* Previous token returned; initially END.  */
+  size_t parens;	/* Count of outstanding left parens.  */
+  int minrep, maxrep;	/* Repeat counts for {m,n}.  */
+
+  /* Wide character representation of the current multibyte character,
+     or WEOF if there was an encoding error.  Used only if
+     MB_CUR_MAX > 1.  */
+  wint_t wctok;
+
+  /* Length of the multibyte representation of wctok.  */
+  int cur_mb_len;
+
+  /* We're separated from beginning or (, | only by zero-width characters.  */
+  bool laststart;
+};
+
+/* Recursive descent parser for regular expressions.  */
+
+struct parser_state
+{
+  token tok;               /* Lookahead token.  */
+  size_t depth;            /* Current depth of a hypothetical stack
+                              holding deferred productions.  This is
+                              used to determine the depth that will be
+                              required of the real stack later on in
+                              dfaanalyze.  */
+};
+
 /* A compiled regular expression.  */
 struct dfa
 {
+  /* Syntax configuration */
+  struct regex_syntax syntax;
+
   /* Fields filled by the scanner.  */
   charclass *charclasses;       /* Array of character sets for CSET tokens.  */
   size_t cindex;                /* Index for adding new charclasses.  */
   size_t calloc;                /* Number of charclasses allocated.  */
+
+  /* Scanner state */
+  struct lexer_state lexstate;
+
+  /* Parser state */
+  struct parser_state parsestate;
 
   /* Fields filled by the parser.  */
   token *tokens;                /* Postfix parse array.  */
@@ -478,7 +549,7 @@ struct dfa
 #define ACCEPTS_IN_CONTEXT(prev, curr, state, dfa) \
   SUCCEEDS_IN_CONTEXT ((dfa).states[state].constraint, prev, curr)
 
-static void regexp (void);
+static void regexp (struct dfa *dfa);
 
 /* A table indexed by byte values that contains the corresponding wide
    character (if any) for that byte.  WEOF means the byte is not a
@@ -697,39 +768,6 @@ dfa_charclass_index (struct dfa *d, charclass const s)
   return i;
 }
 
-/* A pointer to the current dfa is kept here during parsing.  */
-static struct dfa *dfa;
-
-/* Find the index of charclass S in the current DFA, or allocate a new one.  */
-static size_t
-charclass_index (charclass const s)
-{
-  return dfa_charclass_index (dfa, s);
-}
-
-/* Syntax bits controlling the behavior of the lexical analyzer.  */
-static reg_syntax_t syntax_bits;
-static bool syntax_bits_set;
-
-/* Flag for case-folding letters into sets.  */
-static bool case_fold;
-
-/* End-of-line byte in data.  */
-static unsigned char eolbyte;
-
-/* Cache of char-context values.  */
-static int sbit[NOTCHAR];
-
-/* If never_trail[B], the byte B cannot be a non-initial byte in a
-   multibyte character.  */
-static bool never_trail[NOTCHAR];
-
-/* Set of characters considered letters.  */
-static charclass letters;
-
-/* Set of characters that are newline.  */
-static charclass newline;
-
 static bool
 unibyte_word_constituent (unsigned char c)
 {
@@ -737,25 +775,29 @@ unibyte_word_constituent (unsigned char c)
 }
 
 static int
-char_context (unsigned char c)
+char_context (struct dfa const *dfa, unsigned char c)
 {
-  if (c == eolbyte)
+  if (c == dfa->syntax.eolbyte)
     return CTX_NEWLINE;
   if (unibyte_word_constituent (c))
     return CTX_LETTER;
   return CTX_NONE;
 }
 
-/* Entry point to set syntax options.  */
-void
-dfasyntax (reg_syntax_t bits, bool fold, unsigned char eol)
+/* UTF-8 encoding allows some optimizations that we can't otherwise
+   assume in a multibyte encoding.  */
+static bool using_utf8;
+
+bool
+dfa_using_utf8 (void)
+{
+  return using_utf8;
+}
+
+static void
+init_mbrtowc_cache (void)
 {
   int i;
-  syntax_bits_set = true;
-  syntax_bits = bits;
-  case_fold = fold;
-  eolbyte = eol;
-
   for (i = CHAR_MIN; i <= CHAR_MAX; ++i)
     {
       char c = i;
@@ -763,23 +805,39 @@ dfasyntax (reg_syntax_t bits, bool fold, unsigned char eol)
       mbstate_t s = { 0 };
       wchar_t wc;
       mbrtowc_cache[uc] = mbrtowc (&wc, &c, 1, &s) <= 1 ? wc : WEOF;
+    }
+}
 
-      /* Now that mbrtowc_cache[uc] is set, use it to calculate sbit.  */
-      sbit[uc] = char_context (uc);
-      switch (sbit[uc])
+/* Entry point to set syntax options.  */
+void
+dfasyntax (struct dfa *dfa, reg_syntax_t bits, bool fold, unsigned char eol)
+{
+  int i;
+  dfa->syntax.syntax_bits_set = true;
+  dfa->syntax.syntax_bits = bits;
+  dfa->syntax.case_fold = fold;
+  dfa->syntax.eolbyte = eol;
+
+  for (i = CHAR_MIN; i <= CHAR_MAX; ++i)
+    {
+      unsigned char uc = i;
+
+      /* Use mbrtowc_cache to calculate sbit.  */
+      dfa->syntax.sbit[uc] = char_context (dfa, uc);
+      switch (dfa->syntax.sbit[uc])
         {
         case CTX_LETTER:
-          setbit (uc, letters);
+          setbit (uc, dfa->syntax.letters);
           break;
         case CTX_NEWLINE:
-          setbit (uc, newline);
+          setbit (uc, dfa->syntax.newline);
           break;
         }
 
       /* POSIX requires that the five bytes in "\n\r./" (including the
          terminating NUL) cannot occur inside a multibyte character.  */
-      never_trail[uc] = (using_utf8 () ? (uc & 0xc0) != 0x80
-                         : strchr ("\n\r./", uc) != NULL);
+      dfa->syntax.never_trail[uc] = (using_utf8 ? (uc & 0xc0) != 0x80
+                                     : strchr ("\n\r./", uc) != NULL);
     }
 }
 
@@ -811,21 +869,21 @@ setbit_case_fold_c (int b, charclass c)
       setbit (i, c);
 }
 
-
-
-/* UTF-8 encoding allows some optimizations that we can't otherwise
-   assume in a multibyte encoding.  */
-bool
-using_utf8 (void)
+static void check_utf8 (void)
 {
-  static int utf8 = -1;
-  if (utf8 < 0)
-    {
-      wchar_t wc;
-      mbstate_t mbs = { 0 };
-      utf8 = mbrtowc (&wc, "\xc4\x80", 2, &mbs) == 2 && wc == 0x100;
-    }
-  return utf8;
+  wchar_t wc;
+  mbstate_t mbs = { 0 };
+  using_utf8 = mbrtowc (&wc, "\xc4\x80", 2, &mbs) == 2 && wc == 0x100;
+}
+
+static bool unibyte_c;
+
+static void check_unibyte_c (void)
+{
+  char const *locale = setlocale (LC_ALL, NULL);
+  unibyte_c = (!locale
+               || STREQ (locale, "C")
+               || STREQ (locale, "POSIX"));
 }
 
 /* The current locale is known to be a unibyte locale
@@ -834,7 +892,7 @@ using_utf8 (void)
    processed more efficiently.  */
 
 static bool
-using_simple_locale (void)
+using_simple_locale (struct dfa const *dfa)
 {
   /* The native character set is known to be compatible with
      the C locale.  The following test isn't perfect, but it's good
@@ -852,43 +910,8 @@ using_simple_locale (void)
      && '}' == 125 && '~' == 126)
   };
 
-  if (! native_c_charset || dfa->multibyte)
-    return false;
-  else
-    {
-      static int unibyte_c = -1;
-      if (unibyte_c < 0)
-        {
-          char const *locale = setlocale (LC_ALL, NULL);
-          unibyte_c = (!locale
-                       || STREQ (locale, "C")
-                       || STREQ (locale, "POSIX"));
-        }
-      return unibyte_c;
-    }
+  return (!native_c_charset || dfa->multibyte) ? false : unibyte_c;
 }
-
-/* Lexical analyzer.  All the dross that deals with the obnoxious
-   GNU Regex syntax bits is located here.  The poor, suffering
-   reader is referred to the GNU Regex documentation for the
-   meaning of the @#%!@#%^!@ syntax bits.  */
-
-static char const *lexptr;      /* Pointer to next input character.  */
-static size_t lexleft;          /* Number of characters remaining.  */
-static token lasttok;           /* Previous token returned; initially END.  */
-static bool laststart;		/* We're separated from beginning or (,
-                                   | only by zero-width characters.  */
-static size_t parens;           /* Count of outstanding left parens.  */
-static int minrep, maxrep;      /* Repeat counts for {m,n}.  */
-
-static int cur_mb_len = 1;      /* Length of the multibyte representation of
-                                   wctok.  */
-
-static wint_t wctok;		/* Wide character representation of the current
-                                   multibyte character, or WEOF if there was
-                                   an encoding error.  Used only if
-                                   MB_CUR_MAX > 1.  */
-
 
 /* Fetch the next lexical input character.  Set C (of type int) to the
    next input byte, except set C to EOF if the input is a multibyte
@@ -897,24 +920,25 @@ static wint_t wctok;		/* Wide character representation of the current
    of length 1); otherwise set WC to WEOF.  If there is no more input,
    report EOFERR if EOFERR is not null, and return lasttok = END
    otherwise.  */
-# define FETCH_WC(c, wc, eoferr)		\
+# define FETCH_WC(dfa, c, wc, eoferr)		\
   do {						\
-    if (! lexleft)				\
+    if (! dfa->lexstate.lexleft)		\
       {						\
         if ((eoferr) != 0)			\
           dfaerror (eoferr);			\
         else					\
-          return lasttok = END;			\
+          return dfa->lexstate.lasttok = END;	\
       }						\
     else					\
       {						\
         wint_t _wc;				\
-        size_t nbytes = mbs_to_wchar (&_wc, lexptr, lexleft, dfa); \
-        cur_mb_len = nbytes;			\
+        size_t nbytes = mbs_to_wchar (&_wc, dfa->lexstate.lexptr, \
+                                      dfa->lexstate.lexleft, dfa); \
+        dfa->lexstate.cur_mb_len = nbytes;	\
         (wc) = _wc;				\
-        (c) = nbytes == 1 ? to_uchar (*lexptr) : EOF;    \
-        lexptr += nbytes;			\
-        lexleft -= nbytes;			\
+        (c) = nbytes == 1 ? to_uchar (*dfa->lexstate.lexptr) : EOF; \
+        dfa->lexstate.lexptr += nbytes;		\
+        dfa->lexstate.lexleft -= nbytes;	\
       }						\
   } while (false)
 
@@ -1011,7 +1035,7 @@ find_pred (const char *str)
 /* Multibyte character handling sub-routine for lex.
    Parse a bracket expression and build a struct mb_char_classes.  */
 static token
-parse_bracket_exp (void)
+parse_bracket_exp (struct dfa *dfa)
 {
   bool invert;
   int c, c1, c2;
@@ -1055,12 +1079,12 @@ parse_bracket_exp (void)
     work_mbc = NULL;
 
   memset (ccl, 0, sizeof ccl);
-  FETCH_WC (c, wc, _("unbalanced ["));
+  FETCH_WC (dfa, c, wc, _("unbalanced ["));
   if (c == '^')
     {
-      FETCH_WC (c, wc, _("unbalanced ["));
+      FETCH_WC (dfa, c, wc, _("unbalanced ["));
       invert = true;
-      known_bracket_exp = using_simple_locale ();
+      known_bracket_exp = using_simple_locale (dfa);
     }
   else
     invert = false;
@@ -1077,9 +1101,9 @@ parse_bracket_exp (void)
          dfa is ever called.  */
       if (c == '[')
         {
-          FETCH_WC (c1, wc1, _("unbalanced ["));
+          FETCH_WC (dfa, c1, wc1, _("unbalanced ["));
 
-          if ((c1 == ':' && (syntax_bits & RE_CHAR_CLASSES))
+          if ((c1 == ':' && (dfa->syntax.syntax_bits & RE_CHAR_CLASSES))
               || c1 == '.' || c1 == '=')
             {
               enum { MAX_BRACKET_STRING_LEN = 32 };
@@ -1087,8 +1111,9 @@ parse_bracket_exp (void)
               size_t len = 0;
               for (;;)
                 {
-                  FETCH_WC (c, wc, _("unbalanced ["));
-                  if ((c == c1 && *lexptr == ']') || lexleft == 0)
+                  FETCH_WC (dfa, c, wc, _("unbalanced ["));
+                  if ((c == c1 && *dfa->lexstate.lexptr == ']')
+                      || dfa->lexstate.lexleft == 0)
                     break;
                   if (len < MAX_BRACKET_STRING_LEN)
                     str[len++] = c;
@@ -1099,7 +1124,7 @@ parse_bracket_exp (void)
               str[len] = '\0';
 
               /* Fetch bracket.  */
-              FETCH_WC (c, wc, _("unbalanced ["));
+              FETCH_WC (dfa, c, wc, _("unbalanced ["));
               if (c1 == ':')
                 /* Build character class.  POSIX allows character
                    classes to match multicharacter collating elements,
@@ -1107,8 +1132,9 @@ parse_bracket_exp (void)
                    worry about that possibility.  */
                 {
                   char const *class
-                    = (case_fold && (STREQ (str, "upper")
-                                     || STREQ (str, "lower")) ? "alpha" : str);
+                    = (dfa->syntax.case_fold && (STREQ (str, "upper")
+                                                 || STREQ (str, "lower")) ?
+                                                      "alpha" : str);
                   const struct dfa_ctype *pred = find_pred (class);
                   if (!pred)
                     dfaerror (_("invalid character class"));
@@ -1126,7 +1152,7 @@ parse_bracket_exp (void)
               colon_warning_state |= 8;
 
               /* Fetch new lookahead character.  */
-              FETCH_WC (c1, wc1, _("unbalanced ["));
+              FETCH_WC (dfa, c1, wc1, _("unbalanced ["));
               continue;
             }
 
@@ -1134,21 +1160,21 @@ parse_bracket_exp (void)
              are already set up.  */
         }
 
-      if (c == '\\' && (syntax_bits & RE_BACKSLASH_ESCAPE_IN_LISTS))
-        FETCH_WC (c, wc, _("unbalanced ["));
+      if (c == '\\' && (dfa->syntax.syntax_bits & RE_BACKSLASH_ESCAPE_IN_LISTS))
+        FETCH_WC (dfa, c, wc, _("unbalanced ["));
 
       if (c1 == NOTCHAR)
-        FETCH_WC (c1, wc1, _("unbalanced ["));
+        FETCH_WC (dfa, c1, wc1, _("unbalanced ["));
 
       if (c1 == '-')
         /* build range characters.  */
         {
-          FETCH_WC (c2, wc2, _("unbalanced ["));
+          FETCH_WC (dfa, c2, wc2, _("unbalanced ["));
 
           /* A bracket expression like [a-[.aa.]] matches an unknown set.
              Treat it like [-a[.aa.]] while parsing it, and
              remember that the set is unknown.  */
-          if (c2 == '[' && *lexptr == '.')
+          if (c2 == '[' && *dfa->lexstate.lexptr == '.')
             {
               known_bracket_exp = false;
               c2 = ']';
@@ -1158,28 +1184,29 @@ parse_bracket_exp (void)
             {
               /* In the case [x-], the - is an ordinary hyphen,
                  which is left in c1, the lookahead character.  */
-              lexptr -= cur_mb_len;
-              lexleft += cur_mb_len;
+              dfa->lexstate.lexptr -= dfa->lexstate.cur_mb_len;
+              dfa->lexstate.lexleft += dfa->lexstate.cur_mb_len;
             }
           else
             {
-              if (c2 == '\\' && (syntax_bits & RE_BACKSLASH_ESCAPE_IN_LISTS))
-                FETCH_WC (c2, wc2, _("unbalanced ["));
+              if (c2 == '\\' && (dfa->syntax.syntax_bits
+                                 & RE_BACKSLASH_ESCAPE_IN_LISTS))
+                FETCH_WC (dfa, c2, wc2, _("unbalanced ["));
 
               colon_warning_state |= 8;
-              FETCH_WC (c1, wc1, _("unbalanced ["));
+              FETCH_WC (dfa, c1, wc1, _("unbalanced ["));
 
               /* Treat [x-y] as a range if x != y.  */
               if (wc != wc2 || wc == WEOF)
                 {
                   if (dfa->multibyte)
                     known_bracket_exp = false;
-                  else if (using_simple_locale ())
+                  else if (using_simple_locale (dfa))
                     {
                       int ci;
                       for (ci = c; ci <= c2; ci++)
                         setbit (ci, ccl);
-                      if (case_fold)
+                      if (dfa->syntax.case_fold)
                         {
                           int uc = toupper (c);
                           int uc2 = toupper (c2);
@@ -1203,7 +1230,7 @@ parse_bracket_exp (void)
 
       if (!dfa->multibyte)
         {
-          if (case_fold)
+          if (dfa->syntax.case_fold)
             setbit_case_fold_c (c, ccl);
           else
             setbit (c, ccl);
@@ -1216,7 +1243,7 @@ parse_bracket_exp (void)
         {
           wchar_t folded[CASE_FOLDED_BUFSIZE + 1];
           unsigned int i;
-          unsigned int n = (case_fold
+          unsigned int n = (dfa->syntax.case_fold
                             ? case_folded_counterparts (wc, folded + 1) + 1
                             : 1);
           folded[0] = wc;
@@ -1241,7 +1268,7 @@ parse_bracket_exp (void)
   if (dfa->multibyte)
     {
       work_mbc->invert = invert;
-      work_mbc->cset = emptyset (ccl) ? -1 : charclass_index (ccl);
+      work_mbc->cset = emptyset (ccl) ? -1 : dfa_charclass_index (dfa, ccl);
       return MBCSET;
     }
 
@@ -1249,29 +1276,29 @@ parse_bracket_exp (void)
     {
       assert (!dfa->multibyte);
       notset (ccl);
-      if (syntax_bits & RE_HAT_LISTS_NOT_NEWLINE)
+      if (dfa->syntax.syntax_bits & RE_HAT_LISTS_NOT_NEWLINE)
         clrbit ('\n', ccl);
     }
 
-  return CSET + charclass_index (ccl);
+  return CSET + dfa_charclass_index (dfa, ccl);
 }
 
 #define PUSH_LEX_STATE(s)			\
   do						\
     {						\
-      char const *lexptr_saved = lexptr;	\
-      size_t lexleft_saved = lexleft;		\
-      lexptr = (s);				\
-      lexleft = strlen (lexptr)
+      char const *lexptr_saved = dfa->lexstate.lexptr;	\
+      size_t lexleft_saved = dfa->lexstate.lexleft;		\
+      dfa->lexstate.lexptr = (s);				\
+      dfa->lexstate.lexleft = strlen (dfa->lexstate.lexptr)
 
 #define POP_LEX_STATE()				\
-      lexptr = lexptr_saved;			\
-      lexleft = lexleft_saved;			\
+      dfa->lexstate.lexptr = lexptr_saved;			\
+      dfa->lexstate.lexleft = lexleft_saved;			\
     }						\
   while (false)
 
 static token
-lex (void)
+lex (struct dfa *dfa)
 {
   int c, c2;
   bool backslash = false;
@@ -1286,14 +1313,14 @@ lex (void)
      "if (backslash) ...".  */
   for (i = 0; i < 2; ++i)
     {
-      FETCH_WC (c, wctok, NULL);
+      FETCH_WC (dfa, c, dfa->lexstate.wctok, NULL);
 
       switch (c)
         {
         case '\\':
           if (backslash)
             goto normal_char;
-          if (lexleft == 0)
+          if (dfa->lexstate.lexleft == 0)
             dfaerror (_("unfinished \\ escape"));
           backslash = true;
           break;
@@ -1301,25 +1328,29 @@ lex (void)
         case '^':
           if (backslash)
             goto normal_char;
-          if (syntax_bits & RE_CONTEXT_INDEP_ANCHORS
-              || lasttok == END || lasttok == LPAREN || lasttok == OR)
-            return lasttok = BEGLINE;
+          if (dfa->syntax.syntax_bits & RE_CONTEXT_INDEP_ANCHORS
+              || dfa->lexstate.lasttok == END || dfa->lexstate.lasttok == LPAREN
+              || dfa->lexstate.lasttok == OR)
+            return dfa->lexstate.lasttok = BEGLINE;
           goto normal_char;
 
         case '$':
           if (backslash)
             goto normal_char;
-          if (syntax_bits & RE_CONTEXT_INDEP_ANCHORS
-              || lexleft == 0
-              || (syntax_bits & RE_NO_BK_PARENS
-                  ? lexleft > 0 && *lexptr == ')'
-                  : lexleft > 1 && lexptr[0] == '\\' && lexptr[1] == ')')
-              || (syntax_bits & RE_NO_BK_VBAR
-                  ? lexleft > 0 && *lexptr == '|'
-                  : lexleft > 1 && lexptr[0] == '\\' && lexptr[1] == '|')
-              || ((syntax_bits & RE_NEWLINE_ALT)
-                  && lexleft > 0 && *lexptr == '\n'))
-            return lasttok = ENDLINE;
+          if (dfa->syntax.syntax_bits & RE_CONTEXT_INDEP_ANCHORS
+              || dfa->lexstate.lexleft == 0
+              || (dfa->syntax.syntax_bits & RE_NO_BK_PARENS
+                  ? dfa->lexstate.lexleft > 0 && *dfa->lexstate.lexptr == ')'
+                  : dfa->lexstate.lexleft > 1 && dfa->lexstate.lexptr[0] == '\\'
+                    && dfa->lexstate.lexptr[1] == ')')
+              || (dfa->syntax.syntax_bits & RE_NO_BK_VBAR
+                  ? dfa->lexstate.lexleft > 0 && *dfa->lexstate.lexptr == '|'
+                  : dfa->lexstate.lexleft > 1 && dfa->lexstate.lexptr[0] == '\\'
+                    && dfa->lexstate.lexptr[1] == '|')
+              || ((dfa->syntax.syntax_bits & RE_NEWLINE_ALT)
+                  && dfa->lexstate.lexleft > 0
+                  && *dfa->lexstate.lexptr == '\n'))
+            return dfa->lexstate.lasttok = ENDLINE;
           goto normal_char;
 
         case '1':
@@ -1331,74 +1362,84 @@ lex (void)
         case '7':
         case '8':
         case '9':
-          if (backslash && !(syntax_bits & RE_NO_BK_REFS))
+          if (backslash && !(dfa->syntax.syntax_bits & RE_NO_BK_REFS))
             {
-              laststart = false;
-              return lasttok = BACKREF;
+              dfa->lexstate.laststart = false;
+              return dfa->lexstate.lasttok = BACKREF;
             }
           goto normal_char;
 
         case '`':
-          if (backslash && !(syntax_bits & RE_NO_GNU_OPS))
-            return lasttok = BEGLINE; /* FIXME: should be beginning of string */
+          if (backslash && !(dfa->syntax.syntax_bits & RE_NO_GNU_OPS))
+            {
+              /* FIXME: should be beginning of string */
+              return dfa->lexstate.lasttok = BEGLINE;
+            }
           goto normal_char;
 
         case '\'':
-          if (backslash && !(syntax_bits & RE_NO_GNU_OPS))
-            return lasttok = ENDLINE;   /* FIXME: should be end of string */
+          if (backslash && !(dfa->syntax.syntax_bits & RE_NO_GNU_OPS))
+            {
+              /* FIXME: should be end of string */
+              return dfa->lexstate.lasttok = ENDLINE;
+            }
           goto normal_char;
 
         case '<':
-          if (backslash && !(syntax_bits & RE_NO_GNU_OPS))
-            return lasttok = BEGWORD;
+          if (backslash && !(dfa->syntax.syntax_bits & RE_NO_GNU_OPS))
+            return dfa->lexstate.lasttok = BEGWORD;
           goto normal_char;
 
         case '>':
-          if (backslash && !(syntax_bits & RE_NO_GNU_OPS))
-            return lasttok = ENDWORD;
+          if (backslash && !(dfa->syntax.syntax_bits & RE_NO_GNU_OPS))
+            return dfa->lexstate.lasttok = ENDWORD;
           goto normal_char;
 
         case 'b':
-          if (backslash && !(syntax_bits & RE_NO_GNU_OPS))
-            return lasttok = LIMWORD;
+          if (backslash && !(dfa->syntax.syntax_bits & RE_NO_GNU_OPS))
+            return dfa->lexstate.lasttok = LIMWORD;
           goto normal_char;
 
         case 'B':
-          if (backslash && !(syntax_bits & RE_NO_GNU_OPS))
-            return lasttok = NOTLIMWORD;
+          if (backslash && !(dfa->syntax.syntax_bits & RE_NO_GNU_OPS))
+            return dfa->lexstate.lasttok = NOTLIMWORD;
           goto normal_char;
 
         case '?':
-          if (syntax_bits & RE_LIMITED_OPS)
+          if (dfa->syntax.syntax_bits & RE_LIMITED_OPS)
             goto normal_char;
-          if (backslash != ((syntax_bits & RE_BK_PLUS_QM) != 0))
+          if (backslash != ((dfa->syntax.syntax_bits & RE_BK_PLUS_QM) != 0))
             goto normal_char;
-          if (!(syntax_bits & RE_CONTEXT_INDEP_OPS) && laststart)
+          if (!(dfa->syntax.syntax_bits & RE_CONTEXT_INDEP_OPS)
+              && dfa->lexstate.laststart)
             goto normal_char;
-          return lasttok = QMARK;
+          return dfa->lexstate.lasttok = QMARK;
 
         case '*':
           if (backslash)
             goto normal_char;
-          if (!(syntax_bits & RE_CONTEXT_INDEP_OPS) && laststart)
+          if (!(dfa->syntax.syntax_bits & RE_CONTEXT_INDEP_OPS)
+              && dfa->lexstate.laststart)
             goto normal_char;
-          return lasttok = STAR;
+          return dfa->lexstate.lasttok = STAR;
 
         case '+':
-          if (syntax_bits & RE_LIMITED_OPS)
+          if (dfa->syntax.syntax_bits & RE_LIMITED_OPS)
             goto normal_char;
-          if (backslash != ((syntax_bits & RE_BK_PLUS_QM) != 0))
+          if (backslash != ((dfa->syntax.syntax_bits & RE_BK_PLUS_QM) != 0))
             goto normal_char;
-          if (!(syntax_bits & RE_CONTEXT_INDEP_OPS) && laststart)
+          if (!(dfa->syntax.syntax_bits & RE_CONTEXT_INDEP_OPS)
+              && dfa->lexstate.laststart)
             goto normal_char;
-          return lasttok = PLUS;
+          return dfa->lexstate.lasttok = PLUS;
 
         case '{':
-          if (!(syntax_bits & RE_INTERVALS))
+          if (!(dfa->syntax.syntax_bits & RE_INTERVALS))
             goto normal_char;
-          if (backslash != ((syntax_bits & RE_NO_BK_BRACES) == 0))
+          if (backslash != ((dfa->syntax.syntax_bits & RE_NO_BK_BRACES) == 0))
             goto normal_char;
-          if (!(syntax_bits & RE_CONTEXT_INDEP_OPS) && laststart)
+          if (!(dfa->syntax.syntax_bits & RE_CONTEXT_INDEP_OPS)
+              && dfa->lexstate.laststart)
             goto normal_char;
 
           /* Cases:
@@ -1408,79 +1449,86 @@ lex (void)
              {,} - 0 to infinity (same as '*')
              {M,N} - M through N */
           {
-            char const *p = lexptr;
-            char const *lim = p + lexleft;
-            minrep = maxrep = -1;
+            char const *p = dfa->lexstate.lexptr;
+            char const *lim = p + dfa->lexstate.lexleft;
+            dfa->lexstate.minrep = dfa->lexstate.maxrep = -1;
             for (; p != lim && ISASCIIDIGIT (*p); p++)
               {
-                if (minrep < 0)
-                  minrep = *p - '0';
+                if (dfa->lexstate.minrep < 0)
+                  dfa->lexstate.minrep = *p - '0';
                 else
-                  minrep = MIN (RE_DUP_MAX + 1, minrep * 10 + *p - '0');
+                  dfa->lexstate.minrep = MIN (RE_DUP_MAX + 1,
+                                              (dfa->lexstate.minrep
+                                               * 10 + *p - '0'));
               }
             if (p != lim)
               {
                 if (*p != ',')
-                  maxrep = minrep;
+                  dfa->lexstate.maxrep = dfa->lexstate.minrep;
                 else
                   {
-                    if (minrep < 0)
-                      minrep = 0;
+                    if (dfa->lexstate.minrep < 0)
+                      dfa->lexstate.minrep = 0;
                     while (++p != lim && ISASCIIDIGIT (*p))
                       {
-                        if (maxrep < 0)
-                          maxrep = *p - '0';
+                        if (dfa->lexstate.maxrep < 0)
+                          dfa->lexstate.maxrep = *p - '0';
                         else
-                          maxrep = MIN (RE_DUP_MAX + 1, maxrep * 10 + *p - '0');
+                          dfa->lexstate.maxrep = MIN (RE_DUP_MAX + 1,
+                                                      (dfa->lexstate.maxrep
+                                                       * 10 + *p - '0'));
                       }
                   }
               }
             if (! ((! backslash || (p != lim && *p++ == '\\'))
                    && p != lim && *p++ == '}'
-                   && 0 <= minrep && (maxrep < 0 || minrep <= maxrep)))
+                   && 0 <= dfa->lexstate.minrep
+                   && (dfa->lexstate.maxrep < 0
+                       || dfa->lexstate.minrep <= dfa->lexstate.maxrep)))
               {
-                if (syntax_bits & RE_INVALID_INTERVAL_ORD)
+                if (dfa->syntax.syntax_bits & RE_INVALID_INTERVAL_ORD)
                   goto normal_char;
                 dfaerror (_("invalid content of \\{\\}"));
               }
-            if (RE_DUP_MAX < maxrep)
+            if (RE_DUP_MAX < dfa->lexstate.maxrep)
               dfaerror (_("regular expression too big"));
-            lexptr = p;
-            lexleft = lim - p;
+            dfa->lexstate.lexptr = p;
+            dfa->lexstate.lexleft = lim - p;
           }
-          laststart = false;
-          return lasttok = REPMN;
+          dfa->lexstate.laststart = false;
+          return dfa->lexstate.lasttok = REPMN;
 
         case '|':
-          if (syntax_bits & RE_LIMITED_OPS)
+          if (dfa->syntax.syntax_bits & RE_LIMITED_OPS)
             goto normal_char;
-          if (backslash != ((syntax_bits & RE_NO_BK_VBAR) == 0))
+          if (backslash != ((dfa->syntax.syntax_bits & RE_NO_BK_VBAR) == 0))
             goto normal_char;
-          laststart = true;
-          return lasttok = OR;
+          dfa->lexstate.laststart = true;
+          return dfa->lexstate.lasttok = OR;
 
         case '\n':
-          if (syntax_bits & RE_LIMITED_OPS
-              || backslash || !(syntax_bits & RE_NEWLINE_ALT))
+          if (dfa->syntax.syntax_bits & RE_LIMITED_OPS
+              || backslash || !(dfa->syntax.syntax_bits & RE_NEWLINE_ALT))
             goto normal_char;
-          laststart = true;
-          return lasttok = OR;
+          dfa->lexstate.laststart = true;
+          return dfa->lexstate.lasttok = OR;
 
         case '(':
-          if (backslash != ((syntax_bits & RE_NO_BK_PARENS) == 0))
+          if (backslash != ((dfa->syntax.syntax_bits & RE_NO_BK_PARENS) == 0))
             goto normal_char;
-          ++parens;
-          laststart = true;
-          return lasttok = LPAREN;
+          ++dfa->lexstate.parens;
+          dfa->lexstate.laststart = true;
+          return dfa->lexstate.lasttok = LPAREN;
 
         case ')':
-          if (backslash != ((syntax_bits & RE_NO_BK_PARENS) == 0))
+          if (backslash != ((dfa->syntax.syntax_bits & RE_NO_BK_PARENS) == 0))
             goto normal_char;
-          if (parens == 0 && syntax_bits & RE_UNMATCHED_RIGHT_PAREN_ORD)
+          if (dfa->lexstate.parens == 0
+              && dfa->syntax.syntax_bits & RE_UNMATCHED_RIGHT_PAREN_ORD)
             goto normal_char;
-          --parens;
-          laststart = false;
-          return lasttok = RPAREN;
+          --dfa->lexstate.parens;
+          dfa->lexstate.laststart = false;
+          return dfa->lexstate.lasttok = RPAREN;
 
         case '.':
           if (backslash)
@@ -1489,21 +1537,21 @@ lex (void)
             {
               /* In multibyte environment period must match with a single
                  character not a byte.  So we use ANYCHAR.  */
-              laststart = false;
-              return lasttok = ANYCHAR;
+              dfa->lexstate.laststart = false;
+              return dfa->lexstate.lasttok = ANYCHAR;
             }
           zeroset (ccl);
           notset (ccl);
-          if (!(syntax_bits & RE_DOT_NEWLINE))
+          if (!(dfa->syntax.syntax_bits & RE_DOT_NEWLINE))
             clrbit ('\n', ccl);
-          if (syntax_bits & RE_DOT_NOT_NULL)
+          if (dfa->syntax.syntax_bits & RE_DOT_NOT_NULL)
             clrbit ('\0', ccl);
-          laststart = false;
-          return lasttok = CSET + charclass_index (ccl);
+          dfa->lexstate.laststart = false;
+          return dfa->lexstate.lasttok = CSET + dfa_charclass_index (dfa, ccl);
 
         case 's':
         case 'S':
-          if (!backslash || (syntax_bits & RE_NO_GNU_OPS))
+          if (!backslash || (dfa->syntax.syntax_bits & RE_NO_GNU_OPS))
             goto normal_char;
           if (!dfa->multibyte)
             {
@@ -1513,8 +1561,9 @@ lex (void)
                   setbit (c2, ccl);
               if (c == 'S')
                 notset (ccl);
-              laststart = false;
-              return lasttok = CSET + charclass_index (ccl);
+              dfa->lexstate.laststart = false;
+              return dfa->lexstate.lasttok = CSET + dfa_charclass_index (dfa,
+                                                                         ccl);
             }
 
           /* FIXME: see if optimizing this, as is done with ANYCHAR and
@@ -1525,16 +1574,16 @@ lex (void)
              strings, each minus its "already processed" '['.  */
           PUSH_LEX_STATE (c == 's' ? "[:space:]]" : "^[:space:]]");
 
-          lasttok = parse_bracket_exp ();
+          dfa->lexstate.lasttok = parse_bracket_exp (dfa);
 
           POP_LEX_STATE ();
 
-          laststart = false;
-          return lasttok;
+          dfa->lexstate.laststart = false;
+          return dfa->lexstate.lasttok;
 
         case 'w':
         case 'W':
-          if (!backslash || (syntax_bits & RE_NO_GNU_OPS))
+          if (!backslash || (dfa->syntax.syntax_bits & RE_NO_GNU_OPS))
             goto normal_char;
 
           if (!dfa->multibyte)
@@ -1545,8 +1594,9 @@ lex (void)
                   setbit (c2, ccl);
               if (c == 'W')
                 notset (ccl);
-              laststart = false;
-              return lasttok = CSET + charclass_index (ccl);
+              dfa->lexstate.laststart = false;
+              return dfa->lexstate.lasttok = CSET + dfa_charclass_index (dfa,
+                                                                         ccl);
             }
 
           /* FIXME: see if optimizing this, as is done with ANYCHAR and
@@ -1557,35 +1607,36 @@ lex (void)
              strings, each minus its "already processed" '['.  */
           PUSH_LEX_STATE (c == 'w' ? "_[:alnum:]]" : "^_[:alnum:]]");
 
-          lasttok = parse_bracket_exp ();
+          dfa->lexstate.lasttok = parse_bracket_exp (dfa);
 
           POP_LEX_STATE ();
 
-          laststart = false;
-          return lasttok;
+          dfa->lexstate.laststart = false;
+          return dfa->lexstate.lasttok;
 
         case '[':
           if (backslash)
             goto normal_char;
-          laststart = false;
-          return lasttok = parse_bracket_exp ();
+          dfa->lexstate.laststart = false;
+          return dfa->lexstate.lasttok = parse_bracket_exp (dfa);
 
         default:
         normal_char:
-          laststart = false;
+          dfa->lexstate.laststart = false;
           /* For multibyte character sets, folding is done in atom.  Always
              return WCHAR.  */
           if (dfa->multibyte)
-            return lasttok = WCHAR;
+            return dfa->lexstate.lasttok = WCHAR;
 
-          if (case_fold && isalpha (c))
+          if (dfa->syntax.case_fold && isalpha (c))
             {
               zeroset (ccl);
               setbit_case_fold_c (c, ccl);
-              return lasttok = CSET + charclass_index (ccl);
+              return dfa->lexstate.lasttok = CSET + dfa_charclass_index (dfa,
+                                                                         ccl);
             }
 
-          return lasttok = c;
+          return dfa->lexstate.lasttok = c;
         }
     }
 
@@ -1595,17 +1646,8 @@ lex (void)
   return END;                   /* keeps pedantic compilers happy.  */
 }
 
-/* Recursive descent parser for regular expressions.  */
-
-static token tok;               /* Lookahead token.  */
-static size_t depth;            /* Current depth of a hypothetical stack
-                                   holding deferred productions.  This is
-                                   used to determine the depth that will be
-                                   required of the real stack later on in
-                                   dfaanalyze.  */
-
 static void
-addtok_mb (token t, int mbprop)
+addtok_mb (struct dfa *dfa, token t, int mbprop)
 {
   if (dfa->talloc == dfa->tindex)
     {
@@ -1628,7 +1670,7 @@ addtok_mb (token t, int mbprop)
 
     case CAT:
     case OR:
-      --depth;
+      --dfa->parsestate.depth;
       break;
 
     case BACKREF:
@@ -1638,19 +1680,19 @@ addtok_mb (token t, int mbprop)
       ++dfa->nleaves;
       /* fallthrough */
     case EMPTY:
-      ++depth;
+      ++dfa->parsestate.depth;
       break;
     }
-  if (depth > dfa->depth)
-    dfa->depth = depth;
+  if (dfa->parsestate.depth > dfa->depth)
+    dfa->depth = dfa->parsestate.depth;
 }
 
-static void addtok_wc (wint_t wc);
+static void addtok_wc (struct dfa *dfa, wint_t wc);
 
 /* Add the given token to the parse tree, maintaining the depth count and
    updating the maximum depth if necessary.  */
 static void
-addtok (token t)
+addtok (struct dfa *dfa, token t)
 {
   if (dfa->multibyte && t == MBCSET)
     {
@@ -1662,9 +1704,9 @@ addtok (token t)
          This does not require UTF-8.  */
       for (i = 0; i < work_mbc->nchars; i++)
         {
-          addtok_wc (work_mbc->chars[i]);
+          addtok_wc (dfa, work_mbc->chars[i]);
           if (need_or)
-            addtok (OR);
+            addtok (dfa, OR);
           need_or = true;
         }
       work_mbc->nchars = 0;
@@ -1673,14 +1715,14 @@ addtok (token t)
          that the mbcset is empty now.  Do nothing in that case.  */
       if (work_mbc->cset != -1)
         {
-          addtok (CSET + work_mbc->cset);
+          addtok (dfa, CSET + work_mbc->cset);
           if (need_or)
-            addtok (OR);
+            addtok (dfa, OR);
         }
     }
   else
     {
-      addtok_mb (t, 3);
+      addtok_mb (dfa, t, 3);
     }
 }
 
@@ -1691,7 +1733,7 @@ addtok (token t)
    <mb1(1st-byte)><mb1(2nd-byte)><CAT><mb1(3rd-byte)><CAT>
    <mb2(1st-byte)><mb2(2nd-byte)><CAT><mb2(3rd-byte)><CAT><CAT> */
 static void
-addtok_wc (wint_t wc)
+addtok_wc (struct dfa *dfa, wint_t wc)
 {
   unsigned char buf[MB_LEN_MAX];
   mbstate_t s = { 0 };
@@ -1699,25 +1741,25 @@ addtok_wc (wint_t wc)
   size_t stored_bytes = wcrtomb ((char *) buf, wc, &s);
 
   if (stored_bytes != (size_t) -1)
-    cur_mb_len = stored_bytes;
+    dfa->lexstate.cur_mb_len = stored_bytes;
   else
     {
       /* This is merely stop-gap.  buf[0] is undefined, yet skipping
          the addtok_mb call altogether can corrupt the heap.  */
-      cur_mb_len = 1;
+      dfa->lexstate.cur_mb_len = 1;
       buf[0] = 0;
     }
 
-  addtok_mb (buf[0], cur_mb_len == 1 ? 3 : 1);
-  for (i = 1; i < cur_mb_len; i++)
+  addtok_mb (dfa, buf[0], dfa->lexstate.cur_mb_len == 1 ? 3 : 1);
+  for (i = 1; i < dfa->lexstate.cur_mb_len; i++)
     {
-      addtok_mb (buf[i], i == cur_mb_len - 1 ? 2 : 0);
-      addtok (CAT);
+      addtok_mb (dfa, buf[i], i == dfa->lexstate.cur_mb_len - 1 ? 2 : 0);
+      addtok (dfa, CAT);
     }
 }
 
 static void
-add_utf8_anychar (void)
+add_utf8_anychar (struct dfa *dfa)
 {
   static charclass const utf8_classes[5] = {
     /* 80-bf: non-leading bytes.  */
@@ -1746,12 +1788,12 @@ add_utf8_anychar (void)
         copyset (utf8_classes[i], c);
         if (i == 1)
           {
-            if (!(syntax_bits & RE_DOT_NEWLINE))
+            if (!(dfa->syntax.syntax_bits & RE_DOT_NEWLINE))
               clrbit ('\n', c);
-            if (syntax_bits & RE_DOT_NOT_NULL)
+            if (dfa->syntax.syntax_bits & RE_DOT_NOT_NULL)
               clrbit ('\0', c);
           }
-        dfa->utf8_anychar_classes[i] = CSET + charclass_index (c);
+        dfa->utf8_anychar_classes[i] = CSET + dfa_charclass_index (dfa, c);
       }
 
   /* A valid UTF-8 character is
@@ -1765,12 +1807,12 @@ add_utf8_anychar (void)
      and you get "B|(C|(D|EA)A)A".  And since the token buffer is in reverse
      Polish notation, you get "B C D E A CAT OR A CAT OR A CAT OR".  */
   for (i = 1; i < n; i++)
-    addtok (dfa->utf8_anychar_classes[i]);
+    addtok (dfa, dfa->utf8_anychar_classes[i]);
   while (--i > 1)
     {
-      addtok (dfa->utf8_anychar_classes[0]);
-      addtok (CAT);
-      addtok (OR);
+      addtok (dfa, dfa->utf8_anychar_classes[0]);
+      addtok (dfa, CAT);
+      addtok (dfa, OR);
     }
 }
 
@@ -1810,31 +1852,32 @@ add_utf8_anychar (void)
    The parser builds a parse tree in postfix form in an array of tokens.  */
 
 static void
-atom (void)
+atom (struct dfa *dfa)
 {
-  if (tok == WCHAR)
+  if (dfa->parsestate.tok == WCHAR)
     {
-      if (wctok == WEOF)
-        addtok (BACKREF);
+      if (dfa->lexstate.wctok == WEOF)
+        addtok (dfa, BACKREF);
       else
         {
-          addtok_wc (wctok);
+          addtok_wc (dfa, dfa->lexstate.wctok);
 
-          if (case_fold)
+          if (dfa->syntax.case_fold)
             {
               wchar_t folded[CASE_FOLDED_BUFSIZE];
-              unsigned int i, n = case_folded_counterparts (wctok, folded);
+              unsigned int i, n = case_folded_counterparts (dfa->lexstate.wctok,
+                                                            folded);
               for (i = 0; i < n; i++)
                 {
-                  addtok_wc (folded[i]);
-                  addtok (OR);
+                  addtok_wc (dfa, folded[i]);
+                  addtok (dfa, OR);
                 }
             }
         }
 
-      tok = lex ();
+      dfa->parsestate.tok = lex (dfa);
     }
-  else if (tok == ANYCHAR && using_utf8 ())
+  else if (dfa->parsestate.tok == ANYCHAR && using_utf8)
     {
       /* For UTF-8 expand the period to a series of CSETs that define a valid
          UTF-8 character.  This avoids using the slow multibyte path.  I'm
@@ -1843,32 +1886,35 @@ atom (void)
          it is done above in add_utf8_anychar.  So, let's start with
          UTF-8: it is the most used, and the structure of the encoding
          makes the correctness more obvious.  */
-      add_utf8_anychar ();
-      tok = lex ();
+      add_utf8_anychar (dfa);
+      dfa->parsestate.tok = lex (dfa);
     }
-  else if ((tok >= 0 && tok < NOTCHAR) || tok >= CSET || tok == BACKREF
-           || tok == BEGLINE || tok == ENDLINE || tok == BEGWORD
-           || tok == ANYCHAR || tok == MBCSET
-           || tok == ENDWORD || tok == LIMWORD || tok == NOTLIMWORD)
+  else if ((dfa->parsestate.tok >= 0 && dfa->parsestate.tok < NOTCHAR)
+           || dfa->parsestate.tok >= CSET || dfa->parsestate.tok == BACKREF
+           || dfa->parsestate.tok == BEGLINE || dfa->parsestate.tok == ENDLINE
+           || dfa->parsestate.tok == BEGWORD || dfa->parsestate.tok == ANYCHAR
+           || dfa->parsestate.tok == MBCSET || dfa->parsestate.tok == ENDWORD
+           || dfa->parsestate.tok == LIMWORD
+           || dfa->parsestate.tok == NOTLIMWORD)
     {
-      addtok (tok);
-      tok = lex ();
+      addtok (dfa, dfa->parsestate.tok);
+      dfa->parsestate.tok = lex (dfa);
     }
-  else if (tok == LPAREN)
+  else if (dfa->parsestate.tok == LPAREN)
     {
-      tok = lex ();
-      regexp ();
-      if (tok != RPAREN)
+      dfa->parsestate.tok = lex (dfa);
+      regexp (dfa);
+      if (dfa->parsestate.tok != RPAREN)
         dfaerror (_("unbalanced ("));
-      tok = lex ();
+      dfa->parsestate.tok = lex (dfa);
     }
   else
-    addtok (EMPTY);
+    addtok (dfa, EMPTY);
 }
 
 /* Return the number of tokens in the given subexpression.  */
 static size_t _GL_ATTRIBUTE_PURE
-nsubtoks (size_t tindex)
+nsubtoks (struct dfa const *dfa, size_t tindex)
 {
   size_t ntoks1;
 
@@ -1879,90 +1925,93 @@ nsubtoks (size_t tindex)
     case QMARK:
     case STAR:
     case PLUS:
-      return 1 + nsubtoks (tindex - 1);
+      return 1 + nsubtoks (dfa, tindex - 1);
     case CAT:
     case OR:
-      ntoks1 = nsubtoks (tindex - 1);
-      return 1 + ntoks1 + nsubtoks (tindex - 1 - ntoks1);
+      ntoks1 = nsubtoks (dfa, tindex - 1);
+      return 1 + ntoks1 + nsubtoks (dfa, tindex - 1 - ntoks1);
     }
 }
 
 /* Copy the given subexpression to the top of the tree.  */
 static void
-copytoks (size_t tindex, size_t ntokens)
+copytoks (struct dfa *dfa, size_t tindex, size_t ntokens)
 {
   size_t i;
 
   if (dfa->multibyte)
     for (i = 0; i < ntokens; ++i)
-      addtok_mb (dfa->tokens[tindex + i], dfa->multibyte_prop[tindex + i]);
+      addtok_mb (dfa, dfa->tokens[tindex + i], dfa->multibyte_prop[tindex + i]);
   else
     for (i = 0; i < ntokens; ++i)
-      addtok_mb (dfa->tokens[tindex + i], 3);
+      addtok_mb (dfa, dfa->tokens[tindex + i], 3);
 }
 
 static void
-closure (void)
+closure (struct dfa *dfa)
 {
   int i;
   size_t tindex, ntokens;
 
-  atom ();
-  while (tok == QMARK || tok == STAR || tok == PLUS || tok == REPMN)
-    if (tok == REPMN && (minrep || maxrep))
+  atom (dfa);
+  while (dfa->parsestate.tok == QMARK || dfa->parsestate.tok == STAR
+         || dfa->parsestate.tok == PLUS || dfa->parsestate.tok == REPMN)
+    if (dfa->parsestate.tok == REPMN
+        && (dfa->lexstate.minrep || dfa->lexstate.maxrep))
       {
-        ntokens = nsubtoks (dfa->tindex);
+        ntokens = nsubtoks (dfa, dfa->tindex);
         tindex = dfa->tindex - ntokens;
-        if (maxrep < 0)
-          addtok (PLUS);
-        if (minrep == 0)
-          addtok (QMARK);
-        for (i = 1; i < minrep; ++i)
+        if (dfa->lexstate.maxrep < 0)
+          addtok (dfa, PLUS);
+        if (dfa->lexstate.minrep == 0)
+          addtok (dfa, QMARK);
+        for (i = 1; i < dfa->lexstate.minrep; ++i)
           {
-            copytoks (tindex, ntokens);
-            addtok (CAT);
+            copytoks (dfa, tindex, ntokens);
+            addtok (dfa, CAT);
           }
-        for (; i < maxrep; ++i)
+        for (; i < dfa->lexstate.maxrep; ++i)
           {
-            copytoks (tindex, ntokens);
-            addtok (QMARK);
-            addtok (CAT);
+            copytoks (dfa, tindex, ntokens);
+            addtok (dfa, QMARK);
+            addtok (dfa, CAT);
           }
-        tok = lex ();
+        dfa->parsestate.tok = lex (dfa);
       }
-    else if (tok == REPMN)
+    else if (dfa->parsestate.tok == REPMN)
       {
-        dfa->tindex -= nsubtoks (dfa->tindex);
-        tok = lex ();
-        closure ();
+        dfa->tindex -= nsubtoks (dfa, dfa->tindex);
+        dfa->parsestate.tok = lex (dfa);
+        closure (dfa);
       }
     else
       {
-        addtok (tok);
-        tok = lex ();
+        addtok (dfa, dfa->parsestate.tok);
+        dfa->parsestate.tok = lex (dfa);
       }
 }
 
 static void
-branch (void)
+branch (struct dfa* dfa)
 {
-  closure ();
-  while (tok != RPAREN && tok != OR && tok >= 0)
+  closure (dfa);
+  while (dfa->parsestate.tok != RPAREN && dfa->parsestate.tok != OR
+         && dfa->parsestate.tok >= 0)
     {
-      closure ();
-      addtok (CAT);
+      closure (dfa);
+      addtok (dfa, CAT);
     }
 }
 
 static void
-regexp (void)
+regexp (struct dfa *dfa)
 {
-  branch ();
-  while (tok == OR)
+  branch (dfa);
+  while (dfa->parsestate.tok == OR)
     {
-      tok = lex ();
-      branch ();
-      addtok (OR);
+      dfa->parsestate.tok = lex (dfa);
+      branch (dfa);
+      addtok (dfa, OR);
     }
 }
 
@@ -1972,34 +2021,33 @@ regexp (void)
 static void
 dfaparse (char const *s, size_t len, struct dfa *d)
 {
-  dfa = d;
-  lexptr = s;
-  lexleft = len;
-  lasttok = END;
-  laststart = true;
-  parens = 0;
-  if (dfa->multibyte)
+  d->lexstate.lexptr = s;
+  d->lexstate.lexleft = len;
+  d->lexstate.lasttok = END;
+  d->lexstate.laststart = true;
+  d->lexstate.parens = 0;
+  if (d->multibyte)
     {
-      cur_mb_len = 0;
+      d->lexstate.cur_mb_len = 0;
       memset (&d->mbs, 0, sizeof d->mbs);
     }
 
-  if (!syntax_bits_set)
+  if (!d->syntax.syntax_bits_set)
     dfaerror (_("no syntax specified"));
 
-  tok = lex ();
-  depth = d->depth;
+  d->parsestate.tok = lex (d);
+  d->parsestate.depth = d->depth;
 
-  regexp ();
+  regexp (d);
 
-  if (tok != END)
+  if (d->parsestate.tok != END)
     dfaerror (_("unbalanced )"));
 
-  addtok (END - d->nregexps);
-  addtok (CAT);
+  addtok (d, END - d->nregexps);
+  addtok (d, CAT);
 
   if (d->nregexps)
-    addtok (OR);
+    addtok (d, OR);
 
   ++d->nregexps;
 }
@@ -2270,19 +2318,19 @@ epsclosure (position_set *s, struct dfa const *d, char *visited)
    character included in C.  */
 
 static int
-charclass_context (charclass c)
+charclass_context (struct dfa const *dfa, charclass c)
 {
   int context = 0;
   unsigned int j;
 
-  if (tstbit (eolbyte, c))
+  if (tstbit (dfa->syntax.eolbyte, c))
     context |= CTX_NEWLINE;
 
   for (j = 0; j < CHARCLASS_WORDS; ++j)
     {
-      if (c[j] & letters[j])
+      if (c[j] & dfa->syntax.letters[j])
         context |= CTX_LETTER;
-      if (c[j] & ~(letters[j] | newline[j]))
+      if (c[j] & ~(dfa->syntax.letters[j] | dfa->syntax.newline[j]))
         context |= CTX_NONE;
     }
 
@@ -2677,15 +2725,15 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
           if (!SUCCEEDS_IN_CONTEXT (pos.constraint,
                                     d->states[s].context, CTX_NEWLINE))
             for (j = 0; j < CHARCLASS_WORDS; ++j)
-              matches[j] &= ~newline[j];
+              matches[j] &= ~d->syntax.newline[j];
           if (!SUCCEEDS_IN_CONTEXT (pos.constraint,
                                     d->states[s].context, CTX_LETTER))
             for (j = 0; j < CHARCLASS_WORDS; ++j)
-              matches[j] &= ~letters[j];
+              matches[j] &= ~d->syntax.letters[j];
           if (!SUCCEEDS_IN_CONTEXT (pos.constraint,
                                     d->states[s].context, CTX_NONE))
             for (j = 0; j < CHARCLASS_WORDS; ++j)
-              matches[j] &= letters[j] | newline[j];
+              matches[j] &= d->syntax.letters[j] | d->syntax.newline[j];
 
           /* If there are no characters left, there's no point in going on.  */
           for (j = 0; j < CHARCLASS_WORDS && !matches[j]; ++j)
@@ -2791,7 +2839,7 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
 
       for (i = 0; i < NOTCHAR; ++i)
         trans[i] = unibyte_word_constituent (i) ? state_letter : state;
-      trans[eolbyte] = state_newline;
+      trans[d->syntax.eolbyte] = state_newline;
     }
   else
     for (i = 0; i < NOTCHAR; ++i)
@@ -2847,7 +2895,7 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
         }
 
       /* Find out if the new state will want any context information.  */
-      possible_contexts = charclass_context (labels[i]);
+      possible_contexts = charclass_context (d, labels[i]);
       separate_contexts = state_separate_contexts (&follows);
 
       /* Find the state(s) corresponding to the union of the follows.  */
@@ -2894,7 +2942,7 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
             {
               int c = j * CHARCLASS_WORD_BITS + k;
 
-              if (c == eolbyte)
+              if (c == d->syntax.eolbyte)
                 trans[c] = state_newline;
               else if (unibyte_word_constituent (c))
                 trans[c] = state_letter;
@@ -3020,8 +3068,8 @@ build_state (state_num s, struct dfa *d)
 
   /* Keep the newline transition in a special place so we can use it as
      a sentinel.  */
-  d->newlines[s] = trans[eolbyte];
-  trans[eolbyte] = -1;
+  d->newlines[s] = trans[d->syntax.eolbyte];
+  trans[d->syntax.eolbyte] = -1;
 
   if (ACCEPTING (s, *d))
     d->fails[s] = trans;
@@ -3040,7 +3088,7 @@ transit_state_singlebyte (struct dfa *d, state_num s, unsigned char const **pp)
 {
   state_num *t;
 
-  if (**pp == eolbyte)
+  if (**pp == d->syntax.eolbyte)
     {
       /* S is always an initial state in transit_state, so the
          transition table for the state must have been built already.  */
@@ -3083,7 +3131,7 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
   size_t i, j;
 
   int mbclen = mbs_to_wchar (&wc, (char const *) *pp, end - *pp, d);
-  int context = wc == eolbyte ? CTX_NEWLINE : CTX_NONE;
+  int context = wc == d->syntax.eolbyte ? CTX_NEWLINE : CTX_NONE;
   bool context_newline = context == CTX_NEWLINE;
 
   /* This state has some operators which can match a multibyte character.  */
@@ -3201,7 +3249,7 @@ skip_remains_mb (struct dfa *d, unsigned char const *p,
                  unsigned char const *mbp, char const *end, wint_t *wcp)
 {
   wint_t wc = WEOF;
-  if (never_trail[*p])
+  if (d->syntax.never_trail[*p])
     return p;
   while (mbp < p)
     mbp += mbs_to_wchar (&wc, (char const *) mbp,
@@ -3239,7 +3287,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
   unsigned char const *p, *mbp; /* Current input character.  */
   state_num **trans, *t;        /* Copy of d->trans so it can be optimized
                                    into a register.  */
-  unsigned char eol = eolbyte;  /* Likewise for eolbyte.  */
+  unsigned char eol = d->syntax.eolbyte;  /* Likewise for eolbyte.  */
   unsigned char saved_end;
   size_t nlcount = 0;
 
@@ -3306,8 +3354,8 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
                 }
 
               if (d->states[s].mbps.nelem == 0 || (*p == eol && !allow_nl)
-                  || (*p == '\n' && !(syntax_bits & RE_DOT_NEWLINE))
-                  || (*p == '\0' && (syntax_bits & RE_DOT_NOT_NULL))
+                  || (*p == '\n' && !(d->syntax.syntax_bits & RE_DOT_NEWLINE))
+                  || (*p == '\0' && (d->syntax.syntax_bits & RE_DOT_NOT_NULL))
                   || (char *) p >= end)
                 {
                   /* If an input character does not match ANYCHAR, do it
@@ -3370,14 +3418,14 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
         }
       else if (d->fails[s])
         {
-          if (d->success[s] & sbit[*p])
+          if (d->success[s] & d->syntax.sbit[*p])
             goto done;
 
           s1 = s;
           if (!multibyte || d->states[s].mbps.nelem == 0
               || (*p == eol && !allow_nl)
-              || (*p == '\n' && !(syntax_bits & RE_DOT_NEWLINE))
-              || (*p == '\0' && (syntax_bits & RE_DOT_NOT_NULL))
+              || (*p == '\n' && !(d->syntax.syntax_bits & RE_DOT_NEWLINE))
+              || (*p == '\0' && (d->syntax.syntax_bits & RE_DOT_NOT_NULL))
               || (char *) p >= end)
             {
               /* If a input character does not match ANYCHAR, do it
@@ -3479,17 +3527,6 @@ free_mbdata (struct dfa *d)
     }
 }
 
-/* Initialize the components of a dfa that the other routines don't
-   initialize for themselves.  */
-static void
-dfainit (struct dfa *d)
-{
-  memset (d, 0, sizeof *d);
-  d->multibyte = MB_CUR_MAX > 1;
-  d->dfaexec = d->multibyte ? dfaexec_mb : dfaexec_sb;
-  d->fast = !d->multibyte;
-}
-
 /* Return true if every construct in D is supported by this DFA matcher.  */
 static bool _GL_ATTRIBUTE_PURE
 dfa_supported (struct dfa const *d)
@@ -3521,7 +3558,7 @@ dfaoptimize (struct dfa *d)
   size_t i;
   bool have_backref = false;
 
-  if (!using_utf8 ())
+  if (!using_utf8)
     return;
 
   for (i = 0; i < d->tindex; ++i)
@@ -3640,7 +3677,6 @@ dfassbuild (struct dfa *d)
 void
 dfacomp (char const *s, size_t len, struct dfa *d, bool searchflag)
 {
-  dfainit (d);
   dfaparse (s, len, d);
   dfassbuild (d);
 
@@ -3957,7 +3993,7 @@ dfamust (struct dfa const *d)
   size_t rj;
   bool need_begline = false;
   bool need_endline = false;
-  bool case_fold_unibyte = case_fold && MB_CUR_MAX == 1;
+  bool case_fold_unibyte = d->syntax.case_fold && MB_CUR_MAX == 1;
   struct dfamust *dm;
 
   for (ri = 0; ri < d->tindex; ++ri)
@@ -4194,7 +4230,20 @@ dfamustfree (struct dfamust *dm)
 struct dfa *
 dfaalloc (void)
 {
-  return xmalloc (sizeof (struct dfa));
+  struct dfa *d = xcalloc (1, sizeof (struct dfa));
+  d->multibyte = MB_CUR_MAX > 1;
+  d->dfaexec = d->multibyte ? dfaexec_mb : dfaexec_sb;
+  d->fast = !d->multibyte;
+  d->lexstate.cur_mb_len = 1;
+  return d;
+}
+
+void
+dfa_init (void)
+{
+  check_utf8 ();
+  check_unibyte_c ();
+  init_mbrtowc_cache ();
 }
 
 /* vim:set shiftwidth=2: */
