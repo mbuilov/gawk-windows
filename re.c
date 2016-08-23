@@ -203,14 +203,11 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 		syn &= ~RE_ICASE;
 	}
 
-	/* only call dfasyntax if we're using dfa; saves time */
-	if (dfa && ! no_dfa) {
-		dfa_syn = syn;
-		/* FIXME: dfa doesn't pay attention RE_ICASE */
-		if (ignorecase)
-			dfa_syn |= RE_ICASE;
-		dfasyntax(dfa_syn, ignorecase, '\n');
-	}
+	dfa_syn = syn;
+	/* FIXME: dfa doesn't pay attention RE_ICASE */
+	if (ignorecase)
+		dfa_syn |= RE_ICASE;
+
 	re_set_syntax(syn);
 
 	if ((rerr = re_compile_pattern(buf, len, &(rp->pat))) != NULL) {
@@ -228,6 +225,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	if (dfa && ! no_dfa) {
 		rp->dfa = true;
 		rp->dfareg = dfaalloc();
+		dfasyntax(rp->dfareg, dfa_syn, ignorecase, '\n');
 		dfacomp(buf, len, rp->dfareg, true);
 	} else
 		rp->dfa = false;
@@ -423,7 +421,8 @@ resetup()
 		syn |= RE_INTERVALS | RE_INVALID_INTERVAL_ORD | RE_NO_BK_BRACES;
 
 	(void) re_set_syntax(syn);
-	dfasyntax(syn, false, '\n');
+
+	dfa_init();
 }
 
 /* avoid_dfa --- return true if we should not use the DFA matcher */
