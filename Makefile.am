@@ -185,16 +185,16 @@ check-local: gawk$(EXEEXT)
 # A little extra clean up when making distributions.
 # And additional set up for the pc directory.
 dist-hook:
-	cd $(distdir)/extension ; rm -f *.o *.so
-	cd $(srcdir)/pc ; \
+	cd "$(distdir)"/extension ; rm -f *.o *.so
+	cd "$(srcdir)"/pc ; \
 	chmod u+w config.h ; \
 	sed -n -f configpk.sed < ../configure.ac > /tmp/tmp.sed ; \
 	sed -f config.sed < ../configh.in > /tmp/config.tmp ; \
 	sed -f /tmp/tmp.sed < /tmp/config.tmp > config.h ; \
 	$(RM) /tmp/tmp.sed /tmp/config.tmp
 	pwd
-	chmod u+w $(distdir)/pc/config.h
-	cp $(srcdir)/pc/config.h $(distdir)/pc/config.h
+	chmod u+w "$(distdir)"/pc/config.h
+	cp "$(srcdir)"/pc/config.h "$(distdir)"/pc/config.h
 
 # Special rules for individual files
 # Use of awk instead of $(AWK) is deliberate, in case gawk doesn't build
@@ -202,14 +202,14 @@ dist-hook:
 
 awkgram.c: awkgram.y
 	$(YACC) $(AM_YFLAGS) $(YFLAGS) $<
-	sed 's/parse error/syntax error/g' < y.tab.c | awk -f $(srcdir)/bisonfix.awk awkgram > $*.c && rm y.tab.c
+	sed 's/parse error/syntax error/g' < y.tab.c | awk -f "$(srcdir)"/bisonfix.awk awkgram > $*.c && rm y.tab.c
 	if test -f y.tab.h; then \
 	if cmp -s y.tab.h $*.h; then rm -f y.tab.h; else mv y.tab.h $*.h; fi; \
 	else :; fi
 
 command.c: command.y
 	$(YACC) -p zz $<
-	sed 's/parse error/syntax error/g' < y.tab.c | awk -f $(srcdir)/bisonfix.awk command > $*.c && rm y.tab.c
+	sed 's/parse error/syntax error/g' < y.tab.c | awk -f "$(srcdir)"/bisonfix.awk command > $*.c && rm y.tab.c
 
 # This is for my development & testing.
 efence: gawk
@@ -227,3 +227,6 @@ valgrind-noleak:
 	cd test; rm -f log.[0-9]*; \
 	make check VALGRIND="valgrind --leak-check=no --log-file=log.%p"; \
 	make valgrind-scan
+
+spell:
+	cd "$(srcdir)"/doc ; $(MAKE) spell
