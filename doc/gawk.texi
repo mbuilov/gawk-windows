@@ -56,7 +56,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH June, 2016
+@set UPDATE-MONTH August, 2016
 @set VERSION 4.1
 @set PATCHLEVEL 4
 
@@ -18648,7 +18648,7 @@ signal (bit 7) and if so, the guilty signal number (bits 0--6).
 Traditionally, @command{awk}'s @code{system()} function has simply
 returned the exit status value divided by 256. In the normal case this
 gives the exit status but in the case of death-by-signal it yields
-a fractional floating-point value.@footnote{In private correspondance,
+a fractional floating-point value.@footnote{In private correspondence,
 Dr.@: Kernighan has indicated to me that the way this was done
 was probably a mistake.} POSIX states that @command{awk}'s
 @code{system()} should return the full 16-bit value.
@@ -22009,7 +22009,7 @@ Because of this, you should not call it from an @code{ENDFILE} rule.
 file as soon as an @code{ENDFILE} rule finishes!)
 
 You need to be careful calling @code{rewind()}.  You can end up
-causing infinite recursion if you don't pay attenion. Here is an
+causing infinite recursion if you don't pay attention. Here is an
 example use:
 
 @example
@@ -27891,7 +27891,7 @@ programming and knowledge of the behavior of the coprocess are required.
 @cindex files, @code{/inet4/@dots{}} (@command{gawk})
 @cindex @code{/inet6/@dots{}} special files (@command{gawk})
 @cindex files, @code{/inet6/@dots{}} (@command{gawk})
-@cindex @code{EMISTERED}
+@cindex @code{EMRED}
 @ifnotdocbook
 @quotation
 @code{EMRED}:@*
@@ -27906,7 +27906,7 @@ programming and knowledge of the behavior of the coprocess are required.
 @docbook
 <blockquote>
 <attribution>Mike O'Brien (aka Mr.&nbsp;Protocol)</attribution>
-<literallayout class="normal"><literal>EMISTERED</literal>:
+<literallayout class="normal"><literal>EMRED</literal>:
 &nbsp;&nbsp;&nbsp;&nbsp;<emphasis>A host is a host from coast to coast,</emphasis>
 &nbsp;&nbsp;&nbsp;&nbsp;<emphasis>and no-one can talk to host that's close,</emphasis>
 &nbsp;&nbsp;&nbsp;&nbsp;<emphasis>unless the host that isn't close</emphasis>
@@ -41417,7 +41417,7 @@ An internal mechanism in @command{gawk} to minimize the amount of memory
 needed to store the value of string variables. If the value assumed by
 a variable is used in more than one place, only one copy of the value
 itself is kept, and the associated reference count is increased when the
-same value is used by an additional variable, and decresed when the related
+same value is used by an additional variable, and decreased when the related
 variable is no longer in use. When the reference count goes to zero,
 the memory space used to store the value of the variable is freed.
 

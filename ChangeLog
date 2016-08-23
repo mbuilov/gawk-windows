@@ -1,3 +1,17 @@
+2016-08-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.h: Sync with grep. API changes.
+	* dfa.c: Sync with grep.
+	* re.c (make_regexp): Adjust for API changes, move call to dfasyntax
+	into stanza that compiles the regex.
+	(resetup): Call dfa_init.
+	* node.c (str2wstr): using_utf8 is now called dfa_using_utf8.
+
+	Unrelated:
+
+	* Makefile.am: Quote all uses of $(srcdir) and $(distdir).
+	(spell): New target.
+
 2016-08-18         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with grep.
