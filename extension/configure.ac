@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk Bundled Extensions],[4.1.3],[bug-gawk@gnu.org],[gawk-extensions])
+AC_INIT([GNU Awk Bundled Extensions],[4.1.4],[bug-gawk@gnu.org],[gawk-extensions])
 
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
