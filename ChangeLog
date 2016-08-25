@@ -1,5 +1,38 @@
 2016-08-25         Arnold D. Robbins     <arnold@skeeve.com>
 
+	POSIX now says use strcmp for == and !=. Thanks to Chet Ramey
+	for pointing me at the change.  Make it so:
+
+	* awk.h (cmp_nodes): New 3rd param indicating strcmp, not strcoll.
+	* debug.c (cmp_val): Update call to cmp_nodes.
+	* eval.c (cmp_nodes): New 3rd param indicating strcmp, not strcoll.
+	Adjust code and all callers.
+	(scalar_cmp_t): New enum type. Used in ...
+	(cmp_scalars): ... in order to call cmp_nodes correctly.
+	* interpret.h: Use the enum type in calls to cmp_scalars.
+	* re.c (re_update): Adjust call to cmp_nodes.
+
+2016-08-25         Norihiro Tanaka      <noritnk@kcn.ne.jp>
+
+	* awk.h (struct Regexp): Remove dfa.  Now dfareg instead of it.  All
+	referers changed.
+	* re.c (research): Arrange caller of dfaexec and research.
+	* (avoid_dfa): Removed.  All callers changed.
+	* awk.h (avoid_dfa): Removed.
+
+	Other changes by Arnold Robbins:
+
+	* awk.h (struct Regexp): Change various boolean members to bool.
+	(RE_NO_FLAGS): New #define.
+	* interpret.h: Use RE_NO_FLAGS instead of zero.
+	* re.c (research): Prettify the logic a little bit.
+
+2016-08-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with grep.
+
+2016-08-25         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* 4.1.4: Release tar ball made.
 
 2016-08-23         Arnold D. Robbins     <arnold@skeeve.com>
