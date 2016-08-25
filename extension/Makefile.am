@@ -120,6 +120,7 @@ EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog.0 \
 	ext_custom.h \
 	fts.3 \
+	m4 \
 	README.fts \
 	rwarray0.c
 
