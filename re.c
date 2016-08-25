@@ -356,7 +356,7 @@ re_update(NODE *t)
 		t1 = t->re_exp;
 		if (t->re_text != NULL) {
 			/* if contents haven't changed, just return it */
-			if (cmp_nodes(t->re_text, t1) == 0)
+			if (cmp_nodes(t->re_text, t1, true) == 0)
 				return t->re_reg;
 			/* things changed, fall through to recompile */
 			unref(t->re_text);

@@ -1442,7 +1442,7 @@ extern int sanitize_exit_status(int status);
 extern void PUSH_CODE(INSTRUCTION *cp);
 extern INSTRUCTION *POP_CODE(void);
 extern void init_interpret(void);
-extern int cmp_nodes(NODE *t1, NODE *t2);
+extern int cmp_nodes(NODE *t1, NODE *t2, bool use_strcmp);
 extern int cmp_awknums(const NODE *t1, const NODE *t2);
 extern void set_IGNORECASE(void);
 extern void set_OFS(void);

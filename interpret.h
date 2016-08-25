@@ -444,37 +444,37 @@ uninitialized_scalar:
 			break;
 
 		case Op_equal:
-			r = node_Boolean[cmp_scalars() == 0];
+			r = node_Boolean[cmp_scalars(SCALAR_EQ_NEQ) == 0];
 			UPREF(r);
 			REPLACE(r);
 			break;
 
 		case Op_notequal:
-			r = node_Boolean[cmp_scalars() != 0];
+			r = node_Boolean[cmp_scalars(SCALAR_EQ_NEQ) != 0];
 			UPREF(r);
 			REPLACE(r);
 			break;
 
 		case Op_less:
-			r = node_Boolean[cmp_scalars() < 0];
+			r = node_Boolean[cmp_scalars(SCALAR_RELATIONAL) < 0];
 			UPREF(r);
 			REPLACE(r);
 			break;
 
 		case Op_greater:
-			r = node_Boolean[cmp_scalars() > 0];
+			r = node_Boolean[cmp_scalars(SCALAR_RELATIONAL) > 0];
 			UPREF(r);
 			REPLACE(r);
 			break;
 
 		case Op_leq:
-			r = node_Boolean[cmp_scalars() <= 0];
+			r = node_Boolean[cmp_scalars(SCALAR_RELATIONAL) <= 0];
 			UPREF(r);
 			REPLACE(r);
 			break;
 
 		case Op_geq:
-			r = node_Boolean[cmp_scalars() >= 0];
+			r = node_Boolean[cmp_scalars(SCALAR_RELATIONAL) >= 0];
 			UPREF(r);
 			REPLACE(r);
 			break;
@@ -836,7 +836,7 @@ mod:
 			} else {
 				t1 = POP_SCALAR();	/* case value */
 				t2 = TOP_SCALAR();	/* switch expression */
-				di = (cmp_nodes(t2, t1) == 0);
+				di = (cmp_nodes(t2, t1, true) == 0);
 				DEREF(t1);
 			}
 
