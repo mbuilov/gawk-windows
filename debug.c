@@ -1670,7 +1670,7 @@ cmp_val(struct list_item *w, NODE *old, NODE *new)
 
 	if (new->type == Node_var_array)	/* 5 */
 		return true;
-	return cmp_nodes(old, new);			/* 4 */
+	return cmp_nodes(old, new, true);	/* 4 */
 }
 
 /* watchpoint_triggered --- check if we should stop at this watchpoint;

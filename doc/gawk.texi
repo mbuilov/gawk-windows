@@ -12577,19 +12577,19 @@ One special place where @code{/foo/} is @emph{not} an abbreviation for
 where this is discussed in more detail.
 
 @node POSIX String Comparison
-@subsubsection String Comparison with POSIX Rules
+@subsubsection String Comparison Based on Locale Collating Order
 
-The POSIX standard says that string comparison is performed based
-on the locale's @dfn{collating order}. This is the order in which
-characters sort, as defined by the locale (for more discussion,
-@pxref{Locales}).  This order is usually very different
-from the results obtained when doing straight character-by-character
-comparison.@footnote{Technically, string comparison is supposed
-to behave the same way as if the strings were compared with the C
-@code{strcoll()} function.}
+The POSIX standard used to say that all string comparisons are
+performed based on the locale's @dfn{collating order}. This
+is the order in which characters sort, as defined by the locale
+(for more discussion, @pxref{Locales}).  This order is usually very
+different from the results obtained when doing straight byte-by-byte
+comparison.@footnote{Technically, string comparison is supposed to behave
+the same way as if the strings were compared with the C @code{strcoll()}
+function.}
 
 Because this behavior differs considerably from existing practice,
-@command{gawk} only implements it when in POSIX mode (@pxref{Options}).
+@command{gawk} only implemented it when in POSIX mode (@pxref{Options}).
 Here is an example to illustrate the difference, in an @code{en_US.UTF-8}
 locale:
 
@@ -12602,6 +12602,26 @@ $ @kbd{gawk --posix 'BEGIN @{ printf("ABC < abc = %s\n",}
 @print{} ABC < abc = FALSE
 @end example
 
+Fortunately, as of August 2016, comparison based on locale
+collating order is no longer required for the @code{==} and @code{!=}
+operators.@footnote{See @uref{http://austingroupbugs.net/view.php?id=1070,
+the Austin Group website}.} However, comparison based on locales is still
+required for @code{<}, @code{<=}, @code{>}, and @code{>=}.  POSIX thus
+recommends as follows:
+
+@quotation
+Since the @code{==} operator checks whether strings are identical,
+not whether they collate equally, applications needing to check whether
+strings collate equally can use:
+
+@example
+a <= b && a >= b
+@end example
+@end quotation
+
+As of @value{PVERSION} 4.2, @command{gawk} continues to use locale
+collating order for @code{<}, @code{<=}, @code{>}, and @code{>=} only
+in POSIX mode.
 
 @node Boolean Ops
 @subsection Boolean Expressions
@@ -37385,7 +37405,7 @@ and
 @uref{http://pubs.opengroup.org/onlinepubs/9699919799/xrat/V4_xbd_chap09.html#tag_21_09_03_05, its rationale}.}
 
 By using this lovely technical term, the standard gives license
-to implementors to implement ranges in whatever way they choose.
+to implementers to implement ranges in whatever way they choose.
 The @command{gawk} maintainer chose to apply the pre-POSIX meaning
 both with the default regexp matching and when @option{--traditional} or
 @option{--posix} are used.
