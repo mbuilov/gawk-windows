@@ -1,3 +1,18 @@
+2016-08-25         Norihiro Tanaka      <noritnk@kcn.ne.jp>
+
+	* awk.h (struct Regexp): Remove dfa.  Now dfareg instead of it.  All
+	referers changed.
+	* re.c (research): Arrange caller of dfaexec and research.
+	* (avoid_dfa): Removed.  All callers changed.
+	* awk.h (avoid_dfa): Removed.
+
+	Other changes by Arnold Robbins:
+
+	* awk.h (struct Regexp): Change various boolean members to bool.
+	(RE_NO_FLAGS): New #define.
+	* interpret.h: Use RE_NO_FLAGS instead of zero.
+	* re.c (research): Prettify the logic a little bit.
+
 2016-08-25         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with grep.
