@@ -574,7 +574,7 @@ posix_compare(NODE *s1, NODE *s2)
 /* cmp_nodes --- compare two nodes, returning negative, 0, positive */
 
 int
-cmp_nodes(NODE *t1, NODE *t2)
+cmp_nodes(NODE *t1, NODE *t2, bool use_strcmp)
 {
 	int ret = 0;
 	size_t len1, len2;
@@ -597,7 +597,7 @@ cmp_nodes(NODE *t1, NODE *t2)
 	if (len1 == 0 || len2 == 0)
 		return ldiff;
 
-	if (do_posix)
+	if (do_posix && ! use_strcmp)
 		return posix_compare(t1, t2);
 
 	l = (ldiff <= 0 ? len1 : len2);
@@ -884,7 +884,7 @@ fmt_index(NODE *n)
 		emalloc(fmt_list, NODE **, fmt_num*sizeof(*fmt_list), "fmt_index");
 	n = force_string(n);
 	while (ix < fmt_hiwater) {
-		if (cmp_nodes(fmt_list[ix], n) == 0)
+		if (cmp_nodes(fmt_list[ix], n, true) == 0)
 			return ix;
 		ix++;
 	}
@@ -1508,10 +1508,15 @@ eval_condition(NODE *t)
 	return boolval(t);
 }
 
+typedef enum {
+	SCALAR_EQ_NEQ,
+	SCALAR_RELATIONAL
+} scalar_cmp_t;
+
 /* cmp_scalars -- compare two nodes on the stack */
 
 static inline int
-cmp_scalars()
+cmp_scalars(scalar_cmp_t comparison_type)
 {
 	NODE *t1, *t2;
 	int di;
@@ -1522,7 +1527,7 @@ cmp_scalars()
 		DEREF(t2);
 		fatal(_("attempt to use array `%s' in a scalar context"), array_vname(t1));
 	}
-	di = cmp_nodes(t1, t2);
+	di = cmp_nodes(t1, t2, comparison_type == SCALAR_EQ_NEQ);
 	DEREF(t1);
 	DEREF(t2);
 	return di;

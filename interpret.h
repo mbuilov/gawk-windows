@@ -444,37 +444,37 @@ uninitialized_scalar:
 			break;
 
 		case Op_equal:
-			r = node_Boolean[cmp_scalars() == 0];
+			r = node_Boolean[cmp_scalars(SCALAR_EQ_NEQ) == 0];
 			UPREF(r);
 			REPLACE(r);
 			break;
 
 		case Op_notequal:
-			r = node_Boolean[cmp_scalars() != 0];
+			r = node_Boolean[cmp_scalars(SCALAR_EQ_NEQ) != 0];
 			UPREF(r);
 			REPLACE(r);
 			break;
 
 		case Op_less:
-			r = node_Boolean[cmp_scalars() < 0];
+			r = node_Boolean[cmp_scalars(SCALAR_RELATIONAL) < 0];
 			UPREF(r);
 			REPLACE(r);
 			break;
 
 		case Op_greater:
-			r = node_Boolean[cmp_scalars() > 0];
+			r = node_Boolean[cmp_scalars(SCALAR_RELATIONAL) > 0];
 			UPREF(r);
 			REPLACE(r);
 			break;
 
 		case Op_leq:
-			r = node_Boolean[cmp_scalars() <= 0];
+			r = node_Boolean[cmp_scalars(SCALAR_RELATIONAL) <= 0];
 			UPREF(r);
 			REPLACE(r);
 			break;
 
 		case Op_geq:
-			r = node_Boolean[cmp_scalars() >= 0];
+			r = node_Boolean[cmp_scalars(SCALAR_RELATIONAL) >= 0];
 			UPREF(r);
 			REPLACE(r);
 			break;
@@ -832,12 +832,11 @@ mod:
 				t2 = TOP_SCALAR();	/* switch expression */
 				t2 = force_string(t2);
 				rp = re_update(m);
-				di = (research(rp, t2->stptr, 0, t2->stlen,
-							avoid_dfa(m, t2->stptr, t2->stlen)) >= 0);
+				di = (research(rp, t2->stptr, 0, t2->stlen, RE_NO_FLAGS) >= 0);
 			} else {
 				t1 = POP_SCALAR();	/* case value */
 				t2 = TOP_SCALAR();	/* switch expression */
-				di = (cmp_nodes(t2, t1) == 0);
+				di = (cmp_nodes(t2, t1, true) == 0);
 				DEREF(t1);
 			}
 
@@ -996,20 +995,7 @@ arrayfor:
 			t1 = *get_field(0, (Func_ptr *) 0);
 match_re:
 			rp = re_update(m);
-			/*
-			 * Any place where research() is called with a last parameter of
-			 * zero, we need to use the avoid_dfa test. This appears here and
-			 * in the code for Op_K_case.
-			 *
-			 * A new or improved dfa that distinguishes beginning/end of
-			 * string from beginning/end of line will allow us to get rid of
-			 * this hack.
-			 *
-			 * The avoid_dfa() function is in re.c; it is not very smart.
-			 */
-
-			di = research(rp, t1->stptr, 0, t1->stlen,
-								avoid_dfa(m, t1->stptr, t1->stlen));
+			di = research(rp, t1->stptr, 0, t1->stlen, RE_NO_FLAGS);
 			di = (di == -1) ^ (op != Op_nomatch);
 			if (op != Op_match_rec) {
 				decr_sp();

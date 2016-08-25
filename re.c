@@ -170,7 +170,6 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 
 	emalloc(rp, Regexp *, sizeof(*rp), "make_regexp");
 	memset((char *) rp, 0, sizeof(*rp));
-	rp->dfareg = NULL;
 	rp->pat.allocated = 0;	/* regex will allocate the buffer */
 	emalloc(rp->pat.fastmap, char *, 256, "make_regexp");
 
@@ -223,12 +222,11 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	/* gack. this must be done *after* re_compile_pattern */
 	rp->pat.newline_anchor = false; /* don't get \n in middle of string */
 	if (dfa && ! no_dfa) {
-		rp->dfa = true;
 		rp->dfareg = dfaalloc();
 		dfasyntax(rp->dfareg, dfa_syn, ignorecase, '\n');
 		dfacomp(buf, len, rp->dfareg, true);
 	} else
-		rp->dfa = false;
+		rp->dfareg = NULL;
 	rp->has_anchor = has_anchor;
 
 	/* Additional flags that help with RS as regexp. */
@@ -278,26 +276,25 @@ research(Regexp *rp, char *str, int start,
 	 * starts in the middle of a string, so don't bother trying it
 	 * in that case.
 	 */
-	if (rp->dfa && ! no_bol && start == 0) {
-		char save;
-		size_t count = 0;
+	if (rp->dfareg != NULL && ! no_bol && start == 0) {
 		struct dfa *superset = dfasuperset(rp->dfareg);
-		/*
-		 * dfa likes to stick a '\n' right after the matched
-		 * text.  So we just save and restore the character.
-		 */
-		save = str[start+len];
 		if (superset)
 			ret = dfaexec(superset, str+start, str+start+len,
 							true, NULL, NULL);
-		if (ret)
+
+		if (ret && ((! need_start && ! rp->has_anchor)
+				|| (! superset && dfaisfast(rp->dfareg))))
 			ret = dfaexec(rp->dfareg, str+start, str+start+len,
-						true, &count, &try_backref);
-		str[start+len] = save;
+						true, NULL, &try_backref);
 	}
 
 	if (ret) {
-		if (need_start || rp->dfa == false || try_backref) {
+		if (   rp->dfareg == NULL
+			|| start != 0
+			|| no_bol
+			|| need_start
+			|| rp->has_anchor
+			|| try_backref) {
 			/*
 			 * Passing NULL as last arg speeds up search for cases
 			 * where we don't need the start/end info.
@@ -326,7 +323,7 @@ refree(Regexp *rp)
 		free(rp->regs.start);
 	if (rp->regs.end)
 		free(rp->regs.end);
-	if (rp->dfa) {
+	if (rp->dfareg != NULL) {
 		dfafree(rp->dfareg);
 		free(rp->dfareg);
 	}
@@ -359,7 +356,7 @@ re_update(NODE *t)
 		t1 = t->re_exp;
 		if (t->re_text != NULL) {
 			/* if contents haven't changed, just return it */
-			if (cmp_nodes(t->re_text, t1) == 0)
+			if (cmp_nodes(t->re_text, t1, true) == 0)
 				return t->re_reg;
 			/* things changed, fall through to recompile */
 			unref(t->re_text);
@@ -423,32 +420,6 @@ resetup()
 	(void) re_set_syntax(syn);
 
 	dfa_init();
-}
-
-/* avoid_dfa --- return true if we should not use the DFA matcher */
-
-int
-avoid_dfa(NODE *re, char *str, size_t len)
-{
-	char *end;
-
-	/*
-	 * f = @/.../
-	 * if ("foo" ~ f) ...
-	 *
-	 * This creates a Node_dynregex with NULL re_reg.
-	 */
-	if (re->re_reg == NULL)
-		return false;
-
-	if (! re->re_reg->has_anchor)
-		return false;
-
-	for (end = str + len; str < end; str++)
-		if (*str == '\n')
-			return true;
-
-	return false;
 }
 
 /* reisstring --- return true if the RE match is a simple string match */

@@ -206,11 +206,10 @@ typedef struct Regexp {
 	struct re_pattern_buffer pat;
 	struct re_registers regs;
 	struct dfa *dfareg;
-	short dfa;
-	short has_anchor;	/* speed up of avoid_dfa kludge, temporary */
-	short non_empty;	/* for use in fpat_parse_field */
-	short has_meta;		/* re has meta chars so (probably) isn't simple string */
-	short maybe_long;	/* re has meta chars that can match long text */
+	bool has_anchor;	/* re has anchors which dfa avoids */
+	bool non_empty;		/* for use in fpat_parse_field */
+	bool has_meta;		/* re has meta chars so (probably) isn't simple string */
+	bool maybe_long;	/* re has meta chars that can match long text */
 } Regexp;
 #define	RESTART(rp,s)	(rp)->regs.start[0]
 #define	REEND(rp,s)	(rp)->regs.end[0]
@@ -219,6 +218,7 @@ typedef struct Regexp {
 #define	NUMSUBPATS(rp,s)	(rp)->regs.num_regs
 
 /* regexp matching flags: */
+#define RE_NO_FLAGS	0	/* empty flags */
 #define RE_NEED_START	1	/* need to know start/end of match */
 #define RE_NO_BOL	2	/* not allowed to match ^ in regexp */
 
@@ -1442,7 +1442,7 @@ extern int sanitize_exit_status(int status);
 extern void PUSH_CODE(INSTRUCTION *cp);
 extern INSTRUCTION *POP_CODE(void);
 extern void init_interpret(void);
-extern int cmp_nodes(NODE *t1, NODE *t2);
+extern int cmp_nodes(NODE *t1, NODE *t2, bool use_strcmp);
 extern int cmp_awknums(const NODE *t1, const NODE *t2);
 extern void set_IGNORECASE(void);
 extern void set_OFS(void);
@@ -1650,7 +1650,6 @@ extern void reg_error(const char *s);
 extern Regexp *re_update(NODE *t);
 extern void resyntax(int syntax);
 extern void resetup(void);
-extern int avoid_dfa(NODE *re, char *str, size_t len);
 extern int reisstring(const char *text, size_t len, Regexp *re, const char *buf);
 extern int get_numbase(const char *str, bool use_locale);
 
