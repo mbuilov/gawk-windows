@@ -76,6 +76,9 @@ Changes from 4.1.x to 4.2.0
 19. The extension API now provides a mechanism for generating nonfatal
     error messages.
 
+20. Gawk now uses fwrite_unlocked if it's available. The yields a 7% - 18%
+    improvement in raw output speed (gawk '{ print }' on a large file).
+
 Changes from 4.1.3 to 4.1.4
 ---------------------------
 
