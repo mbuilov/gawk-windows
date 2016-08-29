@@ -178,6 +178,10 @@ extern void *memset_ulong(void *dest, int val, unsigned long l);
 #define memset memset_ulong
 #endif
 
+#ifdef HAVE_FWRITE_UNLOCKED
+#define fwrite	fwrite_unlocked
+#endif /* HAVE_FWRITE_UNLOCKED */
+
 #if defined(__EMX__) || defined(__MINGW32__)
 #include "nonposix.h"
 #endif /* defined(__EMX__) || defined(__MINGW32__) */
