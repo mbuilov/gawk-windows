@@ -1,4 +1,20 @@
-2016-08-29         Aharon Robbins       <aharon.robbins@intel.com>
+2016-09-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Merge grep's now thread-safe dfa. Wheee.
+
+	* dfa.h, dfa.c: Sync with grep.
+	* localeinfo.h, localeinfo.c, verify.h: New files.
+	* Makefile.am (base_sources): Adjust.
+	* awk.h (using_utf8): Declare new function.
+	* node.c (str2wstr): Use using_utf8 instead of now-gone dfa function.
+	* re.c: Include "localeinfo.h".
+	(localeinfo): New static variable.
+	(make_regexp): Adjust call to dfa_syntax.
+	(resetup): Call init_localeinfo on localeinfo. Remove call to
+	now-gone function dfa_init.
+	(using_utf8): New function.
+
+2016-08-29         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac (fwrite_unlocked): Check for it.
 	* awk.h (fwrite): Define to fwrite_unlocked if we have it.

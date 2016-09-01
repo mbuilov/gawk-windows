@@ -143,10 +143,11 @@ am__objects_1 = array.$(OBJEXT) awkgram.$(OBJEXT) builtin.$(OBJEXT) \
 	dfa.$(OBJEXT) eval.$(OBJEXT) ext.$(OBJEXT) field.$(OBJEXT) \
 	floatcomp.$(OBJEXT) gawkapi.$(OBJEXT) gawkmisc.$(OBJEXT) \
 	getopt.$(OBJEXT) getopt1.$(OBJEXT) int_array.$(OBJEXT) \
-	io.$(OBJEXT) main.$(OBJEXT) mpfr.$(OBJEXT) msg.$(OBJEXT) \
-	node.$(OBJEXT) profile.$(OBJEXT) random.$(OBJEXT) re.$(OBJEXT) \
-	regex.$(OBJEXT) replace.$(OBJEXT) str_array.$(OBJEXT) \
-	symbol.$(OBJEXT) version.$(OBJEXT)
+	localeinfo.$(OBJEXT) io.$(OBJEXT) main.$(OBJEXT) \
+	mpfr.$(OBJEXT) msg.$(OBJEXT) node.$(OBJEXT) profile.$(OBJEXT) \
+	random.$(OBJEXT) re.$(OBJEXT) regex.$(OBJEXT) \
+	replace.$(OBJEXT) str_array.$(OBJEXT) symbol.$(OBJEXT) \
+	version.$(OBJEXT)
 am_gawk_OBJECTS = $(am__objects_1)
 gawk_OBJECTS = $(am_gawk_OBJECTS)
 gawk_LDADD = $(LDADD)
@@ -518,6 +519,8 @@ base_sources = \
 	gettext.h \
 	int_array.c \
 	interpret.h \
+	localeinfo.c \
+	localeinfo.h \
 	io.c \
 	mbsupport.h \
 	main.c \
@@ -535,6 +538,7 @@ base_sources = \
 	replace.c \
 	str_array.c \
 	symbol.c \
+	verify.h \
 	version.c \
 	xalloc.h
 
@@ -681,6 +685,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/int_array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/localeinfo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mpfr.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msg.Po@am__quote@
