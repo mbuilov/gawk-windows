@@ -25,9 +25,13 @@
 
 #include "awk.h"
 
+#include "localeinfo.h"
+
 static reg_syntax_t syn;
 static void check_bracket_exp(char *s, size_t len);
 const char *regexflags2str(int flags);
+
+static struct localeinfo localeinfo;
 
 /* make_regexp --- generate compiled regular expressions */
 
@@ -223,7 +227,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	rp->pat.newline_anchor = false; /* don't get \n in middle of string */
 	if (dfa && ! no_dfa) {
 		rp->dfareg = dfaalloc();
-		dfasyntax(rp->dfareg, dfa_syn, ignorecase, '\n');
+		dfasyntax(rp->dfareg, & localeinfo, dfa_syn, ignorecase, '\n');
 		dfacomp(buf, len, rp->dfareg, true);
 	} else
 		rp->dfareg = NULL;
@@ -395,6 +399,9 @@ re_update(NODE *t)
 void
 resetup()
 {
+	// init localeinfo for dfa
+	init_localeinfo(& localeinfo);
+
 	/*
 	 * Syntax bits: _that_ is yet another mind trip.  Recreational drugs
 	 * are helpful for recovering from the experience.
@@ -418,8 +425,14 @@ resetup()
 		syn |= RE_INTERVALS | RE_INVALID_INTERVAL_ORD | RE_NO_BK_BRACES;
 
 	(void) re_set_syntax(syn);
+}
 
-	dfa_init();
+/* using_utf8 --- are we using utf8 */
+
+bool
+using_utf8(void)
+{
+	return localeinfo.using_utf8;
 }
 
 /* reisstring --- return true if the RE match is a simple string match */

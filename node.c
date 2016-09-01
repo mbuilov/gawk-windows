@@ -752,7 +752,7 @@ str2wstr(NODE *n, size_t **ptr)
 			 * stopping early. This is particularly important
 			 * for match() where we need to build the indices.
 			 */
-			if (dfa_using_utf8()) {
+			if (using_utf8()) {
 				count = 1;
 				wc = 0xFFFD;	/* unicode replacement character */
 				goto set_wc;

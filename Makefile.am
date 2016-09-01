@@ -109,6 +109,8 @@ base_sources = \
 	gettext.h \
 	int_array.c \
 	interpret.h \
+	localeinfo.c \
+	localeinfo.h \
 	io.c \
 	mbsupport.h \
 	main.c \
@@ -126,6 +128,7 @@ base_sources = \
 	replace.c \
 	str_array.c \
 	symbol.c \
+	verify.h \
 	version.c \
 	xalloc.h
 
