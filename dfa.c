@@ -331,9 +331,6 @@ typedef struct
   size_t hash;                  /* Hash of the positions of this state.  */
   position_set elems;           /* Positions this state could match.  */
   unsigned char context;        /* Context from previous state.  */
-  bool curr_dependent;          /* True if the follows of any positions with
-                                   ANYCHAR depends on the next character's
-                                   context.  */
   unsigned short constraint;    /* Constraint for this state to accept.  */
   token first_end;              /* Token value of the first END in elems.  */
   position_set mbps;            /* Positions which can match multibyte
@@ -429,6 +426,7 @@ struct dfa
   charclass *charclasses;       /* Array of character sets for CSET tokens.  */
   size_t cindex;                /* Index for adding new charclasses.  */
   size_t calloc;                /* Number of charclasses allocated.  */
+  size_t canychar;              /* Index of anychar class, or (size_t) -1.  */
 
   /* Scanner state */
   struct lexer_state lex;
@@ -1426,21 +1424,24 @@ lex (struct dfa *dfa)
         case '.':
           if (backslash)
             goto normal_char;
-          if (dfa->localeinfo.multibyte)
+          if (dfa->canychar == (size_t) -1)
             {
-              /* In multibyte environment period must match with a single
-                 character not a byte.  So we use ANYCHAR.  */
-              dfa->lex.laststart = false;
-              return dfa->lex.lasttok = ANYCHAR;
+              zeroset (ccl);
+              notset (ccl);
+              if (!(dfa->syntax.syntax_bits & RE_DOT_NEWLINE))
+                clrbit ('\n', ccl);
+              if (dfa->syntax.syntax_bits & RE_DOT_NOT_NULL)
+                clrbit ('\0', ccl);
+              if (dfa->localeinfo.multibyte)
+                for (c2 = 0; c2 < NOTCHAR; c2++)
+                  if (dfa->localeinfo.sbctowc[c2] == WEOF)
+                    clrbit (c2, ccl);
+              dfa->canychar = charclass_index (dfa, ccl);
             }
-          zeroset (ccl);
-          notset (ccl);
-          if (!(dfa->syntax.syntax_bits & RE_DOT_NEWLINE))
-            clrbit ('\n', ccl);
-          if (dfa->syntax.syntax_bits & RE_DOT_NOT_NULL)
-            clrbit ('\0', ccl);
           dfa->lex.laststart = false;
-          return dfa->lex.lasttok = CSET + charclass_index (dfa, ccl);
+          return dfa->lex.lasttok = (dfa->localeinfo.multibyte
+                                     ? ANYCHAR
+                                     : CSET + dfa->canychar);
 
         case 's':
         case 'S':
@@ -2051,7 +2052,6 @@ state_index (struct dfa *d, position_set const *s, int context)
   size_t hash = 0;
   int constraint = 0;
   state_num i, j;
-  bool curr_dependent = false;
   token first_end = 0;
 
   for (i = 0; i < s->nelem; ++i)
@@ -2105,17 +2105,6 @@ state_index (struct dfa *d, position_set const *s, int context)
         }
       else if (d->tokens[s->elems[j].index] == BACKREF)
         constraint = NO_CONSTRAINT;
-      if (d->localeinfo.multibyte && d->tokens[s->elems[j].index] == ANYCHAR)
-        {
-          int acceptable
-            = ((SUCCEEDS_IN_CONTEXT (c, context, CTX_NEWLINE)
-                ? CTX_NEWLINE : 0)
-               | (SUCCEEDS_IN_CONTEXT (c, context, CTX_LETTER)
-                  ? CTX_LETTER : 0)
-               | (SUCCEEDS_IN_CONTEXT (c, context, CTX_NONE)
-                  ? CTX_NONE : 0));
-          curr_dependent |= acceptable && (context & ~acceptable);
-        }
     }
 
 
@@ -2126,7 +2115,6 @@ state_index (struct dfa *d, position_set const *s, int context)
   alloc_position_set (&d->states[i].elems, s->nelem);
   copy (s, &d->states[i].elems);
   d->states[i].context = context;
-  d->states[i].curr_dependent = curr_dependent;
   d->states[i].constraint = constraint;
   d->states[i].first_end = first_end;
   d->states[i].mbps.nelem = 0;
@@ -2582,25 +2570,22 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
         setbit (d->tokens[pos.index], matches);
       else if (d->tokens[pos.index] >= CSET)
         copyset (d->charclasses[d->tokens[pos.index] - CSET], matches);
-      else if (d->localeinfo.multibyte && d->tokens[pos.index] == ANYCHAR)
+      else if (d->tokens[pos.index] == ANYCHAR)
         {
-          /* ANYCHAR must match a single character, so put it to
-             D->states[s].mbps which contains the positions which can
-             match with a single character not a byte.  If all
-             positions with ANYCHAR do not depend on the context of
-             the next character, put its follows instead to
+          copyset (d->charclasses[d->canychar], matches);
+
+          /* ANYCHAR must match with a single character, so we must put
+             it to D->states[s].mbps which contains the positions which
+             can match with a single character not a byte.  If all
+             positions which has ANYCHAR does not depend on context of
+             next character, we put the follows instead of it to
              D->states[s].mbps to optimize.  */
-          if (d->states[s].curr_dependent)
+          if (SUCCEEDS_IN_CONTEXT (pos.constraint, d->states[s].context,
+                                   CTX_NONE))
             {
               if (d->states[s].mbps.nelem == 0)
-                alloc_position_set (&d->states[s].mbps, 1);
-              insert (pos, &d->states[s].mbps);
-            }
-          else if (SUCCEEDS_IN_CONTEXT (pos.constraint,
-                                        d->states[s].context, CTX_ANY))
-            {
-              if (d->states[s].mbps.nelem == 0)
-                alloc_position_set (&d->states[s].mbps, 1);
+                alloc_position_set (&d->states[s].mbps,
+                                    d->follows[pos.index].nelem);
               for (j = 0; j < d->follows[pos.index].nelem; j++)
                 insert (d->follows[pos.index].elems[j], &d->states[s].mbps);
             }
@@ -2978,16 +2963,6 @@ transit_state_singlebyte (struct dfa *d, state_num s, unsigned char const **pp)
 {
   state_num *t;
 
-  if (**pp == d->syntax.eolbyte)
-    {
-      /* S is always an initial state in transit_state, so the
-         transition table for the state must have been built already.  */
-      assert (d->trans[s] || d->fails[s]);
-
-      ++*pp;
-      return d->newlines[s];
-    }
-
   if (d->trans[s])
     t = d->trans[s];
   else if (d->fails[s])
@@ -3014,15 +2989,12 @@ static state_num
 transit_state (struct dfa *d, state_num s, unsigned char const **pp,
                unsigned char const *end)
 {
-  state_num s1;
+  state_num s1, s2;
   wint_t wc;
   int separate_contexts;
-  state_num state, state_newline, mb_index;
-  size_t i, j;
+  size_t i;
 
   int mbclen = mbs_to_wchar (&wc, (char const *) *pp, end - *pp, d);
-  int context = wc == d->syntax.eolbyte ? CTX_NEWLINE : CTX_NONE;
-  bool context_newline = context == CTX_NEWLINE;
 
   /* This state has some operators which can match a multibyte character.  */
   d->mb_follows.nelem = 0;
@@ -3034,31 +3006,9 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
     s = transit_state_singlebyte (d, s, pp);
   *pp += mbclen - i;
 
-  if (d->states[s1].curr_dependent)
+  if (wc == WEOF)
     {
-      if (s < 0)
-        d->mb_follows.nelem = 0;
-      else
-        copy (&d->states[s].elems, &d->mb_follows);
-
-      for (i = 0; i < d->states[s1].mbps.nelem; i++)
-        {
-          if (!SUCCEEDS_IN_CONTEXT (d->states[s1].mbps.elems[i].constraint,
-                                    d->states[s1].context, context))
-            continue;
-          for (j = 0; j < d->follows[d->states[s1].mbps.elems[i].index].nelem;
-               j++)
-            insert (d->follows[d->states[s1].mbps.elems[i].index].elems[j],
-                    &d->mb_follows);
-        }
-
-      separate_contexts = state_separate_contexts (&d->mb_follows);
-      if (context_newline && separate_contexts & CTX_NEWLINE)
-        s = state_index (d, &d->mb_follows, CTX_NEWLINE);
-      else
-        s = state_index (d, &d->mb_follows, separate_contexts ^ CTX_ANY);
-      realloc_trans_if_necessary (d, s);
-
+      /* It is an invalid character, so ANYCHAR is not accepted.  */
       return s;
     }
 
@@ -3069,11 +3019,11 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
     {
       if (MAX_TRCOUNT <= d->mb_trcount)
         {
-          state_num s2;
-          for (s2 = -1; s2 < d->tralloc; s2++)
+          state_num s3;
+          for (s3 = -1; s3 < d->tralloc; s3++)
             {
-              free (d->mb_trans[s2]);
-              d->mb_trans[s2] = NULL;
+              free (d->mb_trans[s3]);
+              d->mb_trans[s3] = NULL;
             }
 
           for (i = 0; i < d->sindex; i++)
@@ -3083,22 +3033,16 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
       d->states[s1].mb_trindex = d->mb_trcount++;
     }
 
-  mb_index = d->states[s1].mb_trindex * 2;
-
   if (! d->mb_trans[s])
     {
       enum { TRANSPTR_SIZE = sizeof *d->mb_trans[s] };
-      enum { TRANSALLOC_SIZE = 2 * MAX_TRCOUNT * TRANSPTR_SIZE };
+      enum { TRANSALLOC_SIZE = MAX_TRCOUNT * TRANSPTR_SIZE };
       d->mb_trans[s] = xmalloc (TRANSALLOC_SIZE);
-      for (i = 0; i < 2 * MAX_TRCOUNT; i++)
+      for (i = 0; i < MAX_TRCOUNT; i++)
         d->mb_trans[s][i] = -1;
     }
-  else
-    {
-      state = d->mb_trans[s][mb_index + context_newline];
-      if (0 <= state)
-        return state;
-    }
+  else if (d->mb_trans[s][d->states[s1].mb_trindex] >= 0)
+    return d->mb_trans[s][d->states[s1].mb_trindex];
 
   if (s < 0)
     copy (&d->states[s1].mbps, &d->mb_follows);
@@ -3106,17 +3050,12 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
     merge (&d->states[s1].mbps, &d->states[s].elems, &d->mb_follows);
 
   separate_contexts = state_separate_contexts (&d->mb_follows);
-  state = state_index (d, &d->mb_follows, separate_contexts ^ CTX_ANY);
-  if (separate_contexts & CTX_NEWLINE)
-    state_newline = state_index (d, &d->mb_follows, CTX_NEWLINE);
-  else
-    state_newline = state;
-  realloc_trans_if_necessary (d, state_newline);
+  s2 = state_index (d, &d->mb_follows, separate_contexts ^ CTX_ANY);
+  realloc_trans_if_necessary (d, s2);
 
-  d->mb_trans[s][mb_index] = state;
-  d->mb_trans[s][mb_index + 1] = state_newline;
+  d->mb_trans[s][d->states[s1].mb_trindex] = s2;
 
-  return context_newline ? state_newline : state;
+  return s2;
 }
 
 /* The initial state may encounter a byte which is not a single byte character
@@ -3243,10 +3182,8 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
                     }
                 }
 
-              if (d->states[s].mbps.nelem == 0 || (*p == eol && !allow_nl)
-                  || (*p == '\n' && !(d->syntax.syntax_bits & RE_DOT_NEWLINE))
-                  || (*p == '\0' && (d->syntax.syntax_bits & RE_DOT_NOT_NULL))
-                  || (char *) p >= end)
+              if (d->states[s].mbps.nelem == 0
+                  || d->localeinfo.sbctowc[*p] != WEOF || (char *) p >= end)
                 {
                   /* If an input character does not match ANYCHAR, do it
                      like a single-byte character.  */
@@ -3255,8 +3192,6 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
               else
                 {
                   s = transit_state (d, s, &p, (unsigned char *) end);
-                  if (s >= 0 && p[-1] == eol)
-                    nlcount++;
                   mbp = p;
                   trans = d->trans;
                 }
@@ -3325,8 +3260,6 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
           else
             {
               s = transit_state (d, s, &p, (unsigned char *) end);
-              if (s >= 0 && p[-1] == eol)
-                nlcount++;
               mbp = p;
               trans = d->trans;
             }
@@ -4134,6 +4067,7 @@ dfasyntax (struct dfa *dfa, struct localeinfo const *linfo,
 
   dfa->fast = !dfa->localeinfo.multibyte;
 
+  dfa->canychar = -1;
   dfa->lex.cur_mb_len = 1;
   dfa->syntax.syntax_bits_set = true;
   dfa->syntax.syntax_bits = bits;
