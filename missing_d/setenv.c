@@ -17,11 +17,7 @@ static const char rcsid[] = "Id: setenv.c,v 1.2 2005/04/27 04:56:11 sra Exp";
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,6 +32,22 @@ static const char rcsid[] = "Id: setenv.c,v 1.2 2005/04/27 04:56:11 sra Exp";
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ */
+
+/*
+ * Per the statement at http://opensource.org/licenses/bsd-license.php,
+ *
+ *	The advertising clause in the license appearing on BSD Unix files was
+ *	officially rescinded by the Director of the Office of Technology
+ *	Licensing of the University of California on July 22 1999. He states
+ *	that clause 3 is "hereby deleted in its entirety."
+ *
+ * I removed the advertising clause in the above copyright.
+ * The above web site points to
+ * ftp://ftp.cs.berkeley.edu/pub/4bsd/README.Impt.License.Change.
+ *
+ * Arnold Robbins
+ * 7 September 2016
  */
 
 /* #include "port_before.h" */
