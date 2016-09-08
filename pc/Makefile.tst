@@ -190,7 +190,7 @@ GAWK_EXT_TESTS = \
 	fieldwdth fpat1 fpat2 fpat3 fpat4 fpat5 fpatnull fsfwfs funlen \
 	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
 	genpot gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
-	icasefs icasers id igncdym igncfs ignrcas2 ignrcas3 ignrcase \
+	icasefs icasers id igncdym igncfs ignrcas2 ignrcase \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
 	include include2 indirectbuiltin indirectcall indirectcall2 \
 	lint lintold lintwarn \
@@ -207,7 +207,7 @@ GAWK_EXT_TESTS = \
 	symtab7 symtab8 symtab9 symtab10 \
 	watchpoint1
 
-EXTRA_TESTS = inftest regtest
+EXTRA_TESTS = inftest regtest ignrcas3 
 INET_TESTS = inetdayu inetdayt inetechu inetecht
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 MPFR_TESTS = mpfrnr mpfrnegzero mpfrmemok1 mpfrrem mpfrrnd mpfrieee \
@@ -1294,6 +1294,11 @@ symtab10:
 ignrcas3::
 	@echo $@
 	@echo Expect ignrcas3 to fail with MinGW and DJGPP
+#	@if locale -a | grep el_GR.iso88597 > /dev/null ; then \
+#	GAWKLOCALE=el_GR.iso88597 \
+#	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
+#	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; \
+#	fi
 	@if locale -a | grep ell_GRC.1253 > /dev/null ; then \
 	@GAWKLOCALE=ell_GRC.1253 \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
