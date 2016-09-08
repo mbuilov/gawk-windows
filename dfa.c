@@ -59,7 +59,6 @@
 #define _(str) gettext (str)
 
 #include <wchar.h>
-#include <wctype.h>
 
 #include "xalloc.h"
 
@@ -362,6 +361,10 @@ struct regex_syntax
 
   /* Flag for case-folding letters into sets.  */
   bool case_fold;
+
+  /* True if ^ and $ match only the start and end of data, and do not match
+     end-of-line within data.  */
+  bool anchor;
 
   /* End-of-line byte in data.  */
   unsigned char eolbyte;
@@ -782,7 +785,7 @@ unibyte_word_constituent (struct dfa const *dfa, unsigned char c)
 static int
 char_context (struct dfa const *dfa, unsigned char c)
 {
-  if (c == dfa->syntax.eolbyte)
+  if (c == dfa->syntax.eolbyte && !dfa->syntax.anchor)
     return CTX_NEWLINE;
   if (unibyte_word_constituent (dfa, c))
     return CTX_LETTER;
@@ -2699,18 +2702,9 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
      is to fail miserably.  */
   if (d->searchflag)
     {
-      /* Find the state(s) corresponding to the positions of state 0.  */
-      copy (&d->states[0].elems, &follows);
-      separate_contexts = state_separate_contexts (&follows);
-      state = state_index (d, &follows, separate_contexts ^ CTX_ANY);
-      if (separate_contexts & CTX_NEWLINE)
-        state_newline = state_index (d, &follows, CTX_NEWLINE);
-      else
-        state_newline = state;
-      if (separate_contexts & CTX_LETTER)
-        state_letter = state_index (d, &follows, CTX_LETTER);
-      else
-        state_letter = state;
+      state_newline = 0;
+      state_letter = d->min_trcount - 1;
+      state = d->initstate_notbol;
 
       for (i = 0; i < NOTCHAR; ++i)
         trans[i] = unibyte_word_constituent (d, i) ? state_letter : state;
@@ -3075,16 +3069,14 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
    Both P and MBP must be no larger than END.  */
 static unsigned char const *
 skip_remains_mb (struct dfa *d, unsigned char const *p,
-                 unsigned char const *mbp, char const *end, wint_t *wcp)
+                 unsigned char const *mbp, char const *end)
 {
-  wint_t wc = WEOF;
+  wint_t wc;
   if (d->syntax.never_trail[*p])
     return p;
   while (mbp < p)
     mbp += mbs_to_wchar (&wc, (char const *) mbp,
                          end - (char const *) mbp, d);
-  if (wcp != NULL)
-    *wcp = wc;
   return mbp;
 }
 
@@ -3141,46 +3133,22 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
 
   for (;;)
     {
-      if (multibyte)
+      while ((t = trans[s]) != NULL)
         {
-          while ((t = trans[s]) != NULL)
+          if (s < d->min_trcount)
+            {
+              if (!multibyte || d->states[s].mbps.nelem == 0)
+                {
+                  while (t[*p] == s)
+                    p++;
+                }
+              if (multibyte)
+                p = mbp = skip_remains_mb (d, p, mbp, end);
+            }
+
+          if (multibyte)
             {
               s1 = s;
-
-              if (s < d->min_trcount)
-                {
-                  if (d->min_trcount == 1)
-                    {
-                      if (d->states[s].mbps.nelem == 0)
-                        {
-                          do
-                            {
-                              while (t[*p] == 0)
-                                p++;
-                              p = mbp = skip_remains_mb (d, p, mbp, end, NULL);
-                            }
-                          while (t[*p] == 0);
-                        }
-                      else
-                        p = mbp = skip_remains_mb (d, p, mbp, end, NULL);
-                    }
-                  else
-                    {
-                      wint_t wc;
-                      mbp = skip_remains_mb (d, p, mbp, end, &wc);
-
-                      /* If d->min_trcount is greater than 1, maybe
-                         transit to another initial state after skip.  */
-                      if (p < mbp)
-                        {
-                          /* It's CTX_LETTER or CTX_NONE.  CTX_NEWLINE
-                             cannot happen, as we assume that a newline
-                             is always a single byte character.  */
-                          s1 = s = d->initstate_notbol;
-                          p = mbp;
-                        }
-                    }
-                }
 
               if (d->states[s].mbps.nelem == 0
                   || d->localeinfo.sbctowc[*p] != WEOF || (char *) p >= end)
@@ -3196,22 +3164,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
                   trans = d->trans;
                 }
             }
-        }
-      else
-        {
-          if (s == 0)
-            {
-              t = trans[s];
-              if (t)
-                {
-                  while (t[*p] == 0)
-                    p++;
-                  s1 = 0;
-                  s = t[*p++];
-                }
-            }
-
-          while ((t = trans[s]) != NULL)
+          else
             {
               s1 = t[*p++];
               t = trans[s1];
@@ -3221,6 +3174,11 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
                   s = s1;
                   s1 = tmp;     /* swap */
                   break;
+                }
+              if (s < d->min_trcount)
+                {
+                  while (t[*p] == s1)
+                    p++;
                 }
               s = t[*p++];
             }
@@ -3239,19 +3197,25 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
           nlcount++;
           mbp = p;
 
-          s = allow_nl ? d->newlines[s1] : 0;
+          s = (allow_nl ? d->newlines[s1]
+               : d->syntax.sbit[eol] == CTX_NEWLINE ? 0
+               : d->syntax.sbit[eol] == CTX_LETTER ? d->min_trcount - 1
+               : d->initstate_notbol);
         }
       else if (d->fails[s])
         {
-          if (d->success[s] & d->syntax.sbit[*p])
+          if ((d->success[s] & d->syntax.sbit[*p])
+              || ((char *) p == end
+                  && ACCEPTS_IN_CONTEXT (d->states[s].context, CTX_NEWLINE, s,
+                                         *d)))
             goto done;
+
+          if (multibyte && s < d->min_trcount)
+            p = mbp = skip_remains_mb (d, p, mbp, end);
 
           s1 = s;
           if (!multibyte || d->states[s].mbps.nelem == 0
-              || (*p == eol && !allow_nl)
-              || (*p == '\n' && !(d->syntax.syntax_bits & RE_DOT_NEWLINE))
-              || (*p == '\0' && (d->syntax.syntax_bits & RE_DOT_NOT_NULL))
-              || (char *) p >= end)
+              || d->localeinfo.sbctowc[*p] != WEOF || (char *) p >= end)
             {
               /* If a input character does not match ANYCHAR, do it
                  like a single-byte character.  */
@@ -3813,9 +3777,11 @@ dfamust (struct dfa const *d)
   bool exact = false;
   bool begline = false;
   bool endline = false;
+  size_t rj;
   bool need_begline = false;
   bool need_endline = false;
   bool case_fold_unibyte = d->syntax.case_fold && MB_CUR_MAX == 1;
+  struct dfamust *dm;
 
   for (ri = 0; ri < d->tindex; ++ri)
     {
@@ -3992,7 +3958,7 @@ dfamust (struct dfa const *d)
                 }
             }
 
-          size_t rj = ri + 2;
+          rj = ri + 2;
           if (d->tokens[ri + 1] == CAT)
             {
               for (; rj < d->tindex - 1; rj += 2)
@@ -4021,7 +3987,7 @@ dfamust (struct dfa const *d)
     }
  done:;
 
-  struct dfamust *dm = NULL;
+  dm = NULL;
   if (*result)
     {
       dm = xmalloc (sizeof *dm);
@@ -4057,7 +4023,7 @@ dfaalloc (void)
 /* Initialize DFA.  */
 void
 dfasyntax (struct dfa *dfa, struct localeinfo const *linfo,
-           reg_syntax_t bits, bool fold, unsigned char eol)
+           reg_syntax_t bits, int dfaopts)
 {
   int i;
   memset (dfa, 0, offsetof (struct dfa, dfaexec));
@@ -4070,9 +4036,10 @@ dfasyntax (struct dfa *dfa, struct localeinfo const *linfo,
   dfa->canychar = -1;
   dfa->lex.cur_mb_len = 1;
   dfa->syntax.syntax_bits_set = true;
+  dfa->syntax.case_fold = (dfaopts & DFA_CASE_FOLD) != 0;
+  dfa->syntax.anchor = (dfaopts & DFA_ANCHOR) != 0;
+  dfa->syntax.eolbyte = dfaopts & DFA_EOL_NUL ? '\0' : '\n';
   dfa->syntax.syntax_bits = bits;
-  dfa->syntax.case_fold = fold;
-  dfa->syntax.eolbyte = eol;
 
   for (i = CHAR_MIN; i <= CHAR_MAX; ++i)
     {
