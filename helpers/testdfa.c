@@ -44,6 +44,7 @@
 #define _Noreturn
 #define _GL_ATTRIBUTE_PURE
 #include "dfa.h"
+#include "localeinfo.h"
 
 const char *regexflags2str(int flags);
 char *databuf(int fd);
@@ -71,7 +72,8 @@ void usage(const char *myname)
 
 int main(int argc, char **argv)
 {
-	int c, ret, try_backref;
+	int c, ret;
+	bool try_backref;
 	struct re_pattern_buffer pat;
 	struct re_registers regs;
 	struct dfa *dfareg;
@@ -84,6 +86,7 @@ int main(int argc, char **argv)
 	char save;
 	size_t count = 0;
 	char *place;
+	struct localeinfo localeinfo;
 
 	if (argc < 2)
 		usage(argv[0]);
@@ -158,7 +161,6 @@ int main(int argc, char **argv)
 	dfa_syn = syn;
 	if (ignorecase)
 		dfa_syn |= RE_ICASE;
-	dfasyntax(dfa_syn, ignorecase, '\n');
 	re_set_syntax(syn);
 
 	if ((rerr = re_compile_pattern(pattern, len, & pat)) != NULL) {
@@ -171,6 +173,10 @@ int main(int argc, char **argv)
 	pat.newline_anchor = false; /* don't get \n in middle of string */
 
 	dfareg = dfaalloc();
+	init_localeinfo(&localeinfo);
+	dfasyntax(dfareg, &localeinfo, dfa_syn,
+		  ignorecase ? DFA_CASE_FOLD : 0);
+
 	printf("Calling dfacomp(%s, %d, %p, true)\n",
 			pattern, (int) len, dfareg);
 
