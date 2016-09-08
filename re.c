@@ -227,7 +227,8 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	rp->pat.newline_anchor = false; /* don't get \n in middle of string */
 	if (dfa && ! no_dfa) {
 		rp->dfareg = dfaalloc();
-		dfasyntax(rp->dfareg, & localeinfo, dfa_syn, ignorecase, '\n');
+		dfasyntax(rp->dfareg, & localeinfo, dfa_syn,
+			  ignorecase ? DFA_CASE_FOLD : 0);
 		dfacomp(buf, len, rp->dfareg, true);
 	} else
 		rp->dfareg = NULL;
