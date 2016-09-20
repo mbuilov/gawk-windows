@@ -19059,8 +19059,8 @@ The week number of the year (with the first Monday as the first
 day of week one) as a decimal number (01--53).
 The method for determining the week number is as specified by ISO 8601.
 (To wit: if the week containing January 1 has four or more days in the
-new year, then it is week one; otherwise it is week 53 of the previous year
-and the next week is week one.)
+new year, then it is week one; otherwise it is the last week
+[52 or 53] of the previous year and the next week is week one.)
 
 @item %w
 The weekday as a decimal number (0--6).  Sunday is day zero.
@@ -23148,7 +23148,7 @@ function _gr_init(    oldfs, oldrs, olddol0, grcat,
         n = split($4, a, "[ \t]*,[ \t]*")
         for (i = 1; i <= n; i++)
             if (a[i] in _gr_groupsbyuser)
-                _gr_groupsbyuser[a[i]] = gr_groupsbyuser[a[i]] " " $1
+                _gr_groupsbyuser[a[i]] = _gr_groupsbyuser[a[i]] " " $1
             else
                 _gr_groupsbyuser[a[i]] = $1
 
