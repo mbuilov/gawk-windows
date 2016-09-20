@@ -1,3 +1,8 @@
+2016-09-09         Norihiro Tanaka      <noritnk@kcn.ne.jp>
+
+	* awk.h (struct Regexp): Remove member has_anchor.  All uses removed.
+	* re.c (make_regexp, research): Use dfa matcher for regex with anchor.
+
 2016-09-09         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with grep.

@@ -47,6 +47,9 @@ EXTRA_DIST = \
 	anchgsub.awk \
 	anchgsub.in \
 	anchgsub.ok \
+	anchor.awk \
+	anchor.in \
+	anchor.ok \
 	apiterm.awk \
 	apiterm.in \
 	apiterm.ok \
@@ -1155,7 +1158,7 @@ CLEANFILES = core core.* fmtspcl.ok
 
 # try to keep these sorted. each letter starts a new line
 BASIC_TESTS = \
-	addcomma anchgsub argarray arrayind1 arrayind2 arrayind3 arrayparm arrayprm2 arrayprm3 \
+	addcomma anchgsub anchor argarray arrayind1 arrayind2 arrayind3 arrayparm arrayprm2 arrayprm3 \
 	arrayref arrymem1 arryref2 arryref3 arryref4 arryref5 arynasty \
 	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
 	aryprm8 aryprm9 arysubnm asgext awkpath \

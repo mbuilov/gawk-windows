@@ -210,7 +210,6 @@ typedef struct Regexp {
 	struct re_pattern_buffer pat;
 	struct re_registers regs;
 	struct dfa *dfareg;
-	bool has_anchor;	/* re has anchors which dfa avoids */
 	bool non_empty;		/* for use in fpat_parse_field */
 	bool has_meta;		/* re has meta chars so (probably) isn't simple string */
 	bool maybe_long;	/* re has meta chars that can match long text */
