@@ -49,7 +49,6 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	int c, c2;
 	static bool first = true;
 	static bool no_dfa = false;
-	bool has_anchor = false;
 	reg_syntax_t dfa_syn;
 	int i;
 
@@ -160,9 +159,6 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 			} /* switch */
 		} else {
 			c = *src;
-			if (c == '^' || c == '$')
-				has_anchor = true;
-
 			*dest++ = *src++;	/* not '\\' */
 		}
 		if (gawk_mb_cur_max > 1 && is_multibyte)
@@ -228,11 +224,10 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	if (dfa && ! no_dfa) {
 		rp->dfareg = dfaalloc();
 		dfasyntax(rp->dfareg, & localeinfo, dfa_syn,
-			  ignorecase ? DFA_CASE_FOLD : 0);
+			  (ignorecase ? DFA_CASE_FOLD : 0) | DFA_ANCHOR);
 		dfacomp(buf, len, rp->dfareg, true);
 	} else
 		rp->dfareg = NULL;
-	rp->has_anchor = has_anchor;
 
 	/* Additional flags that help with RS as regexp. */
 	for (i = 0; i < len; i++) {
@@ -287,7 +282,7 @@ research(Regexp *rp, char *str, int start,
 			ret = dfaexec(superset, str+start, str+start+len,
 							true, NULL, NULL);
 
-		if (ret && ((! need_start && ! rp->has_anchor)
+		if (ret && (! need_start
 				|| (! superset && dfaisfast(rp->dfareg))))
 			ret = dfaexec(rp->dfareg, str+start, str+start+len,
 						true, NULL, &try_backref);
@@ -298,7 +293,6 @@ research(Regexp *rp, char *str, int start,
 			|| start != 0
 			|| no_bol
 			|| need_start
-			|| rp->has_anchor
 			|| try_backref) {
 			/*
 			 * Passing NULL as last arg speeds up search for cases
