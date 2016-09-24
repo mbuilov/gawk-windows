@@ -2902,7 +2902,11 @@ restart(bool run)
 	close_all();
 
 	/* start a new process replacing the current process */
+#ifdef __MINGW32__
+	execvp(d_argv[0], (const char * const *)d_argv);
+#else
 	execvp(d_argv[0], d_argv);
+#endif
 
 	/* execvp failed !!! */
 	fprintf(out_fp, _("Failed to restart debugger"));

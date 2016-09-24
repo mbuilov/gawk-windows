@@ -155,6 +155,7 @@ s/^#undef HAVE_STRERROR *$/#define HAVE_STRERROR 1/
 #define HAVE_STRFTIME 1\
 #endif
 s/^#undef HAVE_STRINGIZE *$/#define HAVE_STRINGIZE 1/
+s/^#undef HAVE_STRINGS_H *$/#define HAVE_STRINGS_H 1/
 s/^#undef HAVE_STRING_H *$/#define HAVE_STRING_H 1/
 /^#undef HAVE_STRNCASECMP *$/c\
 #define HAVE_STRNCASECMP 1\
