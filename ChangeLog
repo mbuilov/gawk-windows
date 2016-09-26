@@ -1,3 +1,9 @@
+2016-09-24  Eli Zaretskii  <eliz@gnu.org>
+
+	* debug.c (restart) [__MINGW32__]: Cast 2nd argument of execvp to
+	avoid compiler warnings about prototype mismatch.  Reported by
+	Marc de Bourget <marcdebourget@gmail.com>.
+
 2016-09-09         Norihiro Tanaka      <noritnk@kcn.ne.jp>
 
 	* awk.h (struct Regexp): Remove member has_anchor.  All uses removed.
