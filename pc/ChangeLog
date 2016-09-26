@@ -1,3 +1,18 @@
+2016-09-24  Eli Zaretskii  <eliz@gnu.org>
+
+	Fix compilation warnings on MinGW with the latest runtime.
+	Reported by Marc de Bourget <marcdebourget@gmail.com>.
+
+	* socket.h (_WIN32_WINNT): If it's already defined, redefine it
+	only if the value is less than what we need.  This avoids compiler
+	warnings about redefinitions.
+
+	* config.h (HAVE_STRINGS_H): Define to 1.
+
+	* config.sed: Define STRINGS_H as well, as MinGW runtime 3.22 and
+	later needs that to get the prototypes of strcasecmp and
+	strncasecmp.
+
 2016-09-08         Scott Deifik  <scottd.mail@sbcglobal.net>
 
 	* Makefile.tst: Sync with mainline.
