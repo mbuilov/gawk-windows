@@ -1012,6 +1012,9 @@ particular records in a file and perform operations upon them.
 * VMS Old Gawk::                        An old version comes with some VMS
                                         systems.
 * Bugs::                                Reporting Problems and Bugs.
+* Bug address::                         Where to send reports to.
+* Usenet::                              Where not to send reports to.
+* Maintainers::                         Maintainers of non-*nix ports.
 * Other Versions::                      Other freely available @command{awk}
                                         implementations.
 * Installation summary::                Summary of installation.
@@ -39047,7 +39050,6 @@ $ @kbd{gawk :== $sys$common:[syshlp.examples.tcpip.snmp]gawk.exe}
 This is apparently @value{PVERSION} 2.15.6, which is extremely old. We
 recommend compiling and using the current version.
 
-
 @node Bugs
 @appendixsec Reporting Problems and Bugs
 @cindex archaeologists
@@ -39062,6 +39064,15 @@ recommend compiling and using the current version.
 If you have problems with @command{gawk} or think that you have found a bug,
 report it to the developers; we cannot promise to do anything,
 but we might well want to fix it.
+
+@menu
+* Bug address::                 Where to send reports to.
+* Usenet::                      Where not to send reports to.
+* Maintainers::                 Maintainers of non-*nix ports.
+@end menu
+
+@node Bug address
+@appendixsubsec Submitting Bug Reports
 
 Before reporting a bug, make sure you have really found a genuine bug.
 Carefully reread the documentation and see if it says you can do
@@ -39095,40 +39106,6 @@ understood in common by all the maintainers.}
 In addition, please be sure to send all mail in @emph{plain text},
 not (or not exclusively) in HTML.
 
-@cindex @code{comp.lang.awk} newsgroup
-@quotation CAUTION
-Do @emph{not} try to report bugs in @command{gawk} by
-posting to the Usenet/Internet newsgroup @code{comp.lang.awk}.
-The @command{gawk} developers do occasionally read this newsgroup,
-but there is no guarantee that we will see your posting.  The steps described
-here are the only officially recognized way for reporting bugs.
-Really.
-@end quotation
-
-@ignore
-Date: Sun, 17 May 2015 19:50:14 -0400
-From: Chet Ramey <chet.ramey@case.edu>
-Reply-To: chet.ramey@case.edu
-Organization: ITS, Case Western Reserve University
-To: Aharon Robbins <arnold@skeeve.com>
-CC: chet.ramey@case.edu
-
-....
-I gave up on usenet a couple of years ago and haven't really looked back.
-It's like sports talk radio -- you feel smarter for not having read it.
-
-And another one:
-
-Date: Thu, 11 Jun 2015 09:00:56 -0400
-From: Chet Ramey <chet.ramey@case.edu>
-
-My memory was imperfect.  Back in June 2009, I wrote:
-
-"That's the nice thing about open source, right?  You can take your ball
-and run to another section of the playground.  Then, if you like mixing
-metaphors, you can throw rocks from there."
-@end ignore
-
 @quotation NOTE
 Many distributions of GNU/Linux and the various BSD-based operating systems
 have their own bug reporting systems.  If you report a bug using your distribution's
@@ -39145,6 +39122,45 @@ keeps things self-contained and not dependent on other organizations.
 Non-bug suggestions are always welcome as well.  If you have questions
 about things that are unclear in the documentation or are just obscure
 features, ask on the bug list; we will try to help you out if we can.
+
+@node Usenet
+@appendixsubsec Please Don't Post Bug Reports to USENET
+
+@quotation
+@c Date: Sun, 17 May 2015 19:50:14 -0400
+@c From: Chet Ramey <chet.ramey@case.edu>
+@c Reply-To: chet.ramey@case.edu
+@c Organization: ITS, Case Western Reserve University
+@c To: Aharon Robbins <arnold@skeeve.com>
+@c CC: chet.ramey@case.edu
+I gave up on Usenet a couple of years ago and haven't really looked back.
+It's like sports talk radio---you feel smarter for not having read it.
+@author Chet Ramey
+@end quotation
+
+@cindex @code{comp.lang.awk} newsgroup
+Please do @emph{not} try to report bugs in @command{gawk} by posting to the
+Usenet/Internet newsgroup @code{comp.lang.awk}.  Although some of the
+@command{gawk} developers occasionally read this newgroup, the primary
+@command{gawk} maintainer no longer does.  Thus it's virtually guaranteed
+that he will @emph{not} see your posting.  The steps described here are
+the only officially recognized way for reporting bugs.  Really.
+
+@ignore
+And another one:
+
+Date: Thu, 11 Jun 2015 09:00:56 -0400
+From: Chet Ramey <chet.ramey@case.edu>
+
+My memory was imperfect.  Back in June 2009, I wrote:
+
+"That's the nice thing about open source, right?  You can take your ball
+and run to another section of the playground.  Then, if you like mixing
+metaphors, you can throw rocks from there."
+@end ignore
+
+@node Maintainers
+@appendixsubsec Reporting Problems with Non-Unix Ports
 
 If you find bugs in one of the non-Unix ports of @command{gawk},
 send an email to the bug list, with a copy to the
