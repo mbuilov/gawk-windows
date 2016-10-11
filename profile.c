@@ -1491,45 +1491,12 @@ pp_string_or_strong_regex(const char *in_str, size_t len, int delim, bool strong
 char *
 pp_number(NODE *n)
 {
-#define PP_PRECISION 6
 	char *str;
 
-#ifdef HAVE_MPFR
-	size_t count;
-
-	if (is_mpg_float(n)) {
-		count = mpfr_get_prec(n->mpg_numbr) / 3;	/* ~ 3.22 binary digits per decimal digit */
-		emalloc(str, char *, count, "pp_number");
-		/*
-		 * 3/2015: Format string used to be "%0.*R*g". That padded
-		 * with leading zeros. But it doesn't do that for regular
-		 * numbers in the non-MPFR case.
-		 */
-		mpfr_sprintf(str, "%.*R*g", PP_PRECISION, ROUND_MODE, n->mpg_numbr);
-	} else if (is_mpg_integer(n)) {
-		count = mpz_sizeinbase(n->mpg_i, 10) + 2;	/* +1 for sign, +1 for NUL at end */
-		emalloc(str, char *, count, "pp_number");
-		mpfr_sprintf(str, "%Zd", n->mpg_i);
-	} else
-#endif
-	{
-		/* Use format_val() to get integral values printed as integers */
-		NODE *s;
-
-		getnode(s);
-		*s = *n;
-		s->flags &= ~STRCUR;
-
-		s = r_format_val("%.6g", 0, s);
-
-		s->stptr[s->stlen] = '\0';
-		str = s->stptr;
-
-		freenode(s);
-	}
-
+	assert((n->flags & NUMCONSTSTR) != 0);
+	emalloc(str, char *, n->stlen + 1, "pp_number");
+	strcpy(str, n->stptr);
 	return str;
-#undef PP_PRECISION
 }
 
 /* pp_node --- pretty format a node */
