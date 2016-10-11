@@ -57,6 +57,7 @@ static int include_source(INSTRUCTION *file);
 static int load_library(INSTRUCTION *file);
 static void next_sourcefile(void);
 static char *tokexpand(void);
+static NODE *make_profile_number(double d, const char *str, size_t len);
 
 #define instruction(t)	bcalloc(t, 1, 0)
 
@@ -1667,7 +1668,7 @@ non_post_simp_exp
 		if ($2->opcode == Op_match_rec) {
 			$2->opcode = Op_nomatch;
 			$1->opcode = Op_push_i;
-			$1->memory = make_number(0.0);	
+			$1->memory = make_profile_number(0.0, "0", 1);
 			$$ = list_append(list_append(list_create($1),
 						instruction(Op_field_spec)), $2);
 		} else {
@@ -1763,7 +1764,7 @@ non_post_simp_exp
 	     * POSIX semantics: force a conversion to numeric type
 	     */
 		$1->opcode = Op_plus_i;
-		$1->memory = make_number(0.0);
+		$1->memory = make_profile_number(0.0, "0", 1);
 		$$ = list_append($2, $1);
 	  }
 	;
@@ -2151,6 +2152,17 @@ negate_num(NODE *n)
 #ifdef HAVE_MPFR
 	int tval = 0;
 #endif
+
+	if ((n->flags & NUMCONSTSTR) != 0) {
+		char *s;
+
+		emalloc(s, char *, n->stlen + 1 + 1, "negate_num");
+		s[0] = '-';
+		strcpy(& s[1], n->stptr);
+		free(n->stptr);
+		n->stptr = s;
+		n->stlen++;
+	}
 
 	if (! is_mpg_number(n)) {
 		n->numbr = -n->numbr;
@@ -3940,6 +3952,11 @@ retry:
 				IEEE_FMT(r->mpg_numbr, tval);
 			}
 			yylval->memory = r;
+			if (do_pretty_print) {
+				yylval->memory->stptr = estrdup(tokstart, strlen(tokstart)-1);
+				yylval->memory->stlen = strlen(tokstart)-1;
+				yylval->memory->flags |= NUMCONSTSTR;
+			}
 			return lasttok = YNUMBER;
 		}
 #endif
@@ -3947,7 +3964,7 @@ retry:
 			d = nondec2awknum(tokstart, strlen(tokstart), NULL);
 		else
 			d = atof(tokstart);
-		yylval->memory = make_number(d);
+		yylval->memory = make_profile_number(d, tokstart, strlen(tokstart) - 1);
 		if (d <= INT32_MAX && d >= INT32_MIN && d == (int32_t) d)
 			yylval->memory->flags |= NUMINT;
 		return lasttok = YNUMBER;
@@ -4257,7 +4274,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 				INSTRUCTION *expr;
 
 				expr = list_create(instruction(Op_push_i));
-				expr->nexti->memory = make_number(0.0);
+				expr->nexti->memory = make_profile_number(0.0, "0", 1);
 				(void) mk_expression_list(subn,
 						list_append(expr, instruction(Op_field_spec)));
 			}
@@ -4305,7 +4322,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 			r->sub_flags |= GENSUB;
 			if (nexp == 3) {
 				ip = instruction(Op_push_i);
-				ip->memory = make_number(0.0);
+				ip->memory = make_profile_number(0.0, "0", 1);
 				(void) mk_expression_list(subn,
 						list_append(list_create(ip), instruction(Op_field_spec)));
 			}
@@ -4334,7 +4351,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 			list = list_create(r);
 			(void) list_prepend(list, instruction(Op_field_spec));
 			(void) list_prepend(list, instruction(Op_push_i));
-			list->nexti->memory = make_number(0.0);
+			list->nexti->memory = make_profile_number(0.0, "0", 1);
 			return list; 
 		} else {
 			arg = subn->nexti;
@@ -5133,6 +5150,8 @@ mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 			}
 
 			op->opcode = Op_push_i;
+			// We don't need to call make_profile_number() here since
+			// optimizing is disabled when doing pretty printing.
 			op->memory = make_number(res);
 			unref(n1);
 			unref(n2);
@@ -6193,4 +6212,19 @@ bool
 is_identchar(int c)
 {
 	return (is_alnum(c) || c == '_');
+}
+
+/* make_profile_number --- make a number that can be printed when profiling */
+
+static NODE *
+make_profile_number(double d, const char *str, size_t len)
+{
+	NODE *n = make_number(d);
+	if (do_pretty_print) {
+		n->stptr = estrdup(str, len);
+		n->stlen = len;
+		n->flags |= NUMCONSTSTR;
+	}
+
+	return n;
 }
