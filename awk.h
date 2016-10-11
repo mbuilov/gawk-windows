@@ -458,6 +458,7 @@ typedef struct exp_node {
 #		define	HALFHAT		0x8000       /* half-capacity Hashed Array Tree;
 		                                      * See cint_array.c */
 #		define	XARRAY		0x10000
+#		define	NUMCONSTSTR	0x20000	/* have string value for numeric constant */
 } NODE;
 
 #define vname sub.nodep.name

@@ -1,3 +1,13 @@
+2016-10-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (NUMCONSTSTR): New flag value.
+	* awkgram.y (make_profile_number): New function. Use it
+	wherever we make a number.  This calls make_number and then, if
+	pretty printing, save the original string value and sets NUMCONSTSTR.
+	(negate_num): If NUNCONSTSTR set, update the saved string value.
+	* profile.c (pp_number): Assert NUMCONSSTR set, use that value.
+	Remove previous code.
+
 2016-09-24  Eli Zaretskii  <eliz@gnu.org>
 
 	* debug.c (restart) [__MINGW32__]: Cast 2nd argument of execvp to
