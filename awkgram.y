@@ -2156,11 +2156,9 @@ negate_num(NODE *n)
 	if ((n->flags & NUMCONSTSTR) != 0) {
 		char *s;
 
-		emalloc(s, char *, n->stlen + 1 + 1, "negate_num");
+		s = n->stptr;
+		memmove(& s[1], & s[0], n->stlen + 1);
 		s[0] = '-';
-		strcpy(& s[1], n->stptr);
-		free(n->stptr);
-		n->stptr = s;
 		n->stlen++;
 	}
 
@@ -6221,7 +6219,9 @@ make_profile_number(double d, const char *str, size_t len)
 {
 	NODE *n = make_number(d);
 	if (do_pretty_print) {
-		n->stptr = estrdup(str, len);
+		// extra byte in case need to add minus sign in negate_num
+		n->stptr = estrdup(str, len + 1);
+		n->stptr[len] = '\0';
 		n->stlen = len;
 		n->flags |= NUMCONSTSTR;
 	}
