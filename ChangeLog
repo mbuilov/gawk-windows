@@ -1,3 +1,11 @@
+2016-10-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (make_profile_number): Allocate an extra byte for the
+	string, so there's room for a minus if necessary. Store '\0'
+	in the right place.
+	(negate_num): Use memmove to shift the string up and then
+	insert a minus, instead of doing a fresh alloc + copy + free.
+
 2016-10-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h (NUMCONSTSTR): New flag value.
