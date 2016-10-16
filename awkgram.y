@@ -1239,7 +1239,7 @@ case_value
 	  {
 		NODE *n = $2->lasti->memory;
 		bcfree($1);
-		add_sign_to_num(n, "+");
+		add_sign_to_num(n, '+');
 		$$ = $2;
 	  }
 	| YSTRING 
