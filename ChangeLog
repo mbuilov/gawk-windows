@@ -1,3 +1,15 @@
+2016-10-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (enum opcodeval): Add Op_unary_plus.
+	* awkgram.y (add_sign_to_num): New routine to put in a sign on
+	profiling constants.  Call it as necessary.
+	In unary plus production, use new opcode, or set up a
+	constant as for unary minus.
+	(negate_num): Call add_sign_to_num instead of doing it directly.
+	* eval.c (optypetab): Add entry for Op_unary_plus.
+	* interpret.h (r_interpret): Add case for Op_unary_plus.
+	* profile.c (pprint, prec_level, is_scalar): Ditto.
+
 2016-10-13         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with GNULIB.

@@ -86,6 +86,7 @@ static ssize_t read_one_line(int fd, void *buffer, size_t count);
 static int one_line_close(int fd);
 static void split_comment(void);
 static void check_comment(void);
+static void add_sign_to_num(NODE *n, char sign);
 
 static bool at_seen = false;
 static bool want_source = false;
@@ -1236,7 +1237,9 @@ case_value
 	  }
 	| '+' YNUMBER    %prec UNARY
 	  {
+		NODE *n = $2->lasti->memory;
 		bcfree($1);
+		add_sign_to_num(n, "+");
 		$$ = $2;
 	  }
 	| YSTRING 
@@ -1759,13 +1762,21 @@ non_post_simp_exp
 	  }
 	| '+' simp_exp    %prec UNARY
 	  {
-	    /*
-	     * was: $$ = $2
-	     * POSIX semantics: force a conversion to numeric type
-	     */
-		$1->opcode = Op_plus_i;
-		$1->memory = make_profile_number(0.0, "0", 1);
-		$$ = list_append($2, $1);
+		if ($2->lasti->opcode == Op_push_i
+			&& ($2->lasti->memory->flags & STRING) == 0
+			&& ($2->lasti->memory->flags & NUMCONSTSTR) != 0) {
+			NODE *n = $2->lasti->memory;
+			add_sign_to_num(n, '+');
+			$$ = $2;
+			bcfree($1);
+		} else {
+			/*
+			 * was: $$ = $2
+			 * POSIX semantics: force a conversion to numeric type
+			 */
+			$1->opcode = Op_unary_plus;
+			$$ = list_append($2, $1);
+		}
 	  }
 	;
 
@@ -2153,14 +2164,7 @@ negate_num(NODE *n)
 	int tval = 0;
 #endif
 
-	if ((n->flags & NUMCONSTSTR) != 0) {
-		char *s;
-
-		s = n->stptr;
-		memmove(& s[1], & s[0], n->stlen + 1);
-		s[0] = '-';
-		n->stlen++;
-	}
+	add_sign_to_num(n, '-');
 
 	if (! is_mpg_number(n)) {
 		n->numbr = -n->numbr;
@@ -2192,6 +2196,21 @@ negate_num(NODE *n)
 	tval = mpfr_neg(n->mpg_numbr, n->mpg_numbr, ROUND_MODE);
 	IEEE_FMT(n->mpg_numbr, tval);
 #endif
+}
+
+/* add_sign_to_num --- make a constant unary plus or minus for profiling */
+
+static void
+add_sign_to_num(NODE *n, char sign)
+{
+	if ((n->flags & NUMCONSTSTR) != 0) {
+		char *s;
+
+		s = n->stptr;
+		memmove(& s[1], & s[0], n->stlen + 1);
+		s[0] = sign;
+		n->stlen++;
+	}
 }
 
 /* print_included_from --- print `Included from ..' file names and locations */
