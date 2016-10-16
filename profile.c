@@ -463,10 +463,13 @@ cleanup:
 		case Op_field_spec:
 		case Op_field_spec_lhs:
 		case Op_unary_minus:
+		case Op_unary_plus:
 		case Op_not:
 			t1 = pp_pop();
 			if (is_binary(t1->type)
-			    || (((OPCODE) t1->type) == pc->opcode && pc->opcode == Op_unary_minus))
+			    || (((OPCODE) t1->type) == pc->opcode
+				    && (pc->opcode == Op_unary_minus
+					    || pc->opcode == Op_unary_plus)))
 				pp_parenthesize(t1);
 
 			/* optypes table (eval.c) includes space after ! */
@@ -1198,6 +1201,7 @@ prec_level(int type)
 		return 13;
 
 	case Op_unary_minus:
+	case Op_unary_plus:
 	case Op_not:
 		return 12;
 
@@ -1284,6 +1288,7 @@ is_scalar(int type)
 	case Op_postincrement:
 	case Op_postdecrement:
 	case Op_unary_minus:
+	case Op_unary_plus:
 	case Op_not:
 		return true;
 
