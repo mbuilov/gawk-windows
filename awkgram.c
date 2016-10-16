@@ -3127,7 +3127,7 @@ regular_print:
     {
 		NODE *n = (yyvsp[0])->lasti->memory;
 		bcfree((yyvsp[-1]));
-		add_sign_to_num(n, "+");
+		add_sign_to_num(n, '+');
 		(yyval) = (yyvsp[0]);
 	  }
 #line 3134 "awkgram.c" /* yacc.c:1646  */
