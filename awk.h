@@ -626,6 +626,7 @@ typedef enum opcodeval {
 	Op_postincrement,
 	Op_postdecrement,
 	Op_unary_minus,
+	Op_unary_plus,
 	Op_field_spec,
 
 	/* unary relationals */

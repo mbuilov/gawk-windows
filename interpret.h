@@ -618,6 +618,11 @@ mod:
 			REPLACE(r);
 			break;
 
+		case Op_unary_plus:
+			// Force argument to be numeric
+			t1 = TOP_NUMBER();
+			break;
+
 		case Op_store_sub:
 			/*
 			 * array[sub] assignment optimization,
