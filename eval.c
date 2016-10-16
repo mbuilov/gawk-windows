@@ -288,6 +288,7 @@ static struct optypetab {
 	{ "Op_postincrement", "++" },
 	{ "Op_postdecrement", "--" },
 	{ "Op_unary_minus", "-" },
+	{ "Op_unary_plus", "+" },
 	{ "Op_field_spec", "$" },
 	{ "Op_not", "! " },
 	{ "Op_assign", " = " },
