@@ -2,22 +2,22 @@
  * profile.c - gawk bytecode pretty-printer with counts
  */
 
-/* 
+/*
  * Copyright (C) 1999-2016 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -225,10 +225,10 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 		case Op_rule:
 			/*
 			 * Rules are three instructions long.
-			 * See append_rule in awkgram.y. 
-			 * The first has the Rule Op Code, nexti etc. 
+			 * See append_rule in awkgram.y.
+			 * The first has the Rule Op Code, nexti etc.
 			 * The second, (pc + 1) has firsti and lasti:
-			 * 	the first/last ACTION instructions for this rule. 
+			 * 	the first/last ACTION instructions for this rule.
 			 * The third has first_line and last_line:
 			 * 	the first and last source line numbers.
 			 */
@@ -265,7 +265,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 						t1 = pp_pop();
 						fprintf(prof_fp, "%s {", t1->pp_str);
 						pp_free(t1);
-					} else 
+					} else
 						fprintf(prof_fp, "{");
 					ip1 = (pc + 1)->firsti;
 					ip2 = (pc + 1)->lasti;
@@ -347,7 +347,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 				cant_happen();
 			}
 
-			switch (pc->opcode) {		
+			switch (pc->opcode) {
 			case Op_store_var:
 				t2 = pp_pop(); /* l.h.s. */
 				t1 = pp_pop(); /* r.h.s. */
@@ -390,7 +390,7 @@ cleanup:
 			efree(tmp);
 			pp_free(t1);
 			pp_push(pc->opcode, str, CAN_FREE);
-			break;	
+			break;
 
 		case Op_and:
 		case Op_or:
@@ -503,7 +503,7 @@ cleanup:
 			pp_free(t1);
 			if ((flags & IN_FOR_HEADER) == 0)
 				pc = end_line(pc);
-			break; 
+			break;
 
 		case Op_concat:
 			str = pp_concat(pc->expr_count);
@@ -520,7 +520,7 @@ cleanup:
 				sub = pp_list(pc->expr_count, NULL, pc->expr_count > 1 ? "][" : ", ");
 				fprintf(prof_fp, "%s %s[%s]", op2str(Op_K_delete), array, sub);
 				efree(sub);
-			} else 				
+			} else
 				fprintf(prof_fp, "%s %s", op2str(Op_K_delete), array);
 			if ((flags & IN_FOR_HEADER) == 0)
 				pc = end_line(pc);
@@ -532,7 +532,7 @@ cleanup:
 			/* Efficency hack not in effect because of exec_count instruction */
 			cant_happen();
 			break;
-		
+
 		case Op_in_array:
 		{
 			char *array, *sub;
@@ -561,7 +561,7 @@ cleanup:
 		case Op_field_assign:
 		case Op_subscript_assign:
 		case Op_arrayfor_init:
-		case Op_arrayfor_incr: 
+		case Op_arrayfor_incr:
 		case Op_arrayfor_final:
 		case Op_newfile:
 		case Op_get_record:
@@ -622,7 +622,7 @@ cleanup:
 			else {
 				tmp = pp_list(pc->expr_count, "  ", ", ");
 				tmp[strlen(tmp) - 1] = '\0';	/* remove trailing space */
-			}	
+			}
 
 			if (pc->redir_type != 0) {
 				t1 = pp_pop();
@@ -641,7 +641,7 @@ cleanup:
 		case Op_push_re:
 			if (pc->memory->type != Node_regex)
 				break;
-			/* else 
+			/* else
 				fall through */
 		case Op_match_rec:
 		{
@@ -716,7 +716,7 @@ cleanup:
 			if (pc->opcode == Op_indirect_func_call)
 				pre = "@";
 			else
-				pre = "";		
+				pre = "";
 			pcount = (pc + 1)->expr_count;
 			if (pcount > 0) {
 				tmp = pp_list(pcount, "()", ", ");
@@ -812,7 +812,7 @@ cleanup:
 		case Op_K_for:
 			ip1 = pc + 1;
 			indent(ip1->forloop_body->exec_count);
-			fprintf(prof_fp, "%s (", op2str(pc->opcode));	
+			fprintf(prof_fp, "%s (", op2str(pc->opcode));
 
 			/* If empty for looop header, print it a little more nicely. */
 			if (   pc->nexti->opcode == Op_no_op
@@ -990,7 +990,7 @@ cleanup:
 
 			pc = ip1->nexti;
 			assert(pc->opcode == Op_cond_exp);
-			pprint(pc->nexti, pc->branch_end, NO_PPRINT_FLAGS);	
+			pprint(pc->nexti, pc->branch_end, NO_PPRINT_FLAGS);
 
 			f = pp_pop();
 			t = pp_pop();
@@ -1006,7 +1006,7 @@ cleanup:
 			pp_push(Op_cond_exp, str, CAN_FREE);
 			pc = pc->branch_end;
 		}
-			break;			
+			break;
 
 		case Op_exec_count:
 			if (flags == NO_PPRINT_FLAGS)
@@ -1042,7 +1042,7 @@ end_line(INSTRUCTION *ip)
 		print_comment(ip->nexti, -1);
 		ret = ip->nexti;
 	}
-	else 
+	else
 		fprintf(prof_fp, "\n");
 
 	return ret;
@@ -1554,7 +1554,7 @@ pp_list(int nargs, const char *paren, const char *delim)
 	emalloc(str, char *, len + 1, "pp_list");
 	s = str;
 	if (paren != NULL)
-		*s++ = paren[0];  
+		*s++ = paren[0];
 	if (nargs > 0) {
 		r = pp_args[nargs];
 		memcpy(s, r->pp_str, r->pp_len);
@@ -1574,7 +1574,7 @@ pp_list(int nargs, const char *paren, const char *delim)
 	if (paren != NULL)
 		*s++ = paren[1];
 	*s = '\0';
-	return str;					
+	return str;
 }
 
 /* is_unary_minus --- return true if string starts with unary minus */
@@ -1649,7 +1649,7 @@ pp_concat(int nargs)
 			*s++ = ' ';
 		}
 	}
-	
+
 	pl_l = prec_level(pp_args[nargs-1]->type);
 	pl_r = prec_level(pp_args[nargs]->type);
 	r = pp_args[nargs];
@@ -1665,7 +1665,7 @@ pp_concat(int nargs)
 	pp_free(r);
 
 	*s = '\0';
-	return str;					
+	return str;
 }
 
 /* pp_group3 --- string together up to 3 strings */

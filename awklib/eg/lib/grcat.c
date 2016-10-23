@@ -9,7 +9,6 @@
  * December 2010, move to ANSI C definition for main().
  */
 
-/* For OS/2, do nothing. */
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif

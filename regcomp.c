@@ -216,7 +216,7 @@ static const size_t __re_error_msgid_idx[] =
 
 
 #ifndef HAVE_BTOWC
-wchar_t 
+wchar_t
 btowc (int c)
 {
    wchar_t wtmp[2];

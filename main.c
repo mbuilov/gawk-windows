@@ -1,23 +1,23 @@
 /*
- * main.c -- Code generator and main program for gawk. 
+ * main.c -- Code generator and main program for gawk.
  */
 
-/* 
+/*
  * Copyright (C) 1986, 1988, 1989, 1991-2016 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -357,7 +357,7 @@ main(int argc, char **argv)
 		init_debug();
 
 #ifdef HAVE_MPFR
-	/* Set up MPFR defaults, and register pre-exec hook to process arithmetic opcodes */ 
+	/* Set up MPFR defaults, and register pre-exec hook to process arithmetic opcodes */
 	if (do_mpfr)
 		init_mpfr(DEFAULT_PREC, DEFAULT_ROUNDMODE);
 #endif
@@ -458,7 +458,7 @@ main(int argc, char **argv)
 	/* Read in the program */
 	if (parse_program(& code_block) != 0)
 		exit(EXIT_FAILURE);
-	
+
 	if (do_intl)
 		exit(EXIT_SUCCESS);
 
@@ -520,7 +520,7 @@ main(int argc, char **argv)
 
 	if (do_tidy_mem)
 		release_all_vars();
-	
+
 	/* keep valgrind happier */
 	if (extra_stack)
 		efree(extra_stack);
@@ -663,7 +663,7 @@ GNU General Public License for more details.\n\
 	static const char blurb_part3[] =
 	  N_("You should have received a copy of the GNU General Public License\n\
 along with this program. If not, see http://www.gnu.org/licenses/.\n");
- 
+
 	/* multiple blurbs are needed for some brain dead compilers. */
 	printf(_(blurb_part1), UPDATE_YEAR);	/* Last update year */
 	fputs(_(blurb_part2), stdout);
@@ -774,7 +774,7 @@ static const struct varinit varinit[] = {
 {&FPAT_node,	"FPAT",		"[^[:space:]]+", 0,  NULL, set_FPAT,	false, NON_STANDARD },
 {&IGNORECASE_node, "IGNORECASE", NULL,	0,  NULL, set_IGNORECASE,	false, NON_STANDARD },
 {&LINT_node,	"LINT",		NULL,	0,  NULL, set_LINT,	false, NON_STANDARD },
-{&PREC_node,	"PREC",		NULL,	DEFAULT_PREC,	NULL,	set_PREC,	false,	NON_STANDARD}, 	
+{&PREC_node,	"PREC",		NULL,	DEFAULT_PREC,	NULL,	set_PREC,	false,	NON_STANDARD},
 {&NF_node,	"NF",		NULL,	-1, update_NF, set_NF,	false, 0 },
 {&NR_node,	"NR",		NULL,	0,  update_NR, set_NR,	true, 0 },
 {&OFMT_node,	"OFMT",		"%.6g",	0,  NULL, set_OFMT,	true, 0 },
@@ -1153,7 +1153,7 @@ arg_assign(char *arg, bool initing)
 		if (! initing) {
 			var = lookup(arg);
 			if (var != NULL && var->type == Node_func)
-				fatal(_("cannot use function `%s' as variable name"), arg); 
+				fatal(_("cannot use function `%s' as variable name"), arg);
 		}
 
 		/*
@@ -1275,7 +1275,7 @@ version()
 #ifdef HAVE_MPFR
 	printf(" (GNU MPFR %s, GNU MP %s)", mpfr_get_version(), gmp_version);
 #endif
-	printf("\n"); 
+	printf("\n");
 	print_ext_versions();
 
 	/*
@@ -1358,7 +1358,7 @@ estrdup(const char *str, size_t len)
 	s[len] = '\0';
 	return s;
 }
-             
+
 #if defined(HAVE_LOCALE_H)
 
 /* init_locale --- initialize locale info. */
@@ -1428,7 +1428,7 @@ long
 getenv_long(const char *name)
 {
 	const char *val;
-	long newval;	
+	long newval;
 	if ((val = getenv(name)) != NULL && isdigit((unsigned char) *val)) {
 		for (newval = 0; *val && isdigit((unsigned char) *val); val++)
 			newval = (newval * 10) + *val - '0';
@@ -1454,7 +1454,7 @@ parse_args(int argc, char **argv)
 	/* we do error messages ourselves on invalid options */
 	opterr = false;
 
-	/* copy argv before getopt gets to it; used to restart the debugger */  
+	/* copy argv before getopt gets to it; used to restart the debugger */
 	save_argv(argc, argv);
 
 	/* option processing. ready, set, go! */
@@ -1604,7 +1604,7 @@ parse_args(int argc, char **argv)
 		case 'r':
 			do_flags |= DO_INTERVALS;
  			break;
- 
+
 		case 's':
 			do_optimize = false;
 			break;

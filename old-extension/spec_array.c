@@ -4,20 +4,20 @@
 
 /*
  * Copyright (C) 2012, 2014 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -52,7 +52,7 @@ typedef struct spec_array {
  *	void load_func(NODE *array, void *data)
  *
  * Use register_deferred_array(array, load_func, void *data) to
- * bind an array to the load routine. 
+ * bind an array to the load routine.
  */
 
 static NODE **deferred_array_init(NODE *, NODE *);
@@ -72,7 +72,7 @@ static afunc_t deferred_array_func[] = {
 	deferred_array_exists,
 	deferred_array_clear,
 	deferred_array_remove,
-	deferred_array_list, 
+	deferred_array_list,
 	deferred_array_copy,
 	null_afunc,	/* dump */
 	(afunc_t) 0,	/* store */
@@ -86,7 +86,7 @@ deferred_array_init(NODE *symbol, NODE *subs)
 {
 	if (symbol != NULL) {
 		array_t *av = (array_t *) symbol->xarray;
-		symbol->xarray = NULL;	/* this is to avoid an assertion failure in null_array */ 
+		symbol->xarray = NULL;	/* this is to avoid an assertion failure in null_array */
 		null_array(symbol);	/* typeless empty array */
 		if (symbol->parent_array == NULL) {
 			/* main array */
@@ -141,7 +141,7 @@ static NODE **
 deferred_array_remove(NODE *symbol, NODE *subs)
 {
 	array_t *av = (array_t *) symbol->xarray;
-	
+
 	(void) SUPER(aremove)(symbol, subs);
 	if (av) {
 		symbol->xarray = NULL;
@@ -157,7 +157,7 @@ static NODE **
 deferred_array_clear(NODE *symbol, NODE *subs)
 {
 	array_t *av = (array_t *) symbol->xarray;
-	
+
 	(void) SUPER(aclear)(symbol, subs);
 	if (av) {
 		symbol->xarray = NULL;
@@ -181,7 +181,7 @@ deferred_array_clear(NODE *symbol, NODE *subs)
  * The store routine must take an additional argument for the
  * value. The value can be NULL if the specific element is
  * removed from the array. The subscript (and the value) is NULL
- * when the entire array is deleted. 
+ * when the entire array is deleted.
  *
  * 	void store_func(NODE *array, NODE *subs, NODE *value, void *data)
  *
@@ -207,7 +207,7 @@ static afunc_t dyn_array_func[] = {
 	dyn_array_exists,
 	dyn_array_clear,
 	dyn_array_remove,
-	dyn_array_list, 
+	dyn_array_list,
 	dyn_array_copy,
 	null_afunc,	/* dump */
 	dyn_array_store,

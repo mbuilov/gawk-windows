@@ -1,23 +1,23 @@
 /*
- * awk.h -- Definitions for gawk. 
+ * awk.h -- Definitions for gawk.
  */
 
-/* 
+/*
  * Copyright (C) 1986, 1988, 1989, 1991-2016 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -546,7 +546,7 @@ typedef struct exp_node {
 #define array_size	sub.nodep.cnt
 #define array_capacity	sub.nodep.reserved
 #define xarray		sub.nodep.rn
-#define parent_array	sub.nodep.x.extra 
+#define parent_array	sub.nodep.x.extra
 
 #define ainit		array_funcs[0]
 #define ainit_ind	0
@@ -663,7 +663,7 @@ typedef enum opcodeval {
 	Op_nomatch,
 
 	Op_rule,
-	
+
 	/* keywords */
 	Op_K_case,
 	Op_K_default,
@@ -728,13 +728,13 @@ typedef enum opcodeval {
 	Op_stop,
 
 	/* parsing (yylex and yyparse), should never appear in valid compiled code */
-	Op_token, 	
+	Op_token,
 	Op_symbol,
 	Op_list,
 
 	/* program structures -- for use in the profiler/pretty printer */
 	Op_K_do,
-	Op_K_for,			
+	Op_K_for,
 	Op_K_arrayfor,
 	Op_K_while,
 	Op_K_switch,
@@ -803,7 +803,7 @@ typedef struct exp_instruction {
 
 /* Op_K_exit */
 #define target_end      d.di
-#define target_atexit   x.xi	
+#define target_atexit   x.xi
 
 /* Op_newfile, Op_K_getline, Op_nextfile */
 #define target_endfile	x.xi
@@ -892,7 +892,7 @@ typedef struct exp_instruction {
 #define field_assign    x.aptr
 
 /* Op_field_assign, Op_var_assign */
-#define assign_ctxt	d.dl	
+#define assign_ctxt	d.dl
 
 /* Op_concat */
 #define concat_flag     d.dl
@@ -925,7 +925,7 @@ typedef struct exp_instruction {
 
 /* Op_line_range */
 #define condpair_left   d.di
-#define condpair_right  x.xi 
+#define condpair_right  x.xi
 
 /* Op_store_var */
 #define initval         x.xn
@@ -1015,7 +1015,7 @@ typedef struct srcfile {
 	int fd;
 	int maxlen;	/* size of the longest line */
 
-	void (*fini_func)();	/* dynamic extension of type SRC_EXTLIB */ 
+	void (*fini_func)();	/* dynamic extension of type SRC_EXTLIB */
 
 	char *lexptr;
 	char *lexend;
@@ -1053,7 +1053,7 @@ enum block_id {
 	BLOCK_NODE,
 	BLOCK_BUCKET,
 	BLOCK_MAX	/* count */
-};	
+};
 
 typedef int (*Func_pre_exec)(INSTRUCTION **);
 typedef void (*Func_post_exec)(INSTRUCTION *);
@@ -1067,7 +1067,7 @@ typedef void (*Func_post_exec)(INSTRUCTION *);
 #ifndef LONG_MIN
 #define LONG_MIN ((long)(-LONG_MAX - 1L))
 #endif
-#define UNLIMITED    LONG_MAX 
+#define UNLIMITED    LONG_MAX
 
 /* -------------------------- External variables -------------------------- */
 /* gawk builtin variables */
@@ -1212,7 +1212,7 @@ extern STACK_ITEM *stack_top;
 #define POP_ADDRESS()		(decr_sp()->lptr)
 #define PEEK(n)			((stack_ptr - (n))->rptr)
 #define TOP()			(stack_ptr->rptr)		/* same as PEEK(0) */
-#define TOP_ADDRESS()		(stack_ptr->lptr) 
+#define TOP_ADDRESS()		(stack_ptr->lptr)
 #define PUSH(r)			(void) (incr_sp()->rptr = (r))
 #define PUSH_ADDRESS(l)		(void) (incr_sp()->lptr = (l))
 #define REPLACE(r)		(void) (stack_ptr->rptr = (r))
@@ -1338,7 +1338,7 @@ if (--val) \
 typedef enum { SORTED_IN = 1, ASORT, ASORTI } sort_context_t;
 typedef enum {
 	ANONE   = 0x00,		/* "unused" value */
-	AINDEX	= 0x001,	/* list of indices */ 
+	AINDEX	= 0x001,	/* list of indices */
 	AVALUE	= 0x002,	/* list of values */
 	AINUM	= 0x004,	/* numeric index */
 	AISTR	= 0x008,	/* string index */
@@ -1762,7 +1762,7 @@ POP_SCALAR()
 
 	if (t->type == Node_var_array)
 		fatal(_("attempt to use array `%s' in a scalar context"), array_vname(t));
-	
+
 	return t;
 }
 
@@ -1775,7 +1775,7 @@ TOP_SCALAR()
 
 	if (t->type == Node_var_array)
 		fatal(_("attempt to use array `%s' in a scalar context"), array_vname(t));
-	
+
 	return t;
 }
 
@@ -1793,7 +1793,7 @@ in_array(NODE *a, NODE *s)
 	NODE **ret;
 
 	ret = a->aexists(a, s);
-	
+
 	return ret ? *ret : NULL;
 }
 

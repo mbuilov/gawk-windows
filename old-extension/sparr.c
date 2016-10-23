@@ -5,20 +5,20 @@
 
 /*
  * Copyright (C) 2012 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -75,7 +75,7 @@ static void
 store_SYS(NODE *symbol, NODE *subs, NODE *val, void *data)
 {
 	sdata_t *sd = (sdata_t *) data;
- 
+
 	if (subs != NULL && val != NULL && val->type == Node_val) {
 		force_string(subs);
 		if (strcmp(subs->stptr, "readline") == 0) {
@@ -98,7 +98,7 @@ load_READLINE(NODE *symbol, void *data)
 	int i;
 	bool long_line = false;
 
-	if (! sd->load_file)	/* non-existent SYS["readline"] or already loaded */ 
+	if (! sd->load_file)	/* non-existent SYS["readline"] or already loaded */
 		return;
 
 	file = sd->filename;
@@ -145,7 +145,7 @@ load_READLINE(NODE *symbol, void *data)
 	}
 	fclose(fp);
 	sd->load_file = false;	/* don't load this file again */
-}	
+}
 
 /* dlload --- load this library */
 
