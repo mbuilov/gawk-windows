@@ -2,22 +2,22 @@
  * interpret.h ---  run a list of instructions.
  */
 
-/* 
+/*
  * Copyright (C) 1986, 1988, 1989, 1991-2015 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -99,7 +99,7 @@ top:
 			/* avoid false source indications */
 			source = NULL;
 			sourceline = 0;
-			(void) nextfile(& curfile, true);	/* close input data file */ 
+			(void) nextfile(& curfile, true);	/* close input data file */
 			/*
 			 * This used to be:
 			 *
@@ -161,7 +161,7 @@ top:
 					m = m->orig_array;
 				}
 			}
-				
+
 			switch (m->type) {
 			case Node_var:
 				if (do_lint && var_uninitialized(m))
@@ -203,7 +203,7 @@ uninitialized_scalar:
 				cant_happen();
 			}
 		}
-			break;	
+			break;
 
 		case Op_push_param:		/* function argument */
 			m = pc->memory;
@@ -241,7 +241,7 @@ uninitialized_scalar:
 			/* for FUNCTAB, get the name as the element value */
 			if (t1 == func_table) {
 				static bool warned = false;
-				
+
 				if (do_lint && ! warned) {
 					warned = true;
 					lintwarn(_("FUNCTAB is a gawk extension"));
@@ -259,7 +259,7 @@ uninitialized_scalar:
 			/* for SYMTAB, step through to the actual variable */
 			if (t1 == symbol_table) {
 				static bool warned = false;
-				
+
 				if (do_lint && ! warned) {
 					warned = true;
 					lintwarn(_("SYMTAB is a gawk extension"));
@@ -304,7 +304,7 @@ uninitialized_scalar:
 			t1 = POP_ARRAY();
 			if (do_lint && in_array(t1, t2) == NULL) {
 				t2 = force_string(t2);
-				if (pc->do_reference) 
+				if (pc->do_reference)
 					lintwarn(_("reference to uninitialized element `%s[\"%.*s\"]'"),
 						array_vname(t1), (int) t2->stlen, t2->stptr);
 				if (t2->stlen == 0)
@@ -408,7 +408,7 @@ uninitialized_scalar:
 		case Op_jmp_true:
 			r = POP_SCALAR();
 			di = eval_condition(r);
-			DEREF(r);			
+			DEREF(r);
 			if (di)
 				JUMPTO(pc->target_jmp);
 			break;
@@ -499,7 +499,7 @@ plus:
 		case Op_minus:
 			t2 = POP_NUMBER();
 			x2 = t2->numbr;
-			DEREF(t2);			
+			DEREF(t2);
 minus:
 			t1 = TOP_NUMBER();
 			r = make_number(t1->numbr - x2);
@@ -549,7 +549,7 @@ quotient:
 			r = make_number(t1->numbr / x2);
 			DEREF(t1);
 			REPLACE(r);
-			break;		
+			break;
 
 		case Op_mod_i:
 			x2 = force_number(pc->memory)->numbr;
@@ -673,7 +673,7 @@ mod:
 			 * simple variable assignment optimization,
 			 * see awkgram.y (optimize_assignment)
 			 */
-	
+
 			lhs = get_lhs(pc->memory, false);
 			unref(*lhs);
 			r = pc->initval;	/* constant initializer */
@@ -737,7 +737,7 @@ mod:
 				} else
 					free_wstr(*lhs);
 			} else {
-				size_t nlen = t1->stlen + t2->stlen;  
+				size_t nlen = t1->stlen + t2->stlen;
 				char *p;
 
 				emalloc(p, char *, nlen + 1, "r_interpret");
@@ -745,7 +745,7 @@ mod:
 				memcpy(p + t1->stlen, t2->stptr, t2->stlen);
 				/* N.B. No NUL-termination required, since make_str_node will do it. */
 				unref(*lhs);
-				t1 = *lhs = make_str_node(p, nlen, ALREADY_MALLOCED); 
+				t1 = *lhs = make_str_node(p, nlen, ALREADY_MALLOCED);
 			}
 			DEREF(t2);
 			break;
@@ -760,7 +760,7 @@ mod:
 			break;
 
 		case Op_subscript_assign:
-			/* conditionally execute post-assignment routine for an array element */ 
+			/* conditionally execute post-assignment routine for an array element */
 
 			if (set_idx != NULL) {
 				di = true;
@@ -994,7 +994,7 @@ arrayfor:
 			}
 			PUSH(m);
 			break;
-			
+
 		case Op_match_rec:
 			m = pc->memory;
 			t1 = *get_field(0, (Func_ptr *) 0);
@@ -1055,7 +1055,7 @@ match_re:
 			} else if (f->type == Node_builtin_func) {
 				int arg_count = (pc + 1)->expr_count;
 				builtin_func_t the_func = lookup_builtin(t1->stptr);
-				
+
 				assert(the_func != NULL);
 
 				/* call it */
@@ -1088,11 +1088,11 @@ match_re:
 					npc[1] = pc[1];
 					npc[1].func_name = fname;	/* name of the builtin */
 					npc[1].expr_count = bc->expr_count;	/* defined max # of arguments */
-					ni = npc; 
+					ni = npc;
 					JUMPTO(ni);
 				} else
 					fatal(_("function called indirectly through `%s' does not exist"),
-							pc->func_name);	
+							pc->func_name);
 			}
 			pc->func_body = f;     /* save for next call */
 
@@ -1126,7 +1126,7 @@ match_re:
 				pc->expr_count = arg_count;		/* actual argument count */
 				(pc + 1)->func_name = fname;	/* name of the builtin */
 				(pc + 1)->expr_count = bc->expr_count;	/* defined max # of arguments */
-				ni = pc; 
+				ni = pc;
 				JUMPTO(ni);
 			}
 
@@ -1138,7 +1138,7 @@ match_re:
 			m = POP_SCALAR();       /* return value */
 
 			ni = pop_fcall();
-	
+
 			/* put the return value back on stack */
 			PUSH(m);
 
@@ -1163,7 +1163,7 @@ match_re:
 
 					/* Save execution state so that we can return to it
 					 * from Op_after_beginfile or Op_after_endfile.
-					 */ 
+					 */
 
 					push_exec_state(pc, currule, source, stack_ptr);
 
@@ -1221,8 +1221,8 @@ match_re:
 				execute beginfile block */
 		}
 			break;
-			
-		case Op_get_record:		
+
+		case Op_get_record:
 		{
 			int errcode = 0;
 
@@ -1280,13 +1280,13 @@ match_re:
 					JUMPTO(ni);
 				} else {
 					/* do run ENDFILE block(s) first. */
-					
+
 					/* Execution state to return to in Op_after_endfile. */
 					push_exec_state(ni, currule, source, stack_ptr);
 
 					JUMPTO(pc->target_endfile);
-				}				
-			} /* else 
+				}
+			} /* else
 				Start over with the first rule. */
 
 			/* empty the run-time stack to avoid memory leak */
@@ -1377,7 +1377,7 @@ match_re:
 				/* not already triggered and left expression is true */
 				decr_sp();
 				ip->triggered = true;
-				JUMPTO(ip->target_jmp);	/* evaluate right expression */ 
+				JUMPTO(ip->target_jmp);	/* evaluate right expression */
 			}
 
 			result = ip->triggered || di;

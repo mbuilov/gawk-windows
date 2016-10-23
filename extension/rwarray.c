@@ -8,20 +8,20 @@
 
 /*
  * Copyright (C) 2009-2014 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -80,7 +80,7 @@ static awk_bool_t read_value(FILE *fp, awk_value_t *value);
  * Minor version	4 bytes - network order
  * Element count	4 bytes - network order
  * Elements
- * 
+ *
  * For each element:
  * Length of index val:	4 bytes - network order
  * Index val as characters (N bytes)
@@ -436,7 +436,7 @@ read_value(FILE *fp, awk_value_t *value)
 		awk_array_t array = create_array();
 
 		if (! read_array(fp, array))
-			return awk_false; 
+			return awk_false;
 
 		/* hook into value */
 		value->val_type = AWK_ARRAY;

@@ -2,23 +2,23 @@
  * int_array.c - routines for arrays of integer indices.
  */
 
-/* 
+/*
  * Copyright (C) 1986, 1988, 1989, 1991-2013, 2016,
  * the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -175,7 +175,7 @@ is_integer(NODE *symbol, NODE *subs)
 	if (len == 0 || (! isdigit((unsigned char) *cp) && *cp != '-'))
 		return NULL;
 
-	if (len > 1 && 
+	if (len > 1 &&
 		((*cp == '0')		/* "00", "011" .. */
 			|| (*cp == '-' && *(cp + 1) == '0')	/* "-0", "-011" .. */
 		)
@@ -240,7 +240,7 @@ int_lookup(NODE *symbol, NODE *subs)
 
 
 	if (! is_integer(symbol, subs)) {
-		xn = symbol->xarray; 
+		xn = symbol->xarray;
 		if (xn == NULL) {
 			xn = symbol->xarray = make_array();
 			xn->vname = symbol->vname;	/* shallow copy */
@@ -258,9 +258,9 @@ int_lookup(NODE *symbol, NODE *subs)
  	hash1 = int_hash(k, symbol->array_size);
 	if ((lhs = int_find(symbol, k, hash1)) != NULL)
 		return lhs;
-	
+
 	/* It's not there, install it */
-	
+
 	symbol->table_size++;
 
 	/* first see if we would need to grow the array, before installing */
@@ -274,7 +274,7 @@ int_lookup(NODE *symbol, NODE *subs)
 		/* have to recompute hash value for new size */
 		hash1 = int_hash(k, symbol->array_size);
 	}
-	
+
 	return int_insert(symbol, k, hash1);
 }
 
@@ -328,7 +328,7 @@ int_clear(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
 				r = b->aivalue[j];
 				if (r->type == Node_var_array) {
 					assoc_clear(r);	/* recursively clear all sub-arrays */
-					efree(r->vname);			
+					efree(r->vname);
 					freenode(r);
 				} else
 					unref(r);
@@ -454,7 +454,7 @@ int_copy(NODE *symbol, NODE *newsymb)
 
 	/* find the current hash size */
 	cursize = symbol->array_size;
-	
+
 	/* allocate new table */
 	emalloc(new, BUCKET **, cursize * sizeof(BUCKET *), "int_copy");
 	memset(new, '\0', cursize * sizeof(BUCKET *));
@@ -493,7 +493,7 @@ int_copy(NODE *symbol, NODE *newsymb)
 			newchain->ainext = NULL;
 			pnew = & newchain->ainext;
 		}
-	}	
+	}
 
 	if (symbol->xarray != NULL) {
 		NODE *xn, *n;
@@ -539,7 +539,7 @@ int_list(NODE *symbol, NODE *t)
 	if ((assoc_kind & (AINDEX|AVALUE)) == (AINDEX|AVALUE))
 		elem_size = 2;
 	list_size = elem_size * num_elems;
-	
+
 	if (symbol->xarray != NULL) {
 		xn = symbol->xarray;
 		list = xn->alist(xn, t);
@@ -559,7 +559,7 @@ int_list(NODE *symbol, NODE *t)
 				/* index */
 				num = b->ainum[j];
 				if ((assoc_kind & AISTR) != 0) {
-					sprintf(buf, "%ld", num); 
+					sprintf(buf, "%ld", num);
 					subs = make_string(buf, strlen(buf));
 					subs->numbr = num;
 					subs->flags |= (NUMCUR|NUMINT);
@@ -604,7 +604,7 @@ int_kilobytes(NODE *symbol)
 		for (b = symbol->buckets[i]; b != NULL; b = b->ainext)
 			bucket_cnt++;
 	}
-	kb = (((AWKNUM) bucket_cnt) * sizeof (BUCKET) + 
+	kb = (((AWKNUM) bucket_cnt) * sizeof (BUCKET) +
 			((AWKNUM) symbol->array_size) * sizeof (BUCKET *)) / 1024.0;
 
 	if (symbol->xarray != NULL)
@@ -738,7 +738,7 @@ int_hash(uint32_t k, uint32_t hsize)
  */
 
 	/* This is the final mixing function used by Paul Hsieh in SuperFastHash. */
- 
+
 	k ^= k << 3;
 	k += k >> 5;
 	k ^= k << 4;
@@ -780,7 +780,7 @@ int_insert(NODE *symbol, long k, uint32_t hash1)
 
 	b = symbol->buckets[hash1];
 
-	/* Only the first bucket in the chain can be partially full, but is never empty. */ 
+	/* Only the first bucket in the chain can be partially full, but is never empty. */
 
 	if (b == NULL || (i = b->aicount) == 2) {
 		getbucket(b);
@@ -820,7 +820,7 @@ grow_int_table(NODE *symbol)
 	static const unsigned long sizes[] = {
 		13, 127, 1021, 8191, 16381, 32749, 65497,
 		131101, 262147, 524309, 1048583, 2097169,
-		4194319, 8388617, 16777259, 33554467, 
+		4194319, 8388617, 16777259, 33554467,
 		67108879, 134217757, 268435459, 536870923,
 		1073741827
 	};

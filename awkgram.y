@@ -2,7 +2,7 @@
  * awkgram.y --- yacc/bison parser
  */
 
-/* 
+/*
  * Copyright (C) 1986, 1988, 1989, 1991-2016 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -40,7 +40,7 @@ static void lintwarn_ln(int line, const char *m, ...) ATTRIBUTE_PRINTF_2;
 static void warning_ln(int line, const char *m, ...) ATTRIBUTE_PRINTF_2;
 static char *get_src_buf(void);
 static int yylex(void);
-int	yyparse(void); 
+int	yyparse(void);
 static INSTRUCTION *snode(INSTRUCTION *subn, INSTRUCTION *op);
 static char **check_params(char *fname, int pcount, INSTRUCTION *list);
 static int install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist);
@@ -115,7 +115,7 @@ static char *lexptr;		/* pointer to next char during parsing */
 static char *lexend;		/* end of buffer */
 static char *lexptr_begin;	/* keep track of where we were for error msgs */
 static char *lexeme;		/* beginning of lexeme for debugging */
-static bool lexeof;		/* seen EOF for current source? */  
+static bool lexeof;		/* seen EOF for current source? */
 static char *thisline = NULL;
 static int in_braces = 0;	/* count braces for firstline, lastline in an 'action' */
 static int lastline = 0;
@@ -181,7 +181,7 @@ extern double fmod(double x, double y);
 %token LEX_BEGIN LEX_END LEX_IF LEX_ELSE LEX_RETURN LEX_DELETE
 %token LEX_SWITCH LEX_CASE LEX_DEFAULT LEX_WHILE LEX_DO LEX_FOR LEX_BREAK LEX_CONTINUE
 %token LEX_PRINT LEX_PRINTF LEX_NEXT LEX_EXIT LEX_FUNCTION
-%token LEX_BEGINFILE LEX_ENDFILE 
+%token LEX_BEGINFILE LEX_ENDFILE
 %token LEX_GETLINE LEX_NEXTFILE
 %token LEX_IN
 %token LEX_AND LEX_OR INCREMENT DECREMENT
@@ -322,7 +322,7 @@ pattern
 		} else
 			$$ = $1;
 	  }
-		
+
 	| exp ',' opt_nls exp
 	  {
 		INSTRUCTION *tp;
@@ -433,7 +433,7 @@ lex_builtin
 	: LEX_BUILTIN
 	| LEX_LENGTH
 	;
-		
+
 function_prologue
 	: LEX_FUNCTION func_name '(' { want_param_names = FUNC_HEADER; } opt_param_list r_paren opt_nls
 	  {
@@ -608,7 +608,7 @@ statement
 		int case_count = 0;
 		int i;
 
-		tbreak = instruction(Op_no_op);	
+		tbreak = instruction(Op_no_op);
 		cstmt = list_create(tbreak);
 		cexp = list_create(instruction(Op_pop));
 		dflt = instruction(Op_jmp);
@@ -635,7 +635,7 @@ statement
 							error_ln(curr->source_line,
 								_("duplicate case values in switch body: %s"), caseval);
 					}
- 
+
 					if (case_values == NULL)
 						emalloc(case_values, const char **, sizeof(char *) * maxcount, "statement");
 					else if (case_count >= maxcount) {
@@ -686,18 +686,18 @@ statement
 		(void) list_merge(ip, cexp);
 		$$ = list_merge(ip, cstmt);
 
-		break_allowed--;			
+		break_allowed--;
 		fix_break_continue(ip, tbreak, NULL);
 	  }
 	| LEX_WHILE '(' exp r_paren opt_nls statement
-	  { 
+	  {
 		/*
 		 *    -----------------
 		 * tc:
 		 *         cond
 		 *    -----------------
 		 *    [Op_jmp_false tb   ]
-		 *    -----------------   
+		 *    -----------------
 		 *         body
 		 *    -----------------
 		 *    [Op_jmp      tc    ]
@@ -738,7 +738,7 @@ statement
 		 * z:
 		 *         body
 		 *    -----------------
-		 * tc: 
+		 * tc:
 		 *         cond
 		 *    -----------------
 		 *    [Op_jmp_true | z  ]
@@ -785,7 +785,7 @@ statement
 				&& ($8->nexti->memory->type != Node_var || !($8->nexti->memory->var_update))
 				&& strcmp($8->nexti->memory->vname, var_name) == 0
 		) {
-		
+
 		/* Efficiency hack.  Recognize the special case of
 		 *
 		 * 	for (iggy in foo)
@@ -797,10 +797,10 @@ statement
 		 *
 		 * Check that the body is a `delete a[i]' statement,
 		 * and that both the loop var and array names match.
-		 */		 
+		 */
 			NODE *arr = NULL;
 
-			ip = $8->nexti->nexti; 
+			ip = $8->nexti->nexti;
 			if ($5->nexti->opcode == Op_push && $5->lasti == $5->nexti)
 				arr = $5->nexti->memory;
 			if (arr != NULL
@@ -826,7 +826,7 @@ statement
 
 			/*    [ Op_push_array a       ]
 			 *    [ Op_arrayfor_init | ib ]
-			 * ic:[ Op_arrayfor_incr | ib ] 
+			 * ic:[ Op_arrayfor_incr | ib ]
 			 *    [ Op_var_assign if any  ]
 			 *
 			 *              body
@@ -855,7 +855,7 @@ regular_loop:
 			} /* else
 					$1 is NULL */
 
-			/* add update_FOO instruction if necessary */ 
+			/* add update_FOO instruction if necessary */
 			if ($4->array_var->type == Node_var && $4->array_var->var_update) {
 				(void) list_append(ip, instruction(Op_var_update));
 				ip->lasti->update_var = $4->array_var->var_update;
@@ -871,7 +871,7 @@ regular_loop:
 			if (do_pretty_print) {
 				(void) list_append(ip, instruction(Op_exec_count));
 				($1 + 1)->forloop_cond = $4;
-				($1 + 1)->forloop_body = ip->lasti; 
+				($1 + 1)->forloop_body = ip->lasti;
 			}
 
 			if ($8 != NULL)
@@ -881,7 +881,7 @@ regular_loop:
 			ip->lasti->target_jmp = $4;
 			$$ = list_append(ip, tbreak);
 			fix_break_continue(ip, tbreak, tcont);
-		} 
+		}
 
 		break_allowed--;
 		continue_allowed--;
@@ -912,7 +912,7 @@ regular_loop:
 
 non_compound_stmt
 	: LEX_BREAK statement_term
-	  { 
+	  {
 		if (! break_allowed)
 			error_ln($1->source_line,
 				_("`break' is not allowed outside a loop or switch"));
@@ -956,7 +956,7 @@ non_compound_stmt
 	| LEX_EXIT opt_exp statement_term
 	  {
 		/* Initialize the two possible jump targets, the actual target
-		 * is resolved at run-time. 
+		 * is resolved at run-time.
 		 */
 		$1->target_end = ip_end;	/* first instruction in end_block */
 		$1->target_atexit = ip_atexit;	/* cleanup and go home */
@@ -1074,7 +1074,7 @@ simple_stmt
 			 *    [$1 | NULL | redir_type | expr_count]
 			 *
 			 */
-regular_print:	 
+regular_print:
 			if ($4 == NULL) {		/* no redirection */
 				if ($3 == NULL)	{	/* printf without arg */
 					$1->expr_count = 0;
@@ -1138,7 +1138,7 @@ regular_print:
 			$$ = list_append(list_append($4, $2), $1);
 		}
 		$$ = add_pending_comment($$);
-	  }	
+	  }
 	| LEX_DELETE '(' NAME ')'
 		  /*
 		   * this is for tawk compatibility. maybe the warnings
@@ -1203,7 +1203,7 @@ case_statement
 	  {
 		INSTRUCTION *casestmt = $5;
 		if ($5 == NULL)
-			casestmt = list_create(instruction(Op_no_op));	
+			casestmt = list_create(instruction(Op_no_op));
 		if (do_pretty_print)
 			(void) list_prepend(casestmt, instruction(Op_exec_count));
 		$1->case_exp = $2;
@@ -1228,7 +1228,7 @@ case_value
 	: YNUMBER
 	  {	$$ = $1; }
 	| '-' YNUMBER    %prec UNARY
-	  { 
+	  {
 		NODE *n = $2->memory;
 		(void) force_number(n);
 		negate_num(n);
@@ -1242,9 +1242,9 @@ case_value
 		add_sign_to_num(n, '+');
 		$$ = $2;
 	  }
-	| YSTRING 
+	| YSTRING
 	  {	$$ = $1; }
-	| regexp  
+	| regexp
 	  {
 		if ($1->memory->type == Node_regex)
 			$1->opcode = Op_push_re;
@@ -1497,7 +1497,7 @@ assign_operator
 	| ASSIGNOP
 	  { $$ = $1; }
 	| SLASH_BEFORE_EQUAL ASSIGN   /* `/=' */
-	  {	
+	  {
 		$2->opcode = Op_assign_quotient;
 		$$ = $2;
 	  }
@@ -1752,7 +1752,7 @@ non_post_simp_exp
 		) {
 			NODE *n = $2->lasti->memory;
 			(void) force_number(n);
-			negate_num(n);			
+			negate_num(n);
 			$$ = $2;
 			bcfree($1);
 		} else {
@@ -1801,7 +1801,7 @@ func_call
 			warned = true;
 			lintwarn("%s", msg);
 		}
-		
+
 		f = $2->lasti;
 		f->opcode = Op_indirect_func_call;
 		name = estrdup(f->func_name, strlen(f->func_name));
@@ -1844,7 +1844,7 @@ direct_func_call
 			$$ = list_create($1);
 		} else {
 			INSTRUCTION *t = $3;
-			($1 + 1)->expr_count = count_expressions(&t, true); 
+			($1 + 1)->expr_count = count_expressions(&t, true);
 			$$ = list_append(t, $1);
 		}
 	  }
@@ -1876,7 +1876,7 @@ delete_subscript
 delete_exp_list
 	: bracketed_exp_list
 	  {
-		INSTRUCTION *ip = $1->lasti; 
+		INSTRUCTION *ip = $1->lasti;
 		int count = ip->sub_count;	/* # of SUBSEP-seperated expressions */
 		if (count > 1) {
 			/* change Op_subscript or Op_sub_array to Op_concat */
@@ -1900,7 +1900,7 @@ bracketed_exp_list
 			/* install Null string as subscript. */
 			t = list_create(instruction(Op_push_i));
 			t->nexti->memory = dupnode(Nnull_string);
-			$3->sub_count = 1;			
+			$3->sub_count = 1;
 		} else
 			$3->sub_count = count_expressions(&t, false);
 		$$ = list_append(t, $3);
@@ -2016,7 +2016,7 @@ struct token {
 #	define	BREAK		0x0800	/* break allowed inside */
 #	define	CONTINUE	0x1000	/* continue allowed inside */
 #	define	DEBUG_USE	0x2000	/* for use by developers */
-	
+
 	NODE *(*ptr)(int);	/* function that implements this keyword */
 	NODE *(*ptr2)(int);	/* alternate arbitrary-precision function */
 };
@@ -2148,7 +2148,7 @@ getfname(NODE *(*fptr)(int))
 
 	j = sizeof(tokentab) / sizeof(tokentab[0]);
 	/* linear search, no other way to do it */
-	for (i = 0; i < j; i++) 
+	for (i = 0; i < j; i++)
 		if (tokentab[i].ptr == fptr || tokentab[i].ptr2 == fptr)
 			return tokentab[i].operator;
 
@@ -2221,7 +2221,7 @@ print_included_from()
 	int saveline, line;
 	SRCFILE *s;
 
-	/* suppress current file name, line # from `.. included from ..' msgs */ 
+	/* suppress current file name, line # from `.. included from ..' msgs */
 	saveline = sourceline;
 	sourceline = 0;
 
@@ -2422,7 +2422,7 @@ mk_program()
 
 	if (prog_block == NULL) {
 		if (end_block->nexti == end_block->lasti
-				&& beginfile_block->nexti == beginfile_block->lasti 
+				&& beginfile_block->nexti == beginfile_block->lasti
 				&& endfile_block->nexti == endfile_block->lasti
 		) {
 			/* no pattern-action and (real) end, beginfile or endfile blocks */
@@ -2439,7 +2439,7 @@ mk_program()
 				cp = list_merge(begin_block, end_block);
 			if (program_comment != NULL) {
 				(void) list_prepend(cp, program_comment);
-			}  
+			}
 			if (comment != NULL)
 				(void) list_append(cp, comment);
 			(void) list_append(cp, ip_atexit);
@@ -2464,7 +2464,7 @@ mk_program()
 	(void) list_prepend(prog_block, ip_rec);
 	(void) list_append(prog_block, instruction(Op_jmp));
 	prog_block->lasti->target_jmp = ip_rec;
-		
+
 	list_append(beginfile_block, instruction(Op_after_beginfile));
 
 	cp = list_merge(beginfile_block, prog_block);
@@ -2476,10 +2476,10 @@ mk_program()
 
 	if (program_comment != NULL) {
 		(void) list_prepend(cp, program_comment);
-	}  
+	}
 	if (comment != NULL) {
 		(void) list_append(cp, comment);
-	} 
+	}
 	(void) list_append(cp, ip_atexit);
 	(void) list_append(cp, instruction(Op_stop));
 
@@ -2497,7 +2497,7 @@ out:
 #undef end_block
 #undef prog_block
 #undef beginfile_block
-#undef endfile_block 
+#undef endfile_block
 }
 
 /* parse_program --- read in the program and convert into a list of instructions */
@@ -2648,7 +2648,7 @@ add_srcfile(enum srctype stype, char *src, SRCFILE *thisfile, bool *already_incl
 					*already_included = true;
 				return NULL;
 			} else {
-				/* duplicates are allowed for -f */ 
+				/* duplicates are allowed for -f */
 				if (s->stype == SRC_INC)
 					fatal(_("can't include `%s' and use it as a program file"), src);
 				/* no need to scan for further matches, since
@@ -2699,11 +2699,11 @@ include_source(INSTRUCTION *file)
 	sourcefile->srclines = sourceline;
 	sourcefile->lexptr = lexptr;
 	sourcefile->lexend = lexend;
-	sourcefile->lexptr_begin = lexptr_begin;        
+	sourcefile->lexptr_begin = lexptr_begin;
 	sourcefile->lexeme = lexeme;
 	sourcefile->lasttok = lasttok;
 
-	/* included file becomes the current source */ 
+	/* included file becomes the current source */
 	sourcefile = s;
 	lexptr = NULL;
 	sourceline = 0;
@@ -3010,7 +3010,7 @@ tokexpand()
 {
 	static int toksize;
 	int tokoffset;
-			
+
 	if (tokstart != NULL) {
 		tokoffset = tok - tokstart;
 		toksize *= 2;
@@ -3078,7 +3078,7 @@ again:
 			int idx, work_ring_idx = cur_ring_idx;
 			mbstate_t tmp_state;
 			size_t mbclen;
-	
+
 			for (idx = 0; lexptr + idx < lexend; idx++) {
 				tmp_state = cur_mbstate;
 				mbclen = mbrlen(lexptr, idx + 1, &tmp_state);
@@ -3144,7 +3144,7 @@ check_comment(void)
 	if (comment != NULL) {
 		if (first_rule) {
 			program_comment = comment;
-		} else 
+		} else
 			block_comment = comment;
 		comment = NULL;
 	}
@@ -3345,7 +3345,7 @@ yylex(void)
 		lasttok = 0;
 		return SUBSCRIPT;
 	}
- 
+
 	if (lasttok == LEX_EOF)		/* error earlier in current source, must give up !! */
 		return 0;
 
@@ -3380,7 +3380,7 @@ yylex(void)
 		 *
 		 * [..[..] []] [^]] [.../...]
 		 * [...\[...] [...\]...] [...\/...]
-		 * 
+		 *
 		 * (Remember that all of the above are inside /.../)
 		 *
 		 * The code for \ handles \[, \] and \/.
@@ -3409,7 +3409,7 @@ yylex(void)
 				break;
 			case ']':
 				if (in_brack > 0
-				    && (cur_index == b_index + 1 
+				    && (cur_index == b_index + 1
 					|| (cur_index == b_index + 2 && tok[-1] == '^')))
 					; /* do nothing */
 				else {
@@ -3577,7 +3577,7 @@ retry:
 		in_parens--;
 		return lasttok = c;
 
-	case '(':	
+	case '(':
 		in_parens++;
 		return lasttok = c;
 	case '$':
@@ -3680,7 +3680,7 @@ retry:
 			did_warn_op = true;
 			warning(_("operator `^' is not supported in old awk"));
 		}
-		yylval = GET_INSTRUCTION(Op_exp);	
+		yylval = GET_INSTRUCTION(Op_exp);
 		return lasttok = '^';
 	}
 
@@ -3803,7 +3803,7 @@ retry:
 			yylval->lextok = estrdup(tokstart, tok - tokstart);
 			return lasttok = FILENAME;
 		}
-		
+
 		yylval->opcode = Op_push_i;
 		yylval->memory = make_str_node(tokstart,
 					tok - tokstart, esc_seen ? SCAN : 0);
@@ -4135,7 +4135,7 @@ retry:
 		case LEX_BEGIN:
 		case LEX_END:
 		case LEX_BEGINFILE:
-		case LEX_ENDFILE:		
+		case LEX_ENDFILE:
 			yylval = bcalloc(tokentab[mid].value, 3, sourceline);
 			break;
 
@@ -4184,7 +4184,7 @@ out:
 	tokkey = estrdup(tokstart, tok - tokstart);
 	if (*lexptr == '(') {
 		yylval = bcalloc(Op_token, 2, sourceline);
-		yylval->lextok = tokkey;	
+		yylval->lextok = tokkey;
 		return lasttok = FUNC_CALL;
 	} else {
 		static bool goto_warned = false;
@@ -4260,7 +4260,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 			nexp++;
 		}
 		assert(nexp > 0);
-	}		
+	}
 
 	/* check against how many args. are allowed for this builtin */
 	args_allowed = tokentab[idx].flags & ARGS;
@@ -4331,7 +4331,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 				subn->lasti->assign_ctxt = Op_sub_builtin;
 			}
 
-			return subn;	
+			return subn;
 
 		} else {
 			/* gensub */
@@ -4360,16 +4360,16 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	/* special case processing for a few builtins */
 
 	if (r->builtin == do_length) {
-		if (nexp == 0) {		
+		if (nexp == 0) {
 		    /* no args. Use $0 */
 
 			INSTRUCTION *list;
-			r->expr_count = 1;			
+			r->expr_count = 1;
 			list = list_create(r);
 			(void) list_prepend(list, instruction(Op_field_spec));
 			(void) list_prepend(list, instruction(Op_push_i));
 			list->nexti->memory = make_profile_number(0.0, "0", 1);
-			return list; 
+			return list;
 		} else {
 			arg = subn->nexti;
 			if (arg->nexti == arg->lasti && arg->nexti->opcode == Op_push)
@@ -4710,7 +4710,7 @@ mk_function(INSTRUCTION *fi, INSTRUCTION *def)
 	return fi;
 }
 
-/* 
+/*
  * install_function:
  * install function name in the symbol table.
  * Extra work, build up and install a list of the parameter names.
@@ -4734,7 +4734,7 @@ install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist)
 	fi->func_body = f;
 	f->param_cnt = pcount;
 	f->code_ptr = fi;
-	f->fparms = NULL; 
+	f->fparms = NULL;
 	if (pcount > 0) {
 		char **pnames;
 		pnames = check_params(fname, pcount, plist);	/* frees plist */
@@ -4791,7 +4791,7 @@ check_params(char *fname, int pcount, INSTRUCTION *list)
 	}
 	bcfree(list);
 
-	return pnames; 
+	return pnames;
 }
 
 
@@ -4799,7 +4799,7 @@ check_params(char *fname, int pcount, INSTRUCTION *list)
 undef HASHSIZE
 #endif
 #define HASHSIZE 1021
- 
+
 static struct fdesc {
 	char *name;
 	short used;
@@ -4861,7 +4861,7 @@ check_funcs()
 
 	if (! in_main_context())
 		goto free_mem;
- 
+
 	for (i = 0; i < HASHSIZE; i++) {
 		for (fp = ftable[i]; fp != NULL; fp = fp->next) {
 #ifdef REALLYMEAN
@@ -5201,7 +5201,7 @@ mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 				break;
 			default:
 				goto regular;
-			}	
+			}
 
 			op->memory = ip2->memory;
 			bcfree(ip2);
@@ -5217,7 +5217,7 @@ regular:
 }
 
 /* mk_boolean --- instructions for boolean and, or */
- 
+
 static INSTRUCTION *
 mk_boolean(INSTRUCTION *left, INSTRUCTION *right, INSTRUCTION *op)
 {
@@ -5245,7 +5245,7 @@ mk_boolean(INSTRUCTION *left, INSTRUCTION *right, INSTRUCTION *op)
 		right->lasti->target_stmt = left->lasti;
 	} else {		/* optimization for x || y || z || ... */
 		INSTRUCTION *ip;
-		
+
 		op->opcode = final_opc;
 		(void) list_append(right, op);
 		op->target_stmt = tp;
@@ -5282,7 +5282,7 @@ mk_condition(INSTRUCTION *cond, INSTRUCTION *ifp, INSTRUCTION *true_branch,
 	 *
 	 *    ----------------
 	 *    [Op_jmp y]
-	 *    ---------------- 
+	 *    ----------------
 	 * f:
 	 *      false_branch
 	 *    ----------------
@@ -5444,7 +5444,7 @@ append_rule(INSTRUCTION *pattern, INSTRUCTION *action)
 		rule_block[rule] = ip;
 	else
 		(void) list_merge(rule_block[rule], ip);
-	
+
 	return rule_block[rule];
 }
 
@@ -5466,7 +5466,7 @@ mk_assignment(INSTRUCTION *lhs, INSTRUCTION *rhs, INSTRUCTION *op)
 		break;
 	case Op_push:
 	case Op_push_array:
-		tp->opcode = Op_push_lhs; 
+		tp->opcode = Op_push_lhs;
 		break;
 	case Op_field_assign:
 		yyerror(_("cannot assign a value to the result of a field post-increment expression"));
@@ -5521,7 +5521,7 @@ optimize_assignment(INSTRUCTION *exp)
 	 *   Replaces Op_push_array + Op_subscript_lhs + Op_assign + Op_pop
 	 *   with single instruction Op_store_sub.
 	 *	 Limitation: 1 dimension and sub is simple var/value.
-	 * 
+	 *
 	 * 2) Simple variable assignment var = x:
 	 *   Replaces Op_push_lhs + Op_assign + Op_pop with Op_store_var.
 	 *
@@ -5545,7 +5545,7 @@ optimize_assignment(INSTRUCTION *exp)
 	i1 = exp->lasti;
 
 	if (   i1->opcode != Op_assign
-	    && i1->opcode != Op_field_assign) 
+	    && i1->opcode != Op_field_assign)
 		return list_append(exp, instruction(Op_pop));
 
 	for (i2 = exp->nexti; i2 != i1; i2 = i2->nexti) {
@@ -5620,7 +5620,7 @@ optimize_assignment(INSTRUCTION *exp)
                                           * so use expr_count instead.
 				                          */
 					i3->nexti = NULL;
-					i2->opcode = Op_no_op;					
+					i2->opcode = Op_no_op;
 					bcfree(i1);          /* Op_assign */
 					exp->lasti = i3;     /* update Op_list */
 					return exp;
@@ -5643,7 +5643,7 @@ optimize_assignment(INSTRUCTION *exp)
 					&& (i3->memory->flags & INTLSTR) == 0
 					&& i3->nexti == i2
 				) {
-					/* constant initializer */ 
+					/* constant initializer */
 					i2->initval = i3->memory;
 					bcfree(i3);
 					exp->nexti = i2;
@@ -5679,7 +5679,7 @@ mk_getline(INSTRUCTION *op, INSTRUCTION *var, INSTRUCTION *redir, int redirtype)
 	 *  [ file (simp_exp)]
 	 *  [ [ var ] ]
 	 *  [ Op_K_getline_redir|NULL|redir_type|into_var]
-	 *  [ [var_assign] ] 
+	 *  [ [var_assign] ]
 	 *
 	 */
 
@@ -5688,7 +5688,7 @@ mk_getline(INSTRUCTION *op, INSTRUCTION *var, INSTRUCTION *redir, int redirtype)
 		bcfree(op);
 		op = bcalloc(Op_K_getline, 2, sline);
 		(op + 1)->target_endfile = ip_endfile;
-		(op + 1)->target_beginfile = ip_beginfile;	
+		(op + 1)->target_beginfile = ip_beginfile;
 	}
 
 	if (var != NULL) {
@@ -5746,11 +5746,11 @@ mk_for_loop(INSTRUCTION *forp, INSTRUCTION *init, INSTRUCTION *cond,
 	 *   ------------------------
 	 *        body                 (may be NULL)
 	 *   ------------------------
-	 * tc: 
+	 * tc:
 	 *    incr                      (may be NULL)
-	 *    [ Op_jmp x             ] 
+	 *    [ Op_jmp x             ]
 	 *   ------------------------
-	 * tb:[ Op_no_op             ] 
+	 * tb:[ Op_no_op             ]
 	 */
 
 	INSTRUCTION *ip, *tbreak, *tcont;
@@ -5862,7 +5862,7 @@ mk_expression_list(INSTRUCTION *list, INSTRUCTION *s1)
 	/* we can't just combine all bytecodes, since we need to
 	 * process individual expressions for a few builtins in snode() (-:
 	 */
-	
+
 	/* -- list of lists     */
 	/* [Op_list| ... ]------
 	 *                       |
@@ -5918,7 +5918,7 @@ count_expressions(INSTRUCTION **list, bool isarg)
 			(void) list_merge(r, expr);
 		expr = t2->nexti;
 	}
- 
+
 	assert(count > 0);
 	if (! isarg && count > max_args)
 		max_args = count;
@@ -6184,7 +6184,7 @@ install_builtins(void)
  * The scene of the murder was grisly to look upon.  When the inspector
  * arrived, the sergeant turned to him and said, "Another programmer stabbed
  * in the back. He never knew what happened."
- * 
+ *
  * The inspector replied, "Looks like the MO of isalpha, and his even meaner
  * big brother, isalnum. The Locale brothers."  The sergeant merely
  * shuddered in horror.

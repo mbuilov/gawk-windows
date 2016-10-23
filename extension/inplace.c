@@ -4,20 +4,20 @@
 
 /*
  * Copyright (C) 2013-2015 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -132,7 +132,7 @@ do_inplace_begin(int nargs, awk_value_t *result)
 
 	if (nargs != 2)
 		fatal(ext_id, _("inplace_begin: expects 2 arguments but called with %d"), nargs);
-		
+
 	if (! get_argument(0, AWK_STRING, &filename))
 		fatal(ext_id, _("inplace_begin: cannot retrieve 1st argument as a string filename"));
 

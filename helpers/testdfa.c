@@ -2,22 +2,22 @@
  * testdfa.c --- abstracted from gawk.
  */
 
-/* 
+/*
  * Copyright (C) 1986, 1988, 1989, 1991-2013 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -395,7 +395,7 @@ setup_pattern(const char *pattern, size_t *len)
 	/*
 	 * Build a copy of the string (in buf) with the
 	 * escaped characters translated, and generate the regex
-	 * from that. 
+	 * from that.
 	 */
 	buf = (char *) malloc(*len + 1);
 	if (buf == NULL) {
@@ -499,16 +499,16 @@ setup_pattern(const char *pattern, size_t *len)
  *
  * Parse a C escape sequence.  STRING_PTR points to a variable containing a
  * pointer to the string to parse.  That pointer is updated past the
- * characters we use.  The value of the escape sequence is returned. 
+ * characters we use.  The value of the escape sequence is returned.
  *
  * A negative value means the sequence \ newline was seen, which is supposed to
- * be equivalent to nothing at all. 
+ * be equivalent to nothing at all.
  *
  * If \ is followed by a null character, we return a negative value and leave
- * the string pointer pointing at the null character. 
+ * the string pointer pointing at the null character.
  *
  * If \ is followed by 000, we return 0 and leave the string pointer after the
- * zeros.  A value of 0 does not mean end of string.  
+ * zeros.  A value of 0 does not mean end of string.
  *
  * POSIX doesn't allow \x.
  */
@@ -597,7 +597,7 @@ parse_escape(const char **string_ptr)
 #ifdef C
 #undef C
 #endif
-#define C(c) ((char)c)  
+#define C(c) ((char)c)
 /*
  * This table is used by the regexp routines to do case independent
  * matching. Basically, every ascii character maps to itself, except

@@ -1,5 +1,5 @@
 /* gawkmisc.c --- miscellaneous gawk routines that are OS specific.
- 
+
    Copyright (C) 1986, 1988, 1989, 1991 - 1998, 2001 - 2004, 2011
    the Free Software Foundation, Inc.
 
@@ -40,7 +40,7 @@ char *
 gawk_name(const char *filespec)
 {
 	char *p;
-    
+
 	/* "path/name" -> "name" */
 	p = strrchr(filespec, '/');
 	return (p == NULL ? (char *) filespec : p + 1);
@@ -272,7 +272,7 @@ os_isatty(int fd)
 {
 	return isatty(fd);
 }
- 
+
 /* files_are_same --- return true if files are identical */
 
 int

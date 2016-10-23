@@ -2,23 +2,23 @@
  * io.c --- routines for dealing with input and output and records
  */
 
-/* 
+/*
  * Copyright (C) 1986, 1988, 1989, 1991-2016,
  * the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -357,7 +357,7 @@ init_io()
 	 * PROCINFO entries for timeout are dynamic;
 	 * We can't be any more specific than this.
 	 */
-	if (PROCINFO_node != NULL)	
+	if (PROCINFO_node != NULL)
 		read_can_timeout = true;
 }
 
@@ -417,7 +417,7 @@ after_beginfile(IOBUF **curfile)
 		bool valid;
 
 		fname = iop->public.name;
-		errcode = iop->errcode; 
+		errcode = iop->errcode;
 		valid = iop->valid;
 		errno = 0;
 		update_ERRNO_int(errcode);
@@ -466,12 +466,12 @@ nextfile(IOBUF **curfile, bool skipping)
 			(void) iop_close(iop);
 			*curfile = NULL;
 			return 1;	/* run endfile block */
-		} else				
+		} else
 			return 0;
 	}
 
 	argc = get_number_si(ARGC_node->var_value);
-	
+
 	for (; i < argc; i++) {
 		tmp = make_number((AWKNUM) i);
 		(void) force_string(tmp);
@@ -597,7 +597,7 @@ inrec(IOBUF *iop, int *errcode)
 		cnt = EOF;
 	else if ((iop->flag & IOP_CLOSED) != 0)
 		cnt = EOF;
-	else 
+	else
 		cnt = get_a_record(& begin, iop, errcode);
 
 	/* Note that get_a_record may return -2 when I/O would block */
@@ -1022,7 +1022,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 #ifdef VMS
 			/* Alpha/VMS V7.1+ C RTL is returning these instead
 			   of EMFILE (haven't tried other post-V6.2 systems) */
-			else if ((errno == EIO || errno == EVMSERR) && 
+			else if ((errno == EIO || errno == EVMSERR) &&
                                  (vaxc$errno == SS$_EXQUOTA ||
                                   vaxc$errno == SS$_EXBYTLM ||
                                   vaxc$errno == RMS$_ACC ||
@@ -1168,7 +1168,7 @@ close_one()
 	}
 	if (rp == NULL)
 		/* surely this is the only reason ??? */
-		fatal(_("too many pipes or input files open")); 
+		fatal(_("too many pipes or input files open"));
 }
 
 /* do_close --- completely close an open file or pipe */
@@ -1747,7 +1747,7 @@ devopen(const char *name, const char *mode)
 			char *cp, *end;
 			unsigned long count = 0;
 			char *ms2;
-			
+
 			first_time = false;
 			if ((cp = getenv("GAWK_SOCK_RETRIES")) != NULL) {
 				count = strtoul(cp, & end, 10);
@@ -1886,7 +1886,7 @@ two_way_open(const char *str, struct redirect *rp, int extfd)
 		char c;
 		int master, dup_master;
 		int slave;
-		int save_errno; 
+		int save_errno;
 		pid_t pid;
 		struct stat statb;
 		struct termios st;
@@ -2141,7 +2141,7 @@ use_pipes:
 #if defined(__EMX__) || defined(__MINGW32__)
 	save_stdin = dup(0);	/* duplicate stdin */
 	save_stdout = dup(1);	/* duplicate stdout */
-	
+
 	if (save_stdout == -1 || save_stdin == -1) {
 		/* if an error occurs close all open file handles */
 		save_errno = errno;
@@ -2154,7 +2154,7 @@ use_pipes:
 		errno = save_errno;
 		return false;
 	}
-	
+
 	/* connect pipes to stdin and stdout */
 	close(1);	/* close stdout */
 	if (dup(ctop[1]) != 1) {	/* connect pipe input to stdout */
@@ -2174,7 +2174,7 @@ use_pipes:
 	/* none of these handles must be inherited by the child process */
 	(void) close(ptoc[0]);	/* close pipe output, child will use stdin instead */
 	(void) close(ctop[1]);	/* close pipe input, child will use stdout instead */
-	
+
 	os_close_on_exec(ptoc[1], str, "pipe", "from"); /* pipe input: output of the parent process */
 	os_close_on_exec(ctop[0], str, "pipe", "from"); /* pipe output: input of the parent process */
 	os_close_on_exec(save_stdin, str, "pipe", "from"); /* saved stdin of the parent process */
@@ -2188,7 +2188,7 @@ use_pipes:
 		     qcmd = quote_cmd(str), NULL);
 	efree(qcmd);
 #endif
-	
+
 	/* restore stdin and stdout */
 	close(1);
 	if (dup(save_stdout) != 1) {
@@ -2197,7 +2197,7 @@ use_pipes:
 		fatal(_("restoring stdout in parent process failed\n"));
 	}
 	close(save_stdout);
-	
+
 	close(0);
 	if (dup(save_stdin) != 0) {
 		close(save_stdin);
@@ -2223,7 +2223,7 @@ use_pipes:
 		errno = save_errno;
 		return false;
 	}
-	
+
 	if (pid == 0) {	/* child */
 		if (close(1) == -1)
 			fatal(_("close of stdout in child failed (%s)"),
@@ -2444,10 +2444,10 @@ gawk_popen(const char *cmd, struct redirect *rp)
 		fatal(_("moving pipe to stdout in child failed (dup: %s)"),
 				strerror(errno));
 	}
-	
+
 	/* none of these handles must be inherited by the child process */
 	close(p[1]); /* close pipe input */
-	
+
 	os_close_on_exec(p[0], cmd, "pipe", "from"); /* pipe output: input of the parent process */
 	os_close_on_exec(save_stdout, cmd, "pipe", "from"); /* saved stdout of the parent process */
 
@@ -2458,7 +2458,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 		     qcmd = quote_cmd(cmd), NULL);
 	efree(qcmd);
 #endif
-	
+
 	/* restore stdout */
 	close(1);
 	if (dup(save_stdout) != 1) {
@@ -2686,7 +2686,7 @@ do_getline(int into_variable, IOBUF *iop)
 			update_ERRNO_int(errcode);
 		if (into_variable)
 			(void) POP_ADDRESS();
-		return make_number((AWKNUM) cnt); 
+		return make_number((AWKNUM) cnt);
 	}
 
 	if (cnt == EOF)
@@ -2709,8 +2709,8 @@ do_getline(int into_variable, IOBUF *iop)
 typedef struct {
 	const char *envname;
 	char **dfltp;		/* pointer to address of default path */
-	char **awkpath;		/* array containing library search paths */ 
-	int max_pathlen;	/* length of the longest item in awkpath */ 
+	char **awkpath;		/* array containing library search paths */
+	int max_pathlen;	/* length of the longest item in awkpath */
 } path_info;
 
 static path_info pi_awkpath = {
@@ -2779,7 +2779,7 @@ init_awkpath(path_info *pi)
 #undef INC_PATH
 }
 
-/* do_find_source --- search $AWKPATH for file, return NULL if not found */ 
+/* do_find_source --- search $AWKPATH for file, return NULL if not found */
 
 static char *
 do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
@@ -2803,7 +2803,7 @@ do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 	if (pi->awkpath == NULL)
 		init_awkpath(pi);
 
-	emalloc(path, char *, pi->max_pathlen + strlen(src) + 1, "do_find_source"); 
+	emalloc(path, char *, pi->max_pathlen + strlen(src) + 1, "do_find_source");
 	for (i = 0; pi->awkpath[i] != NULL; i++) {
 		if (strcmp(pi->awkpath[i], "./") == 0 || strcmp(pi->awkpath[i], ".") == 0)
 			*path = '\0';
@@ -2820,7 +2820,7 @@ do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 	return NULL;
 }
 
-/* find_source --- find source file with default file extension handling */ 
+/* find_source --- find source file with default file extension handling */
 
 char *
 find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
@@ -3288,51 +3288,51 @@ rs1scan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state)
 	 * Subject: Re: multibyte locales: any way to find if a character isn't multibyte?
 	 * Date: Mon, 23 Jun 2003 12:20:16 +0200
 	 * Cc: isamu@yamato.ibm.com
-	 * 
+	 *
 	 * Hi,
-	 * 
+	 *
 	 * > Is there any way to make the following query to the current locale?
 	 * >
 	 * > 	Given an 8-bit value, can this value ever appear as part of
 	 * > 	a multibyte character?
-	 * 
+	 *
 	 * There is no simple answer here. The easiest solution I see is to
 	 * get the current locale's codeset (via locale_charset() which is a
 	 * wrapper around nl_langinfo(CODESET)), and then perform a case-by-case
 	 * treatment of the known multibyte encodings, from GB2312 to EUC-JISX0213;
 	 * for the unibyte encodings, a single btowc() call will tell you.
-	 * 
+	 *
 	 * > This is particularly critical for me for ASCII newline ('\n').  If I
 	 * > can be guaranteed that it never shows up as part of a multibyte character,
 	 * > I can speed up gawk considerably in mulitbyte locales.
-	 * 
+	 *
 	 * This is much simpler to answer!
 	 * In all ASCII based multibyte encodings used for locales today (this
 	 * excludes EBCDIC based doublebyte encodings from IBM, and also excludes
 	 * ISO-2022-JP which is used for email exchange but not as a locale encoding)
 	 * ALL bytes in the range 0x00..0x2F occur only as a single character, not
 	 * as part of a multibyte character.
-	 * 
+	 *
 	 * So it's safe to assume, but deserves a comment in the source.
-	 * 
+	 *
 	 * Bruno
 	 ***************************************************************
 	 * From: Bruno Haible <bruno@clisp.org>
 	 * To: Aharon Robbins <arnold@skeeve.com>
 	 * Subject: Re: multibyte locales: any way to find if a character isn't multibyte?
 	 * Date: Mon, 23 Jun 2003 14:27:49 +0200
-	 * 
+	 *
 	 * On Monday 23 June 2003 14:11, you wrote:
-	 * 
+	 *
 	 * >       if (rs != '\n' && MB_CUR_MAX > 1) {
-	 * 
+	 *
 	 * If you assume ASCII, you can even write
-	 * 
+	 *
 	 *         if (rs >= 0x30 && MB_CUR_MAX > 1) {
-	 * 
+	 *
 	 * (this catches also the space character) but if portability to EBCDIC
 	 * systems is desired, your code is fine as is.
-	 * 
+	 *
 	 * Bruno
 	 */
 	/* Thus, the check for \n here; big speedup ! */
@@ -3665,7 +3665,7 @@ get_a_record(char **out,        /* pointer to pointer to data */
 			*errcode = errno;
 			if (errno_io_retry() && retryable(iop))
 				return -2;
-			iop->flag |= IOP_AT_EOF; 
+			iop->flag |= IOP_AT_EOF;
 			return EOF;
 		} else {
 			iop->dataend = iop->buf + iop->count;
@@ -3853,7 +3853,7 @@ set_RS()
 	 * in case of fatal error in make_regexp.
 	 */
 	refree(RS_re_yes_case);	/* NULL argument is ok */
-	refree(RS_re_no_case); 
+	refree(RS_re_no_case);
 	RS_re_yes_case = RS_re_no_case = RS_regexp = NULL;
 
 	if (RS->stlen == 0) {
@@ -3978,9 +3978,9 @@ inetfile(const char *str, struct inet_socket_info *isi)
 	isi->localport.offset = cp-str;
 	while (*cp != '/' && *cp != '\0')
 		cp++;
-	/*                    
+	/*
 	 * Require a port, let them explicitly put 0 if
-	 * they don't care.  
+	 * they don't care.
 	 */
 	if (*cp != '/' || ((isi->localport.len = (cp-str)-isi->localport.offset) == 0))
 		return false;
@@ -3989,7 +3989,7 @@ inetfile(const char *str, struct inet_socket_info *isi)
 	cp++;
 	isi->remotehost.offset = cp-str;
 	while (*cp != '/' && *cp != '\0')
-		cp++; 
+		cp++;
 	if (*cp != '/' || ((isi->remotehost.len = (cp-str)-isi->remotehost.offset) == 0))
 		return false;
 
@@ -4005,7 +4005,7 @@ inetfile(const char *str, struct inet_socket_info *isi)
 	 */
 	isi->remoteport.offset = cp-str;
 	while (*cp != '/' && *cp != '\0')
-		cp++; 
+		cp++;
 	if (*cp != '\0' || ((isi->remoteport.len = (cp-str)-isi->remoteport.offset) == 0))
 		return false;
 
@@ -4021,14 +4021,14 @@ inetfile(const char *str, struct inet_socket_info *isi)
 /*
  * in_PROCINFO --- return value for a PROCINFO element with
  *	SUBSEP seperated indices.
- */ 
+ */
 
 static NODE *
 in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx)
 {
 	char *str;
 	size_t str_len;
-	NODE *r, *sub = NULL; 
+	NODE *r, *sub = NULL;
 	NODE *subsep = SUBSEP_node->var_value;
 
 	if (PROCINFO_node == NULL || (pidx1 == NULL && pidx2 == NULL))
