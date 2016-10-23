@@ -89,7 +89,7 @@ static bool want_nodeval = false;
 
 static int cmd_idx = -1;		/* index of current command in cmd table */
 static int repeat_idx = -1;		/* index of last repeatable command in command table */
-static CMDARG *arg_list = NULL;		/* list of arguments */ 
+static CMDARG *arg_list = NULL;		/* list of arguments */
 static long errcount = 0;
 static char *lexptr_begin = NULL;
 static bool in_commands = false;
@@ -97,7 +97,7 @@ static int num_dim;
 
 static bool in_eval = false;
 static const char start_EVAL[] = "function @eval(){";
-static const char end_EVAL[] = "}";	
+static const char end_EVAL[] = "}";
 static CMDARG *append_statement(CMDARG *stmt_list, char *stmt);
 static NODE *concat_args(CMDARG *a, int count);
 
@@ -1553,7 +1553,7 @@ yyreduce:
 			bool terminate = false;
 			CMDARG *args;
 			int ctype = 0;
-			
+
 			ctype = cmdtab[cmd_idx].type;
 
 			/* a blank line repeats previous command
@@ -1794,7 +1794,7 @@ yyreduce:
 		if (type) {
 			in_commands = true;
 			if (input_from_tty) {
-				dbg_prompt = commands_prompt; 
+				dbg_prompt = commands_prompt;
 				fprintf(out_fp, _("Type commands for when %s %d is hit, one per line.\n"),
 								(type == D_break) ? "breakpoint" : "watchpoint", num);
 				fprintf(out_fp, _("End with the command \"end\"\n"));
@@ -1811,7 +1811,7 @@ yyreduce:
 			yyerror(_("`end' valid only in command `commands' or `eval'"));
 		else {
 			if (input_from_tty)
-				dbg_prompt = dgawk_prompt;	
+				dbg_prompt = dgawk_prompt;
 			in_commands = false;
 		}
 	  }
@@ -2108,7 +2108,7 @@ yyreduce:
 		CMDARG *a;
 		NODE *subs;
 		int count = 0;
-		
+
 		for (a = (yyvsp[-1]); a != NULL; a = a->next)
 			count++;
 		subs = concat_args((yyvsp[-1]), count);
@@ -2165,7 +2165,7 @@ yyreduce:
 
   case 145:
 #line 678 "command.y" /* yacc.c:1646  */
-    { 
+    {
 		NODE *n = (yyvsp[0])->a_node;
 		if ((n->flags & NUMBER) == 0)
 			yyerror(_("non-numeric value found, numeric expected"));
@@ -2176,7 +2176,7 @@ yyreduce:
 
   case 146:
 #line 685 "command.y" /* yacc.c:1646  */
-    { 
+    {
 		NODE *n = (yyvsp[0])->a_node;
 		if ((n->flags & NUMBER) == 0)
 			yyerror(_("non-numeric value found, numeric expected"));
@@ -2498,12 +2498,12 @@ yyreturn:
 
 
 
-/* append_statement --- append 'stmt' to the list of eval awk statements */ 
+/* append_statement --- append 'stmt' to the list of eval awk statements */
 
 static CMDARG *
-append_statement(CMDARG *stmt_list, char *stmt) 
+append_statement(CMDARG *stmt_list, char *stmt)
 {
-	CMDARG *a, *arg; 
+	CMDARG *a, *arg;
 	char *s;
 	int len, slen, ssize;
 
@@ -2535,7 +2535,7 @@ append_statement(CMDARG *stmt_list, char *stmt)
 		s[slen] = '\0';
 		return arg;
 	}
-		 
+
 	len = strlen(stmt) + 1;	/* 1 for newline */
 	s = stmt_list->a_string;
 	slen = strlen(s);
@@ -2699,7 +2699,7 @@ get_command_name(int ctype)
 			return cmdtab[i].name;
 	}
 	return NULL;
-} 
+}
 
 /* mk_cmdarg --- make an argument for command */
 
@@ -2714,7 +2714,7 @@ mk_cmdarg(enum argtype type)
 }
 
 /* append_cmdarg --- append ARG to the list of arguments for the current command */
- 
+
 static void
 append_cmdarg(CMDARG *arg)
 {
@@ -2785,7 +2785,7 @@ yylex(void)
 	static char *lexend;
 	int c;
 	char *tokstart;
-	size_t toklen; 
+	size_t toklen;
 
 	yylval = (CMDARG *) NULL;
 
@@ -2799,7 +2799,7 @@ yylex(void)
 again:
 		lexptr_begin = read_a_line(dbg_prompt);
 		if (lexptr_begin == NULL) {	/* EOF or error */
-			if (get_eof_status() == EXIT_FATAL) 
+			if (get_eof_status() == EXIT_FATAL)
 				exit(EXIT_FATAL);
 			if (get_eof_status() == EXIT_FAILURE) {
 				static int seen_eof = 0;
@@ -2831,7 +2831,7 @@ again:
 				&& input_from_tty
 		)
 			history_expand_line(&lexptr_begin);
-	
+
 		lexptr = lexptr_begin;
 		lexend = lexptr + strlen(lexptr);
 		if (*lexptr == '\0'		/* blank line */
@@ -2850,14 +2850,14 @@ again:
 		}
 		repeat_idx = -1;
 	}
-	
+
 	c = *lexptr;
 
 	while (c == ' ' || c == '\t')
 		c = *++lexptr;
 
 	if (! input_from_tty && c == '#')
-		return '\n'; 
+		return '\n';
 
 	tokstart = lexptr;
 	if (lexptr >= lexend)
@@ -2914,7 +2914,7 @@ again:
 	}
 
 	c = *lexptr;
-	
+
 	if (cmdtab[cmd_idx].type == D_option) {
 		if (c == '=')
 			return *lexptr++;
@@ -3016,8 +3016,8 @@ err:
 				r = mpg_integer();
 				mpfr_get_z(r->mpg_i, tmp->mpg_numbr, MPFR_RNDZ);
 				unref(tmp);
-			}			
-		} else 
+			}
+		} else
 #endif
 			r = make_number(strtod(tokstart, & lexptr));
 
@@ -3126,7 +3126,7 @@ concat_args(CMDARG *arg, int count)
 		n = force_string(arg->a_node);
 		return dupnode(n);
 	}
-	
+
 	emalloc(tmp, NODE **, count * sizeof(NODE *), "concat_args");
 	subseplen = SUBSEP_node->var_value->stlen;
 	subsep = SUBSEP_node->var_value->stptr;
@@ -3161,7 +3161,7 @@ concat_args(CMDARG *arg, int count)
 }
 
 /* find_command --- find the index in 'cmdtab' using exact,
- *                  abbreviation or unique partial match 
+ *                  abbreviation or unique partial match
  */
 
 static int
@@ -3253,10 +3253,10 @@ do_help(CMDARG *arg, int cmd)
 
 #ifdef HAVE_LIBREADLINE
 
-/* next_word --- find the next word in a line to complete 
+/* next_word --- find the next word in a line to complete
  *               (word seperation characters are space and tab).
  */
-   
+
 static char *
 next_word(char *p, int len, char **endp)
 {
@@ -3338,10 +3338,10 @@ command_completion(const char *text, int start, int end)
 	if (this_cmd == D_print || this_cmd == D_printf)
 		return rl_completion_matches(text, variable_generator);
 	return NULL;
-}	
+}
 
 /* command_generator --- generator function for command completion */
- 
+
 static char *
 command_generator(const char *text, int state)
 {
@@ -3414,7 +3414,7 @@ argument_generator(const char *text, int state)
 			if (strncmp(name, text, textlen) == 0)
 				return estrdup(name, strlen(name));
 		}
-	}		
+	}
 	return NULL;
 }
 

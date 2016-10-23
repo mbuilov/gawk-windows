@@ -5,20 +5,20 @@
 /*
  * Copyright (C) 2012, 2013, 2014, 2015
  * the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -918,22 +918,22 @@ do_get_file(int nargs, awk_value_t *result)
 
 	if (ibuf) {
 		awk_value_t idx, val;
-		set_array_element(res.array_cookie, 
+		set_array_element(res.array_cookie,
 				  make_const_string("input", 5, & idx),
 				  make_number(ibuf->fd, & val));
 		if (ibuf->name)
-			set_array_element(res.array_cookie, 
+			set_array_element(res.array_cookie,
 					  make_const_string("input_name", 10, & idx),
 					  make_const_string(ibuf->name, strlen(ibuf->name), & val));
 	}
 	if (obuf) {
 		awk_value_t idx, val;
-		set_array_element(res.array_cookie, 
+		set_array_element(res.array_cookie,
 				  make_const_string("output", 6, & idx),
 				  make_number(obuf->fp ? fileno(obuf->fp) : -1,
 				  	      & val));
 		if (obuf->name)
-			set_array_element(res.array_cookie, 
+			set_array_element(res.array_cookie,
 					  make_const_string("output_name", 11, & idx),
 					  make_const_string(obuf->name, strlen(obuf->name), & val));
 	}

@@ -1,23 +1,23 @@
 /*
- * eval.c - gawk bytecode interpreter 
+ * eval.c - gawk bytecode interpreter
  */
 
-/* 
+/*
  * Copyright (C) 1986, 1988, 1989, 1991-2016 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -53,7 +53,7 @@ static NODE *node_Boolean[2];
 #ifdef C
 #undef C
 #endif
-#define C(c) ((char)c)  
+#define C(c) ((char)c)
 /*
  * This table is used by the regexp routines to do case independent
  * matching. Basically, every ascii character maps to itself, except
@@ -314,7 +314,7 @@ static struct optypetab {
 	{ "Op_match", " ~ " },
 	{ "Op_match_rec", NULL },
 	{ "Op_nomatch", " !~ " },
-	{ "Op_rule", NULL }, 
+	{ "Op_rule", NULL },
 	{ "Op_K_case", "case" },
 	{ "Op_K_default", "default" },
 	{ "Op_K_break", "break" },
@@ -640,7 +640,7 @@ push_frame(NODE *f)
 	}
 
 	if (fcall_count > 1)
-		memmove(fcall_list + 2, fcall_list + 1, (fcall_count - 1) * sizeof(NODE *)); 
+		memmove(fcall_list + 2, fcall_list + 1, (fcall_count - 1) * sizeof(NODE *));
 	fcall_list[1] = f;
 }
 
@@ -651,7 +651,7 @@ static void
 pop_frame()
 {
 	if (fcall_count > 1)
-		memmove(fcall_list + 1, fcall_list + 2, (fcall_count - 1) * sizeof(NODE *)); 
+		memmove(fcall_list + 1, fcall_list + 2, (fcall_count - 1) * sizeof(NODE *));
 	fcall_count--;
 	assert(fcall_count >= 0);
 	if (do_debug)
@@ -1075,7 +1075,7 @@ STACK_ITEM *stack_bottom;
 STACK_ITEM *stack_top;
 static unsigned long STACK_SIZE = 256;    /* initial size of stack */
 int max_args = 0;       /* maximum # of arguments to printf, print, sprintf,
-                         * or # of array subscripts, or adjacent strings     
+                         * or # of array subscripts, or adjacent strings
                          * to be concatenated.
                          */
 NODE **args_array = NULL;
@@ -1147,7 +1147,7 @@ r_get_lhs(NODE *n, bool reference)
 
 
 /* r_get_field --- get the address of a field node */
- 
+
 NODE **
 r_get_field(NODE *n, Func_ptr *assign, bool reference)
 {
@@ -1219,7 +1219,7 @@ calc_exp(AWKNUM x1, AWKNUM x2)
 }
 
 
-/* setup_frame --- setup new frame for function call */ 
+/* setup_frame --- setup new frame for function call */
 
 static INSTRUCTION *
 setup_frame(INSTRUCTION *pc)
@@ -1261,7 +1261,7 @@ setup_frame(INSTRUCTION *pc)
 	}
 
 
-	/* check for extra args */ 
+	/* check for extra args */
 	if (arg_count > pcount) {
 		warning(
 			_("function `%s' called with more arguments than declared"),
@@ -1355,7 +1355,7 @@ setup_frame(INSTRUCTION *pc)
 
 	/* setup new frame */
 	getnode(frame_ptr);
-	frame_ptr->type = Node_frame;	
+	frame_ptr->type = Node_frame;
 	frame_ptr->stack = sp;
 	frame_ptr->prev_frame_size = (stack_ptr - stack_bottom); /* size of the previous stack frame */
 	frame_ptr->func_node = f;
@@ -1473,7 +1473,7 @@ unwind_stack(long n)
 			if (in_main_context() && ! exiting)
 				fatal(_("unwind_stack: unexpected type `%s'"),
 						nodetype2str(r->type));
-			/* else 
+			/* else
 				* Node_var_array,
 				* Node_param_list,
 				* Node_var (e.g: trying to use scalar for array)
@@ -1487,7 +1487,7 @@ unwind_stack(long n)
 			break;
 	}
 	return cp;
-} 
+}
 
 
 /* pop_fcall --- pop off the innermost frame */
@@ -1535,7 +1535,7 @@ cmp_scalars(scalar_cmp_t comparison_type)
 }
 
 /* op_assign --- assignment operators excluding = */
- 
+
 static void
 op_assign(OPCODE op)
 {
@@ -1637,9 +1637,9 @@ POP_CODE()
 typedef struct exec_state {
 	struct exec_state *next;
 
-	INSTRUCTION *cptr;  /* either getline (Op_K_getline) or the 
+	INSTRUCTION *cptr;  /* either getline (Op_K_getline) or the
 	                     * implicit "open-file, read-record" loop (Op_newfile).
-	                     */ 
+	                     */
 
 	int rule;           /* rule for the INSTRUCTION */
 
@@ -1705,7 +1705,7 @@ register_exec_hook(Func_pre_exec preh, Func_post_exec posth)
 	/*
 	 * multiple post-exec hooks aren't supported. post-exec hook is mainly
 	 * for use by the debugger.
-	 */ 
+	 */
 
 	if (! preh || (post_execute && posth))
 		return false;
@@ -1733,7 +1733,7 @@ register_exec_hook(Func_pre_exec preh, Func_post_exec posth)
 }
 
 
-/* interpreter routine when not debugging */ 
+/* interpreter routine when not debugging */
 #include "interpret.h"
 
 /* interpreter routine with exec hook(s). Used when debugging and/or with MPFR. */
@@ -1781,6 +1781,6 @@ init_interpret()
 	if (num_exec_hook > 0)
 		interpret = h_interpret;
 	else
-		interpret = r_interpret; 
+		interpret = r_interpret;
 }
 

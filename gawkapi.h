@@ -2,22 +2,22 @@
  * gawkapi.h -- Definitions for use by extension functions calling into gawk.
  */
 
-/* 
+/*
  * Copyright (C) 2012-2016 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -53,7 +53,7 @@
  * This API purposely restricts itself to ISO C 90 features.  In particular, no
  * bool, no // comments, no use of the restrict keyword, or anything else,
  * in order to provide maximal portability.
- * 
+ *
  * Exception: the "inline" keyword is used below in the "constructor"
  * functions. If your compiler doesn't support it, you should either
  * -Dinline='' on your command line, or use the autotools and include a
@@ -136,7 +136,7 @@ typedef struct awk_input {
 	 * parser is responsible for managing its own memory buffer.
 	 * Similarly, gawk will make its own copy of RT, so the parser
 	 * is also responsible for managing this memory.
-	 * 
+	 *
 	 * It is guaranteed that errcode is a valid pointer, so there is
 	 * no need to test for a NULL value.  Gawk sets *errcode to 0,
 	 * so there is no need to set it unless an error occurs.
@@ -165,7 +165,7 @@ typedef struct awk_input {
 
 	/* put last, for alignment. bleah */
 	struct stat sbuf;       /* stat buf */
-							
+
 } awk_input_buf_t;
 
 typedef struct awk_input_parser {
@@ -531,7 +531,7 @@ typedef struct gawk_api {
 	 * 	- Read-only access to special variables (NF, etc.)
 	 * 	- One special exception: PROCINFO.
 	 *	- Use sym_update() to change a value, including from UNDEFINED
-	 *	  to scalar or array. 
+	 *	  to scalar or array.
 	 */
 	/*
 	 * Lookup a variable, fill in value. No messing with the value
@@ -692,7 +692,7 @@ typedef struct gawk_api {
 	 * Look up a file.  If the name is NULL or name_len is 0, it returns
 	 * data for the currently open input file corresponding to FILENAME
 	 * (and it will not access the filetype argument, so that may be
-	 * undefined).  
+	 * undefined).
 	 * If the file is not already open, it tries to open it.
 	 * The "filetype" argument should be one of:
 	 *    ">", ">>", "<", "|>", "|<", and "|&"

@@ -220,9 +220,9 @@ devopen(const char *name, const char *mode)
 	localpname = cp;
 	while (*cp != '/' && *cp != '\0')
 		cp++;
-	/*                    
+	/*
 	 * Require a port, let them explicitly put 0 if
-	 * they don't care.  
+	 * they don't care.
 	 */
 	if (*cp != '/' || cp == localpname) {
 		fprintf(stderr, _("special file name `%s' is incomplete"), name);
@@ -241,7 +241,7 @@ devopen(const char *name, const char *mode)
 	cp++;
 	hostname = cp;
 	while (*cp != '/' && *cp != '\0')
-		cp++; 
+		cp++;
 	if (*cp != '/' || cp == hostname) {
 		*localpnamelastcharp = '/';
 		fprintf(stderr, _("must supply a remote hostname to `/inet'"));
@@ -278,7 +278,7 @@ devopen(const char *name, const char *mode)
 		char *cp, *end;
 		unsigned long count = 0;
 		char *ms2;
-		
+
 		first_time = false;
 		if ((cp = getenv("GAWK_SOCK_RETRIES")) != NULL) {
 			count = strtoul(cp, & end, 10);

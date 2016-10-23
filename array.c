@@ -2,23 +2,23 @@
  * array.c - routines for awk arrays.
  */
 
-/* 
+/*
  * Copyright (C) 1986, 1988, 1989, 1991-2014, 2016,
  * the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -102,7 +102,7 @@ make_array()
 	/* vname, flags, and parent_array not set here */
 
 	return array;
-}		
+}
 
 
 /* null_array --- force symbol to be an empty typeless array */
@@ -150,7 +150,7 @@ null_lookup(NODE *symbol, NODE *subs)
 	return symbol->alookup(symbol, subs);
 }
 
-/* null_length --- default function for array length interface */ 
+/* null_length --- default function for array length interface */
 
 NODE **
 null_length(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
@@ -198,7 +198,7 @@ assoc_copy(NODE *symbol, NODE *newsymb)
 void
 assoc_dump(NODE *symbol, NODE *ndump)
 {
-	if (symbol->adump)	
+	if (symbol->adump)
 		(void) symbol->adump(symbol, ndump);
 }
 
@@ -229,7 +229,7 @@ make_aname(const NODE *symbol)
 			max_alen = alen + SLEN;
 			emalloc(aname, char *, (max_alen + 1) * sizeof(char *), "make_aname");
 		} else if (alen > max_alen) {
-			max_alen = alen + SLEN; 
+			max_alen = alen + SLEN;
 			erealloc(aname, char *, (max_alen + 1) * sizeof(char *), "make_aname");
 		}
 		memcpy(aname, symbol->vname, alen + 1);
@@ -258,11 +258,11 @@ array_vname(const NODE *symbol)
 	const NODE *save_symbol = symbol;
 	const char *from = _("from %s");
 	const char *aname;
-	
+
 	if (symbol->type != Node_array_ref
 			|| symbol->orig_array->type != Node_var_array
 	) {
-		if (symbol->type != Node_var_array || symbol->parent_array == NULL)	
+		if (symbol->type != Node_var_array || symbol->parent_array == NULL)
 			return symbol->vname;
 		return make_aname(symbol);
 	}
@@ -373,7 +373,7 @@ force_array(NODE *symbol, bool canfatal)
 
 
 /* set_SUBSEP --- update SUBSEP related variables when SUBSEP assigned to */
-                                
+
 void
 set_SUBSEP()
 {
@@ -396,7 +396,7 @@ concat_exp(int nargs, bool do_subsep)
 	size_t subseplen = 0;
 	int i;
 	extern NODE **args_array;
-	
+
 	if (nargs == 1)
 		return POP_STRING();
 
@@ -498,13 +498,13 @@ adjust_fcall_stack(NODE *symbol, int nsubs)
 			 * But excludes cases like (nsubs = 0):
 			 *
 			 *   function f(c, d) { delete c; ..}
-			 *   BEGIN { a[0][0] = 1; f(a[0], a[0]); ...}  
+			 *   BEGIN { a[0][0] = 1; f(a[0], a[0]); ...}
 			 */
 
 			null_array(r);
 			r->parent_array = NULL;
 			continue;
-		}			
+		}
 
 		/* Case 2 */
 		for (n = n->parent_array; n != NULL; n = n->parent_array) {
@@ -648,7 +648,7 @@ do_delete_loop(NODE *symbol, NODE **lhs)
 	efree(list);
 
 	/* blast the array in one shot */
-	adjust_fcall_stack(symbol, 0);	
+	adjust_fcall_stack(symbol, 0);
 	assoc_clear(symbol);
 }
 
@@ -703,7 +703,7 @@ value_info(NODE *n)
 
 	if ((n->flags & (STRING|STRCUR)) == STRCUR) {
 		fprintf(output_fp, "][");
-		fprintf(output_fp, "stfmt=%d, ", n->stfmt);	
+		fprintf(output_fp, "stfmt=%d, ", n->stfmt);
 		/*
 		 * If not STFMT_UNUSED, could be CONVFMT or OFMT if last
 		 * used in a print statement. If immutable, could be that it
@@ -1054,7 +1054,7 @@ sort_up_index_number(const void *p1, const void *p2)
 
 	ret = cmp_numbers(t1, t2);
 	if (ret != 0)
-		return ret; 
+		return ret;
 
 	/* break a tie with the index string itself */
 	t1 = force_string((NODE *) t1);
@@ -1241,7 +1241,7 @@ sort_user_func(const void *p1, const void *p2)
 }
 
 
-/* assoc_list -- construct, and optionally sort, a list of array elements */  
+/* assoc_list -- construct, and optionally sort, a list of array elements */
 
 NODE **
 assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
@@ -1280,7 +1280,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 	extern int currule;
 	int save_rule = 0;
 	assoc_kind_t assoc_kind = ANONE;
-	
+
 	elem_size = 1;
 
 	for (qi = 0, j = sizeof(sort_funcs)/sizeof(sort_funcs[0]); qi < j; qi++) {
@@ -1304,7 +1304,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 
 	} else {	/* unrecognized */
 		NODE *f;
-		const char *sp;	
+		const char *sp;
 
 		for (sp = sort_str; *sp != '\0' && ! isspace((unsigned char) *sp); sp++)
 			continue;
@@ -1328,7 +1328,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		code->func_body = f;
 		code->func_name = NULL;		/* not needed, func_body already assigned */
 		(code + 1)->expr_count = 4;	/* function takes 4 arguments */
-		code->nexti = bcalloc(Op_stop, 1, 0);	
+		code->nexti = bcalloc(Op_stop, 1, 0);
 
 		/*
 		 * make non-redirected getline, exit, `next' and `nextfile' fatal in
@@ -1355,7 +1355,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 
 	if (cmp_func == sort_user_func) {
 		code = POP_CODE();
-		currule = save_rule;            /* restore current rule */ 
+		currule = save_rule;            /* restore current rule */
 		bcfree(code->nexti);            /* Op_stop */
 		bcfree(code);                   /* Op_func_call */
 	}

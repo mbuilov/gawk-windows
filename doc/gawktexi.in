@@ -983,14 +983,11 @@ particular records in a file and perform operations upon them.
 * Configuration Philosophy::            How it's all supposed to work.
 * Non-Unix Installation::               Installation on Other Operating
                                         Systems.
-* PC Installation::                     Installing and Compiling
-                                        @command{gawk} on MS-DOS and OS/2.
+* PC Installation::                     Installing and Compiling @command{gawk} on
+                                        Microsoft Windows.
 * PC Binary Installation::              Installing a prepared distribution.
-* PC Compiling::                        Compiling @command{gawk} for MS-DOS,
-                                        Windows32, and OS/2.
-* PC Testing::                          Testing @command{gawk} on PC systems.
-* PC Using::                            Running @command{gawk} on MS-DOS,
-                                        Windows32 and OS/2.
+* PC Compiling::                        Compiling @command{gawk} for Windows32.
+* PC Using::                            Running @command{gawk} on Windows32.
 * Cygwin::                              Building and running @command{gawk}
                                         for Cygwin.
 * MSYS::                                Using @command{gawk} In The MSYS
@@ -1372,12 +1369,7 @@ ranging from Intel-architecture PC-based computers
 up through large-scale systems.
 @command{gawk} has also been ported to Mac OS X,
 Microsoft Windows
-@ifset FOR_PRINT
 (all versions),
-@end ifset
-@ifclear FOR_PRINT
-(all versions) and OS/2 PCs,
-@end ifclear
 and OpenVMS.@footnote{Some other, obsolete systems to which @command{gawk}
 was once ported are no longer supported and the code for those systems
 has been removed.}
@@ -2454,13 +2446,7 @@ awk '@var{program}'
 @command{awk} applies the @var{program} to the @dfn{standard input},
 which usually means whatever you type on the keyboard.  This continues
 until you indicate end-of-file by typing @kbd{Ctrl-d}.
-@ifset FOR_PRINT
 (On non-POSIX operating systems, the end-of-file character may be different.)
-@end ifset
-@ifclear FOR_PRINT
-(On non-POSIX operating systems, the end-of-file character may be different.
-For example, on OS/2, it is @kbd{Ctrl-z}.)
-@end ifclear
 
 @cindex files, input, See input files
 @cindex input files, running @command{awk} without
@@ -4341,7 +4327,7 @@ directories (called the @dfn{search path}) one by one, looking for a
 file with the specified name.
 
 The search path is a string consisting of directory names
-separated by colons.@footnote{Semicolons on MS-Windows and MS-DOS.}
+separated by colons.@footnote{Semicolons on MS-Windows.}
 @command{gawk} gets its search path from the
 @env{AWKPATH} environment variable.  If that variable does not exist,
 or if it has an empty value,
@@ -22076,7 +22062,6 @@ is as follows:
  * December 2010, move to ANSI C definition for main().
  */
 
-/* For OS/2, do nothing. */
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -37094,9 +37079,6 @@ Files needed for building @command{gawk} on POSIX-compliant systems.
 
 @item pc/*
 Files needed for building @command{gawk} under MS-Windows
-@ifclear FOR_PRINT
-and OS/2
-@end ifclear
 (@pxref{PC Installation} for details).
 
 @item vms/*
@@ -37354,108 +37336,48 @@ various non-Unix systems.
 
 @menu
 * PC Installation::             Installing and Compiling @command{gawk} on
-                                MS-DOS and OS/2.
+                                Microsoft Windows.
 * VMS Installation::            Installing @command{gawk} on VMS.
 @end menu
 
-@c Rewritten by Scott Deifik <scottd.mail@sbcglobal.net>
-@c and Darrel Hankerson <hankedr@mail.auburn.edu>
-
 @node PC Installation
-@appendixsubsec Installation on PC Operating Systems
+@appendixsubsec Installation on MS-Windows
 
 @cindex PC operating systems@comma{} @command{gawk} on, installing
 @cindex operating systems, PC@comma{} @command{gawk} on, installing
 This @value{SECTION} covers installation and usage of @command{gawk}
-on Intel architecture machines
-@ifclear FOR_PRINT
-running MS-DOS, any version of MS-Windows, or OS/2.
-@end ifclear
-@ifset FOR_PRINT
-running MS-DOS and any version of MS-Windows.
-@end ifset
+on Intel architecture machines running any version of MS-Windows.
 In this @value{SECTION}, the term ``Windows32''
-refers to any of Microsoft Windows 95/98/ME/NT/2000/XP/Vista/7/8.
+refers to any of Microsoft Windows 95/98/ME/NT/2000/XP/Vista/7/8/10.
 
-The limitations of MS-DOS (and MS-DOS shells under the other operating
-systems) have meant that various ``DOS extenders'' are often used with
-programs such as @command{gawk}.  The varying capabilities of Microsoft
-Windows 3.1 and Windows32 can add to the confusion.  For an overview
-of the considerations, refer to @file{README_d/README.pc} in
-the distribution.
+See also the @file{README_d/README.pc} file in the distribution.
 
 @menu
 * PC Binary Installation::      Installing a prepared distribution.
-* PC Compiling::                Compiling @command{gawk} for MS-DOS,
-                                Windows32, and OS/2.
-* PC Testing::                  Testing @command{gawk} on PC systems.
-* PC Using::                    Running @command{gawk} on MS-DOS, Windows32
-                                and OS/2.
+* PC Compiling::                Compiling @command{gawk} for Windows32.
+* PC Using::                    Running @command{gawk} on Windows32.
 * Cygwin::                      Building and running @command{gawk} for
                                 Cygwin.
 * MSYS::                        Using @command{gawk} In The MSYS Environment.
 @end menu
 
-@ifclear FOR_PRINT
 @node PC Binary Installation
-@appendixsubsubsec Installing a Prepared Distribution for PC Systems
+@appendixsubsubsec Installing a Prepared Distribution for MS-Windows Systems
 
-If you have received a binary distribution prepared by the MS-DOS
-maintainers, then @command{gawk} and the necessary support files appear
-under the @file{gnu} directory, with executables in @file{gnu/bin},
-libraries in @file{gnu/lib/awk}, and manual pages under @file{gnu/man}.
-This is designed for easy installation to a @file{/gnu} directory on your
-drive---however, the files can be installed anywhere provided @env{AWKPATH} is
-set properly.  Regardless of the installation directory, the first line of
-@file{igawk.cmd} and @file{igawk.bat} (in @file{gnu/bin}) may need to be
-edited.
-
-The binary distribution contains a separate file describing the
-contents. In particular, it may include more than one version of the
-@command{gawk} executable.
-
-OS/2 (32 bit, EMX) binary distributions are prepared for the @file{/usr}
-directory of your preferred drive. Set @env{UNIXROOT} to your installation
-drive (e.g., @samp{e:}) if you want to install @command{gawk} onto another drive
-than the hardcoded default @samp{c:}. Executables appear in @file{/usr/bin},
-libraries under @file{/usr/share/awk}, manual pages under @file{/usr/man},
-Texinfo documentation under @file{/usr/info}, and NLS files
-under @file{/usr/share/locale}.
-Note that the files can be installed anywhere provided @env{AWKPATH} is
-set properly.
-
-If you already have a file @file{/usr/info/dir} from another package
-@emph{do not overwrite it!} Instead enter the following commands at your prompt
-(replace @samp{x:} by your installation drive):
-
-@example
-install-info --info-dir=x:/usr/info x:/usr/info/gawk.info
-install-info --info-dir=x:/usr/info x:/usr/info/gawkinet.info
-@end example
-
-The binary distribution may contain a separate file containing additional
-or more detailed installation instructions.
-@end ifclear
+The only supported binary distribution for MS-Windows systems
+is that provided by Eli Zaretskii's @uref{https://sourceforge.net/projects/ezwinports/,
+``ezwinports''} project.  Install the compiled @command{gawk} from there.
 
 @node PC Compiling
 @appendixsubsubsec Compiling @command{gawk} for PC Operating Systems
 
-@ifclear FOR_PRINT
-@command{gawk} can be compiled for MS-DOS, Windows32, and OS/2 using
-MinGW (Windows32) or Eberhard
-Mattes (EMX: MS-DOS, Windows32 and OS/2).
-@end ifclear
-@ifset FOR_PRINT
-@command{gawk} can be compiled for Windows32 using
-MinGW.
-@end ifset
-The file
-@file{README_d/README.pc} in the @command{gawk} distribution contains
-additional notes, and @file{pc/Makefile} contains important information on
-compilation options.
+@command{gawk} can be compiled for Windows32 using MinGW (Windows32).
+The file @file{README_d/README.pc} in the @command{gawk} distribution
+contains additional notes, and @file{pc/Makefile} contains important
+information on compilation options.
 
-@cindex compiling @command{gawk} for MS-DOS and MS-Windows
-To build @command{gawk} for MS-DOS and Windows32, copy the files in
+@cindex compiling @command{gawk} for MS-Windows
+To build @command{gawk} for Windows32, copy the files in
 the @file{pc} directory (@emph{except} for @file{ChangeLog}) to the
 directory with the rest of the @command{gawk} sources, then invoke
 @command{make} with the appropriate target name as an argument to
@@ -37466,177 +37388,35 @@ to be edited in order to work with your @command{make} utility.
 The @file{Makefile} supports a number of targets for building various
 MS-DOS and Windows32 versions.  A list of targets is printed if the
 @command{make} command is given without a target.  As an example,
-to build a
-native MS-Windows binary of @command{gawk} using the MinGW tools,
+to build a native MS-Windows binary of @command{gawk} using the MinGW tools,
 type @samp{make mingw32}.
-
-@ifclear FOR_PRINT
-@cindex compiling @command{gawk} with EMX for OS/2
-The 32 bit EMX version of @command{gawk} works ``out of the box'' under OS/2.
-However, it is highly recommended to use GCC 2.95.3 for the compilation.
-In principle, it is possible to compile @command{gawk} the following way:
-
-@example
-$ @kbd{./configure}
-$ @kbd{make}
-@end example
-
-This is not recommended, though.  To get an OMF executable you should
-use the following commands at your @command{sh} prompt:
-
-@example
-$ @kbd{CFLAGS="-O2 -Zomf -Zmt"}
-$ @kbd{export CFLAGS}
-$ @kbd{LDFLAGS="-s -Zcrtdll -Zlinker /exepack:2 -Zlinker /pm:vio -Zstack 0x6000"}
-$ @kbd{export LDFLAGS}
-$ @kbd{RANLIB="echo"}
-$ @kbd{export RANLIB}
-$ @kbd{./configure --prefix=c:/usr}
-$ @kbd{make AR=emxomfar}
-@end example
-
-These are just suggestions for use with GCC 2.x.  You may use any other set of
-(self-consistent) environment variables and compiler flags.
-
-@ignore
-To get an FHS-compliant file hierarchy it is recommended to use the additional
-@command{configure} options @option{--infodir=c:/usr/share/info}, @option{--mandir=c:/usr/share/man}
-and @option{--libexecdir=c:/usr/lib}.
-@end ignore
-
-@ignore
-The internal @command{gettext} library tends to be problematic. It is therefore recommended
-to use either an external one (@option{--without-included-gettext}) or to disable
-NLS entirely (@option{--disable-nls}).
-@end ignore
-
-If you use GCC 2.95 it is recommended to use also:
-
-@example
-$ @kbd{LIBS="-lgcc"}
-$ @kbd{export LIBS}
-@end example
-
-You can also get an @code{a.out} executable if you prefer:
-
-@example
-$ @kbd{CFLAGS="-O2 -Zmt"}
-$ @kbd{export CFLAGS}
-$ @kbd{LDFLAGS="-s -Zstack 0x6000"}
-$ @kbd{LIBS="-lgcc"}
-$ @kbd{unset RANLIB}
-@c $ ./configure --prefix=c:/usr --without-included-gettext
-$ @kbd{./configure --prefix=c:/usr}
-$ @kbd{make}
-@end example
-
-@quotation NOTE
-Compilation of @code{a.out} executables also works with GCC 3.2.
-Versions later than GCC 3.2 have not been tested successfully.
-@end quotation
-
-@samp{make install} works as expected with the EMX build.
-
-@quotation NOTE
-Ancient OS/2 ports of GNU @command{make} are not able to handle
-the Makefiles of this package.  If you encounter any problems with
-@command{make}, try GNU Make 3.79.1 or later versions.  You should
-find the latest version on
-@uref{ftp://hobbes.nmsu.edu/pub/os2/}.@footnote{As of November 2014,
-this site is still there, but the author could not find a package
-for GNU Make.}
-@end quotation
-@end ifclear
-
-@node PC Testing
-@appendixsubsubsec Testing @command{gawk} on PC Operating Systems
-
-Using @command{make} to run the standard tests and to install @command{gawk}
-requires additional Unix-like tools, including @command{sh}, @command{sed}, and
-@command{cp}. In order to run the tests, the @file{test/*.ok} files may need to
-be converted so that they have the usual MS-DOS-style end-of-line markers.
-Alternatively, run @command{make check CMP="diff -a"} to use GNU @command{diff}
-in text mode instead of @command{cmp} to compare the resulting files.
-
-@ifclear FOR_PRINT
-Most
-of the tests work properly with Stewartson's shell along with the
-companion utilities or appropriate GNU utilities.  However, some editing of
-@file{test/Makefile} is required. It is recommended that you copy the file
-@file{pc/Makefile.tst} over the file @file{test/Makefile} as a
-replacement. Details can be found in @file{README_d/README.pc}
-and in the file @file{pc/Makefile.tst}.
-
-On OS/2 the @code{pid} test fails because @code{spawnl()} is used instead of
-@code{fork()}/@code{execl()} to start child processes.
-Also the @code{mbfw1} and @code{mbprintf1} tests fail because the needed
-multibyte functionality is not available.
-@end ifclear
 
 @node PC Using
 @appendixsubsubsec Using @command{gawk} on PC Operating Systems
 @cindex operating systems, PC, @command{gawk} on
 @cindex PC operating systems, @command{gawk} on
 
-Under MS-DOS and MS-Windows, the Cygwin and MinGW environments support
+Under MS-Windows, the Cygwin and MinGW environments support
 both the @samp{|&} operator and TCP/IP networking
 (@pxref{TCP/IP Networking}).
-@ifclear FOR_PRINT
-EMX (OS/2 only) supports at least the @samp{|&} operator.
-@end ifclear
 
 @cindex search paths
 @cindex search paths, for source files
-@cindex @command{gawk}, MS-DOS version of
 @cindex @command{gawk}, MS-Windows version of
 @cindex @code{;} (semicolon), @env{AWKPATH} variable and
 @cindex semicolon (@code{;}), @env{AWKPATH} variable and
 @cindex @env{AWKPATH} environment variable
-The MS-DOS and MS-Windows versions of @command{gawk} search for
+The MS-Windows version of @command{gawk} searches for
 program files as described in @ref{AWKPATH Variable}.  However,
 semicolons (rather than colons) separate elements in the @env{AWKPATH}
 variable.  If @env{AWKPATH} is not set or is empty, then the default
 search path is @samp{@w{.;c:/lib/awk;c:/gnu/lib/awk}}.
 
-@ifclear FOR_PRINT
-@cindex @command{gawk}, OS/2 version of
-@cindex @code{UNIXROOT} variable, on OS/2 systems
-The search path for OS/2 (32 bit, EMX) is determined by the prefix directory
-(most likely @file{/usr} or @file{c:/usr}) that has been specified as an option of
-the @command{configure} script as is the case for the Unix versions.
-If @file{c:/usr} is the prefix directory then the default search path contains @file{.}
-and @file{c:/usr/share/awk}.
-Additionally, to support binary distributions of @command{gawk} for OS/2
-systems whose drive @samp{c:} might not support long @value{FN}s or might not exist
-at all, there is a special environment variable.  If @env{UNIXROOT} specifies
-a drive then this specific drive is also searched for program files.
-E.g., if @env{UNIXROOT} is set to @file{e:} the complete default search path is
-@samp{@w{.;c:/usr/share/awk;e:/usr/share/awk}}.
-
-An @command{sh}-like shell (as opposed to @command{command.com} under MS-DOS
-or @command{cmd.exe} under MS-Windows or OS/2) may be useful for @command{awk} programming.
-The DJGPP collection of tools@footnote{Available from
-@uref{ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/}.}
-includes an MS-DOS port of Bash,
-and several shells are available for OS/2, including @command{ksh}.
-@end ifclear
-@ifset FOR_PRINT
-An @command{sh}-like shell (as opposed to @command{command.com} under MS-DOS
-or @command{cmd.exe} under MS-Windows) may be useful for @command{awk} programming.
-The DJGPP collection of tools@footnote{Available from
-@uref{ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/}.} includes an MS-DOS port of Bash.
-@end ifset
-
 @cindex common extensions, @code{BINMODE} variable
 @cindex extensions, common@comma{} @code{BINMODE} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{BINMODE} variable
 @cindex @code{BINMODE} variable
-@ifclear FOR_PRINT
-Under MS-Windows, OS/2 and MS-DOS,
-@end ifclear
-@ifset FOR_PRINT
-Under MS-Windows and MS-DOS,
-@end ifset
+Under MS-Windows,
 @command{gawk} (and many other text programs) silently
 translates end-of-line @samp{\r\n} to @samp{\n} on input and @samp{\n}
 to @samp{\r\n} on output.  A special @code{BINMODE} variable @value{COMMONEXT}
@@ -38268,8 +38048,8 @@ The people maintaining the various @command{gawk} ports are:
 
 @item MS-Windows with MinGW @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}
 
-@c Leave this in the print version on purpose.
-@c OS/2 is not mentioned anywhere else in the print version though.
+@c Leave this in the document on purpose.
+@c OS/2 is not mentioned anywhere else though.
 @item OS/2 @tab Andreas Buening, @EMAIL{andreas.buening@@nexgo.de,andreas dot buening at nexgo dot de}
 
 @item VMS @tab John Malmberg, @EMAIL{wb8tyw@@qsl.net,wb8tyw at qsl.net}
@@ -38529,9 +38309,6 @@ cd gawk-@value{VERSION}.@value{PATCHLEVEL}
 @command{gawk} may be built on non-POSIX systems as well. The currently
 supported systems are MS-Windows using
 MSYS, MinGW, and Cygwin,
-@ifclear FOR_PRINT
-OS/2 using EMX,
-@end ifclear
 and both Vax/VMS and OpenVMS.
 Instructions for each system are included in this @value{APPENDIX}.
 
@@ -42024,7 +41801,7 @@ Consistency issues:
 
 	Use @code{xxx} for the xxx operator in indexing statements, not @samp.
 	Use MS-Windows not MS Windows
-	Use MS-DOS not MS-DOS
+	Use MS-DOS not MS DOS
 	Use an empty set of parentheses after built-in and awk function names.
 	Use "multiFOO" without a hyphen.
 

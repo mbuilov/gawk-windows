@@ -2,22 +2,22 @@
  * builtin.c - Builtin functions and various utility procedures.
  */
 
-/* 
+/*
  * Copyright (C) 1986, 1988, 1989, 1991-2016 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -193,9 +193,9 @@ do_fflush(int nargs)
 
 	/*
 	 * November, 2012.
-	 * It turns out that circa 2002, when BWK 
+	 * It turns out that circa 2002, when BWK
 	 * added fflush() and fflush("") to his awk, he made both of
-	 * them flush everything.  
+	 * them flush everything.
 	 *
 	 * Now, with our inside agent getting ready to try to get fflush()
 	 * standardized in POSIX, we are going to make our awk consistent
@@ -386,7 +386,7 @@ do_index(int nargs)
 		 * If we don't have valid wide character strings, use
 		 * the real bytes.
 		 */
-		do_single_byte = ((s1->wstlen == 0 && s1->stlen > 0) 
+		do_single_byte = ((s1->wstlen == 0 && s1->stlen > 0)
 					|| (s2->wstlen == 0 && s2->stlen > 0));
 	}
 
@@ -521,7 +521,7 @@ do_length(int nargs)
 
 		/*
 		 * Support for deferred loading of array elements requires that
-		 * we use the array length interface even though it isn't 
+		 * we use the array length interface even though it isn't
 		 * necessary for the built-in array types.
 		 *
 		 * 1/2015: The deferred arrays are gone, but this is probably
@@ -962,7 +962,7 @@ check_pos:
 		case ' ':		/* print ' ' or '-' */
 					/* 'space' flag is ignored */
 					/* if '+' already present  */
-			if (signchar != false) 
+			if (signchar != false)
 				goto check_pos;
 			/* FALL THROUGH */
 		case '+':		/* print '+' or '-' */
@@ -988,18 +988,18 @@ check_pos:
 			alt = true;
 			goto check_pos;
 		case '\'':
-#if defined(HAVE_LOCALE_H)       
+#if defined(HAVE_LOCALE_H)
 			quote_flag = true;
 			goto check_pos;
 #else
-			goto retry;  
+			goto retry;
 #endif
 		case 'l':
 			if (big_flag)
 				break;
 			else {
 				static bool warned = false;
-				
+
 				if (do_lint && ! warned) {
 					lintwarn(_("`l' is meaningless in awk formats; ignored"));
 					warned = true;
@@ -1016,7 +1016,7 @@ check_pos:
 				break;
 			else {
 				static bool warned = false;
-				
+
 				if (do_lint && ! warned) {
 					lintwarn(_("`L' is meaningless in awk formats; ignored"));
 					warned = true;
@@ -1033,7 +1033,7 @@ check_pos:
 				break;
 			else {
 				static bool warned = false;
-				
+
 				if (do_lint && ! warned) {
 					lintwarn(_("`h' is meaningless in awk formats; ignored"));
 					warned = true;
@@ -1219,7 +1219,7 @@ out0:
 						jj = 0;		/* keep using current val in loc.grouping[ii] */
 					else if (loc.grouping[ii+1] == CHAR_MAX)
 						quote_flag = false;
-					else {                 
+					else {
 						ii++;
 						jj = 0;
 					}
@@ -1334,7 +1334,7 @@ mpf1:
 				zero_flag = (! lj
 						    && ((zero_flag && ! have_prec)
 							 || (fw == 0 && have_prec)));
-				
+
 				(void) mpfr_get_z(mpzval, mf, MPFR_RNDZ);	/* convert to GMP integer */
  				fmt_type = have_prec ? MP_INT_WITH_PREC : MP_INT_WITHOUT_PREC;
 				zi = mpzval;
@@ -1399,11 +1399,11 @@ mpf1:
 							PREPEND(ts[k]);
 						}
 					}
-					if (loc.grouping[ii+1] == 0)                                          
+					if (loc.grouping[ii+1] == 0)
 						jj = 0;     /* keep using current val in loc.grouping[ii] */
-					else if (loc.grouping[ii+1] == CHAR_MAX)                        
+					else if (loc.grouping[ii+1] == CHAR_MAX)
 						quote_flag = false;
-					else {                 
+					else {
 						ii++;
 						jj = 0;
 					}
@@ -1964,7 +1964,7 @@ do_strftime(int nargs)
 		tmp = POP_SCALAR();
 		if (do_lint && (fixtype(tmp)->flags & STRING) == 0)
 			lintwarn(_("strftime: received non-string first argument"));
-	
+
 		t1 = force_string(tmp);
 		format = t1->stptr;
 		formatlen = t1->stlen;
@@ -2225,7 +2225,7 @@ do_print(int nargs, int redirtype)
 
 /* do_print_rec --- special case printing of $0, for speed */
 
-void 
+void
 do_print_rec(int nargs, int redirtype)
 {
 	FILE *fp = NULL;
@@ -2494,11 +2494,11 @@ do_rand(int nargs ATTRIBUTE_UNUSED)
  	 * that when the values of successive values are combined
  	 * like (rand1*rand2)^2, (rand3*rand4)^2,  ...  the
  	 * resulting time series is not white noise.  The
- 	 * following also seems to fix that bug. 
+ 	 * following also seems to fix that bug.
  	 *
  	 * The add/subtract 0.5 keeps small bits from filling
  	 * below 2^-53 in the double, not that anyone should be
- 	 * looking down there. 
+ 	 * looking down there.
 	 *
 	 * Date: Wed, 25 Sep 2013 10:45:38 -0600 (MDT)
 	 * From: "Nelson H. F. Beebe" <beebe@math.utah.edu>
@@ -2506,32 +2506,32 @@ do_rand(int nargs ATTRIBUTE_UNUSED)
 	 *     from integer to floating-point, and I discuss the serious pitfalls
 	 *     in my book, because it leads to platform-dependent behavior at the
 	 *     end points of the interval [0,1]
-	 * 
+	 *
 	 * (5) the documentation in the gawk info node says
-	 * 
+	 *
 	 *     `rand()'
 	 * 	 Return a random number.  The values of `rand()' are uniformly
 	 * 	 distributed between zero and one.  The value could be zero but is
 	 * 	 never one.(1)
-	 * 
+	 *
 	 *     The division by RAND_DIVISOR may not guarantee that 1.0 is never
 	 *     returned: the programmer forgot the platform-dependent issue of
 	 *     rounding.
-	 * 
+	 *
 	 * For points 4 and 5, the safe way is a loop:
-	 * 
-	 *         double 
+	 *
+	 *         double
 	 * 	   rand(void)		// return value in [0.0, 1.0)
 	 *         {
 	 * 	    value = internal_rand();
 	 *
-	 * 	    while (value == 1.0) 
+	 * 	    while (value == 1.0)
 	 *                 value = internal_rand();
-	 * 
+	 *
 	 * 	    return (value);
 	 *         }
  	 */
- 
+
 	do {
 		long d1, d2;
 		/*
@@ -2605,7 +2605,7 @@ do_match(int nargs)
 	tre = POP();
 	rp = re_update(tre);
 	t1 = POP_STRING();
-	
+
 	rstart = research(rp, t1->stptr, 0, t1->stlen, RE_NEED_START);
 	if (rstart >= 0) {	/* match succeded */
 		size_t *wc_indices = NULL;
@@ -2618,7 +2618,7 @@ do_match(int nargs)
 		}
 
 		rstart++;	/* now it's 1-based indexing */
-	
+
 		/* Build the array only if the caller wants the optional subpatterns */
 		if (dest != NULL) {
 			subsepstr = SUBSEP_node->var_value->stptr;
@@ -2634,7 +2634,7 @@ do_match(int nargs)
 					size_t subpat_len;
 					NODE **lhs;
 					NODE *sub;
-					
+
 					start = t1->stptr + s;
 					subpat_start = s;
 					subpat_len = len = SUBPATEND(rp, t1->stptr, ii) - s;
@@ -2642,7 +2642,7 @@ do_match(int nargs)
 						subpat_start = wc_indices[s];
 						subpat_len = wc_indices[s + len - 1] - subpat_start + 1;
 					}
-	
+
 					it = make_string(start, len);
 					it->flags |= MAYBE_NUM;	/* user input */
 
@@ -2658,7 +2658,7 @@ do_match(int nargs)
 					sprintf(buff, "%d", ii);
 					ilen = strlen(buff);
 					amt = ilen + subseplen + strlen("length") + 1;
-	
+
 					if (oldamt == 0) {
 						emalloc(buf, char *, amt, "do_match");
 					} else if (amt > oldamt) {
@@ -2668,9 +2668,9 @@ do_match(int nargs)
 					memcpy(buf, buff, ilen);
 					memcpy(buf + ilen, subsepstr, subseplen);
 					memcpy(buf + ilen + subseplen, "start", 6);
-	
+
 					slen = ilen + subseplen + 5;
-	
+
 					it = make_number((AWKNUM) subpat_start + 1);
 					sub = make_string(buf, slen);
 					lhs = assoc_lookup(dest, sub);
@@ -2679,13 +2679,13 @@ do_match(int nargs)
 					if (dest->astore != NULL)
 						(*dest->astore)(dest, sub);
 					unref(sub);
-	
+
 					memcpy(buf, buff, ilen);
 					memcpy(buf + ilen, subsepstr, subseplen);
 					memcpy(buf + ilen + subseplen, "length", 7);
-	
+
 					slen = ilen + subseplen + 6;
-	
+
 					it = make_number((AWKNUM) subpat_len);
 					sub = make_string(buf, slen);
 					lhs = assoc_lookup(dest, sub);
@@ -2720,9 +2720,9 @@ do_match(int nargs)
  * Gsub can be tricksy; particularly when handling the case of null strings.
  * The following awk code was useful in debugging problems.  It is too bad
  * that it does not readily translate directly into the C code, below.
- * 
+ *
  * #! /usr/local/bin/mawk -f
- * 
+ *
  * BEGIN {
  * 	true = 1; false = 0
  * 	print "--->", mygsub("abc", "b+", "FOO")
@@ -2732,7 +2732,7 @@ do_match(int nargs)
  * 	print "--->", mygsub("abc", "c+", "X")
  * 	print "--->", mygsub("abc", "x*$", "X")
  * }
- * 
+ *
  * function mygsub(str, regex, replace,	origstr, newstr, eosflag, nonzeroflag)
  * {
  * 	origstr = str;
@@ -2770,7 +2770,7 @@ do_match(int nargs)
  * 	}
  * 	if (length(str) > 0)
  * 		newstr = newstr str	# rest of string
- * 
+ *
  * 	return newstr
  * }
  */
@@ -2782,7 +2782,7 @@ do_match(int nargs)
  *
  * The relevant text is to be found on lines 6394-6407 (pages 166, 167) of the
  * 2001 standard:
- * 
+ *
  * sub(ere, repl[, in ])
  *  Substitute the string repl in place of the first instance of the
  *  extended regular expression ERE in string in and return the number of
@@ -2840,7 +2840,7 @@ do_sub(int nargs, unsigned int flags)
 	long current;
 	bool lastmatchnonzero;
 	char *mb_indices = NULL;
-	
+
 	if ((flags & GENSUB) != 0) {
 		double d;
 		NODE *glob_flag;
@@ -3046,7 +3046,7 @@ do_sub(int nargs, unsigned int flags)
 							int dig = scan[1] - '0';
 							if (dig < NUMSUBPATS(rp, target->stptr) && SUBPATSTART(rp, tp->stptr, dig) != -1) {
 								char *start, *end;
-		
+
 								start = target->stptr
 								      + SUBPATSTART(rp, target->stptr, dig);
 								end = target->stptr
@@ -3140,7 +3140,7 @@ done:
 	DEREF(rep_node);
 
 	if ((matches == 0 || (flags & LITERAL) != 0) && buf != NULL) {
-		efree(buf); 
+		efree(buf);
 		buf = NULL;
 	}
 
@@ -3149,7 +3149,7 @@ done:
 			/* return the result string */
 			DEREF(target);
 			assert(buf != NULL);
-			return make_str_node(buf, textlen, ALREADY_MALLOCED);	
+			return make_str_node(buf, textlen, ALREADY_MALLOCED);
 		}
 
 		/* return the original string */
@@ -3161,7 +3161,7 @@ done:
 		DEREF(target);
 	else if (matches > 0) {
 		unref(*lhs);
-		*lhs = make_str_node(buf, textlen, ALREADY_MALLOCED);	
+		*lhs = make_str_node(buf, textlen, ALREADY_MALLOCED);
 	}
 
 	return make_number((AWKNUM) matches);

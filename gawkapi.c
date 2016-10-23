@@ -2,22 +2,22 @@
  * gawkapi.c -- Implement the functions defined for gawkapi.h
  */
 
-/* 
+/*
  * Copyright (C) 2012-2016 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -76,7 +76,7 @@ api_get_argument(awk_ext_id_t id, size_t count,
 			goto scalar;
 		}
 	}
-	
+
 	/* at this point, we have real type */
 	if (arg->type == Node_var_array || arg->type == Node_array_ref) {
 		if (wanted != AWK_ARRAY && wanted != AWK_UNDEFINED)
@@ -502,7 +502,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
  * 	- No access to special variables (NF, etc.)
  * 	- One special exception: PROCINFO.
  *	- Use sym_update() to change a value, including from UNDEFINED
- *	  to scalar or array. 
+ *	  to scalar or array.
  */
 /*
  * Lookup a variable, fills in value. No messing with the value
@@ -814,7 +814,7 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 }
 
 /*
- * remove_element --- remove an array element 
+ * remove_element --- remove an array element
  *		common code used by multiple functions
  */
 
