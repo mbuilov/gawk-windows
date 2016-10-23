@@ -9,20 +9,20 @@
 /*
  * Copyright (C) 1995 - 2001, 2003-2014, 2016,
  * the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -120,15 +120,15 @@ make_builtin(const awk_ext_func_t *funcinfo)
 			/* user-defined function */
 			fatal(_("make_builtin: can't redefine function `%s'"), name);
 		} else if (f->type == Node_ext_func) {
-			/* multiple extension() calls etc. */ 
+			/* multiple extension() calls etc. */
 			if (do_lint)
 				lintwarn(_("make_builtin: function `%s' already defined"), name);
 			return awk_false;
 		} else
-			/* variable name etc. */ 
+			/* variable name etc. */
 			fatal(_("make_builtin: function name `%s' previously defined"), name);
 	} else if (check_special(name) >= 0)
-		fatal(_("make_builtin: can't use gawk built-in `%s' as function name"), name); 
+		fatal(_("make_builtin: can't use gawk built-in `%s' as function name"), name);
 
 	if (count < 0)
 		fatal(_("make_builtin: negative argument count for function `%s'"),
@@ -154,7 +154,7 @@ get_argument(int i)
 	NODE *t;
 	int arg_count;
 	INSTRUCTION *pc;
-	
+
 	pc = TOP()->code_ptr;		/* Op_ext_builtin instruction */
 	arg_count = pc->expr_count;	/* # of arguments supplied */
 
@@ -167,7 +167,7 @@ get_argument(int i)
 
 	if (t->type == Node_array_ref) {
 		if (t->orig_array->type == Node_var) {
-			/* already a scalar, can no longer use it as array */ 
+			/* already a scalar, can no longer use it as array */
 			t->type = Node_var;
 			t->var_value = Nnull_string;
 			return t;
@@ -191,10 +191,10 @@ get_actual_argument(NODE *t, int i, bool want_array)
 {
 	char *fname;
 	INSTRUCTION *pc;
-	
+
 	pc = TOP()->code_ptr;	/* Op_ext_builtin instruction */
 	fname = (pc + 1)->func_name;
- 
+
 	if (t->type == Node_var_new) {
 		if (want_array)
 			return force_array(t, false);
@@ -239,7 +239,7 @@ close_extensions()
 	if (srcfiles == NULL)
 		return;
 
-	for (s = srcfiles->next; s != srcfiles; s = s->next) 
+	for (s = srcfiles->next; s != srcfiles; s = s->next)
 		if (s->stype == SRC_EXTLIB && s->fini_func)
                	        (*s->fini_func)();
 }

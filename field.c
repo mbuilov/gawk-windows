@@ -2,22 +2,22 @@
  * field.c - routines for dealing with fields and record parsing
  */
 
-/* 
+/*
  * Copyright (C) 1986, 1988, 1989, 1991-2016 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -276,7 +276,7 @@ set_record(const char *buf, int cnt)
 	memcpy(databuf, buf, cnt);
 
 	/*
-	 * Add terminating '\0' so that C library routines 
+	 * Add terminating '\0' so that C library routines
 	 * will know when to stop.
 	 */
 	databuf[cnt] = '\0';
@@ -339,7 +339,7 @@ set_NF()
 	assert(NF != -1);
 
 	(void) force_number(NF_node->var_value);
-	nf = get_number_si(NF_node->var_value); 
+	nf = get_number_si(NF_node->var_value);
 	if (nf < 0)
 		fatal(_("NF set to negative value"));
 	NF = nf;
@@ -407,7 +407,7 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 		sep = scan;
 		while (scan < end && (*scan == ' ' || *scan == '\t' || *scan == '\n'))
 			scan++;
-		if (sep_arr != NULL && sep < scan) 
+		if (sep_arr != NULL && sep < scan)
 			set_element(nf, sep, (long)(scan - sep), sep_arr);
 	}
 
@@ -439,8 +439,8 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 		}
 		(*set)(++nf, field,
 		       (long)(scan + RESTART(rp, scan) - field), n);
-		if (sep_arr != NULL) 
-	    		set_element(nf, scan + RESTART(rp, scan), 
+		if (sep_arr != NULL)
+	    		set_element(nf, scan + RESTART(rp, scan),
            			(long) (REEND(rp, scan) - RESTART(rp, scan)), sep_arr);
 		scan += REEND(rp, scan);
 		field = scan;
@@ -504,7 +504,7 @@ def_parse_field(long up_to,	/* parse only up to this field number */
 	sep = scan;
 	for (; nf < up_to; scan++) {
 		/*
-		 * special case:  fs is single space, strip leading whitespace 
+		 * special case:  fs is single space, strip leading whitespace
 		 */
 		while (scan < end && (*scan == ' ' || *scan == '\t' || *scan == '\n'))
 			scan++;
@@ -786,11 +786,11 @@ get_field(long requested, Func_ptr *assign)
 	/*
 	 * Keep things uniform. Also, mere intention of assigning something
 	 * to $n should not make $0 invalid. Makes sense to invalidate $0
-	 * after the actual assignment is performed. Not a real issue in 
+	 * after the actual assignment is performed. Not a real issue in
 	 * the interpreter otherwise, but causes problem in the
 	 * debugger when watching or printing fields.
 	 */
-  
+
 	if (assign != NULL)
 		*assign = invalidate_field0;	/* $0 needs reconstruction */
 #endif
@@ -906,12 +906,12 @@ do_split(int nargs)
 
 	if (sep_arr != NULL) {
 		if (sep_arr == arr)
-			fatal(_("split: cannot use the same array for second and fourth args")); 
+			fatal(_("split: cannot use the same array for second and fourth args"));
 
 		/* This checks need to be done before clearing any of the arrays */
 		for (tmp = sep_arr->parent_array; tmp != NULL; tmp = tmp->parent_array)
 			if (tmp == arr)
-				fatal(_("split: cannot use a subarray of second arg for fourth arg"));	
+				fatal(_("split: cannot use a subarray of second arg for fourth arg"));
 		for (tmp = arr->parent_array; tmp != NULL; tmp = tmp->parent_array)
 			if (tmp == sep_arr)
 				fatal(_("split: cannot use a subarray of fourth arg for second arg"));
@@ -997,7 +997,7 @@ do_patsplit(int nargs)
 
 	if (sep_arr != NULL) {
 		if (sep_arr == arr)
-			fatal(_("patsplit: cannot use the same array for second and fourth args")); 
+			fatal(_("patsplit: cannot use the same array for second and fourth args"));
 
 		/* These checks need to be done before clearing any of the arrays */
 		for (tmp = sep_arr->parent_array; tmp != NULL; tmp = tmp->parent_array)
@@ -1091,7 +1091,7 @@ set_FIELDWIDTHS()
 		    	|| (*end != '\0' && ! is_blank(*end))
 				|| !(0 < tmp && tmp <= INT_MAX)
 		) {
-			fatal_error = true;	
+			fatal_error = true;
 			break;
 		}
 		FIELDWIDTHS[i] = tmp;
@@ -1162,7 +1162,7 @@ set_FS()
 	 * FS_regexp will be NULL with a non-null FS_re_yes_case.
 	 * refree() handles null argument; no need for `if (FS_regexp != NULL)' below.
 	 * Please do not remerge.
-	 */ 
+	 */
 	refree(FS_re_yes_case);
 	refree(FS_re_no_case);
 	FS_re_yes_case = FS_re_no_case = FS_regexp = NULL;
@@ -1405,19 +1405,19 @@ incr_scan(char **scanp, size_t len, mbstate_t *mbs)
  * BEGIN {
  * 	false = 0
  * 	true = 1
- * 
+ *
  * 	fpat[1] = "([^,]*)|(\"[^\"]+\")"
  * 	fpat[2] = fpat[1]
  * 	fpat[3] = fpat[1]
  * 	fpat[4] = "aa+"
  * 	fpat[5] = fpat[4]
- * 
+ *
  * 	data[1] = "Robbins,,Arnold,"
  * 	data[2] = "Smith,,\"1234 A Pretty Place, NE\",Sometown,NY,12345-6789,USA"
  * 	data[3] = "Robbins,Arnold,\"1234 A Pretty Place, NE\",Sometown,NY,12345-6789,USA"
  * 	data[4] = "bbbaaacccdddaaaaaqqqq"
  * 	data[5] = "bbbaaacccdddaaaaaqqqqa" # should get trailing qqqa
- * 
+ *
  * 	for (i = 1; i in data; i++) {
  * 		printf("Splitting: <%s>\n", data[i])
  * 		n = mypatsplit(data[i], fields, fpat[i], seps)
@@ -1428,7 +1428,7 @@ incr_scan(char **scanp, size_t len, mbstate_t *mbs)
  * 			printf("seps[%s] = <%s>\n", j, seps[j])
  * 	}
  * }
- * 
+ *
  * function mypatsplit(string, array, pattern, seps,
  * 			eosflag, non_empty, nf) # locals
  * {
@@ -1436,7 +1436,7 @@ incr_scan(char **scanp, size_t len, mbstate_t *mbs)
  * 	delete seps
  * 	if (length(string) == 0)
  * 		return 0
- * 
+ *
  * 	eosflag = non_empty = false
  * 	nf = 0
  * 	while (match(string, pattern)) {
@@ -1487,7 +1487,7 @@ incr_scan(char **scanp, size_t len, mbstate_t *mbs)
  * 	}
  * 	if (length(string) > 0)
  * 		seps[nf] = string
- * 
+ *
  * 	return length(array)
  * }
  */
@@ -1560,7 +1560,7 @@ fpat_parse_field(long up_to,	/* parse only up to this field number */
 			 * last match was non-empty, and at the
 			 * current character we get a zero length match,
 			 * which we don't want, so skip over it
-			 */ 
+			 */
 			non_empty = false;
 			if (sep_arr != NULL) {
 				need_to_set_sep = false;

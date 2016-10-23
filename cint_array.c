@@ -2,23 +2,23 @@
  * cint_array.c - routines for arrays of (mostly) consecutive positive integer indices.
  */
 
-/* 
+/*
  * Copyright (C) 1986, 1988, 1989, 1991-2013, 2016,
  * the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -37,7 +37,7 @@ extern NODE **is_integer(NODE *symbol, NODE *subs);
  * THRESHOLD    ---  Maximum capacity waste; THRESHOLD >= 2^(NHAT + 1).
  */
 
-static int NHAT = 10; 
+static int NHAT = 10;
 static long THRESHOLD;
 
 /*
@@ -102,7 +102,7 @@ static void leaf_info(NODE *array, NODE *ndump, const char *aname);
 static void leaf_print(NODE *array, size_t bi, int indent_level);
 #endif
 
-/* powers of 2 table upto 2^30 */ 
+/* powers of 2 table upto 2^30 */
 static const long power_two_table[] = {
 	1, 2, 4, 8, 16, 32, 64,
 	128, 256, 512, 1024, 2048, 4096,
@@ -118,7 +118,7 @@ static const long power_two_table[] = {
 /*
  * To store 2^n integers, allocate top-level array of size n, elements
  * of which are 1-Dimensional (leaf-array) of geometrically increasing
- * size (power of 2).   
+ * size (power of 2).
  *
  *  [0]   -->  [ 0 ]
  *  [1]   -->  [ 1 ]
@@ -128,7 +128,7 @@ static const long power_two_table[] = {
  *  |k|   -->  [ 2^(k - 1)| ...  | 2^k - 1 ]
  *  ...
  *
- * For a given integer n (> 0), the leaf-array is at 1 + floor(log2(n)). 
+ * For a given integer n (> 0), the leaf-array is at 1 + floor(log2(n)).
  *
  * The idea for the geometrically increasing array sizes is from:
  * 	Fast Functional Lists, Hash-Lists, Deques and Variable Length Arrays.
@@ -394,7 +394,7 @@ cint_copy(NODE *symbol, NODE *newsymb)
 	for (i = NHAT; i < INT32_BIT; i++) {
 		if (old[i] == NULL)
 			continue;
-		new[i] = make_node(Node_array_tree); 
+		new[i] = make_node(Node_array_tree);
 		tree_copy(newsymb, old[i], new[i]);
 	}
 
@@ -494,7 +494,7 @@ cint_dump(NODE *symbol, NODE *ndump)
 		xsize = xn->table_size;
 	}
 	cint_size = symbol->table_size - xsize;
-	
+
 	if ((symbol->flags & XARRAY) == 0)
 		fprintf(output_fp, "%s `%s'\n",
 			(symbol->parent_array == NULL) ? "array" : "sub-array",
@@ -525,7 +525,7 @@ cint_dump(NODE *symbol, NODE *ndump)
 		/* Node_array_tree  + HAT */
 		kb += (sizeof(NODE) + tree_kilobytes(tn)) / 1024.0;
 	}
-	kb += (INT32_BIT * sizeof(NODE *)) / 1024.0;	/* symbol->nodes */	
+	kb += (INT32_BIT * sizeof(NODE *)) / 1024.0;	/* symbol->nodes */
 	kb += (symbol->array_capacity * sizeof(NODE *)) / 1024.0;	/* value nodes in Node_array_leaf(s) */
 	if (xn != NULL) {
 		if (xn->array_funcs == int_array_func)
@@ -600,12 +600,12 @@ cint_hash(long k)
 	 * By Sean Eron Anderson
 	 * seander@cs.stanford.edu
 	 * Individually, the code snippets here are in the public domain
-	 * (unless otherwise noted) — feel free to use them however you please.
-	 * The aggregate collection and descriptions are © 1997-2005
+	 * (unless otherwise noted) --- feel free to use them however you please.
+	 * The aggregate collection and descriptions are (C) 1997-2005
 	 * Sean Eron Anderson. The code and descriptions are distributed in the
 	 * hope that they will be useful, but WITHOUT ANY WARRANTY and without
 	 * even the implied warranty of merchantability or fitness for a particular
-	 * purpose.  
+	 * purpose.
 	 *
 	 */
 
@@ -678,15 +678,15 @@ cint_print(NODE *symbol)
 /*
  *  A half HAT is defined here as a HAT with a top-level array of size n^2/2
  *  and holds the first n^2/2 elements.
- * 
+ *
  *   1. 2^8 elements can be stored in a full HAT of size 2^4.
- *   2. 2^9 elements can be stored in a half HAT of size 2^5.     
+ *   2. 2^9 elements can be stored in a half HAT of size 2^5.
  *   3. When the number of elements is some power of 2, it
  *      can be stored in a full or a half HAT.
  *   4. When the number of elements is some power of 2, it
  *      can be stored in a HAT (full or half) with HATs as leaf elements
  *      (full or half),  and so on (e.g. 2^8 elements in a HAT of size 2^4 (top-level
- *      array dimension) with each leaf array being a HAT of size 2^2). 
+ *      array dimension) with each leaf array being a HAT of size 2^2).
  *
  *  IMPLEMENTATION DETAILS:
  *    1. A HAT of 2^12 elements needs 2^6 house-keeping NODEs
@@ -737,7 +737,7 @@ tree_lookup(NODE *symbol, NODE *tree, long k, int m, long base)
 	 */
 
 	n = (m + 1) / 2;
-	
+
 	if (tree->table_size == 0) {
 		size_t actual_size;
 		NODE **table;
@@ -920,7 +920,7 @@ tree_list(NODE *tree, NODE **list, assoc_kind_t assoc_kind)
 
 static void
 tree_copy(NODE *newsymb, NODE *tree, NODE *newtree)
-{ 
+{
 	NODE **old, **new;
 	size_t j, hsize;
 
@@ -1061,13 +1061,13 @@ leaf_lookup(NODE *symbol, NODE *array, long k, long size, long base)
 }
 
 
-/* leaf_exists --- check if the array contains an integer subscript */ 
+/* leaf_exists --- check if the array contains an integer subscript */
 
 static inline NODE **
 leaf_exists(NODE *array, long k)
 {
 	NODE **lhs;
-	lhs = array->nodes + (k - array->array_base); 
+	lhs = array->nodes + (k - array->array_base);
 	return (*lhs != NULL) ? lhs : NULL;
 }
 
@@ -1086,7 +1086,7 @@ leaf_clear(NODE *array)
 			continue;
 		if (r->type == Node_var_array) {
 			assoc_clear(r);		/* recursively clear all sub-arrays */
-			efree(r->vname);			
+			efree(r->vname);
 			freenode(r);
 		} else
 			unref(r);
@@ -1104,7 +1104,7 @@ leaf_remove(NODE *symbol, NODE *array, long k)
 {
 	NODE **lhs;
 
-	lhs = array->nodes + (k - array->array_base); 
+	lhs = array->nodes + (k - array->array_base);
 	if (*lhs == NULL)
 		return false;
 	*lhs = NULL;
@@ -1171,7 +1171,7 @@ leaf_list(NODE *array, NODE **list, assoc_kind_t assoc_kind)
 		/* index */
 		num = array->array_base + ci;
 		if ((assoc_kind & AISTR) != 0) {
-			sprintf(buf, "%ld", num); 
+			sprintf(buf, "%ld", num);
 			subs = make_string(buf, strlen(buf));
 			subs->numbr = num;
 			subs->flags |= (NUMCUR|NUMINT);

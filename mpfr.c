@@ -2,22 +2,22 @@
  * mpfr.c - routines for arbitrary-precision number support in gawk.
  */
 
-/* 
+/*
  * Copyright (C) 2012, 2013, 2015 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -118,7 +118,7 @@ mpg_node(unsigned int tp)
 		mpz_init(r->mpg_i);
 		r->flags = MPZN;
 	}
-	
+
 	r->valref = 1;
 	r->flags |= MALLOC|NUMBER|NUMCUR;
 	r->stptr = NULL;
@@ -151,7 +151,7 @@ mpg_make_number(double x)
 	return r;
 }
 
-/* mpg_strtoui --- assign arbitrary-precision integral value from a string */ 
+/* mpg_strtoui --- assign arbitrary-precision integral value from a string */
 
 int
 mpg_strtoui(mpz_ptr zi, char *str, size_t len, char **end, int base)
@@ -264,7 +264,7 @@ mpg_zero(NODE *n)
 		n->flags &= ~MPFN;
 	}
 	if (! is_mpg_integer(n)) {
-		mpz_init(n->mpg_i);	/* this also sets its value to 0 */ 
+		mpz_init(n->mpg_i);	/* this also sets its value to 0 */
 		n->flags |= MPZN;
 	} else
 		mpz_set_si(n->mpg_i, 0);
@@ -335,7 +335,7 @@ done:
 	if (errno == 0 && ptr == cpend)
 		return true;
 	errno = 0;
-	return false; 
+	return false;
 }
 
 /* mpg_force_number --- force a value to be a multiple-precision number */
@@ -384,7 +384,7 @@ mpg_format_val(const char *format, int index, NODE *s)
 		efree(s->stptr);
 	s->stptr = r->stptr;
 	freenode(r);	/* Do not unref(r)! We want to keep s->stptr == r->stpr.  */
- 
+
 	s->flags |= STRCUR;
 	free_wstr(s);
 	return s;
@@ -427,8 +427,8 @@ mpg_cmp(const NODE *t1, const NODE *t2)
 
 
 /*
- * mpg_update_var --- update NR or FNR. 
- *	NR_node->var_value(mpz_t) = MNR(mpz_t) * LONG_MAX + NR(long) 
+ * mpg_update_var --- update NR or FNR.
+ *	NR_node->var_value(mpz_t) = MNR(mpz_t) * LONG_MAX + NR(long)
  */
 
 NODE *
@@ -482,7 +482,7 @@ mpg_set_var(NODE *n)
 	if (is_mpg_integer(val))
 		r = val->mpg_i;
 	else {
-		/* convert float to integer */ 
+		/* convert float to integer */
 		mpfr_get_z(mpzval, val->mpg_numbr, MPFR_RNDZ);
 		r = mpzval;
 	}
@@ -548,7 +548,7 @@ set_PREC()
 
 	if (prec <= 0) {
 		force_number(val);
-		prec = get_number_si(val);		
+		prec = get_number_si(val);
 		if (prec < MPFR_PREC_MIN || prec > MPFR_PREC_MAX) {
 			force_string(val);
 			warning(_("PREC value `%.*s' is invalid"), (int) val->stlen, val->stptr);
@@ -683,7 +683,7 @@ do_mpfr_atan2(int nargs)
 	p1 = MP_FLOAT(t1);
 	p2 = MP_FLOAT(t2);
 	res = mpg_float();
-	/* See MPFR documentation for handling of special values like +inf as an argument */ 
+	/* See MPFR documentation for handling of special values like +inf as an argument */
 	tval = mpfr_atan2(res->mpg_numbr, p1, p2, ROUND_MODE);
 	IEEE_FMT(res->mpg_numbr, tval);
 
@@ -823,11 +823,11 @@ do_mpfr_compl(int nargs)
 			mpg_fmt(_("comp(%Rg): fractional value will be truncated"), p)
 					);
 		}
-		
+
 		mpfr_get_z(mpzval, p, MPFR_RNDZ);	/* float to integer conversion */
 		zptr = mpzval;
 	} else {
-		/* (tmp->flags & MPZN) != 0 */ 
+		/* (tmp->flags & MPZN) != 0 */
 		zptr = tmp->mpg_i;
 		if (do_lint) {
 			if (mpz_sgn(zptr) < 0)
@@ -888,8 +888,8 @@ get_intval(NODE *t1, int argnum, const char *op)
 		mpz_init(pz);
 		mpfr_get_z(pz, left, MPFR_RNDZ);	/* float to integer conversion */
 		return pz;	/* should be freed */
-	} 
-	/* (t1->flags & MPZN) != 0 */ 
+	}
+	/* (t1->flags & MPZN) != 0 */
 	pz = t1->mpg_i;
 	if (do_lint) {
 		if (mpz_sgn(pz) < 0)
@@ -922,7 +922,7 @@ do_mpfr_lshift(int nargs)
 	NODE *t1, *t2, *res;
 	unsigned long shift;
 	mpz_ptr pz1, pz2;
- 
+
 	t2 = POP_SCALAR();
 	t1 = POP_SCALAR();
 
@@ -954,7 +954,7 @@ do_mpfr_rshift(int nargs)
 	NODE *t1, *t2, *res;
 	unsigned long shift;
 	mpz_ptr pz1, pz2;
- 
+
 	t2 = POP_SCALAR();
 	t1 = POP_SCALAR();
 
@@ -964,7 +964,7 @@ do_mpfr_rshift(int nargs)
 	/* N.B: See do_mpfp_lshift. */
 	shift = mpz_get_ui(pz2);	/* GMP integer => unsigned long conversion */
 	res = mpg_integer();
-	mpz_fdiv_q_2exp(res->mpg_i, pz1, shift);	/* res = pz1 / 2^shift, round towards −inf */
+	mpz_fdiv_q_2exp(res->mpg_i, pz1, shift);	/* res = pz1 / 2^shift, round towards -inf */
 
 	free_intval(t1, pz1);
 	free_intval(t2, pz2);
@@ -1285,13 +1285,13 @@ mpg_tofloat(mpfr_ptr mf, mpz_ptr mz)
 	/*
 	 * When implicitely converting a GMP integer operand to a MPFR float, use
 	 * a precision sufficiently large to hold the converted value exactly.
-	 * 	
+	 *
  	 *	$ ./gawk -M 'BEGIN { print 13 % 2 }'
  	 *	1
  	 * If the user-specified precision is used to convert the integer 13 to a
 	 * float, one will get:
  	 *	$ ./gawk -M 'BEGIN { PREC=2; print 13 % 2.0 }'
- 	 *	0	
+ 	 *	0
  	 */
 
 	prec = mpz_sizeinbase(mz, 2);	/* most significant 1 bit position starting at 1 */
@@ -1305,7 +1305,7 @@ mpg_tofloat(mpfr_ptr mf, mpz_ptr mz)
 	else
 		prec = PRECISION_MIN;
 	/*
-	 * Always set the precision to avoid hysteresis, since do_mpfr_func 
+	 * Always set the precision to avoid hysteresis, since do_mpfr_func
 	 * may copy our precision.
 	 */
 	if (prec != mpfr_get_prec(mf))
@@ -1316,7 +1316,7 @@ mpg_tofloat(mpfr_ptr mf, mpz_ptr mz)
 }
 
 
-/* mpg_add --- add arbitrary-precision numbers */ 
+/* mpg_add --- add arbitrary-precision numbers */
 
 static NODE *
 mpg_add(NODE *t1, NODE *t2)
@@ -1399,7 +1399,7 @@ mpg_mul(NODE *t1, NODE *t2)
 }
 
 
-/* mpg_pow --- exponentiation involving arbitrary-precision numbers */ 
+/* mpg_pow --- exponentiation involving arbitrary-precision numbers */
 
 static NODE *
 mpg_pow(NODE *t1, NODE *t2)
@@ -1498,11 +1498,11 @@ mpg_mod(NODE *t1, NODE *t2)
 	}
 	return r;
 }
-	
+
 /*
  * mpg_interpret --- pre-exec hook in the interpreter. Handles
  *	arithmetic operations with MPFR/GMP numbers.
- */ 
+ */
 
 static int
 mpg_interpret(INSTRUCTION **cp)
@@ -1583,7 +1583,7 @@ quotient:
 		if (op == Op_quotient)
 			DEREF(t2);
 		REPLACE(r);
-		break;		
+		break;
 
 	case Op_mod_i:
 		t2 = force_number(pc->memory);

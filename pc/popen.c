@@ -104,7 +104,7 @@ scriptify(const char *command)
     free(cmd);
     cmd = NULL;
   }
-  if (fp) fclose(fp); 
+  if (fp) fclose(fp);
   return(cmd);
 }
 

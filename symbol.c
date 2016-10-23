@@ -2,22 +2,22 @@
  * symbol.c - routines for symbol table management and code allocation
  */
 
-/* 
+/*
  * Copyright (C) 1986, 1988, 1989, 1991-2015 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -71,7 +71,7 @@ init_symbol_table()
 /*
  * install_symbol:
  * Install a global name in the symbol table, even if it is already there.
- * Caller must check against redefinition if that is desired. 
+ * Caller must check against redefinition if that is desired.
  */
 
 NODE *
@@ -129,7 +129,7 @@ make_params(char **pnames, int pcount)
 {
 	NODE *p, *parms;
 	int i;
-	
+
 	if (pcount <= 0 || pnames == NULL)
 		return NULL;
 
@@ -242,12 +242,12 @@ destroy_symbol(NODE *r)
 			NODE *n;
 			int i;
 			int pcount = r->param_cnt;
-				
-			/* function parameters of type Node_param_list */				
+
+			/* function parameters of type Node_param_list */
 			for (i = 0; i < pcount; i++) {
 				n = r->fparms + i;
 				efree(n->param);
-			}		
+			}
 			efree(r->fparms);
 		}
 		break;
@@ -260,7 +260,7 @@ destroy_symbol(NODE *r)
 		assoc_clear(r);
 		break;
 
-	case Node_var: 
+	case Node_var:
 		unref(r->var_value);
 		break;
 
@@ -369,7 +369,7 @@ comp_symbol(const void *v1, const void *v2)
 typedef enum { FUNCTION = 1, VARIABLE } SYMBOL_TYPE;
 
 /* get_symbols --- return a list of optionally sorted symbols */
- 
+
 static NODE **
 get_symbols(SYMBOL_TYPE what, bool sort)
 {
@@ -448,7 +448,7 @@ function_list(bool sort)
 	return get_symbols(FUNCTION, sort);
 }
 
-/* print_vars --- print names and values of global variables */ 
+/* print_vars --- print names and values of global variables */
 
 void
 print_vars(NODE **table, int (*print_func)(FILE *, const char *, ...), FILE *fp)
@@ -708,7 +708,7 @@ bcfree(INSTRUCTION *cp)
 	cp->opcode = 0;
 	cp->nexti = pool_list->freei;
 	pool_list->freei = cp;
-}	
+}
 
 /* bcalloc --- allocate a new instruction */
 
@@ -804,7 +804,7 @@ push_context(AWK_CONTEXT *ctxt)
 	ctxt_level++;
 }
 
-/* pop_context --- switch to previous execution context. */ 
+/* pop_context --- switch to previous execution context. */
 
 void
 pop_context()
@@ -831,7 +831,7 @@ in_main_context()
 	return (ctxt_level == 1);
 }
 
-/* free_context --- free context structure and related data. */ 
+/* free_context --- free context structure and related data. */
 
 void
 free_context(AWK_CONTEXT *ctxt, bool keep_globals)
@@ -864,7 +864,7 @@ free_context(AWK_CONTEXT *ctxt, bool keep_globals)
 	efree(ctxt);
 }
 
-/* free_bc_internal --- free internal memory of an instruction. */ 
+/* free_bc_internal --- free internal memory of an instruction. */
 
 static void
 free_bc_internal(INSTRUCTION *cp)
@@ -888,7 +888,7 @@ free_bc_internal(INSTRUCTION *cp)
 		if (m->re_text != NULL)
 			unref(m->re_text);
 		freenode(m);
-		break;   		
+		break;
 	case Op_token:
 		/* token lost during error recovery in yyparse */
 		if (cp->lextok != NULL)
@@ -906,7 +906,7 @@ free_bc_internal(INSTRUCTION *cp)
 	case Op_illegal:
 		cant_happen();
 	default:
-		break;	
+		break;
 	}
 }
 

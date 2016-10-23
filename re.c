@@ -2,22 +2,22 @@
  * re.c - compile regular expressions.
  */
 
-/* 
+/*
  * Copyright (C) 1991-2016 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -75,7 +75,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	/*
 	 * Build a copy of the string (in buf) with the
 	 * escaped characters translated, and generate the regex
-	 * from that. 
+	 * from that.
 	 */
 	if (buf == NULL) {
 		emalloc(buf, char *, len + 1, "make_regexp");
@@ -243,7 +243,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 			break;
 		}
 	}
- 
+
 	return rp;
 }
 
@@ -315,7 +315,7 @@ void
 refree(Regexp *rp)
 {
 	if (rp == NULL)
-		return; 
+		return;
 	rp->pat.translate = NULL;
 	regfree(& rp->pat);
 	if (rp->regs.start)

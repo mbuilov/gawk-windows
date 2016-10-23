@@ -2,22 +2,22 @@
  * protos.h -- function prototypes for when the headers don't have them.
  */
 
-/* 
+/*
  * Copyright (C) 1991 - 2002, 2011 the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -64,7 +64,7 @@ extern size_t strftime(char *, size_t, const char *, const struct tm *);
 extern time_t time(time_t *);
 
 extern FILE *fdopen(int, const char *);
-extern int fprintf(FILE *, const char *, ...); 
+extern int fprintf(FILE *, const char *, ...);
 #if ! defined(__GNU_LIBRARY__)
 extern size_t fwrite(const aptr_t, size_t, size_t, FILE *);
 #endif
@@ -124,7 +124,7 @@ extern unsigned long int strtoul(const char *, char **endptr, int base);
 #ifndef HAVE_TZSET
 extern void tzset();
 #endif
- 
+
 #ifndef HAVE_MKTIME
 extern time_t mktime(struct tm *tp);
 #endif

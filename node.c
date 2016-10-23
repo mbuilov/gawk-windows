@@ -2,23 +2,23 @@
  * node.c -- routines for node management
  */
 
-/* 
+/*
  * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003-2015,
  * the Free Software Foundation, Inc.
- * 
+ *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
- * 
+ *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -173,7 +173,7 @@ goodnum:
 
 /*
  * The following lookup table is used as an optimization in force_string;
- * (more complicated) variations on this theme didn't seem to pay off, but 
+ * (more complicated) variations on this theme didn't seem to pay off, but
  * systematic testing might be in order at some point.
  */
 static const char *values[] = {
@@ -323,7 +323,7 @@ r_dupnode(NODE *n)
 			r->flags |= WSTRCUR;
 		}
 	}
-	
+
 	return r;
 }
 
@@ -394,7 +394,7 @@ make_str_node(const char *s, size_t len, int flags)
 		memcpy(r->stptr, s, len);
 	}
 	r->stptr[len] = '\0';
-       
+
 	if ((flags & SCAN) != 0) {	/* scan for escape sequences */
 		const char *pf;
 		char *ptm;
@@ -478,16 +478,16 @@ r_unref(NODE *tmp)
  *
  * Parse a C escape sequence.  STRING_PTR points to a variable containing a
  * pointer to the string to parse.  That pointer is updated past the
- * characters we use.  The value of the escape sequence is returned. 
+ * characters we use.  The value of the escape sequence is returned.
  *
  * A negative value means the sequence \ newline was seen, which is supposed to
- * be equivalent to nothing at all. 
+ * be equivalent to nothing at all.
  *
  * If \ is followed by a null character, we return a negative value and leave
- * the string pointer pointing at the null character. 
+ * the string pointer pointing at the null character.
  *
  * If \ is followed by 000, we return 0 and leave the string pointer after the
- * zeros.  A value of 0 does not mean end of string.  
+ * zeros.  A value of 0 does not mean end of string.
  *
  * POSIX doesn't allow \x.
  */
@@ -981,7 +981,7 @@ void init_btowc_cache()
 #define BLOCKCHUNK 100
 
 BLOCK nextfree[BLOCK_MAX] = {
-	{ 0, NULL},	/* invalid */	
+	{ 0, NULL},	/* invalid */
 	{ sizeof(NODE), NULL },
 	{ sizeof(BUCKET), NULL },
 };
