@@ -18491,12 +18491,12 @@ Return the value of @var{val}, shifted right by @var{count} bits.
 Return the bitwise XOR of the arguments. There must be at least two.
 @end table
 
-For all of these functions, first the double-precision floating-point value is
-converted to the widest C unsigned integer type, then the bitwise operation is
-performed.  If the result cannot be represented exactly as a C @code{double},
-leading nonzero bits are removed one by one until it can be represented
-exactly.  The result is then converted back into a C @code{double}.  (If
-you don't understand this paragraph, don't worry about it.)
+@quotation CAUTION
+Beginning with @command{gawk} @value{VERSION} 4.2, negative
+operands are not allowed for any of these functions. A negative
+operand produces a fatal error.  See the sidebar
+``Beware The Smoke and Mirrors!'' for more information as to why.
+@end quotation
 
 Here is a user-defined function (@pxref{User-defined})
 that illustrates the use of these functions:
@@ -18600,6 +18600,60 @@ decimal and octal values for the same numbers
 (@pxref{Nondecimal-numbers}),
 and then demonstrates the
 results of the @code{compl()}, @code{lshift()}, and @code{rshift()} functions.
+
+@sidebar Beware The Smoke and Mirrors!
+
+It other languages, bitwise operations are performed on integer values,
+not floating-point values.  As a general statement, such operations work
+best when performed on unsigned integers.
+
+@command{gawk} attempts to treat the arguments to the bitwise functions
+as unsigned integers.  For this reason, negative arguments produce a
+fatal error.
+
+In normal operation, for all of these functions, first the
+double-precision floating-point value is converted to the widest C
+unsigned integer type, then the bitwise operation is performed.  If the
+result cannot be represented exactly as a C @code{double}, leading
+nonzero bits are removed one by one until it can be represented exactly.
+The result is then converted back into a C @code{double}.@footnote{If you don't
+understand this paragraph, the upshot is that @command{gawk} can only
+store a particular range of integer values; numbers outside that range
+are reduced to fit within the range.}
+
+However, when using arbitrary precision arithmetic with the @option{-M}
+option (@pxref{Arbitrary Precision Arithmetic}), the results may differ.
+This is particularly noticable with the @code{compl()} function:
+
+@example
+$ @kbd{gawk 'BEGIN @{ print compl(42) @}'}
+@print{} 9007199254740949
+$ @kbd{gawk -M 'BEGIN @{ print compl(42) @}'}
+@print{} -43
+@end example
+
+What's going on becomes clear when printing the results
+in hexadecimal:
+
+@example
+$ @kbd{gawk 'BEGIN @{ printf "%#x\n", compl(42) @}'}
+@print{} 0x1fffffffffffd5
+$ @kbd{gawk -M 'BEGIN @{ printf "%#x\n", compl(42) @}'}
+@print{} 0xffffffffffffffd5
+@end example
+
+When using the @option{-M} option, under the hood, @command{gawk} uses
+GNU MP arbitrary precision integers which have at least 64 bits of precision.
+When not using @option{-M}, @command{gawk} stores integral values in
+regular double-precision floating point, which only maintain 53 bits of
+precision.  Furthermore, the GNU MP library treats (or least seems to treat)
+the leading bit as a sign bit; thus the result with @option{-M} in this case is
+a negative number.
+
+In short, using @command{gawk} for any but the simplest kind of bitwise
+operations is probably a bad idea; caveat emptor!
+
+@end sidebar
 
 @node Type Functions
 @subsection Getting Type Information
