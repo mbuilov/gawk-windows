@@ -2733,50 +2733,62 @@ init_awkpath(path_info *pi)
 	int len, i;
 	int max_path;		/* (# of allocated paths)-1 */
 
-#define INC_PATH 5
-
 	pi->max_pathlen = 0;
 	if ((path = getenv(pi->envname)) == NULL || *path == '\0')
 		path = pi->dfltp[0];
 
-	max_path = INC_PATH;
+	/* count number of separators */
+	for (max_path = 0, p = path; *p; p++)
+		if (*p == envsep)
+			max_path++;
+
 	emalloc(pi->awkpath, char **, (max_path + 1) * sizeof(char *), "init_awkpath");
 	memset(pi->awkpath, 0, (max_path + 1) * sizeof(char *));
 
-	end = start = path;
+	start = path;
 	i = 0;
+
+	if (*path == envsep)	/* null entry at front of path */
+		pi->awkpath[i++] = ".";
+
 	while (*start) {
-		while (*end && *end != envsep)
-			end++;
-		len = end - start;
-		if (len > 0) {
-			/* +2 is correct here; leave room for / */
-			emalloc(p, char *, len + 2, "init_awkpath");
-			memcpy(p, start, len);
+		if (*start == envsep) {
+			if (start[1] == envsep) {
+				pi->awkpath[i++] = ".";
+				if (pi->max_pathlen == 0)
+					pi->max_pathlen = 1;
+				start++;
+			} else if (start[1] == '\0') {
+				pi->awkpath[i++] = ".";
+				if (pi->max_pathlen == 0)
+					pi->max_pathlen = 1;
+				break;
+			} else
+				start++;
+		} else {
+			for (end = start; *end && *end != envsep; end++)
+				continue;
 
-			/* add directory punctuation if necessary */
-			if (! isdirpunct(end[-1]))
-				p[len++] = '/';
-			p[len] = '\0';
+			len = end - start;
+			if (len > 0) {
+				emalloc(p, char *, len + 2, "init_awkpath");
+				memcpy(p, start, len);
 
-			if (i == max_path) {
-				max_path += INC_PATH;
-				erealloc(pi->awkpath, char **, (max_path + 1) * sizeof(char *), "init_awkpath");
-				memset(pi->awkpath + i, 0, (INC_PATH + 1) * sizeof(char *));
-			}
-			pi->awkpath[i++] = p;
-			if (len > pi->max_pathlen)
-				pi->max_pathlen = len;
+				/* add directory punctuation if necessary */
+				if (! isdirpunct(end[-1]))
+					p[len++] = '/';
+				p[len] = '\0';
+				pi->awkpath[i++] = p;
+				if (len > pi->max_pathlen)
+					pi->max_pathlen = len;
+
+				start = end;
+			} else
+				start++;
 		}
-
-		/* skip one or more envsep char */
-		while (*end && *end == envsep)
-			end++;
-		start = end;
 	}
-	pi->awkpath[i] = NULL;
 
-#undef INC_PATH
+	pi->awkpath[i] = NULL;
 }
 
 /* do_find_source --- search $AWKPATH for file, return NULL if not found */
