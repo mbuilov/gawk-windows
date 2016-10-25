@@ -71,11 +71,11 @@ $!-------------------------------------------
 $ interchange = ""
 $ if arch_code .eqs. "V"
 $ then
-$   interchange = "/interchange"
+$   interchange = "/interchange/exclude=[.$5ngit...]*.*"
 $ endif
 $ if (swvers_maj .ges. "8") .and. (swvers_min .ges. 4)
 $ then
-$   interchange = "/interchange/noconvert"
+$   interchange = "/interchange/noconvert/exclude=[.^.git...]*.*"
 $ endif
 $!
 $!
