@@ -3334,11 +3334,13 @@ do_lshift(int nargs)
 		if ((fixtype(s2)->flags & NUMBER) == 0)
 			lintwarn(_("lshift: received non-numeric second argument"));
 	}
+
 	val = force_number(s1)->numbr;
 	shift = force_number(s2)->numbr;
+	if (val < 0 || shift < 0)
+		fatal(_("lshift(%f, %f): negative values are not allowed"), val, shift);
+
 	if (do_lint) {
-		if (val < 0 || shift < 0)
-			lintwarn(_("lshift(%f, %f): negative values will give strange results"), val, shift);
 		if (double_to_int(val) != val || double_to_int(shift) != shift)
 			lintwarn(_("lshift(%f, %f): fractional values will be truncated"), val, shift);
 		if (shift >= sizeof(uintmax_t) * CHAR_BIT)
@@ -3371,11 +3373,13 @@ do_rshift(int nargs)
 		if ((fixtype(s2)->flags & NUMBER) == 0)
 			lintwarn(_("rshift: received non-numeric second argument"));
 	}
+
 	val = force_number(s1)->numbr;
 	shift = force_number(s2)->numbr;
+	if (val < 0 || shift < 0)
+		fatal(_("rshift(%f, %f): negative values are not allowed"), val, shift);
+
 	if (do_lint) {
-		if (val < 0 || shift < 0)
-			lintwarn(_("rshift(%f, %f): negative values will give strange results"), val, shift);
 		if (double_to_int(val) != val || double_to_int(shift) != shift)
 			lintwarn(_("rshift(%f, %f): fractional values will be truncated"), val, shift);
 		if (shift >= sizeof(uintmax_t) * CHAR_BIT)
@@ -3412,8 +3416,8 @@ do_and(int nargs)
 			lintwarn(_("and: argument %d is non-numeric"), i);
 
 		val = force_number(s1)->numbr;
-		if (do_lint && val < 0)
-			lintwarn(_("and: argument %d negative value %g will give strange results"), i, val);
+		if (val < 0)
+			fatal(_("and: argument %d negative value %g is not allowed"), i, val);
 
 		uval = (uintmax_t) val;
 		res &= uval;
@@ -3444,8 +3448,8 @@ do_or(int nargs)
 			lintwarn(_("or: argument %d is non-numeric"), i);
 
 		val = force_number(s1)->numbr;
-		if (do_lint && val < 0)
-			lintwarn(_("or: argument %d negative value %g will give strange results"), i, val);
+		if (val < 0)
+			fatal(_("or: argument %d negative value %g is not allowed"), i, val);
 
 		uval = (uintmax_t) val;
 		res |= uval;
@@ -3476,8 +3480,8 @@ do_xor(int nargs)
 			lintwarn(_("xor: argument %d is non-numeric"), i);
 
 		val = force_number(s1)->numbr;
-		if (do_lint && val < 0)
-			lintwarn(_("xor: argument %d negative value %g will give strange results"), i, val);
+		if (val < 0)
+			fatal(_("xor: argument %d negative value %g is not allowed"), i, val);
 
 		uval = (uintmax_t) val;
 		if (i == 1)
@@ -3506,12 +3510,11 @@ do_compl(int nargs)
 	d = force_number(tmp)->numbr;
 	DEREF(tmp);
 
-	if (do_lint) {
-		if (d < 0)
-			lintwarn(_("compl(%f): negative value will give strange results"), d);
-		if (double_to_int(d) != d)
-			lintwarn(_("compl(%f): fractional value will be truncated"), d);
-	}
+	if (d < 0)
+		fatal(_("compl(%f): negative value is not allowed"), d);
+
+	if (do_lint && double_to_int(d) != d)
+		lintwarn(_("compl(%f): fractional value will be truncated"), d);
 
 	uval = (uintmax_t) d;
 	uval = ~ uval;

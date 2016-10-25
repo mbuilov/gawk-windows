@@ -1,3 +1,12 @@
+2016-10-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Disallow negative arguments to the bitwise functions.
+
+	* NEWS: Document this.
+	* builtin.c (do_lshift, do_rshift, do_and, do_or, do_xor, do_compl):
+	Make negative arguments a fatal error.
+	* mpfr.c (do_mpfr_compl, get_intval): Ditto.
+
 2016-10-23         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* General: Remove trailing whitespace from all relevant files.

@@ -813,11 +813,11 @@ do_mpfr_compl(int nargs)
 			/* [+-]inf or NaN */
 			return tmp;
 		}
-		if (do_lint) {
-			if (mpfr_sgn(p) < 0)
-				lintwarn("%s",
-			mpg_fmt(_("compl(%Rg): negative value will give strange results"), p)
+		if (mpfr_sgn(p) < 0)
+			fatal("%s",
+			mpg_fmt(_("compl(%Rg): negative value is not allowed"), p)
 					);
+		if (do_lint) {
 			if (! mpfr_integer_p(p))
 				lintwarn("%s",
 			mpg_fmt(_("comp(%Rg): fractional value will be truncated"), p)
@@ -829,12 +829,10 @@ do_mpfr_compl(int nargs)
 	} else {
 		/* (tmp->flags & MPZN) != 0 */
 		zptr = tmp->mpg_i;
-		if (do_lint) {
-			if (mpz_sgn(zptr) < 0)
-				lintwarn("%s",
-			mpg_fmt(_("cmpl(%Zd): negative values will give strange results"), zptr)
+		if (mpz_sgn(zptr) < 0)
+				fatal("%s",
+			mpg_fmt(_("compl(%Zd): negative values is not allowed"), zptr)
 					);
-		}
 	}
 
 	r = mpg_integer();
@@ -870,13 +868,13 @@ get_intval(NODE *t1, int argnum, const char *op)
 			return pz;	/* should be freed */
 		}
 
-		if (do_lint) {
-			if (mpfr_sgn(left) < 0)
-				lintwarn("%s",
-		mpg_fmt(_("%s: argument #%d negative value %Rg will give strange results"),
+		if (mpfr_sgn(left) < 0)
+			fatal("%s",
+		mpg_fmt(_("%s: argument #%d negative value %Rg is not allowed"),
 					op, argnum, left)
 				);
 
+		if (do_lint) {
 			if (! mpfr_integer_p(left))
 				lintwarn("%s",
 		mpg_fmt(_("%s: argument #%d fractional value %Rg will be truncated"),
@@ -891,13 +889,12 @@ get_intval(NODE *t1, int argnum, const char *op)
 	}
 	/* (t1->flags & MPZN) != 0 */
 	pz = t1->mpg_i;
-	if (do_lint) {
-		if (mpz_sgn(pz) < 0)
-			lintwarn("%s",
-	mpg_fmt(_("%s: argument #%d negative value %Zd will give strange results"),
+	if (mpz_sgn(pz) < 0)
+		fatal("%s",
+	mpg_fmt(_("%s: argument #%d negative value %Zd is not allowed"),
 					op, argnum, pz)
 				);
-	}
+
 	return pz;	/* must not be freed */
 }
 
