@@ -2748,8 +2748,10 @@ init_awkpath(path_info *pi)
 	start = path;
 	i = 0;
 
-	if (*path == envsep)	/* null entry at front of path */
+	if (*path == envsep) {	/* null entry at front of path */
 		pi->awkpath[i++] = ".";
+		pi->max_pathlen = 1;
+	}
 
 	while (*start) {
 		if (*start == envsep) {
