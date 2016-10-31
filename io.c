@@ -2742,8 +2742,9 @@ init_awkpath(path_info *pi)
 		if (*p == envsep)
 			max_path++;
 
-	emalloc(pi->awkpath, char **, (max_path + 1) * sizeof(char *), "init_awkpath");
-	memset(pi->awkpath, 0, (max_path + 1) * sizeof(char *));
+	// +3 --> 2 for null entries at front and end of path, 1 for NULL end of list
+	emalloc(pi->awkpath, char **, (max_path + 3) * sizeof(char *), "init_awkpath");
+	memset(pi->awkpath, 0, (max_path + 3) * sizeof(char *));
 
 	start = path;
 	i = 0;
