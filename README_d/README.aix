@@ -1,0 +1,9 @@
+Mon Oct 31 21:54:05 IST 2016
+============================
+
+To compile gawk 4.1.4 correctly with IBM's xlc compiler, you need to
+use the -qalias=noansi command line option. Otherwise the compiler
+makes incorrect optimizations and the resulting binary core dumps
+on many tests.
+
+Thanks to Tony Reix (tony.reix@atos.net) for the info.
