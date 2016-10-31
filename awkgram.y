@@ -6242,7 +6242,12 @@ make_profile_number(double d, const char *str, size_t len)
 		n->stptr = estrdup(str, len + 1);
 		n->stptr[len] = '\0';
 		n->stlen = len;
-		n->flags |= NUMCONSTSTR;
+		// Set STRCUR and n->stfmt for use when profiling
+		// (i.e., actually running the program) so that
+		// force_string() on this item will work ok.
+		// Thanks and a tip of the hatlo to valgrind.
+		n->flags |= (NUMCONSTSTR|STRCUR);
+		n->stfmt = STFMT_UNUSED;
 	}
 
 	return n;
