@@ -1,3 +1,11 @@
+2016-10-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix valgrind issues.
+
+	* io.c (init_awkpath): Need to allocate max_path+3 pointers.
+	* awkgram.y (make_profile_number): Need to add STRCUR flag and
+	set n->stfmt to STFMT_UNUSED. See the comment in the code.
+
 2016-10-26         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c (init_awkpath): Set max path len for leading separator.
