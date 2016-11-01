@@ -444,10 +444,12 @@ flags2str(int flagval)
 		{ WSTRCUR, "WSTRCUR" },
 		{ MPFN,	"MPFN" },
 		{ MPZN,	"MPZN" },
+		{ NO_EXT_SET, "NO_EXT_SET" },
 		{ NULL_FIELD, "NULL_FIELD" },
 		{ ARRAYMAXED, "ARRAYMAXED" },
 		{ HALFHAT, "HALFHAT" },
 		{ XARRAY, "XARRAY" },
+		{ NUMCONSTSTR, "NUMCONSTSTR" },
 		{ 0,	NULL },
 	};
 
