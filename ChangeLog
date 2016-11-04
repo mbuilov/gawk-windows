@@ -1,3 +1,10 @@
+2016-11-04  Eli Zaretskii  <eliz@gnu.org>
+
+	* builtin.c (efwrite) [__MINGW32__]: Call w32_maybe_set_errno if
+	errno is not set or set to EINVAL.
+
+	* nonposix.h (w32_maybe_set_errno) [__MINGW32__]: Add prototype.
+
 2016-10-26         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c (init_awkpath): Set max path len for leading separator.

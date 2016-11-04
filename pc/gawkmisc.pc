@@ -1,6 +1,4 @@
-/*
- * gawkmisc.c --- miscellaneous gawk routines that are OS specific.
- */
+/* gawkmisc.c --- miscellaneous gawk routines that are OS specific. -*-C-*- */
 
 /* 
  * Copyright (C) 1986, 1988, 1989, 1991 - 2003, 2012, 2016
@@ -895,6 +893,28 @@ w32_status_to_termsig (unsigned status)
       return sigtbl[i].sig;
 
   return SIGTERM;
+}
+
+void
+w32_maybe_set_errno (void)
+{
+  DWORD w32err = GetLastError ();
+
+  switch (w32err)
+    {
+      /* When stdout is redirected to a pipe, and the program that
+	 reads the pipe (e.g., a pager) exits, Windows doesn't set
+	 errno to a useful value.  Help it DTRT.  */
+      case ERROR_BAD_PIPE:
+      case ERROR_PIPE_BUSY:
+      case ERROR_NO_DATA:
+      case ERROR_PIPE_NOT_CONNECTED:
+	errno = EPIPE;
+	break;
+      default:
+	errno = EINVAL;
+	break;
+    }
 }
 
 #endif	/* __MINGW32__ */
