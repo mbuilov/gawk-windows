@@ -1,4 +1,3 @@
-#!/usr/local/bin/awk -f
 # this script renums pedigrees with metafounders
 # so that they are added *before*regular animals
 # mf are ascertained because they are not in the 1st column
