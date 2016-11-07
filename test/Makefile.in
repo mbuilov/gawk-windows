@@ -4450,17 +4450,7 @@ diffout:
 # convenient way to scan valgrind results for errors
 valgrind-scan:
 	@echo "Scanning valgrind log files for problems:"
-	@$(AWK) '\
-	function show() {if (cmd) {printf "%s: %s\n",FILENAME,cmd; cmd = ""}; \
-	  printf "\t%s\n",$$0}; \
-	{$$1 = ""}; \
-	$$2 == "Command:" {incmd = 1; $$2 = ""; cmd = $$0; next}; \
-	incmd {if (/Parent PID:/) incmd = 0; else {cmd = (cmd $$0); next}}; \
-	/ERROR SUMMARY:/ && !/: 0 errors from 0 contexts/ {show()}; \
-	/definitely lost:/ && !/: 0 bytes in 0 blocks/ {show()}; \
-	/possibly lost:/ && !/: 0 bytes in 0 blocks/ {show()}; \
-	/ suppressed:/ && !/: 0 bytes in 0 blocks/ {show()}; \
-	' log.[0-9]*
+	@$(AWK) -f "$(srcdir)"/valgrind.awk log.[0-9]*
 
 # This target is for testing with electric fence.
 efence:
