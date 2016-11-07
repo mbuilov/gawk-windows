@@ -1,3 +1,10 @@
+2016-11-04  Eli Zaretskii  <eliz@gnu.org>
+
+	* builtin.c (efwrite) [__MINGW32__]: Call w32_maybe_set_errno if
+	errno is not set or set to EINVAL.
+
+	* nonposix.h (w32_maybe_set_errno) [__MINGW32__]: Add prototype.
+
 2016-11-01         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* eval.c (flags2str): Add NO_EXT_SET and NUMCONSTSTR.

@@ -125,6 +125,10 @@ efwrite(const void *ptr,
 	return;
 
 wrerror:
+#ifdef __MINGW32__
+	if (errno == 0 || errno == EINVAL)
+		w32_maybe_set_errno();
+#endif
 	/* die silently on EPIPE to stdout */
 	if (fp == stdout && errno == EPIPE)
 		gawk_exit(EXIT_FATAL);

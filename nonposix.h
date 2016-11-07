@@ -55,6 +55,7 @@ unsigned int getegid (void);
 /* gawkmisc.pc */
 int unsetenv (const char *);
 int setenv (const char *, const char *, int);
+void w32_maybe_set_errno (void);
 #endif	/* __MINGW32__ */
 
 #if defined(VMS) || defined(__DJGPP__) || defined(__MINGW32__)
