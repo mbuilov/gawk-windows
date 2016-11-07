@@ -1,3 +1,11 @@
+2016-11-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* valgrind.awk: New file. Based on original valgrind-scan code.
+	Having it in a separate file makes it easier to adjust.
+	Commented out several checks that just produced false positives.
+	Add check for invalid read and write.
+	* Makefile.am (valgrind-scan): Use valgrind.awk.
+
 2016-11-04         Fabio Berton          <fabio.berton@ossystems.com.br>
 
 	* arrayind1.awk: Remove "#!/usr/local/bin/awk -f" as none of the
