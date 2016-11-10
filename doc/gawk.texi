@@ -28923,10 +28923,12 @@ This example would be better done with @code{dcngettext()}:
 @example
 if (groggy)
     message = dcngettext("%d customer disturbing me\n",
-                         "%d customers disturbing me\n", "adminprog")
+                         "%d customers disturbing me\n",
+                         ncustomers, "adminprog")
 else
     message = dcngettext("enjoying %d customer\n",
-                         "enjoying %d customers\n", "adminprog")
+                         "enjoying %d customers\n",
+                         ncustomers, "adminprog")
 printf(message, ncustomers)
 @end example
 
