@@ -436,7 +436,7 @@ flags2str(int flagval)
 		{ STRCUR, "STRCUR" },
 		{ NUMCUR, "NUMCUR" },
 		{ NUMBER, "NUMBER" },
-		{ MAYBE_NUM, "MAYBE_NUM" },
+		{ USER_INPUT, "USER_INPUT" },
 		{ INTLSTR, "INTLSTR" },
 		{ NUMINT, "NUMINT" },
 		{ INTIND, "INTIND" },

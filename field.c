@@ -132,7 +132,7 @@ set_field(long num,
 	n = fields_arr[num];
 	n->stptr = str;
 	n->stlen = len;
-	n->flags = (STRCUR|STRING|MAYBE_NUM);	/* do not set MALLOC */
+	n->flags = (STRCUR|STRING|USER_INPUT);	/* do not set MALLOC */
 }
 
 /* rebuild_record --- Someone assigned a value to $(something).
@@ -231,10 +231,10 @@ rebuild_record()
 		cops += fields_arr[i]->stlen + OFSlen;
 	}
 
-#ifndef NDEBUG
-	if ((fields_arr[0]->flags & MALLOC) == 0)
-		assert(fields_arr[0]->valref == 1);
-#endif
+	assert((fields_arr[0]->flags & MALLOC) == 0
+		? fields_arr[0]->valref == 1
+		: true);
+
 	unref(fields_arr[0]);
 
 	fields_arr[0] = tmp;
@@ -293,10 +293,10 @@ set_record(const char *buf, int cnt)
 	databuf[cnt] = '\0';
 
 	/* manage field 0: */
-#ifndef NDEBUG
-	if ((fields_arr[0]->flags & MALLOC) == 0)
-		assert(fields_arr[0]->valref == 1);
-#endif
+	assert((fields_arr[0]->flags & MALLOC) == 0
+		? fields_arr[0]->valref == 1
+		: true);
+
 	unref(fields_arr[0]);
 	getnode(n);
 	n->stptr = databuf;
@@ -304,7 +304,7 @@ set_record(const char *buf, int cnt)
 	n->valref = 1;
 	n->type = Node_val;
 	n->stfmt = STFMT_UNUSED;
-	n->flags = (STRING|STRCUR|MAYBE_NUM);	/* do not set MALLOC */
+	n->flags = (STRING|STRCUR|USER_INPUT);	/* do not set MALLOC */
 	fields_arr[0] = n;
 
 #undef INITIAL_SIZE
@@ -328,10 +328,9 @@ purge_record()
 
 	NF = -1;
 	for (i = 1; i <= parse_high_water; i++) {
-#ifndef NDEBUG
-		if ((fields_arr[i]->flags & MALLOC) == 0)
-			assert(fields_arr[i]->valref == 1);
-#endif
+		assert((fields_arr[i]->flags & MALLOC) == 0
+			? fields_arr[i]->valref == 1
+			: true);
 		unref(fields_arr[i]);
 		getnode(n);
 		*n = *Null_field;
@@ -883,7 +882,7 @@ set_element(long num, char *s, long len, NODE *n)
 	NODE *sub;
 
 	it = make_string(s, len);
-	it->flags |= MAYBE_NUM;
+	it->flags |= USER_INPUT;
 	sub = make_number((AWKNUM) (num));
 	lhs = assoc_lookup(n, sub);
 	unref(*lhs);

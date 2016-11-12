@@ -348,13 +348,13 @@ mpg_force_number(NODE *n)
 	n->flags |= NUMCUR;
 
 	if (force_mpnum(n, (do_non_decimal_data && ! do_traditional), true)) {
-		if ((n->flags & MAYBE_NUM) != 0) {
-			/* leave MAYBE_NUM set to indicate a strnum */
+		if ((n->flags & USER_INPUT) != 0) {
+			/* leave USER_INPUT set to indicate a strnum */
 			n->flags &= ~STRING;
 			n->flags |= NUMBER;
 		}
 	} else
-		n->flags &= ~MAYBE_NUM;
+		n->flags &= ~USER_INPUT;
 	return n;
 }
 

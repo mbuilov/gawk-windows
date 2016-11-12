@@ -533,7 +533,7 @@ nextfile(IOBUF **curfile, bool skipping)
 
 		unref(FILENAME_node->var_value);
 		FILENAME_node->var_value = make_string("-", 1);
-		FILENAME_node->var_value->flags |= MAYBE_NUM; /* be pedantic */
+		FILENAME_node->var_value->flags |= USER_INPUT; /* be pedantic */
 		fname = "-";
 		iop = iop_alloc(fileno(stdin), fname, 0);
 		*curfile = iop_finish(iop);
@@ -2657,7 +2657,7 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 	else {			/* assignment to variable */
 		unref(*lhs);
 		*lhs = make_string(s, cnt);
-		(*lhs)->flags |= MAYBE_NUM;
+		(*lhs)->flags |= USER_INPUT;
 	}
 
 	return make_number((AWKNUM) 1.0);
@@ -2700,7 +2700,7 @@ do_getline(int into_variable, IOBUF *iop)
 		lhs = POP_ADDRESS();
 		unref(*lhs);
 		*lhs = make_string(s, cnt);
-		(*lhs)->flags |= MAYBE_NUM;
+		(*lhs)->flags |= USER_INPUT;
 	}
 	return make_number((AWKNUM) 1.0);
 }

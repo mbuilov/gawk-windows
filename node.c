@@ -67,9 +67,9 @@ r_force_number(NODE *n)
 		return n;
 
 	/*
-	 * We should always set NUMCUR. If MAYBE_NUM is set and it's a
+	 * We should always set NUMCUR. If USER_INPUT is set and it's a
 	 * numeric string, we clear STRING and enable NUMBER, but if it's not
-	 * numeric, we disable MAYBE_NUM.
+	 * numeric, we disable USER_INPUT.
 	 */
 
 	/* All the conditionals are an attempt to avoid the expensive strtod */
@@ -159,12 +159,12 @@ r_force_number(NODE *n)
 		/* fall through to badnum */
 	}
 badnum:
-	n->flags &= ~MAYBE_NUM;
+	n->flags &= ~USER_INPUT;
 	return n;
 
 goodnum:
-	if ((n->flags & MAYBE_NUM) != 0) {
-		/* leave MAYBE_NUM enabled to indicate that this is a strnum */
+	if ((n->flags & USER_INPUT) != 0) {
+		/* leave USER_INPUT enabled to indicate that this is a strnum */
 		n->flags &= ~STRING;
 		n->flags |= NUMBER;
 	}

@@ -1,3 +1,9 @@
+2016-11-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h [USER_INPUT]: Renamed from MAYBE_NUM.
+	* builtin.c, eval.c, field.c, int_array.c, io.c, main.c,
+	mpfr.c, node.c: Change all uses.
+
 2016-11-04  Eli Zaretskii  <eliz@gnu.org>
 
 	* builtin.c (efwrite) [__MINGW32__]: Call w32_maybe_set_errno if
@@ -336,7 +342,7 @@
 	termination to protect against unterminated field values.
 	(nondec2awknum): Remove comment about unnecessary termination.
 	* eval.c (posix_compare): Restore temporary string termination.
-	* field.c (databuf): Remove struct no longer needed.
+	* field.c (databuf): Remove struct, no longer needed.
 	(set_field): Remove memcpy for string termination, since we will support
 	unterminated field string values.
 	(rebuild_record): Ditto. Also no need to allocate space for terminated
@@ -434,6 +440,7 @@
 
 	Make sure that all field values, and therefore all strings inside gawk,
 	are terminated with a '\0' character!
+
 	* field.c (databuf): New static struct to hold info about our buffer to
 	contain the field string values.
 	(allocate_databuf): New function to make sure the databuf is large

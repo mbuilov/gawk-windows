@@ -722,14 +722,14 @@ init_args(int argc0, int argc, const char *argv0, char **argv)
 	unref(tmp);
 	unref(*aptr);
 	*aptr = make_string(argv0, strlen(argv0));
-	(*aptr)->flags |= MAYBE_NUM;
+	(*aptr)->flags |= USER_INPUT;
 	for (i = argc0, j = 1; i < argc; i++, j++) {
 		tmp = make_number((AWKNUM) j);
 		aptr = assoc_lookup(ARGV_node, tmp);
 		unref(tmp);
 		unref(*aptr);
 		*aptr = make_string(argv[i], strlen(argv[i]));
-		(*aptr)->flags |= MAYBE_NUM;
+		(*aptr)->flags |= USER_INPUT;
 	}
 
 	ARGC_node = install_symbol(estrdup("ARGC", 4), Node_var);
@@ -883,7 +883,7 @@ load_environ()
 		unref(tmp);
 		unref(*aptr);
 		*aptr = make_string(val, strlen(val));
-		(*aptr)->flags |= MAYBE_NUM;
+		(*aptr)->flags |= USER_INPUT;
 
 		/* restore '=' so that system() gets a valid environment */
 		if (val != nullstr)
@@ -1161,7 +1161,7 @@ arg_assign(char *arg, bool initing)
 		 * This makes sense, so we do it too.
 		 */
 		it = make_str_node(cp, strlen(cp), SCAN);
-		it->flags |= MAYBE_NUM;
+		it->flags |= USER_INPUT;
 #ifdef LC_NUMERIC
 		/*
 		 * See comment above about locale decimal point.

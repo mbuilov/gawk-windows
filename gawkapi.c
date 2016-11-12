@@ -396,6 +396,8 @@ static struct {
 	size_t i, size;
 } scopy;
 
+/* free_api_string_copies --- release memory used by string copies */
+
 void
 free_api_string_copies()
 {
@@ -406,7 +408,7 @@ free_api_string_copies()
 	scopy.i = 0;
 }
 
-/* return a node string with nul termination */
+/* assign_string --- return a string node with NUL termination */
 
 static inline void
 assign_string(NODE *node, awk_value_t *val)
@@ -418,6 +420,7 @@ assign_string(NODE *node, awk_value_t *val)
 		 * This should happen only for $n where n > 0 and n < NF.
 		 */
 		char *s;
+
 		assert((node->flags & MALLOC) == 0);
 		if (scopy.i == scopy.size) {
 			/* expand list */

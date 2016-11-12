@@ -2647,7 +2647,7 @@ do_match(int nargs)
 					}
 
 					it = make_string(start, len);
-					it->flags |= MAYBE_NUM;	/* user input */
+					it->flags |= USER_INPUT;
 
 					sub = make_number((AWKNUM) (ii));
 					lhs = assoc_lookup(dest, sub);
@@ -3950,14 +3950,14 @@ do_typeof(int nargs)
 		break;
 	case Node_val:
 	case Node_var:
-		switch (fixtype(arg)->flags & (STRING|NUMBER|MAYBE_NUM)) {
+		switch (fixtype(arg)->flags & (STRING|NUMBER|USER_INPUT)) {
 		case STRING:
 			res = "string";
 			break;
 		case NUMBER:
 			res = "number";
 			break;
-		case NUMBER|MAYBE_NUM:
+		case NUMBER|USER_INPUT:
 			res = "strnum";
 			break;
 		case NUMBER|STRING:

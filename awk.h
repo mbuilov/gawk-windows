@@ -408,15 +408,15 @@ typedef struct exp_node {
 	 * 	b = a + 0	# Adds NUMCUR to a, since numeric value
 	 * 			# is now available. But the type hasn't changed!
 	 *
-	 * MAYBE_NUM is the joker.  When STRING|MAYBE_NUM is set, it means
+	 * USER_INPUT is the joker.  When STRING|USER_INPUT is set, it means
 	 * "this is string data, but the user may have really wanted it to be a
 	 * number. If we have to guess, like in a comparison, turn it into a
 	 * number if the string is indeed numeric."
 	 * For example,    gawk -v a=42 ....
-	 * Here, `a' gets STRING|STRCUR|MAYBE_NUM and then when used where
+	 * Here, `a' gets STRING|STRCUR|USER_INPUT and then when used where
 	 * a number is needed, it gets turned into a NUMBER and STRING
-	 * is cleared. In that case, we leave the MAYBE_NUM in place, so
-	 * the combination NUMBER|MAYBE_NUM means it is a strnum a.k.a. a
+	 * is cleared. In that case, we leave the USER_INPUT in place, so
+	 * the combination NUMBER|USER_INPUT means it is a strnum a.k.a. a
 	 * "numeric string".
 	 *
 	 * WSTRCUR is for efficiency. If in a multibyte locale, and we
@@ -440,7 +440,7 @@ typedef struct exp_node {
 #		define	STRCUR	0x0004       /* string value is current */
 #		define	NUMCUR	0x0008       /* numeric value is current */
 #		define	NUMBER	0x0010       /* assigned as number */
-#		define	MAYBE_NUM 0x0020     /* user input: if NUMERIC then
+#		define	USER_INPUT 0x0020    /* user input: if NUMERIC then
 		                              * a NUMBER */
 #		define	INTLSTR	0x0040       /* use localized version */
 #		define	NUMINT	0x0080       /* numeric value is an integer */
@@ -1870,7 +1870,7 @@ force_number(NODE *n)
  * please use this function to resolve the type.
  *
  * It is safe to assume that the return value will be the same NODE,
- * since force_number on a MAYBE_NUM should always return the same NODE,
+ * since force_number on a USER_INPUT should always return the same NODE,
  * and force_string on an INTIND should as well.
  *
  * There is no way to handle a Node_typedregex correctly, so we ignore
@@ -1882,7 +1882,7 @@ fixtype(NODE *n)
 {
 	assert(n->type == Node_val);
 	if (n->type == Node_val) {
-		if ((n->flags & (NUMCUR|MAYBE_NUM)) == MAYBE_NUM)
+		if ((n->flags & (NUMCUR|USER_INPUT)) == USER_INPUT)
 			return force_number(n);
 		if ((n->flags & INTIND) != 0)
 			return force_string(n);
