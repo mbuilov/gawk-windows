@@ -509,7 +509,6 @@ typedef struct exp_node {
 #else
 #define numbr		sub.val.fltnum
 #endif
-#define tre_regs	sub.val.preg
 #define typed_re	sub.val.typre
 
 /*
