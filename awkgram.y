@@ -516,7 +516,7 @@ regexp
 typed_regexp
 	: TYPED_REGEXP
 		{
-		  NODE *n, *exp;
+		  NODE *n, *exp, *n2;
 		  char *re;
 		  size_t len;
 
@@ -525,14 +525,21 @@ typed_regexp
 		  len = strlen(re);
 
 		  exp = make_str_node(re, len, ALREADY_MALLOCED);
-		  n = make_regnode(Node_val, exp);
+		  n = make_regnode(Node_regex, exp);
 		  if (n == NULL) {
 			unref(exp);
 			YYABORT;
 		  }
+
+		  n2 = make_string(re, len);
+		  n2->typed_re = n;
+		  n2->numbr = 0;
+		  n2->flags |= NUMCUR|STRCUR|REGEX; 
+		  n2->flags &= ~(STRING|NUMBER);
+
 		  $$ = $1;
 		  $$->opcode = Op_push_re;
-		  $$->memory = n;
+		  $$->memory = n2;
 		}
 
 a_slash
@@ -5006,9 +5013,9 @@ make_regnode(int type, NODE *exp)
 	getnode(n);
 	memset(n, 0, sizeof(NODE));
 	n->type = type;
+	n->re_cnt = 1;
 
 	if (type == Node_regex) {
-		n->re_cnt = 1;
 		n->re_reg = make_regexp(exp->stptr, exp->stlen, false, true, false);
 		if (n->re_reg == NULL) {
 			freenode(n);
@@ -5017,14 +5024,6 @@ make_regnode(int type, NODE *exp)
 		n->re_exp = exp;
 		n->re_flags = CONSTANT;
 		n->valref = 1;
-	} else if (type == Node_val) {
-		exp->tre_regs = make_regexp(exp->stptr, exp->stlen, false, true, false);
-		exp->flags |= REGEX|MALLOC|STRCUR|NUMCUR;
-		exp->numbr = 0;
-		exp->flags &= ~(STRING|NUMBER);
-		exp->valref = 1;
-		unref(n);
-		n = exp;
 	}
 	return n;
 }

@@ -384,7 +384,7 @@ typedef struct exp_node {
 			int idx;
 			wchar_t *wsp;
 			size_t wslen;
-			Regexp *preg;
+			struct exp_node *typre;
 		} val;
 	} sub;
 	NODETYPE type;
@@ -510,6 +510,7 @@ typedef struct exp_node {
 #define numbr		sub.val.fltnum
 #endif
 #define tre_regs	sub.val.preg
+#define typed_re	sub.val.typre
 
 /*
  * If stfmt is set to STFMT_UNUSED, it means that the string representation

@@ -646,11 +646,13 @@ cleanup:
 				fall through */
 		case Op_match_rec:
 		{
-			NODE *re = pc->memory->re_exp;
-			if (pc->memory->type == Node_regex)
+			if (pc->memory->type == Node_regex) {
+				NODE *re = pc->memory->re_exp;
 				str = pp_string(re->stptr, re->stlen, '/');
-			else
-				str = pp_typed_regex(re->stptr, re->stlen, '/');
+			} else {
+				assert((pc->memory->flags & REGEX) != 0);
+				str = pp_typed_regex(pc->memory->stptr, pc->memory->stlen, '/');
+			}
 			pp_push(pc->opcode, str, CAN_FREE);
 		}
 			break;
@@ -673,8 +675,7 @@ cleanup:
 				str = pp_group3(txt, op2str(pc->opcode), restr);
 				pp_free(t2);
 			} else if (m->type == Node_val && (m->flags & REGEX) != 0) {
-				NODE *re = m->re_exp;
-				restr = pp_typed_regex(re->stptr, re->stlen, '/');
+				restr = pp_typed_regex(m->stptr, m->stlen, '/');
 				str = pp_group3(txt, op2str(pc->opcode), restr);
 				efree(restr);
 			} else {

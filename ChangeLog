@@ -1,5 +1,19 @@
 2016-11-15         Arnold D. Robbins     <arnold@skeeve.com>
 
+	Finish reworking typed regexes.
+
+	* awk.h (typed_re): Replaces tre_reg.
+	* awkgram.y (typed_regexp production): Node_val points to a regular
+	Node_regex and also has string value and length.
+	(make_regnode): Simplified back to its original form.
+	* builtin.c (call_sub, call_match, call_split_func): For REGEX,
+	get n->typed_re.
+	* field.c (do_split, do_patsplit): Ditto, for separator regexp.
+	* profile.c (pprint): Op_match_rec, handle REGEX correctly.
+	* re.c (re_update): If REGEX, get t->typed_re->re_reg.
+
+2016-11-15         Arnold D. Robbins     <arnold@skeeve.com>
+
 	Start reworking typed regexes.
 
 	* awk.h (Node_typedregex): Nuked.
