@@ -525,7 +525,7 @@ typed_regexp
 		  len = strlen(re);
 
 		  exp = make_str_node(re, len, ALREADY_MALLOCED);
-		  n = make_regnode(Node_typedregex, exp);
+		  n = make_regnode(Node_val, exp);
 		  if (n == NULL) {
 			unref(exp);
 			YYABORT;
@@ -1276,7 +1276,7 @@ case_value
 	  }
 	| typed_regexp
 	  {
-		assert($1->memory->type == Node_typedregex);
+		assert(($1->memory->flags & REGEX) == REGEX);
 		$1->opcode = Op_push_re;
 		$$ = $1;
 	  }
@@ -1491,7 +1491,7 @@ exp
 				_("regular expression on left of `~' or `!~' operator"));
 
 		assert($3->opcode == Op_push_re
-			&& $3->memory->type == Node_typedregex);
+			&& ($3->memory->flags & REGEX) != 0);
 		/* RHS is @/.../ */
 		$2->memory = $3->memory;
 		bcfree($3);
@@ -3416,6 +3416,7 @@ yylex(void)
 
 	lexeme = lexptr;
 	thisline = NULL;
+
 collect_regexp:
 	if (want_regexp) {
 		int in_brack = 0;	/* count brackets, [[:alnum:]] allowed */
@@ -4631,8 +4632,8 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 {
 	if (n == Nnull_string)
 		print_func(fp, "uninitialized scalar\n");
-	else if (n->type == Node_typedregex)
-		print_func(fp, "@/%.*s/\n", n->re_exp->stlen, n->re_exp->stptr);
+	else if ((n->flags & REGEX) != 0)
+		print_func(fp, "@/%.*s/\n", n->stlen, n->stptr);
 	else if ((n->flags & STRING) != 0) {
 		pp_string_fp(print_func, fp, n->stptr, n->stlen, '"', false);
 		print_func(fp, "\n");
@@ -5005,9 +5006,9 @@ make_regnode(int type, NODE *exp)
 	getnode(n);
 	memset(n, 0, sizeof(NODE));
 	n->type = type;
-	n->re_cnt = 1;
 
-	if (type == Node_regex || type == Node_typedregex) {
+	if (type == Node_regex) {
+		n->re_cnt = 1;
 		n->re_reg = make_regexp(exp->stptr, exp->stlen, false, true, false);
 		if (n->re_reg == NULL) {
 			freenode(n);
@@ -5016,6 +5017,14 @@ make_regnode(int type, NODE *exp)
 		n->re_exp = exp;
 		n->re_flags = CONSTANT;
 		n->valref = 1;
+	} else if (type == Node_val) {
+		exp->tre_regs = make_regexp(exp->stptr, exp->stlen, false, true, false);
+		exp->flags |= REGEX|MALLOC|STRCUR|NUMCUR;
+		exp->numbr = 0;
+		exp->flags &= ~(STRING|NUMBER);
+		exp->valref = 1;
+		unref(n);
+		n = exp;
 	}
 	return n;
 }
