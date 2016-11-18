@@ -389,9 +389,6 @@ typedef struct exp_node {
 	NODETYPE type;
 	unsigned int flags;
 
-/* any type */
-#		define	MALLOC	0x0001       /* can be free'd */
-
 /* type = Node_val */
 	/*
 	 * STRING and NUMBER are mutually exclusive, except for the special
@@ -411,14 +408,16 @@ typedef struct exp_node {
 	 * 	b = a + 0	# Adds NUMCUR to a, since numeric value
 	 * 			# is now available. But the type hasn't changed!
 	 *
-	 * MAYBE_NUM is the joker.  It means "this is string data, but
-	 * the user may have really wanted it to be a number. If we have
-	 * to guess, like in a comparison, turn it into a number if the string
-	 * is indeed numeric."
+	 * USER_INPUT is the joker.  When STRING|USER_INPUT is set, it means
+	 * "this is string data, but the user may have really wanted it to be a
+	 * number. If we have to guess, like in a comparison, turn it into a
+	 * number if the string is indeed numeric."
 	 * For example,    gawk -v a=42 ....
-	 * Here, `a' gets STRING|STRCUR|MAYBE_NUM and then when used where
+	 * Here, `a' gets STRING|STRCUR|USER_INPUT and then when used where
 	 * a number is needed, it gets turned into a NUMBER and STRING
-	 * is cleared.
+	 * is cleared. In that case, we leave the USER_INPUT in place, so
+	 * the combination NUMBER|USER_INPUT means it is a strnum a.k.a. a
+	 * "numeric string".
 	 *
 	 * WSTRCUR is for efficiency. If in a multibyte locale, and we
 	 * need to do something character based (substr, length, etc.)
@@ -436,30 +435,30 @@ typedef struct exp_node {
 	 *
 	 * We hope that the rest of the flags are self-explanatory. :-)
 	 */
+#		define	MALLOC	0x0001       /* stptr can be free'd, i.e. not a field node pointing into a shared buffer */
 #		define	STRING	0x0002       /* assigned as string */
 #		define	STRCUR	0x0004       /* string value is current */
 #		define	NUMCUR	0x0008       /* numeric value is current */
 #		define	NUMBER	0x0010       /* assigned as number */
-#		define	MAYBE_NUM 0x0020     /* user input: if NUMERIC then
+#		define	USER_INPUT 0x0020    /* user input: if NUMERIC then
 		                              * a NUMBER */
-#		define	FIELD	0x0040       /* this is a field */
-#		define	INTLSTR	0x0080       /* use localized version */
-#		define	NUMINT	0x0100       /* numeric value is an integer */
-#		define	INTIND	0x0200	     /* integral value is array index;
+#		define	INTLSTR	0x0040       /* use localized version */
+#		define	NUMINT	0x0080       /* numeric value is an integer */
+#		define	INTIND	0x0100	     /* integral value is array index;
 		                              * lazy conversion to string.
 		                              */
-#		define	WSTRCUR	0x0400       /* wide str value is current */
-#		define	MPFN	0x0800       /* arbitrary-precision floating-point number */
-#		define	MPZN	0x1000       /* arbitrary-precision integer */
-#		define	NO_EXT_SET 0x2000    /* extension cannot set a value for this variable */
-#		define	NULL_FIELD 0x4000    /* this is the null field */
+#		define	WSTRCUR	0x0200       /* wide str value is current */
+#		define	MPFN	0x0400       /* arbitrary-precision floating-point number */
+#		define	MPZN	0x0800       /* arbitrary-precision integer */
+#		define	NO_EXT_SET 0x1000    /* extension cannot set a value for this variable */
+#		define	NULL_FIELD 0x2000    /* this is the null field */
 
 /* type = Node_var_array */
-#		define	ARRAYMAXED	0x8000       /* array is at max size */
-#		define	HALFHAT		0x10000       /* half-capacity Hashed Array Tree;
+#		define	ARRAYMAXED	0x4000       /* array is at max size */
+#		define	HALFHAT		0x8000       /* half-capacity Hashed Array Tree;
 		                                      * See cint_array.c */
-#		define	XARRAY		0x20000
-#		define	NUMCONSTSTR	0x40000	/* have string value for numeric constant */
+#		define	XARRAY		0x10000
+#		define	NUMCONSTSTR	0x20000	/* have string value for numeric constant */
 } NODE;
 
 #define vname sub.nodep.name
@@ -493,6 +492,7 @@ typedef struct exp_node {
  * to '\0'. This is helpful when calling functions such as strtod that require
  * a NUL-terminated argument. In particular, field values $n for n > 0 and
  * n < NF will not have a NUL terminator, since they point into the $0 buffer.
+ * All other strings are NUL-terminated.
  */
 #define stptr	sub.val.sp
 #define stlen	sub.val.slen
@@ -1517,6 +1517,7 @@ extern void update_ext_api(void);
 extern NODE *awk_value_to_node(const awk_value_t *);
 extern void run_ext_exit_handlers(int exitval);
 extern void print_ext_versions(void);
+extern void free_api_string_copies(void);
 
 /* gawkmisc.c */
 extern char *gawk_name(const char *filespec);
@@ -1561,7 +1562,7 @@ extern struct redirect *getredirect(const char *str, int len);
 extern bool inrec(IOBUF *iop, int *errcode);
 extern int nextfile(IOBUF **curfile, bool skipping);
 extern bool is_non_fatal_std(FILE *fp);
-extern bool is_non_fatal_redirect(const char *str);
+extern bool is_non_fatal_redirect(const char *str, size_t len);
 /* main.c */
 extern int arg_assign(char *arg, bool initing);
 extern int is_std_var(const char *var);
@@ -1812,17 +1813,29 @@ dupnode(NODE *n)
 }
 #endif
 
-/* force_string --- force a node to have a string value */
+/*
+ * force_string_fmt --- force a node to have a string value in a given format.
+ * The string representation of a number may change due to whether it was most
+ * recently rendered with CONVFMT or OFMT, or due to changes in the CONVFMT
+ * and OFMT values. But if the value entered gawk as a string or strnum, then
+ * stfmt should be set to STFMT_UNUSED, and the string representation should
+ * not change.
+ */
 
 static inline NODE *
-force_string(NODE *s)
+force_string_fmt(NODE *s, const char *fmtstr, int fmtidx)
 {
 	if ((s->flags & STRCUR) != 0
-		    && (s->stfmt == STFMT_UNUSED || s->stfmt == CONVFMTidx)
+		    && (s->stfmt == STFMT_UNUSED || s->stfmt == fmtidx)
 	)
 		return s;
-	return format_val(CONVFMT, CONVFMTidx, s);
+	return format_val(fmtstr, fmtidx, s);
 }
+
+/* conceptually should be force_string_convfmt, but this is the typical case */
+#define force_string(s)		force_string_fmt((s), CONVFMT, CONVFMTidx)
+
+#define force_string_ofmt(s)	force_string_fmt((s), OFMT, OFMTidx)
 
 #ifdef GAWKDEBUG
 #define unref	r_unref
@@ -1857,7 +1870,7 @@ force_number(NODE *n)
  * please use this function to resolve the type.
  *
  * It is safe to assume that the return value will be the same NODE,
- * since force_number on a MAYBE_NUM should always return the same NODE,
+ * since force_number on a USER_INPUT should always return the same NODE,
  * and force_string on an INTIND should as well.
  *
  * There is no way to handle a Node_typedregex correctly, so we ignore
@@ -1869,7 +1882,7 @@ fixtype(NODE *n)
 {
 	assert(n->type == Node_val);
 	if (n->type == Node_val) {
-		if ((n->flags & MAYBE_NUM) != 0)
+		if ((n->flags & (NUMCUR|USER_INPUT)) == USER_INPUT)
 			return force_number(n);
 		if ((n->flags & INTIND) != 0)
 			return force_string(n);

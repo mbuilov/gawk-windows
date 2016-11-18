@@ -135,7 +135,7 @@ wrerror:
 
 
 	/* otherwise die verbosely */
-	if ((rp != NULL) ? is_non_fatal_redirect(rp->value) : is_non_fatal_std(fp))
+	if ((rp != NULL) ? is_non_fatal_redirect(rp->value, strlen(rp->value)) : is_non_fatal_std(fp))
 		update_ERRNO_int(errno);
 	else
 		fatal(_("%s to \"%s\" failed (%s)"), from,
@@ -194,6 +194,7 @@ do_fflush(int nargs)
 	FILE *fp;
 	int status = 0;
 	const char *file;
+	int len;
 
 	/*
 	 * November, 2012.
@@ -220,6 +221,7 @@ do_fflush(int nargs)
 
 	tmp = POP_STRING();
 	file = tmp->stptr;
+	len = tmp->stlen;
 
 	/* fflush("") */
 	if (tmp->stlen == 0) {
@@ -234,11 +236,11 @@ do_fflush(int nargs)
 	if (rp != NULL) {
 		if ((rp->flag & (RED_WRITE|RED_APPEND)) == 0) {
 			if ((rp->flag & RED_PIPE) != 0)
-				warning(_("fflush: cannot flush: pipe `%s' opened for reading, not writing"),
-					file);
+				warning(_("fflush: cannot flush: pipe `%.*s' opened for reading, not writing"),
+					len, file);
 			else
-				warning(_("fflush: cannot flush: file `%s' opened for reading, not writing"),
-					file);
+				warning(_("fflush: cannot flush: file `%.*s' opened for reading, not writing"),
+					len, file);
 			DEREF(tmp);
 			return make_number((AWKNUM) status);
 		}
@@ -246,13 +248,13 @@ do_fflush(int nargs)
 		if (fp != NULL)
 			status = rp->output.gawk_fflush(fp, rp->output.opaque);
 		else if ((rp->flag & RED_TWOWAY) != 0)
-				warning(_("fflush: cannot flush: two-way pipe `%s' has closed write end"),
-					file);
+				warning(_("fflush: cannot flush: two-way pipe `%.*s' has closed write end"),
+					len, file);
 	} else if ((fp = stdfile(tmp->stptr, tmp->stlen)) != NULL) {
 		status = fflush(fp);
 	} else {
 		status = -1;
-		warning(_("fflush: `%s' is not an open file, pipe or co-process"), file);
+		warning(_("fflush: `%.*s' is not an open file, pipe or co-process"), len, file);
 	}
 	DEREF(tmp);
 	return make_number((AWKNUM) status);
@@ -1685,7 +1687,7 @@ do_printf(int nargs, int redirtype)
 		rp = redirect(redir_exp, redirtype, & errflg, true);
 		if (rp != NULL) {
 			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.fp == NULL) {
-				if (is_non_fatal_redirect(redir_exp->stptr)) {
+				if (is_non_fatal_redirect(redir_exp->stptr, redir_exp->stlen)) {
 					update_ERRNO_int(EBADF);
 					return;
 				}
@@ -2169,7 +2171,7 @@ do_print(int nargs, int redirtype)
 		rp = redirect(redir_exp, redirtype, & errflg, true);
 		if (rp != NULL) {
 			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.fp == NULL) {
-				if (is_non_fatal_redirect(redir_exp->stptr)) {
+				if (is_non_fatal_redirect(redir_exp->stptr, redir_exp->stlen)) {
 					update_ERRNO_int(EBADF);
 					return;
 				}
@@ -2194,11 +2196,10 @@ do_print(int nargs, int redirtype)
 				DEREF(args_array[i]);
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(tmp));
 		}
-
 		if (   (tmp->flags & STRCUR) == 0
 		    || (   tmp->stfmt != STFMT_UNUSED
 		        && tmp->stfmt != OFMTidx))
-		   	args_array[i] = format_val(OFMT, OFMTidx, tmp);
+			args_array[i] = force_string_ofmt(tmp);
 	}
 
 	if (redir_exp != NULL) {
@@ -2244,7 +2245,7 @@ do_print_rec(int nargs, int redirtype)
 		rp = redirect(redir_exp, redirtype, & errflg, true);
 		if (rp != NULL) {
 			if ((rp->flag & RED_TWOWAY) != 0 && rp->output.fp == NULL) {
-				if (is_non_fatal_redirect(redir_exp->stptr)) {
+				if (is_non_fatal_redirect(redir_exp->stptr, redir_exp->stlen)) {
 					update_ERRNO_int(EBADF);
 					return;
 				}
@@ -2648,7 +2649,7 @@ do_match(int nargs)
 					}
 
 					it = make_string(start, len);
-					it->flags |= MAYBE_NUM;	/* user input */
+					it->flags |= USER_INPUT;
 
 					sub = make_number((AWKNUM) (ii));
 					lhs = assoc_lookup(dest, sub);
@@ -3680,6 +3681,8 @@ localecategory_from_argument(NODE *t)
 		char *category;
 		int lc_cat = -1;
 
+		char save = t->stptr[t->stlen];
+		t->stptr[t->stlen] = '\0';
 		category = t->stptr;
 
 		/* binary search the table */
@@ -3698,6 +3701,7 @@ localecategory_from_argument(NODE *t)
 				break;
 			}
 		}
+		t->stptr[t->stlen] = save;
 		if (lc_cat == -1)	/* not there */
 			fatal(_("dcgettext: `%s' is not a valid locale category"), category);
 
@@ -3726,6 +3730,8 @@ do_dcgettext(int nargs)
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	int lc_cat;
 	char *domain;
+	char save;
+	bool saved_end = false;
 
 	if (nargs == 3) {	/* third argument */
 		tmp = POP_STRING();
@@ -3737,6 +3743,9 @@ do_dcgettext(int nargs)
 	if (nargs >= 2) {  /* second argument */
 		t2 = POP_STRING();
 		domain = t2->stptr;
+		save = domain[t2->stlen];
+		domain[t2->stlen] = '\0';
+		saved_end = true;
 	} else
 		domain = TEXTDOMAIN;
 #else
@@ -3755,6 +3764,8 @@ do_dcgettext(int nargs)
 
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	the_result = dcgettext(domain, string, lc_cat);
+	if (saved_end)
+		domain[t2->stlen] = save;
 	if (t2 != NULL)
 		DEREF(t2);
 #else
@@ -3777,6 +3788,8 @@ do_dcngettext(int nargs)
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	int lc_cat;
 	char *domain;
+	char save;
+	bool saved_end = false;
 
 	if (nargs == 5) {	/* fifth argument */
 		tmp = POP_STRING();
@@ -3789,6 +3802,9 @@ do_dcngettext(int nargs)
 	if (nargs >= 4) {	/* fourth argument */
 		t3 = POP_STRING();
 		domain = t3->stptr;
+		save = domain[t3->stlen];
+		domain[t3->stlen] = '\0';
+		saved_end = true;
 	} else
 		domain = TEXTDOMAIN;
 #else
@@ -3815,6 +3831,8 @@ do_dcngettext(int nargs)
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 
 	the_result = dcngettext(domain, string1, string2, number, lc_cat);
+	if (saved_end)
+		domain[t3->stlen] = save;
 	if (t3 != NULL)
 		DEREF(t3);
 #else
@@ -3847,10 +3865,15 @@ do_bindtextdomain(int nargs)
 	/* set defaults */
 	directory = NULL;
 	domain = TEXTDOMAIN;
+	char save;
+	bool saved_end = false;
 
 	if (nargs == 2) {	/* second argument */
 		t2 = POP_STRING();
 		domain = (const char *) t2->stptr;
+		save = t2->stptr[t2->stlen];
+		t2->stptr[t2->stlen] = '\0';
+		saved_end = true;
 	}
 
 	/* first argument */
@@ -3861,6 +3884,8 @@ do_bindtextdomain(int nargs)
 	the_result = bindtextdomain(domain, directory);
 
 	DEREF(t1);
+	if (saved_end)
+		t2->stptr[t2->stlen] = save;
 	if (t2 != NULL)
 		DEREF(t2);
 
@@ -3951,14 +3976,14 @@ do_typeof(int nargs)
 		break;
 	case Node_val:
 	case Node_var:
-		switch (arg->flags & (STRING|NUMBER|MAYBE_NUM)) {
+		switch (fixtype(arg)->flags & (STRING|NUMBER|USER_INPUT)) {
 		case STRING:
 			res = "string";
 			break;
 		case NUMBER:
 			res = "number";
 			break;
-		case STRING|MAYBE_NUM:
+		case NUMBER|USER_INPUT:
 			res = "strnum";
 			break;
 		case NUMBER|STRING:

@@ -50,6 +50,9 @@ EXTRA_DIST = \
 	anchor.awk \
 	anchor.in \
 	anchor.ok \
+	apiterm.awk \
+	apiterm.in \
+	apiterm.ok \
 	argarray.awk \
 	argarray.in \
 	argarray.ok \
@@ -60,6 +63,8 @@ EXTRA_DIST = \
 	arrayind1.ok \
 	arrayind2.awk \
 	arrayind2.ok \
+	arrayind3.awk \
+	arrayind3.ok \
 	arrayparm.awk \
 	arrayparm.ok \
 	arrayprm2.awk \
@@ -276,6 +281,9 @@ EXTRA_DIST = \
 	fldchgnf.awk \
 	fldchgnf.in \
 	fldchgnf.ok \
+	fldterm.awk \
+	fldterm.in \
+	fldterm.ok \
 	fmtspcl-mpfr.ok \
 	fmtspcl.awk \
 	fmtspcl.tok \
@@ -1150,7 +1158,7 @@ CLEANFILES = core core.* fmtspcl.ok
 
 # try to keep these sorted. each letter starts a new line
 BASIC_TESTS = \
-	addcomma anchgsub anchor argarray arrayind1 arrayind2 arrayparm arrayprm2 arrayprm3 \
+	addcomma anchgsub anchor argarray arrayind1 arrayind2 arrayind3 arrayparm arrayprm2 arrayprm3 \
 	arrayref arrymem1 arryref2 arryref3 arryref4 arryref5 arynasty \
 	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
 	aryprm8 aryprm9 arysubnm asgext awkpath \
@@ -1159,7 +1167,7 @@ BASIC_TESTS = \
 	concat3 concat4 convfmt \
 	datanonl defref delargv delarpm2 delarprm delfunc dfamb1 dfastress dynlj \
 	eofsplit exit2 exitval1 exitval2 exitval3 \
-	fcall_exit fcall_exit2 fldchg fldchgnf fnamedat fnarray fnarray2 \
+	fcall_exit fcall_exit2 fldchg fldchgnf fldterm fnamedat fnarray fnarray2 \
 	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsnul1 fsrs fsspcoln \
 	fstabplus funsemnl funsmnam funstack \
 	getline getline2 getline3 getline4 getline5 getlnbuf getnr2tb getnr2tm \
@@ -1245,7 +1253,7 @@ LOCALE_CHARSET_TESTS = \
 	mbprintf1 mbprintf2 mbprintf3 mbprintf4 rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
-	fnmatch filefuncs fork fork2 fts functab4 getfile inplace1 inplace2 inplace3 \
+	apiterm fnmatch filefuncs fork fork2 fts functab4 getfile inplace1 inplace2 inplace3 \
 	ordchr ordchr2 readdir readfile readfile2 revout revtwoway rwarray testext time
 
 # List of the tests which should be run with --lint option:

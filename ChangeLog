@@ -1,3 +1,33 @@
+2016-11-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	General cleanup for zero termination of strings.
+
+	* array.c (do_delete): Use %.*s.
+	(value_info): Get length and use %.*s.
+	(asort_actual): Save and restore character after end.
+	* awkgram.y (split_comment): Use make_string, not make_str_node.
+	* builtin.c (do_fflush): Use %.*s.
+	(locale_category_from_argument, do_dcgettext, do_dcngettext,
+	do_bindtextdomain): Save and restore character after end.
+	* debug.c (do_info, print_array, print_subscript, do_print_var,
+	do_set_var, display, do_watch, print_watch_item, serialize_subscript,
+	do_print_f): Use %.*s.
+	* eval.c (cmp_nodes, fmt_index): Save and restore character after end.
+	* interpret.h (r_interpret): Fix compuation for concatenation of
+	wide strings.
+	* io.c (is_non_fatal_redirect): Add length parameter; save and
+	restore character after last. Adjust all other declarations and calls.
+	(do_close): Save and restore character after end.
+	* mpfr.c (ieee_fmts): Adjust table indentation.
+	(do_mpfr_strtonum): Clear wide string members of the union.
+	* msg.c (err): Use %.*s.
+
+2016-11-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h [USER_INPUT]: Renamed from MAYBE_NUM.
+	* builtin.c, eval.c, field.c, int_array.c, io.c, main.c,
+	mpfr.c, node.c: Change all uses.
+
 2016-11-04  Eli Zaretskii  <eliz@gnu.org>
 
 	* builtin.c (efwrite) [__MINGW32__]: Call w32_maybe_set_errno if
@@ -327,13 +357,180 @@
 	* eval.c (set_LINT): Reset lintfunc to `warning' for LINT="invalid".
 	Thanks to Andy Schorr for the report.
 
+2016-07-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h: Restore previous comment about unterminated strings, since
+	I am removing the string termination patches from field.c
+	(free_api_string_copies): Declare new gawkapi function.
+	* builtin.c (do_mktime, do_system): Restore temporary string
+	termination to protect against unterminated field values.
+	(nondec2awknum): Remove comment about unnecessary termination.
+	* eval.c (posix_compare): Restore temporary string termination.
+	* field.c (databuf): Remove struct, no longer needed.
+	(set_field): Remove memcpy for string termination, since we will support
+	unterminated field string values.
+	(rebuild_record): Ditto. Also no need to allocate space for terminated
+	string copies.
+	(allocate_databuf): Remove function, since memory management can again
+	be done inside set_record.
+	(set_record): Restore inline buffer management logic.
+	(reset_record): Remove calls to allocate_databuf, since we no longer
+	need space for making terminated copies of field strings.
+	* gawkapi.c (free_api_string_copies): New function to free strings
+	that we made to provide terminated copies to API functions.
+	(assign_string): New function to convert a string to an awk_value,
+	making sure to copy it if we need to terminate it.
+	(node_to_awk_value): Use assign_string to return string values with
+	NUL termination protection.
+	* int_array.c (is_integer): Restore temporary string termination.
+	* interpret.h (Op_push_i): Ditto.
+	(Op_ext_builtin): After external function returns, call
+	free_api_string_copies to free temporary string copies.
+	* mpfr.c (force_mpnum): Restore temporary string termination.
+	* node.c (r_force_number, get_ieee_magic_val): Ditto.
+
 2016-07-08         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with GNU grep.
 
 	Unrelated:
 
-	* builtin.c (do_print): Coding style change.
+	* builtin.c (do_print): Coding style change.  (This change obsoleted
+	by earlier changes in the fixtype branch.)
+
+2016-07-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h: Modify comments to indicate that MAYBE_NUM will now be
+	left enabled to indicate strnum values by the NUMBER|MAYBE_NUM
+	combination, whereas STRING|MAYBE_NUM indicates a potential strnum.
+	(fixtype): Modify MAYBE_NUM test to avoid calling force_number if
+	NUMCUR is already set.
+	* builtin.c (do_typeof): Call fixtype to resolve argument type.
+	This forces parsing of numeric strings, so there's a performance
+	penalty, but we must do this to give a correct result. The meaning
+	of "strnum" changes from "potential strnum" to "actual strnum".
+	* eval.c (set_TEXTDOMAIN): Remove some dead code left over from last
+	patch.
+	* int_array.c (is_integer): When a MAYBE_NUM is converted successfully
+	to a NUMBER, leave the MAYBE_NUM flag enabled.
+	* mpfr.c (mpg_force_number): Ditto.
+	* node.c (r_force_number): Ditto.
+
+2016-07-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h: Modify stptr comment to indicate that all strings are now
+	NUL-terminated.
+	* builtin.c (do_mktime): Remove unnecessary logic to terminate
+	the string with '\0' temporarily.
+	(do_system) Ditto.
+	(nondec2awknum): Add a comment about termination.
+	* eval.c (posix_compare): Remove logic to terminate strings temporarily.
+	(set_ORS): No need to terminate ORS, since the string node is already
+	terminated. What gave us the right to modify that node anyway?
+	(fmt_index): Remove code to terminate string. This seems to have been
+	invalid anyway, since we don't own that memory.
+	(set_TEXTDOMAIN): Do not terminate TEXTDOMAIN string, since the node
+	is already terminated. We didn't have the right to modify that node
+	anyway.
+	* gawkapi.c (node_to_awk_value): Add assert checks to confirm that the
+	string is NUL-terminated.
+	* gawkapi.h: Modify awk_string comment to indicate that strings are
+	always terminated with '\0'.
+	* int_array.c (isinteger): Remove unnecessary logic to terminate string
+	with '\0' temporarily.
+	* interpret.h (Op_push_i): Ditto.
+	* io.c (nextfile): Remove string termination. We didn't own that memory
+	anyway.
+	* mpfr.c (force_mpnum): Remove unnecessary logic to terminate the
+	string with '\0' temporarily.
+	* node.c (r_force_number): Remove NUL termination around strtod call,
+	since we already know that there is either a white space or '\0'
+	character there. Either one will stop strtod.
+	(get_ieee_magic_val): Ditto.
+	* profile.c (pp_number): No need to terminate string returned by
+	r_format_val.
+
+2016-07-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* interpret.h (Op_field_spec): Now that all $n field values are
+	NUL-terminated, there is no reason to call dupnode for $n where n > 0.
+	This saves malloc and copying overhead, thereby more than offsetting the
+	performance hit of the additional copying and NUL-termination in the
+	last patch to field.c. It also eliminates repeated parsing in cases
+	where $n, for n > 1, was accessed more than once in a numeric context,
+	so the new approach should be a performance win.
+
+2016-07-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Make sure that all field values, and therefore all strings inside gawk,
+	are terminated with a '\0' character!
+
+	* field.c (databuf): New static struct to hold info about our buffer to
+	contain the field string values.
+	(allocate_databuf): New function to make sure the databuf is large
+	enough to hold $0 and copies of $1 through $NF.
+	(set_field): Copy $n into free space previously allocated in databuf
+	and add a '\0' at the end.
+	(rebuild_record): Call allocate_databuf to ensure sufficient space
+	for copying non-malloced field values. When copying field values,
+	use databuf to create a NUL-terminated copy.
+	(purge_record): New function extracted from reset_record to initialize
+	$1 through $NF to null values.
+	(set_record): Buffer management moved to new allocate_databuf function.
+	Call purge_record instead of reset_record, since reset_record contains
+	some extra logic not needed in this case.
+	(reset_record): Call purge_record to do most of the work, and call
+	allocate_databuf to make sure we have a big enough buffer to contain
+	copies of the $1 through $NF.
+
+2016-07-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h: Renumber flags to remove gap created when FIELD was removed.
+
+2016-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* field.c (rebuild_record): Need to set MALLOC flag if we allocate
+	memory for a residual field node with valref > 1.
+
+2016-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* field.c (rebuild_record): Do not bother to create new field nodes
+	to replace malloc'ed nodes when rebuilding $0.
+
+2016-07-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (FIELD): Remove unnecessary flag.
+	(MALLOC): Move definition to join the others, and improve the comment.
+	* array.c (value_info): Replace FIELD test with MALLOC test.
+	* eval.c (flags2str): Remove FIELD flag.
+	* field.c (init_fields): Remove FIELD bit from Null_field->flags.
+	(set_field): Remove FIELD bit from flags.
+	(rebuild_record): Test against MALLOC instead of FIELD. If a field
+	node has valref > 1, we should make a copy, although I don't think
+	it is valid for this to happen.
+	(set_record): Remove FIELD bit from flags.
+	* interpret.h (UNFIELD): Add comment, and test MALLOC flag instead of
+	FIELD. Remove probably buggy code to disable the FIELD flag when
+	valref is 1; that would have created a node where neither the FIELD
+	nor MALLOC flag was set, which seems invalid.
+	* node.c (r_dupnode): Remove code disabling FIELD flag.
+
+2016-07-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (force_string_fmt): New inline function to get the string
+	representation in a requested format.
+	(force_string): Reimplement as a macro using force_string_fmt function.
+	(force_string_ofmt): New macro to get a value's OFMT representation.
+	* builtin.c (do_print): Use new force_string_ofmt macro instead of
+	duplicating the logic inline.
+
+2016-07-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* str_array.c (str_lookup): There is no need to worry about the
+	MAYBE_NUM flag, since the code has been patched to make sure to
+	preserve the string value of strnum values, and the integer array
+	code should no longer mistakenly claim a strnum integer with a
+	nonstandard string representation.
 
 2016-07-03         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 

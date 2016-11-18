@@ -67,9 +67,9 @@ r_force_number(NODE *n)
 		return n;
 
 	/*
-	 * We should always set NUMCUR and clear MAYBE_NUM, and we may possibly
-	 * change STRING to NUMBER if MAYBE_NUM was set and it's a good numeric
-	 * string.
+	 * We should always set NUMCUR. If USER_INPUT is set and it's a
+	 * numeric string, we clear STRING and enable NUMBER, but if it's not
+	 * numeric, we disable USER_INPUT.
 	 */
 
 	/* All the conditionals are an attempt to avoid the expensive strtod */
@@ -159,12 +159,13 @@ r_force_number(NODE *n)
 		/* fall through to badnum */
 	}
 badnum:
-	n->flags &= ~MAYBE_NUM;
+	n->flags &= ~USER_INPUT;
 	return n;
 
 goodnum:
-	if ((n->flags & MAYBE_NUM) != 0) {
-		n->flags &= ~(MAYBE_NUM|STRING);
+	if ((n->flags & USER_INPUT) != 0) {
+		/* leave USER_INPUT enabled to indicate that this is a strnum */
+		n->flags &= ~STRING;
 		n->flags |= NUMBER;
 	}
 	return n;
@@ -300,7 +301,6 @@ r_dupnode(NODE *n)
 
 	getnode(r);
 	*r = *n;
-	r->flags &= ~FIELD;
 	r->flags |= MALLOC;
 	r->valref = 1;
 	/*

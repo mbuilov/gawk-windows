@@ -95,6 +95,26 @@
 	the report.
 	* clos1way6.ok2: New file.
 
+2016-07-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (apiterm, fldterm): New tests to make sure that we
+	are handling unterminated field string values properly.
+	* apiterm.awk, apiterm.in, apiterm.ok: New files.
+	* fldterm.awk, fldterm.in, fldterm.ok: New files.
+
+2016-07-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* forcenum.awk: We no longer need to force the strnum conversion,
+	since typeof now does this automatically.
+	* forcenum.ok: Change "number" to "strnum" for the numeric strings.
+	* rebuild.in: Change input to include a strnum.
+	* rebuild.ok: Update results.
+
+2016-07-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (arrayind3): New test.
+	* arrayind3.awk, arrayind3.ok: New files.
+
 2016-07-03         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* Makefile.am (rebuild): New test.

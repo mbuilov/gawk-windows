@@ -164,11 +164,9 @@ str_lookup(NODE *symbol, NODE *subs)
 	 * "Array indices are always strings."
 	 * "Array indices are always strings."
 	 * ....
-	 * If subs is a STRNUM, copy it; don't clear the MAYBE_NUM
-	 * flag on it since other variables could be using the same
-	 * reference-counted value.
 	 */
-	if (subs->stfmt != STFMT_UNUSED || (subs->flags & MAYBE_NUM) != 0) {
+	if (subs->stfmt != STFMT_UNUSED) {
+		/* The string was generated using CONVFMT. */
 		NODE *tmp;
 
 		/*
@@ -198,8 +196,6 @@ str_lookup(NODE *symbol, NODE *subs)
 
 		subs = dupnode(subs);
 	}
-
-	assert((subs->flags & MAYBE_NUM) == 0);
 
 	getbucket(b);
 	b->ahnext = symbol->buckets[hash1];

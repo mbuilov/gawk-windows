@@ -436,8 +436,7 @@ flags2str(int flagval)
 		{ STRCUR, "STRCUR" },
 		{ NUMCUR, "NUMCUR" },
 		{ NUMBER, "NUMBER" },
-		{ MAYBE_NUM, "MAYBE_NUM" },
-		{ FIELD, "FIELD" },
+		{ USER_INPUT, "USER_INPUT" },
 		{ INTLSTR, "INTLSTR" },
 		{ NUMINT, "NUMINT" },
 		{ INTIND, "INTIND" },
@@ -607,10 +606,16 @@ cmp_nodes(NODE *t1, NODE *t2, bool use_strcmp)
 	if (IGNORECASE) {
 		const unsigned char *cp1 = (const unsigned char *) t1->stptr;
 		const unsigned char *cp2 = (const unsigned char *) t2->stptr;
+		char save1 = t1->stptr[t1->stlen];
+		char save2 = t2->stptr[t2->stlen];
+
 
 		if (gawk_mb_cur_max > 1) {
+			t1->stptr[t1->stlen] = t2->stptr[t2->stlen] = '\0';
 			ret = strncasecmpmbs((const unsigned char *) cp1,
 					     (const unsigned char *) cp2, l);
+			t1->stptr[t1->stlen] = save1;
+			t2->stptr[t2->stlen] = save2;
 		} else {
 			/* Could use tolower() here; see discussion above. */
 			for (ret = 0; l-- > 0 && ret == 0; cp1++, cp2++)
@@ -829,7 +834,6 @@ set_ORS()
 	ORS_node->var_value = force_string(ORS_node->var_value);
 	ORS = ORS_node->var_value->stptr;
 	ORSlen = ORS_node->var_value->stlen;
-	ORS[ORSlen] = '\0';
 }
 
 /* fmt_ok --- is the conversion format a valid one? */
@@ -854,6 +858,8 @@ fmt_ok(NODE *n)
 #else
 	static const char flags[] = " +-#";
 #endif
+
+	// We rely on the caller to zero-terminate n->stptr.
 
 	if (*p++ != '%')
 		return 0;
@@ -882,22 +888,29 @@ fmt_index(NODE *n)
 	int ix = 0;
 	static int fmt_num = 4;
 	static int fmt_hiwater = 0;
+	char save;
 
 	if (fmt_list == NULL)
 		emalloc(fmt_list, NODE **, fmt_num*sizeof(*fmt_list), "fmt_index");
 	n = force_string(n);
+
+	save = n->stptr[n->stlen];
+	n->stptr[n->stlen] = '\0';
+
 	while (ix < fmt_hiwater) {
 		if (cmp_nodes(fmt_list[ix], n, true) == 0)
 			return ix;
 		ix++;
 	}
+
 	/* not found */
-	n->stptr[n->stlen] = '\0';
 	if (do_lint && ! fmt_ok(n))
 		lintwarn(_("bad `%sFMT' specification `%s'"),
 			    n == CONVFMT_node->var_value ? "CONV"
 			  : n == OFMT_node->var_value ? "O"
 			  : "", n->stptr);
+
+	n->stptr[n->stlen] = save;
 
 	if (fmt_hiwater >= fmt_num) {
 		fmt_num *= 2;
@@ -972,13 +985,10 @@ set_LINT()
 void
 set_TEXTDOMAIN()
 {
-	int len;
 	NODE *tmp;
 
 	tmp = TEXTDOMAIN_node->var_value = force_string(TEXTDOMAIN_node->var_value);
 	TEXTDOMAIN = tmp->stptr;
-	len = tmp->stlen;
-	TEXTDOMAIN[len] = '\0';
 	/*
 	 * Note: don't call textdomain(); this value is for
 	 * the awk program, not for gawk itself.
