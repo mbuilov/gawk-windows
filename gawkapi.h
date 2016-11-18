@@ -279,11 +279,7 @@ enum {
  * be multibyte encoded in the current locale's encoding and character
  * set. Gawk will convert internally to wide characters if necessary.
  *
- * Note that the string may not be terminated with a '\0' character.
- * In particular, this happens for field values $n where n > 0 and n < NF,
- * since the string points directly into the $0 buffer. All other strings,
- * including those created by extensions, should be NUL-terminated. In general
- * though, extension code should not assume that the string is NUL-terminated!
+ * Note that the string will always be terminated with a '\0' character.
  */
 typedef struct awk_string {
 	char *str;	/* data */

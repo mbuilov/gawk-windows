@@ -76,19 +76,21 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 		val = mpg_update_var(FNR_node);
 		assert((val->flags & MPZN) != 0);
 		if (mpz_sgn(val->mpg_i) > 0) {
+			int len = FILENAME_node->var_value->stlen;
 			file = FILENAME_node->var_value->stptr;
 			(void) putc('(', stderr);
 			if (file)
-				(void) fprintf(stderr, "FILENAME=%s ", file);
+				(void) fprintf(stderr, "FILENAME=%.*s ", len, file);
 			(void) mpfr_fprintf(stderr, "FNR=%Zd) ", val->mpg_i);
 		}
 	} else
 #endif
 	if (FNR > 0) {
+		int len = FILENAME_node->var_value->stlen;
 		file = FILENAME_node->var_value->stptr;
 		(void) putc('(', stderr);
 		if (file)
-			(void) fprintf(stderr, "FILENAME=%s ", file);
+			(void) fprintf(stderr, "FILENAME=%.*s ", len, file);
 		(void) fprintf(stderr, "FNR=%ld) ", FNR);
 	}
 

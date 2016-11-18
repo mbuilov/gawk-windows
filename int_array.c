@@ -183,8 +183,9 @@ is_integer(NODE *symbol, NODE *subs)
 		return NULL;
 	if (len == 1 && *cp != '-') {	/* single digit */
 		subs->numbr = (long) (*cp - '0');
-		if ((subs->flags & MAYBE_NUM) != 0) {
-			subs->flags &= ~(MAYBE_NUM|STRING);
+		if ((subs->flags & USER_INPUT) != 0) {
+			/* leave USER_INPUT set */
+			subs->flags &= ~STRING;
 			subs->flags |= NUMBER;
 		}
 		subs->flags |= (NUMCUR|NUMINT);
@@ -202,8 +203,9 @@ is_integer(NODE *symbol, NODE *subs)
 		return NULL;
 
 	subs->numbr = l;
-	if ((subs->flags & MAYBE_NUM) != 0) {
-		subs->flags &= ~(MAYBE_NUM|STRING);
+	if ((subs->flags & USER_INPUT) != 0) {
+		/* leave USER_INPUT set */
+		subs->flags &= ~STRING;
 		subs->flags |= NUMBER;
 	}
 	subs->flags |= NUMCUR;

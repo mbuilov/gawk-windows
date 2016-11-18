@@ -583,8 +583,8 @@ do_delete(NODE *symbol, int nsubs)
 		if (val == NULL) {
 			if (do_lint) {
 				subs = force_string(subs);
-				lintwarn(_("delete: index `%s' not in array `%s'"),
-					subs->stptr, array_vname(symbol));
+				lintwarn(_("delete: index `%.*s' not in array `%s'"),
+					(int) subs->stlen, subs->stptr, array_vname(symbol));
 			}
 			/* avoid memory leak, free all subs */
 			free_subs(i);
@@ -660,7 +660,6 @@ value_info(NODE *n)
 {
 
 #define PREC_NUM -1
-#define PREC_STR -1
 
 	if (n == Nnull_string || n == Null_field) {
 		fprintf(output_fp, "<(null)>");
@@ -669,7 +668,7 @@ value_info(NODE *n)
 
 	if ((n->flags & (STRING|STRCUR)) != 0) {
 		fprintf(output_fp, "<");
-		fprintf(output_fp, "\"%.*s\"", PREC_STR, n->stptr);
+		fprintf(output_fp, "\"%.*s\"", (int) n->stlen, n->stptr);
 		if ((n->flags & (NUMBER|NUMCUR)) != 0) {
 #ifdef HAVE_MPFR
 			if (is_mpg_float(n))
@@ -696,12 +695,14 @@ value_info(NODE *n)
 
 	fprintf(output_fp, ":%s", flags2str(n->flags));
 
-	if ((n->flags & FIELD) == 0)
+	if ((n->flags & MALLOC) != 0)
 		fprintf(output_fp, ":%ld", n->valref);
 	else
 		fprintf(output_fp, ":");
 
 	if ((n->flags & (STRING|STRCUR)) == STRCUR) {
+		size_t len;
+
 		fprintf(output_fp, "][");
 		fprintf(output_fp, "stfmt=%d, ", n->stfmt);
 		/*
@@ -710,13 +711,14 @@ value_info(NODE *n)
 		 * was originally set as a string, or it's a number that has
 		 * an integer value.
 		 */
+		len = fmt_list[n->stfmt]->stlen;
+		fmt_list[n->stfmt]->stptr[len] = '\0';
 		fprintf(output_fp, "FMT=\"%s\"",
 					n->stfmt == STFMT_UNUSED ? "<unused>"
 					: fmt_list[n->stfmt]->stptr);
 	}
 
 #undef PREC_NUM
-#undef PREC_STR
 }
 
 
@@ -803,6 +805,7 @@ asort_actual(int nargs, sort_context_t ctxt)
 	NODE **list = NULL, **ptr, **lhs;
 	unsigned long num_elems, i;
 	const char *sort_str;
+	char save;
 
 	if (nargs == 3)  /* 3rd optional arg */
 		s = POP_STRING();
@@ -811,6 +814,8 @@ asort_actual(int nargs, sort_context_t ctxt)
 
 	s = force_string(s);
 	sort_str = s->stptr;
+	save = s->stptr[s->stlen];
+	s->stptr[s->stlen] = '\0';
 	if (s->stlen == 0) {		/* default sorting */
 		if (ctxt == ASORT)
 			sort_str = "@val_type_asc";
@@ -851,6 +856,7 @@ asort_actual(int nargs, sort_context_t ctxt)
 
 	/* sorting happens inside assoc_list */
 	list = assoc_list(array, sort_str, ctxt);
+	s->stptr[s->stlen] = save;
 	DEREF(s);
 
 	num_elems = assoc_length(array);
@@ -913,6 +919,7 @@ asort_actual(int nargs, sort_context_t ctxt)
 				arr = make_array();
 				subs = force_string(subs);
 				arr->vname = subs->stptr;
+				arr->vname[subs->stlen] = '\0';
 				subs->stptr = NULL;
 				subs->flags &= ~STRCUR;
 				arr->parent_array = array; /* actual parent, not the temporary one. */

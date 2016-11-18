@@ -55,6 +55,7 @@ static long fpat_parse_field(long, char **, int, NODE *,
 static void set_element(long num, char * str, long len, NODE *arr);
 static void grow_fields_arr(long num);
 static void set_field(long num, char *str, long len, NODE *dummy);
+static void purge_record(void);
 
 static char *parse_extent;	/* marks where to restart parse of record */
 static long parse_high_water = 0; /* field number that we have parsed so far */
@@ -93,7 +94,7 @@ init_fields()
 	getnode(Null_field);
 	*Null_field = *Nnull_string;
 	Null_field->valref = 1;
-	Null_field->flags = (FIELD|STRCUR|STRING|NULL_FIELD);
+	Null_field->flags = (STRCUR|STRING|NULL_FIELD); /* do not set MALLOC */
 
 	field0_valid = true;
 }
@@ -131,7 +132,7 @@ set_field(long num,
 	n = fields_arr[num];
 	n->stptr = str;
 	n->stlen = len;
-	n->flags = (STRCUR|STRING|MAYBE_NUM|FIELD);
+	n->flags = (STRCUR|STRING|USER_INPUT);	/* do not set MALLOC */
 }
 
 /* rebuild_record --- Someone assigned a value to $(something).
@@ -194,29 +195,32 @@ rebuild_record()
 	 */
 	for (cops = ops, i = 1; i <= NF; i++) {
 		NODE *r = fields_arr[i];
-		if (r->stlen > 0) {
+		/*
+		 * There is no reason to copy malloc'ed fields to point into
+		 * the new $0 buffer, although that's how previous versions did
+		 * it. It seems faster to leave the malloc'ed fields in place.
+		 */
+		if (r->stlen > 0 && (r->flags & MALLOC) == 0) {
 			NODE *n;
 			getnode(n);
 
-			if ((r->flags & FIELD) == 0) {
-				*n = *Null_field;
-				n->stlen = r->stlen;
-				if ((r->flags & (NUMCUR|NUMBER)) != 0) {
-					n->flags |= (r->flags & (MPFN|MPZN|NUMCUR|NUMBER));
-#ifdef HAVE_MPFR
-					if (is_mpg_float(r)) {
-					        mpfr_init(n->mpg_numbr);
-						mpfr_set(n->mpg_numbr, r->mpg_numbr, ROUND_MODE);
-					} else if (is_mpg_integer(r)) {
-					        mpz_init(n->mpg_i);
-						mpz_set(n->mpg_i, r->mpg_i);
-					} else
-#endif
-					n->numbr = r->numbr;
-				}
-			} else {
-				*n = *r;
-				n->flags &= ~MALLOC;
+			*n = *r;
+			if (r->valref > 1) {
+				/*
+				 * This probably never happens, since it
+				 * was not considered by previous versions of
+				 * this function. But it seems clear that
+				 * we can't leave r's stptr pointing into the
+				 * old $0 buffer that we are about to unref.
+				 * It's not a priori obvious that valref must be
+				 * 1 in all cases, so it seems wise to suppport
+				 * this corner case. The only question is
+				 * whether to add a warning message.
+				 */
+				emalloc(r->stptr, char *, r->stlen + 1, "rebuild_record");
+				memcpy(r->stptr, cops, r->stlen);
+				r->stptr[r->stlen] = '\0';
+				r->flags |= MALLOC;
 			}
 
 			n->stptr = cops;
@@ -226,6 +230,10 @@ rebuild_record()
 		}
 		cops += fields_arr[i]->stlen + OFSlen;
 	}
+
+	assert((fields_arr[0]->flags & MALLOC) == 0
+		? fields_arr[0]->valref == 1
+		: true);
 
 	unref(fields_arr[0]);
 
@@ -252,7 +260,7 @@ set_record(const char *buf, int cnt)
 #define INITIAL_SIZE	512
 #define MAX_SIZE	((unsigned long) ~0)	/* maximally portable ... */
 
-	reset_record();
+	purge_record();
 
 	/* buffer management: */
 	if (databuf_size == 0) {	/* first time */
@@ -267,8 +275,11 @@ set_record(const char *buf, int cnt)
 	 * databuf_size is > cnt after allocation.
 	 */
 	if (cnt >= databuf_size) {
-		while (cnt >= databuf_size && databuf_size <= MAX_SIZE)
+		do {
+			if (databuf_size > MAX_SIZE/2)
+				fatal(_("input record too large"));
 			databuf_size *= 2;
+		} while (cnt >= databuf_size);
 		erealloc(databuf, char *, databuf_size, "set_record");
 		memset(databuf, '\0', databuf_size);
 	}
@@ -282,6 +293,10 @@ set_record(const char *buf, int cnt)
 	databuf[cnt] = '\0';
 
 	/* manage field 0: */
+	assert((fields_arr[0]->flags & MALLOC) == 0
+		? fields_arr[0]->valref == 1
+		: true);
+
 	unref(fields_arr[0]);
 	getnode(n);
 	n->stptr = databuf;
@@ -289,7 +304,7 @@ set_record(const char *buf, int cnt)
 	n->valref = 1;
 	n->type = Node_val;
 	n->stfmt = STFMT_UNUSED;
-	n->flags = (STRING|STRCUR|MAYBE_NUM|FIELD);
+	n->flags = (STRING|STRCUR|USER_INPUT);	/* do not set MALLOC */
 	fields_arr[0] = n;
 
 #undef INITIAL_SIZE
@@ -301,13 +316,21 @@ set_record(const char *buf, int cnt)
 void
 reset_record()
 {
+	fields_arr[0] = force_string(fields_arr[0]);
+	purge_record();
+}
+
+static void
+purge_record()
+{
 	int i;
 	NODE *n;
 
-	fields_arr[0] = force_string(fields_arr[0]);
-
 	NF = -1;
 	for (i = 1; i <= parse_high_water; i++) {
+		assert((fields_arr[i]->flags & MALLOC) == 0
+			? fields_arr[i]->valref == 1
+			: true);
 		unref(fields_arr[i]);
 		getnode(n);
 		*n = *Null_field;
@@ -859,7 +882,7 @@ set_element(long num, char *s, long len, NODE *n)
 	NODE *sub;
 
 	it = make_string(s, len);
-	it->flags |= MAYBE_NUM;
+	it->flags |= USER_INPUT;
 	sub = make_number((AWKNUM) (num));
 	lhs = assoc_lookup(n, sub);
 	unref(*lhs);

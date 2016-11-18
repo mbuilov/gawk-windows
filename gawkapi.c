@@ -391,6 +391,55 @@ api_awk_atexit(awk_ext_id_t id,
 	list_head = p;
 }
 
+static struct {
+	char **strings;
+	size_t i, size;
+} scopy;
+
+/* free_api_string_copies --- release memory used by string copies */
+
+void
+free_api_string_copies()
+{
+	size_t i;
+
+	for (i = 0; i < scopy.i; i++)
+		free(scopy.strings[i]);
+	scopy.i = 0;
+}
+
+/* assign_string --- return a string node with NUL termination */
+
+static inline void
+assign_string(NODE *node, awk_value_t *val)
+{
+	val->val_type = AWK_STRING;
+	if (node->stptr[node->stlen] != '\0') {
+		/*
+		 * This is an unterminated field string, so make a copy.
+		 * This should happen only for $n where n > 0 and n < NF.
+		 */
+		char *s;
+
+		assert((node->flags & MALLOC) == 0);
+		if (scopy.i == scopy.size) {
+			/* expand list */
+			if (scopy.size == 0)
+				scopy.size = 8;	/* initial size */
+			else
+				scopy.size *= 2;
+			erealloc(scopy.strings, char **, scopy.size * sizeof(char *), "assign_string");
+		}
+		emalloc(s, char *, node->stlen + 1, "assign_string");
+		memcpy(s, node->stptr, node->stlen);
+		s[node->stlen] = '\0';
+		val->str_value.str = scopy.strings[scopy.i++] = s;
+	}
+	else
+		val->str_value.str = node->stptr;
+	val->str_value.len = node->stlen;
+}
+
 /* node_to_awk_value --- convert a node into a value for an extension */
 
 static awk_bool_t
@@ -435,11 +484,8 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 			break;
 
 		case AWK_STRING:
-			val->val_type = AWK_STRING;
-
 			(void) force_string(node);
-			val->str_value.str = node->stptr;
-			val->str_value.len = node->stlen;
+			assign_string(node, val);
 			ret = awk_true;
 			break;
 
@@ -465,9 +511,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				val->num_value = get_number_d(node);
 				ret = awk_true;
 			} else if ((node->flags & STRING) != 0) {
-				val->val_type = AWK_STRING;
-				val->str_value.str = node->stptr;
-				val->str_value.len = node->stlen;
+				assign_string(node, val);
 				ret = awk_true;
 			} else
 				val->val_type = AWK_UNDEFINED;

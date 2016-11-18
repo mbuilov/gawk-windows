@@ -11527,17 +11527,93 @@ compares variables.
 @node Variable Typing
 @subsubsection String Type versus Numeric Type
 
+Scalar objects in @command{awk} (variables, array elements, and fields)
+are @emph{dynamically} typed.  This means their type can change as the
+program runs, from @dfn{untyped} before any use,@footnote{@command{gawk}
+calls this @dfn{unassigned}, as the following example shows.} to string
+or number, and then from string to number or number to string, as the
+program progresses.
+
+You can't do much with untyped variables, other than tell that they
+are untyped. The following program tests @code{a} against @code{""}
+and @code{0}; the test succeeds when @code{a} has never been assigned
+a value.  It also uses the built-in @code{typeof()} function
+(not presented yet; @pxref{Type Functions}) to show @code{a}'s type:
+
+@example
+$ @kbd{gawk 'BEGIN @{ print (a == "" && a == 0 ?}
+> @kbd{"a is untyped" : "a has a type!") ; print typeof(a) @}'}
+@print{} a is untyped
+@print{} unassigned
+@end example
+
+A scalar has numeric type when assigned a numeric value,
+such as from a numeric constant, or from another scalar
+with numeric type:
+
+@example
+$ @kbd{gawk 'BEGIN @{ a = 42 ; print typeof(a)}
+> @kbd{b = a ; print typeof(b) @}'}
+number
+number
+@end example
+
+Similarly, a scalar has string type when assigned a string
+value, such as from a string constant, or from another scalar
+with string type:
+
+@example
+$ @kbd{gawk 'BEGIN @{ a = "forty two" ; print typeof(a)}
+> @kbd{b = a ; print typeof(b) @}'}
+string
+string
+@end example
+
+So far, this is all simple and straightforward.  What happens, though,
+when @command{awk} has to process data from a user?  Let's start with
+field data.  What should the following command produce as output?
+
+@example
+echo hello | awk '@{ printf("%s %s < 42\n", $1,
+                           ($1 < 42 ? "is" : "is not")) @}'
+@end example
+
+@noindent
+Since @samp{hello} is alphabetic data, @command{awk} can only do a string
+comparison.  Internally, it converts @code{42} into @code{"42"} and compares
+the two string values @code{"hello"} and @code{"42"}. Here's the result:
+
+@example
+$ @kbd{echo hello | awk '@{ printf("%s %s < 42\n", $1,}
+> @kbd{                           ($1 < 42 ? "is" : "is not")) @}'}
+@print{} hello is not < 42
+@end example
+
+However, what happens when data from a user @emph{looks like} a number?
+On the one hand, in reality, the input data consists of characters, not
+binary numeric
+values.  But, on the other hand, the data looks numeric, and @command{awk}
+really ought to treat it as such. And indeed, it does:
+
+@example
+$ @kbd{echo 37 | awk '@{ printf("%s %s < 42\n", $1,}
+> @kbd{                        ($1 < 42 ? "is" : "is not")) @}'}
+@print{} 37 is < 42
+@end example
+
+Here are the rules for when @command{awk}
+treats data as a number, and for when it treats data as a string.
+
 @cindex numeric, strings
 @cindex strings, numeric
 @cindex POSIX @command{awk}, numeric strings and
-The POSIX standard introduced
-the concept of a @dfn{numeric string}, which is simply a string that looks
-like a number---for example, @code{@w{" +2"}}.  This concept is used
-for determining the type of a variable.
-The type of the variable is important because the types of two variables
-determine how they are compared.
-Variable typing follows these rules:
+The POSIX standard uses the term @dfn{numeric string} for input data that
+looks numeric.  The @samp{37} in the previous example is a numeric string.
+So what is the type of a numeric string? Answer: numeric.
 
+The type of a variable is important because the types of two variables
+determine how they are compared.
+Variable typing follows these definitions and rules:
 
 @itemize @value{BULLET}
 @item
@@ -11552,7 +11628,9 @@ attribute.
 Fields, @code{getline} input, @code{FILENAME}, @code{ARGV} elements,
 @code{ENVIRON} elements, and the elements of an array created by
 @code{match()}, @code{split()}, and @code{patsplit()} that are numeric
-strings have the @dfn{strnum} attribute.  Otherwise, they have
+strings have the @dfn{strnum} attribute.@footnote{Thus, a POSIX
+numeric string and @command{gawk}'s strnum are the same thing.}
+Otherwise, they have
 the @dfn{string} attribute.  Uninitialized variables also have the
 @dfn{strnum} attribute.
 
@@ -11626,7 +11704,7 @@ STRNUM  &&string	&numeric	&numeric\cr
 @end tex
 @ifnottex
 @ifnotdocbook
-@display
+@verbatim
         +----------------------------------------------
         |       STRING          NUMERIC         STRNUM
 --------+----------------------------------------------
@@ -11637,7 +11715,7 @@ NUMERIC |       string          numeric         numeric
         |
 STRNUM  |       string          numeric         numeric
 --------+----------------------------------------------
-@end display
+@end verbatim
 @end ifnotdocbook
 @end ifnottex
 @docbook
@@ -11696,10 +11774,14 @@ purposes.
 In short, when one operand is a ``pure'' string, such as a string
 constant, then a string comparison is performed.  Otherwise, a
 numeric comparison is performed.
+(The primary difference between a number and a strnum is that
+for strnums @command{gawk} preserves the original string value that
+the scalar had when it came in.)
 
-This point bears additional emphasis: All user input is made of characters,
-and so is first and foremost of string type; input strings
-that look numeric are additionally given the strnum attribute.
+This point bears additional emphasis:
+Input that looks numeric @emph{is} numeric.
+All other input is treated as strings.
+
 Thus, the six-character input string @w{@samp{ +3.14}} receives the
 strnum attribute. In contrast, the eight characters
 @w{@code{" +3.14"}} appearing in program text comprise a string constant.
@@ -11724,6 +11806,14 @@ $ @kbd{echo ' +3.14' | awk '@{ print($1 == "3.14") @}'}      @ii{False}
 @print{} 0
 $ @kbd{echo ' +3.14' | awk '@{ print($1 == 3.14) @}'}        @ii{True}
 @print{} 1
+@end example
+
+You can see the type of an input field (or other user input)
+using @code{typeof()}:
+
+@example
+$ @kbd{echo hello 37 | gawk '@{ print typeof($1), typeof($2) @}'}
+@print{} string strnum
 @end example
 
 @node Comparison Operators
@@ -18688,8 +18778,8 @@ Return one of the following strings, depending upon the type of @var{x}:
 @var{x} is a string.
 
 @item "strnum"
-@var{x} is a string that might be a number, such as a field or
-the result of calling @code{split()}. (I.e., @var{x} has the STRNUM
+@var{x} is a number that started life as user input, such as a field or
+the result of calling @code{split()}. (I.e., @var{x} has the strnum
 attribute; @pxref{Variable Typing}.)
 
 @item "unassigned"
@@ -18698,8 +18788,9 @@ For example:
 
 @example
 BEGIN @{
-    a[1]                # creates a[1] but it has no assigned value
-    print typeof(a[1])  # scalar_u
+    # creates a[1] but it has no assigned value
+    a[1]
+    print typeof(a[1])  # unassigned
 @}
 @end example
 
@@ -29721,6 +29812,8 @@ executing, short programs.
 The @command{gawk} debugger only accepts source code supplied with the @option{-f} option.
 @end itemize
 
+@ignore
+@c 11/2016: This no longer applies after all the type cleanup work that's been done.
 One other point is worth discussing.  Conventional debuggers run in a
 separate process (and thus address space) from the programs that they
 debug (the @dfn{debuggee}, if you will).
@@ -29779,6 +29872,7 @@ is indeed a number, and this is reflected in the result of
 Cases like this where the debugger is not transparent to the program's
 execution should be rare. If you encounter one, please report it
 (@pxref{Bugs}).
+@end ignore
 
 @ignore
 Look forward to a future release when these and other missing features may
@@ -31285,14 +31379,26 @@ and is managed by @command{gawk} from then on.
 The API defines several simple @code{struct}s that map values as seen
 from @command{awk}.  A value can be a @code{double}, a string, or an
 array (as in multidimensional arrays, or when creating a new array).
+
 String values maintain both pointer and length, because embedded @sc{nul}
 characters are allowed.
 
 @quotation NOTE
-By intent, strings are maintained using the current multibyte encoding (as
-defined by @env{LC_@var{xxx}} environment variables) and not using wide
-characters.  This matches how @command{gawk} stores strings internally
-and also how characters are likely to be input into and output from files.
+By intent, @command{gawk} maintains strings using the current multibyte
+encoding (as defined by @env{LC_@var{xxx}} environment variables)
+and not using wide characters.  This matches how @command{gawk} stores
+strings internally and also how characters are likely to be input into
+and output from files.
+@end quotation
+
+@quotation NOTE
+String values passed to an extension by @command{gawk} are always
+@sc{NUL}-terminated.  Thus it is safe to pass such string values to
+standard library and system routines. However, because
+@command{gawk} allows embedded @sc{NUL} characters in string data,
+you should check that @samp{strlen(@var{some_string})} matches
+the length for that string passed to the extension before using
+it as a regular C string.
 @end quotation
 
 @item

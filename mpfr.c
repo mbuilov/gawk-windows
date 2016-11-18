@@ -348,12 +348,13 @@ mpg_force_number(NODE *n)
 	n->flags |= NUMCUR;
 
 	if (force_mpnum(n, (do_non_decimal_data && ! do_traditional), true)) {
-		if ((n->flags & MAYBE_NUM) != 0) {
-			n->flags &= ~(MAYBE_NUM|STRING);
+		if ((n->flags & USER_INPUT) != 0) {
+			/* leave USER_INPUT set to indicate a strnum */
+			n->flags &= ~STRING;
 			n->flags |= NUMBER;
 		}
 	} else
-		n->flags &= ~MAYBE_NUM;
+		n->flags &= ~USER_INPUT;
 	return n;
 }
 
@@ -503,11 +504,11 @@ set_PREC()
 		mpfr_exp_t emax;
 		mpfr_exp_t emin;
 	} ieee_fmts[] = {
-{ "half",	11,	16,	-23	},	/* binary16 */
-{ "single",	24,	128,	-148	},	/* binary32 */
-{ "double",	53,	1024,	-1073	},	/* binary64 */
-{ "quad",	113,	16384,	-16493	},	/* binary128 */
-{ "oct",	237,	262144,	-262377	},	/* binary256, not in the IEEE 754-2008 standard */
+		{ "half",	11,	16,	-23	},	/* binary16 */
+		{ "single",	24,	128,	-148	},	/* binary32 */
+		{ "double",	53,	1024,	-1073	},	/* binary64 */
+		{ "quad",	113,	16384,	-16493	},	/* binary128 */
+		{ "oct",	237,	262144,	-262377	},	/* binary256, not in the IEEE 754-2008 standard */
 
 		/*
  		 * For any bitwidth = 32 * k ( k >= 4),
@@ -1080,6 +1081,8 @@ do_mpfr_strtonum(int nargs)
 		force_mpnum(r, true, use_lc_numeric);
 		r->stptr = NULL;
 		r->stlen = 0;
+		r->wstptr = NULL;
+		r->wstlen = 0;
 	} else if (is_mpg_float(tmp)) {
 		int tval;
 		r = mpg_float();

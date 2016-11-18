@@ -23,13 +23,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+/*
+ * If "r" is a field, valref should normally be > 1, because the field is
+ * created initially with valref 1, and valref should be bumped when it is
+ * pushed onto the stack by Op_field_spec. On the other hand, if we are
+ * assigning to $n, then Op_store_field calls unref(*lhs) before assigning
+ * the new value, so that decrements valref. So if the RHS is a field with
+ * valref 1, that effectively means that this is an assignment like "$n = $n",
+ * so a no-op, other than triggering $0 reconstitution.
+ */
 #define UNFIELD(l, r) \
 { \
 	/* if was a field, turn it into a var */ \
-	if ((r->flags & FIELD) == 0) { \
-		l = r; \
-	} else if (r->valref == 1) { \
-		r->flags &= ~FIELD; \
+	if ((r->flags & MALLOC) != 0 || r->valref == 1) { \
 		l = r; \
 	} else { \
 		l = dupnode(r); \
@@ -357,12 +363,8 @@ uninitialized_scalar:
 			lhs = r_get_field(t1, (Func_ptr *) 0, true);
 			decr_sp();
 			DEREF(t1);
-			/* only for $0, up ref count */
-			if (*lhs == fields_arr[0]) {
-				r = *lhs;
-				UPREF(r);
-			} else
-				r = dupnode(*lhs);
+			r = *lhs;
+			UPREF(r);
 			PUSH(r);
 			break;
 
@@ -730,7 +732,7 @@ mod:
 
 					erealloc(t1->wstptr, wchar_t *,
 							sizeof(wchar_t) * (wlen + 1), "r_interpret");
-					memcpy(t1->wstptr + t1->wstlen, t2->wstptr, t2->wstlen);
+					memcpy(t1->wstptr + t1->wstlen, t2->wstptr, t2->wstlen * sizeof(wchar_t));
 					t1->wstlen = wlen;
 					t1->wstptr[wlen] = L'\0';
 					t1->flags |= WSTRCUR;
@@ -964,6 +966,7 @@ arrayfor:
 				if (t1->type == Node_val)
 					DEREF(t1);
 			}
+			free_api_string_copies();
 			PUSH(r);
 		}
 			break;
