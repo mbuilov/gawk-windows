@@ -957,7 +957,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 #endif
 			direction = "to/from";
 			if (! two_way_open(str, rp, extfd)) {
-				if (! failure_fatal || is_non_fatal_redirect(str)) {
+				if (! failure_fatal || is_non_fatal_redirect(str, explen)) {
 					*errflg = errno;
 					/* do not free rp, saving it for reuse (save_rp = rp) */
 					return NULL;
@@ -1044,7 +1044,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 				 */
 				if (errflg != NULL)
 					*errflg = errno;
-				if (failure_fatal && ! is_non_fatal_redirect(str) &&
+				if (failure_fatal && ! is_non_fatal_redirect(str, explen) &&
 				    (redirtype == redirect_output
 				     || redirtype == redirect_append)) {
 					/* multiple messages make life easier for translators */
@@ -1125,10 +1125,21 @@ is_non_fatal_std(FILE *fp)
 /* is_non_fatal_redirect --- return true if redirected I/O should be nonfatal */
 
 bool
-is_non_fatal_redirect(const char *str)
+is_non_fatal_redirect(const char *str, size_t len)
 {
-	return in_PROCINFO(nonfatal, NULL, NULL) != NULL
-	       || in_PROCINFO(str, nonfatal, NULL) != NULL;
+	bool ret;
+	char save;
+	char *s = (char *) str;
+
+	save = s[len];
+	s[len] = '\0';
+
+	ret = in_PROCINFO(nonfatal, NULL, NULL) != NULL
+	       || in_PROCINFO(s, nonfatal, NULL) != NULL;
+
+	s[len] = save;
+
+	return ret;
 }
 
 /* close_one --- temporarily close an open file to re-use the fd */
@@ -1182,7 +1193,11 @@ do_close(int nargs)
 	if (nargs == 2) {
 		/* 2nd arg if present: "to" or "from" for two-way pipe */
 		/* DO NOT use _() on the strings here! */
+		char save;
+
 		tmp2 = POP_STRING();
+		save = tmp2->stptr[tmp2->stlen];
+		tmp2->stptr[tmp2->stlen] = '\0';
 		if (strcasecmp(tmp2->stptr, "to") == 0)
 			how = CLOSE_TO;
 		else if (strcasecmp(tmp2->stptr, "from") == 0)
@@ -1191,6 +1206,7 @@ do_close(int nargs)
 			DEREF(tmp2);
 			fatal(_("close: second argument must be `to' or `from'"));
 		}
+		tmp2->stptr[tmp2->stlen] = save;
 		DEREF(tmp2);
 	}
 
@@ -1733,7 +1749,7 @@ devopen(const char *name, const char *mode)
 		unsigned long retries = 0;
 		static long msleep = 1000;
 		bool hard_error = false;
-		bool non_fatal = is_non_fatal_redirect(name);
+		bool non_fatal = is_non_fatal_redirect(name, strlen(name));
 
 		cp = (char *) name;
 
@@ -2619,7 +2635,7 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 		}
 		return make_number((AWKNUM) -1.0);
 	} else if ((rp->flag & RED_TWOWAY) != 0 && rp->iop == NULL) {
-		if (is_non_fatal_redirect(redir_exp->stptr)) {
+		if (is_non_fatal_redirect(redir_exp->stptr, redir_exp->stlen)) {
 			update_ERRNO_int(EBADF);
 			return make_number((AWKNUM) -1.0);
 		}

@@ -898,7 +898,7 @@ do_info(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 					for (i = 0; i < d->num_subs; i++) {
 						NODE *sub;
 						sub = d->subs[i];
-						gprintf(out_fp, "[\"%s\"]", sub->stptr);
+						gprintf(out_fp, "[\"%.*s\"]", (int) sub->stlen, sub->stptr);
 					}
 					gprintf(out_fp, "\n");
 				} else if (IS_FIELD(d))
@@ -1090,7 +1090,7 @@ print_array(volatile NODE *arr, char *arr_name)
 			if (r->type == Node_var_array)
 				ret = print_array(r, r->vname);
 			else {
-				gprintf(out_fp, "%s[\"%s\"] = ", arr_name, subs->stptr);
+				gprintf(out_fp, "%s[\"%.*s\"] = ", arr_name, (int) subs->stlen, subs->stptr);
 				valinfo((NODE *) r, gprintf, out_fp);
 			}
 		}
@@ -1116,7 +1116,7 @@ print_subscript(NODE *arr, char *arr_name, CMDARG *a, int count)
 	subs = a->a_node;
 	r = in_array(arr, subs);
 	if (r == NULL)
-		fprintf(out_fp, _("[\"%s\"] not in array `%s'\n"), subs->stptr, arr_name);
+		fprintf(out_fp, _("[\"%.*s\"] not in array `%s'\n"), (int) subs->stlen, subs->stptr, arr_name);
 	else if (r->type == Node_var_array) {
 		if (count > 1)
 			print_subscript(r, r->vname, a->next, count - 1);
@@ -1126,7 +1126,7 @@ print_subscript(NODE *arr, char *arr_name, CMDARG *a, int count)
 			print_symbol(r, false);
 		}
 	} else {
-		fprintf(out_fp, "%s[\"%s\"] = ", arr_name, subs->stptr);
+		fprintf(out_fp, "%s[\"%.*s\"] = ", arr_name, (int) subs->stlen, subs->stptr);
 		valinfo(r, fprintf, out_fp);
 	}
 }
@@ -1168,12 +1168,12 @@ do_print_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 					subs = a->a_node;
 					value = in_array(r, subs);
 					if (value == NULL) {
-						fprintf(out_fp, _("[\"%s\"] not in array `%s'\n"),
-									subs->stptr, name);
+						fprintf(out_fp, _("[\"%.*s\"] not in array `%s'\n"),
+									(int) subs->stlen, subs->stptr, name);
 						break;
 					} else if (value->type != Node_var_array) {
-						fprintf(out_fp, _("`%s[\"%s\"]' is not an array\n"),
-									name, subs->stptr);
+						fprintf(out_fp, _("`%s[\"%.*s\"]' is not an array\n"),
+									name, (int) subs->stlen, subs->stptr);
 						break;
 					} else {
 						r = value;
@@ -1255,15 +1255,15 @@ do_set_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 
 			if (count == 1) {
 				if (value != NULL && value->type == Node_var_array)
-					d_error(_("attempt to use array `%s[\"%s\"]' in a scalar context"),
-								name, subs->stptr);
+					d_error(_("attempt to use array `%s[\".*%s\"]' in a scalar context"),
+								name, (int) subs->stlen, subs->stptr);
 				else {
 					arg = arg->next;
 					val = arg->a_node;
 					lhs = assoc_lookup(r, subs);
 					unref(*lhs);
 					*lhs = dupnode(val);
-					fprintf(out_fp, "%s[\"%s\"] = ", name, subs->stptr);
+					fprintf(out_fp, "%s[\"%.*s\"] = ", name, (int) subs->stlen, subs->stptr);
 					valinfo(*lhs, fprintf, out_fp);
 				}
 			} else {
@@ -1277,8 +1277,8 @@ do_set_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 					*lhs = array;
 					r = array;
 				} else if (value->type != Node_var_array) {
-					d_error(_("attempt to use scalar `%s[\"%s\"]' as array"),
-							name, subs->stptr);
+					d_error(_("attempt to use scalar `%s[\".*%s\"]' as array"),
+							name, (int) subs->stlen, subs->stptr);
 					break;
 				} else {
 					r = value;
@@ -1525,8 +1525,8 @@ display(struct list_item *d)
 			sub = d->subs[i];
 			r = in_array(symbol, sub);
 			if (r == NULL) {
-				fprintf(out_fp, _("%d: [\"%s\"] not in array `%s'\n"),
-							d->number, sub->stptr, d->sname);
+				fprintf(out_fp, _("%d: [\"%.*s\"] not in array `%s'\n"),
+							d->number, (int) sub->stlen, sub->stptr, d->sname);
 				break;
 			}
 			if (r->type == Node_var_array) {
@@ -1536,8 +1536,8 @@ display(struct list_item *d)
 			} else {
 				if (i != count - 1)
 					return;		/* FIXME msg and delete item ? */
-				fprintf(out_fp, "%d: %s[\"%s\"] = ", d->number,
-							d->sname, sub->stptr);
+				fprintf(out_fp, "%d: %s[\"%.*s\"] = ", d->number,
+							d->sname, (int) sub->stlen, sub->stptr);
 				valinfo(r, fprintf, out_fp);
 			}
 		}
@@ -1822,7 +1822,7 @@ do_watch(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 		fprintf(out_fp, "%s", w->sname);
 		for (i = 0; i < w->num_subs; i++) {
 			sub = w->subs[i];
-			fprintf(out_fp, "[\"%s\"]", sub->stptr);
+			fprintf(out_fp, "[\"%.*s\"]", (int) sub->stlen, sub->stptr);
 		}
 		fprintf(out_fp, "\n");
 	} else if (IS_FIELD(w))
@@ -3411,7 +3411,7 @@ print_watch_item(struct list_item *w)
 		fprintf(out_fp, "%s", w->sname);
 		for (i = 0; i < w->num_subs; i++) {
 			sub = w->subs[i];
-			fprintf(out_fp, "[\"%s\"]", sub->stptr);
+			fprintf(out_fp, "[\"%.*s\"]", (int) sub->stlen, sub->stptr);
 		}
 		fprintf(out_fp, "\n");
 	} else if (IS_FIELD(w))
@@ -4326,8 +4326,9 @@ serialize_subscript(char *buf, int buflen, struct list_item *item)
  	bl = nchar;
 	for (i = 0; i < item->num_subs; i++) {
 		sub = item->subs[i];
-		nchar = snprintf(buf + bl, buflen - bl, "%lu%c%s%c",
-					(unsigned long) sub->stlen, FSEP, sub->stptr, FSEP);
+		nchar = snprintf(buf + bl, buflen - bl, "%lu%c%.*s%c",
+					(unsigned long) sub->stlen, FSEP,
+					(int) sub->stlen, sub->stptr, FSEP);
 		if (nchar <= 0)
 			return 0;
 		bl += nchar;
@@ -5038,19 +5039,19 @@ do_print_f(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 					if (value == NULL)
 						tmp[i] = Nnull_string;		/* FIXME: goto done ? */
 					else if (value->type == Node_var_array) {
-						d_error(_("attempt to use array `%s[\"%s\"]' in a scalar context"),
-									name, subs->stptr);
+						d_error(_("attempt to use array `%s[\"%.*s\"]' in a scalar context"),
+									name, (int) subs->stlen, subs->stptr);
 						goto done;
 					} else
 						tmp[i] = value;
 				} else {
 					if (value == NULL) {
-						d_error(_("[\"%s\"] not in array `%s'"),
-									subs->stptr, name);
+						d_error(_("[\"%.*s\"] not in array `%s'"),
+									(int) subs->stlen, subs->stptr, name);
 						goto done;
 					} else if (value->type != Node_var_array) {
-						d_error(_("attempt to use scalar `%s[\"%s\"]' as array"),
-									name, subs->stptr);
+						d_error(_("attempt to use scalar `%s[\"%.*s\"]' as array"),
+									name, (int) subs->stlen, subs->stptr);
 						goto done;
 					} else {
 						r = value;

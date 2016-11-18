@@ -5615,7 +5615,7 @@ split_comment(void)
 		if (p[l] == '\n' && p[l+1] == '\n') {
 			function_comment = comment_to_save;
 			n = function_comment->memory;
-			function_comment->memory = make_str_node(p + l + 2, n->stlen - l - 2, 0);
+			function_comment->memory = make_string(p + l + 2, n->stlen - l - 2);
 			/* create program comment  */
 			program_comment = bcalloc(Op_comment, 1, sourceline);
 			program_comment->source_file = comment_to_save->source_file;

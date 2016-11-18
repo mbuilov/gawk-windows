@@ -732,7 +732,7 @@ mod:
 
 					erealloc(t1->wstptr, wchar_t *,
 							sizeof(wchar_t) * (wlen + 1), "r_interpret");
-					memcpy(t1->wstptr + t1->wstlen, t2->wstptr, t2->wstlen);
+					memcpy(t1->wstptr + t1->wstlen, t2->wstptr, t2->wstlen * sizeof(wchar_t));
 					t1->wstlen = wlen;
 					t1->wstptr[wlen] = L'\0';
 					t1->flags |= WSTRCUR;

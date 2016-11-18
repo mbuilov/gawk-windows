@@ -1562,7 +1562,7 @@ extern struct redirect *getredirect(const char *str, int len);
 extern bool inrec(IOBUF *iop, int *errcode);
 extern int nextfile(IOBUF **curfile, bool skipping);
 extern bool is_non_fatal_std(FILE *fp);
-extern bool is_non_fatal_redirect(const char *str);
+extern bool is_non_fatal_redirect(const char *str, size_t len);
 /* main.c */
 extern int arg_assign(char *arg, bool initing);
 extern int is_std_var(const char *var);

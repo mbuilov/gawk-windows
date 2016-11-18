@@ -1,3 +1,27 @@
+2016-11-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	General cleanup for zero termination of strings.
+
+	* array.c (do_delete): Use %.*s.
+	(value_info): Get length and use %.*s.
+	(asort_actual): Save and restore character after end.
+	* awkgram.y (split_comment): Use make_string, not make_str_node.
+	* builtin.c (do_fflush): Use %.*s.
+	(locale_category_from_argument, do_dcgettext, do_dcngettext,
+	do_bindtextdomain): Save and restore character after end.
+	* debug.c (do_info, print_array, print_subscript, do_print_var,
+	do_set_var, display, do_watch, print_watch_item, serialize_subscript,
+	do_print_f): Use %.*s.
+	* eval.c (cmp_nodes, fmt_index): Save and restore character after end.
+	* interpret.h (r_interpret): Fix compuation for concatenation of
+	wide strings.
+	* io.c (is_non_fatal_redirect): Add length parameter; save and
+	restore character after last. Adjust all other declarations and calls.
+	(do_close): Save and restore character after end.
+	* mpfr.c (ieee_fmts): Adjust table indentation.
+	(do_mpfr_strtonum): Clear wide string members of the union.
+	* msg.c (err): Use %.*s.
+
 2016-11-07         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h [USER_INPUT]: Renamed from MAYBE_NUM.
