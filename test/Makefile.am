@@ -1120,6 +1120,7 @@ EXTRA_DIST = \
 	uparrfs.awk \
 	uparrfs.in \
 	uparrfs.ok \
+	valgrind.awk \
 	watchpoint1.awk \
 	watchpoint1.in \
 	watchpoint1.ok \
