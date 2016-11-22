@@ -994,6 +994,9 @@ arrayfor:
 				r = POP_STRING();
 				unref(m->re_exp);
 				m->re_exp = r;
+			} else if (m->type == Node_val) {
+				assert((m->flags & REGEX) != 0);
+				UPREF(m);
 			}
 			PUSH(m);
 			break;

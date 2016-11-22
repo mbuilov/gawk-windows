@@ -59,21 +59,26 @@ Changes from 4.1.x to 4.2.0
     mode when FS = " " where newline was not a field separator. The code
     and doc have been updated.
 
-15. The new typeof() function can be used to indicate if a variable or
-    array element is an array, string or number.  The isarray()
+15. Gawk now supports strongly typed regexp constants. Such constants
+    look like @/.../.  You can assign them to variables, pass them to
+    functions, use them in ~, !~ and the case part of a switch statement.
+    More details are provided in the manual.
+
+16. The new typeof() function can be used to indicate if a variable or
+    array element is an array, regexp, string or number.  The isarray()
     function is deprecated in favor of typeof().
 
-16. As promised when 4.1 was released, the old extension mechanism,
+17. As promised when 4.1 was released, the old extension mechanism,
     using the `extension' function, is now gone.
 
-17. Support for GNU/Linux on Alpha systems has been removed.
+18. Support for GNU/Linux on Alpha systems has been removed.
 
-18. Optimizations are now enabled by default. Use the new -s/--no-optimize
+19. Optimizations are now enabled by default. Use the new -s/--no-optimize
     option(s) to disable them.  Pretty printing and profiling automatically
     disable optimizations so that the output program is the same as the
     original input program.
 
-19. The extension API now provides a mechanism for generating nonfatal
+20. The extension API now provides a mechanism for generating nonfatal
     error messages.
 
 20. Gawk now uses fwrite_unlocked if it's available. The yields a 7% - 18%

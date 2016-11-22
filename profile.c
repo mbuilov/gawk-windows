@@ -32,7 +32,8 @@ static void parenthesize(int type, NODE *left, NODE *right);
 static char *pp_list(int nargs, const char *paren, const char *delim);
 static char *pp_group3(const char *s1, const char *s2, const char *s3);
 static char *pp_concat(int nargs);
-static char *pp_string_or_strong_regex(const char *in_str, size_t len, int delim, bool strong_regex);
+static char *pp_string_or_typed_regex(const char *in_str, size_t len, int delim, bool typed_regex);
+static char *pp_typed_regex(const char *in_str, size_t len, int delim);
 static bool is_binary(int type);
 static bool is_scalar(int type);
 static int prec_level(int type);
@@ -639,14 +640,19 @@ cleanup:
 			break;
 
 		case Op_push_re:
-			if (pc->memory->type != Node_regex)
+			if (pc->memory->type != Node_regex && (pc->memory->flags & REGEX) == 0)
 				break;
 			/* else
 				fall through */
 		case Op_match_rec:
 		{
-			NODE *re = pc->memory->re_exp;
-			str = pp_string(re->stptr, re->stlen, '/');
+			if (pc->memory->type == Node_regex) {
+				NODE *re = pc->memory->re_exp;
+				str = pp_string(re->stptr, re->stlen, '/');
+			} else {
+				assert((pc->memory->flags & REGEX) != 0);
+				str = pp_typed_regex(pc->memory->stptr, pc->memory->stlen, '/');
+			}
 			pp_push(pc->opcode, str, CAN_FREE);
 		}
 			break;
@@ -668,6 +674,10 @@ cleanup:
 				txt = t2->pp_str;
 				str = pp_group3(txt, op2str(pc->opcode), restr);
 				pp_free(t2);
+			} else if (m->type == Node_val && (m->flags & REGEX) != 0) {
+				restr = pp_typed_regex(m->stptr, m->stlen, '/');
+				str = pp_group3(txt, op2str(pc->opcode), restr);
+				efree(restr);
 			} else {
 				NODE *re = m->re_exp;
 				restr = pp_string(re->stptr, re->stlen, '/');
@@ -1407,14 +1417,21 @@ parenthesize(int type, NODE *left, NODE *right)
 char *
 pp_string(const char *in_str, size_t len, int delim)
 {
-	return pp_string_or_strong_regex(in_str, len, delim, false);
+	return pp_string_or_typed_regex(in_str, len, delim, false);
 }
 
+/* pp_typed_regex --- pretty format a hard regex constant */
 
-/* pp_string_or_strong_regex --- pretty format a string, regex, or hard regex constant */
+static char *
+pp_typed_regex(const char *in_str, size_t len, int delim)
+{
+	return pp_string_or_typed_regex(in_str, len, delim, true);
+}
+
+/* pp_string_or_typed_regex --- pretty format a string, regex, or typed regex constant */
 
 char *
-pp_string_or_strong_regex(const char *in_str, size_t len, int delim, bool strong_regex)
+pp_string_or_typed_regex(const char *in_str, size_t len, int delim, bool typed_regex)
 {
 	static char str_escapes[] = "\a\b\f\n\r\t\v\\";
 	static char str_printables[] = "abfnrtv\\";
@@ -1448,10 +1465,13 @@ pp_string_or_strong_regex(const char *in_str, size_t len, int delim, bool strong
 	} ofre -= (l)
 
 	/* initial size; 3 for delim + terminating null, 1 for @ */
-	osiz = len + 3 + 1 + (strong_regex == true);
+	osiz = len + 3 + 1 + (typed_regex == true);
 	emalloc(obuf, char *, osiz, "pp_string");
 	obufout = obuf;
 	ofre = osiz - 1;
+
+	if (typed_regex)
+		*obufout++ = '@';
 
 	*obufout++ = delim;
 	for (; len > 0; len--, str++) {

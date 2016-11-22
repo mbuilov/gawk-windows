@@ -539,7 +539,6 @@ particular records in a file and perform operations upon them.
 * Computed Regexps::                    Using Dynamic Regexps.
 * GNU Regexp Operators::                Operators specific to GNU software.
 * Case-sensitivity::                    How to do case-insensitive matching.
-* Strong Regexp Constants::             Strongly typed regexp constants.
 * Regexp Summary::                      Regular expressions summary.
 * Records::                             Controlling how data is split into
                                         records.
@@ -622,6 +621,9 @@ particular records in a file and perform operations upon them.
 * Nondecimal-numbers::                  What are octal and hex numbers.
 * Regexp Constants::                    Regular Expression constants.
 * Using Constant Regexps::              When and how to use a regexp constant.
+* Standard Regexp Constants::           Regexp constants in standard
+                                        @command{awk}.
+* Strong Regexp Constants::             Strongly typed regexp constants.
 * Variables::                           Variables give names to values for
                                         later use.
 * Using Variables::                     Using variables in your programs.
@@ -924,7 +926,8 @@ particular records in a file and perform operations upon them.
 * Array Functions::                     Functions for working with arrays.
 * Flattening Arrays::                   How to flatten arrays.
 * Creating Arrays::                     How to create and populate arrays.
-* Redirection API::                     How to access and manipulate redirections.
+* Redirection API::                     How to access and manipulate
+                                        redirections.
 * Extension API Variables::             Variables provided by the API.
 * Extension Versioning::                API Version information.
 * Extension API Informational Variables:: Variables providing information about
@@ -988,10 +991,11 @@ particular records in a file and perform operations upon them.
 * Configuration Philosophy::            How it's all supposed to work.
 * Non-Unix Installation::               Installation on Other Operating
                                         Systems.
-* PC Installation::                     Installing and Compiling @command{gawk} on
-                                        Microsoft Windows.
+* PC Installation::                     Installing and Compiling
+                                        @command{gawk} on Microsoft Windows.
 * PC Binary Installation::              Installing a prepared distribution.
-* PC Compiling::                        Compiling @command{gawk} for Windows32.
+* PC Compiling::                        Compiling @command{gawk} for
+                                        Windows32.
 * PC Using::                            Running @command{gawk} on Windows32.
 * Cygwin::                              Building and running @command{gawk}
                                         for Cygwin.
@@ -5004,7 +5008,6 @@ regular expressions work, we present more complicated instances.
 * Computed Regexps::            Using Dynamic Regexps.
 * GNU Regexp Operators::        Operators specific to GNU software.
 * Case-sensitivity::            How to do case-insensitive matching.
-* Strong Regexp Constants::     Strongly typed regexp constants.
 * Regexp Summary::              Regular expressions summary.
 @end menu
 
@@ -6264,25 +6267,6 @@ the right thing.}
 The value of @code{IGNORECASE} has no effect if @command{gawk} is in
 compatibility mode (@pxref{Options}).
 Case is always significant in compatibility mode.
-
-@node Strong Regexp Constants
-@section Strongly Typed Regexp Constants
-
-This @value{SECTION} describes a @command{gawk}-specific feature.
-
-Regexp constants (@code{/@dots{}/}) hold a strange position in the
-@command{awk} language. In most contexts, they act like an expression:
-@samp{$0 ~ /@dots{}/}. In other contexts, they denote only a regexp to
-be matched. In no case are they really a ``first class citizen'' of the
-language. That is, you cannot define a scalar variable whose type is
-``regexp'' in the same sense that you can define a variable to be a
-number or a string:
-
-@example
-num = 42        @ii{Numeric variable}
-str = "hi"      @ii{String variable}
-re = /foo/      @ii{Wrong!} re @ii{is the result of} $0 ~ /foo/
-@end example
 
 @node Regexp Summary
 @section Summary
@@ -10794,7 +10778,7 @@ Just as @samp{11} in decimal is 1 times 10 plus 1, so
 @samp{11} in octal is 1 times 8 plus 1. This equals 9 in decimal.
 In hexadecimal, there are 16 digits. Because the everyday decimal
 number system only has ten digits (@samp{0}--@samp{9}), the letters
-@samp{a} through @samp{f} are used to represent the rest.
+@samp{a} through @samp{f} represent the rest.
 (Case in the letters is usually irrelevant; hexadecimal @samp{a} and @samp{A}
 have the same value.)
 Thus, @samp{11} in
@@ -10926,6 +10910,20 @@ but could be more complex expressions).
 @node Using Constant Regexps
 @subsection Using Regular Expression Constants
 
+Regular expression constants consist of text describing
+a regular expression enclosed in slashes (such as @code{/the +answer/}).
+This @value{SECTION} describes how such constants work in
+POSIX @command{awk} and @command{gawk}, and then goes on to describe
+@dfn{strongly typed regexp constants}, which are a @command{gawk} extension.
+
+@menu
+* Standard Regexp Constants::   Regexp constants in standard @command{awk}.
+* Strong Regexp Constants::     Strongly typed regexp constants.
+@end menu
+
+@node Standard Regexp Constants
+@subsubsection Standard Regular Expression Constants
+
 @cindex dark corner, regexp constants
 When used on the righthand side of the @samp{~} or @samp{!~}
 operators, a regexp constant merely stands for the regexp that is to be
@@ -11032,6 +11030,90 @@ or not @code{$0} matches @code{/hi/}.
 @command{gawk} issues a warning when it sees a regexp constant used as
 a parameter to a user-defined function, because passing a truth value in
 this way is probably not what was intended.
+
+@node Strong Regexp Constants
+@subsubsection Strongly Typed Regexp Constants
+
+This @value{SECTION} describes a @command{gawk}-specific feature.
+
+As we saw in the previous @value{SECTION},
+regexp constants (@code{/@dots{}/}) hold a strange position in the
+@command{awk} language. In most contexts, they act like an expression:
+@samp{$0 ~ /@dots{}/}. In other contexts, they denote only a regexp to
+be matched. In no case are they really a ``first class citizen'' of the
+language. That is, you cannot define a scalar variable whose type is
+``regexp'' in the same sense that you can define a variable to be a
+number or a string:
+
+@example
+num = 42        @ii{Numeric variable}
+str = "hi"      @ii{String variable}
+re = /foo/      @ii{Wrong!} re @ii{is the result of} $0 ~ /foo/
+@end example
+
+For a number of more advanced use cases,
+it would be nice to have regexp constants that
+are @dfn{strongly typed}; in other words, that denote a regexp useful
+for matching, and not an expression.
+
+@command{gawk} provides this feature.  A strongly typed regexp constant
+looks almost like a regular regexp constant, except that it is preceded
+by an @samp{@@} sign:
+
+@example
+re = @@/foo/     @ii{Regexp variable}
+@end example
+
+Strongly typed regexp constants @emph{cannot} be used everywhere that a
+regular regexp constant can, because this would make the language even more
+confusing.  Instead, you may use them only in certain contexts:
+
+@itemize @bullet
+@item
+On the righthand side of the @samp{~} and @samp{!~} operators: @samp{some_var ~ @@/foo/}
+(@pxref{Regexp Usage}).
+
+@item
+In the @code{case} part of a @code{switch} statement
+(@pxref{Switch Statement}).
+
+@item
+As an argument to one of the built-in functions that accept regexp constants:
+@code{gensub()},
+@code{gsub()},
+@code{match()},
+@code{patsplit()},
+@code{split()},
+and
+@code{sub()}
+(@pxref{String Functions}).
+
+@item
+As a parameter in a call to a user-defined function
+(@pxref{User-defined}).
+
+@item
+On the righthand side of an assignment to a variable: @samp{some_var = @@/foo/}.
+In this case, the type of @code{some_var} is regexp. Additionally, @code{some_var}
+can be used with @samp{~} and @samp{!~}, passed to one of the built-in functions
+listed above, or passed as a parameter to a user-defined function.
+@end itemize
+
+You may use the @code{typeof()} built-in function
+(@pxref{Type Functions})
+to determine if a variable or function parameter is
+a regexp variable.
+
+The true power of this feature comes from the ability to create variables that
+have regexp type. Such variables can be passed on to user-defined functions,
+without the confusing aspects of computed regular expressions created from
+strings or string constants. They may also be passed through indirect function
+calls (@pxref{Indirect Calls})
+and on to the built-in functions that accept regexp constants.
+
+When used in numeric conversions, strongly typed regexp variables convert
+to zero. When used in string conversions, they convert to the string
+value of the original regexp text.
 
 @node Variables
 @subsection Variables
@@ -12213,7 +12295,8 @@ are @emph{dynamically} typed.  This means their type can change as the
 program runs, from @dfn{untyped} before any use,@footnote{@command{gawk}
 calls this @dfn{unassigned}, as the following example shows.} to string
 or number, and then from string to number or number to string, as the
-program progresses.
+program progresses.  (@command{gawk} also provides regexp-typed scalars,
+but let's ignore that for now; @pxref{Strong Regexp Constants}.)
 
 You can't do much with untyped variables, other than tell that they
 are untyped. The following program tests @code{a} against @code{""}
@@ -19727,6 +19810,9 @@ Return one of the following strings, depending upon the type of @var{x}:
 @item "array"
 @var{x} is an array.
 
+@item "regexp"
+@var{x} is a strongly typed regexp (@pxref{Strong Regexp Constants}).
+
 @item "number"
 @var{x} is a number.
 
@@ -19784,7 +19870,8 @@ ends up turning it into a scalar.
 @end quotation
 
 The @code{typeof()} function is general; it allows you to determine
-if a variable or function parameter is a scalar, an array.
+if a variable or function parameter is a scalar, an array, or a strongly
+typed regexp.
 
 @code{isarray()} is deprecated; you should use @code{typeof()} instead.
 You should replace any existing uses of @samp{isarray(var)} in your
@@ -32232,7 +32319,8 @@ This (rather large) @value{SECTION} describes the API in detail.
 * Symbol Table Access::                  Functions for accessing global
                                          variables.
 * Array Manipulation::                   Functions for working with arrays.
-* Redirection API::                      How to access and manipulate redirections.
+* Redirection API::                      How to access and manipulate
+                                         redirections.
 * Extension API Variables::              Variables provided by the API.
 * Extension API Boilerplate::            Boilerplate code for using the API.
 @end menu
@@ -32379,9 +32467,9 @@ and output from files.
 
 @quotation NOTE
 String values passed to an extension by @command{gawk} are always
-@sc{NUL}-terminated.  Thus it is safe to pass such string values to
+@sc{nul}-terminated.  Thus it is safe to pass such string values to
 standard library and system routines. However, because
-@command{gawk} allows embedded @sc{NUL} characters in string data,
+@command{gawk} allows embedded @sc{nul} characters in string data,
 you should check that @samp{strlen(@var{some_string})} matches
 the length for that string passed to the extension before using
 it as a regular C string.

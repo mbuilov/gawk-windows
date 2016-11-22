@@ -952,6 +952,9 @@ do_split(int nargs)
 		return make_number((AWKNUM) 0);
 	}
 
+	if ((sep->flags & REGEX) != 0)
+		sep = sep->typed_re;
+
 	if (   (sep->re_flags & FS_DFLT) != 0
 	    && current_field_sep() == Using_FS
 	    && ! RS_is_null) {
@@ -1013,6 +1016,9 @@ do_patsplit(int nargs)
 		fatal(_("patsplit: second argument is not an array"));
 
 	src = TOP_STRING();
+
+	if ((sep->flags & REGEX) != 0)
+		sep = sep->typed_re;
 
 	fpat = sep->re_exp;
 	if (fpat->stlen == 0)

@@ -345,6 +345,9 @@ re_update(NODE *t)
 {
 	NODE *t1;
 
+	if (t->type == Node_val && (t->flags & REGEX) != 0)
+		return t->typed_re->re_reg;
+
 	if ((t->re_flags & CASE) == IGNORECASE) {
 		/* regex was compiled with settings matching IGNORECASE */
 		if ((t->re_flags & CONSTANT) != 0) {

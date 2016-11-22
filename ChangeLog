@@ -32,6 +32,45 @@
 	* builtin.c, eval.c, field.c, int_array.c, io.c, main.c,
 	mpfr.c, node.c: Change all uses.
 
+2016-11-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Finish reworking typed regexes.
+
+	* awk.h (typed_re): Replaces tre_reg.
+	* awkgram.y (typed_regexp production): Node_val points to a regular
+	Node_regex and also has string value and length.
+	(make_regnode): Simplified back to its original form.
+	* builtin.c (call_sub, call_match, call_split_func): For REGEX,
+	get n->typed_re.
+	* field.c (do_split, do_patsplit): Ditto, for separator regexp.
+	* profile.c (pprint): Op_match_rec, handle REGEX correctly.
+	* re.c (re_update): If REGEX, get t->typed_re->re_reg.
+
+2016-11-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Start reworking typed regexes.
+
+	* awk.h (Node_typedregex): Nuked.
+	[REGEX]: New flag.
+	(tre_reg): New member in val part of NODE union.
+	(force_string, force_number, fixtype): Remove use of Node_typedregex.
+	* awkgram.y (grammer): Use REGEX flag instead of node type.
+	(valinfo); Ditto.
+	(make_regnode): Adjust creation based on node type.
+	* builtin.c (do_length, do_print, call_sub, call_match,
+	call_split_func, do_typeof): Adjust code.
+	* debug.c (watchpoint_triggered, initialize_watch_item,
+	print_memory): Adjust code.
+	* eval.c (nodetypes): Remove Node_typedregex.
+	(flags2str): Add REGEX.
+	(setup_frame): Adjust code after removal of Node_typedregex.
+	* interpret.h (r_interpret): Adjust code after removal
+	of Node_typedregex.
+	* profile.c (pp_typed_regex): Renamed from pp_strong_regex.
+	(pp_string_or_strong_regex): Renamed from pp_string_or_strong_regex.
+	(pprint): Adjust code after removal of Node_typedregex.
+	* re.c (re_update): Adjust code after removal of Node_typedregex.
+
 2016-11-04  Eli Zaretskii  <eliz@gnu.org>
 
 	* builtin.c (efwrite) [__MINGW32__]: Call w32_maybe_set_errno if

@@ -384,6 +384,7 @@ typedef struct exp_node {
 			int idx;
 			wchar_t *wsp;
 			size_t wslen;
+			struct exp_node *typre;
 		} val;
 	} sub;
 	NODETYPE type;
@@ -459,6 +460,7 @@ typedef struct exp_node {
 		                                      * See cint_array.c */
 #		define	XARRAY		0x10000
 #		define	NUMCONSTSTR	0x20000	/* have string value for numeric constant */
+#		define  REGEX           0x40000 /* this is a typed regex */
 } NODE;
 
 #define vname sub.nodep.name
@@ -507,6 +509,7 @@ typedef struct exp_node {
 #else
 #define numbr		sub.val.fltnum
 #endif
+#define typed_re	sub.val.typre
 
 /*
  * If stfmt is set to STFMT_UNUSED, it means that the string representation
@@ -1872,9 +1875,6 @@ force_number(NODE *n)
  * It is safe to assume that the return value will be the same NODE,
  * since force_number on a USER_INPUT should always return the same NODE,
  * and force_string on an INTIND should as well.
- *
- * There is no way to handle a Node_typedregex correctly, so we ignore
- * that case.
  */
 
 static inline NODE *

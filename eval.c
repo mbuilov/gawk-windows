@@ -449,6 +449,7 @@ flags2str(int flagval)
 		{ HALFHAT, "HALFHAT" },
 		{ XARRAY, "XARRAY" },
 		{ NUMCONSTSTR, "NUMCONSTSTR" },
+		{ REGEX, "REGEX" },
 		{ 0,	NULL },
 	};
 
