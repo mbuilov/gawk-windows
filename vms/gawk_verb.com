@@ -16,7 +16,7 @@ $loop:
 $read cld/end=loop_end line_in
 $if f$locate("image gawk", line_in) .lt. f$length(line_in)
 $then
-$    write cldv "    image gnv$gnu:[bin]gnv$gawk"
+$    write cldv "    image gnv$gnu:[usr.bin]gnv$gawk"
 $    goto loop
 $endif
 $write cldv line_in
