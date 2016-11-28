@@ -200,8 +200,8 @@ static const char *const env_variable[] = {
 "DGAWK_HISTORY",
 "DGAWK_OPTION",
 };
-static void serialize(int );
-static void unserialize(int );
+static void serialize_list(int type);
+static void unserialize_list(int type);
 static const char *commands_string = NULL;
 static int commands_string_len = 0;
 static char line_sep;
@@ -2796,11 +2796,11 @@ debug_prog(INSTRUCTION *pc)
 		/* We are restarting; restore state (breakpoints, history etc.)
 		 * passed as environment variables and optionally execute the run command.
 		 */
-		unserialize(BREAK);
-		unserialize(WATCH);
-		unserialize(DISPLAY);
-		unserialize(HISTORY);
-		unserialize(OPTION);
+		unserialize_list(BREAK);
+		unserialize_list(WATCH);
+		unserialize_list(DISPLAY);
+		unserialize_list(HISTORY);
+		unserialize_list(OPTION);
 		unsetenv("DGAWK_RESTART");
 		fprintf(out_fp, "Restarting ...\n");
 		if (strcasecmp(run, "true") == 0)
@@ -2891,11 +2891,11 @@ static void
 restart(bool run)
 {
 	/* save state in the environment after serialization */
-	serialize(BREAK);
-	serialize(WATCH);
-	serialize(DISPLAY);
-	serialize(HISTORY);
-	serialize(OPTION);
+	serialize_list(BREAK);
+	serialize_list(WATCH);
+	serialize_list(DISPLAY);
+	serialize_list(HISTORY);
+	serialize_list(OPTION);
 
 	/* tell the new process to restore state from the environment */
 	setenv("DGAWK_RESTART", (run ? "true" : "false"), 1);
@@ -4345,12 +4345,12 @@ serialize_subscript(char *buf, int buflen, struct list_item *item)
 
 
 
-/* serialize --- convert a list structure to a byte stream and
+/* serialize_list--- convert a list structure to a byte stream and
  *               save in environment.
  */
 
 static void
-serialize(int type)
+serialize_list(int type)
 {
 	static char *buf = NULL;
 	static int buflen = 0;
@@ -4500,7 +4500,7 @@ enlarge_buffer:
 		case WATCH:
 			/* recreate the `commands' command strings including the `commands'
 			 * and `end' commands; command seperator is '\034'.
-			 * re-parsed in unserialize to recover the commands list.
+			 * re-parsed in unserialize_list to recover the commands list.
 			 * Alternatively, one could encode(serialize) each command and it's arguments.
 			 */
 
@@ -4521,7 +4521,7 @@ enlarge_buffer:
 				nchar += (strlen("commands ") + 20 + strlen("end") + 1); /* 20 for cnum (an int) */
 				if (nchar > buflen - bl) {
 					buflen = bl + nchar;
-					erealloc(buf, char *, buflen + 3, "serialize");
+					erealloc(buf, char *, buflen + 3, "serialize_list");
 				}
 				nchar = sprintf(buf + bl, "commands %d", cnum);
 				bl += nchar;
@@ -4558,7 +4558,7 @@ enlarge_buffer:
 				nchar = strlen(cndn->expr);
 				if (nchar > buflen - bl) {
 					buflen = bl + nchar;
-					erealloc(buf, char *, buflen + 3, "serialize");
+					erealloc(buf, char *, buflen + 3, "serialize_list");
 				}
 				memcpy(buf + bl, cndn->expr, nchar);
 				bl += nchar;
@@ -4741,12 +4741,12 @@ unserialize_option(char **pstr, int *pstr_len, int field_cnt ATTRIBUTE_UNUSED)
 	return NULL;
 }
 
-/* unserialize -- reconstruct list from serialized data stored in
+/* unserialize_list -- reconstruct list from serialized data stored in
  *                environment variable.
  */
 
 static void
-unserialize(int type)
+unserialize_list(int type)
 {
 	char *val;
 	char *p, *q, *r, *s;
