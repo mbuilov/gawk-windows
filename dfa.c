@@ -340,7 +340,8 @@ typedef struct
                                    ANYCHAR.  */
 } dfa_state;
 
-/* Maximum for any transition table count that exceeds min_trcount.  */
+/* Maximum for any transition table count.  This should be at least 3,
+   for the initial state setup.  */
 enum { MAX_TRCOUNT = 1024 };
 
 /* A bracket operator.
@@ -503,22 +504,26 @@ struct dfa
 
   /* Fields filled by dfaexec.  */
   state_num tralloc;            /* Number of transition tables that have
-                                   slots so far, not counting trans[-1].  */
+                                   slots so far, not counting trans[-1] and
+                                   trans[-2].  */
   int trcount;                  /* Number of transition tables that have
-                                   actually been built.  */
-  int min_trcount;              /* Minimum of number of transition tables.
-                                   Always keep the number, even after freeing
-                                   the transition tables.  It is also the
-                                   number of initial states.  */
+                                   been built, other than for initial
+                                   states.  */
+  int min_trcount;              /* Number of initial states.  Equivalently,
+                                   the minimum state number for which trcount
+                                   counts transitions.  */
   state_num **trans;            /* Transition tables for states that can
                                    never accept.  If the transitions for a
                                    state have not yet been computed, or the
                                    state could possibly accept, its entry in
                                    this table is NULL.  This points to one
                                    past the start of the allocated array,
-                                   and trans[-1] is always NULL.  */
+                                   and trans[-1] and trans[-2] are always
+                                   NULL.  */
   state_num **fails;            /* Transition tables after failing to accept
-                                   on a state that potentially could do so.  */
+                                   on a state that potentially could do so.
+                                   If trans[i] is non-null, fails[i] must
+                                   be null.  */
   int *success;                 /* Table of acceptance conditions used in
                                    dfaexec and computed in build_state.  */
   state_num *newlines;          /* Transitions on newlines.  The entry for a
@@ -533,7 +538,8 @@ struct dfa
                                    do not distinguish between their contexts,
                                    as not supported word.  */
   position_set mb_follows;      /* Follow set added by ANYCHAR on demand.  */
-  state_num **mb_trans;      /* Transition tables for states with ANYCHAR.  */
+  state_num **mb_trans;         /* Transition tables for states with
+                                   ANYCHAR.  */
   state_num mb_trcount;         /* Number of transition tables for states with
                                    ANYCHAR that have actually been built.  */
 
@@ -715,10 +721,17 @@ zeroset (charclass s)
 }
 
 static void
+fillset (charclass s)
+{
+  int i;
+  for (i = 0; i < CHARCLASS_WORDS; i++)
+    s[i] = CHARCLASS_WORD_MASK;
+}
+
+static void
 notset (charclass s)
 {
   int i;
-
   for (i = 0; i < CHARCLASS_WORDS; ++i)
     s[i] = CHARCLASS_WORD_MASK & ~s[i];
 }
@@ -1429,8 +1442,7 @@ lex (struct dfa *dfa)
             goto normal_char;
           if (dfa->canychar == (size_t) -1)
             {
-              zeroset (ccl);
-              notset (ccl);
+              fillset (ccl);
               if (!(dfa->syntax.syntax_bits & RE_DOT_NEWLINE))
                 clrbit ('\n', ccl);
               if (dfa->syntax.syntax_bits & RE_DOT_NOT_NULL)
@@ -2498,6 +2510,7 @@ dfaanalyze (struct dfa *d, bool searchflag)
   if (separate_contexts & CTX_LETTER)
     d->min_trcount = state_index (d, &merged, CTX_LETTER);
   d->min_trcount++;
+  d->trcount = 0;
 
   free (posalloc);
   free (stkalloc);
@@ -2506,75 +2519,80 @@ dfaanalyze (struct dfa *d, bool searchflag)
 }
 
 
-/* Find, for each character, the transition out of state s of d, and store
-   it in the appropriate slot of trans.
+/* Return the transition out of state s of d for the input character uc,
+   updating the slots in trans accordingly.
 
-   We divide the positions of s into groups (positions can appear in more
-   than one group).  Each group is labeled with a set of characters that
+   Do not worry about all possible input characters; calculate just the group
+   of positions that match uc.  Label it with the set of characters that
    every position in the group matches (taking into account, if necessary,
-   preceding context information of s).  For each group, find the union
-   of the its elements' follows.  This set is the set of positions of the
+   preceding context information of s).  Then find the union
+   of these positions' follows, i.e., the set of positions of the
    new state.  For each character in the group's label, set the transition
    on this character to be to a state corresponding to the set's positions,
    and its associated backward context information, if necessary.
 
-   If we are building a searching matcher, we include the positions of state
+   When building a searching matcher, include the positions of state
    0 in every state.
 
-   The collection of groups is constructed by building an equivalence-class
+   The group is constructed by building an equivalence-class
    partition of the positions of s.
 
    For each position, find the set of characters C that it matches.  Eliminate
    any characters from C that fail on grounds of backward context.
 
-   Search through the groups, looking for a group whose label L has nonempty
+   Check whether the group's label L has nonempty
    intersection with C.  If L - C is nonempty, create a new group labeled
    L - C and having the same positions as the current group, and set L to
-   the intersection of L and C.  Insert the position in this group, set
+   the intersection of L and C.  Insert the position in the group, set
    C = C - L, and resume scanning.
 
    If after comparing with every group there are characters remaining in C,
    create a new group labeled with the characters of C and insert this
    position in that group.  */
-static void
-dfastate (state_num s, struct dfa *d, state_num trans[])
+static state_num
+dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
 {
-  leaf_set grps[NOTCHAR];       /* As many as will ever be needed.  */
-  charclass labels[NOTCHAR];    /* Labels corresponding to the groups.  */
-  size_t ngrps = 0;             /* Number of groups actually used.  */
-  position pos;                 /* Current position being considered.  */
-  charclass matches;            /* Set of matching characters.  */
-  charclass_word matchesf;	/* Nonzero if matches is nonempty.  */
-  charclass intersect;          /* Intersection with some label set.  */
-  charclass_word intersectf;	/* Nonzero if intersect is nonempty.  */
-  charclass leftovers;          /* Stuff in the label that didn't match.  */
-  charclass_word leftoversf;	/* Nonzero if leftovers is nonempty.  */
-  position_set follows;         /* Union of the follows of some group.  */
+  leaf_set group;               /* Positions that match the input char.  */
+  charclass label;              /* The group's label.  */
+  position_set follows;         /* Union of the follows of the group.  */
   position_set tmp;             /* Temporary space for merging sets.  */
-  int possible_contexts;        /* Contexts that this group can match.  */
-  int separate_contexts;        /* Context that new state wants to know.  */
   state_num state;              /* New state.  */
   state_num state_newline;      /* New state on a newline transition.  */
   state_num state_letter;       /* New state on a letter transition.  */
-  bool next_isnt_1st_byte = false; /* We can't add state0.  */
   size_t i, j, k;
 
 #ifdef DEBUG
   fprintf (stderr, "build state %td\n", s);
 #endif
 
-  zeroset (matches);
+  group.elems = xnmalloc (d->nleaves, sizeof *group.elems);
+  group.nelem = 0;
+
+  fillset (label);
 
   for (i = 0; i < d->states[s].elems.nelem; ++i)
     {
-      pos = d->states[s].elems.elems[i];
+      charclass matches;            /* Set of matching characters.  */
+      position pos = d->states[s].elems.elems[i];
+      bool matched = false;
       if (d->tokens[pos.index] >= 0 && d->tokens[pos.index] < NOTCHAR)
-        setbit (d->tokens[pos.index], matches);
-      else if (d->tokens[pos.index] >= CSET)
-        copyset (d->charclasses[d->tokens[pos.index] - CSET], matches);
-      else if (d->tokens[pos.index] == ANYCHAR)
         {
+          zeroset (matches);
+          setbit (d->tokens[pos.index], matches);
+          if (d->tokens[pos.index] == uc)
+            matched = true;
+        }
+      else if (d->tokens[pos.index] >= CSET)
+        {
+          copyset (d->charclasses[d->tokens[pos.index] - CSET], matches);
+          if (tstbit (uc, d->charclasses[d->tokens[pos.index] - CSET]))
+            matched = true;
+        }
+       else if (d->tokens[pos.index] == ANYCHAR)
+         {
           copyset (d->charclasses[d->canychar], matches);
+          if (tstbit (uc, d->charclasses[d->canychar]))
+            matched = true;
 
           /* ANYCHAR must match with a single character, so we must put
              it to D->states[s].mbps which contains the positions which
@@ -2629,155 +2647,69 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
       fprintf (stderr, "\n");
 #endif
 
-      for (j = 0; j < ngrps; ++j)
+      if (matched)
         {
-          /* If matches contains a single character only, and the current
-             group's label doesn't contain that character, go on to the
-             next group.  */
-          if (d->tokens[pos.index] >= 0 && d->tokens[pos.index] < NOTCHAR
-              && !tstbit (d->tokens[pos.index], labels[j]))
-            continue;
-
-          /* Check if this group's label has a nonempty intersection with
-             matches.  */
-          intersectf = 0;
           for (k = 0; k < CHARCLASS_WORDS; ++k)
-            intersectf |= intersect[k] = matches[k] & labels[j][k];
-          if (!intersectf)
-            continue;
-
-          /* It does; now find the set differences both ways.  */
-          leftoversf = matchesf = 0;
-          for (k = 0; k < CHARCLASS_WORDS; ++k)
-            {
-              /* Even an optimizing compiler can't know this for sure.  */
-              charclass_word match = matches[k], label = labels[j][k];
-
-              leftoversf |= leftovers[k] = label & ~match;
-              matchesf |= matches[k] = match & ~label;
-            }
-
-          /* If there were leftovers, create a new group labeled with them.  */
-          if (leftoversf)
-            {
-              copyset (leftovers, labels[ngrps]);
-              copyset (intersect, labels[j]);
-              grps[ngrps].elems = xnmalloc (d->nleaves,
-                                            sizeof *grps[ngrps].elems);
-              memcpy (grps[ngrps].elems, grps[j].elems,
-                      sizeof (grps[j].elems[0]) * grps[j].nelem);
-              grps[ngrps].nelem = grps[j].nelem;
-              ++ngrps;
-            }
-
-          /* Put the position in the current group.  The constraint is
-             irrelevant here.  */
-          grps[j].elems[grps[j].nelem++] = pos.index;
-
-          /* If every character matching the current position has been
-             accounted for, we're done.  */
-          if (!matchesf)
-            break;
+            label[k] &= matches[k];
+          group.elems[group.nelem++] = pos.index;
         }
-
-      /* If we've passed the last group, and there are still characters
-         unaccounted for, then we'll have to create a new group.  */
-      if (j == ngrps)
+      else
         {
-          copyset (matches, labels[ngrps]);
-          zeroset (matches);
-          grps[ngrps].elems = xnmalloc (d->nleaves, sizeof *grps[ngrps].elems);
-          grps[ngrps].nelem = 1;
-          grps[ngrps].elems[0] = pos.index;
-          ++ngrps;
+          for (k = 0; k < CHARCLASS_WORDS; ++k)
+            label[k] &= ~matches[k];
         }
     }
 
   alloc_position_set (&follows, d->nleaves);
   alloc_position_set (&tmp, d->nleaves);
 
-  /* If we are a searching matcher, the default transition is to a state
-     containing the positions of state 0, otherwise the default transition
-     is to fail miserably.  */
-  if (d->searchflag)
+  if (group.nelem > 0)
     {
-      int c;
+      int possible_contexts;    /* Contexts that the group can match.  */
+      int separate_contexts;    /* Context that new state wants to know.  */
 
-      state_newline = 0;
-      state_letter = d->min_trcount - 1;
-      state = d->initstate_notbol;
-
-      for (c = 0; c < NOTCHAR; ++c)
-        {
-          switch (d->syntax.sbit[c])
-            {
-            case CTX_NEWLINE:
-              trans[c] = state_newline;
-              break;
-            case CTX_LETTER:
-              trans[c] = state_letter;
-              break;
-            default:
-              trans[c] = state;
-              break;
-            }
-        }
-    }
-  else
-    for (i = 0; i < NOTCHAR; ++i)
-      trans[i] = -1;
-
-  for (i = 0; i < ngrps; ++i)
-    {
       follows.nelem = 0;
 
       /* Find the union of the follows of the positions of the group.
          This is a hideously inefficient loop.  Fix it someday.  */
-      for (j = 0; j < grps[i].nelem; ++j)
-        for (k = 0; k < d->follows[grps[i].elems[j]].nelem; ++k)
-          insert (d->follows[grps[i].elems[j]].elems[k], &follows);
+      for (j = 0; j < group.nelem; ++j)
+        for (k = 0; k < d->follows[group.elems[j]].nelem; ++k)
+          insert (d->follows[group.elems[j]].elems[k], &follows);
 
-      if (d->localeinfo.multibyte)
+      /* If we are building a searching matcher, throw in the positions
+         of state 0 as well, if possible.  */
+      if (d->searchflag)
         {
           /* If a token in follows.elems is not 1st byte of a multibyte
              character, or the states of follows must accept the bytes
              which are not 1st byte of the multibyte character.
-             Then, if a state of follows encounter a byte, it must not be
-             a 1st byte of a multibyte character nor single byte character.
-             We cansel to add state[0].follows to next state, because
-             state[0] must accept 1st-byte
+             Then, if a state of follows encounters a byte, it must not be
+             a 1st byte of a multibyte character nor a single byte character.
+             In this case, do not add state[0].follows to next state, because
+             state[0] must accept 1st-byte.
 
-             For example, we assume <sb a> is a certain single byte
-             character, <mb A> is a certain multibyte character, and the
-             codepoint of <sb a> equals the 2nd byte of the codepoint of
-             <mb A>.
-             When state[0] accepts <sb a>, state[i] transit to state[i+1]
-             by accepting accepts 1st byte of <mb A>, and state[i+1]
-             accepts 2nd byte of <mb A>, if state[i+1] encounter the
-             codepoint of <sb a>, it must not be <sb a> but 2nd byte of
-             <mb A>, so we cannot add state[0].  */
+             For example, suppose <sb a> is a certain single byte character,
+             <mb A> is a certain multibyte character, and the codepoint of
+             <sb a> equals the 2nd byte of the codepoint of <mb A>.  When
+             state[0] accepts <sb a>, state[i] transits to state[i+1] by
+             accepting the 1st byte of <mb A>, and state[i+1] accepts the
+             2nd byte of <mb A>, if state[i+1] encounters the codepoint of
+             <sb a>, it must not be <sb a> but the 2nd byte of <mb A>, so do
+             not add state[0].  */
 
-          next_isnt_1st_byte = false;
-          for (j = 0; j < follows.nelem; ++j)
+          bool mergeit = !d->localeinfo.multibyte;
+          if (!mergeit)
+            for (mergeit = true, j = 0; mergeit && j < follows.nelem; j++)
+              mergeit &= d->multibyte_prop[follows.elems[j].index];
+          if (mergeit)
             {
-              if (!(d->multibyte_prop[follows.elems[j].index] & 1))
-                {
-                  next_isnt_1st_byte = true;
-                  break;
-                }
+              merge (&d->states[0].elems, &follows, &tmp);
+              copy (&tmp, &follows);
             }
         }
 
-      /* If we are building a searching matcher, throw in the positions
-         of state 0 as well.  */
-      if (d->searchflag && (!d->localeinfo.multibyte || !next_isnt_1st_byte))
-        {
-          merge (&d->states[0].elems, &follows, &tmp);
-          copy (&tmp, &follows);
-        }
-
       /* Find out if the new state will want any context information.  */
-      possible_contexts = charclass_context (d, labels[i]);
+      possible_contexts = charclass_context (d, label);
       separate_contexts = state_separate_contexts (&follows);
 
       /* Find the state(s) corresponding to the union of the follows.  */
@@ -2793,51 +2725,39 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
         state_letter = state_index (d, &follows, CTX_LETTER);
       else
         state_letter = state;
-
-#ifdef DEBUG
-      fprintf (stderr, "group %zu\n nextpos:", i);
-      for (j = 0; j < grps[i].nelem; ++j)
-        {
-          fprintf (stderr, " %zu:", grps[i].elems[j]);
-          prtok (d->tokens[grps[i].elems[j]]);
-        }
-      fprintf (stderr, "\n follows:");
-      for (j = 0; j < follows.nelem; ++j)
-        {
-          fprintf (stderr, " %zu:", follows.elems[j].index);
-          prtok (d->tokens[follows.elems[j].index]);
-        }
-      fprintf (stderr, "\n states:");
-      if (possible_contexts & CTX_NEWLINE)
-        fprintf (stderr, " CTX_NEWLINE:%td", state_newline);
-      if (possible_contexts & CTX_LETTER)
-        fprintf (stderr, " CTX_LETTER:%td", state_letter);
-      if (possible_contexts & CTX_NONE)
-        fprintf (stderr, " CTX_NONE:%td", state);
-      fprintf (stderr, "\n");
-#endif
-
-      /* Set the transitions for each character in the current label.  */
-      for (j = 0; j < CHARCLASS_WORDS; ++j)
-        for (k = 0; k < CHARCLASS_WORD_BITS; ++k)
-          if (labels[i][j] >> k & 1)
-            {
-              int c = j * CHARCLASS_WORD_BITS + k;
-
-              switch (d->syntax.sbit[c])
-                {
-                case CTX_NEWLINE:
-                  trans[c] = state_newline;
-                  break;
-                case CTX_LETTER:
-                  trans[c] = state_letter;
-                  break;
-                default:
-                  trans[c] = state;
-                  break;
-                }
-            }
     }
+
+  /* If we are a searching matcher, the default transition is to a state
+     containing the positions of state 0, otherwise the default transition
+     is to fail miserably.  */
+  else if (d->searchflag)
+    {
+      state_newline = 0;
+      state_letter = d->min_trcount - 1;
+      state = d->initstate_notbol;
+    }
+  else
+    {
+      state_newline = -1;
+      state_letter = -1;
+      state = -1;
+    }
+
+  /* Set the transitions for each character in the label.  */
+  for (i = 0; i < NOTCHAR; i++)
+    if (tstbit (i, label))
+      switch (d->syntax.sbit[i])
+        {
+        case CTX_NEWLINE:
+          trans[i] = state_newline;
+          break;
+        case CTX_LETTER:
+          trans[i] = state_letter;
+          break;
+        default:
+          trans[i] = state;
+          break;
+        }
 
 #ifdef DEBUG
   fprintf (stderr, "trans table %td", s);
@@ -2850,10 +2770,19 @@ dfastate (state_num s, struct dfa *d, state_num trans[])
   fprintf (stderr, "\n");
 #endif
 
-  for (i = 0; i < ngrps; ++i)
-    free (grps[i].elems);
+  free (group.elems);
   free (follows.elems);
   free (tmp.elems);
+
+  /* Keep the newline transition in a special place so we can use it as
+     a sentinel.  */
+  if (tstbit (d->syntax.eolbyte, label))
+    {
+      d->newlines[s] = trans[d->syntax.eolbyte];
+      trans[d->syntax.eolbyte] = -1;
+    }
+
+  return trans[uc];
 }
 
 /* Make sure D's state arrays are large enough to hold NEW_STATE.  */
@@ -2863,23 +2792,23 @@ realloc_trans_if_necessary (struct dfa *d, state_num new_state)
   state_num oldalloc = d->tralloc;
   if (oldalloc <= new_state)
     {
-      state_num **realtrans = d->trans ? d->trans - 1 : NULL;
+      state_num **realtrans = d->trans ? d->trans - 2 : NULL;
       size_t newalloc, newalloc1;
-      newalloc1 = new_state + 1;
+      newalloc1 = realtrans ? new_state + 2 : 0;
       realtrans = x2nrealloc (realtrans, &newalloc1, sizeof *realtrans);
-      realtrans[0] = NULL;
-      d->trans = realtrans + 1;
-      d->tralloc = newalloc = newalloc1 - 1;
+      realtrans[0] = realtrans[1] = NULL;
+      d->trans = realtrans + 2;
+      d->tralloc = newalloc = newalloc1 - 2;
       d->fails = xnrealloc (d->fails, newalloc, sizeof *d->fails);
       d->success = xnrealloc (d->success, newalloc, sizeof *d->success);
       d->newlines = xnrealloc (d->newlines, newalloc, sizeof *d->newlines);
       if (d->localeinfo.multibyte)
         {
-          realtrans = d->mb_trans ? d->mb_trans - 1 : NULL;
+          realtrans = d->mb_trans ? d->mb_trans - 2 : NULL;
           realtrans = xnrealloc (realtrans, newalloc1, sizeof *realtrans);
           if (oldalloc == 0)
-            realtrans[0] = NULL;
-          d->mb_trans = realtrans + 1;
+            realtrans[0] = realtrans[1] = NULL;
+          d->mb_trans = realtrans + 2;
         }
       for (; oldalloc < newalloc; oldalloc++)
         {
@@ -2891,47 +2820,48 @@ realloc_trans_if_necessary (struct dfa *d, state_num new_state)
     }
 }
 
-/* Some routines for manipulating a compiled dfa's transition tables.
-   Each state may or may not have a transition table; if it does, and it
-   is a non-accepting state, then d->trans[state] points to its table.
-   If it is an accepting state then d->fails[state] points to its table.
-   If it has no table at all, then d->trans[state] is NULL.
-   TODO: Improve this comment, get rid of the unnecessary redundancy.  */
+/* Calculate the transition table for a new state derived from state s
+   for a compiled dfa d after input character uc, and return the new
+   state number.  */
 
-static void
-build_state (state_num s, struct dfa *d)
+static state_num
+build_state (state_num s, struct dfa *d, unsigned char uc)
 {
   state_num *trans;             /* The new transition table.  */
   state_num i, maxstate;
 
-  /* Set an upper limit on the number of transition tables that will ever
-     exist at once.  MAX_TRCOUNT is arbitrary.  The idea is that the frequently
-     used transition tables will be quickly rebuilt, whereas the ones that
-     were only needed once or twice will be cleared away.  However, do not
-     clear the initial D->min_trcount states, since they are always used.  */
-  if (MAX_TRCOUNT <= d->trcount)
+  if (d->fails[s] != NULL)
+    trans = d->fails[s];
+  else
     {
-      for (i = d->min_trcount; i < d->tralloc; ++i)
+      state_num **ptrans = (ACCEPTING (s, *d) ? d->fails : d->trans) + s;
+      if (!*ptrans)
         {
-          free (d->trans[i]);
-          free (d->fails[i]);
-          d->trans[i] = d->fails[i] = NULL;
-        }
-      d->trcount = d->min_trcount;
-
-      if (d->localeinfo.multibyte)
-        {
-          for (i = d->min_trcount; i < d->tralloc; i++)
+          /* MAX_TRCOUNT is an arbitrary upper limit on the number of
+             transition tables that can exist at once, other than for
+             initial states.  Often-used transition tables are quickly
+             rebuilt, whereas rarely-used ones are cleared away.  */
+          if (MAX_TRCOUNT <= d->trcount)
             {
-              free (d->mb_trans[i]);
-              d->mb_trans[i] = NULL;
+              for (i = d->min_trcount; i < d->tralloc; i++)
+                {
+                  free (d->trans[i]);
+                  free (d->fails[i]);
+                  d->trans[i] = d->fails[i] = NULL;
+                }
+              d->trcount = 0;
             }
-          free (d->mb_trans[-1]);
-          d->mb_trans[-1] = NULL;
-        }
-    }
 
-  ++d->trcount;
+          d->trcount++;
+          *ptrans = xmalloc (NOTCHAR * sizeof *trans);
+        }
+      trans = *ptrans;
+
+      /* Fill transition table with a default value which means that the
+         transited state has not been calculated yet.  */
+      for (i = 0; i < NOTCHAR; i++)
+        trans[i] = -2;
+    }
 
   /* Set up the success bits for this state.  */
   d->success[s] = 0;
@@ -2942,8 +2872,7 @@ build_state (state_num s, struct dfa *d)
   if (ACCEPTS_IN_CONTEXT (d->states[s].context, CTX_NONE, s, *d))
     d->success[s] |= CTX_NONE;
 
-  trans = xmalloc (NOTCHAR * sizeof *trans);
-  dfastate (s, d, trans);
+  s = dfastate (s, d, uc, trans);
 
   /* Now go through the new transition table, and make sure that the trans
      and fail arrays are allocated large enough to hold a pointer for the
@@ -2954,15 +2883,7 @@ build_state (state_num s, struct dfa *d)
       maxstate = trans[i];
   realloc_trans_if_necessary (d, maxstate);
 
-  /* Keep the newline transition in a special place so we can use it as
-     a sentinel.  */
-  d->newlines[s] = trans[d->syntax.eolbyte];
-  trans[d->syntax.eolbyte] = -1;
-
-  if (ACCEPTING (s, *d))
-    d->fails[s] = trans;
-  else
-    d->trans[s] = trans;
+  return s;
 }
 
 /* Multibyte character handling sub-routines for dfaexec.  */
@@ -2982,7 +2903,7 @@ transit_state_singlebyte (struct dfa *d, state_num s, unsigned char const **pp)
     t = d->fails[s];
   else
     {
-      build_state (s, d);
+      build_state (s, d, **pp);
       if (d->trans[s])
         t = d->trans[s];
       else
@@ -2991,6 +2912,9 @@ transit_state_singlebyte (struct dfa *d, state_num s, unsigned char const **pp)
           assert (t);
         }
     }
+
+  if (t[**pp] == -2)
+    build_state (s, d, **pp);
 
   return t[*(*pp)++];
 }
@@ -3057,7 +2981,7 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
   else if (d->mb_trans[s][d->states[s1].mb_trindex] >= 0)
     return d->mb_trans[s][d->states[s1].mb_trindex];
 
-  if (s < 0)
+  if (s == -1)
     copy (&d->states[s1].mbps, &d->mb_follows);
   else
     merge (&d->states[s1].mbps, &d->states[s].elems, &d->mb_follows);
@@ -3165,10 +3089,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
     }
 
   if (!d->tralloc)
-    {
-      realloc_trans_if_necessary (d, 1);
-      build_state (0, d);
-    }
+    realloc_trans_if_necessary (d, 0);
 
   s = s1 = 0;
   p = mbp = (unsigned char const *) begin;
@@ -3238,21 +3159,28 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
 
       if (s < 0)
         {
-          if ((char *) p > end || p[-1] != eol || d->newlines[s1] < 0)
+          if (s == -2)
+            {
+              s = build_state (s1, d, p[-1]);
+              trans = d->trans;
+            }
+          else if ((char *) p <= end && p[-1] == eol && 0 <= d->newlines[s1])
+            {
+              /* The previous character was a newline.  Count it, and skip
+                 checking of multibyte character boundary until here.  */
+              nlcount++;
+              mbp = p;
+
+              s = (allow_nl ? d->newlines[s1]
+                   : d->syntax.sbit[eol] == CTX_NEWLINE ? 0
+                   : d->syntax.sbit[eol] == CTX_LETTER ? d->min_trcount - 1
+                   : d->initstate_notbol);
+            }
+          else
             {
               p = NULL;
               goto done;
             }
-
-          /* The previous character was a newline, count it, and skip
-             checking of multibyte character boundary until here.  */
-          nlcount++;
-          mbp = p;
-
-          s = (allow_nl ? d->newlines[s1]
-               : d->syntax.sbit[eol] == CTX_NEWLINE ? 0
-               : d->syntax.sbit[eol] == CTX_LETTER ? d->min_trcount - 1
-               : d->initstate_notbol);
         }
       else if (d->fails[s])
         {
@@ -3282,7 +3210,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
         }
       else
         {
-          build_state (s, d);
+          build_state (s, d, p[0]);
           trans = d->trans;
         }
     }
@@ -3362,7 +3290,7 @@ free_mbdata (struct dfa *d)
       state_num s;
       for (s = -1; s < d->tralloc; s++)
         free (d->mb_trans[s]);
-      free (d->mb_trans - 1);
+      free (d->mb_trans - 2);
     }
 }
 
@@ -3370,6 +3298,12 @@ free_mbdata (struct dfa *d)
 static bool _GL_ATTRIBUTE_PURE
 dfa_supported (struct dfa const *d)
 {
+  /* Declare any non-UTF8 multibyte locale "not supported."  Otherwise, a
+     regexp like ".*7" would mistakenly match \uC9, e.g., via this command:
+     (export LC_ALL=zh_CN.gb18030; printf '\uC9\n' | grep '.*7')  */
+  if (d->localeinfo.multibyte && !d->localeinfo.using_utf8)
+    return false;
+
   size_t i;
   for (i = 0; i < d->tindex; i++)
     {
@@ -3436,7 +3370,6 @@ static void
 dfassbuild (struct dfa *d)
 {
   size_t i, j;
-  charclass ccl;
   bool have_achar = false;
   bool have_nchar = false;
   struct dfa *sup = dfaalloc ();
@@ -3473,14 +3406,16 @@ dfassbuild (struct dfa *d)
         case ANYCHAR:
         case MBCSET:
         case BACKREF:
-          zeroset (ccl);
-          notset (ccl);
-          sup->tokens[j++] = CSET + charclass_index (sup, ccl);
-          sup->tokens[j++] = STAR;
-          if (d->tokens[i + 1] == QMARK || d->tokens[i + 1] == STAR
-              || d->tokens[i + 1] == PLUS)
-            i++;
-          have_achar = true;
+          {
+            charclass ccl;
+            fillset (ccl);
+            sup->tokens[j++] = CSET + charclass_index (sup, ccl);
+            sup->tokens[j++] = STAR;
+            if (d->tokens[i + 1] == QMARK || d->tokens[i + 1] == STAR
+                || d->tokens[i + 1] == PLUS)
+              i++;
+            have_achar = true;
+          }
           break;
         case BEGWORD:
         case ENDWORD:
@@ -3571,7 +3506,7 @@ dfafree (struct dfa *d)
           free (d->fails[i]);
         }
 
-      free (d->trans - 1);
+      free (d->trans - 2);
       free (d->fails);
       free (d->newlines);
       free (d->success);
