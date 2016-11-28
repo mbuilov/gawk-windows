@@ -616,6 +616,22 @@ statement_term
 	| semi opt_nls
 	;
 
+switch_head
+	: LEX_SWITCH '(' exp r_paren opt_nls
+	  {
+		INSTRUCTION *ip;
+
+		ip = $3;
+		if (do_pretty_print) {
+			(void) list_prepend(ip, $1);
+			(void) list_prepend(ip, instruction(Op_exec_count));
+		}
+		/* else
+			$1 is NULL */
+		$$ = ip;
+	  }
+	;
+
 statement
 	: semi opt_nls
 	  { $$ = NULL; }
@@ -628,7 +644,7 @@ statement
 		else
 			$$ = $1;
  	  }
-	| LEX_SWITCH '(' exp r_paren opt_nls l_brace case_statements opt_nls r_brace
+	| switch_head l_brace case_statements opt_nls r_brace
 	  {
 		INSTRUCTION *dflt, *curr = NULL, *cexp, *cstmt;
 		INSTRUCTION *ip, *nextc, *tbreak;
@@ -643,11 +659,12 @@ statement
 		dflt = instruction(Op_jmp);
 		dflt->target_jmp = tbreak;	/* if no case match and no explicit default */
 
-		if ($7 != NULL) {
-			curr = $7->nexti;
-			bcfree($7);	/* Op_list */
-		} /*  else
-				curr = NULL; */
+		if ($3 != NULL) {
+			curr = $3->nexti;
+			bcfree($3);	/* Op_list */
+		}
+		/*  else
+			curr = NULL; */
 
 		for (; curr != NULL; curr = nextc) {
 			INSTRUCTION *caseexp = curr->case_exp;
@@ -701,15 +718,15 @@ statement
 		if (case_values != NULL)
 			efree(case_values);
 
-		ip = $3;
+		ip = $1;
 		if (do_pretty_print) {
-			(void) list_prepend(ip, $1);
-			(void) list_prepend(ip, instruction(Op_exec_count));
-			$1->target_break = tbreak;
-			($1 + 1)->switch_start = cexp->nexti;
-			($1 + 1)->switch_end = cexp->lasti;
-		}/* else
-				$1 is NULL */
+			INSTRUCTION *exp = $1->nexti->nexti;
+			exp->target_break = tbreak;
+			(exp + 1)->switch_start = cexp->nexti;
+			(exp + 1)->switch_end = cexp->lasti;
+		}
+		/* else
+			$1 is NULL */
 
 		(void) list_append(cexp, dflt);
 		(void) list_merge(ip, cexp);
