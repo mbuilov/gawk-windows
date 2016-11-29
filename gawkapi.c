@@ -164,6 +164,10 @@ awk_value_to_node(const awk_value_t *retval)
 		ext_ret_val = make_str_node(retval->str_value.str,
 				retval->str_value.len, ALREADY_MALLOCED);
 		break;
+	case AWK_REGEX:
+		ext_ret_val = make_typed_regex(retval->str_value.str,
+				retval->str_value.len);
+		break;
 	case AWK_SCALAR:
 		v = (NODE *) retval->scalar_cookie;
 		if (v->type != Node_var)
@@ -440,6 +444,15 @@ assign_string(NODE *node, awk_value_t *val)
 	val->str_value.len = node->stlen;
 }
 
+/* assign_regex --- return a regex node */
+
+static inline void
+assign_regex(NODE *node, awk_value_t *val)
+{
+	assign_string(node, val);
+	val->val_type = AWK_REGEX;
+}
+
 /* node_to_awk_value --- convert a node into a value for an extension */
 
 static awk_bool_t
@@ -489,12 +502,19 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 			ret = awk_true;
 			break;
 
+		case AWK_REGEX:
+			assign_regex(node, val);
+			ret = awk_true;
+			break;
+
 		case AWK_SCALAR:
 			fixtype(node);
 			if ((node->flags & NUMBER) != 0) {
 				val->val_type = AWK_NUMBER;
 			} else if ((node->flags & STRING) != 0) {
 				val->val_type = AWK_STRING;
+			} else if ((node->flags & REGEX) != 0) {
+				val->val_type = AWK_REGEX;
 			} else
 				val->val_type = AWK_UNDEFINED;
 			ret = awk_false;
@@ -512,6 +532,9 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				ret = awk_true;
 			} else if ((node->flags & STRING) != 0) {
 				assign_string(node, val);
+				ret = awk_true;
+			} else if ((node->flags & REGEX) != 0) {
+				assign_regex(node, val);
 				ret = awk_true;
 			} else
 				val->val_type = AWK_UNDEFINED;
@@ -618,6 +641,7 @@ api_sym_update(awk_ext_id_t id,
 	switch (value->val_type) {
 	case AWK_NUMBER:
 	case AWK_STRING:
+	case AWK_REGEX:
 	case AWK_UNDEFINED:
 	case AWK_ARRAY:
 	case AWK_SCALAR:
@@ -715,6 +739,7 @@ api_sym_update_scalar(awk_ext_id_t id,
 			return awk_true;
 		}
 		break;
+
 	case AWK_STRING:
 		if (node->var_value->valref == 1) {
 			NODE *r = node->var_value;
@@ -735,10 +760,13 @@ api_sym_update_scalar(awk_ext_id_t id,
 			return awk_true;
 		}
 		break;
+
+	case AWK_REGEX:
 	case AWK_UNDEFINED:
 	case AWK_SCALAR:
 	case AWK_VALUE_COOKIE:
 		break;
+
 
 	default:	/* AWK_ARRAY or invalid type */
 		return awk_false;
@@ -763,6 +791,7 @@ valid_subscript_type(awk_valtype_t valtype)
 	case AWK_UNDEFINED:
 	case AWK_NUMBER:
 	case AWK_STRING:
+	case AWK_REGEX:
 	case AWK_SCALAR:
 	case AWK_VALUE_COOKIE:
 		return true;
@@ -1005,6 +1034,8 @@ api_flatten_array(awk_ext_id_t id,
 		 * index to be a string, since indices are always
 		 * conceptually strings, regardless of internal optimizations
 		 * to treat them as integers in some cases.
+		 *
+		 * Regexes are forced to string too.
 		 */
 		if (! node_to_awk_value(index,
 				& (*data)->elements[j].index, AWK_STRING)) {
@@ -1073,6 +1104,7 @@ api_create_value(awk_ext_id_t id, awk_value_t *value,
 	switch (value->val_type) {
 	case AWK_NUMBER:
 	case AWK_STRING:
+	case AWK_REGEX:
 		break;
 	default:
 		/* reject anything other than a simple scalar */

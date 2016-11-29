@@ -55,11 +55,11 @@
 
 #define MAGIC "awkrulz\n"
 #define MAJOR 3
-#define MINOR 0
+#define MINOR 1
 
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
-static const char *ext_version = "rwarray extension: version 1.0";
+static const char *ext_version = "rwarray extension: version 1.1";
 static awk_bool_t (*init_func)(void) = NULL;
 
 int plugin_is_GPL_compatible;
@@ -84,7 +84,7 @@ static awk_bool_t read_value(FILE *fp, awk_value_t *value);
  * For each element:
  * Length of index val:	4 bytes - network order
  * Index val as characters (N bytes)
- * Value type		4 bytes (0 = string, 1 = number, 2 = array)
+ * Value type		4 bytes (0 = string, 1 = number, 2 = array, 3 = regex)
  * IF string:
  * 	Length of value	4 bytes
  * 	Value as characters (N bytes)
@@ -213,7 +213,7 @@ write_elem(FILE *fp, awk_element_t *element)
 	return write_value(fp, & element->value);
 }
 
-/* write_value --- write a number or a string or a array */
+/* write_value --- write a number or a string or a regex or an array */
 
 static awk_bool_t
 write_value(FILE *fp, awk_value_t *val)
@@ -235,7 +235,7 @@ write_value(FILE *fp, awk_value_t *val)
 		if (fwrite(& val->num_value, 1, sizeof(val->num_value), fp) != sizeof(val->num_value))
 			return awk_false;
 	} else {
-		code = 0;
+		code = (val->val_type == AWK_STRING ? 0 : 3);
 		if (fwrite(& code, 1, sizeof(code), fp) != sizeof(code))
 			return awk_false;
 
@@ -305,7 +305,7 @@ do_reada(int nargs, awk_value_t *result)
 	}
 	major = ntohl(major);
 
-	if (major != MAJOR) {
+	if (major < MAJOR) {
 		errno = EBADF;
 		goto done1;
 	}
@@ -316,7 +316,7 @@ do_reada(int nargs, awk_value_t *result)
 	}
 
 	minor = ntohl(minor);
-	if (minor != MINOR) {
+	if (minor < MINOR) {
 		errno = EBADF;
 		goto done1;
 	}
@@ -455,7 +455,7 @@ read_value(FILE *fp, awk_value_t *value)
 			return awk_false;
 		}
 		len = ntohl(len);
-		value->val_type = AWK_STRING;
+		value->val_type = (code == 0 ? AWK_STRING : AWK_REGEX);
 		value->str_value.len = len;
 		value->str_value.str = gawk_malloc(len + 1);
 		memset(value->str_value.str, '\0', len + 1);

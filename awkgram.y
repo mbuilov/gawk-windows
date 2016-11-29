@@ -516,7 +516,6 @@ regexp
 typed_regexp
 	: TYPED_REGEXP
 		{
-		  NODE *n, *exp, *n2;
 		  char *re;
 		  size_t len;
 
@@ -524,22 +523,9 @@ typed_regexp
 		  $1->lextok = NULL;
 		  len = strlen(re);
 
-		  exp = make_str_node(re, len, ALREADY_MALLOCED);
-		  n = make_regnode(Node_regex, exp);
-		  if (n == NULL) {
-			unref(exp);
-			YYABORT;
-		  }
-
-		  n2 = make_string(re, len);
-		  n2->typed_re = n;
-		  n2->numbr = 0;
-		  n2->flags |= NUMCUR|STRCUR|REGEX; 
-		  n2->flags &= ~(STRING|NUMBER);
-
 		  $$ = $1;
 		  $$->opcode = Op_push_re;
-		  $$->memory = n2;
+		  $$->memory = make_typed_regex(re, len);
 		}
 
 a_slash

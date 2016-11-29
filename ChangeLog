@@ -1,5 +1,22 @@
 2016-11-29         Arnold D. Robbins     <arnold@skeeve.com>
 
+	Add support for typed regex variables to the API.
+
+	* awk.h (make_typed_regex): Declare function.
+	* awkgram.y (typed_regexp): Call make_typed_regex instead of
+	using inline code.
+	* gawkapi.h (AWK_REGEX): New value type.
+	(regex_value): New macro.
+	(Value fetching table): Updated.
+	* gawkapi.c (awk_value_to_node, node_to_awk_value, api_sym_update,
+	api_sym_update_scalar, valid_subscript_type, api_create_value):
+	Add support for AWK_REGEX.
+	(assign_regex): New function.
+	(api_flatten_array): Adjust comment.
+	* node.c (make_typed_regex): New function; moved code from grammar.
+
+2016-11-29         Arnold D. Robbins     <arnold@skeeve.com>
+
 	Remove redundant flag from dfa:
 
 	* dfa.c (dfasyntax): Use RE_ICASE instead of DFA_CASE_FOLD.

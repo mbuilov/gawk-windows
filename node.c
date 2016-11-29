@@ -444,6 +444,27 @@ make_str_node(const char *s, size_t len, int flags)
 	return r;
 }
 
+/* make_typed_regex --- make a typed regex node */
+
+NODE *
+make_typed_regex(const char *re, size_t len)
+{
+	NODE *n, *exp, *n2;
+
+	exp = make_str_node(re, len, ALREADY_MALLOCED);
+	n = make_regnode(Node_regex, exp);
+	if (n == NULL)
+		fatal(_("could not make typed regex"));
+
+	n2 = make_string(re, len);
+	n2->typed_re = n;
+	n2->numbr = 0;
+	n2->flags |= NUMCUR|STRCUR|REGEX; 
+	n2->flags &= ~(STRING|NUMBER);
+
+	return n2;
+}
+
 
 /* unref --- remove reference to a particular node */
 

@@ -4,6 +4,8 @@ BEGIN {
 	while ((getline word) > 0)
 		dict[word] = word word
 
+	dict["/typed-regex/"] = @/search me/
+
 	n = asorti(dict, dictindices)
 	for (i = 1; i <= n; i++)
 		printf("dict[%s] = %s\n", dictindices[i], dict[dictindices[i]]) > "orig.out"
@@ -12,7 +14,6 @@ BEGIN {
 	ret = writea("orig.bin", dict)
 	printf "writea() returned %d, expecting 1\n", ret
 
- 
 	ret = reada("orig.bin", dict)
 	printf "reada() returned %d, expecting 1\n", ret
 

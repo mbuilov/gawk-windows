@@ -308,7 +308,8 @@ typedef enum {
 	AWK_STRING,
 	AWK_ARRAY,
 	AWK_SCALAR,		/* opaque access to a variable */
-	AWK_VALUE_COOKIE	/* for updating a previously created value */
+	AWK_VALUE_COOKIE,	/* for updating a previously created value */
+	AWK_REGEX		/* last for binary compatibility */
 } awk_valtype_t;
 
 /*
@@ -325,6 +326,7 @@ typedef struct awk_value {
 		awk_value_cookie_t vc;
 	} u;
 #define str_value	u.s
+#define regex_value	str_value
 #define num_value	u.d
 #define array_cookie	u.a
 #define scalar_cookie	u.scl
@@ -477,27 +479,29 @@ typedef struct gawk_api {
 	Table entry is type returned:
 
 
-	                        +-------------------------------------------------+
-	                        |                Type of Actual Value:            |
-	                        +------------+------------+-----------+-----------+
-	                        |   String   |   Number   | Array     | Undefined |
-	+-----------+-----------+------------+------------+-----------+-----------+
-	|           | String    |   String   |   String   | false     | false     |
-	|           |-----------+------------+------------+-----------+-----------+
-	|           | Number    | Number if  |   Number   | false     | false     |
-	|           |           | can be     |            |           |           |
-	|           |           | converted, |            |           |           |
-	|           |           | else false |            |           |           |
-	|           |-----------+------------+------------+-----------+-----------+
-	|   Type    | Array     |   false    |   false    | Array     | false     |
-	| Requested |-----------+------------+------------+-----------+-----------+
-	|           | Scalar    |   Scalar   |   Scalar   | false     | false     |
-	|           |-----------+------------+------------+-----------+-----------+
-	|           | Undefined |  String    |   Number   | Array     | Undefined |
-	|           |-----------+------------+------------+-----------+-----------+
-	|           | Value     |   false    |   false    | false     | false     |
-	|           | Cookie    |            |            |           |           |
-	+-----------+-----------+------------+------------+-----------+-----------+
+	                        +-------------------------------------------------------------+
+	                        |                    Type of Actual Value:                    |
+	                        +------------+------------+-----------+-----------+-----------+
+	                        |   String   |   Number   | Regex     | Array     | Undefined |
+	+-----------+-----------+------------+------------+-----------+-----------+-----------+
+	|           | String    |   String   |   String   | String    | false     | false     |
+	|           +-----------+------------+------------+-----------+-----------+-----------+
+	|           | Number    | Number if  |   Number   | false     | false     | false     |
+	|           |           | can be     |            |           |           |           |
+	|           |           | converted, |            |           |           |           |
+	|           |           | else false |            |           |           |           |
+	|           +-----------+------------+------------+-----------+-----------+-----------+
+	|           | Regex     |   false    |   false    |  Regex    | false     | false     |
+	|           +-----------+------------+------------+-----------+-----------+-----------+
+	|   Type    | Array     |   false    |   false    |  false    | Array     | false     |
+	| Requested +-----------+------------+------------+-----------+-----------+-----------+
+	|           | Scalar    |   Scalar   |   Scalar   |  Scalar   | false     | false     |
+	|           +-----------+------------+------------+-----------+-----------+-----------+
+	|           | Undefined |  String    |   Number   |  Regex    | Array     | Undefined |
+	|           +-----------+------------+------------+-----------+-----------+-----------+
+	|           | Value     |   false    |   false    |  false    | false     | false     |
+	|           | Cookie    |            |            |           |           |           |
+	+-----------+-----------+------------+------------+-----------+-----------+-----------+
 	*/
 
 	/* Functions to handle parameters passed to the extension. */
