@@ -805,6 +805,23 @@ char_context (struct dfa const *dfa, unsigned char c)
   return CTX_NONE;
 }
 
+/* Copy the syntax settings from one dfa instance to another.
+   Saves considerable computation time if compiling many regular expressions
+   based on the same setting.  */
+void
+dfacopysyntax (struct dfa *to, const struct dfa *from)
+{
+  to->dfaexec = from->dfaexec;
+  to->simple_locale = from->simple_locale;
+  to->localeinfo = from->localeinfo;
+
+  to->fast = from->fast;
+
+  to->canychar = from->canychar;
+  to->lex.cur_mb_len = from->lex.cur_mb_len;
+  to->syntax = from->syntax;
+}
+
 /* Set a bit in the charclass for the given wchar_t.  Do nothing if WC
    is represented by a multi-byte sequence.  Even for MB_CUR_MAX == 1,
    this may happen when folding case in weird Turkish locales where
@@ -3999,7 +4016,12 @@ dfamustfree (struct dfamust *dm)
 struct dfa *
 dfaalloc (void)
 {
-  return xmalloc (sizeof (struct dfa));
+  void *p = xmalloc (sizeof (struct dfa));
+  if (p)
+    {
+      memset (p, 0, sizeof (struct dfa));
+    }
+  return p;
 }
 
 /* Initialize DFA.  */

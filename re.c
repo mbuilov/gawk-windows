@@ -49,8 +49,8 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	int c, c2;
 	static bool first = true;
 	static bool no_dfa = false;
-	reg_syntax_t dfa_syn;
 	int i;
+	static struct dfa* dfaregs[2] = { NULL, NULL };
 
 	/*
 	 * The number of bytes in the current multibyte character.
@@ -62,9 +62,9 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	memset(&mbs, 0, sizeof(mbstate_t)); /* Initialize.  */
 
 	if (first) {
-		first = false;
 		/* for debugging and testing */
 		no_dfa = (getenv("GAWK_NO_DFA") != NULL);
+		/* don't set first to false here, we do it below */
 	}
 
 	/* always check */
@@ -202,9 +202,14 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 		syn &= ~RE_ICASE;
 	}
 
-	dfa_syn = syn;
-	if (ignorecase)
-		dfa_syn |= RE_ICASE;
+	/* initialize dfas to hold syntax */
+	if (first) {
+		first = false;
+		dfaregs[0] = dfaalloc();
+		dfaregs[1] = dfaalloc();
+		dfasyntax(dfaregs[0], & localeinfo, syn, DFA_ANCHOR);
+		dfasyntax(dfaregs[1], & localeinfo, syn | RE_ICASE, DFA_ANCHOR);
+	}
 
 	re_set_syntax(syn);
 
@@ -222,7 +227,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	rp->pat.newline_anchor = false; /* don't get \n in middle of string */
 	if (dfa && ! no_dfa) {
 		rp->dfareg = dfaalloc();
-		dfasyntax(rp->dfareg, & localeinfo, dfa_syn, DFA_ANCHOR);
+		dfacopysyntax(rp->dfareg, dfaregs[ignorecase]);
 		dfacomp(buf, len, rp->dfareg, true);
 	} else
 		rp->dfareg = NULL;
