@@ -110,6 +110,11 @@ extern struct dfa *dfasuperset (struct dfa const *d) _GL_ATTRIBUTE_PURE;
 /* The DFA is likely to be fast.  */
 extern bool dfaisfast (struct dfa const *) _GL_ATTRIBUTE_PURE;
 
+/* Copy the syntax settings from one dfa instance to another.
+   Saves considerable computation time if compiling many regular expressions
+   based on the same setting.  */
+extern void dfacopysyntax (struct dfa *to, const struct dfa *from);
+
 /* Free the storage held by the components of a struct dfa. */
 extern void dfafree (struct dfa *);
 

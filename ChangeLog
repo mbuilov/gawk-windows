@@ -1,8 +1,21 @@
 2016-11-29         Arnold D. Robbins     <arnold@skeeve.com>
 
+	Remove redundant flag from dfa:
+
 	* dfa.c (dfasyntax): Use RE_ICASE instead of DFA_CASE_FOLD.
 	* dfa.h (DFA_CASE_FOLD): Removed.
 	* re.c (make_regexp): Use RE_ICASE for regex and dfa. Yay!
+
+	Unrelated: Don't have to recompute syntax stuff every time
+	we compile a regexp.
+
+	* dfa.c (dfacopysyntax): New function.
+	(dfaalloc): Zero out the newly allocated memory.
+	* dfa.h (dfacopysyntax): Declare it.
+	* re.c (make_regexp): Declare two static dfaregs, one for
+	with and without ignorecase. Compute the syntax once for each,
+	then use dfacopysyntax to copy the settings when compiling
+	a regexp.
 
 2016-11-28         Arnold D. Robbins     <arnold@skeeve.com>
 
