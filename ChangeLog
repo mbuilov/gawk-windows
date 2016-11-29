@@ -1,3 +1,9 @@
+2016-11-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c (dfasyntax): Use RE_ICASE instead of DFA_CASE_FOLD.
+	* dfa.h (DFA_CASE_FOLD): Removed.
+	* re.c (make_regexp): Use RE_ICASE for regex and dfa. Yay!
+
 2016-11-28         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Make gawk compile on HP-UX 11.33.
