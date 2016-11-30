@@ -4,7 +4,8 @@ BEGIN {
 	while ((getline word) > 0)
 		dict[word] = word word
 
-	dict["/typed-regex/"] = @/search me/
+	re_sub = "/typed-regex/"
+	dict[re_sub] = @/search me/
 
 	n = asorti(dict, dictindices)
 	for (i = 1; i <= n; i++)
@@ -38,4 +39,8 @@ BEGIN {
 		if (ret == 0 && !("KEEPIT" in ENVIRON))
 			system("rm -f orig.bin orig.out new.out")
 	}
+
+	if (typeof(dict[re_sub]) != "regexp")
+		printf("dict[\"%s\"] should be regexp, is %s\n",
+			re_sub, typeof(dict[re_sub]));
 }

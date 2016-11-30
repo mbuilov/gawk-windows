@@ -305,7 +305,7 @@ do_reada(int nargs, awk_value_t *result)
 	}
 	major = ntohl(major);
 
-	if (major < MAJOR) {
+	if (major != MAJOR) {
 		errno = EBADF;
 		goto done1;
 	}
@@ -316,7 +316,7 @@ do_reada(int nargs, awk_value_t *result)
 	}
 
 	minor = ntohl(minor);
-	if (minor < MINOR) {
+	if (minor != MINOR) {
 		errno = EBADF;
 		goto done1;
 	}

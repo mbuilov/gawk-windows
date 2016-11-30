@@ -883,6 +883,18 @@ make_number(double num, awk_value_t *result)
 	return result;
 }
 
+/* make_regex --- make a regex value in result */
+
+static inline awk_value_t *
+make_regex(const char *string, size_t length, awk_value_t *result)
+{
+	make_const_string(str, len, result);
+	result->val_type = AWK_REGEX;
+
+	return result;
+}
+
+
 /*
  * Each extension must define a function with this prototype:
  *
