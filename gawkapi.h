@@ -349,7 +349,7 @@ typedef struct awk_element {
 		AWK_ELEMENT_DELETE = 1		/* set by extension if
 						   should be deleted */
 	} flags;
-	awk_value_t	index;			/* guaranteed to be a string! */
+	awk_value_t	index;
 	awk_value_t	value;
 } awk_element_t;
 
@@ -668,7 +668,13 @@ typedef struct gawk_api {
 	/* Clear out an array */
 	awk_bool_t (*api_clear_array)(awk_ext_id_t id, awk_array_t a_cookie);
 
-	/* Flatten out an array so that it can be looped over easily. */
+	/*
+	 * Flatten out an array so that it can be looped over easily.
+	 * This function returns all indices as strings and values as
+	 * the native type one would get from an AWK_UNDEFINED request.
+	 * Please use api_flatten_array_typed for more control over the
+	 * type conversions.
+	 */
 	awk_bool_t (*api_flatten_array)(awk_ext_id_t id,
 			awk_array_t a_cookie,
 			awk_flat_array_t **data);
@@ -723,6 +729,16 @@ typedef struct gawk_api {
 
 	/* Print nonfatal error message */
 	void (*api_nonfatal)(awk_ext_id_t id, const char *format, ...);
+
+	/*
+	 * Flatten out an array with type conversions as requested.
+	 * This supersedes the api_flatten_array function that did not allow
+	 * the caller to specify the requested types.
+	 */
+	awk_bool_t (*api_flatten_array_typed)(awk_ext_id_t id,
+			awk_array_t a_cookie,
+			awk_flat_array_t **data,
+			awk_valtype_t index_type, awk_valtype_t value_type);
 
 } gawk_api_t;
 
@@ -790,8 +806,11 @@ typedef struct gawk_api {
 
 #define clear_array(array)	(api->api_clear_array(ext_id, array))
 
+#define flatten_array_typed(array, data, index_type, value_type) \
+	(api->api_flatten_array_typed(ext_id, array, data, index_type, value_type))
+
 #define flatten_array(array, data) \
-	(api->api_flatten_array(ext_id, array, data))
+	flatten_array_typed(array, data, AWK_STRING, AWK_UNDEFINED)
 
 #define release_flattened_array(array, data) \
 	(api->api_release_flattened_array(ext_id, array, data))

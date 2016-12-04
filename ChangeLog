@@ -1,5 +1,19 @@
 2016-12-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* gawkapi.h (awk_element_t): Remove obsolete comment claiming that
+	the index will always be a string.
+	(gawk_api_t): Add new api_flatten_array_typed function and indicate
+	that api_flatten_array has been superseded.
+	(flatten_array_typed): New macro to call api_flatten_array_typed.
+	(flatten_array): Redefine using the new flatten_array_typed macro.
+	* gawkapi.c (api_flatten_array_typed): New function renamed from
+	api_flatten_array to flatten an array with the types requested by the
+	caller. Also update the comments and error messages.
+	(api_flatten_array): Now a wrapper around api_flatten_array_typed.
+	(api_impl): Add new api_flatten_array_typed hook.
+
+2016-12-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* gawkapi.h (r_make_string_type): New inline function to create strings
 	of any type, currently AWK_STRING or AWK_REGEX.
 	(r_make_string): Now a wrapper around r_make_string_type.

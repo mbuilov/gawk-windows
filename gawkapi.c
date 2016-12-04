@@ -995,9 +995,10 @@ api_clear_array(awk_ext_id_t id, awk_array_t a_cookie)
 /* api_flatten_array --- flatten out an array so that it can be looped over easily. */
 
 static awk_bool_t
-api_flatten_array(awk_ext_id_t id,
+api_flatten_array_typed(awk_ext_id_t id,
 		awk_array_t a_cookie,
-		awk_flat_array_t **data)
+		awk_flat_array_t **data,
+		awk_valtype_t index_type, awk_valtype_t value_type)
 {
 	NODE **list;
 	size_t i, j;
@@ -1014,7 +1015,7 @@ api_flatten_array(awk_ext_id_t id,
 			(array->table_size - 1) * sizeof(awk_element_t);
 
 	emalloc(*data, awk_flat_array_t *, alloc_size,
-			"api_flatten_array");
+			"api_flatten_array_typed");
 	memset(*data, 0, alloc_size);
 
 	list = assoc_list(array, "@unsorted", ASORTI);
@@ -1029,26 +1030,32 @@ api_flatten_array(awk_ext_id_t id,
 		index = list[i];
 		value = list[i + 1]; /* number or string or subarray */
 
-		/*
-		 * Convert index and value to ext types.  Force the
-		 * index to be a string, since indices are always
-		 * conceptually strings, regardless of internal optimizations
-		 * to treat them as integers in some cases.
-		 *
-		 * Regexes are forced to string too.
-		 */
+		/* Convert index and value to ext types. */
 		if (! node_to_awk_value(index,
-				& (*data)->elements[j].index, AWK_STRING)) {
-			fatal(_("api_flatten_array: could not convert index %d\n"),
-						(int) i);
+				& (*data)->elements[j].index, index_type)) {
+			fatal(_("api_flatten_array_typed: could not convert index %d to %d\n"),
+						(int) i, (int) index_type);
 		}
 		if (! node_to_awk_value(value,
-				& (*data)->elements[j].value, AWK_UNDEFINED)) {
-			fatal(_("api_flatten_array: could not convert value %d\n"),
-						(int) i);
+				& (*data)->elements[j].value, value_type)) {
+			fatal(_("api_flatten_array_typed: could not convert value %d to %d\n"),
+						(int) i, (int) value_type);
 		}
 	}
 	return awk_true;
+}
+
+/*
+ * api_flatten_array -- replaced by api_flatten_array_typed. This function
+ * is retained only for binary compatibility.
+ */
+
+static awk_bool_t
+api_flatten_array(awk_ext_id_t id,
+		awk_array_t a_cookie,
+		awk_flat_array_t **data)
+{
+	return api_flatten_array_typed(id, a_cookie, data, AWK_STRING, AWK_UNDEFINED);
 }
 
 /*
@@ -1298,7 +1305,7 @@ gawk_api_t api_impl = {
 	api_del_array_element,
 	api_create_array,
 	api_clear_array,
-	api_flatten_array,
+	api_flatten_array,	/* for legacy binary compatibility */
 	api_release_flattened_array,
 
 	/* Memory allocation */
@@ -1312,6 +1319,9 @@ gawk_api_t api_impl = {
 
 	/* Print nonfatal error message */
 	api_nonfatal,
+
+	/* New array flattening function */
+	api_flatten_array_typed,
 };
 
 /* init_ext_api --- init the extension API */

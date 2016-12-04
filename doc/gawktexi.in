@@ -33000,9 +33000,9 @@ The array remains an array, but after calling this function, it
 has no elements. This is equivalent to using the @code{delete}
 statement (@pxref{Delete}).
 
-@item awk_bool_t flatten_array(awk_array_t a_cookie, awk_flat_array_t **data);
+@item awk_bool_t flatten_array_typed(awk_array_t a_cookie, awk_flat_array_t **data, awk_valtype_t index_type, awk_valtype_t value_type);
 For the array represented by @code{a_cookie}, create an @code{awk_flat_array_t}
-structure and fill it in. Set the pointer whose address is passed as @code{data}
+structure and fill it in with indices and values of the requested types. Set the pointer whose address is passed as @code{data}
 to point to this structure.
 Return true upon success, or false otherwise.
 @ifset FOR_PRINT
@@ -33013,6 +33013,12 @@ See the next @value{SECTION}
 @end ifclear
 for a discussion of how to
 flatten an array and work with it.
+
+@item awk_bool_t flatten_array(awk_array_t a_cookie, awk_flat_array_t **data);
+For the array represented by @code{a_cookie}, create an @code{awk_flat_array_t}
+structure and fill it in with @code{AWK_STRING} indices and
+@code{AWK_UNDEFINED} values.  This is superseded by @code{flatten_array_typed}
+and retained only for legacy binary compatibility.
 
 @item awk_bool_t release_flattened_array(awk_array_t a_cookie,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_flat_array_t *data);
@@ -33126,7 +33132,7 @@ to double-check that the count in the @code{awk_flat_array_t}
 is the same as the count just retrieved:
 
 @example
-    if (! flatten_array(value2.array_cookie, & flat_array)) @{
+    if (! flatten_array_typed(value2.array_cookie, & flat_array, AWK_STRING, AWK_UNDEFINED)) @{
         printf("dump_array_and_delete: could not flatten array\n");
         goto out;
     @}
