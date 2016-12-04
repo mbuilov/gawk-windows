@@ -1,3 +1,11 @@
+2016-12-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (r_make_string_type): New inline function to create strings
+	of any type, currently AWK_STRING or AWK_REGEX.
+	(r_make_string): Now a wrapper around r_make_string_type.
+	(make_regex): Convert from an inline function to a macro that
+	calls r_make_string_type.
+
 2016-11-30         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with fixes in GNULIB.

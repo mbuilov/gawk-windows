@@ -827,21 +827,22 @@ typedef struct gawk_api {
 
 /* Constructor functions */
 
-/* r_make_string --- make a string value in result from the passed-in string */
+/* r_make_string_type --- make a string or regexp value in result from the passed-in string */
 
 static inline awk_value_t *
-r_make_string(const gawk_api_t *api,	/* needed for emalloc */
-	      awk_ext_id_t *ext_id,	/* ditto */
-	      const char *string,
-	      size_t length,
-	      awk_bool_t duplicate,
-	      awk_value_t *result)
+r_make_string_type(const gawk_api_t *api,	/* needed for emalloc */
+		   awk_ext_id_t *ext_id,	/* ditto */
+		   const char *string,
+		   size_t length,
+		   awk_bool_t duplicate,
+		   awk_value_t *result,
+		   awk_valtype_t val_type)
 {
 	char *cp = NULL;
 
 	memset(result, 0, sizeof(*result));
 
-	result->val_type = AWK_STRING;
+	result->val_type = val_type;
 	result->str_value.len = length;
 
 	if (duplicate) {
@@ -856,8 +857,22 @@ r_make_string(const gawk_api_t *api,	/* needed for emalloc */
 	return result;
 }
 
+/* r_make_string --- make a string value in result from the passed-in string */
+
+static inline awk_value_t *
+r_make_string(const gawk_api_t *api,	/* needed for emalloc */
+	      awk_ext_id_t *ext_id,	/* ditto */
+	      const char *string,
+	      size_t length,
+	      awk_bool_t duplicate,
+	      awk_value_t *result)
+{
+	return r_make_string_type(api, ext_id, string, length, duplicate, result, AWK_STRING);
+}
+
 #define make_const_string(str, len, result)	r_make_string(api, ext_id, str, len, 1, result)
 #define make_malloced_string(str, len, result)	r_make_string(api, ext_id, str, len, 0, result)
+#define make_regex(str, len, result)	r_make_string_type(api, ext_id, str, len, 1, result, AWK_REGEX)
 
 /* make_null_string --- make a null string value */
 
@@ -879,17 +894,6 @@ make_number(double num, awk_value_t *result)
 
 	result->val_type = AWK_NUMBER;
 	result->num_value = num;
-
-	return result;
-}
-
-/* make_regex --- make a regex value in result */
-
-static inline awk_value_t *
-make_regex(const char *string, size_t length, awk_value_t *result)
-{
-	make_const_string(str, len, result);
-	result->val_type = AWK_REGEX;
 
 	return result;
 }
