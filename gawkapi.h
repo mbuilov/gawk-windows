@@ -891,7 +891,9 @@ r_make_string(const gawk_api_t *api,	/* needed for emalloc */
 
 #define make_const_string(str, len, result)	r_make_string(api, ext_id, str, len, 1, result)
 #define make_malloced_string(str, len, result)	r_make_string(api, ext_id, str, len, 0, result)
-#define make_regex(str, len, result)	r_make_string_type(api, ext_id, str, len, 1, result, AWK_REGEX)
+
+#define make_const_regex(str, len, result)	r_make_string_type(api, ext_id, str, len, 1, result, AWK_REGEX)
+#define make_malloced_regex(str, len, result)	r_make_string_type(api, ext_id, str, len, 0, result, AWK_REGEX)
 
 /* make_null_string --- make a null string value */
 

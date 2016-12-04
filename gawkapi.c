@@ -449,7 +449,11 @@ assign_string(NODE *node, awk_value_t *val)
 static inline void
 assign_regex(NODE *node, awk_value_t *val)
 {
-	assign_string(node, val);
+	/* a REGEX node cannot be an unterminated field string */
+	assert((node->flags & MALLOC) != 0);
+	assert(node->stptr[node->stlen] == '\0');
+	val->str_value.str = node->stptr;
+	val->str_value.len = node->stlen;
 	val->val_type = AWK_REGEX;
 }
 

@@ -1,5 +1,13 @@
 2016-12-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* gawkapi.c (assign_regex): Do not call assign_string, since we
+	know that a REGEX value is not an unterminated field string.
+	* gawkapi.h (make_regex): Delete macro.
+	(make_const_regex, make_malloced_regex): Add new macros to replace
+	make_regex with necessary memory management support.
+
+2016-12-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* awk.h (fixtype): Remove conditional checking if the node type
 	is Node_val. This is already covered by the assert, and if it's not
 	true, we have serious bugs.

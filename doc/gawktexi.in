@@ -31796,9 +31796,17 @@ This function simply creates a numeric value in the @code{awk_value_t} variable
 pointed to by @code{result}.
 
 @item static inline awk_value_t *
-@itemx make_regex(const char *string, size_t length, awk_value_t *result);
+@itemx make_const_regex(const char *string, size_t length, awk_value_t *result);
+This function creates a strongly typed regexp value by allocating a copy of the string.
+@code{string} is the regular expression of length @code{len}.
+
+@item static inline awk_value_t *
+@itemx make_malloced_regex(const char *string, size_t length, awk_value_t *result);
 This function creates a strongly typed regexp value.
 @code{string} is the regular expression of length @code{len}.
+It expects @code{string} to be a @samp{char *}
+value pointing to data previously obtained from @code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()}.
+
 @end table
 
 @node Registration Functions
