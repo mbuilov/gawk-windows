@@ -1882,12 +1882,10 @@ static inline NODE *
 fixtype(NODE *n)
 {
 	assert(n->type == Node_val);
-	if (n->type == Node_val) {
-		if ((n->flags & (NUMCUR|USER_INPUT)) == USER_INPUT)
-			return force_number(n);
-		if ((n->flags & INTIND) != 0)
-			return force_string(n);
-	}
+	if ((n->flags & (NUMCUR|USER_INPUT)) == USER_INPUT)
+		return force_number(n);
+	if ((n->flags & INTIND) != 0)
+		return force_string(n);
 	return n;
 }
 

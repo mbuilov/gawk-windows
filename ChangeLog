@@ -1,5 +1,14 @@
 2016-12-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* awk.h (fixtype): Remove conditional checking if the node type
+	is Node_val. This is already covered by the assert, and if it's not
+	true, we have serious bugs.
+	* builtin.c (do_typeof): Do not treat Node_var the same way as
+	Node_val, since they are different beasts. In reality, the argument
+	to this function will never have type Node_var.
+
+2016-12-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* gawkapi.h (awk_element_t): Remove obsolete comment claiming that
 	the index will always be a string.
 	(gawk_api_t): Add new api_flatten_array_typed function and indicate

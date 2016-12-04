@@ -3988,7 +3988,6 @@ do_typeof(int nargs)
 		deref = false;
 		break;
 	case Node_val:
-	case Node_var:
 		switch (fixtype(arg)->flags & (STRING|NUMBER|USER_INPUT|REGEX)) {
 		case STRING:
 			res = "string";
@@ -4016,6 +4015,14 @@ do_typeof(int nargs)
 	case Node_var_new:
 		res = "untyped";
 		deref = false;
+		break;
+	case Node_var:
+		/*
+		 * Note: this doesn't happen because the function calling code
+		 * in interpret.h pushes Node_var->var_value.
+		 */
+		fatal(_("typeof: invalid argument type `%s'"),
+				nodetype2str(arg->type));
 		break;
 	default:
 		fatal(_("typeof: unknown argument type `%s'"),
