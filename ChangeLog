@@ -1,3 +1,23 @@
+2016-12-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Add API support for strnum values.
+	* gawkapi.c (awk_value_to_node): Add AWK_STRNUM.
+	(assign_string): Add a type argument so we can use this for AWK_STRING
+	or AWK_STRNUM.
+	(node_to_awk_value): When AWK_NUMBER is requested, a regex value
+	should return false, as per the header file documentation.
+	Add support for AWK_STRNUM requests. When AWK_REGEX is requested,
+	implement the cases properly instead of always returning true.
+	Fix AWK_SCALAR logic. For AWK_UNDEFINED, rewrite using a switch
+	and support AWK_STRNUM.
+	(api_sym_update): Add AWK_STRNUM.
+	(api_sym_update_scalar): Add optimized support for updating AWK_STRNUM.
+	(valid_subscript_type): Add AWK_STRNUM.
+	(api_create_value): Add AWK_STRNUM.
+	* gawkapi.h (awk_valtype_t): Add AWK_STRNUM.
+	(strnum_value): New macro.
+	(Value fetching table): Updated.
+
 2016-12-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.c (assign_regex): Do not call assign_string, since we

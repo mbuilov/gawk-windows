@@ -164,6 +164,11 @@ awk_value_to_node(const awk_value_t *retval)
 		ext_ret_val = make_str_node(retval->str_value.str,
 				retval->str_value.len, ALREADY_MALLOCED);
 		break;
+	case AWK_STRNUM:
+		ext_ret_val = make_str_node(retval->str_value.str,
+				retval->str_value.len, ALREADY_MALLOCED);
+		ext_ret_val->flags |= USER_INPUT;
+		break;
 	case AWK_REGEX:
 		ext_ret_val = make_typed_regex(retval->str_value.str,
 				retval->str_value.len);
@@ -415,9 +420,9 @@ free_api_string_copies()
 /* assign_string --- return a string node with NUL termination */
 
 static inline void
-assign_string(NODE *node, awk_value_t *val)
+assign_string(NODE *node, awk_value_t *val, awk_valtype_t val_type)
 {
-	val->val_type = AWK_STRING;
+	val->val_type = val_type;
 	if (node->stptr[node->stlen] != '\0') {
 		/*
 		 * This is an unterminated field string, so make a copy.
@@ -493,55 +498,139 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 		/* a scalar value */
 		switch (wanted) {
 		case AWK_NUMBER:
-			val->val_type = AWK_NUMBER;
+			if (node->flags & REGEX)
+				val->val_type = AWK_REGEX;
+			else {
+				val->val_type = AWK_NUMBER;
+				(void) force_number(node);
+				val->num_value = get_number_d(node);
+				ret = awk_true;
+			}
+			break;
 
-			(void) force_number(node);
-			val->num_value = get_number_d(node);
-			ret = awk_true;
+		case AWK_STRNUM:
+			switch (fixtype(node)->flags & (STRING|NUMBER|USER_INPUT|REGEX)) {
+			case STRING:
+				val->val_type = AWK_STRING;
+				break;
+			case NUMBER:
+				(void) force_string(node);
+				assign_string(node, val, AWK_STRNUM);
+				ret = awk_true;
+				break;
+			case NUMBER|USER_INPUT:
+				assign_string(node, val, AWK_STRNUM);
+				ret = awk_true;
+				break;
+			case REGEX:
+				val->val_type = AWK_REGEX;
+				break;
+			case NUMBER|STRING:
+				if (node == Nnull_string) {
+					val->val_type = AWK_UNDEFINED;
+					break;
+				}
+				/* fall through */
+			default:
+				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				val->val_type = AWK_UNDEFINED;
+				break;
+			}
 			break;
 
 		case AWK_STRING:
 			(void) force_string(node);
-			assign_string(node, val);
+			assign_string(node, val, AWK_STRING);
 			ret = awk_true;
 			break;
 
 		case AWK_REGEX:
-			assign_regex(node, val);
-			ret = awk_true;
+			switch (fixtype(node)->flags & (STRING|NUMBER|USER_INPUT|REGEX)) {
+			case STRING:
+				val->val_type = AWK_STRING;
+				break;
+			case NUMBER:
+				val->val_type = AWK_NUMBER;
+				break;
+			case NUMBER|USER_INPUT:
+				val->val_type = AWK_STRNUM;
+				break;
+			case REGEX:
+				assign_regex(node, val);
+				ret = awk_true;
+				break;
+			case NUMBER|STRING:
+				if (node == Nnull_string) {
+					val->val_type = AWK_UNDEFINED;
+					break;
+				}
+				/* fall through */
+			default:
+				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				val->val_type = AWK_UNDEFINED;
+				break;
+			}
 			break;
 
 		case AWK_SCALAR:
-			fixtype(node);
-			if ((node->flags & NUMBER) != 0) {
-				val->val_type = AWK_NUMBER;
-			} else if ((node->flags & STRING) != 0) {
+			switch (fixtype(node)->flags & (STRING|NUMBER|USER_INPUT|REGEX)) {
+			case STRING:
 				val->val_type = AWK_STRING;
-			} else if ((node->flags & REGEX) != 0) {
+				break;
+			case NUMBER:
+				val->val_type = AWK_NUMBER;
+				break;
+			case NUMBER|USER_INPUT:
+				val->val_type = AWK_STRNUM;
+				break;
+			case REGEX:
 				val->val_type = AWK_REGEX;
-			} else
+				break;
+			case NUMBER|STRING:
+				if (node == Nnull_string) {
+					val->val_type = AWK_UNDEFINED;
+					break;
+				}
+				/* fall through */
+			default:
+				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
-			ret = awk_false;
+				break;
+			}
 			break;
 
 		case AWK_UNDEFINED:
 			/* return true and actual type for request of undefined */
-			fixtype(node);
-			if (node == Nnull_string) {
-				val->val_type = AWK_UNDEFINED;
+			switch (fixtype(node)->flags & (STRING|NUMBER|USER_INPUT|REGEX)) {
+			case STRING:
+				assign_string(node, val, AWK_STRING);
 				ret = awk_true;
-			} else if ((node->flags & NUMBER) != 0) {
+				break;
+			case NUMBER:
 				val->val_type = AWK_NUMBER;
 				val->num_value = get_number_d(node);
 				ret = awk_true;
-			} else if ((node->flags & STRING) != 0) {
-				assign_string(node, val);
+				break;
+			case NUMBER|USER_INPUT:
+				assign_string(node, val, AWK_STRNUM);
 				ret = awk_true;
-			} else if ((node->flags & REGEX) != 0) {
+				break;
+			case REGEX:
 				assign_regex(node, val);
 				ret = awk_true;
-			} else
+				break;
+			case NUMBER|STRING:
+				if (node == Nnull_string) {
+					val->val_type = AWK_UNDEFINED;
+					ret = awk_true;
+					break;
+				}
+				/* fall through */
+			default:
+				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
+				break;
+			}
 			break;
 
 		case AWK_ARRAY:
@@ -644,6 +733,7 @@ api_sym_update(awk_ext_id_t id,
 
 	switch (value->val_type) {
 	case AWK_NUMBER:
+	case AWK_STRNUM:
 	case AWK_STRING:
 	case AWK_REGEX:
 	case AWK_UNDEFINED:
@@ -745,6 +835,7 @@ api_sym_update_scalar(awk_ext_id_t id,
 		break;
 
 	case AWK_STRING:
+	case AWK_STRNUM:
 		if (node->var_value->valref == 1) {
 			NODE *r = node->var_value;
 
@@ -758,6 +849,8 @@ api_sym_update_scalar(awk_ext_id_t id,
 			/* make_str_node(s, l, ALREADY_MALLOCED): */
 			r->numbr = 0;
 			r->flags = (MALLOC|STRING|STRCUR);
+			if (value->val_type == AWK_STRNUM)
+				r->flags |= USER_INPUT;
 			r->stfmt = STFMT_UNUSED;
 			r->stptr = value->str_value.str;
 			r->stlen = value->str_value.len;
@@ -794,6 +887,7 @@ valid_subscript_type(awk_valtype_t valtype)
 	switch (valtype) {
 	case AWK_UNDEFINED:
 	case AWK_NUMBER:
+	case AWK_STRNUM:
 	case AWK_STRING:
 	case AWK_REGEX:
 	case AWK_SCALAR:
@@ -1114,6 +1208,7 @@ api_create_value(awk_ext_id_t id, awk_value_t *value,
 
 	switch (value->val_type) {
 	case AWK_NUMBER:
+	case AWK_STRNUM:
 	case AWK_STRING:
 	case AWK_REGEX:
 		break;

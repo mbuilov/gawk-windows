@@ -309,7 +309,8 @@ typedef enum {
 	AWK_ARRAY,
 	AWK_SCALAR,		/* opaque access to a variable */
 	AWK_VALUE_COOKIE,	/* for updating a previously created value */
-	AWK_REGEX		/* last for binary compatibility */
+	AWK_REGEX,
+	AWK_STRNUM
 } awk_valtype_t;
 
 /*
@@ -326,6 +327,7 @@ typedef struct awk_value {
 		awk_value_cookie_t vc;
 	} u;
 #define str_value	u.s
+#define strnum_value	str_value
 #define regex_value	str_value
 #define num_value	u.d
 #define array_cookie	u.a
@@ -479,29 +481,28 @@ typedef struct gawk_api {
 	Table entry is type returned:
 
 
-	                        +-------------------------------------------------------------+
-	                        |                    Type of Actual Value:                    |
-	                        +------------+------------+-----------+-----------+-----------+
-	                        |   String   |   Number   | Regex     | Array     | Undefined |
-	+-----------+-----------+------------+------------+-----------+-----------+-----------+
-	|           | String    |   String   |   String   | String    | false     | false     |
-	|           +-----------+------------+------------+-----------+-----------+-----------+
-	|           | Number    | Number if  |   Number   | false     | false     | false     |
-	|           |           | can be     |            |           |           |           |
-	|           |           | converted, |            |           |           |           |
-	|           |           | else false |            |           |           |           |
-	|           +-----------+------------+------------+-----------+-----------+-----------+
-	|           | Regex     |   false    |   false    |  Regex    | false     | false     |
-	|           +-----------+------------+------------+-----------+-----------+-----------+
-	|   Type    | Array     |   false    |   false    |  false    | Array     | false     |
-	| Requested +-----------+------------+------------+-----------+-----------+-----------+
-	|           | Scalar    |   Scalar   |   Scalar   |  Scalar   | false     | false     |
-	|           +-----------+------------+------------+-----------+-----------+-----------+
-	|           | Undefined |  String    |   Number   |  Regex    | Array     | Undefined |
-	|           +-----------+------------+------------+-----------+-----------+-----------+
-	|           | Value     |   false    |   false    |  false    | false     | false     |
-	|           | Cookie    |            |            |           |           |           |
-	+-----------+-----------+------------+------------+-----------+-----------+-----------+
+	                        +-------------------------------------------------------+
+	                        |                   Type of Actual Value:               |
+	                        +--------+--------+--------+--------+-------+-----------+
+	                        | String | Strnum | Number | Regex  | Array | Undefined |
+	+-----------+-----------+--------+--------+--------+--------+-------+-----------+
+	|           | String    | String | String | String | String | false | false     |
+	|           +-----------+--------+--------+--------+--------+-------+-----------+
+	|           | Strnum    | false  | Strnum | Strnum | false  | false | false     |
+	|           +-----------+--------+--------+--------+--------+-------+-----------+
+	|           | Number    | Number | Number | Number | false  | false | false     |
+	|           +-----------+--------+--------+--------+--------+-------+-----------+
+	|           | Regex     | false  | false  | false  | Regex  | false | false     |
+	|           +-----------+--------+--------+--------+--------+-------+-----------+
+	|   Type    | Array     | false  | false  | false  | false  | Array | false     |
+	| Requested +-----------+--------+--------+--------+--------+-------+-----------+
+	|           | Scalar    | Scalar | Scalar | Scalar | Scalar | false | false     |
+	|           +-----------+--------+--------+--------+--------+-------+-----------+
+	|           | Undefined | String | Strnum | Number | Regex  | Array | Undefined |
+	|           +-----------+--------+--------+--------+--------+-------+-----------+
+	|           | Value     | false  | false  | false  | false  | false | false     |
+	|           | Cookie    |        |        |        |        |       |           |
+	+-----------+-----------+--------+--------+--------+--------+-------+-----------+
 	*/
 
 	/* Functions to handle parameters passed to the extension. */
@@ -846,7 +847,7 @@ typedef struct gawk_api {
 
 /* Constructor functions */
 
-/* r_make_string_type --- make a string or regexp value in result from the passed-in string */
+/* r_make_string_type --- make a string or strnum or regexp value in result from the passed-in string */
 
 static inline awk_value_t *
 r_make_string_type(const gawk_api_t *api,	/* needed for emalloc */
@@ -894,6 +895,14 @@ r_make_string(const gawk_api_t *api,	/* needed for emalloc */
 
 #define make_const_regex(str, len, result)	r_make_string_type(api, ext_id, str, len, 1, result, AWK_REGEX)
 #define make_malloced_regex(str, len, result)	r_make_string_type(api, ext_id, str, len, 0, result, AWK_REGEX)
+
+/*
+ * Note: The caller may not create a Strnum, but it can create a string that is
+ * flagged as user input that MAY be a Strnum. Gawk will decide whether it's a
+ * Strnum or a String by checking whether the string is numeric.
+ */
+#define make_const_user_input(str, len, result)	r_make_string_type(api, ext_id, str, len, 1, result, AWK_STRNUM)
+#define make_malloced_user_input(str, len, result)	r_make_string_type(api, ext_id, str, len, 0, result, AWK_STRNUM)
 
 /* make_null_string --- make a null string value */
 
