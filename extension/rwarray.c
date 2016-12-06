@@ -109,9 +109,6 @@ do_writea(int nargs, awk_value_t *result)
 	assert(result != NULL);
 	make_number(0.0, result);
 
-	if (do_lint && nargs > 2)
-		lintwarn(ext_id, _("writea: called with too many arguments"));
-
 	if (nargs < 2)
 		goto out;
 
@@ -264,9 +261,6 @@ do_reada(int nargs, awk_value_t *result)
 
 	assert(result != NULL);
 	make_number(0.0, result);
-
-	if (do_lint && nargs > 2)
-		lintwarn(ext_id, _("reada: called with too many arguments"));
 
 	if (nargs < 2)
 		goto out;
@@ -470,8 +464,8 @@ read_value(FILE *fp, awk_value_t *value)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "writea", do_writea, 2 },
-	{ "reada", do_reada, 2 },
+	{ "writea", do_writea, 2, 2 },
+	{ "reada", do_reada, 2, 2 },
 };
 
 

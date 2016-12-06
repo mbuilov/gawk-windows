@@ -107,13 +107,8 @@ do_fnmatch(int nargs, awk_value_t *result)
 	int int_flags, retval;
 
 	make_number(-1.0, result);	/* default return */
-#ifdef HAVE_FNMATCH
-	if (nargs < 3) {
-		warning(ext_id, _("fnmatch: called with less than three arguments"));
-		goto out;
-	} else if (do_lint && nargs > 3)
-		lintwarn(ext_id, _("fnmatch: called with more than three arguments"));
 
+#ifdef HAVE_FNMATCH
 	if (! get_argument(0, AWK_STRING, & pattern)) {
 		warning(ext_id, _("fnmatch: could not get first argument"));
 		goto out;
@@ -199,7 +194,7 @@ init_fnmatch(void)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "fnmatch", do_fnmatch, 3 },
+	{ "fnmatch", do_fnmatch, 3, 3 },
 };
 
 /* define the dl_load function using the boilerplate macro */

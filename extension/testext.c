@@ -1024,20 +1024,20 @@ static void at_exit2(void *data, int exit_status)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "dump_array_and_delete", dump_array_and_delete, 2 },
-	{ "try_modify_environ", try_modify_environ, 0 },
-	{ "var_test", var_test, 1 },
-	{ "test_deferred", test_deferred, 0 },
-	{ "test_errno", test_errno, 0 },
-	{ "test_array_size", test_array_size, 1 },
-	{ "test_array_elem", test_array_elem, 2 },
-	{ "test_array_param", test_array_param, 1 },
-	{ "print_do_lint", print_do_lint, 0 },
-	{ "test_scalar", test_scalar, 1 },
-	{ "test_scalar_reserved", test_scalar_reserved, 0 },
-	{ "test_indirect_vars", test_indirect_vars, 0 },
-	{ "test_get_file", test_get_file, 2 },
-	{ "get_file", do_get_file, 4 },
+	{ "dump_array_and_delete", dump_array_and_delete, 2, 2 },
+	{ "try_modify_environ", try_modify_environ, 0, 0 },
+	{ "var_test", var_test, 1, 1 },
+	{ "test_deferred", test_deferred, 0, 0 },
+	{ "test_errno", test_errno, 0, 0 },
+	{ "test_array_size", test_array_size, 1, 1 },
+	{ "test_array_elem", test_array_elem, 2, 2 },
+	{ "test_array_param", test_array_param, 1, 1 },
+	{ "print_do_lint", print_do_lint, 0, 0 },
+	{ "test_scalar", test_scalar, 1, 1 },
+	{ "test_scalar_reserved", test_scalar_reserved, 0, 0 },
+	{ "test_indirect_vars", test_indirect_vars, 0, 0 },
+	{ "test_get_file", test_get_file, 2, 2 },
+	{ "get_file", do_get_file, 4, 4 },
 };
 
 /* init_testext --- additional initialization function */

@@ -262,8 +262,8 @@ do_inplace_end(int nargs, awk_value_t *result)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "inplace_begin", do_inplace_begin, 2 },
-	{ "inplace_end", do_inplace_end, 2 },
+	{ "inplace_begin", do_inplace_begin, 2, 2 },
+	{ "inplace_end", do_inplace_end, 2, 2 },
 };
 
 static awk_bool_t init_inplace(void)

@@ -160,9 +160,6 @@ do_chdir(int nargs, awk_value_t *result)
 
 	assert(result != NULL);
 
-	if (do_lint && nargs != 1)
-		lintwarn(ext_id, _("chdir: called with incorrect number of arguments, expecting 1"));
-
 	if (get_argument(0, AWK_STRING, & newdir)) {
 		ret = chdir(newdir.str_value.str);
 		if (ret < 0)
@@ -472,12 +469,6 @@ do_stat(int nargs, awk_value_t *result)
 
 	assert(result != NULL);
 
-	if (nargs != 2 && nargs != 3) {
-		if (do_lint)
-			lintwarn(ext_id, _("stat: called with wrong number of arguments"));
-		return make_number(-1, result);
-	}
-
 	/* file is first arg, array to hold results is second */
 	if (   ! get_argument(0, AWK_STRING, & file_param)
 	    || ! get_argument(1, AWK_ARRAY, & array_param)) {
@@ -521,12 +512,6 @@ do_statvfs(int nargs, awk_value_t *result)
 	struct statvfs vfsbuf;
 
 	assert(result != NULL);
-
-	if (nargs != 2) {
-		if (do_lint)
-			lintwarn(ext_id, _("statvfs: called with wrong number of arguments"));
-		return make_number(-1, result);
-	}
 
 	/* file is first arg, array to hold results is second */
 	if (   ! get_argument(0, AWK_STRING, & file_param)
@@ -845,7 +830,7 @@ do_fts(int nargs, awk_value_t *result)
 	assert(result != NULL);
 	fts_errors = 0;		/* ensure a fresh start */
 
-	if (do_lint && nargs != 3)
+	if (nargs > 3)
 		lintwarn(ext_id, _("fts: called with incorrect number of arguments, expecting 3"));
 
 	if (! get_argument(0, AWK_ARRAY, & pathlist)) {
@@ -928,13 +913,13 @@ out:
 #endif	/* ! __MINGW32__ */
 
 static awk_ext_func_t func_table[] = {
-	{ "chdir",	do_chdir, 1 },
-	{ "stat",	do_stat, 3 },
+	{ "chdir",	do_chdir, 1, 1 },
+	{ "stat",	do_stat, 2, 3 },
 #ifndef __MINGW32__
-	{ "fts",	do_fts, 3 },
+	{ "fts",	do_fts, 3, 3 },
 #endif
 #if defined(HAVE_SYS_STATVFS_H) && defined(HAVE_STATVFS)
-	{ "statvfs",	do_statvfs, 2 },
+	{ "statvfs",	do_statvfs, 2, 2 },
 #endif
 };
 

@@ -109,9 +109,6 @@ do_gettimeofday(int nargs, awk_value_t *result)
 
 	assert(result != NULL);
 
-	if (do_lint && nargs > 0)
-		lintwarn(ext_id, _("gettimeofday: ignoring arguments"));
-
 #if defined(HAVE_GETTIMEOFDAY)
 	{
 		struct timeval tv;
@@ -161,9 +158,6 @@ do_sleep(int nargs, awk_value_t *result)
 
 	assert(result != NULL);
 
-	if (do_lint && nargs > 1)
-		lintwarn(ext_id, _("sleep: called with too many arguments"));
-
 	if (! get_argument(0, AWK_NUMBER, &num)) {
 		update_ERRNO_string(_("sleep: missing required numeric argument"));
 		return make_number(-1, result);
@@ -212,8 +206,8 @@ do_sleep(int nargs, awk_value_t *result)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "gettimeofday", do_gettimeofday, 0 },
-	{ "sleep", do_sleep, 1 },
+	{ "gettimeofday", do_gettimeofday, 0, 0 },
+	{ "sleep", do_sleep, 1, 1 },
 };
 
 /* define the dl_load function using the boilerplate macro */

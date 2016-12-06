@@ -65,17 +65,10 @@ do_ord(int nargs, awk_value_t *result)
 
 	assert(result != NULL);
 
-	if (do_lint && nargs > 1)
-		lintwarn(ext_id, _("ord: called with too many arguments"));
-
 	if (get_argument(0, AWK_STRING, & str)) {
 		ret = str.str_value.str[0];
-	} else if (do_lint) {
-		if (nargs == 0)
-			lintwarn(ext_id, _("ord: called with no arguments"));
-		else
-			lintwarn(ext_id, _("ord: called with inappropriate argument(s)"));
-	}
+	} else if (do_lint)
+		lintwarn(ext_id, _("ord: called with inappropriate argument(s)"));
 
 	/* Set the return value */
 	return make_number(ret, result);
@@ -95,29 +88,22 @@ do_chr(int nargs, awk_value_t *result)
 
 	assert(result != NULL);
 
-	if (do_lint && nargs > 1)
-		lintwarn(ext_id, _("chr: called with too many arguments"));
-
 	if (get_argument(0, AWK_NUMBER, & num)) {
 		val = num.num_value;
 		ret = val;	/* convert to int */
 		ret &= 0xff;
 		str[0] = ret;
 		str[1] = '\0';
-	} else if (do_lint) {
-		if (nargs == 0)
-			lintwarn(ext_id, _("chr: called with no arguments"));
-		else
-			lintwarn(ext_id, _("chr: called with inappropriate argument(s)"));
-	}
+	} else if (do_lint)
+		lintwarn(ext_id, _("chr: called with inappropriate argument(s)"));
 
 	/* Set the return value */
 	return make_const_string(str, 1, result);
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "ord", do_ord, 1 },
-	{ "chr", do_chr, 1 },
+	{ "ord", do_ord, 1, 1 },
+	{ "chr", do_chr, 1, 1 },
 };
 
 /* define the dl_load function using the boilerplate macro */

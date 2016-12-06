@@ -1,3 +1,17 @@
+2016-12-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add minimum required and maximum expected number of arguments
+	to the API.
+
+	* awk.h (INSTRUCTION): Add new members min_required and max_expected.
+	* ext.c (make_builtin): Store values from extension function struct
+	into the INSTRUCTION.
+	* gawkapi.h (awk_ext_func): Add min_required args. Make both it and
+	max_expected_args into unsigned short to match type in INSTRUCTION.
+	* interpret.h (Op_ext_builtin): Store min_required and max_expected
+	in instructions. Add checking code and lint checks.
+	(Op_ext_func): Copy min_required and max_expected from function info.
+
 2016-11-30         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with fixes in GNULIB.

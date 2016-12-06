@@ -956,7 +956,20 @@ arrayfor:
 		case Op_ext_builtin:
 		{
 			int arg_count = pc->expr_count;
+			int min_req = pc[1].min_required;
+			int max_expect = pc[1].max_expected;
 			awk_value_t result;
+
+			if (min_req == 0 && max_expect == 0 && arg_count > min_req)
+				fatal(_("%s: cannot be called with arguments"), pc[1].func_name);
+
+			if (min_req > 0 && arg_count < min_req)
+				fatal(_("%s: expects at least %d arguments, called with %d arguments"),
+						pc[1].func_name, min_req, arg_count);
+
+			if (do_lint && arg_count > max_expect)
+				lintwarn(_("%s: called with %d arguments, only expecting %d"),
+						pc[1].func_name, arg_count, max_expect);
 
 			PUSH_CODE(pc);
 			r = awk_value_to_node(pc->extfunc(arg_count, & result));
@@ -1093,7 +1106,8 @@ match_re:
 					npc[0].expr_count = arg_count;		/* actual argument count */
 					npc[1] = pc[1];
 					npc[1].func_name = fname;	/* name of the builtin */
-					npc[1].expr_count = bc->expr_count;	/* defined max # of arguments */
+					npc[1].min_required = bc->min_required;
+					npc[1].max_expected = bc->max_expected;
 					ni = npc;
 					JUMPTO(ni);
 				} else
