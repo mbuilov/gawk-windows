@@ -778,10 +778,7 @@ typedef struct exp_instruction {
 		void (*aptr)(void);
 		struct exp_instruction *xi;
 		struct break_point *bpt;
-		struct {
-			uint16_t mr;	// minimum required
-			uint16_t me;	// maximum expected
-		} fa;	// function args
+		awk_ext_func_t *exf;
 	} x;
 
 	short source_line;
@@ -797,8 +794,7 @@ typedef struct exp_instruction {
 
 #define expr_count      x.xl
 
-#define min_required	x.fa.mr
-#define max_expected	x.fa.me
+#define c_func		x.exf
 
 #define target_continue d.di
 #define target_jmp      d.di

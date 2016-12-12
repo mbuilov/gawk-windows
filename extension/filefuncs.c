@@ -914,7 +914,7 @@ out:
 
 static awk_ext_func_t func_table[] = {
 	{ "chdir",	do_chdir, 1, 1 },
-	{ "stat",	do_stat, 2, 3 },
+	{ "stat",	do_stat, 3, 2 },
 #ifndef __MINGW32__
 	{ "fts",	do_fts, 3, 3 },
 #endif

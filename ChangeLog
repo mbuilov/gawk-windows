@@ -1,3 +1,17 @@
+2016-12-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (INSTRUCTION): Replace min_required and max_expected
+	with a pointer to the extension functions awk_ext_func_t struct.
+	* ext.c (make_builtin): Store a pointer to the extension function
+	struct into the INSTRUCTION instead of the min and max.
+	* gawkapi.h (awk_ext_func): Use size_t instead of unsigned short.
+	Put min second, which preserves source code compatibility.
+	* interpret.h (Op_ext_builtin): Use the pointer for the info
+	directly. If lint and max_expected > 0 and args > max_expected
+	print a message and set max_expected to zero so we only print once
+	per function. Remove special case of both min and max being zero.
+	(Op_ext_func): Adjust creation of the data structures.
+
 2016-12-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with GNULIB.

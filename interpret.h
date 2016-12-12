@@ -956,20 +956,20 @@ arrayfor:
 		case Op_ext_builtin:
 		{
 			int arg_count = pc->expr_count;
-			int min_req = pc[1].min_required;
-			int max_expect = pc[1].max_expected;
+			awk_ext_func_t *f = pc[1].c_func;
+			int min_req = f->min_required_args;
+			int max_expect = f->max_expected_args;
 			awk_value_t result;
 
-			if (min_req == 0 && max_expect == 0 && arg_count > min_req)
-				fatal(_("%s: cannot be called with arguments"), pc[1].func_name);
+			if (arg_count < min_req)
+				fatal(_("%s: called with %d arguments, expecting at least %d"),
+						pc[1].func_name, arg_count, min_req);
 
-			if (min_req > 0 && arg_count < min_req)
-				fatal(_("%s: expects at least %d arguments, called with %d arguments"),
-						pc[1].func_name, min_req, arg_count);
-
-			if (do_lint && arg_count > max_expect)
-				lintwarn(_("%s: called with %d arguments, only expecting %d"),
+			if (do_lint && max_expect > 0 && arg_count > max_expect) {
+				lintwarn(_("%s: called with %d arguments, expecting no more than %d; check all calls"),
 						pc[1].func_name, arg_count, max_expect);
+				f->max_expected_args = 0;	// avoid multiple lint messages
+			}
 
 			PUSH_CODE(pc);
 			r = awk_value_to_node(pc->extfunc(arg_count, & result));
@@ -1106,8 +1106,7 @@ match_re:
 					npc[0].expr_count = arg_count;		/* actual argument count */
 					npc[1] = pc[1];
 					npc[1].func_name = fname;	/* name of the builtin */
-					npc[1].min_required = bc->min_required;
-					npc[1].max_expected = bc->max_expected;
+					npc[1].c_func = bc->c_func;
 					ni = npc;
 					JUMPTO(ni);
 				} else
@@ -1143,9 +1142,9 @@ match_re:
 				assert(bc->opcode == Op_symbol);
 				pc->opcode = Op_ext_builtin;	/* self modifying code */
 				pc->extfunc = bc->extfunc;
-				pc->expr_count = arg_count;		/* actual argument count */
+				pc->expr_count = arg_count;	/* actual argument count */
 				(pc + 1)->func_name = fname;	/* name of the builtin */
-				(pc + 1)->expr_count = bc->expr_count;	/* defined max # of arguments */
+				(pc + 1)->c_func = bc->c_func;	/* min and max args */
 				ni = pc;
 				JUMPTO(ni);
 			}

@@ -390,8 +390,8 @@ typedef struct awk_flat_array {
 typedef struct awk_ext_func {
 	const char *name;
 	awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
-	unsigned short min_required_args;
-	unsigned short max_expected_args;
+	size_t max_expected_args;
+	size_t min_required_args;
 } awk_ext_func_t;
 
 typedef void *awk_ext_id_t;	/* opaque type for extension id */

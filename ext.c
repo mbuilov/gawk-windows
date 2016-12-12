@@ -136,8 +136,7 @@ make_builtin(const awk_ext_func_t *funcinfo)
 
 	b = bcalloc(Op_symbol, 1, 0);
 	b->extfunc = funcinfo->function;
-	b->min_required = funcinfo->min_required_args;
-	b->max_expected = funcinfo->max_expected_args;
+	b->c_func = (awk_ext_func_t *) funcinfo;
 
 	/* NB: extension sub must return something */
 
