@@ -1,3 +1,17 @@
+2016-12-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	MAJOR BREAKING API CHANGE.
+
+	* awk.h (INSTRUCTION): Update extension function pointer to
+	take 3rd argument of pointer to struct awk_ext_func.
+	* gawkapi.c (api_add_ext_func): Update third arg to not be const.
+	* gawkapi.h (awk_ext_func_t): Put min before max. Add suppress_lint
+	and data pointer.
+	[gawk_api_major_version]: Update to 2.
+	[gawk_api_minor_version]: Reset to 0.
+	(api_add_ext_func): Update third arg to not be const.
+	* interpret.h (Op_ext_symbol): Revise lint check.
+
 2016-12-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h (INSTRUCTION): Replace min_required and max_expected

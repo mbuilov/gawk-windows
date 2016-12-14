@@ -58,7 +58,7 @@ int plugin_is_GPL_compatible;
 /*  do_ord --- return numeric value of first char of string */
 
 static awk_value_t *
-do_ord(int nargs, awk_value_t *result)
+do_ord(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t str;
 	double ret = -1;
@@ -77,7 +77,7 @@ do_ord(int nargs, awk_value_t *result)
 /*  do_chr --- turn numeric value into a string */
 
 static awk_value_t *
-do_chr(int nargs, awk_value_t *result)
+do_chr(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t num;
 	unsigned int ret = 0;
@@ -102,8 +102,8 @@ do_chr(int nargs, awk_value_t *result)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "ord", do_ord, 1, 1 },
-	{ "chr", do_chr, 1, 1 },
+	{ "ord", do_ord, 1, 1, awk_false, NULL },
+	{ "chr", do_chr, 1, 1, awk_false, NULL },
 };
 
 /* define the dl_load function using the boilerplate macro */

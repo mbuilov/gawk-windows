@@ -99,7 +99,7 @@ static awk_bool_t read_value(FILE *fp, awk_value_t *value);
 /* do_writea --- write an array */
 
 static awk_value_t *
-do_writea(int nargs, awk_value_t *result)
+do_writea(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t filename, array;
 	FILE *fp = NULL;
@@ -251,7 +251,7 @@ write_value(FILE *fp, awk_value_t *val)
 /* do_reada --- read an array */
 
 static awk_value_t *
-do_reada(int nargs, awk_value_t *result)
+do_reada(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t filename, array;
 	FILE *fp = NULL;
@@ -464,8 +464,8 @@ read_value(FILE *fp, awk_value_t *value)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "writea", do_writea, 2, 2 },
-	{ "reada", do_reada, 2, 2 },
+	{ "writea", do_writea, 2, 2, awk_false, NULL },
+	{ "reada", do_reada, 2, 2, awk_false, NULL },
 };
 
 

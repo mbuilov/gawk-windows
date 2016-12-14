@@ -95,7 +95,7 @@ int plugin_is_GPL_compatible;
 /* do_fnmatch --- implement the fnmatch interface */
 
 static awk_value_t *
-do_fnmatch(int nargs, awk_value_t *result)
+do_fnmatch(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 #ifdef HAVE_FNMATCH_H
 	static int flags_mask =
@@ -194,7 +194,7 @@ init_fnmatch(void)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "fnmatch", do_fnmatch, 3, 3 },
+	{ "fnmatch", do_fnmatch, 3, 3, awk_false, NULL },
 };
 
 /* define the dl_load function using the boilerplate macro */

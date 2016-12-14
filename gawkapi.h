@@ -260,8 +260,8 @@ typedef struct awk_two_way_processor {
 	awk_const struct awk_two_way_processor *awk_const next;  /* for use by gawk */
 } awk_two_way_processor_t;
 
-#define gawk_api_major_version 1
-#define gawk_api_minor_version 2
+#define gawk_api_major_version 2
+#define gawk_api_minor_version 0
 
 /* Current version of the API. */
 enum {
@@ -389,9 +389,13 @@ typedef struct awk_flat_array {
  */
 typedef struct awk_ext_func {
 	const char *name;
-	awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
-	size_t max_expected_args;
-	size_t min_required_args;
+	awk_value_t *(*const function)(int num_actual_args,
+					awk_value_t *result,
+					struct awk_ext_func *finfo);
+	const size_t min_required_args;
+	const size_t max_expected_args;
+	awk_bool_t suppress_lint;
+	void *data;		/* opaque pointer to any extra state */
 } awk_ext_func_t;
 
 typedef void *awk_ext_id_t;	/* opaque type for extension id */
@@ -426,7 +430,7 @@ typedef struct gawk_api {
 
 	/* Add a function to the interpreter, returns true upon success */
 	awk_bool_t (*api_add_ext_func)(awk_ext_id_t id, const char *namespace,
-			const awk_ext_func_t *func);
+			awk_ext_func_t *func);
 
 	/* Register an input parser; for opening files read-only */
 	void (*api_register_input_parser)(awk_ext_id_t id,

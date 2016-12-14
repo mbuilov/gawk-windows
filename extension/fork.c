@@ -71,7 +71,7 @@ array_set_numeric(awk_array_t array, const char *sub, double num)
 /*  do_fork --- provide dynamically loaded fork() builtin for gawk */
 
 static awk_value_t *
-do_fork(int nargs, awk_value_t *result)
+do_fork(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	int ret = -1;
 
@@ -103,7 +103,7 @@ do_fork(int nargs, awk_value_t *result)
 /*  do_waitpid --- provide dynamically loaded waitpid() builtin for gawk */
 
 static awk_value_t *
-do_waitpid(int nargs, awk_value_t *result)
+do_waitpid(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t pid;
 	int ret = -1;
@@ -126,7 +126,7 @@ do_waitpid(int nargs, awk_value_t *result)
 /*  do_wait --- provide dynamically loaded wait() builtin for gawk */
 
 static awk_value_t *
-do_wait(int nargs, awk_value_t *result)
+do_wait(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	int ret;
 
@@ -141,9 +141,9 @@ do_wait(int nargs, awk_value_t *result)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "fork", do_fork, 0, 0 },
-	{ "waitpid", do_waitpid, 1, 1 },
-	{ "wait", do_wait, 0, 0 },
+	{ "fork", do_fork, 0, 0, awk_false, NULL },
+	{ "waitpid", do_waitpid, 1, 1, awk_false, NULL },
+	{ "wait", do_wait, 0, 0, awk_false, NULL },
 };
 
 /* define the dl_load function using the boilerplate macro */

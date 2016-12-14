@@ -965,14 +965,12 @@ arrayfor:
 				fatal(_("%s: called with %d arguments, expecting at least %d"),
 						pc[1].func_name, arg_count, min_req);
 
-			if (do_lint && max_expect > 0 && arg_count > max_expect) {
-				lintwarn(_("%s: called with %d arguments, expecting no more than %d; check all calls"),
+			if (do_lint && ! f->suppress_lint && arg_count > max_expect)
+				lintwarn(_("%s: called with %d arguments, expecting no more than %d"),
 						pc[1].func_name, arg_count, max_expect);
-				f->max_expected_args = 0;	// avoid multiple lint messages
-			}
 
 			PUSH_CODE(pc);
-			r = awk_value_to_node(pc->extfunc(arg_count, & result));
+			r = awk_value_to_node(pc->extfunc(arg_count, & result, f));
 			(void) POP_CODE();
 			while (arg_count-- > 0) {
 				t1 = POP();

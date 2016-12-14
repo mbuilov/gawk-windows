@@ -32799,8 +32799,13 @@ Extension functions are described by the following record:
 @example
 typedef struct awk_ext_func @{
 @ @ @ @ const char *name;
-@ @ @ @ awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
-@ @ @ @ size_t max_expected_args;
+@ @ @ @ awk_value_t *(*const function)(int num_actual_args,
+@ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_value_t *result,
+@ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ struct awk_ext_func *finfo);
+@ @ @ @ const size_t min_required_args;
+@ @ @ @ const size_t max_expected_args;
+@ @ @ @ awk_bool_t suppress_lint;
+@ @ @ @ void *data;        /* opaque pointer to any extra state */
 @} awk_ext_func_t;
 @end example
 
@@ -32818,7 +32823,7 @@ or an underscore, which may be followed by any number of
 letters, digits, and underscores.
 Letter case in function names is significant.
 
-@item awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
+@item awk_value_t *(*const function)(int num_actual_args, awk_value_t *result, struct awk_ext_func *finfo);
 This is a pointer to the C function that provides the extension's
 functionality.
 The function must fill in @code{*result} with either a number
@@ -32829,20 +32834,38 @@ As mentioned earlier, string memory @emph{must} come from one of
 The @code{num_actual_args} argument tells the C function how many
 actual parameters were passed from the calling @command{awk} code.
 
+The @code{finfo} parameter is a pointer to the @code{awk_ext_func_t} for
+this function. The called function may access data within it as desired, or not.
+
 The function must return the value of @code{result}.
 This is for the convenience of the calling code inside @command{gawk}.
 
-@item size_t max_expected_args;
-This is the maximum number of arguments the function expects to receive.
-Each extension function may decide what to do if the number of
-arguments isn't what it expected.  As with real @command{awk} functions, it
-is likely OK to ignore extra arguments.  This value does not affect
-actual program execution.
+@item const size_t min_required_args;
+This is the minimum number of arguments the function expects to receive.
+If called with fewer arguments, @command{gawk} prints a fatal error
+message and exits.
 
-Extension functions should compare this value to the number of actual
-arguments passed and possibly issue a lint warning if there is an
-undesirable mismatch.  Of course, if
-@samp{--lint=fatal} is used, this would cause the program to exit.
+@item const size_t max_expected_args;
+This is the maximum number of arguments the function expects to receive.
+If called with more arguments than this, and if lint checking has
+been enabled, then @command{gawk} prints a warning message.  For more
+information, see the next item in this list.
+
+@item awk_bool_t suppress_lint;
+This flag tells @command{gawk} not to print a lint message if lint
+checking has been enabled and if more arguments were supplied in the call
+than expected.  An extension function can tell if @command{gawk} already
+printed at least one such message by checking if @samp{num_actual_args >
+finfo->max_expected_args}.  If so, and the function does not want more
+lint messages to be printed, it should set @code{finfo->suppress_lint}
+to @code{awk_true}.
+
+@item void *data;
+This is an opaque pointer to any data that an extension function may
+wish to have available when called.  Passing the @code{awk_ext_funct_t}
+structure to the extension function, and having this pointer available
+in it enables writing a single C or C++ function that implements multiple
+@command{awk}-level extension functions.
 @end table
 
 Once you have a record representing your extension function, you register

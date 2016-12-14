@@ -98,7 +98,7 @@ done:
 /* do_readfile --- read a file into memory */
 
 static awk_value_t *
-do_readfile(int nargs, awk_value_t *result)
+do_readfile(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t filename;
 	int ret;
@@ -238,7 +238,7 @@ init_readfile()
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "readfile", do_readfile, 1, 1 },
+	{ "readfile", do_readfile, 1, 1, awk_false, NULL },
 };
 
 /* define the dl_load function using the boilerplate macro */

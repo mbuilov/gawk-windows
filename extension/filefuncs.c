@@ -153,7 +153,7 @@ int plugin_is_GPL_compatible;
 /*  do_chdir --- provide dynamically loaded chdir() function for gawk */
 
 static awk_value_t *
-do_chdir(int nargs, awk_value_t *result)
+do_chdir(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t newdir;
 	int ret = -1;
@@ -458,7 +458,7 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 /* do_stat --- provide a stat() function for gawk */
 
 static awk_value_t *
-do_stat(int nargs, awk_value_t *result)
+do_stat(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t file_param, array_param;
 	char *name;
@@ -503,7 +503,7 @@ do_stat(int nargs, awk_value_t *result)
 /* do_statvfs --- provide a statvfs() function for gawk */
 
 static awk_value_t *
-do_statvfs(int nargs, awk_value_t *result)
+do_statvfs(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t file_param, array_param;
 	char *name;
@@ -599,7 +599,7 @@ init_filefuncs(void)
  */
 
 static awk_value_t *
-do_fts(int nargs, awk_value_t *result)
+do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	fatal(ext_id, _("fts is not supported on this system"));
 
@@ -814,7 +814,7 @@ process(FTS *heirarchy, awk_array_t destarray, int seedot)
  */
 
 static awk_value_t *
-do_fts(int nargs, awk_value_t *result)
+do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t pathlist, flagval, dest;
 	awk_flat_array_t *path_array = NULL;
@@ -913,13 +913,13 @@ out:
 #endif	/* ! __MINGW32__ */
 
 static awk_ext_func_t func_table[] = {
-	{ "chdir",	do_chdir, 1, 1 },
-	{ "stat",	do_stat, 3, 2 },
+	{ "chdir",	do_chdir, 1, 1, awk_false, NULL },
+	{ "stat",	do_stat, 2, 3, awk_false, NULL },
 #ifndef __MINGW32__
-	{ "fts",	do_fts, 3, 3 },
+	{ "fts",	do_fts, 3, 3, awk_false, NULL },
 #endif
 #if defined(HAVE_SYS_STATVFS_H) && defined(HAVE_STATVFS)
-	{ "statvfs",	do_statvfs, 2, 2 },
+	{ "statvfs",	do_statvfs, 2, 2, awk_false, NULL },
 #endif
 };
 

@@ -767,7 +767,9 @@ typedef struct exp_instruction {
 		NODE *dn;
 		struct exp_instruction *di;
 		NODE *(*fptr)(int);
-		awk_value_t *(*efptr)(int, awk_value_t *);
+		awk_value_t *(*efptr)(int num_actual_args,
+					awk_value_t *result,
+					struct awk_ext_func *finfo);
 		long dl;
 		char *name;
 	} d;
