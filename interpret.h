@@ -955,18 +955,18 @@ arrayfor:
 
 		case Op_ext_builtin:
 		{
-			int arg_count = pc->expr_count;
+			size_t arg_count = pc->expr_count;
 			awk_ext_func_t *f = pc[1].c_func;
-			int min_req = f->min_required_args;
-			int max_expect = f->max_expected_args;
+			size_t min_req = f->min_required_args;
+			size_t max_expect = f->max_expected_args;
 			awk_value_t result;
 
 			if (arg_count < min_req)
-				fatal(_("%s: called with %d arguments, expecting at least %d"),
+				fatal(_("%s: called with %lu arguments, expecting at least %lu"),
 						pc[1].func_name, arg_count, min_req);
 
-			if (do_lint && ! f->suppress_lint && arg_count > max_expect)
-				lintwarn(_("%s: called with %d arguments, expecting no more than %d"),
+			if (do_lint && max_expect > 0 && arg_count > max_expect && ! f->suppress_lint)
+				lintwarn(_("%s: called with %lu arguments, expecting no more than %lu"),
 						pc[1].func_name, arg_count, max_expect);
 
 			PUSH_CODE(pc);

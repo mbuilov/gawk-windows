@@ -392,8 +392,8 @@ typedef struct awk_ext_func {
 	awk_value_t *(*const function)(int num_actual_args,
 					awk_value_t *result,
 					struct awk_ext_func *finfo);
-	const size_t min_required_args;
 	const size_t max_expected_args;
+	const size_t min_required_args;
 	awk_bool_t suppress_lint;
 	void *data;		/* opaque pointer to any extra state */
 } awk_ext_func_t;

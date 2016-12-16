@@ -1,3 +1,11 @@
+2016-12-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h (awk_ext_func_t): Put max back before min. Restores
+	source compatibility, although there will be compile warnings
+	because of the 3rd argument for the C function being missing.
+	* interpret.h (Op_ext_builtin): Used size_t instead of int for
+	the various variables. Add a check that max expected > 0.
+
 2016-12-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	MAJOR BREAKING API CHANGE.

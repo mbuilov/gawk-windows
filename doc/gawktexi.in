@@ -31816,8 +31816,8 @@ typedef struct awk_ext_func @{
 @ @ @ @ awk_value_t *(*const function)(int num_actual_args,
 @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_value_t *result,
 @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ struct awk_ext_func *finfo);
-@ @ @ @ const size_t min_required_args;
 @ @ @ @ const size_t max_expected_args;
+@ @ @ @ const size_t min_required_args;
 @ @ @ @ awk_bool_t suppress_lint;
 @ @ @ @ void *data;        /* opaque pointer to any extra state */
 @} awk_ext_func_t;
@@ -31854,16 +31854,16 @@ this function. The called function may access data within it as desired, or not.
 The function must return the value of @code{result}.
 This is for the convenience of the calling code inside @command{gawk}.
 
-@item const size_t min_required_args;
-This is the minimum number of arguments the function expects to receive.
-If called with fewer arguments, @command{gawk} prints a fatal error
-message and exits.
-
 @item const size_t max_expected_args;
 This is the maximum number of arguments the function expects to receive.
 If called with more arguments than this, and if lint checking has
 been enabled, then @command{gawk} prints a warning message.  For more
-information, see the next item in this list.
+information, see the entry for @code{suppress_lint}, later in this list.
+
+@item const size_t min_required_args;
+This is the minimum number of arguments the function expects to receive.
+If called with fewer arguments, @command{gawk} prints a fatal error
+message and exits.
 
 @item awk_bool_t suppress_lint;
 This flag tells @command{gawk} not to print a lint message if lint
