@@ -1,3 +1,10 @@
+2016-12-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h (api_add_ext_func): Add comment about point to
+	awk_ext_func_t not being const but gawk doesn't use it.
+	* * interpret.h (Op_ext_builtin): Simplify code, check only
+	if do_lint and ! f->suppress_lint and num_args > max_expected.
+
 2016-12-16         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkapi.h (awk_ext_func_t): Put max back before min. Restores

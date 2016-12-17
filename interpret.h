@@ -965,7 +965,7 @@ arrayfor:
 				fatal(_("%s: called with %lu arguments, expecting at least %lu"),
 						pc[1].func_name, arg_count, min_req);
 
-			if (do_lint && max_expect > 0 && arg_count > max_expect && ! f->suppress_lint)
+			if (do_lint && ! f->suppress_lint && arg_count > max_expect)
 				lintwarn(_("%s: called with %lu arguments, expecting no more than %lu"),
 						pc[1].func_name, arg_count, max_expect);
 
