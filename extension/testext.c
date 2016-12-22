@@ -107,7 +107,7 @@ BEGIN {
 }
 */
 static awk_value_t *
-dump_array_and_delete(int nargs, awk_value_t *result)
+dump_array_and_delete(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t value, value2, value3;
 	awk_flat_array_t *flat_array;
@@ -201,7 +201,7 @@ BEGIN {
 */
 
 static awk_value_t *
-try_modify_environ(int nargs, awk_value_t *result)
+try_modify_environ(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t value, index, newvalue;
 	awk_flat_array_t *flat_array;
@@ -290,7 +290,7 @@ BEGIN {
 */
 
 static awk_value_t *
-var_test(int nargs, awk_value_t *result)
+var_test(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t value, value2;
 	awk_value_t *valp;
@@ -357,7 +357,7 @@ BEGIN {
 }
 */
 static awk_value_t *
-test_errno(int nargs, awk_value_t *result)
+test_errno(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	assert(result != NULL);
 	make_number(0.0, result);
@@ -386,7 +386,7 @@ BEGIN {
 }
 */
 static awk_value_t *
-test_deferred(int nargs, awk_value_t *result)
+test_deferred(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t arr;
 	awk_value_t index, value;
@@ -465,7 +465,7 @@ BEGIN {
 */
 
 static awk_value_t *
-test_array_size(int nargs, awk_value_t *result)
+test_array_size(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t value;
 	size_t count = 0;
@@ -529,7 +529,7 @@ BEGIN {
 }
 */
 static awk_value_t *
-test_array_elem(int nargs, awk_value_t *result)
+test_array_elem(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t array, index, index2, value;
 
@@ -617,7 +617,7 @@ BEGIN {
 */
 
 static awk_value_t *
-test_array_param(int nargs, awk_value_t *result)
+test_array_param(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t new_array;
 	awk_value_t arg0;
@@ -660,7 +660,7 @@ BEGIN {
 }
 */
 static awk_value_t *
-print_do_lint(int nargs, awk_value_t *result)
+print_do_lint(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	assert(result != NULL);
 	make_number(0.0, result);
@@ -696,7 +696,7 @@ BEGIN {
 /* test_scalar --- test scalar cookie */
 
 static awk_value_t *
-test_scalar(int nargs, awk_value_t *result)
+test_scalar(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t new_value, new_value2;
 	awk_value_t the_scalar;
@@ -743,7 +743,7 @@ BEGIN {
 /* test_scalar_reserved --- test scalar cookie on special variable */
 
 static awk_value_t *
-test_scalar_reserved(int nargs, awk_value_t *result)
+test_scalar_reserved(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t new_value;
 	awk_value_t the_scalar;
@@ -796,7 +796,7 @@ BEGIN {
 /* test_indirect_vars --- test that access to NR, NF, get correct vales */
 
 static awk_value_t *
-test_indirect_vars(int nargs, awk_value_t *result)
+test_indirect_vars(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t value;
 	char *name = "NR";
@@ -844,7 +844,7 @@ BEGIN {
 /* test_get_file --- test that we can create a file */
 
 static awk_value_t *
-test_get_file(int nargs, awk_value_t *result)
+test_get_file(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t filename, alias;
 	int fd;
@@ -882,7 +882,7 @@ test_get_file(int nargs, awk_value_t *result)
 /* do_get_file --- provide access to get_file API */
 
 static awk_value_t *
-do_get_file(int nargs, awk_value_t *result)
+do_get_file(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t filename, filetype, fd, res;
 	const awk_input_buf_t *ibuf;
@@ -1024,20 +1024,20 @@ static void at_exit2(void *data, int exit_status)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "dump_array_and_delete", dump_array_and_delete, 2 },
-	{ "try_modify_environ", try_modify_environ, 0 },
-	{ "var_test", var_test, 1 },
-	{ "test_deferred", test_deferred, 0 },
-	{ "test_errno", test_errno, 0 },
-	{ "test_array_size", test_array_size, 1 },
-	{ "test_array_elem", test_array_elem, 2 },
-	{ "test_array_param", test_array_param, 1 },
-	{ "print_do_lint", print_do_lint, 0 },
-	{ "test_scalar", test_scalar, 1 },
-	{ "test_scalar_reserved", test_scalar_reserved, 0 },
-	{ "test_indirect_vars", test_indirect_vars, 0 },
-	{ "test_get_file", test_get_file, 2 },
-	{ "get_file", do_get_file, 4 },
+	{ "dump_array_and_delete", dump_array_and_delete, 2, 2, awk_false, NULL },
+	{ "try_modify_environ", try_modify_environ, 0, 0, awk_false, NULL },
+	{ "var_test", var_test, 1, 1, awk_false, NULL },
+	{ "test_deferred", test_deferred, 0, 0, awk_false, NULL },
+	{ "test_errno", test_errno, 0, 0, awk_false, NULL },
+	{ "test_array_size", test_array_size, 1, 1, awk_false, NULL },
+	{ "test_array_elem", test_array_elem, 2, 2, awk_false, NULL },
+	{ "test_array_param", test_array_param, 1, 1, awk_false, NULL },
+	{ "print_do_lint", print_do_lint, 0, 0, awk_false, NULL },
+	{ "test_scalar", test_scalar, 1, 1, awk_false, NULL },
+	{ "test_scalar_reserved", test_scalar_reserved, 0, 0, awk_false, NULL },
+	{ "test_indirect_vars", test_indirect_vars, 0, 0, awk_false, NULL },
+	{ "test_get_file", test_get_file, 2, 2, awk_false, NULL },
+	{ "get_file", do_get_file, 4, 4, awk_false, NULL },
 };
 
 /* init_testext --- additional initialization function */

@@ -955,11 +955,22 @@ arrayfor:
 
 		case Op_ext_builtin:
 		{
-			int arg_count = pc->expr_count;
+			size_t arg_count = pc->expr_count;
+			awk_ext_func_t *f = pc[1].c_func;
+			size_t min_req = f->min_required_args;
+			size_t max_expect = f->max_expected_args;
 			awk_value_t result;
 
+			if (arg_count < min_req)
+				fatal(_("%s: called with %lu arguments, expecting at least %lu"),
+						pc[1].func_name, arg_count, min_req);
+
+			if (do_lint && ! f->suppress_lint && arg_count > max_expect)
+				lintwarn(_("%s: called with %lu arguments, expecting no more than %lu"),
+						pc[1].func_name, arg_count, max_expect);
+
 			PUSH_CODE(pc);
-			r = awk_value_to_node(pc->extfunc(arg_count, & result));
+			r = awk_value_to_node(pc->extfunc(arg_count, & result, f));
 			(void) POP_CODE();
 			while (arg_count-- > 0) {
 				t1 = POP();
@@ -1093,7 +1104,7 @@ match_re:
 					npc[0].expr_count = arg_count;		/* actual argument count */
 					npc[1] = pc[1];
 					npc[1].func_name = fname;	/* name of the builtin */
-					npc[1].expr_count = bc->expr_count;	/* defined max # of arguments */
+					npc[1].c_func = bc->c_func;
 					ni = npc;
 					JUMPTO(ni);
 				} else
@@ -1129,9 +1140,9 @@ match_re:
 				assert(bc->opcode == Op_symbol);
 				pc->opcode = Op_ext_builtin;	/* self modifying code */
 				pc->extfunc = bc->extfunc;
-				pc->expr_count = arg_count;		/* actual argument count */
+				pc->expr_count = arg_count;	/* actual argument count */
 				(pc + 1)->func_name = fname;	/* name of the builtin */
-				(pc + 1)->expr_count = bc->expr_count;	/* defined max # of arguments */
+				(pc + 1)->c_func = bc->c_func;	/* min and max args */
 				ni = pc;
 				JUMPTO(ni);
 			}

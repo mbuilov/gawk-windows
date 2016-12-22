@@ -326,7 +326,7 @@ api_unset_ERRNO(awk_ext_id_t id)
 static awk_bool_t
 api_add_ext_func(awk_ext_id_t id,
 		const char *namespace,
-		const awk_ext_func_t *func)
+		awk_ext_func_t *func)
 {
 	(void) id;
 	(void) namespace;

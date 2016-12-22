@@ -26,9 +26,66 @@
 	regcomp.c, regex.c, regex.h, regex_internal.c, regex_internal.h,
 	regexec.c, verify.h, xalloc.h: Moved to support.
 
+2016-12-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h (api_add_ext_func): Add comment about point to
+	awk_ext_func_t not being const but gawk doesn't use it.
+	* * interpret.h (Op_ext_builtin): Simplify code, check only
+	if do_lint and ! f->suppress_lint and num_args > max_expected.
+
+2016-12-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h (awk_ext_func_t): Put max back before min. Restores
+	source compatibility, although there will be compile warnings
+	because of the 3rd argument for the C function being missing.
+	* interpret.h (Op_ext_builtin): Used size_t instead of int for
+	the various variables. Add a check that max expected > 0.
+
+2016-12-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	MAJOR BREAKING API CHANGE.
+
+	* awk.h (INSTRUCTION): Update extension function pointer to
+	take 3rd argument of pointer to struct awk_ext_func.
+	* gawkapi.c (api_add_ext_func): Update third arg to not be const.
+	* gawkapi.h (awk_ext_func_t): Put min before max. Add suppress_lint
+	and data pointer.
+	[gawk_api_major_version]: Update to 2.
+	[gawk_api_minor_version]: Reset to 0.
+	(api_add_ext_func): Update third arg to not be const.
+	* interpret.h (Op_ext_symbol): Revise lint check.
+
+2016-12-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (INSTRUCTION): Replace min_required and max_expected
+	with a pointer to the extension functions awk_ext_func_t struct.
+	* ext.c (make_builtin): Store a pointer to the extension function
+	struct into the INSTRUCTION instead of the min and max.
+	* gawkapi.h (awk_ext_func): Use size_t instead of unsigned short.
+	Put min second, which preserves source code compatibility.
+	* interpret.h (Op_ext_builtin): Use the pointer for the info
+	directly. If lint and max_expected > 0 and args > max_expected
+	print a message and set max_expected to zero so we only print once
+	per function. Remove special case of both min and max being zero.
+	(Op_ext_func): Adjust creation of the data structures.
+
 2016-12-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with GNULIB.
+
+2016-12-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add minimum required and maximum expected number of arguments
+	to the API.
+
+	* awk.h (INSTRUCTION): Add new members min_required and max_expected.
+	* ext.c (make_builtin): Store values from extension function struct
+	into the INSTRUCTION.
+	* gawkapi.h (awk_ext_func): Add min_required args. Make both it and
+	max_expected_args into unsigned short to match type in INSTRUCTION.
+	* interpret.h (Op_ext_builtin): Store min_required and max_expected
+	in instructions. Add checking code and lint checks.
+	(Op_ext_func): Copy min_required and max_expected from function info.
 
 2016-11-30         Arnold D. Robbins     <arnold@skeeve.com>
 

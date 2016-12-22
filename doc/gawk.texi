@@ -933,6 +933,7 @@ particular records in a file and perform operations upon them.
 * Extension API Informational Variables:: Variables providing information about
                                         @command{gawk}'s invocation.
 * Extension API Boilerplate::           Boilerplate code for using the API.
+* Changes from API V1::                 Changes from V1 of the API.
 * Finding Extensions::                  How @command{gawk} finds compiled
                                         extensions.
 * Extension Example::                   Example C code for an extension.
@@ -32323,6 +32324,7 @@ This (rather large) @value{SECTION} describes the API in detail.
                                          redirections.
 * Extension API Variables::              Variables provided by the API.
 * Extension API Boilerplate::            Boilerplate code for using the API.
+* Changes from API V1::                  Changes from V1 of the API.
 @end menu
 
 @node Extension API Functions Introduction
@@ -32799,8 +32801,13 @@ Extension functions are described by the following record:
 @example
 typedef struct awk_ext_func @{
 @ @ @ @ const char *name;
-@ @ @ @ awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
-@ @ @ @ size_t max_expected_args;
+@ @ @ @ awk_value_t *(*const function)(int num_actual_args,
+@ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_value_t *result,
+@ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ struct awk_ext_func *finfo);
+@ @ @ @ const size_t max_expected_args;
+@ @ @ @ const size_t min_required_args;
+@ @ @ @ awk_bool_t suppress_lint;
+@ @ @ @ void *data;        /* opaque pointer to any extra state */
 @} awk_ext_func_t;
 @end example
 
@@ -32818,42 +32825,95 @@ or an underscore, which may be followed by any number of
 letters, digits, and underscores.
 Letter case in function names is significant.
 
-@item awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
+@item awk_value_t *(*const function)(int num_actual_args,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_value_t *result,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ struct awk_ext_func *finfo);
 This is a pointer to the C function that provides the extension's
 functionality.
 The function must fill in @code{*result} with either a number
-or a string. @command{gawk} takes ownership of any string memory.
+or a string.
+@c FIXME: Change to a scalar - number, string or regex once regex api stuff is merged.
+@command{gawk} takes ownership of any string memory.
 As mentioned earlier, string memory @emph{must} come from one of
 @code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()}.
 
 The @code{num_actual_args} argument tells the C function how many
 actual parameters were passed from the calling @command{awk} code.
 
+The @code{finfo} parameter is a pointer to the @code{awk_ext_func_t} for
+this function. The called function may access data within it as desired, or not.
+
 The function must return the value of @code{result}.
 This is for the convenience of the calling code inside @command{gawk}.
 
-@item size_t max_expected_args;
+@item const size_t max_expected_args;
 This is the maximum number of arguments the function expects to receive.
-Each extension function may decide what to do if the number of
-arguments isn't what it expected.  As with real @command{awk} functions, it
-is likely OK to ignore extra arguments.  This value does not affect
-actual program execution.
+If called with more arguments than this, and if lint checking has
+been enabled, then @command{gawk} prints a warning message.  For more
+information, see the entry for @code{suppress_lint}, later in this list.
 
-Extension functions should compare this value to the number of actual
-arguments passed and possibly issue a lint warning if there is an
-undesirable mismatch.  Of course, if
-@samp{--lint=fatal} is used, this would cause the program to exit.
+@item const size_t min_required_args;
+This is the minimum number of arguments the function expects to receive.
+If called with fewer arguments, @command{gawk} prints a fatal error
+message and exits.
+
+@item awk_bool_t suppress_lint;
+This flag tells @command{gawk} not to print a lint message if lint
+checking has been enabled and if more arguments were supplied in the call
+than expected.  An extension function can tell if @command{gawk} already
+printed at least one such message by checking if @samp{num_actual_args >
+finfo->max_expected_args}.  If so, and the function does not want more
+lint messages to be printed, it should set @code{finfo->suppress_lint}
+to @code{awk_true}.
+
+@item void *data;
+This is an opaque pointer to any data that an extension function may
+wish to have available when called.  Passing the @code{awk_ext_func_t}
+structure to the extension function, and having this pointer available
+in it enable writing a single C or C++ function that implements multiple
+@command{awk}-level extension functions.
 @end table
 
 Once you have a record representing your extension function, you register
 it with @command{gawk} using this API function:
 
 @table @code
-@item awk_bool_t add_ext_func(const char *namespace, const awk_ext_func_t *func);
+@item awk_bool_t add_ext_func(const char *namespace, awk_ext_func_t *func);
 This function returns true upon success, false otherwise.
 The @code{namespace} parameter is currently not used; you should pass in an
 empty string (@code{""}).  The @code{func} pointer is the address of a
 @code{struct} representing your function, as just described.
+
+@command{gawk} does not modify what @code{func} points to, but the
+extension function itself receives this pointer and can modify what it
+points to, thus it is purposely not declared to be @code{const}.
+@end table
+
+The combination of @code{min_required_args}, @code{max_expected_args},
+and @code{suppress_lint} may be confusing. Here is how you should
+set things up.
+
+@table @asis
+@item Any number of arguments is valid
+Set @code{min_required_args} and @code{max_expected_args} to zero and
+set @code{suppress_lint} to @code{awk_true}.
+
+@item A minimum number of arguments is required, no limit on maximum number of arguments
+Set @code{min_required_args} to the minimum required. Set
+@code{max_expected_args} to zero and
+set @code{suppress_lint} to @code{awk_true}.
+
+@item A minium number of arguments is required, a maximum number is expected
+Set @code{min_required_args} to the minimum required. Set
+@code{max_expected_args} to the maximum expected.
+Set @code{suppress_lint} to @code{awk_false}.
+
+@item A minum number of arguments is required, and no more than a maximum is allowed
+Set @code{min_required_args} to the minimum required. Set
+@code{max_expected_args} to the maximum expected.
+Set @code{suppress_lint} to @code{awk_false}.
+In your extension function, check that @code{num_actual_args} does not
+exceed @code{f->max_expected_args}. If it does, issue a fatal error message.
 @end table
 
 @node Exit Callback Functions
@@ -33593,13 +33653,6 @@ variables (such as @code{ARGC} or @code{NF}).
 An extension can look up the value of @command{gawk}'s special variables.
 However, with the exception of the @code{PROCINFO} array, an extension
 cannot change any of those variables.
-
-@quotation CAUTION
-It is possible for the lookup of @code{PROCINFO} to fail. This happens if
-the @command{awk} program being run does not reference @code{PROCINFO};
-in this case, @command{gawk} doesn't bother to create the array and
-populate it.
-@end quotation
 
 @node Symbol table by cookie
 @subsubsection Variable Access and Update by Cookie
@@ -34486,10 +34539,10 @@ debugging:
 
 @float Table,gawk-api-version
 @caption{gawk API version constants}
-@multitable @columnfractions .33 .33 .33
+@multitable {@b{API Version}} {@code{gawk_api_major_version}} {@code{GAWK_API_MAJOR_VERSION}}
 @headitem API Version @tab C preprocessor define @tab enum constant
-@item Major @tab gawk_api_major_version @tab GAWK_API_MAJOR_VERSION
-@item Minor @tab gawk_api_minor_version @tab GAWK_API_MINOR_VERSION
+@item Major @tab @code{gawk_api_major_version} @tab @code{GAWK_API_MAJOR_VERSION}
+@item Minor @tab @code{gawk_api_minor_version} @tab @code{GAWK_API_MINOR_VERSION}
 @end multitable
 @end float
 
@@ -34508,10 +34561,10 @@ constant integers:
 
 @table @code
 @item api->major_version
-The major version of the running @command{gawk}
+The major version of the running @command{gawk}.
 
 @item api->minor_version
-The minor version of the running @command{gawk}
+The minor version of the running @command{gawk}.
 @end table
 
 It is up to the extension to decide if there are API incompatibilities.
@@ -34584,7 +34637,7 @@ static awk_ext_id_t ext_id;
 static const char *ext_version = NULL; /* or @dots{} = "some string" */
 
 static awk_ext_func_t func_table[] = @{
-    @{ "name", do_name, 1 @},
+    @{ "name", do_name, 1, 0, awk_false, NULL @},
     /* @dots{} */
 @};
 
@@ -34684,6 +34737,19 @@ warning message.
 If @code{ext_version} is not @code{NULL}, register
 the version string with @command{gawk}.
 @end enumerate
+
+
+@node Changes from API V1
+@subsection Changes From Version 1 of the API
+
+The current API is @emph{not} binary compatible with version 1 of the API.
+You will have to recompile your extensions in order to use them with
+the current version of @command{gawk}.
+
+Fortunately, at the possible expense of some compile-time warnings, the API remains
+source-code--compatible with the previous API. The major differences are
+the additional members in the @code{awk_ext_func_t} structure, and the
+addition of the third argument to the C implementation function.
 
 @node Finding Extensions
 @section How @command{gawk} Finds Extensions
@@ -34925,17 +34991,12 @@ The second is a pointer to an @code{awk_value_t} structure, usually named
 /*  do_chdir --- provide dynamically loaded chdir() function for gawk */
 
 static awk_value_t *
-do_chdir(int nargs, awk_value_t *result)
+do_chdir(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 @{
     awk_value_t newdir;
     int ret = -1;
 
     assert(result != NULL);
-
-    if (do_lint && nargs != 1)
-        lintwarn(ext_id,
-                 _("chdir: called with incorrect number of arguments, "
-                   "expecting 1"));
 @end example
 
 The @code{newdir}
@@ -34944,8 +35005,8 @@ with @code{get_argument()}.  Note that the first argument is
 numbered zero.
 
 If the argument is retrieved successfully, the function calls the
-@code{chdir()} system call. If the @code{chdir()} fails, @code{ERRNO}
-is updated:
+@code{chdir()} system call. Otherwise, if the @code{chdir()} fails,
+it updates @code{ERRNO}:
 
 @example
     if (get_argument(0, AWK_STRING, & newdir)) @{
@@ -35149,15 +35210,11 @@ is set to point to @code{stat()}, instead.
 Here is the @code{do_stat()} function, which starts with
 variable declarations and argument checking:
 
-@ignore
-Changed message for page breaking. Used to be:
-    "stat: called with incorrect number of arguments (%d), should be 2",
-@end ignore
 @example
 /* do_stat --- provide a stat() function for gawk */
 
 static awk_value_t *
-do_stat(int nargs, awk_value_t *result)
+do_stat(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 @{
     awk_value_t file_param, array_param;
     char *name;
@@ -35168,13 +35225,6 @@ do_stat(int nargs, awk_value_t *result)
     int (*statfunc)(const char *path, struct stat *sbuf) = lstat;
 
     assert(result != NULL);
-
-    if (nargs != 2 && nargs != 3) @{
-        if (do_lint)
-            lintwarn(ext_id,
-               _("stat: called with wrong number of arguments"));
-        return make_number(-1, result);
-    @}
 @end example
 
 Then comes the actual work. First, the function gets the arguments.
@@ -35242,11 +35292,9 @@ structures for loading each function into @command{gawk}:
 
 @example
 static awk_ext_func_t func_table[] = @{
-    @{ "chdir", do_chdir, 1 @},
-    @{ "stat",  do_stat, 2 @},
-#ifndef __MINGW32__
-    @{ "fts",   do_fts, 3 @},
-#endif
+    @{ "chdir", do_chdir, 1, 1, awk_false, NULL @},
+    @{ "stat",  do_stat, 3, 2, awk_false, NULL @},
+    @dots{}
 @};
 @end example
 

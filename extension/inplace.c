@@ -118,7 +118,7 @@ invalid_filename(const awk_string_t *filename)
 /* do_inplace_begin --- start in-place editing */
 
 static awk_value_t *
-do_inplace_begin(int nargs, awk_value_t *result)
+do_inplace_begin(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t filename;
 	struct stat sbuf;
@@ -201,7 +201,7 @@ do_inplace_begin(int nargs, awk_value_t *result)
 /* do_inplace_end --- finish in-place editing */
 
 static awk_value_t *
-do_inplace_end(int nargs, awk_value_t *result)
+do_inplace_end(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t filename, suffix;
 
@@ -262,8 +262,8 @@ do_inplace_end(int nargs, awk_value_t *result)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "inplace_begin", do_inplace_begin, 2 },
-	{ "inplace_end", do_inplace_end, 2 },
+	{ "inplace_begin", do_inplace_begin, 2, 2, awk_false, NULL },
+	{ "inplace_end", do_inplace_end, 2, 2, awk_false, NULL },
 };
 
 static awk_bool_t init_inplace(void)

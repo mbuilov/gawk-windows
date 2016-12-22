@@ -260,8 +260,8 @@ typedef struct awk_two_way_processor {
 	awk_const struct awk_two_way_processor *awk_const next;  /* for use by gawk */
 } awk_two_way_processor_t;
 
-#define gawk_api_major_version 1
-#define gawk_api_minor_version 2
+#define gawk_api_major_version 2
+#define gawk_api_minor_version 0
 
 /* Current version of the API. */
 enum {
@@ -376,15 +376,26 @@ typedef struct awk_flat_array {
  * Each extension function may decide what to do if the number of
  * arguments isn't what it expected.  Following awk functions, it
  * is likely OK to ignore extra arguments.
-
- * Note that the 'max_expected_args' value should be used by the
- * extension function itself only to trigger a lint warning if more
- * arguments are passed to the function.
+ *
+ * 'min_required_args' indicates how many arguments MUST be passed.
+ * The API will throw a fatal error if not enough are passed.
+ *
+ * 'max_expected_args' is more benign; if more than that are passed,
+ * the API prints a lint message (IFF lint is enabled, of course).
+ *
+ * In any case, the extension function itself need not compare the
+ * actual number of arguments passed to those two values if it does
+ * not want to.
  */
 typedef struct awk_ext_func {
 	const char *name;
-	awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
-	size_t max_expected_args;
+	awk_value_t *(*const function)(int num_actual_args,
+					awk_value_t *result,
+					struct awk_ext_func *finfo);
+	const size_t max_expected_args;
+	const size_t min_required_args;
+	awk_bool_t suppress_lint;
+	void *data;		/* opaque pointer to any extra state */
 } awk_ext_func_t;
 
 typedef void *awk_ext_id_t;	/* opaque type for extension id */
@@ -417,9 +428,14 @@ typedef struct gawk_api {
 
 	/* Next, registration functions: */
 
-	/* Add a function to the interpreter, returns true upon success */
+	/*
+	 * Add a function to the interpreter, returns true upon success. 
+	 * Gawk does not modify what func points to, but the extension
+	 * function itself receives this pointer and can modify what it
+	 * points to, thus it's not const.
+	 */
 	awk_bool_t (*api_add_ext_func)(awk_ext_id_t id, const char *namespace,
-			const awk_ext_func_t *func);
+			awk_ext_func_t *func);
 
 	/* Register an input parser; for opening files read-only */
 	void (*api_register_input_parser)(awk_ext_id_t id,
