@@ -71,14 +71,11 @@ array_set_numeric(awk_array_t array, const char *sub, double num)
 /*  do_fork --- provide dynamically loaded fork() builtin for gawk */
 
 static awk_value_t *
-do_fork(int nargs, awk_value_t *result)
+do_fork(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	int ret = -1;
 
 	assert(result != NULL);
-
-	if (do_lint && nargs > 0)
-		lintwarn(ext_id, _("fork: called with too many arguments"));
 
 	ret = fork();
 
@@ -106,7 +103,7 @@ do_fork(int nargs, awk_value_t *result)
 /*  do_waitpid --- provide dynamically loaded waitpid() builtin for gawk */
 
 static awk_value_t *
-do_waitpid(int nargs, awk_value_t *result)
+do_waitpid(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	awk_value_t pid;
 	int ret = -1;
@@ -114,16 +111,12 @@ do_waitpid(int nargs, awk_value_t *result)
 
 	assert(result != NULL);
 
-	if (do_lint && nargs > 1)
-		lintwarn(ext_id, _("waitpid: called with too many arguments"));
-
 	if (get_argument(0, AWK_NUMBER, &pid)) {
 		options = WNOHANG|WUNTRACED;
 		ret = waitpid(pid.num_value, NULL, options);
 		if (ret < 0)
 			update_ERRNO_int(errno);
-	} else if (do_lint)
-		lintwarn(ext_id, _("wait: called with no arguments"));
+	}
 
 	/* Set the return value */
 	return make_number(ret, result);
@@ -133,14 +126,11 @@ do_waitpid(int nargs, awk_value_t *result)
 /*  do_wait --- provide dynamically loaded wait() builtin for gawk */
 
 static awk_value_t *
-do_wait(int nargs, awk_value_t *result)
+do_wait(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 {
 	int ret;
 
 	assert(result != NULL);
-
-	if (do_lint && nargs > 0)
-		lintwarn(ext_id, _("wait: called with too many arguments"));
 
 	ret = wait(NULL);
 	if (ret < 0)
@@ -151,9 +141,9 @@ do_wait(int nargs, awk_value_t *result)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "fork", do_fork, 0 },
-	{ "waitpid", do_waitpid, 1 },
-	{ "wait", do_wait, 0 },
+	{ "fork", do_fork, 0, 0, awk_false, NULL },
+	{ "waitpid", do_waitpid, 1, 1, awk_false, NULL },
+	{ "wait", do_wait, 0, 0, awk_false, NULL },
 };
 
 /* define the dl_load function using the boilerplate macro */

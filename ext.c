@@ -136,7 +136,7 @@ make_builtin(const awk_ext_func_t *funcinfo)
 
 	b = bcalloc(Op_symbol, 1, 0);
 	b->extfunc = funcinfo->function;
-	b->expr_count = count;
+	b->c_func = (awk_ext_func_t *) funcinfo;
 
 	/* NB: extension sub must return something */
 
