@@ -1,3 +1,7 @@
+2016-12-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* testext.c (valrep2str): Update for new API types.
+
 2016-12-16         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* filefuncs.c: Update func_table again.
@@ -40,6 +44,22 @@
 	* rwarray0.c: Ditto.
 	* testext.c: Ditto.
 	* time.c: Ditto.
+
+2016-12-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* rwarray.c: Adjust to read and write strnum values.
+	(write_value): When writing a string value, code should use htonl.
+	There are now 3 string types: string, strnum, and regex.
+	(read_value): Support 3 string types: string, strnum, and regex.
+
+2016-11-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* rwarray.c: Restore read comparion of major and minor versions
+	to use !=.
+
+2016-11-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* rwarray.c: Adjust to read and write regexes also.
 
 2016-10-23         Arnold D. Robbins     <arnold@skeeve.com>
 

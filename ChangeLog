@@ -26,6 +26,19 @@
 	regcomp.c, regex.c, regex.h, regex_internal.c, regex_internal.h,
 	regexec.c, verify.h, xalloc.h: Moved to support.
 
+	Unrelated: Totally break binary compatibility in the API
+	after merging in API min/max changes and REGEX and STRNUM
+	support in the API:
+
+	* gawkapi.c (valtype2str): New function.
+	(node_to_awk_value): Minor simplification in a switch.
+	(api_flatten_array): Removed.
+	(api_flatten_array_typed): Use valtype2str in error message.
+	(api_impl): Reorder functions to group related ones together again.
+	* gawkapi.h (awk_valtype_t): Reorder enum values.
+	(struct gawk_api): Remove api_flatten_array field.  Reorder
+	functions to group related ones together again.
+
 2016-12-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkapi.h (api_add_ext_func): Add comment about point to
@@ -73,6 +86,57 @@
 
 	* dfa.c: Sync with GNULIB.
 
+2016-12-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Add API support for strnum values.
+	* gawkapi.c (awk_value_to_node): Add AWK_STRNUM.
+	(assign_string): Add a type argument so we can use this for AWK_STRING
+	or AWK_STRNUM.
+	(node_to_awk_value): When AWK_NUMBER is requested, a regex value
+	should return false, as per the header file documentation.
+	Add support for AWK_STRNUM requests. When AWK_REGEX is requested,
+	implement the cases properly instead of always returning true.
+	Fix AWK_SCALAR logic. For AWK_UNDEFINED, rewrite using a switch
+	and support AWK_STRNUM.
+	(api_sym_update): Add AWK_STRNUM.
+	(api_sym_update_scalar): Add optimized support for updating AWK_STRNUM.
+	(valid_subscript_type): Add AWK_STRNUM.
+	(api_create_value): Add AWK_STRNUM.
+	* gawkapi.h (awk_valtype_t): Add AWK_STRNUM.
+	(strnum_value): New macro.
+	(Value fetching table): Updated.
+
+2016-12-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (assign_regex): Do not call assign_string, since we
+	know that a REGEX value is not an unterminated field string.
+	* gawkapi.h (make_regex): Delete macro.
+	(make_const_regex, make_malloced_regex): Add new macros to replace
+	make_regex with necessary memory management support.
+
+2016-12-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (fixtype): Remove conditional checking if the node type
+	is Node_val. This is already covered by the assert, and if it's not
+	true, we have serious bugs.
+	* builtin.c (do_typeof): Do not treat Node_var the same way as
+	Node_val, since they are different beasts. In reality, the argument
+	to this function will never have type Node_var.
+
+2016-12-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (awk_element_t): Remove obsolete comment claiming that
+	the index will always be a string.
+	(gawk_api_t): Add new api_flatten_array_typed function and indicate
+	that api_flatten_array has been superseded.
+	(flatten_array_typed): New macro to call api_flatten_array_typed.
+	(flatten_array): Redefine using the new flatten_array_typed macro.
+	* gawkapi.c (api_flatten_array_typed): New function renamed from
+	api_flatten_array to flatten an array with the types requested by the
+	caller. Also update the comments and error messages.
+	(api_flatten_array): Now a wrapper around api_flatten_array_typed.
+	(api_impl): Add new api_flatten_array_typed hook.
+
 2016-12-06         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Add minimum required and maximum expected number of arguments
@@ -87,9 +151,39 @@
 	in instructions. Add checking code and lint checks.
 	(Op_ext_func): Copy min_required and max_expected from function info.
 
+
+2016-12-04         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (r_make_string_type): New inline function to create strings
+	of any type, currently AWK_STRING or AWK_REGEX.
+	(r_make_string): Now a wrapper around r_make_string_type.
+	(make_regex): Convert from an inline function to a macro that
+	calls r_make_string_type.
+
 2016-11-30         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with fixes in GNULIB.
+
+	Unrelated:
+
+	* gawkapi.h (make_regex): New function.
+
+2016-11-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add support for typed regex variables to the API.
+
+	* awk.h (make_typed_regex): Declare function.
+	* awkgram.y (typed_regexp): Call make_typed_regex instead of
+	using inline code.
+	* gawkapi.h (AWK_REGEX): New value type.
+	(regex_value): New macro.
+	(Value fetching table): Updated.
+	* gawkapi.c (awk_value_to_node, node_to_awk_value, api_sym_update,
+	api_sym_update_scalar, valid_subscript_type, api_create_value):
+	Add support for AWK_REGEX.
+	(assign_regex): New function.
+	(api_flatten_array): Adjust comment.
+	* node.c (make_typed_regex): New function; moved code from grammar.
 
 2016-11-29         Arnold D. Robbins     <arnold@skeeve.com>
 

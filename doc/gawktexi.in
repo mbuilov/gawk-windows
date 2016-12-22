@@ -31571,6 +31571,8 @@ multibyte encoding.
 @itemx @ @ @ @ AWK_UNDEFINED,
 @itemx @ @ @ @ AWK_NUMBER,
 @itemx @ @ @ @ AWK_STRING,
+@itemx @ @ @ @ AWK_REGEX,
+@itemx @ @ @ @ AWK_STRNUM,
 @itemx @ @ @ @ AWK_ARRAY,
 @itemx @ @ @ @ AWK_SCALAR,@ @ @ @ @ @ @ @ @ /* opaque access to a variable */
 @itemx @ @ @ @ AWK_VALUE_COOKIE@ @ @ @ /* for updating a previously created value */
@@ -31593,6 +31595,8 @@ The @code{val_type} member indicates what kind of value the
 @code{union} holds, and each member is of the appropriate type.
 
 @item #define str_value@ @ @ @ @ @ u.s
+@itemx #define strnum_value@ @ @ @ str_value
+@itemx #define regex_value@ @ @ @ str_value
 @itemx #define num_value@ @ @ @ @ @ u.d
 @itemx #define array_cookie@ @ @ u.a
 @itemx #define scalar_cookie@ @ u.scl
@@ -31613,7 +31617,7 @@ and in more detail in @ref{Cached values}.
 
 @end table
 
-Scalar values in @command{awk} are either numbers or strings. The
+Scalar values in @command{awk} are numbers, strings, strnums, or typed regexps. The
 @code{awk_value_t} struct represents values.  The @code{val_type} member
 indicates what is in the @code{union}.
 
@@ -31621,6 +31625,18 @@ Representing numbers is easy---the API uses a C @code{double}.  Strings
 require more work. Because @command{gawk} allows embedded @sc{nul} bytes
 in string values, a string must be represented as a pair containing a
 data pointer and length. This is the @code{awk_string_t} type.
+
+A strnum (numeric string) value is represented as a string and consists
+of user input data that appears to be numeric.
+When an extension creates a strnum value, the result is a string flagged
+as user input. Subsequent parsing by @command{gawk} then determines whether it
+looks like a number and should be treated as a strnum, or as a regular string.
+
+Typed regexp values (@pxref{Strong Regexp Constants}) are not of
+much use to extension functions.  Extension functions can tell that
+they've received them, and create them for scalar values. Otherwise,
+they can examine the text of the regexp through @code{regex_value.str}
+and @code{regex_value.len}.
 
 Identifiers (i.e., the names of global variables) can be associated
 with either scalar values or with arrays.  In addition, @command{gawk}
@@ -31788,6 +31804,31 @@ It returns @code{result}.
 @itemx make_number(double num, awk_value_t *result);
 This function simply creates a numeric value in the @code{awk_value_t} variable
 pointed to by @code{result}.
+
+@item static inline awk_value_t *
+@itemx make_const_user_input(const char *string, size_t length, awk_value_t *result);
+This function is identical to @code{make_const_string()}, but the string is
+flagged as user input that should be treated as a strnum value if the contents
+of the string are numeric.
+
+@item static inline awk_value_t *
+@itemx make_malloced_user_input(const char *string, size_t length, awk_value_t *result);
+This function is identical to @code{make_malloced_string()}, but the string is
+flagged as user input that should be treated as a strnum value if the contents
+of the string are numeric.
+
+@item static inline awk_value_t *
+@itemx make_const_regex(const char *string, size_t length, awk_value_t *result);
+This function creates a strongly typed regexp value by allocating a copy of the string.
+@code{string} is the regular expression of length @code{len}.
+
+@item static inline awk_value_t *
+@itemx make_malloced_regex(const char *string, size_t length, awk_value_t *result);
+This function creates a strongly typed regexp value.
+@code{string} is the regular expression of length @code{len}.
+It expects @code{string} to be a @samp{char *}
+value pointing to data previously obtained from @code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()}.
+
 @end table
 
 @node Registration Functions
@@ -32472,6 +32513,7 @@ value type, as appropriate.  This behavior is summarized in
 
 @float Table,table-value-types-returned
 @caption{API value types returned}
+@c FIXME: This needs doing.
 @docbook
 <informaltable>
 <tgroup cols="6">
@@ -32547,6 +32589,7 @@ value type, as appropriate.  This behavior is summarized in
 </informaltable>
 @end docbook
 
+@c FIXME: This needs doing.
 @ifnotplaintext
 @ifnotdocbook
 @multitable @columnfractions .50 .50
@@ -32569,27 +32612,28 @@ value type, as appropriate.  This behavior is summarized in
 @end ifnotplaintext
 @ifplaintext
 @example
-                        +-------------------------------------------------+
-                        |                Type of Actual Value:            |
-                        +------------+------------+-----------+-----------+
-                        |   String   |   Number   | Array     | Undefined |
-+-----------+-----------+------------+------------+-----------+-----------+
-|           | String    |   String   |   String   | False     | False     |
-|           |-----------+------------+------------+-----------+-----------+
-|           | Number    | Number if  |   Number   | False     | False     |
-|           |           | can be     |            |           |           |
-|           |           | converted, |            |           |           |
-|           |           | else false |            |           |           |
-|           |-----------+------------+------------+-----------+-----------+
-|   Type    | Array     |   False    |   False    | Array     | False     |
-| Requested |-----------+------------+------------+-----------+-----------+
-|           | Scalar    |   Scalar   |   Scalar   | False     | False     |
-|           |-----------+------------+------------+-----------+-----------+
-|           | Undefined |  String    |   Number   | Array     | Undefined |
-|           |-----------+------------+------------+-----------+-----------+
-|           | Value     |   False    |   False    | False     | False     |
-|           | cookie    |            |            |           |           |
-+-----------+-----------+------------+------------+-----------+-----------+
+                        +-------------------------------------------------------+
+                        |                   Type of Actual Value:               |
+                        +--------+--------+--------+--------+-------+-----------+
+                        | String | Strnum | Number | Regex  | Array | Undefined |
++-----------+-----------+--------+--------+--------+--------+-------+-----------+
+|           | String    | String | String | String | String | false | false     |
+|           +-----------+--------+--------+--------+--------+-------+-----------+
+|           | Strnum    | false  | Strnum | Strnum | false  | false | false     |
+|           +-----------+--------+--------+--------+--------+-------+-----------+
+|           | Number    | Number | Number | Number | false  | false | false     |
+|           +-----------+--------+--------+--------+--------+-------+-----------+
+|           | Regex     | false  | false  | false  | Regex  | false | false     |
+|           +-----------+--------+--------+--------+--------+-------+-----------+
+|   Type    | Array     | false  | false  | false  | false  | Array | false     |
+| Requested +-----------+--------+--------+--------+--------+-------+-----------+
+|           | Scalar    | Scalar | Scalar | Scalar | Scalar | false | false     |
+|           +-----------+--------+--------+--------+--------+-------+-----------+
+|           | Undefined | String | Strnum | Number | Regex  | Array | Undefined |
+|           +-----------+--------+--------+--------+--------+-------+-----------+
+|           | Value     | false  | false  | false  | false  | false | false     |
+|           | Cookie    |        |        |        |        |       |           |
++-----------+-----------+--------+--------+--------+--------+-------+-----------+
 @end example
 @end ifplaintext
 @end float
@@ -32689,7 +32733,7 @@ Return false if the value cannot be retrieved.
 
 @item awk_bool_t sym_update_scalar(awk_scalar_t cookie, awk_value_t *value);
 Update the value associated with a scalar cookie.  Return false if
-the new value is not of type @code{AWK_STRING} or @code{AWK_NUMBER}.
+the new value is not of type @code{AWK_STRING}, @code{AWK_STRNUM}, @code{AWK_REGEX}, or @code{AWK_NUMBER}.
 Here too, the predefined variables may not be updated.
 @end table
 
@@ -32810,7 +32854,7 @@ is what the routines in this @value{SECTION} let you do.  The functions are as f
 @table @code
 @item awk_bool_t create_value(awk_value_t *value, awk_value_cookie_t *result);
 Create a cached string or numeric value from @code{value} for
-efficient later assignment.  Only values of type @code{AWK_NUMBER}
+efficient later assignment.  Only values of type @code{AWK_NUMBER}, @code{AWK_REGEX}, @code{AWK_STRNUM},
 and @code{AWK_STRING} are allowed.  Any other type is rejected.
 @code{AWK_UNDEFINED} could be allowed, but doing so would result in
 inferior performance.
@@ -33036,9 +33080,10 @@ The array remains an array, but after calling this function, it
 has no elements. This is equivalent to using the @code{delete}
 statement (@pxref{Delete}).
 
-@item awk_bool_t flatten_array(awk_array_t a_cookie, awk_flat_array_t **data);
+@item awk_bool_t flatten_array_typed(awk_array_t a_cookie, awk_flat_array_t **data, awk_valtype_t index_type, awk_valtype_t value_type);
 For the array represented by @code{a_cookie}, create an @code{awk_flat_array_t}
-structure and fill it in. Set the pointer whose address is passed as @code{data}
+structure and fill it in with indices and values of the requested types.
+Set the pointer whose address is passed as @code{data}
 to point to this structure.
 Return true upon success, or false otherwise.
 @ifset FOR_PRINT
@@ -33049,6 +33094,14 @@ See the next @value{SECTION}
 @end ifclear
 for a discussion of how to
 flatten an array and work with it.
+
+@item awk_bool_t flatten_array(awk_array_t a_cookie, awk_flat_array_t **data);
+For the array represented by @code{a_cookie}, create an @code{awk_flat_array_t}
+structure and fill it in with @code{AWK_STRING} indices and
+@code{AWK_UNDEFINED} values.
+This is superseded by @code{flatten_array_typed()}.
+It is provided as a macro, and remains convenience and for source code
+compatibility with the previous version of the API.
 
 @item awk_bool_t release_flattened_array(awk_array_t a_cookie,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_flat_array_t *data);
@@ -33162,7 +33215,7 @@ to double-check that the count in the @code{awk_flat_array_t}
 is the same as the count just retrieved:
 
 @example
-    if (! flatten_array(value2.array_cookie, & flat_array)) @{
+    if (! flatten_array_typed(value2.array_cookie, & flat_array, AWK_STRING, AWK_UNDEFINED)) @{
         printf("dump_array_and_delete: could not flatten array\n");
         goto out;
     @}
@@ -33554,7 +33607,7 @@ debugging:
 @float Table,gawk-api-version
 @caption{gawk API version constants}
 @multitable {@b{API Version}} {@code{gawk_api_major_version}} {@code{GAWK_API_MAJOR_VERSION}}
-@headitem API Version @tab C preprocessor define @tab enum constant
+@headitem API Version @tab C Preprocessor Define @tab enum constant
 @item Major @tab @code{gawk_api_major_version} @tab @code{GAWK_API_MAJOR_VERSION}
 @item Minor @tab @code{gawk_api_minor_version} @tab @code{GAWK_API_MINOR_VERSION}
 @end multitable
@@ -37210,6 +37263,12 @@ These files contain the actual @command{gawk} source code.
 @end table
 
 @table @file
+@item support/*
+C header and source files for routines that @command{gawk}
+uses, but that are not part of its core functionality.
+For example, argument parsing, regular expression matching,
+and random number generating routines are all kept here.
+
 @item ABOUT-NLS
 A file containing information about GNU @command{gettext} and translations.
 

@@ -31,6 +31,7 @@ extern INSTRUCTION *main_beginfile;
 extern int currule;
 
 static awk_bool_t node_to_awk_value(NODE *node, awk_value_t *result, awk_valtype_t wanted);
+static char *valtype2str(awk_valtype_t type);
 
 /*
  * api_get_argument --- get the count'th paramater, zero-based.
@@ -163,6 +164,15 @@ awk_value_to_node(const awk_value_t *retval)
 	case AWK_STRING:
 		ext_ret_val = make_str_node(retval->str_value.str,
 				retval->str_value.len, ALREADY_MALLOCED);
+		break;
+	case AWK_STRNUM:
+		ext_ret_val = make_str_node(retval->str_value.str,
+				retval->str_value.len, ALREADY_MALLOCED);
+		ext_ret_val->flags |= USER_INPUT;
+		break;
+	case AWK_REGEX:
+		ext_ret_val = make_typed_regex(retval->str_value.str,
+				retval->str_value.len);
 		break;
 	case AWK_SCALAR:
 		v = (NODE *) retval->scalar_cookie;
@@ -411,9 +421,9 @@ free_api_string_copies()
 /* assign_string --- return a string node with NUL termination */
 
 static inline void
-assign_string(NODE *node, awk_value_t *val)
+assign_string(NODE *node, awk_value_t *val, awk_valtype_t val_type)
 {
-	val->val_type = AWK_STRING;
+	val->val_type = val_type;
 	if (node->stptr[node->stlen] != '\0') {
 		/*
 		 * This is an unterminated field string, so make a copy.
@@ -438,6 +448,19 @@ assign_string(NODE *node, awk_value_t *val)
 	else
 		val->str_value.str = node->stptr;
 	val->str_value.len = node->stlen;
+}
+
+/* assign_regex --- return a regex node */
+
+static inline void
+assign_regex(NODE *node, awk_value_t *val)
+{
+	/* a REGEX node cannot be an unterminated field string */
+	assert((node->flags & MALLOC) != 0);
+	assert(node->stptr[node->stlen] == '\0');
+	val->str_value.str = node->stptr;
+	val->str_value.len = node->stlen;
+	val->val_type = AWK_REGEX;
 }
 
 /* node_to_awk_value --- convert a node into a value for an extension */
@@ -476,45 +499,137 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 		/* a scalar value */
 		switch (wanted) {
 		case AWK_NUMBER:
-			val->val_type = AWK_NUMBER;
+			if (node->flags & REGEX)
+				val->val_type = AWK_REGEX;
+			else {
+				val->val_type = AWK_NUMBER;
+				(void) force_number(node);
+				val->num_value = get_number_d(node);
+				ret = awk_true;
+			}
+			break;
 
-			(void) force_number(node);
-			val->num_value = get_number_d(node);
-			ret = awk_true;
+		case AWK_STRNUM:
+			switch (fixtype(node)->flags & (STRING|NUMBER|USER_INPUT|REGEX)) {
+			case STRING:
+				val->val_type = AWK_STRING;
+				break;
+			case NUMBER:
+				(void) force_string(node);
+				/* fall through */
+			case NUMBER|USER_INPUT:
+				assign_string(node, val, AWK_STRNUM);
+				ret = awk_true;
+				break;
+			case REGEX:
+				val->val_type = AWK_REGEX;
+				break;
+			case NUMBER|STRING:
+				if (node == Nnull_string) {
+					val->val_type = AWK_UNDEFINED;
+					break;
+				}
+				/* fall through */
+			default:
+				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				val->val_type = AWK_UNDEFINED;
+				break;
+			}
 			break;
 
 		case AWK_STRING:
 			(void) force_string(node);
-			assign_string(node, val);
+			assign_string(node, val, AWK_STRING);
 			ret = awk_true;
 			break;
 
-		case AWK_SCALAR:
-			fixtype(node);
-			if ((node->flags & NUMBER) != 0) {
-				val->val_type = AWK_NUMBER;
-			} else if ((node->flags & STRING) != 0) {
+		case AWK_REGEX:
+			switch (fixtype(node)->flags & (STRING|NUMBER|USER_INPUT|REGEX)) {
+			case STRING:
 				val->val_type = AWK_STRING;
-			} else
+				break;
+			case NUMBER:
+				val->val_type = AWK_NUMBER;
+				break;
+			case NUMBER|USER_INPUT:
+				val->val_type = AWK_STRNUM;
+				break;
+			case REGEX:
+				assign_regex(node, val);
+				ret = awk_true;
+				break;
+			case NUMBER|STRING:
+				if (node == Nnull_string) {
+					val->val_type = AWK_UNDEFINED;
+					break;
+				}
+				/* fall through */
+			default:
+				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
-			ret = awk_false;
+				break;
+			}
+			break;
+
+		case AWK_SCALAR:
+			switch (fixtype(node)->flags & (STRING|NUMBER|USER_INPUT|REGEX)) {
+			case STRING:
+				val->val_type = AWK_STRING;
+				break;
+			case NUMBER:
+				val->val_type = AWK_NUMBER;
+				break;
+			case NUMBER|USER_INPUT:
+				val->val_type = AWK_STRNUM;
+				break;
+			case REGEX:
+				val->val_type = AWK_REGEX;
+				break;
+			case NUMBER|STRING:
+				if (node == Nnull_string) {
+					val->val_type = AWK_UNDEFINED;
+					break;
+				}
+				/* fall through */
+			default:
+				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
+				val->val_type = AWK_UNDEFINED;
+				break;
+			}
 			break;
 
 		case AWK_UNDEFINED:
 			/* return true and actual type for request of undefined */
-			fixtype(node);
-			if (node == Nnull_string) {
-				val->val_type = AWK_UNDEFINED;
+			switch (fixtype(node)->flags & (STRING|NUMBER|USER_INPUT|REGEX)) {
+			case STRING:
+				assign_string(node, val, AWK_STRING);
 				ret = awk_true;
-			} else if ((node->flags & NUMBER) != 0) {
+				break;
+			case NUMBER:
 				val->val_type = AWK_NUMBER;
 				val->num_value = get_number_d(node);
 				ret = awk_true;
-			} else if ((node->flags & STRING) != 0) {
-				assign_string(node, val);
+				break;
+			case NUMBER|USER_INPUT:
+				assign_string(node, val, AWK_STRNUM);
 				ret = awk_true;
-			} else
+				break;
+			case REGEX:
+				assign_regex(node, val);
+				ret = awk_true;
+				break;
+			case NUMBER|STRING:
+				if (node == Nnull_string) {
+					val->val_type = AWK_UNDEFINED;
+					ret = awk_true;
+					break;
+				}
+				/* fall through */
+			default:
+				warning(_("node_to_awk_value detected invalid flags combination `%s'; please file a bug report."), flags2str(node->flags));
 				val->val_type = AWK_UNDEFINED;
+				break;
+			}
 			break;
 
 		case AWK_ARRAY:
@@ -617,7 +732,9 @@ api_sym_update(awk_ext_id_t id,
 
 	switch (value->val_type) {
 	case AWK_NUMBER:
+	case AWK_STRNUM:
 	case AWK_STRING:
+	case AWK_REGEX:
 	case AWK_UNDEFINED:
 	case AWK_ARRAY:
 	case AWK_SCALAR:
@@ -715,7 +832,9 @@ api_sym_update_scalar(awk_ext_id_t id,
 			return awk_true;
 		}
 		break;
+
 	case AWK_STRING:
+	case AWK_STRNUM:
 		if (node->var_value->valref == 1) {
 			NODE *r = node->var_value;
 
@@ -729,16 +848,21 @@ api_sym_update_scalar(awk_ext_id_t id,
 			/* make_str_node(s, l, ALREADY_MALLOCED): */
 			r->numbr = 0;
 			r->flags = (MALLOC|STRING|STRCUR);
+			if (value->val_type == AWK_STRNUM)
+				r->flags |= USER_INPUT;
 			r->stfmt = STFMT_UNUSED;
 			r->stptr = value->str_value.str;
 			r->stlen = value->str_value.len;
 			return awk_true;
 		}
 		break;
+
+	case AWK_REGEX:
 	case AWK_UNDEFINED:
 	case AWK_SCALAR:
 	case AWK_VALUE_COOKIE:
 		break;
+
 
 	default:	/* AWK_ARRAY or invalid type */
 		return awk_false;
@@ -762,7 +886,9 @@ valid_subscript_type(awk_valtype_t valtype)
 	switch (valtype) {
 	case AWK_UNDEFINED:
 	case AWK_NUMBER:
+	case AWK_STRNUM:
 	case AWK_STRING:
+	case AWK_REGEX:
 	case AWK_SCALAR:
 	case AWK_VALUE_COOKIE:
 		return true;
@@ -963,12 +1089,13 @@ api_clear_array(awk_ext_id_t id, awk_array_t a_cookie)
 	return awk_true;
 }
 
-/* api_flatten_array --- flatten out an array so that it can be looped over easily. */
+/* api_flatten_array_typed --- flatten out an array so that it can be looped over easily. */
 
 static awk_bool_t
-api_flatten_array(awk_ext_id_t id,
+api_flatten_array_typed(awk_ext_id_t id,
 		awk_array_t a_cookie,
-		awk_flat_array_t **data)
+		awk_flat_array_t **data,
+		awk_valtype_t index_type, awk_valtype_t value_type)
 {
 	NODE **list;
 	size_t i, j;
@@ -985,7 +1112,7 @@ api_flatten_array(awk_ext_id_t id,
 			(array->table_size - 1) * sizeof(awk_element_t);
 
 	emalloc(*data, awk_flat_array_t *, alloc_size,
-			"api_flatten_array");
+			"api_flatten_array_typed");
 	memset(*data, 0, alloc_size);
 
 	list = assoc_list(array, "@unsorted", ASORTI);
@@ -1000,21 +1127,16 @@ api_flatten_array(awk_ext_id_t id,
 		index = list[i];
 		value = list[i + 1]; /* number or string or subarray */
 
-		/*
-		 * Convert index and value to ext types.  Force the
-		 * index to be a string, since indices are always
-		 * conceptually strings, regardless of internal optimizations
-		 * to treat them as integers in some cases.
-		 */
+		/* Convert index and value to API types. */
 		if (! node_to_awk_value(index,
-				& (*data)->elements[j].index, AWK_STRING)) {
-			fatal(_("api_flatten_array: could not convert index %d\n"),
-						(int) i);
+				& (*data)->elements[j].index, index_type)) {
+			fatal(_("api_flatten_array_typed: could not convert index %d to %s\n"),
+						(int) i, valtype2str(index_type));
 		}
 		if (! node_to_awk_value(value,
-				& (*data)->elements[j].value, AWK_UNDEFINED)) {
-			fatal(_("api_flatten_array: could not convert value %d\n"),
-						(int) i);
+				& (*data)->elements[j].value, value_type)) {
+			fatal(_("api_flatten_array_typed: could not convert value %d to %s\n"),
+						(int) i, valtype2str(value_type));
 		}
 	}
 	return awk_true;
@@ -1072,7 +1194,9 @@ api_create_value(awk_ext_id_t id, awk_value_t *value,
 
 	switch (value->val_type) {
 	case AWK_NUMBER:
+	case AWK_STRNUM:
 	case AWK_STRING:
+	case AWK_REGEX:
 		break;
 	default:
 		/* reject anything other than a simple scalar */
@@ -1237,6 +1361,7 @@ gawk_api_t api_impl = {
 	api_fatal,
 	api_warning,
 	api_lintwarn,
+	api_nonfatal,
 
 	/* updating ERRNO */
 	api_update_ERRNO_int,
@@ -1266,7 +1391,7 @@ gawk_api_t api_impl = {
 	api_del_array_element,
 	api_create_array,
 	api_clear_array,
-	api_flatten_array,
+	api_flatten_array_typed,
 	api_release_flattened_array,
 
 	/* Memory allocation */
@@ -1277,9 +1402,6 @@ gawk_api_t api_impl = {
 
 	/* Find/open a file */
 	api_get_file,
-
-	/* Print nonfatal error message */
-	api_nonfatal,
 };
 
 /* init_ext_api --- init the extension API */
@@ -1313,4 +1435,31 @@ print_ext_versions(void)
 
 	for (p = vi_head; p != NULL; p = p->next)
 		printf("%s\n", p->version);
+}
+
+/* valtype2str --- return a printable representation of a value type */
+
+static char *
+valtype2str(awk_valtype_t type)
+{
+	static char buf[100];
+
+	// Important: keep in same order as in gawkapi.h!
+	static char *values[] = {
+		"AWK_UNDEFINED",
+		"AWK_NUMBER",
+		"AWK_STRING",
+		"AWK_REGEX",
+		"AWK_STRNUM",
+		"AWK_ARRAY",
+		"AWK_SCALAR",
+		"AWK_VALUE_COOKIE",
+	};
+
+	if (AWK_UNDEFINED <= type && type <= AWK_VALUE_COOKIE)
+		return values[(int) type];
+
+	sprintf(buf, "unknown type! (%d)", (int) type);
+
+	return buf;
 }

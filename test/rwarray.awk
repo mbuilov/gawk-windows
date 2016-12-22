@@ -4,6 +4,13 @@ BEGIN {
 	while ((getline word) > 0)
 		dict[word] = word word
 
+	re_sub = "/typed-regex/"
+	dict[re_sub] = @/search me/
+
+	strnum_sub = "strnum-sub"
+	split("-2.4", f)
+	dict[strnum_sub] = f[1]
+
 	n = asorti(dict, dictindices)
 	for (i = 1; i <= n; i++)
 		printf("dict[%s] = %s\n", dictindices[i], dict[dictindices[i]]) > "orig.out"
@@ -12,7 +19,6 @@ BEGIN {
 	ret = writea("orig.bin", dict)
 	printf "writea() returned %d, expecting 1\n", ret
 
- 
 	ret = reada("orig.bin", dict)
 	printf "reada() returned %d, expecting 1\n", ret
 
@@ -37,4 +43,12 @@ BEGIN {
 		if (ret == 0 && !("KEEPIT" in ENVIRON))
 			system("rm -f orig.bin orig.out new.out")
 	}
+
+	if (typeof(dict[re_sub]) != "regexp")
+		printf("dict[\"%s\"] should be regexp, is %s\n",
+			re_sub, typeof(dict[re_sub]));
+
+	if (typeof(dict[strnum_sub]) != "strnum")
+		printf("dict[\"%s\"] should be strnum, is %s\n",
+			strnum_sub, typeof(dict[strnum_sub]));
 }

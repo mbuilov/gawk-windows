@@ -70,6 +70,8 @@ valrep2str(const awk_value_t *value)
 	case AWK_VALUE_COOKIE:
 		strcpy(buf, "<value-cookie>");
 		break;
+	case AWK_REGEX:
+	case AWK_STRNUM:
 	case AWK_STRING:
 		if (value->str_value.len < size)
 			size = value->str_value.len;

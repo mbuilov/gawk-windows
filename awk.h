@@ -1641,6 +1641,7 @@ extern NODE *r_force_number(NODE *n);
 extern NODE *r_format_val(const char *format, int index, NODE *s);
 extern NODE *r_dupnode(NODE *n);
 extern NODE *make_str_node(const char *s, size_t len, int flags);
+extern NODE *make_typed_regex(const char *re, size_t len);
 extern void *more_blocks(int id);
 extern int parse_escape(const char **string_ptr);
 extern NODE *str2wstr(NODE *n, size_t **ptr);
@@ -1886,12 +1887,10 @@ static inline NODE *
 fixtype(NODE *n)
 {
 	assert(n->type == Node_val);
-	if (n->type == Node_val) {
-		if ((n->flags & (NUMCUR|USER_INPUT)) == USER_INPUT)
-			return force_number(n);
-		if ((n->flags & INTIND) != 0)
-			return force_string(n);
-	}
+	if ((n->flags & (NUMCUR|USER_INPUT)) == USER_INPUT)
+		return force_number(n);
+	if ((n->flags & INTIND) != 0)
+		return force_string(n);
 	return n;
 }
 

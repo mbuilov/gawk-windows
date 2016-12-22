@@ -23625,6 +23625,8 @@ use them.
 '    AWK_UNDEFINED,'
 '    AWK_NUMBER,'
 '    AWK_STRING,'
+'    AWK_REGEX,'
+'    AWK_STRNUM,'
 '    AWK_ARRAY,'
 '    AWK_SCALAR,         /* opaque access to a variable */'
 '    AWK_VALUE_COOKIE    /* for updating a previously created value */'
@@ -23647,6 +23649,8 @@ use them.
      type.
 
 '#define str_value      u.s'
+'#define strnum_value    str_value'
+'#define regex_value    str_value'
 '#define num_value      u.d'
 '#define array_cookie   u.a'
 '#define scalar_cookie  u.scl'
@@ -23665,14 +23669,26 @@ use them.
      This is also discussed in a general fashion in the text following
      this list, and in more detail in *note Cached values::.
 
-   Scalar values in 'awk' are either numbers or strings.  The
-'awk_value_t' struct represents values.  The 'val_type' member indicates
-what is in the 'union'.
+   Scalar values in 'awk' are numbers, strings, strnums, or typed
+regexps.  The 'awk_value_t' struct represents values.  The 'val_type'
+member indicates what is in the 'union'.
 
    Representing numbers is easy--the API uses a C 'double'.  Strings
 require more work.  Because 'gawk' allows embedded NUL bytes in string
 values, a string must be represented as a pair containing a data pointer
 and length.  This is the 'awk_string_t' type.
+
+   A strnum (numeric string) value is represented as a string and
+consists of user input data that appears to be numeric.  When an
+extension creates a strnum value, the result is a string flagged as user
+input.  Subsequent parsing by 'gawk' then determines whether it looks
+like a number and should be treated as a strnum, or as a regular string.
+
+   Typed regexp values (*note Strong Regexp Constants::) are not of much
+use to extension functions.  Extension functions can tell that they've
+received them, and create them for scalar values.  Otherwise, they can
+examine the text of the regexp through 'regex_value.str' and
+'regex_value.len'.
 
    Identifiers (i.e., the names of global variables) can be associated
 with either scalar values or with arrays.  In addition, 'gawk' provides
@@ -23832,6 +23848,31 @@ code would use them:
 'make_number(double num, awk_value_t *result);'
      This function simply creates a numeric value in the 'awk_value_t'
      variable pointed to by 'result'.
+
+'static inline awk_value_t *'
+'make_const_user_input(const char *string, size_t length, awk_value_t *result);'
+     This function is identical to 'make_const_string()', but the string
+     is flagged as user input that should be treated as a strnum value
+     if the contents of the string are numeric.
+
+'static inline awk_value_t *'
+'make_malloced_user_input(const char *string, size_t length, awk_value_t *result);'
+     This function is identical to 'make_malloced_string()', but the
+     string is flagged as user input that should be treated as a strnum
+     value if the contents of the string are numeric.
+
+'static inline awk_value_t *'
+'make_const_regex(const char *string, size_t length, awk_value_t *result);'
+     This function creates a strongly typed regexp value by allocating a
+     copy of the string.  'string' is the regular expression of length
+     'len'.
+
+'static inline awk_value_t *'
+'make_malloced_regex(const char *string, size_t length, awk_value_t *result);'
+     This function creates a strongly typed regexp value.  'string' is
+     the regular expression of length 'len'.  It expects 'string' to be
+     a 'char *' value pointing to data previously obtained from
+     'gawk_malloc()', 'gawk_calloc()', or 'gawk_realloc()'.
 
 
 File: gawk.info,  Node: Registration Functions,  Next: Printing Messages,  Prev: Constructor Functions,  Up: Extension API Description
@@ -24580,8 +24621,9 @@ was discussed earlier, in *note General Data Types::.
 
 'awk_bool_t sym_update_scalar(awk_scalar_t cookie, awk_value_t *value);'
      Update the value associated with a scalar cookie.  Return false if
-     the new value is not of type 'AWK_STRING' or 'AWK_NUMBER'.  Here
-     too, the predefined variables may not be updated.
+     the new value is not of type 'AWK_STRING', 'AWK_STRNUM',
+     'AWK_REGEX', or 'AWK_NUMBER'.  Here too, the predefined variables
+     may not be updated.
 
    It is not obvious at first glance how to work with scalar cookies or
 what their raison d'e^tre really is.  In theory, the 'sym_lookup()' and
@@ -24695,10 +24737,10 @@ follows:
 
 'awk_bool_t create_value(awk_value_t *value, awk_value_cookie_t *result);'
      Create a cached string or numeric value from 'value' for efficient
-     later assignment.  Only values of type 'AWK_NUMBER' and
-     'AWK_STRING' are allowed.  Any other type is rejected.
-     'AWK_UNDEFINED' could be allowed, but doing so would result in
-     inferior performance.
+     later assignment.  Only values of type 'AWK_NUMBER', 'AWK_REGEX',
+     'AWK_STRNUM', and 'AWK_STRING' are allowed.  Any other type is
+     rejected.  'AWK_UNDEFINED' could be allowed, but doing so would
+     result in inferior performance.
 
 'awk_bool_t release_value(awk_value_cookie_t vc);'
      Release the memory associated with a value cookie obtained from
@@ -24925,12 +24967,21 @@ The following functions relate to individual array elements:
      array, but after calling this function, it has no elements.  This
      is equivalent to using the 'delete' statement (*note Delete::).
 
+'awk_bool_t flatten_array_typed(awk_array_t a_cookie, awk_flat_array_t **data, awk_valtype_t index_type, awk_valtype_t value_type);'
+     For the array represented by 'a_cookie', create an
+     'awk_flat_array_t' structure and fill it in with indices and values
+     of the requested types.  Set the pointer whose address is passed as
+     'data' to point to this structure.  Return true upon success, or
+     false otherwise.  *Note Flattening Arrays::, for a discussion of
+     how to flatten an array and work with it.
+
 'awk_bool_t flatten_array(awk_array_t a_cookie, awk_flat_array_t **data);'
      For the array represented by 'a_cookie', create an
-     'awk_flat_array_t' structure and fill it in.  Set the pointer whose
-     address is passed as 'data' to point to this structure.  Return
-     true upon success, or false otherwise.  *Note Flattening Arrays::,
-     for a discussion of how to flatten an array and work with it.
+     'awk_flat_array_t' structure and fill it in with 'AWK_STRING'
+     indices and 'AWK_UNDEFINED' values.  This is superseded by
+     'flatten_array_typed()'.  It is provided as a macro, and remains
+     convenience and for source code compatibility with the previous
+     version of the API.
 
 'awk_bool_t release_flattened_array(awk_array_t a_cookie,'
 '                                   awk_flat_array_t *data);'
@@ -25032,7 +25083,7 @@ count of elements in the array and print it:
 double-check that the count in the 'awk_flat_array_t' is the same as the
 count just retrieved:
 
-         if (! flatten_array(value2.array_cookie, & flat_array)) {
+         if (! flatten_array_typed(value2.array_cookie, & flat_array, AWK_STRING, AWK_UNDEFINED)) {
              printf("dump_array_and_delete: could not flatten array\n");
              goto out;
          }
@@ -25348,7 +25399,7 @@ versions are available at compile time as C preprocessor defines to
 support conditional compilation, and as enum constants to facilitate
 debugging:
 
-API Version   C preprocessor define      enum constant
+API Version   C Preprocessor Define      enum constant
 --------------------------------------------------------------------
 Major         'gawk_api_major_version'   'GAWK_API_MAJOR_VERSION'
 Minor         'gawk_api_minor_version'   'GAWK_API_MINOR_VERSION'
@@ -28140,6 +28191,12 @@ to different non-Unix operating systems:
 
 Various '.c', '.y', and '.h' files
      These files contain the actual 'gawk' source code.
+
+'support/*'
+     C header and source files for routines that 'gawk' uses, but that
+     are not part of its core functionality.  For example, argument
+     parsing, regular expression matching, and random number generating
+     routines are all kept here.
 
 'ABOUT-NLS'
      A file containing information about GNU 'gettext' and translations.
@@ -32665,7 +32722,7 @@ Index
 * arrays, unassigned elements:           Reference to Elements.
                                                               (line  18)
 * artificial intelligence, gawk and:     Distribution contents.
-                                                              (line  52)
+                                                              (line  58)
 * ASCII:                                 Ordinal Functions.   (line  45)
 * ASCII <1>:                             Glossary.            (line 196)
 * asort:                                 String Functions.    (line  42)
@@ -35144,7 +35201,7 @@ Index
 * Texinfo <2>:                           Dupword Program.     (line  17)
 * Texinfo <3>:                           Extract Program.     (line  12)
 * Texinfo <4>:                           Distribution contents.
-                                                              (line  77)
+                                                              (line  83)
 * Texinfo <5>:                           Adding Code.         (line 100)
 * Texinfo, chapter beginnings in files:  Regexp Operators.    (line  22)
 * Texinfo, extracting programs from source files: Extract Program.
@@ -35806,142 +35863,142 @@ Ref: figure-call-new-function948497
 Node: Extension API Description950559
 Node: Extension API Functions Introduction952201
 Node: General Data Types957512
-Ref: General Data Types-Footnote-1963467
-Node: Memory Allocation Functions963766
-Ref: Memory Allocation Functions-Footnote-1966611
-Node: Constructor Functions966710
-Node: Registration Functions968455
-Node: Extension Functions969140
-Node: Exit Callback Functions974338
-Node: Extension Version String975588
-Node: Input Parsers976251
-Node: Output Wrappers986133
-Node: Two-way processors990645
-Node: Printing Messages992910
-Ref: Printing Messages-Footnote-1994081
-Node: Updating ERRNO994234
-Node: Requesting Values994973
-Ref: table-value-types-returned995710
-Node: Accessing Parameters996593
-Node: Symbol Table Access997828
-Node: Symbol table by name998340
-Node: Symbol table by cookie1000129
-Ref: Symbol table by cookie-Footnote-11004281
-Node: Cached values1004345
-Ref: Cached values-Footnote-11007852
-Node: Array Manipulation1007943
-Ref: Array Manipulation-Footnote-11009034
-Node: Array Data Types1009071
-Ref: Array Data Types-Footnote-11011729
-Node: Array Functions1011821
-Node: Flattening Arrays1015679
-Node: Creating Arrays1022587
-Node: Redirection API1027356
-Node: Extension API Variables1030187
-Node: Extension Versioning1030820
-Ref: gawk-api-version1031257
-Node: Extension API Informational Variables1032985
-Node: Extension API Boilerplate1034049
-Node: Changes from API V11037911
-Node: Finding Extensions1038571
-Node: Extension Example1039130
-Node: Internal File Description1039928
-Node: Internal File Ops1044008
-Ref: Internal File Ops-Footnote-11055408
-Node: Using Internal File Ops1055548
-Ref: Using Internal File Ops-Footnote-11057931
-Node: Extension Samples1058205
-Node: Extension Sample File Functions1059734
-Node: Extension Sample Fnmatch1067383
-Node: Extension Sample Fork1068870
-Node: Extension Sample Inplace1070088
-Node: Extension Sample Ord1073298
-Node: Extension Sample Readdir1074134
-Ref: table-readdir-file-types1075023
-Node: Extension Sample Revout1075828
-Node: Extension Sample Rev2way1076417
-Node: Extension Sample Read write array1077157
-Node: Extension Sample Readfile1079099
-Node: Extension Sample Time1080194
-Node: Extension Sample API Tests1081542
-Node: gawkextlib1082034
-Node: Extension summary1084481
-Node: Extension Exercises1088183
-Node: Language History1089681
-Node: V7/SVR3.11091337
-Node: SVR41093489
-Node: POSIX1094923
-Node: BTL1096302
-Node: POSIX/GNU1097031
-Node: Feature History1102893
-Node: Common Extensions1117263
-Node: Ranges and Locales1118546
-Ref: Ranges and Locales-Footnote-11123162
-Ref: Ranges and Locales-Footnote-21123189
-Ref: Ranges and Locales-Footnote-31123424
-Node: Contributors1123645
-Node: History summary1129205
-Node: Installation1130585
-Node: Gawk Distribution1131529
-Node: Getting1132013
-Node: Extracting1132974
-Node: Distribution contents1134612
-Node: Unix Installation1140697
-Node: Quick Installation1141379
-Node: Shell Startup Files1143793
-Node: Additional Configuration Options1144871
-Node: Configuration Philosophy1146676
-Node: Non-Unix Installation1149045
-Node: PC Installation1149505
-Node: PC Binary Installation1150343
-Node: PC Compiling1150778
-Node: PC Using1151895
-Node: Cygwin1154940
-Node: MSYS1155710
-Node: VMS Installation1156211
-Node: VMS Compilation1157002
-Ref: VMS Compilation-Footnote-11158231
-Node: VMS Dynamic Extensions1158289
-Node: VMS Installation Details1159974
-Node: VMS Running1162227
-Node: VMS GNV1166506
-Node: VMS Old Gawk1167241
-Node: Bugs1167712
-Node: Bug address1168375
-Node: Usenet1170772
-Node: Maintainers1171547
-Node: Other Versions1172923
-Node: Installation summary1179507
-Node: Notes1180542
-Node: Compatibility Mode1181407
-Node: Additions1182189
-Node: Accessing The Source1183114
-Node: Adding Code1184549
-Node: New Ports1190768
-Node: Derived Files1195256
-Ref: Derived Files-Footnote-11200741
-Ref: Derived Files-Footnote-21200776
-Ref: Derived Files-Footnote-31201374
-Node: Future Extensions1201488
-Node: Implementation Limitations1202146
-Node: Extension Design1203329
-Node: Old Extension Problems1204483
-Ref: Old Extension Problems-Footnote-11206001
-Node: Extension New Mechanism Goals1206058
-Ref: Extension New Mechanism Goals-Footnote-11209422
-Node: Extension Other Design Decisions1209611
-Node: Extension Future Growth1211724
-Node: Old Extension Mechanism1212560
-Node: Notes summary1214323
-Node: Basic Concepts1215505
-Node: Basic High Level1216186
-Ref: figure-general-flow1216468
-Ref: figure-process-flow1217153
-Ref: Basic High Level-Footnote-11220454
-Node: Basic Data Typing1220639
-Node: Glossary1223967
-Node: Copying1255914
-Node: GNU Free Documentation License1293453
-Node: Index1318571
+Ref: General Data Types-Footnote-1964235
+Node: Memory Allocation Functions964534
+Ref: Memory Allocation Functions-Footnote-1967379
+Node: Constructor Functions967478
+Node: Registration Functions970477
+Node: Extension Functions971162
+Node: Exit Callback Functions976360
+Node: Extension Version String977610
+Node: Input Parsers978273
+Node: Output Wrappers988155
+Node: Two-way processors992667
+Node: Printing Messages994932
+Ref: Printing Messages-Footnote-1996103
+Node: Updating ERRNO996256
+Node: Requesting Values996995
+Ref: table-value-types-returned997732
+Node: Accessing Parameters998615
+Node: Symbol Table Access999850
+Node: Symbol table by name1000362
+Node: Symbol table by cookie1002151
+Ref: Symbol table by cookie-Footnote-11006336
+Node: Cached values1006400
+Ref: Cached values-Footnote-11009936
+Node: Array Manipulation1010027
+Ref: Array Manipulation-Footnote-11011118
+Node: Array Data Types1011155
+Ref: Array Data Types-Footnote-11013813
+Node: Array Functions1013905
+Node: Flattening Arrays1018300
+Node: Creating Arrays1025241
+Node: Redirection API1030010
+Node: Extension API Variables1032841
+Node: Extension Versioning1033474
+Ref: gawk-api-version1033911
+Node: Extension API Informational Variables1035639
+Node: Extension API Boilerplate1036703
+Node: Changes from API V11040565
+Node: Finding Extensions1041225
+Node: Extension Example1041784
+Node: Internal File Description1042582
+Node: Internal File Ops1046662
+Ref: Internal File Ops-Footnote-11058062
+Node: Using Internal File Ops1058202
+Ref: Using Internal File Ops-Footnote-11060585
+Node: Extension Samples1060859
+Node: Extension Sample File Functions1062388
+Node: Extension Sample Fnmatch1070037
+Node: Extension Sample Fork1071524
+Node: Extension Sample Inplace1072742
+Node: Extension Sample Ord1075952
+Node: Extension Sample Readdir1076788
+Ref: table-readdir-file-types1077677
+Node: Extension Sample Revout1078482
+Node: Extension Sample Rev2way1079071
+Node: Extension Sample Read write array1079811
+Node: Extension Sample Readfile1081753
+Node: Extension Sample Time1082848
+Node: Extension Sample API Tests1084196
+Node: gawkextlib1084688
+Node: Extension summary1087135
+Node: Extension Exercises1090837
+Node: Language History1092335
+Node: V7/SVR3.11093991
+Node: SVR41096143
+Node: POSIX1097577
+Node: BTL1098956
+Node: POSIX/GNU1099685
+Node: Feature History1105547
+Node: Common Extensions1119917
+Node: Ranges and Locales1121200
+Ref: Ranges and Locales-Footnote-11125816
+Ref: Ranges and Locales-Footnote-21125843
+Ref: Ranges and Locales-Footnote-31126078
+Node: Contributors1126299
+Node: History summary1131859
+Node: Installation1133239
+Node: Gawk Distribution1134183
+Node: Getting1134667
+Node: Extracting1135628
+Node: Distribution contents1137266
+Node: Unix Installation1143608
+Node: Quick Installation1144290
+Node: Shell Startup Files1146704
+Node: Additional Configuration Options1147782
+Node: Configuration Philosophy1149587
+Node: Non-Unix Installation1151956
+Node: PC Installation1152416
+Node: PC Binary Installation1153254
+Node: PC Compiling1153689
+Node: PC Using1154806
+Node: Cygwin1157851
+Node: MSYS1158621
+Node: VMS Installation1159122
+Node: VMS Compilation1159913
+Ref: VMS Compilation-Footnote-11161142
+Node: VMS Dynamic Extensions1161200
+Node: VMS Installation Details1162885
+Node: VMS Running1165138
+Node: VMS GNV1169417
+Node: VMS Old Gawk1170152
+Node: Bugs1170623
+Node: Bug address1171286
+Node: Usenet1173683
+Node: Maintainers1174458
+Node: Other Versions1175834
+Node: Installation summary1182418
+Node: Notes1183453
+Node: Compatibility Mode1184318
+Node: Additions1185100
+Node: Accessing The Source1186025
+Node: Adding Code1187460
+Node: New Ports1193679
+Node: Derived Files1198167
+Ref: Derived Files-Footnote-11203652
+Ref: Derived Files-Footnote-21203687
+Ref: Derived Files-Footnote-31204285
+Node: Future Extensions1204399
+Node: Implementation Limitations1205057
+Node: Extension Design1206240
+Node: Old Extension Problems1207394
+Ref: Old Extension Problems-Footnote-11208912
+Node: Extension New Mechanism Goals1208969
+Ref: Extension New Mechanism Goals-Footnote-11212333
+Node: Extension Other Design Decisions1212522
+Node: Extension Future Growth1214635
+Node: Old Extension Mechanism1215471
+Node: Notes summary1217234
+Node: Basic Concepts1218416
+Node: Basic High Level1219097
+Ref: figure-general-flow1219379
+Ref: figure-process-flow1220064
+Ref: Basic High Level-Footnote-11223365
+Node: Basic Data Typing1223550
+Node: Glossary1226878
+Node: Copying1258825
+Node: GNU Free Documentation License1296364
+Node: Index1321482
 
 End Tag Table
