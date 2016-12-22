@@ -74,6 +74,7 @@ AC_PROG_YACC
 AC_PROG_LN_S
 AC_PROG_CC_C99
 AC_PROG_CPP
+AC_PROG_RANLIB
 
 AC_OBJEXT
 AC_EXEEXT
@@ -400,6 +401,7 @@ esac
 AC_SUBST(GAWKLIBEXT)
 
 AC_CONFIG_FILES(Makefile
+	support/Makefile
 	awklib/Makefile
 	doc/Makefile
 	extras/Makefile

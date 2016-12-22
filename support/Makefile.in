@@ -15,9 +15,9 @@
 @SET_MAKE@
 
 #
-# awklib/Makefile.am --- automake input file for gawk
+# Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1995-2006 the Free Software Foundation, Inc.
+# Copyright (C) 2000-2016 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -93,8 +93,10 @@ am__make_running_with_option = \
   test $$has_opt = yes
 am__make_dryrun = (target_option=n; $(am__make_running_with_option))
 am__make_keepgoing = (target_option=k; $(am__make_running_with_option))
+pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
+pkglibexecdir = $(libexecdir)/@PACKAGE@
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 install_sh_DATA = $(install_sh) -c -m 644
 install_sh_PROGRAM = $(install_sh) -c
@@ -109,8 +111,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-pkglibexec_PROGRAMS = pwcat$(EXEEXT) grcat$(EXEEXT)
-subdir = awklib
+subdir = support
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/arch.m4 \
 	$(top_srcdir)/m4/codeset.m4 $(top_srcdir)/m4/gettext.m4 \
@@ -130,14 +131,19 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(pkglibexecdir)"
-PROGRAMS = $(pkglibexec_PROGRAMS)
-nodist_grcat_OBJECTS = grcat.$(OBJEXT)
-grcat_OBJECTS = $(nodist_grcat_OBJECTS)
-grcat_LDADD = $(LDADD)
-nodist_pwcat_OBJECTS = pwcat.$(OBJEXT)
-pwcat_OBJECTS = $(nodist_pwcat_OBJECTS)
-pwcat_LDADD = $(LDADD)
+LIBRARIES = $(noinst_LIBRARIES)
+AR = ar
+ARFLAGS = cru
+AM_V_AR = $(am__v_AR_@AM_V@)
+am__v_AR_ = $(am__v_AR_@AM_DEFAULT_V@)
+am__v_AR_0 = @echo "  AR      " $@;
+am__v_AR_1 = 
+libsupport_a_AR = $(AR) $(ARFLAGS)
+libsupport_a_LIBADD =
+am_libsupport_a_OBJECTS = dfa.$(OBJEXT) getopt.$(OBJEXT) \
+	getopt1.$(OBJEXT) localeinfo.$(OBJEXT) random.$(OBJEXT) \
+	regex.$(OBJEXT)
+libsupport_a_OBJECTS = $(am_libsupport_a_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -166,8 +172,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(nodist_grcat_SOURCES) $(nodist_pwcat_SOURCES)
-DIST_SOURCES =
+SOURCES = $(libsupport_a_SOURCES)
+DIST_SOURCES = $(libsupport_a_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -195,8 +201,6 @@ CTAGS = ctags
 am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/depcomp \
 	$(top_srcdir)/mkinstalldirs ChangeLog
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-pkgdatadir = $(datadir)/awk
-pkglibexecdir = $(libexecdir)/awk
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
@@ -210,7 +214,7 @@ CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
-DEFS = @DEFS@
+DEFS = -DGAWK -DHAVE_CONFIG_H -I"$(srcdir)/.."
 DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
@@ -325,18 +329,43 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-EXTRA_DIST = ChangeLog ChangeLog.0 extract.awk eg $(srcdir)/stamp-eg
-@TEST_CROSS_COMPILE_FALSE@AWKPROG = LC_ALL=C LANG=C "$(abs_top_builddir)/gawk$(EXEEXT)"
-# With some locales, the script extract.awk fails.
-# So we fix the locale to some sensible value.
-@TEST_CROSS_COMPILE_TRUE@AWKPROG = LC_ALL=C LANG=C awk$(EXEEXT)
 
-# Get config.h from the build directory and custom.h from the source directory.
-AM_CPPFLAGS = -I$(top_builddir) -I$(top_srcdir)
-AUXAWK = passwd.awk group.awk
-nodist_grcat_SOURCES = grcat.c
-nodist_pwcat_SOURCES = pwcat.c
-CLEANFILES = $(nodist_grcat_SOURCES) $(nodist_pwcat_SOURCES)
+# This insures that make flags get passed down to child makes.
+AM_MAKEFLAGS = 'CFLAGS=$(CFLAGS)' 'LDFLAGS=$(LDFLAGS)'
+
+# Stuff to include in the dist that doesn't need it's own
+# Makefile.am files
+EXTRA_DIST = \
+	Makefile.am \
+	Makefile.in \
+	regcomp.c \
+	regex_internal.c \
+	regex_internal.h \
+	regexec.c
+
+
+# what to make and install
+noinst_LIBRARIES = libsupport.a
+libsupport_a_SOURCES = \
+	dfa.c \
+	dfa.h \
+	getopt.c \
+	getopt.h \
+	getopt_int.h \
+	getopt1.c \
+	intprops.h \
+	localeinfo.c \
+	localeinfo.h \
+	random.c \
+	random.h \
+	regex.c \
+	regex.h \
+	verify.h \
+	xalloc.h
+
+
+# For some make's, e.g. OpenBSD, that don't define this
+RM = rm -f
 all: all-am
 
 .SUFFIXES:
@@ -350,9 +379,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu awklib/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu support/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu awklib/Makefile
+	  $(AUTOMAKE) --gnu support/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -370,56 +399,14 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
-install-pkglibexecPROGRAMS: $(pkglibexec_PROGRAMS)
-	@$(NORMAL_INSTALL)
-	@list='$(pkglibexec_PROGRAMS)'; test -n "$(pkglibexecdir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(pkglibexecdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(pkglibexecdir)" || exit 1; \
-	fi; \
-	for p in $$list; do echo "$$p $$p"; done | \
-	sed 's/$(EXEEXT)$$//' | \
-	while read p p1; do if test -f $$p \
-	  ; then echo "$$p"; echo "$$p"; else :; fi; \
-	done | \
-	sed -e 'p;s,.*/,,;n;h' \
-	    -e 's|.*|.|' \
-	    -e 'p;x;s,.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/' | \
-	sed 'N;N;N;s,\n, ,g' | \
-	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1 } \
-	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
-	    if ($$2 == $$4) files[d] = files[d] " " $$1; \
-	    else { print "f", $$3 "/" $$4, $$1; } } \
-	  END { for (d in files) print "f", d, files[d] }' | \
-	while read type dir files; do \
-	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
-	    test -z "$$files" || { \
-	      echo " $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(pkglibexecdir)$$dir'"; \
-	      $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(pkglibexecdir)$$dir" || exit $$?; \
-	    } \
-	; done
 
-uninstall-pkglibexecPROGRAMS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(pkglibexec_PROGRAMS)'; test -n "$(pkglibexecdir)" || list=; \
-	files=`for p in $$list; do echo "$$p"; done | \
-	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
-	      -e 's/$$/$(EXEEXT)/' \
-	`; \
-	test -n "$$list" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(pkglibexecdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(pkglibexecdir)" && rm -f $$files
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
 
-clean-pkglibexecPROGRAMS:
-	-test -z "$(pkglibexec_PROGRAMS)" || rm -f $(pkglibexec_PROGRAMS)
-
-grcat$(EXEEXT): $(grcat_OBJECTS) $(grcat_DEPENDENCIES) $(EXTRA_grcat_DEPENDENCIES) 
-	@rm -f grcat$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(grcat_OBJECTS) $(grcat_LDADD) $(LIBS)
-
-pwcat$(EXEEXT): $(pwcat_OBJECTS) $(pwcat_DEPENDENCIES) $(EXTRA_pwcat_DEPENDENCIES) 
-	@rm -f pwcat$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(pwcat_OBJECTS) $(pwcat_LDADD) $(LIBS)
+libsupport.a: $(libsupport_a_OBJECTS) $(libsupport_a_DEPENDENCIES) $(EXTRA_libsupport_a_DEPENDENCIES) 
+	$(AM_V_at)-rm -f libsupport.a
+	$(AM_V_AR)$(libsupport_a_AR) libsupport.a $(libsupport_a_OBJECTS) $(libsupport_a_LIBADD)
+	$(AM_V_at)$(RANLIB) libsupport.a
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -427,8 +414,12 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/grcat.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pwcat.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dfa.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt1.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/localeinfo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/random.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regex.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -528,11 +519,8 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(LIBRARIES)
 installdirs:
-	for dir in "$(DESTDIR)$(pkglibexecdir)"; do \
-	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
-	done
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -555,7 +543,6 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -566,8 +553,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-local clean-pkglibexecPROGRAMS \
-	mostlyclean-am
+clean-am: clean-generic clean-noinstLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -593,9 +579,8 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-pkglibexecPROGRAMS
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
+install-exec-am:
+
 install-html: install-html-am
 
 install-html-am:
@@ -633,70 +618,25 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-local uninstall-pkglibexecPROGRAMS
+uninstall-am:
 
-.MAKE: install-am install-exec-am install-strip
+.MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
-	clean-local clean-pkglibexecPROGRAMS cscopelist-am ctags \
-	ctags-am distclean distclean-compile distclean-generic \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-exec-hook \
-	install-html install-html-am install-info install-info-am \
-	install-man install-pdf install-pdf-am \
-	install-pkglibexecPROGRAMS install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am uninstall-local \
-	uninstall-pkglibexecPROGRAMS
+	clean-noinstLIBRARIES cscopelist-am ctags ctags-am distclean \
+	distclean-compile distclean-generic distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic pdf pdf-am ps ps-am tags tags-am uninstall \
+	uninstall-am
 
 .PRECIOUS: Makefile
 
-
-all: $(srcdir)/stamp-eg $(AUXPROGS) $(AUXAWK)
-
-install-exec-hook: $(AUXAWK)
-	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
-	for i in $(AUXAWK) $(srcdir)/eg/lib/*.awk ; do \
-		progname=`echo $$i | sed 's;.*/;;'` ; \
-		$(INSTALL_DATA) $$i $(DESTDIR)$(pkgdatadir)/$$progname ; \
-	done
-
-# pkglibexecdir and pkgdatadir are removed in the top level Makefile's uninstall
-uninstall-local:
-	rm -fr $(DESTDIR)$(pkglibexecdir)/* $(DESTDIR)$(pkgdatadir)/*
-
-clean-local:
-	rm -f $(AUXAWK) *.exe
-	rm -fr eg.old
-	rm -fr grcat.dSYM pwcat.dSYM
-
-$(srcdir)/stamp-eg: $(srcdir)/../doc/gawktexi.in $(srcdir)/../doc/gawkinet.texi
-	cd $(srcdir) && \
-	rm -fr eg && \
-	rm -fr stamp-eg && \
-	$(AWKPROG) -f ./extract.awk ../doc/gawktexi.in ../doc/gawkinet.texi
-	@echo 'some makes are stupid and will not check a directory' > $(srcdir)/stamp-eg
-	@echo 'against a file, so this file is a place holder. gack.' >> $(srcdir)/stamp-eg
-
-pwcat.c: $(srcdir)/eg/lib/pwcat.c
-	rm -f $@
-	$(LN_S) $(srcdir)/eg/lib/pwcat.c .
-
-grcat.c: $(srcdir)/eg/lib/grcat.c
-	rm -f $@
-	$(LN_S) $(srcdir)/eg/lib/grcat.c .
-
-$(srcdir)/eg/lib/pwcat.c $(srcdir)/eg/lib/grcat.c $(srcdir)/eg/prog/igawk.sh \
-$(srcdir)/eg/lib/passwdawk.in $(srcdir)/eg/lib/groupawk.in: stamp-eg; @:
-
-passwd.awk: $(srcdir)/eg/lib/passwdawk.in
-	sed 's;/usr/local/libexec/awk;$(pkglibexecdir);' < $(srcdir)/eg/lib/passwdawk.in > passwd.awk
-
-group.awk: $(srcdir)/eg/lib/groupawk.in
-	sed 's;/usr/local/libexec/awk;$(pkglibexecdir);' < $(srcdir)/eg/lib/groupawk.in > group.awk
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
