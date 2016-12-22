@@ -51,30 +51,26 @@ EXTRA_DIST = \
 	po/README \
 	pc \
 	posix \
-	regcomp.c \
-	regex_internal.c \
-	regex_internal.h \
-	regexec.c \
 	vms \
 	ylwrap
 
 # The order to do things in.
 #
+# Build in support first, since we need the support library.
+#
 # Build explicitly in "." in order to build gawk first, so
 # that `make check' without a prior `make' works.
-#
+SUBDIRS = support .
+
 # Build in extension before test so that
 # 	./configure && make check
 # works properly too.
-#
-# Build in awklib after in doc, since we want to extract
-# sample files if doc/gawk.texi changed.
-SUBDIRS = .
-
 if ENABLE_EXTENSIONS
 SUBDIRS += extension
 endif
 
+# Build in awklib after in doc, since we want to extract
+# sample files if doc/gawk.texi changed.
 SUBDIRS += extras doc awklib po test
 
 # what to make and install
@@ -92,8 +88,6 @@ base_sources = \
 	command.y \
 	custom.h \
 	debug.c \
-	dfa.c \
-	dfa.h \
 	eval.c \
 	ext.c \
 	field.c \
@@ -102,15 +96,9 @@ base_sources = \
 	gawkapi.c \
 	gawkapi.h \
 	gawkmisc.c \
-	getopt.c \
-	getopt.h \
-	getopt1.c \
-	getopt_int.h \
 	gettext.h \
 	int_array.c \
 	interpret.h \
-	localeinfo.c \
-	localeinfo.h \
 	io.c \
 	mbsupport.h \
 	main.c \
@@ -120,22 +108,17 @@ base_sources = \
 	nonposix.h \
 	profile.c \
 	protos.h \
-	random.c \
-	random.h \
 	re.c \
-	regex.c \
-	regex.h \
 	replace.c \
 	str_array.c \
 	symbol.c \
-	verify.h \
-	version.c \
-	xalloc.h
+	version.c
 
 gawk_SOURCES = $(base_sources)
 
 # Get extra libs as needed, Automake will supply LIBINTL and SOCKET_LIBS.
-LDADD = $(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS) $(LIBREADLINE) $(LIBMPFR)
+LDADD = support/libsupport.a \
+	$(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS) $(LIBREADLINE) $(LIBMPFR)
 
 # Directory for gawk's data files. Automake supplies datadir.
 pkgdatadir = $(datadir)/awk
@@ -147,7 +130,7 @@ DEFPATH='".$(PATH_SEPARATOR)$(pkgdatadir)"'
 SHLIBEXT = "\"$(GAWKLIBEXT)"\"
 DEFLIBPATH="\"$(pkgextensiondir)\""
 
-DEFS= -DDEFPATH=$(DEFPATH) -DDEFLIBPATH=$(DEFLIBPATH) -DSHLIBEXT=$(SHLIBEXT) -DHAVE_CONFIG_H -DGAWK -DLOCALEDIR='"$(datadir)/locale"'
+DEFS= -DDEFPATH=$(DEFPATH) -DDEFLIBPATH=$(DEFLIBPATH) -DSHLIBEXT=$(SHLIBEXT) -DHAVE_CONFIG_H -DGAWK -DLOCALEDIR='"$(datadir)/locale"' -I"$(srcdir)/support"
 
 # Get rid of core files when cleaning
 CLEANFILES = core core.*
