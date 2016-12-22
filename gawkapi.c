@@ -31,6 +31,7 @@ extern INSTRUCTION *main_beginfile;
 extern int currule;
 
 static awk_bool_t node_to_awk_value(NODE *node, awk_value_t *result, awk_valtype_t wanted);
+static char *valtype2str(awk_valtype_t type);
 
 /*
  * api_get_argument --- get the count'th paramater, zero-based.
@@ -515,9 +516,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				break;
 			case NUMBER:
 				(void) force_string(node);
-				assign_string(node, val, AWK_STRNUM);
-				ret = awk_true;
-				break;
+				/* fall through */
 			case NUMBER|USER_INPUT:
 				assign_string(node, val, AWK_STRNUM);
 				ret = awk_true;
@@ -1090,7 +1089,7 @@ api_clear_array(awk_ext_id_t id, awk_array_t a_cookie)
 	return awk_true;
 }
 
-/* api_flatten_array --- flatten out an array so that it can be looped over easily. */
+/* api_flatten_array_typed --- flatten out an array so that it can be looped over easily. */
 
 static awk_bool_t
 api_flatten_array_typed(awk_ext_id_t id,
@@ -1128,32 +1127,19 @@ api_flatten_array_typed(awk_ext_id_t id,
 		index = list[i];
 		value = list[i + 1]; /* number or string or subarray */
 
-		/* Convert index and value to ext types. */
+		/* Convert index and value to API types. */
 		if (! node_to_awk_value(index,
 				& (*data)->elements[j].index, index_type)) {
-			fatal(_("api_flatten_array_typed: could not convert index %d to %d\n"),
-						(int) i, (int) index_type);
+			fatal(_("api_flatten_array_typed: could not convert index %d to %s\n"),
+						(int) i, valtype2str(index_type));
 		}
 		if (! node_to_awk_value(value,
 				& (*data)->elements[j].value, value_type)) {
-			fatal(_("api_flatten_array_typed: could not convert value %d to %d\n"),
-						(int) i, (int) value_type);
+			fatal(_("api_flatten_array_typed: could not convert value %d to %s\n"),
+						(int) i, valtype2str(value_type));
 		}
 	}
 	return awk_true;
-}
-
-/*
- * api_flatten_array -- replaced by api_flatten_array_typed. This function
- * is retained only for binary compatibility.
- */
-
-static awk_bool_t
-api_flatten_array(awk_ext_id_t id,
-		awk_array_t a_cookie,
-		awk_flat_array_t **data)
-{
-	return api_flatten_array_typed(id, a_cookie, data, AWK_STRING, AWK_UNDEFINED);
 }
 
 /*
@@ -1375,6 +1361,7 @@ gawk_api_t api_impl = {
 	api_fatal,
 	api_warning,
 	api_lintwarn,
+	api_nonfatal,
 
 	/* updating ERRNO */
 	api_update_ERRNO_int,
@@ -1404,7 +1391,7 @@ gawk_api_t api_impl = {
 	api_del_array_element,
 	api_create_array,
 	api_clear_array,
-	api_flatten_array,	/* for legacy binary compatibility */
+	api_flatten_array_typed,
 	api_release_flattened_array,
 
 	/* Memory allocation */
@@ -1415,12 +1402,6 @@ gawk_api_t api_impl = {
 
 	/* Find/open a file */
 	api_get_file,
-
-	/* Print nonfatal error message */
-	api_nonfatal,
-
-	/* New array flattening function */
-	api_flatten_array_typed,
 };
 
 /* init_ext_api --- init the extension API */
@@ -1454,4 +1435,31 @@ print_ext_versions(void)
 
 	for (p = vi_head; p != NULL; p = p->next)
 		printf("%s\n", p->version);
+}
+
+/* valtype2str --- return a printable representation of a value type */
+
+static char *
+valtype2str(awk_valtype_t type)
+{
+	static char buf[100];
+
+	// Important: keep in same order as in gawkapi.h!
+	static char *values[] = {
+		"AWK_UNDEFINED",
+		"AWK_NUMBER",
+		"AWK_STRING",
+		"AWK_REGEX",
+		"AWK_STRNUM",
+		"AWK_ARRAY",
+		"AWK_SCALAR",
+		"AWK_VALUE_COOKIE",
+	};
+
+	if (AWK_UNDEFINED <= type && type <= AWK_VALUE_COOKIE)
+		return values[(int) type];
+
+	sprintf(buf, "unknown type! (%d)", (int) type);
+
+	return buf;
 }

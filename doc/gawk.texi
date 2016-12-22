@@ -32557,11 +32557,11 @@ multibyte encoding.
 @itemx @ @ @ @ AWK_UNDEFINED,
 @itemx @ @ @ @ AWK_NUMBER,
 @itemx @ @ @ @ AWK_STRING,
+@itemx @ @ @ @ AWK_REGEX,
+@itemx @ @ @ @ AWK_STRNUM,
 @itemx @ @ @ @ AWK_ARRAY,
 @itemx @ @ @ @ AWK_SCALAR,@ @ @ @ @ @ @ @ @ /* opaque access to a variable */
-@itemx @ @ @ @ AWK_VALUE_COOKIE,@ @ @ /* for updating a previously created value */
-@itemx @ @ @ @ AWK_REGEX,
-@itemx @ @ @ @ AWK_STRNUM
+@itemx @ @ @ @ AWK_VALUE_COOKIE@ @ @ @ /* for updating a previously created value */
 @itemx @} awk_valtype_t;
 This @code{enum} indicates the type of a value.
 It is used in the following @code{struct}.
@@ -32614,9 +32614,9 @@ data pointer and length. This is the @code{awk_string_t} type.
 
 A strnum (numeric string) value is represented as a string and consists
 of user input data that appears to be numeric.
-When an extension attempts to create a strnum value, a string flagged
-as user input is created. Subsequent parsing will determine whether it
-looks like a number and should be treated as a strnum or a regular string.
+When an extension creates a strnum value, the result is a string flagged
+as user input. Subsequent parsing by @command{gawk} then determines whether it
+looks like a number and should be treated as a strnum, or as a regular string.
 
 Typed regexp values (@pxref{Strong Regexp Constants}) are not of
 much use to extension functions.  Extension functions can tell that
@@ -32793,13 +32793,13 @@ pointed to by @code{result}.
 
 @item static inline awk_value_t *
 @itemx make_const_user_input(const char *string, size_t length, awk_value_t *result);
-This function is identical to @code{make_const_string}, but the string is
+This function is identical to @code{make_const_string()}, but the string is
 flagged as user input that should be treated as a strnum value if the contents
 of the string are numeric.
 
 @item static inline awk_value_t *
 @itemx make_malloced_user_input(const char *string, size_t length, awk_value_t *result);
-This function is identical to @code{make_malloced_string}, but the string is
+This function is identical to @code{make_malloced_string()}, but the string is
 flagged as user input that should be treated as a strnum value if the contents
 of the string are numeric.
 
@@ -34068,7 +34068,8 @@ statement (@pxref{Delete}).
 
 @item awk_bool_t flatten_array_typed(awk_array_t a_cookie, awk_flat_array_t **data, awk_valtype_t index_type, awk_valtype_t value_type);
 For the array represented by @code{a_cookie}, create an @code{awk_flat_array_t}
-structure and fill it in with indices and values of the requested types. Set the pointer whose address is passed as @code{data}
+structure and fill it in with indices and values of the requested types.
+Set the pointer whose address is passed as @code{data}
 to point to this structure.
 Return true upon success, or false otherwise.
 @ifset FOR_PRINT
@@ -34083,8 +34084,10 @@ flatten an array and work with it.
 @item awk_bool_t flatten_array(awk_array_t a_cookie, awk_flat_array_t **data);
 For the array represented by @code{a_cookie}, create an @code{awk_flat_array_t}
 structure and fill it in with @code{AWK_STRING} indices and
-@code{AWK_UNDEFINED} values.  This is superseded by @code{flatten_array_typed}
-and retained only for legacy binary compatibility.
+@code{AWK_UNDEFINED} values.
+This is superseded by @code{flatten_array_typed()}.
+It is provided as a macro, and remains convenience and for source code
+compatibility with the previous version of the API.
 
 @item awk_bool_t release_flattened_array(awk_array_t a_cookie,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_flat_array_t *data);
@@ -38246,6 +38249,12 @@ These files contain the actual @command{gawk} source code.
 @end table
 
 @table @file
+@item support/*
+C header and source files for routines that @command{gawk}
+uses, but that are not part of its core functionality.
+For example, argument parsing, regular expression matching,
+and random number generating routines are all kept here.
+
 @item ABOUT-NLS
 A file containing information about GNU @command{gettext} and translations.
 

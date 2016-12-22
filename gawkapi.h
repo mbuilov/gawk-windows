@@ -306,11 +306,11 @@ typedef enum {
 	AWK_UNDEFINED,
 	AWK_NUMBER,
 	AWK_STRING,
+	AWK_REGEX,
+	AWK_STRNUM,
 	AWK_ARRAY,
 	AWK_SCALAR,		/* opaque access to a variable */
-	AWK_VALUE_COOKIE,	/* for updating a previously created value */
-	AWK_REGEX,
-	AWK_STRNUM
+	AWK_VALUE_COOKIE	/* for updating a previously created value */
 } awk_valtype_t;
 
 /*
@@ -473,6 +473,7 @@ typedef struct gawk_api {
 	void (*api_fatal)(awk_ext_id_t id, const char *format, ...);
 	void (*api_warning)(awk_ext_id_t id, const char *format, ...);
 	void (*api_lintwarn)(awk_ext_id_t id, const char *format, ...);
+	void (*api_nonfatal)(awk_ext_id_t id, const char *format, ...);
 
 	/* Functions to update ERRNO */
 	void (*api_update_ERRNO_int)(awk_ext_id_t id, int errno_val);
@@ -686,15 +687,14 @@ typedef struct gawk_api {
 	awk_bool_t (*api_clear_array)(awk_ext_id_t id, awk_array_t a_cookie);
 
 	/*
-	 * Flatten out an array so that it can be looped over easily.
-	 * This function returns all indices as strings and values as
-	 * the native type one would get from an AWK_UNDEFINED request.
-	 * Please use api_flatten_array_typed for more control over the
-	 * type conversions.
+	 * Flatten out an array with type conversions as requested.
+	 * This supersedes the api_flatten_array function that did not allow
+	 * the caller to specify the requested types.
 	 */
-	awk_bool_t (*api_flatten_array)(awk_ext_id_t id,
+	awk_bool_t (*api_flatten_array_typed)(awk_ext_id_t id,
 			awk_array_t a_cookie,
-			awk_flat_array_t **data);
+			awk_flat_array_t **data,
+			awk_valtype_t index_type, awk_valtype_t value_type);
 
 	/* When done, delete any marked elements, release the memory. */
 	awk_bool_t (*api_release_flattened_array)(awk_ext_id_t id,
@@ -743,19 +743,6 @@ typedef struct gawk_api {
 			 */
 			const awk_input_buf_t **ibufp,
 			const awk_output_buf_t **obufp);
-
-	/* Print nonfatal error message */
-	void (*api_nonfatal)(awk_ext_id_t id, const char *format, ...);
-
-	/*
-	 * Flatten out an array with type conversions as requested.
-	 * This supersedes the api_flatten_array function that did not allow
-	 * the caller to specify the requested types.
-	 */
-	awk_bool_t (*api_flatten_array_typed)(awk_ext_id_t id,
-			awk_array_t a_cookie,
-			awk_flat_array_t **data,
-			awk_valtype_t index_type, awk_valtype_t value_type);
 
 } gawk_api_t;
 

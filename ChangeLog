@@ -26,6 +26,19 @@
 	regcomp.c, regex.c, regex.h, regex_internal.c, regex_internal.h,
 	regexec.c, verify.h, xalloc.h: Moved to support.
 
+	Unrelated: Totally break binary compatibility in the API
+	after merging in API min/max changes and REGEX and STRNUM
+	support in the API:
+
+	* gawkapi.c (valtype2str): New function.
+	(node_to_awk_value): Minor simplification in a switch.
+	(api_flatten_array): Removed.
+	(api_flatten_array_typed): Use valtype2str in error message.
+	(api_impl): Reorder functions to group related ones together again.
+	* gawkapi.h (awk_valtype_t): Reorder enum values.
+	(struct gawk_api): Remove api_flatten_array field.  Reorder
+	functions to group related ones together again.
+
 2016-12-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkapi.h (api_add_ext_func): Add comment about point to
