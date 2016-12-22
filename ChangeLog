@@ -1,3 +1,31 @@
+2016-12-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNULIB.
+	* intprops.h: New file.
+	* Makefile.am (base_sources): Add intprops.h.
+
+	Unrelated.  Import GNULIB fix for regex: fix integer-overflow
+	bug in never-used code.
+	Problem reported by Clément Pit–Claudel in:
+	http://lists.gnu.org/archive/html/emacs-devel/2016-12/msg00654.html
+	Fix by Paul Eggert  <eggert@cs.ucla.edu>:
+
+	* regex_internal.h: Include intprops.h.
+	* regexec.c (re_search_2_stub): Use it to avoid undefined
+	behavior on integer overflow.
+
+	Unrelated. Set up a support directory for externally obtained
+	support files.
+
+	* Makefile.am (base_sources, EXTRA_DIST): Edit lists.
+	(SUBDIRS): Get ordering right.
+	(LDADD): Add support/libsupport.a.
+	(DEFS): Add -I for support directory.
+	* dfa.c, dfa.h, getopt.c, getopt.h, getopt1.c, getopt_int.h,
+	intprops.h, localeinfo.c, localeinfo.h, random.c, random.h,
+	regcomp.c, regex.c, regex.h, regex_internal.c, regex_internal.h,
+	regexec.c, verify.h, xalloc.h: Moved to support.
+
 2016-12-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with GNULIB.

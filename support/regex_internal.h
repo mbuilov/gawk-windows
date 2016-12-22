@@ -44,6 +44,9 @@
 #if defined HAVE_STDINT_H || defined _LIBC
 # include <stdint.h>
 #endif /* HAVE_STDINT_H || _LIBC */
+ 
+#include "intprops.h"
+
 #if defined _LIBC
 # include <libc-lock.h>
 #else
