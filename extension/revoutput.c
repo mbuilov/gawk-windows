@@ -134,7 +134,7 @@ init_revoutput()
 }
 
 static awk_ext_func_t func_table[] = {
-	{ NULL, NULL, 0 }
+	{ NULL, NULL, 0, 0, awk_false, NULL }
 };
 
 /* define the dl_load function using the boilerplate macro */
