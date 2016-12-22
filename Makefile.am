@@ -109,6 +109,7 @@ base_sources = \
 	gettext.h \
 	int_array.c \
 	interpret.h \
+	intprops.h \
 	localeinfo.c \
 	localeinfo.h \
 	io.c \

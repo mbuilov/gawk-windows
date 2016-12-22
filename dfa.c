@@ -24,6 +24,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #ifndef VMS
@@ -60,15 +61,19 @@
 
 #include <wchar.h>
 
+#include "intprops.h"
 #include "xalloc.h"
+#include "localeinfo.h"
+
+#ifndef MIN
+# define MIN(a,b) ((a) < (b) ? (a) : (b))
+#endif
 
 #if defined(__DJGPP__)
 #include "mbsupport.h"
 #endif
 
 #include "dfa.h"
-
-#include "localeinfo.h"
 
 #ifdef GAWK
 static int
@@ -203,6 +208,7 @@ to_uchar (char ch)
    codes are returned by the lexical analyzer.  */
 
 typedef ptrdiff_t token;
+#define TOKEN_MAX PTRDIFF_MAX
 
 /* States are indexed by state_num values.  These are normally
    nonnegative but -1 is used as a special value.  */
@@ -311,8 +317,8 @@ typedef struct
 typedef struct
 {
   position *elems;              /* Elements of this position set.  */
-  size_t nelem;                 /* Number of elements in this set.  */
-  size_t alloc;                 /* Number of elements allocated in ELEMS.  */
+  ptrdiff_t nelem;              /* Number of elements in this set.  */
+  ptrdiff_t alloc;              /* Number of elements allocated in ELEMS.  */
 } position_set;
 
 /* Sets of leaves are also stored as arrays.  */
@@ -351,7 +357,7 @@ struct mb_char_classes
   ptrdiff_t cset;
   bool invert;
   wchar_t *chars;               /* Normal characters.  */
-  size_t nchars;
+  ptrdiff_t nchars;
 };
 
 struct regex_syntax
@@ -428,8 +434,8 @@ struct dfa
 
   /* Fields filled by the scanner.  */
   charclass *charclasses;       /* Array of character sets for CSET tokens.  */
-  size_t cindex;                /* Index for adding new charclasses.  */
-  size_t calloc;                /* Number of charclasses allocated.  */
+  ptrdiff_t cindex;             /* Index for adding new charclasses.  */
+  ptrdiff_t calloc;             /* Number of charclasses allocated.  */
   size_t canychar;              /* Index of anychar class, or (size_t) -1.  */
 
   /* Scanner state */
@@ -475,8 +481,8 @@ struct dfa
 
   /* Array of the bracket expression in the DFA.  */
   struct mb_char_classes *mbcsets;
-  size_t nmbcsets;
-  size_t mbcsets_alloc;
+  ptrdiff_t nmbcsets;
+  ptrdiff_t mbcsets_alloc;
 
   /* Fields filled by the superset.  */
   struct dfa *superset;             /* Hint of the dfa.  */
@@ -484,7 +490,7 @@ struct dfa
   /* Fields filled by the state builder.  */
   dfa_state *states;            /* States of the dfa.  */
   state_num sindex;             /* Index for adding new states.  */
-  size_t salloc;		/* Number of states currently allocated.  */
+  ptrdiff_t salloc;		/* Number of states currently allocated.  */
 
   /* Fields filled by the parse tree->NFA conversion.  */
   position_set *follows;        /* Array of follow sets, indexed by position
@@ -516,7 +522,7 @@ struct dfa
                                    never accept.  If the transitions for a
                                    state have not yet been computed, or the
                                    state could possibly accept, its entry in
-                                   this table is NULL.  This points to one
+                                   this table is NULL.  This points to two
                                    past the start of the allocated array,
                                    and trans[-1] and trans[-2] are always
                                    NULL.  */
@@ -756,34 +762,95 @@ emptyset (charclass const s)
   return w == 0;
 }
 
-/* Ensure that the array addressed by PTR holds at least NITEMS +
-   (PTR || !NITEMS) items.  Either return PTR, or reallocate the array
-   and return its new address.  Although PTR may be null, the returned
-   value is never null.
+/* Grow PA, which points to an array of *NITEMS items, and return the
+   location of the reallocated array, updating *NITEMS to reflect its
+   new size.  The new array will contain at least NITEMS_INCR_MIN more
+   items, but will not contain more than NITEMS_MAX items total.
+   ITEM_SIZE is the size of each item, in bytes.
 
-   The array holds *NALLOC items; *NALLOC is updated on reallocation.
-   ITEMSIZE is the size of one item.  Avoid O(N**2) behavior on arrays
-   growing linearly.  */
+   ITEM_SIZE and NITEMS_INCR_MIN must be positive.  *NITEMS must be
+   nonnegative.  If NITEMS_MAX is -1, it is treated as if it were
+   infinity.
+
+   If PA is null, then allocate a new array instead of reallocating
+   the old one.
+
+   Thus, to grow an array A without saving its old contents, do
+   { free (A); A = xpalloc (NULL, &AITEMS, ...); }.  */
+
 static void *
-maybe_realloc (void *ptr, size_t nitems, size_t *nalloc, size_t itemsize)
+xpalloc (void *pa, ptrdiff_t *nitems, ptrdiff_t nitems_incr_min,
+	 ptrdiff_t nitems_max, ptrdiff_t item_size)
 {
-  if (nitems < *nalloc)
-    return ptr;
-  *nalloc = nitems;
-  return x2nrealloc (ptr, nalloc, itemsize);
+  ptrdiff_t n0 = *nitems;
+
+  /* The approximate size to use for initial small allocation
+     requests.  This is the largest "small" request for the GNU C
+     library malloc.  */
+  enum { DEFAULT_MXFAST = 64 * sizeof (size_t) / 4 };
+
+  /* If the array is tiny, grow it to about (but no greater than)
+     DEFAULT_MXFAST bytes.  Otherwise, grow it by about 50%.
+     Adjust the growth according to three constraints: NITEMS_INCR_MIN,
+     NITEMS_MAX, and what the C language can represent safely.  */
+
+  ptrdiff_t n, nbytes;
+  if (INT_ADD_WRAPV (n0, n0 >> 1, &n))
+    n = PTRDIFF_MAX;
+  if (0 <= nitems_max && nitems_max < n)
+    n = nitems_max;
+
+  ptrdiff_t adjusted_nbytes
+    = ((INT_MULTIPLY_WRAPV (n, item_size, &nbytes) || SIZE_MAX < nbytes)
+       ? MIN (PTRDIFF_MAX, SIZE_MAX)
+       : nbytes < DEFAULT_MXFAST ? DEFAULT_MXFAST : 0);
+  if (adjusted_nbytes)
+    {
+      n = adjusted_nbytes / item_size;
+      nbytes = adjusted_nbytes - adjusted_nbytes % item_size;
+    }
+
+  if (! pa)
+    *nitems = 0;
+  if (n - n0 < nitems_incr_min
+      && (INT_ADD_WRAPV (n0, nitems_incr_min, &n)
+	  || (0 <= nitems_max && nitems_max < n)
+	  || INT_MULTIPLY_WRAPV (n, item_size, &nbytes)))
+    xalloc_die ();
+  pa = xrealloc (pa, nbytes);
+  *nitems = n;
+  return pa;
+}
+
+/* Ensure that the array addressed by PA holds at least I + 1 items.
+   Either return PA, or reallocate the array and return its new address.
+   Although PA may be null, the returned value is never null.
+
+   The array holds *NITEMS items, where 0 <= I <= *NITEMS; *NITEMS
+   is updated on reallocation.  If PA is null, *NITEMS must be zero.
+   Do not allocate more than NITEMS_MAX items total; -1 means no limit.
+   ITEM_SIZE is the size of one item; it must be positive.
+   Avoid O(N**2) behavior on arrays growing linearly.  */
+static void *
+maybe_realloc (void *pa, ptrdiff_t i, ptrdiff_t *nitems,
+               ptrdiff_t nitems_max, ptrdiff_t item_size)
+{
+  if (i < *nitems)
+    return pa;
+  return xpalloc (pa, nitems, 1, nitems_max, item_size);
 }
 
 /* In DFA D, find the index of charclass S, or allocate a new one.  */
-static size_t
+static ptrdiff_t
 charclass_index (struct dfa *d, charclass const s)
 {
-  size_t i;
+  ptrdiff_t i;
 
   for (i = 0; i < d->cindex; ++i)
     if (equal (s, d->charclasses[i]))
       return i;
   d->charclasses = maybe_realloc (d->charclasses, d->cindex, &d->calloc,
-                                  sizeof *d->charclasses);
+                                  TOKEN_MAX - CSET, sizeof *d->charclasses);
   ++d->cindex;
   copyset (s, d->charclasses[i]);
   return i;
@@ -911,10 +978,6 @@ using_simple_locale (bool multibyte)
       }						\
   } while (false)
 
-#ifndef MIN
-# define MIN(a,b) ((a) < (b) ? (a) : (b))
-#endif
-
 typedef int predicate (int);
 
 /* The following list maps the names of the Posix named character classes
@@ -980,13 +1043,13 @@ parse_bracket_exp (struct dfa *dfa)
 
   /* Work area to build a mb_char_classes.  */
   struct mb_char_classes *work_mbc;
-  size_t chars_al;
+  ptrdiff_t chars_al;
 
   chars_al = 0;
   if (dfa->localeinfo.multibyte)
     {
       dfa->mbcsets = maybe_realloc (dfa->mbcsets, dfa->nmbcsets,
-                                    &dfa->mbcsets_alloc,
+                                    &dfa->mbcsets_alloc, -1,
                                     sizeof *dfa->mbcsets);
 
       /* dfa->multibyte_prop[] hold the index of dfa->mbcsets.
@@ -1174,7 +1237,7 @@ parse_bracket_exp (struct dfa *dfa)
               {
                 work_mbc->chars
                   = maybe_realloc (work_mbc->chars, work_mbc->nchars,
-                                   &chars_al, sizeof *work_mbc->chars);
+                                   &chars_al, -1, sizeof *work_mbc->chars);
                 work_mbc->chars[work_mbc->nchars++] = folded[i];
               }
         }
@@ -1623,7 +1686,7 @@ addtok (struct dfa *dfa, token t)
     {
       bool need_or = false;
       struct mb_char_classes *work_mbc = &dfa->mbcsets[dfa->nmbcsets - 1];
-      size_t i;
+      ptrdiff_t i;
 
       /* Extract wide characters into alternations for better performance.
          This does not require UTF-8.  */
@@ -1984,8 +2047,8 @@ copy (position_set const *src, position_set *dst)
   if (dst->alloc < src->nelem)
     {
       free (dst->elems);
-      dst->alloc = src->nelem;
-      dst->elems = x2nrealloc (NULL, &dst->alloc, sizeof *dst->elems);
+      dst->elems = xpalloc (NULL, &dst->alloc, src->nelem - dst->alloc, -1,
+                            sizeof *dst->elems);
     }
   memcpy (dst->elems, src->elems, src->nelem * sizeof *dst->elems);
   dst->nelem = src->nelem;
@@ -1995,6 +2058,8 @@ static void
 alloc_position_set (position_set *s, size_t size)
 {
   s->elems = xnmalloc (size, sizeof *s->elems);
+  if (PTRDIFF_MAX < SIZE_MAX / sizeof *s->elems && PTRDIFF_MAX < size)
+    xalloc_die ();
   s->alloc = size;
   s->nelem = 0;
 }
@@ -2006,29 +2071,66 @@ alloc_position_set (position_set *s, size_t size)
 static void
 insert (position p, position_set *s)
 {
-  size_t count = s->nelem;
-  size_t lo = 0, hi = count;
-  size_t i;
+  ptrdiff_t count = s->nelem;
+  ptrdiff_t lo = 0, hi = count;
+  ptrdiff_t i;
   while (lo < hi)
     {
-      size_t mid = (lo + hi) >> 1;
+      ptrdiff_t mid = (lo + hi) >> 1;
       if (s->elems[mid].index > p.index)
         lo = mid + 1;
+      else if (s->elems[mid].index == p.index)
+        {
+          s->elems[mid].constraint |= p.constraint;
+          return;
+        }
       else
         hi = mid;
     }
 
-  if (lo < count && p.index == s->elems[lo].index)
-    {
-      s->elems[lo].constraint |= p.constraint;
-      return;
-    }
-
-  s->elems = maybe_realloc (s->elems, count, &s->alloc, sizeof *s->elems);
+  s->elems = maybe_realloc (s->elems, count, &s->alloc, -1, sizeof *s->elems);
   for (i = count; i > lo; i--)
     s->elems[i] = s->elems[i - 1];
   s->elems[lo] = p;
   ++s->nelem;
+}
+
+/* Merge S1 and S2 (with the additional constraint C2) into M.  The
+   result is as if the positions of S1, and of S2 with the additional
+   constraint C2, were inserted into an initially empty set.  */
+static void
+merge_constrained (position_set const *s1, position_set const *s2,
+                   unsigned int c2, position_set *m)
+{
+  ptrdiff_t i = 0, j = 0;
+
+  if (m->alloc - s1->nelem < s2->nelem)
+    {
+      free (m->elems);
+      m->alloc = s1->nelem;
+      m->elems = xpalloc (NULL, &m->alloc, s2->nelem, -1, sizeof *m->elems);
+    }
+  m->nelem = 0;
+  while (i < s1->nelem || j < s2->nelem)
+    if (! (j < s2->nelem)
+        || (i < s1->nelem && s1->elems[i].index >= s2->elems[j].index))
+      {
+        unsigned int c = ((i < s1->nelem && j < s2->nelem
+                           && s1->elems[i].index == s2->elems[j].index)
+                          ? s2->elems[j++].constraint & c2
+                          : 0);
+        m->elems[m->nelem].index = s1->elems[i].index;
+        m->elems[m->nelem++].constraint = s1->elems[i++].constraint | c;
+      }
+    else
+      {
+        if (s2->elems[j].constraint & c2)
+          {
+            m->elems[m->nelem].index = s2->elems[j].index;
+            m->elems[m->nelem++].constraint = s2->elems[j].constraint & c2;
+          }
+        j++;
+      }
 }
 
 /* Merge two sets of positions into a third.  The result is exactly as if
@@ -2036,43 +2138,48 @@ insert (position p, position_set *s)
 static void
 merge (position_set const *s1, position_set const *s2, position_set *m)
 {
-  size_t i = 0, j = 0;
-
-  if (m->alloc < s1->nelem + s2->nelem)
-    {
-      free (m->elems);
-      m->elems = maybe_realloc (NULL, s1->nelem + s2->nelem, &m->alloc,
-                                sizeof *m->elems);
-    }
-  m->nelem = 0;
-  while (i < s1->nelem && j < s2->nelem)
-    if (s1->elems[i].index > s2->elems[j].index)
-      m->elems[m->nelem++] = s1->elems[i++];
-    else if (s1->elems[i].index < s2->elems[j].index)
-      m->elems[m->nelem++] = s2->elems[j++];
-    else
-      {
-        m->elems[m->nelem] = s1->elems[i++];
-        m->elems[m->nelem++].constraint |= s2->elems[j++].constraint;
-      }
-  while (i < s1->nelem)
-    m->elems[m->nelem++] = s1->elems[i++];
-  while (j < s2->nelem)
-    m->elems[m->nelem++] = s2->elems[j++];
+  return merge_constrained (s1, s2, -1, m);
 }
 
-/* Delete a position from a set.  */
-static void
-delete (position p, position_set *s)
+/* Delete a position from a set.  Return the nonzero constraint of the
+   deleted position, or zero if there was no such position.  */
+static unsigned int
+delete (size_t del, position_set *s)
 {
-  size_t i;
+  size_t count = s->nelem;
+  size_t lo = 0, hi = count;
+  while (lo < hi)
+    {
+      size_t mid = (lo + hi) >> 1;
+      if (s->elems[mid].index > del)
+        lo = mid + 1;
+      else if (s->elems[mid].index == del)
+        {
+          unsigned int c = s->elems[mid].constraint;
+          size_t i;
+          for (i = mid; i + 1 < count; i++)
+            s->elems[i] = s->elems[i + 1];
+          s->nelem = i;
+          return c;
+        }
+      else
+        hi = mid;
+    }
+  return 0;
+}
 
-  for (i = 0; i < s->nelem; ++i)
-    if (p.index == s->elems[i].index)
-      break;
-  if (i < s->nelem)
-    for (--s->nelem; i < s->nelem; ++i)
-      s->elems[i] = s->elems[i + 1];
+/* Replace a position with the followed set.  */
+static void
+replace (position_set *dst, size_t del, position_set *add,
+         unsigned int constraint, position_set *tmp)
+{
+  unsigned int c = delete (del, dst) & constraint;
+
+  if (c)
+    {
+      copy (dst, tmp);
+      merge_constrained (tmp, add, c, dst);
+    }
 }
 
 /* Find the index of the state corresponding to the given position set with
@@ -2141,7 +2248,7 @@ state_index (struct dfa *d, position_set const *s, int context)
 
 
   /* Create a new state.  */
-  d->states = maybe_realloc (d->states, d->sindex, &d->salloc,
+  d->states = maybe_realloc (d->states, d->sindex, &d->salloc, -1,
                              sizeof *d->states);
   d->states[i].hash = hash;
   alloc_position_set (&d->states[i].elems, s->nelem);
@@ -2164,63 +2271,48 @@ state_index (struct dfa *d, position_set const *s, int context)
    constraint.  Repeat exhaustively until no funny positions are left.
    S->elems must be large enough to hold the result.  */
 static void
-epsclosure (position_set *s, struct dfa const *d, char *visited)
+epsclosure (position_set *initial, struct dfa const *d)
 {
-  size_t i, j;
-  position p, old;
-  bool initialized = false;
-
-  for (i = 0; i < s->nelem; ++i)
-    if (d->tokens[s->elems[i].index] >= NOTCHAR
-        && d->tokens[s->elems[i].index] != BACKREF
-        && d->tokens[s->elems[i].index] != ANYCHAR
-        && d->tokens[s->elems[i].index] != MBCSET
-        && d->tokens[s->elems[i].index] < CSET)
+  position_set tmp;
+  alloc_position_set (&tmp, d->nleaves);
+  for (size_t i = 0; i < d->tindex; ++i)
+    if (d->follows[i].nelem > 0 && d->tokens[i] >= NOTCHAR
+        && d->tokens[i] != BACKREF && d->tokens[i] != ANYCHAR
+        && d->tokens[i] != MBCSET && d->tokens[i] < CSET)
       {
-        if (!initialized)
-          {
-            memset (visited, 0, d->tindex * sizeof (*visited));
-            initialized = true;
-          }
-        old = s->elems[i];
-        p.constraint = old.constraint;
-        delete (s->elems[i], s);
-        if (visited[old.index])
-          {
-            --i;
-            continue;
-          }
-        visited[old.index] = 1;
-        switch (d->tokens[old.index])
+        unsigned int constraint;
+        switch (d->tokens[i])
           {
           case BEGLINE:
-            p.constraint &= BEGLINE_CONSTRAINT;
+            constraint = BEGLINE_CONSTRAINT;
             break;
           case ENDLINE:
-            p.constraint &= ENDLINE_CONSTRAINT;
+            constraint = ENDLINE_CONSTRAINT;
             break;
           case BEGWORD:
-            p.constraint &= BEGWORD_CONSTRAINT;
+            constraint = BEGWORD_CONSTRAINT;
             break;
           case ENDWORD:
-            p.constraint &= ENDWORD_CONSTRAINT;
+            constraint = ENDWORD_CONSTRAINT;
             break;
           case LIMWORD:
-            p.constraint &= LIMWORD_CONSTRAINT;
+            constraint = LIMWORD_CONSTRAINT;
             break;
           case NOTLIMWORD:
-            p.constraint &= NOTLIMWORD_CONSTRAINT;
+            constraint = NOTLIMWORD_CONSTRAINT;
             break;
           default:
+            constraint = NO_CONSTRAINT;
             break;
           }
-        for (j = 0; j < d->follows[old.index].nelem; ++j)
-          {
-            p.index = d->follows[old.index].elems[j].index;
-            insert (p, s);
-          }
-        /* Force rescan to start at the beginning.  */
-        i = -1;
+
+        delete (i, &d->follows[i]);
+
+        for (size_t j = 0; j < d->tindex; j++)
+          if (i != j && d->follows[j].nelem > 0)
+            replace (&d->follows[j], i, &d->follows[i], constraint, &tmp);
+
+        replace (initial, i, &d->follows[i], constraint, &tmp);
       }
 }
 
@@ -2347,7 +2439,6 @@ dfaanalyze (struct dfa *d, bool searchflag)
   int separate_contexts;        /* Context wanted by some position.  */
   size_t i, j;
   position *pos;
-  char *visited = xnmalloc (d->tindex, sizeof *visited);
 
 #ifdef DEBUG
   fprintf (stderr, "dfaanalyze:\n");
@@ -2488,14 +2579,12 @@ dfaanalyze (struct dfa *d, bool searchflag)
 #endif
     }
 
-  /* For each follow set that is the follow set of a real position, replace
-     it with its epsilon closure.  */
+#ifdef DEBUG
   for (i = 0; i < d->tindex; ++i)
     if (d->tokens[i] < NOTCHAR || d->tokens[i] == BACKREF
         || d->tokens[i] == ANYCHAR || d->tokens[i] == MBCSET
         || d->tokens[i] >= CSET)
       {
-#ifdef DEBUG
         fprintf (stderr, "follows(%zu:", i);
         prtok (d->tokens[i]);
         fprintf (stderr, "):");
@@ -2505,18 +2594,18 @@ dfaanalyze (struct dfa *d, bool searchflag)
             prtok (d->tokens[d->follows[i].elems[j].index]);
           }
         putc ('\n', stderr);
-#endif
-        copy (&d->follows[i], &merged);
-        epsclosure (&merged, d, visited);
-        copy (&merged, &d->follows[i]);
       }
+#endif
 
   /* Get the epsilon closure of the firstpos of the regexp.  The result will
      be the set of positions of state 0.  */
   merged.nelem = 0;
   for (i = 0; i < stk[-1].nfirstpos; ++i)
     insert (firstpos[i], &merged);
-  epsclosure (&merged, d, visited);
+
+  /* For each follow set that is the follow set of a real position, replace
+     it with its epsilon closure.  */
+  epsclosure (&merged, d);
 
   /* Build the initial state.  */
   separate_contexts = state_separate_contexts (&merged);
@@ -2532,7 +2621,6 @@ dfaanalyze (struct dfa *d, bool searchflag)
   free (posalloc);
   free (stkalloc);
   free (merged.elems);
-  free (visited);
 }
 
 
@@ -2816,9 +2904,10 @@ realloc_trans_if_necessary (struct dfa *d, state_num new_state)
   if (oldalloc <= new_state)
     {
       state_num **realtrans = d->trans ? d->trans - 2 : NULL;
-      size_t newalloc, newalloc1;
-      newalloc1 = realtrans ? new_state + 2 : 0;
-      realtrans = x2nrealloc (realtrans, &newalloc1, sizeof *realtrans);
+      ptrdiff_t newalloc, newalloc1;
+      newalloc1 = realtrans ? d->tralloc + 2 : 0;
+      realtrans = xpalloc (realtrans, &newalloc1, new_state - oldalloc + 1,
+                           -1, sizeof *realtrans);
       realtrans[0] = realtrans[1] = NULL;
       d->trans = realtrans + 2;
       d->tralloc = newalloc = newalloc1 - 2;
@@ -3292,7 +3381,7 @@ dfaisfast (struct dfa const *d)
 static void
 free_mbdata (struct dfa *d)
 {
-  size_t i;
+  ptrdiff_t i;
 
   free (d->multibyte_prop);
 
