@@ -366,7 +366,13 @@ dnl check for readline support
 GAWK_CHECK_READLINE
 
 dnl check for mpfr support
-GNUPG_CHECK_MPFR
+case `uname -m` in
+*'Power Macintosh'*)
+	: ;;
+*)
+	GNUPG_CHECK_MPFR
+	;;
+esac
 
 dnl checks for structure members
 AC_CHECK_MEMBERS([struct stat.st_blksize])

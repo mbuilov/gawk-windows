@@ -10508,6 +10508,10 @@ fi
   fi
 
 
+case `uname -m` in
+*'Power Macintosh'*)
+	: ;;
+*)
 
 
 # Check whether --with-mpfr was given.
@@ -10582,6 +10586,8 @@ $as_echo "#define HAVE_MPFR 1" >>confdefs.h
      unset _found_mpfr
   fi
 
+	;;
+esac
 
 ac_fn_c_check_member "$LINENO" "struct stat" "st_blksize" "ac_cv_member_struct_stat_st_blksize" "$ac_includes_default"
 if test "x$ac_cv_member_struct_stat_st_blksize" = xyes; then :
