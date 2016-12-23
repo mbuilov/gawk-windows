@@ -31595,7 +31595,7 @@ The @code{val_type} member indicates what kind of value the
 @code{union} holds, and each member is of the appropriate type.
 
 @item #define str_value@ @ @ @ @ @ u.s
-@itemx #define strnum_value@ @ @ @ str_value
+@itemx #define strnum_value@ @ @ str_value
 @itemx #define regex_value@ @ @ @ str_value
 @itemx #define num_value@ @ @ @ @ @ u.d
 @itemx #define array_cookie@ @ @ u.a
@@ -32515,22 +32515,27 @@ value type, as appropriate.  This behavior is summarized in
 @caption{API value types returned}
 @c FIXME: This needs doing.
 @docbook
+<!-- FIXME: Column widths need adjusting -->
 <informaltable>
-<tgroup cols="6">
-  <colspec colwidth="16.6*"/>
-  <colspec colwidth="16.6*"/>
-  <colspec colwidth="19.8*" colname="c3"/>
-  <colspec colwidth="15*" colname="c4"/>
-  <colspec colwidth="15*" colname="c5"/>
-  <colspec colwidth="16.6*" colname="c6"/>
-  <spanspec spanname="hspan" namest="c3" nameend="c6" align="center"/>
+<tgroup cols="8">
+  <colspec colname="c1"/>
+  <colspec colname="c2"/>
+  <colspec colname="c3"/>
+  <colspec colname="c4"/>
+  <colspec colname="c5"/>
+  <colspec colname="c6"/>
+  <colspec colname="c7"/>
+  <colspec colname="c8"/>
+  <spanspec spanname="hspan" namest="c3" nameend="c8" align="center"/>
   <thead>
     <row><entry></entry><entry spanname="hspan"><para>Type of Actual Value</para></entry></row>
     <row>
       <entry></entry>
       <entry></entry>
       <entry><para>String</para></entry>
+      <entry><para>Strnum</para></entry>
       <entry><para>Number</para></entry>
+      <entry><para>Regex</para></entry>
       <entry><para>Array</para></entry>
       <entry><para>Undefined</para></entry>
     </row>
@@ -32541,55 +32546,86 @@ value type, as appropriate.  This behavior is summarized in
       <entry><para><emphasis role="bold">String</emphasis></para></entry>
       <entry><para>String</para></entry>
       <entry><para>String</para></entry>
-      <entry><para>False</para></entry>
-      <entry><para>False</para></entry>
+      <entry><para>String</para></entry>
+      <entry><para>String</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry><para><emphasis role="bold">Strnum</emphasis></para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>Strnum</para></entry>
+      <entry><para>Strnum</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
     </row>
     <row>
       <entry></entry>
       <entry><para><emphasis role="bold">Number</emphasis></para></entry>
-      <entry><para>Number if can be converted, else false</para></entry>
       <entry><para>Number</para></entry>
-      <entry><para>False</para></entry>
-      <entry><para>False</para></entry>
+      <entry><para>Number</para></entry>
+      <entry><para>Number</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
     </row>
     <row>
       <entry><para><emphasis role="bold">Type</emphasis></para></entry>
-      <entry><para><emphasis role="bold">Array</emphasis></para></entry>
-      <entry><para>False</para></entry>
-      <entry><para>False</para></entry>
-      <entry><para>Array</para></entry>
-      <entry><para>False</para></entry>
+      <entry><para><emphasis role="bold">Regex</emphasis></para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>Regex</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
     </row>
     <row>
       <entry><para><emphasis role="bold">Requested</emphasis></para></entry>
+      <entry><para><emphasis role="bold">Array</emphasis></para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>Array</para></entry>
+      <entry><para>false</para></entry>
+    </row>
+    <row>
+      <entry></entry>
       <entry><para><emphasis role="bold">Scalar</emphasis></para></entry>
       <entry><para>Scalar</para></entry>
       <entry><para>Scalar</para></entry>
-      <entry><para>False</para></entry>
-      <entry><para>False</para></entry>
+      <entry><para>Scalar</para></entry>
+      <entry><para>Scalar</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
     </row>
     <row>
       <entry></entry>
       <entry><para><emphasis role="bold">Undefined</emphasis></para></entry>
       <entry><para>String</para></entry>
+      <entry><para>Strnum</para></entry>
       <entry><para>Number</para></entry>
+      <entry><para>Regex</para></entry>
       <entry><para>Array</para></entry>
       <entry><para>Undefined</para></entry>
     </row>
     <row>
       <entry></entry>
       <entry><para><emphasis role="bold">Value cookie</emphasis></para></entry>
-      <entry><para>False</para></entry>
-      <entry><para>False</para></entry>
-      <entry><para>False</para>
-      </entry><entry><para>False</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
+      <entry><para>false</para></entry>
     </row>
   </tbody>
 </tgroup>
 </informaltable>
 @end docbook
 
-@c FIXME: This needs doing.
 @ifnotplaintext
 @ifnotdocbook
 @multitable @columnfractions .50 .50
@@ -32599,19 +32635,22 @@ value type, as appropriate.  This behavior is summarized in
 @tex
 \vglue-1.1\baselineskip
 @end tex
-@multitable @columnfractions .166 .166 .198 .15 .15 .166
-@headitem @tab @tab String @tab Number @tab Array @tab Undefined
-@item @tab @b{String} @tab String @tab String @tab False @tab False
-@item @tab @b{Number} @tab Number if can be converted, else false @tab Number @tab False @tab False
-@item @b{Type} @tab @b{Array} @tab False @tab False @tab Array @tab False
-@item @b{Requested} @tab @b{Scalar} @tab Scalar @tab Scalar @tab False @tab False
-@item @tab @b{Undefined} @tab String @tab Number @tab Array @tab Undefined
-@item @tab @b{Value cookie} @tab False @tab False @tab False @tab False
+@c @multitable @columnfractions .166 .166 .198 .15 .15 .166
+@multitable {Requested} {Undefined} {Number} {Number} {Scalar} {Regex} {Array} {Undefined}
+@headitem @tab @tab String @tab Strnum @tab Number @tab Regex @tab Array @tab Undefined
+@item @tab @b{String} @tab String @tab String @tab String @tab String @tab false @tab false
+@item @tab @b{Strnum} @tab false @tab Strnum @tab Strnum @tab false @tab false @tab false
+@item @tab @b{Number} @tab Number @tab Number @tab Number @tab false @tab false @tab false
+@item @b{Type} @tab @b{Regex} @tab false @tab false @tab false @tab Regex @tab false @tab false
+@item @b{Requested} @tab @b{Array} @tab false @tab false @tab false @tab false @tab Array @tab false
+@item @tab @b{Scalar} @tab Scalar @tab Scalar @tab Scalar @tab Scalar @tab false @tab false
+@item @tab @b{Undefined} @tab String @tab Strnum @tab Number @tab Regex @tab Array @tab Undefined
+@item @tab @b{Value cookie} @tab false @tab false @tab false @tab false @tab false @tab false
 @end multitable
 @end ifnotdocbook
 @end ifnotplaintext
 @ifplaintext
-@example
+@verbatim
                         +-------------------------------------------------------+
                         |                   Type of Actual Value:               |
                         +--------+--------+--------+--------+-------+-----------+
@@ -32624,9 +32663,9 @@ value type, as appropriate.  This behavior is summarized in
 |           | Number    | Number | Number | Number | false  | false | false     |
 |           +-----------+--------+--------+--------+--------+-------+-----------+
 |           | Regex     | false  | false  | false  | Regex  | false | false     |
+|   Type    +-----------+--------+--------+--------+--------+-------+-----------+
+| Requested | Array     | false  | false  | false  | false  | Array | false     |
 |           +-----------+--------+--------+--------+--------+-------+-----------+
-|   Type    | Array     | false  | false  | false  | false  | Array | false     |
-| Requested +-----------+--------+--------+--------+--------+-------+-----------+
 |           | Scalar    | Scalar | Scalar | Scalar | Scalar | false | false     |
 |           +-----------+--------+--------+--------+--------+-------+-----------+
 |           | Undefined | String | Strnum | Number | Regex  | Array | Undefined |
@@ -32634,7 +32673,7 @@ value type, as appropriate.  This behavior is summarized in
 |           | Value     | false  | false  | false  | false  | false | false     |
 |           | Cookie    |        |        |        |        |       |           |
 +-----------+-----------+--------+--------+--------+--------+-------+-----------+
-@end example
+@end verbatim
 @end ifplaintext
 @end float
 
