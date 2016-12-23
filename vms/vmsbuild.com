@@ -19,7 +19,7 @@ $ then
 $! assumes VAX
 $   CC = "gcc"
 $   if f$type(gcc).eqs."STRING" then  CC = gcc
-$   CFLAGS = "/Incl=([],[.vms])/Obj=[]/Def=(''CDEFS')''CCFLAGS'"
+$   CFLAGS = "/Incl=([],[.vms],[.SUPPORT])/Obj=[]/Def=(''CDEFS')''CCFLAGS'"
 $   LIBS = "gnu_cc:[000000]gcclib.olb/Library,sys$library:vaxcrtl.olb/Library"
 $   if p2.eqs."DO_GNUC_SETUP" then  set command gnu_cc:[000000]gcc
 $ else	!!GNUC
@@ -41,7 +41,8 @@ $ endif
 $   CC = "cc/DECC/Prefix=All"
 $   CNAME = "/NAME=(AS_IS,SHORT)
 $   CINC = "/NESTED_INCLUDE=NONE"
-$   CFLAGS = "/Incl=([],[.vms])/Obj=[]/Def=(''CDEFS')''CINC'''CCFLAGS'"
+$   CINC1 = "[],[.vms],[.support]"
+$   CFLAGS = "/Incl=(''CINC1')/Obj=[]/Def=(''CDEFS')''CINC'''CCFLAGS'"
 $   CFLAGS = CNAME + CFLOAT + CFLAGS
 $   LIBS = ""	! DECC$SHR instead of VAXCRTL, no special link option needed
 $  endif !VAXC
@@ -80,20 +81,21 @@ $ v1 = f$verify(1)
 $ cc array.c
 $ cc awkgram.c
 $ cc builtin.c
-$ cc dfa.c
+$ cc [.support]dfa.c
 $ cc ext.c
 $ cc field.c
 $ cc floatcomp.c
 $ cc gawkmisc.c
-$ cc getopt.c
-$ cc getopt1.c
+$ cc [.support]getopt.c
+$ cc [.support]getopt1.c
 $ cc io.c
+$ cc [.support]localeinfo.c
 $ cc main.c
 $ cc msg.c
 $ cc node.c
-$ cc random.c
+$ cc [.support]random.c
 $ cc re.c
-$ cc regex.c
+$ cc [.support]regex.c
 $ cc replace.c
 $ cc version.c
 $ cc eval.c
@@ -120,7 +122,7 @@ $ close/noLog Fopt
 $ create gawk.opt
 ! GAWK -- GNU awk
 array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,field.obj,floatcomp.obj
-gawkmisc.obj,getopt.obj,getopt1.obj,io.obj
+gawkmisc.obj,getopt.obj,getopt1.obj,io.obj,localeinfo.obj
 main.obj,msg.obj,node.obj
 random.obj,re.obj,regex.obj,replace.obj,version.obj,eval.obj,profile.obj
 command.obj,debug.obj,int_array.obj,cint_array.obj,gawkapi.obj,mpfr.obj
