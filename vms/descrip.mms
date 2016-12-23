@@ -38,6 +38,7 @@
 #
 
 # location of various source files, relative to the 'main' directory
+SUPPORT = [.support]
 VMSDIR	= [.vms]
 DOCDIR	= [.doc]
 MISSNGD	= [.missing_d]
@@ -75,8 +76,9 @@ CFLOAT	= /float=ieee/ieee_mode=denorm_results
 .endif
 CNAME	= /NAME=(AS_IS,SHORT)
 CC	= cc/DECC/Prefix=All/NESTED_INCLUDE=NONE$(CFLOAT)
-CFLAGS	= /Incl=([],[.vms])/Obj=[]/Def=($(CDEFS))$(CNAME) $(CCFLAGS)
-CEFLAGS = /Incl=([],[.vms],[.missing_d],[.extension])$(CNAME) $(CCFLAGS)
+CINC1   = [],[.VMS],$(SUPPORT)
+CFLAGS	= /Incl=($(CINC1))/Obj=[]/Def=($(CDEFS))$(CNAME) $(CCFLAGS)
+CEFLAGS = /Incl=($(CINC1),[.missing_d],[.extension])$(CNAME) $(CCFLAGS)
 LIBS	=	# DECC$SHR instead of VAXCRTL, no special link option needed
 .endif	!VAXC
 .endif	!GNUC
@@ -105,8 +107,8 @@ AWKOBJ1 = array.obj,awkgram.obj,builtin.obj,cint_array.obj,\
 	command.obj,debug.obj,dfa.obj,ext.obj,field.obj,\
 	floatcomp.obj,gawkapi.obj,gawkmisc.obj,getopt.obj,getopt1.obj
 
-AWKOBJ2 = int_array.obj,io.obj,main.obj,mpfr.obj,msg.obj,node.obj,\
-	random.obj,re.obj,regex.obj,replace.obj,\
+AWKOBJ2 = int_array.obj,io.obj,localeinfo.obj,main.obj,mpfr.obj,msg.obj,\
+	node.obj,random.obj,re.obj,regex.obj,replace.obj,\
 	str_array.obj,symbol.obj,version.obj
 
 AWKOBJS = $(AWKOBJ1),$(AWKOBJ2)
@@ -153,8 +155,8 @@ gawk.opt : $(MAKEFILE) config.h         # create linker options file
       $ @$(VMSDIR)gawk_ident.com
 
 $(VMSCODE)	: awk.h config.h $(VMSDIR)redirect.h $(VMSDIR)vms.h
-$(AWKOBJS)	: awk.h gettext.h mbsupport.h regex.h dfa.h config.h \
-		  $(VMSDIR)redirect.h
+$(AWKOBJS)	: awk.h gettext.h mbsupport.h $(SUPPORT)regex.h \
+		  $(SUPPORT)dfa.h config.h $(VMSDIR)redirect.h
 $(GAWKOBJ)	: awk.h config.h $(VMSDIR)redirect.h
 
 #-----------------------------------------------------------------------------
@@ -164,30 +166,32 @@ $(GAWKOBJ)	: awk.h config.h $(VMSDIR)redirect.h
 
 array.obj	: array.c
 awkgram.obj	: awkgram.c awk.h
-builtin.obj	: builtin.c floatmagic.h random.h
+builtin.obj	: builtin.c floatmagic.h $(SUPPORT)random.h
 cint_array.obj	: cint_array.c
 command.obj	: command.c cmd.h
 debug.obj	: debug.c cmd.h
-dfa.obj		: dfa.c dfa.h
+dfa.obj		: $(SUPPORT)dfa.c $(SUPPORT)dfa.h
 ext.obj		: ext.c
 eval.obj	: eval.c
 field.obj	: field.c
 floatcomp.obj	: floatcomp.c
 gawkaoi.obj	: gawkapi.c
 gawkmisc.obj	: gawkmisc.c $(VMSDIR)gawkmisc.vms
-getopt.obj	: getopt.c
-getopt1.obj	: getopt1.c
+getopt.obj	: $(SUPPORT)getopt.c
+getopt1.obj	: $(SUPPORT)getopt1.c
 int_array.obj	: int_array.c
 io.obj		: io.c
+localeinfo.obj  : $(SUPPORT)localeinfo.c
 main.obj	: main.c
 msg.obj		: msg.c
 mpfr.obj	: mpfr.c
 node.obj	: node.c
 profile.obj	: profile.c
-random.obj	: random.c random.h
+random.obj	: $(SUPPORT)random.c $(SUPPORT)random.h
 re.obj		: re.c
-regex.obj	: regex.c regcomp.c regex_internal.c regexec.c regex.h \
-		  regex_internal.h
+regex.obj	: $(SUPPORT)regex.c $(SUPPORT)regcomp.c \
+		  $(SUPPORT)regex_internal.c $(SUPPORT)regexec.c \
+		  $(SUPPORT)regex.h $(SUPPORT)regex_internal.h
 str_array.obj	: str_array.c
 symbol.obj	: symbol.c
 version.obj	: version.c
