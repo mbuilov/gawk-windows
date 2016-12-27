@@ -42,6 +42,7 @@ if (${DYNAMIC})
 endif ()
 
 include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/support)
 
 if(WIN32 OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
   # This is enough to build with MinGW in a native Windows environment
@@ -66,13 +67,14 @@ if(WIN32 OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
   include_directories(${CMAKE_SOURCE_DIR}/pc)
 endif()
 
+add_subdirectory(support)
+
 set (GAWK_SOURCES ${GAWK_SOURCES}
   array.c
   builtin.c 
   cint_array.c 
   command.c
   debug.c
-  dfa.c
   eval.c 
   ext.c 
   field.c 
@@ -86,7 +88,6 @@ set (GAWK_SOURCES ${GAWK_SOURCES}
   msg.c 
   node.c 
   profile.c 
-  random.c 
   re.c 
   replace.c 
   str_array.c 
@@ -95,7 +96,7 @@ set (GAWK_SOURCES ${GAWK_SOURCES}
 )
 
 add_executable (gawk ${GAWK_SOURCES} ${BISON_awkgram_OUTPUTS})
-target_link_libraries (gawk m ${EXTRA_LIBS})
+target_link_libraries (gawk m support ${EXTRA_LIBS})
 install(PROGRAMS ${CMAKE_BINARY_DIR}/gawk${CMAKE_EXECUTABLE_SUFFIX} DESTINATION bin)
 
 # Beware: before building the extension, -DGAWK gets undefined.
