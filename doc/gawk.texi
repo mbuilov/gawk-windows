@@ -32618,6 +32618,14 @@ When an extension creates a strnum value, the result is a string flagged
 as user input. Subsequent parsing by @command{gawk} then determines whether it
 looks like a number and should be treated as a strnum, or as a regular string.
 
+This is useful in cases where an extension function would like to do something
+comparable to the @code{split()} function which sets the user input attribute
+on the array elements it creates.  For example, an extension that implements
+CSV splitting would want to use this feature. This is also useful for a
+function that retrieves a data item from a database. The PostgreSQL
+@code{PQgetvalue()} function, for example, returns a string that may be numeric
+or textual depending on the contents.
+
 Typed regexp values (@pxref{Strong Regexp Constants}) are not of
 much use to extension functions.  Extension functions can tell that
 they've received them, and create them for scalar values. Otherwise,
