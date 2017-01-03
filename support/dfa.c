@@ -1,5 +1,5 @@
 /* dfa.c - deterministic extended regexp routines for GNU
-   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2016 Free Software
+   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2017 Free Software
    Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -44,22 +44,24 @@
 #include <locale.h>
 #endif
 
+#include "dfa.h"	// gets stdbool.h for us
+
+static bool
+streq (char const *a, char const *b)
+{
+  return strcmp (a, b) == 0;
+}
+
+static bool
+isasciidigit (char c)
+{
+  return '0' <= c && c <= '9';
+}
+
 /* Gawk doesn't use Gnulib, so don't assume that setlocale is present.  */
 #ifndef LC_ALL
 # define setlocale(category, locale) NULL
 #endif
-
-#define STREQ(a, b) (strcmp (a, b) == 0)
-
-/* ISASCIIDIGIT differs from isdigit, as follows:
-   - Its arg may be any int or unsigned int; it need not be an unsigned char.
-   - It's guaranteed to evaluate its argument exactly once.
-   - It's typically faster.
-   Posix 1003.2-1992 section 2.5.2.1 page 50 lines 1556-1558 says that
-   only '0' through '9' are digits.  Prefer ISASCIIDIGIT to isdigit unless
-   it's important to use the locale's definition of "digit" even when the
-   host does not conform to Posix.  */
-#define ISASCIIDIGIT(c) ((unsigned) (c) - '0' <= 9)
 
 #include "gettext.h"
 #define _(str) gettext (str)
@@ -77,8 +79,6 @@
 #if defined(__DJGPP__)
 #include "mbsupport.h"
 #endif
-
-#include "dfa.h"
 
 #ifdef GAWK
 static int
@@ -117,10 +117,10 @@ enum { CHARCLASS_WORD_BITS = 64 };
 
 /* An initializer for a charclass whose 32-bit words are A through H.  */
 #define CHARCLASS_INIT(a, b, c, d, e, f, g, h)		\
-    {							\
+   {{							\
       CHARCLASS_PAIR (a, b), CHARCLASS_PAIR (c, d),	\
       CHARCLASS_PAIR (e, f), CHARCLASS_PAIR (g, h)	\
-    }
+   }}
 
 /* The maximum useful value of a charclass_word; all used bits are 1.  */
 static charclass_word const CHARCLASS_WORD_MASK
@@ -133,7 +133,7 @@ enum
 };
 
 /* Sets of unsigned characters are stored as bit vectors in arrays of ints.  */
-typedef charclass_word charclass[CHARCLASS_WORDS];
+typedef struct { charclass_word w[CHARCLASS_WORDS]; } charclass;
 
 /* Convert a possibly-signed character to an unsigned character.  This is
    a bit safer than casting to unsigned char, since it catches some type
@@ -156,10 +156,13 @@ to_uchar (char ch)
    character is a word constituent.  A state whose context is CTX_ANY
    might have transitions from any character.  */
 
-#define CTX_NONE	1
-#define CTX_LETTER	2
-#define CTX_NEWLINE	4
-#define CTX_ANY		7
+enum
+  {
+    CTX_NONE = 1,
+    CTX_LETTER = 2,
+    CTX_NEWLINE = 4,
+    CTX_ANY = 7
+  };
 
 /* Sometimes characters can only be matched depending on the surrounding
    context.  Such context decisions depend on what the previous character
@@ -172,48 +175,68 @@ to_uchar (char ch)
    bit 4-7  - valid contexts when next character is CTX_LETTER
    bit 0-3  - valid contexts when next character is CTX_NONE
 
-   The macro SUCCEEDS_IN_CONTEXT determines whether a given constraint
+   succeeds_in_context determines whether a given constraint
    succeeds in a particular context.  Prev is a bitmask of possible
    context values for the previous character, curr is the (single-bit)
    context value for the lookahead character.  */
-#define NEWLINE_CONSTRAINT(constraint) (((constraint) >> 8) & 0xf)
-#define LETTER_CONSTRAINT(constraint)  (((constraint) >> 4) & 0xf)
-#define OTHER_CONSTRAINT(constraint)    ((constraint)       & 0xf)
+static int
+newline_constraint (int constraint)
+{
+  return (constraint >> 8) & 0xf;
+}
+static int
+letter_constraint (int constraint)
+{
+  return (constraint >> 4) & 0xf;
+}
+static int
+other_constraint (int constraint)
+{
+  return constraint & 0xf;
+}
 
-#define SUCCEEDS_IN_CONTEXT(constraint, prev, curr) \
-  ((((curr) & CTX_NONE      ? OTHER_CONSTRAINT (constraint) : 0) \
-    | ((curr) & CTX_LETTER  ? LETTER_CONSTRAINT (constraint) : 0) \
-    | ((curr) & CTX_NEWLINE ? NEWLINE_CONSTRAINT (constraint) : 0)) \
-   & (prev))
+static bool
+succeeds_in_context (int constraint, int prev, int curr)
+{
+  return !! (((curr & CTX_NONE      ? other_constraint (constraint) : 0) \
+              | (curr & CTX_LETTER  ? letter_constraint (constraint) : 0) \
+              | (curr & CTX_NEWLINE ? newline_constraint (constraint) : 0)) \
+             & prev);
+}
 
-/* The following macros describe what a constraint depends on.  */
-#define PREV_NEWLINE_CONSTRAINT(constraint) (((constraint) >> 2) & 0x111)
-#define PREV_LETTER_CONSTRAINT(constraint)  (((constraint) >> 1) & 0x111)
-#define PREV_OTHER_CONSTRAINT(constraint)    ((constraint)       & 0x111)
-
-#define PREV_NEWLINE_DEPENDENT(constraint) \
-  (PREV_NEWLINE_CONSTRAINT (constraint) != PREV_OTHER_CONSTRAINT (constraint))
-#define PREV_LETTER_DEPENDENT(constraint) \
-  (PREV_LETTER_CONSTRAINT (constraint) != PREV_OTHER_CONSTRAINT (constraint))
+/* The following describe what a constraint depends on.  */
+static bool
+prev_newline_dependent (int constraint)
+{
+  return ((constraint ^ constraint >> 2) & 0x111) != 0;
+}
+static bool
+prev_letter_dependent (int constraint)
+{
+  return ((constraint ^ constraint >> 1) & 0x111) != 0;
+}
 
 /* Tokens that match the empty string subject to some constraint actually
    work by applying that constraint to determine what may follow them,
    taking into account what has gone before.  The following values are
    the constraints corresponding to the special tokens previously defined.  */
-#define NO_CONSTRAINT         0x777
-#define BEGLINE_CONSTRAINT    0x444
-#define ENDLINE_CONSTRAINT    0x700
-#define BEGWORD_CONSTRAINT    0x050
-#define ENDWORD_CONSTRAINT    0x202
-#define LIMWORD_CONSTRAINT    0x252
-#define NOTLIMWORD_CONSTRAINT 0x525
+enum
+  {
+    NO_CONSTRAINT = 0x777,
+    BEGLINE_CONSTRAINT = 0x444,
+    ENDLINE_CONSTRAINT = 0x700,
+    BEGWORD_CONSTRAINT = 0x050,
+    ENDWORD_CONSTRAINT = 0x202,
+    LIMWORD_CONSTRAINT = 0x252,
+    NOTLIMWORD_CONSTRAINT = 0x525
+  };
 
 /* The regexp is parsed into an array of tokens in postfix form.  Some tokens
    are operators and others are terminal symbols.  Most (but not all) of these
    codes are returned by the lexical analyzer.  */
 
 typedef ptrdiff_t token;
-#define TOKEN_MAX PTRDIFF_MAX
+static ptrdiff_t const TOKEN_MAX = PTRDIFF_MAX;
 
 /* States are indexed by state_num values.  These are normally
    nonnegative but -1 is used as a special value.  */
@@ -363,6 +386,7 @@ struct mb_char_classes
   bool invert;
   wchar_t *chars;               /* Normal characters.  */
   ptrdiff_t nchars;
+  ptrdiff_t nchars_alloc;
 };
 
 struct regex_syntax
@@ -382,7 +406,7 @@ struct regex_syntax
   unsigned char eolbyte;
 
   /* Cache of char-context values.  */
-  int sbit[NOTCHAR];
+  char sbit[NOTCHAR];
 
   /* If never_trail[B], the byte B cannot be a non-initial byte in a
      multibyte character.  */
@@ -414,6 +438,9 @@ struct lexer_state
 
   /* Length of the multibyte representation of wctok.  */
   int cur_mb_len;
+
+  /* The most recently analyzed multibyte bracket expression.  */
+  struct mb_char_classes brack;
 
   /* We're separated from beginning or (, | only by zero-width characters.  */
   bool laststart;
@@ -472,9 +499,6 @@ struct dfa
      bit 1 : tokens[i] is the last byte of a character, including
      single-byte characters.
 
-     if tokens[i] = MBCSET
-     ("the index of mbcsets corresponding to this operator" << 2) + 3
-
      e.g.
      tokens
      = 'single_byte_a', 'multi_byte_A', single_byte_b'
@@ -482,12 +506,7 @@ struct dfa
      multibyte_prop
      = 3     , 1               ,  0              ,  2              , 3
    */
-  int *multibyte_prop;
-
-  /* Array of the bracket expression in the DFA.  */
-  struct mb_char_classes *mbcsets;
-  ptrdiff_t nmbcsets;
-  ptrdiff_t mbcsets_alloc;
+  char *multibyte_prop;
 
   /* Fields filled by the superset.  */
   struct dfa *superset;             /* Hint of the dfa.  */
@@ -535,7 +554,7 @@ struct dfa
                                    on a state that potentially could do so.
                                    If trans[i] is non-null, fails[i] must
                                    be null.  */
-  int *success;                 /* Table of acceptance conditions used in
+  char *success;                /* Table of acceptance conditions used in
                                    dfaexec and computed in build_state.  */
   state_num *newlines;          /* Transitions on newlines.  The entry for a
                                    newline in any transition table is always
@@ -570,14 +589,21 @@ struct dfa
   struct localeinfo localeinfo;
 };
 
-/* Some macros for user access to dfa internals.  */
+/* User access to dfa internals.  */
 
 /* S could possibly be an accepting state of R.  */
-#define ACCEPTING(s, r) ((r).states[s].constraint)
+static bool
+accepting (state_num s, struct dfa const *r)
+{
+  return r->states[s].constraint != 0;
+}
 
 /* STATE accepts in the specified context.  */
-#define ACCEPTS_IN_CONTEXT(prev, curr, state, dfa) \
-  SUCCEEDS_IN_CONTEXT ((dfa).states[state].constraint, prev, curr)
+static bool
+accepts_in_context (int prev, int curr, state_num state, struct dfa const *dfa)
+{
+  return succeeds_in_context (dfa->states[state].constraint, prev, curr);
+}
 
 static void regexp (struct dfa *dfa);
 
@@ -625,8 +651,6 @@ mbs_to_wchar (wint_t *pwc, char const *s, size_t n, struct dfa *d)
 static void
 prtok (token t)
 {
-  char const *s;
-
   if (t < 0)
     fprintf (stderr, "END");
   else if (t < NOTCHAR)
@@ -636,6 +660,7 @@ prtok (token t)
     }
   else
     {
+      char const *s;
       switch (t)
         {
         case EMPTY:
@@ -701,69 +726,60 @@ prtok (token t)
 /* Stuff pertaining to charclasses.  */
 
 static bool
-tstbit (unsigned int b, charclass const c)
+tstbit (unsigned int b, charclass const *c)
 {
-  return c[b / CHARCLASS_WORD_BITS] >> b % CHARCLASS_WORD_BITS & 1;
+  return c->w[b / CHARCLASS_WORD_BITS] >> b % CHARCLASS_WORD_BITS & 1;
 }
 
 static void
-setbit (unsigned int b, charclass c)
+setbit (unsigned int b, charclass *c)
 {
-  c[b / CHARCLASS_WORD_BITS] |= (charclass_word) 1 << b % CHARCLASS_WORD_BITS;
+  charclass_word one = 1;
+  c->w[b / CHARCLASS_WORD_BITS] |= one << b % CHARCLASS_WORD_BITS;
 }
 
 static void
-clrbit (unsigned int b, charclass c)
+clrbit (unsigned int b, charclass *c)
 {
-  c[b / CHARCLASS_WORD_BITS] &= ~((charclass_word) 1
-                                  << b % CHARCLASS_WORD_BITS);
+  charclass_word one = 1;
+  c->w[b / CHARCLASS_WORD_BITS] &= ~(one << b % CHARCLASS_WORD_BITS);
 }
 
 static void
-copyset (charclass const src, charclass dst)
+zeroset (charclass *s)
 {
-  memcpy (dst, src, sizeof (charclass));
+  memset (s, 0, sizeof *s);
 }
 
 static void
-zeroset (charclass s)
+fillset (charclass *s)
 {
-  memset (s, 0, sizeof (charclass));
+  for (int i = 0; i < CHARCLASS_WORDS; i++)
+    s->w[i] = CHARCLASS_WORD_MASK;
 }
 
 static void
-fillset (charclass s)
+notset (charclass *s)
 {
-  int i;
-  for (i = 0; i < CHARCLASS_WORDS; i++)
-    s[i] = CHARCLASS_WORD_MASK;
-}
-
-static void
-notset (charclass s)
-{
-  int i;
-  for (i = 0; i < CHARCLASS_WORDS; ++i)
-    s[i] = CHARCLASS_WORD_MASK & ~s[i];
+  for (int i = 0; i < CHARCLASS_WORDS; ++i)
+    s->w[i] = CHARCLASS_WORD_MASK & ~s->w[i];
 }
 
 static bool
-equal (charclass const s1, charclass const s2)
+equal (charclass const *s1, charclass const *s2)
 {
   charclass_word w = 0;
-  int i;
-  for (i = 0; i < CHARCLASS_WORDS; i++)
-    w |= s1[i] ^ s2[i];
+  for (int i = 0; i < CHARCLASS_WORDS; i++)
+    w |= s1->w[i] ^ s2->w[i];
   return w == 0;
 }
 
 static bool
-emptyset (charclass const s)
+emptyset (charclass const *s)
 {
   charclass_word w = 0;
-  int i;
-  for (i = 0; i < CHARCLASS_WORDS; i++)
-    w |= s[i];
+  for (int i = 0; i < CHARCLASS_WORDS; i++)
+    w |= s->w[i];
   return w == 0;
 }
 
@@ -847,17 +863,17 @@ maybe_realloc (void *pa, ptrdiff_t i, ptrdiff_t *nitems,
 
 /* In DFA D, find the index of charclass S, or allocate a new one.  */
 static ptrdiff_t
-charclass_index (struct dfa *d, charclass const s)
+charclass_index (struct dfa *d, charclass *s)
 {
   ptrdiff_t i;
 
   for (i = 0; i < d->cindex; ++i)
-    if (equal (s, d->charclasses[i]))
+    if (equal (s, &d->charclasses[i]))
       return i;
   d->charclasses = maybe_realloc (d->charclasses, d->cindex, &d->calloc,
                                   TOKEN_MAX - CSET, sizeof *d->charclasses);
   ++d->cindex;
-  copyset (s, d->charclasses[i]);
+  d->charclasses[i] = *s;
   return i;
 }
 
@@ -900,10 +916,10 @@ dfacopysyntax (struct dfa *to, const struct dfa *from)
    dotless i/dotted I are not included in the chosen character set.
    Return whether a bit was set in the charclass.  */
 static bool
-setbit_wc (wint_t wc, charclass c)
+setbit_wc (wint_t wc, charclass *c)
 {
   int b = wctob (wc);
-  if (b == EOF)
+  if (b < 0)
     return false;
 
   setbit (b, c);
@@ -913,11 +929,10 @@ setbit_wc (wint_t wc, charclass c)
 /* Set a bit for B and its case variants in the charclass C.
    MB_CUR_MAX must be 1.  */
 static void
-setbit_case_fold_c (int b, charclass c)
+setbit_case_fold_c (int b, charclass *c)
 {
   int ub = toupper (b);
-  int i;
-  for (i = 0; i < NOTCHAR; i++)
+  for (int i = 0; i < NOTCHAR; i++)
     if (toupper (i) == ub)
       setbit (i, c);
 }
@@ -950,38 +965,37 @@ using_simple_locale (bool multibyte)
       /* Treat C and POSIX locales as being compatible.  Also, treat
          errors as compatible, as these are invariably from stubs.  */
       char const *loc = setlocale (LC_ALL, NULL);
-      return !loc || STREQ (loc, "C") || STREQ (loc, "POSIX");
+      return !loc || streq (loc, "C") || streq (loc, "POSIX");
     }
 }
 
-/* Fetch the next lexical input character.  Set C (of type int) to the
-   next input byte, except set C to EOF if the input is a multibyte
-   character of length greater than 1.  Set WC (of type wint_t) to the
-   value of the input if it is a valid multibyte character (possibly
-   of length 1); otherwise set WC to WEOF.  If there is no more input,
-   report EOFERR if EOFERR is not null, and return lasttok = END
-   otherwise.  */
-# define FETCH_WC(dfa, c, wc, eoferr)		\
-  do {						\
-    if (! (dfa)->lex.left)			\
-      {						\
-        if ((eoferr) != 0)			\
-          dfaerror (eoferr);			\
-        else					\
-          return (dfa)->lex.lasttok = END;	\
-      }						\
-    else					\
-      {						\
-        wint_t _wc;				\
-        size_t nbytes = mbs_to_wchar (&_wc, (dfa)->lex.ptr, \
-                                      (dfa)->lex.left, dfa); \
-        (dfa)->lex.cur_mb_len = nbytes;		\
-        (wc) = _wc;				\
-        (c) = nbytes == 1 ? to_uchar ((dfa)->lex.ptr[0]) : EOF; \
-        (dfa)->lex.ptr += nbytes;		\
-        (dfa)->lex.left -= nbytes;		\
-      }						\
-  } while (false)
+/* Fetch the next lexical input character from the pattern.  There
+   must at least one byte of pattern input.  Set DFA->lex.wctok to the
+   value of the character or to WEOF depending on whether the input is
+   a valid multibyte character (possibly of length 1).  Then return
+   the next input byte value, except return EOF if the input is a
+   multibyte character of length greater than 1.  */
+static int
+fetch_wc (struct dfa *dfa)
+{
+  size_t nbytes = mbs_to_wchar (&dfa->lex.wctok, dfa->lex.ptr, dfa->lex.left,
+                                dfa);
+  dfa->lex.cur_mb_len = nbytes;
+  int c = nbytes == 1 ? to_uchar (dfa->lex.ptr[0]) : EOF;
+  dfa->lex.ptr += nbytes;
+  dfa->lex.left -= nbytes;
+  return c;
+}
+
+/* If there is no more input, report an error about unbalanced brackets.
+   Otherwise, behave as with fetch_wc (DFA).  */
+static int
+bracket_fetch_wc (struct dfa *dfa)
+{
+  if (! dfa->lex.left)
+    dfaerror (_("unbalanced ["));
+  return fetch_wc (dfa);
+}
 
 typedef int predicate (int);
 
@@ -1015,22 +1029,17 @@ static const struct dfa_ctype prednames[] = {
 static const struct dfa_ctype *_GL_ATTRIBUTE_PURE
 find_pred (const char *str)
 {
-  unsigned int i;
-  for (i = 0; prednames[i].name; ++i)
-    if (STREQ (str, prednames[i].name))
+  for (unsigned int i = 0; prednames[i].name; ++i)
+    if (streq (str, prednames[i].name))
       return &prednames[i];
   return NULL;
 }
 
-/* Multibyte character handling sub-routine for lex.
-   Parse a bracket expression and build a struct mb_char_classes.  */
+/* Parse a bracket expression, which possibly includes multibyte
+   characters.  */
 static token
 parse_bracket_exp (struct dfa *dfa)
 {
-  bool invert;
-  int c, c1, c2;
-  charclass ccl;
-
   /* This is a bracket expression that dfaexec is known to
      process correctly.  */
   bool known_bracket_exp = true;
@@ -1042,43 +1051,20 @@ parse_bracket_exp (struct dfa *dfa)
      Bit 3 = includes ranges, char/equiv classes or collation elements.  */
   int colon_warning_state;
 
-  wint_t wc;
-  wint_t wc2;
-  wint_t wc1 = 0;
-
-  /* Work area to build a mb_char_classes.  */
-  struct mb_char_classes *work_mbc;
-  ptrdiff_t chars_al;
-
-  chars_al = 0;
-  if (dfa->localeinfo.multibyte)
+  dfa->lex.brack.nchars = 0;
+  charclass ccl;
+  zeroset (&ccl);
+  int c = bracket_fetch_wc (dfa);
+  bool invert = c == '^';
+  if (invert)
     {
-      dfa->mbcsets = maybe_realloc (dfa->mbcsets, dfa->nmbcsets,
-                                    &dfa->mbcsets_alloc, -1,
-                                    sizeof *dfa->mbcsets);
-
-      /* dfa->multibyte_prop[] hold the index of dfa->mbcsets.
-         We will update dfa->multibyte_prop[] in addtok, because we can't
-         decide the index in dfa->tokens[].  */
-
-      /* Initialize work area.  */
-      work_mbc = &dfa->mbcsets[dfa->nmbcsets++];
-      memset (work_mbc, 0, sizeof *work_mbc);
-    }
-  else
-    work_mbc = NULL;
-
-  memset (ccl, 0, sizeof ccl);
-  FETCH_WC (dfa, c, wc, _("unbalanced ["));
-  if (c == '^')
-    {
-      FETCH_WC (dfa, c, wc, _("unbalanced ["));
+      c = bracket_fetch_wc (dfa);
       invert = true;
       known_bracket_exp = dfa->simple_locale;
     }
-  else
-    invert = false;
-
+  wint_t wc = dfa->lex.wctok;
+  int c1;
+  wint_t wc1;
   colon_warning_state = (c == ':');
   do
     {
@@ -1091,7 +1077,8 @@ parse_bracket_exp (struct dfa *dfa)
          dfa is ever called.  */
       if (c == '[')
         {
-          FETCH_WC (dfa, c1, wc1, _("unbalanced ["));
+          c1 = bracket_fetch_wc (dfa);
+          wc1 = dfa->lex.wctok;
 
           if ((c1 == ':' && (dfa->syntax.syntax_bits & RE_CHAR_CLASSES))
               || c1 == '.' || c1 == '=')
@@ -1101,7 +1088,7 @@ parse_bracket_exp (struct dfa *dfa)
               size_t len = 0;
               for (;;)
                 {
-                  FETCH_WC (dfa, c, wc, _("unbalanced ["));
+                  c = bracket_fetch_wc (dfa);
                   if (dfa->lex.left == 0
                       || (c == c1 && dfa->lex.ptr[0] == ']'))
                     break;
@@ -1114,7 +1101,8 @@ parse_bracket_exp (struct dfa *dfa)
               str[len] = '\0';
 
               /* Fetch bracket.  */
-              FETCH_WC (dfa, c, wc, _("unbalanced ["));
+              c = bracket_fetch_wc (dfa);
+              wc = dfa->lex.wctok;
               if (c1 == ':')
                 /* Build character class.  POSIX allows character
                    classes to match multicharacter collating elements,
@@ -1122,8 +1110,8 @@ parse_bracket_exp (struct dfa *dfa)
                    worry about that possibility.  */
                 {
                   char const *class
-                    = (dfa->syntax.case_fold && (STREQ (str, "upper")
-                                                 || STREQ (str, "lower"))
+                    = (dfa->syntax.case_fold && (streq (str, "upper")
+                                                 || streq (str, "lower"))
                        ? "alpha" : str);
                   const struct dfa_ctype *pred = find_pred (class);
                   if (!pred)
@@ -1132,9 +1120,9 @@ parse_bracket_exp (struct dfa *dfa)
                   if (dfa->localeinfo.multibyte && !pred->single_byte_only)
                     known_bracket_exp = false;
                   else
-                    for (c2 = 0; c2 < NOTCHAR; ++c2)
+                    for (int c2 = 0; c2 < NOTCHAR; ++c2)
                       if (pred->func (c2))
-                        setbit (c2, ccl);
+                        setbit (c2, &ccl);
                 }
               else
                 known_bracket_exp = false;
@@ -1142,7 +1130,8 @@ parse_bracket_exp (struct dfa *dfa)
               colon_warning_state |= 8;
 
               /* Fetch new lookahead character.  */
-              FETCH_WC (dfa, c1, wc1, _("unbalanced ["));
+              c1 = bracket_fetch_wc (dfa);
+              wc1 = dfa->lex.wctok;
               continue;
             }
 
@@ -1150,16 +1139,24 @@ parse_bracket_exp (struct dfa *dfa)
              are already set up.  */
         }
 
-      if (c == '\\' && (dfa->syntax.syntax_bits & RE_BACKSLASH_ESCAPE_IN_LISTS))
-        FETCH_WC (dfa, c, wc, _("unbalanced ["));
+      if (c == '\\'
+          && (dfa->syntax.syntax_bits & RE_BACKSLASH_ESCAPE_IN_LISTS))
+        {
+          c = bracket_fetch_wc (dfa);
+          wc = dfa->lex.wctok;
+        }
 
       if (c1 == NOTCHAR)
-        FETCH_WC (dfa, c1, wc1, _("unbalanced ["));
+        {
+          c1 = bracket_fetch_wc (dfa);
+          wc1 = dfa->lex.wctok;
+        }
 
       if (c1 == '-')
         /* build range characters.  */
         {
-          FETCH_WC (dfa, c2, wc2, _("unbalanced ["));
+          int c2 = bracket_fetch_wc (dfa);
+          wint_t wc2 = dfa->lex.wctok;
 
           /* A bracket expression like [a-[.aa.]] matches an unknown set.
              Treat it like [-a[.aa.]] while parsing it, and
@@ -1181,10 +1178,14 @@ parse_bracket_exp (struct dfa *dfa)
             {
               if (c2 == '\\' && (dfa->syntax.syntax_bits
                                  & RE_BACKSLASH_ESCAPE_IN_LISTS))
-                FETCH_WC (dfa, c2, wc2, _("unbalanced ["));
+                {
+                  c2 = bracket_fetch_wc (dfa);
+                  wc2 = dfa->lex.wctok;
+                }
 
               colon_warning_state |= 8;
-              FETCH_WC (dfa, c1, wc1, _("unbalanced ["));
+              c1 = bracket_fetch_wc (dfa);
+              wc1 = dfa->lex.wctok;
 
               /* Treat [x-y] as a range if x != y.  */
               if (wc != wc2 || wc == WEOF)
@@ -1195,7 +1196,7 @@ parse_bracket_exp (struct dfa *dfa)
                     {
                       int ci;
                       for (ci = c; ci <= c2; ci++)
-                        setbit (ci, ccl);
+                        setbit (ci, &ccl);
                       if (dfa->syntax.case_fold)
                         {
                           int uc = toupper (c);
@@ -1204,7 +1205,7 @@ parse_bracket_exp (struct dfa *dfa)
                             {
                               int uci = toupper (ci);
                               if (uc <= uci && uci <= uc2)
-                                setbit (ci, ccl);
+                                setbit (ci, &ccl);
                             }
                         }
                     }
@@ -1221,9 +1222,9 @@ parse_bracket_exp (struct dfa *dfa)
       if (!dfa->localeinfo.multibyte)
         {
           if (dfa->syntax.case_fold)
-            setbit_case_fold_c (c, ccl);
+            setbit_case_fold_c (c, &ccl);
           else
-            setbit (c, ccl);
+            setbit (c, &ccl);
           continue;
         }
 
@@ -1232,18 +1233,18 @@ parse_bracket_exp (struct dfa *dfa)
       else
         {
           wchar_t folded[CASE_FOLDED_BUFSIZE + 1];
-          unsigned int i;
           unsigned int n = (dfa->syntax.case_fold
                             ? case_folded_counterparts (wc, folded + 1) + 1
                             : 1);
           folded[0] = wc;
-          for (i = 0; i < n; i++)
-            if (!setbit_wc (folded[i], ccl))
+          for (unsigned int i = 0; i < n; i++)
+            if (!setbit_wc (folded[i], &ccl))
               {
-                work_mbc->chars
-                  = maybe_realloc (work_mbc->chars, work_mbc->nchars,
-                                   &chars_al, -1, sizeof *work_mbc->chars);
-                work_mbc->chars[work_mbc->nchars++] = folded[i];
+                dfa->lex.brack.chars
+                  = maybe_realloc (dfa->lex.brack.chars, dfa->lex.brack.nchars,
+                                   &dfa->lex.brack.nchars_alloc, -1,
+                                   sizeof *dfa->lex.brack.chars);
+                dfa->lex.brack.chars[dfa->lex.brack.nchars++] = folded[i];
               }
         }
     }
@@ -1257,20 +1258,20 @@ parse_bracket_exp (struct dfa *dfa)
 
   if (dfa->localeinfo.multibyte)
     {
-      work_mbc->invert = invert;
-      work_mbc->cset = emptyset (ccl) ? -1 : charclass_index (dfa, ccl);
+      dfa->lex.brack.invert = invert;
+      dfa->lex.brack.cset = emptyset (&ccl) ? -1 : charclass_index (dfa, &ccl);
       return MBCSET;
     }
 
   if (invert)
     {
       assert (!dfa->localeinfo.multibyte);
-      notset (ccl);
+      notset (&ccl);
       if (dfa->syntax.syntax_bits & RE_HAT_LISTS_NOT_NEWLINE)
-        clrbit ('\n', ccl);
+        clrbit ('\n', &ccl);
     }
 
-  return CSET + charclass_index (dfa, ccl);
+  return CSET + charclass_index (dfa, &ccl);
 }
 
 struct lexptr
@@ -1298,10 +1299,7 @@ pop_lex_state (struct dfa *dfa, struct lexptr const *ls)
 static token
 lex (struct dfa *dfa)
 {
-  int c, c2;
   bool backslash = false;
-  charclass ccl;
-  int i;
 
   /* Basic plan: We fetch a character.  If it's a backslash,
      we set the backslash flag and go through the loop again.
@@ -1309,9 +1307,11 @@ lex (struct dfa *dfa)
      main switch inside the backslash case.  On the minus side,
      it means that just about every case begins with
      "if (backslash) ...".  */
-  for (i = 0; i < 2; ++i)
+  for (int i = 0; i < 2; ++i)
     {
-      FETCH_WC (dfa, c, dfa->lex.wctok, NULL);
+      if (! dfa->lex.left)
+        return dfa->lex.lasttok = END;
+      int c = fetch_wc (dfa);
 
       switch (c)
         {
@@ -1451,7 +1451,7 @@ lex (struct dfa *dfa)
             char const *p = dfa->lex.ptr;
             char const *lim = p + dfa->lex.left;
             dfa->lex.minrep = dfa->lex.maxrep = -1;
-            for (; p != lim && ISASCIIDIGIT (*p); p++)
+            for (; p != lim && isasciidigit (*p); p++)
               dfa->lex.minrep = (dfa->lex.minrep < 0
                                  ? *p - '0'
                                  : MIN (RE_DUP_MAX + 1,
@@ -1464,7 +1464,7 @@ lex (struct dfa *dfa)
                   {
                     if (dfa->lex.minrep < 0)
                       dfa->lex.minrep = 0;
-                    while (++p != lim && ISASCIIDIGIT (*p))
+                    while (++p != lim && isasciidigit (*p))
                       dfa->lex.maxrep
                         = (dfa->lex.maxrep < 0
                            ? *p - '0'
@@ -1527,16 +1527,17 @@ lex (struct dfa *dfa)
             goto normal_char;
           if (dfa->canychar == (size_t) -1)
             {
-              fillset (ccl);
+              charclass ccl;
+              fillset (&ccl);
               if (!(dfa->syntax.syntax_bits & RE_DOT_NEWLINE))
-                clrbit ('\n', ccl);
+                clrbit ('\n', &ccl);
               if (dfa->syntax.syntax_bits & RE_DOT_NOT_NULL)
-                clrbit ('\0', ccl);
+                clrbit ('\0', &ccl);
               if (dfa->localeinfo.multibyte)
-                for (c2 = 0; c2 < NOTCHAR; c2++)
+                for (int c2 = 0; c2 < NOTCHAR; c2++)
                   if (dfa->localeinfo.sbctowc[c2] == WEOF)
-                    clrbit (c2, ccl);
-              dfa->canychar = charclass_index (dfa, ccl);
+                    clrbit (c2, &ccl);
+              dfa->canychar = charclass_index (dfa, &ccl);
             }
           dfa->lex.laststart = false;
           return dfa->lex.lasttok = (dfa->localeinfo.multibyte
@@ -1549,14 +1550,15 @@ lex (struct dfa *dfa)
             goto normal_char;
           if (!dfa->localeinfo.multibyte)
             {
-              zeroset (ccl);
-              for (c2 = 0; c2 < NOTCHAR; ++c2)
+              charclass ccl;
+              zeroset (&ccl);
+              for (int c2 = 0; c2 < NOTCHAR; ++c2)
                 if (isspace (c2))
-                  setbit (c2, ccl);
+                  setbit (c2, &ccl);
               if (c == 'S')
-                notset (ccl);
+                notset (&ccl);
               dfa->lex.laststart = false;
-              return dfa->lex.lasttok = CSET + charclass_index (dfa, ccl);
+              return dfa->lex.lasttok = CSET + charclass_index (dfa, &ccl);
             }
 
           /* FIXME: see if optimizing this, as is done with ANYCHAR and
@@ -1582,14 +1584,15 @@ lex (struct dfa *dfa)
 
           if (!dfa->localeinfo.multibyte)
             {
-              zeroset (ccl);
-              for (c2 = 0; c2 < NOTCHAR; ++c2)
+              charclass ccl;
+              zeroset (&ccl);
+              for (int c2 = 0; c2 < NOTCHAR; ++c2)
                 if (dfa->syntax.sbit[c2] == CTX_LETTER)
-                  setbit (c2, ccl);
+                  setbit (c2, &ccl);
               if (c == 'W')
-                notset (ccl);
+                notset (&ccl);
               dfa->lex.laststart = false;
-              return dfa->lex.lasttok = CSET + charclass_index (dfa, ccl);
+              return dfa->lex.lasttok = CSET + charclass_index (dfa, &ccl);
             }
 
           /* FIXME: see if optimizing this, as is done with ANYCHAR and
@@ -1624,9 +1627,10 @@ lex (struct dfa *dfa)
 
           if (dfa->syntax.case_fold && isalpha (c))
             {
-              zeroset (ccl);
-              setbit_case_fold_c (c, ccl);
-              return dfa->lex.lasttok = CSET + charclass_index (dfa, ccl);
+              charclass ccl;
+              zeroset (&ccl);
+              setbit_case_fold_c (c, &ccl);
+              return dfa->lex.lasttok = CSET + charclass_index (dfa, &ccl);
             }
 
           return dfa->lex.lasttok = c;
@@ -1640,7 +1644,7 @@ lex (struct dfa *dfa)
 }
 
 static void
-addtok_mb (struct dfa *dfa, token t, int mbprop)
+addtok_mb (struct dfa *dfa, token t, char mbprop)
 {
   if (dfa->talloc == dfa->tindex)
     {
@@ -1690,25 +1694,23 @@ addtok (struct dfa *dfa, token t)
   if (dfa->localeinfo.multibyte && t == MBCSET)
     {
       bool need_or = false;
-      struct mb_char_classes *work_mbc = &dfa->mbcsets[dfa->nmbcsets - 1];
-      ptrdiff_t i;
 
       /* Extract wide characters into alternations for better performance.
          This does not require UTF-8.  */
-      for (i = 0; i < work_mbc->nchars; i++)
+      for (ptrdiff_t i = 0; i < dfa->lex.brack.nchars; i++)
         {
-          addtok_wc (dfa, work_mbc->chars[i]);
+          addtok_wc (dfa, dfa->lex.brack.chars[i]);
           if (need_or)
             addtok (dfa, OR);
           need_or = true;
         }
-      work_mbc->nchars = 0;
+      dfa->lex.brack.nchars = 0;
 
-      /* Characters have been handled above, so it is possible
-         that the mbcset is empty now.  Do nothing in that case.  */
-      if (work_mbc->cset != -1)
+      /* Wide characters have been handled above, so it is possible
+         that the set is empty now.  Do nothing in that case.  */
+      if (dfa->lex.brack.cset != -1)
         {
-          addtok (dfa, CSET + work_mbc->cset);
+          addtok (dfa, CSET + dfa->lex.brack.cset);
           if (need_or)
             addtok (dfa, OR);
         }
@@ -1730,7 +1732,6 @@ addtok_wc (struct dfa *dfa, wint_t wc)
 {
   unsigned char buf[MB_LEN_MAX];
   mbstate_t s = { 0 };
-  int i;
   size_t stored_bytes = wcrtomb ((char *) buf, wc, &s);
 
   if (stored_bytes != (size_t) -1)
@@ -1744,7 +1745,7 @@ addtok_wc (struct dfa *dfa, wint_t wc)
     }
 
   addtok_mb (dfa, buf[0], dfa->lex.cur_mb_len == 1 ? 3 : 1);
-  for (i = 1; i < dfa->lex.cur_mb_len; i++)
+  for (int i = 1; i < dfa->lex.cur_mb_len; i++)
     {
       addtok_mb (dfa, buf[i], i == dfa->lex.cur_mb_len - 1 ? 2 : 0);
       addtok (dfa, CAT);
@@ -1771,22 +1772,20 @@ add_utf8_anychar (struct dfa *dfa)
     CHARCLASS_INIT (0, 0, 0, 0, 0, 0, 0, 0xff0000)
   };
   const unsigned int n = sizeof (utf8_classes) / sizeof (utf8_classes[0]);
-  unsigned int i;
 
   /* Define the five character classes that are needed below.  */
   if (dfa->utf8_anychar_classes[0] == 0)
-    for (i = 0; i < n; i++)
+    for (unsigned int i = 0; i < n; i++)
       {
-        charclass c;
-        copyset (utf8_classes[i], c);
+        charclass c = utf8_classes[i];
         if (i == 1)
           {
             if (!(dfa->syntax.syntax_bits & RE_DOT_NEWLINE))
-              clrbit ('\n', c);
+              clrbit ('\n', &c);
             if (dfa->syntax.syntax_bits & RE_DOT_NOT_NULL)
-              clrbit ('\0', c);
+              clrbit ('\0', &c);
           }
-        dfa->utf8_anychar_classes[i] = CSET + charclass_index (dfa, c);
+        dfa->utf8_anychar_classes[i] = CSET + charclass_index (dfa, &c);
       }
 
   /* A valid UTF-8 character is
@@ -1799,6 +1798,7 @@ add_utf8_anychar (struct dfa *dfa)
      which I'll write more concisely "B|CA|DAA|EAAA".  Factor the [0x00-0x7f]
      and you get "B|(C|(D|EA)A)A".  And since the token buffer is in reverse
      Polish notation, you get "B C D E A CAT OR A CAT OR A CAT OR".  */
+  unsigned int i;
   for (i = 1; i < n; i++)
     addtok (dfa, dfa->utf8_anychar_classes[i]);
   while (--i > 1)
@@ -1858,9 +1858,9 @@ atom (struct dfa *dfa)
           if (dfa->syntax.case_fold)
             {
               wchar_t folded[CASE_FOLDED_BUFSIZE];
-              unsigned int i, n = case_folded_counterparts (dfa->lex.wctok,
-                                                            folded);
-              for (i = 0; i < n; i++)
+              unsigned int n = case_folded_counterparts (dfa->lex.wctok,
+                                                         folded);
+              for (unsigned int i = 0; i < n; i++)
                 {
                   addtok_wc (dfa, folded[i]);
                   addtok (dfa, OR);
@@ -1908,8 +1908,6 @@ atom (struct dfa *dfa)
 static size_t _GL_ATTRIBUTE_PURE
 nsubtoks (struct dfa const *dfa, size_t tindex)
 {
-  size_t ntoks1;
-
   switch (dfa->tokens[tindex - 1])
     {
     default:
@@ -1920,8 +1918,10 @@ nsubtoks (struct dfa const *dfa, size_t tindex)
       return 1 + nsubtoks (dfa, tindex - 1);
     case CAT:
     case OR:
-      ntoks1 = nsubtoks (dfa, tindex - 1);
-      return 1 + ntoks1 + nsubtoks (dfa, tindex - 1 - ntoks1);
+      {
+        size_t ntoks1 = nsubtoks (dfa, tindex - 1);
+        return 1 + ntoks1 + nsubtoks (dfa, tindex - 1 - ntoks1);
+      }
     }
 }
 
@@ -1929,33 +1929,30 @@ nsubtoks (struct dfa const *dfa, size_t tindex)
 static void
 copytoks (struct dfa *dfa, size_t tindex, size_t ntokens)
 {
-  size_t i;
-
   if (dfa->localeinfo.multibyte)
-    for (i = 0; i < ntokens; ++i)
-      addtok_mb (dfa, dfa->tokens[tindex + i], dfa->multibyte_prop[tindex + i]);
+    for (size_t i = 0; i < ntokens; ++i)
+      addtok_mb (dfa, dfa->tokens[tindex + i],
+                 dfa->multibyte_prop[tindex + i]);
   else
-    for (i = 0; i < ntokens; ++i)
+    for (size_t i = 0; i < ntokens; ++i)
       addtok_mb (dfa, dfa->tokens[tindex + i], 3);
 }
 
 static void
 closure (struct dfa *dfa)
 {
-  int i;
-  size_t tindex, ntokens;
-
   atom (dfa);
   while (dfa->parse.tok == QMARK || dfa->parse.tok == STAR
          || dfa->parse.tok == PLUS || dfa->parse.tok == REPMN)
     if (dfa->parse.tok == REPMN && (dfa->lex.minrep || dfa->lex.maxrep))
       {
-        ntokens = nsubtoks (dfa, dfa->tindex);
-        tindex = dfa->tindex - ntokens;
+        size_t ntokens = nsubtoks (dfa, dfa->tindex);
+        size_t tindex = dfa->tindex - ntokens;
         if (dfa->lex.maxrep < 0)
           addtok (dfa, PLUS);
         if (dfa->lex.minrep == 0)
           addtok (dfa, QMARK);
+        int i;
         for (i = 1; i < dfa->lex.minrep; i++)
           {
             copytoks (dfa, tindex, ntokens);
@@ -2016,12 +2013,6 @@ dfaparse (char const *s, size_t len, struct dfa *d)
   d->lex.left = len;
   d->lex.lasttok = END;
   d->lex.laststart = true;
-  d->lex.parens = 0;
-  if (d->localeinfo.multibyte)
-    {
-      d->lex.cur_mb_len = 0;
-      memset (&d->mbs, 0, sizeof d->mbs);
-    }
 
   if (!d->syntax.syntax_bits_set)
     dfaerror (_("no syntax specified"));
@@ -2078,7 +2069,6 @@ insert (position p, position_set *s)
 {
   ptrdiff_t count = s->nelem;
   ptrdiff_t lo = 0, hi = count;
-  ptrdiff_t i;
   while (lo < hi)
     {
       ptrdiff_t mid = (lo + hi) >> 1;
@@ -2094,7 +2084,7 @@ insert (position p, position_set *s)
     }
 
   s->elems = maybe_realloc (s->elems, count, &s->alloc, -1, sizeof *s->elems);
-  for (i = count; i > lo; i--)
+  for (ptrdiff_t i = count; i > lo; i--)
     s->elems[i] = s->elems[i - 1];
   s->elems[lo] = p;
   ++s->nelem;
@@ -2195,7 +2185,7 @@ state_index (struct dfa *d, position_set const *s, int context)
 {
   size_t hash = 0;
   int constraint = 0;
-  state_num i, j;
+  state_num i;
   token first_end = 0;
 
   for (i = 0; i < s->nelem; ++i)
@@ -2207,6 +2197,7 @@ state_index (struct dfa *d, position_set const *s, int context)
       if (hash != d->states[i].hash || s->nelem != d->states[i].elems.nelem
           || context != d->states[i].context)
         continue;
+      state_num j;
       for (j = 0; j < s->nelem; ++j)
         if (s->elems[j].constraint != d->states[i].elems.elems[j].constraint
             || s->elems[j].index != d->states[i].elems.elems[j].index)
@@ -2217,7 +2208,7 @@ state_index (struct dfa *d, position_set const *s, int context)
 
 #ifdef DEBUG
   fprintf (stderr, "new state %zd\n nextpos:", i);
-  for (j = 0; j < s->nelem; ++j)
+  for (state_num j = 0; j < s->nelem; j++)
     {
       fprintf (stderr, " %zu:", s->elems[j].index);
       prtok (d->tokens[s->elems[j].index]);
@@ -2237,12 +2228,12 @@ state_index (struct dfa *d, position_set const *s, int context)
   fprintf (stderr, "\n");
 #endif
 
-  for (j = 0; j < s->nelem; ++j)
+  for (state_num j = 0; j < s->nelem; j++)
     {
       int c = s->elems[j].constraint;
       if (d->tokens[s->elems[j].index] < 0)
         {
-          if (SUCCEEDS_IN_CONTEXT (c, context, CTX_ANY))
+          if (succeeds_in_context (c, context, CTX_ANY))
             constraint |= c;
           if (!first_end)
             first_end = d->tokens[s->elems[j].index];
@@ -2325,18 +2316,17 @@ epsclosure (position_set *initial, struct dfa const *d)
    character included in C.  */
 
 static int
-charclass_context (struct dfa const *dfa, charclass c)
+charclass_context (struct dfa const *dfa, charclass const *c)
 {
   int context = 0;
-  unsigned int j;
 
-  for (j = 0; j < CHARCLASS_WORDS; ++j)
+  for (unsigned int j = 0; j < CHARCLASS_WORDS; ++j)
     {
-      if (c[j] & dfa->syntax.newline[j])
+      if (c->w[j] & dfa->syntax.newline.w[j])
         context |= CTX_NEWLINE;
-      if (c[j] & dfa->syntax.letters[j])
+      if (c->w[j] & dfa->syntax.letters.w[j])
         context |= CTX_LETTER;
-      if (c[j] & ~(dfa->syntax.letters[j] | dfa->syntax.newline[j]))
+      if (c->w[j] & ~(dfa->syntax.letters.w[j] | dfa->syntax.newline.w[j]))
         context |= CTX_NONE;
     }
 
@@ -2353,13 +2343,12 @@ static int _GL_ATTRIBUTE_PURE
 state_separate_contexts (position_set const *s)
 {
   int separate_contexts = 0;
-  size_t j;
 
-  for (j = 0; j < s->nelem; ++j)
+  for (size_t j = 0; j < s->nelem; j++)
     {
-      if (PREV_NEWLINE_DEPENDENT (s->elems[j].constraint))
+      if (prev_newline_dependent (s->elems[j].constraint))
         separate_contexts |= CTX_NEWLINE;
-      if (PREV_LETTER_DEPENDENT (s->elems[j].constraint))
+      if (prev_letter_dependent (s->elems[j].constraint))
         separate_contexts |= CTX_LETTER;
     }
 
@@ -2439,15 +2428,11 @@ dfaanalyze (struct dfa *d, bool searchflag)
     size_t nlastpos;
   } *stkalloc = xnmalloc (d->depth, sizeof *stkalloc), *stk = stkalloc;
 
-  position_set tmp;             /* Temporary set for merging sets.  */
   position_set merged;          /* Result of merging sets.  */
-  int separate_contexts;        /* Context wanted by some position.  */
-  size_t i, j;
-  position *pos;
 
 #ifdef DEBUG
   fprintf (stderr, "dfaanalyze:\n");
-  for (i = 0; i < d->tindex; ++i)
+  for (size_t i = 0; i < d->tindex; ++i)
     {
       fprintf (stderr, " %zu:", i);
       prtok (d->tokens[i]);
@@ -2459,7 +2444,7 @@ dfaanalyze (struct dfa *d, bool searchflag)
   alloc_position_set (&merged, d->nleaves);
   d->follows = xcalloc (d->tindex, sizeof *d->follows);
 
-  for (i = 0; i < d->tindex; ++i)
+  for (size_t i = 0; i < d->tindex; ++i)
     {
       switch (d->tokens[i])
         {
@@ -2476,14 +2461,17 @@ dfaanalyze (struct dfa *d, bool searchflag)
         case PLUS:
           /* Every element in the firstpos of the argument is in the follow
              of every element in the lastpos.  */
-          tmp.nelem = stk[-1].nfirstpos;
-          tmp.elems = firstpos;
-          pos = lastpos;
-          for (j = 0; j < stk[-1].nlastpos; ++j)
-            {
-              merge (&tmp, &d->follows[pos[j].index], &merged);
-              copy (&merged, &d->follows[pos[j].index]);
-            }
+          {
+            position_set tmp;
+            tmp.nelem = stk[-1].nfirstpos;
+            tmp.elems = firstpos;
+            position *pos = lastpos;
+            for (size_t j = 0; j < stk[-1].nlastpos; j++)
+              {
+                merge (&tmp, &d->follows[pos[j].index], &merged);
+                copy (&merged, &d->follows[pos[j].index]);
+              }
+          }
           /* fallthrough */
 
         case QMARK:
@@ -2495,14 +2483,17 @@ dfaanalyze (struct dfa *d, bool searchflag)
         case CAT:
           /* Every element in the firstpos of the second argument is in the
              follow of every element in the lastpos of the first argument.  */
-          tmp.nelem = stk[-1].nfirstpos;
-          tmp.elems = firstpos;
-          pos = lastpos + stk[-1].nlastpos;
-          for (j = 0; j < stk[-2].nlastpos; ++j)
-            {
-              merge (&tmp, &d->follows[pos[j].index], &merged);
-              copy (&merged, &d->follows[pos[j].index]);
-            }
+          {
+            position_set tmp;
+            tmp.nelem = stk[-1].nfirstpos;
+            tmp.elems = firstpos;
+            position *pos = lastpos + stk[-1].nlastpos;
+            for (size_t j = 0; j < stk[-2].nlastpos; j++)
+              {
+                merge (&tmp, &d->follows[pos[j].index], &merged);
+                copy (&merged, &d->follows[pos[j].index]);
+              }
+          }
 
           /* The firstpos of a CAT node is the firstpos of the first argument,
              union that of the second argument if the first is nullable.  */
@@ -2517,8 +2508,8 @@ dfaanalyze (struct dfa *d, bool searchflag)
             stk[-2].nlastpos += stk[-1].nlastpos;
           else
             {
-              pos = lastpos + stk[-2].nlastpos;
-              for (j = stk[-1].nlastpos; j-- > 0;)
+              position *pos = lastpos + stk[-2].nlastpos;
+              for (size_t j = stk[-1].nlastpos; j-- > 0;)
                 pos[j] = lastpos[j];
               lastpos += stk[-2].nlastpos;
               stk[-2].nlastpos = stk[-1].nlastpos;
@@ -2569,13 +2560,13 @@ dfaanalyze (struct dfa *d, bool searchflag)
       fprintf (stderr,
                stk[-1].nullable ? " nullable: yes\n" : " nullable: no\n");
       fprintf (stderr, " firstpos:");
-      for (j = stk[-1].nfirstpos; j-- > 0;)
+      for (size_t j = stk[-1].nfirstpos; j-- > 0;)
         {
           fprintf (stderr, " %zu:", firstpos[j].index);
           prtok (d->tokens[firstpos[j].index]);
         }
       fprintf (stderr, "\n lastpos:");
-      for (j = stk[-1].nlastpos; j-- > 0;)
+      for (size_t j = stk[-1].nlastpos; j-- > 0;)
         {
           fprintf (stderr, " %zu:", lastpos[j].index);
           prtok (d->tokens[lastpos[j].index]);
@@ -2585,7 +2576,7 @@ dfaanalyze (struct dfa *d, bool searchflag)
     }
 
 #ifdef DEBUG
-  for (i = 0; i < d->tindex; ++i)
+  for (size_t i = 0; i < d->tindex; ++i)
     if (d->tokens[i] < NOTCHAR || d->tokens[i] == BACKREF
         || d->tokens[i] == ANYCHAR || d->tokens[i] == MBCSET
         || d->tokens[i] >= CSET)
@@ -2593,7 +2584,7 @@ dfaanalyze (struct dfa *d, bool searchflag)
         fprintf (stderr, "follows(%zu:", i);
         prtok (d->tokens[i]);
         fprintf (stderr, "):");
-        for (j = d->follows[i].nelem; j-- > 0;)
+        for (size_t j = d->follows[i].nelem; j-- > 0;)
           {
             fprintf (stderr, " %zu:", d->follows[i].elems[j].index);
             prtok (d->tokens[d->follows[i].elems[j].index]);
@@ -2605,15 +2596,17 @@ dfaanalyze (struct dfa *d, bool searchflag)
   /* Get the epsilon closure of the firstpos of the regexp.  The result will
      be the set of positions of state 0.  */
   merged.nelem = 0;
-  for (i = 0; i < stk[-1].nfirstpos; ++i)
+  for (size_t i = 0; i < stk[-1].nfirstpos; ++i)
     insert (firstpos[i], &merged);
 
   /* For each follow set that is the follow set of a real position, replace
      it with its epsilon closure.  */
   epsclosure (&merged, d);
 
+  /* Context wanted by some position.  */
+  int separate_contexts = state_separate_contexts (&merged);
+
   /* Build the initial state.  */
-  separate_contexts = state_separate_contexts (&merged);
   if (separate_contexts & CTX_NEWLINE)
     state_index (d, &merged, CTX_NEWLINE);
   d->initstate_notbol = d->min_trcount
@@ -2662,46 +2655,47 @@ dfaanalyze (struct dfa *d, bool searchflag)
 static state_num
 dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
 {
-  leaf_set group;               /* Positions that match the input char.  */
-  charclass label;              /* The group's label.  */
   position_set follows;         /* Union of the follows of the group.  */
   position_set tmp;             /* Temporary space for merging sets.  */
   state_num state;              /* New state.  */
   state_num state_newline;      /* New state on a newline transition.  */
   state_num state_letter;       /* New state on a letter transition.  */
-  size_t i, j, k;
 
 #ifdef DEBUG
   fprintf (stderr, "build state %td\n", s);
 #endif
 
+  /* Positions that match the input char.  */
+  leaf_set group;
   group.elems = xnmalloc (d->nleaves, sizeof *group.elems);
   group.nelem = 0;
 
-  fillset (label);
+  /* The group's label.  */
+  charclass label;
+  fillset (&label);
 
-  for (i = 0; i < d->states[s].elems.nelem; ++i)
+  for (size_t i = 0; i < d->states[s].elems.nelem; ++i)
     {
       charclass matches;            /* Set of matching characters.  */
       position pos = d->states[s].elems.elems[i];
       bool matched = false;
       if (d->tokens[pos.index] >= 0 && d->tokens[pos.index] < NOTCHAR)
         {
-          zeroset (matches);
-          setbit (d->tokens[pos.index], matches);
+          zeroset (&matches);
+          setbit (d->tokens[pos.index], &matches);
           if (d->tokens[pos.index] == uc)
             matched = true;
         }
       else if (d->tokens[pos.index] >= CSET)
         {
-          copyset (d->charclasses[d->tokens[pos.index] - CSET], matches);
-          if (tstbit (uc, d->charclasses[d->tokens[pos.index] - CSET]))
+          matches = d->charclasses[d->tokens[pos.index] - CSET];
+          if (tstbit (uc, &d->charclasses[d->tokens[pos.index] - CSET]))
             matched = true;
         }
-       else if (d->tokens[pos.index] == ANYCHAR)
-         {
-          copyset (d->charclasses[d->canychar], matches);
-          if (tstbit (uc, d->charclasses[d->canychar]))
+      else if (d->tokens[pos.index] == ANYCHAR)
+        {
+          matches = d->charclasses[d->canychar];
+          if (tstbit (uc, &d->charclasses[d->canychar]))
             matched = true;
 
           /* ANYCHAR must match with a single character, so we must put
@@ -2710,13 +2704,13 @@ dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
              positions which has ANYCHAR does not depend on context of
              next character, we put the follows instead of it to
              D->states[s].mbps to optimize.  */
-          if (SUCCEEDS_IN_CONTEXT (pos.constraint, d->states[s].context,
+          if (succeeds_in_context (pos.constraint, d->states[s].context,
                                    CTX_NONE))
             {
               if (d->states[s].mbps.nelem == 0)
                 alloc_position_set (&d->states[s].mbps,
                                     d->follows[pos.index].nelem);
-              for (j = 0; j < d->follows[pos.index].nelem; j++)
+              for (size_t j = 0; j < d->follows[pos.index].nelem; j++)
                 insert (d->follows[pos.index].elems[j], &d->states[s].mbps);
             }
         }
@@ -2727,21 +2721,22 @@ dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
          they fail in the current context.  */
       if (pos.constraint != NO_CONSTRAINT)
         {
-          if (!SUCCEEDS_IN_CONTEXT (pos.constraint,
+          if (!succeeds_in_context (pos.constraint,
                                     d->states[s].context, CTX_NEWLINE))
-            for (j = 0; j < CHARCLASS_WORDS; ++j)
-              matches[j] &= ~d->syntax.newline[j];
-          if (!SUCCEEDS_IN_CONTEXT (pos.constraint,
+            for (size_t j = 0; j < CHARCLASS_WORDS; ++j)
+              matches.w[j] &= ~d->syntax.newline.w[j];
+          if (!succeeds_in_context (pos.constraint,
                                     d->states[s].context, CTX_LETTER))
-            for (j = 0; j < CHARCLASS_WORDS; ++j)
-              matches[j] &= ~d->syntax.letters[j];
-          if (!SUCCEEDS_IN_CONTEXT (pos.constraint,
+            for (size_t j = 0; j < CHARCLASS_WORDS; ++j)
+              matches.w[j] &= ~d->syntax.letters.w[j];
+          if (!succeeds_in_context (pos.constraint,
                                     d->states[s].context, CTX_NONE))
-            for (j = 0; j < CHARCLASS_WORDS; ++j)
-              matches[j] &= d->syntax.letters[j] | d->syntax.newline[j];
+            for (size_t j = 0; j < CHARCLASS_WORDS; ++j)
+              matches.w[j] &= d->syntax.letters.w[j] | d->syntax.newline.w[j];
 
           /* If there are no characters left, there's no point in going on.  */
-          for (j = 0; j < CHARCLASS_WORDS && !matches[j]; ++j)
+          size_t j;
+          for (j = 0; j < CHARCLASS_WORDS && !matches.w[j]; j++)
             continue;
           if (j == CHARCLASS_WORDS)
             continue;
@@ -2749,7 +2744,7 @@ dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
           /* If we have reset the bit that made us declare "matched", reset
              that indicator, too.  This is required to avoid an infinite loop
              with this command: echo cx | LC_ALL=C grep -E 'c\b[x ]'  */
-          if (!tstbit (uc, matches))
+          if (!tstbit (uc, &matches))
             matched = false;
         }
 
@@ -2757,22 +2752,22 @@ dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
       fprintf (stderr, " nextpos %zu:", pos.index);
       prtok (d->tokens[pos.index]);
       fprintf (stderr, " of");
-      for (j = 0; j < NOTCHAR; j++)
-        if (tstbit (j, matches))
+      for (size_t j = 0; j < NOTCHAR; j++)
+        if (tstbit (j, &matches))
           fprintf (stderr, " 0x%02zx", j);
       fprintf (stderr, "\n");
 #endif
 
       if (matched)
         {
-          for (k = 0; k < CHARCLASS_WORDS; ++k)
-            label[k] &= matches[k];
+          for (size_t k = 0; k < CHARCLASS_WORDS; ++k)
+            label.w[k] &= matches.w[k];
           group.elems[group.nelem++] = pos.index;
         }
       else
         {
-          for (k = 0; k < CHARCLASS_WORDS; ++k)
-            label[k] &= ~matches[k];
+          for (size_t k = 0; k < CHARCLASS_WORDS; ++k)
+            label.w[k] &= ~matches.w[k];
         }
     }
 
@@ -2781,15 +2776,12 @@ dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
 
   if (group.nelem > 0)
     {
-      int possible_contexts;    /* Contexts that the group can match.  */
-      int separate_contexts;    /* Context that new state wants to know.  */
-
       follows.nelem = 0;
 
       /* Find the union of the follows of the positions of the group.
          This is a hideously inefficient loop.  Fix it someday.  */
-      for (j = 0; j < group.nelem; ++j)
-        for (k = 0; k < d->follows[group.elems[j]].nelem; ++k)
+      for (size_t j = 0; j < group.nelem; ++j)
+        for (size_t k = 0; k < d->follows[group.elems[j]].nelem; ++k)
           insert (d->follows[group.elems[j]].elems[k], &follows);
 
       /* If we are building a searching matcher, throw in the positions
@@ -2815,8 +2807,11 @@ dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
 
           bool mergeit = !d->localeinfo.multibyte;
           if (!mergeit)
-            for (mergeit = true, j = 0; mergeit && j < follows.nelem; j++)
-              mergeit &= d->multibyte_prop[follows.elems[j].index];
+            {
+              mergeit = true;
+              for (size_t j = 0; mergeit && j < follows.nelem; j++)
+                mergeit &= d->multibyte_prop[follows.elems[j].index];
+            }
           if (mergeit)
             {
               merge (&d->states[0].elems, &follows, &tmp);
@@ -2824,9 +2819,11 @@ dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
             }
         }
 
-      /* Find out if the new state will want any context information.  */
-      possible_contexts = charclass_context (d, label);
-      separate_contexts = state_separate_contexts (&follows);
+      /* Find out if the new state will want any context information,
+         by calculating possible contexts that the group can match,
+         and separate contexts that the new state wants to know.  */
+      int possible_contexts = charclass_context (d, &label);
+      int separate_contexts = state_separate_contexts (&follows);
 
       /* Find the state(s) corresponding to the union of the follows.  */
       if (possible_contexts & ~separate_contexts)
@@ -2860,8 +2857,8 @@ dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
     }
 
   /* Set the transitions for each character in the label.  */
-  for (i = 0; i < NOTCHAR; i++)
-    if (tstbit (i, label))
+  for (size_t i = 0; i < NOTCHAR; i++)
+    if (tstbit (i, &label))
       switch (d->syntax.sbit[i])
         {
         case CTX_NEWLINE:
@@ -2877,7 +2874,7 @@ dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
 
 #ifdef DEBUG
   fprintf (stderr, "trans table %td", s);
-  for (i = 0; i < NOTCHAR; ++i)
+  for (size_t i = 0; i < NOTCHAR; ++i)
     {
       if (!(i & 0xf))
         fprintf (stderr, "\n");
@@ -2892,7 +2889,7 @@ dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
 
   /* Keep the newline transition in a special place so we can use it as
      a sentinel.  */
-  if (tstbit (d->syntax.eolbyte, label))
+  if (tstbit (d->syntax.eolbyte, &label))
     {
       d->newlines[s] = trans[d->syntax.eolbyte];
       trans[d->syntax.eolbyte] = -1;
@@ -2909,13 +2906,12 @@ realloc_trans_if_necessary (struct dfa *d, state_num new_state)
   if (oldalloc <= new_state)
     {
       state_num **realtrans = d->trans ? d->trans - 2 : NULL;
-      ptrdiff_t newalloc, newalloc1;
-      newalloc1 = realtrans ? d->tralloc + 2 : 0;
+      ptrdiff_t newalloc1 = realtrans ? d->tralloc + 2 : 0;
       realtrans = xpalloc (realtrans, &newalloc1, new_state - oldalloc + 1,
                            -1, sizeof *realtrans);
       realtrans[0] = realtrans[1] = NULL;
       d->trans = realtrans + 2;
-      d->tralloc = newalloc = newalloc1 - 2;
+      ptrdiff_t newalloc = d->tralloc = newalloc1 - 2;
       d->fails = xnrealloc (d->fails, newalloc, sizeof *d->fails);
       d->success = xnrealloc (d->success, newalloc, sizeof *d->success);
       d->newlines = xnrealloc (d->newlines, newalloc, sizeof *d->newlines);
@@ -2945,7 +2941,7 @@ static state_num
 build_state (state_num s, struct dfa *d, unsigned char uc)
 {
   /* A pointer to the new transition table, and the table itself.  */
-  state_num **ptrans = (ACCEPTING (s, *d) ? d->fails : d->trans) + s;
+  state_num **ptrans = (accepting (s, d) ? d->fails : d->trans) + s;
   state_num *trans = *ptrans;
 
   if (!trans)
@@ -2976,11 +2972,11 @@ build_state (state_num s, struct dfa *d, unsigned char uc)
 
   /* Set up the success bits for this state.  */
   d->success[s] = 0;
-  if (ACCEPTS_IN_CONTEXT (d->states[s].context, CTX_NEWLINE, s, *d))
+  if (accepts_in_context (d->states[s].context, CTX_NEWLINE, s, d))
     d->success[s] |= CTX_NEWLINE;
-  if (ACCEPTS_IN_CONTEXT (d->states[s].context, CTX_LETTER, s, *d))
+  if (accepts_in_context (d->states[s].context, CTX_LETTER, s, d))
     d->success[s] |= CTX_LETTER;
-  if (ACCEPTS_IN_CONTEXT (d->states[s].context, CTX_NONE, s, *d))
+  if (accepts_in_context (d->states[s].context, CTX_NONE, s, d))
     d->success[s] |= CTX_NONE;
 
   s = dfastate (s, d, uc, trans);
@@ -3037,10 +3033,7 @@ static state_num
 transit_state (struct dfa *d, state_num s, unsigned char const **pp,
                unsigned char const *end)
 {
-  state_num s1, s2;
   wint_t wc;
-  int separate_contexts;
-  size_t i;
 
   int mbclen = mbs_to_wchar (&wc, (char const *) *pp, end - *pp, d);
 
@@ -3049,10 +3042,11 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
 
   /* Calculate the state which can be reached from the state 's' by
      consuming 'mbclen' single bytes from the buffer.  */
-  s1 = s;
-  for (i = 0; i < mbclen && (i == 0 || d->min_trcount <= s); i++)
+  state_num s1 = s;
+  int mbci;
+  for (mbci = 0; mbci < mbclen && (mbci == 0 || d->min_trcount <= s); mbci++)
     s = transit_state_singlebyte (d, s, pp);
-  *pp += mbclen - i;
+  *pp += mbclen - mbci;
 
   if (wc == WEOF)
     {
@@ -3074,7 +3068,7 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
               d->mb_trans[s3] = NULL;
             }
 
-          for (i = 0; i < d->sindex; i++)
+          for (state_num i = 0; i < d->sindex; i++)
             d->states[i].mb_trindex = -1;
           d->mb_trcount = 0;
         }
@@ -3086,7 +3080,7 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
       enum { TRANSPTR_SIZE = sizeof *d->mb_trans[s] };
       enum { TRANSALLOC_SIZE = MAX_TRCOUNT * TRANSPTR_SIZE };
       d->mb_trans[s] = xmalloc (TRANSALLOC_SIZE);
-      for (i = 0; i < MAX_TRCOUNT; i++)
+      for (int i = 0; i < MAX_TRCOUNT; i++)
         d->mb_trans[s][i] = -1;
     }
   else if (d->mb_trans[s][d->states[s1].mb_trindex] >= 0)
@@ -3097,8 +3091,8 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
   else
     merge (&d->states[s1].mbps, &d->states[s].elems, &d->mb_follows);
 
-  separate_contexts = state_separate_contexts (&d->mb_follows);
-  s2 = state_index (d, &d->mb_follows, separate_contexts ^ CTX_ANY);
+  int separate_contexts = state_separate_contexts (&d->mb_follows);
+  state_num s2 = state_index (d, &d->mb_follows, separate_contexts ^ CTX_ANY);
   realloc_trans_if_necessary (d, s2);
 
   d->mb_trans[s][d->states[s1].mb_trindex] = s2;
@@ -3125,12 +3119,14 @@ static unsigned char const *
 skip_remains_mb (struct dfa *d, unsigned char const *p,
                  unsigned char const *mbp, char const *end)
 {
-  wint_t wc;
   if (d->syntax.never_trail[*p])
     return p;
   while (mbp < p)
-    mbp += mbs_to_wchar (&wc, (char const *) mbp,
-                         end - (char const *) mbp, d);
+    {
+      wint_t wc;
+      mbp += mbs_to_wchar (&wc, (char const *) mbp,
+                           end - (char const *) mbp, d);
+    }
   return mbp;
 }
 
@@ -3158,17 +3154,9 @@ static inline char *
 dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
               size_t *count, bool multibyte)
 {
-  state_num s, s1;              /* Current state.  */
-  unsigned char const *p, *mbp; /* Current input character.  */
-  state_num **trans, *t;        /* Copy of d->trans so it can be optimized
-                                   into a register.  */
-  unsigned char eol = d->syntax.eolbyte;  /* Likewise for eolbyte.  */
-  unsigned char saved_end;
-  size_t nlcount = 0;
-
   if (MAX_TRCOUNT <= d->sindex)
     {
-      for (s = d->min_trcount; s < d->sindex; s++)
+      for (state_num s = d->min_trcount; s < d->sindex; s++)
         {
           free (d->states[s].elems.elems);
           free (d->states[s].mbps.elems);
@@ -3177,7 +3165,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
 
       if (d->trans)
         {
-          for (s = 0; s < d->tralloc; s++)
+          for (state_num s = 0; s < d->tralloc; s++)
             {
               free (d->trans[s]);
               free (d->fails[s]);
@@ -3188,12 +3176,12 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
 
       if (d->localeinfo.multibyte && d->mb_trans)
         {
-          for (s = -1; s < d->tralloc; s++)
+          for (state_num s = -1; s < d->tralloc; s++)
             {
               free (d->mb_trans[s]);
               d->mb_trans[s] = NULL;
             }
-          for (s = 0; s < d->min_trcount; s++)
+          for (state_num s = 0; s < d->min_trcount; s++)
             d->states[s].mb_trindex = -1;
           d->mb_trcount = 0;
         }
@@ -3202,10 +3190,17 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
   if (!d->tralloc)
     realloc_trans_if_necessary (d, 0);
 
-  s = s1 = 0;
-  p = mbp = (unsigned char const *) begin;
-  trans = d->trans;
-  saved_end = *(unsigned char *) end;
+  /* Current state.  */
+  state_num s = 0, s1 = 0;
+
+  /* Current input character.  */
+  unsigned char const *p = (unsigned char const *) begin;
+  unsigned char const *mbp = p;
+
+  /* Copy of d->trans so it can be optimized into a register.  */
+  state_num **trans = d->trans;
+  unsigned char eol = d->syntax.eolbyte;  /* Likewise for eolbyte.  */
+  unsigned char saved_end = *(unsigned char *) end;
   *end = eol;
 
   if (multibyte)
@@ -3215,8 +3210,10 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
         alloc_position_set (&d->mb_follows, d->nleaves);
     }
 
+  size_t nlcount = 0;
   for (;;)
     {
+      state_num *t;
       while ((t = trans[s]) != NULL)
         {
           if (s < d->min_trcount)
@@ -3297,8 +3294,8 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
         {
           if ((d->success[s] & d->syntax.sbit[*p])
               || ((char *) p == end
-                  && ACCEPTS_IN_CONTEXT (d->states[s].context, CTX_NEWLINE, s,
-                                         *d)))
+                  && accepts_in_context (d->states[s].context, CTX_NEWLINE, s,
+                                         d)))
             goto done;
 
           if (multibyte && s < d->min_trcount)
@@ -3386,14 +3383,8 @@ dfaisfast (struct dfa const *d)
 static void
 free_mbdata (struct dfa *d)
 {
-  ptrdiff_t i;
-
   free (d->multibyte_prop);
-
-  for (i = 0; i < d->nmbcsets; ++i)
-    free (d->mbcsets[i].chars);
-
-  free (d->mbcsets);
+  free (d->lex.brack.chars);
   free (d->mb_follows.elems);
 
   if (d->mb_trans)
@@ -3409,8 +3400,7 @@ free_mbdata (struct dfa *d)
 static bool _GL_ATTRIBUTE_PURE
 dfa_supported (struct dfa const *d)
 {
-  size_t i;
-  for (i = 0; i < d->tindex; i++)
+  for (size_t i = 0; i < d->tindex; i++)
     {
       switch (d->tokens[i])
         {
@@ -3433,13 +3423,11 @@ dfa_supported (struct dfa const *d)
 static void
 dfaoptimize (struct dfa *d)
 {
-  size_t i;
-  bool have_backref = false;
-
   if (!d->localeinfo.using_utf8)
     return;
 
-  for (i = 0; i < d->tindex; ++i)
+  bool have_backref = false;
+  for (size_t i = 0; i < d->tindex; ++i)
     {
       switch (d->tokens[i])
         {
@@ -3474,16 +3462,12 @@ dfaoptimize (struct dfa *d)
 static void
 dfassbuild (struct dfa *d)
 {
-  size_t i, j;
-  bool have_achar = false;
-  bool have_nchar = false;
   struct dfa *sup = dfaalloc ();
 
   *sup = *d;
   sup->localeinfo.multibyte = false;
   sup->dfaexec = dfaexec_sb;
   sup->multibyte_prop = NULL;
-  sup->mbcsets = NULL;
   sup->superset = NULL;
   sup->states = NULL;
   sup->sindex = 0;
@@ -3504,7 +3488,10 @@ dfassbuild (struct dfa *d)
   sup->tokens = xnmalloc (d->tindex, 2 * sizeof *sup->tokens);
   sup->talloc = d->tindex * 2;
 
-  for (i = j = 0; i < d->tindex; i++)
+  bool have_achar = false;
+  bool have_nchar = false;
+  size_t j;
+  for (size_t i = j = 0; i < d->tindex; i++)
     {
       switch (d->tokens[i])
         {
@@ -3513,8 +3500,8 @@ dfassbuild (struct dfa *d)
         case BACKREF:
           {
             charclass ccl;
-            fillset (ccl);
-            sup->tokens[j++] = CSET + charclass_index (sup, ccl);
+            fillset (&ccl);
+            sup->tokens[j++] = CSET + charclass_index (sup, &ccl);
             sup->tokens[j++] = STAR;
             if (d->tokens[i + 1] == QMARK || d->tokens[i + 1] == STAR
                 || d->tokens[i + 1] == PLUS)
@@ -3581,15 +3568,13 @@ dfacomp (char const *s, size_t len, struct dfa *d, bool searchflag)
 void
 dfafree (struct dfa *d)
 {
-  size_t i;
-
   free (d->charclasses);
   free (d->tokens);
 
   if (d->localeinfo.multibyte)
     free_mbdata (d);
 
-  for (i = 0; i < d->sindex; ++i)
+  for (size_t i = 0; i < d->sindex; ++i)
     {
       free (d->states[i].elems.elems);
       free (d->states[i].mbps.elems);
@@ -3598,14 +3583,14 @@ dfafree (struct dfa *d)
 
   if (d->follows)
     {
-      for (i = 0; i < d->tindex; ++i)
+      for (size_t i = 0; i < d->tindex; ++i)
         free (d->follows[i].elems);
       free (d->follows);
     }
 
   if (d->trans)
     {
-      for (i = 0; i < d->tralloc; ++i)
+      for (size_t i = 0; i < d->tralloc; ++i)
         {
           free (d->trans[i]);
           free (d->fails[i]);
@@ -3706,13 +3691,11 @@ dfafree (struct dfa *d)
 static char *
 icatalloc (char *old, char const *new)
 {
-  char *result;
-  size_t oldsize;
   size_t newsize = strlen (new);
   if (newsize == 0)
     return old;
-  oldsize = strlen (old);
-  result = xrealloc (old, oldsize + newsize + 1);
+  size_t oldsize = strlen (old);
+  char *result = xrealloc (old, oldsize + newsize + 1);
   memcpy (result + oldsize, new, newsize + 1);
   return result;
 }
@@ -3727,10 +3710,10 @@ freelist (char **cpp)
 static char **
 enlist (char **cpp, char *new, size_t len)
 {
-  size_t i, j;
   new = memcpy (xmalloc (len + 1), new, len);
   new[len] = '\0';
   /* Is there already something in the list that's new (or longer)?  */
+  size_t i;
   for (i = 0; cpp[i] != NULL; ++i)
     if (strstr (cpp[i], new) != NULL)
       {
@@ -3738,8 +3721,7 @@ enlist (char **cpp, char *new, size_t len)
         return cpp;
       }
   /* Eliminate any obsoleted strings.  */
-  j = 0;
-  while (cpp[j] != NULL)
+  for (size_t j = 0; cpp[j] != NULL; )
     if (strstr (new, cpp[j]) == NULL)
       ++j;
     else
@@ -3763,9 +3745,8 @@ static char **
 comsubs (char *left, char const *right)
 {
   char **cpp = xzalloc (sizeof *cpp);
-  char *lcp;
 
-  for (lcp = left; *lcp != '\0'; ++lcp)
+  for (char *lcp = left; *lcp != '\0'; lcp++)
     {
       size_t len = 0;
       char *rcp = strchr (right, *lcp);
@@ -3798,11 +3779,10 @@ static char **
 inboth (char **left, char **right)
 {
   char **both = xzalloc (sizeof *both);
-  size_t lnum, rnum;
 
-  for (lnum = 0; left[lnum] != NULL; ++lnum)
+  for (size_t lnum = 0; left[lnum] != NULL; ++lnum)
     {
-      for (rnum = 0; right[rnum] != NULL; ++rnum)
+      for (size_t rnum = 0; right[rnum] != NULL; ++rnum)
         {
           char **temp = comsubs (left[lnum], right[rnum]);
           both = addlists (both, temp);
@@ -3866,17 +3846,14 @@ dfamust (struct dfa const *d)
 {
   must *mp = NULL;
   char const *result = "";
-  size_t i, ri;
   bool exact = false;
   bool begline = false;
   bool endline = false;
-  size_t rj;
   bool need_begline = false;
   bool need_endline = false;
   bool case_fold_unibyte = d->syntax.case_fold && MB_CUR_MAX == 1;
-  struct dfamust *dm;
 
-  for (ri = 0; ri < d->tindex; ++ri)
+  for (size_t ri = 0; ri < d->tindex; ++ri)
     {
       token t = d->tokens[ri];
       switch (t)
@@ -3919,7 +3896,7 @@ dfamust (struct dfa const *d)
             size_t j, ln, rn, n;
 
             /* Guaranteed to be.  Unlikely, but ...  */
-            if (STREQ (lmp->is, rmp->is))
+            if (streq (lmp->is, rmp->is))
               {
                 lmp->begline &= rmp->begline;
                 lmp->endline &= rmp->endline;
@@ -3931,7 +3908,7 @@ dfamust (struct dfa const *d)
                 lmp->endline = false;
               }
             /* Left side--easy */
-            i = 0;
+            size_t i = 0;
             while (lmp->left[i] != '\0' && lmp->left[i] == rmp->left[i])
               ++i;
             lmp->left[i] = '\0';
@@ -3961,10 +3938,10 @@ dfamust (struct dfa const *d)
 
         case END:
           assert (!mp->prev);
-          for (i = 0; mp->in[i] != NULL; ++i)
+          for (size_t i = 0; mp->in[i] != NULL; ++i)
             if (strlen (mp->in[i]) > strlen (result))
               result = mp->in[i];
-          if (STREQ (result, mp->is))
+          if (streq (result, mp->is))
             {
               if ((!need_begline || mp->begline) && (!need_endline
                                                      || mp->endline))
@@ -4031,7 +4008,7 @@ dfamust (struct dfa const *d)
               charclass *ccl = &d->charclasses[t - CSET];
               int j;
               for (j = 0; j < NOTCHAR; j++)
-                if (tstbit (j, *ccl))
+                if (tstbit (j, ccl))
                   break;
               if (! (j < NOTCHAR))
                 {
@@ -4040,7 +4017,7 @@ dfamust (struct dfa const *d)
                 }
               t = j;
               while (++j < NOTCHAR)
-                if (tstbit (j, *ccl)
+                if (tstbit (j, ccl)
                     && ! (case_fold_unibyte
                           && toupper (j) == toupper (t)))
                   break;
@@ -4051,7 +4028,7 @@ dfamust (struct dfa const *d)
                 }
             }
 
-          rj = ri + 2;
+          size_t rj = ri + 2;
           if (d->tokens[ri + 1] == CAT)
             {
               for (; rj < d->tindex - 1; rj += 2)
@@ -4066,6 +4043,7 @@ dfamust (struct dfa const *d)
           mp->is[0] = mp->left[0] = mp->right[0]
             = case_fold_unibyte ? toupper (t) : t;
 
+          size_t i;
           for (i = 1; ri + 2 < rj; i++)
             {
               ri += 2;
@@ -4080,7 +4058,7 @@ dfamust (struct dfa const *d)
     }
  done:;
 
-  dm = NULL;
+  struct dfamust *dm = NULL;
   if (*result)
     {
       dm = xmalloc (sizeof *dm);
@@ -4123,7 +4101,6 @@ void
 dfasyntax (struct dfa *dfa, struct localeinfo const *linfo,
            reg_syntax_t bits, int dfaopts)
 {
-  int i;
   memset (dfa, 0, offsetof (struct dfa, dfaexec));
   dfa->dfaexec = linfo->multibyte ? dfaexec_mb : dfaexec_sb;
   dfa->simple_locale = using_simple_locale (linfo->multibyte);
@@ -4139,7 +4116,7 @@ dfasyntax (struct dfa *dfa, struct localeinfo const *linfo,
   dfa->syntax.eolbyte = dfaopts & DFA_EOL_NUL ? '\0' : '\n';
   dfa->syntax.syntax_bits = bits;
 
-  for (i = CHAR_MIN; i <= CHAR_MAX; ++i)
+  for (int i = CHAR_MIN; i <= CHAR_MAX; ++i)
     {
       unsigned char uc = i;
 
@@ -4147,10 +4124,10 @@ dfasyntax (struct dfa *dfa, struct localeinfo const *linfo,
       switch (dfa->syntax.sbit[uc])
         {
         case CTX_LETTER:
-          setbit (uc, dfa->syntax.letters);
+          setbit (uc, &dfa->syntax.letters);
           break;
         case CTX_NEWLINE:
-          setbit (uc, dfa->syntax.newline);
+          setbit (uc, &dfa->syntax.newline);
           break;
         }
 
