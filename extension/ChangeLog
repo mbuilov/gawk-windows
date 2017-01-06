@@ -1,3 +1,13 @@
+2017-01-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* intdiv.c: New extension to demonstrate how to implement intdiv
+	using the new extended-precision math API.
+	* Makefile.am (pkgextension_LTLIBRARIES): Add intdiv.la.
+	(intdiv_la_SOURCES, intdiv_la_LDFLAGS, intdiv_la_LIBADD): Add support
+	for new intdiv library.
+	* configure.ac (AC_CHECK_FUNCS): Check for fmod needed by intdiv.
+	(GNUPG_CHECK_MPFR): Add check for MPFR support.
+
 2016-12-22         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* testext.c (valrep2str): Update for new API types.

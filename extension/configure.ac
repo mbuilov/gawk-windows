@@ -69,7 +69,16 @@ AC_HEADER_DIRENT
 AC_HEADER_MAJOR
 AC_HEADER_TIME
 
-AC_CHECK_FUNCS(fdopendir fnmatch gettimeofday \
+dnl check for mpfr support
+case `uname -m` in
+*'Power Macintosh'*)
+	: ;;
+*)
+	GNUPG_CHECK_MPFR
+	;;
+esac
+
+AC_CHECK_FUNCS(fdopendir fnmatch gettimeofday fmod \
 		getdtablesize nanosleep select statvfs GetSystemTimeAsFileTime)
 
 GAWK_FUNC_DIRFD

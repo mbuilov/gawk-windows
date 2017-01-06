@@ -1060,6 +1060,8 @@ enum block_id {
 	BLOCK_INVALID = 0,	/* not legal */
 	BLOCK_NODE,
 	BLOCK_BUCKET,
+	BLOCK_MPFR,
+	BLOCK_MPZ,
 	BLOCK_MAX	/* count */
 };
 
@@ -1944,4 +1946,19 @@ erealloc_real(void *ptr, size_t count, const char *where, const char *var, const
 			file, line, where, var, (long) count, strerror(errno));
 
 	return ret;
+}
+
+static inline NODE *
+make_number_node(unsigned int tp)
+{
+	NODE *r;
+	getnode(r);
+	r->type = Node_val;
+	r->valref = 1;
+	r->flags = (tp|MALLOC|NUMBER|NUMCUR);
+	r->stptr = NULL;
+	r->stlen = 0;
+	r->wstptr = NULL;
+	r->wstlen = 0;
+	return r;
 }

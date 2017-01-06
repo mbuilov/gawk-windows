@@ -332,16 +332,8 @@ r_dupnode(NODE *n)
 static NODE *
 r_make_number(double x)
 {
-	NODE *r;
-	getnode(r);
-	r->type = Node_val;
+	NODE *r = make_number_node(0);
 	r->numbr = x;
-	r->flags = MALLOC|NUMBER|NUMCUR;
-	r->valref = 1;
-	r->stptr = NULL;
-	r->stlen = 0;
-	r->wstptr = NULL;
-	r->wstlen = 0;
 	return r;
 }
 
@@ -1005,6 +997,10 @@ BLOCK nextfree[BLOCK_MAX] = {
 	{ 0, NULL},	/* invalid */
 	{ sizeof(NODE), NULL },
 	{ sizeof(BUCKET), NULL },
+#ifdef HAVE_MPFR
+	{ sizeof(mpfr_t), NULL },
+	{ sizeof(mpz_t), NULL },
+#endif
 };
 
 
@@ -1021,6 +1017,7 @@ more_blocks(int id)
 
 	size = nextfree[id].size;
 
+	assert(size >= sizeof(BLOCK));
 	emalloc(freep, BLOCK *, BLOCKCHUNK * size, "more_blocks");
 	p = (char *) freep;
 	endp = p + BLOCKCHUNK * size;

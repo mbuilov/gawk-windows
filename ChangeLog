@@ -1,3 +1,45 @@
+2017-01-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Enhance API to support extended-precision arithmetic.
+	* awk.h (enum block_id): Add new values BLOCK_MPFR and BLOCK_MPZ.
+	(make_number_node): New inline function to reduce code duplication
+	for creating numeric nodes.
+	* gawkapi.h (gawk_api_major_version): Bump to 3.
+	(awk_number_t): New typedef to represent numbers with varying internal
+	representations.
+	(awk_value_t): For numbers, replace double with awk_number_t.
+	(num_value): Redefine.
+	(num_type, num_ptr): New defines for awk_number_t union members.
+	(gawk_api_t): Add constants for version checking: gmp_major_version,
+	gmp_minor_version, mpfr_major_version, and mpfr_minor_version.
+	Add functions api_get_mpfr and api_get_mpz to allocate memory for
+	extended-precision numbers to hand to gawk.
+	(get_mpfr_ptr, get_mpz_ptr): Helper macros to warp api_get_mpfr and
+	api_get_mpz.
+	(make_number): Modify to populate awk_number_t correctly.
+	(make_number_mpz, make_number_mpfr): New helper functions to create
+	extended-precision numeric nodes.
+	(check_mpfr_version): New macro to check GMP/MPFR version compatibility
+	in extensions that want to support extended-precision math.
+	* gawkapi.c (getmpfr, freempfr, getmpz, freempz): New macros to
+	allocate and free memory blocks for extended-precision math.
+	(awk_value_to_node): For AWK_NUMBER values, support 3 different kinds
+	of internal numbers: double, mpz_t, and mpfr_t.
+	(assign_number): New helper function to convert a numeric node to
+	an awk_value_t.
+	(node_to_awk_value): Use assign_number in a couple of places to
+	pass numbers properly.
+	(api_get_mpfr): Implement new api_get_mpfr hook.
+	(api_get_mpfz): Implement new api_get_mpz hook.
+	(api_impl): Add GMP & MPFR versions, api_get_mpfr, and api_get_mpz.
+	* node.c (r_make_number): Use new make_number_node inline function
+	to reduce code duplication.
+	(nextfree): Add block allocators for mpfr_t and mpz_t.
+	(more_blocks): Add an assert to protect against cases where the block
+	size is too small to hold our structure.
+	* mpfr.c (mpg_node): Use new make_number_node inline function
+	to reduce code duplication.
+
 2016-12-27         Juergen Kahrs         <Juergen.Kahrs@googlemail.com>
 
 	* CMakeLists.txt: Updated after adding support library.

@@ -105,26 +105,14 @@ cleanup_mpfr(void)
 NODE *
 mpg_node(unsigned int tp)
 {
-	NODE *r;
-	getnode(r);
-	r->type = Node_val;
+	NODE *r = make_number_node(tp);
 
-	if (tp == MPFN) {
+	if (tp == MPFN)
 		/* Initialize, set precision to the default precision, and value to NaN */
 		mpfr_init(r->mpg_numbr);
-		r->flags = MPFN;
-	} else {
+	else
 		/* Initialize and set value to 0 */
 		mpz_init(r->mpg_i);
-		r->flags = MPZN;
-	}
-
-	r->valref = 1;
-	r->flags |= MALLOC|NUMBER|NUMCUR;
-	r->stptr = NULL;
-	r->stlen = 0;
-	r->wstptr = NULL;
-	r->wstlen = 0;
 	return r;
 }
 
