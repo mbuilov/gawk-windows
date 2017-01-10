@@ -2621,9 +2621,45 @@ dfaanalyze (struct dfa *d, bool searchflag)
   free (merged.elems);
 }
 
+/* Make sure D's state arrays are large enough to hold NEW_STATE.  */
+static void
+realloc_trans_if_necessary (struct dfa *d)
+{
+  state_num oldalloc = d->tralloc;
+  if (oldalloc < d->sindex)
+    {
+      state_num **realtrans = d->trans ? d->trans - 2 : NULL;
+      ptrdiff_t newalloc1 = realtrans ? d->tralloc + 2 : 0;
+      realtrans = xpalloc (realtrans, &newalloc1, d->sindex - oldalloc,
+                           -1, sizeof *realtrans);
+      realtrans[0] = realtrans[1] = NULL;
+      d->trans = realtrans + 2;
+      ptrdiff_t newalloc = d->tralloc = newalloc1 - 2;
+      d->fails = xnrealloc (d->fails, newalloc, sizeof *d->fails);
+      d->success = xnrealloc (d->success, newalloc, sizeof *d->success);
+      d->newlines = xnrealloc (d->newlines, newalloc, sizeof *d->newlines);
+      if (d->localeinfo.multibyte)
+        {
+          realtrans = d->mb_trans ? d->mb_trans - 2 : NULL;
+          realtrans = xnrealloc (realtrans, newalloc1, sizeof *realtrans);
+          if (oldalloc == 0)
+            realtrans[0] = realtrans[1] = NULL;
+          d->mb_trans = realtrans + 2;
+        }
+      for (; oldalloc < newalloc; oldalloc++)
+        {
+          d->trans[oldalloc] = NULL;
+          d->fails[oldalloc] = NULL;
+          if (d->localeinfo.multibyte)
+            d->mb_trans[oldalloc] = NULL;
+        }
+    }
+}
 
-/* Return the transition out of state s of d for the input character uc,
-   updating the slots in trans accordingly.
+/*
+   Calculate the transition table for a new state derived from state s
+   for a compiled dfa d after input character uc, and return the new
+   state number.
 
    Do not worry about all possible input characters; calculate just the group
    of positions that match uc.  Label it with the set of characters that
@@ -2652,8 +2688,9 @@ dfaanalyze (struct dfa *d, bool searchflag)
    If after comparing with every group there are characters remaining in C,
    create a new group labeled with the characters of C and insert this
    position in that group.  */
+
 static state_num
-dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
+build_state (state_num s, struct dfa *d, unsigned char uc)
 {
   position_set follows;         /* Union of the follows of the group.  */
   position_set tmp;             /* Temporary space for merging sets.  */
@@ -2664,6 +2701,45 @@ dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
 #ifdef DEBUG
   fprintf (stderr, "build state %td\n", s);
 #endif
+
+  /* A pointer to the new transition table, and the table itself.  */
+  state_num **ptrans = (accepting (s, d) ? d->fails : d->trans) + s;
+  state_num *trans = *ptrans;
+
+  if (!trans)
+    {
+      /* MAX_TRCOUNT is an arbitrary upper limit on the number of
+         transition tables that can exist at once, other than for
+         initial states.  Often-used transition tables are quickly
+         rebuilt, whereas rarely-used ones are cleared away.  */
+      if (MAX_TRCOUNT <= d->trcount)
+        {
+          for (state_num i = d->min_trcount; i < d->tralloc; i++)
+            {
+              free (d->trans[i]);
+              free (d->fails[i]);
+              d->trans[i] = d->fails[i] = NULL;
+            }
+          d->trcount = 0;
+        }
+
+      d->trcount++;
+      *ptrans = trans = xmalloc (NOTCHAR * sizeof *trans);
+
+      /* Fill transition table with a default value which means that the
+         transited state has not been calculated yet.  */
+      for (int i = 0; i < NOTCHAR; i++)
+        trans[i] = -2;
+    }
+
+  /* Set up the success bits for this state.  */
+  d->success[s] = 0;
+  if (accepts_in_context (d->states[s].context, CTX_NEWLINE, s, d))
+    d->success[s] |= CTX_NEWLINE;
+  if (accepts_in_context (d->states[s].context, CTX_LETTER, s, d))
+    d->success[s] |= CTX_LETTER;
+  if (accepts_in_context (d->states[s].context, CTX_NONE, s, d))
+    d->success[s] |= CTX_NONE;
 
   /* Positions that match the input char.  */
   leaf_set group;
@@ -2838,6 +2914,9 @@ dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
         state_letter = state_index (d, &follows, CTX_LETTER);
       else
         state_letter = state;
+
+      /* Reallocate now, to reallocate any newline transition properly.  */
+      realloc_trans_if_necessary (d);
     }
 
   /* If we are a searching matcher, the default transition is to a state
@@ -2896,101 +2975,6 @@ dfastate (state_num s, struct dfa *d, unsigned char uc, state_num trans[])
     }
 
   return trans[uc];
-}
-
-/* Make sure D's state arrays are large enough to hold NEW_STATE.  */
-static void
-realloc_trans_if_necessary (struct dfa *d, state_num new_state)
-{
-  state_num oldalloc = d->tralloc;
-  if (oldalloc <= new_state)
-    {
-      state_num **realtrans = d->trans ? d->trans - 2 : NULL;
-      ptrdiff_t newalloc1 = realtrans ? d->tralloc + 2 : 0;
-      realtrans = xpalloc (realtrans, &newalloc1, new_state - oldalloc + 1,
-                           -1, sizeof *realtrans);
-      realtrans[0] = realtrans[1] = NULL;
-      d->trans = realtrans + 2;
-      ptrdiff_t newalloc = d->tralloc = newalloc1 - 2;
-      d->fails = xnrealloc (d->fails, newalloc, sizeof *d->fails);
-      d->success = xnrealloc (d->success, newalloc, sizeof *d->success);
-      d->newlines = xnrealloc (d->newlines, newalloc, sizeof *d->newlines);
-      if (d->localeinfo.multibyte)
-        {
-          realtrans = d->mb_trans ? d->mb_trans - 2 : NULL;
-          realtrans = xnrealloc (realtrans, newalloc1, sizeof *realtrans);
-          if (oldalloc == 0)
-            realtrans[0] = realtrans[1] = NULL;
-          d->mb_trans = realtrans + 2;
-        }
-      for (; oldalloc < newalloc; oldalloc++)
-        {
-          d->trans[oldalloc] = NULL;
-          d->fails[oldalloc] = NULL;
-          if (d->localeinfo.multibyte)
-            d->mb_trans[oldalloc] = NULL;
-        }
-    }
-}
-
-/* Calculate the transition table for a new state derived from state s
-   for a compiled dfa d after input character uc, and return the new
-   state number.  */
-
-static state_num
-build_state (state_num s, struct dfa *d, unsigned char uc)
-{
-  /* A pointer to the new transition table, and the table itself.  */
-  state_num **ptrans = (accepting (s, d) ? d->fails : d->trans) + s;
-  state_num *trans = *ptrans;
-
-  if (!trans)
-    {
-      /* MAX_TRCOUNT is an arbitrary upper limit on the number of
-         transition tables that can exist at once, other than for
-         initial states.  Often-used transition tables are quickly
-         rebuilt, whereas rarely-used ones are cleared away.  */
-      if (MAX_TRCOUNT <= d->trcount)
-        {
-          for (state_num i = d->min_trcount; i < d->tralloc; i++)
-            {
-              free (d->trans[i]);
-              free (d->fails[i]);
-              d->trans[i] = d->fails[i] = NULL;
-            }
-          d->trcount = 0;
-        }
-
-      d->trcount++;
-      *ptrans = trans = xmalloc (NOTCHAR * sizeof *trans);
-
-      /* Fill transition table with a default value which means that the
-         transited state has not been calculated yet.  */
-      for (int i = 0; i < NOTCHAR; i++)
-        trans[i] = -2;
-    }
-
-  /* Set up the success bits for this state.  */
-  d->success[s] = 0;
-  if (accepts_in_context (d->states[s].context, CTX_NEWLINE, s, d))
-    d->success[s] |= CTX_NEWLINE;
-  if (accepts_in_context (d->states[s].context, CTX_LETTER, s, d))
-    d->success[s] |= CTX_LETTER;
-  if (accepts_in_context (d->states[s].context, CTX_NONE, s, d))
-    d->success[s] |= CTX_NONE;
-
-  s = dfastate (s, d, uc, trans);
-
-  /* Now go through the new transition table, and make sure that the trans
-     and fail arrays are allocated large enough to hold a pointer for the
-     largest state mentioned in the table.  */
-  state_num maxstate = -1;
-  for (int i = 0; i < NOTCHAR; i++)
-    if (maxstate < trans[i])
-      maxstate = trans[i];
-  realloc_trans_if_necessary (d, maxstate);
-
-  return s;
 }
 
 /* Multibyte character handling sub-routines for dfaexec.  */
@@ -3093,7 +3077,7 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
 
   int separate_contexts = state_separate_contexts (&d->mb_follows);
   state_num s2 = state_index (d, &d->mb_follows, separate_contexts ^ CTX_ANY);
-  realloc_trans_if_necessary (d, s2);
+  realloc_trans_if_necessary (d);
 
   d->mb_trans[s][d->states[s1].mb_trindex] = s2;
 
@@ -3188,7 +3172,7 @@ dfaexec_main (struct dfa *d, char const *begin, char *end, bool allow_nl,
     }
 
   if (!d->tralloc)
-    realloc_trans_if_necessary (d, 0);
+    realloc_trans_if_necessary (d);
 
   /* Current state.  */
   state_num s = 0, s1 = 0;
