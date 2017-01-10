@@ -167,13 +167,13 @@ enum
 /* Sometimes characters can only be matched depending on the surrounding
    context.  Such context decisions depend on what the previous character
    was, and the value of the current (lookahead) character.  Context
-   dependent constraints are encoded as 12-bit integers.  Each bit that
+   dependent constraints are encoded as 9-bit integers.  Each bit that
    is set indicates that the constraint succeeds in the corresponding
    context.
 
-   bit 8-11 - valid contexts when next character is CTX_NEWLINE
-   bit 4-7  - valid contexts when next character is CTX_LETTER
-   bit 0-3  - valid contexts when next character is CTX_NONE
+   bit 6-8  - valid contexts when next character is CTX_NEWLINE
+   bit 3-5  - valid contexts when next character is CTX_LETTER
+   bit 0-2  - valid contexts when next character is CTX_NONE
 
    succeeds_in_context determines whether a given constraint
    succeeds in a particular context.  Prev is a bitmask of possible
@@ -182,17 +182,17 @@ enum
 static int
 newline_constraint (int constraint)
 {
-  return (constraint >> 8) & 0xf;
+  return (constraint >> 6) & 7;
 }
 static int
 letter_constraint (int constraint)
 {
-  return (constraint >> 4) & 0xf;
+  return (constraint >> 3) & 7;
 }
 static int
 other_constraint (int constraint)
 {
-  return constraint & 0xf;
+  return constraint & 7;
 }
 
 static bool
@@ -208,12 +208,12 @@ succeeds_in_context (int constraint, int prev, int curr)
 static bool
 prev_newline_dependent (int constraint)
 {
-  return ((constraint ^ constraint >> 2) & 0x111) != 0;
+  return ((constraint ^ constraint >> 2) & 0111) != 0;
 }
 static bool
 prev_letter_dependent (int constraint)
 {
-  return ((constraint ^ constraint >> 1) & 0x111) != 0;
+  return ((constraint ^ constraint >> 1) & 0111) != 0;
 }
 
 /* Tokens that match the empty string subject to some constraint actually
@@ -222,13 +222,13 @@ prev_letter_dependent (int constraint)
    the constraints corresponding to the special tokens previously defined.  */
 enum
   {
-    NO_CONSTRAINT = 0x777,
-    BEGLINE_CONSTRAINT = 0x444,
-    ENDLINE_CONSTRAINT = 0x700,
-    BEGWORD_CONSTRAINT = 0x050,
-    ENDWORD_CONSTRAINT = 0x202,
-    LIMWORD_CONSTRAINT = 0x252,
-    NOTLIMWORD_CONSTRAINT = 0x525
+    NO_CONSTRAINT = 0777,
+    BEGLINE_CONSTRAINT = 0444,
+    ENDLINE_CONSTRAINT = 0700,
+    BEGWORD_CONSTRAINT = 0050,
+    ENDWORD_CONSTRAINT = 0202,
+    LIMWORD_CONSTRAINT = 0252,
+    NOTLIMWORD_CONSTRAINT = 0525
   };
 
 /* The regexp is parsed into an array of tokens in postfix form.  Some tokens
@@ -2054,8 +2054,6 @@ static void
 alloc_position_set (position_set *s, size_t size)
 {
   s->elems = xnmalloc (size, sizeof *s->elems);
-  if (PTRDIFF_MAX < SIZE_MAX / sizeof *s->elems && PTRDIFF_MAX < size)
-    xalloc_die ();
   s->alloc = size;
   s->nelem = 0;
 }
@@ -2548,8 +2546,6 @@ dfaanalyze (struct dfa *d, bool searchflag)
           firstpos->index = lastpos->index = i;
           firstpos->constraint = lastpos->constraint = NO_CONSTRAINT;
 
-          /* Allocate the follow set for this position.  */
-          alloc_position_set (&d->follows[i], 1);
           break;
         }
 #ifdef DEBUG
@@ -2811,10 +2807,7 @@ build_state (state_num s, struct dfa *d, unsigned char uc)
               matches.w[j] &= d->syntax.letters.w[j] | d->syntax.newline.w[j];
 
           /* If there are no characters left, there's no point in going on.  */
-          size_t j;
-          for (j = 0; j < CHARCLASS_WORDS && !matches.w[j]; j++)
-            continue;
-          if (j == CHARCLASS_WORDS)
+          if (emptyset (&matches))
             continue;
 
           /* If we have reset the bit that made us declare "matched", reset
