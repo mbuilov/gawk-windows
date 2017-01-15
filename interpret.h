@@ -718,14 +718,16 @@ mod:
 				*lhs = dupnode(t1);
 			}
 
-			if (t1 != t2 && t1->valref == 1 && (t1->flags & MPFN) == 0) {
+			if (t1 != t2 && t1->valref == 1 && (t1->flags & (MPFN|MPZN)) == 0) {
 				size_t nlen = t1->stlen + t2->stlen;
 
 				erealloc(t1->stptr, char *, nlen + 1, "r_interpret");
 				memcpy(t1->stptr + t1->stlen, t2->stptr, t2->stlen);
 				t1->stlen = nlen;
 				t1->stptr[nlen] = '\0';
-				t1->flags &= ~(NUMCUR|NUMBER|NUMINT);
+				t1->flags &= ~(NUMCUR|NUMBER|USER_INPUT|NUMINT|INTIND);
+				t1->flags |= (STRING|STRCUR);
+				t1->stfmt = -1;
 
 				if ((t1->flags & WSTRCUR) != 0 && (t2->flags & WSTRCUR) != 0) {
 					size_t wlen = t1->wstlen + t2->wstlen;
