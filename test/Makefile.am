@@ -195,6 +195,8 @@ EXTRA_DIST = \
 	concat4.awk \
 	concat4.in \
 	concat4.ok \
+	concat5.awk \
+	concat5.ok \
 	convfmt.awk \
 	convfmt.ok \
 	crlf.awk \
@@ -1165,7 +1167,7 @@ BASIC_TESTS = \
 	aryprm8 aryprm9 arysubnm asgext awkpath \
 	back89 backgsub badassign1 badbuild \
 	callparam childin clobber closebad clsflnam compare compare2 concat1 concat2 \
-	concat3 concat4 convfmt \
+	concat3 concat4 concat5 convfmt \
 	datanonl defref delargv delarpm2 delarprm delfunc dfamb1 dfastress dynlj \
 	eofsplit exit2 exitval1 exitval2 exitval3 \
 	fcall_exit fcall_exit2 fldchg fldchgnf fldterm fnamedat fnarray fnarray2 \

@@ -1,3 +1,10 @@
+2017-01-15         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* interpret.h (r_interpret): Fix bug in Op_assign_concat reported
+	on Cygwin mailing list. The string concatenation optimization was
+	not updating the node correctly by setting STRING and STRCUR flags
+	and setting stfmt.
+
 2017-01-04         Arnold Robbins        <arnold@skeeve.com>
 
 	* config.guess, config.sub, compile, depcomp: Sync from latest
