@@ -2046,8 +2046,9 @@ copy (position_set const *src, position_set *dst)
       dst->elems = xpalloc (NULL, &dst->alloc, src->nelem - dst->alloc, -1,
                             sizeof *dst->elems);
     }
-  memcpy (dst->elems, src->elems, src->nelem * sizeof *dst->elems);
   dst->nelem = src->nelem;
+  if (src->nelem != 0)
+    memcpy (dst->elems, src->elems, src->nelem * sizeof *dst->elems);
 }
 
 static void
