@@ -1,3 +1,10 @@
+2017-01-18         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* interpret.h (r_interpret): Increase robustness of the optimization
+	logic in Op_assign_concat -- check that the node has MALLOC set,
+	and make sure to wipe all flags other than MALLOC, STRING, STRCUR,
+	and possibly WSTRCUR. Use STFMT_UNUSED define.
+
 2017-01-15         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* interpret.h (r_interpret): Fix bug in Op_assign_concat reported
