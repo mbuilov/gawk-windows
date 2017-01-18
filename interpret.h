@@ -718,16 +718,18 @@ mod:
 				*lhs = dupnode(t1);
 			}
 
-			if (t1 != t2 && t1->valref == 1 && (t1->flags & (MPFN|MPZN)) == 0) {
+			if (t1 != t2 && t1->valref == 1 && (t1->flags & (MALLOC|MPFN|MPZN)) == MALLOC) {
 				size_t nlen = t1->stlen + t2->stlen;
 
 				erealloc(t1->stptr, char *, nlen + 1, "r_interpret");
 				memcpy(t1->stptr + t1->stlen, t2->stptr, t2->stlen);
 				t1->stlen = nlen;
 				t1->stptr[nlen] = '\0';
-				t1->flags &= ~(NUMCUR|NUMBER|USER_INPUT|NUMINT|INTIND);
-				t1->flags |= (STRING|STRCUR);
-				t1->stfmt = -1;
+				/* clear flags except WSTRCUR (used below) */
+				t1->flags &= WSTRCUR;
+				/* configure as a string as in make_str_node */
+				t1->flags |= (MALLOC|STRING|STRCUR);
+				t1->stfmt = STFMT_UNUSED;
 
 				if ((t1->flags & WSTRCUR) != 0 && (t2->flags & WSTRCUR) != 0) {
 					size_t wlen = t1->wstlen + t2->wstlen;
@@ -737,7 +739,6 @@ mod:
 					memcpy(t1->wstptr + t1->wstlen, t2->wstptr, t2->wstlen * sizeof(wchar_t));
 					t1->wstlen = wlen;
 					t1->wstptr[wlen] = L'\0';
-					t1->flags |= WSTRCUR;
 				} else
 					free_wstr(*lhs);
 			} else {
