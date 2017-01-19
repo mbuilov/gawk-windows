@@ -343,7 +343,7 @@ typedef struct exp_node {
 			} l;
 			union {
 				struct exp_node *rptr;
-				Regexp *preg;
+				Regexp *preg[2];
 				struct exp_node **av;
 				BUCKET **bv;
 				void *aq;
@@ -361,9 +361,8 @@ typedef struct exp_node {
 			struct exp_node *rn;
 			unsigned long cnt;
 			unsigned long reflags;
-#				define	CASE		1
-#				define	CONSTANT	2
-#				define	FS_DFLT		4
+#				define	CONSTANT	1
+#				define	FS_DFLT		2
 		} nodep;
 
 		struct {
@@ -1083,7 +1082,7 @@ extern long NF;
 extern long NR;
 extern long FNR;
 extern int BINMODE;
-extern int IGNORECASE;
+extern bool IGNORECASE;
 extern bool RS_is_null;
 extern char *OFS;
 extern int OFSlen;

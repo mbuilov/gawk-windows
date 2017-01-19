@@ -318,8 +318,7 @@ static long read_default_timeout;
 
 static struct redirect *red_head = NULL;
 static NODE *RS = NULL;
-static Regexp *RS_re_yes_case;	/* regexp for RS when ignoring case */
-static Regexp *RS_re_no_case;	/* regexp for RS when not ignoring case */
+static Regexp *RS_re[2];	/* index 0 - don't ignore case, index 1, do */
 static Regexp *RS_regexp;
 
 static const char nonfatal[] = "NONFATAL";
@@ -3870,7 +3869,7 @@ set_RS()
 		 * set_IGNORECASE() relies on this routine to call
 		 * set_FS().
 		 */
-		RS_regexp = (IGNORECASE ? RS_re_no_case : RS_re_yes_case);
+		RS_regexp = RS_re[IGNORECASE];
 		goto set_FS;
 	}
 	unref(save_rs);
@@ -3882,9 +3881,9 @@ set_RS()
 	 * Please do not remerge the if condition; hinders memory deallocation
 	 * in case of fatal error in make_regexp.
 	 */
-	refree(RS_re_yes_case);	/* NULL argument is ok */
-	refree(RS_re_no_case);
-	RS_re_yes_case = RS_re_no_case = RS_regexp = NULL;
+	refree(RS_re[0]);	/* NULL argument is ok */
+	refree(RS_re[1]);
+	RS_re[0] = RS_re[1] = RS_regexp = NULL;
 
 	if (RS->stlen == 0) {
 		RS_is_null = true;
@@ -3892,9 +3891,9 @@ set_RS()
 	} else if (RS->stlen > 1 && ! do_traditional) {
 		static bool warned = false;
 
-		RS_re_yes_case = make_regexp(RS->stptr, RS->stlen, false, true, true);
-		RS_re_no_case = make_regexp(RS->stptr, RS->stlen, true, true, true);
-		RS_regexp = (IGNORECASE ? RS_re_no_case : RS_re_yes_case);
+		RS_re[0] = make_regexp(RS->stptr, RS->stlen, false, true, true);
+		RS_re[1] = make_regexp(RS->stptr, RS->stlen, true, true, true);
+		RS_regexp = RS_re[IGNORECASE];
 
 		matchrec = rsrescan;
 

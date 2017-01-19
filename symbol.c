@@ -881,8 +881,10 @@ free_bc_internal(INSTRUCTION *cp)
 	case Op_match:
 	case Op_nomatch:
 		m = cp->memory;
-		if (m->re_reg != NULL)
-			refree(m->re_reg);
+		if (m->re_reg[0] != NULL)
+			refree(m->re_reg[0]);
+		if (m->re_reg[1] != NULL)
+			refree(m->re_reg[1]);
 		if (m->re_exp != NULL)
 			unref(m->re_exp);
 		if (m->re_text != NULL)

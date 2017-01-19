@@ -1,3 +1,22 @@
+2017-01-04         Arnold Robbins        <arnold@skeeve.com>
+
+	Trade space for time for programs that toggle IGNORECASE a lot.
+	Brings 25% to 39% speedup.  NODE does not actually grow in size.
+
+	* awk.h (NODE::preg): Now an array of size two.
+	[CASE]: Flag no longer needed, so removed.
+	(IGNORECASE): Change type from int to bool.
+	* awkgram.y (make_regnode): Build two copies of the compiled regexp,
+	one without ignorecase, and one with.
+	* io.c (RS_re): Array replacing RS_re_yes_case and RS_re_no_case.
+	(set_RS): Use RS_re[IGNORECASE] as appropriate. Free and recompute
+	as needed.
+	* main.c (IGNORECASE): Change type from int to bool.
+	* re.c (re_update): Simplify the code. No need to check CASE flag
+	any longer. Recompute only if text of regexp changed.
+	* symbol.c (free_bc_internal): Adjust to free both elements of
+	m_re_reg.
+
 2017-01-18         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* interpret.h (r_interpret): Increase robustness of the optimization
