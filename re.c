@@ -349,50 +349,48 @@ re_update(NODE *t)
 	NODE *t1;
 
 	if (t->type == Node_val && (t->flags & REGEX) != 0)
-		return t->typed_re->re_reg;
+		return t->typed_re->re_reg[IGNORECASE];
 
-	if ((t->re_flags & CASE) == IGNORECASE) {
-		/* regex was compiled with settings matching IGNORECASE */
-		if ((t->re_flags & CONSTANT) != 0) {
-			/* it's a constant, so just return it as is */
-			assert(t->type == Node_regex);
-			return t->re_reg;
-		}
-		t1 = t->re_exp;
-		if (t->re_text != NULL) {
-			/* if contents haven't changed, just return it */
-			if (cmp_nodes(t->re_text, t1, true) == 0)
-				return t->re_reg;
-			/* things changed, fall through to recompile */
-			unref(t->re_text);
-		}
-		/* get fresh copy of the text of the regexp */
-		t->re_text = dupnode(t1);
+	if ((t->re_flags & CONSTANT) != 0) {
+		/* it's a constant, so just return it as is */
+		assert(t->type == Node_regex);
+		return t->re_reg[IGNORECASE];
 	}
-	/* was compiled with different IGNORECASE or text changed */
+	t1 = t->re_exp;
+	if (t->re_text != NULL) {
+		/* if contents haven't changed, just return it */
+		if (cmp_nodes(t->re_text, t1, true) == 0)
+			return t->re_reg[IGNORECASE];
+		/* things changed, fall through to recompile */
+		unref(t->re_text);
+	}
+	/* get fresh copy of the text of the regexp */
+	t->re_text = dupnode(t1);
+
+	/* text changed */
 
 	/* free old */
-	if (t->re_reg != NULL)
-		refree(t->re_reg);
+	if (t->re_reg[0] != NULL)
+		refree(t->re_reg[0]);
+	if (t->re_reg[1] != NULL)
+		refree(t->re_reg[1]);
 	if (t->re_cnt > 0)
 		t->re_cnt++;
 	if (t->re_cnt > 10)
 		t->re_cnt = 0;
-	if (t->re_text == NULL || (t->re_flags & CASE) != IGNORECASE) {
+	if (t->re_text == NULL) {
 		/* reset regexp text if needed */
 		t1 = t->re_exp;
 		unref(t->re_text);
 		t->re_text = dupnode(t1);
 	}
 	/* compile it */
-	t->re_reg = make_regexp(t->re_text->stptr, t->re_text->stlen,
-				IGNORECASE, t->re_cnt, true);
+	t->re_reg[0] = make_regexp(t->re_text->stptr, t->re_text->stlen,
+				false, t->re_cnt, true);
+	t->re_reg[1] = make_regexp(t->re_text->stptr, t->re_text->stlen,
+				true, t->re_cnt, true);
 
-	/* clear case flag */
-	t->re_flags &= ~CASE;
-	/* set current value of case flag */
-	t->re_flags |= IGNORECASE;
-	return t->re_reg;
+	return t->re_reg[IGNORECASE];
 }
 
 /* resetup --- choose what kind of regexps we match */

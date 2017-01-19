@@ -85,7 +85,7 @@ long NF;
 long NR;
 long FNR;
 int BINMODE;
-int IGNORECASE;
+bool IGNORECASE;
 char *OFS;
 char *ORS;
 char *OFMT;
