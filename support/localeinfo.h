@@ -1,6 +1,6 @@
 /* locale information
 
-   Copyright 2016 Free Software Foundation, Inc.
+   Copyright 2016-2017 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -51,4 +51,4 @@ extern void init_localeinfo (struct localeinfo *);
    itself.  This is a generous upper bound.  */
 enum { CASE_FOLDED_BUFSIZE = 32 };
 
-extern int case_folded_counterparts (wchar_t, wchar_t[CASE_FOLDED_BUFSIZE]);
+extern int case_folded_counterparts (wint_t, wchar_t[CASE_FOLDED_BUFSIZE]);

@@ -2309,6 +2309,7 @@ epsclosure (position_set *initial, struct dfa const *d)
 
         replace (initial, i, &d->follows[i], constraint, &tmp);
       }
+  free (tmp.elems);
 }
 
 /* Returns the set of contexts for which there is at least one
