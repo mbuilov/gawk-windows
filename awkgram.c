@@ -7422,8 +7422,14 @@ make_regnode(int type, NODE *exp)
 	n->re_cnt = 1;
 
 	if (type == Node_regex) {
-		n->re_reg = make_regexp(exp->stptr, exp->stlen, false, true, false);
-		if (n->re_reg == NULL) {
+		n->re_reg[0] = make_regexp(exp->stptr, exp->stlen, false, true, false);
+		if (n->re_reg[0] == NULL) {
+			freenode(n);
+			return NULL;
+		}
+		n->re_reg[1] = make_regexp(exp->stptr, exp->stlen, true, true, false);
+		if (n->re_reg[1] == NULL) {
+			refree(n->re_reg[0]);
 			freenode(n);
 			return NULL;
 		}
