@@ -60,6 +60,8 @@ static const char sccsid[] = "@(#)random.c	8.2 (Berkeley) 5/19/95";
 #include <unistd.h>
 #endif
 
+#include <assert.h>
+
 #include "random.h"		/* gawk addition */
 
 #ifdef HAVE_SYS_TIME_H		/* gawk addition */
@@ -137,7 +139,19 @@ __FBSDID("$FreeBSD: /repoman/r/ncvs/src/lib/libc/stdlib/random.c,v 1.24 2004/01/
  * 32 bytes, a simple linear congruential R.N.G. is used."  For a buffer of
  * 128 bytes, this new version runs about 19 percent faster and for a 16
  * byte buffer it is about 5 percent faster.
+ *
+ * Modified 06 February 2016 by Nelson H. F. Beebe to interface to a
+ * shuffle buffer, producing a huge period, and removing long-range
+ * correlations of the basic low-level generator.  See comments and
+ * literature references in random() at the end of this file.
  */
+
+#define SHUFFLE_BITS	9			/* see comments in random() below for this choice */
+#define SHUFFLE_MAX	(1 << SHUFFLE_BITS)	/* MUST be power of two */
+#define SHUFFLE_MASK	(SHUFFLE_MAX - 1)	/* (k & SHUFFLE_MASK) is in [0, SHUFFLE_MAX - 1] */
+
+static int  shuffle_init = 1;
+static long shuffle_buffer[SHUFFLE_MAX];
 
 /*
  * For each of the currently supported random number generators, we have a
@@ -306,6 +320,8 @@ srandom(x)
 	unsigned long x;
 {
 	int i, lim;
+
+	shuffle_init = 1;
 
 	state[0] = (uint32_t)x;
 	if (rand_type == TYPE_0)
@@ -512,8 +528,8 @@ setstate(arg_state)
  *
  * Returns a 31-bit random number.
  */
-long
-random()
+static long
+random_old()
 {
 	uint32_t i;
 	uint32_t *f, *r;
@@ -539,4 +555,88 @@ random()
 		fptr = f; rptr = r;
 	}
 	return((long)i);
+}
+
+long
+random()
+{
+	/*
+	 * This function is a wrapper to the original random(), now renamed
+	 * random_old(), to interpose a shuffle buffer to dramatically extend
+	 * the generator period at nearly zero additional execution cost,
+	 * and an additional storage cost set by the size of the
+	 * shuffle buffer (default: 512 longs, or 2K or 4K bytes).
+	 * The algorithm was first described in
+	 *
+	 *     Carter Bays and S. D. Durham
+	 *     Improving a Poor Random Number Generator
+	 *     ACM Transactions on Mathematical Software (TOMS) 2(1) 59--64 (March 1976)
+	 *     http://dx.doi.org/10.1145/355666.355670
+	 * 
+	 * and later revisited in
+	 * 
+	 *     Carter Bays
+	 *     C364. Improving a random number generator: a comparison between two shuffling methods
+	 *     Journal of Statistical Computation and Simulation 36(1) 57--59 (May 1990)
+	 *     http://dx.doi.org/10.1080/00949659008811264
+	 *
+	 * The second paper is critically important because it
+	 * emphasizes how an apparently trivial change to the final
+	 * element selection can destroy the period-lengthening
+	 * feature of the original shuffle algorithm.
+	 * 
+	 * Here is a table of the increase in period size for a
+	 * shuffle generator using 32-bit and 64-bit unsigned integer
+	 * linear congruential generators, which are known to have
+	 * significant correlations, and are thus inadvisable for
+	 * serious work with random numbers:
+	 *
+	 * hocd128> for (n = 32; n < 4096; n *= 2) \
+	 *              printf("%7d\t%12.3.4e\t%12.3.4e\n",
+	 *              n, \
+	 *              sqrt(PI * gamma(n + 1)/(2**32 - 1)) / (2**32 - 1), \\
+	 *              sqrt(PI * gamma(n + 1)/(2**64 - 1)) / (2**64 - 1))
+	 * 
+	 *      32    3.230e+03       1.148e-11
+	 *      64    2.243e+30       7.969e+15
+	 *     128    3.910e+93       1.389e+79
+	 *     256   1.844e+239      6.552e+224
+	 *     512   1.174e+569      4.172e+554
+	 *    1024  4.635e+1305     1.647e+1291
+	 *    2048  8.144e+2932     2.893e+2918
+	 *
+	 * A generator giving one result per nanosecond would produce
+	 * about 3.16e16 random numbers per year, so even for
+	 * massively parallel operations with, say, one million CPU
+	 * cores, it could not produce more than 10**23 values per
+	 * year.  The main benefit of an enormous period is that it
+	 * makes long-range correlations vanishingly unlikely, even
+	 * when starting seeds are similar (e.g., seeds of 0, 1, 2,
+	 * ...), and therefore makes possible families of generators
+	 * (needed in parallel computations) where the probability of
+	 * sequence overlap between family members is essentially
+	 * zero.
+	 */
+
+	int k;
+	long r;
+	static long s = 0xcafefeedL;
+
+	if (shuffle_init) {	/* first time, or seed changed by srand() */
+		for (k = 0; k < SHUFFLE_MAX; k++)
+			shuffle_buffer[k] = random_old();
+
+		s = random_old();
+		shuffle_init = 0;
+	}
+
+	r = random_old();
+	k = s & SHUFFLE_MASK;		/* random index into shuffle_buffer[] */
+
+	assert(0L <= k && k < SHUFFLE_MAX);
+
+	s = shuffle_buffer[k];
+	shuffle_buffer[k] = r;
+
+	return (s);
 }
