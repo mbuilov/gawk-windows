@@ -41,6 +41,7 @@
 
 #ifdef __MINGW32__
 #include <winsock2.h>
+#include <stdint.h>
 #else
 #include <arpa/inet.h>
 #endif

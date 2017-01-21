@@ -1,3 +1,30 @@
+2017-01-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkmisc.pc: Fix a typo.
+
+2017-01-21  Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile.tst: Modify the locale values to valid ones on Windows.
+
+	* gawkmisc.pc: Undef setlocale and include locale.h.
+	(lc_var, w32_setlocale): New functions.
+
+	* Makefile (VAPTH): Set to allow Make to find sources in the
+	'support' subdirectory.
+	(CFLAGS): Add "-I./support", as some headers are there.
+	(LIBOBJS): Add localeinfo$O.
+	(regex$O): Depend on regex_internal.c.
+	(localeinfo$O): New dependency.
+
+	* config.sed (SIZEOF_UNSIGNED_INT, SIZEOF_UNSIGNED_LONG): Set to 4
+	unconditioonally, as we no longer support 16-bit ports.  The
+	previous definitions caused compilation errors, since config.h is
+	included by random.h before awk.h, where limits.h is included and
+	defines UINT_MAX etc.
+	* config.h: Regenerated.
+
+	* Makefile.tst: Sync with test/Makefile.in.
+
 2016-11-04  Eli Zaretskii  <eliz@gnu.org>
 
 	* gawkmisc.pc (w32_maybe_set_errno) [__MINGW32__]: New function,

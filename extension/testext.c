@@ -49,6 +49,15 @@ int plugin_is_GPL_compatible;
 
 static void fill_in_array(awk_value_t *value);
 
+#ifdef __MINGW32__
+unsigned int
+getuid (void)
+{
+  /* See pc/getid.c.  */
+  return 0;
+}
+#endif
+
 /* valrep2str --- turn a value into a string */
 
 static const char *

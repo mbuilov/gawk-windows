@@ -1,3 +1,13 @@
+2017-01-21  Eli Zaretskii  <eliz@gnu.org>
+
+	* testext.c (getuid) [__MINGW32__]: New function, mirrors what
+	pc/getid.c does in Gawk.
+	* rwarray.c [__MINGW32__]: Include stdint.h, otherwise using
+	uint32_t causes compilation errors.
+	* inplace.c (_XOPEN_SOURCE): Define to 1, not to nothing.  MinGW
+	system headers assume that if this is defined, it must have a
+	numeric value.
+
 2016-12-22         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* testext.c (valrep2str): Update for new API types.
