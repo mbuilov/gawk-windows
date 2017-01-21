@@ -1,5 +1,10 @@
 2017-01-21  Eli Zaretskii  <eliz@gnu.org>
 
+	* Makefile.tst: Modify the locale values to valid ones on Windows.
+
+	* gawkmisc.pc: Undef setlocale and include locale.h.
+	(lc_var, w32_setlocale): New functions.
+
 	* Makefile (VAPTH): Set to allow Make to find sources in the
 	'support' subdirectory.
 	(CFLAGS): Add "-I./support", as some headers are there.

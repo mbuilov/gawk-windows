@@ -277,7 +277,7 @@ unix-tests: $(UNIX_TESTS)
 gawk-extensions: $(GAWK_EXT_TESTS)
 
 charset-tests-all:
-	$(MAKE) charset-msg-start charset-tests charset-msg-end; \
+	$(MAKE) charset-msg-start charset-tests charset-msg-end
 
 charset-tests: $(LOCALE_CHARSET_TESTS)
 
@@ -346,9 +346,7 @@ charset-msg-start:
 	@echo "======== Starting tests that can vary based on character set or locale support ========"
 	@echo "**************************************************************************"
 	@echo "* Some or all of these tests may fail if you have inadequate or missing  *"
-	@echo "* locale support. At least en_US.UTF-8, ru_RU.UTF-8 and ja_JP.UTF-8 are  *"
-	@echo "* needed. However, if you see this message, the Makefile thinks you have *"
-	@echo "* what you need ...                                                      *"
+	@echo "* locale support...                                                      *"
 	@echo "**************************************************************************"
 
 charset-msg-end:
@@ -368,7 +366,7 @@ mpfr-msg-end:
 
 lc_num1:
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -671,49 +669,49 @@ rsnulbig2::
 
 wideidx::
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 wideidx2::
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 widesub::
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 widesub2::
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 widesub3::
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 widesub4::
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 ignrcas2::
 	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	@GAWKLOCALE=ENU_USA.1252 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 subamp::
 	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	@GAWKLOCALE=ENU_USA.1252 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -756,7 +754,7 @@ rtlen01::
 
 rtlenmb::
 	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	@GAWKLOCALE=ENU_USA.1252 ; export GAWKLOCALE ; \
 	"$(srcdir)"/rtlen.sh >_$@ || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -790,12 +788,12 @@ binmode1::
 
 subi18n::
 	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; $(AWK) -f "$(srcdir)"/$@.awk > _$@
+	@GAWKLOCALE=ENU_USA.1252 ; $(AWK) -f "$(srcdir)"/$@.awk > _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 concat4::
 	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; $(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in > _$@
+	@GAWKLOCALE=ENU_USA.1252 ; $(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in > _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 devfd1::
@@ -818,13 +816,13 @@ mixed1::
 
 mtchi18n::
 	@echo $@
-	@GAWKLOCALE=ru_RU.UTF-8 ; export GAWKLOCALE ; \
+	@GAWKLOCALE=RUS_RUS.1251 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 reint2::
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) --re-interval -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -836,33 +834,33 @@ localenl::
 mbprintf1::
 	@echo $@
 	@echo Expect mbprintf1 to fail with DJGPP and MinGW.
-	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	@GAWKLOCALE=ENU_USA.1252 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbprintf2::
 	@echo $@
-	@GAWKLOCALE=ja_JP.UTF-8 ; export GAWKLOCALE ; \
+	@GAWKLOCALE=JPN_JPN.932 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbprintf3::
 	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	@GAWKLOCALE=ENU_USA.1252 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbprintf4::
 	@echo $@
 	@echo Expect mbprintf4 to fail with MinGW and DJGPP
-	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	@GAWKLOCALE=ENU_USA.1252 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbfw1::
 	@echo $@
 	@echo Expect mbfw1 to fail with DJGPP and MinGW.
-	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	@GAWKLOCALE=ENU_USA.1252 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -874,14 +872,14 @@ gsubtst6::
 mbstr1::
 	@echo $@
 	@echo Expect mbstr1 to fail with MinGW.
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbstr2::
 	@echo $@
 	@echo Expect mbstr2 to fail with MinGW.
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -995,7 +993,7 @@ exit:
 
 rri1::
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1201,7 +1199,7 @@ charasbytes:
 #	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 #	AWKPATH="$(srcdir)" $(AWK) -b -f $@.awk "$(srcdir)"/$@.in | \
 #	od -c -t x1 | tr '	' ' ' | sed -e 's/  */ /g' -e 's/ *$$//' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -b -v BINMODE=2 -f $@.awk "$(srcdir)"/$@.in | \
 	od -c -t x1 | tr '	' ' ' | sed -e 's/  */ /g' -e 's/ *$$//' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -1244,7 +1242,7 @@ clos1way:
 
 dfamb1:
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1256,20 +1254,20 @@ randtest::
 backbigs1:
 	@echo $@
 	@echo Expect backbigs1 to fail with MinGW and DJGPP
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 backsmalls1:
 	@echo $@
 	@echo Expect backsmalls1 to fail with MinGW and DJGPP
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 backsmalls2:
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1282,7 +1280,7 @@ dbugeval::
 
 printhuge::
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
