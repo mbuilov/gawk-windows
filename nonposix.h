@@ -56,6 +56,9 @@ unsigned int getegid (void);
 int unsetenv (const char *);
 int setenv (const char *, const char *, int);
 void w32_maybe_set_errno (void);
+char *w32_setlocale (int, const char *);
+#define setlocale(c,v) w32_setlocale(c,v)
+
 #endif	/* __MINGW32__ */
 
 #if defined(VMS) || defined(__DJGPP__) || defined(__MINGW32__)

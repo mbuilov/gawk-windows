@@ -247,16 +247,8 @@ s/^#undef RETSIGTYPE *$/#define RETSIGTYPE void/
 #if defined(__DJGPP__) || defined(__MINGW32__)\
 #include <limits.h>\
 #endif
-/^#undef SIZEOF_UNSIGNED_INT *$/c\
-#if UINT_MAX == 65536\
-#define SIZEOF_UNSIGNED_INT 2\
-#elif UINT_MAX == 4294967295U\
-#define SIZEOF_UNSIGNED_INT 4\
-#endif
-/^#undef SIZEOF_UNSIGNED_LONG *$/c\
-#if ULONG_MAX == 4294967295UL\
-#define SIZEOF_UNSIGNED_LONG 4\
-#endif
+s/^#undef SIZEOF_UNSIGNED_INT *$/#define SIZEOF_UNSIGNED_INT 4/
+s/^#undef SIZEOF_UNSIGNED_LONG *$/#define SIZEOF_UNSIGNED_LONG 4/
 s/^#undef STDC_HEADERS *$/#define STDC_HEADERS 1/
 s/^#undef TIME_WITH_SYS_TIME *$/#define TIME_WITH_SYS_TIME 1/
 /^#undef inline *$/c\

@@ -456,16 +456,10 @@
 #undef PRINTF_HAS_F_FORMAT
 
 /* The size of `unsigned int', as computed by sizeof. */
-#if UINT_MAX == 65536
-#define SIZEOF_UNSIGNED_INT 2
-#elif UINT_MAX == 4294967295U
 #define SIZEOF_UNSIGNED_INT 4
-#endif
 
 /* The size of `unsigned long', as computed by sizeof. */
-#if ULONG_MAX == 4294967295UL
 #define SIZEOF_UNSIGNED_LONG 4
-#endif
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
