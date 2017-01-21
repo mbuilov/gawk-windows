@@ -91,6 +91,9 @@ install = 1
 # that $($X) can be expanded.
 DO_LNK = $($(LNK))
 DO_BIND= $($(BIND))
+#------------------------------------------------------------------------
+# To allow Make find files in the support subdirectory.
+VPATH = .;./support
 #========================================================================
 # End of general configuration. Some platform-specific configuration
 # notes appear below.
@@ -198,7 +201,7 @@ BIND = EMPTY
 PBIND = EMPTY
 EMPTY=
 
-CFLAGS = $(CF) -DGAWK -I. -DHAVE_CONFIG_H -DDEFLIBPATH=$(DEFLIBPATH) -DSHLIBEXT=$(SHLIBEXT)
+CFLAGS = $(CF) -DGAWK -I. -I./support -DHAVE_CONFIG_H -DDEFLIBPATH=$(DEFLIBPATH) -DSHLIBEXT=$(SHLIBEXT)
 
 # object files
 AWKOBJS1  = array$O builtin$O eval$O field$O floatcomp$O gawkmisc$O io$O main$O
@@ -211,7 +214,7 @@ ALLOBJS = $(AWKOBJS) awkgram$O getid$O $(OBJ)
 
 # LIBOBJS
 #       GNU and other stuff that gawk uses as library routines.
-LIBOBJS= getopt$O getopt1$O dfa$O regex$O random$O
+LIBOBJS= getopt$O getopt1$O dfa$O regex$O random$O localeinfo$O
 
 GAWKOBJS = $(ALLOBJS) $(LIBOBJS)
 
@@ -260,9 +263,11 @@ getopt$O getopt1$O :	getopt_int.h
 
 io$O:		popen.h socket.h in.h
 
-regex$O:	regcomp.c regexec.c regex_internal.h
+regex$O:	regcomp.c regexec.c regex_internal.c regex_internal.h
 
 eval$O:		interpret.h
+
+localeinfo$O:	localeinfo.h
 
 # A bug in ndmake requires the following rule
 awkgram$O: awk.h awkgram.c
