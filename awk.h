@@ -1253,23 +1253,34 @@ DEREF(NODE *r)
 
 /* ------------------------- Pseudo-functions ------------------------- */
 #ifdef HAVE_MPFR
-/* conversion to C types */
-#define get_number_ui(n)	(((n)->flags & MPFN) ? mpfr_get_ui((n)->mpg_numbr, ROUND_MODE) \
-				: ((n)->flags & MPZN) ? mpz_get_ui((n)->mpg_i) \
-				: (unsigned long) (n)->numbr)
-#define get_number_si(n)	(((n)->flags & MPFN) ? mpfr_get_si((n)->mpg_numbr, ROUND_MODE) \
-				: ((n)->flags & MPZN) ? mpz_get_si((n)->mpg_i) \
-				: (long) (n)->numbr)
-#define get_number_d(n)		(((n)->flags & MPFN) ? mpfr_get_d((n)->mpg_numbr, ROUND_MODE) \
-				: ((n)->flags & MPZN) ? mpz_get_d((n)->mpg_i) \
-				: (double) (n)->numbr)
-#define get_number_uj(n)	(((n)->flags & MPFN) ? mpfr_get_uj((n)->mpg_numbr, ROUND_MODE) \
-				: ((n)->flags & MPZN) ? (uintmax_t) mpz_get_d((n)->mpg_i) \
-				: (uintmax_t) (n)->numbr)
 
-#define iszero(n)		(((n)->flags & MPFN) ? mpfr_zero_p((n)->mpg_numbr) \
-				: ((n)->flags & MPZN) ? (mpz_sgn((n)->mpg_i) == 0) \
-				: ((n)->numbr == 0.0))
+#if 0
+
+/*
+ * In principle, there is no need to have both the MPFN and MPZN flags,
+ * since we are using 2 bits to encode 1 bit of information. But
+ * there may be some minor performance advantages from testing only the
+ * node flag bits without needing also to access the global do_mpfr flag bit.
+ */
+#define numtype_choose(n, mpfrval, mpzval, dblval)	\
+ (!do_mpfr ? (dblval) : (((n)->flags & MPFN) ? (mpfrval) : (mpzval)))
+
+#endif
+
+/* N.B. This implementation seems to give the fastest results. */
+#define numtype_choose(n, mpfrval, mpzval, dblval)	\
+ (!((n)->flags & (MPFN|MPZN)) ? (dblval) : (((n)->flags & MPFN) ? (mpfrval) : (mpzval)))
+
+/* conversion to C types */
+#define get_number_ui(n)	numtype_choose((n), mpfr_get_ui((n)->mpg_numbr, ROUND_MODE), mpz_get_ui((n)->mpg_i), (unsigned long) (n)->numbr)
+
+#define get_number_si(n)	numtype_choose((n), mpfr_get_si((n)->mpg_numbr, ROUND_MODE), mpz_get_si((n)->mpg_i), (long) (n)->numbr)
+
+#define get_number_d(n)		numtype_choose((n), mpfr_get_d((n)->mpg_numbr, ROUND_MODE), mpz_get_d((n)->mpg_i), (double) (n)->numbr)
+
+#define get_number_uj(n)	numtype_choose((n), mpfr_get_uj((n)->mpg_numbr, ROUND_MODE), (uintmax_t) mpz_get_d((n)->mpg_i), (uintmax_t) (n)->numbr)
+
+#define iszero(n)		numtype_choose((n), mpfr_zero_p((n)->mpg_numbr), (mpz_sgn((n)->mpg_i) == 0), ((n)->numbr == 0.0))
 
 #define IEEE_FMT(r, t)		(void) (do_ieee_fmt && format_ieee(r, t))
 
