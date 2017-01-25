@@ -1001,32 +1001,33 @@ void init_btowc_cache()
 
 #define BLOCKCHUNK 100
 
-BLOCK nextfree[BLOCK_MAX] = {
-	{ 0, NULL},	/* invalid */
-	{ sizeof(NODE), NULL },
-	{ sizeof(BUCKET), NULL },
+struct block_header nextfree[BLOCK_MAX] = {
+	{ NULL, 0},	/* invalid */
+	{ NULL, sizeof(NODE) },
+	{ NULL, sizeof(BUCKET) },
 };
 
 
 /* more_blocks --- get more blocks of memory and add to the free list;
-	size of a block must be >= sizeof(BLOCK)
+	size of a block must be >= sizeof(struct block_item)
  */
 
 void *
 more_blocks(int id)
 {
-	BLOCK *freep, *np, *next;
+	struct block_item *freep, *np, *next;
 	char *p, *endp;
 	size_t size;
 
 	size = nextfree[id].size;
 
-	emalloc(freep, BLOCK *, BLOCKCHUNK * size, "more_blocks");
+	assert(size >= sizeof(struct block_item));
+	emalloc(freep, struct block_item *, BLOCKCHUNK * size, "more_blocks");
 	p = (char *) freep;
 	endp = p + BLOCKCHUNK * size;
 
 	for (np = freep; ; np = next) {
-		next = (BLOCK *) (p += size);
+		next = (struct block_item *) (p += size);
 		if (p >= endp) {
 			np->freep = NULL;
 			break;

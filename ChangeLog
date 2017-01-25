@@ -1,3 +1,22 @@
+2017-01-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (BLOCK): Remove typedef. BLOCK was used for 2 different
+	purposes: to contain a block allocation list header, and to hold
+	each individual allocated item. This was confusing, because the "size"
+	field was set only in the header, but not in each element.
+	(struct block_header): The block header contains a pointer to the first
+	element and the element size.
+	(struct block_item): Represent a single allocated item. This contains
+	only a pointer to the next element. This reduces the minimum allocated
+	item size from 2 pointers to 1 (16 bytes to 8 bytes on x86_64).
+	(nextfree): Change array item type from BLOCK to struct block_header.
+	(getblock, freeblock): Change cast from 'BLOCK' to 'struct block_item'.
+	* node.c (nextfree): Now an array of 'struct block_header' instead of
+	BLOCK. Switch the ordering to put the next pointer before the size.
+	(more_blocks): Replace 'BLOCK' with 'struct block_item', and add
+	an assert to ensure that the allocation size is at least as large
+	as 'struct block_item', i.e. 1 pointer.
+
 2017-01-22         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* awk.h (numtype_choose): New backend macro used to implement
