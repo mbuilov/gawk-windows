@@ -1,3 +1,12 @@
+2017-01-22         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (numtype_choose): New backend macro used to implement
+	various macros whose calculations depend on how a number is
+	actually represented. This improves readability and should give
+	a small performance improvement when not using extended precision.
+	(get_number_ui, get_number_si, get_number_d, get_number_uj, iszero):
+	Rewrite using new numtype_choose macro.
+
 2017-01-04         Arnold Robbins        <arnold@skeeve.com>
 
 	Trade space for time for programs that toggle IGNORECASE a lot.
