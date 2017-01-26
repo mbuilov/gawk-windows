@@ -1,5 +1,14 @@
 2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* node.c (r_format_val): Before we free s->stptr, make sure that it
+	was malloced.
+	(wstr2str): Add comment explaining why it's safe to free n->stptr
+	without doing any checks.
+	* mpfr.c (mpg_format_val): Ditto. And no need to reset the STRCUR flag
+	that we just checked.
+
+2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* awk.h (enum block_id): Remove BLOCK_INVALID, since it serves no
 	useful purpose and seems to slow things down a bit.
 	* node.c (nextfree): Remove first invalid entry.

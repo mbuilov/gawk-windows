@@ -248,7 +248,7 @@ r_format_val(const char *format, int index, NODE *s)
 		}
 		s->flags = oflags;
 		s->stlen = r->stlen;
-		if ((s->flags & STRCUR) != 0)
+		if ((s->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR))
 			efree(s->stptr);
 		s->stptr = r->stptr;
 		freenode(r);	/* Do not unref(r)! We want to keep s->stptr == r->stpr.  */
@@ -273,7 +273,7 @@ r_format_val(const char *format, int index, NODE *s)
 			s->flags |= STRING;
 		}
 	}
-	if ((s->flags & STRCUR) != 0)
+	if ((s->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR))
 		efree(s->stptr);
 	emalloc(s->stptr, char *, s->stlen + 1, "format_val");
 	memcpy(s->stptr, sp, s->stlen + 1);
@@ -844,6 +844,7 @@ wstr2str(NODE *n)
 	}
 	*cp = '\0';
 
+	/* N.B. caller just created n with make_string, so this free is safe */
 	efree(n->stptr);
 	n->stptr = newval;
 	n->stlen = cp - newval;
