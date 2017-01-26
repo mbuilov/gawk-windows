@@ -1050,10 +1050,14 @@ struct flagtab {
 };
 
 
-typedef struct block_item {
-	size_t size;
+struct block_item {
 	struct block_item *freep;
-} BLOCK;
+};
+
+struct block_header {
+	struct block_item *freep;
+	size_t size;
+};
 
 enum block_id {
 	BLOCK_INVALID = 0,	/* not legal */
@@ -1120,7 +1124,7 @@ extern afunc_t int_array_func[];
 /* special node used to indicate success in array routines (not NULL) */
 extern NODE *success_node;
 
-extern BLOCK nextfree[];
+extern struct block_header nextfree[];
 extern bool field0_valid;
 
 extern int do_flags;
@@ -1307,10 +1311,10 @@ DEREF(NODE *r)
 				&((n)->var_value) : r_get_lhs((n), (r))
 
 #define getblock(p, id, ty)  (void) ((p = (ty) nextfree[id].freep) ? \
-			(ty) (nextfree[id].freep = ((BLOCK *) p)->freep) \
+			(ty) (nextfree[id].freep = ((struct block_item *) p)->freep) \
 			: (p = (ty) more_blocks(id)))
-#define freeblock(p, id)	 (void) (((BLOCK *) p)->freep = nextfree[id].freep, \
-					nextfree[id].freep = (BLOCK *) p)
+#define freeblock(p, id)	 (void) (((struct block_item *) p)->freep = nextfree[id].freep, \
+					nextfree[id].freep = (struct block_item *) p)
 
 #define getnode(n)	getblock(n, BLOCK_NODE, NODE *)
 #define freenode(n)	freeblock(n, BLOCK_NODE)
