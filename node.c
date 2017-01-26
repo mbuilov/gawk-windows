@@ -1002,7 +1002,6 @@ void init_btowc_cache()
 #define BLOCKCHUNK 100
 
 struct block_header nextfree[BLOCK_MAX] = {
-	{ NULL, 0},	/* invalid */
 	{ NULL, sizeof(NODE) },
 	{ NULL, sizeof(BUCKET) },
 };
