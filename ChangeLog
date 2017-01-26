@@ -1,5 +1,10 @@
 2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* builtin.c (do_strftime): If format argument is passed, we need
+	to terminate it in case it's a field variable.
+
+2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* node.c (r_format_val): Before we free s->stptr, make sure that it
 	was malloced.
 	(wstr2str): Add comment explaining why it's safe to free n->stptr

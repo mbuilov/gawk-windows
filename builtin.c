@@ -1907,6 +1907,7 @@ do_strftime(int nargs)
 	int do_gmt;
 	NODE *val = NULL;
 	NODE *sub = NULL;
+	char save;
 	static const time_t time_t_min = TYPE_MINIMUM(time_t);
 	static const time_t time_t_max = TYPE_MAXIMUM(time_t);
 
@@ -1980,6 +1981,8 @@ do_strftime(int nargs)
 			DEREF(t1);
 			return make_string("", 0);
 		}
+		save = format[formatlen];
+		t1->stptr[formatlen] = '\0';
 	}
 
 	if (do_gmt)
@@ -1987,8 +1990,10 @@ do_strftime(int nargs)
 	else
 		tm = localtime(& fclock);
 
-	if (tm == NULL)
-		return make_string("", 0);
+	if (tm == NULL) {
+		ret = make_string("", 0);
+		goto done;
+	}
 
 	bufp = buf;
 	bufsize = sizeof(buf);
@@ -2014,8 +2019,11 @@ do_strftime(int nargs)
 	ret = make_string(bufp, buflen);
 	if (bufp != buf)
 		efree(bufp);
-	if (t1)
+done:
+	if (t1) {
+		t1->stptr[formatlen] = save;
 		DEREF(t1);
+	}
 	return ret;
 }
 
