@@ -886,6 +886,8 @@ mod:
 			size_t num_elems = 0;
 			static NODE *sorted_in = NULL;
 			const char *how_to_sort = "@unsorted";
+			char save;
+			bool saved_end = false;
 
 			/* get the array */
 			array = POP_ARRAY();
@@ -908,11 +910,17 @@ mod:
 
 			if (sort_str != NULL) {
 				sort_str = force_string(sort_str);
-				if (sort_str->stlen > 0)
+				if (sort_str->stlen > 0) {
 					how_to_sort = sort_str->stptr;
+					save = sort_str->stptr[sort_str->stlen];
+					sort_str->stptr[sort_str->stlen] = '\0';
+					saved_end = true;
+				}
 			}
 
 			list = assoc_list(array, how_to_sort, SORTED_IN);
+			if (saved_end)
+				sort_str->stptr[sort_str->stlen] = save;
 
 arrayfor:
 			getnode(r);
@@ -1049,6 +1057,7 @@ match_re:
 		{
 			NODE *f = NULL;
 			int arg_count;
+			char save;
 
 			arg_count = (pc + 1)->expr_count;
 			t1 = PEEK(arg_count);	/* indirect var */
@@ -1057,12 +1066,15 @@ match_re:
 				fatal(_("indirect function call requires a simple scalar value"));
 
 			t1 = force_string(t1);
+			save = t1->stptr[t1->stlen];
+			t1->stptr[t1->stlen] = '\0';
 			if (t1->stlen > 0) {
 				/* retrieve function definition node */
 				f = pc->func_body;
 				if (f != NULL && strcmp(f->vname, t1->stptr) == 0) {
 					/* indirect var hasn't been reassigned */
 
+					t1->stptr[t1->stlen] = save;
 					ni = setup_frame(pc);
 					JUMPTO(ni);	/* Op_func */
 				}
@@ -1087,10 +1099,12 @@ match_re:
 					r = call_split_func(t1->stptr, arg_count);
 				else
 					r = the_func(arg_count);
+				t1->stptr[t1->stlen] = save;
 
 				PUSH(r);
 				break;
 			} else if (f->type != Node_func) {
+				t1->stptr[t1->stlen] = save;
 				if (f->type == Node_ext_func) {
 					/* code copied from below, keep in sync */
 					INSTRUCTION *bc;
@@ -1115,6 +1129,7 @@ match_re:
 							pc->func_name);
 			}
 			pc->func_body = f;     /* save for next call */
+			t1->stptr[t1->stlen] = save;
 
 			ni = setup_frame(pc);
 			JUMPTO(ni);	/* Op_func */
