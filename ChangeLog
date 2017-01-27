@@ -1,5 +1,11 @@
 2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* node.c (is_hex): Add a new argument pointing to the end of the string
+	so we can check for string overrun.
+	(r_force_number): Pass string end to is_hex.
+
+2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* awk.h (get_numbase): Add string length argument so we can operate
 	on unterminated strings.
 	* awkgram.y: Call get_numbase with string length, and fix off-by-one

@@ -41,12 +41,13 @@ int (*cmp_numbers)(const NODE *, const NODE *) = cmp_awknums;
 /* is_hex --- return true if a string looks like a hex value */
 
 static bool
-is_hex(const char *str)
+is_hex(const char *str, const char *cpend)
 {
+	/* on entry, we know the string length is >= 1 */
 	if (*str == '-' || *str == '+')
 		str++;
 
-	if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+	if (str + 1 < cpend && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
 		return true;
 
 	return false;
@@ -113,7 +114,7 @@ r_force_number(NODE *n)
 	if (   (! do_posix		/* not POSIXLY paranoid and */
 	        && (is_alpha((unsigned char) *cp)	/* letter, or */
 					/* CANNOT do non-decimal and saw 0x */
-		    || (! do_non_decimal_data && is_hex(cp))))) {
+		    || (! do_non_decimal_data && is_hex(cp, cpend))))) {
 		goto badnum;
 	}
 
