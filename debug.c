@@ -2962,9 +2962,9 @@ do_run(CMDARG *arg ATTRIBUTE_UNUSED, int cmd ATTRIBUTE_UNUSED)
 
 	fatal_tag_valid = false;
 	prog_running = false;
-	fprintf(out_fp, _("Program exited %s with exit value: %d\n"),
-			(! exiting && exit_val != EXIT_SUCCESS) ? "abnormally"
-			                                        : "normally",
+	fprintf(out_fp, (! exiting && exit_val != EXIT_SUCCESS)
+				? _("Program exited abnormally with exit value: %d\n")
+				: _("Program exited normally with exit value: %d\n"),
 			exit_val);
 	need_restart = true;
 	return false;
