@@ -1,5 +1,15 @@
 2017-01-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* io.c (redirect_string): Check explen positive before accessing *str.
+	In lintwarn message, use explen string length. Pass length to inetfile.
+	(devopen): Pass name length to inetfile.
+	Stop assuming that remoteport is NUL-terminated.
+	(two_way_open): Pass name length to inetfile.
+	(inetfile): Stop assuming NUL string termination; add checks to avoid 
+	string overrun.
+
+2017-01-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* awk.h (str_terminate_f): New helper function for terminating a string
 	NODE.
 	(str_terminate): Macro wrapper to call str_terminate_f.
