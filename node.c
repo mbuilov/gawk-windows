@@ -129,7 +129,7 @@ r_force_number(NODE *n)
 
 	errno = 0;
 	if (do_non_decimal_data		/* main.c assures false if do_posix */
-		&& ! do_traditional && get_numbase(cp, true) != 10) {
+		&& ! do_traditional && get_numbase(cp, cpend - cp, true) != 10) {
 		/* nondec2awknum() saves and restores the byte after the string itself */
 		n->numbr = nondec2awknum(cp, cpend - cp, &ptr);
 	} else {
@@ -631,7 +631,7 @@ parse_escape(const char **string_ptr)
 /* get_numbase --- return the base to use for the number in 's' */
 
 int
-get_numbase(const char *s, bool use_locale)
+get_numbase(const char *s, size_t len, bool use_locale)
 {
 	int dec_point = '.';
 	const char *str = s;
@@ -645,7 +645,7 @@ get_numbase(const char *s, bool use_locale)
 		dec_point = loc.decimal_point[0];	/* XXX --- assumes one char */
 #endif
 
-	if (str[0] != '0')
+	if (len < 2 || str[0] != '0')
 		return 10;
 
 	/* leading 0x or 0X */
@@ -658,7 +658,7 @@ get_numbase(const char *s, bool use_locale)
 	 *
 	 * These beasts can have trailing whitespace. Deal with that too.
 	 */
-	for (; *str != '\0'; str++) {
+	for (; len > 0; len--, str++) {
 		if (*str == 'e' || *str == 'E' || *str == dec_point)
 			return 10;
 		else if (! isdigit((unsigned char) *str))

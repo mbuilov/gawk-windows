@@ -1679,7 +1679,7 @@ extern Regexp *re_update(NODE *t);
 extern void resyntax(int syntax);
 extern void resetup(void);
 extern int reisstring(const char *text, size_t len, Regexp *re, const char *buf);
-extern int get_numbase(const char *str, bool use_locale);
+extern int get_numbase(const char *str, size_t len, bool use_locale);
 extern bool using_utf8(void);
 
 /* symbol.c */

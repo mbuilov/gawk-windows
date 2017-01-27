@@ -1,5 +1,18 @@
 2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* awk.h (get_numbase): Add string length argument so we can operate
+	on unterminated strings.
+	* awkgram.y: Call get_numbase with string length, and fix off-by-one
+	error in length passed to nondec2awknum: should be strlen(tokstart)-1
+	based on surrounding code.
+	* builtin.c (do_strtonum): Pass string length to get_numbase.
+	(nondec2awknum): Check string length before accessing characters.
+	* mpfr.c (force_mpnum): Pass string length to get_numbase.
+	* node.c (r_force_number): Pass string length to get_numbase.
+	(get_numbase): Add string length argument and honor it.
+
+2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* builtin.c (do_strftime): If format argument is passed, we need
 	to terminate it in case it's a field variable.
 

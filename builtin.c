@@ -3558,7 +3558,7 @@ do_strtonum(int nargs)
 	tmp = fixtype(POP_SCALAR());
 	if ((tmp->flags & NUMBER) != 0)
 		d = (AWKNUM) tmp->numbr;
-	else if (get_numbase(tmp->stptr, use_lc_numeric) != 10)
+	else if (get_numbase(tmp->stptr, tmp->stlen, use_lc_numeric) != 10)
 		d = nondec2awknum(tmp->stptr, tmp->stlen, NULL);
 	else
 		d = (AWKNUM) force_number(tmp)->numbr;
@@ -3583,7 +3583,7 @@ nondec2awknum(char *str, size_t len, char **endptr)
 	short val;
 	char *start = str;
 
-	if (*str == '0' && (str[1] == 'x' || str[1] == 'X')) {
+	if (len >= 2 && *str == '0' && (str[1] == 'x' || str[1] == 'X')) {
 		/*
 		 * User called strtonum("0x") or some such,
 		 * so just quit early.
@@ -3633,7 +3633,7 @@ nondec2awknum(char *str, size_t len, char **endptr)
 		}
 		if (endptr)
 			*endptr = str;
-	} else if (*str == '0') {
+	} else if (len >= 1 && *str == '0') {
 		for (; len > 0; len--) {
 			if (! isdigit((unsigned char) *str)) {
 				if (endptr)
