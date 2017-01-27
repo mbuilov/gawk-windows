@@ -26,10 +26,7 @@
 #define UNFIELD(l, r) \
 { \
 	/* if was a field, turn it into a var */ \
-	if ((r->flags & FIELD) == 0) { \
-		l = r; \
-	} else if (r->valref == 1) { \
-		r->flags &= ~FIELD; \
+	if ((r->flags & FIELD) == 0 || r->valref == 1) { \
 		l = r; \
 	} else { \
 		l = dupnode(r); \
