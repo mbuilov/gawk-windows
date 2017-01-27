@@ -1958,3 +1958,19 @@ erealloc_real(void *ptr, size_t count, const char *where, const char *var, const
 
 	return ret;
 }
+
+/*
+ * str_terminate_f, str_terminate, str_restore: function and macros to
+ * reduce chances of typos when terminating and restoring strings.
+ * This also helps to enforce that the NODE must be in scope when we restore.
+ */
+
+static inline void
+str_terminate_f(NODE *n, char *savep)
+{
+	*savep = n->stptr[n->stlen];
+	n->stptr[n->stlen] = '\0';
+}
+
+#define str_terminate(n, save) str_terminate_f((n), &save)
+#define str_restore(n, save) (n)->stptr[(n)->stlen] = save

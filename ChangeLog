@@ -1,5 +1,19 @@
 2017-01-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* awk.h (str_terminate_f): New helper function for terminating a string
+	NODE.
+	(str_terminate): Macro wrapper to call str_terminate_f.
+	(str_restore): New macro to restore the string.
+	* builtin.c (do_strftime): Use str_terminate and str_restore.
+	(do_dcgettext): Ditto, and remove saved_end flag since equivalent
+	to testing (t2 != NULL). Fix overrun bug in calculating result
+	length when !ENABLE_NLS.
+	(do_dcngettext, do_bindtextdomain): Use str_terminate and str_restore.
+	* interpret.h (Op_arrayfor_init, Op_indirect_func_call): Ditto.
+	* str_array.c (env_remove): Ditto.
+
+2017-01-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* interpret.h [UNFIELD]: Fix condition for assignment from
 	value with valref == 1. Fixes problems introduced at gawk 4.1.2.
 

@@ -776,10 +776,9 @@ env_remove(NODE *symbol, NODE *subs)
 	char save;
 
 	if (val != NULL) {
-		save = subs->stptr[subs->stlen];
-		subs->stptr[subs->stlen] = '\0';
+		str_terminate(subs, save);
 		(void) unsetenv(subs->stptr);
-		subs->stptr[subs->stlen] = save;
+		str_restore(subs, save);
 	}
 
 	return val;

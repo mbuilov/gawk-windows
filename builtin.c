@@ -1981,8 +1981,7 @@ do_strftime(int nargs)
 			DEREF(t1);
 			return make_string("", 0);
 		}
-		save = format[formatlen];
-		t1->stptr[formatlen] = '\0';
+		str_terminate(t1, save);
 	}
 
 	if (do_gmt)
@@ -2021,7 +2020,7 @@ do_strftime(int nargs)
 		efree(bufp);
 done:
 	if (t1) {
-		t1->stptr[formatlen] = save;
+		str_restore(t1, save);
 		DEREF(t1);
 	}
 	return ret;
@@ -3751,8 +3750,8 @@ do_dcgettext(int nargs)
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	int lc_cat;
 	char *domain;
-	char save, save1;
-	bool saved_end = false;
+	char save1, save2;
+	size_t reslen;
 
 	if (nargs == 3) {	/* third argument */
 		tmp = POP_STRING();
@@ -3764,9 +3763,7 @@ do_dcgettext(int nargs)
 	if (nargs >= 2) {  /* second argument */
 		t2 = POP_STRING();
 		domain = t2->stptr;
-		save = domain[t2->stlen];
-		domain[t2->stlen] = '\0';
-		saved_end = true;
+		str_terminate(t2, save2);
 	} else
 		domain = TEXTDOMAIN;
 #else
@@ -3782,21 +3779,22 @@ do_dcgettext(int nargs)
 
 	t1 = POP_STRING();	/* first argument */
 	string = t1->stptr;
-	save1 = string[t1->stlen];
-	string[t1->stlen] = '\0';
 
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
+	str_terminate(t1, save1);
 	the_result = dcgettext(domain, string, lc_cat);
-	string[t1->stlen] = save1;
-	if (saved_end)
-		domain[t2->stlen] = save;
-	if (t2 != NULL)
+	str_restore(t1, save1);
+	if (t2 != NULL) {
+		str_restore(t2, save2);
 		DEREF(t2);
+	}
+	reslen = strlen(the_result);
 #else
 	the_result = string;
+	reslen = t1->stlen;
 #endif
 	DEREF(t1);
-	return make_string(the_result, strlen(the_result));
+	return make_string(the_result, reslen);
 }
 
 
@@ -3855,14 +3853,12 @@ do_dcngettext(int nargs)
 
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 
-	save1 = string1[t1->stlen];
-	string1[t1->stlen] = '\0';
-	save2 = string2[t2->stlen];
-	string2[t2->stlen] = '\0';
+	str_terminate(t1, save1);
+	str_terminate(t2, save2);
 	the_result = dcngettext(domain, string1, string2, number, lc_cat);
 	reslen = strlen(the_result);
-	string1[t1->stlen] = save1;
-	string2[t2->stlen] = save2;
+	str_restore(t1, save1);
+	str_restore(t2, save2);
 	if (saved_end)
 		domain[t3->stlen] = save;
 	if (t3 != NULL)
@@ -3917,13 +3913,12 @@ do_bindtextdomain(int nargs)
 	t1 = POP_STRING();
 	if (t1->stlen > 0) {
 		directory = (const char *) t1->stptr;
-		save1 = t1->stptr[t1->stlen];
-		t1->stptr[t1->stlen] = '\0';
+		str_terminate(t1, save1);
 	}
 
 	the_result = bindtextdomain(domain, directory);
 	if (directory)
-		t1->stptr[t1->stlen] = save1;
+		str_restore(t1, save1);
 
 	DEREF(t1);
 	if (t2 != NULL) {
