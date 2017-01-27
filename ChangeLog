@@ -1,5 +1,9 @@
 2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* str_array.c (env_remove): Terminate string before calling unsetenv.
+
+2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* node.c (is_hex): Add a new argument pointing to the end of the string
 	so we can check for string overrun.
 	(r_force_number): Pass string end to is_hex.
