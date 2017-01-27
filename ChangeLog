@@ -1,5 +1,14 @@
 2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* builtin.c (do_dcgettext): First argument also needs protection
+	from string overrun.
+	(do_dcngettext): Need to terminate string1 and string2 also,
+	and replace strlen(the_result), which could overrun.
+	(do_bindtextdomain): Terminate both string args, and eliminate
+	saved_end boolean which is redundant with (t2 != NULL).
+
+2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* interpret.h (Op_arrayfor_init): Protect against string overrun
 	on sorting method.
 	(Op_indirect_func_call): Terminate function name.

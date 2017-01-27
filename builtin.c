@@ -3751,7 +3751,7 @@ do_dcgettext(int nargs)
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	int lc_cat;
 	char *domain;
-	char save;
+	char save, save1;
 	bool saved_end = false;
 
 	if (nargs == 3) {	/* third argument */
@@ -3782,9 +3782,12 @@ do_dcgettext(int nargs)
 
 	t1 = POP_STRING();	/* first argument */
 	string = t1->stptr;
+	save1 = string[t1->stlen];
+	string[t1->stlen] = '\0';
 
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	the_result = dcgettext(domain, string, lc_cat);
+	string[t1->stlen] = save1;
 	if (saved_end)
 		domain[t2->stlen] = save;
 	if (t2 != NULL)
@@ -3805,11 +3808,12 @@ do_dcngettext(int nargs)
 	unsigned long number;
 	AWKNUM d;
 	char *the_result;
+	size_t reslen;
 
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	int lc_cat;
 	char *domain;
-	char save;
+	char save, save1, save2;
 	bool saved_end = false;
 
 	if (nargs == 5) {	/* fifth argument */
@@ -3851,17 +3855,31 @@ do_dcngettext(int nargs)
 
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 
+	save1 = string1[t1->stlen];
+	string1[t1->stlen] = '\0';
+	save2 = string2[t2->stlen];
+	string2[t2->stlen] = '\0';
 	the_result = dcngettext(domain, string1, string2, number, lc_cat);
+	reslen = strlen(the_result);
+	string1[t1->stlen] = save1;
+	string2[t2->stlen] = save2;
 	if (saved_end)
 		domain[t3->stlen] = save;
 	if (t3 != NULL)
 		DEREF(t3);
 #else
-	the_result = (number == 1 ? string1 : string2);
+	if (number == 1) {
+		the_result = string1;
+		reslen = t1->stlen;
+	}
+	else {
+		the_result = string2;
+		reslen = t2->stlen;
+	}
 #endif
 	DEREF(t1);
 	DEREF(t2);
-	return make_string(the_result, strlen(the_result));
+	return make_string(the_result, reslen);
 }
 
 /* do_bindtextdomain --- set the directory for a text domain */
@@ -3886,29 +3904,32 @@ do_bindtextdomain(int nargs)
 	/* set defaults */
 	directory = NULL;
 	domain = TEXTDOMAIN;
-	char save;
-	bool saved_end = false;
+	char save, save1;
 
 	if (nargs == 2) {	/* second argument */
 		t2 = POP_STRING();
 		domain = (const char *) t2->stptr;
 		save = t2->stptr[t2->stlen];
 		t2->stptr[t2->stlen] = '\0';
-		saved_end = true;
 	}
 
 	/* first argument */
 	t1 = POP_STRING();
-	if (t1->stlen > 0)
+	if (t1->stlen > 0) {
 		directory = (const char *) t1->stptr;
+		save1 = t1->stptr[t1->stlen];
+		t1->stptr[t1->stlen] = '\0';
+	}
 
 	the_result = bindtextdomain(domain, directory);
+	if (directory)
+		t1->stptr[t1->stlen] = save1;
 
 	DEREF(t1);
-	if (saved_end)
+	if (t2 != NULL) {
 		t2->stptr[t2->stlen] = save;
-	if (t2 != NULL)
 		DEREF(t2);
+	}
 
 	return make_string(the_result, strlen(the_result));
 }
