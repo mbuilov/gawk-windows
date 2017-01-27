@@ -1,3 +1,21 @@
+2017-01-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* interpret.h [UNFIELD]: Fix condition for assignment from
+	value with valref == 1. Fixes problems introduced at gawk 4.1.2.
+
+2017-01-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* interpret.h: Update copyright year.
+	* debug.c (do_run): Rework error message to ease translation.
+	Thanks to Rafael Fontenelle <rafaelff@gnome.org> and to
+	Eli Zaretskii <eliz@gnu.org>.
+
+2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (enum block_id): Remove BLOCK_INVALID, since it serves no
+	useful purpose and seems to slow things down a bit.
+	* node.c (nextfree): Remove first invalid entry.
+
 2017-01-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* awk.h (BLOCK): Remove typedef. BLOCK was used for 2 different
