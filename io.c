@@ -3973,7 +3973,7 @@ inetfile(const char *str, size_t len, struct inet_socket_info *isi)
 	struct inet_socket_info buf;
 
 	/* syntax: /inet/protocol/localport/hostname/remoteport */
-	if (len < 5 || strncmp(cp, "/inet", 5) != 0)
+	if (len < 5 || memcmp(cp, "/inet", 5) != 0)
 		/* quick exit */
 		return false;
 	if (! isi)
@@ -4003,9 +4003,9 @@ inetfile(const char *str, size_t len, struct inet_socket_info *isi)
 	/* which protocol? */
 	if (cpend - cp < 5)
 		return false;
-	if (strncmp(cp, "tcp/", 4) == 0)
+	if (memcmp(cp, "tcp/", 4) == 0)
 		isi->protocol = SOCK_STREAM;
-	else if (strncmp(cp, "udp/", 4) == 0)
+	else if (memcmp(cp, "udp/", 4) == 0)
 		isi->protocol = SOCK_DGRAM;
 	else
 		return false;
