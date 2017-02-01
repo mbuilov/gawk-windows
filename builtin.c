@@ -4076,12 +4076,12 @@ mbc_char_count(const char *ptr, size_t numbytes)
 
 	memset(& cur_state, 0, sizeof(cur_state));
 
-	mb_len = mbrlen(ptr, numbytes * gawk_mb_cur_max, &cur_state);
+	mb_len = mbrlen(ptr, numbytes, &cur_state);
 	if (mb_len <= 0)
 		return numbytes;	/* no valid m.b. char */
 
 	for (; numbytes > 0; numbytes--) {
-		mb_len = mbrlen(ptr, numbytes * gawk_mb_cur_max, &cur_state);
+		mb_len = mbrlen(ptr, numbytes, &cur_state);
 		if (mb_len <= 0)
 			break;
 		sum++;
