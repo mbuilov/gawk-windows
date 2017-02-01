@@ -1,3 +1,15 @@
+2017-02-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (mbc_char_count): Remove spurious multiplies by
+	gawk_mb_cur_max. Thanks to Andrew Schorr for making me look
+	at this code.
+
+	Unrelated:
+
+	* awkgram.y (make_profile_number): Renamed to ...
+	(set_profile_next): New function. All calls adjusted. Also improved
+	use at MPFR number case.
+
 2017-01-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* interpret.h [UNFIELD]: Fix condition for assignment from
