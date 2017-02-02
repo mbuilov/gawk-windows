@@ -8713,7 +8713,8 @@ set_profile_text(NODE *n, const char *str, size_t len)
 {
 	if (do_pretty_print) {
 		// extra byte in case need to add minus sign in negate_num
-		n->stptr = estrdup(str, len + 1);
+		// and another one for the \0 at the end
+		n->stptr = estrdup(str, len + 2);
 		n->stptr[len] = '\0';
 		n->stlen = len;
 		// Set STRCUR and n->stfmt for use when profiling
