@@ -8712,9 +8712,10 @@ static NODE *
 set_profile_text(NODE *n, const char *str, size_t len)
 {
 	if (do_pretty_print) {
-		// extra byte in case we need to add minus sign in negate_num
-		// note that estrdup adds another byte for the \0 at the end
-		n->stptr = estrdup(str, len + 1);
+		// two extra bytes: one for NUL termination, and another in
+		// case we need to add a leading minus sign in add_sign_to_num
+		emalloc(n->stptr, char *, len + 2, "set_profile_text");
+		memcpy(n->stptr, str, len);
 		n->stptr[len] = '\0';
 		n->stlen = len;
 		// Set STRCUR and n->stfmt for use when profiling
