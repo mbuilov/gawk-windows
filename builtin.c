@@ -3977,7 +3977,7 @@ NODE *
 do_typeof(int nargs)
 {
 	NODE *arg;
-	char *res = "unknown";
+	char *res = NULL;
 	bool deref = true;
 
 	arg = POP();
@@ -3989,9 +3989,6 @@ do_typeof(int nargs)
 		break;
 	case Node_val:
 		switch (fixtype(arg)->flags & (STRING|NUMBER|USER_INPUT|REGEX)) {
-		case STRING:
-			res = "string";
-			break;
 		case NUMBER:
 			res = "number";
 			break;
@@ -4001,14 +3998,20 @@ do_typeof(int nargs)
 		case REGEX:
 			res = "regexp";
 			break;
+		case STRING:
+			res = "string";
+			// fall through
 		case NUMBER|STRING:
-			if (arg == Nnull_string) {
+			if (arg == Nnull_string || (arg->flags & NULL_FIELD) != 0) {
 				res = "unassigned";
 				break;
 			}
 			/* fall through */
 		default:
-			warning(_("typeof detected invalid flags combination `%s'; please file a bug report."), flags2str(arg->flags));
+			if (res == NULL) {
+				warning(_("typeof detected invalid flags combination `%s'; please file a bug report."), flags2str(arg->flags));
+				res = "unknown";
+			}
 			break;
 		}
 		break;
