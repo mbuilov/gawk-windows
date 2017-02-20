@@ -289,22 +289,3 @@ void
 init_sockets(void)
 {
 }
-
-#ifdef __CYGWIN__
-void
-cygwin_premain0(int argc, char **argv, struct per_process *myself)
-{
-	static struct __cygwin_perfile pf[] = {
-		{ "", O_RDONLY | O_TEXT },
-		/*{ "", O_WRONLY | O_BINARY },*/
-		{ NULL, 0 }
-	};
-	cygwin_internal(CW_PERFILE, pf);
-}
-
-void
-cygwin_premain2(int argc, char **argv, struct per_process *myself)
-{
-	setmode(fileno (stdin), O_TEXT);
-}
-#endif
