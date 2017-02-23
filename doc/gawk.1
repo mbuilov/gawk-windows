@@ -3105,7 +3105,7 @@ provides the following functions for obtaining time stamps and
 formatting them.
 .PP
 .TP "\w'\fBsystime()\fR'u+1n"
-\fBmktime(\fIdatespec\fB)\fR
+\fBmktime(\fIdatespec\fR [\fB, \fIutc-flag\fR]\fB)\fR
 Turn
 .I datespec
 into a time stamp of the same form as returned by
@@ -3127,7 +3127,11 @@ The values of these numbers need not be within the ranges specified;
 for example, an hour of \-1 means 1 hour before midnight.
 The origin-zero Gregorian calendar is assumed,
 with year 0 preceding year 1 and year \-1 preceding year 0.
-The time is assumed to be in the local timezone.
+If
+.I utc-flag
+is present and is non-zero or non-null, the time is assumed to be in
+the UTC timezone; otherwise, the
+time is assumed to be in the local timezone.
 If the daylight saving flag is positive,
 the time is assumed to be daylight saving time;
 if zero, the time is assumed to be standard time;

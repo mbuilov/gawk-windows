@@ -1904,7 +1904,7 @@ do_strftime(int nargs)
 	char buf[BUFSIZ];
 	const char *format;
 	int formatlen;
-	int do_gmt;
+	bool do_gmt;
 	NODE *val = NULL;
 	NODE *sub = NULL;
 	static const time_t time_t_min = TYPE_MINIMUM(time_t);
@@ -2030,19 +2030,55 @@ do_systime(int nargs ATTRIBUTE_UNUSED)
 	return make_number((AWKNUM) lclock);
 }
 
+/* mktime_tz --- based on Linux timegm man page */
+
+static time_t
+mktime_tz(struct tm *tm, const char *tzreq)
+{
+	time_t ret;
+	char *tz = getenv("TZ");
+
+	if (tz)
+		tz = estrdup(tz, strlen(tz));
+	if (setenv("TZ", tzreq, 1) < 0) {
+		warning(_("setenv(TZ, %s) failed (%s)"), tzreq, strerror(errno));
+		return -1;
+	}
+	tzset();
+	ret = mktime(tm);
+	if (tz) {
+		if (setenv("TZ", tz, 1) < 0)
+			fatal(_("setenv(TZ, %s) restoration failed (%s)"), tz, strerror(errno));
+		free(tz);
+	} else {
+		if (unsetenv("TZ") < 0)
+			fatal(_("unsetenv(TZ) failed (%s)"), strerror(errno));
+	}
+	tzset();
+	return ret;
+}
+
 /* do_mktime --- turn a time string into a timestamp */
 
 NODE *
 do_mktime(int nargs)
 {
-	NODE *t1;
+	NODE *t1, *t2;
 	struct tm then;
 	long year;
 	int month, day, hour, minute, second, count;
 	int dst = -1; /* default is unknown */
 	time_t then_stamp;
 	char save;
+	bool do_gmt;
 
+	if (nargs == 2) {
+		t2 = POP_SCALAR();
+		do_gmt = boolval(t2);
+		DEREF(t2);
+	}
+	else
+		do_gmt = false;
 	t1 = POP_SCALAR();
 	if (do_lint && (fixtype(t1)->flags & STRING) == 0)
 		lintwarn(_("mktime: received non-string argument"));
@@ -2082,7 +2118,7 @@ do_mktime(int nargs)
 	then.tm_year = year - 1900;
 	then.tm_isdst = dst;
 
-	then_stamp = mktime(& then);
+	then_stamp = (do_gmt ? mktime_tz(& then, "UTC+0") : mktime(& then));
 	return make_number((AWKNUM) then_stamp);
 }
 

@@ -1794,13 +1794,16 @@ formatting them.
 .fi
 .in +.2i
 .ti -.2i
-\*(FCmktime(\*(FIdatespec\*(FC)\*(FR
+\*(FCmktime(\*(FIdatespec \*(FR[\*(FC, \*(FIutc-flag\*(FR]\*(FC)\*(FR
 .br
 Convert \*(FIdatespec\fP into a time
 stamp of the same form as returned by \*(FCsystime()\*(FR
 and return it.
 The \*(FIdatespec\fP is a string of the form
 \*(FC"\*(FIYYYY MM DD HH MM SS[ DST]\*(FC"\*(FR.
+If \*(FIutc-flag\*(FR
+is present and is non-zero or non-null, the result
+is in UTC, otherwise it is in local time.
 .ti -.2i
 \*(FCstrftime(\*(FR[\*(FIformat \*(FR[\*(FC, \*(FItimestamp\*(FR[\*(FC, \*(FIutc-flag\*(FR]]]\*(FC)\*(FR
 .br

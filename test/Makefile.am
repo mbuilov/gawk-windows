@@ -621,6 +621,9 @@ EXTRA_DIST = \
 	minusstr.awk \
 	minusstr.ok \
 	mixed1.ok \
+	mktime.awk \
+	mktime.in \
+	mktime.ok \
 	mmap8k.in \
 	mpfrbigint.awk \
 	mpfrbigint.ok \
@@ -1224,7 +1227,7 @@ GAWK_EXT_TESTS = \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
 	include include2 indirectbuiltin indirectcall indirectcall2 intarray \
 	lint lintexp lintindex lintint lintlength lintold lintset lintwarn \
-	mixed1 manyfiles match1 match2 match3 mbstr1 mbstr2 \
+	mixed1 mktime manyfiles match1 match2 match3 mbstr1 mbstr2 \
 	muldimposix \
 	nastyparm negtime next nondec nondec2 \
 	nonfatal1 nonfatal2 nonfatal3 \
