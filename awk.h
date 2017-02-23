@@ -1914,7 +1914,7 @@ fixtype(NODE *n)
  * non-null. Otherwise, the value is false.
  */
 
-static inline int
+static inline bool
 boolval(NODE *t)
 {
 	(void) fixtype(t);

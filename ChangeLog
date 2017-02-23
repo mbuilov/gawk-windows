@@ -1,3 +1,21 @@
+2017-02-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (boolval): Return bool instead of int.
+	* eval.c (eval_condition): Same.
+	* io.c (pty_vs_pipe): Same
+	Thanks to Andrew Schorr for pointing these out.
+
+2017-02-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* NEWS: Document that mktime now takes an optional utc-flag argument.
+	* awkgram.y (tokentab): Modify mktime entry to indicate that it may
+	accept two arguments.
+	* builtin.c (mktime_tz): New function to run mktime in an arbitrary
+	time zone. Code was copied from the Linux timegm man page.
+	(do_mktime): Add support for new optional 2nd argument utc-flag by
+	using the new mktime_tz function.
+	(do_strftime): Change do_gmt type from int to bool.
+
 2017-02-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_typeof): Handle arguments that have

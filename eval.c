@@ -1510,7 +1510,7 @@ unwind_stack(long n)
 #define pop_stack()	(void) unwind_stack(0)
 
 
-static inline int
+static inline bool
 eval_condition(NODE *t)
 {
 	if (t == node_Boolean[false])

@@ -19039,7 +19039,7 @@ Optional parameters are enclosed in square brackets ([ ]):
 
 @c @asis for docbook
 @table @asis
-@item @code{mktime(@var{datespec})}
+@item @code{mktime(@var{datespec}} [@code{, @var{utc-flag}} ]@code{)}
 @cindexgawkfunc{mktime}
 @cindex generate time values
 Turn @var{datespec} into a timestamp in the same form
@@ -19058,7 +19058,9 @@ The values of these numbers need not be within the ranges specified;
 for example, an hour of @minus{}1 means 1 hour before midnight.
 The origin-zero Gregorian calendar is assumed, with year 0 preceding
 year 1 and year @minus{}1 preceding year 0.
-The time is assumed to be in the local time zone.
+If @var{utc-flag} is present and is either nonzero or non-null, the time
+is assumed to be in the UTC time zone; otherwise, the
+time is assumed to be in the local time zone.
 If the daylight-savings flag is positive, the time is assumed to be
 daylight savings time; if zero, the time is assumed to be standard
 time; and if negative (the default), @code{mktime()} attempts to determine
