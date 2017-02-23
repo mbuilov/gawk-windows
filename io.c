@@ -275,7 +275,7 @@ static IOBUF *iop_finish(IOBUF *iop);
 static int gawk_pclose(struct redirect *rp);
 static int str2mode(const char *mode);
 static int two_way_open(const char *str, struct redirect *rp, int extfd);
-static int pty_vs_pipe(const char *command);
+static bool pty_vs_pipe(const char *command);
 static void find_input_parser(IOBUF *iop);
 static bool find_output_wrapper(awk_output_buf_t *outbuf);
 static void init_output_wrapper(awk_output_buf_t *outbuf);
@@ -3915,7 +3915,7 @@ set_FS:
  * This works by checking if PROCINFO["command", "pty"] exists and is true.
  */
 
-static int
+static bool
 pty_vs_pipe(const char *command)
 {
 #ifdef HAVE_TERMIOS_H
