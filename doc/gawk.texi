@@ -10441,10 +10441,10 @@ a system problem closing the file or process.
 In these cases, @command{gawk} sets the predefined variable
 @code{ERRNO} to a string describing the problem.
 
-In @command{gawk}, starting with version 4.2, when closing a pipe or
+In @command{gawk}, starting with @value{PVERSION} 4.2, when closing a pipe or
 coprocess (input or output), the return value is the exit status of the
 command, as described in @ref{table-close-pipe-return-values}.@footnote{Prior
-to version 4.2, the return value from closing a pipe or co-process
+to @value{PVERSION} 4.2, the return value from closing a pipe or co-process
 was the full 16-bit exit value as defined by the @code{wait()} system
 call.} Otherwise, it is the return value from the system's @code{close()}
 or @code{fclose()} C functions when closing input or output files,
@@ -10507,10 +10507,10 @@ a system problem closing the file or process.
 In these cases, @command{gawk} sets the predefined variable
 @code{ERRNO} to a string describing the problem.
 
-In @command{gawk}, starting with version 4.2, when closing a pipe or
+In @command{gawk}, starting with @value{PVERSION} 4.2, when closing a pipe or
 coprocess (input or output), the return value is the exit status of the
 command, as described in @ref{table-close-pipe-return-values}.@footnote{Prior
-to version 4.2, the return value from closing a pipe or co-process
+to @value{PVERSION} 4.2, the return value from closing a pipe or co-process
 was the full 16-bit exit value as defined by the @code{wait()} system
 call.} Otherwise, it is the return value from the system's @code{close()}
 or @code{fclose()} C functions when closing input or output files,
@@ -15183,7 +15183,7 @@ For POSIX @command{awk}, changing this array does not affect the
 environment passed on to any programs that @command{awk} may spawn via
 redirection or the @code{system()} function.
 
-However, beginning with version 4.2, if not in POSIX
+However, beginning with @value{PVERSION} 4.2, if not in POSIX
 compatibility mode, @command{gawk} does update its own environment when
 @code{ENVIRON} is changed, thus changing the environment seen by programs
 that it creates.  You should therefore be especially careful if you
@@ -19561,7 +19561,7 @@ Return the bitwise XOR of the arguments. There must be at least two.
 @end table
 
 @quotation CAUTION
-Beginning with @command{gawk} @value{VERSION} 4.2, negative
+Beginning with @command{gawk} @value{PVERSION} 4.2, negative
 operands are not allowed for any of these functions. A negative
 operand produces a fatal error.  See the sidebar
 ``Beware The Smoke and Mirrors!'' for more information as to why.
@@ -19720,7 +19720,7 @@ When using the @option{-M} option, under the hood, @command{gawk} uses
 GNU MP arbitrary precision integers which have at least 64 bits of precision.
 When not using @option{-M}, @command{gawk} stores integral values in
 regular double-precision floating point, which only maintain 53 bits of
-precision.  Furthermore, the GNU MP library treats (or least seems to treat)
+precision.  Furthermore, the GNU MP library treats (or at least seems to treat)
 the leading bit as a sign bit; thus the result with @option{-M} in this case is
 a negative number.
 
@@ -19782,7 +19782,7 @@ When using the @option{-M} option, under the hood, @command{gawk} uses
 GNU MP arbitrary precision integers which have at least 64 bits of precision.
 When not using @option{-M}, @command{gawk} stores integral values in
 regular double-precision floating point, which only maintain 53 bits of
-precision.  Furthermore, the GNU MP library treats (or least seems to treat)
+precision.  Furthermore, the GNU MP library treats (or at least seems to treat)
 the leading bit as a sign bit; thus the result with @option{-M} in this case is
 a negative number.
 
@@ -19795,7 +19795,7 @@ operations is probably a bad idea; caveat emptor!
 @node Type Functions
 @subsection Getting Type Information
 
-@command{gawk} provides two functions that lets you distinguish
+@command{gawk} provides two functions that let you distinguish
 the type of a variable.
 This is necessary for writing code
 that traverses every element of an array of arrays
@@ -28151,7 +28151,7 @@ pipe which has been closed, and it is also a fatal error to read
 from the @code{"from"} end of a two-way pipe that has been closed.
 
 You may set @code{PROCINFO["@var{command}", "NONFATAL"]} to
-make such operations become nonfatal, in which case you then need
+make such operations become nonfatal. If you do so, you then need
 to check @code{ERRNO} after each @code{print}, @code{printf},
 or @code{getline}.
 @xref{Nonfatal}, for more information.
@@ -28660,6 +28660,10 @@ version of your program.
 Because the internal representation of your program is formatted to
 recreate an @command{awk} program, profiling and pretty-printing
 automatically disable @command{gawk}'s default optimizations.
+
+Pretty printing also preserves the original format of numeric
+constants; if you used an octal or hexadecimal value in your source
+code, it will appear that way in the output.
 
 @node Advanced Features Summary
 @section Summary
@@ -32477,11 +32481,11 @@ and output from files.
 @quotation NOTE
 String values passed to an extension by @command{gawk} are always
 @sc{nul}-terminated.  Thus it is safe to pass such string values to
-standard library and system routines. However, because
-@command{gawk} allows embedded @sc{nul} characters in string data,
-you should check that @samp{strlen(@var{some_string})} matches
-the length for that string passed to the extension before using
-it as a regular C string.
+standard library and system routines. However, because @command{gawk}
+allows embedded @sc{nul} characters in string data, before using the data
+as a regular C string, you should check that the length for that string
+passed to the extension matches the return value of @code{strlen()}
+for it.
 @end quotation
 
 @item
@@ -32626,7 +32630,7 @@ as user input. Subsequent parsing by @command{gawk} then determines whether it
 looks like a number and should be treated as a strnum, or as a regular string.
 
 This is useful in cases where an extension function would like to do something
-comparable to the @code{split()} function which sets the user input attribute
+comparable to the @code{split()} function which sets the strnum attribute
 on the array elements it creates.  For example, an extension that implements
 CSV splitting would want to use this feature. This is also useful for a
 function that retrieves a data item from a database. The PostgreSQL
@@ -32825,10 +32829,10 @@ This function creates a strongly typed regexp value by allocating a copy of the 
 
 @item static inline awk_value_t *
 @itemx make_malloced_regex(const char *string, size_t length, awk_value_t *result);
-This function creates a strongly typed regexp value.
-@code{string} is the regular expression of length @code{len}.
-It expects @code{string} to be a @samp{char *}
-value pointing to data previously obtained from @code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()}.
+This function creates a strongly typed regexp value.  @code{string} is
+the regular expression of length @code{len}.  It expects @code{string}
+to be a @samp{char *} value pointing to data previously obtained from
+@code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()}.
 
 @end table
 
@@ -32886,9 +32890,8 @@ Letter case in function names is significant.
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ struct awk_ext_func *finfo);
 This is a pointer to the C function that provides the extension's
 functionality.
-The function must fill in @code{*result} with either a number
-or a string.
-@c FIXME: Change to a scalar - number, string or regex once regex api stuff is merged.
+The function must fill in @code{*result} with either a number,
+a string, or a regexp.
 @command{gawk} takes ownership of any string memory.
 As mentioned earlier, string memory @emph{must} come from one of
 @code{gawk_malloc()}, @code{gawk_calloc()}, or @code{gawk_realloc()}.
@@ -33514,9 +33517,7 @@ value type, as appropriate.  This behavior is summarized in
 
 @float Table,table-value-types-returned
 @caption{API value types returned}
-@c FIXME: This needs doing.
 @docbook
-<!-- FIXME: Column widths need adjusting -->
 <informaltable>
 <tgroup cols="8">
   <colspec colname="c1"/>
@@ -34140,7 +34141,7 @@ For the array represented by @code{a_cookie}, create an @code{awk_flat_array_t}
 structure and fill it in with @code{AWK_STRING} indices and
 @code{AWK_UNDEFINED} values.
 This is superseded by @code{flatten_array_typed()}.
-It is provided as a macro, and remains convenience and for source code
+It is provided as a macro, and remains for convenience and for source code
 compatibility with the previous version of the API.
 
 @item awk_bool_t release_flattened_array(awk_array_t a_cookie,
@@ -34563,7 +34564,7 @@ The following function allows extensions to access and manipulate redirections.
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ int fd,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const awk_input_buf_t **ibufp,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const awk_output_buf_t **obufp);
-Look up a file in @command{gawk}'s internal redirection table.
+Look up file @code{name} in @command{gawk}'s internal redirection table.
 If @code{name} is @code{NULL} or @code{name_len} is zero, return
 data for the currently open input file corresponding to @code{FILENAME}.
 (This does not access the @code{filetype} argument, so that may be undefined).  
@@ -34590,8 +34591,8 @@ A pipe opened for input.
 A two-way coprocess.
 @end table
 
-On error, return a @code{false} value.  Otherwise, return
-@code{true}, and return additional information about the redirection
+On error, return an @code{awk_false} value.  Otherwise, return
+@code{awk_true}, and return additional information about the redirection
 in the @code{ibufp} and @code{obufp} pointers.  For input
 redirections, the @code{*ibufp} value should be non-@code{NULL},
 and @code{*obufp} should be @code{NULL}.  For output redirections,
@@ -34601,9 +34602,9 @@ be non-@code{NULL}.
 
 In the usual case, the extension is interested in @code{(*ibufp)->fd}
 and/or @code{fileno((*obufp)->fp)}.  If the file is not already
-open, and the @code{fd} argument is non-negative, @command{gawk}
+open, and the @code{fd} argument is nonnegative, @command{gawk}
 will use that file descriptor instead of opening the file in the
-usual way.  If @code{fd} is non-negative, but the file exists already,
+usual way.  If @code{fd} is nonnegative, but the file exists already,
 @command{gawk} ignores @code{fd} and returns the existing file.  It is
 the caller's responsibility to notice that neither the @code{fd} in
 the returned @code{awk_input_buf_t} nor the @code{fd} in the returned
@@ -37063,6 +37064,9 @@ for @command{gawk} @value{PVERSION} 4.2:
 @itemize @value{MINUS}
 @item
 MirBSD
+
+@item
+GNU/Linux on Alpha
 @end itemize
 
 @end itemize
@@ -38584,9 +38588,9 @@ to have been set up previously as a user who is allowed to run the
 @appendixsubsec Shell Startup Files
 
 The distribution contains shell startup files @file{gawk.sh} and
-@file{gawk.csh} containing functions to aid in manipulating
+@file{gawk.csh}, containing functions to aid in manipulating
 the @env{AWKPATH} and @env{AWKLIBPATH} environment variables.
-On a Fedora system, these files should be installed in @file{/etc/profile.d};
+On a Fedora GNU/Linux system, these files should be installed in @file{/etc/profile.d};
 on other platforms, the appropriate location may be different.
 
 @table @command
@@ -43201,6 +43205,7 @@ Consistency issues:
 	Use MS-DOS not MS DOS
 	Use an empty set of parentheses after built-in and awk function names.
 	Use "multiFOO" without a hyphen.
+	Use "time zone" as two words, not "timezone".
 
 Date: Wed, 13 Apr 94 15:20:52 -0400
 From: rms@gnu.org (Richard Stallman)
