@@ -604,7 +604,7 @@ inrec(IOBUF *iop, int *errcode)
 	} else {
 		INCREMENT_REC(NR);
 		INCREMENT_REC(FNR);
-		set_record(begin, cnt);
+		set_record(begin, cnt, iop->public.field_width);
 		if (*errcode > 0)
 			retval = false;
 	}
@@ -2668,7 +2668,7 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 	}
 
 	if (lhs == NULL)	/* no optional var. */
-		set_record(s, cnt);
+		set_record(s, cnt, iop->public.field_width);
 	else {			/* assignment to variable */
 		unref(*lhs);
 		*lhs = make_string(s, cnt);
@@ -2709,7 +2709,7 @@ do_getline(int into_variable, IOBUF *iop)
 	INCREMENT_REC(FNR);
 
 	if (! into_variable)	/* no optional var. */
-		set_record(s, cnt);
+		set_record(s, cnt, iop->public.field_width);
 	else {			/* assignment to variable */
 		NODE **lhs;
 		lhs = POP_ADDRESS();

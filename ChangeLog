@@ -1,3 +1,37 @@
+2017-03-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (set_record): Add a new argument containing a field-width
+	array returned by an API parser.
+	(field_sep_type): Add new enum value Using_API.
+	(current_field_sep_str): Declare new function.
+	* field.c (save_parse_field): New static variable to save the
+	parse_field value in cases where it's overridden by API parsing.
+	(api_fw): New static variable to hold pointer to API parser fieldwidth
+	array.
+	(set_record): Add new field-width array argument. If present, API
+	parsing will override the default parsing mechanism.
+	(api_parse_field): New field parser using field widths supplied by the
+	API. This is very similar to the existing fw_parse_field function.
+	(get_field): Fix typo in comment.
+	(set_parser): New function to set default parser and check whether
+	there's an API parser override in effect. Update PROCINFO["FS"] if
+	something has changed.
+	(set_FIELDWIDTHS): Use set_parser and stop updating PROCINFO["FS"].
+	(set_FS): Ditto.
+	(set_FPAT): Ditto.
+	(current_field_sep): Return Using_API when using the API field parsing
+	widths.
+	(current_field_sep_str): New function to return the proper string
+	value for PROCINFO["FS"].
+	* gawkapi.h (awk_input_buf_t): Add field_width array to enable the
+	parser get_record function to supply field widths to override the
+	default gawk field parsing mechanism.
+	* io.c (inrec): Pass iop->public.field_width to set_record as the
+	3rd argument to enable API field parsing overrides.
+	(do_getline_redir, do_getline): Ditto.
+	* main.c (load_procinfo): Use new current_field_sep_str function
+	instead of switching on the return value from current_field_sep.
+
 2017-02-23         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h (boolval): Return bool instead of int.

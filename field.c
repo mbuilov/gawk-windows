@@ -40,6 +40,8 @@ typedef void (* Setfunc)(long, char *, long, NODE *);
 
 static long (*parse_field)(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
+static long (*save_parse_field)(long, char **, int, NODE *,
+			     Regexp *, Setfunc, NODE *, NODE *, bool);
 static long re_parse_field(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
 static long def_parse_field(long, char **, int, NODE *,
@@ -50,6 +52,9 @@ static long sc_parse_field(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
 static long fw_parse_field(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
+static long api_parse_field(long, char **, int, NODE *,
+			     Regexp *, Setfunc, NODE *, NODE *, bool);
+static const int *api_fw = NULL;
 static long fpat_parse_field(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
 static void set_element(long num, char * str, long len, NODE *arr);
@@ -252,7 +257,7 @@ rebuild_record()
  * but better correct than fast.
  */
 void
-set_record(const char *buf, int cnt)
+set_record(const char *buf, int cnt, const int *fw)
 {
 	NODE *n;
 	static char *databuf;
@@ -306,6 +311,20 @@ set_record(const char *buf, int cnt)
 	n->stfmt = STFMT_UNUSED;
 	n->flags = (STRING|STRCUR|USER_INPUT);	/* do not set MALLOC */
 	fields_arr[0] = n;
+	if (fw != api_fw) {
+		if ((api_fw = fw) != NULL) {
+			if (parse_field != api_parse_field) {
+				parse_field = api_parse_field;
+				update_PROCINFO_str("FS", "API");
+			}
+		}
+		else {
+			if (parse_field != save_parse_field) {
+				parse_field = save_parse_field;
+				update_PROCINFO_str("FS", current_field_sep_str());
+			}
+		}
+	}
 
 #undef INITIAL_SIZE
 #undef MAX_SIZE
@@ -760,6 +779,49 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 	return nf;
 }
 
+/*
+ * api_parse_field --- field parsing using field widths returned by API parser.
+ *
+ * This is called from get_field() via (*parse_field)().
+ */
+static long
+api_parse_field(long up_to,	/* parse only up to this field number */
+	char **buf,	/* on input: string to parse; on output: point to start next */
+	int len,
+	NODE *fs ATTRIBUTE_UNUSED,
+	Regexp *rp ATTRIBUTE_UNUSED,
+	Setfunc set,	/* routine to set the value of the parsed field */
+	NODE *n,
+	NODE *dummy ATTRIBUTE_UNUSED, /* sep_arr not needed here: hence dummy */
+	bool in_middle ATTRIBUTE_UNUSED)
+{
+	char *scan = *buf;
+	long nf = parse_high_water;
+	char *end = scan + len;
+	int skiplen;
+
+	if (up_to == UNLIMITED)
+		nf = 0;
+	if (len == 0)
+		return nf;
+	while (nf < up_to) {
+		if (((skiplen = api_fw[2*nf]) < 0) ||
+		    ((len = api_fw[2*nf+1]) < 0)) {
+		    	*buf = end;
+			return nf;
+		}
+		if (skiplen > end - scan)
+			skiplen = end - scan;
+		scan += skiplen;
+		if (len > end - scan)
+			len = end - scan;
+		(*set)(++nf, scan, (long) len, n);
+		scan += len;
+	}
+	*buf = scan;
+	return nf;
+}
+
 /* invalidate_field0 --- $0 needs reconstruction */
 
 void
@@ -845,7 +907,7 @@ get_field(long requested, Func_ptr *assign)
 		if (parse_extent == fields_arr[0]->stptr + fields_arr[0]->stlen)
 			NF = parse_high_water;
 		else if (parse_field == fpat_parse_field) {
-			/* FPAT parsing is wierd, isolate the special cases */
+			/* FPAT parsing is weird, isolate the special cases */
 			char *rec_start = fields_arr[0]->stptr;
 			char *rec_end = fields_arr[0]->stptr + fields_arr[0]->stlen;
 
@@ -1057,6 +1119,18 @@ do_patsplit(int nargs)
 	return tmp;
 }
 
+/* set_parser: update the current (non-API) parser */
+
+static void
+set_parser(long (*func)(long, char **, int, NODE *, Regexp *, Setfunc, NODE *, NODE *, bool))
+{
+	save_parse_field = func;
+	if (parse_field != api_parse_field && parse_field != func) {
+		parse_field = func;
+	        update_PROCINFO_str("FS", current_field_sep_str());
+	}
+}
+
 /* set_FIELDWIDTHS --- handle an assignment to FIELDWIDTHS */
 
 void
@@ -1084,7 +1158,7 @@ set_FIELDWIDTHS()
 	if (fields_arr != NULL)
 		(void) get_field(UNLIMITED - 1, 0);
 
-	parse_field = fw_parse_field;
+	set_parser(fw_parse_field);
 	tmp = force_string(FIELDWIDTHS_node->var_value);
 	scan = tmp->stptr;
 
@@ -1134,7 +1208,6 @@ set_FIELDWIDTHS()
 	}
 	FIELDWIDTHS[i+1] = -1;
 
-	update_PROCINFO_str("FS", "FIELDWIDTHS");
 	if (fatal_error)
 		fatal(_("invalid FIELDWIDTHS value, near `%s'"),
 			      scan);
@@ -1205,7 +1278,7 @@ choose_fs_function:
 	if (! do_traditional && fs->stlen == 0) {
 		static bool warned = false;
 
-		parse_field = null_parse_field;
+		set_parser(null_parse_field);
 
 		if (do_lint && ! warned) {
 			warned = true;
@@ -1214,10 +1287,10 @@ choose_fs_function:
 	} else if (fs->stlen > 1) {
 		if (do_lint_old)
 			warning(_("old awk does not support regexps as value of `FS'"));
-		parse_field = re_parse_field;
+		set_parser(re_parse_field);
 	} else if (RS_is_null) {
 		/* we know that fs->stlen <= 1 */
-		parse_field = sc_parse_field;
+		set_parser(sc_parse_field);
 		if (fs->stlen == 1) {
 			if (fs->stptr[0] == ' ') {
 				default_FS = true;
@@ -1233,7 +1306,7 @@ choose_fs_function:
 			}
 		}
 	} else {
-		parse_field = def_parse_field;
+		set_parser(def_parse_field);
 
 		if (fs->stlen == 1) {
 			if (fs->stptr[0] == ' ')
@@ -1242,7 +1315,7 @@ choose_fs_function:
 				/* same special case */
 				strcpy(buf, "[\\\\]");
 			else
-				parse_field = sc_parse_field;
+				set_parser(sc_parse_field);
 		}
 	}
 	if (remake_re) {
@@ -1254,7 +1327,7 @@ choose_fs_function:
 			FS_re_yes_case = make_regexp(buf, strlen(buf), false, true, true);
 			FS_re_no_case = make_regexp(buf, strlen(buf), true, true, true);
 			FS_regexp = (IGNORECASE ? FS_re_no_case : FS_re_yes_case);
-			parse_field = re_parse_field;
+			set_parser(re_parse_field);
 		} else if (parse_field == re_parse_field) {
 			FS_re_yes_case = make_regexp(fs->stptr, fs->stlen, false, true, true);
 			FS_re_no_case = make_regexp(fs->stptr, fs->stlen, true, true, true);
@@ -1270,8 +1343,6 @@ choose_fs_function:
 	 */
 	if (fs->stlen == 1 && parse_field == re_parse_field)
 		FS_regexp = FS_re_yes_case;
-
-	update_PROCINFO_str("FS", "FS");
 }
 
 /* current_field_sep --- return what field separator is */
@@ -1283,8 +1354,25 @@ current_field_sep()
 		return Using_FIELDWIDTHS;
 	else if (parse_field == fpat_parse_field)
 		return Using_FPAT;
+	else if (parse_field == api_parse_field)
+		return Using_API;
 	else
 		return Using_FS;
+}
+
+/* current_field_sep --- return what field separator is */
+
+const char *
+current_field_sep_str()
+{
+	if (parse_field == fw_parse_field)
+		return "FIELDWIDTHS";
+	else if (parse_field == fpat_parse_field)
+		return "FPAT";
+	else if (parse_field == api_parse_field)
+		return "API";
+	else
+		return "FS";
 }
 
 /* update_PROCINFO_str --- update PROCINFO[sub] with string value */
@@ -1373,7 +1461,7 @@ set_FPAT()
 
 set_fpat_function:
 	fpat = force_string(FPAT_node->var_value);
-	parse_field = fpat_parse_field;
+	set_parser(fpat_parse_field);
 
 	if (remake_re) {
 		refree(FPAT_re_yes_case);
@@ -1384,8 +1472,6 @@ set_fpat_function:
 		FPAT_re_no_case = make_regexp(fpat->stptr, fpat->stlen, true, true, true);
 		FPAT_regexp = (IGNORECASE ? FPAT_re_no_case : FPAT_re_yes_case);
 	}
-
-	update_PROCINFO_str("FS", "FPAT");
 }
 
 /*

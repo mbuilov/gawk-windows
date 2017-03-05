@@ -151,6 +151,18 @@ typedef struct awk_input {
 			char **rt_start, size_t *rt_len);
 
 	/*
+	 * If this pointer is non-NULL, then this record should be parsed
+	 * using the supplied field widths instead of the default gawk
+	 * field parsing mechanism. The field_width array should have
+	 * at least 2*NF+1 elements, and the value of field_width[2*NF]
+	 * must be negative. The first entry field_width[0] should contain
+	 * the number of bytes to skip before $1; field_width[1] contains
+	 * the number of bytes in $1. Note that these values are specified
+	 * in bytes, not (potentially multi-byte) characters!
+	 */
+	const int *field_width;
+
+	/*
 	 * No argument prototype on read_func to allow for older systems
 	 * whose headers are not up to date.
 	 */
