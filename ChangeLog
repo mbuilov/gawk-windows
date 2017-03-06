@@ -1,3 +1,17 @@
+2017-03-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (awk_input_buf_t): Remove field_width array and instead
+	add it as a 6th argument to the get_record function. This should
+	not break existing code, since it's fine to ignore the additional
+	argument. Document the behavior of the field_width argument.
+	* io.c (inrec): Pass pointer to field_width array to get_a_record,
+	and then hand it off to set_record.
+	(do_getline_redir): If not reading into a variable, pass pointer to
+	field_width array to get_a_record and then hand it off to set_record.
+	(do_getline): Ditto.
+	(get_a_record): Add a 4th field_width argument to pass through to
+	the API get_record method.
+
 2017-03-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* awk.h (set_record): Add a new argument containing a field-width
