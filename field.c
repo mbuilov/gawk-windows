@@ -40,7 +40,12 @@ typedef void (* Setfunc)(long, char *, long, NODE *);
 
 static long (*parse_field)(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
-static long (*save_parse_field)(long, char **, int, NODE *,
+/*
+ * N.B. The normal_parse_field function pointer contains the parse_field value
+ * that should be used except when API field parsing is overriding the default
+ * field parsing mechanism.
+ */
+static long (*normal_parse_field)(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
 static long re_parse_field(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
@@ -319,8 +324,8 @@ set_record(const char *buf, int cnt, const int *fw)
 			}
 		}
 		else {
-			if (parse_field != save_parse_field) {
-				parse_field = save_parse_field;
+			if (parse_field != normal_parse_field) {
+				parse_field = normal_parse_field;
 				update_PROCINFO_str("FS", current_field_sep_str());
 			}
 		}
@@ -1124,7 +1129,7 @@ do_patsplit(int nargs)
 static void
 set_parser(long (*func)(long, char **, int, NODE *, Regexp *, Setfunc, NODE *, NODE *, bool))
 {
-	save_parse_field = func;
+	normal_parse_field = func;
 	if (parse_field != api_parse_field && parse_field != func) {
 		parse_field = func;
 	        update_PROCINFO_str("FS", current_field_sep_str());

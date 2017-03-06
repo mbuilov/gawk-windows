@@ -1,5 +1,12 @@
 2017-03-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* field.c (normal_parse_field): Renamed from save_parse_field to reflect
+	better its purpose. Added a comment to explain more clearly what's
+	going on.
+	(set_record, set_parser): Rename save_parse_field to normal_parse_field.
+
+2017-03-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* gawkapi.h (awk_input_buf_t): Remove field_width array and instead
 	add it as a 6th argument to the get_record function. This should
 	not break existing code, since it's fine to ignore the additional
