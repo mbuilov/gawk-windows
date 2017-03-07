@@ -157,7 +157,7 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(pkgextensiondir)" \
 	"$(DESTDIR)$(man3dir)"
-LTLIBRARIES = $(pkgextension_LTLIBRARIES)
+LTLIBRARIES = $(noinst_LTLIBRARIES) $(pkgextension_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 filefuncs_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_filefuncs_la_OBJECTS = filefuncs.lo stack.lo gawkfts.lo
@@ -517,8 +517,10 @@ pkgextension_LTLIBRARIES = \
 	revoutput.la	\
 	revtwoway.la	\
 	rwarray.la	\
-	testext.la	\
 	time.la
+
+noinst_LTLIBRARIES = \
+	testext.la
 
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 # on Cygwin, gettext requires that we link with -lintl 
@@ -558,8 +560,12 @@ rwarray_la_LIBADD = $(MY_LIBS)
 time_la_SOURCES = time.c
 time_la_LDFLAGS = $(MY_MODULE_FLAGS)
 time_la_LIBADD = $(MY_LIBS)
+
+# N.B. Becaues we are not installing testext, we must specify -rpath in
+# LDFLAGS to get automake to build a shared library, since it needs
+# an installation path.
 testext_la_SOURCES = testext.c
-testext_la_LDFLAGS = $(MY_MODULE_FLAGS)
+testext_la_LDFLAGS = $(MY_MODULE_FLAGS) -rpath /foo
 testext_la_LIBADD = $(MY_LIBS)
 EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
@@ -632,6 +638,17 @@ $(srcdir)/configh.in:  $(am__configure_deps)
 distclean-hdr:
 	-rm -f config.h stamp-h1
 
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+	@list='$(noinst_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	test -z "$$locs" || { \
+	  echo rm -f $${locs}; \
+	  rm -f $${locs}; \
+	}
+
 install-pkgextensionLTLIBRARIES: $(pkgextension_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	@list='$(pkgextension_LTLIBRARIES)'; test -n "$(pkgextensiondir)" || list=; \
@@ -698,7 +715,7 @@ rwarray.la: $(rwarray_la_OBJECTS) $(rwarray_la_DEPENDENCIES) $(EXTRA_rwarray_la_
 	$(AM_V_CCLD)$(rwarray_la_LINK) -rpath $(pkgextensiondir) $(rwarray_la_OBJECTS) $(rwarray_la_LIBADD) $(LIBS)
 
 testext.la: $(testext_la_OBJECTS) $(testext_la_DEPENDENCIES) $(EXTRA_testext_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(testext_la_LINK) -rpath $(pkgextensiondir) $(testext_la_OBJECTS) $(testext_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(testext_la_LINK)  $(testext_la_OBJECTS) $(testext_la_LIBADD) $(LIBS)
 
 time.la: $(time_la_OBJECTS) $(time_la_DEPENDENCIES) $(EXTRA_time_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(time_la_LINK) -rpath $(pkgextensiondir) $(time_la_OBJECTS) $(time_la_LIBADD) $(LIBS)
@@ -1131,8 +1148,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-recursive
 
-clean-am: clean-generic clean-libtool clean-pkgextensionLTLIBRARIES \
-	mostlyclean-am
+clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
+	clean-pkgextensionLTLIBRARIES mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -1211,13 +1228,14 @@ uninstall-man: uninstall-man3
 
 .PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am \
 	am--refresh check check-am clean clean-cscope clean-generic \
-	clean-libtool clean-pkgextensionLTLIBRARIES cscope \
-	cscopelist-am ctags ctags-am dist dist-all dist-bzip2 \
-	dist-gzip dist-lzip dist-shar dist-tarZ dist-xz dist-zip \
-	distcheck distclean distclean-compile distclean-generic \
-	distclean-hdr distclean-libtool distclean-tags distcleancheck \
-	distdir distuninstallcheck dvi dvi-am html html-am info \
-	info-am install install-am install-data install-data-am \
+	clean-libtool clean-noinstLTLIBRARIES \
+	clean-pkgextensionLTLIBRARIES cscope cscopelist-am ctags \
+	ctags-am dist dist-all dist-bzip2 dist-gzip dist-lzip \
+	dist-shar dist-tarZ dist-xz dist-zip distcheck distclean \
+	distclean-compile distclean-generic distclean-hdr \
+	distclean-libtool distclean-tags distcleancheck distdir \
+	distuninstallcheck dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am \
 	install-data-hook install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
 	install-info-am install-man install-man3 install-pdf \
