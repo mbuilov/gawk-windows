@@ -1,3 +1,15 @@
+2017-03-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (pkgextension_LTLIBRARIES): Remove testext.la, since it
+	does not make sense to install this library.
+	(noinst_LTLIBRARIES): New variable containing list of libraries to
+	build for testing purposes only. These libraries will not be installed.
+	Initially, it contains only testext.la.
+	(testext_la_LDFLAGS): Add "-rpath /foo" to convince automake/libtool
+	to build a shared version of this library. Since it is not being
+	installed, automake cannot use the final destination directory to
+	determine -rpath by itself. The value doesn't matter.
+
 2017-01-21  Eli Zaretskii  <eliz@gnu.org>
 
 	* testext.c (getuid) [__MINGW32__]: New function, mirrors what
