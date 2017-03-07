@@ -45,8 +45,10 @@ pkgextension_LTLIBRARIES =	\
 	revoutput.la	\
 	revtwoway.la	\
 	rwarray.la	\
-	testext.la	\
 	time.la
+
+noinst_LTLIBRARIES =	\
+	testext.la
 
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 # on Cygwin, gettext requires that we link with -lintl 
@@ -97,8 +99,11 @@ time_la_SOURCES       = time.c
 time_la_LDFLAGS       = $(MY_MODULE_FLAGS)
 time_la_LIBADD        = $(MY_LIBS)
 
+# N.B. Becaues we are not installing testext, we must specify -rpath in
+# LDFLAGS to get automake to build a shared library, since it needs
+# an installation path.
 testext_la_SOURCES    = testext.c
-testext_la_LDFLAGS    = $(MY_MODULE_FLAGS)
+testext_la_LDFLAGS    = $(MY_MODULE_FLAGS) -rpath /foo
 testext_la_LIBADD     = $(MY_LIBS)
 
 install-data-hook:
