@@ -526,11 +526,11 @@ pkgextension_LTLIBRARIES = \
 	revoutput.la	\
 	revtwoway.la	\
 	rwarray.la	\
+	testext.la	\
 	time.la
 
 noinst_LTLIBRARIES = \
-	readdir_test.la	\
-	testext.la
+	readdir_test.la
 
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 # on Cygwin, gettext requires that we link with -lintl 
@@ -570,13 +570,13 @@ rwarray_la_LIBADD = $(MY_LIBS)
 time_la_SOURCES = time.c
 time_la_LDFLAGS = $(MY_MODULE_FLAGS)
 time_la_LIBADD = $(MY_LIBS)
+testext_la_SOURCES = testext.c
+testext_la_LDFLAGS = $(MY_MODULE_FLAGS)
+testext_la_LIBADD = $(MY_LIBS)
 
-# N.B. Because we are not installing testext, we must specify -rpath in
+# N.B. Because we are not installing readdir_test, we must specify -rpath in
 # LDFLAGS to get automake to build a shared library, since it needs
 # an installation path.
-testext_la_SOURCES = testext.c
-testext_la_LDFLAGS = $(MY_MODULE_FLAGS) -rpath /foo
-testext_la_LIBADD = $(MY_LIBS)
 readdir_test_la_SOURCES = readdir_test.c
 readdir_test_la_LDFLAGS = $(MY_MODULE_FLAGS) -rpath /foo
 readdir_test_la_LIBADD = $(MY_LIBS)
@@ -731,7 +731,7 @@ rwarray.la: $(rwarray_la_OBJECTS) $(rwarray_la_DEPENDENCIES) $(EXTRA_rwarray_la_
 	$(AM_V_CCLD)$(rwarray_la_LINK) -rpath $(pkgextensiondir) $(rwarray_la_OBJECTS) $(rwarray_la_LIBADD) $(LIBS)
 
 testext.la: $(testext_la_OBJECTS) $(testext_la_DEPENDENCIES) $(EXTRA_testext_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(testext_la_LINK)  $(testext_la_OBJECTS) $(testext_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(testext_la_LINK) -rpath $(pkgextensiondir) $(testext_la_OBJECTS) $(testext_la_LIBADD) $(LIBS)
 
 time.la: $(time_la_OBJECTS) $(time_la_DEPENDENCIES) $(EXTRA_time_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(time_la_LINK) -rpath $(pkgextensiondir) $(time_la_OBJECTS) $(time_la_LIBADD) $(LIBS)
