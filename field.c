@@ -322,12 +322,9 @@ set_record(const char *buf, int cnt, const int *fw)
 				parse_field = api_parse_field;
 				update_PROCINFO_str("FS", "API");
 			}
-		}
-		else {
-			if (parse_field != normal_parse_field) {
-				parse_field = normal_parse_field;
-				update_PROCINFO_str("FS", current_field_sep_str());
-			}
+		} else if (parse_field != normal_parse_field) {
+			parse_field = normal_parse_field;
+			update_PROCINFO_str("FS", current_field_sep_str());
 		}
 	}
 
@@ -789,6 +786,7 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
  *
  * This is called from get_field() via (*parse_field)().
  */
+
 static long
 api_parse_field(long up_to,	/* parse only up to this field number */
 	char **buf,	/* on input: string to parse; on output: point to start next */
@@ -1350,7 +1348,7 @@ choose_fs_function:
 		FS_regexp = FS_re_yes_case;
 }
 
-/* current_field_sep --- return what field separator is */
+/* current_field_sep --- return the field separator type */
 
 field_sep_type
 current_field_sep()
@@ -1365,7 +1363,7 @@ current_field_sep()
 		return Using_FS;
 }
 
-/* current_field_sep --- return what field separator is */
+/* current_field_sep_str --- return the field separator type as a string */
 
 const char *
 current_field_sep_str()
