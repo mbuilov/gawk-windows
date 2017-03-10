@@ -1,3 +1,22 @@
+2017-03-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (awk_input_field_info_t): Define new structure to contain
+	API field parsing info.
+	(awk_input_buf_t): Update get_record prototype to use an array of
+	awk_input_field_info_t instead of integers.
+	* awk.h (set_record): Change 3rd argument from 'const int *' to
+	'const awk_input_field_info_t *'.
+	* field.c (api_fw): Now points to an array of awk_input_field_info_t
+	instead of integers.
+	(set_record): Change 3rd argument to point to an array of
+	awk_input_field_info_t.
+	(api_parse_field): Update parsing logic to use awk_input_field_info_t
+	structures instead of an array of integers.
+	* io.c (inrec, do_getline_redir, do_getline): Change field_width type
+	from 'const int *' to 'const awk_input_field_info_t *'.
+	(get_a_record): Change field_width argument type from 'const int **'
+	to 'const awk_input_field_info_t **'.
+
 2017-03-09         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* field.c: Minor style edits.

@@ -59,7 +59,7 @@ static long fw_parse_field(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
 static long api_parse_field(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
-static const int *api_fw = NULL;
+static const awk_input_field_info_t *api_fw = NULL;
 static long fpat_parse_field(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
 static void set_element(long num, char * str, long len, NODE *arr);
@@ -262,7 +262,7 @@ rebuild_record()
  * but better correct than fast.
  */
 void
-set_record(const char *buf, int cnt, const int *fw)
+set_record(const char *buf, int cnt, const awk_input_field_info_t *fw)
 {
 	NODE *n;
 	static char *databuf;
@@ -802,24 +802,25 @@ api_parse_field(long up_to,	/* parse only up to this field number */
 	long nf = parse_high_water;
 	char *end = scan + len;
 	int skiplen;
+	size_t flen;
 
 	if (up_to == UNLIMITED)
 		nf = 0;
 	if (len == 0)
 		return nf;
 	while (nf < up_to) {
-		if (((skiplen = api_fw[2*nf]) < 0) ||
-		    ((len = api_fw[2*nf+1]) < 0)) {
+		if ((skiplen = api_fw[nf].skip) < 0) {
 		    	*buf = end;
 			return nf;
 		}
 		if (skiplen > end - scan)
 			skiplen = end - scan;
 		scan += skiplen;
-		if (len > end - scan)
-			len = end - scan;
-		(*set)(++nf, scan, (long) len, n);
-		scan += len;
+		flen = api_fw[nf].len;
+		if (flen > end - scan)
+			flen = end - scan;
+		(*set)(++nf, scan, (long) flen, n);
+		scan += flen;
 	}
 	*buf = scan;
 	return nf;

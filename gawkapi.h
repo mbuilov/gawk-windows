@@ -117,6 +117,19 @@ typedef enum awk_bool {
 	awk_true
 } awk_bool_t;	/* we don't use <stdbool.h> on purpose */
 
+/*
+ * If the input parser would like to specify the field positions in the input
+ * record, it may populate an array of awk_input_field_info_t structures
+ * to indicate the location of each field. The 0th array element contains
+ * the information about field $1, and the NFth element should set skip
+ * to a negative value. For both skip and len, the value should be in
+ * bytes, not (potentially multi-byte) characters.
+ */
+typedef struct {
+	int skip;	/* # of bytes to skip before field starts */
+	size_t len;	/* # of bytes in field */
+} awk_input_field_info_t;
+
 /* The information about input files that input parsers need to know: */
 typedef struct awk_input {
 	const char *name;	/* filename */
@@ -149,12 +162,10 @@ typedef struct awk_input {
 	 *
 	 * If field_width is non-NULL, then its value will be initialized
 	 * to NULL, and the function may set it to point to an array of
-	 * integers supplying field width information to override the default
+	 * structures supplying field width information to override the default
 	 * gawk field parsing mechanism.  The field_width array should have
-	 * at least 2*NF+1 elements, and the value of field_width[2*NF]
-	 * must be negative. The first entry field_width[0] should contain
-	 * the number of bytes to skip before $1; field_width[1] contains
-	 * the number of bytes in $1. Note that these values are specified
+	 * at least NF+1 elements, and the value of field_width[NF].skip
+	 * must be negative. Note that these values are specified
 	 * in bytes, not (potentially multi-byte) characters! And note that this
 	 * array will not be copied by gawk; it must persist at least until the
 	 * next call to get_record or close_func. Note that field_width will
@@ -163,7 +174,7 @@ typedef struct awk_input {
 	 */
 	int (*get_record)(char **out, struct awk_input *iobuf, int *errcode,
 			char **rt_start, size_t *rt_len,
-			const int **field_width);
+			const awk_input_field_info_t **field_width);
 
 	/*
 	 * No argument prototype on read_func to allow for older systems
