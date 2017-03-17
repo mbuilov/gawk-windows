@@ -49,6 +49,14 @@
 @set MINUS
 @end ifdocbook
 
+@iftex
+@set TIMES @times
+@end iftex
+@ifnottex
+@set TIMES *
+@end ifnottex
+        
+
 @set xref-automatic-section-title
 
 @c The following information should be updated here only!
@@ -3032,14 +3040,59 @@ it is worth addressing.
 @cindex Brink, Jeroen
 The ``shells'' on Microsoft Windows systems use the double-quote
 character for quoting, and make it difficult or impossible to include an
-escaped double-quote character in a command-line script.
-The following example, courtesy of Jeroen Brink, shows
-how to print all lines in a file surrounded by double quotes:
+escaped double-quote character in a command-line script.  The following
+example, courtesy of Jeroen Brink, shows how to escape the double quotes
+from this one liner script that prints all lines in a file surrounded by
+double quotes:
+
+@example
+@{ print "\"" $0 "\"" @}
+@end example
+
+@noindent
+In an MS-Windows command-line the one-liner script above may be passed as
+follows:
 
 @example
 gawk "@{ print \"\042\" $0 \"\042\" @}" @var{file}
 @end example
 
+In this example the @samp{\042} is the octal code for a double-quote;
+@command{gawk} converts it into a real double-quote for output by
+the @code{print} statement.
+
+In MS-Windows escaping double-quotes is a little tricky because you use
+backslashes to escape double-quotes, but backslashes themselves are not
+escaped in the usual way; indeed they are either duplicated or not,
+depending upon whether there is a subsequent double-quote.  The MS-Windows
+rule for double-quoting a string is the following:
+
+@enumerate
+@item
+For each double quote in the orginal string, let @var{N} be the number
+of backslash(es) before it, @var{N} might be zero. Replace these @var{N}
+backslash(es) by @math{2@value{TIMES}@var{N}+1} backslash(es)
+
+@item
+Let @var{N} be the number of backslash(es) tailing the original string,
+@var{N} might be zero. Replace these @var{N} backslash(es) by
+@math{2@value{TIMES}@var{N}} backslash(es)
+
+@item
+Surround the resulting string by double-quotes.
+@end enumerate
+
+So to double-quote the one-liner script @samp{@{ print "\"" $0 "\"" @}}
+from the previous example you would do it this way:
+
+@example
+gawk "@{ print \"\\\"\" $0 \"\\\"\" @}" @var{file}
+@end example
+
+@noindent
+However, the use of @samp{\042} instead of @samp{\\\"} is also possible
+and easier to read, because backslashes that are not followed by a
+double-quote don't need duplication.
 
 @node Sample Data Files
 @section @value{DDF}s for the Examples
