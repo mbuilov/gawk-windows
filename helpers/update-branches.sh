@@ -6,14 +6,32 @@ then
 	exit 1
 fi
 
-git checkout master || exit
+doit () {
+	echo "
+	Running: $@"
+	"$@" || {
+		echo "Oops: command [$@] failed with status $?"
+		return 1
+	}
+}
+
+doit git checkout master || exit
 
 features=$(git branch -a | grep /origin/feature/ | sed 's;.*/origin/;;')
 others="porting"
 
 for i in $others $features
 do
-	(git checkout $i && git pull && git merge master && git push) || break
+	echo "
+	Updating branch $i"
+	(doit git checkout $i && doit git pull && doit git merge master && doit git push) || {
+		echo "
+Error encountered updating branch $i.
+Please resolve the conflict and push it manually in a separate window.
+Please hit enter when you are done so we may continue to merge into
+the other branches."
+		read x
+	}
 done
 
-git checkout master || exit
+doit git checkout master
