@@ -45,20 +45,23 @@ AM_INIT_AUTOMAKE([1.15 dist-xz dist-lzip])
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl Additional argument stuff
-AC_ARG_WITH(whiny-user-strftime, [  --with-whiny-user-strftime	Force use of included version of strftime for deficient systems],
+AC_ARG_WITH(whiny-user-strftime,
+	[AS_HELP_STRING([--with-whiny-user-strftime], [Force use of included version of strftime for deficient systems])],
 	if test "$withval" = yes
 	then
 		AC_DEFINE(USE_INCLUDED_STRFTIME, 1,
 			  [force use of our version of strftime])
 	fi
 )
-AC_ARG_ENABLE([lint], [  --disable-lint	Disable gawk lint checking],
+AC_ARG_ENABLE([lint],
+	[AS_HELP_STRING([--disable-lint],[Disable gawk lint checking])],
 	if test "$enableval" = no
 	then
 		AC_DEFINE(NO_LINT, 1, [disable lint checks])
 	fi
 )
-AC_ARG_ENABLE([severe-portability-problems], [  --enable-severe-portability-problems	Enable really nasty portability problems],
+AC_ARG_ENABLE([severe-portability-problems],
+	[AS_HELP_STRING([--enable-severe-portability-problems],[Enable really nasty portability problems])],
 	if test "$enableval" = yes
 	then
 		AC_DEFINE(I_DONT_KNOW_WHAT_IM_DOING, 1, [enable severe portability problems])
@@ -206,8 +209,10 @@ AC_DEFUN([TYPE_SOCKLEN_T],
          # Systems have either "struct sockaddr *" or
          # "void *" as the second argument to getpeername
          rsync_cv_socklen_t_equiv=
-         for arg2 in "struct sockaddr" void; do
-            for t in int size_t unsigned long "unsigned long"; do
+         for arg2 in "struct sockaddr" void
+	 do
+            for t in int size_t unsigned long "unsigned long"
+	    do
                AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -223,7 +228,8 @@ AC_DEFUN([TYPE_SOCKLEN_T],
             done
          done
 
-         if test "x$rsync_cv_socklen_t_equiv" = x; then
+         if test "x$rsync_cv_socklen_t_equiv" = x
+	 then
 dnl		Some systems get this. Default to int.  -- ADR
 dnl            AC_MSG_ERROR([Cannot find a type to use in place of socklen_t])
 		rsync_cv_socklen_t_equiv=int
@@ -280,7 +286,8 @@ dnl check for dynamic linking
 dnl This is known to be very primitive
 AC_ARG_ENABLE([extensions],
 	[AS_HELP_STRING([--disable-extensions], [disable dynamic extensions (default is detect)])])
-if test "x$enable_extensions" != "xno"; then
+if test "x$enable_extensions" != "xno"
+then
 	extensions_supported=no
 
 	dnl On MirBSD (and probably other systems), don't even try.
@@ -301,7 +308,8 @@ if test "x$enable_extensions" != "xno"; then
 			extensions_supported=yes
 			AC_DEFINE([DYNAMIC], 1, [dynamic loading is possible])
 			# Add -export-dynamic for old extensions. Only works for GCC
-			if test "$GCC" = yes; then
+			if test "$GCC" = yes
+			then
 				case $host_os in
 				linux*|freebsd*)
 					LDFLAGS="$LDFLAGS -Wl,-export-dynamic"
@@ -313,7 +321,8 @@ if test "x$enable_extensions" != "xno"; then
 		;;
 	esac
 
-	if test "x$enable_extensions$extensions_supported" = "xyesno"; then
+	if test "x$enable_extensions$extensions_supported" = "xyesno"
+	then
 		AC_MSG_ERROR([extension support requested, but unavailable])
 	fi
 	enable_extensions=$extensions_supported
@@ -354,7 +363,8 @@ int main()
 	has_f_format=no,
 	has_f_format=no  dnl Cross-compiling, assuming the worst.
 )
-if test "$has_f_format" = yes; then
+if test "$has_f_format" = yes
+then
 	AC_DEFINE(PRINTF_HAS_F_FORMAT, 1, [Define to 1 if *printf supports %F format])
 fi
 AC_MSG_RESULT($has_f_format)
@@ -413,7 +423,8 @@ AC_CONFIG_FILES(Makefile
 	extras/Makefile
 	po/Makefile.in
 	test/Makefile)
-if test "x$enable_extensions" = "xyes"; then
+if test "x$enable_extensions" = "xyes"
+then
 	AC_CONFIG_SUBDIRS(extension)
 fi
 AC_OUTPUT

@@ -1,3 +1,32 @@
+2017-03-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Improve handling of EPIPE. Problems reported by
+	Alexandre Ferrieux <alexandre.ferrieux@orange.com>
+	and David Kerns <david.t.kerns@gmail.com>.
+
+	* awk.h (ignore_sigpipe, set_sigpipe_to_default,
+	non_fatal_flush_std): Declare new functions.
+	(ignore_sigpipe, set_sigpipe_to_default,
+	non_fatal_flush_std): New macros.
+	* builtin.c (do_fflush): When nonfatal not in force, flush
+	of stdout/stderr and EPIPE exits, simulating SIGPIPE, as
+	in nawk/mawk. Flush of other redirections with EPIPE now
+	also fatals.
+	(do_system): Use ignore_sipipe and set_sigpipe_to_default
+	instead of uglier inline ifdefed code.
+	* main.c (main): Ditto.
+	* io.c (redirect_string, two_way_open, gawk_popen): Ditto.
+	(flush_io): Use non_fatal_flush_std for stdout and stderr.
+
+	Unrelated:
+
+	* config.guess, config.rpath, config.sub, install-sh:
+	Sync with GNULIB.
+
+2017-03-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Some cleanups.
+
 2017-02-23         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h (boolval): Return bool instead of int.

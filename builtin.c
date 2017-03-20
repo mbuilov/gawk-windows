@@ -133,7 +133,6 @@ wrerror:
 	if (fp == stdout && errno == EPIPE)
 		gawk_exit(EXIT_FATAL);
 
-
 	/* otherwise die verbosely */
 	if ((rp != NULL) ? is_non_fatal_redirect(rp->value, strlen(rp->value)) : is_non_fatal_std(fp))
 		update_ERRNO_int(errno);
@@ -245,13 +244,19 @@ do_fflush(int nargs)
 			return make_number((AWKNUM) status);
 		}
 		fp = rp->output.fp;
-		if (fp != NULL)
+		if (fp != NULL) {
 			status = rp->output.gawk_fflush(fp, rp->output.opaque);
-		else if ((rp->flag & RED_TWOWAY) != 0)
+
+			if (status != 0) {
+				if (! is_non_fatal_redirect(tmp->stptr, tmp->stlen))
+					fatal(_("fflush: cannot flush file `%.*s': %s"),
+						len, file, strerror(errno));
+			}
+		} else if ((rp->flag & RED_TWOWAY) != 0)
 				warning(_("fflush: cannot flush: two-way pipe `%.*s' has closed write end"),
 					len, file);
 	} else if ((fp = stdfile(tmp->stptr, tmp->stlen)) != NULL) {
-		status = fflush(fp);
+		status = (non_fatal_flush_std_file(fp) == false);
 	} else {
 		status = -1;
 		warning(_("fflush: `%.*s' is not an open file, pipe or co-process"), len, file);
@@ -2148,9 +2153,7 @@ do_system(int nargs)
 		cmd[tmp->stlen] = '\0';
 
 		os_restore_mode(fileno(stdin));
-#ifdef SIGPIPE
-		signal(SIGPIPE, SIG_DFL);
-#endif
+		set_sigpipe_to_default();
 
 		status = system(cmd);
 		/*
@@ -2176,9 +2179,7 @@ do_system(int nargs)
 
 		if ((BINMODE & BINMODE_INPUT) != 0)
 			os_setbinmode(fileno(stdin), O_BINARY);
-#ifdef SIGPIPE
-		signal(SIGPIPE, SIG_IGN);
-#endif
+		ignore_sigpipe();
 
 		cmd[tmp->stlen] = save;
 	}

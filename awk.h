@@ -1586,6 +1586,10 @@ extern bool inrec(IOBUF *iop, int *errcode);
 extern int nextfile(IOBUF **curfile, bool skipping);
 extern bool is_non_fatal_std(FILE *fp);
 extern bool is_non_fatal_redirect(const char *str, size_t len);
+extern void ignore_sigpipe(void);
+extern void set_sigpipe_to_default(void);
+extern bool non_fatal_flush_std_file(FILE *fp);
+
 /* main.c */
 extern int arg_assign(char *arg, bool initing);
 extern int is_std_var(const char *var);
@@ -1975,3 +1979,11 @@ make_number_node(unsigned int tp)
 	r->wstlen = 0;
 	return r;
 }
+
+#ifdef SIGPIPE
+#define ignore_sigpipe() signal(SIGPIPE, SIG_IGN)
+#define set_sigpipe_to_default() signal(SIGPIPE, SIG_DFL)
+#else
+#define ignore_sigpipe()
+#define set_sigpipe_to_default()
+#endif
