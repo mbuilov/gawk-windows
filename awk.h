@@ -1584,6 +1584,10 @@ extern bool inrec(IOBUF *iop, int *errcode);
 extern int nextfile(IOBUF **curfile, bool skipping);
 extern bool is_non_fatal_std(FILE *fp);
 extern bool is_non_fatal_redirect(const char *str, size_t len);
+extern void ignore_sigpipe(void);
+extern void set_sigpipe_to_default(void);
+extern bool non_fatal_flush_std_file(FILE *fp);
+
 /* main.c */
 extern int arg_assign(char *arg, bool initing);
 extern int is_std_var(const char *var);
@@ -1959,6 +1963,7 @@ erealloc_real(void *ptr, size_t count, const char *where, const char *var, const
 	return ret;
 }
 
+
 /*
  * str_terminate_f, str_terminate, str_restore: function and macros to
  * reduce chances of typos when terminating and restoring strings.
@@ -1974,3 +1979,11 @@ str_terminate_f(NODE *n, char *savep)
 
 #define str_terminate(n, save) str_terminate_f((n), &save)
 #define str_restore(n, save) (n)->stptr[(n)->stlen] = save
+
+#ifdef SIGPIPE
+#define ignore_sigpipe() signal(SIGPIPE, SIG_IGN)
+#define set_sigpipe_to_default() signal(SIGPIPE, SIG_DFL)
+#else
+#define ignore_sigpipe()
+#define set_sigpipe_to_default()
+#endif
