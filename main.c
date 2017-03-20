@@ -255,7 +255,7 @@ main(int argc, char **argv)
 #ifdef SIGBUS
 	(void) signal(SIGBUS, catchsig);
 #endif
-#ifdef SIGPIPE
+
 	/*
 	 * Ignore SIGPIPE so that writes to pipes that fail don't
 	 * kill the process but instead return -1 and set errno.
@@ -269,8 +269,7 @@ main(int argc, char **argv)
 	 * should not give us "broken pipe" messages --- mainly because
 	 * it did not do so in the past and people would complain.
 	 */
-	signal(SIGPIPE, SIG_IGN);
-#endif
+	ignore_sigpipe();
 
 	(void) sigsegv_install_handler(catchsegv);
 #define STACK_SIZE (16*1024)

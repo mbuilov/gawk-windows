@@ -1901,15 +1901,9 @@ messages::
 
 argarray::
 	@echo $@
-	@case "$(srcdir)" in \
-	.)	: ;; \
-	*)	cp "$(srcdir)"/argarray.in . ;; \
-	esac
-	@TEST=test echo just a test | $(AWK) -f "$(srcdir)"/argarray.awk ./argarray.in - >_$@
-	@case "$(srcdir)" in \
-	.)	: ;; \
-	*)	rm -f ./argarray.in ;; \
-	esac
+	@cp "$(srcdir)"/argarray.in ./argarray.input
+	@TEST=test echo just a test | $(AWK) -f "$(srcdir)"/argarray.awk ./argarray.input - >_$@
+	@rm -f ./argarray.input
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 regtest::
