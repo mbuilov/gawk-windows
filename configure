@@ -1409,8 +1409,9 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
-  --disable-lint	Disable gawk lint checking
-  --enable-severe-portability-problems	Enable really nasty portability problems
+  --disable-lint          Disable gawk lint checking
+  --enable-severe-portability-problems
+                          Enable really nasty portability problems
   --enable-dependency-tracking
                           do not reject slow dependency extractors
   --disable-dependency-tracking
@@ -1423,7 +1424,9 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-whiny-user-strftime	Force use of included version of strftime for deficient systems
+  --with-whiny-user-strftime
+                          Force use of included version of strftime for
+                          deficient systems
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
@@ -8803,8 +8806,10 @@ else
          # Systems have either "struct sockaddr *" or
          # "void *" as the second argument to getpeername
          rsync_cv_socklen_t_equiv=
-         for arg2 in "struct sockaddr" void; do
-            for t in int size_t unsigned long "unsigned long"; do
+         for arg2 in "struct sockaddr" void
+	 do
+            for t in int size_t unsigned long "unsigned long"
+	    do
                cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -8834,7 +8839,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             done
          done
 
-         if test "x$rsync_cv_socklen_t_equiv" = x; then
+         if test "x$rsync_cv_socklen_t_equiv" = x
+	 then
 		rsync_cv_socklen_t_equiv=int
          fi
 
@@ -9966,7 +9972,8 @@ if test "${enable_extensions+set}" = set; then :
   enableval=$enable_extensions;
 fi
 
-if test "x$enable_extensions" != "xno"; then
+if test "x$enable_extensions" != "xno"
+then
 	extensions_supported=no
 
 		case $host_os in
@@ -10046,7 +10053,8 @@ fi
 $as_echo "#define DYNAMIC 1" >>confdefs.h
 
 			# Add -export-dynamic for old extensions. Only works for GCC
-			if test "$GCC" = yes; then
+			if test "$GCC" = yes
+			then
 				case $host_os in
 				linux*|freebsd*)
 					LDFLAGS="$LDFLAGS -Wl,-export-dynamic"
@@ -10061,7 +10069,8 @@ fi
 		;;
 	esac
 
-	if test "x$enable_extensions$extensions_supported" = "xyesno"; then
+	if test "x$enable_extensions$extensions_supported" = "xyesno"
+	then
 		as_fn_error $? "extension support requested, but unavailable" "$LINENO" 5
 	fi
 	enable_extensions=$extensions_supported
@@ -10150,7 +10159,8 @@ rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
 
-if test "$has_f_format" = yes; then
+if test "$has_f_format" = yes
+then
 
 $as_echo "#define PRINTF_HAS_F_FORMAT 1" >>confdefs.h
 
@@ -10973,7 +10983,8 @@ esac
 
 ac_config_files="$ac_config_files Makefile support/Makefile awklib/Makefile doc/Makefile extras/Makefile po/Makefile.in test/Makefile"
 
-if test "x$enable_extensions" = "xyes"; then
+if test "x$enable_extensions" = "xyes"
+then
 
 
 subdirs="$subdirs extension"
