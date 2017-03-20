@@ -899,9 +899,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 			(void) flush_io();
 
 			os_restore_mode(fileno(stdin));
-#ifdef SIGPIPE
-			signal(SIGPIPE, SIG_DFL);
-#endif
+			set_sigpipe_to_default();
 			/*
 			 * Don't check failure_fatal; see input pipe below.
 			 * Note that the failure happens upon failure to fork,
@@ -911,9 +909,7 @@ redirect_string(const char *str, size_t explen, bool not_string,
 			if ((rp->output.fp = popen(str, binmode("w"))) == NULL)
 				fatal(_("can't open pipe `%s' for output (%s)"),
 						str, strerror(errno));
-#ifdef SIGPIPE
-			signal(SIGPIPE, SIG_IGN);
-#endif
+			ignore_sigpipe();
 
 			/* set close-on-exec */
 			os_close_on_exec(fileno(rp->output.fp), str, "pipe", "to");
@@ -1392,6 +1388,36 @@ checkwarn:
 	return status;
 }
 
+/* non_fatal_flush_std_file --- flush a standard output file allowing for nonfatal setting */
+
+bool
+non_fatal_flush_std_file(FILE *fp)
+{
+	int status = fflush(fp);
+
+	if (status != 0) {
+		bool is_fatal = ! is_non_fatal_std(fp);
+
+		if (is_fatal) {
+			if (errno == EPIPE)
+				exit(EXIT_SUCCESS);	// simulate SIGPIPE
+			else
+				fatal(fp == stdout
+					? _("fflush: cannot flush standard output: %s")
+					: _("fflush: cannot flush standard error: %s"),
+						strerror(errno));
+		} else {
+			warning(fp == stdout
+				? _("error writing standard output (%s)")
+				: _("error writing standard error (%s)"),
+					strerror(errno));
+		}
+		return false;
+	}
+
+	return true;
+}
+
 /* flush_io --- flush all open output files */
 
 int
@@ -1401,21 +1427,18 @@ flush_io()
 	int status = 0;
 
 	errno = 0;
-	/* we don't warn about stdout/stderr if EPIPE, but we do error exit */
-	if (fflush(stdout)) {
-		if (errno != EPIPE)
-			warning(_("error writing standard output (%s)"), strerror(errno));
+	if (! non_fatal_flush_std_file(stdout))
 		status++;
-	}
-	if (fflush(stderr)) {
-		if (errno != EPIPE)
-			warning(_("error writing standard error (%s)"), strerror(errno));
+
+	errno = 0;
+	if (! non_fatal_flush_std_file(stderr))
 		status++;
-	}
+
+	// now for all open redirections
 	for (rp = red_head; rp != NULL; rp = rp->next) {
 		/* flush both files and pipes, what the heck */
 		if ((rp->flag & RED_WRITE) != 0 && rp->output.fp != NULL) {
-			if (rp->output.gawk_fflush(rp->output.fp, rp->output.opaque)) {
+			if (rp->output.gawk_fflush(rp->output.fp, rp->output.opaque) != 0) {
 				if ((rp->flag & RED_PIPE) != 0)
 					warning(_("pipe flush of `%s' failed (%s)."),
 						rp->value, strerror(errno));
@@ -2076,7 +2099,7 @@ two_way_open(const char *str, struct redirect *rp, int extfd)
 
 			/* stderr does NOT get dup'ed onto child's stdout */
 
-			signal(SIGPIPE, SIG_DFL);
+			set_sigpipe_to_default();
 
 			execl("/bin/sh", "sh", "-c", str, NULL);
 			_exit(errno == ENOENT ? 127 : 126);
@@ -2253,7 +2276,7 @@ use_pipes:
 		    || close(ctop[0]) == -1 || close(ctop[1]) == -1)
 			fatal(_("close of pipe failed (%s)"), strerror(errno));
 		/* stderr does NOT get dup'ed onto child's stdout */
-		signal(SIGPIPE, SIG_DFL);
+		set_sigpipe_to_default();
 		execl("/bin/sh", "sh", "-c", str, NULL);
 		_exit(errno == ENOENT ? 127 : 126);
 	}
@@ -2490,7 +2513,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 			fatal(_("moving pipe to stdout in child failed (dup: %s)"), strerror(errno));
 		if (close(p[0]) == -1 || close(p[1]) == -1)
 			fatal(_("close of pipe failed (%s)"), strerror(errno));
-		signal(SIGPIPE, SIG_DFL);
+		set_sigpipe_to_default();
 		execl("/bin/sh", "sh", "-c", cmd, NULL);
 		_exit(errno == ENOENT ? 127 : 126);
 	}
@@ -2555,17 +2578,13 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	FILE *current;
 
 	os_restore_mode(fileno(stdin));
-#ifdef SIGPIPE
-	signal(SIGPIPE, SIG_DFL);
-#endif
+	set_sigpipe_to_default();
 
 	current = popen(cmd, binmode("r"));
 
 	if ((BINMODE & BINMODE_INPUT) != 0)
 		os_setbinmode(fileno(stdin), O_BINARY);
-#ifdef SIGPIPE
-	signal(SIGPIPE, SIG_IGN);
-#endif
+	ignore_sigpipe();
 
 	if (current == NULL)
 		return NULL;
