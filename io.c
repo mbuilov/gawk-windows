@@ -287,7 +287,7 @@ static RECVALUE rsrescan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state);
 
 static RECVALUE (*matchrec)(IOBUF *iop, struct recmatch *recm, SCANSTATE *state) = rs1scan;
 
-static int get_a_record(char **out, IOBUF *iop, int *errcode, const awk_input_field_info_t **field_width);
+static int get_a_record(char **out, IOBUF *iop, int *errcode, const awk_fieldwidth_info_t **field_width);
 
 static void free_rp(struct redirect *rp);
 
@@ -590,7 +590,7 @@ inrec(IOBUF *iop, int *errcode)
 	char *begin;
 	int cnt;
 	bool retval = true;
-	const awk_input_field_info_t *field_width = NULL;
+	const awk_fieldwidth_info_t *field_width = NULL;
 
 	if (at_eof(iop) && no_data_left(iop))
 		cnt = EOF;
@@ -2638,7 +2638,7 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 	NODE *redir_exp = NULL;
 	NODE **lhs = NULL;
 	int redir_error = 0;
-	const awk_input_field_info_t *field_width = NULL;
+	const awk_fieldwidth_info_t *field_width = NULL;
 
 	if (into_variable)
 		lhs = POP_ADDRESS();
@@ -2707,7 +2707,7 @@ do_getline(int into_variable, IOBUF *iop)
 	int cnt = EOF;
 	char *s = NULL;
 	int errcode;
-	const awk_input_field_info_t *field_width = NULL;
+	const awk_fieldwidth_info_t *field_width = NULL;
 
 	if (iop == NULL) {	/* end of input */
 		if (into_variable)
@@ -3676,8 +3676,8 @@ static int
 get_a_record(char **out,        /* pointer to pointer to data */
         IOBUF *iop,             /* input IOP */
         int *errcode,           /* pointer to error variable */
-        const awk_input_field_info_t **field_width)
-				/* pointer to pointer to field_width array */
+        const awk_fieldwidth_info_t **field_width)
+				/* pointer to pointer to field_width info */
 {
 	struct recmatch recm;
 	SCANSTATE state;

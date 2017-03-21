@@ -1,3 +1,43 @@
+2017-03-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (awk_fieldwidth_info_t): Define new structure to contain
+	API field parsing info, replacing the previous awk_input_field_info_t
+	array.
+	(awk_fieldwidth_info_size): Define macro to calculate size of the
+	variable-length awk_fieldwidth_info_t structure.
+	(awk_input_buf_t): Update get_record prototype to update the type
+	of the final field_width argument from 'const awk_input_field_info_t **'
+	to 'const awk_fieldwidth_info_t **'.
+	* awk.h (set_record): Change 3rd argument from
+	'const awk_input_field_info_t *' to 'const awk_fieldwidth_info_t *'.
+	* io.c (inrec, do_getline_redir, do_getline): Change field_width type
+	from 'const awk_input_field_info_t *' to
+	'const awk_fieldwidth_info_t *'.
+	(get_a_record): Change field_width argument type from
+	'const awk_input_field_info_t **' to 'const awk_fieldwidth_info_t **'.
+	* field.c (api_parser_override): Define new boolean to track whether
+	API parsing is currently overriding default parsing behavior.
+	(api_fw): Change type from 'const awk_input_field_info_t *'
+	to 'const awk_fieldwidth_info_t *'.
+	(FIELDWIDTHS): Change type from 'int *' to 'awk_fieldwidth_info_t *'.
+	(set_record): Use new boolean api_parser_override to track whether
+	API parsing override is in effect, since we can no longer discern
+	this from the value of parse_field -- FIELDWIDTHS parsing uses the
+	same function.
+	(calc_mbslen): New function to calculate the length of a multi-byte 
+	string.
+	(fw_parse_field): Enhance to support the awk_fieldwidth_info_t 
+	structure instead of simply using an array of integer field widths.
+	(api_parse_field): Remove function no longer needed since fw_parse_field
+	now supports both FIELDWIDTHS and API parsing.
+	(set_parser): Use api_parser_override instead of comparing parse_field
+	to api_parse_field.
+	(set_FIELDWIDTHS): Enhance to use new awk_fieldwidth_info_t structure
+	and parse new skip prefix for each field.
+	(current_field_sep): Use api_parser_override flag instead of comparing
+	to api_parse_field.
+	(current_field_sep_str): Ditto.
+
 2017-03-20         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Improve handling of EPIPE. Problems reported by

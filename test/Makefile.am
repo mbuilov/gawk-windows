@@ -385,6 +385,8 @@ EXTRA_DIST = \
 	fwtest2.awk \
 	fwtest2.in \
 	fwtest2.ok \
+	fwtest2b.awk \
+	fwtest2b.ok \
 	fwtest3.awk \
 	fwtest3.in \
 	fwtest3.ok \
@@ -1221,7 +1223,7 @@ GAWK_EXT_TESTS = \
 	crlf dbugeval dbugeval2 dbugtypedre1 dbugtypedre2 delsub \
 	devfd devfd1 devfd2 dumpvars errno exit \
 	fieldwdth forcenum fpat1 fpat2 fpat3 fpat4 fpat5 fpatnull fsfwfs funlen \
-	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
+	functab1 functab2 functab3 fwtest fwtest2 fwtest2b fwtest3 \
 	genpot gensub gensub2 gensub3 getlndir gnuops2 gnuops3 gnureops gsubind \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcas4 ignrcase \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
@@ -2372,6 +2374,11 @@ arrdbg:
 	@$(AWK) -v "okfile=$(srcdir)/$@.ok" -f "$(srcdir)"/$@.awk | grep array_f >_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ "$(srcdir)"/$@.ok
 #	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ "$(srcdir)"/$@.ok || exit 0
+
+fwtest2b:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/fwtest2.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
 include Maketests

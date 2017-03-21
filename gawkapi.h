@@ -119,16 +119,27 @@ typedef enum awk_bool {
 
 /*
  * If the input parser would like to specify the field positions in the input
- * record, it may populate an array of awk_input_field_info_t structures
- * to indicate the location of each field. The 0th array element contains
- * the information about field $1, and the NFth element should set skip
- * to a negative value. For both skip and len, the value should be in
- * bytes, not (potentially multi-byte) characters.
+ * record, it may populate an awk_fieldwidth_info_t structure to indicate
+ * the location of each field. The use_chars boolean controls whether the
+ * field lengths are specified in terms of bytes or potentially multi-byte
+ * characters. Performance will be better if the values are supplied in
+ * terms of bytes. The fields[0].skip value indicates how many bytes (or
+ * characters to skip) before $1, and fields[0].len is the length of $1, etc.
  */
 typedef struct {
-	int skip;	/* # of bytes to skip before field starts */
-	size_t len;	/* # of bytes in field */
-} awk_input_field_info_t;
+	awk_bool_t	use_chars;	/* false ==> use bytes */
+	size_t		nf;
+	struct awk_field_info {
+		size_t	skip;	/* # to skip before field starts */
+		size_t len;	/* length of field */
+	} fields[1];	/* actual dimension should be nf */
+} awk_fieldwidth_info_t;
+/*
+ * This macro calculates the total struct size needed. This is useful when
+ * calling malloc or realloc.
+ */
+#define awk_fieldwidth_info_size(NF) (sizeof(awk_fieldwidth_info_t) + \
+			(((NF)-1) * sizeof(struct awk_field_info)))
 
 /* The information about input files that input parsers need to know: */
 typedef struct awk_input {
@@ -174,7 +185,7 @@ typedef struct awk_input {
 	 */
 	int (*get_record)(char **out, struct awk_input *iobuf, int *errcode,
 			char **rt_start, size_t *rt_len,
-			const awk_input_field_info_t **field_width);
+			const awk_fieldwidth_info_t **field_width);
 
 	/*
 	 * No argument prototype on read_func to allow for older systems

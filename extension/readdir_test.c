@@ -85,8 +85,12 @@ int plugin_is_GPL_compatible;
 typedef struct open_directory {
 	DIR *dp;
 	char *buf;
-	awk_input_field_info_t field_width[4];
+	union {
+		awk_fieldwidth_info_t fw;
+		char buf[awk_fieldwidth_info_size(3)];
+	} u;
 } open_directory_t;
+#define fw u.fw
 
 /* ftype --- return type of file as a single character string */
 
@@ -170,7 +174,7 @@ get_inode(struct dirent *entry, const char *dirname)
 static int
 dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 		char **rt_start, size_t *rt_len,
-		const awk_input_field_info_t **field_width)
+		const awk_fieldwidth_info_t **field_width)
 {
 	DIR *dp;
 	struct dirent *dirent;
@@ -207,20 +211,20 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 #else
 	len = sprintf(the_dir->buf, "%llu", ino);
 #endif
-	the_dir->field_width[0].len = len;
+	the_dir->fw.fields[0].len = len;
 	len += (flen = sprintf(the_dir->buf + len, "/%s", dirent->d_name));
-	the_dir->field_width[1].len = flen-1;
+	the_dir->fw.fields[1].len = flen-1;
 
 	ftstr = ftype(dirent, iobuf->name);
 	len += (flen = sprintf(the_dir->buf + len, "/%s", ftstr));
-	the_dir->field_width[2].len = flen-1;
+	the_dir->fw.fields[2].len = flen-1;
 
 	*out = the_dir->buf;
 
 	*rt_start = NULL;
 	*rt_len = 0;	/* set RT to "" */
 	if (field_width)
-		*field_width = the_dir->field_width;
+		*field_width = & the_dir->fw;
 	return len;
 }
 
@@ -284,11 +288,12 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 
 	emalloc(the_dir, open_directory_t *, sizeof(open_directory_t), "dir_take_control_of");
 	the_dir->dp = dp;
-	/* pre-populate the field_width array with constant values: */
-	the_dir->field_width[0].skip = 0;	/* no leading space */
-	the_dir->field_width[1].skip = 1;	/* single '/' separator */
-	the_dir->field_width[2].skip = 1;	/* single '/' separator */
-	the_dir->field_width[3].skip = -1;	/* terminate after 3 fields */
+	/* pre-populate the field_width struct with constant values: */
+	the_dir->fw.use_chars = awk_false;
+	the_dir->fw.nf = 3;
+	the_dir->fw.fields[0].skip = 0;	/* no leading space */
+	the_dir->fw.fields[1].skip = 1;	/* single '/' separator */
+	the_dir->fw.fields[2].skip = 1;	/* single '/' separator */
 	size = sizeof(struct dirent) + 21 /* max digits in inode */ + 2 /* slashes */;
 	emalloc(the_dir->buf, char *, size, "dir_take_control_of");
 

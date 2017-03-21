@@ -1,3 +1,14 @@
+2017-03-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readdir_test.c (open_directory_t): Replace field_width array
+	with new awk_fieldwidth_info_t structure. Wrap it in a union so
+	we can allocate the proper size.
+	(dir_get_record): Update field_width type from
+	'const awk_input_field_info_t **' to 'const awk_fieldwidth_info_t **'.
+	Update new fieldwidth parsing info appropriately.
+	(dir_take_control_of): Populate new fieldwidth parsing structure
+	with initial values.
+
 2017-03-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* readdir_test.c (open_directory_t): Update field_width type from an
