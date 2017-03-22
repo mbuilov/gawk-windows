@@ -171,15 +171,12 @@ typedef struct awk_input {
 	 * on the value of *errcode (e.g., setting *errcode = errno should do
 	 * the right thing).
 	 *
-	 * If field_width is non-NULL, then its value will be initialized
-	 * to NULL, and the function may set it to point to an array of
-	 * structures supplying field width information to override the default
-	 * gawk field parsing mechanism.  The field_width array should have
-	 * at least NF+1 elements, and the value of field_width[NF].skip
-	 * must be negative. Note that these values are specified
-	 * in bytes, not (potentially multi-byte) characters! And note that this
-	 * array will not be copied by gawk; it must persist at least until the
-	 * next call to get_record or close_func. Note that field_width will
+	 * If field_width is non-NULL, then *field_width will be initialized
+	 * to NULL, and the function may set it to point to a structure
+	 * supplying field width information to override the default
+	 * gawk field parsing mechanism. Note that this structure will not
+	 * be copied by gawk; it must persist at least until the next call
+	 * to get_record or close_func. Note also that field_width will
 	 * be NULL when getline is assigning the results to a variable, thus
 	 * field parsing is not needed.
 	 */
