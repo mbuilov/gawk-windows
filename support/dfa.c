@@ -581,8 +581,9 @@ struct dfa
                     bool, size_t *, bool *);
 
   /* The locale is simple, like the C locale.  These locales can be
-     processed more efficiently, e.g., the relationship between lower-
-     and upper-case letters is 1-1.  */
+     processed more efficiently, as they are single-byte, their native
+     character set is in collating-sequence order, and they do not
+     have multi-character collating elements.  */
   bool simple_locale;
 
   /* Other cached information derived from the locale.  */
@@ -1059,7 +1060,6 @@ parse_bracket_exp (struct dfa *dfa)
   if (invert)
     {
       c = bracket_fetch_wc (dfa);
-      invert = true;
       known_bracket_exp = dfa->simple_locale;
     }
   wint_t wc = dfa->lex.wctok;
@@ -1190,24 +1190,14 @@ parse_bracket_exp (struct dfa *dfa)
               /* Treat [x-y] as a range if x != y.  */
               if (wc != wc2 || wc == WEOF)
                 {
-                  if (dfa->localeinfo.multibyte)
-                    known_bracket_exp = false;
-                  else if (dfa->simple_locale)
+                  if (dfa->simple_locale
+                      || (isasciidigit (c) & isasciidigit (c2)))
                     {
-                      int ci;
-                      for (ci = c; ci <= c2; ci++)
-                        setbit (ci, &ccl);
-                      if (dfa->syntax.case_fold)
-                        {
-                          int uc = toupper (c);
-                          int uc2 = toupper (c2);
-                          for (ci = 0; ci < NOTCHAR; ci++)
-                            {
-                              int uci = toupper (ci);
-                              if (uc <= uci && uci <= uc2)
-                                setbit (ci, &ccl);
-                            }
-                        }
+                      for (int ci = c; ci <= c2; ci++)
+                        if (dfa->syntax.case_fold && isalpha (ci))
+                          setbit_case_fold_c (ci, &ccl);
+                        else
+                          setbit (ci, &ccl);
                     }
                   else
                     known_bracket_exp = false;
@@ -1221,7 +1211,7 @@ parse_bracket_exp (struct dfa *dfa)
 
       if (!dfa->localeinfo.multibyte)
         {
-          if (dfa->syntax.case_fold)
+          if (dfa->syntax.case_fold && isalpha (c))
             setbit_case_fold_c (c, &ccl);
           else
             setbit (c, &ccl);
@@ -1256,7 +1246,7 @@ parse_bracket_exp (struct dfa *dfa)
   if (! known_bracket_exp)
     return BACKREF;
 
-  if (dfa->localeinfo.multibyte)
+  if (dfa->localeinfo.multibyte && (invert || dfa->lex.brack.nchars != 0))
     {
       dfa->lex.brack.invert = invert;
       dfa->lex.brack.cset = emptyset (&ccl) ? -1 : charclass_index (dfa, &ccl);
@@ -1265,7 +1255,6 @@ parse_bracket_exp (struct dfa *dfa)
 
   if (invert)
     {
-      assert (!dfa->localeinfo.multibyte);
       notset (&ccl);
       if (dfa->syntax.syntax_bits & RE_HAT_LISTS_NOT_NEWLINE)
         clrbit ('\n', &ccl);
