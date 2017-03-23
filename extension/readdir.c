@@ -168,7 +168,8 @@ get_inode(struct dirent *entry, const char *dirname)
 
 static int
 dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
-		char **rt_start, size_t *rt_len)
+		char **rt_start, size_t *rt_len,
+		const awk_fieldwidth_info_t **unused)
 {
 	DIR *dp;
 	struct dirent *dirent;
