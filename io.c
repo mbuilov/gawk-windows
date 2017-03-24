@@ -1407,6 +1407,7 @@ non_fatal_flush_std_file(FILE *fp)
 					: _("fflush: cannot flush standard error: %s"),
 						strerror(errno));
 		} else {
+			update_ERRNO_int(errno);
 			warning(fp == stdout
 				? _("error writing standard output (%s)")
 				: _("error writing standard error (%s)"),
@@ -1427,26 +1428,34 @@ flush_io()
 	int status = 0;
 
 	errno = 0;
-	if (! non_fatal_flush_std_file(stdout))
+	if (! non_fatal_flush_std_file(stdout))	// ERRNO updated
 		status++;
 
 	errno = 0;
-	if (! non_fatal_flush_std_file(stderr))
+	if (! non_fatal_flush_std_file(stderr))	// ERRNO updated
 		status++;
+
 
 	// now for all open redirections
 	for (rp = red_head; rp != NULL; rp = rp->next) {
+		void (*messagefunc)(const char *mesg, ...) = fatal;
+
 		/* flush both files and pipes, what the heck */
 		if ((rp->flag & RED_WRITE) != 0 && rp->output.fp != NULL) {
 			if (rp->output.gawk_fflush(rp->output.fp, rp->output.opaque) != 0) {
+				update_ERRNO_int(errno);
+
+				if (is_non_fatal_redirect(rp->value, strlen(rp->value)))
+					messagefunc = warning;
+
 				if ((rp->flag & RED_PIPE) != 0)
-					warning(_("pipe flush of `%s' failed (%s)."),
+					messagefunc(_("pipe flush of `%s' failed (%s)."),
 						rp->value, strerror(errno));
 				else if ((rp->flag & RED_TWOWAY) != 0)
-					warning(_("co-process flush of pipe to `%s' failed (%s)."),
+					messagefunc(_("co-process flush of pipe to `%s' failed (%s)."),
 						rp->value, strerror(errno));
 				else
-					warning(_("file flush of `%s' failed (%s)."),
+					messagefunc(_("file flush of `%s' failed (%s)."),
 						rp->value, strerror(errno));
 				status++;
 			}
