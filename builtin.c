@@ -131,14 +131,18 @@ wrerror:
 #endif
 	/* die silently on EPIPE to stdout */
 	if (fp == stdout && errno == EPIPE)
-		gawk_exit(EXIT_FATAL);
+		gawk_exit(EXIT_SUCCESS);	// a la SIGPIPE
 
 	/* otherwise die verbosely */
 	if ((rp != NULL) ? is_non_fatal_redirect(rp->value, strlen(rp->value)) : is_non_fatal_std(fp))
 		update_ERRNO_int(errno);
 	else
 		fatal(_("%s to \"%s\" failed (%s)"), from,
-			rp ? rp->value : _("standard output"),
+			rp != NULL
+				? rp->value
+				: fp == stdout
+					? _("standard output")
+					: _("standard error"),
 			errno ? strerror(errno) : _("reason unknown"));
 }
 
@@ -214,7 +218,7 @@ do_fflush(int nargs)
 
 	/* fflush() */
 	if (nargs == 0) {
-		status = flush_io();
+		status = flush_io();	// ERRNO updated
 		return make_number((AWKNUM) status);
 	}
 
@@ -224,7 +228,7 @@ do_fflush(int nargs)
 
 	/* fflush("") */
 	if (tmp->stlen == 0) {
-		status = flush_io();
+		status = flush_io();	// ERRNO updated
 		DEREF(tmp);
 		return make_number((AWKNUM) status);
 	}
@@ -251,6 +255,7 @@ do_fflush(int nargs)
 				if (! is_non_fatal_redirect(tmp->stptr, tmp->stlen))
 					fatal(_("fflush: cannot flush file `%.*s': %s"),
 						len, file, strerror(errno));
+				update_ERRNO_int(errno);
 			}
 		} else if ((rp->flag & RED_TWOWAY) != 0)
 				warning(_("fflush: cannot flush: two-way pipe `%.*s' has closed write end"),

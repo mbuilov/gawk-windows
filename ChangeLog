@@ -1,3 +1,13 @@
+2017-03-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (efwrite): Exit successfully upon EPIPE, as SIGPIPE
+	done. Improve error messages upon failure to write.
+	(do_fflush): Update ERRNO for non-fatal flush failures.
+	* io.c (non_fatal_flush_std_file): Update ERRNO when flush is
+	non-fatal.
+	(flush_io): If a redirect is marked non-fatal, only warning,
+	not fatal message.
+
 2017-03-23         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* config.sub: Updated again.
