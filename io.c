@@ -1438,7 +1438,7 @@ flush_io()
 
 	// now for all open redirections
 	for (rp = red_head; rp != NULL; rp = rp->next) {
-		void (*messagefunc)(const char *mesg, ...) = fatal;
+		void (*messagefunc)(const char *mesg, ...) = r_fatal;
 
 		/* flush both files and pipes, what the heck */
 		if ((rp->flag & RED_WRITE) != 0 && rp->output.fp != NULL) {
@@ -1446,7 +1446,7 @@ flush_io()
 				update_ERRNO_int(errno);
 
 				if (is_non_fatal_redirect(rp->value, strlen(rp->value)))
-					messagefunc = warning;
+					messagefunc = r_warning;
 
 				if ((rp->flag & RED_PIPE) != 0)
 					messagefunc(_("pipe flush of `%s' failed (%s)."),
