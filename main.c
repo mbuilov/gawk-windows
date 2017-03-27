@@ -633,7 +633,10 @@ By default it reads standard input and writes standard output.\n\n"), fp);
 				warning(_("error writing standard output (%s)"), strerror(errno));
 			else if (fp == stderr)
 				warning(_("error writing standard error (%s)"), strerror(errno));
-		}
+		} else if (errno == SIGPIPE)
+			die_via_sigpipe();
+
+		// some other problem than SIGPIPE
 		exit(EXIT_FAILURE);
 	}
 
