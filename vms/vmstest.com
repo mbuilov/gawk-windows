@@ -920,8 +920,10 @@ $	return
 $
 $argarray:	echo "argarray"
 $	test_class = "basic"
+$	copy sys$disk:[]argarray.in sys$disk:[]argarray.input
+$       purge sys$disk:[]argarray.input
 $	define/User TEST "test"			!this is useless...
-$	gawk -f argarray.awk ./argarray.in - >_argarray.tmp
+$	gawk -f argarray.awk ./argarray.input - >_argarray.tmp
 just a test
 $	if f$search("sys$disk:[]_''test'.tmp;2") .nes. ""
 $	then
