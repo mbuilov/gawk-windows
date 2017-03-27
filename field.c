@@ -40,15 +40,15 @@ typedef void (* Setfunc)(long, char *, long, NODE *);
 
 /* is the API currently overriding the default parsing mechanism? */
 static bool api_parser_override = false;
-static long (*parse_field)(long, char **, int, NODE *,
+typedef long (*parse_field_func_t)(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
+static parse_field_func_t parse_field;
 /*
  * N.B. The normal_parse_field function pointer contains the parse_field value
  * that should be used except when API field parsing is overriding the default
  * field parsing mechanism.
  */
-static long (*normal_parse_field)(long, char **, int, NODE *,
-			     Regexp *, Setfunc, NODE *, NODE *, bool);
+static parse_field_func_t normal_parse_field;
 static long re_parse_field(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
 static long def_parse_field(long, char **, int, NODE *,
@@ -771,9 +771,10 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 		return nf;
 	if (gawk_mb_cur_max > 1 && fw->use_chars) {
 		/*
-		 * XXX This may be a bug. Most likely, shift state should
-		 * persist across all fields in a record, if not across record
-		 * boundaries as well.
+		 * Reset the shift state for each field, since there might
+		 * be who-knows-what kind of stuff in between fields,
+		 * and we assume each field starts with a valid (possibly
+		 * multibyte) character.
 		 */
 		memset(&mbs, 0, sizeof(mbstate_t));
 		while (nf < up_to) {
@@ -1104,10 +1105,10 @@ do_patsplit(int nargs)
 	return tmp;
 }
 
-/* set_parser: update the current (non-API) parser */
+/* set_parser --- update the current (non-API) parser */
 
 static void
-set_parser(long (*func)(long, char **, int, NODE *, Regexp *, Setfunc, NODE *, NODE *, bool))
+set_parser(parse_field_func_t func)
 {
 	normal_parse_field = func;
 	if (! api_parser_override && parse_field != func) {
@@ -1149,7 +1150,7 @@ set_FIELDWIDTHS()
 
 	if (FIELDWIDTHS == NULL) {
 		emalloc(FIELDWIDTHS, awk_fieldwidth_info_t *, awk_fieldwidth_info_size(fw_alloc), "set_FIELDWIDTHS");
-		FIELDWIDTHS->use_chars = awk_true;
+		FIELDWIDTHS->use_chars = true;
 	}
 	FIELDWIDTHS->nf = 0;
 	for (i = 0; ; i++) {
@@ -1201,8 +1202,8 @@ set_FIELDWIDTHS()
 	}
 
 	if (fatal_error)
-		fatal(_("invalid FIELDWIDTHS value, near `%s'"),
-			      scan);
+		fatal(_("invalid FIELDWIDTHS value, for field %d, near `%s'"),
+			      i, scan);
 }
 
 /* set_FS --- handle things when FS is assigned to */

@@ -124,16 +124,18 @@ typedef enum awk_bool {
  * field lengths are specified in terms of bytes or potentially multi-byte
  * characters. Performance will be better if the values are supplied in
  * terms of bytes. The fields[0].skip value indicates how many bytes (or
- * characters to skip) before $1, and fields[0].len is the length of $1, etc.
+ * characters) to skip before $1, and fields[0].len is the length of $1, etc.
  */
+
 typedef struct {
 	awk_bool_t	use_chars;	/* false ==> use bytes */
 	size_t		nf;
 	struct awk_field_info {
-		size_t	skip;	/* # to skip before field starts */
+		size_t	skip;	/* amount to skip before field starts */
 		size_t len;	/* length of field */
-	} fields[1];	/* actual dimension should be nf */
+	} fields[1];		/* actual dimension should be nf */
 } awk_fieldwidth_info_t;
+
 /*
  * This macro calculates the total struct size needed. This is useful when
  * calling malloc or realloc.

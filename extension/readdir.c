@@ -51,7 +51,7 @@
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
 #else
-#error Cannot compile the dirent extension on this system!
+#error Cannot compile the readdir extension on this system!
 #endif
 
 #ifdef __MINGW32__
@@ -137,6 +137,7 @@ ftype(struct dirent *entry, const char *dirname)
 }
 
 /* get_inode --- get the inode of a file */
+
 static long long
 get_inode(struct dirent *entry, const char *dirname)
 {
@@ -199,7 +200,7 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 		return EOF;
 	}
 
-	ino = get_inode (dirent, iobuf->name);
+	ino = get_inode(dirent, iobuf->name);
 
 #if __MINGW32__
 	len = sprintf(the_dir->buf, "%I64u/%s", ino, dirent->d_name);
