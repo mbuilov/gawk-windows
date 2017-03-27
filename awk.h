@@ -1983,7 +1983,9 @@ make_number_node(unsigned int tp)
 #ifdef SIGPIPE
 #define ignore_sigpipe() signal(SIGPIPE, SIG_IGN)
 #define set_sigpipe_to_default() signal(SIGPIPE, SIG_DFL)
+#define die_via_sigpipe() (signal(SIGPIPE, SIG_DFL), kill(getpid(), SIGPIPE))
 #else
 #define ignore_sigpipe()
 #define set_sigpipe_to_default()
+#define die_via_sigpipe() exit(EXIT_FATAL)
 #endif
