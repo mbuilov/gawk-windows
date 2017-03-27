@@ -1,3 +1,12 @@
+2017-03-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Cause EPIPE errors to stdout to generate a real SIGPIPE.
+
+	* awk.h (die_via_sigpipe): New macro.
+	* builtin.c (efwrite): Use it.
+	* io.c (non_fatal_flush_std_file): Ditto.
+	* main.c (usage): Ditto.
+
 2017-03-25         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c (flush_io): Use r_fatal and r_warning for messagefunc

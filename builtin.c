@@ -129,9 +129,9 @@ wrerror:
 	if (errno == 0 || errno == EINVAL)
 		w32_maybe_set_errno();
 #endif
-	/* die silently on EPIPE to stdout */
+	/* for stdout, die with a real SIGPIPE, like other awks */
 	if (fp == stdout && errno == EPIPE)
-		gawk_exit(EXIT_SUCCESS);	// a la SIGPIPE
+		die_via_sigpipe();
 
 	/* otherwise die verbosely */
 	if ((rp != NULL) ? is_non_fatal_redirect(rp->value, strlen(rp->value)) : is_non_fatal_std(fp))
