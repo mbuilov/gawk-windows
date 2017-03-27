@@ -1400,7 +1400,7 @@ non_fatal_flush_std_file(FILE *fp)
 
 		if (is_fatal) {
 			if (errno == EPIPE)
-				exit(EXIT_SUCCESS);	// simulate SIGPIPE
+				die_via_sigpipe();
 			else
 				fatal(fp == stdout
 					? _("fflush: cannot flush standard output: %s")
