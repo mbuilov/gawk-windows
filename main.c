@@ -628,13 +628,13 @@ By default it reads standard input and writes standard output.\n\n"), fp);
 
 	if (ferror(fp)) {
 		/* don't warn about stdout/stderr if EPIPE, but do error exit */
-		if (errno != EPIPE) {
-			if (fp == stdout)
-				warning(_("error writing standard output (%s)"), strerror(errno));
-			else if (fp == stderr)
-				warning(_("error writing standard error (%s)"), strerror(errno));
-		} else if (errno == SIGPIPE)
+		if (errno == EPIPE)
 			die_via_sigpipe();
+
+		if (fp == stdout)
+			warning(_("error writing standard output (%s)"), strerror(errno));
+		else if (fp == stderr)
+			warning(_("error writing standard error (%s)"), strerror(errno));
 
 		// some other problem than SIGPIPE
 		exit(EXIT_FAILURE);
