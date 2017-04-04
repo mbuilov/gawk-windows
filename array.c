@@ -1353,28 +1353,28 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 	list = symbol->alist(symbol, & akind);
 	assoc_kind = (assoc_kind_t) akind.flags;	/* symbol->alist can modify it */
 
-	if (list == NULL || ! cmp_func || (assoc_kind & (AASC|ADESC)) != 0)
-		return list;	/* empty list or unsorted, or list already sorted */
+	/* check for empty list or unsorted, or list already sorted */
+	if (list != NULL && cmp_func != NULL && (assoc_kind & (AASC|ADESC)) == 0) {
+		num_elems = assoc_length(symbol);
 
-	num_elems = assoc_length(symbol);
+		qsort(list, num_elems, elem_size * sizeof(NODE *), cmp_func); /* shazzam! */
 
-	qsort(list, num_elems, elem_size * sizeof(NODE *), cmp_func); /* shazzam! */
+		if (sort_ctxt == SORTED_IN && (assoc_kind & (AINDEX|AVALUE)) == (AINDEX|AVALUE)) {
+			/* relocate all index nodes to the first half of the list. */
+			for (j = 1; j < num_elems; j++)
+				list[j] = list[2 * j];
+
+			/* give back extra memory */
+
+			erealloc(list, NODE **, num_elems * sizeof(NODE *), "assoc_list");
+		}
+	}
 
 	if (cmp_func == sort_user_func) {
 		code = POP_CODE();
 		currule = save_rule;            /* restore current rule */
 		bcfree(code->nexti);            /* Op_stop */
 		bcfree(code);                   /* Op_func_call */
-	}
-
-	if (sort_ctxt == SORTED_IN && (assoc_kind & (AINDEX|AVALUE)) == (AINDEX|AVALUE)) {
-		/* relocate all index nodes to the first half of the list. */
-		for (j = 1; j < num_elems; j++)
-			list[j] = list[2 * j];
-
-		/* give back extra memory */
-
-		erealloc(list, NODE **, num_elems * sizeof(NODE *), "assoc_list");
 	}
 
 	return list;

@@ -37,7 +37,7 @@ static NODE *symbol_list;
 static void (*install_func)(NODE *) = NULL;
 static NODE *make_symbol(const char *name, NODETYPE type);
 static NODE *install(const char *name, NODE *parm, NODETYPE type);
-static void free_bcpool(INSTRUCTION *pl);
+static void free_bcpool(INSTRUCTION_POOL *pl);
 
 static AWK_CONTEXT *curr_ctxt = NULL;
 static int ctxt_level;
@@ -693,21 +693,19 @@ check_param_names(void)
 	return result;
 }
 
-#define pool_size	d.dl
 #define freei		x.xi
-static INSTRUCTION *pool_list;
-
-/* INSTR_CHUNK must be > largest code size (3) */
-#define INSTR_CHUNK 127
+static INSTRUCTION_POOL pools;
 
 /* bcfree --- deallocate instruction */
 
 void
 bcfree(INSTRUCTION *cp)
 {
+	assert(cp->pool_size >= 1 && cp->pool_size <= MAX_INSTRUCTION_ALLOC);
+
 	cp->opcode = 0;
-	cp->nexti = pool_list->freei;
-	pool_list->freei = cp;
+	cp->nexti = pools.pool[cp->pool_size].freei;
+	pools.pool[cp->pool_size].freei = cp;
 }
 
 /* bcalloc --- allocate a new instruction */
@@ -717,37 +715,16 @@ bcalloc(OPCODE op, int size, int srcline)
 {
 	INSTRUCTION *cp;
 
-	if (size > 1) {
-		/* wide instructions Op_rule, Op_func_call .. */
-		emalloc(cp, INSTRUCTION *, (size + 1) * sizeof(INSTRUCTION), "bcalloc");
-		cp->pool_size = size;
-		cp->nexti = pool_list->nexti;
-		pool_list->nexti = cp++;
+	assert(size >= 1 && size <= MAX_INSTRUCTION_ALLOC);
+
+	if ((cp = pools.pool[size].freei) != NULL) {
+		pools.pool[size].freei = cp->nexti;
 	} else {
-		INSTRUCTION *pool;
-
-		pool = pool_list->freei;
-		if (pool == NULL) {
-			INSTRUCTION *last;
-			emalloc(cp, INSTRUCTION *, (INSTR_CHUNK + 1) * sizeof(INSTRUCTION), "bcalloc");
-
-			cp->pool_size = INSTR_CHUNK;
-			cp->nexti = pool_list->nexti;
-			pool_list->nexti = cp;
-			pool = ++cp;
-			last = &pool[INSTR_CHUNK - 1];
-			for (; cp <= last; cp++) {
-				cp->opcode = 0;
-				cp->nexti = cp + 1;
-			}
-			--cp;
-			cp->nexti = NULL;
-		}
-		cp = pool;
-		pool_list->freei = cp->nexti;
+		emalloc(cp, INSTRUCTION *, (size + 1) * sizeof(INSTRUCTION), "bcalloc");
 	}
 
 	memset(cp, 0, size * sizeof(INSTRUCTION));
+	cp->pool_size = size;
 	cp->opcode = op;
 	cp->source_line = srcline;
 	return cp;
@@ -773,7 +750,7 @@ new_context()
 static void
 set_context(AWK_CONTEXT *ctxt)
 {
-	pool_list = & ctxt->pools;
+	pools = ctxt->pools;
 	symbol_list = & ctxt->symbols;
 	srcfiles = & ctxt->srcfiles;
 	rule_list = & ctxt->rule_list;
@@ -915,24 +892,16 @@ free_bc_internal(INSTRUCTION *cp)
 /* free_bcpool --- free list of instruction memory pools */
 
 static void
-free_bcpool(INSTRUCTION *pl)
+free_bcpool(INSTRUCTION_POOL *pl)
 {
-	INSTRUCTION *pool, *tmp;
+	INSTRUCTION *cp, *next;
+	int i;
 
-	for (pool = pl->nexti; pool != NULL; pool = tmp) {
-		INSTRUCTION *cp, *last;
-		long psiz;
-		psiz = pool->pool_size;
-		if (psiz == INSTR_CHUNK)
-			last = pool + psiz;
-		else
-			last = pool + 1;
-		for (cp = pool + 1; cp <= last ; cp++) {
+	for (i = 1; i <= MAX_INSTRUCTION_ALLOC; i++) {
+		for (cp = pl->pool[i].nexti; cp != NULL; cp = next) {
+			next = cp->nexti;
 			if (cp->opcode != 0)
 				free_bc_internal(cp);
 		}
-		tmp = pool->nexti;
-		efree(pool);
 	}
-	memset(pl, 0, sizeof(INSTRUCTION));
 }

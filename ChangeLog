@@ -1,3 +1,18 @@
+2017-04-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (INSTRUCTION): Add pool_size member.
+	[MAX_INSTRUCTION_ALLOC]: New macro.
+	(INSTRUCTION_POOL): New type.
+	(struct context): Use INSTRUCTION_POOL.
+	* array.c (assoc_list): Reorg the code a bit to make sure
+	to alway free the INSTRUCTIONs allocated for calling a
+	user-supplied sorting function. Based on code by
+	Andrew Schorr.
+	* symbol.c (free_bcpool): Rework to use an INSTRUCTION_POOL.
+	(bcfree, bcalloc): Rework to use separate chains in
+	the instruction pool.
+	(set_context): Update appropriately.
+
 2017-03-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Cause EPIPE errors to stdout to generate a real SIGPIPE.

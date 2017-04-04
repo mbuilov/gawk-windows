@@ -783,6 +783,7 @@ typedef struct exp_instruction {
 	} x;
 
 	short source_line;
+	short pool_size;	// memory management in symbol.c
 	OPCODE opcode;
 } INSTRUCTION;
 
@@ -1031,9 +1032,15 @@ typedef struct srcfile {
 	int lasttok;
 } SRCFILE;
 
+// structure for INSTRUCTION pool, needed mainly for debugger
+typedef struct instruction_pool {
+#define MAX_INSTRUCTION_ALLOC	3	// we don't call bcalloc with more than this
+	INSTRUCTION pool[MAX_INSTRUCTION_ALLOC + 1];
+} INSTRUCTION_POOL;
+
 /* structure for execution context */
 typedef struct context {
-	INSTRUCTION pools;
+	INSTRUCTION_POOL pools;
 	NODE symbols;
 	INSTRUCTION rule_list;
 	SRCFILE srcfiles;
