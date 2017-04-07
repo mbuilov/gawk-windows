@@ -208,7 +208,7 @@ do_inplace_end(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	assert(result != NULL);
 
 	if (nargs != 2)
-		fatal(ext_id, _("inplace_begin: expects 2 arguments but called with %d"), nargs);
+		fatal(ext_id, _("inplace_end: expects 2 arguments but called with %d"), nargs);
 
 	if (! get_argument(0, AWK_STRING, &filename))
 		fatal(ext_id, _("inplace_end: cannot retrieve 1st argument as a string filename"));
