@@ -1,7 +1,7 @@
 #
 # doc/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 2000, 2001, 2002, 2004, 2005, 2007, 2010, 2011
+# Copyright (C) 2000, 2001, 2002, 2004, 2005, 2007, 2010, 2011, 2016, 2017
 # the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
@@ -24,7 +24,7 @@
 
 ## process this file with automake to produce Makefile.in
 
-info_TEXINFOS = gawk.texi gawkinet.texi using-git.texi
+info_TEXINFOS = gawk.texi gawkinet.texi gawkworkflow.texi
 
 man_MANS = gawk.1
 
@@ -51,7 +51,7 @@ EXTRA_DIST = ChangeLog ChangeLog.0 README.card ad.block setter.outline \
 	bc_notes
 
 # Get rid of generated files when cleaning
-CLEANFILES = *.ps *.html *.dvi *~ awkcard.nc awkcard.tr gawk.pdf gawkinet.pdf using-git.pdf awkcard.pdf gawk.1.pdf
+CLEANFILES = *.ps *.html *.dvi *~ awkcard.nc awkcard.tr gawk.pdf gawkinet.pdf gawkworkflow.pdf awkcard.pdf gawk.1.pdf
 
 MAKEINFO = @MAKEINFO@ --no-split --force
 
@@ -77,7 +77,7 @@ AWKCARD = awkcard.ps
 gawk.texi: $(srcdir)/gawktexi.in $(srcdir)/sidebar.awk
 	awk -f $(srcdir)/sidebar.awk < $(srcdir)/gawktexi.in > gawk.texi
 
-postscript: gawk.ps gawkinet.ps using-git.ps gawk.1.ps $(AWKCARD)
+postscript: gawk.ps gawkinet.ps gawkworkflow.ps gawk.1.ps $(AWKCARD)
 
 pdf-local: postscript gawk.pdf gawkinet.pdf awkcard.pdf gawk.1.pdf
 
@@ -87,8 +87,8 @@ gawk.ps: gawk.dvi
 gawkinet.ps: gawkinet.dvi
 	TEXINPUTS=$(srcdir): dvips -o gawkinet.ps gawkinet.dvi
 
-using-git.ps: using-git.dvi
-	TEXINPUTS=$(srcdir): dvips -o using-git.ps using-git.dvi
+gawkworkflow.ps: gawkworkflow.dvi
+	TEXINPUTS=$(srcdir): dvips -o gawkworkflow.ps gawkworkflow.dvi
 
 gawk.1.ps: gawk.1
 	-groff -man $(srcdir)/gawk.1 > gawk.1.ps
@@ -108,6 +108,14 @@ awkcard.nc: $(CARDFILES)
 awkcard.pdf: awkcard.ps
 	ps2pdf awkcard.ps awkcard.pdf
 
-spell:
+spell: spellmanual spell workflow
+
+spellmanual:
+	@echo ==== gawktexi.in ====;
 	export LC_ALL=C ; spell "$(srcdir)"/gawktexi.in | \
 	sort -u | comm -23 - "$(srcdir)"/wordlist
+
+spellworkflow:
+	@echo ==== gawkworkflow.texi ====
+	export LC_ALL=C ; spell "$(srcdir)"/gawkworkflow.texi | \
+	sort -u | comm -23 - "$(srcdir)"/wordlist2
