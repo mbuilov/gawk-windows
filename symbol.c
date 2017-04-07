@@ -693,8 +693,19 @@ check_param_names(void)
 	return result;
 }
 
-#define freei		x.xi
-static INSTRUCTION_POOL pools;
+static INSTRUCTION_POOL *pools;
+
+/*
+ * For best performance, the INSTR_CHUNK value should be divisible by all
+ * possible sizes, i.e. 1 through MAX_INSTRUCTION_ALLOC. Otherwise, there
+ * will be wasted space at the end of the block.
+ */
+#define INSTR_CHUNK (2*3*21)
+
+struct instruction_block {
+	struct instruction_block *next;
+	INSTRUCTION i[INSTR_CHUNK];
+};
 
 /* bcfree --- deallocate instruction */
 
@@ -704,8 +715,8 @@ bcfree(INSTRUCTION *cp)
 	assert(cp->pool_size >= 1 && cp->pool_size <= MAX_INSTRUCTION_ALLOC);
 
 	cp->opcode = 0;
-	cp->nexti = pools.pool[cp->pool_size].freei;
-	pools.pool[cp->pool_size].freei = cp;
+	cp->nexti = pools->pool[cp->pool_size - 1].free_list;
+	pools->pool[cp->pool_size - 1].free_list = cp;
 }
 
 /* bcalloc --- allocate a new instruction */
@@ -714,13 +725,24 @@ INSTRUCTION *
 bcalloc(OPCODE op, int size, int srcline)
 {
 	INSTRUCTION *cp;
+	struct instruction_mem_pool *pool;
 
 	assert(size >= 1 && size <= MAX_INSTRUCTION_ALLOC);
+	pool = &pools->pool[size - 1];
 
-	if ((cp = pools.pool[size].freei) != NULL) {
-		pools.pool[size].freei = cp->nexti;
+	if (pool->free_list != NULL) {
+		cp = pool->free_list;
+		pool->free_list = cp->nexti;
+	} else if (pool->free_space && pool->free_space + size <= & pool->block_list->i[INSTR_CHUNK]) {
+		cp = pool->free_space;
+		pool->free_space += size;
 	} else {
-		emalloc(cp, INSTRUCTION *, (size + 1) * sizeof(INSTRUCTION), "bcalloc");
+		struct instruction_block *block;
+		emalloc(block, struct instruction_block *, sizeof(struct instruction_block), "bcalloc");
+		block->next = pool->block_list;
+		pool->block_list = block;
+		cp = &block->i[0];
+		pool->free_space = &block->i[size];
 	}
 
 	memset(cp, 0, size * sizeof(INSTRUCTION));
@@ -750,7 +772,7 @@ new_context()
 static void
 set_context(AWK_CONTEXT *ctxt)
 {
-	pools = ctxt->pools;
+	pools = & ctxt->pools;
 	symbol_list = & ctxt->symbols;
 	srcfiles = & ctxt->srcfiles;
 	rule_list = & ctxt->rule_list;
@@ -889,19 +911,36 @@ free_bc_internal(INSTRUCTION *cp)
 	}
 }
 
+/* free_bc_mempool --- free a single pool */
+
+static void
+free_bc_mempool(struct instruction_mem_pool *pool, int size)
+{
+	int first = 1;
+	struct instruction_block *block, *next;
+
+	for (block = pool->block_list; block; block = next) {
+		INSTRUCTION *cp, *end;
+
+		end = (first ? pool->free_space : & block->i[INSTR_CHUNK]);
+		for (cp = & block->i[0]; cp + size <= end; cp += size) {
+			if (cp->opcode != 0)
+				free_bc_internal(cp);
+		}
+		next = block->next;
+		efree(block);
+		first = 0;
+	}
+}
+
+
 /* free_bcpool --- free list of instruction memory pools */
 
 static void
 free_bcpool(INSTRUCTION_POOL *pl)
 {
-	INSTRUCTION *cp, *next;
 	int i;
 
-	for (i = 1; i <= MAX_INSTRUCTION_ALLOC; i++) {
-		for (cp = pl->pool[i].nexti; cp != NULL; cp = next) {
-			next = cp->nexti;
-			if (cp->opcode != 0)
-				free_bc_internal(cp);
-		}
-	}
+	for (i = 0; i < MAX_INSTRUCTION_ALLOC; i++)
+		free_bc_mempool(& pl->pool[i], i + 1);
 }

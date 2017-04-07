@@ -1,3 +1,18 @@
+2017-04-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (INSTRUCTION_POOL): Redefine as an array of structures so we
+	can track allocated blocks.
+	* symbol.c (pools): Make it a pointer to avoid copying.
+	(struct instruction_block): Define structure to hold a block of
+	allocated instructions.
+	(bcfree): Update to use new INSTRUCTION_POOL definition.
+	(bcalloc): Allocate an instruction by searching first on the free
+	list, second for free space in the current block, or third by
+	allocating a new block.
+	(set_context): Update to reflect that pools is now a pointer.
+	(free_bc_mempool): New helper function to free a pool of a certain size.
+	(fre_bcpool): Call free_bc_mempool for each pool.
+
 2017-04-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h (INSTRUCTION): Add pool_size member.

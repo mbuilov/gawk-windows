@@ -1035,7 +1035,11 @@ typedef struct srcfile {
 // structure for INSTRUCTION pool, needed mainly for debugger
 typedef struct instruction_pool {
 #define MAX_INSTRUCTION_ALLOC	3	// we don't call bcalloc with more than this
-	INSTRUCTION pool[MAX_INSTRUCTION_ALLOC + 1];
+	struct instruction_mem_pool {
+		struct instruction_block *block_list;
+		INSTRUCTION *free_space;	// free location in active block
+		INSTRUCTION *free_list;
+	} pool[MAX_INSTRUCTION_ALLOC];
 } INSTRUCTION_POOL;
 
 /* structure for execution context */
