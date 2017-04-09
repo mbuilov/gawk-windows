@@ -132,7 +132,7 @@ typedef struct {
 	size_t		nf;
 	struct awk_field_info {
 		size_t	skip;	/* amount to skip before field starts */
-		size_t len;	/* length of field */
+		size_t	len;	/* length of field */
 	} fields[1];		/* actual dimension should be nf */
 } awk_fieldwidth_info_t;
 

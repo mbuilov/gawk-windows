@@ -771,10 +771,10 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 		return nf;
 	if (gawk_mb_cur_max > 1 && fw->use_chars) {
 		/*
-		 * Reset the shift state for each field, since there might
-		 * be who-knows-what kind of stuff in between fields,
-		 * and we assume each field starts with a valid (possibly
-		 * multibyte) character.
+		 * Reset the shift state. Arguably, the shift state should
+		 * be part of the file state and carried forward at all times,
+		 * but nobody has complained so far, so this may not matter
+		 * in practice.
 		 */
 		memset(&mbs, 0, sizeof(mbstate_t));
 		while (nf < up_to) {
