@@ -597,8 +597,7 @@ typedef enum lintvals {
 /* --------------------------------Instruction ---------------------------------- */
 
 typedef enum opcodeval {
-	/* illegal entry == 0 */
-	Op_illegal,
+	Op_illegal = 0,		/* illegal entry */
 
 	/* binary operators */
 	Op_times,

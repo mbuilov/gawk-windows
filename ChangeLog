@@ -1,3 +1,12 @@
+2017-04-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (enum opcodeval): For the avoidance of doubt, specify that
+	Op_illegal must equal zero.
+	* symbol.c (bcfree): Improve clarity by setting opcode to Op_illegal
+	instead of 0.
+	(free_bc_mempool): Improve clarity by comparing opcode to Op_illegal
+	instead of to 0.
+
 2017-04-10         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* symbol.c (free_bc_mempool): Change `first' from int to bool.

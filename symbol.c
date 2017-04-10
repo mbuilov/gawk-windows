@@ -714,7 +714,7 @@ bcfree(INSTRUCTION *cp)
 {
 	assert(cp->pool_size >= 1 && cp->pool_size <= MAX_INSTRUCTION_ALLOC);
 
-	cp->opcode = 0;
+	cp->opcode = Op_illegal;
 	cp->nexti = pools->pool[cp->pool_size - 1].free_list;
 	pools->pool[cp->pool_size - 1].free_list = cp;
 }
@@ -924,7 +924,7 @@ free_bc_mempool(struct instruction_mem_pool *pool, int size)
 
 		end = (first ? pool->free_space : & block->i[INSTR_CHUNK]);
 		for (cp = & block->i[0]; cp + size <= end; cp += size) {
-			if (cp->opcode != 0)
+			if (cp->opcode != Op_illegal)
 				free_bc_internal(cp);
 		}
 		next = block->next;
