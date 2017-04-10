@@ -916,7 +916,7 @@ free_bc_internal(INSTRUCTION *cp)
 static void
 free_bc_mempool(struct instruction_mem_pool *pool, int size)
 {
-	int first = 1;
+	bool first = true;
 	struct instruction_block *block, *next;
 
 	for (block = pool->block_list; block; block = next) {
@@ -929,7 +929,7 @@ free_bc_mempool(struct instruction_mem_pool *pool, int size)
 		}
 		next = block->next;
 		efree(block);
-		first = 0;
+		first = false;
 	}
 }
 
