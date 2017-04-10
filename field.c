@@ -1150,7 +1150,7 @@ set_FIELDWIDTHS()
 
 	if (FIELDWIDTHS == NULL) {
 		emalloc(FIELDWIDTHS, awk_fieldwidth_info_t *, awk_fieldwidth_info_size(fw_alloc), "set_FIELDWIDTHS");
-		FIELDWIDTHS->use_chars = true;
+		FIELDWIDTHS->use_chars = awk_true;
 	}
 	FIELDWIDTHS->nf = 0;
 	for (i = 0; ; i++) {
