@@ -11,6 +11,14 @@
 
 	* symbol.c (free_bc_mempool): Change `first' from int to bool.
 
+2017-04-08  Eli Zaretskii  <eliz@gnu.org>
+
+	* main.c (usage, copyleft) [__MINGW32__]:
+	* io.c (non_fatal_flush_std_file, close_io) [__MINGW32__]: Call
+	w32_maybe_set_errno to correctly set errno to EPIPE when appropriate.
+
+	* awk.h (die_via_sigpipe) [__MINGW32__]: MinGW-specific definition.
+
 2017-04-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* awk.h (INSTRUCTION_POOL): Redefine as an array of structures so we
