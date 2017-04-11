@@ -7469,7 +7469,7 @@ else if  (PROCINFO["FS"] == "FIELDWIDTHS")
 else if  (PROCINFO["FS"] == "FPAT")
     @var{content-based field splitting} @dots{} @ii{(see next @value{SECTION})}
 else
-    @var{API input parser field splitting} @dots{} @ii{(@pxref{Input Parsers})}
+    @var{API input parser field splitting} @dots{} @ii{(advanced feature)}
 @end example
 
 This information is useful when writing a function
@@ -7610,7 +7610,7 @@ to split input records into fields.
 The mechanism used is based on which of the three
 variables---@code{FS}, @code{FIELDWIDTHS}, or @code{FPAT}---was
 last assigned to. In addition, an API input parser may choose to
-override the record parsing mechanism; please refer to @pxref{Input Parsers}
+override the record parsing mechanism; please refer to @ref{Input Parsers}
 for further information about this feature.
 
 @node Multiple Line
@@ -32321,10 +32321,10 @@ to @code{NULL}, and the function may set it to point to a structure
 supplying field width information to override the default
 field parsing mechanism. Note that this structure will not
 be copied by @command{gawk}; it must persist at least until the next call
-to @code{get_record} or @code{close_func}. Note also that @code{field_width} will
-be @code{NULL} when @code{getline} is assigning the results to a variable, thus
+to @code{get_record} or @code{close_func}. Note also that @code{field_width} is
+@code{NULL} when @code{getline} is assigning the results to a variable, thus
 field parsing is not needed. If the parser does set @code{*field_width},
-then @command{gawk} will use this layout to parse the input record,
+then @command{gawk} uses this layout to parse the input record,
 and the @code{PROCINFO["FS"]} value will be @code{"API"} while this record
 is active in @code{$0}.
 The @code{awk_fieldwidth_info_t} data structure
@@ -32388,7 +32388,7 @@ Register the input parser pointed to by @code{input_parser} with
 @end table
 
 If you would like to override the default field parsing mechanism for a given
-record, then you must populate the @code{awk_fieldwidth_info_t} structure,
+record, then you must populate an @code{awk_fieldwidth_info_t} structure,
 which looks like this:
 
 @example
@@ -32419,16 +32419,16 @@ Set this to the number of fields in the input record, i.e. @code{NF}.
 This is a variable-length array whose actual dimension should be @code{nf}.
 For each field, the @code{skip} element should be set to the number
 of characters or bytes, as controlled by the @code{use_chars} flag,
-to skip before the start of this field. And the @code{len} element provides
+to skip before the start of this field. The @code{len} element provides
 the length of the field. The values in @code{fields[0]} provide the information
-for the @code{$1} field, and so on through the @code{fields[nf-1]} element containing the information for @code{$NF}.
+for @code{$1}, and so on through the @code{fields[nf-1]} element containing the information for @code{$NF}.
 @end table
 
 A convenience macro @code{awk_fieldwidth_info_size(NF)} is provided to
 calculate the appropriate size of a variable-length 
 @code{awk_fieldwidth_info_t} structure containing @code{NF} fields. This can
-be used as an argument to @code{malloc} or in a union to allocate space
-statically. Please refer to the sample extension @code{readdir_test} for an
+be used as an argument to @code{malloc()} or in a union to allocate space
+statically. Please refer to the @code{readdir_test} sample extension for an
 example.
 
 @node Output Wrappers
