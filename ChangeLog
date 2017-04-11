@@ -1,3 +1,11 @@
+2017-04-08  Eli Zaretskii  <eliz@gnu.org>
+
+	* main.c (usage, copyleft) [__MINGW32__]:
+	* io.c (non_fatal_flush_std_file, close_io) [__MINGW32__]: Call
+	w32_maybe_set_errno to correctly set errno to EPIPE when appropriate.
+
+	* awk.h (die_via_sigpipe) [__MINGW32__]: MinGW-specific definition.
+
 2017-03-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Cause EPIPE errors to stdout to generate a real SIGPIPE.
