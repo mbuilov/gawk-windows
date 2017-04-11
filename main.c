@@ -627,6 +627,10 @@ By default it reads standard input and writes standard output.\n\n"), fp);
 	fflush(fp);
 
 	if (ferror(fp)) {
+#ifdef __MINGW32__
+		if (errno == 0 || errno == EINVAL)
+			w32_maybe_set_errno();
+#endif
 		/* don't warn about stdout/stderr if EPIPE, but do error exit */
 		if (errno == EPIPE)
 			die_via_sigpipe();
@@ -673,6 +677,10 @@ along with this program. If not, see http://www.gnu.org/licenses/.\n");
 	fflush(stdout);
 
 	if (ferror(stdout)) {
+#ifdef __MINGW32__
+		if (errno == 0 || errno == EINVAL)
+			w32_maybe_set_errno();
+#endif
 		/* don't warn about stdout if EPIPE, but do error exit */
 		if (errno != EPIPE)
 			warning(_("error writing standard output (%s)"), strerror(errno));
