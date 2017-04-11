@@ -1987,5 +1987,10 @@ str_terminate_f(NODE *n, char *savep)
 #else
 #define ignore_sigpipe()
 #define set_sigpipe_to_default()
+#ifdef __MINGW32__
+/* 0xC0000008 is EXCEPTION_INVALID_HANDLE, somewhat appropriate for EPIPE */
+#define die_via_sigpipe() exit(0xC0000008)
+#else  /* !__MINGW32__ */
 #define die_via_sigpipe() exit(EXIT_FATAL)
+#endif	/* !__MINGW32__ */
 #endif

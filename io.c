@@ -1399,6 +1399,10 @@ non_fatal_flush_std_file(FILE *fp)
 		bool is_fatal = ! is_non_fatal_std(fp);
 
 		if (is_fatal) {
+#ifdef __MINGW32__
+			if (errno == 0 || errno == EINVAL)
+				w32_maybe_set_errno();
+#endif
 			if (errno == EPIPE)
 				die_via_sigpipe();
 			else
@@ -1494,12 +1498,20 @@ close_io(bool *stdio_problem)
 	*stdio_problem = false;
 	/* we don't warn about stdout/stderr if EPIPE, but we do error exit */
 	if (fflush(stdout) != 0) {
+#ifdef __MINGW32__
+		if (errno == 0 || errno == EINVAL)
+			w32_maybe_set_errno();
+#endif
 		if (errno != EPIPE)
 			warning(_("error writing standard output (%s)"), strerror(errno));
 		status++;
 		*stdio_problem = true;
 	}
 	if (fflush(stderr) != 0) {
+#ifdef __MINGW32__
+		if (errno == 0 || errno == EINVAL)
+			w32_maybe_set_errno();
+#endif
 		if (errno != EPIPE)
 			warning(_("error writing standard error (%s)"), strerror(errno));
 		status++;
