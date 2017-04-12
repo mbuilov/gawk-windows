@@ -384,6 +384,7 @@ mpg_format_val(const char *format, int index, NODE *s)
 	if ((s->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR))
 		efree(s->stptr);
 	s->stptr = r->stptr;
+	s->flags |= STRCUR;
 	freenode(r);	/* Do not unref(r)! We want to keep s->stptr == r->stpr.  */
 	free_wstr(s);
 	return s;
