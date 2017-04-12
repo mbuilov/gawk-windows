@@ -386,8 +386,10 @@ EXTRA_DIST = \
 	fwtest2.in \
 	fwtest2.ok \
 	fwtest3.awk \
-	fwtest3.in \
 	fwtest3.ok \
+	fwtest4.awk \
+	fwtest4.in \
+	fwtest4.ok \
 	genpot.awk \
 	genpot.ok \
 	gensub.awk \
@@ -1221,7 +1223,7 @@ GAWK_EXT_TESTS = \
 	crlf dbugeval dbugeval2 dbugtypedre1 dbugtypedre2 delsub \
 	devfd devfd1 devfd2 dumpvars errno exit \
 	fieldwdth forcenum fpat1 fpat2 fpat3 fpat4 fpat5 fpatnull fsfwfs funlen \
-	functab1 functab2 functab3 fwtest fwtest2 fwtest3 \
+	functab1 functab2 functab3 fwtest fwtest2 fwtest3 fwtest4 \
 	genpot gensub gensub2 gensub3 getlndir gnuops2 gnuops3 gnureops gsubind \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcas4 ignrcase \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
@@ -1263,7 +1265,7 @@ LOCALE_CHARSET_TESTS = \
 
 SHLIB_TESTS = \
 	apiterm fnmatch filefuncs fork fork2 fts functab4 getfile inplace1 inplace2 inplace3 \
-	ordchr ordchr2 readdir readfile readfile2 revout revtwoway rwarray testext time
+	ordchr ordchr2 readdir readdir_test readfile readfile2 revout revtwoway rwarray testext time
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
@@ -2187,6 +2189,12 @@ readdir:
 		-v dirlist=_dirlist -v longlist=_longlist > $@.ok
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@ _dirlist _longlist
 
+readdir_test:
+	@echo $@
+	@$(AWK) -lreaddir -F/ '{printf "[%s] [%s] [%s] [%s]\n", $$1, $$2, $$3, $$4}' "$(top_srcdir)" > $@.ok
+	@$(AWK) -lreaddir_test '{printf "[%s] [%s] [%s] [%s]\n", $$1, $$2, $$3, $$4}' "$(top_srcdir)" > _$@
+	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
+
 fts:
 	@case `uname` in \
 	IRIX) \
@@ -2366,6 +2374,11 @@ arrdbg:
 	@$(AWK) -v "okfile=$(srcdir)/$@.ok" -f "$(srcdir)"/$@.awk | grep array_f >_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ "$(srcdir)"/$@.ok
 #	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ "$(srcdir)"/$@.ok || exit 0
+
+fwtest3:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/fwtest2.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
 include Maketests

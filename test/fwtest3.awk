@@ -1,1 +1,6 @@
-BEGIN { FIELDWIDTHS="5" } { print $1 }
+BEGIN {
+   FIELDWIDTHS = "2:13 2:13 2:13";
+}
+{
+   printf "%s|%s|%s\n", $1, $2, $3
+}

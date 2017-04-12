@@ -805,10 +805,13 @@ is a regular expression.
 .PP
 If the
 .B FIELDWIDTHS
-variable is set to a space separated list of numbers, each field is
+variable is set to a space-separated list of numbers, each field is
 expected to have fixed width, and
 .I gawk
-splits up the record using the specified widths.  The value of
+splits up the record using the specified widths. 
+Each field width may optionally be preceded by a colon-separated
+value specifying the number of characters to skip before the field starts.
+The value of
 .B FS
 is ignored.
 Assigning a new value to
@@ -959,12 +962,14 @@ For non-system errors,
 will be zero.
 .TP
 .B FIELDWIDTHS
-A whitespace separated list of field widths.  When set,
+A whitespace-separated list of field widths.  When set,
 .I gawk
 parses the input into fields of fixed width, instead of using the
 value of the
 .B FS
 variable as the field separator.
+Each field width may optionally be preceded by a colon-separated
+value specifying the number of characters to skip before the field starts.
 See
 .BR Fields ,
 above.
@@ -1133,8 +1138,10 @@ is in effect,
 \fB"FPAT"\fP if field splitting with
 .B FPAT
 is in effect,
-or \fB"FIELDWIDTHS"\fP if field splitting with
+\fB"FIELDWIDTHS"\fP if field splitting with
 .B FIELDWIDTHS
+is in effect,
+or \fB"API"\fP if API input parser field splitting
 is in effect.
 .TP
 \fBPROCINFO["gid"]\fP

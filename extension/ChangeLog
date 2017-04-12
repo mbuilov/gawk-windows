@@ -4,6 +4,37 @@
 	wrong argument count error message. Thanks to Dan Neilsen
 	for the report.
 
+2017-03-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* readdir.c: Minor edits.
+	* readdir_test.c: Same minor edits, update copyright year,
+	bump version of extension in case this ever becomes the real one.
+
+2017-03-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* readdir.c (dir_get_record): Add additional parameter to make types
+	match and remove compiler warning.
+	* readfile.c (readfile_get_record): Ditto.
+	* revtwoway.c (rev2way_get_record): Ditto.
+
+2017-03-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readdir_test.c (open_directory_t): Replace field_width array
+	with new awk_fieldwidth_info_t structure. Wrap it in a union so
+	we can allocate the proper size.
+	(dir_get_record): Update field_width type from
+	'const awk_input_field_info_t **' to 'const awk_fieldwidth_info_t **'.
+	Update new fieldwidth parsing info appropriately.
+	(dir_take_control_of): Populate new fieldwidth parsing structure
+	with initial values.
+
+2017-03-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readdir_test.c (open_directory_t): Update field_width type from an
+	array of integers to an array of awk_input_field_info_t.
+	(dir_get_record): Ditto.
+	(dir_take_control_of): Ditto.
+
 2017-03-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* Makefile.am (pkgextension_LTLIBRARIES): Remove testext.la, since it
@@ -15,6 +46,13 @@
 	to build a shared version of this library. Since it is not being
 	installed, automake cannot use the final destination directory to
 	determine -rpath by itself. The value doesn't matter.
+
+2017-03-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readdir_test.c: Test extension using new get_record field_width
+	parsing feature.
+	* Makefile.am (noinst_LTLIBRARIES): Add readdir_test.la.
+	(readdir_test_la_*): Configure building of new extension library.
 
 2017-01-21  Eli Zaretskii  <eliz@gnu.org>
 
