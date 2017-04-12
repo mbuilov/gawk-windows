@@ -306,7 +306,7 @@ struct inet_socket_info {
 	} localport, remotehost, remoteport;
 };
 
-static bool inetfile(const char *str, struct inet_socket_info *isn);
+static bool inetfile(const char *str, size_t len, struct inet_socket_info *isn);
 
 static NODE *in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx);
 static long get_read_timeout(IOBUF *iop);
@@ -787,21 +787,21 @@ redirect_string(const char *str, size_t explen, bool not_string,
 		lintwarn(_("expression in `%s' redirection is a number"),
 			what);
 
-	if (str == NULL || *str == '\0')
+	if (explen < 1 || str == NULL || *str == '\0')
 		fatal(_("expression for `%s' redirection has null string value"),
 			what);
 
 	if (do_lint && (strncmp(str, "0", explen) == 0
 			|| strncmp(str, "1", explen) == 0))
-		lintwarn(_("filename `%s' for `%s' redirection may be result of logical expression"),
-				str, what);
+		lintwarn(_("filename `%.*s' for `%s' redirection may be result of logical expression"),
+				(int) explen, str, what);
 
 #ifdef HAVE_SOCKETS
 	/*
 	 * Use /inet4 to force IPv4, /inet6 to force IPv6, and plain
 	 * /inet will be whatever we get back from the system.
 	 */
-	if (inetfile(str, & isi)) {
+	if (inetfile(str, explen, & isi)) {
 		tflag |= RED_SOCKET;
 		if (isi.protocol == SOCK_STREAM)
 			tflag |= RED_TCP;	/* use shutdown when closing */
@@ -1785,7 +1785,7 @@ devopen(const char *name, const char *mode)
 
 	if (do_traditional) {
 		goto strictopen;
-	} else if (inetfile(name, & isi)) {
+	} else if (inetfile(name, strlen(name), & isi)) {
 #ifdef HAVE_SOCKETS
 #define DEFAULT_RETRIES 20
 		static unsigned long def_retries = DEFAULT_RETRIES;
@@ -1794,13 +1794,15 @@ devopen(const char *name, const char *mode)
 		static long msleep = 1000;
 		bool hard_error = false;
 		bool non_fatal = is_non_fatal_redirect(name, strlen(name));
+		char save;
 
 		cp = (char *) name;
 
 		/* socketopen requires NUL-terminated strings */
 		cp[isi.localport.offset+isi.localport.len] = '\0';
 		cp[isi.remotehost.offset+isi.remotehost.len] = '\0';
-		/* remoteport comes last, so already NUL-terminated */
+		save = cp[isi.remoteport.offset+isi.remoteport.len];
+		cp[isi.remoteport.offset+isi.remoteport.len] = '\0';
 
 		if (first_time) {
 			char *cp, *end;
@@ -1846,6 +1848,7 @@ devopen(const char *name, const char *mode)
 		/* restore original name string */
 		cp[isi.localport.offset+isi.localport.len] = '/';
 		cp[isi.remotehost.offset+isi.remotehost.len] = '/';
+		cp[isi.remoteport.offset+isi.remoteport.len] = save;
 #else /* ! HAVE_SOCKETS */
 		fatal(_("TCP/IP communications are not supported"));
 #endif /* HAVE_SOCKETS */
@@ -1868,7 +1871,7 @@ strictopen:
 		   not permitted.  */
 		struct stat buf;
 
-		if (! inetfile(name, NULL)
+		if (! inetfile(name, strlen(name), NULL)
 		    && stat(name, & buf) == 0 && S_ISDIR(buf.st_mode))
 			errno = EISDIR;
 	}
@@ -1890,7 +1893,7 @@ two_way_open(const char *str, struct redirect *rp, int extfd)
 
 #ifdef HAVE_SOCKETS
 	/* case 1: socket */
-	if (extfd >= 0 || inetfile(str, NULL)) {
+	if (extfd >= 0 || inetfile(str, strlen(str), NULL)) {
 		int fd, newfd;
 
 		fd = (extfd >= 0) ? extfd : devopen(str, "rw");
@@ -4006,21 +4009,24 @@ free_rp(struct redirect *rp)
 /* inetfile --- return true for a /inet special file, set other values */
 
 static bool
-inetfile(const char *str, struct inet_socket_info *isi)
+inetfile(const char *str, size_t len, struct inet_socket_info *isi)
 {
 #ifndef HAVE_SOCKETS
 	return false;
 #else
 	const char *cp = str;
+	const char *cpend = str + len;
 	struct inet_socket_info buf;
 
 	/* syntax: /inet/protocol/localport/hostname/remoteport */
-	if (strncmp(cp, "/inet", 5) != 0)
+	if (len < 5 || memcmp(cp, "/inet", 5) != 0)
 		/* quick exit */
 		return false;
 	if (! isi)
 		isi = & buf;
 	cp += 5;
+	if (cpend - cp < 2)
+		return false;
 	switch (*cp) {
 	case '/':
 		isi->family = AF_UNSPEC;
@@ -4041,9 +4047,11 @@ inetfile(const char *str, struct inet_socket_info *isi)
 	cp++;	/* skip past '/' */
 
 	/* which protocol? */
-	if (strncmp(cp, "tcp/", 4) == 0)
+	if (cpend - cp < 5)
+		return false;
+	if (memcmp(cp, "tcp/", 4) == 0)
 		isi->protocol = SOCK_STREAM;
-	else if (strncmp(cp, "udp/", 4) == 0)
+	else if (memcmp(cp, "udp/", 4) == 0)
 		isi->protocol = SOCK_DGRAM;
 	else
 		return false;
@@ -4051,37 +4059,43 @@ inetfile(const char *str, struct inet_socket_info *isi)
 
 	/* which localport? */
 	isi->localport.offset = cp-str;
-	while (*cp != '/' && *cp != '\0')
-		cp++;
+	while (*cp != '/') {
+		if (++cp >= cpend)
+			return false;
+	}
 	/*
 	 * Require a port, let them explicitly put 0 if
 	 * they don't care.
 	 */
-	if (*cp != '/' || ((isi->localport.len = (cp-str)-isi->localport.offset) == 0))
+	if ((isi->localport.len = (cp-str)-isi->localport.offset) == 0)
 		return false;
 
 	/* which hostname? */
+	if (cpend - cp < 2)
+		return false;
 	cp++;
 	isi->remotehost.offset = cp-str;
-	while (*cp != '/' && *cp != '\0')
-		cp++;
-	if (*cp != '/' || ((isi->remotehost.len = (cp-str)-isi->remotehost.offset) == 0))
+	while (*cp != '/') {
+		if (++cp >= cpend)
+			return false;
+	}
+	if ((isi->remotehost.len = (cp-str)-isi->remotehost.offset) == 0)
 		return false;
 
 	/* which remoteport? */
+	if (cpend - cp < 2)
+		return false;
 	cp++;
 	/*
 	 * The remote port ends the special file name.
-	 * This means there already is a '\0' at the end of the string.
-	 * Therefore no need to patch any string ending.
 	 *
 	 * Here too, require a port, let them explicitly put 0 if
 	 * they don't care.
 	 */
 	isi->remoteport.offset = cp-str;
-	while (*cp != '/' && *cp != '\0')
+	while (*cp != '/' && cp < cpend)
 		cp++;
-	if (*cp != '\0' || ((isi->remoteport.len = (cp-str)-isi->remoteport.offset) == 0))
+	if (cp != cpend || ((isi->remoteport.len = (cp-str)-isi->remoteport.offset) == 0))
 		return false;
 
 #ifndef HAVE_GETADDRINFO

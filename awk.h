@@ -1697,7 +1697,7 @@ extern Regexp *re_update(NODE *t);
 extern void resyntax(int syntax);
 extern void resetup(void);
 extern int reisstring(const char *text, size_t len, Regexp *re, const char *buf);
-extern int get_numbase(const char *str, bool use_locale);
+extern int get_numbase(const char *str, size_t len, bool use_locale);
 extern bool using_utf8(void);
 
 /* symbol.c */
@@ -1977,6 +1977,8 @@ erealloc_real(void *ptr, size_t count, const char *where, const char *var, const
 	return ret;
 }
 
+/* make_number_node --- make node with the give flags */
+
 static inline NODE *
 make_number_node(unsigned int tp)
 {
@@ -1991,6 +1993,22 @@ make_number_node(unsigned int tp)
 	r->wstlen = 0;
 	return r;
 }
+
+/*
+ * str_terminate_f, str_terminate, str_restore: function and macros to
+ * reduce chances of typos when terminating and restoring strings.
+ * This also helps to enforce that the NODE must be in scope when we restore.
+ */
+
+static inline void
+str_terminate_f(NODE *n, char *savep)
+{
+	*savep = n->stptr[n->stlen];
+	n->stptr[n->stlen] = '\0';
+}
+
+#define str_terminate(n, save) str_terminate_f((n), &save)
+#define str_restore(n, save) (n)->stptr[(n)->stlen] = save
 
 #ifdef SIGPIPE
 #define ignore_sigpipe() signal(SIGPIPE, SIG_IGN)

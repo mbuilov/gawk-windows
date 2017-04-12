@@ -3994,7 +3994,7 @@ retry:
 
 		base = 10;
 		if (! do_traditional) {
-			base = get_numbase(tokstart, false);
+			base = get_numbase(tokstart, strlen(tokstart)-1, false);
 			if (do_lint) {
 				if (base == 8)
 					lintwarn("numeric constant `%.*s' treated as octal",
@@ -4025,7 +4025,7 @@ retry:
 		}
 #endif
 		if (base != 10)
-			d = nondec2awknum(tokstart, strlen(tokstart), NULL);
+			d = nondec2awknum(tokstart, strlen(tokstart)-1, NULL);
 		else
 			d = atof(tokstart);
 		yylval->memory = set_profile_text(make_number(d), tokstart, strlen(tokstart) - 1);
