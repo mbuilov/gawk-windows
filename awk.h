@@ -597,8 +597,7 @@ typedef enum lintvals {
 /* --------------------------------Instruction ---------------------------------- */
 
 typedef enum opcodeval {
-	/* illegal entry == 0 */
-	Op_illegal,
+	Op_illegal = 0,		/* illegal entry */
 
 	/* binary operators */
 	Op_times,
@@ -783,6 +782,7 @@ typedef struct exp_instruction {
 	} x;
 
 	short source_line;
+	short pool_size;	// memory management in symbol.c
 	OPCODE opcode;
 } INSTRUCTION;
 
@@ -1031,9 +1031,19 @@ typedef struct srcfile {
 	int lasttok;
 } SRCFILE;
 
+// structure for INSTRUCTION pool, needed mainly for debugger
+typedef struct instruction_pool {
+#define MAX_INSTRUCTION_ALLOC	3	// we don't call bcalloc with more than this
+	struct instruction_mem_pool {
+		struct instruction_block *block_list;
+		INSTRUCTION *free_space;	// free location in active block
+		INSTRUCTION *free_list;
+	} pool[MAX_INSTRUCTION_ALLOC];
+} INSTRUCTION_POOL;
+
 /* structure for execution context */
 typedef struct context {
-	INSTRUCTION pools;
+	INSTRUCTION_POOL pools;
 	NODE symbols;
 	INSTRUCTION rule_list;
 	SRCFILE srcfiles;
