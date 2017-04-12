@@ -3,6 +3,9 @@
 	* mpfr.c (mpg_format_val): Set STRCUR flag when we're done.
 	Fixes a memory leak. Thanks to valgrind for the report.
 
+	* builtin.c (do_dcgettext): Move declaration of reslen to
+	outside the ifdefs. Thanks to Hermann Peifer for the report.
+
 2017-04-12         Manuel Collado        <m-collado@users.sourceforge.net>
 
 	Fix the FPAT bug reported by Ed Morton in the gawk-bug mailing list.

@@ -3789,11 +3789,11 @@ do_dcgettext(int nargs)
 	NODE *tmp, *t1, *t2 = NULL;
 	char *string;
 	char *the_result;
+	size_t reslen;
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	int lc_cat;
 	char *domain;
 	char save1, save2;
-	size_t reslen;
 
 	if (nargs == 3) {	/* third argument */
 		tmp = POP_STRING();
