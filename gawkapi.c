@@ -153,7 +153,7 @@ api_set_argument(awk_ext_id_t id,
 NODE *
 awk_value_to_node(const awk_value_t *retval)
 {
-	NODE *ext_ret_val;
+	NODE *ext_ret_val = NULL;
 	NODE *v;
 
 	if (retval == NULL)
