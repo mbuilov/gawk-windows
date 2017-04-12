@@ -773,9 +773,13 @@ static NODE **
 env_remove(NODE *symbol, NODE *subs)
 {
 	NODE **val = str_remove(symbol, subs);
+	char save;
 
-	if (val != NULL)
+	if (val != NULL) {
+		str_terminate(subs, save);
 		(void) unsetenv(subs->stptr);
+		str_restore(subs, save);
+	}
 
 	return val;
 }

@@ -305,6 +305,35 @@
 	(set_profile_next): New function. All calls adjusted. Also improved
 	use at MPFR number case.
 
+2017-01-28         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (inetfile): Replace strncmp with memcmp in a few places, now
+	that we are checking string length beforehand.
+
+2017-01-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (redirect_string): Check explen positive before accessing *str.
+	In lintwarn message, use explen string length. Pass length to inetfile.
+	(devopen): Pass name length to inetfile.
+	Stop assuming that remoteport is NUL-terminated.
+	(two_way_open): Pass name length to inetfile.
+	(inetfile): Stop assuming NUL string termination; add checks to avoid 
+	string overrun.
+
+2017-01-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (str_terminate_f): New helper function for terminating a string
+	NODE.
+	(str_terminate): Macro wrapper to call str_terminate_f.
+	(str_restore): New macro to restore the string.
+	* builtin.c (do_strftime): Use str_terminate and str_restore.
+	(do_dcgettext): Ditto, and remove saved_end flag since equivalent
+	to testing (t2 != NULL). Fix overrun bug in calculating result
+	length when !ENABLE_NLS.
+	(do_dcngettext, do_bindtextdomain): Use str_terminate and str_restore.
+	* interpret.h (Op_arrayfor_init, Op_indirect_func_call): Ditto.
+	* str_array.c (env_remove): Ditto.
+
 2017-01-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* interpret.h [UNFIELD]: Fix condition for assignment from
@@ -316,6 +345,58 @@
 	* debug.c (do_run): Rework error message to ease translation.
 	Thanks to Rafael Fontenelle <rafaelff@gnome.org> and to
 	Eli Zaretskii <eliz@gnu.org>.
+
+2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* builtin.c (do_dcgettext): First argument also needs protection
+	from string overrun.
+	(do_dcngettext): Need to terminate string1 and string2 also,
+	and replace strlen(the_result), which could overrun.
+	(do_bindtextdomain): Terminate both string args, and eliminate
+	saved_end boolean which is redundant with (t2 != NULL).
+
+2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* interpret.h (Op_arrayfor_init): Protect against string overrun
+	on sorting method.
+	(Op_indirect_func_call): Terminate function name.
+
+2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* str_array.c (env_remove): Terminate string before calling unsetenv.
+
+2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* node.c (is_hex): Add a new argument pointing to the end of the string
+	so we can check for string overrun.
+	(r_force_number): Pass string end to is_hex.
+
+2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (get_numbase): Add string length argument so we can operate
+	on unterminated strings.
+	* awkgram.y: Call get_numbase with string length, and fix off-by-one
+	error in length passed to nondec2awknum: should be strlen(tokstart)-1
+	based on surrounding code.
+	* builtin.c (do_strtonum): Pass string length to get_numbase.
+	(nondec2awknum): Check string length before accessing characters.
+	* mpfr.c (force_mpnum): Pass string length to get_numbase.
+	* node.c (r_force_number): Pass string length to get_numbase.
+	(get_numbase): Add string length argument and honor it.
+
+2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* builtin.c (do_strftime): If format argument is passed, we need
+	to terminate it in case it's a field variable.
+
+2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* node.c (r_format_val): Before we free s->stptr, make sure that it
+	was malloced.
+	(wstr2str): Add comment explaining why it's safe to free n->stptr
+	without doing any checks.
+	* mpfr.c (mpg_format_val): Ditto. And no need to reset the STRCUR flag
+	that we just checked.
 
 2017-01-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 

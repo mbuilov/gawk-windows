@@ -1033,6 +1033,9 @@ EXTRA_DIST = \
 	strftime.awk \
 	strftlng.awk \
 	strftlng.ok \
+	strftfld.awk \
+	strftfld.in \
+	strftfld.ok \
 	strnum1.awk \
 	strnum1.ok \
 	strnum2.awk \
@@ -1241,7 +1244,7 @@ GAWK_EXT_TESTS = \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow shadowbuiltin \
 	sortfor sortfor2 sortu split_after_fpat \
-	splitarg4 strftime \
+	splitarg4 strftime strftfld \
 	strtonum strtonum1 switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
 	symtab7 symtab8 symtab9 symtab10 \
 	typedregex1 typedregex2 typedregex3 \

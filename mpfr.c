@@ -303,7 +303,7 @@ force_mpnum(NODE *n, int do_nondec, int use_locale)
 		cp1 = cp;
 
 	if (do_nondec)
-		base = get_numbase(cp1, use_locale);
+		base = get_numbase(cp1, cpend - cp1, use_locale);
 
 	if (! mpg_maybe_float(cp1, use_locale)) {
 		mpg_zero(n);
@@ -381,12 +381,10 @@ mpg_format_val(const char *format, int index, NODE *s)
 	}
 	s->flags = oflags;
 	s->stlen = r->stlen;
-	if ((s->flags & STRCUR) != 0)
+	if ((s->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR))
 		efree(s->stptr);
 	s->stptr = r->stptr;
 	freenode(r);	/* Do not unref(r)! We want to keep s->stptr == r->stpr.  */
-
-	s->flags |= STRCUR;
 	free_wstr(s);
 	return s;
 }

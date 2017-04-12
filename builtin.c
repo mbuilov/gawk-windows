@@ -1917,6 +1917,7 @@ do_strftime(int nargs)
 	bool do_gmt;
 	NODE *val = NULL;
 	NODE *sub = NULL;
+	char save;
 	static const time_t time_t_min = TYPE_MINIMUM(time_t);
 	static const time_t time_t_max = TYPE_MAXIMUM(time_t);
 
@@ -1990,6 +1991,7 @@ do_strftime(int nargs)
 			DEREF(t1);
 			return make_string("", 0);
 		}
+		str_terminate(t1, save);
 	}
 
 	if (do_gmt)
@@ -1997,8 +1999,10 @@ do_strftime(int nargs)
 	else
 		tm = localtime(& fclock);
 
-	if (tm == NULL)
-		return make_string("", 0);
+	if (tm == NULL) {
+		ret = make_string("", 0);
+		goto done;
+	}
 
 	bufp = buf;
 	bufsize = sizeof(buf);
@@ -2024,8 +2028,11 @@ do_strftime(int nargs)
 	ret = make_string(bufp, buflen);
 	if (bufp != buf)
 		efree(bufp);
-	if (t1)
+done:
+	if (t1) {
+		str_restore(t1, save);
 		DEREF(t1);
+	}
 	return ret;
 }
 
@@ -3592,7 +3599,7 @@ do_strtonum(int nargs)
 	tmp = fixtype(POP_SCALAR());
 	if ((tmp->flags & NUMBER) != 0)
 		d = (AWKNUM) tmp->numbr;
-	else if (get_numbase(tmp->stptr, use_lc_numeric) != 10)
+	else if (get_numbase(tmp->stptr, tmp->stlen, use_lc_numeric) != 10)
 		d = nondec2awknum(tmp->stptr, tmp->stlen, NULL);
 	else
 		d = (AWKNUM) force_number(tmp)->numbr;
@@ -3617,7 +3624,7 @@ nondec2awknum(char *str, size_t len, char **endptr)
 	short val;
 	char *start = str;
 
-	if (*str == '0' && (str[1] == 'x' || str[1] == 'X')) {
+	if (len >= 2 && *str == '0' && (str[1] == 'x' || str[1] == 'X')) {
 		/*
 		 * User called strtonum("0x") or some such,
 		 * so just quit early.
@@ -3667,7 +3674,7 @@ nondec2awknum(char *str, size_t len, char **endptr)
 		}
 		if (endptr)
 			*endptr = str;
-	} else if (*str == '0') {
+	} else if (len >= 1 && *str == '0') {
 		for (; len > 0; len--) {
 			if (! isdigit((unsigned char) *str)) {
 				if (endptr)
@@ -3785,8 +3792,8 @@ do_dcgettext(int nargs)
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	int lc_cat;
 	char *domain;
-	char save;
-	bool saved_end = false;
+	char save1, save2;
+	size_t reslen;
 
 	if (nargs == 3) {	/* third argument */
 		tmp = POP_STRING();
@@ -3798,9 +3805,7 @@ do_dcgettext(int nargs)
 	if (nargs >= 2) {  /* second argument */
 		t2 = POP_STRING();
 		domain = t2->stptr;
-		save = domain[t2->stlen];
-		domain[t2->stlen] = '\0';
-		saved_end = true;
+		str_terminate(t2, save2);
 	} else
 		domain = TEXTDOMAIN;
 #else
@@ -3818,16 +3823,20 @@ do_dcgettext(int nargs)
 	string = t1->stptr;
 
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
+	str_terminate(t1, save1);
 	the_result = dcgettext(domain, string, lc_cat);
-	if (saved_end)
-		domain[t2->stlen] = save;
-	if (t2 != NULL)
+	str_restore(t1, save1);
+	if (t2 != NULL) {
+		str_restore(t2, save2);
 		DEREF(t2);
+	}
+	reslen = strlen(the_result);
 #else
 	the_result = string;
+	reslen = t1->stlen;
 #endif
 	DEREF(t1);
-	return make_string(the_result, strlen(the_result));
+	return make_string(the_result, reslen);
 }
 
 
@@ -3839,11 +3848,12 @@ do_dcngettext(int nargs)
 	unsigned long number;
 	AWKNUM d;
 	char *the_result;
+	size_t reslen;
 
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	int lc_cat;
 	char *domain;
-	char save;
+	char save, save1, save2;
 	bool saved_end = false;
 
 	if (nargs == 5) {	/* fifth argument */
@@ -3885,17 +3895,29 @@ do_dcngettext(int nargs)
 
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 
+	str_terminate(t1, save1);
+	str_terminate(t2, save2);
 	the_result = dcngettext(domain, string1, string2, number, lc_cat);
+	reslen = strlen(the_result);
+	str_restore(t1, save1);
+	str_restore(t2, save2);
 	if (saved_end)
 		domain[t3->stlen] = save;
 	if (t3 != NULL)
 		DEREF(t3);
 #else
-	the_result = (number == 1 ? string1 : string2);
+	if (number == 1) {
+		the_result = string1;
+		reslen = t1->stlen;
+	}
+	else {
+		the_result = string2;
+		reslen = t2->stlen;
+	}
 #endif
 	DEREF(t1);
 	DEREF(t2);
-	return make_string(the_result, strlen(the_result));
+	return make_string(the_result, reslen);
 }
 
 /* do_bindtextdomain --- set the directory for a text domain */
@@ -3920,29 +3942,31 @@ do_bindtextdomain(int nargs)
 	/* set defaults */
 	directory = NULL;
 	domain = TEXTDOMAIN;
-	char save;
-	bool saved_end = false;
+	char save, save1;
 
 	if (nargs == 2) {	/* second argument */
 		t2 = POP_STRING();
 		domain = (const char *) t2->stptr;
 		save = t2->stptr[t2->stlen];
 		t2->stptr[t2->stlen] = '\0';
-		saved_end = true;
 	}
 
 	/* first argument */
 	t1 = POP_STRING();
-	if (t1->stlen > 0)
+	if (t1->stlen > 0) {
 		directory = (const char *) t1->stptr;
+		str_terminate(t1, save1);
+	}
 
 	the_result = bindtextdomain(domain, directory);
+	if (directory)
+		str_restore(t1, save1);
 
 	DEREF(t1);
-	if (saved_end)
+	if (t2 != NULL) {
 		t2->stptr[t2->stlen] = save;
-	if (t2 != NULL)
 		DEREF(t2);
+	}
 
 	return make_string(the_result, strlen(the_result));
 }

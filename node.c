@@ -41,12 +41,13 @@ int (*cmp_numbers)(const NODE *, const NODE *) = cmp_awknums;
 /* is_hex --- return true if a string looks like a hex value */
 
 static bool
-is_hex(const char *str)
+is_hex(const char *str, const char *cpend)
 {
+	/* on entry, we know the string length is >= 1 */
 	if (*str == '-' || *str == '+')
 		str++;
 
-	if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+	if (str + 1 < cpend && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
 		return true;
 
 	return false;
@@ -113,7 +114,7 @@ r_force_number(NODE *n)
 	if (   (! do_posix		/* not POSIXLY paranoid and */
 	        && (is_alpha((unsigned char) *cp)	/* letter, or */
 					/* CANNOT do non-decimal and saw 0x */
-		    || (! do_non_decimal_data && is_hex(cp))))) {
+		    || (! do_non_decimal_data && is_hex(cp, cpend))))) {
 		goto badnum;
 	}
 
@@ -129,7 +130,7 @@ r_force_number(NODE *n)
 
 	errno = 0;
 	if (do_non_decimal_data		/* main.c assures false if do_posix */
-		&& ! do_traditional && get_numbase(cp, true) != 10) {
+		&& ! do_traditional && get_numbase(cp, cpend - cp, true) != 10) {
 		/* nondec2awknum() saves and restores the byte after the string itself */
 		n->numbr = nondec2awknum(cp, cpend - cp, &ptr);
 	} else {
@@ -248,7 +249,7 @@ r_format_val(const char *format, int index, NODE *s)
 		}
 		s->flags = oflags;
 		s->stlen = r->stlen;
-		if ((s->flags & STRCUR) != 0)
+		if ((s->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR))
 			efree(s->stptr);
 		s->stptr = r->stptr;
 		freenode(r);	/* Do not unref(r)! We want to keep s->stptr == r->stpr.  */
@@ -273,7 +274,7 @@ r_format_val(const char *format, int index, NODE *s)
 			s->flags |= STRING;
 		}
 	}
-	if ((s->flags & STRCUR) != 0)
+	if ((s->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR))
 		efree(s->stptr);
 	emalloc(s->stptr, char *, s->stlen + 1, "format_val");
 	memcpy(s->stptr, sp, s->stlen + 1);
@@ -631,7 +632,7 @@ parse_escape(const char **string_ptr)
 /* get_numbase --- return the base to use for the number in 's' */
 
 int
-get_numbase(const char *s, bool use_locale)
+get_numbase(const char *s, size_t len, bool use_locale)
 {
 	int dec_point = '.';
 	const char *str = s;
@@ -645,7 +646,7 @@ get_numbase(const char *s, bool use_locale)
 		dec_point = loc.decimal_point[0];	/* XXX --- assumes one char */
 #endif
 
-	if (str[0] != '0')
+	if (len < 2 || str[0] != '0')
 		return 10;
 
 	/* leading 0x or 0X */
@@ -658,7 +659,7 @@ get_numbase(const char *s, bool use_locale)
 	 *
 	 * These beasts can have trailing whitespace. Deal with that too.
 	 */
-	for (; *str != '\0'; str++) {
+	for (; len > 0; len--, str++) {
 		if (*str == 'e' || *str == 'E' || *str == dec_point)
 			return 10;
 		else if (! isdigit((unsigned char) *str))
@@ -844,6 +845,7 @@ wstr2str(NODE *n)
 	}
 	*cp = '\0';
 
+	/* N.B. caller just created n with make_string, so this free is safe */
 	efree(n->stptr);
 	n->stptr = newval;
 	n->stlen = cp - newval;
