@@ -1520,7 +1520,7 @@ extern NODE *get_actual_argument(NODE *, int, bool);
 #endif
 /* field.c */
 extern void init_fields(void);
-extern void set_record(const char *buf, int cnt);
+extern void set_record(const char *buf, int cnt, const awk_fieldwidth_info_t *);
 extern void reset_record(void);
 extern void rebuild_record(void);
 extern void set_NF(void);
@@ -1537,9 +1537,11 @@ extern void update_PROCINFO_num(const char *subscript, AWKNUM val);
 typedef enum {
 	Using_FS,
 	Using_FIELDWIDTHS,
-	Using_FPAT
+	Using_FPAT,
+	Using_API
 } field_sep_type;
 extern field_sep_type current_field_sep(void);
+extern const char *current_field_sep_str(void);
 
 /* gawkapi.c: */
 extern gawk_api_t api_impl;

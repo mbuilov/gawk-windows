@@ -10,7 +10,7 @@
  */
 
 /*
- * Copyright (C) 2012-2014 the Free Software Foundation, Inc.
+ * Copyright (C) 2012-2014, 2017 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -73,7 +73,7 @@
 
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
-static const char *ext_version = "readdir extension: version 1.0";
+static const char *ext_version = "readdir extension: version 2.0";
 
 static awk_bool_t init_readdir(void);
 static awk_bool_t (*init_func)(void) = init_readdir;
@@ -85,7 +85,12 @@ int plugin_is_GPL_compatible;
 typedef struct open_directory {
 	DIR *dp;
 	char *buf;
+	union {
+		awk_fieldwidth_info_t fw;
+		char buf[awk_fieldwidth_info_size(3)];
+	} u;
 } open_directory_t;
+#define fw u.fw
 
 /* ftype --- return type of file as a single character string */
 
@@ -170,11 +175,11 @@ get_inode(struct dirent *entry, const char *dirname)
 static int
 dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 		char **rt_start, size_t *rt_len,
-		const awk_fieldwidth_info_t **unused)
+		const awk_fieldwidth_info_t **field_width)
 {
 	DIR *dp;
 	struct dirent *dirent;
-	int len;
+	int len, flen;
 	open_directory_t *the_dir;
 	const char *ftstr;
 	unsigned long long ino;
@@ -203,18 +208,24 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 	ino = get_inode(dirent, iobuf->name);
 
 #if __MINGW32__
-	len = sprintf(the_dir->buf, "%I64u/%s", ino, dirent->d_name);
+	len = sprintf(the_dir->buf, "%I64u", ino);
 #else
-	len = sprintf(the_dir->buf, "%llu/%s", ino, dirent->d_name);
+	len = sprintf(the_dir->buf, "%llu", ino);
 #endif
+	the_dir->fw.fields[0].len = len;
+	len += (flen = sprintf(the_dir->buf + len, "/%s", dirent->d_name));
+	the_dir->fw.fields[1].len = flen-1;
 
 	ftstr = ftype(dirent, iobuf->name);
-	len += sprintf(the_dir->buf + len, "/%s", ftstr);
+	len += (flen = sprintf(the_dir->buf + len, "/%s", ftstr));
+	the_dir->fw.fields[2].len = flen-1;
 
 	*out = the_dir->buf;
 
 	*rt_start = NULL;
 	*rt_len = 0;	/* set RT to "" */
+	if (field_width)
+		*field_width = & the_dir->fw;
 	return len;
 }
 
@@ -278,6 +289,12 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 
 	emalloc(the_dir, open_directory_t *, sizeof(open_directory_t), "dir_take_control_of");
 	the_dir->dp = dp;
+	/* pre-populate the field_width struct with constant values: */
+	the_dir->fw.use_chars = awk_false;
+	the_dir->fw.nf = 3;
+	the_dir->fw.fields[0].skip = 0;	/* no leading space */
+	the_dir->fw.fields[1].skip = 1;	/* single '/' separator */
+	the_dir->fw.fields[2].skip = 1;	/* single '/' separator */
 	size = sizeof(struct dirent) + 21 /* max digits in inode */ + 2 /* slashes */;
 	emalloc(the_dir->buf, char *, size, "dir_take_control_of");
 

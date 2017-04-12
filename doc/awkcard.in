@@ -556,8 +556,10 @@ fails, or if
 \*(FCclose()\*(FR fails.
 T}
 \*(FCFIELDWIDTHS\fP	T{
-Whitespace separated list of field widths. Used
-to parse the input into fields of fixed width,
+Whitespace-separated list of field widths.
+Each field width may optionally be preceded by a colon-separated
+value specifying the number of characters to skip before the field starts.
+Used to parse the input into fields of fixed width,
 instead of the value of \*(FCFS\fP.\*(CD
 T}
 \*(FCFILENAME\fP	T{
@@ -1017,6 +1019,8 @@ also affects how fields are split when
 variable is set to a space-separated list of numbers, each field is
 expected to have a fixed width, and \*(GK
 splits up the record using the specified widths.
+Each field width may optionally be preceded by a colon-separated
+value specifying the number of characters to skip before the field starts.
 The value of \*(FCFS\fP is ignored.
 Assigning a new value to \*(FCFS\fP or \*(FCFPAT\fP
 overrides the use of \*(FCFIELDWIDTHS\*(FR.

@@ -133,7 +133,8 @@ close_two_proc_data(two_way_proc_data_t *proc_data)
 
 static int
 rev2way_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
-		char **rt_start, size_t *rt_len)
+		char **rt_start, size_t *rt_len,
+		const awk_fieldwidth_info_t **unused)
 {
 	int len = 0;	/* for now */
 	two_way_proc_data_t *proc_data;
