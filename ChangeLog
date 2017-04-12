@@ -1,3 +1,13 @@
+2017-04-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* field.c (set_FIELDWIDTHS): Set use_chars to awk_true, since its
+	type is awk_bool_t.
+
+2017-04-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* field.c (fw_parse_field): Edit comment about resetting shift state.
+	* gawkapi.h (awk_fieldwidth_info_t): Make white space more uniform.
+
 2017-04-08  Eli Zaretskii  <eliz@gnu.org>
 
 	* main.c (usage, copyleft) [__MINGW32__]:
@@ -5,6 +15,14 @@
 	w32_maybe_set_errno to correctly set errno to EPIPE when appropriate.
 
 	* awk.h (die_via_sigpipe) [__MINGW32__]: MinGW-specific definition.
+
+2017-03-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* field.c (parse_field_func_t): New typedef. Used as needed.
+	(fw_parse_field): Edit comment about resetting shift state.
+	(set_parser): Fix leading comment's style and type of argument.
+	(set_FIELDWIDTHS): Improve the fatal error message.
+	* gawkapi.h: Minor edits in some comments.
 
 2017-03-27         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -34,6 +52,60 @@
 
 	* config.sub: Updated again.
 
+2017-03-22         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* NEWS: Document new PROCINFO["FS"] value of "API".
+
+2017-03-22         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* NEWS: Document new FIELDWIDTHS skip capability and API input parser
+	field parsing enhancement.
+
+2017-03-22         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (awk_input_buf_t): Update get_record comment regarding the
+	new field_width argument.
+
+2017-03-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (awk_fieldwidth_info_t): Define new structure to contain
+	API field parsing info, replacing the previous awk_input_field_info_t
+	array.
+	(awk_fieldwidth_info_size): Define macro to calculate size of the
+	variable-length awk_fieldwidth_info_t structure.
+	(awk_input_buf_t): Update get_record prototype to update the type
+	of the final field_width argument from 'const awk_input_field_info_t **'
+	to 'const awk_fieldwidth_info_t **'.
+	* awk.h (set_record): Change 3rd argument from
+	'const awk_input_field_info_t *' to 'const awk_fieldwidth_info_t *'.
+	* io.c (inrec, do_getline_redir, do_getline): Change field_width type
+	from 'const awk_input_field_info_t *' to
+	'const awk_fieldwidth_info_t *'.
+	(get_a_record): Change field_width argument type from
+	'const awk_input_field_info_t **' to 'const awk_fieldwidth_info_t **'.
+	* field.c (api_parser_override): Define new boolean to track whether
+	API parsing is currently overriding default parsing behavior.
+	(api_fw): Change type from 'const awk_input_field_info_t *'
+	to 'const awk_fieldwidth_info_t *'.
+	(FIELDWIDTHS): Change type from 'int *' to 'awk_fieldwidth_info_t *'.
+	(set_record): Use new boolean api_parser_override to track whether
+	API parsing override is in effect, since we can no longer discern
+	this from the value of parse_field -- FIELDWIDTHS parsing uses the
+	same function.
+	(calc_mbslen): New function to calculate the length of a multi-byte 
+	string.
+	(fw_parse_field): Enhance to support the awk_fieldwidth_info_t 
+	structure instead of simply using an array of integer field widths.
+	(api_parse_field): Remove function no longer needed since fw_parse_field
+	now supports both FIELDWIDTHS and API parsing.
+	(set_parser): Use api_parser_override instead of comparing parse_field
+	to api_parse_field.
+	(set_FIELDWIDTHS): Enhance to use new awk_fieldwidth_info_t structure
+	and parse new skip prefix for each field.
+	(current_field_sep): Use api_parser_override flag instead of comparing
+	to api_parse_field.
+	(current_field_sep_str): Ditto.
+
 2017-03-20         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Improve handling of EPIPE. Problems reported by
@@ -62,6 +134,84 @@
 2017-03-16         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Some cleanups.
+
+2017-03-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (awk_input_field_info_t): Define new structure to contain
+	API field parsing info.
+	(awk_input_buf_t): Update get_record prototype to use an array of
+	awk_input_field_info_t instead of integers.
+	* awk.h (set_record): Change 3rd argument from 'const int *' to
+	'const awk_input_field_info_t *'.
+	* field.c (api_fw): Now points to an array of awk_input_field_info_t
+	instead of integers.
+	(set_record): Change 3rd argument to point to an array of
+	awk_input_field_info_t.
+	(api_parse_field): Update parsing logic to use awk_input_field_info_t
+	structures instead of an array of integers.
+	* io.c (inrec, do_getline_redir, do_getline): Change field_width type
+	from 'const int *' to 'const awk_input_field_info_t *'.
+	(get_a_record): Change field_width argument type from 'const int **'
+	to 'const awk_input_field_info_t **'.
+
+2017-03-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* field.c: Minor style edits.
+
+2017-03-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* field.c (normal_parse_field): Renamed from save_parse_field to reflect
+	better its purpose. Added a comment to explain more clearly what's
+	going on.
+	(set_record, set_parser): Rename save_parse_field to normal_parse_field.
+
+2017-03-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (awk_input_buf_t): Remove field_width array and instead
+	add it as a 6th argument to the get_record function. This should
+	not break existing code, since it's fine to ignore the additional
+	argument. Document the behavior of the field_width argument.
+	* io.c (inrec): Pass pointer to field_width array to get_a_record,
+	and then hand it off to set_record.
+	(do_getline_redir): If not reading into a variable, pass pointer to
+	field_width array to get_a_record and then hand it off to set_record.
+	(do_getline): Ditto.
+	(get_a_record): Add a 4th field_width argument to pass through to
+	the API get_record method.
+
+2017-03-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (set_record): Add a new argument containing a field-width
+	array returned by an API parser.
+	(field_sep_type): Add new enum value Using_API.
+	(current_field_sep_str): Declare new function.
+	* field.c (save_parse_field): New static variable to save the
+	parse_field value in cases where it's overridden by API parsing.
+	(api_fw): New static variable to hold pointer to API parser fieldwidth
+	array.
+	(set_record): Add new field-width array argument. If present, API
+	parsing will override the default parsing mechanism.
+	(api_parse_field): New field parser using field widths supplied by the
+	API. This is very similar to the existing fw_parse_field function.
+	(get_field): Fix typo in comment.
+	(set_parser): New function to set default parser and check whether
+	there's an API parser override in effect. Update PROCINFO["FS"] if
+	something has changed.
+	(set_FIELDWIDTHS): Use set_parser and stop updating PROCINFO["FS"].
+	(set_FS): Ditto.
+	(set_FPAT): Ditto.
+	(current_field_sep): Return Using_API when using the API field parsing
+	widths.
+	(current_field_sep_str): New function to return the proper string
+	value for PROCINFO["FS"].
+	* gawkapi.h (awk_input_buf_t): Add field_width array to enable the
+	parser get_record function to supply field widths to override the
+	default gawk field parsing mechanism.
+	* io.c (inrec): Pass iop->public.field_width to set_record as the
+	3rd argument to enable API field parsing overrides.
+	(do_getline_redir, do_getline): Ditto.
+	* main.c (load_procinfo): Use new current_field_sep_str function
+	instead of switching on the return value from current_field_sep.
 
 2017-02-23         Arnold D. Robbins     <arnold@skeeve.com>
 

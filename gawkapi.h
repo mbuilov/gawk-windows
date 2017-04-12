@@ -117,6 +117,32 @@ typedef enum awk_bool {
 	awk_true
 } awk_bool_t;	/* we don't use <stdbool.h> on purpose */
 
+/*
+ * If the input parser would like to specify the field positions in the input
+ * record, it may populate an awk_fieldwidth_info_t structure to indicate
+ * the location of each field. The use_chars boolean controls whether the
+ * field lengths are specified in terms of bytes or potentially multi-byte
+ * characters. Performance will be better if the values are supplied in
+ * terms of bytes. The fields[0].skip value indicates how many bytes (or
+ * characters) to skip before $1, and fields[0].len is the length of $1, etc.
+ */
+
+typedef struct {
+	awk_bool_t	use_chars;	/* false ==> use bytes */
+	size_t		nf;
+	struct awk_field_info {
+		size_t	skip;	/* amount to skip before field starts */
+		size_t	len;	/* length of field */
+	} fields[1];		/* actual dimension should be nf */
+} awk_fieldwidth_info_t;
+
+/*
+ * This macro calculates the total struct size needed. This is useful when
+ * calling malloc or realloc.
+ */
+#define awk_fieldwidth_info_size(NF) (sizeof(awk_fieldwidth_info_t) + \
+			(((NF)-1) * sizeof(struct awk_field_info)))
+
 /* The information about input files that input parsers need to know: */
 typedef struct awk_input {
 	const char *name;	/* filename */
@@ -146,9 +172,19 @@ typedef struct awk_input {
 	 * than zero, gawk will automatically update the ERRNO variable based
 	 * on the value of *errcode (e.g., setting *errcode = errno should do
 	 * the right thing).
+	 *
+	 * If field_width is non-NULL, then *field_width will be initialized
+	 * to NULL, and the function may set it to point to a structure
+	 * supplying field width information to override the default
+	 * gawk field parsing mechanism. Note that this structure will not
+	 * be copied by gawk; it must persist at least until the next call
+	 * to get_record or close_func. Note also that field_width will
+	 * be NULL when getline is assigning the results to a variable, thus
+	 * field parsing is not needed.
 	 */
 	int (*get_record)(char **out, struct awk_input *iobuf, int *errcode,
-			char **rt_start, size_t *rt_len);
+			char **rt_start, size_t *rt_len,
+			const awk_fieldwidth_info_t **field_width);
 
 	/*
 	 * No argument prototype on read_func to allow for older systems

@@ -199,6 +199,13 @@ readdir_la_OBJECTS = $(am_readdir_la_OBJECTS)
 readdir_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(readdir_la_LDFLAGS) $(LDFLAGS) -o $@
+readdir_test_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
+am_readdir_test_la_OBJECTS = readdir_test.lo
+readdir_test_la_OBJECTS = $(am_readdir_test_la_OBJECTS)
+readdir_test_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(readdir_test_la_LDFLAGS) $(LDFLAGS) \
+	-o $@
 readfile_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_readfile_la_OBJECTS = readfile.lo
 readfile_la_OBJECTS = $(am_readfile_la_OBJECTS)
@@ -271,14 +278,16 @@ am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(filefuncs_la_SOURCES) $(fnmatch_la_SOURCES) \
 	$(fork_la_SOURCES) $(inplace_la_SOURCES) $(ordchr_la_SOURCES) \
-	$(readdir_la_SOURCES) $(readfile_la_SOURCES) \
-	$(revoutput_la_SOURCES) $(revtwoway_la_SOURCES) \
-	$(rwarray_la_SOURCES) $(testext_la_SOURCES) $(time_la_SOURCES)
+	$(readdir_la_SOURCES) $(readdir_test_la_SOURCES) \
+	$(readfile_la_SOURCES) $(revoutput_la_SOURCES) \
+	$(revtwoway_la_SOURCES) $(rwarray_la_SOURCES) \
+	$(testext_la_SOURCES) $(time_la_SOURCES)
 DIST_SOURCES = $(filefuncs_la_SOURCES) $(fnmatch_la_SOURCES) \
 	$(fork_la_SOURCES) $(inplace_la_SOURCES) $(ordchr_la_SOURCES) \
-	$(readdir_la_SOURCES) $(readfile_la_SOURCES) \
-	$(revoutput_la_SOURCES) $(revtwoway_la_SOURCES) \
-	$(rwarray_la_SOURCES) $(testext_la_SOURCES) $(time_la_SOURCES)
+	$(readdir_la_SOURCES) $(readdir_test_la_SOURCES) \
+	$(readfile_la_SOURCES) $(revoutput_la_SOURCES) \
+	$(revtwoway_la_SOURCES) $(rwarray_la_SOURCES) \
+	$(testext_la_SOURCES) $(time_la_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
 	ctags-recursive dvi-recursive html-recursive info-recursive \
 	install-data-recursive install-dvi-recursive \
@@ -520,6 +529,7 @@ pkgextension_LTLIBRARIES = \
 	time.la
 
 noinst_LTLIBRARIES = \
+	readdir_test.la	\
 	testext.la
 
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
@@ -567,6 +577,13 @@ time_la_LIBADD = $(MY_LIBS)
 testext_la_SOURCES = testext.c
 testext_la_LDFLAGS = $(MY_MODULE_FLAGS) -rpath /foo
 testext_la_LIBADD = $(MY_LIBS)
+
+# N.B. Because we are not installing readdir_test, we must specify -rpath in
+# LDFLAGS to get automake to build a shared library, since it needs
+# an installation path.
+readdir_test_la_SOURCES = readdir_test.c
+readdir_test_la_LDFLAGS = $(MY_MODULE_FLAGS) -rpath /foo
+readdir_test_la_LIBADD = $(MY_LIBS)
 EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
 	ChangeLog.0 \
@@ -702,6 +719,9 @@ ordchr.la: $(ordchr_la_OBJECTS) $(ordchr_la_DEPENDENCIES) $(EXTRA_ordchr_la_DEPE
 readdir.la: $(readdir_la_OBJECTS) $(readdir_la_DEPENDENCIES) $(EXTRA_readdir_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(readdir_la_LINK) -rpath $(pkgextensiondir) $(readdir_la_OBJECTS) $(readdir_la_LIBADD) $(LIBS)
 
+readdir_test.la: $(readdir_test_la_OBJECTS) $(readdir_test_la_DEPENDENCIES) $(EXTRA_readdir_test_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(readdir_test_la_LINK)  $(readdir_test_la_OBJECTS) $(readdir_test_la_LIBADD) $(LIBS)
+
 readfile.la: $(readfile_la_OBJECTS) $(readfile_la_DEPENDENCIES) $(EXTRA_readfile_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(readfile_la_LINK) -rpath $(pkgextensiondir) $(readfile_la_OBJECTS) $(readfile_la_LIBADD) $(LIBS)
 
@@ -733,6 +753,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/inplace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ordchr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readdir.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readdir_test.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readfile.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/revoutput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/revtwoway.Plo@am__quote@

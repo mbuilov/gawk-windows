@@ -1,9 +1,27 @@
+2017-03-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* fwtest4: Renamed from fwtest3.
+	* fwtest3: Renamed from fwtest2b.
+	* Makefile.am: Updated.
+
+2017-03-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (fwtest2b): Add new test of enhanced FIELDWIDTHS syntax.
+	* fwtest2b.awk, fwtest2b.ok: New files.
+
 2017-03-19         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* Makefile.am (argarray): Always copy argarray.in to the local
 	directory as argarray.input instead of trying to figure out whether
 	$(srcdir) is the current directory.
 	* argarray.ok: Replace argarray.in with argarray.input.
+
+2017-03-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (readdir_test): New test to check whether get_record
+	field_width parsing is working by comparing the results from the
+	readdir and readdir_test extensions.
+	(SHLIB_TESTS): Add readdir_test.
 
 2017-02-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 

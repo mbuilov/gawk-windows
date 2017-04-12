@@ -1015,22 +1015,7 @@ load_procinfo()
 	value = getegid();
 	update_PROCINFO_num("egid", value);
 
-	switch (current_field_sep()) {
-	case Using_FIELDWIDTHS:
-		update_PROCINFO_str("FS", "FIELDWIDTHS");
-		break;
-	case Using_FPAT:
-		update_PROCINFO_str("FS", "FPAT");
-		break;
-	case Using_FS:
-		update_PROCINFO_str("FS", "FS");
-		break;
-	default:
-		fatal(_("unknown value for field spec: %d\n"),
-				current_field_sep());
-		break;
-	}
-
+	update_PROCINFO_str("FS", current_field_sep_str());
 
 #if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 	for (i = 0; i < ngroups; i++) {

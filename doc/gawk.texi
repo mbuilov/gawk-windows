@@ -7761,6 +7761,9 @@ variable @code{FIELDWIDTHS}.  Each number specifies the width of the field,
 @emph{including} columns between fields.  If you want to ignore the columns
 between fields, you can specify the width as a separate field that is
 subsequently ignored.
+Or, starting in @value{PVERSION} 4.2, each field width may optionally be
+preceded by a colon-separated value specifying the number of characters to skip
+before the field starts.
 It is a fatal error to supply a field width that has a negative value.
 The following data is the output of the Unix @command{w} utility.  It is useful
 to illustrate the use of @code{FIELDWIDTHS}:
@@ -7820,6 +7823,24 @@ brent     ttyp0  286
 dave      ttyq4  1296000
 @end example
 
+Starting in @value{PVERSION} 4.2, this program could be rewritten to
+specify @code{FIELDWIDTHS} like so:
+@example
+BEGIN  @{ FIELDWIDTHS = "8 1:5 4:7 6 1:6 1:6 2:33" @}
+@end example
+This strips away some of the white space separating the fields. With such
+a change, the program would produce the following results:
+
+@example
+hzang    ttyV3 50
+eklye    ttyV5 0
+dportein ttyV6 107
+gierd    ttyD3 1
+dave     ttyD4 0
+brent    ttyp0 286
+dave     ttyq4 1296000
+@end example
+
 Another (possibly more practical) example of fixed-width input data
 is the input from a deck of balloting cards.  In some parts of
 the United States, voters mark their choices by punching holes in computer
@@ -7845,8 +7866,10 @@ if (PROCINFO["FS"] == "FS")
     @var{regular field splitting} @dots{}
 else if  (PROCINFO["FS"] == "FIELDWIDTHS")
     @var{fixed-width field splitting} @dots{}
-else
+else if  (PROCINFO["FS"] == "FPAT")
     @var{content-based field splitting} @dots{} @ii{(see next @value{SECTION})}
+else
+    @var{API input parser field splitting} @dots{} @ii{(advanced feature)}
 @end example
 
 This information is useful when writing a function
@@ -7986,7 +8009,9 @@ To recap, @command{gawk} provides three independent methods
 to split input records into fields.
 The mechanism used is based on which of the three
 variables---@code{FS}, @code{FIELDWIDTHS}, or @code{FPAT}---was
-last assigned to.
+last assigned to. In addition, an API input parser may choose to
+override the record parsing mechanism; please refer to @ref{Input Parsers}
+for further information about this feature.
 
 @node Multiple Line
 @section Multiple-Line Records
@@ -14972,6 +14997,9 @@ Its default value is @code{"%.6g"}.
 @item FIELDWIDTHS #
 A space-separated list of columns that tells @command{gawk}
 how to split input with fixed columnar boundaries.
+Starting in @value{PVERSION} 4.2, each field width may optionally be
+preceded by a colon-separated value specifying the number of characters to skip
+before the field starts.
 Assigning a value to @code{FIELDWIDTHS}
 overrides the use of @code{FS} and @code{FPAT} for field splitting.
 @xref{Constant Size} for more information.
@@ -15366,7 +15394,8 @@ The value of the @code{geteuid()} system call.
 This is
 @code{"FS"} if field splitting with @code{FS} is in effect,
 @code{"FIELDWIDTHS"} if field splitting with @code{FIELDWIDTHS} is in effect,
-or @code{"FPAT"} if field matching with @code{FPAT} is in effect.
+@code{"FPAT"} if field matching with @code{FPAT} is in effect,
+or @code{"API"} if field splitting is controlled by an API input parser.
 
 @item PROCINFO["gid"]
 @cindex group ID of @command{gawk} user
@@ -33165,7 +33194,8 @@ typedef struct awk_input @{
 #define INVALID_HANDLE (-1)
     void *opaque;           /* private data for input parsers */
     int (*get_record)(char **out, struct awk_input *iobuf,
-                      int *errcode, char **rt_start, size_t *rt_len);
+                      int *errcode, char **rt_start, size_t *rt_len,
+                      const awk_fieldwidth_info_t **field_width);
     ssize_t (*read_func)();
     void (*close_func)(struct awk_input *iobuf);
     struct stat sbuf;       /* stat buf */
@@ -33217,7 +33247,8 @@ is not required to use this pointer.
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ struct@ awk_input *iobuf,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ int *errcode,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ char **rt_start,
-@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ size_t *rt_len);
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ size_t *rt_len,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const awk_fieldwidth_info_t **field_width);
 This function pointer should point to a function that creates the input
 records.  Said function is the core of the input parser.  Its behavior
 is described in the text following this list.
@@ -33269,6 +33300,21 @@ If the concept of a ``record terminator'' makes sense, then
 data. Otherwise, @code{*rt_len} should be set to zero.
 @command{gawk} makes its own copy of this data, so the
 extension must manage this storage.
+
+@item const awk_fieldwidth_info_t **field_width
+If @code{field_width} is not @code{NULL}, then @code{*field_width} will be initialized
+to @code{NULL}, and the function may set it to point to a structure
+supplying field width information to override the default
+field parsing mechanism. Note that this structure will not
+be copied by @command{gawk}; it must persist at least until the next call
+to @code{get_record} or @code{close_func}. Note also that @code{field_width} is
+@code{NULL} when @code{getline} is assigning the results to a variable, thus
+field parsing is not needed. If the parser does set @code{*field_width},
+then @command{gawk} uses this layout to parse the input record,
+and the @code{PROCINFO["FS"]} value will be @code{"API"} while this record
+is active in @code{$0}.
+The @code{awk_fieldwidth_info_t} data structure
+is described below.
 @end table
 
 The return value is the length of the buffer pointed to by
@@ -33326,6 +33372,50 @@ You register your input parser with the following function:
 Register the input parser pointed to by @code{input_parser} with
 @command{gawk}.
 @end table
+
+If you would like to override the default field parsing mechanism for a given
+record, then you must populate an @code{awk_fieldwidth_info_t} structure,
+which looks like this:
+
+@example
+typedef struct @{
+        awk_bool_t     use_chars; /* false ==> use bytes */
+        size_t         nf;        /* number of fields in record (NF) */
+        struct awk_field_info @{
+                size_t skip;      /* amount to skip before field starts */
+                size_t len;       /* length of field */
+        @} fields[1];              /* actual dimension should be nf */
+@} awk_fieldwidth_info_t;
+@end example
+
+The fields are:
+
+@table @code
+@item awk_bool_t use_chars;
+Set this to @code{awk_true} if the field lengths are specified in terms
+of potentially multi-byte characters, and set it to @code{awk_false} if
+the lengths are in terms of bytes.
+Performance will be better if the values are supplied in
+terms of bytes. 
+
+@item size_t nf;
+Set this to the number of fields in the input record, i.e. @code{NF}.
+
+@item struct awk_field_info fields[nf];
+This is a variable-length array whose actual dimension should be @code{nf}.
+For each field, the @code{skip} element should be set to the number
+of characters or bytes, as controlled by the @code{use_chars} flag,
+to skip before the start of this field. The @code{len} element provides
+the length of the field. The values in @code{fields[0]} provide the information
+for @code{$1}, and so on through the @code{fields[nf-1]} element containing the information for @code{$NF}.
+@end table
+
+A convenience macro @code{awk_fieldwidth_info_size(NF)} is provided to
+calculate the appropriate size of a variable-length 
+@code{awk_fieldwidth_info_t} structure containing @code{NF} fields. This can
+be used as an argument to @code{malloc()} or in a union to allocate space
+statically. Please refer to the @code{readdir_test} sample extension for an
+example.
 
 @node Output Wrappers
 @subsubsection Customized Output Wrappers
