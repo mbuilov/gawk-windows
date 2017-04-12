@@ -48,6 +48,7 @@ pkgextension_LTLIBRARIES =	\
 	time.la
 
 noinst_LTLIBRARIES =	\
+	readdir_test.la	\
 	testext.la
 
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
@@ -105,6 +106,13 @@ time_la_LIBADD        = $(MY_LIBS)
 testext_la_SOURCES    = testext.c
 testext_la_LDFLAGS    = $(MY_MODULE_FLAGS) -rpath /foo
 testext_la_LIBADD     = $(MY_LIBS)
+
+# N.B. Because we are not installing readdir_test, we must specify -rpath in
+# LDFLAGS to get automake to build a shared library, since it needs
+# an installation path.
+readdir_test_la_SOURCES = readdir_test.c
+readdir_test_la_LDFLAGS = $(MY_MODULE_FLAGS) -rpath /foo
+readdir_test_la_LIBADD  = $(MY_LIBS)
 
 install-data-hook:
 	for i in $(pkgextension_LTLIBRARIES) ; do \

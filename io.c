@@ -287,7 +287,7 @@ static RECVALUE rsrescan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state);
 
 static RECVALUE (*matchrec)(IOBUF *iop, struct recmatch *recm, SCANSTATE *state) = rs1scan;
 
-static int get_a_record(char **out, IOBUF *iop, int *errcode);
+static int get_a_record(char **out, IOBUF *iop, int *errcode, const awk_fieldwidth_info_t **field_width);
 
 static void free_rp(struct redirect *rp);
 
@@ -590,13 +590,14 @@ inrec(IOBUF *iop, int *errcode)
 	char *begin;
 	int cnt;
 	bool retval = true;
+	const awk_fieldwidth_info_t *field_width = NULL;
 
 	if (at_eof(iop) && no_data_left(iop))
 		cnt = EOF;
 	else if ((iop->flag & IOP_CLOSED) != 0)
 		cnt = EOF;
 	else
-		cnt = get_a_record(& begin, iop, errcode);
+		cnt = get_a_record(& begin, iop, errcode, & field_width);
 
 	/* Note that get_a_record may return -2 when I/O would block */
 	if (cnt < 0) {
@@ -604,7 +605,7 @@ inrec(IOBUF *iop, int *errcode)
 	} else {
 		INCREMENT_REC(NR);
 		INCREMENT_REC(FNR);
-		set_record(begin, cnt);
+		set_record(begin, cnt, field_width);
 		if (*errcode > 0)
 			retval = false;
 	}
@@ -2661,6 +2662,7 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 	NODE *redir_exp = NULL;
 	NODE **lhs = NULL;
 	int redir_error = 0;
+	const awk_fieldwidth_info_t *field_width = NULL;
 
 	if (into_variable)
 		lhs = POP_ADDRESS();
@@ -2689,7 +2691,7 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 		return make_number((AWKNUM) 0.0);
 
 	errcode = 0;
-	cnt = get_a_record(& s, iop, & errcode);
+	cnt = get_a_record(& s, iop, & errcode, (lhs ? NULL : & field_width));
 	if (errcode != 0) {
 		if (! do_traditional && (errcode != -1))
 			update_ERRNO_int(errcode);
@@ -2711,7 +2713,7 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 	}
 
 	if (lhs == NULL)	/* no optional var. */
-		set_record(s, cnt);
+		set_record(s, cnt, field_width);
 	else {			/* assignment to variable */
 		unref(*lhs);
 		*lhs = make_string(s, cnt);
@@ -2729,6 +2731,7 @@ do_getline(int into_variable, IOBUF *iop)
 	int cnt = EOF;
 	char *s = NULL;
 	int errcode;
+	const awk_fieldwidth_info_t *field_width = NULL;
 
 	if (iop == NULL) {	/* end of input */
 		if (into_variable)
@@ -2737,7 +2740,7 @@ do_getline(int into_variable, IOBUF *iop)
 	}
 
 	errcode = 0;
-	cnt = get_a_record(& s, iop, & errcode);
+	cnt = get_a_record(& s, iop, & errcode, (into_variable ? NULL : & field_width));
 	if (errcode != 0) {
 		if (! do_traditional && (errcode != -1))
 			update_ERRNO_int(errcode);
@@ -2752,7 +2755,7 @@ do_getline(int into_variable, IOBUF *iop)
 	INCREMENT_REC(FNR);
 
 	if (! into_variable)	/* no optional var. */
-		set_record(s, cnt);
+		set_record(s, cnt, field_width);
 	else {			/* assignment to variable */
 		NODE **lhs;
 		lhs = POP_ADDRESS();
@@ -3696,7 +3699,9 @@ errno_io_retry(void)
 static int
 get_a_record(char **out,        /* pointer to pointer to data */
         IOBUF *iop,             /* input IOP */
-        int *errcode)           /* pointer to error variable */
+        int *errcode,           /* pointer to error variable */
+        const awk_fieldwidth_info_t **field_width)
+				/* pointer to pointer to field_width info */
 {
 	struct recmatch recm;
 	SCANSTATE state;
@@ -3715,7 +3720,8 @@ get_a_record(char **out,        /* pointer to pointer to data */
 		char *rt_start;
 		size_t rt_len;
 		int rc = iop->public.get_record(out, &iop->public, errcode,
-						&rt_start, &rt_len);
+						&rt_start, &rt_len,
+						field_width);
 		if (rc == EOF)
 			iop->flag |= IOP_AT_EOF;
 		else {

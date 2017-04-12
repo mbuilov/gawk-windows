@@ -38,8 +38,17 @@ is_blank(int c)
 
 typedef void (* Setfunc)(long, char *, long, NODE *);
 
-static long (*parse_field)(long, char **, int, NODE *,
+/* is the API currently overriding the default parsing mechanism? */
+static bool api_parser_override = false;
+typedef long (*parse_field_func_t)(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
+static parse_field_func_t parse_field;
+/*
+ * N.B. The normal_parse_field function pointer contains the parse_field value
+ * that should be used except when API field parsing is overriding the default
+ * field parsing mechanism.
+ */
+static parse_field_func_t normal_parse_field;
 static long re_parse_field(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
 static long def_parse_field(long, char **, int, NODE *,
@@ -50,6 +59,7 @@ static long sc_parse_field(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
 static long fw_parse_field(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
+static const awk_fieldwidth_info_t *api_fw = NULL;
 static long fpat_parse_field(long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *, NODE *, bool);
 static void set_element(long num, char * str, long len, NODE *arr);
@@ -64,7 +74,7 @@ static bool resave_fs;
 static NODE *save_FS;		/* save current value of FS when line is read,
 				 * to be used in deferred parsing
 				 */
-static int *FIELDWIDTHS = NULL;
+static awk_fieldwidth_info_t *FIELDWIDTHS = NULL;
 
 NODE **fields_arr;		/* array of pointers to the field nodes */
 bool field0_valid;		/* $(>0) has not been changed yet */
@@ -252,7 +262,7 @@ rebuild_record()
  * but better correct than fast.
  */
 void
-set_record(const char *buf, int cnt)
+set_record(const char *buf, int cnt, const awk_fieldwidth_info_t *fw)
 {
 	NODE *n;
 	static char *databuf;
@@ -306,6 +316,19 @@ set_record(const char *buf, int cnt)
 	n->stfmt = STFMT_UNUSED;
 	n->flags = (STRING|STRCUR|USER_INPUT);	/* do not set MALLOC */
 	fields_arr[0] = n;
+	if (fw != api_fw) {
+		if ((api_fw = fw) != NULL) {
+			if (! api_parser_override) {
+				api_parser_override = true;
+				parse_field = fw_parse_field;
+				update_PROCINFO_str("FS", "API");
+			}
+		} else if (api_parser_override) {
+			api_parser_override = false;
+			parse_field = normal_parse_field;
+			update_PROCINFO_str("FS", current_field_sep_str());
+		}
+	}
 
 #undef INITIAL_SIZE
 #undef MAX_SIZE
@@ -691,6 +714,31 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 }
 
 /*
+ * calc_mbslen --- calculate the length in bytes of a multi-byte string
+ * containing len characters.
+ */
+
+static size_t
+calc_mbslen(char *scan, char *end, size_t len, mbstate_t *mbs)
+{
+
+	size_t mbclen;
+	char *mbscan = scan;
+
+	while (len-- > 0 && mbscan < end) {
+		mbclen = mbrlen(mbscan, end - mbscan, mbs);
+		if (!(mbclen > 0 && mbclen <= (size_t)(end - mbscan)))
+			/*
+			 * We treat it as a singlebyte character. This should
+			 * catch error codes 0, (size_t) -1, and (size_t) -2.
+			 */
+			mbclen = 1;
+		mbscan += mbclen;
+	}
+	return mbscan - scan;
+}
+
+/*
  * fw_parse_field --- field parsing using FIELDWIDTHS spec
  *
  * This is called from get_field() via (*parse_field)().
@@ -710,53 +758,53 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 	char *scan = *buf;
 	long nf = parse_high_water;
 	char *end = scan + len;
-	int nmbc;
-	size_t mbclen;
-	size_t mbslen;
-	size_t lenrest;
-	char *mbscan;
+	const awk_fieldwidth_info_t *fw;
 	mbstate_t mbs;
+	size_t skiplen;
+	size_t flen;
 
-	memset(&mbs, 0, sizeof(mbstate_t));
+	fw = (api_parser_override ? api_fw : FIELDWIDTHS);
 
 	if (up_to == UNLIMITED)
 		nf = 0;
 	if (len == 0)
 		return nf;
-	for (; nf < up_to && (len = FIELDWIDTHS[nf+1]) != -1; ) {
-		if (gawk_mb_cur_max > 1) {
-			nmbc = 0;
-			mbslen = 0;
-			mbscan = scan;
-			lenrest = end - scan;
-			while (nmbc < len && mbslen < lenrest) {
-				mbclen = mbrlen(mbscan, end - mbscan, &mbs);
-				if (   mbclen == 1
-				    || mbclen == (size_t) -1
-				    || mbclen == (size_t) -2
-				    || mbclen == 0) {
-					/* We treat it as a singlebyte character.  */
-		    			mbclen = 1;
-				}
-				if (mbclen <= end - mbscan) {
-					mbscan += mbclen;
-		    			mbslen += mbclen;
-		    			++nmbc;
-				}
-	    		}
-			(*set)(++nf, scan, (long) mbslen, n);
-			scan += mbslen;
-		} else {
-			if (len > end - scan)
-				len = end - scan;
-			(*set)(++nf, scan, (long) len, n);
-			scan += len;
+	if (gawk_mb_cur_max > 1 && fw->use_chars) {
+		/*
+		 * Reset the shift state. Arguably, the shift state should
+		 * be part of the file state and carried forward at all times,
+		 * but nobody has complained so far, so this may not matter
+		 * in practice.
+		 */
+		memset(&mbs, 0, sizeof(mbstate_t));
+		while (nf < up_to) {
+			if (nf >= fw->nf) {
+				*buf = end;
+				return nf;
+			}
+			scan += calc_mbslen(scan, end, fw->fields[nf].skip, &mbs);
+			flen = calc_mbslen(scan, end, fw->fields[nf].len, &mbs);
+			(*set)(++nf, scan, (long) flen, n);
+			scan += flen;
+		}
+	} else {
+		while (nf < up_to) {
+			if (nf >= fw->nf) {
+				*buf = end;
+				return nf;
+			}
+			skiplen = fw->fields[nf].skip;
+			if (skiplen > end - scan)
+				skiplen = end - scan;
+			scan += skiplen;
+			flen = fw->fields[nf].len;
+			if (flen > end - scan)
+				flen = end - scan;
+			(*set)(++nf, scan, (long) flen, n);
+			scan += flen;
 		}
 	}
-	if (len == -1)
-		*buf = end;
-	else
-		*buf = scan;
+	*buf = scan;
 	return nf;
 }
 
@@ -845,7 +893,7 @@ get_field(long requested, Func_ptr *assign)
 		if (parse_extent == fields_arr[0]->stptr + fields_arr[0]->stlen)
 			NF = parse_high_water;
 		else if (parse_field == fpat_parse_field) {
-			/* FPAT parsing is wierd, isolate the special cases */
+			/* FPAT parsing is weird, isolate the special cases */
 			char *rec_start = fields_arr[0]->stptr;
 			char *rec_end = fields_arr[0]->stptr + fields_arr[0]->stlen;
 
@@ -1057,6 +1105,18 @@ do_patsplit(int nargs)
 	return tmp;
 }
 
+/* set_parser --- update the current (non-API) parser */
+
+static void
+set_parser(parse_field_func_t func)
+{
+	normal_parse_field = func;
+	if (! api_parser_override && parse_field != func) {
+		parse_field = func;
+	        update_PROCINFO_str("FS", current_field_sep_str());
+	}
+}
+
 /* set_FIELDWIDTHS --- handle an assignment to FIELDWIDTHS */
 
 void
@@ -1078,27 +1138,27 @@ set_FIELDWIDTHS()
 		return;
 
 	/*
-	 * If changing the way fields are split, obey least-suprise
+	 * If changing the way fields are split, obey least-surprise
 	 * semantics, and force $0 to be split totally.
 	 */
 	if (fields_arr != NULL)
 		(void) get_field(UNLIMITED - 1, 0);
 
-	parse_field = fw_parse_field;
+	set_parser(fw_parse_field);
 	tmp = force_string(FIELDWIDTHS_node->var_value);
 	scan = tmp->stptr;
 
-	if (FIELDWIDTHS == NULL)
-		emalloc(FIELDWIDTHS, int *, fw_alloc * sizeof(int), "set_FIELDWIDTHS");
-	FIELDWIDTHS[0] = 0;
-	for (i = 1; ; i++) {
+	if (FIELDWIDTHS == NULL) {
+		emalloc(FIELDWIDTHS, awk_fieldwidth_info_t *, awk_fieldwidth_info_size(fw_alloc), "set_FIELDWIDTHS");
+		FIELDWIDTHS->use_chars = awk_true;
+	}
+	FIELDWIDTHS->nf = 0;
+	for (i = 0; ; i++) {
 		unsigned long int tmp;
-		if (i + 1 >= fw_alloc) {
+		if (i >= fw_alloc) {
 			fw_alloc *= 2;
-			erealloc(FIELDWIDTHS, int *, fw_alloc * sizeof(int), "set_FIELDWIDTHS");
+			erealloc(FIELDWIDTHS, awk_fieldwidth_info_t *, awk_fieldwidth_info_size(fw_alloc), "set_FIELDWIDTHS");
 		}
-		/* Initialize value to be end of list */
-		FIELDWIDTHS[i] = -1;
 		/* Ensure that there is no leading `-' sign.  Otherwise,
 		   strtoul would accept it and return a bogus result.  */
 		while (is_blank(*scan)) {
@@ -1116,6 +1176,13 @@ set_FIELDWIDTHS()
 		   or a value that is not in the range [1..INT_MAX].  */
 		errno = 0;
 		tmp = strtoul(scan, &end, 10);
+		if (errno == 0 && *end == ':' && (0 < tmp && tmp <= INT_MAX)) {
+			FIELDWIDTHS->fields[i].skip = tmp;
+			scan = end + 1;
+			tmp = strtoul(scan, &end, 10);
+		}
+		else
+			FIELDWIDTHS->fields[i].skip = 0;
 		if (errno != 0
 		    	|| (*end != '\0' && ! is_blank(*end))
 				|| !(0 < tmp && tmp <= INT_MAX)
@@ -1123,7 +1190,8 @@ set_FIELDWIDTHS()
 			fatal_error = true;
 			break;
 		}
-		FIELDWIDTHS[i] = tmp;
+		FIELDWIDTHS->fields[i].len = tmp;
+		FIELDWIDTHS->nf = i+1;
 		scan = end;
 		/* Skip past any trailing blanks.  */
 		while (is_blank(*scan)) {
@@ -1132,12 +1200,10 @@ set_FIELDWIDTHS()
 		if (*scan == '\0')
 			break;
 	}
-	FIELDWIDTHS[i+1] = -1;
 
-	update_PROCINFO_str("FS", "FIELDWIDTHS");
 	if (fatal_error)
-		fatal(_("invalid FIELDWIDTHS value, near `%s'"),
-			      scan);
+		fatal(_("invalid FIELDWIDTHS value, for field %d, near `%s'"),
+			      i, scan);
 }
 
 /* set_FS --- handle things when FS is assigned to */
@@ -1205,7 +1271,7 @@ choose_fs_function:
 	if (! do_traditional && fs->stlen == 0) {
 		static bool warned = false;
 
-		parse_field = null_parse_field;
+		set_parser(null_parse_field);
 
 		if (do_lint && ! warned) {
 			warned = true;
@@ -1214,10 +1280,10 @@ choose_fs_function:
 	} else if (fs->stlen > 1) {
 		if (do_lint_old)
 			warning(_("old awk does not support regexps as value of `FS'"));
-		parse_field = re_parse_field;
+		set_parser(re_parse_field);
 	} else if (RS_is_null) {
 		/* we know that fs->stlen <= 1 */
-		parse_field = sc_parse_field;
+		set_parser(sc_parse_field);
 		if (fs->stlen == 1) {
 			if (fs->stptr[0] == ' ') {
 				default_FS = true;
@@ -1233,7 +1299,7 @@ choose_fs_function:
 			}
 		}
 	} else {
-		parse_field = def_parse_field;
+		set_parser(def_parse_field);
 
 		if (fs->stlen == 1) {
 			if (fs->stptr[0] == ' ')
@@ -1242,7 +1308,7 @@ choose_fs_function:
 				/* same special case */
 				strcpy(buf, "[\\\\]");
 			else
-				parse_field = sc_parse_field;
+				set_parser(sc_parse_field);
 		}
 	}
 	if (remake_re) {
@@ -1254,7 +1320,7 @@ choose_fs_function:
 			FS_re_yes_case = make_regexp(buf, strlen(buf), false, true, true);
 			FS_re_no_case = make_regexp(buf, strlen(buf), true, true, true);
 			FS_regexp = (IGNORECASE ? FS_re_no_case : FS_re_yes_case);
-			parse_field = re_parse_field;
+			set_parser(re_parse_field);
 		} else if (parse_field == re_parse_field) {
 			FS_re_yes_case = make_regexp(fs->stptr, fs->stlen, false, true, true);
 			FS_re_no_case = make_regexp(fs->stptr, fs->stlen, true, true, true);
@@ -1270,21 +1336,36 @@ choose_fs_function:
 	 */
 	if (fs->stlen == 1 && parse_field == re_parse_field)
 		FS_regexp = FS_re_yes_case;
-
-	update_PROCINFO_str("FS", "FS");
 }
 
-/* current_field_sep --- return what field separator is */
+/* current_field_sep --- return the field separator type */
 
 field_sep_type
 current_field_sep()
 {
-	if (parse_field == fw_parse_field)
+	if (api_parser_override)
+		return Using_API;
+	else if (parse_field == fw_parse_field)
 		return Using_FIELDWIDTHS;
 	else if (parse_field == fpat_parse_field)
 		return Using_FPAT;
 	else
 		return Using_FS;
+}
+
+/* current_field_sep_str --- return the field separator type as a string */
+
+const char *
+current_field_sep_str()
+{
+	if (api_parser_override)
+		return "API";
+	else if (parse_field == fw_parse_field)
+		return "FIELDWIDTHS";
+	else if (parse_field == fpat_parse_field)
+		return "FPAT";
+	else
+		return "FS";
 }
 
 /* update_PROCINFO_str --- update PROCINFO[sub] with string value */
@@ -1373,7 +1454,7 @@ set_FPAT()
 
 set_fpat_function:
 	fpat = force_string(FPAT_node->var_value);
-	parse_field = fpat_parse_field;
+	set_parser(fpat_parse_field);
 
 	if (remake_re) {
 		refree(FPAT_re_yes_case);
@@ -1384,8 +1465,6 @@ set_fpat_function:
 		FPAT_re_no_case = make_regexp(fpat->stptr, fpat->stlen, true, true, true);
 		FPAT_regexp = (IGNORECASE ? FPAT_re_no_case : FPAT_re_yes_case);
 	}
-
-	update_PROCINFO_str("FS", "FPAT");
 }
 
 /*
