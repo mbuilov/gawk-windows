@@ -1,3 +1,8 @@
+2017-04-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* mpfr.c (mpg_format_val): Set STRCUR flag when we're done.
+	Fixes a memory leak. Thanks to valgrind for the report.
+
 2017-04-12         Manuel Collado        <m-collado@users.sourceforge.net>
 
 	Fix the FPAT bug reported by Ed Morton in the gawk-bug mailing list.
@@ -5,6 +10,9 @@
 	* awk.h (Regexp): Remove the non_empty flag.
 	* field.c (fpat_parse_field): Restructure the code to reduce complexity
 	and document the new structure.
+
+	* field.c (fpat_parse_field): Further restructuring to avoid
+	invalid reads as reported by valgrind.
 
 2017-04-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 

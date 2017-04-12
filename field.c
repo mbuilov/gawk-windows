@@ -1581,7 +1581,7 @@ fpat_parse_field(long up_to,	/* parse only up to this field number */
 	int regex_flags = RE_NEED_START;
 	mbstate_t mbs;
 	char* field_start;
-	bool field_found;
+	bool field_found = false;
 
 	memset(&mbs, 0, sizeof(mbstate_t));
 
@@ -1594,7 +1594,7 @@ fpat_parse_field(long up_to,	/* parse only up to this field number */
 	if (rp == NULL) /* use FPAT */
 		rp = FPAT_regexp;
 
-	while (scan <= end && nf < up_to) {  /* still something to parse */
+	while (scan < end && nf < up_to) {  /* still something to parse */
 
 		/* first attempt to match the next field */
 		start = scan;
@@ -1632,9 +1632,16 @@ fpat_parse_field(long up_to,	/* parse only up to this field number */
 			 */
 			if (sep_arr != NULL)
 				set_element(nf, start, (long) (end - start), sep_arr);
-			scan = end + 1;
+			scan = end;
 		}
 	}
+
+	/*
+	 * If the last field extends up to the end of the record, generate
+	 * a null trailing separator
+	 */
+	if (sep_arr != NULL && scan == end && field_found) 
+		set_element(nf, scan, 0L, sep_arr);
 
 	*buf = scan;
 	return nf;
