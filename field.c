@@ -1502,101 +1502,65 @@ incr_scan(char **scanp, size_t len, mbstate_t *mbs)
  * via (*parse_field)().  This variation is for when FPAT is a regular
  * expression -- use the value to find field contents.
  *
- * This was really hard to get right.  It happens to bear many resemblances
- * to issues I had with getting gsub right with null matches. When dealing
- * with that I prototyped in awk and had the foresight to save the awk code
- * over in the C file.  Starting with that as a base, I finally got to this
- * awk code to do what I needed, and then translated it into C. Fortunately
- * the C code bears a closer correspondance to the awk code here than over
- * by gsub.
+ * The FPAT parsing logic is a bit difficult to specify. In particular
+ * to allow null fields at certain locations. To make the code as robust
+ * as possible, an awk reference implementation was written and tested
+ * as a first step, and later recoded in C, preserving its structure as
+ * much as possible.
  *
- * BEGIN {
- * 	false = 0
- * 	true = 1
- *
- * 	fpat[1] = "([^,]*)|(\"[^\"]+\")"
- * 	fpat[2] = fpat[1]
- * 	fpat[3] = fpat[1]
- * 	fpat[4] = "aa+"
- * 	fpat[5] = fpat[4]
- *
- * 	data[1] = "Robbins,,Arnold,"
- * 	data[2] = "Smith,,\"1234 A Pretty Place, NE\",Sometown,NY,12345-6789,USA"
- * 	data[3] = "Robbins,Arnold,\"1234 A Pretty Place, NE\",Sometown,NY,12345-6789,USA"
- * 	data[4] = "bbbaaacccdddaaaaaqqqq"
- * 	data[5] = "bbbaaacccdddaaaaaqqqqa" # should get trailing qqqa
- *
- * 	for (i = 1; i in data; i++) {
- * 		printf("Splitting: <%s>\n", data[i])
- * 		n = mypatsplit(data[i], fields, fpat[i], seps)
- * 		print "n =", n
- * 		for (j = 1; j <= n; j++)
- * 			printf("fields[%d] = <%s>\n", j, fields[j])
- * 		for (j = 0; j in seps; j++)
- * 			printf("seps[%s] = <%s>\n", j, seps[j])
- * 	}
- * }
- *
- * function mypatsplit(string, array, pattern, seps,
- * 			eosflag, non_empty, nf) # locals
+ * # Reference implementation of the FPAT record parsing.
+ * #
+ * # Each loop iteration identifies a (separator[n-1],field[n]) pair.
+ * # Each loop iteration must consume some characters, except for the first field.
+ * # So a null field is only valid as a first field or after a non-null separator.
+ * # A null record has no fields (not a single null field).
+ * 
+ * function refpatsplit(string, fields, pattern, seps,
+ *         parse_start, sep_start, field_start, field_length, field_found, nf) # locals
  * {
- * 	delete array
- * 	delete seps
- * 	if (length(string) == 0)
- * 		return 0
- *
- * 	eosflag = non_empty = false
- * 	nf = 0
- * 	while (match(string, pattern)) {
- * 		if (RLENGTH > 0) {	# easy case
- * 			non_empty = true
- * 			if (! (nf in seps)) {
- * 				if (RSTART == 1)	# match at front of string
- * 					seps[nf] = ""
- * 				else
- * 					seps[nf] = substr(string, 1, RSTART - 1)
- * 			}
- * 			array[++nf] = substr(string, RSTART, RLENGTH)
- * 			string = substr(string, RSTART+RLENGTH)
- * 			if (length(string) == 0)
- * 				break
- * 		} else if (non_empty) {
- * 			# last match was non-empty, and at the
- * 			# current character we get a zero length match,
- * 			# which we don't want, so skip over it
- * 			non_empty = false
- * 			seps[nf] = substr(string, 1, 1)
- * 			string = substr(string, 2)
- * 		} else {
- * 			# 0 length match
- * 			if (! (nf in seps)) {
- * 				if (RSTART == 1)
- * 					seps[nf] = ""
- * 				else
- * 					seps[nf] = substr(string, 1, RSTART - 1)
- * 			}
- * 			array[++nf] = ""
- * 			if (! non_empty && ! eosflag) { # prev was empty
- * 				seps[nf] = substr(string, 1, 1)
- * 			}
- * 			if (RSTART == 1) {
- * 				string = substr(string, 2)
- * 			} else {
- * 				string = substr(string, RSTART + 1)
- * 			}
- * 			non_empty = false
- * 		}
- * 		if (length(string) == 0) {
- * 			if (eosflag)
- * 				break
- * 			else
- * 				eosflag = true
- * 		}
- * 	}
- * 	if (length(string) > 0)
- * 		seps[nf] = string
- *
- * 	return length(array)
+ *     # Local state variables:
+ *     # - parse_start: pointer to the first not yet consumed character
+ *     # - sep_start: pointer to the beginning of the parsed separator
+ *     # - field start: pointer to the beginning of the parsed field
+ *     # - field length: length of the parsed field
+ *     # - field_found: flag for succesful field match
+ *     # - nf: Number of fields found so far
+ *     
+ *     # Prepare for parsing
+ *     parse_start = 1   # first not yet parsed char
+ *     nf = 0            # fields found so far
+ *     delete fields
+ *     delete seps
+ * 
+ *     # Loop that consumes the whole record
+ *     while (parse_start <= length(string)) {  # still something to parse
+ *     
+ *         # first attempt to match the next field
+ *         sep_start = parse_start
+ *         field_found = match(substr(string, parse_start), pattern)
+ *         
+ *         # check for an invalid null field and retry one character away
+ *         if (nf > 0 && field_found && RSTART==1 && RLENGTH==0) {
+ *             parse_start++
+ *             field_found = match(substr(string, parse_start), pattern)
+ *         }
+ *         
+ *         # store the (sep[n-1],field[n]) pair
+ *         if (field_found) {
+ *             field_start = parse_start + RSTART - 1
+ *             field_length = RLENGTH
+ *             seps[nf] = substr(string, sep_start, field_start-sep_start)
+ *             fields[++nf] = substr(string, field_start, field_length)
+ *             parse_start = field_start + field_length
+ *             
+ *         # store the final extra sep after the last field
+ *         } else {
+ *             seps[nf] = substr(string, sep_start)
+ *             parse_start = length(string) + 1
+ *         }
+ *     }
+ *     
+ *     return nf
  * }
  */
 static long
@@ -1615,10 +1579,9 @@ fpat_parse_field(long up_to,	/* parse only up to this field number */
 	char *start;
 	char *end = scan + len;
 	int regex_flags = RE_NEED_START;
-	bool need_to_set_sep;
-	bool non_empty;
-	bool eosflag;
 	mbstate_t mbs;
+	char* field_start;
+	bool field_found;
 
 	memset(&mbs, 0, sizeof(mbstate_t));
 
@@ -1631,90 +1594,48 @@ fpat_parse_field(long up_to,	/* parse only up to this field number */
 	if (rp == NULL) /* use FPAT */
 		rp = FPAT_regexp;
 
-	if (in_middle) {
-		regex_flags |= RE_NO_BOL;
-	}
-	non_empty = rp->non_empty;
+	while (scan <= end && nf < up_to) {  /* still something to parse */
 
-	eosflag = false;
-	need_to_set_sep = true;
-	start = scan;
-	while (research(rp, scan, 0, (end - scan), regex_flags) != -1
-	       && nf < up_to) {
+		/* first attempt to match the next field */
+		start = scan;
+		field_found = research(rp, scan, 0, (end - scan), regex_flags) != -1;
 
-		if (REEND(rp, scan) > RESTART(rp, scan)) { /* if (RLENGTH > 0) */
-			non_empty = true;
-			if (sep_arr != NULL && need_to_set_sep) {
-				if (RESTART(rp, scan) == 0) /* match at front */
-		    			set_element(nf, start, 0L, sep_arr);
+		/* check for an invalid null field and retry one character away */ 
+		if (nf > 0 && field_found && REEND(rp, scan) == 0) { /* invalid null field */
+			increment_scan(& scan, end - scan);
+			field_found = research(rp, scan, 0, (end - scan), regex_flags) != -1;
+		}
+
+		/* store the (sep[n-1],field[n]) pair */
+		if (field_found) {
+			field_start = scan + RESTART(rp, scan);
+			if (sep_arr != NULL) { /* store the separator */
+				if (field_start == start) /* match at front */
+					set_element(nf, start, 0L, sep_arr);
 				else
-		    			set_element(nf,
+					set_element(nf,
 						start,
-						(long) RESTART(rp, scan),
+						(long) (field_start - start),
 						sep_arr);
 			}
 			/* field is text that matched */
 			(*set)(++nf,
-				scan + RESTART(rp, scan),
+				field_start,
 				(long)(REEND(rp, scan) - RESTART(rp, scan)),
 				n);
-
 			scan += REEND(rp, scan);
-			if (scan >= end)
-				break;
-			need_to_set_sep = true;
-		} else if (non_empty) { /* else if non_empty */
-			/*
-			 * last match was non-empty, and at the
-			 * current character we get a zero length match,
-			 * which we don't want, so skip over it
-			 */
-			non_empty = false;
-			if (sep_arr != NULL) {
-				need_to_set_sep = false;
-		    		set_element(nf, start, 1L, sep_arr);
-			}
-			increment_scan(& scan, end - scan);
-		} else {
-			/* 0 length match */
-			if (sep_arr != NULL && need_to_set_sep) {
-				if (RESTART(rp, scan) == 0) /* RSTART == 1 */
-		    			set_element(nf, start, 0L, sep_arr);
-				else
-		    			set_element(nf, start,
-							(long) RESTART(rp, scan),
-							sep_arr);
-			}
-			need_to_set_sep = true;
-			(*set)(++nf, scan, 0L, n);
-			if (! non_empty && ! eosflag) { /* prev was empty */
-				if (sep_arr != NULL) {
-		    			set_element(nf, start, 1L, sep_arr);
-					need_to_set_sep = false;
-				}
-			}
-			if (RESTART(rp, scan) == 0)
-				increment_scan(& scan, end - scan);
-			else {
-				scan += RESTART(rp, scan);
-			}
-			non_empty = false;
-		}
-		if (scan >= end) { /* length(string) == 0 */
-			if (eosflag)
-				break;
-			else
-				eosflag = true;
-		}
 
-		start = scan;
-	}
-	if (scan < end) {
-		if (sep_arr != NULL)
-    			set_element(nf, scan, (long) (end - scan), sep_arr);
+		} else {
+			/*
+			 * No match, store the final extra separator after
+			 * the last field.
+			 */
+			if (sep_arr != NULL)
+				set_element(nf, start, (long) (end - start), sep_arr);
+			scan = end + 1;
+		}
 	}
 
 	*buf = scan;
-	rp->non_empty = non_empty;
 	return nf;
 }

@@ -17994,7 +17994,7 @@ using a third argument is a fatal error.
 @cindexgawkfunc{patsplit}
 @cindex split string into array
 Divide
-@var{string} into pieces defined by @var{fieldpat}
+@var{string} into pieces (or ``fields'') defined by @var{fieldpat}
 and store the pieces in @var{array} and the separator strings in the
 @var{seps} array.  The first piece is stored in
 @code{@var{array}[1]}, the second piece in @code{@var{array}[2]}, and so
@@ -18005,9 +18005,11 @@ It may be either a regexp constant or a string.
 If @var{fieldpat} is omitted, the value of @code{FPAT} is used.
 @code{patsplit()} returns the number of elements created.
 @code{@var{seps}[@var{i}]} is
-the separator string
-between @code{@var{array}[@var{i}]} and @code{@var{array}[@var{i}+1]}.
-Any leading separator will be in @code{@var{seps}[0]}.
+the possibly null separator string
+after @code{@var{array}[@var{i}]}.
+The possibly null leading separator will be in @code{@var{seps}[0]}.
+So a non-null @var{string} with @var{n} fields will have @var{n+1} separators.
+A null @var{string} will not have neither fields nor separators.
 
 The @code{patsplit()} function splits strings into pieces in a
 manner similar to the way input lines are split into fields using @code{FPAT}

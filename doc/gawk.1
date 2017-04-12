@@ -2977,9 +2977,11 @@ that matched
 .IR r .
 The value of
 .BI seps[ i ]
-is the separator that appeared in
-front of
-.BI a[ i +1]\fR.
+is the possibly null separator that appeared after
+.BI a[ i ]\fR.
+The value of
+.B seps[0]
+is the possibly null leading separator.
 \&\fRIf
 .I r
 is omitted,
