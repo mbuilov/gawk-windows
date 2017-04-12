@@ -619,6 +619,8 @@ EXTRA_DIST = \
 	membug1.awk \
 	membug1.in \
 	membug1.ok \
+	memleak.awk \
+	memleak.ok \
 	messages.awk \
 	minusstr.awk \
 	minusstr.ok \
@@ -1190,7 +1192,7 @@ BASIC_TESTS = \
 	hex hex2 hsprint \
 	inpref inputred intest intprec iobug1 \
 	leaddig leadnl litoct longsub longwrds \
-	manglprm math membug1 messages minusstr mmap8k mtchi18n \
+	manglprm math membug1 memleak messages minusstr mmap8k mtchi18n \
 	nasty nasty2 negexp negrange nested nfldstr nfloop nfneg nfset nlfldsep \
 	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl \
 	noparms nors nulinsrc nulrsend numindex numsubstr \

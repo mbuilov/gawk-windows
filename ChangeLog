@@ -1,7 +1,18 @@
 2017-04-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* awk.h (enum opcodeval): For the avoidance of doubt, specify that
+	Op_illegal must equal zero.
+	* symbol.c (bcfree): Improve clarity by setting opcode to Op_illegal
+	instead of 0.
+	(free_bc_mempool): Improve clarity by comparing opcode to Op_illegal
+	instead of to 0.
+
 	* field.c (set_FIELDWIDTHS): Set use_chars to awk_true, since its
 	type is awk_bool_t.
+
+2017-04-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* symbol.c (free_bc_mempool): Change `first' from int to bool.
 
 2017-04-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
@@ -15,6 +26,36 @@
 	w32_maybe_set_errno to correctly set errno to EPIPE when appropriate.
 
 	* awk.h (die_via_sigpipe) [__MINGW32__]: MinGW-specific definition.
+
+2017-04-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (INSTRUCTION_POOL): Redefine as an array of structures so we
+	can track allocated blocks.
+	* symbol.c (pools): Make it a pointer to avoid copying.
+	(struct instruction_block): Define structure to hold a block of
+	allocated instructions.
+	(bcfree): Update to use new INSTRUCTION_POOL definition.
+	(bcalloc): Allocate an instruction by searching first on the free
+	list, second for free space in the current block, or third by
+	allocating a new block.
+	(set_context): Update to reflect that pools is now a pointer.
+	(free_bc_mempool): New helper function to free a pool of a certain size.
+	(fre_bcpool): Call free_bc_mempool for each pool.
+
+2017-04-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (INSTRUCTION): Add pool_size member.
+	[MAX_INSTRUCTION_ALLOC]: New macro.
+	(INSTRUCTION_POOL): New type.
+	(struct context): Use INSTRUCTION_POOL.
+	* array.c (assoc_list): Reorg the code a bit to make sure
+	to alway free the INSTRUCTIONs allocated for calling a
+	user-supplied sorting function. Based on code by
+	Andrew Schorr.
+	* symbol.c (free_bcpool): Rework to use an INSTRUCTION_POOL.
+	(bcfree, bcalloc): Rework to use separate chains in
+	the instruction pool.
+	(set_context): Update appropriately.
 
 2017-03-27         Arnold D. Robbins     <arnold@skeeve.com>
 
