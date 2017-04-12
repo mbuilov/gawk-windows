@@ -1,3 +1,11 @@
+2017-04-12         Manuel Collado        <m-collado@users.sourceforge.net>
+
+	Fix the FPAT bug reported by Ed Morton in the gawk-bug mailing list.
+
+	* awk.h (Regexp): Remove the non_empty flag.
+	* field.c (fpat_parse_field): Restructure the code to reduce complexity
+	and document the new structure.
+
 2017-04-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* awk.h (enum opcodeval): For the avoidance of doubt, specify that
