@@ -103,11 +103,11 @@ cleanup_mpfr(void)
 /* mpg_node --- allocate a node to store MPFR float or GMP integer */
 
 NODE *
-mpg_node(unsigned int tp)
+mpg_node(unsigned int flags)
 {
-	NODE *r = make_number_node(tp);
+	NODE *r = make_number_node(flags);
 
-	if (tp == MPFN)
+	if (flags == MPFN)
 		/* Initialize, set precision to the default precision, and value to NaN */
 		mpfr_init(r->mpg_numbr);
 	else

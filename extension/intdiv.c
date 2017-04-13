@@ -29,6 +29,8 @@ static const char *ext_version = "intdiv extension: version 1.0";
 
 int plugin_is_GPL_compatible;
 
+/* double_to_int --- get the integer part of a double */
+
 static double
 double_to_int(double d)
 {
@@ -39,6 +41,8 @@ double_to_int(double d)
 	return d;
 }
 
+/* array_set_number --- set an array element to a numeric value */
+
 static void
 array_set_number(awk_array_t array, const char *sub, size_t sublen, double num)
 {
@@ -48,6 +52,8 @@ array_set_number(awk_array_t array, const char *sub, size_t sublen, double num)
 }
 
 #ifdef HAVE_MPFR
+
+/* mpz_conv --- convert an awk_value_t to an MPZ value */
 
 static mpz_ptr
 mpz_conv(const awk_value_t *arg, mpz_ptr tmp)
@@ -70,6 +76,8 @@ mpz_conv(const awk_value_t *arg, mpz_ptr tmp)
 		return NULL;
 	}
 }
+
+/* array_set_mpz --- set an array element to an MPZ value */
 
 static void
 array_set_mpz(awk_array_t array, const char *sub, size_t sublen, mpz_ptr num)
@@ -136,8 +144,7 @@ do_intdiv(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		array_set_number(array, "quotient", 8, quotient);
 		array_set_number(array, "remainder", 9, remainder);
 #ifdef HAVE_MPFR
-	}
-	else {
+	} else {
 		/* extended precision */
 		mpz_ptr numer, denom;
 		mpz_t numer_tmp, denom_tmp;
@@ -155,11 +162,13 @@ do_intdiv(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 			return make_number(-1, result);
 		}
 		if (mpz_sgn(denom) == 0) {
-			warning(ext_id, _("intdiv: division by zero attempted"));
 			if (numer == numer_tmp)
 				mpz_clear(numer);
 			if (denom == denom_tmp)
 				mpz_clear(denom);
+
+			fatal(ext_id, _("intdiv: division by zero attempted"));
+			// won't get here, but keep the compiler happy
 			return make_number(-1, result);
 		}
 

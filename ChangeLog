@@ -1,3 +1,8 @@
+2017-04-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (make_number_node): Simplify.
+	* mpfr.c (mpg_node): Change parameter name to `flags'.
+
 2017-04-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* mpfr.c (mpg_format_val): Set STRCUR flag when we're done.
@@ -503,7 +508,7 @@
 	gmp_minor_version, mpfr_major_version, and mpfr_minor_version.
 	Add functions api_get_mpfr and api_get_mpz to allocate memory for
 	extended-precision numbers to hand to gawk.
-	(get_mpfr_ptr, get_mpz_ptr): Helper macros to warp api_get_mpfr and
+	(get_mpfr_ptr, get_mpz_ptr): Helper macros to wrap api_get_mpfr and
 	api_get_mpz.
 	(make_number): Modify to populate awk_number_t correctly.
 	(make_number_mpz, make_number_mpfr): New helper functions to create
@@ -512,12 +517,11 @@
 	in extensions that want to support extended-precision math.
 	* gawkapi.c (getmpfr, freempfr, getmpz, freempz): New macros to
 	allocate and free memory blocks for extended-precision math.
-	(awk_value_to_node): For AWK_NUMBER values, support 3 different kinds
-	of internal numbers: double, mpz_t, and mpfr_t.
+	(awk_value_to_node): For AWK_NUMBER values, support three different
+	kinds of internal numbers: double, mpz_t, and mpfr_t.
 	(assign_number): New helper function to convert a numeric node to
 	an awk_value_t.
-	(node_to_awk_value): Use assign_number in a couple of places to
-	pass numbers properly.
+	(node_to_awk_value): Use assign_number to pass numbers properly.
 	(api_get_mpfr): Implement new api_get_mpfr hook.
 	(api_get_mpfz): Implement new api_get_mpz hook.
 	(api_impl): Add GMP & MPFR versions, api_get_mpfr, and api_get_mpz.

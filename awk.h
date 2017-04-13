@@ -1976,20 +1976,17 @@ erealloc_real(void *ptr, size_t count, const char *where, const char *var, const
 	return ret;
 }
 
-/* make_number_node --- make node with the give flags */
+/* make_number_node --- make node with the given flags */
 
 static inline NODE *
-make_number_node(unsigned int tp)
+make_number_node(unsigned int flags)
 {
 	NODE *r;
 	getnode(r);
+	memset(r, 0, sizeof(*r));
 	r->type = Node_val;
 	r->valref = 1;
-	r->flags = (tp|MALLOC|NUMBER|NUMCUR);
-	r->stptr = NULL;
-	r->stlen = 0;
-	r->wstptr = NULL;
-	r->wstlen = 0;
+	r->flags = (flags|MALLOC|NUMBER|NUMCUR);
 	return r;
 }
 
