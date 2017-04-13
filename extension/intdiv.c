@@ -161,16 +161,8 @@ do_intdiv(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 				mpz_clear(numer);
 			return make_number(-1, result);
 		}
-		if (mpz_sgn(denom) == 0) {
-			if (numer == numer_tmp)
-				mpz_clear(numer);
-			if (denom == denom_tmp)
-				mpz_clear(denom);
-
+		if (mpz_sgn(denom) == 0)
 			fatal(ext_id, _("intdiv: division by zero attempted"));
-			// won't get here, but keep the compiler happy
-			return make_number(-1, result);
-		}
 
 		/* ask gawk to allocate return values for us */
 		quotient = get_mpz_ptr();
