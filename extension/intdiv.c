@@ -129,8 +129,10 @@ do_intdiv(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		num = double_to_int(nv.num_value);
 		denom = double_to_int(dv.num_value);
 
-		if (denom == 0.0)
-			fatal(ext_id, _("intdiv: division by zero attempted"));
+		if (denom == 0.0) {
+			warning(ext_id, _("intdiv: division by zero attempted"));
+			return make_number(-1, result);
+		}
 
 		quotient = double_to_int(num / denom);
 #ifdef HAVE_FMOD
@@ -161,8 +163,14 @@ do_intdiv(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 				mpz_clear(numer);
 			return make_number(-1, result);
 		}
-		if (mpz_sgn(denom) == 0)
-			fatal(ext_id, _("intdiv: division by zero attempted"));
+		if (mpz_sgn(denom) == 0) {
+			warning(ext_id, _("intdiv: division by zero attempted"));
+			if (numer == numer_tmp)
+				mpz_clear(numer);
+			if (denom == denom_tmp)
+				mpz_clear(denom);
+			return make_number(-1, result);
+		}
 
 		/* ask gawk to allocate return values for us */
 		quotient = get_mpz_ptr();
