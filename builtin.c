@@ -4034,6 +4034,9 @@ do_intdiv(int nargs)
 	unref(*lhs);
 	*lhs = make_number((AWKNUM) remainder);
 
+	DEREF(denominator);
+	DEREF(numerator);
+
 	return make_number((AWKNUM) 0.0);
 }
 
