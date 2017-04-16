@@ -16734,13 +16734,17 @@ is @minus{}3, and @code{int(-3)} is @minus{}3 as well.
 @item @code{intdiv(@var{numerator}, @var{denominator}, @var{result})}
 @cindexawkfunc{intdiv}
 @cindex intdiv
-Perform integer division, similar to the standard C function of the
-same name.  First, truncate @code{numerator} and @code{denominator}
+Perform integer division, similar to the standard C @code{div()} function.
+First, truncate @code{numerator} and @code{denominator}
 towards zero, creating integer values.  Clear the @code{result}
 array, and then set @code{result["quotient"]} to the result of
 @samp{numerator / denominator}, truncated towards zero to an integer,
 and set @code{result["remainder"]} to the result of @samp{numerator %
-denominator}, truncated towards zero to an integer.  This function is
+denominator}, truncated towards zero to an integer.
+Attempting division by zero causes a fatal error.
+The function returns zero upon success, and @minus{}1 upon error.
+
+This function is
 primarily intended for use with arbitrary length integers; it avoids
 creating MPFR arbitrary precision floating-point values (@pxref{Arbitrary
 Precision Integers}).
