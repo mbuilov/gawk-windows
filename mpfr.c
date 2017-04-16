@@ -1224,7 +1224,9 @@ do_mpfr_intdiv(int nargs)
 	} else {
 		if (! mpfr_number_p(numerator->mpg_numbr)) {
 			/* [+-]inf or NaN */
-			return numerator;
+			unref(numerator);
+			unref(denominator);
+			return make_number((AWKNUM) -1);
 		}
 
 		num = mpg_integer();
@@ -1237,7 +1239,10 @@ do_mpfr_intdiv(int nargs)
 	} else {
 		if (! mpfr_number_p(denominator->mpg_numbr)) {
 			/* [+-]inf or NaN */
-			return denominator;
+			unref(numerator);
+			unref(denominator);
+			unref(num);
+			return make_number((AWKNUM) -1);
 		}
 
 		denom = mpg_integer();

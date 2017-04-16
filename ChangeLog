@@ -1,3 +1,10 @@
+2017-04-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_intdiv): Use DEREF on the arguments.
+	Thanks to Andrew Schorr for finding the problem.
+	* mpfr.c (do_mpfr_intdiv): Return -1 if numerator or denominator
+	are not valid numbers.  Unref various bits first.
+
 2017-04-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* mpfr.c (mpg_format_val): Set STRCUR flag when we're done.
