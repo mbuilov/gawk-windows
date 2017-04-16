@@ -1,5 +1,16 @@
 2017-04-16         Arnold D. Robbins     <arnold@skeeve.com>
 
+	Rename intdiv it intdiv0 and require enabling at configure time.
+
+	* awkgram.y (tokentab): Bracket intdiv0 in #ifdef SUPPLY_INTDIV.
+	(snode): Similar.
+	* builtin.c (do_intdiv): Bracket in #ifdef SUPPLY_INTDIV.
+	* mpfr.c (do_mpfr_intdiv): Bracket in #ifdef SUPPLY_INTDIV.
+	* configure.ac: Add --enable-builtin-intdiv0 option. If enabled,
+	also revise doc/gawktexi.in.
+
+2017-04-16         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* builtin.c (do_intdiv): Use DEREF on the arguments.
 	Thanks to Andrew Schorr for finding the problem.
 	* mpfr.c (do_mpfr_intdiv): Return -1 if numerator or denominator

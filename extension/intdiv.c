@@ -194,7 +194,7 @@ do_intdiv(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "api_intdiv", do_intdiv, 3, 3, awk_false, NULL },
+	{ "intdiv", do_intdiv, 3, 3, awk_false, NULL },
 };
 
 /* init_intdiv --- initialization routine */

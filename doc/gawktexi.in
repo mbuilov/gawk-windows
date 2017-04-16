@@ -16731,9 +16731,10 @@ truncated toward zero.
 For example, @code{int(3)} is 3, @code{int(3.9)} is 3, @code{int(-3.9)}
 is @minus{}3, and @code{int(-3)} is @minus{}3 as well.
 
-@item @code{intdiv(@var{numerator}, @var{denominator}, @var{result})}
-@cindexawkfunc{intdiv}
-@cindex intdiv
+@ifset INTDIV
+@item @code{intdiv0(@var{numerator}, @var{denominator}, @var{result})}
+@cindexawkfunc{intdiv0}
+@cindex intdiv0
 Perform integer division, similar to the standard C @code{div()} function.
 First, truncate @code{numerator} and @code{denominator}
 towards zero, creating integer values.  Clear the @code{result}
@@ -16751,6 +16752,7 @@ Precision Integers}).
 
 This function is a @code{gawk} extension.  It is not available in
 compatibility mode (@pxref{Options}).
+@end ifset
 
 @item @code{log(@var{x})}
 @cindexawkfunc{log}
@@ -30921,16 +30923,18 @@ gawk -M 'BEGIN @{ n = 13; print n % 2 @}'
 When dividing two arbitrary precision integers with either
 @samp{/} or @samp{%}, the result is typically an arbitrary
 precision floating point value (unless the denominator evenly
-divides into the numerator).  In order to do integer division
+divides into the numerator).
+@ifset INTDIV
+In order to do integer division
 or remainder with arbitrary precision integers, use the built-in
-@code{intdiv()} function (@pxref{Numeric Functions}).
+@code{intdiv0()} function (@pxref{Numeric Functions}).
 
-You can simulate the @code{intdiv()} function in standard @command{awk}
+You can simulate the @code{intdiv0()} function in standard @command{awk}
 using this user-defined function:
 
 @example
 @c file eg/lib/intdiv.awk
-# intdiv --- do integer division
+# intdiv0 --- do integer division
 
 @c endfile
 @ignore
@@ -30941,12 +30945,15 @@ using this user-defined function:
 #
 # Name changed from div() to intdiv()
 # April, 2015
+#
+# Changed to intdiv0()
+# April, 2016
 
 @c endfile
 
 @end ignore
 @c file eg/lib/intdiv.awk
-function intdiv(numerator, denominator, result)
+function intdiv0(numerator, denominator, result)
 @{
     split("", result)
 
@@ -31033,6 +31040,7 @@ because it's quite easy to modify for tiny memory devices with smallish
 word sizes. See
 @uref{http://www.hpmuseum.org/cgi-sys/cgiwrap/hpmuseum/articles.cgi?read=899}.
 @end quotation
+@end ifset
 
 @node POSIX Floating Point Problems
 @section Standards Versus Existing Practice
@@ -36081,10 +36089,12 @@ The @code{bindtextdomain()}, @code{dcgettext()}, and @code{dcngettext()}
 functions for internationalization
 (@pxref{Programmer i18n})
 
+@ifset INTDIV
 @item
-The @code{intdiv()} function for doing integer
+The @code{intdiv0()} function for doing integer
 division and remainder
 (@pxref{Numeric Functions})
+@end ifset
 @end itemize
 
 @item
@@ -36876,9 +36886,11 @@ The @command{igawk} program and its manual page are no longer
 installed when @command{gawk} is built.
 @xref{Igawk Program}.
 
+@ifset INTDIV
 @item
-The @code{intdiv()} function.
+The @code{intdiv0()} function.
 @xref{Numeric Functions}.
+@end ifset
 
 @item
 The maximum number of hexadecimal digits in @samp{\x} escapes

@@ -1169,6 +1169,7 @@ do_mpfr_srand(int nargs)
 	return res;
 }
 
+#ifdef SUPPLY_INTDIV
 /* do_mpfr_intdiv --- do integer division, return quotient and remainder in dest array */
 
 /*
@@ -1262,6 +1263,7 @@ do_mpfr_intdiv(int nargs)
 
 	return make_number((AWKNUM) 0.0);
 }
+#endif /* SUPPLY_INTDIV */
 
 /*
  * mpg_tofloat --- convert an arbitrary-precision integer operand to

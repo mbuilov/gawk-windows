@@ -766,6 +766,7 @@ enable_silent_rules
 with_whiny_user_strftime
 enable_lint
 enable_severe_portability_problems
+enable_builtin_intdiv0
 enable_dependency_tracking
 enable_largefile
 enable_nls
@@ -1412,6 +1413,8 @@ Optional Features:
   --disable-lint          Disable gawk lint checking
   --enable-severe-portability-problems
                           Enable really nasty portability problems
+  --enable-builtin-intdiv0
+                          Enable built-in intdiv0 function
   --enable-dependency-tracking
                           do not reject slow dependency extractors
   --disable-dependency-tracking
@@ -3239,6 +3242,21 @@ if test "${enable_severe_portability_problems+set}" = set; then :
 
 $as_echo "#define I_DONT_KNOW_WHAT_IM_DOING 1" >>confdefs.h
 
+	fi
+
+fi
+
+# Check whether --enable-builtin-intdiv0 was given.
+if test "${enable_builtin_intdiv0+set}" = set; then :
+  enableval=$enable_builtin_intdiv0; if test "$enableval" = yes
+	then
+
+$as_echo "#define SUPPLY_INTDIV 1" >>confdefs.h
+
+		sed '/^@set PATCHLEVEL/a\
+@set INTDIV' < "$srcdir"/doc/gawktexi.in > foo
+		cp foo "$srcdir"/doc/gawktexi.in
+		rm foo
 	fi
 
 fi
