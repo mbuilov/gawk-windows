@@ -46,7 +46,7 @@ AC_CONFIG_MACRO_DIR([m4])
 
 dnl Additional argument stuff
 AC_ARG_WITH(whiny-user-strftime,
-	[AS_HELP_STRING([--with-whiny-user-strftime], [Force use of included version of strftime for deficient systems])],
+	[AS_HELP_STRING([--with-whiny-user-strftime], [force use of included version of strftime for deficient systems])],
 	if test "$withval" = yes
 	then
 		AC_DEFINE(USE_INCLUDED_STRFTIME, 1,
@@ -54,17 +54,26 @@ AC_ARG_WITH(whiny-user-strftime,
 	fi
 )
 AC_ARG_ENABLE([lint],
-	[AS_HELP_STRING([--disable-lint],[Disable gawk lint checking])],
+	[AS_HELP_STRING([--disable-lint],[do not compile in gawk lint checking])],
 	if test "$enableval" = no
 	then
 		AC_DEFINE(NO_LINT, 1, [disable lint checks])
 	fi
 )
 AC_ARG_ENABLE([severe-portability-problems],
-	[AS_HELP_STRING([--enable-severe-portability-problems],[Enable really nasty portability problems])],
+	[AS_HELP_STRING([--enable-severe-portability-problems],[allow really nasty portability problems])],
 	if test "$enableval" = yes
 	then
 		AC_DEFINE(I_DONT_KNOW_WHAT_IM_DOING, 1, [enable severe portability problems])
+	fi
+)
+
+SKIP_MPFR=no
+AC_ARG_ENABLE([mpfr],
+	[AS_HELP_STRING([--disable-mpfr],[do not check for MPFR])],
+	if test "$enableval" = no
+	then
+		SKIP_MPFR=yes
 	fi
 )
 
@@ -380,7 +389,10 @@ case `uname -m` in
 *'Power Macintosh'*)
 	: ;;
 *)
-	GNUPG_CHECK_MPFR
+	case $SKIP_MPFR in
+	no)	GNUPG_CHECK_MPFR
+		;;
+	esac
 	;;
 esac
 

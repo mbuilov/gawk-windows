@@ -1,3 +1,15 @@
+2017-04-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Make letter case usage in the various
+	AC_ARG_ENABLE messages consistent with the rest of configure
+	output.
+	(--disable-mpfr): Add this option to make it easier
+	to check compiles without MPFR. Motivated by:
+	* awk.h (NODE): Rearrange the layout of the 'val' subportion
+	of the union to fix alignment problems when compiling without
+	MPFR.  The problem only happened on 64-bit compiles, not
+	32-bit compiles.
+
 2017-04-16         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_intdiv): Use DEREF on the arguments.
