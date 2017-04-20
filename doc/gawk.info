@@ -28553,6 +28553,11 @@ command line when compiling 'gawk' from scratch, including:
           test suite to fail.  This option may be removed at a later
           date.
 
+'--disable-mpfr'
+     Skip checking for the MPFR and GMP libraries.  This is useful
+     mainly for the developers, to make sure nothing breaks if MPFR
+     support is not available.
+
 '--disable-nls'
      Disable all message-translation facilities.  This is usually not
      desirable, but it may bring you some slight performance
@@ -32440,8 +32445,10 @@ Index
                                                               (line   9)
 * --disable-lint configuration option:   Additional Configuration Options.
                                                               (line  15)
-* --disable-nls configuration option:    Additional Configuration Options.
+* --disable-mpfr configuration option:   Additional Configuration Options.
                                                               (line  32)
+* --disable-nls configuration option:    Additional Configuration Options.
+                                                              (line  37)
 * --dump-variables option:               Options.             (line  94)
 * --dump-variables option, using for library functions: Library Names.
                                                               (line  45)
@@ -32481,7 +32488,7 @@ Index
 * --use-lc-numeric option:               Options.             (line 218)
 * --version option:                      Options.             (line 304)
 * --with-whiny-user-strftime configuration option: Additional Configuration Options.
-                                                              (line  37)
+                                                              (line  42)
 * -b option:                             Options.             (line  69)
 * -c option:                             Options.             (line  82)
 * -C option:                             Options.             (line  89)
@@ -33179,10 +33186,12 @@ Index
                                                               (line   9)
 * configuration option, --disable-lint:  Additional Configuration Options.
                                                               (line  15)
-* configuration option, --disable-nls:   Additional Configuration Options.
+* configuration option, --disable-mpfr:  Additional Configuration Options.
                                                               (line  32)
-* configuration option, --with-whiny-user-strftime: Additional Configuration Options.
+* configuration option, --disable-nls:   Additional Configuration Options.
                                                               (line  37)
+* configuration option, --with-whiny-user-strftime: Additional Configuration Options.
+                                                              (line  42)
 * configuration options, gawk:           Additional Configuration Options.
                                                               (line   6)
 * constant regexps:                      Regexp Usage.        (line  57)
@@ -35996,58 +36005,58 @@ Node: Unix Installation1146886
 Node: Quick Installation1147568
 Node: Shell Startup Files1149982
 Node: Additional Configuration Options1151071
-Node: Configuration Philosophy1152876
-Node: Non-Unix Installation1155245
-Node: PC Installation1155705
-Node: PC Binary Installation1156543
-Node: PC Compiling1156978
-Node: PC Using1158095
-Node: Cygwin1161140
-Node: MSYS1161910
-Node: VMS Installation1162411
-Node: VMS Compilation1163202
-Ref: VMS Compilation-Footnote-11164431
-Node: VMS Dynamic Extensions1164489
-Node: VMS Installation Details1166174
-Node: VMS Running1168427
-Node: VMS GNV1172706
-Node: VMS Old Gawk1173441
-Node: Bugs1173912
-Node: Bug address1174575
-Node: Usenet1176972
-Node: Maintainers1177749
-Node: Other Versions1179125
-Node: Installation summary1185709
-Node: Notes1186744
-Node: Compatibility Mode1187609
-Node: Additions1188391
-Node: Accessing The Source1189316
-Node: Adding Code1190751
-Node: New Ports1196969
-Node: Derived Files1201457
-Ref: Derived Files-Footnote-11206942
-Ref: Derived Files-Footnote-21206977
-Ref: Derived Files-Footnote-31207575
-Node: Future Extensions1207689
-Node: Implementation Limitations1208347
-Node: Extension Design1209530
-Node: Old Extension Problems1210684
-Ref: Old Extension Problems-Footnote-11212202
-Node: Extension New Mechanism Goals1212259
-Ref: Extension New Mechanism Goals-Footnote-11215623
-Node: Extension Other Design Decisions1215812
-Node: Extension Future Growth1217925
-Node: Old Extension Mechanism1218761
-Node: Notes summary1220524
-Node: Basic Concepts1221706
-Node: Basic High Level1222387
-Ref: figure-general-flow1222669
-Ref: figure-process-flow1223354
-Ref: Basic High Level-Footnote-11226655
-Node: Basic Data Typing1226840
-Node: Glossary1230168
-Node: Copying1262115
-Node: GNU Free Documentation License1299654
-Node: Index1324772
+Node: Configuration Philosophy1153060
+Node: Non-Unix Installation1155429
+Node: PC Installation1155889
+Node: PC Binary Installation1156727
+Node: PC Compiling1157162
+Node: PC Using1158279
+Node: Cygwin1161324
+Node: MSYS1162094
+Node: VMS Installation1162595
+Node: VMS Compilation1163386
+Ref: VMS Compilation-Footnote-11164615
+Node: VMS Dynamic Extensions1164673
+Node: VMS Installation Details1166358
+Node: VMS Running1168611
+Node: VMS GNV1172890
+Node: VMS Old Gawk1173625
+Node: Bugs1174096
+Node: Bug address1174759
+Node: Usenet1177156
+Node: Maintainers1177933
+Node: Other Versions1179309
+Node: Installation summary1185893
+Node: Notes1186928
+Node: Compatibility Mode1187793
+Node: Additions1188575
+Node: Accessing The Source1189500
+Node: Adding Code1190935
+Node: New Ports1197153
+Node: Derived Files1201641
+Ref: Derived Files-Footnote-11207126
+Ref: Derived Files-Footnote-21207161
+Ref: Derived Files-Footnote-31207759
+Node: Future Extensions1207873
+Node: Implementation Limitations1208531
+Node: Extension Design1209714
+Node: Old Extension Problems1210868
+Ref: Old Extension Problems-Footnote-11212386
+Node: Extension New Mechanism Goals1212443
+Ref: Extension New Mechanism Goals-Footnote-11215807
+Node: Extension Other Design Decisions1215996
+Node: Extension Future Growth1218109
+Node: Old Extension Mechanism1218945
+Node: Notes summary1220708
+Node: Basic Concepts1221890
+Node: Basic High Level1222571
+Ref: figure-general-flow1222853
+Ref: figure-process-flow1223538
+Ref: Basic High Level-Footnote-11226839
+Node: Basic Data Typing1227024
+Node: Glossary1230352
+Node: Copying1262299
+Node: GNU Free Documentation License1299838
+Node: Index1324956
 
 End Tag Table
