@@ -365,6 +365,21 @@ typedef struct exp_node {
 		} nodep;
 
 		struct {
+			// April 2017:
+			// The NODE union will be the death of me yet. :-(
+			//
+			// On 64 bit Intel systems, at least, if compiling
+			// without MPFR, the pointers need to come before the 
+			// the double. Otherwise things break pretty
+			// badly.  This doesn't happen on 32 bit compiles.
+			// I saw this on GCC 5.4.0, GCC 6.3.0, PCC, TCC
+			// and clang 3.8.0. It's way too much work to
+			// try to figure out why. So I just put pointers,
+			// then the double, then the size_t's, and then
+			// the rest. Sigh.
+			char *sp;
+			wchar_t *wsp;
+			struct exp_node *typre;
 #ifdef HAVE_MPFR
 			union {
 				AWKNUM fltnum;
@@ -372,17 +387,12 @@ typedef struct exp_node {
 				mpz_t mpi;
 			} nm;
 #else
-			AWKNUM fltnum;	/* this is here for optimal packing of
-			             	 * the structure on many machines
-			              	 */
+			AWKNUM fltnum;
 #endif
-			char *sp;
 			size_t slen;
+			size_t wslen;
 			long sref;
 			int idx;
-			wchar_t *wsp;
-			size_t wslen;
-			struct exp_node *typre;
 		} val;
 	} sub;
 	NODETYPE type;

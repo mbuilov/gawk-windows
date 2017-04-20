@@ -766,6 +766,7 @@ enable_silent_rules
 with_whiny_user_strftime
 enable_lint
 enable_severe_portability_problems
+enable_mpfr
 enable_dependency_tracking
 enable_largefile
 enable_nls
@@ -1409,9 +1410,10 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
-  --disable-lint          Disable gawk lint checking
+  --disable-lint          do not compile in gawk lint checking
   --enable-severe-portability-problems
-                          Enable really nasty portability problems
+                          allow really nasty portability problems
+  --disable-mpfr          do not check for MPFR
   --enable-dependency-tracking
                           do not reject slow dependency extractors
   --disable-dependency-tracking
@@ -1425,7 +1427,7 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-whiny-user-strftime
-                          Force use of included version of strftime for
+                          force use of included version of strftime for
                           deficient systems
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
@@ -3239,6 +3241,17 @@ if test "${enable_severe_portability_problems+set}" = set; then :
 
 $as_echo "#define I_DONT_KNOW_WHAT_IM_DOING 1" >>confdefs.h
 
+	fi
+
+fi
+
+
+SKIP_MPFR=no
+# Check whether --enable-mpfr was given.
+if test "${enable_mpfr+set}" = set; then :
+  enableval=$enable_mpfr; if test "$enableval" = no
+	then
+		SKIP_MPFR=yes
 	fi
 
 fi
@@ -10522,7 +10535,8 @@ case `uname -m` in
 *'Power Macintosh'*)
 	: ;;
 *)
-
+	case $SKIP_MPFR in
+	no)
 
 # Check whether --with-mpfr was given.
 if test "${with_mpfr+set}" = set; then :
@@ -10596,6 +10610,8 @@ $as_echo "#define HAVE_MPFR 1" >>confdefs.h
      unset _found_mpfr
   fi
 
+		;;
+	esac
 	;;
 esac
 
