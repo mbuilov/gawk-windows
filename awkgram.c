@@ -5519,8 +5519,21 @@ nextc(bool check_for_bad)
 {
 	if (gawk_mb_cur_max > 1) {
 again:
+#ifdef NO_CONTINUE_SOURCE_STRINGS
 		if (lexeof)
 			return END_FILE;
+#else
+		if (lexeof) {
+			if (sourcefile->next == srcfiles)
+				return END_FILE;
+			else {
+				next_sourcefile();
+				if (get_src_buf())
+					goto again;
+				return END_SRC;
+			}
+		}
+#endif
 		if (lexptr == NULL || lexptr >= lexend) {
 			if (get_src_buf())
 				goto again;
@@ -5572,8 +5585,17 @@ again:
 		return (int) (unsigned char) *lexptr++;
 	} else {
 		do {
+#ifdef NO_CONTINUE_SOURCE_STRINGS
 			if (lexeof)
 				return END_FILE;
+#else
+			if (lexeof) {
+				if (sourcefile->next == srcfiles)
+					return END_FILE;
+				else
+					next_sourcefile();
+			}
+#endif
 			if (lexptr && lexptr < lexend) {
 				if (check_for_bad || *lexptr == '\0')
 					check_bad_char(*lexptr);
