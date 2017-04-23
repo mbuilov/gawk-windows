@@ -3961,6 +3961,24 @@ This is particularly useful
 when you have library functions that you want to use from your command-line
 programs (@pxref{AWKPATH Variable}).
 
+Note that @command{gawk} treats each string as if it ended with
+a newline character (even if it doesn't). This makes building
+the total program easier.
+
+@quotation CAUTION
+At the moment, there is no requirement that each @var{program-text}
+be a full syntactic unit. I.e., the following currently works:
+
+@example
+$ @kbd{gawk -e 'BEGIN @{ a = 5 ;' -e 'print a @}'}
+@print{} 5
+@end example
+
+@noindent
+However, this could change in the future, so it's not a
+good idea to rely upon this feature.
+@end quotation
+
 @item @option{-E} @var{file}
 @itemx @option{--exec} @var{file}
 @cindex @option{-E} option
