@@ -345,7 +345,6 @@ typedef struct exp_node {
 				Regexp *preg[2];
 				struct exp_node **av;
 				BUCKET **bv;
-				void *aq;
 				void (*uptr)(void);
 				struct exp_instruction *iptr;
 			} r;
@@ -353,7 +352,6 @@ typedef struct exp_node {
 				struct exp_node *extra;
 				void (*aptr)(void);
 				long xl;
-				char **param_list;
 			} x;
 			char *name;
 			size_t reserved;
@@ -384,20 +382,9 @@ typedef struct exp_node {
 	} sub;
 	NODETYPE type;
 	unsigned int flags;
-	// April 2017:
-	// The NODE union will be the death of me yet. :-(
-	//
-	// On 64 bit Intel systems, at least, if compiling without MPFR,
-	// the valref (formerly) sref field needs to be at the end. In its
-	// original position it overlapped with stuff in the nodep part of
-	// the union causing things to break pretty badly.  This doesn't
-	// happen on 32 bit compiles.
-	//
-	// I saw this on GCC 4.9.0, GCC 5.4.0, GCC 6.3.0, PCC, TCC and
-	// clang 3.8.0.
-	//
-	// We simply move valref out of the unions entirely to avoid future
-	// problems.
+
+	// We access valref for both Node_val and Node_regex values,
+	// so it needs to be outside the union.
 	long valref;
 
 /* type = Node_val */
@@ -476,7 +463,6 @@ typedef struct exp_node {
 #define vname sub.nodep.name
 
 #define lnode	sub.nodep.l.lptr
-#define nextp	sub.nodep.l.lptr
 #define rnode	sub.nodep.r.rptr
 
 /* Node_param_list */
@@ -551,7 +537,6 @@ typedef struct exp_node {
 /* Node_var_array: */
 #define buckets		sub.nodep.r.bv
 #define nodes		sub.nodep.r.av
-#define a_opaque	sub.nodep.r.aq
 #define array_funcs	sub.nodep.l.lp
 #define array_base	sub.nodep.l.ll
 #define table_size	sub.nodep.reflags
