@@ -1,7 +1,7 @@
-#! /bin/sh
+#! /bin/bash
 
-MIXED_COMPILERS="gcc /usr/gcc/bin/gcc clang"
-OTHER_COMPILERS="tcc pcc"
+MIXED_COMPILERS=${MIXED_COMPILERS:-gcc /usr/gcc/bin/gcc clang}
+OTHER_COMPILERS=${OTHER_COMPILERS:-tcc pcc}
 
 rm -f compile-results.txt
 
@@ -16,12 +16,15 @@ compile () {
 }
 
 configure_and_compile () {
-	for j in "" --disable-mpfr
-	do
-		./configure $j CC="$1"
-		compile "$1" "$j"
-	done
-	make distclean
+	if type -p $1 >> compile-results.txt 2>&1
+	then
+		for j in "" --disable-mpfr
+		do
+			./configure $j CC="$1"
+			compile "$1" "$j"
+			make distclean
+		done
+	fi
 }
 
 (make distclean)
