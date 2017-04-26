@@ -1,3 +1,15 @@
+2017-04-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awkgram.y (make_regnode): Fix bug -- we should not set valref to 1
+	when creating a node of type Node_regex, since valref is appropriate
+	only for Node_val nodes. This fixes a bug introduced in commit
+	687e6594. Also, add an assert to make it clear that this function
+	supports only Node_regex and Node_dynregex.
+	* awk.h (NODE): Restore sref to the `val' subportion, since it is not
+	really needed for Node_regex, now that the bug in make_regnode has
+	been fixed.
+	(valref): Restore macro definition.
+
 2017-04-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h (NODE): Additional cleanups. Removed `aq' and `param_list'
