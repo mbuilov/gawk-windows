@@ -5017,6 +5017,7 @@ make_regnode(int type, NODE *exp)
 {
 	NODE *n;
 
+	assert(type == Node_regex || type == Node_dynregex);
 	getnode(n);
 	memset(n, 0, sizeof(NODE));
 	n->type = type;
@@ -5036,7 +5037,6 @@ make_regnode(int type, NODE *exp)
 		}
 		n->re_exp = exp;
 		n->re_flags = CONSTANT;
-		n->valref = 1;
 	}
 	return n;
 }
