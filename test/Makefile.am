@@ -1420,8 +1420,8 @@ charset-msg-start:
 	@echo "**************************************************************************"
 	@echo "* Some or all of these tests may fail if you have inadequate or missing  *"
 	@echo "* locale support. At least en_US.UTF-8, ru_RU.UTF-8 and ja_JP.UTF-8 are  *"
-	@echo "* needed. However, if you see this message, the Makefile thinks you have *"
-	@echo "* what you need ...                                                      *"
+	@echo "* needed. The el_GR.iso88597 is optional but helpful. However, if you    *"
+	@echo "* see this message, the Makefile thinks you have what you need ...       *"
 	@echo "**************************************************************************"
 
 charset-msg-end:
