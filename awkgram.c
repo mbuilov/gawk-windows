@@ -5526,12 +5526,8 @@ again:
 		if (lexeof) {
 			if (sourcefile->next == srcfiles)
 				return END_FILE;
-			else {
+			else
 				next_sourcefile();
-				if (get_src_buf())
-					goto again;
-				return END_SRC;
-			}
 		}
 #endif
 		if (lexptr == NULL || lexptr >= lexend) {
