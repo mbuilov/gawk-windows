@@ -1007,6 +1007,7 @@ EXTRA_DIST = \
 	sortglos.ok \
 	sortu.awk \
 	sortu.ok \
+	sourcesplit.ok \
 	space.ok \
 	split_after_fpat.awk \
 	split_after_fpat.in \
@@ -1246,7 +1247,7 @@ GAWK_EXT_TESTS = \
 	profile8 profile9 profile10 pty1 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow shadowbuiltin \
-	sortfor sortfor2 sortu split_after_fpat \
+	sortfor sortfor2 sortu sourcesplit split_after_fpat \
 	splitarg4 strftime strftfld \
 	strtonum strtonum1 switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
 	symtab7 symtab8 symtab9 symtab10 \
@@ -1419,8 +1420,8 @@ charset-msg-start:
 	@echo "**************************************************************************"
 	@echo "* Some or all of these tests may fail if you have inadequate or missing  *"
 	@echo "* locale support. At least en_US.UTF-8, ru_RU.UTF-8 and ja_JP.UTF-8 are  *"
-	@echo "* needed. However, if you see this message, the Makefile thinks you have *"
-	@echo "* what you need ...                                                      *"
+	@echo "* needed. The el_GR.iso88597 is optional but helpful. However, if you    *"
+	@echo "* see this message, the Makefile thinks you have what you need ...       *"
 	@echo "**************************************************************************"
 
 charset-msg-end:
@@ -2386,6 +2387,11 @@ arrdbg:
 fwtest3:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/fwtest2.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+sourcesplit:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) --source='BEGIN { a = 5;' --source='print a }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
