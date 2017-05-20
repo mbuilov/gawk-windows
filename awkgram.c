@@ -8324,12 +8324,22 @@ add_lint(INSTRUCTION *list, LINTTYPE linttype)
 
 	case LINT_no_effect:
 		if (list->lasti->opcode == Op_pop && list->nexti != list->lasti) {
-			for (ip = list->nexti; ip->nexti != list->lasti; ip = ip->nexti)
-				;
+			int line = 0;
+
+			// Get down to the last instruction (FIXME: why?)
+			for (ip = list->nexti; ip->nexti != list->lasti; ip = ip->nexti) {
+				// along the way track line numbers, we will use the line
+				// closest to the opcode if that opcode doesn't have one
+				if (ip->source_line != 0)
+					line = ip->source_line;
+			} 
 
 			if (do_lint) {		/* compile-time warning */
-				if (isnoeffect(ip->opcode))
-					lintwarn_ln(ip->source_line, ("statement may have no effect"));
+				if (isnoeffect(ip->opcode)) {
+					if (ip->source_line != 0)
+						line = ip->source_line;
+					lintwarn_ln(line, ("statement may have no effect"));
+				}
 			}
 
 			if (ip->opcode == Op_push) {		/* run-time warning */
