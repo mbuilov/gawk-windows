@@ -402,6 +402,9 @@ EXTRA_DIST = \
 	fwtest7.awk \
 	fwtest7.in \
 	fwtest7.ok \
+	fwtest8.awk \
+	fwtest8.in \
+	fwtest8.ok \
 	genpot.awk \
 	genpot.ok \
 	gensub.awk \
@@ -1242,7 +1245,7 @@ GAWK_EXT_TESTS = \
 	devfd devfd1 devfd2 dumpvars errno exit \
 	fieldwdth forcenum fpat1 fpat2 fpat3 fpat4 fpat5 fpat6 fpatnull \
 	fsfwfs funlen functab1 functab2 functab3 \
-	fwtest fwtest2 fwtest3 fwtest4 fwtest5 fwtest6 fwtest7 \
+	fwtest fwtest2 fwtest3 fwtest4 fwtest5 fwtest6 fwtest7 fwtest8 \
 	genpot gensub gensub2 gensub3 getlndir gnuops2 gnuops3 gnureops gsubind \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcas4 ignrcase \
 	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
