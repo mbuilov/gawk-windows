@@ -563,7 +563,13 @@ particular records in a file and perform operations upon them.
                                         field.
 * Field Splitting Summary::             Some final points and a summary table.
 * Constant Size::                       Reading constant width data.
+* Fixed width data::                    Processing fixed-width data.
+* Skipping intervening::                Skipping intervening fields.
+* Allowing trailing data::              Capturing optional trailing data.
+* Fields with fixed data::              Field values with fixed-width data.
 * Splitting By Content::                Defining Fields By Content
+* Testing field creation::              Checking how @command{gawk} is
+                                        splitting records.
 * Multiple Line::                       Reading multiline records.
 * Getline::                             Reading files under explicit program
                                         control using the @code{getline}
@@ -6215,6 +6221,8 @@ used with it do not have to be named on the @command{awk} command line
 * Field Separators::            The field separator and how to change it.
 * Constant Size::               Reading constant width data.
 * Splitting By Content::        Defining Fields By Content
+* Testing field creation::      Checking how @command{gawk} is splitting
+                                records.
 * Multiple Line::               Reading multiline records.
 * Getline::                     Reading files under explicit program control
                                 using the @code{getline} function.
@@ -7356,18 +7364,30 @@ feature of @command{gawk}.  If you are a novice @command{awk} user,
 you might want to skip it on the first reading.
 
 @command{gawk} provides a facility for dealing with fixed-width fields
-with no distinctive field separator.  For example, data of this nature
-arises in the input for old Fortran programs where numbers are run
-together, or in the output of programs that did not anticipate the use
-of their output as input for other programs.
+with no distinctive field separator. We discuss this feature in
+the following @value{SUBSECTION}s.
 
-An example of the latter is a table where all the columns are lined up by
-the use of a variable number of spaces and @emph{empty fields are just
-spaces}.  Clearly, @command{awk}'s normal field splitting based on @code{FS}
-does not work well in this case.  Although a portable @command{awk} program
-can use a series of @code{substr()} calls on @code{$0}
-(@pxref{String Functions}),
-this is awkward and inefficient for a large number of fields.
+@menu
+* Fixed width data::            Processing fixed-width data.
+* Skipping intervening::        Skipping intervening fields.
+* Allowing trailing data::      Capturing optional trailing data.
+* Fields with fixed data::      Field values with fixed-width data.
+@end menu
+
+@node Fixed width data
+@subsection Processing Fixed-Width Data
+
+An example of fixed-width data would be the input for old Fortran programs
+where numbers are run together, or the output of programs that did not
+anticipate the use of their output as input for other programs.
+
+An example of the latter is a table where all the columns are lined up
+by the use of a variable number of spaces and @emph{empty fields are
+just spaces}.  Clearly, @command{awk}'s normal field splitting based
+on @code{FS} does not work well in this case.  Although a portable
+@command{awk} program can use a series of @code{substr()} calls on
+@code{$0} (@pxref{String Functions}), this is awkward and inefficient
+for a large number of fields.
 
 @cindex troubleshooting, fatal errors, field widths@comma{} specifying
 @cindex @command{w} utility
@@ -7375,14 +7395,12 @@ this is awkward and inefficient for a large number of fields.
 @cindex @command{gawk}, @code{FIELDWIDTHS} variable in
 The splitting of an input record into fixed-width fields is specified by
 assigning a string containing space-separated numbers to the built-in
-variable @code{FIELDWIDTHS}.  Each number specifies the width of the field,
-@emph{including} columns between fields.  If you want to ignore the columns
-between fields, you can specify the width as a separate field that is
-subsequently ignored.
-Or, starting in @value{PVERSION} 4.2, each field width may optionally be
-preceded by a colon-separated value specifying the number of characters to skip
-before the field starts.
-It is a fatal error to supply a field width that has a negative value.
+variable @code{FIELDWIDTHS}.  Each number specifies the width of the
+field, @emph{including} columns between fields.  If you want to ignore
+the columns between fields, you can specify the width as a separate
+field that is subsequently ignored.  It is a fatal error to supply a
+field width that has a negative value.
+
 The following data is the output of the Unix @command{w} utility.  It is useful
 to illustrate the use of @code{FIELDWIDTHS}:
 
@@ -7412,7 +7430,7 @@ NR > 2 @{
     sub(/^ +/, "", idle)   # strip leading spaces
     if (idle == "")
         idle = 0
-    if (idle ~ /:/) @{
+    if (idle ~ /:/) @{      # hh:mm
         split(idle, t, ":")
         idle = t[1] * 60 + t[2]
     @}
@@ -7441,13 +7459,30 @@ brent     ttyp0  286
 dave      ttyq4  1296000
 @end example
 
-Starting in @value{PVERSION} 4.2, this program could be rewritten to
-specify @code{FIELDWIDTHS} like so:
+Another (possibly more practical) example of fixed-width input data
+is the input from a deck of balloting cards.  In some parts of
+the United States, voters mark their choices by punching holes in computer
+cards.  These cards are then processed to count the votes for any particular
+candidate or on any particular issue.  Because a voter may choose not to
+vote on some issue, any column on the card may be empty.  An @command{awk}
+program for processing such data could use the @code{FIELDWIDTHS} feature
+to simplify reading the data.  (Of course, getting @command{gawk} to run on
+a system with card readers is another story!)
+
+@node Skipping intervening
+@subsection Skipping Intervening Fields
+
+Starting in @value{PVERSION} 4.2, each field width may optionally be
+preceded by a colon-separated value specifying the number of characters
+to skip before the field starts.  Thus, the preceding program could be
+rewritten to specify @code{FIELDWIDTHS} like so:
+
 @example
 BEGIN  @{ FIELDWIDTHS = "8 1:5 4:7 6 1:6 1:6 2:33" @}
 @end example
+
 This strips away some of the white space separating the fields. With such
-a change, the program would produce the following results:
+a change, the program produces the following results:
 
 @example
 hzang    ttyV3 50
@@ -7459,42 +7494,65 @@ brent    ttyp0 286
 dave     ttyq4 1296000
 @end example
 
-Another (possibly more practical) example of fixed-width input data
-is the input from a deck of balloting cards.  In some parts of
-the United States, voters mark their choices by punching holes in computer
-cards.  These cards are then processed to count the votes for any particular
-candidate or on any particular issue.  Because a voter may choose not to
-vote on some issue, any column on the card may be empty.  An @command{awk}
-program for processing such data could use the @code{FIELDWIDTHS} feature
-to simplify reading the data.  (Of course, getting @command{gawk} to run on
-a system with card readers is another story!)
+@node Allowing trailing data
+@subsection Capturing Optional Trailing Data
 
-@cindex @command{gawk}, splitting fields and
-Assigning a value to @code{FS} causes @command{gawk} to use
-@code{FS} for field splitting again.  Use @samp{FS = FS} to make this happen,
-without having to know the current value of @code{FS}.
-In order to tell which kind of field splitting is in effect,
-use @code{PROCINFO["FS"]}
-(@pxref{Auto-set}).
-The value is @code{"FS"} if regular field splitting is being used,
-or @code{"FIELDWIDTHS"} if fixed-width field splitting is being used:
+There are times when fixed-width data may be followed by additional data
+that has no fixed length.  Such data may or may not be present, but if
+it is, it should be possible to get at it from an @command{awk} program.
+
+Starting with version 4.2, in order to provide a way to say ``anything
+else in the record after the defined fields,'' @command{gawk}
+allows you to add a final @samp{*} character to the value of
+@code{FIELDWIDTHS}. There can only be one such character, and it must
+be the final non-whitespace character in @code{FIELDWIDTHS}.
+For example:
 
 @example
-if (PROCINFO["FS"] == "FS")
-    @var{regular field splitting} @dots{}
-else if  (PROCINFO["FS"] == "FIELDWIDTHS")
-    @var{fixed-width field splitting} @dots{}
-else if  (PROCINFO["FS"] == "FPAT")
-    @var{content-based field splitting} @dots{} @ii{(see next @value{SECTION})}
-else
-    @var{API input parser field splitting} @dots{} @ii{(advanced feature)}
+$ @kbd{cat fw.awk}                         @ii{Show the program}
+@print{} BEGIN @{ FIELDWIDTHS = "2 2 *" @}
+@print{} @{ print NF, $1, $2, $3 @}
+$ @kbd{cat fw.in}                          @ii{Show sample input}
+@print{} 1234abcdefghi
+$ @kbd{gawk -f fw.awk fw.in}               @ii{Run the program}
+@print{} 3 12 34 abcdefghi
 @end example
 
-This information is useful when writing a function
-that needs to temporarily change @code{FS} or @code{FIELDWIDTHS},
-read some records, and then restore the original settings
-(@pxref{Passwd Functions}
-for an example of such a function).
+@node Fields with fixed data
+@subsection Field Values With Fixed-Width Data
+
+So far, so good.  But what happens if there isn't as much data as there
+should be based on the contents of @code{FIELDWIDTHS}? Or, what happens
+if there is more data than expected?
+
+For many years, what happens in these cases was not well defined. Starting
+with version 4.2, the rules are as follows:
+
+@table @asis
+@item Enough data for some fields
+For example, if @code{FIELDWIDTHS} is set to @code{"2 3 4"} and the
+input record is @samp{aabbb}.  In this case, @code{NF} is set to two.
+
+@item Not enough data for a field
+For example, if @code{FIELDWIDTHS} is set to @code{"2 3 4"} and the
+input record is @samp{aab}.  In this case, @code{NF} is set to two and
+@code{$2} has the value @code{"b"}. The idea is that even though there
+aren't as many characters as were expected, there are some, so the data
+should be made available to the program.
+
+@item Too much data
+For example, if @code{FIELDWIDTHS} is set to @code{"2 3 4"} and the
+input record is @samp{aabbbccccddd}.  In this case, @code{NF} is set to
+three and the extra characters (@samp{ddd}) are ignored.  If you want
+@command{gawk} to capture the extra characters, supply a final @samp{*}
+in the value of @code{FIELDWIDTHS}.
+
+@item Too much data, but with @samp{*} supplied
+For example, if @code{FIELDWIDTHS} is set to @code{"2 3 4 *"} and the
+input record is @samp{aabbbccccddd}.  In this case, @code{NF} is set to
+four, and @code{$4} has the value @code{"ddd"}.
+
+@end table
 
 @node Splitting By Content
 @section Defining Fields by Content
@@ -7595,8 +7653,6 @@ affects field splitting with @code{FPAT}.
 
 Assigning a value to @code{FPAT} overrides field splitting
 with @code{FS} and with @code{FIELDWIDTHS}.
-Similar to @code{FIELDWIDTHS}, the value of @code{PROCINFO["FS"]}
-will be @code{"FPAT"} if content-based field splitting is being used.
 
 @quotation NOTE
 Some programs export CSV data that contains embedded newlines between
@@ -7623,13 +7679,44 @@ FPAT = "([^,]*)|(\"[^\"]+\")"
 Finally, the @code{patsplit()} function makes the same functionality
 available for splitting regular strings (@pxref{String Functions}).
 
-To recap, @command{gawk} provides three independent methods
-to split input records into fields.
-The mechanism used is based on which of the three
-variables---@code{FS}, @code{FIELDWIDTHS}, or @code{FPAT}---was
-last assigned to. In addition, an API input parser may choose to
-override the record parsing mechanism; please refer to @ref{Input Parsers}
-for further information about this feature.
+
+@node Testing field creation
+@section Checking How @command{gawk} Is Splitting Records
+
+@cindex @command{gawk}, splitting fields and
+As we've seen, @command{gawk} provides three independent methods to split
+input records into fields.  The mechanism used is based on which of the
+three variables---@code{FS}, @code{FIELDWIDTHS}, or @code{FPAT}---was
+last assigned to. In addition, an API input parser may choose to override
+the record parsing mechanism; please refer to @ref{Input Parsers} for
+further information about this feature.
+
+To restore normal field splitting after using @code{FIELDWIDTHS}
+and/or @code{FPAT}, simply assign a value to @code{FS}.
+You can use @samp{FS = FS} to do this,
+without having to know the current value of @code{FS}.
+
+In order to tell which kind of field splitting is in effect,
+use @code{PROCINFO["FS"]} (@pxref{Auto-set}).
+The value is @code{"FS"} if regular field splitting is being used,
+@code{"FIELDWIDTHS"} if fixed-width field splitting is being used,
+or @code{"FPAT"} if content-based field splitting is being used:
+
+@example
+if (PROCINFO["FS"] == "FS")
+    @var{regular field splitting} @dots{}
+else if (PROCINFO["FS"] == "FIELDWIDTHS")
+    @var{fixed-width field splitting} @dots{}
+else if (PROCINFO["FS"] == "FPAT")
+    @var{content-based field splitting}
+else
+    @var{API input parser field splitting} @dots{} @ii{(advanced feature)}
+@end example
+
+This information is useful when writing a function that needs to
+temporarily change @code{FS} or @code{FIELDWIDTHS}, read some records,
+and then restore the original settings (@pxref{Passwd Functions} for an
+example of such a function).
 
 @node Multiple Line
 @section Multiple-Line Records
