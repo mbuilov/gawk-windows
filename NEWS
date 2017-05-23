@@ -105,7 +105,11 @@ Changes from 4.1.x to 4.2.0
     from UTC instead of from the local timezone.
 
 26. The FIELDWIDTHS parsing syntax has been enhanced to allow specifying
-    how many characters to skip before a field starts.
+    how many characters to skip before a field starts. It also allows
+    specifying '*' as the last character to mean "the rest of the record".
+    Field splitting with FIELDWIDTHS now sets NF correctly.  The documentation
+    for FIELDWIDTHS in the manual has been considerably reorganized and
+    improved as well.
 
 27. An API input parser now has the ability to override the default field
     parsing mechanism by specifying the locations of each field in the input
