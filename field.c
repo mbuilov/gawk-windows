@@ -777,7 +777,7 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 		 * in practice.
 		 */
 		memset(&mbs, 0, sizeof(mbstate_t));
-		while (nf < up_to) {
+		while (nf < up_to && scan < end) {
 			if (nf >= fw->nf) {
 				*buf = end;
 				return nf;
@@ -788,7 +788,7 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 			scan += flen;
 		}
 	} else {
-		while (nf < up_to) {
+		while (nf < up_to && scan < end) {
 			if (nf >= fw->nf) {
 				*buf = end;
 				return nf;
@@ -1171,18 +1171,38 @@ set_FIELDWIDTHS()
 		if (*scan == '\0')
 			break;
 
-		/* Detect an invalid base-10 integer, a valid value that
-		   is followed by something other than a blank or '\0',
-		   or a value that is not in the range [1..INT_MAX].  */
+		// Look for skip value. We allow N:M and N:*.
+		/*
+		 * Detect an invalid base-10 integer, a valid value that
+		 * is followed by something other than a blank or '\0',
+		 * or a value that is not in the range [1..INT_MAX].
+		 */
 		errno = 0;
 		tmp = strtoul(scan, &end, 10);
-		if (errno == 0 && *end == ':' && (0 < tmp && tmp <= INT_MAX)) {
+		if (errno == 0 && *end == ':' && (0 < tmp && tmp <= UINT_MAX)) {
 			FIELDWIDTHS->fields[i].skip = tmp;
 			scan = end + 1;
+			if (*scan == '*')
+				goto got_star;
+			// try scanning for field width
 			tmp = strtoul(scan, &end, 10);
 		}
 		else
 			FIELDWIDTHS->fields[i].skip = 0;
+
+		if (*scan == '*') {
+	got_star:
+			for (scan++; is_blank(*scan); scan++)
+				continue;
+
+			if (*scan != '\0')
+				fatal(_("`*' must be the last designator in FIELDWIDTHS"));
+
+			FIELDWIDTHS->fields[i].len = UINT_MAX;
+			FIELDWIDTHS->nf = i+1;
+			break;
+		}
+
 		if (errno != 0
 		    	|| (*end != '\0' && ! is_blank(*end))
 				|| !(0 < tmp && tmp <= INT_MAX)

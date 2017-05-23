@@ -1,3 +1,10 @@
+2017-05-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* field.c (fw_parse_field): Stop upon hitting the end of the
+	record; this enables correct counting of the number of fields.
+	(set_FIELDWIDTHS): Add `*' at end as meaning ``all the rest
+	of the data on the line.'' Allow skip:* as well.
+
 2017-05-20         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y (add_lint): Make ``no effect'' check smarter about
