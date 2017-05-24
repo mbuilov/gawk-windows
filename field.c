@@ -1182,7 +1182,7 @@ set_FIELDWIDTHS()
 		if (errno == 0 && *end == ':' && (0 < tmp && tmp <= UINT_MAX)) {
 			FIELDWIDTHS->fields[i].skip = tmp;
 			scan = end + 1;
-			if (*scan == '-') {
+			if (*scan == '-' || is_blank(*scan)) {
 				fatal_error = true;
 				break;
 			}
@@ -1223,7 +1223,7 @@ set_FIELDWIDTHS()
 
 	if (fatal_error)
 		fatal(_("invalid FIELDWIDTHS value, for field %d, near `%s'"),
-			      i, scan);
+			      i + 1, scan);
 }
 
 /* set_FS --- handle things when FS is assigned to */
