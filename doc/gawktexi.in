@@ -59,7 +59,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH January, 2017
+@set UPDATE-MONTH May, 2017
 @set VERSION 4.1
 @set PATCHLEVEL 4
 
@@ -903,6 +903,7 @@ particular records in a file and perform operations upon them.
 * Setting the rounding mode::           How to set the rounding mode.
 * Arbitrary Precision Integers::        Arbitrary Precision Integer Arithmetic
                                         with @command{gawk}.
+* Checking for MPFR::                   How to check if MPFR is available.
 * POSIX Floating Point Problems::       Standards Versus Existing Practice.
 * Floating point summary::              Summary of floating point discussion.
 * Extension Intro::                     What is an extension.
@@ -4899,7 +4900,7 @@ the name by which @command{gawk} was invoked.  Here is an example of how this
 feature may be used:
 
 @example
-awk '
+gawk '
 BEGIN @{
         for (i = 0; i < length(PROCINFO["argv"]); i++)
                 print i, PROCINFO["argv"][i]
@@ -30238,6 +30239,7 @@ this is the place to be.
 * FP Math Caution::               Things to know.
 * Arbitrary Precision Integers::  Arbitrary Precision Integer Arithmetic with
                                   @command{gawk}.
+* Checking for MPFR::             How to check if MPFR is available.
 * POSIX Floating Point Problems:: Standards Versus Existing Practice.
 * Floating point summary::        Summary of floating point discussion.
 @end menu
@@ -31138,6 +31140,58 @@ because it's quite easy to modify for tiny memory devices with smallish
 word sizes. See
 @uref{http://www.hpmuseum.org/cgi-sys/cgiwrap/hpmuseum/articles.cgi?read=899}.
 @end quotation
+
+@node Checking for MPFR
+@section How To Check If MPFR Is Available
+
+@cindex MPFR, checking availability of
+@cindex checking for MPFR
+Occasionally, you might like to be able to check if @command{gawk}
+was invoked with the @option{-M} option, enabling aribtrary-precision
+arithmetic.  You can do so with the following function, contributed
+by Andrew Schorr:
+
+@example
+@c file eg/lib/have_mpfr.awk
+# adequate_math_precision --- return true if we have enough bits
+@c endfile
+@ignore
+@c file eg/lib/have_mpfr.awk
+#
+# Andrew Schorr, aschorr@@telemetry-investments.com, Public Domain
+# May 2017
+@c endfile
+@end ignore
+@c file eg/lib/have_mpfr.awk
+
+function adequate_math_precision(n)
+@{
+    return (1 != (1+(1/(2^(n-1)))))
+@}
+@c endfile
+@end example
+
+Here is code that invokes the function in order to check
+if arbitrary-precision arithmetic is available:
+
+@example
+BEGIN @{
+    # How many bits of mantissa precision are required
+    # for this program to function properly?
+    fpbits = 123
+
+    # We hope that we were invoked with MPFR enabled. If so, the
+    # following statement should configure calculations to our desired
+    # precision.
+    PREC = fpbits
+
+    if (! adequate_math_precision(fpbits)) @{
+        print("Error: insufficient computation precision available.\n" \
+              "Try again with the -M argument?") > "/dev/stderr"
+        exit 1
+    @}
+@}
+@end example
 
 @node POSIX Floating Point Problems
 @section Standards Versus Existing Practice
