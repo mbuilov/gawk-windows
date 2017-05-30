@@ -4892,25 +4892,6 @@ function names added by @command{gawk} after the code was written.
 Standard @command{awk} built-in functions, such as @code{sin()} or
 @code{substr()} are @emph{not} shadowed in this way.
 
-The @code{PROCINFO["argv"]} array contains all of the command-line arguments
-(after glob expansion and redirection processing on platforms where that must
-be done manually by the program) with subscripts ranging from 0 through
-@code{argc} @minus{} 1.  For example, @code{PROCINFO["argv"][0]} will contain
-the name by which @command{gawk} was invoked.  Here is an example of how this
-feature may be used:
-
-@example
-gawk '
-BEGIN @{
-        for (i = 0; i < length(PROCINFO["argv"]); i++)
-                print i, PROCINFO["argv"][i]
-@}'
-@end example
-
-Please note that this differs from the standard @code{ARGV} array which does
-not include command-line arguments that have already been processed by
-@command{gawk} (@pxref{ARGC and ARGV}).
-
 @end ignore
 
 @node Invoking Summary
@@ -14803,6 +14784,27 @@ The following elements (listed alphabetically)
 are guaranteed to be available:
 
 @table @code
+@item PROCINFO["argv"]
+@cindex command line arguments, @code{PROCINFO["argv"}
+The @code{PROCINFO["argv"]} array contains all of the command-line arguments
+(after glob expansion and redirection processing on platforms where that must
+be done manually by the program) with subscripts ranging from 0 through
+@code{argc} @minus{} 1.  For example, @code{PROCINFO["argv"][0]} will contain
+the name by which @command{gawk} was invoked.  Here is an example of how this
+feature may be used:
+
+@example
+gawk '
+BEGIN @{
+        for (i = 0; i < length(PROCINFO["argv"]); i++)
+                print i, PROCINFO["argv"][i]
+@}'
+@end example
+
+Please note that this differs from the standard @code{ARGV} array which does
+not include command-line arguments that have already been processed by
+@command{gawk} (@pxref{ARGC and ARGV}).
+
 @cindex effective group ID of @command{gawk} user
 @item PROCINFO["egid"]
 The value of the @code{getegid()} system call.
@@ -37023,6 +37025,10 @@ Version 4.2 introduced the following changes:
 @item
 Changes to @code{ENVIRON} are reflected into @command{gawk}'s
 environment and that of programs that it runs.
+@xref{Auto-set}.
+
+@item
+The @code{PROCINFO["argv"} array.
 @xref{Auto-set}.
 
 @item
