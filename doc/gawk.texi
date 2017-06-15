@@ -22535,8 +22535,8 @@ $ @kbd{cat data}
 
 $ cat @kbd{test.awk}
 @print{} FNR == 3 && ! rewound @{
-@print{} 	rewound = 1
-@print{} 	rewind()
+@print{}    rewound = 1
+@print{}    rewind()
 @print{} @}
 @print{} 
 @print{} @{ print FILENAME, FNR, $0 @}
@@ -36153,7 +36153,7 @@ properly:
 # actions in an ENDFILE rule will be redirected as expected.
 
 BEGIN @{
-    inplace = 1		# enabled by default
+    inplace = 1         # enabled by default
 @}
 
 BEGINFILE @{

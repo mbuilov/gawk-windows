@@ -15,7 +15,7 @@
 # actions in an ENDFILE rule will be redirected as expected.
 
 BEGIN {
-    inplace = 1		# enabled by default
+    inplace = 1         # enabled by default
 }
 
 BEGINFILE {
