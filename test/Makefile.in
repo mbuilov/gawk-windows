@@ -884,6 +884,9 @@ EXTRA_DIST = \
 	mbprintf4.awk \
 	mbprintf4.in \
 	mbprintf4.ok \
+	mbprintf5.awk \
+	mbprintf5.in \
+	mbprintf5.ok \
 	mbstr1.awk \
 	mbstr1.ok \
 	mbstr2.awk \
@@ -1536,7 +1539,8 @@ MPFR_TESTS = mpfrnr mpfrnegzero mpfrmemok1 mpfrrem mpfrrnd mpfrieee \
 LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
 	fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
-	mbprintf1 mbprintf2 mbprintf3 mbprintf4 rebt8b2 rtlenmb sort1 sprintfc
+	mbprintf1 mbprintf2 mbprintf3 mbprintf4 mbprintf5 \
+	rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
 	apiterm fnmatch filefuncs fork fork2 fts functab4 getfile inplace1 inplace2 inplace3 \
@@ -2340,6 +2344,12 @@ mbprintf3::
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbprintf4::
+	@echo $@
+	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mbprintf5::
 	@echo $@
 	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
