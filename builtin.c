@@ -4152,12 +4152,13 @@ mbc_char_count(const char *ptr, size_t numbytes)
 	if (mb_len <= 0)
 		return numbytes;	/* no valid m.b. char */
 
-	for (; numbytes > 0; numbytes--) {
+	while (numbytes > 0) {
 		mb_len = mbrlen(ptr, numbytes, &cur_state);
 		if (mb_len <= 0)
 			break;
 		sum++;
 		ptr += mb_len;
+		numbytes -= mb_len;
 	}
 
 	return sum;

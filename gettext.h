@@ -193,7 +193,8 @@ npgettext_aux (const char *domain,
 #include <string.h>
 
 #if (((__GNUC__ >= 3 || __GNUG__ >= 2) && !defined __STRICT_ANSI__) \
-     /* || __STDC_VERSION__ >= 199901L */ )
+     /* || __STDC_VERSION__ == 199901L
+        || (__STDC_VERSION__ >= 201112L && !defined __STDC_NO_VLA__) */ )
 # define _LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS 1
 #else
 # define _LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS 0
@@ -234,15 +235,17 @@ dcpgettext_expr (const char *domain,
   if (msg_ctxt_id != NULL)
 #endif
     {
+      int found_translation;
       memcpy (msg_ctxt_id, msgctxt, msgctxt_len - 1);
       msg_ctxt_id[msgctxt_len - 1] = '\004';
       memcpy (msg_ctxt_id + msgctxt_len, msgid, msgid_len);
       translation = dcgettext (domain, msg_ctxt_id, category);
+      found_translation = (translation != msg_ctxt_id);
 #if !_LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS
       if (msg_ctxt_id != buf)
         free (msg_ctxt_id);
 #endif
-      if (translation != msg_ctxt_id)
+      if (found_translation)
         return translation;
     }
   return msgid;
@@ -280,15 +283,17 @@ dcnpgettext_expr (const char *domain,
   if (msg_ctxt_id != NULL)
 #endif
     {
+      int found_translation;
       memcpy (msg_ctxt_id, msgctxt, msgctxt_len - 1);
       msg_ctxt_id[msgctxt_len - 1] = '\004';
       memcpy (msg_ctxt_id + msgctxt_len, msgid, msgid_len);
       translation = dcngettext (domain, msg_ctxt_id, msgid_plural, n, category);
+      found_translation = !(translation == msg_ctxt_id || translation == msgid_plural);
 #if !_LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS
       if (msg_ctxt_id != buf)
         free (msg_ctxt_id);
 #endif
-      if (!(translation == msg_ctxt_id || translation == msgid_plural))
+      if (found_translation)
         return translation;
     }
   return (n == 1 ? msgid : msgid_plural);
