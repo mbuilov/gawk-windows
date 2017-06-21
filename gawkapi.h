@@ -878,6 +878,12 @@ typedef struct gawk_api {
 			fatal(ext_id, "%s: malloc of %d bytes failed\n", message, size); \
 	} while(0)
 
+#define ezalloc(pointer, type, size, message) \
+	do { \
+		if ((pointer = (type) gawk_calloc(1, size)) == 0) \
+			fatal(ext_id, "%s: calloc of %d bytes failed\n", message, size); \
+	} while(0)
+
 #define erealloc(pointer, type, size, message) \
 	do { \
 		if ((pointer = (type) gawk_realloc(pointer, size)) == 0) \
