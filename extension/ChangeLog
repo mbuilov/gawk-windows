@@ -1,3 +1,11 @@
+2017-06-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* filefuncs.c (do_fts): Replace emalloc+memset with ezalloc.
+	* readfile.c (read_file_to_buffer): Ditto.
+	* rwarray.c (read_value): Replace gawk_malloc+memset with gawk_calloc.
+	* gawkfts.c (fts_open): Replace malloc+memset with calloc.
+	* rwarray0.c (read_value): Ditto.
+
 2017-04-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* inplace.c (inplace_end): Correct the function name in the

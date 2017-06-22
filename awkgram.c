@@ -4813,8 +4813,7 @@ yyerror(const char *m, ...)
 	count = strlen(mesg) + 1;
 	if (lexptr != NULL)
 		count += (lexeme - thisline) + 2;
-	emalloc(buf, char *, count+1, "yyerror");
-	memset(buf, 0, count+1);
+	ezalloc(buf, char *, count+1, "yyerror");
 
 	bp = buf;
 
@@ -5033,8 +5032,7 @@ do_add_srcfile(enum srctype stype, char *src, char *path, SRCFILE *thisfile)
 {
 	SRCFILE *s;
 
-	emalloc(s, SRCFILE *, sizeof(SRCFILE), "do_add_srcfile");
-	memset(s, 0, sizeof(SRCFILE));
+	ezalloc(s, SRCFILE *, sizeof(SRCFILE), "do_add_srcfile");
 	s->src = estrdup(src, strlen(src));
 	s->fullpath = path;
 	s->stype = stype;
@@ -7313,8 +7311,7 @@ func_use(const char *name, enum defref how)
 
 	/* not in the table, fall through to allocate a new one */
 
-	emalloc(fp, struct fdesc *, sizeof(struct fdesc), "func_use");
-	memset(fp, '\0', sizeof(struct fdesc));
+	ezalloc(fp, struct fdesc *, sizeof(struct fdesc), "func_use");
 	emalloc(fp->name, char *, len + 1, "func_use");
 	strcpy(fp->name, name);
 	fp->next = ftable[ind];

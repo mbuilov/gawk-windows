@@ -446,8 +446,7 @@ read_value(int fd, awk_value_t *value)
 		len = ntohl(len);
 		value->val_type = AWK_STRING;
 		value->str_value.len = len;
-		value->str_value.str = malloc(len + 1);
-		memset(value->str_value.str, '\0', len + 1);
+		value->str_value.str = calloc(1, len + 1);
 
 		if (read(fd, value->str_value.str, len) != (ssize_t) len) {
 			free(value->str_value.str);

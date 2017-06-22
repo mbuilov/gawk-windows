@@ -33,12 +33,11 @@ getaddrinfo(const char *hostname, const char *portname,
 	if (res == NULL)
 		return EINVAL;
 
-	out = (struct addrinfo *) malloc(sizeof(*out));
+	out = (struct addrinfo *) calloc(1, sizeof(*out));
 	if (out == NULL) {
 		*res = NULL;
 		return ENOMEM;
 	}
-	memset(out, '\0', sizeof(*out));
 
 	out->ai_addr = (struct sockaddr *) malloc(sizeof(struct sockaddr_in));
 	if (out->ai_addr == NULL) {

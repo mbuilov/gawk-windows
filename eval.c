@@ -1269,8 +1269,7 @@ setup_frame(INSTRUCTION *pc)
 		sp = frame_ptr->stack;
 
 	} else if (pcount > 0) {
-		emalloc(sp, NODE **, pcount * sizeof(NODE *), "setup_frame");
-		memset(sp, 0, pcount * sizeof(NODE *));
+		ezalloc(sp, NODE **, pcount * sizeof(NODE *), "setup_frame");
 	}
 
 

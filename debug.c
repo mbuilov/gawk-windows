@@ -1371,8 +1371,7 @@ add_item(struct list_item *list, int type, NODE *symbol, char *pname)
 {
 	struct list_item *d;
 
-	emalloc(d, struct list_item *, sizeof(struct list_item), "add_item");
-	memset(d, 0, sizeof(struct list_item));
+	ezalloc(d, struct list_item *, sizeof(struct list_item), "add_item");
 	d->commands.next = d->commands.prev = &d->commands;
 
 	d->number = ++list->number;

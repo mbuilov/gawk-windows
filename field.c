@@ -274,10 +274,8 @@ set_record(const char *buf, int cnt, const awk_fieldwidth_info_t *fw)
 
 	/* buffer management: */
 	if (databuf_size == 0) {	/* first time */
-		emalloc(databuf, char *, INITIAL_SIZE, "set_record");
+		ezalloc(databuf, char *, INITIAL_SIZE, "set_record");
 		databuf_size = INITIAL_SIZE;
-		memset(databuf, '\0', INITIAL_SIZE);
-
 	}
 	/*
 	 * Make sure there's enough room. Since we sometimes need
