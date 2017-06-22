@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -44,9 +44,6 @@
 #if defined HAVE_STDINT_H || defined _LIBC
 # include <stdint.h>
 #endif /* HAVE_STDINT_H || _LIBC */
- 
-#include "intprops.h"
-
 #if defined _LIBC
 # include <libc-lock.h>
 #else
