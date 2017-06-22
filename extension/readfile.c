@@ -73,24 +73,22 @@ int plugin_is_GPL_compatible;
 static char *
 read_file_to_buffer(int fd, const struct stat *sbuf)
 {
-	char *text = NULL;
-	int ret;
+	char *text;
 
 	if ((sbuf->st_mode & S_IFMT) != S_IFREG) {
 		errno = EINVAL;
 		update_ERRNO_int(errno);
-		goto done;
+		return NULL;
 	}
 
-	ezalloc(text, char *, sbuf->st_size + 1, "do_readfile");
+	emalloc(text, char *, sbuf->st_size + 1, "do_readfile");
 
-	if ((ret = read(fd, text, sbuf->st_size)) != sbuf->st_size) {
+	if (read(fd, text, sbuf->st_size) != sbuf->st_size) {
 		update_ERRNO_int(errno);
 		gawk_free(text);
-		text = NULL;
-		/* fall through to return */
+		return NULL;
 	}
-done:
+	text[sbuf->st_size] = '\0';
 	return text;
 }
 
