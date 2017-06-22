@@ -446,12 +446,13 @@ read_value(int fd, awk_value_t *value)
 		len = ntohl(len);
 		value->val_type = AWK_STRING;
 		value->str_value.len = len;
-		value->str_value.str = calloc(1, len + 1);
+		value->str_value.str = malloc(len + 1);
 
 		if (read(fd, value->str_value.str, len) != (ssize_t) len) {
 			free(value->str_value.str);
 			return awk_false;
 		}
+		value->str_value.str[len] = '\0';
 	}
 
 	return awk_true;
