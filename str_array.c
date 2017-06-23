@@ -325,8 +325,7 @@ str_copy(NODE *symbol, NODE *newsymb)
 	cursize = symbol->array_size;
 
 	/* allocate new table */
-	emalloc(new, BUCKET **, cursize * sizeof(BUCKET *), "str_copy");
-	memset(new, '\0', cursize * sizeof(BUCKET *));
+	ezalloc(new, BUCKET **, cursize * sizeof(BUCKET *), "str_copy");
 
 	old = symbol->buckets;
 
@@ -666,8 +665,7 @@ grow_table(NODE *symbol)
 	}
 
 	/* allocate new table */
-	emalloc(new, BUCKET **, newsize * sizeof(BUCKET *), "grow_table");
-	memset(new, '\0', newsize * sizeof(BUCKET *));
+	ezalloc(new, BUCKET **, newsize * sizeof(BUCKET *), "grow_table");
 
 	old = symbol->buckets;
 	symbol->buckets = new;

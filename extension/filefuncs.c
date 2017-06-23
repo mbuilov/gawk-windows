@@ -877,8 +877,7 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 	/* make pathvector */
 	count = path_array->count + 1;
-	emalloc(pathvector, char **, count * sizeof(char *), "do_fts");
-	memset(pathvector, 0, count * sizeof(char *));
+	ezalloc(pathvector, char **, count * sizeof(char *), "do_fts");
 
 	/* fill it in */
 	count--;	/* ignore final NULL at end of vector */

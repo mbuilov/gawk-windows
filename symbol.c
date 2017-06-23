@@ -133,8 +133,7 @@ make_params(char **pnames, int pcount)
 	if (pcount <= 0 || pnames == NULL)
 		return NULL;
 
-	emalloc(parms, NODE *, pcount * sizeof(NODE), "make_params");
-	memset(parms, '\0', pcount * sizeof(NODE));
+	ezalloc(parms, NODE *, pcount * sizeof(NODE), "make_params");
 
 	for (i = 0, p = parms; i < pcount; i++, p++) {
 		p->type = Node_param_list;
@@ -759,8 +758,7 @@ new_context()
 {
 	AWK_CONTEXT *ctxt;
 
-	emalloc(ctxt, AWK_CONTEXT *, sizeof(AWK_CONTEXT), "new_context");
-	memset(ctxt, 0, sizeof(AWK_CONTEXT));
+	ezalloc(ctxt, AWK_CONTEXT *, sizeof(AWK_CONTEXT), "new_context");
 	ctxt->srcfiles.next = ctxt->srcfiles.prev = & ctxt->srcfiles;
 	ctxt->rule_list.opcode = Op_list;
 	ctxt->rule_list.lasti = & ctxt->rule_list;

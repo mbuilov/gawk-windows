@@ -209,8 +209,7 @@ do_bind_array(int nargs)
 
 	assoc_clear(symbol);
 
-	emalloc(aq, array_t *, sizeof(array_t), "do_bind_array");
-	memset(aq, '\0', sizeof(array_t));
+	ezalloc(aq, array_t *, sizeof(array_t), "do_bind_array");
 
 	t = get_array_argument(1, false);
 

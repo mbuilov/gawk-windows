@@ -427,6 +427,13 @@ cleanup:
 			pp_push(pc->opcode, str, CAN_FREE);
 			break;
 
+		case Op_parens:
+			t1 = pp_pop();
+			str = pp_group3("(", t1->pp_str, ")");
+			pp_free(t1);
+			pp_push(pc->opcode, str, CAN_FREE);
+			break;
+
 		case Op_plus:
 		case Op_minus:
 		case Op_times:
@@ -546,7 +553,7 @@ cleanup:
 			} else {
 				t2 = pp_pop();
 				if (prec_level(t2->type) < prec_level(Op_in_array)) {
-						pp_parenthesize(t2);
+					pp_parenthesize(t2);
 				}
 				sub = t2->pp_str;
 				str = pp_group3(sub, op2str(Op_in_array), array);
@@ -1008,7 +1015,7 @@ cleanup:
 
 			len =  f->pp_len + t->pp_len + cond->pp_len + 12;
 			emalloc(str, char *, len, "pprint");
-			sprintf(str, "(%s ? %s : %s)", cond->pp_str, t->pp_str, f->pp_str);
+			sprintf(str, "%s ? %s : %s", cond->pp_str, t->pp_str, f->pp_str);
 
 			pp_free(cond);
 			pp_free(t);
@@ -1363,6 +1370,9 @@ pp_parenthesize(NODE *sp)
 	char *p = sp->pp_str;
 	size_t len = sp->pp_len;
 
+	if (p[0] == '(')	// already parenthesized
+		return;
+
 	emalloc(p, char *, len + 3, "pp_parenthesize");
 	*p = '(';
 	memcpy(p + 1, sp->pp_str, len);
@@ -1375,26 +1385,6 @@ pp_parenthesize(NODE *sp)
 	sp->flags |= CAN_FREE;
 }
 
-/* div_on_left_mul_on_right --- have / or % on left and * on right */
-
-static bool
-div_on_left_mul_on_right(int o1, int o2)
-{
-	OPCODE op1 = (OPCODE) o1;
-	OPCODE op2 = (OPCODE) o2;
-
-	switch (op1) {
-	case Op_quotient:
-	case Op_quotient_i:
-	case Op_mod:
-	case Op_mod_i:
-		return (op2 == Op_times || op2 == Op_times_i);
-
-	default:
-		return false;
-	}
-}
-
 /* parenthesize --- parenthesize two nodes relative to parent node type */
 
 static void
@@ -1404,11 +1394,9 @@ parenthesize(int type, NODE *left, NODE *right)
 	int lprec = prec_level(left->type);
 	int prec = prec_level(type);
 
-	if (lprec < prec
-	    || (lprec == prec && div_on_left_mul_on_right(left->type, type)))
+	if (lprec < prec)
 		pp_parenthesize(left);
-	if (rprec < prec
-	    || (rprec == prec && div_on_left_mul_on_right(type, right->type)))
+	if (rprec < prec)
 		pp_parenthesize(right);
 }
 
@@ -1643,22 +1631,27 @@ pp_concat(int nargs)
 	for (i = 1; i < nargs; i++) {
 		r = pp_args[i];
 
-		pl_l = prec_level(pp_args[i]->type);
-		pl_r = prec_level(pp_args[i+1]->type);
+		if (r->pp_str[0] != '(') {
+			pl_l = prec_level(pp_args[i]->type);
+			pl_r = prec_level(pp_args[i+1]->type);
 
-		if (i >= 2 && is_unary_minus(r->pp_str)) {
-			*s++ = '(';
-			memcpy(s, r->pp_str, r->pp_len);
-			s += r->pp_len;
-			*s++ = ')';
-		} else if (is_scalar(pp_args[i]->type) && is_scalar(pp_args[i+1]->type)) {
-			memcpy(s, r->pp_str, r->pp_len);
-			s += r->pp_len;
-		} else if (pl_l <= pl_r || is_scalar(pp_args[i+1]->type)) {
-			*s++ = '(';
-			memcpy(s, r->pp_str, r->pp_len);
-			s += r->pp_len;
-			*s++ = ')';
+			if (i >= 2 && is_unary_minus(r->pp_str)) {
+				*s++ = '(';
+				memcpy(s, r->pp_str, r->pp_len);
+				s += r->pp_len;
+				*s++ = ')';
+			} else if (is_scalar(pp_args[i]->type) && is_scalar(pp_args[i+1]->type)) {
+				memcpy(s, r->pp_str, r->pp_len);
+				s += r->pp_len;
+			} else if (pl_l <= pl_r || is_scalar(pp_args[i+1]->type)) {
+				*s++ = '(';
+				memcpy(s, r->pp_str, r->pp_len);
+				s += r->pp_len;
+				*s++ = ')';
+			} else {
+				memcpy(s, r->pp_str, r->pp_len);
+				s += r->pp_len;
+			}
 		} else {
 			memcpy(s, r->pp_str, r->pp_len);
 			s += r->pp_len;
@@ -1673,7 +1666,10 @@ pp_concat(int nargs)
 	pl_l = prec_level(pp_args[nargs-1]->type);
 	pl_r = prec_level(pp_args[nargs]->type);
 	r = pp_args[nargs];
-	if (is_unary_minus(r->pp_str) || ((pl_l >= pl_r && ! is_scalar(pp_args[nargs]->type)))) {
+	if (r->pp_str[0] == '(') {
+		memcpy(s, r->pp_str, r->pp_len);
+		s += r->pp_len;
+	} else if (is_unary_minus(r->pp_str) || ((pl_l >= pl_r && ! is_scalar(pp_args[nargs]->type)))) {
 		*s++ = '(';
 		memcpy(s, r->pp_str, r->pp_len);
 		s += r->pp_len;

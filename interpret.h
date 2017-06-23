@@ -1437,6 +1437,7 @@ match_re:
 		case Op_K_else:
 		case Op_cond_exp:
 		case Op_comment:
+		case Op_parens:
 			break;
 
 		default:
