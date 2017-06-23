@@ -736,6 +736,7 @@ typedef enum opcodeval {
 	Op_K_else,
 	Op_K_function,
 	Op_cond_exp,
+	Op_parens,
 	Op_final			/* sentry value, not legal */
 } OPCODE;
 
@@ -1331,6 +1332,7 @@ DEREF(NODE *r)
 				__LINE__, __FILE__)
 
 #define	emalloc(var,ty,x,str)	(void) (var = (ty) emalloc_real((size_t)(x), str, #var, __FILE__, __LINE__))
+#define	ezalloc(var,ty,x,str)	(void) (var = (ty) ezalloc_real((size_t)(x), str, #var, __FILE__, __LINE__))
 #define	erealloc(var,ty,x,str)	(void) (var = (ty) erealloc_real((void *) var, (size_t)(x), str, #var, __FILE__, __LINE__))
 
 #define efree(p)	free(p)
@@ -1943,6 +1945,24 @@ emalloc_real(size_t count, const char *where, const char *var, const char *file,
 		fatal("%s:%d: emalloc called with zero bytes", file, line);
 
 	ret = (void *) malloc(count);
+	if (ret == NULL)
+		fatal(_("%s:%d:%s: %s: can't allocate %ld bytes of memory (%s)"),
+			file, line, where, var, (long) count, strerror(errno));
+
+	return ret;
+}
+
+/* ezalloc_real --- malloc zero-filled bytes with error checking */
+
+static inline void *
+ezalloc_real(size_t count, const char *where, const char *var, const char *file, int line)
+{
+	void *ret;
+
+	if (count == 0)
+		fatal("%s:%d: ezalloc called with zero bytes", file, line);
+
+	ret = (void *) calloc(1, count);
 	if (ret == NULL)
 		fatal(_("%s:%d:%s: %s: can't allocate %ld bytes of memory (%s)"),
 			file, line, where, var, (long) count, strerror(errno));

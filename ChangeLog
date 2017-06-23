@@ -1,3 +1,47 @@
+2017-06-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Make pretty-printing include parentheses that were explicitly
+	in the source code. Thanks to Hermann Peifer for the bug report.
+
+	* awk.h (OPCODE): Add Op_parens.
+	* awkgram.y [Grammar]: If pretty-printing, add Op_parens ot end of
+	list for parenthesized expression.
+	* eval.c (optypetab): Add Op_parens.
+	* interpret.h (r_interpret): Ditto.
+	* profile.c (pprint): Ditto.  For ?:, don't parenthesize it.
+	(pp_parenthesize): If string starts with left paren, return early.
+	(parenthesize): Don't call div_on_left_mul_on_right.
+	(div_on_left_mul_on_right): Remove function.
+	(pp_concat): Don't add parentheses if expressions already have them.
+	* NEWS: Updated.
+
+2017-06-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Replace malloc/memset combinations with calloc by using the new ezalloc
+	macro.
+	* awkgram.y (yyerror, do_add_srcfile, funcuse): Replace emalloc+memset
+	with ezalloc.
+	* cint_array.c (cint_lookup, cint_copy, tree_lookup, tree_copy,
+	leaf_lookup, leaf_copy): Ditto.
+	* command.y (mk_cmdarg): Ditto.
+	* debug.c (add_item): Ditto.
+	* eval.c (setup_frame): Ditto.
+	* field.c (set_record): Ditto.
+	* gawkapi.c (api_flatten_array_typed): Ditto.
+	* int_array.c (int_copy, grow_int_table): Ditto.
+	* io.c (init_awkpath, iop_alloc): Ditto.
+	* node.c (str2wstr): Ditto.
+	* re.c (make_regexp): Ditto.
+	* str_array.c (str_copy, grow_table): Ditto.
+	* symbol.c (make_params, new_context): Ditto.
+
+2017-06-19         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (ezalloc): Add new macro to allocate memory initialized to zero.
+	(ezalloc_real): New inline function to call calloc.
+	* gawkapi.h (ezalloc): Add new API macro to allocate memory initialized
+	to zero.
+
 2017-06-18         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (mbc_char_count): Fix code to correctly traverse

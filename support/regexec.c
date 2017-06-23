@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -55,7 +55,8 @@ static int re_search_stub (struct re_pattern_buffer *bufp,
 			   int ret_len) internal_function;
 static unsigned re_copy_regs (struct re_registers *regs, regmatch_t *pmatch,
 			      int nregs, int regs_allocated) internal_function;
-static reg_errcode_t prune_impossible_nodes (re_match_context_t *mctx);
+static reg_errcode_t prune_impossible_nodes (re_match_context_t *mctx)
+     internal_function;
 static int check_matching (re_match_context_t *mctx, int fl_longest_match,
 			   int *p_match_first) internal_function;
 static int check_halt_state_context (const re_match_context_t *mctx,
@@ -362,12 +363,10 @@ re_search_2_stub (struct re_pattern_buffer *bufp, const char *string1,
 {
   const char *str;
   int rval;
-  int len;
+  int len = length1 + length2;
   char *s = NULL;
 
-  if (BE ((length1 < 0 || length2 < 0 || stop < 0
-           || INT_ADD_WRAPV (length1, length2, &len)),
-          0))
+  if (BE (length1 < 0 || length2 < 0 || stop < 0 || len < length1, 0))
     return -2;
 
   /* Concatenate the strings.  */
@@ -939,6 +938,7 @@ re_search_internal (const regex_t *preg, const char *string, int length,
 }
 
 static reg_errcode_t
+internal_function __attribute_warn_unused_result__
 prune_impossible_nodes (re_match_context_t *mctx)
 {
   const re_dfa_t *const dfa = mctx->dfa;
@@ -1034,7 +1034,7 @@ prune_impossible_nodes (re_match_context_t *mctx)
    since initial states may have constraints like "\<", "^", etc..  */
 
 static inline re_dfastate_t *
-__attribute__ ((always_inline)) internal_function
+__attribute ((always_inline)) internal_function
 acquire_init_state_context (reg_errcode_t *err, const re_match_context_t *mctx,
 			    int idx)
 {
@@ -2395,7 +2395,7 @@ merge_state_with_log (reg_errcode_t *err, re_match_context_t *mctx,
 /* Skip bytes in the input that correspond to part of a
    multi-byte match, then look in the log for a state
    from which to restart matching.  */
-static re_dfastate_t *
+re_dfastate_t *
 internal_function
 find_recover_state (reg_errcode_t *err, re_match_context_t *mctx)
 {

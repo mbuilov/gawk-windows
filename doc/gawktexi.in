@@ -31992,8 +31992,8 @@ to use its version of @code{free()} when the memory came from an
 unrelated version of @code{malloc()}, unexpected behavior would
 likely result.
 
-Two convenience macros may be used for allocating storage
-from @code{gawk_malloc()} and
+Three convenience macros may be used for allocating storage
+from @code{gawk_malloc()}, @code{gawk_calloc}, and
 @code{gawk_realloc()}. If the allocation fails, they cause @command{gawk}
 to exit with a fatal error message.  They should be used as if they were
 procedure calls that do not return a value:
@@ -32031,6 +32031,12 @@ emalloc(message, char *, sizeof(greet), "myfunc");
 strcpy(message, greet);
 make_malloced_string(message, strlen(message), & result);
 @end example
+
+@item #define ezalloc(pointer, type, size, message) @dots{}
+This is like @code{emalloc()}, but it calls @code{gawk_calloc()}
+instead of @code{gawk_malloc()}.
+The arguments are the same as for the @code{emalloc()} macro, but this
+macro guarantees that the memory returned is initialized to zero.
 
 @item #define erealloc(pointer, type, size, message) @dots{}
 This is like @code{emalloc()}, but it calls @code{gawk_realloc()}

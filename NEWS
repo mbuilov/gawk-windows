@@ -74,7 +74,7 @@ Changes from 4.1.x to 4.2.0
 18. Support for GNU/Linux on Alpha systems has been removed.
 
 19. Optimizations are now enabled by default. Use the new -s/--no-optimize
-    option(s) to disable them.  Pretty printing and profiling automatically
+    option(s) to disable them.  Pretty-printing and profiling automatically
     disable optimizations so that the output program is the same as the
     original input program.
 
@@ -84,8 +84,8 @@ Changes from 4.1.x to 4.2.0
 20. Gawk now uses fwrite_unlocked if it's available. The yields a 7% - 18%
     improvement in raw output speed (gawk '{ print }' on a large file).
 
-21. Pretty printing now uses the original text of constant numeric values for
-    pretty printing and profiling.
+21. Pretty-printing now uses the original text of constant numeric values for
+    pretty-printing and profiling.
 
 22. Passing negative operands to any of the bitwise functions now
     produces a fatal error.
@@ -117,6 +117,10 @@ Changes from 4.1.x to 4.2.0
 
 28. The PROCINFO["argv"] array records all of gawk's command line arguments
     as gawk received them (the values of the C level argv array).
+
+29. Pretty-printing now preserves parenthesized expressions as they
+    were in the source file. This solves several niggling corner cases
+    with such things.
 
 Changes from 4.1.3 to 4.1.4
 ---------------------------

@@ -381,6 +381,7 @@ static struct optypetab {
 	{ "Op_K_else", "else" },
 	{ "Op_K_function", "function" },
 	{ "Op_cond_exp", NULL },
+	{ "Op_parens", NULL },
 	{ "Op_final --- this should never appear", NULL },
 	{ NULL, NULL },
 };
@@ -1269,8 +1270,7 @@ setup_frame(INSTRUCTION *pc)
 		sp = frame_ptr->stack;
 
 	} else if (pcount > 0) {
-		emalloc(sp, NODE **, pcount * sizeof(NODE *), "setup_frame");
-		memset(sp, 0, pcount * sizeof(NODE *));
+		ezalloc(sp, NODE **, pcount * sizeof(NODE *), "setup_frame");
 	}
 
 

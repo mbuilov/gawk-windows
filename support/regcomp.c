@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -961,8 +961,9 @@ static void
 internal_function
 init_word_char (re_dfa_t *dfa)
 {
-  int i, j, ch;
   dfa->word_ops_used = 1;
+  int i = 0;
+  int ch = 0;
 #ifndef GAWK
   if (BE (dfa->map_notascii == 0, 1))
     {
@@ -996,8 +997,8 @@ init_word_char (re_dfa_t *dfa)
     }
 #endif
 
-  for (i = 0, ch = 0; i < BITSET_WORDS; ++i)
-    for (j = 0; j < BITSET_WORD_BITS; ++j, ++ch)
+  for (; i < BITSET_WORDS; ++i)
+    for (int j = 0; j < BITSET_WORD_BITS; ++j, ++ch)
       if (isalnum (ch) || ch == '_')
 	dfa->word_char[i] |= (bitset_word_t) 1 << j;
 }

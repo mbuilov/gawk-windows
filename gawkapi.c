@@ -1111,9 +1111,8 @@ api_flatten_array_typed(awk_ext_id_t id,
 	alloc_size = sizeof(awk_flat_array_t) +
 			(array->table_size - 1) * sizeof(awk_element_t);
 
-	emalloc(*data, awk_flat_array_t *, alloc_size,
+	ezalloc(*data, awk_flat_array_t *, alloc_size,
 			"api_flatten_array_typed");
-	memset(*data, 0, alloc_size);
 
 	list = assoc_list(array, "@unsorted", ASORTI);
 

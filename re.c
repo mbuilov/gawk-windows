@@ -168,8 +168,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	*dest = '\0';
 	len = dest - buf;
 
-	emalloc(rp, Regexp *, sizeof(*rp), "make_regexp");
-	memset((char *) rp, 0, sizeof(*rp));
+	ezalloc(rp, Regexp *, sizeof(*rp), "make_regexp");
 	rp->pat.allocated = 0;	/* regex will allocate the buffer */
 	emalloc(rp->pat.fastmap, char *, 256, "make_regexp");
 

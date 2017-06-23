@@ -1,3 +1,23 @@
+2017-06-22         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* rwarray.c (read_value): Use malloc instead of calloc, since
+	we immediately overwrite the buffer with data from the file.
+	* rwarray0.c (read_value): Ditto.
+
+2017-06-22         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readfile.c (read_file_to_buffer): Use emalloc instead of ezalloc,
+	since there's no need to initialize the memory to zero before 
+	overwriting it with the file's contents.
+
+2017-06-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* filefuncs.c (do_fts): Replace emalloc+memset with ezalloc.
+	* readfile.c (read_file_to_buffer): Ditto.
+	* rwarray.c (read_value): Replace gawk_malloc+memset with gawk_calloc.
+	* gawkfts.c (fts_open): Replace malloc+memset with calloc.
+	* rwarray0.c (read_value): Ditto.
+
 2017-04-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* inplace.c (inplace_end): Correct the function name in the

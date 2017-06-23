@@ -728,8 +728,7 @@ str2wstr(NODE *n, size_t **ptr)
 	 * Create the array.
 	 */
 	if (ptr != NULL) {
-		emalloc(*ptr, size_t *, sizeof(size_t) * n->stlen, "str2wstr");
-		memset(*ptr, 0, sizeof(size_t) * n->stlen);
+		ezalloc(*ptr, size_t *, sizeof(size_t) * n->stlen, "str2wstr");
 	}
 
 	sp = n->stptr;
