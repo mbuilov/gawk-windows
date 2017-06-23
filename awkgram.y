@@ -1738,7 +1738,12 @@ non_post_simp_exp
 		}
 	   }
 	| '(' exp r_paren
-	  { $$ = $2; }
+	  {
+		if (do_pretty_print)
+			$$ = list_append($2, bcalloc(Op_parens, 1, sourceline));
+		else
+			$$ = $2;
+	  }
 	| LEX_BUILTIN '(' opt_fcall_expression_list r_paren
 	  {
 		$$ = snode($3, $1);
@@ -5909,7 +5914,7 @@ add_lint(INSTRUCTION *list, LINTTYPE linttype)
 				// closest to the opcode if that opcode doesn't have one
 				if (ip->source_line != 0)
 					line = ip->source_line;
-			} 
+			}
 
 			if (do_lint) {		/* compile-time warning */
 				if (isnoeffect(ip->opcode)) {

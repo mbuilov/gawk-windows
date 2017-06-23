@@ -736,6 +736,7 @@ typedef enum opcodeval {
 	Op_K_else,
 	Op_K_function,
 	Op_cond_exp,
+	Op_parens,
 	Op_final			/* sentry value, not legal */
 } OPCODE;
 

@@ -1,3 +1,20 @@
+2017-06-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Make pretty-printing include parentheses that were explicitly
+	in the source code. Thanks to Hermann Peifer for the bug report.
+
+	* awk.h (OPCODE): Add Op_parens.
+	* awkgram.y [Grammar]: If pretty-printing, add Op_parens ot end of
+	list for parenthesized expression.
+	* eval.c (optypetab): Add Op_parens.
+	* interpret.h (r_interpret): Ditto.
+	* profile.c (pprint): Ditto.  For ?:, don't parenthesize it.
+	(pp_parenthesize): If string starts with left paren, return early.
+	(parenthesize): Don't call div_on_left_mul_on_right.
+	(div_on_left_mul_on_right): Remove function.
+	(pp_concat): Don't add parentheses if expressions already have them.
+	* NEWS: Updated.
+
 2017-06-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	Replace malloc/memset combinations with calloc by using the new ezalloc

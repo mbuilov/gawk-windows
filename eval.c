@@ -381,6 +381,7 @@ static struct optypetab {
 	{ "Op_K_else", "else" },
 	{ "Op_K_function", "function" },
 	{ "Op_cond_exp", NULL },
+	{ "Op_parens", NULL },
 	{ "Op_final --- this should never appear", NULL },
 	{ NULL, NULL },
 };
