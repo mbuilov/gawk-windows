@@ -880,8 +880,13 @@ xnmalloc (size_t n, size_t s)
 void *
 xcalloc(size_t nmemb, size_t size)
 {
-  void *p = xmalloc (nmemb * size);
-  memset(p, '\0', nmemb * size);
+  void *p = calloc (nmemb, size);
+
+  if (p == NULL) {
+    fprintf(stderr, "xcalloc: calloc failed: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
   return p;
 }
 
@@ -1031,7 +1036,7 @@ xcharalloc (size_t n)
 void *
 xzalloc (size_t s)
 {
-  return memset (xmalloc (s), 0, s);
+  return xcalloc (1, s);
 }
 
 # endif

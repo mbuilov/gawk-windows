@@ -1,3 +1,10 @@
+2017-06-25         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* dfa.c (dfaalloc): Replace xmalloc+memset with xzalloc.
+	* xalloc.h (xmalloc): New function moved here from gawkmisc.c.
+	(xcalloc): Replace xmalloc+memset with calloc.
+	(xzalloc): Replace xmalloc+memset with xcalloc.
+
 2017-06-22         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regcomp.c, regex.c, regex.h, regex_internal.c, regex_internal.h,
