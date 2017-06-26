@@ -71,7 +71,7 @@ AC_ARG_ENABLE([builtin-intdiv0],
 	[AS_HELP_STRING([--enable-builtin-intdiv0],[enable built-in intdiv0 function])],
 	if test "$enableval" = yes
 	then
-		AC_DEFINE(SUPPLY_INTDIV, 1, [enable	built-in intdiv0 function])
+		AC_DEFINE(SUPPLY_INTDIV, 1, [enable built-in intdiv0 function])
 		sed '/^@set PATCHLEVEL/a\
 @set INTDIV' < "$srcdir"/doc/gawktexi.in > foo
 		cp foo "$srcdir"/doc/gawktexi.in
