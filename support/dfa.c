@@ -4062,12 +4062,7 @@ dfamustfree (struct dfamust *dm)
 struct dfa *
 dfaalloc (void)
 {
-  void *p = xmalloc (sizeof (struct dfa));
-  if (p)
-    {
-      memset (p, 0, sizeof (struct dfa));
-    }
-  return p;
+  return xzalloc (sizeof (struct dfa));
 }
 
 /* Initialize DFA.  */

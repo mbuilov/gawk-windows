@@ -1910,10 +1910,14 @@ mbprintf4::
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbprintf5::
-	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
-	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+	echo $@
+	@case `uname` in \
+	CYGWIN*) echo this test fails on cygwin --- skipping $@ ;; \
+	*) \
+	GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@ ; \
+	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; \
+	esac
 
 mbfw1::
 	@echo $@
