@@ -41,19 +41,3 @@
 #include "posix/gawkmisc.c"
 #endif /* not VMS */
 #endif /* not __DJGPP__, not __MINGW32__ */
-
-/* xmalloc --- provide this so that other GNU library routines work */
-
-typedef void *pointer;
-
-extern pointer xmalloc(size_t bytes);	/* get rid of gcc warning */
-
-pointer
-xmalloc(size_t bytes)
-{
-	pointer p;
-	if (bytes == 0)
-		bytes = 1;	/* avoid dfa.c mishegos */
-	emalloc(p, pointer, bytes, "xmalloc");
-	return p;
-}

@@ -138,6 +138,17 @@ xnmalloc (size_t n, size_t s)
 #include <errno.h>
 extern void r_fatal(const char *msg, ...) ATTRIBUTE_NORETURN ;
 
+void *
+xmalloc(size_t bytes)
+{
+  void *p;
+  if (bytes == 0)
+    bytes = 1;	/* avoid dfa.c mishegos */
+  if ((p = malloc(bytes)) == NULL)
+    xalloc_die ();
+  return p;
+}
+
 /* Allocate an array of N objects, each with S bytes of memory,
    dynamically, with error checking.  S must be nonzero.
    Clear the contents afterwards.  */
@@ -145,8 +156,12 @@ extern void r_fatal(const char *msg, ...) ATTRIBUTE_NORETURN ;
 void *
 xcalloc(size_t nmemb, size_t size)
 {
-  void *p = xmalloc (nmemb * size);
-  memset(p, '\0', nmemb * size);
+  void *p;
+
+  if (nmemb == 0 || size == 0)
+    nmemb = size = 1; 	/* avoid dfa.c mishegos */
+  if ((p = calloc(nmemb, size)) == NULL)
+    xalloc_die ();
   return p;
 }
 
@@ -314,7 +329,7 @@ xcharalloc (size_t n)
 inline void *
 xzalloc (size_t s)
 {
-  return memset (xmalloc (s), 0, s);
+  return xcalloc(1, s);
 }
 
 # endif
