@@ -187,7 +187,7 @@ inplace_la_OBJECTS = $(am_inplace_la_OBJECTS)
 inplace_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(inplace_la_LDFLAGS) $(LDFLAGS) -o $@
-intdiv_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
+intdiv_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_intdiv_la_OBJECTS = intdiv.lo
 intdiv_la_OBJECTS = $(am_intdiv_la_OBJECTS)
 intdiv_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -541,7 +541,7 @@ noinst_LTLIBRARIES = \
 	testext.la
 
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
-# on Cygwin, gettext requires that we link with -lintl 
+# On Cygwin, gettext requires that we link with -lintl 
 MY_LIBS = $(LTLIBINTL)
 filefuncs_la_SOURCES = filefuncs.c stack.h stack.c gawkfts.h \
 			gawkfts.c gawkdirfd.h
@@ -557,9 +557,11 @@ fork_la_LIBADD = $(MY_LIBS)
 inplace_la_SOURCES = inplace.c
 inplace_la_LDFLAGS = $(MY_MODULE_FLAGS)
 inplace_la_LIBADD = $(MY_LIBS)
+
+# On Cygwin, intdiv has to be linked with the MPFR and GMP libraries
 intdiv_la_SOURCES = intdiv.c
 intdiv_la_LDFLAGS = $(MY_MODULE_FLAGS)
-intdiv_la_LIBADD = $(MY_LIBS)
+intdiv_la_LIBADD = $(MY_LIBS) $(LIBMPFR)
 ordchr_la_SOURCES = ordchr.c
 ordchr_la_LDFLAGS = $(MY_MODULE_FLAGS)
 ordchr_la_LIBADD = $(MY_LIBS)
