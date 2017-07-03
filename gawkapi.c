@@ -267,7 +267,7 @@ api_register_input_parser(awk_ext_id_t id, awk_input_parser_t *input_parser)
 	register_input_parser(input_parser);
 }
 
-/* api_register_output_wrapper --- egister an output wrapper, for writing files / two-way pipes */
+/* api_register_output_wrapper --- register an output wrapper, for writing files / two-way pipes */
 
 static void api_register_output_wrapper(awk_ext_id_t id,
 		awk_output_wrapper_t *output_wrapper)

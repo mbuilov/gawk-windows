@@ -590,7 +590,7 @@ typedef struct gawk_api {
 	/*
 	 * Lookup a variable, fill in value. No messing with the value
 	 * returned.
-	 * Returns false if the variable doesn't exist* or if the wrong type
+	 * Returns false if the variable doesn't exist or if the wrong type
 	 * was requested.  In the latter case, vaule->val_type will have
 	 * the real type, as described above.
 	 *
