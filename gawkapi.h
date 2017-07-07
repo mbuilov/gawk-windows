@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 2012-2016 the Free Software Foundation, Inc.
+ * Copyright (C) 2012-2017 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -118,7 +118,7 @@ typedef enum awk_bool {
 } awk_bool_t;	/* we don't use <stdbool.h> on purpose */
 
 /*
- * If the input parser would like to specify the field positions in the input
+ * If an input parser would like to specify the field positions in the input
  * record, it may populate an awk_fieldwidth_info_t structure to indicate
  * the location of each field. The use_chars boolean controls whether the
  * field lengths are specified in terms of bytes or potentially multi-byte
@@ -208,7 +208,7 @@ typedef struct awk_input_parser {
 	const char *name;	/* name of parser */
 
 	/*
-	 * The can_take_file function should return non-zero if the parser
+	 * The can_take_file function should return true if the parser
 	 * would like to parse this file.  It should not change any gawk
 	 * state!
 	 */
@@ -219,7 +219,7 @@ typedef struct awk_input_parser {
 	 * It can assume that a previous call to can_take_file was successful,
 	 * and no gawk state has changed since that call.  It should populate
 	 * the awk_input_buf_t's get_record, close_func, and opaque values as needed.
-	 * It should return non-zero if successful.
+	 * It should return true if successful.
 	 */
 	awk_bool_t (*take_control_of)(awk_input_buf_t *iobuf);
 
@@ -254,7 +254,7 @@ typedef struct awk_output_wrapper {
 	const char *name;	/* name of the wrapper */
 
 	/*
-	 * The can_take_file function should return non-zero if the wrapper
+	 * The can_take_file function should return true if the wrapper
 	 * would like to process this file.  It should not change any gawk
 	 * state!
 	 */
@@ -265,7 +265,7 @@ typedef struct awk_output_wrapper {
 	 * It can assume that a previous call to can_take_file was successful,
 	 * and no gawk state has changed since that call.  It should populate
 	 * the awk_output_buf_t function pointers and opaque pointer as needed.
-	 * It should return non-zero if successful.
+	 * It should return true if successful.
 	 */
 	awk_bool_t (*take_control_of)(awk_output_buf_t *outbuf);
 
@@ -277,7 +277,7 @@ typedef struct awk_two_way_processor {
 	const char *name;	/* name of the two-way processor */
 
 	/*
-	 * The can_take_file function should return non-zero if the two-way
+	 * The can_take_file function should return true if the two-way
 	 * processor would like to parse this file.  It should not change
 	 * any gawk state!
 	 */
@@ -288,7 +288,7 @@ typedef struct awk_two_way_processor {
 	 * It can assume that a previous call to can_take_file was successful,
 	 * and no gawk state has changed since that call.  It should populate
 	 * the awk_input_buf_t and awk_otuput_buf_t structures as needed.
-	 * It should return non-zero if successful.
+	 * It should return true if successful.
 	 */
 	awk_bool_t (*take_control_of)(const char *name, awk_input_buf_t *inbuf,
 					awk_output_buf_t *outbuf);
@@ -315,7 +315,8 @@ enum {
  * be multibyte encoded in the current locale's encoding and character
  * set. Gawk will convert internally to wide characters if necessary.
  *
- * Note that the string will always be terminated with a '\0' character.
+ * Note that a string provided by gawk will always be terminated
+ * with a '\0' character.
  */
 typedef struct awk_string {
 	char *str;	/* data */
@@ -407,8 +408,8 @@ typedef struct awk_flat_array {
  * loaded, the extension should pass in one of these to gawk for
  * each C function.
  *
- * Each called function must fill in the result with either a number
- * or string. Gawk takes ownership of any string memory.
+ * Each called function must fill in the result with either a scalar
+ * (number, string, or regex). Gawk takes ownership of any string memory.
  *
  * The called function must return the value of `result'.
  * This is for the convenience of the calling code inside gawk.
@@ -522,13 +523,13 @@ typedef struct gawk_api {
 	 * behave in the same way.
 	 *
 	 * For a function parameter, the return is false if the argument
-	 * count is out of range, or if actual paramater does not match
+	 * count is out of range, or if the actual paramater does not match
 	 * what is specified in wanted. In that case,  result->val_type
 	 * will hold the actual type of what was passed.
 	 *
 	 * Similarly for symbol table access to variables and array elements,
 	 * the return is false if the actual variable or array element does
-	 * not match what was requested, and the result->val_type will hold
+	 * not match what was requested, and result->val_type will hold
 	 * the actual type.
 
 	Table entry is type returned:
@@ -652,7 +653,7 @@ typedef struct gawk_api {
 	 *		use the scalar cookie
 	 *
 	 * Return will be false if the new value is not one of
-	 * AWK_STRING or AWK_NUMBER.
+	 * AWK_STRING, AWK_NUMBER, AWK_REGEX.
 	 *
 	 * Here too, the built-in variables may not be updated.
 	 */
@@ -662,12 +663,12 @@ typedef struct gawk_api {
 	/* Cached values */
 
 	/*
-	 * Create a cached string or numeric value for efficient later
+	 * Create a cached string,regex, or numeric value for efficient later
 	 * assignment. This improves performance when you want to assign
 	 * the same value to one or more variables repeatedly.  Only
-	 * AWK_NUMBER and AWK_STRING values are allowed.  Any other type
-	 * is rejected.  We disallow AWK_UNDEFINED since that case would
-	 * result in inferior performance.
+	 * AWK_NUMBER, AWK_STRING, AWK_REGEX and AWK_STRNUM values are allowed.
+	 * Any other type is rejected.  We disallow AWK_UNDEFINED since that
+	 * case would result in inferior performance.
 	 */
 	awk_bool_t (*api_create_value)(awk_ext_id_t id, awk_value_t *value,
 		    awk_value_cookie_t *result);
@@ -711,21 +712,22 @@ typedef struct gawk_api {
 
 	/*
 	 * Remove the element with the given index.
-	 * Returns success if removed or false if element did not exist.
+	 * Returns true if removed or false if element did not exist.
 	 */
 	awk_bool_t (*api_del_array_element)(awk_ext_id_t id,
 			awk_array_t a_cookie, const awk_value_t* const index);
 
-	/* Create a new array cookie to which elements may be added */
+	/* Create a new array cookie to which elements may be added. */
 	awk_array_t (*api_create_array)(awk_ext_id_t id);
 
-	/* Clear out an array */
+	/* Clear out an array. */
 	awk_bool_t (*api_clear_array)(awk_ext_id_t id, awk_array_t a_cookie);
 
 	/*
 	 * Flatten out an array with type conversions as requested.
-	 * This supersedes the api_flatten_array function that did not allow
-	 * the caller to specify the requested types.
+	 * This supersedes the earlier api_flatten_array function that
+	 * did not allow the caller to specify the requested types.
+	 * (That API is still available as a macro, defined below.)
 	 */
 	awk_bool_t (*api_flatten_array_typed)(awk_ext_id_t id,
 			awk_array_t a_cookie,
@@ -752,21 +754,34 @@ typedef struct gawk_api {
 	 * data for the currently open input file corresponding to FILENAME
 	 * (and it will not access the filetype argument, so that may be
 	 * undefined).
-	 * If the file is not already open, it tries to open it.
+	 *
+	 * If the file is not already open, try to open it.
+	 *
 	 * The "filetype" argument should be one of:
+	 *
 	 *    ">", ">>", "<", "|>", "|<", and "|&"
+	 *
 	 * If the file is not already open, and the fd argument is non-negative,
 	 * gawk will use that file descriptor instead of opening the file
-	 * in the usual way.  If the fd is non-negative, but the file exists
-	 * already, gawk ignores the fd and returns the existing file.  It is
-	 * the caller's responsibility to notice that the fd in the returned
-	 * awk_input_buf_t does not match the requested value.  Note that
-	 * supplying a file descriptor is currently NOT supported for pipes.
-	 * It should work for input, output, append, and two-way (coprocess)
-	 * sockets.  If the filetype is two-way, we assume that it is a socket!
+	 * in the usual way.
+	 *
+	 * If the fd is non-negative, but the file exists already, gawk
+	 * ignores the fd and returns the existing file.  It is the caller's
+	 * responsibility to notice that the fd in the returned
+	 * awk_input_buf_t does not match the requested value.
+	 *
+	 * Note that supplying a file descriptor is currently NOT supported
+	 * for pipes. It should work for input, output, append, and two-way
+	 * (coprocess) sockets.  If the filetype is two-way, we assume that
+	 * it is a socket!
+	 *
 	 * Note that in the two-way case, the input and output file descriptors
 	 * may differ.  To check for success, one must check that either of
 	 * them matches.
+	 *
+	 * ibufp and obufp point at gawk's internal copies of the
+	 * awk_input_buf_t and awk_output_t associated with the open
+	 * file.  Treat these data structures as read-only!
 	 */
 	awk_bool_t (*api_get_file)(awk_ext_id_t id,
 			const char *name,
@@ -942,9 +957,9 @@ r_make_string(const gawk_api_t *api,	/* needed for emalloc */
 #define make_malloced_regex(str, len, result)	r_make_string_type(api, ext_id, str, len, 0, result, AWK_REGEX)
 
 /*
- * Note: The caller may not create a Strnum, but it can create a string that is
- * flagged as user input that MAY be a Strnum. Gawk will decide whether it's a
- * Strnum or a String by checking whether the string is numeric.
+ * Note: The caller may not create a STRNUM, but it can create a string that is
+ * flagged as user input that MAY be a STRNUM. Gawk will decide whether it's a
+ * STRNUM or a string by checking whether the string is numeric.
  */
 #define make_const_user_input(str, len, result)	r_make_string_type(api, ext_id, str, len, 1, result, AWK_STRNUM)
 #define make_malloced_user_input(str, len, result)	r_make_string_type(api, ext_id, str, len, 0, result, AWK_STRNUM)
