@@ -965,7 +965,7 @@ check_pos:
 			*cur = get_number_si(arg);
 			if (*cur < 0 && cur == &fw) {
 				*cur = -*cur;
-				lj++;
+				lj = true;
 			}
 			if (cur == &prec) {
 				if (*cur >= 0)
@@ -992,7 +992,7 @@ check_pos:
 				goto retry;
 			}
 			fill = sp;      /* if left justified then other */
-			lj++; 		/* filling is ignored */
+			lj = true;	/* filling is ignored */
 			goto check_pos;
 		case '.':
 			if (cur != &fw)

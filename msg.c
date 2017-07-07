@@ -33,7 +33,7 @@ static const char *srcfile = NULL;
 static int srcline;
 
 jmp_buf fatal_tag;
-bool fatal_tag_valid = false;
+int fatal_tag_valid = 0;
 
 /* err --- print an error message with source line and file and record */
 
