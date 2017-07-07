@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2016,
+ * Copyright (C) 1986, 1988, 1989, 1991-2017,
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -3334,8 +3334,6 @@ grow_iop_buffer(IOBUF *iop)
 	iop->end = iop->buf + iop->size;
 }
 
-/* Here are the routines. */
-
 /* rs1scan --- scan for a single character record terminator */
 
 static RECVALUE
@@ -4270,6 +4268,8 @@ gawk_fwrite(const void *buf, size_t size, size_t count, FILE *fp, void *opaque)
 	return fwrite(buf, size, count, fp);
 }
 
+/* gawk_fflush --- like fflush */
+
 static int
 gawk_fflush(FILE *fp, void *opaque)
 {
@@ -4278,6 +4278,8 @@ gawk_fflush(FILE *fp, void *opaque)
 	return fflush(fp);
 }
 
+/* gawk_ferror --- like ferror */
+
 static int
 gawk_ferror(FILE *fp, void *opaque)
 {
@@ -4285,6 +4287,8 @@ gawk_ferror(FILE *fp, void *opaque)
 
 	return ferror(fp);
 }
+
+/* gawk_fclose --- like fclose */
 
 static int
 gawk_fclose(FILE *fp, void *opaque)
@@ -4302,7 +4306,6 @@ gawk_fclose(FILE *fp, void *opaque)
 #endif
 	return result;
 }
-
 
 /* init_output_wrapper --- initialize the output wrapper */
 
