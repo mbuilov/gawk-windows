@@ -270,7 +270,7 @@ static void save_options(const char *file);
 
 /* pager */
 jmp_buf pager_quit_tag;
-bool pager_quit_tag_valid = false;
+int pager_quit_tag_valid = 0;
 static int screen_width = INT_MAX;	/* no of columns */
 static int screen_height = INT_MAX;	/* no of rows */
 static int pager_lines_printed = 0;	/* no of lines printed so far */
@@ -2459,7 +2459,7 @@ do_clear(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	NODE *func;
 	SRCFILE *s = cur_srcfile;
 	char *src = cur_srcfile->src;
-	bool bp_found = false;
+	int bp_found = 0;
 
 	if (arg == NULL) {	/* clear */
 		CHECK_PROG_RUNNING();
@@ -2511,7 +2511,7 @@ func:
 				fprintf(out_fp, ", %d", b->number);
 			delete_breakpoint(b);
 		}
-		if (! bp_found)
+		if (bp_found == 0)
 			fprintf(out_fp, _("No breakpoint(s) at entry to function `%s'\n"),
 					func->vname);
 		else
@@ -2538,7 +2538,7 @@ delete_bp:
 		}
 	}
 
-	if (! bp_found)
+	if (bp_found == 0)
 		fprintf(out_fp, _("No breakpoint at file `%s', line #%d\n"),
 					src, (int) lineno);
 	else
@@ -2955,11 +2955,11 @@ do_run(CMDARG *arg ATTRIBUTE_UNUSED, int cmd ATTRIBUTE_UNUSED)
 	fprintf(out_fp, _("Starting program: \n"));
 
 	prog_running = true;
-	fatal_tag_valid = true;
+	fatal_tag_valid = 1;
 	if (setjmp(fatal_tag) == 0)
 		(void) interpret(code_block);
 
-	fatal_tag_valid = false;
+	fatal_tag_valid = 0;
 	prog_running = false;
 	fprintf(out_fp, (! exiting && exit_val != EXIT_SUCCESS)
 				? _("Program exited abnormally with exit value: %d\n")
