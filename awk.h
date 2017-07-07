@@ -1340,7 +1340,7 @@ DEREF(NODE *r)
 #define fatal		(*(set_loc(__FILE__, __LINE__), r_fatal))
 
 extern jmp_buf fatal_tag;
-extern bool fatal_tag_valid;
+extern int fatal_tag_valid;
 
 #define PUSH_BINDING(stack, tag, val)	\
 if (val++) \
