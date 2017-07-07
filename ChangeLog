@@ -1,3 +1,16 @@
+2017-07-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Remove warnings from GCC 7.1 compilation.
+
+	* awk.h (fatal_tag_valid): Change type to int.
+	* awkgram.y (yylex): Set did_newline to true instead of using ++.
+	* builtin.c (format_tree): Set lj to true instead of using ++.
+	* cmd.h (pager_quit_tag_valid): Change type to int.
+	* debug.c (pager_quit_tag_valid): Change type to int.
+	(do_clear): Make bp_found an int, change uses.
+	(do_run): Treat fatal_tag_valid as an int.
+	* msg.c (fatal_tag_valid): Change type to int.
+
 2017-01-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* interpret.h [UNFIELD]: Fix condition for assignment from

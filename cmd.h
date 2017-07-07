@@ -36,7 +36,7 @@ extern NODE *get_function(void);
 
 extern int gprintf(FILE *fp, const char *format, ...);
 extern jmp_buf pager_quit_tag;
-extern bool pager_quit_tag_valid;
+extern int pager_quit_tag_valid;
 
 extern bool output_is_tty;
 extern int input_fd;
