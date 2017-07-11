@@ -1418,6 +1418,7 @@ extern builtin_func_t lookup_builtin(const char *name);
 extern void install_builtins(void);
 extern bool is_alpha(int c);
 extern bool is_alnum(int c);
+extern bool is_letter(int c);
 extern bool is_identchar(int c);
 extern NODE *make_regnode(int type, NODE *exp);
 /* builtin.c */

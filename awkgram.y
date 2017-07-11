@@ -4086,7 +4086,7 @@ retry:
 		}
 	}
 
-	if (c != '_' && ! is_alpha(c)) {
+	if (! is_letter(c)) {
 		yyerror(_("invalid char '%c' in expression"), c);
 		return lasttok = LEX_EOF;
 	}
@@ -6307,6 +6307,18 @@ is_alnum(int c)
 	return (is_alpha(c) || ('0' <= c && c <= '9'));
 }
 
+
+/*
+ * is_letter --- function to check letters
+ *	isalpha() isn't good enough since it can look at the locale.
+ * Underscore counts as a letter in awk identifiers
+ */
+
+bool
+is_letter(int c)
+{
+	return (is_alpha(c) || c == '_');
+}
 
 /* is_identchar --- return true if c can be in an identifier */
 
