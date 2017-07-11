@@ -3038,7 +3038,7 @@ err:
 			|| c == ',' || c == '=')
 		return *lexptr++;
 
-	if (c != '_' && ! is_alpha(c)) {
+	if (! is_letter(c)) {
 		yyerror(_("invalid character"));
 		return '\n';
 	}

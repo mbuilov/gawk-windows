@@ -1125,7 +1125,7 @@ arg_assign(char *arg, bool initing)
 
 	/* first check that the variable name has valid syntax */
 	badvar = false;
-	if (! is_alpha((unsigned char) arg[0]) && arg[0] != '_')
+	if (! is_letter((unsigned char) arg[0]))
 		badvar = true;
 	else
 		for (cp2 = arg+1; *cp2; cp2++)
