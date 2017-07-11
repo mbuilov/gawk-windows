@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 2004, 2010, 2011, 2014, 2016
+ * Copyright (C) 2004, 2010, 2011, 2014, 2016, 2017
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -1288,7 +1288,7 @@ err:
 			|| c == ',' || c == '=')
 		return *lexptr++;
 
-	if (c != '_' && ! is_alpha(c)) {
+	if (! is_letter(c)) {
 		yyerror(_("invalid character"));
 		return '\n';
 	}

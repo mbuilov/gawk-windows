@@ -35,18 +35,6 @@ extern SRCFILE *srcfiles;
 
 #include <dlfcn.h>
 
-/*
- * is_letter --- function to check letters
- *	isalpha() isn't good enough since it can look at the locale.
- * Underscore counts as a letter in awk identifiers
- */
-
-static bool
-is_letter(unsigned char c)
-{
-	return (is_alpha(c) || c == '_');
-}
-
 #define INIT_FUNC	"dl_load"
 
 /* load_ext --- load an external library */
@@ -89,6 +77,25 @@ load_ext(const char *lib_name)
 				lib_name, INIT_FUNC);
 }
 
+/* is_valid_identifier --- return true if name is a valid simple identifier */
+
+static bool
+is_valid_identifier(const char *name)
+{
+	const char *sp = name;
+	int c;
+
+	if (! is_letter(*sp))
+		return false;
+
+	for (sp++; (c = *sp++) != '\0';) {
+		if (! is_identchar(c))
+			return false;
+	}
+
+	return true;
+}
+
 /* make_builtin --- register name to be called as func with a builtin body */
 
 awk_bool_t
@@ -96,22 +103,14 @@ make_builtin(const awk_ext_func_t *funcinfo)
 {
 	NODE *symbol, *f;
 	INSTRUCTION *b;
-	const char *sp;
-	char c;
 	const char *name = funcinfo->name;
 	int count = funcinfo->max_expected_args;
 
-	sp = name;
-	if (sp == NULL || *sp == '\0')
+	if (name == NULL || *name == '\0')
 		fatal(_("make_builtin: missing function name"));
 
-	if (! is_letter(*sp))
+	if (! is_valid_identifier(name))
 		return awk_false;
-
-	for (sp++; (c = *sp++) != '\0';) {
-		if (! is_identchar(c))
-			return awk_false;
-	}
 
 	f = lookup(name);
 

@@ -1,3 +1,14 @@
+2017-07-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (is_letter): Add declaration.
+	* ext.c (is_valid_identifier): New function.
+	(make_builtin): Use is_valid_identifier instead of inline code.
+	(is_letter): Moved from here ...
+	* awkgram.y (is_letter): ... to here.
+	(yylex): Use is_letter instead of a test.
+	* command.y (yylex): Ditto.
+	* main.c (arg_assign): Ditto.
+
 2017-07-07         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Remove warnings from GCC 7.1 compilation.
