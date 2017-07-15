@@ -1,3 +1,12 @@
+2017-07-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Revert change of 2016-07-24 that always runs the dfa
+	matcher. Based on a bug report from Alexandre Oliva
+	<lxoliva@fsfla.org>, DFA can cause gawk to hang, even
+	in the C locale.
+
+	* re.c (research): Don't use dfa if need_start is true.
+
 2017-07-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h (is_letter): Add declaration.
