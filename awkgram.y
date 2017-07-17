@@ -1744,7 +1744,13 @@ non_post_simp_exp
 		else
 			$$ = $2;
 	  }
-	| lex_builtin '(' opt_fcall_expression_list r_paren
+	| LEX_BUILTIN '(' opt_fcall_expression_list r_paren
+	  {
+		$$ = snode($3, $1);
+		if ($$ == NULL)
+			YYABORT;
+	  }
+	| LEX_LENGTH '(' opt_fcall_expression_list r_paren
 	  {
 		$$ = snode($3, $1);
 		if ($$ == NULL)
