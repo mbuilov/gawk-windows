@@ -1744,13 +1744,7 @@ non_post_simp_exp
 		else
 			$$ = $2;
 	  }
-	| LEX_BUILTIN '(' opt_fcall_expression_list r_paren
-	  {
-		$$ = snode($3, $1);
-		if ($$ == NULL)
-			YYABORT;
-	  }
-	| LEX_LENGTH '(' opt_fcall_expression_list r_paren
+	| lex_builtin '(' opt_fcall_expression_list r_paren
 	  {
 		$$ = snode($3, $1);
 		if ($$ == NULL)
@@ -6220,14 +6214,14 @@ lookup_builtin(const char *name)
 		return NULL;
 	}
 
+	/* And another special case... */
+	if (tokentab[mid].value == Op_sub_builtin)
+		return (builtin_func_t) do_sub;
+
 #ifdef HAVE_MPFR
 	if (do_mpfr)
 		return tokentab[mid].ptr2;
 #endif
-
-	/* And another special case... */
-	if (tokentab[mid].value == Op_sub_builtin)
-		return (builtin_func_t) do_sub;
 
 	return tokentab[mid].ptr;
 }
