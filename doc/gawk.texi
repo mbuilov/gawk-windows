@@ -20042,17 +20042,24 @@ BEGIN @{
 
 @item "untyped"
 @var{x} has not yet been used yet at all; it can become a scalar or an
-array.
-For example:
+array.  The typing could even conceivably differ from run to run of
+the same program! For example:
 
 @example
 BEGIN @{
-    print typeof(x)     # x never used --> untyped
-    mk_arr(x)
-    print typeof(x)     # x now an array --> array
+    print "initially, typeof(v) = ", typeof(v)
+
+    if ("FOO" in ENVIRON)
+        make_scalar(v)
+    else
+        make_array(v)
+
+    print "typeof(v) =", typeof(v)
 @}
 
-function mk_arr(a) @{ a[1] = 1 @}
+function make_scalar(p,    l) @{ l = p @}
+
+function make_array(p) @{ p[1] = 1 @}
 @end example
 
 @end table
