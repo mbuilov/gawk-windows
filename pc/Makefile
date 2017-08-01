@@ -81,7 +81,10 @@ prefix = c:/gnu
 pkgdatadir = $(prefix)/lib/awk
 pkgextensiondir = $(prefix)/lib/gawk
 DEFLIBPATH = "\"$(pkgextensiondir)\""
+LOCALEDIR="\"$(prefix)/share/locale\""
 SHLIBEXT = "\"dll\""
+infodir = $(prefix)/share/info
+mandir = $(prefix)/share/man
 #
 # Define the install method. Method 1 is Unix-like (and requires cat
 # and cp); method 2 uses gawk and batch files.
@@ -103,8 +106,9 @@ VPATH = .;./support
 #========================================================================
 
 ifneq ($(DJGPP),)
-prefix = $(DJDIR)
+prefix = /dev/env/DJDIR
 pkgdatadir = $(prefix)/share/awk
+SHLIBEXT = "\"dxe\""
 endif
 LDJG = $(CC) $(LF) -o gawk.exe $(LDRSP) $(LF2)
 BDJG = stubify -g awk.exe | stubedit awk.exe runfile=gawk
@@ -201,7 +205,7 @@ BIND = EMPTY
 PBIND = EMPTY
 EMPTY=
 
-CFLAGS = $(CF) -DGAWK -I. -I./support -DHAVE_CONFIG_H -DDEFLIBPATH=$(DEFLIBPATH) -DSHLIBEXT=$(SHLIBEXT)
+CFLAGS = $(CF) -DGAWK -I. -I./support -DHAVE_CONFIG_H -DDEFLIBPATH=$(DEFLIBPATH) -DSHLIBEXT=$(SHLIBEXT) -DLOCALEDIR=$(LOCALEDIR)
 
 # object files
 AWKOBJS1  = array$O builtin$O eval$O field$O floatcomp$O gawkmisc$O io$O main$O

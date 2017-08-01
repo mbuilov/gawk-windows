@@ -299,6 +299,7 @@ os_is_setuid()
 
 #ifdef __DJGPP__
 #include <sys/exceptn.h>
+#include <io.h>
 #endif
 static int orig_tty_mode = -1;
 
@@ -996,6 +997,7 @@ init_sockets(void)
 
 #ifdef __DJGPP__
 
+# if __DJGPP__ == 2 && __DJGPP_MINOR__ < 4 
 int
 unsetenv (const char *name)
 {
@@ -1004,6 +1006,7 @@ unsetenv (const char *name)
 
   return putenv (name);
 }
+#endif
 
 /* This is needed to defeat too-clever GCC warnings in dfa.c about
    comparison being always false due to limited range of data type.  */
@@ -1011,6 +1014,13 @@ wint_t
 btowc (int c)
 {
   return c;
+}
+
+wint_t
+putwc(wchar_t wc, FILE *stream)
+{
+  return MB_CUR_MAX == 1 && wc > 0 && wc <= UCHAR_MAX
+         && putc((unsigned char)wc, stream) != EOF ? (wint_t)wc : WEOF;
 }
 
 #endif /* __DJGPP__ */
