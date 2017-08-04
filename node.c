@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003-2015,
+ * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003-2015, 2017,
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
