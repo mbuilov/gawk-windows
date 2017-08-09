@@ -68,3 +68,10 @@ int getpgrp(void);
 #if defined(__DJGPP__) || defined(__MINGW32__)
 int getppid(void);
 #endif
+
+#ifdef __DJGPP__
+/* Prototypes of for Posix functions for which we define replacements
+   in pc/ files.  */
+wint_t btowc (int c);
+wint_t putwc (wchar_t wc, FILE *stream);
+#endif
