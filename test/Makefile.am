@@ -1199,7 +1199,7 @@ BASIC_TESTS = \
 	addcomma anchgsub anchor argarray arrayind1 arrayind2 arrayind3 arrayparm arrayprm2 arrayprm3 \
 	arrayref arrymem1 arryref2 arryref3 arryref4 arryref5 arynasty \
 	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
-	aryprm8 aryprm9 arysubnm asgext awkpath \
+	aryprm8 aryprm9 arysubnm aryunasgn asgext awkpath \
 	back89 backgsub badassign1 badbuild \
 	callparam childin clobber closebad clsflnam compare compare2 concat1 concat2 \
 	concat3 concat4 concat5 convfmt \

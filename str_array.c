@@ -165,8 +165,13 @@ str_lookup(NODE *symbol, NODE *subs)
 	 * "Array indices are always strings."
 	 * ....
 	 */
-	if (subs->stfmt != STFMT_UNUSED) {
-		/* The string was generated using CONVFMT. */
+	// Special cases:
+	// 1. The string was generated using CONVFMT.
+	// 2. The string was from an unassigned variable.
+	// 3. The string was from an unassigned field.
+	if (   subs->stfmt != STFMT_UNUSED
+	    || subs == Nnull_string
+	    || (subs->flags & NULL_FIELD) != 0) {
 		NODE *tmp;
 
 		/*

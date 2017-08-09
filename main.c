@@ -613,8 +613,10 @@ usage(int exitval, FILE *fp)
 	   for this application.  Please add _another line_ with the
 	   address for translation bugs.
 	   no-wrap */
-	fputs(_("\nTo report bugs, see node `Bugs' in `gawk.info', which is\n\
-section `Reporting Problems and Bugs' in the printed version.\n\n"), fp);
+	fputs(_("\nTo report bugs, see node `Bugs' in `gawk.info'\n\
+which is section `Reporting Problems and Bugs' in the\n\
+printed version.  This same information may be found at\n\
+https://www.gnu.org/software/gawk/manual/html_node/Bugs.html.\n\n"), fp);
 
 	/* ditto */
 	fputs(_("gawk is a pattern scanning and processing language.\n\
