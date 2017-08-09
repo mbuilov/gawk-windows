@@ -1115,6 +1115,8 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 		exit(1); \
 	} \
 \
+	check_mpfr_version(extension); \
+\
 	/* load functions */ \
 	for (i = 0, j = sizeof(func_table) / sizeof(func_table[0]); i < j; i++) { \
 		if (func_table[i].name == NULL) \
@@ -1139,11 +1141,8 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 	return (errors == 0); \
 }
 
-/*
- * If you are using extended-precision calculations in your library, please
- * call this macro from your init_func.
- */
-#define check_mpfr_version(extension) { \
+#if defined __GNU_MP_VERSION && defined MPFR_VERSION_MAJOR
+#define check_mpfr_version(extension) do { \
 	if (api->gmp_major_version != __GNU_MP_VERSION \
 	    || api->gmp_minor_version < __GNU_MP_VERSION_MINOR) { \
 		fprintf(stderr, #extension ": GMP version mismatch with gawk!\n"); \
@@ -1160,7 +1159,10 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 			api->mpfr_major_version, api->mpfr_minor_version); \
 		exit(1); \
 	} \
-}
+} while (0)
+#else
+#define check_mpfr_version(extension) /* nothing */
+#endif
 
 #endif /* GAWK */
 

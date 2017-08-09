@@ -1,5 +1,11 @@
 2017-08-09         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* gawkapi.h (check_mpfr_versions): Define differently based on if
+	MPFR version macro is defined. Enhance body to use do/while(0).
+	(dl_load): Call check_mpfr_versions unconditionally.
+
+2017-08-09         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* main.c (usage): Add URL for Bug reporting info to the help message.
 
 	Unrelated:
