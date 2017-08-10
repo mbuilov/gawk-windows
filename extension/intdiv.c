@@ -26,6 +26,7 @@
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
 static const char *ext_version = "intdiv extension: version 1.0";
+static awk_bool_t (*init_func)(void) = NULL;
 
 int plugin_is_GPL_compatible;
 
@@ -196,19 +197,6 @@ do_intdiv(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 static awk_ext_func_t func_table[] = {
 	{ "intdiv", do_intdiv, 3, 3, awk_false, NULL },
 };
-
-/* init_intdiv --- initialization routine */
-
-static awk_bool_t
-init_intdiv(void)
-{
-#ifdef HAVE_MPFR
-	check_mpfr_version(intdiv)
-#endif
-	return awk_true;
-}
-
-static awk_bool_t (*init_func)(void) = init_intdiv;
 
 /* define the dl_load function using the boilerplate macro */
 
