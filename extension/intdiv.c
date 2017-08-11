@@ -15,7 +15,6 @@
 #include "gawkapi.h"
 
 #ifdef HAVE_MPFR
-#include <gmp.h>
 #include <mpfr.h>
 #endif
 
