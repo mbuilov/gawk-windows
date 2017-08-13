@@ -5,7 +5,7 @@ Free Software Foundation, Inc.
 
 
    This is Edition 4.1 of 'GAWK: Effective AWK Programming: A User's
-Guide for GNU Awk', for the 4.1.4 (or later) version of the GNU
+Guide for GNU Awk', for the 4.2.0 (or later) version of the GNU
 implementation of AWK.
 
    Permission is granted to copy, distribute and/or modify this document
@@ -42,7 +42,7 @@ Free Software Foundation, Inc.
 
 
    This is Edition 4.1 of 'GAWK: Effective AWK Programming: A User's
-Guide for GNU Awk', for the 4.1.4 (or later) version of the GNU
+Guide for GNU Awk', for the 4.2.0 (or later) version of the GNU
 implementation of AWK.
 
    Permission is granted to copy, distribute and/or modify this document
@@ -28486,7 +28486,7 @@ There are two ways to get GNU software:
      supported.  If you have the 'wget' program, you can use a command
      like the following:
 
-          wget http://ftp.gnu.org/gnu/gawk/gawk-4.1.4.tar.gz
+          wget http://ftp.gnu.org/gnu/gawk/gawk-4.2.0.tar.gz
 
    The GNU software archive is mirrored around the world.  The
 up-to-date list of mirror sites is available from the main FSF website
@@ -28508,25 +28508,25 @@ compression programs: 'gzip', 'bzip2', and 'xz'.  For simplicity, the
 rest of these instructions assume you are using the one compressed with
 the GNU Gzip program ('gzip').
 
-   Once you have the distribution (e.g., 'gawk-4.1.4.tar.gz'), use
+   Once you have the distribution (e.g., 'gawk-4.2.0.tar.gz'), use
 'gzip' to expand the file and then use 'tar' to extract it.  You can use
 the following pipeline to produce the 'gawk' distribution:
 
-     gzip -d -c gawk-4.1.4.tar.gz | tar -xvpf -
+     gzip -d -c gawk-4.2.0.tar.gz | tar -xvpf -
 
    On a system with GNU 'tar', you can let 'tar' do the decompression
 for you:
 
-     tar -xvpzf gawk-4.1.4.tar.gz
+     tar -xvpzf gawk-4.2.0.tar.gz
 
-Extracting the archive creates a directory named 'gawk-4.1.4' in the
+Extracting the archive creates a directory named 'gawk-4.2.0' in the
 current directory.
 
    The distribution file name is of the form 'gawk-V.R.P.tar.gz'.  The V
 represents the major version of 'gawk', the R represents the current
 release of version V, and the P represents a "patch level", meaning that
 minor bugs have been fixed in the release.  The current patch level is
-4, but when retrieving distributions, you should get the version with
+0, but when retrieving distributions, you should get the version with
 the highest version, release, and patch level.  (Note, however, that
 patch levels greater than or equal to 70 denote "beta" or nonproduction
 software; you might not want to retrieve such a version unless you don't
@@ -28749,7 +28749,7 @@ Unix-derived systems, GNU/Linux, BSD-based systems, and the Cygwin
 environment for MS-Windows.
 
    After you have extracted the 'gawk' distribution, 'cd' to
-'gawk-4.1.4'.  As with most GNU software, you configure 'gawk' for your
+'gawk-4.2.0'.  As with most GNU software, you configure 'gawk' for your
 system by running the 'configure' program.  This program is a Bourne
 shell script that is generated automatically using GNU Autoconf.  (The
 Autoconf software is described fully starting with *note (Autoconf,
@@ -29079,8 +29079,8 @@ environment provides an excellent simulation of GNU/Linux, using Bash,
 GCC, GNU Make, and other GNU programs.  Compilation and installation for
 Cygwin is the same as for a Unix system:
 
-     tar -xvpzf gawk-4.1.4.tar.gz
-     cd gawk-4.1.4
+     tar -xvpzf gawk-4.2.0.tar.gz
+     cd gawk-4.2.0
      ./configure
      make && make check
 
@@ -29690,9 +29690,9 @@ B.6 Summary
    * The 'gawk' distribution is available from the GNU Project's main
      distribution site, 'ftp.gnu.org'.  The canonical build recipe is:
 
-          wget http://ftp.gnu.org/gnu/gawk/gawk-4.1.4.tar.gz
-          tar -xvpzf gawk-4.1.4.tar.gz
-          cd gawk-4.1.4
+          wget http://ftp.gnu.org/gnu/gawk/gawk-4.2.0.tar.gz
+          tar -xvpzf gawk-4.2.0.tar.gz
+          cd gawk-4.2.0
           ./configure && make && make check
 
    * 'gawk' may be built on non-POSIX systems as well.  The currently
