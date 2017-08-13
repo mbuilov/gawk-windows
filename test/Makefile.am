@@ -1196,80 +1196,77 @@ CLEANFILES = core core.* fmtspcl.ok
 
 # try to keep these sorted. each letter starts a new line
 BASIC_TESTS = \
-	addcomma anchgsub anchor argarray arrayind1 arrayind2 arrayind3 arrayparm arrayprm2 arrayprm3 \
-	arrayref arrymem1 arryref2 arryref3 arryref4 arryref5 arynasty \
-	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
+	addcomma anchgsub anchor argarray arrayind1 arrayind2 arrayind3 arrayparm \
+	arrayprm2 arrayprm3 arrayref arrymem1 arryref2 arryref3 arryref4 arryref5 \
+	arynasty arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
 	aryprm8 aryprm9 arysubnm aryunasgn asgext awkpath \
 	back89 backgsub badassign1 badbuild \
-	callparam childin clobber closebad clsflnam compare compare2 concat1 concat2 \
-	concat3 concat4 concat5 convfmt \
+	callparam childin clobber closebad clsflnam compare compare2 \
+	concat1 concat2 concat3 concat4 concat5 convfmt \
 	datanonl defref delargv delarpm2 delarprm delfunc dfamb1 dfastress dynlj \
-	eofsplit exit2 exitval1 exitval2 exitval3 \
-	fcall_exit fcall_exit2 fldchg fldchgnf fldterm fnamedat fnarray fnarray2 \
-	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsnul1 fsrs fsspcoln \
-	fstabplus funsemnl funsmnam funstack \
+	eofsplit exit2 exitval1 exitval2 exitval3 fcall_exit fcall_exit2 \
+	fldchg fldchgnf fldterm fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc \
+	fordel forref forsimp fsbs fsnul1 fsrs fsspcoln fstabplus funsemnl \
+	funsmnam funstack \
 	getline getline2 getline3 getline4 getline5 getlnbuf getnr2tb getnr2tm \
-	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
-	gsubtst7 gsubtst8 \
+	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 gsubtst7 \
+	gsubtst8 \
 	hex hex2 hsprint \
 	inpref inputred intest intprec iobug1 \
 	leaddig leadnl litoct longsub longwrds \
 	manglprm math membug1 memleak messages minusstr mmap8k mtchi18n \
 	nasty nasty2 negexp negrange nested nfldstr nfloop nfneg nfset nlfldsep \
-	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl \
-	noparms nors nulinsrc nulrsend numindex numsubstr \
+	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl noparms \
+	nors nulinsrc nulrsend numindex numsubstr \
 	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofmtstrnum ofs1 onlynl \
 	opasnidx opasnslf \
-	paramasfunc1 paramasfunc2 \
-	paramdup paramres paramtyp paramuninitglobal parse1 parsefld parseme \
-	pcntplus posix2008sub prdupval prec printf0 printf1 printfchar prmarscl prmreuse \
-	prt1eval prtoeval \
-	rand randtest range1 readbuf rebrackloc rebt8b1 rebuild redfilnm \
-	regeq regexpbrack regexpbrack2 \
-	regexprange regrange reindops \
-	reparse resplit rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
-	rstest3 rstest4 rstest5 rswhite \
-	scalar sclforin sclifin sigpipe1 sortempty sortglos splitargv splitarr splitdef \
-	splitvar splitwht status-close strcat1 strnum1 strnum2 strtod subamp subback subi18n \
-	subsepnm subslash substr swaplns synerr1 synerr2 tradanch tweakfld \
+	paramasfunc1 paramasfunc2 paramdup paramres paramtyp paramuninitglobal \
+	parse1 parsefld parseme pcntplus posix2008sub prdupval prec printf0 \
+	printf1 printfchar prmarscl prmreuse prt1eval prtoeval \
+	rand randtest range1 readbuf rebrackloc rebt8b1 rebuild redfilnm regeq \
+	regexpbrack regexpbrack2 regexprange regrange reindops reparse resplit \
+	rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 rstest3 \
+	rstest4 rstest5 rswhite \
+	scalar sclforin sclifin sigpipe1 sortempty sortglos splitargv splitarr \
+	splitdef splitvar splitwht status-close strcat1 strnum1 strnum2 strtod \
+	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 \
+	tradanch tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs \
 	wideidx wideidx2 widesub widesub2 widesub3 widesub4 wjposer1 \
 	zero2 zeroe0 zeroflag
 
 UNIX_TESTS = \
-	fflush getlnhd localenl pid pipeio1 pipeio2 poundbang \
-	rtlen rtlen01 space strftlng
+	fflush getlnhd localenl pid pipeio1 pipeio2 poundbang rtlen rtlen01 \
+	space strftlng
 
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
-	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
-	colonwarn clos1way clos1way2 clos1way3 clos1way4 clos1way5 clos1way6 \
-	crlf dbugeval dbugeval2 dbugtypedre1 dbugtypedre2 delsub \
-	devfd devfd1 devfd2 dumpvars errno exit \
-	fieldwdth forcenum fpat1 fpat2 fpat3 fpat4 fpat5 fpat6 fpatnull \
-	fsfwfs funlen functab1 functab2 functab3 \
-	fwtest fwtest2 fwtest3 fwtest4 fwtest5 fwtest6 fwtest7 fwtest8 \
+	backw badargs beginfile1 beginfile2 binmode1 \
+	charasbytes colonwarn clos1way clos1way2 clos1way3 clos1way4 clos1way5 \
+	clos1way6 crlf \
+	dbugeval dbugeval2 dbugtypedre1 dbugtypedre2 delsub \
+	devfd devfd1 devfd2 dumpvars \
+	errno exit \
+	fieldwdth forcenum fpat1 fpat2 fpat3 fpat4 fpat5 fpat6 fpatnull fsfwfs \
+	funlen functab1 functab2 functab3 fwtest fwtest2 fwtest3 fwtest4 \
+	fwtest5 fwtest6 fwtest7 fwtest8 \
 	genpot gensub gensub2 gensub3 getlndir gnuops2 gnuops3 gnureops gsubind \
-	icasefs icasers id igncdym igncfs ignrcas2 ignrcas4 ignrcase \
-	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
-	include include2 indirectbuiltin indirectcall indirectcall2 intarray \
+	icasefs icasers id igncdym igncfs ignrcas2 ignrcas4 ignrcase incdupe \
+	incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 include include2 \
+	indirectbuiltin indirectcall indirectcall2 intarray \
 	lint lintexp lintindex lintint lintlength lintold lintset lintwarn \
-	mixed1 mktime manyfiles match1 match2 match3 mbstr1 mbstr2 \
-	muldimposix \
-	nastyparm negtime next nondec nondec2 \
-	nonfatal1 nonfatal2 nonfatal3 \
-	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge procinfs \
-	profile0 profile1 profile2 profile3 profile4 profile5 profile6 profile7 \
-	profile8 profile9 profile10 pty1 \
-	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin rsstart1 \
-	rsstart2 rsstart3 rstest6 shadow shadowbuiltin \
-	sortfor sortfor2 sortu sourcesplit split_after_fpat \
-	splitarg4 strftime strftfld \
-	strtonum strtonum1 switch2 symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
-	symtab7 symtab8 symtab9 symtab10 \
-	typedregex1 typedregex2 typedregex3 \
-	typeof1 typeof2 typeof3 typeof4 typeof5 \
-	timeout \
+	mixed1 mktime manyfiles match1 match2 match3 mbstr1 mbstr2 muldimposix \
+	nastyparm negtime next nondec nondec2 nonfatal1 nonfatal2 nonfatal3 \
+	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge \
+	procinfs profile0 profile1 profile2 profile3 profile4 profile5 profile6 \
+	profile7 profile8 profile9 profile10 pty1 \
+	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin \
+	rsstart1 rsstart2 rsstart3 rstest6 \
+	shadow shadowbuiltin sortfor sortfor2 sortu sourcesplit split_after_fpat \
+	splitarg4 strftime strftfld strtonum strtonum1 switch2 symtab1 symtab2 \
+	symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9 symtab10 \
+	typedregex1 typedregex2 typedregex3 typeof1 typeof2 typeof3 typeof4 \
+	typeof5 timeout \
 	watchpoint1
 
 ARRAYDEBUG_TESTS = arrdbg
@@ -1280,7 +1277,7 @@ INET_TESTS = inetdayu inetdayt inetechu inetecht
 
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 
-MPFR_TESTS = mpfrnr mpfrnegzero mpfrmemok1 mpfrrem mpfrrnd mpfrieee \
+MPFR_TESTS = mpfrnr mpfrnegzero mpfrmemok1 mpfrrem mpfrrnd mpfrieee
 	mpfrexprange mpfrsort mpfrsqrt mpfrbigint mpfrstrtonum mpgforcenum
 
 LOCALE_CHARSET_TESTS = \
@@ -1290,13 +1287,19 @@ LOCALE_CHARSET_TESTS = \
 	rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
-	apiterm fnmatch filefuncs fork fork2 fts functab4 getfile inplace1 inplace2 inplace3 \
-	ordchr ordchr2 readdir readdir_test readfile readfile2 revout revtwoway rwarray testext time
+	apiterm \
+	filefuncs fnmatch fork fork2 fts functab4 \
+	getfile \
+	inplace1 inplace2 inplace3 \
+	ordchr ordchr2 \
+	readdir readdir_test readfile readfile2 revout \
+	revtwoway rwarray \
+	testext time
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
-	defref fmtspcl lintexp lintindex lintint lintlength lintwarn noeffect nofmtch shadow \
-	uninit2 uninit3 uninit4 uninit5 uninitialized
+	defref fmtspcl lintexp lintindex lintint lintlength lintwarn \
+	noeffect nofmtch shadow uninit2 uninit3 uninit4 uninit5 uninitialized
 
 # List of the tests which should be run with --lint-old option:
 NEED_LINT_OLD = lintold
