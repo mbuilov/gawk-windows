@@ -635,6 +635,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+LIBMPFR
 pkgextensiondir
 LT_SYS_LIBRARY_PATH
 OTOOL64
@@ -763,6 +764,7 @@ with_aix_soname
 with_gnu_ld
 with_sysroot
 enable_libtool_lock
+with_mpfr
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1416,6 +1418,7 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-sysroot[=DIR]    Search for dependent libraries within DIR (or the
                           compiler's sysroot if not specified).
+  --with-mpfr=DIR         look for the mpfr and gmp libraries in DIR
 
 Some influential environment variables:
   CC          C compiler command
@@ -12859,8 +12862,89 @@ $as_echo "#define TIME_WITH_SYS_TIME 1" >>confdefs.h
 fi
 
 
-for ac_func in fdopendir fnmatch gettimeofday \
-		getdtablesize nanosleep select statvfs GetSystemTimeAsFileTime
+case `uname -m` in
+*'Power Macintosh'*)
+	: ;;
+*)
+
+
+# Check whether --with-mpfr was given.
+if test "${with_mpfr+set}" = set; then :
+  withval=$with_mpfr; _do_mpfr=$withval
+else
+  _do_mpfr=yes
+fi
+
+
+  if test "$_do_mpfr" != "no" ; then
+     if test -d "$withval" ; then
+        CPPFLAGS="${CPPFLAGS} -I$withval/include"
+        LDFLAGS="${LDFLAGS} -L$withval/lib"
+     fi
+
+        _mpfr_save_libs=$LIBS
+        _combo="-lmpfr -lgmp"
+        LIBS="$LIBS $_combo"
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether mpfr via \"$_combo\" is present and usable" >&5
+$as_echo_n "checking whether mpfr via \"$_combo\" is present and usable... " >&6; }
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+#include <stdio.h>
+#include <mpfr.h>
+#include <gmp.h>
+
+int
+main ()
+{
+
+mpfr_t p;
+mpz_t z;
+mpfr_init(p);
+mpz_init(z);
+mpfr_printf("%Rf%Zd", p, z);
+mpfr_clear(p);
+mpz_clear(z);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  _found_mpfr=yes
+else
+  _found_mpfr=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $_found_mpfr" >&5
+$as_echo "$_found_mpfr" >&6; }
+
+        LIBS=$_mpfr_save_libs
+
+        if test $_found_mpfr = yes ; then
+
+$as_echo "#define HAVE_MPFR 1" >>confdefs.h
+
+           LIBMPFR=$_combo
+
+           break
+        fi
+
+     unset _mpfr_save_libs
+     unset _combo
+     unset _found_mpfr
+  fi
+
+	;;
+esac
+
+for ac_func in fdopendir fmod fnmatch getdtablesize \
+		gettimeofday nanosleep select statvfs GetSystemTimeAsFileTime
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"

@@ -1,4 +1,4 @@
-# intdiv --- do integer division
+# intdiv0 --- do integer division
 
 #
 # Arnold Robbins, arnold@skeeve.com, Public Domain
@@ -6,8 +6,11 @@
 #
 # Name changed from div() to intdiv()
 # April, 2015
+#
+# Changed to intdiv0()
+# April, 2016
 
-function intdiv(numerator, denominator, result)
+function intdiv0(numerator, denominator, result)
 {
     split("", result)
 

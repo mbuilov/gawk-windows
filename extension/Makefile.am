@@ -39,6 +39,7 @@ pkgextension_LTLIBRARIES =	\
 	fnmatch.la	\
 	fork.la		\
 	inplace.la	\
+	intdiv.la	\
 	ordchr.la	\
 	readdir.la	\
 	readfile.la	\
@@ -52,7 +53,7 @@ noinst_LTLIBRARIES =	\
 	testext.la
 
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
-# on Cygwin, gettext requires that we link with -lintl 
+# On Cygwin, gettext requires that we link with -lintl 
 MY_LIBS = $(LTLIBINTL)
 
 filefuncs_la_SOURCES  = filefuncs.c stack.h stack.c gawkfts.h \
@@ -71,6 +72,11 @@ fork_la_LIBADD        = $(MY_LIBS)
 inplace_la_SOURCES    = inplace.c
 inplace_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 inplace_la_LIBADD     = $(MY_LIBS)
+
+# On Cygwin, intdiv has to be linked with the MPFR and GMP libraries
+intdiv_la_SOURCES     = intdiv.c
+intdiv_la_LDFLAGS     = $(MY_MODULE_FLAGS)
+intdiv_la_LIBADD      = $(MY_LIBS) $(LIBMPFR)
 
 ordchr_la_SOURCES     = ordchr.c
 ordchr_la_LDFLAGS     = $(MY_MODULE_FLAGS)

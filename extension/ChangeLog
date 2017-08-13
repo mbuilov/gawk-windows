@@ -1,6 +1,22 @@
+2017-08-11         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* intdiv.c: No need to include <gmp.h> explicitly, since <mpfr.h>
+	does this for us.
+
+2017-08-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* intdiv.c (init_intdiv): Remove function, since dl_load_func now
+	calls check_mpfr_version automatically.
+	(init_func): Initialize to NULL instead of init_intdiv.
+
 2017-08-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am: Update copyright year.
+
+2017-06-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makfile.am (intdiv_la_LIBADD): Add LIBMPFR for Cygwin.
+	Thanks to Eli Zaretskii for the tip that this is necessary.
 
 2017-06-22         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
@@ -21,6 +37,26 @@
 	* rwarray.c (read_value): Replace gawk_malloc+memset with gawk_calloc.
 	* gawkfts.c (fts_open): Replace malloc+memset with calloc.
 	* rwarray0.c (read_value): Ditto.
+
+2017-04-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* intdiv.c (func_table): Function is now named intdiv.
+
+2017-04-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* intdiv.c (do_intdiv): On division by zero, return -1 and issue a
+	warning instead of throwing a fatal error.
+
+2017-04-13         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* intdiv.c (do_intdiv): On a division by zero fatal error, there's
+	no need to clear the numerator and denominator and add a fake return.
+
+2017-04-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Alphabetize function list in AC_CHECK_FUNCS.
+	* intdiv.c: Add descriptive comments to some functions.
+	(do_intdiv): Make division by zero fatal in MPFR case.
 
 2017-04-03         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -87,6 +123,16 @@
 	* inplace.c (_XOPEN_SOURCE): Define to 1, not to nothing.  MinGW
 	system headers assume that if this is defined, it must have a
 	numeric value.
+
+2017-01-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* intdiv.c: New extension to demonstrate how to implement intdiv
+	using the new extended-precision math API.
+	* Makefile.am (pkgextension_LTLIBRARIES): Add intdiv.la.
+	(intdiv_la_SOURCES, intdiv_la_LDFLAGS, intdiv_la_LIBADD): Add support
+	for new intdiv library.
+	* configure.ac (AC_CHECK_FUNCS): Check for fmod needed by intdiv.
+	(GNUPG_CHECK_MPFR): Add check for MPFR support.
 
 2016-12-22         Arnold D. Robbins     <arnold@skeeve.com>
 

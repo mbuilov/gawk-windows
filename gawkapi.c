@@ -25,6 +25,14 @@
 
 #include "awk.h"
 
+#ifdef HAVE_MPFR
+#define getmpfr(n)	getblock(n, BLOCK_MPFR, mpfr_ptr)
+#define freempfr(n)	freeblock(n, BLOCK_MPFR)
+
+#define getmpz(n)	getblock(n, BLOCK_MPZ, mpz_ptr)
+#define freempz(n)	freeblock(n, BLOCK_MPZ)
+#endif
+
 /* Declare some globals used by api_get_file: */
 extern IOBUF *curfile;
 extern INSTRUCTION *main_beginfile;
@@ -145,7 +153,7 @@ api_set_argument(awk_ext_id_t id,
 NODE *
 awk_value_to_node(const awk_value_t *retval)
 {
-	NODE *ext_ret_val;
+	NODE *ext_ret_val = NULL;
 	NODE *v;
 
 	if (retval == NULL)
@@ -159,7 +167,36 @@ awk_value_to_node(const awk_value_t *retval)
 		ext_ret_val = dupnode(Nnull_string);
 		break;
 	case AWK_NUMBER:
-		ext_ret_val = make_number(retval->num_value);
+		switch (retval->num_type) {
+		case AWK_NUMBER_TYPE_DOUBLE:
+			ext_ret_val = make_number(retval->num_value);
+			break;
+		case AWK_NUMBER_TYPE_MPFR:
+#ifdef HAVE_MPFR
+			if (! do_mpfr)
+				fatal(_("awk_value_to_node: not in MPFR mode"));
+			ext_ret_val = make_number_node(MPFN);
+			memcpy(&ext_ret_val->mpg_numbr, retval->num_ptr, sizeof(ext_ret_val->mpg_numbr));
+			freempfr(retval->num_ptr);
+#else
+			fatal(_("awk_value_to_node: MPFR not supported"));
+#endif
+			break;
+		case AWK_NUMBER_TYPE_MPZ:
+#ifdef HAVE_MPFR
+			if (! do_mpfr)
+				fatal(_("awk_value_to_node: not in MPFR mode"));
+			ext_ret_val = make_number_node(MPZN);
+			memcpy(&ext_ret_val->mpg_i, retval->num_ptr, sizeof(ext_ret_val->mpg_i));
+			freempz(retval->num_ptr);
+#else
+			fatal(_("awk_value_to_node: MPFR not supported"));
+#endif
+			break;
+		default:
+			fatal(_("awk_value_to_node: invalid number type `%d'"), retval->num_type);
+			break;
+		}
 		break;
 	case AWK_STRING:
 		ext_ret_val = make_str_node(retval->str_value.str,
@@ -450,6 +487,34 @@ assign_string(NODE *node, awk_value_t *val, awk_valtype_t val_type)
 	val->str_value.len = node->stlen;
 }
 
+/* assign_number -- return a number node */
+
+static inline void
+assign_number(NODE *node, awk_value_t *val)
+{
+	val->val_type = AWK_NUMBER;
+	switch (node->flags & (MPFN|MPZN)) {
+	case 0:
+		val->num_value = node->numbr;
+		val->num_type = AWK_NUMBER_TYPE_DOUBLE;
+		val->num_ptr = NULL;
+		break;
+	case MPFN:
+		val->num_value = mpfr_get_d(node->mpg_numbr, ROUND_MODE);
+		val->num_type = AWK_NUMBER_TYPE_MPFR;
+		val->num_ptr = &node->mpg_numbr;
+		break;
+	case MPZN:
+		val->num_value = mpz_get_d(node->mpg_i);
+		val->num_type = AWK_NUMBER_TYPE_MPZ;
+		val->num_ptr = &node->mpg_i;
+		break;
+	default:
+		fatal(_("node_to_awk_value: detected invalid numeric flags combination `%s'; please file a bug report."), flags2str(node->flags));
+		break;
+	}
+}
+
 /* assign_regex --- return a regex node */
 
 static inline void
@@ -502,9 +567,8 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 			if (node->flags & REGEX)
 				val->val_type = AWK_REGEX;
 			else {
-				val->val_type = AWK_NUMBER;
 				(void) force_number(node);
-				val->num_value = get_number_d(node);
+				assign_number(node, val);
 				ret = awk_true;
 			}
 			break;
@@ -606,8 +670,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				ret = awk_true;
 				break;
 			case NUMBER:
-				val->val_type = AWK_NUMBER;
-				val->num_value = get_number_d(node);
+				assign_number(node, val);
 				ret = awk_true;
 				break;
 			case NUMBER|USER_INPUT:
@@ -1219,6 +1282,36 @@ api_release_value(awk_ext_id_t id, awk_value_cookie_t value)
 	return awk_true;
 }
 
+/* api_get_mpfr --- allocate an mpfr_ptr */
+
+static void *
+api_get_mpfr(awk_ext_id_t id)
+{
+#ifdef HAVE_MPFR
+	mpfr_ptr p;
+	getmpfr(p);
+	mpfr_init(p);
+	return p;
+#else
+	fatal(_("api_get_mpfr: MPFR not supported"));
+#endif
+}
+
+/* api_get_mpz --- allocate an mpz_ptr */
+
+static void *
+api_get_mpz(awk_ext_id_t id)
+{
+#ifdef HAVE_MPFR
+	mpz_ptr p;
+	getmpz(p);
+	mpz_init(p);
+	return p;
+#else
+	fatal(_("api_get_mpfr: MPFR not supported"));
+#endif
+}
+
 /* api_get_file --- return a handle to an existing or newly opened file */
 
 static awk_bool_t
@@ -1346,6 +1439,16 @@ gawk_api_t api_impl = {
 	/* data */
 	GAWK_API_MAJOR_VERSION,	/* major and minor versions */
 	GAWK_API_MINOR_VERSION,
+
+#ifdef HAVE_MPFR
+	__GNU_MP_VERSION,
+	__GNU_MP_VERSION_MINOR,
+	MPFR_VERSION_MAJOR,
+	MPFR_VERSION_MINOR,
+#else
+	0, 0, 0, 0,
+#endif
+
 	{ 0 },			/* do_flags */
 
 	/* registration functions */
@@ -1398,6 +1501,8 @@ gawk_api_t api_impl = {
 	calloc,
 	realloc,
 	free,
+	api_get_mpfr,
+	api_get_mpz,
 
 	/* Find/open a file */
 	api_get_file,

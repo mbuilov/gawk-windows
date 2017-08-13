@@ -333,16 +333,8 @@ r_dupnode(NODE *n)
 static NODE *
 r_make_number(double x)
 {
-	NODE *r;
-	getnode(r);
-	r->type = Node_val;
+	NODE *r = make_number_node(0);
 	r->numbr = x;
-	r->flags = MALLOC|NUMBER|NUMCUR;
-	r->valref = 1;
-	r->stptr = NULL;
-	r->stlen = 0;
-	r->wstptr = NULL;
-	r->wstlen = 0;
 	return r;
 }
 
@@ -1005,6 +997,10 @@ void init_btowc_cache()
 struct block_header nextfree[BLOCK_MAX] = {
 	{ NULL, sizeof(NODE) },
 	{ NULL, sizeof(BUCKET) },
+#ifdef HAVE_MPFR
+	{ NULL, sizeof(mpfr_t) },
+	{ NULL, sizeof(mpz_t) },
+#endif
 };
 
 

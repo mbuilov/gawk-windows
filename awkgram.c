@@ -4577,7 +4577,9 @@ static const struct token tokentab[] = {
 {"include",	Op_symbol,	 LEX_INCLUDE,	GAWKX,	0,	0},
 {"index",	Op_builtin,	 LEX_BUILTIN,	A(2),		do_index,	0},
 {"int",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_int,	MPF(int)},
-{"intdiv",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(3),	do_intdiv,	MPF(intdiv)},
+#ifdef SUPPLY_INTDIV
+{"intdiv0",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(3),	do_intdiv,	MPF(intdiv)},
+#endif
 {"isarray",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_isarray,	0},
 {"length",	Op_builtin,	 LEX_LENGTH,	A(0)|A(1),	do_length,	0},
 {"load",  	Op_symbol,	 LEX_LOAD,	GAWKX,		0,	0},
@@ -6892,6 +6894,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		arg = subn->nexti;
 		if (arg->nexti == arg->lasti && arg->nexti->opcode == Op_push)
 			arg->nexti->opcode = Op_push_arg_untyped;	/* argument may be untyped */
+#ifdef SUPPLY_INTDIV
 	} else if (r->builtin == do_intdiv
 #ifdef HAVE_MPFR
 		   || r->builtin == MPF(intdiv)
@@ -6901,6 +6904,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		ip = arg->lasti;
 		if (ip->opcode == Op_push)
 			ip->opcode = Op_push_array;
+#endif /* SUPPLY_INTDIV */
 	} else if (r->builtin == do_match) {
 		static bool warned = false;
 

@@ -323,6 +323,16 @@ typedef struct awk_string {
 	size_t len;	/* length thereof, in chars */
 } awk_string_t;
 
+typedef struct awk_number {
+	double d;	/* always populated in data received from gawk */
+	enum AWK_NUMBER_TYPE {
+		AWK_NUMBER_TYPE_DOUBLE,
+		AWK_NUMBER_TYPE_MPFR,
+		AWK_NUMBER_TYPE_MPZ
+	} type;
+	void *ptr;	/* either NULL or mpfr_ptr or mpz_ptr */
+} awk_number_t;
+
 /* Arrays are represented as an opaque type. */
 typedef void *awk_array_t;
 
@@ -358,7 +368,7 @@ typedef struct awk_value {
 	awk_valtype_t	val_type;
 	union {
 		awk_string_t	s;
-		double		d;
+		awk_number_t	n;
 		awk_array_t	a;
 		awk_scalar_t	scl;
 		awk_value_cookie_t vc;
@@ -366,7 +376,9 @@ typedef struct awk_value {
 #define str_value	u.s
 #define strnum_value	str_value
 #define regex_value	str_value
-#define num_value	u.d
+#define num_value	u.n.d
+#define num_type	u.n.type
+#define num_ptr		u.n.ptr
 #define array_cookie	u.a
 #define scalar_cookie	u.scl
 #define value_cookie	u.vc
@@ -451,6 +463,12 @@ typedef struct gawk_api {
 	/* These are what gawk thinks the API version is. */
 	awk_const int major_version;
 	awk_const int minor_version;
+
+	/* GMP/MPFR versions, if extended-precision is available */
+	awk_const int gmp_major_version;
+	awk_const int gmp_minor_version;
+	awk_const int mpfr_major_version;
+	awk_const int mpfr_minor_version;
 
 	/*
 	 * These can change on the fly as things happen within gawk.
@@ -749,6 +767,20 @@ typedef struct gawk_api {
 	void *(*api_realloc)(void *ptr, size_t size);
 	void (*api_free)(void *ptr);
 
+	/*
+	 * A function that returns mpfr data should call this function
+	 * to allocate and initialize an mpfr_ptr for use in an
+	 * awk_value_t structure that will be handed to gawk.
+	 */
+	void *(*api_get_mpfr)(awk_ext_id_t id);
+
+	/*
+	 * A function that returns mpz data should call this function
+	 * to allocate and initialize an mpz_ptr for use in an
+	 * awk_value_t structure that will be handed to gawk.
+	 */
+	void *(*api_get_mpz)(awk_ext_id_t id);
+
         /*
 	 * Look up a file.  If the name is NULL or name_len is 0, it returns
 	 * data for the currently open input file corresponding to FILENAME
@@ -794,7 +826,6 @@ typedef struct gawk_api {
 			 */
 			const awk_input_buf_t **ibufp,
 			const awk_output_buf_t **obufp);
-
 } gawk_api_t;
 
 #ifndef GAWK	/* these are not for the gawk code itself! */
@@ -883,6 +914,9 @@ typedef struct gawk_api {
 
 #define get_file(name, namelen, filetype, fd, ibuf, obuf) \
 	(api->api_get_file(ext_id, name, namelen, filetype, fd, ibuf, obuf))
+
+#define get_mpfr_ptr() (api->api_get_mpfr(ext_id))
+#define get_mpz_ptr() (api->api_get_mpz(ext_id))
 
 #define register_ext_version(version) \
 	(api->api_register_ext_version(ext_id, version))
@@ -980,11 +1014,39 @@ make_null_string(awk_value_t *result)
 static inline awk_value_t *
 make_number(double num, awk_value_t *result)
 {
-	memset(result, 0, sizeof(*result));
-
 	result->val_type = AWK_NUMBER;
 	result->num_value = num;
+	result->num_type = AWK_NUMBER_TYPE_DOUBLE;
+	return result;
+}
 
+/*
+ * make_number_mpz --- make an mpz number value in result.
+ * The mpz_ptr must be from a call to get_mpz_ptr. Gawk will now
+ * take ownership of this memory.
+ */
+
+static inline awk_value_t *
+make_number_mpz(void *mpz_ptr, awk_value_t *result)
+{
+	result->val_type = AWK_NUMBER;
+	result->num_type = AWK_NUMBER_TYPE_MPZ;
+	result->num_ptr = mpz_ptr;
+	return result;
+}
+
+/*
+ * make_number_mpfr --- make an mpfr number value in result.
+ * The mpfr_ptr must be from a call to get_mpfr_ptr. Gawk will now
+ * take ownership of this memory.
+ */
+
+static inline awk_value_t *
+make_number_mpfr(void *mpfr_ptr, awk_value_t *result)
+{
+	result->val_type = AWK_NUMBER;
+	result->num_type = AWK_NUMBER_TYPE_MPFR;
+	result->num_ptr = mpfr_ptr;
 	return result;
 }
 
@@ -1053,6 +1115,8 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 		exit(1); \
 	} \
 \
+	check_mpfr_version(extension); \
+\
 	/* load functions */ \
 	for (i = 0, j = sizeof(func_table) / sizeof(func_table[0]); i < j; i++) { \
 		if (func_table[i].name == NULL) \
@@ -1076,6 +1140,29 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 \
 	return (errors == 0); \
 }
+
+#if defined __GNU_MP_VERSION && defined MPFR_VERSION_MAJOR
+#define check_mpfr_version(extension) do { \
+	if (api->gmp_major_version != __GNU_MP_VERSION \
+	    || api->gmp_minor_version < __GNU_MP_VERSION_MINOR) { \
+		fprintf(stderr, #extension ": GMP version mismatch with gawk!\n"); \
+		fprintf(stderr, "\tmy version (%d, %d), gawk version (%d, %d)\n", \
+			__GNU_MP_VERSION, __GNU_MP_VERSION_MINOR, \
+			api->gmp_major_version, api->gmp_minor_version); \
+		exit(1); \
+	} \
+	if (api->mpfr_major_version != MPFR_VERSION_MAJOR \
+	    || api->mpfr_minor_version < MPFR_VERSION_MINOR) { \
+		fprintf(stderr, #extension ": MPFR version mismatch with gawk!\n"); \
+		fprintf(stderr, "\tmy version (%d, %d), gawk version (%d, %d)\n", \
+			MPFR_VERSION_MAJOR, MPFR_VERSION_MINOR, \
+			api->mpfr_major_version, api->mpfr_minor_version); \
+		exit(1); \
+	} \
+} while (0)
+#else
+#define check_mpfr_version(extension) /* nothing */
+#endif
 
 #endif /* GAWK */
 

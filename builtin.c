@@ -3971,6 +3971,7 @@ do_bindtextdomain(int nargs)
 	return make_string(the_result, strlen(the_result));
 }
 
+#ifdef SUPPLY_INTDIV
 /* do_intdiv --- do integer division, return quotient and remainder in dest array */
 
 /*
@@ -4039,6 +4040,7 @@ do_intdiv(int nargs)
 
 	return make_number((AWKNUM) 0.0);
 }
+#endif /* SUPPLY_INTDIV */
 
 /* do_typeof --- return a string with the type of the arg */
 

@@ -64,9 +64,9 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH July, 2017
-@set VERSION 4.1
-@set PATCHLEVEL 4
+@set UPDATE-MONTH August, 2017
+@set VERSION 4.2
+@set PATCHLEVEL 0
 
 @set GAWKINETTITLE TCP/IP Internetworking with @command{gawk}
 @ifset FOR_PRINT
@@ -945,6 +945,8 @@ particular records in a file and perform operations upon them.
                                         redirections.
 * Extension API Variables::             Variables provided by the API.
 * Extension Versioning::                API Version information.
+* Extension GMP/MPFR Versioning::       Version information about GMP and
+                                        MPFR.
 * Extension API Informational Variables:: Variables providing information about
                                         @command{gawk}'s invocation.
 * Extension API Boilerplate::           Boilerplate code for using the API.
@@ -17566,9 +17568,10 @@ truncated toward zero.
 For example, @code{int(3)} is 3, @code{int(3.9)} is 3, @code{int(-3.9)}
 is @minus{}3, and @code{int(-3)} is @minus{}3 as well.
 
-@item @code{intdiv(@var{numerator}, @var{denominator}, @var{result})}
-@cindexawkfunc{intdiv}
-@cindex intdiv
+@ifset INTDIV
+@item @code{intdiv0(@var{numerator}, @var{denominator}, @var{result})}
+@cindexawkfunc{intdiv0}
+@cindex intdiv0
 Perform integer division, similar to the standard C @code{div()} function.
 First, truncate @code{numerator} and @code{denominator}
 towards zero, creating integer values.  Clear the @code{result}
@@ -17586,6 +17589,7 @@ Precision Integers}).
 
 This function is a @code{gawk} extension.  It is not available in
 compatibility mode (@pxref{Options}).
+@end ifset
 
 @item @code{log(@var{x})}
 @cindexawkfunc{log}
@@ -32023,16 +32027,18 @@ gawk -M 'BEGIN @{ n = 13; print n % 2 @}'
 When dividing two arbitrary precision integers with either
 @samp{/} or @samp{%}, the result is typically an arbitrary
 precision floating point value (unless the denominator evenly
-divides into the numerator).  In order to do integer division
+divides into the numerator).
+@ifset INTDIV
+In order to do integer division
 or remainder with arbitrary precision integers, use the built-in
-@code{intdiv()} function (@pxref{Numeric Functions}).
+@code{intdiv0()} function (@pxref{Numeric Functions}).
 
-You can simulate the @code{intdiv()} function in standard @command{awk}
+You can simulate the @code{intdiv0()} function in standard @command{awk}
 using this user-defined function:
 
 @example
 @c file eg/lib/intdiv.awk
-# intdiv --- do integer division
+# intdiv0 --- do integer division
 
 @c endfile
 @ignore
@@ -32043,12 +32049,15 @@ using this user-defined function:
 #
 # Name changed from div() to intdiv()
 # April, 2015
+#
+# Changed to intdiv0()
+# April, 2016
 
 @c endfile
 
 @end ignore
 @c file eg/lib/intdiv.awk
-function intdiv(numerator, denominator, result)
+function intdiv0(numerator, denominator, result)
 @{
     split("", result)
 
@@ -32135,6 +32144,7 @@ because it's quite easy to modify for tiny memory devices with smallish
 word sizes. See
 @uref{http://www.hpmuseum.org/cgi-sys/cgiwrap/hpmuseum/articles.cgi?read=899}.
 @end quotation
+@end ifset
 
 @node Checking for MPFR
 @section How To Check If MPFR Is Available
@@ -32700,6 +32710,11 @@ a portability hodge-podge as can be seen in some parts of
 the @command{gawk} source code.
 
 @item
+If your extension uses MPFR facilities, and you wish to receive such
+values from @command{gawk} and/or pass such values to it, you must include the
+@code{<mpfr.h>} header before including @code{<gawkapi.h>}.
+
+@item
 The @file{gawkapi.h} file may be included more than once without ill effect.
 Doing so, however, is poor coding practice.
 
@@ -32837,7 +32852,7 @@ It is used in the following @code{struct}.
 @itemx @ @ @ @ awk_valtype_t   val_type;
 @itemx @ @ @ @ union @{
 @itemx @ @ @ @ @ @ @ @ awk_string_t@ @ @ @ @ @ @ s;
-@itemx @ @ @ @ @ @ @ @ double@ @ @ @ @ @ @ @ @ @ @ @ @ d;
+@itemx @ @ @ @ @ @ @ @ awknum_t@ @ @ @ @ @ @ @ @ @ @ n;
 @itemx @ @ @ @ @ @ @ @ awk_array_t@ @ @ @ @ @ @ @ a;
 @itemx @ @ @ @ @ @ @ @ awk_scalar_t@ @ @ @ @ @ @ scl;
 @itemx @ @ @ @ @ @ @ @ awk_value_cookie_t@ vc;
@@ -32850,12 +32865,36 @@ The @code{val_type} member indicates what kind of value the
 @item #define str_value@ @ @ @ @ @ u.s
 @itemx #define strnum_value@ @ @ str_value
 @itemx #define regex_value@ @ @ @ str_value
-@itemx #define num_value@ @ @ @ @ @ u.d
+@itemx #define num_value@ @ @ @ @ @ u.n.d
+@itemx #define num_type@ @ @ @ @ @ @ u.n.type
+@itemx #define num_ptr@ @ @ @ @ @ @ @ u.n.ptr
 @itemx #define array_cookie@ @ @ u.a
 @itemx #define scalar_cookie@ @ u.scl
 @itemx #define value_cookie@ @ @ u.vc
 Using these macros makes accessing the fields of the @code{awk_value_t} more
 readable.
+
+@item typedef struct awk_number @{
+@itemx @ @ @ @ double d;
+@itemx @ @ @ @ enum AWK_NUMBER_TYPE @{
+@itemx @ @ @ @ @ @ @ @ AWK_NUMBER_TYPE_DOUBLE,
+@itemx @ @ @ @ @ @ @ @ AWK_NUMBER_TYPE_MPFR,
+@itemx @ @ @ @ @ @ @ @ AWK_NUMBER_TYPE_MPZ
+@itemx @ @ @ @ @} type;
+@itemx @ @ @ @ void *ptr;
+@itemx @} awk_number_t;
+This represents a numeric value.  Internally, @command{gawk} stores
+every number as either a C @code{double}, a GMP integer, or an MPFR
+arbitrary-precision floating-point value.  In order to allow extensions
+to also support GMP and MPFR values, numeric values are passed in this
+structure.
+
+The double-precision @code{d} element is always populated
+in data received from @command{gawk}. In addition, by examining the
+@code{type} member, an extension can determine if the @code{ptr}
+member is either a GMP integer (type @code{mpz_ptr}), or an MPFR
+floating-point value (type @code{mpfr_ptr_t}), and cast it appropriately.
+
 
 @item typedef void *awk_scalar_t;
 Scalars can be represented as an opaque type. These values are obtained
@@ -33037,6 +33076,31 @@ instead of @code{gawk_malloc()}.
 The arguments are the same as for the @code{emalloc()} macro.
 @end table
 
+Two additional functions allocate MPFR and GMP objects for use
+by extension functions that need to create and then return such
+values:
+
+@table @code
+@item void *get_mpfr_ptr();
+Allocate and initialize an MPFR object and return a pointer to it.
+If the allocation fails, @command{gawk} exits with a fatal
+``out of memory'' error.  If @command{gawk} was compiled without
+MPFR support, calling this function causes a fatal error.
+
+@item void *get_mpz_ptr();
+Allocate and initialize a GMP object and return a pointer to it.
+If the allocation fails, @command{gawk} exits with a fatal
+``out of memory'' error.  If @command{gawk} was compiled without
+MPFR support, calling this function causes a fatal error.
+@end table
+
+Both of these functions return @samp{void *}, since the @file{gawkapi.h}
+header file should not have dependency upon @code{<mpfr.h>} (and @code{<gmp.h>},
+which is included from @code{<mpfr.h>}).  The actual return values are of
+types @code{mpfr_ptr} and @code{mpz_ptr} respectively, and you should cast
+the return values appropriately before assigning the results to variables
+of the correct types.
+
 @node Constructor Functions
 @subsection Constructor Functions
 
@@ -33071,6 +33135,20 @@ It returns @code{result}.
 @itemx make_number(double num, awk_value_t *result);
 This function simply creates a numeric value in the @code{awk_value_t} variable
 pointed to by @code{result}.
+
+@item static inline awk_value_t *
+@itemx make_number_mpz(void *mpz, awk_value_t *result);
+This function creates a GMP number value in @code{result}.
+The @code{mpz} must be from a call to @code{get_mpz_ptr()}
+(and thus be or real underlying type @code{mpz_ptr}).
+@command{gawk} takes ownership of this memory.
+
+@item static inline awk_value_t *
+@itemx make_number_mpfr(void *mpfr, awk_value_t *result);
+This function creates an MPFR number value in @code{result}.
+The @code{mpfr} must be from a call to @code{get_mpfr_ptr()}.
+(and thus be or real underlying type @code{mpfr_ptr})
+@command{gawk} takes ownership of this memory.
 
 @item static inline awk_value_t *
 @itemx make_const_user_input(const char *string, size_t length, awk_value_t *result);
@@ -33590,9 +33668,9 @@ the length of the field. The values in @code{fields[0]} provide the information
 for @code{$1}, and so on through the @code{fields[nf-1]} element containing the information for @code{$NF}.
 @end table
 
-A convenience macro @code{awk_fieldwidth_info_size(NF)} is provided to
+A convenience macro @code{awk_fieldwidth_info_size(numfields)} is provided to
 calculate the appropriate size of a variable-length 
-@code{awk_fieldwidth_info_t} structure containing @code{NF} fields. This can
+@code{awk_fieldwidth_info_t} structure containing @code{numfields} fields. This can
 be used as an argument to @code{malloc()} or in a union to allocate space
 statically. Please refer to the @code{readdir_test} sample extension for an
 example.
@@ -34209,7 +34287,8 @@ However, you can understand the point of cached values if you remember that
 @code{gawk_calloc()}, or @code{gawk_realloc()}.
 If you have 20 variables, all of which have the same string value, you
 must create 20 identical copies of the string.@footnote{Numeric values
-are clearly less problematic, requiring only a C @code{double} to store.}
+are clearly less problematic, requiring only a C @code{double} to store.
+But of course, GMP and MPFR values @emph{do} take up more memory.}
 
 It is clearly more efficient, if possible, to create a value once, and
 then tell @command{gawk} to reuse the value for multiple variables. That
@@ -34444,7 +34523,10 @@ The array remains an array, but after calling this function, it
 has no elements. This is equivalent to using the @code{delete}
 statement (@pxref{Delete}).
 
-@item awk_bool_t flatten_array_typed(awk_array_t a_cookie, awk_flat_array_t **data, awk_valtype_t index_type, awk_valtype_t value_type);
+@item awk_bool_t flatten_array_typed(awk_array_t a_cookie,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_flat_array_t **data,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_valtype_t index_type,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_valtype_t value_type);
 For the array represented by @code{a_cookie}, create an @code{awk_flat_array_t}
 structure and fill it in with indices and values of the requested types.
 Set the pointer whose address is passed as @code{data}
@@ -34579,7 +34661,8 @@ to double-check that the count in the @code{awk_flat_array_t}
 is the same as the count just retrieved:
 
 @example
-    if (! flatten_array_typed(value2.array_cookie, & flat_array, AWK_STRING, AWK_UNDEFINED)) @{
+    if (! flatten_array_typed(value2.array_cookie, & flat_array,
+                              AWK_STRING, AWK_UNDEFINED)) @{
         printf("dump_array_and_delete: could not flatten array\n");
         goto out;
     @}
@@ -34914,10 +34997,11 @@ A pipe opened for input.
 A two-way coprocess.
 @end table
 
-On error, return an @code{awk_false} value.  Otherwise, return
+On error, return @code{awk_false}.  Otherwise, return
 @code{awk_true}, and return additional information about the redirection
-in the @code{ibufp} and @code{obufp} pointers.  For input
-redirections, the @code{*ibufp} value should be non-@code{NULL},
+in the @code{ibufp} and @code{obufp} pointers.
+
+For input redirections, the @code{*ibufp} value should be non-@code{NULL},
 and @code{*obufp} should be @code{NULL}.  For output redirections,
 the @code{*obufp} value should be non-@code{NULL}, and @code{*ibufp}
 should be @code{NULL}.  For two-way coprocesses, both values should
@@ -34953,9 +35037,10 @@ and with which @command{gawk} was compiled).  The second provides
 information about how @command{gawk} was invoked.
 
 @menu
-* Extension Versioning::        API Version information.
+* Extension Versioning::          API Version information.
+* Extension GMP/MPFR Versioning:: Version information about GMP and MPFR.
 * Extension API Informational Variables:: Variables providing information about
-                                @command{gawk}'s invocation.
+                                  @command{gawk}'s invocation.
 @end menu
 
 @node Extension Versioning
@@ -35015,6 +35100,49 @@ if (api->major_version != GAWK_API_MAJOR_VERSION
 Such code is included in the boilerplate @code{dl_load_func()} macro
 provided in @file{gawkapi.h} (discussed in
 @ref{Extension API Boilerplate}).
+
+@node Extension GMP/MPFR Versioning
+@subsubsection GMP and MPFR Version Information
+
+The API also includes information about the versions of GMP and MPFR
+with which the running @command{gawk} was compiled (if any).
+They are included in the API @code{struct} as read-only
+constant integers:
+
+@table @code
+@item api->gmp_major_version
+The major version of the GMP library used to compile @command{gawk}.
+
+@item api->gmp_minor_version
+The minor version of the GMP library used to compile @command{gawk}.
+
+@item api->mpfr_major_version
+The major version of the MPFR library used to compile @command{gawk}.
+
+@item api->mpfr_minor_version
+The minor version of the MPFR library used to compile @command{gawk}.
+@end table
+
+These fields are set to zero if @command{gawk} was compiled without
+MPFR support.
+
+You can check if the versions of MPFR and GMP that you are using match those
+of @command{gawk} with the following macro:
+
+@table @code
+@item check_mpfr_version(extension)
+The @code{extension} is the extension id passed to all the other macros
+and functions defined in @file{gawkapi.h}.  If you have not included
+the @code{<mpfr.h>} header file, then this macro will be defined to do nothing.
+
+If you have included that file, then this macro compares the MPFR
+and GMP major and minor versions against those of the library you are
+compiling against.  If your libraries are newer than @command{gawk}'s, it
+produces a fatal error message.
+
+The @code{dl_load_func()} macro (@pxref{Extension API Boilerplate})
+calls @code{check_mpfr_version()}.
+@end table
 
 @node Extension API Informational Variables
 @subsubsection Informational Variables
@@ -35153,6 +35281,10 @@ macro) do all the standard work. It does the following:
 Check the API versions. If the extension major version does not match
 @command{gawk}'s, or if the extension minor version is greater than
 @command{gawk}'s, it prints a fatal error message and exits.
+
+@item
+Check the MPFR and GMP versions. If there is a mismatch, it prints
+a fatal error message and exits.
 
 @item
 Load the functions defined in @code{func_table}.
@@ -37275,10 +37407,12 @@ The @code{bindtextdomain()}, @code{dcgettext()}, and @code{dcngettext()}
 functions for internationalization
 (@pxref{Programmer i18n})
 
+@ifset INTDIV
 @item
-The @code{intdiv()} function for doing integer
+The @code{intdiv0()} function for doing integer
 division and remainder
 (@pxref{Numeric Functions})
+@end ifset
 @end itemize
 
 @item
@@ -38074,9 +38208,11 @@ The @command{igawk} program and its manual page are no longer
 installed when @command{gawk} is built.
 @xref{Igawk Program}.
 
+@ifset INTDIV
 @item
-The @code{intdiv()} function.
+The @code{intdiv0()} function.
 @xref{Numeric Functions}.
+@end ifset
 
 @item
 The maximum number of hexadecimal digits in @samp{\x} escapes

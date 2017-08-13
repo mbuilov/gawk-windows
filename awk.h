@@ -1066,6 +1066,8 @@ struct block_header {
 enum block_id {
 	BLOCK_NODE = 0,
 	BLOCK_BUCKET,
+	BLOCK_MPFR,
+	BLOCK_MPZ,
 	BLOCK_MAX	/* count */
 };
 
@@ -1989,6 +1991,19 @@ erealloc_real(void *ptr, size_t count, const char *where, const char *var, const
 	return ret;
 }
 
+/* make_number_node --- make node with the given flags */
+
+static inline NODE *
+make_number_node(unsigned int flags)
+{
+	NODE *r;
+	getnode(r);
+	memset(r, 0, sizeof(*r));
+	r->type = Node_val;
+	r->valref = 1;
+	r->flags = (flags|MALLOC|NUMBER|NUMCUR);
+	return r;
+}
 
 /*
  * str_terminate_f, str_terminate, str_restore: function and macros to

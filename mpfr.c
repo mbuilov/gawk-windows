@@ -103,28 +103,16 @@ cleanup_mpfr(void)
 /* mpg_node --- allocate a node to store MPFR float or GMP integer */
 
 NODE *
-mpg_node(unsigned int tp)
+mpg_node(unsigned int flags)
 {
-	NODE *r;
-	getnode(r);
-	r->type = Node_val;
+	NODE *r = make_number_node(flags);
 
-	if (tp == MPFN) {
+	if (flags == MPFN)
 		/* Initialize, set precision to the default precision, and value to NaN */
 		mpfr_init(r->mpg_numbr);
-		r->flags = MPFN;
-	} else {
+	else
 		/* Initialize and set value to 0 */
 		mpz_init(r->mpg_i);
-		r->flags = MPZN;
-	}
-
-	r->valref = 1;
-	r->flags |= MALLOC|NUMBER|NUMCUR;
-	r->stptr = NULL;
-	r->stlen = 0;
-	r->wstptr = NULL;
-	r->wstlen = 0;
 	return r;
 }
 
@@ -1181,6 +1169,7 @@ do_mpfr_srand(int nargs)
 	return res;
 }
 
+#ifdef SUPPLY_INTDIV
 /* do_mpfr_intdiv --- do integer division, return quotient and remainder in dest array */
 
 /*
@@ -1274,6 +1263,7 @@ do_mpfr_intdiv(int nargs)
 
 	return make_number((AWKNUM) 0.0);
 }
+#endif /* SUPPLY_INTDIV */
 
 /*
  * mpg_tofloat --- convert an arbitrary-precision integer operand to

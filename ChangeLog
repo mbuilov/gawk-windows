@@ -1,3 +1,16 @@
+2017-08-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h (gawk_api_major_version): Reset to 2 after merging
+	in feature/api-mpfr branch.
+	* NEWS: `intdiv' is not built-in; remove the entry for up and update
+	numbering. Add note about API supporting GMP and MPFR values.
+
+2017-08-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h (check_mpfr_versions): Define differently based on if
+	MPFR version macro is defined. Enhance body to use do/while(0).
+	(dl_load): Call check_mpfr_versions unconditionally.
+
 2017-08-09         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* main.c (usage): Add URL for Bug reporting info to the help message.
@@ -78,6 +91,10 @@
 2017-07-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkapi.h, gawkapi.c: Typo fixes in comments.
+
+2017-06-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Turn a tab into a space in AC_DEFINE(SUPPLY_INTDIV).
 
 2017-06-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
@@ -217,10 +234,26 @@
 
 2017-04-16         Arnold D. Robbins     <arnold@skeeve.com>
 
+	Rename intdiv it intdiv0 and require enabling at configure time.
+
+	* awkgram.y (tokentab): Bracket intdiv0 in #ifdef SUPPLY_INTDIV.
+	(snode): Similar.
+	* builtin.c (do_intdiv): Bracket in #ifdef SUPPLY_INTDIV.
+	* mpfr.c (do_mpfr_intdiv): Bracket in #ifdef SUPPLY_INTDIV.
+	* configure.ac: Add --enable-builtin-intdiv0 option. If enabled,
+	also revise doc/gawktexi.in.
+
+2017-04-16         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* builtin.c (do_intdiv): Use DEREF on the arguments.
 	Thanks to Andrew Schorr for finding the problem.
 	* mpfr.c (do_mpfr_intdiv): Return -1 if numerator or denominator
 	are not valid numbers.  Unref various bits first.
+
+2017-04-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (make_number_node): Simplify.
+	* mpfr.c (mpg_node): Change parameter name to `flags'.
 
 2017-04-12         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -229,6 +262,9 @@
 
 	* builtin.c (do_dcgettext): Move declaration of reslen to
 	outside the ifdefs. Thanks to Hermann Peifer for the report.
+
+	* gawkapi.c (awk_value_to_node): Initialize ext_ret_val to NULL
+	to avoid compiler warnings.
 
 2017-04-12         Manuel Collado        <m-collado@users.sourceforge.net>
 
@@ -707,6 +743,47 @@
 	on Cygwin mailing list. The string concatenation optimization was
 	not updating the node correctly by setting STRING and STRCUR flags
 	and setting stfmt.
+
+2017-01-06         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Enhance API to support extended-precision arithmetic.
+	* awk.h (enum block_id): Add new values BLOCK_MPFR and BLOCK_MPZ.
+	(make_number_node): New inline function to reduce code duplication
+	for creating numeric nodes.
+	* gawkapi.h (gawk_api_major_version): Bump to 3.
+	(awk_number_t): New typedef to represent numbers with varying internal
+	representations.
+	(awk_value_t): For numbers, replace double with awk_number_t.
+	(num_value): Redefine.
+	(num_type, num_ptr): New defines for awk_number_t union members.
+	(gawk_api_t): Add constants for version checking: gmp_major_version,
+	gmp_minor_version, mpfr_major_version, and mpfr_minor_version.
+	Add functions api_get_mpfr and api_get_mpz to allocate memory for
+	extended-precision numbers to hand to gawk.
+	(get_mpfr_ptr, get_mpz_ptr): Helper macros to wrap api_get_mpfr and
+	api_get_mpz.
+	(make_number): Modify to populate awk_number_t correctly.
+	(make_number_mpz, make_number_mpfr): New helper functions to create
+	extended-precision numeric nodes.
+	(check_mpfr_version): New macro to check GMP/MPFR version compatibility
+	in extensions that want to support extended-precision math.
+	* gawkapi.c (getmpfr, freempfr, getmpz, freempz): New macros to
+	allocate and free memory blocks for extended-precision math.
+	(awk_value_to_node): For AWK_NUMBER values, support three different
+	kinds of internal numbers: double, mpz_t, and mpfr_t.
+	(assign_number): New helper function to convert a numeric node to
+	an awk_value_t.
+	(node_to_awk_value): Use assign_number to pass numbers properly.
+	(api_get_mpfr): Implement new api_get_mpfr hook.
+	(api_get_mpfz): Implement new api_get_mpz hook.
+	(api_impl): Add GMP & MPFR versions, api_get_mpfr, and api_get_mpz.
+	* node.c (r_make_number): Use new make_number_node inline function
+	to reduce code duplication.
+	(nextfree): Add block allocators for mpfr_t and mpz_t.
+	(more_blocks): Add an assert to protect against cases where the block
+	size is too small to hold our structure.
+	* mpfr.c (mpg_node): Use new make_number_node inline function
+	to reduce code duplication.
 
 2017-01-04         Arnold Robbins        <arnold@skeeve.com>
 

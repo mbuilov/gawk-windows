@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk],[4.1.61],[bug-gawk@gnu.org],[gawk])
+AC_INIT([GNU Awk],[4.1.62],[bug-gawk@gnu.org],[gawk])
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -65,6 +65,17 @@ AC_ARG_ENABLE([severe-portability-problems],
 	if test "$enableval" = yes
 	then
 		AC_DEFINE(I_DONT_KNOW_WHAT_IM_DOING, 1, [enable severe portability problems])
+	fi
+)
+AC_ARG_ENABLE([builtin-intdiv0],
+	[AS_HELP_STRING([--enable-builtin-intdiv0],[enable built-in intdiv0 function])],
+	if test "$enableval" = yes
+	then
+		AC_DEFINE(SUPPLY_INTDIV, 1, [enable built-in intdiv0 function])
+		sed '/^@set PATCHLEVEL/a\
+@set INTDIV' < "$srcdir"/doc/gawktexi.in > foo
+		cp foo "$srcdir"/doc/gawktexi.in
+		rm foo
 	fi
 )
 
