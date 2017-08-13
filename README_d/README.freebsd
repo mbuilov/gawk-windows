@@ -1,0 +1,17 @@
+Sun Aug 13 21:23:00 IDT 2017
+============================
+
+According to a report from Eric Pruitt <eric.pruitt@gmail.com>:
+
+| When running ./configure for GAWK 4.1.4, the mktime(3) function is not
+| detected on FreeBSD 11 when using -static with CFLAGS and LDFLAGS. This
+| causes the build to fail.
+
+Paul Eggert says that using:
+
+	./configure ac_cv_func_working_mktime=yes
+
+will cause gawk to use the FreeBSD mktime.
+
+Arnold Robbins
+arnold@skeeve.com
