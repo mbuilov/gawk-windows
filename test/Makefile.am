@@ -111,6 +111,8 @@ EXTRA_DIST = \
 	aryprm9.ok \
 	arysubnm.awk \
 	arysubnm.ok \
+	aryunasgn.awk \
+	aryunasgn.ok \
 	asgext.awk \
 	asgext.in \
 	asgext.ok \
@@ -2410,9 +2412,8 @@ ignrcas3::
 
 arrdbg:
 	@echo $@
-	@$(AWK) -v "okfile=$(srcdir)/$@.ok" -f "$(srcdir)"/$@.awk | grep array_f >_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ "$(srcdir)"/$@.ok
-#	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ "$(srcdir)"/$@.ok || exit 0
+	@$(AWK) -v "okfile=./$@.ok" -f "$(srcdir)"/$@.awk | grep array_f >_$@
+	@-$(CMP) ./$@.ok _$@ && rm -f _$@ ./$@.ok
 
 fwtest3:
 	@echo $@
