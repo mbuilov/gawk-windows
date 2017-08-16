@@ -489,15 +489,22 @@ assign_string(NODE *node, awk_value_t *val, awk_valtype_t val_type)
 
 /* assign_number -- return a number node */
 
+#define assign_double(val) \
+	val->num_value = node->numbr; \
+	val->num_type = AWK_NUMBER_TYPE_DOUBLE; \
+	val->num_ptr = NULL
+
 static inline void
 assign_number(NODE *node, awk_value_t *val)
 {
 	val->val_type = AWK_NUMBER;
+
+#ifndef HAVE_MPFR
+	assign_double(val);
+#else
 	switch (node->flags & (MPFN|MPZN)) {
 	case 0:
-		val->num_value = node->numbr;
-		val->num_type = AWK_NUMBER_TYPE_DOUBLE;
-		val->num_ptr = NULL;
+		assign_double(val);
 		break;
 	case MPFN:
 		val->num_value = mpfr_get_d(node->mpg_numbr, ROUND_MODE);
@@ -513,7 +520,9 @@ assign_number(NODE *node, awk_value_t *val)
 		fatal(_("node_to_awk_value: detected invalid numeric flags combination `%s'; please file a bug report."), flags2str(node->flags));
 		break;
 	}
+#endif
 }
+#undef assign_double
 
 /* assign_regex --- return a regex node */
 
@@ -1294,6 +1303,7 @@ api_get_mpfr(awk_ext_id_t id)
 	return p;
 #else
 	fatal(_("api_get_mpfr: MPFR not supported"));
+	return NULL;	// silence compiler warning
 #endif
 }
 
@@ -1309,6 +1319,7 @@ api_get_mpz(awk_ext_id_t id)
 	return p;
 #else
 	fatal(_("api_get_mpfr: MPFR not supported"));
+	return NULL;	// silence compiler warning
 #endif
 }
 

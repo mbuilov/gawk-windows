@@ -1,3 +1,19 @@
+2017-08-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.c (assign_number): Clean up the code a bit.
+	(api_get_mpfr, api_get_mpz): Add return NULL in non-MPFR case
+	to avoid compiler warnings.
+
+2017-08-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* config.guess: Update from GNULIB.
+	* NEWS, README: Updated in preparation for release.
+
+2017-08-16         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (assign_number): Add 'ifdef HAVE_MPFR' tests to get this
+	to build in the absence of MPFR.
+
 2017-08-13         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkapi.h (gawk_api_major_version): Reset to 2 after merging

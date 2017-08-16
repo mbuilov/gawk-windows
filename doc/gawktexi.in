@@ -36600,7 +36600,9 @@ I've tried to follow this general order, esp.@: for the 3.0 and 3.1 sections:
        new keywords
        new command-line options
        behavioral changes
-       new ports
+       extension API changes
+       new / deprecated / removed ports
+       installation time stuff
 Within each category, be alphabetical.
 @end ignore
 
@@ -37112,10 +37114,10 @@ Cray
 MIPS RiscOS
 
 @item
-MS-DOS with Microsoft Compiler
+MS-DOS with the Microsoft Compiler
 
 @item
-MS-Windows with Microsoft Compiler
+MS-Windows with the Microsoft Compiler
 
 @item
 NeXT
@@ -37200,7 +37202,7 @@ Support for Ultrix was removed.
 
 @end itemize
 
-Version 4.2 introduced the following changes:
+Version 4.2 of @command{gawk} introduced the following changes:
 
 @itemize @bullet
 @item
@@ -37209,18 +37211,26 @@ environment and that of programs that it runs.
 @xref{Auto-set}.
 
 @item
-The @code{PROCINFO["argv"} array.
+@code{FIELDWIDTHS} was enhanced to allow skipping characters
+before assigning a value to a field
+(@pxref{Splitting By Content}).
+
+@item
+The @code{PROCINFO["argv"]} array.
 @xref{Auto-set}.
 
 @item
-The @option{--pretty-print} option no longer runs the @command{awk}
-program too.
-@xref{Options}.
+The maximum number of hexadecimal digits in @samp{\x} escapes
+is now two.
+@xref{Escape Sequences}.
 
 @item
-The @command{igawk} program and its manual page are no longer
-installed when @command{gawk} is built.
-@xref{Igawk Program}.
+Strongly typed regexp constants of the form @samp{@@/@dots{}/}
+(@pxref{Strong Regexp Constants}).
+
+@item
+The bitwise functions changed, making negative arguments into
+a fatal error (@pxref{Bitwise Functions}).
 
 @ifset INTDIV
 @item
@@ -37229,13 +37239,16 @@ The @code{intdiv0()} function.
 @end ifset
 
 @item
-The maximum number of hexadecimal digits in @samp{\x} escapes
-is now two.
-@xref{Escape Sequences}.
+The @code{mktime()} function now accepts an optional
+second argument
+(@pxref{Time Functions}).
 
 @item
-Nonfatal output with @code{print} and @code{printf}.
-@xref{Nonfatal}.
+The @code{typeof()} function (@pxref{Type Functions}).
+
+@item
+Optimizations are enabled by default. Use @option{-s} /
+@option{--no-optimize} to disable optimizations.
 
 @item
 For many years, POSIX specified that default field splitting
@@ -37246,10 +37259,66 @@ field splitting with @option{--posix} also allows newlines to
 separate fields.
 
 @item
+Nonfatal output with @code{print} and @code{printf}.
+@xref{Nonfatal}.
+
+@item
+Retryable I/O via @code{PROCINFO[@var{input-file}, "RETRY"]};
+(@pxref{Retrying Input}).
+
+@item
+Changes to the pretty-printer (@pxref{Profiling}):
+
+@c nested table
+@itemize @value{MINUS}
+@item
+The @option{--pretty-print} option no longer runs the @command{awk}
+program too.
+
+@item
+Comments in the source program are preserved and placed into the
+output file.
+
+@item
+Explicit parentheses for expressions
+in the input are preserved in the generated output.
+@end itemize
+
+@item
+Improvements to the extension API
+(@pxref{Dynamic Extensions}):
+
+@c nested
+@itemize @value{MINUS}
+@item
+The @code{get_file()} function to access open redirections.
+
+@item
+The @code{nonfatal()} function for generating nonfatal error messages.
+
+@item
+Support for GMP and MPFR values.
+
+@item
+Input parsers can now override the default field parsing mechanism
+by specifying explicit locations.
+@end itemize
+
+@item
 Support for MirBSD was removed.
 
 @item
 Support for GNU/Linux on Alpha was removed.
+
+@item
+Shell startup files are supplied with the distribution and
+installed by @samp{make install} (@pxref{Shell Startup Files}).
+
+@item
+The @command{igawk} program and its manual page are no longer
+installed when @command{gawk} is built.
+@xref{Igawk Program}.
+
 @end itemize
 
 @c XXX ADD MORE STUFF HERE

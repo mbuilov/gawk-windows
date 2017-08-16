@@ -28034,9 +28034,9 @@ POSIX 'awk', in the order they were added to 'gawk'.
 
         - MIPS RiscOS
 
-        - MS-DOS with Microsoft Compiler
+        - MS-DOS with the Microsoft Compiler
 
-        - MS-Windows with Microsoft Compiler
+        - MS-Windows with the Microsoft Compiler
 
         - NeXT
 
@@ -28090,23 +28090,32 @@ POSIX 'awk', in the order they were added to 'gawk'.
 
    * Support for Ultrix was removed.
 
-   Version 4.2 introduced the following changes:
+   Version 4.2 of 'gawk' introduced the following changes:
 
    * Changes to 'ENVIRON' are reflected into 'gawk''s environment and
      that of programs that it runs.  *Note Auto-set::.
 
-   * The 'PROCINFO["argv"' array.  *Note Auto-set::.
+   * 'FIELDWIDTHS' was enhanced to allow skipping characters before
+     assigning a value to a field (*note Splitting By Content::).
 
-   * The '--pretty-print' option no longer runs the 'awk' program too.
-     *Note Options::.
-
-   * The 'igawk' program and its manual page are no longer installed
-     when 'gawk' is built.  *Note Igawk Program::.
+   * The 'PROCINFO["argv"]' array.  *Note Auto-set::.
 
    * The maximum number of hexadecimal digits in '\x' escapes is now
      two.  *Note Escape Sequences::.
 
-   * Nonfatal output with 'print' and 'printf'.  *Note Nonfatal::.
+   * Strongly typed regexp constants of the form '@/.../' (*note Strong
+     Regexp Constants::).
+
+   * The bitwise functions changed, making negative arguments into a
+     fatal error (*note Bitwise Functions::).
+
+   * The 'mktime()' function now accepts an optional second argument
+     (*note Time Functions::).
+
+   * The 'typeof()' function (*note Type Functions::).
+
+   * Optimizations are enabled by default.  Use '-s' / '--no-optimize'
+     to disable optimizations.
 
    * For many years, POSIX specified that default field splitting only
      allowed spaces and tabs to separate fields, and this was how 'gawk'
@@ -28114,9 +28123,43 @@ POSIX 'awk', in the order they were added to 'gawk'.
      historical behavior, and now default field splitting with '--posix'
      also allows newlines to separate fields.
 
+   * Nonfatal output with 'print' and 'printf'.  *Note Nonfatal::.
+
+   * Retryable I/O via 'PROCINFO[INPUT-FILE, "RETRY"]'; (*note Retrying
+     Input::).
+
+   * Changes to the pretty-printer (*note Profiling::):
+
+        - The '--pretty-print' option no longer runs the 'awk' program
+          too.
+
+        - Comments in the source program are preserved and placed into
+          the output file.
+
+        - Explicit parentheses for expressions in the input are
+          preserved in the generated output.
+
+   * Improvements to the extension API (*note Dynamic Extensions::):
+
+        - The 'get_file()' function to access open redirections.
+
+        - The 'nonfatal()' function for generating nonfatal error
+          messages.
+
+        - Support for GMP and MPFR values.
+
+        - Input parsers can now override the default field parsing
+          mechanism by specifying explicit locations.
+
    * Support for MirBSD was removed.
 
    * Support for GNU/Linux on Alpha was removed.
+
+   * Shell startup files are supplied with the distribution and
+     installed by 'make install' (*note Shell Startup Files::).
+
+   * The 'igawk' program and its manual page are no longer installed
+     when 'gawk' is built.  *Note Igawk Program::.
 
 
 File: gawk.info,  Node: Common Extensions,  Next: Ranges and Locales,  Prev: Feature History,  Up: Language History
@@ -36304,74 +36347,74 @@ Node: POSIX1113185
 Node: BTL1114564
 Node: POSIX/GNU1115293
 Node: Feature History1121071
-Node: Common Extensions1135436
-Node: Ranges and Locales1136719
-Ref: Ranges and Locales-Footnote-11141335
-Ref: Ranges and Locales-Footnote-21141362
-Ref: Ranges and Locales-Footnote-31141597
-Node: Contributors1141818
-Node: History summary1147446
-Node: Installation1148826
-Node: Gawk Distribution1149770
-Node: Getting1150254
-Node: Extracting1151215
-Node: Distribution contents1152853
-Node: Unix Installation1159195
-Node: Quick Installation1159877
-Node: Shell Startup Files1162291
-Node: Additional Configuration Options1163380
-Node: Configuration Philosophy1165369
-Node: Non-Unix Installation1167738
-Node: PC Installation1168198
-Node: PC Binary Installation1169036
-Node: PC Compiling1169471
-Node: PC Using1170588
-Node: Cygwin1173633
-Node: MSYS1174403
-Node: VMS Installation1174904
-Node: VMS Compilation1175695
-Ref: VMS Compilation-Footnote-11176924
-Node: VMS Dynamic Extensions1176982
-Node: VMS Installation Details1178667
-Node: VMS Running1180920
-Node: VMS GNV1185199
-Node: VMS Old Gawk1185934
-Node: Bugs1186405
-Node: Bug address1187068
-Node: Usenet1189465
-Node: Maintainers1190242
-Node: Other Versions1191503
-Node: Installation summary1198087
-Node: Notes1199122
-Node: Compatibility Mode1199987
-Node: Additions1200769
-Node: Accessing The Source1201694
-Node: Adding Code1203129
-Node: New Ports1209347
-Node: Derived Files1213835
-Ref: Derived Files-Footnote-11219320
-Ref: Derived Files-Footnote-21219355
-Ref: Derived Files-Footnote-31219953
-Node: Future Extensions1220067
-Node: Implementation Limitations1220725
-Node: Extension Design1221908
-Node: Old Extension Problems1223062
-Ref: Old Extension Problems-Footnote-11224580
-Node: Extension New Mechanism Goals1224637
-Ref: Extension New Mechanism Goals-Footnote-11228001
-Node: Extension Other Design Decisions1228190
-Node: Extension Future Growth1230303
-Node: Old Extension Mechanism1231139
-Node: Notes summary1232902
-Node: Basic Concepts1234084
-Node: Basic High Level1234765
-Ref: figure-general-flow1235047
-Ref: figure-process-flow1235732
-Ref: Basic High Level-Footnote-11239033
-Node: Basic Data Typing1239218
-Node: Glossary1242546
-Node: Copying1274493
-Node: GNU Free Documentation License1312032
-Node: Index1337150
+Node: Common Extensions1136930
+Node: Ranges and Locales1138213
+Ref: Ranges and Locales-Footnote-11142829
+Ref: Ranges and Locales-Footnote-21142856
+Ref: Ranges and Locales-Footnote-31143091
+Node: Contributors1143312
+Node: History summary1148940
+Node: Installation1150320
+Node: Gawk Distribution1151264
+Node: Getting1151748
+Node: Extracting1152709
+Node: Distribution contents1154347
+Node: Unix Installation1160689
+Node: Quick Installation1161371
+Node: Shell Startup Files1163785
+Node: Additional Configuration Options1164874
+Node: Configuration Philosophy1166863
+Node: Non-Unix Installation1169232
+Node: PC Installation1169692
+Node: PC Binary Installation1170530
+Node: PC Compiling1170965
+Node: PC Using1172082
+Node: Cygwin1175127
+Node: MSYS1175897
+Node: VMS Installation1176398
+Node: VMS Compilation1177189
+Ref: VMS Compilation-Footnote-11178418
+Node: VMS Dynamic Extensions1178476
+Node: VMS Installation Details1180161
+Node: VMS Running1182414
+Node: VMS GNV1186693
+Node: VMS Old Gawk1187428
+Node: Bugs1187899
+Node: Bug address1188562
+Node: Usenet1190959
+Node: Maintainers1191736
+Node: Other Versions1192997
+Node: Installation summary1199581
+Node: Notes1200616
+Node: Compatibility Mode1201481
+Node: Additions1202263
+Node: Accessing The Source1203188
+Node: Adding Code1204623
+Node: New Ports1210841
+Node: Derived Files1215329
+Ref: Derived Files-Footnote-11220814
+Ref: Derived Files-Footnote-21220849
+Ref: Derived Files-Footnote-31221447
+Node: Future Extensions1221561
+Node: Implementation Limitations1222219
+Node: Extension Design1223402
+Node: Old Extension Problems1224556
+Ref: Old Extension Problems-Footnote-11226074
+Node: Extension New Mechanism Goals1226131
+Ref: Extension New Mechanism Goals-Footnote-11229495
+Node: Extension Other Design Decisions1229684
+Node: Extension Future Growth1231797
+Node: Old Extension Mechanism1232633
+Node: Notes summary1234396
+Node: Basic Concepts1235578
+Node: Basic High Level1236259
+Ref: figure-general-flow1236541
+Ref: figure-process-flow1237226
+Ref: Basic High Level-Footnote-11240527
+Node: Basic Data Typing1240712
+Node: Glossary1244040
+Node: Copying1275987
+Node: GNU Free Documentation License1313526
+Node: Index1338644
 
 End Tag Table
