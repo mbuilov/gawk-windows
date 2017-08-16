@@ -493,11 +493,14 @@ static inline void
 assign_number(NODE *node, awk_value_t *val)
 {
 	val->val_type = AWK_NUMBER;
+#ifdef HAVE_MPFR
 	switch (node->flags & (MPFN|MPZN)) {
 	case 0:
+#endif
 		val->num_value = node->numbr;
 		val->num_type = AWK_NUMBER_TYPE_DOUBLE;
 		val->num_ptr = NULL;
+#ifdef HAVE_MPFR
 		break;
 	case MPFN:
 		val->num_value = mpfr_get_d(node->mpg_numbr, ROUND_MODE);
@@ -513,6 +516,7 @@ assign_number(NODE *node, awk_value_t *val)
 		fatal(_("node_to_awk_value: detected invalid numeric flags combination `%s'; please file a bug report."), flags2str(node->flags));
 		break;
 	}
+#endif
 }
 
 /* assign_regex --- return a regex node */
