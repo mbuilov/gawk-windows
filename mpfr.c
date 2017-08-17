@@ -819,7 +819,7 @@ do_mpfr_compl(int nargs)
 		zptr = tmp->mpg_i;
 		if (mpz_sgn(zptr) < 0)
 				fatal("%s",
-			mpg_fmt(_("compl(%Zd): negative values is not allowed"), zptr)
+			mpg_fmt(_("compl(%Zd): negative values are not allowed"), zptr)
 					);
 	}
 
