@@ -217,20 +217,16 @@ rebuild_record()
 			*n = *r;
 			if (r->valref > 1) {
 				/*
-				 * This probably never happens, since it
-				 * was not considered by previous versions of
-				 * this function. But it seems clear that
+				 * This can and does happen.  It seems clear that
 				 * we can't leave r's stptr pointing into the
 				 * old $0 buffer that we are about to unref.
-				 * It's not a priori obvious that valref must be
-				 * 1 in all cases, so it seems wise to suppport
-				 * this corner case. The only question is
-				 * whether to add a warning message.
 				 */
 				emalloc(r->stptr, char *, r->stlen + 1, "rebuild_record");
 				memcpy(r->stptr, cops, r->stlen);
 				r->stptr[r->stlen] = '\0';
 				r->flags |= MALLOC;
+
+				n->valref = 1;	// reset in the new field to start it off correctly!
 			}
 
 			n->stptr = cops;
