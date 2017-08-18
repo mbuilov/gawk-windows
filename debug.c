@@ -1255,7 +1255,7 @@ do_set_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 
 			if (count == 1) {
 				if (value != NULL && value->type == Node_var_array)
-					d_error(_("attempt to use array `%s[\".*%s\"]' in a scalar context"),
+					d_error(_("attempt to use array `%s[\"%.*s\"]' in a scalar context"),
 								name, (int) subs->stlen, subs->stptr);
 				else {
 					arg = arg->next;
@@ -1277,7 +1277,7 @@ do_set_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 					*lhs = array;
 					r = array;
 				} else if (value->type != Node_var_array) {
-					d_error(_("attempt to use scalar `%s[\".*%s\"]' as array"),
+					d_error(_("attempt to use scalar `%s[\"%.*s\"]' as array"),
 							name, (int) subs->stlen, subs->stptr);
 					break;
 				} else {
