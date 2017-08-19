@@ -23,19 +23,30 @@ pkglibdir = $(libdir)/gawk-extensions
 pkglibexecdir = $(libexecdir)/gawk-extensions
 
 SOEXT = dll
+
+MPFR = -DHAVE_MPFR
+MPFR_LIBS = -lmpfr -lgmp
+
 SIMPLE_EXTENSIONS = inplace.$(SOEXT) ordchr.$(SOEXT) readfile.$(SOEXT)\
  revoutput.$(SOEXT) revtwoway.$(SOEXT) testext.$(SOEXT)
 ALL_EXTENSIONS = filefuncs.$(SOEXT) fnmatch.$(SOEXT) inplace.$(SOEXT)\
- ordchr.$(SOEXT) readdir.$(SOEXT) readfile.$(SOEXT) revoutput.$(SOEXT)\
- revtwoway.$(SOEXT) rwarray.$(SOEXT) testext.$(SOEXT) time.$(SOEXT)
+ intdiv.$(SOEXT) ordchr.$(SOEXT) readdir.$(SOEXT) readfile.$(SOEXT) \
+ revoutput.$(SOEXT) readdir_test.$(SOEXT) revtwoway.$(SOEXT) rwarray.$(SOEXT) \
+ testext.$(SOEXT) time.$(SOEXT)
 
 extensions: $(ALL_EXTENSIONS)
 
 fnmatch.$(SOEXT): fnmatch.c
 	gcc -I.. -I../missing_d -DHAVE_FNMATCH_H -shared -gdwarf-2 -g3 -static-libgcc -o $@ fnmatch.c
 
+intdiv.$(SOEXT): intdiv.c
+	gcc -I.. $(MPFR) -shared -gdwarf-2 -g3 -static-libgcc -o $@ intdiv.c $(MPFR_LIBS)
+
 readdir.$(SOEXT): readdir.c gawkdirfd.h
 	gcc -I.. -DHAVE_DIRENT_H -shared -gdwarf-2 -g3 -static-libgcc -o $@ readdir.c
+
+readdir_test.$(SOEXT): readdir.c gawkdirfd.h
+	gcc -I.. -DHAVE_DIRENT_H -shared -gdwarf-2 -g3 -static-libgcc -o $@ readdir_test.c
 
 rwarray.$(SOEXT): rwarray.c
 	gcc -I.. -shared -gdwarf-2 -g3 -static-libgcc -o $@ rwarray.c -lws2_32
