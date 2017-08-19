@@ -69,7 +69,8 @@ AWKPROG = ../gawk.exe
 # index numbers, because this is what the readdir test expects.
 # Otherwise, the readdir test will fail.  (The MSYS ls.exe doesn't
 # report full index values.)
-LS = ls.exe
+#LS = ls.exe
+LS = /d/usr/bin/ls.exe
 
 # Define PGAWK
 PGAWK = ../gawk.exe -p
@@ -118,7 +119,13 @@ MKDIR = mkdir
 DATE = gdate
 
 # MS-DOS and OS/2 use ; as a PATH delimiter
-PATH_SEPARATOR = ;
+PATH_SEPARATOR = :
+
+# Argument to -F to produce -F/, should be // for MinGW, / otherwise,
+# because MSYS Bash converts a single slash to the equivalent Windows
+# directory.
+#SLASH = /
+SLASH = //
 
 # Non-default GREP_OPTIONS might fail the badargs test
 export GREP_OPTIONS=
@@ -858,7 +865,7 @@ mbprintf4::
 mbprintf5::
 	@echo $@
 	@case `uname` in \
-	CYGWIN*) echo this test fails on cygwin --- skipping $@ ;; \
+	CYGWIN* | MINGW32*) echo this test fails on this system --- skipping $@ ;; \
 	*) \
 	GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@ ; \
@@ -942,13 +949,11 @@ profile3:
 
 profile4:
 	@echo $@
-	@echo Expect profile4 to fail with MinGW
 	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile5:
 	@echo $@
-	@echo Expect profile5 to abort with MinGW
 	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
 #	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 	@-$(TESTOUTCMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -967,7 +972,6 @@ profile7:
 
 profile8:
 	@echo $@
-	@echo Expect profile8 to fail with MinGW
 	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1166,6 +1170,7 @@ testext::
 
 getfile:
 	@echo $@
+	@echo Expect getfile to fail with MinGW.
 	@AWKPATH="$(srcdir)" $(AWK) -v TESTEXT_QUIET=1 -ltestext -f $@.awk < $(srcdir)/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1187,7 +1192,7 @@ readdir:
 
 readdir_test:
 	@echo $@
-	@$(AWK) -lreaddir -F/ '{printf "[%s] [%s] [%s] [%s]\n", $$1, $$2, $$3, $$4}' "$(top_srcdir)" > $@.ok
+	@$(AWK) -lreaddir -F$(SLASH) '{printf "[%s] [%s] [%s] [%s]\n", $$1, $$2, $$3, $$4}' "$(top_srcdir)" > $@.ok
 	@$(AWK) -lreaddir_test '{printf "[%s] [%s] [%s] [%s]\n", $$1, $$2, $$3, $$4}' "$(top_srcdir)" > _$@
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 

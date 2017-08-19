@@ -1,5 +1,11 @@
 2017-08-19  Eli Zaretskii  <eliz@gnu.org>
 
+	* Makefile.tst (SLASH): New variable for use it readdir_test.
+	(mbprintf5, profile4, profile5, profile8, getfile): Update the
+	expected failure messages.
+	(readdir_test): Use SLASH instead of a literal /, as the latter
+	gets converted by MSYS Bash to the corresponding Windows directory.
+
 	* Makefile.ext (MPFR, MPFR_LIBS): New variables, used in compiling
 	intdiv.c.
 	(ALL_EXTENSIONS): Add intdiv and readdir_test.
