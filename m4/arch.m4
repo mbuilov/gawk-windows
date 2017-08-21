@@ -38,15 +38,15 @@ if test "x$ac_cv_zos_uss" = "xyes"
 then
   dnl Identify the compiler.
   ac_zos_uss_cc_id=unknown
-  echo " $CC " | $EGREP ' (/bin/)?c89[ |_]' >/dev/null && ac_zos_uss_cc_id=c89
-  echo " $CC " | $EGREP ' (/bin/)?c99[ |_]' >/dev/null && ac_zos_uss_cc_id=xlc
-  echo " $CC " | $EGREP ' (/bin/)?cc[ |_]'  >/dev/null && ac_zos_uss_cc_id=cc
-  echo " $CC " | $EGREP ' (/bin/)?xlc[ |_]' >/dev/null && ac_zos_uss_cc_id=xlc
-  echo " $CC " | $EGREP ' (/bin/)?xlC[ |_]' >/dev/null && ac_zos_uss_cc_id=xlc++
-  echo " $CC " | $EGREP ' (/bin/)?xlc\+\+[ |_]' >/dev/null && ac_zos_uss_cc_id=xlc++
+  echo " $CC " | $EGREP [' (/bin/)?c89[ |_]'] >/dev/null && ac_zos_uss_cc_id=c89
+  echo " $CC " | $EGREP [' (/bin/)?c99[ |_]'] >/dev/null && ac_zos_uss_cc_id=xlc
+  echo " $CC " | $EGREP [' (/bin/)?cc[ |_]']  >/dev/null && ac_zos_uss_cc_id=cc
+  echo " $CC " | $EGREP [' (/bin/)?xlc[ |_]'] >/dev/null && ac_zos_uss_cc_id=xlc
+  echo " $CC " | $EGREP [' (/bin/)?xlC[ |_]'] >/dev/null && ac_zos_uss_cc_id=xlc++
+  echo " $CC " | $EGREP [' (/bin/)?xlc\+\+[ |_]'] >/dev/null && ac_zos_uss_cc_id=xlc++
   test "x$GCC" = "xyes" && ac_zos_uss_cc_id=gcc
   dnl These feature test macros are needed on z/OS.
-  CPPFLAGS="$CPPFLAGS -D_ALL_SOURCE"
+  CPPFLAGS="$CPPFLAGS -D_ALL_SOURCE -D_OPEN_SYS_UNLOCKED_EXT"
   test "$ac_zos_uss_cc_id" != xlc++ && CPPFLAGS="$CPPFLAGS -D_XOPEN_SOURCE=600"
   case "$ac_zos_uss_cc_id" in
   c89)

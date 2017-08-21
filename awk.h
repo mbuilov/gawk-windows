@@ -789,7 +789,7 @@ typedef struct exp_instruction {
 
 #define expr_count      x.xl
 
-#define c_func		x.exf
+#define c_function	x.exf
 
 #define target_continue d.di
 #define target_jmp      d.di
