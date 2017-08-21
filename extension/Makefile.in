@@ -558,10 +558,11 @@ inplace_la_SOURCES = inplace.c
 inplace_la_LDFLAGS = $(MY_MODULE_FLAGS)
 inplace_la_LIBADD = $(MY_LIBS)
 
-# On Cygwin, intdiv has to be linked with the MPFR and GMP libraries
+# On Cygwin, intdiv has to be linked with the MPFR and GMP libraries.
+# Solaris in addition wants the math library.
 intdiv_la_SOURCES = intdiv.c
 intdiv_la_LDFLAGS = $(MY_MODULE_FLAGS)
-intdiv_la_LIBADD = $(MY_LIBS) $(LIBMPFR)
+intdiv_la_LIBADD = $(MY_LIBS) $(LIBMPFR) -lm
 ordchr_la_SOURCES = ordchr.c
 ordchr_la_LDFLAGS = $(MY_MODULE_FLAGS)
 ordchr_la_LIBADD = $(MY_LIBS)

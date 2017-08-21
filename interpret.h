@@ -966,7 +966,7 @@ arrayfor:
 		case Op_ext_builtin:
 		{
 			size_t arg_count = pc->expr_count;
-			awk_ext_func_t *f = pc[1].c_func;
+			awk_ext_func_t *f = pc[1].c_function;
 			size_t min_req = f->min_required_args;
 			size_t max_expect = f->max_expected_args;
 			awk_value_t result;
@@ -1119,7 +1119,7 @@ match_re:
 					npc[0].expr_count = arg_count;		/* actual argument count */
 					npc[1] = pc[1];
 					npc[1].func_name = fname;	/* name of the builtin */
-					npc[1].c_func = bc->c_func;
+					npc[1].c_function = bc->c_function;
 					ni = npc;
 					JUMPTO(ni);
 				} else
@@ -1158,7 +1158,7 @@ match_re:
 				pc->extfunc = bc->extfunc;
 				pc->expr_count = arg_count;	/* actual argument count */
 				(pc + 1)->func_name = fname;	/* name of the builtin */
-				(pc + 1)->c_func = bc->c_func;	/* min and max args */
+				(pc + 1)->c_function = bc->c_function;	/* min and max args */
 				ni = pc;
 				JUMPTO(ni);
 			}

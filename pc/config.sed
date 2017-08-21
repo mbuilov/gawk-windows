@@ -188,7 +188,7 @@ s/^#undef HAVE_STRTOD *$/#define HAVE_STRTOD 1/
 #define HAVE_STRUCT_STAT_ST_BLKSIZE 1\
 #endif
 /^#undef HAVE_SYS_IOCTL_H *$/c\
-#if defined(__MINGW32__) || defined(__DJGPP__)\
+#ifdef __DJGPP__\
 #define HAVE_SYS_IOCTL_H 1\
 #endif
 s/^#undef HAVE_SYSTEM *$/#define HAVE_SYSTEM 1/

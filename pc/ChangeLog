@@ -1,3 +1,27 @@
+2017-08-21  Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile.tst (testext): Remove textexttmp.txt.
+
+2017-08-19  Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile.tst (SLASH): New variable for use it readdir_test.
+	(mbprintf5, profile4, profile5, profile8, getfile): Update the
+	expected failure messages.
+	(readdir_test): Use SLASH instead of a literal /, as the latter
+	gets converted by MSYS Bash to the corresponding Windows directory.
+
+	* Makefile.ext (MPFR, MPFR_LIBS): New variables, used in compiling
+	intdiv.c.
+	(ALL_EXTENSIONS): Add intdiv and readdir_test.
+	(intdiv.$(SOEXT), readdir_test.$(SOEXT)): New recipes.
+
+	* Makefile.tst: Synchronize with test/Makefile.in.
+
+2017-08-18  Eli Zaretskii  <eliz@gnu.org>
+
+	* config.h (HAVE_SYS_IOCTL_H):
+	* config.sed (HAVE_SYS_IOCTL_H): Do not define for MinGW.
+
 2017-08-16         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* config.h: Regenerated in preparation for release.

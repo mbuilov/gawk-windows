@@ -847,7 +847,7 @@ BEGIN {
 	while ((getline < alias) > 0)
 		printf "File [%s] nr [%s]: %s\n", alias, ++nr, $0
 	close(alias)
-	system("rm " outfile)
+#	system("rm " outfile)
 	print ""
 }
 */
