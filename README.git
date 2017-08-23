@@ -1,12 +1,14 @@
-Thu Apr 17 16:54:26 IDT 2014
+Wed Aug 23 08:07:18 IDT 2017
 ============================
 
 If you are reading this, you have retrieved the gawk code base via
 Git from savannah.gnu.org.  This is good; gawk no longer uses CVS.
 
-On GNU and Unix systems, please execute ./bootstrap.sh before invoking
-the usual incantaton of `./configure && make && make check'.  This
-version of bootstrap.sh should work OK.
+On GNU and Unix systems, please execute use the following to build
+gawk after doing `git clone' or `git pull':
+
+	make distclean		# if not a new clone
+	./bootstrap.sh && ./configure && make && make check
 
 On systems supported by configuration files in the pc/ subdirectory,
 chdir into pc/ and run the make-config.bat script there.  This will produce
