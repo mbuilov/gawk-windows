@@ -1,0 +1,15 @@
+Wed Aug 23 08:19:08 IDT 2017
+============================
+
+I have a report that Alpine Linux uses BusyBox for its utilities. In
+particular, the BusyBox ls does not have a -f option. This option is
+needed in at least one of the tests.
+
+Install coreutils on your Alpine Linux system:
+
+	apk add coreutils
+
+in order to get a fully POSIX-compliant ls.
+
+Arnold Robbins
+arnold@skeeve.com
