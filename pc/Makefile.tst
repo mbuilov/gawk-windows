@@ -69,8 +69,7 @@ AWKPROG = ../gawk.exe
 # index numbers, because this is what the readdir test expects.
 # Otherwise, the readdir test will fail.  (The MSYS ls.exe doesn't
 # report full index values.)
-#LS = ls.exe
-LS = /d/usr/bin/ls.exe
+LS = ls.exe
 
 # Define PGAWK
 PGAWK = ../gawk.exe -p
@@ -119,13 +118,13 @@ MKDIR = mkdir
 DATE = gdate
 
 # MS-DOS and OS/2 use ; as a PATH delimiter
-PATH_SEPARATOR = :
+PATH_SEPARATOR = ;
 
 # Argument to -F to produce -F/, should be // for MinGW, / otherwise,
 # because MSYS Bash converts a single slash to the equivalent Windows
 # directory.
-#SLASH = /
-SLASH = //
+SLASH = /
+#SLASH = //
 
 # Non-default GREP_OPTIONS might fail the badargs test
 export GREP_OPTIONS=
