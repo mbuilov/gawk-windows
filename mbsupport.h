@@ -44,7 +44,13 @@
 #define wcslen		strlen
 #define wctob(wc)	(EOF)
 
-#define mbstate_t	int
+#if (__DJGPP__ > 2 || __DJGPP_MINOR__ >= 3)
+# include <ctype.h>
+# include <wchar.h>
+# include <wctype.h>
+#else
+# define mbstate_t	int
+#endif
 
 extern wctype_t wctype(const char *name);
 extern int iswctype(wint_t wc, wctype_t desc);

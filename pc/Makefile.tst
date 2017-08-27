@@ -486,7 +486,7 @@ devfd::
 
 errno:
 	@echo $@
-	@echo Expect errno to fail with MinGW due to error message differences
+	@echo Expect errno to fail with DJGPP and MinGW due to error message differences
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -885,14 +885,14 @@ gsubtst6::
 
 mbstr1::
 	@echo $@
-	@echo Expect mbstr1 to fail with MinGW.
+	@echo Expect mbstr1 to fail with DJGPP and MinGW.
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbstr2::
 	@echo $@
-	@echo Expect mbstr2 to fail with MinGW.
+	@echo Expect mbstr2 to fail with DJGPP and MinGW.
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -2492,27 +2492,31 @@ backw:
 
 clos1way2:
 	@echo $@
+	@echo Expect clos1way2 to fail with DJGPP.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 clos1way3:
 	@echo $@
+	@echo Expect clos1way3 to fail with DJGPP.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 clos1way4:
 	@echo $@
+	@echo Expect clos1way4 to fail with DJGPP.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 clos1way5:
 	@echo $@
+	@echo Expect clos1way5 to fail with DJGPP.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 clos1way6:
 	@echo $@
-	@echo Expect clos1way6 to fail with MinGW
+	@echo Expect clos1way6 to fail with DJGPP and MinGW
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -2643,7 +2647,7 @@ gensub3:
 
 getlndir:
 	@echo $@
-	@echo Expect getlndir to fail with DJGPP.
+	@echo Expect getlndir to fail with DJGPP due to error message differences.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 

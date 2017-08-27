@@ -31,6 +31,10 @@
 #include <string.h>
 #include <wctype.h>
 
+#if defined(__DJGPP__)
+#include "mbsupport.h"
+#endif
+
 /* The sbclen implementation relies on this.  */
 verify (MB_LEN_MAX <= SCHAR_MAX);
 
