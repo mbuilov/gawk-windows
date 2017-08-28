@@ -42,10 +42,13 @@
 
 /* The extra casts work around common compiler bugs.  */
 #define TYPE_SIGNED(t) (! ((t) 0 < (t) -1))
-/* The outer cast is needed to work around a bug in Cray C 5.0.3.0.
-   It is necessary at least when t == time_t.  */
+/* Note:  these assume that negative integers are represented internally
+   via 2's complement, which is not mandated by C.  They also ignore the
+   fact that signed integer arithmetic overflow can trigger exceptions,
+   unlike unsigned which is guaranteed not to do so. */
 #define TYPE_MINIMUM(t) ((t) (TYPE_SIGNED (t) \
-			      ? ~ (t) 0 << (sizeof (t) * CHAR_BIT - 1) : (t) 0))
+			      ? ~ (uintmax_t) 0 << (sizeof (t) * CHAR_BIT - 1) \
+			      : 0))
 #define TYPE_MAXIMUM(t) ((t) (~ (t) 0 - TYPE_MINIMUM (t)))
 
 #ifndef INTMAX_MIN

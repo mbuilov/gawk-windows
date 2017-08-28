@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk],[4.1.63],[bug-gawk@gnu.org],[gawk])
+AC_INIT([GNU Awk],[4.1.64],[bug-gawk@gnu.org],[gawk])
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -290,7 +290,8 @@ osf1)	: ;;
 esac
 
 # Need the check for mkstemp and tmpfile for missing_d/snprintf.c.
-AC_CHECK_FUNCS(__etoa_l atexit btowc fmod getgrent getgroups grantpt \
+AC_CHECK_FUNCS(__etoa_l atexit btowc fmod gai_strerror \
+	getgrent getgroups grantpt \
 	fwrite_unlocked \
 	isascii iswctype iswlower iswupper mbrlen \
 	memcmp memcpy memcpy_ulong memmove memset \

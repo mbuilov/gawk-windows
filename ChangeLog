@@ -1,3 +1,24 @@
+2017-08-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* interpret.h (r_interpret): Add some casts to avoid warning
+	messages in printf statements.
+
+	Unrelated:
+
+	* configure.ac: Add check for gai_strerror.
+	* io.c (socketopen): Use gai_strerror to add more information
+	if getaddrinfo fails.
+
+2017-08-25         Pat Rankin            <r.pat.rankin@gmail.com>
+
+	* builtin.c (TYPE_MINIMUM): Use type uintmax_t for the calculation,
+	deferring the cast to the target type until the final result.
+
+2017-08-27         Juan Manuel Guerrero  <juan.guerrero@gmx.de>
+
+	* mbsupport.h [__DJGPP_]: Provide multi-byte specific declarations
+	and definitions for DJGPP.
+
 2017-08-23         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* README.git: Minor edits to make build steps clearer.

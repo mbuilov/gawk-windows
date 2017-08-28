@@ -69,8 +69,7 @@ AWKPROG = ../gawk.exe
 # index numbers, because this is what the readdir test expects.
 # Otherwise, the readdir test will fail.  (The MSYS ls.exe doesn't
 # report full index values.)
-#LS = ls.exe
-LS = /d/usr/bin/ls.exe
+LS = ls.exe
 
 # Define PGAWK
 PGAWK = ../gawk.exe -p
@@ -119,13 +118,13 @@ MKDIR = mkdir
 DATE = gdate
 
 # MS-DOS and OS/2 use ; as a PATH delimiter
-PATH_SEPARATOR = :
+PATH_SEPARATOR = ;
 
 # Argument to -F to produce -F/, should be // for MinGW, / otherwise,
 # because MSYS Bash converts a single slash to the equivalent Windows
 # directory.
-#SLASH = /
-SLASH = //
+SLASH = /
+#SLASH = //
 
 # Non-default GREP_OPTIONS might fail the badargs test
 export GREP_OPTIONS=
@@ -487,7 +486,7 @@ devfd::
 
 errno:
 	@echo $@
-	@echo Expect errno to fail with MinGW due to error message differences
+	@echo Expect errno to fail with DJGPP and MinGW due to error message differences
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -886,14 +885,14 @@ gsubtst6::
 
 mbstr1::
 	@echo $@
-	@echo Expect mbstr1 to fail with MinGW.
+	@echo Expect mbstr1 to fail with DJGPP and MinGW.
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbstr2::
 	@echo $@
-	@echo Expect mbstr2 to fail with MinGW.
+	@echo Expect mbstr2 to fail with DJGPP and MinGW.
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -2493,27 +2492,31 @@ backw:
 
 clos1way2:
 	@echo $@
+	@echo Expect clos1way2 to fail with DJGPP.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 clos1way3:
 	@echo $@
+	@echo Expect clos1way3 to fail with DJGPP.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 clos1way4:
 	@echo $@
+	@echo Expect clos1way4 to fail with DJGPP.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 clos1way5:
 	@echo $@
+	@echo Expect clos1way5 to fail with DJGPP.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 clos1way6:
 	@echo $@
-	@echo Expect clos1way6 to fail with MinGW
+	@echo Expect clos1way6 to fail with DJGPP and MinGW
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -2644,7 +2647,7 @@ gensub3:
 
 getlndir:
 	@echo $@
-	@echo Expect getlndir to fail with DJGPP.
+	@echo Expect getlndir to fail with DJGPP due to error message differences.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 

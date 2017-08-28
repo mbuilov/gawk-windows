@@ -1586,7 +1586,12 @@ socketopen(int family, int type, const char *localpname,
 	lerror = getaddrinfo(NULL, localpname, & lhints, & lres);
 	if (lerror) {
 		if (strcmp(localpname, "0") != 0) {
+#ifdef HAVE_GAI_STRERROR
+			warning(_("local port %s invalid in `/inet': %s"), localpname,
+					gai_strerror(lerror));
+#else
 			warning(_("local port %s invalid in `/inet'"), localpname);
+#endif
 			*hard_error = true;
 			return INVALID_HANDLE;
 		}
@@ -1607,7 +1612,12 @@ socketopen(int family, int type, const char *localpname,
 		if (rerror) {
 			if (lres0 != NULL)
 				freeaddrinfo(lres0);
+#ifdef HAVE_GAI_STRERROR
+			warning(_("remote host and port information (%s, %s) invalid: %s"), remotehostname, remotepname,
+					gai_strerror(rerror));
+#else
 			warning(_("remote host and port information (%s, %s) invalid"), remotehostname, remotepname);
+#endif
 			*hard_error = true;
 			return INVALID_HANDLE;
 		}
