@@ -973,11 +973,15 @@ arrayfor:
 
 			if (arg_count < min_req)
 				fatal(_("%s: called with %lu arguments, expecting at least %lu"),
-						pc[1].func_name, arg_count, min_req);
+						pc[1].func_name,
+						(unsigned long) arg_count,
+						(unsigned long) min_req);
 
 			if (do_lint && ! f->suppress_lint && arg_count > max_expect)
 				lintwarn(_("%s: called with %lu arguments, expecting no more than %lu"),
-						pc[1].func_name, arg_count, max_expect);
+						pc[1].func_name,
+						(unsigned long) arg_count,
+						(unsigned long) max_expect);
 
 			PUSH_CODE(pc);
 			r = awk_value_to_node(pc->extfunc(arg_count, & result, f));
