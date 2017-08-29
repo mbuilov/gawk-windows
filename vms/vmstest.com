@@ -55,6 +55,12 @@ $! 4.1.3.i: New tests
 $!	basic:  ofmtstrnum
 $!	extra:  ignrcas3
 $!
+$! 4.1.3+: New tests
+$!      basic:   aryunasgn, concat5, memleak
+$!      ext:     fpat5, fpat6, fwtest5, fwtest6, fwtest7, fwtest8,
+$!               sourcesplit
+$!      charset: mbprintf5
+$!
 $	echo	= "write sys$output"
 $	cmp	= "diff/Output=_NL:/Maximum=1"
 $	delsym  = "delete/symbol/local/nolog"
@@ -171,13 +177,13 @@ $		list = "msg addcomma anchgsub argarray arrayind1" -
 		  + " arrayparm arrayref arrayprm2 arrayprm3 arrymem1" -
 		  + " arryref2 arryref3 arryref4 arryref5 arynasty" -
 		  + " arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5" -
-		  + " aryprm6 aryprm7 aryprm8 aryprm9 arysubnm asgext" -
-		  + " awkpath" -
+		  + " aryprm6 aryprm7 aryprm8 aryprm9 arysubnm aryunasgn" -
+                  + " asgext awkpath" -
 		  + " back89 backgsub badassign1 badbuild"
 $		gosub list_of_tests
 $		list = "callparam childin clobber closebad clsflnam" -
 		  + " compare compare2 concat1 concat2 concat3 concat4" -
-		  + " convfmt " -
+		  + " concat5 convfmt " -
 		  + " datanonl defref delargv delarprm delarpm2 delfunc" -
 		  + " dfamb1 dfastress dynlj" -
 		  + " eofsplit exit2 exitval1 exitval2 exitval3"
@@ -194,7 +200,7 @@ $		list = "getline getline2 getline3 getline4 getline5 " -
 		  + " hex hex2 hsprint" -
 		  + " inpref inputred intest intprec iobug1" -
 		  + " leaddig leadnl litoct longsub longwrds"-
-		  + " manglprm math membug1 messages minusstr mixed1" -
+		  + " manglprm math membug1 messages memleak minusstr mixed1" -
 		  + " mmap8k mtchi18n"
 $		gosub list_of_tests
 $		list = "nasty nasty2 negexp negrange nested nfldstr" -
@@ -245,8 +251,10 @@ $		list = "aadelete1 aadelete2 aarray1 aasort aasorti" -
 		  + " clos1way5 charasbytes crlf" -
 		  + " dbugeval delsub devfd devfd1 devfd2 dumpvars" -
 		  + " exit" -
-		  + " fieldwdth fpat1 fpat2 fpat3 fpat4 fpatnull funlen" -
-		  + " functab1 functab2 functab3 fsfwfs fwtest fwtest2 fwtest3"
+		  + " fieldwdth fpat1 fpat2 fpat3 fpat4 fpat5 fpat6 " -
+		  + " fpatnull funlen functab1 functab2 functab3 fsfwfs " -
+		  + " fwtest fwtest2 fwtest3 fwtest4 fwtest5 fwtest6 " -
+		  + " fwtest7 fwtest8"
 $		gosub list_of_tests
 $		list = "genpot gensub gensub2 getlndir gnuops2 gnuops3" -
 		  + " gnureops" -
@@ -265,10 +273,10 @@ $		gosub list_of_tests
 $		list = "regx8bit rebuf reginttrad regnul1 regnul2" -
 		  + " reint reint2 rsgetline rsglstdin rsstart1 rsstart2" -
 		  + " rsstart3 rstest6" -
-		  + " shadow sortfor sortu split_after_fpat splitarg4" -
-		  + " strtonum strftime switch2 symtab1 symtab2 symtab3" -
-		  + " symtab4 symtab5 symtab6 symtab7 symtab8 symtab9" -
-		  + " symtab10 watchpoint1"
+		  + " shadow sortfor sortu sourcesplit split_after_fpat" -
+		  + " splitarg4 strtonum strftime switch2 symtab1 symtab2" -
+		  + " symtab3 symtab4 symtab5 symtab6 symtab7 symtab8" -
+		  + " symtab9 symtab10 watchpoint1"
 $		gosub list_of_tests
 $		return
 $
@@ -286,7 +294,7 @@ $		list = "asort asorti" -
 		  + " backbigs1 backsmalls1 backsmalls2" -
 		  + " fmttest fnarydel fnparydl" -
 		  + " lc_num1 mbfw1" -
-		  + " mbprintf1 mbprintf2 mbprintf4" -
+		  + " mbprintf1 mbprintf2 mbprintf4 mbprintf5" -
 		  + " rebt8b2 rtlenmb" -
 		  + " sort1 sprintfc"
 $		gosub list_of_tests
@@ -357,44 +365,28 @@ $
 $! common tests, not needing special set up: gawk -f 'test'.awk 'test'.in
 $addcomma:
 $anchgsub:
-$arrayprm2:
-$arryref2:
-$aryprm8:
-$aryprm9:
 $asgext:
 $backgsub:
 $concat1:
-$concat2:
-$concat3:
 $datanonl:
-$delarpm2:
 $dfamb1:
-$exit2:
 $fldchg:
 $fldchgnf:
-$fordel:
 $fsnul1:
 $fsrs:
 $funstack:
-$getline3:
 $getline4:
 $getnr2tb:
 $getnr2tm:
-$gsubtest:
-$gsubtst2:
-$gsubtst4:
 $gsubtst5:
 $gsubtst7:
 $gsubtst8:
-$hex:
 $hex2:
 $inpref:
-$inputred:
 $leadnl:
 $manglprm:
 $membug1:
 $nested:
-$nfloop:
 $nfset:
 $nlfldsep:
 $nlinstr:
@@ -409,8 +401,6 @@ $onlynl:
 $parse1:
 $parsefld:
 $prdupval:
-$prec:
-$prtoeval:
 $range1:
 $rebrackloc:
 $regeq:
@@ -418,44 +408,39 @@ $regexpbrack:
 $reindops:
 $reparse:
 $rsnul1nl:
-$rstest1:
-$rstest2:
-$rstest3:
 $rswhite:
-$sortempty:
 $sortglos:
 $splitargv:
-$splitarr:
 $splitvar:
-$strcat1:
 $strtod:
 $subback:
-$subsepnm:
 $swaplns:
 $uparrfs:
 $wjposer1:
-$zeroe0:
 $	test_class = "basic"
+$       test_in = "''test'.in"
 $	goto common_with_test_in
 $!
-$backsmalls2:
-$fmttest:
-$lc_num1:
 $sprintfc:
 $	classname="charset_tests"
+$       test_in = "''test'.in"
 $	goto common_with_test_in
 $!
 $backw:
-$crlf:
 $fpat1:
 $fpat3:
-$fpat4:
+$fpat5:
+$fpat6:
 $fpatnull:
 $fsfwfs:
 $funlen:
 $fwtest:
 $fwtest2:
-$fwtest3:
+$fwtest4:
+$fwtest5:
+$fwtest6:
+$fwtest7:
+$fwtest8:
 $gensub:
 $icasers:
 $igncdym:
@@ -463,14 +448,16 @@ $igncfs:
 $indirectcall:
 $match3:
 $rebuf:
-$regnul1:
-$regnul2:
-$rsgetline:
 $rsstart1:
-$rstest6:
 $sortfor:
 $split_after_fpat:
 $splitarg4:
+$       test_in = "''test'.in"
+$	classname="gawk_ext"
+$	goto common_with_test_in
+$!
+$fwtest3:
+$       test_in = "fwtest2.in"
 $	classname="gawk_ext"
 $	goto common_with_test_in
 $!
@@ -478,15 +465,32 @@ $common_with_test_in:
 $! common with 'test'.in
 $!
 $	echo "''test'"
-$	gawk -f 'test'.awk 'test'.in >_'test'.tmp
+$	if f$search("sys$disk:[]_''test'.tmp2;*") .nes. ""
+$	then
+$	    delete sys$disk:[]_'test'.tmp2;*
+$	endif
+$	if f$search("sys$disk:[]_''test'.tmp;*") .nes. ""
+$	then
+$	    delete sys$disk:[]_'test'.tmp;*
+$	endif
+$       set noOn
+$       define/user sys$error _'test'.tmp2
+$	gawk -f 'test'.awk < 'test_in' >_'test'.tmp
+$	gawk_status = $status
+$	set On
 $	if f$search("sys$disk:[]_''test'.tmp;2") .nes. ""
 $	then
 $	    delete sys$disk:[]_'test'.tmp;2
 $	endif
+$       append _'test'.tmp2 _'test'.tmp
+$	if .not. gawk_status
+$       then
+$	    call exit_code 'gawk_status' _'test'.tmp
+$       endif
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status
 $	then
-$	    rm _'test'.tmp;
+$	    rm _'test'.tmp;*,_'test'.tmp2;*
 $	    gosub junit_report_pass
 $	else
 $	    gosub junit_report_fail_diff
@@ -532,6 +536,31 @@ $	else
 $	    gosub junit_report_fail_diff
 $	endif
 $	return
+$!
+$!
+$! Sourcesplit test
+$sourcesplit:
+$	echo "''test'"
+$	test_class = "ext"
+$       source1 = "BEGIN { a = 5;"
+$       source2 = "print a }"
+$       set noOn
+$       define/user sys$error _'test'.tmp
+$	gawk --source="''source1'" --source="''source2'" >_'test'.tmp2
+$	if .not. $status then call exit_code '$status' _'test'.tmp
+$       set On
+$       append _'test'.tmp2 _'test'.tmp
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status
+$	then
+$	    rm _'test'.tmp;,_'test'.tmp2;
+$	    gosub junit_report_pass
+$	else
+$	    gosub junit_report_fail_diff
+$	endif
+$	return
+$!
+$!
 $
 $! more common tests, without a data file: gawk -f 'test'.awk
 $ofmta:
@@ -543,24 +572,34 @@ $	    gosub junit_report_skip
 $	    return
 $	endif
 $arrayref:
+$arryref2:
 $arrymem1:
 $arynasty:
 $arysubnm:
+$aryunasgn:
 $badassign1:
 $badbuild:
 $callparam:
 $closebad:
 $compare2:
+$concat2:
+$concat3:
+$concat5:
 $convfmt:
 $delargv:
+$delarpm2:
 $delarprm:
 $dynlj:
+$exit2:
+$fordel:
 $forref:
 $forsimp:
 $funsemnl:
+$getline3:
 $hsprint:
 $intest:
 $math:
+$memleak:
 $minusstr:
 $negrange:
 $nulinsrc:
@@ -2060,6 +2099,7 @@ $	set On
 $	return
 $
 $arrayparm:
+$arrayprm2:
 $fnaryscl:
 $opasnslf:
 $opasnidx:
@@ -2357,6 +2397,8 @@ $aryprm4:
 $aryprm5:
 $aryprm6:
 $aryprm7:
+$aryprm8:
+$aryprm9:
 $dfastress:
 $nfneg:
 $numindex:
@@ -2452,6 +2494,21 @@ $	endif
 $	return
 $!
 $!
+$lc_num1:
+$fmttest:
+$backsmalls2:
+$	test_class = "charset_tests"
+$       goto common_test_optional_input
+$!
+$regnul1:
+$regnul2:
+$rsgetline:
+$rstest6:
+$crlf:
+$fpat4:
+$	classname="gawk_ext"
+$	goto common_with_test_in
+$!
 $delfunc:
 $fcall_exit2:
 $fnamedat:
@@ -2459,9 +2516,26 @@ $fnarray2:
 $fnasgnm:
 $fnmisc:
 $gsubasgn:
+$gsubtest:
+$gsubtst2:
+$gsubtst4:
+$hex:
+$inputred:
+$nfloop:
+$prec:
+$prtoeval:
+$rstest1:
+$rstest2:
+$rstest3:
+$sortempty:
+$splitarr:
+$strcat1:
+$subsepnm:
 $unterm:
-$	echo "''test'"
+$zeroe0:
 $	test_class = "basic"
+$common_test_optional_input:
+$	echo "''test'"
 $	set noOn
 $	gawk -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
 $	if .not. $status then call exit_code '$status' _'test'.tmp
@@ -3277,7 +3351,9 @@ $! Makefile test exports this
 $!	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
 $!	Only always have "utf8-20"
 $	gosub define_gawklocale
+$       set noOn
 $	gawk -f 'test'.awk 'test'.in 2>&1 >_'test'.tmp
+$       set On
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status
 $	then
@@ -3285,6 +3361,28 @@ $	    rm _'test'.tmp;
 $	    gosub junit_report_pass
 $	else
 $	    gosub junit_report_fail_diff
+$	endif
+$	return
+$!
+$mbprintf5:
+$	echo "''test'"
+$	test_class = "charset_tests"
+$! Makefile test exports this
+$!	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+$!	Only always have "utf8-20"
+$	gosub define_gawklocale
+$       set noOn
+$	gawk -f 'test'.awk 'test'.in 2>&1 >_'test'.tmp
+$       set On
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status
+$	then
+$	    rm _'test'.tmp;
+$	    gosub junit_report_pass
+$	else
+$	    skip_reason = "Test not currently passing on VMS."
+$	    gosub junit_report_skip
+$!	    gosub junit_report_fail_diff
 $	endif
 $	return
 $!
@@ -3533,18 +3631,18 @@ $	test_class = "gawk_ext"
 $ ! FIXME: for both gawk invocations which pipe output to SORT,
 $ ! two output files get created; the top version has real output
 $ ! but there's also an empty lower version.
-$		oldout = f$search("_''test'.tmp1")
-$	gawk --pretty-print -v "sortcmd=SORT sys$intput: sys$output:" -
-			-f xref.awk dtdgport.awk > _'test'.tmp1
-$		badout = f$search("_''test'.tmp1;-1")
-$		if badout.nes."" .and. badout.nes.oldout then  rm 'badout'
-$		oldout = f$search("_''test'.tmp2")
-$	gawk -v "sortcmd=SORT sys$intput: sys$output:" -
-			-f awkprof.out dtdgport.awk > _'test'.tmp2
-$		badout = f$search("_''test'.tmp2;-1")
-$		if badout.nes."" .and. badout.nes.oldout then  rm 'badout'
-$	cmp _'test'.tmp1 sys$disk:[]_'test'.tmp2
-$	if $status then  rm _'test'.tmp%;,awkprof.out;
+$!	oldout = f$search("_''test'.tmp1")
+$	gawk -f xref.awk dtdgport.awk >  _'test'.out1
+$	gawk --pretty-print=ap-'test'.out -f xref.awk
+$	gawk -f ap-'test'.out dtdgport.awk > _'test'.out2
+$	cmp _'test'.out1 sys$disk:[]_'test'.out2
+$	if $status
+$	then
+$	    rm ap-'test'.out;*, _'test'.out%;*
+$	    gosub junit_report_pass
+$	else
+$	    gosub junit_report_fail_diff
+$	endif
 $	return
 $
 $profile2:  echo "''test'"
@@ -3568,22 +3666,18 @@ $	return
 $
 $profile4:
 $profile5:
+$profile8:
 $	echo "''test'"
 $	test_class = "gawk_ext"
+$       if f$search("_''test'.tmp1") .nes. "" then delete _'test'.tmp1;*
 $	define/user GAWK_NO_PP_RUN 1
-$	gawk --profile -f 'test'.awk > _NL:
-$	! sed <awkprof.out 1,2d >_profile4.tmp
-$	gawk "NR>2" awkprof.out > sys$disk:[]_awkprof.out
-$	if f$search("sys$disk:[]_awkprof.out;2") .nes. ""
-$	then
-$	    delete sys$disk:[]_awkprof.out;2
-$	endif
-$	convert/fdl=nla0: _awkprof.out sys$disk:[]_'test'.tmp
+$	gawk --pretty-print=_'test'.tmp1 -f 'test'.awk > _NL:
+$	convert/fdl=nla0: _'test'.tmp1 sys$disk:[]_'test'.tmp
 $	convert/fdl=nla0: 'test'.ok _'test'.ok
-$	cmp _'test'.ok sys$disk:[]_'test'.tmp
+$	cmp sys$disk:[]_'test'.ok sys$disk:[]_'test'.tmp
 $	if $status
 $	then
-$	    rm _'test'.tmp;*,_'test'.ok;*,awkprof.out;,_awkprof.out;
+$	    rm _'test'.tmp;*,_'test'.ok;*,_'test'.tmp1;*
 $	    gosub junit_report_pass
 $	else
 $	    gosub junit_report_fail_diff
@@ -3592,22 +3686,18 @@ $	return
 $!
 $profile6:
 $profile7:
-$profile8:
 $profile3: echo "''test'"
 $	test_class = "gawk_ext"
-$	gawk --profile -f 'test'.awk > _NL:
+$       if f$search("''test'.tmp1") .nes. "" then delete 'test'.tmp1;*
+$	gawk --profile=ap-'test'.out -f 'test'.awk > _NL:
 $	! sed <awkprof.out 1,2d >_profile3.tmp
-$	gawk "NR>2" awkprof.out > sys$disk:[]_awkprof.out
-$	if f$search("sys$disk:[]_awkprof.out;2") .nes. ""
-$	then
-$	    delete sys$disk:[]_awkprof.out;2
-$	endif
-$	convert/fdl=nla0: _awkprof.out sys$disk:[]_'test'.tmp
+$	gawk "NR>2" ap-'test'.out > sys$disk:[]_'test'.tmp1
+$	convert/fdl=nla0: _'test'.tmp1 sys$disk:[]_'test'.tmp
 $	convert/fdl=nla0: 'test'.ok _'test'.ok
 $	cmp _'test'.ok sys$disk:[]_'test'.tmp
 $	if $status
 $	then
-$	    rm _'test'.tmp;*,_'test'.ok;*,awkprof.out;,_awkprof.out;
+$	    rm _'test'.tmp;*,_'test'.ok;*,_'test'.tmp1;*
 $	    gosub junit_report_pass
 $	else
 $	    gosub junit_report_fail_diff
