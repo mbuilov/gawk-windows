@@ -39,6 +39,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef MAJOR_IN_MKDEV
+#include <sys/mkdev.h>
+#elif defined(MAJOR_IN_SYSMACROS)
+#include <sys/sysmacros.h>
+#endif
+
 #include "gawkapi.h"
 
 #include "gettext.h"
