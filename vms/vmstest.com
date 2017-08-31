@@ -4,7 +4,18 @@ $! Usage:
 $!  $ set default [-.test]
 $!  $ @[-.vms]vmstest.com bigtest
 $! This assumes that newly built gawk.exe is in the next directory up.
-$
+$!
+$! Note to other maintainers:
+$! *  when this test script is run via automation through RSH or SSH,
+$!    on non-VAX, for some reason a second empty version of the output
+$!    file is generated.
+$!    For the tests to pass, this must be detected and deleted.
+$!    This issue does not show up when running this script from
+$!    an interactive SSH session.
+$! *  The tests where Gawk could return an error code need to be
+$!    wrapped in a set On / set noOn pair or it will abort this
+$!    script, leaving behind an open "junit" file logical in DCL.
+$!
 $! 3.1.7:  changed to share code among many common tests, and
 $!	   to put results for test foo into _foo.tmp instead of tmp.
 $!
@@ -419,12 +430,12 @@ $uparrfs:
 $wjposer1:
 $	test_class = "basic"
 $       test_in = "''test'.in"
-$	goto common_with_test_in
+$	goto common_with_test_in_redir
 $!
 $sprintfc:
-$	classname="charset_tests"
+$	test_class = "charset_tests"
 $       test_in = "''test'.in"
-$	goto common_with_test_in
+$	goto common_with_test_in_redir
 $!
 $backw:
 $fpat1:
@@ -453,16 +464,16 @@ $sortfor:
 $split_after_fpat:
 $splitarg4:
 $       test_in = "''test'.in"
-$	classname="gawk_ext"
-$	goto common_with_test_in
+$	test_class = "gawk_ext"
+$	goto common_with_test_in_redir
 $!
 $fwtest3:
 $       test_in = "fwtest2.in"
-$	classname="gawk_ext"
-$	goto common_with_test_in
+$	test_class = "gawk_ext"
+$	goto common_with_test_in_redir
 $!
-$common_with_test_in:
-$! common with 'test'.in
+$common_with_test_in_redir:
+$! common with 'test'.in redirected.
 $!
 $	echo "''test'"
 $	if f$search("sys$disk:[]_''test'.tmp2;*") .nes. ""
@@ -482,6 +493,10 @@ $	if f$search("sys$disk:[]_''test'.tmp;2") .nes. ""
 $	then
 $	    delete sys$disk:[]_'test'.tmp;2
 $	endif
+$	if f$search("sys$disk:[]_''test'.tmp2;2") .nes. ""
+$	then
+$	    delete sys$disk:[]_'test'.tmp2;2
+$	endif
 $       append _'test'.tmp2 _'test'.tmp
 $	if .not. gawk_status
 $       then
@@ -491,6 +506,39 @@ $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status
 $	then
 $	    rm _'test'.tmp;*,_'test'.tmp2;*
+$	    gosub junit_report_pass
+$	else
+$	    gosub junit_report_fail_diff
+$	endif
+$	return
+$!
+$!
+$! Gawk treats < 'test_in' differently than just 'test_in' on VMS
+$! and some tests care about this.
+$common_with_test_input:
+$! common with 'test'.in
+$!
+$	echo "''test'"
+$	if f$search("sys$disk:[]_''test'.tmp;*") .nes. ""
+$	then
+$	    delete sys$disk:[]_'test'.tmp;*
+$	endif
+$       set noOn
+$	gawk -f 'test'.awk 'test_in' >_'test'.tmp
+$	gawk_status = $status
+$	set On
+$	if f$search("sys$disk:[]_''test'.tmp;2") .nes. ""
+$	then
+$	    delete sys$disk:[]_'test'.tmp;2
+$	endif
+$	if .not. gawk_status
+$       then
+$	    call exit_code 'gawk_status' _'test'.tmp
+$       endif
+$	cmp 'test'.ok sys$disk:[]_'test'.tmp
+$	if $status
+$	then
+$	    rm _'test'.tmp;*
 $	    gosub junit_report_pass
 $	else
 $	    gosub junit_report_fail_diff
@@ -517,7 +565,7 @@ $	return
 $!
 $indirectbuiltin: ! 4.1.2
 $	echo "''test'"
-$	classname="gawk_ext"
+$	test_class = "gawk_ext"
 $	! No shell simulation in gawk
 $	temp_file = "sys$disk:[]_'test'.tmp"
 $	if f$search(temp_file) .nes. "" then delete 'temp_file';*
@@ -541,13 +589,22 @@ $!
 $! Sourcesplit test
 $sourcesplit:
 $	echo "''test'"
-$	test_class = "ext"
+$	test_class = "gawk_ext"
 $       source1 = "BEGIN { a = 5;"
 $       source2 = "print a }"
+$	if f$search("sys$disk:[]_''test'.tmp2;*") .nes. ""
+$	then
+$	    delete sys$disk:[]_'test'.tmp2;*
+$	endif
 $       set noOn
 $       define/user sys$error _'test'.tmp
 $	gawk --source="''source1'" --source="''source2'" >_'test'.tmp2
-$	if .not. $status then call exit_code '$status' _'test'.tmp
+$	gawk_status = $status
+$	if f$search("sys$disk:[]_''test'.tmp2;2") .nes. ""
+$	then
+$	    delete sys$disk:[]_'test'.tmp2;2
+$	endif
+$	if .not. gawk_status then call exit_code 'gawk_status' _'test'.tmp
 $       set On
 $       append _'test'.tmp2 _'test'.tmp
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
@@ -642,7 +699,7 @@ $regx8bit:
 $sortu:
 $strtonum:
 $switch2:
-$	classname="gawk_ext"
+$	test_class = "gawk_ext"
 $	goto common_without_test_in
 $!
 $asort:
@@ -651,7 +708,7 @@ $fnarydel:
 $fnparydl:
 $rebt8b2:
 $sort1:
-$	classname="charset_tests"
+$	test_class = "charset_tests"
 $	goto common_without_test_in
 $!
 $common_without_test_in:
@@ -676,7 +733,7 @@ $	endif
 $	return
 $
 $colonwarn:	echo "''test'"
-$	classname="gawk_ext"
+$	test_class = "gawk_ext"
 $	gawk -f 'test'.awk 1 < 'test'.in > _'test'.tmp
 $	gawk -f 'test'.awk 2 < 'test'.in > _'test'_2.tmp
 $	gawk -f 'test'.awk 3 < 'test'.in > _'test'_3.tmp
@@ -701,7 +758,7 @@ $	return
 $
 $dbugeval:
 $	echo "''test'"
-$	classname="gawk_ext"
+$	test_class = "gawk_ext"
 $	if f$getdvi("SYS$COMMAND", "TRM")
 $	then
 $	    set noOn
@@ -724,16 +781,21 @@ $	return
 $!
 $rsglstdin:
 $	echo "''test'"
-$	classname="gawk_ext"
+$	test_class = "gawk_ext"
 $	set noOn
 $	define/user sys$input rsgetline.in
+$	if f$search("sys$disk:[]_''test'.tmp;*") .nes. ""
+$	then
+$	    delete sys$disk:[]_'test'.tmp;*
+$	endif
 $	gawk -f rsgetline.awk 2>&1 > _'test'.tmp
-$	if .not. $status then call exit_code '$status' _'test'.tmp
+$       gawk_status = $status
 $	set On
 $	if f$search("sys$disk:[]_''test'.tmp;2") .nes. ""
 $	then
 $	    delete sys$disk:[]_'test'.tmp;2
 $	endif
+$	if .not. gawk_status then call exit_code 'gawk_status' _'test'.tmp
 $	cmp 'test'.ok sys$disk:[]_'test'.tmp
 $	if $status
 $	then
@@ -746,7 +808,7 @@ $	return
 $!
 $genpot:
 $	echo "''test'"
-$	classname="gawk_ext"
+$	test_class = "gawk_ext"
 $	set noOn
 $	gawk -f 'test'.awk --gen-pot 2>&1 >_'test'.tmp
 $	if .not. $status then call exit_code '$status' _'test'.tmp
@@ -764,7 +826,7 @@ $!
 $paramasfunc1:
 $paramasfunc2:
 $	echo "''test'"
-$	classname="basic"
+$	test_class = "gawk_ext"
 $	set noOn
 $	gawk -f 'test'.awk --posix 2>&1 >_'test'.tmp
 $	if .not. $status then call exit_code '$status' _'test'.tmp
@@ -781,7 +843,7 @@ $	return
 $!
 $watchpoint1:
 $	echo "''test'"
-$	classname="gawk_ext"
+$	test_class = "gawk_ext"
 $	set noOn
 $	gawk "-D" -f 'test'.awk 'test'.in < 'test'.script 2>&1 >_'test'.tmp
 $	if .not. $status then call exit_code '$status' _'test'.tmp
@@ -800,14 +862,14 @@ $!
 $!
 $fork:		! 4.0.2
 $fork2:		! 4.0.2
-$	classname="shlib"
+$	test_class = "shlib"
 $	skip_reasons = "''test' not implemented on VMS"
 $	gosub junit_report_skip
 $	return
 $!
 $testext:
 $	echo "''test'"
-$	classname="shlib"
+$	test_class = "shlib"
 $  	if arch_name .eqs. "VAX"
 $	then
 $	    skip_reason = "ODS-5 required"
@@ -2498,16 +2560,18 @@ $lc_num1:
 $fmttest:
 $backsmalls2:
 $	test_class = "charset_tests"
+$       test_in = "''test'.in"
 $       goto common_test_optional_input
 $!
+$fpat4:
 $regnul1:
 $regnul2:
+$crlf:
 $rsgetline:
 $rstest6:
-$crlf:
-$fpat4:
-$	classname="gawk_ext"
-$	goto common_with_test_in
+$	test_class = "gawk_ext"
+$       test_in = "''test'.in"
+$	goto common_with_test_input
 $!
 $delfunc:
 $fcall_exit2:
@@ -3380,7 +3444,7 @@ $	then
 $	    rm _'test'.tmp;
 $	    gosub junit_report_pass
 $	else
-$	    skip_reason = "Test not currently passing on VMS."
+$	    skip_reason = "Test not currently passing on VMS. UTF-8 issue."
 $	    gosub junit_report_skip
 $!	    gosub junit_report_fail_diff
 $	endif
@@ -3691,7 +3755,15 @@ $	test_class = "gawk_ext"
 $       if f$search("''test'.tmp1") .nes. "" then delete 'test'.tmp1;*
 $	gawk --profile=ap-'test'.out -f 'test'.awk > _NL:
 $	! sed <awkprof.out 1,2d >_profile3.tmp
+$	if f$search("sys$disk:[]_''test'.tmp1;*") .nes. ""
+$	then
+$	    delete sys$disk:[]_'test'.tmp1;*
+$	endif
 $	gawk "NR>2" ap-'test'.out > sys$disk:[]_'test'.tmp1
+$	if f$search("sys$disk:[]_''test'.tmp1;2") .nes. ""
+$	then
+$	    delete sys$disk:[]_'test'.tmp1;2
+$	endif
 $	convert/fdl=nla0: _'test'.tmp1 sys$disk:[]_'test'.tmp
 $	convert/fdl=nla0: 'test'.ok _'test'.ok
 $	cmp _'test'.ok sys$disk:[]_'test'.tmp
