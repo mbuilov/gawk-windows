@@ -44,7 +44,10 @@ tools, enter "make djgpp".
 
 For the MinGW build, after you build in the top-level directory, chdir
 to the extension subdirectory and say "make" there to build the
-extensions.
+extensions.  If you built gawk without libmpfr, say this instead to
+build the extensions:
+
+  make MPFR= MPFR_LIBS=
 
 
 Testing and installing gawk
