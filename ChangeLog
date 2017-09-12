@@ -1,3 +1,10 @@
+2017-09-12         Petr Ovtchenkov       <ptr@void-ptr.info>
+		   Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* Makefile.am (command.c): Make dependant on awkgram.c so
+	that bison is run serially with make -j.  Use -o option so
+	that we no longer need bisonfix.awk in this rule.
+
 2017-08-28         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* interpret.h (r_interpret): Add some casts to avoid warning

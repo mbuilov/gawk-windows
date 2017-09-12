@@ -193,9 +193,9 @@ awkgram.c: awkgram.y
 	if cmp -s y.tab.h $*.h; then rm -f y.tab.h; else mv y.tab.h $*.h; fi; \
 	else :; fi
 
-command.c: command.y
-	$(YACC) -p zz $<
-	sed 's/parse error/syntax error/g' < y.tab.c | awk -f "$(srcdir)"/bisonfix.awk command > $*.c && rm y.tab.c
+command.c: command.y awkgram.c
+	$(YACC) -o $@ -p zz $<
+	sed 's/parse error/syntax error/g' < $@ > $@.tmp && mv $@.tmp $@
 
 # This is for my development & testing.
 efence: gawk
