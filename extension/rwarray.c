@@ -85,7 +85,7 @@ static awk_bool_t read_value(FILE *fp, awk_value_t *value);
  * For each element:
  * Length of index val:	4 bytes - network order
  * Index val as characters (N bytes)
- * Value type		4 bytes (0 = string, 1 = number, 2 = array, 3 = regex, 4 = strnum)
+ * Value type		4 bytes (0 = string, 1 = number, 2 = array, 3 = regex, 4 = strnum, 5 = undefined)
  * IF string:
  * 	Length of value	4 bytes
  * 	Value as characters (N bytes)
@@ -242,6 +242,9 @@ write_value(FILE *fp, awk_value_t *val)
 			break;
 		case AWK_REGEX:
 			code = htonl(3);
+			break;
+		case AWK_UNDEFINED:
+			code = htonl(5);
 			break;
 		default:
 			/* XXX can this happen? */
@@ -474,6 +477,9 @@ read_value(FILE *fp, awk_value_t *value)
 			break;
 		case 4:
 			value->val_type = AWK_STRNUM;
+			break;
+		case 5:
+			value->val_type = AWK_UNDEFINED;
 			break;
 		default:
 			/* this cannot happen! */
