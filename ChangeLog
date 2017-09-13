@@ -1,3 +1,16 @@
+2017-09-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (command.c): Don't need the dependency on awkgram.c
+	anymore.
+	* bisonfix.awk: Removed.
+	* README: Revised to describe use of Bison exclusively.
+
+2017-09-13         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* Makefile.am (awkgram.c): Use -o option to bison. Get rid of
+	messing with y.tab.h, that was obsolete.
+	(EXTRA_DIST): Don't need bisonfix.awk anymore.
+
 2017-09-12         Petr Ovtchenkov       <ptr@void-ptr.info>
 		   Andrew J. Schorr      <aschorr@telemetry-investments.com>
 

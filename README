@@ -34,14 +34,13 @@ have read and didn't, and you bug me about it, I'm going to yell at you.
 
 See the file INSTALL for installation instructions.
 
-If you have neither Bison nor yacc, use the awkgram.c file here.  It was
+If you don't have neither Bison, use the awkgram.c file here.  It was
 generated with Bison, and has no proprietary code in it.  (Note that
-modifying awkgram.y without Bison or yacc will be difficult, at best.
-You might want to get a copy of Bison from the FSF too.)
+modifying awkgram.y without Bison will be difficult, at best.  You might
+want to get a copy of Bison from the FSF too.)
 
-Since there are two parsers in gawk (one for the grammar, one for the
-debugger), there is a dependency on Bison's ability to rename the
-yacc internal variables.  So, you should really use Bison and not yacc.
+The build mechanics depend upon Bison. Also, gawk doesn't work correctly
+with some versions of yacc, so just use Bison.
 
 If you have an MS-DOS, MS-Windows, or OS/2 system, use the stuff in the `pc'
 directory.  Similarly, there is a separate directory for VMS.

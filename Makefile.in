@@ -461,7 +461,6 @@ EXTRA_DIST = \
 	NEWS.0 \
 	POSIX.STD \
 	README_d \
-	bisonfix.awk \
 	config.guess \
 	config.rpath  \
 	config.sub \
@@ -1193,17 +1192,12 @@ dist-hook:
 	cp "$(srcdir)"/pc/config.h "$(distdir)"/pc/config.h
 
 # Special rules for individual files
-# Use of awk instead of $(AWK) is deliberate, in case gawk doesn't build
-# or work correctly.
 
 awkgram.c: awkgram.y
-	$(YACC) $(AM_YFLAGS) $(YFLAGS) $<
-	sed 's/parse error/syntax error/g' < y.tab.c | awk -f "$(srcdir)"/bisonfix.awk awkgram > $*.c && rm y.tab.c
-	if test -f y.tab.h; then \
-	if cmp -s y.tab.h $*.h; then rm -f y.tab.h; else mv y.tab.h $*.h; fi; \
-	else :; fi
+	$(YACC) -o $@ $(AM_YFLAGS) $(YFLAGS) $<
+	sed 's/parse error/syntax error/g' < $@ > $@.tmp && mv $@.tmp $@
 
-command.c: command.y awkgram.c
+command.c: command.y
 	$(YACC) -o $@ -p zz $<
 	sed 's/parse error/syntax error/g' < $@ > $@.tmp && mv $@.tmp $@
 
