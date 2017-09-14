@@ -412,7 +412,7 @@
 	(INSTRUCTION_POOL): New type.
 	(struct context): Use INSTRUCTION_POOL.
 	* array.c (assoc_list): Reorg the code a bit to make sure
-	to alway free the INSTRUCTIONs allocated for calling a
+	to always free the INSTRUCTIONs allocated for calling a
 	user-supplied sorting function. Based on code by
 	Andrew Schorr.
 	* symbol.c (free_bcpool): Rework to use an INSTRUCTION_POOL.
@@ -1124,7 +1124,7 @@
 	do_set_var, display, do_watch, print_watch_item, serialize_subscript,
 	do_print_f): Use %.*s.
 	* eval.c (cmp_nodes, fmt_index): Save and restore character after end.
-	* interpret.h (r_interpret): Fix compuation for concatenation of
+	* interpret.h (r_interpret): Fix computation for concatenation of
 	wide strings.
 	* io.c (is_non_fatal_redirect): Add length parameter; save and
 	restore character after last. Adjust all other declarations and calls.
@@ -1161,7 +1161,7 @@
 	[REGEX]: New flag.
 	(tre_reg): New member in val part of NODE union.
 	(force_string, force_number, fixtype): Remove use of Node_typedregex.
-	* awkgram.y (grammer): Use REGEX flag instead of node type.
+	* awkgram.y (grammar): Use REGEX flag instead of node type.
 	(valinfo); Ditto.
 	(make_regnode): Adjust creation based on node type.
 	* builtin.c (do_length, do_print, call_sub, call_match,
@@ -2048,7 +2048,7 @@
 
 2016-05-12  Eli Zaretskii  <eliz@gnu.org>
 
-	* nonposix.h: Add prototypes for Posix functions emulated in pc/*
+	* nonposix.h: Add prototypes for POSIX functions emulated in pc/*
 	files.
 
 2016-05-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
@@ -2182,7 +2182,7 @@
 	Due to shift-reduce parsing, there can be up to two comments
 	captured and waiting to be saved; be sure to get them both and
 	at the right times.  This is difficult since comments have no
-	real syntactic exisitence. Call add_pending_comment on most of
+	real syntactic existence. Call add_pending_comment on most of
 	the simple statements.
 	(get_comment): Save a pre-existing comment in prior_comment.
 	(split_comment): Use comment_to_save instead of `comment'.
@@ -2657,7 +2657,7 @@
 	Thanks to Hermann Peifer for the bug report.
 
 	* awkgram.y (valinfo): Add support for Node_typedregex.
-	* debug.c (watchpoint_triggerred): Handle Node_typedregex.
+	* debug.c (watchpoint_triggered): Handle Node_typedregex.
 	(initialize_watch_item): Ditto.
 	(print_memory): Ditto.
 
@@ -2893,7 +2893,7 @@
 	* regex_internal.h (test_malloc, test_realloc): New functions
 	that check for zero count.
 	(re_malloc, re_realloc): Adjust to call the new functions for gawk.
-	* regexec.c (buid_trtable, match_ctx_clean): Replace malloc/free
+	* regexec.c (build_trtable, match_ctx_clean): Replace malloc/free
 	with re_malloc/re_free.
 
 	Unrelated:
@@ -2931,7 +2931,7 @@
 	* io.c (devopen_simple): New routine.
 	(devopen): Call devopen_simple as appropriate.
 	* profile.c (set_prof_file): Call devopen_simple as appropriate,
-	some additonal logic to hande fd to fp conversion.
+	some additional logic to handle fd to fp conversion.
 
 	Unrelated:
 
@@ -3168,7 +3168,7 @@
 
 2015-02-01         Arnold D. Robbins     <arnold@skeeve.com>
 
-	Move POSIX requirement for disallowing paramater names with the
+	Move POSIX requirement for disallowing parameter names with the
 	same name as a function into --posix.
 
 	* NEWS: Document it.
@@ -3286,7 +3286,7 @@
 	a deferred variable in a newly added 3rd arg.
 	(variable): Pass 3rd arg to variable_create.
 	* gawkapi.c (api_sym_update): If we triggered the creation of a deferred
-	variable, we must merge the extension's array elements into the deffered
+	variable, we must merge the extension's array elements into the deferred
 	array, not the other way around.  The ENVIRON array has special funcs
 	to call setenv and unsetenv.
 
@@ -3411,7 +3411,7 @@
 2014-11-22         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h (emalloc, realloc): Redefine in terms of ...
-	(emalloc_real, eralloc_real): New static inline functions.
+	(emalloc_real, erealloc_real): New static inline functions.
 	(fatal): Move definition up.
 	* gawkmisc.c (xmalloc): If count is zero, make it one for older
 	mallocs that require size > 0 (such as z/OS).
@@ -3735,13 +3735,13 @@
 		- DO print the header comments
 		- Do NOT print the program's original comments
 
-	* awkgram.y (comment0, commentf): New varibles that are  pointers to
+	* awkgram.y (comment0, commentf): New variables that are  pointers to
 	program and function comments.
 	(get_comment): New function that retrieves consecutive comment lines
 	and empty lines as a unit).
 	(split_comment): New function: iff first block in the program is a
-	function and it is predeeded by comments, take the last non-blank
-	line as function comment and any preceeding lines as program comment.)
+	function and it is preceded by comments, take the last non-blank
+	line as function comment and any preceding lines as program comment.)
 
 	Following token rules were changed to handle comments:
 
@@ -3821,7 +3821,7 @@
 	Unrelated:
 
 	Remove support for MirBSD. It uglified the code too much
-	for no discernable gain.
+	for no discernible gain.
 
 	* configure.ac: Remove check for MirBSD and define of
 	LIBC_IS_BORKED.
@@ -3833,7 +3833,7 @@
 2014-08-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regex.h: Remove underscores in names of parameters in function
-	declarations. Tweak names as neeeded.
+	declarations. Tweak names as needed.
 
 2014-08-20         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -4139,7 +4139,7 @@
 
 2014-04-11         Arnold D. Robbins     <arnold@skeeve.com>
 
-	* io.c (closemabyesocket): Define if not defined, e.g. building
+	* io.c (closemaybesocket): Define if not defined, e.g. building
 	without socket code. Thanks to dave.gma@googlemail.com (Dave Sines)
 	for the report.
 
@@ -4381,7 +4381,7 @@
 
 	* configure.ac: Add --disable-extensions flag to control
 	compiling extensions.  Better for cross-compiling.
-	(AC_CANONICAL_HOST): Added. Changed case statments appropriately.
+	(AC_CANONICAL_HOST): Added. Changed case statements appropriately.
 	* Makefile.am (check-for-shared-lib-support): Removed.
 	(check-recursive, all-recursive): Removed.
 
@@ -4628,7 +4628,7 @@
 
 	* regcomp.c (re_fastmap_iter): Undo addition of volatile from
 	Jan 18 2007; no longer needed and is one less change to have to
-	maintain aginst the upstream.
+	maintain against the upstream.
 
 	* regcomp.c, regex.h, regex_internal.h: Sync with GLIBC.
 
@@ -4937,7 +4937,7 @@
 2013-05-20         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkapi.h [FAKE_FD_VALUE]: Moved from here to ...
-	* io.c [FAKE_FD_VALAUE]: here.
+	* io.c [FAKE_FD_VALUE]: here.
 
 2013-05-14  Eli Zaretskii  <eliz@gnu.org>
 
@@ -5085,7 +5085,7 @@
 
 2013-02-12         Arnold D. Robbins     <arnold@skeeve.com>
 
-	* bisonfix.awk: Comment out code for fixing contined #if
+	* bisonfix.awk: Comment out code for fixing continued #if
 	statements. It is likely not needed anymore. Leave it there in
 	case I'm wrong.
 
@@ -5280,7 +5280,7 @@
 
 	Unrelated: Fix --disable-lint so that everything compiles.
 
-	* main.c (main): Move case lable inside ifdef.
+	* main.c (main): Move case label inside ifdef.
 	* awkgram.y (isnoeffect): Add ifdefs around declaration, use,
 	and function body.
 
@@ -5533,7 +5533,7 @@
 
 2012-11-14         Arnold D. Robbins     <arnold@skeeve.com>
 
-	* io.c (do_find_source): On VMS, don't add the `/' separater.
+	* io.c (do_find_source): On VMS, don't add the `/' separator.
 	Thanks to Anders Wallin.
 
 	MPFR minor cleanup:
@@ -5568,7 +5568,7 @@
 	remove_element, run_ext_exit_handlers): Add null pointer checks.
 	Everywhere: Add / fixup leading comments.
 
-	* interpret.h (Op_store_sub): If assigning to an unitialized variable
+	* interpret.h (Op_store_sub): If assigning to an uninitialized variable
 	through SYMTAB, change it to Node_var. Add explanatory comments.
 	* symbol.c (get_symbol): Rationalized. Skip non-variables in SYMTAB.
 
@@ -5640,7 +5640,7 @@
 	soon as they are seen in the scanner; the rules that check them
 	can not be reduced until after a token that allows them is seen,
 	leading to errors at execution time.
-	* interpret.h (Op_K_break, Op_K_continue, Op_jmp): Add asssertion
+	* interpret.h (Op_K_break, Op_K_continue, Op_jmp): Add assertion
 	that pc->target_jmp is not NULL.
 
 	* symbol.c (lookup): Correct a comment.
@@ -6034,7 +6034,7 @@
 
 	* gawk_api.h (api_sym_constant): Create a constant.
 	* gawk_api.h (api_sym_update_real): Renamed from api_sym_update.
-	Add is_const paramater and do the right thing if true.
+	Add is_const parameter and do the right thing if true.
 	(api_sym_update, api_sym_constant): Call api_sym_update_real
 	in the correct way.
 	(set_constant): New function.
@@ -6063,7 +6063,7 @@
 
 	Lots of API work.
 
-	* gawkapi.h: Function pointer members renamed api_XXXX and
+	* gawkapi.h: Function pointer members renamed api_XXX and
 	macros adjusted. More documentation.
 	(awk_valtype_t): New AWK_SCALAR enum for scalar cookies.
 	(awk_scalar_t): New type.
@@ -6158,7 +6158,7 @@
 
 2012-06-24         Arnold D. Robbins     <arnold@skeeve.com>
 
-	* ext.c (load_ext): Don't retun a value from a void function.
+	* ext.c (load_ext): Don't return a value from a void function.
 	* gawkapi.c (api_set_array_element): Set up vname and parent_array.
 
 2012-06-21         Arnold D. Robbins     <arnold@skeeve.com>
@@ -6222,12 +6222,12 @@
 
 2012-06-18         Arnold D. Robbins     <arnold@skeeve.com>
 
-	* gawkapi.h (get_array_element): Restore `wanted' paramater.
+	* gawkapi.h (get_array_element): Restore `wanted' parameter.
 	(awk_element_t): Use awk_value_t for index. Add awk_flat_array_t.
 	(flatten_array): Change signature to use awk_flat_array_t;
 	(release_flattened_array): Change signature to use awk_flat_array_t;
 	* gawkapi.c (api_sym_update): Handle case where variable exists already.
-	(api_get_array_element): Restore `wanted' paramater and pass it
+	(api_get_array_element): Restore `wanted' parameter and pass it
 	on to node_to_awk_value.
 	(api_set_array_element): Revisse to match changed element type.
 	(api_flatten_array): Revise signature, implement.
@@ -6681,7 +6681,7 @@
 	(h_interpret): Renamed from debug_interpret.
 	(init_interpret): Changed to use the new name.
 	(flags2str): New entries for MPFN and MPZN.
-	(cmp_nodes): Reworked to use seperate routine for numeric comparisons.
+	(cmp_nodes): Reworked to use separate routine for numeric comparisons.
 	(set_IGNORECASE, set_BINMODE, set_LINT, update_NR, update_FNR,
 	update_NF): Adjust code and some cleanup.
 	* field.c (rebuild_record): Field copying code reworked to handle
@@ -6845,7 +6845,7 @@
 	New variables.
 	(init_io): New routine to initialize the variables.
 	(in_PROCINFO): New "clever" routine to parse elements with indices
-	seperated by a SUPSEP.
+	separated by a SUPSEP.
 	(get_read_timeout): New routine to read timeout value for an IOBUF.
 	(read_with_timeout): New routine to read from a fd with a timeout.
 	(pty_vs_pipe): Use in_PROCINFO().
@@ -6933,8 +6933,8 @@
 	* debug.c (source_find): Fix misplaced call to efree.
 	* profile.c (redir2str): Add a missing comma in the redirtab array.
 	* eval.c (r_interpret): Disallow call to exit if currule is undefined.
-	This avoids the possiblity of running END blocks more than once when
-	used in a user-defined sorted-in comparision function.
+	This avoids the possibility of running END blocks more than once when
+	used in a user-defined sorted-in comparison function.
 	* array.c (sort_user_func): Adjust appropriately.
 
 2011-12-06         Arnold D. Robbins     <arnold@skeeve.com>
@@ -7043,7 +7043,7 @@
 2011-10-10         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_sub): Init textlen to zero to avoid "may be
-	used unitialized" warning. Thanks to Corinna Vinschen for
+	used uninitialized" warning. Thanks to Corinna Vinschen for
 	pointing this out.
 	* eval.c (unwind_stack): Add parentheses around condition in while
 	to avoid overzealous warning from GCC.
@@ -7099,7 +7099,7 @@
 	* dfa.c, mbsupport.h: Sync with GNU grep. Large amount of changes
 	that remove many ifdefs, moving many conditions for multibyte
 	support into regular C code and relying GCC's dead code optimization
-	to elimnate code that won't be needed.
+	to eliminate code that won't be needed.
 	* dfa.c: For gawk, add a number of additional defines so that things
 	will compile if MBS_SUPPORT is 0.
 	* array.c, awk.h, awkgram.y, builtin.c, eval.c, field.c, main.c,
@@ -7130,7 +7130,7 @@
 	* awkgram.y: Move symbol table related routines to the
 	new file.
 	(rule, func_name, function_prologue, param_list): Reworked.
-	(install_function, check_params): Do all error checkings
+	(install_function, check_params): Do all error checks
 	for the function name and parameters before installing in
 	the symbol table.
 	(mk_function): Finalize function definition.
@@ -7144,7 +7144,6 @@
 	* awk.h (parmlist, FUNC): Nuked.
 	(fparms): New define.
 
-
 	Dynamically loaded function parameters are now handled like
 	those for a builtin.
 
@@ -7157,7 +7156,6 @@
 	* eval.c (r_interpret): Update case Op_func_call for a dynamic
 	extension function. Handle the new opcode Op_ext_builtin.
 	* pprint (profile.c): Adjust.
-
 
 	Use a single variable to process gawk options.
 
@@ -7175,16 +7173,14 @@
 	* debug.c (execute_code, do_eval, parse_condition): Save
 	do_flags before executing/parsing and restore afterwards.
 
-
 	Nuke PERM flag. Always increment/decrement the reference
 	count for a Node_val. Simplifies macros and avoids
-	occassional memory leaks, specially in the debugger.
+	occasional memory leaks, specially in the debugger.
 
 	* awk.h (UPREF, DEREF, dupnode, unref): Simplified.
 	(mk_number): Nuked.
 	* (*.c): Increment the reference count of Nnull_string before
 	assigning as a value.
-
 
 	Revamped array handling mechanism for more speed and
 	less memory consumption.
@@ -7207,7 +7203,6 @@
 	* cint_array.c: New file. Special handling of arrays with
 	(mostly) consecutive integer indices.
 
-
 	Memory pool management reworked to handle NODE and BUCKET.
 
 	* awk.h (struct block_item, BLOCK, block_id): New definitions.
@@ -7227,7 +7222,7 @@
 
 2011-08-23         Arnold D. Robbins     <arnold@skeeve.com>
 
-	* regex_internal.c (re_string_fetch_byte_case ): Remove
+	* regex_internal.c (re_string_fetch_byte_case): Remove
 	__attribute((pure)) since it causes failures with gcc -O2
 	-fno-inline. Thanks to Neil Cahill <ncahill_alt@yahoo.com>
 	for reporting the bug.
@@ -7354,13 +7349,13 @@
 	need to use their own domain.
 
 	* awk.h (enum errno_translate): Removed.
-	(update_ERRNO_string): Remove second translate paramater.
-	* eval.c (update_ERRNO_string): Remove second translate paramater
+	(update_ERRNO_string): Remove second translate parameter.
+	* eval.c (update_ERRNO_string): Remove second translate parameter
 	and code that used it.
 	* gawkapi.h (api_update_ERRNO_string): Remove third translate
 	parameter.
 	* gawkapi.c (api_update_ERRNO_string): Remove third translate
-	paramater and change call to update_ERRNO_string.
+	parameter and change call to update_ERRNO_string.
 	* io.c (do_close): Fix call to update_ERRNO_string.
 
 2011-07-15         Arnold D. Robbins     <arnold@skeeve.com>
