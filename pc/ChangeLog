@@ -1,3 +1,17 @@
+2017-09-16  Eli Zaretskii  <eliz@gnu.org>
+
+	* config.h (HAVE_GAI_STRERROR) [__MINGW32__]: Define to 1.  Update
+	to Gawk 4.1.64.
+
+	* config.sed (HAVE_GAI_STRERROR) [__MINGW32__]: Edit to 1 for MinGW.
+
+	* Makefile.tst (nondec): Edit the error message to match teh
+	expected results.
+
+	* Makefile (awkgram.c): Edit "parse error" into "syntax error",
+	like the mainline Makefile does.
+	(clean): Remove awkgram.tmp.
+
 2017-08-27         Juan Manuel Guerrero  <juan.guerrero@gmx.de>
 
 	* pc/Makefile.tst (mbstr1, mbstr2, errno, getlndir, clos1way2)

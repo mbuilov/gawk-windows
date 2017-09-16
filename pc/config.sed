@@ -46,6 +46,10 @@ s/^#undef HAVE_ATEXIT *$/#define HAVE_ATEXIT 1/
 #endif
 s/^#undef HAVE_FCNTL_H *$/#define HAVE_FCNTL_H 1/
 s/^#undef HAVE_FMOD *$/#define HAVE_FMOD 1/
+/^#undef HAVE_GAI_STRERROR *$/c\
+#ifdef __MINGW32__\
+#define HAVE_GAI_STRERROR 1\
+#endif
 /^#undef HAVE_GETADDRINFO *$/c\
 #ifdef __MINGW32__\
 #define HAVE_GETADDRINFO 1\

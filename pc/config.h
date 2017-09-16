@@ -56,6 +56,11 @@
 /* Define to 1 if you have the `fwrite_unlocked' function. */
 #undef HAVE_FWRITE_UNLOCKED
 
+/* Define to 1 if you have the `gai_strerror' function. */
+#ifdef __MINGW32__
+#define HAVE_GAI_STRERROR 1
+#endif
+
 /* have getaddrinfo */
 #ifdef __MINGW32__
 #define HAVE_GETADDRINFO 1
@@ -457,7 +462,7 @@
 #define PACKAGE_NAME "GNU Awk"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GNU Awk 4.1.63"
+#define PACKAGE_STRING "GNU Awk 4.1.64"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gawk"
@@ -466,7 +471,7 @@
 #define PACKAGE_URL "http://www.gnu.org/software/gawk/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.1.63"
+#define PACKAGE_VERSION "4.1.64"
 
 /* Define to 1 if *printf supports %F format */
 #ifdef __DJGPP__
@@ -523,7 +528,7 @@
 
 
 /* Version number of package */
-#define VERSION "4.1.63"
+#define VERSION "4.1.64"
 
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE

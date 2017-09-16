@@ -278,7 +278,8 @@ awkgram$O: awk.h awkgram.c
 	$(CC) -c $(CFLAGS) awkgram.c
 
 awkgram.c:	awkgram.y
-	bison -o $@ awkgram.y
+	bison -o awkgram.tmp awkgram.y
+	sed "s/parse error/syntax error/g" < awkgram.tmp > $@
 
 alloca$O:	alloca.c
 
@@ -312,7 +313,7 @@ install-strip: install$(install)
 	-$(MAKE) -C extension $@
 
 clean:
-	-rm -rf gawk *.exe gawk.map *.o *.obj core a.out $(RSPFILE) $(PRSPFILE) $(DRSPFILE) $(DYN_EXP)
+	-rm -rf gawk *.exe gawk.map *.o *.obj core a.out $(RSPFILE) $(PRSPFILE) $(DRSPFILE) $(DYN_EXP) awkgram.tmp
 #	cd doc && $(MAKE) clean
 #	cd test && $(MAKE) clean
 #	cd awklib && $(MAKE) clean
