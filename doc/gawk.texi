@@ -33279,9 +33279,9 @@ Once you have a record representing your extension function, you register
 it with @command{gawk} using this API function:
 
 @table @code
-@item awk_bool_t add_ext_func(const char *namespace, awk_ext_func_t *func);
+@item awk_bool_t add_ext_func(const char *name_space, awk_ext_func_t *func);
 This function returns true upon success, false otherwise.
-The @code{namespace} parameter is currently not used; you should pass in an
+The @code{name_space} parameter is currently not used; you should pass in an
 empty string (@code{""}).  The @code{func} pointer is the address of a
 @code{struct} representing your function, as just described.
 
