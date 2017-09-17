@@ -10,7 +10,7 @@
  */
 
 /*
- * Copyright (C) 2001, 2004, 2005, 2010-2016
+ * Copyright (C) 2001, 2004, 2005, 2010-2017
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -73,7 +73,6 @@
 #include <unistd.h>
 
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
@@ -84,6 +83,8 @@
 #elif defined(MAJOR_IN_SYSMACROS)
 #include <sys/sysmacros.h>
 #endif
+
+#include <sys/stat.h>
 
 #if defined(HAVE_SYS_STATVFS_H) && defined(HAVE_STATVFS)
 #include <sys/statvfs.h>
