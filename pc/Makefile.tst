@@ -864,7 +864,7 @@ mbprintf4::
 mbprintf5::
 	@echo $@
 	@case `uname` in \
-	CYGWIN* | MINGW32*) echo this test fails on this system --- skipping $@ ;; \
+	CYGWIN* | MINGW32* | *MS-DOS*) echo this test fails on this system --- skipping $@ ;; \
 	*) \
 	GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@ ; \
@@ -904,7 +904,7 @@ printfbad2: printfbad2.ok
 
 beginfile1::
 	@echo $@
-	@echo Expect beginfile1 to fail with DJGPP
+	@echo Expect beginfile1 to fail with DJGPP due to error message differences.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.awk . ./no/such/file Makefile  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -2294,6 +2294,7 @@ sclifin:
 
 sigpipe1:
 	@echo $@
+	@echo Expect sigpipe1 to fail with DJGPP.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -2487,6 +2488,7 @@ arraysort:
 
 backw:
 	@echo $@
+	@echo Expect backw to fail with DJGPP.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -2799,16 +2801,19 @@ nondec:
 
 nonfatal1:
 	@echo $@
+	@echo Expect nonfatal1 to fail with DJGPP.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk 2>&1 | $(AWK) '{print gensub(/invalid.*$$/, "invalid", 1, $$0)}' >_$@ || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 nonfatal2:
 	@echo $@
+	@echo Expect nonfatal2 to fail with DJGPP due to error message differences.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 nonfatal3:
 	@echo $@
+	@echo Expect nonfatal3 to fail with DJGPP.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -2995,7 +3000,7 @@ typeof5:
 
 timeout:
 	@echo $@
-	@echo Expect timeout to fail with MinGW
+	@echo Expect timeout to fail with DJGPP and MinGW
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
