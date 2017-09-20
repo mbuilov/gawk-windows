@@ -3128,7 +3128,7 @@ Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
 clean-local:
 	rm -fr _* core core.* fmtspcl.ok junk strftime.ok test1 test2 \
 	seq *~ readfile.ok fork.tmp.* testext.awk fts.ok readdir.ok \
-	mmap8k.ok profile1.ok
+	mmap8k.ok profile1.ok readdir_test.ok
 
 # An attempt to print something that can be grepped for in build logs
 pass-fail:
