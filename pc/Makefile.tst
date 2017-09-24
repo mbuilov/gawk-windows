@@ -303,7 +303,7 @@ machine-tests: $(MACHINE_TESTS)
 # in the next shlib-tests.
 mpfr-tests:
 	@if $(AWK) --version | $(AWK) ' /MPFR/ { exit 1 }' ; then \
-	@echo MPFR tests not supported on this system ; \
+	echo MPFR tests not supported on this system ; \
 	else $(MAKE) $(MPFR_TESTS) ; \
 	fi
 
@@ -312,7 +312,7 @@ arraydebug-tests:
 
 shlib-tests:
 	@if $(AWK) --version | $(AWK) ' /API/ { exit 1 }' ; then \
-	@echo shlib tests not supported on this system ; \
+	echo shlib tests not supported on this system ; \
 	else $(MAKE) shlib-real-tests ; \
 	fi
 
@@ -1068,7 +1068,7 @@ mpfrmemok1:
 
 jarebug::
 	@echo $@
-	@echo Expect jarebug to fail with DJGPP and MinGW.
+	@echo Expect jarebug to fail with DJGPP.
 	@"$(srcdir)"/$@.sh "$(AWKPROG)" "$(srcdir)"/$@.awk "$(srcdir)"/$@.in "_$@"
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -3128,7 +3128,7 @@ Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
 clean-local:
 	rm -fr _* core core.* fmtspcl.ok junk strftime.ok test1 test2 \
 	seq *~ readfile.ok fork.tmp.* testext.awk fts.ok readdir.ok \
-	mmap8k.ok profile1.ok
+	mmap8k.ok profile1.ok readdir_test.ok
 
 # An attempt to print something that can be grepped for in build logs
 pass-fail:
