@@ -96,11 +96,11 @@ Brian Kernighan and Michael Brennan who reviewed it.
 .sp .4
 .so SRCDIR/ad.block
 .\" a subtlety here; this line changes color. We rely on it
-.\" also to provide a blank line.
+.\" also to provide a empty line.
 \*(CD
 .SL
 .nf
-\*(FRCopyright \(co 1996\(en2005, 2007, 2009\(en2016
+\*(FRCopyright \(co 1996\(en2005, 2007, 2009\(en2017
 Free Software Foundation, Inc.
 .nf
 .BT
@@ -155,6 +155,10 @@ Strings may contain \*(FIescape sequences\*(FR.
 enclosed in forward slashes, or a dynamic regexp computed at run-time.
 Regexp constants may contain \*(FIescape sequences\*(FR.
 .sp .5
+\*(CB\*(FIstrongly typed regexp\fP \- a regular expression constant with
+a leading \*(FC@\*(FR. E.g., \*(FC@/stuff/\*(FR. Such constants may
+be assigned to variables and passed to user-defined functions.\*(CD
+.sp .5
 \*(FIname\fP \- a variable, array or function name.
 .sp .5
 \*(FIentry\fP(\*(FIN\fP) \- entry \*(FIentry\fP in section \*(FIN\fP of the
@@ -174,7 +178,7 @@ be missing.\*(CX
 .ES
 .fi
 \*(CDCommand line arguments control setting the field separator,
-setting variables before the \*(FCBEGIN\fP rule is run, and
+setting variables before the \*(FCBEGIN\fP rule runs, and
 the location of AWK program source code.
 Implementation-specific command line arguments change
 the behavior of the running interpreter.
@@ -237,9 +241,7 @@ l lw(1.3i).
 .TE
 .in +4n
 .TI "\*(FC\-b\*(FR, \*(FC\-\^\-characters\-as\-bytes\*(FR
-Treat all input data as single-byte characters. I.e.,
-don't attempt to
-process strings as multibyte characters.
+Treat all input data as single-byte characters.
 Overridden by \*(FC\-\^\-posix\*(FR.
 .TI "\*(FC\-c\*(FR, \*(FC\-\^\-traditional\*(FR
 Disable \*(GK-specific extensions.
@@ -270,8 +272,10 @@ Print a short summary of the available
 options on \*(FCstdout\*(FR, then exit zero.
 .TI "\*(FC\-i \*(FIfile\*(FR, \*(FC\-\^\-include \*(FIfile\*(FR
 Include library AWK code in \*(FIfile\*(FR.
+See \fHAwk Program Execution\*(FR.
 .TI "\*(FC\-l \*(FIlib\*(FR, \*(FC\-\^\-load \*(FIlib\*(FR
 Load dynamic extension \*(FIlib\fP.
+See \fHDynamic Extensions\*(FR.
 .TI "\*(FC\-L \*(FR[\*(FC\*(FIvalue\*(FR], \*(FC\-\^\-lint\*(FR[\*(FC=\*(FIvalue\*(FR]
 Warn about dubious or non-portable constructs.
 If \*(FIvalue\*(FR is
@@ -299,10 +303,10 @@ Send profiling data to \*(FIfile\*(FR
 The profile contains execution counts in the left margin
 of each statement in the program.
 .TI "\*(FC\-P\*(FR, \*(FC\-\^\-posix\*(FR
-Disable common and GNU extensions.\*(CB
+Disable common and GNU extensions.
 .TI "\*(FC\-r\*(FR, \*(FC\-\^\-re\-interval\*(FR
 Enable \*(FIinterval expressions\*(FR.
-(Needed with \*(FC\-c\*(FR.)
+(Needed with \*(FC\-c\*(FR.)\*(CB
 .in -4n
 .EB "\s+2\f(HBCOMMAND LINE ARGUMENTS (\*(GK\f(HB)\*(FR\s0"
 
@@ -435,7 +439,9 @@ and to the pattern-action statements themselves.\*(CX
 .\" --- Awk Program Execution
 .ES
 .fi
-\*(CDAWK programs are a sequence of pattern-action statements
+\*(CDAWK programs are a sequence of
+\*(CBoptional directives,\*(CD
+pattern-action statements
 and optional function definitions.
 .sp .5
 	\*(CB\*(FC@include "\*(FIfilename\*(FC"
@@ -473,12 +479,6 @@ A command line argument of the form
 is treated as a variable assignment. The variable
 \*(FIvar\fP is assigned the value \*(FIval\*(FR.
 (This happens after any \*(FCBEGIN\fP rule(s) have been run.)
-... delete this paragraph if no space
-Command line variable assignment
-is most useful for dynamically assigning values to the variables
-\*(AK uses to control how input is broken into fields and records. It
-is also useful for controlling state if multiple passes are needed over
-a single data file.
 .sp .5
 If the value of a particular element of \*(FCARGV\fP is empty
 (\*(FC"\^"\*(FR), \*(AK skips over it.
@@ -490,8 +490,8 @@ the code associated with \*(FCENDFILE\fP after processing the file.\*(CD
 .sp .5
 For each record in the input, \*(AK tests to see if it matches any
 \*(FIpattern\fP in the AWK program.
-For each pattern that the record matches, the associated
-\*(FIaction\fP is executed.
+For each pattern that the record matches,
+it executes the associated \*(FIaction\fP.
 The patterns are tested in the order they occur in the program.
 .sp .5
 Finally, after all the input is exhausted,
@@ -516,7 +516,7 @@ Index in \*(FCARGV\fP of current data file.\*(CD
 T}
 \*(FCARGV\fP	T{
 Array of command line arguments. Indexed from
-0 to \*(FCARGC\fP \- 1. Dynamically changing the
+zero to \*(FCARGC\fP \- 1. Dynamically changing the
 contents of \*(FCARGV\fP can control the files used
 for data.
 T}
@@ -557,10 +557,9 @@ fails, or if
 T}
 \*(FCFIELDWIDTHS\fP	T{
 Whitespace-separated list of field widths.
-Each field width may optionally be preceded by a colon-separated
-value specifying the number of characters to skip before the field starts.
 Used to parse the input into fields of fixed width,
-instead of the value of \*(FCFS\fP.\*(CD
+instead of the value of \*(FCFS\fP.
+See \fHFields\*(FR.\*(CD
 T}
 \*(FCFILENAME\fP	T{
 Name of the current input file. If no files given
@@ -637,7 +636,7 @@ Input record separator, a newline by default
 T}
 \*(FCRSTART\fP	T{
 Index of the first character matched by
-\*(FCmatch()\*(FR; 0 if no match.
+\*(FCmatch()\*(FR; zero if no match.
 T}
 \*(CB\*(FCRT\fP	T{
 Record terminator. \*(GK sets \*(FCRT\fP to the input
@@ -760,7 +759,7 @@ T}
 \*(FIspace\fP	String concatenation
 \*(FC< >\fP	Less than, greater than
 \*(FC<= >=\fP	Less than or equal, greater than or equal
-\*(FC!= ==\fP	Not equal, equal
+\*(FC== !=\fP	Equal, not equal
 \*(FC~ !~\fP	Regular expression match, negated match
 \*(FCin\fP	Array membership
 \*(FC&&\fP	Logical AND, short circuit
@@ -783,11 +782,13 @@ l lw(1.8i).
 Context determines how a variable's value is interpreted. If used in
 a numeric expression, it will be treated as a number, if used as a string
 it will be treated as a string.
+\*(CBAssigning a strongly typed regexp constant to a scalar makes it
+a regexp.\*(CD
 .sp .5
-To force a variable to be treated as a number, add 0 to it; to force it
+To force a variable to be treated as a number, add zero to it; to force it
 to be treated as a string, concatenate it with the null string.
 .sp .5
-Uninitialized variables have the numeric value 0 and the string value
+Uninitialized variables have the numeric value zero and the string value
 \*(FC"\^"\fP
 (the null, or empty, string).
 .sp .5
@@ -941,8 +942,7 @@ The \*(FCdefault\fP label and associated statements are optional.\*(CD
 .br
 While \*(FIcondition\*(FR is true, execute \*(FIstatement\*(FR.
 .ti -.2i
-\*(FC{ \*(FIstatements \*(FC}\*(FR
-.br
+\*(FC{ \*(FIstatements \*(FC}\*(FR .br
 A list of statements enclosed in braces can be used anywhere
 that a single statement would otherwise be used.\*(CX
 .in -.2i
@@ -986,13 +986,13 @@ The value of \*(FCIGNORECASE\fP
 also affects how records are separated when
 \*(FCRS\fP is a regular expression.\*(CD
 If \*(FCRS\fP is set to the null string,
-then records are separated by one or more blank lines.
+then records are separated by one or more empty lines.
 When \*(FCRS\fP is set to the null string,
 the newline character always acts as
 a field separator, in addition to whatever value
 \*(FCFS\fP may have.
 \*(CB\*(MK does not apply exceptional rules to \*(FCFS\fP
-when \*(FCRS = "\^"\fP.\*(CX
+when \*(FCRS\fP is set to \*(FC"\^"\fP.\*(CX
 .EB "\s+2\f(HBRECORDS\*(FR\s0"
 
 .\" --- Fields
@@ -1009,7 +1009,7 @@ Otherwise, \*(FCFS\fP is expected to be a full regular expression.
 In the special case that \*(FCFS\fP
 is a single space, fields are separated
 by runs of spaces and/or tabs
-\*(CLand/or newlines\*(CD.
+and/or newlines.
 Leading and trailing whitespace are ignored.
 \*(CBThe value of \*(FCIGNORECASE\fP
 also affects how fields are split when
@@ -1297,19 +1297,19 @@ T}
 \*(FCgetline \*(FIv \*(FC< \*(FIfile\*(FR	Set \*(FIv\fP from next record of \*(FIfile\*(FR.
 \*(FIcmd \*(FC| getline\*(FR	Pipe into \*(FCgetline\*(FR; set \*(FC$0\*(FR, \*(FCNF\*(FR.
 \*(FIcmd \*(FC| getline \*(FIv\*(FR	Pipe into \*(FCgetline\*(FR; set \*(FIv\*(FR.
-.\" \*(CB\*(FIcmd \*(FC|& getline\*(FR	Co-process pipe into \*(FCgetline\*(FR; set \*(FC$0\*(FR, \*(FCNF\*(FR.
+.\" \*(CB\*(FIcmd \*(FC|& getline\*(FR	Coprocess pipe into \*(FCgetline\*(FR; set \*(FC$0\*(FR, \*(FCNF\*(FR.
 .TE
 .fi
 .in +.2i
 .ti -.2i
 \*(CB\*(FIcmd \*(FC|& getline\*(FR
 .br
-Co-process pipe into \*(FCgetline\*(FR; set \*(FC$0\*(FR, \*(FCNF\*(FR.
+Coprocess pipe into \*(FCgetline\*(FR; set \*(FC$0\*(FR, \*(FCNF\*(FR.
 .br
 .ti -.2i
 \*(FIcmd \*(FC|& getline \*(FIv\*(FR
 .br
-Co-process pipe into \*(FCgetline\*(FR; set \*(FIv\*(FR.
+Coprocess pipe into \*(FCgetline\*(FR; set \*(FIv\*(FR.
 .ti -.2i
 \*(CD\*(FCnext\fP
 .br
@@ -1332,9 +1332,11 @@ of input data, execute any \*(FCEND\fP rule(s).
 .in -.2i
 .sp .5
 .fi
-\*(FCgetline\*(FR returns 1 on success, 0 on end of file, and \-1 on an error.
-\*(CBAll versions set \*(FCRT\fP.
-Upon an error, \*(FCERRNO\*(FR contains a string describing
+\*(FCgetline\*(FR returns 1 on success, zero on end of file,
+and \-1 on an error.
+\*(CBFor retryable I/O, \*(FCgetline\*(FR returns \-2.
+All versions set \*(FCRT\fP.
+Upon an error, \*(FCERRNO\*(FR describes
 the problem.\*(CX
 .EB "\s+2\f(HBINPUT CONTROL\*(FR\s0"
 .sp .6
@@ -1391,7 +1393,7 @@ Print data down a pipeline to \*(FIcmd\*(FR.
 .ti -.2i
 \*(CB\*(FCprint "hello" |& \*(FIcmd\*(FR
 .br
-Print data down a pipeline to co-process \*(FIcmd\*(FR.\*(CX
+Print data down a pipeline to coprocess \*(FIcmd\*(FR.\*(CX
 .in -.2i
 .EB "\s+2\f(HBOUTPUT CONTROL\*(FR\s0"
 .sp .6
@@ -1402,11 +1404,11 @@ Print data down a pipeline to co-process \*(FIcmd\*(FR.\*(CX
 .ti -.2i
 \*(CD\*(FCclose(\*(FIfile\*(FC)\*(FR
 .br
-Close input or output file, pipe \*(CBor co-process.\*(CD
+Close input or output file, pipe \*(CBor coprocess.\*(CD
 .ti -.2i
 \*(CB\*(FCclose(\*(FIcommand\*(FC, \*(FIhow\*(FC)\*(FR
 .br
-Close one end of co-process pipe.
+Close one end of coprocess pipe.
 Use \*(FC"to"\*(FR for the write end, or
 \*(FC"from"\*(FR for the read end.\*(CD
 .in -.2i
@@ -1460,7 +1462,7 @@ Use the
 \*(FIcount\*(FR'th
 argument at this point in the formatting
 (a \*(FIpositional specifier\*(FR).
-Use in translated versions of
+For use in translated versions of
 format strings, not in the original text of an AWK program.\*(CD
 T}
 \*(FC\-\fP	T{
@@ -1550,12 +1552,12 @@ with a dynamic width or precision.\*(CX
 	\*(FC}\*(FR
 .sp .5
 .fi
-Functions are executed when they are called from within expressions
+Functions execute when they are called from within expressions
 in either patterns or actions. Actual parameters supplied in the function
 call instantiate the formal parameters declared in the function.
 Arrays are passed by reference, other variables are passed by value.
 .sp .5
-Local variables are declared as extra parameters
+Declare local variables as extra parameters
 in the parameter list. The convention is to separate local variables from
 real parameters by extra spaces in the parameter list. For example:
 .sp .5
@@ -1663,12 +1665,12 @@ replace all matches of \*(FIr\fP with \*(FIs\*(FR. Otherwise, \*(FIh\fP
 is a number indicating which match of \*(FIr\fP to replace.
 If \*(FIt\fP is not supplied, use \*(FC$0\fP instead. Within the
 replacement text \*(FIs\*(FR, the sequence \*(FC\e\*(FIn\*(FR,
-where \*(FIn\fP is a digit from 1 to 9, may be used to indicate just
+where \*(FIn\fP is a digit from 1 to 9, indicates just
 the text that matched the \*(FIn\*(FRth parenthesized subexpression.
 The sequence \*(FC\e0\fP represents the entire matched text, as does
 the character \*(FC&\*(FR. Unlike \*(FCsub()\fP and \*(FCgsub()\*(FR,
-the modified string is returned as the result of the function,
-and the original target string is \*(FInot\fP changed.\*(CD
+the function returns the modified string;
+the original target string is \*(FInot\fP changed.\*(CD
 .ti -.2i
 \*(FCgsub(\*(FIr\*(FC, \*(FIs \*(FR[\*(FC, \*(FIt\*(FR]\*(FC)\*(FR
 .br
@@ -1685,7 +1687,7 @@ and \*(FCgsub().\*(FR
 \*(FCindex(\*(FIs\*(FC, \*(FIt\*(FC)\*(FR
 .br
 Return the index of the string
-\*(FIt\fP in the string \*(FIs\*(FR, or 0 if \*(FIt\fP is not present.
+\*(FIt\fP in the string \*(FIs\*(FR, or zero if \*(FIt\fP is not present.
 .ti -.2i
 \*(FClength(\*(FR[\*(FIs\*(FR]\*(FC)\*(FR
 .br
@@ -1697,7 +1699,7 @@ in the array.\*(CD
 \*(FCmatch(\*(FIs\*(FC, \*(FIr \*(CB\*(FR[\*(FC, \*(FIa\*(FR]\*(CD\*(FC)\*(FR
 .br
 Return the position in
-\*(FIs\fP where the regular expression \*(FIr\fP occurs, or 0 if
+\*(FIs\fP where the regular expression \*(FIr\fP occurs, or zero if
 \*(FIr\fP is not present, and set the values of variables
 \*(FCRSTART\fP
 and \*(FCRLENGTH\*(FR.
@@ -1733,7 +1735,7 @@ Split the string
 using the regular expression \*(FIr\*(FR,
 and return the number of fields. If \*(FIr\fP is omitted, use \*(FCFS\fP
 instead.
-Clear the \*(FIa\fP \*(CBand \*(FIseps\fP\*(CD first.
+Clear the arrays \*(FIa\fP \*(CBand \*(FIseps\fP\*(CD first.
 Splitting behaves identically to field splitting.
 (See \fHFields\fP.)
 .ti -.2i
@@ -1895,6 +1897,7 @@ See the manual for details.\*(CB
 \*(CD\*(FCisarray(\*(FIx\*(FC)\*(FR
 .br
 Return true if \*(FIx\fP is an array, false otherwise.
+\*(CRDeprecated.\*(CD
 .br
 .ti -.2i
 \*(FCtypeof(\*(FIx\*(FC)\*(FR
@@ -1942,8 +1945,7 @@ Return the plural form used for \*(FInumber\*(FR of the translation of
 \*(FIstring1\*(FR and \*(FIstring2\*(FR in text domain
 \*(FIdom\*(FR for locale category \*(FIcat\*(FR.
 The default value for \*(FIdom\*(FR is the current value of \*(FCTEXTDOMAIN\*(FR.
-The default for \*(FC"LC_MESSAGES"\*(FR
-is \*(FIcat\*(FR.
+The default for \*(FIcat\*(FR is \*(FC"LC_MESSAGES"\*(FR.
 .sp .5
 If you supply a value for \*(FIcat\*(FR, it must be a string equal to
 one of the known locale categories.
@@ -1987,7 +1989,7 @@ maintains it.\*(CX
 .ES
 .fi
 \*(CDCopyright \(co 1996\(en2005,
-2007, 2009\(en2016 Free Software Foundation, Inc.
+2007, 2009\(en2017 Free Software Foundation, Inc.
 .sp .5   
 Permission is granted to make and distribute verbatim copies of this
 reference card provided the copyright notice and this permission notice
