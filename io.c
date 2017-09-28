@@ -1782,7 +1782,6 @@ int
 devopen(const char *name, const char *mode)
 {
 	int openfd;
-	char *cp;
 	int flag;
 	struct inet_socket_info isi;
 	int save_errno = 0;
@@ -1805,8 +1804,7 @@ devopen(const char *name, const char *mode)
 		bool hard_error = false;
 		bool non_fatal = is_non_fatal_redirect(name, strlen(name));
 		char save;
-
-		cp = (char *) name;
+		char *cp = (char *) name;
 
 		/* socketopen requires NUL-terminated strings */
 		cp[isi.localport.offset+isi.localport.len] = '\0';
