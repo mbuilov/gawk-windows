@@ -10,7 +10,7 @@ BEGIN {
     for (m = digits * 4; m > 0; --m) {
         d = m * 2 + 1
         x = pi * m
-        intdiv(x, d, result)
+        intdiv0(x, d, result)
         pi = result["quotient"]
         pi = pi + two
     }

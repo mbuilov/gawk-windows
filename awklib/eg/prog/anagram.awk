@@ -9,7 +9,7 @@
 #   - split() with "" as separator splits out individual characters
 #   - asort() and asorti() functions
 #
-# See http://savannah.gnu.org/projects/gawk.
+# See https://savannah.gnu.org/projects/gawk.
 #
 # Arnold Robbins
 # arnold@skeeve.com

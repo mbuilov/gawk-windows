@@ -2071,7 +2071,7 @@ contact me if you are interested.
 @ignore
 Other links:
 
-http://www.reddit.com/r/linux/comments/dtect/composing_music_in_awk/
+https://www.reddit.com/r/linux/comments/dtect/composing_music_in_awk/
 @end ignore
 @end ifclear
 
@@ -7487,7 +7487,7 @@ There are times when fixed-width data may be followed by additional data
 that has no fixed length.  Such data may or may not be present, but if
 it is, it should be possible to get at it from an @command{awk} program.
 
-Starting with version 4.2, in order to provide a way to say ``anything
+Starting with @value{PVERSION} 4.2, in order to provide a way to say ``anything
 else in the record after the defined fields,'' @command{gawk}
 allows you to add a final @samp{*} character to the value of
 @code{FIELDWIDTHS}. There can only be one such character, and it must
@@ -7512,7 +7512,7 @@ should be based on the contents of @code{FIELDWIDTHS}? Or, what happens
 if there is more data than expected?
 
 For many years, what happens in these cases was not well defined. Starting
-with version 4.2, the rules are as follows:
+with @value{PVERSION} 4.2, the rules are as follows:
 
 @table @asis
 @item Enough data for some fields
@@ -7694,7 +7694,7 @@ if (PROCINFO["FS"] == "FS")
 else if (PROCINFO["FS"] == "FIELDWIDTHS")
     @var{fixed-width field splitting} @dots{}
 else if (PROCINFO["FS"] == "FPAT")
-    @var{content-based field splitting}
+    @var{content-based field splitting} @dots{}
 else
     @var{API input parser field splitting} @dots{} @ii{(advanced feature)}
 @end example
@@ -13388,7 +13388,7 @@ If you have written extensions that modify the record handling (by
 inserting an ``input parser''; @pxref{Input Parsers}), you can invoke
 them at this point, before @command{gawk} has started processing the file.
 (This is a @emph{very} advanced feature, currently used only by the
-@uref{http://sourceforge.net/projects/gawkextlib, @code{gawkextlib} project}.)
+@uref{https://sourceforge.net/projects/gawkextlib, @code{gawkextlib} project}.)
 @end itemize
 
 The @code{ENDFILE} rule is called when @command{gawk} has finished processing
@@ -14957,6 +14957,18 @@ of setting up a two-way pipe.
 @item PROCINFO["@var{input_name}", "READ_TIMEOUT"]
 Set a timeout for reading from input redirection @var{input_name}.
 @xref{Read Timeout} for more information.
+
+@item PROCINFO["@var{Iinput_name}", "RETRY"]
+If an I/O error that may be retried occurs when reading data from
+@var{input_name}, and this array entry exists, then @code{getline} returns
+@minus{}2 instead of following the default behavior of returning @minus{}1
+and configuring @var{input_name} to return no further data.  An I/O error
+that may be retried is one where @code{errno} has the value @code{EAGAIN},
+@code{EWOULDBLOCK}, @code{EINTR}, or @code{ETIMEDOUT}.  This may be useful
+in conjunction with @code{\fBPROCINFO["@var{input_name}", "READ_TIMEOUT"]}
+or situations where a file descriptor has been configured to behave in
+a non-blocking fashion.
+@xref{Retrying Input} for more information.
 
 @item PROCINFO["sorted_in"]
 If this element exists in @code{PROCINFO}, its value controls the
@@ -18375,7 +18387,7 @@ year 1 and year @minus{}1 preceding year 0.
 If @var{utc-flag} is present and is either nonzero or non-null, the time
 is assumed to be in the UTC time zone; otherwise, the
 time is assumed to be in the local time zone.
-If the daylight-savings flag is positive, the time is assumed to be
+If the @var{DST} daylight-savings flag is positive, the time is assumed to be
 daylight savings time; if zero, the time is assumed to be standard
 time; and if negative (the default), @code{mktime()} attempts to determine
 whether daylight savings time is in effect for the specified time.
@@ -20067,7 +20079,7 @@ think at first.  The C and C++ languages provide ``function pointers,'' which
 are a mechanism for calling a function chosen at runtime.  One of the most
 well-known uses of this ability is the C @code{qsort()} function, which sorts
 an array using the famous ``quicksort'' algorithm
-(see @uref{http://en.wikipedia.org/wiki/Quicksort, the Wikipedia article}
+(see @uref{https://en.wikipedia.org/wiki/Quicksort, the Wikipedia article}
 for more information).  To use this function, you supply a pointer to a comparison
 function.  This mechanism allows you to sort arbitrary data in an arbitrary
 fashion.
@@ -26214,7 +26226,7 @@ in sorted order:
 #   - split() with "" as separator splits out individual characters
 #   - asort() and asorti() functions
 #
-# See http://savannah.gnu.org/projects/gawk.
+# See https://savannah.gnu.org/projects/gawk.
 #
 # Arnold Robbins
 # arnold@@skeeve.com
@@ -26377,7 +26389,7 @@ certainty through the space-time continuum.
 # From "13.3.11 And Now For Something Completely Different"
 #   https://www.gnu.org/software/gawk/manual/html_node/Signature-Program.html#Signature-Program
 
-# Copyright © 2008 Davide Brini
+# Copyright @copyright{} 2008 Davide Brini
 
 # Copying and distribution of the code published in this page, with
 # or without modification, are permitted in any medium without
@@ -30439,13 +30451,13 @@ to the power of the exponent. For example, in @code{1.2345e67},
 the significand is @code{1.2345}.
 
 @item Stability
-From @uref{http://en.wikipedia.org/wiki/Numerical_stability,
+From @uref{https://en.wikipedia.org/wiki/Numerical_stability,
 the Wikipedia article on numerical stability}:
 ``Calculations that can be proven not to magnify approximation errors
 are called @dfn{numerically stable}.''
 @end table
 
-See @uref{http://en.wikipedia.org/wiki/Accuracy_and_precision,
+See @uref{https://en.wikipedia.org/wiki/Accuracy_and_precision,
 the Wikipedia article on accuracy and precision} for more information
 on some of those terms.
 
@@ -30482,7 +30494,7 @@ By default, @command{gawk} uses the double-precision floating-point values
 supplied by the hardware of the system it runs on.  However, if it was
 compiled to do so, and the @option{-M} command-line option is supplied,
 @command{gawk} uses the @uref{http://www.mpfr.org,
-GNU MPFR} and @uref{http://gmplib.org, GNU MP} (GMP) libraries for
+GNU MPFR} and @uref{https://gmplib.org, GNU MP} (GMP) libraries for
 arbitrary-precision arithmetic on numbers.  You can see if MPFR support
 is available like so:
 
@@ -31053,12 +31065,12 @@ You can simulate the @code{intdiv0()} function in standard @command{awk}
 using this user-defined function:
 
 @example
-@c file eg/lib/intdiv.awk
+@c file eg/lib/intdiv0.awk
 # intdiv0 --- do integer division
 
 @c endfile
 @ignore
-@c file eg/lib/intdiv.awk
+@c file eg/lib/intdiv0.awk
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # July, 2014
@@ -31072,7 +31084,7 @@ using this user-defined function:
 @c endfile
 
 @end ignore
-@c file eg/lib/intdiv.awk
+@c file eg/lib/intdiv0.awk
 function intdiv0(numerator, denominator, result)
 @{
     split("", result)
@@ -31088,7 +31100,7 @@ function intdiv0(numerator, denominator, result)
 @end example
 
 The following example program, contributed by Katie Wasserman,
-uses @code{intdiv()} to
+uses @code{intdiv0()} to
 compute the digits of @value{PI} to as many places as you
 choose to set:
 
@@ -31113,7 +31125,7 @@ BEGIN @{
     for (m = digits * 4; m > 0; --m) @{
         d = m * 2 + 1
         x = pi * m
-        intdiv(x, d, result)
+        intdiv0(x, d, result)
         pi = result["quotient"]
         pi = pi + two
     @}
@@ -32156,14 +32168,14 @@ pointed to by @code{result}.
 @itemx make_number_mpz(void *mpz, awk_value_t *result);
 This function creates a GMP number value in @code{result}.
 The @code{mpz} must be from a call to @code{get_mpz_ptr()}
-(and thus be or real underlying type @code{mpz_ptr}).
+(and thus be of real underlying type @code{mpz_ptr}).
 @command{gawk} takes ownership of this memory.
 
 @item static inline awk_value_t *
 @itemx make_number_mpfr(void *mpfr, awk_value_t *result);
 This function creates an MPFR number value in @code{result}.
 The @code{mpfr} must be from a call to @code{get_mpfr_ptr()}.
-(and thus be or real underlying type @code{mpfr_ptr})
+(and thus be of real underlying type @code{mpfr_ptr})
 @command{gawk} takes ownership of this memory.
 
 @item static inline awk_value_t *
@@ -35673,7 +35685,7 @@ for more information.
 @cindex extensions, where to find
 
 @cindex @code{gawkextlib} project
-The @uref{http://sourceforge.net/projects/gawkextlib/, @code{gawkextlib}}
+The @uref{https://sourceforge.net/projects/gawkextlib/, @code{gawkextlib}}
 project provides a number of @command{gawk} extensions, including one for
 processing XML files.  This is the evolution of the original @command{xgawk}
 (XML @command{gawk}) project.
@@ -35705,13 +35717,13 @@ Redis extension
 Select extension
 
 @item
-XML parser extension, using the @uref{http://expat.sourceforge.net, Expat}
+XML parser extension, using the @uref{https://expat.sourceforge.net, Expat}
 XML parsing library
 @end itemize
 
 @cindex @command{git} utility
 You can check out the code for the @code{gawkextlib} project
-using the @uref{http://git-scm.com, Git} distributed source
+using the @uref{https://git-scm.com, Git} distributed source
 code control system.  The command is as follows:
 
 @example
@@ -35719,7 +35731,7 @@ git clone git://git.code.sf.net/p/gawkextlib/code gawkextlib-code
 @end example
 
 @cindex Expat XML parser library
-You will need to have the @uref{http://expat.sourceforge.net, Expat}
+You will need to have the @uref{https://expat.sourceforge.net, Expat}
 XML parser library installed in order to build and use the XML extension.
 
 In addition, you must have the GNU Autotools installed
@@ -35739,7 +35751,7 @@ make && make check                    @ii{Build and check that all is OK}
 make install                          @ii{Install gawk}
 @end example
 
-Next, go to @url{http://sourceforge.net/projects/gawkextlib/files} to
+Next, go to @url{https://sourceforge.net/projects/gawkextlib/files} to
 download @code{gawkextlib} and any extensions that you would like to build.
 The @file{README} file at that site explains how to build the code.  If you
 installed @command{gawk} in a non-standard location, you will need to
@@ -36196,7 +36208,7 @@ The ability to delete all of an array at once with @samp{delete @var{array}}
 not permitted by the POSIX standard.
 
 The 2008 POSIX standard can be found online at
-@url{http://www.opengroup.org/onlinepubs/9699919799/}.
+@url{http://pubs.opengroup.org/onlinepubs/9699919799/}.
 
 
 @node BTL
@@ -38945,11 +38957,19 @@ but we might well want to fix it.
 @appendixsubsec Submitting Bug Reports
 
 Before reporting a bug, make sure you have really found a genuine bug.
-Carefully reread the documentation and see if it says you can do
+First, verify that you have the latest version of @command{gawk}.
+Many bugs (usually subtle ones) are fixed at each release, and if yours
+is out of date, the problem may already have been solved.
+
+Second, please see if setting the environment variable @env{LC_ALL}
+to @code{LC_ALL=C} causes things to behave as you expect. If so, it's
+a locale issue, and may or may not really be a bug.
+
+Third, carefully reread the documentation and see if it says you can do
 what you're trying to do.  If it's not clear whether you should be able
 to do something or not, report that too; it's a bug in the documentation!
 
-Before reporting a bug or trying to fix it yourself, try to isolate it
+Finally, before reporting a bug or trying to fix it yourself, try to isolate it
 to the smallest possible @command{awk} program and input @value{DF} that
 reproduce the problem.  Then send us the program and @value{DF},
 some idea of what kind of Unix system you're using,
@@ -39137,7 +39157,7 @@ git clone git://github.com/onetrueawk/awk bwkawk
 @end example
 
 @noindent
-This command creates a copy of the @uref{http://git-scm.com, Git}
+This command creates a copy of the @uref{https://git-scm.com, Git}
 repository in a directory named @file{bwkawk}.  If you leave that argument
 off the @command{git} command line, the repository copy is created in a
 directory named @file{awk}.
@@ -39184,6 +39204,11 @@ is similar to @command{gawk}'s
 @xref{Common Extensions}
 for a list of extensions in @command{mawk} that are not in POSIX @command{awk}.
 
+@item @command{mawk} 2.0
+In 2016, Michael Brennan resumed @command{mawk} development.
+His development snapshots are available via Git from the project's
+@uref{https://github.com/mikebrennan000/mawk-2, GitHub page}.
+
 @cindex Sumner, Andrew
 @cindex @command{awka} compiler for @command{awk}
 @cindex source code, @command{awka}
@@ -39197,7 +39222,7 @@ It also has a number of extensions.
 The @command{awk} translator is released under the GPL, and the library
 is under the LGPL.
 
-To get @command{awka}, go to @url{http://sourceforge.net/projects/awka}.
+To get @command{awka}, go to @url{https://sourceforge.net/projects/awka}.
 @c You can reach Andrew Sumner at @email{andrew@@zbcom.net}.
 @c andrewsumner@@yahoo.net
 
@@ -39226,7 +39251,7 @@ applications within a single executable. It is aimed at embedded systems.
 It includes a full implementation of POSIX @command{awk}.  When building
 it, be careful not to do @samp{make install} as it will overwrite
 copies of other applications in your @file{/usr/local/bin}.  For more
-information, see the @uref{http://busybox.net, project's home page}.
+information, see the @uref{https://busybox.net, project's home page}.
 
 @cindex OpenSolaris
 @cindex Solaris, POSIX-compliant @command{awk}
@@ -39245,7 +39270,7 @@ has not been done, at least to our knowledge.
 @cindex source code, Illumos @command{awk}
 The source code used to be available from the OpenSolaris website.
 However, that project was ended and the website shut down.  Fortunately, the
-@uref{http://wiki.illumos.org/display/illumos/illumos+Home, Illumos project}
+@uref{https://wiki.illumos.org/display/illumos/illumos+Home, Illumos project}
 makes this implementation available.  You can view the files one at a time from
 @uref{https://github.com/joyent/illumos-joyent/blob/master/usr/src/cmd/awk_xpg4}.
 
@@ -39257,7 +39282,7 @@ This is an interpreter for @command{awk} written in Java. It claims
 to be a full interpreter, although because it uses Java facilities
 for I/O and for regexp matching, the language it supports is different
 from POSIX @command{awk}.  More information is available on the
-@uref{http://jawk.sourceforge.net, project's home page}.
+@uref{https://jawk.sourceforge.net, project's home page}.
 
 @item Libmawk
 @cindex libmawk
@@ -39278,7 +39303,7 @@ modified version of BWK @command{awk}, described earlier.)
 @cindex QSE @command{awk}
 @cindex source code, QSE @command{awk}
 This is an embeddable @command{awk} interpreter. For more information,
-see @uref{http://code.google.com/p/qse/} and @uref{http://awk.info/?tools/qse}.
+see @uref{https://code.google.com/p/qse/} and @uref{http://awk.info/?tools/qse}.
 
 @item @command{QTawk}
 @cindex QuikTrim Awk
@@ -39296,7 +39321,7 @@ since approximately 2014.
 
 @item Other versions
 See also the ``Versions and implementations'' section of the
-@uref{http://en.wikipedia.org/wiki/Awk_language#Versions_and_implementations,
+@uref{https://en.wikipedia.org/wiki/Awk_language#Versions_and_implementations,
 Wikipedia article} on @command{awk} for information on additional versions.
 
 @end table
@@ -39422,7 +39447,7 @@ However, if you want to modify @command{gawk} and contribute back your
 changes, you will probably wish to work with the development version.
 To do so, you will need to access the @command{gawk} source code
 repository.  The code is maintained using the
-@uref{http://git-scm.com, Git distributed version control system}.
+@uref{https://git-scm.com, Git distributed version control system}.
 You will need to install it if your system doesn't have it.
 Once you have done so, use the command:
 
@@ -41152,7 +41177,7 @@ programming languages, such as C and C++.
 In the computer arena, important standards like those for C, C++, and POSIX
 become both American national and ISO international standards simultaneously.
 This @value{DOCUMENT} refers to Standard C as ``ISO C'' throughout.
-See @uref{http://www.iso.org/iso/home/about.htm, the ISO website} for more
+See @uref{https://www.iso.org/iso/home/about.htm, the ISO website} for more
 information about the name of the organization and its language-independent
 three-letter acronym.
 
@@ -41294,7 +41319,7 @@ the Unix heritage of these standards.  The main standard of interest for
 @command{awk} users is
 @cite{IEEE Standard for Information Technology, Standard 1003.1-2008}.
 The 2008 POSIX standard can be found online at
-@url{http://www.opengroup.org/onlinepubs/9699919799/}.
+@url{http://pubs.opengroup.org/onlinepubs/9699919799/}.
 
 @item Precedence
 The order in which operations are performed when operators are used
@@ -41473,7 +41498,7 @@ the world and later moved into commercial environments as a software
 development system and network server system. There are many commercial
 versions of Unix, as well as several work-alike systems whose source code
 is freely available (such as GNU/Linux, @uref{http://www.netbsd.org, NetBSD},
-@uref{http://www.freebsd.org, FreeBSD}, and @uref{http://www.openbsd.org, OpenBSD}).
+@uref{https://www.freebsd.org, FreeBSD}, and @uref{http://www.openbsd.org, OpenBSD}).
 
 @item UTC
 The accepted abbreviation for ``Universal Coordinated Time.''

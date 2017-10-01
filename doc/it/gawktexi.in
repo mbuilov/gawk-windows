@@ -13,7 +13,7 @@
 @end direntry
 @dircategory Programmi di utilit@`a individuale
 @direntry
-* awk: (gawk)Avviare gawk.                     Scansione e processo di testi.
+* awk: (gawk)Avviare Gawk.                     Scansione e processo di testi.
 @end direntry
 
 @c Enable better indexing, requires texindex from Texinfo 6 or later.
@@ -46,6 +46,14 @@
 @set MINUS
 @end ifdocbook
 
+@iftex
+@set TIMES @times
+@end iftex
+@ifnottex
+@set TIMES *
+@end ifnottex
+        
+
 @set xref-automatic-section-title
 
 @c The following information should be updated here only!
@@ -54,9 +62,9 @@
 
 @c These apply across the board.
 @c Aggiornata alla versione del 3 marzo 2017
-@set UPDATE-MONTH gennaio 2017
-@set VERSION 4.1
-@set PATCHLEVEL 4
+@set UPDATE-MONTH Settembre 2017
+@set VERSION 4.2
+@set PATCHLEVEL 0
 
 @c added Italian hyphenation stuff
 @hyphenation{ven-go-no o-met-te-re o-met-ten-do}
@@ -78,6 +86,7 @@
 @set SECTION sezione
 @set SECTIONS sezioni
 @set SUBSECTION sottosezione
+@set SUBSECTIONS sottosezioni
 @ifclear SMALLPRINT
 @set DARKCORNER @inmargin{@image{lflashlight,1cm}, @image{rflashlight,1cm}}
 @end ifclear
@@ -94,6 +103,7 @@
 @set SECTION nodo secondario
 @set SECTIONS nodi secondari
 @set SUBSECTION nodo
+@set SUBSECTIONS nodi
 @set DARKCORNER (a.b.)
 @set COMMONEXT (e.c.)
 @set PAGE videata
@@ -105,6 +115,7 @@
 @set SECTION sezione
 @set SECTIONS sezioni
 @set SUBSECTION sottosezione
+@set SUBSECTIONS sottosezioni
 @set DARKCORNER (a.b.)
 @set COMMONEXT (e.c.)
 @set PAGE videata
@@ -116,6 +127,7 @@
 @set SECTION sezione
 @set SECTIONS sezioni
 @set SUBSECTION sottosezione
+@set SUBSECTIONS sottosezioni
 @set DARKCORNER (a.b.)
 @set COMMONEXT (e.c.)
 @set PAGE pagina
@@ -127,6 +139,7 @@
 @set SECTION sezione
 @set SECTIONS sezioni
 @set SUBSECTION sottosezione
+@set SUBSECTIONS sottosezioni
 @set DARKCORNER (a.b.)
 @set COMMONEXT (e.c.)
 @set PAGE pagina
@@ -138,6 +151,7 @@
 @set SECTION sezione
 @set SECTIONS sezioni
 @set SUBSECTION sottosezione
+@set SUBSECTIONS sottosezioni
 @set DARKCORNER (a.b.)
 @set COMMONEXT (e.c.)
 @set PAGE pagina
@@ -293,7 +307,7 @@ Some comments on the layout for TeX.
 <literallayout class="normal">Free Software Foundation
 51 Franklin Street, Fifth Floor -- Boston, MA  02110-1301 USA
 Tel.: +1-617-542-5942 Fax: +1-617-542-2652 Email: <email>gnu@@gnu.org</email>
-URL: <ulink url="http://www.gnu.org">http://www.gnu.org/</ulink></literallayout>
+URL: <ulink url="https://www.gnu.org">https://www.gnu.org/</ulink></literallayout>
 
 <literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2017
 Free Software Foundation, Inc.
@@ -310,7 +324,7 @@ Marco Curreli -- <email>marcocurreli(chiocciola)tiscali(punto)it</email>
 <para>Pubblicato da:</para>
 <literallayout class="normal">Free Software Foundation
 Email: <email>gnu@@gnu.org</email>
-URL: <ulink url="http://www.gnu.org">http://www.gnu.org/</ulink>
+URL: <ulink url="https://www.gnu.org">https://www.gnu.org/</ulink>
 
 e da:
 Italian Linux Documentation Project (ILDP)
@@ -353,7 +367,7 @@ Una copia della licenza @`e acclusa nella sezione intitolata
 @ifset FOR_PRINT
 Una copia della licenza
 si pu@`o trovare in internet all'indirizzo
-@uref{http://www.gnu.org/software/gawk/manual/html_node/GNU-Free-Documentation-License.html,
+@uref{https://www.gnu.org/software/gawk/manual/html_node/GNU-Free-Documentation-License.html,
 il sito web del Progetto GNU}.
 @end ifset
 
@@ -404,7 +418,7 @@ Titolo originale:@*
 Published by @strong{Free Software Foundation}@*
 51 Franklin Street, Fifth Floor -- Boston, MA  02110-1301 USA @*
 Tel.: +1-617-542-5942 -- Fax: +1-617-542-2652 -- Email: @email{gnu@@gnu.org} @*
-URL: @uref{http://www.gnu.org/}
+URL: @uref{https://www.gnu.org/}
 @sp 0
 @c This one is correct for gawk 3.1.0 from the FSF
 ISBN 1-882114-28-0
@@ -419,7 +433,7 @@ Marco Curreli -- @email{marcocurreli(chiocciola)tiscali(punto)it}@*
 @sp 1
 Pubblicato da:
 Free Software Foundation@*
-Email: @email{gnu@@gnu.org}; URL: @uref{http://www.gnu.org/}
+Email: @email{gnu@@gnu.org}; URL: @uref{https://www.gnu.org/}
 
 e da:
 Italian Linux Documentation Project (ILDP)@*
@@ -660,7 +674,14 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
 * Sommario sulla separazione campi::    Alcuni punti finali e una tavola di
                                         sommario.
 * Dimensione costante::                 Leggere campi di larghezza costante.
-* Separazione in base al contenuto::    Definire campi dal loro Contenuto.
+* Dati di larghezza fissa::             Elaborare dati di lunghezza fissa.
+* Saltare campi intermedi::             Saltare campi intermedi.
+* Consentire dati a fine record::       Trattare dati opzionali a fine record.
+* Campi con dati a larghezza fissa::    Valore di campi con dati a larghezza
+                                        fissa.
+* Separazione in base al contenuto::    Definire campi dal loro contenuto.
+* Controllare la creazione di campi::   Controllare come @command{gawk} sta
+                                        dividendo i record.
 * Righe multiple::                      Record su righe multiple
 * Getline::                             Richiedere input usando @code{getline}.
 * Getline semplice::                    Usare @code{getline} senza argomenti.
@@ -1028,8 +1049,9 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
 * Tentare di arrotondare::              Tentare di aggiungere bit di precisione e
                                         arrotondare.
 * Impostare la precisione::             Impostare la precisione.
-* Impostare modi di arrotondare::       Impostare la modalit@`a di
+* Impostare modo di arrotondare::       Impostare la modalit@`a di
                                         arrotondamento.
+* Controllare disponibilit@`a MPFR::      Come controllare se MPFR @`e disponibile.
 * Interi a precisione arbitraria::      Aritmetica dei numeri interi a precisione
                                         arbitraria con @command{gawk}.
 * Problemi virgola mobile POSIX::       Confronto tra standard e uso corrente.
@@ -1070,6 +1092,8 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
                                         modificarle.
 * Variabili dell'estensione API::       Variabili fornite dall'API.
 * Versione dell'estensione::            Informazioni sulla versione API.
+* Versione estensione GMP/MPFR::        Informazioni sulla versione disponibile
+                                        di GMP ed MPFR.
 * Variabili informative di estens. API:: Variabili che forniscono informazioni
                                         sull'invocazione di @command{gawk}.
 * Codice predefinito di un'estensione API:: Codice predefinito di interfaccia API.
@@ -1714,12 +1738,12 @@ Infine, vien fatta rilevare ogni funzionalit@`a di @command{gawk} non
 inclusa nello standard POSIX per @command{awk}.
 
 @ifnotinfo
-Questo @value{DOCUMENT} ha il difficile compito di essere tanto una guida
+Questo @value{DOCUMENT} ha il difficile compito di essere sia una guida
 introduttiva che un manuale di riferimento.  I neofiti possono
 tranquillamente saltare i dettagli che sembrano loro troppo complessi.
 Possono anche ignorare i molti riferimenti incrociati, preparati avendo in
 mente gli utenti esperti e per le versioni Info e
-@uref{http://www.gnu.org/software/gawk/manual/, HTML}
+@uref{https://www.gnu.org/software/gawk/manual/, HTML}
 del @value{DOCUMENT}.
 @end ifnotinfo
 
@@ -1946,7 +1970,7 @@ delle appendici. Si possono trovare in rete ai seguenti indirizzi:
 
 @itemize @value{BULLET}
 @item
-@uref{http://www.gnu.org/software/gawk/manual/html_node/Notes.html,
+@uref{https://www.gnu.org/software/gawk/manual/html_node/Notes.html,
 L'appendice sulle note di implementazione}
 descrive come disabilitare le estensioni @command{gawk}, come contribuire
 scrivendo del nuovo codice per @command{gawk}, dove reperire informazioni
@@ -1954,20 +1978,20 @@ su alcune possibili future direzioni dello sviluppo di @command{gawk}, e
 sulle decisioni di progetto che hanno influito sulle estensioni API.
 
 @item
-@uref{http://www.gnu.org/software/gawk/manual/html_node/Basic-Concepts.html,
+@uref{https://www.gnu.org/software/gawk/manual/html_node/Basic-Concepts.html,
 L'appendice sui concetti fondamentali}
 fornisce del materiale di riferimento a livello elementare per chi sia completamente a
 digiuno di programmazione informatica.
 
 @item
-@uref{http://www.gnu.org/software/gawk/manual/html_node/Glossary.html,
+@uref{https://www.gnu.org/software/gawk/manual/html_node/Glossary.html,
 Il Glossario}
-definisce la maggior parte, se non tutti, i termini significativi usati
+definisce la maggior parte, o quasi, dei termini significativi usati
 nel corso del libro.  Se si incontrano termini con cui non si ha familiarit@`a,
 questo @`e il posto dove cercarli.
 
 @item
-@uref{http://www.gnu.org/software/gawk/manual/html_node/GNU-Free-Documentation-License.html, la licenza GNU FDL}
+@uref{https://www.gnu.org/software/gawk/manual/html_node/GNU-Free-Documentation-License.html, la licenza GNU FDL}
 @`e la licenza che vale per questo @value{DOCUMENT}.
 @end itemize
 
@@ -1982,7 +2006,7 @@ state omesse dall'edizione a stampa ma sono disponibili online.
 @unnumberedsec Convenzioni tipografiche
 
 @cindex Texinfo
-Questo @value{DOCUMENT} @`e scritto in @uref{http://www.gnu.org/software/texinfo/, Texinfo},
+Questo @value{DOCUMENT} @`e scritto in @uref{https://www.gnu.org/software/texinfo/, Texinfo},
 il linguaggio di formattazione della documentazione GNU.  Viene usato un unico
 file sorgente Texinfo per produrre sia la versione a stampa della documentazione
 sia quella online.
@@ -2130,9 +2154,9 @@ per la consultazione
 @end ifclear
 La GPL si applica al codice sorgente in linguaggio C per @command{gawk}.
 Per saperne di pi@`u sulla FSF e sul Progetto GNU,
-si veda @uref{http://www.gnu.org, la pagina principale del Progetto GNU}.
+si veda @uref{https://www.gnu.org, la pagina principale del Progetto GNU}.
 Questo @value{DOCUMENT} si pu@`o leggere anche dal
-@uref{http://www.gnu.org/software/gawk/manual/, sito di GNU}.
+@uref{https://www.gnu.org/software/gawk/manual/, sito di GNU}.
 
 @ifclear FOR_PRINT
 Una shell, un editor (Emacs), compilatori ottimizzanti C, C++ e
@@ -2223,8 +2247,9 @@ dovreste prima guardare il file @file{NEWS} nella distribuzione di
 @command{gawk}, che fornisce un sommario ad alto livello dei
 cambiamenti in ciascuna versione.
 
-You can then look at the @uref{http://www.gnu.org/software/gawk/manual/,
-online version} of this @value{DOCUMENT} to read about any new features.
+@`E poi possibile consultare la @uref{https://www.gnu.org/software/gawk/manual/,
+versione online} di questo @value{DOCUMENT} per informazioni su eventuali
+nuove funzionalit@`a.
 @end ifset
 
 @ifclear FOR_PRINT
@@ -2379,6 +2404,7 @@ versione 3.1 di @command{gawk}.
 @cindex Deifik, Scott
 @cindex Demaille, Akim
 @cindex G., Daniel Richard
+@cindex Guerrero, Juan Manuel
 @cindex Hankerson, Darrel
 @cindex Jaegermann, Michal
 @cindex Kahrs, J@"urgen
@@ -2399,6 +2425,7 @@ Stephen Davies,
 Scott Deifik,
 Akim Demaille,
 Daniel Richard G.,
+Juan Manuel Guerrero,
 Darrel Hankerson,
 Michal Jaegermann,
 J@"urgen Kahrs,
@@ -2784,7 +2811,7 @@ awk -f consiglio
 @end example
 
 @noindent
-@`e equivalente al comando:
+equivale al comando:
 
 @example
 awk 'BEGIN @{ print \"Non v\47allarmate!\" @}'
@@ -3215,16 +3242,65 @@ e della shell POSIX, il problema che stiamo per vedere emerge abbastanza
 spesso presso parecchi utenti, e per questo ne parliamo.
 
 @cindex Brink, Jeroen
-Le ``shell'' nei sistemi Microsoft Windows usaso il carattere doppio apice
+Le ``shell'' nei sistemi Microsoft Windows usano il carattere doppio apice
 per protezione, e rendono difficile o impossibile inserire un carattere
-doppio apice in uno @dfn{script} scritto su una riga di comando.
-l'esempio che segue, per il quale ringraziamo Jeroen Brink, mostra come
-stampare tutte le righe di un file, racchiudendole tra doppi apici:
+doppio apice letterale in uno @dfn{script} scritto su una riga di comando.
+L'esempio che segue, per il quale ringraziamo Jeroen Brink, mostra come
+proteggere i doppi apici, con questo script di una sola riga, che stampa
+tutte le righe di un file, racchiudendole tra doppi apici:
+
+@example
+@{ print "\"" $0 "\"" @} @var{file}
+@end example
+
+@noindent
+In una riga di comando in ambiente MS-Windows lo script di una riga
+mostrato sopra pu@`o essere eseguito immettendo:
 
 @example
 gawk "@{ print \"\042\" $0 \"\042\" @}" @var{file}
 @end example
 
+In questo esempio, lo @samp{\042} @`e il codice ottale che rappresenta un
+doppio apice; @command{gawk} lo trasforma in un carattere doppio apice
+per poi scriverlo in output con l'istruzione @code{print}.
+
+In ambiente MS-Windows proteggere i doppi apici richiede questo
+espediente perch@'e occorre usare delle barre inverse per proteggere
+i doppi apici, ma le barre inverse non sono protette nella solita maniera;
+in effetti le barre inverse vanno raddoppiate (oppure no), a seconda che
+siano seguite (oppure no) da un doppio apice.
+La regola in ambiente MS-Windows per racchiudere tra doppi apici una
+stringa @`e la seguente:
+
+@enumerate
+@item
+Per ogni doppio apice presente nella stringa originale, sia @var{N} il
+numero di barre inverse presenti nella stringa prima di esso (@var{N}
+potrebbe anche valere zero).  Si rimpiazzino queste @var{N} barre inverse
+con @math{2@value{VOLTE}@var{N}+1} barre inverse.
+
+@item
+Sia poi @var{N} il numero di barre inverse alla fine della stringa originale,
+(@var{N} potrebbe anche valere zero). Si rimpiazzino queste @var{N}
+barre inverse con @math{2@value{VOLTE}@var{N}} barre inverse
+
+@item
+La stringa cos@`{@dotless{i}} prodotta va racchiusa fra doppi apici.
+@end enumerate
+
+Quindi, per racchiudere fra doppi apici lo script di
+una linea @samp{@{ print "\"" $0 "\"" @}} del precedente esempio, si
+dovrebbe fare cos@`{@dotless{i}}:
+
+@example
+gawk "@{ print \"\\\"\" $0 \"\\\"\" @}" @var{file}
+@end example
+
+@noindent
+Comunque, usare la notazione @samp{\042} invece che @samp{\\\"} rimane
+possibile, e di pi@`u facile lettura, perch@'e le barre inverse che non sono
+seguite da un doppio apice non hanno bisogno di essere duplicate.
 
 @node File dati di esempio
 @section @value{DDF} per gli esempi
@@ -4151,6 +4227,25 @@ Questo @`e particolarmente utile quando si hanno funzioni di libreria che si
 vogliono usare dai programmi da riga di comando
 (@pxref{AWKPATH (Variabile)}).
 
+Si noti che @command{gawk} elabora ogni stringa come se fosse terminata
+da un carattere di ritorno a capo (anche se non @`e questo il caso).
+Ci@`o facilita la costruzione del programma completo.
+
+@quotation ATTENZIONE
+Non c'@`e ancora alcuna specifica che imponga che ogni @var{testo-di-programma}
+costituisca un'unit@`a sintattica completa.  P.es., il codice che segue
+funziona a tutt'oggi:
+
+@example
+$ @kbd{gawk -e 'BEGIN @{ a = 5 ;' -e 'print a @}'}
+@print{} 5
+@end example
+
+@noindent
+Comunque ci@`o potrebbe cambiare in futuro, e per questo motivo non @`e una
+buona idea utilizzare questa funzionalit@`a.
+@end quotation
+
 @item @option{-E} @var{file}
 @itemx @option{--exec} @var{file}
 @cindex @option{-E}, opzione
@@ -4178,7 +4273,7 @@ codice sorgente @command{awk} (con @option{-e}) all'applicazione
 CGI.@footnote{per maggiori dettagli,
 si veda la Sezione 4.4 di @uref{http://www.ietf.org/rfc/rfc3875,
 RFC 3875}. Si veda anche
-@uref{http://lists.gnu.org/archive/html/bug-gawk/2014-11/msg00022.html,
+@uref{https://lists.gnu.org/archive/html/bug-gawk/2014-11/msg00022.html,
 note esplicative spedite alla mailing list @command{gawk} bug}.}
 Quest'opzione dovrebbe essere usata
 con @dfn{script} @samp{#!}
@@ -4725,7 +4820,7 @@ il percorso viene cercato di nuovo dopo aver aggiunto il suffisso
 
 Il meccanismo di ricerca del percorso di @command{gawk} @`e simile a quello
 della shell.
-(Si veda @uref{http://www.gnu.org/software/bash/manual/,
+(Si veda @uref{https://www.gnu.org/software/bash/manual/,
 @cite{The Bourne-Again SHell manual}}.)
 Un elemento nullo nel percorso indica la directory corrente.
 (Un elemento nullo @`e indicato iniziando o terminando il percorso con un segno
@@ -5091,7 +5186,7 @@ $ @kbd{gawk '@@load "ordchr"; BEGIN @{print chr(65)@}'}
 @end example
 
 @noindent
-Questo @`e equivalente all'esempio seguente:
+Questo equivale all'esempio seguente:
 
 @example
 $ @kbd{gawk -lordchr 'BEGIN @{print chr(65)@}'}
@@ -5223,27 +5318,6 @@ utilizzino nomi di funzioni aggiunte da @command{gawk} dopo che questi
 programmi erano stati scritti.
 Le funzioni predefinite standard di command{awk}, per esempio
 @code{sin()} o @code{substr()} @emph{non} ammettono questa possibilit@`a.
-
-Il vettore @code{PROCINFO["argv"]} contiene tutti gli argomenti della
-riga di comando (una volta espansi i metacaratteri ed elaborata la
-ridirezione, nelle piattaforme in cui ci@`o dev'essere fatto manualmente
-dal programma), con indici che vanno da 0 as @code{argc} @minus{} 1.
-Per esempio, @code{PROCINFO["argv"][0]} conterr@`a il nome con cui @`e
-stato invocato @command{gawk}.  L'esempio seguente mostra come @`e
-possibile usare questa funzionalit@`a:
-
-@example
-awk '
-BEGIN @{
-        for (i = 0; i < length(PROCINFO["argv"]); i++)
-                print i, PROCINFO["argv"][i]
-@}'
-@end example
-
-@`E da tener presente che questo vettore @`e diverso dal vettore
-standard @code{ARGV} che non comprende quegli argomenti della riga di
-comando che sono gi@`a stati elaborati da
-@command{gawk} (@pxref{ARGC e ARGV}).
 
 @end ignore
 
@@ -5671,7 +5745,7 @@ come metacaratteri veri e propri, e questo @`e ci@`o che @command{gawk} fa.
 In modalit@`a compatibile (@pxref{Opzioni}),
 @command{gawk} tratta i caratteri scritti come sequenze ottali ed esadecimali
 letteramente, quando sono usati in costanti @dfn{regexp}.  Quindi,
-@code{/a\52b/} @`e equivalente a @code{/a\*b/}.
+@code{/a\52b/} equivale a @code{/a\*b/}.
 @end sidebar
 
 @node Operatori di espressioni regolari
@@ -5933,7 +6007,7 @@ All'interno di un'espressione tra parentesi quadre, una
 @dfn{espressione di intervallo} @`e formata da due caratteri separati da un
 trattino.  Individua ogni singolo carattere compreso tra i due caratteri,
 ordinati secondo l'insieme di caratteri in uso nel sistema.  Per esempio,
-@samp{[0-9]} @`e equivalente a @samp{[0123456789]}.
+@samp{[0-9]} equivale a @samp{[0123456789]}.
 (Si veda @ref{Intervalli e localizzazione} per una spiegazione di come
 lo standard POSIX e @command{gawk} sono cambiati nel corso degli anni.
 La cosa ha un interesse principalmente storico.)
@@ -6631,6 +6705,8 @@ getline (@pxref{Getline}).
 * Dimensione costante::              Leggere campi di larghezza costante.
 * Separazione in base al contenuto:: Definire campi dal loro contenuto.
 * Righe multiple::                   Leggere record che sono su pi@`u righe.
+* Controllare la creazione di campi:: Controllare come @command{gawk} sta
+                                     dividendo i record.
 * Getline::                          Leggere file sotto il controllo del
                                      programma, usando la funzione
                                      @code{getline}.
@@ -7230,7 +7306,7 @@ $ @kbd{echo a b c d | awk '@{ OFS = ":"; $2 = ""; $6 = "nuovo"}
 
 @noindent
 Il campo intermedio, @code{$5}, @`e creato con un valore vuoto
-(indicato dalla seconda coppia di due punti adiacenti),
+(indicato dalla seconda coppia di due punti @code{:} adiacenti),
 e @code{NF} @`e aggiornato col valore sei.
 
 @cindex angolo buio, variabile @code{NF}, decremento
@@ -7812,18 +7888,38 @@ di @command{gawk}.  Se si @`e un utente alle prime armi di @command{awk},
 la si pu@`o saltare in prima lettura.
 
 @command{gawk} fornisce una funzionalit@`a per il trattamento di campi
-a larghezza fissa senza un separatore di campo distintivo.  Per esempio,
-dati di questo tipo si trovano nell'input per vecchi programmi Fortran dove
-dei numeri sono elencati uno dopo l'altro, o nell'output di programmi che
-non prevedono che il loro output sia dato in input ad altri programmi.
+a larghezza fissa senza un separatore di campo distintivo.  Questa
+funzionalit@`a @`e trattata
+@ifnotinfo
+nelle seguenti
+@end ifnotinfo
+@ifinfo
+nei seguenti
+@end ifinfo
+@value{SUBSECTIONS}.
+
+@menu
+* Dati di larghezza fissa::     Elaborare dati di lunghezza fissa.
+* Saltare campi intermedi::     Saltare campi intermedi.
+* Consentire dati a fine record:: Trattare dati opzionali a fine record.
+* Campi con dati a larghezza fissa:: Valore di campi con dati a larghezza
+                                     fissa.
+@end menu
+
+@node Dati di lunghezza fissa
+@subsection Elaborare dati di lunghezza fissa
+
+Un esempio di dati a lunghezza fissa pu@`o essere l'input per vecchi programmi
+Fortran dove dei numeri sono elencati uno dopo l'altro, o l'output di
+programmi che non prevedono che questo loro output sia dato in input ad
+altri programmi.
 
 Un esempio di quest'ultimo caso @`e una tabella dove tutte le colonne sono
 allineate usando un numero variabile di spazi e dove @emph{i campi vuoti
 sono solo spazi}.  Chiaramente, la normale divisione in campi di
 @command{awk} basata su @code{FS} non funziona bene in questa situazione.
-Sebbene un programma @command{awk}
-portabile possa usare una serie di chiamate @code{substr()} su @code{$0}
-(@pxref{Funzioni per stringhe}),
+Sebbene un programma @command{awk} portabile possa usare una serie di
+chiamate @code{substr()} su @code{$0} (@pxref{Funzioni per stringhe}),
 questo @`e scomodo e inefficiente se il numero dei campi @`e elevato.
 
 @cindex risoluzione di problemi, errori fatali, specificare larghezza dei campi
@@ -7839,7 +7935,9 @@ del campo, @emph{comprese} le colonne tra i campi.  Se si vogliono ignorare le
 colonne tra i campi si pu@`o specificare la loro larghezza come un campo
 separato che verr@`a poi ignorato.
 @`E un errore fatale definire una larghezza di campo che abbia un valore
-negativo.  I dati seguenti costituiscono l'output del programma di utilit@`a
+negativo.
+
+I dati seguenti costituiscono un output del programma di utilit@`a
 Unix @command{w}.  @`E utile per spiegare l'uso di @code{FIELDWIDTHS}:
 
 @example
@@ -7869,7 +7967,7 @@ NR > 2 @{
     sub(/^ +/, "", inat)   # togli spazi prima del valore
     if (inat == "")
         inat = 0
-    if (inat ~ /:/) @{
+    if (inat ~ /:/) @{      # hh:mm
         split(inat, t, ":")
         inat = t[1] * 60 + t[2]
     @}
@@ -7910,7 +8008,96 @@ usare la funzionalit@`a @code{FIELDWIDTHS} per semplificare la lettura dei dati.
 (Naturalmente, riuscire a eseguire @command{gawk} su un sistema con lettori di
 schede @`e un'altra storia!)
 
-@cindex @command{gawk}, separazione in campi e
+@node Saltare campi intermedi
+@subsection Saltare campi intermedi
+
+A partire dalla @value{PVERSION} 4.2, ogni specifica di una larghezza di campo
+pu@`o essere facoltativamente preceduta da un valore, delimitato dai due punti
+@code{:}, che indica il numero di caratteri da saltare prima dell'inizio del campo
+successivo.  Quindi, il programma precedente potrebbe essere riscritto per
+specificare @code{FIELDWIDTHS} in questo modo:
+
+@example
+BEGIN  @{ FIELDWIDTHS = "8 1:5 4:7 6 1:6 1:6 2:33" @}
+@end example
+
+In questo modo si eliminano alcuni degli spazi bianchi che separano fra
+loro i campo.  Dopo esser stato cos@`{@dotless{i}} modificato, il programma produce
+i risultati seguenti:
+
+@example
+hzang    ttyV3 50
+eklye    ttyV5 0
+dportein ttyV6 107
+gierd    ttyD3 1
+dave     ttyD4 0
+brent    ttyp0 286
+dave     ttyq4 1296000
+@end example
+
+@node Consentire dati a fine record
+@subsection Trattare dati opzionali a fine record
+
+A volte dati di larghezza fissa possono essere seguiti da ulteriori dati
+la cui lunghezza non @`e nota @dfn{a priori}.  Tali dati possono essere
+presenti o meno, ma, nel caso siano presenti, dovrebbe essere possibile
+elaborarli all'interno di un programma @command{awk}.
+
+A partire dalla @value{PVERSION} 4.2, per consentire di poter designare
+``tutto il resto del record dopo i campi a lunghezza fissa''
+@command{gawk} prevede la possibilit@`a di aggiungere un carattere @samp{*}
+in fondo alla descrizione contenuta in @code{FIELDWIDTHS}.
+Ci pu@`o essere un solo carattere @samp{*}, e dev'essere l'ultimo carattere
+diverso da uno spazio in @code{FIELDWIDTHS}.
+Per esempio:
+
+@example
+$ @kbd{cat fw.awk}                        @ii{Visualizza il programma}
+@print{} BEGIN @{ FIELDWIDTHS = "2 2 *" @}
+@print{} @{ print NF, $1, $2, $3 @}
+$ @kbd{cat fw.in}                         @ii{Visualizza l'input dell'esempio}
+@print{} 1234abcdefghi
+$ @kbd{gawk -f fw.awk fw.in}              @ii{Esegui il programma}
+@print{} 3 12 34 abcdefghi
+@end example
+
+@node Campi con dati a larghezza fissa
+@subsection Valore di campi con dati a larghezza fissa
+
+Fin qui, tutto bene.  Ma cosa succede se non ci sono abbastanza dati
+rispetto a quelli che dovrebbero essere presenti in base alla descrizione
+contenuta in @code{FIELDWIDTHS}?  E invece cosa succede se i dati sono
+pi@`u di quelli previsti?
+
+Per molti anni, quel che succede in questi casi non era definito con
+esattezza.  A partire dalla @value{PVERSION} 4.2 le regole sono le seguenti:
+
+@table @asis
+@item Dati sufficienti per uno o pi@`u campi
+Per esempio, se @code{FIELDWIDTHS} @`e impostato a @code{"2 3 4"} e il record
+in input @`e @samp{aabbb}.  In questo caso, @code{NF} @`e impostato a due.
+
+@item Dati insufficienti per la specifica di un campo
+Per esempio, se @code{FIELDWIDTHS} @`e impostato a @code{"2 3 4"} e il record
+in input @`e @samp{aab}.  In questo caso, @code{NF} @`e impostato a due e
+il campo numero @code{$2} ha come valore @code{"b"}.  L'idea @`e che, anche se
+ci sono meno caratteri di quelli previsti, qualcosa @`e presente, e quindi il
+dato dovrebbe essere reso disponibile al programma.
+
+@item Troppi dati
+Per esempio, se @code{FIELDWIDTHS} @`e impostato a @code{"2 3 4"} e il record
+in input @`e @samp{aabbbccccddd}.  In questo caso, @code{NF} @`e impostato a
+tre e i caratteri in eccesso (@samp{ddd}) sono ignorati.  Se si vuole che
+@command{gawk} elabori i caratteri in pi@`u, si deve aggiungere un @samp{*}
+in fondo, nel valore di @code{FIELDWIDTHS}.
+
+@item Troppi dati, ma @`e stato specificato @samp{*}
+Per esempio, se @code{FIELDWIDTHS} @`e impostato a @code{"2 3 4 *"} e il record
+in input @`e @samp{aabbbccccddd}.  In questo caso, @code{NF} @`e impostato a
+quattro, e @code{$4} ha come valore @code{"ddd"}.
+
+@end table
+
 L'assegnazione di un valore a @code{FS} fa s@`{@dotless{i}} che @command{gawk} usi @code{FS}
 per separare nuovamente i campi.  Si pu@`o usare @samp{FS = FS} per ottenere
 questo effetto, senza dover conoscere il valore corrente di @code{FS}.
@@ -7956,6 +8143,7 @@ di @command{gawk}.  Se si @`e un utente alle prime armi di @command{awk},
 la si pu@`o saltare in prima lettura.
 
 @cindex funzionalit@`a avanzate, specificare il contenuto dei campi
+
 Normalmente, quando si usa @code{FS}, @command{gawk} definisce i campi come
 le parti del record che si trovano tra due separatori di campo.  In altre
 parole, @code{FS} definisce cosa un campo @emph{non @`e}, invece di cosa
@@ -8057,8 +8245,6 @@ campi con @code{FPAT}.
 
 Se si assegna un valore a @code{FPAT} la divisione in campi non viene
 effettuata utilizzando @code{FS} o @code{FIELDWIDTHS}.
-Analogamente a @code{FIELDWIDTHS}, il valore di @code{PROCINFO["FS"]}
-sar@`a @code{"FPAT"} se @`e in uso la suddivisione in campi in base al contenuto.
 
 @quotation NOTA
 Alcuni programmi esportano dei dati CSV che contengono dei ritorni a capo al
@@ -8091,6 +8277,48 @@ suddividere in campi i record in input.
 Il meccanismo usato @`e determinato da quella tra le tre
 variabili---@code{FS}, @code{FIELDWIDTHS}, o @code{FPAT}---a cui
 sia stato assegnato un valore pi@`u recentemente.
+
+@node Controllare la creazione di campi
+@section Controllare come @command{gawk} sta dividendo i record
+
+@cindex @command{gawk}, separazione in campi e
+Come visto sopra, @command{gawk} fornisce tre metodi indipendenti per
+dividere i record in input in campi.  Il meccanismo utilizzato dipende da
+quale delle tre variabili---@code{FS}, @code{FIELDWIDTHS}, o 
+@code{FPAT}---@`e stato definito per ultimo.
+Inoltre, un analizzatore di input che utilizzi l'API (Application
+Programming Interface) pu@`o scegliere di modificare il meccanismo di
+analisi dei record; si veda @ref{Analizzatori di input} per ulteriori informazioni
+riguardo a questa funzionalit@`a.
+
+Per ripristinare la normale divisione in campi dopo aver fatto uso
+di @code{FIELDWIDTHS} e/o @code{FPAT}, @`e sufficiente assegnare un valore
+alla variabile @code{FS}.
+Si pu@`o usare @samp{FS = FS} per farlo, senza bisogno di conoscere il
+valore corrente di @code{FS}.
+
+Per determinare quale sia il tipo di divisione dei campi attiva al momento,
+si usi @code{PROCINFO["FS"]} (@pxref{Variabili auto-assegnate}).
+Il valore @`e @code{"FS"} se si usa la maniera normale di divisione dei campi,
+@code{"FIELDWIDTHS"} se si usa la divisione in campi di lunghezza fissa
+oppure @code{"FPAT"} se si una la divisione in campi in base al contenuto:
+
+@example
+if (PROCINFO["FS"] == "FS")
+    @var{divisione normale in campi} @dots{}
+else if (PROCINFO["FS"] == "FIELDWIDTHS")
+    @var{divisione in campi a lunghezza fissa} @dots{}
+else if (PROCINFO["FS"] == "FPAT")
+    @var{divisione in campi in base al contenuto} @dots{}
+else
+    @var{divisione in campi da analizzatore di input API} @dots{}
+                                    @ii{(funzionalit@`a avanzata)}
+@end example
+
+Quest'informazione @`e utile se si sta scrivendo una funzione che
+deve cambiare provvisoriamente @code{FS} o @code{FIELDWIDTHS}, leggere alcuni
+record e poi ripristinare le inpostazioni originali.  Si veda
+(@pxref{Funzioni Passwd} per un esempio si una funzione di questo tipo.
 
 @node Righe multiple
 @section Record su righe multiple
@@ -11779,7 +12007,7 @@ in ordine di precedenza, da quella pi@`u alta a quella pi@`u bassa:
 @item @var{x} ^ @var{y}
 @itemx @var{x} ** @var{y}
 Elevamento a potenza; @var{x} elevato alla potenza @var{y}.  @samp{2 ^ 3}
-ha il valore otto; la sequenza di caratteri @samp{**} @`e equivalente a
+ha il valore otto; la sequenza di caratteri @samp{**} equivale a
 @samp{^}. @value{COMMONEXT}
 
 @item - @var{x}
@@ -12121,7 +12349,7 @@ pippo += 5
 @end example
 
 @noindent
-Questo @`e equivalente a:
+Questo equivale a:
 
 @example
 pippo = pippo + 5
@@ -14194,7 +14422,7 @@ Se sono state scritte estensioni che modificano la gestione del record
 @pxref{Analizzatori di input}), @`e possibile richiamarle
 a questo punto, prima che @command{gawk} inizi a elaborare il file.
 (Questa @`e una funzionalit@`a @emph{molto} avanzata, usata al momento solo dal
-@uref{http://sourceforge.net/projects/gawkextlib, progetto @code{gawkextlib}}.)
+@uref{https://sourceforge.net/projects/gawkextlib, progetto @code{gawkextlib}}.)
 @end itemize
 
 La regola @code{ENDFILE} @`e chiamata quando @command{gawk} ha finito di
@@ -14368,7 +14596,7 @@ da dei punti e virgola.
 Le parentesi graffe attorno a un'azione vanno usate anche se l'azione
 contiene una sola istruzione o se non contiene alcuna istruzione.
 Comunque, se si omette completamente l'azione, si possono omettere anche le
-parentesi graffe.  Un'azione omessa @`e equivalente a specificare
+parentesi graffe.  Un'azione omessa equivale a specificare
 @samp{@{ print $0 @}}:
 
 @example
@@ -14715,7 +14943,7 @@ for (i = 1; i <= 100; i *= 2)
 
 Se non @`e necessaria, ognuna delle tre espressioni fra
 parentesi che segue la parola chiave @code{for} pu@`o essere omessa.  Quindi,
-@w{@samp{for (; x > 0;)}} @`e equivalente a @w{@samp{while (x > 0)}}.  Se la
+@w{@samp{for (; x > 0;)}} equivale a @w{@samp{while (x > 0)}}.  Se la
 @var{condizione} @`e omessa del tutto, @`e ritenuta sempre vera, producendo
 un @dfn{ciclo infinito} (cio@`e, un ciclo che non finisce mai).
 
@@ -15314,6 +15542,9 @@ Il suo valore di default @`e @code{"%.6g"}.
 Una lista di posizioni di colonna, separate da spazi, per dire a
 @command{gawk}
 come dividere campi in input posti su colonne fisse.
+A partire dalla @value{PVERSION} 4.2, ogni lunghezza di campo pu@`o essere
+facoltativamente preceduta da un valore, separato da due punti @code{:}
+che specifica il numero di caratteri da ignorare prima dell'inizio del campo.
 Assegnando un valore a @code{FIELDWIDTHS}, le variabili @code{FS} e
 @code{FPAT}
 @emph{non} vengono usate per effettuare la divisione in campi.
@@ -15478,7 +15709,7 @@ per default 53 bit (@pxref{Impostare la precisione}).
 La modalit@`a di arrotondamento da usare per operazioni aritmetiche a precisione
 arbitraria svolte sui numeri, per default @code{"N"}
 (@code{roundTiesToEven} nello standard
-IEEE 754; @pxref{Impostare modi di arrotondare}).
+IEEE 754; @pxref{Impostare modo di arrotondare}).
 
 @cindex @code{RS}, variabile
 @cindex variabile @code{RS}
@@ -15766,6 +15997,27 @@ I seguenti elementi (elencati in ordine alfabetico)
 sono sicuramente sempre disponibili:
 
 @table @code
+@item PROCINFO["argv"]
+@cindex argomenti, riga di comando, @code{PROCINFO["argv"}
+Il vettore @code{PROCINFO["argv"]} contiene tutti gli argomenti della riga di
+comando (dopo che l'eventuale elaborazione di valutazione e ridirezione,
+nelle piattaforme in cui ci@`o debba essere fatto a cura del programma), con
+indici che vanno da 0 a @code{argc} @minus{} 1.  Per esempio,
+@code{PROCINFO["argv"][0]} conterr@`a il nome con cui @command{gawk} @`e stato
+richiamato.  Ecco un esempio di come si pu@`o usare questa funzionalit@`a:
+
+@example
+gawk '
+BEGIN @{
+        for (i = 0; i < length(PROCINFO["argv"]); i++)
+                print i, PROCINFO["argv"][i]
+@}'
+@end example
+
+Si prega di notare che questo vettore @`e diverso dal vettore standard
+@code{ARGV} il quale non include quegli argomenti della riga di comando
+che sono gi@`a stati elaborati da @command{gawk} (@pxref{ARGC e ARGV}).
+
 @cindex effettivo, @dfn{ID di gruppo} dell'utente di @command{gawk}
 @item PROCINFO["egid"]
 Il valore restituito dalla chiamata di sistema @code{getegid()}.
@@ -15782,7 +16034,9 @@ Il valore restituito dalla chiamata di sistema @code{geteuid()}.
 Questo elemento vale
 @code{"FS"} se @`e in uso la separazione in campi con @code{FS},
 @code{"FIELDWIDTHS"} se @`e in uso quella con @code{FIELDWIDTHS},
-oppure @code{"FPAT"} se @`e in uso l'individuazione di campo con @code{FPAT}.
+@code{"FPAT"} se @`e in uso l'individuazione di campo con @code{FPAT}, o
+@code{"API"} se la divisione in campi @`e controllata da un analizzatore
+di input tramite API.
 
 @item PROCINFO["gid"]
 @cindex @dfn{ID di gruppo} dell'utente @command{gawk}
@@ -17923,11 +18177,12 @@ troncato togliendo i decimali.
 Per esempio, @code{int(3)} @`e 3, @code{int(3.9)} @`e 3, @code{int(-3.9)}
 @`e @minus{}3, e @code{int(-3)} @`e ancora @minus{}3.
 
-@item @code{intdiv(@var{numeratore}, @var{denominatore}, @var{risultato})}
-@cindexawkfunc{intdiv}
-@cindex funzione @code{intdiv}
+@ifset INTDIV
+@item @code{intdiv0(@var{numeratore}, @var{denominatore}, @var{risultato})}
+@cindexawkfunc{intdiv0}
+@cindex funzione @code{intdiv0}
 Esegue una divisione tra numeri interi, simile alla funzione standard C
-che ha lo stesso nome.  Dapprima, il @code{numeratore} e il
+@code{div}.  Dapprima, il @code{numeratore} e il
 @code{denominatore} vengono troncati, eliminando la parte decimale,
 per trasformarli in numeri interi.
 Il vettore @code{risultato} viene dapprima svuotato, e poi viene impostato
@@ -17936,7 +18191,9 @@ l'elemento @code{risultato["quotient"]} al risultato della divisione
 mediante l'eliminazione dei decimali,
 e viene impostato l'elemento @code{risultato["remainder"]} al
 risultato dell'operazione @samp{numeratore % denominatore}, troncato a
-numero intero allo stesso modo del risultato.  Questa funzione @`e
+numero intero allo stesso modo del risultato.
+Il tentativo di effettuare una divisione per zero provoca la fine del
+programma.  Questa funzione @`e
 rivolta principalmente a chi usa numeri interi di lunghezza arbitraria;
 consente di evitare la creazione di numeri in virgola mobile
 di precisione arbitaria usando la funzionalit@`a MPFR
@@ -17944,6 +18201,7 @@ di precisione arbitaria usando la funzionalit@`a MPFR
 
 Questa funzione @`e un'estensione @code{gawk}.  Non @`e disponibile in
 modalit@`a compatibile (@pxref{Opzioni}).
+@end ifset
 
 @item @code{log(@var{x})}
 @cindexawkfunc{log}
@@ -18518,7 +18776,7 @@ l'impiego di un terzo argomento causa un errore fatale.
 @cindex dividere in un vettore una stringa
 @cindex creare un vettore da una stringa
 Divide
-@var{stringa} in parti definite da @var{regexpdelim}
+@var{stringa} in pezzi (o ``campi'') definiti da @var{fieldpat}
 e memorizza i pezzi in @var{vettore} e le stringhe di separazione nel
 vettore @var{separatori}.  Il primo pezzo @`e memorizzato in
 @code{@var{vettore}[1]}, il secondo pezzo in @code{@var{vettore}[2]}, e
@@ -18530,9 +18788,12 @@ Pu@`o essere una costante @dfn{regexp} o una stringa.
 Se @var{regexpdelim} @`e omesso, viene usato il valore di @code{FPAT}.
 @code{patsplit()} restituisce il numero di elementi creati.
 @code{@var{separatori}[@var{i}]} @`e
-la stringa che separa
-l'elemento @code{@var{vettore}[@var{i}]} e @code{@var{vettore}[@var{i}+1]}.
-Ogni separatore iniziale sar@`a in @code{@var{separatori}[0]}.
+la stringa (che potrebbe anche essere la stringa nulla) dopo
+l'elemento @code{@var{vettore}[@var{i}]}.
+Il separatore iniziale (che potrebbe anche essere la stringa nulla)
+sar@`a in @code{@var{separatori}[0]}.
+Quindi, una @var{stringa} non nulla, con @var{n} campi avr@`a @var{n+1}
+separatori.  Una stringa nulla non avr@`a n@'e campi n@'e separatori.
 
 La funzione @code{patsplit()} divide delle stringhe in pezzi in modo
 simile a quello con cui le righe in input vengono divise in campi
@@ -20368,23 +20629,31 @@ Per esempio:
 BEGIN @{
     # crea a[1] ma non gli attribuisce alcun valore
     a[1]
-    print typeof(a[1])  # unassigned
+    print typeof(a[1])  # non assegnato
 @}
 @end example
 
 @item "untyped"
 @var{x} non @`e stata usata per nulla; pu@`o diventare uno scalare o un
-vettore.
+vettore.  @`E anche possibile che il tipo sia differente, in differenti
+esecuzioni del medesimo programma!
 Per esempio:
 
 @example
 BEGIN @{
-    print typeof(x)     # x non @`e mai stato usato --> untyped
-    mk_arr(x)
-    print typeof(x)     # x ora @`e un vettore      --> array
+    print "all'inizio, typeof(v) = ", typeof(v)
+
+    if ("FOO" in ENVIRON)
+        make_scalar(v)
+    else
+        make_array(v)
+
+    print "typeof(v) =", typeof(v)
 @}
 
-function mk_arr(a) @{ a[1] = 1 @}
+function make_scalar(p,    l) @{ l = p @}
+
+function make_array(p) @{ p[1] = 1 @}
 @end example
 
 @end table
@@ -21421,7 +21690,7 @@ sono un metodo per chiamare una funzione scelta al momento dell'esecuzione.
 Uno dei pi@`u noti usi di questa funzionalit@`a @`e
 la funzione C @code{qsort()}, che ordina un vettore usando il famoso
 algoritmo noto come ``quicksort''
-(si veda @uref{http://en.wikipedia.org/wiki/Quicksort, l'articolo di Wikipedia}
+(si veda @uref{https://en.wikipedia.org/wiki/Quicksort, l'articolo di Wikipedia}
 per ulteriori informazioni).  Per usare questa funzione, si specifica un
 puntatore a una funzione di confronto.  Questo meccanismo consente
 di ordinare dei dati arbitrari in una maniera arbitraria.
@@ -23065,8 +23334,8 @@ $ @kbd{cat dati}
 
 $ cat @kbd{test.awk}
 @print{} FNR == 3 && ! riavvolto @{
-@print{} 	riavvolto = 1
-@print{} 	rewind()
+@print{}    riavvolto = 1
+@print{}    rewind()
 @print{} @}
 @print{}
 @print{} @{ print FILENAME, FNR, $0 @}
@@ -23303,7 +23572,7 @@ elaborare gli argomenti presenti
 sulla riga di comando.  Il programmatore fornisce una
 stringa che descrive le opzioni, ognuna delle quali consiste di
 una sola lettera.  Se un'opzione richiede un
-argomento, nella stringa l'opzione @`e seguita da due punti.
+argomento, nella stringa l'opzione @`e seguita da due punti @code{:}.
 A @code{getopt()} vengono anche
 passati il numero e i valori degli argomenti presenti sulla riga di comando
 e viene chiamata in un ciclo.
@@ -23491,7 +23760,7 @@ mantiene il suo valore attraverso chiamate successive a @code{getopt()}, perch@'
 L'espressione regolare che viene usata, @code{@w{/^-[^:[:space:]/}},
 chiede di cercare un
 @samp{-} seguito da qualsiasi cosa che non sia uno spazio vuoto o un carattere
-di due punti.  Se l'argomento corrente sulla riga di comando non corrisponde a
+di due punti @code{:}.  Se l'argomento corrente sulla riga di comando non corrisponde a
 quest'espressione regolare, vuol dire che non si tratta di un'opzione, e
 quindi viene terminata l'elaborazione delle opzioni. Continuando:
 
@@ -23560,7 +23829,8 @@ conoscere quale lettera di opzione @`e quella non valida. Proseguendo:
 @c endfile
 @end example
 
-Se l'opzione richiede un argomento, la lettera di opzione @`e seguita da due punti
+Se l'opzione richiede un argomento, la lettera di opzione @`e seguita da
+due punti @code{:}
 nella stringa @code{opzioni}.  Se rimangono altri caratteri nell'argomento
 corrente sulla riga di comando (@code{argv[Optind]}), il resto di quella stringa
 viene assegnato a @code{Optarg}.  Altrimenti, viene usato il successivo
@@ -23797,7 +24067,7 @@ main(int argc, char **argv)
 
 Se non si conosce il linguaggio C, non @`e il caso di preoccuparsi.
 L'output di @command{pwcat} @`e la lista degli utenti, nel formato
-tradizionale del file @file{/etc/passwd} con campi separati da due punti.
+tradizionale del file @file{/etc/passwd} con campi separati da due punti @code{:}.
 I campi sono:
 
 @table @asis
@@ -24190,7 +24460,7 @@ main(int argc, char **argv)
 @end example
 
 Ciascuna riga nella lista dei gruppi rappresenta un gruppo.  I campi sono
-separati da due punti e rappresentano le seguenti informazioni:
+separati da due punti @code{:} e rappresentano le seguenti informazioni:
 
 @table @asis
 @item Nome del gruppo
@@ -25190,7 +25460,7 @@ carattere speciale come @value{FN}.
 Normalmente, @command{egrep} stampa le righe per cui @`e stata trovata una
 corrispondenza.  Se nella riga di comando si richiede di operare su pi@`u di un
 @value{FN}, ogni riga in output @`e preceduta dal nome del file, e dal segno
-due punti.
+due punti @code{:}.
 
 Le opzioni di @command{egrep} sono le seguenti:
 
@@ -25406,7 +25676,7 @@ usando @code{nextfile}.  Analogamente, se stiamo solo stampando @value{FNS},
 possiamo stampare il @value{FN}, e quindi saltare al file successivo con
 @code{nextfile}.
 Infine, ogni riga viene stampata, preceduta, se necessario, dal @value{FN} e
-dai due punti:
+dai due punti @code{:}:
 
 @cindex @code{!} (punto esclamativo), operatore @code{!}
 @cindex punto esclamativo (@code{!}), operatore @code{!}
@@ -27199,7 +27469,7 @@ in grado di estrarre parti di un file in input Texinfo e metterli in file
 separati.
 
 @cindex Texinfo
-Questo @value{DOCUMENT} @`e scritto in @uref{http://www.gnu.org/software/texinfo/, Texinfo},
+Questo @value{DOCUMENT} @`e scritto in @uref{https://www.gnu.org/software/texinfo/, Texinfo},
 il programma di formattazione di documenti del progetto GNU.
 Un solo file sorgente Texinfo pu@`o essere usato per produrre sia la
 documentazione stampata, usando @TeX{}, sia quella online.
@@ -27207,7 +27477,7 @@ documentazione stampata, usando @TeX{}, sia quella online.
 (Texinfo @`e esaurientemente documentato nel libro
 @cite{Texinfo---The GNU Documentation Format},
 disponibile alla Free Software Foundation,
-e anche @uref{http://www.gnu.org/software/texinfo/manual/texinfo/, online}.)
+e anche @uref{https://www.gnu.org/software/texinfo/manual/texinfo/, online}.)
 @end ifnotinfo
 @ifinfo
 (Il linguaggio Texinfo @`e descritto esaurientemente, a partire da
@@ -28258,9 +28528,9 @@ certainty through the space-time continuum.
 #! /usr/bin/gawk -f
 
 # Da "13.3.11 E ora per qualcosa di completamente differente"
-#   http://www.gnu.org/software/gawk/manual/html_node/Signature-Program.html#Signature-Program
+#   https://www.gnu.org/software/gawk/manual/html_node/Signature-Program.html#Signature-Program
 
-# Copyright Â© 2008 Davide Brini
+# Copyright @copyright{} 2008 Davide Brini
 
 # Copying and distribution of the code published in this page, with
 # or without modification, are permitted in any medium without
@@ -28882,7 +29152,7 @@ END @{
 @end example
 
 Il primo campo di ogni elemento del file delle password @`e il nome d'accesso
-dell'utente, e i campi sono separati tra loro da due punti.
+dell'utente, e i campi sono separati tra loro da due punti @code{:}.
 Ogni record definisce un sottovettore,
 con ogni campo come elemento nel sottovettore.
 L'esecuzione del programma produce
@@ -29372,7 +29642,7 @@ Usare le @dfn{pty} in genere evita i problemi di stallo del buffer descritti
 precedentemente, in cambio di un piccolo calo di prestazioni.  Ci@`o dipende
 dal fatto che la gestione delle @dfn{tty} @`e fatta una riga per volta.
 Su sistemi che hanno il comando @command{stdbuf} (parte del pacchetto
-@uref{http://www.gnu.org/software/coreutils/coreutils.html,
+@uref{https://www.gnu.org/software/coreutils/coreutils.html,
 GNU Coreutils}), si pu@`o usare tale programma, invece delle @dfn{pty}.
 
 Si noti anche che le @dfn{pty} non sono completamente trasparenti.
@@ -29515,7 +29785,7 @@ Si veda
 @end ifinfo
 @ifnotinfo
 Si veda
-@uref{http://www.gnu.org/software/gawk/manual/gawkinet/,
+@uref{https://www.gnu.org/software/gawk/manual/gawkinet/,
 @cite{@value{GAWKINETTITLE}}},
 che fa parte della distribuzione @command{gawk},
 @end ifnotinfo
@@ -30838,7 +31108,7 @@ maniera esauriente in
 @inforef{Top, , GNU @command{gettext} utilities, gettext, GNU @command{gettext} utilities}.)
 @end ifinfo
 @ifnotinfo
-@uref{http://www.gnu.org/software/gettext/manual/,
+@uref{https://www.gnu.org/software/gettext/manual/,
 @cite{GNU @command{gettext} utilities}}.)
 @end ifnotinfo
 Al momento in cui questo libro @`e stato scritto, la versione pi@`u recente di
@@ -30909,7 +31179,7 @@ eccezione.
 
 Il @dfn{debugger} di @command{gawk} @`e di proposito costruito sul modello del
 debugger da riga di comando
-@uref{http://www.gnu.org/software/gdb/, GNU Debugger (GDB)}.
+@uref{https://www.gnu.org/software/gdb/, GNU Debugger (GDB)}.
 Se si ha familiarit@`a con GDB, sar@`a facile imparare come usare @command{gawk}
 per eseguire il debug dei propri programmi.
 
@@ -31391,7 +31661,14 @@ Ottenere informazioni
 Comandi vari
 @end itemize
 
-Ciascuna di esse @`e trattata nelle sottosezioni che seguono.
+Ciascuna di esse @`e trattata
+@ifnotinfo
+nelle seguenti
+@end ifnotinfo
+@ifinfo
+nei seguenti
+@end ifinfo
+@value{SUBSECTIONS}.
 Nelle descrizioni seguenti, i comandi che possono essere abbreviati
 mostrano l'abbreviazione su una seconda riga di descrizione.
 Un nome di comando del debugger pu@`o essere anche troncato se la parte gi@`a scritta
@@ -32455,6 +32732,7 @@ questo capitolo. Tuttavia, se si vogliono eseguire calcoli scientifici con
 * Cautela col calcolo in VM::     Cose da sapere.
 * Interi a precisione arbitraria:: Calcolo con numeri interi a precisione
                                    arbitraria con @command{gawk}.
+* Controllare disponibilit@`a MPFR:: Come controllare se MPFR @`e disponibile.
 * Problemi virgola mobile POSIX::  Confronto tra standard e uso corrente.
 * Sommario virgola mobile::        Sommario della trattazione della
                                    virgola mobile.
@@ -32652,13 +32930,13 @@ Qui, @emph{prec} indica la precisione binaria
 indica le cifre decimali.
 
 @item Stabilit@`a
-Dal@uref{http://en.wikipedia.org/wiki/Numerical_stability,
+Dal@uref{https://en.wikipedia.org/wiki/Numerical_stability,
 l'articolo di Wikipedia sulla stabilit@`a numerica}:
 ``I calcoli per i quali si pu@`o dimostrare che non amplificano gli errori di
 approssimazione sono chiamati @dfn{numericamente stabili}.''
 @end table
 
-Si veda @uref{http://en.wikipedia.org/wiki/Accuracy_and_precision,
+Si veda @uref{https://en.wikipedia.org/wiki/Accuracy_and_precision,
 l'articolo di Wikipedia su accuratezza e precisione} per maggiori informazioni
 su questi due termini.
 
@@ -32732,7 +33010,7 @@ a livello globale per ogni operazione da eseguire.
 @iftex
 la
 @end iftex
-@ref{Impostare modi di arrotondare}
+@ref{Impostare modo di arrotondare}
 per maggiori informazioni.
 
 @node Cautela col calcolo in VM
@@ -32769,7 +33047,7 @@ ottenere ulteriori informazioni, e non basarsi solo su quanto qui detto.
                                   sforzo.
 * Tentare di arrotondare::        Aggiungere cifre di precisione e arrotondare.
 * Impostare la precisione::       Come impostare la precisione.
-* Impostare modi di arrotondare:: Impostare le modalit@`a di arrotondamento.
+* Impostare modo di arrotondare:: Impostare le modalit@`a di arrotondamento.
 @end menu
 
 @node Inesattezza nei calcoli
@@ -33075,7 +33353,7 @@ $ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", 1/10) @}'}
 @end example
 @end quotation
 
-@node Impostare modi di arrotondare
+@node Impostare modo di arrotondare
 @subsection Impostare la modalit@`a di arrotondamento
 
 La variabile @code{ROUNDMODE} permette di controllare a livello di programma
@@ -33293,16 +33571,17 @@ gawk -M 'BEGIN @{ n = 13; print n % 2 @}'
 Dividendo due interi a precisione arbitraria con @samp{/} o con @samp{%}, il
 risultato @`e tipicamente un valore a virgola mobile con precisione arbitraria
 (a meno che il risultato non sia un numero intero esatto).
+@ifset INTDIV
 Per eseguire divisioni intere o calcolare moduli con interi a precisione
 arbitraria, usare la funzione predefinita
-@code{intdiv()} (@pxref{Funzioni numeriche}).
+@code{intdiv0()} (@pxref{Funzioni numeriche}).
 
-Si pu@`o simulare la funzione @code{intdiv()} in @command{awk} standard
+Si pu@`o simulare la funzione @code{intdiv0()} in @command{awk} standard
 usando questa funzione definita dall'utente:
 
 @example
 @c file eg/lib/intdiv.awk
-# intdiv --- fa una divisione intera
+# intdiv0 --- fa una divisione intera
 
 @c endfile
 @ignore
@@ -33313,12 +33592,15 @@ usando questa funzione definita dall'utente:
 #
 # Name changed from div() to intdiv()
 # April, 2015
+#
+# Changed to intdiv0()
+# April, 2016
 
 @c endfile
 
 @end ignore
 @c file eg/lib/intdiv.awk
-function intdiv(numerator, denominator, result)
+function intdiv0(numerator, denominator, result)
 @{
     split("", result)
 
@@ -33333,7 +33615,7 @@ function intdiv(numerator, denominator, result)
 @end example
 
 Il seguente programma d'esempio, proposto da Katie Wasserman,
-usa @code{intdiv()} per
+usa @code{intdiv0()} per
 calcolare le cifre di @value{PI} al numero di cifre significative
 che si @`e scelto di impostare:
 
@@ -33358,7 +33640,7 @@ BEGIN @{
     for (m = cifre * 4; m > 0; --m) @{
         d = m * 2 + 1
         x = pi * m
-        intdiv(x, d, risultato)
+        intdiv0(x, d, risultato)
         pi = risultato["quotient"]
         pi = pi + due
     @}
@@ -33385,12 +33667,15 @@ It's Euler's modification to Newton's method for calculating pi.
 
 Take a look at lines (23) - (25)  here: http://mathworld.wolfram.com/PiFormulas.htm
 
-The algorithm I wrote simply expands the multiply by 2 and works from the innermost expression outwards.  I used this to program HP calculators because it's quite easy to modify for tiny memory devices with smallish word sizes.
+The algorithm I wrote simply expands the multiply by 2 and works from
+the innermost expression outwards.  I used this to program HP calculators
+because it's quite easy to modify for tiny memory devices with smallish
+word sizes.
 
 http://www.hpmuseum.org/cgi-sys/cgiwrap/hpmuseum/articles.cgi?read=899
+@end quotation
 
 -Katie
-@end ignore
 
 Quando gli fu chiesto dell'algoritmo usato, Katie rispose:
 
@@ -33407,6 +33692,63 @@ dispositivi di scarsa memoria con dimensioni di parola piuttosto piccole.
 Si veda
 @uref{http://www.hpmuseum.org/cgi-sys/cgiwrap/hpmuseum/articles.cgi?read=899}.
 @end quotation
+@end ifset
+
+@node Controllare disponibilit@`a MPFR
+@section Come controllare se MPFR @`e disponibile
+
+@cindex MPFR, controllare se disponibile
+@cindex controllare disponibilit@`a MPFR
+In qualche occasione, potreste voler controllare se @command{gawk} sia stato
+chiamato specificando l'opzione @option{-M}, che consente di effettuare
+calcoli aritmetici di precisione arbitraria.
+Lo si pu@`o fare con la funzione seguente, messa a disposizione da
+Andrew Schorr:
+
+@example
+@c file eg/lib/have_mpfr.awk
+# precisione_matematica_sufficiente
+# --- restituisce "true" [vero]
+# se il numero di bit "n" di precisione richiesto
+# @`e disponibile per il programma
+@c endfile
+@ignore
+@c file eg/lib/have_mpfr.awk
+#
+# Andrew Schorr, aschorr@@telemetry-investments.com, Public Domain
+# May 2017
+@c endfile
+@end ignore
+@c file eg/lib/have_mpfr.awk
+
+function adequate_math_precision(n)
+@{
+    return (1 != (1+(1/(2^(n-1)))))
+@}
+@c endfile
+@end example
+
+Ecco un frammento di codice che invoca la funzione per controllare
+se l'aritmetica a precisione arbitraria @`e disponibile:
+
+@example
+BEGIN @{
+    # Quanti bit di precisione nella mantissa sono necessari
+    # perch@'e questo programma funzioni correttamente?
+    fpbits = 123
+
+    # Si spera che il programma sia stato invocato con MPFR abilitata.
+    # Se @`e questo il caso, le istruzioni seguenti dovrebbero configurare
+    # i calcoli al livello di precisione desiderato.
+    PREC = fpbits
+
+    if (! adequate_math_precision(fpbits)) @{
+        print("Errore: la precisione di calcolo disponibile non basta.\n" \
+              "Provare ancora specificando l'argomento -M?") > "/dev/stderr"
+        exit 1
+    @}
+@}
+@end example
 
 @node Problemi virgola mobile POSIX
 @section Confronto tra standard e uso corrente
@@ -33659,7 +34001,7 @@ e viene descritto il progetto @code{gawkextlib}.
 progetto del meccanismo delle estensioni.
 @end ifclear
 @ifset FOR_PRINT
-Si veda @uref{http://www.gnu.org/software/gawk/manual/html_node/estensione-Design.html}
+Si veda @uref{https://www.gnu.org/software/gawk/manual/html_node/Extension-Design.html}
 per una disamina degli obiettivi e del
 progetto del meccanismo delle estensioni.
 @end ifset
@@ -33974,6 +34316,12 @@ un'accozzaglia di problemi di portabilit@`a, quale si pu@`o vedere in alcune
 parti del codice sorgente di @command{gawk}.
 
 @item
+Se l'estensione usa le funzionalit@`a MPFR, e si desidera ricevere valori
+numerici di precisione arbitraria da @command{gawk} e/o passare ad esso
+tali valori, si deve includere l'intestazione
+@code{<mpfr.h>} prima di includere @code{<gawkapi.h>}.
+
+@item
 Il file @file{gawkapi.h} pu@`o essere incluso pi@`u volte, senza conseguenze
 negative.  Tuttavia sarebbe meglio evitare di farlo, per uno
 stile di programmazione migliore.
@@ -34137,7 +34485,7 @@ L'elenco @code{enum} indica di che tipo @`e un certo valore.
 @itemx @ @ @ @ awk_valtype_t   val_type;
 @itemx @ @ @ @ union @{
 @itemx @ @ @ @ @ @ @ @ awk_string_t@ @ @ @ @ @ @ s;
-@itemx @ @ @ @ @ @ @ @ double@ @ @ @ @ @ @ @ @ @ @ @ @ d;
+@itemx @ @ @ @ @ @ @ @ awknum_t@ @ @ @ @ @ @ @ @ @ @ n;
 @itemx @ @ @ @ @ @ @ @ awk_array_t@ @ @ @ @ @ @ @ a;
 @itemx @ @ @ @ @ @ @ @ awk_scalar_t@ @ @ @ @ @ @ scl;
 @itemx @ @ @ @ @ @ @ @ awk_value_cookie_t@ vc;
@@ -34150,12 +34498,38 @@ e ogni campo @`e del tipo appropriato.
 @item #define str_value@ @ @ @ @ @ u.s
 @itemx #define strnum_value@ @ @ str_value
 @itemx #define regex_value@ @ @ @ str_value
-@itemx #define num_value@ @ @ @ @ @ u.d
+@itemx #define num_value@ @ @ @ @ @ u.n.d
+@itemx #define num_type@ @ @ @ @ @ @ u.n.type
+@itemx #define num_ptr@ @ @ @ @ @ @ @ u.n.ptr
 @itemx #define array_cookie@ @ @ u.a
 @itemx #define scalar_cookie@ @ u.scl
 @itemx #define value_cookie@ @ @ u.vc
 L'uso di queste macro rende pi@`u facile da seguire l'accesso ai campi di
 @code{awk_value_t}.
+
+@item typedef struct awk_number @{
+@itemx @ @ @ @ double d;
+@itemx @ @ @ @ enum AWK_NUMBER_TYPE @{
+@itemx @ @ @ @ @ @ @ @ AWK_NUMBER_TYPE_DOUBLE,
+@itemx @ @ @ @ @ @ @ @ AWK_NUMBER_TYPE_MPFR,
+@itemx @ @ @ @ @ @ @ @ AWK_NUMBER_TYPE_MPZ
+@itemx @ @ @ @ @} type;
+@itemx @ @ @ @ void *ptr;
+@itemx @} awk_number_t;
+Questo rappresenta un valore numerico.  Internamente, @command{gawk}
+memorizza ogni numero o come una variabile C di tipo @code{double},
+o come un numero intero GMP, o come un numero MPFR a virgola mobile
+di precisione arbitraria.  Per consentire alle estensioni di
+supportare valori numerici GMP ed MPFR, i valori numerici sono
+comunicati utilizzando questa struttura.
+
+L'elemento in doppia-precisione @code{d} @`e sempre valorizzato nei dati
+ricevuti da @command{gawk}.  Inoltre, esaminando il membro
+@code{type}, un'estensione @`e in grado di determinare se il membro puntato
+da @code{ptr} sia un numero intero GMP (tipo @code{mpz_ptr}), o un numero
+MPFR a virgola mobile (tipo @code{mpfr_ptr_t}), e trasformarlo a seconda
+delle necessit@`a.
+
 
 @item typedef void *awk_scalar_t;
 La variabili scalari possono essere rappresentate da un tipo opaco.  Questi
@@ -34333,8 +34707,8 @@ Se @command{gawk} usasse la propria versione di @code{free()} per liberare
 della memoria acquisita tramite una differente versione di @code{malloc()},
 il risultato sarebbe molto probabilmente differente da quello atteso.
 
-Due macro di utilit@`a possono essere usate per allocare memoria
-tramite @code{gawk_malloc()} e
+Tre macro di utilit@`a possono essere usate per allocare memoria
+tramite @code{gawk_malloc()}, @code{gawk_calloc}, e
 @code{gawk_realloc()}.  Se l'allocazione non riesce, @command{gawk}
 termina l'esecuzione con un messaggio di errore fatale.
 Queste macro dovrebbero essere usate come se fossero dei richiami a
@@ -34374,11 +34748,44 @@ strcpy(message, greet);
 make_malloced_string(message, strlen(message), & risultato);
 @end example
 
+@item #define ezalloc(pointer, type, size, message) @dots{}
+Questo @`e simile a @code{emalloc()}, ma chiama @code{gawk_calloc()}
+invece che @code{gawk_malloc()}.
+Gli argomenti sono gli stessi della macro @code{emalloc()}, ma
+questa macro garantisce che la memoria allocata sia inizializzata
+a zeri binari.
+
 @item #define erealloc(pointer, type, size, message) @dots{}
 Questo @`e simile a @code{emalloc()}, ma chiama @code{gawk_realloc()}
 invece che @code{gawk_malloc()}.
 Gli argomenti sono gli stessi della macro @code{emalloc()}.
 @end table
+
+Due ulteriori funzioni allocano oggetti MPFR e GMP per l'utilizzo
+da parte di funzioni di estensione che necessitino di creare e di
+restituire valori di questo tipo:
+
+@table @code
+@item void *get_mpfr_ptr();
+Alloca e inizializza un oggetto MPFR e restituisce un puntatore allo stesso.
+Se l'allocazione non riesce, @command{gawk} termina con un errore fatale
+``out of memory'' (memoria esaurita).  Se @command{gawk} era stato compilato
+senza il supporto MPFR, chiamare questa funzione genera un errore fatale.
+
+@item void *get_mpz_ptr();
+Alloca e inizializza un oggetto GMP e restituisce un puntatore allo stesso.
+Se l'allocazione non riesce, @command{gawk} termina con un errore fatale
+``out of memory'' (memoria esaurita).  Se @command{gawk} era stato compilato
+senza il supporto MPFR, chiamare questa funzione genera un errore fatale.
+@end table
+
+Entrambe queste funzioni restituiscono un codice di ritorno @samp{void *},
+poich@'e il file di intestazione @file{gawkapi.h} non dovrebbe avere dipendenze
+da @code{<mpfr.h>} (e @code{<gmp.h>},
+che @`e incluso da @code{<mpfr.h>}).  I valori di ritorno effettivamente
+restituiti sono di tipo @code{mpfr_ptr} e @code{mpz_ptr} rispettivamente,
+e si dovrebbero assegnare in maniera appropriata questi valori di ritorno
+prima di assegnare i risultati a variabili del tipo corretto.
 
 @node Funzioni di costruzione
 @subsection Funzioni per creare valori
@@ -34426,6 +34833,20 @@ Viene restituito il puntatore @code{risultato}.
 @itemx make_number(double num, awk_value_t *risultato);
 Questa funzione crea semplicemente un valore numerico nella variabile
 @code{awk_value_t}, puntata da @code{risultato}.
+
+@item static inline awk_value_t *
+@itemx make_number_mpz(void *mpz, awk_value_t *result);
+Questa funzione crea un valore di numero GMP number in @code{result}.
+@code{mpz} deve provenire da una chiamata a @code{get_mpz_ptr()}
+(e quindi essere veramente del corrispondente tipo @code{mpz_ptr}).
+@command{gawk} assume la propriet@`a di questa memoria.
+
+@item static inline awk_value_t *
+@itemx make_number_mpfr(void *mpfr, awk_value_t *result);
+Questa funzione crea un valore di numero MPFR number in @code{result}.
+@code{mpz} deve provenire da una chiamata a @code{get_mpfr_ptr()}
+(e quindi essere veramente del corrispondente tipo @code{mpfr_ptr}).
+@command{gawk} assume la propriet@`a di questa memoria.
 
 @item static inline awk_value_t *
 @itemx make_const_user_input(const char *stringa, size_t lunghezza, awk_value_t *risultato);
@@ -34562,10 +34983,10 @@ Una volta preparato un record che descrive l'estensione, la funzione di
 estensione va registrata con @command{gawk} usando questa funzione dell'API:
 
 @table @code
-@item awk_bool_t add_ext_func(const char *namespace, awk_ext_func_t *func);
+@item awk_bool_t add_ext_func(const char *name_space, awk_ext_func_t *func);
 Questa funzione restituisce il valore @dfn{true} se ha successo,
 oppure @dfn{false} in caso contrario.
-Il parametro @code{namespace} non @`e usato per ora; dovrebbe puntare a una
+Il parametro @code{name_space} non @`e usato per ora; dovrebbe puntare a una
 stringa vuota (@code{""}).  Il puntatore @code{func} @`e l'indirizzo di una
 @code{struct} che rappresenta la funzione stessa, come descritto sopra.
 
@@ -34760,7 +35181,8 @@ typedef struct awk_input @{
     void *opaque;           /* area dati privata
     			       per l'analizzatore di input */
     int (*get_record)(char **out, struct awk_input *iobuf,
-                      int *errcode, char **rt_start, size_t *rt_len);
+                      int *errcode, char **rt_start, size_t *rt_len,
+                      const awk_fieldwidth_info_t **field_width);
     ssize_t (*read_func)();
     void (*close_func)(struct awk_input *iobuf);
     struct stat sbuf;       /* buffer per stat */
@@ -34816,7 +35238,8 @@ L'analizzatore di input non @`e obbligato a usare questo puntatore.
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ struct@ awk_input *iobuf,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ int *errcode,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ char **rt_start,
-@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ size_t *rt_len);
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ size_t *rt_len,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const awk_fieldwidth_info_t **field_width);
 Questo puntatore a funzione dovrebbe puntare a una funzione che crea i record
 in input.  Tale funzione @`e il nucleo centrale dell'analizzatore di input.
 Il suo modo di operare @`e descritto nel testo che segue questo elenco.
@@ -34869,6 +35292,22 @@ Se il concetto ``fine record'' @`e applicabile,
 campo.  In caso contrario, @code{*rt_len} dovrebbe essere impostata a zero.
 @command{gawk} usa una sua copia di questi dati, quindi l'estensione deve
 gestire tale memoria.
+
+@item const awk_fieldwidth_info_t **field_width
+Se @code{field_width} non @`e @code{NULL}, allora @code{*field_width} sar@`a
+inizializzato a @code{NULL}, e la funzione pu@`o impostarlo per puntare a una
+struttura che fornisca l'informazione sulla lunghezza del campo, che
+sar@`a utilizzata al posto di quella determinata dall'analizzatore di default
+del campo.  Si noti che qeusta struttura non sar@`a copiata da @command{gawk};
+inoltre essa deve rimanere disponibile almeno fino alla prossima chiamata a
+@code{get_record} o a @code{close_func}.  Si noti inoltre che
+@code{field_width} vale @code{NULL} quando @code{getline} sta assegnando
+i risultati a una variabile, e quindi un'analisi del campo non @`e necessaria.
+Se l'analizzatore imposta @code{*field_width},
+allora @command{gawk} usa questa descrizione per analizzare il record in
+input, e il valore di @code{PROCINFO["FS"]} sar@`a @code{"API"} finch@'e questo
+record rimane corrente come @code{$0}.
+La struttura dati @code{awk_fieldwidth_info_t} @`e descritta sotto.
 @end table
 
 Il codice di ritorno @`e la lunghezza del buffer puntato da
@@ -34931,6 +35370,51 @@ Un analizzatore di input va registrato usando la seguente funzione:
 Registra l'analizzatore di input puntato da @code{input_parser} con
 @command{gawk}.
 @end table
+
+Se si vuole sostituire il meccanismo di default per determinare i campi
+[con uno scritto dall'utente], si deve riempire una struttura
+@code{awk_fieldwidth_info_t} che ha questo aspetto:
+
+@example
+typedef struct @{
+        awk_bool_t     use_chars; /* falso ==> usare byte */
+        size_t         nf;        /* numero di campi nel record (NF) */
+        struct awk_field_info @{
+                size_t skip;      /* da ignorare prima dell'inizio di un campo */
+                size_t len;       /* lunghezza del campo */
+        @} fields[1];              /* la dimensione effettiva dovrebbe essere nf */
+@} awk_fieldwidth_info_t;
+@end example
+
+I campi sono:
+
+@table @code
+@item awk_bool_t use_chars;
+Impostare ad @code{awk_true} se le lunghezze di campo sono specificate in
+unit@`a di caratteri---potenzialmente multi-byte, oppure impostarlo a
+@code{awk_false} se le lunghezze sono espresse in numero di byte.
+L'efficienza del programma sar@`a maggiore utilizzando la dimensione in byte.
+
+@item size_t nf;
+Impostare al numero di campi nel record in input, cio@`e a @code{NF}.
+
+@item struct awk_field_info fields[nf];
+Questo @`e un vettore di lunghezza variabile la cui dimensione effettiva
+dovrebbe essere @code{nf}.
+Per ogni campo, l'elemento @code{skip} dovrebbe essere impostato al numero
+di caratteri o byte, come richiesto dal flag @code{use_chars},
+da saltare prima dell'inizio di questo campo.  L'elemento @code{len} fornisce
+la lunghezza del campo.  I valori in @code{fields[0]} fornisce l'informazione
+per @code{$1}, e cos@`{@dotless{i}} via, fino all'elemento @code{fields[nf-1]} che contiene
+l'informazione per @code{$NF}.
+@end table
+
+Una macro di utilit@`a @code{awk_fieldwidth_info_size(numfields)} @`e disponibile
+per calcolare la dimensione appropriata della struttura a lunghezza variabile
+@code{awk_fieldwidth_info_t} che contiene @code{numfields} campi.  Questa
+dimensione pu@`o essere usata come argomento per @code{malloc()} o in una
+struttura @dfn{union} per allocare spazio staticamente.
+Per un esempio si pu@`o vedere l'estensione di esempio @code{readdir_test}.
 
 @node Processori di output
 @subsubsection Registrare un processore di output
@@ -35623,7 +36107,8 @@ se si pone mente al fatto che la memoria di @emph{ogni} valore di stringa
 Se ci sono 20 variabili, e tutte hanno per valore la stessa stringa,
 si devono creare 20 copie identiche della stringa.@footnote{I valori
 numerici creano molti meno problemi, in quanto richiedono solo una variabile
-C @code{double} (8 byte) per contenerli.}
+C @code{double} (8 byte) per contenerli.  Naturalmente, valori di tipo
+GMP ed MPFR usano @emph{molta} pi@`u memoria.}
 
 Chiaramente @`e pi@`u efficiente, se possibile, creare il valore una sola volta,
 e fare in modo che @command{gawk} utilizzi quell'unico valore per molte
@@ -35886,10 +36371,13 @@ creare un nuovo vettore e aggiungervi elementi.
 Svuota il vettore rappresentato da @code{a_cookie}.
 Restituisce @dfn{false} in presenza di qualche tipo di problema, @dfn{true}
 in caso contrario.  Il vettore non viene eliminato ma, dopo aver chiamato
-questa funzione, resta privo di elementi.  Questo @`e equivalente a usare
+questa funzione, resta privo di elementi.  Questo equivale a usare
 l'istruzione @code{delete} (@pxref{Cancellazione}).
 
-@item awk_bool_t flatten_array_typed(awk_array_t a_cookie, awk_flat_array_t **data, awk_valtype_t index_type, awk_valtype_t value_type);
+@item awk_bool_t flatten_array_typed(awk_array_t a_cookie,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_flat_array_t **data,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_valtype_t index_type,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_valtype_t value_type);
 Per il vettore rappresentato da @code{a_cookie}, crea una struttura
 @code{awk_flat_array_t} e la riempie con indici e valori del tipo richiesto.
 Imposta il puntatore il cui indirizzo @`e passato in @code{data} per puntare a
@@ -36379,16 +36867,21 @@ Una @dfn{pipe} aperta in input.
 Un coprocesso bidirezionale.
 @end table
 
-In caso di errore, restituisce il valore @code{@dfn{awk_false}}.
+In caso di errore, restituisce il valore @code{awk_false}.
 Altrimenti, restituisce
-@code{@dfn{awk_true}}, insieme a ulteriori informazioni sulla ridirezione
+@code{awk_true}, insieme a ulteriori informazioni sulla ridirezione
 nei puntatori @code{ibufp} e @code{obufp}.
 Per ridirezioni di input il valore @code{*ibufp} non dovrebbe essere
 @code{NULL}, mentre @code{*obufp} dovrebbe essere @code{NULL}.
+
+Per ridirezioni di input,
+il valore di @code{*ibufp} dovrebbe essere non-@code{NULL}, e @code{*obufp}
+dovrebbe essere @code{NULL}.
 Per ridirezioni di output,
-il valore di @code{*obufp} non dovrebbe essere @code{NULL}, e @code{*ibufp}
-dovrebbe essere @code{NULL}.  Per coprocessi bidirezionali, nessuno dei due
-valori dovrebbe essere @code{NULL}.
+il valore di @code{*obufp} dovrebbe essere non-@code{NULL}, e @code{*ibufp}
+dovrebbe essere @code{NULL}.
+Per coprocessi bidirezionali, ognuno dei due
+valori dovrebbe essere non-@code{NULL}.
 
 Normalmente, l'estensione @`e interessata a @code{(*ibufp)->fd}
 e/o @code{fileno((*obufp)->fp)}.  Se il file non @`e gi@`a
@@ -36425,8 +36918,10 @@ insieme contiene informazioni su come @command{gawk} @`e stato invocato.
 
 @menu
 * Versione dell'estensione::    Informazioni sulla versione API.
+* Versione estensione GMP/MPFR:: Informazioni sulla versione disponibile
+                                 di GMP ed MPFR.
 * Variabili informative di estens. API:: Variabili che forniscono informationi
-                                sull'invocazione di @command{gawk}.
+                                 sull'invocazione di @command{gawk}.
 @end menu
 
 @node Versione dell'estensione
@@ -36495,6 +36990,58 @@ nella
 in
 @end ifnottex
 @ref{Codice predefinito di un'estensione API}).
+
+@node Versione estensione GMP/MPFR
+@subsubsection Informazioni sulla versione disponibile di GMP ed MPFR
+
+L'API include anche informazioni sulle versioni di GMP ed MPFR con cui
+il comando @command{gawk} in esecuzione @`e stato compilato (se disponibile).
+Queste sono incluse nella @code{struct} dell'API come costanti intere
+in sola lettura:
+
+@table @code
+@item api->gmp_major_version
+La versione principale della libreria GMP usata per compilare @command{gawk}.
+
+@item api->gmp_minor_version
+La versione secondaria della libreria GMP usata per compilare @command{gawk}.
+
+@item api->mpfr_major_version
+La versione principale della libreria MPFR usata per compilare @command{gawk}.
+
+@item api->mpfr_minor_version
+La versione secondaria della libreria MPFR usata per compilare @command{gawk}.
+@end table
+
+Questi campi hanno un valore di zero se @command{gawk} @`e stato compilato
+senza supporto MPFR.
+
+Si pu@`o controllare se le versioni di MPFR e GMP dell'utente corrispondono
+a quelle contenute in @command{gawk} con le seguenti macro:
+
+@table @code
+@item check_mpfr_version(extension)
+La @code{extension} @`e l'ID dell'estensione, passato a tutte le altre macro
+e funzioni definite in @file{gawkapi.h}.  Se il file di intestazione
+@code{<mpfr.h>} non @`e stato incluso, questa macro verr@`a definita in
+modo da non fare nulla.
+
+Se invece il predetto file @`e stato incluso, questa macro confronta
+le versioni principale e secondaria di MPFR e GMP con quelle delle
+librerie in uso da parte dell'utente.  Se queste ultime sono pi@`u
+recenti di quelle di @command{gawk}, stampa un messaggio di
+errore fatale ed esce.
+
+La macro @code{dl_load_func()} (trattata
+@iftex
+nella
+@end iftex
+@ifnottex
+in
+@end ifnottex
+@ref{Codice predefinito di un'estensione API})
+chiama @code{check_mpfr_version()}.
+@end table
 
 @node Variabili informative di estens. API
 @subsubsection Variabili informative
@@ -36637,6 +37184,11 @@ faccia tutto il lavoro standard necessario, qui descritto:
 Controlla le versioni dell'API.  Se la versione principale dell'estensione
 non corrisponde a quella di @command{gawk} o se la versione secondaria
 dell'estensione @`e maggiore di quella di @command{gawk}, stampa un messaggio
+di errore fatale ed esce.
+
+@item
+Controlla le versioni di MPFR e GMP. Se non sono allo stesso livello con
+quelle in uso localmente, stampa un messaggio
 di errore fatale ed esce.
 
 @item
@@ -37727,6 +38279,34 @@ l'estensione in maniera corretta:
 @c file eg/lib/inplace.awk
 @group
 # inplace --- carica e richiama l'estensione inplace.
+@c endfile
+@ignore
+@c file eg/lib/inplace.awk
+# 
+# Copyright (C) 2013, 2017 the Free Software Foundation, Inc.
+# 
+# This file is part of GAWK, the GNU implementation of the
+# AWK Programming Language.
+# 
+# GAWK is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# GAWK is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+#
+# Andrew J. Schorr, aschorr@@telemetry-investments.com
+# January 2013
+@c endfile
+@end ignore
+@c file eg/lib/inplace.awk
 
 @@load "inplace"
 
@@ -37739,6 +38319,7 @@ l'estensione in maniera corretta:
 # verr@`a modificato sovrascrivendo il file originale.
 # Ma @`e possibile evitarlo specificando l'argomento inplace=0
 # davanti al nome del file che non si desidera elaborare in questo modo.
+
 # Si pu@`o poi abilitare di nuovo l'aggiornamento diretto del file
 # sulla riga di comando, specificando inplace=1 prima del file
 # che si vuole modificare direttamente.
@@ -37746,11 +38327,15 @@ l'estensione in maniera corretta:
 # N.B. La funzione inplace_end() @`e invocata nelle regole
 # BEGINFILE ed END, in modo che ogni eventuale azione
 # in una regola ENDFILE sar@`a ridiretta come previsto.
+@end group
 
+@group
 BEGIN @{
-    inplace = 1		# abilitato per default
+    inplace = 1         # abilitato per default
 @}
+@end group
 
+@group
 BEGINFILE @{
     if (_inplace_filename != "")
         inplace_end(_inplace_filename, INPLACE_SUFFIX)
@@ -37759,6 +38344,9 @@ BEGINFILE @{
     else
         _inplace_filename = ""
 @}
+@end group
+
+@group
 
 END @{
     if (_inplace_filename != "")
@@ -38120,7 +38708,7 @@ sorgente per maggiori informazioni.
 
 @cindex @code{gawkextlib}, progetto
 @cindex progetto @code{gawkextlib}
-Il progetto @uref{http://sourceforge.net/projects/gawkextlib/, @code{gawkextlib}}
+Il progetto @uref{https://sourceforge.net/projects/gawkextlib/, @code{gawkextlib}}
 fornisce varie estensioni per @command{gawk}, compresa una per
 l'elaborazione dei file XML.  Questa @`e un'evoluzione del progetto noto come
 @command{xgawk} (XML @command{gawk}).
@@ -38153,14 +38741,14 @@ Estensione Select
 
 @item
 Estensione analizzatore XML, usando la libreria di analisi XML
-@uref{http://expat.sourceforge.net, Expat}
+@uref{https://expat.sourceforge.net, Expat}
 @end itemize
 
 @cindex @command{git}, programma di utilit@`a
 @cindex programma di utilit@`a @command{git}
 Si pu@`o scaricare il codice del progetto @code{gawkextlib}
 usando il codice sorgente mantenuto tramite
-@uref{http://git-scm.com, Git}.
+@uref{https://git-scm.com, Git}.
 Il comando per farlo @`e il seguente:
 
 @example
@@ -38170,14 +38758,14 @@ git clone git://git.code.sf.net/p/gawkextlib/code gawkextlib-code
 @cindex Expat, libreria per analizzare XML
 @cindex XML, Expat, libreria per analizzare
 Per poter compilare e usare l'estensione XML, @`e necessario installare
-la libreria di analisi XML @uref{http://expat.sourceforge.net, Expat}.
+la libreria di analisi XML @uref{https://expat.sourceforge.net, Expat}.
 
 Inoltre, @`e necessario installare gli strumenti GNU Autotools
-(@uref{http://www.gnu.org/software/autoconf, Autoconf},
-@uref{http://www.gnu.org/software/automake, Automake},
-@uref{http://www.gnu.org/software/libtool, Libtool}
+(@uref{https://www.gnu.org/software/autoconf, Autoconf},
+@uref{https://www.gnu.org/software/automake, Automake},
+@uref{https://www.gnu.org/software/libtool, Libtool}
 e
-@uref{http://www.gnu.org/software/gettext, GNU @command{gettext}}).
+@uref{https://www.gnu.org/software/gettext, GNU @command{gettext}}).
 
 La semplice procedura per compilare e testare @code{gawkextlib} @`e la seguente.
 Dapprima, occorre compilare e installare @command{gawk}:
@@ -38189,7 +38777,7 @@ make && make check                  @ii{Compila e controlla che tutto sia a post
 make install                        @ii{Installa gawk}
 @end example
 
-Poi, dal sito @url{http://sourceforge.net/projects/gawkextlib/files} si deve
+Poi, dal sito @url{https://sourceforge.net/projects/gawkextlib/files} si deve
 scaricare @code{gawkextlib} e le estensioni che si vogliono installare.
 Il file @file{README} del sito spiega come compilare il codice.  Se si @`e
 installato @command{gawk} in una posizione non-standard, occorre
@@ -38454,7 +39042,7 @@ del linguaggio @command{awk}, facendo riferimento ad altre parti del
 @ifset FOR_PRINT
 Per amor di brevit@`a, sono state omesse in questa edizione informazioni
 sulla storia delle funzionalit@`a di @command{gawk}.  Si possono trovare nella
-@uref{http://www.gnu.org/software/gawk/manual/html_node/Feature-History.html,
+@uref{https://www.gnu.org/software/gawk/manual/html_node/Feature-History.html,
 documentazione online}.
 @end ifset
 
@@ -38942,10 +39530,12 @@ Le funzioni @code{bindtextdomain()}, @code{dcgettext()}
 e @code{dcngettext()} per l'internazionalizzazione
 (@pxref{I18N per programmatore})
 
+@ifset INTDIV
 @item
-La funzione @code{intdiv()} per effettuare divisioni a numeri interi e
+La funzione @code{intdiv0()} per effettuare divisioni a numeri interi e
 ottenere il resto della divisione
 (@pxref{Funzioni numeriche})
+@end ifset
 @end itemize
 
 @item
@@ -39120,7 +39710,9 @@ I've tried to follow this general order, esp.@: for the 3.0 and 3.1 sections:
        new keywords
        new command-line options
        behavioral changes
-       new ports
+       extension API changes
+       new / deprecated / removed ports
+       installation time stuff
 Within each category, be alphabetical.
 @end ignore
 
@@ -39683,10 +40275,10 @@ Cray
 MIPS RiscOS
 
 @item
-MS-DOS con Compilatore Microsoft
+MS-DOS col Compilatore Microsoft
 
 @item
-MS-Windows con Compilatore Microsoft
+MS-Windows col Compilatore Microsoft
 
 @item
 NeXT
@@ -39781,37 +40373,54 @@ Il supporto per Ultrix @`e stato rimosso.
 
 @end itemize
 
-La versione 4.2 ha introdotto le seguenti funzionalit@`a:
+La versione 4.2 di @command{gawk} ha introdotto le seguenti modifiche:
 
 @itemize @bullet
 @item
-Differenze apportate alle variabili di ambiente (@code{ENVIRON}) sono riflesse in quelle
-rese disponibili a @command{gawk} e in quelle di programmi che siano da esso richiamati.
+Differenze apportate alle variabili di ambiente (@code{ENVIRON}) sono
+riflesse in quelle rese disponibili a @command{gawk} e in quelle di
+programmi che siano da esso richiamati.
 @xref{Variabili auto-assegnate}.
 
 @item
-L'opzione @option{--pretty-print} non esegue pi@`u, dopo averlo stampato,
-il programma @command{awk}.
-@xref{Opzioni}.
+@code{FIELDWIDTHS} @`e stato migliorato per consentire di saltare dei
+caratteri prima di assegnare il valore di un campo
+(@pxref{Separazione in base al contenuto}).
 
 @item
-Il programma @command{igawk} e le relative pagine di manuale non sono
-pi@`u installati come parte dell'installazione di @command{gawk}.
-@xref{Programma igawk}.
+Il vettore @code{PROCINFO["argv"]}.
+@xref{Variabili auto-assegnate}.
 
 @item
-La funzione @code{intdiv()}.
-@xref{Funzioni numeriche}.
-
-@item
-Il massimo numero di cifre esadecimali permesse nelle sequenze di
+Il numero massimo di cifre esadecimali consentito nelle sequenze di
 protezione @samp{\x} @`e ora limitato a due.
 @xref{Sequenze di protezione}.
+  
+@item
+Costanti @dfn{regexp} forti nella forma @samp{@@/@dots{}/}
+(@pxref{Costanti @dfn{regexp} forti}).
 
 @item
-@code{print} e @code{printf} non terminano il programma dopo alcuni
-errori di output.
-@xref{Continuazione dopo errori}.
+Le funzioni a livello di bit sono state modificate. Se si
+forniscono argomenti negativi, viene generato un errore fatale.
+(@pxref{Funzioni a livello di bit}).
+
+@ifset INTDIV
+@item
+La funzione @code{intdiv0()}.
+@xref{Funzioni numeriche}.
+@end ifset
+
+@item
+La funzione @code{mktime()} ora acctte un secondo argomento facoltativo
+(@pxref{Funzioni di tempo}).
+
+@item
+La funzione @code{typeof()} (@pxref{Funzioni per i tipi}).
+
+@item
+Le ottimizzazioni sono abilitate per default.  Si usi @option{-s} /
+@option{--no-optimize} per non effettuare ottimizzazioni.
 
 @item
 Per molti anni, lo standard POSIX richiedeva che la separazione dei campi
@@ -39823,10 +40432,72 @@ il default per separare i campi con l'opzione @option{--posix} ammette
 anche il ritorno a capo come separatore di campi.
 
 @item
+Continuazione dopo errori [non fatali] con @code{print} e @code{printf}.
+@xref{Continuazione dopo errori}.
+
+@item
+Possibilit@`a di tentare di nuovo l'I/O in input
+attraverso @code{PROCINFO[@var{input-file}, "RETRY"]};
+(@pxref{Proseguire dopo errore in input}).
+
+@item
+Modifiche all'opzione @option{--pretty-print}
+(@pxref{Profilare}):
+
+@c nested table
+@itemize @value{MINUS}
+@item
+L'opzione @option{--pretty-print} non esegue pi@`u il programma @command{awk}
+come in precedenza.
+
+@item
+I commenti nel programma sorgente sono conservati e inseriti nel file
+in output.
+
+@item
+Parentesi esplicite [anche se non strettamente necessarie] nelle espressioni
+in input sono mantenute nell'output generato.
+@end itemize
+
+@item
+Miglioramenti all'API per l'estensione
+(@pxref{Estensioni dinamiche}):
+
+@c nested
+@itemize @value{MINUS}
+@item
+La funzione @code{get_file()} @`e in grado di accedere
+a ridirezioni in fase di @dfn{open}.
+
+@item
+La funzione @code{nonfatal()} per generare messaggi di errore non fatali
+(che non provocano la fine del programma).
+
+@item
+Supporto per i numeri scritti per essere usati tramite GMP ed MPFR.
+
+@item
+Gli analizzatori di input possono ora prevalere sul meccanismo di
+analisi dei campi, specificando delle posizioni precise.
+@end itemize
+
+@item
+Dei file per iniziare una sessione sono inclusi nella distribuzione
+e installati da @samp{make install}
+(@pxref{File da usare a inizio sessione}).
+
+@item
+Il programma @command{igawk} e la relativa pagina di manuale non
+sono pi@`u installati quando si compila @command{gawk} [il programma
+non @`e pi@`u necessario].
+@xref{Programma igawk}.
+
+@item
 Il supporto per MirBSD @`e stato rimosso.
 
 @item
 Il supporto per GNU/Linux sull'architettura Alpha @`e stato rimosso.
+
 @end itemize
 
 @c XXX ADD MORE STUFF HERE
@@ -40102,7 +40773,8 @@ documentazione.
 @item
 @cindex Deifik, Scott
 Scott Deifik
-si @`e occupato della manutenzione per MS-DOS usando il compilatore DJGPP.
+si @`e occupato in passato della manutenzione per MS-DOS usando
+il compilatore DJGPP.
 
 @item
 @cindex Zaretskii, Eli
@@ -40115,6 +40787,7 @@ MinGW.
 Juan Grigera
 @`e autore di una versione di @command{gawk} per sistemi Windows32.
 (Questa versione non @`e pi@`u supportata.)
+
 
 @item
 @cindex Hankerson, Darrel
@@ -40149,6 +40822,9 @@ anche la relativa documentazione.
 Stephen @`e anche stato determinante nel lavoro iniziale per integrare il codice
 interno di gestione dei byte nel
 complesso del codice di @command{gawk}.
+Inoltre, ha svolto molto del lavoro necessario per far s@`{@dotless{i}} che usando
+l'opzione @option{--pretty-print} i commenti venissero conservati e
+stampati nell'output.
 
 @item
 @cindex Woehlke, Matthew
@@ -40265,6 +40941,19 @@ OpenVMS e alla relativa documentazione.
 @cindex Colombo, Antonio
 Antonio Giovanni Colombo ha riscritto diversi esempi, che non erano pi@`u
 attuali, contenuti nei primi capitoli, e gliene sono estremamente grato.
+Ha inoltre preparato con Marco Curreli e mantiene la traduzione in
+italiano di questo libro.
+
+@item
+@cindex Curreli, Marco
+Marco Curreli, insieme con Antonio Colombo, ha tradotto questo
+@value{DOCUMENT} in italiano.  @`E ora incluso nella distribuzione
+di @command{gawk}.
+
+@item
+@cindex Guerrero, Juan Manuel
+Juan Manuel Guerrero ha preso in carico la manutenzione dellla
+versione DJGPP di @command{gawk}.
 
 @item
 @cindex Robbins, Arnold
@@ -40378,14 +41067,14 @@ Se si dispone del programma @command{wget}, si pu@`o utilizzarlo digitando un
 comando simile a questo:
 
 @example
-wget http://ftp.gnu.org/gnu/gawk/gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz
+wget https://ftp.gnu.org/gnu/gawk/gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz
 @end example
 @end itemize
 
 L'archivio che contiene il software GNU @`e disponibile in vari cloni
 (@dfn{mirror}) in tutto il mondo.
 La lista aggiornata dei siti clone @`e disponibile nel
-@uref{http://www.gnu.org/order/ftp.html, sito web principale della FSF}.
+@uref{https://www.gnu.org/order/ftp.html, sito web principale della FSF}.
 Si tenti di usare uno dei siti-clone; dovrebbero essere meno trafficati, ed @`e
 possibile che ce ne sia uno pi@`u vicino.
 
@@ -40586,6 +41275,10 @@ nella
 @code{@@include},
 n@'e @command{igawk} n@'e @file{igawk.1} sono effettivamente installati.)
 
+@item doc/it/*
+File per la traduzione italiana di questo @value{DOCUMENT}, preparata e
+contribuita da Antonio Colombo e Marco Curreli.
+
 @item doc/Makefile.in
 Il file in input usato durante la procedura di configurazione per
 generare l'effettivo @file{Makefile} da usare per creare la documentazione.
@@ -40719,7 +41412,7 @@ usando il comando GNU Autoconf.
 descritto in dettaglio in
 @cite{Autoconf---Generating Automatic Configuration Scripts},
 che pu@`o essere trovato in rete sul sito
-@uref{http://www.gnu.org/software/autoconf/manual/index.html,
+@uref{https://www.gnu.org/software/autoconf/manual/index.html,
 della Free Software Foundation}.)
 @end ifnotinfo
 @ifinfo
@@ -40878,6 +41571,14 @@ tempi di esecuzione di un programma.
 Se si usa quest'opzione alcuni dei test di funzionalit@`a non avranno successo.
 Quest'opzione potr@`a essere rimossa in futuro.
 @end quotation
+
+@cindex @option{--disable-mpfr}, opzione di configurazione
+@cindex opzione di configurazione @code{--disable-mpfr}
+@item --disable-mpfr
+Non viene effettuato il controllo delle librerie MPFR e GMP.
+Ci@`o pu@`o essere utile principalmente per gli sviluppatori,
+per essere sicuro che tutto funzioni regolarmente nel caso in cui
+il supporto MPFR non sia disponibile.
 
 @cindex @option{--disable-nls}, opzione di configurazione
 @cindex opzione di configurazione @code{--disable-nls}
@@ -41711,12 +42412,12 @@ Le persone che si occupano delle varie versioni di @command{gawk} sono:
 
 @c put the index entries outside the table, for docbook
 @cindex Buening, Andreas
-@cindex Deifik, Scott
 @cindex Malmberg, John E.
 @cindex Pitts, Dave
 @cindex G., Daniel Richard
 @cindex Robbins, Arnold
 @cindex Zaretskii, Eli
+@cindex Guerrero, Juan Manuel
 @ifset SMALLPRINT
 @multitable {MS-Windows} {123456789012345678901234567890123456789001234567890}
 @end ifset
@@ -41725,7 +42426,7 @@ Le persone che si occupano delle varie versioni di @command{gawk} sono:
 @end ifclear
 @item Unix e sistemi POSIX @tab Arnold Robbins, @EMAIL{arnold@@skeeve.com,arnold at skeeve dot com}
 
-@c @item MS-DOS con DJGPP @tab Scott Deifik, @EMAIL{scottd.mail@@sbcglobal.net,scottd dot mail at sbcglobal dot net}
+@item MS-DOS with DJGPP @tab Juan Manuel Guerrero, @EMAIL{juan.guerrero@@gmx.de, juan dot guerrero at gmx dot de}
 
 @item MS-Windows con MinGW @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}
 
@@ -41748,6 +42449,13 @@ il codice relativo rester@`a nella distribuzione ancora per qualche tempo,
 nel caso che qualche volontario desideri prenderla in carico.
 Se questo non dovesse succedere, la parte di codice relativa questa
 versione sar@`a rimossa dalla distribuzione.
+
+@c 7/2017, Juan Guerrero has taken over the DJGPP port.
+@ignore
+The DJGPP port is no longer supported; it will remain in the code base
+for a while in case a volunteer wishes to take it over. If this does
+not happen, then eventually code for this port will be removed.
+@end ignore
 
 @node Altre versioni
 @appendixsec Altre implementazioni di @command{awk} liberamente disponibili
@@ -41817,7 +42525,7 @@ git clone git://github.com/onetrueawk/awk bwkawk
 @end example
 
 @noindent
-Questo comando crea una copia del deposito @uref{http://git-scm.com, Git}
+Questo comando crea una copia del deposito @uref{https://git-scm.com, Git}
 in una directory chiamata @file{bwkawk}.  Se si omette questo argomento della
 riga di comando @command{git}, la copia del deposito @`e creata nella
 directory di nome @file{awk}.
@@ -41882,7 +42590,7 @@ Il traduttore di @command{awk} @`e rilasciato sotto la licenza GPL, e la
 relativa libreria sotto la licenza LGPL.
 
 Per ottenere @command{awka}, si visiti
-il sito @url{http://sourceforge.net/projects/awka}.
+il sito @url{https://sourceforge.net/projects/awka}.
 @c You can reach Andrew Sumner at @email{andrew@@zbcom.net}.
 @c andrewsumner@@yahoo.net
 
@@ -41954,7 +42662,7 @@ essere un interprete completo, anche se, poich@'e usa funzionalit@`a di Java
 per l'I/O e per la ricerca di @dfn{regexp}, il linguaggio che supporta
 @`e differente da @command{awk} POSIX.
 Ulteriori informazioni sono disponibili sulla
-@uref{http://jawk.sourceforge.net, pagina principale del progetto}.
+@uref{https://jawk.sourceforge.net, pagina principale del progetto}.
 
 @item Libmawk
 @cindex @command{libmawk}
@@ -41979,7 +42687,7 @@ modificata da Nelson Beebe di BWK @command{awk}, descritta prima.)
 @cindex sorgente, codice, QSE @command{awk}
 Questo @`e un interprete di @command{awk} incorporabile.  Per ulteriori
 informazioni, si veda
-@uref{http://code.google.com/p/qse/} e @uref{http://awk.info/?tools/qse}.
+@uref{https://code.google.com/p/qse/} e @uref{http://awk.info/?tools/qse}.
 
 @item @command{QTawk}
 @cindex QuikTrim Awk
@@ -41999,7 +42707,7 @@ a partire dal 2014 circa.
 @item Altre versioni
 Si veda anche [in inglese] la sezione ``Versions and implementations''
 della voce di
-@uref{http://en.wikipedia.org/wiki/Awk_language#Versions_and_implementations,
+@uref{https://en.wikipedia.org/wiki/Awk_language#Versions_and_implementations,
 Wikipedia} su @command{awk} per informazioni su ulteriori versioni.
 
 @end table
@@ -42014,16 +42722,23 @@ di distribuzione del Progetto GNU
 @code{ftp.gnu.org}.  La maniera canonica per scaricarlo e installarlo @`e:
 
 @example
-wget http://ftp.gnu.org/gnu/gawk/gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz
+wget https://ftp.gnu.org/gnu/gawk/gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz
 tar -xvpzf gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz
 cd gawk-@value{VERSION}.@value{PATCHLEVEL}
 ./configure && make && make check
 @end example
 
+@quotation NOTA
+A causa degli URL di tipo @samp{https://}, pu@`o essere necessario
+specificare l'opzione @option{--no-check-certificate} a @command{wget}
+per poter scaricare il file.
+@end quotation
+
 @item
 @command{gawk} pu@`o essere installato anche su sistemi non-POSIX.  I sistemi
 correntemente supportati sono MS-Windows, usando
-MSYS, MinGW, e Cygwin,
+MSYS, DJGPP, MinGW, e Cygwin,
+@c OS/2,
 e sia Vax/VMS che OpenVMS.  Le istruzioni per ognuno di questi sistemi sono
 incluse in questa @value{APPENDIX}.
 
@@ -42137,12 +42852,12 @@ le versioni ufficiali rilasciate di @command{gawk}.
 Peraltro, se si intende modificare @command{gawk} e mettere a disposizione le
 modifiche, @`e preferibile lavorare sulla versione in via di sviluppo.  Per far
 ci@`o @`e necessario accedere al deposito del codice sorgente di @command{gawk}.
-Il codice @`e mantenuto usando il @uref{http://git-scm.com, sistema distribuito
+Il codice @`e mantenuto usando il @uref{https://git-scm.com, sistema distribuito
 di controllo delle versioni Git}.  Sar@`a necessario installarlo se non @`e gi@`a
 presente nel sistema.  Quando @command{git} @`e disponibile, va usato il comando:
 
 @example
-git clone git://git.savannah.gnu.org/gawk.git
+git clone https://git.savannah.gnu.org/gawk.git
 @end example
 
 @noindent
@@ -42214,7 +42929,7 @@ Questo documento descrive come dovrebbe essere scritto il software GNU.
 Se non lo si @`e letto, @`e bene farlo, preferibilmente @emph{prima}
 di iniziare a modificare @command{gawk}.
 (Gli @cite{Standard di codifica GNU} sono disponibili nel sito web del
-@uref{http://www.gnu.org/prep/standards/, Progetto GNU}.
+@uref{https://www.gnu.org/prep/standards/, Progetto GNU}.
 Sono disponibili anche versioni in formato Texinfo, Info, e DVI.)
 
 @cindex @command{gawk}, stile di codifica in
@@ -42632,12 +43347,18 @@ Egli aveva @file{/usr/local/bin} all'inizio del suo @env{PATH} e dava i
 seguenti comandi:
 
 @example
-wget http://ftp.gnu.org/gnu/@var{package}/@var{package}-@var{x}.@var{y}.@var{z}.tar.gz
+wget https://ftp.gnu.org/gnu/@var{package}/@var{package}-@var{x}.@var{y}.@var{z}.tar.gz
 tar -xpzvf @var{package}-@var{x}.@var{y}.@var{z}.tar.gz
 cd @var{package}-@var{x}.@var{y}.@var{z}
 ./configure && make && make check
 make install    # come utente root
 @end example
+
+@quotation NOTA
+A causa degli URL di tipo @samp{https://}, pu@`o essere necessario
+specificare l'opzione @option{--no-check-certificate} a @command{wget}
+per poter scaricare il file.
+@end quotation
 
 @c @item
 @ignore
@@ -42687,7 +43408,7 @@ Fortunatamente, il server Git pu@`o rispondere a questa esigenza.  Per ogni
 dato ramo chiamato @var{nome-ramo}, basta usare:
 
 @example
-wget http://git.savannah.gnu.org/cgit/gawk.git/snapshot/gawk-@var{nome-ramo}.tar.gz
+wget https://git.savannah.gnu.org/cgit/gawk.git/snapshot/gawk-@var{nome-ramo}.tar.gz
 @end example
 
 @noindent
@@ -43428,7 +44149,7 @@ Si veda ``Passaggio per valore/riferimento''.
 Arrotondare il risultato di un'operazione aritmetica pu@`o essere difficile.
 C'@`e pi@`u di un modo di arrotondare, e in @command{gawk} @`e possibile scegliere
 quale metodo dovrebbe essere usato all'interno di un programma.
-@xref{Impostare modi di arrotondare}.
+@xref{Impostare modo di arrotondare}.
 
 @item Assegnamento
 Un'espressione @command{awk} che cambia il valore di qualche variabile o
@@ -44410,7 +45131,7 @@ Copyright @copyright{} 2007 Free Software Foundation, Inc. @url{http://fsf.org/}
 
 This is an unofficial translation of the GNU General Public License into
 Italian. It was not published by the Free Software Foundation, and does not
-legally state the distribution terms for software that uses the GNU GPL—only
+legally state the distribution terms for software that uses the GNU GPL---only
 the original English text of the GNU GPL does that. However, we hope that this
 translation will help Italian speakers understand the GNU GPL better.
 
@@ -45205,7 +45926,7 @@ Copyright @copyright{} 2000, 2001, 2002, 2007, 2008 Free Software Foundation, In
 
 This is an unofficial translation of the GNU Free Documentation License into
 Italian. It was not published by the Free Software Foundation, and does not
-legally state the distribution terms for software that uses the GNU FDL—only
+legally state the distribution terms for software that uses the GNU FDL---only
 the original English text of the GNU FDL does that. However, we hope that this
 translation will help Italian speakers understand the GNU FDL better.
 
@@ -45679,10 +46400,10 @@ Una MMC @`e ``qualificata a cambiare questa licenza'' se ha adottato questa
 licenza e se tutte le opere precedentemente pubblicate con questa licenza
 altrove rispetto alla MMC e successivamente incorporate del tutto o in
 parte nella MMC (1) non hanno testo di copertina o sezioni invarianti e
-(2) sono state incorporate prima del 1° Novembre 2008.
+(2) sono state incorporate prima del 1^ Novembre 2008.
 
 L'operatore di un sito MMC pu@`o ripubblicare un MMC contenuto nel sito con
-una CC-BY-SA nello stesso sito in qualsiasi momento prima del 1° Agosto
+una CC-BY-SA nello stesso sito in qualsiasi momento prima del 1^ Agosto
 2009, da parte di una MMC qualificata a cambiare questa licenza.
 
 @end enumerate
