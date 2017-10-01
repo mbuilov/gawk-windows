@@ -14958,6 +14958,18 @@ of setting up a two-way pipe.
 Set a timeout for reading from input redirection @var{input_name}.
 @xref{Read Timeout} for more information.
 
+@item PROCINFO["@var{Iinput_name}", "RETRY"]
+If an I/O error that may be retried occurs when reading data from
+@var{input_name}, and this array entry exists, then @code{getline} returns
+@minus{}2 instead of following the default behavior of returning @minus{}1
+and configuring @var{input_name} to return no further data.  An I/O error
+that may be retried is one where @code{errno} has the value @code{EAGAIN},
+@code{EWOULDBLOCK}, @code{EINTR}, or @code{ETIMEDOUT}.  This may be useful
+in conjunction with @code{\fBPROCINFO["@var{input_name}", "READ_TIMEOUT"]}
+or situations where a file descriptor has been configured to behave in
+a non-blocking fashion.
+@xref{Retrying Input} for more information.
+
 @item PROCINFO["sorted_in"]
 If this element exists in @code{PROCINFO}, its value controls the
 order in which array indices will be processed by
@@ -18375,7 +18387,7 @@ year 1 and year @minus{}1 preceding year 0.
 If @var{utc-flag} is present and is either nonzero or non-null, the time
 is assumed to be in the UTC time zone; otherwise, the
 time is assumed to be in the local time zone.
-If the daylight-savings flag is positive, the time is assumed to be
+If the @var{DST} daylight-savings flag is positive, the time is assumed to be
 daylight savings time; if zero, the time is assumed to be standard
 time; and if negative (the default), @code{mktime()} attempts to determine
 whether daylight savings time is in effect for the specified time.
@@ -38945,11 +38957,19 @@ but we might well want to fix it.
 @appendixsubsec Submitting Bug Reports
 
 Before reporting a bug, make sure you have really found a genuine bug.
-Carefully reread the documentation and see if it says you can do
+First, verify that you have the latest version of @command{gawk}.
+Many bugs (usually subtle ones) are fixed at each release, and if yours
+is out of date, the problem may already have been solved.
+
+Second, please see if setting the environment variable @env{LC_ALL}
+to @code{LC_ALL=C} causes things to behave as you expect. If so, it's
+a locale issue, and may or may not really be a bug.
+
+Third, carefully reread the documentation and see if it says you can do
 what you're trying to do.  If it's not clear whether you should be able
 to do something or not, report that too; it's a bug in the documentation!
 
-Before reporting a bug or trying to fix it yourself, try to isolate it
+Finally, before reporting a bug or trying to fix it yourself, try to isolate it
 to the smallest possible @command{awk} program and input @value{DF} that
 reproduce the problem.  Then send us the program and @value{DF},
 some idea of what kind of Unix system you're using,
