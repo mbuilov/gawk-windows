@@ -8702,9 +8702,6 @@ install_builtins(void)
 bool
 is_alpha(int c)
 {
-#ifdef I_DONT_KNOW_WHAT_IM_DOING
-	return isalpha(c);
-#else /* ! I_DONT_KNOW_WHAT_IM_DOING */
 	switch (c) {
 	case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
 	case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
@@ -8719,7 +8716,6 @@ is_alpha(int c)
 		return true;
 	}
 	return false;
-#endif /* ! I_DONT_KNOW_WHAT_IM_DOING */
 }
 
 /* is_alnum --- return true for alphanumeric, English only letters */

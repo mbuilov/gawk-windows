@@ -765,7 +765,6 @@ enable_option_checking
 enable_silent_rules
 with_whiny_user_strftime
 enable_lint
-enable_severe_portability_problems
 enable_builtin_intdiv0
 enable_mpfr
 enable_dependency_tracking
@@ -1412,8 +1411,6 @@ Optional Features:
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
   --disable-lint          do not compile in gawk lint checking
-  --enable-severe-portability-problems
-                          allow really nasty portability problems
   --enable-builtin-intdiv0
                           enable built-in intdiv0 function
   --disable-mpfr          do not check for MPFR
@@ -3232,17 +3229,6 @@ if test "${enable_lint+set}" = set; then :
 	then
 
 $as_echo "#define NO_LINT 1" >>confdefs.h
-
-	fi
-
-fi
-
-# Check whether --enable-severe-portability-problems was given.
-if test "${enable_severe_portability_problems+set}" = set; then :
-  enableval=$enable_severe_portability_problems; if test "$enableval" = yes
-	then
-
-$as_echo "#define I_DONT_KNOW_WHAT_IM_DOING 1" >>confdefs.h
 
 	fi
 

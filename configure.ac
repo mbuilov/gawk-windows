@@ -60,13 +60,6 @@ AC_ARG_ENABLE([lint],
 		AC_DEFINE(NO_LINT, 1, [disable lint checks])
 	fi
 )
-AC_ARG_ENABLE([severe-portability-problems],
-	[AS_HELP_STRING([--enable-severe-portability-problems],[allow really nasty portability problems])],
-	if test "$enableval" = yes
-	then
-		AC_DEFINE(I_DONT_KNOW_WHAT_IM_DOING, 1, [enable severe portability problems])
-	fi
-)
 AC_ARG_ENABLE([builtin-intdiv0],
 	[AS_HELP_STRING([--enable-builtin-intdiv0],[enable built-in intdiv0 function])],
 	if test "$enableval" = yes

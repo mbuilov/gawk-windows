@@ -1,5 +1,13 @@
 2017-10-02         Arnold D. Robbins     <arnold@skeeve.com>
 
+	Undo change of 2014-09-07:
+
+	* configure.ac: Remove the undocumented option to enable locale
+	letters in identifiers.
+	* awkgram.y (is_alpha): Remove related code.
+
+2017-10-02         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* config.guess, config.sub: Updated.
 
 2017-09-28         Arnold D. Robbins     <arnold@skeeve.com>
@@ -3688,6 +3696,7 @@
 
 	* configure.ac: Add an option to enable locale letters in identifiers.
 	Undocumented and subject to being rescinded at any time in the future.
+	* awkgram.y (is_alpha): Actual code is here.
 	* NEWS: Mention to look at configure --help.
 
 	Unrelated:
