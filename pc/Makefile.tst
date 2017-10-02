@@ -1191,6 +1191,7 @@ readdir:
 
 readdir_test:
 	@echo $@
+	@echo This test may fail on MinGW if $(LS) does not report full Windows file index as the inode
 	@$(AWK) -lreaddir -F$(SLASH) '{printf "[%s] [%s] [%s] [%s]\n", $$1, $$2, $$3, $$4}' "$(top_srcdir)" > $@.ok
 	@$(AWK) -lreaddir_test '{printf "[%s] [%s] [%s] [%s]\n", $$1, $$2, $$3, $$4}' "$(top_srcdir)" > _$@
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@

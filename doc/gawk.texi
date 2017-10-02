@@ -15639,14 +15639,14 @@ of setting up a two-way pipe.
 Set a timeout for reading from input redirection @var{input_name}.
 @xref{Read Timeout} for more information.
 
-@item PROCINFO["@var{Iinput_name}", "RETRY"]
+@item PROCINFO["@var{input_name}", "RETRY"]
 If an I/O error that may be retried occurs when reading data from
 @var{input_name}, and this array entry exists, then @code{getline} returns
 @minus{}2 instead of following the default behavior of returning @minus{}1
 and configuring @var{input_name} to return no further data.  An I/O error
 that may be retried is one where @code{errno} has the value @code{EAGAIN},
 @code{EWOULDBLOCK}, @code{EINTR}, or @code{ETIMEDOUT}.  This may be useful
-in conjunction with @code{\fBPROCINFO["@var{input_name}", "READ_TIMEOUT"]}
+in conjunction with @code{PROCINFO["@var{input_name}", "READ_TIMEOUT"]}
 or situations where a file descriptor has been configured to behave in
 a non-blocking fashion.
 @xref{Retrying Input} for more information.
