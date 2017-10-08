@@ -405,7 +405,7 @@ struct re_dfa_t;
 typedef struct re_dfa_t re_dfa_t;
 
 #ifndef _LIBC
-# ifdef __i386__
+# if defined( __i386__ ) && !defined(__EMX__)
 #  define internal_function   __attribute__ ((regparm (3), stdcall))
 # else
 #  define internal_function
