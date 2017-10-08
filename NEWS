@@ -18,7 +18,19 @@ Changes from 4.1.4 to 4.2.0
    get the same series of numbers each time you call rand() repeatedly,
    but this will be a different series than previously.
 
-3. The --pretty-print option no longer runs the program too.
+3. Multiple changes related to the pretty printer:
+
+   * The --pretty-print option no longer runs the program too.
+
+   * Pretty printing now preserves comments and places them into the
+     pretty-printed file.
+
+   * Pretty-printing now uses the original text of constant numeric values
+     for pretty-printing and profiling.
+
+   * Pretty-printing now preserves parenthesized expressions as they
+     were in the source file. This solves several niggling corner cases
+     with such things.
 
 4. The igawk script and igawk.1 man page are no longer installed by
    `make install'.  They have been obsolete since gawk 4.0.0.
@@ -32,23 +44,20 @@ Changes from 4.1.4 to 4.2.0
 
 7. Setting PROCINFO["redirection", "NONFATAL"] to true makes I/O
    errors for "redirection" not fatal, setting ERRNO. Setting
-   PROCINFO["NONFATAL"] makes all I/O nonfatal.
+   PROCINFO["NONFATAL"] makes all I/O nonfatal. See the manual.
 
 8. MirBSD is no longer supported.
 
-9. Pretty printing now preserves comments and places them into the
-   pretty-printed file.
+9. `make install' now installs shell startup files
+   $sysconfdir/profile.d/gawk.{csh,sh} containing shell functions to
+   manipulate the AWKPATH and AWKLIBPATH environment variables.  On a Fedora
+   system, these files belong in /etc/profile.d, but the appropriate location
+   may be different on other platforms.
 
-10. `make install' now installs shell startup files
-    $sysconfdir/profile.d/gawk.{csh,sh} containing shell functions to
-    manipulate the AWKPATH and AWKLIBPATH environment variables.  On a Fedora
-    system, these files belong in /etc/profile.d, but the appropriate location
-    may be different on other platforms.
-
-11. Gawk now supports retryable I/O via PROCINFO[input-file, "RETRY"]; see
+10. Gawk now supports retryable I/O via PROCINFO[input-file, "RETRY"]; see
     the manual.
 
-12. The C API has undergone changes that break binary compatibility with
+11. The C API has undergone changes that break binary compatibility with
     the previous version. Thus the API version is now at 2.0.  YOU WILL
     NEED TO RECOMPILE YOUR EXTENSIONS to work with this version of gawk.
     Source code compatibility remains intact, although you will get
@@ -58,61 +67,54 @@ Changes from 4.1.4 to 4.2.0
 
     See the manual for the new features.
 
-13. Revisions in the POSIX standard remove the special case for POSIX
+12. Revisions in the POSIX standard remove the special case for POSIX
     mode when FS = " " where newline was not a field separator. The code
     and doc have been updated.
 
-14. Gawk now supports strongly typed regexp constants. Such constants
+13. Gawk now supports strongly typed regexp constants. Such constants
     look like @/.../.  You can assign them to variables, pass them to
     functions, use them in ~, !~ and the case part of a switch statement.
     More details are provided in the manual.
 
-15. The new typeof() function can be used to indicate if a variable or
+14. The new typeof() function can be used to indicate if a variable or
     array element is an array, regexp, string or number.  The isarray()
     function is deprecated in favor of typeof().
 
-16. As promised when 4.1 was released, the old extension mechanism,
+15. As promised when 4.1 was released, the old extension mechanism,
     using the `extension' function, is now gone.
 
-17. Support for GNU/Linux on Alpha systems has been removed.
+16. Support for GNU/Linux on Alpha systems has been removed.
 
-18. Optimizations are now enabled by default. Use the new -s/--no-optimize
+17. Optimizations are now enabled by default. Use the new -s/--no-optimize
     option(s) to disable them.  Pretty-printing and profiling automatically
     disable optimizations so that the output program is the same as the
     original input program.
 
-19. Gawk now uses fwrite_unlocked if it's available. The yields a 7% - 18%
+18. Gawk now uses fwrite_unlocked if it's available. The yields a 7% - 18%
     improvement in raw output speed (gawk '{ print }' on a large file).
 
-20. Pretty-printing now uses the original text of constant numeric values for
-    pretty-printing and profiling.
-
-21. Passing negative operands to any of the bitwise functions now
+19. Passing negative operands to any of the bitwise functions now
     produces a fatal error.
 
-22. Programs that toggle IGNORECASE a lot should now be noticeably faster.
+20. Programs that toggle IGNORECASE a lot should now be noticeably faster.
 
-23. The mktime function now accepts an optional second argument. If this
+21. The mktime function now accepts an optional second argument. If this
     argument is present and is non-zero or non-null, the time will be converted
     from UTC instead of from the local timezone.
 
-24. The FIELDWIDTHS parsing syntax has been enhanced to allow specifying
+22. The FIELDWIDTHS parsing syntax has been enhanced to allow specifying
     how many characters to skip before a field starts. It also allows
     specifying '*' as the last character to mean "the rest of the record".
     Field splitting with FIELDWIDTHS now sets NF correctly.  The documentation
     for FIELDWIDTHS in the manual has been considerably reorganized and
     improved as well.
 
-25. The PROCINFO["argv"] array records all of gawk's command line arguments
+23. The PROCINFO["argv"] array records all of gawk's command line arguments
     as gawk received them (the values of the C level argv array).
 
-26. Pretty-printing now preserves parenthesized expressions as they
-    were in the source file. This solves several niggling corner cases
-    with such things.
+24. The DJGPP port has been revived and now has an official maintainer.
 
-27. The DJGPP port has been revived and now has an official maintainer.
-
-28. The manual has been translated into Italian!  The translation is
+25. The manual has been translated into Italian!  The translation is
     included in the distribution.
 
 Changes from 4.1.3 to 4.1.4
