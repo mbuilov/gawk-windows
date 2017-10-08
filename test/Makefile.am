@@ -2299,7 +2299,7 @@ dfamb1:
 
 randtest::
 	@echo $@
-	@GAWK="$(AWKPROG)" "$(srcdir)"/randtest.sh >_$@
+	@-GAWK="$(AWKPROG)" "$(srcdir)"/randtest.sh >_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 backbigs1:
