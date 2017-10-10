@@ -12278,6 +12278,11 @@ As of @value{PVERSION} 4.2, @command{gawk} continues to use locale
 collating order for @code{<}, @code{<=}, @code{>}, and @code{>=} only
 in POSIX mode.
 
+@ignore
+References: http://austingroupbugs.net/view.php?id=963
+and http://austingroupbugs.net/view.php?id=1070.
+@end ignore
+
 @node Boolean Ops
 @subsection Boolean Expressions
 @cindex and Boolean-logic operator
@@ -21219,14 +21224,14 @@ in memory as a single string. A straightforward but naive way to
 do that might be as follows:
 
 @example
-function readfile(file,    tmp, contents)
+function readfile1(file,    tmp, contents)
 @{
     if ((getline tmp < file) < 0)
         return
 
-    contents = tmp
-    while (getline tmp < file) > 0)
-        contents = contents RT tmp
+    contents = tmp RT
+    while ((getline tmp < file) > 0)
+        contents = contents tmp RT
 
     close(file)
     return contents
