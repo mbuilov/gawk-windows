@@ -48,11 +48,6 @@
 #define HAVE_MKTIME	1
 #endif
 
-/* For whiny users */
-#ifdef USE_INCLUDED_STRFTIME
-#undef HAVE_STRFTIME
-#endif
-
 /* For HP/UX with gcc */
 #if defined(hpux) || defined(_HPUX_SOURCE)
 #undef HAVE_TZSET

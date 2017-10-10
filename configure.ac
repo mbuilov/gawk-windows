@@ -44,15 +44,6 @@ AM_INIT_AUTOMAKE([1.15 dist-xz dist-lzip])
 
 AC_CONFIG_MACRO_DIR([m4])
 
-dnl Additional argument stuff
-AC_ARG_WITH(whiny-user-strftime,
-	[AS_HELP_STRING([--with-whiny-user-strftime], [force use of included version of strftime for deficient systems])],
-	if test "$withval" = yes
-	then
-		AC_DEFINE(USE_INCLUDED_STRFTIME, 1,
-			  [force use of our version of strftime])
-	fi
-)
 AC_ARG_ENABLE([lint],
 	[AS_HELP_STRING([--disable-lint],[do not compile in gawk lint checking])],
 	if test "$enableval" = no
