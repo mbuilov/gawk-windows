@@ -22,6 +22,7 @@ BEGIN {
       else if ((getline x < fn) != 1)
 	 printf "Error: getline failed on temp file %s\n", fn
       else {
+	 close(fn)	# needed on non-POSIX systems
 	 expected = ("pid " pid " ppid " PROCINFO["pid"])
 	 if (x != expected)
 	    printf "Error: child data (%s) != expected (%s)\n", x, expected
