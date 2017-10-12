@@ -13224,6 +13224,11 @@ A partire dalla @value{PVERSION} 4.2, @command{gawk} continua a usare
 l'ordine di collazione locale per @code{<}, @code{<=}, @code{>}
 e @code{>=} solo se eseguito nella modalit@`a POSIX.
 
+@ignore
+References: http://austingroupbugs.net/view.php?id=963
+and http://austingroupbugs.net/view.php?id=1070.
+@end ignore
+
 @node Operatori booleani
 @subsection Espressioni booleane
 @cindex @dfn{and}, operatore logico-booleano
@@ -22962,14 +22967,14 @@ come un'unica stringa. Un modo chiaro e semplice per far ci@`o potrebbe essere
 questo:
 
 @example
-function readfile(file,    temp, contenuto)
+function readfile1(file,    temp, contenuto)
 @{
     if ((getline temp < file) < 0)
         return
 
-    contenuto = temp
-    while (getline temp < file) > 0)
-        contenuto = contenuto RT tmp
+    contenuto = temp RT
+    while ((getline temp < file) > 0)
+        contenuto = contenuto temp RT
 
     close(file)
     return contenuto
