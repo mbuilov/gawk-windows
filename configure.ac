@@ -142,8 +142,8 @@ AM_LANGINFO_CODESET
 gt_LC_MESSAGES
 
 dnl checks for header files
-AC_CHECK_HEADERS(arpa/inet.h fcntl.h limits.h locale.h libintl.h mcheck.h \
-	netdb.h netinet/in.h stdarg.h stddef.h string.h \
+AC_CHECK_HEADERS(arpa/inet.h fcntl.h locale.h libintl.h mcheck.h \
+	netdb.h netinet/in.h stddef.h string.h \
 	sys/ioctl.h sys/param.h sys/select.h sys/socket.h sys/time.h unistd.h \
 	termios.h stropts.h wchar.h wctype.h)
 AC_HEADER_STDC

@@ -53,9 +53,7 @@
 
 #include <stdio.h>
 #include <assert.h>
-#ifdef HAVE_LIMITS_H
 #include <limits.h>
-#endif /* HAVE_LIMITS_H */
 #include <ctype.h>
 #include <setjmp.h>
 
@@ -73,11 +71,8 @@
 #error "gawk no longer supports non-C89 environments (no __STDC__ or __STDC__ < 1)"
 #endif
 
-#if defined(HAVE_STDARG_H)
 #include <stdarg.h>
-#else
-#error "gawk no longer supports <varargs.h>. Please update your compiler and runtime"
-#endif
+#include <stdbool.h>
 #include <signal.h>
 #include <time.h>
 #include <errno.h>
@@ -89,11 +84,6 @@ extern int errno;
 #include <stdlib.h>
 #endif	/* not STDC_HEADERS */
 
-#ifdef HAVE_STDBOOL_H
-#include <stdbool.h>
-#else
-#include "missing_d/gawkbool.h"
-#endif
 
 /* We can handle multibyte strings.  */
 #include <wchar.h>
