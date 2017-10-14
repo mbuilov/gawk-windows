@@ -946,7 +946,7 @@ do_split(int nargs)
 	Regexp *rp = NULL;
 
 	if (nargs == 4) {
-		static bool warned1 = false, warned2 = false;
+		static bool warned = false;
 
 		if (do_traditional || do_posix) {
 			fatal(_("split: fourth argument is a gawk extension"));
@@ -954,13 +954,9 @@ do_split(int nargs)
 		sep_arr = POP_PARAM();
 		if (sep_arr->type != Node_var_array)
 			fatal(_("split: fourth argument is not an array"));
-		if (do_lint && ! warned1) {
-			warned1 = true;
+		if ((do_lint || do_lint_old) && ! warned) {
+			warned = true;
 			lintwarn(_("split: fourth argument is a gawk extension"));
-		}
-		if (do_lint_old && ! warned2) {
-			warned2 = true;
-			warning(_("split: fourth argument is a gawk extension"));
 		}
 	}
 
