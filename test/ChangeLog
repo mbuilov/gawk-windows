@@ -1,3 +1,11 @@
+2017-10-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* forcenum.awk: Convert values manually to number and then
+	to string and remove leading sign, to avoid C library
+	differences across platforms. Thanks to Corinna Vinschen
+	for the report.
+	* forcenum.ok: Adjust for above change.
+
 2017-10-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* fork.awk: Close the file in the parent after reading it.

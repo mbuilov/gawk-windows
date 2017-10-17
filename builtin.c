@@ -503,12 +503,6 @@ do_isarray(int nargs)
 {
 	NODE *tmp;
 	int ret = 1;
-	static bool warned = false;
-
-	if (do_lint && ! warned) {
-		warned = true;
-		lintwarn(_("`isarray' is deprecated. Use `typeof' instead"));
-	}
 
 	tmp = POP();
 	if (tmp->type != Node_var_array) {
