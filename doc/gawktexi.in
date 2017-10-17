@@ -71,7 +71,7 @@
 @set TITLE GAWK: Effective AWK Programming
 @end ifclear
 @set SUBTITLE A User's Guide for GNU Awk
-@set EDITION 4.1
+@set EDITION 4.2
 
 @iftex
 @set DOCUMENT book
@@ -19149,10 +19149,6 @@ ends up turning it into a scalar.
 The @code{typeof()} function is general; it allows you to determine
 if a variable or function parameter is a scalar, an array, or a strongly
 typed regexp.
-
-@code{isarray()} is deprecated; you should use @code{typeof()} instead.
-You should replace any existing uses of @samp{isarray(var)} in your
-code with @samp{typeof(var) == "array"}.
 
 @node I18N Functions
 @subsection String-Translation Functions
@@ -39307,7 +39303,7 @@ modified version of BWK @command{awk}, described earlier.)
 @cindex QSE @command{awk}
 @cindex source code, QSE @command{awk}
 This is an embeddable @command{awk} interpreter. For more information,
-see @uref{https://code.google.com/p/qse/} and @uref{http://awk.info/?tools/qse}.
+see @uref{https://code.google.com/p/qse/}. @c and @uref{http://awk.info/?tools/qse}.
 
 @item @command{QTawk}
 @cindex QuikTrim Awk
@@ -40616,7 +40612,7 @@ completely as @command{sed} and @command{awk} scripts.  It is thousands
 of lines long, including machine descriptions for several eight-bit
 microcomputers.  It is a good example of a program that would have been
 better written in another language.
-You can get it from @uref{http://awk.info/?awk100/aaa}.
+@c You can get it from @uref{http://awk.info/?awk100/aaa}.
 
 @cindex amazingly workable formatter (@command{awf})
 @cindex @command{awf} (amazingly workable formatter) program
@@ -40624,8 +40620,8 @@ You can get it from @uref{http://awk.info/?awk100/aaa}.
 Henry Spencer at the University of Toronto wrote a formatter that accepts
 a large subset of the @samp{nroff -ms} and @samp{nroff -man} formatting
 commands, using @command{awk} and @command{sh}.
-It is available
-from @uref{http://awk.info/?tools/awf}.
+@c It is available
+@c from @uref{http://awk.info/?tools/awf}.
 
 @item Anchor
 The regexp metacharacters @samp{^} and @samp{$}, which force the match
