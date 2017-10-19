@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.1.3h\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2017-10-04 09:35+0300\n"
+"POT-Creation-Date: 2017-10-19 21:28+0300\n"
 "PO-Revision-Date: 2016-08-08 09:21+0200\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
@@ -40,8 +40,8 @@ msgstr "scalaire parameter '%s' wordt gebruikt als array"
 msgid "attempt to use scalar `%s' as an array"
 msgstr "scalair '%s' wordt gebruikt als array"
 
-#: array.c:412 array.c:579 builtin.c:88 builtin.c:1640 builtin.c:1686
-#: builtin.c:1699 builtin.c:2222 builtin.c:2249 eval.c:1131 eval.c:1135
+#: array.c:412 array.c:579 builtin.c:88 builtin.c:1634 builtin.c:1680
+#: builtin.c:1693 builtin.c:2216 builtin.c:2243 eval.c:1131 eval.c:1135
 #: eval.c:1542
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
@@ -381,7 +381,7 @@ msgstr "oude 'awk' kent de operator '^=' niet"
 msgid "operator `^' is not supported in old awk"
 msgstr "oude 'awk' kent de operator '^' niet"
 
-#: awkgram.y:3853 awkgram.y:3871 command.y:1186
+#: awkgram.y:3853 awkgram.y:3871 command.y:1187
 msgid "unterminated string"
 msgstr "onafgesloten string"
 
@@ -607,194 +607,190 @@ msgstr "index: tweede argument is geen string"
 msgid "int: received non-numeric argument"
 msgstr "int: argument is geen getal"
 
-#: builtin.c:510
-msgid "`isarray' is deprecated. Use `typeof' instead"
-msgstr ""
-
-#: builtin.c:535
+#: builtin.c:529
 msgid "length: received array argument"
 msgstr "length: argument is een array"
 
-#: builtin.c:538
+#: builtin.c:532
 msgid "`length(array)' is a gawk extension"
 msgstr "'length(array)' is een gawk-uitbreiding"
 
-#: builtin.c:557
+#: builtin.c:551
 msgid "length: received non-string argument"
 msgstr "length: argument is geen string"
 
-#: builtin.c:586
+#: builtin.c:580
 msgid "log: received non-numeric argument"
 msgstr "log: argument is geen getal"
 
-#: builtin.c:589
+#: builtin.c:583
 #, c-format
 msgid "log: received negative argument %g"
 msgstr "log: argument %g is negatief"
 
-#: builtin.c:787 builtin.c:792 builtin.c:943
+#: builtin.c:781 builtin.c:786 builtin.c:937
 msgid "fatal: must use `count$' on all formats or none"
 msgstr "fataal: 'count$' hoort in alle opmaken gebruikt te worden, of in geen"
 
-#: builtin.c:862
+#: builtin.c:856
 #, c-format
 msgid "field width is ignored for `%%' specifier"
 msgstr "veldbreedte wordt genegeerd voor opmaakaanduiding '%%'"
 
-#: builtin.c:864
+#: builtin.c:858
 #, c-format
 msgid "precision is ignored for `%%' specifier"
 msgstr "veldprecisie wordt genegeerd voor opmaakaanduiding '%%'"
 
-#: builtin.c:866
+#: builtin.c:860
 #, c-format
 msgid "field width and precision are ignored for `%%' specifier"
 msgstr "veldbreedte en -precisie worden genegeerd voor opmaakaanduiding '%%'"
 
-#: builtin.c:917
+#: builtin.c:911
 msgid "fatal: `$' is not permitted in awk formats"
 msgstr "fataal: '$' is niet toegestaan in awk-opmaak"
 
-#: builtin.c:926
+#: builtin.c:920
 msgid "fatal: arg count with `$' must be > 0"
 msgstr "fataal: het aantal argumenten met '$' moet > 0 zijn"
 
-#: builtin.c:930
+#: builtin.c:924
 #, c-format
 msgid "fatal: arg count %ld greater than total number of supplied arguments"
 msgstr "fataal: argumentental %ld is groter dan het gegeven aantal argumenten"
 
-#: builtin.c:934
+#: builtin.c:928
 msgid "fatal: `$' not permitted after period in format"
 msgstr "fataal: '$' is niet toegestaan na een punt in de opmaak"
 
-#: builtin.c:953
+#: builtin.c:947
 msgid "fatal: no `$' supplied for positional field width or precision"
 msgstr "fataal: geen '$' opgegeven bij positionele veldbreedte of -precisie"
 
-#: builtin.c:1023
+#: builtin.c:1017
 msgid "`l' is meaningless in awk formats; ignored"
 msgstr "'l' is betekenisloos in awk-opmaak; genegeerd"
 
-#: builtin.c:1027
+#: builtin.c:1021
 msgid "fatal: `l' is not permitted in POSIX awk formats"
 msgstr "fataal: 'l' is niet toegestaan in POSIX awk-opmaak"
 
-#: builtin.c:1040
+#: builtin.c:1034
 msgid "`L' is meaningless in awk formats; ignored"
 msgstr "'L' is betekenisloos in awk-opmaak; genegeerd"
 
-#: builtin.c:1044
+#: builtin.c:1038
 msgid "fatal: `L' is not permitted in POSIX awk formats"
 msgstr "fataal: 'L' is niet toegestaan in POSIX awk-opmaak"
 
-#: builtin.c:1057
+#: builtin.c:1051
 msgid "`h' is meaningless in awk formats; ignored"
 msgstr "'h' is betekenisloos in awk-opmaak; genegeerd"
 
-#: builtin.c:1061
+#: builtin.c:1055
 msgid "fatal: `h' is not permitted in POSIX awk formats"
 msgstr "fataal: 'h' is niet toegestaan in POSIX awk-opmaak"
 
-#: builtin.c:1086
+#: builtin.c:1080
 #, c-format
 msgid "[s]printf: value %g is too big for %%c format"
 msgstr "[s]printf: waarde %g is te groot voor opmaak %%c"
 
-#: builtin.c:1099
+#: builtin.c:1093
 #, c-format
 msgid "[s]printf: value %g is not a valid wide character"
 msgstr "[s]printf: waarde %g is geen geldig breed teken"
 
-#: builtin.c:1485
+#: builtin.c:1479
 #, c-format
 msgid "[s]printf: value %g is out of range for `%%%c' format"
 msgstr "[s]printf: waarde %g ligt buiten toegestaan bereik voor opmaak '%%%c'"
 
-#: builtin.c:1583
+#: builtin.c:1577
 #, c-format
 msgid "ignoring unknown format specifier character `%c': no argument converted"
 msgstr ""
 "onbekend opmaakteken '%c' wordt genegeerd: geen argument is geconverteerd"
 
-#: builtin.c:1588
+#: builtin.c:1582
 msgid "fatal: not enough arguments to satisfy format string"
 msgstr "fataal: niet genoeg argumenten voor opmaakstring"
 
-#: builtin.c:1590
+#: builtin.c:1584
 msgid "^ ran out for this one"
 msgstr "niet genoeg ^ voor deze"
 
-#: builtin.c:1597
+#: builtin.c:1591
 msgid "[s]printf: format specifier does not have control letter"
 msgstr "[s]printf: opmaakaanduiding mist een stuurletter"
 
-#: builtin.c:1600
+#: builtin.c:1594
 msgid "too many arguments supplied for format string"
 msgstr "te veel argumenten voor opmaakstring"
 
-#: builtin.c:1659
+#: builtin.c:1653
 msgid "sprintf: no arguments"
 msgstr "sprintf: geen argumenten"
 
-#: builtin.c:1682 builtin.c:1693
+#: builtin.c:1676 builtin.c:1687
 msgid "printf: no arguments"
 msgstr "printf: geen argumenten"
 
-#: builtin.c:1708
+#: builtin.c:1702
 msgid "printf: attempt to write to closed write end of two-way pipe"
 msgstr "printf: poging tot schrijven naar gesloten schrijfkant van tweewegpijp"
 
-#: builtin.c:1749
+#: builtin.c:1743
 msgid "sqrt: received non-numeric argument"
 msgstr "sqrt: argument is geen getal"
 
-#: builtin.c:1753
+#: builtin.c:1747
 #, c-format
 msgid "sqrt: called with negative argument %g"
 msgstr "sqrt: argument %g is negatief"
 
-#: builtin.c:1784
+#: builtin.c:1778
 #, c-format
 msgid "substr: length %g is not >= 1"
 msgstr "substr: lengte %g is niet >= 1"
 
-#: builtin.c:1786
+#: builtin.c:1780
 #, c-format
 msgid "substr: length %g is not >= 0"
 msgstr "substr: lengte %g is niet >= 0"
 
-#: builtin.c:1800
+#: builtin.c:1794
 #, c-format
 msgid "substr: non-integer length %g will be truncated"
 msgstr "substr: lengte %g is geen integer; wordt afgekapt"
 
-#: builtin.c:1805
+#: builtin.c:1799
 #, c-format
 msgid "substr: length %g too big for string indexing, truncating to %g"
 msgstr ""
 "substr: lengte %g is te groot voor stringindexering; wordt verkort tot %g"
 
-#: builtin.c:1817
+#: builtin.c:1811
 #, c-format
 msgid "substr: start index %g is invalid, using 1"
 msgstr "substr: startindex %g is ongeldig; 1 wordt gebruikt"
 
-#: builtin.c:1822
+#: builtin.c:1816
 #, c-format
 msgid "substr: non-integer start index %g will be truncated"
 msgstr "substr: startindex %g is geen integer; wordt afgekapt"
 
-#: builtin.c:1845
+#: builtin.c:1839
 msgid "substr: source string is zero length"
 msgstr "substr: bronstring heeft lengte nul"
 
-#: builtin.c:1859
+#: builtin.c:1853
 #, c-format
 msgid "substr: start index %g is past end of string"
 msgstr "substr: startindex %g ligt voorbij het einde van de string"
 
-#: builtin.c:1867
+#: builtin.c:1861
 #, c-format
 msgid ""
 "substr: length %g at start index %g exceeds length of first argument (%lu)"
@@ -802,363 +798,363 @@ msgstr ""
 "substr: lengte %g bij startindex %g is groter dan de lengte van het eerste "
 "argument (%lu)"
 
-#: builtin.c:1940
+#: builtin.c:1934
 msgid "strftime: format value in PROCINFO[\"strftime\"] has numeric type"
 msgstr "strftime: opmaakwaarde in PROCINFO[\"strftime\"] is numeriek"
 
-#: builtin.c:1960
+#: builtin.c:1954
 msgid "strftime: received non-numeric second argument"
 msgstr "strftime: tweede argument is geen getal"
 
-#: builtin.c:1970
+#: builtin.c:1964
 msgid "strftime: second argument less than 0 or too big for time_t"
 msgstr "strftime: tweede argument is kleiner dan nul of te groot voor 'time_t'"
 
-#: builtin.c:1977
+#: builtin.c:1971
 msgid "strftime: second argument out of range for time_t"
 msgstr "strftime: tweede argument ligt buiten toegestaan bereik voor 'time_t'"
 
-#: builtin.c:1986
+#: builtin.c:1980
 msgid "strftime: received non-string first argument"
 msgstr "strftime: eerste argument is geen string"
 
-#: builtin.c:1993
+#: builtin.c:1987
 msgid "strftime: received empty format string"
 msgstr "strftime: opmaakstring is leeg"
 
-#: builtin.c:2064
+#: builtin.c:2058
 #, fuzzy, c-format
 msgid "setenv(TZ, %s) failed (%s)"
 msgstr "%s naar \"%s\" is mislukt (%s)"
 
-#: builtin.c:2071
+#: builtin.c:2065
 #, c-format
 msgid "setenv(TZ, %s) restoration failed (%s)"
 msgstr ""
 
-#: builtin.c:2075
+#: builtin.c:2069
 #, fuzzy, c-format
 msgid "unsetenv(TZ) failed (%s)"
 msgstr "%s: sluiten is mislukt (%s)"
 
-#: builtin.c:2104
+#: builtin.c:2098
 msgid "mktime: received non-string argument"
 msgstr "mktime: argument is geen string"
 
-#: builtin.c:2121
+#: builtin.c:2115
 msgid "mktime: at least one of the values is out of the default range"
 msgstr "mktime: minstens één van waarden valt buiten het standaardbereik"
 
-#: builtin.c:2157
+#: builtin.c:2151
 msgid "'system' function not allowed in sandbox mode"
 msgstr "'system'-functie is niet toegestaan in sandbox-modus"
 
-#: builtin.c:2162
+#: builtin.c:2156
 msgid "system: received non-string argument"
 msgstr "system: argument is geen string"
 
-#: builtin.c:2231 builtin.c:2305
+#: builtin.c:2225 builtin.c:2299
 msgid "print: attempt to write to closed write end of two-way pipe"
 msgstr "print: poging tot schrijven naar gesloten schrijfkant van tweewegpijp"
 
-#: builtin.c:2328
+#: builtin.c:2322
 #, c-format
 msgid "reference to uninitialized field `$%d'"
 msgstr "verwijzing naar ongeïnitialiseerd veld '$%d'"
 
-#: builtin.c:2413
+#: builtin.c:2407
 msgid "tolower: received non-string argument"
 msgstr "tolower: argument is geen string"
 
-#: builtin.c:2444
+#: builtin.c:2438
 msgid "toupper: received non-string argument"
 msgstr "toupper: argument is geen string"
 
-#: builtin.c:2477 mpfr.c:664
+#: builtin.c:2471 mpfr.c:664
 msgid "atan2: received non-numeric first argument"
 msgstr "atan2: eerste argument is geen getal"
 
-#: builtin.c:2479 mpfr.c:666
+#: builtin.c:2473 mpfr.c:666
 msgid "atan2: received non-numeric second argument"
 msgstr "atan2: tweede argument is geen getal"
 
-#: builtin.c:2498
+#: builtin.c:2492
 msgid "sin: received non-numeric argument"
 msgstr "sin: argument is geen getal"
 
-#: builtin.c:2514
+#: builtin.c:2508
 msgid "cos: received non-numeric argument"
 msgstr "cos: argument is geen getal"
 
-#: builtin.c:2628 mpfr.c:1159
+#: builtin.c:2622 mpfr.c:1159
 msgid "srand: received non-numeric argument"
 msgstr "srand: argument is geen getal"
 
-#: builtin.c:2659
+#: builtin.c:2653
 msgid "match: third argument is not an array"
 msgstr "match: derde argument is geen array"
 
-#: builtin.c:2926
+#: builtin.c:2920
 #, c-format
 msgid "gensub: third argument `%.*s' treated as 1"
 msgstr "gensub: derde argument is '%.*s'; wordt beschouwd als 1"
 
 # FIXME: ambiguous
-#: builtin.c:3248
+#: builtin.c:3242
 #, c-format
 msgid "%s: can be called indirectly only with two arguments"
 msgstr "%s: kan alleen indirect aangeroepen worden met twee argumenten"
 
-#: builtin.c:3348
+#: builtin.c:3342
 #, c-format
 msgid "indirect call to %s requires at least two arguments"
 msgstr "indirecte aanroep van %s vereist minstens twee argumenten"
 
-#: builtin.c:3403
+#: builtin.c:3397
 msgid "lshift: received non-numeric first argument"
 msgstr "lshift: eerste argument is geen getal"
 
-#: builtin.c:3405
+#: builtin.c:3399
 msgid "lshift: received non-numeric second argument"
 msgstr "lshift: tweede argument is geen getal"
 
-#: builtin.c:3411
+#: builtin.c:3405
 #, fuzzy, c-format
 msgid "lshift(%f, %f): negative values are not allowed"
 msgstr "lshift(%f, %f): negatieve waarden geven rare resultaten"
 
-#: builtin.c:3415
+#: builtin.c:3409
 #, c-format
 msgid "lshift(%f, %f): fractional values will be truncated"
 msgstr "lshift(%f, %f): cijfers na de komma worden afgekapt"
 
-#: builtin.c:3417
+#: builtin.c:3411
 #, c-format
 msgid "lshift(%f, %f): too large shift value will give strange results"
 msgstr "lshift(%f, %f): te grote opschuifwaarden geven rare resultaten"
 
-#: builtin.c:3442
+#: builtin.c:3436
 msgid "rshift: received non-numeric first argument"
 msgstr "rshift: eerste argument is geen getal"
 
-#: builtin.c:3444
+#: builtin.c:3438
 msgid "rshift: received non-numeric second argument"
 msgstr "rshift: tweede argument is geen getal"
 
-#: builtin.c:3450
+#: builtin.c:3444
 #, fuzzy, c-format
 msgid "rshift(%f, %f): negative values are not allowed"
 msgstr "rshift(%f, %f): negatieve waarden geven rare resultaten"
 
-#: builtin.c:3454
+#: builtin.c:3448
 #, c-format
 msgid "rshift(%f, %f): fractional values will be truncated"
 msgstr "rshift(%f, %f): cijfers na de komma worden afgekapt"
 
-#: builtin.c:3456
+#: builtin.c:3450
 #, c-format
 msgid "rshift(%f, %f): too large shift value will give strange results"
 msgstr "rshift(%f, %f): te grote opschuifwaarden geven rare resultaten"
 
-#: builtin.c:3481 mpfr.c:972
+#: builtin.c:3475 mpfr.c:972
 msgid "and: called with less than two arguments"
 msgstr "and: aangeroepen met minder dan twee argumenten"
 
-#: builtin.c:3486
+#: builtin.c:3480
 #, c-format
 msgid "and: argument %d is non-numeric"
 msgstr "and: argument %d is niet-numeriek"
 
-#: builtin.c:3490
+#: builtin.c:3484
 #, fuzzy, c-format
 msgid "and: argument %d negative value %g is not allowed"
 msgstr "and: negatieve waarde %2$g van argument %1$d geeft rare resultaten"
 
-#: builtin.c:3513 mpfr.c:1004
+#: builtin.c:3507 mpfr.c:1004
 msgid "or: called with less than two arguments"
 msgstr "or: aangeroepen met minder dan twee argumenten"
 
-#: builtin.c:3518
+#: builtin.c:3512
 #, c-format
 msgid "or: argument %d is non-numeric"
 msgstr "or: argument %d is niet-numeriek"
 
-#: builtin.c:3522
+#: builtin.c:3516
 #, fuzzy, c-format
 msgid "or: argument %d negative value %g is not allowed"
 msgstr "or: negatieve waarde %2$g van argument %1$d geeft rare resultaten"
 
-#: builtin.c:3544 mpfr.c:1035
+#: builtin.c:3538 mpfr.c:1035
 msgid "xor: called with less than two arguments"
 msgstr "xor: aangeroepen met minder dan twee argumenten"
 
-#: builtin.c:3550
+#: builtin.c:3544
 #, c-format
 msgid "xor: argument %d is non-numeric"
 msgstr "xor: argument %d is niet-numeriek"
 
-#: builtin.c:3554
+#: builtin.c:3548
 #, fuzzy, c-format
 msgid "xor: argument %d negative value %g is not allowed"
 msgstr "xor: negatieve waarde %2$g van argument %1$d geeft rare resultaten"
 
-#: builtin.c:3579 mpfr.c:794
+#: builtin.c:3573 mpfr.c:794
 msgid "compl: received non-numeric argument"
 msgstr "compl: argument is geen getal"
 
-#: builtin.c:3584
+#: builtin.c:3578
 #, fuzzy, c-format
 msgid "compl(%f): negative value is not allowed"
 msgstr "compl(%f): negatieve waarden geven rare resultaten"
 
-#: builtin.c:3587
+#: builtin.c:3581
 #, c-format
 msgid "compl(%f): fractional value will be truncated"
 msgstr "compl(%f): cijfers na de komma worden afgekapt"
 
-#: builtin.c:3771
+#: builtin.c:3765
 #, c-format
 msgid "dcgettext: `%s' is not a valid locale category"
 msgstr "dcgettext: '%s' is geen geldige taalregio-deelcategorie"
 
-#: builtin.c:3997 mpfr.c:1193
+#: builtin.c:3991 mpfr.c:1193
 #, fuzzy
 msgid "intdiv: third argument is not an array"
 msgstr "match: derde argument is geen array"
 
-#: builtin.c:4005 mpfr.c:1201
+#: builtin.c:3999 mpfr.c:1201
 #, fuzzy
 msgid "intdiv: received non-numeric first argument"
 msgstr "and: eerste argument is geen getal"
 
-#: builtin.c:4007 mpfr.c:1203
+#: builtin.c:4001 mpfr.c:1203
 #, fuzzy
 msgid "intdiv: received non-numeric second argument"
 msgstr "and: tweede argument is geen getal"
 
-#: builtin.c:4016 mpfr.c:1242
+#: builtin.c:4010 mpfr.c:1242
 #, fuzzy
 msgid "intdiv: division by zero attempted"
 msgstr "deling door nul"
 
-#: builtin.c:4086
+#: builtin.c:4080
 #, c-format
 msgid ""
 "typeof detected invalid flags combination `%s'; please file a bug report."
 msgstr ""
 
-#: builtin.c:4101
+#: builtin.c:4095
 #, fuzzy, c-format
 msgid "typeof: invalid argument type `%s'"
 msgstr "option: ongeldige parameter -- \"%s\""
 
-#: builtin.c:4105
+#: builtin.c:4099
 #, c-format
 msgid "typeof: unknown argument type `%s'"
 msgstr ""
 
-#: command.y:226
+#: command.y:227
 #, c-format
 msgid "Type (g)awk statement(s). End with the command \"end\"\n"
 msgstr "Typ (g)awk statement(s).  Eindig met het commando \"end\".\n"
 
-#: command.y:290
+#: command.y:291
 #, c-format
 msgid "invalid frame number: %d"
 msgstr "ongeldig framenummer: %d"
 
-#: command.y:296
+#: command.y:297
 #, c-format
 msgid "info: invalid option - \"%s\""
 msgstr "info: ongeldige optie -- \"%s\""
 
-#: command.y:322
+#: command.y:323
 #, c-format
 msgid "source \"%s\": already sourced."
 msgstr "source \"%s\": is reeds ingelezen."
 
-#: command.y:327
+#: command.y:328
 #, c-format
 msgid "save \"%s\": command not permitted."
 msgstr "save \"%s\": commando niet toegestaan."
 
-#: command.y:340
+#: command.y:341
 msgid "Can't use command `commands' for breakpoint/watchpoint commands"
 msgstr ""
 "Kan commando 'commands' niet voor breekpunt-/kijkpunt-commando's gebruiken"
 
-#: command.y:342
+#: command.y:343
 msgid "no breakpoint/watchpoint has been set yet"
 msgstr "er is nog geen breekpunt/kijkpunt gezet"
 
-#: command.y:344
+#: command.y:345
 msgid "invalid breakpoint/watchpoint number"
 msgstr "ongeldig nummer van breekpunt/kijkpunt"
 
-#: command.y:349
+#: command.y:350
 #, c-format
 msgid "Type commands for when %s %d is hit, one per line.\n"
 msgstr "Typ de commando's voor wanneer %s %d getroffen wordt, één per regel.\n"
 
-#: command.y:351
+#: command.y:352
 #, c-format
 msgid "End with the command \"end\"\n"
 msgstr "Eindig met het commando 'end'.\n"
 
-#: command.y:358
+#: command.y:359
 msgid "`end' valid only in command `commands' or `eval'"
 msgstr "'end' is alleen geldig bij de commando's 'commands' en 'eval'"
 
-#: command.y:368
+#: command.y:369
 msgid "`silent' valid only in command `commands'"
 msgstr "'silent' is alleen geldig bij het commando 'commands'"
 
-#: command.y:374
+#: command.y:375
 #, c-format
 msgid "trace: invalid option - \"%s\""
 msgstr "trace: ongeldige optie -- \"%s\""
 
-#: command.y:388
+#: command.y:389
 msgid "condition: invalid breakpoint/watchpoint number"
 msgstr "condition: ongeldig nummer van breekpunt/kijkpunt"
 
-#: command.y:450
+#: command.y:451
 msgid "argument not a string"
 msgstr "argument is geen string"
 
-#: command.y:460 command.y:465
+#: command.y:461 command.y:466
 #, c-format
 msgid "option: invalid parameter - \"%s\""
 msgstr "option: ongeldige parameter -- \"%s\""
 
-#: command.y:475
+#: command.y:476
 #, c-format
 msgid "no such function - \"%s\""
 msgstr "functie \"%s\" bestaat niet"
 
-#: command.y:532
+#: command.y:533
 #, c-format
 msgid "enable: invalid option - \"%s\""
 msgstr "enable: ongeldige optie -- \"%s\""
 
-#: command.y:598
+#: command.y:599
 #, c-format
 msgid "invalid range specification: %d - %d"
 msgstr "ongeldig bereik: %d - %d"
 
-#: command.y:660
+#: command.y:661
 msgid "non-numeric value for field number"
 msgstr "niet-numerieke waarde voor veldnummer"
 
-#: command.y:681 command.y:688
+#: command.y:682 command.y:689
 msgid "non-numeric value found, numeric expected"
 msgstr "niet-numerieke waarde gevonden, numerieke wordt verwacht"
 
-#: command.y:713 command.y:719
+#: command.y:714 command.y:720
 msgid "non-zero integer value"
 msgstr "niet-nul geheel getal"
 
-#: command.y:818
+#: command.y:819
 msgid ""
 "backtrace [N] - print trace of all or N innermost (outermost if N < 0) "
 "frames."
@@ -1166,20 +1162,20 @@ msgstr ""
 "backtrace [N] - een trace weergeven van alle of N binnenste frames (of "
 "buitenste als N < 0)"
 
-#: command.y:820
+#: command.y:821
 msgid ""
 "break [[filename:]N|function] - set breakpoint at the specified location."
 msgstr ""
 "break [[BESTANDSNAAM:]REGELNUMMER|FUNCTIE] - breekpunt zetten op gegeven "
 "positie"
 
-#: command.y:822
+#: command.y:823
 msgid "clear [[filename:]N|function] - delete breakpoints previously set."
 msgstr ""
 "clear [[BESTANDSNAAM:]REGELNUMMER|FUNCTIE] - eerder gezet breekpunt "
 "verwijderen"
 
-#: command.y:824
+#: command.y:825
 msgid ""
 "commands [num] - starts a list of commands to be executed at a "
 "breakpoint(watchpoint) hit."
@@ -1187,78 +1183,78 @@ msgstr ""
 "commands [NUMMER] - een lijst van commando's beginnen die uitgevoerd moeten "
 "worden wanneer een breekpunt/kijkpunt getroffen wordt"
 
-#: command.y:826
+#: command.y:827
 msgid "condition num [expr] - set or clear breakpoint or watchpoint condition."
 msgstr ""
 "condition NUMMER [EXPRESSIE] - de conditie van een breekpunt/kijkpunt zetten "
 "of wissen"
 
-#: command.y:828
+#: command.y:829
 msgid "continue [COUNT] - continue program being debugged."
 msgstr "continue [AANTAL] - doorgaan met het programma in de debugger"
 
-#: command.y:830
+#: command.y:831
 msgid "delete [breakpoints] [range] - delete specified breakpoints."
 msgstr "delete [BREEKPUNTEN] [BEREIK] - de gegeven breekpunten verwijderen"
 
-#: command.y:832
+#: command.y:833
 msgid "disable [breakpoints] [range] - disable specified breakpoints."
 msgstr "disable [BREEKPUNTEN] [BEREIK] - de gegeven breekpunten uitschakelen"
 
-#: command.y:834
+#: command.y:835
 msgid "display [var] - print value of variable each time the program stops."
 msgstr ""
 "display [VAR] - waarde van variabele weergeven elke keer dat het programma "
 "stopt"
 
-#: command.y:836
+#: command.y:837
 msgid "down [N] - move N frames down the stack."
 msgstr "down [AANTAL] - dit aantal frames naar beneden in de stack gaan"
 
-#: command.y:838
+#: command.y:839
 msgid "dump [filename] - dump instructions to file or stdout."
 msgstr ""
 "dump [BESTANDSNAAM] - instructies dumpen op standaarduitvoer (of naar "
 "bestand)"
 
-#: command.y:840
+#: command.y:841
 msgid "enable [once|del] [breakpoints] [range] - enable specified breakpoints."
 msgstr ""
 "enable [once|del] [BREEKPUNTEN] [BEREIK] - de gegeven breekpunten inschakelen"
 
-#: command.y:842
+#: command.y:843
 msgid "end - end a list of commands or awk statements."
 msgstr "end - een lijst van commando's of awk-statements beëindigen"
 
-#: command.y:844
+#: command.y:845
 msgid "eval stmt|[p1, p2, ...] - evaluate awk statement(s)."
 msgstr "eval STATEMENT|[p1, p2, ...] - awk-statement(s) evalueren"
 
-#: command.y:846
+#: command.y:847
 msgid "exit - (same as quit) exit debugger."
 msgstr "exit - (hetzelfde als 'quit') de debugger verlaten"
 
-#: command.y:848
+#: command.y:849
 msgid "finish - execute until selected stack frame returns."
 msgstr "finish - uitvoeren totdat het geselecteerde stack-frame terugkeert"
 
-#: command.y:850
+#: command.y:851
 msgid "frame [N] - select and print stack frame number N."
 msgstr "frame [NUMMER] - stack-frame met dit nummer selecteren en weergeven"
 
-#: command.y:852
+#: command.y:853
 msgid "help [command] - print list of commands or explanation of command."
 msgstr ""
 "help [COMMANDO] - lijst van beschikbare commando's (of uitleg van commando) "
 "tonen"
 
-#: command.y:854
+#: command.y:855
 msgid "ignore N COUNT - set ignore-count of breakpoint number N to COUNT."
 msgstr ""
 "ignore NUMMER AANTAL - het aantal keren dat dit breekpuntnummer genegeerd "
 "moet worden"
 
-#: command.y:856
+#: command.y:857
 msgid ""
 "info topic - source|sources|variables|functions|break|frame|args|locals|"
 "display|watch."
@@ -1266,91 +1262,91 @@ msgstr ""
 "info THEMA - source|sources|variables|functions|break|frame|args|locals|"
 "display|watch"
 
-#: command.y:858
+#: command.y:859
 msgid "list [-|+|[filename:]lineno|function|range] - list specified line(s)."
 msgstr ""
 "list [-|+|[BESTANDSNAAM:]REGELNUMMER|FUNCTIE|BEREIK] - aangegeven regels "
 "tonen"
 
-#: command.y:860
+#: command.y:861
 msgid "next [COUNT] - step program, proceeding through subroutine calls."
 msgstr ""
 "next [AANTAL] - programma uitvoeren tot de volgende bronregel bereikt is"
 
-#: command.y:862
+#: command.y:863
 msgid ""
 "nexti [COUNT] - step one instruction, but proceed through subroutine calls."
 msgstr ""
 "nexti [AANTAL] - één instructie (of dit aantal) uitvoeren, waarbij een "
 "functie-aanroep als één telt"
 
-#: command.y:864
+#: command.y:865
 msgid "option [name[=value]] - set or display debugger option(s)."
 msgstr "option [NAAM[=WAARDE]] - opties van debugger tonen of instellen"
 
-#: command.y:866
+#: command.y:867
 msgid "print var [var] - print value of a variable or array."
 msgstr "print VAR [VAR] - waarde van variabele of array weergeven"
 
-#: command.y:868
+#: command.y:869
 msgid "printf format, [arg], ... - formatted output."
 msgstr "printf OPMAAK [, ARGUMENT...] - opgemaakte uitvoer"
 
-#: command.y:870
+#: command.y:871
 msgid "quit - exit debugger."
 msgstr "quit - de debugger verlaten"
 
-#: command.y:872
+#: command.y:873
 msgid "return [value] - make selected stack frame return to its caller."
 msgstr "return [WAARDE] - gekozen stack-frame terug laten keren naar aanroeper"
 
-#: command.y:874
+#: command.y:875
 msgid "run - start or restart executing program."
 msgstr "run - programma starten of herstarten"
 
-#: command.y:877
+#: command.y:878
 msgid "save filename - save commands from the session to file."
 msgstr "save BESTANDSNAAM - commando's van de sessie opslaan in bestand"
 
-#: command.y:880
+#: command.y:881
 msgid "set var = value - assign value to a scalar variable."
 msgstr "set VAR = WAARDE - een waarde aan een scalaire variabele toekennen"
 
-#: command.y:882
+#: command.y:883
 msgid ""
 "silent - suspends usual message when stopped at a breakpoint/watchpoint."
 msgstr ""
 "silent - de gewone meldingen bij het stoppen bij een breekpunt/kijkpunt "
 "onderdrukken"
 
-#: command.y:884
+#: command.y:885
 msgid "source file - execute commands from file."
 msgstr "source BESTANDSNAAM - commando's uit dit bestand uitvoeren"
 
-#: command.y:886
+#: command.y:887
 msgid "step [COUNT] - step program until it reaches a different source line."
 msgstr ""
 "step [AANTAL] - programma uitvoeren tot een andere bronregel bereikt is"
 
-#: command.y:888
+#: command.y:889
 msgid "stepi [COUNT] - step one instruction exactly."
 msgstr "stepi [AANTAL] - precies één (of dit aantal) instructies uitvoeren"
 
-#: command.y:890
+#: command.y:891
 msgid "tbreak [[filename:]N|function] - set a temporary breakpoint."
 msgstr ""
 "tbreak [[BESTANDSNAAM:]REGELNUMMER|FUNCTIE] - een tijdelijk breekpunt zetten"
 
-#: command.y:892
+#: command.y:893
 msgid "trace on|off - print instruction before executing."
 msgstr "trace on|off - instructie weergeven alvorens deze uit te voeren"
 
-#: command.y:894
+#: command.y:895
 msgid "undisplay [N] - remove variable(s) from automatic display list."
 msgstr ""
 "undisplay [AANTAL] - variabele(n) van automatische weergavelijst verwijderen"
 
-#: command.y:896
+#: command.y:897
 msgid ""
 "until [[filename:]N|function] - execute until program reaches a different "
 "line or line N within current frame."
@@ -1358,19 +1354,19 @@ msgstr ""
 "until [[BESTANDSNAAM:]N|FUNCTIE] - programma uitvoeren totdat deze een "
 "andere regel bereikt of regel N binnen het huidige frame"
 
-#: command.y:898
+#: command.y:899
 msgid "unwatch [N] - remove variable(s) from watch list."
 msgstr "unwatch [AANTAL] - variabele(n) van de kijklijst verwijderen"
 
-#: command.y:900
+#: command.y:901
 msgid "up [N] - move N frames up the stack."
 msgstr "up [AANTAL] - dit aantal frames naar boven in de stack gaan"
 
-#: command.y:902
+#: command.y:903
 msgid "watch var - set a watchpoint for a variable."
 msgstr "watch VAR - een kijkpunt voor een variabele zetten"
 
-#: command.y:904
+#: command.y:905
 msgid ""
 "where [N] - (same as backtrace) print trace of all or N innermost (outermost "
 "if N < 0) frames."
@@ -1378,40 +1374,40 @@ msgstr ""
 "where[N] - (zelfde als backtrace) een trace weergeven van alle of N "
 "binnenste frames (of buitenste als N < 0)"
 
-#: command.y:1015 debug.c:401 gawkapi.c:258 msg.c:137
+#: command.y:1016 debug.c:401 gawkapi.c:258 msg.c:137
 #, c-format
 msgid "error: "
 msgstr "fout: "
 
-#: command.y:1059
+#: command.y:1060
 #, c-format
 msgid "can't read command (%s)\n"
 msgstr "kan commando niet lezen (%s)\n"
 
-#: command.y:1073
+#: command.y:1074
 #, c-format
 msgid "can't read command (%s)"
 msgstr "kan commando niet lezen (%s)"
 
-#: command.y:1124
+#: command.y:1125
 msgid "invalid character in command"
 msgstr "ongeldig teken in commando"
 
-#: command.y:1160
+#: command.y:1161
 #, c-format
 msgid "unknown command - \"%.*s\", try help"
 msgstr "onbekend commando - \"%.*s\", probeer help"
 
-#: command.y:1230
+#: command.y:1231
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: command.y:1292
+#: command.y:1293
 msgid "invalid character"
 msgstr "ongeldig teken"
 
-#: command.y:1496
+#: command.y:1497
 #, c-format
 msgid "undefined command: %s\n"
 msgstr "ongedefinieerd commando: %s\n"
@@ -2423,7 +2419,7 @@ msgstr ""
 msgid "NF set to negative value"
 msgstr "NF is op een negatieve waarde gezet"
 
-#: field.c:952 field.c:959 field.c:963
+#: field.c:952 field.c:959
 msgid "split: fourth argument is a gawk extension"
 msgstr "split: vierde argument is een gawk-uitbreiding"
 
@@ -2431,84 +2427,84 @@ msgstr "split: vierde argument is een gawk-uitbreiding"
 msgid "split: fourth argument is not an array"
 msgstr "split: vierde argument is geen array"
 
-#: field.c:970
+#: field.c:966
 msgid "split: second argument is not an array"
 msgstr "split: tweede argument is geen array"
 
-#: field.c:974
+#: field.c:970
 msgid "split: cannot use the same array for second and fourth args"
 msgstr ""
 "split: hetzelfde array kan niet zowel als tweede als als vierde argument "
 "gebruikt worden"
 
-#: field.c:979
+#: field.c:975
 msgid "split: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "split: een subarray van het tweede argument kan niet als vierde argument "
 "gebruikt worden"
 
-#: field.c:982
+#: field.c:978
 msgid "split: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "split: een subarray van het vierde argument kan niet als tweede argument "
 "gebruikt worden"
 
-#: field.c:1016
+#: field.c:1012
 msgid "split: null string for third arg is a gawk extension"
 msgstr "split: lege string als derde argument is een gawk-uitbreiding"
 
-#: field.c:1053
+#: field.c:1049
 msgid "patsplit: fourth argument is not an array"
 msgstr "patsplit: vierde argument is geen array"
 
-#: field.c:1058
+#: field.c:1054
 msgid "patsplit: second argument is not an array"
 msgstr "patsplit: tweede argument is geen array"
 
-#: field.c:1067
+#: field.c:1063
 msgid "patsplit: third argument must be non-null"
 msgstr "patsplit: derde argument moet niet-nil zijn"
 
-#: field.c:1071
+#: field.c:1067
 msgid "patsplit: cannot use the same array for second and fourth args"
 msgstr ""
 "patsplit: hetzelfde array kan niet zowel als tweede als als vierde argument "
 "gebruikt worden"
 
-#: field.c:1076
+#: field.c:1072
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "patsplit: een subarray van het tweede argument kan niet als vierde argument "
 "gebruikt worden"
 
-#: field.c:1079
+#: field.c:1075
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "patsplit: een subarray van het vierde argument kan niet als tweede argument "
 "gebruikt worden"
 
-#: field.c:1129
+#: field.c:1125
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "'FIELDWIDTHS' is een gawk-uitbreiding"
 
-#: field.c:1198
+#: field.c:1194
 msgid "`*' must be the last designator in FIELDWIDTHS"
 msgstr ""
 
-#: field.c:1219
+#: field.c:1215
 #, fuzzy, c-format
 msgid "invalid FIELDWIDTHS value, for field %d, near `%s'"
 msgstr "ongeldige waarde voor FIELDWIDTHS, nabij '%s'"
 
-#: field.c:1292
+#: field.c:1288
 msgid "null string for `FS' is a gawk extension"
 msgstr "een lege string als 'FS' is een gawk-uitbreiding"
 
-#: field.c:1296
+#: field.c:1292
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "oude 'awk' staat geen reguliere expressies toe als waarde van 'FS'"
 
-#: field.c:1431
+#: field.c:1427
 msgid "`FPAT' is a gawk extension"
 msgstr "'FPAT' is een gawk-uitbreiding"
 
