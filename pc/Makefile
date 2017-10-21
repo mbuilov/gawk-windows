@@ -294,15 +294,18 @@ install1:
 	cat pc/awklib/igawk >> igawk.cmd
 	cat pc/awklib/igawk.bat > igawk.bat
 	-mkdir "$(prefix)"
+	-mkdir "$(prefix)/include"
 	-mkdir "$(prefix)/bin"
 	-mkdir "$(prefix)/share"
 	-mkdir "$(prefix)/share/man"
 	-mkdir "$(pkgdatadir)" "$(prefix)/share/man/man1" "$(prefix)/share/info"
 	cp *awk.exe igawk.bat igawk.cmd pc/awklib/igawk $(prefix)/bin
 	cp gawk.exe $(prefix)/bin/awk.exe
+	cp gawkapi.h $(prefix)/include
 	cp awklib/eg/lib/* pc/awklib/igawk.awk $(pkgdatadir)
 	cp doc/*.1 $(prefix)/share/man/man1
 	cp doc/*.info $(prefix)/share/info
+	cp doc/*.png $(prefix)/share/info
 
 # install2 is equivalent to install1, but doesn't require cp, sed, etc.
 install2:
