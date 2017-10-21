@@ -75,3 +75,19 @@ int getppid(void);
 wint_t btowc (int c);
 wint_t putwc (wchar_t wc, FILE *stream);
 #endif
+
+#ifdef __EMX__
+
+char *os2_fixdllname(char *dst, const char *src, size_t n);
+
+#ifdef __KLIBC__
+#include <dlfcn.h>
+
+#define dlopen(f, m) os2_dlopen(f, m)
+void *os2_dlopen(const char *file, int mode);
+
+#define dlsym(h, n) os2_dlsym(h, n)
+void *os2_dlsym(void *handle, const char *name);
+#endif /* __KLIBC__ */
+
+#endif /* __EMX__ */
