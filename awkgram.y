@@ -1589,7 +1589,8 @@ common_exp
 
 			// 1.5 ""   # can't fold this if program mucks with CONVFMT.
 			// See test #12 in test/posix.awk.
-			if ((n1->flags & (NUMBER|NUMINT)) != 0 || (n2->flags & (NUMBER|NUMINT)) != 0)
+			// Also can't fold if one or the other is translatable.
+			if ((n1->flags & (NUMBER|NUMINT|INTLSTR)) != 0 || (n2->flags & (NUMBER|NUMINT|INTLSTR)) != 0)
 				goto plain_concat;
 
 			n1 = force_string(n1);

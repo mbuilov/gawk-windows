@@ -2913,6 +2913,12 @@ find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
 	*errcode = 0;
 	if (src == NULL || *src == '\0')
 		return NULL;
+#ifdef __EMX__
+	char os2_src[strlen(src) + 1];
+
+	if (is_extlib)
+		src = os2_fixdllname(os2_src, src, sizeof(os2_src));
+#endif /* __EMX__ */
 	path = do_find_source(src, stb, errcode, pi);
 
 	if (path == NULL && is_extlib) {
