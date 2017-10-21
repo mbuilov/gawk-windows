@@ -548,6 +548,52 @@ _os2_unixroot_path(const char *path)
 
   return (result) ? (const char*) result : path;
 }
+
+/* limit a length of DLL name up to 8 characters. If dst is not enough for
+   a fixed dll name, it is truncated. */
+char *os2_fixdllname(char *dst, const char *src, size_t n)
+{
+    char drive[_MAX_DRIVE];
+    char dir[_MAX_DIR];
+    char name[_MAX_FNAME];
+    char ext[_MAX_EXT];
+    char dll_file[_MAX_PATH];
+
+    _splitpath(src, drive, dir, name, ext);
+    if (strlen(name) > 8)
+        name[8] = '\0';
+    _makepath(dll_file, drive, dir, name, ext);
+
+    strncpy(dst, dll_file, n);
+    dst[n - 1] = '\0';
+
+    return dst;
+}
+
+#ifdef __KLIBC__
+
+/* replacement of dlopen(). This limits a length of a base name up to 8
+   characters. */
+void *os2_dlopen(const char *file, int mode)
+{
+    char dll_file[strlen(file) + 1];
+
+    return (dlopen)(os2_fixdllname(dll_file, file, sizeof(dll_file)), mode);
+}
+
+/* replacement of dlsym(). This prepends '_' to name. */
+void *os2_dlsym(void *handle, const char *name)
+{
+    char sym[strlen(name) + 1 + 1]; /* 1 for '_', 1 for NUL */
+
+    sym[0] = '_';
+    strcpy(sym + 1, name);
+
+    return (dlsym)(handle, sym);
+}
+
+#endif /* __KLIBC__ */
+
 #endif /* __EMX__ */
 
 #ifdef __MINGW32__

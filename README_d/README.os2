@@ -1,22 +1,57 @@
-Date: Mon, 16 Aug 2010 08:19:37 +0200
-From: Andreas =?iso-8859-1?Q?B=FCning?= <andreas.buening@nexgo.de>
-To: Aharon Robbins <arnold@skeeve.com>
-Subject: Re: how alive is OS/2?
+From andreas.buening@nexgo.de  Thu Oct 19 15:34:16 2017
+Date: Thu, 19 Oct 2017 23:34:09 +0200 (CEST)
+From: =?UTF-8?Q?Andreas_B=C3=BCning?= <andreas.buening@nexgo.de>
+To: arnold@skeeve.com
+Message-ID: <1433289104.12656.1508448849820@mail.vodafone.de>
+Subject: Re: gawk for OS/2 - any updates?
 
-Hello!
+Hello Arnold,
 
-Aharon Robbins schrieb:
+I'd like to inform you about the current state of compiling gawk on
+OS/2:
 
-> Is OS/2 still viable?  Or can I look to start removing support for it
-> also?
+1. Compilation
 
-I apologize for the late response. Yes, OS/2 is still "alive" in some sense.
-At least, licenses are still sold but under the name "eComStation" (eCS)
-instead of OS/2. The (only) distributor is a small company "Serenity Systems",
-see www.ecomstation.com for details.
+Running ./configure does work but
 
-So I would be pleased if you don't remove the code during the next years. :-)
+- I tried only running with --disable-nls, so with NLS I didn't test.
+- Depending on the gcc version you use you may get linker errors. In
+  that case add 'CFLAGS=-O2 -g -fgnu89-inline' to the configure options
+  (-O2 -g already is the default).
 
-Thanks.
 
-Andreas
+2. Tests
+
+It is possible to run the built-in checks but many test results depend
+on the shell being used. I recommend to use 'make -i check' to run
+the tests because some failures might cause a immediate termination
+of the make run.
+
+- If your shell uses \r\n linebreaks (in that case all tests fail)
+  then you have to run 'make -i check CMP=diff' to ignore the linebreak
+  differences at the test result comparison.
+- Depending on the shell some tests might just hang forever. Press
+  Ctrl+C and/or Ctrl+Break until the tests continue.
+- OS/2 can only load DLLs with filenames up to 8+3 bytes but gawk
+  creates three internal DLLs with longer names (e.g. filefuncs.dll,
+  revoutput.dll, revtwoway.dll). Thus, all tests trying to load
+  filefuncs.dll or the other two DLLs will fail. This is not a bug
+  of gawk. If you change e.g. the '@load filefuncs' directive to
+  '@load filefunc' in the according *.awk file then the tests will
+  succeed.
+- The number of failling tests is currently around 50, less if your
+  shell uses \r\n linebreaks, more otherwise.
+
+Best wishes,
+
+Andreas Buening
+======================================================
+
+Sat Oct 21 21:01:49 IDT 2017
+============================
+
+Fixes for loading extension libraries have since been included
+in the git repo and will be part of 4.2.1.
+
+Arnold Robbins
+arnold@skeeve.com

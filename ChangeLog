@@ -1,3 +1,17 @@
+2017-10-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y: For string concatenation, don't fold constants
+	if one or the other is translatable. Thanks to Harald van Dijk
+	<harald@gigawatt.nl> for the report.
+
+2017-10-21  KO Myung-Hun <komh78@gmail.com>
+
+	* nonposix.h [__KLIBC__]: Include dlfcn.h, declare os2_dlsym, and
+	redirect dlsym to os2_dlsym. Declare os2_fixdllname.  Declare
+	os2_dlopen and redirect dlopen to os2_dlopen.
+	* io.h (find_source) [__EMX__]: Truncate extension file basename
+	to 8 characters.
+
 2017-10-19         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* 4.2.0: Release tar ball made.
