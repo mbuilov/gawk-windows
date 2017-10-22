@@ -44,27 +44,11 @@ AM_INIT_AUTOMAKE([1.15 dist-xz dist-lzip])
 
 AC_CONFIG_MACRO_DIR([m4])
 
-dnl Additional argument stuff
-AC_ARG_WITH(whiny-user-strftime,
-	[AS_HELP_STRING([--with-whiny-user-strftime], [force use of included version of strftime for deficient systems])],
-	if test "$withval" = yes
-	then
-		AC_DEFINE(USE_INCLUDED_STRFTIME, 1,
-			  [force use of our version of strftime])
-	fi
-)
 AC_ARG_ENABLE([lint],
 	[AS_HELP_STRING([--disable-lint],[do not compile in gawk lint checking])],
 	if test "$enableval" = no
 	then
 		AC_DEFINE(NO_LINT, 1, [disable lint checks])
-	fi
-)
-AC_ARG_ENABLE([severe-portability-problems],
-	[AS_HELP_STRING([--enable-severe-portability-problems],[allow really nasty portability problems])],
-	if test "$enableval" = yes
-	then
-		AC_DEFINE(I_DONT_KNOW_WHAT_IM_DOING, 1, [enable severe portability problems])
 	fi
 )
 AC_ARG_ENABLE([builtin-intdiv0],
@@ -158,8 +142,8 @@ AM_LANGINFO_CODESET
 gt_LC_MESSAGES
 
 dnl checks for header files
-AC_CHECK_HEADERS(arpa/inet.h fcntl.h limits.h locale.h libintl.h mcheck.h \
-	netdb.h netinet/in.h stdarg.h stddef.h string.h \
+AC_CHECK_HEADERS(arpa/inet.h fcntl.h locale.h libintl.h mcheck.h \
+	netdb.h netinet/in.h stddef.h string.h \
 	sys/ioctl.h sys/param.h sys/select.h sys/socket.h sys/time.h unistd.h \
 	termios.h stropts.h wchar.h wctype.h)
 AC_HEADER_STDC

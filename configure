@@ -763,9 +763,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_silent_rules
-with_whiny_user_strftime
 enable_lint
-enable_severe_portability_problems
 enable_builtin_intdiv0
 enable_mpfr
 enable_dependency_tracking
@@ -1412,8 +1410,6 @@ Optional Features:
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
   --disable-lint          do not compile in gawk lint checking
-  --enable-severe-portability-problems
-                          allow really nasty portability problems
   --enable-builtin-intdiv0
                           enable built-in intdiv0 function
   --disable-mpfr          do not check for MPFR
@@ -1429,9 +1425,6 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-whiny-user-strftime
-                          force use of included version of strftime for
-                          deficient systems
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
@@ -3214,35 +3207,12 @@ fi
 
 
 
-
-# Check whether --with-whiny-user-strftime was given.
-if test "${with_whiny_user_strftime+set}" = set; then :
-  withval=$with_whiny_user_strftime; if test "$withval" = yes
-	then
-
-$as_echo "#define USE_INCLUDED_STRFTIME 1" >>confdefs.h
-
-	fi
-
-fi
-
 # Check whether --enable-lint was given.
 if test "${enable_lint+set}" = set; then :
   enableval=$enable_lint; if test "$enableval" = no
 	then
 
 $as_echo "#define NO_LINT 1" >>confdefs.h
-
-	fi
-
-fi
-
-# Check whether --enable-severe-portability-problems was given.
-if test "${enable_severe_portability_problems+set}" = set; then :
-  enableval=$enable_severe_portability_problems; if test "$enableval" = yes
-	then
-
-$as_echo "#define I_DONT_KNOW_WHAT_IM_DOING 1" >>confdefs.h
 
 	fi
 
@@ -8029,8 +7999,8 @@ $as_echo "#define HAVE_LC_MESSAGES 1" >>confdefs.h
   fi
 
 
-for ac_header in arpa/inet.h fcntl.h limits.h locale.h libintl.h mcheck.h \
-	netdb.h netinet/in.h stdarg.h stddef.h string.h \
+for ac_header in arpa/inet.h fcntl.h locale.h libintl.h mcheck.h \
+	netdb.h netinet/in.h stddef.h string.h \
 	sys/ioctl.h sys/param.h sys/select.h sys/socket.h sys/time.h unistd.h \
 	termios.h stropts.h wchar.h wctype.h
 do :

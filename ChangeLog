@@ -26,6 +26,25 @@
 	* field.c (do_split): Simplify the lint warnings.
 	Based on suggested code by Eric Pruitt <eric.pruitt@gmail.com>.
 
+	Unrelated:
+
+	* awkgram.y (check_funcs): Remove the REALLYMEAN ifdef and
+	simplify the lint checking code for function defined but not
+	called or called but not defined.
+
+2017-10-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Assume a more C99 environment:
+
+	* awk.h: Assume we have limits.h, stdarg.h and stdbool.h.
+	* configure.ac: Remove checks for limits.h and stdarg.h.
+
+2017-10-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Remove --with-whiny-user-strftime option.
+	* NEWS: Updated.
+	* ChangeLog.0: Fix a typo. :-)
+
 2017-10-08         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* command.y: Fix the FSF's address.
@@ -42,6 +61,14 @@
 2017-10-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* NEWS: Add a note about OS/2 not working.
+
+2017-10-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Undo change of 2014-09-07:
+
+	* configure.ac: Remove the undocumented option to enable locale
+	letters in identifiers.
+	* awkgram.y (is_alpha): Remove related code.
 
 2017-10-02         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -3737,6 +3764,7 @@
 
 	* configure.ac: Add an option to enable locale letters in identifiers.
 	Undocumented and subject to being rescinded at any time in the future.
+	* awkgram.y (is_alpha): Actual code is here.
 	* NEWS: Mention to look at configure --help.
 
 	Unrelated:
