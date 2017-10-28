@@ -114,7 +114,7 @@ do_writea(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	if (nargs < 2)
 		goto out;
 
-	/* directory is first arg, array to dump is second */
+	/* filename is first arg, array to dump is second */
 	if (! get_argument(0, AWK_STRING, & filename)) {
 		fprintf(stderr, _("do_writea: argument 0 is not a string\n"));
 		errno = EINVAL;
@@ -178,8 +178,10 @@ write_array(FILE *fp, awk_array_t array)
 		return awk_false;
 
 	for (i = 0; i < flat_array->count; i++) {
-		if (! write_elem(fp, & flat_array->elements[i]))
+		if (! write_elem(fp, & flat_array->elements[i])) {
+			(void) release_flattened_array(array, flat_array);
 			return awk_false;
+		}
 	}
 
 	if (! release_flattened_array(array, flat_array)) {
