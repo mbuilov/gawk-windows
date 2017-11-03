@@ -1175,7 +1175,7 @@ getfile:
 
 readdir:
 	@if [ "`uname`" = Linux ] && [ "`stat -f . 2>/dev/null | awk 'NR == 2 { print $$NF }'`" = nfs ];  then \
-	echo This test may fail on GNU/Linux systems when run on an NFS filesystem.; \
+	echo This test may fail on GNU/Linux systems when run on NFS or JFS filesystems.; \
 	echo If it does, try rerunning on an ext'[234]' filesystem. ; \
 	fi
 	@echo $@
