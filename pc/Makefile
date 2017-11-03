@@ -288,6 +288,10 @@ popen$O:	popen.h
 install: install$(install)
 	-$(MAKE) -C extension install-extensions
 
+# Note: The line that copies gawk.exe into awk.exe should come before
+# the line after it, which copies *awk.exe, to support the DJGPP "hard
+# link to executables" feature, whereby awk.exe is actually a small
+# stub that invokes gawk.exe.
 install1:
 	echo extproc sh $(prefix)/bin/igawk.cmd > igawk.cmd
 	echo shift >> igawk.cmd
@@ -299,8 +303,8 @@ install1:
 	-mkdir "$(prefix)/share"
 	-mkdir "$(prefix)/share/man"
 	-mkdir "$(pkgdatadir)" "$(prefix)/share/man/man1" "$(prefix)/share/info"
-	cp *awk.exe igawk.bat igawk.cmd pc/awklib/igawk $(prefix)/bin
 	cp gawk.exe $(prefix)/bin/awk.exe
+	cp *awk.exe igawk.bat igawk.cmd pc/awklib/igawk $(prefix)/bin
 	cp gawkapi.h $(prefix)/include
 	cp awklib/eg/lib/* pc/awklib/igawk.awk $(pkgdatadir)
 	cp doc/*.1 $(prefix)/share/man/man1
