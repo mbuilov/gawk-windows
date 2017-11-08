@@ -32888,13 +32888,18 @@ The @code{val_type} member indicates what kind of value the
 Using these macros makes accessing the fields of the @code{awk_value_t} more
 readable.
 
+@item enum AWK_NUMBER_TYPE @{
+@itemx @ @ @ @ AWK_NUMBER_TYPE_DOUBLE,
+@itemx @ @ @ @ AWK_NUMBER_TYPE_MPFR,
+@itemx @ @ @ @ AWK_NUMBER_TYPE_MPZ
+@itemx @};
+This @code{enum} is used in the following structure for defining the
+type of numeric value that is being worked with.  It is declared at the
+top level of the file so that it works correctly for C++ as well as for C.
+
 @item typedef struct awk_number @{
 @itemx @ @ @ @ double d;
-@itemx @ @ @ @ enum AWK_NUMBER_TYPE @{
-@itemx @ @ @ @ @ @ @ @ AWK_NUMBER_TYPE_DOUBLE,
-@itemx @ @ @ @ @ @ @ @ AWK_NUMBER_TYPE_MPFR,
-@itemx @ @ @ @ @ @ @ @ AWK_NUMBER_TYPE_MPZ
-@itemx @ @ @ @ @} type;
+@itemx @ @ @ @ enum AWK_NUMBER_TYPE type;
 @itemx @ @ @ @ void *ptr;
 @itemx @} awk_number_t;
 This represents a numeric value.  Internally, @command{gawk} stores
@@ -32908,7 +32913,6 @@ in data received from @command{gawk}. In addition, by examining the
 @code{type} member, an extension can determine if the @code{ptr}
 member is either a GMP integer (type @code{mpz_ptr}), or an MPFR
 floating-point value (type @code{mpfr_ptr_t}), and cast it appropriately.
-
 
 @item typedef void *awk_scalar_t;
 Scalars can be represented as an opaque type. These values are obtained
