@@ -323,13 +323,15 @@ typedef struct awk_string {
 	size_t len;	/* length thereof, in chars */
 } awk_string_t;
 
+enum AWK_NUMBER_TYPE {
+	AWK_NUMBER_TYPE_DOUBLE,
+	AWK_NUMBER_TYPE_MPFR,
+	AWK_NUMBER_TYPE_MPZ
+};
+
 typedef struct awk_number {
 	double d;	/* always populated in data received from gawk */
-	enum AWK_NUMBER_TYPE {
-		AWK_NUMBER_TYPE_DOUBLE,
-		AWK_NUMBER_TYPE_MPFR,
-		AWK_NUMBER_TYPE_MPZ
-	} type;
+	enum AWK_NUMBER_TYPE type;
 	void *ptr;	/* either NULL or mpfr_ptr or mpz_ptr */
 } awk_number_t;
 
