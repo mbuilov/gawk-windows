@@ -174,28 +174,12 @@ vsnprintf (char *restrict buf, size_t len,
 }
 
 int
-#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
 snprintf (char *restrict buf, size_t len, const char *restrict fmt, ...)
-#else
-snprintf (va_alist)
-     va_dcl
-#endif
 {
 	int rv;
 	va_list args;
 
-#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
 	va_start (args, fmt);
-#else
-	char *buf;
-	size_t len;
-	char *fmt;
-
-	va_start (args);
-	buf = va_arg (args, char *);
-	len = va_arg (args, size_t);
-	fmt = va_arg (args, char *);
-#endif
 	rv = vsnprintf (buf, len, fmt, args);
 	va_end (args);
 	return rv;
