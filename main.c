@@ -616,7 +616,8 @@ usage(int exitval, FILE *fp)
 	fputs(_("\nTo report bugs, see node `Bugs' in `gawk.info'\n\
 which is section `Reporting Problems and Bugs' in the\n\
 printed version.  This same information may be found at\n\
-https://www.gnu.org/software/gawk/manual/html_node/Bugs.html.\n\n"), fp);
+https://www.gnu.org/software/gawk/manual/html_node/Bugs.html.\n\
+PLEASE do NOT try to report bugs by posting in comp.lang.awk.\n\n"), fp);
 
 	/* ditto */
 	fputs(_("gawk is a pattern scanning and processing language.\n\
