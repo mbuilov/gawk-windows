@@ -699,11 +699,16 @@ mod:
 			lhs = r_get_field(t1, & assign, false);
 			decr_sp();
 			DEREF(t1);
+			/*
+			 * N.B. We must call assign() before unref, since
+			 * we may need to copy $n values before freeing the
+			 * $0 buffer.
+			 */
+			assert(assign != NULL);
+			assign();
 			unref(*lhs);
 			r = POP_SCALAR();
 			UNFIELD(*lhs, r);
-			assert(assign != NULL);
-			assign();
 		}
 			break;
 

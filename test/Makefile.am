@@ -1003,6 +1003,11 @@ EXTRA_DIST = \
 	sclforin.ok \
 	sclifin.awk \
 	sclifin.ok \
+	setrec0.awk \
+	setrec0.in \
+	setrec0.ok \
+	setrec1.awk \
+	setrec1.ok \
 	shadow.awk \
 	shadow.ok \
 	shadowbuiltin.awk \
@@ -1229,7 +1234,8 @@ BASIC_TESTS = \
 	regexpbrack regexpbrack2 regexprange regrange reindops reparse resplit \
 	rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 rstest3 \
 	rstest4 rstest5 rswhite \
-	scalar sclforin sclifin sigpipe1 sortempty sortglos splitargv splitarr \
+	scalar sclforin sclifin setrec0 setrec1 \
+	sigpipe1 sortempty sortglos splitargv splitarr \
 	splitdef splitvar splitwht status-close strcat1 strnum1 strnum2 strtod \
 	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 \
 	tradanch tweakfld \

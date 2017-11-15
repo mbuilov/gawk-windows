@@ -21,6 +21,8 @@ default:
 	@echo "Enter $(MAK) target "
 	@echo " where 'target' is chosen from                          "
 	@echo "  djgpp ... DOS 32-bit exe [GNU C, Delorie, v2]         "
+	@echo "  djgpp-mpfr . Like djgpp, but with MPFR                "
+	@echo "   [You will need to have GNU MPFR library installed.]  "
 	@echo "  emx ..... OS/2 32-bit exe [emx/gcc; uses emxlibc.dll] "
 	@echo "  emxnt ... NT exe [emx/gcc with RSXNT]                 "
 	@echo "  emxbnd .. OS/2 and DOS 32-bit exe [emx/gcc]           "
@@ -123,6 +125,12 @@ djgpp-debug:
 	$(MAK) all \
 	CC=gcc O=.o CF='-O2 -g' \
 	LNK=LDJG LF2=-lm \
+	BIND=BDJG
+
+djgpp-mpfr:
+	$(MAK) all \
+	CC=gcc O=.o CF='-O2 -DHAVE_MPFR' \
+	LNK=LDJG LF=-s LF2="-lmpfr -lgmp -lm" \
 	BIND=BDJG
 
 #========================================================================

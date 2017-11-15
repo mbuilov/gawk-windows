@@ -2294,10 +2294,12 @@ sclifin:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 sigpipe1:
-	@echo $@
-	@echo Expect sigpipe1 to fail with DJGPP.
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+	@case `uname` in \
+	*MS-DOS*) echo This test fails on DJGPP --- skipping $@ ;; \
+	*) \
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; \
+	esac
 
 sortempty:
 	@echo $@

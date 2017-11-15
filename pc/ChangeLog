@@ -1,3 +1,13 @@
+2017-11-13  Juan Manuel Guerrero  <juan.guerrero@gmx.de>
+
+	* Makefile (default): Add a line for the djgpp-mpfr target.
+	(djgpp-mpfr): New target, passes -DHAVE_MPFR to the
+	compiler and adds -lmpfr -lgmp to the linker command line.
+
+2017-11-11  Juan Manuel Guerrero  <juan.guerrero@gmx.de>
+
+	* pc/Makefile.tst (sigpipe1): Exclude DJGPP from the sigpipe1 test.
+
 2017-11-03  Juan Manuel Guerrero  <juan.guerrero@gmx.de>
 
 	* Makefile (install1): Copy gawk.exe to awk.exe before copying

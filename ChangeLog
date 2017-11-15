@@ -1,3 +1,16 @@
+2017-11-14         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	Fix corruption when $0 is reassigned while other NODEs have open
+	references to $n. Thanks to Eric Pruitt <eric.pruitt@gmail.com> for
+	the bug report.
+
+	* field.c (purge_record): For each $n field variable, if valref > 1
+	and it has not already been malloced, make a copy of the string, since
+	$0 is about to be reset.
+	* interpret.h (Op_store_field): We must call the assign function
+	before unref, since we must copy any non-malloced $n string values
+	before freeing $0.
+
 2017-11-09         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* main.c (usage): Add a note to not post bugs in comp.lang.awk.
