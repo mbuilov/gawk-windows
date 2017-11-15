@@ -341,14 +341,20 @@ static void
 purge_record()
 {
 	int i;
-	NODE *n;
 
 	NF = -1;
 	for (i = 1; i <= parse_high_water; i++) {
-		assert((fields_arr[i]->flags & MALLOC) == 0
-			? fields_arr[i]->valref == 1
-			: true);
-		unref(fields_arr[i]);
+		NODE *n;
+		NODE *r = fields_arr[i];
+		if ((r->flags & MALLOC) == 0 && r->valref > 1) {
+			/* This can and does happen. We must copy the string! */
+			const char *save = r->stptr;
+			emalloc(r->stptr, char *, r->stlen + 1, "purge_record");
+			memcpy(r->stptr, save, r->stlen);
+			r->stptr[r->stlen] = '\0';
+			r->flags |= MALLOC;
+		}
+		unref(r);
 		getnode(n);
 		*n = *Null_field;
 		fields_arr[i] = n;
