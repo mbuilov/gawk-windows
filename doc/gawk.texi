@@ -35330,7 +35330,48 @@ the current version of @command{gawk}.
 Fortunately, at the possible expense of some compile-time warnings, the API remains
 source-code--compatible with the previous API. The major differences are
 the additional members in the @code{awk_ext_func_t} structure, and the
-addition of the third argument to the C implementation function.
+addition of the third argument to the C implementation function
+(@pxref{Extension Functions}).
+
+Here is a list of individual features that changed from version 1 to
+version 2 of the API:
+
+@itemize @bullet
+
+@item
+Numeric values can now have MPFR/MPZ variants
+(@pxref{General Data Types}).
+
+@item
+There are new string types: @code{AWK_REGEX} and @code{AWK_STRNUM}
+(@pxref{General Data Types}).
+
+@item
+The @code{ezalloc()} macro is new
+(@pxref{Memory Allocation Functions}).
+
+@item
+The @code{awk_ext_func_t} structure changed. Instead of
+@code{num_expected_args}, it now has @code{max_expected} and
+@code{min_required}
+(@pxref{Extension Functions}).
+
+@item
+For @code{get_record()}, an input parser can now specify field widths
+(@pxref{Input Parsers}).
+
+@item
+Extensions can now produce nonfatal error messages
+(@pxref{Printing Messages}).
+
+@item
+When flattening an array, you can now specify the index and value types
+(@pxref{Array Functions}).
+
+@item
+The @code{get_file()} API is new
+(@pxref{Redirection API}).
+@end itemize
 
 @node Finding Extensions
 @section How @command{gawk} Finds Extensions
