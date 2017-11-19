@@ -23,6 +23,9 @@ default:
 	@echo "  djgpp ... DOS 32-bit exe [GNU C, Delorie, v2]         "
 	@echo "  djgpp-mpfr . Like djgpp, but with MPFR                "
 	@echo "   [You will need to have GNU MPFR library installed.]  "
+	@echo "  djgpp-readline . Like djgpp, but with readline        "
+	@echo "   [You will need to have GNU readline library installed.] "
+	@echo "  djgpp-readline-mpfr . djgpp with readline and MPFR    "
 	@echo "  emx ..... OS/2 32-bit exe [emx/gcc; uses emxlibc.dll] "
 	@echo "  emxnt ... NT exe [emx/gcc with RSXNT]                 "
 	@echo "  emxbnd .. OS/2 and DOS 32-bit exe [emx/gcc]           "
@@ -131,6 +134,18 @@ djgpp-mpfr:
 	$(MAK) all \
 	CC=gcc O=.o CF='-O2 -DHAVE_MPFR' \
 	LNK=LDJG LF=-s LF2="-lmpfr -lgmp -lm" \
+	BIND=BDJG
+
+djgpp-readline:
+	$(MAK) all \
+	CC=gcc O=.o CF='-O2 -DHAVE_LIBREADLINE' \
+	LNK=LDJG LF=-s LF2="-lreadline -lm" \
+	BIND=BDJG
+
+djgpp-readline-mpfr:
+	$(MAK) all \
+	CC=gcc O=.o CF='-O2 -DHAVE_LIBREADLINE -DHAVE_MPFR' \
+	LNK=LDJG LF=-s LF2="-lreadline -lmpfr -lgmp -lm" \
 	BIND=BDJG
 
 #========================================================================

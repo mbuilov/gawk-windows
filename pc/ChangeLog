@@ -1,3 +1,13 @@
+2017-11-19  Juan Manuel Guerrero  <juan.guerrero@gmx.de>
+
+	* pc/Makefile (default): Add lines for the djgpp-readline-mpfr
+	and the djgpp-readline targets.
+	(djgpp-readline): New target, passes -DHAVE_LIBREADLINE to the
+	compiler and adds -lreadline to the linker command line.
+	(djgpp-readline-mpfr): New target, passes -DHAVE_LIBREADLINE and
+	-DHAVE_MPFR to the compiler and adds -lreadline -lmpfr -lgmp to
+	the linker command line.
+
 2017-11-13  Juan Manuel Guerrero  <juan.guerrero@gmx.de>
 
 	* Makefile (default): Add a line for the djgpp-mpfr target.
