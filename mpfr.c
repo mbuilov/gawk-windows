@@ -571,7 +571,7 @@ get_rnd_mode(const char rmode)
 #if defined(MPFR_VERSION_MAJOR) && MPFR_VERSION_MAJOR > 2
 	case 'A':
 	case 'a':
-		return MPFR_RNDA;	/* round away from zero (IEEE-754 roundTiesToAway) */
+		return MPFR_RNDA;	/* round away from zero */
 #endif
 	default:
 		break;

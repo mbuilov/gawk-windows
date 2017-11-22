@@ -30866,14 +30866,14 @@ rounding modes is shown in @ref{table-gawk-rounding-modes}.
 @item Round toward positive infinity @tab @code{roundTowardPositive} @tab @code{"U"} or @code{"u"}
 @item Round toward negative infinity @tab @code{roundTowardNegative} @tab @code{"D"} or @code{"d"}
 @item Round toward zero @tab @code{roundTowardZero} @tab @code{"Z"} or @code{"z"}
-@item Round to nearest, ties away from zero @tab @code{roundTiesToAway} @tab @code{"A"} or @code{"a"}
+@item Round away from zero @tab @tab @code{"A"} or @code{"a"}
 @end multitable
 @end float
 
 @code{ROUNDMODE} has the default value @code{"N"}, which
 selects the IEEE 754 rounding mode @code{roundTiesToEven}.
 In @ref{table-gawk-rounding-modes}, the value @code{"A"} selects
-@code{roundTiesToAway}.  This is only available if your version of the
+rounding away from zero. This is only available if your version of the
 MPFR library supports it; otherwise, setting @code{ROUNDMODE} to @code{"A"}
 has no effect.
 
@@ -30930,9 +30930,9 @@ The other rounding modes are rarely used.  Rounding toward positive infinity
 (@code{roundTowardNegative}) are often used to implement interval
 arithmetic, where you adjust the rounding mode to calculate upper and
 lower bounds for the range of output. The @code{roundTowardZero} mode can
-be used for converting floating-point numbers to integers.  The rounding
-mode @code{roundTiesToAway} rounds the result to the nearest number and
-selects the number with the larger magnitude if a tie occurs.
+be used for converting floating-point numbers to integers.  When rounding
+away from zero, the nearest number with magnitude greater than or equal to
+the value is selected.
 
 Some numerical analysts will tell you that your choice of rounding
 style has tremendous impact on the final outcome, and advise you to
