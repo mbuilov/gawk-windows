@@ -1682,8 +1682,8 @@ gotten rid of:
 @cindex @code{git branch}
 @cindex @code{git push}
 @example
-$ @kbd{git branch -d feature/python}           @ii{Still on} master@ii{, delete feature branch}
-$ @kbd{git push -u origin -d feature/python}   @ii{Delete the branch on Savannah}
+$ @kbd{git branch -d feature/python}                 @ii{Still on} master@ii{, delete feature branch}
+$ @kbd{git push -u origin --delete feature/python}   @ii{Delete the branch on Savannah}
 @end example
 
 The @samp{git push} command deletes the @code{feature/python}
@@ -2104,7 +2104,7 @@ into @code{@var{xxx}}.
 @item git push
 Push commits from your local tracking branch @code{@var{xxx}}
 through @code{origin/@var{xxx}} and on to branch @code{@var{xxx}}
-in the upstream repo. Use @samp{git push -u origin -d @var{xxx}} to delete
+in the upstream repo. Use @samp{git push -u origin --delete @var{xxx}} to delete
 an upstream branch. (Do so carefully!)
 
 @item git rebase
