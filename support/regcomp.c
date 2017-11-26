@@ -67,7 +67,7 @@ static reg_errcode_t calc_inveclosure (re_dfa_t *dfa);
 static int fetch_number (re_string_t *input, re_token_t *token,
 			 reg_syntax_t syntax);
 static int peek_token (re_token_t *token, re_string_t *input,
-			reg_syntax_t syntax) internal_function;
+			reg_syntax_t syntax);
 static bin_tree_t *parse (re_string_t *regexp, regex_t *preg,
 			  reg_syntax_t syntax, reg_errcode_t *err);
 static bin_tree_t *parse_reg_exp (re_string_t *regexp, regex_t *preg,
@@ -542,6 +542,7 @@ regcomp (regex_t *__restrict preg, const char *__restrict pattern, int cflags)
   return (int) ret;
 }
 #ifdef _LIBC
+libc_hidden_def (__regcomp)
 weak_alias (__regcomp, regcomp)
 #endif
 
@@ -672,6 +673,7 @@ regfree (regex_t *preg)
   preg->translate = NULL;
 }
 #ifdef _LIBC
+libc_hidden_def (__regfree)
 weak_alias (__regfree, regfree)
 #endif
 
@@ -958,7 +960,6 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
    character used by some operators like "\<", "\>", etc.  */
 
 static void
-internal_function
 init_word_char (re_dfa_t *dfa)
 {
   dfa->word_ops_used = 1;
@@ -967,26 +968,29 @@ init_word_char (re_dfa_t *dfa)
 #ifndef GAWK
   if (BE (dfa->map_notascii == 0, 1))
     {
-      if (sizeof (dfa->word_char[0]) == 8)
+      /* Avoid uint32_t and uint64_t as some non-GCC platforms lack
+	 them, an issue when this code is used in Gnulib.  */
+      bitset_word_t bits0 = 0x00000000;
+      bitset_word_t bits1 = 0x03ff0000;
+      bitset_word_t bits2 = 0x87fffffe;
+      bitset_word_t bits3 = 0x07fffffe;
+      if (BITSET_WORD_BITS == 64)
 	{
-          /* The extra temporaries here avoid "implicitly truncated"
-             warnings in the case when this is dead code, i.e. 32-bit.  */
-          const uint64_t wc0 = UINT64_C (0x03ff000000000000);
-          const uint64_t wc1 = UINT64_C (0x07fffffe87fffffe);
-	  dfa->word_char[0] = wc0;
-	  dfa->word_char[1] = wc1;
+	  /* Pacify gcc -Woverflow on 32-bit platformns.  */
+	  dfa->word_char[0] = bits1 << 31 << 1 | bits0;
+	  dfa->word_char[1] = bits3 << 31 << 1 | bits2;
 	  i = 2;
 	}
-      else if (sizeof (dfa->word_char[0]) == 4)
+      else if (BITSET_WORD_BITS == 32)
 	{
-	  dfa->word_char[0] = UINT32_C (0x00000000);
-	  dfa->word_char[1] = UINT32_C (0x03ff0000);
-	  dfa->word_char[2] = UINT32_C (0x87fffffe);
-	  dfa->word_char[3] = UINT32_C (0x07fffffe);
+	  dfa->word_char[0] = bits0;
+	  dfa->word_char[1] = bits1;
+	  dfa->word_char[2] = bits2;
+	  dfa->word_char[3] = bits3;
 	  i = 4;
 	}
       else
-	abort ();
+        goto general_case;
       ch = 128;
 
       if (BE (dfa->is_utf8, 1))
@@ -997,6 +1001,7 @@ init_word_char (re_dfa_t *dfa)
     }
 #endif
 
+ general_case:
   for (; i < BITSET_WORDS; ++i)
     for (int j = 0; j < BITSET_WORD_BITS; ++j, ++ch)
       if (isalnum (ch) || ch == '_')
@@ -1509,7 +1514,6 @@ link_nfa_nodes (void *extra, bin_tree_t *node)
    to their own constraint.  */
 
 static reg_errcode_t
-internal_function
 duplicate_node_closure (re_dfa_t *dfa, int top_org_node, int top_clone_node,
 			int root_node, unsigned int init_constraint)
 {
@@ -1798,7 +1802,6 @@ calc_eclosure_iter (re_node_set *new_set, re_dfa_t *dfa, int node, int root)
    We must not use this function inside bracket expressions.  */
 
 static void
-internal_function
 fetch_token (re_token_t *result, re_string_t *input, reg_syntax_t syntax)
 {
   re_string_skip_bytes (input, peek_token (result, input, syntax));
@@ -1808,7 +1811,6 @@ fetch_token (re_token_t *result, re_string_t *input, reg_syntax_t syntax)
    We must not use this function inside bracket expressions.  */
 
 static int
-internal_function
 peek_token (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
 {
   unsigned char c;
@@ -2047,7 +2049,6 @@ peek_token (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
    We must not use this function out of bracket expressions.  */
 
 static int
-internal_function
 peek_token_bracket (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
 {
   unsigned char c;
@@ -2679,7 +2680,6 @@ parse_dup_op (bin_tree_t *elem, re_string_t *regexp, re_dfa_t *dfa,
      update it.  */
 
 static reg_errcode_t
-internal_function
 # ifdef RE_ENABLE_I18N
 build_range_exp (reg_syntax_t syntax, bitset_t sbcset, re_charset_t *mbcset,
 		int *range_alloc, bracket_elem_t *start_elem,
@@ -2815,7 +2815,6 @@ build_range_exp (reg_syntax_t syntax, bitset_t sbcset,
    pointer argument since we may update it.  */
 
 static reg_errcode_t
-internal_function
 # ifdef RE_ENABLE_I18N
 build_collating_symbol (bitset_t sbcset, re_charset_t *mbcset,
 			int *coll_sym_alloc, const unsigned char *name)
