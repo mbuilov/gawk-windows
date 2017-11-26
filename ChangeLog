@@ -1,3 +1,9 @@
+2017-11-25         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* debug.c (do_set_var): As in interpret.h (Op_store_field), we should
+	call the assign function before unref to give it a chance to copy
+	any non-malloced $n string values before freeing $0.
+
 2017-11-14         Andrew J. Schorr      <aschorr@telemetry-investments.com>
 
 	* mpfr.c (get_rnd_mode): Fix MPFR_RNDA comment.

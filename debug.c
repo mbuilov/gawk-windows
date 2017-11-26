@@ -1299,10 +1299,11 @@ do_set_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 		arg = arg->next;
 		val = arg->a_node;
 		lhs = get_field(field_num, &assign);
+		if (assign)
+			/* call assign to copy fields before unref frees $0 */
+			assign();
 		unref(*lhs);
 		*lhs = dupnode(val);
-		if (assign)
-			assign();
 		print_field(field_num);
 	}
 		break;
