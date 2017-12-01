@@ -69,9 +69,6 @@
 #include "regex_internal.h"
 
 #include "regex_internal.c"
-#ifndef HAVE_STDBOOL_H
-#include "missing_d/gawkbool.h"
-#endif
 #include "regcomp.c"
 #include "regexec.c"
 
