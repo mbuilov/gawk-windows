@@ -19,11 +19,7 @@
 /* Written June, 1988 by Mike Haertel */
 
 #include <regex.h>
-#ifdef HAVE_STDBOOL_H
 #include <stdbool.h>
-#else
-#include "missing_d/gawkbool.h"
-#endif /* HAVE_STDBOOL_H */
 #include <stddef.h>
 
 #if 3 <= __GNUC__
