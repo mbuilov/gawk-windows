@@ -999,9 +999,9 @@ init_word_char (re_dfa_t *dfa)
 	  return;
 	}
     }
-#endif
 
  general_case:
+#endif
   for (; i < BITSET_WORDS; ++i)
     for (int j = 0; j < BITSET_WORD_BITS; ++j, ++ch)
       if (isalnum (ch) || ch == '_')
