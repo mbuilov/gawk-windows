@@ -14916,8 +14916,8 @@ awk '
 @end example
 
 @noindent
-Questo programma stampa i primi tre campi di ogni record in input, mettendo
-un campo su ogni riga.
+Questo programma stampa i primi tre campi di ogni record in input,
+mettendo un unico campo in una riga in output.
 
 Non @`e possibile impostare
 pi@`u di una variabile nella parte di
@@ -33385,14 +33385,15 @@ La corrispondenza tra @code{ROUNDMODE} e le modalit@`a di arrotondamento IEEE
 @item Arrotonda verso infinito @tab @code{roundTowardPositive} @tab @code{"U"} o @code{"u"}
 @item Arrotonda verso meno infinito @tab @code{roundTowardNegative} @tab @code{"D"} o @code{"d"}
 @item Arrotonda verso zero (troncamento) @tab @code{roundTowardZero} @tab @code{"Z"} o @code{"z"}
-@item Arrotonda al pi@`u vicino, o per eccesso @tab @code{roundTiesToAway} @tab @code{"A"} o @code{"a"}
+@item Arrotonda lontano da zero (per eccesso) @tab @tab @code{"A"} o @code{"a"}
 @end multitable
 @end float
 
 @code{ROUNDMODE} ha @code{"N"} come valore di default, ovvero si usa la
 modalit@`a di arrotondamento IEEE 754 @code{roundTiesToEven}.
 In @ref{table-gawk-rounding-modes}, il valore @code{"A"} seleziona
-@code{roundTiesToAway}.  Questo @`e applicabile solo se la versione in uso
+l'arrotondamento lontano da zero (per eccesso).
+Questo @`e applicabile solo se la versione in uso
 della libreria MPFR lo supporta; altrimenti, l'impostazione di @code{ROUNDMODE}
 ad @code{"A"} non ha alcun effetto.
 
@@ -33455,9 +33456,8 @@ intervalli, dove si adotta questa modalit@`a di arrotondamento per calcolare
 i limiti superiore e inferiore per l'intervallo di valori in uscita.
 La modalit@`a
 @code{roundTowardZero} pu@`o essere usata per convertire numeri a virgola mobile
-in numeri interi.  La modalit@`a di arrotondamento @code{roundTiesToAway}
-arrotonda il risultato al numero pi@`u vicino, e in caso di equidistanza
-arrotonda per eccesso.
+in numeri interi.  Quando si arrotonda lontano da zero (per eccesso), viene
+scelto il numero pi@`u vicino di grandezza maggiore o uguale al valore.
 
 Qualche esperto di analisi numerica dir@`a che la scelta dello stile di
 arrotondamento ha un grandissimo impatto sul risultato finale, e consiglier@`a
@@ -34524,13 +34524,19 @@ e ogni campo @`e del tipo appropriato.
 L'uso di queste macro rende pi@`u facile da seguire l'accesso ai campi di
 @code{awk_value_t}.
 
+@item enum AWK_NUMBER_TYPE @{
+@itemx @ @ @ @ AWK_NUMBER_TYPE_DOUBLE,
+@itemx @ @ @ @ AWK_NUMBER_TYPE_MPFR,
+@itemx @ @ @ @ AWK_NUMBER_TYPE_MPZ
+@itemx @};
+La lista @code{enum} @`e usata nella struttura seguente per definire
+il tipo di valore numerico con cui si ha a che fare.  Va dichiarata al
+livello pi@`u alto del file, in modo da poter essere usata sia con il
+linguaggio C++ che con il C.
+
 @item typedef struct awk_number @{
 @itemx @ @ @ @ double d;
-@itemx @ @ @ @ enum AWK_NUMBER_TYPE @{
-@itemx @ @ @ @ @ @ @ @ AWK_NUMBER_TYPE_DOUBLE,
-@itemx @ @ @ @ @ @ @ @ AWK_NUMBER_TYPE_MPFR,
-@itemx @ @ @ @ @ @ @ @ AWK_NUMBER_TYPE_MPZ
-@itemx @ @ @ @ @} type;
+@itemx @ @ @ @ enum AWK_NUMBER_TYPE type;
 @itemx @ @ @ @ void *ptr;
 @itemx @} awk_number_t;
 Questo rappresenta un valore numerico.  Internamente, @command{gawk}
@@ -34546,7 +34552,6 @@ ricevuti da @command{gawk}.  Inoltre, esaminando il membro
 da @code{ptr} sia un numero intero GMP (tipo @code{mpz_ptr}), o un numero
 MPFR a virgola mobile (tipo @code{mpfr_ptr_t}), e trasformarlo a seconda
 delle necessit@`a.
-
 
 @item typedef void *awk_scalar_t;
 La variabili scalari possono essere rappresentate da un tipo opaco.  Questi
@@ -37236,6 +37241,49 @@ compilazione, l'API rimane compatibile a livello di codice sorgente con la
 precedente versione API.  Le differenze pi@`u rilevanti sono gli ulteriori
 campi nella struttura @code{awk_ext_func_t}, e l'aggiunta del terzo argomento
 nella funzione di implementazione in linguaggio C.
+(@pxref{Funzioni di estensione}).
+
+Quella che segue @`e una lista di singole funzionalit@`a che sono
+state modificate nella versione 2 rispetto alla versione 1 dell'API:
+
+@itemize @bullet
+
+@item
+I valori numerici possono ora essere anche di tipo MPFR/MPZ
+(@pxref{Tipi di dati generali}).
+
+@item
+Ci sono nuovi tipi di stringa: @code{AWK_REGEX} e @code{AWK_STRNUM}
+(@pxref{Tipi di dati generali}).
+
+@item
+@`E disponibile la nuova macro @code{ezalloc()}
+(@pxref{Funzioni di allocazione memoria}).
+
+@item
+La struttura @code{awk_ext_func_t} @`e stata modificata.  Invece del
+parametro @code{num_expected_args}, ha ora i due parametri
+@code{max_expected} e @code{min_required}
+(@pxref{Funzioni di estensione}).
+
+@item
+In @code{get_record()}, un analizzatore di input pu@`o ora specificare
+l'ampiezza dei campi
+(@pxref{Analizzatori di input}).
+
+@item
+Le estensioni possono ora inviare messaggi di errore non fatali
+(@pxref{Stampare messaggi}).
+
+@item
+Quando di appiattisce un vettore, si pu@`o ora specificare il tipo
+dell'indice e quello dei valori
+(@pxref{Funzioni per i vettori}).
+
+@item
+C'@`e una nuova API, @code{get_file()}
+(@pxref{Ridirezione API}).
+@end itemize
 
 @node Trovare le estensioni
 @section Come @command{gawk} trova le estensioni compilate
@@ -41603,13 +41651,6 @@ il supporto MPFR non sia disponibile.
 Non attiva la traduzione automatica dei messaggi.
 Ci@`o normalmente non @`e consigliabile, ma pu@`o apportare qualche lieve
 miglioramento nei tempi di esecuzione di un programma.
-
-@cindex @option{--with-whiny-user-strftime}, opzione di configurazione
-@cindex opzione di configurazione @code{--with-whiny-user-strftime}
-@item  --with-whiny-user-strftime
-Forza l'uso della versione della funzione C @code{strftime()} inclusa nella
-distribuzione di @command{gawk}, per i sistemi in cui la funzione stessa
-non sia disponibile.
 @end table
 
 Si usi il comando @samp{./configure --help} per ottenere la lista completa
