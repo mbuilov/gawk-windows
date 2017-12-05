@@ -28,6 +28,10 @@
 #include <sys/types.h>
 #endif
 
+#ifndef _LIBC
+#define __USE_GNU	1
+#endif
+
 /* Allow the use in C++ code.  */
 #ifdef __cplusplus
 extern "C" {
