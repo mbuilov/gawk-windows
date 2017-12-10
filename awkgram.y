@@ -1717,7 +1717,7 @@ non_post_simp_exp
 		} else {
 			if (do_optimize && $2->nexti == $2->lasti
 					&& $2->nexti->opcode == Op_push_i
-					&& ($2->nexti->memory->flags & (MPFN|MPZN)) == 0
+					&& ($2->nexti->memory->flags & (MPFN|MPZN|INTLSTR)) == 0
 			) {
 				NODE *n = $2->nexti->memory;
 				if ((n->flags & STRING) != 0) {

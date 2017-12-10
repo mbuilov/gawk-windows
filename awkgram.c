@@ -3817,7 +3817,7 @@ regular_print:
 		} else {
 			if (do_optimize && (yyvsp[0])->nexti == (yyvsp[0])->lasti
 					&& (yyvsp[0])->nexti->opcode == Op_push_i
-					&& ((yyvsp[0])->nexti->memory->flags & (MPFN|MPZN)) == 0
+					&& ((yyvsp[0])->nexti->memory->flags & (MPFN|MPZN|INTLSTR)) == 0
 			) {
 				NODE *n = (yyvsp[0])->nexti->memory;
 				if ((n->flags & STRING) != 0) {
