@@ -2690,6 +2690,7 @@ of some sort from @command{awk}.
 
 @cindex @code{ARGC}/@code{ARGV} variables, portability and
 @cindex portability, @code{ARGV} variable
+@cindex dark corner, @code{ARGV} variable, value of
 Finally, the value of @code{ARGV[0]}
 (@pxref{Built-in Variables})
 varies depending upon your operating system.
@@ -2740,6 +2741,7 @@ of some sort from @command{awk}.
 
 @cindex @code{ARGC}/@code{ARGV} variables, portability and
 @cindex portability, @code{ARGV} variable
+@cindex dark corner, @code{ARGV} variable, value of
 Finally, the value of @code{ARGV[0]}
 (@pxref{Built-in Variables})
 varies depending upon your operating system.
@@ -3780,6 +3782,7 @@ awk '' datafile1 datafile2
 @end example
 
 @cindex @option{--lint} option
+@cindex dark corner, empty programs
 @noindent
 Doing so makes little sense, though; @command{awk} exits
 silently when given an empty program.
@@ -9554,6 +9557,7 @@ uses the low eight bits of the value as the character to print.
 Other @command{awk} versions generally restrict themselves to printing
 the first byte of a string or to numeric values within the range of
 a single byte (0--255).
+@value{DARKCORNER}
 @end quotation
 
 
@@ -13873,6 +13877,7 @@ $ @kbd{echo Yes | gawk '(/1/,/2/) || /Yes/'}
 @end example
 
 @cindex range patterns, line continuation and
+@cindex dark corner, range patterns, line continuation and
 As a minor point of interest, although it is poor style,
 POSIX allows you to put a newline after the comma in
 a range pattern.  @value{DARKCORNER}
@@ -43817,6 +43822,8 @@ Consistency issues:
 	The term "blank" is thus basically reserved for "blank lines" etc.
 	To make dark corners work, the @value{DARKCORNER} has to be outside
 		closing `.' of a sentence and after (pxref{...}).
+	Make sure that each @value{DARKCORNER} has an index entry, and
+		also that each `@cindex dark corner' has an @value{DARKCORNER}.
 	" " should have an @w{} around it
 	Use "non-" only with language names or acronyms, or the words bug and option and null
 	Use @command{ftp} when talking about anonymous ftp
@@ -43934,4 +43941,7 @@ But to use it you have to say
 which sorta sucks.
 
 TODO:
-Check that all dark corners are indexed properly.
+Add a section explaining recursion from ground zero. Probably
+easiest to do it with factorial as the example. Explain that
+recursion needs a stopping condition. Thanks to
+Bill Duncan <bduncan@beachnet.org> for the suggestion.
