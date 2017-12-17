@@ -27,7 +27,6 @@ BEGIN {
         outfile = ARGV[i]
         ARGV[i] = ""
     }
-
     s1 = s2 = "a"
     out = (outfile s1 s2)
 }
