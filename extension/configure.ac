@@ -36,6 +36,15 @@ export INSTALL
 
 AM_INIT_AUTOMAKE([1.15 -Wall -Werror])
 
+SKIP_MPFR=no
+AC_ARG_ENABLE([mpfr],
+	[AS_HELP_STRING([--disable-mpfr],[do not check for MPFR])],
+	if test "$enableval" = no
+	then
+		SKIP_MPFR=yes
+	fi
+)
+
 dnl checks for structure members
 AC_CHECK_MEMBERS([struct stat.st_blksize])
 
@@ -74,7 +83,10 @@ case `uname -m` in
 *'Power Macintosh'*)
 	: ;;
 *)
-	GNUPG_CHECK_MPFR
+	case $SKIP_MPFR in
+	no)	GNUPG_CHECK_MPFR
+		;;
+	esac
 	;;
 esac
 

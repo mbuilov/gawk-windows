@@ -33,7 +33,7 @@ AC_INIT([GNU Awk],[4.2.0],[bug-gawk@gnu.org],[gawk])
 # With Autoconf 2.5x, this needs to come very early on, but *after*
 # the INIT macro. Sigh.
 
-if test "x$INSTALL" = "x"
+if test "$INSTALL" = ""
 then
 	INSTALL="$srcdir/install-sh -c"
 	export INSTALL
@@ -175,7 +175,7 @@ else
 fi
 
 dnl Check cross compiling
-AM_CONDITIONAL([TEST_CROSS_COMPILE], [test "x$build_alias" != "x$host_alias"])
+AM_CONDITIONAL([TEST_CROSS_COMPILE], [test "$build_alias" != "$host_alias"])
 
 dnl checks for typedefs
 AC_TYPE_PID_T
@@ -248,7 +248,7 @@ AC_DEFUN([TYPE_SOCKLEN_T],
             done
          done
 
-         if test "x$rsync_cv_socklen_t_equiv" = x
+         if test "$rsync_cv_socklen_t_equiv" = ""
 	 then
 dnl		Some systems get this. Default to int.  -- ADR
 dnl            AC_MSG_ERROR([Cannot find a type to use in place of socklen_t])
@@ -307,7 +307,7 @@ dnl check for dynamic linking
 dnl This is known to be very primitive
 AC_ARG_ENABLE([extensions],
 	[AS_HELP_STRING([--disable-extensions], [disable dynamic extensions (default is detect)])])
-if test "x$enable_extensions" != "xno"
+if test "$enable_extensions" != "no"
 then
 	extensions_supported=no
 
@@ -328,27 +328,18 @@ then
 		then
 			extensions_supported=yes
 			AC_DEFINE([DYNAMIC], 1, [dynamic loading is possible])
-			# Add -export-dynamic for old extensions. Only works for GCC
-			if test "$GCC" = yes
-			then
-				case $host_os in
-				linux*|freebsd*)
-					LDFLAGS="$LDFLAGS -Wl,-export-dynamic"
-					;;
-				esac
-			fi
 		fi
 	])
 		;;
 	esac
 
-	if test "x$enable_extensions$extensions_supported" = "xyesno"
+	if test "$enable_extensions$extensions_supported" = "yesno"
 	then
 		AC_MSG_ERROR([extension support requested, but unavailable])
 	fi
 	enable_extensions=$extensions_supported
 fi
-AM_CONDITIONAL([ENABLE_EXTENSIONS], [test "x$enable_extensions" = "xyes"])
+AM_CONDITIONAL([ENABLE_EXTENSIONS], [test "$enable_extensions" = "yes"])
 
 dnl check for how to use getpgrp
 dnl have to hardwire it for VMS POSIX. Sigh.
@@ -447,7 +438,7 @@ AC_CONFIG_FILES(Makefile
 	extras/Makefile
 	po/Makefile.in
 	test/Makefile)
-if test "x$enable_extensions" = "xyes"
+if test "$enable_extensions" = "yes"
 then
 	AC_CONFIG_SUBDIRS(extension)
 fi

@@ -2596,7 +2596,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 # With Autoconf 2.5x, this needs to come very early on, but *after*
 # the INIT macro. Sigh.
 
-if test "x$INSTALL" = "x"
+if test "$INSTALL" = ""
 then
 	INSTALL="$srcdir/install-sh -c"
 	export INSTALL
@@ -8356,7 +8356,7 @@ done
 
 fi
 
- if test "x$build_alias" != "x$host_alias"; then
+ if test "$build_alias" != "$host_alias"; then
   TEST_CROSS_COMPILE_TRUE=
   TEST_CROSS_COMPILE_FALSE='#'
 else
@@ -8870,7 +8870,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             done
          done
 
-         if test "x$rsync_cv_socklen_t_equiv" = x
+         if test "$rsync_cv_socklen_t_equiv" = ""
 	 then
 		rsync_cv_socklen_t_equiv=int
          fi
@@ -10004,7 +10004,7 @@ if test "${enable_extensions+set}" = set; then :
   enableval=$enable_extensions;
 fi
 
-if test "x$enable_extensions" != "xno"
+if test "$enable_extensions" != "no"
 then
 	extensions_supported=no
 
@@ -10084,15 +10084,6 @@ fi
 
 $as_echo "#define DYNAMIC 1" >>confdefs.h
 
-			# Add -export-dynamic for old extensions. Only works for GCC
-			if test "$GCC" = yes
-			then
-				case $host_os in
-				linux*|freebsd*)
-					LDFLAGS="$LDFLAGS -Wl,-export-dynamic"
-					;;
-				esac
-			fi
 		fi
 
 fi
@@ -10101,13 +10092,13 @@ fi
 		;;
 	esac
 
-	if test "x$enable_extensions$extensions_supported" = "xyesno"
+	if test "$enable_extensions$extensions_supported" = "yesno"
 	then
 		as_fn_error $? "extension support requested, but unavailable" "$LINENO" 5
 	fi
 	enable_extensions=$extensions_supported
 fi
- if test "x$enable_extensions" = "xyes"; then
+ if test "$enable_extensions" = "yes"; then
   ENABLE_EXTENSIONS_TRUE=
   ENABLE_EXTENSIONS_FALSE='#'
 else
@@ -11018,7 +11009,7 @@ esac
 
 ac_config_files="$ac_config_files Makefile support/Makefile awklib/Makefile doc/Makefile extras/Makefile po/Makefile.in test/Makefile"
 
-if test "x$enable_extensions" = "xyes"
+if test "$enable_extensions" = "yes"
 then
 
 
