@@ -1,3 +1,10 @@
+2017-12-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regex.h: Restore GLIBC's use of '__' in parameter names. They
+	have to be that way since public headers can't use identifiers that
+	users might define as macros.  At least now I understand why
+	things are the way they are.
+
 2017-12-19  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Small sync with gnulib based on mails in libc-alpha@sourceware.com.
