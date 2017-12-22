@@ -1,3 +1,24 @@
+2017-12-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regex.h: Restore GLIBC's use of '__' in parameter names. They
+	have to be that way since public headers can't use identifiers that
+	users might define as macros.  At least now I understand why
+	things are the way they are.
+
+2017-12-19  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Small sync with gnulib based on mails in libc-alpha@sourceware.com.
+
+	Use re_malloc etc. consistently.
+
+	* regcomp.c (re_comp, analyze): Use re_malloc/re_free instead of
+	malloc/free.
+	* regexec.c (push_fail_stack): Use re_realloc instead of realloc.
+
+	Other changes:
+
+	* regex_internal.h: Synchronize on __libc_lock_define usage.
+
 2017-12-05         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* regex.h: Yes define __USE_GNU. Needed for non-GLIBC systems.

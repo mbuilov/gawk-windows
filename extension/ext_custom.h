@@ -6,8 +6,8 @@
  * in order to override definitions from Autoconf that are erroneous. See
  * the manual for more information.
  *
- * If you make additions to this file for your system, please send me
- * the information, to arnold@skeeve.com.
+ * If you make additions to this file for your system, please send
+ * the information to bug-gawk@gnu.org.
  */
 
 /* 

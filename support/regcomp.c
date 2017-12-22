@@ -715,7 +715,7 @@ re_comp (const char *s)
 
   if (re_comp_buf.fastmap == NULL)
     {
-      re_comp_buf.fastmap = (char *) malloc (SBC_MAX);
+      re_comp_buf.fastmap = (char *) re_malloc (SBC_MAX);
       if (re_comp_buf.fastmap == NULL)
 	return (char *) gettext (__re_error_msgid
 				 + __re_error_msgid_idx[(int) REG_ESPACE]);
@@ -1217,7 +1217,7 @@ analyze (regex_t *preg)
 	  break;
       if (i == preg->re_nsub)
 	{
-	  free (dfa->subexp_map);
+	  re_free (dfa->subexp_map);
 	  dfa->subexp_map = NULL;
 	}
     }

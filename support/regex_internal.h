@@ -47,7 +47,6 @@
 #if defined _LIBC
 # include <libc-lock.h>
 #else
-# define __libc_lock_define(CLASS,NAME)
 # define __libc_lock_init(NAME) do { } while (0)
 # define __libc_lock_lock(NAME) do { } while (0)
 # define __libc_lock_unlock(NAME) do { } while (0)
@@ -700,7 +699,7 @@ struct re_dfa_t
 #ifdef DEBUG
   char* re_str;
 #endif
-#if defined _LIBC
+#ifdef _LIBC
   __libc_lock_define (, lock)
 #endif
 };
