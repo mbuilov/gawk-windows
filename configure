@@ -660,7 +660,6 @@ MSGFMT
 GETTEXT_MACRO_VERSION
 USE_NLS
 SED
-pkgextensiondir
 acl_shlibext
 RANLIB
 LN_S
@@ -694,6 +693,7 @@ build_os
 build_vendor
 build_cpu
 build
+pkgextensiondir
 AM_BACKSLASH
 AM_DEFAULT_VERBOSITY
 AM_DEFAULT_V
@@ -768,6 +768,7 @@ enable_lint
 enable_severe_portability_problems
 enable_builtin_intdiv0
 enable_mpfr
+enable_versioned_extension_dir
 enable_dependency_tracking
 enable_largefile
 enable_nls
@@ -1417,6 +1418,8 @@ Optional Features:
   --enable-builtin-intdiv0
                           enable built-in intdiv0 function
   --disable-mpfr          do not check for MPFR
+  --enable-versioned-extension-dir
+                          use a versioned directory for extensions
   --enable-dependency-tracking
                           do not reject slow dependency extractors
   --disable-dependency-tracking
@@ -3273,6 +3276,25 @@ if test "${enable_mpfr+set}" = set; then :
 	fi
 
 fi
+
+
+EXTENSIONDIR=
+# Check whether --enable-versioned-extension-dir was given.
+if test "${enable_versioned_extension_dir+set}" = set; then :
+  enableval=$enable_versioned_extension_dir; if test "$enableval" = yes
+	then
+		MAJOR=`awk '/define gawk_api_major_version/ { print $3 }' < $srcdir/gawkapi.h`
+		MINOR=`awk '/define gawk_api_minor_version/ { print $3 }' < $srcdir/gawkapi.h`
+
+		# note leading slash on the value
+		export EXTENSIONDIR=/ext-$MAJOR.$MINOR
+	fi
+
+fi
+
+
+# set default shared library location
+pkgextensiondir='${pkglibdir}'${EXTENSIONDIR}
 
 
 # Make sure we can run config.sub.
@@ -5435,9 +5457,6 @@ fi
 
 
 # shared library suffix for dynamic loading:
-
-# default shared library location
-pkgextensiondir='${pkglibdir}'
 
 
 

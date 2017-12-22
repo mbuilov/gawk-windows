@@ -88,6 +88,22 @@ AC_ARG_ENABLE([mpfr],
 	fi
 )
 
+EXTENSIONDIR=
+AC_ARG_ENABLE([versioned-extension-dir],
+	[AS_HELP_STRING([--enable-versioned-extension-dir], [use a versioned directory for extensions])],
+	if test "$enableval" = yes
+	then
+		MAJOR=`awk '/define gawk_api_major_version/ { print $3 }' < $srcdir/gawkapi.h`
+		MINOR=`awk '/define gawk_api_minor_version/ { print $3 }' < $srcdir/gawkapi.h`
+
+		# note leading slash on the value
+		export EXTENSIONDIR=/ext-$MAJOR.$MINOR
+	fi
+)
+
+# set default shared library location
+AC_SUBST([pkgextensiondir], ['${pkglibdir}'${EXTENSIONDIR}])
+
 AC_CANONICAL_HOST
 AC_USE_SYSTEM_EXTENSIONS
 
@@ -129,8 +145,6 @@ AC_SUBST(CFLAGS)
 
 # shared library suffix for dynamic loading:
 AC_SUBST(acl_shlibext)
-# default shared library location
-AC_SUBST([pkgextensiondir], ['${pkglibdir}'])
 
 dnl checks for systems
 AC_ZOS_USS

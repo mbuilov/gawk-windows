@@ -28971,6 +28971,12 @@ command line when compiling 'gawk' from scratch, including:
      desirable, but it may bring you some slight performance
      improvement.
 
+'--enable-versioned-extension-dir'
+     Use a versioned directory for extensions.  The directory name will
+     include the major and minor API versions in it.  This makes it
+     possible to keep extensions for different API versions on the same
+     system without their conflicting with one another.
+
 '--with-whiny-user-strftime'
      Force use of the included version of the C 'strftime()' function
      for deficient systems.
@@ -32878,6 +32884,8 @@ Index
 * --dump-variables option:               Options.             (line  94)
 * --dump-variables option, using for library functions: Library Names.
                                                               (line  45)
+* --enable-versioned-extension-dir configuration option: Additional Configuration Options.
+                                                              (line  42)
 * --exec option:                         Options.             (line 139)
 * --field-separator option:              Options.             (line  21)
 * --file option:                         Options.             (line  25)
@@ -32914,7 +32922,7 @@ Index
 * --use-lc-numeric option:               Options.             (line 232)
 * --version option:                      Options.             (line 318)
 * --with-whiny-user-strftime configuration option: Additional Configuration Options.
-                                                              (line  42)
+                                                              (line  48)
 * -b option:                             Options.             (line  69)
 * -c option:                             Options.             (line  82)
 * -C option:                             Options.             (line  89)
@@ -33619,8 +33627,10 @@ Index
                                                               (line  32)
 * configuration option, --disable-nls:   Additional Configuration Options.
                                                               (line  37)
-* configuration option, --with-whiny-user-strftime: Additional Configuration Options.
+* configuration option, --enable-versioned-extension-dir: Additional Configuration Options.
                                                               (line  42)
+* configuration option, --with-whiny-user-strftime: Additional Configuration Options.
+                                                              (line  48)
 * configuration options, gawk:           Additional Configuration Options.
                                                               (line   6)
 * constant regexps:                      Regexp Usage.        (line  57)
@@ -36459,58 +36469,58 @@ Node: Unix Installation1163323
 Node: Quick Installation1164005
 Node: Shell Startup Files1166419
 Node: Additional Configuration Options1167508
-Node: Configuration Philosophy1169497
-Node: Non-Unix Installation1171866
-Node: PC Installation1172326
-Node: PC Binary Installation1173164
-Node: PC Compiling1173599
-Node: PC Using1174716
-Node: Cygwin1177761
-Node: MSYS1178531
-Node: VMS Installation1179032
-Node: VMS Compilation1179823
-Ref: VMS Compilation-Footnote-11181052
-Node: VMS Dynamic Extensions1181110
-Node: VMS Installation Details1182795
-Node: VMS Running1185048
-Node: VMS GNV1189327
-Node: VMS Old Gawk1190062
-Node: Bugs1190533
-Node: Bug address1191196
-Node: Usenet1193988
-Node: Maintainers1194765
-Node: Other Versions1196026
-Node: Installation summary1202788
-Node: Notes1203990
-Node: Compatibility Mode1204855
-Node: Additions1205637
-Node: Accessing The Source1206562
-Node: Adding Code1207999
-Node: New Ports1214218
-Node: Derived Files1218706
-Ref: Derived Files-Footnote-11224352
-Ref: Derived Files-Footnote-21224387
-Ref: Derived Files-Footnote-31224985
-Node: Future Extensions1225099
-Node: Implementation Limitations1225757
-Node: Extension Design1226940
-Node: Old Extension Problems1228094
-Ref: Old Extension Problems-Footnote-11229612
-Node: Extension New Mechanism Goals1229669
-Ref: Extension New Mechanism Goals-Footnote-11233033
-Node: Extension Other Design Decisions1233222
-Node: Extension Future Growth1235335
-Node: Old Extension Mechanism1236171
-Node: Notes summary1237934
-Node: Basic Concepts1239116
-Node: Basic High Level1239797
-Ref: figure-general-flow1240079
-Ref: figure-process-flow1240764
-Ref: Basic High Level-Footnote-11244065
-Node: Basic Data Typing1244250
-Node: Glossary1247578
-Node: Copying1279416
-Node: GNU Free Documentation License1316955
-Node: Index1342073
+Node: Configuration Philosophy1169801
+Node: Non-Unix Installation1172170
+Node: PC Installation1172630
+Node: PC Binary Installation1173468
+Node: PC Compiling1173903
+Node: PC Using1175020
+Node: Cygwin1178065
+Node: MSYS1178835
+Node: VMS Installation1179336
+Node: VMS Compilation1180127
+Ref: VMS Compilation-Footnote-11181356
+Node: VMS Dynamic Extensions1181414
+Node: VMS Installation Details1183099
+Node: VMS Running1185352
+Node: VMS GNV1189631
+Node: VMS Old Gawk1190366
+Node: Bugs1190837
+Node: Bug address1191500
+Node: Usenet1194292
+Node: Maintainers1195069
+Node: Other Versions1196330
+Node: Installation summary1203092
+Node: Notes1204294
+Node: Compatibility Mode1205159
+Node: Additions1205941
+Node: Accessing The Source1206866
+Node: Adding Code1208303
+Node: New Ports1214522
+Node: Derived Files1219010
+Ref: Derived Files-Footnote-11224656
+Ref: Derived Files-Footnote-21224691
+Ref: Derived Files-Footnote-31225289
+Node: Future Extensions1225403
+Node: Implementation Limitations1226061
+Node: Extension Design1227244
+Node: Old Extension Problems1228398
+Ref: Old Extension Problems-Footnote-11229916
+Node: Extension New Mechanism Goals1229973
+Ref: Extension New Mechanism Goals-Footnote-11233337
+Node: Extension Other Design Decisions1233526
+Node: Extension Future Growth1235639
+Node: Old Extension Mechanism1236475
+Node: Notes summary1238238
+Node: Basic Concepts1239420
+Node: Basic High Level1240101
+Ref: figure-general-flow1240383
+Ref: figure-process-flow1241068
+Ref: Basic High Level-Footnote-11244369
+Node: Basic Data Typing1244554
+Node: Glossary1247882
+Node: Copying1279720
+Node: GNU Free Documentation License1317259
+Node: Index1342377
 
 End Tag Table

@@ -54,7 +54,9 @@ AC_DISABLE_STATIC
 LT_INIT
 dnl AC_PROG_INSTALL
 
-AC_SUBST([pkgextensiondir], ['${libdir}/gawk'])
+dnl use the same definition as the main configure script.
+dnl EXTENSIONDIR is exported if it was set there.
+AC_SUBST([pkgextensiondir], ['${pkglibdir}'${EXTENSIONDIR}])
 
 if test "$GCC" = yes
 then
