@@ -755,6 +755,7 @@ ac_user_opts='
 enable_option_checking
 enable_dependency_tracking
 enable_silent_rules
+enable_mpfr
 enable_largefile
 enable_static
 enable_shared
@@ -1400,6 +1401,7 @@ Optional Features:
                           speeds up one-time build
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
+  --disable-mpfr          do not check for MPFR
   --disable-largefile     omit support for large files
   --enable-static[=PKGS]  build static libraries [default=no]
   --enable-shared[=PKGS]  build shared libraries [default=yes]
@@ -4524,6 +4526,17 @@ to "yes", and re-run configure.
 END
     as_fn_error $? "Your 'rm' program is bad, sorry." "$LINENO" 5
   fi
+fi
+
+
+SKIP_MPFR=no
+# Check whether --enable-mpfr was given.
+if test "${enable_mpfr+set}" = set; then :
+  enableval=$enable_mpfr; if test "$enableval" = no
+	then
+		SKIP_MPFR=yes
+	fi
+
 fi
 
 
@@ -12582,7 +12595,7 @@ CC=$lt_save_CC
 
 
 
-pkgextensiondir='${libdir}/gawk'
+pkgextensiondir='${pkglibdir}'${EXTENSIONDIR}
 
 
 if test "$GCC" = yes
@@ -12866,7 +12879,8 @@ case `uname -m` in
 *'Power Macintosh'*)
 	: ;;
 *)
-
+	case $SKIP_MPFR in
+	no)
 
 # Check whether --with-mpfr was given.
 if test "${with_mpfr+set}" = set; then :
@@ -12940,6 +12954,8 @@ $as_echo "#define HAVE_MPFR 1" >>confdefs.h
      unset _found_mpfr
   fi
 
+		;;
+	esac
 	;;
 esac
 

@@ -36,6 +36,15 @@ export INSTALL
 
 AM_INIT_AUTOMAKE([1.15 -Wall -Werror])
 
+SKIP_MPFR=no
+AC_ARG_ENABLE([mpfr],
+	[AS_HELP_STRING([--disable-mpfr],[do not check for MPFR])],
+	if test "$enableval" = no
+	then
+		SKIP_MPFR=yes
+	fi
+)
+
 dnl checks for structure members
 AC_CHECK_MEMBERS([struct stat.st_blksize])
 
@@ -45,7 +54,9 @@ AC_DISABLE_STATIC
 LT_INIT
 dnl AC_PROG_INSTALL
 
-AC_SUBST([pkgextensiondir], ['${libdir}/gawk'])
+dnl use the same definition as the main configure script.
+dnl EXTENSIONDIR is exported if it was set there.
+AC_SUBST([pkgextensiondir], ['${pkglibdir}'${EXTENSIONDIR}])
 
 if test "$GCC" = yes
 then
@@ -74,7 +85,10 @@ case `uname -m` in
 *'Power Macintosh'*)
 	: ;;
 *)
-	GNUPG_CHECK_MPFR
+	case $SKIP_MPFR in
+	no)	GNUPG_CHECK_MPFR
+		;;
+	esac
 	;;
 esac
 

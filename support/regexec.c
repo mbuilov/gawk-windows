@@ -1327,8 +1327,8 @@ push_fail_stack (struct re_fail_stack_t *fs, int str_idx, int dest_node,
   if (fs->num == fs->alloc)
     {
       struct re_fail_stack_ent_t *new_array;
-      new_array = realloc (fs->stack, (sizeof (struct re_fail_stack_ent_t)
-				       * fs->alloc * 2));
+      new_array = re_realloc (fs->stack, struct re_fail_stack_ent_t,
+                              fs->alloc * 2);
       if (new_array == NULL)
 	return REG_ESPACE;
       fs->alloc *= 2;
