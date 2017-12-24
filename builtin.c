@@ -1914,7 +1914,7 @@ do_strftime(int nargs)
 	bool do_gmt;
 	NODE *val = NULL;
 	NODE *sub = NULL;
-	char save;
+	char save = '\0';	// initialize to avoid compiler warnings
 	static const time_t time_t_min = TYPE_MINIMUM(time_t);
 	static const time_t time_t_max = TYPE_MAXIMUM(time_t);
 
@@ -3790,7 +3790,7 @@ do_dcgettext(int nargs)
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	int lc_cat;
 	char *domain;
-	char save1, save2;
+	char save1 = '\0', save2 = '\0';
 
 	if (nargs == 3) {	/* third argument */
 		tmp = POP_STRING();
@@ -3850,7 +3850,7 @@ do_dcngettext(int nargs)
 #if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	int lc_cat;
 	char *domain;
-	char save, save1, save2;
+	char save = '\0', save1 = '\0', save2 = '\0';
 	bool saved_end = false;
 
 	if (nargs == 5) {	/* fifth argument */
@@ -3906,8 +3906,7 @@ do_dcngettext(int nargs)
 	if (number == 1) {
 		the_result = string1;
 		reslen = t1->stlen;
-	}
-	else {
+	} else {
 		the_result = string2;
 		reslen = t2->stlen;
 	}
@@ -3939,7 +3938,7 @@ do_bindtextdomain(int nargs)
 	/* set defaults */
 	directory = NULL;
 	domain = TEXTDOMAIN;
-	char save, save1;
+	char save = '\0', save1 = '\0';
 
 	if (nargs == 2) {	/* second argument */
 		t2 = POP_STRING();
