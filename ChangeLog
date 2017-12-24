@@ -1,3 +1,19 @@
+2017-12-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Avoid some compiler warnings. Thanks to Michal Jaegermann
+	<michal.jnn@gmail.com> for the report.
+
+	* builtin.c (do_strftime): Initialize save.
+	(do_dcgetttext): Initialize save and save2.
+	(do_dcngettext): Ditto.
+	(do_bindtextdomain): Initialize save and save1.
+
+	Unrelated:
+
+	* main.c (optlist): Make 'L' option's argument optional, to
+	match --lint. Thanks to Manuel Collado <mcollado2011@gmail.com>
+	for the report.
+
 2017-12-22         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* config.guess, config.sub, depcomp, install-sh: Updated

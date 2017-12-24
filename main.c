@@ -1443,7 +1443,7 @@ parse_args(int argc, char **argv)
 	/*
 	 * The + on the front tells GNU getopt not to rearrange argv.
 	 */
-	const char *optlist = "+F:f:v:W;bcCd::D::e:E:ghi:l:L:nNo::Op::MPrSstVYZ:";
+	const char *optlist = "+F:f:v:W;bcCd::D::e:E:ghi:l:L::nNo::Op::MPrSstVYZ:";
 	int old_optind;
 	int c;
 	char *scan;

@@ -15,7 +15,12 @@
 #include "gawkapi.h"
 
 #ifdef HAVE_MPFR
+#include <gmp.h>
 #include <mpfr.h>
+#ifndef MPFR_RNDZ
+/* for compatibility with MPFR 2.X */
+#define MPFR_RNDZ GMP_RNDZ
+#endif
 #endif
 
 #include "gettext.h"
