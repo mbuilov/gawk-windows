@@ -1239,7 +1239,7 @@ fts_safe_changedir(const FTS *sp, const FTSENT *p, int fd, const char *path)
 	if (ISSET(FTS_NOCHDIR))
 		return 0;
 
-	if (oldfd < 0 && (fd = open(path, O_RDONLY)) == -1)
+	if (oldfd < 0 && (path == NULL || (fd = open(path, O_RDONLY)) == -1))
 		return -1;
 
 	if (fstat(fd, &sb) == -1)
