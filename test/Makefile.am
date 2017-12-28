@@ -749,6 +749,8 @@ EXTRA_DIST = \
 	numindex.awk \
 	numindex.in \
 	numindex.ok \
+	numstr1.awk \
+	numstr1.ok \
 	numsubstr.awk \
 	numsubstr.in \
 	numsubstr.ok \
@@ -1228,7 +1230,7 @@ BASIC_TESTS = \
 	manglprm math membug1 memleak messages minusstr mmap8k mtchi18n \
 	nasty nasty2 negexp negrange nested nfldstr nfloop nfneg nfset nlfldsep \
 	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl noparms \
-	nors nulinsrc nulrsend numindex numsubstr \
+	nors nulinsrc nulrsend numindex numstr1 numsubstr \
 	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofmtstrnum ofs1 onlynl \
 	opasnidx opasnslf \
 	paramasfunc1 paramasfunc2 paramdup paramres paramtyp paramuninitglobal \
