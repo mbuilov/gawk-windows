@@ -36,14 +36,15 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <sys/types.h>
 #include <sys/stat.h>
 
-#ifdef MAJOR_IN_MKDEV
-#include <sys/mkdev.h>
-#elif defined(MAJOR_IN_SYSMACROS)
+#if HAVE_SYS_SYSMACROS_H
 #include <sys/sysmacros.h>
-#endif
+#elif HAVE_SYS_MKDEV_H
+#include <sys/mkdev.h>
+#endif /* HAVE_SYS_MKDEV_H */
+
+#include <sys/types.h>
 
 #include "gawkapi.h"
 
