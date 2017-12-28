@@ -75,9 +75,13 @@ else
 	AC_MSG_RESULT([no])
 fi
 
-AC_CHECK_HEADERS(fnmatch.h limits.h sys/time.h sys/select.h sys/param.h sys/statvfs.h)
+AC_CHECK_HEADERS(fnmatch.h limits.h sys/mkdev.h sys/param.h sys/select.h \
+		sys/statvfs.h sys/sysmacros.h sys/time.h)
+
 AC_HEADER_DIRENT
-AC_HEADER_MAJOR
+dnl 12/2017: AC_HEADER_MAJOR no longer works on recent Fedora / GLIBC.
+dnl Instead we just check for the headers in the call above.
+dnl AC_HEADER_MAJOR
 AC_HEADER_TIME
 
 dnl check for mpfr support
@@ -92,8 +96,10 @@ case `uname -m` in
 	;;
 esac
 
-AC_CHECK_FUNCS(fdopendir fmod fnmatch getdtablesize \
-		gettimeofday nanosleep select statvfs GetSystemTimeAsFileTime)
+AC_CHECK_FUNCS(fdopendir fnmatch getdtablesize \
+		gettimeofday nanosleep select statvfs \
+		GetSystemTimeAsFileTime)
+AC_SEARCH_LIBS(fmod, m)
 
 GAWK_FUNC_DIRFD
 GAWK_PREREQ_DIRFD
