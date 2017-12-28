@@ -1,3 +1,22 @@
+2017-12-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	More configuration fixes, mainly for Fedora. Thanks to
+	Michal Jaegermann <michal.jnn@gmail.com> for the reports
+	and for validating.
+
+	* configure.ac (AC_HEADER_MAJOR): Comment out, no longer works.
+	(sys/sysmacros.h, sys/mkdev.h): Check for header existence.
+	(fmod): Check with AC_SEARCH_LIB instead of AC_CHECK_FUNCS.
+	* filefuncs.c: Rework header inclusion checks and order so
+	that we get the `major' macro without warnings on Fedora.
+	* fnmatch.c: Ditto.
+
+2017-12-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkfts.c (fts_safe_changedir): Add check for path not null
+	before trying to open it. Thanks to Michal Jaegermann
+	<michal.jnn@gmail.com> for the report.
+
 2017-12-24          Michal Jaegermann    <michal.jnn@gmail.com>
 
 	* intdiv.c: Fix compilation for MPFR 2.4.1.
