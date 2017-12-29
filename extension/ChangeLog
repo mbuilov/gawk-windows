@@ -1,3 +1,10 @@
+2017-12-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac (fmod): Put AC_SEARCH_LIBS before the call
+	to AC_CHECK_FUNCS and put fmod back into that list. Finally
+	causes config.h to have the correct check for HAVE_FMOD.
+	Thanks again to Michal Jaegermann <michal.jnn@gmail.com>.
+
 2017-12-28         Arnold D. Robbins     <arnold@skeeve.com>
 
 	More configuration fixes, mainly for Fedora. Thanks to
@@ -6,7 +13,7 @@
 
 	* configure.ac (AC_HEADER_MAJOR): Comment out, no longer works.
 	(sys/sysmacros.h, sys/mkdev.h): Check for header existence.
-	(fmod): Check with AC_SEARCH_LIB instead of AC_CHECK_FUNCS.
+	(fmod): Check with AC_SEARCH_LIBs instead of AC_CHECK_FUNCS.
 	* filefuncs.c: Rework header inclusion checks and order so
 	that we get the `major' macro without warnings on Fedora.
 	* fnmatch.c: Ditto.
