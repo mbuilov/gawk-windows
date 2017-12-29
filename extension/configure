@@ -12911,20 +12911,6 @@ $as_echo "#define HAVE_MPFR 1" >>confdefs.h
 	;;
 esac
 
-for ac_func in fdopendir fnmatch getdtablesize \
-		gettimeofday nanosleep select statvfs \
-		GetSystemTimeAsFileTime
-do :
-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-done
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing fmod" >&5
 $as_echo_n "checking for library containing fmod... " >&6; }
 if ${ac_cv_search_fmod+:} false; then :
@@ -12980,6 +12966,20 @@ if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 fi
+
+for ac_func in fdopendir fmod fnmatch getdtablesize \
+		gettimeofday nanosleep select statvfs \
+		GetSystemTimeAsFileTime
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
 
 
 

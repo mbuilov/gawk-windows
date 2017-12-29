@@ -96,10 +96,10 @@ case `uname -m` in
 	;;
 esac
 
-AC_CHECK_FUNCS(fdopendir fnmatch getdtablesize \
+AC_SEARCH_LIBS(fmod, m)
+AC_CHECK_FUNCS(fdopendir fmod fnmatch getdtablesize \
 		gettimeofday nanosleep select statvfs \
 		GetSystemTimeAsFileTime)
-AC_SEARCH_LIBS(fmod, m)
 
 GAWK_FUNC_DIRFD
 GAWK_PREREQ_DIRFD
