@@ -59,9 +59,9 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH October, 2017
+@set UPDATE-MONTH January, 2018
 @set VERSION 4.2
-@set PATCHLEVEL 0
+@set PATCHLEVEL 1
 
 @set GAWKINETTITLE TCP/IP Internetworking with @command{gawk}
 @ifset FOR_PRINT
@@ -279,13 +279,13 @@ Fax: +1-617-542-2652
 Email: <email>gnu@@gnu.org</email>
 URL: <ulink url="https://www.gnu.org">https://www.gnu.org/</ulink></literallayout>
 
-<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2017
+<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2018
 Free Software Foundation, Inc.
 All Rights Reserved.</literallayout>
 @end docbook
 
 @ifnotdocbook
-Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2017 @*
+Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2018 @*
 Free Software Foundation, Inc.
 @end ifnotdocbook
 @sp 2
@@ -31139,6 +31139,7 @@ $ @kbd{gawk -M -f roundmode.awk}
 @print{} 4
 @end example
 @end sidebar
+
 The other rounding modes are rarely used.  Rounding toward positive infinity
 (@code{roundTowardPositive}) and toward negative infinity
 (@code{roundTowardNegative}) are often used to implement interval
@@ -39379,13 +39380,6 @@ The people maintaining the various @command{gawk} ports are:
 
 If your bug is also reproducible under Unix, send a copy of your
 report to the @EMAIL{bug-gawk@@gnu.org,bug-gawk at gnu dot org} email list as well.
-
-@c 7/2017, Juan Guerrero has taken over the DJGPP port.
-@ignore
-The DJGPP port is no longer supported; it will remain in the code base
-for a while in case a volunteer wishes to take it over. If this does
-not happen, then eventually code for this port will be removed.
-@end ignore
 
 @node Other Versions
 @appendixsec Other Freely Available @command{awk} Implementations
