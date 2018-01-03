@@ -1,3 +1,31 @@
+2018-01-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	If ROUNDMODE changes, cause cached string conversions
+	to become invalid. Thanks to Nethox <nethox@gmail.com>
+	for the report. Day 1 bug from 4.1.0 release.
+
+	In all the below files, bump copyright year, too.
+
+	* array.c (value_info): Include strndmode in the output.
+	* awk.h (NODE): New member, strndmode.
+	(MPFR_round_mode): Add extern declaration.
+	(force_string_fmt): Check s->strnmode against MPFR_round_mode.
+	* awkgram.y (set_profile_text): Set n->strndmode to MPFR_round_mode.
+	* builtin.c (do_print): Remove tests and just call force_string_fmt.
+	* field.c (set_record): Set n->strndmode to MPFR_round_mode.
+	* gawk_api.c (api_sym_update_scalar): Set r->strndmode to
+	MPFR_round_mode.
+	* interpret.h (r_interpret): For Op_assign_concat, set t1->strndmode
+	to MPFR_round_mode.
+	* mpfr.c (MPFR_round_mode): Define and initialize.
+	(mpfr_format_val): Set s->strndmode to MPFR_round_mode.
+	(set_ROUNDMODE): Update MPFR_round_mode when ROUNDMODE changes
+	successfully.
+	* node.c (r_format_val): Set s->strndmode to MPFR_round_mode.
+	(make_str_node): Set r->strndmode to MPFR_round_mode.
+	* str_array.c (str_kilobytes): Update a comment.
+	* symbol.c (check_param_names): Set n.strndmode to MPFR_round_mode.
+
 2017-12-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Avoid some compiler warnings. Thanks to Michal Jaegermann

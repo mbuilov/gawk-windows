@@ -32028,6 +32028,7 @@ $ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", 1/10) @}'}
 @node Setting the rounding mode
 @subsection Setting the Rounding Mode
 
+@cindex @code{ROUNDMODE} variable
 The @code{ROUNDMODE} variable provides
 program-level control over the rounding mode.
 The correspondence between @code{ROUNDMODE} and the IEEE
@@ -32100,6 +32101,70 @@ distributes upward and downward rounds of exact halves, which might
 cause any accumulating round-off error to cancel itself out. This is the
 default rounding mode for IEEE 754 computing functions and operators.
 
+@c January 2018. Thanks to nethox@gmail.com for the example.
+@cindex sidebar, Rounding Modes and Conversion
+@ifdocbook
+@docbook
+<sidebar><title>Rounding Modes and Conversion</title>
+@end docbook
+
+It's important to understand that, along with @code{CONVFMT} and
+@code{OFMT}, the rounding mode affects how numbers are converted to strings.
+For example, consider the following program:
+
+@example
+BEGIN @{
+    pi = 3.1416
+    OFMT = "%.f"        # Print value as integer
+    print pi            # ROUNDMODE = "N" by default.
+    ROUNDMODE = "U"     # Now change ROUNDMODE
+    print pi
+@}
+@end example
+
+@noindent
+Running this program produces this output:
+
+@example
+$ @kbd{gawk -M -f roundmode.awk}
+@print{} 3
+@print{} 4
+@end example
+
+@docbook
+</sidebar>
+@end docbook
+@end ifdocbook
+
+@ifnotdocbook
+@cartouche
+@center @b{Rounding Modes and Conversion}
+
+
+It's important to understand that, along with @code{CONVFMT} and
+@code{OFMT}, the rounding mode affects how numbers are converted to strings.
+For example, consider the following program:
+
+@example
+BEGIN @{
+    pi = 3.1416
+    OFMT = "%.f"        # Print value as integer
+    print pi            # ROUNDMODE = "N" by default.
+    ROUNDMODE = "U"     # Now change ROUNDMODE
+    print pi
+@}
+@end example
+
+@noindent
+Running this program produces this output:
+
+@example
+$ @kbd{gawk -M -f roundmode.awk}
+@print{} 3
+@print{} 4
+@end example
+@end cartouche
+@end ifnotdocbook
 The other rounding modes are rarely used.  Rounding toward positive infinity
 (@code{roundTowardPositive}) and toward negative infinity
 (@code{roundTowardNegative}) are often used to implement interval

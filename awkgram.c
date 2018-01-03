@@ -8771,6 +8771,9 @@ set_profile_text(NODE *n, const char *str, size_t len)
 		// Thanks and a tip of the hatlo to valgrind.
 		n->flags |= (NUMCONSTSTR|STRCUR);
 		n->stfmt = STFMT_UNUSED;
+#ifdef HAVE_MPFR
+		n->strndmode = MPFR_round_mode;
+#endif
 	}
 
 	return n;

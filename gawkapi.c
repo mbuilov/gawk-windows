@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 2012-2017 the Free Software Foundation, Inc.
+ * Copyright (C) 2012-2018 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -925,6 +925,9 @@ api_sym_update_scalar(awk_ext_id_t id,
 			r->stfmt = STFMT_UNUSED;
 			r->stptr = value->str_value.str;
 			r->stlen = value->str_value.len;
+#ifdef HAVE_MPFR
+			r->strndmode = MPFR_round_mode;
+#endif
 			return awk_true;
 		}
 		break;

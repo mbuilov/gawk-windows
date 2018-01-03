@@ -924,6 +924,8 @@ EXTRA_DIST = \
 	mpfrrem.ok \
 	mpfrrnd.awk \
 	mpfrrnd.ok \
+	mpfrrndeval.awk \
+	mpfrrndeval.ok \
 	mpfrsort.awk \
 	mpfrsort.ok \
 	mpfrsqrt.awk \
@@ -1538,7 +1540,7 @@ ARRAYDEBUG_TESTS = arrdbg
 EXTRA_TESTS = inftest regtest ignrcas3 
 INET_TESTS = inetdayu inetdayt inetechu inetecht
 MACHINE_TESTS = double1 double2 fmtspcl intformat
-MPFR_TESTS = mpfrnr mpfrnegzero mpfrmemok1 mpfrrem mpfrrnd mpfrieee
+MPFR_TESTS = mpfrnr mpfrnegzero mpfrmemok1 mpfrrem mpfrrnd mpfrrndeval mpfrieee
 LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
 	fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
@@ -2510,6 +2512,11 @@ mpfrexprange:
 mpfrrnd:
 	@echo $@
 	@$(AWK) -M -vPREC=53 -f "$(srcdir)"/$@.awk > _$@ 2>&1
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfrrndeval:
+	@echo $@
+	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mpfrnegzero:
