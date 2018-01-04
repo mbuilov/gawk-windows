@@ -1,3 +1,18 @@
+2018-01-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Refactor handling of slave pty. On AIX and HP-UX open
+	slave in the child. Otherwise open slave in the parent
+	before forking (restoring code mostly from 4.1.3). Thanks
+	to Andrew Schorr for the bug report.
+
+	* io.c (fork_and_open_slave_pty): New routine. Two versions.
+	(set_slave_pty_attributes): New routine. Common code used by
+	both versions of fork_and_open_slave_pty.
+	(push_pty_line_disciplines): New routine. Common code used by
+	both versions of fork_and_open_slave_pty.
+	(two_way_open): Call fork_and_open_slave_pty instead of
+	doing it inline.
+
 2018-01-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* main.c (UPDATE_YEAR): Move to 2018. Revise copyright year.
