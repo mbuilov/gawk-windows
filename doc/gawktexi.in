@@ -31438,10 +31438,13 @@ BEGIN @{
     if (! adequate_math_precision(fpbits)) @{
         print("Error: insufficient computation precision available.\n" \
               "Try again with the -M argument?") > "/dev/stderr"
+        # Note: you may need to set a flag here to bail out of END rules
         exit 1
     @}
 @}
 @end example
+
+Please be aware that @code{exit} will jump to the @code{END} rules, if present (@pxref{Exit Statement}).
 
 @node POSIX Floating Point Problems
 @section Standards Versus Existing Practice
