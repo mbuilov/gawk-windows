@@ -1923,6 +1923,7 @@ push_pty_line_disciplines(int slave)
 static void
 set_slave_pty_attributes(int slave)
 {
+#ifdef HAVE_TERMIOS_H
 	struct termios st;
 
 	tcgetattr(slave, & st);
@@ -1951,6 +1952,7 @@ set_slave_pty_attributes(int slave)
 	st.c_cc[VEOF] = '\004'; /* ^d */
 #endif
 	tcsetattr(slave, TCSANOW, & st);
+#endif /* HAVE_TERMIOS_H */
 }
 
 
@@ -2026,6 +2028,7 @@ fork_and_open_slave_pty(const char *slavenam, int master, const char *command, p
 	}
 }
 #else
+#ifndef VMS
 static bool
 fork_and_open_slave_pty(const char *slavenam, int master, const char *command, pid_t *pid)
 {
@@ -2090,6 +2093,7 @@ fork_and_open_slave_pty(const char *slavenam, int master, const char *command, p
 
 	return true;
 }
+#endif
 #endif
 
 /* two_way_open --- open a two way communications channel */
