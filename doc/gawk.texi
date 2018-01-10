@@ -64,9 +64,9 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH October, 2017
+@set UPDATE-MONTH January, 2018
 @set VERSION 4.2
-@set PATCHLEVEL 0
+@set PATCHLEVEL 1
 
 @set GAWKINETTITLE TCP/IP Internetworking with @command{gawk}
 @ifset FOR_PRINT
@@ -284,13 +284,13 @@ Fax: +1-617-542-2652
 Email: <email>gnu@@gnu.org</email>
 URL: <ulink url="https://www.gnu.org">https://www.gnu.org/</ulink></literallayout>
 
-<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2017
+<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2018
 Free Software Foundation, Inc.
 All Rights Reserved.</literallayout>
 @end docbook
 
 @ifnotdocbook
-Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2017 @*
+Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2018 @*
 Free Software Foundation, Inc.
 @end ifnotdocbook
 @sp 2
@@ -32028,6 +32028,7 @@ $ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", 1/10) @}'}
 @node Setting the rounding mode
 @subsection Setting the Rounding Mode
 
+@cindex @code{ROUNDMODE} variable
 The @code{ROUNDMODE} variable provides
 program-level control over the rounding mode.
 The correspondence between @code{ROUNDMODE} and the IEEE
@@ -32099,6 +32100,71 @@ The theory behind @code{roundTiesToEven} is that it more or less evenly
 distributes upward and downward rounds of exact halves, which might
 cause any accumulating round-off error to cancel itself out. This is the
 default rounding mode for IEEE 754 computing functions and operators.
+
+@c January 2018. Thanks to nethox@gmail.com for the example.
+@cindex sidebar, Rounding Modes and Conversion
+@ifdocbook
+@docbook
+<sidebar><title>Rounding Modes and Conversion</title>
+@end docbook
+
+It's important to understand that, along with @code{CONVFMT} and
+@code{OFMT}, the rounding mode affects how numbers are converted to strings.
+For example, consider the following program:
+
+@example
+BEGIN @{
+    pi = 3.1416
+    OFMT = "%.f"        # Print value as integer
+    print pi            # ROUNDMODE = "N" by default.
+    ROUNDMODE = "U"     # Now change ROUNDMODE
+    print pi
+@}
+@end example
+
+@noindent
+Running this program produces this output:
+
+@example
+$ @kbd{gawk -M -f roundmode.awk}
+@print{} 3
+@print{} 4
+@end example
+
+@docbook
+</sidebar>
+@end docbook
+@end ifdocbook
+
+@ifnotdocbook
+@cartouche
+@center @b{Rounding Modes and Conversion}
+
+
+It's important to understand that, along with @code{CONVFMT} and
+@code{OFMT}, the rounding mode affects how numbers are converted to strings.
+For example, consider the following program:
+
+@example
+BEGIN @{
+    pi = 3.1416
+    OFMT = "%.f"        # Print value as integer
+    print pi            # ROUNDMODE = "N" by default.
+    ROUNDMODE = "U"     # Now change ROUNDMODE
+    print pi
+@}
+@end example
+
+@noindent
+Running this program produces this output:
+
+@example
+$ @kbd{gawk -M -f roundmode.awk}
+@print{} 3
+@print{} 4
+@end example
+@end cartouche
+@end ifnotdocbook
 
 The other rounding modes are rarely used.  Rounding toward positive infinity
 (@code{roundTowardPositive}) and toward negative infinity
@@ -32398,10 +32464,13 @@ BEGIN @{
     if (! adequate_math_precision(fpbits)) @{
         print("Error: insufficient computation precision available.\n" \
               "Try again with the -M argument?") > "/dev/stderr"
+        # Note: you may need to set a flag here to bail out of END rules
         exit 1
     @}
 @}
 @end example
+
+Please be aware that @code{exit} will jump to the @code{END} rules, if present (@pxref{Exit Statement}).
 
 @node POSIX Floating Point Problems
 @section Standards Versus Existing Practice
@@ -40335,13 +40404,6 @@ The people maintaining the various @command{gawk} ports are:
 
 If your bug is also reproducible under Unix, send a copy of your
 report to the @EMAIL{bug-gawk@@gnu.org,bug-gawk at gnu dot org} email list as well.
-
-@c 7/2017, Juan Guerrero has taken over the DJGPP port.
-@ignore
-The DJGPP port is no longer supported; it will remain in the code base
-for a while in case a volunteer wishes to take it over. If this does
-not happen, then eventually code for this port will be removed.
-@end ignore
 
 @node Other Versions
 @appendixsec Other Freely Available @command{awk} Implementations

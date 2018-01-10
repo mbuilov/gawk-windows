@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003-2015, 2017,
+ * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003-2015, 2017, 2018,
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -252,6 +252,9 @@ r_format_val(const char *format, int index, NODE *s)
 		if ((s->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR))
 			efree(s->stptr);
 		s->stptr = r->stptr;
+#ifdef HAVE_MPFR
+		s->strndmode = MPFR_round_mode;
+#endif
 		freenode(r);	/* Do not unref(r)! We want to keep s->stptr == r->stpr.  */
 
 		goto no_malloc;
@@ -273,6 +276,9 @@ r_format_val(const char *format, int index, NODE *s)
 			s->flags &= ~(INTIND|NUMBER);
 			s->flags |= STRING;
 		}
+#ifdef HAVE_MPFR
+		s->strndmode = MPFR_round_mode;
+#endif
 	}
 	if ((s->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR))
 		efree(s->stptr);
@@ -377,6 +383,9 @@ make_str_node(const char *s, size_t len, int flags)
 	r->flags = (MALLOC|STRING|STRCUR);
 	r->valref = 1;
 	r->stfmt = STFMT_UNUSED;
+#ifdef HAVE_MPFR
+	r->strndmode = MPFR_round_mode;
+#endif
 	r->wstptr = NULL;
 	r->wstlen = 0;
 

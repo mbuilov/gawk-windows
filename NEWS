@@ -1,4 +1,4 @@
-   Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017
+   Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018
    Free Software Foundation, Inc.
    
    Copying and distribution of this file, with or without modification,
@@ -21,6 +21,17 @@ Changes from 4.2.0 to 4.2.1
 1. Support for OS/2 has been brought up to date.  This support was
    accidentally omitted from the initial 4.2 release, for which
    we apologize.
+
+2. The manual received a number of updates to make it format better
+   for PDF.
+
+3. A configure new option, --enable-versioned-dir, causes the directory
+   holding extensions to include the API version in its name.
+
+4. extension/configure.ac has been improved considerably.
+
+5. A number of bugs, some of them quite significant, have been fixed.
+   See the ChangeLog for details.
 
 Changes from 4.1.4 to 4.2.0
 ---------------------------
@@ -106,7 +117,7 @@ Changes from 4.1.4 to 4.2.0
     disable optimizations so that the output program is the same as the
     original input program.
 
-18. Gawk now uses fwrite_unlocked if it's available. The yields a 7% - 18%
+18. Gawk now uses fwrite_unlocked if it's available. This yields a 7% - 18%
     improvement in raw output speed (gawk '{ print }' on a large file).
 
 19. Passing negative operands to any of the bitwise functions now
