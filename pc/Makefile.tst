@@ -175,7 +175,8 @@ BASIC_TESTS = \
 	regexpbrack regexpbrack2 regexprange regrange reindops reparse resplit \
 	rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 rstest3 \
 	rstest4 rstest5 rswhite \
-	scalar sclforin sclifin sigpipe1 sortempty sortglos splitargv splitarr \
+	scalar sclforin sclifin setrec0 setrec1 \
+	sigpipe1 sortempty sortglos splitargv splitarr \
 	splitdef splitvar splitwht status-close strcat1 strnum1 strnum2 strtod \
 	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 \
 	tradanch tweakfld \
@@ -207,7 +208,7 @@ GAWK_EXT_TESTS = \
 	nastyparm negtime next nondec nondec2 nonfatal1 nonfatal2 nonfatal3 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge \
 	procinfs profile0 profile1 profile2 profile3 profile4 profile5 profile6 \
-	profile7 profile8 profile9 profile10 pty1 \
+	profile7 profile8 profile9 profile10 pty1 pty2 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin \
 	rsstart1 rsstart2 rsstart3 rstest6 \
 	shadow shadowbuiltin sortfor sortfor2 sortu sourcesplit split_after_fpat \
@@ -221,7 +222,7 @@ ARRAYDEBUG_TESTS = arrdbg
 EXTRA_TESTS = inftest regtest ignrcas3 
 INET_TESTS = inetdayu inetdayt inetechu inetecht
 MACHINE_TESTS = double1 double2 fmtspcl intformat
-MPFR_TESTS = mpfrnr mpfrnegzero mpfrmemok1 mpfrrem mpfrrnd mpfrieee
+MPFR_TESTS = mpfrnr mpfrnegzero mpfrmemok1 mpfrrem mpfrrnd mpfrrndeval mpfrieee
 LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
 	fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
@@ -1021,6 +1022,10 @@ mpfrrnd:
 	@$(AWK) -M -vPREC=53 -f "$(srcdir)"/$@.awk > _$@ 2>&1
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+mpfrrndeval:
+	@echo $@
+	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 mpfrnegzero:
 	@echo $@
 	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
@@ -1353,13 +1358,21 @@ watchpoint1:
 
 pty1:
 	@echo $@
-	@echo Expect pty1 to fail with DJGPP and MinGW.
+	@echo Expect $@ to fail with DJGPP and MinGW.
 	@-case `uname` in \
 	*[Oo][Ss]/390*) : ;; \
 	*) AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
 	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ;; \
 	esac
 
+pty2:
+	@echo $@
+	@echo Expect $@ to fail with DJGPP and MinGW.
+	@-case `uname` in \
+	*[Oo][Ss]/390*) : ;; \
+	*) AWKPATH="$(srcdir)" $(AWK) -f $@.awk | od -c  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
+	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ;; \
+	esac
 rscompat:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) --traditional -f $@.awk "$(srcdir)/$@.in" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -2293,6 +2306,16 @@ sclifin:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+setrec0:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+setrec1:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 sigpipe1:
 	@case `uname` in \
 	*MS-DOS*) echo This test fails on DJGPP --- skipping $@ ;; \
@@ -3160,17 +3183,7 @@ diffout:
 # convenient way to scan valgrind results for errors
 valgrind-scan:
 	@echo "Scanning valgrind log files for problems:"
-	@$(AWK) '\
-	function show() {if (cmd) {printf "%s: %s\n",FILENAME,cmd; cmd = ""}; \
-	  printf "\t%s\n",$$0}; \
-	{$$1 = ""}; \
-	$$2 == "Command:" {incmd = 1; $$2 = ""; cmd = $$0; next}; \
-	incmd {if (/Parent PID:/) incmd = 0; else {cmd = (cmd $$0); next}}; \
-	/ERROR SUMMARY:/ && !/: 0 errors from 0 contexts/ {show()}; \
-	/definitely lost:/ && !/: 0 bytes in 0 blocks/ {show()}; \
-	/possibly lost:/ && !/: 0 bytes in 0 blocks/ {show()}; \
-	/ suppressed:/ && !/: 0 bytes in 0 blocks/ {show()}; \
-	' log.[0-9]*
+	@$(AWK) -f "$(srcdir)"/valgrind.awk log.[0-9]*
 
 # This target is for testing with electric fence.
 efence:
