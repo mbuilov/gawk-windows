@@ -66,11 +66,14 @@ $! 4.1.3.i: New tests
 $!	basic:  ofmtstrnum
 $!	extra:  ignrcas3
 $!
-$! 4.1.3+: New tests
+$! 4.2.0: New tests
 $!      basic:   aryunasgn, concat5, memleak
 $!      ext:     fpat5, fpat6, fwtest5, fwtest6, fwtest7, fwtest8,
 $!               sourcesplit
 $!      charset: mbprintf5
+$!
+$! 4.2+: New tests
+$!      basic:   numstr1, setrec0, setrec1
 $!
 $	echo	= "write sys$output"
 $	cmp	= "diff/Output=_NL:/Maximum=1"
@@ -217,7 +220,8 @@ $		gosub list_of_tests
 $		list = "nasty nasty2 negexp negrange nested nfldstr" -
 		  + " nfloop nfneg nfset nlfldsep nlinstr nlstrina" -
 		  + " noeffect nofile nofmtch noloop1 noloop2 nonl" -
-		  + " noparms nors nulinsrc nulrsend numindex numsubstr" -
+		  + " noparms nors nulinsrc nulrsend numindex numstr1" -
+		  + " numsubstr" -
 		  + " octsub ofmt ofmtbig ofmtfidl" -
 		  + " ofmta ofmts ofs1 onlynl opasnidx opasnslf
 $		gosub list_of_tests
@@ -232,7 +236,8 @@ $		list = "rand range1 rebrackloc rebt8b1 redfilnm regeq" -
 		  + " resplit rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2" -
 		  + " rstest1 rstest2 rstest3 rstest4 rstest5 rswhite"
 $		gosub list_of_tests
-$		list = "scalar sclforin sclifin sigpipe1 sortempty sortglos" -
+$		list = "scalar sclforin sclifin setrec0 setrec1 sigpipe1" -
+		  + " sortempty sortglos" -
 		  + " splitargv splitarr splitdef splitvar splitwht" -
 		  + " strcat1 strtod strnum1 subamp subback subi18n subsepnm" -
 		  + " subslash substr swaplns synerr1 synerr2"
@@ -420,6 +425,7 @@ $reindops:
 $reparse:
 $rsnul1nl:
 $rswhite:
+$setrec0:
 $sortglos:
 $splitargv:
 $splitvar:
@@ -660,6 +666,7 @@ $memleak:
 $minusstr:
 $negrange:
 $nulinsrc:
+$numstr1:
 $nlstrina:
 $octsub:
 $ofmtstrnum:
@@ -671,6 +678,7 @@ $prt1eval:
 $rebt8b1:
 $regexprange:
 $regrange:
+$setrec1:
 $splitdef:
 $splitwht:
 $strnum1:

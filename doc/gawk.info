@@ -1,11 +1,11 @@
 This is gawk.info, produced by makeinfo version 6.1 from gawk.texi.
 
-Copyright (C) 1989, 1991, 1992, 1993, 1996-2005, 2007, 2009-2017
+Copyright (C) 1989, 1991, 1992, 1993, 1996-2005, 2007, 2009-2018
 Free Software Foundation, Inc.
 
 
    This is Edition 4.2 of 'GAWK: Effective AWK Programming: A User's
-Guide for GNU Awk', for the 4.2.0 (or later) version of the GNU
+Guide for GNU Awk', for the 4.2.1 (or later) version of the GNU
 implementation of AWK.
 
    Permission is granted to copy, distribute and/or modify this document
@@ -37,12 +37,12 @@ General Introduction
 This file documents 'awk', a program that you can use to select
 particular records in a file and perform operations upon them.
 
-   Copyright (C) 1989, 1991, 1992, 1993, 1996-2005, 2007, 2009-2017
+   Copyright (C) 1989, 1991, 1992, 1993, 1996-2005, 2007, 2009-2018
 Free Software Foundation, Inc.
 
 
    This is Edition 4.2 of 'GAWK: Effective AWK Programming: A User's
-Guide for GNU Awk', for the 4.2.0 (or later) version of the GNU
+Guide for GNU Awk', for the 4.2.1 (or later) version of the GNU
 implementation of AWK.
 
    Permission is granted to copy, distribute and/or modify this document
@@ -23137,6 +23137,26 @@ cause any accumulating round-off error to cancel itself out.  This is
 the default rounding mode for IEEE 754 computing functions and
 operators.
 
+                     Rounding Modes and Conversion
+
+   It's important to understand that, along with 'CONVFMT' and 'OFMT',
+the rounding mode affects how numbers are converted to strings.  For
+example, consider the following program:
+
+     BEGIN {
+         pi = 3.1416
+         OFMT = "%.f"        # Print value as integer
+         print pi            # ROUNDMODE = "N" by default.
+         ROUNDMODE = "U"     # Now change ROUNDMODE
+         print pi
+     }
+
+Running this program produces this output:
+
+     $ gawk -M -f roundmode.awk
+     -| 3
+     -| 4
+
    The other rounding modes are rarely used.  Rounding toward positive
 infinity ('roundTowardPositive') and toward negative infinity
 ('roundTowardNegative') are often used to implement interval arithmetic,
@@ -23273,9 +23293,13 @@ arbitrary-precision arithmetic is available:
          if (! adequate_math_precision(fpbits)) {
              print("Error: insufficient computation precision available.\n" \
                    "Try again with the -M argument?") > "/dev/stderr"
+             # Note: you may need to set a flag here to bail out of END rules
              exit 1
          }
      }
+
+   Please be aware that 'exit' will jump to the 'END' rules, if present
+(*note Exit Statement::).
 
 
 File: gawk.info,  Node: POSIX Floating Point Problems,  Next: Floating point summary,  Prev: Checking for MPFR,  Up: Arbitrary Precision Arithmetic
@@ -28593,7 +28617,7 @@ There are two ways to get GNU software:
      supported.  If you have the 'wget' program, you can use a command
      like the following:
 
-          wget https://ftp.gnu.org/gnu/gawk/gawk-4.2.0.tar.gz
+          wget https://ftp.gnu.org/gnu/gawk/gawk-4.2.1.tar.gz
 
    The GNU software archive is mirrored around the world.  The
 up-to-date list of mirror sites is available from the main FSF website
@@ -28615,25 +28639,25 @@ compression programs: 'gzip', 'bzip2', and 'xz'.  For simplicity, the
 rest of these instructions assume you are using the one compressed with
 the GNU Gzip program ('gzip').
 
-   Once you have the distribution (e.g., 'gawk-4.2.0.tar.gz'), use
+   Once you have the distribution (e.g., 'gawk-4.2.1.tar.gz'), use
 'gzip' to expand the file and then use 'tar' to extract it.  You can use
 the following pipeline to produce the 'gawk' distribution:
 
-     gzip -d -c gawk-4.2.0.tar.gz | tar -xvpf -
+     gzip -d -c gawk-4.2.1.tar.gz | tar -xvpf -
 
    On a system with GNU 'tar', you can let 'tar' do the decompression
 for you:
 
-     tar -xvpzf gawk-4.2.0.tar.gz
+     tar -xvpzf gawk-4.2.1.tar.gz
 
-Extracting the archive creates a directory named 'gawk-4.2.0' in the
+Extracting the archive creates a directory named 'gawk-4.2.1' in the
 current directory.
 
    The distribution file name is of the form 'gawk-V.R.P.tar.gz'.  The V
 represents the major version of 'gawk', the R represents the current
 release of version V, and the P represents a "patch level", meaning that
 minor bugs have been fixed in the release.  The current patch level is
-0, but when retrieving distributions, you should get the version with
+1, but when retrieving distributions, you should get the version with
 the highest version, release, and patch level.  (Note, however, that
 patch levels greater than or equal to 70 denote "beta" or nonproduction
 software; you might not want to retrieve such a version unless you don't
@@ -28860,7 +28884,7 @@ Unix-derived systems, GNU/Linux, BSD-based systems, and the Cygwin
 environment for MS-Windows.
 
    After you have extracted the 'gawk' distribution, 'cd' to
-'gawk-4.2.0'.  As with most GNU software, you configure 'gawk' for your
+'gawk-4.2.1'.  As with most GNU software, you configure 'gawk' for your
 system by running the 'configure' program.  This program is a Bourne
 shell script that is generated automatically using GNU Autoconf.  (The
 Autoconf software is described fully starting with *note (Autoconf,
@@ -29192,8 +29216,8 @@ environment provides an excellent simulation of GNU/Linux, using Bash,
 GCC, GNU Make, and other GNU programs.  Compilation and installation for
 Cygwin is the same as for a Unix system:
 
-     tar -xvpzf gawk-4.2.0.tar.gz
-     cd gawk-4.2.0
+     tar -xvpzf gawk-4.2.1.tar.gz
+     cd gawk-4.2.1
      ./configure
      make && make check
 
@@ -29817,9 +29841,9 @@ B.6 Summary
    * The 'gawk' distribution is available from the GNU Project's main
      distribution site, 'ftp.gnu.org'.  The canonical build recipe is:
 
-          wget https://ftp.gnu.org/gnu/gawk/gawk-4.2.0.tar.gz
-          tar -xvpzf gawk-4.2.0.tar.gz
-          cd gawk-4.2.0
+          wget https://ftp.gnu.org/gnu/gawk/gawk-4.2.1.tar.gz
+          tar -xvpzf gawk-4.2.1.tar.gz
+          cd gawk-4.2.1
           ./configure && make && make check
 
           NOTE: Because of the 'https://' URL, you may have to supply
@@ -35415,6 +35439,8 @@ Index
 * round() user-defined function:         Round Function.      (line  16)
 * rounding numbers:                      Round Function.      (line   6)
 * ROUNDMODE variable:                    User-modified.       (line 131)
+* ROUNDMODE variable <1>:                Setting the rounding mode.
+                                                              (line   6)
 * RS variable:                           awk split records.   (line  12)
 * RS variable <1>:                       User-modified.       (line 136)
 * RS variable, multiline records and:    Multiple Line.       (line  17)
@@ -35542,6 +35568,8 @@ Index
 * sidebar, Pre-POSIX awk Used OFMT for String Conversion: Strings And Numbers.
                                                               (line  54)
 * sidebar, Recipe for a Programming Language: History.        (line   6)
+* sidebar, Rounding Modes and Conversion: Setting the rounding mode.
+                                                              (line  65)
 * sidebar, RS = "\0" Is Not Portable:    gawk split records.  (line  63)
 * sidebar, So Why Does gawk Have BEGINFILE and ENDFILE?: Filetrans Function.
                                                               (line  83)
@@ -36367,160 +36395,160 @@ Node: Setting precision933040
 Ref: table-predefined-precision-strings933737
 Node: Setting the rounding mode935567
 Ref: table-gawk-rounding-modes935941
-Ref: Setting the rounding mode-Footnote-1939316
-Node: Arbitrary Precision Integers939495
-Ref: Arbitrary Precision Integers-Footnote-1942670
-Node: Checking for MPFR942819
-Node: POSIX Floating Point Problems944116
-Ref: POSIX Floating Point Problems-Footnote-1947987
-Node: Floating point summary948025
-Node: Dynamic Extensions950215
-Node: Extension Intro951768
-Node: Plugin License953034
-Node: Extension Mechanism Outline953831
-Ref: figure-load-extension954270
-Ref: figure-register-new-function955835
-Ref: figure-call-new-function956927
-Node: Extension API Description958989
-Node: Extension API Functions Introduction960631
-Node: General Data Types966171
-Ref: General Data Types-Footnote-1974532
-Node: Memory Allocation Functions974831
-Ref: Memory Allocation Functions-Footnote-1979041
-Node: Constructor Functions979140
-Node: Registration Functions982726
-Node: Extension Functions983411
-Node: Exit Callback Functions988626
-Node: Extension Version String989876
-Node: Input Parsers990539
-Node: Output Wrappers1003260
-Node: Two-way processors1007772
-Node: Printing Messages1010037
-Ref: Printing Messages-Footnote-11011208
-Node: Updating ERRNO1011361
-Node: Requesting Values1012100
-Ref: table-value-types-returned1012837
-Node: Accessing Parameters1013773
-Node: Symbol Table Access1015008
-Node: Symbol table by name1015520
-Node: Symbol table by cookie1017309
-Ref: Symbol table by cookie-Footnote-11021494
-Node: Cached values1021558
-Ref: Cached values-Footnote-11025094
-Node: Array Manipulation1025247
-Ref: Array Manipulation-Footnote-11026338
-Node: Array Data Types1026375
-Ref: Array Data Types-Footnote-11029033
-Node: Array Functions1029125
-Node: Flattening Arrays1033623
-Node: Creating Arrays1040599
-Node: Redirection API1045366
-Node: Extension API Variables1048199
-Node: Extension Versioning1048910
-Ref: gawk-api-version1049339
-Node: Extension GMP/MPFR Versioning1051070
-Node: Extension API Informational Variables1052698
-Node: Extension API Boilerplate1053771
-Node: Changes from API V11057745
-Node: Finding Extensions1059317
-Node: Extension Example1059876
-Node: Internal File Description1060674
-Node: Internal File Ops1064754
-Ref: Internal File Ops-Footnote-11076105
-Node: Using Internal File Ops1076245
-Ref: Using Internal File Ops-Footnote-11078628
-Node: Extension Samples1078902
-Node: Extension Sample File Functions1080431
-Node: Extension Sample Fnmatch1088080
-Node: Extension Sample Fork1089567
-Node: Extension Sample Inplace1090785
-Node: Extension Sample Ord1094002
-Node: Extension Sample Readdir1094838
-Ref: table-readdir-file-types1095727
-Node: Extension Sample Revout1096532
-Node: Extension Sample Rev2way1097121
-Node: Extension Sample Read write array1097861
-Node: Extension Sample Readfile1099803
-Node: Extension Sample Time1100898
-Node: Extension Sample API Tests1102246
-Node: gawkextlib1102738
-Node: Extension summary1105194
-Node: Extension Exercises1108896
-Node: Language History1110394
-Node: V7/SVR3.11112050
-Node: SVR41114202
-Node: POSIX1115636
-Node: BTL1117016
-Node: POSIX/GNU1117745
-Node: Feature History1123523
-Node: Common Extensions1139382
-Node: Ranges and Locales1140665
-Ref: Ranges and Locales-Footnote-11145281
-Ref: Ranges and Locales-Footnote-21145308
-Ref: Ranges and Locales-Footnote-31145543
-Node: Contributors1145764
-Node: History summary1151709
-Node: Installation1153089
-Node: Gawk Distribution1154033
-Node: Getting1154517
-Node: Extracting1155480
-Node: Distribution contents1157118
-Node: Unix Installation1163598
-Node: Quick Installation1164280
-Node: Shell Startup Files1166694
-Node: Additional Configuration Options1167783
-Node: Configuration Philosophy1169948
-Node: Non-Unix Installation1172317
-Node: PC Installation1172777
-Node: PC Binary Installation1173615
-Node: PC Compiling1174050
-Node: PC Using1175167
-Node: Cygwin1178212
-Node: MSYS1178982
-Node: VMS Installation1179483
-Node: VMS Compilation1180274
-Ref: VMS Compilation-Footnote-11181503
-Node: VMS Dynamic Extensions1181561
-Node: VMS Installation Details1183246
-Node: VMS Running1185499
-Node: VMS GNV1189778
-Node: VMS Old Gawk1190513
-Node: Bugs1190984
-Node: Bug address1191647
-Node: Usenet1194439
-Node: Maintainers1195216
-Node: Other Versions1196477
-Node: Installation summary1203239
-Node: Notes1204441
-Node: Compatibility Mode1205306
-Node: Additions1206088
-Node: Accessing The Source1207013
-Node: Adding Code1208450
-Node: New Ports1214669
-Node: Derived Files1219157
-Ref: Derived Files-Footnote-11224803
-Ref: Derived Files-Footnote-21224838
-Ref: Derived Files-Footnote-31225436
-Node: Future Extensions1225550
-Node: Implementation Limitations1226208
-Node: Extension Design1227391
-Node: Old Extension Problems1228545
-Ref: Old Extension Problems-Footnote-11230063
-Node: Extension New Mechanism Goals1230120
-Ref: Extension New Mechanism Goals-Footnote-11233484
-Node: Extension Other Design Decisions1233673
-Node: Extension Future Growth1235786
-Node: Old Extension Mechanism1236622
-Node: Notes summary1238385
-Node: Basic Concepts1239567
-Node: Basic High Level1240248
-Ref: figure-general-flow1240530
-Ref: figure-process-flow1241215
-Ref: Basic High Level-Footnote-11244516
-Node: Basic Data Typing1244701
-Node: Glossary1248029
-Node: Copying1279867
-Node: GNU Free Documentation License1317406
-Node: Index1342524
+Ref: Setting the rounding mode-Footnote-1939872
+Node: Arbitrary Precision Integers940051
+Ref: Arbitrary Precision Integers-Footnote-1943226
+Node: Checking for MPFR943375
+Node: POSIX Floating Point Problems944849
+Ref: POSIX Floating Point Problems-Footnote-1948720
+Node: Floating point summary948758
+Node: Dynamic Extensions950948
+Node: Extension Intro952501
+Node: Plugin License953767
+Node: Extension Mechanism Outline954564
+Ref: figure-load-extension955003
+Ref: figure-register-new-function956568
+Ref: figure-call-new-function957660
+Node: Extension API Description959722
+Node: Extension API Functions Introduction961364
+Node: General Data Types966904
+Ref: General Data Types-Footnote-1975265
+Node: Memory Allocation Functions975564
+Ref: Memory Allocation Functions-Footnote-1979774
+Node: Constructor Functions979873
+Node: Registration Functions983459
+Node: Extension Functions984144
+Node: Exit Callback Functions989359
+Node: Extension Version String990609
+Node: Input Parsers991272
+Node: Output Wrappers1003993
+Node: Two-way processors1008505
+Node: Printing Messages1010770
+Ref: Printing Messages-Footnote-11011941
+Node: Updating ERRNO1012094
+Node: Requesting Values1012833
+Ref: table-value-types-returned1013570
+Node: Accessing Parameters1014506
+Node: Symbol Table Access1015741
+Node: Symbol table by name1016253
+Node: Symbol table by cookie1018042
+Ref: Symbol table by cookie-Footnote-11022227
+Node: Cached values1022291
+Ref: Cached values-Footnote-11025827
+Node: Array Manipulation1025980
+Ref: Array Manipulation-Footnote-11027071
+Node: Array Data Types1027108
+Ref: Array Data Types-Footnote-11029766
+Node: Array Functions1029858
+Node: Flattening Arrays1034356
+Node: Creating Arrays1041332
+Node: Redirection API1046099
+Node: Extension API Variables1048932
+Node: Extension Versioning1049643
+Ref: gawk-api-version1050072
+Node: Extension GMP/MPFR Versioning1051803
+Node: Extension API Informational Variables1053431
+Node: Extension API Boilerplate1054504
+Node: Changes from API V11058478
+Node: Finding Extensions1060050
+Node: Extension Example1060609
+Node: Internal File Description1061407
+Node: Internal File Ops1065487
+Ref: Internal File Ops-Footnote-11076838
+Node: Using Internal File Ops1076978
+Ref: Using Internal File Ops-Footnote-11079361
+Node: Extension Samples1079635
+Node: Extension Sample File Functions1081164
+Node: Extension Sample Fnmatch1088813
+Node: Extension Sample Fork1090300
+Node: Extension Sample Inplace1091518
+Node: Extension Sample Ord1094735
+Node: Extension Sample Readdir1095571
+Ref: table-readdir-file-types1096460
+Node: Extension Sample Revout1097265
+Node: Extension Sample Rev2way1097854
+Node: Extension Sample Read write array1098594
+Node: Extension Sample Readfile1100536
+Node: Extension Sample Time1101631
+Node: Extension Sample API Tests1102979
+Node: gawkextlib1103471
+Node: Extension summary1105927
+Node: Extension Exercises1109629
+Node: Language History1111127
+Node: V7/SVR3.11112783
+Node: SVR41114935
+Node: POSIX1116369
+Node: BTL1117749
+Node: POSIX/GNU1118478
+Node: Feature History1124256
+Node: Common Extensions1140115
+Node: Ranges and Locales1141398
+Ref: Ranges and Locales-Footnote-11146014
+Ref: Ranges and Locales-Footnote-21146041
+Ref: Ranges and Locales-Footnote-31146276
+Node: Contributors1146497
+Node: History summary1152442
+Node: Installation1153822
+Node: Gawk Distribution1154766
+Node: Getting1155250
+Node: Extracting1156213
+Node: Distribution contents1157851
+Node: Unix Installation1164331
+Node: Quick Installation1165013
+Node: Shell Startup Files1167427
+Node: Additional Configuration Options1168516
+Node: Configuration Philosophy1170681
+Node: Non-Unix Installation1173050
+Node: PC Installation1173510
+Node: PC Binary Installation1174348
+Node: PC Compiling1174783
+Node: PC Using1175900
+Node: Cygwin1178945
+Node: MSYS1179715
+Node: VMS Installation1180216
+Node: VMS Compilation1181007
+Ref: VMS Compilation-Footnote-11182236
+Node: VMS Dynamic Extensions1182294
+Node: VMS Installation Details1183979
+Node: VMS Running1186232
+Node: VMS GNV1190511
+Node: VMS Old Gawk1191246
+Node: Bugs1191717
+Node: Bug address1192380
+Node: Usenet1195172
+Node: Maintainers1195949
+Node: Other Versions1197210
+Node: Installation summary1203972
+Node: Notes1205174
+Node: Compatibility Mode1206039
+Node: Additions1206821
+Node: Accessing The Source1207746
+Node: Adding Code1209183
+Node: New Ports1215402
+Node: Derived Files1219890
+Ref: Derived Files-Footnote-11225536
+Ref: Derived Files-Footnote-21225571
+Ref: Derived Files-Footnote-31226169
+Node: Future Extensions1226283
+Node: Implementation Limitations1226941
+Node: Extension Design1228124
+Node: Old Extension Problems1229278
+Ref: Old Extension Problems-Footnote-11230796
+Node: Extension New Mechanism Goals1230853
+Ref: Extension New Mechanism Goals-Footnote-11234217
+Node: Extension Other Design Decisions1234406
+Node: Extension Future Growth1236519
+Node: Old Extension Mechanism1237355
+Node: Notes summary1239118
+Node: Basic Concepts1240300
+Node: Basic High Level1240981
+Ref: figure-general-flow1241263
+Ref: figure-process-flow1241948
+Ref: Basic High Level-Footnote-11245249
+Node: Basic Data Typing1245434
+Node: Glossary1248762
+Node: Copying1280600
+Node: GNU Free Documentation License1318139
+Node: Index1343257
 
 End Tag Table

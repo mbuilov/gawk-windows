@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2017 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2018 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -359,6 +359,7 @@ typedef struct exp_node {
 				mpfr_t mpnum;
 				mpz_t mpi;
 			} nm;
+			int rndmode;
 #else
 			AWKNUM fltnum;
 #endif
@@ -483,6 +484,7 @@ typedef struct exp_node {
 #define stlen	sub.val.slen
 #define valref	sub.val.sref
 #define stfmt	sub.val.idx
+#define strndmode sub.val.rndmode
 #define wstptr	sub.val.wsp
 #define wstlen	sub.val.wslen
 #ifdef HAVE_MPFR
@@ -1091,6 +1093,9 @@ extern char *OFMT;
 extern char *CONVFMT;
 extern int CONVFMTidx;
 extern int OFMTidx;
+#ifdef HAVE_MPFR
+extern int MPFR_round_mode;
+#endif
 extern char *TEXTDOMAIN;
 extern NODE *BINMODE_node, *CONVFMT_node, *FIELDWIDTHS_node, *FILENAME_node;
 extern NODE *FNR_node, *FS_node, *IGNORECASE_node, *NF_node;
@@ -1846,14 +1851,20 @@ dupnode(NODE *n)
  * and OFMT values. But if the value entered gawk as a string or strnum, then
  * stfmt should be set to STFMT_UNUSED, and the string representation should
  * not change.
+ *
+ * Additional twist: If ROUNDMODE changed at some point we have to
+ * recompute also.
  */
 
 static inline NODE *
 force_string_fmt(NODE *s, const char *fmtstr, int fmtidx)
 {
 	if ((s->flags & STRCUR) != 0
-		    && (s->stfmt == STFMT_UNUSED || s->stfmt == fmtidx)
-	)
+		&& (s->stfmt == STFMT_UNUSED || (s->stfmt == fmtidx
+#ifdef HAVE_MPFR
+						&& s->strndmode == MPFR_round_mode
+#endif
+				)))
 		return s;
 	return format_val(fmtstr, fmtidx, s);
 }

@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2017 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2018 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -6361,6 +6361,9 @@ set_profile_text(NODE *n, const char *str, size_t len)
 		// Thanks and a tip of the hatlo to valgrind.
 		n->flags |= (NUMCONSTSTR|STRCUR);
 		n->stfmt = STFMT_UNUSED;
+#ifdef HAVE_MPFR
+		n->strndmode = MPFR_round_mode;
+#endif
 	}
 
 	return n;

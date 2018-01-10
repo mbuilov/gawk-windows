@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2014, 2016, 2017,
+ * Copyright (C) 1986, 1988, 1989, 1991-2014, 2016, 2018,
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -716,6 +716,9 @@ value_info(NODE *n)
 		fprintf(output_fp, "FMT=\"%s\"",
 					n->stfmt == STFMT_UNUSED ? "<unused>"
 					: fmt_list[n->stfmt]->stptr);
+#ifdef HAVE_MPFR
+		fprintf(output_fp, ", RNDMODE=\"%c\"", n->strndmode);
+#endif
 	}
 
 #undef PREC_NUM

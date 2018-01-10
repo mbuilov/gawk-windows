@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2013, 2016, 2017,
+ * Copyright (C) 1986, 1988, 1989, 1991-2013, 2016, 2017, 2018,
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -444,7 +444,7 @@ str_kilobytes(NODE *symbol)
 
 	bucket_cnt = symbol->table_size;
 
-	/* This does not include extra memory for indices with stfmt != -1 */
+	/* This does not include extra memory for indices with stfmt != STFMT_UNUSED */
 	kb = (((AWKNUM) bucket_cnt) * sizeof (BUCKET) +
 		((AWKNUM) symbol->array_size) * sizeof (BUCKET *)) / 1024.0;
 	return kb;

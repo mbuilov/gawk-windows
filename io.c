@@ -1892,6 +1892,210 @@ strictopen:
 	return openfd;
 }
 
+/* push_pty_line_disciplines --- push line disciplines if we work that way */
+
+// Factors out common code for the two versions of fork_and_open_slave_pty().
+
+static void
+push_pty_line_disciplines(int slave)
+{
+#ifdef I_PUSH
+	/*
+	 * Push the necessary modules onto the slave to
+	 * get terminal semantics.  Check that they aren't
+	 * already there to avoid hangs on said "limited" systems.
+	 */
+#ifdef I_FIND
+	if (ioctl(slave, I_FIND, "ptem") == 0)
+#endif
+		ioctl(slave, I_PUSH, "ptem");
+#ifdef I_FIND
+	if (ioctl(slave, I_FIND, "ldterm") == 0)
+#endif
+		ioctl(slave, I_PUSH, "ldterm");
+#endif
+}
+
+/* set_slave_pty_attributes --- set terminal attributes for slave pty */
+
+// Factors out common code for the two versions of fork_and_open_slave_pty().
+
+static void
+set_slave_pty_attributes(int slave)
+{
+#ifdef HAVE_TERMIOS_H
+	struct termios st;
+
+	tcgetattr(slave, & st);
+	st.c_iflag &= ~(ISTRIP | IGNCR | INLCR | IXOFF);
+	st.c_iflag |= (ICRNL | IGNPAR | BRKINT | IXON);
+	st.c_oflag &= ~OPOST;
+	st.c_cflag &= ~CSIZE;
+	st.c_cflag |= CREAD | CS8 | CLOCAL;
+	st.c_lflag &= ~(ECHO | ECHOE | ECHOK | NOFLSH | TOSTOP);
+	st.c_lflag |= ISIG;
+
+	/* Set some control codes to default values */
+#ifdef VINTR
+	st.c_cc[VINTR] = '\003';        /* ^c */
+#endif
+#ifdef VQUIT
+	st.c_cc[VQUIT] = '\034';        /* ^| */
+#endif
+#ifdef VERASE
+	st.c_cc[VERASE] = '\177';       /* ^? */
+#endif
+#ifdef VKILL
+	st.c_cc[VKILL] = '\025';        /* ^u */
+#endif
+#ifdef VEOF
+	st.c_cc[VEOF] = '\004'; /* ^d */
+#endif
+	tcsetattr(slave, TCSANOW, & st);
+#endif /* HAVE_TERMIOS_H */
+}
+
+
+/* fork_and_open_slave_pty --- handle forking the child and slave pty setup */
+
+/*
+ * January, 2018:
+ * This is messy. AIX and HP-UX require that the slave pty be opened and
+ * set up in the child.  Everything else wants it to be done in the parent,
+ * before the fork.  Thus we have two different versions of the routine that
+ * do the same thing, but in different orders.  This is not pretty, but it
+ * seems to be the simplest thing to do.
+ */
+
+#if defined _AIX || defined __hpux
+static bool
+fork_and_open_slave_pty(const char *slavenam, int master, const char *command, pid_t *pid)
+{
+	int slave;
+	int save_errno;
+
+	/*
+	 * We specifically open the slave only in the child. This allows
+	 * certain, er, "limited" systems to work.  The open is specifically
+	 * without O_NOCTTY in order to make the slave become the controlling
+	 * terminal.
+	 */
+
+	switch (*pid = fork()) {
+	case 0:
+		/* Child process */
+		setsid();
+
+		if ((slave = open(slavenam, O_RDWR)) < 0) {
+			close(master);
+			fatal(_("could not open `%s', mode `%s'"),
+				slavenam, "r+");
+		}
+
+		push_pty_line_disciplines(slave);
+		set_slave_pty_attributes(slave);
+
+		if (close(master) == -1)
+			fatal(_("close of master pty failed (%s)"), strerror(errno));
+		if (close(1) == -1)
+			fatal(_("close of stdout in child failed (%s)"),
+				strerror(errno));
+		if (dup(slave) != 1)
+			fatal(_("moving slave pty to stdout in child failed (dup: %s)"), strerror(errno));
+		if (close(0) == -1)
+			fatal(_("close of stdin in child failed (%s)"),
+				strerror(errno));
+		if (dup(slave) != 0)
+			fatal(_("moving slave pty to stdin in child failed (dup: %s)"), strerror(errno));
+		if (close(slave))
+			fatal(_("close of slave pty failed (%s)"), strerror(errno));
+
+		/* stderr does NOT get dup'ed onto child's stdout */
+
+		set_sigpipe_to_default();
+
+		execl("/bin/sh", "sh", "-c", command, NULL);
+		_exit(errno == ENOENT ? 127 : 126);
+
+	case -1:
+		save_errno = errno;
+		close(master);
+		errno = save_errno;
+		return false;
+
+	default:
+		return true;
+	}
+}
+#else
+#ifndef VMS
+static bool
+fork_and_open_slave_pty(const char *slavenam, int master, const char *command, pid_t *pid)
+{
+	int slave;
+	int save_errno;
+
+	if ((slave = open(slavenam, O_RDWR)) < 0) {
+		close(master);
+		fatal(_("could not open `%s', mode `%s'"),
+			slavenam, "r+");
+	}
+
+	push_pty_line_disciplines(slave);
+	set_slave_pty_attributes(slave);
+
+	switch (*pid = fork()) {
+	case 0:
+		/* Child process */
+		setsid();
+
+#ifdef TIOCSCTTY
+		ioctl(slave, TIOCSCTTY, 0);
+#endif
+
+		if (close(master) == -1)
+			fatal(_("close of master pty failed (%s)"), strerror(errno));
+		if (close(1) == -1)
+			fatal(_("close of stdout in child failed (%s)"),
+				strerror(errno));
+		if (dup(slave) != 1)
+			fatal(_("moving slave pty to stdout in child failed (dup: %s)"), strerror(errno));
+		if (close(0) == -1)
+			fatal(_("close of stdin in child failed (%s)"),
+				strerror(errno));
+		if (dup(slave) != 0)
+			fatal(_("moving slave pty to stdin in child failed (dup: %s)"), strerror(errno));
+		if (close(slave))
+			fatal(_("close of slave pty failed (%s)"), strerror(errno));
+
+		/* stderr does NOT get dup'ed onto child's stdout */
+
+		signal(SIGPIPE, SIG_DFL);
+
+		execl("/bin/sh", "sh", "-c", command, NULL);
+		_exit(errno == ENOENT ? 127 : 126);
+
+	case -1:
+		save_errno = errno;
+		close(master);
+		close(slave);
+		errno = save_errno;
+		return false;
+
+	}
+
+	/* parent */
+	if (close(slave) != 0) {
+		close(master);
+		(void) kill(*pid, SIGKILL);
+		fatal(_("close of slave pty failed (%s)"), strerror(errno));
+	}
+
+	return true;
+}
+#endif
+#endif
+
 /* two_way_open --- open a two way communications channel */
 
 static int
@@ -1955,11 +2159,8 @@ two_way_open(const char *str, struct redirect *rp, int extfd)
 		char slavenam[32];
 		char c;
 		int master, dup_master;
-		int slave;
-		int save_errno;
 		pid_t pid;
 		struct stat statb;
-		struct termios st;
 		/* Use array of chars to avoid ASCII / EBCDIC issues */
 		static char pty_chars[] = "pqrstuvwxyzabcdefghijklmno";
 		int i;
@@ -2046,104 +2247,9 @@ two_way_open(const char *str, struct redirect *rp, int extfd)
 
 	got_the_pty:
 
-		/*
-		 * We specifically open the slave only in the child. This allows
-		 * certain, er, "limited" systems to work.  The open is specifically
-		 * without O_NOCTTY in order to make the slave become the controlling
-		 * terminal.
-		 */
-
-		switch (pid = fork()) {
-		case 0:
-			/* Child process */
-			setsid();
-
-			if ((slave = open(slavenam, O_RDWR)) < 0) {
-				close(master);
-				fatal(_("could not open `%s', mode `%s'"),
-					slavenam, "r+");
-			}
-
-#ifdef I_PUSH
-			/*
-			 * Push the necessary modules onto the slave to
-			 * get terminal semantics.  Check that they aren't
-			 * already there to avoid hangs on said "limited" systems.
-			 */
-#ifdef I_FIND
-			if (ioctl(slave, I_FIND, "ptem") == 0)
-#endif
-				ioctl(slave, I_PUSH, "ptem");
-#ifdef I_FIND
-			if (ioctl(slave, I_FIND, "ldterm") == 0)
-#endif
-				ioctl(slave, I_PUSH, "ldterm");
-#endif
-			tcgetattr(slave, & st);
-
-			st.c_iflag &= ~(ISTRIP | IGNCR | INLCR | IXOFF);
-			st.c_iflag |= (ICRNL | IGNPAR | BRKINT | IXON);
-			st.c_oflag &= ~OPOST;
-			st.c_cflag &= ~CSIZE;
-			st.c_cflag |= CREAD | CS8 | CLOCAL;
-			st.c_lflag &= ~(ECHO | ECHOE | ECHOK | NOFLSH | TOSTOP);
-			st.c_lflag |= ISIG;
-
-			/* Set some control codes to default values */
-#ifdef VINTR
-			st.c_cc[VINTR] = '\003';        /* ^c */
-#endif
-#ifdef VQUIT
-			st.c_cc[VQUIT] = '\034';        /* ^| */
-#endif
-#ifdef VERASE
-			st.c_cc[VERASE] = '\177';       /* ^? */
-#endif
-#ifdef VKILL
-			st.c_cc[VKILL] = '\025';        /* ^u */
-#endif
-#ifdef VEOF
-			st.c_cc[VEOF] = '\004'; /* ^d */
-#endif
-
-#ifdef TIOCSCTTY
-			/*
-			 * This may not necessary anymore given that we
-			 * open the slave in the child, but it doesn't hurt.
-			 */
-			ioctl(slave, TIOCSCTTY, 0);
-#endif
-			tcsetattr(slave, TCSANOW, & st);
-
-			if (close(master) == -1)
-				fatal(_("close of master pty failed (%s)"), strerror(errno));
-			if (close(1) == -1)
-				fatal(_("close of stdout in child failed (%s)"),
-					strerror(errno));
-			if (dup(slave) != 1)
-				fatal(_("moving slave pty to stdout in child failed (dup: %s)"), strerror(errno));
-			if (close(0) == -1)
-				fatal(_("close of stdin in child failed (%s)"),
-					strerror(errno));
-			if (dup(slave) != 0)
-				fatal(_("moving slave pty to stdin in child failed (dup: %s)"), strerror(errno));
-			if (close(slave))
-				fatal(_("close of slave pty failed (%s)"), strerror(errno));
-
-			/* stderr does NOT get dup'ed onto child's stdout */
-
-			set_sigpipe_to_default();
-
-			execl("/bin/sh", "sh", "-c", str, NULL);
-			_exit(errno == ENOENT ? 127 : 126);
-
-		case -1:
-			save_errno = errno;
-			close(master);
-			errno = save_errno;
-			return false;
-
-		}
+		/* this is the parent */
+		if (! fork_and_open_slave_pty(slavenam, master, str, & pid))
+			fatal(_("could not create child process or open pty"));
 
 		rp->pid = pid;
 		rp->iop = iop_alloc(master, str, 0);

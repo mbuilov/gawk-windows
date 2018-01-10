@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2017 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2018 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -2242,10 +2242,9 @@ do_print(int nargs, int redirtype)
 				DEREF(args_array[i]);
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(tmp));
 		}
-		if (   (tmp->flags & STRCUR) == 0
-		    || (   tmp->stfmt != STFMT_UNUSED
-		        && tmp->stfmt != OFMTidx))
-			args_array[i] = force_string_ofmt(tmp);
+		// Let force_string_ofmt handle checking if things
+		// are already valid.
+		args_array[i] = force_string_ofmt(tmp);
 	}
 
 	if (redir_exp != NULL) {
