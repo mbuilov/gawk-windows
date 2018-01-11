@@ -48,7 +48,7 @@
 #define N_(msgid) msgid
 
 static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t *ext_id;
+static awk_ext_id_t ext_id;
 static const char *ext_version = "fork extension: version 1.0";
 static awk_bool_t (*init_func)(void) = NULL;
 

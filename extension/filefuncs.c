@@ -144,7 +144,7 @@ get_inode(const char *fname)
 #endif
 
 static const gawk_api_t *api;	/* for convenience macros to work */
-static awk_ext_id_t *ext_id;
+static awk_ext_id_t ext_id;
 static awk_bool_t init_filefuncs(void);
 static awk_bool_t (*init_func)(void) = init_filefuncs;
 static const char *ext_version = "filefuncs extension: version 1.0";
