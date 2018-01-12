@@ -61,9 +61,9 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH Ottobre 2017
+@set UPDATE-MONTH Gennaio 2018
 @set VERSION 4.2
-@set PATCHLEVEL 0
+@set PATCHLEVEL 1
 
 @c added Italian hyphenation stuff
 @hyphenation{ven-go-no o-met-te-re o-met-ten-do}
@@ -308,7 +308,7 @@ Some comments on the layout for TeX.
 Tel.: +1-617-542-5942 Fax: +1-617-542-2652 Email: <email>gnu@@gnu.org</email>
 URL: <ulink url="https://www.gnu.org">https://www.gnu.org/</ulink></literallayout>
 
-<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2017
+<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2018
 Free Software Foundation, Inc.
 All Rights Reserved.
 </literallayout>
@@ -338,7 +338,8 @@ All Rights Reserved.
 
 @ifnotdocbook
 @iftex
-Copyright @copyright{} 2017 -- Free Software Foundation, Inc.
+Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2018 @*
+Free Software Foundation, Inc.
 @end iftex
 @end ifnotdocbook
 @sp 2
@@ -422,7 +423,7 @@ URL: @uref{https://www.gnu.org/}
 @c This one is correct for gawk 3.1.0 from the FSF
 ISBN 1-882114-28-0
 @sp 0
-Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2017 @*
+Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2018 @*
 Free Software Foundation, Inc.
 @sp 1
 Traduzione e revisione:@*
@@ -508,7 +509,7 @@ Questo file documenta @command{awk}, un programma che si pu@`o usare per
 selezionare dei record determinati in un file ed eseguire azioni su di essi.
 
 @noindent
-Copyright dell'edizione originale @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2017 @*
+Copyright dell'edizione originale @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2018 @*
 Free Software Foundation, Inc.
 
 @noindent
@@ -1689,8 +1690,10 @@ del tipo:
 
 @example
 $ @kbd{awk 1 /dev/null}
+@group
 @error{} awk: syntax error near line 1
 @error{} awk: bailing out near line 1
+@end group
 @end example
 
 @noindent
@@ -2260,39 +2263,21 @@ di gestire una raccolta di programmi @command{awk} pubblicamente disponibili e
 avevo anche esortato a collaborare.  Rendere disponibili le cose su Internet
 aiuta a contenere la distribuzione @command{gawk} entro dimensioni gestibili.
 
-L'iniziale raccolta di materiale, come questo, @`e tuttora disponibile
+L'iniziale raccolta di materiale, cos@`{@dotless{i}} com'@`e, @`e tuttora disponibile
 su @uref{ftp://ftp.freefriends.org/arnold/Awkstuff}.
 
-Chi fosse @emph{seriamente} interessato a contribuire nell'implementazione
-di un sito Internet dedicato ad argomenti riguardanti il
-linguaggio @command{awk}, @`e pregato di contattarmi.
+Nella speranza di fare qualcosa di pi@`u generale, ho acuisito il dominio
+@code{awklang.org}.  A fine anno 2017 un volontario si @`e assunto il compito
+di gestirlo.
 
-@ignore
-Nella speranza di
-fare qualcosa di pi@`u esteso, acquisii il dominio @code{awk.info}.
+Se qualcuno ha scritto un programma @command{awk} interessante, o
+un'estensione a @command{gawk} che vuole condividere col resto del mondo,
+@`e invitato a consultare la pagina @uref{http://www.awklang.org} e a usare
+il puntatore ``Contact''.
 
-Tuttavia, mi accorsi che non potevo dedicare abbastanza tempo per la gestione
-del codice inviato dai collaboratori: l'archivio non cresceva e il dominio
-rimase in disuso per diversi anni.
+Se qualcuno ha scritto un'estensione a @command{gawk}, si veda
+@ref{gawkextlib}.
 
-Alla fine del 2008, un volontario si assunse il compito di mettere a punto
-un sito web collegato ad @command{awk}---@uref{http://awk.info}---e fece un
-lavoro molto ben fatto.
-
-Se qualcuno ha scritto un programma @command{awk} interessante, o un'estensione
-a @command{gawk} che vuole condividere col resto del mondo, @`e invitato a
-consultare la pagina @uref{http://awk.info/?contribute} per sapere come
-inviarlo per contribuire al sito web.
-
-Mentre scrivo, questo sito @`e in cerca di un responsabile; se qualcuno @`e
-interessato mi contatti.
-@end ignore
-
-@ignore
-Altri collegamenti:
-
-https://www.reddit.com/r/linux/comments/dtect/composing_music_in_awk/
-@end ignore
 @end ifclear
 
 @node Ringraziamenti
@@ -2914,6 +2899,8 @@ messaggio di errore di qualche tipo da @command{awk}.
 @cindex variabili @code{ARGC}/@code{ARGV}, portabilit@`a e
 @cindex portabilit@`a, variabile @code{ARGV}
 Infine, il valore di @code{ARGV[0]}
+@cindex angolo buio, @code{ARGV}, valore della variabile
+@cindex angolo buio, variabile @code{ARGV}, valore
 (@pxref{Variabili predefinite})
 pu@`o variare a seconda del sistema operativo.
 Alcuni sistemi ci mettono @samp{awk}, altri il nome completo del percorso
@@ -3180,10 +3167,12 @@ per i caratteri
 apice singolo e doppio, cos@`{@dotless{i}}:
 
 @example
+@group
 $ @kbd{awk 'BEGIN @{ print "Questo @`e un apice singolo <\47>" @}'}
 @print{} Questo @`e un apice singolo <'>
 $ @kbd{awk 'BEGIN @{ print "Questo @`e un doppio apice <\42>" @}'}
 @print{} Questo @`e un doppio apice <">
+@end group
 @end example
 
 @noindent
@@ -3470,8 +3459,10 @@ e non ha azione---quindi applica l'azione di default, stampando il record.
 Stampare la lunghezza della riga in input pi@`u lunga:
 
 @example
+@group
 awk '@{ if (length($0) > max) max = length($0) @}
      END @{ print max @}' data
+@end group
 @end example
 
 Il codice associato a @code{END} viene eseguito dopo che tutto
@@ -3802,11 +3793,13 @@ un @samp{#} che inizia un commento, ignora @emph{tutto} il resto della riga.
 Per esempio:
 
 @example
+@group
 $ @kbd{gawk 'BEGIN @{ print "Non allarmarti" # una amichevole \}
 > @kbd{               regola BEGIN}
 > @kbd{@}'}
 @error{} gawk: riga com.:2:              regola BEGIN
 @error{} gawk: riga com.:2:                     ^ syntax error
+@end group
 @end example
 
 @noindent
@@ -4027,6 +4020,7 @@ awk '' file_dati_1 file_dati_2
 @end example
 
 @cindex @option{--lint}, opzione
+@cindex angolo buio, programmi vuoti
 @noindent
 Fare cos@`{@dotless{i}} ha comunque poco senso; @command{awk} termina
 silenziosamente quando viene fornito un programma vuoto.
@@ -5086,10 +5080,12 @@ I file da includere possono essere nidificati; p.es., dato un terzo
 @dfn{script}, che chiameremo @file{test3}:
 
 @example
+@group
 @@include "test2"
 BEGIN @{
     print "Questo @`e lo script test3."
 @}
+@end group
 @end example
 
 @noindent
@@ -5187,8 +5183,10 @@ $ @kbd{gawk '@@load "ordchr"; BEGIN @{print chr(65)@}'}
 Questo equivale all'esempio seguente:
 
 @example
+@group
 $ @kbd{gawk -lordchr 'BEGIN @{print chr(65)@}'}
 @print{} A
+@end group
 @end example
 
 @noindent
@@ -6782,8 +6780,10 @@ a capo.  Qui vediamo il risultato dell'esecuzione del programma sul file
 @file{mail-list}:
 
 @example
+@group
 $ @kbd{awk 'BEGIN @{ RS = "u" @}}
 >      @kbd{@{ print $0 @}' mail-list}
+@end group
 @print{} Amelia       555-5553     amelia.zodiac
 @print{} sq
 @print{} e@@gmail.com    F
@@ -6945,9 +6945,11 @@ cerca sia un ritorno a capo che una serie di una o pi@`u lettere
 maiuscole con uno spazio vuoto opzionale iniziale e/o finale:
 
 @example
+@group
 $ @kbd{echo record 1 AAAA record 2 BBBB record 3 |}
 > @kbd{gawk 'BEGIN @{ RS = "\n|( *[[:upper:]]+ *)" @}}
 >             @kbd{@{ print "Record =", $0,"e RT = [" RT "]" @}'}
+@end group
 @print{} Record = record 1 e RT = [ AAAA ]
 @print{} Record = record 2 e RT = [ BBBB ]
 @print{} Record = record 3 e RT = [
@@ -7333,8 +7335,10 @@ dei campi e @code{OFS}.  Per far ci@`o, si usa
 l'apparentemente innocuo assegnamento:
 
 @example
+@group
 $1 = $1   # forza la ricostruzione del record
 print $0  # o qualsiasi altra cosa con $0
+@end group
 @end example
 
 @noindent
@@ -8197,16 +8201,20 @@ e divide i dati:
 
 @example
 @c file eg/misc/simple-csv.awk
+@group
 BEGIN @{
     FPAT = "([^,]+)|(\"[^\"]+\")"
 @}
+@end group
 
+@group
 @{
     print "NF = ", NF
     for (i = 1; i <= NF; i++) @{
         printf("$%d = <%s>\n", i, $i)
     @}
 @}
+@end group
 @c endfile
 @end example
 
@@ -8673,6 +8681,7 @@ e controlla ogni regola" non la veda affatto.
 L'esempio seguente inverte tra loro a due a due le righe in input:
 
 @example
+@group
 @{
      if ((getline tmp) > 0) @{
           print tmp
@@ -8680,6 +8689,7 @@ L'esempio seguente inverte tra loro a due a due le righe in input:
      @} else
           print $0
 @}
+@end group
 @end example
 
 @noindent
@@ -8825,6 +8835,7 @@ sostituite dall'output prodotto dall'esecuzione del resto della riga
 costituito da un comando di shell.
 
 @example
+@group
 @{
      if ($1 == "@@execute") @{
           tmp = substr($0, 10)        # Rimuove "@@execute"
@@ -8834,6 +8845,7 @@ costituito da un comando di shell.
      @} else
           print
 @}
+@end group
 @end example
 
 @noindent
@@ -9162,12 +9174,14 @@ specificato.  Per esempio, un cliente TCP pu@`o decidere di abbandonare se
 non riceve alcuna risposta dal server dopo un certo periodo di tempo:
 
 @example
+@group
 Service = "/inet/tcp/0/localhost/daytime"
 PROCINFO[Service, "READ_TIMEOUT"] = 100
 if ((Service |& getline) > 0)
     print $0
 else if (ERRNO != "")
     print ERRNO
+@end group
 @end example
 
 Qui vediamo come ottenere dati interattivamente dall'utente@footnote{Questo
@@ -9542,10 +9556,12 @@ ritorni a capo:
 @end ifnotinfo
 
 @example
+@group
 $ @kbd{awk 'BEGIN @{ print "riga uno\nriga due\nriga tre" @}'}
 @print{} riga uno
 @print{} riga due
 @print{} riga tre
+@end group
 @end example
 
 @cindex campi, stampare
@@ -9751,7 +9767,7 @@ $ @kbd{awk 'BEGIN @{}
 @cindex variabile @code{OFMT}, POSIX @command{awk} e
 Per lo standard POSIX, il comportamento di @command{awk} @`e indefinito
 se @code{OFMT} contiene qualcosa di diverso da una specifica di conversione
-di un numero a virgola mobile.
+di un numero in virgola mobile.
 @value{DARKCORNER}
 
 @node Printf
@@ -9819,12 +9835,14 @@ effetto sulle istruzioni @code{printf}.
 Per esempio:
 
 @example
+@group
 $ @kbd{awk 'BEGIN @{}
 >    @kbd{ORS = "\nAHI!\n"; OFS = "+"}
 >    @kbd{msg = "Non v\47allarmate!"}
 >    @kbd{printf "%s\n", msg}
 > @kbd{@}'}
 @print{} Non v'allarmate!
+@end group
 @end example
 
 @noindent
@@ -9870,6 +9888,7 @@ carattere da stampare.
 Altre versioni di @command{awk} generalmente si limitano a stampare
 il primo byte di una stringa o i valori numerici che possono essere
 rappresentati in un singolo byte (0--255).
+@value{DARKCORNER}
 @end quotation
 
 
@@ -9896,7 +9915,7 @@ introdotti nella prossima @value{SUBSECTION}).
 @samp{%E} usa @samp{E} invece di @samp{e} nell'output.
 
 @item @code{%f}
-Stampa un numero in notazione a virgola mobile.
+Stampa un numero in notazione in virgola mobile.
 Per esempio:
 
 @example
@@ -9909,7 +9928,7 @@ delle quali vengono dopo il punto decimale.
 (L'espressione @samp{4.3} rappresenta due modificatori,
 introdotti nella prossima @value{SUBSECTION}).
 
-In sistemi che implementano il formato a virgola mobile, come specificato
+In sistemi che implementano il formato in virgola mobile, come specificato
 dallo standard IEEE 754, il valore infinito negativo @`e rappresentato come
 @samp{-inf} o @samp{-infinity},
 e l'infinito positivo come
@@ -9927,7 +9946,7 @@ i sistemi lo prevedono.  In tali casi,
 @command{gawk} usa il formato @samp{%f}.
 
 @item @code{%g}, @code{%G}
-Stampa un numero usando o la notazione scientifica o quella a virgola
+Stampa un numero usando o la notazione scientifica o quella in virgola
 mobile, scegliendo la forma pi@`u concisa; se il risultato @`e stampato usando la
 notazione scientifica, @samp{%G} usa @samp{E} invece di @samp{e}.
 
@@ -9941,7 +9960,7 @@ Stampa una stringa.
 @item @code{%u}
 Stampa un numero intero decimale, senza segno.
 (Questo formato @`e poco usato, perch@'e tutti i numeri in @command{awk}
-sono a virgola mobile; @`e disponibile principalmente per compatibilit@`a col
+sono in virgola mobile; @`e disponibile principalmente per compatibilit@`a col
 linguaggio C.)
 
 @item @code{%x}, @code{%X}
@@ -10061,7 +10080,7 @@ di quella del valore da stampare.
 @item @code{'}
 Un carattere di apice singolo o un apostrofo @`e un'estensione POSIX allo
 standard ISO C.
-Indica che la parte intera di un valore a virgola mobile, o la parte intera
+Indica che la parte intera di un valore in virgola mobile, o la parte intera
 di un valore decimale intero, ha un carattere di separazione delle migliaia.
 Ci@`o @`e applicabile solo alle localizzazioni che prevedono un tale carattere.
 Per esempio:
@@ -10386,9 +10405,11 @@ alone for now and let's hope no-one notices.
 @end ignore
 
 @example
+@group
 awk '@{ print $1 > "nomi.non.ordinati"
        comando = "sort -r > nomi.ordinati"
        print $1 | comando @}' mail-list
+@end group
 @end example
 
 La lista non ordinata @`e scritta usando una ridirezione normale, mentre
@@ -10703,12 +10724,12 @@ Questo avviene usando uno speciale @value{FN} della forma:
 @file{/@var{tipo-rete}/@var{protocollo}/@var{porta-locale}/@var{host-remoto}/@var{porta-remota}}
 @end example
 
-il @var{tipo-rete} pu@`o essere @samp{inet}, @samp{inet4} o @samp{inet6}.
+Il @var{tipo-rete} pu@`o essere @samp{inet}, @samp{inet4} o @samp{inet6}.
 Il @var{protocollo} pu@`o essere @samp{tcp} o @samp{udp},
 e gli altri campi rappresentano gli altri dati essenziali
 necessari per realizzare una connessione di rete.
 Questi @value{FNS} sono usati con l'operatore @samp{|&} per comunicare
-con un coprocesso
+con @w{un coprocesso}
 (@pxref{I/O bidirezionale}).
 Questa @`e una funzionalit@`a avanzata, qui riferita solo per completezza.
 Una spiegazione esauriente sar@`a fornita nella
@@ -10811,10 +10832,14 @@ essere uguale all'espressione usata per aprire il file o eseguire il comando,
 Il precedente esempio cambia come segue:
 
 @example
+@group
 sortcom = "sort -r nomi"
 sortcom | getline pippo
+@end group
+@group
 @dots{}
 close(sortcom)
+@end group
 @end example
 
 @noindent
@@ -11486,6 +11511,7 @@ argomenti di funzioni definite dall'utente
 (@pxref{Funzioni definite dall'utente}).  Per esempio:
 
 @example
+@group
 function mysub(modello, sostituzione, stringa, globale)
 @{
     if (globale)
@@ -11494,13 +11520,16 @@ function mysub(modello, sostituzione, stringa, globale)
         sub(modello, sostituzione, stringa)
     return stringa
 @}
+@end group
 
+@group
 @{
     @dots{}
     text = "salve! salve a te!"
     mysub(/salve/, "ciao", text, 1)
     @dots{}
 @}
+@end group
 @end example
 
 @c @cindex automatic warnings
@@ -11786,8 +11815,10 @@ Se in una concatenazione di stringhe ci sono valori numerici, questi sono
 convertiti in stringhe.  Si consideri il seguente esempio:
 
 @example
+@group
 due = 2; tre = 3
 print (due tre) + 4
+@end group
 @end example
 
 @noindent
@@ -12288,10 +12319,14 @@ assegnato per ultimo.  Nel seguente frammento di programma, la variabile
 @code{pippo} ha dapprima un valore numerico, e in seguito un valore di stringa:
 
 @example
+@group
 pippo = 1
 print pippo
+@end group
+@group
 pippo = "pluto"
 print pippo
+@end group
 @end example
 
 @noindent
@@ -12364,16 +12399,20 @@ di sinistra nell'espressione di destra.  Per esempio:
 
 @cindex Rankin, Pat
 @example
+@group
 # Grazie a Pat Rankin per quest'esempio
 BEGIN  @{
     pippo[rand()] += 5
     for (x in pippo)
        print x, pippo[x]
-
+@end group
+  
+@group
     pluto[rand()] = pluto[rand()] + 5
     for (x in pluto)
        print x, pluto[x]
 @}
+@end group
 @end example
 
 @cindex operatori di assegnamento, ordine di valutazione
@@ -13073,10 +13112,12 @@ omettendo uno dei due caratteri @samp{=}.  Il risultato @`e sempre un codice
 @command{awk} valido, ma il programma non fa quel che si voleva:
 
 @example
+@group
 if (a = b)   # oops! dovrebbe essere == b
    @dots{}
 else
    @dots{}
+@end group
 @end example
 
 @noindent
@@ -14079,8 +14120,10 @@ $ @kbd{awk '! /li/' mail-list}
 @print{} Bill         555-1675     bill.drowning@@hotmail.com       A
 @print{} Camilla      555-2912     camilla.infusarum@@skynet.be     R
 @print{} Fabius       555-1234     fabius.undevicesimus@@ucb.edu    F
+@group
 @print{} Martin       555-6480     martin.codicibus@@hotmail.com    A
 @print{} Jean-Paul    555-2127     jeanpaul.campanorum@@nyu.edu     R
+@end group
 @end example
 
 @cindex @code{BEGIN}, criterio di ricerca, criteri di ricerca booleani e
@@ -14200,6 +14243,7 @@ $ @kbd{echo Yes | gawk '(/1/,/2/) || /Yes/'}
 @end example
 
 @cindex intervalli di ricerca, continuazione di riga e
+@cindex angolo buio, intervalli di ricerca, continuazione di riga e
 Come punto di secondaria importanza, nonostante sia stilisticamente poco elegante,
 lo standard POSIX consente di andare a capo dopo la virgola
 in un intervallo di ricerca.  @value{DARKCORNER}
@@ -14515,10 +14559,12 @@ variabile nel progamma @command{awk} contenuto nello @dfn{script}:
 Per esempio, si consideri il programma seguente:
 
 @example
+@group
 printf "Immettere il criterio di ricerca: "
 read criterio_di_ricerca
 awk "/$criterio_di_ricerca/ "'@{ num_trov++ @}
      END @{ print num_trov, "occorrenze trovate" @}' /nome/file/dati
+@end group
 @end example
 
 @noindent
@@ -14734,10 +14780,12 @@ la stringa nulla; altrimenti, la condizione @`e vera.
 Si consideri quanto segue:
 
 @example
+@group
 if (x % 2 == 0)
     print "x @`e pari"
 else
     print "x @`e dispari"
+@end group
 @end example
 
 In questo esempio, se l'espressione @samp{x % 2 == 0} @`e vera (cio@`e,
@@ -15089,6 +15137,7 @@ trova, se esiste, il divisore pi@`u piccolo di un dato numero intero, oppure
 dichiara che si tratta di un numero primo:
 
 @example
+@group
 # trova il divisore pi@`u piccolo di num
 @{
     num = $1
@@ -15096,11 +15145,14 @@ dichiara che si tratta di un numero primo:
         if (num % divisore == 0)
             break
     @}
+@end group
+@group
     if (num % divisore == 0)
         printf "Il pi@`u piccolo divisore di %d @`e %d\n", num, divisore
     else
         printf "%d @`e un numero primo\n", num
 @}
+@end group
 @end example
 
 Quando il resto della divisione @`e zero nella prima istruzione @code{if},
@@ -15436,14 +15488,18 @@ segnalano terminando con un codice di ritorno diverso da zero.  Un programma
 diverso da zero, come mostrato nell'esempio seguente:
 
 @example
+@group
 BEGIN @{
     if (("date" | getline data_corrente) <= 0) @{
       print "Non riesco a ottenere la data dal sistema" > "/dev/stderr"
       exit 1
     @}
+@end group
+@group
     print "la data corrente @`e", data_corrente
     close("date")
 @}
+@end group
 @end example
 
 @quotation NOTA
@@ -15705,7 +15761,7 @@ il carattere di ritorno a capo.
 @cindex @code{PREC}, variabile
 @cindex variabile @code{PREC}
 @item PREC #
-La precisione disponibile nei numeri a virgola mobile a precisione arbitraria,
+La precisione disponibile nei numeri in virgola mobile a precisione arbitraria,
 per default 53 bit (@pxref{Impostare la precisione}).
 
 @cindex @code{ROUNDMODE}, variabile
@@ -15798,6 +15854,7 @@ A differenza di quasi tutti i vettori di @command{awk},
 Lo si pu@`o vedere nell'esempio seguente:
 
 @example
+@group
 $ @kbd{awk 'BEGIN @{}
 >         @kbd{for (i = 0; i < ARGC; i++)}
 >             @kbd{print ARGV[i]}
@@ -15805,6 +15862,7 @@ $ @kbd{awk 'BEGIN @{}
 @print{} awk
 @print{} inventory-shipped
 @print{} mail-list
+@end group
 @end example
 
 @noindent
@@ -16284,6 +16342,7 @@ Schorr fa notare che effettivamente consente di ottenere dei puntatori ai dati
 in @command{awk}.  Si consideri quest'esempio:
 
 @example
+@group
 # Moltiplicazione indiretta di una qualsiasi variabile per un
 # numero a piacere e restituzione del risultato
 
@@ -16291,6 +16350,7 @@ function multiply(variabile, numero)
 @{
     return SYMTAB[variabile] *= numero
 @}
+@end group
 @end example
 
 @noindent
@@ -16369,6 +16429,7 @@ conteneva il programma seguente che visualizzava le informazioni contenute
 in @code{ARGC} e @code{ARGV}:
 
 @example
+@group
 $ @kbd{awk 'BEGIN @{}
 >        @kbd{for (i = 0; i < ARGC; i++)}
 >            @kbd{print ARGV[i]}
@@ -16376,6 +16437,7 @@ $ @kbd{awk 'BEGIN @{}
 @print{} awk
 @print{} inventory-shipped
 @print{} mail-list
+@end group
 @end example
 
 @noindent
@@ -17001,8 +17063,10 @@ Per esempio, quest'istruzione verifica se il vettore @code{frequenze}
 contiene l'indice @samp{2}:
 
 @example
+@group
 if (2 in frequenze)
     print "L'indice 2 @`e presente."
+@end group
 @end example
 
 Si noti che questo @emph{non} verifica se il vettore
@@ -17012,8 +17076,10 @@ elementi.  Inoltre, questo @emph{non} crea @code{frequenze[2]}, mentre la
 seguente alternativa (non corretta) lo fa:
 
 @example
+@group
 if (frequenze[2] != "")
     print "L'indice 2 @`e presente."
+@end group
 @end example
 
 @node Impostare elementi
@@ -17071,6 +17137,7 @@ stampare tutte le righe.
 Quando questo programma viene eseguito col seguente input:
 
 @example
+@group
 @c file eg/misc/arraymax.data
 5  Io sono l'uomo Cinque
 2  Chi sei?  Il nuovo numero due!
@@ -17078,17 +17145,20 @@ Quando questo programma viene eseguito col seguente input:
 1  Chi @`e il numero uno?
 3  Sei il tre.
 @c endfile
+@end group
 @end example
 
 @noindent
 Il suo output @`e:
 
 @example
+@group
 1  Chi @`e il numero uno?
 2  Chi sei?  Il nuovo numero due!
 3  Sei il tre.
 4  . . . E quattro a terra
 5  Io sono l'uomo Cinque
+@end group
 @end example
 
 Se un numero di riga appare pi@`u di una volta, l'ultima riga con quel dato
@@ -17098,11 +17168,13 @@ si possono saltare con un semplice perfezionamento della
 regola @code{END} del programma, in questo modo:
 
 @example
+@group
 END @{
     for (x = 1; x <= massimo; x++)
         if (x in vett)
             print vett[x]
 @}
+@end group
 @end example
 
 @node Visitare un intero vettore
@@ -17123,8 +17195,10 @@ fare da indice in un vettore.  Perci@`o @command{awk} ha un tipo speciale di
 istruzione @code{for} per visitare un vettore:
 
 @example
+@group
 for (@var{variabile} in @var{vettore})
     @var{corpo}
+@end group
 @end example
 
 @noindent
@@ -17147,12 +17221,15 @@ anche il numero di tali parole.
 per maggiori informazioni sulla funzione predefinita @code{length()}.
 
 @example
+@group
 # Registra un 1 per ogni parola usata almeno una volta
 @{
     for (i = 1; i <= NF; i++)
         usate[$i] = 1
 @}
+@end group
 
+@group
 # Trova il numero di parole distinte lunghe pi@`u di 10 caratteri
 END @{
     for (x in usate) @{
@@ -17163,6 +17240,7 @@ END @{
     @}
     print numero_parole_lunghe, "parole pi@`u lunghe di 10 caratteri"
 @}
+@end group
 @end example
 
 @noindent
@@ -17571,9 +17649,11 @@ che assegnargli un valore nullo (la stringa vuota, @code{""}).
 Per esempio:
 
 @example
+@group
 pippo[4] = ""
 if (4 in pippo)
-  print "Questo viene stampato, anche se pippo[4] @`e vuoto"
+  print "Questa riga viene stampata, anche se pippo[4] @`e vuoto"
+@end group
 @end example
 
 @cindex @dfn{lint}, controlli, elementi di vettori
@@ -17734,22 +17814,26 @@ END @{
 Dato l'input:
 
 @example
+@group
 1 2 3 4 5 6
 2 3 4 5 6 1
 3 4 5 6 1 2
 4 5 6 1 2 3
+@end group
 @end example
 
 @noindent
 il programma produce il seguente output:
 
 @example
+@group
 4 3 2 1
 5 4 3 2
 6 5 4 3
 1 6 5 4
 2 1 6 5
 3 2 1 6
+@end group
 @end example
 
 @node Visitare vettori multidimensionali
@@ -17937,15 +18021,19 @@ Per esempio,
 il seguente codice stampa gli elementi del nostro vettore principale @code{a}:
 
 @example
+@group
 for (i in a) @{
     for (j in a[i]) @{
         if (j == 3) @{
             for (k in a[i][j])
                 print a[i][j][k]
+@end group
+@group
         @} else
             print a[i][j]
     @}
 @}
+@end group
 @end example
 
 @noindent
@@ -18445,9 +18533,11 @@ asort(a)
 genera i seguenti contenuti di @code{a}:
 
 @example
+@group
 a[1] = "cul"
 a[2] = "de"
 a[3] = "sac"
+@end group
 @end example
 
 La funzione @code{asorti()} si comporta in maniera simile ad @code{asort()};
@@ -19601,6 +19691,9 @@ buffer di un file o @dfn{pipe} che era stato aperto in lettura
 o se @var{nome_file} non @`e un file, una @dfn{pipe}, o un coprocesso aperto.
 in tal caso, @code{fflush()} restituisce ancora @minus{}1.
 
+@c end the table to let the sidebar take up the full width of the page.
+@end table
+
 @sidebar Bufferizzazione interattiva e non interattiva
 @cindex bufferizzazione, interattiva vs.@: non interattiva
 
@@ -19648,6 +19741,7 @@ In questo caso, nessun output viene stampato finch@'e non @`e stato battuto il
 @dfn{pipe} al comando @command{cat} in un colpo solo.
 @end sidebar
 
+@table @asis
 @item @code{system(@var{comando})}
 @cindexawkfunc{system}
 @cindex chiamare comandi di shell
@@ -19712,7 +19806,7 @@ semplicemente limitata a restituire il valore del codice di ritorno
 diviso per 256 (ossia la met@`a sinistra del numero di 16 bit, spostata
 a destra).  In una situazione normale questo equivale a utilizzare il
 codice di ritornodi @code{system()}, ma nel caso in cui il programma sia
-stato terminato da un segnale, il valore diventa un numero frazionale a
+stato terminato da un segnale, il valore diventa un numero frazionale in
 virgola mobile.@footnote{In uno scambio di messaggi privato il Dr.@:
 Kernighan mi ha comunicato che questo modo di procedere @`e probabilmente
 errato.}  POSIX stabilisce che la chiamata a @code{system()} dall'interno
@@ -20445,7 +20539,7 @@ che illustra l'uso di queste funzioni:
 @example
 @group
 @c file eg/lib/bits2str.awk
-# bits2str --- decodifica un byte in una serie di 0/1 leggibili
+# bits2str --- decodifica un numero intero in una serie di 0/1 leggibili
 
 function bits2str(byte,        dati, maschera)
 @{
@@ -20467,7 +20561,7 @@ function bits2str(byte,        dati, maschera)
 @c this is a hack to make testbits.awk self-contained
 @ignore
 @c file eg/prog/testbits.awk
-# bits2str --- turn a byte into readable 1's and 0's
+# bits2str --- turn an integer into readable ones and zeros
 
 function bits2str(bits,        data, mask)
 @{
@@ -20508,8 +20602,8 @@ $ @kbd{gawk -f testbits.awk}
 @print{} 123 = 01111011
 @print{} 0123 = 01010011
 @print{} 0x99 = 10011001
-@print{} compl(0x99) = 0x3fffffffffff66 = 001111111111111111111111111111111
-@print{} 11111111111111101100110
+@print{} compl(0x99) = 0x3fffffffffff66 =
+@print{} 00111111111111111111111111111111111111111111111101100110
 @print{} lshift(0x99, 2) = 0x264 = 0000001001100100
 @print{} rshift(0x99, 2) = 0x26 = 00100110
 @end example
@@ -20546,14 +20640,14 @@ e poi mostra i risultati delle funzioni
 @sidebar Attenzione. Non @`e tutto oro quel che luccica!
 
 In altri linguaggi, le operazioni "bit a bit" sono eseguite su valori interi,
-non su valori a virgola mobile.  Come regola generale, tali operazioni
+non su valori in virgola mobile.  Come regola generale, tali operazioni
 funzionano meglio se eseguite su interi senza segno.
 
 @command{gawk} tenta di trattare gli argomenti delle funzioni
 "bit a bit" come interi senza segno. Per questo motivo, gli argomenti negativi
 provocano un errore fatale.
 
-In una normale operazione, per tutte queste funzioni, prima il valore a virgola
+In una normale operazione, per tutte queste funzioni, prima il valore in virgola
 mobile a doppia precisione viene convertito nel tipo intero senza segno di C
 pi@`u ampio, poi viene eseguita l'operazione "bit a bit".  Se il risultato non
 pu@`o essere rappresentato esattamente come un tipo @code{double} di C,
@@ -20588,7 +20682,7 @@ $ @kbd{gawk -M 'BEGIN @{ printf "%#x\n", compl(42) @}'}
 Quando si usa l'opzione @option{-M}, nel dettaglio, @command{gawk} usa
 gli interi a precisione arbitraria di GNU MP che hanno almeno 64 bit di precisione.
 Quando non si usa l'opzione @option{-M}, @command{gawk} memorizza i valori
-interi come regolari valori a virgola mobile con doppia precisione, che
+interi come regolari valori in virgola mobile con doppia precisione, che
 mantengono solo 53 bit di precisione.  Inoltre, la libreria GNU MP tratta
 (o almeno sembra che tratti) il bit iniziale come un bit con segno; cos@`i il
 risultato con @option{-M} in questo caso @`e un numero negativo.
@@ -20799,10 +20893,12 @@ legge l'intero programma, prima di iniziare ad eseguirlo.
 La definizione di una funzione chiamata @var{nome} @`e simile a questa:
 
 @display
+@group
 @code{function} @var{nome}@code{(}[@var{lista-parametri}]@code{)}
 @code{@{}
      @var{corpo-della-funzione}
 @code{@}}
+@end group
 @end display
 
 @cindex nomi di funzione
@@ -20989,11 +21085,13 @@ La funzione seguente cancella tutti gli elementi in un vettore
 l'inizio della lista delle variabili locali):
 
 @example
+@group
 function cancella_vettore(a,    i)
 @{
     for (i in a)
         delete a[i]
 @}
+@end group
 @end example
 
 Quando si lavora con vettori, @`e spesso necessario cancellare
@@ -21215,10 +21313,12 @@ Inoltre, chiamate ricorsive creano nuovi vettori.
 Si consideri questo esempio:
 
 @example
+@group
 function qualche_funz(p1,      a)
 @{
     if (p1++ > 3)
         return
+@end group
 
     a[p1] = p1
 
@@ -21283,12 +21383,14 @@ locali, ci@`o non influisce su nessun'altra variabile.  Quindi, se
 @code{mia_funzione()} fa questo:
 
 @example
+@group
 function mia_funzione(stringa)
 @{
    print stringa
    stringa = "zzz"
    print stringa
 @}
+@end group
 @end example
 
 @noindent
@@ -21466,11 +21568,13 @@ function massimo(vettore,   i, max)
      return max
 @}
 
+@group
 # Carica tutti i campi di ogni record in numeri.
 @{
      for (i = 1; i <= NF; i++)
           numeri[NR, i] = $i
 @}
+@end group
 
 END @{
      print massimo(numeri)
@@ -21781,12 +21885,14 @@ di confronto:
 
 @example
 @c file eg/prog/indirectcall.awk
+@group
 # num_min --- confronto numerico per minore di
 
 function num_min(sinistra, destra)
 @{
     return ((sinistra + 0) < (destra + 0))
 @}
+@end group
 
 # num_magg_o_ug --- confronto numerico per maggiore o uguale
 
@@ -21839,6 +21945,7 @@ Per finire, le due funzioni di ordinamento chiamano la funzione
 
 @example
 @c file eg/prog/indirectcall.awk
+@group
 # ascendente --- ordina i dati in ordine crescente
 #            e li restituisce sotto forma di stringa
 
@@ -21846,7 +21953,9 @@ function ascendente(primo, ultimo)
 @{
     return ordina(primo, ultimo, "num_min")
 @}
+@end group
 
+@group
 # discendente --- ordina i dati in ordine decrescente
 #            e li restituisce sotto forma di stringa
 
@@ -21854,6 +21963,7 @@ function discendente(primo, ultimo)
 @{
     return ordina(primo, ultimo, "num_magg_o_ug")
 @}
+@end group
 @c endfile
 @end example
 
@@ -22412,6 +22522,7 @@ il programma.
 In C, l'uso di @code{assert()} @`e simile a questo:
 
 @example
+@group
 #include <assert.h>
 
 int myfunc(int a, double b)
@@ -22419,6 +22530,7 @@ int myfunc(int a, double b)
      assert(a <= 5 && b >= 17.1);
      @dots{}
 @}
+@end group
 @end example
 
 Se l'asserzione @`e falsa, il programma stampa un messaggio simile a questo:
@@ -22589,9 +22701,10 @@ function round(x,   ival, aval, frazione)
 @}
 @c endfile
 @c don't include test harness in the file that gets installed
-
+@group
 # codice per testare, commentato
 # @{ print $0, round($0) @}
+@end group
 @end example
 
 @node Funzione random Cliff
@@ -23031,7 +23144,7 @@ if (length(contenuto) == 0)
 @end example
 
 La verifica serve a determinare se il file @`e vuoto o no. Una verifica
-equivalente potrebbe essere @samp{contenuto == ""}.
+equivalente potrebbe essere @samp{@w{contenuto == ""}}.
 
 @xref{Esempio di estensione Readfile} per una funzione di estensione
 anch'essa finalizzata a leggere un intero file in memoria.
@@ -23361,8 +23474,10 @@ $ @kbd{gawk -f rewind.awk -f test.awk dati }
 @print{} data 1 a
 @print{} data 2 b
 @print{} data 3 c
+@group
 @print{} data 4 d
 @print{} data 5 e
+@end group
 @end example
 
 @node Controllo di file
@@ -24709,8 +24824,10 @@ function getgrent()
     _gr_init()
     if (++_gr_contatore in _gr_bycount)
         return _gr_bycount[_gr_contatore]
+@group
     return ""
 @}
+@end group
 @c endfile
 @end example
 
@@ -25290,10 +25407,12 @@ preparare la lista dei campi o dei caratteri:
     if (per_campi == 0 && per_caratteri == 0)
         per_campi = 1    # default
 
+@group
     if (lista_campi == "") @{
         print "cut: specificare lista per -c o -f" > "/dev/stderr"
         exit 1
     @}
+@end group
 
     if (per_campi)
         prepara_lista_campi()
@@ -25662,8 +25781,10 @@ function endfile(file)
             print contatore_file
     @}
 
+@group
     totale += contatore_file
 @}
+@end group
 @c endfile
 @end example
 
@@ -25837,11 +25958,15 @@ BEGIN @{
     pw = getpwuid(uid)
     stampa_primo_campo(pw)
 
+@group
     if (euid != uid) @{
         printf(" euid=%d", euid)
         pw = getpwuid(euid)
+@end group
+@group
         stampa_primo_campo(pw)
     @}
+@end group
 
     printf(" gid=%d", gid)
     pw = getgrgid(gid)
@@ -25974,14 +26099,17 @@ BEGIN @{
     # testa argv nel caso che si legga da stdin invece che da file
     if (i in ARGV)
         i++    # salta nome file-dati
+@group
     if (i in ARGV) @{
         outfile = ARGV[i]
         ARGV[i] = ""
     @}
-
+@end group
+@group
     s1 = s2 = "a"
     out = (outfile s1 s2)
 @}
+@end group
 @c endfile
 @end example
 
@@ -26146,11 +26274,15 @@ indicato nella riga di comando, e poi sullo standard output:
 @`E anche possibile scrivere il ciclo cos@`{@dotless{i}}:
 
 @example
+@group
 for (i in copia)
     if (append)
         print >> copia[i]
+@end group
+@group
     else
         print > copia[i]
+@end group
 @end example
 
 @noindent
@@ -26305,10 +26437,12 @@ BEGIN @{
             sintassi()
     @}
 
+@group
     if (ARGV[Optind] ~ /^\+[[:digit:]]+$/) @{
         conta_caratteri = substr(ARGV[Optind], 2) + 0
         Optind++
     @}
+@end group
 
     for (i = 1; i < Optind; i++)
         ARGV[i] = ""
@@ -26345,11 +26479,13 @@ occorre saltare dei caratteri, si usa @code{substr()} per eliminare i primi
 
 @example
 @c file eg/prog/uniq.awk
+@group
 function se_sono_uguali(    n, m, campi_ultima, campi_corrente,\
 vettore_ultima, vettore_corrente)
 @{
     if (contatore_file == 0 && conta_caratteri == 0)
         return (ultima == $0)
+@end group
 
     if (contatore_file > 0) @{
         n = split(ultima, vettore_ultima)
@@ -26364,9 +26500,11 @@ vettore_ultima, vettore_corrente)
         campi_ultima = substr(campi_ultima, conta_caratteri + 1)
         campi_corrente = substr(campi_corrente, conta_caratteri + 1)
     @}
+@group
 
     return (campi_ultima == campi_corrente)
 @}
+@end group
 @c endfile
 @end example
 
@@ -26428,11 +26566,13 @@ NR == 1 @{
 END @{
     if (conta_record)
         printf("%4d %s\n", contatore, ultima) > file_output
+@group
     else if ((solo_ripetute && contatore > 1) ||
             (solo_non_ripetute && contatore == 1))
         print ultima > file_output
     close(file_output)
 @}
+@end group
 @c endfile
 @end example
 
@@ -27272,10 +27412,12 @@ A prima vista, un programma come questo sembrerebbe essere sufficiente:
         freq[$i]++
 @}
 
+@group
 END @{
     for (word in freq)
         printf "%s\t%d\n", word, freq[word]
 @}
+@end group
 @end example
 
 Il programma si affida al meccanismo con cui @command{awk} divide i campi per
@@ -27689,9 +27831,11 @@ La riga @`e poi stampata nel file di output:
                     i++
             @}
         @}
+@group
         print join(a, 1, n, SUBSEP) > file_corrente
     @}
 @}
+@end group
 @c endfile
 @end example
 
@@ -27784,10 +27928,12 @@ function sintassi()
     exit 1
 @}
 
+@group
 BEGIN @{
     # valida argomenti
     if (ARGC < 3)
         sintassi()
+@end group
 
     RS = ARGV[1]
     ORS = ARGV[2]
@@ -28216,13 +28362,11 @@ di zero, il programma @`e terminato:
                 continue
             @}
             cammino = percorso($2)
-@group
             if (cammino == "") @{
                 printf("igawk: %s:%d: non riesco a trovare %s\n",
                     input[indice_pila], FNR, $2) > "/dev/stderr"
                 continue
             @}
-@end group
             if (! (cammino in gia_fatto)) @{
                 gia_fatto[cammino] = input[indice_pila]
                 input[++indice_pila] = cammino  # aggiungilo alla pila
@@ -28493,10 +28637,12 @@ notice and this notice are preserved.
 Ecco il programma:
 
 @example
+@group
 awk 'BEGIN@{O="~"~"~";o="=="=="==";o+=+o;x=O""O;while(X++<=x+o+o)c=c"%c";
 printf c,(x-O)*(x-O),x*(x-o)-o,x*(x-O)+x-O-o,+x*(x-O)-x+o,X*(o*o+O)+x-O,
 X*(X-x)-o*o,(x+X)*o*o+o,x*(X-x)-O-O,x-O+(O+o+X+x)*(o+O),X*X-X*(x-O)-x+O,
 O+X*(o*(o+O)+O),+x+O+X*o,x*(x-o),(o+X+x)*o*o-(x-O-O),O+(X-x)*(X+O),x-O@}'
+@end group
 @end example
 @c genera l'email del tizio:
 @c dave_br@gmx.com
@@ -29042,11 +29188,13 @@ La prima funzione di confronto pu@`o essere usata per scorrere un vettore
 secondo l'ordine numerico degli indici:
 
 @example
+@group
 function cfr_ind_num(i1, v1, i2, v2)
 @{
      # confronto di indici numerici, ordine crescente
      return (i1 - i2)
 @}
+@end group
 @end example
 
 La seconda funzione scorre un vettore secondo l'ordine delle stringhe
@@ -29155,10 +29303,13 @@ function per_campo(i1, v1, i2, v2)
         a[NR][i] = $i
 @}
 
+@group
 END @{
     PROCINFO["sorted_in"] = "per_campo"
+@end group
     if (POS < 1 || POS > NF)
         POS = 1
+
     for (i in a) @{
         for (j = 1; j <= NF; j++)
             printf("%s%c", a[i][j], j < NF ? ":" : "")
@@ -29215,6 +29366,7 @@ function per_numero(i1, v1, i2, v2)
     return (v1 != v2) ? (v2 - v1) : (i2 - i1)
 @}
 
+@group
 function per_stringa(i1, v1, i2, v2)
 @{
     # confronto di valori di stringa (e indici), ordine decrescente
@@ -29222,6 +29374,7 @@ function per_stringa(i1, v1, i2, v2)
     v2 = v2 i2
     return (v1 > v2) ? -1 : (v1 != v2)
 @}
+@end group
 @end example
 
 @c Avoid using the term ``stable'' when describing the unpredictable behavior
@@ -29387,11 +29540,13 @@ trasforma gli elementi da confrontare in lettere minuscole, in modo da avere
 confronti che non dipendono da maiuscolo/minuscolo.
 
 @example
+@group
 # confronta_in_minuscolo --- confronta stringhe ignorando maiuscolo/minuscolo
 
 function confronta_in_minuscolo(i1, v1, i2, v2,    l, r)
 @{
     l = tolower(v1)
+@end group
     r = tolower(v2)
 
     if (l < r)
@@ -30863,9 +31018,11 @@ con altri contenenti degli specificatori posizionali in una stessa stringa di
 formato:
 
 @example
+@group
 $ @kbd{gawk 'BEGIN @{ printf "%d %3$s\n", 1, 2, "ciao" @}'}
 @error{} gawk: riga com.:1: fatale: `count$' va usato per tutti
 @error{}                             i formati o per nessuno
+@end group
 @end example
 
 @quotation NOTA
@@ -31535,8 +31692,10 @@ ulteriormente, iniziamo a ``scorrere una ad una'' le righe di
 [successivo]):
 
 @example
+@group
 gawk> @kbd{n}
 @print{} 66          if (contatore_file > 0) @{
+@end group
 @end example
 
 Questo ci dice che @command{gawk} ora @`e pronto per eseguire la riga 66, che
@@ -32364,10 +32523,12 @@ Davide Brini (@pxref{Programma signature}):
 
 @c FIXME: This will need updating if num-handler branch is ever merged in.
 @smallexample
+@group
 gawk> @kbd{dump}
 @print{}        # BEGIN
 @print{}
 @print{} [  1:0xfcd340] Op_rule           : [in_rule = BEGIN] [source_file = brini.awk]
+@end group
 @print{} [  1:0xfcc240] Op_push_i         : "~" [MALLOC|STRING|STRCUR]
 @print{} [  1:0xfcc2a0] Op_push_i         : "~" [MALLOC|STRING|STRCUR]
 @print{} [  1:0xfcc280] Op_match          :
@@ -32400,18 +32561,18 @@ gawk> @kbd{dump}
 @print{} [   :0xfcc660] Op_no_op          :
 @print{} [  1:0xfcc520] Op_assign_concat  : c
 @print{} [   :0xfcc620] Op_jmp            : [target_jmp = 0xfcc440]
-@print{}
 @dots{}
-@print{}
 @print{} [     2:0xfcc5a0] Op_K_printf         : [expr_count = 17] [redir_type = ""]
 @print{} [      :0xfcc140] Op_no_op            :
 @print{} [      :0xfcc1c0] Op_atexit           :
 @print{} [      :0xfcc640] Op_stop             :
 @print{} [      :0xfcc180] Op_no_op            :
 @print{} [      :0xfcd150] Op_after_beginfile  :
+@group
 @print{} [      :0xfcc160] Op_no_op            :
 @print{} [      :0xfcc1a0] Op_after_endfile    :
 gawk>
+@end group
 @end smallexample
 
 @cindex comando del debugger, @code{exit}
@@ -32805,55 +32966,84 @@ mentre i valori senza segno sono sempre maggiori o uguali a zero.
 
 Nei sistemi informatici, il calcolo con valori interi @`e esatto, ma il possibile
 campo di variazione dei valori @`e limitato.  L'elaborazione con numeri interi @`e
-pi@`u veloce di quella con numeri a virgola mobile.
+pi@`u veloce di quella con numeri in virgola mobile.
 
-@item La matematica coi numeri a virgola mobile
-I numeri a virgola mobile rappresentano quelli che a scuola sono chiamati
+@cindex virgola mobile, numeri in
+@cindex numeri in virgola mobile
+@item La matematica coi numeri in virgola mobile
+I numeri in virgola mobile rappresentano quelli che a scuola sono chiamati
 numeri ``reali'' (cio@`e, quelli che hanno una parte frazionaria, come
-3.1415927).  Il vantaggio dei numeri a virgola mobile @`e che essi possono
+3.1415927).  Il vantaggio dei numeri in virgola mobile @`e che essi possono
 rappresentare uno spettro di valori molto pi@`u ampio di quello rappresentato dai
 numeri interi.  Lo svantaggio @`e che ci sono numeri che essi non possono
 rappresentare in modo esatto.
 
-I computer moderni possono eseguire calcoli su valori a virgola mobile
+I computer moderni possono eseguire calcoli su valori in virgola mobile
 nell'hardware dell'elaboratore, entro un intervallo di valori limitato.
-Ci sono inoltre librerie di programmi che consentono calcoli, usando numeri a
+Ci sono inoltre librerie di programmi che consentono calcoli, usando numeri in
 virgola mobile, di precisione arbitraria.
 
-POSIX @command{awk} usa numeri a virgola mobile a @dfn{doppia precisione},
-che possono gestire pi@`u cifre rispetto ai numeri a virgola mobile a
+@cindex virgola mobile, numeri in@comma{} precisione singola
+@cindex virgola mobile, numeri in@comma{} precisione doppia
+@cindex virgola mobile, numeri in@comma{} precisione arbitraria
+@cindex precisione singola
+@cindex precisione doppia
+@cindex precisione arbitraria
+@cindex singola, precisione
+@cindex doppia, precisione
+@cindex arbitraria, precisione
+POSIX @command{awk} usa numeri in virgola mobile a @dfn{doppia precisione},
+che possono gestire pi@`u cifre rispetto ai numeri in virgola mobile a
 @dfn{singola precisione}.  @command{gawk} ha inoltre funzionalit@`a, descritte
 in dettaglio pi@`u sotto, che lo mettono in grado di eseguire
-calcoli con i numeri a virgola mobile con precisione arbitraria.
+calcoli con i numeri in virgola mobile con precisione arbitraria.
 @end table
 
-I calcolatori operano con valori interi e a virgola mobile su diversi
+I calcolatori operano con valori interi e in virgola mobile su diversi
 intervalli. I valori interi normalmente hanno una dimensione di 32 bit o 64 bit.
-I valori a virgola mobile a singola precisione occupano 32 bit, mentre i
-valori a virgola mobile a doppia precisione occupano 64 bit.  I valori a
-virgola mobile sono sempre con segno.  Il possibile campo di variazione dei
-valori @`e mostrato in @ref{table-numeric-ranges}.
+I valori in virgola mobile a singola precisione occupano 32 bit, mentre i
+valori in virgola mobile a doppia precisione occupano 64 bit.
+(Esistono anche numeri in virgola mobile a precisione quadrupla.  Occupano
+128 bit, ma non sono disponibili in @command{awk}.)
+I valori in virgola mobile sono sempre con segno.  I possibili campi di
+variazione dei valori sono mostrati in @ref{table-numeric-ranges} e in
+@ref{table-floating-point-ranges}.
 
 @float Tabella,table-numeric-ranges
-@caption{Intervalli dei valori per diverse rappresentazioni numeriche}
+@caption{Intervallo di valori per rappresentazioni di numeri interi}
 @multitable @columnfractions .34 .33 .33
-@headitem Rappresentazione numerica @tab Valore minimo @tab Valore massimo
+@headitem Rappresentazione @tab Valore minimo @tab Valore massimo
 @item Interi con segno a 32-bit @tab @minus{}2.147.483.648 @tab 2.147.483.647
 @item Interi senza segno a 32-bit @tab 0 @tab 4.294.967.295
 @item Interi con segno a 64-bit @tab @minus{}9.223.372.036.854.775.808 @tab 9.223.372.036.854.775.807
 @item Interi senza segno a 64-bit @tab 0 @tab 18.446.744.073.709.551.615
+@end multitable
+@end float
+
+@float Tabella,table-floating-point-ranges
+@caption{Intervallo di valori per rappresentazioni di numeri in virgola mobile}
+@multitable @columnfractions .34 .22 .22 .22
 @iftex
-@item Virgola mobile, singola precisione (circa) @tab @math{1,175494^{-38}} @tab @math{3,402823^{38}}
-@item Virgola mobile, doppia precisione (circa) @tab @math{2,225074^{-308}} @tab @math{1,797693^{308}}
+@headitem Rappresentazione @tab @w{Valore positivo} @w{minimo} @w{diverso da zero} @tab @w{Valore finito} @w{minimo} @tab @w{Valore finito} @w{massimo}
+@end iftex
+@ifnottex
+@headitem Rappresentazione @tab Valore positivo minimo diverso da zero @tab Valore finito minimo @tab Valore finito massimo 
+@end ifnottex
+@iftex
+@item @w{Virgola mobile, singola precis.} @tab @math{1,175494 @cdot 10^{-38}} @tab @math{-3,402823 @cdot 10^{38}} @tab @math{3,402823 @cdot 10^{38}}
+@item @w{Virgola mobile, doppia precis.} @tab @math{2,225074 @cdot 10^{-308}} @tab @math{-1,797693 @cdot 10^{308}} @tab @math{1,797693 @cdot 10^{308}}
+@item @w{Virgola mobile, quadrupla prec.} @tab @math{3,362103 @cdot 10^{-4932}} @tab @math{-1,189731 @cdot 10^{4932}} @tab @math{1,189731 @cdot 10^{4932}}
 @end iftex
 @ifinfo
-@item Virgola mobile, singola precisione (circa) @tab 1,175494e-38 @tab 3,402823e38
-@item Virgola mobile, doppia precisione (circa) @tab 2,225074e-308 @tab 1,797693e308
+@item Virgola mobile, singola precis. @tab 1,175494e-38 @tab -3,402823e38 @tab 3,402823e38
+@item Virgola mobile, doppia precis. @tab 2,225074e-308 @tab -1,797693e308 @tab 1,797693e308
+@item Virgola mobile, quadrupla prec. @tab 3,362103e-4932 @tab -1,189731e4932 @tab 1,189731e4932
 @end ifinfo
 @ifnottex
 @ifnotinfo
-@item Virgola mobile, singola precisione (circa) @tab 1,175494@sup{-38} @tab 3,402823@sup{38}
-@item Virgola mobile, singola precisione (circa) @tab 2,225074@sup{-308} @tab 1,797693@sup{308}
+@item Virgola mobile, singola precis. @tab 1,175494@sup{-38} @tab -3,402823@sup{38} @tab 3,402823*10@sup{38}
+@item Virgola mobile, singola precis. @tab 2,225074@sup{-308} @tab -1,797693@sup{308} @tab 1,797693*10@sup{308}
+@item Virgola mobile, quadrupla prec. @tab 3,362103@sup{-4932} @tab -1,189731@sup{4932} @tab 1,189731@sup{4932} @tab 1.189731@sup{4932}
 @end ifnotinfo
 @end ifnottex
 @end multitable
@@ -32868,7 +33058,7 @@ per la lettura di questo documento:
 
 @table @dfn
 @item Accuratezza
-L'accuratezza del calcolo sui numeri a virgola mobile indica di quanto si
+L'accuratezza del calcolo sui numeri in virgola mobile indica di quanto si
 avvicina il calcolo al valore reale (calcolato con carta e penna).
 
 @item Errore
@@ -32878,14 +33068,14 @@ possibile.
 
 @item Esponente
 L'ordine di grandezza di un valore;
-alcuni bit in un valore a virgola mobile contengono l'esponente.
+alcuni bit in un valore in virgola mobile contengono l'esponente.
 
 @item Inf
 Un valore speciale che rappresenta l'infinito. Le operazioni tra un qualsiasi
 numero e l'infinito danno infinito.
 
 @item Mantissa
-Un valore a virgola mobile @`e formato dalla mantissa moltiplicata per 10
+Un valore in virgola mobile @`e formato dalla mantissa moltiplicata per 10
 alla potenza dell'esponente. Per esempio, in @code{1,2345e67},
 la mantissa @`e @code{1,2345}.
 
@@ -32920,7 +33110,7 @@ generato il numero), ma non @`e memorizzato fisicamente.
 Questo fornisce un bit di precisione in pi@`u.
 
 @item Precisione
-Il numero di bit usati per rappresentare un numero a virgola mobile.
+Il numero di bit usati per rappresentare un numero in virgola mobile.
 Pi@`u sono i bit, e maggiore @`e l'intervallo di cifre che si possono
 rappresentare.
 Le precisioni binaria e decimale sono legate in modo approssimativo, secondo
@@ -33069,10 +33259,10 @@ ottenere ulteriori informazioni, e non basarsi solo su quanto qui detto.
 @node Inesattezza nei calcoli
 @subsection La matematica in virgola mobile non @`e esatta
 
-Le rappresentazioni e i calcoli con numeri a virgola mobile binari sono
+Le rappresentazioni e i calcoli con numeri in virgola mobile binari sono
 inesatti.  Semplici valori come  0,1 non possono essere rappresentati in modo
-preciso usando numeri a virgola mobile binari, e la limitata precisione dei
-numeri a virgola mobile significa che piccoli cambiamenti nell'ordine delle
+preciso usando numeri in virgola mobile binari, e la limitata precisione dei
+numeri in virgola mobile significa che piccoli cambiamenti nell'ordine delle
 operazioni o la precisione di memorizzazione di operazioni
 intermedie pu@`o cambiare il
 risultato. Per rendere la situazione pi@`u difficile, nel calcolo in virgola
@@ -33102,7 +33292,7 @@ Diversamente dal numero in @code{y}, il numero memorizzato in @code{x}
 @`e rappresentabile esattamente nel formato binario, perch@'e pu@`o essere
 scritto come somma finita di una o pi@`u frazioni i cui denominatori sono tutti
 multipli di due.
-Quando @command{gawk} legge un numero a virgola mobile dal sorgente di un
+Quando @command{gawk} legge un numero in virgola mobile dal sorgente di un
 programma, arrotonda automaticamente quel numero alla precisione, quale che
 sia, supportata dal computer in uso. Se si tenta di stampare il contenuto
 numerico di una variabile usando una stringa di formato in uscita di
@@ -33125,7 +33315,7 @@ nell'esempio precedente, d@`a luogo a un output identico all'input.
 
 Poich@'e la rappresentazione interna del computer
 pu@`o discostarsi, sia pur di poco, dal valore
-esatto, confrontare dei valori a virgola mobile per vedere se sono esattamente
+esatto, confrontare dei valori in virgola mobile per vedere se sono esattamente
 uguali @`e generalmente una pessima idea.  Questo @`e un esempio in cui tale
 confronto non funziona come dovrebbe:
 
@@ -33134,19 +33324,21 @@ $ @kbd{gawk 'BEGIN @{ print (0.1 + 12.2 == 12.3) @}'}
 @print{} 0
 @end example
 
-Il metodo generalmente seguito per confrontare valori a virgola mobile
+Il metodo generalmente seguito per confrontare valori in virgola mobile
 consiste nel controllare se la differenza tra loro @`e minore di un certo valore
 (chiamato @dfn{delta}, o @dfn{tolleranza}).  Quel che si deve decidere @`e qual
 @`e il valore minimo di delta
 adeguato.  Il codice per far ci@`o @`e qualcosa del genere:
 
 @example
+@group
 delta = 0.00001                 # per esempio
 differenza = abs(a) - abs(b)    # sottrazione dei due valori
 if (differenza < delta)
     # va bene
 else
     # non va bene
+@end group
 @end example
 
 @noindent
@@ -33157,7 +33349,7 @@ chiamata @code{abs()}.)
 @node Gli errori si sommano
 @subsubsection Gli errori diventano sempre maggiori
 
-La perdita di accuratezza in un singolo calcolo con numeri a virgola mobile
+La perdita di accuratezza in un singolo calcolo con numeri in virgola mobile
 generalmente non dovrebbe destare preoccupazione.  Tuttavia, se si calcola un
 valore che @`e una sequenza di operazioni in virgola mobile, l'errore si pu@`o
 accumulare e influire sensibilmente sul risultato del calcolo stesso.
@@ -33372,6 +33564,8 @@ $ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", 1/10) @}'}
 @node Impostare modo di arrotondare
 @subsection Impostare la modalit@`a di arrotondamento
 
+@cindex @code{ROUNDMODE}, variable
+@cindex variabile @code{ROUNDMODE}
 La variabile @code{ROUNDMODE} permette di controllare a livello di programma
 la modalit@`a di arrotondamento.
 La corrispondenza tra @code{ROUNDMODE} e le modalit@`a di arrotondamento IEEE
@@ -33410,7 +33604,7 @@ In questo caso, il numero @`e arrotondato alla cifra @emph{pari} pi@`u prossima.
 Cos@`{@dotless{i}} arrotondando 0.125 alle due cifre si arrotonda per difetto a 0.12,
 ma arrotondando 0.6875 alle tre cifre si arrotonda per eccesso a 0.688.
 Probabilmente ci si @`e gi@`a imbattuti in questa modalit@`a di arrotondamento
-usando @code{printf} per formattare numeri a virgola mobile.
+usando @code{printf} per formattare numeri in virgola mobile.
 Per esempio:
 
 @example
@@ -33448,6 +33642,32 @@ valori equidistanti in eccesso e in difetto si distribuiscono pi@`u o meno
 uniformemente, con la possibile conseguenza che errori di arrotondamento
 ripetuti tendono ad annullarsi a vicenda.  Questa @`e la modalit@`a di
 arrotondamento di default per funzioni e operatori di calcolo secondo IEEE 754.
+@c January 2018. Thanks to nethox@gmail.com for the example.
+@sidebar Modalit@`a di arrotondamento e conversioni
+@`E importante comprendere che, insieme a @code{CONVFMT} e
+@code{OFMT}, la modalit@`a di arrotondamento ha effetto anche sul
+modo con cui i numeri sono convertiti in stringhe di caratteri.
+Per esempio,si consideri il seguente programma:
+
+@example
+BEGIN @{
+    pi = 3.1416
+    OFMT = "%.f"        # Stampa il valore come numero intero
+    print pi            # ROUNDMODE = "N" per default.
+    ROUNDMODE = "U"     # Ora si cambia ROUNDMODE
+    print pi
+@}
+@end example
+
+@noindent
+L'esecuzione di questo programma produce il seguente output:
+
+@example
+$ @kbd{gawk -M -f roundmode.awk}
+@print{} 3
+@print{} 4
+@end example
+@end sidebar
 
 Le altre modalit@`a di arrotondamento sono usate raramente.  Gli arrotondamenti
 verso l'infinito (@code{roundTowardPositive}) e verso il meno infinito
@@ -33455,7 +33675,7 @@ verso l'infinito (@code{roundTowardPositive}) e verso il meno infinito
 intervalli, dove si adotta questa modalit@`a di arrotondamento per calcolare
 i limiti superiore e inferiore per l'intervallo di valori in uscita.
 La modalit@`a
-@code{roundTowardZero} pu@`o essere usata per convertire numeri a virgola mobile
+@code{roundTowardZero} pu@`o essere usata per convertire numeri in virgola mobile
 in numeri interi.  Quando si arrotonda lontano da zero (per eccesso), viene
 scelto il numero pi@`u vicino di grandezza maggiore o uguale al valore.
 
@@ -33494,7 +33714,7 @@ disponibile.  Per esempio, il seguente programma calcola
 5@sup{4@sup{3@sup{2}}},
 @end ifnotinfo
 @end ifnottex
-il cui risultato @`e oltre i limiti degli ordinari valori a virgola mobile a
+il cui risultato @`e oltre i limiti degli ordinari valori in virgola mobile a
 doppia precisione dei processori:
 
 @example
@@ -33507,7 +33727,7 @@ $ @kbd{gawk -M 'BEGIN @{}
 @print{} 62060698786608744707 ... 92256259918212890625
 @end example
 
-Se invece si dovesse calcolare lo stesso valore usando valori a virgola mobile
+Se invece si dovesse calcolare lo stesso valore usando valori in virgola mobile
 con precisione arbitraria, la precisione necessaria per il risultato corretto
 (usando
 la formula
@@ -33528,8 +33748,8 @@ would be
 @end docbook
 o 608693.
 
-Il risultato di un'operazione aritmetica tra un intero e un valore a virgola
-mobile @`e un valore a virgola mobile con precisione uguale alla precisione di
+Il risultato di un'operazione aritmetica tra un intero e un valore in virgola
+mobile @`e un valore in virgola mobile con precisione uguale alla precisione di
 lavoro.  Il seguente programma calcola l'ottavo termine nella successione di
 Sylvester@footnote{Weisstein, Eric W.
 @cite{Sylvester's Sequence}. From MathWorld---A Wolfram Web Resource
@@ -33555,7 +33775,7 @@ esattamente il risultato in virgola mobile. Si pu@`o o aumentare la precisione
 gli interi per ottenere l'output corretto.
 
 A volte @command{gawk} deve convertire implicitamente un intero con precisione
-arbitraria in un valore a virgola mobile con precisione arbitraria.
+arbitraria in un valore in virgola mobile con precisione arbitraria.
 Ci@`o si rende necessario
 principalmente perch@'e la libreria MPFR non sempre prevede l'interfaccia
 necessaria per elaborare interi a precisione arbitraria o numeri di tipo
@@ -33563,7 +33783,7 @@ eterogeneo come richiesto da un'operazione o funzione.  In tal caso, la
 precisione viene impostata al minimo valore necessario per una conversione
 esatta, e non viene usata la precisione di lavoro.  Se
 questo non @`e quello di cui si ha bisogno o che si vuole, si pu@`o ricorrere a un
-sotterfugio e convertire preventivamente l'intero in un valore a virgola
+sotterfugio e convertire preventivamente l'intero in un valore in virgola
 mobile, come qui di seguito:
 
 @example
@@ -33571,7 +33791,7 @@ gawk -M 'BEGIN @{ n = 13; print (n + 0.0) % 2.0 @}'
 @end example
 
 Si pu@`o evitare completamente questo passaggio specificando il numero come
-valore a virgola mobile fin dall'inizio:
+valore in virgola mobile fin dall'inizio:
 
 @example
 gawk -M 'BEGIN @{ n = 13.0; print n % 2.0 @}'
@@ -33585,7 +33805,7 @@ gawk -M 'BEGIN @{ n = 13; print n % 2 @}'
 @end example
 
 Dividendo due interi a precisione arbitraria con @samp{/} o con @samp{%}, il
-risultato @`e tipicamente un valore a virgola mobile con precisione arbitraria
+risultato @`e tipicamente un valore in virgola mobile con precisione arbitraria
 (a meno che il risultato non sia un numero intero esatto).
 @ifset INTDIV
 Per eseguire divisioni intere o calcolare moduli con interi a precisione
@@ -33637,6 +33857,7 @@ che si @`e scelto di impostare:
 
 @example
 @c file eg/prog/pi.awk
+@group
 # pi.awk --- calcola le cifre di pi
 @c endfile
 @c endfile
@@ -33652,6 +33873,7 @@ che si @`e scelto di impostare:
 BEGIN @{
     cifre = 100000
     due = 2 * 10 ^ cifre
+@end group
     pi = due
     for (m = cifre * 4; m > 0; --m) @{
         d = m * 2 + 1
@@ -33762,10 +33984,15 @@ BEGIN @{
     if (! adequate_math_precision(fpbits)) @{
         print("Errore: la precisione di calcolo disponibile non basta.\n" \
               "Provare ancora specificando l'argomento -M?") > "/dev/stderr"
+        # Nota: pu@`o essere necessario impostare un flag a questo punto
+	#       per evitare di eseguire delle eventuali regole END
         exit 1
     @}
 @}
 @end example
+
+Occorre tener presente che @code{exit} eseguir@`a le regole @code{END},
+eventualmente contenute nel programma (@pxref{Istruzione exit}).
 
 @node Problemi virgola mobile POSIX
 @section Confronto tra standard e uso corrente
@@ -33782,12 +34009,12 @@ aggiuntive.  Queste sono:
 
 @itemize @value{BULLET}
 @item
-Interpretazione del valore dei dati a virgola mobile specificati in notazione
+Interpretazione del valore dei dati in virgola mobile specificati in notazione
 esadecimale (p.es., @code{0xDEADBEEF}). (Da notare: valore dei dati letti,
 @emph{non} costanti facenti parte del codice sorgente.)
 
 @item
-Supporto per i valori a virgola mobile speciali IEEE 754 ``not a number''
+Supporto per i valori in virgola mobile speciali IEEE 754 ``not a number''
 (NaN), pi@`u infinito (``inf'') e meno infinito (``@minus{}inf'').
 In particolare, il formato per questi valori @`e quello specificato dallo
 standard C ISO 1999, che non distingue maiuscole/minuscole e pu@`o consentire
@@ -33800,7 +34027,7 @@ dalla prassi consolidata:
 
 @itemize @value{BULLET}
 @item
-Il manutentore di @command{gawk} crede che supportare i valori a virgola mobile
+Il manutentore di @command{gawk} crede che supportare i valori in virgola mobile
 esadecimali, nello specifico, sia sbagliato, e che non sia mai stata intenzione
 dell'autore originale di introdurlo nel linguaggio.
 
@@ -33818,7 +34045,7 @@ arrivati sin qui, ma non pensiamo che questo sia il posto dove volete essere.''
 Recependo queste argomentazioni, e cercando nel contempo di assicurare la
 compatibilit@`a con le versioni precedenti dello standard, lo standard POSIX 2008
 ha aggiunto delle formulazioni esplicite per consentire l'uso da parte di
-@command{awk}, solo a richiesta, dei valori a virgola mobile esadecimali e
+@command{awk}, solo a richiesta, dei valori in virgola mobile esadecimali e
 dei valori speciali
 ``@dfn{not a number}'' e infinito.
 
@@ -33856,7 +34083,7 @@ e
 @samp{-nan}
 in modo speciale, producendo i corrispondenti valori numerici speciali.
 Il segno iniziale serve per segnalare a @command{gawk} (e all'utente)
-che il valore @`e realmente numerico.  I numeri a virgola mobile esadecimali
+che il valore @`e realmente numerico.  I numeri in virgola mobile esadecimali
 non sono consentiti (a meno di non usare anche @option{--non-decimal-data},
 che @emph{non} @`e consigliabile). Per esempio:
 
@@ -33880,12 +34107,12 @@ speciali. Cos@`{@dotless{i}}, @samp{+nan} e @samp{+NaN} sono la stessa cosa.
 @item
 La maggior parte dell'aritmetica al calcolatore @`e fatta usando numeri interi
 oppure
-valori a virgola mobile.  L'@command{awk} standard usa valori a virgola mobile
+valori in virgola mobile.  L'@command{awk} standard usa valori in virgola mobile
 a doppia precisione.
 
 @item
 Nei primi anni '90 Barbie disse erroneamente, ``L'ora di matematica @`e
-ostica!''  Sebbene la matematica non sia ostica, l'aritmetica a virgola
+ostica!''  Sebbene la matematica non sia ostica, l'aritmetica in virgola
 mobile non @`e proprio come la
 matematica ``carta e penna'', e bisogna prestare attenzione:
 
@@ -33926,7 +34153,7 @@ una pi@`u efficiente allocazione dello spazio rispetto all'uso di MPFR per
 eseguire gli stessi calcoli.
 
 @item
-Ci sono diverse aree per quanto attiene ai numeri a virgola mobile in cui
+Ci sono diverse aree per quanto attiene ai numeri in virgola mobile in cui
 @command{gawk} @`e in disaccordo con lo standard POSIX.
 @`E importante averlo ben presente.
 
@@ -34362,7 +34589,7 @@ e sono gestite da @command{gawk} da quel punto in avanti.
 @item
 L'API definisce parecchie semplici @code{struct} che mappano dei valori
 come sono visti da @command{awk}.  Un valore pu@`o essere un numero @code{double}
-(a virgola mobile, in doppia precisione), una stringa o un
+(in virgola mobile, in doppia precisione), una stringa o un
 vettore (come @`e il caso per i vettori multidimensionali o nella creazione di
 un nuovo vettore).
 
@@ -34541,7 +34768,7 @@ linguaggio C++ che con il C.
 @itemx @} awk_number_t;
 Questo rappresenta un valore numerico.  Internamente, @command{gawk}
 memorizza ogni numero o come una variabile C di tipo @code{double},
-o come un numero intero GMP, o come un numero MPFR a virgola mobile
+o come un numero intero GMP, o come un numero MPFR in virgola mobile
 di precisione arbitraria.  Per consentire alle estensioni di
 supportare valori numerici GMP ed MPFR, i valori numerici sono
 trasmessi utilizzando questa struttura.
@@ -34550,7 +34777,7 @@ L'elemento in doppia-precisione @code{d} @`e sempre presente nei dati
 ricevuti da @command{gawk}.  Inoltre, esaminando il membro
 @code{type}, un'estensione @`e in grado di determinare se il membro puntato
 da @code{ptr} sia un numero intero GMP (tipo @code{mpz_ptr}), o un numero
-MPFR a virgola mobile (tipo @code{mpfr_ptr_t}), e trasformarlo a seconda
+MPFR in virgola mobile (tipo @code{mpfr_ptr_t}), e trasformarlo a seconda
 delle necessit@`a.
 
 @item typedef void *awk_scalar_t;
@@ -34761,15 +34988,18 @@ Questo @`e solitamente il nome della funzione che sta usando la macro.
 Per esempio, si potrebbe allocare il valore di una stringa cos@`{@dotless{i}}:
 
 @example
+@group
 awk_value_t risultato;
 char *message;
-const char greet[] = "non v'allarmate!";
+const char greet[] = "Non v'allarmate!";
 
 emalloc(message, char *, sizeof(greet), "myfunc");
 strcpy(message, greet);
 make_malloced_string(message, strlen(message), & risultato);
+@end group
 @end example
 
+@sp 2
 @item #define ezalloc(pointer, type, size, message) @dots{}
 Questo @`e simile a @code{emalloc()}, ma chiama @code{gawk_calloc()}
 invece che @code{gawk_malloc()}.
@@ -34921,6 +35151,7 @@ registrare parti di un'estensione con @command{gawk}.
 Le funzioni di estensione sono descritte dal seguente tracciato record:
 
 @example
+@group
 typedef struct awk_ext_func @{
 @ @ @ @ const char *name;
 @ @ @ @ awk_value_t *(*const function)(int num_actual_args,
@@ -34932,6 +35163,7 @@ typedef struct awk_ext_func @{
 @ @ @ @ void *data;        /* puntatore di tipo opaco 
 @ @ @ @                    a ogni informazione ulteriore */
 @} awk_ext_func_t;
+@end group
 @end example
 
 I campi sono:
@@ -35152,6 +35384,7 @@ L'estensione dovrebbe raccogliere queste funzioni all'interno di una
 struttura @code{awk_input_parser_t}, simile a questa:
 
 @example
+@group
 typedef struct awk_input_parser @{
     const char *name;   /* nome dell'analizzatore */
     awk_bool_t (*can_take_file)(const awk_input_buf_t *iobuf);
@@ -35159,6 +35392,7 @@ typedef struct awk_input_parser @{
     awk_const struct awk_input_parser *awk_const next;   /* per uso
                                                             di gawk */
 @} awk_input_parser_t;
+@end group
 @end example
 
 I campi sono:
@@ -35985,6 +36219,7 @@ che un accesso @`e necessario.  Questo
 argomento @`e gi@`a stato trattato in precedenza, nella
 @ref{Tipi di dati generali}.
 
+@need 1500
 Le funzioni seguenti servono per gestire gli @dfn{scalar cookie}:
 
 @table @code
@@ -36055,12 +36290,14 @@ uno @dfn{scalar cookie} per la
 variabile usando @code{sym_lookup()}:
 
 @example
+@group
 static awk_scalar_t magic_var_cookie;    /* cookie per MAGIC_VAR */
 
 static void
 inizializza_estensione()
 @{
     awk_value_t valore;
+@end group
 
     /* immettere il valore iniziale */
     sym_update("MAGIC_VAR", make_number(42.0, & valore));
@@ -36611,10 +36848,12 @@ Infine, poich@'e tutto @`e andato bene, la funzione imposta il codice di ritorno
 a "successo", e lo restituisce quando esce:
 
 @example
+@group
     make_number(1.0, risultato);
 out:
     return risultato;
 @}
+@end group
 @end example
 
 Ecco l'output ottenuto eseguendo questa parte del test:
@@ -36718,7 +36957,7 @@ Tabella dei simboli:
 #include "gawkapi.h"
 
 static const gawk_api_t *api;   /* per far funzionare le macro di utilit@`a */
-static awk_ext_id_t *ext_id;
+static awk_ext_id_t ext_id;
 static const char *ext_version = "testarray extension: version 1.0";
 
 int plugin_is_GPL_compatible;
@@ -36834,7 +37073,7 @@ BEGIN @{
 Ecco il risultato dell'esecuzione dello script:
 
 @example
-$ @kbd{AWKLIBPATH=$PWD ./gawk -f subarray.awk}
+$ @kbd{AWKLIBPATH=$PWD gawk -f subarray.awk}
 @print{} new_array["sottovettore"]["pippo"] = pluto
 @print{} new_array["salve"] = mondo
 @print{} new_array["risposta"] = 42
@@ -36991,7 +37230,7 @@ Dipende dall'estensione decidere se ci sono incompatibilit@`a con l'API.
 Tipicamente, basta un controllo di questo tipo:
 
 @example
-if (api->major_version != GAWK_API_MAJOR_VERSION
+if (   api->major_version != GAWK_API_MAJOR_VERSION
     || api->minor_version < GAWK_API_MINOR_VERSION) @{
         fprintf(stderr, "estensione_pippo: discordanza di versione \
 con gawk!\n");
@@ -37111,10 +37350,12 @@ standard, come descritto qui sotto.  Il codice predefinito in questione @`e
 anche descritto nel file di intestazione @file{gawkapi.h}:
 
 @example
+@group
 /* Codice predefinito: */
 int plugin_is_GPL_compatible;
 
 static gawk_api_t *const api;
+@end group
 static awk_ext_id_t ext_id;
 static const char *ext_version = NULL; /* o @dots{} = "qualche stringa" */
 
@@ -37532,7 +37773,7 @@ per usare le macro dell'API e il codice predefinito
 
 static const gawk_api_t *api;    /* per consentire il funzionamento
                                     delle macro di utilit@`a */
-static awk_ext_id_t *ext_id;
+static awk_ext_id_t ext_id;
 static awk_bool_t init_filefuncs(void);
 static awk_bool_t (*init_func)(void) = init_filefuncs;
 static const char *ext_version = "filefuncs extension: version 1.0";
@@ -37550,11 +37791,13 @@ Il secondo @`e un puntatore a una struttura @code{awk_value_t}, normalmente
 chiamata @code{risultato}:
 
 @example
+@group
 /*  do_chdir --- fornisce funzione chdir()
                  caricata dinamicamente per gawk */
 
 static awk_value_t *
 do_chdir(int nargs, awk_value_t *risultato, struct awk_ext_func *non_usata)
+@end group
 @{
     awk_value_t newdir;
     int ret = -1;
@@ -37689,7 +37932,7 @@ fill_stat_array(const char *name, awk_array_t vettore, struct stat *sbuf)
 #endif
 #ifdef S_IFDOOR /* Stranezza Solaris */
         @{ S_IFDOOR, "door" @},
-#endif /* S_IFDOOR */
+#endif
     @};
     int j, k;
 @end example
@@ -37731,9 +37974,11 @@ certi campi e/o il tipo del file.  Viene poi restituito zero, per indicare che
 tutto @`e andato bene:
 
 @example
+@group
 #ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
     array_set_numeric(vettore, "blksize", sbuf->st_blksize);
-#endif /* HAVE_STRUCT_STAT_ST_BLKSIZE */
+#endif
+@end group
 
     pmode = format_mode(sbuf->st_mode);
     array_set(vettore, "pmode", make_const_string(pmode, strlen(pmode),
@@ -37829,10 +38074,12 @@ Poi, ottiene le informazioni relative al file.  Se la funzione chiamata
        in caso di errore,
        imposta ERRNO e ritorna */
     ret = statfunc(name, & sbuf);
+@group
     if (ret < 0) @{
         update_ERRNO_int(errno);
         return make_number(ret, risultato);
     @}
+@end group
 @end example
 
 Il lavoro noioso @`e svolto da @code{fill_stat_array()}, visto in
@@ -37840,10 +38087,12 @@ precedenza.  Alla fine, la funzione restituisce il codice di ritorno
 impostato da @code{fill_stat_array()}:
 
 @example
+@group
     ret = fill_stat_array(name, vettore, & sbuf);
 
     return make_number(ret, risultato);
 @}
+@end group
 @end example
 
 Infine, @`e necessario fornire la ``colla'' che aggrega
@@ -38726,7 +38975,7 @@ Questo @`e il modo per caricare l'estensione.
 @cindex estensione @code{gettimeofday()}
 @item ora_corrente = gettimeofday()
 Restituisce il numero di secondi trascorsi dalle ore 00:00 del giorno
-01/01/1970 UTC come valore a virgola mobile.
+01/01/1970 UTC come valore in virgola mobile.
 Se questa informazione non @`e disponibile nella piattaforma in uso,
 restituisce @minus{}1 e imposta @code{ERRNO}.  Il valore fornito dovrebbe
 avere la precisione di una frazione di
@@ -38745,7 +38994,7 @@ specificati.  Se @var{secondi} ha un valore negativo,
 o la chiamata di sistema non riesce, restituisce @minus{}1 e imposta @code{ERRNO}.
 In caso contrario, restituisce zero dopo aver lasciato trascorrere
 la quantit@`a di tempo indicata.
-Si noti che @var{secondi} pu@`o essere un numero a virgola mobile (non solo un
+Si noti che @var{secondi} pu@`o essere un numero in virgola mobile (non solo un
 numero intero).
 Dettagli di implementazione: a seconda della disponibilit@`a nel sistema in uso,
 questa funzione tenta di usare @code{nanosleep()} o @code{select()} per
@@ -41606,7 +41855,7 @@ quando si compila @command{gawk} a partire dai sorgenti, tra cui:
 @cindex @option{--disable-extensions}, opzione di configurazione
 @cindex opzione di configurazione @code{--disable-extensions}
 @item --disable-extensions
-Richiede di non configurare e generare le estensioni di esempio nella
+Richiesta di non configurare e generare le estensioni di esempio nella
 directory @file{extension}. Questo @`e utile quando si genera
 @command{gawk} per essere eseguito su un'altra piattaforma.
 L'azione di default @`e di controllare dinamicamente se le estensioni
@@ -41615,7 +41864,7 @@ possono essere configurate e compilate.
 @cindex @option{--disable-lint}, opzione di configurazione
 @cindex opzione di configurazione @code{--disable-lint}
 @item --disable-lint
-Disabilita i controlli @dfn{lint} all'interno di @command{gawk}.  Le opzioni
+Disabilitare i controlli @dfn{lint} all'interno di @command{gawk}.  Le opzioni
 @option{--lint} e @option{--lint-old}
 (@pxref{Opzioni})
 sono accettate, ma non fanno nulla, e non emettono alcun messaggio di
@@ -41640,7 +41889,7 @@ Quest'opzione potr@`a essere rimossa in futuro.
 @cindex @option{--disable-mpfr}, opzione di configurazione
 @cindex opzione di configurazione @code{--disable-mpfr}
 @item --disable-mpfr
-Non viene effettuato il controllo delle librerie MPFR e GMP.
+Non effettuare il controllo delle librerie MPFR e GMP.
 Ci@`o pu@`o essere utile principalmente per gli sviluppatori,
 per assicurarsi che tutto funzioni regolarmente nel caso in cui
 il supporto MPFR non sia disponibile.
@@ -41648,9 +41897,19 @@ il supporto MPFR non sia disponibile.
 @cindex @option{--disable-nls}, opzione di configurazione
 @cindex opzione di configurazione @code{--disable-nls}
 @item --disable-nls
-Non attiva la traduzione automatica dei messaggi.
+Non attivare la traduzione automatica dei messaggi.
 Ci@`o normalmente non @`e consigliabile, ma pu@`o apportare qualche lieve
 miglioramento nei tempi di esecuzione di un programma.
+
+@cindex @option{--enable-versioned-extension-dir}, opzione di configurazione
+@cindex opzione di configuzazione @code{--enable-versioned-extension-dir}
+@item --enable-versioned-extension-dir
+Usare una directory con l'indicazione della versione per le estensioni.
+Il nome della directory conterr@`a la versione principale e quella
+secondaria dell'API.  Ci@`o consente la presenza, nello stesso sistema,
+di pi@`u di una versione dell'API, senza che fra di esse sorgano dei
+conflitti legati all'una o all'altra versione.
+
 @end table
 
 Si usi il comando @samp{./configure --help} per ottenere la lista completa
@@ -42520,13 +42779,6 @@ il codice relativo rester@`a nella distribuzione ancora per qualche tempo,
 nel caso che qualche volontario desideri prenderla in carico.
 Se questo non dovesse succedere, la parte di codice relativa questa
 versione sar@`a rimossa dalla distribuzione.
-
-@c 7/2017, Juan Guerrero has taken over the DJGPP port.
-@ignore
-The DJGPP port is no longer supported; it will remain in the code base
-for a while in case a volunteer wishes to take it over. If this does
-not happen, then eventually code for this port will be removed.
-@end ignore
 
 @node Altre versioni
 @appendixsec Altre implementazioni di @command{awk} liberamente disponibili
@@ -43564,7 +43816,7 @@ sistemi operativi possono avere limiti differenti.
 @item Numero di record in input in un singolo file @tab @code{MAX_LONG}
 @item Numero totale di record in input @tab @code{MAX_LONG}
 @item Numero di ridirezioni via @dfn{pipe} @tab min(numero processi per utente, numero di file aperti)
-@item Valori numerici @tab Numeri a virgola mobile in doppia precisione (se non si usa la funzionalit@`a MPFR)
+@item Valori numerici @tab Numeri in virgola mobile in doppia precisione (se non si usa la funzionalit@`a MPFR)
 @item Dimensione di un campo @tab @code{MAX_INT}
 @item Dimensione di una stringa letterale @tab @code{MAX_INT}
 @item Dimensione di una stringa di @dfn{printf} @tab @code{MAX_INT}
@@ -44103,7 +44355,7 @@ variabili numeriche e di tipo stringa, sono definite come valori
 La
 @end iftex
 @ref{Aritmetica del computer}, ha fornito un'introduzione di base ai tipi
-numerici (interi e a virgola mobile) e a come questi sono usati in un computer.
+numerici (interi e in virgola mobile) e a come questi sono usati in un computer.
 Si consiglia di rileggere quelle informazioni, comprese le numerose avvertente
 l@`a esposte.
 
@@ -44117,14 +44369,30 @@ programmi @command{awk}: @code{""}.
 
 Gli esseri umani sono abituati a usare il sistema decimale, cio@`e a base 10.
 In base 10, i numeri vanno da 0 a 9, e poi ``vengono riportati'' nella
-colonna successiva.  (Chi si ricorda la scuola elementare? 42 = 4 x 10 + 2.)
+colonna
+@iftex
+colonna successiva.
+(Chi si ricorda la scuola elementare? @math{42 = 4 volte 10 + 2}.)
+@end iftex
+@ifnottex
+colonna successiva.
+(Chi si ricorda la scuola elementare? 42 = 4 x 10 + 2.)
+@end ifnottex
 
 Ma esistono anche altre basi per i numeri.  I computer normalmente usano
 la base 2 o @dfn{binaria}, la base 8 o @dfn{ottale}, e la base 16 o
 @dfn{esadecimale}.  Nella numerazione binaria, ogni colonna rappresenta il
 doppio del valore della colonna alla sua destra.  Ogni colonna pu@`o contenere
-solo uno 0 o un 1.  Quindi, il numero binario 1010 rappresenta (1 x 8) + (0 x
-4) + (1 x 2) + (0 x 1), ossia il numero decimale 10.  Le numerazioni ottale ed
+solo uno 0 o un 1.
+@iftex
+Quindi, il numero binario 1010 rappresenta @math{(1 volta 8) + (0 volte 4)
++ (1 volta 2) + (0 volte 1)}, ossia il numero decimale 10.
+@end iftex
+@ifnottex
+Quindi, il numero binario 1010 rappresenta (1 x 8) + (0 x 4)
++ (1 x 2) + (0 x 1), ossia il numero decimale 10.
+@end ifnottex
+Le numerazioni ottale ed
 esadecimale sono trattate pi@`u ampiamente
 @ifnottex
 in
@@ -44277,7 +44545,13 @@ i circuiti elettronici funzionano ``naturalmente'' in base 2
 calcolata usando la base 2. Ciascuna cifra rappresenta la presenza
 (o l'assenza) di una potenza di 2 ed @`e chiamata un @dfn{bit}.
 Cos@`{@dotless{i}}, per esempio, il numero in base due @code{10101} rappresenta il
-numero in base decimale 21, ((1 x 16) + (1 x 4) + (1 x 1)).
+numero in base decimale 21,
+@iftex
+(@math{(1 volta 16) + (1 volta 4) + (1 volta 1)}).
+@end iftex
+@ifnottex
+((1 x 16) + (1 x 4) + (1 x 1)).
+@end ifnottex
 
 Poich@'e i numeri in base due diventano rapidamente molto lunghi
 sia da leggere che da scrivere, normalmente li si unisce a gruppi di tre
@@ -44344,9 +44618,9 @@ Abbreviazione di ``Binary Digit'' [cifra binaria].
 Tutti i valori nella memoria di un computer sono rappresentati nella forma di
 cifre binarie: valori che sono zero o uno.
 Gruppi di bit possono essere interpretati differentemente---come numeri
-interi, numeri a virgola mobile, dati di tipo carattere, indirizzi di altri
+interi, numeri in virgola mobile, dati di tipo carattere, indirizzi di altri
 oggetti contenuti in memoria, o altri dati ancora.
-@command{awk} permette di lavorare con numeri a virgola mobile e stringhe.
+@command{awk} permette di lavorare con numeri in virgola mobile e stringhe.
 @command{gawk} permette di manipolare bit con le funzioni predefinite
 descritte
 @ifnottex
@@ -44387,7 +44661,7 @@ stile complessivo, che @`e abbastanza simile a quello del linguaggio C.
 La C shell non @`e compatibile all'indietro con la Bourne Shell, e per questo
 motivo un'attenzione speciale @`e necessaria se si convertono alla C shell
 degli script scritti per altre shell Unix, in particolare per ci@`o che
-concerne la gestione delle variaili di shell.
+concerne la gestione delle variabili di shell.
 Si veda anche ``Bourne Shell''.
 
 @item C++
@@ -44525,7 +44799,13 @@ le lettere @code{A}--@code{F}, con @samp{A}
 che rappresenta 10, @samp{B} che rappresenta 11, e cos@`{@dotless{i}} via, fino a
 @samp{F} per 15.
 I numeri esadecimali sono scritti in C prefissandoli con @samp{0x},
-per indicarne la base.  Quindi, @code{0x12} @`e 18 ((1 x 16) + 2).
+per indicarne la base.
+@iftex
+Quindi, @code{0x12} @`e 18 (@math{(1 volta 16) + 2}).
+@end iftex
+@ifnottex
+Quindi, @code{0x12} @`e 18 ((1 x 16) + 2).
+@end ifnottex
 @xref{Numeri non-decimali}.
 
 @item Espressione booleana
@@ -44619,7 +44899,7 @@ Si veda anche ``Espressioni regolari''.
 La negazione di una @dfn{espressione tra parentesi quadre}.  Tutto ci@`o che
 @emph{non} @`e descritto da una data espressione tra parentesi quadre.
 Il simbolo @samp{^} precede l'espressione tra parentesi quadre che viene
-negata.  Per esempio: @samp{[[^:digit:]}
+negata.  Per esempio: @samp{[^[:digit:]]}
 designa qualsiasi carattere che non sia una cifra. @samp{[^bad]}
 designa qualsiasi carattere che non sia una delle lettere @samp{b}, @samp{a},
 o @samp{d}.
@@ -44901,11 +45181,11 @@ Un'operazione che non fa nulla.
 
 @item Numero
 Un dato oggetto il cui valore @`e numerico. Le implementazioni di @command{awk}
-usano numeri a virgola mobile in doppia precisione per rappresentare i numeri.
-Le primissime implementazioni di @command{awk} usavano numeri a virgola mobile
+usano numeri in virgola mobile in doppia precisione per rappresentare i numeri.
+Le primissime implementazioni di @command{awk} usavano numeri in virgola mobile
 in singola precisione.
 
-@item Numero a virgola mobile
+@item Numero in virgola mobile
 Spesso descritto, in termini matematici, come un numero ``razionale'' o reale,
 @`e soltanto un numero che pu@`o avere una parte frazionaria.
 Si veda anche ``Doppia precisione'' e ``Singola precisione''.
@@ -44916,7 +45196,13 @@ Si veda ``Metacaratteri''.
 @item Ottale
 Notazione avente come base 8, nella quale le cifre sono @code{0}--@code{7}.
 I numeri ottali in C sono scritti premettendo uno @samp{0},
-per indicare la base.  Quindi, @code{013} @`e 11 ((1 x 8) + 3).
+per indicare la base.
+@iftex
+Quindi, @code{013} @`e 11 (@math{(1 volta 8) + 3}).
+@end iftex
+@ifnottex
+Quindi, @code{013} @`e 11 ((1 x 8) + 3).
+@end ifnottex
 @xref{Numeri non-decimali}.
 
 @item Parentesi Graffe
@@ -44935,7 +45221,7 @@ Le parole chiave di @command{gawk} sono:
 @code{break},
 @code{case},
 @code{continue},
-@code{default}
+@code{default},
 @code{delete},
 @code{do@dots{}while},
 @code{else},
@@ -46554,6 +46840,8 @@ Consistency issues:
 	The term "blank" is thus basically reserved for "blank lines" etc.
 	To make dark corners work, the @value{DARKCORNER} has to be outside
 		closing `.' of a sentence and after (pxref{...}).
+	Make sure that each @value{DARKCORNER} has an index entry, and
+		also that each `@cindex dark corner' has an @value{DARKCORNER}.
 	" " should have an @w{} around it
 	Use "non-" only with language names or acronyms, or the words bug and option and null
 	Use @command{ftp} when talking about anonymous ftp
@@ -46671,5 +46959,7 @@ But to use it you have to say
 which sorta sucks.
 
 TODO:
-Check that all dark corners are indexed properly.
-
+Add a section explaining recursion from ground zero. Probably
+easiest to do it with factorial as the example. Explain that
+recursion needs a stopping condition. Thanks to
+Bill Duncan <bduncan@beachnet.org> for the suggestion.
