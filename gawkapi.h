@@ -947,7 +947,7 @@ typedef struct gawk_api {
 
 static inline awk_value_t *
 r_make_string_type(const gawk_api_t *api,	/* needed for emalloc */
-		   awk_ext_id_t *ext_id,	/* ditto */
+		   awk_ext_id_t ext_id,		/* ditto */
 		   const char *string,
 		   size_t length,
 		   awk_bool_t duplicate,
@@ -977,7 +977,7 @@ r_make_string_type(const gawk_api_t *api,	/* needed for emalloc */
 
 static inline awk_value_t *
 r_make_string(const gawk_api_t *api,	/* needed for emalloc */
-	      awk_ext_id_t *ext_id,	/* ditto */
+	      awk_ext_id_t ext_id,	/* ditto */
 	      const char *string,
 	      size_t length,
 	      awk_bool_t duplicate,
