@@ -714,6 +714,9 @@ EXTRA_DIST = \
 	nlinstr.ok \
 	nlstrina.awk \
 	nlstrina.ok \
+	nlstringtest.awk \
+	nlstringtest.ok \
+	fr \
 	noeffect.awk \
 	noeffect.ok \
 	nofile.ok \
@@ -1298,7 +1301,7 @@ LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
 	fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 mbprintf3 mbprintf4 mbprintf5 \
-	rebt8b2 rtlenmb sort1 sprintfc
+	nlstringtest rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
 	apiterm \
@@ -1374,13 +1377,14 @@ gawk-extensions: $(GAWK_EXT_TESTS)
 
 charset-tests-all:
 	@if locale -a | grep -i 'en_US.UTF.*8' > /dev/null && \
+	    locale -a | grep -i 'fr_FR.UTF.*8' > /dev/null && \
 	    locale -a | grep -i 'ru_RU.UTF.*8' > /dev/null && \
 	    locale -a | grep -i 'ja_JP.UTF.*8' > /dev/null  ; \
 	then \
 		$(MAKE) charset-msg-start charset-tests charset-msg-end; \
 	else \
 		echo %%%%%%%%%% Inadequate locale support: skipping charset tests. ; \
-		echo %%%%%%%%%% At least en_US.UTF-8, ru_RU.UTF-8 and ja_JP.UTF-8 are needed. ; \
+		echo %%%%%%%%%% At least en_US.UTF-8 fr_FR.UTF-8, ru_RU.UTF-8 and ja_JP.UTF-8 are needed. ; \
 	fi
 
 charset-tests: $(LOCALE_CHARSET_TESTS)
@@ -2453,6 +2457,13 @@ nonfatal1:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk 2>&1 | $(AWK) '{print gensub(/invalid:.*$$/, "invalid", 1, $$0)}' >_$@ || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+nlstringtest::
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=fr_FR.UTF-8 LANGUAGE= ; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 
 # Targets generated for other tests:
 include Maketests
