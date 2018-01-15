@@ -716,6 +716,7 @@ EXTRA_DIST = \
 	nlstrina.ok \
 	nlstringtest.awk \
 	nlstringtest.ok \
+	nlstringtest.po \
 	fr \
 	noeffect.awk \
 	noeffect.ok \
