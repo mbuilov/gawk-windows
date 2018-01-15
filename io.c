@@ -1892,6 +1892,7 @@ strictopen:
 	return openfd;
 }
 
+#if defined(HAVE_TERMIOS_H)
 /* push_pty_line_disciplines --- push line disciplines if we work that way */
 
 // Factors out common code for the two versions of fork_and_open_slave_pty().
@@ -1923,7 +1924,6 @@ push_pty_line_disciplines(int slave)
 static void
 set_slave_pty_attributes(int slave)
 {
-#ifdef HAVE_TERMIOS_H
 	struct termios st;
 
 	tcgetattr(slave, & st);
@@ -1952,7 +1952,6 @@ set_slave_pty_attributes(int slave)
 	st.c_cc[VEOF] = '\004'; /* ^d */
 #endif
 	tcsetattr(slave, TCSANOW, & st);
-#endif /* HAVE_TERMIOS_H */
 }
 
 
@@ -1967,18 +1966,17 @@ set_slave_pty_attributes(int slave)
  * seems to be the simplest thing to do.
  */
 
-#if defined _AIX || defined __hpux
 static bool
 fork_and_open_slave_pty(const char *slavenam, int master, const char *command, pid_t *pid)
 {
 	int slave;
 	int save_errno;
 
+#if defined _AIX || defined __hpux
 	/*
 	 * We specifically open the slave only in the child. This allows
-	 * certain, er, "limited" systems to work.  The open is specifically
-	 * without O_NOCTTY in order to make the slave become the controlling
-	 * terminal.
+	 * AIX and HP0UX to work.  The open is specifically without O_NOCTTY
+	 * in order to make the slave become the controlling terminal.
 	 */
 
 	switch (*pid = fork()) {
@@ -2026,14 +2024,8 @@ fork_and_open_slave_pty(const char *slavenam, int master, const char *command, p
 	default:
 		return true;
 	}
-}
+
 #else
-#ifndef VMS
-static bool
-fork_and_open_slave_pty(const char *slavenam, int master, const char *command, pid_t *pid)
-{
-	int slave;
-	int save_errno;
 
 	if ((slave = open(slavenam, O_RDWR)) < 0) {
 		close(master);
@@ -2094,7 +2086,8 @@ fork_and_open_slave_pty(const char *slavenam, int master, const char *command, p
 	return true;
 }
 #endif
-#endif
+
+#endif /* defined(HAVE_TERMIOS_H) */
 
 /* two_way_open --- open a two way communications channel */
 
