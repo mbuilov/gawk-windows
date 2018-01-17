@@ -507,7 +507,9 @@ do_isarray(int nargs)
 	tmp = POP();
 	if (tmp->type != Node_var_array) {
 		ret = 0;
-		DEREF(tmp);
+		// could be Node_var_new
+		if (tmp->type == Node_val)
+			DEREF(tmp);
 	}
 	return make_number((AWKNUM) ret);
 }

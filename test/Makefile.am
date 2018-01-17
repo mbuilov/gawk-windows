@@ -557,6 +557,8 @@ EXTRA_DIST = \
 	intprec.ok \
 	iobug1.awk \
 	iobug1.ok \
+	isarrayunset.awk \
+	isarrayunset.ok \
 	jarebug.awk \
 	jarebug.in \
 	jarebug.ok \
@@ -1271,7 +1273,7 @@ GAWK_EXT_TESTS = \
 	genpot gensub gensub2 gensub3 getlndir gnuops2 gnuops3 gnureops gsubind \
 	icasefs icasers id igncdym igncfs ignrcas2 ignrcas4 ignrcase incdupe \
 	incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 include include2 \
-	indirectbuiltin indirectcall indirectcall2 intarray \
+	indirectbuiltin indirectcall indirectcall2 intarray isarrayunset \
 	lint lintexp lintindex lintint lintlength lintold lintset lintwarn \
 	mixed1 mktime manyfiles match1 match2 match3 mbstr1 mbstr2 muldimposix \
 	nastyparm negtime next nondec nondec2 nonfatal1 nonfatal2 nonfatal3 \
