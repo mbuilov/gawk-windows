@@ -5,6 +5,9 @@
 	reformat the message.
 	(isarrayunset): New test.
 	* isarrayunset.awk, isarrayunset.ok: New files.
+	* pty2: Add some sed goop to canonicalize the output of od;
+	this works around the Mac OS X od which produces different
+	output, avoiding a spurious test failure.
 
 2018-01-15         Arnold D. Robbins     <arnold@skeeve.com>
 
