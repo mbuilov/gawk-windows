@@ -1385,7 +1385,7 @@ charset-tests-all:
 		$(MAKE) charset-msg-start charset-tests charset-msg-end; \
 	else \
 		echo %%%%%%%%%% Inadequate locale support: skipping charset tests. ; \
-		echo %%%%%%%%%% At least en_US.UTF-8 fr_FR.UTF-8, ru_RU.UTF-8 and ja_JP.UTF-8 are needed. ; \
+		echo %%%%%%%%%% At least en_US.UTF-8, fr_FR.UTF-8, ru_RU.UTF-8 and ja_JP.UTF-8 are needed. ; \
 	fi
 
 charset-tests: $(LOCALE_CHARSET_TESTS)
@@ -1458,9 +1458,10 @@ charset-msg-start:
 	@echo "======== Starting tests that can vary based on character set or locale support ========"
 	@echo "**************************************************************************"
 	@echo "* Some or all of these tests may fail if you have inadequate or missing  *"
-	@echo "* locale support. At least en_US.UTF-8, ru_RU.UTF-8 and ja_JP.UTF-8 are  *"
-	@echo "* needed. The el_GR.iso88597 is optional but helpful. However, if you    *"
-	@echo "* see this message, the Makefile thinks you have what you need ...       *"
+	@echo "* locale support. At least en_US.UTF-8, fr_FR.UTF-8, ru_RU.UTF-8 and     *"
+	@echo "* ja_JP.UTF-8 are needed. The el_GR.iso88597 is optional but helpful.    *"
+	@echo "* However, if you see this message, the Makefile thinks you have what    *"
+	@echo "* you need ...                                                           *"
 	@echo "**************************************************************************"
 
 charset-msg-end:
