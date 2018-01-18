@@ -2858,7 +2858,7 @@ pty2:
 	@echo $@
 	@-case `uname` in \
 	*[Oo][Ss]/390*) : ;; \
-	*) AWKPATH="$(srcdir)" $(AWK) -f $@.awk | od -c | sed -e 's/0  */0   /' -e 's/  *$$//' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
+	*) AWKPATH="$(srcdir)" $(AWK) -f $@.awk | od -c | $(AWK) '{ $$1 = $$1 ; print }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
 	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ;; \
 	esac
 
