@@ -2416,11 +2416,13 @@ pty1:
 	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ;; \
 	esac
 
+## 1/2018: The awk goop is to compensate for different output of od on
+## Mac OS X systems. Sigh.
 pty2:
 	@echo $@
 	@-case `uname` in \
 	*[Oo][Ss]/390*) : ;; \
-	*) AWKPATH="$(srcdir)" $(AWK) -f $@.awk | od -c  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
+	*) AWKPATH="$(srcdir)" $(AWK) -f $@.awk | od -c | $(AWK) '{ $$1 = $$1 ; print }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
 	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ;; \
 	esac
 

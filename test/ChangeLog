@@ -1,3 +1,10 @@
+2018-01-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (pty2): Instead of sed, use simpler awk goop
+	to canonicalize the output from od. Thanks to Michal
+	Jaegermann for the tip.
+	* pty2.ok: Updated.
+
 2018-01-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (charset-tests-all): Add punctuation in the message.
@@ -5,6 +12,9 @@
 	reformat the message.
 	(isarrayunset): New test.
 	* isarrayunset.awk, isarrayunset.ok: New files.
+	* pty2: Add some sed goop to canonicalize the output of od;
+	this works around the Mac OS X od which produces different
+	output, avoiding a spurious test failure.
 
 2018-01-15         Arnold D. Robbins     <arnold@skeeve.com>
 
