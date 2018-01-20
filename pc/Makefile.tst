@@ -2317,11 +2317,13 @@ setrec1:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 sigpipe1:
-	@case `uname` in \
+	@echo $@
+	@-case `uname` in \
 	*MS-DOS*) echo This test fails on DJGPP --- skipping $@ ;; \
 	*) \
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; \
+	AWKPATH="$(srcdir)" ; export AWKPATH; \
+	$(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
+	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; \
 	esac
 
 sortempty:
