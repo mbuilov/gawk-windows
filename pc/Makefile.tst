@@ -227,7 +227,7 @@ LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
 	fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 mbprintf3 mbprintf4 mbprintf5 \
-	rebt8b2 rtlenmb sort1 sprintfc
+	nlstringtest rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
 	apiterm \
@@ -1997,6 +1997,12 @@ nlstrina:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+nlstringtest::
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=fr_FR.UTF-8 LANGUAGE= ; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 noeffect:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --lint >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -2317,11 +2323,13 @@ setrec1:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 sigpipe1:
-	@case `uname` in \
+	@echo $@
+	@-case `uname` in \
 	*MS-DOS*) echo This test fails on DJGPP --- skipping $@ ;; \
 	*) \
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; \
+	AWKPATH="$(srcdir)" ; export AWKPATH; \
+	$(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
+	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; \
 	esac
 
 sortempty:
