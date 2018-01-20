@@ -227,7 +227,7 @@ LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
 	fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 mbprintf3 mbprintf4 mbprintf5 \
-	rebt8b2 rtlenmb sort1 sprintfc
+	nlstringtest rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
 	apiterm \
@@ -1995,6 +1995,12 @@ nlinstr:
 nlstrina:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+nlstringtest::
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=fr_FR.UTF-8 LANGUAGE= ; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 noeffect:
