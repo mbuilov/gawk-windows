@@ -1370,7 +1370,7 @@ pty2:
 	@echo Expect $@ to fail with DJGPP and MinGW.
 	@-case `uname` in \
 	*[Oo][Ss]/390*) : ;; \
-	*) AWKPATH="$(srcdir)" $(AWK) -f $@.awk | od -c  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
+	*) AWKPATH="$(srcdir)" $(AWK) -f $@.awk | od -c | $(AWK) '{ $$1 = $$1 ; print }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
 	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ;; \
 	esac
 rscompat:
