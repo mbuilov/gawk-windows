@@ -246,6 +246,14 @@ main(int argc, char **argv)
 	if ((cp = getenv("GAWK_LOCALE_DIR")) != NULL)
 		locale_dir = cp;
 
+#if defined(F_GETFL) && defined(O_APPEND)
+	int flags = fcntl(fileno(stderr), F_GETFL, NULL);
+	if (flags >= 0 && (flags & O_APPEND) == 0) {
+		flags |= O_APPEND;
+		(void) fcntl(fileno(stderr), F_SETFL, flags);
+	}
+#endif
+
 #if defined(LOCALEDEBUG)
 	initial_locale = locale;
 #endif
