@@ -4504,6 +4504,14 @@ manipulate the @env{AWKLIBPATH} variable.
 @code{ENVIRON["AWKLIBPATH"]}. This provides access to the actual search
 path value from within an @command{awk} program.
 
+Although you can change @code{ENVIRON["AWKLIBPATH"]} within your
+@command{awk} program, this has no effect on the running program's
+behavior.  This makes sense: the @env{AWKLIBPATH} environment variable
+is used to find any requested extensions, and they are loaded before
+the program starts to run.  Once your program is running, all the
+extensions have been found, and @command{gawk} no longer needs to use
+@env{AWKLIBPATH}.
+
 @node Other Environment Variables
 @subsection Other Environment Variables
 
