@@ -35977,31 +35977,27 @@ project provides a number of @command{gawk} extensions, including one for
 processing XML files.  This is the evolution of the original @command{xgawk}
 (XML @command{gawk}) project.
 
-As of this writing, there are seven extensions:
+There are a number of extensions. Some of the more interesting ones are:
 
 @itemize @value{BULLET}
 @item
-@code{errno} extension
+@code{abort} extension. It allows you to exit immediately from your
+@command{awk} program without running the @code{END} rules.
 
 @item
-GD graphics library extension
+@code{json} extension.
+This serializes a multidimensional array into a JSON string, and
+can deserialize a JSON string into a @command{gawk} array.
+This extension is interesting since it is written in C++ instead of C.
 
 @item
-MPFR library extension
-(this provides access to a number of MPFR functions that @command{gawk}'s
-native MPFR support does not)
+MPFR library extension.
+This provides access to a number of MPFR functions that @command{gawk}'s
+native MPFR support does not.
 
 @item
-PDF extension
-
-@item
-PostgreSQL extension
-
-@item
-Redis extension
-
-@item
-Select extension
+Select extension. It provides functionality based on the
+@code{select()} system call.
 
 @item
 XML parser extension, using the @uref{https://expat.sourceforge.net, Expat}
@@ -36016,6 +36012,10 @@ code control system.  The command is as follows:
 @example
 git clone git://git.code.sf.net/p/gawkextlib/code gawkextlib-code
 @end example
+
+@cindex RapidJson JSON parser library
+You will need to have the @uref{http://www.rapidjson.org, RapidJson}
+JSON parser library installed in order to build and use the @code{json} extension.
 
 @cindex Expat XML parser library
 You will need to have the @uref{https://expat.sourceforge.net, Expat}
