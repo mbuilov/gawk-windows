@@ -74,6 +74,8 @@ $!      charset: mbprintf5
 $!
 $! 4.2+: New tests
 $!      basic:   numstr1, setrec0, setrec1
+$!      extra:   isarrayunset, nlstringtest
+$!
 $!
 $	echo	= "write sys$output"
 $	cmp	= "diff/Output=_NL:/Maximum=1"
@@ -329,7 +331,8 @@ $		gosub list_of_tests
 $		return
 $
 $extra:		echo "extra..."
-$		list = "regtest inftest inet ignrcas3"
+$		list = "regtest inftest inet ignrcas3 isarrayunset" -
+                  + " nlstringtest"
 $		gosub list_of_tests
 $		return
 $
@@ -686,6 +689,9 @@ $substr:
 $zero2:
 $zeroflag:
 $	test_class = "basic"
+$	goto common_without_test_in
+$isarrayunset:
+$	test_class = "extra"
 $	goto common_without_test_in
 $!
 $aarray1:
@@ -1736,12 +1742,30 @@ $   if f$search("sys$i18n_locale:el_gr_iso8859-7.locale") .nes. ""
 $   then
 $	define/user LC_ALL "el_gr_iso8859-7"
 $	define/user GAWKLOCALE "el_gr_iso8859-7"
-	AWKPATH_srcdir
+$	AWKPATH_srcdir
 $!	goto common_without_test_in
 $	skip_reason = "VMS EL_GR_ISO8859-7 locale fails test"
 $	gosub junit_report_skip
 $   else
 $	skip_reason = "EL_GR_ISO8859-7 locale not installed"
+$	gosub junit_report_skip
+$   endif
+$   return
+$!
+$nlstringtest:	echo "''test'"
+$   test_class = "extra"
+$   ! This locale does not seem to be available from the HPE I18N kit.
+$   ! So this test has not been run on VMS.
+$   if f$search("sys$i18n_locale:fr_fr_utf-8.locale") .nes. ""
+$   then
+$	define/user LC_ALL "fr_fr_utf-8"
+$	define/user GAWKLOCALE "fr_fr_utf-8"
+$	AWKPATH_srcdir
+$!	goto common_without_test_in
+$	skip_reason = "VMS FR_FR_UTF-8 locale test not validated."
+$	gosub junit_report_skip
+$   else
+$	skip_reason = "FR_FR_UTF-8 locale not installed"
 $	gosub junit_report_skip
 $   endif
 $   return
@@ -2258,7 +2282,9 @@ $
 $lintold:	echo "lintold"
 $	test_class = "gawk_ext"
 $	AWKPATH_srcdir
+$       set noOn
 $	gawk -f lintold.awk --lint-old <lintold.in >_lintold.tmp 2>&1
+$       set on
 $	cmp lintold.ok sys$disk:[]_lintold.tmp
 $	if $status
 $	then

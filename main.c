@@ -247,6 +247,9 @@ main(int argc, char **argv)
 		locale_dir = cp;
 
 #if defined(F_GETFL) && defined(O_APPEND)
+	// 1/2018: This is needed on modern BSD systems so that the
+	// inplace tests pass. I think it's a bug in those kernels
+	// but let's just work around it anyway.
 	int flags = fcntl(fileno(stderr), F_GETFL, NULL);
 	if (flags >= 0 && (flags & O_APPEND) == 0) {
 		flags |= O_APPEND;
