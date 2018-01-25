@@ -1999,6 +1999,7 @@ nlstrina:
 
 nlstringtest::
 	@echo $@
+	@echo Expect nlstringtest to fail with DJGPP.
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=fr_FR.UTF-8 LANGUAGE= ; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
