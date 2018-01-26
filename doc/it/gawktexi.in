@@ -4887,6 +4887,16 @@ essere di aiuto per gestire la variabile @env{AWKPATH}.
 @code{ENVIRON["AWKLIBPATH"]}.  Questo consente di aver accesso al valore del
 percorso di ricerca in uso all'interno di un programma @command{awk}.
 
+Sebbene sia possibile modificare la variabile @code{ENVIRON["AWKLIBPATH"]}
+all'interno di un programma @command{awk}, la modifica non ha effetto
+sul comportamento del programma in esecuzione.
+Il motivo @`e chiaro: la variabile d'ambiente
+@env{AWKLIBPATH} @`e usata per trovare eventuali estensioni richieste, e
+queste sono caricate prima che il programma inizi l'esecuzione.  Dopo che
+il programma ha iniziato l'esecuzione, tutte le estensioni sono gi@`a state
+caricate, e @command{gawk} non ha pi@`u bisogno di usare la variabile d'ambiente
+@env{AWKLIBPATH}.
+
 @node Altre variabili d'ambiente
 @subsection Le variabili d'ambiente.
 
@@ -20684,7 +20694,8 @@ gli interi a precisione arbitraria di GNU MP che hanno almeno 64 bit di precisio
 Quando non si usa l'opzione @option{-M}, @command{gawk} memorizza i valori
 interi come regolari valori in virgola mobile con doppia precisione, che
 mantengono solo 53 bit di precisione.  Inoltre, la libreria GNU MP tratta
-(o almeno sembra che tratti) il bit iniziale come un bit con segno; cos@`i il
+(o almeno sembra che tratti) il bit iniziale come un bit con segno;
+cos@`{@dotless{i}} il
 risultato con @option{-M} in questo caso @`e un numero negativo.
 
 In breve, usare @command{gawk} per qualsiasi tipo di operazione "bit a bit",
@@ -39027,31 +39038,28 @@ fornisce varie estensioni per @command{gawk}, compresa una per
 l'elaborazione dei file XML.  Questa @`e un'evoluzione del progetto noto come
 @command{xgawk} (XML @command{gawk}).
 
-Al momento della stesura di questo testo, ci sono otto estensioni:
+Le estensioni sono parecchie.  Alcune delle pi@`u interessanti sono:
 
 @itemize @value{BULLET}
 @item
-Estensione @code{errno}
+Estensione @code{abort}.  Consente di uscire immediatamente dal programma
+@command{awk} senza eseguire le regole @code{END}.
 
 @item
-Estensione GD graphics library
+Estensione @code{json}.
+Permette di serializzare un vettore multidimensionale trasformandolo in
+una stringa in formato JSON (JavaScript Object Notation), di effettuare
+l'operazione inversa, de-serializzando una stringa JSON, generando
+un vettore @command{gawk}.
 
 @item
-Estensione libreria MPFR
-(fornisce l'accesso a varie funzioni MPFR non previste dal supporto nativo
-di MPFR disponibile in @command{gawk})
+Estensione libreria MPFR.
+Fornisce accesso a varie funzioni MPFR non previste dal supporto nativo
+di MPFR disponibile in @command{gawk}
 
 @item
-Estensione PDF
-
-@item
-Estensione PostgreSQL
-
-@item
-Estensione Redis
-
-@item
-Estensione Select
+Estensione Select.  Fornisce delle funzionalit@`a, appoggiandosi sulla
+chiamata di sistema @code{select()}.
 
 @item
 Estensione analizzatore XML, usando la libreria di analisi XML
@@ -39068,6 +39076,11 @@ Il comando per farlo @`e il seguente:
 @example
 git clone git://git.code.sf.net/p/gawkextlib/code gawkextlib-code
 @end example
+
+@cindex RapidJson, libreria per analizzare JSON
+@cindex JSON, RapidJson, libreria per analizzare
+Occorre che sia installata la libreria di analisi JSON
+per poter generare e usare l'estensione @code{json}.
 
 @cindex Expat, libreria per analizzare XML
 @cindex XML, Expat, libreria per analizzare
@@ -40691,7 +40704,7 @@ La versione 4.2 di @command{gawk} ha introdotto le seguenti modifiche:
 
 @itemize @bullet
 @item
-Differenze apportate alle variabili di ambiente (@code{ENVIRON}) sono
+Differenze apportate alle variabili d'ambiente (@code{ENVIRON}) sono
 riflesse in quelle rese disponibili a @command{gawk} e in quelle di
 programmi che siano da esso richiamati.
 @xref{Variabili auto-assegnate}.
@@ -41664,7 +41677,7 @@ gli esempi di estensione incluse con @command{gawk}.
 Ulteriori file, non-essenziali.  Al momento, questa directory contiene
 alcuni file da eseguire al momento di iniziare una sessione,
 da installare nella directory @file{/etc/profile.d}
-per essere di aiuto nella gestione delle variabili di ambiente
+per essere di aiuto nella gestione delle variabili d'ambiente
 @env{AWKPATH} e @env{AWKLIBPATH}.
 @xref{File da usare a inizio sessione}, per ulteriori informazioni.
 
@@ -41798,7 +41811,7 @@ utenti che possono utilizzare il comando @command{sudo}.
 La distribuzione contiene i file da usare a inizio sessione
 @file{gawk.sh} e
 @file{gawk.csh}, che contengono funzioni che possono essere di aiuto
-nel gestire le variabili di ambiente
+nel gestire le variabili d'ambiente
 @env{AWKPATH} e @env{AWKLIBPATH}.
 Su un sistema Fedora GNU/Linux, questi file dovrebbero essere installati
 nella directory @file{/etc/profile.d};
