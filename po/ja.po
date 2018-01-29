@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.1.0b\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2018-01-15 19:55+0200\n"
+"POT-Creation-Date: 2018-01-28 20:07+0200\n"
 "PO-Revision-Date: 2014-11-07 12:26+0000\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -37,8 +37,8 @@ msgstr "スカラー仮引数 `%s' を配列として使用する試みです"
 msgid "attempt to use scalar `%s' as an array"
 msgstr "スカラー `%s' を配列として使用する試みです"
 
-#: array.c:412 array.c:579 builtin.c:88 builtin.c:1634 builtin.c:1680
-#: builtin.c:1693 builtin.c:2216 builtin.c:2243 eval.c:1131 eval.c:1135
+#: array.c:412 array.c:579 builtin.c:88 builtin.c:1636 builtin.c:1682
+#: builtin.c:1695 builtin.c:2218 builtin.c:2245 eval.c:1131 eval.c:1135
 #: eval.c:1542
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
@@ -596,190 +596,190 @@ msgstr "index: 文字列では無い第二引数を受け取りました"
 msgid "int: received non-numeric argument"
 msgstr "int: 数値では無い引数を受け取りました"
 
-#: builtin.c:529
+#: builtin.c:531
 msgid "length: received array argument"
 msgstr "length: 配列引数を受け取りました"
 
-#: builtin.c:532
+#: builtin.c:534
 msgid "`length(array)' is a gawk extension"
 msgstr "`length(array)' は gawk 拡張です"
 
-#: builtin.c:551
+#: builtin.c:553
 msgid "length: received non-string argument"
 msgstr "length: 文字列では無い引数を受け取りました"
 
-#: builtin.c:580
+#: builtin.c:582
 msgid "log: received non-numeric argument"
 msgstr "log: 数値では無い引数を受け取りました"
 
-#: builtin.c:583
+#: builtin.c:585
 #, c-format
 msgid "log: received negative argument %g"
 msgstr "log: 負の引数 %g を受け取りました"
 
-#: builtin.c:781 builtin.c:786 builtin.c:937
+#: builtin.c:783 builtin.c:788 builtin.c:939
 msgid "fatal: must use `count$' on all formats or none"
 msgstr ""
 "致命的: `count$’ は全ての書式使用する、または全てに使用しないのいずれかでなけ"
 "ればいけません"
 
-#: builtin.c:856
+#: builtin.c:858
 #, c-format
 msgid "field width is ignored for `%%' specifier"
 msgstr "`%%' 指定用のフィールド幅は無視されます"
 
-#: builtin.c:858
+#: builtin.c:860
 #, c-format
 msgid "precision is ignored for `%%' specifier"
 msgstr "`%%' 指定用のフィールド幅は無視されます"
 
-#: builtin.c:860
+#: builtin.c:862
 #, c-format
 msgid "field width and precision are ignored for `%%' specifier"
 msgstr "`%%' 指定用のフィールド幅および精度は無視されます"
 
-#: builtin.c:911
+#: builtin.c:913
 msgid "fatal: `$' is not permitted in awk formats"
 msgstr "致命的: `$' は awk 形式内では許可されていません"
 
-#: builtin.c:920
+#: builtin.c:922
 msgid "fatal: arg count with `$' must be > 0"
 msgstr "致命的: `$' で指定する引数の番号は正でなければいけません"
 
-#: builtin.c:924
+#: builtin.c:926
 #, c-format
 msgid "fatal: arg count %ld greater than total number of supplied arguments"
 msgstr "致命的: 引数の番号 %ld は引数として与えられた数より大きいです"
 
-#: builtin.c:928
+#: builtin.c:930
 msgid "fatal: `$' not permitted after period in format"
 msgstr "致命的: `$' は書式指定内のピリオド `.' の後に使用できません"
 
-#: builtin.c:947
+#: builtin.c:949
 msgid "fatal: no `$' supplied for positional field width or precision"
 msgstr "致命的: フィールド幅、または精度の指定子に `$' が与えられていません"
 
-#: builtin.c:1017
+#: builtin.c:1019
 msgid "`l' is meaningless in awk formats; ignored"
 msgstr "awk の書式指定では `l' は無意味です。無視します"
 
-#: builtin.c:1021
+#: builtin.c:1023
 msgid "fatal: `l' is not permitted in POSIX awk formats"
 msgstr "致命的: POSIX awk 書式内では `l' は許可されていません"
 
-#: builtin.c:1034
+#: builtin.c:1036
 msgid "`L' is meaningless in awk formats; ignored"
 msgstr "awk の書式指定では `L' は無意味です。無視します。"
 
-#: builtin.c:1038
+#: builtin.c:1040
 msgid "fatal: `L' is not permitted in POSIX awk formats"
 msgstr "致命的: POSIX awk 書式内では `L' は許可されていません"
 
-#: builtin.c:1051
+#: builtin.c:1053
 msgid "`h' is meaningless in awk formats; ignored"
 msgstr "awk の書式指定では `h' は無意味です。無視します。"
 
-#: builtin.c:1055
+#: builtin.c:1057
 msgid "fatal: `h' is not permitted in POSIX awk formats"
 msgstr "致命的: POSIX awk 書式内では `h' は許可されていません"
 
-#: builtin.c:1080
+#: builtin.c:1082
 #, fuzzy, c-format
 msgid "[s]printf: value %g is too big for %%c format"
 msgstr "[s]printf: 値 %g は書式 `%%%c' の範囲外です"
 
-#: builtin.c:1093
+#: builtin.c:1095
 #, fuzzy, c-format
 msgid "[s]printf: value %g is not a valid wide character"
 msgstr "[s]printf: 値 %g は書式 `%%%c' の範囲外です"
 
-#: builtin.c:1479
+#: builtin.c:1481
 #, c-format
 msgid "[s]printf: value %g is out of range for `%%%c' format"
 msgstr "[s]printf: 値 %g は書式 `%%%c' の範囲外です"
 
-#: builtin.c:1577
+#: builtin.c:1579
 #, c-format
 msgid "ignoring unknown format specifier character `%c': no argument converted"
 msgstr "不明な書式指定文字 `%c' を無視しています: 変換される引数はありません"
 
-#: builtin.c:1582
+#: builtin.c:1584
 msgid "fatal: not enough arguments to satisfy format string"
 msgstr "致命的: 書式文字列を満たす十分な数の引数がありません"
 
-#: builtin.c:1584
+#: builtin.c:1586
 msgid "^ ran out for this one"
 msgstr "^ ここから足りません"
 
-#: builtin.c:1591
+#: builtin.c:1593
 msgid "[s]printf: format specifier does not have control letter"
 msgstr "[s]printf: 書式指定子に制御文字がありません"
 
-#: builtin.c:1594
+#: builtin.c:1596
 msgid "too many arguments supplied for format string"
 msgstr "書式文字列に与えられている引数が多すぎます"
 
-#: builtin.c:1653
+#: builtin.c:1655
 msgid "sprintf: no arguments"
 msgstr "sprintf: 引数がありません"
 
-#: builtin.c:1676 builtin.c:1687
+#: builtin.c:1678 builtin.c:1689
 msgid "printf: no arguments"
 msgstr "printf: 引数がありません"
 
-#: builtin.c:1702
+#: builtin.c:1704
 msgid "printf: attempt to write to closed write end of two-way pipe"
 msgstr ""
 
-#: builtin.c:1743
+#: builtin.c:1745
 msgid "sqrt: received non-numeric argument"
 msgstr "sqrt: 数値では無い引数を受け取りました"
 
-#: builtin.c:1747
+#: builtin.c:1749
 #, c-format
 msgid "sqrt: called with negative argument %g"
 msgstr "sqrt: 負の値 %g を引数に使用して呼び出されました"
 
-#: builtin.c:1778
+#: builtin.c:1780
 #, c-format
 msgid "substr: length %g is not >= 1"
 msgstr "substr: 長さ %g が 1 以上ではありません"
 
-#: builtin.c:1780
+#: builtin.c:1782
 #, c-format
 msgid "substr: length %g is not >= 0"
 msgstr "substr: 長さ %g が 0 以上ではありません"
 
-#: builtin.c:1794
+#: builtin.c:1796
 #, c-format
 msgid "substr: non-integer length %g will be truncated"
 msgstr "substr: 文字数 %g の小数点以下は切り捨てます。"
 
-#: builtin.c:1799
+#: builtin.c:1801
 #, c-format
 msgid "substr: length %g too big for string indexing, truncating to %g"
 msgstr "substr: 文字数 %g は最大値を超えています。%g を使います。"
 
-#: builtin.c:1811
+#: builtin.c:1813
 #, c-format
 msgid "substr: start index %g is invalid, using 1"
 msgstr "substr: 開始インデックス %g が無効です。1を使用します"
 
-#: builtin.c:1816
+#: builtin.c:1818
 #, c-format
 msgid "substr: non-integer start index %g will be truncated"
 msgstr "substr: 開始インデックス %g が非整数のため、値は切り捨てられます"
 
-#: builtin.c:1839
+#: builtin.c:1841
 msgid "substr: source string is zero length"
 msgstr "substr: 文字列の長さがゼロです。"
 
-#: builtin.c:1853
+#: builtin.c:1855
 #, c-format
 msgid "substr: start index %g is past end of string"
 msgstr "substr: 開始インデックス %g が文字列終端の後にあります"
 
-#: builtin.c:1861
+#: builtin.c:1863
 #, c-format
 msgid ""
 "substr: length %g at start index %g exceeds length of first argument (%lu)"
@@ -787,258 +787,258 @@ msgstr ""
 "substr: 開始インデックス %2$g からの長さ %1$g は第一引数の長さを超えています "
 "(%3$lu)"
 
-#: builtin.c:1934
+#: builtin.c:1936
 msgid "strftime: format value in PROCINFO[\"strftime\"] has numeric type"
 msgstr "strftime: PROCINFO[\"strftime\"] の書式の値は数値型です"
 
-#: builtin.c:1954
+#: builtin.c:1956
 msgid "strftime: received non-numeric second argument"
 msgstr "strftime: 非数値の第二引数を受け取りました"
 
-#: builtin.c:1964
+#: builtin.c:1966
 msgid "strftime: second argument less than 0 or too big for time_t"
 msgstr ""
 
-#: builtin.c:1971
+#: builtin.c:1973
 #, fuzzy
 msgid "strftime: second argument out of range for time_t"
 msgstr "asorti: 第二引数が配列ではありません"
 
-#: builtin.c:1980
+#: builtin.c:1982
 msgid "strftime: received non-string first argument"
 msgstr "strftime: 非文字列の第一引数を受け取りました"
 
-#: builtin.c:1987
+#: builtin.c:1989
 msgid "strftime: received empty format string"
 msgstr "strftime: 空の書式文字列を受け取りました"
 
-#: builtin.c:2058
+#: builtin.c:2060
 #, fuzzy, c-format
 msgid "setenv(TZ, %s) failed (%s)"
 msgstr "%s から \"%s\" へ出力できません (%s)。"
 
-#: builtin.c:2065
+#: builtin.c:2067
 #, c-format
 msgid "setenv(TZ, %s) restoration failed (%s)"
 msgstr ""
 
-#: builtin.c:2069
+#: builtin.c:2071
 #, fuzzy, c-format
 msgid "unsetenv(TZ) failed (%s)"
 msgstr "%s: 閉じるのに失敗しました (%s)"
 
-#: builtin.c:2098
+#: builtin.c:2100
 msgid "mktime: received non-string argument"
 msgstr "mktime: 非文字列引数を受け取りました"
 
-#: builtin.c:2115
+#: builtin.c:2117
 msgid "mktime: at least one of the values is out of the default range"
 msgstr "mktime: 一つ以上の値がデフォルトの範囲を超えています"
 
-#: builtin.c:2151
+#: builtin.c:2153
 msgid "'system' function not allowed in sandbox mode"
 msgstr "サンドボックスモードでは 'system' 関数は許可されていません"
 
-#: builtin.c:2156
+#: builtin.c:2158
 msgid "system: received non-string argument"
 msgstr "system: 文字列では無い引数を受け取りました"
 
-#: builtin.c:2225 builtin.c:2298
+#: builtin.c:2227 builtin.c:2300
 msgid "print: attempt to write to closed write end of two-way pipe"
 msgstr ""
 
-#: builtin.c:2321
+#: builtin.c:2323
 #, c-format
 msgid "reference to uninitialized field `$%d'"
 msgstr "初期化されていないフィールド `$%d' への参照です"
 
-#: builtin.c:2406
+#: builtin.c:2408
 msgid "tolower: received non-string argument"
 msgstr "tolower: 非文字列引数を受け取りました"
 
-#: builtin.c:2437
+#: builtin.c:2439
 msgid "toupper: received non-string argument"
 msgstr "toupper: 非文字列引数を受け取りました"
 
-#: builtin.c:2470 mpfr.c:669
+#: builtin.c:2472 mpfr.c:669
 msgid "atan2: received non-numeric first argument"
 msgstr "atan2: 非数値の第一引数を受け取りました"
 
-#: builtin.c:2472 mpfr.c:671
+#: builtin.c:2474 mpfr.c:671
 msgid "atan2: received non-numeric second argument"
 msgstr "atan2: 非数値の第二引数を受け取りました"
 
-#: builtin.c:2491
+#: builtin.c:2493
 msgid "sin: received non-numeric argument"
 msgstr "sin: 非数値の引数を受け取りました"
 
-#: builtin.c:2507
+#: builtin.c:2509
 msgid "cos: received non-numeric argument"
 msgstr "cos: 非数値の引数を受け取りました"
 
-#: builtin.c:2621 mpfr.c:1164
+#: builtin.c:2623 mpfr.c:1164
 msgid "srand: received non-numeric argument"
 msgstr "srand: 非数値の引数を受け取りました"
 
-#: builtin.c:2652
+#: builtin.c:2654
 msgid "match: third argument is not an array"
 msgstr "match: 第三引数が配列ではありません"
 
-#: builtin.c:2919
+#: builtin.c:2921
 #, fuzzy, c-format
 msgid "gensub: third argument `%.*s' treated as 1"
 msgstr "gensub: 第三引数が 0 です。1 を代わりに使用します"
 
-#: builtin.c:3241
+#: builtin.c:3243
 #, fuzzy, c-format
 msgid "%s: can be called indirectly only with two arguments"
 msgstr "and: 2個未満の引数で呼び出されました"
 
-#: builtin.c:3341
+#: builtin.c:3343
 #, fuzzy, c-format
 msgid "indirect call to %s requires at least two arguments"
 msgstr "and: 2個未満の引数で呼び出されました"
 
-#: builtin.c:3396
+#: builtin.c:3398
 msgid "lshift: received non-numeric first argument"
 msgstr "lshift: 非数値の第一引数を受け取りました"
 
-#: builtin.c:3398
+#: builtin.c:3400
 msgid "lshift: received non-numeric second argument"
 msgstr "lshift: 非数値の第二引数を受け取りました"
 
-#: builtin.c:3404
+#: builtin.c:3406
 #, fuzzy, c-format
 msgid "lshift(%f, %f): negative values are not allowed"
 msgstr "lshift(%f, %f): 負の数値を使用すると異常な結果になります"
 
-#: builtin.c:3408
+#: builtin.c:3410
 #, c-format
 msgid "lshift(%f, %f): fractional values will be truncated"
 msgstr "lshift(%f, %f): 小数点以下は切り捨てられます"
 
-#: builtin.c:3410
+#: builtin.c:3412
 #, c-format
 msgid "lshift(%f, %f): too large shift value will give strange results"
 msgstr "lshift(%f, %f): シフト値が大き過ぎると異常な結果になります"
 
-#: builtin.c:3435
+#: builtin.c:3437
 msgid "rshift: received non-numeric first argument"
 msgstr "rshift: 非数値の第一引数を受け取りました"
 
-#: builtin.c:3437
+#: builtin.c:3439
 msgid "rshift: received non-numeric second argument"
 msgstr "rshift: 非数値の第二引数を受け取りました"
 
-#: builtin.c:3443
+#: builtin.c:3445
 #, fuzzy, c-format
 msgid "rshift(%f, %f): negative values are not allowed"
 msgstr "rshift(%f, %f): 負の数値を使用すると異常な結果になります"
 
-#: builtin.c:3447
+#: builtin.c:3449
 #, c-format
 msgid "rshift(%f, %f): fractional values will be truncated"
 msgstr "rshift(%f, %f): 小数点以下は切り捨てられます"
 
-#: builtin.c:3449
+#: builtin.c:3451
 #, c-format
 msgid "rshift(%f, %f): too large shift value will give strange results"
 msgstr "rshift(%f, %f): シフト値が大き過ぎると異常な結果になります"
 
-#: builtin.c:3474 mpfr.c:977
+#: builtin.c:3476 mpfr.c:977
 msgid "and: called with less than two arguments"
 msgstr "and: 2個未満の引数で呼び出されました"
 
-#: builtin.c:3479
+#: builtin.c:3481
 #, c-format
 msgid "and: argument %d is non-numeric"
 msgstr "and: 引数 %d が非数値です"
 
-#: builtin.c:3483
+#: builtin.c:3485
 #, fuzzy, c-format
 msgid "and: argument %d negative value %g is not allowed"
 msgstr "and(%lf, %lf): 負の数値を使用すると異常な結果になります"
 
-#: builtin.c:3506 mpfr.c:1009
+#: builtin.c:3508 mpfr.c:1009
 msgid "or: called with less than two arguments"
 msgstr "or: 2個未満の引数で呼び出されました"
 
-#: builtin.c:3511
+#: builtin.c:3513
 #, c-format
 msgid "or: argument %d is non-numeric"
 msgstr "or: 引数 %d が非数値です"
 
-#: builtin.c:3515
+#: builtin.c:3517
 #, fuzzy, c-format
 msgid "or: argument %d negative value %g is not allowed"
 msgstr "compl(%lf): 負の数値を使用すると異常な結果になります"
 
-#: builtin.c:3537 mpfr.c:1040
+#: builtin.c:3539 mpfr.c:1040
 #, fuzzy
 msgid "xor: called with less than two arguments"
 msgstr "xor: 2個未満の引数で呼び出されました"
 
-#: builtin.c:3543
+#: builtin.c:3545
 #, c-format
 msgid "xor: argument %d is non-numeric"
 msgstr "xor: 引数 %d が非数値です"
 
-#: builtin.c:3547
+#: builtin.c:3549
 #, fuzzy, c-format
 msgid "xor: argument %d negative value %g is not allowed"
 msgstr "xor(%lf, %lf): 負の数値を使用すると異常な結果になります"
 
-#: builtin.c:3572 mpfr.c:799
+#: builtin.c:3574 mpfr.c:799
 msgid "compl: received non-numeric argument"
 msgstr "compl: 非数値の引数を受け取りました"
 
-#: builtin.c:3577
+#: builtin.c:3579
 #, fuzzy, c-format
 msgid "compl(%f): negative value is not allowed"
 msgstr "compl(%f): 負の数値を使用すると異常な結果になります"
 
-#: builtin.c:3580
+#: builtin.c:3582
 #, c-format
 msgid "compl(%f): fractional value will be truncated"
 msgstr "compl(%f): 小数点以下は切り捨てられます"
 
-#: builtin.c:3764
+#: builtin.c:3766
 #, c-format
 msgid "dcgettext: `%s' is not a valid locale category"
 msgstr "dcgettext: `%s' は無効なロケール区分です"
 
-#: builtin.c:3989 mpfr.c:1198
+#: builtin.c:3991 mpfr.c:1198
 #, fuzzy
 msgid "intdiv: third argument is not an array"
 msgstr "match: 第三引数が配列ではありません"
 
-#: builtin.c:3997 mpfr.c:1206
+#: builtin.c:3999 mpfr.c:1206
 #, fuzzy
 msgid "intdiv: received non-numeric first argument"
 msgstr "and: 非数値の第一引数を受け取りました"
 
-#: builtin.c:3999 mpfr.c:1208
+#: builtin.c:4001 mpfr.c:1208
 #, fuzzy
 msgid "intdiv: received non-numeric second argument"
 msgstr "and: 非数値の第二引数を受け取りました"
 
-#: builtin.c:4008 mpfr.c:1247
+#: builtin.c:4010 mpfr.c:1247
 #, fuzzy
 msgid "intdiv: division by zero attempted"
 msgstr "ゼロによる除算が試みられました"
 
-#: builtin.c:4078
+#: builtin.c:4080
 #, c-format
 msgid ""
 "typeof detected invalid flags combination `%s'; please file a bug report."
 msgstr ""
 
-#: builtin.c:4093
+#: builtin.c:4095
 #, fuzzy, c-format
 msgid "typeof: invalid argument type `%s'"
 msgstr "option: 無効なパラメーター - \"%s\""
 
-#: builtin.c:4097
+#: builtin.c:4099
 #, c-format
 msgid "typeof: unknown argument type `%s'"
 msgstr ""
@@ -2673,12 +2673,12 @@ msgstr ""
 msgid "fflush: cannot flush standard error: %s"
 msgstr ""
 
-#: io.c:1417 io.c:1507 main.c:642 main.c:689
+#: io.c:1417 io.c:1507 main.c:653 main.c:700
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "標準出力への書込みエラー (%s)"
 
-#: io.c:1418 io.c:1517 main.c:644
+#: io.c:1418 io.c:1517 main.c:655
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "標準エラーへの書込みエラー (%s)"
@@ -2865,193 +2865,193 @@ msgstr "複数の文字を `RS' に使用するのは gawk 特有の拡張です
 msgid "IPv6 communication is not supported"
 msgstr "IPv6 通信はサポートされていません"
 
-#: main.c:322
+#: main.c:333
 msgid "environment variable `POSIXLY_CORRECT' set: turning on `--posix'"
 msgstr ""
 "環境変数 `POSIXLY_CORRECT' が指定されています。オプション `--posix' を有効に"
 "します"
 
-#: main.c:328
+#: main.c:339
 msgid "`--posix' overrides `--traditional'"
 msgstr "オプション `--posix' は `--traditional' を無効にします。"
 
-#: main.c:339
+#: main.c:350
 msgid "`--posix'/`--traditional' overrides `--non-decimal-data'"
 msgstr ""
 "オプション `--posix'/`--traditional' は `--non-decimal-data' を無効にします。"
 
-#: main.c:343
+#: main.c:354
 #, c-format
 msgid "running %s setuid root may be a security problem"
 msgstr ""
 "setuid root で %s を実行すると、セキュリティ上の問題が発生する場合がありま"
 "す。"
 
-#: main.c:347
+#: main.c:358
 #, fuzzy
 msgid "`--posix' overrides `--characters-as-bytes'"
 msgstr "`--posix' は `--binary' を上書きします"
 
-#: main.c:405
+#: main.c:416
 #, c-format
 msgid "can't set binary mode on stdin (%s)"
 msgstr "標準入力をバイナリモードに設定できません (%s)"
 
-#: main.c:408
+#: main.c:419
 #, c-format
 msgid "can't set binary mode on stdout (%s)"
 msgstr "標準出力をバイナリモードに設定できません (%s)"
 
-#: main.c:410
+#: main.c:421
 #, c-format
 msgid "can't set binary mode on stderr (%s)"
 msgstr "標準エラーをバイナリモードに設定できません (%s)"
 
-#: main.c:470
+#: main.c:481
 msgid "no program text at all!"
 msgstr "プログラム文が全くありません!"
 
-#: main.c:563
+#: main.c:574
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"
 msgstr ""
 "使用法: %s [POSIX または GNU 形式のオプション] -f progfile [--] file ...\n"
 
-#: main.c:565
+#: main.c:576
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"
 msgstr ""
 "使用法: %s [POSIX または GNU 形式のオプション] [--] %cprogram%c file ...\n"
 
-#: main.c:570
+#: main.c:581
 msgid "POSIX options:\t\tGNU long options: (standard)\n"
 msgstr "POSIX オプション:\t\tGNU 長い形式のオプション: (標準)\n"
 
-#: main.c:571
+#: main.c:582
 msgid "\t-f progfile\t\t--file=progfile\n"
 msgstr "\t-f progfile\t\t--file=progfile\n"
 
-#: main.c:572
+#: main.c:583
 msgid "\t-F fs\t\t\t--field-separator=fs\n"
 msgstr "\t-F fs\t\t\t--field-separator=fs\n"
 
-#: main.c:573
+#: main.c:584
 msgid "\t-v var=val\t\t--assign=var=val\n"
 msgstr "\t-v var=val\t\t--assign=var=val\n"
 
-#: main.c:574
+#: main.c:585
 msgid "Short options:\t\tGNU long options: (extensions)\n"
 msgstr "短いオプション:\t\tGNU 長い形式のオプション: (拡張)\n"
 
-#: main.c:575
+#: main.c:586
 msgid "\t-b\t\t\t--characters-as-bytes\n"
 msgstr "\t-b\t\t\t--characters-as-bytes\n"
 
-#: main.c:576
+#: main.c:587
 msgid "\t-c\t\t\t--traditional\n"
 msgstr "\t-c\t\t\t--traditional\n"
 
-#: main.c:577
+#: main.c:588
 msgid "\t-C\t\t\t--copyright\n"
 msgstr "\t-C\t\t\t--copyright\n"
 
-#: main.c:578
+#: main.c:589
 msgid "\t-d[file]\t\t--dump-variables[=file]\n"
 msgstr "\t-d[file]\t\t--dump-variables[=file]\n"
 
-#: main.c:579
+#: main.c:590
 #, fuzzy
 msgid "\t-D[file]\t\t--debug[=file]\n"
 msgstr "\t-p[file]\t\t--profile[=file]\n"
 
-#: main.c:580
+#: main.c:591
 msgid "\t-e 'program-text'\t--source='program-text'\n"
 msgstr "\t-e 'program-text'\t--source='program-text'\n"
 
-#: main.c:581
+#: main.c:592
 msgid "\t-E file\t\t\t--exec=file\n"
 msgstr "\t-E file\t\t\t--exec=file\n"
 
-#: main.c:582
+#: main.c:593
 msgid "\t-g\t\t\t--gen-pot\n"
 msgstr "\t-g\t\t\t--gen-pot\n"
 
-#: main.c:583
+#: main.c:594
 msgid "\t-h\t\t\t--help\n"
 msgstr "\t-h\t\t\t--help\n"
 
-#: main.c:584
+#: main.c:595
 msgid "\t-i includefile\t\t--include=includefile\n"
 msgstr ""
 
-#: main.c:585
+#: main.c:596
 msgid "\t-l library\t\t--load=library\n"
 msgstr ""
 
 #. TRANSLATORS: the "fatal" and "invalid" here are literal
 #. values, they should not be translated. Thanks.
 #.
-#: main.c:590
+#: main.c:601
 #, fuzzy
 msgid "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
 msgstr "\t-L [fatal]\t\t--lint[=fatal]\n"
 
-#: main.c:591
+#: main.c:602
 #, fuzzy
 msgid "\t-M\t\t\t--bignum\n"
 msgstr "\t-g\t\t\t--gen-pot\n"
 
-#: main.c:592
+#: main.c:603
 msgid "\t-N\t\t\t--use-lc-numeric\n"
 msgstr "\t-N\t\t\t--use-lc-numeric\n"
 
-#: main.c:593
+#: main.c:604
 msgid "\t-n\t\t\t--non-decimal-data\n"
 msgstr "\t-n\t\t\t--non-decimal-data\n"
 
-#: main.c:594
+#: main.c:605
 #, fuzzy
 msgid "\t-o[file]\t\t--pretty-print[=file]\n"
 msgstr "\t-p[file]\t\t--profile[=file]\n"
 
-#: main.c:595
+#: main.c:606
 msgid "\t-O\t\t\t--optimize\n"
 msgstr "\t-O\t\t\t--optimize\n"
 
-#: main.c:596
+#: main.c:607
 msgid "\t-p[file]\t\t--profile[=file]\n"
 msgstr "\t-p[file]\t\t--profile[=file]\n"
 
-#: main.c:597
+#: main.c:608
 msgid "\t-P\t\t\t--posix\n"
 msgstr "\t-P\t\t\t--posix\n"
 
-#: main.c:598
+#: main.c:609
 msgid "\t-r\t\t\t--re-interval\n"
 msgstr "\t-r\t\t\t--re-interval\n"
 
-#: main.c:599
+#: main.c:610
 #, fuzzy
 msgid "\t-s\t\t\t--no-optimize\n"
 msgstr "\t-O\t\t\t--optimize\n"
 
-#: main.c:600
+#: main.c:611
 msgid "\t-S\t\t\t--sandbox\n"
 msgstr "\t-S\t\t\t--sandbox\n"
 
-#: main.c:601
+#: main.c:612
 msgid "\t-t\t\t\t--lint-old\n"
 msgstr "\t-t\t\t\t--lint-old\n"
 
-#: main.c:602
+#: main.c:613
 msgid "\t-V\t\t\t--version\n"
 msgstr "\t-V\t\t\t--version\n"
 
-#: main.c:604
+#: main.c:615
 msgid "\t-W nostalgia\t\t--nostalgia\n"
 msgstr "\t-W nostalgia\t\t--nostalgia\n"
 
-#: main.c:607
+#: main.c:618
 msgid "\t-Y\t\t--parsedebug\n"
 msgstr "\t-Y\t\t--parsedebug\n"
 
@@ -3060,7 +3060,7 @@ msgstr "\t-Y\t\t--parsedebug\n"
 #. for this application.  Please add _another line_ with the
 #. address for translation bugs.
 #. no-wrap
-#: main.c:616
+#: main.c:627
 #, fuzzy
 msgid ""
 "\n"
@@ -3079,7 +3079,7 @@ msgstr ""
 "翻訳に関するバグは<translation-team-ja@lists.sourceforge.net>に報告してくださ"
 "い。\n"
 
-#: main.c:623
+#: main.c:634
 msgid ""
 "gawk is a pattern scanning and processing language.\n"
 "By default it reads standard input and writes standard output.\n"
@@ -3089,7 +3089,7 @@ msgstr ""
 "デフォルト設定では、標準入力を読み込み、標準出力に書き出します。\n"
 "\n"
 
-#: main.c:627
+#: main.c:638
 msgid ""
 "Examples:\n"
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
@@ -3099,7 +3099,7 @@ msgstr ""
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
 "\tgawk -F: '{ print $1 }' /etc/passwd\n"
 
-#: main.c:659
+#: main.c:670
 #, c-format
 msgid ""
 "Copyright (C) 1989, 1991-%d Free Software Foundation.\n"
@@ -3118,7 +3118,7 @@ msgstr ""
 "(at your option) any later version.\n"
 "\n"
 
-#: main.c:667
+#: main.c:678
 msgid ""
 "This program is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
@@ -3132,7 +3132,7 @@ msgstr ""
 "GNU General Public License for more details.\n"
 "\n"
 
-#: main.c:673
+#: main.c:684
 msgid ""
 "You should have received a copy of the GNU General Public License\n"
 "along with this program. If not, see http://www.gnu.org/licenses/.\n"
@@ -3140,11 +3140,11 @@ msgstr ""
 "You should have received a copy of the GNU General Public License\n"
 "along with this program. If not, see http://www.gnu.org/licenses/.\n"
 
-#: main.c:714
+#: main.c:725
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "POSIX awk では -Ft は FS をタブに設定しません"
 
-#: main.c:1116
+#: main.c:1127
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
@@ -3153,66 +3153,66 @@ msgstr ""
 "%s: オプション `-v' の引数 `%s' が `変数=代入値' の形式になっていません。\n"
 "\n"
 
-#: main.c:1142
+#: main.c:1153
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "`%s' は不正な変数名です"
 
-#: main.c:1145
+#: main.c:1156
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "`%s' は変数名ではありません。`%s=%s' のファイルを探します。"
 
-#: main.c:1149
+#: main.c:1160
 #, c-format
 msgid "cannot use gawk builtin `%s' as variable name"
 msgstr "gawk に組み込みの `%s' は変数名として使用出来ません"
 
-#: main.c:1154
+#: main.c:1165
 #, c-format
 msgid "cannot use function `%s' as variable name"
 msgstr "関数 `%s' は変数名として使用出来ません"
 
-#: main.c:1209
+#: main.c:1220
 msgid "floating point exception"
 msgstr "浮動小数点例外"
 
-#: main.c:1216
+#: main.c:1227
 msgid "fatal error: internal error"
 msgstr "致命的エラー: 内部エラー"
 
-#: main.c:1231
+#: main.c:1242
 msgid "fatal error: internal error: segfault"
 msgstr "致命的エラー: 内部エラー: セグメンテーション違反"
 
-#: main.c:1243
+#: main.c:1254
 msgid "fatal error: internal error: stack overflow"
 msgstr "致命的エラー: 内部エラー: スタックオーバーフロー"
 
-#: main.c:1302
+#: main.c:1313
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "fd %d が事前に開いていません。"
 
-#: main.c:1309
+#: main.c:1320
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "事前に fd %d 用に /dev/null を開けません。"
 
-#: main.c:1523
+#: main.c:1534
 msgid "empty argument to `-e/--source' ignored"
 msgstr "`-e/--source' への空の引数は無視されました"
 
-#: main.c:1594
+#: main.c:1605
 msgid "-M ignored: MPFR/GMP support not compiled in"
 msgstr ""
 
-#: main.c:1619
+#: main.c:1630
 #, c-format
 msgid "%s: option `-W %s' unrecognized, ignored\n"
 msgstr "%s: オプション `-W %s' は認識できません。無視されました\n"
 
-#: main.c:1672
+#: main.c:1683
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: 引数が必要なオプション -- %c\n"
