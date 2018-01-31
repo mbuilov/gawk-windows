@@ -23,7 +23,7 @@
 
 	* NEWS: Small typo fix.
 	* config.sub: Updated.
-	* io.c (fork_and_open_slave_pty: Rationalize down to one
+	* io.c (fork_and_open_slave_pty): Rationalize down to one
 	function with two bodies.
 	(set_slave_pty_attributes, push_pty_line_disciplines): Move
 	into #ifdef for TERMIOS_H. Helps out with VMS compiling.
@@ -40,8 +40,8 @@
 
 2018-01-08         John E. Malmberg      <wb8tyw@qsl.net>
 
-	* io.c (set_slave_pty_attributes) Currently no termios on VMS.
-	(set_slave_pty_attributes) No fork on VMS.
+	* io.c (set_slave_pty_attributes): Currently no termios on VMS.
+	(set_slave_pty_attributes): No fork on VMS.
 
 2018-01-04         Arnold D. Robbins     <arnold@skeeve.com>
 
