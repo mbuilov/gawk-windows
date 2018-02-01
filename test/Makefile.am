@@ -1355,7 +1355,7 @@ VALGRIND =
 
 #
 # And we set AWKLIBPATH to find the extension libraries we built.
-LOCALES = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C}
+LOCALES = LANGUAGE= LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C}
 AWK = $(LOCALES) AWKLIBPATH=../extension/.libs $(VALGRIND) $(AWKPROG)
 
 # Message stuff is to make it a little easier to follow.
@@ -2466,7 +2466,7 @@ nonfatal1:
 
 nlstringtest::
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=fr_FR.UTF-8 LANGUAGE= ; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=fr_FR.UTF-8 ; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 

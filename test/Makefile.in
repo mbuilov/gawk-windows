@@ -1610,7 +1610,7 @@ VALGRIND =
 
 #
 # And we set AWKLIBPATH to find the extension libraries we built.
-LOCALES = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C}
+LOCALES = LANGUAGE= LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C}
 all: all-am
 
 .SUFFIXES:
@@ -2902,7 +2902,7 @@ nonfatal1:
 
 nlstringtest::
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=fr_FR.UTF-8 LANGUAGE= ; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=fr_FR.UTF-8 ; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 Gt-dummy:
