@@ -10,7 +10,7 @@
  */
 
 /*
- * Copyright (C) 2001, 2004, 2005, 2010-2017
+ * Copyright (C) 2001, 2004, 2005, 2010-2018
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -575,6 +575,7 @@ init_filefuncs(void)
 		ENTRY(FTS_PHYSICAL),
 		ENTRY(FTS_SEEDOT),
 		ENTRY(FTS_XDEV),
+		ENTRY(FTS_SKIP),
 		{ NULL, 0 }
 	};
 
@@ -690,7 +691,7 @@ fill_default_elements(awk_array_t element_array, const FTSENT *const fentry, awk
 /* process --- process the heirarchy */
 
 static void
-process(FTS *heirarchy, awk_array_t destarray, int seedot)
+process(FTS *heirarchy, awk_array_t destarray, int seedot, int skipset)
 {
 	FTSENT *fentry;
 	awk_value_t index, value;
@@ -705,7 +706,12 @@ process(FTS *heirarchy, awk_array_t destarray, int seedot)
 		switch (fentry->fts_info) {
 		case FTS_D:
 			/* directory */
+
+			if (skipset && fentry->fts_level == 0)
+				fts_set(heirarchy, fentry, FTS_SKIP);
+
 			/* create array to hold entries */
+			/* this will be empty if doing FTS_SKIP */
 			newdir_array = create_array();
 			if (newdir_array == NULL) {
 				warning(ext_id, _("fts-process: could not create array"));
@@ -826,7 +832,7 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	int ret = -1;
 	static const int mask = (
 		  FTS_COMFOLLOW | FTS_LOGICAL | FTS_NOCHDIR | FTS_PHYSICAL
-		| FTS_SEEDOT | FTS_XDEV);
+		| FTS_SEEDOT | FTS_XDEV | FTS_SKIP);
 
 	assert(result != NULL);
 	fts_errors = 0;		/* ensure a fresh start */
@@ -894,7 +900,7 @@ do_fts(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 
 	/* let's do it! */
 	if ((heirarchy = fts_open(pathvector, flags, NULL)) != NULL) {
-		process(heirarchy, dest.array_cookie, (flags & FTS_SEEDOT) != 0);
+		process(heirarchy, dest.array_cookie, (flags & FTS_SEEDOT) != 0, (flags & FTS_SKIP) != 0);
 		fts_close(heirarchy);
 
 		if (fts_errors == 0)

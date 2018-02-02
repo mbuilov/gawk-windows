@@ -1,3 +1,10 @@
+2018-02-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (FTS_SKIP): New constant.
+	(process): Additional arg skipset. When true (based on if
+	FTS_SKIP was passed) and at level 0, use fts_set to set
+	FTS_SKIP on the directory.
+
 2018-01-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* compile, config.guess, config.rpath, config.sub,
