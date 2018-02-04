@@ -14,25 +14,6 @@ that works on that platform don't get along, and I could not solve
 the problem. So I simply disabled the MPFR check in configure.ac on
 that platform.
 
-Wed Aug 24 21:54:13 IDT 2016
-============================
-
-From: Pat Rankin <r.pat.rankin@gmail.com>
-Date: Tue, 23 Aug 2016 18:37:26 -0700
-Subject: Re: [gawk-devel] one last prerelease tarball
-To: Aharon Robbins <arnold@skeeve.com>
-
-> http://www.skeeve.com/gawk/gawk-4.1.3j.tar.gz
-
-     On OSX 10.11.6, I still get warnings that left-shifting a negative value
-is undefined when handling TYPE_MINIMUM(time_t) in builtin.c.  time_t
-is a signed 64-bit integer.  'TYPE_MINIMUM(char)' triggers warnings too,
-so the size isn't an issue, just the signedness.
-
-     Despite the warnings, the build finishes successfully and the test suite
-passes without any failures now that igncas3 is skipped by 'make check'.
-I don't have MPFR so those tests aren't being run.
-
 Mon Apr 13 09:49:40 IDT 2015
 ============================
 
