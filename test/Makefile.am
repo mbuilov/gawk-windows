@@ -1297,8 +1297,9 @@ INET_TESTS = inetdayu inetdayt inetechu inetecht
 
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 
-MPFR_TESTS = mpfrnr mpfrnegzero mpfrmemok1 mpfrrem mpfrrnd mpfrrndeval mpfrieee
-	mpfrexprange mpfrsort mpfrsqrt mpfrbigint mpfrstrtonum mpgforcenum
+MPFR_TESTS = mpfrbigint mpfrexprange mpfrieee mpfrmemok1 mpfrnegzero \
+	mpfrnr mpfrrem mpfrrnd mpfrrndeval mpfrsort mpfrsqrt \
+	mpfrstrtonum mpgforcenum
 
 LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
