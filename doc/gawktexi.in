@@ -38719,9 +38719,14 @@ type @samp{make mingw32}.
 @cindex operating systems, PC, @command{gawk} on
 @cindex PC operating systems, @command{gawk} on
 
-Under MS-Windows, the Cygwin and MinGW environments support
+Information in this section applies to the MinGW and
+DJGPP ports of @command{gawk}. @xref{Cygwin} for information
+about the Cygwin port.
+
+Under MS-Windows, the MinGW environment supports
 both the @samp{|&} operator and TCP/IP networking
 (@pxref{TCP/IP Networking}).
+The DJGPP environment does not support @samp{|&}.
 
 @cindex search paths
 @cindex search paths, for source files
@@ -38846,6 +38851,15 @@ make && make check
 When compared to GNU/Linux on the same system, the @samp{configure}
 step on Cygwin takes considerably longer.  However, it does finish,
 and then the @samp{make} proceeds as usual.
+
+Recent versions of Cygwin open all files in binary mode. This means
+that you should use @samp{RS = "\r?\n"} in order to be able to
+handle standard MS-Windows text files with carriage-return plus
+line-feed line endings.
+
+The Cygwin environment supports
+both the @samp{|&} operator and TCP/IP networking
+(@pxref{TCP/IP Networking}).
 
 @node MSYS
 @appendixsubsubsec Using @command{gawk} In The MSYS Environment
