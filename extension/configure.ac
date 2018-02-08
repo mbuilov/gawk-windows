@@ -56,7 +56,9 @@ dnl AC_PROG_INSTALL
 
 dnl use the same definition as the main configure script.
 dnl EXTENSIONDIR is exported if it was set there.
-AC_SUBST([pkgextensiondir], ['${pkglibdir}'${EXTENSIONDIR}])
+dnl N.B. We must use ${libdir}/gawk instead of $pkglibdir because $pkglibdir
+dnl is set to ${libdir}/gawk-extensions, which is not what we want.
+AC_SUBST([pkgextensiondir], ['${libdir}/gawk'${EXTENSIONDIR}])
 
 if test "$GCC" = yes
 then
