@@ -1579,9 +1579,22 @@ socketopen(int family, int type, const char *localpname,
 	int any_remote_host = (strcmp(remotehostname, "0") == 0);
 
 	memset(& lhints, '\0', sizeof (lhints));
-	lhints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
+
 	lhints.ai_socktype = type;
 	lhints.ai_family = family;
+
+	/*
+         * If only the loopback interface is up and hints.ai_flags has
+	 * AI_ADDRCONFIG, getaddrinfo() will succeed and return all wildcard
+	 * addresses, but only if hints.ai_family == AF_UNSPEC
+	 *
+	 * Do return the wildcard address in case the loopback interface
+	 * is the only one that is up (and
+	 * hints.ai_family == either AF_INET4 or AF_INET6)
+         */
+	lhints.ai_flags = AI_PASSIVE;
+	if (lhints.ai_family == AF_UNSPEC)
+		lhints.ai_flags |= AI_ADDRCONFIG;
 
 	lerror = getaddrinfo(NULL, localpname, & lhints, & lres);
 	if (lerror) {

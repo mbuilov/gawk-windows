@@ -1,3 +1,11 @@
+2018-02-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac (pkgextensiondir): This must be set to
+	'${libdir}/gawk'${EXTENSIONDIR} to match gawk's value.
+	The previous value of '${pkglibdir}'${EXTENSIONDIR} was incorrect,
+	because it was putting the extensions in the gawk-extensions
+	libdir subdirectory, instead of the gawk subdirectory.
+
 2018-02-02         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* filefuncs.3am, fnmatch.3am, fork.3am, inplace.3am,

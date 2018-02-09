@@ -1,3 +1,20 @@
+2018-02-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (socketopen): Rearrange assigning the flags to use
+	AI_ADDRCONFIG only if family is AF_UNSPEC. Thanks to
+	Houder <houder@xs4all.nl> for the report and initial
+	code suggestion.
+
+2018-02-07         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	Print +"01" should print "1", not "01".
+	* interpret.h (Op_unary_plus): Need to make a new number node that does
+	not contain the original string representation. The logic is copied
+	from Op_unary_minus.
+	* mpfr.c (mpg_interpret): Add new case for Op_unary_plus based on
+	the Op_unary_minus logic. We need a fresh number node that does not
+	contain the string.
+
 2018-01-28         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* config.guess, config.sub: Updated.

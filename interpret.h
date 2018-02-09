@@ -621,6 +621,9 @@ mod:
 		case Op_unary_plus:
 			// Force argument to be numeric
 			t1 = TOP_NUMBER();
+			r = make_number(t1->numbr);
+			DEREF(t1);
+			REPLACE(r);
 			break;
 
 		case Op_store_sub:
