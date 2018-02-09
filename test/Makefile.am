@@ -676,6 +676,7 @@ EXTRA_DIST = \
 	mpfrsqrt.ok \
 	mpfrstrtonum.awk \
 	mpfrstrtonum.ok \
+	mpfruplus.ok \
 	mpgforcenum.awk \
 	mpgforcenum.ok \
 	mtchi18n.awk \
@@ -1176,6 +1177,8 @@ EXTRA_DIST = \
 	uparrfs.awk \
 	uparrfs.in \
 	uparrfs.ok \
+	uplus.awk \
+	uplus.ok \
 	valgrind.awk \
 	watchpoint1.awk \
 	watchpoint1.in \
@@ -1251,7 +1254,7 @@ BASIC_TESTS = \
 	splitdef splitvar splitwht status-close strcat1 strnum1 strnum2 strtod \
 	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 \
 	tradanch tweakfld \
-	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs \
+	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs uplus \
 	wideidx wideidx2 widesub widesub2 widesub3 widesub4 wjposer1 \
 	zero2 zeroe0 zeroflag
 
@@ -1299,7 +1302,7 @@ MACHINE_TESTS = double1 double2 fmtspcl intformat
 
 MPFR_TESTS = mpfrbigint mpfrexprange mpfrieee mpfrmemok1 mpfrnegzero \
 	mpfrnr mpfrrem mpfrrnd mpfrrndeval mpfrsort mpfrsqrt \
-	mpfrstrtonum mpgforcenum
+	mpfrstrtonum mpgforcenum mpfruplus
 
 LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
@@ -2121,6 +2124,11 @@ mpfrsqrt:
 mpfrstrtonum:
 	@echo $@
 	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfruplus:
+	@echo $@
+	@$(AWK) -M -f "$(srcdir)"/uplus.awk > _$@ 2>&1
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mpgforcenum:
