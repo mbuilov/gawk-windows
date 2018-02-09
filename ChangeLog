@@ -1,3 +1,10 @@
+2018-02-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (socketopen): Rearrange assigning the flags to use
+	AI_ADDRCONFIG only if family is AF_UNSPEC. Thanks to
+	Houder <houder@xs4all.nl> for the report and initial
+	code suggestion.
+
 2018-02-07         Andrew J. Schorr      <aschorr@telemetry-investments.com>
 
 	Print +"01" should print "1", not "01".
