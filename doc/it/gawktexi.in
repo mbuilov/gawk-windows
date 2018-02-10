@@ -5580,12 +5580,12 @@ Nuova pagina, @kbd{Ctrl-l}, codice ASCII 12 (FF).
 @cindex @code{\} (barra inversa), @code{\n}, sequenza di protezione
 @cindex barra inversa (@code{\}), @code{\n}, sequenza di protezione
 @item \n
-A capo, @kbd{Ctrl-j}, codice ASCII 10 (LF).
+A-capo, @kbd{Ctrl-j}, codice ASCII 10 (LF).
 
 @cindex @code{\} (barra inversa), @code{\r}, sequenza di protezione
 @cindex barra inversa (@code{\}), @code{\r}, sequenza di protezione
 @item \r
-Ritorno del carrello, @kbd{Ctrl-m}, codice ASCII 13 (CR).
+Ritorno-del-carrello, @kbd{Ctrl-m}, codice ASCII 13 (CR).
 
 @cindex @code{\} (barra inversa), @code{\t}, sequenza di protezione
 @cindex barra inversa (@code{\}), @code{\t}, sequenza di protezione
@@ -29960,7 +29960,7 @@ TCP del sistema locale.
 Stampa poi il risultato e chiude la connessione.
 
 Poich@'e questo tema @`e molto ampio, l'uso di @command{gawk} per
-la programmazione TCP/IP viene documentato separatamente.
+la programmazione TCP/IP viene documentata separatamente.
 @ifinfo
 Si veda
 @inforef{Top, , General Introduction, gawkinet, @value{GAWKINETTITLE}},
@@ -42054,9 +42054,10 @@ usando gli strumenti MinGW, scrivere @samp{make mingw32}.
 @cindex PC, @command{gawk} su sistemi operativi
 @cindex sistemi operativi PC, @command{gawk} su
 
-Sotto MS-Windows, gli ambienti Cygwin e MinGW consentono di usare
+Sotto MS-Windows, l'ambiente MinGW consente di usare
 sia l'operatore @samp{|&} che le operazioni su rete TCP/IP
 (@pxref{Reti TCP/IP}).
+L'ambiente DJGPP non consente di usare @samp{|&}.
 
 @cindex percorso di ricerca
 @cindex percorso di ricerca per file sorgente
@@ -42187,8 +42188,17 @@ make && make check
 @end example
 
 In confronto a un sistema GNU/Linux sulla stessa macchina, l'esecuzione
-del passo di @samp{configure} sotto Cygwin richiede molto pi@`u tempo.  Tuttavia
-si conclude regolarmente, e poi @samp{make} funziona come ci si aspetta.
+del passo di @samp{configure} sotto Cygwin richiede molto pi@`u tempo.
+Tuttavia si conclude regolarmente, e poi @samp{make} funziona come ci si
+aspetta.
+
+Le versioni più recenti di Cygwin aprono tutti i file in modalità binaria.
+Ciò implica che si dovrebbe usare @samp{RS = "\r?\n"} per riuscire a
+gestire file di testo MS-Windows in formato standard, in cui ogni riga
+termina con i due caratteri di Ritorno-del-carrello e A-capo.
+
+L'ambiente Cygwin consente l'utilizzo sia dell'operatore @samp{|&}
+che di reti TCP/IP (@pxref{Reti TCP/IP}).
 
 @node MSYS
 @appendixsubsubsec Usare @command{gawk} in ambiente MSYS
