@@ -222,7 +222,9 @@ ARRAYDEBUG_TESTS = arrdbg
 EXTRA_TESTS = inftest regtest ignrcas3 
 INET_TESTS = inetdayu inetdayt inetechu inetecht
 MACHINE_TESTS = double1 double2 fmtspcl intformat
-MPFR_TESTS = mpfrnr mpfrnegzero mpfrmemok1 mpfrrem mpfrrnd mpfrrndeval mpfrieee
+MPFR_TESTS = mpfrbigint mpfrexprange mpfrieee mpfrmemok1 mpfrnegzero \
+	mpfrnr mpfrrem mpfrrnd mpfrrndeval mpfrsort mpfrsqrt \
+	mpfrstrtonum mpgforcenum mpfruplus
 LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
 	fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
