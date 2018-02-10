@@ -101,6 +101,8 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 
 	if (isfatal) {
 #ifdef GAWKDEBUG
+		// GLIBC 2.27 doesn't necessarily flush on abort. Sigh.
+		fflush(NULL);
 		abort();
 #endif
 		gawk_exit(EXIT_FATAL);
