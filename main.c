@@ -1226,6 +1226,8 @@ catchsig(int sig)
 		set_loc(__FILE__, __LINE__);
 		msg(_("fatal error: internal error"));
 		/* fatal won't abort() if not compiled for debugging */
+		// GLIBC 2.27 doesn't necessarily flush on abort. Sigh.
+		fflush(NULL);
 		abort();
 	} else
 		cant_happen();
@@ -1240,6 +1242,7 @@ catchsegv(void *fault_address, int serious)
 {
 	set_loc(__FILE__, __LINE__);
 	msg(_("fatal error: internal error: segfault"));
+	fflush(NULL);
 	abort();
 	/*NOTREACHED*/
 	return 0;
@@ -1252,6 +1255,7 @@ catchstackoverflow(int emergency, stackoverflow_context_t scp)
 {
 	set_loc(__FILE__, __LINE__);
 	msg(_("fatal error: internal error: stack overflow"));
+	fflush(NULL);
 	abort();
 	/*NOTREACHED*/
 	return;
