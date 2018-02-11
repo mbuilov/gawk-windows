@@ -1,4 +1,4 @@
-.TH FILEFUNCS 3am "Jan 15 2013" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH FILEFUNCS 3am "Feb 02 2018" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
 filefuncs \- provide some file related functionality to gawk
 .SH SYNOPSIS
@@ -230,6 +230,9 @@ This option causes entries for ``..'' to also be included.
 .TP
 .B FTS_XDEV
 During a traversal, do not cross onto a different mounted filesystem.
+.TP
+.B FTS_SKIP
+When set, causes top level directories to not be descended into.
 .RE
 .TP
 .B filedata
@@ -315,12 +318,16 @@ heirarchy and its information.
 .PP
 Nothing prevents AWK code from changing the predefined
 .BI FTS_ xx
-values, but doing so is may cause strange results when
+values, but doing so may cause strange results when
 the changed values are passed to
 .BR fts() .
 .SH BUGS
 There are many more file-related functions for which AWK
 interfaces would be desirable.
+.PP
+It's not clear why I thought adding
+.B FTS_SKIP
+was a good idea.
 .SH EXAMPLE
 See
 .B test/fts.awk
@@ -346,7 +353,7 @@ distribution for an example.
 Arnold Robbins,
 .BR arnold@skeeve.com .
 .SH COPYING PERMISSIONS
-Copyright \(co 2012, 2013,
+Copyright \(co 2012, 2013, 2018,
 Free Software Foundation, Inc.
 .PP
 Permission is granted to make and distribute verbatim copies of

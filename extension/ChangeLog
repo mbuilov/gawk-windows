@@ -1,3 +1,7 @@
+2018-02-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.3am: Fix some typos.
+
 2018-02-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* configure.ac (pkgextensiondir): This must be set to
@@ -12,6 +16,13 @@
 	ordchr.3am, readdir.3am, readfile.3am, revoutput.3am,
 	revtwoway.3am, rwarray.3am, time.3am: Add vim modeline at the
 	bottom to set the file type for syntax coloring.
+
+2018-02-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (FTS_SKIP): New constant.
+	(process): Additional arg skipset. When true (based on if
+	FTS_SKIP was passed) and at level 0, use fts_set to set
+	FTS_SKIP on the directory.
 
 2018-01-11         Arnold D. Robbins     <arnold@skeeve.com>
 
