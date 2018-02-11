@@ -1682,6 +1682,20 @@ mod:
 		REPLACE(r);
 		break;
 
+	case Op_unary_plus:
+		t1 = TOP_NUMBER();
+		if (is_mpg_float(t1)) {
+			r = mpg_float();
+			tval = mpfr_set(r->mpg_numbr, t1->mpg_numbr, ROUND_MODE);
+			IEEE_FMT(r->mpg_numbr, tval);
+		} else {
+			r = mpg_integer();
+			mpz_set(r->mpg_i, t1->mpg_i);
+		}
+		DEREF(t1);
+		REPLACE(r);
+		break;
+
 	case Op_assign_plus:
 	case Op_assign_minus:
 	case Op_assign_times:

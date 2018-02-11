@@ -8,10 +8,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gawk 4.1.64\n"
+"Project-Id-Version: gawk 4.2.0e\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
 "POT-Creation-Date: 2018-01-28 20:07+0200\n"
-"PO-Revision-Date: 2017-09-16 13:10+0200\n"
+"PO-Revision-Date: 2018-02-05 19:53+0100\n"
 "Last-Translator: Tianze Wang <zwpwjwtz@126.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -516,8 +516,7 @@ msgid "division by zero attempted in `%%'"
 msgstr "在“%%”中试图除 0"
 
 #: awkgram.y:5552
-msgid ""
-"cannot assign a value to the result of a field post-increment expression"
+msgid "cannot assign a value to the result of a field post-increment expression"
 msgstr "无法将值赋给字段后增表达式"
 
 #: awkgram.y:5555
@@ -767,8 +766,7 @@ msgstr "substr：开始坐标 %g 超出字符串尾部"
 
 #: builtin.c:1863
 #, c-format
-msgid ""
-"substr: length %g at start index %g exceeds length of first argument (%lu)"
+msgid "substr: length %g at start index %g exceeds length of first argument (%lu)"
 msgstr "substr：在开始坐标 %2$g 下长度 %1$g 超出第一个参数的长度 (%3$lu)"
 
 #: builtin.c:1936
@@ -1007,8 +1005,7 @@ msgstr "intdiv：试图除0"
 
 #: builtin.c:4080
 #, c-format
-msgid ""
-"typeof detected invalid flags combination `%s'; please file a bug report."
+msgid "typeof detected invalid flags combination `%s'; please file a bug report."
 msgstr "typeof 函数发现一个无效的选项组合“%s”；请向开发者汇报此错误。"
 
 #: builtin.c:4095
@@ -1122,14 +1119,11 @@ msgid "non-zero integer value"
 msgstr "非零整数值"
 
 #: command.y:819
-msgid ""
-"backtrace [N] - print trace of all or N innermost (outermost if N < 0) "
-"frames."
+msgid "backtrace [N] - print trace of all or N innermost (outermost if N < 0) frames."
 msgstr "backtrace [N] - 显示所有或最近 N 层 (若 N < 0，则显示最远 N 层) 调用。"
 
 #: command.y:821
-msgid ""
-"break [[filename:]N|function] - set breakpoint at the specified location."
+msgid "break [[filename:]N|function] - set breakpoint at the specified location."
 msgstr "break [[文件名:]N|函数] - 在指定处设置断点。"
 
 #: command.y:823
@@ -1137,9 +1131,7 @@ msgid "clear [[filename:]N|function] - delete breakpoints previously set."
 msgstr "clear [[文件名:]N|函数] - 删除之前设置的断点。"
 
 #: command.y:825
-msgid ""
-"commands [num] - starts a list of commands to be executed at a "
-"breakpoint(watchpoint) hit."
+msgid "commands [num] - starts a list of commands to be executed at a breakpoint(watchpoint) hit."
 msgstr "commands [编号] - 在断点 (监视点) 处执行一系列命令。"
 
 #: command.y:827
@@ -1203,12 +1195,8 @@ msgid "ignore N COUNT - set ignore-count of breakpoint number N to COUNT."
 msgstr "ignore N 次数 - 设置忽略断点 N 的次数。"
 
 #: command.y:857
-msgid ""
-"info topic - source|sources|variables|functions|break|frame|args|locals|"
-"display|watch."
-msgstr ""
-"info 主题 - 查看 info 信息，主题可以为 source|sources|variables|functions|"
-"break|frame|args|locals|display|watch。"
+msgid "info topic - source|sources|variables|functions|break|frame|args|locals|display|watch."
+msgstr "info 主题 - 查看 info 信息，主题可以为 source|sources|variables|functions|break|frame|args|locals|display|watch。"
 
 #: command.y:859
 msgid "list [-|+|[filename:]lineno|function|range] - list specified line(s)."
@@ -1219,8 +1207,7 @@ msgid "next [COUNT] - step program, proceeding through subroutine calls."
 msgstr "next [次数] - 单步运行程序，并且步过子调用。"
 
 #: command.y:863
-msgid ""
-"nexti [COUNT] - step one instruction, but proceed through subroutine calls."
+msgid "nexti [COUNT] - step one instruction, but proceed through subroutine calls."
 msgstr "nexti [次数] - 单运行一步指令，但步过其子调用。"
 
 #: command.y:865
@@ -1256,8 +1243,7 @@ msgid "set var = value - assign value to a scalar variable."
 msgstr "set 变量 = 值 - 给标量变量赋值。"
 
 #: command.y:883
-msgid ""
-"silent - suspends usual message when stopped at a breakpoint/watchpoint."
+msgid "silent - suspends usual message when stopped at a breakpoint/watchpoint."
 msgstr "silent - 在断点/监视点处中断时，隐藏常规消息。"
 
 #: command.y:885
@@ -1285,9 +1271,7 @@ msgid "undisplay [N] - remove variable(s) from automatic display list."
 msgstr "undisplay [N] - 从自动显示列表中移除指定变量。"
 
 #: command.y:897
-msgid ""
-"until [[filename:]N|function] - execute until program reaches a different "
-"line or line N within current frame."
+msgid "until [[filename:]N|function] - execute until program reaches a different line or line N within current frame."
 msgstr "until [[文件名:]N|函数] - 在当前层中执行，在下一行或第 N 行处暂停。"
 
 #: command.y:899
@@ -1303,12 +1287,8 @@ msgid "watch var - set a watchpoint for a variable."
 msgstr "watch 变量 - 为变量设置监视点。"
 
 #: command.y:905
-msgid ""
-"where [N] - (same as backtrace) print trace of all or N innermost (outermost "
-"if N < 0) frames."
-msgstr ""
-"where [N] - (与backtrace相同) 显示所有或最近 N 层 (若 N < 0，则显示最远 N "
-"层) 调用。"
+msgid "where [N] - (same as backtrace) print trace of all or N innermost (outermost if N < 0) frames."
+msgstr "where [N] - (与backtrace相同) 显示所有或最近 N 层 (若 N < 0，则显示最远 N 层) 调用。"
 
 #: command.y:1016 debug.c:401 gawkapi.c:258 msg.c:137
 #, c-format
@@ -1993,8 +1973,7 @@ msgstr "load_ext：无法打开库“%s”(%s)\n"
 
 #: ext.c:66
 #, c-format
-msgid ""
-"load_ext: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"
+msgid "load_ext: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"
 msgstr "load_ext：库“%s”：未定义“plugin_is_GPL_compatible”(%s)\n"
 
 #: ext.c:72
@@ -2436,9 +2415,7 @@ msgstr "awk_value_to_node：数值类型“%d”无效"
 
 #: gawkapi.c:520
 #, c-format
-msgid ""
-"node_to_awk_value: detected invalid numeric flags combination `%s'; please "
-"file a bug report."
+msgid "node_to_awk_value: detected invalid numeric flags combination `%s'; please file a bug report."
 msgstr "node_to_awk_value：发现一个无效的选项组合“%s”；请向开发者汇报此错误。"
 
 #: gawkapi.c:548
@@ -2451,9 +2428,7 @@ msgstr "node_to_awk_value：值为空"
 
 #: gawkapi.c:607 gawkapi.c:641 gawkapi.c:668 gawkapi.c:701
 #, c-format
-msgid ""
-"node_to_awk_value detected invalid flags combination `%s'; please file a bug "
-"report."
+msgid "node_to_awk_value detected invalid flags combination `%s'; please file a bug report."
 msgstr "node_to_awk_value 发现了一个无效的选项组合“%s”；请向开发者汇报此错误。"
 
 #: gawkapi.c:1072
@@ -2518,8 +2493,7 @@ msgstr "“%s”重定向中的表达式是空字符串"
 
 #: io.c:796
 #, c-format
-msgid ""
-"filename `%.*s' for `%s' redirection may be result of logical expression"
+msgid "filename `%.*s' for `%s' redirection may be result of logical expression"
 msgstr "“%3$s”重定向中的文件名“%2$.*1$s”可能是逻辑表达式的结果"
 
 #: io.c:844
@@ -2544,8 +2518,7 @@ msgstr "无法为输入打开管道“%s”(%s)"
 
 #: io.c:950
 #, c-format
-msgid ""
-"get_file socket creation not supported on this platform for `%s' with fd %d"
+msgid "get_file socket creation not supported on this platform for `%s' with fd %d"
 msgstr "此平台不支持使用 get_file 创建文件描述符为 %2$d 的套接字“%1$s”"
 
 #: io.c:961
@@ -2564,8 +2537,7 @@ msgid "can't redirect to `%s' (%s)"
 msgstr "无法重定向到“%s”(%s)"
 
 #: io.c:1153
-msgid ""
-"reached system limit for open files: starting to multiplex file descriptors"
+msgid "reached system limit for open files: starting to multiplex file descriptors"
 msgstr "打开的文件数达到系统限制：开始复用文件描述符"
 
 #: io.c:1169
@@ -2720,9 +2692,8 @@ msgid "close of slave pty failed (%s)"
 msgstr "关闭从 pty 失败(%s)"
 
 #: io.c:2245
-#, fuzzy
 msgid "could not create child process or open pty"
-msgstr "无法为“%s”创建子进程(fork：%s)"
+msgstr "无法创建子进程或打开 pty"
 
 #: io.c:2333 io.c:2401 io.c:2613 io.c:2645
 #, c-format
@@ -2785,8 +2756,7 @@ msgstr "register_output_parser：指针为空"
 
 #: io.c:3201
 #, c-format
-msgid ""
-"output wrapper `%s' conflicts with previously installed output wrapper `%s'"
+msgid "output wrapper `%s' conflicts with previously installed output wrapper `%s'"
 msgstr "输出解析器“%s”与之前设置的“%s”相冲突"
 
 #: io.c:3208
@@ -2800,9 +2770,7 @@ msgstr "register_output_processor：指针为空"
 
 #: io.c:3258
 #, c-format
-msgid ""
-"two-way processor `%s' conflicts with previously installed two-way processor "
-"`%s'"
+msgid "two-way processor `%s' conflicts with previously installed two-way processor `%s'"
 msgstr "双向处理器“%s”与之前设置的“%s”相冲突"
 
 #: io.c:3267
@@ -3010,7 +2978,6 @@ msgstr "\t-Y\t\t--parsedebug\n"
 #. address for translation bugs.
 #. no-wrap
 #: main.c:627
-#, fuzzy
 msgid ""
 "\n"
 "To report bugs, see node `Bugs' in `gawk.info'\n"
@@ -3025,6 +2992,7 @@ msgstr ""
 "Problems and Bugs”一节。您也可以在\n"
 "https://www.gnu.org/software/gawk/manual/html_node/Bugs.html\n"
 "中找到相同的信息。\n"
+"请勿在群组 comp.lang.awk 上提交错误报告。\n"
 "\n"
 
 #: main.c:634
@@ -3080,9 +3048,7 @@ msgstr ""
 msgid ""
 "You should have received a copy of the GNU General Public License\n"
 "along with this program. If not, see http://www.gnu.org/licenses/.\n"
-msgstr ""
-"你应该收到程序附带的一份 GNU 通用公共许可证(GPL)。如果没有收到，请参看 "
-"http://www.gnu.org/licenses/ 。\n"
+msgstr "你应该收到程序附带的一份 GNU 通用公共许可证(GPL)。如果没有收到，请参看 http://www.gnu.org/licenses/ 。\n"
 
 #: main.c:725
 msgid "-Ft does not set FS to tab in POSIX awk"
@@ -3239,9 +3205,7 @@ msgstr "“\\x”转义序列中没有十六进制数"
 
 #: node.c:611
 #, c-format
-msgid ""
-"hex escape \\x%.*s of %d characters probably not interpreted the way you "
-"expect"
+msgid "hex escape \\x%.*s of %d characters probably not interpreted the way you expect"
 msgstr "十六进制转义符 \\x%.*s 表示的 %d 个字符可能不会被如期望情况解释"
 
 #: node.c:626
@@ -3250,9 +3214,7 @@ msgid "escape sequence `\\%c' treated as plain `%c'"
 msgstr "转义序列“\\%c”被当作单纯的“%c”"
 
 #: node.c:762
-msgid ""
-"Invalid multibyte data detected. There may be a mismatch between your data "
-"and your locale."
+msgid "Invalid multibyte data detected. There may be a mismatch between your data and your locale."
 msgstr "检测到了无效的多字节数据。可能你的数据和区域设置不匹配。"
 
 #: posix/gawkmisc.c:177
@@ -3528,8 +3490,7 @@ msgstr "无法弹出 main 的上下文"
 #~ msgid "extension: cannot open library `%s' (%s)"
 #~ msgstr "extension：无法打开库“%s”(%s)"
 
-#~ msgid ""
-#~ "extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)"
+#~ msgid "extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)"
 #~ msgstr "extension：库“%s”：未定义“plugin_is_GPL_compatible”(%s)"
 
 #~ msgid "extension: library `%s': cannot call function `%s' (%s)"
@@ -3679,8 +3640,7 @@ msgstr "无法弹出 main 的上下文"
 #~ msgid "xor(%lf, %lf): fractional values will be truncated"
 #~ msgstr "xor(%lf, %lf): 小数部分会被截断"
 
-#~ msgid ""
-#~ "for loop: array `%s' changed size from %ld to %ld during loop execution"
+#~ msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
 #~ msgstr "for loop: 数组“%s”在循环执行时大小从 %ld 改变为 %ld"
 
 #~ msgid "`break' outside a loop is not portable"
@@ -3701,9 +3661,7 @@ msgstr "无法弹出 main 的上下文"
 #~ msgid "statement has no effect"
 #~ msgstr "表达式无任何作用"
 
-#~ msgid ""
-#~ "concatenation: side effects in one expression have changed the length of "
-#~ "another!"
+#~ msgid "concatenation: side effects in one expression have changed the length of another!"
 #~ msgstr "concatenation: 一个表达式的额外效应已改变另一个的长度！"
 
 #~ msgid "assignment used in conditional context"

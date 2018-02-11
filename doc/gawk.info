@@ -29146,8 +29146,12 @@ File: gawk.info,  Node: PC Using,  Next: Cygwin,  Prev: PC Compiling,  Up: PC In
 B.3.1.3 Using 'gawk' on PC Operating Systems
 ............................................
 
-Under MS-Windows, the Cygwin and MinGW environments support both the
-'|&' operator and TCP/IP networking (*note TCP/IP Networking::).
+Information in this section applies to the MinGW and DJGPP ports of
+'gawk'.  *Note Cygwin:: for information about the Cygwin port.
+
+   Under MS-Windows, the MinGW environment supports both the '|&'
+operator and TCP/IP networking (*note TCP/IP Networking::).  The DJGPP
+environment does not support '|&'.
 
    The MS-Windows version of 'gawk' searches for program files as
 described in *note AWKPATH Variable::.  However, semicolons (rather than
@@ -29234,6 +29238,14 @@ Cygwin is the same as for a Unix system:
    When compared to GNU/Linux on the same system, the 'configure' step
 on Cygwin takes considerably longer.  However, it does finish, and then
 the 'make' proceeds as usual.
+
+   Recent versions of Cygwin open all files in binary mode.  This means
+that you should use 'RS = "\r?\n"' in order to be able to handle
+standard MS-Windows text files with carriage-return plus line-feed line
+endings.
+
+   The Cygwin environment supports both the '|&' operator and TCP/IP
+networking (*note TCP/IP Networking::).
 
 
 File: gawk.info,  Node: MSYS,  Prev: Cygwin,  Up: PC Installation
@@ -33016,7 +33028,7 @@ Index
 * /inet/... special files (gawk):        TCP/IP Networking.   (line   6)
 * /inet4/... special files (gawk):       TCP/IP Networking.   (line   6)
 * /inet6/... special files (gawk):       TCP/IP Networking.   (line   6)
-* ; (semicolon), AWKPATH variable and:   PC Using.            (line   9)
+* ; (semicolon), AWKPATH variable and:   PC Using.            (line  13)
 * ; (semicolon), separating statements in actions: Statements/Lines.
                                                               (line  90)
 * ; (semicolon), separating statements in actions <1>: Action Overview.
@@ -33345,7 +33357,7 @@ Index
 * awka compiler for awk:                 Other Versions.      (line  73)
 * AWKLIBPATH environment variable:       AWKLIBPATH Variable. (line   6)
 * AWKPATH environment variable:          AWKPATH Variable.    (line   6)
-* AWKPATH environment variable <1>:      PC Using.            (line   9)
+* AWKPATH environment variable <1>:      PC Using.            (line  13)
 * awkprof.out file:                      Profiling.           (line   6)
 * awksed.awk program:                    Simple Sed.          (line  25)
 * awkvars.out file:                      Options.             (line  94)
@@ -33439,7 +33451,7 @@ Index
 * bindtextdomain() function (gawk), portability and: I18N Portability.
                                                               (line  33)
 * BINMODE variable:                      User-modified.       (line  15)
-* BINMODE variable <1>:                  PC Using.            (line  16)
+* BINMODE variable <1>:                  PC Using.            (line  20)
 * bit-manipulation functions:            Bitwise Functions.   (line   6)
 * bits2str() user-defined function:      Bitwise Functions.   (line  69)
 * bitwise AND:                           Bitwise Functions.   (line  40)
@@ -33622,7 +33634,7 @@ Index
 * common extensions, /dev/stderr special file: Special FD.    (line  48)
 * common extensions, /dev/stdin special file: Special FD.     (line  48)
 * common extensions, /dev/stdout special file: Special FD.    (line  48)
-* common extensions, BINMODE variable:   PC Using.            (line  16)
+* common extensions, BINMODE variable:   PC Using.            (line  20)
 * common extensions, delete to delete entire arrays: Delete.  (line  39)
 * common extensions, func keyword:       Definition Syntax.   (line  99)
 * common extensions, length() applied to an array: String Functions.
@@ -33927,7 +33939,7 @@ Index
 * differences in awk and gawk, BINMODE variable: User-modified.
                                                               (line  15)
 * differences in awk and gawk, BINMODE variable <1>: PC Using.
-                                                              (line  16)
+                                                              (line  20)
 * differences in awk and gawk, close() function: Close Files And Pipes.
                                                               (line  81)
 * differences in awk and gawk, close() function <1>: Close Files And Pipes.
@@ -34161,7 +34173,7 @@ Index
 * extensions, common, /dev/stderr special file: Special FD.   (line  48)
 * extensions, common, /dev/stdin special file: Special FD.    (line  48)
 * extensions, common, /dev/stdout special file: Special FD.   (line  48)
-* extensions, common, BINMODE variable:  PC Using.            (line  16)
+* extensions, common, BINMODE variable:  PC Using.            (line  20)
 * extensions, common, delete to delete entire arrays: Delete. (line  39)
 * extensions, common, fflush() function: I/O Functions.       (line  43)
 * extensions, common, func keyword:      Definition Syntax.   (line  99)
@@ -34469,7 +34481,7 @@ Index
 * gawk, line continuation in:            Conditional Exp.     (line  34)
 * gawk, LINT variable in:                User-modified.       (line  90)
 * gawk, list of contributors to:         Contributors.        (line   6)
-* gawk, MS-Windows version of:           PC Using.            (line   9)
+* gawk, MS-Windows version of:           PC Using.            (line  13)
 * gawk, newlines in:                     Statements/Lines.    (line  12)
 * gawk, octal numbers and:               Nondecimal-numbers.  (line  41)
 * gawk, predefined variables and:        Built-in Variables.  (line  14)
@@ -35485,12 +35497,12 @@ Index
 * search and replace in strings:         String Functions.    (line  89)
 * search in string:                      String Functions.    (line 155)
 * search paths:                          Programs Exercises.  (line  70)
-* search paths <1>:                      PC Using.            (line   9)
+* search paths <1>:                      PC Using.            (line  13)
 * search paths <2>:                      VMS Running.         (line  57)
 * search paths, for loadable extensions: AWKLIBPATH Variable. (line   6)
 * search paths, for source files:        AWKPATH Variable.    (line   6)
 * search paths, for source files <1>:    Programs Exercises.  (line  70)
-* search paths, for source files <2>:    PC Using.            (line   9)
+* search paths, for source files <2>:    PC Using.            (line  13)
 * search paths, for source files <3>:    VMS Running.         (line  57)
 * searching, files for regular expressions: Egrep Program.    (line   6)
 * searching, for words:                  Dupword Program.     (line   6)
@@ -35498,7 +35510,7 @@ Index
 * sed utility <1>:                       Simple Sed.          (line   6)
 * sed utility <2>:                       Glossary.            (line  16)
 * seeding random number generator:       Numeric Functions.   (line  64)
-* semicolon (;), AWKPATH variable and:   PC Using.            (line   9)
+* semicolon (;), AWKPATH variable and:   PC Using.            (line  13)
 * semicolon (;), separating statements in actions: Statements/Lines.
                                                               (line  90)
 * semicolon (;), separating statements in actions <1>: Action Overview.
@@ -36514,52 +36526,52 @@ Node: PC Installation1174372
 Node: PC Binary Installation1175210
 Node: PC Compiling1175645
 Node: PC Using1176762
-Node: Cygwin1179807
-Node: MSYS1180577
-Node: VMS Installation1181078
-Node: VMS Compilation1181869
-Ref: VMS Compilation-Footnote-11183098
-Node: VMS Dynamic Extensions1183156
-Node: VMS Installation Details1184841
-Node: VMS Running1187094
-Node: VMS GNV1191373
-Node: VMS Old Gawk1192108
-Node: Bugs1192579
-Node: Bug address1193242
-Node: Usenet1196034
-Node: Maintainers1196811
-Node: Other Versions1198072
-Node: Installation summary1204834
-Node: Notes1206036
-Node: Compatibility Mode1206901
-Node: Additions1207683
-Node: Accessing The Source1208608
-Node: Adding Code1210045
-Node: New Ports1216264
-Node: Derived Files1220752
-Ref: Derived Files-Footnote-11226398
-Ref: Derived Files-Footnote-21226433
-Ref: Derived Files-Footnote-31227031
-Node: Future Extensions1227145
-Node: Implementation Limitations1227803
-Node: Extension Design1228986
-Node: Old Extension Problems1230140
-Ref: Old Extension Problems-Footnote-11231658
-Node: Extension New Mechanism Goals1231715
-Ref: Extension New Mechanism Goals-Footnote-11235079
-Node: Extension Other Design Decisions1235268
-Node: Extension Future Growth1237381
-Node: Old Extension Mechanism1238217
-Node: Notes summary1239980
-Node: Basic Concepts1241162
-Node: Basic High Level1241843
-Ref: figure-general-flow1242125
-Ref: figure-process-flow1242810
-Ref: Basic High Level-Footnote-11246111
-Node: Basic Data Typing1246296
-Node: Glossary1249624
-Node: Copying1281462
-Node: GNU Free Documentation License1319005
-Node: Index1344125
+Node: Cygwin1179977
+Node: MSYS1181076
+Node: VMS Installation1181577
+Node: VMS Compilation1182368
+Ref: VMS Compilation-Footnote-11183597
+Node: VMS Dynamic Extensions1183655
+Node: VMS Installation Details1185340
+Node: VMS Running1187593
+Node: VMS GNV1191872
+Node: VMS Old Gawk1192607
+Node: Bugs1193078
+Node: Bug address1193741
+Node: Usenet1196533
+Node: Maintainers1197310
+Node: Other Versions1198571
+Node: Installation summary1205333
+Node: Notes1206535
+Node: Compatibility Mode1207400
+Node: Additions1208182
+Node: Accessing The Source1209107
+Node: Adding Code1210544
+Node: New Ports1216763
+Node: Derived Files1221251
+Ref: Derived Files-Footnote-11226897
+Ref: Derived Files-Footnote-21226932
+Ref: Derived Files-Footnote-31227530
+Node: Future Extensions1227644
+Node: Implementation Limitations1228302
+Node: Extension Design1229485
+Node: Old Extension Problems1230639
+Ref: Old Extension Problems-Footnote-11232157
+Node: Extension New Mechanism Goals1232214
+Ref: Extension New Mechanism Goals-Footnote-11235578
+Node: Extension Other Design Decisions1235767
+Node: Extension Future Growth1237880
+Node: Old Extension Mechanism1238716
+Node: Notes summary1240479
+Node: Basic Concepts1241661
+Node: Basic High Level1242342
+Ref: figure-general-flow1242624
+Ref: figure-process-flow1243309
+Ref: Basic High Level-Footnote-11246610
+Node: Basic Data Typing1246795
+Node: Glossary1250123
+Node: Copying1281961
+Node: GNU Free Documentation License1319504
+Node: Index1344624
 
 End Tag Table
