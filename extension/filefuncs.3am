@@ -173,10 +173,10 @@ The
 .B fts()
 function provides a hook to the
 .IR fts (3)
-set of routines for traversing file heirarchies.
+set of routines for traversing file hierarchies.
 Instead of returning data about one file at a time in a stream,
 it fills in a multi-dimensional array with data about each file and
-directory encountered in the requested heirarchies.
+directory encountered in the requested hierarchies.
 .PP
 The arguments are as follows:
 .TP
@@ -211,11 +211,11 @@ This flag is mutually exclusive with
 .B FTS_NOCHDIR
 As a performance optimization, the
 .IR fts (3)
-routines change directory as they traverse a file heirarchy.
+routines change directory as they traverse a file hierarchy.
 This flag disables that optimization.
 .TP
 .B FTS_COMFOLLOW
-Immediatly follow a symbolic link named in
+Immediately follow a symbolic link named in
 .BR pathlist ,
 whether or not
 .B FTS_LOGICAL
@@ -314,7 +314,7 @@ already provides powerful array sorting facilities.  While an
 .IR fts_read() \-like
 interface could have been provided, this felt less natural than
 simply creating a multi-dimensional array to represent the file
-heirarchy and its information.
+hierarchy and its information.
 .PP
 Nothing prevents AWK code from changing the predefined
 .BI FTS_ xx
