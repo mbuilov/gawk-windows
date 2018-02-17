@@ -16233,17 +16233,17 @@ gruppi supplementari che il processo [Unix] possiede.  Si usi l'operatore
 I seguenti elementi consentono di modificare il comportamento di
 @command{gawk}:
 
+@table @code
 @item PROCINFO["NONFATAL"]
 Se questo elemento esiste, gli errori di I/O per tutte le ridirezioni
-consentono la prosecuzizone del programma.
+consentono la prosecuzione del programma.
 @xref{Continuazione dopo errori}.
 
-@item PROCINFO["@var{nome_output}", "NONFATAL"]
-Gli errori in output per il file @var{nome_output}
-consentono la prosecuzizone del programma.
+@item PROCINFO["@var{nome}", "NONFATAL"]
+Gli errori di I/O per il file @var{nome}
+consentono la prosecuzione del programma.
 @xref{Continuazione dopo errori}.
 
-@table @code
 @item PROCINFO["@var{comando}", "pty"]
 Per una comunicazione bidirezionale con @var{comando}, si usi una pseudo-tty
 invece di impostare una @dfn{pipe} bidirezionale.
@@ -16254,7 +16254,7 @@ Imposta un tempo limite per leggere dalla ridirezione di input @var{input_name}.
 @xref{Timeout in lettura} per ulteriori informazioni.
 
 @item PROCINFO["@var{input_name}", "RETRY"]
-Se durante la lettura del file  @var{input_name}si verifica un errore di I/O
+Se durante la lettura del file  @var{input_name} si verifica un errore di I/O
 per il quale si pu@`o ritentare una lettura, e questo elemento di vettore
 esiste, @code{getline} d@`a come codice di ritorno @minus{}2 invece di
 seguire il comportamento di default, che consiste nel restituire @minus{}1
