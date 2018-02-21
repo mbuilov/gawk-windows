@@ -1,18 +1,17 @@
+Wed Feb 21 06:59:28 IST 2018
+============================
+
+On PowerPC Macintosh, if you build GCC 4.2.4 and use that version of GCC,
+you can compile gawk with MPFR and the C99 settings. So I have restored
+the MPFR check for that system.  Right now the two readfile tests fail
+on that system; I may not let that block the release of 4.2.1.
+
 Thu Jan 25 20:07:56 IST 2018
 ============================
 
 You may need to explicitly tell configure where to find the GNU gettext
 header file and library with --with-libintl-prefix=...'. Otherwise,
 the nlstringtest test will fail.
-
-Fri Dec 23 13:42:58 IST 2016
-============================
-
-If anyone besides me still has a PowerPC Macintosh, it's no longer
-possible to build gawk using MPFR. C99 and the last version of MPFR
-that works on that platform don't get along, and I could not solve
-the problem. So I simply disabled the MPFR check in configure.ac on
-that platform.
 
 Mon Apr 13 09:49:40 IDT 2015
 ============================
