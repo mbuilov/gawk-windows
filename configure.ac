@@ -1,7 +1,7 @@
 dnl
 dnl configure.ac --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995-2018 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995-2017 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Programming Language.
@@ -386,8 +386,14 @@ dnl check for readline support
 GAWK_CHECK_READLINE
 
 dnl check for mpfr support
-case $SKIP_MPFR in
-no)	GNUPG_CHECK_MPFR
+case `uname -m` in
+*'Power Macintosh'*)
+	: ;;
+*)
+	case $SKIP_MPFR in
+	no)	GNUPG_CHECK_MPFR
+		;;
+	esac
 	;;
 esac
 

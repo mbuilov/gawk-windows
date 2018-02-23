@@ -1,10 +1,18 @@
-Wed Feb 21 06:59:28 IST 2018
+Fri Feb 23 10:38:05 IST 2018
 ============================
 
-On PowerPC Macintosh, if you build GCC 4.2.4 and use that version of GCC,
-you can compile gawk with MPFR and the C99 settings. So I have restored
-the MPFR check for that system.  Right now the two readfile tests fail
-on that system; I may not let that block the release of 4.2.1.
+On PowerPC Macintosh, things are just weird.
+
+* Using the stock compiler, you can't build gawk (c99 mode) against MPFR;
+there is an issue with duplicate inline functions from GMP.  By default,
+I have disabled this compilation.
+
+* If you build GCC 4.2.4 and use that version of GCC, you can compile gawk
+with MPFR and the C99 settings.  But then the two readfile tests fail.
+The call to read(2) simply returns zero. I have no idea why.
+
+Since nobody but me has one of these left, I'm not going to mess
+with it anymore right now.
 
 Thu Jan 25 20:07:56 IST 2018
 ============================
