@@ -101,8 +101,14 @@ dnl AC_HEADER_MAJOR
 AC_HEADER_TIME
 
 dnl check for mpfr support
-case $SKIP_MPFR in
-no)	GNUPG_CHECK_MPFR
+case `uname -m` in
+*'Power Macintosh'*)
+	: ;;
+*)
+	case $SKIP_MPFR in
+	no)	GNUPG_CHECK_MPFR
+		;;
+	esac
 	;;
 esac
 
