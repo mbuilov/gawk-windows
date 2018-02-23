@@ -15074,8 +15074,12 @@ $as_echo "#define TIME_WITH_SYS_TIME 1" >>confdefs.h
 fi
 
 
-case $SKIP_MPFR in
-no)
+case `uname -m` in
+*'Power Macintosh'*)
+	: ;;
+*)
+	case $SKIP_MPFR in
+	no)
 
 # Check whether --with-mpfr was given.
 if test "${with_mpfr+set}" = set; then :
@@ -15149,6 +15153,8 @@ $as_echo "#define HAVE_MPFR 1" >>confdefs.h
      unset _found_mpfr
   fi
 
+		;;
+	esac
 	;;
 esac
 
