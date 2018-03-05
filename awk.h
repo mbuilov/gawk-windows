@@ -1349,13 +1349,6 @@ DEREF(NODE *r)
 extern jmp_buf fatal_tag;
 extern int fatal_tag_valid;
 
-#define PUSH_BINDING(stack, tag, val)	\
-if (val++) \
-	memcpy((char *) (stack), (const char *) tag, sizeof(jmp_buf))
-#define POP_BINDING(stack, tag, val)	\
-if (--val) \
-	memcpy((char *) tag, (const char *) (stack), sizeof(jmp_buf))
-
 #define assoc_length(a)	((*((a)->alength(a, NULL)))->table_size)
 #define assoc_empty(a)	(assoc_length(a) == 0)
 #define assoc_lookup(a, s)	((a)->alookup(a, s))

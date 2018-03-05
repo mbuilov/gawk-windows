@@ -4286,7 +4286,7 @@ static int
 yylex(void)
 {
 	static char etoa_xlate[256];
-	static int do_etoa_init = 1;
+	static bool do_etoa_init = true;
 	int tok;
 
 	if (do_etoa_init)
@@ -4299,7 +4299,7 @@ yylex(void)
 #else
 # error "An EBCDIC-to-ASCII translation function is needed for this system"
 #endif
-		do_etoa_init = 0;
+		do_etoa_init = false;
 	}
 
 	tok = yylex_ebcdic();
