@@ -325,7 +325,9 @@ install1:
 	-mkdir "$(prefix)/bin"
 	-mkdir "$(prefix)/share"
 	-mkdir "$(prefix)/share/man"
+	-mkdir "$(prefix)/lib"
 	-mkdir "$(pkgdatadir)" "$(prefix)/share/man/man1" "$(prefix)/share/info"
+	-mkdir "$(prefix)/lib/gawk"
 	cp gawk.exe $(prefix)/bin/awk.exe
 	cp *awk.exe igawk.bat igawk.cmd pc/awklib/igawk $(prefix)/bin
 	cp gawkapi.h $(prefix)/include
