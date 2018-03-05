@@ -338,6 +338,13 @@ struct command_source
 
 static struct command_source *cmd_src = NULL;
 
+#define PUSH_BINDING(stack, tag, val)	\
+if (val++) \
+	memcpy((char *) (stack), (const char *) tag, sizeof(jmp_buf))
+#define POP_BINDING(stack, tag, val)	\
+if (--val) \
+	memcpy((char *) tag, (const char *) (stack), sizeof(jmp_buf))
+
 
 #define CHECK_PROG_RUNNING() \
 	do { \

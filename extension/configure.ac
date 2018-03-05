@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk Bundled Extensions],[4.2.0],[bug-gawk@gnu.org],[gawk-extensions])
+AC_INIT([GNU Awk Bundled Extensions],[4.2.1],[bug-gawk@gnu.org],[gawk-extensions])
 
 AC_PREREQ([2.69])
 
