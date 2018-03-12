@@ -150,4 +150,4 @@ dist_man_MANS = \
 	revtwoway.3am rwarray.3am time.3am
 
 # gettext requires this
-SUBDIRS =
+SUBDIRS = po 
