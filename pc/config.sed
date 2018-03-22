@@ -273,6 +273,8 @@ s/^#undef HAVE_VPRINTF *$/#define HAVE_VPRINTF 1/
 #ifdef __DJGPP__\
 #define HAVE__BOOL 1\
 #endif
+/^#undef PRINTF_HAS_A_FORMAT *$/c\
+#define PRINTF_HAS_A_FORMAT 1
 /^#undef PRINTF_HAS_F_FORMAT *$/c\
 #ifdef __DJGPP__\
 #define PRINTF_HAS_F_FORMAT 1\

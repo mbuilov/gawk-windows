@@ -9557,6 +9557,25 @@ the field width.  Here is a list of the format-control letters:
 
 @c @asis for docbook to come out right
 @table @asis
+@item @code{%a}, @code{%A}
+A floating point number of the form
+[@code{-}]@code{0x@var{h}.@var{hhhh}p+-@var{dd}}
+(C99 hexadecimal floating point format).
+For @code{%A},
+uppercase letters are used instead of lowercase ones.
+
+@quotation NOTE
+While the current POSIX standard requires support for @code{%a}
+and @code{%A} in @command{awk}, as far as we know, no other version
+of @command{awk} actually implements it.  It's use is thus highly
+nonportable!
+
+Furthermore, these formats are not available on any system where the
+underlying C library @code{printf()} function does not support them. As
+of this writing, among current systems, only OpenVMS is known to not
+support them.
+@end quotation
+
 @item @code{%c}
 Print a number as a character; thus, @samp{printf "%c",
 65} outputs the letter @samp{A}. The output for a string value is

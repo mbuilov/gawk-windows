@@ -395,6 +395,34 @@ then
 fi
 AC_MSG_RESULT($has_f_format)
 
+dnl check for printf %a format
+AC_MSG_CHECKING([for printf %a format])
+AC_RUN_IFELSE([
+AC_LANG_SOURCE([
+#include <stdio.h>
+
+int main()
+{
+	char buf[[100]];
+
+	sprintf(buf, "%a", 8.0);
+
+	if (strncmp(buf, "0x", 2) == 0)
+		return 0;
+	else
+		return 1;
+}
+])],
+	has_a_format=yes,
+	has_a_format=no,
+	has_a_format=no  dnl Cross-compiling, assuming the worst.
+)
+if test "$has_a_format" = yes
+then
+	AC_DEFINE(PRINTF_HAS_A_FORMAT, 1, [Define to 1 if *printf supports %a format])
+fi
+AC_MSG_RESULT($has_a_format)
+
 dnl check for sockets
 GAWK_AC_LIB_SOCKETS
 

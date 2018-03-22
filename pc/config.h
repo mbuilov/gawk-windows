@@ -473,6 +473,9 @@
 /* Define to the version of this package. */
 #define PACKAGE_VERSION "4.2.1a"
 
+/* Define to 1 if *printf supports %a format */
+#define PRINTF_HAS_A_FORMAT 1
+
 /* Define to 1 if *printf supports %F format */
 #ifdef __DJGPP__
 #define PRINTF_HAS_F_FORMAT 1
