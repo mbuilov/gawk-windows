@@ -10180,6 +10180,48 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $has_f_format" >&5
 $as_echo "$has_f_format" >&6; }
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for printf %a format" >&5
+$as_echo_n "checking for printf %a format... " >&6; }
+if test "$cross_compiling" = yes; then :
+  has_a_format=no
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+#include <stdio.h>
+
+int main()
+{
+	char buf[100];
+
+	sprintf(buf, "%a", 8.0);
+
+	if (strncmp(buf, "0x", 2) == 0)
+		return 0;
+	else
+		return 1;
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  has_a_format=yes
+else
+  has_a_format=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+if test "$has_a_format" = yes
+then
+
+$as_echo "#define PRINTF_HAS_A_FORMAT 1" >>confdefs.h
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $has_a_format" >&5
+$as_echo "$has_a_format" >&6; }
+
 
 gawk_have_sockets=no
 # Check for system-dependent location of socket libraries

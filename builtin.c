@@ -1493,6 +1493,17 @@ mpf1:
 		case 'e':
 		case 'f':
 		case 'E':
+#if defined(PRINTF_HAS_A_FORMAT) && PRINTF_HAS_A_FORMAT == 1
+		case 'A':
+		case 'a':
+		{
+			static bool warned = false;
+			if (do_lint && tolower(cs1) == 'a' && ! warned) {
+				warned = true;
+				lintwarn(_("%%%c format is POSIX standard but not portable to other awks"), cs1);
+			}
+		}
+#endif
 			need_format = false;
 			parse_next_arg();
 			(void) force_number(arg);
@@ -1557,11 +1568,21 @@ mpf1:
 				break;
 #endif
 			default:
-				sprintf(cp, "*.*%c", cs1);
-				while ((nc = snprintf(obufout, ofre, cpbuf,
-					     (int) fw, (int) prec,
-					     (double) tmpval)) >= ofre)
-					chksize(nc)
+				if (have_prec || tolower(cs1) != 'a') {
+					sprintf(cp, "*.*%c", cs1);
+					while ((nc = snprintf(obufout, ofre, cpbuf,
+						     (int) fw, (int) prec,
+						     (double) tmpval)) >= ofre)
+						chksize(nc)
+				} else {
+					// For %a and %A, use the default precision if it
+					// wasn't supplied by the user.
+					sprintf(cp, "*%c", cs1);
+					while ((nc = snprintf(obufout, ofre, cpbuf,
+						     (int) fw,
+						     (double) tmpval)) >= ofre)
+						chksize(nc)
+				}
 			}
 
 #if defined(LC_NUMERIC)
