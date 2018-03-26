@@ -527,7 +527,6 @@ typedef struct exp_node {
 #define func_node    sub.nodep.x.extra
 #define prev_frame_size	sub.nodep.reflags
 #define reti         sub.nodep.l.li
-#define num_tail_calls    sub.nodep.cnt
 
 /* Node_var: */
 #define var_value    lnode
@@ -861,9 +860,6 @@ typedef struct exp_instruction {
 
 /* Op_func_call, Op_func */
 #define func_body       x.xn
-
-/* Op_func_call */
-#define tail_call	d.dl
 
 /* Op_subscript */
 #define sub_count       d.dl

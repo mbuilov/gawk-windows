@@ -674,7 +674,7 @@ void
 dump_fcall_stack(FILE *fp)
 {
 	NODE *f, *func;
-	long i = 0, j, k = 0;
+	long i = 0, k = 0;
 
 	if (fcall_count == 0)
 		return;
@@ -682,15 +682,13 @@ dump_fcall_stack(FILE *fp)
 
 	/* current frame */
 	func = frame_ptr->func_node;
-	for (j = 0; j <= frame_ptr->num_tail_calls; j++)
-		fprintf(fp, "\t# %3ld. %s\n", k++, func->vname);
+	fprintf(fp, "\t# %3ld. %s\n", k++, func->vname);
 
 	/* outer frames except main */
 	for (i = 1; i < fcall_count; i++) {
 		f = fcall_list[i];
 		func = f->func_node;
-		for (j = 0; j <= f->num_tail_calls; j++)
-			fprintf(fp, "\t# %3ld. %s\n", k++, func->vname);
+		fprintf(fp, "\t# %3ld. %s\n", k++, func->vname);
 	}
 
 	fprintf(fp, "\t# %3ld. -- main --\n", k);
@@ -1242,37 +1240,15 @@ setup_frame(INSTRUCTION *pc)
 	NODE *m, *f, *fp;
 	NODE **sp = NULL;
 	int pcount, arg_count, i, j;
-	bool tail_optimize = false;
 
 	f = pc->func_body;
 	pcount = f->param_cnt;
 	fp = f->fparms;
 	arg_count = (pc + 1)->expr_count;
 
-	/* tail recursion optimization */
-	tail_optimize =  ((pc + 1)->tail_call && do_optimize
-				&& ! do_debug && ! do_profile);
-
-	if (tail_optimize) {
-		/* free local vars of calling frame */
-
-		NODE *func;
-		int n;
-
-		func = frame_ptr->func_node;
-		for (n = func->param_cnt, sp = frame_ptr->stack; n > 0; n--) {
-			r = *sp++;
-			if (r->type == Node_var)     /* local variable */
-				DEREF(r->var_value);
-			else if (r->type == Node_var_array)     /* local array */
-				assoc_clear(r);
-		}
-		sp = frame_ptr->stack;
-
-	} else if (pcount > 0) {
+	if (pcount > 0) {
 		ezalloc(sp, NODE **, pcount * sizeof(NODE *), "setup_frame");
 	}
-
 
 	/* check for extra args */
 	if (arg_count > pcount) {
@@ -1287,13 +1263,9 @@ setup_frame(INSTRUCTION *pc)
 	}
 
 	for (i = 0, j = arg_count - 1; i < pcount; i++, j--) {
-		if (tail_optimize)
-			r = sp[i];
-		else {
-			getnode(r);
-			memset(r, 0, sizeof(NODE));
-			sp[i] = r;
-		}
+		getnode(r);
+		memset(r, 0, sizeof(NODE));
+		sp[i] = r;
 
 		if (i >= arg_count) {
 			/* local variable */
@@ -1348,11 +1320,6 @@ setup_frame(INSTRUCTION *pc)
 
 	stack_adj(-arg_count);	/* adjust stack pointer */
 
-	if (tail_optimize) {
-		frame_ptr->num_tail_calls++;
-		return f->code_ptr;
-	}
-
 	if (pc->opcode == Op_indirect_func_call) {
 		r = POP();	/* indirect var */
 		DEREF(r);
@@ -1372,7 +1339,6 @@ setup_frame(INSTRUCTION *pc)
 	frame_ptr->stack = sp;
 	frame_ptr->prev_frame_size = (stack_ptr - stack_bottom); /* size of the previous stack frame */
 	frame_ptr->func_node = f;
-	frame_ptr->num_tail_calls = 0;
 	frame_ptr->vname = NULL;
 	frame_ptr->reti = pc; /* on return execute pc->nexti */
 
@@ -1774,7 +1740,6 @@ init_interpret()
 	frame_ptr->type = Node_frame;
 	frame_ptr->stack = NULL;
 	frame_ptr->func_node = NULL;	/* in main */
-	frame_ptr->num_tail_calls = 0;
 	frame_ptr->vname = NULL;
 
 	/* initialize true and false nodes */
