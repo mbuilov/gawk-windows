@@ -993,20 +993,9 @@ non_compound_stmt
 			$$ = list_create($1);
 			(void) list_prepend($$, instruction(Op_push_i));
 			$$->nexti->memory = dupnode(Nnull_string);
-		} else {
-			if (do_optimize
-				&& $3->lasti->opcode == Op_func_call
-				&& strcmp($3->lasti->func_name, in_function) == 0
-			) {
-				/* Do tail recursion optimization. Tail
-				 * call without a return value is recognized
-				 * in mk_function().
-				 */
-				($3->lasti + 1)->tail_call = true;
-			}
-
+		} else
 			$$ = list_append($3, $1);
-		}
+
 		$$ = add_pending_comment($$);
 	  }
 	| simple_stmt statement_term
@@ -4735,18 +4724,6 @@ mk_function(INSTRUCTION *fi, INSTRUCTION *def)
 
 	thisfunc = fi->func_body;
 	assert(thisfunc != NULL);
-
-	if (do_optimize && def->lasti->opcode == Op_pop) {
-		/* tail call which does not return any value. */
-
-		INSTRUCTION *t;
-
-		for (t = def->nexti; t->nexti != def->lasti; t = t->nexti)
-			;
-		if (t->opcode == Op_func_call
-		    && strcmp(t->func_name, thisfunc->vname) == 0)
-			(t + 1)->tail_call = true;
-	}
 
 	/* add any pre-function comment to start of action for profile.c  */
 

@@ -1,3 +1,18 @@
+2018-03-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Remove the tail recursion optimization. It's fundamentally
+	broken, in the case where a local var becomes a parameter.
+	Thanks to Denis Shirokov <cosmogen@gmail.com> for the report.
+	See test/tailrecurse.awk.
+
+	* awk.h [num_tail_calls, tail_call]: Remove definitions.
+	* awkgram.y (grammar, mk_function): Remove code related to
+	the tail recursion optimization.
+	* eval.c (dump_fcall_stack): Adjust dumping code since no longer
+	looping through tail call recursion.
+	(setup_frame): Remove code related to the tail recursion optimization.
+	(init_interpret): Ditto.
+
 2018-03-22         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Check for %a support in system printf.

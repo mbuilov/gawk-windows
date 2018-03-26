@@ -1135,6 +1135,8 @@ EXTRA_DIST = \
 	synerr1.ok \
 	synerr2.awk \
 	synerr2.ok \
+	tailrecurse.awk \
+	tailrecurse.ok \
 	testext.ok \
 	time.awk \
 	time.ok \
@@ -1254,7 +1256,7 @@ BASIC_TESTS = \
 	sigpipe1 sortempty sortglos splitargv splitarr \
 	splitdef splitvar splitwht status-close strcat1 strnum1 strnum2 strtod \
 	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 \
-	tradanch tweakfld \
+	tailrecurse tradanch tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs uplus \
 	wideidx wideidx2 widesub widesub2 widesub3 widesub4 wjposer1 \
 	zero2 zeroe0 zeroflag
