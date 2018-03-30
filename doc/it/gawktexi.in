@@ -61,7 +61,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH Febbraio 2018
+@set UPDATE-MONTH Marzo 2018
 @set VERSION 4.2
 @set PATCHLEVEL 1
 
@@ -4418,12 +4418,10 @@ Ora non @`e pi@`u cos@`{@dotless{i}}.
 @cindex @option{--optimize}, opzione
 @cindex @option{-O}, opzione
 Abilita le ottimizzazioni di default nella rappresentazione interna del
-programma.  Attualmente, questo comprende delle semplificazioni nell'uso
-di costanti e l'eliminazione delle code di chiamata nelle funzioni
-ricorsive [sostituzione della chiamata di funzione con dei salti
-diretti alla funzione].
+programma.  Attualmente, questo comprende solo delle semplificazioni nell'uso
+di costanti.
 
-Queste ottimizzazioni sono abilitate per default.
+Quest'ottimizzazione @`e abilitata per default.
 Quest'opzione rimane disponibile per compatibilit@`a all'indietro.
 Tuttavia pu@`o essere usata per annullare l'effetto di una precedente
 opzione @option{-s} (si veda pi@`u sotto in questa lista).
@@ -9876,6 +9874,27 @@ lettere di controllo del formato:
 
 @c @asis for docbook to come out right
 @table @asis
+@item @code{%a}, @code{%A}
+Un numero in virgola mobile scritto nella forma
+[@code{-}]@code{0x@var{h}.@var{hhhh}p+-@var{dd}}
+(formato esadecimale virgola mobile nel compilatore C99).
+Per @code{%A},
+si usano lettere maiuscole invece che lettere minuscole.
+
+@quotation NOTA
+Anche se lo standard POSIX in vigore richiede il supporto di @code{%a}
+e @code{%A} in @command{awk}, per quanto ci consta, nessun'altra versione
+di @command{awk} supporta questo formato.  Se lo si usa, il programma
+in questione @`e quindi estremamente non-portabile!
+
+inoltre, questi formati non sono disponibili su alcun sistema in cui
+la funzione di libreria C @code{printf()} utilizzata da @command{gawk}
+non li supporta.  
+Al momento in cui questo libro @`e stato scritto, fra i sistemi su cui
+@`e stato portato @command{gawk}, il solo sistema noto che
+non li supporta @`e OpenVMS.
+@end quotation
+
 @item @code{%c}
 Stampa un numero come un carattere; quindi, @samp{printf "%c",
 65} stampa la lettera @samp{A}. L'output per un valore costituito da una
@@ -42192,8 +42211,8 @@ del passo di @samp{configure} sotto Cygwin richiede molto pi@`u tempo.
 Tuttavia si conclude regolarmente, e poi @samp{make} funziona come ci si
 aspetta.
 
-Le versioni più recenti di Cygwin aprono tutti i file in modalità binaria.
-Ciò implica che si dovrebbe usare @samp{RS = "\r?\n"} per riuscire a
+Le versioni pi@`u recenti di Cygwin aprono tutti i file in modalit@`a binaria.
+Ci@`o implica che si dovrebbe usare @samp{RS = "\r?\n"} per riuscire a
 gestire file di testo MS-Windows in formato standard, in cui ogni riga
 termina con i due caratteri di Ritorno-del-carrello e A-capo.
 
@@ -46198,7 +46217,7 @@ CORREZIONE.
 
 IN NESSUN CASO, A MENO CHE NON SIA RICHIESTO DALLA NORMATIVA VIGENTE O
 CONCORDATO PER ISCRITTO, I DETENTORI DEL COPYRIGHT, O QUALUNQUE ALTRA PARTE
-CHE MODIICA E/O DISTRIBUISCE IL PROGRAMMA SECONDO LE CONDIZIONI PRECEDENTI,
+CHE MODIFICA E/O DISTRIBUISCE IL PROGRAMMA SECONDO LE CONDIZIONI PRECEDENTI,
 POSSONO ESSERE RITENUTI RESPONSABILI NEI CONFRONTI DEL LICENZIATARIO PER
 DANNI, INCLUSO QUALUNQUE DANNEGGIAMENTO GENERICO, SPECIALE, INCIDENTALE O
 CONSEQUENZIALE DOVUTO ALL'USO O ALL'IMPOSSIBILIT@`A D'USO DEL PROGRAMMA
