@@ -1,3 +1,18 @@
+2018-04-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix a nasty MPFR bug in r_dupnode. If the value being copied
+	is MPFN / MPFR, copy those bits over too. Thanks to
+	Noah Dean <N.Dean@gaminglabs.com> for the report.
+
+	* node.c (r_dupnode): Check for MPFN / MPFR and copy the bits
+	over as needed.
+
+	Unrelated:
+
+	* interpret.h (UNFIELD): Turn into an inline function and
+	let UNFIELD macro call it, allows stepping in with a debugger.
+	(unfield): Function holding former body of UNFIELD macro.
+
 2018-03-26         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Remove the tail recursion optimization. It's fundamentally
