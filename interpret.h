@@ -32,16 +32,25 @@
  * valref 1, that effectively means that this is an assignment like "$n = $n",
  * so a no-op, other than triggering $0 reconstitution.
  */
-#define UNFIELD(l, r) \
-{ \
-	/* if was a field, turn it into a var */ \
-	if ((r->flags & MALLOC) != 0 || r->valref == 1) { \
-		l = r; \
-	} else { \
-		l = dupnode(r); \
-		DEREF(r); \
-	} \
+
+// not a macro so we can step into it with a debugger
+#ifndef UNFIELD_DEFINED
+#define UNFIELD_DEFINED 1
+static inline void
+unfield(NODE **l, NODE **r)
+{
+	/* if was a field, turn it into a var */
+	if (((*r)->flags & MALLOC) != 0 || (*r)->valref == 1) {
+		(*l) = (*r);
+	} else {
+		(*l) = dupnode(*r);
+		DEREF(*r);
+	}
 }
+
+#define UNFIELD(l, r)	unfield(& (l), & (r))
+#endif
+
 int
 r_interpret(INSTRUCTION *code)
 {
