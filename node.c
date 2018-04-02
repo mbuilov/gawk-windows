@@ -306,8 +306,24 @@ r_dupnode(NODE *n)
 	}
 #endif
 
-	getnode(r);
-	*r = *n;
+#ifdef HAVE_MPFR
+	if ((n->flags & MPZN) != 0) {
+		r = mpg_integer();
+		mpz_set(r->mpg_i, n->mpg_i);
+		r->flags = n->flags;
+	} else if ((n->flags & MPFN) != 0) {
+		r = mpg_float();
+		int tval = mpfr_set(r->mpg_numbr, n->mpg_numbr, ROUND_MODE);
+		IEEE_FMT(r->mpg_numbr, tval);
+		r->flags = n->flags;
+	} else {
+#endif
+		getnode(r);
+		*r = *n;
+#ifdef HAVE_MPFR
+	}
+#endif
+
 	r->flags |= MALLOC;
 	r->valref = 1;
 	/*
