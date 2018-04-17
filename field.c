@@ -338,6 +338,11 @@ reset_record()
 {
 	fields_arr[0] = force_string(fields_arr[0]);
 	purge_record();
+	if (api_parser_override) {
+		api_parser_override = false;
+		parse_field = normal_parse_field;
+		update_PROCINFO_str("FS", current_field_sep_str());
+	}
 }
 
 static void
