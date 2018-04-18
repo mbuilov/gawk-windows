@@ -233,7 +233,7 @@
 #define HAVE_STDARG_H 1
 
 /* Define to 1 if stdbool.h conforms to C99. */
-#ifdef __DJGPP__
+#if defined(__MINGW32__) || defined(__DJGPP__)
 #define HAVE_STDBOOL_H 1
 #endif
 

@@ -142,7 +142,7 @@ s/^#undef HAVE_MKTIME *$/#define HAVE_MKTIME 1/
 #endif
 s/^#undef HAVE_STDARG_H *$/#define HAVE_STDARG_H 1/
 /^#undef HAVE_STDBOOL_H *$/c\
-#ifdef __DJGPP__\
+#if defined(__MINGW32__) || defined(__DJGPP__)\
 #define HAVE_STDBOOL_H 1\
 #endif
 /^#undef HAVE_STDDEF_H *$/c\
