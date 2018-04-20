@@ -2274,8 +2274,8 @@ readdir_test:
 
 readdir_retest:
 	@echo $@
-	@$(AWK) -lreaddir -F/ -f $@.awk "$(top_srcdir)" > $@.ok
-	@$(AWK) -lreaddir_test -F/ -f $@.awk "$(top_srcdir)" > _$@
+	@$(AWK) -lreaddir -F/ -f "$(srcdir)"/$@.awk "$(top_srcdir)" > $@.ok
+	@$(AWK) -lreaddir_test -F/ -f "$(srcdir)"/$@.awk "$(top_srcdir)" > _$@
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 fts:
