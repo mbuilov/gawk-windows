@@ -1111,7 +1111,7 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 	if (api->major_version != GAWK_API_MAJOR_VERSION \
 	    || api->minor_version < GAWK_API_MINOR_VERSION) { \
 		fprintf(stderr, #extension ": version mismatch with gawk!\n"); \
-		fprintf(stderr, "\tmy version (%d, %d), gawk version (%d, %d)\n", \
+		fprintf(stderr, "\tmy version (API %d.%d), gawk version (API %d.%d)\n", \
 			GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION, \
 			api->major_version, api->minor_version); \
 		exit(1); \
