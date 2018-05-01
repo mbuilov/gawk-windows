@@ -1,7 +1,6 @@
 # NOTE: This program is not a generalized parser for the output of 'ls'.
 # It's job is to read the output of ls from the gawk source code directory,
-# where we know there are no symbolic links, nor are there files with
-# spaces in their file names, etc.
+# where we know there are no files with spaces in their file names, etc.
 BEGIN {
 	# analyze results from readdir extension
 	while ((getline x < extout) > 0) {
@@ -32,7 +31,10 @@ BEGIN {
 		type_let = substr($0, 1, 1)
 		if (type_let == "-")
 			type_let = "f"
-		type[$NF] = type_let
+		if (type_let == "l")
+			type[$(NF-2)] = type_let
+		else
+			type[$NF] = type_let
 	}
 	close(longlist)
 
