@@ -64,7 +64,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH March, 2018
+@set UPDATE-MONTH May, 2018
 @set VERSION 4.2
 @set PATCHLEVEL 1
 
@@ -5808,7 +5808,7 @@ POSIX standard.
 @item @code{[:print:]} @tab Printable characters (characters that are not control characters)
 @item @code{[:punct:]} @tab Punctuation characters (characters that are not letters, digits,
 control characters, or space characters)
-@item @code{[:space:]} @tab Space characters (such as space, TAB, and formfeed, to name a few)
+@item @code{[:space:]} @tab Space characters (these are: space, TAB, newline, carriage return, formfeed and vertical tab)
 @item @code{[:upper:]} @tab Uppercase alphabetic characters
 @item @code{[:xdigit:]} @tab Characters that are hexadecimal digits
 @end multitable
@@ -5832,6 +5832,13 @@ all values numerically between zero and 127, which is the defined
 range of the ASCII character set.  Use a complemented character list
 (@samp{[^\x00-\x7F]}) to match any single-byte characters that are not
 in the ASCII range.
+
+@quotation NOTE
+As of this writing (May 2018), Brian Kernighan's @command{awk} treats
+@code{[:blank:]} like @code{[:space:]}, incorrectly matching
+more characters than it should.  We have submitted a patch to him,
+and hope that this will be fixed.
+@end quotation
 
 @cindex bracket expressions, collating elements
 @cindex bracket expressions, non-ASCII
