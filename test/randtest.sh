@@ -29,9 +29,9 @@
 # 
 #!/bin/ksh
 
-#GAWK=/bin/gawk
+#AWK=/bin/gawk
 
-# ADR: Get GAWK from the environment.
+# ADR: Get AWK from the environment.
 # Additional note: This wants ksh/bash for the use of $RANDOM below to
 # seed the generator. However, shells that don't provide it won't be
 # a problem since gawk will then seed the generator with the time of day,
@@ -40,7 +40,7 @@
 # large NSAMPLES and NRUNS will bring any correlation out of the noise better
 NSAMPLES=1024; MAX_ALLOWED_SIGMA=5; NRUNS=50;
 
-$GAWK 'BEGIN{ 
+$AWK 'BEGIN{ 
     srand('$RANDOM');
     nsamples=('$NSAMPLES');
     max_allowed_sigma=('$MAX_ALLOWED_SIGMA');

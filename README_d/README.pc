@@ -61,13 +61,20 @@ There are two methods for the install: Method 1 uses a typical Unix-like
 approach and requires cat, cp, mkdir, sed, and sh; method 2 uses gawk 
 and batch files. See the configuration section of the makefile.
 
-The file test/Makefile will need some editing (especially for DOS). A
+The file test/Makefile may need some editing (especially for DOS). A
 sample makefile with comments appears in pc/Makefile.tst, and can be
 used to modify test/Makefile for your platform.  For starters, just
 copy pc/Makefile.tst to test/Makefile, then walk through the variables
 defined at the beginning and change them as appropriate for your
 setup.  In addition, some files in the test directory may need to have
 their end-of-line markers converted, as described in Makefile.tst.
+One change you will have to make for testing the MinGW port using the
+MSYS Bash is to set SLASH to //.
+
+On MinGW, testing Gawk built with MPFR support should report 26 tests
+failed, and if your ls.exe doesn't produce inode numbers consistent
+with the readdir extension, you should see 29 failures.  If you see
+more failures, you should investigate the reasons.
 
 As with building gawk, the OS, shell, and long filename issues come into
 play when testing, too.  If you are testing gawk on a LFN aware system with

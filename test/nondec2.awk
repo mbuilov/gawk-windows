@@ -101,4 +101,8 @@
 # 
 # --------------enig9DEC74140126C224E7DE3E54--
 # 
+
+# Added 4/2018 to make script self contained
+BEGIN { a = "0x1" }
+
 BEGIN { print a+0 }
