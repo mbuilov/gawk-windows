@@ -28,7 +28,6 @@ EXTRA_DIST = \
 	lib \
 	ChangeLog.0 \
 	Gentests \
-	Gentests.vms \
 	Maketests \
 	README \
 	aadelete1.awk \
@@ -589,12 +588,10 @@ EXTRA_DIST = \
 	lintwarn.awk \
 	lintwarn.ok \
 	litoct.awk \
+	litoct.in \
 	litoct.ok \
 	localenl.ok \
 	localenl.sh \
-	longdbl.awk \
-	longdbl.in \
-	longdbl.ok \
 	longsub.awk \
 	longsub.in \
 	longsub.ok \
@@ -750,6 +747,7 @@ EXTRA_DIST = \
 	nonfatal3.awk \
 	nonfatal3.ok \
 	nonl.awk \
+	nonl.in \
 	nonl.ok \
 	noparms.awk \
 	noparms.ok \
@@ -1222,8 +1220,6 @@ EXTRA_DIST = \
 	zeroflag.ok
 
 
-TESTS_WE_ARE_NOT_DOING_YET_FIXME_ONE_DAY = longdbl
-
 # Get rid of core files when cleaning and generated .ok file
 CLEANFILES = core core.* fmtspcl.ok
 
@@ -1311,10 +1307,6 @@ INET_TESTS = inetdayu inetdayt inetechu inetecht
 
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 
-MPFR_TESTS = mpfrbigint mpfrexprange mpfrfield mpfrieee mpfrmemok1 \
-	mpfrnegzero mpfrnr mpfrrem mpfrrnd mpfrrndeval mpfrsort mpfrsqrt \
-	mpfrstrtonum mpgforcenum mpfruplus
-
 LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
 	fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
@@ -1331,13 +1323,39 @@ SHLIB_TESTS = \
 	revtwoway rwarray \
 	testext time
 
+# List of the tests which should be run with --debug option:
+NEED_DEBUG = dbugtypedre1 dbugtypedre2 dbugeval2 symtab10
+
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
 	defref fmtspcl lintexp lintindex lintint lintlength lintwarn \
-	noeffect nofmtch shadow uninit2 uninit3 uninit4 uninit5 uninitialized
+	noeffect nofmtch nonl shadow uninit2 uninit3 uninit4 uninit5 uninitialized
 
 # List of the tests which should be run with --lint-old option:
 NEED_LINT_OLD = lintold
+
+# List of tests that must be run with -M
+NEED_MPFR = mpfrbigint mpfrexprange mpfrfield mpfrieee mpfrmemok1 \
+	mpfrnegzero mpfrnr mpfrrem mpfrrnd mpfrrndeval mpfrsort mpfrsqrt \
+	mpfrstrtonum mpgforcenum mpfruplus
+
+# List of tests that need --non-decimal-data
+NEED_NONDEC = nondec2 intarray forcenum
+
+# List of tests that need --posix
+NEED_POSIX = printf0 posix2008sub paramasfunc1 paramasfunc2 muldimposix
+
+# List of tests that need --pretty-print
+NEED_PRETTY = profile4 profile5 profile8 profile9 profile10
+
+# List of tests that need --re-interval
+NEED_RE_INTERVAL = gsubtst3 reint reint2
+
+# List of tests that need --traditional
+NEED_TRADITIONAL = litoct tradanch rscompat
+
+# Lists of tests that run a shell script
+RUN_SHELL = exit fflush localenl next randtest rtlen rtlen01
 
 # List of the tests which fail with EXIT CODE 1
 FAIL_CODE1 = \
@@ -1350,13 +1368,53 @@ FAIL_CODE1 = \
 CHECK_MPFR = \
 	rand fnarydel fnparydl
 
+# Lists of tests that need particular locales
+NEED_LOCALE_C = \
+	clos1way gsubtst6
+
+NEED_LOCALE_EN = \
+	backbigs1 backsmalls1 backsmalls2 concat4 dfamb1 ignrcas2 lc_num1 \
+	mbfw1 mbprintf1 mbprintf3 mbprintf4 mbstr1 mbstr2 printhuge reint2 \
+	rri1 subamp subi18n wideidx wideidx2 widesub widesub2 widesub3 widesub4
+
+# Unused at the moment, since nlstringtest has additional stufff it does
+# NEED_LOCALE_FR =
+# Same for ignrcas3
+# NEED_LOCALE_GR =
+
+NEED_LOCALE_JP = mbprintf2
+
+NEED_LOCALE_RU = mtchi18n
+
+# List of tests that fail on DJGPP
+EXPECTED_FAIL_DJGPP = \
+	backbigs1 backsmalls1 backw beginfile1 clos1way clos1way2 \
+	clos1way3 clos1way4 clos1way5 clos1way6 errno getlndir \
+	getlnhd gnuops3 gnureops id ignrcas3 inetdayt inetdayu \
+	inetecht inetechu inftest jarebug mbfw1 mbprintf1 mbprintf4 \
+	mbstr1 mbstr2 mpfrsqrt nonfatal1 nonfatal2 nonfatal3 pid pty1 pty2 \
+	regx8bit strtod sigpipe1 timeout
+
+# List of tests that fail on MinGW
+EXPECTED_FAIL_MINGW = \
+	backbigs1 backsmalls1 clos1way6 devfd devfd1 devfd2 \
+	errno exitval2 fork fork2 fts getfile getlnhd ignrcas3 inetdayt \
+	inetecht mbfw1 mbprintf1 mbprintf4 mbstr1 mbstr2 pid pipeio2 \
+	pty1 pty2 readdir readdir_test readdir_retest rstest4 rstest5 \
+	status-close timeout
+
 # List of the files that appear in manual tests or are for reserve testing:
-GENTESTS_UNUSED = Makefile.in dtdgport.awk gtlnbufv.awk hello.awk \
-	inchello.awk inclib.awk inplace.1.in inplace.2.in inplace.in \
-	longdbl.awk longdbl.in printfloat.awk readdir0.awk xref.awk
+GENTESTS_UNUSED = Makefile.in checknegtime.awk dtdgport.awk gtlnbufv.awk \
+	hello.awk inchello.awk inclib.awk inplace.1.in inplace.2.in \
+	inplace.in printfloat.awk readdir0.awk valgrind.awk xref.awk
+
+# List of tests on MinGW or DJGPP that need a different cmp program
+NEED_TESTOUTCMP = \
+	beginfile2 double2 exit fmttest hsprint posix profile5 space
 
 CMP = cmp
 AWKPROG = ../gawk$(EXEEXT)
+SORT = sort
 
 # Default for VALGRIND is empty unless overridden by a command-line argument.
 # This protects against cruft in the environment.
@@ -1394,16 +1452,21 @@ unix-tests: $(UNIX_TESTS)
 gawk-extensions: $(GAWK_EXT_TESTS)
 
 charset-tests-all:
-	@if locale -a | grep -i 'en_US.UTF.*8' > /dev/null && \
-	    locale -a | grep -i 'fr_FR.UTF.*8' > /dev/null && \
-	    locale -a | grep -i 'ru_RU.UTF.*8' > /dev/null && \
-	    locale -a | grep -i 'ja_JP.UTF.*8' > /dev/null  ; \
-	then \
-		$(MAKE) charset-msg-start charset-tests charset-msg-end; \
-	else \
-		echo %%%%%%%%%% Inadequate locale support: skipping charset tests. ; \
-		echo %%%%%%%%%% At least en_US.UTF-8, fr_FR.UTF-8, ru_RU.UTF-8 and ja_JP.UTF-8 are needed. ; \
-	fi
+	@case `uname` in \
+	*MINGW* | *MS-DOS*) \
+		$(MAKE) charset-msg-start charset-tests charset-msg-end ;; \
+	*) \
+		if locale -a | grep -i 'en_US.UTF.*8' > /dev/null && \
+		   locale -a | grep -i 'fr_FR.UTF.*8' > /dev/null && \
+		   locale -a | grep -i 'ru_RU.UTF.*8' > /dev/null && \
+		   locale -a | grep -i 'ja_JP.UTF.*8' > /dev/null  ; \
+		then \
+			$(MAKE) charset-msg-start charset-tests charset-msg-end; \
+		else \
+			echo %%%%%%%%%% Inadequate locale support: skipping charset tests. ; \
+			echo %%%%%%%%%% At least en_US.UTF-8, fr_FR.UTF-8, ru_RU.UTF-8 and ja_JP.UTF-8 are needed. ; \
+		fi ;; \
+	esac
 
 charset-tests: $(LOCALE_CHARSET_TESTS)
 
@@ -1420,7 +1483,7 @@ machine-tests: $(MACHINE_TESTS)
 mpfr-tests:
 	@if $(AWK) --version | $(AWK) ' /MPFR/ { exit 1 }' ; then \
 	echo MPFR tests not supported on this system ; \
-	else $(MAKE) $(MPFR_TESTS) ; \
+	else $(MAKE) $(NEED_MPFR) ; \
 	fi
 
 arraydebug-tests:
@@ -1439,7 +1502,7 @@ shlib-real-tests: $(SHLIB_TESTS)
 
 msg::
 	@echo ''
-	@echo 'Any output from "cmp" is bad news, although some differences'
+	@echo 'Any output from "$(CMP)" is bad news, although some differences'
 	@echo 'in floating point values are probably benign -- in particular,'
 	@echo 'some systems may omit a leading zero and the floating point'
 	@echo 'precision may lead to slightly different output in a few cases.'
@@ -1497,13 +1560,6 @@ mpfr-msg-end:
 	@echo "======== Done with MPFR tests ========"
 
 
-lc_num1:
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-
 # This test is a PITA because increasingly, /tmp is getting
 # mounted noexec.  So, we'll test it locally.  Sigh.
 #
@@ -1524,83 +1580,74 @@ poundbang::
 
 messages::
 	@echo $@
-	@$(AWK) -f "$(srcdir)"/messages.awk >_out2 2>_out3
+	@$(AWK) -f "$(srcdir)"/messages.awk >_out2 2>_out3 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/out1.ok _out1 && $(CMP) "$(srcdir)"/out2.ok _out2 && $(CMP) "$(srcdir)"/out3.ok _out3 && rm -f _out1 _out2 _out3
 
 argarray::
 	@echo $@
 	@cp "$(srcdir)"/argarray.in ./argarray.input
-	@TEST=test echo just a test | $(AWK) -f "$(srcdir)"/argarray.awk ./argarray.input - >_$@
+	@TEST=test echo just a test | $(AWK) -f "$(srcdir)"/argarray.awk ./argarray.input - >_$@ || echo EXIT CODE: $$? >> _$@
 	@rm -f ./argarray.input
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 regtest::
+	@echo $@
 	@echo 'Some of the output from regtest is very system specific, do not'
 	@echo 'be distressed if your output differs from that distributed.'
 	@echo 'Manual inspection is called for.'
-	AWK=$(AWKPROG) "$(srcdir)"/regtest.sh
+	@AWK=$(AWKPROG) "$(srcdir)"/regtest.sh
 
 manyfiles::
-	@echo manyfiles
+	@echo $@
 	@rm -rf junk
 	@mkdir junk
 	@$(AWK) 'BEGIN { for (i = 1; i <= 1030; i++) print i, i}' >_$@
-	@$(AWK) -f "$(srcdir)"/manyfiles.awk _$@ _$@
+	@$(AWK) -f "$(srcdir)"/manyfiles.awk _$@ _$@ || echo EXIT CODE: $$? >> _$@
 	@wc -l junk/* | $(AWK) '$$1 != 2' | wc -l | sed "s/  *//g" > _$@
 	@rm -rf junk
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 compare::
 	@echo $@
-	@$(AWK) -f "$(srcdir)"/compare.awk 0 1 "$(srcdir)"/compare.in >_$@
+	@$(AWK) -f "$(srcdir)"/compare.awk 0 1 "$(srcdir)"/compare.in >_$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 inftest::
 	@echo $@
 	@echo This test is very machine specific...
-	@$(AWK) -f "$(srcdir)"/inftest.awk | sed "s/inf/Inf/g" >_$@
+	@$(AWK) -f "$(srcdir)"/inftest.awk | sed "s/inf/Inf/g" >_$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 getline2::
 	@echo $@
-	@$(AWK) -f "$(srcdir)"/getline2.awk "$(srcdir)"/getline2.awk "$(srcdir)"/getline2.awk >_$@
+	@$(AWK) -f "$(srcdir)"/getline2.awk "$(srcdir)"/getline2.awk "$(srcdir)"/getline2.awk >_$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 awkpath::
 	@echo $@
-	@AWKPATH="$(srcdir)$(PATH_SEPARATOR)$(srcdir)/lib" $(AWK) -f awkpath.awk >_$@
+	@AWKPATH="$(srcdir)$(PATH_SEPARATOR)$(srcdir)/lib" $(AWK) -f awkpath.awk >_$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 argtest::
 	@echo $@
-	@$(AWK) -f "$(srcdir)"/argtest.awk -x -y abc >_$@
+	@$(AWK) -f "$(srcdir)"/argtest.awk -x -y abc >_$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 badargs::
 	@echo $@
-	@-$(AWK) -f 2>&1 | grep -v patchlevel >_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-nonl::
-	@echo $@
-	@-AWKPATH="$(srcdir)" $(AWK) --lint -f nonl.awk /dev/null >_$@ 2>&1
+	@-$(AWK) -f 2>&1 | grep -v patchlevel >_$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 strftime::
 	@echo $@
-	@GAWKLOCALE=C; export GAWKLOCALE; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=C ; export GAWKLOCALE; \
 	TZ=GMT0; export TZ; \
-	$(AWK) -v OUTPUT=_$@ -f "$(srcdir)"/strftime.awk
+	$(AWK) -v OUTPUT=_$@ -v DATECMD="$(DATE)" -f "$(srcdir)"/strftime.awk || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
-
-litoct::
-	@echo $@
-	@echo ab | $(AWK) --traditional -f "$(srcdir)"/litoct.awk >_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 devfd::
 	@echo $@
-	@$(AWK) 1 /dev/fd/4 /dev/fd/5 4<"$(srcdir)"/devfd.in4 5<"$(srcdir)"/devfd.in5 >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@$(AWK) 1 /dev/fd/4 /dev/fd/5 4<"$(srcdir)"/devfd.in4 5<"$(srcdir)"/devfd.in5 >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # This cannot be autogenerated; we want it to read the input name
@@ -1610,26 +1657,16 @@ errno:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
-fflush::
-	@echo $@
-	@"$(srcdir)"/fflush.sh >_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
 tweakfld::
 	@echo $@
-	@$(AWK) -f "$(srcdir)"/tweakfld.awk "$(srcdir)"/tweakfld.in >_$@
+	@$(AWK) -f "$(srcdir)"/tweakfld.awk "$(srcdir)"/tweakfld.in >_$@ || echo EXIT CODE: $$? >> _$@
 	@rm -f errors.cleanup
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-tradanch::
-	@echo $@
-	@$(AWK) --traditional -f "$(srcdir)"/tradanch.awk "$(srcdir)"/tradanch.in >_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # AIX /bin/sh exec's the last command in a list, therefore issue a ":"
 # command so that pid.sh is fork'ed as a child before being exec'ed.
 pid::
-	@echo pid
+	@echo $@
 	@AWKPATH="$(srcdir)" AWK=$(AWKPROG) $(SHELL) "$(srcdir)"/pid.sh $$$$ > _`basename $@` ; :
 	@-$(CMP) "$(srcdir)"/pid.ok _`basename $@` && rm -f _`basename $@`
 
@@ -1643,7 +1680,7 @@ strftlng::
 
 nors::
 	@echo $@
-	@echo A B C D E | tr -d '\12\15' | $(AWK) '{ print $$NF }' - "$(srcdir)"/nors.in > _$@
+	@echo A B C D E | tr -d '\12\15' | $(AWK) '{ print $$NF }' - "$(srcdir)"/nors.in > _$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 fmtspcl.ok: fmtspcl.tok Makefile
@@ -1666,37 +1703,32 @@ rsglstdin::
 	@cat  "$(srcdir)"/rsgetline.in | AWKPATH="$(srcdir)" $(AWK) -f rsgetline.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
-reint::
-	@echo $@
-	@$(AWK) --re-interval -f "$(srcdir)"/reint.awk "$(srcdir)"/reint.in >_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
 pipeio1::
 	@echo $@
-	@$(AWK) -f "$(srcdir)"/pipeio1.awk >_$@
+	@$(AWK) -f "$(srcdir)"/pipeio1.awk >_$@ || echo EXIT CODE: $$? >> _$@
 	@rm -f test1 test2
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 pipeio2::
 	@echo $@
-	@$(AWK) -v SRCDIR="$(srcdir)" -f "$(srcdir)"/pipeio2.awk >_$@
+	@$(AWK) -v SRCDIR="$(srcdir)" -f "$(srcdir)"/pipeio2.awk >_$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 clobber::
 	@echo $@
-	@$(AWK) -f "$(srcdir)"/clobber.awk >_$@
+	@$(AWK) -f "$(srcdir)"/clobber.awk >_$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/clobber.ok seq && $(CMP) "$(srcdir)"/clobber.ok _$@ && rm -f _$@
 	@rm -f seq
 
 arynocls::
 	@echo $@
-	@-AWKPATH="$(srcdir)" $(AWK) -v INPUT="$(srcdir)"/arynocls.in -f arynocls.awk >_$@
+	@-AWKPATH="$(srcdir)" $(AWK) -v INPUT="$(srcdir)"/arynocls.in -f arynocls.awk >_$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 getlnbuf::
 	@echo $@
-	@-AWKPATH="$(srcdir)" $(AWK) -f getlnbuf.awk "$(srcdir)"/getlnbuf.in > _$@
-	@-AWKPATH="$(srcdir)" $(AWK) -f gtlnbufv.awk "$(srcdir)"/getlnbuf.in > _2$@
+	@-AWKPATH="$(srcdir)" $(AWK) -f getlnbuf.awk "$(srcdir)"/getlnbuf.in > _$@ || echo EXIT CODE: $$? >> _$@
+	@-AWKPATH="$(srcdir)" $(AWK) -f gtlnbufv.awk "$(srcdir)"/getlnbuf.in > _2$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/getlnbuf.ok _$@ && $(CMP) "$(srcdir)"/getlnbuf.ok _2$@ && rm -f _$@ _2$@
 
 inetmesg::
@@ -1724,27 +1756,12 @@ inetdayt::
 
 redfilnm::
 	@echo $@
-	@$(AWK) -f "$(srcdir)"/redfilnm.awk srcdir="$(srcdir)" "$(srcdir)"/redfilnm.in >_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-leaddig::
-	@echo $@
-	@$(AWK) -v x=2E  -f "$(srcdir)"/leaddig.awk >_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-gsubtst3::
-	@echo $@
-	@$(AWK) --re-interval -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@
+	@$(AWK) -f "$(srcdir)"/redfilnm.awk srcdir="$(srcdir)" "$(srcdir)"/redfilnm.in >_$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 space::
 	@echo $@
-	@$(AWK) -f ' ' "$(srcdir)"/space.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-printf0::
-	@echo $@
-	@$(AWK) --posix -f "$(srcdir)"/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@$(AWK) -f ' ' "$(srcdir)"/space.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 rsnulbig::
@@ -1752,7 +1769,7 @@ rsnulbig::
 	@ : Suppose that block size for pipe is at most 128kB:
 	@$(AWK) 'BEGIN { for (i = 1; i <= 128*64+1; i++) print "abcdefgh123456\n" }' 2>&1 | \
 	$(AWK) 'BEGIN { RS = ""; ORS = "\n\n" }; { print }' 2>&1 | \
-	$(AWK) '/^[^a]/; END{ print NR }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	$(AWK) ' /^[^a]/; END{ print NR }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 rsnulbig2::
@@ -1760,55 +1777,7 @@ rsnulbig2::
 	@$(AWK) 'BEGIN { ORS = ""; n = "\n"; for (i = 1; i <= 10; i++) n = (n n); \
 		for (i = 1; i <= 128; i++) print n; print "abc\n" }' 2>&1 | \
 		$(AWK) 'BEGIN { RS = ""; ORS = "\n\n" };{ print }' 2>&1 | \
-		$(AWK) '/^[^a]/; END { print NR }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-wideidx::
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-wideidx2::
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-widesub::
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-widesub2::
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-widesub3::
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-widesub4::
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-ignrcas2::
-	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
-	$(AWK) -f "$(srcdir)"/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-subamp::
-	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
-	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+		$(AWK) ' /^[^a]/; END { print NR }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # This test makes sure gawk exits with a zero code.
@@ -1820,43 +1789,20 @@ exitval1::
 
 fsspcoln::
 	@echo $@
-	@$(AWK) -f "$(srcdir)"/$@.awk 'FS=[ :]+' "$(srcdir)"/$@.in >_$@
+	@$(AWK) -f "$(srcdir)"/$@.awk 'FS=[ :]+' "$(srcdir)"/$@.in >_$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 rsstart3::
 	@echo $@
-	@head "$(srcdir)"/rsstart1.in | $(AWK) -f "$(srcdir)"/rsstart2.awk >_$@
+	@head "$(srcdir)"/rsstart1.in | $(AWK) -f "$(srcdir)"/rsstart2.awk >_$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
-rtlen::
-	@echo $@
-	@"$(srcdir)"/$@.sh >_$@ || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-rtlen01::
-	@echo $@
-	@"$(srcdir)"/$@.sh >_$@ || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
+# FIXME: Gentests can't really deal with something that is both a shell script
+# and requires a locale. We might can fix that ...
 rtlenmb::
 	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE ; \
 	"$(srcdir)"/rtlen.sh >_$@ || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-nondec2::
-	@echo $@
-	@$(AWK) --non-decimal-data -v a=0x1 -f "$(srcdir)"/$@.awk >_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-intarray::
-	@echo $@
-	@$(AWK) --non-decimal-data -f "$(srcdir)"/$@.awk >_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-forcenum::
-	@echo $@
-	@$(AWK) --non-decimal-data -f "$(srcdir)"/$@.awk >_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 nofile::
@@ -1867,16 +1813,6 @@ nofile::
 binmode1::
 	@echo $@
 	@$(AWK) -v BINMODE=3 'BEGIN { print BINMODE }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-subi18n::
-	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; $(AWK) -f "$(srcdir)"/$@.awk > _$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-concat4::
-	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; $(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in > _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 devfd1::
@@ -1895,79 +1831,15 @@ mixed1::
 	@$(AWK) -f /dev/null --source 'BEGIN {return junk}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
-mtchi18n::
-	@echo $@
-	@GAWKLOCALE=ru_RU.UTF-8 ; export GAWKLOCALE ; \
-	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-reint2::
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) --re-interval -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-localenl::
-	@echo $@
-	@"$(srcdir)"/$@.sh >_$@ 2>/dev/null
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-mbprintf1::
-	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
-	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-mbprintf2::
-	@echo $@
-	@GAWKLOCALE=ja_JP.UTF-8 ; export GAWKLOCALE ; \
-	$(AWK) -f "$(srcdir)"/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-mbprintf3::
-	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
-	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-mbprintf4::
-	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
-	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
 mbprintf5::
 	@echo $@
 	@case `uname` in \
-	CYGWIN*) echo this test fails on cygwin --- skipping $@ ;; \
+	CYGWIN* | MINGW32* | *MS-DOS*) echo this test fails on this system --- skipping $@ ;; \
 	*) \
-	GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE ; \
 	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@ ; \
 	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; \
 	esac
-
-mbfw1::
-	@echo $@
-	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
-	$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-gsubtst6::
-	@echo $@
-	@GAWKLOCALE=C ; $(AWK) -f "$(srcdir)"/$@.awk > _$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-mbstr1::
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-mbstr2::
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -f $@.awk < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 printfbad2: printfbad2.ok
 	@echo $@
@@ -1981,12 +1853,12 @@ beginfile1::
 
 beginfile2:
 	@echo $@
-	@-( cd "$(srcdir)" && LC_ALL=C AWK="$(abs_builddir)/$(AWKPROG)" $(abs_srcdir)/$@.sh $(abs_srcdir)/$@.in ) > _$@ 2>&1
+	@-( cd "$(srcdir)" && LC_ALL=C AWK="$(abs_builddir)/$(AWKPROG)" $(abs_srcdir)/$@.sh $(abs_srcdir)/$@.in ) > _$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 dumpvars::
 	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) --dump-variables 1 < "$(srcdir)"/$@.in >/dev/null 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH="$(srcdir)" $(AWK) --dump-variables 1 < "$(srcdir)"/$@.in >/dev/null 2>&1 || echo EXIT CODE: $$? >>_$@ || echo EXIT CODE: $$? >> _$@
 	@grep -v ENVIRON < awkvars.out | grep -v PROCINFO > _$@; rm awkvars.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -2006,7 +1878,7 @@ profile1:
 
 profile2:
 	@echo $@
-	@$(AWK) --profile=ap-$@.out -v sortcmd=sort -f "$(srcdir)"/xref.awk "$(srcdir)"/dtdgport.awk > /dev/null
+	@$(AWK) --profile=ap-$@.out -v sortcmd=$(SORT) -f "$(srcdir)"/xref.awk "$(srcdir)"/dtdgport.awk > /dev/null
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -2014,16 +1886,6 @@ profile3:
 	@echo $@
 	@$(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-profile4:
-	@echo $@
-	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-profile5:
-	@echo $@
-	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile6:
@@ -2038,120 +1900,39 @@ profile7:
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
-profile8:
-	@echo $@
-	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-profile9:
-	@echo $@
-	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-profile10:
-	@echo $@
-	@$(AWK) --pretty-print=_$@ -f "$(srcdir)"/$@.awk > /dev/null
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-posix2008sub:
-	@echo $@
-	@$(AWK) --posix -f "$(srcdir)"/$@.awk > _$@ 2>&1
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-next:
-	@echo $@
-	@-$(LOCALES) AWK="$(AWKPROG)" "$(srcdir)"/$@.sh > _$@ 2>&1
-	@-LC_ALL=C $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-exit:
-	@echo $@
-	@-AWK="$(AWKPROG)" "$(srcdir)"/$@.sh > _$@ 2>&1
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-rri1::
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
 mpfrieee:
 	@echo $@
-	@$(AWK) -M -vPREC=double -f "$(srcdir)"/$@.awk > _$@ 2>&1
+	@$(AWK) -M -vPREC=double -f "$(srcdir)"/$@.awk > _$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mpfrexprange:
 	@echo $@
-	@$(AWK) -M -vPREC=53 -f "$(srcdir)"/$@.awk > _$@ 2>&1
+	@$(AWK) -M -vPREC=53 -f "$(srcdir)"/$@.awk > _$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mpfrrnd:
 	@echo $@
-	@$(AWK) -M -vPREC=53 -f "$(srcdir)"/$@.awk > _$@ 2>&1
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-mpfrrndeval:
-	@echo $@
-	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-mpfrnegzero:
-	@echo $@
-	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-mpfrnr:
-	@echo $@
-	@$(AWK) -M -vPREC=113 -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in > _$@
+	@$(AWK) -M -vPREC=53 -f "$(srcdir)"/$@.awk > _$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mpfrsort:
 	@echo $@
-	@$(AWK) -M -vPREC=53 -f "$(srcdir)"/$@.awk > _$@ 2>&1
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-mpfrbigint:
-	@echo $@
-	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-mpfrsqrt:
-	@echo $@
-	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-mpfrstrtonum:
-	@echo $@
-	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
+	@$(AWK) -M -vPREC=53 -f "$(srcdir)"/$@.awk > _$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mpfruplus:
 	@echo $@
-	@$(AWK) -M -f "$(srcdir)"/uplus.awk > _$@ 2>&1
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-mpgforcenum:
-	@echo $@
-	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-mpfrrem:
-	@echo $@
-	@$(AWK) -M -f "$(srcdir)"/$@.awk > _$@ 2>&1
+	@$(AWK) -M -f "$(srcdir)"/uplus.awk > _$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mpfrmemok1:
 	@echo $@
-	@$(AWK) -p- -M -f "$(srcdir)"/$@.awk 2>&1 | sed 1d > _$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-mpfrfield:
-	@echo $@
-	@$(AWK) -M -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in > _$@ 2>&1
+	@$(AWK) -p- -M -f "$(srcdir)"/$@.awk 2>&1 | sed 1d > _$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 jarebug::
 	@echo $@
-	@"$(srcdir)"/$@.sh "$(AWKPROG)" "$(srcdir)"/$@.awk "$(srcdir)"/$@.in "_$@"
+	@"$(srcdir)"/$@.sh "$(AWKPROG)" "$(srcdir)"/$@.awk "$(srcdir)"/$@.in "_$@" || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 ordchr2::
@@ -2162,8 +1943,8 @@ ordchr2::
 # N.B. If the test fails, create readfile.ok so that "make diffout" will work
 readfile::
 	@echo $@
-	@$(AWK) -l readfile 'BEGIN {printf "%s", readfile("Makefile")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) Makefile _$@ && rm -f _$@ || cp -p Makefile $@.ok
+	@$(AWK) -l readfile 'BEGIN {printf "%s", readfile("$(srcdir)/Makefile.am")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)/Makefile.am" _$@ && rm -f _$@ || cp -p "$(srcdir)/Makefile.am" $@.ok
 
 readfile2::
 	@echo $@
@@ -2244,7 +2025,7 @@ inplace3::
 
 testext::
 	@echo $@
-	@$(AWK) '/^(@load|BEGIN)/,/^}/' "$(top_srcdir)"/extension/testext.c > testext.awk
+	@$(AWK) ' /^(@load|BEGIN)/,/^}/' "$(top_srcdir)"/extension/testext.c > testext.awk
 	@$(AWK) -f ./testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ testext.awk testexttmp.txt
 
@@ -2254,12 +2035,12 @@ getfile:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 readdir:
+	@echo $@
 	@if [ "`uname`" = Linux ] && [ "`stat -f . 2>/dev/null | awk 'NR == 2 { print $$NF }'`" = nfs ];  then \
 	echo This test may fail on GNU/Linux systems when run on NFS or JFS filesystems.; \
 	echo If it does, try rerunning on an ext'[234]' filesystem. ; \
 	fi
-	@echo $@
-	@$(AWK) -f "$(srcdir)"/readdir.awk "$(top_srcdir)" > _$@
+	@$(AWK) -f "$(srcdir)"/readdir.awk "$(top_srcdir)" > _$@ || echo EXIT CODE: $$? >> _$@
 	@ls -afi "$(top_srcdir)" > _dirlist
 	@ls -lna "$(top_srcdir)" | sed 1d > _longlist
 	@$(AWK) -f "$(srcdir)"/readdir0.awk -v extout=_$@  \
@@ -2279,6 +2060,7 @@ readdir_retest:
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 fts:
+	@echo $@
 	@case `uname` in \
 	IRIX) \
 	echo This test may fail on IRIX systems when run on an NFS filesystem.; \
@@ -2287,14 +2069,14 @@ fts:
 	echo This test may fail on CYGWIN systems when run on an NFS filesystem.; \
 	echo If it does, try rerunning on an ntfs filesystem. ;; \
 	esac
-	@echo $@
-	@$(AWK) -f "$(srcdir)"/fts.awk
+	@$(AWK) -f "$(srcdir)"/fts.awk || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
+# BINMODE=2 is needed for PC tests.
 charasbytes:
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -b -f $@.awk "$(srcdir)"/$@.in | \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -b -v BINMODE=2 -f $@.awk "$(srcdir)"/$@.in | \
 	od -c -t x1 | tr '	' ' ' | sed -e 's/  */ /g' -e 's/ *$$//' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -2312,55 +2094,20 @@ symtab8:
 
 symtab9:
 	@echo $@
-	@$(AWK) -f "$(srcdir)"/$@.awk >_$@
+	@$(AWK) -f "$(srcdir)"/$@.awk >_$@ || echo EXIT CODE: $$? >> _$@
 	@rm -f testit.txt
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 reginttrad:
 	@echo $@
-	@$(AWK) --traditional -r -f "$(srcdir)"/$@.awk > _$@
+	@$(AWK) --traditional -r -f "$(srcdir)"/$@.awk > _$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 colonwarn:
 	@echo $@
 	@for i in 1 2 3 ; \
 	do $(AWK) -f "$(srcdir)"/$@.awk $$i < "$(srcdir)"/$@.in ; \
-	done > _$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-clos1way:
-	@echo $@
-	@AWKPATH="$(srcdir)" LC_ALL=C $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-dfamb1:
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-
-randtest::
-	@echo $@
-	@-GAWK="$(AWKPROG)" "$(srcdir)"/randtest.sh >_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-backbigs1:
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-backsmalls1:
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-backsmalls2:
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	done > _$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 dbugeval::
@@ -2369,12 +2116,6 @@ dbugeval::
 	$(AWK) --debug -f /dev/null < "$(srcdir)"/$@.in > _$@  2>&1 || echo EXIT CODE: $$? >>_$@ ; \
 	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; \
 	fi
-
-printhuge::
-	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
-	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 filefuncs:
 	@echo $@
@@ -2386,40 +2127,10 @@ genpot:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --gen-pot >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
-paramasfunc1::
-	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-paramasfunc2::
-	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
 negtime::
 	@echo $@
 	@TZ=GMT AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@AWKPATH="$(srcdir)" $(AWK) -f checknegtime.awk "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-dbugtypedre1:
-	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-dbugtypedre2:
-	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-dbugeval2:
-	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-muldimposix::
-	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 watchpoint1:
 	@echo $@
@@ -2444,27 +2155,17 @@ pty2:
 	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ;; \
 	esac
 
-rscompat:
-	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) --traditional -f $@.awk "$(srcdir)/$@.in" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-symtab10:
-	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -D -f $@.awk < "$(srcdir)/$@.in" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
 ignrcas3::
 	@echo $@
 	@if locale -a | grep el_GR.iso88597 > /dev/null ; then \
-	GAWKLOCALE=el_GR.iso88597 \
+	[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=el_GR.iso88597 ; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@ ; \
 	$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; \
 	fi
 
 arrdbg:
 	@echo $@
-	@$(AWK) -v "okfile=./$@.ok" -f "$(srcdir)"/$@.awk | grep array_f >_$@
+	@$(AWK) -v "okfile=./$@.ok" -f "$(srcdir)"/$@.awk | grep array_f >_$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) ./$@.ok _$@ && rm -f _$@ ./$@.ok
 
 sourcesplit:
@@ -2472,16 +2173,18 @@ sourcesplit:
 	@AWKPATH="$(srcdir)" $(AWK) --source='BEGIN { a = 5;' --source='print a }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+# Use [:] in the regexp to keep MSYS from converting the /'s to \'s.
 nonfatal1:
 	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk 2>&1 | $(AWK) '{print gensub(/invalid:.*$$/, "invalid", 1, $$0)}' >_$@ || echo EXIT CODE: $$? >>_$@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk 2>&1 | $(AWK) '{print gensub(/invalid[:].*$$/, "invalid", 1, $$0)}' >_$@ || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+# 4/2018: On first call to $(CMP), send to /dev/null even with -s for MinGW.
 nlstringtest::
 	@echo $@
-	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=fr_FR.UTF-8 ; \
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=fr_FR.UTF-8 ; export GAWKLOCALE ; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk "$(srcdir)" >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-if $(CMP) -s "$(srcdir)"/nlstringtest-nogettext.ok _$@ ; \
+	@-if $(CMP) -s "$(srcdir)"/nlstringtest-nogettext.ok _$@ > /dev/null ; \
 	then \
 		rm -f _$@ ; \
 	else \
@@ -2489,11 +2192,17 @@ nlstringtest::
 	fi
 
 
+longwrds:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk -v SORT="$(SORT)" < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+
 # Targets generated for other tests:
 include Maketests
 
 Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
-	files=`cd "$(srcdir)" && echo *.awk *.in`; \
+	files=`cd "$(srcdir)" && echo *.awk *.in *.sh`; \
 	$(AWK) -f "$(srcdir)"/Gentests "$(srcdir)"/Makefile.am $$files > $@
 
 clean-local:

@@ -200,6 +200,12 @@ concat3:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+concat4:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 concat5:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -238,6 +244,12 @@ delarprm:
 delfunc:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+dfamb1:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 dfastress:
@@ -420,6 +432,11 @@ gsubtst2:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+gsubtst3:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --re-interval < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 gsubtst4:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -428,6 +445,12 @@ gsubtst4:
 gsubtst5:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+gsubtst6:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=C; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 gsubtst7:
@@ -480,17 +503,22 @@ iobug1:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+leaddig:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 leadnl:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
-longsub:
+litoct:
 	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --traditional < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
-longwrds:
+longsub:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -605,6 +633,11 @@ noloop2:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+nonl:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --lint < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 noparms:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -690,6 +723,16 @@ opasnslf:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+paramasfunc1:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+paramasfunc2:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 paramdup:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -730,6 +773,11 @@ pcntplus:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+posix2008sub:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 prdupval:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -738,6 +786,11 @@ prdupval:
 prec:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+printf0:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 printf1:
@@ -776,6 +829,11 @@ rand:
 	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; else \
 	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
 	fi
+
+randtest:
+	@echo $@
+	@-$(LOCALES) AWK="$(AWKPROG)" "$(srcdir)"/$@.sh  > _$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 range1:
 	@echo $@
@@ -842,9 +900,20 @@ resplit:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+rri1:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 rs:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+rscompat:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --traditional < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 rsnul1nl:
@@ -972,9 +1041,21 @@ strtod:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+subamp:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 subback:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+subi18n:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 subsepnm:
@@ -1010,6 +1091,11 @@ synerr2:
 tailrecurse:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+tradanch:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --traditional < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 uninit2:
@@ -1052,6 +1138,42 @@ uplus:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+wideidx:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+wideidx2:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+widesub:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+widesub2:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+widesub3:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+widesub4:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 wjposer1:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -1072,9 +1194,29 @@ zeroflag:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+fflush:
+	@echo $@
+	@-$(LOCALES) AWK="$(AWKPROG)" "$(srcdir)"/$@.sh  > _$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 getlnhd:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+localenl:
+	@echo $@
+	@-$(LOCALES) AWK="$(AWKPROG)" "$(srcdir)"/$@.sh  > _$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+rtlen:
+	@echo $@
+	@-$(LOCALES) AWK="$(AWKPROG)" "$(srcdir)"/$@.sh  > _$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+rtlen01:
+	@echo $@
+	@-$(LOCALES) AWK="$(AWKPROG)" "$(srcdir)"/$@.sh  > _$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 aadelete1:
@@ -1112,6 +1254,12 @@ backw:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+clos1way:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=C; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 clos1way2:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -1142,14 +1290,39 @@ crlf:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+dbugeval2:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --debug < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+dbugtypedre1:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --debug < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+dbugtypedre2:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --debug < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 delsub:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+exit:
+	@echo $@
+	@-$(LOCALES) AWK="$(AWKPROG)" "$(srcdir)"/$@.sh  > _$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 fieldwdth:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+forcenum:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --non-decimal-data >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 fpat1:
@@ -1317,6 +1490,12 @@ igncfs:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+ignrcas2:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 ignrcas4:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -1345,6 +1524,11 @@ indirectcall:
 indirectcall2:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+intarray:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --non-decimal-data >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 isarrayunset:
@@ -1412,14 +1596,41 @@ match3:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+mbstr1:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mbstr2:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+muldimposix:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --posix >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 nastyparm:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+next:
+	@echo $@
+	@-$(LOCALES) AWK="$(AWKPROG)" "$(srcdir)"/$@.sh  > _$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 nondec:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+nondec2:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --non-decimal-data >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 nonfatal2:
@@ -1457,9 +1668,40 @@ printfbad4:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+printhuge:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 procinfs:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile4:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --pretty-print=_$@ >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile5:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --pretty-print=_$@ >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile8:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --pretty-print=_$@ >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile9:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --pretty-print=_$@ >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile10:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --pretty-print=_$@ >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 regnul1:
@@ -1475,6 +1717,17 @@ regnul2:
 regx8bit:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+reint:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --re-interval < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+reint2:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --re-interval < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 rsgetline:
@@ -1582,6 +1835,11 @@ symtab7:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+symtab10:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --debug < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 typedregex1:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -1652,6 +1910,24 @@ asorti:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+backbigs1:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+backsmalls1:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+backsmalls2:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 fmttest:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -1670,6 +1946,48 @@ fnparydl:
 	@-if test -z "$$AWKFLAGS" ; then $(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@ ; else \
 	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
 	fi
+
+lc_num1:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mbfw1:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mbprintf1:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mbprintf2:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mbprintf3:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mbprintf4:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mtchi18n:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ru_RU.UTF-8; export GAWKLOCALE; \
+	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 rebt8b2:
 	@echo $@
@@ -1734,6 +2052,51 @@ rwarray:
 time:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfrbigint:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  -M >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfrfield:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  -M < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfrnegzero:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  -M >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfrnr:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  -M < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfrrem:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  -M >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfrrndeval:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  -M >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfrsqrt:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  -M >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfrstrtonum:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  -M >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpgforcenum:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  -M >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # end of file Maketests

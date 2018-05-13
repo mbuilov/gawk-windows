@@ -164,7 +164,8 @@ OFS="-"
 $(length(_)+1)=""
 print $0
 
-while(getline <ARGV[1]) # ADR: was testre.dat
+#while(getline <ARGV[1]) # ADR: was testre.dat
+while(getline) # ADR: use stdin so can automate generation of test
 {
 RE=$1;IN=$2;OUT=$3
 $0=IN
