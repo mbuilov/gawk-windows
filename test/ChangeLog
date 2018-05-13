@@ -1,8 +1,52 @@
+2018-05-12  Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile.am (readfile): Fix a typo.
+
+2018-05-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (readfile): Use $(srcdir)/Makefile.am as the
+	target to read and compare against. We hope this avoids
+	issues with CR/LF on Windows...
+
+2018-05-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (SORT): New variable, to improve consistency with
+	PC test suite.
+	(profile2): Use $(SORT) instead of literal "sort".
+	(msg): Use $(CMP) in message instead of literal "cmp".
+	Thanks to Eli Z. for the suggested changes.
+
+2018-05-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (EXPECTED_FAIL_MINGW): Per Eli Z., remove clos1way5.
+
 2018-04-30         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* readdir0.awk: Handle symbolic links in the top level
 	source directory. (Useful if testing for PC where the PC
 	test makefile wants a gawk.exe to exist.)
+
+2018-04-24         Scott Deifik          <scottd.mail@sbcglobal.net>
+
+	* Makefile.am (EXPECTED_FAIL_MINGW): Add clos1way5.
+
+2018-04-24         Juan Manuel Guerrero  <juan.guerrero@gmx.de>
+
+	* Makefile.am (EXPECTED_FAIL_DJGPP): Add mpfrsqrt.
+
+2018-04-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (EXPECTED_FAIL_MINGW): Remove fmtspcl and
+	and add readdir_retest.
+	(mbprintf5): Add checks for MinGW and DJGPP along with Cygwin.
+	Thanks to Scott Deifik for the report.
+	(nlstringtest): Redirect $(CMP) output to /dev/null. Not sure
+	why this is necessary but it seems to be.
+
+2018-04-22         Juan Manuel Guerrero  <juan.guerrero@gmx.de>
+
+	* Makefile.am (EXPECTED_FAIL_DJGPP): Add gnuops3, gnureops,
+	regx8bit and sigpipe1 to the list.
 
 2018-04-20         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -12,8 +56,24 @@
 
 2018-04-19         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* Makefile.am (EXPECTED_FAIL_MINGW): Add clos1way6.
+	(readdir, fts): Move the 'echo $@' to be the first line.
+	(nonfatal1): Adapt inline awk script to work with MSYS too.
+	(charset-tests-all): Check for MinGW or DJGPP and just run
+	the tests if so, otherwise check for needed locales as
+	previously.
+
+2018-04-19         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* nonfatal1.awk, nonfatal1.ok: Change to use 1.2.3.4.5
 	as the host. Thanks again to Mike Burkett <vidgizmo@gmail.com>.
+
+2018-04-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (NEED_TESTOUTCMP): New list of tests that need
+	a different cmp program.
+	(charasbytes): Add -v BINMODE=2.
+	(longwrds): Need an explicit recipe to have sort command.
 
 2018-04-17         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -22,10 +82,87 @@
 	cause the test to time out instead of failing. Thanks to
 	Mike Burkett <vidgizmo@gmail.com> for the report.
 
+	Unrelated:
+
+	* Makefile.am (NEED_RE_INTERVAL): Spell the macro correctly.
+	(strftime): Pass -v DATECMD="$(DATE)" to match pc usage.
+
 2018-04-14         Manuel Collado       <m-collado@users.sourceforge.net>
 
 	* Makefile.am (readdir_retest): Add new test.
 	* readdir_retest.awk: New file.
+
+2018-04-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Gentests: Remove VMS stuff. It hasn't been used in years.
+	* Gentests.vms: Removed.
+	* Makefile.am (EXTRA_DIST): Remove Gentests.vms.
+	(regtest): Add an echo $@ and make last line start with @,
+	for consistency with other tests.
+
+2018-04-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Gentests: Add support tests that need --re-interval.
+	* Makefile.am (NEED_RE_INTERVAL): New list of tests.
+	(NEED_LOCALE_EN): Add reint2 to the list.
+	* gsubtst3.awk, leaddig.awk: Modified to support automating.
+
+	Unrelated: Start on being able to generate pc/Makefile.tst.
+	
+	* Makfile.am (EXPECTED_FAIL_DJGPP, EXPECTED_FAIL_MINGW):
+	New lists of test expected to fail on the given platforms.
+
+2018-04-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Gentests: Add support for tests that need a specific locale.
+	* Makefile.am (NEED_LOCALE_C, NEED_LOCALE_EN, NEED_LOCALE_JP,
+	NEED_LOCALE_RU): New lists of such tests.
+
+	Unrelated:
+
+	* Makefile.am: Add printing exit status to results for many
+	tests that lacked it. This makes the tests more consistent
+	with each other and with the auto-generated tests.
+
+2018-04-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (RUN_SHELL): List of tests that run a .sh file.
+	* Gentests: Add support for such tests.
+	* randtest.sh: Use $AWK, not $GAWK so it can be generated.
+
+	Unrelated:
+
+	* Makefile.am (clos1way): Use standard locale verbiage in
+	preparation for later automation of specialized locale tests.
+
+2018-04-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (manyfiles, pid): Use echo $@ to echo test name.
+	(EXTRA_DIST): Remove longdbl.* files.
+	(TESTS_WE_ARE_NOT_DOING_YET_FIXME_ONE_DAY): Removed.
+	* longdbl.awk, longdbl.in, longdbl.ok: Removed.
+
+2018-04-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Gentests: Add support for tests needing --debug and
+	--non-decimal-data.
+	* Makefile.am (NEED_DEBUG, NEED_NONDEC):  New macros.
+
+2018-04-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Gentests: Add support for tests needing --pretty-print.
+	Improve checking in the END rule.
+	* Makefile.am (NEED_PRETTY):  New macro.
+
+2018-04-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Gentests: Add special support for MPFR tests, tests needing
+	--posix and --traditional.
+	* Makefile.am (NEED_MPFR): Renamed from MPFR_TESTS.
+	(NEED_POSIX, NEED_TRADITIONAL): New groupings.  Removed related
+	individual recipes.
+	(GENTESTS_UNUSED): Updated.
+	* litoct.in, nonl.in: New files.
 
 2018-04-01         Arnold D. Robbins     <arnold@skeeve.com>
 

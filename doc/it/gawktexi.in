@@ -61,7 +61,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH Marzo 2018
+@set UPDATE-MONTH Maggio 2018
 @set VERSION 4.2
 @set PATCHLEVEL 1
 
@@ -4263,7 +4263,7 @@ Quest'opzione @`e particolarmente necessaria per le applicazioni World Wide Web
 CGI che passano argomenti attraverso le URL; l'uso di quest'opzione impedisce
 a un utente malintenzionato (o ad altri) di passare opzioni, assegnamenti o
 codice sorgente @command{awk} (con @option{-e}) all'applicazione
-CGI.@footnote{per maggiori dettagli,
+CGI.@footnote{Per maggiori dettagli,
 si veda la Sezione 4.4 di @uref{http://www.ietf.org/rfc/rfc3875,
 RFC 3875}. Si veda anche
 @uref{https://lists.gnu.org/archive/html/bug-gawk/2014-11/msg00022.html,
@@ -6094,8 +6094,7 @@ l'altro.)
 caratteri di controllo).
 @item @code{[:punct:]} @tab Caratteri di punteggiatura (caratteri che non
 sono lettere, cifre, caratteri di controllo, o caratteri di spazio).
-@item @code{[:space:]} @tab Caratteri di spazio (come @dfn{spazio}, TAB, e
-@dfn{formfeed}, per citarne alcuni).
+@item @code{[:space:]} @tab Caratteri di spazio (ovvero: @dfn{spazio}, TAB, avanzamento riga (@dfn{newline}), ritorno a capo (@dfn{carriage return}), avanzamento pagina (@dfn{formfeed}) e tabulazione verticale)
 @item @code{[:upper:]} @tab Caratteri alfabetici maiuscoli.
 @item @code{[:xdigit:]} @tab Caratteri che sono cifre esadecimali.
 @end multitable
@@ -6121,6 +6120,13 @@ individua tutti i valori numerici tra zero e 127, che @`e l'intervallo definito
 dell'insieme di caratteri ASCII.  Usando una lista di caratteri che esclude
 (@samp{[^\x00-\x7F]}) si individuano tutti i caratteri mono-byte che non
 sono nell'intervallo ASCII.
+
+@quotation NOTA
+Al momento (Maggio 2018), l'@command{awk} di Brian Kernighan
+tratta @code{[:blank:]} come @code{[:space:]}, individuando quindi
+pi@`u caratteri del dovuto.  Gli @`e stata inviata una correzione,
+si spera che il problema verr@`a risolto.
+@end quotation
 
 @cindex espressioni tra parentesi quadre, elementi di collazione
 @cindex espressioni tra parentesi quadre, non-ASCII
@@ -9887,7 +9893,7 @@ e @code{%A} in @command{awk}, per quanto ci consta, nessun'altra versione
 di @command{awk} supporta questo formato.  Se lo si usa, il programma
 in questione @`e quindi estremamente non-portabile!
 
-inoltre, questi formati non sono disponibili su alcun sistema in cui
+Inoltre, questi formati non sono disponibili su alcun sistema in cui
 la funzione di libreria C @code{printf()} utilizzata da @command{gawk}
 non li supporta.  
 Al momento in cui questo libro @`e stato scritto, fra i sistemi su cui
@@ -24898,8 +24904,8 @@ usa queste funzioni.
 @iftex
 La
 @end iftex
-@ref{Vettori di vettori} trattava come @command{gawk}
-avere a disposizione vettori di vettori.  In particolare, qualsiasi elemento di
+@ref{Vettori di vettori} trattava di come @command{gawk}
+mette a disposizione vettori di vettori.  In particolare, qualsiasi elemento di
 un vettore pu@`o essere uno scalare o un altro vettore. La funzione
 @code{isarray()} (@pxref{Funzioni per i tipi})
 permette di distinguere un vettore
@@ -33073,7 +33079,7 @@ variazione dei valori sono mostrati in @ref{table-numeric-ranges} e in
 @ifnotinfo
 @item Virgola mobile, singola precis. @tab 1,175494@sup{-38} @tab -3,402823@sup{38} @tab 3,402823*10@sup{38}
 @item Virgola mobile, singola precis. @tab 2,225074@sup{-308} @tab -1,797693@sup{308} @tab 1,797693*10@sup{308}
-@item Virgola mobile, quadrupla prec. @tab 3,362103@sup{-4932} @tab -1,189731@sup{4932} @tab 1,189731@sup{4932} @tab 1.189731@sup{4932}
+@item Virgola mobile, quadrupla prec. @tab 3,362103@sup{-4932} @tab -1,189731@sup{4932} @tab 1,189731@sup{4932}
 @end ifnotinfo
 @end ifnottex
 @end multitable

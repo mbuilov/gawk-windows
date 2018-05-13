@@ -169,7 +169,7 @@ check-local: gawk$(EXEEXT)
 
 # A little extra clean up when making distributions.
 # And additional set up for the pc directory.
-dist-hook:
+dist-hook: pc/Makefile.tst
 	cd "$(distdir)"/extension ; rm -f *.o *.so
 	cd "$(srcdir)"/pc ; \
 	chmod u+w config.h ; \
@@ -190,6 +190,9 @@ awkgram.c: awkgram.y
 command.c: command.y
 	$(YACC) -o $@ -p zz $<
 	sed 's/parse error/syntax error/g' < $@ > $@.tmp && mv $@.tmp $@
+
+pc/Makefile.tst: test/Makefile.in
+	cd pc && awk -f GenMakefileTst.awk ../test/Makefile.in > Makefile.tst
 
 # This is for my development & testing.
 efence: gawk
