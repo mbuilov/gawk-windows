@@ -18,10 +18,10 @@ Changes from 4.2.x to 5.0.0
 Changes from 4.2.1 to 4.2.2
 ---------------------------
 
-1. Support for the POSIX standard %a and %A formats has been added.
+1. Support for the POSIX standard %a and %A printf formats has been added.
 
 2. The test infrastructure has been greatly improved, simplifying the
-   contents of Makefile.am and making it possible to generate
+   contents of test/Makefile.am and making it possible to generate
    pc/Makefile.tst from test/Makefile.in.
 
 Changes from 4.2.0 to 4.2.1
@@ -40,7 +40,7 @@ Changes from 4.2.0 to 4.2.1
 4. extension/configure.ac has been improved considerably.
 
 5. In MPFR mode, When ROUNDMODE changes, string values for numerically
-   type values will be redone.
+   typed values will be redone.
 
 6. The various 'inplace' tests now pass on modern BSD systems.
 
@@ -139,7 +139,7 @@ Changes from 4.1.4 to 4.2.0
 
 20. Programs that toggle IGNORECASE a lot should now be noticeably faster.
 
-21. The mktime function now accepts an optional second argument. If this
+21. The mktime() function now accepts an optional second argument. If this
     argument is present and is non-zero or non-null, the time will be converted
     from UTC instead of from the local timezone.
 
