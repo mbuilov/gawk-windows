@@ -1051,6 +1051,8 @@ EXTRA_DIST = \
 	sortu.ok \
 	sourcesplit.ok \
 	space.ok \
+	spacere.awk \
+	spacere.ok \
 	split_after_fpat.awk \
 	split_after_fpat.in \
 	split_after_fpat.ok \
@@ -1257,7 +1259,7 @@ BASIC_TESTS = \
 	rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 rstest3 \
 	rstest4 rstest5 rswhite \
 	scalar sclforin sclifin setrec0 setrec1 \
-	sigpipe1 sortempty sortglos splitargv splitarr \
+	sigpipe1 sortempty sortglos spacere splitargv splitarr \
 	splitdef splitvar splitwht status-close strcat1 strnum1 strnum2 strtod \
 	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 \
 	tailrecurse tradanch tweakfld \
