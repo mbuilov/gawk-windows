@@ -5903,7 +5903,7 @@ add_lint(INSTRUCTION *list, LINTTYPE linttype)
 				}
 			}
 
-			if (ip->opcode == Op_push) {		/* run-time warning */
+			if (ip->opcode == Op_push || ip->opcode == Op_push_i) {		/* run-time warning */
 				list_append(list, instruction(Op_lint));
 				list->lasti->lint_type = linttype;
 			}
