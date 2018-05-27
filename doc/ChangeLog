@@ -1,3 +1,11 @@
+2018-05-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in (Extract Program): Bug fix. Keep the files open
+	in case one program's bits are intermixed with another's.
+	Then close them all at the end.  Bug report was about
+	indirectcall.awk but affected another file as well. Thanks
+	to Ramasahayam Reddy <rureddy57@gmail.com> for the report.
+
 2018-05-23         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawktexi.in (Auto-Set): For PROCINFO["sorted_in"], make the xref
