@@ -1,3 +1,32 @@
+BEGIN {
+  Init()
+  ReadQuotes()
+  CleanUp()
+  Prediction()
+  Report()
+  SendMail()
+}
+function Init() {
+  if (ARGC != 1) {
+    print "STOXPRED - daily stock share prediction"
+    print "IN:\n    no parameters, nothing on stdin"
+    print "PARAM:\n    -v Proxy=MyProxy -v ProxyPort=80"
+    print "OUT:\n    commented predictions as email"
+    print "JK 09.10.2000"
+    exit
+  }
+  # Remember ticker symbols from Dow Jones Industrial Index
+  StockCount = split("AA GE JNJ MSFT AXP GM JPM PG BA HD KO \
+    SBC C HON MCD T CAT HWP MMM UTX DD IBM MO WMT DIS INTC \
+    MRK XOM EK IP", name);
+  # Remember the current date as the end of the time series
+  day   = strftime("%d")
+  month = strftime("%m")
+  year  = strftime("%Y")
+  if (Proxy     == "")  Proxy     = "chart.yahoo.com"
+  if (ProxyPort ==  0)  ProxyPort = 80
+  YahooData = "/inet/tcp/0/" Proxy "/" ProxyPort
+}
 function ReadQuotes() {
   # Retrieve historical data for each ticker symbol
   FS = ","

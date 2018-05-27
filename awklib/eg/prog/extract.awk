@@ -30,7 +30,7 @@ BEGIN    { IGNORECASE = 1 }
     }
     if ($3 != curfile) {
         if (curfile != "")
-            close(curfile)
+            filelist[curfile]++     # save to close later
         curfile = $3
     }
 
@@ -60,14 +60,13 @@ BEGIN    { IGNORECASE = 1 }
         print join(a, 1, n, SUBSEP) > curfile
     }
 }
+END {
+    for (f in filelist)
+        close(filelist[f])
+}
 function unexpected_eof()
 {
     printf("extract: %s:%d: unexpected EOF or error\n",
                      FILENAME, FNR) > "/dev/stderr"
     exit 1
-}
-
-END {
-    if (curfile)
-        close(curfile)
 }

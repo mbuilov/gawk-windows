@@ -20124,7 +20124,7 @@ using indirect function calls:
 @ignore
 @c file eg/prog/indirectcall.awk
 #
-# Arnold Robbins, arnold@skeeve.com, Public Domain
+# Arnold Robbins, arnold@@skeeve.com, Public Domain
 # January 2009
 @c endfile
 @end ignore
@@ -25741,7 +25741,7 @@ line.  That line is then printed to the output file:
     @}
     if ($3 != curfile) @{
         if (curfile != "")
-            close(curfile)
+            filelist[curfile]++     # save to close later
         curfile = $3
     @}
 
@@ -25785,6 +25785,26 @@ sample source file (as has been done here!) without any hassle.  The file is
 only closed when a new @value{DF} name is encountered or at the end of the
 input file.
 
+When a new @value{FN} is encountered, instead of closing the file,
+the program saves the name of the current file in @code{filelist}.
+This makes it possible to interleave the code for more than one file in
+the Texinfo input file.  (Previous versions of this program @emph{did}
+close the file. But because of the @samp{>} redirection, a file whose
+parts were not all one after the other ended up getting clobbered.)
+An @code{END} rule then closes all the open files when processing
+is finished:
+
+@example
+@c file eg/prog/extract.awk
+@group
+END @{
+    for (f in filelist)
+        close(filelist[f])
+@}
+@end group
+@c endfile
+@end example
+
 Finally, the function @code{@w{unexpected_eof()}} prints an appropriate
 error message and then exits.
 The @code{END} rule handles the final cleanup, closing the open file:
@@ -25799,11 +25819,6 @@ function unexpected_eof()
     exit 1
 @}
 @end group
-
-END @{
-    if (curfile)
-        close(curfile)
-@}
 @c endfile
 @end example
 
