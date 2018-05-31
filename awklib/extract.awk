@@ -30,7 +30,7 @@ BEGIN    { IGNORECASE = 1 }
     }
     if ($3 != curfile) {
         if (curfile != "")
-            filelist[curfile]++     # save to close later
+            filelist[curfile] = 1     # save to close later
         curfile = $3
     }
 
@@ -61,8 +61,9 @@ BEGIN    { IGNORECASE = 1 }
     }
 }
 END {
-    for (f in filelist)
-        close(filelist[f])
+    close(curfile)          # close the last one
+    for (f in filelist)     # close all the rest
+        close(f)
 }
 function unexpected_eof()
 {
