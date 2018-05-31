@@ -17955,11 +17955,12 @@ a[3] = "middle"
 @cindex substitute in string
 Search the target string @var{target} for matches of the regular
 expression @var{regexp}.  If @var{how} is a string beginning with
-@samp{g} or @samp{G} (short for ``global''), then replace all matches of @var{regexp} with
-@var{replacement}.  Otherwise, @var{how} is treated as a number indicating
-which match of @var{regexp} to replace. If no @var{target} is supplied,
-use @code{$0}.  It returns the modified string as the result
-of the function and the original target string is @emph{not} changed.
+@samp{g} or @samp{G} (short for ``global''), then replace all matches
+of @var{regexp} with @var{replacement}.  Otherwise, treat @var{how}
+as a number indicating which match of @var{regexp} to replace.  Treat
+numeric values less than one as if they were one.  If no @var{target}
+is supplied, use @code{$0}.  Return the modified string as the result
+of the function. The original target string is @emph{not} changed.
 
 @code{gensub()} is a general substitution function.  Its purpose is
 to provide more features than the standard @code{sub()} and @code{gsub()}
