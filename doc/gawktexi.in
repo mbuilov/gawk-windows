@@ -25741,7 +25741,7 @@ line.  That line is then printed to the output file:
     @}
     if ($3 != curfile) @{
         if (curfile != "")
-            filelist[curfile]++     # save to close later
+            filelist[curfile] = 1   # save to close later
         curfile = $3
     @}
 
@@ -25798,8 +25798,9 @@ is finished:
 @c file eg/prog/extract.awk
 @group
 END @{
-    for (f in filelist)
-        close(filelist[f])
+    close(curfile)          # close the last one
+    for (f in filelist)     # close all the rest
+        close(f)
 @}
 @end group
 @c endfile
