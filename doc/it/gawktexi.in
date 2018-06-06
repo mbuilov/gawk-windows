@@ -18597,8 +18597,9 @@ Se @var{come} @`e una stringa che inizia
 con @samp{g} o @samp{G} (abbreviazione di ``global''), sostituisce
 ogni occorrenza di @var{regexp} con la stringa
 @var{rimpiazzo}.  Altrimenti, @var{come} @`e visto come un numero che indica
-quale corrispondenza di @var{regexp} va rimpiazzata.  Se non si specifica
-il nome dell'@var{obiettivo}, si
+quale corrispondenza di @var{regexp} va rimpiazzata.  Valori numerici
+inferiori a uno vengono gestiti come se avessero il valore uno.
+Se non si specifica il nome dell'@var{obiettivo}, si
 opera su @code{$0}.  La funzione restituisce come risultato la stringa
 modificata, e la stringa originale di partenza @emph{non} viene modificata.
 
@@ -21746,7 +21747,7 @@ usando la chiamata indiretta di funzioni:
 @ignore
 @c file eg/prog/indirectcall.awk
 #
-# Arnold Robbins, arnold@skeeve.com, Public Domain
+# Arnold Robbins, arnold@@skeeve.com, Public Domain
 # January 2009
 @c endfile
 @end ignore
@@ -27840,7 +27841,7 @@ La riga @`e poi stampata nel file di output:
     @}
     if ($3 != file_corrente) @{
         if (file_corrente != "")
-            close(file_corrente)
+            lista_file[file_corrente] = 1   # memorizza per chiudere dopo
         file_corrente = $3
     @}
 
@@ -27879,14 +27880,35 @@ La riga @`e poi stampata nel file di output:
 L'output fatto usando @samp{>} apre il file solo la prima volta; il file resta
 poi aperto, e ogni scrittura successiva @`e aggiunta in fondo al file.
 (@pxref{Ridirezione}).
-Ci@`o rende possibile mischiare testo del programm e commenti esplicativi
+Ci@`o rende agevole mischiare testo del programma e commenti esplicativi
 (come @`e stato fatto qui) nello stesso file sorgente, senza nessun problema.
 Il file viene chiuso solo quando viene trovato un nuovo nome di
 @value{DF} oppure alla fine del file in input.
 
+Quando si incontra un nuovo @value{FN}, invece di chiudere il file,
+il programma memorizza il nome del file corrente in @code{lista_file}.
+Ci@`o rende possibile mischiare il codice per pi@`u di un file nel file
+sorgente Texinfo in input.  (Precedenti versioni di questo programma
+chiudevano @emph{davvero} il file.  Ma, a causa della ridirezione
+@samp{>}, un file le cui parti non erano tutte una di seguito all'altra
+finiva per contenere errori.)
+Una regola @code{END} effettua la chiusura di tutti i file aperti, quando
+l'elaborazione @`e stata completata:
+
+@example
+@c file eg/prog/extract.awk
+@group
+END @{
+    close(file_corrente)    # chiudi l'ultimo file
+    for (f in lista_file)   # chiudi tutti gli altri
+        close(f)
+@}
+@end group
+@c endfile
+@end example
+
 Per finire, la funzione @code{@w{fine_file_inattesa()}} stampa un
-appropriato messaggio di errore ed esce.
-La regola @code{END} gestisce la pulizia finale, chiudendo il file aperto:
+appropriato messaggio di errore ed esce:
 
 @example
 @c file eg/prog/extract.awk
@@ -27898,11 +27920,6 @@ function fine_file_inattesa()
     exit 1
 @}
 @end group
-
-END @{
-    if (file_corrente)
-        close(file_corrente)
-@}
 @c endfile
 @end example
 
