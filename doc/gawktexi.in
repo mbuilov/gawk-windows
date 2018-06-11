@@ -6371,6 +6371,13 @@ Using an unusual character such as @samp{/} is more likely to
 produce correct behavior in the majority of cases, but there
 are no guarantees. The moral is: Know Your Data.
 
+@command{gawk} allows @code{RS} to be a full regular expression
+(discussed shortly; @pxref{gawk split records}).  Even so, using
+a regular expression metacharacter, such as @samp{.} as the single
+character in the value of @code{RS} has no special effect: it is
+treated literally. This is required for backwards compatibility with
+both Unix @command{awk} and with POSIX.
+
 When using regular characters as the record separator,
 there is one unusual case that occurs when @command{gawk} is
 being fully POSIX-compliant (@pxref{Options}).
