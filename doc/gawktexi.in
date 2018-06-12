@@ -6244,6 +6244,12 @@ Another predefined variable, @code{NR}, records the total number of input
 records read so far from all @value{DF}s.  It starts at zero, but is
 never automatically reset to zero.
 
+Normally, records are separated by newline characters.  You can control how
+records are separated by assigning values to the built-in variable @code{RS}.
+If @code{RS} is any single character, that character separates records.
+Otherwise (in @command{gawk}), @code{RS} is treated as a regular expression.
+This mechanism is explained in greater detail shortly.
+
 @menu
 * awk split records::           How standard @command{awk} splits records.
 * gawk split records::          How @command{gawk} splits records.
@@ -6430,9 +6436,9 @@ sets the variable @code{RT} to the text in the input that matched
 
 @cindex common extensions, @code{RS} as a regexp
 @cindex extensions, common@comma{} @code{RS} as a regexp
-When using @command{gawk},
-the value of @code{RS} is not limited to a one-character
-string.  It can be any regular expression
+When using @command{gawk}, the value of @code{RS} is not limited to a
+one-character string.  If it contains more than one character, it is
+treated as a regular expression
 (@pxref{Regexp}). @value{COMMONEXT}
 In general, each record
 ends at the next string that matches the regular expression; the next
