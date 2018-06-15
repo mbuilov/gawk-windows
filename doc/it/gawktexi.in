@@ -6745,6 +6745,14 @@ numero totale di record in input gi@`a letti da tutti i @value{DF}.
 Il suo valore iniziale @`e zero ma non viene mai reimpostata a zero
 automaticamente.
 
+I record sono normalmente separati dal carattere di avanzamento riga
+(@dfn{newline}).  @`E possibile specificare come vanno separati i record
+assegnando un valore alla variabile predefinita @code{RS}.
+Se il valore di @code{RS} @`e costituto da un solo carattere, @`e quello
+il carattere che fa da separatore fra i record.
+Altrimenti (in @command{gawk}), @code{RS} @`e valutata come espressione
+regolare.  Questo meccanismo @`e spiegato pi@`u in dettaglio qui sotto.
+
 @menu
 * awk divisione record::       Come @command{awk} standard divide i record.
 * gawk divisione record::      Come @command{gawk} divide i record.
@@ -6874,6 +6882,14 @@ Usando un carattere insolito come @samp{/} @`e pi@`u probabile
 che si ottenga un comportamento corretto nella  maggioranza dei casi, ma non
 c'@`e nessuna garanzia.  La morale @`e: conosci i tuoi dati!
 
+@command{gawk} consente di usare per @code{RS} un'espressione regolare
+normale (descritta pi@`u avanti; @pxref{gawk divisione record}).
+Tuttavia, se l'espressione regolare @`e costituita da un singolo metacarattere,
+come p.es. @samp{.} che assegni il valore di @code{RS}, il metacarattere
+in questione non viene trattato come tale, ma viene usato letteralmente.
+Ci@`o viene fatto per compatibilit@`a all'indietro sia con il comando
+Unix @command{awk} che con lo standard POSIX.
+
 Quando si usano caratteri normali come separatore di record,
 c'@`e un caso insolito che capita quando @command{gawk}
 @`e reso completamente conforme a POSIX (@pxref{Opzioni}).
@@ -6928,7 +6944,8 @@ imposta la variabile @code{RT} al testo nell'input che corrisponde a
 @cindex comuni, estensioni@comma{} @code{RS} come espressione regolare
 Quando si usa @command{gawk},
 il valore di @code{RS} non @`e limitato a una stringa costituita da un solo
-carattere, ma pu@`o essere qualsiasi espressione regolare
+carattere.  Se contiene pi@`u di un carattere, @`e considerato essere
+un'espressione regolare
 @iftex
 (@pxrefil{Espressioni regolari}). @value{COMMONEXT}
 @end iftex
