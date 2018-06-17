@@ -1,3 +1,15 @@
+2018-06-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix a corner case with EPIPE to stdout/stderr.
+	Thanks to Peng Yu for the report.
+
+	* io.c (close_io): Add new parameter for indicating EPIPE happened,
+	update the code to set it if so.
+	* awk.h (close_io): Revise declaration.
+	* debug.c (close_all): Change call to close_io().
+	* interpret.h (interpret): For Op_atexit, if got an EPIPE, call
+	die_via_sigpipe().
+
 2018-05-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y (add_lint): For no-effect case, also check for
