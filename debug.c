@@ -5405,11 +5405,11 @@ save_options(const char *file)
 static void
 close_all()
 {
-	bool stdio_problem;
+	bool stdio_problem, got_EPIPE;
 	struct command_source *cs;
 
 	(void) nextfile(& curfile, true);	/* close input data file */
-	(void) close_io(& stdio_problem);
+	(void) close_io(& stdio_problem, & got_EPIPE);
 	if (cur_srcfile->fd != INVALID_HANDLE) {
 		close(cur_srcfile->fd);
 		cur_srcfile->fd = INVALID_HANDLE;

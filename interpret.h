@@ -110,6 +110,7 @@ top:
 		case Op_atexit:
 		{
 			bool stdio_problem = false;
+			bool got_EPIPE = false;
 
 			/* avoid false source indications */
 			source = NULL;
@@ -125,7 +126,7 @@ top:
 			 * and pipes, in that it doesn't affect their exit status.
 			 * So we no longer do either.
 			 */
-			(void) close_io(& stdio_problem);
+			(void) close_io(& stdio_problem, & got_EPIPE);
 			/*
 			 * However, we do want to exit non-zero if there was a problem
 			 * with stdout/stderr, so we reinstate a slightly different
@@ -135,6 +136,9 @@ top:
 				exit_val = 1;
 
 			close_extensions();
+
+			if (got_EPIPE)
+				die_via_sigpipe();
 		}
 			break;
 
