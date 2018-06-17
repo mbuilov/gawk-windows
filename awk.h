@@ -1574,7 +1574,7 @@ extern struct redirect *redirect_string(const char *redir_exp_str,
 		int *errflg, int extfd, bool failure_fatal);
 extern NODE *do_close(int nargs);
 extern int flush_io(void);
-extern int close_io(bool *stdio_problem);
+extern int close_io(bool *stdio_problem, bool *got_EPIPE);
 typedef enum { CLOSE_ALL, CLOSE_TO, CLOSE_FROM } two_way_close_type;
 extern int close_rp(struct redirect *rp, two_way_close_type how);
 extern int devopen_simple(const char *name, const char *mode, bool try_real_open);

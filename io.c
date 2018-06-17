@@ -1474,12 +1474,13 @@ flush_io()
 /* close_io --- close all open files, called when exiting */
 
 int
-close_io(bool *stdio_problem)
+close_io(bool *stdio_problem, bool *got_EPIPE)
 {
 	struct redirect *rp;
 	struct redirect *next;
 	int status = 0;
 
+	*stdio_problem = *got_EPIPE = false;
 	errno = 0;
 	for (rp = red_head; rp != NULL; rp = next) {
 		next = rp->next;
@@ -1505,6 +1506,9 @@ close_io(bool *stdio_problem)
 #endif
 		if (errno != EPIPE)
 			warning(_("error writing standard output (%s)"), strerror(errno));
+		else
+			*got_EPIPE = true;
+
 		status++;
 		*stdio_problem = true;
 	}
@@ -1515,6 +1519,9 @@ close_io(bool *stdio_problem)
 #endif
 		if (errno != EPIPE)
 			warning(_("error writing standard error (%s)"), strerror(errno));
+		else
+			*got_EPIPE = true;
+
 		status++;
 		*stdio_problem = true;
 	}
