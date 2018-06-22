@@ -1,3 +1,11 @@
+2018-06-22         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* node.c (r_force_number): If strtod returns ERANGE, accept the
+	value as being numeric instead of forcing it to zero. The impact
+	is that huge string values that overflow IEEE 754 limits will now
+	be converted to inf or -inf instead of 0. Thanks to Daniel
+	Pettet for reporting this issue.
+
 2018-06-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Fix a corner case with EPIPE to stdout/stderr.
