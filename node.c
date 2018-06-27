@@ -140,7 +140,8 @@ r_force_number(NODE *n)
 		*cpend = save;
 	}
 
-	if (errno == 0) {
+	if (errno == 0 || errno == ERANGE) {
+		errno = 0;	/* reset in case of ERANGE */
 		if (ptr == cpend)
 			goto goodnum;
 		/* else keep the leading numeric value without updating flags */
