@@ -111,9 +111,7 @@ is_blank (int c)
 # define BE(expr, val) __builtin_expect (expr, val)
 #else
 # define BE(expr, val) (expr)
-# ifdef inline
 # undef inline
-# endif
 # define inline
 #endif
 
