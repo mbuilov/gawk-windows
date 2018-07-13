@@ -357,6 +357,11 @@ mpg_format_val(const char *format, int index, NODE *s)
 	NODE *dummy[2], *r;
 	unsigned int oflags;
 
+	if (out_of_range(s)) {
+		const char *result = format_nan_inf(s, 'g');
+		return make_string(result, strlen(result));
+	}
+
 	/* create dummy node for a sole use of format_tree */
 	dummy[1] = s;
 	oflags = s->flags;

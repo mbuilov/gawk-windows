@@ -219,10 +219,13 @@ r_format_val(const char *format, int index, NODE *s)
 	 * < and > so that things work correctly on systems with 64 bit integers.
 	 */
 
-	/* not an integral value, or out of range */
-	if ((val = double_to_int(s->numbr)) != s->numbr
+	if (out_of_range(s)) {
+		const char *result = format_nan_inf(s, 'g');
+		return make_string(result, strlen(result));
+	} else if ((val = double_to_int(s->numbr)) != s->numbr
 			|| val <= LONG_MIN || val >= LONG_MAX
 	) {
+		/* not an integral value, or out of integer range */
 		/*
 		 * Once upon a time, we just blindly did this:
 		 *	sprintf(sp, format, s->numbr);
