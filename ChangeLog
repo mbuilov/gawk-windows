@@ -1,3 +1,19 @@
+2018-07-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (format_nan_inf): New function to generate +nan, -nan,
+	+inf, -inf, so that gawk output for NaN and INF always has a sign.
+	Handles regular and MPFR.
+	(out_of_range): New function to check if a value is out of range,
+	both regular and MPFR.
+	(format_tree): Use them in out of range calculation.  Check for out
+	of range in floating point formats also. Allow new *undocumented*
+	'P' flag to not do out of range formantting. Used mainly for
+	the test program.
+	* awk.h (out_of_range, format_nan_inf): Declare functions.
+	* mpfr.c (mpg_format_val): Check for out of range and format the
+	the result appropriately if so.
+	* node.c (r_format_val): Ditto.
+
 2018-06-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* config.guess, config.sub: Updated from GNULIB.

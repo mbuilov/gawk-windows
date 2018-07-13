@@ -722,6 +722,8 @@ format_tree(
 	int ii, jj;
 	char *chp;
 	size_t copy_count, char_count;
+	char *nan_inf_val;
+	bool magic_posix_flag;
 #ifdef HAVE_MPFR
 	mpz_ptr zi;
 	mpfr_ptr mf;
@@ -820,6 +822,7 @@ format_tree(
 		signchar = '\0';
 		zero_flag = false;
 		quote_flag = false;
+		nan_inf_val = NULL;
 #ifdef HAVE_MPFR
 		mf = NULL;
 		zi = NULL;
@@ -827,6 +830,7 @@ format_tree(
 		fmt_type = MP_NONE;
 
 		lj = alt = big_flag = bigbig_flag = small_flag = false;
+		magic_posix_flag = false;
 		fill = sp;
 		cp = cend;
 		chbuf = lchbuf;
@@ -1060,6 +1064,11 @@ check_pos:
 			}
 			small_flag = true;
 			goto retry;
+		case 'P':
+			if (magic_posix_flag)
+				break;
+			magic_posix_flag = true;
+			goto retry;
 		case 'c':
 			need_format = false;
 			parse_next_arg();
@@ -1157,6 +1166,12 @@ out0:
 			need_format = false;
 			parse_next_arg();
 			(void) force_number(arg);
+
+			/*
+			 * Check for Nan or Inf.
+			 */
+			if (out_of_range(arg))
+				goto out_of_range;
 #ifdef HAVE_MPFR
 			if (is_mpg_float(arg))
 				goto mpf0;
@@ -1164,15 +1179,7 @@ out0:
 				goto mpz0;
 			else
 #endif
-			tmpval = arg->numbr;
-
-			/*
-			 * Check for Nan or Inf.
-			 */
-			if (isnan(tmpval) || isinf(tmpval))
-				goto out_of_range;
-			else
-				tmpval = double_to_int(tmpval);
+			tmpval = double_to_int(arg->numbr);
 
 			/*
 			 * ``The result of converting a zero value with a
@@ -1286,6 +1293,9 @@ out0:
 			need_format = false;
 			parse_next_arg();
 			(void) force_number(arg);
+
+			if (out_of_range(arg))
+				goto out_of_range;
 #ifdef HAVE_MPFR
 			if (is_mpg_integer(arg)) {
 mpz0:
@@ -1476,12 +1486,27 @@ mpf1:
 			break;
 
      out_of_range:
-			/* out of range - emergency use of %g format */
-			if (do_lint)
-				lintwarn(_("[s]printf: value %g is out of range for `%%%c' format"),
-							(double) tmpval, cs1);
-			cs1 = 'g';
-			goto fmt1;
+			/*
+			 * out of range - emergency use of %g format,
+			 * or format NaN and INF values.
+			 */
+			nan_inf_val = format_nan_inf(arg, cs1);
+			if (do_posix || magic_posix_flag || nan_inf_val == NULL) {
+				if (do_lint && ! do_posix && ! magic_posix_flag)
+					lintwarn(_("[s]printf: value %g is out of range for `%%%c' format"),
+								(double) tmpval, cs1);
+				tmpval = arg->numbr;
+				if (strchr("aAeEfFgG", cs1) == NULL)
+					cs1 = 'g';
+				goto fmt1;
+			} else {
+				if (do_lint)
+					lintwarn(_("[s]printf: value %s is out of range for `%%%c' format"),
+								nan_inf_val, cs1);
+				bchunk(nan_inf_val, strlen(nan_inf_val));
+				s0 = s1;
+				break;
+			}
 
 		case 'F':
 #if ! defined(PRINTF_HAS_F_FORMAT) || PRINTF_HAS_F_FORMAT != 1
@@ -1498,6 +1523,7 @@ mpf1:
 		case 'a':
 		{
 			static bool warned = false;
+
 			if (do_lint && tolower(cs1) == 'a' && ! warned) {
 				warned = true;
 				lintwarn(_("%%%c format is POSIX standard but not portable to other awks"), cs1);
@@ -1521,6 +1547,9 @@ mpf1:
 				fmt_type = MP_FLOAT;
 			}
 #endif
+			if (out_of_range(arg))
+				goto out_of_range;
+
      fmt1:
 			if (! have_prec)
 				prec = DEFAULT_G_PRECISION;
@@ -4203,4 +4232,69 @@ int sanitize_exit_status(int status)
 		ret = 0;	/* shouldn't get here */
 
 	return ret;
+}
+
+/* out_of_range --- return true if a value is out of range */
+
+bool
+out_of_range(NODE *n)
+{
+#ifdef HAVE_MPFR
+	if (is_mpg_integer(n))
+		return false;
+	else if (is_mpg_float(n))
+		return (! mpfr_number_p(n->mpg_numbr));
+	else
+#endif
+		return (isnan(n->numbr) || isinf(n->numbr));
+}
+
+/* format_nan_inf --- format NaN and INF values */
+
+char *
+format_nan_inf(NODE *n, char format)
+{
+	static char buf[100];
+
+#ifdef HAVE_MPFR
+	if (is_mpg_integer(n))
+		return NULL;
+	else if (is_mpg_float(n)) {
+		if (mpfr_nan_p(n->mpg_numbr)) {
+			strcpy(buf, mpfr_sgn(n->mpg_numbr) < 0 ? "-nan" : "+nan");
+
+			goto fmt;
+		} else if (mpfr_inf_p(n->mpg_numbr)) {
+			strcpy(buf, mpfr_sgn(n->mpg_numbr) < 0 ? "-inf" : "+inf");
+
+			goto fmt;
+		} else
+			return NULL;
+	}
+	/* else
+		fallthrough */
+#endif
+	double val = n->numbr;
+
+	if (isnan(val)) {
+		strcpy(buf, signbit(val) != 0 ? "-nan" : "+nan");
+
+		// fall through to end
+	} else if (isinf(val)) {
+		strcpy(buf, val < 0 ? "-inf" : "+inf");
+
+		// fall through to end
+	} else
+		return NULL;
+
+#ifdef HAVE_MPFR
+fmt:
+#endif
+	if (isupper(format)) {
+		int i;
+
+		for (i = 0; buf[i] != '\0'; i++)
+			buf[i] = toupper(buf[i]);
+	}
+	return buf;
 }

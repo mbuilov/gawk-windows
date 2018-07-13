@@ -4988,6 +4988,12 @@ function names added by @command{gawk} after the code was written.
 Standard @command{awk} built-in functions, such as @code{sin()} or
 @code{substr()} are @emph{not} shadowed in this way.
 
+You can use a @samp{P} modifier for the @code{printf()} floating-point
+format control letters to use the underlying C library's result for
+NaN and Infinity values, instead of the special values @command{gawk}
+usually produces, as described in @ref{POSIX Floating Point Problems}.
+This is mainly useful for the included unit tests.
+
 @end ignore
 
 @node Invoking Summary
@@ -9710,6 +9716,17 @@ command line (@pxref{Options}), @command{gawk}
 warns about this.  Other versions of @command{awk} may print invalid
 values or do something else entirely.
 @value{DARKCORNER}
+@end quotation
+
+@quotation NOTE
+The IEEE 754 standard for floating-point arithmetic allows for special
+values that represent ``infinity'' (positive and negative) and values
+that are ``not a number'' (NaN).
+
+Input and output of these values occurs as text strings. This is
+somewhat problematic for the @command{awk} language, which predates
+the IEEE standard.  Further details are provided in
+@ref{POSIX Floating Point Problems}; please see there.
 @end quotation
 
 @node Format Modifiers
@@ -32627,7 +32644,7 @@ which is @emph{not} recommended). For example:
 $ @kbd{echo nanny | gawk '@{ print $1 + 0 @}'}
 @print{} 0
 $ @kbd{echo +nan | gawk '@{ print $1 + 0 @}'}
-@print{} nan
+@print{} +nan
 $ @kbd{echo 0xDeadBeef | gawk '@{ print $1 + 0 @}'}
 @print{} 0
 @end example
@@ -32635,6 +32652,14 @@ $ @kbd{echo 0xDeadBeef | gawk '@{ print $1 + 0 @}'}
 @command{gawk} ignores case in the four special values.
 Thus, @samp{+nan} and @samp{+NaN} are the same.
 @end itemize
+
+Besides handling imput, @command{gawk} also needs to print ``correct'' values on
+output when a value is either NaN or infinity. Starting with version 4.2.2,
+for such values @command{gawk} prints one of the four strings
+just described: @samp{+inf}, @samp{-inf}, @samp{+nan}, or @samp{-nan}.
+Similarly, in POSIX mode, @command{gawk} prints the result of
+the system's C @code{printf()} function using the @code{%g} format string
+for the value, whatever that may be.
 
 @node Floating point summary
 @section Summary
