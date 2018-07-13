@@ -8,14 +8,19 @@ function display(x, str,	i, res) {
 
 BEGIN {
 	nan = sqrt(-1)
-	nan_str = sprintf("%f", nan)
-	nnan_str = sprintf("%f", -nan)
+	nan_str =  sprintf("%Pf", nan)
+	nnan_str = sprintf("%Pf", -nan)
+	if (nan_str == "nan")
+		nan_str = "+" nan_str
+	if (nnan_str == "nan")
+		nnan_str = "+" nnan_str
 	inf = -log(0)
-	inf_str = sprintf("%f", inf)
-	ninf_str = sprintf("%f", -inf)
+	inf_str = "+" sprintf("%Pf", inf)
+	ninf_str = sprintf("%Pf", -inf)
 
 	n = 0
 	formats[n++] = "%a"
+	formats[n++] = "%e"
 	formats[n++] = "%f"
 	formats[n++] = "%g"
 	formats[n++] = "%x"
