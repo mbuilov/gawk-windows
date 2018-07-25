@@ -28652,6 +28652,53 @@ they've already written.  There is no workaround for deadlock; careful
 programming and knowledge of the behavior of the coprocess are required.
 @end quotation
 
+@c From email send January 4, 2018.
+The following example, due to Andrew Schorr, demonstrates how
+using ptys can help deal with buffering deadlocks.
+
+Suppose @command{gawk} were unable to add numbers.
+You could use a coprocess to do it. Here's an exceedingly
+simple program written for that purpose: 
+
+@example
+$ @kbd{cat add.c}
+#include <stdio.h> 
+
+int 
+main(void) 
+@{ 
+    int x, y; 
+    while (scanf("%d %d", & x, & y) == 2) 
+        printf("%d\n", x + y); 
+    return 0; 
+@} 
+$ @kbd{cc -O add.c -o add}	@ii{Compile the program}
+@end example
+
+You could then write an exceedingly simple @command{gawk} program
+to add numbers by passing them to the coprocess:
+
+@example
+$ @kbd{echo 1 2 |}
+> @kbd{gawk -v cmd=./add '@{ print |& cmd; cmd |& getline x; print x @}'}
+@end example
+
+And it would deadlock, because @file{add.c} fails to call
+@samp{setlinebuf(stdout)}. The @command{add} program freezes. 
+
+Now try instead: 
+
+@example
+$ @kbd{echo 1 2 |}
+> @kbd{gawk -v cmd=add 'BEGIN @{ PROCINFO[cmd, "pty"] = 1 @}}
+> @kbd{                 @{ print |& cmd; cmd |& getline x; print x @}'}
+@print{} 3 
+@end example
+
+By using a pty, @command{gawk} fools the standard I/O library into
+thinking it has an interactive session, so it defaults to line buffering.
+And now, magically, it works!
+
 @node TCP/IP Networking
 @section Using @command{gawk} for Network Programming
 @cindex advanced features, network programming
