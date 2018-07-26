@@ -43,10 +43,6 @@
 #include <config.h>
 #endif
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE	1	/* enable GNU extensions */
-#endif /* _GNU_SOURCE */
-
 #if defined(tandem_for_real) && ! defined(_SCO_DS)
 #define _XOPEN_SOURCE_EXTENDED 1
 #endif
