@@ -3186,8 +3186,8 @@ regular_print:
 		    	&& (yyvsp[0])->lasti->opcode == Op_K_getline_redir
 		   	 	&& (yyvsp[0])->lasti->redir_type == redirect_twoway)
 			yyerror(_("multistage two-way pipelines don't work"));
-        if (do_lint && (yyvsp[0])->lasti->opcode == Op_concat && (yyvsp[-2])->redir_type == redirect_output)
-            lintwarn(_("concatenation as I/O redirection target is ambiguous"));
+		if (do_lint && (yyvsp[-2])->redir_type == redirect_output && (yyvsp[0])->lasti->opcode == Op_concat)
+			lintwarn(_("concatenation as I/O `>' redirection target is ambiguous"));
 		(yyval) = list_prepend((yyvsp[0]), (yyvsp[-2]));
 	  }
 #line 3194 "awkgram.c" /* yacc.c:1646  */
@@ -3835,10 +3835,10 @@ regular_print:
   case 163:
 #line 1733 "awkgram.y" /* yacc.c:1646  */
     {
-        // Always include. Allows us to lint warn on
-        // print "foo" > "bar" 1
-        // but not warn on
-        // print "foo" > ("bar" 1)
+		// Always include. Allows us to lint warn on
+		// print "foo" > "bar" 1
+		// but not warn on
+		// print "foo" > ("bar" 1)
 		(yyval) = list_append((yyvsp[-1]), bcalloc(Op_parens, 1, sourceline));
 	  }
 #line 3845 "awkgram.c" /* yacc.c:1646  */
