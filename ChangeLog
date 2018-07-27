@@ -2,6 +2,9 @@
 
 	* re.c (make_regexp): Add warnings for unknown escape sequences,
 	similar to what we already do for strings.
+	* awkgram.y: Add lint warning about concatenation as target
+	of `>' redirection.  Always use Op_parens so that
+	print "foo" > ("foo" 1) does not warn.
 
 2018-07-13         Arnold D. Robbins     <arnold@skeeve.com>
 
