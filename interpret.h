@@ -46,6 +46,7 @@ unfield(NODE **l, NODE **r)
 		(*l) = dupnode(*r);
 		DEREF(*r);
 	}
+	force_string(*l);
 }
 
 #define UNFIELD(l, r)	unfield(& (l), & (r))
