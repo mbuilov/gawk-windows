@@ -1,5 +1,17 @@
 2018-07-31         Arnold D. Robbins     <arnold@skeeve.com>
 
+	Handle newlines in -v and fix \-<newline>. Thanks to
+	Samy Mahmoudi <samy.mahmoudi@gmail.com> for the report.
+
+	* awk.h [ELIDE_BACK_NL]: New constant.
+	* awkgram.y (yylex): Disallow any physical newlines in a string
+	even if escaped, in POSIX mode.
+	* main.c (arg_assign): In POSIX mode disallow physical newline
+	in a -v value.  Otherwise call make_str_node() with ELIDE_BACK_NL.
+	* node.c (make_str_node): Handle ELIDE_BACK_NL.
+
+2018-07-31         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* array.c (cmp_strings): Preserve value of lmin so it can be passed
 	to memcmp() if IGNORECASE comparison failed. Thanks to
 	M. Rashid Zamani <rashid.z@gmail.com> for the report.

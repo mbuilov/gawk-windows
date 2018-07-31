@@ -451,6 +451,8 @@ make_str_node(const char *s, size_t len, int flags)
 				if (c < 0) {
 					if (do_lint)
 						lintwarn(_("backslash at end of string"));
+					if ((flags & ELIDE_BACK_NL) != 0)
+						continue;
 					c = '\\';
 				}
 				*ptm++ = c;

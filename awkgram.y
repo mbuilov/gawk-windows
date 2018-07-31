@@ -3852,6 +3852,8 @@ retry:
 				if (c == '\r')	/* allow MS-DOS files. bleah */
 					c = nextc(true);
 				if (c == '\n') {
+					if (do_posix)
+						fatal(_("POSIX does not allow physical newlines in string values"));
 					sourceline++;
 					continue;
 				}

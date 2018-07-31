@@ -1165,11 +1165,18 @@ arg_assign(char *arg, bool initing)
 				fatal(_("cannot use function `%s' as variable name"), arg);
 		}
 
+		// POSIX disallows any newlines inside strings
+		// The scanner handles that for program files.
+		// We have to check here for strings passed to -v.
+		if (do_posix && strchr(cp, '\n') != NULL)
+			fatal(_("POSIX does not allow physical newlines in string values"));
+
 		/*
 		 * BWK awk expands escapes inside assignments.
 		 * This makes sense, so we do it too.
+		 * In addition, remove \-<newline> as in scanning.
 		 */
-		it = make_str_node(cp, strlen(cp), SCAN);
+		it = make_str_node(cp, strlen(cp), SCAN | ELIDE_BACK_NL);
 		it->flags |= USER_INPUT;
 #ifdef LC_NUMERIC
 		/*
