@@ -31674,9 +31674,9 @@ $ @kbd{echo 0xDeadBeef | gawk '@{ print $1 + 0 @}'}
 Thus, @samp{+nan} and @samp{+NaN} are the same.
 @end itemize
 
-Besides handling imput, @command{gawk} also needs to print ``correct'' values on
-output when a value is either NaN or infinity. Starting with version 4.2.2,
-for such values @command{gawk} prints one of the four strings
+Besides handling input, @command{gawk} also needs to print ``correct'' values on
+output when a value is either NaN or infinity. Starting with @value{PVERSION}
+4.2.2, for such values @command{gawk} prints one of the four strings
 just described: @samp{+inf}, @samp{-inf}, @samp{+nan}, or @samp{-nan}.
 Similarly, in POSIX mode, @command{gawk} prints the result of
 the system's C @code{printf()} function using the @code{%g} format string
