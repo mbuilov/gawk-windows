@@ -74,6 +74,8 @@ EXTRA_DIST = \
 	arrayref.ok \
 	arraysort.awk \
 	arraysort.ok \
+	arraysort2.awk \
+	arraysort2.ok \
 	arrdbg.awk \
 	arrymem1.awk \
 	arrymem1.ok \
@@ -1275,7 +1277,7 @@ UNIX_TESTS = \
 	space strftlng
 
 GAWK_EXT_TESTS = \
-	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
+	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort arraysort2 \
 	backw badargs beginfile1 beginfile2 binmode1 \
 	charasbytes colonwarn clos1way clos1way2 clos1way3 clos1way4 clos1way5 \
 	clos1way6 crlf \
