@@ -1324,8 +1324,10 @@ DEREF(NODE *r)
 
 #define	make_string(s, l)	make_str_node((s), (l), 0)
 
+// Flags for making string nodes
 #define		SCAN			1
 #define		ALREADY_MALLOCED	2
+#define		ELIDE_BACK_NL		4
 
 #define	cant_happen()	r_fatal("internal error line %d, file: %s", \
 				__LINE__, __FILE__)
