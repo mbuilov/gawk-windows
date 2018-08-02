@@ -36,3 +36,8 @@ function zz(aa, aa)
 	return aa
 }
 @include ""
+BEGIN {
+	print "foo" > "foo" 1	# should warn
+	print "foo" > ("foo" 1)	# should not warn
+	system("rm -f foo1 foo2")
+}

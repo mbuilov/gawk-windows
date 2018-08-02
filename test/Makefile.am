@@ -74,6 +74,8 @@ EXTRA_DIST = \
 	arrayref.ok \
 	arraysort.awk \
 	arraysort.ok \
+	arraysort2.awk \
+	arraysort2.ok \
 	arrdbg.awk \
 	arrymem1.awk \
 	arrymem1.ok \
@@ -119,6 +121,9 @@ EXTRA_DIST = \
 	asort.ok \
 	asorti.awk \
 	asorti.ok \
+	assignnumfield.awk \
+	assignnumfield.in \
+	assignnumfield.ok \
 	awkpath.ok \
 	back89.awk \
 	back89.in \
@@ -1233,7 +1238,7 @@ BASIC_TESTS = \
 	addcomma anchgsub anchor argarray arrayind1 arrayind2 arrayind3 arrayparm \
 	arrayprm2 arrayprm3 arrayref arrymem1 arryref2 arryref3 arryref4 arryref5 \
 	arynasty arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
-	aryprm8 aryprm9 arysubnm aryunasgn asgext awkpath \
+	aryprm8 aryprm9 arysubnm aryunasgn asgext awkpath assignnumfield \
 	back89 backgsub badassign1 badbuild \
 	callparam childin clobber closebad clsflnam compare compare2 \
 	concat1 concat2 concat3 concat4 concat5 convfmt \
@@ -1275,7 +1280,7 @@ UNIX_TESTS = \
 	space strftlng
 
 GAWK_EXT_TESTS = \
-	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
+	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort arraysort2 \
 	backw badargs beginfile1 beginfile2 binmode1 \
 	charasbytes colonwarn clos1way clos1way2 clos1way3 clos1way4 clos1way5 \
 	clos1way6 crlf \

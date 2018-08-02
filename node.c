@@ -450,7 +450,9 @@ make_str_node(const char *s, size_t len, int flags)
 				c = parse_escape(&pf);
 				if (c < 0) {
 					if (do_lint)
-						lintwarn(_("backslash at end of string"));
+						lintwarn(_("backslash string continuation is not portable"));
+					if ((flags & ELIDE_BACK_NL) != 0)
+						continue;
 					c = '\\';
 				}
 				*ptm++ = c;

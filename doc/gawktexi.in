@@ -10511,6 +10511,69 @@ eight-bit ASCII characters, including ASCII @sc{nul} (character code zero).
 Other @command{awk}
 implementations may have difficulty with some character codes.
 
+Some languages allow you to continue long strings across
+multiple lines by ending the line with a backslash. For example in C:
+
+@example
+#include <stdio.h>
+
+int main()
+@{
+    printf "hello, \
+world\n");
+    return 0;
+@}
+@end example
+
+@noindent
+In such a case, the C compiler removes both the backslash and the newline,
+producing a string as if it had been typed @samp{"hello, world\n"}.
+This is useful when a single string needs to contain a large amount of text.
+
+The POSIX standard says explicitly that newlines are not allowed inside string
+constants.  And indeed, all @command{awk} implementations report an error
+if you try to do so. For example:
+
+@example
+$ @kbd{gawk 'BEGIN @{ print "hello, }
+> @kbd{world" @}'}
+@print{} gawk: cmd. line:1: BEGIN { print "hello,
+@print{} gawk: cmd. line:1:               ^ unterminated string
+@print{} gawk: cmd. line:1: BEGIN { print "hello,
+@print{} gawk: cmd. line:1:               ^ syntax error
+@end example
+
+@cindex dark corner, string continuation
+@cindex strings, continuation across lines
+@cindex differences in @command{awk} and @command{gawk}, strings
+Although POSIX doesn't define what happens if you use an escaped
+newline, as in the previous C example, all known versions of
+@command{awk} allow you to do so.  Unfortunately, what each one
+does with such a string varies.  @value{DARKCORNER} @command{gawk},
+@command{mawk}, and the OpenSolaris POSIX @command{awk}
+(@pxref{Other Versions}) elide the backslash and newline, as in C:
+
+@example
+$ @kbd{gawk 'BEGIN @{ print "hello, \}
+> @kbd{world" @}'}
+@print{} hello, world
+@end example
+
+Brian Kernighan's @command{awk} and Busybox @command{awk}
+remove the backslash but leave the newline
+intact, as part of the string:
+
+@example
+$ @kbd{nawk 'BEGIN @{ print "hello, \}
+> @kbd{world" @}'}
+@print{} hello, 
+@print{} world
+@end example
+
+In POSIX mode (@pxref{Options}), @command{gawk} does not
+allow escaped newlines.  Otherwise, it behaves as
+just described.
+
 @node Nondecimal-numbers
 @subsubsection Octal and Hexadecimal Numbers
 @cindex octal numbers
@@ -31674,9 +31737,9 @@ $ @kbd{echo 0xDeadBeef | gawk '@{ print $1 + 0 @}'}
 Thus, @samp{+nan} and @samp{+NaN} are the same.
 @end itemize
 
-Besides handling imput, @command{gawk} also needs to print ``correct'' values on
-output when a value is either NaN or infinity. Starting with version 4.2.2,
-for such values @command{gawk} prints one of the four strings
+Besides handling input, @command{gawk} also needs to print ``correct'' values on
+output when a value is either NaN or infinity. Starting with @value{PVERSION}
+4.2.2, for such values @command{gawk} prints one of the four strings
 just described: @samp{+inf}, @samp{-inf}, @samp{+nan}, or @samp{-nan}.
 Similarly, in POSIX mode, @command{gawk} prints the result of
 the system's C @code{printf()} function using the @code{%g} format string
