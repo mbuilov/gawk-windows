@@ -979,7 +979,6 @@ cmp_strings(const NODE *n1, const NODE *n2)
 	char *s1, *s2;
 	size_t len1, len2;
 	int ret;
-	size_t lmin;
 
 	s1 = n1->stptr;
 	len1 = n1->stlen;
@@ -992,7 +991,9 @@ cmp_strings(const NODE *n1, const NODE *n2)
 		return 1;
 
 	/* len1 > 0 && len2 > 0 */
-	lmin = len1 < len2 ? len1 : len2;
+	// make const to ensure it doesn't change if we
+	// need to call memcmp(), below
+	const size_t lmin = len1 < len2 ? len1 : len2;
 
 	if (IGNORECASE) {
 		const unsigned char *cp1 = (const unsigned char *) s1;
@@ -1002,7 +1003,9 @@ cmp_strings(const NODE *n1, const NODE *n2)
 			ret = strncasecmpmbs((const unsigned char *) cp1,
 					     (const unsigned char *) cp2, lmin);
 		} else {
-			for (ret = 0; lmin-- > 0 && ret == 0; cp1++, cp2++)
+			size_t count = lmin;
+
+			for (ret = 0; count-- > 0 && ret == 0; cp1++, cp2++)
 				ret = casetable[*cp1] - casetable[*cp2];
 		}
 		if (ret != 0)

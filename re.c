@@ -100,6 +100,12 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 			}
 		}
 
+		const char *ok_to_escape;
+		if (do_traditional)
+			ok_to_escape = "()|*+?.^$\\[]/-";
+		else
+			ok_to_escape = "<>`'BywWsS{}()|*+?.^$\\[]/-";
+
 		/* We skip multibyte character, since it must not be a special
 		   character.  */
 		if ((gawk_mb_cur_max == 1 || ! is_multibyte) &&
@@ -141,6 +147,14 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 			case '9':	/* a\9b not valid */
 				*dest++ = c;
 				src++;
+			{
+				static bool warned[2];
+
+				if (! warned[c - '8']) {
+					warning(_("regexp escape sequence `\\%c' treated as plain `%c'"), c, c);
+					warned[c - '8'] = true;
+				}
+			}
 				break;
 			case 'y':	/* normally \b */
 				/* gnu regex op */
@@ -152,6 +166,14 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 				}
 				/* else, fall through */
 			default:
+				if (strchr(ok_to_escape, c) == NULL) {
+					static bool warned[256];
+
+					if (! warned[c & 0xFF]) {
+						warning(_("regexp escape sequence `\\%c' is not a known regexp operator"), c);
+						warned[c & 0xFF] = true;
+					}
+				}
 				*dest++ = '\\';
 				*dest++ = (char) c;
 				src++;

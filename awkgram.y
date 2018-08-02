@@ -1313,6 +1313,8 @@ output_redir
 		    	&& $3->lasti->opcode == Op_K_getline_redir
 		   	 	&& $3->lasti->redir_type == redirect_twoway)
 			yyerror(_("multistage two-way pipelines don't work"));
+		if (do_lint && $1->redir_type == redirect_output && $3->lasti->opcode == Op_concat)
+			lintwarn(_("concatenation as I/O `>' redirection target is ambiguous"));
 		$$ = list_prepend($3, $1);
 	  }
 	;
@@ -1746,10 +1748,11 @@ non_post_simp_exp
 	   }
 	| '(' exp r_paren
 	  {
-		if (do_pretty_print)
-			$$ = list_append($2, bcalloc(Op_parens, 1, sourceline));
-		else
-			$$ = $2;
+		// Always include. Allows us to lint warn on
+		// print "foo" > "bar" 1
+		// but not warn on
+		// print "foo" > ("bar" 1)
+		$$ = list_append($2, bcalloc(Op_parens, 1, sourceline));
 	  }
 	| LEX_BUILTIN '(' opt_fcall_expression_list r_paren
 	  {
@@ -3866,6 +3869,10 @@ retry:
 				if (c == '\r')	/* allow MS-DOS files. bleah */
 					c = nextc(true);
 				if (c == '\n') {
+					if (do_posix)
+						fatal(_("POSIX does not allow physical newlines in string values"));
+					else if (do_lint)
+						lintwarn(_("backslash string continuation is not portable"));
 					sourceline++;
 					continue;
 				}
