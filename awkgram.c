@@ -6274,6 +6274,8 @@ retry:
 				if (c == '\n') {
 					if (do_posix)
 						fatal(_("POSIX does not allow physical newlines in string values"));
+					else if (do_lint)
+						lintwarn(_("backslash string continuation is not portable"));
 					sourceline++;
 					continue;
 				}
