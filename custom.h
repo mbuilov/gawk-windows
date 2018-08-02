@@ -38,6 +38,14 @@
 #include "vms/redirect.h"
 #endif
 
+/* OpenVMS has some definitions in fp.h that should be in math.h */
+/* From John Malmberg, wb8tyw@qsl.net */
+#ifdef __VMS
+#include <fp.h>
+/* isnan () macro is broken */
+#undef isnan
+#endif
+
 /* For QNX, based on submission from Michael Hunter, mphunter@qnx.com */
 #ifdef __QNX__
 #define GETPGRP_VOID	1
