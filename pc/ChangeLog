@@ -1,3 +1,13 @@
+2018-08-04  Eli Zaretskii  <eliz@gnu.org>
+
+	* gawkmisc.pc (nl_langinfo) [__MINGW32__]: New function
+	[DYNAMIC]: Include winerror.h, for MinGW runtime 5.1.0.
+
+	* langinfo.h: New file.
+
+	* config.sed:
+	* config.h (HAVE_LANGINFO_CODESET): Define for MinGW.
+
 2018-05-12  Eli Zaretskii  <eliz@gnu.org>
 
 	* Makefile.tst (readfile): Fix a typo.
