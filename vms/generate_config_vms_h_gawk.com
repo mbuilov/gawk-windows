@@ -61,6 +61,16 @@ $   if (arch_name .eqs. "") then arch_name = "UNK"
 $ endif
 $!
 $!
+$ pipe lib/list sys$library:decc$rtldef.tlb | search sys$input: stdint
+$ if '$SEVERITY' .ne. 1
+$ then
+$   create sys$disk:[]stdint.h
+$   open/append stdint_h sys$disk:[]stdint.h
+$   write stdint_h "/* Fake stdint.h for gnulib */"
+$   close stdint_h
+$ endif
+$!
+$!
 $! Start the configuration file.
 $! Need to do a create and then an append to make the file have the
 $! typical file attributes of a VMS text file.
