@@ -470,7 +470,7 @@ Wed May  2 19:30:54 2007  Stepan Kasal  <kasal@ucw.cz>
 
 	* parsefld.awk, parsefld.in, parsefld.ok: New files.
 	* Makefile.am (parsefld): New basic test, check for $/regex/ and
-	  for /re1/+/re2/.
+	for /re1/+/re2/.
 	* getline.awk, getline.ok: Add precedence check "echo " "date"|getline
 
 Sun Apr 29 22:43:28 2007  Arnold D. Robbins  <arnold@skeeve.com>
@@ -615,7 +615,7 @@ Sun Mar 12 23:48:31 2006  Arnold D. Robbins  <arnold@skeeve.com>
 Sun Mar 12 23:33:26 2006  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Makefile.am (subi18n): new test (from
-	  KIMURA Koichi <kimura.koichi@canon.co.jp>).
+	KIMURA Koichi <kimura.koichi@canon.co.jp>).
 	* subi18n.awk, subi18n.ok: New files.
 
 Mon Dec 19 05:41:56 2005  Arnold D. Robbins  <arnold@skeeve.com>
@@ -747,7 +747,7 @@ Mon Feb 23 18:39:24 2004  Arnold D. Robbins  <arnold@skeeve.com>
 Thu Feb 12 02:08:15 2004  Stepan Kasal  <kasal@ucw.cz>
 
 	* Makefile.am (diffout): Use $(srcdir), when we are not building
-	  in the source tree.
+	in the source tree.
 
 Wed Feb 11 10:23:39 2004  Arnold D. Robbins  <arnold@skeeve.com>
 
@@ -837,10 +837,10 @@ Wed May 28 08:02:33 CEST 2003  Stepan Kasal  <kasal@math.cas.cz>
 Wed May 28 06:30:23 2003  Stepan Kasal  <kasal@math.cas.cz>
 
 	* Makefile.am (aryprm4 aryprm5 aryprm6 aryprm7 aryprm8 scalar uninit3):
-	  new tests.
-	* aryprm4.awk aryprm4.ok aryprm5.awk aryprm5.ok aryprm6.awk aryprm6.ok:
-          aryprm7.awk aryprm7.ok aryprm8.awk aryprm8.ok scalar.awk scalar.ok:
-	  uninit3.awk uninit3.ok: new files.
+	new tests.
+	* aryprm4.awk aryprm4.ok aryprm5.awk aryprm5.ok aryprm6.awk aryprm6.ok,
+	aryprm7.awk aryprm7.ok aryprm8.awk aryprm8.ok scalar.awk scalar.ok,
+	uninit3.awk uninit3.ok: new files.
 
 Tue May 27 14:27:50 2003  Stepan Kasal  <kasal@math.cas.cz>
 
@@ -937,9 +937,9 @@ Sun Feb  2 15:33:33 2003  Stepan Kasal  <kasal@math.cas.cz>
 
 	* getline3.awk, getline3.ok: Renamed from getline2.awk, getline2.ok
 	* Makefile.am (getline, getline2): getline renamed to getline2,
-	  new test under the name getline.
+	new test under the name getline.
 	* getline.awk, getline.ok, getline2.awk, getline2.ok:
-	  rename getline.* getline2.*; new files getline.* .
+	rename getline.* getline2.*; new files getline.* .
 	* getline.awk, getline.ok: add tests for ``cmd | getline ''
 	* Makefile.am (printf0): New test.
 	* printf0.awk, printf0.ok: New files.
@@ -953,8 +953,8 @@ Thu Jan 30 15:32:56 2003  Stepan Kasal  <kasal@math.cas.cz>
 	* inputred.awk, inputred.ok: New files.
 	* prec.awk, prec.ok: New files.
 	* noeffect.awk: add second no-effect command; two error messages
-	  should be generated.  Add some empty statements, to check that --lint
-          doesn't abort on them.
+	should be generated.  Add some empty statements, to check that --lint
+	doesn't abort on them.
 
 Tue Jan 28 18:34:22 2003  Arnold D. Robbins  <arnold@skeeve.com>
 
@@ -999,7 +999,7 @@ Thu Dec 26 16:44:37 2002  Arnold D. Robbins  <arnold@skeeve.com>
 Mon Dec  9 14:20:44 2002  Stepan Kasal  <kasal@math.cas.cz>
 
 	* Makefile.am (space): New test: ``gawk -f " " file'' should try
-	  to include file ` '.
+	to include file ` '.
 
 Sun Nov 17 21:47:11 2002  Arnold D. Robbins  <arnold@skeeve.com>
 
@@ -1055,15 +1055,15 @@ Mon Oct 28 15:36:42 2002  Arnold D. Robbins  <arnold@skeeve.com>
 
 Mon Oct 28 12:25:25 2002  Stepan Kasal  <kasal@math.cas.cz>
 
-        * Makefile.am (uninitialized): New test.
-        * uninitialized.awk, uninitialized.ok: New files.
+	* Makefile.am (uninitialized): New test.
+	* uninitialized.awk, uninitialized.ok: New files.
 
 Mon Oct 28 11:24:16 2002  Stepan Kasal  <kasal@math.cas.cz>
 
 	* Gentests: new script
 	* Maketests: new file, generated automatically by Gentests
 	* Makefile.am: new rules and variables to make use of Gentests;
-	  Most targets removed, Gentests will take care
+	Most targets removed, Gentests will take care.
 
 Sun Oct 13 16:58:07 2002  Stepan Kasal  <kasal@math.cas.cz>
 
@@ -1134,7 +1134,7 @@ Tue Apr 16 17:07:25 2002  Arnold D. Robbins  <arnold@skeeve.com>
 Sun Mar 10 17:00:51 2002  Scott Deifik       <scottd@amgen.com>
 
 	* Makefile.am (strftime): Add TZ=GMT0 into environment, to
-	  regularize things, esp. for some DJGPP systems.
+	regularize things, esp. for some DJGPP systems.
 
 Mon Feb 18 14:55:19 2002  Arnold D. Robbins  <arnold@skeeve.com>
 
@@ -1158,8 +1158,8 @@ Mon Jan  7 22:21:25 2002  Arnold D. Robbins  <arnold@skeeve.com>
 
 Wed Dec 26 22:01:52 2001  Arnold D. Robbins  <arnold@skeeve.com>
 
-        * Makefile.am (inftest): Add sed to fix case issues between
-          different libc versions. Ugh.
+	* Makefile.am (inftest): Add sed to fix case issues between
+	different libc versions. Ugh.
 
 Wed Dec 19 16:01:58 2001  Peter J. Farley III  <pjfarley@dorsai.org>
 
@@ -1168,7 +1168,7 @@ Wed Dec 19 16:01:58 2001  Peter J. Farley III  <pjfarley@dorsai.org>
 Tue Dec 18 20:56:07 2001  Andreas Buening    <andreas.buening@nexgo.de>
 
 	* Makefile.am (nors): Add \15 to list of chars to delete so
-	  test will run on OS/2 also.
+	test will run on OS/2 also.
 
 Thu Oct  4 18:34:49 2001  Arnold D. Robbins  <arnold@skeeve.com>
 
@@ -1183,8 +1183,8 @@ Thu Aug 23 14:04:10 2001  Arnold D. Robbins  <arnold@skeeve.com>
 Sat Aug  4 23:42:37 2001  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Makefile.am (arrymem1): new test case.
-	  (compare2): new test case.
-	  (regtest): Make test work, use regtest.sh, not .awk.
+	(compare2): new test case.
+	(regtest): Make test work, use regtest.sh, not .awk.
 	* arrymem1.awk, arrymem1.ok: new files.
 	* compare2.awk, compare2.ok: new files.
 
@@ -1201,12 +1201,12 @@ Wed Jun 13 18:12:43 2001  Arnold D. Robbins  <arnold@skeeve.com>
 Sun Jun  3 13:04:44 2001  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.0: Release tar file made.  And there was
-	  rejoicing.
+	rejoicing.
 
 Sun May  6 13:30:20 2001  Arnold Robbins  <arnold@skeeve.com>
 
 	* inftest.awk: Changed test to use < so that it will
-	  work for MSC and DJGPP combination, per Scott Deifik.
+	work for MSC and DJGPP combination, per Scott Deifik.
 
 Tue Mar 20 11:09:51 2001  Arnold Robbins  <arnold@skeeve.com>
 
@@ -1228,17 +1228,17 @@ Sun Dec  3 15:36:41 2000  Arnold Robbins  <arnold@skeeve.com>
 
 	* Makefile.am (gnuops2): New test case.
 	* gnuops2.awk, gnuops2.ok: New files, based on bug report from
-	  Servatius.Brandt@fujitsu-siemens.com.
+	Servatius.Brandt@fujitsu-siemens.com.
 
 Mon Nov 27 15:52:46 2000  Arnold Robbins  <arnold@skeeve.com>
 
 	* regx8bit.awk, regx8bit.ok: Updated to what should
-	  work on all systems.
+	work on all systems.
 
 Wed Nov 22 13:27:59 2000  Arnold Robbins  <arnold@skeeve.com>
 
 	* Makefile.am (poundbang): Added some smarts for /tmp mounted
-	  noexec.  Hopefully it'll even work.
+	noexec.  Hopefully it'll even work.
 
 Tue Nov 14 17:45:02 2000  Arnold Robbins  <arnold@skeeve.com>
 
@@ -1268,7 +1268,7 @@ Mon Oct  2 10:17:13 2000  Arnold Robbins  <arnold@skeeve.com>
 
 	* Makefile.am (clsflnam): Add redirect of stderr.
 	* clsflnam.awk, clsflnam.ok: modified to reflect changed
-	  semantics of close() for a non-open file. See ../ChangeLog.
+	semantics of close() for a non-open file. See ../ChangeLog.
 
 Sun Sep 24 16:46:29 2000  Arnold Robbins  <arnold@skeeve.com>
 
@@ -1278,9 +1278,9 @@ Sun Sep 24 16:46:29 2000  Arnold Robbins  <arnold@skeeve.com>
 Wed Sep 13 11:09:49 2000  Arnold Robbins  <arnold@skeeve.com>
 
 	* Makefile.am (check): Added calls to new targets that
-	  print messages.
-	  (clos1way, basic-msg-start, basic-msg-end, unix-msg-start,
-	   unix-msg-end, extend-msg-start, extend-msg-end): new targets.
+	print messages.
+	(clos1way, basic-msg-start, basic-msg-end, unix-msg-start,
+	unix-msg-end, extend-msg-start, extend-msg-end): new targets.
 	* clos1way.awk, clos1way.ok: new files.
 
 Tue Sep 12 16:29:54 2000  Arnold Robbins  <arnold@skeeve.com>
@@ -1306,7 +1306,7 @@ Sun Aug 13 12:37:16 2000  Arnold Robbins  <arnold@skeeve.com>
 2000-02-15  Arnold Robbins  <arnold@skeeve.com>
 
 	* MOVED TO AUTOMAKE AND GETTEXT.
-	  Just about every file touched.  Work done by Arno Peters.
+	Just about every file touched.  Work done by Arno Peters.
 
 Wed May 19 15:41:41 1999  Arnold D. Robbins  <arnold@gnu.org>
 
@@ -1323,8 +1323,8 @@ Mon May 10 17:11:30 1999  Arnold D. Robbins  <arnold@gnu.org>
 Sun Apr 25 13:02:35 1999  Arnold D. Robbins  <arnold@gnu.org>
 
 	* Makefile.in (inetechu,inetecht,inetdayu,inetdayt,inet): new
-	  tests, courtesy of Juergen Khars.
-	  (paramtyp): new test for bug from Juergen.
+	tests, courtesy of Juergen Khars.
+	(paramtyp): new test for bug from Juergen.
 	* paramtyp.awk, paramtyp.in: new files.
 
 Sun Oct 25 23:11:46 1998  Arnold D. Robbins  <arnold@gnu.org>
@@ -1338,7 +1338,7 @@ Tue Oct 20 22:07:10 1998  Arnold D. Robbins  <arnold@gnu.org>
 	* Makefile.in (lint): new test case.
 	* lint.awk, lint.ok: new files.
 	* badargs.ok: updated output corresponding to change made to
-	  main.c (see main ChangeLog).
+	main.c (see main ChangeLog).
 
 Tue May 26 20:39:07 1998  Arnold D. Robbins  <arnold@gnu.org>
 
@@ -1392,18 +1392,18 @@ Sun Jun 22 16:17:35 1997  Arnold D. Robbins  <arnold@gnu.org>
 Wed Jun  4 13:18:21 1997  Arnold D. Robbins  <arnold@gnu.org>
 
 	* pid.sh: send errors to /dev/null to toss warning about
-	  using PROCINFO["pid"] etc. This test explicitly tests
-	  the special files. It'll need changing in 3.2.
+	using PROCINFO["pid"] etc. This test explicitly tests
+	the special files. It'll need changing in 3.2.
 
 Thu Apr 24 23:24:59 1997  Arnold D. Robbins  <arnold@gnu.org>
 
 	* Makefile.in (messages): remove special case if /dev/fd exists.
-	  Finally.
+	Finally.
 
 Mon Aug  7 15:23:00 2000  Arnold D. Robbins  <arnold@skeeve.com>
- 
- 	* Release 3.0.6: Release tar file made.
- 
+
+	* Release 3.0.6: Release tar file made.
+
 Thu Aug  3 17:51:56 2000  Arnold D. Robbins  <arnold@skeeve.com>
 	
 	* Makefile.in (nlstrina): new test case.
@@ -1431,20 +1431,20 @@ Wed Jun 14 13:17:59 2000  Arnold D. Robbins  <arnold@skeeve.com>
 Mon Jun  5 15:51:39 2000  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* pipeio2.awk: Change use of tr to sed, fixes problems
-	  on SCO OS5.
+	on SCO OS5.
 	* pipeio2.ok: Updated to reflect use of sed.
 
 Tue May  2 13:28:04 2000  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Makefile.in (strftime): moved test code into a separate
-	  file for the PC guys.
+	file for the PC guys.
 	* strftime.awk: new file.
 
 Mon Apr 10 15:58:13 2000  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Makefile.in (longwrds): Add setting LC_ALL=C to sort
-	  call to preserve traditional output.  (Theme from the
-	  Twilight Zone plays eerily in the background...)
+	call to preserve traditional output.  (Theme from the
+	Twilight Zone plays eerily in the background...)
 
 Sun Apr  2 17:51:40 2000  Arnold D. Robbins  <arnold@skeeve.com>
 
@@ -1479,7 +1479,7 @@ Fri Nov 26 11:03:07 1999  Arnold D. Robbins  <arnold@skeeve.com>
 Sun Oct 24 08:46:16 1999  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Makefile.in (strftime): Add tweak for $NF that should
-	  hopefully avoid cygwin problems with lack of timezone.
+	hopefully avoid cygwin problems with lack of timezone.
 
 Thu Jul 29 19:25:02 1999  Arnold D. Robbins  <arnold@skeeve.com>
 
@@ -1488,7 +1488,7 @@ Thu Jul 29 19:25:02 1999  Arnold D. Robbins  <arnold@skeeve.com>
 	* fnamedat.awk, fnamedat.in, fnamedat.ok: new files.
 
 Wed Jun 30 16:14:36 1999  Arnold D. Robbins  <arnold@gnu.org>
-  
+
 	* Release 3.0.4: Release tar file made.  This time for sure.
 
 Tue May 25 16:37:50 1999  Arnold D. Robbins  <arnold@gnu.org>
@@ -1499,12 +1499,12 @@ Tue May 25 16:37:50 1999  Arnold D. Robbins  <arnold@gnu.org>
 Wed May 19 15:32:09 1999  Arnold D. Robbins  <arnold@gnu.org>
 
 	* reg/*: moved exp and log tests to new `Obsolete' directory; they
-	  would only succeed under SunOS 4.x.
+	would only succeed under SunOS 4.x.
 
 Mon May  3 11:53:33 1999  Arnold D. Robbins  <arnold@gnu.org>
 
 	* Makefile.in (gawk.extensions): removed `nondec' until the
-	  associated features get documented in 3.1.
+	associated features get documented in 3.1.
 
 Tue Nov  3 16:46:39 1998  Arnold D. Robbins  <arnold@gnu.org>
 
@@ -1525,7 +1525,7 @@ Wed Oct 28 18:44:19 1998  Arnold D. Robbins  <arnold@gnu.org>
 Sun Nov 16 20:08:59 1997  Arnold D. Robbins  <arnold@gnu.org>
 
 	* gsubtest.awk, gsubtest.ok: fix for count of matches in gsub
-	  from Geert.Debyser@esat.kuleuven.ac.be.
+	from Geert.Debyser@esat.kuleuven.ac.be.
 
 Sun Nov 16 19:54:50 1997  Arnold D. Robbins  <arnold@gnu.org>
 
@@ -1561,12 +1561,12 @@ Wed May  7 17:54:00 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 Tue May  6 20:28:30 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 
 	* Makefile.in (strftime): Use the right locale stuff.
-	  (clobber): don't need an input file.
+	(clobber): don't need an input file.
 
 Thu Apr 24 22:24:42 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 
 	* Makefile.in (pid): new test case, from jco@convex.com.
-	  (specfile): removed test case, pid does it better.
+	(specfile): removed test case, pid does it better.
 	* pid.awk, pid.ok, pid.sh: new files.
 	* specfile.awk: removed.
 
@@ -1587,9 +1587,9 @@ Fri Apr 18 07:55:47 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 Tue Apr 15 05:57:29 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 
 	* Makefile.in (strftlng): More wizardry for bizarre Unix systems.
-	  (nlfldsep): use program and input file, not shell script
-	  (basic, unix-tests, gawk.extensions): moved specfile, pipeio1
-	  and strftlng into unix-tests per Pat Rankin.
+	(nlfldsep): use program and input file, not shell script
+	(basic, unix-tests, gawk.extensions): moved specfile, pipeio1
+	and strftlng into unix-tests per Pat Rankin.
 	* nlfldsep.awk, nlfldsep.in: new files.
 	* nlfldsep.sh: removed.
 
@@ -1669,9 +1669,9 @@ Thu Oct 17 21:22:05 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 	* tweakfld.awk: move `rm' out into Makefile.in.
 	* eofsplit.awk: fixed buggy code so won't loop forever.
 	* Makefile.in (all): add unix-tests.
-	  (unix-tests): new target, has pound-bang, fflush, getlnhd.
-	  (basic): removed fflush, getlnhd.
-	  (tweakfld): added rm from tweakfld.awk.
+	(unix-tests): new target, has pound-bang, fflush, getlnhd.
+	(basic): removed fflush, getlnhd.
+	(tweakfld): added rm from tweakfld.awk.
 
 Sun Oct  6 22:00:35 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 
@@ -1701,12 +1701,12 @@ Tue Sep 10 06:26:44 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 Wed Aug 28 22:06:33 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 
 	* badargs.ok: updated output corresponding to change made to
-	  main.c (see main ChangeLog).
+	main.c (see main ChangeLog).
 
 Thu Aug  1 07:20:28 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 
 	* Makefile.in (clean): remove out[123] files from `messages' test.
-	  Thanks to Pat Rankin (rankin@eql.caltech.edu).
+	Thanks to Pat Rankin (rankin@eql.caltech.edu).
 
 Sat Jul 27 23:56:57 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 
@@ -1774,11 +1774,11 @@ Mon Feb 26 22:30:02 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 Wed Jan 24 10:06:16 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 
 	* Makefile.in (distclean, maintainer-clean): new targets.
-	  (reindops): added test from Rick Adams (rick@uunet.uu.net).
-	  (arrayparm, paramdup, defref, strftime, prmarscl, sclforin,
-	  sclifin): Fix from Larry Schwimmer (schwim@cyclone.stanford.edu)
-	  so that tests that are supposed to fail use `... || exit 0' to
-	  cause a clean `make clean'.
+	(reindops): added test from Rick Adams (rick@uunet.uu.net).
+	(arrayparm, paramdup, defref, strftime, prmarscl, sclforin,
+	sclifin): Fix from Larry Schwimmer (schwim@cyclone.stanford.edu)
+	so that tests that are supposed to fail use `... || exit 0' to
+	cause a clean `make clean'.
 
 Wed Jan 10 22:58:55 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 
