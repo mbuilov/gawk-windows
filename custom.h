@@ -44,6 +44,13 @@
 #include <fp.h>
 /* isnan () macro is broken */
 #undef isnan
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE 1
+#endif
+#define __builtin_expect(expr, val) (expr)
+#ifndef SIZE_MAX
+#define SIZE_MAX __INT32_MAX
+#endif
 #endif
 
 /* For QNX, based on submission from Michael Hunter, mphunter@qnx.com */
