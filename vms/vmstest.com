@@ -95,6 +95,7 @@ $	def_dir = f$environment("default")
 $	create/dir 'def_dir'
 $	listdepth = 0
 $	pipeok = 0
+$       prepend_error = 0
 $	floatmode = -1	! 0: D_float, 1: G_float, 2: IEEE T_float
 $
 $	list = p1+" "+p2+" "+p3+" "+p4+" "+p5+" "+p6+" "+p7+" "+p8
@@ -397,7 +398,6 @@ $funstack:
 $getline4:
 $getnr2tb:
 $getnr2tm:
-$gsubtst5:
 $gsubtst7:
 $gsubtst8:
 $hex2:
@@ -439,6 +439,12 @@ $uparrfs:
 $wjposer1:
 $	test_class = "basic"
 $       test_in = "''test'.in"
+$	goto common_with_test_in_redir
+$!
+$gsubtst5:
+$	test_class = "basic"
+$       test_in = "''test'.in"
+$       prepend_error = 1
 $	goto common_with_test_in_redir
 $!
 $sprintfc:
@@ -493,9 +499,18 @@ $	if f$search("sys$disk:[]_''test'.tmp;*") .nes. ""
 $	then
 $	    delete sys$disk:[]_'test'.tmp;*
 $	endif
+$       if prepend_error .eq. 1
+$       then
+$           tmp_error = "_''test'.tmp"
+$           tmp_output = "_''test'.tmp2"
+$       else
+$           tmp_error = "_''test'.tmp2"
+$           tmp_output = "_''test'.tmp"
+$       endif
+$       prepend_error = 0
 $       set noOn
-$       define/user sys$error _'test'.tmp2
-$	gawk -f 'test'.awk < 'test_in' >_'test'.tmp
+$       define/user sys$error 'tmp_error'
+$	gawk -f 'test'.awk < 'test_in' >'tmp_output'
 $	gawk_status = $status
 $	set On
 $	if f$search("sys$disk:[]_''test'.tmp;2") .nes. ""
@@ -1225,7 +1240,7 @@ $	return
 $
 $fsbs:		echo "fsbs"
 $	test_class = "basic"
-$	gawk -v "FS=\" "{ print $1, $2 }" fsbs.in >_fsbs.tmp
+$	gawk -f fsbs.awk fsbs.in >_fsbs.tmp
 $	if f$search("sys$disk:[]_''test'.tmp;2") .nes. ""
 $	then
 $	    delete sys$disk:[]_'test'.tmp;2
@@ -1936,22 +1951,11 @@ $	    gosub junit_report_fail_diff
 $	endif
 $	return
 $
-$back89:		echo "back89"
+$back89:		! echo "back89"
 $	test_class = "basic"
-$	gawk "/a\8b/" back89.in >_back89.tmp
-$	if f$search("sys$disk:[]_''test'.tmp;2") .nes. ""
-$	then
-$	    delete sys$disk:[]_'test'.tmp;2
-$	endif
-$	cmp back89.ok sys$disk:[]_back89.tmp
-$	if $status
-$	then
-$	    rm _back89.tmp;
-$	    gosub junit_report_pass
-$	else
-$	    gosub junit_report_fail_diff
-$	endif
-$	return
+$       test_in = "''test'.in"
+$       prepend_error = 1
+$	goto common_with_test_in_redir
 $
 $tradanch:	echo "tradanch"
 $	test_class = "basic"
