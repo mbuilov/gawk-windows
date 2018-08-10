@@ -3577,7 +3577,10 @@ dfafree (struct dfa *d)
     }
 
   if (d->superset)
-    dfafree (d->superset);
+    {
+      dfafree (d->superset);
+      free (d->superset);
+    }
 }
 
 /* Having found the postfix representation of the regular expression,
