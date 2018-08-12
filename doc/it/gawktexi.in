@@ -5323,6 +5323,14 @@ programmi erano stati scritti.
 Le funzioni predefinite standard di command{awk}, per esempio
 @code{sin()} o @code{substr()} @emph{non} ammettono questa possibilit@`a.
 
+@`E possibile specificare in @code{printf} un modificatore @samp{P} 
+fra le lettere di controllo dei numeri in virgola mobile, per
+utilizzare il risultato fornito dalle funzioni di libreria C
+per i valori NaN [Not a Number] e Infinity [Infinito], invece dei
+valori speciali normalmente prodotti da @command{gawk}, come
+descritto in @ref{Problemi virgola mobile POSIX}.
+Questo serve principalmente nella fase di test delle componenti aggiunte.
+
 @end ignore
 
 @node Sommario invocazione
@@ -10041,6 +10049,18 @@ stampare valori non validi, o comportarsi in modo completamente differente.
 @value{DARKCORNER}
 @end quotation
 
+@quotation NOTA
+Lo standard IEEE 754 per l'aritmetica in virgola mobile consente di
+avere valori speciali per rappresentare ``infinito'' (sia positivo che
+negativo) e valori che sono ``non numerici'' (NaN - [Not a Number]).
+
+L'input e l'output di tali valori avviene sotto forma di stringhe di
+testo.  Ci@`o pone dei problemi nel linguaggio @command{awk}, che 
+esisteva gi@`a prima della definizione dello standard IEEE.  Dettagli
+ulteriori si possono trovare in @ref{Problemi virgola mobile POSIX};
+si prega di fare riferimento a quel testo.
+@end quotation
+
 @node Modificatori di formato
 @subsection Modificatori per specifiche di formato @code{printf}
 
@@ -12018,8 +12038,8 @@ ancora descritte.
 Infine, gli standard ufficiali correnti e la rappresentazione dei numeri
 in virgola mobile dello standard IEEE possono avere un effetto insolito ma
 importante sul modo in cui @command{gawk} converte alcuni valori di stringa
-speciali in
-numeri.  I dettagli sono illustrati in @ref{Problemi virgola mobile POSIX}.
+speciali in numeri.  I dettagli sono illustrati in
+@ref{Problemi virgola mobile POSIX}.
 
 @node Tutti gli operatori
 @section Operatori: fare qualcosa coi valori
@@ -29903,6 +29923,55 @@ programmazione attenta, insieme alla conoscenza del comportamento del
 coprocesso.
 @end quotation
 
+@c From email send January 4, 2018.
+L'esempio seguente, preparato da Andrew Schorr, dimostra come
+l'utilizzo delle @dfn{pty} pu@`o servire a evitare situazioni
+di stallo connesse con i buffer
+
+Si supponga che @command{gawk} non sia in grado di sommare dei numeri.
+Si potrebbe usare un coprocesso per farlo.  Ecco un programma fin troppo
+semplice, che pu@`o svolgere tale funzione:
+
+@example
+$ @kbd{cat add.c}
+#include <stdio.h> 
+
+int 
+main(void) 
+@{ 
+    int x, y; 
+    while (scanf("%d %d", & x, & y) == 2) 
+        printf("%d\n", x + y); 
+    return 0; 
+@} 
+$ @kbd{cc -O add.c -o add}	@ii{Compilazione del programma}
+@end example
+
+Si potrebbe poi scrivere un programma @command{gawk} fin troppo semplice,
+per sommare dei numeri passandoli al coprocesso:
+
+@example
+$ @kbd{echo 1 2 |}
+> @kbd{gawk -v cmd=./add '@{ print |& cmd; cmd |& getline x; print x @}'}
+@end example
+
+E il programma andrebbe in stallo, poich@'e, @file{add.c} non chiama a sua
+volta @samp{setlinebuf(stdout)}. Il programma @command{add} si blocca.
+
+Ora, si provi invece con: 
+
+@example
+$ @kbd{echo 1 2 |}
+> @kbd{gawk -v cmd=add 'BEGIN @{ PROCINFO[cmd, "pty"] = 1 @}}
+> @kbd{                 @{ print |& cmd; cmd |& getline x; print x @}'}
+@print{} 3 
+@end example
+
+Usando una @dfn{pty}, @command{gawk} fa s@`{@dotless{i}} che la libreria di I/O
+determini di avere a che fare con una sessione interattiva, e quindi
+utilizzi per default una linea alla volta come buffer.
+E ora, magicamente, funziona!
+
 @node Reti TCP/IP
 @section Usare @command{gawk} per la programmazione di rete
 @cindex funzionalit@`a avanzate, programmazione di rete
@@ -34161,7 +34230,7 @@ che @emph{non} @`e consigliabile). Per esempio:
 $ @kbd{echo nanny | gawk '@{ print $1 + 0 @}'}
 @print{} 0
 $ @kbd{echo +nan | gawk '@{ print $1 + 0 @}'}
-@print{} nan
+@print{} +nan
 $ @kbd{echo 0xDeadBeef | gawk '@{ print $1 + 0 @}'}
 @print{} 0
 @end example
@@ -34169,6 +34238,15 @@ $ @kbd{echo 0xDeadBeef | gawk '@{ print $1 + 0 @}'}
 @command{gawk} ignora la distinzione maiuscole/minuscole nei quattro valori
 speciali. Cos@`{@dotless{i}}, @samp{+nan} e @samp{+NaN} sono la stessa cosa.
 @end itemize
+
+Oltre a gestire l'input, @command{gawk} deve anche stampare valori
+``corretti'' in output, quando un valore sia NaN o infinito.
+A partire dalla @value{PVERSION} 4.2.2, per tali valori
+@command{gawk} stampa una delle quattro stringhe sopra descritte:
+@samp{+inf}, @samp{-inf}, @samp{+nan}, or @samp{-nan}.
+Analogamente,se usato in modalit@`a POSIX, @command{gawk} stampa il risultato
+della funzione C di sistema @code{printf()} usando la stringa di formato
+@code{%g} per il valore, quale che esso sia.
 
 @node Sommario virgola mobile
 @section Sommario
