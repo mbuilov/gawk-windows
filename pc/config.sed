@@ -82,6 +82,10 @@ s/^#undef HAVE_FMOD *$/#define HAVE_FMOD 1/
 #ifdef __MINGW32__\
 #define HAVE_ISWUPPER 1\
 #endif
+/^#undef HAVE_LANGINFO_CODESET *$/c\
+#ifdef __MINGW32__\
+#define HAVE_LANGINFO_CODESET 1\
+#endif
 s/^#undef HAVE_LIBM *$/#define HAVE_LIBM 1/
 /^#undef HAVE_LIBREADLINE *$/c\
 /* #undef HAVE_LIBREADLINE */

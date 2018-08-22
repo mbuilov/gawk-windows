@@ -53,6 +53,11 @@
 	of `>' redirection.  Always use Op_parens so that
 	print "foo" > ("foo" 1) does not warn.
 
+2018-07-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (_GNU_SOURCE): Don't define it here, it's already
+	done in config.h.
+
 2018-07-13         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (format_nan_inf): New function to generate +nan, -nan,
