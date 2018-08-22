@@ -115,7 +115,9 @@
 #endif
 
 /* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
-#undef HAVE_LANGINFO_CODESET
+#ifdef __MINGW32__
+#define HAVE_LANGINFO_CODESET 1
+#endif
 
 /* Define if your <locale.h> file defines LC_MESSAGES. */
 #undef HAVE_LC_MESSAGES
