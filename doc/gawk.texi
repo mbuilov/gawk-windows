@@ -1056,7 +1056,6 @@ particular records in a file and perform operations upon them.
 * Extension New Mechanism Goals::       Goals for the new mechanism.
 * Extension Other Design Decisions::    Some other design decisions.
 * Extension Future Growth::             Some room for future growth.
-* Old Extension Mechanism::             Some compatibility for old extensions.
 * Notes summary::                       Summary of implementation notes.
 * Basic High Level::                    The high level view.
 * Basic Data Typing::                   A very quick intro to data types.
@@ -5840,10 +5839,9 @@ range of the ASCII character set.  Use a complemented character list
 in the ASCII range.
 
 @quotation NOTE
-As of this writing (May 2018), Brian Kernighan's @command{awk} treats
-@code{[:blank:]} like @code{[:space:]}, incorrectly matching
-more characters than it should.  We have submitted a patch to him,
-and hope that this will be fixed.
+Some older versions of Unix @command{awk}
+treat @code{[:blank:]} like @code{[:space:]}, incorrectly matching
+more characters than they should.  Caveat Emptor.
 @end quotation
 
 @cindex bracket expressions, collating elements
@@ -7123,6 +7121,8 @@ $ @kbd{echo a b c d e f | awk '@{ print "NF =", NF;}
 @quotation CAUTION
 Some versions of @command{awk} don't
 rebuild @code{$0} when @code{NF} is decremented.
+Until August, 2018, this included BWK @command{awk}; fortunately
+his version now handles this correctly.
 @end quotation
 
 Finally, there are times when it is convenient to force
@@ -11073,6 +11073,9 @@ $ @kbd{gawk 'BEGIN @{ print "hello, \}
 @print{} hello, world
 @end example
 
+In POSIX mode (@pxref{Options}), @command{gawk} does not
+allow escaped newlines.  Otherwise, it behaves as just described.
+
 Brian Kernighan's @command{awk} and Busybox @command{awk}
 remove the backslash but leave the newline
 intact, as part of the string:
@@ -11083,10 +11086,6 @@ $ @kbd{nawk 'BEGIN @{ print "hello, \}
 @print{} hello, 
 @print{} world
 @end example
-
-In POSIX mode (@pxref{Options}), @command{gawk} does not
-allow escaped newlines.  Otherwise, it behaves as
-just described.
 
 @node Nondecimal-numbers
 @subsubsection Octal and Hexadecimal Numbers
@@ -19296,6 +19295,9 @@ The return values are summarized in @ref{table-system-return-values}.
 @end multitable
 @end float
 @end table
+
+As of August, 2018, BWK @command{awk} now follows @command{gawk}'s behavior
+for the return value of @code{system()}.
 
 @cindex sidebar, Controlling Output Buffering with @code{system()}
 @ifdocbook
@@ -31996,7 +31998,7 @@ this looks something like the following:
 @example
 @group
 delta = 0.00001                 # for example
-difference = abs(a) - abs(b)    # subtract the two values
+difference = abs(a - b)         # subtract the two values
 if (difference < delta)
     # all ok
 else
@@ -32006,7 +32008,10 @@ else
 
 @noindent
 (We assume that you have a simple absolute value function named
-@code{abs()} defined elsewhere in your program.)
+@code{abs()} defined elsewhere in your program.)  If you write a
+function to compare values with a delta, you should be sure
+to use @samp{difference < abs(delta)} in case someone passes
+in a negative delta value.
 
 @node Errors accumulate
 @subsubsection Errors Accumulate
@@ -40911,7 +40916,6 @@ maintainers of @command{gawk}.  Everything in it applies specifically to
 * Future Extensions::           New features that may be implemented one day.
 * Implementation Limitations::  Some limitations of the implementation.
 * Extension Design::            Design notes about the extension API.
-* Old Extension Mechanism::     Some compatibility for old extensions.
 * Notes summary::               Summary of implementation notes.
 @end menu
 
@@ -41807,42 +41811,6 @@ conflicts.
 
 Of course, as of this writing, no decisions have been made with respect
 to any of the above.
-
-@node Old Extension Mechanism
-@appendixsec Compatibility For Old Extensions
-
-@ref{Dynamic Extensions}, describes the supported API and mechanisms
-for writing extensions for @command{gawk}.  This API was introduced
-in @value{PVERSION} 4.1.  However, for many years @command{gawk}
-provided an extension mechanism that required knowledge of @command{gawk}
-internals and that was not as well designed.
-
-In order to provide a transition period, @command{gawk} @value{PVERSION} 4.1
-continues to support the original extension mechanism.
-This will be true for the life of exactly one major release.  This support
-will be withdrawn, and removed from the source code, at the next major
-release.
-
-Briefly, original-style extensions should be compiled by including the
-@file{awk.h} header file in the extension source code. Additionally,
-you must define the identifier @samp{GAWK} when building (use
-@samp{-DGAWK} with Unix-style compilers).  Otherwise, the definitions
-in @file{gawkapi.h} will cause conflicts with those in @file{awk.h}
-and your extension will not compile.
-
-Just as in previous versions, you load an old-style extension with the
-@code{extension()} built-in function (which is not otherwise documented).
-This function in turn finds and loads the shared object file containing
-the extension and calls its @code{dl_load()} C routine.
-
-Because original-style and new-style extensions use different initialization
-routines (@code{dl_load()} versus @code{dlload()}), they may safely
-be installed in the same directory (to be found by @env{AWKLIBPATH})
-without conflict.
-
-The @command{gawk} development team strongly recommends that you
-convert any old extensions that you may have to use the new API
-described in @ref{Dynamic Extensions}.
 
 @node Notes summary
 @appendixsec Summary
