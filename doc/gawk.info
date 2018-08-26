@@ -29862,30 +29862,21 @@ This minor node briefly describes where to get them:
 Unix 'awk'
      Brian Kernighan, one of the original designers of Unix 'awk', has
      made his implementation of 'awk' freely available.  You can
-     retrieve this version via his home page
-     (http://www.cs.princeton.edu/~bwk).  It is available in several
-     archive formats:
-
-     Shell archive
-          <http://www.cs.princeton.edu/~bwk/btl.mirror/awk.shar>
-
-     Compressed 'tar' file
-          <http://www.cs.princeton.edu/~bwk/btl.mirror/awk.tar.gz>
-
-     Zip file
-          <http://www.cs.princeton.edu/~bwk/btl.mirror/awk.zip>
-
-     You can also retrieve it from GitHub:
+     retrieve it from GitHub:
 
           git clone git://github.com/onetrueawk/awk bwkawk
 
      This command creates a copy of the Git (https://git-scm.com)
-     repository in a directory named 'bwkawk'.  If you leave that
-     argument off the 'git' command line, the repository copy is created
-     in a directory named 'awk'.
+     repository in a directory named 'bwkawk'.  If you omit the last
+     argument from the 'git' command line, the repository copy is
+     created in a directory named 'awk'.
 
      This version requires an ISO C (1990 standard) compiler; the C
      compiler from GCC (the GNU Compiler Collection) works quite nicely.
+
+     To build it, review the settings in the 'makefile', and then just
+     run 'make'.  Note that the result of compilation is named 'a.out';
+     you will have to rename it to something reasonable.
 
      *Note Common Extensions:: for a list of extensions in this 'awk'
      that are not in POSIX 'awk'.
@@ -33470,7 +33461,7 @@ Index
 * awk, versions of, See Also Brian Kernighan's awk: BTL.      (line   6)
 * awk, versions of, See Also Brian Kernighan's awk <1>: Other Versions.
                                                               (line  13)
-* awka compiler for awk:                 Other Versions.      (line  73)
+* awka compiler for awk:                 Other Versions.      (line  64)
 * AWKLIBPATH environment variable:       AWKLIBPATH Variable. (line   6)
 * AWKPATH environment variable:          AWKPATH Variable.    (line   6)
 * AWKPATH environment variable <1>:      PC Using.            (line  13)
@@ -33529,7 +33520,7 @@ Index
                                                               (line  57)
 * backtrace debugger command:            Execution Stack.     (line  13)
 * Beebe, Nelson H.F.:                    Acknowledgments.     (line  60)
-* Beebe, Nelson H.F. <1>:                Other Versions.      (line  87)
+* Beebe, Nelson H.F. <1>:                Other Versions.      (line  78)
 * BEGIN pattern:                         Field Separators.    (line  44)
 * BEGIN pattern <1>:                     BEGIN/END.           (line   6)
 * BEGIN pattern <2>:                     Using BEGIN/END.     (line   6)
@@ -33616,7 +33607,7 @@ Index
 * Brennan, Michael <3>:                  Delete.              (line  56)
 * Brennan, Michael <4>:                  Simple Sed.          (line  25)
 * Brennan, Michael <5>:                  Other Versions.      (line   6)
-* Brennan, Michael <6>:                  Other Versions.      (line  48)
+* Brennan, Michael <6>:                  Other Versions.      (line  39)
 * Brian Kernighan's awk:                 When.                (line  21)
 * Brian Kernighan's awk <1>:             Escape Sequences.    (line 112)
 * Brian Kernighan's awk <2>:             GNU Regexp Operators.
@@ -33655,7 +33646,7 @@ Index
 * bug-gawk@gnu.org bug reporting address: Bug address.        (line  31)
 * built-in functions:                    Functions.           (line   6)
 * built-in functions, evaluation order:  Calling Built-in.    (line  30)
-* BusyBox Awk:                           Other Versions.      (line  97)
+* BusyBox Awk:                           Other Versions.      (line  88)
 * c.e., See common extensions:           Conventions.         (line  51)
 * call by reference:                     Pass By Value/Reference.
                                                               (line  44)
@@ -34693,7 +34684,7 @@ Index
 * gettimeofday() extension function:     Extension Sample Time.
                                                               (line  12)
 * git utility:                           gawkextlib.          (line  31)
-* git utility <1>:                       Other Versions.      (line  29)
+* git utility <1>:                       Other Versions.      (line  18)
 * git utility <2>:                       Accessing The Source.
                                                               (line  10)
 * git utility <3>:                       Adding Code.         (line 112)
@@ -34771,8 +34762,8 @@ Index
                                                               (line  53)
 * IGNORECASE variable, with ~ and !~ operators: Case-sensitivity.
                                                               (line  26)
-* Illumos:                               Other Versions.      (line 114)
-* Illumos, POSIX-compliant awk:          Other Versions.      (line 114)
+* Illumos:                               Other Versions.      (line 105)
+* Illumos, POSIX-compliant awk:          Other Versions.      (line 105)
 * implementation issues, gawk:           Notes.               (line   6)
 * implementation issues, gawk, debugging: Compatibility Mode. (line   6)
 * implementation issues, gawk, limits:   Getline Notes.       (line  14)
@@ -34862,9 +34853,9 @@ Index
 * Jacobs, Andrew:                        Passwd Functions.    (line  90)
 * Jaegermann, Michal:                    Acknowledgments.     (line  60)
 * Jaegermann, Michal <1>:                Contributors.        (line  46)
-* Java implementation of awk:            Other Versions.      (line 122)
+* Java implementation of awk:            Other Versions.      (line 113)
 * Java programming language:             Glossary.            (line 466)
-* jawk:                                  Other Versions.      (line 122)
+* jawk:                                  Other Versions.      (line 113)
 * Jedi knights:                          Undocumented.        (line   6)
 * Johansen, Chris:                       Signature Program.   (line  25)
 * join() user-defined function:          Join Function.       (line  18)
@@ -34916,7 +34907,7 @@ Index
 * length of string:                      String Functions.    (line 171)
 * Lesser General Public License (LGPL):  Glossary.            (line 489)
 * LGPL (Lesser General Public License):  Glossary.            (line 489)
-* libmawk:                               Other Versions.      (line 130)
+* libmawk:                               Other Versions.      (line 121)
 * libraries of awk functions:            Library Functions.   (line   6)
 * libraries of awk functions, assertions: Assert Function.    (line   6)
 * libraries of awk functions, associative arrays and: Library Names.
@@ -35020,7 +35011,7 @@ Index
 * mawk utility <1>:                      Getline/Pipe.        (line  62)
 * mawk utility <2>:                      Concatenation.       (line  36)
 * mawk utility <3>:                      Nextfile Statement.  (line  47)
-* mawk utility <4>:                      Other Versions.      (line  48)
+* mawk utility <4>:                      Other Versions.      (line  39)
 * maximum precision supported by MPFR library: Auto-set.      (line 255)
 * McIlroy, Doug:                         Glossary.            (line 255)
 * McPhee, Patrick:                       Contributors.        (line 103)
@@ -35139,7 +35130,7 @@ Index
 * OFS variable <1>:                      Output Separators.   (line   6)
 * OFS variable <2>:                      User-modified.       (line 116)
 * OpenBSD:                               Glossary.            (line 746)
-* OpenSolaris:                           Other Versions.      (line 105)
+* OpenSolaris:                           Other Versions.      (line  96)
 * operating systems, BSD-based:          Manual History.      (line  28)
 * operating systems, PC, gawk on:        PC Using.            (line   6)
 * operating systems, PC, gawk on, installing: PC Installation.
@@ -35229,8 +35220,8 @@ Index
 * patterns, regexp constants as:         Expression Patterns. (line  34)
 * patterns, types of:                    Pattern Overview.    (line  15)
 * pawk (profiling version of Brian Kernighan's awk): Other Versions.
-                                                              (line  87)
-* pawk, awk-like facilities for Python:  Other Versions.      (line 134)
+                                                              (line  78)
+* pawk, awk-like facilities for Python:  Other Versions.      (line 125)
 * PC operating systems, gawk on:         PC Using.            (line   6)
 * PC operating systems, gawk on, installing: PC Installation. (line   6)
 * percent sign (%), % operator:          Precedence.          (line  54)
@@ -35425,13 +35416,13 @@ Index
 * pwcat program:                         Passwd Functions.    (line  23)
 * q debugger command (alias for quit):   Miscellaneous Debugger Commands.
                                                               (line 100)
-* QSE awk:                               Other Versions.      (line 140)
+* QSE awk:                               Other Versions.      (line 131)
 * Quanstrom, Erik:                       Alarm Program.       (line   8)
 * question mark (?), ?: operator:        Precedence.          (line  91)
 * question mark (?), regexp operator:    Regexp Operators.    (line 111)
 * question mark (?), regexp operator <1>: GNU Regexp Operators.
                                                               (line  62)
-* QuikTrim Awk:                          Other Versions.      (line 144)
+* QuikTrim Awk:                          Other Versions.      (line 135)
 * quit debugger command:                 Miscellaneous Debugger Commands.
                                                               (line 100)
 * QUIT signal (MS-Windows):              Profiling.           (line 212)
@@ -35751,7 +35742,7 @@ Index
 * sleep utility:                         Alarm Program.       (line 109)
 * sleep() extension function:            Extension Sample Time.
                                                               (line  22)
-* Solaris, POSIX-compliant awk:          Other Versions.      (line 105)
+* Solaris, POSIX-compliant awk:          Other Versions.      (line  96)
 * sort array:                            String Functions.    (line  42)
 * sort array indices:                    String Functions.    (line  42)
 * sort function, arrays, sorting:        Array Sorting Functions.
@@ -35760,20 +35751,20 @@ Index
 * sort utility, coprocesses and:         Two-way I/O.         (line  66)
 * sorting characters in different languages: Explaining gettext.
                                                               (line  94)
-* source code, awka:                     Other Versions.      (line  73)
+* source code, awka:                     Other Versions.      (line  64)
 * source code, Brian Kernighan's awk:    Other Versions.      (line  13)
-* source code, BusyBox Awk:              Other Versions.      (line  97)
+* source code, BusyBox Awk:              Other Versions.      (line  88)
 * source code, gawk:                     Gawk Distribution.   (line   6)
-* source code, Illumos awk:              Other Versions.      (line 114)
-* source code, jawk:                     Other Versions.      (line 122)
-* source code, libmawk:                  Other Versions.      (line 130)
-* source code, mawk:                     Other Versions.      (line  48)
+* source code, Illumos awk:              Other Versions.      (line 105)
+* source code, jawk:                     Other Versions.      (line 113)
+* source code, libmawk:                  Other Versions.      (line 121)
+* source code, mawk:                     Other Versions.      (line  39)
 * source code, mixing:                   Options.             (line 117)
-* source code, pawk:                     Other Versions.      (line  87)
-* source code, pawk (Python version):    Other Versions.      (line 134)
-* source code, QSE awk:                  Other Versions.      (line 140)
-* source code, QuikTrim Awk:             Other Versions.      (line 144)
-* source code, Solaris awk:              Other Versions.      (line 105)
+* source code, pawk:                     Other Versions.      (line  78)
+* source code, pawk (Python version):    Other Versions.      (line 125)
+* source code, QSE awk:                  Other Versions.      (line 131)
+* source code, QuikTrim Awk:             Other Versions.      (line 135)
+* source code, Solaris awk:              Other Versions.      (line  96)
 * source files, search path for:         Programs Exercises.  (line  70)
 * sparse arrays:                         Array Intro.         (line  76)
 * Spencer, Henry:                        Glossary.            (line  16)
@@ -35862,7 +35853,7 @@ Index
 * substitute in string:                  String Functions.    (line  89)
 * substr:                                String Functions.    (line 485)
 * substring:                             String Functions.    (line 485)
-* Sumner, Andrew:                        Other Versions.      (line  73)
+* Sumner, Andrew:                        Other Versions.      (line  64)
 * supplementary groups of gawk process:  Auto-set.            (line 271)
 * switch statement:                      Switch Statement.    (line   6)
 * SYMTAB array:                          Auto-set.            (line 331)
@@ -36662,36 +36653,36 @@ Node: Bug address1199952
 Node: Usenet1202744
 Node: Maintainers1203521
 Node: Other Versions1204782
-Node: Installation summary1211544
-Node: Notes1212746
-Node: Compatibility Mode1213540
-Node: Additions1214322
-Node: Accessing The Source1215247
-Node: Adding Code1216684
-Node: New Ports1222903
-Node: Derived Files1227391
-Ref: Derived Files-Footnote-11233037
-Ref: Derived Files-Footnote-21233072
-Ref: Derived Files-Footnote-31233670
-Node: Future Extensions1233784
-Node: Implementation Limitations1234442
-Node: Extension Design1235625
-Node: Old Extension Problems1236769
-Ref: Old Extension Problems-Footnote-11238287
-Node: Extension New Mechanism Goals1238344
-Ref: Extension New Mechanism Goals-Footnote-11241708
-Node: Extension Other Design Decisions1241897
-Node: Extension Future Growth1244010
-Node: Notes summary1244846
-Node: Basic Concepts1246021
-Node: Basic High Level1246702
-Ref: figure-general-flow1246984
-Ref: figure-process-flow1247669
-Ref: Basic High Level-Footnote-11250970
-Node: Basic Data Typing1251155
-Node: Glossary1254483
-Node: Copying1286321
-Node: GNU Free Documentation License1323864
-Node: Index1348984
+Node: Installation summary1211340
+Node: Notes1212542
+Node: Compatibility Mode1213336
+Node: Additions1214118
+Node: Accessing The Source1215043
+Node: Adding Code1216480
+Node: New Ports1222699
+Node: Derived Files1227187
+Ref: Derived Files-Footnote-11232833
+Ref: Derived Files-Footnote-21232868
+Ref: Derived Files-Footnote-31233466
+Node: Future Extensions1233580
+Node: Implementation Limitations1234238
+Node: Extension Design1235421
+Node: Old Extension Problems1236565
+Ref: Old Extension Problems-Footnote-11238083
+Node: Extension New Mechanism Goals1238140
+Ref: Extension New Mechanism Goals-Footnote-11241504
+Node: Extension Other Design Decisions1241693
+Node: Extension Future Growth1243806
+Node: Notes summary1244642
+Node: Basic Concepts1245817
+Node: Basic High Level1246498
+Ref: figure-general-flow1246780
+Ref: figure-process-flow1247465
+Ref: Basic High Level-Footnote-11250766
+Node: Basic Data Typing1250951
+Node: Glossary1254279
+Node: Copying1286117
+Node: GNU Free Documentation License1323660
+Node: Index1348780
 
 End Tag Table

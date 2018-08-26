@@ -40665,36 +40665,25 @@ This @value{SECTION} briefly describes where to get them:
 Brian Kernighan, one of the original designers of Unix @command{awk},
 has made his implementation of
 @command{awk} freely available.
-You can retrieve this version via
-@uref{http://www.cs.princeton.edu/~bwk, his home page}.
-It is available in several archive formats:
-
-@table @asis
-@item Shell archive
-@uref{http://www.cs.princeton.edu/~bwk/btl.mirror/awk.shar}
-
-@item Compressed @command{tar} file
-@uref{http://www.cs.princeton.edu/~bwk/btl.mirror/awk.tar.gz}
-
-@item Zip file
-@uref{http://www.cs.princeton.edu/~bwk/btl.mirror/awk.zip}
-@end table
+You can retrieve it from GitHub:
 
 @cindex @command{git} utility
-You can also retrieve it from GitHub:
-
 @example
 git clone git://github.com/onetrueawk/awk bwkawk
 @end example
 
 @noindent
 This command creates a copy of the @uref{https://git-scm.com, Git}
-repository in a directory named @file{bwkawk}.  If you leave that argument
-off the @command{git} command line, the repository copy is created in a
+repository in a directory named @file{bwkawk}.  If you omit the last argument
+from the @command{git} command line, the repository copy is created in a
 directory named @file{awk}.
 
 This version requires an ISO C (1990 standard) compiler; the C compiler
 from GCC (the GNU Compiler Collection) works quite nicely.
+
+To build it, review the settings in the @file{makefile}, and then just run
+@command{make}.  Note that the result of compilation is named
+@command{a.out}; you will have to rename it to something reasonable.
 
 @xref{Common Extensions}
 for a list of extensions in this @command{awk} that are not in POSIX @command{awk}.
