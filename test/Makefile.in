@@ -1570,7 +1570,7 @@ GAWK_EXT_TESTS = \
 ARRAYDEBUG_TESTS = arrdbg
 EXTRA_TESTS = inftest regtest ignrcas3 
 INET_TESTS = inetdayu inetdayt inetechu inetecht
-MACHINE_TESTS = double1 double2 fmtspcl intformat
+MACHINE_TESTS = double1 double2 intformat
 LOCALE_CHARSET_TESTS = \
 	asort asorti backbigs1 backsmalls1 backsmalls2 \
 	fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
@@ -1674,9 +1674,10 @@ EXPECTED_FAIL_MINGW = \
 
 
 # List of the files that appear in manual tests or are for reserve testing:
-GENTESTS_UNUSED = Makefile.in checknegtime.awk dtdgport.awk gtlnbufv.awk \
-	hello.awk inchello.awk inclib.awk inplace.1.in inplace.2.in \
-	inplace.in printfloat.awk readdir0.awk valgrind.awk xref.awk
+GENTESTS_UNUSED = Makefile.in checknegtime.awk dtdgport.awk fix-fmtspcl.awk \
+	fmtspcl-mpfr.ok fmtspcl.awk fmtspcl.tok gtlnbufv.awk hello.awk \
+	inchello.awk inclib.awk inplace.1.in inplace.2.in inplace.in \
+	printfloat.awk readdir0.awk valgrind.awk xref.awk
 
 
 # List of tests on MinGW or DJGPP that need a different cmp program
@@ -2138,15 +2139,15 @@ nors::
 	@echo A B C D E | tr -d '\12\15' | $(AWK) '{ print $$NF }' - "$(srcdir)"/nors.in > _$@ || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
-fmtspcl.ok: fmtspcl.tok Makefile fix-fmtspcl.awk
-	@$(AWK) -v "sd=$(srcdir)" -f "$(srcdir)/fix-fmtspcl.awk" < "$(srcdir)"/fmtspcl.tok > $@ 2>/dev/null
-
-fmtspcl: fmtspcl.ok
-	@echo $@
-	@$(AWK) $(AWKFLAGS) -f "$(srcdir)"/fmtspcl.awk  --lint >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) $@.ok _$@ && rm -f _$@ ; else \
-	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
-	fi
+# fmtspcl.ok: fmtspcl.tok Makefile fix-fmtspcl.awk
+# 	@$(AWK) -v "sd=$(srcdir)" -f "$(srcdir)/fix-fmtspcl.awk" < "$(srcdir)"/fmtspcl.tok > $@ 2>/dev/null
+# 
+# fmtspcl: fmtspcl.ok
+# 	@echo $@
+# 	@$(AWK) $(AWKFLAGS) -f "$(srcdir)"/fmtspcl.awk  --lint >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+# 	@-if test -z "$$AWKFLAGS" ; then $(CMP) $@.ok _$@ && rm -f _$@ ; else \
+# 	$(CMP) "$(srcdir)"/$@-mpfr.ok _$@ && rm -f _$@ ; \
+# 	fi
 
 rebuf::
 	@echo $@
