@@ -926,19 +926,19 @@ typedef struct gawk_api {
 #define emalloc(pointer, type, size, message) \
 	do { \
 		if ((pointer = (type) gawk_malloc(size)) == 0) \
-			fatal(ext_id, "%s: malloc of %d bytes failed\n", message, size); \
+			fatal(ext_id, "%s: malloc of %d bytes failed", message, size); \
 	} while(0)
 
 #define ezalloc(pointer, type, size, message) \
 	do { \
 		if ((pointer = (type) gawk_calloc(1, size)) == 0) \
-			fatal(ext_id, "%s: calloc of %d bytes failed\n", message, size); \
+			fatal(ext_id, "%s: calloc of %d bytes failed", message, size); \
 	} while(0)
 
 #define erealloc(pointer, type, size, message) \
 	do { \
 		if ((pointer = (type) gawk_realloc(pointer, size)) == 0) \
-			fatal(ext_id, "%s: realloc of %d bytes failed\n", message, size); \
+			fatal(ext_id, "%s: realloc of %d bytes failed", message, size); \
 	} while(0)
 
 /* Constructor functions */
@@ -1124,7 +1124,7 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 		if (func_table[i].name == NULL) \
 			break; \
 		if (! add_ext_func(name_space, & func_table[i])) { \
-			warning(ext_id, #extension ": could not add %s\n", \
+			warning(ext_id, #extension ": could not add %s", \
 					func_table[i].name); \
 			errors++; \
 		} \
@@ -1132,7 +1132,7 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 \
 	if (init_func != NULL) { \
 		if (! init_func()) { \
-			warning(ext_id, #extension ": initialization function failed\n"); \
+			warning(ext_id, #extension ": initialization function failed"); \
 			errors++; \
 		} \
 	} \

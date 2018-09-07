@@ -57,23 +57,23 @@ load_ext(const char *lib_name)
 		fatal(_("load_ext: received NULL lib_name"));
 
 	if ((dl = dlopen(lib_name, flags)) == NULL)
-		fatal(_("load_ext: cannot open library `%s' (%s)\n"), lib_name,
+		fatal(_("load_ext: cannot open library `%s' (%s)"), lib_name,
 		      dlerror());
 
 	/* Per the GNU Coding standards */
 	gpl_compat = (int *) dlsym(dl, "plugin_is_GPL_compatible");
 	if (gpl_compat == NULL)
-		fatal(_("load_ext: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"),
+		fatal(_("load_ext: library `%s': does not define `plugin_is_GPL_compatible' (%s)"),
 				lib_name, dlerror());
 
 	install_func = (int (*)(const gawk_api_t *const, awk_ext_id_t))
 				dlsym(dl, INIT_FUNC);
 	if (install_func == NULL)
-		fatal(_("load_ext: library `%s': cannot call function `%s' (%s)\n"),
+		fatal(_("load_ext: library `%s': cannot call function `%s' (%s)"),
 				lib_name, INIT_FUNC, dlerror());
 
 	if (install_func(& api_impl, NULL /* ext_id */) == 0)
-		warning(_("load_ext: library `%s' initialization routine `%s' failed\n"),
+		warning(_("load_ext: library `%s' initialization routine `%s' failed"),
 				lib_name, INIT_FUNC);
 }
 

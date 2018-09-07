@@ -1204,12 +1204,12 @@ api_flatten_array_typed(awk_ext_id_t id,
 		/* Convert index and value to API types. */
 		if (! node_to_awk_value(index,
 				& (*data)->elements[j].index, index_type)) {
-			fatal(_("api_flatten_array_typed: could not convert index %d to %s\n"),
+			fatal(_("api_flatten_array_typed: could not convert index %d to %s"),
 						(int) i, valtype2str(index_type));
 		}
 		if (! node_to_awk_value(value,
 				& (*data)->elements[j].value, value_type)) {
-			fatal(_("api_flatten_array_typed: could not convert value %d to %s\n"),
+			fatal(_("api_flatten_array_typed: could not convert value %d to %s"),
 						(int) i, valtype2str(value_type));
 		}
 	}
