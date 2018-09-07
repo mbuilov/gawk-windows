@@ -2383,7 +2383,7 @@ use_pipes:
 	if (dup(save_stdout) != 1) {
 		close(save_stdin); close(save_stdout);
 		close(ptoc[1]); close(ctop[0]);
-		fatal(_("restoring stdout in parent process failed\n"));
+		fatal(_("restoring stdout in parent process failed"));
 	}
 	close(save_stdout);
 
@@ -2391,7 +2391,7 @@ use_pipes:
 	if (dup(save_stdin) != 0) {
 		close(save_stdin);
 		close(ptoc[1]);	close(ctop[0]);
-		fatal(_("restoring stdin in parent process failed\n"));
+		fatal(_("restoring stdin in parent process failed"));
 	}
 	close(save_stdin);
 
@@ -2652,7 +2652,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	close(1);
 	if (dup(save_stdout) != 1) {
 		close(p[0]);
-		fatal(_("restoring stdout in parent process failed\n"));
+		fatal(_("restoring stdout in parent process failed"));
 	}
 	close(save_stdout);
 

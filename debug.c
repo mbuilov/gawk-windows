@@ -4782,7 +4782,7 @@ unserialize_list(int type)
 			field_cnt++;
 			if (field_cnt == MAX_FIELD)
 #ifdef GAWKDEBUG
-				fatal("Increase MAX_FIELD and recompile.\n");
+				fatal("Increase MAX_FIELD and recompile.");
 #else
 				return;
 #endif

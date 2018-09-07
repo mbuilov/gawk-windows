@@ -4280,7 +4280,7 @@ out:
 		if (SMART_ALECK && do_lint
 		    && ! goto_warned && strcasecmp(tokkey, "goto") == 0) {
 			goto_warned = true;
-			lintwarn(_("`goto' considered harmful!\n"));
+			lintwarn(_("`goto' considered harmful!"));
 		}
 		return lasttok = NAME;
 	}
