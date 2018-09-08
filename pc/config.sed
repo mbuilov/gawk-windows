@@ -299,6 +299,12 @@ s/^#undef TIME_WITH_SYS_TIME *$/#define TIME_WITH_SYS_TIME 1/
 #define inline __inline__\
 #endif
 
+/^\/\* Enable extensions on AIX 3, Interix.  \*\//i\
+/* This is required to compile Gnulib regex code.  */\
+#ifdef __MINGW32__\
+#define _GNU_SOURCE 1\
+#endif
+
 s|^#undef PACKAGE_URL *$|#define PACKAGE_URL "http://www.gnu.org/software/gawk/"|
 
 $a\
