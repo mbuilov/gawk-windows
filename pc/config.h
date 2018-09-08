@@ -510,6 +510,10 @@
 /* force use of our version of strftime */
 #undef USE_INCLUDED_STRFTIME
 
+/* This is required to compile Gnulib regex code.  */
+#ifdef __MINGW32__
+#define _GNU_SOURCE 1
+#endif
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
 # undef _ALL_SOURCE
