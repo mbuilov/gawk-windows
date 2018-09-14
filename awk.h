@@ -1464,6 +1464,9 @@ extern NODE *do_typeof(int nargs);
 extern int strncasecmpmbs(const unsigned char *,
 			  const unsigned char *, size_t);
 extern int sanitize_exit_status(int status);
+/* debug.c */
+extern void init_debug(void);
+extern int debug_prog(INSTRUCTION *pc);
 /* eval.c */
 extern void PUSH_CODE(INSTRUCTION *cp);
 extern INSTRUCTION *POP_CODE(void);
