@@ -69,9 +69,6 @@ static void init_fds(void);
 static void init_groupset(void);
 static void save_argv(int, char **);
 
-extern int debug_prog(INSTRUCTION *pc); /* debug.c */
-extern int init_debug();	/* debug.c */
-
 /* These nodes store all the special variables AWK uses */
 NODE *ARGC_node, *ARGIND_node, *ARGV_node, *BINMODE_node, *CONVFMT_node;
 NODE *ENVIRON_node, *ERRNO_node, *FIELDWIDTHS_node, *FILENAME_node;
