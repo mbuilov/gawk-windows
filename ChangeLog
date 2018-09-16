@@ -1,3 +1,10 @@
+2018-09-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* field.c (get_field): Add lint check if accessing $0 inside
+	and END rule, print a "may not be portable" warning.
+	* builtin.c (do_print_rec): Call get_field() unconditionally
+	in order to do lint check.
+
 2018-09-14         Adrian Bunk           <bunk@debian.org>
 
 	* awk.h (init_debug, debug_prog): Move prototypes to here from ...

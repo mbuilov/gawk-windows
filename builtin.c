@@ -2364,8 +2364,7 @@ do_print_rec(int nargs, int redirtype)
 	if (fp == NULL)
 		return;
 
-	if (! field0_valid)
-		(void) get_field(0L, NULL);	/* rebuild record */
+	(void) get_field(0L, NULL);	/* rebuild record if necessary */
 
 	f0 = fields_arr[0];
 
