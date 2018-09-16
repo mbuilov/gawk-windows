@@ -837,6 +837,13 @@ get_field(long requested, Func_ptr *assign)
 	 * then the whole line must be rebuilt
 	 */
 	if (requested == 0) {
+		static bool warned = false;
+		extern int currule;
+
+		if (do_lint && currule == END && ! warned) {
+			warned = true;
+			lintwarn(_("accessing $0 from an END rule may not be portable"));
+		}
 		if (! field0_valid) {
 			/* first, parse remainder of input record */
 			if (NF == -1) {

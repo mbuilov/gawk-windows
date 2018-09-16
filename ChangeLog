@@ -1,3 +1,29 @@
+2018-09-16  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* configure.ac (AM_GNU_GETTEXT_VERSION): Bump to 0.19.8.
+	* ABOUT-NLS, config.rpath: Updated by gettext 0.19.8.1.
+
+2018-09-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* field.c (get_field): Add lint check if accessing $0 inside
+	and END rule, print a "may not be portable" warning.
+	* builtin.c (do_print_rec): Call get_field() unconditionally
+	in order to do lint check.
+
+	Unrelated:
+
+	* awkgram.c, command.c: Updated to Bison 3.1.
+	* NEWS: Updated.
+
+	Unrelated:
+
+	* Makefile.in, aclocal.m4, configure: Regenerated, using
+	Automake 1.16.1.
+
+	Unrelated:
+
+	* gettext.h: Synced with that from Gettext 0.19.8.1.
+
 2018-09-14         Adrian Bunk           <bunk@debian.org>
 
 	* awk.h (init_debug, debug_prog): Move prototypes to here from ...

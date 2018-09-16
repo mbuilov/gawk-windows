@@ -1,18 +1,18 @@
 /* Convenience header for conditional use of GNU <libintl.h>.
-   Copyright (C) 1995-1998, 2000-2002, 2004-2006, 2009-2011, 2015, 2017
-   Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2002, 2004-2006, 2009-2016 Free Software
+   Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation; either version 2.1 of the License, or
    (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifndef _LIBGETTEXT_H
@@ -193,8 +193,7 @@ npgettext_aux (const char *domain,
 #include <string.h>
 
 #if (((__GNUC__ >= 3 || __GNUG__ >= 2) && !defined __STRICT_ANSI__) \
-     /* || __STDC_VERSION__ == 199901L
-        || (__STDC_VERSION__ >= 201112L && !defined __STDC_NO_VLA__) */ )
+     /* || __STDC_VERSION__ >= 199901L */ )
 # define _LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS 1
 #else
 # define _LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS 0
