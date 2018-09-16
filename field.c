@@ -840,7 +840,7 @@ get_field(long requested, Func_ptr *assign)
 		static bool warned = false;
 		extern int currule;
 
-		if (do_lint && currule == END) {
+		if (do_lint && currule == END && ! warned) {
 			warned = true;
 			lintwarn(_("accessing $0 from an END rule may not be portable"));
 		}
