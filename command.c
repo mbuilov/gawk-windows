@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.0.4.  */
+/* A Bison parser, made by GNU Bison 3.1.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.0.4"
+#define YYBISON_VERSION "3.1"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -302,13 +302,13 @@ typedef signed char yytype_int8;
 #ifdef YYTYPE_UINT16
 typedef YYTYPE_UINT16 yytype_uint16;
 #else
-typedef unsigned short int yytype_uint16;
+typedef unsigned short yytype_uint16;
 #endif
 
 #ifdef YYTYPE_INT16
 typedef YYTYPE_INT16 yytype_int16;
 #else
-typedef short int yytype_int16;
+typedef short yytype_int16;
 #endif
 
 #ifndef YYSIZE_T
@@ -320,7 +320,7 @@ typedef short int yytype_int16;
 #  include <stddef.h> /* INFRINGES ON USER NAME SPACE */
 #  define YYSIZE_T size_t
 # else
-#  define YYSIZE_T unsigned int
+#  define YYSIZE_T unsigned
 # endif
 #endif
 
@@ -372,7 +372,7 @@ typedef short int yytype_int16;
 # define YYUSE(E) /* empty */
 #endif
 
-#if defined __GNUC__ && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
+#if defined __GNUC__ && ! defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
 /* Suppress an incorrect diagnostic about yylval being uninitialized.  */
 # define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN \
     _Pragma ("GCC diagnostic push") \
@@ -540,7 +540,7 @@ union yyalloc
 #define YYMAXUTOK   303
 
 #define YYTRANSLATE(YYX)                                                \
-  ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
+  ((unsigned) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
 
 /* YYTRANSLATE[TOKEN-NUM] -- Symbol number corresponding to TOKEN-NUM
    as returned by yylex, without out-of-bounds checking.  */
@@ -985,7 +985,7 @@ do {                                                            \
 static void
 yy_reduce_print (yytype_int16 *yyssp, YYSTYPE *yyvsp, int yyrule)
 {
-  unsigned long int yylno = yyrline[yyrule];
+  unsigned long yylno = yyrline[yyrule];
   int yynrhs = yyr2[yyrule];
   int yyi;
   YYFPRINTF (stderr, "Reducing stack by rule %d (line %lu):\n",
@@ -1211,6 +1211,7 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
       case N:                               \
         yyformat = S;                       \
       break
+    default: /* Avoid compiler warnings. */
       YYCASE_(0, YY_("syntax error"));
       YYCASE_(1, YY_("syntax error, unexpected %s"));
       YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
@@ -1416,7 +1417,7 @@ yyparse (void)
       yyvsp = yyvs + yysize - 1;
 
       YYDPRINTF ((stderr, "Stack size increased to %lu\n",
-                  (unsigned long int) yystacksize));
+                  (unsigned long) yystacksize));
 
       if (yyss + yystacksize - 1 <= yyssp)
         YYABORT;
@@ -1527,7 +1528,7 @@ yyreduce:
   switch (yyn)
     {
         case 3:
-#line 111 "command.y" /* yacc.c:1646  */
+#line 111 "command.y" /* yacc.c:1651  */
     {
 		cmd_idx = -1;
 		want_nodeval = false;
@@ -1542,11 +1543,11 @@ yyreduce:
 			arg_list = NULL;
 		}
 	  }
-#line 1546 "command.c" /* yacc.c:1646  */
+#line 1547 "command.c" /* yacc.c:1651  */
     break;
 
   case 5:
-#line 130 "command.y" /* yacc.c:1646  */
+#line 130 "command.y" /* yacc.c:1651  */
     {
 		if (errcount == 0 && cmd_idx >= 0) {
 			Func_cmd cmdfunc;
@@ -1596,25 +1597,25 @@ yyreduce:
 				YYACCEPT;
 		}
 	  }
-#line 1600 "command.c" /* yacc.c:1646  */
+#line 1601 "command.c" /* yacc.c:1651  */
     break;
 
   case 6:
-#line 180 "command.y" /* yacc.c:1646  */
+#line 180 "command.y" /* yacc.c:1651  */
     {
 		yyerrok;
 	  }
-#line 1608 "command.c" /* yacc.c:1646  */
+#line 1609 "command.c" /* yacc.c:1651  */
     break;
 
   case 22:
-#line 214 "command.y" /* yacc.c:1646  */
+#line 214 "command.y" /* yacc.c:1651  */
     { want_nodeval = true; }
-#line 1614 "command.c" /* yacc.c:1646  */
+#line 1615 "command.c" /* yacc.c:1651  */
     break;
 
   case 23:
-#line 219 "command.y" /* yacc.c:1646  */
+#line 219 "command.y" /* yacc.c:1651  */
     {
 		if (errcount == 0) {
 			/* don't free arg_list;	passed on to statement_list
@@ -1630,11 +1631,11 @@ yyreduce:
 			in_eval = true;
 		}
 	  }
-#line 1634 "command.c" /* yacc.c:1646  */
+#line 1635 "command.c" /* yacc.c:1651  */
     break;
 
   case 24:
-#line 238 "command.y" /* yacc.c:1646  */
+#line 238 "command.y" /* yacc.c:1651  */
     {
 		(yyval) = append_statement(arg_list, (char *) start_EVAL);
 		if (read_a_line == read_commands_string)	/* unserializing 'eval' in 'commands' */
@@ -1642,25 +1643,25 @@ yyreduce:
 		free_cmdarg(arg_list);
 		arg_list = NULL;
 	  }
-#line 1646 "command.c" /* yacc.c:1646  */
+#line 1647 "command.c" /* yacc.c:1651  */
     break;
 
   case 25:
-#line 245 "command.y" /* yacc.c:1646  */
+#line 245 "command.y" /* yacc.c:1651  */
     { (yyval) = append_statement((yyvsp[-1]), lexptr_begin); }
-#line 1652 "command.c" /* yacc.c:1646  */
+#line 1653 "command.c" /* yacc.c:1651  */
     break;
 
   case 26:
-#line 246 "command.y" /* yacc.c:1646  */
+#line 246 "command.y" /* yacc.c:1651  */
     {
 		(yyval) = (yyvsp[-1]);
 	  }
-#line 1660 "command.c" /* yacc.c:1646  */
+#line 1661 "command.c" /* yacc.c:1651  */
     break;
 
   case 27:
-#line 253 "command.y" /* yacc.c:1646  */
+#line 253 "command.y" /* yacc.c:1651  */
     {
 		arg_list = append_statement((yyvsp[-1]), (char *) end_EVAL);
 		if (read_a_line == read_commands_string) {	/* unserializing 'eval' in 'commands' */
@@ -1676,11 +1677,11 @@ yyreduce:
 		cmd_idx = find_command("eval", 4);
 		in_eval = false;
 	  }
-#line 1680 "command.c" /* yacc.c:1646  */
+#line 1681 "command.c" /* yacc.c:1651  */
     break;
 
   case 28:
-#line 269 "command.y" /* yacc.c:1646  */
+#line 269 "command.y" /* yacc.c:1651  */
     {
 		NODE *n;
 		CMDARG *arg;
@@ -1691,21 +1692,21 @@ yyreduce:
 		free_cmdarg(arg_list);
 		arg_list = arg;
 	  }
-#line 1695 "command.c" /* yacc.c:1646  */
+#line 1696 "command.c" /* yacc.c:1651  */
     break;
 
   case 34:
-#line 288 "command.y" /* yacc.c:1646  */
+#line 288 "command.y" /* yacc.c:1651  */
     {
 		if (cmdtab[cmd_idx].class == D_FRAME
 				&& (yyvsp[0]) != NULL && (yyvsp[0])->a_int < 0)
 			yyerror(_("invalid frame number: %d"), (yyvsp[0])->a_int);
 	  }
-#line 1705 "command.c" /* yacc.c:1646  */
+#line 1706 "command.c" /* yacc.c:1651  */
     break;
 
   case 35:
-#line 294 "command.y" /* yacc.c:1646  */
+#line 294 "command.y" /* yacc.c:1651  */
     {
 		int idx = find_argument((yyvsp[0]));
 		if (idx < 0)
@@ -1717,65 +1718,65 @@ yyreduce:
 			(yyvsp[0])->a_argument = argtab[idx].value;
 		}
 	  }
-#line 1721 "command.c" /* yacc.c:1646  */
+#line 1722 "command.c" /* yacc.c:1651  */
     break;
 
   case 38:
-#line 307 "command.y" /* yacc.c:1646  */
+#line 307 "command.y" /* yacc.c:1651  */
     { want_nodeval = true; }
-#line 1727 "command.c" /* yacc.c:1646  */
+#line 1728 "command.c" /* yacc.c:1651  */
     break;
 
   case 40:
-#line 308 "command.y" /* yacc.c:1646  */
+#line 308 "command.y" /* yacc.c:1651  */
     { want_nodeval = true; }
-#line 1733 "command.c" /* yacc.c:1646  */
+#line 1734 "command.c" /* yacc.c:1651  */
     break;
 
   case 46:
-#line 313 "command.y" /* yacc.c:1646  */
+#line 313 "command.y" /* yacc.c:1651  */
     { want_nodeval = true; }
-#line 1739 "command.c" /* yacc.c:1646  */
+#line 1740 "command.c" /* yacc.c:1651  */
     break;
 
   case 49:
-#line 315 "command.y" /* yacc.c:1646  */
+#line 315 "command.y" /* yacc.c:1651  */
     { want_nodeval = true; }
-#line 1745 "command.c" /* yacc.c:1646  */
+#line 1746 "command.c" /* yacc.c:1651  */
     break;
 
   case 51:
-#line 316 "command.y" /* yacc.c:1646  */
+#line 316 "command.y" /* yacc.c:1651  */
     { want_nodeval = true; }
-#line 1751 "command.c" /* yacc.c:1646  */
+#line 1752 "command.c" /* yacc.c:1651  */
     break;
 
   case 53:
-#line 317 "command.y" /* yacc.c:1646  */
+#line 317 "command.y" /* yacc.c:1651  */
     { want_nodeval = true; }
-#line 1757 "command.c" /* yacc.c:1646  */
+#line 1758 "command.c" /* yacc.c:1651  */
     break;
 
   case 57:
-#line 321 "command.y" /* yacc.c:1646  */
+#line 321 "command.y" /* yacc.c:1651  */
     {
 		if (in_cmd_src((yyvsp[0])->a_string))
 			yyerror(_("source \"%s\": already sourced."), (yyvsp[0])->a_string);
 	  }
-#line 1766 "command.c" /* yacc.c:1646  */
+#line 1767 "command.c" /* yacc.c:1651  */
     break;
 
   case 58:
-#line 326 "command.y" /* yacc.c:1646  */
+#line 326 "command.y" /* yacc.c:1651  */
     {
 		if (! input_from_tty)
 			yyerror(_("save \"%s\": command not permitted."), (yyvsp[0])->a_string);
 	  }
-#line 1775 "command.c" /* yacc.c:1646  */
+#line 1776 "command.c" /* yacc.c:1651  */
     break;
 
   case 59:
-#line 331 "command.y" /* yacc.c:1646  */
+#line 331 "command.y" /* yacc.c:1651  */
     {
 		int type = 0;
 		int num;
@@ -1801,11 +1802,11 @@ yyreduce:
 			}
 		}
 	  }
-#line 1805 "command.c" /* yacc.c:1646  */
+#line 1806 "command.c" /* yacc.c:1651  */
     break;
 
   case 60:
-#line 357 "command.y" /* yacc.c:1646  */
+#line 357 "command.y" /* yacc.c:1651  */
     {
 		if (! in_commands)
 			yyerror(_("`end' valid only in command `commands' or `eval'"));
@@ -1815,20 +1816,20 @@ yyreduce:
 			in_commands = false;
 		}
 	  }
-#line 1819 "command.c" /* yacc.c:1646  */
+#line 1820 "command.c" /* yacc.c:1651  */
     break;
 
   case 61:
-#line 367 "command.y" /* yacc.c:1646  */
+#line 367 "command.y" /* yacc.c:1651  */
     {
 		if (! in_commands)
 			yyerror(_("`silent' valid only in command `commands'"));
 	  }
-#line 1828 "command.c" /* yacc.c:1646  */
+#line 1829 "command.c" /* yacc.c:1651  */
     break;
 
   case 62:
-#line 372 "command.y" /* yacc.c:1646  */
+#line 372 "command.y" /* yacc.c:1651  */
     {
 		int idx = find_argument((yyvsp[0]));
 		if (idx < 0)
@@ -1840,17 +1841,17 @@ yyreduce:
 			(yyvsp[0])->a_argument = argtab[idx].value;
 		}
 	  }
-#line 1844 "command.c" /* yacc.c:1646  */
+#line 1845 "command.c" /* yacc.c:1651  */
     break;
 
   case 63:
-#line 383 "command.y" /* yacc.c:1646  */
+#line 383 "command.y" /* yacc.c:1651  */
     { want_nodeval = true; }
-#line 1850 "command.c" /* yacc.c:1646  */
+#line 1851 "command.c" /* yacc.c:1651  */
     break;
 
   case 64:
-#line 384 "command.y" /* yacc.c:1646  */
+#line 384 "command.y" /* yacc.c:1651  */
     {
 		int type;
 		int num = (yyvsp[-2])->a_int;
@@ -1858,11 +1859,11 @@ yyreduce:
 		if (! type)
 			yyerror(_("condition: invalid breakpoint/watchpoint number"));
 	  }
-#line 1862 "command.c" /* yacc.c:1646  */
+#line 1863 "command.c" /* yacc.c:1651  */
     break;
 
   case 65:
-#line 392 "command.y" /* yacc.c:1646  */
+#line 392 "command.y" /* yacc.c:1651  */
     {
 		if (in_commands) {
 			/* Prepend command 'eval' to argument list */
@@ -1873,11 +1874,11 @@ yyreduce:
 			arg_list = arg;
 		}
 	  }
-#line 1877 "command.c" /* yacc.c:1646  */
+#line 1878 "command.c" /* yacc.c:1651  */
     break;
 
   case 66:
-#line 406 "command.y" /* yacc.c:1646  */
+#line 406 "command.y" /* yacc.c:1651  */
     {
 		if ((yyvsp[0]) != NULL) {
 			NODE *n = (yyvsp[0])->a_node;
@@ -1887,76 +1888,76 @@ yyreduce:
 		}
 		(yyval) = (yyvsp[0]);
 	  }
-#line 1891 "command.c" /* yacc.c:1646  */
+#line 1892 "command.c" /* yacc.c:1651  */
     break;
 
   case 68:
-#line 420 "command.y" /* yacc.c:1646  */
+#line 420 "command.y" /* yacc.c:1651  */
     {	(yyval) = NULL; }
-#line 1897 "command.c" /* yacc.c:1646  */
+#line 1898 "command.c" /* yacc.c:1651  */
     break;
 
   case 69:
-#line 425 "command.y" /* yacc.c:1646  */
+#line 425 "command.y" /* yacc.c:1651  */
     { (yyval) = NULL; }
-#line 1903 "command.c" /* yacc.c:1646  */
+#line 1904 "command.c" /* yacc.c:1651  */
     break;
 
   case 74:
-#line 434 "command.y" /* yacc.c:1646  */
+#line 434 "command.y" /* yacc.c:1651  */
     { (yyval) = NULL; }
-#line 1909 "command.c" /* yacc.c:1646  */
+#line 1910 "command.c" /* yacc.c:1651  */
     break;
 
   case 75:
-#line 439 "command.y" /* yacc.c:1646  */
+#line 439 "command.y" /* yacc.c:1651  */
     { (yyval) = NULL; }
-#line 1915 "command.c" /* yacc.c:1646  */
+#line 1916 "command.c" /* yacc.c:1651  */
     break;
 
   case 77:
-#line 442 "command.y" /* yacc.c:1646  */
+#line 442 "command.y" /* yacc.c:1651  */
     { (yyval) = NULL; }
-#line 1921 "command.c" /* yacc.c:1646  */
+#line 1922 "command.c" /* yacc.c:1651  */
     break;
 
   case 78:
-#line 447 "command.y" /* yacc.c:1646  */
+#line 447 "command.y" /* yacc.c:1651  */
     {
 		NODE *n;
 		n = (yyvsp[0])->a_node;
 		if ((n->flags & STRING) == 0)
 			yyerror(_("argument not a string"));
 	  }
-#line 1932 "command.c" /* yacc.c:1646  */
+#line 1933 "command.c" /* yacc.c:1651  */
     break;
 
   case 79:
-#line 457 "command.y" /* yacc.c:1646  */
+#line 457 "command.y" /* yacc.c:1651  */
     { (yyval) = NULL; }
-#line 1938 "command.c" /* yacc.c:1646  */
+#line 1939 "command.c" /* yacc.c:1651  */
     break;
 
   case 80:
-#line 459 "command.y" /* yacc.c:1646  */
+#line 459 "command.y" /* yacc.c:1651  */
     {
 		if (find_option((yyvsp[0])->a_string) < 0)
 			yyerror(_("option: invalid parameter - \"%s\""), (yyvsp[0])->a_string);
  	  }
-#line 1947 "command.c" /* yacc.c:1646  */
+#line 1948 "command.c" /* yacc.c:1651  */
     break;
 
   case 81:
-#line 464 "command.y" /* yacc.c:1646  */
+#line 464 "command.y" /* yacc.c:1651  */
     {
 		if (find_option((yyvsp[-2])->a_string) < 0)
 			yyerror(_("option: invalid parameter - \"%s\""), (yyvsp[-2])->a_string);
  	  }
-#line 1956 "command.c" /* yacc.c:1646  */
+#line 1957 "command.c" /* yacc.c:1651  */
     break;
 
   case 82:
-#line 472 "command.y" /* yacc.c:1646  */
+#line 472 "command.y" /* yacc.c:1651  */
     {
 		NODE *n;
 		n = lookup((yyvsp[0])->a_string);
@@ -1969,53 +1970,53 @@ yyreduce:
 			(yyvsp[0])->a_node = n;
 		}
 	  }
-#line 1973 "command.c" /* yacc.c:1646  */
+#line 1974 "command.c" /* yacc.c:1651  */
     break;
 
   case 83:
-#line 488 "command.y" /* yacc.c:1646  */
+#line 488 "command.y" /* yacc.c:1651  */
     { (yyval) = NULL; }
-#line 1979 "command.c" /* yacc.c:1646  */
+#line 1980 "command.c" /* yacc.c:1651  */
     break;
 
   case 88:
-#line 497 "command.y" /* yacc.c:1646  */
+#line 497 "command.y" /* yacc.c:1651  */
     { (yyval) = NULL; }
-#line 1985 "command.c" /* yacc.c:1646  */
+#line 1986 "command.c" /* yacc.c:1651  */
     break;
 
   case 89:
-#line 498 "command.y" /* yacc.c:1646  */
+#line 498 "command.y" /* yacc.c:1651  */
     { want_nodeval = true; }
-#line 1991 "command.c" /* yacc.c:1646  */
+#line 1992 "command.c" /* yacc.c:1651  */
     break;
 
   case 92:
-#line 500 "command.y" /* yacc.c:1646  */
+#line 500 "command.y" /* yacc.c:1651  */
     { want_nodeval = true; }
-#line 1997 "command.c" /* yacc.c:1646  */
+#line 1998 "command.c" /* yacc.c:1651  */
     break;
 
   case 95:
-#line 506 "command.y" /* yacc.c:1646  */
+#line 506 "command.y" /* yacc.c:1651  */
     { (yyval) = NULL; }
-#line 2003 "command.c" /* yacc.c:1646  */
+#line 2004 "command.c" /* yacc.c:1651  */
     break;
 
   case 97:
-#line 512 "command.y" /* yacc.c:1646  */
+#line 512 "command.y" /* yacc.c:1651  */
     { (yyval) = NULL; }
-#line 2009 "command.c" /* yacc.c:1646  */
+#line 2010 "command.c" /* yacc.c:1651  */
     break;
 
   case 99:
-#line 518 "command.y" /* yacc.c:1646  */
+#line 518 "command.y" /* yacc.c:1651  */
     { (yyval) = NULL; }
-#line 2015 "command.c" /* yacc.c:1646  */
+#line 2016 "command.c" /* yacc.c:1651  */
     break;
 
   case 104:
-#line 530 "command.y" /* yacc.c:1646  */
+#line 530 "command.y" /* yacc.c:1651  */
     {
 		int idx = find_argument((yyvsp[-1]));
 		if (idx < 0)
@@ -2027,52 +2028,52 @@ yyreduce:
 			(yyvsp[-1])->a_argument = argtab[idx].value;
 		}
 	  }
-#line 2031 "command.c" /* yacc.c:1646  */
+#line 2032 "command.c" /* yacc.c:1651  */
     break;
 
   case 106:
-#line 546 "command.y" /* yacc.c:1646  */
+#line 546 "command.y" /* yacc.c:1651  */
     {
 		(yyvsp[0])->type = D_array;	/* dump all items */
 		(yyvsp[0])->a_count = 0;
 	  }
-#line 2040 "command.c" /* yacc.c:1646  */
+#line 2041 "command.c" /* yacc.c:1651  */
     break;
 
   case 107:
-#line 551 "command.y" /* yacc.c:1646  */
+#line 551 "command.y" /* yacc.c:1651  */
     {
 		(yyvsp[-1])->type = D_array;
 		(yyvsp[-1])->a_count = num_dim;
 	  }
-#line 2049 "command.c" /* yacc.c:1646  */
+#line 2050 "command.c" /* yacc.c:1651  */
     break;
 
   case 117:
-#line 577 "command.y" /* yacc.c:1646  */
+#line 577 "command.y" /* yacc.c:1651  */
     { (yyval) = NULL; }
-#line 2055 "command.c" /* yacc.c:1646  */
+#line 2056 "command.c" /* yacc.c:1651  */
     break;
 
   case 118:
-#line 579 "command.y" /* yacc.c:1646  */
+#line 579 "command.y" /* yacc.c:1651  */
     { (yyval) = NULL; }
-#line 2061 "command.c" /* yacc.c:1646  */
+#line 2062 "command.c" /* yacc.c:1651  */
     break;
 
   case 119:
-#line 581 "command.y" /* yacc.c:1646  */
+#line 581 "command.y" /* yacc.c:1651  */
     {
 		CMDARG *a;
 		a = mk_cmdarg(D_int);
 		a->a_int = -1;
 		append_cmdarg(a);
 	  }
-#line 2072 "command.c" /* yacc.c:1646  */
+#line 2073 "command.c" /* yacc.c:1651  */
     break;
 
   case 126:
-#line 597 "command.y" /* yacc.c:1646  */
+#line 597 "command.y" /* yacc.c:1651  */
     {
 		if ((yyvsp[-2])->a_int > (yyvsp[0])->a_int)
 			yyerror(_("invalid range specification: %d - %d"),
@@ -2081,29 +2082,29 @@ yyreduce:
 			(yyvsp[-2])->type = D_range;
 		(yyval) = (yyvsp[-2]);
 	  }
-#line 2085 "command.c" /* yacc.c:1646  */
+#line 2086 "command.c" /* yacc.c:1651  */
     break;
 
   case 127:
-#line 609 "command.y" /* yacc.c:1646  */
+#line 609 "command.y" /* yacc.c:1651  */
     { (yyval) = NULL; }
-#line 2091 "command.c" /* yacc.c:1646  */
+#line 2092 "command.c" /* yacc.c:1651  */
     break;
 
   case 134:
-#line 623 "command.y" /* yacc.c:1646  */
+#line 623 "command.y" /* yacc.c:1651  */
     { (yyval) = (yyvsp[0]); }
-#line 2097 "command.c" /* yacc.c:1646  */
+#line 2098 "command.c" /* yacc.c:1651  */
     break;
 
   case 135:
-#line 625 "command.y" /* yacc.c:1646  */
+#line 625 "command.y" /* yacc.c:1651  */
     { (yyval) = (yyvsp[-2]); }
-#line 2103 "command.c" /* yacc.c:1646  */
+#line 2104 "command.c" /* yacc.c:1651  */
     break;
 
   case 137:
-#line 631 "command.y" /* yacc.c:1646  */
+#line 631 "command.y" /* yacc.c:1651  */
     {
 		CMDARG *a;
 		NODE *subs;
@@ -2118,23 +2119,23 @@ yyreduce:
 		(yyvsp[-1])->a_node = subs;
 		(yyval) = (yyvsp[-1]);
 	  }
-#line 2122 "command.c" /* yacc.c:1646  */
+#line 2123 "command.c" /* yacc.c:1651  */
     break;
 
   case 139:
-#line 650 "command.y" /* yacc.c:1646  */
+#line 650 "command.y" /* yacc.c:1651  */
     { (yyval) = (yyvsp[0]); num_dim = 1; }
-#line 2128 "command.c" /* yacc.c:1646  */
+#line 2129 "command.c" /* yacc.c:1651  */
     break;
 
   case 140:
-#line 652 "command.y" /* yacc.c:1646  */
+#line 652 "command.y" /* yacc.c:1651  */
     {	(yyval) = (yyvsp[-1]); num_dim++; }
-#line 2134 "command.c" /* yacc.c:1646  */
+#line 2135 "command.c" /* yacc.c:1651  */
     break;
 
   case 142:
-#line 658 "command.y" /* yacc.c:1646  */
+#line 658 "command.y" /* yacc.c:1651  */
     {
 		NODE *n = (yyvsp[0])->a_node;
 		if ((n->flags & NUMBER) == 0)
@@ -2143,39 +2144,39 @@ yyreduce:
 			(yyvsp[0])->type = D_field;
 		(yyval) = (yyvsp[0]);
 	  }
-#line 2147 "command.c" /* yacc.c:1646  */
+#line 2148 "command.c" /* yacc.c:1651  */
     break;
 
   case 143:
-#line 667 "command.y" /* yacc.c:1646  */
+#line 667 "command.y" /* yacc.c:1651  */
     {
 		/* a_string is array name, a_count is dimension count */
 		(yyvsp[-1])->type = D_subscript;
 		(yyvsp[-1])->a_count = num_dim;
 		(yyval) = (yyvsp[-1]);
 	  }
-#line 2158 "command.c" /* yacc.c:1646  */
+#line 2159 "command.c" /* yacc.c:1651  */
     break;
 
   case 144:
-#line 677 "command.y" /* yacc.c:1646  */
+#line 677 "command.y" /* yacc.c:1651  */
     { (yyval) = (yyvsp[0]); }
-#line 2164 "command.c" /* yacc.c:1646  */
+#line 2165 "command.c" /* yacc.c:1651  */
     break;
 
   case 145:
-#line 679 "command.y" /* yacc.c:1646  */
+#line 679 "command.y" /* yacc.c:1651  */
     {
 		NODE *n = (yyvsp[0])->a_node;
 		if ((n->flags & NUMBER) == 0)
 			yyerror(_("non-numeric value found, numeric expected"));
 		(yyval) = (yyvsp[0]);
 	  }
-#line 2175 "command.c" /* yacc.c:1646  */
+#line 2176 "command.c" /* yacc.c:1651  */
     break;
 
   case 146:
-#line 686 "command.y" /* yacc.c:1646  */
+#line 686 "command.y" /* yacc.c:1651  */
     {
 		NODE *n = (yyvsp[0])->a_node;
 		if ((n->flags & NUMBER) == 0)
@@ -2184,76 +2185,76 @@ yyreduce:
 			negate_num(n);
 		(yyval) = (yyvsp[0]);
 	  }
-#line 2188 "command.c" /* yacc.c:1646  */
+#line 2189 "command.c" /* yacc.c:1651  */
     break;
 
   case 147:
-#line 698 "command.y" /* yacc.c:1646  */
+#line 698 "command.y" /* yacc.c:1651  */
     { (yyval) = NULL; }
-#line 2194 "command.c" /* yacc.c:1646  */
+#line 2195 "command.c" /* yacc.c:1651  */
     break;
 
   case 148:
-#line 700 "command.y" /* yacc.c:1646  */
+#line 700 "command.y" /* yacc.c:1651  */
     { (yyval) = (yyvsp[0]); }
-#line 2200 "command.c" /* yacc.c:1646  */
+#line 2201 "command.c" /* yacc.c:1651  */
     break;
 
   case 149:
-#line 705 "command.y" /* yacc.c:1646  */
+#line 705 "command.y" /* yacc.c:1651  */
     { (yyval) = NULL; }
-#line 2206 "command.c" /* yacc.c:1646  */
+#line 2207 "command.c" /* yacc.c:1651  */
     break;
 
   case 150:
-#line 707 "command.y" /* yacc.c:1646  */
+#line 707 "command.y" /* yacc.c:1651  */
     { (yyval) = (yyvsp[0]); }
-#line 2212 "command.c" /* yacc.c:1646  */
+#line 2213 "command.c" /* yacc.c:1651  */
     break;
 
   case 151:
-#line 712 "command.y" /* yacc.c:1646  */
+#line 712 "command.y" /* yacc.c:1651  */
     {
 		if ((yyvsp[0])->a_int == 0)
 			yyerror(_("non-zero integer value"));
 		(yyval) = (yyvsp[0]);
 	  }
-#line 2222 "command.c" /* yacc.c:1646  */
+#line 2223 "command.c" /* yacc.c:1651  */
     break;
 
   case 152:
-#line 718 "command.y" /* yacc.c:1646  */
+#line 718 "command.y" /* yacc.c:1651  */
     {
 		if ((yyvsp[0])->a_int == 0)
 			yyerror(_("non-zero integer value"));
 		(yyval) = (yyvsp[0]);
 	  }
-#line 2232 "command.c" /* yacc.c:1646  */
+#line 2233 "command.c" /* yacc.c:1651  */
     break;
 
   case 153:
-#line 727 "command.y" /* yacc.c:1646  */
+#line 727 "command.y" /* yacc.c:1651  */
     { (yyval) = (yyvsp[0]); }
-#line 2238 "command.c" /* yacc.c:1646  */
+#line 2239 "command.c" /* yacc.c:1651  */
     break;
 
   case 154:
-#line 729 "command.y" /* yacc.c:1646  */
+#line 729 "command.y" /* yacc.c:1651  */
     { (yyval) = (yyvsp[0]); }
-#line 2244 "command.c" /* yacc.c:1646  */
+#line 2245 "command.c" /* yacc.c:1651  */
     break;
 
   case 155:
-#line 731 "command.y" /* yacc.c:1646  */
+#line 731 "command.y" /* yacc.c:1651  */
     {
 		(yyvsp[0])->a_int = - (yyvsp[0])->a_int;
 		(yyval) = (yyvsp[0]);
 	  }
-#line 2253 "command.c" /* yacc.c:1646  */
+#line 2254 "command.c" /* yacc.c:1651  */
     break;
 
   case 156:
-#line 739 "command.y" /* yacc.c:1646  */
+#line 739 "command.y" /* yacc.c:1651  */
     {
 		if (lexptr_begin != NULL) {
 			if (input_from_tty && lexptr_begin[0] != '\0')
@@ -2262,11 +2263,11 @@ yyreduce:
 			lexptr_begin = NULL;
 		}
 	  }
-#line 2266 "command.c" /* yacc.c:1646  */
+#line 2267 "command.c" /* yacc.c:1651  */
     break;
 
 
-#line 2270 "command.c" /* yacc.c:1646  */
+#line 2271 "command.c" /* yacc.c:1651  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2494,7 +2495,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 749 "command.y" /* yacc.c:1906  */
+#line 749 "command.y" /* yacc.c:1910  */
 
 
 
