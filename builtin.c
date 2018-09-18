@@ -2364,7 +2364,8 @@ do_print_rec(int nargs, int redirtype)
 	if (fp == NULL)
 		return;
 
-	(void) get_field(0L, NULL);	/* rebuild record if necessary */
+	if (! field0_valid || do_lint)	// lint check for field access in END
+		(void) get_field(0L, NULL);
 
 	f0 = fields_arr[0];
 
