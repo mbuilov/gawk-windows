@@ -1,3 +1,23 @@
+2018-09-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* NEWS: Fix typo in gettext version.
+
+	Unrelated:
+
+	* field.c (get_field): Move lint check for field access in an
+	END rule to top level, make wording more general.
+	* builtin.c (do_print_rec): Restore check before calling get_field()
+	and add do_lint to the condition.
+
+	Unrelated:
+
+	* field.c (set_NF): Add lint warning if decrementing NF, which
+	doesn't work on older Unix awks.
+
+	Unrelated:
+
+	* config.rpath: Sync to GNULIB.
+
 2018-09-16  gettextize  <bug-gnu-gettext@gnu.org>
 
 	* configure.ac (AM_GNU_GETTEXT_VERSION): Bump to 0.19.8.
