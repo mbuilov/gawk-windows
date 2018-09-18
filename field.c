@@ -396,6 +396,13 @@ set_NF()
 	nf = get_number_si(NF_node->var_value);
 	if (nf < 0)
 		fatal(_("NF set to negative value"));
+
+	static bool warned = false;
+	if (do_lint && NF > nf && ! warned) {
+		warned = true;
+		lintwarn(_("decrementing NF is not portable to many awk versions"));
+	}
+
 	NF = nf;
 
 	if (NF > nf_high_water)
@@ -832,18 +839,19 @@ NODE **
 get_field(long requested, Func_ptr *assign)
 {
 	bool in_middle = false;
+	static bool warned = false;
+	extern int currule;
+
+	if (do_lint && currule == END && ! warned) {
+		warned = true;
+		lintwarn(_("accessing fields from an END rule may not be portable"));
+	}
+
 	/*
 	 * if requesting whole line but some other field has been altered,
 	 * then the whole line must be rebuilt
 	 */
 	if (requested == 0) {
-		static bool warned = false;
-		extern int currule;
-
-		if (do_lint && currule == END && ! warned) {
-			warned = true;
-			lintwarn(_("accessing $0 from an END rule may not be portable"));
-		}
 		if (! field0_valid) {
 			/* first, parse remainder of input record */
 			if (NF == -1) {
