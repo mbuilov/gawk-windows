@@ -396,6 +396,13 @@ set_NF()
 	nf = get_number_si(NF_node->var_value);
 	if (nf < 0)
 		fatal(_("NF set to negative value"));
+
+	static bool warned = false;
+	if (do_lint && NF > nf && ! warned) {
+		warned = true;
+		lintwarn(_("decrementing NF is not portable to many awk versions"));
+	}
+
 	NF = nf;
 
 	if (NF > nf_high_water)
