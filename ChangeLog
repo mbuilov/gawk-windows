@@ -1,5 +1,16 @@
 2018-09-21         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* awk.h (INSTRUCTION): Add comment field to carry
+	comment around during parsing.
+	* awkgram.y (merge_comments): New function.
+	(split_comment, check_comment, comment, prior_comment,
+	comment_to_save, program_comment, function_comment,
+	block_comment): Removed.
+	(grammar): Remove old code and start passing the comment
+	up via yylval and the newlines in the grammar.
+
+2018-09-21         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* awkgram.y: Undo change of 2016-11-28 to make switch
 	head a separate production, in preparation for revamping
 	comment handling.

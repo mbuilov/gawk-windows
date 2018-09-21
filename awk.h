@@ -762,6 +762,7 @@ typedef struct exp_instruction {
 		awk_ext_func_t *exf;
 	} x;
 
+	struct exp_instruction *comment;
 	short source_line;
 	short pool_size;	// memory management in symbol.c
 	OPCODE opcode;
