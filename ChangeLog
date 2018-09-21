@@ -1,5 +1,13 @@
 2018-09-21         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* re.c (make_regexp): Handle backslash at end of
+	input string. Thanks to Anatoly Trosinenko
+	<anatoly.trosinenko@gmail.com> for the report.
+	Also, improve the error message when compilation of
+	the regexp fails.
+
+2018-09-21         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* io.c (fork_and_open_slave_pty): Move an errant close brace
 	inside the #endif so that gawk will compile on AIX. Thanks to
 	Fredrik Laurin <fredrik_laurin@yahoo.se> for the report.

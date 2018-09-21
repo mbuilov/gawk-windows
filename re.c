@@ -112,6 +112,12 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 		    (*src == '\\')) {
 			c = *++src;
 			switch (c) {
+			case '\0':	/* \\ before \0, either dynamic data or real end of string */
+				if (src >= s + len)
+					*dest++ = '\\';	// at end of string, will fatal below
+				else
+					fatal(_("invalid NUL byte in dynamic regexp"));
+				break;
 			case 'a':
 			case 'b':
 			case 'f':
@@ -241,7 +247,7 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 			error("%s: /%s/", rerr, buf);
  			return NULL;
 		}
-		fatal("%s: /%s/", rerr, buf);
+		fatal("invalid regexp: %s: /%s/", rerr, buf);
 	}
 
 	/* gack. this must be done *after* re_compile_pattern */
