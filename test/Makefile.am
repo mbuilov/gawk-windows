@@ -1161,6 +1161,9 @@ EXTRA_DIST = \
 	tradanch.awk \
 	tradanch.in \
 	tradanch.ok \
+	trailbs.awk \
+	trailbs.in \
+	trailbs.ok \
 	tweakfld.awk \
 	tweakfld.in \
 	tweakfld.ok \
@@ -1270,7 +1273,7 @@ BASIC_TESTS = \
 	sigpipe1 sortempty sortglos spacere splitargv splitarr \
 	splitdef splitvar splitwht status-close strcat1 strnum1 strnum2 strtod \
 	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 \
-	tailrecurse tradanch tweakfld \
+	tailrecurse tradanch trailbs tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs uplus \
 	wideidx wideidx2 widesub widesub2 widesub3 widesub4 wjposer1 \
 	zero2 zeroe0 zeroflag
