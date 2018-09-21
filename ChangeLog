@@ -1,3 +1,9 @@
+2018-09-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (fork_and_open_slave_pty): Move an errant close brace
+	inside the #endif so that gawk will compile on AIX. Thanks to
+	Fredrik Laurin <fredrik_laurin@yahoo.se> for the report.
+
 2018-09-18         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* NEWS: Fix typo in gettext version.
