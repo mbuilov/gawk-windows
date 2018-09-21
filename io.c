@@ -2104,8 +2104,8 @@ fork_and_open_slave_pty(const char *slavenam, int master, const char *command, p
 	}
 
 	return true;
-}
 #endif
+}
 
 #endif /* defined(HAVE_TERMIOS_H) */
 
