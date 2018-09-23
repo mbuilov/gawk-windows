@@ -65,8 +65,10 @@
 #endif /* LOCALEDIR */
 #endif
 
+#if !defined(__SUNPRO_C)
 #if !defined(__STDC__) || __STDC__ < 1
 #error "gawk no longer supports non-C89 environments (no __STDC__ or __STDC__ < 1)"
+#endif
 #endif
 
 #if defined(HAVE_STDARG_H)
