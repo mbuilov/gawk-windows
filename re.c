@@ -51,6 +51,12 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 	static bool no_dfa = false;
 	int i;
 	static struct dfa* dfaregs[2] = { NULL, NULL };
+	static bool nul_warned = false;
+
+	if (do_lint && ! nul_warned && memchr(s, '\0', len) != NULL) {
+		nul_warned = true;
+		lintwarn(_("behavior of matching a regexp containing NUL characters is not defined by POSIX"));
+	}
 
 	/*
 	 * The number of bytes in the current multibyte character.
@@ -148,6 +154,12 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 				    && strchr("()|*+?.^$\\[]", c2) != NULL)
 					*dest++ = '\\';
 				*dest++ = (char) c2;
+				if (do_lint
+				    && ! nul_warned
+				    && c2 == '\0') {
+					nul_warned = true;
+					lintwarn(_("behavior of matching a regexp containing NUL characters is not defined by POSIX"));
+				}
 				break;
 			case '8':
 			case '9':	/* a\9b not valid */
