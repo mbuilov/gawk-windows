@@ -1771,9 +1771,15 @@ extern uintmax_t adjust_uint(uintmax_t n);
 /* POP_ARRAY --- get the array at the top of the stack */
 
 static inline NODE *
-POP_ARRAY()
+POP_ARRAY(bool check_for_untyped)
 {
 	NODE *t = POP();
+	static bool warned = false;
+
+	if (do_lint && ! warned && check_for_untyped && t->type == Node_var_new) {
+		warned = true;
+		lintwarn(_("behavior of `for' loop on untyped variable is not defined by POSIX"));
+	}
 
 	return (t->type == Node_var_array) ? t : force_array(t, true);
 }
