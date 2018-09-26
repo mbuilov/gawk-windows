@@ -1038,7 +1038,7 @@ do_split(int nargs)
 
 			if (do_lint && ! warned) {
 				warned = true;
-				lintwarn(_("split: null string for third arg is a gawk extension"));
+				lintwarn(_("split: null string for third arg is a non-standard extension"));
 			}
 		} else if (fs->stlen == 1 && (sep->re_flags & CONSTANT) == 0) {
 			if (fs->stptr[0] == ' ') {

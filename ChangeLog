@@ -1,3 +1,15 @@
+2018-09-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add more lint checks.
+
+	* awk.h (POP_ARRAY): Add boolean parameter to check for untyped
+	value and include lint warning.
+	* interpret.h (r_interpret): Adjust all calls to POP_ARRAY.
+	* field.c (do_split): Improve lint warning text for empty
+	third argument.
+	* re.c (make_regexp): Add lint check for '\0' in contents of
+	regexp to be matched (dynamic or otherwise).
+
 2018-09-23         Steven Packard        <spackard1@bloomberg.net>
 
 	* awk.h: Add `#if !defined(__SUNPRO_C)' around check for non-ANSI

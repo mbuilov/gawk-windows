@@ -248,7 +248,7 @@ uninitialized_scalar:
 
 		case Op_subscript:
 			t2 = mk_sub(pc->sub_count);
-			t1 = POP_ARRAY();
+			t1 = POP_ARRAY(false);
 
 			if (do_lint && in_array(t1, t2) == NULL) {
 				t2 = force_string(t2);
@@ -295,7 +295,7 @@ uninitialized_scalar:
 
 		case Op_sub_array:
 			t2 = mk_sub(pc->sub_count);
-			t1 = POP_ARRAY();
+			t1 = POP_ARRAY(false);
 			r = in_array(t1, t2);
 			if (r == NULL) {
 				r = make_array();
@@ -321,7 +321,7 @@ uninitialized_scalar:
 
 		case Op_subscript_lhs:
 			t2 = mk_sub(pc->sub_count);
-			t1 = POP_ARRAY();
+			t1 = POP_ARRAY(false);
 			if (do_lint && in_array(t1, t2) == NULL) {
 				t2 = force_string(t2);
 				if (pc->do_reference)
@@ -884,19 +884,19 @@ mod:
 			break;
 
 		case Op_K_delete:
-			t1 = POP_ARRAY();
+			t1 = POP_ARRAY(false);
 			do_delete(t1, pc->expr_count);
 			stack_adj(-pc->expr_count);
 			break;
 
 		case Op_K_delete_loop:
-			t1 = POP_ARRAY();
+			t1 = POP_ARRAY(false);
 			lhs = POP_ADDRESS();	/* item */
 			do_delete_loop(t1, lhs);
 			break;
 
 		case Op_in_array:
-			t1 = POP_ARRAY();
+			t1 = POP_ARRAY(false);
 			t2 = mk_sub(pc->expr_count);
 			r = node_Boolean[(in_array(t1, t2) != NULL)];
 			DEREF(t2);
@@ -915,7 +915,7 @@ mod:
 			bool saved_end = false;
 
 			/* get the array */
-			array = POP_ARRAY();
+			array = POP_ARRAY(true);
 
 			/* sanity: check if empty */
 			num_elems = assoc_length(array);
