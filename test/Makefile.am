@@ -659,6 +659,9 @@ EXTRA_DIST = \
 	mmap8k.ok \
 	mpfrbigint.awk \
 	mpfrbigint.ok \
+	mpfrbigint2.awk \
+	mpfrbigint2.in \
+	mpfrbigint2.ok \
 	mpfrexprange.awk \
 	mpfrexprange.ok \
 	mpfrfield.awk \
@@ -1348,12 +1351,12 @@ NEED_LINT = \
 NEED_LINT_OLD = lintold
 
 # List of tests that must be run with -M
-NEED_MPFR = mpfrbigint mpfrexprange mpfrfield mpfrieee mpfrmemok1 \
+NEED_MPFR = mpfrbigint mpfrbigint2 mpfrexprange mpfrfield mpfrieee mpfrmemok1 \
 	mpfrnegzero mpfrnr mpfrrem mpfrrnd mpfrrndeval mpfrsort mpfrsqrt \
 	mpfrstrtonum mpgforcenum mpfruplus
 
 # List of tests that need --non-decimal-data
-NEED_NONDEC = nondec2 intarray forcenum
+NEED_NONDEC = mpfrbigint2 nondec2 intarray forcenum
 
 # List of tests that need --posix
 NEED_POSIX = printf0 posix2008sub paramasfunc1 paramasfunc2 muldimposix
