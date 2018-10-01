@@ -53,6 +53,13 @@
 #endif
 #endif
 
+/* This keeps regex happy on non-GCC compilers */
+#ifndef __GNUC__
+#ifndef __builtin_expect
+#define __builtin_expect(expr, val) (expr)
+#endif
+#endif
+
 /* For QNX, based on submission from Michael Hunter, mphunter@qnx.com */
 #ifdef __QNX__
 #define GETPGRP_VOID	1
