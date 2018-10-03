@@ -348,12 +348,10 @@ pattern
 			($1->nexti + 1)->condpair_left = $1->lasti;
 			($1->nexti + 1)->condpair_right = $4->lasti;
 		}
-#if 0
 		/* Put any comments in front of the range expression */
 		if ($3 != NULL)
 			$$ = list_append(list_merge(list_prepend($1, $3), $4), tp);
 		else
-#endif
 			$$ = list_append(list_merge($1, $4), tp);
 		rule = Rule;
 	  }
@@ -587,8 +585,9 @@ statement
 		if ($7 != NULL) {
 			curr = $7->nexti;
 			bcfree($7);	/* Op_list */
-		} /*  else
-				curr = NULL; */
+		}
+		/*  else
+			curr = NULL; */
 
 		for (; curr != NULL; curr = nextc) {
 			INSTRUCTION *caseexp = curr->case_exp;
@@ -644,16 +643,33 @@ statement
 
 		ip = $3;
 		if (do_pretty_print) {
+			// first merge comments
+			INSTRUCTION *head_comment = NULL;
+
+			if ($5 != NULL && $6 != NULL) {
+				merge_comments($5, $6);
+				head_comment = $5;
+			} else if ($5 != NULL)
+				head_comment = $5;
+			else
+				head_comment = $6;
+
+			$1->comment = head_comment;
+
 			(void) list_prepend(ip, $1);
 			(void) list_prepend(ip, instruction(Op_exec_count));
 			$1->target_break = tbreak;
 			($1 + 1)->switch_start = cexp->nexti;
 			($1 + 1)->switch_end = cexp->lasti;
-		}/* else
-				$1 is NULL */
+			($1 + 1)->switch_end->comment = $9;
+		}
+		/* else
+			$1 is NULL */
 
 		(void) list_append(cexp, dflt);
 		(void) list_merge(ip, cexp);
+		if ($8 != NULL)
+			(void) list_append(cstmt, $8);
 		$$ = list_merge(ip, cstmt);
 
 		break_allowed--;
@@ -1966,11 +1982,11 @@ opt_incdec
 	;
 
 l_brace
-	: '{' opt_nls
+	: '{' opt_nls { $$ = $2; }
 	;
 
 r_brace
-	: '}' opt_nls	{ yyerrok; }
+	: '}' opt_nls	{ $$ = $2; yyerrok; }
 	;
 
 r_paren
