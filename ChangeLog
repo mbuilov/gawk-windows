@@ -1,3 +1,15 @@
+2018-10-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (merge_comments): Change return type to void. Adjust calls.
+	(Grammar): For action, pull comments out of braces and stick
+	into the list. For function_prologue, get comments from parameters
+	and ending newline, merge, and save.  Wherever nls and opt_nls
+	are used, be sure to pass their values up via $$. For various
+	cases that can be empty, explicitly set $$ = NULL.
+	* profile.c (pprint): Get switch working.  Get ?: working.
+	(print_comment): Print any chained comment.
+	(pp_func): Start revising.
+
 2018-10-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y: Range expressions, enable comment stuff.

@@ -901,10 +901,14 @@ cleanup:
 			pprint(pc->nexti, ip1->switch_start, NO_PPRINT_FLAGS);
 			t1 = pp_pop();
 			fprintf(prof_fp, "%s) {\n", t1->pp_str);
+			if (pc->comment)
+				print_comment(pc->comment, 0);
 			pp_free(t1);
 			pprint(ip1->switch_start, ip1->switch_end, NO_PPRINT_FLAGS);
 			indent(SPACEOVER);
 			fprintf(prof_fp, "}\n");
+			if (ip1->switch_end->comment)
+				print_comment(ip1->switch_end->comment, 0);
 			pc = pc->target_break;
 			break;
 
@@ -999,6 +1003,11 @@ cleanup:
 		{
 			NODE *f, *t, *cond;
 			size_t len;
+			INSTRUCTION *qm_comment = NULL, *colon_comment = NULL;
+			static const char tabs[] = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
+			static const size_t tabs_len = sizeof(tabs) - 1;
+
+			qm_comment = pc->comment;
 
 			pprint(pc->nexti, pc->branch_if, NO_PPRINT_FLAGS);
 			ip1 = pc->branch_if;
@@ -1006,6 +1015,7 @@ cleanup:
 			ip1 = pc->branch_else->nexti;
 
 			pc = ip1->nexti;
+			colon_comment = pc->comment;
 			assert(pc->opcode == Op_cond_exp);
 			pprint(pc->nexti, pc->branch_end, NO_PPRINT_FLAGS);
 
@@ -1013,9 +1023,73 @@ cleanup:
 			t = pp_pop();
 			cond = pp_pop();
 
-			len =  f->pp_len + t->pp_len + cond->pp_len + 12;
-			emalloc(str, char *, len, "pprint");
-			sprintf(str, "%s ? %s : %s", cond->pp_str, t->pp_str, f->pp_str);
+			if (indent_level + 1 > tabs_len)
+				// We're allowed to be snarky, occasionally.
+				fatal(_("Program indentation level too deep. Consider refactoring your code"));
+
+			/*
+			 * This stuff handles comments that come after a ?, :, or both.
+			 * Allowing newlines after ? and : is a gawk extension.
+			 * Theoretically this is fragile, since ?: expressions can be nested.
+			 * In practice, it's not, since if there was a comment following ? or :
+			 * in the original code, then it wasn't nested.
+			 */
+
+			len = f->pp_len + t->pp_len + cond->pp_len + 12;
+			if (qm_comment == NULL && colon_comment == NULL) {
+				// easy case
+				emalloc(str, char *, len, "pprint");
+				sprintf(str, "%s ? %s : %s", cond->pp_str, t->pp_str, f->pp_str);
+			} else if (qm_comment != NULL && colon_comment != NULL) {
+				len += qm_comment->memory->stlen +		// comments
+					colon_comment->memory->stlen +
+					2 * (indent_level + 1) + 3 +		// indentation
+					t->pp_len + 6;
+				emalloc(str, char *, len, "pprint");
+				sprintf(str,
+					"%s ? %s"	// cond ? comment
+					"%.*s   %s"	// indent true-part
+					" : %s"		// : comment
+					"%.*s   %s",	// indent false-part
+					cond->pp_str,	// condition
+					qm_comment->memory->stptr,	// comment
+					indent_level + 1, tabs,		// indent
+					t->pp_str,			// true part
+					colon_comment->memory->stptr,	// comment
+					indent_level + 1, tabs,		// indent
+					f->pp_str			// false part
+					);
+			} else if (qm_comment != NULL) {
+				len += qm_comment->memory->stlen +	// comment
+					1 * (indent_level + 1) + 3 +	// indentation
+					t->pp_len + 3;
+				emalloc(str, char *, len, "pprint");
+				sprintf(str,
+					"%s ? %s"	// cond ? comment
+					"%.*s   %s"	// indent true-part
+					" : %s",	// : false-part
+					cond->pp_str,	// condition
+					qm_comment->memory->stptr,	// comment
+					indent_level + 1, tabs,		// indent
+					t->pp_str,			// true part
+					f->pp_str			// false part
+					);
+			} else {
+				len += colon_comment->memory->stlen +		// comment
+					1 * (indent_level + 1) + 3 +		// indentation
+					t->pp_len + 3;
+				emalloc(str, char *, len, "pprint");
+				sprintf(str,
+					"%s ? %s"	// cond ? true-part
+					" : %s"		// : comment
+					"%.*s   %s",	// indent false-part
+					cond->pp_str,			// condition
+					t->pp_str,			// true part
+					colon_comment->memory->stptr,	// comment
+					indent_level + 1, tabs,		// indent
+					f->pp_str			// false part
+					);
+			}
 
 			pp_free(cond);
 			pp_free(t);
@@ -1065,7 +1139,7 @@ end_line(INSTRUCTION *ip)
 	return ret;
 }
 
-/* pp_string_fp --- printy print a string to the fp */
+/* pp_string_fp --- pretty print a string to the fp */
 
 /*
  * This routine concentrates string pretty printing in one place,
@@ -1161,6 +1235,9 @@ print_comment(INSTRUCTION* pc, long in)
 		if (*text == '\n')
 			after_newline = true;
 	}
+
+	if (pc->comment)
+		print_comment(pc->comment, in);
 }
 
 /* dump_prog --- dump the program */
@@ -1736,10 +1813,15 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 	fprintf(prof_fp, "\n");
 
 	/* print any function comment */
+#if 1
+	if (fp->comment != NULL)
+		print_comment(fp->comment, -1);	/* -1 ==> don't indent */
+#else
 	if (fp->opcode == Op_comment && fp->source_line == 0) {
 		print_comment(fp, -1);	/* -1 ==> don't indent */
 		fp = fp->nexti;
 	}
+#endif
 
 	indent(pc->nexti->exec_count);
 	fprintf(prof_fp, "%s %s(", op2str(Op_K_function), func->vname);

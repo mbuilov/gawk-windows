@@ -1,9 +1,17 @@
 /* working on statement_term */
 /*
--- After ? and :
+TODO:
 -- After && and ||
 -- After , in parameter list
--- After , in a range expression in a patter
+-- Get comments from all instances of nls
+-- Get comments from all instances of opt_nls
+-- Get comments from all instances of l_brace
+-- Get comments from all instances of r_brace
+-- Review statement lists and handling of statement_term
+DONE:
+-- After ? and :
+-- switch statement
+-- After , in a range expression in a pattern
 */
 /*
  * awkgram.y --- yacc/bison parser
@@ -91,7 +99,7 @@ static void check_funcs(void);
 
 static ssize_t read_one_line(int fd, void *buffer, size_t count);
 static int one_line_close(int fd);
-static bool merge_comments(INSTRUCTION *c1, INSTRUCTION *c2);
+static void merge_comments(INSTRUCTION *c1, INSTRUCTION *c2);
 static void add_sign_to_num(NODE *n, char sign);
 
 static bool at_seen = false;
@@ -407,7 +415,12 @@ action
 		else
 			ip = $2;
 
+		if ($1 != NULL)
+			ip = list_prepend(ip, $1);
+
 		/* Tack any comment onto the end. */
+		if ($3 != NULL)
+			ip = list_append(ip, $3);
 		if ($5 != NULL)
 			ip = list_append(ip, $5);
 		$$ = ip;
@@ -440,23 +453,21 @@ lex_builtin
 function_prologue
 	: LEX_FUNCTION func_name '(' { want_param_names = FUNC_HEADER; } opt_param_list r_paren opt_nls
 	  {
+		INSTRUCTION *func_comment = NULL;
 		// Merge any comments found in the parameter list with those
 		// following the function header, associate the whole shebang
 		// with the function as one block comment.
-#if 0
-		if ($5->comment != NULL && $7 != NULL) {
-			INSTRUCTION *ip = list_merge($5->comment, $7);
-			$1->comment = merge_comment_list(ip);
-			$5->comment = NULL;
-		} else if ($5->comment != NULL) {
-			$1->comment = $5->comment;
-			$5->comment = NULL;
-		} else {
-			$1->comment = merge_comment_list($7);
+		if ($5 != NULL && $5->comment != NULL) {
+			if ($7 != NULL) {
+				merge_comments($5, $7);
+			}
+			func_comment = $5;
+		} else if ($7 != NULL) {
+			func_comment = $7;
 		}
-#endif
 
 		$1->source_file = source;
+		$1->comment = func_comment;
 		if (install_function($2->lextok, $1, $5) < 0)
 			YYABORT;
 		in_function = $2->lextok;
@@ -557,7 +568,7 @@ statement_term
 
 statement
 	: semi opt_nls
-	  { $$ = NULL; }
+	  { $$ = $2; }
 	| l_brace statements r_brace
 	  { $$ = $2; }
 	| if_statement
@@ -1279,10 +1290,10 @@ nls
 			if ($1->memory->comment_type == EOL_COMMENT) {
 				assert($2->memory->comment_type == FULL_COMMENT);
 				$1->comment = $2;	// chain them
-			} else if (merge_comments($1, $2))
-				$$ = $1;
-			else
-				cant_happen();
+			} else
+				merge_comments($1, $2);
+
+			$$ = $1;
 		} else if ($1 != NULL) {
 			$$ = $1;
 		} else {
@@ -1293,7 +1304,9 @@ nls
 
 opt_nls
 	: /* empty */
+	  { $$ = NULL; }
 	| nls
+	  { $$ = $1; }
 	;
 
 input_redir
@@ -1978,7 +1991,8 @@ opt_incdec
 	  {
 		$1->opcode = Op_postdecrement;
 	  }
-	| /* empty */	{ $$ = NULL; }
+	| /* empty */
+	  { $$ = NULL; }
 	;
 
 l_brace
@@ -1995,6 +2009,7 @@ r_paren
 
 opt_semi
 	: /* empty */
+	  { $$ = NULL; }
 	| semi
 	;
 
@@ -2007,7 +2022,7 @@ colon
 	;
 
 comma
-	: ',' opt_nls	{ yyerrok; }
+	: ',' opt_nls	{ $$ = $2; yyerrok; }
 	;
 %%
 
@@ -6238,7 +6253,7 @@ set_profile_text(NODE *n, const char *str, size_t len)
 
 /* merge_comments --- merge c2 into c1 and free c2 if successful. */
 
-static bool
+static void
 merge_comments(INSTRUCTION *c1, INSTRUCTION *c2)
 {
 	assert(c1->opcode == Op_comment && c2->opcode == Op_comment);
@@ -6284,6 +6299,4 @@ merge_comments(INSTRUCTION *c1, INSTRUCTION *c2)
 		c2->comment = NULL;
 	}
 	bcfree(c2);
-
-	return true;
 }
