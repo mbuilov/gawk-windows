@@ -415,14 +415,25 @@ action
 		else
 			ip = $2;
 
-		if ($1 != NULL)
+		if ($1 != NULL) {
+			INSTRUCTION *comment2 = $1->comment;
+			if (comment2 != NULL) {
+				ip = list_prepend(ip, comment2);
+				$1->comment = NULL;
+			}
 			ip = list_prepend(ip, $1);
+		}
 
 		/* Tack any comment onto the end. */
-		if ($3 != NULL)
+		if ($3 != NULL) {
 			ip = list_append(ip, $3);
+			if ($3->memory->comment_type == EOL_COMMENT)
+				$3->memory->comment_type = FULL_COMMENT;
+		}
+
 		if ($5 != NULL)
 			ip = list_append(ip, $5);
+
 		$$ = ip;
 	  }
 	;
@@ -459,9 +470,9 @@ function_prologue
 		// with the function as one block comment.
 		if ($5 != NULL && $5->comment != NULL) {
 			if ($7 != NULL) {
-				merge_comments($5, $7);
+				merge_comments($5->comment, $7);
 			}
-			func_comment = $5;
+			func_comment = $5->comment;
 		} else if ($7 != NULL) {
 			func_comment = $7;
 		}
@@ -1335,9 +1346,17 @@ param_list
 	| param_list comma NAME
 	  {
 		if ($1 != NULL && $3 != NULL) {
-			$3->param_count =  $1->lasti->param_count + 1;
+			$3->param_count = $1->lasti->param_count + 1;
 			$$ = list_append($1, $3);
 			yyerrok;
+
+			// newlines are allowed after commas, catch any comments
+			if ($2 != NULL) {
+				if ($1->comment != NULL)
+					merge_comments($1->comment, $2);
+				else
+					$1->comment = $2;
+			}
 		} else
 			$$ = NULL;
 	  }
