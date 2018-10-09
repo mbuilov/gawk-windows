@@ -240,7 +240,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 				/* Allow for pre-non-rule-block comment  */
 				if (pc->nexti != (pc +1)->firsti
 				    && pc->nexti->opcode == Op_comment
-				    && pc->nexti->memory->comment_type == FULL_COMMENT)
+				    && pc->nexti->memory->comment_type == BLOCK_COMMENT)
 					print_comment(pc->nexti, -1);
 				ip1 = (pc + 1)->firsti;
 				ip2 = (pc + 1)->lasti;
@@ -624,7 +624,8 @@ cleanup:
 		case Op_K_printf:
 		case Op_K_print_rec:
 			if (pc->opcode == Op_K_print_rec)
-				tmp = pp_group3(" ", op2str(Op_field_spec), "0");
+				// instead of `print $0', just `print'
+				tmp = strdup("");
 			else if (pc->redir_type != 0)
 				tmp = pp_list(pc->expr_count, "()", ", ");
 			else {
@@ -948,7 +949,7 @@ cleanup:
 				indent(SPACEOVER);
 				fprintf(prof_fp, "}");
 				if (pc->nexti->nexti->opcode != Op_comment
-				    || pc->nexti->nexti->memory->comment_type == FULL_COMMENT)
+				    || pc->nexti->nexti->memory->comment_type == BLOCK_COMMENT)
 					fprintf(prof_fp, "\n");
 				/* else
 				 	It will be printed at the top. */
@@ -1053,10 +1054,10 @@ cleanup:
 					"%.*s   %s",	// indent false-part
 					cond->pp_str,	// condition
 					qm_comment->memory->stptr,	// comment
-					indent_level + 1, tabs,		// indent
+					(int) indent_level + 1, tabs,		// indent
 					t->pp_str,			// true part
 					colon_comment->memory->stptr,	// comment
-					indent_level + 1, tabs,		// indent
+					(int) indent_level + 1, tabs,		// indent
 					f->pp_str			// false part
 					);
 			} else if (qm_comment != NULL) {
@@ -1070,7 +1071,7 @@ cleanup:
 					" : %s",	// : false-part
 					cond->pp_str,	// condition
 					qm_comment->memory->stptr,	// comment
-					indent_level + 1, tabs,		// indent
+					(int) indent_level + 1, tabs,		// indent
 					t->pp_str,			// true part
 					f->pp_str			// false part
 					);
@@ -1086,7 +1087,7 @@ cleanup:
 					cond->pp_str,			// condition
 					t->pp_str,			// true part
 					colon_comment->memory->stptr,	// comment
-					indent_level + 1, tabs,		// indent
+					(int) indent_level + 1, tabs,		// indent
 					f->pp_str			// false part
 					);
 			}
@@ -1232,12 +1233,14 @@ print_comment(INSTRUCTION* pc, long in)
 			after_newline = false;
 		}
 		putc(*text, prof_fp);
-		if (*text == '\n')
-			after_newline = true;
+		after_newline = (*text == '\n');
 	}
 
-	if (pc->comment)
+	if (pc->comment) {
+		// chaining should only be two deep
+		assert(pc->comment->comment == NULL);
 		print_comment(pc->comment, in);
+	}
 }
 
 /* dump_prog --- dump the program */
@@ -1813,15 +1816,8 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 	fprintf(prof_fp, "\n");
 
 	/* print any function comment */
-#if 1
-	if (fp->comment != NULL)
-		print_comment(fp->comment, -1);	/* -1 ==> don't indent */
-#else
-	if (fp->opcode == Op_comment && fp->source_line == 0) {
-		print_comment(fp, -1);	/* -1 ==> don't indent */
-		fp = fp->nexti;
-	}
-#endif
+	if (pc->comment != NULL)
+		print_comment(pc->comment, -1);	/* -1 ==> don't indent */
 
 	indent(pc->nexti->exec_count);
 	fprintf(prof_fp, "%s %s(", op2str(Op_K_function), func->vname);

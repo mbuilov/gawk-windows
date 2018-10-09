@@ -296,6 +296,11 @@ typedef union bucket_item {
 	} hi;
 } BUCKET;
 
+enum commenttype {
+	EOL_COMMENT = 1,
+	BLOCK_COMMENT
+};
+
 /* string hash table */
 #define ahnext		hs.next
 #define	ahname		hs.name	/* a string index node */
@@ -368,6 +373,7 @@ typedef struct exp_node {
 			wchar_t *wsp;
 			size_t wslen;
 			struct exp_node *typre;
+			enum commenttype comtype;
 		} val;
 	} sub;
 	NODETYPE type;
@@ -565,9 +571,7 @@ typedef struct exp_node {
 #define alevel     sub.nodep.x.xl
 
 /* Op_comment	*/
-#define comment_type	sub.val.idx
-#define EOL_COMMENT 1
-#define FULL_COMMENT 2
+#define comment_type	sub.val.comtype
 
 /* --------------------------------lint warning types----------------------------*/
 typedef enum lintvals {

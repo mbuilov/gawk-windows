@@ -1,3 +1,19 @@
+2018-10-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (enum commenttype): New enum.
+	(NODE): Add it to sub.val.
+	(EOL_COMMENT, FULL_COMMENT): Replaced with above enum values.
+	* awkgram.y (Grammar): Finish up handling comments in function headers
+	and bodies. Get trailing comments at end of program
+	(get_comment): When doing comments, if we got EOF, push it back so that
+	multiple comments get merged together.
+	(merge_comments): Allow second parameter to be NULL.
+	* profile.c (pp_print): Change to use above enum everywhere. For
+	Op_K_print_rec produce plain `print' instead of `print $0'. Handle
+	comments in ?:. Handle printing function comments.
+	(print_comment): Simplify `after_newline' assignment.  Add assertion
+	that chaining is only two deep.
+
 2018-10-06         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y (action): Improve handling of comments attached

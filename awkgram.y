@@ -2,13 +2,14 @@
 /*
 TODO:
 -- After && and ||
--- After , in parameter list
--- Get comments from all instances of nls
 -- Get comments from all instances of opt_nls
 -- Get comments from all instances of l_brace
 -- Get comments from all instances of r_brace
 -- Review statement lists and handling of statement_term
+-- case part of switch statement
 DONE:
+-- Get comments from all instances of nls
+-- After , in parameter list
 -- After ? and :
 -- switch statement
 -- After , in a range expression in a pattern
@@ -220,6 +221,7 @@ extern double fmod(double x, double y);
 
 program
 	: /* empty */
+	  { $$ = NULL; }
 	| program rule
 	  {
 		rule = 0;
@@ -227,10 +229,11 @@ program
 	  }
 	| program nls
 	  {
-		  if ($2 != NULL)
-			  $$ = list_append($1, $2);
-		  else
-			  $$ = $1;
+		if ($2 != NULL) {
+			merge_comments($2, NULL);
+			$$ = list_append(rule_list, $2);
+		} else
+			$$ = $1;
 	  }
 	| program LEX_EOF
 	  {
@@ -327,6 +330,7 @@ pattern
 	: /* empty */
 	  {
 		rule = Rule;
+		$$ = NULL;
 	  }
 	| exp
 	  {
@@ -426,9 +430,13 @@ action
 
 		/* Tack any comment onto the end. */
 		if ($3 != NULL) {
-			ip = list_append(ip, $3);
+			INSTRUCTION *comment2 = $3->comment;
+			$3->comment = NULL;
 			if ($3->memory->comment_type == EOL_COMMENT)
-				$3->memory->comment_type = FULL_COMMENT;
+				$3->memory->comment_type = BLOCK_COMMENT;
+			ip = list_append(ip, $3);
+			if (comment2 != NULL)
+				ip = list_append(ip, comment2);
 		}
 
 		if ($5 != NULL)
@@ -551,9 +559,7 @@ a_slash
 
 statements
 	: /* empty */
-	  {
-		$$ = NULL;
-	  }
+	  { $$ = NULL; }
 	| statements statement
 	  {
 		if ($2 == NULL) {
@@ -573,8 +579,8 @@ statements
 	;
 
 statement_term
-	: nls
-	| semi opt_nls { $$ = $2; }
+	: nls		{ $$ = $1; }
+	| semi opt_nls	{ $$ = $2; }
 	;
 
 statement
@@ -726,8 +732,17 @@ statement
 			$1->target_continue = tcont;
 			($1 + 1)->while_body = ip->lasti;
 			(void) list_prepend(ip, $1);
-		}/* else
-				$1 is NULL */
+		}
+		/* else
+			$1 is NULL */
+
+		if ($5 != NULL) {
+			if ($6 == NULL)
+				$6 = list_create(instruction(Op_no_op));
+
+			$5->memory->comment_type = BLOCK_COMMENT;
+			$6 = list_prepend($6, $5);
+		}
 
 		if ($6 != NULL)
 			(void) list_merge(ip, $6);
@@ -1299,17 +1314,19 @@ nls
 	  {
 		if ($1 != NULL && $2 != NULL) {
 			if ($1->memory->comment_type == EOL_COMMENT) {
-				assert($2->memory->comment_type == FULL_COMMENT);
+				assert($2->memory->comment_type == BLOCK_COMMENT);
 				$1->comment = $2;	// chain them
-			} else
+			} else {
 				merge_comments($1, $2);
+			}
 
 			$$ = $1;
 		} else if ($1 != NULL) {
 			$$ = $1;
-		} else {
+		} else if ($2 != NULL) {
 			$$ = $2;
-		}
+		} else
+			$$ = NULL;
 	  }
 	;
 
@@ -3185,11 +3202,11 @@ pushback(void)
 /*
  * get_comment --- collect comment text.
  * 	Flag = EOL_COMMENT for end-of-line comments.
- * 	Flag = FULL_COMMENT for self-contained comments.
+ * 	Flag = BLOCK_COMMENT for self-contained comments.
  */
 
-int
-get_comment(int flag, INSTRUCTION **comment_instruction)
+static int
+get_comment(enum commenttype flag, INSTRUCTION **comment_instruction)
 {
 	int c;
 	int sl;
@@ -3507,14 +3524,16 @@ retry:
 			INSTRUCTION *new_comment;
 
 			if (lasttok == NEWLINE || lasttok == 0)
-				c = get_comment(FULL_COMMENT, & new_comment);
+				c = get_comment(BLOCK_COMMENT, & new_comment);
 			else
 				c = get_comment(EOL_COMMENT, & new_comment);
 
 			yylval = new_comment;
 
-			if (c == END_FILE)
-				return lasttok = NEWLINE_EOF;
+			if (c == END_FILE) {
+				pushback();
+				return lasttok = NEWLINE;
+			}
 		} else {
 			while ((c = nextc(false)) != '\n') {
 				if (c == END_FILE)
@@ -6270,18 +6289,27 @@ set_profile_text(NODE *n, const char *str, size_t len)
 	return n;
 }
 
-/* merge_comments --- merge c2 into c1 and free c2 if successful. */
+/*
+ * merge_comments --- merge c2 into c1 and free c2 if successful.
+ *	Allow c2 to be NULL, in which case just merged chained
+ *	comments in c1.
+ */
 
 static void
 merge_comments(INSTRUCTION *c1, INSTRUCTION *c2)
 {
-	assert(c1->opcode == Op_comment && c2->opcode == Op_comment);
+	assert(c1->opcode == Op_comment);
 
-	size_t total = c1->memory->stlen + 1 /* \n */ + c2->memory->stlen;
+	size_t total = c1->memory->stlen;
 	if (c1->comment != NULL)
-		total += c1->comment->memory->stlen + 1;
-	if (c2->comment != NULL)
-		total += c2->comment->memory->stlen + 1;
+		total += 1 /* \n */ + c1->comment->memory->stlen;
+
+	if (c2 != NULL) {
+		assert(c2->opcode == Op_comment);
+		total += 1 /* \n */ + c2->memory->stlen;
+		if (c2->comment != NULL)
+			total += c2->comment->memory->stlen + 1;
+	}
 
 	char *buffer;
 	emalloc(buffer, char *, total + 1, "merge_comments");
@@ -6293,13 +6321,23 @@ merge_comments(INSTRUCTION *c1, INSTRUCTION *c2)
 		strcat(buffer, "\n");
 	}
 
-	strcat(buffer, c2->memory->stptr);
-	if (c2->comment != NULL) {
-		strcat(buffer, "\n");
-		strcat(buffer, c2->comment->memory->stptr);
+	if (c2 != NULL) {
+		strcat(buffer, c2->memory->stptr);
+		if (c2->comment != NULL) {
+			strcat(buffer, "\n");
+			strcat(buffer, c2->comment->memory->stptr);
+		}
+
+		unref(c2->memory);
+		if (c2->comment != NULL) {
+			unref(c2->comment->memory);
+			bcfree(c2->comment);
+			c2->comment = NULL;
+		}
+		bcfree(c2);
 	}
 
-	c1->memory->comment_type = FULL_COMMENT;
+	c1->memory->comment_type = BLOCK_COMMENT;
 	free(c1->memory->stptr);
 	c1->memory->stptr = buffer;
 	c1->memory->stlen = strlen(buffer);
@@ -6310,12 +6348,4 @@ merge_comments(INSTRUCTION *c1, INSTRUCTION *c2)
 		bcfree(c1->comment);
 		c1->comment = NULL;
 	}
-
-	unref(c2->memory);
-	if (c2->comment != NULL) {
-		unref(c2->comment->memory);
-		bcfree(c2->comment);
-		c2->comment = NULL;
-	}
-	bcfree(c2);
 }
