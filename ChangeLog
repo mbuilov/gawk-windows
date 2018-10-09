@@ -1,5 +1,12 @@
 2018-10-09         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* awkgram.y (Grammar): Fix handling of empty statement (just a semi-
+	colon).
+	(merge_comments): If no chained comment and no second comment,
+	just return early.
+
+2018-10-09         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* awk.h (enum commenttype): New enum.
 	(NODE): Add it to sub.val.
 	(EOL_COMMENT, FULL_COMMENT): Replaced with above enum values.

@@ -1,3 +1,6 @@
+/* ALSO TODO:
+ * Fix debug.c
+ */
 /* working on statement_term */
 /*
 TODO:
@@ -585,7 +588,16 @@ statement_term
 
 statement
 	: semi opt_nls
-	  { $$ = $2; }
+	  {
+		if ($2 != NULL) {
+			INSTRUCTION *ip;
+
+			merge_comments($2, NULL);
+			ip = list_create(instruction(Op_no_op));
+			$$ = list_append(ip, $2); 
+		} else
+			$$ = NULL;
+	  }
 	| l_brace statements r_brace
 	  { $$ = $2; }
 	| if_statement
@@ -6299,6 +6311,9 @@ static void
 merge_comments(INSTRUCTION *c1, INSTRUCTION *c2)
 {
 	assert(c1->opcode == Op_comment);
+
+	if (c1->comment == NULL && c2 == NULL)	// nothing to do
+		return;
 
 	size_t total = c1->memory->stlen;
 	if (c1->comment != NULL)
