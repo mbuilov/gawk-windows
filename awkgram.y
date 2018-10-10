@@ -599,7 +599,37 @@ statement
 			$$ = NULL;
 	  }
 	| l_brace statements r_brace
-	  { $$ = $2; }
+	  {
+		/* FIXME: Make this a function and use also for action production */
+		INSTRUCTION *ip;
+
+		if ($2 == NULL)
+			ip = list_create(instruction(Op_no_op));
+		else
+			ip = $2;
+
+		if ($1 != NULL) {
+			INSTRUCTION *comment2 = $1->comment;
+			if (comment2 != NULL) {
+				ip = list_prepend(ip, comment2);
+				$1->comment = NULL;
+			}
+			ip = list_prepend(ip, $1);
+		}
+
+		/* Tack any comment onto the end. */
+		if ($3 != NULL) {
+			INSTRUCTION *comment2 = $3->comment;
+			$3->comment = NULL;
+			if ($3->memory->comment_type == EOL_COMMENT)
+				$3->memory->comment_type = BLOCK_COMMENT;
+			ip = list_append(ip, $3);
+			if (comment2 != NULL)
+				ip = list_append(ip, comment2);
+		}
+
+		$$ = ip;
+	  }
 	| if_statement
 	  {
 		if (do_pretty_print)
@@ -1311,11 +1341,17 @@ output_redir
 if_statement
 	: LEX_IF '(' exp r_paren opt_nls statement
 	  {
+		if ($5 != NULL)
+			$1->comment = $5;
 		$$ = mk_condition($3, $1, $6, NULL, NULL);
 	  }
 	| LEX_IF '(' exp r_paren opt_nls statement
 	     LEX_ELSE opt_nls statement
 	  {
+		if ($5 != NULL)
+			$1->comment = $5;
+		if ($8 != NULL)
+			$7->comment = $8;
 		$$ = mk_condition($3, $1, $6, $7, $9);
 	  }
 	;

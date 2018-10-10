@@ -942,6 +942,8 @@ cleanup:
 				fprintf(prof_fp, " # %ld", ip1->exec_count);
 			ip1 = end_line(ip1);
 			indent_in();
+			if (pc->comment != NULL)
+				print_comment(pc->comment, indent_level);
 			pprint(ip1->nexti, pc->branch_else, NO_PPRINT_FLAGS);
 			indent_out();
 			pc = pc->branch_else;
@@ -985,6 +987,8 @@ cleanup:
 				end_line(pc);
 				skip_comment = true;
 				indent_in();
+				if (pc->comment != NULL)
+					print_comment(pc->comment, indent_level);
 				pprint(pc->nexti, pc->branch_end, NO_PPRINT_FLAGS);
 				indent_out();
 				indent(SPACEOVER);
