@@ -1,5 +1,14 @@
 2018-10-10         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* awkgram.y (make_braced_statements): New function.
+	(Grammar): Use it in the right places instead of inline code.
+	* debug.c (print_instruction): For Op_comment, fix type string.
+	* profile.c (pprint): Move tabs and tabs_len to top of function.
+	For Op_and and Op_or, handle comments.  Use new check_indent_level
+	for Op_and, Op_or and Op_cond_exp.
+
+2018-10-10         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* debug.c (print_instruction): For Op_comment, use print_func
 	instead of fprintf to print the comment type.
 

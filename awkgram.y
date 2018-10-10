@@ -104,6 +104,7 @@ static void check_funcs(void);
 static ssize_t read_one_line(int fd, void *buffer, size_t count);
 static int one_line_close(int fd);
 static void merge_comments(INSTRUCTION *c1, INSTRUCTION *c2);
+static INSTRUCTION *make_braced_statements(INSTRUCTION *lbrace, INSTRUCTION *stmts, INSTRUCTION *rbrace);
 static void add_sign_to_num(NODE *n, char sign);
 
 static bool at_seen = false;
@@ -415,32 +416,7 @@ pattern
 action
 	: l_brace statements r_brace opt_semi opt_nls
 	  {
-		INSTRUCTION *ip;
-
-		if ($2 == NULL)
-			ip = list_create(instruction(Op_no_op));
-		else
-			ip = $2;
-
-		if ($1 != NULL) {
-			INSTRUCTION *comment2 = $1->comment;
-			if (comment2 != NULL) {
-				ip = list_prepend(ip, comment2);
-				$1->comment = NULL;
-			}
-			ip = list_prepend(ip, $1);
-		}
-
-		/* Tack any comment onto the end. */
-		if ($3 != NULL) {
-			INSTRUCTION *comment2 = $3->comment;
-			$3->comment = NULL;
-			if ($3->memory->comment_type == EOL_COMMENT)
-				$3->memory->comment_type = BLOCK_COMMENT;
-			ip = list_append(ip, $3);
-			if (comment2 != NULL)
-				ip = list_append(ip, comment2);
-		}
+		INSTRUCTION *ip = make_braced_statements($1, $2, $3);
 
 		if ($5 != NULL)
 			ip = list_append(ip, $5);
@@ -600,35 +576,7 @@ statement
 	  }
 	| l_brace statements r_brace
 	  {
-		/* FIXME: Make this a function and use also for action production */
-		INSTRUCTION *ip;
-
-		if ($2 == NULL)
-			ip = list_create(instruction(Op_no_op));
-		else
-			ip = $2;
-
-		if ($1 != NULL) {
-			INSTRUCTION *comment2 = $1->comment;
-			if (comment2 != NULL) {
-				ip = list_prepend(ip, comment2);
-				$1->comment = NULL;
-			}
-			ip = list_prepend(ip, $1);
-		}
-
-		/* Tack any comment onto the end. */
-		if ($3 != NULL) {
-			INSTRUCTION *comment2 = $3->comment;
-			$3->comment = NULL;
-			if ($3->memory->comment_type == EOL_COMMENT)
-				$3->memory->comment_type = BLOCK_COMMENT;
-			ip = list_append(ip, $3);
-			if (comment2 != NULL)
-				ip = list_append(ip, comment2);
-		}
-
-		$$ = ip;
+		$$ = make_braced_statements($1, $2, $3);
 	  }
 	| if_statement
 	  {
@@ -6399,4 +6347,39 @@ merge_comments(INSTRUCTION *c1, INSTRUCTION *c2)
 		bcfree(c1->comment);
 		c1->comment = NULL;
 	}
+}
+
+/* make_braced_statements --- handle `l_brace statements r_brace' with comments */
+
+static INSTRUCTION *
+make_braced_statements(INSTRUCTION *lbrace, INSTRUCTION *stmts, INSTRUCTION *rbrace)
+{
+	INSTRUCTION *ip;
+
+	if (stmts == NULL)
+		ip = list_create(instruction(Op_no_op));
+	else
+		ip = stmts;
+
+	if (lbrace != NULL) {
+		INSTRUCTION *comment2 = lbrace->comment;
+		if (comment2 != NULL) {
+			ip = list_prepend(ip, comment2);
+			lbrace->comment = NULL;
+		}
+		ip = list_prepend(ip, lbrace);
+	}
+
+	/* Tack any comment onto the end. */
+	if (rbrace != NULL) {
+		INSTRUCTION *comment2 = rbrace->comment;
+		rbrace->comment = NULL;
+		if (rbrace->memory->comment_type == EOL_COMMENT)
+			rbrace->memory->comment_type = BLOCK_COMMENT;
+		ip = list_append(ip, rbrace);
+		if (comment2 != NULL)
+			ip = list_append(ip, comment2);
+	}
+
+	return ip;
 }

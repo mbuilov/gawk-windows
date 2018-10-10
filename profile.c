@@ -208,6 +208,14 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 	int rule;
 	static int rule_count[MAXRULE];
 	static bool skip_comment = false;
+	static const char tabs[] = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
+	static const size_t tabs_len = sizeof(tabs) - 1;
+
+#define check_indent_level()
+	if (indent_level + 1 > tabs_len) \
+		/* We're allowed to be snarky, occasionally. */ \
+		fatal(_("Program indentation level too deep. Consider refactoring your code"));
+
 
 	for (pc = startp; pc != endp; pc = pc->nexti) {
 		if (pc->source_line > 0)
@@ -399,7 +407,21 @@ cleanup:
 			t2 = pp_pop();
 			t1 = pp_pop();
 			parenthesize(pc->opcode, t1, t2);
-			str = pp_group3(t1->pp_str, op2str(pc->opcode), t2->pp_str);
+			if (pc->comment == NULL)
+				str = pp_group3(t1->pp_str, op2str(pc->opcode), t2->pp_str);
+			else {
+				check_indent_level();
+
+				size_t len = strlen(t1->pp_str)
+						+ strlen(op2str(pc->opcode)) + strlen(t2->pp_str)	// foo && bar
+						+ indent_level + 1				// indent
+						+ pc->comment->memory->stlen + 3;		// tab comment
+
+				emalloc(str, char *, len, "pprint");
+				sprintf(str, "%s%s%s%.*s %s", t1->pp_str, op2str(pc->opcode),
+						pc->comment->memory->stptr,
+						indent_level + 1, tabs, t2->pp_str);
+			}
 			pp_free(t1);
 			pp_free(t2);
 			pp_push(pc->opcode, str, CAN_FREE);
@@ -1009,8 +1031,6 @@ cleanup:
 			NODE *f, *t, *cond;
 			size_t len;
 			INSTRUCTION *qm_comment = NULL, *colon_comment = NULL;
-			static const char tabs[] = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
-			static const size_t tabs_len = sizeof(tabs) - 1;
 
 			qm_comment = pc->comment;
 
@@ -1028,10 +1048,6 @@ cleanup:
 			t = pp_pop();
 			cond = pp_pop();
 
-			if (indent_level + 1 > tabs_len)
-				// We're allowed to be snarky, occasionally.
-				fatal(_("Program indentation level too deep. Consider refactoring your code"));
-
 			/*
 			 * This stuff handles comments that come after a ?, :, or both.
 			 * Allowing newlines after ? and : is a gawk extension.
@@ -1046,6 +1062,7 @@ cleanup:
 				emalloc(str, char *, len, "pprint");
 				sprintf(str, "%s ? %s : %s", cond->pp_str, t->pp_str, f->pp_str);
 			} else if (qm_comment != NULL && colon_comment != NULL) {
+				check_indent_level();
 				len += qm_comment->memory->stlen +		// comments
 					colon_comment->memory->stlen +
 					2 * (indent_level + 1) + 3 +		// indentation
@@ -1065,6 +1082,7 @@ cleanup:
 					f->pp_str			// false part
 					);
 			} else if (qm_comment != NULL) {
+				check_indent_level();
 				len += qm_comment->memory->stlen +	// comment
 					1 * (indent_level + 1) + 3 +	// indentation
 					t->pp_len + 3;
@@ -1080,6 +1098,7 @@ cleanup:
 					f->pp_str			// false part
 					);
 			} else {
+				check_indent_level();
 				len += colon_comment->memory->stlen +		// comment
 					1 * (indent_level + 1) + 3 +		// indentation
 					t->pp_len + 3;
