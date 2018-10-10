@@ -4032,7 +4032,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 
 	case Op_comment:
 		print_memory(pc->memory, func, print_func, fp);
-		fprintf(fp, " [comment_type = %s]\n",
+		print_func(fp, " [comment_type = %s]\n",
 			pc->memory->comment_type == EOL_COMMENT ?
 						"EOL" : "FULL");
 		break;
