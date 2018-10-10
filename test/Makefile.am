@@ -1890,7 +1890,7 @@ profile1:
 	@$(AWK) -f "$(srcdir)"/xref.awk "$(srcdir)"/dtdgport.awk > _$@.out1
 	@$(AWK) --pretty-print=ap-$@.out -f "$(srcdir)"/xref.awk
 	@$(AWK) -f ./ap-$@.out "$(srcdir)"/dtdgport.awk > _$@.out2 ; rm ap-$@.out
-	@$(CMP) _$@.out1 _$@.out2 && rm _$@.out[12] || { echo EXIT CODE: $$? >>_$@ ; \
+	@-$(CMP) _$@.out1 _$@.out2 && rm _$@.out[12] || { echo EXIT CODE: $$? >>_$@ ; \
 	cp "$(srcdir)"/dtdgport.awk $@.ok ; }
 
 profile2:
