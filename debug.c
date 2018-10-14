@@ -3807,7 +3807,12 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		break;
 
 	case Op_K_do:
-		print_func(fp, "[doloop_cond = %p] [target_break = %p]\n", (pc+1)->doloop_cond, pc->target_break);
+		print_func(fp, "[doloop_cond = %p] [target_break = %p]", (pc+1)->doloop_cond, pc->target_break);
+		if (pc->comment)
+			print_func(fp, " [comment = %p]", pc->comment);
+		print_func(fp, "\n");
+		if (pc->comment)
+			print_instruction(pc->comment, print_func, fp, in_dump);
 		break;
 
 	case Op_K_for:
@@ -3819,7 +3824,26 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		break;
 
 	case Op_K_switch:
+	{
+		bool need_newline = false;
 		print_func(fp, "[switch_start = %p] [switch_end = %p]\n", (pc+1)->switch_start, (pc+1)->switch_end);
+		if (pc->comment || (pc+1)->switch_end->comment)
+			print_func(fp, "%*s", noffset, "");
+		if (pc->comment) {
+			print_func(fp, "[start_comment = %p]", pc->comment);
+			need_newline = true;
+		}
+		if ((pc+1)->switch_end->comment) {
+			print_func(fp, "[end_comment = %p]", (pc + 1)->switch_end->comment);
+			need_newline = true;
+		}
+		if (need_newline)
+			print_func(fp, "\n");
+		if (pc->comment)
+			print_instruction(pc->comment, print_func, fp, in_dump);
+		if ((pc+1)->switch_end->comment)
+			print_instruction((pc+1)->switch_end->comment, print_func, fp, in_dump);
+	}
 		break;
 
 	case Op_K_default:
@@ -4032,9 +4056,14 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 
 	case Op_comment:
 		print_memory(pc->memory, func, print_func, fp);
-		print_func(fp, " [comment_type = %s]\n",
+		print_func(fp, " [comment_type = %s]",
 			pc->memory->comment_type == EOL_COMMENT ?
 						"EOL" : "BLOCK");
+		if (pc->comment)
+			print_func(fp, " [comment = %p]", pc->comment);
+		print_func(fp, "\n", pc->comment);
+		if (pc->comment)
+			print_instruction(pc->comment, print_func, fp, in_dump);
 		break;
 
 	case Op_push_i:

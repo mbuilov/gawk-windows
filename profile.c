@@ -843,9 +843,13 @@ cleanup:
 			indent(SPACEOVER);
 			t1 = pp_pop();
 			fprintf(prof_fp, "} %s (%s)", op2str(Op_K_while), t1->pp_str);
+			if (pc->comment)
+				fprintf(prof_fp, "\t%s", pc->comment->memory->stptr);
+			else {
+				end_line(pc->target_break);
+				skip_comment = true;
+			}
 			pp_free(t1);
-			end_line(pc->target_break);
-			skip_comment = true;
 			pc = pc->target_break;
 			break;
 

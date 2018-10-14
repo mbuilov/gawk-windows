@@ -767,8 +767,13 @@ statement
 			ip = list_merge($3, $6);
 		else
 			ip = list_prepend($6, instruction(Op_no_op));
+
+		if ($2 != NULL)
+			(void) list_prepend(ip, $2);
+
 		if (do_pretty_print)
 			(void) list_prepend(ip, instruction(Op_exec_count));
+
 		(void) list_append(ip, instruction(Op_jmp_true));
 		ip->lasti->target_jmp = ip->nexti;
 		$$ = list_append(ip, tbreak);
@@ -783,7 +788,10 @@ statement
 			($1 + 1)->doloop_cond = tcont;
 			$$ = list_prepend(ip, $1);
 			bcfree($4);
-		} /* else
+			if ($8 != NULL)
+				$1->comment = $8;
+		}
+		/* else
 			$1 and $4 are NULLs */
 	  }
 	| LEX_FOR '(' NAME LEX_IN simple_variable r_paren opt_nls statement
@@ -865,8 +873,9 @@ regular_loop:
 				$1->target_continue = tcont;
 				$1->target_break = tbreak;
 				(void) list_append(ip, $1);
-			} /* else
-					$1 is NULL */
+			}
+			/* else
+				$1 is NULL */
 
 			/* add update_FOO instruction if necessary */
 			if ($4->array_var->type == Node_var && $4->array_var->var_update) {
@@ -5830,8 +5839,9 @@ mk_for_loop(INSTRUCTION *forp, INSTRUCTION *init, INSTRUCTION *cond,
 		forp->target_break = tbreak;
 		forp->target_continue = tcont;
 		ret = list_prepend(ret, forp);
-	} /* else
-			forp is NULL */
+	}
+	/* else
+		forp is NULL */
 
 	return ret;
 }
