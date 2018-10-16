@@ -809,7 +809,8 @@ statement
 				&& strcmp($8->nexti->memory->vname, var_name) == 0
 		) {
 
-		/* Efficiency hack.  Recognize the special case of
+		/*
+		 * Efficiency hack.  Recognize the special case of
 		 *
 		 * 	for (iggy in foo)
 		 * 		delete foo[iggy]
@@ -841,8 +842,10 @@ statement
 				bcfree($3);
 				bcfree($4);
 				bcfree($5);
-				if ($7 != NULL)
+				if ($7 != NULL) {
+					merge_comments($7, NULL);
 					$8 = list_prepend($8, $7);
+				}
 				$$ = $8;
 			} else
 				goto regular_loop;
@@ -899,6 +902,9 @@ regular_loop:
 				($1 + 1)->forloop_cond = $4;
 				($1 + 1)->forloop_body = ip->lasti;
 			}
+
+			if ($7 != NULL)
+				merge_comments($7, NULL);
 
 			if ($8 != NULL) {
 				if ($7 != NULL)
@@ -6358,13 +6364,13 @@ merge_comments(INSTRUCTION *c1, INSTRUCTION *c2)
 	emalloc(buffer, char *, total + 1, "merge_comments");
 
 	strcpy(buffer, c1->memory->stptr);
-	strcat(buffer, "\n");
 	if (c1->comment != NULL) {
-		strcat(buffer, c1->comment->memory->stptr);
 		strcat(buffer, "\n");
+		strcat(buffer, c1->comment->memory->stptr);
 	}
 
 	if (c2 != NULL) {
+		strcat(buffer, "\n");
 		strcat(buffer, c2->memory->stptr);
 		if (c2->comment != NULL) {
 			strcat(buffer, "\n");

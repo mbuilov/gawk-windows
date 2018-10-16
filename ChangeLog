@@ -2,7 +2,10 @@
 
 	* awkgram.y (Grammar): Improve comment handling for many plain
 	statements. Improve handling for case and default.
+	Handle comments in `for (iggy in foo)' loops.
 	(yylex): After a colon, only allow newline if was part of ?:.
+	(merge_comments): Improve coding so we don't get two newlines
+	at the end of a merged comment.
 	* debug.c (print_instruction): Handle comments for case and default.
 	Simplify printing of comments.
 	* profile.c (pprint): Handle comments for case and default.
