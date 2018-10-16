@@ -420,7 +420,7 @@ cleanup:
 				emalloc(str, char *, len, "pprint");
 				sprintf(str, "%s%s%s%.*s %s", t1->pp_str, op2str(pc->opcode),
 						pc->comment->memory->stptr,
-						indent_level + 1, tabs, t2->pp_str);
+						(int) indent_level + 1, tabs, t2->pp_str);
 			}
 			pp_free(t1);
 			pp_free(t2);
