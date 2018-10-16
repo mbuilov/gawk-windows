@@ -246,7 +246,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 
 			if (rule != Rule) {
 				/* Allow for pre-non-rule-block comment  */
-				if (pc->nexti != (pc +1)->firsti
+				if (pc->nexti != (pc+1)->firsti
 				    && pc->nexti->opcode == Op_comment
 				    && pc->nexti->memory->comment_type == BLOCK_COMMENT)
 					print_comment(pc->nexti, -1);
@@ -945,13 +945,19 @@ cleanup:
 			if (pc->opcode == Op_K_case) {
 				t1 = pp_pop();
 				fprintf(prof_fp, "%s %s:", op2str(pc->opcode), t1->pp_str);
-				pc = end_line(pc);
 				pp_free(t1);
-			} else {
+			} else
 				fprintf(prof_fp, "%s:", op2str(pc->opcode));
-				pc = end_line(pc);
-			}
+
 			indent_in();
+			if (pc->comment != NULL) {
+				if (pc->comment->memory->comment_type == EOL_COMMENT)
+					fprintf(prof_fp, "\t%s", pc->comment->memory->stptr);
+				else {
+					fprintf(prof_fp, "\n");
+					print_comment(pc->comment, indent_level);
+				}
+			}
 			pprint(pc->stmt_start->nexti, pc->stmt_end->nexti, NO_PPRINT_FLAGS);
 			indent_out();
 			break;

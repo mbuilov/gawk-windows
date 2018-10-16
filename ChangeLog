@@ -1,3 +1,12 @@
+2018-10-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (Grammar): Improve comment handling for many plain
+	statements. Improve handling for case and default.
+	(yylex): After a colon, only allow newline if was part of ?:.
+	* debug.c (print_instruction): Handle comments for case and default.
+	Simplify printing of comments.
+	* profile.c (pprint): Handle comments for case and default.
+
 2018-10-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y (Grammar): Add comment handling for do...while.

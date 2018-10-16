@@ -3847,7 +3847,12 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		break;
 
 	case Op_K_default:
-		print_func(fp, "[stmt_start = %p] [stmt_end = %p]\n", pc->stmt_start, pc->stmt_end);
+		print_func(fp, "[stmt_start = %p] [stmt_end = %p]", pc->stmt_start, pc->stmt_end);
+		if (pc->comment) {
+			print_func(fp, " [comment = %p]\n", pc->comment);
+			print_instruction(pc->comment, print_func, fp, in_dump);
+		} else
+			print_func(fp, "\n");
 		break;
 
 	case Op_var_update:
@@ -3939,8 +3944,13 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		break;
 
 	case Op_K_case:
-		print_func(fp, "[target_jmp = %p] [match_exp = %s]\n",
+		print_func(fp, "[target_jmp = %p] [match_exp = %s]",
 						pc->target_jmp,	(pc + 1)->match_exp ? "true" : "false");
+		if (pc->comment) {
+			print_func(fp, " [comment = %p]\n", pc->comment);
+			print_instruction(pc->comment, print_func, fp, in_dump);
+		} else
+			print_func(fp, "\n");
 		break;
 
 	case Op_arrayfor_incr:
@@ -4059,11 +4069,11 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		print_func(fp, " [comment_type = %s]",
 			pc->memory->comment_type == EOL_COMMENT ?
 						"EOL" : "BLOCK");
-		if (pc->comment)
-			print_func(fp, " [comment = %p]", pc->comment);
-		print_func(fp, "\n", pc->comment);
-		if (pc->comment)
+		if (pc->comment) {
+			print_func(fp, " [comment = %p]\n", pc->comment);
 			print_instruction(pc->comment, print_func, fp, in_dump);
+		} else
+			print_func(fp, "\n");
 		break;
 
 	case Op_push_i:

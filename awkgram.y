@@ -1,21 +1,20 @@
-/* ALSO TODO:
- * Fix debug.c
- */
-/* working on statement_term */
+/* working on statement_term and opt_nls */
 /*
 TODO:
--- After && and ||
 -- Get comments from all instances of opt_nls
 -- Get comments from all instances of l_brace
 -- Get comments from all instances of r_brace
 -- Review statement lists and handling of statement_term
--- case part of switch statement
+-- for(;;) statement
+-- for(iggy in fo) statement
 DONE:
 -- Get comments from all instances of nls
 -- After , in parameter list
 -- After ? and :
 -- switch statement
 -- After , in a range expression in a pattern
+-- After && and ||
+-- case part of switch statement
 */
 /*
  * awkgram.y --- yacc/bison parser
@@ -268,8 +267,11 @@ rule
 		} else if ($1 == NULL) {
 			msg(_("each rule must have a pattern or an action part"));
 			errcount++;
-		} else		/* pattern rule with non-empty pattern */
+		} else {	/* pattern rule with non-empty pattern */
+			if ($2 != NULL)
+				list_append($1, $2);
 			(void) append_rule($1, NULL);
+		}
 	  }
 	| function_prologue action
 	  {
@@ -284,7 +286,7 @@ rule
 		at_seen = false;
 		if ($4 != NULL) {
 			warning(_("comments on `@include' statements will be lost"));
-			/* FIXME: Free memory, it should be a list */
+			bcfree($4);
 		}
 		yyerrok;
 	  }
@@ -294,7 +296,7 @@ rule
 		at_seen = false;
 		if ($4 != NULL) {
 			warning(_("comments on `@load' statements will be lost"));
-			/* FIXME: Free memory, it should be a list */
+			bcfree($4);
 		}
 		yyerrok;
 	  }
@@ -839,6 +841,8 @@ statement
 				bcfree($3);
 				bcfree($4);
 				bcfree($5);
+				if ($7 != NULL)
+					$8 = list_prepend($8, $7);
 				$$ = $8;
 			} else
 				goto regular_loop;
@@ -896,8 +900,12 @@ regular_loop:
 				($1 + 1)->forloop_body = ip->lasti;
 			}
 
-			if ($8 != NULL)
+			if ($8 != NULL) {
+				if ($7 != NULL)
+					$8 = list_prepend($8, $7);
 				(void) list_merge(ip, $8);
+			} else if ($7 != NULL)
+				(void) list_append(ip, $7);
 
 			(void) list_append(ip, instruction(Op_jmp));
 			ip->lasti->target_jmp = $4;
@@ -939,6 +947,8 @@ non_compound_stmt
 				_("`break' is not allowed outside a loop or switch"));
 		$1->target_jmp = NULL;
 		$$ = list_create($1);
+		if ($2 != NULL)
+			$$ = list_append($$, $2);
 	  }
 	| LEX_CONTINUE statement_term
 	  {
@@ -947,6 +957,8 @@ non_compound_stmt
 				_("`continue' is not allowed outside a loop"));
 		$1->target_jmp = NULL;
 		$$ = list_create($1);
+		if ($2 != NULL)
+			$$ = list_append($$, $2);
 	  }
 	| LEX_NEXT statement_term
 	  {
@@ -956,6 +968,8 @@ non_compound_stmt
 				_("`next' used in %s action"), ruletab[rule]);
 		$1->target_jmp = ip_rec;
 		$$ = list_create($1);
+		if ($2 != NULL)
+			$$ = list_append($$, $2);
 	  }
 	| LEX_NEXTFILE statement_term
 	  {
@@ -967,6 +981,8 @@ non_compound_stmt
 		$1->target_newfile = ip_newfile;
 		$1->target_endfile = ip_endfile;
 		$$ = list_create($1);
+		if ($2 != NULL)
+			$$ = list_append($$, $2);
 	  }
 	| LEX_EXIT opt_exp statement_term
 	  {
@@ -982,6 +998,8 @@ non_compound_stmt
 			$$->nexti->memory = dupnode(Nnull_string);
 		} else
 			$$ = list_append($2, $1);
+		if ($3 != NULL)
+			$$ = list_append($$, $3);
 	  }
 	| LEX_RETURN
 	  {
@@ -994,8 +1012,16 @@ non_compound_stmt
 			$$->nexti->memory = dupnode(Nnull_string);
 		} else
 			$$ = list_append($3, $1);
+		if ($4 != NULL)
+			$$ = list_append($$, $4);
 	  }
 	| simple_stmt statement_term
+	  {
+		if ($2 != NULL)
+			$$ = list_append($1, $2);
+		else
+			$$ = $1;
+	  }
 	;
 
 	/*
@@ -1205,6 +1231,7 @@ case_statement
 			(void) list_prepend(casestmt, instruction(Op_exec_count));
 		$1->case_exp = $2;
 		$1->case_stmt = casestmt;
+		$1->comment = $4;
 		bcfree($3);
 		$$ = $1;
 	  }
@@ -1217,6 +1244,7 @@ case_statement
 			(void) list_prepend(casestmt, instruction(Op_exec_count));
 		bcfree($2);
 		$1->case_stmt = casestmt;
+		$1->comment = $3;
 		$$ = $1;
 	  }
 	;
@@ -3356,6 +3384,7 @@ yylex(void)
 	bool intlstr = false;
 	AWKNUM d;
 	bool collecting_typed_regexp = false;
+	static int qm_col_count = 0;
 
 #define GET_INSTRUCTION(op) bcalloc(op, 1, sourceline)
 
@@ -3607,13 +3636,18 @@ retry:
 		}
 		break;
 
-	case ':':
 	case '?':
+		qm_col_count++;
+		// fall through
+	case ':':
 		yylval = GET_INSTRUCTION(Op_cond_exp);
-		if (! do_posix) {
-			INSTRUCTION *new_comment = NULL;
-			allow_newline(& new_comment);
-			yylval->comment = new_comment;
+		if (c == ':' && qm_col_count > 0) {
+			if (do_posix) {
+				INSTRUCTION *new_comment = NULL;
+				allow_newline(& new_comment);
+				yylval->comment = new_comment;
+			}
+			qm_col_count--;
 		}
 		return lasttok = c;
 
