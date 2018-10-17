@@ -28131,12 +28131,14 @@ come out as:
 
 @example
 /foo/   @{
-    print $0
+    print
 @}
 @end example
 
 @noindent
 which is correct, but possibly unexpected.
+(If a program uses both @samp{print $0} and plain
+@samp{print}, that distinction is retained.)
 
 @cindex profiling @command{awk} programs, dynamically
 @cindex @command{gawk} program, dynamic profiling

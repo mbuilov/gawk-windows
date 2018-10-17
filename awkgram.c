@@ -2882,7 +2882,7 @@ regular_loop:
 		 * which is faster for these two cases.
 		 */
 
-		if ((yyvsp[-3])->opcode == Op_K_print &&
+		if (do_optimize && (yyvsp[-3])->opcode == Op_K_print &&
 			((yyvsp[-1]) == NULL
 				|| ((yyvsp[-1])->lasti->opcode == Op_field_spec
 					&& (yyvsp[-1])->nexti->nexti->nexti == (yyvsp[-1])->lasti

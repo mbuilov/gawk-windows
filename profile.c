@@ -957,7 +957,8 @@ cleanup:
 					fprintf(prof_fp, "\n");
 					print_comment(pc->comment, indent_level);
 				}
-			}
+			} else
+				fprintf(prof_fp, "\n");
 			pprint(pc->stmt_start->nexti, pc->stmt_end->nexti, NO_PPRINT_FLAGS);
 			indent_out();
 			break;

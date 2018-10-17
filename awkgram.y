@@ -1047,7 +1047,7 @@ simple_stmt
 		 * which is faster for these two cases.
 		 */
 
-		if ($1->opcode == Op_K_print &&
+		if (do_optimize && $1->opcode == Op_K_print &&
 			($3 == NULL
 				|| ($3->lasti->opcode == Op_field_spec
 					&& $3->nexti->nexti->nexti == $3->lasti
