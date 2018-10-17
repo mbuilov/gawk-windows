@@ -298,7 +298,8 @@ typedef union bucket_item {
 
 enum commenttype {
 	EOL_COMMENT = 1,
-	BLOCK_COMMENT
+	BLOCK_COMMENT,
+	FOR_COMMENT	// special case
 };
 
 /* string hash table */

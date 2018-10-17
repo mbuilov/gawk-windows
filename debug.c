@@ -3820,7 +3820,12 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		/* fall through */
 	case Op_K_arrayfor:
 		print_func(fp, "[forloop_body = %p] ", (pc+1)->forloop_body);
-		print_func(fp, "[target_break = %p] [target_continue = %p]\n", pc->target_break, pc->target_continue);
+		print_func(fp, "[target_break = %p] [target_continue = %p]", pc->target_break, pc->target_continue);
+		if (pc->comment != NULL) {
+			print_func(fp, " [comment = %p]\n", (pc)->comment);
+			print_instruction(pc->comment, print_func, fp, in_dump);
+		} else
+			print_func(fp, "\n");
 		break;
 
 	case Op_K_switch:

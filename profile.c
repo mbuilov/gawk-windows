@@ -854,6 +854,23 @@ cleanup:
 			break;
 
 		case Op_K_for:
+		{
+			INSTRUCTION *comment1 = NULL, *comment2 = NULL;
+
+			if (pc->comment != NULL) {
+				comment1 = pc->comment;
+				pc->comment = NULL;
+				if (comment1 != NULL && comment1->comment != NULL) {
+					comment2 = comment1->comment;
+					comment1->comment = NULL;
+				}
+				if (comment2 == NULL && comment1->memory->comment_type == FOR_COMMENT) {
+					comment2 = comment1;
+					comment2->memory->comment_type = EOL_COMMENT;
+					comment1 = NULL;
+				}
+			}
+
 			ip1 = pc + 1;
 			indent(ip1->forloop_body->exec_count);
 			fprintf(prof_fp, "%s (", op2str(pc->opcode));
@@ -861,11 +878,18 @@ cleanup:
 			/* If empty for looop header, print it a little more nicely. */
 			if (   pc->nexti->opcode == Op_no_op
 			    && ip1->forloop_cond == pc->nexti
-			    && pc->target_continue->opcode == Op_jmp) {
+			    && pc->target_continue->opcode == Op_jmp
+			    && comment1 == NULL && comment2 == NULL) {
 				fprintf(prof_fp, ";;");
 			} else {
 				pprint(pc->nexti, ip1->forloop_cond, IN_FOR_HEADER);
 				fprintf(prof_fp, "; ");
+
+				if (comment1 != NULL) {
+					print_comment(comment1, 0);
+					indent(ip1->forloop_body->exec_count);
+					indent(1);
+				}
 
 				if (ip1->forloop_cond->opcode == Op_no_op &&
 						ip1->forloop_cond->nexti == ip1->forloop_body)
@@ -875,6 +899,12 @@ cleanup:
 					t1 = pp_pop();
 					fprintf(prof_fp, "%s; ", t1->pp_str);
 					pp_free(t1);
+				}
+
+				if (comment2 != NULL) {
+					print_comment(comment2, 0);
+					indent(ip1->forloop_body->exec_count);
+					indent(1);
 				}
 
 				pprint(pc->target_continue, pc->target_break, IN_FOR_HEADER);
@@ -890,6 +920,7 @@ cleanup:
 			end_line(pc->target_break);
 			skip_comment = true;
 			pc = pc->target_break;
+		}
 			break;
 
 		case Op_K_arrayfor:

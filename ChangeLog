@@ -1,5 +1,13 @@
 2018-10-17         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* awk.h (commenttype): Add FOR_COMMENT.
+	* awkgram.y (Grammar): Handle all the opt_nls cases in
+	regular for statements.
+	* debug.c (print_instruction): Print the comments in Op_K_for.
+	* profile.c (pprint): Handle printing comments.
+
+2018-10-17         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* NEWS: Updated.
 	* awkgram.y (Grammar): Distinguish `print' and `print $0' in
 	what gets profiled / pretty-printed.

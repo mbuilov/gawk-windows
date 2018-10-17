@@ -924,6 +924,20 @@ regular_loop:
 	  }
 	| LEX_FOR '(' opt_simple_stmt semi opt_nls exp semi opt_nls opt_simple_stmt r_paren opt_nls statement
 	  {
+		if ($5 != NULL) {
+			merge_comments($5, NULL);
+			$1->comment = $5;
+		}
+		if ($8 != NULL) {
+			merge_comments($8, NULL);
+			if ($1->comment == NULL) {
+				$8->memory->comment_type = FOR_COMMENT;
+				$1->comment = $8;
+			} else
+				$1->comment->comment = $8;
+		}
+		if ($11 != NULL)
+			$12 = list_prepend($12, $11);
 		$$ = mk_for_loop($1, $3, $6, $9, $12);
 
 		break_allowed--;
@@ -931,6 +945,20 @@ regular_loop:
 	  }
 	| LEX_FOR '(' opt_simple_stmt semi opt_nls semi opt_nls opt_simple_stmt r_paren opt_nls statement
 	  {
+		if ($5 != NULL) {
+			merge_comments($5, NULL);
+			$1->comment = $5;
+		}
+		if ($7 != NULL) {
+			merge_comments($7, NULL);
+			if ($1->comment == NULL) {
+				$7->memory->comment_type = FOR_COMMENT;
+				$1->comment = $7;
+			} else
+				$1->comment->comment = $7;
+		}
+		if ($10 != NULL)
+			$11 = list_prepend($11, $10);
 		$$ = mk_for_loop($1, $3, (INSTRUCTION *) NULL, $8, $11);
 
 		break_allowed--;
