@@ -1015,6 +1015,7 @@ typedef struct srcfile {
 	char *lexeme;
 	char *lexptr_begin;
 	int lasttok;
+	INSTRUCTION *comment;	/* comment on @load line */
 } SRCFILE;
 
 // structure for INSTRUCTION pool, needed mainly for debugger

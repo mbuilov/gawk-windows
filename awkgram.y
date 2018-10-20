@@ -5,8 +5,6 @@ TODO:
 -- Get comments from all instances of l_brace
 -- Get comments from all instances of r_brace
 -- Review statement lists and handling of statement_term
--- for(;;) statement
--- for(iggy in fo) statement
 DONE:
 -- Get comments from all instances of nls
 -- After , in parameter list
@@ -15,6 +13,8 @@ DONE:
 -- After , in a range expression in a pattern
 -- After && and ||
 -- case part of switch statement
+-- for(;;) statement
+-- for(iggy in fo) statement
 */
 /*
  * awkgram.y --- yacc/bison parser
@@ -71,8 +71,8 @@ static int isnoeffect(OPCODE type);
 static INSTRUCTION *make_assignable(INSTRUCTION *ip);
 static void dumpintlstr(const char *str, size_t len);
 static void dumpintlstr2(const char *str1, size_t len1, const char *str2, size_t len2);
-static int include_source(INSTRUCTION *file);
-static int load_library(INSTRUCTION *file);
+static bool include_source(INSTRUCTION *file);
+static bool load_library(INSTRUCTION *file, void **comment_p);
 static void next_sourcefile(void);
 static char *tokexpand(void);
 static NODE *set_profile_text(NODE *n, const char *str, size_t len);
@@ -103,6 +103,7 @@ static void check_funcs(void);
 static ssize_t read_one_line(int fd, void *buffer, size_t count);
 static int one_line_close(int fd);
 static void merge_comments(INSTRUCTION *c1, INSTRUCTION *c2);
+static INSTRUCTION *make_include_comment(const char *filename);
 static INSTRUCTION *make_braced_statements(INSTRUCTION *lbrace, INSTRUCTION *stmts, INSTRUCTION *rbrace);
 static void add_sign_to_num(NODE *n, char sign);
 
@@ -284,19 +285,40 @@ rule
 	  {
 		want_source = false;
 		at_seen = false;
+#if 1
 		if ($4 != NULL) {
+			assert($4->opcode == Op_comment);
 			warning(_("comments on `@include' statements will be lost"));
+			unref($4->memory);
 			bcfree($4);
 		}
+#else
+		if ($3 != NULL && $4 != NULL) {
+			size_t end;
+
+			// remove trailing newline
+			end = --($3->memory->stlen);
+			$3->memory->stptr[end] = '\0';
+
+			merge_comments($3, $4);
+
+			// tweak embedded newline
+			$3->memory->stptr[end] = '\t';
+
+			// FIXME: how to get this into the program?
+			// list_append(rule_list, $3);
+			// rule_list = list_prepend(rule_list, list_create($3));
+		}
+#endif
 		yyerrok;
 	  }
 	| '@' LEX_LOAD library statement_term
 	  {
 		want_source = false;
 		at_seen = false;
-		if ($4 != NULL) {
-			warning(_("comments on `@load' statements will be lost"));
-			bcfree($4);
+		if ($3 != NULL && $4 != NULL) {
+			SRCFILE *s = (SRCFILE *) $3;
+			s->comment = $4;
 		}
 		yyerrok;
 	  }
@@ -305,11 +327,15 @@ rule
 source
 	: FILENAME
 	  {
-		if (include_source($1) < 0)
+		if (! include_source($1))
 			YYABORT;
+		if (do_pretty_print) {
+			$$ = make_include_comment($1->lextok);
+		} else {
+			$$ = NULL;
+		}
 		efree($1->lextok);
 		bcfree($1);
-		$$ = NULL;
 	  }
 	| FILENAME error
 	  { $$ = NULL; }
@@ -320,11 +346,13 @@ source
 library
 	: FILENAME
 	  {
-		if (load_library($1) < 0)
+		void *srcfile;
+
+		if (! load_library($1, & srcfile))
 			YYABORT;
 		efree($1->lextok);
 		bcfree($1);
-		$$ = NULL;
+		$$ = (INSTRUCTION *) srcfile;
 	  }
 	| FILENAME error
 	  { $$ = NULL; }
@@ -2778,7 +2806,7 @@ add_srcfile(enum srctype stype, char *src, SRCFILE *thisfile, bool *already_incl
 
 /* include_source --- read program from source included using `@include' */
 
-static int
+static bool
 include_source(INSTRUCTION *file)
 {
 	SRCFILE *s;
@@ -2788,23 +2816,23 @@ include_source(INSTRUCTION *file)
 
 	if (do_traditional || do_posix) {
 		error_ln(file->source_line, _("@include is a gawk extension"));
-		return -1;
+		return false;
 	}
 
 	if (strlen(src) == 0) {
 		if (do_lint)
 			lintwarn_ln(file->source_line, _("empty filename after @include"));
-		return 0;
+		return true;
 	}
 
 	s = add_srcfile(SRC_INC, src, sourcefile, &already_included, &errcode);
 	if (s == NULL) {
 		if (already_included)
-			return 0;
+			return true;
 		error_ln(file->source_line,
 			_("can't open source file `%s' for reading (%s)"),
 			src, errcode ? strerror(errcode) : _("reason unknown"));
-		return -1;
+		return false;
 	}
 
 	/* save scanner state for the current sourcefile */
@@ -2823,42 +2851,45 @@ include_source(INSTRUCTION *file)
 	lasttok = 0;
 	lexeof = false;
 	eof_warned = false;
-	return 0;
+	return true;
 }
 
 /* load_library --- load a shared library */
 
-static int
-load_library(INSTRUCTION *file)
+static bool
+load_library(INSTRUCTION *file, void **srcfile_p)
 {
 	SRCFILE *s;
 	char *src = file->lextok;
 	int errcode;
 	bool already_included;
 
+	*srcfile_p = NULL;
+
 	if (do_traditional || do_posix) {
 		error_ln(file->source_line, _("@load is a gawk extension"));
-		return -1;
+		return false;
 	}
 
 	if (strlen(src) == 0) {
 		if (do_lint)
 			lintwarn_ln(file->source_line, _("empty filename after @load"));
-		return 0;
+		return true;
 	}
 
 	s = add_srcfile(SRC_EXTLIB, src, sourcefile, &already_included, &errcode);
 	if (s == NULL) {
 		if (already_included)
-			return 0;
+			return true;
 		error_ln(file->source_line,
 			_("can't open shared library `%s' for reading (%s)"),
 			src, errcode ? strerror(errcode) : _("reason unknown"));
-		return -1;
+		return false;
 	}
 
 	load_ext(s->fullpath);
-	return 0;
+	*srcfile_p = (void *) s;
+	return true;
 }
 
 /* next_sourcefile --- read program from the next source in srcfiles */
@@ -6460,4 +6491,27 @@ make_braced_statements(INSTRUCTION *lbrace, INSTRUCTION *stmts, INSTRUCTION *rbr
 	}
 
 	return ip;
+}
+
+/* make_include_comment --- create a commented @include statement */
+
+static INSTRUCTION *
+make_include_comment(const char *filename)
+{
+	assert(do_pretty_print);
+
+	static char format[] = "# @include \"%s\"\n";
+	static size_t formatlen = sizeof(format);
+
+	size_t count = formatlen + strlen(filename);
+	char *buffer;
+
+	emalloc(buffer, char *, count + 1, "make_include_comment");
+	sprintf(buffer, format, filename);
+
+	NODE *mem = make_str_node(buffer, strlen(buffer), ALREADY_MALLOCED);
+	INSTRUCTION *com = instruction(Op_comment);
+	com->memory = mem;
+
+	return com;
 }

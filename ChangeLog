@@ -1,3 +1,16 @@
+2018-10-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (SRCFILE): Add comment field for comments on @load statements.
+	* awkgram.y (include_source): Type change to boolean.
+	(load_library): Type change to boolean, additiona parameter to
+	bring the SRCFILE struct up to where we can add the comment into it.
+	(make_include_comment): New function. Not used yet.
+	(Grammar): Add comment for @load statements. Start on preserving
+	@include statements and their comments for eventual inclusion
+	into the pretty-printed code.
+	* profile.c (print_lib_list): Made a little smarter about printing
+	the header and indentation. Print the comment if there is one.
+
 2018-10-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h (commenttype): Add FOR_COMMENT.

@@ -1264,17 +1264,28 @@ print_lib_list(FILE *prof_fp)
 {
 	SRCFILE *s;
 	static bool printed_header = false;
+	const char *indent = "";
+	bool found = false;
+
+	if (do_profile)
+		indent = "\t";
 
 	for (s = srcfiles->next; s != srcfiles; s = s->next) {
 		if (s->stype == SRC_EXTLIB) {
-			if (! printed_header) {
+			if (do_profile && ! printed_header) {
 				printed_header = true;
-				fprintf(prof_fp, _("\t# Loaded extensions (-l and/or @load)\n\n"));
+				fprintf(prof_fp, _("%s# Loaded extensions (-l and/or @load)\n\n"), indent);
 			}
-			fprintf(prof_fp, "\t@load \"%s\"\n", s->src);
+			found = true;
+			fprintf(prof_fp, "%s@load \"%s\"", indent, s->src);
+			if (s->comment != NULL) {
+				fprintf(prof_fp, "\t");
+				print_comment(s->comment, indent_level + 1);
+			} else
+				fprintf(prof_fp, "\n");
 		}
 	}
-	if (printed_header)	/* we found some */
+	if (found)	/* we found some */
 		fprintf(prof_fp, "\n");
 }
 
