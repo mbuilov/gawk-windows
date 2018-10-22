@@ -365,13 +365,6 @@ typedef struct
   ptrdiff_t alloc;              /* Number of elements allocated in ELEMS.  */
 } position_set;
 
-/* Sets of leaves are also stored as arrays.  */
-typedef struct
-{
-  size_t *elems;                /* Elements of this position set.  */
-  size_t nelem;                 /* Number of elements in this set.  */
-} leaf_set;
-
 /* A state of the dfa consists of a set of positions, some flags,
    and the token value of the lowest-numbered position of the state that
    contains an END token.  */
@@ -547,6 +540,12 @@ struct dfa
                                    whereas an exact matcher finds the longest
                                    string matching, but anchored to the
                                    beginning of the buffer.  */
+
+  /* Fields filled by dfaanalyze.  */
+  int *constraints;             /* Array of union of accepting constraints
+                                   in the follow of a position.  */
+  int *separates;               /* Array of contexts on follow of a
+                                   position.  */
 
   /* Fields filled by dfaexec.  */
   state_num tralloc;            /* Number of transition tables that have
@@ -2083,7 +2082,7 @@ insert (position p, position_set *s)
   while (lo < hi)
     {
       ptrdiff_t mid = (lo + hi) >> 1;
-      if (s->elems[mid].index > p.index)
+      if (s->elems[mid].index < p.index)
         lo = mid + 1;
       else if (s->elems[mid].index == p.index)
         {
@@ -2099,6 +2098,14 @@ insert (position p, position_set *s)
     s->elems[i] = s->elems[i - 1];
   s->elems[lo] = p;
   ++s->nelem;
+}
+
+static void
+append (position p, position_set *s)
+{
+  ptrdiff_t count = s->nelem;
+  s->elems = maybe_realloc (s->elems, count, &s->alloc, -1, sizeof *s->elems);
+  s->elems[s->nelem++] = p;
 }
 
 /* Merge S1 and S2 (with the additional constraint C2) into M.  The
@@ -2119,7 +2126,7 @@ merge_constrained (position_set const *s1, position_set const *s2,
   m->nelem = 0;
   while (i < s1->nelem || j < s2->nelem)
     if (! (j < s2->nelem)
-        || (i < s1->nelem && s1->elems[i].index >= s2->elems[j].index))
+        || (i < s1->nelem && s1->elems[i].index <= s2->elems[j].index))
       {
         unsigned int c = ((i < s1->nelem && j < s2->nelem
                            && s1->elems[i].index == s2->elems[j].index)
@@ -2172,7 +2179,7 @@ delete (size_t del, position_set *s)
   while (lo < hi)
     {
       size_t mid = (lo + hi) >> 1;
-      if (s->elems[mid].index > del)
+      if (s->elems[mid].index < del)
         lo = mid + 1;
       else if (s->elems[mid].index == del)
         {
@@ -2256,8 +2263,9 @@ state_index (struct dfa *d, position_set const *s, int context)
 
   for (state_num j = 0; j < s->nelem; j++)
     {
-      int c = s->elems[j].constraint;
-      if (d->tokens[s->elems[j].index] <= END)
+      int c = d->constraints[s->elems[j].index];
+
+      if (c != 0)
         {
           if (succeeds_in_context (c, context, CTX_ANY))
             constraint |= c;
@@ -2293,7 +2301,7 @@ state_index (struct dfa *d, position_set const *s, int context)
    constraint.  Repeat exhaustively until no funny positions are left.
    S->elems must be large enough to hold the result.  */
 static void
-epsclosure (position_set *initial, struct dfa const *d)
+epsclosure (struct dfa const *d)
 {
   position_set tmp;
   alloc_position_set (&tmp, d->nleaves);
@@ -2333,8 +2341,6 @@ epsclosure (position_set *initial, struct dfa const *d)
         for (size_t j = 0; j < d->tindex; j++)
           if (i != j && d->follows[j].nelem > 0)
             replace (&d->follows[j], i, &d->follows[i], constraint, &tmp);
-
-        replace (initial, i, &d->follows[i], constraint, &tmp);
       }
   free (tmp.elems);
 }
@@ -2367,17 +2373,12 @@ charclass_context (struct dfa const *dfa, charclass const *c)
    in the complement set will have the same follow set.  */
 
 static int _GL_ATTRIBUTE_PURE
-state_separate_contexts (position_set const *s)
+state_separate_contexts (struct dfa *d, position_set const *s)
 {
   int separate_contexts = 0;
 
   for (size_t j = 0; j < s->nelem; j++)
-    {
-      if (prev_newline_dependent (s->elems[j].constraint))
-        separate_contexts |= CTX_NEWLINE;
-      if (prev_letter_dependent (s->elems[j].constraint))
-        separate_contexts |= CTX_LETTER;
-    }
+    separate_contexts |= d->separates[s->elems[j].index];
 
   return separate_contexts;
 }
@@ -2402,77 +2403,165 @@ enum
   OPT_QUEUED = (1 << 4)
 };
 
-static ptrdiff_t
-merge_nfa_state (struct dfa *d, size_t *queue, ptrdiff_t nqueue, size_t tindex,
-                 char *flags, position_set *merged)
+static void
+merge_nfa_state (struct dfa *d, size_t tindex, char *flags,
+                 position_set *merged)
 {
   position_set *follows = d->follows;
   ptrdiff_t nelem = 0;
 
+  d->constraints[tindex] = 0;
+
   for (ptrdiff_t i = 0; i < follows[tindex].nelem; i++)
     {
-      size_t dindex = follows[tindex].elems[i].index;
+      size_t sindex = follows[tindex].elems[i].index;
 
       /* Skip the node as pruned in future.  */
       unsigned int iconstraint = follows[tindex].elems[i].constraint;
       if (iconstraint == 0)
         continue;
 
+      if (d->tokens[follows[tindex].elems[i].index] <= END)
+        {
+          d->constraints[tindex] |= follows[tindex].elems[i].constraint;
+          continue;
+        }
+
+      if (!(flags[sindex] & (OPT_LPAREN | OPT_RPAREN)))
+        {
+          ptrdiff_t j;
+
+          for (j = 0; j < nelem; j++)
+            {
+              size_t dindex = follows[tindex].elems[j].index;
+
+              if (follows[tindex].elems[j].constraint != iconstraint)
+                continue;
+
+              if (flags[dindex] & (OPT_LPAREN | OPT_RPAREN))
+                continue;
+
+              if (d->tokens[sindex] != d->tokens[dindex])
+                continue;
+
+              if ((flags[sindex] ^ flags[dindex]) & OPT_REPEAT)
+                continue;
+
+              if (flags[sindex] & OPT_REPEAT)
+                delete (sindex, &follows[sindex]);
+
+              merge2 (&follows[dindex], &follows[sindex], merged);
+
+              break;
+            }
+
+          if (j < nelem)
+            continue;
+        }
+
       follows[tindex].elems[nelem++] = follows[tindex].elems[i];
-
-      if (tindex < dindex && !(flags[dindex] & OPT_QUEUED))
-        {
-          queue[nqueue++] = dindex;
-          flags[dindex] |= OPT_QUEUED;
-        }
-
-      if (flags[dindex] & (OPT_LPAREN | OPT_RPAREN))
-        continue;
-
-      for (ptrdiff_t j = i + 1; j < follows[tindex].nelem; j++)
-        {
-          size_t sindex = follows[tindex].elems[j].index;
-
-          if (follows[tindex].elems[j].constraint != iconstraint)
-            continue;
-
-          if (flags[sindex] & (OPT_LPAREN | OPT_RPAREN))
-            continue;
-
-          if (d->tokens[sindex] != d->tokens[dindex])
-            continue;
-
-          if ((flags[sindex] ^ flags[dindex]) & OPT_REPEAT)
-            continue;
-
-          if (flags[sindex] & OPT_REPEAT)
-            delete (sindex, &follows[sindex]);
-
-          merge2 (&follows[dindex], &follows[sindex], merged);
-
-          /* Mark it as pruned in future.  */
-          follows[tindex].elems[j].constraint = 0;
-        }
+      flags[sindex] |= OPT_QUEUED;
     }
 
   follows[tindex].nelem = nelem;
+}
 
-  return nqueue;
+static int
+compare (const void *a, const void *b)
+{
+  int aindex;
+  int bindex;
+
+  aindex = (int) ((position *) a)->index;
+  bindex = (int) ((position *) b)->index;
+
+  return aindex - bindex;
+}
+
+static void
+reorder_tokens (struct dfa *d)
+{
+  ptrdiff_t nleaves;
+  ptrdiff_t *map;
+  token *tokens;
+  position_set *follows;
+  int *constraints;
+  char *multibyte_prop;
+
+  nleaves = 0;
+
+  map = xnmalloc (d->tindex, sizeof *map);
+
+  map[0] = nleaves++;
+
+  for (ptrdiff_t i = 1; i < d->tindex; i++)
+    map[i] = -1;
+
+  tokens = xnmalloc (d->nleaves, sizeof *tokens);
+  follows = xnmalloc (d->nleaves, sizeof *follows);
+  constraints = xnmalloc (d->nleaves, sizeof *constraints);
+
+  if (d->localeinfo.multibyte)
+    multibyte_prop = xnmalloc (d->nleaves, sizeof *multibyte_prop);
+  else
+    multibyte_prop = NULL;
+
+  for (ptrdiff_t i = 0; i < d->tindex; i++)
+    {
+      if (map[i] == -1)
+        {
+          free (d->follows[i].elems);
+          d->follows[i].elems = NULL;
+          d->follows[i].nelem = 0;
+          continue;
+        }
+
+      tokens[map[i]] = d->tokens[i];
+      follows[map[i]] = d->follows[i];
+      constraints[map[i]] = d->constraints[i];
+
+      if (multibyte_prop != NULL)
+        multibyte_prop[map[i]] = d->multibyte_prop[i];
+
+      for (ptrdiff_t j = 0; j < d->follows[i].nelem; j++)
+        {
+          if (map[d->follows[i].elems[j].index] == -1)
+            map[d->follows[i].elems[j].index] = nleaves++;
+
+          d->follows[i].elems[j].index = map[d->follows[i].elems[j].index];
+        }
+
+      qsort (d->follows[i].elems, d->follows[i].nelem,
+             sizeof *d->follows[i].elems, compare);
+    }
+
+  for (ptrdiff_t i = 0; i < nleaves; i++)
+    {
+      d->tokens[i] = tokens[i];
+      d->follows[i] = follows[i];
+      d->constraints[i] = constraints[i];
+
+      if (multibyte_prop != NULL)
+        d->multibyte_prop[i] = multibyte_prop[i];
+    }
+
+  d->tindex = d->nleaves = nleaves;
+
+  free (tokens);
+  free (follows);
+  free (constraints);
+  free (multibyte_prop);
+  free (map);
 }
 
 static void
 dfaoptimize (struct dfa *d)
 {
   char *flags;
-  size_t *queue;
-  ptrdiff_t nqueue;
   position_set merged0;
   position_set *merged;
-  ptrdiff_t extra_space = d->tindex + sizeof *queue - 1;
-  extra_space -= extra_space % sizeof *queue;
 
-  queue = xmalloc (d->nleaves * sizeof *queue + extra_space);
-  flags = (char *) (queue + d->nleaves);
+  flags = xmalloc (d->tindex * sizeof *flags);
   memset (flags, 0, d->tindex * sizeof *flags);
 
   for (size_t i = 0; i < d->tindex; i++)
@@ -2490,17 +2579,21 @@ dfaoptimize (struct dfa *d)
         }
     }
 
+  flags[0] |= OPT_QUEUED;
+
   merged = &merged0;
   alloc_position_set (merged, d->nleaves);
 
-  nqueue = 0;
-  queue[nqueue++] = 0;
+  d->constraints = xnmalloc (d->tindex, sizeof *d->constraints);
 
-  for (ptrdiff_t i = 0; i < nqueue; i++)
-    nqueue = merge_nfa_state (d, queue, nqueue, queue[i], flags, merged);
+  for (ptrdiff_t i = 0; i < d->tindex; i++)
+    if (flags[i] & OPT_QUEUED)
+      merge_nfa_state (d, i, flags, merged);
+
+  reorder_tokens (d);
 
   free (merged->elems);
-  free (queue);
+  free (flags);
 }
 
 /* Perform bottom-up analysis on the parse tree, computing various functions.
@@ -2561,8 +2654,10 @@ dfaanalyze (struct dfa *d, bool searchflag)
   /* Array allocated to hold position sets.  */
   position *posalloc = xnmalloc (d->nleaves, 2 * sizeof *posalloc);
   /* Firstpos and lastpos elements.  */
-  position *firstpos = posalloc + d->nleaves;
+  position *firstpos = posalloc;
   position *lastpos = firstpos + d->nleaves;
+  position pos;
+  position_set tmp;
 
   /* Stack for element counts and nullable flags.  */
   struct
@@ -2611,10 +2706,9 @@ dfaanalyze (struct dfa *d, bool searchflag)
           /* Every element in the firstpos of the argument is in the follow
              of every element in the lastpos.  */
           {
-            position_set tmp;
+            tmp.elems = firstpos - stk[-1].nfirstpos;
             tmp.nelem = stk[-1].nfirstpos;
-            tmp.elems = firstpos;
-            position *pos = lastpos;
+            position *pos = lastpos - stk[-1].nlastpos;
             for (size_t j = 0; j < stk[-1].nlastpos; j++)
               {
                 merge (&tmp, &d->follows[pos[j].index], &merged);
@@ -2632,10 +2726,9 @@ dfaanalyze (struct dfa *d, bool searchflag)
           /* Every element in the firstpos of the second argument is in the
              follow of every element in the lastpos of the first argument.  */
           {
-            position_set tmp;
             tmp.nelem = stk[-1].nfirstpos;
-            tmp.elems = firstpos;
-            position *pos = lastpos + stk[-1].nlastpos;
+            tmp.elems = firstpos - stk[-1].nfirstpos;
+            position *pos = lastpos - stk[-1].nlastpos - stk[-2].nlastpos;
             for (size_t j = 0; j < stk[-2].nlastpos; j++)
               {
                 merge (&tmp, &d->follows[pos[j].index], &merged);
@@ -2648,7 +2741,7 @@ dfaanalyze (struct dfa *d, bool searchflag)
           if (stk[-2].nullable)
             stk[-2].nfirstpos += stk[-1].nfirstpos;
           else
-            firstpos += stk[-1].nfirstpos;
+            firstpos -= stk[-1].nfirstpos;
 
           /* The lastpos of a CAT node is the lastpos of the second argument,
              union that of the first argument if the second is nullable.  */
@@ -2656,10 +2749,10 @@ dfaanalyze (struct dfa *d, bool searchflag)
             stk[-2].nlastpos += stk[-1].nlastpos;
           else
             {
-              position *pos = lastpos + stk[-2].nlastpos;
-              for (size_t j = stk[-1].nlastpos; j-- > 0;)
-                pos[j] = lastpos[j];
-              lastpos += stk[-2].nlastpos;
+              position *pos = lastpos - stk[-1].nlastpos - stk[-2].nlastpos;
+              for (size_t j = 0; j < stk[-1].nlastpos; j++)
+                pos[j] = pos[j + stk[-2].nlastpos];
+              lastpos -= stk[-2].nlastpos;
               stk[-2].nlastpos = stk[-1].nlastpos;
             }
 
@@ -2692,9 +2785,9 @@ dfaanalyze (struct dfa *d, bool searchflag)
           stk->nfirstpos = stk->nlastpos = 1;
           stk++;
 
-          --firstpos, --lastpos;
           firstpos->index = lastpos->index = i;
           firstpos->constraint = lastpos->constraint = NO_CONSTRAINT;
+          firstpos++, lastpos++;
 
           break;
         }
@@ -2706,33 +2799,37 @@ dfaanalyze (struct dfa *d, bool searchflag)
       fprintf (stderr,
                stk[-1].nullable ? " nullable: yes\n" : " nullable: no\n");
       fprintf (stderr, " firstpos:");
-      for (size_t j = stk[-1].nfirstpos; j-- > 0;)
+      for (size_t j = 0; j < stk[-1].nfirstpos; j++)
         {
-          fprintf (stderr, " %zu:", firstpos[j].index);
-          prtok (d->tokens[firstpos[j].index]);
+          fprintf (stderr, " %zu:", firstpos[j - stk[-1].nfirstpos].index);
+          prtok (d->tokens[firstpos[j - stk[-1].nfirstpos].index]);
         }
       fprintf (stderr, "\n lastpos:");
-      for (size_t j = stk[-1].nlastpos; j-- > 0;)
+      for (size_t j = 0; j < stk[-1].nlastpos; j++)
         {
-          fprintf (stderr, " %zu:", lastpos[j].index);
-          prtok (d->tokens[lastpos[j].index]);
+          fprintf (stderr, " %zu:", lastpos[j - stk[-1].nlastpos].index);
+          prtok (d->tokens[lastpos[j - stk[-1].nlastpos].index]);
         }
       putc ('\n', stderr);
 #endif
     }
 
+  /* For each follow set that is the follow set of a real position, replace
+     it with its epsilon closure.  */
+  epsclosure (d);
+
   dfaoptimize (d);
 
 #ifdef DEBUG
   for (size_t i = 0; i < d->tindex; ++i)
-    if (d->tokens[i] < NOTCHAR || d->tokens[i] == BACKREF
-        || d->tokens[i] == ANYCHAR || d->tokens[i] == MBCSET
-        || d->tokens[i] >= CSET)
+    if (d->tokens[i] == BEG || d->tokens[i] < NOTCHAR
+        || d->tokens[i] == BACKREF || d->tokens[i] == ANYCHAR
+        || d->tokens[i] == MBCSET || d->tokens[i] >= CSET)
       {
         fprintf (stderr, "follows(%zu:", i);
         prtok (d->tokens[i]);
         fprintf (stderr, "):");
-        for (size_t j = d->follows[i].nelem; j-- > 0;)
+        for (size_t j = 0; j < d->follows[i].nelem; j++)
           {
             fprintf (stderr, " %zu:", d->follows[i].elems[j].index);
             prtok (d->tokens[d->follows[i].elems[j].index]);
@@ -2742,26 +2839,50 @@ dfaanalyze (struct dfa *d, bool searchflag)
 #endif
 
 
-  /* For each follow set that is the follow set of a real position, replace
-     it with its epsilon closure.  */
-  epsclosure (&d->follows[0], d);
+  pos.index = 0;
+  pos.constraint = NO_CONSTRAINT;
+
+  alloc_position_set (&tmp, 1);
+
+  append (pos, &tmp);
+
+  d->separates = xnmalloc (d->tindex, sizeof *d->separates);
+
+  for (ptrdiff_t i = 0; i < d->tindex; i++)
+    {
+      d->separates[i] = 0;
+
+      if (prev_newline_dependent (d->constraints[i]))
+        d->separates[i] |= CTX_NEWLINE;
+      if (prev_letter_dependent (d->constraints[i]))
+        d->separates[i] |= CTX_LETTER;
+
+      for (ptrdiff_t j = 0; j < d->follows[i].nelem; j++)
+        {
+          if (prev_newline_dependent (d->follows[i].elems[j].constraint))
+            d->separates[i] |= CTX_NEWLINE;
+          if (prev_letter_dependent (d->follows[i].elems[j].constraint))
+            d->separates[i] |= CTX_LETTER;
+        }
+    }
 
   /* Context wanted by some position.  */
-  int separate_contexts = state_separate_contexts (&d->follows[0]);
+  int separate_contexts = state_separate_contexts (d, &tmp);
 
   /* Build the initial state.  */
   if (separate_contexts & CTX_NEWLINE)
-    state_index (d, &d->follows[0], CTX_NEWLINE);
+    state_index (d, &tmp, CTX_NEWLINE);
   d->initstate_notbol = d->min_trcount
-    = state_index (d, &d->follows[0], separate_contexts ^ CTX_ANY);
+    = state_index (d, &tmp, separate_contexts ^ CTX_ANY);
   if (separate_contexts & CTX_LETTER)
-    d->min_trcount = state_index (d, &d->follows[0], CTX_LETTER);
+    d->min_trcount = state_index (d, &tmp, CTX_LETTER);
   d->min_trcount++;
   d->trcount = 0;
 
   free (posalloc);
   free (stkalloc);
   free (merged.elems);
+  free (tmp.elems);
 }
 
 /* Make sure D's state arrays are large enough to hold NEW_STATE.  */
@@ -2835,7 +2956,9 @@ realloc_trans_if_necessary (struct dfa *d)
 static state_num
 build_state (state_num s, struct dfa *d, unsigned char uc)
 {
-  position_set follows;         /* Union of the follows of the group.  */
+  position_set follows;         /* Union of the follows for each
+                                   position of the current state.  */
+  position_set group;           /* Positions that match the input char.  */
   position_set tmp;             /* Temporary space for merging sets.  */
   state_num state;              /* New state.  */
   state_num state_newline;      /* New state on a newline transition.  */
@@ -2884,19 +3007,27 @@ build_state (state_num s, struct dfa *d, unsigned char uc)
   if (accepts_in_context (d->states[s].context, CTX_NONE, s, d))
     d->success[s] |= CTX_NONE;
 
+  alloc_position_set (&follows, d->nleaves);
+
+  /* Find the union of the follows of the positions of the group.
+     This is a hideously inefficient loop.  Fix it someday.  */
+  for (size_t j = 0; j < d->states[s].elems.nelem; ++j)
+    for (size_t k = 0;
+         k < d->follows[d->states[s].elems.elems[j].index].nelem; ++k)
+      insert (d->follows[d->states[s].elems.elems[j].index].elems[k],
+              &follows);
+
   /* Positions that match the input char.  */
-  leaf_set group;
-  group.elems = xnmalloc (d->nleaves, sizeof *group.elems);
-  group.nelem = 0;
+  alloc_position_set (&group, d->nleaves);
 
   /* The group's label.  */
   charclass label;
   fillset (&label);
 
-  for (size_t i = 0; i < d->states[s].elems.nelem; ++i)
+  for (size_t i = 0; i < follows.nelem; ++i)
     {
       charclass matches;            /* Set of matching characters.  */
-      position pos = d->states[s].elems.elems[i];
+      position pos = follows.elems[i];
       bool matched = false;
       if (d->tokens[pos.index] >= 0 && d->tokens[pos.index] < NOTCHAR)
         {
@@ -2927,10 +3058,8 @@ build_state (state_num s, struct dfa *d, unsigned char uc)
                                    CTX_NONE))
             {
               if (d->states[s].mbps.nelem == 0)
-                alloc_position_set (&d->states[s].mbps,
-                                    d->follows[pos.index].nelem);
-              for (size_t j = 0; j < d->follows[pos.index].nelem; j++)
-                insert (d->follows[pos.index].elems[j], &d->states[s].mbps);
+                alloc_position_set (&d->states[s].mbps, 1);
+              insert (pos, &d->states[s].mbps);
             }
         }
       else
@@ -2978,7 +3107,7 @@ build_state (state_num s, struct dfa *d, unsigned char uc)
         {
           for (size_t k = 0; k < CHARCLASS_WORDS; ++k)
             label.w[k] &= matches.w[k];
-          group.elems[group.nelem++] = pos.index;
+          append (pos, &group);
         }
       else
         {
@@ -2987,19 +3116,10 @@ build_state (state_num s, struct dfa *d, unsigned char uc)
         }
     }
 
-  alloc_position_set (&follows, d->nleaves);
   alloc_position_set (&tmp, d->nleaves);
 
   if (group.nelem > 0)
     {
-      follows.nelem = 0;
-
-      /* Find the union of the follows of the positions of the group.
-         This is a hideously inefficient loop.  Fix it someday.  */
-      for (size_t j = 0; j < group.nelem; ++j)
-        for (size_t k = 0; k < d->follows[group.elems[j]].nelem; ++k)
-          insert (d->follows[group.elems[j]].elems[k], &follows);
-
       /* If we are building a searching matcher, throw in the positions
          of state 0 as well, if possible.  */
       if (d->searchflag)
@@ -3025,35 +3145,31 @@ build_state (state_num s, struct dfa *d, unsigned char uc)
           if (!mergeit)
             {
               mergeit = true;
-              for (size_t j = 0; mergeit && j < follows.nelem; j++)
-                mergeit &= d->multibyte_prop[follows.elems[j].index];
+              for (size_t j = 0; mergeit && j < group.nelem; j++)
+                mergeit &= d->multibyte_prop[group.elems[j].index];
             }
           if (mergeit)
             {
-              merge (&d->states[0].elems, &follows, &tmp);
-              copy (&tmp, &follows);
+              merge (&d->states[0].elems, &group, &tmp);
+              copy (&tmp, &group);
             }
         }
 
       /* Find out if the new state will want any context information,
          by calculating possible contexts that the group can match,
          and separate contexts that the new state wants to know.  */
-      int possible_contexts = charclass_context (d, &label);
-      int separate_contexts = state_separate_contexts (&follows);
+      int separate_contexts = state_separate_contexts (d, &group);
 
       /* Find the state(s) corresponding to the union of the follows.  */
-      if (possible_contexts & ~separate_contexts)
-        state = state_index (d, &follows, separate_contexts ^ CTX_ANY);
+      if (d->syntax.sbit[uc] & separate_contexts & CTX_NEWLINE)
+        state = state_index (d, &group, CTX_NEWLINE);
+      else if (d->syntax.sbit[uc] & separate_contexts & CTX_LETTER)
+        state = state_index (d, &group, CTX_LETTER);
       else
-        state = -1;
-      if (separate_contexts & possible_contexts & CTX_NEWLINE)
-        state_newline = state_index (d, &follows, CTX_NEWLINE);
-      else
-        state_newline = state;
-      if (separate_contexts & possible_contexts & CTX_LETTER)
-        state_letter = state_index (d, &follows, CTX_LETTER);
-      else
-        state_letter = state;
+        state = state_index (d, &group, separate_contexts ^ CTX_ANY);
+
+      state_newline = state;
+      state_letter = state;
 
       /* Reallocate now, to reallocate any newline transition properly.  */
       realloc_trans_if_necessary (d);
@@ -3215,7 +3331,7 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp,
   else
     merge (&d->states[s1].mbps, &d->states[s].elems, &d->mb_follows);
 
-  int separate_contexts = state_separate_contexts (&d->mb_follows);
+  int separate_contexts = state_separate_contexts (d, &d->mb_follows);
   state_num s2 = state_index (d, &d->mb_follows, separate_contexts ^ CTX_ANY);
   realloc_trans_if_necessary (d);
 
@@ -3596,6 +3712,8 @@ dfassbuild (struct dfa *d)
   sup->superset = NULL;
   sup->states = NULL;
   sup->sindex = 0;
+  sup->constraints = NULL;
+  sup->separates = NULL;
   sup->follows = NULL;
   sup->tralloc = 0;
   sup->trans = NULL;
@@ -3698,6 +3816,9 @@ dfafree (struct dfa *d)
 
   if (d->localeinfo.multibyte)
     free_mbdata (d);
+
+  free (d->constraints);
+  free (d->separates);
 
   for (size_t i = 0; i < d->sindex; ++i)
     {
