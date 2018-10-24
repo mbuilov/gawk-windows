@@ -612,7 +612,10 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-W nostalgia\t\t--nostalgia\n"), fp);
 #endif
 #ifdef GAWKDEBUG
-	fputs(_("\t-Y\t\t--parsedebug\n"), fp);
+	fputs(_("\t-Y\t\t\t--parsedebug\n"), fp);
+#endif
+#ifdef GAWKDEBUG
+	fputs(_("\t-Z\t\t\t--locale\n"), fp);
 #endif
 
 	/* This is one string to make things easier on translators. */
