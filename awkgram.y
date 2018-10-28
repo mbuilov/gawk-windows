@@ -72,8 +72,8 @@ static int isnoeffect(OPCODE type);
 static INSTRUCTION *make_assignable(INSTRUCTION *ip);
 static void dumpintlstr(const char *str, size_t len);
 static void dumpintlstr2(const char *str1, size_t len1, const char *str2, size_t len2);
-static bool include_source(INSTRUCTION *file);
-static bool load_library(INSTRUCTION *file, void **comment_p);
+static bool include_source(INSTRUCTION *file, void **srcfile_p);
+static bool load_library(INSTRUCTION *file, void **srcfile_p);
 static void next_sourcefile(void);
 static char *tokexpand(void);
 static NODE *set_profile_text(NODE *n, const char *str, size_t len);
@@ -104,7 +104,6 @@ static void check_funcs(void);
 static ssize_t read_one_line(int fd, void *buffer, size_t count);
 static int one_line_close(int fd);
 static void merge_comments(INSTRUCTION *c1, INSTRUCTION *c2);
-static INSTRUCTION *make_include_comment(const char *filename);
 static INSTRUCTION *make_braced_statements(INSTRUCTION *lbrace, INSTRUCTION *stmts, INSTRUCTION *rbrace);
 static void add_sign_to_num(NODE *n, char sign);
 
@@ -286,31 +285,10 @@ rule
 	  {
 		want_source = false;
 		at_seen = false;
-#if 1
-		if ($4 != NULL) {
-			assert($4->opcode == Op_comment);
-			warning(_("comments on `@include' statements will be lost"));
-			unref($4->memory);
-			bcfree($4);
-		}
-#else
 		if ($3 != NULL && $4 != NULL) {
-			size_t end;
-
-			// remove trailing newline
-			end = --($3->memory->stlen);
-			$3->memory->stptr[end] = '\0';
-
-			merge_comments($3, $4);
-
-			// tweak embedded newline
-			$3->memory->stptr[end] = '\t';
-
-			// FIXME: how to get this into the program?
-			// list_append(rule_list, $3);
-			// rule_list = list_prepend(rule_list, list_create($3));
+			SRCFILE *s = (SRCFILE *) $3;
+			s->comment = $4;
 		}
-#endif
 		yyerrok;
 	  }
 	| '@' LEX_LOAD library statement_term
@@ -328,15 +306,13 @@ rule
 source
 	: FILENAME
 	  {
-		if (! include_source($1))
+		void *srcfile = NULL;
+
+		if (! include_source($1, & srcfile))
 			YYABORT;
-		if (do_pretty_print) {
-			$$ = make_include_comment($1->lextok);
-		} else {
-			$$ = NULL;
-		}
 		efree($1->lextok);
 		bcfree($1);
+		$$ = (INSTRUCTION *) srcfile;
 	  }
 	| FILENAME error
 	  { $$ = NULL; }
@@ -2808,12 +2784,14 @@ add_srcfile(enum srctype stype, char *src, SRCFILE *thisfile, bool *already_incl
 /* include_source --- read program from source included using `@include' */
 
 static bool
-include_source(INSTRUCTION *file)
+include_source(INSTRUCTION *file, void **srcfile_p)
 {
 	SRCFILE *s;
 	char *src = file->lextok;
 	int errcode;
 	bool already_included;
+
+	*srcfile_p = NULL;
 
 	if (do_traditional || do_posix) {
 		error_ln(file->source_line, _("@include is a gawk extension"));
@@ -2852,6 +2830,7 @@ include_source(INSTRUCTION *file)
 	lasttok = 0;
 	lexeof = false;
 	eof_warned = false;
+	*srcfile_p = (void *) s;
 	return true;
 }
 
@@ -6492,27 +6471,4 @@ make_braced_statements(INSTRUCTION *lbrace, INSTRUCTION *stmts, INSTRUCTION *rbr
 	}
 
 	return ip;
-}
-
-/* make_include_comment --- create a commented @include statement */
-
-static INSTRUCTION *
-make_include_comment(const char *filename)
-{
-	assert(do_pretty_print);
-
-	static char format[] = "# @include \"%s\"\n";
-	static size_t formatlen = sizeof(format);
-
-	size_t count = formatlen + strlen(filename);
-	char *buffer;
-
-	emalloc(buffer, char *, count + 1, "make_include_comment");
-	sprintf(buffer, format, filename);
-
-	NODE *mem = make_str_node(buffer, strlen(buffer), ALREADY_MALLOCED);
-	INSTRUCTION *com = instruction(Op_comment);
-	com->memory = mem;
-
-	return com;
 }

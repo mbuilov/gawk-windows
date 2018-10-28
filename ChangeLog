@@ -1,3 +1,14 @@
+2018-10-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (include_source): Add second parameter to return
+	SRCFILE pointer.
+	(Grammar): For @include, save the comment for later dumping
+	along with the list of include files.
+	(make_include_comment): Removed. No longer used.
+	* profile.c: Update copyright year.
+	(print_include_list): New function.
+	(dump_prog): Call it.
+
 2018-10-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* main.c (usage): Improve output for -Y and add -Z in the help.

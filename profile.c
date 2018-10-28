@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1999-2017 the Free Software Foundation, Inc.
+ * Copyright (C) 1999-2018 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -1289,6 +1289,37 @@ print_lib_list(FILE *prof_fp)
 		fprintf(prof_fp, "\n");
 }
 
+/* print_include_list --- print a list of all files included */
+
+static void
+print_include_list(FILE *prof_fp)
+{
+	SRCFILE *s;
+	static bool printed_header = false;
+	bool found = false;
+
+	if (do_profile)
+		return;
+
+	for (s = srcfiles->next; s != srcfiles; s = s->next) {
+		if (s->stype == SRC_INC) {
+			if (! printed_header) {
+				printed_header = true;
+				fprintf(prof_fp, _("\n# Included files (-i and/or @include)\n\n"));
+			}
+			found = true;
+			fprintf(prof_fp, "# @include \"%s\"", s->src);
+			if (s->comment != NULL) {
+				fprintf(prof_fp, "\t");
+				print_comment(s->comment, indent_level + 1);
+			} else
+				fprintf(prof_fp, "\n");
+		}
+	}
+	if (found)	/* we found some */
+		fprintf(prof_fp, "\n");
+}
+
 /* print_comment --- print comment text with proper indentation */
 
 static void
@@ -1337,6 +1368,7 @@ dump_prog(INSTRUCTION *code)
 		fprintf(prof_fp, _("\t# gawk profile, created %s\n"), ctime(& now));
 	print_lib_list(prof_fp);
 	pprint(code, NULL, NO_PPRINT_FLAGS);
+	print_include_list(prof_fp);
 }
 
 /* prec_level --- return the precedence of an operator, for paren tests */
