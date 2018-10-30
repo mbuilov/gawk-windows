@@ -37,7 +37,7 @@ static char *pp_typed_regex(const char *in_str, size_t len, int delim);
 static bool is_binary(int type);
 static bool is_scalar(int type);
 static int prec_level(int type);
-static void pp_push(int type, char *s, int flag);
+static void pp_push(int type, char *s, int flag, INSTRUCTION *comment);
 static NODE *pp_pop(void);
 static void print_comment(INSTRUCTION *pc, long in);
 const char *redir2str(int redirtype);
@@ -45,6 +45,7 @@ const char *redir2str(int redirtype);
 #define pp_str	vname
 #define pp_len	sub.nodep.reserved
 #define pp_next	rnode
+#define pp_comment	sub.nodep.x.cmnt
 
 #define DONT_FREE 1
 #define CAN_FREE  2
@@ -59,6 +60,15 @@ static NODE *func_params;	/* function parameters */
 static FILE *prof_fp;	/* where to send the profile */
 
 static long indent_level = 0;
+
+static const char tabs[] = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
+static const size_t tabs_len = sizeof(tabs) - 1;
+
+#define check_indent_level() \
+	if (indent_level + 1 > tabs_len) \
+		/* We're allowed to be snarky, occasionally. */ \
+		fatal(_("Program indentation level too deep. Consider refactoring your code"));
+
 
 #define SPACEOVER	0
 
@@ -159,7 +169,7 @@ indent_out(void)
 /* pp_push --- push a pretty printed string onto the stack */
 
 static void
-pp_push(int type, char *s, int flag)
+pp_push(int type, char *s, int flag, INSTRUCTION *comment)
 {
 	NODE *n;
 	getnode(n);
@@ -168,6 +178,7 @@ pp_push(int type, char *s, int flag)
 	n->flags = flag;
 	n->type = type;
 	n->pp_next = pp_stack;
+	n->pp_comment = comment;
 	pp_stack = n;
 }
 
@@ -208,14 +219,6 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 	int rule;
 	static int rule_count[MAXRULE];
 	static bool skip_comment = false;
-	static const char tabs[] = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
-	static const size_t tabs_len = sizeof(tabs) - 1;
-
-#define check_indent_level()
-	if (indent_level + 1 > tabs_len) \
-		/* We're allowed to be snarky, occasionally. */ \
-		fatal(_("Program indentation level too deep. Consider refactoring your code"));
-
 
 	for (pc = startp; pc != endp; pc = pc->nexti) {
 		if (pc->source_line > 0)
@@ -310,9 +313,9 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 		case Op_push_i:
 			m = pc->memory;
 			if (m == Nnull_string)	/* optional return or exit value; don't print 0 or "" */
-				pp_push(pc->opcode, m->stptr, DONT_FREE);
+				pp_push(pc->opcode, m->stptr, DONT_FREE, pc->comment);
 			else if ((m->flags & NUMBER) != 0)
-				pp_push(pc->opcode, pp_number(m), CAN_FREE);
+				pp_push(pc->opcode, pp_number(m), CAN_FREE, pc->comment);
 			else {
 				str = pp_string(m->stptr, m->stlen, '"');
 				if ((m->flags & INTLSTR) != 0) {
@@ -320,13 +323,13 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 					str = pp_group3("_", tmp, "");
 					efree(tmp);
 				}
-				pp_push(pc->opcode, str, CAN_FREE);
+				pp_push(pc->opcode, str, CAN_FREE, pc->comment);
 			}
 			break;
 
 		case Op_store_var:
 			if (pc->initval != NULL)
-				pp_push(Op_push_i, pp_node(pc->initval), CAN_FREE);
+				pp_push(Op_push_i, pp_node(pc->initval), CAN_FREE, pc->comment);
 			/* fall through */
 		case Op_store_sub:
 		case Op_assign_concat:
@@ -339,14 +342,14 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 			m = pc->memory;
 			switch (m->type) {
 			case Node_param_list:
-				pp_push(pc->opcode, func_params[m->param_cnt].param, DONT_FREE);
+				pp_push(pc->opcode, func_params[m->param_cnt].param, DONT_FREE, pc->comment);
 				break;
 
 			case Node_var:
 			case Node_var_new:
 			case Node_var_array:
 				if (m->vname != NULL)
-					pp_push(pc->opcode, m->vname, DONT_FREE);
+					pp_push(pc->opcode, m->vname, DONT_FREE, pc->comment);
  				else
 					fatal(_("internal error: %s with null vname"),
 							nodetype2str(m->type));
@@ -398,7 +401,7 @@ cleanup:
 			str = pp_group3(t1->pp_str, tmp, "");
 			efree(tmp);
 			pp_free(t1);
-			pp_push(pc->opcode, str, CAN_FREE);
+			pp_push(pc->opcode, str, CAN_FREE, pc->comment);
 			break;
 
 		case Op_and:
@@ -420,11 +423,11 @@ cleanup:
 				emalloc(str, char *, len, "pprint");
 				sprintf(str, "%s%s%s%.*s %s", t1->pp_str, op2str(pc->opcode),
 						pc->comment->memory->stptr,
-						(int) indent_level + 1, tabs, t2->pp_str);
+						(int) (indent_level + 1), tabs, t2->pp_str);
 			}
 			pp_free(t1);
 			pp_free(t2);
-			pp_push(pc->opcode, str, CAN_FREE);
+			pp_push(pc->opcode, str, CAN_FREE, pc->comment);
 			pc = pc->target_jmp;
 			break;
 
@@ -446,14 +449,14 @@ cleanup:
 			str = pp_group3(t1->pp_str, op2str(pc->opcode), tmp);
 			efree(tmp);
 			pp_free(t1);
-			pp_push(pc->opcode, str, CAN_FREE);
+			pp_push(pc->opcode, str, CAN_FREE, pc->comment);
 			break;
 
 		case Op_parens:
 			t1 = pp_pop();
 			str = pp_group3("(", t1->pp_str, ")");
 			pp_free(t1);
-			pp_push(pc->opcode, str, CAN_FREE);
+			pp_push(pc->opcode, str, CAN_FREE, pc->comment);
 			break;
 
 		case Op_plus:
@@ -474,7 +477,7 @@ cleanup:
 			str = pp_group3(t1->pp_str, op2str(pc->opcode), t2->pp_str);
 			pp_free(t1);
 			pp_free(t2);
-			pp_push(pc->opcode, str, CAN_FREE);
+			pp_push(pc->opcode, str, CAN_FREE, pc->comment);
 			break;
 
 		case Op_preincrement:
@@ -487,7 +490,7 @@ cleanup:
 			else
 				str = pp_group3(t1->pp_str, op2str(pc->opcode), "");
 			pp_free(t1);
-			pp_push(pc->opcode, str, CAN_FREE);
+			pp_push(pc->opcode, str, CAN_FREE, pc->comment);
 			break;
 
 		case Op_field_spec:
@@ -505,7 +508,7 @@ cleanup:
 			/* optypes table (eval.c) includes space after ! */
 			str = pp_group3(op2str(pc->opcode), t1->pp_str, "");
 			pp_free(t1);
-			pp_push(pc->opcode, str, CAN_FREE);
+			pp_push(pc->opcode, str, CAN_FREE, pc->comment);
 			break;
 
 		case Op_assign:
@@ -520,7 +523,7 @@ cleanup:
 			str = pp_group3(t2->pp_str, op2str(pc->opcode), t1->pp_str);
 			pp_free(t2);
 			pp_free(t1);
-			pp_push(pc->opcode, str, CAN_FREE);
+			pp_push(pc->opcode, str, CAN_FREE, pc->comment);
 			break;
 
 		case Op_store_field:
@@ -537,7 +540,7 @@ cleanup:
 
 		case Op_concat:
 			str = pp_concat(pc->expr_count);
-			pp_push(Op_concat, str, CAN_FREE);
+			pp_push(Op_concat, str, CAN_FREE, pc->comment);
 			break;
 
 		case Op_K_delete:
@@ -582,7 +585,7 @@ cleanup:
 				pp_free(t2);
 			}
 			pp_free(t1);
-			pp_push(Op_in_array, str, CAN_FREE);
+			pp_push(Op_in_array, str, CAN_FREE, pc->comment);
 		}
 			break;
 
@@ -617,7 +620,7 @@ cleanup:
 			tmp = pp_list(pc->expr_count, "()", ", ");
 			str = pp_group3(fname, tmp, "");
 			efree(tmp);
-			pp_push(Op_sub_builtin, str, CAN_FREE);
+			pp_push(Op_sub_builtin, str, CAN_FREE, pc->comment);
 		}
 			break;
 
@@ -636,7 +639,7 @@ cleanup:
 					efree(tmp);
 				} else
 					str = pp_group3(fname, "()", "");
-				pp_push(Op_builtin, str, CAN_FREE);
+				pp_push(Op_builtin, str, CAN_FREE, pc->comment);
 			} else
 				fatal(_("internal error: builtin with null fname"));
 		}
@@ -683,7 +686,7 @@ cleanup:
 				assert((pc->memory->flags & REGEX) != 0);
 				str = pp_typed_regex(pc->memory->stptr, pc->memory->stlen, '/');
 			}
-			pp_push(pc->opcode, str, CAN_FREE);
+			pp_push(pc->opcode, str, CAN_FREE, pc->comment);
 		}
 			break;
 
@@ -715,7 +718,7 @@ cleanup:
 				efree(restr);
 			}
 			pp_free(t1);
-			pp_push(pc->opcode, str, CAN_FREE);
+			pp_push(pc->opcode, str, CAN_FREE, pc->comment);
 		}
 			break;
 
@@ -743,7 +746,7 @@ cleanup:
 				pp_free(t2);
 			} else
 				str = tmp;
-			pp_push(pc->opcode, str, CAN_FREE);
+			pp_push(pc->opcode, str, CAN_FREE, pc->comment);
 			break;
 
 		case Op_indirect_func_call:
@@ -768,7 +771,7 @@ cleanup:
 				t1 = pp_pop();	/* indirect var */
 				pp_free(t1);
 			}
-			pp_push(pc->opcode, str, CAN_FREE);
+			pp_push(pc->opcode, str, CAN_FREE, pc->comment);
 		}
 			break;
 
@@ -809,7 +812,7 @@ cleanup:
 			str = pp_group3(t1->pp_str, ", ", t2->pp_str);
 			pp_free(t1);
 			pp_free(t2);
-			pp_push(Op_line_range, str, CAN_FREE);
+			pp_push(Op_line_range, str, CAN_FREE, pc->comment);
 			pc = ip1->condpair_right;
 			break;
 
@@ -1117,10 +1120,10 @@ cleanup:
 					"%.*s   %s",	// indent false-part
 					cond->pp_str,	// condition
 					qm_comment->memory->stptr,	// comment
-					(int) indent_level + 1, tabs,		// indent
+					(int) (indent_level + 1), tabs,		// indent
 					t->pp_str,			// true part
 					colon_comment->memory->stptr,	// comment
-					(int) indent_level + 1, tabs,		// indent
+					(int) (indent_level + 1), tabs,		// indent
 					f->pp_str			// false part
 					);
 			} else if (qm_comment != NULL) {
@@ -1135,7 +1138,7 @@ cleanup:
 					" : %s",	// : false-part
 					cond->pp_str,	// condition
 					qm_comment->memory->stptr,	// comment
-					(int) indent_level + 1, tabs,		// indent
+					(int) (indent_level + 1), tabs,		// indent
 					t->pp_str,			// true part
 					f->pp_str			// false part
 					);
@@ -1152,7 +1155,7 @@ cleanup:
 					cond->pp_str,			// condition
 					t->pp_str,			// true part
 					colon_comment->memory->stptr,	// comment
-					(int) indent_level + 1, tabs,		// indent
+					(int) (indent_level + 1), tabs,		// indent
 					f->pp_str			// false part
 					);
 			}
@@ -1160,7 +1163,7 @@ cleanup:
 			pp_free(cond);
 			pp_free(t);
 			pp_free(f);
-			pp_push(Op_cond_exp, str, CAN_FREE);
+			pp_push(Op_cond_exp, str, CAN_FREE, pc->comment);
 			pc = pc->branch_end;
 		}
 			break;
@@ -1723,6 +1726,7 @@ pp_list(int nargs, const char *paren, const char *delim)
 	size_t len;
 	size_t delimlen;
 	int i;
+	INSTRUCTION *comment = NULL;
 
 	if (pp_args == NULL) {
 		npp_args = nargs;
@@ -1740,12 +1744,17 @@ pp_list(int nargs, const char *paren, const char *delim)
 		for (i = 1; i <= nargs; i++) {
 			r = pp_args[i] = pp_pop();
 			len += r->pp_len + delimlen;
+			if (r->pp_comment != NULL) {
+				comment = (INSTRUCTION *) r->pp_comment;
+				len += comment->memory->stlen + indent_level + 1;	// comment\n ident
+			}
 		}
 		if (paren != NULL) {
 			assert(strlen(paren) == 2);
 			len += 2;
 		}
 	}
+	comment = NULL;
 
 	emalloc(str, char *, len + 1, "pp_list");
 	s = str;
@@ -1760,6 +1769,14 @@ pp_list(int nargs, const char *paren, const char *delim)
 			if (delimlen > 0) {
 				memcpy(s, delim, delimlen);
 				s += delimlen;
+			}
+			if (r->pp_comment != NULL) {
+				check_indent_level();
+				comment = (INSTRUCTION *) r->pp_comment;
+				memcpy(s, comment->memory->stptr, comment->memory->stlen);
+				s += comment->memory->stlen;
+				memcpy(s, tabs, indent_level + 1);
+				s += indent_level + 1;
 			}
 			r = pp_args[i];
 			memcpy(s, r->pp_str, r->pp_len);

@@ -346,6 +346,7 @@ typedef struct exp_node {
 				struct exp_node *extra;
 				void (*aptr)(void);
 				long xl;
+				void *cmnt;	// used by pretty printer
 			} x;
 			char *name;
 			size_t reserved;

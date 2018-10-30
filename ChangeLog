@@ -1,3 +1,18 @@
+2018-10-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (NODE): New field: sub.nodep.x.cmnt, holds comment for
+	expressions being pretty-printed.
+	* awkgram.y (Grammar): For expression lists, save any comment
+	that came after a comma in the list.
+	* profile.c (pp_push): Accept a fourth argument which is any
+	comment associated with the expression. Either it's there or
+	it's NULL. Save it in the pp_comment field of the node being pushed.
+	(tabs, tabs_len, check_indent_level): Made into static globals.
+	(pprint): Adjust all calls to pp_push(). Fix parenthesization
+	for casts in string lengthes when indenting.
+	(pp_list): If a popped item has a comment, include it and the
+	following indentation in the formatted result.
+
 2018-10-28         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y (include_source): Add second parameter to return

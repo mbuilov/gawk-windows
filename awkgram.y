@@ -1,7 +1,8 @@
 /* working on statement_term and opt_nls */
 /*
 TODO:
--- Comments after commas in expressions lists in print/f and function calls
+-- Handle comments outside blocks
+-- Handle EOL comments on a closing right brace
 -- Get comments from all instances of opt_nls
 -- Get comments from all instances of l_brace
 -- Get comments from all instances of r_brace
@@ -16,6 +17,7 @@ DONE:
 -- case part of switch statement
 -- for(;;) statement
 -- for(iggy in fo) statement
+-- Comments after commas in expressions lists in print/f and function calls
 */
 /*
  * awkgram.y --- yacc/bison parser
@@ -1477,6 +1479,8 @@ expression_list
 	  {	$$ = mk_expression_list(NULL, $1); }
 	| expression_list comma exp
 	  {
+		if ($2 != NULL)
+			$1->lasti->comment = $2;
 		$$ = mk_expression_list($1, $3);
 		yyerrok;
 	  }
@@ -1498,6 +1502,8 @@ expression_list
 	| expression_list comma error
 	  {
 		/* Ditto */
+		if ($2 != NULL)
+			$1->lasti->comment = $2;
 		$$ = $1;
 	  }
 	;
@@ -1514,6 +1520,8 @@ fcall_expression_list
 	  {	$$ = mk_expression_list(NULL, $1); }
 	| fcall_expression_list comma fcall_exp
 	  {
+		if ($2 != NULL)
+			$1->lasti->comment = $2;
 		$$ = mk_expression_list($1, $3);
 		yyerrok;
 	  }
@@ -1535,6 +1543,8 @@ fcall_expression_list
 	| fcall_expression_list comma error
 	  {
 		/* Ditto */
+		if ($2 != NULL)
+			$1->comment = $2;
 		$$ = $1;
 	  }
 	;
