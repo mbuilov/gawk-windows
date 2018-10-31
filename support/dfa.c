@@ -2345,27 +2345,6 @@ epsclosure (struct dfa const *d)
   free (tmp.elems);
 }
 
-/* Returns the set of contexts for which there is at least one
-   character included in C.  */
-
-static int
-charclass_context (struct dfa const *dfa, charclass const *c)
-{
-  int context = 0;
-
-  for (unsigned int j = 0; j < CHARCLASS_WORDS; ++j)
-    {
-      if (c->w[j] & dfa->syntax.newline.w[j])
-        context |= CTX_NEWLINE;
-      if (c->w[j] & dfa->syntax.letters.w[j])
-        context |= CTX_LETTER;
-      if (c->w[j] & ~(dfa->syntax.letters.w[j] | dfa->syntax.newline.w[j]))
-        context |= CTX_NONE;
-    }
-
-  return context;
-}
-
 /* Returns the contexts on which the position set S depends.  Each context
    in the set of returned contexts (let's call it SC) may have a different
    follow set than other contexts in SC, and also different from the
