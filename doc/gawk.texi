@@ -29080,6 +29080,7 @@ of the program and the precedence rules.
 For example, @samp{(3 + 5) * 4} means add three and five, then multiply
 the total by four.  However, @samp{3 + 5 * 4} has no parentheses, and
 means @samp{3 + (5 * 4)}.
+However, explicit parentheses in the source program are retained.
 
 @ignore
 @item
@@ -29210,12 +29211,10 @@ There is a significant difference between the output created when
 profiling, and that created when pretty-printing.  Pretty-printed output
 preserves the original comments that were in the program, although their
 placement may not correspond exactly to their original locations in the
-source code.@footnote{@command{gawk} does the best it can to preserve
+source code. However, no comments should be lost.
+Also, @command{gawk} does the best it can to preserve
 the distinction between comments at the end of a statement and comments
-on lines by themselves. Due to implementation constraints, it does not
-always do so correctly, particularly for @code{switch} statements. The
-@command{gawk} maintainers hope to improve this in a subsequent
-release.}
+on lines by themselves. This isn't always perfect, though.
 
 However, as a deliberate design decision, profiling output @emph{omits}
 the original program's comments. This allows you to focus on the
