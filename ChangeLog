@@ -1,3 +1,13 @@
+2018-11-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (trailing_comment): New variable.
+	(Grammar): For `action', append both trailing comments. This may
+	change. For `statements', append the value of `trailing_comment'
+	if set. At `statement := l_brace statements rbrace' save
+	trailing_comment from r_brace.
+	(make_braced_statements): Don't append the comment from r_brace
+	to the statement list.
+
 2018-10-30         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h (NODE): New field: sub.nodep.x.cmnt, holds comment for

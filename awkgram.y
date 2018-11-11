@@ -79,6 +79,7 @@ static bool load_library(INSTRUCTION *file, void **srcfile_p);
 static void next_sourcefile(void);
 static char *tokexpand(void);
 static NODE *set_profile_text(NODE *n, const char *str, size_t len);
+static INSTRUCTION *trailing_comment;
 
 #define instruction(t)	bcalloc(t, 1, 0)
 
@@ -427,6 +428,9 @@ action
 	  {
 		INSTRUCTION *ip = make_braced_statements($1, $2, $3);
 
+		if ($3 != NULL)
+			ip = list_append(ip, $3);
+
 		if ($5 != NULL)
 			ip = list_append(ip, $5);
 
@@ -560,6 +564,10 @@ statements
 				$$ = list_merge($1, $2);
 			}
 		}
+		if (trailing_comment != NULL) {
+			$$ = list_append($$, trailing_comment);
+			trailing_comment = NULL;
+		}
 		yyerrok;
 	  }
 	| statements error
@@ -585,6 +593,7 @@ statement
 	  }
 	| l_brace statements r_brace
 	  {
+		trailing_comment = $3;	// NULL or comment
 		$$ = make_braced_statements($1, $2, $3);
 	  }
 	| if_statement
@@ -6467,17 +6476,6 @@ make_braced_statements(INSTRUCTION *lbrace, INSTRUCTION *stmts, INSTRUCTION *rbr
 			lbrace->comment = NULL;
 		}
 		ip = list_prepend(ip, lbrace);
-	}
-
-	/* Tack any comment onto the end. */
-	if (rbrace != NULL) {
-		INSTRUCTION *comment2 = rbrace->comment;
-		rbrace->comment = NULL;
-		if (rbrace->memory->comment_type == EOL_COMMENT)
-			rbrace->memory->comment_type = BLOCK_COMMENT;
-		ip = list_append(ip, rbrace);
-		if (comment2 != NULL)
-			ip = list_append(ip, comment2);
 	}
 
 	return ip;
