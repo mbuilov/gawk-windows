@@ -1,12 +1,7 @@
-/* working on statement_term and opt_nls */
 /*
 TODO:
 -- Handle comments outside blocks
--- Handle EOL comments on a closing right brace
--- Get comments from all instances of opt_nls
--- Get comments from all instances of l_brace
--- Get comments from all instances of r_brace
--- Review statement lists and handling of statement_term
+-- Put together a big test file
 DONE:
 -- Get comments from all instances of nls
 -- After , in parameter list
@@ -16,8 +11,13 @@ DONE:
 -- After && and ||
 -- case part of switch statement
 -- for(;;) statement
--- for(iggy in fo) statement
+-- for(iggy in foo) statement
 -- Comments after commas in expressions lists in print/f and function calls
+-- Handle EOL comments on a closing right brace
+-- Get comments from all instances of opt_nls
+-- Get comments from all instances of l_brace
+-- Get comments from all instances of r_brace
+-- Review statement lists and handling of statement_term
 */
 /*
  * awkgram.y --- yacc/bison parser
@@ -80,6 +80,7 @@ static void next_sourcefile(void);
 static char *tokexpand(void);
 static NODE *set_profile_text(NODE *n, const char *str, size_t len);
 static INSTRUCTION *trailing_comment;
+static INSTRUCTION *outer_comment;
 
 #define instruction(t)	bcalloc(t, 1, 0)
 
@@ -237,10 +238,13 @@ program
 	| program nls
 	  {
 		if ($2 != NULL) {
-			merge_comments($2, NULL);
-			$$ = list_append(rule_list, $2);
-		} else
-			$$ = $1;
+			if ($1 == NULL) {
+				outer_comment = $2;
+			} else {
+				trailing_comment = $2;
+			}
+		}
+		$$ = $1;
 	  }
 	| program LEX_EOF
 	  {
@@ -428,11 +432,14 @@ action
 	  {
 		INSTRUCTION *ip = make_braced_statements($1, $2, $3);
 
-		if ($3 != NULL)
-			ip = list_append(ip, $3);
-
-		if ($5 != NULL)
-			ip = list_append(ip, $5);
+		if ($3 != NULL && $5 != NULL) {
+			merge_comments($3, $5);
+			trailing_comment = $3;
+		} else if ($3 != NULL) {
+			trailing_comment = $3;
+		} else if ($5 != NULL) {
+			trailing_comment = $5;
+		}
 
 		$$ = ip;
 	  }
@@ -1392,7 +1399,10 @@ if_statement
 	;
 
 nls
-	: NEWLINE { $$ = $1; }
+	: NEWLINE
+	  {
+		$$ = $1;
+	  }
 	| nls NEWLINE
 	  {
 		if ($1 != NULL && $2 != NULL) {
@@ -2589,6 +2599,18 @@ mk_program()
 				cp = end_block;
 			else
 				cp = list_merge(begin_block, end_block);
+
+
+			if (outer_comment != NULL) {
+				(void) list_prepend(cp, outer_comment);
+				outer_comment = NULL;
+			}
+
+			if (trailing_comment != NULL) {
+				(void) list_append(cp, trailing_comment);
+				trailing_comment = NULL;
+			}
+
 			(void) list_append(cp, ip_atexit);
 			(void) list_append(cp, instruction(Op_stop));
 

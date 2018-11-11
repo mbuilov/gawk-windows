@@ -1,5 +1,11 @@
 2018-11-11         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* awkgram.y (outer_comment): New variable.
+	(Grammar): More changes. We now get the simple case of leading
+	and trailing comments, but not all the cases.
+
+2018-11-11         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* awkgram.y (trailing_comment): New variable.
 	(Grammar): For `action', append both trailing comments. This may
 	change. For `statements', append the value of `trailing_comment'
