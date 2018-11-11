@@ -615,7 +615,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-Y\t\t\t--parsedebug\n"), fp);
 #endif
 #ifdef GAWKDEBUG
-	fputs(_("\t-Z\t\t\t--locale\n"), fp);
+	fputs(_("\t-Z locale-name\t\t--locale=locale-name\n"), fp);
 #endif
 
 	/* This is one string to make things easier on translators. */
