@@ -1155,15 +1155,34 @@ arg_assign(char *arg, bool initing)
 		if (do_lint)
 			lintwarn(_("`%s' is not a variable name, looking for file `%s=%s'"),
 				arg, arg, cp);
-	} else {
-		if (check_special(arg) >= 0)
-			fatal(_("cannot use gawk builtin `%s' as variable name"), arg);
 
-		if (! initing) {
-			var = lookup(arg);
-			if (var != NULL && var->type == Node_func)
-				fatal(_("cannot use function `%s' as variable name"), arg);
-		}
+		goto done;
+	}
+
+	// Assigning a string or typed regex
+
+	if (check_special(arg) >= 0)
+		fatal(_("cannot use gawk builtin `%s' as variable name"), arg);
+
+	if (! initing) {
+		var = lookup(arg);
+		if (var != NULL && var->type == Node_func)
+			fatal(_("cannot use function `%s' as variable name"), arg);
+	}
+
+	cp2 = cp + strlen(cp) - 1;	// end char
+	if (! do_traditional
+	    && cp[0] == '@' && cp[1] == '/' && *cp2 == '/') {
+		// typed regex
+		size_t len = strlen(cp) - 3;
+
+		ezalloc(cp2, char *, len + 1, "arg_assign");
+		memcpy(cp2, cp + 2, len);
+
+		it = make_typed_regex(cp2, len);
+		// fall through to variable setup
+	} else {
+		// string assignment
 
 		// POSIX disallows any newlines inside strings
 		// The scanner handles that for program files.
@@ -1190,28 +1209,30 @@ arg_assign(char *arg, bool initing)
 		if (do_posix)
 			setlocale(LC_NUMERIC, locale);
 #endif /* LC_NUMERIC */
-
-		/*
-		 * since we are restoring the original text of ARGV later,
-		 * need to copy the variable name part if we don't want
-		 * name like v=abc instead of just v in var->vname
-		 */
-
-		cp2 = estrdup(arg, cp - arg);	/* var name */
-
-		var = variable(0, cp2, Node_var);
-		if (var == NULL)	/* error */
-			final_exit(EXIT_FATAL);
-		if (var->type == Node_var && var->var_update)
-			var->var_update();
-		lhs = get_lhs(var, false);
-		unref(*lhs);
-		*lhs = it;
-		/* check for set_FOO() routine */
-		if (var->type == Node_var && var->var_assign)
-			var->var_assign();
 	}
 
+	/*
+	 * since we are restoring the original text of ARGV later,
+	 * need to copy the variable name part if we don't want
+	 * name like v=abc instead of just v in var->vname
+	 */
+
+	cp2 = estrdup(arg, cp - arg);	/* var name */
+
+	var = variable(0, cp2, Node_var);
+	if (var == NULL)	/* error */
+		final_exit(EXIT_FATAL);
+
+	if (var->type == Node_var && var->var_update)
+		var->var_update();
+	lhs = get_lhs(var, false);
+	unref(*lhs);
+	*lhs = it;
+	/* check for set_FOO() routine */
+	if (var->type == Node_var && var->var_assign)
+		var->var_assign();
+
+done:
 	if (! initing)
 		*--cp = '=';	/* restore original text of ARGV */
 	FNR = save_FNR;

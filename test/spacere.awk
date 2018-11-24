@@ -8,7 +8,7 @@ BEGIN {
 	c["\t"] = "\\t"
 	c["\v"] = "\\v"
 
-	sort = "LC_ALL=C sort"
+	sort = "sort"
 
 	for (i in c)
 		printf("%s %s [[:space:]]\n", c[i],

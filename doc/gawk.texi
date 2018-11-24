@@ -11566,6 +11566,22 @@ sequences
 (@pxref{Escape Sequences}).
 @value{DARKCORNER}
 
+Normally, variables assigned on the command line (with or without the
+@option{-v} option) are treated as strings.  When such variables are
+used as numbers, @command{awk}'s normal automatic conversion of strings
+to numbers takes place, and everything ``just works.''
+
+However, @command{gawk} supports variables whose types are ``regexp''.
+You can assign variables of this type using the following syntax:
+
+@example
+gawk -v 're1=@/foo|bar/' '@dots{}' /path/to/file1 're2=@/baz|quux/' /path/to/file2
+@end example
+
+@noindent
+Strongly typed regexps are an advanced feature (@pxref{Strong Regexp Constants}).
+We mention them here only for completeness.
+
 @node Conversion
 @subsection Conversion of Strings and Numbers
 
