@@ -1,25 +1,4 @@
 /*
-TODO:
--- Handle comments outside blocks
--- Put together a big test file
-DONE:
--- Get comments from all instances of nls
--- After , in parameter list
--- After ? and :
--- switch statement
--- After , in a range expression in a pattern
--- After && and ||
--- case part of switch statement
--- for(;;) statement
--- for(iggy in foo) statement
--- Comments after commas in expressions lists in print/f and function calls
--- Handle EOL comments on a closing right brace
--- Get comments from all instances of opt_nls
--- Get comments from all instances of l_brace
--- Get comments from all instances of r_brace
--- Review statement lists and handling of statement_term
-*/
-/*
  * awkgram.y --- yacc/bison parser
  */
 
@@ -81,6 +60,8 @@ static char *tokexpand(void);
 static NODE *set_profile_text(NODE *n, const char *str, size_t len);
 static INSTRUCTION *trailing_comment;
 static INSTRUCTION *outer_comment;
+static INSTRUCTION *interblock_comment;
+static INSTRUCTION *pending_comment;
 
 #define instruction(t)	bcalloc(t, 1, 0)
 
@@ -238,11 +219,10 @@ program
 	| program nls
 	  {
 		if ($2 != NULL) {
-			if ($1 == NULL) {
+			if ($1 == NULL)
 				outer_comment = $2;
-			} else {
-				trailing_comment = $2;
-			}
+			else
+				interblock_comment = $2;
 		}
 		$$ = $1;
 	  }
@@ -265,6 +245,10 @@ rule
 	: pattern action
 	  {
 		(void) append_rule($1, $2);
+		if (pending_comment != NULL) {
+			interblock_comment = pending_comment;
+			pending_comment = NULL;
+		}
 		first_rule = false;
 	  }
 	| pattern statement_term
@@ -434,11 +418,11 @@ action
 
 		if ($3 != NULL && $5 != NULL) {
 			merge_comments($3, $5);
-			trailing_comment = $3;
+			pending_comment = $3;
 		} else if ($3 != NULL) {
-			trailing_comment = $3;
+			pending_comment = $3;
 		} else if ($5 != NULL) {
-			trailing_comment = $5;
+			pending_comment = $5;
 		}
 
 		$$ = ip;
@@ -571,10 +555,12 @@ statements
 				$$ = list_merge($1, $2);
 			}
 		}
+
 		if (trailing_comment != NULL) {
 			$$ = list_append($$, trailing_comment);
 			trailing_comment = NULL;
 		}
+
 		yyerrok;
 	  }
 	| statements error
@@ -2600,15 +2586,9 @@ mk_program()
 			else
 				cp = list_merge(begin_block, end_block);
 
-
-			if (outer_comment != NULL) {
-				(void) list_prepend(cp, outer_comment);
-				outer_comment = NULL;
-			}
-
-			if (trailing_comment != NULL) {
-				(void) list_append(cp, trailing_comment);
-				trailing_comment = NULL;
+			if (interblock_comment != NULL) {
+				(void) list_append(cp, interblock_comment);
+				interblock_comment = NULL;
 			}
 
 			(void) list_append(cp, ip_atexit);
@@ -2642,6 +2622,16 @@ mk_program()
 	(void) list_merge(cp, end_block);
 	if (begin_block != NULL)
 		cp = list_merge(begin_block, cp);
+
+	if (outer_comment != NULL) {
+		cp = list_merge(list_create(outer_comment), cp);
+		outer_comment = NULL;
+	}
+
+	if (interblock_comment != NULL) {
+		(void) list_append(cp, interblock_comment);
+		interblock_comment = NULL;
+	}
 
 	(void) list_append(cp, ip_atexit);
 	(void) list_append(cp, instruction(Op_stop));
@@ -5555,6 +5545,10 @@ append_rule(INSTRUCTION *pattern, INSTRUCTION *action)
 		(rp + 2)->first_line = pattern->source_line;
 		(rp + 2)->last_line = lastline;
 		ip = list_prepend(action, rp);
+		if (interblock_comment != NULL) {
+			ip = list_prepend(ip, interblock_comment);
+			interblock_comment = NULL;
+		}
 	} else {
 		rp = bcalloc(Op_rule, 3, 0);
 		rp->in_rule = Rule;
@@ -5580,14 +5574,20 @@ append_rule(INSTRUCTION *pattern, INSTRUCTION *action)
 				(rp + 2)->last_line = find_line(pattern, LAST_LINE);
 				action = list_create(instruction(Op_K_print_rec));
 				if (do_pretty_print)
-					(void) list_prepend(action, instruction(Op_exec_count));
+					action = list_prepend(action, instruction(Op_exec_count));
 			} else
 				(rp + 2)->last_line = lastline;
 
 			if (do_pretty_print) {
-				(void) list_prepend(pattern, instruction(Op_exec_count));
-				(void) list_prepend(action, instruction(Op_exec_count));
+				pattern = list_prepend(pattern, instruction(Op_exec_count));
+				action = list_prepend(action, instruction(Op_exec_count));
 			}
+
+			if (interblock_comment != NULL) {	// was after previous action
+				pattern = list_prepend(pattern, interblock_comment);
+				interblock_comment = NULL;
+			}
+
  			(rp + 1)->firsti = action->nexti;
 			(rp + 1)->lasti = tp;
 			ip = list_append(

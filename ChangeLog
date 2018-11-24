@@ -1,5 +1,11 @@
 2018-11-24         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* awkgram.y (interblock_comment, pending_comment): New variables.
+	(Grammar, mk_program, add_rule): Adjust to use them. Changes
+	handle comments at the outermost level, between blocks and functions.
+
+2018-11-24         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* main.c (arg_assign): Allow assigning strongly typed regexp
 	constants to variables on the command line and with -v.
 	Thanks to Peng Yu <pengyu.ut@gmail.com> for the report.
