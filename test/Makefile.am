@@ -1176,6 +1176,8 @@ EXTRA_DIST = \
 	typedregex2.ok \
 	typedregex3.awk \
 	typedregex3.ok \
+	typedregex4.awk \
+	typedregex4.ok \
 	typeof1.awk \
 	typeof1.ok \
 	typeof2.awk \
@@ -1311,7 +1313,8 @@ GAWK_EXT_TESTS = \
 	shadow shadowbuiltin sortfor sortfor2 sortu sourcesplit split_after_fpat \
 	splitarg4 strftime strftfld strtonum strtonum1 switch2 symtab1 symtab2 \
 	symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9 symtab10 \
-	typedregex1 typedregex2 typedregex3 typeof1 typeof2 typeof3 typeof4 \
+	typedregex1 typedregex2 typedregex3 typedregex4 \
+	typeof1 typeof2 typeof3 typeof4 \
 	typeof5 timeout \
 	watchpoint1
 
@@ -2218,6 +2221,11 @@ longwrds:
 spacere:
 	@echo $@
 	@LC_ALL=C AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+typedregex4:
+	@echo $@
+	@$(AWK) -v x=@/foo/ -f "$(srcdir)"/$@.awk y=@/bar/ /dev/null >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
