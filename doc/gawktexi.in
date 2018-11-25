@@ -15070,6 +15070,31 @@ The values indicate what @command{gawk} knows about the identifiers
 after it has finished parsing the program; they are @emph{not} updated
 while the program runs.
 
+@item PROCINFO["platform"]
+@cindex platform running on, @code{PROCINFO["platform"]}
+This element gives a string indicating the platform for which
+@command{gawk} was compiled. The value will be one of the following:
+
+@c nested table
+@table @code
+@item "vms"
+OpenVMS or Vax/VMS.
+
+@item "macosx"
+Mac OS X.
+
+@item "cygwin"
+@itemx "djgpp"
+@itemx "mingw"
+Microsoft Windows, using either Cygwin, DJGPP, or MinGW, respectively.
+
+@item "os2"
+OS/2.
+
+@item "posix"
+GNU/Linux and legacy Unix systems.
+@end table
+
 @item PROCINFO["pgrpid"]
 @cindex process group ID of @command{gawk} process
 The process group ID of the current process.
@@ -37840,6 +37865,14 @@ Support for MirBSD was removed.
 @item
 Support for GNU/Linux on Alpha was removed.
 
+@end itemize
+
+Version 5.0 added the following features:
+
+@itemize
+@item
+The @code{PROCINFO["platform"]} array element, which allows you
+to write code that takes the operating system / platform into account.
 @end itemize
 
 @c XXX ADD MORE STUFF HERE
