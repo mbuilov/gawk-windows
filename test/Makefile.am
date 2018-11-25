@@ -1314,9 +1314,8 @@ GAWK_EXT_TESTS = \
 	splitarg4 strftime strftfld strtonum strtonum1 switch2 symtab1 symtab2 \
 	symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9 symtab10 \
 	typedregex1 typedregex2 typedregex3 typedregex4 \
-	typeof1 typeof2 typeof3 typeof4 \
-	typeof5 timeout \
-	watchpoint1
+	typeof1 typeof2 typeof3 typeof4 typeof5 \
+	timeout watchpoint1
 
 ARRAYDEBUG_TESTS = arrdbg
 
