@@ -68,6 +68,7 @@ static void version(void) ATTRIBUTE_NORETURN;
 static void init_fds(void);
 static void init_groupset(void);
 static void save_argv(int, char **);
+static const char *platform_name();
 
 /* These nodes store all the special variables AWK uses */
 NODE *ARGC_node, *ARGIND_node, *ARGV_node, *BINMODE_node, *CONVFMT_node;
@@ -981,6 +982,7 @@ load_procinfo()
 
 	update_PROCINFO_str("version", VERSION);
 	update_PROCINFO_str("strftime", def_strftime_format);
+	update_PROCINFO_str("platform", platform_name());
 
 #ifdef HAVE_MPFR
 	sprintf(name, "GNU MPFR %s", mpfr_get_version());
@@ -1768,4 +1770,26 @@ set_locale_stuff(void)
 	/* These must be done after calling setlocale */
 	(void) bindtextdomain(PACKAGE, locale_dir);
 	(void) textdomain(PACKAGE);
+}
+
+/* platform_name --- return the platform name */
+
+static const char *
+platform_name()
+{
+#if defined(__VMS)
+	return "vms";
+#elif defined(__APPLE__)
+	return "macosx";
+#elif defined(__MINGW32__)
+	return "mingw";
+#elif defined(__DJGPP__)
+	return "djgpp";
+#elif defined(__CYGWIN__)
+	return "cygwin";
+#elif defined(__EMX__)
+	return "os2";
+#else
+	return "posix";
+#endif
 }

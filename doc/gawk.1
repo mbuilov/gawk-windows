@@ -1202,6 +1202,28 @@ doesn't know yet).
 The identifier is a user-defined function.
 .RE
 .TP
+\fBPROCINFO["platform"]\fP
+A string indicating the platform for which
+.I gawk
+was compiled.  It is one of:
+.RS
+.TP
+\fB"vms"\fR
+OpenVMS or Vax/VMS.
+.TP
+\fB"macosx"\fR
+Mac OS X.
+.TP
+\fB"cygwin"\fR, \fB"djgpp"\fR, \fB"mingw"\fR
+Microsoft Windows, using either Cygwin, DJGPP, or MinGW, respectively.
+.TP
+\fB"os2"\fR
+OS/2.
+.TP
+\fB"posix"\fR
+GNU/Linux and legacy Unix systems.
+.RE
+.TP
 \fBPROCINFO["pgrpid"]\fP
 The process group ID of the current process.
 .TP
