@@ -8105,7 +8105,6 @@ FPAT = "([^,]*)|(\"[^\"]+\")"
 Finally, the @code{patsplit()} function makes the same functionality
 available for splitting regular strings (@pxref{String Functions}).
 
-
 @node Testing field creation
 @section Checking How @command{gawk} Is Splitting Records
 
@@ -18406,8 +18405,8 @@ whitespace goes into @code{@var{seps}[@var{n}]}, where @var{n} is the
 return value of
 @code{split()} (i.e., the number of elements in @var{array}).
 
-The @code{split()} function splits strings into pieces in a
-manner similar to the way input lines are split into fields.  For example:
+The @code{split()} function splits strings into pieces in the same way
+that input lines are split into fields.  For example:
 
 @example
 split("cul-de-sac", a, "-", seps)
@@ -18443,6 +18442,8 @@ are separated by runs of whitespace.
 Also, as with input field splitting, if @var{fieldsep} is the null string, each
 individual character in the string is split into its own array element.
 @value{COMMONEXT}
+Additionally, if @var{fieldsep} is a single-character string, that string acts
+as the separator, even if its value is a regular expression metacharacter.
 
 Note, however, that @code{RS} has no effect on the way @code{split()}
 works. Even though @samp{RS = ""} causes the newline character to also be an input
