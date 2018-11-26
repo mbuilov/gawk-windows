@@ -899,6 +899,8 @@ EXTRA_DIST = \
 	profile9.ok \
 	profile10.awk \
 	profile10.ok \
+	profile11.awk \
+	profile11.ok \
 	prt1eval.awk \
 	prt1eval.ok \
 	prtoeval.awk \
@@ -1307,7 +1309,7 @@ GAWK_EXT_TESTS = \
 	nastyparm negtime next nondec nondec2 nonfatal1 nonfatal2 nonfatal3 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge \
 	procinfs profile0 profile1 profile2 profile3 profile4 profile5 profile6 \
-	profile7 profile8 profile9 profile10 pty1 pty2 \
+	profile7 profile8 profile9 profile10 profile11 pty1 pty2 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin \
 	rsstart1 rsstart2 rsstart3 rstest6 \
 	shadow shadowbuiltin sortfor sortfor2 sortu sourcesplit split_after_fpat \
@@ -1364,7 +1366,7 @@ NEED_NONDEC = mpfrbigint2 nondec2 intarray forcenum
 NEED_POSIX = printf0 posix2008sub paramasfunc1 paramasfunc2 muldimposix
 
 # List of tests that need --pretty-print
-NEED_PRETTY = profile4 profile5 profile8 profile9 profile10
+NEED_PRETTY = profile4 profile5 profile8 profile9 profile10 profile11
 
 # List of tests that need --re-interval
 NEED_RE_INTERVAL = gsubtst3 reint reint2

@@ -2882,6 +2882,9 @@ load_library(INSTRUCTION *file, void **srcfile_p)
 		return false;
 	}
 
+	if (do_pretty_print && ! do_profile)
+		return true;
+
 	if (strlen(src) == 0) {
 		if (do_lint)
 			lintwarn_ln(file->source_line, _("empty filename after @load"));
@@ -3717,13 +3720,14 @@ retry:
 		// fall through
 	case ':':
 		yylval = GET_INSTRUCTION(Op_cond_exp);
-		if (c == ':' && qm_col_count > 0) {
-			if (do_posix) {
+		if (qm_col_count > 0) {
+			if (! do_posix) {
 				INSTRUCTION *new_comment = NULL;
 				allow_newline(& new_comment);
 				yylval->comment = new_comment;
 			}
-			qm_col_count--;
+			if (c == ':')
+				qm_col_count--;
 		}
 		return lasttok = c;
 

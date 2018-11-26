@@ -1349,6 +1349,10 @@ print_comment(INSTRUCTION* pc, long in)
 	if (pc->comment) {
 		// chaining should only be two deep
 		assert(pc->comment->comment == NULL);
+		// if first was EOL comment, next must be block comment,
+		// it needs to be indented.
+		if (pc->memory->comment_type == EOL_COMMENT)
+			in++;
 		print_comment(pc->comment, in);
 	}
 }
