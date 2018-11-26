@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Apr 08 2018" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Nov 26 2018" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -3053,7 +3053,7 @@ is the possibly null separator that appeared after
 The value of
 .B seps[0]
 is the possibly null leading separator.
-\&\fRIf
+If
 .I r
 is omitted,
 .B FPAT
@@ -3093,7 +3093,7 @@ between
 .BI a[ i ]
 and
 .BI a[ i +1]\fR.
-\&\fRIf
+If
 .I r
 is a single space, then leading whitespace in
 .I s
@@ -3106,6 +3106,10 @@ where
 is the return value of
 .BI split( s ", " a ", " r ", " seps )\fR.
 Splitting behaves identically to field splitting, described above.
+In particular, if
+.I r
+is a single-character string, that string acts as the separator,
+even if it happens to be a regular expression metacharacter.
 .TP
 .BI sprintf( fmt , " expr-list" )
 Print
