@@ -1777,18 +1777,17 @@ set_locale_stuff(void)
 static const char *
 platform_name()
 {
+	// Cygwin and Mac OS X count as POSIX
 #if defined(__VMS)
 	return "vms";
-#elif defined(__APPLE__)
-	return "macosx";
 #elif defined(__MINGW32__)
 	return "mingw";
 #elif defined(__DJGPP__)
 	return "djgpp";
-#elif defined(__CYGWIN__)
-	return "cygwin";
 #elif defined(__EMX__)
 	return "os2";
+#elif defined(USE_EBCDIC)
+	return "os390";
 #else
 	return "posix";
 #endif

@@ -15761,19 +15761,18 @@ This element gives a string indicating the platform for which
 @item "vms"
 OpenVMS or Vax/VMS.
 
-@item "macosx"
-Mac OS X.
-
-@item "cygwin"
-@itemx "djgpp"
+@item "djgpp"
 @itemx "mingw"
-Microsoft Windows, using either Cygwin, DJGPP, or MinGW, respectively.
+Microsoft Windows, using either DJGPP or MinGW, respectively.
 
 @item "os2"
 OS/2.
 
+@item "os390"
+OS/390.
+
 @item "posix"
-GNU/Linux and legacy Unix systems.
+GNU/Linux, Cygwin, Mac OS X, and legacy Unix systems.
 @end table
 
 @item PROCINFO["pgrpid"]
@@ -40048,6 +40047,12 @@ standard output is accomplished by using an
 appropriate @samp{-v BINMODE=@var{N}} option on the command line.
 @code{BINMODE} is set at the time a file or pipe is opened and cannot be
 changed midstream.
+
+On POSIX-compatible systems, this variable's value has no effect.
+Thus, if you think your program will run on multiple different systems
+and that you may need to use @code{BINMODE}, you should simply set it
+(in the program or on the command line) unconditionally, and not worry
+about the operating system on which your program is running.
 
 The name @code{BINMODE} was chosen to match @command{mawk}
 (@pxref{Other Versions}).
