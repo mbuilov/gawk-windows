@@ -270,6 +270,10 @@ rule
 		in_function = NULL;
 		(void) mk_function($1, $2);
 		want_param_names = DONT_CHECK;
+		if (pending_comment != NULL) {
+			interblock_comment = pending_comment;
+			pending_comment = NULL;
+		}
 		yyerrok;
 	  }
 	| '@' LEX_INCLUDE source statement_term
@@ -4836,6 +4840,15 @@ mk_function(INSTRUCTION *fi, INSTRUCTION *def)
 	thisfunc = fi->func_body;
 	assert(thisfunc != NULL);
 
+	/* add any pre-function comment to start of action for profile.c  */
+
+	if (interblock_comment != NULL) {
+		interblock_comment->source_line = 0;
+		merge_comments(interblock_comment, fi->comment);
+		fi->comment = interblock_comment;
+		interblock_comment = NULL;
+	}
+
 	/*
 	 * Add an implicit return at end;
 	 * also used by 'return' command in debugger
@@ -4844,6 +4857,11 @@ mk_function(INSTRUCTION *fi, INSTRUCTION *def)
 	(void) list_append(def, instruction(Op_push_i));
 	def->lasti->memory = dupnode(Nnull_string);
 	(void) list_append(def, instruction(Op_K_return));
+
+	if (trailing_comment != NULL) {
+		(void) list_append(def, trailing_comment);
+		trailing_comment = NULL;
+	}
 
 	if (do_pretty_print)
 		(void) list_prepend(def, instruction(Op_exec_count));

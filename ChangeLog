@@ -1,3 +1,9 @@
+2018-11-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (Grammar): In rule for function, set interblock_comment.
+	(mk_function): Hook interblock_comment onto fi->comment, merge it
+	with the existing one first, if any. Append trailing_comment.
+
 2018-11-26         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* main.c (platform_name): Add os390. Treat Cygwin and Mac OS X

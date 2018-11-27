@@ -208,8 +208,8 @@ function bar(p1,
 	p2)
 {
 	print "foo"
-}	# rbrace eol
-	# rbrace block
+}	# rbrace eol bar
+	# rbrace block bar
 
 # comments2/function.awk
 function baz(p1, # comment
@@ -218,8 +218,8 @@ function baz(p1, # comment
 {	# lbrace eol
 	# lbrace block
 	print "foo"
-}	# rbrace eol
-	# rbrace block
+}	# rbrace eol baz
+	# rbrace block baz
 
 # comments/function.awk
 function funny(param1,	# param comment 1
@@ -229,8 +229,8 @@ function funny(param1,	# param comment 1
 {	# lbrace EOL comment
 	# lbrace block comment
 	print "funny"
-}	# rbrace EOL comment
-	# rbrace block comment
+}	# rbrace EOL comment funny
+	# rbrace block comment funny
 
 # comments/function2.awk
 function funnyhaha(param1,
@@ -239,8 +239,8 @@ function funnyhaha(param1,
 {	# lbrace EOL comment
 	# lbrace block comment
 	print "funny"
-}	# rbrace EOL comment
-	# rbrace block comment
+}	# rbrace EOL comment funnyhaha
+	# rbrace block comment funnyhaha
 
 # comments/callcoma.awk
 function callme(a, b, c)

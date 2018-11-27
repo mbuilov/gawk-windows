@@ -234,7 +234,6 @@ BEGIN {
 	}
 }
 
-# comments2/f.awk
 BEGIN {
 	callme(1, # 1 comment
 		2, # 2 comment
@@ -303,10 +302,17 @@ BEGIN {
 }
 
 
+# comments2/f.awk
 function bar(p1, p2)
 {
 	print "foo"
 }
+
+# rbrace eol bar
+
+# rbrace block bar
+
+# comments2/function.awk
 
 # comment
 
@@ -318,6 +324,11 @@ function baz(p1, p2)
 	print "foo"
 }
 
+# rbrace EOL comment funnyhaha
+
+# rbrace block comment funnyhaha
+
+# comments/callcoma.awk
 function callme(a, b, c)
 {
 	printf "a = %s, b = %s, c = %s\n", # format comment
@@ -325,6 +336,12 @@ function callme(a, b, c)
 		b, # b2 comment
 		c
 }
+
+# rbrace eol baz
+
+# rbrace block baz
+
+# comments/function.awk
 
 # param comment 1
 
@@ -338,6 +355,11 @@ function funny(param1, param2, param3, param4)
 	print "funny"
 }
 
+# rbrace EOL comment funny
+
+# rbrace block comment funny
+
+# comments/function2.awk
 function funnyhaha(param1, param2, param3, param4)
 {
 	# lbrace EOL comment
