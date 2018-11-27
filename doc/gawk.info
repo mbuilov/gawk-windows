@@ -29983,6 +29983,14 @@ The OpenSolaris POSIX 'awk'
      from
      <https://github.com/joyent/illumos-joyent/blob/master/usr/src/cmd/awk_xpg4>.
 
+'goawk'
+     This is an 'awk' interpreter written in the Go programming language
+     (https://golang.org/).  It implements POSIX 'awk', with a few minor
+     extensions.  Source code is available from
+     <https://github.com/benhoyt/goawk>.  The author wrote a nice
+     article (https://benhoyt.com/writings/goawk/) describing the
+     implementation.
+
 'jawk'
      This is an interpreter for 'awk' written in Java.  It claims to be
      a full interpreter, although because it uses Java facilities for
@@ -34727,6 +34735,8 @@ Index
 * GNU/Linux:                             Manual History.      (line  28)
 * GNU/Linux <1>:                         I18N Example.        (line  57)
 * GNU/Linux <2>:                         Glossary.            (line 746)
+* Go implementation of awk:              Other Versions.      (line 113)
+* goawk:                                 Other Versions.      (line 113)
 * Gordon, Assaf:                         Contributors.        (line 108)
 * GPL (General Public License):          Manual History.      (line  11)
 * GPL (General Public License) <1>:      Glossary.            (line 394)
@@ -34877,9 +34887,9 @@ Index
 * Jacobs, Andrew:                        Passwd Functions.    (line  90)
 * Jaegermann, Michal:                    Acknowledgments.     (line  60)
 * Jaegermann, Michal <1>:                Contributors.        (line  46)
-* Java implementation of awk:            Other Versions.      (line 113)
+* Java implementation of awk:            Other Versions.      (line 121)
 * Java programming language:             Glossary.            (line 466)
-* jawk:                                  Other Versions.      (line 113)
+* jawk:                                  Other Versions.      (line 121)
 * Jedi knights:                          Undocumented.        (line   6)
 * Johansen, Chris:                       Signature Program.   (line  25)
 * join() user-defined function:          Join Function.       (line  18)
@@ -34931,7 +34941,7 @@ Index
 * length of string:                      String Functions.    (line 171)
 * Lesser General Public License (LGPL):  Glossary.            (line 489)
 * LGPL (Lesser General Public License):  Glossary.            (line 489)
-* libmawk:                               Other Versions.      (line 121)
+* libmawk:                               Other Versions.      (line 129)
 * libraries of awk functions:            Library Functions.   (line   6)
 * libraries of awk functions, assertions: Assert Function.    (line   6)
 * libraries of awk functions, associative arrays and: Library Names.
@@ -35245,7 +35255,7 @@ Index
 * patterns, types of:                    Pattern Overview.    (line  15)
 * pawk (profiling version of Brian Kernighan's awk): Other Versions.
                                                               (line  78)
-* pawk, awk-like facilities for Python:  Other Versions.      (line 125)
+* pawk, awk-like facilities for Python:  Other Versions.      (line 133)
 * PC operating systems, gawk on:         PC Using.            (line   6)
 * PC operating systems, gawk on, installing: PC Installation. (line   6)
 * percent sign (%), % operator:          Precedence.          (line  54)
@@ -35440,13 +35450,13 @@ Index
 * pwcat program:                         Passwd Functions.    (line  23)
 * q debugger command (alias for quit):   Miscellaneous Debugger Commands.
                                                               (line 100)
-* QSE awk:                               Other Versions.      (line 131)
+* QSE awk:                               Other Versions.      (line 139)
 * Quanstrom, Erik:                       Alarm Program.       (line   8)
 * question mark (?), ?: operator:        Precedence.          (line  91)
 * question mark (?), regexp operator:    Regexp Operators.    (line 111)
 * question mark (?), regexp operator <1>: GNU Regexp Operators.
                                                               (line  62)
-* QuikTrim Awk:                          Other Versions.      (line 135)
+* QuikTrim Awk:                          Other Versions.      (line 143)
 * quit debugger command:                 Miscellaneous Debugger Commands.
                                                               (line 100)
 * QUIT signal (MS-Windows):              Profiling.           (line 212)
@@ -35779,15 +35789,16 @@ Index
 * source code, Brian Kernighan's awk:    Other Versions.      (line  13)
 * source code, BusyBox Awk:              Other Versions.      (line  88)
 * source code, gawk:                     Gawk Distribution.   (line   6)
+* source code, goawk:                    Other Versions.      (line 113)
 * source code, Illumos awk:              Other Versions.      (line 105)
-* source code, jawk:                     Other Versions.      (line 113)
-* source code, libmawk:                  Other Versions.      (line 121)
+* source code, jawk:                     Other Versions.      (line 121)
+* source code, libmawk:                  Other Versions.      (line 129)
 * source code, mawk:                     Other Versions.      (line  39)
 * source code, mixing:                   Options.             (line 117)
 * source code, pawk:                     Other Versions.      (line  78)
-* source code, pawk (Python version):    Other Versions.      (line 125)
-* source code, QSE awk:                  Other Versions.      (line 131)
-* source code, QuikTrim Awk:             Other Versions.      (line 135)
+* source code, pawk (Python version):    Other Versions.      (line 133)
+* source code, QSE awk:                  Other Versions.      (line 139)
+* source code, QuikTrim Awk:             Other Versions.      (line 143)
 * source code, Solaris awk:              Other Versions.      (line  96)
 * source files, search path for:         Programs Exercises.  (line  70)
 * sparse arrays:                         Array Intro.         (line  76)
@@ -36677,36 +36688,36 @@ Node: Bug address1200731
 Node: Usenet1203713
 Node: Maintainers1204717
 Node: Other Versions1205978
-Node: Installation summary1212536
-Node: Notes1213738
-Node: Compatibility Mode1214532
-Node: Additions1215314
-Node: Accessing The Source1216239
-Node: Adding Code1217676
-Node: New Ports1223895
-Node: Derived Files1228383
-Ref: Derived Files-Footnote-11234029
-Ref: Derived Files-Footnote-21234064
-Ref: Derived Files-Footnote-31234662
-Node: Future Extensions1234776
-Node: Implementation Limitations1235434
-Node: Extension Design1236617
-Node: Old Extension Problems1237761
-Ref: Old Extension Problems-Footnote-11239279
-Node: Extension New Mechanism Goals1239336
-Ref: Extension New Mechanism Goals-Footnote-11242700
-Node: Extension Other Design Decisions1242889
-Node: Extension Future Growth1245002
-Node: Notes summary1245838
-Node: Basic Concepts1247013
-Node: Basic High Level1247694
-Ref: figure-general-flow1247976
-Ref: figure-process-flow1248661
-Ref: Basic High Level-Footnote-11251962
-Node: Basic Data Typing1252147
-Node: Glossary1255475
-Node: Copying1287313
-Node: GNU Free Documentation License1324856
-Node: Index1349976
+Node: Installation summary1212892
+Node: Notes1214094
+Node: Compatibility Mode1214888
+Node: Additions1215670
+Node: Accessing The Source1216595
+Node: Adding Code1218032
+Node: New Ports1224251
+Node: Derived Files1228739
+Ref: Derived Files-Footnote-11234385
+Ref: Derived Files-Footnote-21234420
+Ref: Derived Files-Footnote-31235018
+Node: Future Extensions1235132
+Node: Implementation Limitations1235790
+Node: Extension Design1236973
+Node: Old Extension Problems1238117
+Ref: Old Extension Problems-Footnote-11239635
+Node: Extension New Mechanism Goals1239692
+Ref: Extension New Mechanism Goals-Footnote-11243056
+Node: Extension Other Design Decisions1243245
+Node: Extension Future Growth1245358
+Node: Notes summary1246194
+Node: Basic Concepts1247369
+Node: Basic High Level1248050
+Ref: figure-general-flow1248332
+Ref: figure-process-flow1249017
+Ref: Basic High Level-Footnote-11252318
+Node: Basic Data Typing1252503
+Node: Glossary1255831
+Node: Copying1287669
+Node: GNU Free Documentation License1325212
+Node: Index1350332
 
 End Tag Table
