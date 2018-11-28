@@ -63,6 +63,19 @@ static INSTRUCTION *outer_comment;
 static INSTRUCTION *interblock_comment;
 static INSTRUCTION *pending_comment;
 
+#ifdef DEBUG_COMMENTS
+static void
+debug_print_comment_s(const char *name, INSTRUCTION *comment, int line)
+{
+	if (comment != NULL)
+		fprintf(stderr, "%d: %s: <%.*s>\n", line, name,
+				(int) (comment->memory->stlen - 1),
+				comment->memory->stptr);
+}
+#define debug_print_comment(comment) \
+	 debug_print_comment_s(# comment, comment, __LINE__)
+#endif
+
 #define instruction(t)	bcalloc(t, 1, 0)
 
 static INSTRUCTION *mk_program(void);
@@ -2886,8 +2899,6 @@ load_library(INSTRUCTION *file, void **srcfile_p)
 		return false;
 	}
 
-	if (do_pretty_print && ! do_profile)
-		return true;
 
 	if (strlen(src) == 0) {
 		if (do_lint)
@@ -2895,17 +2906,23 @@ load_library(INSTRUCTION *file, void **srcfile_p)
 		return true;
 	}
 
-	s = add_srcfile(SRC_EXTLIB, src, sourcefile, &already_included, &errcode);
-	if (s == NULL) {
-		if (already_included)
-			return true;
-		error_ln(file->source_line,
-			_("can't open shared library `%s' for reading (%s)"),
-			src, errcode ? strerror(errcode) : _("reason unknown"));
-		return false;
+	if (do_pretty_print && ! do_profile) {
+		// create a fake one, don't try to open the file
+		s = do_add_srcfile(SRC_EXTLIB, src, src, sourcefile);
+	} else {
+		s = add_srcfile(SRC_EXTLIB, src, sourcefile, &already_included, &errcode);
+		if (s == NULL) {
+			if (already_included)
+				return true;
+			error_ln(file->source_line,
+				_("can't open shared library `%s' for reading (%s)"),
+				src, errcode ? strerror(errcode) : _("reason unknown"));
+			return false;
+		}
+
+		load_ext(s->fullpath);
 	}
 
-	load_ext(s->fullpath);
 	*srcfile_p = (void *) s;
 	return true;
 }
@@ -5600,14 +5617,14 @@ append_rule(INSTRUCTION *pattern, INSTRUCTION *action)
 			} else
 				(rp + 2)->last_line = lastline;
 
-			if (do_pretty_print) {
-				pattern = list_prepend(pattern, instruction(Op_exec_count));
-				action = list_prepend(action, instruction(Op_exec_count));
-			}
-
 			if (interblock_comment != NULL) {	// was after previous action
 				pattern = list_prepend(pattern, interblock_comment);
 				interblock_comment = NULL;
+			}
+
+			if (do_pretty_print) {
+				pattern = list_prepend(pattern, instruction(Op_exec_count));
+				action = list_prepend(action, instruction(Op_exec_count));
 			}
 
  			(rp + 1)->firsti = action->nexti;
