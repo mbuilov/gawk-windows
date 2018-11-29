@@ -2101,8 +2101,7 @@ charasbytes:
 
 symtab6:
 	@echo $@
-	@$(AWK) -d__$@ -f "$(srcdir)"/$@.awk
-	@grep -v '^ENVIRON' __$@ | grep -v '^PROCINFO' > _$@ ; rm __$@
+	@$(AWK) -f "$(srcdir)"/$@.awk > _$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 symtab8:
