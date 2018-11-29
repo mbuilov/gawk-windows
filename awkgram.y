@@ -169,9 +169,6 @@ static INSTRUCTION *ip_endfile;
 static INSTRUCTION *ip_beginfile;
 INSTRUCTION *main_beginfile;
 
-static bool func_first = true;	// can nuke
-static bool first_rule = true;
-
 static inline INSTRUCTION *list_create(INSTRUCTION *x);
 static inline INSTRUCTION *list_append(INSTRUCTION *l, INSTRUCTION *x);
 static inline INSTRUCTION *list_prepend(INSTRUCTION *l, INSTRUCTION *x);
@@ -262,7 +259,6 @@ rule
 			interblock_comment = pending_comment;
 			pending_comment = NULL;
 		}
-		first_rule = false;
 	  }
 	| pattern statement_term
 	  {
@@ -356,41 +352,40 @@ pattern
 		rule = Rule;
 	  }
 
-	| exp ',' opt_nls exp
+	| exp comma exp
 	  {
 		INSTRUCTION *tp;
 
 		add_lint($1, LINT_assign_in_cond);
-		add_lint($4, LINT_assign_in_cond);
+		add_lint($3, LINT_assign_in_cond);
 
 		tp = instruction(Op_no_op);
 		list_prepend($1, bcalloc(Op_line_range, !!do_pretty_print + 1, 0));
 		$1->nexti->triggered = false;
-		$1->nexti->target_jmp = $4->nexti;
+		$1->nexti->target_jmp = $3->nexti;
 
 		list_append($1, instruction(Op_cond_pair));
 		$1->lasti->line_range = $1->nexti;
 		$1->lasti->target_jmp = tp;
 
-		list_append($4, instruction(Op_cond_pair));
-		$4->lasti->line_range = $1->nexti;
-		$4->lasti->target_jmp = tp;
+		list_append($3, instruction(Op_cond_pair));
+		$3->lasti->line_range = $1->nexti;
+		$3->lasti->target_jmp = tp;
 		if (do_pretty_print) {
 			($1->nexti + 1)->condpair_left = $1->lasti;
-			($1->nexti + 1)->condpair_right = $4->lasti;
+			($1->nexti + 1)->condpair_right = $3->lasti;
 		}
 		/* Put any comments in front of the range expression */
-		if ($3 != NULL)
-			$$ = list_append(list_merge(list_prepend($1, $3), $4), tp);
+		if ($2 != NULL)
+			$$ = list_append(list_merge(list_prepend($1, $2), $3), tp);
 		else
-			$$ = list_append(list_merge($1, $4), tp);
+			$$ = list_append(list_merge($1, $3), tp);
 		rule = Rule;
 	  }
 	| LEX_BEGIN
 	  {
 		static int begin_seen = 0;
 
-		func_first = false;
 		if (do_lint_old && ++begin_seen == 2)
 			warning_ln($1->source_line,
 				_("old awk does not support multiple `BEGIN' or `END' rules"));
@@ -403,7 +398,6 @@ pattern
 	  {
 		static int end_seen = 0;
 
-		func_first = false;
 		if (do_lint_old && ++end_seen == 2)
 			warning_ln($1->source_line,
 				_("old awk does not support multiple `BEGIN' or `END' rules"));
@@ -414,14 +408,12 @@ pattern
 	  }
 	| LEX_BEGINFILE
 	  {
-		func_first = false;
 		$1->in_rule = rule = BEGINFILE;
 		$1->source_file = source;
 		$$ = $1;
 	  }
 	| LEX_ENDFILE
 	  {
-		func_first = false;
 		$1->in_rule = rule = ENDFILE;
 		$1->source_file = source;
 		$$ = $1;
