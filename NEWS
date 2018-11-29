@@ -18,7 +18,10 @@ Changes from 4.2.x to 5.0.0
 4. PROCINFO["platform"] yields a string indicating the platform for
    which gawk was compiled.
 
-5. Comment handling in the pretty-printer has been reworked almost completely
+5. Writing to elements of SYMTAB that are not variable names now
+   causes a fatal error.
+
+6. Comment handling in the pretty-printer has been reworked almost completely
    from scratch. As a result, comments in many corner cases that were
    previously lost are now included in the formatted output.
 

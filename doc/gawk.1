@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Nov 26 2018" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Nov 29 2018" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -1425,7 +1425,8 @@ You may not use the
 .B delete
 statement with the
 .B SYMTAB
-array.
+array, nor assign to elements with an index that is
+not a variable name.
 .TP
 .B TEXTDOMAIN
 The text domain of the \*(AK program; used to find the localized

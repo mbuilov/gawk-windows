@@ -348,16 +348,19 @@ uninitialized_scalar:
 			 * 	3. Values that awk code stuck into SYMTAB not related to variables (Node_value)
 			 * For 1, since we are giving it a value, we have to change the type to Node_var.
 			 * For 1 and 2, we have to step through the Node_var to get to the value.
-			 * For 3, we just us the value we got from assoc_lookup(), above.
+			 * For 3, we fatal out. This avoids confusion on things like
+			 * SYMTAB["a foo"] = 42	# variable with a space in its name?
 			 */
 			if (t1 == func_table)
 				fatal(_("cannot assign to elements of FUNCTAB"));
-			else if (   t1 == symbol_table
-				 && (   (*lhs)->type == Node_var
+			else if (t1 == symbol_table) {
+				if ((   (*lhs)->type == Node_var
 				     || (*lhs)->type == Node_var_new)) {
-				update_global_values();		/* make sure stuff like NF, NR, are up to date */
-				(*lhs)->type = Node_var;	/* in case was Node_var_new */
-				lhs = & ((*lhs)->var_value);	/* extra level of indirection */
+					update_global_values();		/* make sure stuff like NF, NR, are up to date */
+					(*lhs)->type = Node_var;	/* in case was Node_var_new */
+					lhs = & ((*lhs)->var_value);	/* extra level of indirection */
+				} else
+					fatal(_("cannot assign to arbitrary elements of SYMTAB"));
 			}
 
 			assert(set_idx == NULL);
@@ -658,22 +661,25 @@ mod:
 			/*
 			 * Changing something in FUNCTAB is not allowed.
 			 *
-			 * SYMTAB is a little more messy.  Three kinds of values may
-			 * be stored in SYMTAB:
+			 * SYMTAB is a little more messy.  Three possibilities for SYMTAB:
 			 * 	1. Variables that don"t yet have a value (Node_var_new)
 			 * 	2. Variables that have a value (Node_var)
 			 * 	3. Values that awk code stuck into SYMTAB not related to variables (Node_value)
 			 * For 1, since we are giving it a value, we have to change the type to Node_var.
 			 * For 1 and 2, we have to step through the Node_var to get to the value.
-			 * For 3, we just us the value we got from assoc_lookup(), above.
+			 * For 3, we fatal out. This avoids confusion on things like
+			 * SYMTAB["a foo"] = 42	# variable with a space in its name?
 			 */
 			if (t1 == func_table)
 				fatal(_("cannot assign to elements of FUNCTAB"));
-			else if (   t1 == symbol_table
-				 && (   (*lhs)->type == Node_var
+			else if (t1 == symbol_table) {
+				if ((   (*lhs)->type == Node_var
 				     || (*lhs)->type == Node_var_new)) {
-				(*lhs)->type = Node_var;	/* in case was Node_var_new */
-				lhs = & ((*lhs)->var_value);	/* extra level of indirection */
+					update_global_values();		/* make sure stuff like NF, NR, are up to date */
+					(*lhs)->type = Node_var;	/* in case was Node_var_new */
+					lhs = & ((*lhs)->var_value);	/* extra level of indirection */
+				} else
+					fatal(_("cannot assign to arbitrary elements of SYMTAB"));
 			}
 
 			unref(*lhs);

@@ -15253,7 +15253,8 @@ if an element in @code{SYMTAB} is an array.
 Also, you may not use the @code{delete} statement with the
 @code{SYMTAB} array.
 
-You may use an index for @code{SYMTAB} that is not a predefined identifier:
+Prior to @value{PVERSION} 5.0 of @command{gawk}, you could
+use an index for @code{SYMTAB} that was not a predefined identifier:
 
 @example
 SYMTAB["xxx"] = 5
@@ -15261,9 +15262,8 @@ print SYMTAB["xxx"]
 @end example
 
 @noindent
-This works as expected: in this case @code{SYMTAB} acts just like
-a regular array.  The only difference is that you can't then delete
-@code{SYMTAB["xxx"]}.
+This no longer works, instead producing a fatal error, as it led
+to rampant confusion.
 
 @cindex Schorr, Andrew
 The @code{SYMTAB} array is more interesting than it looks. Andrew Schorr
