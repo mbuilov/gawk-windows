@@ -5075,6 +5075,16 @@ mk_program()
 			(void) list_merge(cp, beginfile_block);
 			(void) list_merge(cp, endfile_block);
 
+			if (outer_comment != NULL) {
+				cp = list_merge(list_create(outer_comment), cp);
+				outer_comment = NULL;
+			}
+
+			if (interblock_comment != NULL) {
+				(void) list_append(cp, interblock_comment);
+				interblock_comment = NULL;
+			}
+
 			goto out;
 
 		} else {
