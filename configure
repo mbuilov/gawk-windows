@@ -5444,7 +5444,7 @@ then
 	# enable debugging using macros also
 	if test "$GCC" = yes
 	then
-		CFLAGS="$CFLAGS -Wall -fno-builtin -g3"
+		CFLAGS="$CFLAGS -Wall -fno-builtin -g3 -ggdb3"
 	fi
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
@@ -12830,3 +12830,11 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
+if test "$GCC" = yes && test -f $srcdir/.developing
+then
+	for i in . support extension
+	do
+		sed '/-O2/s///' $i/Makefile > foo
+		mv foo $i/Makefile
+	done
+fi
