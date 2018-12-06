@@ -117,7 +117,7 @@ then
 	# enable debugging using macros also
 	if test "$GCC" = yes
 	then
-		CFLAGS="$CFLAGS -Wall -fno-builtin -g3"
+		CFLAGS="$CFLAGS -Wall -fno-builtin -g3 -ggdb3"
 	fi
 	AC_MSG_RESULT([yes])
 else
@@ -469,3 +469,11 @@ then
 	AC_CONFIG_SUBDIRS(extension)
 fi
 AC_OUTPUT
+if test "$GCC" = yes && test -f $srcdir/.developing
+then
+	for i in . support extension
+	do
+		sed '/-O2/s///' $i/Makefile > foo
+		mv foo $i/Makefile
+	done
+fi
