@@ -2096,34 +2096,6 @@ do_systime(int nargs ATTRIBUTE_UNUSED)
 	return make_number((AWKNUM) lclock);
 }
 
-/* mktime_tz --- based on Linux timegm man page */
-
-static time_t
-mktime_tz(struct tm *tm, const char *tzreq)
-{
-	time_t ret;
-	char *tz = getenv("TZ");
-
-	if (tz)
-		tz = estrdup(tz, strlen(tz));
-	if (setenv("TZ", tzreq, 1) < 0) {
-		warning(_("setenv(TZ, %s) failed (%s)"), tzreq, strerror(errno));
-		return -1;
-	}
-	tzset();
-	ret = mktime(tm);
-	if (tz) {
-		if (setenv("TZ", tz, 1) < 0)
-			fatal(_("setenv(TZ, %s) restoration failed (%s)"), tz, strerror(errno));
-		free(tz);
-	} else {
-		if (unsetenv("TZ") < 0)
-			fatal(_("unsetenv(TZ) failed (%s)"), strerror(errno));
-	}
-	tzset();
-	return ret;
-}
-
 /* do_mktime --- turn a time string into a timestamp */
 
 NODE *
@@ -2184,7 +2156,7 @@ do_mktime(int nargs)
 	then.tm_year = year - 1900;
 	then.tm_isdst = dst;
 
-	then_stamp = (do_gmt ? mktime_tz(& then, "UTC+0") : mktime(& then));
+	then_stamp = (do_gmt ? timegm(& then) : mktime(& then));
 	return make_number((AWKNUM) then_stamp);
 }
 
