@@ -129,6 +129,10 @@ extern void tzset();
 extern time_t mktime(struct tm *tp);
 #endif
 
+#ifndef HAVE_TIMEGM
+extern time_t timegm(struct tm *);
+#endif
+
 #ifndef HAVE_SNPRINTF
 extern int snprintf(char *restrict buf, size_t len, const char *restrict fmt, ...);
 #endif

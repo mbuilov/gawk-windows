@@ -1,3 +1,11 @@
+2018-12-12         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* configure.ac (AC_CHECK_FUNCS): Check for timegm.
+	* builtin.c (mktime_tz): Remove function; we will use timegm instead.
+	(do_mktime): Replace 'mktime_tz(& then, "UTC+0")' with 'timegm(& then)'.
+	* protos.h (timegm): Add timegm proto on systems lacking it.
+	* replace.c (timegm): Include missing_d/timegm.c if needed.
+
 2018-12-06         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Add -ggdb3 to CFLAGS if developing and remove

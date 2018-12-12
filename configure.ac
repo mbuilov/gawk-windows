@@ -312,7 +312,7 @@ AC_CHECK_FUNCS(__etoa_l atexit btowc fmod gai_strerror \
 	memset_ulong mkstemp posix_openpt setenv setlocale setsid sigprocmask \
 	snprintf strchr \
 	strerror strftime strcasecmp strncasecmp strcoll strtod strtoul \
-	system tmpfile towlower towupper tzset usleep waitpid wcrtomb \
+	system timegm tmpfile towlower towupper tzset usleep waitpid wcrtomb \
 	wcscoll wctype)
 dnl this check is for both mbrtowc and the mbstate_t type, which is good
 AC_FUNC_MBRTOWC
