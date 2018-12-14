@@ -1,6 +1,8 @@
 #include <time.h>
 #include <stdlib.h>
 
+/* timegm -- based on Linux timegm man page */
+
 static time_t
 timegm(struct tm *tm)
 {
