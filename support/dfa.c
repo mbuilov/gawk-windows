@@ -2687,11 +2687,11 @@ dfaanalyze (struct dfa *d, bool searchflag)
           {
             tmp.elems = firstpos - stk[-1].nfirstpos;
             tmp.nelem = stk[-1].nfirstpos;
-            position *pos = lastpos - stk[-1].nlastpos;
+            position *p = lastpos - stk[-1].nlastpos;
             for (size_t j = 0; j < stk[-1].nlastpos; j++)
               {
-                merge (&tmp, &d->follows[pos[j].index], &merged);
-                copy (&merged, &d->follows[pos[j].index]);
+                merge (&tmp, &d->follows[p[j].index], &merged);
+                copy (&merged, &d->follows[p[j].index]);
               }
           }
           FALLTHROUGH;
@@ -2707,11 +2707,11 @@ dfaanalyze (struct dfa *d, bool searchflag)
           {
             tmp.nelem = stk[-1].nfirstpos;
             tmp.elems = firstpos - stk[-1].nfirstpos;
-            position *pos = lastpos - stk[-1].nlastpos - stk[-2].nlastpos;
+            position *p = lastpos - stk[-1].nlastpos - stk[-2].nlastpos;
             for (size_t j = 0; j < stk[-2].nlastpos; j++)
               {
-                merge (&tmp, &d->follows[pos[j].index], &merged);
-                copy (&merged, &d->follows[pos[j].index]);
+                merge (&tmp, &d->follows[p[j].index], &merged);
+                copy (&merged, &d->follows[p[j].index]);
               }
           }
 
@@ -2728,9 +2728,9 @@ dfaanalyze (struct dfa *d, bool searchflag)
             stk[-2].nlastpos += stk[-1].nlastpos;
           else
             {
-              position *pos = lastpos - stk[-1].nlastpos - stk[-2].nlastpos;
+              position *p = lastpos - stk[-1].nlastpos - stk[-2].nlastpos;
               for (size_t j = 0; j < stk[-1].nlastpos; j++)
-                pos[j] = pos[j + stk[-2].nlastpos];
+                p[j] = p[j + stk[-2].nlastpos];
               lastpos -= stk[-2].nlastpos;
               stk[-2].nlastpos = stk[-1].nlastpos;
             }
