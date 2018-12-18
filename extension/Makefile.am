@@ -151,3 +151,6 @@ dist_man_MANS = \
 
 # gettext requires this
 SUBDIRS = po 
+
+distclean-local:
+	rm -fr .deps

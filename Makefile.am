@@ -213,3 +213,6 @@ valgrind-noleak:
 
 spell:
 	cd "$(srcdir)"/doc ; $(MAKE) spell
+
+distclean-local:
+	rm -fr .deps
