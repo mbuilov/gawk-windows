@@ -21584,12 +21584,12 @@ File: gawk.info,  Node: Debugger,  Next: Arbitrary Precision Arithmetic,  Prev: 
 It would be nice if computer programs worked perfectly the first time
 they were run, but in real life, this rarely happens for programs of any
 complexity.  Thus, most programming languages have facilities available
-for "debugging" programs, and now 'awk' is no exception.
+for "debugging" programs, and 'awk' is no exception.
 
    The 'gawk' debugger is purposely modeled after the GNU Debugger (GDB)
 (https://www.gnu.org/software/gdb/) command-line debugger.  If you are
-familiar with GDB, learning how to use 'gawk' for debugging your program
-is easy.
+familiar with GDB, learning how to use 'gawk' for debugging your
+programs is easy.
 
 * Menu:
 
@@ -21726,7 +21726,12 @@ instructions.
 is easy to lose sight of everything that is going on "inside" each line
 of 'awk' code.  The debugger provides the opportunity to look at the
 individual primitive instructions carried out by the higher-level 'awk'
-commands.
+commands.(1)
+
+   ---------- Footnotes ----------
+
+   (1) The "primitive instructions" are defined by 'gawk' itself; the
+debugger does not work at the level of machine instructions.
 
 
 File: gawk.info,  Node: Sample Debugging Session,  Next: List of Debugger Commands,  Prev: Debugging,  Up: Debugger
@@ -21736,7 +21741,7 @@ File: gawk.info,  Node: Sample Debugging Session,  Next: List of Debugger Comman
 
 In order to illustrate the use of 'gawk' as a debugger, let's look at a
 sample debugging session.  We will use the 'awk' implementation of the
-POSIX 'uniq' command described earlier (*note Uniq Program::) as our
+POSIX 'uniq' command presented earlier (*note Uniq Program::) as our
 example.
 
 * Menu:
@@ -21783,9 +21788,8 @@ File: gawk.info,  Node: Finding The Bug,  Prev: Debugger Invocation,  Up: Sample
 ----------------------
 
 Let's say that we are having a problem using (a faulty version of)
-'uniq.awk' in the "field-skipping" mode, and it doesn't seem to be
-catching lines which should be identical when skipping the first field,
-such as:
+'uniq.awk' in "field-skipping" mode, and it doesn't seem to be catching
+lines which should be identical when skipping the first field, such as:
 
      awk is a wonderful program!
      gawk is a wonderful program!
@@ -33625,7 +33629,7 @@ Index
                                                               (line   6)
 * break debugger command:                Breakpoint Control.  (line  11)
 * break statement:                       Break Statement.     (line   6)
-* breakpoint:                            Debugging Terms.     (line  33)
+* breakpoint (debugger):                 Debugging Terms.     (line  33)
 * breakpoint at location, how to delete: Breakpoint Control.  (line  36)
 * breakpoint commands:                   Debugger Execution Control.
                                                               (line  10)
@@ -33684,6 +33688,7 @@ Index
                                                               (line  44)
 * call by value:                         Pass By Value/Reference.
                                                               (line  15)
+* call stack (debugger):                 Debugging Terms.     (line  10)
 * call stack, display in debugger:       Execution Stack.     (line  13)
 * caret (^), in bracket expressions:     Bracket Expressions. (line  25)
 * caret (^), regexp operator:            Regexp Operators.    (line  22)
@@ -33942,6 +33947,7 @@ Index
 * dcngettext() function (gawk), portability and: I18N Portability.
                                                               (line  33)
 * deadlocks:                             Two-way I/O.         (line  53)
+* debugger capabilities:                 Debugging Concepts.  (line  16)
 * debugger commands, b (break):          Breakpoint Control.  (line  11)
 * debugger commands, backtrace:          Execution Stack.     (line  13)
 * debugger commands, break:              Breakpoint Control.  (line  11)
@@ -34039,15 +34045,41 @@ Index
 * debugger commands, watch:              Viewing And Changing Data.
                                                               (line  66)
 * debugger commands, where (backtrace):  Execution Stack.     (line  13)
+* debugger concepts:                     Debugging Terms.     (line   6)
 * debugger default list amount:          Debugger Info.       (line  69)
 * debugger history file:                 Debugger Info.       (line  81)
 * debugger history size:                 Debugger Info.       (line  65)
 * debugger options:                      Debugger Info.       (line  57)
 * debugger prompt:                       Debugger Info.       (line  78)
+* debugger, b command:                   Finding The Bug.     (line  32)
+* debugger, backtrace command:           Finding The Bug.     (line  52)
+* debugger, break command:               Finding The Bug.     (line  32)
+* debugger, breakpoint command:          Finding The Bug.     (line  32)
+* debugger, bt command:                  Finding The Bug.     (line  52)
+* debugger, command completion:          Readline Support.    (line   6)
+* debugger, history expansion:           Readline Support.    (line   6)
 * debugger, how to start:                Debugger Invocation. (line   6)
+* debugger, instruction tracing:         Debugger Info.       (line  90)
+* debugger, limitations:                 Limitations.         (line   6)
+* debugger, n command:                   Finding The Bug.     (line 105)
+* debugger, next command:                Finding The Bug.     (line 105)
+* debugger, p command:                   Finding The Bug.     (line  68)
+* debugger, print command:               Finding The Bug.     (line  68)
+* debugger, printing all array elements: Finding The Bug.     (line 154)
+* debugger, printing single array elements: Finding The Bug.  (line 140)
+* debugger, prompt:                      Debugger Invocation. (line  23)
 * debugger, read commands from a file:   Debugger Info.       (line  97)
+* debugger, repeating commands:          List of Debugger Commands.
+                                                              (line  21)
+* debugger, run command:                 Finding The Bug.     (line  39)
+* debugger, running the program:         Finding The Bug.     (line  39)
+* debugger, save commands to a file:     Debugger Info.       (line  92)
+* debugger, setting a breakpoint:        Finding The Bug.     (line  32)
+* debugger, show stack frames:           Finding The Bug.     (line  52)
 * debugging awk programs:                Debugger.            (line   6)
 * debugging gawk, bug reports:           Bugs.                (line   9)
+* debugging, example session:            Sample Debugging Session.
+                                                              (line   6)
 * decimal point character, locale specific: Options.          (line 282)
 * decrement operators:                   Increment Ops.       (line  35)
 * default keyword:                       Switch Statement.    (line   6)
@@ -34254,6 +34286,8 @@ Index
 * evaluation order, concatenation:       Concatenation.       (line  41)
 * evaluation order, functions:           Calling Built-in.    (line  30)
 * examining fields:                      Fields.              (line   6)
+* example debugging session:             Sample Debugging Session.
+                                                              (line   6)
 * exclamation point (!), ! operator:     Boolean Ops.         (line  69)
 * exclamation point (!), ! operator <1>: Precedence.          (line  51)
 * exclamation point (!), ! operator <2>: Egrep Program.       (line 174)
@@ -35817,7 +35851,7 @@ Index
 * square brackets ([]), regexp operator: Regexp Operators.    (line  56)
 * square root:                           Numeric Functions.   (line  78)
 * srand:                                 Numeric Functions.   (line  82)
-* stack frame:                           Debugging Terms.     (line  10)
+* stack frame (debugger):                Debugging Terms.     (line  10)
 * Stallman, Richard:                     Manual History.      (line   6)
 * Stallman, Richard <1>:                 Acknowledgments.     (line  18)
 * Stallman, Richard <2>:                 Contributors.        (line  24)
@@ -36100,7 +36134,7 @@ Index
 * warnings, issuing:                     Options.             (line 198)
 * watch debugger command:                Viewing And Changing Data.
                                                               (line  66)
-* watchpoint:                            Debugging Terms.     (line  42)
+* watchpoint (debugger):                 Debugging Terms.     (line  42)
 * wc utility:                            Wc Program.          (line   6)
 * wc.awk program:                        Wc Program.          (line  46)
 * Weinberger, Peter:                     History.             (line  17)
@@ -36527,197 +36561,198 @@ Ref: I18N Example-Footnote-1873616
 Node: Gawk I18N873689
 Node: I18N Summary874334
 Node: Debugger875675
-Node: Debugging876698
-Node: Debugging Concepts877139
-Node: Debugging Terms878948
-Node: Awk Debugging881523
-Node: Sample Debugging Session882429
-Node: Debugger Invocation882963
-Node: Finding The Bug884349
-Node: List of Debugger Commands890827
-Node: Breakpoint Control892160
-Node: Debugger Execution Control895854
-Node: Viewing And Changing Data899216
-Node: Execution Stack902590
-Node: Debugger Info904227
-Node: Miscellaneous Debugger Commands908298
-Node: Readline Support913360
-Node: Limitations914256
-Node: Debugging Summary916365
-Node: Arbitrary Precision Arithmetic917644
-Node: Computer Arithmetic919129
-Ref: table-numeric-ranges922895
-Ref: table-floating-point-ranges923388
-Ref: Computer Arithmetic-Footnote-1924046
-Node: Math Definitions924103
-Ref: table-ieee-formats927419
-Ref: Math Definitions-Footnote-1928022
-Node: MPFR features928127
-Node: FP Math Caution929845
-Ref: FP Math Caution-Footnote-1930917
-Node: Inexactness of computations931286
-Node: Inexact representation932246
-Node: Comparing FP Values933606
-Node: Errors accumulate934847
-Node: Getting Accuracy936280
-Node: Try To Round938990
-Node: Setting precision939889
-Ref: table-predefined-precision-strings940586
-Node: Setting the rounding mode942416
-Ref: table-gawk-rounding-modes942790
-Ref: Setting the rounding mode-Footnote-1946721
-Node: Arbitrary Precision Integers946900
-Ref: Arbitrary Precision Integers-Footnote-1950075
-Node: Checking for MPFR950224
-Node: POSIX Floating Point Problems951698
-Ref: POSIX Floating Point Problems-Footnote-1955983
-Node: Floating point summary956021
-Node: Dynamic Extensions958211
-Node: Extension Intro959764
-Node: Plugin License961030
-Node: Extension Mechanism Outline961827
-Ref: figure-load-extension962266
-Ref: figure-register-new-function963831
-Ref: figure-call-new-function964923
-Node: Extension API Description966985
-Node: Extension API Functions Introduction968627
-Node: General Data Types974167
-Ref: General Data Types-Footnote-1982528
-Node: Memory Allocation Functions982827
-Ref: Memory Allocation Functions-Footnote-1987037
-Node: Constructor Functions987136
-Node: Registration Functions990722
-Node: Extension Functions991407
-Node: Exit Callback Functions996622
-Node: Extension Version String997872
-Node: Input Parsers998535
-Node: Output Wrappers1011256
-Node: Two-way processors1015768
-Node: Printing Messages1018033
-Ref: Printing Messages-Footnote-11019204
-Node: Updating ERRNO1019357
-Node: Requesting Values1020096
-Ref: table-value-types-returned1020833
-Node: Accessing Parameters1021769
-Node: Symbol Table Access1023004
-Node: Symbol table by name1023516
-Node: Symbol table by cookie1025305
-Ref: Symbol table by cookie-Footnote-11029490
-Node: Cached values1029554
-Ref: Cached values-Footnote-11033090
-Node: Array Manipulation1033243
-Ref: Array Manipulation-Footnote-11034334
-Node: Array Data Types1034371
-Ref: Array Data Types-Footnote-11037029
-Node: Array Functions1037121
-Node: Flattening Arrays1041619
-Node: Creating Arrays1048595
-Node: Redirection API1053362
-Node: Extension API Variables1056195
-Node: Extension Versioning1056906
-Ref: gawk-api-version1057335
-Node: Extension GMP/MPFR Versioning1059066
-Node: Extension API Informational Variables1060694
-Node: Extension API Boilerplate1061767
-Node: Changes from API V11065741
-Node: Finding Extensions1067313
-Node: Extension Example1067872
-Node: Internal File Description1068670
-Node: Internal File Ops1072750
-Ref: Internal File Ops-Footnote-11084100
-Node: Using Internal File Ops1084240
-Ref: Using Internal File Ops-Footnote-11086623
-Node: Extension Samples1086897
-Node: Extension Sample File Functions1088426
-Node: Extension Sample Fnmatch1096075
-Node: Extension Sample Fork1097562
-Node: Extension Sample Inplace1098780
-Node: Extension Sample Ord1101997
-Node: Extension Sample Readdir1102833
-Ref: table-readdir-file-types1103722
-Node: Extension Sample Revout1104527
-Node: Extension Sample Rev2way1105116
-Node: Extension Sample Read write array1105856
-Node: Extension Sample Readfile1107798
-Node: Extension Sample Time1108893
-Node: Extension Sample API Tests1110241
-Node: gawkextlib1110733
-Node: Extension summary1113651
-Node: Extension Exercises1117353
-Node: Language History1118851
-Node: V7/SVR3.11120507
-Node: SVR41122659
-Node: POSIX1124093
-Node: BTL1125473
-Node: POSIX/GNU1126202
-Node: Feature History1131980
-Node: Common Extensions1147839
-Node: Ranges and Locales1149122
-Ref: Ranges and Locales-Footnote-11153738
-Ref: Ranges and Locales-Footnote-21153765
-Ref: Ranges and Locales-Footnote-31154000
-Node: Contributors1154221
-Node: History summary1160166
-Node: Installation1161546
-Node: Gawk Distribution1162490
-Node: Getting1162974
-Node: Extracting1163937
-Node: Distribution contents1165575
-Node: Unix Installation1172055
-Node: Quick Installation1172737
-Node: Shell Startup Files1175151
-Node: Additional Configuration Options1176240
-Node: Configuration Philosophy1178533
-Node: Non-Unix Installation1180902
-Node: PC Installation1181362
-Node: PC Binary Installation1182200
-Node: PC Compiling1182635
-Node: PC Using1183752
-Node: Cygwin1186967
-Node: MSYS1188066
-Node: VMS Installation1188567
-Node: VMS Compilation1189358
-Ref: VMS Compilation-Footnote-11190587
-Node: VMS Dynamic Extensions1190645
-Node: VMS Installation Details1192330
-Node: VMS Running1194583
-Node: VMS GNV1198862
-Node: VMS Old Gawk1199597
-Node: Bugs1200068
-Node: Bug address1200731
-Node: Usenet1203713
-Node: Maintainers1204717
-Node: Other Versions1205978
-Node: Installation summary1212892
-Node: Notes1214094
-Node: Compatibility Mode1214888
-Node: Additions1215670
-Node: Accessing The Source1216595
-Node: Adding Code1218032
-Node: New Ports1224251
-Node: Derived Files1228739
-Ref: Derived Files-Footnote-11234385
-Ref: Derived Files-Footnote-21234420
-Ref: Derived Files-Footnote-31235018
-Node: Future Extensions1235132
-Node: Implementation Limitations1235790
-Node: Extension Design1236973
-Node: Old Extension Problems1238117
-Ref: Old Extension Problems-Footnote-11239635
-Node: Extension New Mechanism Goals1239692
-Ref: Extension New Mechanism Goals-Footnote-11243056
-Node: Extension Other Design Decisions1243245
-Node: Extension Future Growth1245358
-Node: Notes summary1246194
-Node: Basic Concepts1247369
-Node: Basic High Level1248050
-Ref: figure-general-flow1248332
-Ref: figure-process-flow1249017
-Ref: Basic High Level-Footnote-11252318
-Node: Basic Data Typing1252503
-Node: Glossary1255831
-Node: Copying1287669
-Node: GNU Free Documentation License1325212
-Node: Index1350332
+Node: Debugging876695
+Node: Debugging Concepts877136
+Node: Debugging Terms878945
+Node: Awk Debugging881520
+Ref: Awk Debugging-Footnote-1882465
+Node: Sample Debugging Session882597
+Node: Debugger Invocation883131
+Node: Finding The Bug884517
+Node: List of Debugger Commands890991
+Node: Breakpoint Control892324
+Node: Debugger Execution Control896018
+Node: Viewing And Changing Data899380
+Node: Execution Stack902754
+Node: Debugger Info904391
+Node: Miscellaneous Debugger Commands908462
+Node: Readline Support913524
+Node: Limitations914420
+Node: Debugging Summary916529
+Node: Arbitrary Precision Arithmetic917808
+Node: Computer Arithmetic919293
+Ref: table-numeric-ranges923059
+Ref: table-floating-point-ranges923552
+Ref: Computer Arithmetic-Footnote-1924210
+Node: Math Definitions924267
+Ref: table-ieee-formats927583
+Ref: Math Definitions-Footnote-1928186
+Node: MPFR features928291
+Node: FP Math Caution930009
+Ref: FP Math Caution-Footnote-1931081
+Node: Inexactness of computations931450
+Node: Inexact representation932410
+Node: Comparing FP Values933770
+Node: Errors accumulate935011
+Node: Getting Accuracy936444
+Node: Try To Round939154
+Node: Setting precision940053
+Ref: table-predefined-precision-strings940750
+Node: Setting the rounding mode942580
+Ref: table-gawk-rounding-modes942954
+Ref: Setting the rounding mode-Footnote-1946885
+Node: Arbitrary Precision Integers947064
+Ref: Arbitrary Precision Integers-Footnote-1950239
+Node: Checking for MPFR950388
+Node: POSIX Floating Point Problems951862
+Ref: POSIX Floating Point Problems-Footnote-1956147
+Node: Floating point summary956185
+Node: Dynamic Extensions958375
+Node: Extension Intro959928
+Node: Plugin License961194
+Node: Extension Mechanism Outline961991
+Ref: figure-load-extension962430
+Ref: figure-register-new-function963995
+Ref: figure-call-new-function965087
+Node: Extension API Description967149
+Node: Extension API Functions Introduction968791
+Node: General Data Types974331
+Ref: General Data Types-Footnote-1982692
+Node: Memory Allocation Functions982991
+Ref: Memory Allocation Functions-Footnote-1987201
+Node: Constructor Functions987300
+Node: Registration Functions990886
+Node: Extension Functions991571
+Node: Exit Callback Functions996786
+Node: Extension Version String998036
+Node: Input Parsers998699
+Node: Output Wrappers1011420
+Node: Two-way processors1015932
+Node: Printing Messages1018197
+Ref: Printing Messages-Footnote-11019368
+Node: Updating ERRNO1019521
+Node: Requesting Values1020260
+Ref: table-value-types-returned1020997
+Node: Accessing Parameters1021933
+Node: Symbol Table Access1023168
+Node: Symbol table by name1023680
+Node: Symbol table by cookie1025469
+Ref: Symbol table by cookie-Footnote-11029654
+Node: Cached values1029718
+Ref: Cached values-Footnote-11033254
+Node: Array Manipulation1033407
+Ref: Array Manipulation-Footnote-11034498
+Node: Array Data Types1034535
+Ref: Array Data Types-Footnote-11037193
+Node: Array Functions1037285
+Node: Flattening Arrays1041783
+Node: Creating Arrays1048759
+Node: Redirection API1053526
+Node: Extension API Variables1056359
+Node: Extension Versioning1057070
+Ref: gawk-api-version1057499
+Node: Extension GMP/MPFR Versioning1059230
+Node: Extension API Informational Variables1060858
+Node: Extension API Boilerplate1061931
+Node: Changes from API V11065905
+Node: Finding Extensions1067477
+Node: Extension Example1068036
+Node: Internal File Description1068834
+Node: Internal File Ops1072914
+Ref: Internal File Ops-Footnote-11084264
+Node: Using Internal File Ops1084404
+Ref: Using Internal File Ops-Footnote-11086787
+Node: Extension Samples1087061
+Node: Extension Sample File Functions1088590
+Node: Extension Sample Fnmatch1096239
+Node: Extension Sample Fork1097726
+Node: Extension Sample Inplace1098944
+Node: Extension Sample Ord1102161
+Node: Extension Sample Readdir1102997
+Ref: table-readdir-file-types1103886
+Node: Extension Sample Revout1104691
+Node: Extension Sample Rev2way1105280
+Node: Extension Sample Read write array1106020
+Node: Extension Sample Readfile1107962
+Node: Extension Sample Time1109057
+Node: Extension Sample API Tests1110405
+Node: gawkextlib1110897
+Node: Extension summary1113815
+Node: Extension Exercises1117517
+Node: Language History1119015
+Node: V7/SVR3.11120671
+Node: SVR41122823
+Node: POSIX1124257
+Node: BTL1125637
+Node: POSIX/GNU1126366
+Node: Feature History1132144
+Node: Common Extensions1148003
+Node: Ranges and Locales1149286
+Ref: Ranges and Locales-Footnote-11153902
+Ref: Ranges and Locales-Footnote-21153929
+Ref: Ranges and Locales-Footnote-31154164
+Node: Contributors1154385
+Node: History summary1160330
+Node: Installation1161710
+Node: Gawk Distribution1162654
+Node: Getting1163138
+Node: Extracting1164101
+Node: Distribution contents1165739
+Node: Unix Installation1172219
+Node: Quick Installation1172901
+Node: Shell Startup Files1175315
+Node: Additional Configuration Options1176404
+Node: Configuration Philosophy1178697
+Node: Non-Unix Installation1181066
+Node: PC Installation1181526
+Node: PC Binary Installation1182364
+Node: PC Compiling1182799
+Node: PC Using1183916
+Node: Cygwin1187131
+Node: MSYS1188230
+Node: VMS Installation1188731
+Node: VMS Compilation1189522
+Ref: VMS Compilation-Footnote-11190751
+Node: VMS Dynamic Extensions1190809
+Node: VMS Installation Details1192494
+Node: VMS Running1194747
+Node: VMS GNV1199026
+Node: VMS Old Gawk1199761
+Node: Bugs1200232
+Node: Bug address1200895
+Node: Usenet1203877
+Node: Maintainers1204881
+Node: Other Versions1206142
+Node: Installation summary1213056
+Node: Notes1214258
+Node: Compatibility Mode1215052
+Node: Additions1215834
+Node: Accessing The Source1216759
+Node: Adding Code1218196
+Node: New Ports1224415
+Node: Derived Files1228903
+Ref: Derived Files-Footnote-11234549
+Ref: Derived Files-Footnote-21234584
+Ref: Derived Files-Footnote-31235182
+Node: Future Extensions1235296
+Node: Implementation Limitations1235954
+Node: Extension Design1237137
+Node: Old Extension Problems1238281
+Ref: Old Extension Problems-Footnote-11239799
+Node: Extension New Mechanism Goals1239856
+Ref: Extension New Mechanism Goals-Footnote-11243220
+Node: Extension Other Design Decisions1243409
+Node: Extension Future Growth1245522
+Node: Notes summary1246358
+Node: Basic Concepts1247533
+Node: Basic High Level1248214
+Ref: figure-general-flow1248496
+Ref: figure-process-flow1249181
+Ref: Basic High Level-Footnote-11252482
+Node: Basic Data Typing1252667
+Node: Glossary1255995
+Node: Copying1287833
+Node: GNU Free Documentation License1325376
+Node: Index1350496
 
 End Tag Table

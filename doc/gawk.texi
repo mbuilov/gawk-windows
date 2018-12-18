@@ -30172,17 +30172,16 @@ a number of translations for its messages.
 @cindex debugging @command{awk} programs
 
 @c The original text for this chapter was contributed by Efraim Yawitz.
-@c FIXME: Add more indexing.
 
 It would be nice if computer programs worked perfectly the first time they
 were run, but in real life, this rarely happens for programs of
 any complexity.  Thus, most programming languages have facilities available
-for ``debugging'' programs, and now @command{awk} is no exception.
+for ``debugging'' programs, and @command{awk} is no exception.
 
 The @command{gawk} debugger is purposely modeled after
 @uref{https://www.gnu.org/software/gdb/, the GNU Debugger (GDB)}
 command-line debugger.  If you are familiar with GDB, learning
-how to use @command{gawk} for debugging your program is easy.
+how to use @command{gawk} for debugging your programs is easy.
 
 @menu
 * Debugging::                   Introduction to @command{gawk} debugger.
@@ -30218,6 +30217,7 @@ In that case, what can you expect from such a tool?  The answer to that
 depends on the language being debugged, but in general, you can expect at
 least the following:
 
+@cindex debugger capabilities
 @itemize @value{BULLET}
 @item
 The ability to watch a program execute its instructions one by one,
@@ -30250,13 +30250,15 @@ functional program that you or someone else wrote).
 @node Debugging Terms
 @subsection Debugging Concepts
 
+@cindex debugger concepts
 Before diving in to the details, we need to introduce several
 important concepts that apply to just about all debuggers.
 The following list defines terms used throughout the rest of
 this @value{CHAPTER}:
 
 @table @dfn
-@cindex stack frame
+@cindex call stack (debugger)
+@cindex stack frame (debugger)
 @item Stack frame
 Programs generally call functions during the course of their execution.
 One function can call another, or a function can call itself (recursion).
@@ -30278,7 +30280,7 @@ invoked. Commands that print the call stack print information about
 each stack frame (as detailed later on).
 
 @item Breakpoint
-@cindex breakpoint
+@cindex breakpoint (debugger)
 During debugging, you often wish to let the program run until it
 reaches a certain point, and then continue execution from there one
 statement (or instruction) at a time.  The way to do this is to set
@@ -30288,7 +30290,7 @@ take over control of the program's execution.  You can add and remove
 as many breakpoints as you like.
 
 @item Watchpoint
-@cindex watchpoint
+@cindex watchpoint (debugger)
 A watchpoint is similar to a breakpoint.  The difference is that
 breakpoints are oriented around the code: stop when a certain point in the
 code is reached.  A watchpoint, however, specifies that program execution
@@ -30316,15 +30318,19 @@ In addition, because @command{awk} is by design a very concise language,
 it is easy to lose sight of everything that is going on ``inside''
 each line of @command{awk} code.  The debugger provides the opportunity
 to look at the individual primitive instructions carried out
-by the higher-level @command{awk} commands.
+by the higher-level @command{awk} commands.@footnote{The ``primitive
+instructions'' are defined by @command{gawk} itself; the debugger
+does not work at the level of machine instructions.}
 
 @node Sample Debugging Session
 @section Sample @command{gawk} Debugging Session
 @cindex sample debugging session
+@cindex example debugging session
+@cindex debugging, example session
 
 In order to illustrate the use of @command{gawk} as a debugger, let's look at a sample
 debugging session.  We will use the @command{awk} implementation of the
-POSIX @command{uniq} command described earlier (@pxref{Uniq Program})
+POSIX @command{uniq} command presented earlier (@pxref{Uniq Program})
 as our example.
 
 @menu
@@ -30358,6 +30364,7 @@ in the command line to the debugger rather than as part of the @code{run}
 command at the debugger prompt.)
 The @option{-1} is an option to @file{uniq.awk}.
 
+@cindex debugger, prompt
 Instead of immediately running the program on @file{inputfile}, as
 @command{gawk} would ordinarily do, the debugger merely loads all
 the program source files, compiles them internally, and then gives
@@ -30375,7 +30382,7 @@ code has been executed.
 @subsection Finding the Bug
 
 Let's say that we are having a problem using (a faulty version of)
-@file{uniq.awk} in the ``field-skipping'' mode, and it doesn't seem to be
+@file{uniq.awk} in ``field-skipping'' mode, and it doesn't seem to be
 catching lines which should be identical when skipping the first field,
 such as:
 
@@ -30407,6 +30414,10 @@ a breakpoint in @file{uniq.awk} is at the beginning of the function
 @code{are_equal()}, which compares the current line with the previous one. To set
 the breakpoint, use the @code{b} (breakpoint) command:
 
+@cindex debugger, setting a breakpoint
+@cindex debugger, @code{breakpoint} command
+@cindex debugger, @code{break} command
+@cindex debugger, @code{b} command
 @example
 gawk> @kbd{b are_equal}
 @print{} Breakpoint 1 set at file `awklib/eg/prog/uniq.awk', line 63
@@ -30416,6 +30427,8 @@ The debugger tells us the file and line number where the breakpoint is.
 Now type @samp{r} or @samp{run} and the program runs until it hits
 the breakpoint for the first time:
 
+@cindex debugger, running the program
+@cindex debugger, @code{run} command
 @example
 gawk> @kbd{r}
 @print{} Starting program:
@@ -30431,6 +30444,9 @@ let's see how we got to where we are.  At the prompt, we type @samp{bt}
 (short for ``backtrace''), and the debugger responds with a
 listing of the current stack frames:
 
+@cindex debugger, show stack frames
+@cindex debugger, @code{bt} command
+@cindex debugger, @code{backtrace} command
 @example
 gawk> @kbd{bt}
 @print{} #0  are_equal(n, m, clast, cline, alast, aline)
@@ -30450,6 +30466,8 @@ of some variables.  Let's say we type @samp{p n}
 @code{n}, a parameter to @code{are_equal()}.  Actually, the debugger
 gives us:
 
+@cindex debugger, @code{print} command
+@cindex debugger, @code{p} command
 @example
 gawk> @kbd{p n}
 @print{} n = untyped variable
@@ -30500,6 +30518,8 @@ be inside this function.  To investigate further, we must begin
 ``stepping through'' the lines of @code{are_equal()}.  We start by typing
 @samp{n} (for ``next''):
 
+@cindex debugger, @code{n} command
+@cindex debugger, @code{next} command
 @example
 @group
 gawk> @kbd{n}
@@ -30545,6 +30565,7 @@ This information is useful enough (we now know that
 none of the words were accidentally left out), but what if we want to see
 inside the array?
 
+@cindex debugger, printing single array elements
 The first choice would be to use subscripts:
 
 @example
@@ -30564,6 +30585,7 @@ This would be kind of slow for a 100-member array, though, so
 @command{gawk} provides a shortcut (reminiscent of another language
 not to be mentioned):
 
+@cindex debugger, printing all array elements
 @example
 gawk> @kbd{p @@alast}
 @print{} alast["1"] = "awk"
@@ -30643,6 +30665,7 @@ Getting information
 Miscellaneous
 @end itemize
 
+@cindex debugger, repeating commands
 Each of these are discussed in the following subsections.
 In the following descriptions, commands that may be abbreviated
 show the abbreviation on a second description line.
@@ -31229,9 +31252,11 @@ Options are read back into the next session upon startup.
 
 @item @code{trace} [@code{on} | @code{off}]
 @cindex instruction tracing, in debugger
+@cindex debugger, instruction tracing
 Turn instruction tracing on or off. The default is @code{off}.
 @end table
 
+@cindex debugger, save commands to a file
 @item @code{save} @var{filename}
 Save the commands from the current session to the given @value{FN},
 so that they can be replayed using the @command{source} command.
@@ -31404,7 +31429,9 @@ fairly self-explanatory, and using @code{stepi} and @code{nexti} while
 @node Readline Support
 @section Readline Support
 @cindex command completion, in debugger
+@cindex debugger, command completion
 @cindex history expansion, in debugger
+@cindex debugger, history expansion
 
 If @command{gawk} is compiled with
 @uref{http://cnswww.cns.cwru.edu/php/chet/readline/readline.html,
@@ -31443,6 +31470,7 @@ and
 @node Limitations
 @section Limitations
 
+@cindex debugger, limitations
 We hope you find the @command{gawk} debugger useful and enjoyable to work with,
 but as with any program, especially in its early releases, it still has
 some limitations.  A few that it's worth being aware of are:
