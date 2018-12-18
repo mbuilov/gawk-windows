@@ -61,7 +61,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH Maggio 2018
+@set UPDATE-MONTH Settembre 2018
 @set VERSION 4.2
 @set PATCHLEVEL 1
 
@@ -1208,7 +1208,6 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
 * Obiettivi delle estensioni::          Obiettivi del nuovo meccanismo.
 * Altre scelte progettuali per le estensioni:: Qualche altra scelta progettuale.
 * Futuri sviluppi delle estensioni::    Possibilit@`a di crescita futura.
-* Meccanismo delle vecchie estensioni:: Problemi con le vecchie estensioni.
 * Sommario delle note::                 Sommario delle note di
                                         implementazione.
 * Fondamenti ad alto livello::          Una visione dall'alto.
@@ -1951,6 +1950,7 @@ e alcune possibili direzioni per il futuro sviluppo di @command{gawk}.
 fornisce del materiale di riferimento a livello elementare per chi
 sia completamente digiuno di programmazione informatica.
 
+@item
 Il @ref{Glossario}, definisce quasi tutti i termini significativi
 usati all'interno di questo @value{DOCUMENT}.  Se si incontrano termini
 coi quali non si ha familiarit@`a, questo @`e il posto dove cercarli.
@@ -3960,8 +3960,8 @@ riga di comando, sia quelle dello standard POSIX che quelle specifiche di
 argomenti che non sono opzioni.
 Prosegue poi spiegando come @command{gawk} cerca i file sorgenti,
 leggendo lo standard input assieme ad altri file, le variabili d'ambiente di
-@command{gawk}, lo stato di ritorno di @command{gawk}, l'uso dei file inclusi,
-e opzioni e/o funzionalit@`a obsolete e non documentate.
+@command{gawk}, il codice di ritorno di @command{gawk}, l'uso dei file
+inclusi, e opzioni e/o funzionalit@`a obsolete e non documentate.
 
 Molte delle opzioni e funzionalit@`a qui descritte sono trattate con
 maggior dettaglio nei capitoli successivi del @value{DOCUMENT}; gli argomenti
@@ -5591,7 +5591,7 @@ A-capo, @kbd{Ctrl-j}, codice ASCII 10 (LF).
 @cindex @code{\} (barra inversa), @code{\r}, sequenza di protezione
 @cindex barra inversa (@code{\}), @code{\r}, sequenza di protezione
 @item \r
-Ritorno-del-carrello, @kbd{Ctrl-m}, codice ASCII 13 (CR).
+Ritorno-a-capo, @kbd{Ctrl-m}, codice ASCII 13 (CR).
 
 @cindex @code{\} (barra inversa), @code{\t}, sequenza di protezione
 @cindex barra inversa (@code{\}), @code{\t}, sequenza di protezione
@@ -6130,10 +6130,9 @@ dell'insieme di caratteri ASCII.  Usando una lista di caratteri che esclude
 sono nell'intervallo ASCII.
 
 @quotation NOTA
-Al momento (Maggio 2018), l'@command{awk} di Brian Kernighan
-tratta @code{[:blank:]} come @code{[:space:]}, individuando quindi
-pi@`u caratteri del dovuto.  Gli @`e stata inviata una correzione,
-si spera che il problema verr@`a risolto.
+Alcune vecchie versioni Unix di @command{awk} 
+trattano @code{[:blank:]} come @code{[:space:]}, individuando quindi
+pi@`u caratteri del dovuto.  Caveat Emptor! [Stia in guardia il compratore!].
 @end quotation
 
 @cindex espressioni tra parentesi quadre, elementi di collazione
@@ -6316,8 +6315,8 @@ chiaramente che si vuole una corrispondenza con una @dfn{regexp}.
 @cindex ritorno a capo, in @dfn{regexp} dinamiche
 
 Alcune delle prime versioni di @command{awk} non consentono di usare il
-carattere di ritorno
-a capo all'interno di un'espressione tra parentesi quadre in @dfn{regexp}
+carattere di ritorno a capo
+all'interno di un'espressione tra parentesi quadre in @dfn{regexp}
 dinamiche:
 
 @example
@@ -6805,8 +6804,9 @@ file in input, e la seconda regola nel programma @command{awk} (l'azione
 eseguita se non si specifica un criterio)
 stampa ogni record.  Poich@'e ogni istruzione @code{print} aggiunge
 un ritorno a capo alla fine del suo output, questo programma
-@command{awk} copia l'input con ogni @samp{u} trasformato in un ritorno
-a capo.  Qui vediamo il risultato dell'esecuzione del programma sul file
+@command{awk} copia l'input con ogni @samp{u} trasformato in un
+ritorno a capo.
+Qui vediamo il risultato dell'esecuzione del programma sul file
 @file{mail-list}:
 
 @example
@@ -6920,8 +6920,8 @@ Il raggiungimento della fine di un file in input fa terminare il record di
 input corrente, anche se l'ultimo carattere nel file non @`e il carattere in
 @code{RS}.  @value{DARKCORNER}
 
-@cindex stringhe vuote
-@cindex stringhe nulle
+@cindex stringa vuota
+@cindex stringa nulla
 @c @cindex strings, empty, see null strings
 La stringa nulla @code{""} (una stringa che non contiene alcun carattere)
 ha un significato particolare come
@@ -7366,6 +7366,8 @@ $ @kbd{echo a b c d e f | awk '@{ print "NF =", NF;}
 @quotation ATTENZIONE
 Alcune versioni di @command{awk} non
 ricostruiscono @code{$0} quando @code{NF} viene diminuito.
+Fino ad agosto 2018, fra queste c'era BWK @command{awk}; per fortuna
+da allora la sua versione funziona correttamente.
 @end quotation
 
 Infine, ci sono casi in cui conviene forzare
@@ -7589,8 +7591,8 @@ $ @kbd{echo ' a  b  c  d ' | awk 'BEGIN @{ FS = "[ \t\n]+" @}}
 
 @noindent
 @c @cindex null strings
-@cindex stringhe nulle
-@cindex stringhe vuote, si veda stringhe nulle
+@cindex stringa nulla
+@cindex stringa vuota, si veda stringa nulla
 In questo caso, il primo campo @`e nullo, o vuoto.
 Il taglio degli spazi vuoti iniziale e finale ha luogo anche
 ogniqualvolta @code{$0} @`e ricalcolato.
@@ -8317,14 +8319,6 @@ FPAT = "([^,]*)|(\"[^\"]+\")"
 Infine, la funzione @code{patsplit()} rende la stessa funzionalit@`a disponibile
 per suddividere normali stringhe (@pxref{Funzioni per stringhe}).
 
-@ignore
-Per ricapitolare, @command{gawk} fornisce tre metodi indipendenti per
-suddividere in campi i record in input.
-Il meccanismo usato @`e determinato da quella tra le tre
-variabili---@code{FS}, @code{FIELDWIDTHS}, o @code{FPAT}---a cui
-sia stato assegnato un valore pi@`u recentemente.
-@end ignore
-
 @node Controllare la creazione di campi
 @section Controllare come @command{gawk} sta dividendo i record
 
@@ -8584,7 +8578,7 @@ e avere acquisito una buona conoscenza di come funziona @command{awk}.
 @cindex @command{gawk}, variabile @code{ERRNO} in
 @cindex @code{ERRNO}, variabile, con comando @command{getline}
 @cindex differenze tra @command{awk} e @command{gawk}, comando @code{getline}
-@cindex @code{getline}, comando, valori di ritorno
+@cindex @code{getline}, comando, codice di ritorno
 @cindex @option{--sandbox}, opzione, ridirezione dell'input con @code{getline}
 
 Il comando @code{getline} restituisce 1 se trova un record e 0 se
@@ -9255,7 +9249,7 @@ messaggio di errore:
 
 @example
 @c questo @`e l'output effettivo - Antonio
-@error{} gawk: linea com.:2: (FILENAME=- FNR=1) fatale: errore leggendo
+@error{} gawk: riga com.:2: (FILENAME=- FNR=1) fatale: errore leggendo
 @error{}                         file in input `-': Connessione scaduta
 @end example
 
@@ -9531,8 +9525,8 @@ L'istruzione @code{print} si usa per produrre dell'output formattato in
 maniera semplice, standardizzata.  Si
 specificano solo le stringhe o i numeri
 da stampare, in una lista separata da virgole.  Questi elementi sono stampati,
-separati tra loro da spazi singoli, e alla fine viene stampato un ritorno a
-capo.  L'istruzione @`e simile a questa:
+separati tra loro da spazi singoli, e alla fine viene stampato un
+ritorno a capo.  L'istruzione @`e simile a questa:
 
 @example
 print @var{elemento1}, @var{elemento2}, @dots{}
@@ -9913,10 +9907,12 @@ Per @code{%A},
 si usano lettere maiuscole invece che lettere minuscole.
 
 @quotation NOTA
-Anche se lo standard POSIX in vigore richiede il supporto di @code{%a}
-e @code{%A} in @command{awk}, per quanto ci consta, nessun'altra versione
-di @command{awk} supporta questo formato.  Se lo si usa, il programma
-in questione @`e quindi estremamente non-portabile!
+Lo standard POSIX in vigore richiede il supporto di @code{%a}
+e di @code{%A} in @command{awk}.  Per quanto ci consta, oltre a
+@command{gawk}, la sola altra versione di @command{awk} che fornisce
+questo supporto @`e BWK @command{awk}.
+Se si usano questi formati, il programma in questione @`e quindi
+estremamente non-portabile!
 
 Inoltre, questi formati non sono disponibili su alcun sistema in cui
 la funzione di libreria C @code{printf()} utilizzata da @command{gawk}
@@ -10999,7 +10995,7 @@ per la @dfn{pipe} non @`e chiuso e liberato finch@'e non si chiama
 @code{close()} non fa nulla (e non emette messaggi) se le viene fornito come
 argomento una stringa che non rappresenta un file, una @dfn{pipe} o un
 coprocesso che sia stato aperto mediante una ridirezione.  In quel caso,
-@code{close()} restituisce un valore di ritorno negativo, che indica un
+@code{close()} restituisce un codice di ritorno negativo, che indica un
 errore. Inoltre, @command{gawk} imposta @code{ERRNO}
 a una stringa che indica il tipo di errore.
 
@@ -11025,19 +11021,19 @@ rinviata alla
 @ref{I/O bidirezionale},
 che ne parla pi@`u dettagliatamente e fornisce un esempio.
 
-@sidebar Usare il valore di ritorno di @code{close()}
+@sidebar Usare il codice di ritorno di @code{close()}
 @cindex angolo buio, funzione @code{close()}
-@cindex funzione @code{close()}, valore di ritorno
-@cindex @code{close()}, funzione, valore di ritorno
-@cindex valore di ritorno@comma{} funzione @code{close()}
+@cindex funzione @code{close()}, codice di ritorno
+@cindex @code{close()}, funzione, codice di ritorno
+@cindex codice di ritorno@comma{} funzione @code{close()}
 @cindex differenze tra @command{awk} e @command{gawk}, funzione @code{close()}
 @cindex Unix @command{awk}, funzione @code{close()} e
 
 In molte versioni di Unix @command{awk}, la funzione @code{close()}
 @`e in realt@`a un'istruzione.
 @value{DARKCORNER}
-@`E un errore di sintassi tentare di usare il valore
-di ritorno da @code{close()}:
+@`E un errore di sintassi tentare di usare il
+codice di ritorno da @code{close()}:
 
 @example
 comando = "@dots{}"
@@ -11049,7 +11045,7 @@ retval = close(comando)  # errore di sintassi in parecchi Unix awk
 @cindex variabile @code{ERRNO}, con funzione @command{close()}
 @cindex @code{ERRNO}, variabile, con funzione @command{close()}
 @command{gawk} gestisce @code{close()} come una funzione.
-Il valore di ritorno @`e @minus{}1 se l'argomento designa un file
+Il codice di ritorno @`e @minus{}1 se l'argomento designa un file
 che non era mai stato aperto con una ridirezione, o se c'@`e un problema di
 sistema nella chiusura del file o del processo.
 In tal caso, @command{gawk} imposta la variabile predefinita
@@ -11057,18 +11053,18 @@ In tal caso, @command{gawk} imposta la variabile predefinita
 
 In @command{gawk}, a partire dalla @value{PVERSION} 4.2,
 quando si chiude una @dfn{pipe} o un coprocesso (in input o in output),
-il valore di ritorno @`e quello restituito dal comando,
+il codice di ritorno @`e quello restituito dal comando,
 come descritto in @ref{table-close-pipe-return-values}.@footnote{Prima
-della @value{PVERSION} 4.2, il valore di ritorno dopo la chiusura di
+della @value{PVERSION} 4.2, il codice di ritorno dopo la chiusura di
 una @dfn{pipe} o di un coprocesso era una cifra di due byte (16-bit),
 contenente il valore restituito dalla chiamata di sistema @code{wait()}}.
-Altrimenti, @`e il valore di ritorno dalla chiamata alle funzione
+Altrimenti, @`e il codice di ritorno dalla chiamata alle funzione
 di sistema @code{close()} o alla funzione C @code{fclose()}
 se si sta chiudendo un file in input o in output, rispettivamente.
 Questo valore @`e zero se la chiusura riesce, o @minus{}1 se non riesce.
 
 @float Tabella,table-close-pipe-return-values
-@caption{Valori di ritorno dalla @code{close()} di una @dfn{pipe}}
+@caption{Codici di ritorno dalla @code{close()} di una @dfn{pipe}}
 @multitable @columnfractions .50 .50
 @headitem Situazione @tab Valore restituito da @code{close()}
 @item Uscita normale dal comando @tab Il codice di ritorno del comando
@@ -11082,7 +11078,7 @@ Lo standard POSIX @`e molto generico; dice che @code{close()}
 restituisce zero se @`e terminata correttamente, e un valore diverso da zero
 nell'altro caso.  In generale,
 implementazioni differenti variano in quel che restituiscono chiudendo una
-@dfn{pipe}; quindi, il valore di ritorno non pu@`o essere usato in modo
+@dfn{pipe}; quindi, il codice di ritorno non pu@`o essere usato in modo
 portabile.
 @value{DARKCORNER}
 In modalit@`a POSIX (@pxref{Opzioni}), @command{gawk} restituisce solo zero
@@ -11349,6 +11345,77 @@ tutti i possibili caratteri ASCII a otto bit, compreso il carattere ASCII
 @sc{nul} (carattere con codice zero).
 Altre implementazioni di @command{awk} possono avere difficolt@`a con alcuni
 particolari codici di carattere.
+
+Alcuni linguaggi di programmazione consentono la continuazione di stringhe
+lunghe su pi@`u righe, qualora una riga termini con una barra inversa.
+Per esempio in C:
+
+@example
+#include <stdio.h>
+
+int main()
+@{
+    printf "ciao, \
+mondo\n");
+    return 0;
+@}
+@end example
+
+@noindent
+In questo caso, il compilatore C rimuove sia la barra inversa che il
+carattere di avanzamento riga (@dfn{newline}),
+producendo una stringa che equivale ad aver immesso
+@samp{"ciao, mondo\n"}.  Ci@`o torna utile quando una stringa deve contenere
+una grande quantit@`a di testo.
+
+Lo standard POSIX afferma esplicitamente che
+il carattere di avanzamento riga
+non @`e consentito all'interno di costanti di tipo stringa.
+E in effetti, tutte le implementazioni di @command{awk} emettono un
+messaggio di errore se si tenta di utilizzarlo.  Per esempio:
+
+@example
+$ @kbd{gawk 'BEGIN @{ print "ciao, }
+> @kbd{mondo" @}'}
+@print{} gawk: riga com.:1: BEGIN @{ print "ciao,
+@print{} gawk: riga com.:1:                ^ stringa non terminata
+@print{} gawk: riga com.:1: BEGIN @{ print "ciao,
+@print{} gawk: riga com.:1:                ^ syntax error
+@end example
+
+@cindex angolo buio, stringhe, continuazione su pi@`u righe
+@cindex stringhe, continuazione su pi@`u righe
+@cindex differenze tra @command{awk} e @command{gawk}, stringhe
+Sebbene POSIX non definisca cosa succede usando un carattere
+protetto di avanzamento riga, come nell'esempio in linguaggio C
+visto sopra, tutte le versioni di @command{awk} consentono di
+farlo.  Sfortunatamente, quello che una particolare versione di
+@command{awk} fa con una tale stringa non @`e uniforme.
+@value{DARKCORNER} @command{gawk}, @command{mawk}, e
+OpenSolaris POSIX @command{awk} (@pxref{Altre versioni})
+tolgono sia la barra inversa che il carattere di
+avanzamento riga, come avviene nel linguaggio C:
+
+@example
+$ @kbd{gawk 'BEGIN @{ print "ciao, \}
+> @kbd{mondo" @}'}
+@print{} ciao, mondo
+@end example
+
+In modalit@`a POSIX (@pxref{Opzioni}), @command{gawk} non consente
+caratteri protetti di avanzamento riga.  Altrimenti, il
+comportamento @`e quello descritto sopra.
+
+BKW @command{awk} e Busybox @command{awk}
+tolgono la barra inversa, ma lasciano indisturbato il carattere
+di avanzamento riga, che fa quindi parte della stringa:
+
+@example
+$ @kbd{nawk 'BEGIN @{ print "ciao, \}
+> @kbd{mondo" @}'}
+@print{} ciao, 
+@print{} mondo
+@end example
 
 @node Numeri non-decimali
 @subsubsection Numeri ottali ed esadecimali
@@ -11858,6 +11925,25 @@ sequenze di protezione
 (@pxref{Sequenze di protezione}).
 @value{DARKCORNER}
 
+Le variabili assegnate sulla riga di comando (sia tramite l'opzione
+@option{-v} che senza) sono trattate come stringhe.  Quando tali variabili
+sono usate come numeri, viene effettuata la normale conversione automatica
+da stringhe a numeri, e ogni cosa ``funziona come deve''.
+
+Peraltro, @command{gawk} supporta variabili di tipo ``regexp''.
+Si possono assegnare valori a variabili di questo tipo usando la
+sintassi seguente:
+
+@example
+gawk -v 're1=@/pippo|pluto/' '@dots{}' /percorso/al/file1 're2=@/ciao|salve/' /percorso/al/file2
+@end example
+
+@noindent
+Le costanti @dfn{regexp} fortemente tipizzate sono un'altra
+funzionalit@`a avanzata disponibile
+(@pxref{costanti @dfn{regexp} fortemente tipizzate}).
+Sono ricordate qui solo per completezza.
+
 @node Conversione
 @subsection Conversione di stringhe e numeri
 
@@ -11899,7 +11985,7 @@ variabili @code{due} e @code{tre} sono convertiti in stringhe e
 concatenati insieme.  La stringa risultante @`e riconvertita nel
 numero 23, al quale poi viene aggiunto 4.
 
-@cindex stringhe nulle, conversione da tipo numerico a tipo stringa
+@cindex stringa nulla, conversione da tipo numerico a tipo stringa
 @cindex conversione di tipo variabile
 @cindex variabile, conversione di tipo
 Se, per qualche ragione, si vuole forzare la conversione di un numero in
@@ -12232,8 +12318,8 @@ print "qualcosa di significativo" > nome file
 @cindex programma di utilit@`a @command{mawk}
 @noindent
 Questo produce un errore di sintassi in alcune versioni di
-@command{awk} per Unix.@footnote{Pu@`o capitare che BWK
-@command{awk}, @command{gawk} e @command{mawk} lo interpretino nel modo giusto,
+@command{awk} per Unix.@footnote{Pu@`o capitare che BWK @command{awk},
+@command{gawk} e @command{mawk} lo interpretino nel modo giusto,
 ma non ci si dovrebbe fare affidamento.}
 @`E necessario usare la seguente sintassi:
 
@@ -13638,7 +13724,7 @@ a un secondo momento; si veda @ref{Chiamate indirette}.
 @cindex effetti collaterali, chiamate di funzione
 Come ogni altra espressione, la chiamata di funzione ha un valore, chiamato
 spesso @dfn{valore di ritorno}, che @`e calcolato dalla funzione
-in base agli argomenti dati.  In quest'esempio, il valore di ritorno
+in base agli argomenti dati.  In quest'esempio, il codice di ritorno
 di @samp{sqrt(@var{argomento})} @`e la radice quadrata di @var{argomento}.
 Il seguente programma legge numeri, un numero per riga, e stampa
 la radice quadrata di ciascuno:
@@ -15548,7 +15634,7 @@ viene specificato alcun argomento,
 Nel caso in cui un argomento
 sia specificato in una prima istruzione @code{exit} e poi @code{exit} sia
 chiamato una seconda volta all'interno di una regola @code{END} senza alcun
-argomento, @command{awk} usa il valore di ritorno specificato in precedenza.
+argomento, @command{awk} usa il codice di ritorno specificato in precedenza.
 @value{DARKCORNER}
 @xref{Codice di ritorno} per maggiori informazioni.
 
@@ -16133,7 +16219,7 @@ sono sicuramente sempre disponibili:
 
 @table @code
 @item PROCINFO["argv"]
-@cindex argomenti, riga di comando, @code{PROCINFO["argv"}
+@cindex argomenti, riga di comando, @code{PROCINFO["argv"]}
 Il vettore @code{PROCINFO["argv"]} contiene tutti gli argomenti della riga di
 comando (dopo che l'eventuale elaborazione di valutazione e ridirezione,
 nelle piattaforme in cui ci@`o debba essere fatto a cura del programma), con
@@ -16213,6 +16299,31 @@ L'identificativo @`e una funzione definita dall'utente.
 I valori riportano ci@`o che @command{gawk} sa sugli identificativi
 dopo aver finito l'analisi iniziale del programma; questi valori @emph{non}
 vengono pi@`u aggiornati durante l'esecuzione del programma.
+
+@item PROCINFO["platform"]
+@cindex piattaforma di esecuzione, @code{PROCINFO["platform"]}
+Quest'elemento restituisce una stringa che indica la piattaforma
+per la quale @command{gawk} @`e stato compilato.  Il valore sar@`a
+uno dei seguenti:
+
+@c nested table
+@table @code
+@item "vms"
+OpenVMS o Vax/VMS.
+
+@item "djgpp"
+@itemx "mingw"
+Microsoft Windows, utilizzando DJGPP o MinGW, rispettivamente.
+
+@item "os2"
+OS/2.
+
+@item "os390"
+OS/390.
+
+@item "posix"
+GNU/Linux, Cygwin, Mac OS X, e sistemi Unix tradizionali.
+@end table
 
 @item PROCINFO["pgrpid"]
 @cindex @dfn{process group ID} del programma @command{gawk}
@@ -16395,7 +16506,8 @@ controllare se un elemento in @code{SYMTAB} @`e un vettore.
 Inoltre, non @`e possibile usare l'istruzione @code{delete} con il vettore
 @code{SYMTAB}.
 
-@`E possibile aggiungere a @code{SYMTAB} un elemento che non sia un
+Prima della @value{PVERSION} 5.0 di @command{gawk}, era possibile
+usare come indice per @code{SYMTAB} una stringa che non era un
 identificativo gi@`a esistente:
 
 @example
@@ -16404,9 +16516,8 @@ print SYMTAB["xxx"]
 @end example
 
 @noindent
-Il risultato @`e quello previsto: in questo caso @code{SYMTAB} si comporta
-come un normale vettore.  La sola differenza @`e che non @`e poi possibile
-cancellare @code{SYMTAB["xxx"]}.
+Ci@`o non @`e pi@`u possibile, e il farlo determina un errore
+fatale, perch@'e il poterlo fare era solo fonte di confusione.
 
 @cindex Schorr, Andrew
 Il vettore @code{SYMTAB} @`e pi@`u interessante di quel che sembra.  Andrew
@@ -16516,7 +16627,8 @@ $ @kbd{awk 'BEGIN @{}
 In questo esempio, @code{ARGV[0]} contiene @samp{awk}, @code{ARGV[1]}
 contiene @samp{inventory-shipped} e @code{ARGV[2]} contiene
 @samp{mail-list}.
-Si noti che il nome del programma @command{awk} non @`e incluso in @code{ARGV}.
+Si tenga presente che il nome del programma @command{awk}
+non @`e incluso in @code{ARGV}.
 Le altre opzioni della riga di comando, con i relativi argomenti,
 sono parimenti non presenti, compresi anche gli assegnamenti di
 variabile fatti tramite l'opzione @option{-v}
@@ -18077,7 +18189,7 @@ permette di verificare se un elemento di un vettore @`e esso stesso un vettore:
 
 @example
 for (i in vettore) @{
-    if (isarray(vettore[i]) @{
+    if (isarray(vettore[i])) @{
         for (j in vettore[i]) @{
             print vettore[i][j]
         @}
@@ -19008,8 +19120,8 @@ eventuale spazio bianco a fine stringa  viene messo in
 @code{@var{separatori}[@var{n}]}, dove @var{n} @`e il valore restituito da
 @code{split()} (cio@`e il numero di elementi in @var{vettore}).
 
-La funzione @code{split()} divide le stringhe in pezzi in modo simile
-a quello con cui le righe in input sono divise in campi.  Per esempio:
+La funzione @code{split()} divide le stringhe in pezzi nello stesso
+modo in cui le righe in input sono divise in campi.  Per esempio:
 
 @example
 split("cul-de-sac", a, "-", separatori)
@@ -19045,6 +19157,9 @@ bianchi.  Inoltre, come nel caso della divisione dei record in input, se
 @var{separacampo} @`e la stringa nulla, ogni singolo carattere nella stringa
 costituisce un elemento del vettore.
 @value{COMMONEXT}
+Inoltre, se @var{separacampo} @`e una stringa costituita da un unico
+carattere, quella stringa fa da separatore, anche se il carattere
+in questione @`e un metacarattere usato nella espressioni regolari.
 
 Si noti, tuttavia, che @code{RS} non influisce sul comportamento di
 @code{split()}.
@@ -19821,7 +19936,7 @@ In questo caso, nessun output viene stampato finch@'e non @`e stato battuto il
 @cindex interagire con altri programmi
 Esegue il comando del sistema operativo @var{comando} e quindi
 ritorna al programma @command{awk}.
-Restituisce il codice ritorno di @var{comando}.
+Restituisce il codice di ritorno di @var{comando}.
 
 Per esempio, inserendo il seguente frammento di codice in un programma
 @command{awk}:
@@ -19902,6 +20017,9 @@ I valori del codice di ritorno sono descritti nella
 @end multitable
 @end float
 @end table
+
+A partire dalla versione di agosto 2018, BWK @command{awk} si comporta
+come @command{gawk} per il codice di ritorno della chiamata @code{system()}.
 
 @sidebar Controllare la bufferizzazione dell'output con @code{system()}
 @cindex buffer, scrivere su disco un
@@ -22552,7 +22670,7 @@ Se la stringa in input corrisponde all'espressione regolare che descrive i
 numeri ottali, @code{mystrtonum()} esegue il ciclo per ogni carattere presente
 nella stringa.  Imposta @code{k} all'indice in @code{"1234567"} della cifra
 ottale corrente.
-Il valore di ritorno sar@`a lo stesso numero della cifra, o zero
+Il codice di ritorno sar@`a lo stesso numero della cifra, o zero
 se il carattere non c'@`e, il che succeder@`a per ogni cifra @samp{0}.
 Questo si pu@`o fare, perch@'e il test di @dfn{regexp} nell'istruzione @code{if}
 assicura che vengano scelti per
@@ -23208,7 +23326,7 @@ rapidamente, e quindi @command{gawk} inserisce in
 @code{temp} l'intero contenuto del file.
 (@xref{Record} per informazioni su @code{RT} e @code{RS}.)
 
-Se @code{file} @`e vuoto, il valore di ritorno @`e la stringa vuota.
+Se @code{file} @`e vuoto, il codice di ritorno @`e la stringa vuota.
 Quindi, il codice chiamante pu@`o usare qualcosa simile a questo:
 
 @example
@@ -23920,7 +24038,7 @@ man mano che si elencano i pezzi di codice che la compongono:
 @end example
 
 La funzione inizia con commenti che elencano e descrivono le variabili globali
-utilizzate, spiegano quali sono i valori di ritorno, il loro significato, e
+utilizzate, spiegano quali sono i codici di ritorno, il loro significato, e
 ogni altra variabile che @`e
 ``esclusiva'' a questa funzione di libreria.  Tale
 documentazione @`e essenziale per qualsiasi programma, e in modo particolare per
@@ -25731,7 +25849,7 @@ da implementare con @command{gawk}; basta usare la variabile predefinita
 @c file eg/prog/egrep.awk
 # Opzioni:
 #    -c    conta le righe trovate
-#    -s    sileziosa: genera solo il codice di ritorno
+#    -s    silenziosa: genera solo il codice di ritorno
 #    -v    inverte test, successo se @dfn{regexp} non presente
 #    -i    ignora maiuscolo/minuscolo
 #    -l    stampa solo nomi file
@@ -25834,8 +25952,8 @@ function a_inizio_file(da_buttare)
 La funzione @code{endfile()} viene chiamata dopo l'elaborazione di ogni file.
 Ha influenza sull'output solo quando l'utente desidera un contatore del
 numero di righe che sono state individuate.  @code{non_stampare} @`e vero nel
-caso si desideri solo il codice di
-ritorno.  @code{conta_e_basta} @`e vero se si desiderano solo i contatori
+caso si desideri solo il codice di ritorno.
+@code{conta_e_basta} @`e vero se si desiderano solo i contatori
 delle righe trovate.  @command{egrep}
 quindi stampa i contatori solo se
 sia la stampa che il conteggio delle righe sono stati abilitati.
@@ -29258,7 +29376,7 @@ sono i corrispondenti valori dei due elementi che si stanno confrontando.
 @code{v1} oppure @code{v2}, o entrambi, possono essere vettori se il vettore
 che si sta visitando contiene sottovettori come valori.
 (@xref{Vettori di vettori} per maggiori informazioni sui sottovettori.)
-I tre possibili valori di ritorno sono interpretati nel seguente modo:
+I tre possibili codici di ritorno sono interpretati nel seguente modo:
 
 @table @code
 @item confronta(i1, v1, i2, v2) < 0
@@ -29531,7 +29649,7 @@ for (i = 1; i <= n; i++)
 
 Dopo la chiamata ad @code{asort()}, il vettore @code{dati} @`e indicizzato da 1
 a @var{n}, il numero totale di elementi in @code{dati}.
-(Questo conteggio @`e il valore di ritorno di @code{asort()}).
+(Questo conteggio @`e il codice di ritorno di @code{asort()}).
 @code{dati[1]} @value{LEQ} @code{dati[2]} @value{LEQ} @code{dati[3]}, e cos@`{@dotless{i}}
 via.  Il confronto di default @`e basato sul tipo di elementi
 (@pxref{Tipi di variabile e confronti}).
@@ -29969,7 +30087,7 @@ $ @kbd{echo 1 2 |}
 
 Usando una @dfn{pty}, @command{gawk} fa s@`{@dotless{i}} che la libreria di I/O
 determini di avere a che fare con una sessione interattiva, e quindi
-utilizzi per default una linea alla volta come buffer.
+utilizzi per default una riga alla volta come buffer.
 E ora, magicamente, funziona!
 
 @node Reti TCP/IP
@@ -30304,6 +30422,8 @@ struttura del programma e dalle regole di precedenza.
 Per esempio, @samp{(3 + 5) * 4} significa sommare tre e cinque, quindi
 moltiplicare il totale per quattro.  Di contro, @samp{3 + 5 * 4} non ha
 parentesi, e significa @samp{3 + (5 * 4)}.
+Tuttavia, le parentesi inserite esplicitamente nel programma sorgente
+sono conservate come sono state scritte.
 
 @ignore
 @item
@@ -30342,12 +30462,14 @@ appaiono come:
 
 @example
 /pippo/   @{
-    print $0
+    print
 @}
 @end example
 
 @noindent
 che @`e corretto, ma probabilmente inatteso.
+(Se un programma usa sia @samp{print $0} che un semplice
+@samp{print}, tale differenza @`e mantenuta.)
 
 @cindex profilare programmi @command{awk}, dinamicamente
 @cindex @command{gawk}, programma, profilazione dinamica
@@ -30429,16 +30551,15 @@ Una volta, l'opzione @option{--pretty-print} eseguiva anche il programma.
 Ora non pi@`u.
 @end quotation
 
-C'@`e una differenza significativa tra l'output creato durante la profilazione, e
-quello creato durante la stampa elegante.  L'output della stampa elegante
+C'@`e una differenza significativa tra l'output creato durante la profilazione,
+e quello creato durante la stampa elegante.  L'output della stampa elegante
 preserva i commenti originali che erano nel programma, anche se la loro
 posizione pu@`o non corrispondere esattamente alle posizioni originali che
-avevano nel codice sorgente.@footnote{@command{gawk} fa del suo meglio
+avevano nel codice sorgente.  Tuttavia, nessun commento dovrebbe andare
+perso.  Inoltre, @command{gawk} fa del suo meglio
 per mantenere la distinzione tra commenti posti dopo delle istruzioni e
-commenti su righe a s@'e stanti.  Per limiti insiti nell'implementazione,
-non sempre questo pu@`o avvenire in maniera corretta, in particolare nel
-caso di istruzioni @code{switch}.  I manutentori di @command{gawk}
-sperano di poter migliorare la situazione in una futura versione.}
+commenti su righe a s@'e stanti.  Tuttavia, non sempre questo pu@`o avvenire
+in maniera perfetta.
 
 Comunque, per una precisa scelta progettuale, l'output della profilazione
 @emph{omette} i commenti del programma originale. Questo permette di
@@ -31583,7 +31704,7 @@ attiva.  Tale pila (@dfn{stack}) @`e chiamata @dfn{call stack} (pila delle chiam
 
 Per ciascuna funzione della pila delle chiamate (@dfn{call stack}), il sistema
 mantiene un'area di dati che contiene i parametri della funzione, le variabili
-locali e i valori di ritorno, e anche ogni altra informazione ``contabile''
+locali e i codici di ritorno, e anche ogni altra informazione ``contabile''
 necessaria per gestire la pila delle chiamate.  Quest'area di dati @`e chiamata
 @dfn{stack frame}.
 
@@ -32236,7 +32357,7 @@ Esegue una o @var{contatore} istruzioni, comprese le chiamate di funzione.
 @cindex @code{return}, comando del debugger
 @item @code{return} [@var{valore}]
 Cancella l'esecuzione di una chiamata di funzione. Se @var{valore} (una
-stringa o un numero) viene specificato, @`e usato come valore di ritorno della
+stringa o un numero) viene specificato, @`e usato come codice di ritorno della
 funzione. Se usato in un frame diverso da quello pi@`u interno (la funzione
 correntemente in esecuzione; cio@`e, il frame numero 0), ignora tutti i frame
 pi@`u interni di quello selezionato, e il chiamante del frame selezionato
@@ -33472,7 +33593,7 @@ adeguato.  Il codice per far ci@`o @`e qualcosa del genere:
 @example
 @group
 delta = 0.00001                 # per esempio
-differenza = abs(a) - abs(b)    # sottrazione dei due valori
+differenza = abs(a - b)         # sottrazione dei due valori
 if (differenza < delta)
     # va bene
 else
@@ -33481,9 +33602,11 @@ else
 @end example
 
 @noindent
-(Si presuppone che sia stata definita in qualche parte del programma una
-semplice funzione che restituisce il valore assoluto di un numero,
-chiamata @code{abs()}.)
+(Si presuppone che sia stata definita in qualche altra parte del programma
+una semplice funzione di nome @code{abs()}.)  Se si scrive una funzione
+per confrontare dei valori con un valore dato @samp{delta}, si dovrebbe
+utilizzare la notazione @samp{differenza < abs(delta)} nel caso che
+a @samp{delta} venga assegnato un valore negativo.
 
 @node Gli errori si sommano
 @subsubsection Gli errori diventano sempre maggiori
@@ -35182,9 +35305,9 @@ senza il supporto MPFR, chiamare questa funzione genera un errore fatale.
 Entrambe queste funzioni restituiscono un codice di ritorno @samp{void *},
 poich@'e il file di intestazione @file{gawkapi.h} non dovrebbe avere dipendenze
 da @code{<mpfr.h>} (e @code{<gmp.h>},
-che @`e incluso da @code{<mpfr.h>}).  I valori di ritorno effettivamente
+che @`e incluso da @code{<mpfr.h>}).  I codici di ritorno effettivamente
 restituiti sono di tipo @code{mpfr_ptr} e @code{mpz_ptr} rispettivamente,
-e si dovrebbero assegnare in maniera appropriata questi valori di ritorno
+e si dovrebbero assegnare in maniera appropriata questi codici di ritorno
 prima di assegnare i risultati a variabili del tipo corretto.
 
 @node Funzioni di costruzione
@@ -36854,7 +36977,7 @@ costituisce la funzione
 @code{dump_array_and_delete()}.  @`E stato leggermente modificato per facilitare
 l'esposizione.
 
-La prima parte dichiara variabili, imposta il valore di ritorno di default
+La prima parte dichiara variabili, imposta il codice di ritorno di default
 in @code{risultato}, e controlla che la funzione
 sia stata chiamata con il numero corretto di argomenti:
 
@@ -38703,7 +38826,7 @@ Nel processo figlio, gli elementi @code{PROCINFO["pid"]} e
 @cindex estensione @code{waitpid()}
 @item ret = waitpid(pid)
 Questa funzione ha un unico argomento numerico, l'identificativo del processo
-di cui aspettare l'esito. Il valore di ritorno @`e quello restituito dalla
+di cui aspettare l'esito. Il codice di ritorno @`e quello restituito dalla
 chiamata di sistema @code{waitpid()}.
 
 @cindex @code{wait()}, estensione
@@ -39653,7 +39776,7 @@ Le sequenze di protezione @samp{\a}, @samp{\v} e @samp{\x}
 @c GNU, for ANSI C compat
 
 @item
-Un valore di ritorno definito per la funzione predefinita @code{srand()}
+Un codice di ritorno definito per la funzione predefinita @code{srand()}
 (@pxref{Funzioni numeriche})
 
 @item
@@ -40964,6 +41087,14 @@ Il supporto per GNU/Linux sull'architettura Alpha @`e stato rimosso.
 
 @end itemize
 
+La @value{PVERSION} 5.0 ha aggiunto le seguenti funzionalit@`a:
+
+@itemize
+@item
+L'elemento di vettore @code{PROCINFO["platform"]}, che permette di
+scrivere del codice che tiene conto di piattaforma / sistema operativo.
+@end itemize
+
 @c XXX ADD MORE STUFF HERE
 @end ifclear
 
@@ -41586,7 +41717,7 @@ correzioni a errori minori sono state incluse nel rilascio.
 Il @dfn{patch level} corrente @`e @value{PATCHLEVEL}, ma quando ci si procura
 una distribuzione, andr@`a ottenuta quella con il livello pi@`u alto di
 versione, rilascio e @dfn{patch}.
-(Si noti, comunque, che livelli di @dfn{patch} maggiori o uguali a 70
+(Si noti, comunque, che livelli di @dfn{patch} maggiori o uguali a 60
 denotano versioni ``beta'', ossia versioni non destinate a essere usate
 in produzione; non si dovrebbero utilizzare tali versioni, se non si @`e
 disposti a sperimentare.)
@@ -42255,6 +42386,13 @@ un'appropriata opzione @samp{-v BINMODE=@var{N}} sulla riga di comando.
 @code{BINMODE} @`e impostato nel momento in cui un file o @dfn{pipe} @`e aperto
 e non pu@`o essere cambiato in corso di elaborazione.
 
+Su sistemi compatibili con POSIX, il valore di queta variabile non ha
+alcun effetto.  Pertanto, se si pensa che un dato programma sar@`a eseguito
+su parecchi sistemi differenti, e che sia necessario usare
+@code{BINMODE}, @`e possibile impostarlo semplicemente (nel programma
+o sulla riga di comando) incondizionatamente, senza preoccuparsi del
+sistema operativo sotto il quale il programma viene eseguito.
+
 Il nome @code{BINMODE} @`e stato scelto in analogia con @command{mawk}
 (@pxref{Altre versioni}).
 @command{mawk} e @command{gawk} gestiscono @code{BINMODE} in maniera simile;
@@ -42332,7 +42470,7 @@ aspetta.
 Le versioni pi@`u recenti di Cygwin aprono tutti i file in modalit@`a binaria.
 Ci@`o implica che si dovrebbe usare @samp{RS = "\r?\n"} per riuscire a
 gestire file di testo MS-Windows in formato standard, in cui ogni riga
-termina con i due caratteri di Ritorno-del-carrello e A-capo.
+termina con i due caratteri di ritorno a capo e avanzamento riga.
 
 L'ambiente Cygwin consente l'utilizzo sia dell'operatore @samp{|&}
 che di reti TCP/IP (@pxref{Reti TCP/IP}).
@@ -42610,8 +42748,9 @@ unix_status = (vms_status .and. %x7f8) / 8
 Un programma C che usa @code{exec()} per chiamare @command{gawk}
 ricever@`a il valore originale della exit in stile Unix.
 
-Precedenti versioni di @command{gawk} per VMS consideravano un codice di
-ritorno a Unix di 0 come 1, un errore come 2, un errore fatale come 4, e tutti
+Precedenti versioni di @command{gawk} per VMS consideravano un
+codice di ritorno a Unix di 0 come 1, un errore come 2,
+un errore fatale come 4, e tutti
 gli altri valori erano restituiti immodificati.  Questa era una violazione
 rispetto alle specifiche di codifica delle condizioni di uscita di VMS.
 
@@ -42846,6 +42985,13 @@ domande riguardo a qualcosa di non chiaro nella documentazione o a proposito
 di funzionalit@`a oscure, si scriva alla mailing list dei bug; si prover@`a
 a essere di aiuto nei limiti del possibile.
 
+Si tenga presente: Si chiede di seguire le
+@uref{https://gnu.org/philosophy/kind-communication.html,
+@dfn{GNU Kind Communication Guidelines}
+-- Linee guida GNU per una comunicazione gentile}
+nella corrispondenza con la lista
+(e anche in quella fuori dalla lista).
+
 @node Usenet
 @appendixsubsec Non segnalare bug a USENET!
 
@@ -42871,7 +43017,12 @@ Sebbene alcuni degli sviluppatori di @command{gawk} leggano talora i
 messaggi di questo gruppo di discussione, il manutentore principale di
 @command{gawk} non lo fa pi@`u.  Quindi @`e praticamente certo che un
 messaggio inviato l@`a @emph{non} sia da lui letto.
-La procedura qui descritta @`e la sola maniera ufficialmente riconosciuta
+
+Analogamente, segnalando bug o ponendo domande in @dfn{forum} online
+come @uref{https://stackoverflow.com/, Stack Overflow}) si pu@`o
+ottenere una risposta, ma non dai manutentori di @command{gawk},
+che non dedicano tempo ai @dfn{forum} online.  La procedura qui
+descritta @`e la sola maniera ufficialmente riconosciuta
 per notificare problemi. Davvero!
 
 @ignore
@@ -42984,37 +43135,24 @@ Questa @value{SECTION} descrive in breve dove @`e possibile trovarle:
 @item Unix @command{awk}
 Brian Kernighan, uno degli sviluppatori originali di Unix @command{awk},
 ha reso disponibile liberamente la sua implementazione di @command{awk}.
-Si pu@`o scaricare questa versione dalla
-@uref{http://www.cs.princeton.edu/~bwk, sua pagina principale}.
-@`E disponibile in parecchi formati compressi:
-
-@table @asis
-@item Archivio Shell
-@uref{http://www.cs.princeton.edu/~bwk/btl.mirror/awk.shar}
-
-@item File @command{tar} compresso
-@uref{http://www.cs.princeton.edu/~bwk/btl.mirror/awk.tar.gz}
-
-@item File Zip
-@uref{http://www.cs.princeton.edu/~bwk/btl.mirror/awk.zip}
-@end table
-
-@cindex @command{git}, programma di utilit@`a
-@cindex programma di utilit@`a @command{git}
-@`E anche disponbile in GitHub:
-
+Pu@`o essere scaricata da GitHub:
 @example
 git clone git://github.com/onetrueawk/awk bwkawk
 @end example
 
 @noindent
 Questo comando crea una copia del deposito @uref{https://git-scm.com, Git}
-in una directory chiamata @file{bwkawk}.  Se si omette questo argomento della
-riga di comando @command{git}, la copia del deposito @`e creata nella
+in una directory chiamata @file{bwkawk}.  Se si omette l'ultimo argomento
+della riga di comando @command{git}, la copia del deposito @`e creata in una
 directory di nome @file{awk}.
 
 Questa versione richiede un compilatore ISO C (standard 1990); il compilatore
 C contenuto in GCC (la collezione di compilatori GNU) @`e pi@`u che sufficiente.
+
+Per eseguire la compilazione, si rivedano le impostazioni nel file
+@file{makefile}, e quindi si richiami semplicemente @command{make}.
+Si noti che il risultato della compilazione ha come nome
+@command{a.out}; questo file va rinominato in maniera adeguata.
 
 @xref{Estensioni comuni}
 per una lista di estensioni in questo @command{awk} che non sono in
@@ -43138,6 +43276,19 @@ il progetto
 @uref{https://wiki.illumos.org/display/illumos/illumos+Home, Illumos}
 mette a disposizione questa implementazione.  Si possono vedere i singoli file in
 @uref{https://github.com/joyent/illumos-joyent/blob/master/usr/src/cmd/awk_xpg4}.
+
+@cindex @command{goawk}
+@cindex Go, implementazione di @command{awk}
+@cindex sorgente, @command{goawk}
+@cindex @command{goawk}, sorgente di
+@item @command{goawk}
+Questo @`e un interpretatore di @command{awk} scritto nel
+@uref{https://golang.org/, Linguaggio di programmazion Go}.
+Implementa POSIX @command{awk}, con alcune estensioni minori.
+Il codice sorgente @`e disponibile in @uref{https://github.com/benhoyt/goawk}.
+L'autore ha scritto un buon
+@uref{https://benhoyt.com/writings/goawk/, articolo}
+che descrive l'implementazione.
 
 @cindex @command{jawk}
 @cindex Java, implementazione di @command{awk}
@@ -43263,8 +43414,6 @@ specificatamente a @command{gawk} e non ad altre implementazioni.
 * Limitazioni dell'implementazione:: Alcune limitazioni
                                 dell'implementazione.
 * Progetto delle estensioni::   Note di progetto sull'estensione API.
-* Meccanismo delle vecchie estensioni:: Alcune compatibilit@`a per le vecchie
-                                estensioni.
 * Sommario delle note::         Sommario delle note di
                                 implementazione.
 @end menu
@@ -44227,54 +44376,6 @@ evitare in questo modo possibili conflitti nei nomi di funzione.
 Naturalmente, al momento in cui queste righe sono state scritte, nessuna
 decisione @`e stata presa riguardo ai punti sopra descritti.
 
-@node Meccanismo delle vecchie estensioni
-@appendixsec Compatibilit@`a per le vecchie estensioni
-
-@iftex
-Il
-@end iftex
-@ref{Estensioni dinamiche}, descrive le API supportate e i meccanismi
-per scrivere estensioni per @command{gawk}.  Quest'API @`e stata introdotta
-nella @value{PVERSION} 4.1.  Peraltro, gi@`a da molti anni @command{gawk}
-metteva a disposizione un meccanismo di estensione che richiedeva una
-familiarit@`a con la struttura interna di @command{gawk} e che non era stato
-progettato altrettanto bene.
-
-Per garantire un periodo di transizione, @command{gawk} @value{PVERSION} 4.1
-continua a supportare il meccanismo di estensione originale.
-Questo rimarr@`a disponibile per la durata di una sola versione principale.
-Il supporto cesser@`a, e sar@`a rimosso dal codice sorgente, al rilascio
-della prossima versione principale.
-
-In breve, le estensioni in stile originale dovrebbero essere compilate
-includendo il file di intestazione @file{awk.h} nel codice sorgente
-dell'estensione. Inoltre, va definito l'identificativo @samp{GAWK} durante la
-preparazione (si usi @samp{-DGAWK} con compilatori in stile Unix).  Se non lo
-si fa, le definizioni in @file{gawkapi.h} risulteranno in conflitto con quelle
-in @file{awk.h} e l'estensione non sar@`a compilabile.
-
-Come nelle versioni precedenti, un'estensione vecchio stile sar@`a caricata
-usando la funzione predefinita @code{extension()} (che non viene ulteriormente
-documentata).  Questa funzione, a sua volta, trova e carica il file oggetto
-condiviso che contiene l'estensione e chiama la sua routine C @code{dl_load()}.
-
-Poich@'e le estensioni in stile originale e quelle nello stile nuovo usano
-differenti routine di inizializzazione(@code{dl_load()} e @code{dlload()},
-rispettivamente), esse possono tranquillamente essere installate nella stessa
-directory (il cui nome deve essere contenuto nella variabile @env{AWKLIBPATH})
-senza problemi di conflitti.
-
-Il @dfn{team} di sviluppo di @command{gawk} raccomanda caldamente di convertire
-ogni estensione del vecchio tipo ancora in uso, in modo da utilizzare la nuova
-API descritta
-@iftex
-nel
-@end iftex
-@ifnottex
-in
-@end ifnottex
-@ref{Estensioni dinamiche}.
-
 @node Sommario delle note
 @appendixsec Sommario
 
@@ -44519,7 +44620,7 @@ numerici (interi e in virgola mobile) e a come questi sono usati in un computer.
 Si consiglia di rileggere quelle informazioni, comprese le numerose avvertente
 l@`a esposte.
 
-@cindex stringhe nulle
+@cindex stringa nulla
 Mentre @`e probabile che ci si sia abituati all'idea di un numero senza un valore
 (cio@`e, allo zero), richiede un po' pi@`u di riflessione abituarsi all'idea di
 dati di tipo carattere a lunghezza zero.  Nonostante ci@`o, questo tipo di dato
@@ -45441,7 +45542,7 @@ Si veda ``Record in input'' e ``Record in output''.
 
 @item Record in input
 Una singola parte di dati letta da @command{awk}.  Solitamente, un
-record in input di @command{awk} consiste in una linea di testo.
+record in input di @command{awk} consiste in una riga di testo.
 (@xref{Record}).
 
 @item Record in output
