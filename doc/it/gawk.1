@@ -9,6 +9,7 @@
 .\"Aggiornam. a gawk-4.1.3 di Marco Curreli - revis. A.G. Colombo - Giugno 2016
 .\"Aggiornam. a gawk-4.2.0 di A.G. Colombo - revis. M. Curreli - Dicembre 2017
 .\"Aggiornam. a gawk-4.2.1 di A.G. Colombo - revis. M. Curreli - Febbraio 2018
+.\"Aggiornam. a gawk-4.2.2 di A.G. Colombo - revis. M. Curreli - Dicembre 2018
 
 .ds PX \s-1POSIX\s+1
 .ds UX \s-1UNIX\s+1
@@ -25,7 +26,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Feb 15 2018" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Nov 29 2018" "Free Software Foundation" "Utility Commands"
 .SH NOME
 gawk \- linguaggio per il riconoscimento e il trattamento di espressioni
 regolari
@@ -69,12 +70,12 @@ e valori da rendere disponibili
 nelle variabili \*(AK predefinite
 .B ARGC
 e
-.B ARGV .
+.BR ARGV .
 .PP
 Quando
 .I gawk
 è invocato con l'opzione
-.B \-\^\-profile ,
+.BR \-\^\-profile ,
 inizia a raccogliere statistiche sul comportamento del programma
 durante l'esecuzione.
 .I Gawk
@@ -228,7 +229,7 @@ nella directory corrente.
 .sp .5
 Avere una lista di tutte le variabili globali è un buon modo per cercare
 errori tipografici nei programmi.
-Questa opzione potrebbe essere usata anche se si ha un grosso programma con 
+Quest'opzione potrebbe essere usata anche se si ha un grosso programma con 
 tantissime funzioni, e ci si vuole assicurare che le funzioni non usino
 inavvertitamente variabili globali che sono supposte essere locali
 (è facile commettere questo errore quando si usano nomi di variabili
@@ -242,10 +243,11 @@ e così via).
 .TP
 .PD
 \fB\-\^\-debug\fR[\fB=\fIfile\fR]
-Abilita il debugging di programmi \*(AK.  Se non diversamente specificato, l'analizzatore di errori [debugger] legge i comandi
+Abilita il debugging di programmi \*(AK.
+Per default, l'analizzatore di errori [debugger] legge i comandi
 in maniera interattiva dalla tastiera (standard input).
 L'argomento opzionale
-.IR file
+.I file
 specifica un file contenente un elenco di comandi
 per il debugger da eseguire in maniera non interattiva.
 .TP
@@ -294,7 +296,7 @@ nel programma.  Il programma in sé non viene eseguito.
 Si veda la distribuzione \*(GN
 .I gettext
 per maggiori informazioni sui file
-.B \&.pot .
+.BR \&.pot .
 .TP
 .PD 0
 .B \-h
@@ -317,7 +319,7 @@ Cerca la libreria usando la variabile d'ambiente
 .BR AWKPATH .
 Se la ricerca iniziale non va a buon fine, viene
 fatto un altro tentativo dopo aver aggiunto il suffisso
-.B \&.awk .
+.BR \&.awk .
 Il file verrà caricato solo una volta
 (cioè vengono ignorati i duplicati), e il codice non costituisce
 il sorgente del programma principale.
@@ -332,7 +334,7 @@ Carica un'estensione
 dalla libreria condivisa
 .IR lib .
 Cerca la libreria usando la variabile d'ambiente
-.B AWKLIBPATH .
+.BR AWKLIBPATH .
 Se la ricerca iniziale non va a buon fine, viene
 fatto un altro tentativo dopo aver aggiunto il suffisso della libreria
 condivisa predefinita per la piattaforma.
@@ -394,7 +396,7 @@ faccia questo quando l'opzione
 il punto come separatore decimale, anche per le localizzazioni in cui
 il carattere di separazione non è il punto.  Quest'opzione ignora il
 comportamento predefinito, senza il rigore draconiano dell'opzione
-.B \-\^\-posix .
+.BR \-\^\-posix .
 .ig
 .\" Quest'opzione è lasciata intenzionalmente non documentata.
 .TP
@@ -432,9 +434,8 @@ Sottintende
 Abilita le ottimizzazioni predefinite di
 .IR gawk
 nella rappresentazione interna del programma.
-Attualmente, questo comprende il calcolo di costanti, se possibile, al momento
-della compilazione, e l'eliminazione della chiamata di coda per funzioni
-ricorsive. Questa opzione è attiva in modo predefinito.
+Attualmente, questo comprende il semplice calcolo delle costanti.
+Quest'opzione è attiva in modo predefinito.
 .TP
 .PD 0
 \fB\-p\fR[\fIprof-file\fR]
@@ -457,7 +458,7 @@ Sottindende
 .PD
 .B \-\^\-posix
 Quest'opzione attiva la modalità di
-.I compatibilità ,
+.IR compatibilità ,
 con le seguenti restrizioni aggiuntive:
 .RS
 .TP "\w'\(bu'u+1n"
@@ -476,7 +477,7 @@ e
 Non viene riconosciuto il sinonimo
 .B func
 per la parola chiave
-.B function .
+.BR function .
 .TP
 \(bu
 Non si possono usare gli operatori
@@ -515,14 +516,14 @@ rimane per essere usata con l'opzione
 .PD
 .B \-\^\-no\-optimize
 Disabilita le ottimizzazioni predefinite di
-.IR gawk
+.I gawk
 nella rappresentazione interna del programma.
 .TP
 .PD 0
-.BI \-S
+.B \-S
 .TP
 .PD
-.BI \-\^\-sandbox
+.B \-\^\-sandbox
 Esegue
 .I gawk
 in modalità "sandbox", disabilitando la funzione
@@ -579,7 +580,7 @@ per l'elaborazione.  Questo è particolarmente utile per eseguire i programmi
 .BR #! .
 .PP
 Per compatibilità con \*(PX, si può usare l'opzione
-.B \-W ,
+.BR \-W ,
 seguita dal nome di un'opzione lunga.
 .SH ESECUZIONE DEL PROGRAMMA AWK
 .PP
@@ -652,7 +653,7 @@ La variabile d'ambiente
 .B AWKLIBPATH
 specifica il percorso lungo il quale cercare i file sorgenti
 indicati con l'opzione
-.B \-l ,
+.BR \-l ,
 Se questa variabile non esiste, il percorso predefinito è
 \fB"/usr/local/lib/gawk"\fR
 (la directory in questione può variare a seconda di come
@@ -1144,7 +1145,7 @@ Il valore della chiamata di sistema
 Il valore di
 .IR errno (3)
 quando
-.BR ERRNO
+.B ERRNO
 è impostato al messaggio di errore associato.
 .TP
 \fBPROCINFO["euid"]\fP
@@ -1203,6 +1204,28 @@ ancora non lo sa).
 .TP
 \fB"user"\fR
 L'identificatore è una funzione definita dall'utente.
+.RE
+.TP
+\fBPROCINFO["platform"]\fP
+Una stringa che indica la piattaforma sulla quale
+.I gawk
+è stato compilato.  Può essere una delle alternative seguenti:
+.RS
+.TP
+\fB"vms"\fR
+OpenVMS o Vax/VMS.
+.TP
+\fB"macosx"\fR
+Mac OS X.
+.TP
+\fB"cygwin"\fR, \fB"djgpp"\fR, \fB"mingw"\fR
+Microsoft Windows, avendo compilato in Cygwin, DJGPP, o MinGW, rispettivamente.
+.TP
+\fB"os2"\fR
+OS/2.
+.TP
+\fB"posix"\fR
+GNU/Linux e i sistemi Unix precedenti.
 .RE
 .TP
 \fBPROCINFO["pgrpid"]\fP
@@ -1266,7 +1289,7 @@ Se presente, gli errori di I/O per tutte le ridirezioni
 diventano non fatali.
 .TP
 \fBPROCINFO["\fInome\fB", "NONFATAL"]\fR
-Rendono gli errori relativi a
+Rende gli errori relativi a
 .I nome
 non fatali.
 .TP
@@ -1290,7 +1313,7 @@ e questo elemento di vettore esiste,
 .B getline
 restituisce \-2 invece di restituire il valore previsto di \-1
 e di configurare
-.IR l'input
+.I l'input
 in modo da non fornire ulteriori dati.
 Un errore di I/O non fatale si verifica quando
 .IR errno (3)
@@ -1403,7 +1426,9 @@ può essere usata per controllare se un elemento in
 Non è possibile usare l'istruzione
 .B delete
 per il vettore
-.B SYMTAB .
+.B SYMTAB
+e neppure impostare elementi il cui indice non sia
+un nome di variabile.
 .TP
 .B TEXTDOMAIN
 Il dominio di testo del programma \*(AK ; usato per trovare le traduzioni
@@ -1417,7 +1442,7 @@ Se l'espressione è formata da una lista di espressioni
 l'indice del vettore è una stringa ottenuta concatenando
 i valori (stringa) di ogni espressione, separati dal valore della
 variabile
-.B SUBSEP .
+.BR SUBSEP .
 Questa modalità è usata per simulare vettori multidimensionali.
 Per esempio:
 .PP
@@ -1492,7 +1517,7 @@ si aspetta di trovare un vettore (come nel secondo argomento di
 .BR split() ).
 Si può fare questo creando un elemento nel sottovettore e cancellandolo
 poi con l'istruzione
-.B delete .
+.BR delete .
 .SS Notazione e conversione delle variabili
 .PP
 Le variabili e i campi
@@ -1567,7 +1592,7 @@ a
 agli elementi di
 .B ARGV
 di
-.B ENVIRON ,
+.BR ENVIRON ,
 ed agli elementi di un vettore creato da
 .B split()
 o da
@@ -1738,13 +1763,13 @@ Le azioni di tutti i criteri di ricerca
 .B BEGIN
 sono unite insieme, come se tutte le istruzioni fossero
 scritte in un'unica regola
-.B BEGIN ,
+.BR BEGIN ,
 e sono eseguite prima che sia letto qualsiasi input.
 Allo stesso modo, tutte le regole
 .B END
 sono fuse insieme, ed eseguite dopo che tutti i dati in input sono
 terminati o dopo che si è incontrata l'istruzione
-.B exit .
+.BR exit .
 .B BEGIN
 e
 .B END
@@ -2271,7 +2296,8 @@ dalla successiva riga di input; imposta
 Imposta
 .I variabile
 dalla successiva riga di
-.IR file ,
+.IR file ;
+imposta
 .BR RT .
 .TP
 \fIcomando\fB | getline \fR[\fIvariabile\fR]
@@ -2432,6 +2458,14 @@ e della funzione
 accettano i seguenti
 formati di richiesta conversione:
 .TP "\w'\fB%g\fR, \fB%G\fR'u+2n"
+.BR "%a" "," " %A"
+Un numero a virgola mobile nel formato
+[\fB\-\fP]\fB0x\fIh\fB.\fIhhhh\fBp+\-\fIdd\fR
+(formato esadecimale a virgola mobile di C99).
+Per
+.BR %A ,
+si usano lettere maiuscole invece che lettere minuscole.
+.TP
 .B %c
 Un singolo carattere.
 Se l'argomento usato per
@@ -2502,7 +2536,7 @@ invece di
 .TP
 .B %%
 Un singolo carattere
-.B % ;
+.BR % ;
 non c'è alcuna conversione di argomenti.
 .PP
 Alcuni ulteriori parametri facoltativi possono comparire fra il
@@ -3025,7 +3059,7 @@ davanti a
 Il valore di
 .B seps[0]
 è il separatore iniziale (che potrebbe anche essere la stringa nulla).
-\&\fRIf
+Se
 .I r
 è omesso,
 .B FPAT
@@ -3064,7 +3098,7 @@ tra
 .BI a[ i ]
 e
 .BI a[ i +1]\fR.
-\&\fRSe
+Se
 .I r
 è uno spazio singolo, gli eventuali spazi bianchi all'inizio di
 .I s
@@ -3077,6 +3111,10 @@ dove
 è il valore restituito da
 .BI split( s ", " a ", " r ", " seps )\fR.
 La suddivisione si comporta come la suddivisione in campi, descritta sopra.
+Nel caso particolare in cui
+.I r
+è una stringa composta da un unico carattere, quella stringa fa da separatore,
+anche se il carattere è un metacarattere di un'espressione regolare.
 .TP
 .BI sprintf( fmt , " lista-espressioni" )
 Stampa
@@ -3599,7 +3637,7 @@ assegnazione compariva prima di un nome di file, l'assegnazione sarebbe
 avvenuta 
 .I prima
 di eseguire la regola
-.B BEGIN .
+.BR BEGIN .
 Esistono applicazioni che dipendono da questa \*(lqfunzionalità.\*(rq
 Quando
 .I awk
@@ -4050,7 +4088,7 @@ ILDP - Italian Linux Documentation Project
 Se trovate un bug in
 .IR gawk ,
 siete pregati di inviare un messaggio di posta elettronica a
-.BR bug-gawk@gnu.org .
+.BR \%bug-gawk@gnu.org .
 Siete pregati di includere il vostro sistema operativo e la versione di
 .I gawk
 (da
