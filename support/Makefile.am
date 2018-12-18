@@ -59,3 +59,6 @@ libsupport_a_SOURCES = \
 RM = rm -f
 
 DEFS = -DGAWK -DHAVE_CONFIG_H -I"$(srcdir)/.."
+
+distclean-local:
+	rm -fr .deps
