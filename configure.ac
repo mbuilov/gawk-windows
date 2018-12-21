@@ -485,7 +485,9 @@ then
 	AC_CONFIG_SUBDIRS(extension)
 fi
 AC_OUTPUT
-if test "$GCC" = yes && test -f $srcdir/.developing
+if test "$GCC" = yes &&
+   test -f $srcdir/.developing &&
+   grep -i debug $srcdir/.developing > /dev/null
 then
 	for i in . support extension
 	do

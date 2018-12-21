@@ -12830,7 +12830,9 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
-if test "$GCC" = yes && test -f $srcdir/.developing
+if test "$GCC" = yes &&
+   test -f $srcdir/.developing &&
+   grep -i debug $srcdir/.developing > /dev/null
 then
 	for i in . support extension
 	do
