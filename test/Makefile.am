@@ -241,6 +241,9 @@ EXTRA_DIST = \
 	devfd1.awk \
 	devfd1.ok \
 	devfd2.ok \
+	dfacheck.awk \
+	dfacheck.in \
+	dfacheck.ok \
 	dfamb1.awk \
 	dfamb1.in \
 	dfamb1.ok \
@@ -1293,7 +1296,7 @@ GAWK_EXT_TESTS = \
 	charasbytes colonwarn clos1way clos1way2 clos1way3 clos1way4 clos1way5 \
 	clos1way6 crlf \
 	dbugeval dbugeval2 dbugtypedre1 dbugtypedre2 delsub \
-	devfd devfd1 devfd2 dumpvars \
+	devfd devfd1 devfd2 dfacheck1 dumpvars \
 	errno exit \
 	fieldwdth forcenum fpat1 fpat2 fpat3 fpat4 fpat5 fpat6 fpatnull fsfwfs \
 	funlen functab1 functab2 functab3 fwtest fwtest2 fwtest3 fwtest4 \
