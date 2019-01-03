@@ -4128,6 +4128,7 @@ that this option may disappear in a future version of @command{gawk}.
 Force the use of the locale's decimal point character
 when parsing numeric input data (@pxref{Locales}).
 
+@cindex pretty printing
 @item @option{-o}[@var{file}]
 @itemx @option{--pretty-print}[@code{=}@var{file}]
 @cindex @option{-o} option
@@ -15345,8 +15346,8 @@ is to simply say @samp{FS = FS}, perhaps with an explanatory comment.
 @cindex @command{gawk}, @code{IGNORECASE} variable in
 @cindex @code{IGNORECASE} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{IGNORECASE} variable
-@cindex case sensitivity, and string comparisons
-@cindex case sensitivity, and regexps
+@cindex case sensitivity, string comparisons and
+@cindex case sensitivity, regexps and
 @cindex regular expressions, case sensitivity
 @item IGNORECASE #
 If @code{IGNORECASE} is nonzero or non-null, then all string comparisons
@@ -16572,8 +16573,8 @@ automatically converts it to a string.
 
 @cindex @command{gawk}, @code{IGNORECASE} variable in
 @cindex case sensitivity, array indices and
-@cindex arrays, and @code{IGNORECASE} variable
-@cindex @code{IGNORECASE} variable, and array indices
+@cindex arrays, @code{IGNORECASE} variable and
+@cindex @code{IGNORECASE} variable, array indices and
 The value of @code{IGNORECASE} has no effect upon array subscripting.
 The identical string value used to store an array element must be used
 to retrieve it.
@@ -17056,7 +17057,7 @@ sorting arrays; see @ref{Array Sorting Functions}.
 @cindex numbers, as array subscripts
 @cindex arrays, numeric subscripts
 @cindex subscripts in arrays, numbers as
-@cindex @code{CONVFMT} variable, and array subscripts
+@cindex @code{CONVFMT} variable, array subscripts and
 An important aspect to remember about arrays is that @emph{array subscripts
 are always strings}.  When a numeric value is used as a subscript,
 it is converted to a string value before being used for subscripting
@@ -17213,7 +17214,7 @@ if (4 in foo)
     print "This will never be printed"
 @end example
 
-@cindex null strings, and deleting array elements
+@cindex null strings, deleting array elements and
 It is important to note that deleting an element is @emph{not} the
 same as assigning it a null value (the empty string, @code{""}).
 For example:
@@ -17308,7 +17309,7 @@ languages, including @command{awk}) to refer to an element of a
 two-dimensional array named @code{grid} is with
 @code{grid[@var{x},@var{y}]}.
 
-@cindex @code{SUBSEP} variable, and multidimensional arrays
+@cindex @code{SUBSEP} variable, multidimensional arrays and
 Multidimensional arrays are supported in @command{awk} through
 concatenation of indices into one string.
 @command{awk} converts the indices into strings
@@ -23735,7 +23736,7 @@ uses these functions.
 @cindex functions, library, group database@comma{} reading
 @cindex group database, reading
 @cindex database, group, reading
-@cindex @code{PROCINFO} array, and group membership
+@cindex @code{PROCINFO} array, group membership and
 @cindex @code{getgrent()} function (C library)
 @cindex @code{getgrent()} user-defined function
 @cindex groups@comma{} information about
@@ -25034,7 +25035,7 @@ $ @kbd{id}
 @print{} uid=1000(arnold) gid=1000(arnold) groups=1000(arnold),4(adm),7(lp),27(sudo)
 @end example
 
-@cindex @code{PROCINFO} array, and user and group ID numbers
+@cindex @code{PROCINFO} array, user and group ID numbers and
 This information is part of what is provided by @command{gawk}'s
 @code{PROCINFO} array (@pxref{Built-in Variables}).
 However, the @command{id} utility provides a more palatable output than just
@@ -28449,7 +28450,7 @@ both arrays use the values.
 @c Document It And Call It A Feature. Sigh.
 @cindex @command{gawk}, @code{IGNORECASE} variable in
 @cindex arrays, sorting, and @code{IGNORECASE} variable
-@cindex @code{IGNORECASE} variable, and array sorting functions
+@cindex @code{IGNORECASE} variable, array sorting functions and
 Because @code{IGNORECASE} affects string comparisons, the value
 of @code{IGNORECASE} also affects sorting for both @code{asort()} and @code{asorti()}.
 Note also that the locale's sorting order does @emph{not}
@@ -28697,7 +28698,7 @@ or @code{getline}.
 @end quotation
 
 @cindex @command{gawk}, @code{PROCINFO} array in
-@cindex @code{PROCINFO} array, and communications via ptys
+@cindex @code{PROCINFO} array, communications via ptys and
 You may also use pseudo-ttys (ptys) for
 two-way communication instead of pipes, if your system supports them.
 This is done on a per-command basis, by setting a special element
@@ -28982,8 +28983,8 @@ Here is the @file{awkprof.out} that results from running the
 illustrates that @command{awk} programmers sometimes get up very early
 in the morning to work):
 
-@cindex @code{BEGIN} pattern, and profiling
-@cindex @code{END} pattern, and profiling
+@cindex @code{BEGIN} pattern, profiling and
+@cindex @code{END} pattern, profiling and
 @example
     # gawk profile, created Mon Sep 29 05:16:21 2014
 
@@ -29213,6 +29214,7 @@ keyboard.  The @code{INT} signal is generated by the
 @kbd{Ctrl-c} or @kbd{Ctrl-BREAK} key, while the
 @code{QUIT} signal is generated by the @kbd{Ctrl-\} key.
 
+@cindex pretty printing
 Finally, @command{gawk} also accepts another option, @option{--pretty-print}.
 When called this way, @command{gawk} ``pretty-prints'' the program into
 @file{awkprof.out}, without any execution counts.
@@ -29222,6 +29224,8 @@ Once upon a time, the @option{--pretty-print} option would also run
 your program.  This is is no longer the case.
 @end quotation
 
+@cindex profiling, pretty-printing, difference with
+@cindex pretty-printing, profiling, difference with
 There is a significant difference between the output created when
 profiling, and that created when pretty-printing.  Pretty-printed output
 preserves the original comments that were in the program, although their
@@ -29247,7 +29251,7 @@ Because the internal representation of your program is formatted to
 recreate an @command{awk} program, profiling and pretty-printing
 automatically disable @command{gawk}'s default optimizations.
 
-Pretty printing also preserves the original format of numeric
+Profiling and pretty-printing also preserve the original format of numeric
 constants; if you used an octal or hexadecimal value in your source
 code, it will appear that way in the output.
 
