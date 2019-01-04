@@ -3589,6 +3589,8 @@ noticed because it is ``hidden'' inside the comment. Thus, the
 @cindex statements, multiple
 @cindex @code{;} (semicolon), separating statements in actions
 @cindex semicolon (@code{;}), separating statements in actions
+@cindex @code{;} (semicolon), separating rules
+@cindex semicolon (@code{;}), separating rules
 When @command{awk} statements within one rule are short, you might want to put
 more than one of them on a line.  This is accomplished by separating the statements
 with a semicolon (@samp{;}).
@@ -5732,7 +5734,7 @@ expressions are not available in regular expressions.
 @cindex bracket expressions
 @cindex bracket expressions, range expressions
 @cindex range expressions (regexps)
-@cindex character lists in regular expression
+@cindex character lists in regular expressions
 
 As mentioned earlier, a bracket expression matches any character among
 those listed between the opening and closing square brackets.
@@ -13634,6 +13636,8 @@ Logical ``or.''
 
 @cindex @code{?} (question mark), @code{?:} operator
 @cindex question mark (@code{?}), @code{?:} operator
+@cindex @code{:} (colon), @code{?:} operator
+@cindex colon (@code{:}), @code{?:} operator
 @item @code{?:}
 Conditional.  This operator groups right to left.
 
@@ -15674,7 +15678,7 @@ are guaranteed to be available:
 
 @table @code
 @item PROCINFO["argv"]
-@cindex command line arguments, @code{PROCINFO["argv"]}
+@cindex command line, arguments
 The @code{PROCINFO["argv"]} array contains all of the command-line arguments
 (after glob expansion and redirection processing on platforms where that must
 be done manually by the program) with subscripts ranging from 0 through
@@ -15883,7 +15887,7 @@ if no match was found.
 
 @cindex @command{gawk}, @code{RT} variable in
 @cindex @code{RT} variable
-@cindex differences in @command{awk} and @command{gawk}, @code{RT} variable
+@cindex differences in @command{awk} and @command{gawk}, @code{RS}/@code{RT} variables
 @item @code{RT #}
 The input text that matched the text denoted by @code{RS},
 the record separator.  It is set every time a record is read.
@@ -18226,7 +18230,7 @@ warning about this.
 
 @cindex common extensions, @code{length()} applied to an array
 @cindex extensions, common@comma{} @code{length()} applied to an array
-@cindex differences between @command{gawk} and @command{awk}
+@cindex differences in @command{awk} and @command{gawk}, @code{length()} function
 @cindex number of array elements
 @cindex array, number of elements
 With @command{gawk} and several other @command{awk} implementations, when given an
@@ -19961,7 +19965,7 @@ Operands  | 0 | 1 | 0 | 1 | 0 | 1
 @end docbook
 @end float
 
-@cindex bitwise, complement
+@cindex bitwise complement
 @cindex complement, bitwise
 As you can see, the result of an AND operation is 1 only when @emph{both}
 bits are 1.
@@ -28449,7 +28453,7 @@ both arrays use the values.
 
 @c Document It And Call It A Feature. Sigh.
 @cindex @command{gawk}, @code{IGNORECASE} variable in
-@cindex arrays, sorting, and @code{IGNORECASE} variable
+@cindex arrays, sorting, @code{IGNORECASE} variable and
 @cindex @code{IGNORECASE} variable, array sorting functions and
 Because @code{IGNORECASE} affects string comparisons, the value
 of @code{IGNORECASE} also affects sorting for both @code{asort()} and @code{asorti()}.
@@ -28731,7 +28735,7 @@ driver and not passed through.
 Finally, coprocesses open up the possibility of @dfn{deadlock} between
 @command{gawk} and the program running in the coprocess. This can occur
 if you send ``too much'' data to the coprocess before reading any back;
-each process is blocked writing data with noone available to read what
+each process is blocked writing data with no one available to read what
 they've already written.  There is no workaround for deadlock; careful
 programming and knowledge of the behavior of the coprocess are required.
 @end quotation
@@ -30254,7 +30258,7 @@ functional program that you or someone else wrote).
 @node Debugging Terms
 @subsection Debugging Concepts
 
-@cindex debugger concepts
+@cindex debugger, concepts
 Before diving in to the details, we need to introduce several
 important concepts that apply to just about all debuggers.
 The following list defines terms used throughout the rest of
@@ -30448,7 +30452,7 @@ let's see how we got to where we are.  At the prompt, we type @samp{bt}
 (short for ``backtrace''), and the debugger responds with a
 listing of the current stack frames:
 
-@cindex debugger, show stack frames
+@cindex debugger, stack frames, showing
 @cindex debugger, @code{bt} command
 @cindex debugger, @code{backtrace} command
 @example
@@ -30736,7 +30740,7 @@ it continues executing the program.
 
 @cindex debugger commands, @code{clear}
 @cindex @code{clear} debugger command
-@cindex delete breakpoint at location
+@cindex delete breakpoint, at location
 @cindex breakpoint at location, how to delete
 @item @code{clear} [[@var{filename}@code{:}]@var{n} | @var{function}]
 Without any argument, delete any breakpoint at the next instruction
@@ -30773,7 +30777,7 @@ watchpoint is made unconditional).
 @cindex debugger commands, @code{delete}
 @cindex @code{delete} debugger command
 @cindex @code{d} debugger command (alias for @code{delete})
-@cindex delete breakpoint by number
+@cindex delete breakpoint, by number
 @cindex breakpoint, delete by number
 @item @code{delete} [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 @itemx @code{d} [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
@@ -30872,6 +30876,7 @@ gawk>
 @cindex debugger commands, @code{c} (@code{continue})
 @cindex debugger commands, @code{continue}
 @cindex continue program, in debugger
+@cindex @code{continue} debugger command
 @item @code{continue} [@var{count}]
 @itemx @code{c} [@var{count}]
 Resume program execution. If continued from a breakpoint and @var{count} is
@@ -31212,7 +31217,7 @@ from a file.  The commands are:
 @cindex @code{option} debugger command
 @cindex @code{o} debugger command (alias for @code{option})
 @cindex display debugger options
-@cindex debugger options
+@cindex debugger, options
 @item @code{option} [@var{name}[@code{=}@var{value}]]
 @itemx @code{o} [@var{name}[@code{=}@var{value}]]
 Without an argument, display the available debugger options
@@ -31225,12 +31230,12 @@ The available options are:
 @c asis for docbook
 @table @asis
 @item @code{history_size}
-@cindex debugger history size
+@cindex debugger, history size
 Set the maximum number of lines to keep in the history file
 @file{./.gawk_history}.  The default is 100.
 
 @item @code{listsize}
-@cindex debugger default list amount
+@cindex debugger, default list amount
 Specify the number of lines that @code{list} prints. The default is 15.
 
 @item @code{outfile}
@@ -31240,11 +31245,11 @@ to standard output. An empty string (@code{""}) resets output to
 standard output.
 
 @item @code{prompt}
-@cindex debugger prompt
+@cindex debugger, prompt
 Change the debugger prompt. The default is @samp{@w{gawk> }}.
 
 @item @code{save_history} [@code{on} | @code{off}]
-@cindex debugger history file
+@cindex debugger, history file
 Save command history to file @file{./.gawk_history}.
 The default is @code{on}.
 
@@ -31726,7 +31731,7 @@ the use of arbitrary-precision floating-point calculations.
 @cindex floating-point, numbers@comma{} arbitrary-precision
 @cindex single-precision
 @cindex double-precision
-@cindex arbitrary-precision
+@cindex arbitrary precision
 POSIX @command{awk} uses @dfn{double-precision} floating-point numbers, which
 can hold more digits than @dfn{single-precision} floating-point numbers.
 @command{gawk} has facilities for performing arbitrary-precision
@@ -32667,6 +32672,7 @@ word sizes. See
 
 @cindex MPFR, checking availability of
 @cindex checking for MPFR
+@cindex MPFR, checking for
 Occasionally, you might like to be able to check if @command{gawk}
 was invoked with the @option{-M} option, enabling arbitrary-precision
 arithmetic.  You can do so with the following function, contributed
@@ -33521,6 +33527,7 @@ process and reduces the time needed to create the value.
 @subsection Memory Allocation Functions and Convenience Macros
 @cindex allocating memory for extensions
 @cindex extensions, allocating memory
+@cindex memory, allocating for extensions
 
 The API provides a number of @dfn{memory allocation} functions for
 allocating memory that can be passed to @command{gawk}, as well as a number of
@@ -34913,6 +34920,7 @@ you should release any cached values that you created, using
 @node Array Manipulation
 @subsection Array Manipulation
 @cindex array manipulation in extensions
+@cindex extensions, array manipulation in
 
 The primary data structure@footnote{OK, the only data structure.} in @command{awk}
 is the associative array (@pxref{Arrays}).
@@ -40365,7 +40373,7 @@ flag is required to force Unix-style parsing rather than @code{DCL} parsing.
 If any other dash-type options (or multiple parameters such as @value{DF}s to
 process) are present, there is no ambiguity and @option{--} can be omitted.
 
-@cindex exit status, of VMS
+@cindex exit status, of @command{gawk}, on VMS
 The @code{exit} value is a Unix-style value and is encoded into a VMS exit
 status value when the program exits.
 
