@@ -608,6 +608,9 @@ do_delete(NODE *symbol, int nsubs)
 
 	(void) assoc_remove(symbol, subs);
 	DEREF(subs);
+	if (assoc_empty(symbol))
+		/* last element was removed, so reset array type to null */
+		null_array(symbol);
 
 #undef free_subs
 }

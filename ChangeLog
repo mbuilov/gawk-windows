@@ -1,5 +1,11 @@
 2019-01-06         Andrew J. Schorr      <aschorr@telemetry-investments.com>
 
+	* array.c (do_delete): If the array is now empty, reset it to the
+	null implementation to avoid being locked into the backend
+	optimization previously selected.
+
+2019-01-06         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
 	Remove pointless alength macro/method that uses a needless
 	function call indirection to access the table_size value.
 
