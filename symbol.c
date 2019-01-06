@@ -106,7 +106,7 @@ lookup(const char *name)
 
 	n = NULL;
 	for (i = 0; tables[i] != NULL; i++) {
-		if (tables[i]->table_size == 0)
+		if (assoc_empty(tables[i]))
 			continue;
 
 		if ((do_posix || do_traditional) && tables[i] == global_table)
@@ -644,7 +644,7 @@ check_param_names(void)
 	bool result = true;
 	NODE n;
 
-	if (func_table->table_size == 0)
+	if (assoc_empty(func_table))
 		return result;
 
 	max = func_table->table_size * 2;

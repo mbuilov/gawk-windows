@@ -62,7 +62,6 @@ static void cint_print(NODE *symbol);
 afunc_t cint_array_func[] = {
 	cint_array_init,
 	is_uinteger,
-	null_length,
 	cint_lookup,
 	cint_exists,
 	cint_clear,

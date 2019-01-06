@@ -40,7 +40,6 @@ static NODE **null_dump(NODE *symbol, NODE *subs);
 static afunc_t null_array_func[] = {
 	(afunc_t) 0,
 	(afunc_t) 0,
-	null_length,
 	null_lookup,
 	null_afunc,
 	null_afunc,
@@ -150,15 +149,6 @@ null_lookup(NODE *symbol, NODE *subs)
 	return symbol->alookup(symbol, subs);
 }
 
-/* null_length --- default function for array length interface */
-
-NODE **
-null_length(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
-{
-	static NODE *tmp;
-	tmp = symbol;
-	return & tmp;
-}
 
 /* null_afunc --- default function for array interface */
 

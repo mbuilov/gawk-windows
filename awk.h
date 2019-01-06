@@ -540,29 +540,26 @@ typedef struct exp_node {
 #define xarray		sub.nodep.rn
 #define parent_array	sub.nodep.x.extra
 
-#define ainit		array_funcs[0]
 #define ainit_ind	0
-#define atypeof		array_funcs[1]
+#define ainit		array_funcs[ainit_ind]
 #define atypeof_ind	1
-#define alength		array_funcs[2]
-#define alength_ind	2
-#define alookup 	array_funcs[3]
-#define alookup_ind	3
-#define aexists 	array_funcs[4]
-#define aexists_ind	4
-#define aclear		array_funcs[5]
-#define aclear_ind	5
-#define aremove		array_funcs[6]
-#define aremove_ind	6
-#define alist		array_funcs[7]
-#define alist_ind	7
-#define acopy		array_funcs[8]
-#define acopy_ind	8
-#define adump		array_funcs[9]
-#define adump_ind	9
-#define astore		array_funcs[10]
-#define astore_ind	10
-#define NUM_AFUNCS	11		/* # of entries in array_funcs */
+#define atypeof		array_funcs[atypeof_ind]
+#define alookup_ind	2
+#define alookup 	array_funcs[alookup_ind]
+#define aexists_ind	3
+#define aexists 	array_funcs[aexists_ind]
+#define aclear_ind	4
+#define aclear		array_funcs[aclear_ind]
+#define aremove_ind	5
+#define aremove		array_funcs[aremove_ind]
+#define alist_ind	6
+#define alist		array_funcs[alist_ind]
+#define acopy_ind	7
+#define acopy		array_funcs[acopy_ind]
+#define adump_ind	8
+#define adump		array_funcs[adump_ind]
+#define astore_ind	9
+#define astore		array_funcs[astore_ind]
 
 /* Node_array_ref: */
 #define orig_array lnode
@@ -1343,7 +1340,7 @@ DEREF(NODE *r)
 extern jmp_buf fatal_tag;
 extern int fatal_tag_valid;
 
-#define assoc_length(a)	((*((a)->alength(a, NULL)))->table_size)
+#define assoc_length(a)	((a)->table_size)
 #define assoc_empty(a)	(assoc_length(a) == 0)
 #define assoc_lookup(a, s)	((a)->alookup(a, s))
 
@@ -1376,7 +1373,6 @@ extern const char *make_aname(const NODE *symbol);
 extern const char *array_vname(const NODE *symbol);
 extern void array_init(void);
 extern int register_array_func(afunc_t *afunc);
-extern NODE **null_length(NODE *symbol, NODE *subs);
 extern NODE **null_afunc(NODE *symbol, NODE *subs);
 extern void set_SUBSEP(void);
 extern NODE *concat_exp(int nargs, bool do_subsep);

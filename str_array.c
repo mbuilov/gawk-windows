@@ -59,7 +59,6 @@ static NODE **str_dump(NODE *symbol, NODE *ndump);
 afunc_t str_array_func[] = {
 	str_array_init,
 	(afunc_t) 0,
-	null_length,
 	str_lookup,
 	str_exists,
 	str_clear,
@@ -78,7 +77,6 @@ static NODE **env_clear(NODE *symbol, NODE *subs);
 afunc_t env_array_func[] = {
 	str_array_init,
 	(afunc_t) 0,
-	null_length,
 	str_lookup,
 	str_exists,
 	env_clear,

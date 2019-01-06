@@ -49,7 +49,6 @@ static void grow_int_table(NODE *symbol);
 afunc_t int_array_func[] = {
 	int_array_init,
 	is_integer,
-	null_length,
 	int_lookup,
 	int_exists,
 	int_clear,

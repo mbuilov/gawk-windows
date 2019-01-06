@@ -1179,7 +1179,7 @@ api_flatten_array_typed(awk_ext_id_t id,
 
 	if (   array == NULL
 	    || array->type != Node_var_array
-	    || array->table_size == 0
+	    || assoc_empty(array)
 	    || data == NULL)
 		return awk_false;
 
