@@ -37,7 +37,8 @@ static char indent_char[] = "    ";
 
 static NODE **null_lookup(NODE *symbol, NODE *subs);
 static NODE **null_dump(NODE *symbol, NODE *subs);
-static afunc_t null_array_func[] = {
+static const array_funcs_t null_array_func = {
+	"null",
 	(afunc_t) 0,
 	(afunc_t) 0,
 	null_lookup,
@@ -52,23 +53,20 @@ static afunc_t null_array_func[] = {
 
 #define MAX_ATYPE 10
 
-static afunc_t *array_types[MAX_ATYPE];
+static const array_funcs_t *array_types[MAX_ATYPE];
 static int num_array_types = 0;
-
-/* array func to index mapping */
-#define AFUNC(F) (F ## _ind)
 
 /* register_array_func --- add routines to handle arrays */
 
-int
-register_array_func(afunc_t *afunc)
+static int
+register_array_func(const array_funcs_t *afunc)
 {
 	if (afunc && num_array_types < MAX_ATYPE) {
-		if (afunc != str_array_func && ! afunc[AFUNC(atypeof)])
+		if (afunc != & str_array_func && afunc->type_of == NULL)
 			return false;
 		array_types[num_array_types++] = afunc;
-		if (afunc[AFUNC(ainit)])	/* execute init routine if any */
-			(void) (*afunc[AFUNC(ainit)])(NULL, NULL);
+		if (afunc->init)	/* execute init routine if any */
+			(void) (*afunc->init)(NULL, NULL);
 		return true;
 	}
 	return false;
@@ -80,10 +78,10 @@ register_array_func(afunc_t *afunc)
 void
 array_init()
 {
-	(void) register_array_func(str_array_func);	/* the default */
+	(void) register_array_func(& str_array_func);	/* the default */
 	if (! do_mpfr) {
-		(void) register_array_func(int_array_func);
-		(void) register_array_func(cint_array_func);
+		(void) register_array_func(& int_array_func);
+		(void) register_array_func(& cint_array_func);
 	}
 }
 
@@ -97,7 +95,7 @@ make_array()
 	getnode(array);
 	memset(array, '\0', sizeof(NODE));
 	array->type = Node_var_array;
-	array->array_funcs = null_array_func;
+	array->array_funcs = & null_array_func;
 	/* vname, flags, and parent_array not set here */
 
 	return array;
@@ -110,7 +108,7 @@ void
 null_array(NODE *symbol)
 {
 	symbol->type = Node_var_array;
-	symbol->array_funcs = null_array_func;
+	symbol->array_funcs = & null_array_func;
 	symbol->buckets = NULL;
 	symbol->table_size = symbol->array_size = 0;
 	symbol->array_capacity = 0;
@@ -128,7 +126,7 @@ static NODE **
 null_lookup(NODE *symbol, NODE *subs)
 {
 	int i;
-	afunc_t *afunc = NULL;
+	const array_funcs_t *afunc = NULL;
 
 	assert(symbol->table_size == 0);
 
@@ -138,7 +136,7 @@ null_lookup(NODE *symbol, NODE *subs)
 	 */
 	for (i = num_array_types - 1; i >= 1; i--) {
 		afunc = array_types[i];
-		if (afunc[AFUNC(atypeof)](symbol, subs) != NULL)
+		if (afunc->type_of(symbol, subs) != NULL)
 			break;
 	}
 	if (i == 0 || afunc == NULL)
@@ -1298,7 +1296,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		cmp_func = sort_funcs[qi].comp_func;
 		assoc_kind = sort_funcs[qi].kind;
 
-		if (symbol->array_funcs != cint_array_func)
+		if (symbol->array_funcs != & cint_array_func)
 			assoc_kind &= ~(AASC|ADESC);
 
 		if (sort_ctxt != SORTED_IN || (assoc_kind & AVALUE) != 0) {

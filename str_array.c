@@ -56,7 +56,8 @@ static NODE **str_list(NODE *symbol, NODE *subs);
 static NODE **str_copy(NODE *symbol, NODE *newsymb);
 static NODE **str_dump(NODE *symbol, NODE *ndump);
 
-afunc_t str_array_func[] = {
+const array_funcs_t str_array_func = {
+	"str",
 	str_array_init,
 	(afunc_t) 0,
 	str_lookup,
@@ -74,7 +75,8 @@ static NODE **env_store(NODE *symbol, NODE *subs);
 static NODE **env_clear(NODE *symbol, NODE *subs);
 
 /* special case for ENVIRON */
-afunc_t env_array_func[] = {
+const array_funcs_t env_array_func = {
+	"env",
 	str_array_init,
 	(afunc_t) 0,
 	str_lookup,
@@ -796,7 +798,7 @@ env_clear(NODE *symbol, NODE *subs)
 	environ = NULL;	/* ZAP! */
 
 	/* str_clear zaps the vtable, reset it */
-	symbol->array_funcs = env_array_func;
+	symbol->array_funcs = & env_array_func;
 
 	return val;
 }
@@ -829,5 +831,5 @@ init_env_array(NODE *env_node)
 	if (do_posix)
 		return;
 
-	env_node->array_funcs = env_array_func;
+	env_node->array_funcs = & env_array_func;
 }

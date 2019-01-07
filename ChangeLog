@@ -1,3 +1,40 @@
+2019-01-07         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	Use a struct instead of an array to contain the array methods
+	for improved code clarity and flexibility.
+
+	* awk.h (array_funcs_t): Define new struct to contain the array
+	methods.
+	(NODE): Change type of array_funcs (sub.nodep.l.lp) from `afunc_t *'
+	to `const array_funcs_t *' (from a pointer to an array of function
+	methods to a pointer to a struct containing the methods).
+	(a*_ind): Remove obsolete method array index defines.
+	(a*): Redefine array methods to use struct members instead of 
+	array elements.
+	(str_array_func, cint_array_func, int_array_func): Change type
+	from array of afunc_t to 'const array_funcs_t'.
+	(register_array_func): Remove global declaration, since this function
+	is called only inside array.c.
+	* array.c (null_array_func): Change from array of methods to a struct.
+	(array_types): Now an array of pointers to array_funcs_t.
+	(AFUNC): Remove obsolete macro.
+	(register_array_func): Change scope to static, and change argument
+	to a pointer to array_funcs_t instead of a pointer to an array of
+	methods.
+	(array_init): Modify calls to register_array_func to pass the address
+	of the new array method structs.
+	(make_array): Set array_funcs to & null_array_func.
+	(null_lookup): Modify to use new array method structs.
+	(assoc_list): Update cint check to use & cint_array_func.
+	* str_array.c (str_array_func, env_array_func): Change from array of
+	methods to an array_funcs_t struct.
+	(env_clear, init_env_array): Set array_funcs to & env_array_func.
+	* int_array.c (int_array_func): Change from array of methods to an
+	array_funcs_t struct.
+	* cint_array.c (cint_array_func): Ditto.
+	(cint_lookup): When setting xn->array_funcs, must now use &.
+	(cint_dump): Compare xn->array_funcs to & int_array_func.
+
 2019-01-06         Andrew J. Schorr      <aschorr@telemetry-investments.com>
 
 	* array.c (do_delete): If the array is now empty, reset it to the

@@ -320,6 +320,19 @@ struct exp_instruction;
 
 typedef int (*Func_print)(FILE *, const char *, ...);
 typedef struct exp_node **(*afunc_t)(struct exp_node *, struct exp_node *);
+typedef struct {
+	const char *name;
+	afunc_t init;
+	afunc_t type_of;	/* avoid reserved word typeof */
+	afunc_t lookup;
+	afunc_t exists;
+	afunc_t clear;
+	afunc_t remove;
+	afunc_t list;
+	afunc_t copy;
+	afunc_t dump;
+	afunc_t store;
+} array_funcs_t;
 
 /*
  * NOTE - this struct is a rather kludgey -- it is packed to minimize
@@ -332,7 +345,7 @@ typedef struct exp_node {
 				struct exp_node *lptr;
 				struct exp_instruction *li;
 				long ll;
-				afunc_t *lp;
+				const array_funcs_t *lp;
 			} l;
 			union {
 				struct exp_node *rptr;
@@ -540,26 +553,16 @@ typedef struct exp_node {
 #define xarray		sub.nodep.rn
 #define parent_array	sub.nodep.x.extra
 
-#define ainit_ind	0
-#define ainit		array_funcs[ainit_ind]
-#define atypeof_ind	1
-#define atypeof		array_funcs[atypeof_ind]
-#define alookup_ind	2
-#define alookup 	array_funcs[alookup_ind]
-#define aexists_ind	3
-#define aexists 	array_funcs[aexists_ind]
-#define aclear_ind	4
-#define aclear		array_funcs[aclear_ind]
-#define aremove_ind	5
-#define aremove		array_funcs[aremove_ind]
-#define alist_ind	6
-#define alist		array_funcs[alist_ind]
-#define acopy_ind	7
-#define acopy		array_funcs[acopy_ind]
-#define adump_ind	8
-#define adump		array_funcs[adump_ind]
-#define astore_ind	9
-#define astore		array_funcs[astore_ind]
+#define ainit		array_funcs->init
+#define atypeof		array_funcs->type_of
+#define alookup 	array_funcs->lookup
+#define aexists 	array_funcs->exists
+#define aclear		array_funcs->clear
+#define aremove		array_funcs->remove
+#define alist		array_funcs->list
+#define acopy		array_funcs->copy
+#define adump		array_funcs->dump
+#define astore		array_funcs->store
 
 /* Node_array_ref: */
 #define orig_array lnode
@@ -1114,9 +1117,9 @@ extern NODE *(*format_val)(const char *, int, NODE *);
 extern int (*cmp_numbers)(const NODE *, const NODE *);
 
 /* built-in array types */
-extern afunc_t str_array_func[];
-extern afunc_t cint_array_func[];
-extern afunc_t int_array_func[];
+extern const array_funcs_t str_array_func;
+extern const array_funcs_t cint_array_func;
+extern const array_funcs_t int_array_func;
 
 /* special node used to indicate success in array routines (not NULL) */
 extern NODE *success_node;
@@ -1372,7 +1375,6 @@ extern NODE *force_array(NODE *symbol, bool canfatal);
 extern const char *make_aname(const NODE *symbol);
 extern const char *array_vname(const NODE *symbol);
 extern void array_init(void);
-extern int register_array_func(afunc_t *afunc);
 extern NODE **null_afunc(NODE *symbol, NODE *subs);
 extern void set_SUBSEP(void);
 extern NODE *concat_exp(int nargs, bool do_subsep);

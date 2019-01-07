@@ -46,7 +46,8 @@ static inline NODE **int_find(NODE *symbol, long k, uint32_t hash1);
 static NODE **int_insert(NODE *symbol, long k, uint32_t hash1);
 static void grow_int_table(NODE *symbol);
 
-afunc_t int_array_func[] = {
+const array_funcs_t int_array_func = {
+	"int",
 	int_array_init,
 	is_integer,
 	int_lookup,
