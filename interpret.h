@@ -156,7 +156,10 @@ top:
 				orig = m->stptr;
 				trans = dgettext(TEXTDOMAIN, orig);
 				m->stptr[m->stlen] = save;
-				m = make_string(trans, strlen(trans));
+				if (trans != orig)	// got a translation
+					m = make_string(trans, strlen(trans));
+				else
+					UPREF(m);
 			} else
 				UPREF(m);
 			PUSH(m);
