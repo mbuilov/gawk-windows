@@ -30061,13 +30061,32 @@ msgstr "Like, the scoop is"
 
 @cindex Linux
 @cindex GNU/Linux
+@quotation NOTE
+The following instructions apply to GNU/Linux with the GNU C Library. Be
+aware that the actual steps may change over time, that the following
+description may not be accurate for all GNU/Linux distributions, and
+that things may work entirely differently on other operating systems.
+@end quotation
+
 The next step is to make the directory to hold the binary message object
 file and then to create the @file{guide.mo} file.
-We pretend that our file is to be used in the @code{en_US.UTF-8} locale,
-because we have to use a locale name known to the C @command{gettext} routines.
-The directory layout shown here is standard for GNU @command{gettext} on
-GNU/Linux systems.  Other versions of @command{gettext} may use a different
-layout:
+The directory has the form @file{@var{locale}/LC_MESSAGES}, where
+@var{locale} is a locale name known to the C @command{gettext} routines.
+
+How do we know which locale to use?  It turns out that there are
+three different environment variables used by the C @command{gettext} routines.
+In order, they are @env{$LANGUAGE}, @env{$LC_ALL}, and @env{$LANG}.@footnote{Well,
+sort of. It seems that if @env{$LC_ALL} is set to @samp{C}, then no translations
+are done. Go figure.}
+Thus, we check the value of @env{$LANGUAGE}:
+
+@example
+$ @kbd{echo $LANGUAGE}
+@print{} en_US.UTF-8
+@end example
+
+@noindent
+We next make the directories:
 
 @example
 $ @kbd{mkdir en_US.UTF-8 en_US.UTF-8/LC_MESSAGES}
@@ -30082,8 +30101,8 @@ $ @kbd{mkdir en_US.UTF-8 en_US.UTF-8/LC_MESSAGES}
 @cindex message object files, converting from portable object files
 @cindex files, message object, converting from portable object files
 @cindex @command{msgfmt} utility
-The @command{msgfmt} utility does the conversion from human-readable
-@file{.po} file to machine-readable @file{.mo} file.
+The @command{msgfmt} utility converts the human-readable
+@file{.po} file into a machine-readable @file{.mo} file.
 By default, @command{msgfmt} creates a file named @file{messages}.
 This file must be renamed and placed in the proper directory (using
 the @option{-o} option) so that @command{gawk} can find it:
