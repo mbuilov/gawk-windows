@@ -4997,6 +4997,15 @@ NaN and Infinity values, instead of the special values @command{gawk}
 usually produces, as described in @ref{POSIX Floating Point Problems}.
 This is mainly useful for the included unit tests.
 
+The @code{typeof()} built-in function
+(@pxref{Type Functions})
+takes an optional second array argument that, if present, will be cleared
+and populated with some information about the internal implementation of
+the variable. This can be useful for debugging. At the moment, this
+returns a textual version of the flags for scalar variables, and the
+array back-end implementation type for arrays. This interface is subject
+to change and may not be stable.
+
 @end ignore
 
 @node Invoking Summary

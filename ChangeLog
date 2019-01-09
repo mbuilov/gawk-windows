@@ -1,3 +1,10 @@
+2019-01-09         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* awkgram.y (tokentab): Indicate that typeof may take 2 arguments.
+	(snode): Add support for typeof's optional 2nd array argument.
+	* builtin.c (do_typeof): Add support for optional 2nd array arg,
+	returning flag info for scalars and backend array type for arrays.
+
 2019-01-08         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* interpret.h (r_interpret): For a translatable string, only copy

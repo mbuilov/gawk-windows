@@ -2280,7 +2280,7 @@ static const struct token tokentab[] = {
 {"systime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(0),	do_systime,	0},
 {"tolower",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_tolower,	0},
 {"toupper",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_toupper,	0},
-{"typeof",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_typeof,	0},
+{"typeof",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2), do_typeof,	0},
 {"while",	Op_K_while,	 LEX_WHILE,	BREAK|CONTINUE,	0,	0},
 {"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_xor,	MPF(xor)},
 };
@@ -4569,10 +4569,20 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 			if (arg->nexti == arg->lasti && arg->nexti->opcode == Op_push)
 				arg->nexti->opcode = Op_push_arg;	/* argument may be array */
  		}
-	} else if (r->builtin == do_isarray || r->builtin == do_typeof) {
+	} else if (r->builtin == do_isarray) {
 		arg = subn->nexti;
 		if (arg->nexti == arg->lasti && arg->nexti->opcode == Op_push)
 			arg->nexti->opcode = Op_push_arg_untyped;	/* argument may be untyped */
+	} else if (r->builtin == do_typeof) {
+		arg = subn->nexti;
+		if (arg->nexti == arg->lasti && arg->nexti->opcode == Op_push)
+			arg->nexti->opcode = Op_push_arg_untyped;	/* argument may be untyped */
+		if (nexp == 2) {	/* 2nd argument there */
+			arg = subn->nexti->lasti->nexti;	/* 2nd arg list */
+			ip = arg->lasti;
+			if (ip->opcode == Op_push)
+				ip->opcode = Op_push_array;
+		}
 #ifdef SUPPLY_INTDIV
 	} else if (r->builtin == do_intdiv
 #ifdef HAVE_MPFR

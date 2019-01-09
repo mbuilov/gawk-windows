@@ -4069,13 +4069,28 @@ do_typeof(int nargs)
 	NODE *arg;
 	char *res = NULL;
 	bool deref = true;
+	NODE *dbg;
 
+	if (nargs == 2) {	/* 2nd optional arg for debugging */
+		dbg = POP_PARAM();
+		if (dbg->type != Node_var_array)
+			fatal(_("typeof: second argument is not an array"));
+		assoc_clear(dbg);
+	}
+	else
+		dbg = NULL;
 	arg = POP();
 	switch (arg->type) {
 	case Node_var_array:
 		/* Node_var_array is never UPREF'ed */
 		res = "array";
 		deref = false;
+		if (dbg) {
+			NODE *sub = make_string("array_type", 10);
+			NODE **lhs = assoc_lookup(dbg, sub);
+			unref(*lhs);
+			*lhs = make_string(arg->array_funcs->name, strlen(arg->array_funcs->name));
+		}
 		break;
 	case Node_val:
 		switch (fixtype(arg)->flags & (STRING|NUMBER|USER_INPUT|REGEX)) {
@@ -4103,6 +4118,13 @@ do_typeof(int nargs)
 				res = "unknown";
 			}
 			break;
+		}
+		if (dbg) {
+			const char *s = flags2str(arg->flags);
+			NODE *sub = make_string("flags", 5);
+			NODE **lhs = assoc_lookup(dbg, sub);
+			unref(*lhs);
+			*lhs = make_string(s, strlen(s));
 		}
 		break;
 	case Node_var_new:
