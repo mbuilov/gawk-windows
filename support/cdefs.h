@@ -1,4 +1,4 @@
-/* Copyright (C) 1992-2018 Free Software Foundation, Inc.
+/* Copyright (C) 1992-2019 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -198,7 +198,7 @@
    `__attribute__' syntax.  All of the ways we use this do fine if
    they are omitted for compilers that don't understand it. */
 #if !defined __GNUC__ || __GNUC__ < 2
-# define __attribute__(xyz)	/* Ignore */
+# define __attribute__(arg)	/* Ignore */
 #endif
 
 /* At some point during the gcc 2.96 development the `malloc' attribute

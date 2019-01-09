@@ -3,7 +3,7 @@
 
 /* timegm -- based on Linux timegm man page */
 
-static time_t
+time_t
 timegm(struct tm *tm)
 {
 	time_t ret;
