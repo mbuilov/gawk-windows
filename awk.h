@@ -669,6 +669,7 @@ typedef enum opcodeval {
 	Op_K_getline_redir,
 	Op_K_getline,
 	Op_K_nextfile,
+	Op_K_namespace,
 
 	Op_builtin,
 	Op_sub_builtin,		/* sub, gsub and gensub */
@@ -921,6 +922,9 @@ typedef struct exp_instruction {
 #define condpair_left   d.di
 #define condpair_right  x.xi
 
+/* Op_Rule, Op_Func */
+#define ns_name		d.name
+
 /* Op_store_var */
 #define initval         x.xn
 
@@ -1017,11 +1021,12 @@ typedef struct srcfile {
 	char *lexptr_begin;
 	int lasttok;
 	INSTRUCTION *comment;	/* comment on @load line */
+	const char *namespace;
 } SRCFILE;
 
 // structure for INSTRUCTION pool, needed mainly for debugger
 typedef struct instruction_pool {
-#define MAX_INSTRUCTION_ALLOC	3	// we don't call bcalloc with more than this
+#define MAX_INSTRUCTION_ALLOC	4	// we don't call bcalloc with more than this
 	struct instruction_mem_pool {
 		struct instruction_block *block_list;
 		INSTRUCTION *free_space;	// free location in active block
@@ -1203,6 +1208,10 @@ extern char *deflibpath;
 extern char envsep;
 
 extern char casetable[];	/* for case-independent regexp matching */
+
+extern const char awk_namespace[];	/* "awk" */
+extern const char *current_namespace;
+extern bool namespace_changed;
 
 /* ------------------------- Runtime stack -------------------------------- */
 
@@ -1396,7 +1405,7 @@ extern int parse_program(INSTRUCTION **pcode);
 extern void track_ext_func(const char *name);
 extern void dump_funcs(void);
 extern void dump_vars(const char *fname);
-extern const char *getfname(NODE *(*)(int));
+extern const char *getfname(NODE *(*)(int), bool prepend_awk);
 extern NODE *stopme(int nargs);
 extern void shadow_funcs(void);
 extern int check_special(const char *name);
@@ -1413,6 +1422,7 @@ extern bool is_alnum(int c);
 extern bool is_letter(int c);
 extern bool is_identchar(int c);
 extern NODE *make_regnode(int type, NODE *exp);
+extern bool validate_qualified_name(char *token);
 /* builtin.c */
 extern double double_to_int(double d);
 extern NODE *do_exp(int nargs);
@@ -1503,9 +1513,10 @@ extern NODE *do_ext(int nargs);
 void load_ext(const char *lib_name);	/* temporary */
 extern void close_extensions(void);
 #ifdef DYNAMIC
-extern awk_bool_t make_builtin(const awk_ext_func_t *);
+extern awk_bool_t make_builtin(const char *name_space, const awk_ext_func_t *);
 extern NODE *get_argument(int);
 extern NODE *get_actual_argument(NODE *, int, bool);
+extern bool is_valid_identifier(const char *name);
 #define get_scalar_argument(n, i)  get_actual_argument((n), (i), false)
 #define get_array_argument(n, i)   get_actual_argument((n), (i), true)
 #endif
@@ -1701,7 +1712,7 @@ extern NODE *remove_symbol(NODE *r);
 extern void destroy_symbol(NODE *r);
 extern void release_symbols(NODE *symlist, int keep_globals);
 extern void append_symbol(NODE *r);
-extern NODE *lookup(const char *name);
+extern NODE *lookup(const char *name, bool do_qualify);
 extern NODE *make_params(char **pnames, int pcount);
 extern void install_params(NODE *func);
 extern void remove_params(NODE *func);

@@ -47,7 +47,8 @@
 .ES
 .in +.2i
 .nf
-\*(FRAction Statements	9
+\*(FRAcknowledgements	9
+Action Statements	9
 Arrays	7
 Awk Program Execution	5
 Bit Manipulation Functions (\*(GK)	17
@@ -70,6 +71,7 @@ Input Control	13
 Internationalization (\*(GK)	18
 Lines And Statements	4
 Localization (\*(GK)	12
+Namespaces	12
 Numeric Functions	15
 Output Control	13
 Pattern Elements	8
@@ -88,9 +90,6 @@ Variables	5\*(CX
 .sp .4
 .TD
 .fi
-\*(CD\*(FRArnold Robbins wrote this reference card.
-We thank
-Brian Kernighan and Michael Brennan who reviewed it.
 .sp .4
 .SL
 .sp .4
@@ -446,7 +445,9 @@ and optional function definitions.
 .sp .5
 	\*(CB\*(FC@include "\*(FIfilename\*(FC"
 .br
-	\*(FC@load "\*(FIfilename\*(FC"\*(CD
+	\*(FC@load "\*(FIfilename\*(FC"
+.br
+	\*(FC@namespace "\*(FInamespace\*(FC"\*(CD
 .br
 	\*(FIpattern\*(FC	{ \*(FIaction statements\*(FC }\*(FR
 .br
@@ -523,7 +524,7 @@ T}
 \*(CL\*(FCBINMODE\fP	T{
 Controls ``binary'' mode for all file I/O.  Values of 1, 2, or 3,
 indicate input, output, or all files, respectively, should use binary
-I/O.  \*(CR(Not \*(NK.)  \*(CLApplies only to non-POSIX systems.
+I/O.  \*(CR(Not \*(NK.)  \*(CLOnly for non-POSIX systems.
 \*(CBFor \*(GK, string values of \*(FC"r"\fP, or \*(FC"w"\fP specify
 that input files, or output files, respectively, should use binary I/O.
 Use \*(FC"rw"\fP or \*(FC"wr"\fP for all files.\*(CX
@@ -967,6 +968,14 @@ lp8 lp8 lp8 lp8.
 \*(FC\e"\fP~double quote~\*(FC\e/\fP~forward slash\*(CX
 .TE
 .EB "\s+2\f(HBESCAPE SEQUENCES\*(FR\s0"
+.sp
+.\" --- Acknowledgements
+.ES
+.fi
+\*(CD\*(FRArnold Robbins wrote this reference card.
+We thank
+Brian Kernighan and Michael Brennan who reviewed it.\*(CX
+.EB "\s+2\f(HBACKNOWLEDGMENTS\*(FR\s0"
 .BT
 
 .\" --- Records
@@ -1276,6 +1285,26 @@ Usable only with the \*(FC|&\*(FR two-way I/O operator.
 Similar, but use UDP/IP instead of TCP/IP.\*(CL
 .in -.2i
 .EB "\s+2\f(HBSPECIAL FILENAMES\*(FR\s0"
+.sp .5
+.\" --- Namespaces
+.ES
+.fi
+\*(CDA
+\*(FIqualified name\fP
+consists of a two simple identifiers joined by a double colon
+(\*(FC::\fP).
+The left identifier is the namespace and the right one
+is the variable within it.
+All non-qualified names are treated as if in the
+``current'' namespace; the default namespace is \*(FCawk\fP.
+However, simple identifiers consisting solely of upper-case
+letters are forced into the
+\*(FCawk\fP
+namespace.
+You change the current namespace with an
+\*(FC@namespace "\*(FIname\^\*(FC"\*(FR
+directive.\*(CB
+.EB "\s+2\f(HBNAMESPACES\*(FR\s0"
 
 .BT
 

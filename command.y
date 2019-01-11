@@ -471,7 +471,7 @@ func_name
 	: D_STRING
 	  {
 		NODE *n;
-		n = lookup($1->a_string);
+		n = lookup($1->a_string, true);
 		if (n == NULL || n->type != Node_func)
 			yyerror(_("no such function - \"%s\""), $1->a_string);
 		else {

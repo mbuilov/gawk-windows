@@ -80,6 +80,26 @@
 	check for an empty array instead of comparing table_size to 0.
 	* symbol.c (lookup, check_param_names): Ditto.
 
+2018-12-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Clean up namespace handling for the profiler.
+
+	* awkgram.y (make_pp_namespace): Remove function, not needed.
+	(set_namespace): Use estrdup to save the current namespace.
+	* main.c (main): Before dumping the program, set current_namespace
+	to awk_namespace.
+	* profile.c (pprint): Use "awk" for comparison, not "awk::".
+	(pp_namespace): Just print the name in the @namespace line.
+	(adjust_namespace): Adjust for the fact that namespaces no longer
+	have the trailing "::".
+
+2018-12-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (check_qualified_name): Remove declaration.
+	* awkgram.y (check_qualified_special): Renamed from
+	check_qualified_name and made static.
+	* profile.c (pprint): Improve comment on namespace list.
+
 2018-12-21         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Remove -O only if .developing has 'debug' in it.
@@ -104,11 +124,40 @@
 	* protos.h (timegm): Add timegm proto on systems lacking it.
 	* replace.c (timegm): Include missing_d/timegm.c if needed.
 
+2018-12-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* NEWS: Updated some.
+
+2018-12-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h: Add new Op_K_namespace opcode for pretty printing.
+	* awkgram.y (namespace_chain): New variable, list of successive
+	@namespace directives seen, for the pretty printer.
+	(namespace_comment): Removed.
+	(set_namespace): Takes comment as second argument, builds the chain.
+	(mk_function, append_rule): Adjust to store the chain.
+	* debug.c (print_ns_list): New function.
+	(print_instruction): Adjust Op_rule and Op_func to use print_ns_list.
+	Add case for Op_K_namespace.
+	* eval.c (optable): Add entry for Op_K_namespace.
+	(opcode2str, op2str): Edit / add leading comments, respectively.
+	* profile.c (pp_namespace_list): New function.
+	(pprint): Adjust code to call pp_namespace_list.
+
 2018-12-06         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Add -ggdb3 to CFLAGS if developing and remove
 	-O2 from Makefile, extension/Makefile, and support/Makefile.
 	* config.guess, config.sub: Updated from GNULIB.
+
+2018-12-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (namespace_comment): New variable.
+	(Grammar): Handle comments after @namespace statements.
+	(mk_function): Add any comment onto the saved namespace.
+	(append_rule): Ditto.
+	* profile.c (pp_namespace): Add second argument for a comment.
+	Adjust all calls.
 
 2018-12-02         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -1092,6 +1141,69 @@
 	* awk.h: Add DJGPP in #if for include of nonposix.h
 	* nonposix.h (btowc, putwc): Add declarations for DJGPP.
 
+2017-07-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (validate_qualified_name): Return type back to bool.
+	* awkgram.y (validate_qualified_name): Return type back to bool.
+	(lookup_builtin): Make allowances for `awk::' prefix on name.
+	* interpret.h (r_interpret): For indirect call, always pass true
+	for do_qualify argument of lookup.
+	* main.c (main): Make note of errors in -v values, use this
+	to exit failure if any happen.  Only change current_namespace
+	to 'awk::' if doing pretty printing.
+	(arg_assign): If validate_qualified name returns false, error out.
+
+2017-07-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (set_namespace): Change return type void, adjust
+	all return statements.
+	[@namespace]: Don't YYABORT on bad namespace so that we can check
+	the rest of the program.
+	(validate_qualified_name): Check traditional / posix first. Return
+	after printing an error message; we don't want to print multiple
+	messages for the same identifer.
+	* interpret.h (r_interpret): For indirect call, set do_qualify
+	parameter of lookup based on presence of a colon.
+
+2017-07-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Make qualified names work with -v and command-line assignments.
+
+	* awk.h (validate_qualified_name, check_qualified_name): Declare.
+	* awkgram.y (validate_qualified_name): No longer static.
+	(check_qualified_name): Ditto.
+	* main.c (arg_assign): Allow colons in identifiers. If not a
+	bad identifier, call validate_qualified_name and instead of
+	check_special use check_qualified_name.
+
+2017-07-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Allow identifiers that are gawk extensions to be used as plain
+	identifiers outside the "awk" namespace. Make the real
+	builtins available via awk::builtin_name(). Standard awk reserved
+	words and builtin functions remain reserved.
+
+	* awk.h (getfname): Add boolean parameter to prepend namespace
+	or not.
+	* awkgram.y (check_qualified_name): New function. Enforces that
+	standard awk reserved words and functions aren't allowed, and
+	allows awk::gawk_extension from non-"awk" namespace.
+	[direct_func_call]: Always convert name to fully qualified.
+	(getfname): Add boolean parameter to prepend namespace
+	or not. Adjust code.
+	(yylex): Separate out validation code from code building the
+	NAME token.  Use check_qualified_name to decide if token is
+	special instead of check_special.
+	(validate_qualified_name): Just checks the form of the fully
+	qualified name.
+	* debug.c (print_instruction): Update call to getfname.
+	* profile.c (pprint): Update call to getfname.
+
+2017-07-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y [direct_func_call]: Save full variable name for
+	indirect calls too.
+
 2017-07-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y [non_post_simp_exp]: Merge LEX_BUILTIN and
@@ -1111,6 +1223,42 @@
 	in the C locale.
 
 	* re.c (research): Don't use dfa if need_start is true.
+
+2017-07-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	More rationalization of the namespace code.
+
+	* awk.h (is_valid_identifier): Declare.
+	* awkgram.y (grammar: direct_func_call): Store the fully qualified
+	name in the op code.
+	(yylex): Disallow reserved words and functions as namespace name.
+	(check_params): Small code edit
+	(validate_qualified_name): Use is_lsetter.
+	(set_namespace): Check for NULL pointer first! Use is_valid_identifier
+	instead of inline code.  Disallow using reserved words as namespace
+	names.
+	* ext.c (is_valid_identifier): No longer static.
+	(make_builtin): Check name and namespace against reserved words and
+	fatal error if found.
+	* gawkapi.c (ns_lookup): New function to look for variables
+	in namespaces.
+	(api_sym_lookup): Check namespace for validity and use ns_lookup.
+	(api_sym_update): Ditto.
+	* profile.c (pp_print): Correctly print full function name
+	in a function call.
+
+2017-07-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Continue adding namespace support to the extension API.
+
+	* awk.h (make_builtin): Add leading name_space parameter.
+	* ext.c (make_builtin): Add leading name_space parameter.
+	Do the appropriate checking and building of a name before
+	installing in the symbol table.
+	* gawkapi.c (add_ext_func): Use name_space, not namespace.
+	Check that the parameter isn't NULL.
+	(api_sym_lookup, api_sym_update): Use name_space, not namespace.
+	* gawkapi.h: Use name_space, not namespace, everywhere.
 
 2017-07-11         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -1138,12 +1286,74 @@
 
 2017-07-07         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* awkgram.y (yyerror): Produce better diagnostics for source
+	files that are not whole syntactic units.
+
+	* gawkapi.c (api_sym_lookup, api_sym_update): Add namespace parameter.
+	Currently unused.
+	* gawkapi.h (api_sym_lookup, api_sym_update): Add namespace parameter.
+	(api_sym_lookup_ns, api_sym_update_ns): New macros.
+	(api_sym_lookup, api_sym_update): Adjust macro bodies.
+
+2017-07-07         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* gawapi.h: Bring descriptive comments up to date, minor edits.
 	* io.c: Add some initial comments to functions where they were missing.
 
 2017-07-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkapi.h, gawkapi.c: Typo fixes in comments.
+
+2017-07-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* symbol.c (install): Don't call fix_up_namespace if
+	installing parameters.
+	* profile.c (remove_namespace): Renamed to
+	(adjust_namespace): Make smarter and add boolean parameter for
+	if return was mallc'ed. Adjust calls.
+
+2017-06-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add namespace info into Op_Rule and Op_Func.
+	Fix memory management problem.
+	The changes temporarily break the test suite.
+
+	* awk.h (MAX_INSTRUCTION_ALLOC): Increase to 4.
+	(Op_K_namespace): Remove, not needed.
+	* eval.c (optypetab): Remove Op_K_namespace.
+	* awkgram.y (make_pp_namespace): New function.
+	(yylex): For BEGIN etc, allocate 4 in the instruction.
+	(install_func): Save namespace name for Op_rule.
+	(append_rule): Save namespace name for Op_rule.
+	* debug.c (print_instruction): Print namespace for Op_rule, Op_func.
+	Remove Op_K_namespace.
+	* profile.c (pp_namespace, remove_namespace): New functions.
+	(pprint): Call `pp_namespace'. Use `remove_namespace' on variable
+	names.
+	(pp_func): Ditto on both.
+	* symbol.c (lookup): Initialize `malloced' to false.
+	(install): Ditto.
+
+	Unbreak the test suite:
+
+	* awk.h (namespace_changed): Declare new boolean variable.
+	* awkgram.y (namespace_changed): Define new boolean variable.
+	(set_namespace): Set it to true when the namespace is changed.
+	* main.c (main): Set current_namespace to "awk::" for the pretty
+	printer.
+	* profile.c (pp_namespace): If namespace_changed is false, return.
+
+2017-06-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h [ns_name]: Add macro in preparation for use.
+	* debug.c (print_instruction): Add case for Op_K_namespace.
+	Not really used yet.
+	* symbol.c (fix_up_namespace): Bug fix to always allocate
+	memory for a full name. Add boolean parameter to indicate
+	if memory was malloc'ed or not.
+	(lookup): Adjust call to fix_up_namespace and use make_str_node
+	if the string was malloced.
+	(install): Ditto.
 
 2017-06-26         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -1203,6 +1413,62 @@
 	the string. Thanks to Hermann Peifer for the bug report.
 	* config.guess, config.sub: Update to latest from GNULIB.
 	* gettext.h: Pull in a few nice changes from GNULIB version.
+
+2017-06-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (lookup): Add second parameter.
+	* array.c (assoc_list): Adjust call to lookup.
+	* awkgram.y (grammar, parms_shadow, install_function, variable):
+	Ditto.
+	* command.y [Grammar]: Ditto.
+	* debug.c (find_symbol): Ditto.
+	* ext.c (make_builtin): Ditto.
+	* gawkapi.c (api_sym_lookup, api_sym_update): Ditto.
+	* interpret.h (r_interpret): Ditto.
+	* main.c (arg_assign): Ditto.
+	(main): Reset current_namespace after parsing.
+	* symbol.c (lookup): New second parameter, do_qualify. Use it
+	to qualify names or not.
+	(install): Call fix_up_namespace.
+	(is_all_upper): New helper routine.
+	(fix_up_namespace): New function.
+
+2017-06-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (awk_namespace, current_namespace): Move to const char.
+	(SRCFILE): Add namespace element.
+	* awkgram.y (awk_namespace, current_namespace): Move to const char.
+	(set_namespace): New function.
+	[Grammer]: Call it.
+	(tokentab): Add "namespace" entry.
+	(include_source): Push the current namespace.
+	(next_sourcefile): Pop the current namespace.
+	(yylex): Add lint warning if a reserved word is used as a namespace
+	name.
+	(validate_qualified_name): Make it an error to use a reserved
+	word as the second part of a fully qualified name.
+
+2017-06-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (awk_namespace, current_namespace): Declare.
+	(opcodeval): Add Op_K_namespace.
+	* awkgram.y (awk_namespace, current_namespace): Define.
+	(LEX_NAMESPACE): Add lexing and parsing of `@namespace directive'.
+	(tokentab): Add "namespace" entry.
+	(yylex): Check if first part of qualified identifier is
+	a reserved word or function.
+	* eval.c (optypetab): Add Op_K_namespace.
+
+2017-06-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (yylex): Allow :: in identifiers (the "NAME" token).
+	Use validate_qualified_name to check it.
+	(validate_qualified_name): New function.
+
+2017-05-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (nextc): Force -e chunks to be syntactic units.
+	Needed for namespaces to work correctly.
 
 2017-05-30         Arnold D. Robbins     <arnold@skeeve.com>
 

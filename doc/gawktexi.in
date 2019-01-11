@@ -454,6 +454,7 @@ particular records in a file and perform operations upon them.
 * Internationalization::           Getting @command{gawk} to speak your
                                    language.
 * Debugger::                       The @command{gawk} debugger.
+* Namespaces::                     How namespaces work in @command{gawk}.
 * Arbitrary Precision Arithmetic:: Arbitrary precision arithmetic with
                                    @command{gawk}.
 * Dynamic Extensions::             Adding new built-in functions to
@@ -889,6 +890,15 @@ particular records in a file and perform operations upon them.
 * Readline Support::                    Readline support.
 * Limitations::                         Limitations and future plans.
 * Debugging Summary::                   Debugging summary.
+* Global Namespace::                    The global namespace in standard @command{awk}.
+* Qualified Names::                     How to qualify names with a namespace.
+* Default Namespace::                   The default namespace.
+* Changing The Namespace::              How to change the namespace.
+* Naming Rules::                        Namespace and Component Naming Rules.
+* Internal Name Management::            How names are stored internally.
+* Namespace Example::                   An example of code using a namespace.
+* Namespace And Features::              Namespaces and other @command{gawk} features.
+* Namespace Summary::                   Summarizing namespaces.
 * Computer Arithmetic::                 A quick intro to computer math.
 * Math Definitions::                    Defining terms used.
 * MPFR features::                       The MPFR features in @command{gawk}.
@@ -1681,6 +1691,10 @@ messages into different languages at runtime.
 
 @item
 @ref{Debugger}, describes the @command{gawk} debugger.
+
+@item
+@ref{Namespaces}, describes how @command{gawk} allows variables and/or
+functions of the same name to be in different namespaces.
 
 @item
 @ref{Arbitrary Precision Arithmetic},
@@ -3736,6 +3750,9 @@ This option may be given multiple times; the @command{awk}
 program consists of the concatenation of the contents of
 each specified @var{source-file}.
 
+Files named with @option{-i} are treated as if they had @samp{@@namespace "awk"}
+at their beginning. @xref{Changing The Namespace}, for more information.
+
 @item -v @var{var}=@var{val}
 @itemx --assign @var{var}=@var{val}
 @cindex @option{-v} option
@@ -3881,8 +3898,9 @@ a newline character (even if it doesn't). This makes building
 the total program easier.
 
 @quotation CAUTION
-At the moment, there is no requirement that each @var{program-text}
-be a full syntactic unit. I.e., the following currently works:
+Prior to @value{PVERSION} 5.0, there was
+no requirement that each @var{program-text}
+be a full syntactic unit. I.e., the following worked:
 
 @example
 $ @kbd{gawk -e 'BEGIN @{ a = 5 ;' -e 'print a @}'}
@@ -3890,8 +3908,12 @@ $ @kbd{gawk -e 'BEGIN @{ a = 5 ;' -e 'print a @}'}
 @end example
 
 @noindent
-However, this could change in the future, so it's not a
-good idea to rely upon this feature.
+However, this is no longer true. If you have any scripts that
+rely upon this feature, you should revise them.
+
+This is because each @var{program-text} is treated as if it had
+@samp{@@namespace "awk"} at its beginning. @xref{Changing The Namespace},
+for more information.
 @end quotation
 
 @item @option{-E} @var{file}
@@ -3969,6 +3991,9 @@ Second, because this option is intended to be used with code libraries,
 input.  Thus, after processing an @option{-i} argument, @command{gawk}
 still expects to find the main source code via the @option{-f} option
 or on the command line.
+
+Files named with @option{-i} are treated as if they had @samp{@@namespace "awk"}
+at their beginning.  @xref{Changing The Namespace}, for more information.
 
 @item @option{-l} @var{ext}
 @itemx @option{--load} @var{ext}
@@ -4756,6 +4781,10 @@ to be run from web pages.
 
 The rules for finding a source file described in @ref{AWKPATH Variable} also
 apply to files loaded with @code{@@include}.
+
+Finally, files included with @code{@@include}
+are treated as if they had @samp{@@namespace "awk"}
+at their beginning.  @xref{Changing The Namespace}, for more information.
 
 @node Loading Shared Libraries
 @section Loading Dynamic Extensions into Your Program
@@ -20866,6 +20895,11 @@ The conventions presented in this @value{SECTION} are exactly
 that: conventions. You are not required to write your programs this
 way---we merely recommend that you do so.
 
+Beginning with @value{PVERSION} 5.0, @command{gawk} provides
+a powerful mechanism for solving the problems described in this
+section: @dfn{namespaces}.  Namespaces and their use are described
+in detail in @ref{Namespaces}.
+
 @node General Functions
 @section General Programming
 
@@ -24734,12 +24768,9 @@ END @{
 @c endfile
 @end example
 
-@c FIXME: Include this?
-@ignore
-This program does not follow our recommended convention of naming
+As a side note, this program does not follow our recommended convention of naming
 global variables with a leading capital letter.  Doing that would
 make the program a little easier to follow.
-@end ignore
 
 @ifset FOR_PRINT
 The logic for choosing which lines to print represents a @dfn{state
@@ -26964,6 +26995,9 @@ Part III focuses on features specific to @command{gawk}.
 It contains the following chapters:
 
 @itemize @value{BULLET}
+@item
+@ref{Namespaces}
+
 @item
 @ref{Advanced Features}
 
@@ -30696,6 +30730,447 @@ program being debugged, but occasionally it can.
 
 @end itemize
 
+@hyphenation{name-space name-spaces Name-space Name-spaces}
+@node Namespaces
+@chapter Namespaces in @command{gawk}
+
+This @value{CHAPTER} describes a feature that is specific to @command{gawk}.
+
+@menu
+* Global Namespace::            The global namespace in standard @command{awk}.
+* Qualified Names::             How to qualify names with a namespace.
+* Default Namespace::           The default namespace.
+* Changing The Namespace::      How to change the namespace.
+* Naming Rules::                Namespace and Component Naming Rules.
+* Internal Name Management::    How names are stored internally.
+* Namespace Example::           An example of code using a namespace.
+* Namespace And Features::      Namespaces and other @command{gawk} features.
+* Namespace Summary::           Summarizing namespaces.
+@end menu
+
+@node Global Namespace
+@section Standard @command{awk}'s Single Namespace
+
+@cindex namespace, definition of
+@cindex namespace, standard @command{awk}, global
+In standard @command{awk}, there is a single, global, @dfn{namespace}.
+This means that @emph{all} function names and global variable names must
+be unique. For example, two different @command{awk} source files cannot
+both define a function named @code{min()}, or define the same identifier,
+used as a scalar in one and as an array in the other.
+
+This situation is okay when programs are small, say a few hundred
+lines, or even a few thousand, but it prevents the development of
+reusable libraries of @command{awk} functions, and can inadvertently
+cause independently-developed library files to accidentally step on each
+other's ``private'' global variables
+(@pxref{Library Names}).
+
+@cindex package, definition of
+@cindex module, definition of
+Most other programming languages solve this issue by providing some kind
+of namespace control: a way to say ``this function is in namespace @var{xxx},
+and that function is in namespace @var{yyy}.''  (Of course, there is then
+still a single namespace for the namespaces, but the hope is that there
+are much fewer namespaces in use by any given program, and thus much
+less chance for collisions.)  These facilities are sometimes referred
+to as @dfn{packages} or @dfn{modules}.
+
+Starting with @value{PVERSION} 5.0, @command{gawk} provides a
+simple mechanism to put functions and global variables into separate namespaces.
+
+@node Qualified Names
+@section Qualified Names
+
+@cindex qualified name, definition of
+@cindex namespaces, qualified names
+@cindex @code{::}, namespace separator
+@cindex component name
+A @dfn{qualified name} is an identifier that includes a namespace name,
+the namespace separator @code{::}, and a @dfn{component} name.  For example, one
+might have a function named @code{posix::getpid()}.  Here, the namespace
+is @code{posix} and the function name within the namespace (the component)
+is @code{getpid()}.  The namespace and component names are separated by
+a double-colon.  Only one such separator is allowed in a qualified name.
+
+@quotation NOTE
+Unlike C++, the @code{::} is @emph{not} an operator.  No spaces are
+allowed between the namespace name, the @code{::}, and the component name.
+@end quotation
+
+@cindex qualified name, use of
+You must use qualified names from one namespace to access variables
+and functions in another.  This is especially important when using
+variable names to index the special @code{SYMTAB} array (@pxref{Auto-set}),
+and when making indirect function calls (@pxref{Indirect Calls}).
+
+@node Default Namespace
+@section The Default Namespace
+
+@cindex namespace, default
+@cindex namespace, @code{awk}
+@cindex @code{awk} namespace
+The default namespace, not surprisingly, is @code{awk}.
+All of the predefined @command{awk} and @command{gawk} variables
+are in this namespace, and thus have qualified names like
+@code{awk::ARGC}, @code{awk::NF}, and so on.
+
+@cindex uppercase names, namespace for
+Furthermore, even when you have changed the namespace for your
+current source file (@pxref{Changing The Namespace}), @command{gawk}
+forces unqualified identifiers whose names are all uppercase letters
+to be in the @code{awk} namespace.  This makes it possible for you to easily
+reference @command{gawk}'s global variables from different namespaces.
+It also keeps your code looking natural.
+
+@node Changing The Namespace
+@section Changing The Namespace
+
+@cindex namespaces, changing
+@cindex @code{@@namespace} directive
+In order to set the current namespace, use an @code{@@namespace} directive
+at the top level of your program:
+
+@example
+@@namespace "passwd"
+
+BEGIN @{ @dots{} @}
+@dots{}
+@end example
+
+After this directive, all simple non-completely-uppercase identifiers are
+placed into the @code{passwd} namespace.
+
+You can change the namespace multiple times within a single
+source file, although this is likely to become confusing if you
+do it too much.
+
+@quotation NOTE
+Association of unqualified identifiers to a namespace is handled while
+@command{gawk} parses your program, @emph{before} it starts to run.  There is
+no concept of a ``current'' namespace once your program starts executing.
+Be sure you understand this.
+@end quotation
+
+@cindex namespace, implicit
+@cindex implicit namespace
+Each source file for @option{-i} and @option{-f} starts out with
+an implicit @samp{@@namespace "awk"}.  Similarly, each chunk of
+command-line code supplied with @option{-e} has such an implicit
+initial statement (@pxref{Options}).
+
+@cindex current namespace, pushing and popping
+@cindex namespace, pushing and popping
+Files included with @code{@@include} (@pxref{Include Files}) ``push''
+and ``pop'' the current namespace. That is, each @code{@@include} saves
+the current namespace and starts over with an implicit @samp{@@namespace
+"awk"} which remains in effect until an explicit @code{@@namespace}
+directive is seen.  When @command{gawk} finishes processing the included
+file, the saved namespace is restored and processing continues where it
+left off in the original file.
+
+@cindex @code{@@namespace}, no effect on @code{BEGIN} @code{BEGINFILE}, @code{END}, and @code{ENDFILE}
+@cindex @code{BEGIN}, execution order not affected by @code{@@namespace}
+@cindex @code{BEGINFILE}, execution order not affected by @code{@@namespace}
+@cindex @code{END}, execution order not affected by @code{@@namespace}
+@cindex @code{ENDFILE}, execution order not affected by @code{@@namespace}
+The use of @code{@@namespace} has no influence upon the order of execution
+of @code{BEGIN}, @code{BEGINFILE}, @code{END}, and @code{ENDFILE} rules.
+
+@node Naming Rules
+@section Namespace and Component Naming Rules
+
+@cindex naming rules, namespaces and component names
+@cindex namespace names, naming rules
+@cindex component names, naming rules
+A number of rules apply to the namespace and component names, as follows.
+
+@itemize @bullet
+@item
+It is a syntax error to use qualified names for function parameter names.
+
+@item
+It is a syntax error to use any standard @command{awk} reserved word (such
+as @code{if} or @code{for}), or the name of any standard built-in function
+(such as @code{sin()} or @code{gsub()}) as either part of a qualified name.
+Thus, the following produces a syntax error:
+
+@example
+@@namespace "example"
+
+function gsub(str, pat, result) @{ @dots{} @}
+@end example
+
+@item
+Outside the @code{awk} namespace, the names of the additional @command{gawk}
+built-in functions (such as @code{gensub()} or @code{strftime()}) @emph{may}
+be used as component names.  The same set of names may be used as namespace
+names, although this has the potential to be confusing.
+
+@item
+The additional @command{gawk} built-in functions may still be called
+from outside the @code{awk} namespace by qualifying them. For example,
+@code{awk::systime()}.  Here is a somewhat silly example demonstrating
+this rule and the previous one:
+
+@example
+BEGIN @{
+    print "in awk namespace, systime() =", systime()
+@}
+
+@@namespace "testing"
+
+function systime()
+@{
+    print "in testing namespace, systime() =", awk::systime()
+@}
+
+BEGIN @{
+    systime()
+@}
+@end example
+
+@noindent
+
+When run, it produces output like this:
+
+@example
+$ @kbd{gawk -f systime.awk}
+@print{} in awk namespace, systime() = 1500488503
+@print{} in testing namespace, systime() = 1500488503
+@end example
+
+@item
+@command{gawk} pre-defined variable names may be used:
+@code{NF::NR} is valid, if possibly not all that useful.
+@end itemize
+
+@node Internal Name Management
+@section Internal Name Management
+
+@cindex name management
+@cindex @code{awk} namespace, identifier name storage
+@cindex @code{awk} namespace, use for indirect function calls
+For backwards compatibility, all identifiers in the @code{awk} namespace
+are stored internally as unadorned identifiers (that is, without a
+leading @samp{awk::}).  This is mainly relevant
+when using such identifiers as indices for @code{SYMTAB}, @code{FUNCTAB},
+and @code{PROCINFO["identifiers"]} (@pxref{Auto-set}), and for use in
+indirect function calls (@pxref{Indirect Calls}).
+
+In program code, to refer to variables and functions in the @code{awk}
+namespace from another namespace, you must still use the @samp{awk::}
+prefix. For example:
+
+@example
+@@namespace "awk"          @ii{This is the default namespace}
+
+BEGIN @{
+    Title = "My Report"   @ii{Qualified name is} awk::Title
+@}
+
+@@namespace "report"       @ii{Now in} report @ii{namespace}
+
+function compute()        @ii{This is really} report::compute()
+@{
+    print awk::Title      @ii{But would be} SYMTAB["Title"]
+    @dots{}
+@}
+@end example
+
+@node Namespace Example
+@section Namespace Example
+
+@cindex namespace, example code
+The following example is a revised version of the suite of routines
+developed in @ref{Passwd Functions}. See there for an explanation
+of how the code works.
+
+The formulation here, due mainly to Andrew Schorr, is rather elegant.
+All of the implementation functions and variables are in the
+@code{passwd} namespace, whereas the main interface functions are
+defined in the @code{awk} namespace.
+
+@example
+@c file eg/lib/ns_passwd.awk
+# ns_passwd.awk --- access password file information
+@c endfile
+@ignore
+@c file eg/lib/ns_passwd.awk
+#
+# Arnold Robbins, arnold@@skeeve.com, Public Domain
+# May 1993
+# Revised October 2000
+# Revised December 2010
+#
+# Reworked for namespaces June 2017, with help from
+# Andrew J.@: Schorr, aschorr@@telemetry-investments.com
+@c endfile
+@end ignore
+@c file eg/lib/ns_passwd.awk
+
+@@namespace "passwd"
+
+BEGIN @{
+    # tailor this to suit your system
+    Awklib = "/usr/local/libexec/awk/"
+@}
+
+function Init(    oldfs, oldrs, olddol0, pwcat, using_fw, using_fpat)
+@{
+    if (Inited)
+        return
+
+    oldfs = FS
+    oldrs = RS
+    olddol0 = $0
+    using_fw = (PROCINFO["FS"] == "FIELDWIDTHS")
+    using_fpat = (PROCINFO["FS"] == "FPAT")
+    FS = ":"
+    RS = "\n"
+
+    pwcat = Awklib "pwcat"
+    while ((pwcat | getline) > 0) @{
+        Byname[$1] = $0
+        Byuid[$3] = $0
+        Bycount[++Total] = $0
+    @}
+    close(pwcat)
+    Count = 0
+    Inited = 1
+    FS = oldfs
+    if (using_fw)
+        FIELDWIDTHS = FIELDWIDTHS
+    else if (using_fpat)
+        FPAT = FPAT
+    RS = oldrs
+    $0 = olddol0
+@}
+
+function awk::getpwnam(name)
+@{
+    Init()
+    return Byname[name]
+@}
+
+function awk::getpwuid(uid)
+@{
+    Init()
+    return Byuid[uid]
+@}
+
+function awk::getpwent()
+@{
+    Init()
+    if (Count < Total)
+        return Bycount[++Count]
+    return ""
+@}
+
+function awk::endpwent()
+@{
+    Count = 0
+@}
+@c endfile
+@end example
+
+As you can see, this version also follows the convention mentioned in
+@ref{Library Names}, whereby global variable and function names
+start with a capital letter.
+
+Here is a simple test program. Since it's in a separate file, unadorned
+identifiers are sought for in the @code{awk} namespace:
+
+@example
+BEGIN @{
+    while ((p = getpwent()) != "")
+        print p
+@}
+@end example
+
+@noindent
+
+Here's what happens when it's run:
+
+@example
+$ @kbd{gawk -f ns_passwd.awk -f testpasswd.awk}
+@print{} root:x:0:0:root:/root:/bin/bash
+@print{} daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+@print{} bin:x:2:2:bin:/bin:/usr/sbin/nologin
+@print{} sys:x:3:3:sys:/dev:/usr/sbin/nologin
+@dots{}
+@end example
+
+@node Namespace And Features
+@section Namespaces and Other @command{gawk} Features
+
+This @value{SECTION} looks briefly at how the namespace facility interacts
+with other important @command{gawk} features.
+
+@cindex namespaces, interaction with profiler
+@cindex namespaces, interaction with pretty printer
+@cindex profiler, interaction with namespaces
+@cindex pretty printer, interaction with namespaces
+The profiler and pretty-printer (@pxref{Profiling}) have been enhanced
+to understand namespaces and the namespace naming rules presented in
+@ref{Naming Rules}.  In particular, the output groups functions in the same
+namespace together, and has @code{@@namespace} directives in front
+of rules as necessary. This allows component names to be
+simple identifiers, instead of using qualified identifiers everywhere.
+
+@cindex namespaces, interaction with debugger
+@cindex debugger, interaction with namespaces
+Interaction with the debugger (@pxref{Debugging}) has not had to change
+(at least as of this writing).  Some of the internal byte codes changed
+in order to accommodate namespaces, and the debugger's @code{dump} command
+was adjusted to match.
+
+@cindex namespaces, interaction with extension API
+@cindex extension API, interaction with namespaces
+The extension API (@pxref{Dynamic Extensions}) has always allowed for
+placing functions into a different namespace, although this was not
+previously implemented.  However, the symbol lookup and symbol update
+routines did not have provision for including a namespace. That has now
+been corrected (@pxref{Symbol table by name}).
+@xref{Extension Sample Inplace}, for a nice example of an extension that
+leverages a namespace shared by cooperating @command{awk} and C code.
+
+@node Namespace Summary
+@section Summary
+
+@itemize @value{BULLET}
+@item
+Standard @command{awk} provides a single namespace for all global
+identifiers (scalars, arrays, and functions).  This is limiting when
+one wants to develop libraries of reusable functions or function suites.
+
+@item
+@command{gawk} provides multiple namespaces by using qualified names:
+names consisting of a namespace name, a double colon, @code{::}, and a
+component name.  Namespace names might still possibly conflict, but this
+is true of any language providing namespaces, modules, or packages.
+
+@item
+The default namespace is @command{awk}. The rules for namespace and
+component names are provided in @ref{Naming Rules}. The rules are
+designed in such a way as to make namespace-aware code continue to
+look and work naturally while still providing the necessary power and
+flexibility.
+
+@item
+Other parts of @command{gawk} have been extended as necessary to integrate
+namespaces smoothly with their operation.  This applies most notably to
+the profiler / pretty-printer (@pxref{Profiling}) and to the extension
+facility (@pxref{Dynamic Extensions}).
+
+@cindex namespaces, backwards compatibility
+@item
+Overall, the namespace facility was designed and implemented such that
+backwards compatibility is paramount. Programs that don't use namespaces
+should see absolutely no difference in behavior when run by a namespace-capable
+version of @command{gawk}.
+@end itemize
+
 @node Arbitrary Precision Arithmetic
 @chapter Arithmetic and Arbitrary-Precision Arithmetic with @command{gawk}
 @cindex arbitrary precision
@@ -32247,9 +32722,11 @@ Some points about using the API:
 @item
 The following types, macros, and/or functions are referenced
 in @file{gawkapi.h}.  For correct use, you must therefore include the
-corresponding standard header file @emph{before} including @file{gawkapi.h}:
+corresponding standard header file @emph{before} including @file{gawkapi.h}.
+The list of macros and related header files is shown in @ref{table-api-std-headers}.
 
-@c FIXME: Make this is a float at some point.
+@float Table,table-api-std-headers
+@caption{Standard header files needed by API}
 @multitable {@code{memset()}, @code{memcpy()}} {@code{<sys/types.h>}}
 @headitem C entity @tab Header file
 @item @code{EOF} @tab @code{<stdio.h>}
@@ -32261,6 +32738,7 @@ corresponding standard header file @emph{before} including @file{gawkapi.h}:
 @item @code{size_t} @tab @code{<sys/types.h>}
 @item @code{struct stat} @tab @code{<sys/stat.h>}
 @end multitable
+@end float
 
 Due to portability concerns, especially to systems that are not
 fully standards-compliant, it is your responsibility
@@ -32849,8 +33327,11 @@ it with @command{gawk} using this API function:
 @table @code
 @item awk_bool_t add_ext_func(const char *name_space, awk_ext_func_t *func);
 This function returns true upon success, false otherwise.
-The @code{name_space} parameter is currently not used; you should pass in an
-empty string (@code{""}).  The @code{func} pointer is the address of a
+The @code{name_space} parameter is the namespace in which to place
+the function (@pxref{Namespaces}).
+Use an empty string (@code{""}) or @code{"awk"} to place
+the function in the default @code{awk} namespace.
+The @code{func} pointer is the address of a
 @code{struct} representing your function, as just described.
 
 @command{gawk} does not modify what @code{func} points to, but the
@@ -33711,6 +34192,18 @@ Return true if the actual type matches @code{wanted}, and false otherwise.
 In the latter case, @code{result->val_type} indicates the actual type
 (@pxref{table-value-types-returned}).
 
+@item awk_bool_t sym_lookup_ns(const char *name,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const char *name_space,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_valtype_t wanted,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_value_t *result);
+This is like @code{sym_lookup()}, but the @code{name_space} parameter allows you
+to specify which namespace @code{name} is part of.  @code{name_space} cannot be
+@code{NULL}. If it is @code{""} or @code{"awk"}, then @code{name} is searched
+for in the default @code{awk} namespace.
+
+Note that @code{namespace} is a C++ keyword. For interoperability with C++,
+you should avoid using that identifier in C code.
+
 @item awk_bool_t sym_update(const char *name, awk_value_t *value);
 Update the variable named by the string @code{name}, which is a regular
 C string.  The variable is added to @command{gawk}'s symbol table
@@ -33720,11 +34213,24 @@ Changing types (scalar to array or vice versa) of an existing variable
 is @emph{not} allowed, nor may this routine be used to update an array.
 This routine cannot be used to update any of the predefined
 variables (such as @code{ARGC} or @code{NF}).
+
+@item awk_bool_t sym_update_ns(const char *name_space, const char *name, awk_value_t *value);
+This is like @code{sym_update()}, but the @code{name_space} parameter allows you
+to specify which namespace @code{name} is part of.  @code{name_space} cannot be
+@code{NULL}. If it is @code{""} or @code{"awk}, then @code{name} is searched
+for in the default @code{awk} namespace.
 @end table
 
 An extension can look up the value of @command{gawk}'s special variables.
 However, with the exception of the @code{PROCINFO} array, an extension
 cannot change any of those variables.
+
+When searching for or updating variables outside the @code{awk} namespace
+(@pxref{Namespaces}), function and variable names must be simple
+identifiers.@footnote{Allowing both namespace plus identifier and
+@code{foo::bar} would have been too confusing to document, and to code
+and test.} In addition, namespace names and variable and function names
+must follow the rules given in @ref{Naming Rules}.
 
 @node Symbol table by cookie
 @subsubsection Variable Access and Update by Cookie
@@ -35905,7 +36411,9 @@ else
 The @code{inplace} extension emulates GNU @command{sed}'s @option{-i} option,
 which performs ``in-place'' editing of each input file.
 It uses the bundled @file{inplace.awk} include file to invoke the extension
-properly:
+properly.  This extension makes use of the namespace facility to place
+all the variables and functions in the @code{inplace} namespace
+(@pxref{Namespaces}):
 
 @example
 @c file eg/lib/inplace.awk
@@ -35936,14 +36444,18 @@ properly:
 #
 # Andrew J. Schorr, aschorr@@telemetry-investments.com
 # January 2013
+#
+# Revised for namespaces
+# Arnold Robbins, arnold@@skeeve.com
+# July 2017
 @c endfile
 @end ignore
 @c file eg/lib/inplace.awk
 
 @@load "inplace"
 
-# Please set INPLACE_SUFFIX to make a backup copy.  For example, you may
-# want to set INPLACE_SUFFIX to .bak on the command line or in a BEGIN rule.
+# Please set inplace::suffix to make a backup copy.  For example, you may
+# want to set inplace::suffix to .bak on the command line or in a BEGIN rule.
 
 # By default, each filename on the command line will be edited inplace.
 # But you can selectively disable this by adding an inplace=0 argument
@@ -35951,31 +36463,33 @@ properly:
 # reenable it later on the commandline by putting inplace=1 before files
 # that you wish to be subject to inplace editing.
 
-# N.B. We call inplace_end() in the BEGINFILE and END rules so that any
+# N.B. We call inplace::end() in the BEGINFILE and END rules so that any
 # actions in an ENDFILE rule will be redirected as expected.
+
+@@namespace "inplace"
 @end group
 
 @group
 BEGIN @{
-    inplace = 1         # enabled by default
+    enable = 1         # enabled by default
 @}
 @end group
 
 @group
 BEGINFILE @{
-    if (_inplace_filename != "")
-        inplace_end(_inplace_filename, INPLACE_SUFFIX)
-    if (inplace)
-        inplace_begin(_inplace_filename = FILENAME, INPLACE_SUFFIX)
+    if (filename != "")
+        end(filename, suffix)
+    if (enable)
+        begin(filename = FILENAME, suffix)
     else
-        _inplace_filename = ""
+        filename = ""
 @}
 @end group
 
 @group
 END @{
-    if (_inplace_filename != "")
-        inplace_end(_inplace_filename, INPLACE_SUFFIX)
+    if (filename != "")
+        end(filename, suffix)
 @}
 @end group
 @c endfile
@@ -35985,17 +36499,18 @@ For each regular file that is processed, the extension redirects
 standard output to a temporary file configured to have the same owner
 and permissions as the original.  After the file has been processed,
 the extension restores standard output to its original destination.
-If @code{INPLACE_SUFFIX} is not an empty string, the original file is
+If @code{inplace::suffix} is not an empty string, the original file is
 linked to a backup @value{FN} created by appending that suffix.  Finally,
 the temporary file is renamed to the original @value{FN}.
 
-Note that the use of this feature can be controlled by placing @samp{inplace=0}
-on the command-line prior to listing files that should not be processed this
-way.  You can reenable inplace editing by adding an @samp{inplace=1} argument
-prior to files that should be subject to inplace editing.
+Note that the use of this feature can be controlled by placing
+@samp{inplace::enable=0} on the command-line prior to listing files that
+should not be processed this way.  You can reenable inplace editing by adding
+an @samp{inplace::enable=1} argument prior to files that should be subject
+to inplace editing.
 
-The @code{_inplace_filename} variable serves to keep track of the
-current filename so as to not invoke @code{inplace_end()} before
+The @code{inplace::filename} variable serves to keep track of the
+current filename so as to not invoke @code{inplace::end()} before
 processing the first file.
 
 If any error occurs, the extension issues a fatal error to terminate
@@ -36010,7 +36525,7 @@ $ @kbd{gawk -i inplace '@{ gsub(/foo/, "bar") @}; @{ print @}' file1 file2 file3
 To keep a backup copy of the original files, try this:
 
 @example
-$ @kbd{gawk -i inplace -v INPLACE_SUFFIX=.bak '@{ gsub(/foo/, "bar") @}}
+$ @kbd{gawk -i inplace -v inplace::suffix=.bak '@{ gsub(/foo/, "bar") @}}
 > @kbd{@{ print @}' file1 file2 file3}
 @end example
 
@@ -36508,13 +37023,6 @@ Why is standard error a better
 choice than standard output for writing the prompt?
 Which reading mechanism should you replace, the one to get
 a record, or the one to read raw bytes?
-
-@item
-(Hard.)
-How would you provide namespaces in @command{gawk}, so that the
-names of functions in different extensions don't conflict with each other?
-If you come up with a really good scheme, contact the @command{gawk}
-maintainer to tell him about it.
 
 @item
 Write a wrapper script that provides an interface similar to

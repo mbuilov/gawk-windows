@@ -149,10 +149,10 @@ BASIC_TESTS = \
 	callparam childin clobber closebad clsflnam compare compare2 \
 	concat1 concat2 concat3 concat4 concat5 convfmt \
 	datanonl defref delargv delarpm2 delarprm delfunc dfamb1 dfastress dynlj \
-	eofsplit exit2 exitval1 exitval2 exitval3 fcall_exit fcall_exit2 \
-	fldchg fldchgnf fldterm fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc \
-	fordel forref forsimp fsbs fsnul1 fsrs fsspcoln fstabplus funsemnl \
-	funsmnam funstack \
+	eofsplit eofsrc1 exit2 exitval1 exitval2 exitval3 \
+	fcall_exit fcall_exit2 fldchg fldchgnf fldterm fnamedat fnarray fnarray2 \
+	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsnul1 fsrs fsspcoln \
+	fstabplus funsemnl funsmnam funstack \
 	getline getline2 getline3 getline4 getline5 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 gsubtst7 \
 	gsubtst8 \
@@ -201,18 +201,19 @@ GAWK_EXT_TESTS = \
 	incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 include include2 \
 	indirectbuiltin indirectcall indirectcall2 intarray isarrayunset \
 	lint lintexp lintindex lintint lintlength lintold lintset lintwarn \
-	mixed1 mktime manyfiles match1 match2 match3 mbstr1 mbstr2 muldimposix \
+	manyfiles match1 match2 match3 mbstr1 mbstr2 mixed1 mktime muldimposix \
 	nastyparm negtime next nondec nondec2 nonfatal1 nonfatal2 nonfatal3 \
+	nsbad nsbad_cmd nsindirect1 nsindirect2 nsprof1 nsprof2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge \
 	procinfs profile0 profile1 profile2 profile3 profile4 profile5 profile6 \
 	profile7 profile8 profile9 profile10 pty1 pty2 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin \
 	rsstart1 rsstart2 rsstart3 rstest6 \
 	shadow shadowbuiltin sortfor sortfor2 sortu sourcesplit split_after_fpat \
-	splitarg4 strftime strftfld strtonum strtonum1 switch2 symtab1 symtab2 \
+	splitarg4 strftfld strftime strtonum strtonum1 switch2 symtab1 symtab2 \
 	symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9 symtab10 \
-	typedregex1 typedregex2 typedregex3 typeof1 typeof2 typeof3 typeof4 \
-	typeof5 timeout \
+	timeout typedregex1 typedregex2 typedregex3 typeof1 typeof2 typeof3 \
+	typeof4 typeof5 \
 	watchpoint1
 
 ARRAYDEBUG_TESTS = arrdbg
@@ -261,7 +262,9 @@ NEED_NONDEC = mpfrbigint2 nondec2 intarray forcenum
 NEED_POSIX = printf0 posix2008sub paramasfunc1 paramasfunc2 muldimposix
 
 # List of tests that need --pretty-print
-NEED_PRETTY = profile4 profile5 profile8 profile9 profile10
+NEED_PRETTY = nsprof1 nsprof2 \
+	profile4 profile5 profile8 profile9 profile10
+
 
 # List of tests that need --re-interval
 NEED_RE_INTERVAL = gsubtst3 reint reint2
@@ -919,7 +922,7 @@ inplace2::
 	@echo $@
 	@cp "$(srcdir)"/inplace.1.in _$@.1
 	@cp "$(srcdir)"/inplace.2.in _$@.2
-	@AWKPATH="$(srcdir)"/../awklib/eg/lib $(AWK) -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _$@.1 - _$@.2 < "$(srcdir)"/inplace.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH="$(srcdir)"/../awklib/eg/lib $(AWK) -i inplace -v inplace::suffix=.bak 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _$@.1 - _$@.2 < "$(srcdir)"/inplace.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 	@-$(CMP) "$(srcdir)"/$@.1.ok _$@.1 && rm -f _$@.1
 	@-$(CMP) "$(srcdir)"/$@.1.bak.ok _$@.1.bak && rm -f _$@.1.bak
@@ -930,8 +933,8 @@ inplace3::
 	@echo $@
 	@cp "$(srcdir)"/inplace.1.in _$@.1
 	@cp "$(srcdir)"/inplace.2.in _$@.2
-	@AWKPATH="$(srcdir)"/../awklib/eg/lib $(AWK) -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _$@.1 - _$@.2 < "$(srcdir)"/inplace.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@AWKPATH="$(srcdir)"/../awklib/eg/lib $(AWK) -i inplace -v INPLACE_SUFFIX=.bak 'BEGIN {print "Before"} {gsub(/bar/, "foo"); print} END {print "After"}' _$@.1 - _$@.2 < "$(srcdir)"/inplace.in >>_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH="$(srcdir)"/../awklib/eg/lib $(AWK) -i inplace -v inplace::suffix=.bak 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _$@.1 - _$@.2 < "$(srcdir)"/inplace.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH="$(srcdir)"/../awklib/eg/lib $(AWK) -i inplace -v inplace::suffix=.bak 'BEGIN {print "Before"} {gsub(/bar/, "foo"); print} END {print "After"}' _$@.1 - _$@.2 < "$(srcdir)"/inplace.in >>_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 	@-$(CMP) "$(srcdir)"/$@.1.ok _$@.1 && rm -f _$@.1
 	@-$(CMP) "$(srcdir)"/$@.1.bak.ok _$@.1.bak && rm -f _$@.1.bak
@@ -1092,6 +1095,16 @@ arrdbg:
 sourcesplit:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) --source='BEGIN { a = 5;' --source='print a }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+eofsrc1:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f "$(srcdir)"/$@a.awk -f "$(srcdir)"/$@b.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+nsbad_cmd:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -v foo:bar=3 -v foo:::blat=4 1 /dev/null >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 # Use [:] in the regexp to keep MSYS from converting the /'s to \'s.
@@ -2738,11 +2751,6 @@ lintwarn:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --lint >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
-mktime:
-	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
 match1:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -2770,6 +2778,11 @@ mbstr2:
 	@echo Expect $@ to fail with DJGPP and MinGW.
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=ENU_USA.1252; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mktime:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 muldimposix:
@@ -2807,6 +2820,31 @@ nonfatal3:
 	@echo $@
 	@echo Expect $@ to fail with DJGPP.
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+nsbad:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+nsindirect1:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+nsindirect2:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+nsprof1:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --pretty-print=_$@ >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+nsprof2:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --pretty-print=_$@ >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 patsplit:
@@ -3007,6 +3045,12 @@ symtab10:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --debug < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+timeout:
+	@echo $@
+	@echo Expect $@ to fail with DJGPP and MinGW.
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 typedregex1:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -3045,12 +3089,6 @@ typeof4:
 typeof5:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
-timeout:
-	@echo $@
-	@echo Expect $@ to fail with DJGPP and MinGW.
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 double1:

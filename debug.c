@@ -310,6 +310,7 @@ static void delete_item(struct list_item *d);
 static int breakpoint_triggered(BREAKPOINT *b);
 static int watchpoint_triggered(struct list_item *w);
 static void print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump);
+static void print_ns_list(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump);
 static int print_code(INSTRUCTION *pc, void *x);
 static void next_command();
 static void debug_post_execute(INSTRUCTION *pc);
@@ -1031,7 +1032,7 @@ NODE *find_symbol(const char *name, char **pname)
 	if (prog_running)
 		r = find_param(name, cur_frame, pname);
 	if (r == NULL)
-		r = lookup(name);
+		r = lookup(name, false); // for now, require fully qualified name
 	if (r == NULL)
 		fprintf(out_fp, _("no symbol `%s' in current context\n"), name);
 	return r;
@@ -3882,8 +3883,13 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		break;
 
 	case Op_func:
-		print_func(fp, "[param_cnt = %d] [source_file = %s]\n", pcount,
+		print_func(fp, "[param_cnt = %d] [source_file = %s]", pcount,
 				pc->source_file ? pc->source_file : "cmd. line");
+		if (pc[3].nexti != NULL) {
+			print_func(fp, "[ns_list = %p]\n", pc[3].nexti);
+			print_ns_list(pc[3].nexti, print_func, fp, in_dump);
+		} else
+			print_func(fp, "\n");
 		break;
 
 	case Op_K_getline_redir:
@@ -3958,6 +3964,15 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 			print_func(fp, "\n");
 		break;
 
+	case Op_K_namespace:
+		print_func(fp, "[namespace = %s]", pc->ns_name);
+		if (pc->nexti)
+			print_func(fp, "[nexti = %p]", pc->nexti);
+		if (pc->comment)
+			print_func(fp, "[comment = %p]", pc->comment);
+		print_func(fp, "\n");
+		break;
+
 	case Op_arrayfor_incr:
 		print_func(fp, "[array_var = %s] [target_jmp = %p]\n",
 		                pc->array_var->type == Node_param_list ?
@@ -3996,7 +4011,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		break;
 
 	case Op_builtin:
-		print_func(fp, "%s [arg_count = %ld]\n", getfname(pc->builtin),
+		print_func(fp, "%s [arg_count = %ld]\n", getfname(pc->builtin, false),
 						pc->expr_count);
 		break;
 
@@ -4034,9 +4049,14 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		break;
 
 	case Op_rule:
-		print_func(fp, "[in_rule = %s] [source_file = %s]\n",
+		print_func(fp, "[in_rule = %s] [source_file = %s]",
 		                ruletab[pc->in_rule],
 		                pc->source_file ? pc->source_file : "cmd. line");
+		if (pc[3].nexti != NULL) {
+			print_func(fp, "[ns_list = %p]\n", pc[3].nexti);
+			print_ns_list(pc[3].nexti, print_func, fp, in_dump);
+		} else
+			print_func(fp, "\n");
 		break;
 
 	case Op_lint:
@@ -4128,6 +4148,18 @@ print_code(INSTRUCTION *pc, void *x)
 	for (; pc != NULL; pc = pc->nexti)
 		print_instruction(pc, data->print_func, data->fp, data->defn /* in_dump */);
 	return 0;
+}
+
+/* print_ns_list --- print the list of namespaces */
+
+static void
+print_ns_list(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
+{
+	for (; pc != NULL; pc = pc->nexti) {
+		print_instruction(pc, print_func, fp, in_dump);
+		if (pc->comment != NULL)
+			print_instruction(pc->comment, print_func, fp, in_dump);
+	}
 }
 
 /* do_dump_instructions --- dump command */
@@ -5574,7 +5606,7 @@ do_eval(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 		return false;
 	}
 
-	f = lookup("@eval");
+	f = lookup("@eval", false);
 	assert(f != NULL);
 	if (this_func == NULL) {	/* in main */
 		/* do a function call */

@@ -41,6 +41,9 @@ static void pp_push(int type, char *s, int flag, INSTRUCTION *comment);
 static NODE *pp_pop(void);
 static void print_comment(INSTRUCTION *pc, long in);
 const char *redir2str(int redirtype);
+static void pp_namespace(const char *name, INSTRUCTION *comment);
+static void pp_namespace_list(INSTRUCTION *list);
+static char *adjust_namespace(char *name, bool *malloced);
 
 #define pp_str	vname
 #define pp_len	sub.nodep.reserved
@@ -236,16 +239,23 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 		switch (pc->opcode) {
 		case Op_rule:
 			/*
-			 * Rules are three instructions long.
+			 * Rules are four instructions long.
 			 * See append_rule in awkgram.y.
 			 * The first has the Rule Op Code, nexti etc.
 			 * The second, (pc + 1) has firsti and lasti:
 			 * 	the first/last ACTION instructions for this rule.
 			 * The third has first_line and last_line:
 			 * 	the first and last source line numbers.
+			 * The fourth holds the namespace name if there is one.
+			 *	(there should be one if we're in this file)
+			 * This can actually be a list in reverse order if
+			 * there were several @namespace directives one
+			 * after the other.
 			 */
 			source = pc->source_file;
 			rule = pc->in_rule;
+
+			pp_namespace_list(pc[3].nexti);
 
 			if (rule != Rule) {
 				/* Allow for pre-non-rule-block comment  */
@@ -348,9 +358,12 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int flags)
 			case Node_var:
 			case Node_var_new:
 			case Node_var_array:
-				if (m->vname != NULL)
-					pp_push(pc->opcode, m->vname, DONT_FREE, pc->comment);
- 				else
+				if (m->vname != NULL) {
+					bool malloced = false;
+					char *name = adjust_namespace(m->vname, & malloced);
+
+					pp_push(pc->opcode, name, malloced ? CAN_FREE : DONT_FREE, pc->comment);
+				} else
 					fatal(_("internal error: %s with null vname"),
 							nodetype2str(m->type));
 				break;
@@ -628,9 +641,10 @@ cleanup:
 		case Op_ext_builtin:
 		{
 			const char *fname;
-			if (pc->opcode == Op_builtin)
-				fname = getfname(pc->builtin);
-			else
+			if (pc->opcode == Op_builtin) {
+				bool prepend_awk = (current_namespace != awk_namespace && strcmp(current_namespace, "awk") != 0);
+				fname = getfname(pc->builtin, prepend_awk);
+			} else
 				fname = (pc + 1)->func_name;
 			if (fname != NULL) {
 				if (pc->expr_count > 0) {
@@ -752,9 +766,10 @@ cleanup:
 		case Op_indirect_func_call:
 		case Op_func_call:
 		{
-			char *fname = pc->func_name;
 			char *pre;
  			int pcount;
+			bool malloced = false;
+			char *fname = adjust_namespace(pc->func_name, & malloced);
 
 			if (pc->opcode == Op_indirect_func_call)
 				pre = "@";
@@ -771,7 +786,10 @@ cleanup:
 				t1 = pp_pop();	/* indirect var */
 				pp_free(t1);
 			}
+
 			pp_push(pc->opcode, str, CAN_FREE, pc->comment);
+			if (malloced)
+				efree((void *) fname);
 		}
 			break;
 
@@ -1940,6 +1958,8 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 			fprintf(prof_fp, _("\n\t# Functions, listed alphabetically\n"));
 	}
 
+	pp_namespace_list(pc[3].nexti);
+
 	fp = pc->nexti->nexti;
 	func = pc->func_body;
 	fprintf(prof_fp, "\n");
@@ -1949,7 +1969,12 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 		print_comment(pc->comment, -1);	/* -1 ==> don't indent */
 
 	indent(pc->nexti->exec_count);
-	fprintf(prof_fp, "%s %s(", op2str(Op_K_function), func->vname);
+	
+	bool malloced = false;
+	char *name = adjust_namespace(func->vname, & malloced);
+	fprintf(prof_fp, "%s %s(", op2str(Op_K_function), name);
+	if (malloced)
+		free(name);
 	pcount = func->param_cnt;
 	func_params = func->fparms;
 	for (j = 0; j < pcount; j++) {
@@ -1993,4 +2018,77 @@ redir2str(int redirtype)
 	if (redirtype < 0 || redirtype > redirect_twoway)
 		fatal(_("redir2str: unknown redirection type %d"), redirtype);
 	return redirtab[redirtype];
+}
+
+/* pp_namespace --- print @namespace directive */
+
+static void
+pp_namespace(const char *name, INSTRUCTION *comment)
+{
+	// Don't print the initial `@namespace "awk"' unless
+	// @namespace was used at some point in the program
+	if (! namespace_changed)
+		return;
+
+	if (strcmp(current_namespace, name) == 0)
+		return;
+
+	current_namespace = name;
+
+	if (do_profile)
+		indent(SPACEOVER);
+
+	fprintf(prof_fp, "@namespace \"%s\"", name);
+
+	if (comment != NULL) {
+		putc('\t', prof_fp);
+		print_comment(comment, 0);
+		putc('\n', prof_fp);
+	} else
+		fprintf(prof_fp, "\n\n");
+}
+
+/* pp_namespace_list --- print the list, back to front, using recursion */
+
+static void
+pp_namespace_list(INSTRUCTION *list)
+{
+	if (list == NULL)
+		return;
+
+	pp_namespace_list(list->nexti);
+	pp_namespace(list->ns_name, list->comment);
+}
+
+/* adjust_namespace --- remove leading namespace or add leading awk:: */
+
+static char *
+adjust_namespace(char *name, bool *malloced)
+{
+	*malloced = false;
+
+	// unadorned name from symbol table, add awk:: if not in awk:: n.s.
+	if (strchr(name, ':') == NULL &&
+	    current_namespace != awk_namespace &&	// can be equal if namespace never changed
+	    strcmp(current_namespace, "awk") != 0) {
+		char *buf;
+		size_t len = 5 + strlen(name) + 1;
+
+		emalloc(buf, char *, len, "adjust_namespace");
+		sprintf(buf, "awk::%s", name);
+		*malloced = true;
+
+		return buf;
+	}
+
+	// qualifed name, remove <ns>:: if in that n.s.
+	size_t len = strlen(current_namespace);
+
+	if (strncmp(current_namespace, name, len) == 0) {
+		char *ret = name + len + 2;
+
+		return ret;
+	}
+
+	return name;
 }

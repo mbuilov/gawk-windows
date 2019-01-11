@@ -25,6 +25,13 @@ Changes from 4.2.x to 5.0.0
    from scratch. As a result, comments in many corner cases that were
    previously lost are now included in the formatted output.
 
+7. Namespaces have been implemented! See the manual.  One consequence of this
+   is that file included with -i, read with -f, and command line program
+   segments must all be self-contained syntactic units. E.g., you can no
+   longer do something like this:
+
+   	gawk -e 'BEGIN {' -e 'print "hello" }'
+
 Changes from 4.2.1 to 4.2.2
 ---------------------------
 

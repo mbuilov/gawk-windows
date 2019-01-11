@@ -13,7 +13,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Nov 29 2018" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Dec 12 2018" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -132,6 +132,9 @@ Multiple
 (or
 .BR \-\^\-file )
 options may be used.
+Files read with
+.B \-f
+are treated as if they begin with an implict \fB@namespace "awk"\fR statement.
 .TP
 .PD 0
 .BI \-F " fs"
@@ -253,6 +256,9 @@ and
 options) with source code entered on the command line.
 It is intended primarily for medium to large \*(AK programs used
 in shell scripts.
+Each argument supplied via
+.B \-e
+is treated as if it begins with an implict \fB@namespace "awk"\fR statement.
 .TP
 .PD 0
 .BI "\-E " file
@@ -310,6 +316,9 @@ be made after appending the
 suffix.  The file will be loaded only
 once (i.e., duplicates are eliminated), and the code does not constitute
 the main program source.
+Files read with
+.B \-i
+are treated as if they begin with an implict \fB@namespace "awk"\fR statement.
 .TP
 .PD 0
 .BI "\-l " lib
@@ -577,9 +586,11 @@ pattern-action statements,
 and optional function definitions.
 .RS
 .PP
-\fB@include "\fIfilename\fB"
+\fB@include "\fIfilename\^\fB"
 .br
-\fB@load "\fIfilename\fB"
+\fB@load "\fIfilename\^\fB"
+.br
+\fB@namespace "\fIname\^\fB"
 .br
 \fIpattern\fB	{ \fIaction statements\fB }\fR
 .br
@@ -1520,6 +1531,37 @@ You can do this by creating an element in the subarray and then
 deleting it with the
 .B delete
 statement.
+.SS Namespaces
+.I Gawk
+provides a simple
+.I namespace
+facility to help work around the fact that all variables in
+AWK are global.
+.PP
+A
+.I "qualified name"
+consists of a two simple identifiers joined by a double colon
+.RB ( :: ).
+The left-hand identifier represents the namespace and the right-hand
+identifier is the variable within it.
+All simple (non-qualified) names are considered to be in the
+``current'' namespace; the default namespace is
+.BR awk .
+However, simple identifiers consisting solely of upper-case
+letters are forced into the
+.B awk
+namespace, even if the current namespace is different.
+.PP
+You change the current namespace with an
+\fB@namespace "\fIname\^\fB"\fR
+directive.
+.PP
+The standard predefined builtin function names may not be used as
+namespace names.  The names of additional functions provided by
+.I gawk
+may be used as namespace names or as simple identifiers in other
+namespaces.
+For more details, see \*(EP.
 .SS Variable Typing And Conversion
 .PP
 Variables and fields
@@ -1668,7 +1710,7 @@ regular expression constants.  Thus,
 .B /a\e52b/
 is equivalent to
 .BR /a\e*b/ .
-.SS "Regexp Constants"
+.SS Regexp Constants
 A regular expression constant is a sequence of characters enclosed
 between forward slashes (like
 .BR /value/ ).

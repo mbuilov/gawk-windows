@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 2012, 2013, 2014, 2015, 2018
+ * Copyright (C) 2012, 2013, 2014, 2015, 2017, 2018
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -1034,6 +1034,17 @@ static void at_exit2(void *data, int exit_status)
 	printf(" exit_status = %d\n", exit_status);
 }
 
+/* do_test_function --- test function for test namespace */
+
+static awk_value_t *
+do_test_function(int nargs, awk_value_t *result, struct awk_ext_func *unused)
+{
+	printf("test::test_function() called.\n");
+	fflush(stdout);
+
+	return make_number(0.0, result);
+}
+
 static awk_ext_func_t func_table[] = {
 	{ "dump_array_and_delete", dump_array_and_delete, 2, 2, awk_false, NULL },
 	{ "try_modify_environ", try_modify_environ, 0, 0, awk_false, NULL },
@@ -1051,6 +1062,10 @@ static awk_ext_func_t func_table[] = {
 	{ "get_file", do_get_file, 4, 4, awk_false, NULL },
 };
 
+static awk_ext_func_t ns_test_func = {
+	"test_function", do_test_function, 0, 0, awk_false, NULL
+};
+
 /* init_testext --- additional initialization function */
 
 static awk_bool_t init_testext(void)
@@ -1058,6 +1073,7 @@ static awk_bool_t init_testext(void)
 	awk_value_t value;
 	static const char message[] = "hello, world";	/* of course */
 	static const char message2[] = "i am a scalar";
+	static const char message3[] = "in namespace test";
 
 	/* This is used by the getfile test */
 	if (sym_lookup("TESTEXT_QUIET", AWK_NUMBER, & value))
@@ -1075,6 +1091,9 @@ BEGIN {
 	for (i in new_array)
 		printf("new_array[\"%s\"] = \"%s\"\n", i, new_array[i])
 	print ""
+	printf("test::testval = %s\n", test::testval)
+	test::test_function()
+	print ""
 }
 */
 
@@ -1091,6 +1110,13 @@ BEGIN {
 		printf("testext: sym_update(\"the_scalar\") failed!\n");
 
 	create_new_array();
+
+	if (! sym_update_ns("test", "testval",
+			make_const_string(message3, strlen(message3), & value)))
+		printf("testext: sym_update_ns(\"test\", \"testval\") failed!\n");
+
+	if (! add_ext_func("test", & ns_test_func))
+		printf("testext: add_ext_func(\"test\", ns_test_func) failed!\n");
 
 	return awk_true;
 }

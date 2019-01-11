@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 2013-2015, 2018, the Free Software Foundation, Inc.
+ * Copyright (C) 2013-2015, 2017, 2018, the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -128,13 +128,13 @@ do_inplace_begin(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	fflush(stdout);
 
 	if (state.tname)
-		fatal(ext_id, _("inplace_begin: in-place editing already active"));
+		fatal(ext_id, _("inplace::begin: in-place editing already active"));
 
 	if (nargs != 2)
-		fatal(ext_id, _("inplace_begin: expects 2 arguments but called with %d"), nargs);
+		fatal(ext_id, _("inplace::begin: expects 2 arguments but called with %d"), nargs);
 
 	if (! get_argument(0, AWK_STRING, &filename))
-		fatal(ext_id, _("inplace_begin: cannot retrieve 1st argument as a string filename"));
+		fatal(ext_id, _("inplace::begin: cannot retrieve 1st argument as a string filename"));
 
 	/*
 	 * N.B. In the current implementation, the 2nd suffix arg is not used
@@ -142,21 +142,21 @@ do_inplace_begin(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	 */
 
 	if (invalid_filename(&filename.str_value)) {
-		warning(ext_id, _("inplace_begin: disabling in-place editing for invalid FILENAME `%s'"),
+		warning(ext_id, _("inplace::begin: disabling in-place editing for invalid FILENAME `%s'"),
 			filename.str_value.str);
 		unset_ERRNO();
 		return make_number(-1, result);
 	}
 
 	if (stat(filename.str_value.str, & sbuf) < 0) {
-		warning(ext_id, _("inplace_begin: Cannot stat `%s' (%s)"),
+		warning(ext_id, _("inplace::begin: Cannot stat `%s' (%s)"),
 			filename.str_value.str, strerror(errno));
 		update_ERRNO_int(errno);
 		return make_number(-1, result);
 	}
 
 	if (! S_ISREG(sbuf.st_mode)) {
-		warning(ext_id, _("inplace_begin: `%s' is not a regular file"),
+		warning(ext_id, _("inplace::begin: `%s' is not a regular file"),
 			filename.str_value.str);
 		unset_ERRNO();
 		return make_number(-1, result);
@@ -167,7 +167,7 @@ do_inplace_begin(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	sprintf(state.tname, "%s.gawk.XXXXXX", filename.str_value.str);
 
 	if ((fd = mkstemp(state.tname)) < 0)
-		fatal(ext_id, _("inplace_begin: mkstemp(`%s') failed (%s)"),
+		fatal(ext_id, _("inplace::begin: mkstemp(`%s') failed (%s)"),
 			state.tname, strerror(errno));
 
 	/* N.B. chown/chmod should be more portable than fchown/fchmod */
@@ -179,20 +179,20 @@ do_inplace_begin(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	}
 
 	if (chmod(state.tname, sbuf.st_mode) < 0)
-		fatal(ext_id, _("inplace_begin: chmod failed (%s)"),
+		fatal(ext_id, _("inplace::begin: chmod failed (%s)"),
 			strerror(errno));
 
 	fflush(stdout);
 	/* N.B. fgetpos fails when stdout is a tty */
 	state.posrc = fgetpos(stdout, &state.pos);
 	if ((state.default_stdout = dup(STDOUT_FILENO)) < 0)
-		fatal(ext_id, _("inplace_begin: dup(stdout) failed (%s)"),
+		fatal(ext_id, _("inplace::begin: dup(stdout) failed (%s)"),
 			strerror(errno));
 	if (dup2(fd, STDOUT_FILENO) < 0)
-		fatal(ext_id, _("inplace_begin: dup2(%d, stdout) failed (%s)"),
+		fatal(ext_id, _("inplace::begin: dup2(%d, stdout) failed (%s)"),
 			fd, strerror(errno));
 	if (close(fd) < 0)
-		fatal(ext_id, _("inplace_begin: close(%d) failed (%s)"),
+		fatal(ext_id, _("inplace::begin: close(%d) failed (%s)"),
 			fd, strerror(errno));
 	rewind(stdout);
 	return make_number(0, result);
@@ -208,30 +208,30 @@ do_inplace_end(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	assert(result != NULL);
 
 	if (nargs != 2)
-		fatal(ext_id, _("inplace_end: expects 2 arguments but called with %d"), nargs);
+		fatal(ext_id, _("inplace::end: expects 2 arguments but called with %d"), nargs);
 
 	if (! get_argument(0, AWK_STRING, &filename))
-		fatal(ext_id, _("inplace_end: cannot retrieve 1st argument as a string filename"));
+		fatal(ext_id, _("inplace::end: cannot retrieve 1st argument as a string filename"));
 
 	if (! get_argument(1, AWK_STRING, &suffix))
 		suffix.str_value.str = NULL;
 
 	if (! state.tname) {
 		if (! invalid_filename(&filename.str_value))
-			warning(ext_id, _("inplace_end: in-place editing not active"));
+			warning(ext_id, _("inplace::end: in-place editing not active"));
 		return make_number(0, result);
 	}
 
 	fflush(stdout);
 	if (dup2(state.default_stdout, STDOUT_FILENO) < 0)
-		fatal(ext_id, _("inplace_end: dup2(%d, stdout) failed (%s)"),
+		fatal(ext_id, _("inplace::end: dup2(%d, stdout) failed (%s)"),
 			state.default_stdout, strerror(errno));
 	if (close(state.default_stdout) < 0)
-		fatal(ext_id, _("inplace_end: close(%d) failed (%s)"),
+		fatal(ext_id, _("inplace::end: close(%d) failed (%s)"),
 			state.default_stdout, strerror(errno));
 	state.default_stdout = -1;
 	if (state.posrc == 0 && fsetpos(stdout, &state.pos) < 0)
-		fatal(ext_id, _("inplace_end: fsetpos(stdout) failed (%s)"),
+		fatal(ext_id, _("inplace::end: fsetpos(stdout) failed (%s)"),
 			strerror(errno));
 
 	if (suffix.str_value.str && suffix.str_value.str[0]) {
@@ -254,7 +254,7 @@ do_inplace_end(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 #endif
 
 	if (rename(state.tname, filename.str_value.str) < 0)
-		fatal(ext_id, _("inplace_end: rename(`%s', `%s') failed (%s)"),
+		fatal(ext_id, _("inplace::end: rename(`%s', `%s') failed (%s)"),
 			state.tname, filename.str_value.str, strerror(errno));
 	gawk_free(state.tname);
 	state.tname = NULL;
@@ -262,8 +262,8 @@ do_inplace_end(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "inplace_begin", do_inplace_begin, 2, 2, awk_false, NULL },
-	{ "inplace_end", do_inplace_end, 2, 2, awk_false, NULL },
+	{ "begin", do_inplace_begin, 2, 2, awk_false, NULL },
+	{ "end", do_inplace_end, 2, 2, awk_false, NULL },
 };
 
 static awk_bool_t init_inplace(void)
@@ -276,4 +276,4 @@ static awk_bool_t (*init_func)(void) = init_inplace;
 
 /* define the dl_load function using the boilerplate macro */
 
-dl_load_func(func_table, inplace, "")
+dl_load_func(func_table, inplace, "inplace")

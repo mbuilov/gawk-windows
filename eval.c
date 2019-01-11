@@ -330,6 +330,7 @@ static struct optypetab {
 	{ "Op_K_getline_redir", "getline" },
 	{ "Op_K_getline", "getline" },
 	{ "Op_K_nextfile", "nextfile" },
+	{ "Op_K_namespace", "@namespace" },
 	{ "Op_builtin", NULL },
 	{ "Op_sub_builtin", NULL },
 	{ "Op_ext_builtin", NULL },
@@ -400,7 +401,7 @@ nodetype2str(NODETYPE type)
 	return buf;
 }
 
-/* opcode2str --- convert a opcode type into a printable value */
+/* opcode2str --- convert an opcode type into a printable value */
 
 const char *
 opcode2str(OPCODE op)
@@ -410,6 +411,8 @@ opcode2str(OPCODE op)
 	fatal(_("unknown opcode %d"), (int) op);
 	return NULL;
 }
+
+/* op2str --- convert an opcode type to corresponding operator or keyword */
 
 const char *
 op2str(OPCODE op)

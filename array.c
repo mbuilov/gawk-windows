@@ -1317,7 +1317,7 @@ assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 		if (sp == sort_str || *sp != '\0')
 			fatal(_("`%s' is invalid as a function name"), sort_str);
 
-		f = lookup(sort_str);
+		f = lookup(sort_str, false);
 		if (f == NULL || f->type != Node_func)
 			fatal(_("sort comparison function `%s' is not defined"), sort_str);
 

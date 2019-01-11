@@ -398,9 +398,10 @@ main(int argc, char **argv)
 	init_fields();
 
 	/* Now process the pre-assignments */
+	int dash_v_errs = 0;	// bad stuff for -v
 	for (i = 0; i <= numassigns; i++) {
 		if (preassigns[i].type == PRE_ASSIGN)
-			(void) arg_assign(preassigns[i].val, true);
+			dash_v_errs += (arg_assign(preassigns[i].val, true) == false);
 		else	/* PRE_ASSIGN_FS */
 			cmdline_fs(preassigns[i].val);
 		efree(preassigns[i].val);
@@ -464,11 +465,16 @@ main(int argc, char **argv)
 	setlocale(LC_NUMERIC, "C");
 #endif
 	/* Read in the program */
-	if (parse_program(& code_block) != 0)
+	if (parse_program(& code_block) != 0 || dash_v_errs > 0)
 		exit(EXIT_FAILURE);
 
 	if (do_intl)
 		exit(EXIT_SUCCESS);
+
+	if (current_namespace != awk_namespace) {
+		efree((char *) current_namespace);
+		current_namespace = awk_namespace;
+	}
 
 	install_builtins();
 
@@ -514,6 +520,7 @@ main(int argc, char **argv)
 		interpret(code_block);
 
 	if (do_pretty_print) {
+		current_namespace = awk_namespace;
 		dump_prog(code_block);
 		dump_funcs();
 	}
@@ -1145,7 +1152,7 @@ arg_assign(char *arg, bool initing)
 		badvar = true;
 	else
 		for (cp2 = arg+1; *cp2; cp2++)
-			if (! is_identchar((unsigned char) *cp2)) {
+			if (! is_identchar((unsigned char) *cp2) && *cp2 != ':') {
 				badvar = true;
 				break;
 			}
@@ -1163,11 +1170,16 @@ arg_assign(char *arg, bool initing)
 
 	// Assigning a string or typed regex
 
+	if (! validate_qualified_name(arg)) {
+		badvar = true;
+		goto done;
+	}
+
 	if (check_special(arg) >= 0)
 		fatal(_("cannot use gawk builtin `%s' as variable name"), arg);
 
 	if (! initing) {
-		var = lookup(arg);
+		var = lookup(arg, false);
 		if (var != NULL && var->type == Node_func)
 			fatal(_("cannot use function `%s' as variable name"), arg);
 	}

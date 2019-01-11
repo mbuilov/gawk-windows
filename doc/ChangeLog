@@ -21,6 +21,27 @@
 	* gawktexi.in: Some small indexing fixes. Thanks to Antonio
 	Giovanni Colombo for pointing them out.
 
+2019-01-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in: A few more fixes w.r.t. namespaces. Thanks to
+	Antonio Giovanni Colombo for pointing out the problems.
+
+2018-12-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in: A few fixes w.r.t. namespaces. Thanks to
+	Antonio Giovanni Colombo for pointing out the problems.
+
+2018-12-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in: Added more indexing to the debugger chapter.
+	Add more indexing to namespaces chapter, too.
+
+2018-12-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in: Clean up some FIXMEs and other improvements.
+	* gawk.1: Mention that files read with -f and -i and command
+	line segments all implicitly start with @namespace "awk".
+
 2018-12-18         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawktexi.in: Added more indexing to the debugger chapter.
@@ -403,6 +424,15 @@
 	* gawkexti.in: Remove sentence indicating that isarray is deprecated
 	and recommending typeof instead.
 
+2017-10-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkcard.in: Add @namespaces to Execution section.
+
+2017-10-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.1: Documents namespaces.
+	* awkcard.in: Ditto.
+
 2017-10-10         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawktexi.in (Readfile Function): Fix the code for the naive
@@ -511,6 +541,11 @@
 
 	* texinfo.tex: Updated.
 
+2017-08-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in (Namespace Summary): Add summary to namespace
+	chapter.
+
 2017-08-01         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawktexi.in: Update with info about DJGPP port now
@@ -520,6 +555,8 @@
 
 	* gawktexi.in (Type Functions): Improve the example
 	for untyped variables.
+	(Extension Exercises): Remove the exercise that talks
+	about namespaces, since it's no longer relevant.
 
 2017-07-28         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -527,14 +564,59 @@
 	inplace.awk; should have done that when it was first
 	added. Oops.
 
+2017-07-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in (Namespaces): More edits.
+
 2017-07-21         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawktexi.in: Fix a spelling error.
 	* wordlist: Update with more words.
 
+	Done also for namespace material.
+
+2017-07-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in (Extension Sample Inplace): Rework to use the
+	"inplace" namespace.
+
+	* gawktexi.in (Namespace And Features): Renamed from
+	`Namespace Misc' and reworked.
+	(Symbol table by name): Add note about namespace and
+	component name rules with xref to section in Namespaces chapter.
+
+2017-07-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in (Namespaces): Cleanup, new section on naming rules
+	added.
+
+2017-07-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in (Namespaces): Revised password suite example.
+	(Symbol table by name): Add entries for namespace versions
+	of lookup and update routines.
+
+2017-07-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in (Namespaces): More updates. Especially that
+	reserved words are not allowed in either half of a fully
+	qualified name or as a namespace.
+
+2017-07-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in (Namespaces): More updates.
+
 2017-07-02         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* texinfo.tex: Pull in latest from Texinfo SVN.
+
+2017-06-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in (Namespaces): Move to later in the book.
+
+2017-06-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in (Namespaces): More minor doc edits.
 
 2017-06-19         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
@@ -548,10 +630,41 @@
 2017-06-15         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawktexi.in: Expand tab characters.
+	* gawktexi.in (Namespaces): Further minor doc edits, including
+	hyphenation hint.
+
+2017-06-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in (Namespaces): Document that reserved words and
+	predefined functions can be namespace names but can be in
+	the second part of a fully qualified name. (Design decision
+	change.)
+
+2017-06-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in (Namespaces): Document that reserved words and
+	predefined functions can't be namespace names. Reformat the
+	input a little bit.
+
+2017-06-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in (Namespaces): Further clarifications. Move to
+	`::' as the namespace separator.
 
 2017-06-05         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawktexi.in (Checking for MPFR): Fix typo.
+
+2017-06-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in (Namespaces): Fixes in passwd.awk example. Document
+	that indirect calls with an unadorned name assume "awk" namespace.
+
+2017-05-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawktexi.in: Initial doc on namespaces. Serves as a design
+	right now.
+	* gawktexi.in: More doc added.
 
 2017-05-30         Arnold D. Robbins     <arnold@skeeve.com>
 
