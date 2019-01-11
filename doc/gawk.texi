@@ -30108,10 +30108,10 @@ The directory has the form @file{@var{locale}/LC_MESSAGES}, where
 @var{locale} is a locale name known to the C @command{gettext} routines.
 
 How do we know which locale to use?  It turns out that there are
-three different environment variables used by the C @command{gettext} routines.
-In order, they are @env{$LANGUAGE}, @env{$LC_ALL}, and @env{$LANG}.@footnote{Well,
-sort of. It seems that if @env{$LC_ALL} is set to @samp{C}, then no translations
-are done. Go figure.}
+four different environment variables used by the C @command{gettext} routines.
+In order, they are @env{$LANGUAGE}, @env{$LC_ALL}, @env{$LANG}, and
+@env{$LC_MESSAGES}.@footnote{Well, sort of. It seems that if @env{$LC_ALL}
+is set to @samp{C}, then no translations are done. Go figure.}
 Thus, we check the value of @env{$LANGUAGE}:
 
 @example
