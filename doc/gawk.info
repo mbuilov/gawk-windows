@@ -33074,7 +33074,7 @@ Index
 * - (hyphen), -- operator <1>:           Precedence.          (line  45)
 * - (hyphen), -= operator:               Assignment Ops.      (line 129)
 * - (hyphen), -= operator <1>:           Precedence.          (line  94)
-* - (hyphen), filenames beginning with:  Options.             (line  60)
+* - (hyphen), file names beginning with: Options.             (line  60)
 * - (hyphen), in bracket expressions:    Bracket Expressions. (line  25)
 * --assign option:                       Options.             (line  32)
 * --bignum option:                       Options.             (line 217)
@@ -33388,6 +33388,10 @@ Index
                                                               (line   6)
 * array scanning order, controlling:     Controlling Scanning.
                                                               (line  14)
+* array subscripts, null strings as:     Uninitialized Subscripts.
+                                                              (line  43)
+* array subscripts, numbers as:          Numeric Array Subscripts.
+                                                              (line   6)
 * array, number of elements:             String Functions.    (line 201)
 * arrays:                                Arrays.              (line   6)
 * arrays of arrays:                      Arrays of Arrays.    (line   6)
@@ -33446,7 +33450,7 @@ Index
 * assignment operators:                  Assignment Ops.      (line   6)
 * assignment operators, evaluation order: Assignment Ops.     (line 110)
 * assignment operators, lvalues/rvalues: Assignment Ops.      (line  31)
-* assignments as filenames:              Ignoring Assigns.    (line   6)
+* assignments as file names:             Ignoring Assigns.    (line   6)
 * associative arrays:                    Array Intro.         (line  48)
 * asterisk (*), * operator, as multiplication operator: Precedence.
                                                               (line  54)
@@ -34406,6 +34410,8 @@ Index
 * field numbers:                         Nonconstant Fields.  (line   6)
 * field operator $:                      Fields.              (line  19)
 * field operators, dollar sign as:       Fields.              (line  19)
+* field separator, backslash (\) as:     Command Line Field Separator.
+                                                              (line  24)
 * field separator, in multiline records: Multiple Line.       (line  41)
 * field separator, on command line:      Command Line Field Separator.
                                                               (line   6)
@@ -34421,6 +34427,8 @@ Index
                                                               (line   6)
 * field separators, See Also OFS:        Changing Fields.     (line  64)
 * field separators, spaces as:           Cut Program.         (line 103)
+* field separators, whitespace as:       Default Field Splitting.
+                                                              (line   6)
 * fields:                                Reading Files.       (line  14)
 * fields <1>:                            Fields.              (line   6)
 * fields <2>:                            Basic High Level.    (line  62)
@@ -34439,13 +34447,13 @@ Index
 * FIELDWIDTHS variable <1>:              User-modified.       (line  37)
 * file descriptors:                      Special FD.          (line   6)
 * file inclusion, @include directive:    Include Files.       (line   8)
+* file names, assignments as:            Ignoring Assigns.    (line   6)
 * file names, distinguishing:            Auto-set.            (line  55)
 * file names, in compatibility mode:     Special Caveats.     (line   9)
 * file names, standard streams in gawk:  Special FD.          (line  48)
 * FILENAME variable:                     Reading Files.       (line   6)
 * FILENAME variable <1>:                 Auto-set.            (line 108)
 * FILENAME variable, getline, setting with: Getline Notes.    (line  19)
-* filenames, assignments as:             Ignoring Assigns.    (line   6)
 * files, .gmo:                           Explaining gettext.  (line  42)
 * files, .gmo, specifying directory of:  Explaining gettext.  (line  54)
 * files, .gmo, specifying directory of <1>: Programmer i18n.  (line  48)
@@ -34505,9 +34513,9 @@ Index
 * flag variables:                        Boolean Ops.         (line  69)
 * flag variables <1>:                    Tee Program.         (line  20)
 * floating-point, numbers:               Computer Arithmetic. (line  49)
-* floating-point, numbers, arbitrary precision: Arbitrary Precision Arithmetic.
+* floating-point, numbers, arbitrary-precision: Arbitrary Precision Arithmetic.
                                                               (line   6)
-* floating-point, numbers, arbitrary-precision: Computer Arithmetic.
+* floating-point, numbers, arbitrary-precision <1>: Computer Arithmetic.
                                                               (line  61)
 * floating-point, numbers, double-precision: Computer Arithmetic.
                                                               (line  61)
@@ -34557,11 +34565,11 @@ Index
 * FS variable, --field-separator option and: Options.         (line  21)
 * FS variable, as null string:           Single Character Fields.
                                                               (line  20)
-* FS variable, as TAB character:         Options.             (line 279)
 * FS variable, changing value of:        Field Separators.    (line  34)
 * FS variable, running awk programs and: Cut Program.         (line  63)
 * FS variable, setting from command line: Command Line Field Separator.
                                                               (line   6)
+* FS variable, TAB character as:         Options.             (line 279)
 * FS, containing ^:                      Regexp Field Splitting.
                                                               (line  59)
 * FS, in multiline records:              Multiple Line.       (line  41)
@@ -34836,7 +34844,7 @@ Index
 * hyphen (-), -- operator <1>:           Precedence.          (line  45)
 * hyphen (-), -= operator:               Assignment Ops.      (line 129)
 * hyphen (-), -= operator <1>:           Precedence.          (line  94)
-* hyphen (-), filenames beginning with:  Options.             (line  60)
+* hyphen (-), file names beginning with: Options.             (line  60)
 * hyphen (-), in bracket expressions:    Bracket Expressions. (line  25)
 * i debugger command (alias for info):   Debugger Info.       (line  13)
 * id utility:                            Id Program.          (line   6)
@@ -34949,7 +34957,7 @@ Index
 * Java implementation of awk:            Other Versions.      (line 121)
 * Java programming language:             Glossary.            (line 466)
 * jawk:                                  Other Versions.      (line 121)
-* Jedi knights:                          Undocumented.        (line   6)
+* jedi knights:                          Undocumented.        (line   6)
 * Johansen, Chris:                       Signature Program.   (line  25)
 * join() user-defined function:          Join Function.       (line  18)
 * Kahrs, Ju"rgen:                        Acknowledgments.     (line  60)
@@ -34968,7 +34976,7 @@ Index
 * Kernighan, Brian <9>:                  Basic Data Typing.   (line  54)
 * Kernighan, Brian <10>:                 Glossary.            (line 204)
 * kill command, dynamic profiling:       Profiling.           (line 186)
-* Knights, jedi:                         Undocumented.        (line   6)
+* knights, jedi:                         Undocumented.        (line   6)
 * Kwok, Conrad:                          Contributors.        (line  35)
 * l debugger command (alias for list):   Miscellaneous Debugger Commands.
                                                               (line  73)
@@ -35307,13 +35315,16 @@ Index
 * patsplit:                              String Functions.    (line 297)
 * patterns:                              Patterns and Actions.
                                                               (line   6)
+* patterns, Boolean expressions as:      Expression Patterns. (line  39)
 * patterns, comparison expressions as:   Expression Patterns. (line  14)
 * patterns, counts, in a profile:        Profiling.           (line 118)
 * patterns, default:                     Very Simple.         (line  35)
 * patterns, empty:                       Empty.               (line   6)
-* patterns, expressions as:              Regexp Patterns.     (line   6)
+* patterns, expressions as:              Expression Patterns. (line   6)
 * patterns, ranges in:                   Ranges.              (line   6)
 * patterns, regexp constants as:         Expression Patterns. (line  34)
+* patterns, regular expressions as:      Regexp Usage.        (line   6)
+* patterns, regular expressions as <1>:  Regexp Patterns.     (line   6)
 * patterns, types of:                    Pattern Overview.    (line  15)
 * pawk (profiling version of Brian Kernighan's awk): Other Versions.
                                                               (line  78)
@@ -35561,6 +35572,7 @@ Index
 * record separators:                     awk split records.   (line   6)
 * record separators <1>:                 User-modified.       (line 136)
 * record separators, changing:           awk split records.   (line  85)
+* record separators, newlines as:        awk split records.   (line  12)
 * record separators, regular expressions as: awk split records.
                                                               (line 131)
 * record separators, with multiline records: Multiple Line.   (line  10)
@@ -35834,6 +35846,7 @@ Index
 * single quote ('), in shell commands:   Quoting.             (line  48)
 * single quote ('), vs. apostrophe:      Comments.            (line  27)
 * single quote ('), with double quotes:  Quoting.             (line  73)
+* single records, treating files as:     gawk split records.  (line  92)
 * single-character fields:               Single Character Fields.
                                                               (line   6)
 * single-precision:                      Computer Arithmetic. (line  61)

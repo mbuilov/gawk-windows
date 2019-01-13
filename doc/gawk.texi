@@ -3867,8 +3867,8 @@ are not treated as options even if they begin with @samp{-}.  This
 interpretation of @option{--} follows the POSIX argument parsing
 conventions.
 
-@cindex @code{-} (hyphen), filenames beginning with
-@cindex hyphen (@code{-}), filenames beginning with
+@cindex @code{-} (hyphen), file names beginning with
+@cindex hyphen (@code{-}), file names beginning with
 This is useful if you have @value{FN}s that start with @samp{-},
 or in shell scripts, if you have @value{FN}s that will be specified
 by the user that could start with @samp{-}.
@@ -4203,7 +4203,7 @@ Newlines are not allowed after @samp{?} or @samp{:}
 (@pxref{Conditional Exp}).
 
 
-@cindex @code{FS} variable, as TAB character
+@cindex @code{FS} variable, TAB character as
 @item
 Specifying @samp{-Ft} on the command line does not set the value
 of @code{FS} to be a single TAB character
@@ -4923,8 +4923,8 @@ in case some option becomes obsolete in a future version of @command{gawk}.
 @cindex features, undocumented
 @cindex Skywalker, Luke
 @cindex Kenobi, Obi-Wan
-@cindex Jedi knights
-@cindex Knights, jedi
+@cindex jedi knights
+@cindex knights, jedi
 @quotation
 @i{Use the Source, Luke!}
 @author Obi-Wan
@@ -5095,6 +5095,7 @@ regular expressions work, we present more complicated instances.
 @node Regexp Usage
 @section How to Use Regular Expressions
 
+@cindex patterns, regular expressions as
 @cindex regular expressions, as patterns
 A regular expression can be used as a pattern by enclosing it in
 slashes.  Then the regular expression is tested against the
@@ -6491,6 +6492,7 @@ This is why records are, by default, single lines.
 To use a different character for the record separator,
 simply assign that character to the predefined variable @code{RS}.
 
+@cindex record separators, newlines as
 @cindex newlines, as record separators
 @cindex @code{RS} variable
 Like any other variable,
@@ -6775,6 +6777,7 @@ character as a record separator. However, this is a special case:
 
 @cindex records, treating files as
 @cindex treating files, as single records
+@cindex single records, treating files as
 @xref{Readfile Function} for an interesting way to read
 whole files.  If you are using @command{gawk}, see @ref{Extension Sample
 Readfile} for another option.
@@ -6826,6 +6829,7 @@ character as a record separator. However, this is a special case:
 
 @cindex records, treating files as
 @cindex treating files, as single records
+@cindex single records, treating files as
 @xref{Readfile Function} for an interesting way to read
 whole files.  If you are using @command{gawk}, see @ref{Extension Sample
 Readfile} for another option.
@@ -7293,6 +7297,7 @@ can massage it first with a separate @command{awk} program.)
 @node Default Field Splitting
 @subsection Whitespace Normally Separates Fields
 
+@cindex field separators, whitespace as
 @cindex whitespace, as field separators
 Fields are normally separated by whitespace sequences
 (spaces, TABs, and newlines), not by single spaces.  Two spaces in a row do not
@@ -7487,6 +7492,7 @@ awk -F\\\\ '@dots{}' files @dots{}
 @end example
 
 @noindent
+@cindex field separator, backslash (@code{\}) as
 @cindex @code{\} (backslash), as field separator
 @cindex backslash (@code{\}), as field separator
 Because @samp{\} is used for quoting in the shell, @command{awk} sees
@@ -13848,7 +13854,7 @@ The empty pattern matches every input record.
 
 @node Regexp Patterns
 @subsection Regular Expressions as Patterns
-@cindex patterns, expressions as
+@cindex patterns, regular expressions as
 @cindex regular expressions, as patterns
 
 Regular expressions are one of the first kinds of patterns presented
@@ -13866,6 +13872,7 @@ END            @{ print buzzwords, "buzzwords seen" @}
 @node Expression Patterns
 @subsection Expressions as Patterns
 @cindex expressions, as patterns
+@cindex patterns, expressions as
 
 Any @command{awk} expression is valid as an @command{awk} pattern.
 The pattern matches if the expression's value is nonzero (if a
@@ -13919,6 +13926,7 @@ appears in the current input record. Thus, as a pattern, @code{/li/}
 matches any record containing @samp{li}.
 
 @cindex Boolean expressions, as patterns
+@cindex patterns, Boolean expressions as
 Boolean expressions are also commonly used as patterns.
 Whether the pattern
 matches an input record depends on whether its subexpressions match.
@@ -17059,6 +17067,7 @@ sorting arrays; see @ref{Array Sorting Functions}.
 @section Using Numbers to Subscript Arrays
 
 @cindex numbers, as array subscripts
+@cindex array subscripts, numbers as
 @cindex arrays, numeric subscripts
 @cindex subscripts in arrays, numbers as
 @cindex @code{CONVFMT} variable, array subscripts and
@@ -17172,6 +17181,7 @@ Here, the @samp{++} forces @code{lines} to be numeric, thus making
 the ``old value'' numeric zero. This is then converted to @code{"0"}
 as the array subscript.
 
+@cindex array subscripts, null strings as
 @cindex null strings, as array subscripts
 @cindex dark corner, array subscripts
 @cindex lint checking, array subscripts
@@ -22964,8 +22974,8 @@ not @samp{<}.
 @node Ignoring Assigns
 @subsection Treating Assignments as @value{FFN}s
 
-@cindex assignments as filenames
-@cindex filenames, assignments as
+@cindex assignments as file names
+@cindex file names, assignments as
 Occasionally, you might not want @command{awk} to process command-line
 variable assignments
 (@pxref{Assignment Options}).
@@ -31654,7 +31664,7 @@ program being debugged, but occasionally it can.
 @cindex arbitrary precision
 @cindex multiple precision
 @cindex infinite precision
-@cindex floating-point, numbers@comma{} arbitrary precision
+@cindex floating-point, numbers@comma{} arbitrary-precision
 
 This @value{CHAPTER} introduces some basic concepts relating to
 how computers do arithmetic and defines some important terms.
