@@ -4090,6 +4090,9 @@ do_typeof(int nargs)
 			NODE **lhs = assoc_lookup(dbg, sub);
 			unref(*lhs);
 			*lhs = make_string(arg->array_funcs->name, strlen(arg->array_funcs->name));
+			if (dbg->astore != NULL)
+				(*dbg->astore)(dbg, sub);
+			unref(sub);
 		}
 		break;
 	case Node_val:
@@ -4125,6 +4128,9 @@ do_typeof(int nargs)
 			NODE **lhs = assoc_lookup(dbg, sub);
 			unref(*lhs);
 			*lhs = make_string(s, strlen(s));
+			if (dbg->astore != NULL)
+				(*dbg->astore)(dbg, sub);
+			unref(sub);
 		}
 		break;
 	case Node_var_new:
