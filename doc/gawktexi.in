@@ -2558,7 +2558,7 @@ does the same thing as this one:
 awk 'BEGIN @{ print "Don\47t Panic!" @}'
 @end example
 
-@cindex quoting in @command{gawk} command lines
+@cindex quoting, in @command{gawk} command lines
 @noindent
 This was explained earlier
 (@pxref{Read Terminal}).
@@ -2857,7 +2857,7 @@ as the value of @code{FS}, and the first @value{FN} as the text of the program!
 This results in syntax errors at best, and confusing behavior at worst.
 @end itemize
 
-@cindex quoting in @command{gawk} command lines, tricks for
+@cindex quoting, in @command{gawk} command lines, tricks for
 Mixing single and double quotes is difficult.  You have to resort
 to shell quoting tricks, like this:
 
@@ -3768,7 +3768,7 @@ more than once, setting another variable each time, like this:
 @samp{awk @w{-v foo=1} @w{-v bar=2} @dots{}}.
 
 @cindex predefined variables, @code{-v} option@comma{} setting with
-@cindex variables, predefined @code{-v} option@comma{} setting with
+@cindex variables, predefined, @code{-v} option@comma{} setting with
 @quotation CAUTION
 Using @option{-v} to set the values of the built-in
 variables may lead to surprising results.  @command{awk} will reset the
@@ -3794,8 +3794,8 @@ are not treated as options even if they begin with @samp{-}.  This
 interpretation of @option{--} follows the POSIX argument parsing
 conventions.
 
-@cindex @code{-} (hyphen), filenames beginning with
-@cindex hyphen (@code{-}), filenames beginning with
+@cindex @code{-} (hyphen), file names beginning with
+@cindex hyphen (@code{-}), file names beginning with
 This is useful if you have @value{FN}s that start with @samp{-},
 or in shell scripts, if you have @value{FN}s that will be specified
 by the user that could start with @samp{-}.
@@ -4138,7 +4138,7 @@ Newlines are not allowed after @samp{?} or @samp{:}
 (@pxref{Conditional Exp}).
 
 
-@cindex @code{FS} variable, as TAB character
+@cindex @code{FS} variable, TAB character as
 @item
 Specifying @samp{-Ft} on the command line does not set the value
 of @code{FS} to be a single TAB character
@@ -4393,6 +4393,8 @@ the output of @var{some_command}, and finally it reads
 
 You may also use @code{"-"} to name standard input when reading
 files with @code{getline} (@pxref{Getline/File}).
+And, you can even use @code{"-"} with the @option{-f} option
+to read program source code from standard input (@pxref{Options}).
 
 In addition, @command{gawk} allows you to specify the special
 @value{FN} @file{/dev/stdin}, both on the command line and
@@ -4862,8 +4864,8 @@ in case some option becomes obsolete in a future version of @command{gawk}.
 @cindex features, undocumented
 @cindex Skywalker, Luke
 @cindex Kenobi, Obi-Wan
-@cindex Jedi knights
-@cindex Knights, jedi
+@cindex jedi knights
+@cindex knights, jedi
 @quotation
 @i{Use the Source, Luke!}
 @author Obi-Wan
@@ -5043,6 +5045,7 @@ regular expressions work, we present more complicated instances.
 @node Regexp Usage
 @section How to Use Regular Expressions
 
+@cindex patterns, regular expressions as
 @cindex regular expressions, as patterns
 A regular expression can be used as a pattern by enclosing it in
 slashes.  Then the regular expression is tested against the
@@ -6312,6 +6315,7 @@ This is why records are, by default, single lines.
 To use a different character for the record separator,
 simply assign that character to the predefined variable @code{RS}.
 
+@cindex record separators, newlines as
 @cindex newlines, as record separators
 @cindex @code{RS} variable
 Like any other variable,
@@ -6470,6 +6474,7 @@ affected.
 @cindex records, terminating
 @cindex terminating records
 @cindex differences in @command{awk} and @command{gawk}, record separators
+@cindex differences in @command{awk} and @command{gawk}, @code{RS}/@code{RT} variables
 @cindex regular expressions, as record separators
 @cindex record separators, regular expressions as
 @cindex separators, for records, regular expressions as
@@ -6545,6 +6550,8 @@ that happens to contain newline characters.
 It is thus best to avoid anchor metacharacters in the value of @code{RS}.
 @end quotation
 
+@cindex @command{gawk}, @code{RT} variable in
+@cindex @code{RT} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{RS}/@code{RT} variables
 The use of @code{RS} as a regular expression and the @code{RT}
 variable are @command{gawk} extensions; they are not available in
@@ -6591,6 +6598,7 @@ character as a record separator. However, this is a special case:
 
 @cindex records, treating files as
 @cindex treating files, as single records
+@cindex single records, treating files as
 @xref{Readfile Function} for an interesting way to read
 whole files.  If you are using @command{gawk}, see @ref{Extension Sample
 Readfile} for another option.
@@ -7002,7 +7010,7 @@ this @command{awk} program extracts and prints the string
 @samp{@bullet{}29@bullet{}Oak@bullet{}St.}.
 
 @cindex field separators, choice of
-@cindex regular expressions as field separators
+@cindex regular expressions, as field separators
 @cindex field separators, regular expressions as
 Sometimes the input data contains separator characters that don't
 separate fields the way you thought they would.  For instance, the
@@ -7026,6 +7034,7 @@ can massage it first with a separate @command{awk} program.)
 @node Default Field Splitting
 @subsection Whitespace Normally Separates Fields
 
+@cindex field separators, whitespace as
 @cindex whitespace, as field separators
 Fields are normally separated by whitespace sequences
 (spaces, TABs, and newlines), not by single spaces.  Two spaces in a row do not
@@ -7220,6 +7229,7 @@ awk -F\\\\ '@dots{}' files @dots{}
 @end example
 
 @noindent
+@cindex field separator, backslash (@code{\}) as
 @cindex @code{\} (backslash), as field separator
 @cindex backslash (@code{\}), as field separator
 Because @samp{\} is used for quoting in the shell, @command{awk} sees
@@ -7951,6 +7961,7 @@ POSIX standard.)
 
 @cindex @command{gawk}, @code{RT} variable in
 @cindex @code{RT} variable
+@cindex differences in @command{awk} and @command{gawk}, @code{RS}/@code{RT} variables
 If not in compatibility mode (@pxref{Options}), @command{gawk} sets
 @code{RT} to the input text that matched the value specified by @code{RS}.
 But if the input file ended without any text that matches @code{RS},
@@ -10882,6 +10893,7 @@ it would be nice to have regexp constants that
 are @dfn{strongly typed}; in other words, that denote a regexp useful
 for matching, and not an expression.
 
+@cindex values, regexp
 @command{gawk} provides this feature.  A strongly typed regexp constant
 looks almost like a regular regexp constant, except that it is preceded
 by an @samp{@@} sign:
@@ -11872,7 +11884,7 @@ like @samp{@var{lvalue}++}, but instead of adding, it subtracts.)
 
 @sidebar Operator Evaluation Order
 @cindex precedence
-@cindex operators, precedence
+@cindex operators, precedence of
 @cindex portability, operators
 @cindex evaluation order
 @cindex Marx, Groucho
@@ -13204,7 +13216,7 @@ The empty pattern matches every input record.
 
 @node Regexp Patterns
 @subsection Regular Expressions as Patterns
-@cindex patterns, expressions as
+@cindex patterns, regular expressions as
 @cindex regular expressions, as patterns
 
 Regular expressions are one of the first kinds of patterns presented
@@ -13222,6 +13234,7 @@ END            @{ print buzzwords, "buzzwords seen" @}
 @node Expression Patterns
 @subsection Expressions as Patterns
 @cindex expressions, as patterns
+@cindex patterns, expressions as
 
 Any @command{awk} expression is valid as an @command{awk} pattern.
 The pattern matches if the expression's value is nonzero (if a
@@ -13275,6 +13288,7 @@ appears in the current input record. Thus, as a pattern, @code{/li/}
 matches any record containing @samp{li}.
 
 @cindex Boolean expressions, as patterns
+@cindex patterns, Boolean expressions as
 Boolean expressions are also commonly used as patterns.
 Whether the pattern
 matches an input record depends on whether its subexpressions match.
@@ -14759,7 +14773,6 @@ Its default value is @code{"%.6g"}.  Earlier versions of @command{awk}
 used @code{OFMT} to specify the format for converting numbers to
 strings in general expressions; this is now done by @code{CONVFMT}.
 
-@cindex @code{sprintf()} function, @code{OFMT} variable and
 @cindex @code{print} statement, @code{OFMT} variable and
 @cindex @code{OFS} variable
 @cindex separators, field
@@ -14833,7 +14846,7 @@ The default value of @code{TEXTDOMAIN} is @code{"messages"}.
 @subsection Built-in Variables That Convey Information
 
 @cindex predefined variables, conveying information
-@cindex variables, predefined conveying information
+@cindex variables, predefined, conveying information
 The following is an alphabetical list of variables that @command{awk}
 sets automatically on certain occasions in order to provide
 information to your program.
@@ -16393,6 +16406,7 @@ sorting arrays; see @ref{Array Sorting Functions}.
 @section Using Numbers to Subscript Arrays
 
 @cindex numbers, as array subscripts
+@cindex array subscripts, numbers as
 @cindex arrays, numeric subscripts
 @cindex subscripts in arrays, numbers as
 @cindex @code{CONVFMT} variable, array subscripts and
@@ -16506,6 +16520,7 @@ Here, the @samp{++} forces @code{lines} to be numeric, thus making
 the ``old value'' numeric zero. This is then converted to @code{"0"}
 as the array subscript.
 
+@cindex array subscripts, null strings as
 @cindex null strings, as array subscripts
 @cindex dark corner, array subscripts
 @cindex lint checking, array subscripts
@@ -19285,7 +19300,7 @@ $ @kbd{gawk -f testbits.awk}
 @cindex strings, converting
 @cindex numbers, converting
 @cindex converting, numbers to strings
-@cindex number as string of bits
+@cindex numbers, as string of bits
 The @code{bits2str()} function turns a binary number into a string.
 Initializing @code{mask} to one creates
 a binary value where the rightmost bit
@@ -22044,8 +22059,8 @@ not @samp{<}.
 @node Ignoring Assigns
 @subsection Treating Assignments as @value{FFN}s
 
-@cindex assignments as filenames
-@cindex filenames, assignments as
+@cindex assignments as file names
+@cindex file names, assignments as
 Occasionally, you might not want @command{awk} to process command-line
 variable assignments
 (@pxref{Assignment Options}).
@@ -28850,7 +28865,6 @@ is covered.
 @node String Extraction
 @subsection Extracting Marked Strings
 @cindex strings, extracting
-@cindex marked strings@comma{} extracting
 @cindex @option{--gen-pot} option
 @cindex command-line options, string extraction
 @cindex string extraction (internationalization)
@@ -30199,7 +30213,6 @@ functions that called the one you are in.  The commands for doing this are:
 @cindex debugger commands, @code{where} (@code{backtrace})
 @cindex @code{backtrace} debugger command
 @cindex @code{bt} debugger command (alias for @code{backtrace})
-@cindex @code{where} debugger command
 @cindex @code{where} debugger command (alias for @code{backtrace})
 @cindex call stack, display in debugger
 @cindex traceback, display in debugger
@@ -31176,7 +31189,7 @@ version of @command{gawk}.
 @cindex arbitrary precision
 @cindex multiple precision
 @cindex infinite precision
-@cindex floating-point, numbers@comma{} arbitrary precision
+@cindex floating-point, numbers@comma{} arbitrary-precision
 
 This @value{CHAPTER} introduces some basic concepts relating to
 how computers do arithmetic and defines some important terms.
@@ -38836,7 +38849,7 @@ The development of the extension API first released with
 Arnold Robbins and Andrew Schorr, with notable contributions from
 the rest of the development team.
 
-@cindex Malmberg, John E.
+@cindex Malmberg, John
 @item
 John Malmberg contributed significant improvements to the
 OpenVMS port and the related documentation.
@@ -40409,6 +40422,7 @@ makes this implementation available.  You can view the files one at a time from
 @cindex @command{goawk}
 @cindex Go implementation of @command{awk}
 @cindex source code, @command{goawk}
+@cindex programming languages, Go
 @item @command{goawk}
 This is an @command{awk} interpreter written in the
 @uref{https://golang.org/, Go programming language}.
