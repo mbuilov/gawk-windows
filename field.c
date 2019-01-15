@@ -949,18 +949,12 @@ static void
 set_element(long num, char *s, long len, NODE *n)
 {
 	NODE *it;
-	NODE **lhs;
 	NODE *sub;
 
 	it = make_string(s, len);
 	it->flags |= USER_INPUT;
 	sub = make_number((AWKNUM) (num));
-	lhs = assoc_lookup(n, sub);
-	unref(*lhs);
-	*lhs = it;
-        if (n->astore != NULL)
-                (*n->astore)(n, sub);
-	unref(sub);
+	assoc_set(n, sub, it);
 }
 
 /* do_split --- implement split(), semantics are same as for field splitting */
@@ -1412,16 +1406,12 @@ current_field_sep_str()
 void
 update_PROCINFO_str(const char *subscript, const char *str)
 {
-	NODE **aptr;
 	NODE *tmp;
 
 	if (PROCINFO_node == NULL)
 		return;
 	tmp = make_string(subscript, strlen(subscript));
-	aptr = assoc_lookup(PROCINFO_node, tmp);
-	unref(tmp);
-	unref(*aptr);
-	*aptr = make_string(str, strlen(str));
+	assoc_set(PROCINFO_node, tmp, make_string(str, strlen(str)));
 }
 
 /* update_PROCINFO_num --- update PROCINFO[sub] with numeric value */
@@ -1429,16 +1419,12 @@ update_PROCINFO_str(const char *subscript, const char *str)
 void
 update_PROCINFO_num(const char *subscript, AWKNUM val)
 {
-	NODE **aptr;
 	NODE *tmp;
 
 	if (PROCINFO_node == NULL)
 		return;
 	tmp = make_string(subscript, strlen(subscript));
-	aptr = assoc_lookup(PROCINFO_node, tmp);
-	unref(tmp);
-	unref(*aptr);
-	*aptr = make_number(val);
+	assoc_set(PROCINFO_node, tmp, make_number(val));
 }
 
 /* set_FPAT --- handle an assignment to FPAT */

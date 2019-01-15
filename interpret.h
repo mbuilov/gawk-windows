@@ -303,22 +303,15 @@ uninitialized_scalar:
 			if (r == NULL) {
 				r = make_array();
 				r->parent_array = t1;
-				lhs = assoc_lookup(t1, t2);
-				unref(*lhs);
-				*lhs = r;
 				t2 = force_string(t2);
 				r->vname = estrdup(t2->stptr, t2->stlen);	/* the subscript in parent array */
-
-				/* execute post-assignment routine if any */
-				if (t1->astore != NULL)
-					(*t1->astore)(t1, t2);
+				assoc_set(t1, t2, r);
 			} else if (r->type != Node_var_array) {
 				t2 = force_string(t2);
 				fatal(_("attempt to use scalar `%s[\"%.*s\"]' as an array"),
 						array_vname(t1), (int) t2->stlen, t2->stptr);
 			}
 
-			DEREF(t2);
 			PUSH(r);
 			break;
 

@@ -2024,7 +2024,7 @@ make_number_node(unsigned int flags)
 	return r;
 }
 
-/* assoc_set -- set an element in an array */
+/* assoc_set -- set an element in an array. Does unref(sub)! */
 
 static inline void
 assoc_set(NODE *array, NODE *sub, NODE *value)

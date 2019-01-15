@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2014, 2016, 2018,
+ * Copyright (C) 1986, 1988, 1989, 1991-2014, 2016, 2018, 2019,
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -796,7 +796,7 @@ asort_actual(int nargs, sort_context_t ctxt)
 {
 	NODE *array, *dest = NULL, *result;
 	NODE *r, *subs, *s;
-	NODE **list = NULL, **ptr, **lhs;
+	NODE **list = NULL, **ptr;
 	unsigned long num_elems, i;
 	const char *sort_str;
 	char save;
@@ -884,12 +884,7 @@ asort_actual(int nargs, sort_context_t ctxt)
 
 		for (i = 1, ptr = list; i <= num_elems; i++, ptr += 2) {
 			subs = make_number(i);
-			lhs = assoc_lookup(result, subs);
-			unref(*lhs);
-			*lhs = *ptr;
-			if (result->astore != NULL)
-				(*result->astore)(result, subs);
-			unref(subs);
+			assoc_set(result, subs, *ptr);
 		}
 	} else {
 		/* We want the values of the source array. */
@@ -904,11 +899,11 @@ asort_actual(int nargs, sort_context_t ctxt)
 			/* value node */
 			r = *ptr++;
 
-			if (r->type == Node_val) {
-				lhs = assoc_lookup(result, subs);
-				unref(*lhs);
-				*lhs = dupnode(r);
-			} else {
+			NODE *value;
+
+			if (r->type == Node_val)
+				value = dupnode(r);
+			else {
 				NODE *arr;
 				arr = make_array();
 				subs = force_string(subs);
@@ -917,13 +912,10 @@ asort_actual(int nargs, sort_context_t ctxt)
 				subs->stptr = NULL;
 				subs->flags &= ~STRCUR;
 				arr->parent_array = array; /* actual parent, not the temporary one. */
-				lhs = assoc_lookup(result, subs);
-				unref(*lhs);
-				*lhs = assoc_copy(r, arr);
+
+				value = assoc_copy(r, arr);
 			}
-			if (result->astore != NULL)
-				(*result->astore)(result, subs);
-			unref(subs);
+			assoc_set(result, subs, value);
 		}
 	}
 
