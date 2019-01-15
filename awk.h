@@ -1362,6 +1362,21 @@ extern int fatal_tag_valid;
 /* assoc_remove --- remove an index from symbol[] */
 #define assoc_remove(a, s) ((a)->aremove(a, s) != NULL)
 
+/* assoc_set -- set an element in an array */
+
+static inline void
+assoc_set(NODE *array, NODE *sub, NODE *value)
+{
+
+	NODE **lhs = assoc_lookup(array, sub);
+	unref(*lhs);
+	*lhs = value;
+	if (array->astore != NULL)
+		(*array->astore)(array, sub);
+	unref(sub);
+}
+
+
 /* ------------- Function prototypes or defs (as appropriate) ------------- */
 /* array.c */
 typedef enum { SORTED_IN = 1, ASORT, ASORTI } sort_context_t;
