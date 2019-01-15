@@ -2706,8 +2706,6 @@ do_match(int nargs)
 				if ((s = SUBPATSTART(rp, t1->stptr, ii)) != -1) {
 					size_t subpat_start;
 					size_t subpat_len;
-					NODE **lhs;
-					NODE *sub;
 
 					start = t1->stptr + s;
 					subpat_start = s;
@@ -3984,7 +3982,6 @@ do_intdiv(int nargs)
 {
 	NODE *numerator, *denominator, *result;
 	double num, denom, quotient, remainder;
-	NODE *sub, **lhs;
 
 	result = POP_PARAM();
 	if (result->type != Node_var_array)
