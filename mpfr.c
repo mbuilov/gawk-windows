@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 2012, 2013, 2015, 2017, 2018,
+ * Copyright (C) 2012, 2013, 2015, 2017, 2018, 2019,
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -1265,11 +1265,13 @@ do_mpfr_intdiv(int nargs)
 	lhs = assoc_lookup(result, sub);
 	unref(*lhs);
 	*lhs = quotient;
+	unref(sub);
 
 	sub = make_string("remainder", 9);
 	lhs = assoc_lookup(result, sub);
 	unref(*lhs);
 	*lhs = remainder;
+	unref(sub);
 
 	return make_number((AWKNUM) 0.0);
 }

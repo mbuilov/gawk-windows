@@ -21,6 +21,12 @@
 	* builtin.c (do_typeof): Fix memory leak when populating the
 	optional array, and make sure to call the astore method.
 
+2019-01-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_intdiv): Add unref of subscripts.
+	* mpfr.c (do_mpfr_intdiv): Ditto.
+	Thanks to Andy Schorr for noticing.
+
 2019-01-09         Andrew J. Schorr      <aschorr@telemetry-investments.com>
 
 	* awkgram.y (tokentab): Indicate that typeof may take 2 arguments.
