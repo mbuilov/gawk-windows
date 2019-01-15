@@ -1,3 +1,11 @@
+2019-01-15         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* awk.h (assoc_set): Move the definition lower down because it
+	needs to be after unref is declared.
+	* builtin.c (do_match): Use assoc_set in 3 places.
+	(do_intdiv): Use assoc_set in 2 places.
+	(do_typeof): Use assoc_set in 2 places.
+
 2019-01-14         Andrew J. Schorr      <aschorr@telemetry-investments.com>
 
 	* awk.h (assoc_set): Add new inline function to set an array element

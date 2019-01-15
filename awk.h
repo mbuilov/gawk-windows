@@ -1362,20 +1362,6 @@ extern int fatal_tag_valid;
 /* assoc_remove --- remove an index from symbol[] */
 #define assoc_remove(a, s) ((a)->aremove(a, s) != NULL)
 
-/* assoc_set -- set an element in an array */
-
-static inline void
-assoc_set(NODE *array, NODE *sub, NODE *value)
-{
-
-	NODE **lhs = assoc_lookup(array, sub);
-	unref(*lhs);
-	*lhs = value;
-	if (array->astore != NULL)
-		(*array->astore)(array, sub);
-	unref(sub);
-}
-
 
 /* ------------- Function prototypes or defs (as appropriate) ------------- */
 /* array.c */
@@ -2036,6 +2022,20 @@ make_number_node(unsigned int flags)
 	r->valref = 1;
 	r->flags = (flags|MALLOC|NUMBER|NUMCUR);
 	return r;
+}
+
+/* assoc_set -- set an element in an array */
+
+static inline void
+assoc_set(NODE *array, NODE *sub, NODE *value)
+{
+
+	NODE **lhs = assoc_lookup(array, sub);
+	unref(*lhs);
+	*lhs = value;
+	if (array->astore != NULL)
+		(*array->astore)(array, sub);
+	unref(sub);
 }
 
 /*
