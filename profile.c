@@ -2033,6 +2033,8 @@ pp_namespace(const char *name, INSTRUCTION *comment)
 	if (strcmp(current_namespace, name) == 0)
 		return;
 
+	if (current_namespace != awk_namespace)
+		efree((void *) current_namespace);
 	current_namespace = name;
 
 	if (do_profile)

@@ -2117,10 +2117,32 @@ subscript_list
 simple_variable
 	: NAME
 	  {
+		// FIXME: Code  here and at function call
+		// should be moved into a function
 		char *var_name = $1->lextok;
 
+		bool is_all_upper = true;
+		char *cp;
+		for (cp = var_name; *cp != '\0'; cp++) {
+			if (! isupper(*cp)) {
+				is_all_upper = false;
+				break;
+			}
+		}
+
+		if (current_namespace != awk_namespace && strchr(var_name, ':') == NULL && ! is_all_upper) {
+			size_t len = strlen(current_namespace) + 2 + strlen(var_name) + 1;
+			char *buf;
+
+			emalloc(buf, char *, len, "simple_variable");
+			sprintf(buf, "%s::%s", current_namespace, var_name);
+
+			efree((void *) $1->lextok);
+			$1->lextok = buf;
+		}
+
 		$1->opcode = Op_push;
-		$1->memory = variable($1->source_line, var_name, Node_var_new);
+		$1->memory = variable($1->source_line, $1->lextok, Node_var_new);
 		$$ = list_create($1);
 	  }
 	| NAME subscript_list
@@ -3049,6 +3071,8 @@ next_sourcefile()
 		sourceline = 0;
 		source = NULL;
 		lasttok = 0;
+		if (current_namespace != awk_namespace)
+			efree((char *) current_namespace);
 		current_namespace = awk_namespace;
 	}
 }
@@ -4458,7 +4482,7 @@ make_instruction:
 		return lasttok = class;
 	}
 out:
-	tokkey = estrdup(tokstart, tok - tokstart);
+	tokkey = estrdup(tokstart, tok - tokstart - 1);
 	if (*lexptr == '(') {
 		yylval = bcalloc(Op_token, 2, sourceline);
 		yylval->lextok = tokkey;
@@ -6799,15 +6823,17 @@ set_namespace(INSTRUCTION *ns, INSTRUCTION *comment)
 	}
 
 	if (strcmp(ns->lextok, current_namespace) == 0)
-		efree(ns->lextok);
+		;	// nothing to do
 	else if (strcmp(ns->lextok, awk_namespace) == 0) {
-		efree(ns->lextok);
+		if (current_namespace != awk_namespace)
+			efree((char *) current_namespace);
 		current_namespace = awk_namespace;
 	} else {
 		if (current_namespace != awk_namespace)
 			efree((char *) current_namespace);
-		current_namespace = ns->lextok;
+		current_namespace = estrdup(ns->lextok, strlen(ns->lextok));
 	}
+	efree(ns->lextok);
 
 	// save info and push on front of list of namespaces seen
 	INSTRUCTION *new_ns = instruction(Op_K_namespace);

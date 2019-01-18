@@ -1,3 +1,19 @@
+2019-01-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Start fixing memory leaks related to namespaces.
+
+	* awkgram.y (Grammar): At simple_variable -> NAME, qualify names
+	before lookup/install.
+	(next_sourcefile): Check if need to free current_namespace before
+	assigning to it.
+	(yylex): Fix length of string to be dup'ed before returning
+	NAME or FUNC_CALL.
+	(set_namespace): Always free ns->lextok, adjust memory allocations
+	appropriately.
+	* main.c (main): Check if need to free current_namespace before
+	assigning to it.
+	* profile.c (pp_namespace): Ditto. (This may not be necessary.)
+
 2019-01-14         Andrew J. Schorr      <aschorr@telemetry-investments.com>
 
 	* builtin.c (do_typeof): Fix memory leak when populating the

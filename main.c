@@ -520,6 +520,8 @@ main(int argc, char **argv)
 		interpret(code_block);
 
 	if (do_pretty_print) {
+		if (current_namespace != awk_namespace)
+			efree((char *) current_namespace);
 		current_namespace = awk_namespace;
 		dump_prog(code_block);
 		dump_funcs();
