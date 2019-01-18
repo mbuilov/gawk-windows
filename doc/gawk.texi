@@ -15809,7 +15809,7 @@ after it has finished parsing the program; they are @emph{not} updated
 while the program runs.
 
 @item PROCINFO["platform"]
-@cindex platform running on, @code{PROCINFO["platform"]}
+@cindex platform running on
 This element gives a string indicating the platform for which
 @command{gawk} was compiled. The value will be one of the following:
 
@@ -31870,11 +31870,11 @@ directive is seen.  When @command{gawk} finishes processing the included
 file, the saved namespace is restored and processing continues where it
 left off in the original file.
 
-@cindex @code{@@namespace}, no effect on @code{BEGIN} @code{BEGINFILE}, @code{END}, and @code{ENDFILE}
-@cindex @code{BEGIN}, execution order not affected by @code{@@namespace}
-@cindex @code{BEGINFILE}, execution order not affected by @code{@@namespace}
-@cindex @code{END}, execution order not affected by @code{@@namespace}
-@cindex @code{ENDFILE}, execution order not affected by @code{@@namespace}
+@cindex @code{@@namespace}, no effect on @code{BEGIN}@comma{} @code{BEGINFILE}@comma{} @code{END}@comma{} and @code{ENDFILE}
+@cindex @code{BEGIN} pattern, execution order not affected by @code{@@namespace}
+@cindex @code{BEGINFILE} pattern, execution order not affected by @code{@@namespace}
+@cindex @code{END} pattern, execution order not affected by @code{@@namespace}
+@cindex @code{ENDFILE} pattern, execution order not affected by @code{@@namespace}
 The use of @code{@@namespace} has no influence upon the order of execution
 of @code{BEGIN}, @code{BEGINFILE}, @code{END}, and @code{ENDFILE} rules.
 
@@ -32127,7 +32127,7 @@ in order to accommodate namespaces, and the debugger's @code{dump} command
 was adjusted to match.
 
 @cindex namespaces, interaction with extension API
-@cindex extension API, interaction with namespaces
+@cindex extension API interaction with namespaces
 The extension API (@pxref{Dynamic Extensions}) has always allowed for
 placing functions into a different namespace, although this was not
 previously implemented.  However, the symbol lookup and symbol update
