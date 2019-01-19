@@ -471,10 +471,7 @@ main(int argc, char **argv)
 	if (do_intl)
 		exit(EXIT_SUCCESS);
 
-	if (current_namespace != awk_namespace) {
-		efree((char *) current_namespace);
-		current_namespace = awk_namespace;
-	}
+	set_current_namespace(awk_namespace);
 
 	install_builtins();
 
@@ -520,9 +517,7 @@ main(int argc, char **argv)
 		interpret(code_block);
 
 	if (do_pretty_print) {
-		if (current_namespace != awk_namespace)
-			efree((char *) current_namespace);
-		current_namespace = awk_namespace;
+		set_current_namespace(awk_namespace);
 		dump_prog(code_block);
 		dump_funcs();
 	}
@@ -1805,4 +1800,15 @@ platform_name()
 #else
 	return "posix";
 #endif
+}
+
+/* set_current_namespace --- set current_namespace and handle memory management */
+
+void
+set_current_namespace(const char *new_namespace)
+{
+	if (current_namespace != awk_namespace)
+		efree((void *) current_namespace);
+
+	current_namespace = new_namespace;
 }

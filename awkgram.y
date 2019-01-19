@@ -60,6 +60,8 @@ static void next_sourcefile(void);
 static char *tokexpand(void);
 static NODE *set_profile_text(NODE *n, const char *str, size_t len);
 static int check_qualified_special(char *token);
+static bool is_all_upper(const char *name);
+static char *qualify_name(const char *name, size_t len, bool is_var);
 static INSTRUCTION *trailing_comment;
 static INSTRUCTION *outer_comment;
 static INSTRUCTION *interblock_comment;
@@ -116,7 +118,7 @@ static enum {
 	FUNC_BODY,
 	DONT_CHECK
 } want_param_names = DONT_CHECK;	/* ditto */
-static char *in_function;		/* parsing kludge */
+static bool in_function;		/* parsing kludge */
 static int rule = 0;
 
 const char *const ruletab[] = {
@@ -283,7 +285,7 @@ rule
 	  }
 	| function_prologue action
 	  {
-		in_function = NULL;
+		in_function = false;
 		(void) mk_function($1, $2);
 		want_param_names = DONT_CHECK;
 		if (pending_comment != NULL) {
@@ -466,9 +468,27 @@ action
 
 func_name
 	: NAME
-	  { $$ = $1; }
+	  {
+		const char *name = $1->lextok;
+		char *qname = qualify_name(name, strlen(name), false);
+
+		if (qname != name) {
+			efree((void *)name);
+			$1->lextok = qname;
+		}
+		$$ = $1;
+	  }
 	| FUNC_CALL
-	  { $$ = $1; }
+	  {
+		const char *name = $1->lextok;
+		char *qname = qualify_name(name, strlen(name), false);
+
+		if (qname != name) {
+			efree((void *)name);
+			$1->lextok = qname;
+		}
+		$$ = $1;
+	  }
 	| lex_builtin
 	  {
 		yyerror(_("`%s' is a built-in function, it cannot be redefined"),
@@ -507,7 +527,7 @@ function_prologue
 		$1->comment = func_comment;
 		if (install_function($2->lextok, $1, $5) < 0)
 			YYABORT;
-		in_function = $2->lextok;
+		in_function = true;
 		$2->lextok = NULL;
 		bcfree($2);
 		/* $5 already free'd in install_function */
@@ -2006,6 +2026,7 @@ direct_func_call
 	: FUNC_CALL '(' opt_fcall_expression_list r_paren
 	  {
 		NODE *n;
+#if 0
 		const char *name = $1->func_name;
 
 		if (current_namespace != awk_namespace && strchr(name, ':') == NULL) {
@@ -2018,6 +2039,7 @@ direct_func_call
 			efree((void *) $1->func_name);
 			$1->func_name = buf;
 		}
+#endif
 
 		if (! at_seen) {
 			n = lookup($1->func_name, true);
@@ -2117,6 +2139,7 @@ subscript_list
 simple_variable
 	: NAME
 	  {
+#if 0
 		// FIXME: Code  here and at function call
 		// should be moved into a function
 		char *var_name = $1->lextok;
@@ -2140,6 +2163,15 @@ simple_variable
 			efree((void *) $1->lextok);
 			$1->lextok = buf;
 		}
+#else
+		const char *name = $1->lextok;
+		char *qname = qualify_name(name, strlen(name), true);
+
+		if (qname != name) {
+			efree((void *)name);
+			$1->lextok = qname;
+		}
+#endif
 
 		$1->opcode = Op_push;
 		$1->memory = variable($1->source_line, $1->lextok, Node_var_new);
@@ -3063,17 +3095,13 @@ next_sourcefile()
 		lexeme = sourcefile->lexeme;
 		sourceline = sourcefile->srclines;
 		source = sourcefile->src;
-		if (current_namespace != awk_namespace)
-			efree((char *) current_namespace);
-		current_namespace = sourcefile->namespace;
+		set_current_namespace(sourcefile->namespace);
 	} else {
 		lexptr = NULL;
 		sourceline = 0;
 		source = NULL;
 		lasttok = 0;
-		if (current_namespace != awk_namespace)
-			efree((char *) current_namespace);
-		current_namespace = awk_namespace;
+		set_current_namespace(awk_namespace);
 	}
 }
 
@@ -5047,6 +5075,11 @@ install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist)
 	if (plist != NULL)
 		pcount = plist->lasti->param_count + 1;
 	f = install_symbol(fname, Node_func);
+	if (f->vname != fname) {
+		// DON'T free fname, it's done later
+		fname = f->vname;
+	}
+
 	fi->func_body = f;
 	f->param_cnt = pcount;
 	f->code_ptr = fi;
@@ -6825,13 +6858,9 @@ set_namespace(INSTRUCTION *ns, INSTRUCTION *comment)
 	if (strcmp(ns->lextok, current_namespace) == 0)
 		;	// nothing to do
 	else if (strcmp(ns->lextok, awk_namespace) == 0) {
-		if (current_namespace != awk_namespace)
-			efree((char *) current_namespace);
-		current_namespace = awk_namespace;
+		set_current_namespace(awk_namespace);
 	} else {
-		if (current_namespace != awk_namespace)
-			efree((char *) current_namespace);
-		current_namespace = estrdup(ns->lextok, strlen(ns->lextok));
+		set_current_namespace(estrdup(ns->lextok, strlen(ns->lextok)));
 	}
 	efree(ns->lextok);
 
@@ -6848,4 +6877,54 @@ set_namespace(INSTRUCTION *ns, INSTRUCTION *comment)
 	namespace_changed = true;
 
 	return;
+}
+
+/* is_all_upper --- return true if name is all uppercase letters */
+
+/*
+ * DON'T use isupper(), it's locale aware!
+ */
+
+static bool
+is_all_upper(const char *name)
+{
+	for (; *name != '\0'; name ++) {
+		switch (*name) {
+		case 'A': case 'B': case 'C': case 'D': case 'E':
+		case 'F': case 'G': case 'H': case 'I': case 'J':
+		case 'K': case 'L': case 'M': case 'N': case 'O':
+		case 'P': case 'Q': case 'R': case 'S': case 'T':
+		case 'U': case 'V': case 'W': case 'X': case 'Y':
+		case 'Z':
+			break;
+		default:
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/* qualify_name --- put name into namespace */
+
+static char *
+qualify_name(const char *name, size_t len, bool is_var)
+{
+	if (strchr(name, ':') != NULL)	// already qualified
+		return (char *) name;
+
+	bool case_ok = is_var ? ! is_all_upper(name) : true;
+
+	if (current_namespace != awk_namespace && case_ok) {
+		size_t len = strlen(current_namespace) + 2 + strlen(name) + 1;
+		char *buf;
+
+		emalloc(buf, char *, len, "simple_variable");
+		sprintf(buf, "%s::%s", current_namespace, name);
+
+		return buf;
+	}
+
+	// is this right?
+	return (char *) name;
 }

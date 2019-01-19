@@ -1,3 +1,19 @@
+2019-01-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Continue fixing memory leaks.
+
+	* awk.h (set_current_namespace): Declare function.
+	* awkgram.y: Change all assignments of current_namespace to calls
+	to set_current_namespace.
+	(is_all_upper, qualify_name): New functions.
+	(in_function): Change type to bool, and fix usages.
+	(Grammar): Use qualify_name on variables and function names.
+	* main.c: Change all assignments of current_namespace to calls
+	to set_current_namespace.
+	(set_current_namespace): New function.
+	* profile.c (pp_namespace): Don't free old current_namespace. Add
+	comment explaining why.
+
 2019-01-18         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Start fixing memory leaks related to namespaces.

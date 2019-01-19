@@ -1610,6 +1610,7 @@ extern char *estrdup(const char *str, size_t len);
 extern void update_global_values();
 extern long getenv_long(const char *name);
 extern void after_beginfile(IOBUF **curfile);
+extern void set_current_namespace(const char *new_namespace);
 
 /* mpfr.c */
 extern void set_PREC(void);
