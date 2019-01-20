@@ -310,7 +310,8 @@ uninitialized_scalar:
 				t2 = force_string(t2);
 				fatal(_("attempt to use scalar `%s[\"%.*s\"]' as an array"),
 						array_vname(t1), (int) t2->stlen, t2->stptr);
-			}
+			} else
+				DEREF(t2);
 
 			PUSH(r);
 			break;
