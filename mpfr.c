@@ -1262,16 +1262,10 @@ do_mpfr_intdiv(int nargs)
 	unref(denominator);
 
 	sub = make_string("quotient", 8);
-	lhs = assoc_lookup(result, sub);
-	unref(*lhs);
-	*lhs = quotient;
-	unref(sub);
+	assoc_set(result, sub, quotient);
 
 	sub = make_string("remainder", 9);
-	lhs = assoc_lookup(result, sub);
-	unref(*lhs);
-	*lhs = remainder;
-	unref(sub);
+	assoc_set(result, sub, remainder);
 
 	return make_number((AWKNUM) 0.0);
 }

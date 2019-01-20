@@ -38,6 +38,45 @@
 	assigning to it.
 	* profile.c (pp_namespace): Ditto. (This may not be necessary.)
 
+2019-01-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* debug.c (do_set_var): Add comments before calls to assoc_set.
+	* interpret.h (r_interpret): For Op_sub_array, deref the subscript
+	appropriately. Thanks to Andy Schorr for the catch.
+
+2019-01-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* array.c (asort_actual): Use assoc_set in 2 places.
+	* awk.h (assoc_set): Improve leading comment.
+	* debug.c (do_set_var): Use assoc_set in 2 places.
+	* field.c (set_element, update_PROCINFO_str, update_PROCINFO_num):
+	Use assoc_set in each.
+	* gawkapi.c (api_set_array_element): Use assoc_set.
+	* interpret.h (r_interpret): Use assoc_set.
+	* main.c (init_args, load_environ, load_procinfo_argv):
+	Use assoc_set in each.
+	* mpfr.c (do_mpfr_intdiv): Use assoc_set in 2 places.
+	* str_array.c (str_lookup): Fix leading comment.
+	* symbol.c (install): Use assoc_set.
+
+2019-01-15         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* builtin.c (do_match, do_intdiv): Remove unused `sub' and `lhs'
+	variables, since assoc_set is now doing all of the work.
+
+2019-01-15         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* awk.h (assoc_set): Move the definition lower down because it
+	needs to be after unref is declared.
+	* builtin.c (do_match): Use assoc_set in 3 places.
+	(do_intdiv): Use assoc_set in 2 places.
+	(do_typeof): Use assoc_set in 2 places.
+
+2019-01-14         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* awk.h (assoc_set): Add new inline function to set an array element
+	to eliminate code duplication and reduce the chance of memory leaks.
+
 2019-01-14         Andrew J. Schorr      <aschorr@telemetry-investments.com>
 
 	* builtin.c (do_typeof): Fix memory leak when populating the

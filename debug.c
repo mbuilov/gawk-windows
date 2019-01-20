@@ -1250,6 +1250,7 @@ do_set_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	{
 		NODE *subs, *value;
 		int count = arg->a_count;
+		NODE *newval;
 
 		assert(count > 0);
 		name = arg->a_string;
@@ -1268,11 +1269,12 @@ do_set_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 				else {
 					arg = arg->next;
 					val = arg->a_node;
-					lhs = assoc_lookup(r, subs);
-					unref(*lhs);
-					*lhs = dupnode(val);
+					newval = dupnode(val);
+					// subs should not be freed, so
+					// use dupnode in call to assoc_set.
+					assoc_set(r, dupnode(subs), newval);
 					fprintf(out_fp, "%s[\"%.*s\"] = ", name, (int) subs->stlen, subs->stptr);
-					valinfo(*lhs, fprintf, out_fp);
+					valinfo(newval, fprintf, out_fp);
 				}
 			} else {
 				if (value == NULL) {
@@ -1280,9 +1282,9 @@ do_set_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 					array = make_array();
 					array->vname = estrdup(subs->stptr, subs->stlen);
 					array->parent_array = r;
-					lhs = assoc_lookup(r, subs);
-					unref(*lhs);
-					*lhs = array;
+					// subs should not be freed, so
+					// use dupnode in call to assoc_set.
+					assoc_set(r, dupnode(subs), array);
 					r = array;
 				} else if (value->type != Node_var_array) {
 					d_error(_("attempt to use scalar `%s[\"%.*s\"]' as array"),

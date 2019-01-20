@@ -121,7 +121,7 @@ str_array_init(NODE *symbol ATTRIBUTE_UNUSED, NODE *subs ATTRIBUTE_UNUSED)
 
 
 /*
- * assoc_lookup:
+ * str_lookup:
  * Find SYMBOL[SUBS] in the assoc array.  Install it with value "" if it
  * isn't there. Returns a pointer ala get_lhs to where its value is stored.
  *

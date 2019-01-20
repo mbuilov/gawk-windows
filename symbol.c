@@ -307,7 +307,6 @@ static NODE *
 install(const char *name, NODE *parm, NODETYPE type)
 {
 	NODE *r;
-	NODE **aptr;
 	NODE *table;
 	NODE *n_name;
 	NODE *prev;
@@ -353,14 +352,12 @@ install(const char *name, NODE *parm, NODETYPE type)
 			goto simple;
 		r->dup_ent = prev->dup_ent;
 		prev->dup_ent = r;
+		unref(n_name);
 	} else {
 simple:
 		/* the simple case */
-		aptr = assoc_lookup(table, n_name);
-		unref(*aptr);
-		*aptr = r;
+		assoc_set(table, n_name, r);
 	}
-	unref(n_name);
 
 	if (install_func)
 		(*install_func)(r);

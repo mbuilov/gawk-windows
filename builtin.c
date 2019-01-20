@@ -2706,8 +2706,6 @@ do_match(int nargs)
 				if ((s = SUBPATSTART(rp, t1->stptr, ii)) != -1) {
 					size_t subpat_start;
 					size_t subpat_len;
-					NODE **lhs;
-					NODE *sub;
 
 					start = t1->stptr + s;
 					subpat_start = s;
@@ -2719,15 +2717,7 @@ do_match(int nargs)
 
 					it = make_string(start, len);
 					it->flags |= USER_INPUT;
-
-					sub = make_number((AWKNUM) (ii));
-					lhs = assoc_lookup(dest, sub);
-					unref(*lhs);
-					*lhs = it;
-					/* execute post-assignment routine if any */
-					if (dest->astore != NULL)
-						(*dest->astore)(dest, sub);
-					unref(sub);
+					assoc_set(dest, make_number((AWKNUM) (ii)), it);;
 
 					sprintf(buff, "%d", ii);
 					ilen = strlen(buff);
@@ -2745,14 +2735,7 @@ do_match(int nargs)
 
 					slen = ilen + subseplen + 5;
 
-					it = make_number((AWKNUM) subpat_start + 1);
-					sub = make_string(buf, slen);
-					lhs = assoc_lookup(dest, sub);
-					unref(*lhs);
-					*lhs = it;
-					if (dest->astore != NULL)
-						(*dest->astore)(dest, sub);
-					unref(sub);
+					assoc_set(dest, make_string(buf, slen), make_number((AWKNUM) subpat_start + 1));
 
 					memcpy(buf, buff, ilen);
 					memcpy(buf + ilen, subsepstr, subseplen);
@@ -2760,14 +2743,7 @@ do_match(int nargs)
 
 					slen = ilen + subseplen + 6;
 
-					it = make_number((AWKNUM) subpat_len);
-					sub = make_string(buf, slen);
-					lhs = assoc_lookup(dest, sub);
-					unref(*lhs);
-					*lhs = it;
-					if (dest->astore != NULL)
-						(*dest->astore)(dest, sub);
-					unref(sub);
+					assoc_set(dest, make_string(buf, slen), make_number((AWKNUM) subpat_len));
 				}
 			}
 
@@ -4006,7 +3982,6 @@ do_intdiv(int nargs)
 {
 	NODE *numerator, *denominator, *result;
 	double num, denom, quotient, remainder;
-	NODE *sub, **lhs;
 
 	result = POP_PARAM();
 	if (result->type != Node_var_array)
@@ -4044,17 +4019,9 @@ do_intdiv(int nargs)
 #endif	/* ! HAVE_FMOD */
 	remainder = double_to_int(remainder);
 
-	sub = make_string("quotient", 8);
-	lhs = assoc_lookup(result, sub);
-	unref(*lhs);
-	*lhs = make_number((AWKNUM) quotient);
-	unref(sub);
+	assoc_set(result, make_string("quotient", 8), make_number((AWKNUM) quotient));
 
-	sub = make_string("remainder", 9);
-	lhs = assoc_lookup(result, sub);
-	unref(*lhs);
-	*lhs = make_number((AWKNUM) remainder);
-	unref(sub);
+	assoc_set(result, make_string("remainder", 9), make_number((AWKNUM) remainder));
 
 	DEREF(denominator);
 	DEREF(numerator);
@@ -4087,15 +4054,8 @@ do_typeof(int nargs)
 		/* Node_var_array is never UPREF'ed */
 		res = "array";
 		deref = false;
-		if (dbg) {
-			NODE *sub = make_string("array_type", 10);
-			NODE **lhs = assoc_lookup(dbg, sub);
-			unref(*lhs);
-			*lhs = make_string(arg->array_funcs->name, strlen(arg->array_funcs->name));
-			if (dbg->astore != NULL)
-				(*dbg->astore)(dbg, sub);
-			unref(sub);
-		}
+		if (dbg)
+			assoc_set(dbg, make_string("array_type", 10), make_string(arg->array_funcs->name, strlen(arg->array_funcs->name)));
 		break;
 	case Node_val:
 		switch (fixtype(arg)->flags & (STRING|NUMBER|USER_INPUT|REGEX)) {
@@ -4126,13 +4086,7 @@ do_typeof(int nargs)
 		}
 		if (dbg) {
 			const char *s = flags2str(arg->flags);
-			NODE *sub = make_string("flags", 5);
-			NODE **lhs = assoc_lookup(dbg, sub);
-			unref(*lhs);
-			*lhs = make_string(s, strlen(s));
-			if (dbg->astore != NULL)
-				(*dbg->astore)(dbg, sub);
-			unref(sub);
+			assoc_set(dbg, make_string("flags", 5), make_string(s, strlen(s)));
 		}
 		break;
 	case Node_var_new:

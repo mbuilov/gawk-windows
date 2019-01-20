@@ -1046,7 +1046,6 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 	NODE *array = (NODE *)a_cookie;
 	NODE *tmp;
 	NODE *elem;
-	NODE **aptr;
 
 	/* don't check for index len zero, null str is ok as index */
 	if (   array == NULL
@@ -1058,17 +1057,13 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 		return awk_false;
 
 	tmp = awk_value_to_node(index);
-	aptr = assoc_lookup(array, tmp);
-	unref(*aptr);
-	elem = *aptr = awk_value_to_node(value);
+	elem = awk_value_to_node(value);
 	if (elem->type == Node_var_array) {
 		elem->parent_array = array;
 		elem->vname = estrdup(index->str_value.str,
 					index->str_value.len);
 	}
-	if (array->astore != NULL)
-		(*array->astore)(array, tmp);
-	unref(tmp);
+	assoc_set(array, tmp, elem);
 
 	return awk_true;
 }

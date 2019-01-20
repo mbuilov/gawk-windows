@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1986, 1988, 1989, 1991-2018 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2019 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -742,23 +742,19 @@ static void
 init_args(int argc0, int argc, const char *argv0, char **argv)
 {
 	int i, j;
-	NODE **aptr;
-	NODE *tmp;
+	NODE *sub, *val;
 
 	ARGV_node = install_symbol(estrdup("ARGV", 4), Node_var_array);
-	tmp =  make_number(0.0);
-	aptr = assoc_lookup(ARGV_node, tmp);
-	unref(tmp);
-	unref(*aptr);
-	*aptr = make_string(argv0, strlen(argv0));
-	(*aptr)->flags |= USER_INPUT;
+	sub = make_number(0.0);
+	val = make_string(argv0, strlen(argv0));
+	val->flags |= USER_INPUT;
+	assoc_set(ARGV_node, sub, val);
+
 	for (i = argc0, j = 1; i < argc; i++, j++) {
-		tmp = make_number((AWKNUM) j);
-		aptr = assoc_lookup(ARGV_node, tmp);
-		unref(tmp);
-		unref(*aptr);
-		*aptr = make_string(argv[i], strlen(argv[i]));
-		(*aptr)->flags |= USER_INPUT;
+		sub = make_number((AWKNUM) j);
+		val = make_string(argv[i], strlen(argv[i]));
+		val->flags |= USER_INPUT;
+		assoc_set(ARGV_node, sub, val);
 	}
 
 	ARGC_node = install_symbol(estrdup("ARGC", 4), Node_var);
@@ -887,9 +883,8 @@ load_environ()
 	extern char **environ;
 #endif
 	char *var, *val;
-	NODE **aptr;
 	int i;
-	NODE *tmp;
+	NODE *sub, *newval;
 	static bool been_here = false;
 
 	if (been_here)
@@ -907,12 +902,10 @@ load_environ()
 			*val++ = '\0';
 		else
 			val = nullstr;
-		tmp = make_string(var, strlen(var));
-		aptr = assoc_lookup(ENVIRON_node, tmp);
-		unref(tmp);
-		unref(*aptr);
-		*aptr = make_string(val, strlen(val));
-		(*aptr)->flags |= USER_INPUT;
+		sub = make_string(var, strlen(var));
+		newval = make_string(val, strlen(val));
+		newval->flags |= USER_INPUT;
+		assoc_set(ENVIRON_node, sub, newval);
 
 		/* restore '=' so that system() gets a valid environment */
 		if (val != nullstr)
@@ -936,31 +929,32 @@ load_environ()
 	return ENVIRON_node;
 }
 
+/* load_procinfo_argv --- populate PROCINFO["argv"] */
+
 static void
 load_procinfo_argv()
 {
-	NODE *tmp;
-	NODE **aptr;
+	NODE *sub;
+	NODE *val;
 	NODE *argv_array;
 	int i;
 
-	tmp = make_string("argv", 4);
-	aptr = assoc_lookup(PROCINFO_node, tmp);
-	unref(tmp);
-	unref(*aptr);
+	// build the sub-array first
 	getnode(argv_array);
  	memset(argv_array, '\0', sizeof(NODE));  /* valgrind wants this */
 	null_array(argv_array);
-	*aptr = argv_array;
 	argv_array->parent_array = PROCINFO_node;
 	argv_array->vname = estrdup("argv", 4);
 	for (i = 0; d_argv[i] != NULL; i++) {
-		tmp = make_number(i);
-		aptr = assoc_lookup(argv_array, tmp);
-		unref(tmp);
-		unref(*aptr);
-		*aptr = make_string(d_argv[i], strlen(d_argv[i]));
+		sub = make_number(i);
+		val = make_string(d_argv[i], strlen(d_argv[i]));
+		assoc_set(argv_array, sub, val);
 	}
+
+	// hook it into PROCINFO
+	sub = make_string("argv", 4);
+	assoc_set(PROCINFO_node, sub, argv_array);
+
 }
 
 /* load_procinfo --- populate the PROCINFO array */
