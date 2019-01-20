@@ -61,7 +61,7 @@ static char *tokexpand(void);
 static NODE *set_profile_text(NODE *n, const char *str, size_t len);
 static int check_qualified_special(char *token);
 static bool is_all_upper(const char *name);
-static char *qualify_name(const char *name, size_t len, bool is_var);
+static char *qualify_name(const char *name, size_t len);
 static INSTRUCTION *trailing_comment;
 static INSTRUCTION *outer_comment;
 static INSTRUCTION *interblock_comment;
@@ -470,7 +470,7 @@ func_name
 	: NAME
 	  {
 		const char *name = $1->lextok;
-		char *qname = qualify_name(name, strlen(name), false);
+		char *qname = qualify_name(name, strlen(name));
 
 		if (qname != name) {
 			efree((void *)name);
@@ -481,7 +481,7 @@ func_name
 	| FUNC_CALL
 	  {
 		const char *name = $1->lextok;
-		char *qname = qualify_name(name, strlen(name), false);
+		char *qname = qualify_name(name, strlen(name));
 
 		if (qname != name) {
 			efree((void *)name);
@@ -2039,6 +2039,14 @@ direct_func_call
 			efree((void *) $1->func_name);
 			$1->func_name = buf;
 		}
+#else
+		char *name = $1->func_name;
+		char *qname = qualify_name(name, strlen(name));
+
+		if (qname != name) {
+			efree((char *) name);
+			$1->func_name = qname;
+		}
 #endif
 
 		if (! at_seen) {
@@ -2165,7 +2173,7 @@ simple_variable
 		}
 #else
 		const char *name = $1->lextok;
-		char *qname = qualify_name(name, strlen(name), true);
+		char *qname = qualify_name(name, strlen(name));
 
 		if (qname != name) {
 			efree((void *)name);
@@ -6888,7 +6896,7 @@ set_namespace(INSTRUCTION *ns, INSTRUCTION *comment)
 static bool
 is_all_upper(const char *name)
 {
-	for (; *name != '\0'; name ++) {
+	for (; *name != '\0'; name++) {
 		switch (*name) {
 		case 'A': case 'B': case 'C': case 'D': case 'E':
 		case 'F': case 'G': case 'H': case 'I': case 'J':
@@ -6908,18 +6916,16 @@ is_all_upper(const char *name)
 /* qualify_name --- put name into namespace */
 
 static char *
-qualify_name(const char *name, size_t len, bool is_var)
+qualify_name(const char *name, size_t len)
 {
 	if (strchr(name, ':') != NULL)	// already qualified
 		return (char *) name;
 
-	bool case_ok = is_var ? ! is_all_upper(name) : true;
-
-	if (current_namespace != awk_namespace && case_ok) {
-		size_t len = strlen(current_namespace) + 2 + strlen(name) + 1;
+	if (current_namespace != awk_namespace && ! is_all_upper(name)) {
+		size_t length = strlen(current_namespace) + 2 + len + 1;
 		char *buf;
 
-		emalloc(buf, char *, len, "simple_variable");
+		emalloc(buf, char *, length, "qualify_name");
 		sprintf(buf, "%s::%s", current_namespace, name);
 
 		return buf;

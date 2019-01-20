@@ -1,3 +1,11 @@
+2019-01-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Restore functionality.
+
+	* awkgram.y (qualify_name): Remove `is_var' param, always check
+	for all upper case. Adjust all calls.
+	(Grammar): Do qualify_name for function calls also.
+
 2019-01-19         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Continue fixing memory leaks.
