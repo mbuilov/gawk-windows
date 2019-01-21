@@ -2188,6 +2188,12 @@ simple_variable
 	| NAME subscript_list
 	  {
 		char *arr = $1->lextok;
+		char *qname = qualify_name(arr, strlen(arr));
+
+		if (qname != arr) {
+			efree((void *)arr);
+			arr = $1->lextok = qname;
+		}
 		$1->memory = variable($1->source_line, arr, Node_var_new);
 		$1->opcode = Op_push_array;
 		$$ = list_prepend($2, $1);
