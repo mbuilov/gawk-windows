@@ -2,6 +2,10 @@
 
 	* awkgram.y (Grammar): Use qualify_name for array subscript
 	expressions. Fixes the last leak in the test suite.
+	* awk.h (is_all_upper): Declare.
+	* symbol.c (is_all_upper): Remove static.
+	* awkgram.y (is_all_upper): Remove.
+	(Grammar): Clean up `#if 0' code.
 
 2019-01-20         Arnold D. Robbins     <arnold@skeeve.com>
 

@@ -965,10 +965,14 @@ free_bcpool(INSTRUCTION_POOL *pl)
 
 /* is_all_upper --- return true if name is all uppercase letters */
 
-static bool
+/*
+ * DON'T use isupper(), it's locale aware!
+ */
+
+bool
 is_all_upper(const char *name)
 {
-	for (; *name != '\0'; name ++) {
+	for (; *name != '\0'; name++) {
 		switch (*name) {
 		case 'A': case 'B': case 'C': case 'D': case 'E':
 		case 'F': case 'G': case 'H': case 'I': case 'J':

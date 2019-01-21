@@ -60,7 +60,6 @@ static void next_sourcefile(void);
 static char *tokexpand(void);
 static NODE *set_profile_text(NODE *n, const char *str, size_t len);
 static int check_qualified_special(char *token);
-static bool is_all_upper(const char *name);
 static char *qualify_name(const char *name, size_t len);
 static INSTRUCTION *trailing_comment;
 static INSTRUCTION *outer_comment;
@@ -2026,20 +2025,6 @@ direct_func_call
 	: FUNC_CALL '(' opt_fcall_expression_list r_paren
 	  {
 		NODE *n;
-#if 0
-		const char *name = $1->func_name;
-
-		if (current_namespace != awk_namespace && strchr(name, ':') == NULL) {
-			size_t len = strlen(current_namespace) + 2 + strlen(name) + 1;
-			char *buf;
-
-			emalloc(buf, char *, len, "direct_func_call");
-			sprintf(buf, "%s::%s", current_namespace, name);
-
-			efree((void *) $1->func_name);
-			$1->func_name = buf;
-		}
-#else
 		char *name = $1->func_name;
 		char *qname = qualify_name(name, strlen(name));
 
@@ -2047,7 +2032,6 @@ direct_func_call
 			efree((char *) name);
 			$1->func_name = qname;
 		}
-#endif
 
 		if (! at_seen) {
 			n = lookup($1->func_name, true);
@@ -2147,31 +2131,6 @@ subscript_list
 simple_variable
 	: NAME
 	  {
-#if 0
-		// FIXME: Code  here and at function call
-		// should be moved into a function
-		char *var_name = $1->lextok;
-
-		bool is_all_upper = true;
-		char *cp;
-		for (cp = var_name; *cp != '\0'; cp++) {
-			if (! isupper(*cp)) {
-				is_all_upper = false;
-				break;
-			}
-		}
-
-		if (current_namespace != awk_namespace && strchr(var_name, ':') == NULL && ! is_all_upper) {
-			size_t len = strlen(current_namespace) + 2 + strlen(var_name) + 1;
-			char *buf;
-
-			emalloc(buf, char *, len, "simple_variable");
-			sprintf(buf, "%s::%s", current_namespace, var_name);
-
-			efree((void *) $1->lextok);
-			$1->lextok = buf;
-		}
-#else
 		const char *name = $1->lextok;
 		char *qname = qualify_name(name, strlen(name));
 
@@ -2179,7 +2138,6 @@ simple_variable
 			efree((void *)name);
 			$1->lextok = qname;
 		}
-#endif
 
 		$1->opcode = Op_push;
 		$1->memory = variable($1->source_line, $1->lextok, Node_var_new);
@@ -6891,32 +6849,6 @@ set_namespace(INSTRUCTION *ns, INSTRUCTION *comment)
 	namespace_changed = true;
 
 	return;
-}
-
-/* is_all_upper --- return true if name is all uppercase letters */
-
-/*
- * DON'T use isupper(), it's locale aware!
- */
-
-static bool
-is_all_upper(const char *name)
-{
-	for (; *name != '\0'; name++) {
-		switch (*name) {
-		case 'A': case 'B': case 'C': case 'D': case 'E':
-		case 'F': case 'G': case 'H': case 'I': case 'J':
-		case 'K': case 'L': case 'M': case 'N': case 'O':
-		case 'P': case 'Q': case 'R': case 'S': case 'T':
-		case 'U': case 'V': case 'W': case 'X': case 'Y':
-		case 'Z':
-			break;
-		default:
-			return false;
-		}
-	}
-
-	return true;
 }
 
 /* qualify_name --- put name into namespace */
