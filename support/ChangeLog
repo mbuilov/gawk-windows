@@ -1,3 +1,10 @@
+2019-01-21         Paul Eggert           <eggert@cs.ucla.edu>
+
+	regex: fix read overrun
+	Problem found by AddressSanitizer, reported by Hongxu Chen in:
+	https://debbugs.gnu.org/cgi/34140
+	* regexec.c (proceed_next_node): Do not read past end of input buffer.
+
 2019-01-09         John E. Malmberg      <wb8tyw@qsl.net>
 
 	* cdefs.h, xalloc.h: For non GCC, have
