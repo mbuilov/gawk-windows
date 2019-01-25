@@ -24,7 +24,7 @@
  */
 
 /* FIX THIS BEFORE EVERY RELEASE: */
-#define UPDATE_YEAR	2018
+#define UPDATE_YEAR	2019
 
 #include "awk.h"
 #include "getopt.h"
@@ -633,7 +633,8 @@ usage(int exitval, FILE *fp)
 which is section `Reporting Problems and Bugs' in the\n\
 printed version.  This same information may be found at\n\
 https://www.gnu.org/software/gawk/manual/html_node/Bugs.html.\n\
-PLEASE do NOT try to report bugs by posting in comp.lang.awk.\n\n"), fp);
+PLEASE do NOT try to report bugs by posting in comp.lang.awk,\n\n\
+or by using a web forum such as Stack Overflow.\n\n"), fp);
 
 	/* ditto */
 	fputs(_("gawk is a pattern scanning and processing language.\n\

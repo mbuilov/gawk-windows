@@ -5,34 +5,7 @@
    are permitted in any medium without royalty provided the copyright
    notice and this notice are preserved.
 
-Changes from 4.2.x to 5.0.0
----------------------------
-
-1. The undocumented configure option and code that enabled the use of
-   non-English "letters" in identifiers is now gone.
-
-2. The `--with-whiny-user-strftime' configuration option is now gone.
-
-3. The code now makes some stronger assumptions about a C99 environment.
-
-4. PROCINFO["platform"] yields a string indicating the platform for
-   which gawk was compiled.
-
-5. Writing to elements of SYMTAB that are not variable names now
-   causes a fatal error.
-
-6. Comment handling in the pretty-printer has been reworked almost completely
-   from scratch. As a result, comments in many corner cases that were
-   previously lost are now included in the formatted output.
-
-7. Namespaces have been implemented! See the manual.  One consequence of this
-   is that file included with -i, read with -f, and command line program
-   segments must all be self-contained syntactic units. E.g., you can no
-   longer do something like this:
-
-   	gawk -e 'BEGIN {' -e 'print "hello" }'
-
-Changes from 4.2.1 to 4.2.2
+Changes from 4.2.1 to 5.0.0
 ---------------------------
 
 1. Support for the POSIX standard %a and %A printf formats has been added.
@@ -47,8 +20,32 @@ Changes from 4.2.1 to 4.2.2
 
 4. Infrastructure upgrades: Bison 3.2.1, Automake 1.16.1, Gettext 0.19.8.1.
 
+5. The undocumented configure option and code that enabled the use of
+   non-English "letters" in identifiers is now gone.
+
+6. The `--with-whiny-user-strftime' configuration option is now gone.
+
+7. The code now makes some stronger assumptions about a C99 environment.
+
+8. PROCINFO["platform"] yields a string indicating the platform for
+   which gawk was compiled.
+
+9. Writing to elements of SYMTAB that are not variable names now
+   causes a fatal error.
+
+10. Comment handling in the pretty-printer has been reworked almost completely
+    from scratch. As a result, comments in many corner cases that were
+   previously lost are now included in the formatted output.
+
+11. Namespaces have been implemented! See the manual.  One consequence of this
+    is that files included with -i, read with -f, and command line program
+    segments must all be self-contained syntactic units. E.g., you can no
+    longer do something like this:
+
+   	gawk -e 'BEGIN {' -e 'print "hello" }'
+
 XX. A number of bugs, some of them quite significant, have been fixed.
-   See the ChangeLog for details.
+    See the ChangeLog for details.
 
 Changes from 4.2.0 to 4.2.1
 ---------------------------
