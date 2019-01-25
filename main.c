@@ -1170,7 +1170,7 @@ arg_assign(char *arg, bool initing)
 		fatal(_("cannot use gawk builtin `%s' as variable name"), arg);
 
 	if (! initing) {
-		var = lookup(arg, false);
+		var = lookup(arg);
 		if (var != NULL && var->type == Node_func)
 			fatal(_("cannot use function `%s' as variable name"), arg);
 	}

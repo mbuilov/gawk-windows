@@ -1,3 +1,29 @@
+2019-01-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (Grammar): Add new production `qualified_name' which
+	is NAME + qualification call. Use it everywhere that NAME was
+	used, except for function parameters.
+
+2019-01-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (adjust_namespace): Check for all upper case
+	identifiers so we don't get things like awk::NF.
+
+2019-01-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* symtab.c (lookup): Remove second `do_qualify' parameter.
+	Remove calls to `fix_up_namespace'.  If name starts with
+	"awk::" just lookup the compnent name.
+	Adjust all calls to `lookup' in other files.
+	(install): Don't use `fix_up_namespace'.
+	(fix_up_namespace): Remove function.
+	* awk.h (lookup): Adjust declaration.
+
+2019-01-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (qualify_name): Don't qualify a name if it's
+	a parameter.
+
 2019-01-21         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y (Grammar): Use qualify_name for array subscript

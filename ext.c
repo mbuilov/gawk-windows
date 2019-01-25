@@ -118,7 +118,7 @@ make_builtin(const char *name_space, const awk_ext_func_t *funcinfo)
 		if (check_special(name) >= 0)
 			fatal(_("make_builtin: can't use gawk built-in `%s' as function name"), name);
 
-		f = lookup(name, false);
+		f = lookup(name);
 		install_name = estrdup(name, strlen(name));
 	} else {
 		if (! is_valid_identifier(name_space))
@@ -135,7 +135,7 @@ make_builtin(const char *name_space, const awk_ext_func_t *funcinfo)
 		sprintf(buf, "%s::%s", name_space, name);
 		install_name = buf;
 
-		f = lookup(install_name, false);
+		f = lookup(install_name);
 	}
 
 	if (f != NULL) {

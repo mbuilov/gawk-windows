@@ -773,6 +773,10 @@ EXTRA_DIST = \
 	nsbad.awk \
 	nsbad.ok \
 	nsbad_cmd.ok \
+	nsforloop.awk \
+	nsforloop.ok \
+	nsfuncrecurse.awk \
+	nsfuncrecurse.ok \
 	nsindirect1.awk \
 	nsindirect1.ok \
 	nsindirect2.awk \
@@ -1327,7 +1331,7 @@ GAWK_EXT_TESTS = \
 	lint lintexp lintindex lintint lintlength lintold lintset lintwarn \
 	manyfiles match1 match2 match3 mbstr1 mbstr2 mixed1 mktime muldimposix \
 	nastyparm negtime next nondec nondec2 nonfatal1 nonfatal2 nonfatal3 \
-	nsbad nsbad_cmd nsindirect1 nsindirect2 nsprof1 nsprof2 \
+	nsbad nsbad_cmd nsforloop nsfuncrecurse nsindirect1 nsindirect2 nsprof1 nsprof2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge \
 	procinfs profile0 profile1 profile2 profile3 profile4 profile5 profile6 \
 	profile7 profile8 profile9 profile10 profile11 pty1 pty2 \

@@ -465,7 +465,7 @@ action
 	  }
 	;
 
-func_name
+qualified_name
 	: NAME
 	  {
 		const char *name = $1->lextok;
@@ -477,6 +477,10 @@ func_name
 		}
 		$$ = $1;
 	  }
+	;
+
+func_name
+	: qualified_name
 	| FUNC_CALL
 	  {
 		const char *name = $1->lextok;
@@ -859,7 +863,7 @@ statement
 		/* else
 			$1 and $4 are NULLs */
 	  }
-	| LEX_FOR '(' NAME LEX_IN simple_variable r_paren opt_nls statement
+	| LEX_FOR '(' qualified_name LEX_IN simple_variable r_paren opt_nls statement
 	  {
 		INSTRUCTION *ip;
 		char *var_name = $3->lextok;
@@ -1228,7 +1232,7 @@ regular_print:
 		}
 	  }
 
-	| LEX_DELETE NAME { sub_counter = 0; } delete_subscript_list
+	| LEX_DELETE qualified_name { sub_counter = 0; } delete_subscript_list
 	  {
 		char *arr = $2->lextok;
 
@@ -1261,7 +1265,7 @@ regular_print:
 			$$ = list_append(list_append($4, $2), $1);
 		}
 	  }
-	| LEX_DELETE '(' NAME ')'
+	| LEX_DELETE '(' qualified_name ')'
 		  /*
 		   * this is for tawk compatibility. maybe the warnings
 		   * should always be done.
@@ -2034,7 +2038,7 @@ direct_func_call
 		}
 
 		if (! at_seen) {
-			n = lookup($1->func_name, true);
+			n = lookup($1->func_name);
 			if (n != NULL && n->type != Node_func
 			    && n->type != Node_ext_func) {
 				error_ln($1->source_line,
@@ -2129,29 +2133,16 @@ subscript_list
 	;
 
 simple_variable
-	: NAME
+	: qualified_name
 	  {
-		const char *name = $1->lextok;
-		char *qname = qualify_name(name, strlen(name));
-
-		if (qname != name) {
-			efree((void *)name);
-			$1->lextok = qname;
-		}
-
 		$1->opcode = Op_push;
 		$1->memory = variable($1->source_line, $1->lextok, Node_var_new);
 		$$ = list_create($1);
 	  }
-	| NAME subscript_list
+	| qualified_name subscript_list
 	  {
 		char *arr = $1->lextok;
-		char *qname = qualify_name(arr, strlen(arr));
 
-		if (qname != arr) {
-			efree((void *)arr);
-			arr = $1->lextok = qname;
-		}
 		$1->memory = variable($1->source_line, arr, Node_var_new);
 		$1->opcode = Op_push_array;
 		$$ = list_prepend($2, $1);
@@ -4374,7 +4365,7 @@ retry:
 				goto out;
 			case FUNC_BODY:
 				/* in body, name must be in symbol table for it to be a parameter */
-				if ((f = lookup(tokstart, false)) != NULL) {
+				if ((f = lookup(tokstart)) != NULL) {
 					if (f->type == Node_builtin_func)
 						break;
 					else
@@ -4870,7 +4861,7 @@ parms_shadow(INSTRUCTION *pc, bool *shadow)
 	 * about all shadowed parameters.
 	 */
 	for (i = 0; i < pcount; i++) {
-		if (lookup(fp[i].param, false) != NULL) {
+		if (lookup(fp[i].param) != NULL) {
 			warning(
 	_("function `%s': parameter `%s' shadows global variable"),
 					fname, fp[i].param);
@@ -5038,7 +5029,7 @@ install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist)
 	NODE *r, *f;
 	int pcount = 0;
 
-	r = lookup(fname, true);
+	r = lookup(fname);
 	if (r != NULL) {
 		error_ln(fi->source_line, _("function name `%s' previously defined"), fname);
 		return -1;
@@ -5243,7 +5234,7 @@ variable(int location, char *name, NODETYPE type)
 {
 	NODE *r;
 
-	if ((r = lookup(name, true)) != NULL) {
+	if ((r = lookup(name)) != NULL) {
 		if (r->type == Node_func || r->type == Node_ext_func )
 			error_ln(location, _("function `%s' called with space between name and `(',\nor used as a variable or an array"),
 				r->vname);
@@ -6859,6 +6850,10 @@ qualify_name(const char *name, size_t len)
 	if (strchr(name, ':') != NULL)	// already qualified
 		return (char *) name;
 
+	NODE *p = lookup(name);
+	if (p != NULL && p->type == Node_param_list)
+		return (char *) name;
+
 	if (current_namespace != awk_namespace && ! is_all_upper(name)) {
 		size_t length = strlen(current_namespace) + 2 + len + 1;
 		char *buf;
@@ -6869,6 +6864,5 @@ qualify_name(const char *name, size_t len)
 		return buf;
 	}
 
-	// is this right?
 	return (char *) name;
 }
