@@ -39,7 +39,6 @@ static void (*install_func)(NODE *) = NULL;
 static NODE *make_symbol(const char *name, NODETYPE type);
 static NODE *install(const char *name, NODE *parm, NODETYPE type);
 static void free_bcpool(INSTRUCTION_POOL *pl);
-static const char *fix_up_namespace(const char *name, bool *malloced);
 
 static AWK_CONTEXT *curr_ctxt = NULL;
 static int ctxt_level;
@@ -89,13 +88,12 @@ install_symbol(const char *name, NODETYPE type)
  */
 
 NODE *
-lookup(const char *name, bool do_qualify)
+lookup(const char *name)
 {
 	NODE *n;
 	NODE *tmp;
 	NODE *tables[5];	/* manual init below, for z/OS */
 	int i;
-	bool malloced = false;
 
 	/* ``It's turtles, all the way down.'' */
 	tables[0] = param_table;	/* parameters shadow everything */
@@ -104,11 +102,8 @@ lookup(const char *name, bool do_qualify)
 	tables[3] = symbol_table;	/* then globals */
 	tables[4] = NULL;
 
-	if (do_qualify)
-		name = fix_up_namespace(name, & malloced);
-
-	if (malloced)
-		tmp = make_str_node(name, strlen(name), ALREADY_MALLOCED);
+	if (strncmp(name, "awk::", 5) == 0)
+		tmp = make_string(name + 5, strlen(name) - 5);
 	else
 		tmp = make_string(name, strlen(name));
 
@@ -310,18 +305,8 @@ install(const char *name, NODE *parm, NODETYPE type)
 	NODE *table;
 	NODE *n_name;
 	NODE *prev;
-	bool malloced = false;
 
-	if (type == Node_param_list) {
-		n_name = make_string(name, strlen(name));
-	} else {
-		name = fix_up_namespace(name, & malloced);
-
-		if (malloced)
-			n_name = make_str_node(name, strlen(name), ALREADY_MALLOCED);
-		else
-			n_name = make_string(name, strlen(name));
-	}
+	n_name = make_string(name, strlen(name));
 
 	table = symbol_table;
 
@@ -965,10 +950,14 @@ free_bcpool(INSTRUCTION_POOL *pl)
 
 /* is_all_upper --- return true if name is all uppercase letters */
 
-static bool
+/*
+ * DON'T use isupper(), it's locale aware!
+ */
+
+bool
 is_all_upper(const char *name)
 {
-	for (; *name != '\0'; name ++) {
+	for (; *name != '\0'; name++) {
 		switch (*name) {
 		case 'A': case 'B': case 'C': case 'D': case 'E':
 		case 'F': case 'G': case 'H': case 'I': case 'J':
@@ -983,41 +972,4 @@ is_all_upper(const char *name)
 	}
 
 	return true;
-}
-
-/* fix_up_namespace --- qualify / dequalify a simple name */
-
-static const char *
-fix_up_namespace(const char *name, bool *malloced)
-{
-	static char awk_ns[] = "awk::";
-	const size_t awk_ns_len = sizeof(awk_ns) - 1;	// don't include trailing \0
-	char *cp;
-
-	assert(malloced != NULL);
-	*malloced = false;
-
-	// first, check if it's qualified
-	if ((cp = strchr(name, ':')) != NULL) {
-		// does it start with awk:: ?
-		if (strncmp(name, awk_ns, awk_ns_len) == 0)
-			return cp + 2;	// just trailing part
-
-		// otherwise it's fully qualified, not in the awk n.s.
-		return name;
-	}
-
-	// not fully qualified
-	if (current_namespace == awk_namespace || is_all_upper(name))
-		return name;	// put it into awk namespace
-
-	// make it fully qualified
-	size_t len = strlen(current_namespace) + 2 + strlen(name) + 1;
-	char *buf = NULL;
-
-	emalloc(buf, char *, len, "fix_up_namespace");
-	sprintf(buf, "%s::%s", current_namespace, name);
-	*malloced = true;
-
-	return buf;
 }

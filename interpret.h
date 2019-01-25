@@ -1108,7 +1108,7 @@ match_re:
 					ni = setup_frame(pc);
 					JUMPTO(ni);	/* Op_func */
 				}
-				f = lookup(t1->stptr, true);
+				f = lookup(t1->stptr);
 			}
 
 			if (f == NULL) {
@@ -1172,7 +1172,7 @@ match_re:
 			/* retrieve function definition node */
 			f = pc->func_body;
 			if (f == NULL) {
-				f = lookup(pc->func_name, true);
+				f = lookup(pc->func_name);
 				if (f == NULL || (f->type != Node_func && f->type != Node_ext_func))
 					fatal(_("function `%s' not defined"), pc->func_name);
 				pc->func_body = f;     /* save for next call */

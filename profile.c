@@ -2033,6 +2033,8 @@ pp_namespace(const char *name, INSTRUCTION *comment)
 	if (strcmp(current_namespace, name) == 0)
 		return;
 
+	// don't need to free current_namespace, it comes from
+	// info saved in Op_namespace instructions.
 	current_namespace = name;
 
 	if (do_profile)
@@ -2070,7 +2072,8 @@ adjust_namespace(char *name, bool *malloced)
 	// unadorned name from symbol table, add awk:: if not in awk:: n.s.
 	if (strchr(name, ':') == NULL &&
 	    current_namespace != awk_namespace &&	// can be equal if namespace never changed
-	    strcmp(current_namespace, "awk") != 0) {
+	    strcmp(current_namespace, "awk") != 0 &&
+	    ! is_all_upper(name)) {
 		char *buf;
 		size_t len = 5 + strlen(name) + 1;
 

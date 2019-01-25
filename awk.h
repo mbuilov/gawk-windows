@@ -1611,6 +1611,7 @@ extern char *estrdup(const char *str, size_t len);
 extern void update_global_values();
 extern long getenv_long(const char *name);
 extern void after_beginfile(IOBUF **curfile);
+extern void set_current_namespace(const char *new_namespace);
 
 /* mpfr.c */
 extern void set_PREC(void);
@@ -1713,7 +1714,7 @@ extern NODE *remove_symbol(NODE *r);
 extern void destroy_symbol(NODE *r);
 extern void release_symbols(NODE *symlist, int keep_globals);
 extern void append_symbol(NODE *r);
-extern NODE *lookup(const char *name, bool do_qualify);
+extern NODE *lookup(const char *name);
 extern NODE *make_params(char **pnames, int pcount);
 extern void install_params(NODE *func);
 extern void remove_params(NODE *func);
@@ -1730,6 +1731,7 @@ extern NODE **variable_list();
 extern NODE **function_list(bool sort);
 extern void print_vars(NODE **table, Func_print print_func, FILE *fp);
 extern bool check_param_names(void);
+extern bool is_all_upper(const char *name);
 
 /* floatcomp.c */
 #ifdef HAVE_UINTMAX_T

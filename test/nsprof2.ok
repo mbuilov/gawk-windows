@@ -48,13 +48,13 @@ function Init(oldfs, oldrs, olddol0, pwcat, using_fw, using_fpat)
 	if (Inited) {
 		return 
 	}
-	oldfs = awk::FS
-	oldrs = awk::RS
+	oldfs = FS
+	oldrs = RS
 	olddol0 = $0
-	using_fw = (awk::PROCINFO["FS"] == "FIELDWIDTHS")
-	using_fpat = (awk::PROCINFO["FS"] == "FPAT")
-	awk::FS = ":"
-	awk::RS = "\n"
+	using_fw = (PROCINFO["FS"] == "FIELDWIDTHS")
+	using_fpat = (PROCINFO["FS"] == "FPAT")
+	FS = ":"
+	RS = "\n"
 	pwcat = Awklib "pwcat"
 	while ((pwcat | getline) > 0) {
 		Byname[$1] = $0
@@ -64,12 +64,12 @@ function Init(oldfs, oldrs, olddol0, pwcat, using_fw, using_fpat)
 	close(pwcat)
 	Count = 0
 	Inited = 1
-	awk::FS = oldfs
+	FS = oldfs
 	if (using_fw) {
-		awk::FIELDWIDTHS = awk::FIELDWIDTHS
+		FIELDWIDTHS = FIELDWIDTHS
 	} else if (using_fpat) {
-		awk::FPAT = awk::FPAT
+		FPAT = FPAT
 	}
-	awk::RS = oldrs
+	RS = oldrs
 	$0 = olddol0
 }

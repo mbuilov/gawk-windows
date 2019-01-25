@@ -1,4 +1,79 @@
+2019-01-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (Grammar): Add new production `qualified_name' which
+	is NAME + qualification call. Use it everywhere that NAME was
+	used, except for function parameters.
+
+2019-01-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile.c (adjust_namespace): Check for all upper case
+	identifiers so we don't get things like awk::NF.
+
+2019-01-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* symtab.c (lookup): Remove second `do_qualify' parameter.
+	Remove calls to `fix_up_namespace'.  If name starts with
+	"awk::" just lookup the compnent name.
+	Adjust all calls to `lookup' in other files.
+	(install): Don't use `fix_up_namespace'.
+	(fix_up_namespace): Remove function.
+	* awk.h (lookup): Adjust declaration.
+
+2019-01-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (qualify_name): Don't qualify a name if it's
+	a parameter.
+
+2019-01-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (Grammar): Use qualify_name for array subscript
+	expressions. Fixes the last leak in the test suite.
+	* awk.h (is_all_upper): Declare.
+	* symbol.c (is_all_upper): Remove static.
+	* awkgram.y (is_all_upper): Remove.
+	(Grammar): Clean up `#if 0' code.
+
 2019-01-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Restore functionality.
+
+	* awkgram.y (qualify_name): Remove `is_var' param, always check
+	for all upper case. Adjust all calls.
+	(Grammar): Do qualify_name for function calls also.
+
+2019-01-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Continue fixing memory leaks.
+
+	* awk.h (set_current_namespace): Declare function.
+	* awkgram.y: Change all assignments of current_namespace to calls
+	to set_current_namespace.
+	(is_all_upper, qualify_name): New functions.
+	(in_function): Change type to bool, and fix usages.
+	(Grammar): Use qualify_name on variables and function names.
+	* main.c: Change all assignments of current_namespace to calls
+	to set_current_namespace.
+	(set_current_namespace): New function.
+	* profile.c (pp_namespace): Don't free old current_namespace. Add
+	comment explaining why.
+
+2019-01-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Start fixing memory leaks related to namespaces.
+
+	* awkgram.y (Grammar): At simple_variable -> NAME, qualify names
+	before lookup/install.
+	(next_sourcefile): Check if need to free current_namespace before
+	assigning to it.
+	(yylex): Fix length of string to be dup'ed before returning
+	NAME or FUNC_CALL.
+	(set_namespace): Always free ns->lextok, adjust memory allocations
+	appropriately.
+	* main.c (main): Check if need to free current_namespace before
+	assigning to it.
+	* profile.c (pp_namespace): Ditto. (This may not be necessary.)
+
+2019-01-18         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* debug.c (do_set_var): Add comments before calls to assoc_set.
 	* interpret.h (r_interpret): For Op_sub_array, deref the subscript

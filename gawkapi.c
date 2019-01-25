@@ -1603,7 +1603,7 @@ ns_lookup(const char *name_space, const char *name, char **fullname)
 	if (name_space[0] == '\0' || strcmp(name_space, awk_namespace) == 0) {
 		if (fullname != NULL)
 			*fullname = estrdup(name, strlen(name));
-		return lookup(name, false);
+		return lookup(name);
 	}
 
 	size_t len = strlen(name_space) + 2 + strlen(name) + 1;
@@ -1611,7 +1611,7 @@ ns_lookup(const char *name_space, const char *name, char **fullname)
 	emalloc(buf, char *, len, "ns_lookup");
 	sprintf(buf, "%s::%s", name_space, name);
 
-	NODE *f = lookup(buf, false);
+	NODE *f = lookup(buf);
 	if (fullname != NULL)
 		*fullname = buf;
 	else
