@@ -192,7 +192,8 @@ command.c: command.y
 	sed 's/parse error/syntax error/g' < $@ > $@.tmp && mv $@.tmp $@
 
 pc/Makefile.tst: test/Makefile.in
-	awk -f "$(top_srcdir)"/pc/GenMakefileTst.awk ../test/Makefile.in > pc/Makefile.tst
+	cat "$(top_srcdir)"/pc/Makefile.tst.prologue > pc/Makefile.tst
+	awk -f "$(top_srcdir)"/pc/GenMakefileTst.awk test/Makefile.in >> pc/Makefile.tst
 
 # This is for my development & testing.
 efence: gawk

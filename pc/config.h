@@ -131,9 +131,6 @@
 /* Define if you have the libsigsegv library. */
 #undef HAVE_LIBSIGSEGV
 
-/* Define to 1 if you have the <limits.h> header file. */
-#define HAVE_LIMITS_H 1
-
 /* Define to 1 if you have the <locale.h> header file. */
 #if defined(__MINGW32__) || defined(__DJGPP__)
 #define HAVE_LOCALE_H 1
@@ -230,9 +227,6 @@
 #ifdef __MINGW32__
 #define HAVE_SOCKETS 1
 #endif
-
-/* Define to 1 if you have the <stdarg.h> header file. */
-#define HAVE_STDARG_H 1
 
 /* Define to 1 if stdbool.h conforms to C99. */
 #if defined(__MINGW32__) || defined(__DJGPP__)
@@ -358,6 +352,9 @@
 /* Define to 1 if you have the <termios.h> header file. */
 #undef HAVE_TERMIOS_H
 
+/* Define to 1 if you have the `timegm' function. */
+#undef HAVE_TIMEGM
+
 /* Define to 1 if you have the `tmpfile' function. */
 #ifdef __DJGPP__
 #define HAVE_TMPFILE 1
@@ -448,9 +445,6 @@
 /* Define to 1 if you have the `__etoa_l' function. */
 #undef HAVE___ETOA_L
 
-/* enable severe portability problems */
-#undef I_DONT_KNOW_WHAT_IM_DOING
-
 /* disable lint checks */
 #undef NO_LINT
 
@@ -464,7 +458,7 @@
 #define PACKAGE_NAME "GNU Awk"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GNU Awk 4.2.60"
+#define PACKAGE_STRING "GNU Awk 4.2.61"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gawk"
@@ -473,7 +467,7 @@
 #define PACKAGE_URL "http://www.gnu.org/software/gawk/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.2.60"
+#define PACKAGE_VERSION "4.2.61"
 
 /* Define to 1 if *printf supports %a format */
 #define PRINTF_HAS_A_FORMAT 1
@@ -507,9 +501,6 @@
 /* Define to 1 if the character set is EBCDIC */
 #undef USE_EBCDIC
 
-/* force use of our version of strftime */
-#undef USE_INCLUDED_STRFTIME
-
 /* This is required to compile Gnulib regex code.  */
 #ifdef __MINGW32__
 #define _GNU_SOURCE 1
@@ -537,7 +528,7 @@
 
 
 /* Version number of package */
-#define VERSION "4.2.60"
+#define VERSION "4.2.61"
 
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE

@@ -501,9 +501,9 @@ EXTRA_DIST = \
 	devfd1.awk \
 	devfd1.ok \
 	devfd2.ok \
-	dfacheck.awk \
-	dfacheck.in \
-	dfacheck.ok \
+	dfacheck1.awk \
+	dfacheck1.in \
+	dfacheck1.ok \
 	dfamb1.awk \
 	dfamb1.in \
 	dfamb1.ok \
@@ -2578,7 +2578,7 @@ charasbytes:
 
 symtab6:
 	@echo $@
-	@$(AWK) -f "$(srcdir)"/$@.awk > _$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH="$(srcdir)" @$(AWK) -f $@.awk > _$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 symtab8:
@@ -2668,7 +2668,7 @@ sourcesplit:
 
 eofsrc1:
 	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -f "$(srcdir)"/$@a.awk -f "$(srcdir)"/$@b.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@a.awk -f $@b.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 nsbad_cmd:

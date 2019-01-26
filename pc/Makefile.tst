@@ -187,11 +187,12 @@ UNIX_TESTS = \
 
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort arraysort2 \
+	arraytype \
 	backw badargs beginfile1 beginfile2 binmode1 \
 	charasbytes colonwarn clos1way clos1way2 clos1way3 clos1way4 clos1way5 \
 	clos1way6 crlf \
 	dbugeval dbugeval2 dbugtypedre1 dbugtypedre2 delsub \
-	devfd devfd1 devfd2 dumpvars \
+	devfd devfd1 devfd2 dfacheck1 dumpvars \
 	errno exit \
 	fieldwdth forcenum fpat1 fpat2 fpat3 fpat4 fpat5 fpat6 fpatnull fsfwfs \
 	funlen functab1 functab2 functab3 fwtest fwtest2 fwtest3 fwtest4 \
@@ -203,17 +204,17 @@ GAWK_EXT_TESTS = \
 	lint lintexp lintindex lintint lintlength lintold lintset lintwarn \
 	manyfiles match1 match2 match3 mbstr1 mbstr2 mixed1 mktime muldimposix \
 	nastyparm negtime next nondec nondec2 nonfatal1 nonfatal2 nonfatal3 \
-	nsbad nsbad_cmd nsindirect1 nsindirect2 nsprof1 nsprof2 \
+	nsbad nsbad_cmd nsforloop nsfuncrecurse nsindirect1 nsindirect2 nsprof1 nsprof2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge \
 	procinfs profile0 profile1 profile2 profile3 profile4 profile5 profile6 \
-	profile7 profile8 profile9 profile10 pty1 pty2 \
+	profile7 profile8 profile9 profile10 profile11 pty1 pty2 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin \
 	rsstart1 rsstart2 rsstart3 rstest6 \
 	shadow shadowbuiltin sortfor sortfor2 sortu sourcesplit split_after_fpat \
 	splitarg4 strftfld strftime strtonum strtonum1 switch2 symtab1 symtab2 \
 	symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9 symtab10 \
-	timeout typedregex1 typedregex2 typedregex3 typeof1 typeof2 typeof3 \
-	typeof4 typeof5 \
+	timeout typedregex1 typedregex2 typedregex3 typedregex4 \
+	typeof1 typeof2 typeof3 typeof4 typeof5 \
 	watchpoint1
 
 ARRAYDEBUG_TESTS = arrdbg
@@ -263,7 +264,7 @@ NEED_POSIX = printf0 posix2008sub paramasfunc1 paramasfunc2 muldimposix
 
 # List of tests that need --pretty-print
 NEED_PRETTY = nsprof1 nsprof2 \
-	profile4 profile5 profile8 profile9 profile10
+	profile4 profile5 profile8 profile9 profile10 profile11
 
 
 # List of tests that need --re-interval
@@ -1005,8 +1006,7 @@ charasbytes:
 
 symtab6:
 	@echo $@
-	@$(AWK) -d__$@ -f "$(srcdir)"/$@.awk
-	@grep -v '^ENVIRON' __$@ | grep -v '^PROCINFO' > _$@ ; rm __$@
+	@AWKPATH="$(srcdir)" @$(AWK) -f $@.awk > _$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 symtab8:
@@ -1099,7 +1099,7 @@ sourcesplit:
 
 eofsrc1:
 	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -f "$(srcdir)"/$@a.awk -f "$(srcdir)"/$@b.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@a.awk -f $@b.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 nsbad_cmd:
@@ -1129,6 +1129,16 @@ nlstringtest::
 longwrds:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk -v SORT="$(SORT)" < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+spacere:
+	@echo $@
+	@LC_ALL=C AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+typedregex4:
+	@echo $@
+	@$(AWK) -v x=@/foo/ -f "$(srcdir)"/$@.awk y=@/bar/ /dev/null >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
@@ -2137,11 +2147,6 @@ sortglos:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
-spacere:
-	@echo $@
-	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
-
 splitargv:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -2413,6 +2418,11 @@ arraysort2:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+arraytype:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 backw:
 	@echo $@
 	@echo Expect $@ to fail with DJGPP.
@@ -2479,6 +2489,11 @@ dbugtypedre2:
 delsub:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+dfacheck1:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 exit:
@@ -2827,6 +2842,16 @@ nsbad:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+nsforloop:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+nsfuncrecurse:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 nsindirect1:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -2904,6 +2929,11 @@ profile9:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile10:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --pretty-print=_$@ >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile11:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --pretty-print=_$@ >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@

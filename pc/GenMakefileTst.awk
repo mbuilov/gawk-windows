@@ -2,11 +2,6 @@
 
 # This program generates pc/Makefile.tst
 
-BEGIN {
-	# Print the prologue
-	system("cat Makefile.tst.prologue")
-}
-
 # Skip the first part of Makefile.in
 /Get rid of core files/ { process = 1 }
 
