@@ -2129,7 +2129,7 @@ charasbytes:
 
 symtab6:
 	@echo $@
-	@AWKPATH="$(srcdir)" @$(AWK) -f $@.awk > _$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk > _$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 symtab8:
