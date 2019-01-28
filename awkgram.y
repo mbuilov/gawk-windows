@@ -465,22 +465,8 @@ action
 	  }
 	;
 
-qualified_name
-	: NAME
-	  {
-		const char *name = $1->lextok;
-		char *qname = qualify_name(name, strlen(name));
-
-		if (qname != name) {
-			efree((void *)name);
-			$1->lextok = qname;
-		}
-		$$ = $1;
-	  }
-	;
-
 func_name
-	: qualified_name
+	: NAME
 	| FUNC_CALL
 	  {
 		const char *name = $1->lextok;
@@ -863,7 +849,7 @@ statement
 		/* else
 			$1 and $4 are NULLs */
 	  }
-	| LEX_FOR '(' qualified_name LEX_IN simple_variable r_paren opt_nls statement
+	| LEX_FOR '(' NAME LEX_IN simple_variable r_paren opt_nls statement
 	  {
 		INSTRUCTION *ip;
 		char *var_name = $3->lextok;
@@ -1232,7 +1218,7 @@ regular_print:
 		}
 	  }
 
-	| LEX_DELETE qualified_name { sub_counter = 0; } delete_subscript_list
+	| LEX_DELETE NAME { sub_counter = 0; } delete_subscript_list
 	  {
 		char *arr = $2->lextok;
 
@@ -1265,7 +1251,7 @@ regular_print:
 			$$ = list_append(list_append($4, $2), $1);
 		}
 	  }
-	| LEX_DELETE '(' qualified_name ')'
+	| LEX_DELETE '(' NAME ')'
 		  /*
 		   * this is for tawk compatibility. maybe the warnings
 		   * should always be done.
@@ -2133,13 +2119,13 @@ subscript_list
 	;
 
 simple_variable
-	: qualified_name
+	: NAME
 	  {
 		$1->opcode = Op_push;
 		$1->memory = variable($1->source_line, $1->lextok, Node_var_new);
 		$$ = list_create($1);
 	  }
-	| qualified_name subscript_list
+	| NAME subscript_list
 	  {
 		char *arr = $1->lextok;
 
@@ -4473,7 +4459,11 @@ make_instruction:
 		return lasttok = class;
 	}
 out:
-	tokkey = estrdup(tokstart, tok - tokstart - 1);
+	if (want_param_names == FUNC_HEADER)
+		tokkey = estrdup(tokstart, tok - tokstart - 1);
+	else
+		tokkey = qualify_name(tokstart, tok - tokstart - 1);
+
 	if (*lexptr == '(') {
 		yylval = bcalloc(Op_token, 2, sourceline);
 		yylval->lextok = tokkey;
@@ -6848,11 +6838,11 @@ static char *
 qualify_name(const char *name, size_t len)
 {
 	if (strchr(name, ':') != NULL)	// already qualified
-		return (char *) name;
+		return estrdup(name, len);
 
 	NODE *p = lookup(name);
 	if (p != NULL && p->type == Node_param_list)
-		return (char *) name;
+		return estrdup(name, len);
 
 	if (current_namespace != awk_namespace && ! is_all_upper(name)) {
 		size_t length = strlen(current_namespace) + 2 + len + 1;
@@ -6864,5 +6854,5 @@ qualify_name(const char *name, size_t len)
 		return buf;
 	}
 
-	return (char *) name;
+	return estrdup(name, len);
 }

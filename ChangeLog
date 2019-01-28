@@ -1,5 +1,12 @@
 2019-01-27         Arnold D. Robbins     <arnold@skeeve.com>
 
+	* awkgram.y (qualify_name): Return duplicated strings.
+	(yylex): Qualify names before returning either NAME or FUNC_CALL.
+	(Grammar): Replace qualified_name non-token with NAME, remove
+	`qualified_name' production.
+
+2019-01-27         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* Makefile.am, NEWS, awkgram.y, cint_array.c, custom.h, debug.c,
 	eval.c, ext.c, gawkapi.c, int_array.c, interpret.h, nonposix.h,
 	profile.c, re.c, replace.c, str_array.c, symbol.c: Update
