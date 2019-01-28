@@ -11,7 +11,7 @@
  */
 
 /*
- * Copyright (C) 1995-2004, 2008, 2009, 2011, 2016
+ * Copyright (C) 1995-2004, 2008, 2009, 2011, 2016, 2018
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
