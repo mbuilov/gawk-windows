@@ -215,9 +215,9 @@ mail to \*(FCbug-gawk@gnu.org\*(FR.\*(CX
 .\" --- Command Line Arguments (gawk)
 .ES
 .fi
-\*(CDLong options may abbreviated as long as the abbreviation
+\*(CDLong options may be abbreviated as long as the abbreviation
 remains unique.
-You may use ``\*(FC\-W \*(FIoption\*(FR''
+Use ``\*(FC\-W \*(FIoption\*(FR''
 for full POSIX compliance.
 .sp .5
 .ig
@@ -485,10 +485,16 @@ is treated as a variable assignment. The variable
 If the value of a particular element of \*(FCARGV\fP is empty
 (\*(FC"\^"\*(FR), \*(AK skips over it.
 .sp .5
+Naming directories on the command-line is generally a fatal error.
+\*(CB\*(GK skips them, with a warning, unless invoked with
+\*(FC\-\^\-posix\*(FR
+or
+\*(FC\-\^\-traditional.\*(CK\*(FR
+.sp .5
 \*(CBFor each input file,
-if a \*(FCBEGINFILE\fP rule exists, \*(GK executes the associated code
+if a \*(FCBEGINFILE\fP rule exists, \*(GK executes the associated \*(FIaction\*(FR
 before processing the contents of the file. Similarly, \*(GK executes
-the code associated with \*(FCENDFILE\fP after processing the file.\*(CD
+the \*(FIaction\*(FR associated with \*(FCENDFILE\fP after processing the file.\*(CD
 .sp .5
 For each record in the input, \*(AK tests to see if it matches any
 \*(FIpattern\fP in the AWK program.
@@ -560,8 +566,8 @@ T}
 \*(FCFIELDWIDTHS\fP	T{
 Whitespace-separated list of field widths.
 Used to parse the input into fields of fixed width,
-instead of the value of \*(FCFS\fP.
-See \fHFields\*(FR.\*(CD
+instead of the value of \*(FCFS\fP
+(see \fHFields\*(FR).\*(CD
 T}
 \*(FCFILENAME\fP	T{
 Name of the current input file. If no files given
@@ -575,7 +581,8 @@ T}
 \*(CB\*(FCFPAT\fP	T{
 Regular expression describing field contents.
 Used to parse the input based on the fields
-instead of the field separator.\*(CD
+instead of the field separator
+(see \fHFields\*(FR).\*(CD
 T}
 \*(FCFS\fP	T{
 Input field separator, a space by default
@@ -782,7 +789,7 @@ l lw(1.8i).
 .fi
 \*(CDVariables and fields may be (floating point) numbers, strings or both.
 Context determines how a variable's value is interpreted. If used in
-a numeric expression, it will be treated as a number, if used as a string
+a numeric expression, it will be treated as a number; if used as a string
 it will be treated as a string.
 \*(CBAssigning a strongly typed regexp constant to a scalar makes it
 a regexp.\*(CD
@@ -944,7 +951,8 @@ The \*(FCdefault\fP label and associated statements are optional.\*(CD
 .br
 While \*(FIcondition\*(FR is true, execute \*(FIstatement\*(FR.
 .ti -.2i
-\*(FC{ \*(FIstatements \*(FC}\*(FR .br
+\*(FC{ \*(FIstatements \*(FC}\*(FR
+.br
 A list of statements enclosed in braces can be used anywhere
 that a single statement would otherwise be used.\*(CX
 .in -.2i
@@ -1025,16 +1033,15 @@ Leading and trailing whitespace are ignored.
 also affects how fields are split when
 \*(FCFS\fP is a regular expression.\*(CD
 .sp .5
-\*(CBIf the \*(FCFIELDWIDTHS\fP
-variable is set to a space-separated list of numbers, each field is
+\*(CBIf \*(FCFIELDWIDTHS\fP
+is set to a space-separated list of numbers, each field is
 expected to have a fixed width, and \*(GK
-splits up the record using the specified widths.
+splits the record using the specified widths.
 Each field width may optionally be preceded by a colon-separated
 value specifying the number of characters to skip before the field starts.
 The value of \*(FCFS\fP is ignored.
 Assigning a new value to \*(FCFS\fP or \*(FCFPAT\fP
 overrides the use of \*(FCFIELDWIDTHS\*(FR.
-and restores the default behavior.
 .sp .5
 Similarly, if the
 \*(FCFPAT\fP
@@ -1065,8 +1072,7 @@ and causes the value of \*(FC$0\fP
 to be recomputed with the fields being separated by the
 value of \*(FCOFS\*(FR.
 References to negative numbered fields cause a fatal error.
-Decreasing the value of \*(FCNF\fP causes the trailing fields to be lost
-\*(CR(not \*(NK)\*(CD.\*(CX
+Decreasing the value of \*(FCNF\fP causes the trailing fields to be lost.\*(CX
 .EB "\s+2\f(HBFIELDS\*(FR\s0"
 
 .\" --- Historical Features

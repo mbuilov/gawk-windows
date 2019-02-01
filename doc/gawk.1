@@ -1722,7 +1722,7 @@ constant regular expressions
 (e.g.,
 .B "/[\ \et\ef\en\er\ev]/"
 matches whitespace characters).
-.TP
+.PP
 .I Gawk
 provides
 .I "strongly typed"
@@ -1770,7 +1770,9 @@ or
 .B else
 also have their statements automatically continued on the following line.
 In other cases, a line can be continued by ending it with a \*(lq\e\*(rq,
-in which case the newline is ignored.
+in which case the newline is ignored.  However, a \*(lq\e\*(rq after a
+.B #
+is not special.
 .PP
 Multiple statements may
 be put on one line by separating them with a \*(lq;\*(rq.
@@ -3372,6 +3374,7 @@ The string will be one of
 \fB"regexp"\fP,
 \fB"string"\fP,
 \fB"strnum"\fP,
+\fB"unassigned"\fP,
 or
 \fB"undefined"\fP.
 .SS Internationalization Functions
@@ -3542,7 +3545,7 @@ may be used in place of
 .BR function ,
 although this is deprecated.
 .SH DYNAMICALLY LOADING NEW FUNCTIONS
-You can dynamically add new built-in functions to the running
+You can dynamically add new functions written in C or C++ to the running
 .I gawk
 interpreter with the
 .B @load

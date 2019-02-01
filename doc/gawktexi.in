@@ -17200,18 +17200,23 @@ otherwise, return @code{NaN} (``not a number'') on IEEE 754 systems.
 Additionally, @command{gawk} prints a warning message when @code{x}
 is negative.
 
+@cindex Beebe, Nelson H.F.@:
 @item @code{rand()}
 @cindexawkfunc{rand}
 @cindex random numbers, @code{rand()}/@code{srand()} functions
 Return a random number.  The values of @code{rand()} are
 uniformly distributed between zero and one.
-The value could be zero but is never one.@footnote{The C version of @code{rand()}
-on many Unix systems
-is known to produce fairly poor sequences of random numbers.
-However, nothing requires that an @command{awk} implementation use the C
-@code{rand()} to implement the @command{awk} version of @code{rand()}.
-In fact, @command{gawk} uses the BSD @code{random()} function, which is
-considerably better than @code{rand()}, to produce random numbers.}
+The value could be zero but is never one.@footnote{The C version of
+@code{rand()} on many Unix systems is known to produce fairly poor
+sequences of random numbers.  However, nothing requires that an
+@command{awk} implementation use the C @code{rand()} to implement the
+@command{awk} version of @code{rand()}.  In fact, for many years,
+@command{gawk} used the BSD @code{random()} function, which is
+considerably better than @code{rand()}, to produce random numbers.
+From @value{PVERSION} 4.1.4, courtesy of Nelson H.F.@: Beebe, @command{gawk}
+uses the Bayes-Durham shuffle buffer algorithm which considerably extends
+the period the random number generator, and eliminates short-range and
+long-range correlations that might exist in the original generator.}
 
 Often random integers are needed instead.  Following is a user-defined function
 that can be used to obtain a random nonnegative integer less than @var{n}:

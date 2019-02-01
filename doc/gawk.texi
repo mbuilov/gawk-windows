@@ -64,9 +64,9 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH September, 2018
-@set VERSION 4.2
-@set PATCHLEVEL 1
+@set UPDATE-MONTH January, 2019
+@set VERSION 5.0
+@set PATCHLEVEL 0
 
 @set GAWKINETTITLE TCP/IP Internetworking with @command{gawk}
 @ifset FOR_PRINT
@@ -76,7 +76,7 @@
 @set TITLE GAWK: Effective AWK Programming
 @end ifclear
 @set SUBTITLE A User's Guide for GNU Awk
-@set EDITION 4.2
+@set EDITION 5.0
 
 @iftex
 @set DOCUMENT book
@@ -284,13 +284,13 @@ Fax: +1-617-542-2652
 Email: <email>gnu@@gnu.org</email>
 URL: <ulink url="https://www.gnu.org">https://www.gnu.org/</ulink></literallayout>
 
-<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2018
+<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2019
 Free Software Foundation, Inc.
 All Rights Reserved.</literallayout>
 @end docbook
 
 @ifnotdocbook
-Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2018 @*
+Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2019 @*
 Free Software Foundation, Inc.
 @end ifnotdocbook
 @sp 2
@@ -17929,18 +17929,23 @@ otherwise, return @code{NaN} (``not a number'') on IEEE 754 systems.
 Additionally, @command{gawk} prints a warning message when @code{x}
 is negative.
 
+@cindex Beebe, Nelson H.F.@:
 @item @code{rand()}
 @cindexawkfunc{rand}
 @cindex random numbers, @code{rand()}/@code{srand()} functions
 Return a random number.  The values of @code{rand()} are
 uniformly distributed between zero and one.
-The value could be zero but is never one.@footnote{The C version of @code{rand()}
-on many Unix systems
-is known to produce fairly poor sequences of random numbers.
-However, nothing requires that an @command{awk} implementation use the C
-@code{rand()} to implement the @command{awk} version of @code{rand()}.
-In fact, @command{gawk} uses the BSD @code{random()} function, which is
-considerably better than @code{rand()}, to produce random numbers.}
+The value could be zero but is never one.@footnote{The C version of
+@code{rand()} on many Unix systems is known to produce fairly poor
+sequences of random numbers.  However, nothing requires that an
+@command{awk} implementation use the C @code{rand()} to implement the
+@command{awk} version of @code{rand()}.  In fact, for many years,
+@command{gawk} used the BSD @code{random()} function, which is
+considerably better than @code{rand()}, to produce random numbers.
+From @value{PVERSION} 4.1.4, courtesy of Nelson H.F.@: Beebe, @command{gawk}
+uses the Bayes-Durham shuffle buffer algorithm which considerably extends
+the period the random number generator, and eliminates short-range and
+long-range correlations that might exist in the original generator.}
 
 Often random integers are needed instead.  Following is a user-defined function
 that can be used to obtain a random nonnegative integer less than @var{n}:
