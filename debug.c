@@ -31,6 +31,7 @@
 #endif
 
 #ifdef __MINGW32__
+#define execvp(p,a) w32_execvp(p,a)
 int w32_execvp(const char *, char **);
 #endif
 
@@ -2918,11 +2919,7 @@ restart(bool run)
 	close_all();
 
 	/* start a new process replacing the current process */
-#ifdef __MINGW32__
-	w32_execvp(d_argv[0], d_argv);
-#else
 	execvp(d_argv[0], d_argv);
-#endif
 
 	/* execvp failed !!! */
 	fprintf(out_fp, _("Failed to restart debugger"));

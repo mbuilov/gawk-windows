@@ -1,5 +1,8 @@
 2019-02-02  Eli Zaretskii  <eliz@gnu.org>
 
+	* debug.c (execvp) [__MINGW32__]: Redirect to w32_execvp.
+	(restart): No need for MinGW-specific code anymore.
+
 	* nonposix.h: If setlocale is already a defined macro, #undef it
 	before redefining.  This avoids compilation warnings if someone
 	tries to compile Gawk with Gettext's libintl.h, which redirects
