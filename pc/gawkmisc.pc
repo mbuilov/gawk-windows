@@ -794,7 +794,7 @@ nl_langinfo (int item)
  *
  * This will need work if we ever need a real version of execvp.
  */
-int execvp(const char *file, const char *const *argv)
+int w32_execvp(const char *file, char **argv)
 {
 	if (_spawnvp(_P_WAIT, file, (const char * const *)argv) != -1)
 		exit(EXIT_SUCCESS);

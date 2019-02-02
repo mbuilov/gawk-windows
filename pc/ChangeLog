@@ -1,5 +1,10 @@
 2019-02-02  Eli Zaretskii  <eliz@gnu.org>
 
+	* gawkmisc.pc (w32_execvp) [__MINGW32__]: Renamed from execvp, to
+	avoid compiler errors with MinGW64, which stupidly defined a
+	deviant prototype for execvp, because GCC's built-in does.
+	Reported by Budi <budikusasi@gmail.com>.
+
 	* Makefile.tst (typedregex4):
 	* GenMakefileTst.awk (substitutions): Replace a literal slash with
 	$(SLASH) in the typedregex4 test.

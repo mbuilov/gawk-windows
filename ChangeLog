@@ -1,3 +1,15 @@
+2019-02-02  Eli Zaretskii  <eliz@gnu.org>
+
+	* nonposix.h: If setlocale is already a defined macro, #undef it
+	before redefining.  This avoids compilation warnings if someone
+	tries to compile Gawk with Gettext's libintl.h, which redirects
+	setlocale to its own function.
+	Reported by Budi <budikusasi@gmail.com>.
+
+	* debug.c [__MINGW32__]: Prototype for w32_execvp.
+	(restart) [__MINGW32__]: Call w32_execvp instead of execvp.  Don't
+	type-cast d_argv anymore.
+
 2019-01-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y (qualify_name): Return duplicated strings.

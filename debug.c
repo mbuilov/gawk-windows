@@ -30,6 +30,10 @@
 #include <fcntl.h>	/* open() */
 #endif
 
+#ifdef __MINGW32__
+int w32_execvp(const char *, char **);
+#endif
+
 extern bool exiting;
 extern SRCFILE *srcfiles;
 extern INSTRUCTION *rule_list;
@@ -2915,7 +2919,7 @@ restart(bool run)
 
 	/* start a new process replacing the current process */
 #ifdef __MINGW32__
-	execvp(d_argv[0], (const char * const *)d_argv);
+	w32_execvp(d_argv[0], d_argv);
 #else
 	execvp(d_argv[0], d_argv);
 #endif
