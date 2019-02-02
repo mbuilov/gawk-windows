@@ -1138,7 +1138,7 @@ spacere:
 
 typedregex4:
 	@echo $@
-	@$(AWK) -v x=@/foo/ -f "$(srcdir)"/$@.awk y=@/bar/ /dev/null >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@$(AWK) -v x=@$(SLASH)foo/ -f "$(srcdir)"/$@.awk y=@$(SLASH)bar/ /dev/null >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
