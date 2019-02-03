@@ -7293,7 +7293,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	else if (r->builtin == do_index) {
 		arg = subn->nexti->lasti->nexti;	/* 2nd arg list */
 		ip = arg->lasti;
-		if (ip->opcode == Op_match_rec)
+		if (ip->opcode == Op_match_rec || ip->opcode == Op_push_re)
 			fatal(_("index: regexp constant as second argument is not allowed"));
 	}
 #ifdef ARRAYDEBUG
