@@ -48,7 +48,7 @@ EXTRA_DIST = ChangeLog ChangeLog.0 README.card ad.block setter.outline \
 	lflashlight-small.xpic lflashlight.eps lflashlight.pdf \
 	rflashlight-small.xpic rflashlight.eps rflashlight.pdf \
 	statist.jpg statist.eps statist.pdf \
-	wordlist wordlist2 \
+	wordlist wordlist2 wordlist3 \
 	bc_notes
 
 # Get rid of generated files when cleaning
@@ -109,7 +109,7 @@ awkcard.nc: $(CARDFILES)
 awkcard.pdf: awkcard.ps
 	ps2pdf awkcard.ps awkcard.pdf
 
-spell: spellmanual spellworkflow
+spell: spellmanual spellworkflow spellmanpage
 
 spellmanual:
 	@echo ==== gawktexi.in ====;
@@ -120,3 +120,8 @@ spellworkflow:
 	@echo ==== gawkworkflow.texi ====
 	export LC_ALL=C ; spell "$(srcdir)"/gawkworkflow.texi | \
 	sort -u | comm -23 - "$(srcdir)"/wordlist2
+
+spellmanpage:
+	@echo ==== gawk.1 ====
+	export LC_ALL=C ; spell "$(srcdir)"/gawk.1 | \
+	sort -u | comm -23 - "$(srcdir)"/wordlist3

@@ -1158,14 +1158,14 @@ lp8 lp8 lp8 lp8.
 .ES
 .fi
 \*(CDThe environment variable \*(FCAWKPATH\fP specifies a search path to use
-when finding source files named with the \*(FC\-f\fP
-option.
+when finding source files named with the \*(FC\-f\fP and \*(FC\-i\fP
+options.
 The default path is
 \*(FC".:/usr/local/share/awk"\*(FR.
 .\" if this variable does not exist.
 .\" (The actual directory may vary,
 .\" depending upon how \*(GK was built and installed.)
-If a file name given to the \*(FC\-f\fP option contains a ``/'' character,
+If a source file name contains a ``/'' character,
 no path search is performed.
 .sp .5
 The variable \*(FCAWKLIBPATH\fP
@@ -1304,7 +1304,7 @@ The left identifier is the namespace and the right one
 is the variable within it.
 All non-qualified names are treated as if in the
 ``current'' namespace; the default namespace is \*(FCawk\fP.
-However, simple identifiers consisting solely of upper-case
+However, simple identifiers consisting solely of uppercase
 letters are forced into the
 \*(FCawk\fP
 namespace.
@@ -1390,7 +1390,7 @@ If no \*(FIfile\fP, or if
 .ti -.2i
 \*(FCprint\fP
 .br
-Print the current record. Terminate output record
+Print \*(FC$0\*(FR. Terminate the output record
 with \*(FCORS\fP.
 .ti -.2i
 \*(FCprint \*(FIexpr-list\*(FR
@@ -1467,25 +1467,25 @@ the error.\*(CX
 accept the following conversion specification formats:
 .sp .5
 .nf
-\*(CB\*(FC%a\fP, \*(FC%A\fP	A C99 floating point hexadecimal number\*(CD
-\*(FC%c\fP		An \s-1ASCII\s+1 character
-\*(FC%d\fP, \*(FC%i\fP	A decimal number (the integer part)
+\*(CB\*(FC%a\fP, \*(FC%A\fP	A C99 floating point hexadecimal number.\*(CD
+\*(FC%c\fP		An \s-1ASCII\s+1 character.
+\*(FC%d\fP, \*(FC%i\fP	A decimal number (the integer part).
 \*(FC%e\fP		A floating point number of the form
-		\*(FC[\-]d.dddddde[+\^\-]dd\*(FR
-\*(FC%E\fP		Like \*(FC%e\fP, but use \*(FCE\fP instead of \*(FCe\*(FR
+		\*(FC[\-]d.dddddde[+\^\-]dd\*(FR.
+\*(FC%E\fP		Like \*(FC%e\fP, but use \*(FCE\fP instead of \*(FCe\*(FR.
 \*(FC%f\fP		A floating point number of the form
-		\*(FC[\-]ddd.dddddd\*(FR
+		\*(FC[\-]ddd.dddddd\*(FR.
 \*(FC%F\fP		Like \*(FC%f\fP, but use capital letters for infinity and
 		not-a-number values.
 \*(FC%g\fP		Use \*(FC%e\fP or \*(FC%f\fP, whichever is shorter, with
-		nonsignificant zeros suppressed
-\*(FC%G\fP		Like \*(FC%g\fP, but use \*(FC%E\fP instead of \*(FC%e\*(FR
-\*(FC%o\fP		An unsigned octal integer
-\*(FC%u\fP		An unsigned decimal integer
-\*(FC%s\fP		A character string
-\*(FC%x\fP		An unsigned hexadecimal integer
-\*(FC%X\fP		Like \*(FC%x\fP, but use \*(FCABCDEF\fP for 10\(en15
-\*(FC%%\fP		A literal \*(FC%\fP; no argument is converted
+		nonsignificant zeros suppressed.
+\*(FC%G\fP		Like \*(FC%g\fP, but use \*(FC%E\fP instead of \*(FC%e\*(FR.
+\*(FC%o\fP		An unsigned octal integer.
+\*(FC%u\fP		An unsigned decimal integer.
+\*(FC%s\fP		A character string.
+\*(FC%x\fP		An unsigned hexadecimal integer.
+\*(FC%X\fP		Like \*(FC%x\fP, but use \*(FCABCDEF\fP for 10\(en15.
+\*(FC%%\fP		A literal \*(FC%\fP; no argument is converted.
 .sp .5
 .fi
 Optional, additional parameters may lie between the \*(FC%\fP
@@ -1654,7 +1654,7 @@ expand;
 l lw(1.9i).
 \*(CD\*(FCatan2(\*(FIy\*(FC, \*(FIx\*(FC)\*(FR	The arctangent of \*(FIy/x\fP in radians.
 \*(FCcos(\*(FIexpr\*(FC)\*(FR	The cosine of \*(FIexpr\fP, which is in radians.
-\*(FCexp(\*(FIexpr\*(FC)\*(FR	The exponential function (\*(FIe \*(FC^ \*(FIx\*(FR).
+\*(FCexp(\*(FIexpr\*(FC)\*(FR	The exponential function (\*(FIe\|\*(FC^\|\*(FIx\*(FR).
 \*(FCint(\*(FIexpr\*(FC)\*(FR	Truncate to integer.
 .\" \*(CB\*(FCintdiv(\*(FIn\*(FR\*(FC,\*(FI d\*(FR\*(FC,\*(FI r\*(FR\*(FC)\*(FR	T{
 .\" Return result of integer division in \*(FIr\*(FR.\*(CD
@@ -1745,9 +1745,9 @@ is placed in \*(FIa\*(FC[0]\*(FR.  If there were parenthesized
 subexpressions, the matching texts are placed
 in \*(FIa\*(FC[1]\*(FR, \*(FIa\*(FC[2]\*(FR, and so on.
 Subscripts
-\*(FCa[\*(FIn\^\*(FC, "start"]\*(FR,
+\*(FIa\*(FC[\*(FIn\^\*(FC, "start"]\*(FR,
 and
-\*(FCa[\*(FIn\^\*(FC, "length"]\*(FR
+\*(FIa\*(FC[\*(FIn\^\*(FC, "length"]\*(FR
 provide the starting index in the string and length,
 respectively, of each matching substring.\*(CD
 .ti -.2i
@@ -1759,8 +1759,8 @@ and the array \*(FIseps\fP of separator strings
 using the regular expression \*(FIr\*(FR,
 and return the number of fields.
 Element values are the portions of \*(FIs\fP that matched \*(FIr\fP.
-The value of \*(FIseps\fP[\*(FIi\fP] is the separator that appeared in
-front of \*(FIa\fP[\*(FIi\fP+1].
+The value of \*(FIseps\*(FC[\*(FIi\^\fP]\*(FR is the separator that appeared in
+front of \*(FIa\*(FC[\*(FIi\fP+1]\*(FR.
 If \*(FIr\fP is omitted, use \*(FCFPAT\fP instead.
 Clear the arrays \*(FIa\fP and \*(FIseps\fP first.
 Splitting behaves identically to field splitting with \*(FCFPAT\fP.\*(CD
@@ -1798,7 +1798,7 @@ treat it as an octal number.
 If \*(FIs\*(FR begins with a leading \*(FC0x\*(FR
 or \*(FC0X\*(FR, treat
 \*(FIs\*(FR as a hexadecimal number. Otherwise,
-treat the number as decimal.\*(CD
+treat \*(FIs\*(FR as decimal.\*(CD
 .ti -.2i
 \*(FCsub(\*(FIr\*(FC, \*(FIs \*(FR[\*(FC, \*(FIt\*(FR]\*(FC)\*(FR
 .br
