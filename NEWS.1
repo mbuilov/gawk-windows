@@ -1,0 +1,480 @@
+   Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018
+   Free Software Foundation, Inc.
+   
+   Copying and distribution of this file, with or without modification,
+   are permitted in any medium without royalty provided the copyright
+   notice and this notice are preserved.
+
+Changes from 4.2.0 to 4.2.1
+---------------------------
+
+1. Support for OS/2 has been brought up to date.  This support was
+   accidentally omitted from the initial 4.2 release, for which
+   we apologize.
+
+2. The manual received a number of updates to make it format better
+   for PDF.
+
+3. A new configure option, --enable-versioned-dir, causes the directory
+   holding extensions to include the API version in its name.
+
+4. extension/configure.ac has been improved considerably.
+
+5. In MPFR mode, When ROUNDMODE changes, string values for numerically
+   typed values will be redone.
+
+6. The various 'inplace' tests now pass on modern BSD systems.
+
+7. A number of bugs, some of them quite significant, have been fixed.
+   See the ChangeLog for details.
+
+Changes from 4.1.4 to 4.2.0
+---------------------------
+
+1. If not in POSIX mode, changes to ENVIRON are reflected into
+   gawk's environment, affecting any programs run by system()
+   or for piped redirections. This can also affect built-in routines, such
+   as mktime(), which is typically influenced by the TZ environment variable.
+
+2. The series of numbers returned by rand() should now be "more
+   random" than previously.  Gawk's rand() remains repeatable; you will
+   get the same series of numbers each time you call rand() repeatedly,
+   but this will be a different series than previously.
+
+3. Multiple changes related to the pretty printer:
+
+   * The --pretty-print option no longer runs the program too.
+
+   * Pretty printing now preserves comments and places them into the
+     pretty-printed file.
+
+   * Pretty-printing now uses the original text of constant numeric values
+     for pretty-printing and profiling.
+
+   * Pretty-printing now preserves parenthesized expressions as they
+     were in the source file. This solves several niggling corner cases
+     with such things.
+
+4. The igawk script and igawk.1 man page are no longer installed by
+   `make install'.  They have been obsolete since gawk 4.0.0.
+
+5. Gawk can now be built with CMake.  This is an alternative build
+   system for those who may want it; gawk is not going to switch off
+   use of the autotools anytime soon, if ever.
+
+6. Gawk now processes a maximum of two hexadecimal digits in \x
+   escape sequences inside strings.
+
+7. Setting PROCINFO["redirection", "NONFATAL"] to true makes I/O
+   errors for "redirection" not fatal, setting ERRNO. Setting
+   PROCINFO["NONFATAL"] makes all I/O nonfatal. See the manual.
+
+8. MirBSD is no longer supported.
+
+9. `make install' now installs shell startup files
+   $sysconfdir/profile.d/gawk.{csh,sh} containing shell functions to
+   manipulate the AWKPATH and AWKLIBPATH environment variables.  On a Fedora
+   system, these files belong in /etc/profile.d, but the appropriate location
+   may be different on other platforms.
+
+10. Gawk now supports retryable I/O via PROCINFO[input-file, "RETRY"]; see
+    the manual.
+
+11. The C API has undergone changes that break binary compatibility with
+    the previous version. Thus the API version is now at 2.0.  YOU WILL
+    NEED TO RECOMPILE YOUR EXTENSIONS to work with this version of gawk.
+    Source code compatibility remains intact, although you will get
+    compiler warnings if you do not revise your extensions. We strongly
+    recommend that you do so.  Fortunately, the changes are fairly minor
+    and straightforward.
+
+    See the manual for the new features.
+
+12. Revisions in the POSIX standard remove the special case for POSIX
+    mode when FS = " " where newline was not a field separator. The code
+    and doc have been updated.
+
+13. Gawk now supports strongly typed regexp constants. Such constants
+    look like @/.../.  You can assign them to variables, pass them to
+    functions, use them in ~, !~ and the case part of a switch statement.
+    More details are provided in the manual.
+
+14. The new typeof() function can be used to indicate if a variable or
+    array element is an array, regexp, string or number.
+
+15. As promised when 4.1 was released, the old extension mechanism,
+    using the `extension' function, is now gone.
+
+16. Support for GNU/Linux on Alpha systems has been removed.
+
+17. Optimizations are now enabled by default. Use the new -s/--no-optimize
+    option(s) to disable them.  Pretty-printing and profiling automatically
+    disable optimizations so that the output program is the same as the
+    original input program.
+
+18. Gawk now uses fwrite_unlocked if it's available. This yields a 7% - 18%
+    improvement in raw output speed (gawk '{ print }' on a large file).
+
+19. Passing negative operands to any of the bitwise functions now
+    produces a fatal error.
+
+20. Programs that toggle IGNORECASE a lot should now be noticeably faster.
+
+21. The mktime() function now accepts an optional second argument. If this
+    argument is present and is non-zero or non-null, the time will be converted
+    from UTC instead of from the local timezone.
+
+22. The FIELDWIDTHS parsing syntax has been enhanced to allow specifying
+    how many characters to skip before a field starts. It also allows
+    specifying '*' as the last character to mean "the rest of the record".
+    Field splitting with FIELDWIDTHS now sets NF correctly.  The documentation
+    for FIELDWIDTHS in the manual has been considerably reorganized and
+    improved as well.
+
+23. The PROCINFO["argv"] array records all of gawk's command line arguments
+    as gawk received them (the values of the C level argv array).
+
+24. The DJGPP port has been revived and now has an official maintainer.
+
+25. The manual has been translated into Italian!  The translation is
+    included in the distribution.
+
+Changes from 4.1.3 to 4.1.4
+---------------------------
+
+1. Updated to GNU autoconf 2.69, automake 1.15, gettext 0.19.7,
+   texinfo 6.1, texinfo.tex 2016-02-05.07, libtool 2.4.6.
+
+2. z/OS support updated.
+
+3. At the beginning of each statement, the debugger now checks and
+   reports watchpoints that have fired before checking for breakpoints.
+   This gives more natural behavior to the user.
+
+4. The "exit" command has been added to the debugger as an alias
+   for "quit".
+
+5. AIX 7.1 should pass the test suite now.  Similar for Minix.
+
+6. VMS support has been updated.
+
+7. The profiler / pretty-printer now chains else-if statements instead
+   of causing cascading elses.
+
+8. The return value of system() has been enhanced to convey more information.
+   See the doc.
+
+9. Attempting to write to the "to" end of a two-way pipe that has been
+   closed is now a fatal error. Similarly, so is reading from the "from"
+   end that has been closed.
+
+10. MinGW support has been updated.
+
+11. The -d option now allows -d- to print to standard output.
+
+12. Error messages for --help and in other instances should now get
+    translated correctly.
+
+13. A new environment variable GAWK_LOCALE_DIR may be set to locate the .mo
+    file for gawk itself.
+
+14. The DJGPP port is now officially deprecated.
+
+15. A number of bugs have been fixed. See the ChangeLog.
+
+Changes from 4.1.2 to 4.1.3
+---------------------------
+
+1. Regexp parsing with extra brackets should now be working again. There
+   are several new tests to keep this stuff on track.
+
+2. Updated to latest config.guess and config.sub.
+
+3. A (small) number of bugs have been fixed. See the ChangeLog.
+
+Changes from 4.1.1 to 4.1.2
+---------------------------
+
+1. The manual has been considerably improved.
+	- Thoroughly reviewed and updated.
+	- Out-of-date examples replaced.
+	- Chapter 15 on MPFR reworked.
+	- Summary sections added to all chapters.
+	- Exercises added in several chapters.
+	- Heavily proof-read and copyedited.
+
+2. The debugger's "restart" command now works again.
+
+3. Redirected getline is now allowed inside BEGINFILE/ENDFILE.
+
+4. A number of bugs have been fixed in the MPFR code.
+
+5. Indirect function calls now work for both built-in and extension functions.
+
+6. Built-in functions are now included in FUNCTAB.
+
+7. POSIX and historical practice require the exclusive use of the English
+   alphabet in identifiers.  In non-English locales, it was accidentally
+   possible to use "letters" beside those of the English alphabet.  This
+   has been fixed. (isalpha and isalnum are NOT our friends.)
+
+   If you feel that you must have this misfeature, use `configure --help'
+   to see what option to use when configuring gawk to reenable it.
+
+8. The "where" command has been added to the debugger as an alias
+   for "backtrace". This will make life easier for long-time GDB users.
+
+9. Gawk no longer explicitly checks the current directory after doing
+   a path search of AWKPATH.  The default value continues to have "." at
+   the front, so most people should not be affected.  If you have your own
+   AWKPATH setting, be sure to put "." in it somewhere. The documentation
+   has been updated and clarified.
+
+10. Infrastructure upgrades: Automake 1.15, Gettext 0.19.4, Libtool 2.4.6,
+    Bison 3.0.4.
+
+11. If a user-defined function has a parameter with the same name as another
+    user-defined function, it is no longer possible to call the second
+    function from inside the first.
+
+12. POSIX requires that the names of function parameters not be the
+    same as any of the special built-in variables and also not conflict
+    with the names of any functions. Gawk has checked for the former
+    since 3.1.7. With --posix, it now also checks for the latter.
+
+13. The test suite should check for necessary locales and skip the tests
+    where it matters if support isn't what it should be.
+
+14. Gawk now expects to be compiled on a system with multibyte character
+    support.  Systems without such support, at least at the C language
+    level, are so obsolete as to not be worth supporting anymore.
+
+15. A number of bugs have been fixed. See the ChangeLog.
+
+Changes from 4.1.0 to 4.1.1
+---------------------------
+
+1. The "stat" extension now includes a "devbsize" element which indicates
+   the units for the "nblocks" element.
+
+2. The extension facility now works on MinGW. Many of the extensions can be
+   built and used directly.
+
+3. A number of bugs in the pretty-printing / profiling code have been fixed.
+
+4. Sockets and two-way pipes now work under MinGW.
+
+5. The debugger now lists source code correctly under Cygwin.
+
+6. Configuration and building with the Mac OS X libreadline should work now.
+
+7. The -O option now works again.
+
+8. The --include option, documented since 4.0, now actually works.
+
+9. Infrastructure updated to automake 1.13.4, bison 3.0.2, and
+   libtool 2.4.2.418.
+
+10. The configure script now accepts a --disable-extensions option,
+    which disables checking for and building the extensions.
+
+11. The VMS port has been considerably improved. In particular config.h
+    is now generated by a DCL script. Also, the extension facility works
+    and several of the extensions can be built and used. Currently, the
+    extension facility only works on Alpha and Itanium.
+
+12. The API now provides functions pointers for malloc(), calloc(),
+    realloc() and free(), to insure that the same memory allocation
+    functions are always used. This bumps the minor version by one.
+
+13. The printf quote flag now works correctly in locales with a different
+    decimal point character but without a thousands separator character.
+    If the thousands separator is a string, it will be correctly added
+    to decimal numbers.
+
+14. The readfile extension now has an input parser that will read whole
+    files as a single record.
+
+15. A number of bugs have been fixed. See the ChangeLog.
+
+Changes from 4.0.2 to 4.1.0
+---------------------------
+
+1. The three executables gawk, pgawk, and dgawk, have been merged into
+   one, named just gawk.  As a result:
+   	* The -R option is gone
+	* Use -D to run the debugger. An optional file argument is a
+	  list of commands to run first.
+	* Use -o to do pretty-printing only.
+	* Use -p to do profiling.
+   This considerably reduces gawk's "footprint" and eases the documentation
+   burden as well.
+
+2. Gawk now supports high precision arithmetic with MPFR.  The default is
+   still double precision, but setting PREC changes things, or using
+   the -M / --bignum options.  This support is not compiled in if the MPFR
+   library is not available.
+
+3. The new -i option (from xgawk) is used for loading awk library files.
+   This differs from -f in that the first non-option argument is treated
+   as a script.
+
+4. The new -l option (from xgawk) is used for loading dynamic extensions.
+
+5. The dynamic extension interface has been completely redone!  There is
+   now a defined API for C extensions to use.  A C extension acts like
+   a function written in awk, except that it cannot do everything that awk
+   code can. However, this allows interfacing to any facility that is
+   available from C.  This is a major development, see the doc, which has
+   a nice shiny new chapter describing everything.
+
+   This support is not compiled in if dynamic loading of shared libraries
+   is not supported.
+
+   The old extension mechanism is still supported for compatiblity, but
+   it will most definitely be removed at the next major release.
+
+6. The "inplace" extension, built using the new facility, can be used to
+   simulate the GNU "sed -i" feature.
+
+7. The and(), or() and xor() functions now take any number of arguments,
+   with a minimum of two.
+
+8. New arrays: SYMTAB, FUNCTAB, and PROCINFO["identifiers"]. SYMTAB allows
+   indirect access to any defined variable or array; it is possible to
+   "walk" the symbol table, if that should be necessary.
+
+9. Support for building gawk with a cross compiler has been improved.
+
+10. Infrastructure upgrades: bison 2.7.1, gettext 0.18.2.1, automake 1.13.1,
+    libtool 2.4.2 for the extensions.
+
+Changes from 4.0.1 to 4.0.2
+---------------------------
+
+1. Infrastructure upgrades: Autoconf 2.69, Automake 1.12.6, bison 2.7.
+
+2. `fflush()', `nextfile', and `delete array' are all now part of POSIX.
+
+3. fflush() behavior changed to match BWK awk and for POSIX - now both
+   fflush() and fflush("") flush all open output redirections.
+
+4. Various minor bug fixes and documentation updates.
+ 
+Changes from 4.0.0 to 4.0.1
+---------------------------
+
+1. The default handling of backslash in sub() and gsub() has been reverted to
+   the behavior of 3.1. It was silly to think I could break compatibility that
+   way, even for standards compliance.
+
+2. Completed the implementation of Rational Range Interpretation.
+
+3. Failure to get the group set is no longer a fatal error.
+
+4. Lots of minor bugs fixed and portability clean-ups along the way. See
+   the ChangeLog for details.
+
+Changes from 3.1.8 to 4.0.0
+---------------------------
+
+1. The special files /dev/pid, /dev/ppid, /dev/pgrpid and /dev/user are
+   now completely gone. Use PROCINFO instead.
+
+2. The POSIX 2008 behavior for `sub' and `gsub' are now the default.
+   THIS CHANGES BEHAVIOR!!!!
+
+3. The \s and \S escape sequences are now recognized in regular expressions.
+
+4. The split() function accepts an optional fourth argument which is an array
+   to hold the values of the separators.
+
+5. The new -b / --characters-as-bytes option means "hands off my data"; gawk
+   won't try to treat input as a multibyte string.
+
+6. There is a new --sandbox option; see the doc.
+
+7. Indirect function calls are now available.
+
+8. Interval expressions are now part of default regular expressions for
+   GNU Awk syntax.
+
+9. --gen-po is now correctly named --gen-pot.
+
+10. switch / case is now enabled by default. There's no longer a need
+    for a configure-time option.
+
+11. Gawk now supports BEGINFILE and ENDFILE. See the doc for details.
+
+12. Directories named on the command line now produce a warning, not
+    a fatal error, unless --posix or --traditional.
+
+13. The new FPAT variable allows you to specify a regexp that matches
+    the fields, instead of matching the field separator. The new patsplit()
+    function gives the same capability for splitting.
+
+14. All long options now have short options, for use in `#!' scripts.
+
+15. Support for IPv6 is added via the /inet6/... special file. /inet4/...
+    forces IPv4 and /inet chooses the system default (probably IPv4).
+
+16. Added a warning for /[:space:]/ that should be /[[:space:]]/.
+
+17. Merged with John Haque's byte code internals. Adds dgawk debugger and
+    possibly improved performance.
+
+18. `break' and `continue' are no longer valid outside a loop, even with
+    --traditional.
+
+19. POSIX character classes work with --traditional (BWK awk supports them).
+
+20. Nuked redundant --compat, --copyleft, and --usage long options.
+
+21. Arrays of arrays added. See the doc.
+
+22. Per the GNU Coding Standards, dynamic extensions must now define
+    a global symbol indicating that they are GPL-compatible. See
+    the documentation and example extensions.
+    THIS CHANGES BEHAVIOR!!!!
+
+23. In POSIX mode, string comparisons use strcoll/wcscoll.
+    THIS CHANGES BEHAVIOR!!!!
+
+24. The option for raw sockets was removed, since it was never implemented.
+
+25. Gawk now treats ranges of the form [d-h] as if they were in the C
+    locale, no matter what kind of regexp is being used, and even if
+    --posix.  The latest POSIX standard allows this, and the documentation
+    has been updated.  Maybe this will stop all the questions about
+    [a-z] matching uppercase letters.
+    THIS CHANGES BEHAVIOR!!!!
+
+26. PROCINFO["strftime"] now holds the default format for strftime().
+
+27. Updated to latest infrastructure: Autoconf 2.68, Automake 1.11.1,
+    Gettext 0.18.1, Bison 2.5.
+
+28. Many code cleanups. Removed code for many old, unsupported systems:
+	- Atari
+	- Amiga
+	- BeOS
+	- Cray
+	- MIPS RiscOS
+	- MS-DOS with Microsoft Compiler
+	- MS-Windows with Microsoft Compiler
+	- NeXT
+	- SunOS 3.x, Sun 386 (Road Runner)
+	- Tandem (non-POSIX)
+	- Prestandard VAX C compiler for VAX/VMS
+	- Probably others that I've forgotten
+
+29. If PROCINFO["sorted_in"] exists, for(iggy in foo) loops sort the
+    indices before looping over them.  The value of this element
+    provides control over how the indices are sorted before the loop
+    traversal starts. See the manual.
+
+30. A new isarray() function exists to distinguish if an item is an array
+    or not, to make it possible to traverse multidimensional arrays.
+
+31. asort() and asorti() take a third argument specifying how to sort.
+    See the doc.
