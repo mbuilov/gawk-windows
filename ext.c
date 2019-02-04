@@ -77,25 +77,6 @@ load_ext(const char *lib_name)
 				lib_name, INIT_FUNC);
 }
 
-/* is_valid_identifier --- return true if name is a valid simple identifier */
-
-bool
-is_valid_identifier(const char *name)
-{
-	const char *sp = name;
-	int c;
-
-	if (! is_letter(*sp))
-		return false;
-
-	for (sp++; (c = *sp++) != '\0';) {
-		if (! is_identchar(c))
-			return false;
-	}
-
-	return true;
-}
-
 /* make_builtin --- register name to be called as func with a builtin body */
 
 awk_bool_t
@@ -265,4 +246,23 @@ close_extensions()
 	for (s = srcfiles->next; s != srcfiles; s = s->next)
 		if (s->stype == SRC_EXTLIB && s->fini_func)
                	        (*s->fini_func)();
+}
+
+/* is_valid_identifier --- return true if name is a valid simple identifier */
+
+bool
+is_valid_identifier(const char *name)
+{
+	const char *sp = name;
+	int c;
+
+	if (! is_letter(*sp))
+		return false;
+
+	for (sp++; (c = *sp++) != '\0';) {
+		if (! is_identchar(c))
+			return false;
+	}
+
+	return true;
 }

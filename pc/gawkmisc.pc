@@ -1108,6 +1108,21 @@ init_sockets(void)
 
 #ifdef __DJGPP__
 
+/* Replacement for the missing nl_langinfo.  DJGPP provides only C locale.  */
+#include <langinfo.h>
+
+char *
+nl_langinfo (int item)
+{
+  switch (item)
+    {
+      case CODESET:
+      default:
+        return (char *) "";
+    }
+}
+
+
 # if __DJGPP__ == 2 && __DJGPP_MINOR__ < 4 
 int
 unsetenv (const char *name)

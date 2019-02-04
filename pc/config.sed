@@ -83,7 +83,7 @@ s/^#undef HAVE_FMOD *$/#define HAVE_FMOD 1/
 #define HAVE_ISWUPPER 1\
 #endif
 /^#undef HAVE_LANGINFO_CODESET *$/c\
-#ifdef __MINGW32__\
+#if defined(__DJGPP__) || defined(__MINGW32__)\
 #define HAVE_LANGINFO_CODESET 1\
 #endif
 s/^#undef HAVE_LIBM *$/#define HAVE_LIBM 1/
@@ -301,7 +301,7 @@ s/^#undef TIME_WITH_SYS_TIME *$/#define TIME_WITH_SYS_TIME 1/
 
 /^\/\* Enable extensions on AIX 3, Interix.  \*\//i\
 /* This is required to compile Gnulib regex code.  */\
-#ifdef __MINGW32__\
+#if defined(__DJGPP__) || defined(__MINGW32__)\
 #define _GNU_SOURCE 1\
 #endif
 
@@ -318,6 +318,10 @@ $a\
 # else\
 #  define DEFPATH  ".;c:/lib/awk;c:/gnu/lib/awk"\
 # endif\
+\
+/* Function prototype.  */\
+#include <stdbool.h>\
+extern bool is_valid_identifier(const char *name);\
 #endif\
 \
 #ifndef __DJGPP__\

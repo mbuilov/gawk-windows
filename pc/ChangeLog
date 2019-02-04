@@ -1,3 +1,11 @@
+2010-02-03  Juan Manuel Guerrero  <juan.guerrero@gmx.de>
+
+	* config.sed (_GNU_SOURCE) [__DJGPP__]: Define for DJGPP.
+	(HAVE_LANGINFO_CODESET) [__DJGPP__]: Define for DJGPP.
+	[__DJGPP__]: Prototype of is_valid_identifier.
+
+	* gawkmisc.pc (nl_langinfo) [__DJGPP__]: New function.
+
 2019-02-02  Eli Zaretskii  <eliz@gnu.org>
 
 	* gawkmisc.pc (w32_execvp) [__MINGW32__]: Renamed from execvp, to
