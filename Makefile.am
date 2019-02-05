@@ -38,6 +38,7 @@ EXTRA_DIST = \
 	INSTALL \
 	NEWS \
 	NEWS.0 \
+	NEWS.1 \
 	POSIX.STD \
 	README_d \
 	config.guess \
