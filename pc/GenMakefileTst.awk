@@ -90,7 +90,7 @@ function substitutions(test, string)
 
 	# MSYS needs "/" to be doubled
 	gsub(/-F\//, "-F$(SLASH)", string)
-	gsub(/=@\//, =@$(SLASH), string)
+	gsub(/=@\//, "=@$(SLASH)", string)
 
 	if (string ~ /\$\(CMP\)/ && test in testoutcmp) {
 		gsub(/\$\(CMP\)/, "$(TESTOUTCMP)", string)
