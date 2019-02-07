@@ -1439,7 +1439,7 @@ EXPECTED_FAIL_DJGPP = \
 	getlnhd gnuops3 gnureops id ignrcas3 inetdayt inetdayu \
 	inetecht inetechu inftest jarebug mbfw1 mbprintf1 mbprintf4 \
 	mbstr1 mbstr2 mpfrsqrt nonfatal1 nonfatal2 nonfatal3 pid pty1 pty2 \
-	regx8bit strtod sigpipe1 timeout
+	randtest regx8bit strtod sigpipe1 symtab6 timeout
 
 # List of tests that fail on MinGW
 EXPECTED_FAIL_MINGW = \

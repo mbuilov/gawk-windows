@@ -115,7 +115,7 @@
 #endif
 
 /* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
-#ifdef __MINGW32__
+#if defined(__DJGPP__) || defined(__MINGW32__)
 #define HAVE_LANGINFO_CODESET 1
 #endif
 
@@ -502,7 +502,7 @@
 #undef USE_EBCDIC
 
 /* This is required to compile Gnulib regex code.  */
-#ifdef __MINGW32__
+#if defined(__DJGPP__) || defined(__MINGW32__)
 #define _GNU_SOURCE 1
 #endif
 /* Enable extensions on AIX 3, Interix.  */
@@ -631,6 +631,10 @@
 # else
 #  define DEFPATH  ".;c:/lib/awk;c:/gnu/lib/awk"
 # endif
+
+/* Function prototype.  */
+#include <stdbool.h>
+extern bool is_valid_identifier(const char *name);
 #endif
 
 #ifndef __DJGPP__
