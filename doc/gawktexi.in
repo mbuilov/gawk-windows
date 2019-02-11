@@ -762,10 +762,11 @@ particular records in a file and perform operations upon them.
                                         mean.
 * Function Example::                    An example function definition and
                                         what it does.
-* Function Caveats::                    Things to watch out for.
+* Function Calling::                    Calling user-defined functions.
 * Calling A Function::                  Don't use spaces.
 * Variable Scope::                      Controlling variable scope.
 * Pass By Value/Reference::             Passing parameters.
+* Function Caveats::                    Other points to know about functions.
 * Return Statement::                    Specifying the value a function
                                         returns.
 * Dynamic Typing::                      How variable types can change at
@@ -19536,7 +19537,7 @@ them (i.e., to tell @command{awk} what they should do).
 * Definition Syntax::           How to write definitions and what they mean.
 * Function Example::            An example function definition and what it
                                 does.
-* Function Caveats::            Things to watch out for.
+* Function Calling::            Calling user-defined functions.
 * Return Statement::            Specifying the value a function returns.
 * Dynamic Typing::              How variable types can change at runtime.
 @end menu
@@ -19810,7 +19811,7 @@ for its format string. That would be a mistake, because @code{ctime()} is
 supposed to return the time formatted in a standard fashion, and user-level
 code could have changed @code{PROCINFO["strftime"]}.
 
-@node Function Caveats
+@node Function Calling
 @subsection Calling User-Defined Functions
 
 @cindex functions, user-defined, calling
@@ -19822,6 +19823,7 @@ the function.
 * Calling A Function::          Don't use spaces.
 * Variable Scope::              Controlling variable scope.
 * Pass By Value/Reference::     Passing parameters.
+* Function Caveats::            Other points to know about functions.
 @end menu
 
 @node Calling A Function
@@ -20068,6 +20070,9 @@ prints @samp{a[1] = 1, a[2] = two, a[3] = 3}, because
 @code{changeit()} stores @code{"two"} in the second element of @code{a}.
 @end quotation
 
+@node Function Caveats
+@subsubsection Other Points About Calling Functions
+
 @cindex undefined functions
 @cindex functions, undefined
 Some @command{awk} implementations allow you to call a function that
@@ -20108,6 +20113,36 @@ or the @code{nextfile} statement
 @end ifnotdocbook
 inside a user-defined function.
 @command{gawk} does not have this limitation.
+
+You can call a function and pass it more parameters than it was declared
+with, like so:
+
+@example
+function foo(p1, p2)
+@{
+    @dots{}
+@}
+
+BEGIN @{
+    foo(1, 2, 3, 4)
+@}
+@end example
+
+Doing so is bad practice, however.  The called function cannot do
+anything with the additional values being passed to it, so @command{awk}
+evaluates the expressions but then just throws them away.
+
+More importantly, such a call is confusing for whoever will next read your
+program.@footnote{Said person might even be you, sometime in the future,
+at which point you will wonder, ``what was I thinking?!?''} Function
+parameters generally are input items that influence the computation
+performed by the function.  Calling a function with more paramaters than
+it accepts gives the false impression that those values are important
+to the function, when in fact they are not.
+
+Because this is such a bad practice, @command{gawk} @emph{unconditionally}
+issues a warning whenever it executes such a function call.  (If you
+don't like the warning, fix your code!  It's incorrect, after all.)
 
 @node Return Statement
 @subsection The @code{return} Statement
