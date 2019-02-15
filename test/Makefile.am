@@ -924,6 +924,9 @@ EXTRA_DIST = \
 	profile10.ok \
 	profile11.awk \
 	profile11.ok \
+	profile12.awk \
+	profile12.in \
+	profile12.ok \
 	prt1eval.awk \
 	prt1eval.ok \
 	prtoeval.awk \
@@ -1334,7 +1337,7 @@ GAWK_EXT_TESTS = \
 	nsbad nsbad_cmd nsforloop nsfuncrecurse nsindirect1 nsindirect2 nsprof1 nsprof2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge \
 	procinfs profile0 profile1 profile2 profile3 profile4 profile5 profile6 \
-	profile7 profile8 profile9 profile10 profile11 pty1 pty2 \
+	profile7 profile8 profile9 profile10 profile11 profile12 pty1 pty2 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin \
 	rsstart1 rsstart2 rsstart3 rstest6 \
 	shadow shadowbuiltin sortfor sortfor2 sortu sourcesplit split_after_fpat \
@@ -1945,6 +1948,12 @@ profile7:
 	@echo $@
 	@$(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk > /dev/null
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+profile12:
+	@echo $@
+	@$(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in > _$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mpfrieee:

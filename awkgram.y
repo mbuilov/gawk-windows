@@ -1190,8 +1190,10 @@ simple_stmt
 			 */
 regular_print:
 			if ($4 == NULL) {		/* no redirection */
-				if ($3 == NULL)	{	/* printf without arg */
+				if ($3 == NULL)	{	/* print/printf without arg */
 					$1->expr_count = 0;
+					if ($1->opcode == Op_K_print)
+						$1->opcode = Op_K_print_rec;
 					$1->redir_type = redirect_none;
 					$$ = list_create($1);
 				} else {
@@ -1208,6 +1210,8 @@ regular_print:
 				bcfree(ip);
 				if ($3 == NULL) {
 					$1->expr_count = 0;
+					if ($1->opcode == Op_K_print)
+						$1->opcode = Op_K_print_rec;
 					$$ = list_append($4, $1);
 				} else {
 					INSTRUCTION *t = $3;
