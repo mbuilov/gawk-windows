@@ -1,4 +1,4 @@
-Sun Feb  3 20:34:46 IST 2019
+Fri Feb 15 12:51:55 IST 2019
 ============================
 
 There were too many files tracking different thoughts and ideas for
@@ -30,6 +30,11 @@ Minor Cleanups and Code Improvements
 	See if something like  b = a "" can be optimized to not do
 	a concatenation, but instead just set STRCUR on a.
 
+	Review all conditional warnings to see if they should be made
+	into calls to lintwarn. The advantage is that that --lint=fatal
+	would then make such warnings exit gawk, along with regular
+	lint warnings.
+
 Minor New Features
 ------------------
 
@@ -42,6 +47,10 @@ Minor New Features
 	Consider relaxing the strictness of --posix.
 
 	Enhance --lint=invalid to apply in more places.
+
+	Remove, if possible, the limitation that eval in the debugger
+	cannot run code that calls user defined functions which
+	execute return.
 
 	? Add an optional base to strtonum, allowing 2-36.
 

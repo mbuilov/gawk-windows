@@ -22342,6 +22342,11 @@ The commands for viewing and changing variables inside of 'gawk' are:
      can do anything that an 'awk' program would do: assign values to
      variables, call functions, and so on.
 
+          NOTE: Do to implementation constraintss, using 'eval' to call
+          a user-defined function that returns a value does not work,
+          generating an error message.  We hope to one day remove this
+          constraint.
+
 'eval' PARAM, ...
 AWK STATEMENTS
 'end'
@@ -33974,7 +33979,7 @@ Index
 * assert() user-defined function:        Assert Function.     (line  28)
 * assertions:                            Assert Function.     (line   6)
 * assign values to variables, in debugger: Viewing And Changing Data.
-                                                              (line  58)
+                                                              (line  63)
 * assignment operators:                  Assignment Ops.      (line   6)
 * assignment operators, evaluation order: Assignment Ops.     (line 110)
 * assignment operators, lvalues/rvalues: Assignment Ops.      (line  31)
@@ -34567,11 +34572,11 @@ Index
 * debugger commands, o (option):         Debugger Info.       (line  57)
 * debugger commands, option:             Debugger Info.       (line  57)
 * debugger commands, p (print):          Viewing And Changing Data.
-                                                              (line  35)
+                                                              (line  40)
 * debugger commands, print:              Viewing And Changing Data.
-                                                              (line  35)
+                                                              (line  40)
 * debugger commands, printf:             Viewing And Changing Data.
-                                                              (line  53)
+                                                              (line  58)
 * debugger commands, q (quit):           Miscellaneous Debugger Commands.
                                                               (line 100)
 * debugger commands, quit:               Miscellaneous Debugger Commands.
@@ -34585,7 +34590,7 @@ Index
 * debugger commands, s (step):           Debugger Execution Control.
                                                               (line  68)
 * debugger commands, set:                Viewing And Changing Data.
-                                                              (line  58)
+                                                              (line  63)
 * debugger commands, si (stepi):         Debugger Execution Control.
                                                               (line  75)
 * debugger commands, silent:             Debugger Execution Control.
@@ -34601,16 +34606,16 @@ Index
 * debugger commands, u (until):          Debugger Execution Control.
                                                               (line  82)
 * debugger commands, undisplay:          Viewing And Changing Data.
-                                                              (line  79)
+                                                              (line  84)
 * debugger commands, until:              Debugger Execution Control.
                                                               (line  82)
 * debugger commands, unwatch:            Viewing And Changing Data.
-                                                              (line  83)
+                                                              (line  88)
 * debugger commands, up:                 Execution Stack.     (line  36)
 * debugger commands, w (watch):          Viewing And Changing Data.
-                                                              (line  66)
+                                                              (line  71)
 * debugger commands, watch:              Viewing And Changing Data.
-                                                              (line  66)
+                                                              (line  71)
 * debugger commands, where (backtrace):  Execution Stack.     (line  13)
 * debugger, b command:                   Finding The Bug.     (line  32)
 * debugger, backtrace command:           Finding The Bug.     (line  52)
@@ -34660,7 +34665,7 @@ Index
 * delete debugger command:               Breakpoint Control.  (line  64)
 * delete statement:                      Delete.              (line   6)
 * delete watchpoint:                     Viewing And Changing Data.
-                                                              (line  83)
+                                                              (line  88)
 * deleting elements in arrays:           Delete.              (line   6)
 * deleting entire arrays:                Delete.              (line  39)
 * Demaille, Akim:                        Acknowledgments.     (line  60)
@@ -35884,7 +35889,7 @@ Index
 * output, records:                       Output Separators.   (line  20)
 * output, standard:                      Special FD.          (line   6)
 * p debugger command (alias for print):  Viewing And Changing Data.
-                                                              (line  35)
+                                                              (line  40)
 * package, definition of:                Global Namespace.    (line  18)
 * Papadopoulos, Panos:                   Contributors.        (line 131)
 * parent process ID of gawk process:     Auto-set.            (line 251)
@@ -36028,7 +36033,7 @@ Index
 * pretty printing <1>:                   Profiling.           (line 222)
 * pretty-printing, profiling, difference with: Profiling.     (line 229)
 * print debugger command:                Viewing And Changing Data.
-                                                              (line  35)
+                                                              (line  40)
 * print statement:                       Printing.            (line  16)
 * print statement, BEGIN/END patterns and: I/O And BEGIN/END. (line  15)
 * print statement, commas, omitting:     Print Examples.      (line  30)
@@ -36039,9 +36044,9 @@ Index
                                                               (line  17)
 * print statement, sprintf() function and: Round Function.    (line   6)
 * print variables, in debugger:          Viewing And Changing Data.
-                                                              (line  35)
+                                                              (line  40)
 * printf debugger command:               Viewing And Changing Data.
-                                                              (line  53)
+                                                              (line  58)
 * printf statement:                      Printing.            (line  16)
 * printf statement <1>:                  Printf.              (line   6)
 * printf statement, columns, aligning:   Print Examples.      (line  69)
@@ -36342,10 +36347,10 @@ Index
 * separators, subscript:                 User-modified.       (line 149)
 * set breakpoint:                        Breakpoint Control.  (line  11)
 * set debugger command:                  Viewing And Changing Data.
-                                                              (line  58)
+                                                              (line  63)
 * set directory of message catalogs:     I18N Functions.      (line  11)
 * set watchpoint:                        Viewing And Changing Data.
-                                                              (line  66)
+                                                              (line  71)
 * shadowing of variable values:          Definition Syntax.   (line  77)
 * shell quoting, rules for:              Quoting.             (line   6)
 * shells, piping commands into:          Redirection.         (line 136)
@@ -36504,7 +36509,7 @@ Index
 * stepi debugger command:                Debugger Execution Control.
                                                               (line  75)
 * stop automatic display, in debugger:   Viewing And Changing Data.
-                                                              (line  79)
+                                                              (line  84)
 * stream editors:                        Full Line Fields.    (line  22)
 * stream editors <1>:                    Simple Sed.          (line   6)
 * strftime:                              Time Functions.      (line  50)
@@ -36674,7 +36679,7 @@ Index
                                                               (line  29)
 * underscore (_), translatable string:   Programmer i18n.     (line  69)
 * undisplay debugger command:            Viewing And Changing Data.
-                                                              (line  79)
+                                                              (line  84)
 * undocumented features:                 Undocumented.        (line   6)
 * Unicode:                               Ordinal Functions.   (line  45)
 * Unicode <1>:                           Ranges and Locales.  (line  61)
@@ -36695,7 +36700,7 @@ Index
 * until debugger command:                Debugger Execution Control.
                                                               (line  82)
 * unwatch debugger command:              Viewing And Changing Data.
-                                                              (line  83)
+                                                              (line  88)
 * up debugger command:                   Execution Stack.     (line  36)
 * uppercase names, namespace for:        Default Namespace.   (line  10)
 * user database, reading:                Passwd Functions.    (line   6)
@@ -36756,7 +36761,7 @@ Index
 * vertical bar (|), || operator <1>:     Precedence.          (line  88)
 * Vinschen, Corinna:                     Acknowledgments.     (line  60)
 * w debugger command (alias for watch):  Viewing And Changing Data.
-                                                              (line  66)
+                                                              (line  71)
 * w utility:                             Fixed width data.    (line  17)
 * wait() extension function:             Extension Sample Fork.
                                                               (line  22)
@@ -36768,7 +36773,7 @@ Index
 * Wallin, Anders:                        Contributors.        (line 106)
 * warnings, issuing:                     Options.             (line 210)
 * watch debugger command:                Viewing And Changing Data.
-                                                              (line  66)
+                                                              (line  71)
 * watchpoint (debugger):                 Debugging Terms.     (line  42)
 * wc utility:                            Wc Program.          (line   6)
 * wc.awk program:                        Wc Program.          (line  46)
@@ -37209,198 +37214,198 @@ Node: List of Debugger Commands895922
 Node: Breakpoint Control897255
 Node: Debugger Execution Control900949
 Node: Viewing And Changing Data904311
-Node: Execution Stack907685
-Node: Debugger Info909322
-Node: Miscellaneous Debugger Commands913393
-Node: Readline Support918455
-Node: Limitations919351
-Node: Debugging Summary921460
-Node: Namespaces922739
-Node: Global Namespace923818
-Node: Qualified Names925216
-Node: Default Namespace926215
-Node: Changing The Namespace926956
-Node: Naming Rules928570
-Node: Internal Name Management930418
-Node: Namespace Example931460
-Node: Namespace And Features934022
-Node: Namespace Summary935457
-Node: Arbitrary Precision Arithmetic936934
-Node: Computer Arithmetic938421
-Ref: table-numeric-ranges942187
-Ref: table-floating-point-ranges942680
-Ref: Computer Arithmetic-Footnote-1943338
-Node: Math Definitions943395
-Ref: table-ieee-formats946711
-Ref: Math Definitions-Footnote-1947314
-Node: MPFR features947419
-Node: FP Math Caution949137
-Ref: FP Math Caution-Footnote-1950209
-Node: Inexactness of computations950578
-Node: Inexact representation951538
-Node: Comparing FP Values952898
-Node: Errors accumulate954139
-Node: Getting Accuracy955572
-Node: Try To Round958282
-Node: Setting precision959181
-Ref: table-predefined-precision-strings959878
-Node: Setting the rounding mode961708
-Ref: table-gawk-rounding-modes962082
-Ref: Setting the rounding mode-Footnote-1966013
-Node: Arbitrary Precision Integers966192
-Ref: Arbitrary Precision Integers-Footnote-1969367
-Node: Checking for MPFR969516
-Node: POSIX Floating Point Problems970990
-Ref: POSIX Floating Point Problems-Footnote-1975275
-Node: Floating point summary975313
-Node: Dynamic Extensions977503
-Node: Extension Intro979056
-Node: Plugin License980322
-Node: Extension Mechanism Outline981119
-Ref: figure-load-extension981558
-Ref: figure-register-new-function983123
-Ref: figure-call-new-function984215
-Node: Extension API Description986277
-Node: Extension API Functions Introduction987919
-Ref: table-api-std-headers989755
-Node: General Data Types993620
-Ref: General Data Types-Footnote-11001981
-Node: Memory Allocation Functions1002280
-Ref: Memory Allocation Functions-Footnote-11006490
-Node: Constructor Functions1006589
-Node: Registration Functions1010175
-Node: Extension Functions1010860
-Node: Exit Callback Functions1016182
-Node: Extension Version String1017432
-Node: Input Parsers1018095
-Node: Output Wrappers1030816
-Node: Two-way processors1035328
-Node: Printing Messages1037593
-Ref: Printing Messages-Footnote-11038764
-Node: Updating ERRNO1038917
-Node: Requesting Values1039656
-Ref: table-value-types-returned1040393
-Node: Accessing Parameters1041329
-Node: Symbol Table Access1042564
-Node: Symbol table by name1043076
-Ref: Symbol table by name-Footnote-11046100
-Node: Symbol table by cookie1046228
-Ref: Symbol table by cookie-Footnote-11050413
-Node: Cached values1050477
-Ref: Cached values-Footnote-11054013
-Node: Array Manipulation1054166
-Ref: Array Manipulation-Footnote-11055257
-Node: Array Data Types1055294
-Ref: Array Data Types-Footnote-11057952
-Node: Array Functions1058044
-Node: Flattening Arrays1062542
-Node: Creating Arrays1069518
-Node: Redirection API1074285
-Node: Extension API Variables1077118
-Node: Extension Versioning1077829
-Ref: gawk-api-version1078258
-Node: Extension GMP/MPFR Versioning1079989
-Node: Extension API Informational Variables1081617
-Node: Extension API Boilerplate1082690
-Node: Changes from API V11086664
-Node: Finding Extensions1088236
-Node: Extension Example1088795
-Node: Internal File Description1089593
-Node: Internal File Ops1093673
-Ref: Internal File Ops-Footnote-11105023
-Node: Using Internal File Ops1105163
-Ref: Using Internal File Ops-Footnote-11107546
-Node: Extension Samples1107820
-Node: Extension Sample File Functions1109349
-Node: Extension Sample Fnmatch1116998
-Node: Extension Sample Fork1118485
-Node: Extension Sample Inplace1119703
-Node: Extension Sample Ord1123007
-Node: Extension Sample Readdir1123843
-Ref: table-readdir-file-types1124732
-Node: Extension Sample Revout1125537
-Node: Extension Sample Rev2way1126126
-Node: Extension Sample Read write array1126866
-Node: Extension Sample Readfile1128808
-Node: Extension Sample Time1129903
-Node: Extension Sample API Tests1131251
-Node: gawkextlib1131743
-Node: Extension summary1134661
-Node: Extension Exercises1138363
-Node: Language History1139605
-Node: V7/SVR3.11141261
-Node: SVR41143413
-Node: POSIX1144847
-Node: BTL1146227
-Node: POSIX/GNU1146956
-Node: Feature History1152734
-Node: Common Extensions1168780
-Node: Ranges and Locales1170063
-Ref: Ranges and Locales-Footnote-11174679
-Ref: Ranges and Locales-Footnote-21174706
-Ref: Ranges and Locales-Footnote-31174941
-Node: Contributors1175162
-Node: History summary1181107
-Node: Installation1182487
-Node: Gawk Distribution1183431
-Node: Getting1183915
-Node: Extracting1184878
-Node: Distribution contents1186516
-Node: Unix Installation1192996
-Node: Quick Installation1193678
-Node: Shell Startup Files1196092
-Node: Additional Configuration Options1197181
-Node: Configuration Philosophy1199346
-Node: Non-Unix Installation1201715
-Node: PC Installation1202175
-Node: PC Binary Installation1203013
-Node: PC Compiling1203448
-Node: PC Using1204565
-Node: Cygwin1208118
-Node: MSYS1209217
-Node: VMS Installation1209718
-Node: VMS Compilation1210509
-Ref: VMS Compilation-Footnote-11211738
-Node: VMS Dynamic Extensions1211796
-Node: VMS Installation Details1213481
-Node: VMS Running1215734
-Node: VMS GNV1220013
-Node: VMS Old Gawk1220748
-Node: Bugs1221219
-Node: Bug address1221882
-Node: Usenet1224864
-Node: Maintainers1225868
-Node: Other Versions1227129
-Node: Installation summary1234043
-Node: Notes1235245
-Node: Compatibility Mode1236039
-Node: Additions1236821
-Node: Accessing The Source1237746
-Node: Adding Code1239183
-Node: New Ports1245402
-Node: Derived Files1249890
-Ref: Derived Files-Footnote-11255536
-Ref: Derived Files-Footnote-21255571
-Ref: Derived Files-Footnote-31256169
-Node: Future Extensions1256283
-Node: Implementation Limitations1256941
-Node: Extension Design1258124
-Node: Old Extension Problems1259268
-Ref: Old Extension Problems-Footnote-11260786
-Node: Extension New Mechanism Goals1260843
-Ref: Extension New Mechanism Goals-Footnote-11264207
-Node: Extension Other Design Decisions1264396
-Node: Extension Future Growth1266509
-Node: Notes summary1267345
-Node: Basic Concepts1268520
-Node: Basic High Level1269201
-Ref: figure-general-flow1269483
-Ref: figure-process-flow1270168
-Ref: Basic High Level-Footnote-11273469
-Node: Basic Data Typing1273654
-Node: Glossary1276982
-Node: Copying1308820
-Node: GNU Free Documentation License1346363
-Node: Index1371483
+Node: Execution Stack907921
+Node: Debugger Info909558
+Node: Miscellaneous Debugger Commands913629
+Node: Readline Support918691
+Node: Limitations919587
+Node: Debugging Summary921696
+Node: Namespaces922975
+Node: Global Namespace924054
+Node: Qualified Names925452
+Node: Default Namespace926451
+Node: Changing The Namespace927192
+Node: Naming Rules928806
+Node: Internal Name Management930654
+Node: Namespace Example931696
+Node: Namespace And Features934258
+Node: Namespace Summary935693
+Node: Arbitrary Precision Arithmetic937170
+Node: Computer Arithmetic938657
+Ref: table-numeric-ranges942423
+Ref: table-floating-point-ranges942916
+Ref: Computer Arithmetic-Footnote-1943574
+Node: Math Definitions943631
+Ref: table-ieee-formats946947
+Ref: Math Definitions-Footnote-1947550
+Node: MPFR features947655
+Node: FP Math Caution949373
+Ref: FP Math Caution-Footnote-1950445
+Node: Inexactness of computations950814
+Node: Inexact representation951774
+Node: Comparing FP Values953134
+Node: Errors accumulate954375
+Node: Getting Accuracy955808
+Node: Try To Round958518
+Node: Setting precision959417
+Ref: table-predefined-precision-strings960114
+Node: Setting the rounding mode961944
+Ref: table-gawk-rounding-modes962318
+Ref: Setting the rounding mode-Footnote-1966249
+Node: Arbitrary Precision Integers966428
+Ref: Arbitrary Precision Integers-Footnote-1969603
+Node: Checking for MPFR969752
+Node: POSIX Floating Point Problems971226
+Ref: POSIX Floating Point Problems-Footnote-1975511
+Node: Floating point summary975549
+Node: Dynamic Extensions977739
+Node: Extension Intro979292
+Node: Plugin License980558
+Node: Extension Mechanism Outline981355
+Ref: figure-load-extension981794
+Ref: figure-register-new-function983359
+Ref: figure-call-new-function984451
+Node: Extension API Description986513
+Node: Extension API Functions Introduction988155
+Ref: table-api-std-headers989991
+Node: General Data Types993856
+Ref: General Data Types-Footnote-11002217
+Node: Memory Allocation Functions1002516
+Ref: Memory Allocation Functions-Footnote-11006726
+Node: Constructor Functions1006825
+Node: Registration Functions1010411
+Node: Extension Functions1011096
+Node: Exit Callback Functions1016418
+Node: Extension Version String1017668
+Node: Input Parsers1018331
+Node: Output Wrappers1031052
+Node: Two-way processors1035564
+Node: Printing Messages1037829
+Ref: Printing Messages-Footnote-11039000
+Node: Updating ERRNO1039153
+Node: Requesting Values1039892
+Ref: table-value-types-returned1040629
+Node: Accessing Parameters1041565
+Node: Symbol Table Access1042800
+Node: Symbol table by name1043312
+Ref: Symbol table by name-Footnote-11046336
+Node: Symbol table by cookie1046464
+Ref: Symbol table by cookie-Footnote-11050649
+Node: Cached values1050713
+Ref: Cached values-Footnote-11054249
+Node: Array Manipulation1054402
+Ref: Array Manipulation-Footnote-11055493
+Node: Array Data Types1055530
+Ref: Array Data Types-Footnote-11058188
+Node: Array Functions1058280
+Node: Flattening Arrays1062778
+Node: Creating Arrays1069754
+Node: Redirection API1074521
+Node: Extension API Variables1077354
+Node: Extension Versioning1078065
+Ref: gawk-api-version1078494
+Node: Extension GMP/MPFR Versioning1080225
+Node: Extension API Informational Variables1081853
+Node: Extension API Boilerplate1082926
+Node: Changes from API V11086900
+Node: Finding Extensions1088472
+Node: Extension Example1089031
+Node: Internal File Description1089829
+Node: Internal File Ops1093909
+Ref: Internal File Ops-Footnote-11105259
+Node: Using Internal File Ops1105399
+Ref: Using Internal File Ops-Footnote-11107782
+Node: Extension Samples1108056
+Node: Extension Sample File Functions1109585
+Node: Extension Sample Fnmatch1117234
+Node: Extension Sample Fork1118721
+Node: Extension Sample Inplace1119939
+Node: Extension Sample Ord1123243
+Node: Extension Sample Readdir1124079
+Ref: table-readdir-file-types1124968
+Node: Extension Sample Revout1125773
+Node: Extension Sample Rev2way1126362
+Node: Extension Sample Read write array1127102
+Node: Extension Sample Readfile1129044
+Node: Extension Sample Time1130139
+Node: Extension Sample API Tests1131487
+Node: gawkextlib1131979
+Node: Extension summary1134897
+Node: Extension Exercises1138599
+Node: Language History1139841
+Node: V7/SVR3.11141497
+Node: SVR41143649
+Node: POSIX1145083
+Node: BTL1146463
+Node: POSIX/GNU1147192
+Node: Feature History1152970
+Node: Common Extensions1169016
+Node: Ranges and Locales1170299
+Ref: Ranges and Locales-Footnote-11174915
+Ref: Ranges and Locales-Footnote-21174942
+Ref: Ranges and Locales-Footnote-31175177
+Node: Contributors1175398
+Node: History summary1181343
+Node: Installation1182723
+Node: Gawk Distribution1183667
+Node: Getting1184151
+Node: Extracting1185114
+Node: Distribution contents1186752
+Node: Unix Installation1193232
+Node: Quick Installation1193914
+Node: Shell Startup Files1196328
+Node: Additional Configuration Options1197417
+Node: Configuration Philosophy1199582
+Node: Non-Unix Installation1201951
+Node: PC Installation1202411
+Node: PC Binary Installation1203249
+Node: PC Compiling1203684
+Node: PC Using1204801
+Node: Cygwin1208354
+Node: MSYS1209453
+Node: VMS Installation1209954
+Node: VMS Compilation1210745
+Ref: VMS Compilation-Footnote-11211974
+Node: VMS Dynamic Extensions1212032
+Node: VMS Installation Details1213717
+Node: VMS Running1215970
+Node: VMS GNV1220249
+Node: VMS Old Gawk1220984
+Node: Bugs1221455
+Node: Bug address1222118
+Node: Usenet1225100
+Node: Maintainers1226104
+Node: Other Versions1227365
+Node: Installation summary1234279
+Node: Notes1235481
+Node: Compatibility Mode1236275
+Node: Additions1237057
+Node: Accessing The Source1237982
+Node: Adding Code1239419
+Node: New Ports1245638
+Node: Derived Files1250126
+Ref: Derived Files-Footnote-11255772
+Ref: Derived Files-Footnote-21255807
+Ref: Derived Files-Footnote-31256405
+Node: Future Extensions1256519
+Node: Implementation Limitations1257177
+Node: Extension Design1258360
+Node: Old Extension Problems1259504
+Ref: Old Extension Problems-Footnote-11261022
+Node: Extension New Mechanism Goals1261079
+Ref: Extension New Mechanism Goals-Footnote-11264443
+Node: Extension Other Design Decisions1264632
+Node: Extension Future Growth1266745
+Node: Notes summary1267581
+Node: Basic Concepts1268756
+Node: Basic High Level1269437
+Ref: figure-general-flow1269719
+Ref: figure-process-flow1270404
+Ref: Basic High Level-Footnote-11273705
+Node: Basic Data Typing1273890
+Node: Glossary1277218
+Node: Copying1309056
+Node: GNU Free Documentation License1346599
+Node: Index1371719
 
 End Tag Table

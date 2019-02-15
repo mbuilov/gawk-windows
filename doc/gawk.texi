@@ -31131,6 +31131,12 @@ Evaluate @var{awk statements} in the context of the running program.
 You can do anything that an @command{awk} program would do: assign
 values to variables, call functions, and so on.
 
+@quotation NOTE
+Do to implementation constraintss, using @code{eval} to call a
+user-defined function that returns a value does not work, generating
+an error message.  We hope to one day remove this constraint.
+@end quotation
+
 @item @code{eval} @var{param}, @dots{}
 @itemx @var{awk statements}
 @itemx @code{end}
