@@ -244,7 +244,7 @@ do_inplace_end(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 			filename.str_value.str, suffix.str_value.str);
 		unlink(bakname); /* if backup file exists already, remove it */
 		if (link(filename.str_value.str, bakname) < 0)
-			fatal(ext_id, _("inplace_end: link(`%s', `%s') failed (%s)"),
+			fatal(ext_id, _("inplace::end: link(`%s', `%s') failed (%s)"),
 				filename.str_value.str, bakname, strerror(errno));
 		gawk_free(bakname);
 	}
