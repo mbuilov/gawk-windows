@@ -1675,13 +1675,24 @@ $   return
 $
 $symtab6:   echo "''test'"
 $   test_class = "gawk_ext"
+$   tmp_error = "sys$disk:[]__''test'.tmp2"
 $   set noOn
+$   if f$search(tmp_error) then delete 'tmp_error';*
+$   define/user sys$error 'tmp_error'
 $   gawk -d__'test'.tmp -f 'test'.awk
+$   gawk_status = $status
+$   if f$search("sys$disk:[]__''test'.tmp") .eqs. ""
+$   then
+$       copy 'tmp_error' sys$disk:[]__'test.tmp'
+$   else
+$       append 'tmp_error' sys$disk:[]__'test.tmp'
+$   endif
+$   if .not. gawk_status then call exit_code 'gawk_status' __'test'.tmp
 $   pipe search __'test'.tmp "ENVIRON","PROCINFO" /match=nor > _'test'.tmp
 $   cmp 'test'.ok sys$disk:[]_'test'.tmp
 $   if $status
 $   then
-$	rm _'test'.tmp;*,__'test'.tmp;*
+$	rm _'test'.tmp;*,__'test'.tmp;*,'tmp_error';*
 $	gosub junit_report_pass
 $   else
 $	gosub junit_report_fail_diff
