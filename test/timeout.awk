@@ -2,7 +2,7 @@ BEGIN {
 	cmd = "echo hello; sleep 1; echo goodbye"
 
 	print "With timeouts"
-	PROCINFO[cmd, "READ_TIMEOUT"] = 300
+	PROCINFO[cmd, "READ_TIMEOUT"] = 400
 	while ((rc = (cmd | getline x)) > 0)
 		print x
 	if (rc < 0)
