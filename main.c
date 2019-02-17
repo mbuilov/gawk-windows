@@ -465,7 +465,7 @@ main(int argc, char **argv)
 	setlocale(LC_NUMERIC, "C");
 #endif
 	/* Read in the program */
-	if (parse_program(& code_block) != 0 || dash_v_errs > 0)
+	if (parse_program(& code_block, false) != 0 || dash_v_errs > 0)
 		exit(EXIT_FAILURE);
 
 	if (do_intl)

@@ -1,3 +1,22 @@
+2019-02-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix debugger eval command so that return from a called
+	user-defined function works. Thanks to Lothar Langer
+	<lotharla@gmail.com> for the report.
+
+	* awk.h (Op_K_return_from_eval): New opcode.
+	(parse_program): Add boolean second parameter, `from_eval'.
+	* awkgram.y (called_from_eval): New variable
+	(Grammar): Check it for return statements. If true, change the
+	opcode to Op_K_return_from_eval.
+	(parse_program): Set called_from_eval to value of from_eval parameter.
+	* debug.c (pre_execute_code): Change test for Op_K_return to test
+	for Op_K_return_from_eval.
+	(do_eval): Call parse_program with second parameter true.
+	* eval.c (optypetab): Add entry for Op_K_return_from_eval.
+	* interpret.h (r_interpret): Ditto: can't-happen error.
+	* main.c (main): Call parse_program with second parameter false.
+
 2019-02-15         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y: If profiling, correctly turn `print' into `print $0'.

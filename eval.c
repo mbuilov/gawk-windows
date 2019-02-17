@@ -325,6 +325,7 @@ static struct optypetab {
 	{ "Op_K_next", "next" },
 	{ "Op_K_exit", "exit" },
 	{ "Op_K_return", "return" },
+	{ "Op_K_return_from_eval", "return" },
 	{ "Op_K_delete", "delete" },
 	{ "Op_K_delete_loop", NULL },
 	{ "Op_K_getline_redir", "getline" },

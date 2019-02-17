@@ -30144,9 +30144,14 @@ You can do anything that an @command{awk} program would do: assign
 values to variables, call functions, and so on.
 
 @quotation NOTE
-Do to implementation constraintss, using @code{eval} to call a
-user-defined function that returns a value does not work, generating
-an error message.  We hope to one day remove this constraint.
+You cannot use @code{eval} to execute a statement containing
+any of the following:
+@code{exit},
+@code{getline},
+@code{next},
+@code{nextfile},
+or
+@code{return}.
 @end quotation
 
 @item @code{eval} @var{param}, @dots{}

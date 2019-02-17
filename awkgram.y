@@ -176,6 +176,7 @@ static INSTRUCTION *ip_end;
 static INSTRUCTION *ip_endfile;
 static INSTRUCTION *ip_beginfile;
 INSTRUCTION *main_beginfile;
+static bool called_from_eval = false;
 
 static inline INSTRUCTION *list_create(INSTRUCTION *x);
 static inline INSTRUCTION *list_append(INSTRUCTION *l, INSTRUCTION *x);
@@ -1093,6 +1094,9 @@ non_compound_stmt
 		if (! in_function)
 			yyerror(_("`return' used outside function context"));
 	  } opt_exp statement_term {
+		if (called_from_eval)
+			$1->opcode = Op_K_return_from_eval;
+
 		if ($3 == NULL) {
 			$$ = list_create($1);
 			(void) list_prepend($$, instruction(Op_push_i));
@@ -2732,9 +2736,11 @@ out:
 /* parse_program --- read in the program and convert into a list of instructions */
 
 int
-parse_program(INSTRUCTION **pcode)
+parse_program(INSTRUCTION **pcode, bool from_eval)
 {
 	int ret;
+
+	called_from_eval = from_eval;
 
 	/* pre-create non-local jump targets
 	 * ip_end (Op_no_op) -- used as jump target for `exit'

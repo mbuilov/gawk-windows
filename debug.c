@@ -5522,7 +5522,7 @@ pre_execute_code(INSTRUCTION **pi)
 				op2str(ei->opcode));
 		*pi = ei->nexti;
 		break;
-	case Op_K_return:
+	case Op_K_return_from_eval:
 		if (ei->nexti != NULL) {	/* not an implicit return */
 			NODE *r;
 			d_error(_("`return' not allowed in current context;"
@@ -5600,7 +5600,7 @@ do_eval(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	push_context(ctxt);
 	the_source = add_srcfile(SRC_CMDLINE, arg->a_string, srcfiles, NULL, NULL);
 	do_flags = false;
-	ret = parse_program(&code);
+	ret = parse_program(&code, true);
 	do_flags = save_flags;
 	remove_params(this_func);
 	if (ret != 0) {
@@ -5783,7 +5783,7 @@ parse_condition(int type, int num, char *expr)
 	push_context(ctxt);
 	(void) add_srcfile(SRC_CMDLINE, expr, srcfiles, NULL, NULL);
 	do_flags = false;
-	ret = parse_program(&code);
+	ret = parse_program(&code, true);
 	do_flags = save_flags;
 	remove_params(this_func);
 	pop_context();

@@ -1199,6 +1199,10 @@ match_re:
 			JUMPTO(ni);	/* Op_func */
 		}
 
+		case Op_K_return_from_eval:
+			cant_happen();
+			break;
+
 		case Op_K_return:
 			m = POP_SCALAR();       /* return value */
 

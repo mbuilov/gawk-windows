@@ -664,6 +664,7 @@ typedef enum opcodeval {
 	Op_K_next,
 	Op_K_exit,
 	Op_K_return,
+	Op_K_return_from_eval,
 	Op_K_delete,
 	Op_K_delete_loop,
 	Op_K_getline_redir,
@@ -1402,7 +1403,7 @@ extern unsigned long (*hash)(const char *s, size_t len, unsigned long hsize, siz
 extern void init_env_array(NODE *env_node);
 /* awkgram.c */
 extern NODE *variable(int location, char *name, NODETYPE type);
-extern int parse_program(INSTRUCTION **pcode);
+extern int parse_program(INSTRUCTION **pcode, bool from_eval);
 extern void track_ext_func(const char *name);
 extern void dump_funcs(void);
 extern void dump_vars(const char *fname);

@@ -217,6 +217,9 @@ EXTRA_DIST = \
 	dbugeval2.awk \
 	dbugeval2.in \
 	dbugeval2.ok \
+	dbugeval3.awk \
+	dbugeval3.in \
+	dbugeval3.ok \
 	dbugtypedre1.awk \
 	dbugtypedre1.in \
 	dbugtypedre1.ok \
@@ -1321,7 +1324,7 @@ GAWK_EXT_TESTS = \
 	backw badargs beginfile1 beginfile2 binmode1 \
 	charasbytes colonwarn clos1way clos1way2 clos1way3 clos1way4 clos1way5 \
 	clos1way6 crlf \
-	dbugeval dbugeval2 dbugtypedre1 dbugtypedre2 delsub \
+	dbugeval dbugeval2 dbugeval3 dbugtypedre1 dbugtypedre2 delsub \
 	devfd devfd1 devfd2 dfacheck1 dumpvars \
 	errno exit \
 	fieldwdth forcenum fpat1 fpat2 fpat3 fpat4 fpat5 fpat6 fpatnull fsfwfs \
@@ -1372,7 +1375,7 @@ SHLIB_TESTS = \
 	testext time
 
 # List of the tests which should be run with --debug option:
-NEED_DEBUG = dbugtypedre1 dbugtypedre2 dbugeval2 symtab10
+NEED_DEBUG = dbugtypedre1 dbugtypedre2 dbugeval2 dbugeval3 symtab10
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
