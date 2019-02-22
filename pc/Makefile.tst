@@ -191,7 +191,7 @@ GAWK_EXT_TESTS = \
 	backw badargs beginfile1 beginfile2 binmode1 \
 	charasbytes colonwarn clos1way clos1way2 clos1way3 clos1way4 clos1way5 \
 	clos1way6 crlf \
-	dbugeval dbugeval2 dbugtypedre1 dbugtypedre2 delsub \
+	dbugeval dbugeval2 dbugeval3 dbugtypedre1 dbugtypedre2 delsub \
 	devfd devfd1 devfd2 dfacheck1 dumpvars \
 	errno exit \
 	fieldwdth forcenum fpat1 fpat2 fpat3 fpat4 fpat5 fpat6 fpatnull fsfwfs \
@@ -207,7 +207,7 @@ GAWK_EXT_TESTS = \
 	nsbad nsbad_cmd nsforloop nsfuncrecurse nsindirect1 nsindirect2 nsprof1 nsprof2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge \
 	procinfs profile0 profile1 profile2 profile3 profile4 profile5 profile6 \
-	profile7 profile8 profile9 profile10 profile11 pty1 pty2 \
+	profile7 profile8 profile9 profile10 profile11 profile12 pty1 pty2 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin \
 	rsstart1 rsstart2 rsstart3 rstest6 \
 	shadow shadowbuiltin sortfor sortfor2 sortu sourcesplit split_after_fpat \
@@ -239,7 +239,7 @@ SHLIB_TESTS = \
 
 
 # List of the tests which should be run with --debug option:
-NEED_DEBUG = dbugtypedre1 dbugtypedre2 dbugeval2 symtab10
+NEED_DEBUG = dbugtypedre1 dbugtypedre2 dbugeval2 dbugeval3 symtab10
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
@@ -321,8 +321,7 @@ EXPECTED_FAIL_MINGW = \
 	backbigs1 backsmalls1 clos1way6 devfd devfd1 devfd2 \
 	errno exitval2 fork fork2 fts getfile getlnhd ignrcas3 inetdayt \
 	inetecht mbfw1 mbprintf1 mbprintf4 mbstr1 mbstr2 pid pipeio2 \
-	pty1 pty2 readdir readdir_test readdir_retest rstest4 rstest5 \
-	status-close timeout
+	pty1 pty2 readdir rstest4 rstest5 status-close timeout
 
 
 # List of the files that appear in manual tests or are for reserve testing:
@@ -818,6 +817,12 @@ profile7:
 	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+profile12:
+	@echo $@
+	@$(AWK) --profile=ap-$@.out -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.in > _$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@rm ap-$@.out
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 mpfrieee:
 	@echo $@
 	@$(AWK) -M -vPREC=double -f "$(srcdir)"/$@.awk > _$@ 2>&1 || echo EXIT CODE: $$? >> _$@
@@ -970,14 +975,12 @@ readdir:
 
 readdir_test:
 	@echo $@
-	@echo Expect $@ to fail with MinGW.
 	@$(AWK) -lreaddir -F$(SLASH) '{printf "[%s] [%s] [%s] [%s]\n", $$1, $$2, $$3, $$4}' "$(top_srcdir)" > $@.ok
 	@$(AWK) -lreaddir_test '{printf "[%s] [%s] [%s] [%s]\n", $$1, $$2, $$3, $$4}' "$(top_srcdir)" > _$@
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 readdir_retest:
 	@echo $@
-	@echo Expect $@ to fail with MinGW.
 	@$(AWK) -lreaddir -F$(SLASH) -f "$(srcdir)"/$@.awk "$(top_srcdir)" > $@.ok
 	@$(AWK) -lreaddir_test -F$(SLASH) -f "$(srcdir)"/$@.awk "$(top_srcdir)" > _$@
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
@@ -2474,6 +2477,11 @@ crlf:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 dbugeval2:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --debug < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+dbugeval3:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --debug < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@

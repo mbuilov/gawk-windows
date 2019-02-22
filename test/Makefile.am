@@ -1452,8 +1452,7 @@ EXPECTED_FAIL_MINGW = \
 	backbigs1 backsmalls1 clos1way6 devfd devfd1 devfd2 \
 	errno exitval2 fork fork2 fts getfile getlnhd ignrcas3 inetdayt \
 	inetecht mbfw1 mbprintf1 mbprintf4 mbstr1 mbstr2 pid pipeio2 \
-	pty1 pty2 readdir readdir_test readdir_retest rstest4 rstest5 \
-	status-close timeout
+	pty1 pty2 readdir rstest4 rstest5 status-close timeout
 
 # List of the files that appear in manual tests or are for reserve testing:
 GENTESTS_UNUSED = Makefile.in checknegtime.awk dtdgport.awk fix-fmtspcl.awk \
