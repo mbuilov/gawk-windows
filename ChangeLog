@@ -1,3 +1,21 @@
+2019-02-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Set ZOS_FAIL if on ZOS to improve test suite on that
+	platform.
+	* awk.h (is_valid_identifier): Move declaration outside ifdef DYNAMIC.
+	* command.y: Fix test for EBCDIC to use USE_EBCDIC.
+	* custom.h: Remove definitions of __builtin_expect.
+	* eval.c (update_ERRNO_string): Add untested and disabled code for z/OS
+	to remove leading IBM error codes.  This might one day make more of the
+	tests pass on z/OS.
+
+2019-02-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (is_valid_identifier): Move declaration outside of
+	`#if DYNAMIC'.  Thanks to Daniel Richard G.
+	* custom.h (builtin_expect): Remove definitions, now
+	handled by support/cdefs.h.
+
 2019-02-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Fix debugger eval command so that return from a called

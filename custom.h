@@ -47,16 +47,8 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE 1
 #endif
-#define __builtin_expect(expr, val) (expr)
 #ifndef SIZE_MAX
 #define SIZE_MAX __INT32_MAX
-#endif
-#endif
-
-/* This keeps regex happy on non-GCC compilers */
-#ifndef __GNUC__
-#ifndef __builtin_expect
-#define __builtin_expect(expr, val) (expr)
 #endif
 #endif
 

@@ -1023,7 +1023,23 @@ update_ERRNO_string(const char *string)
 {
 	update_PROCINFO_num("errno", 0);
 	unref(ERRNO_node->var_value);
-	ERRNO_node->var_value = make_string(string, strlen(string));
+	size_t len = strlen(string);
+#if defined(USE_EBCDIC) && defined(ELIDE_IBM_ERROR_CODE)
+	// skip over leading IBM error code
+	// N.B. This code is untested
+	if (isupper(string[0]) && isupper(string[1])) {
+		while (*string && *string != ' ')
+			string++;
+
+		while (*string && *string == ' ')
+			string++;
+
+		len = strlen(string);
+		if (string[len-1] == '.')
+			len--;	// remove the final '.'
+	}
+#endif
+	ERRNO_node->var_value = make_string(string, len);
 }
 
 /* unset_ERRNO --- eliminate the value of ERRNO */

@@ -206,7 +206,7 @@ concat3:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 concat4:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -252,7 +252,7 @@ delfunc:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 dfamb1:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -448,7 +448,7 @@ gsubtst4:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 gsubtst5:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -664,7 +664,7 @@ numindex:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 numrange:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -891,7 +891,7 @@ regexprange:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 regrange:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -911,7 +911,7 @@ resplit:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 rri1:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -987,7 +987,7 @@ setrec1:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 sigpipe1:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1052,7 +1052,7 @@ strtod:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 subamp:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -1063,7 +1063,7 @@ subback:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 subi18n:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -1154,37 +1154,37 @@ uplus:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 wideidx:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 wideidx2:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 widesub:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 widesub2:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 widesub3:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 widesub4:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -1250,17 +1250,17 @@ aarray1:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 aasort:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 aasorti:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 arraysort:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1306,7 +1306,7 @@ clos1way5:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 clos1way6:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1356,7 +1356,7 @@ fieldwdth:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 forcenum:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --non-decimal-data >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1476,7 +1476,7 @@ gensub3:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 getlndir:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1526,7 +1526,7 @@ igncfs:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 ignrcas2:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -1627,13 +1627,13 @@ match3:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbstr1:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbstr2:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -1669,7 +1669,7 @@ nondec2:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 nonfatal2:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1739,7 +1739,7 @@ printfbad4:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 printhuge:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -1755,7 +1755,7 @@ profile4:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 profile5:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --pretty-print=_$@ >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1800,7 +1800,7 @@ reint:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 reint2:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --re-interval < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -1836,7 +1836,7 @@ shadowbuiltin:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 sortfor:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1846,7 +1846,7 @@ sortfor2:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 sortu:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1881,7 +1881,7 @@ switch2:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 symtab1:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1916,7 +1916,7 @@ symtab10:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 timeout:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1961,12 +1961,12 @@ typeof5:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 double1:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 double2:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -1976,35 +1976,35 @@ intformat:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 asort:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 asorti:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 backbigs1:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 backsmalls1:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 backsmalls2:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 fmttest:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
@@ -2023,37 +2023,37 @@ fnparydl:
 	fi
 
 lc_num1:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbfw1:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbprintf1:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbprintf2:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbprintf3:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mbprintf4:
-	@echo $@
+	@echo $@ $(ZOS_FAIL)
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE; \
 	AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@

@@ -122,6 +122,16 @@ BEGIN {
  	}
 }
 
+# Tests that fail on z/OS
+/EXPECTED_FAIL_ZOS *=/,/[^\\]$/ {
+	gsub(/(^EXPECTED_FAIL_ZOS *=|\\$)/,"")
+	for (i = 1; i <= NF; i++)
+	{
+		zos_fail[$i]
+	}
+	next
+}
+
 /^[[:alpha:]_][[:alnum:]_]*:/ {
 	# remember all targets from Makefile.am
 	sub(/:.*/,"")
@@ -215,7 +225,11 @@ function generate(x,	s, i, locale_string)
 		delete files[x".in"]
 	}
 
-	printf "\t@echo $@\n"
+	if (x in zos_fail) {
+		printf "\t@echo $@ $(ZOS_FAIL)\n"
+		delete zos_fail[x]
+	} else
+		printf "\t@echo $@\n"
 
 	# default is the leading tab and @
 	locale_string = "\t@"

@@ -3180,7 +3180,7 @@ find_command(const char *token, size_t toklen)
 	int abrv_match = -1;
 	int partial_match = -1;
 
-#if 'a' == 0x81 /* it's EBCDIC */
+#ifdef USE_EBCDIC
 	/* make sure all lower case characters in token (sorting
 	 * isn't the solution in this case)
 	 */

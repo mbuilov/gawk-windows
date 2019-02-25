@@ -144,6 +144,11 @@ gnu_gawk_in_ebcdic
  use_ebcdic=yes],
 [use_ebcdic=no])
 AC_MSG_RESULT([$use_ebcdic])
+if test "$use_ebcdic" = yes ]
+then
+	ZOS_FAIL='; echo Expect $@ to fail on z/OS.'
+fi
+AC_SUBST(ZOS_FAIL)
 
 dnl Set the programming language for checks. Fortunately,
 dnl this only needs to be set once, since everything is in C.

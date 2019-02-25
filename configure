@@ -660,6 +660,7 @@ MSGFMT
 GETTEXT_MACRO_VERSION
 USE_NLS
 SED
+ZOS_FAIL
 acl_shlibext
 RANLIB
 LN_S
@@ -5800,6 +5801,11 @@ rm -f conftest*
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_ebcdic" >&5
 $as_echo "$use_ebcdic" >&6; }
+if test "$use_ebcdic" = yes ]
+then
+	ZOS_FAIL='; echo Expect $@ to fail on z/OS.'
+fi
+
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
