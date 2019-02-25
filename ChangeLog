@@ -1,5 +1,17 @@
 2019-02-25         Arnold D. Robbins     <arnold@skeeve.com>
 
+	Small profiling improvements. Suggested by mukti
+	<ferida.cicatriz@gmail.com>.
+
+	* main.c (parse_args): Add warnings that --profile overrides
+	--pretty-print.
+	(main): Move setuid warning to after all the warnings for conflicting
+	arguments.
+	* profile.c (pprint): Don't print extra trailing space after return
+	and exit if no value associated with the statement.
+
+2019-02-25         Arnold D. Robbins     <arnold@skeeve.com>
+
 	* configure.ac: Set ZOS_FAIL if on ZOS to improve test suite on that
 	platform.
 	* awk.h (is_valid_identifier): Move declaration outside ifdef DYNAMIC.

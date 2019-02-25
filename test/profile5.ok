@@ -297,7 +297,7 @@ BEGIN {	########################################################################
 	ENVIRON["EGAWK_CMDLINE"] = a
 	_lib_APPLY()
 	if (_basexit_fl) {
-		exit 
+		exit
 	}
 	_INIT()
 	_START()
@@ -697,19 +697,19 @@ function _ARR(c, t, P)
 		return t
 		#___________________________________________________________
 	case "_lib_APPLY":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_HELP":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_NAMEVER":
 		return _ln("_ARR 1.0")
 		#___________________________________________________________
 	case "_lib_BEGIN":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_END":
-		return 
+		return
 	}
 }
 
@@ -739,7 +739,7 @@ function _BASE(c, t, P, A)
 			_out(_ln(_PRODUCT_NAME " v" _PRODUCT_VERSION) _ln(_PRODUCT_COPYRIGHT) _ln() (_cmdln_version == "v" ? "" : _lib_NAMEVER()))
 			return _endpass(_basexit_fl = 1)
 		}
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_HELP":
 		return ("\000" _ln(_PRODUCT_NAME " v" _PRODUCT_VERSION) _ln(_PRODUCT_COPYRIGHT) _ln() _ln(" Usage:") _ln() _ln("    " _PRODUCT_FILENAME " [/key1 /key2...] [-- cmdline]") _ln() _ln(" keys:") _ln() "\001" _ln("    -v -V --version                    - output product version and (if /V) all modules") _ln("    ? -? --help                        - output this help page") _ln("    --                                 - command line string edge"))
@@ -748,10 +748,10 @@ function _BASE(c, t, P, A)
 		return _ln("_BASE 3.0")
 		#___________________________________________________________
 	case "_lib_BEGIN":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_END":
-		return 
+		return
 	}
 }
 
@@ -765,19 +765,19 @@ function _DS(c, t, P, a, A)
 		return t
 		#_____________________________________________________
 	case "_lib_APPLY":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_HELP":
 		return (_ln() _ln(" Usage: " _PRODUCT_NAME " [/key1 /key2...] sourcefile [cmdline]") _ln())
 		#_____________________________________________________
 	case "_lib_NAMEVER":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_BEGIN":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_END":
-		return 
+		return
 	}
 }
 
@@ -832,7 +832,7 @@ function _ERRLOG(c, t, P, a, b, A)
 				_info("Log-message types inherited acc/deny: " "TRACE " (_ERRLOG_TF ? "ON" : "OFF") "/" "VERBOSE " (_ERRLOG_VF ? "ON" : "OFF") "/" "INFO " (_ERRLOG_IF ? "ON" : "OFF") "/" "WARNING " (_ERRLOG_WF ? "ON" : "OFF") "/" "ERROR " (_ERRLOG_EF ? "ON" : "OFF") "/" "FATAL " (_ERRLOG_FF ? "ON" : "OFF"))
 			}
 		}
-		return 
+		return
 		#_______________________________________________________________________
 	case "_lib_HELP":
 		return (_ln("    -L:TtVvIiWwEeFf                    - enable(upcase: TVIWEF) or disable(lowcase: tviwef) allowable type of") _ln("                                         log messages. Trace/Verbose/Informational/Warning/Error/Fatal.") _ln())
@@ -848,7 +848,7 @@ function _ERRLOG(c, t, P, a, b, A)
 		P["_ERRLOG_EF"] = _ERRLOG_EF
 		P["_ERRLOG_FF"] = _ERRLOG_FF
 		P["_errlog_file"] = "/dev/stderr"
-		return 
+		return
 	}
 }
 
@@ -866,19 +866,19 @@ function _EXTFN(c, t, P)
 		return t
 		#___________________________________________________________
 	case "_lib_APPLY":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_HELP":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_NAMEVER":
 		return _ln("_EXTFN 1.0")
 		#___________________________________________________________
 	case "_lib_BEGIN":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_END":
-		return 
+		return
 	}
 }
 
@@ -901,7 +901,7 @@ function _FILEIO(c, t, P, A)
 		if (_fileio_notdeltmpflag) {
 			_info("Temporary objects deletion DISABLED (inherited)")
 		}
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_HELP":
 		return (_ln("    -[Tt][+-]                          - inherited: +enable\\-disable temporary files\\dirs deletion") _ln())
@@ -917,10 +917,10 @@ function _FILEIO(c, t, P, A)
 		if (! ("_FILEIO_TMPRD" in P)) {
 			P["_FILEIO_TMPRD"] = _getmpdir(_filen(P["SOURCE"]) "." ++_egawk_subcntr _CHR["SUBDIR"])
 		}
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_END":
-		return 
+		return
 	}
 }
 
@@ -936,19 +936,19 @@ function _FILEVER(c, t, P, a, A)
 		return t
 		#_____________________________________________________
 	case "_lib_APPLY":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_HELP":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_NAMEVER":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_BEGIN":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_END":
-		return 
+		return
 	}
 }
 
@@ -978,19 +978,19 @@ function _INSTRUC(c, t, P)
 		return t
 		#___________________________________________________________
 	case "_lib_APPLY":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_HELP":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_NAMEVER":
 		return _ln("_INSTRUC 1.0")
 		#___________________________________________________________
 	case "_lib_BEGIN":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_END":
-		return 
+		return
 	}
 }
 
@@ -1019,19 +1019,19 @@ function _SHORTCUT(c, t, P)
 		return t
 		#___________________________________________________________
 	case "_lib_APPLY":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_HELP":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_NAMEVER":
 		return _ln("_shortcut 1.0")
 		#___________________________________________________________
 	case "_lib_BEGIN":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_END":
-		return 
+		return
 	}
 }
 
@@ -1041,10 +1041,10 @@ function _START(t, i, A)
 	#########################################################################
 	_torexp_init()
 	test_uid()
-	return 
+	return
 	_conl(patsplit("a,b,c", A, /[^,]/, B))
 	test_splitstr()
-	return 
+	return
 	A[""]
 	_CLASSPTR["ptr"]
 	ALTARR["ptra"]
@@ -1065,12 +1065,12 @@ function _START(t, i, A)
 	_rtn("ptra", ALTARR)
 	_rtn(ALTARR)
 	_rtn(ALTARR, ALTARR)
-	return 
+	return
 	_tstini()
-	return 
+	return
 	_splitpath_test()
 	#	_split_regpath()
-	return 
+	return
 	hh = "CPU"
 	_conl("go1!")
 	_conl(_var(_sharepath(hh, "gdfsgdsgsd sdgsdighjui teretiewrotrewut 345345345 rtjtireutireu huj")))
@@ -1086,7 +1086,7 @@ function _START(t, i, A)
 		_conl("not match")
 	}
 	_conl(_dumparr(A))
-	return 
+	return
 	_pathSMA = "C:\\Program Files\\Altiris\\Altiris Agent\\"
 	DSPlugInPath = _pathSMA "Agents\\Deployment\\Agent\\"
 	DSAutoPath = _pathSMA
@@ -1152,19 +1152,19 @@ function _SYSIO(c, t, P)
 		return t
 		#___________________________________________________________
 	case "_lib_APPLY":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_HELP":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_NAMEVER":
 		return _ln("_SYSIO 1.0")
 		#___________________________________________________________
 	case "_lib_BEGIN":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_END":
-		return 
+		return
 	}
 }
 
@@ -1459,7 +1459,7 @@ function _addfile(f, d, a, b)
 	##################################
 	if (((f = _wfilerdnehnd(f)) == "") || (_filene(f) == "")) {
 		ERRNO = "Filename error"
-		return 
+		return
 	}
 	a = BINMODE
 	BINMODE = "rw"
@@ -2214,7 +2214,7 @@ function _dumparr_i1(A, lv, ls, ln, t, t2, i, a, f)
 			_DUMPARR[++_dumparrc] = _dumparrd
 			_dumparrd = ""
 		}
-		return 
+		return
 	}
 	if (ls >= 0) {
 		for (i in A) {
@@ -2300,7 +2300,7 @@ function _dumpobj_i3(A, t, p, e, s, i, t2)
 		return (e == "" ? "" : t e)
 	}
 	if (A == 0 && A == "") {
-		return 
+		return
 	}
 	return _ln(t "=" _dumpobj_i4(p A) "'")
 }
@@ -2383,19 +2383,19 @@ function _eXTFN(c, t, P)
 		return t
 		#___________________________________________________________
 	case "_lib_APPLY":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_HELP":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_NAMEVER":
 		return _ln("_extfn 1.0")
 		#___________________________________________________________
 	case "_lib_BEGIN":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_END":
-		return 
+		return
 	}
 }
 
@@ -2515,7 +2515,7 @@ function _fatal(t, d, A)
 		_log(A, d)
 	}
 	if (! d) {
-		exit 
+		exit
 	}
 }
 
@@ -3034,7 +3034,7 @@ function _getchrln(s, w)
 {
 	#################################################
 	if (s == "") {
-		return 
+		return
 		#if ( w!=w+0 || w<0 )	w=_CON_WIDTH
 	}
 	if (length(s) < w) {
@@ -3394,7 +3394,7 @@ function _inituid(p, cs, dptr, pfx, sfx, hstr, lstr, A)
 		lstr = A[4]
 	} else {
 		ERRNO = "_inituid(): bad parameters"
-		return 
+		return
 	}
 	_conl(dptr ":" pfx "'" hstr "|" lstr "'" sfx)
 	return _cfguid(p, dptr, pfx, sfx, hstr, lstr)
@@ -3769,7 +3769,7 @@ function _newclrdir(f)
 {
 	############################################
 	if ((f = _filerd(f)) == "") {
-		return 
+		return
 	}
 	_cmd("rd " f " /S /Q 2>NUL")
 	_cmd("md " f " 2>NUL")
@@ -3782,7 +3782,7 @@ function _newdir(f)
 {
 	#####################################################
 	if ((f = _filerd(f)) == "") {
-		return 
+		return
 	}
 	if (! (f in _WFILEROOTDIR)) {
 		_cmd("md " f " 2>NUL")
@@ -3824,13 +3824,13 @@ function _nretarr(A, i, v, r, q)
 				_ARRSTR = _ARRSTR A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i]
 			}
 			_ARRSTR = _ARRSTR A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] v _retarr_i0(A, q, i)
-			return 
+			return
 		}
 		_ARRSTR = A[i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] A[++i] v _retarr_i0(A, q, i)
-		return 
+		return
 	}
 	_ARRSTR = v
-	return 
+	return
 }
 
 #___________________________________________________________
@@ -4126,7 +4126,7 @@ function _printarr_i1(A, lv, ls, ln, t, t2, i, a, f)
 			_conl(_dumparrd)
 			_dumparrd = ""
 		}
-		return 
+		return
 	}
 	if (ls >= 0) {
 		for (i in A) {
@@ -4224,19 +4224,19 @@ function _rEG(c, t, P, a, A)
 		return t
 		#_____________________________________________________
 	case "_lib_APPLY":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_HELP":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_NAMEVER":
 		return _ln("_reg 0.001")
 		#_____________________________________________________
 	case "_lib_BEGIN":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_END":
-		return 
+		return
 	}
 }
 
@@ -4422,7 +4422,7 @@ function _rSQNEXTA(g, p, A)
 			_SQTOPTR[g] = _SQSTACK[g][_SQSTACK[g][0]--]
 			return _rSQNEXTA(g, _SQSTACK[g][_SQSTACK[g][0]--], A)
 		}
-		return 
+		return
 	}
 	while (p in _tNEXT) {
 		if ((p = _rsqgetptr(g, _tNEXT[p])) in A) {
@@ -4465,7 +4465,7 @@ function _rdfile(f, i, A)
 	################################################
 	if (((f = _filerdne(f)) == "") || (_filene(f) == "")) {
 		ERRNO = "Filename error"
-		return 
+		return
 	}
 	_fio_cmda = RS
 	RS = ".{1,}"
@@ -4533,7 +4533,7 @@ function _rdreg_i0(D, A)
 			if (! _rdreg_i0(D)) {
 				++_rdregfld
 				D[_rdregp0 A[1] "." _RDREGTYPE[A[2]]] = A[9]
-				return 
+				return
 			} else {
 				break
 			}
@@ -4893,7 +4893,7 @@ function _rsqnext_i0(g, p)
 			_SQTOPTR[g] = _SQSTACK[g][_SQSTACK[g][0]--]
 			return _rsqnext_i0(g, _SQSTACK[g][_SQSTACK[g][0]--])
 		}
-		return 
+		return
 	}
 	if (p in _tNEXT) {
 		return _rsqgetptr(g, _tNEXT[p])
@@ -4946,19 +4946,19 @@ function _sHARE(c, t, P, a, A)
 		return t
 		#_____________________________________________________
 	case "_lib_APPLY":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_HELP":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_NAMEVER":
 		return _ln("_share 1.000")
 		#_____________________________________________________
 	case "_lib_BEGIN":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_END":
-		return 
+		return
 	}
 }
 
@@ -4974,19 +4974,19 @@ function _sYS(c, t, P, a, A)
 		return t
 		#_____________________________________________________
 	case "_lib_APPLY":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_HELP":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_NAMEVER":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_BEGIN":
-		return 
+		return
 		#_____________________________________________________
 	case "_lib_END":
-		return 
+		return
 	}
 }
 
@@ -5084,7 +5084,7 @@ function _shortcut(D, S)
 		} else if (_isnotfileptr(S)) {
 			_addarrmask(D, _[S], _SHORTCUTWSTRUC)	# array*			- define shortcut-specific elements in array by default values
 		} else if (_rd_shortcut(D, S)) {
-			return 
+			return
 		}		# array,ptr*		- copy from array _[ptr] to array shorcut-specific elements
 	} else if (D == 0 && D == "") {
 		return _NOP	# -*				- no action(return -)
@@ -5096,17 +5096,17 @@ function _shortcut(D, S)
 		} else if (_isnotfileptr(S)) {
 			_addarrmask(_[D], _[S], _SHORTCUTWSTRUC)	# ptr*			- define shortcut-specifc elements in array _[ptr] by default values
 		} else if (_rd_shortcut(_[D], S)) {
-			return 
+			return
 		}		# ptr,ptr2*			- copy from array _[ptr2] to array _[ptr] shorcut-specific elements
 	} else {
 		if (isarray(S) && _wr_shortcut(D, S)) {
-			return 	# filepath,array*		- [over]write shorcut file filepath; shortcut parameters will be defined by shortcut-specific elements in array(save shortcut)
+			return	# filepath,array*		- [over]write shorcut file filepath; shortcut parameters will be defined by shortcut-specific elements in array(save shortcut)
 		} else if (S == 0 && S == "" && _wr_shortcut(D, _SHORTCUTDEFAULT)) {
-			return 	# filepath*			- [over]write shorcut file filepath; shortcut parameters will be defined by default values
+			return	# filepath*			- [over]write shorcut file filepath; shortcut parameters will be defined by default values
 		} else if (_isnotfileptr(S) && _wr_shortcut(D, _[S])) {
-			return 	# filepath,ptr*		- [over]write shorcut file filepath; shortcut parameters will be defined by shortcut-specific elements in array _[ptr](save shortcut)
+			return	# filepath,ptr*		- [over]write shorcut file filepath; shortcut parameters will be defined by shortcut-specific elements in array _[ptr](save shortcut)
 		} else if (_rd_shortcut(_SHRTCUTA1, S) || _wr_shortcut(D, _SHRTCUTA1)) {
-			return 
+			return
 		}		# ptr,filepath*		- define in array _[ptr] shortcut-specific elements by reading its from shortcut file filepath(load shortcut)
 	}	# filepath,filepath2*	- [over]write shorcut file filepath; shortcut parameters will be defined from shortcut file filepath2(copy shortcut)
 	return 1
@@ -5286,7 +5286,7 @@ function _splitpath_test()
 	_conl()
 	_conl("########################################################################################")
 	_conl()
-	return 
+	return
 }
 
 #_______________________________________________________________________
@@ -5466,19 +5466,19 @@ function _tOBJ(c, t, P)
 		return t
 		#___________________________________________________________
 	case "_lib_APPLY":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_HELP":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_NAMEVER":
 		return _ln("_tOBJ 3.0")
 		#___________________________________________________________
 	case "_lib_BEGIN":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_END":
-		return 
+		return
 		#___________________________________________________________
 	case "_lib_CLEANUP":
 		return _tOBJ_CLEANUP()
@@ -5906,7 +5906,7 @@ function _tframe0_i0(A, p, f)
 function _tframe0_i1(A, p)
 {
 	if (_TEND[_ARRLEN] in _TEND) {
-		return 
+		return
 	}
 	if (p in _tNEXT) {
 		return (_tframe0_i0(A, p) _tframe0_i1(A, _tNEXT[p]))
@@ -5924,7 +5924,7 @@ function _tframe0_i2(A, m, p)
 	if (m in A) {
 		if ((m "~") in A) {
 			if (! (_TYPEWORD in _[p]) || A[m "~"] !~ _[p][_TYPEWORD]) {
-				return 
+				return
 			}
 		}
 		m = A[m]
@@ -5962,7 +5962,7 @@ function _tframe1_i0(A, p, p0)
 function _tframe1_i1(A, p, p0)
 {
 	if (_TEND[_ARRLEN] in _TEND) {
-		return 
+		return
 	}
 	if (p in _tNEXT) {
 		return (_tframe1_i0(A, p, p0) _tframe1_i1(A, _tNEXT[p], p0))
@@ -5980,7 +5980,7 @@ function _tframe1_i2(A, m, p, p0)
 	if (m in A) {
 		if ((m "~") in A) {
 			if (! (_TYPEWORD in _[p]) || A[m "~"] !~ _[p][_TYPEWORD]) {
-				return 
+				return
 			}
 		}
 		m = A[m]
@@ -6018,7 +6018,7 @@ function _tframe2_i0(A, p, p0, p1)
 function _tframe2_i1(A, p, p0, p1)
 {
 	if (_TEND[_ARRLEN] in _TEND) {
-		return 
+		return
 	}
 	if (p in _tNEXT) {
 		return (_tframe2_i0(A, p, p0, p1) _tframe2_i1(A, _tNEXT[p], p0, p1))
@@ -6036,7 +6036,7 @@ function _tframe2_i2(A, m, p, p0, p1)
 	if (m in A) {
 		if ((m "~") in A) {
 			if (! (_TYPEWORD in _[p]) || A[m "~"] !~ _[p][_TYPEWORD]) {
-				return 
+				return
 			}
 		}
 		m = A[m]
@@ -6074,7 +6074,7 @@ function _tframe3_i0(A, p, p0, p1, p2)
 function _tframe3_i1(A, p, p0, p1, p2)
 {
 	if (_TEND[_ARRLEN] in _TEND) {
-		return 
+		return
 	}
 	if (p in _tNEXT) {
 		return (_tframe3_i0(A, p, p0, p1, p2) _tframe3_i1(A, _tNEXT[p], p0, p1, p2))
@@ -6092,7 +6092,7 @@ function _tframe3_i2(A, m, p, p0, p1, p2)
 	if (m in A) {
 		if ((m "~") in A) {
 			if (! (_TYPEWORD in _[p]) || A[m "~"] !~ _[p][_TYPEWORD]) {
-				return 
+				return
 			}
 		}
 		m = A[m]
@@ -6130,7 +6130,7 @@ function _tframe4_i0(A, p, p0, p1, p2, p3)
 function _tframe4_i1(A, p, p0, p1, p2, p3)
 {
 	if (_TEND[_ARRLEN] in _TEND) {
-		return 
+		return
 	}
 	if (p in _tNEXT) {
 		return (_tframe4_i0(A, p, p0, p1, p2, p3) _tframe4_i1(A, _tNEXT[p], p0, p1, p2, p3))
@@ -6148,7 +6148,7 @@ function _tframe4_i2(A, m, p, p0, p1, p2, p3)
 	if (m in A) {
 		if ((m "~") in A) {
 			if (! (_TYPEWORD in _[p]) || A[m "~"] !~ _[p][_TYPEWORD]) {
-				return 
+				return
 			}
 		}
 		m = A[m]
@@ -6203,7 +6203,7 @@ function _tframex_p0(A, f, q, i, B, C)
 		f = substr(f, 1, RSTART - 1)
 	}
 	A["."] = A["^"] = f
-	return 
+	return
 	q = split(f, B, /;/)
 	i = 0
 	while (i < q) {
@@ -6469,7 +6469,7 @@ function _tlist_i0(L, p, q, i)
 		while (i++ < q) {
 			_tlist_i0(L, p[i])
 		}
-		return 
+		return
 	}
 	if (p in _) {
 		while (p in _tLINK) {
@@ -6492,7 +6492,7 @@ function _tlist_i1(L, p)
 		while (i++ < q) {
 			_tlist_i1(L, p[i])
 		}
-		return 
+		return
 	}
 	if (p in _) {
 		while (p in _tLINK) {
@@ -6691,7 +6691,7 @@ function _tpop(p, aA, a)
 		if (isarray(_tSTACK[p][a])) {
 			delete aA
 			_movarr(aA, _tSTACK[p][a])
-			return 
+			return
 		}
 		return _tSTACK[p][a]
 	}
@@ -6707,7 +6707,7 @@ function _tpush(p, aA, a)
 		_tSTACK[p][a][""]
 		delete _tSTACK[p][a][""]
 		_movarr(_tSTACK[p][a], aA)
-		return 
+		return
 	}
 	delete _tSTACK[p][a = ++_tSTACK[p][0]]
 	return (_tSTACK[p][a] = aA)
@@ -7812,7 +7812,7 @@ function _wr_shortcut(f, S)
 			}
 		}
 		if (_shortcut_nerr(_cmd(_shrtcuta0), _shrtcutf0)) {
-			return 
+			return
 		}
 	}
 	return (ERRNO ? ERRNO = "write shortcut: " ERRNO : _NOP)
@@ -7824,7 +7824,7 @@ function _wrfile(f, d, a, b)
 	#########################################
 	if (((f = _wfilerdnehnd(f)) == "") || (_filene(f) == "")) {
 		ERRNO = "Filename error"
-		return 
+		return
 	}
 	a = BINMODE
 	BINMODE = "rw"
@@ -7850,7 +7850,7 @@ function _wrfile1(f, d, a, b)
 	##################################
 	if (((f = _wfilerdnehnd(f)) == "") || (_filene(f) == "")) {
 		ERRNO = "Filename error"
-		return 
+		return
 	}
 	a = BINMODE
 	BINMODE = "rw"
@@ -8166,7 +8166,7 @@ function zorr(A, i, r)
 	}
 	r = A[i] == "" && A[i] == 0
 	_conl("A[" i "] status is " r)
-	return 
+	return
 	a = a + -a
 	_conl("``````````````" a "''''''''''''''''")
 }

@@ -331,6 +331,7 @@ main(int argc, char **argv)
 	_("environment variable `POSIXLY_CORRECT' set: turning on `--posix'"));
 	}
 
+	// Checks for conflicting command-line arguments.
 	if (do_posix) {
 		use_lc_numeric = true;
 		if (do_traditional)	/* both on command line */
@@ -348,9 +349,6 @@ main(int argc, char **argv)
 		warning(_("`--posix'/`--traditional' overrides `--non-decimal-data'"));
 	}
 
-	if (do_lint && os_is_setuid())
-		warning(_("running %s setuid root may be a security problem"), myname);
-
 	if (do_binary) {
 		if (do_posix)
 			warning(_("`--posix' overrides `--characters-as-bytes'"));
@@ -360,6 +358,9 @@ main(int argc, char **argv)
 		setlocale(LC_ALL, "C");
 #endif
 	}
+
+	if (do_lint && os_is_setuid())
+		warning(_("running %s setuid root may be a security problem"), myname);
 
 	if (do_debug)	/* Need to register the debugger pre-exec hook before any other */
 		init_debug();
@@ -1626,9 +1627,13 @@ parse_args(int argc, char **argv)
 			break;
 
 		case 'p':
+			if (do_pretty_print)
+				warning(_("`--profile' overrides `--pretty-print'"));
 			do_flags |= DO_PROFILE;
 			/* fall through */
 		case 'o':
+			if (c == 'o' && do_profile)
+				warning(_("`--profile' overrides `--pretty-print'"));
 			do_flags |= DO_PRETTY_PRINT;
 			if (optarg != NULL)
 				set_prof_file(optarg);

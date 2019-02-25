@@ -807,7 +807,11 @@ cleanup:
 			if (is_binary(t1->type))
 				pp_parenthesize(t1);
 			if (pc->source_line > 0) {	/* don't print implicit 'return' at end of function */
-				fprintf(prof_fp, "%s %s", op2str(pc->opcode), t1->pp_str);
+				// avoid final trailing space to keep whiny users happy
+				if (t1->pp_str[0] != '\0')
+					fprintf(prof_fp, "%s %s", op2str(pc->opcode), t1->pp_str);
+				else
+					fprintf(prof_fp, "%s", op2str(pc->opcode));
 				pc = end_line(pc);
 			}
 			pp_free(t1);
