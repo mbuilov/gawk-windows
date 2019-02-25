@@ -5695,6 +5695,28 @@ With the POSIX character classes, you can write
 @code{/[[:alnum:]]/} to match the alphabetic
 and numeric characters in your character set.
 
+@ignore
+From eliz@gnu.org  Fri Feb 15 03:38:41 2019
+Date: Fri, 15 Feb 2019 12:38:23 +0200
+From: Eli Zaretskii <eliz@gnu.org>
+To: arnold@skeeve.com
+CC: pengyu.ut@gmail.com, bug-gawk@gnu.org
+Subject: Re: [bug-gawk] Does gawk character classes follow this?
+
+> From: arnold@skeeve.com
+> Date: Fri, 15 Feb 2019 03:01:34 -0700
+> Cc: pengyu.ut@gmail.com, bug-gawk@gnu.org
+> 
+> I get the feeling that there's something really bothering you, but
+> I don't understand what.
+> 
+> Can you clarify, please?
+
+I thought I already did: we cannot be expected to provide a definitive
+description of what the named classes stand for, because the answer
+depends on various factors out of our control.
+@end ignore
+
 @c Thanks to
 @c Date: Tue, 01 Jul 2014 07:39:51 +0200
 @c From: Hermann Peifer <peifer@gmx.eu>
@@ -15128,9 +15150,6 @@ This element gives a string indicating the platform for which
 
 @c nested table
 @table @code
-@item "vms"
-OpenVMS or Vax/VMS.
-
 @item "djgpp"
 @itemx "mingw"
 Microsoft Windows, using either DJGPP or MinGW, respectively.
@@ -15143,6 +15162,9 @@ OS/390.
 
 @item "posix"
 GNU/Linux, Cygwin, Mac OS X, and legacy Unix systems.
+
+@item "vms"
+OpenVMS or Vax/VMS.
 @end table
 
 @item PROCINFO["pgrpid"]
