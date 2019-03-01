@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.1.1d\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2019-01-26 21:24+0200\n"
+"POT-Creation-Date: 2019-03-01 11:47+0200\n"
 "PO-Revision-Date: 2015-05-18 12:37+0200\n"
 "Last-Translator: Keld Simonsen <keld@keldix.com>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
@@ -41,8 +41,8 @@ msgid "attempt to use scalar `%s' as an array"
 msgstr "forsøg på at bruge skalar '%s' som et array"
 
 #: array.c:400 array.c:567 builtin.c:88 builtin.c:1686 builtin.c:1732
-#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1132 eval.c:1136
-#: eval.c:1511
+#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1149 eval.c:1153
+#: eval.c:1528
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "forsøg på at bruge array '%s' i skalarsammenhæng"
@@ -107,319 +107,319 @@ msgstr "'%s' er ugyldigt som funktionsnavn"
 msgid "sort comparison function `%s' is not defined"
 msgstr "funktionen for sorteringssammenligning '%s' er ikke defineret"
 
-#: awkgram.y:274
+#: awkgram.y:275
 #, c-format
 msgid "%s blocks must have an action part"
 msgstr "%s-blokke skal have en handlingsdel"
 
-#: awkgram.y:277
+#: awkgram.y:278
 msgid "each rule must have a pattern or an action part"
 msgstr "hver regel skal have et mønster eller en handlingsdel"
 
-#: awkgram.y:418 awkgram.y:430
+#: awkgram.y:419 awkgram.y:431
 msgid "old awk does not support multiple `BEGIN' or `END' rules"
 msgstr ""
 "gamle versioner af awk understøtter ikke flere 'BEGIN'- eller 'END'-regler"
 
-#: awkgram.y:497
+#: awkgram.y:484
 #, c-format
 msgid "`%s' is a built-in function, it cannot be redefined"
 msgstr "'%s' er en indbygget funktion, den kan ikke omdefineres"
 
-#: awkgram.y:561
+#: awkgram.y:548
 msgid "regexp constant `//' looks like a C++ comment, but is not"
 msgstr "regexp-konstanten '//' ser ud som en C++-kommentar, men er det ikke"
 
-#: awkgram.y:565
+#: awkgram.y:552
 #, c-format
 msgid "regexp constant `/%s/' looks like a C comment, but is not"
 msgstr "regexp-konstanten '/%s/' ser ud som en C-kommentar, men er det ikke"
 
-#: awkgram.y:692
+#: awkgram.y:679
 #, c-format
 msgid "duplicate case values in switch body: %s"
 msgstr "dublet case-værdier i switch-krop %s"
 
-#: awkgram.y:713
+#: awkgram.y:700
 msgid "duplicate `default' detected in switch body"
 msgstr "dublet 'default' opdaget i switch-krop"
 
-#: awkgram.y:1048 awkgram.y:4461
+#: awkgram.y:1035 awkgram.y:4457
 msgid "`break' is not allowed outside a loop or switch"
 msgstr "'break' uden for en løkke eller switch er ikke tilladt"
 
-#: awkgram.y:1058 awkgram.y:4453
+#: awkgram.y:1045 awkgram.y:4449
 msgid "`continue' is not allowed outside a loop"
 msgstr "'continue' uden for en løkke er ikke tilladt"
 
-#: awkgram.y:1069
+#: awkgram.y:1056
 #, c-format
 msgid "`next' used in %s action"
 msgstr "'next' brugt i %s-handling"
 
-#: awkgram.y:1080
+#: awkgram.y:1067
 #, c-format
 msgid "`nextfile' used in %s action"
 msgstr "'nextfile' brugt i %s-handling"
 
-#: awkgram.y:1108
+#: awkgram.y:1095
 msgid "`return' used outside function context"
 msgstr "'return' brugt uden for funktion"
 
-#: awkgram.y:1178
+#: awkgram.y:1168
 msgid "plain `print' in BEGIN or END rule should probably be `print \"\"'"
 msgstr ""
 "alenestående 'print' i BEGIN eller END-regel skulle muligvis være 'print "
 "\"\"'"
 
-#: awkgram.y:1244 awkgram.y:1293
+#: awkgram.y:1238 awkgram.y:1287
 msgid "`delete' is not allowed with SYMTAB"
 msgstr ""
 
-#: awkgram.y:1246 awkgram.y:1295
+#: awkgram.y:1240 awkgram.y:1289
 msgid "`delete' is not allowed with FUNCTAB"
 msgstr ""
 
-#: awkgram.y:1280 awkgram.y:1284
+#: awkgram.y:1274 awkgram.y:1278
 msgid "`delete(array)' is a non-portable tawk extension"
 msgstr "'delete array' er en ikke-portabel udvidelse fra tawk"
 
-#: awkgram.y:1420
+#: awkgram.y:1414
 msgid "multistage two-way pipelines don't work"
 msgstr "flertrins dobbeltrettede datakanaler fungerer ikke"
 
-#: awkgram.y:1422
+#: awkgram.y:1416
 msgid "concatenation as I/O `>' redirection target is ambiguous"
 msgstr ""
 
-#: awkgram.y:1626
+#: awkgram.y:1620
 msgid "regular expression on right of assignment"
 msgstr "regulært udtryk i højreleddet af en tildeling"
 
-#: awkgram.y:1641 awkgram.y:1654
+#: awkgram.y:1635 awkgram.y:1648
 msgid "regular expression on left of `~' or `!~' operator"
 msgstr "regulært udtryk på venstre side af en '~'- eller '!~'-operator"
 
-#: awkgram.y:1671 awkgram.y:1820
+#: awkgram.y:1665 awkgram.y:1814
 msgid "old awk does not support the keyword `in' except after `for'"
 msgstr ""
 "gamle versioner af awk understøtter ikke nøgleordet 'in' undtagen efter 'for'"
 
-#: awkgram.y:1681
+#: awkgram.y:1675
 msgid "regular expression on right of comparison"
 msgstr "regulært udtryk i højreleddet af en sammenligning"
 
-#: awkgram.y:1800
+#: awkgram.y:1794
 #, c-format
 msgid "non-redirected `getline' invalid inside `%s' rule"
 msgstr "ikke-omdirigeret 'getline' ugyldig inden i '%s'-regel"
 
-#: awkgram.y:1803
+#: awkgram.y:1797
 msgid "non-redirected `getline' undefined inside END action"
 msgstr "ikke-omdirigeret 'getline' udefineret inden i END-handling"
 
-#: awkgram.y:1822
+#: awkgram.y:1816
 msgid "old awk does not support multidimensional arrays"
 msgstr "gamle versioner af awk understøtter ikke flerdimensionale array"
 
-#: awkgram.y:1925
+#: awkgram.y:1919
 msgid "call of `length' without parentheses is not portable"
 msgstr "kald af 'length' uden parenteser er ikke portabelt"
 
-#: awkgram.y:1999
+#: awkgram.y:1993
 msgid "indirect function calls are a gawk extension"
 msgstr "indirekte funktionskald er en gawk-udvidelse"
 
-#: awkgram.y:2012
+#: awkgram.y:2006
 #, c-format
 msgid "can not use special variable `%s' for indirect function call"
 msgstr "kan ikke bruge specialvariabel '%s' til indirekte funktionskald"
 
-#: awkgram.y:2045
+#: awkgram.y:2039
 #, c-format
 msgid "attempt to use non-function `%s' in function call"
 msgstr "forsøg på at bruge ikke-funktionen '%s' som et funktionskald"
 
-#: awkgram.y:2110
+#: awkgram.y:2104
 msgid "invalid subscript expression"
 msgstr "ugyldigt indeksudtryk"
 
-#: awkgram.y:2483 awkgram.y:2503 gawkapi.c:273 gawkapi.c:290 msg.c:130
+#: awkgram.y:2477 awkgram.y:2497 gawkapi.c:273 gawkapi.c:290 msg.c:130
 msgid "warning: "
 msgstr "advarsel: "
 
-#: awkgram.y:2501 gawkapi.c:245 gawkapi.c:288 msg.c:162
+#: awkgram.y:2495 gawkapi.c:245 gawkapi.c:288 msg.c:162
 msgid "fatal: "
 msgstr "fatal: "
 
-#: awkgram.y:2554
+#: awkgram.y:2548
 msgid "unexpected newline or end of string"
 msgstr "uventet nylinjetegn eller strengafslutning"
 
-#: awkgram.y:2575
+#: awkgram.y:2569
 msgid ""
 "source files / command-line arguments must contain complete functions or "
 "rules"
 msgstr ""
 
-#: awkgram.y:2855 awkgram.y:2933 awkgram.y:3171 debug.c:531 debug.c:547
-#: debug.c:2824 debug.c:5193
+#: awkgram.y:2851 awkgram.y:2929 awkgram.y:3167 debug.c:536 debug.c:552
+#: debug.c:2829 debug.c:5194
 #, c-format
 msgid "can't open source file `%s' for reading (%s)"
 msgstr "kan ikke åbne kildefilen '%s' for læsning (%s)"
 
-#: awkgram.y:2856 awkgram.y:2993
+#: awkgram.y:2852 awkgram.y:2989
 #, c-format
 msgid "can't open shared library `%s' for reading (%s)"
 msgstr "kan ikke åbne delt bibliotek '%s' for læsning (%s)"
 
-#: awkgram.y:2858 awkgram.y:2934 awkgram.y:2994 builtin.c:149 debug.c:5344
+#: awkgram.y:2854 awkgram.y:2930 awkgram.y:2990 builtin.c:149 debug.c:5345
 msgid "reason unknown"
 msgstr "ukendt årsag"
 
-#: awkgram.y:2867 awkgram.y:2891
+#: awkgram.y:2863 awkgram.y:2887
 #, c-format
 msgid "can't include `%s' and use it as a program file"
 msgstr ""
 
-#: awkgram.y:2880
+#: awkgram.y:2876
 #, c-format
 msgid "already included source file `%s'"
 msgstr "allerede inkluderet kildefil '%s'"
 
-#: awkgram.y:2881
+#: awkgram.y:2877
 #, c-format
 msgid "already loaded shared library `%s'"
 msgstr "allerede indlæst delt bibliotek '%s'"
 
-#: awkgram.y:2918
+#: awkgram.y:2914
 msgid "@include is a gawk extension"
 msgstr "@include er en gawk-udvidelse"
 
-#: awkgram.y:2924
+#: awkgram.y:2920
 msgid "empty filename after @include"
 msgstr "tomt filnavn efter @include"
 
-#: awkgram.y:2973
+#: awkgram.y:2969
 msgid "@load is a gawk extension"
 msgstr "@load er en gawk-udvidelse"
 
-#: awkgram.y:2980
+#: awkgram.y:2976
 msgid "empty filename after @load"
 msgstr "tomt filnavn efter @load"
 
-#: awkgram.y:3123
+#: awkgram.y:3119
 msgid "empty program text on command line"
 msgstr "tom programtekst på kommandolinjen"
 
-#: awkgram.y:3238
+#: awkgram.y:3234
 #, c-format
 msgid "can't read sourcefile `%s' (%s)"
 msgstr "kan ikke læse kildefilen '%s' (%s)"
 
-#: awkgram.y:3249
+#: awkgram.y:3245
 #, c-format
 msgid "source file `%s' is empty"
 msgstr "kildefilen '%s' er tom"
 
-#: awkgram.y:3308
+#: awkgram.y:3304
 #, c-format
 msgid "PEBKAC error: invalid character '\\%03o' in source code"
 msgstr ""
 
-#: awkgram.y:3535
+#: awkgram.y:3531
 msgid "source file does not end in newline"
 msgstr "kildefilen slutter ikke med en ny linje"
 
-#: awkgram.y:3656
+#: awkgram.y:3652
 msgid "unterminated regexp ends with `\\' at end of file"
 msgstr "uafsluttet regulært udtryk slutter med '\\' i slutningen af filen"
 
-#: awkgram.y:3683
+#: awkgram.y:3679
 #, c-format
 msgid "%s: %d: tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr "%s: %d: regex-ændringstegn '/.../%c' fra tawk virker ikke i gawk"
 
-#: awkgram.y:3687
+#: awkgram.y:3683
 #, c-format
 msgid "tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr "regex-ændringstegn '/.../%c' fra tawk virker ikke i gawk"
 
-#: awkgram.y:3700
+#: awkgram.y:3696
 msgid "unterminated regexp"
 msgstr "uafsluttet regulært udtryk"
 
-#: awkgram.y:3704
+#: awkgram.y:3700
 msgid "unterminated regexp at end of file"
 msgstr "uafsluttet regulært udtryk i slutningen af filen"
 
-#: awkgram.y:3793
+#: awkgram.y:3789
 msgid "use of `\\ #...' line continuation is not portable"
 msgstr "brug af '\\ #...' for linjefortsættelse er ikke portabelt"
 
-#: awkgram.y:3815
+#: awkgram.y:3811
 msgid "backslash not last character on line"
 msgstr "sidste tegn på linjen er ikke en omvendt skråstreg"
 
-#: awkgram.y:3862 awkgram.y:3864
+#: awkgram.y:3858 awkgram.y:3860
 #, fuzzy
 msgid "multidimensional arrays are a gawk extension"
 msgstr "indirekte funktionskald er en gawk-udvidelse"
 
-#: awkgram.y:3889
+#: awkgram.y:3885
 msgid "POSIX does not allow operator `**='"
 msgstr "POSIX tillader ikke operatoren '**='"
 
-#: awkgram.y:3891
+#: awkgram.y:3887
 msgid "old awk does not support operator `**='"
 msgstr "gamle versioner af awk understøtter ikke operatoren '**='"
 
-#: awkgram.y:3900
+#: awkgram.y:3896
 msgid "POSIX does not allow operator `**'"
 msgstr "POSIX tillader ikke operatoren '**'"
 
-#: awkgram.y:3902
+#: awkgram.y:3898
 msgid "old awk does not support operator `**'"
 msgstr "gamle versioner af awk understøtter ikke operatoren '**'"
 
-#: awkgram.y:3937
+#: awkgram.y:3933
 msgid "operator `^=' is not supported in old awk"
 msgstr "operatoren '^=' understøttes ikke i gamle versioner af awk"
 
-#: awkgram.y:3945
+#: awkgram.y:3941
 msgid "operator `^' is not supported in old awk"
 msgstr "operatoren '^' understøttes ikke i gamle versioner af awk"
 
-#: awkgram.y:4042 awkgram.y:4064 command.y:1187
+#: awkgram.y:4038 awkgram.y:4060 command.y:1187
 msgid "unterminated string"
 msgstr "uafsluttet streng"
 
-#: awkgram.y:4052 main.c:1197
+#: awkgram.y:4048 main.c:1198
 #, fuzzy
 msgid "POSIX does not allow physical newlines in string values"
 msgstr "POSIX tillader ikke '\\x'-kontrolsekvenser"
 
-#: awkgram.y:4054 node.c:453
+#: awkgram.y:4050 node.c:453
 #, fuzzy
 msgid "backslash string continuation is not portable"
 msgstr "brug af '\\ #...' for linjefortsættelse er ikke portabelt"
 
-#: awkgram.y:4292
+#: awkgram.y:4288
 #, c-format
 msgid "invalid char '%c' in expression"
 msgstr "ugyldigt tegn '%c' i udtryk"
 
-#: awkgram.y:4387
+#: awkgram.y:4383
 #, c-format
 msgid "`%s' is a gawk extension"
 msgstr "'%s' er en gawk-udvidelse"
 
-#: awkgram.y:4392
+#: awkgram.y:4388
 #, c-format
 msgid "POSIX does not allow `%s'"
 msgstr "POSIX tillader ikke '%s'"
 
-#: awkgram.y:4400
+#: awkgram.y:4396
 #, c-format
 msgid "`%s' is not supported in old awk"
 msgstr "'%s' understøttes ikke i gamle versioner af awk"
@@ -474,7 +474,7 @@ msgstr "index: regexp-konstant som andet argument er ikke tilladt"
 msgid "function `%s': parameter `%s' shadows global variable"
 msgstr "funktionen '%s': parameteren '%s' overskygger en global variabel"
 
-#: awkgram.y:4915 debug.c:4178 debug.c:4221 debug.c:5342
+#: awkgram.y:4915 debug.c:4179 debug.c:4222 debug.c:5343
 #, c-format
 msgid "could not open `%s' for writing (%s)"
 msgstr "kunne ikke åbne '%s' for skrivning (%s)"
@@ -1401,7 +1401,7 @@ msgid ""
 "if N < 0) frames."
 msgstr ""
 
-#: command.y:1016 debug.c:409 gawkapi.c:259 msg.c:139
+#: command.y:1016 debug.c:414 gawkapi.c:259 msg.c:139
 #, c-format
 msgid "error: "
 msgstr "fejl: "
@@ -1439,152 +1439,152 @@ msgstr "Ugyldigt tegn"
 msgid "undefined command: %s\n"
 msgstr "ikke-defineret kommando: %s\n"
 
-#: debug.c:252
+#: debug.c:257
 msgid "set or show the number of lines to keep in history file."
 msgstr ""
 
-#: debug.c:254
+#: debug.c:259
 msgid "set or show the list command window size."
 msgstr ""
 
-#: debug.c:256
+#: debug.c:261
 msgid "set or show gawk output file."
 msgstr ""
 
-#: debug.c:258
+#: debug.c:263
 msgid "set or show debugger prompt."
 msgstr ""
 
-#: debug.c:260
+#: debug.c:265
 msgid "(un)set or show saving of command history (value=on|off)."
 msgstr ""
 
-#: debug.c:262
+#: debug.c:267
 msgid "(un)set or show saving of options (value=on|off)."
 msgstr ""
 
-#: debug.c:264
+#: debug.c:269
 msgid "(un)set or show instruction tracing (value=on|off)."
 msgstr ""
 
-#: debug.c:353
+#: debug.c:358
 msgid "program not running."
 msgstr ""
 
-#: debug.c:456 debug.c:614
+#: debug.c:461 debug.c:619
 #, c-format
 msgid "can't read source file `%s' (%s)"
 msgstr "kan ikke læse kildefil '%s' (%s)"
 
-#: debug.c:461
+#: debug.c:466
 #, c-format
 msgid "source file `%s' is empty.\n"
 msgstr "kildefil '%s' er tom.\n"
 
-#: debug.c:488
+#: debug.c:493
 msgid "no current source file."
 msgstr "ingen aktuel kildefil."
 
-#: debug.c:513
+#: debug.c:518
 #, c-format
 msgid "cannot find source file named `%s' (%s)"
 msgstr "kan ikke finde kildefil kaldet '%s' (%s)"
 
-#: debug.c:537
+#: debug.c:542
 #, c-format
 msgid "WARNING: source file `%s' modified since program compilation.\n"
 msgstr ""
 
-#: debug.c:559
+#: debug.c:564
 #, c-format
 msgid "line number %d out of range; `%s' has %d lines"
 msgstr "linjenummer %d uden for område; '%s' har %d linjer"
 
-#: debug.c:619
+#: debug.c:624
 #, c-format
 msgid "unexpected eof while reading file `%s', line %d"
 msgstr "uventet nylinjetegn ved læsning af fil '%s', lije %d"
 
-#: debug.c:628
+#: debug.c:633
 #, c-format
 msgid "source file `%s' modified since start of program execution"
 msgstr ""
 
-#: debug.c:740
+#: debug.c:745
 #, c-format
 msgid "Current source file: %s\n"
 msgstr "Aktuel kildefil %s\n"
 
-#: debug.c:741
+#: debug.c:746
 #, c-format
 msgid "Number of lines: %d\n"
 msgstr ""
 
-#: debug.c:748
+#: debug.c:753
 #, c-format
 msgid "Source file (lines): %s (%d)\n"
 msgstr ""
 
-#: debug.c:762
+#: debug.c:767
 msgid ""
 "Number  Disp  Enabled  Location\n"
 "\n"
 msgstr ""
 
-#: debug.c:773
+#: debug.c:778
 #, c-format
 msgid "\tno of hits = %ld\n"
 msgstr ""
 
-#: debug.c:775
+#: debug.c:780
 #, c-format
 msgid "\tignore next %ld hit(s)\n"
 msgstr ""
 
-#: debug.c:777 debug.c:917
+#: debug.c:782 debug.c:922
 #, c-format
 msgid "\tstop condition: %s\n"
 msgstr ""
 
-#: debug.c:779 debug.c:919
+#: debug.c:784 debug.c:924
 msgid "\tcommands:\n"
 msgstr ""
 
-#: debug.c:801
+#: debug.c:806
 #, c-format
 msgid "Current frame: "
 msgstr ""
 
-#: debug.c:804
+#: debug.c:809
 #, c-format
 msgid "Called by frame: "
 msgstr ""
 
-#: debug.c:808
+#: debug.c:813
 #, c-format
 msgid "Caller of frame: "
 msgstr ""
 
-#: debug.c:826
+#: debug.c:831
 #, c-format
 msgid "None in main().\n"
 msgstr ""
 
-#: debug.c:856
+#: debug.c:861
 msgid "No arguments.\n"
 msgstr "Ingen argumenter.\n"
 
-#: debug.c:857
+#: debug.c:862
 msgid "No locals.\n"
 msgstr "Ingen lokale.\n"
 
-#: debug.c:865
+#: debug.c:870
 msgid ""
 "All defined variables:\n"
 "\n"
 msgstr ""
 
-#: debug.c:875
+#: debug.c:880
 msgid ""
 "All defined functions:\n"
 "\n"
@@ -1592,7 +1592,7 @@ msgstr ""
 "Alle definerede funktioner:\n"
 "\n"
 
-#: debug.c:894
+#: debug.c:899
 msgid ""
 "Auto-display variables:\n"
 "\n"
@@ -1600,7 +1600,7 @@ msgstr ""
 "Vis variable automatisk:\n"
 "\n"
 
-#: debug.c:897
+#: debug.c:902
 msgid ""
 "Watch variables:\n"
 "\n"
@@ -1608,380 +1608,380 @@ msgstr ""
 "Overvåg variable:\n"
 "\n"
 
-#: debug.c:1037
+#: debug.c:1042
 #, c-format
 msgid "no symbol `%s' in current context\n"
 msgstr "'intet symbol '%s' i den aktuelle kontekst\n"
 
-#: debug.c:1049 debug.c:1437
+#: debug.c:1054 debug.c:1442
 #, c-format
 msgid "`%s' is not an array\n"
 msgstr "'%s' er ikke et array\n"
 
-#: debug.c:1063
+#: debug.c:1068
 #, c-format
 msgid "$%ld = uninitialized field\n"
 msgstr "$%ld = ikke-initieret felt\n"
 
-#: debug.c:1084
+#: debug.c:1089
 #, c-format
 msgid "array `%s' is empty\n"
 msgstr "array '%s' er tomt\n"
 
-#: debug.c:1127 debug.c:1179
+#: debug.c:1132 debug.c:1184
 #, fuzzy, c-format
 msgid "[\"%.*s\"] not in array `%s'\n"
 msgstr "[\"%s\"] findes ikke i array '%s'\n"
 
-#: debug.c:1183
+#: debug.c:1188
 #, fuzzy, c-format
 msgid "`%s[\"%.*s\"]' is not an array\n"
 msgstr "`%s[\"%s\"]' er ikke et array\n"
 
-#: debug.c:1244 debug.c:5102
+#: debug.c:1249 debug.c:5103
 #, c-format
 msgid "`%s' is not a scalar variable"
 msgstr "'%s' er ikke en skalar variabel"
 
-#: debug.c:1267 debug.c:5132
+#: debug.c:1272 debug.c:5133
 #, fuzzy, c-format
 msgid "attempt to use array `%s[\"%.*s\"]' in a scalar context"
 msgstr "forsøg på at bruge array '%s[\"%s\"]' i skalarsammenhæng"
 
-#: debug.c:1290 debug.c:5143
+#: debug.c:1295 debug.c:5144
 #, fuzzy, c-format
 msgid "attempt to use scalar `%s[\"%.*s\"]' as array"
 msgstr "forsøg på at bruge skalaren '%s[\"%s\"]' som array"
 
-#: debug.c:1433
+#: debug.c:1438
 #, c-format
 msgid "`%s' is a function"
 msgstr "'%s' er en funktion"
 
-#: debug.c:1475
+#: debug.c:1480
 #, c-format
 msgid "watchpoint %d is unconditional\n"
 msgstr ""
 
-#: debug.c:1509
+#: debug.c:1514
 #, c-format
 msgid "No display item numbered %ld"
 msgstr ""
 
-#: debug.c:1512
+#: debug.c:1517
 #, c-format
 msgid "No watch item numbered %ld"
 msgstr ""
 
-#: debug.c:1538
+#: debug.c:1543
 #, fuzzy, c-format
 msgid "%d: [\"%.*s\"] not in array `%s'\n"
 msgstr "%d: [\"%s\"] ikke i array '%s'\n"
 
-#: debug.c:1777
+#: debug.c:1782
 msgid "attempt to use scalar value as array"
 msgstr "forsøg på at bruge en skalarværdi som array"
 
-#: debug.c:1868
+#: debug.c:1873
 #, c-format
 msgid "Watchpoint %d deleted because parameter is out of scope.\n"
 msgstr ""
 
-#: debug.c:1879
+#: debug.c:1884
 #, c-format
 msgid "Display %d deleted because parameter is out of scope.\n"
 msgstr ""
 
-#: debug.c:1912
+#: debug.c:1917
 #, c-format
 msgid " in file `%s', line %d\n"
 msgstr " i fil `%s', linje %d\n"
 
-#: debug.c:1933
+#: debug.c:1938
 #, c-format
 msgid " at `%s':%d"
 msgstr " ved '%s':%d"
 
-#: debug.c:1949 debug.c:2012
+#: debug.c:1954 debug.c:2017
 #, c-format
 msgid "#%ld\tin "
 msgstr "#%ld\ti "
 
-#: debug.c:1986
+#: debug.c:1991
 #, c-format
 msgid "More stack frames follow ...\n"
 msgstr ""
 
-#: debug.c:2029
+#: debug.c:2034
 msgid "invalid frame number"
 msgstr "Ugyldigt rammenummer"
 
-#: debug.c:2212
+#: debug.c:2217
 #, c-format
 msgid "Note: breakpoint %d (enabled, ignore next %ld hits), also set at %s:%d"
 msgstr ""
 
-#: debug.c:2219
+#: debug.c:2224
 #, c-format
 msgid "Note: breakpoint %d (enabled), also set at %s:%d"
 msgstr ""
 
-#: debug.c:2226
+#: debug.c:2231
 #, c-format
 msgid "Note: breakpoint %d (disabled, ignore next %ld hits), also set at %s:%d"
 msgstr ""
 
-#: debug.c:2233
+#: debug.c:2238
 #, c-format
 msgid "Note: breakpoint %d (disabled), also set at %s:%d"
 msgstr ""
 
-#: debug.c:2250
+#: debug.c:2255
 #, c-format
 msgid "Breakpoint %d set at file `%s', line %d\n"
 msgstr ""
 
-#: debug.c:2352
+#: debug.c:2357
 #, c-format
 msgid "Can't set breakpoint in file `%s'\n"
 msgstr ""
 
-#: debug.c:2381 debug.c:2504 debug.c:3366
+#: debug.c:2386 debug.c:2509 debug.c:3367
 #, c-format
 msgid "line number %d in file `%s' out of range"
 msgstr "linjenummer %d i fil %s er uden for det tilladte område"
 
-#: debug.c:2385
+#: debug.c:2390
 #, c-format
 msgid "Can't find rule!!!\n"
 msgstr "Kan ikke finde regel!!!\n"
 
-#: debug.c:2387
+#: debug.c:2392
 #, c-format
 msgid "Can't set breakpoint at `%s':%d\n"
 msgstr ""
 
-#: debug.c:2399
+#: debug.c:2404
 #, c-format
 msgid "Can't set breakpoint in function `%s'\n"
 msgstr "Kan ikke sætte stoppunkt i funktion '%s'\n"
 
-#: debug.c:2415
+#: debug.c:2420
 #, c-format
 msgid "breakpoint %d set at file `%s', line %d is unconditional\n"
 msgstr ""
 
-#: debug.c:2520 debug.c:2542
+#: debug.c:2525 debug.c:2547
 #, c-format
 msgid "Deleted breakpoint %d"
 msgstr "Slettet stoppunkt %d"
 
-#: debug.c:2526
+#: debug.c:2531
 #, c-format
 msgid "No breakpoint(s) at entry to function `%s'\n"
 msgstr ""
 
-#: debug.c:2553
+#: debug.c:2558
 #, c-format
 msgid "No breakpoint at file `%s', line #%d\n"
 msgstr "Intet stoppunkt ved fil `%s', linje #%d\n"
 
-#: debug.c:2608 debug.c:2649 debug.c:2669 debug.c:2712
+#: debug.c:2613 debug.c:2654 debug.c:2674 debug.c:2717
 msgid "invalid breakpoint number"
 msgstr "Ugyldigt stoppunktsnummer"
 
-#: debug.c:2624
+#: debug.c:2629
 msgid "Delete all breakpoints? (y or n) "
 msgstr "Slet alle stoppunkter? (j eller n) "
 
-#: debug.c:2625 debug.c:2939 debug.c:2992
+#: debug.c:2630 debug.c:2940 debug.c:2993
 msgid "y"
 msgstr "j"
 
-#: debug.c:2674
+#: debug.c:2679
 #, c-format
 msgid "Will ignore next %ld crossing(s) of breakpoint %d.\n"
 msgstr ""
 
-#: debug.c:2678
+#: debug.c:2683
 #, c-format
 msgid "Will stop next time breakpoint %d is reached.\n"
 msgstr ""
 
-#: debug.c:2795
+#: debug.c:2800
 #, c-format
 msgid "Can only debug programs provided with the `-f' option.\n"
 msgstr ""
 
-#: debug.c:2924
+#: debug.c:2925
 #, c-format
 msgid "Failed to restart debugger"
 msgstr "Kunne ikke genstarte fejlsøger"
 
-#: debug.c:2938
+#: debug.c:2939
 msgid "Program already running. Restart from beginning (y/n)? "
 msgstr ""
 
-#: debug.c:2942
+#: debug.c:2943
 #, c-format
 msgid "Program not restarted\n"
 msgstr "Program ikke genstartet\n"
 
-#: debug.c:2952
+#: debug.c:2953
 #, c-format
 msgid "error: cannot restart, operation not allowed\n"
 msgstr ""
 
-#: debug.c:2958
+#: debug.c:2959
 #, c-format
 msgid "error (%s): cannot restart, ignoring rest of the commands\n"
 msgstr ""
 
-#: debug.c:2966
+#: debug.c:2967
 #, c-format
 msgid "Starting program: \n"
 msgstr "Starter program: \n"
 
-#: debug.c:2976
+#: debug.c:2977
 #, c-format
 msgid "Program exited abnormally with exit value: %d\n"
 msgstr ""
 
-#: debug.c:2977
+#: debug.c:2978
 #, c-format
 msgid "Program exited normally with exit value: %d\n"
 msgstr ""
 
-#: debug.c:2991
+#: debug.c:2992
 msgid "The program is running. Exit anyway (y/n)? "
 msgstr ""
 
-#: debug.c:3026
+#: debug.c:3027
 #, c-format
 msgid "Not stopped at any breakpoint; argument ignored.\n"
 msgstr ""
 
-#: debug.c:3031
+#: debug.c:3032
 #, c-format
 msgid "invalid breakpoint number %d."
 msgstr "Ugyldigt stoppunktsnummer %d."
 
-#: debug.c:3036
+#: debug.c:3037
 #, c-format
 msgid "Will ignore next %ld crossings of breakpoint %d.\n"
 msgstr ""
 
-#: debug.c:3223
+#: debug.c:3224
 #, c-format
 msgid "'finish' not meaningful in the outermost frame main()\n"
 msgstr ""
 
-#: debug.c:3228
+#: debug.c:3229
 #, c-format
 msgid "Run till return from "
 msgstr "Kør til returnering fra "
 
-#: debug.c:3271
+#: debug.c:3272
 #, c-format
 msgid "'return' not meaningful in the outermost frame main()\n"
 msgstr ""
 
-#: debug.c:3385
+#: debug.c:3386
 #, c-format
 msgid "Can't find specified location in function `%s'\n"
 msgstr ""
 
-#: debug.c:3393
+#: debug.c:3394
 #, fuzzy, c-format
 msgid "invalid source line %d in file `%s'"
 msgstr "allerede inkluderet kildefil '%s'"
 
-#: debug.c:3408
+#: debug.c:3409
 #, c-format
 msgid "Can't find specified location %d in file `%s'\n"
 msgstr ""
 
-#: debug.c:3440
+#: debug.c:3441
 #, fuzzy, c-format
 msgid "element not in array\n"
 msgstr "adump: argument er ikke et array"
 
-#: debug.c:3440
+#: debug.c:3441
 #, c-format
 msgid "untyped variable\n"
 msgstr "variabel uden type\n"
 
-#: debug.c:3482
+#: debug.c:3483
 #, c-format
 msgid "Stopping in %s ...\n"
 msgstr "Stopper i %s ...\n"
 
-#: debug.c:3559
+#: debug.c:3560
 #, c-format
 msgid "'finish' not meaningful with non-local jump '%s'\n"
 msgstr ""
 
-#: debug.c:3566
+#: debug.c:3567
 #, c-format
 msgid "'until' not meaningful with non-local jump '%s'\n"
 msgstr ""
 
-#: debug.c:4322
+#: debug.c:4323
 msgid "\t------[Enter] to continue or q [Enter] to quit------"
 msgstr "\t------[Retur] for at fortsætte eller q [Retur] for at afslutte------"
 
-#: debug.c:4323
+#: debug.c:4324
 msgid "q"
 msgstr "q"
 
-#: debug.c:5139
+#: debug.c:5140
 #, fuzzy, c-format
 msgid "[\"%.*s\"] not in array `%s'"
 msgstr "[\"%s\"] findes ikke i array '%s'"
 
-#: debug.c:5345
+#: debug.c:5346
 #, c-format
 msgid "sending output to stdout\n"
 msgstr "sender uddata til stdout\n"
 
-#: debug.c:5385
+#: debug.c:5386
 msgid "invalid number"
 msgstr "ugyldigt nummer"
 
-#: debug.c:5519
+#: debug.c:5520
 #, fuzzy, c-format
 msgid "`%s' not allowed in current context; statement ignored"
 msgstr "'exit' kan ikke kaldes i den aktuelle kontekst"
 
-#: debug.c:5527
+#: debug.c:5528
 msgid "`return' not allowed in current context; statement ignored"
 msgstr "'returnér' ikke tilladt i den aktuelle kontekst, sætning ignoreret"
 
-#: debug.c:5742
+#: debug.c:5743
 #, fuzzy, c-format
 msgid "No symbol `%s' in current context"
 msgstr "forsøg på at bruge array '%s' i skalarsammenhæng"
 
-#: eval.c:400
+#: eval.c:401
 #, c-format
 msgid "unknown nodetype %d"
 msgstr "ukendt nodetype %d"
 
-#: eval.c:411 eval.c:427
+#: eval.c:412 eval.c:428
 #, c-format
 msgid "unknown opcode %d"
 msgstr "ukendt opkode %d"
 
-#: eval.c:424
+#: eval.c:425
 #, c-format
 msgid "opcode %s not an operator or keyword"
 msgstr "opkode %s er ikke en operator eller et nøgleord"
 
-#: eval.c:482
+#: eval.c:483
 msgid "buffer overflow in genflags2str"
 msgstr "bufferoverløb i genflags2str"
 
-#: eval.c:684
+#: eval.c:685
 #, c-format
 msgid ""
 "\n"
@@ -1992,71 +1992,71 @@ msgstr ""
 "\t# Funktionskaldsstak:\n"
 "\n"
 
-#: eval.c:710
+#: eval.c:711
 msgid "`IGNORECASE' is a gawk extension"
 msgstr "'IGNORECASE' er en gawk-udvidelse"
 
-#: eval.c:731
+#: eval.c:732
 msgid "`BINMODE' is a gawk extension"
 msgstr "'BINMODE' er en gawk-udvidelse"
 
-#: eval.c:788
+#: eval.c:789
 #, c-format
 msgid "BINMODE value `%s' is invalid, treated as 3"
 msgstr "BINMODE værdi '%s' er ugyldig, behandles som 3"
 
-#: eval.c:911
+#: eval.c:912
 #, c-format
 msgid "bad `%sFMT' specification `%s'"
 msgstr "forkert '%sFMT'-specifikation '%s'"
 
-#: eval.c:979
+#: eval.c:980
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "deaktiverer '--lint' på grund af en tildeling til 'LINT'"
 
-#: eval.c:1157
+#: eval.c:1174
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "reference til ikke-initieret argument '%s'"
 
-#: eval.c:1158
+#: eval.c:1175
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "reference til ikke-initieret variabel '%s'"
 
-#: eval.c:1176
+#: eval.c:1193
 msgid "attempt to field reference from non-numeric value"
 msgstr "forsøg på at referere til et felt fra ikke-numerisk værdi"
 
-#: eval.c:1178
+#: eval.c:1195
 msgid "attempt to field reference from null string"
 msgstr "forsøg på at referere til et felt fra tom streng"
 
-#: eval.c:1186
+#: eval.c:1203
 #, c-format
 msgid "attempt to access field %ld"
 msgstr "forsøg på at få adgang til felt %ld"
 
-#: eval.c:1195
+#: eval.c:1212
 #, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "reference til ikke-initieret felt '$%ld'"
 
-#: eval.c:1259
+#: eval.c:1276
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr "funktionen '%s' kaldt med flere argumenter end deklareret"
 
-#: eval.c:1456
+#: eval.c:1473
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr "unwind_stack: uventet type `%s'"
 
-#: eval.c:1549
+#: eval.c:1566
 msgid "division by zero attempted in `/='"
 msgstr "forsøgte at dividere med nul i '/='"
 
-#: eval.c:1556
+#: eval.c:1573
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "forsøgte at dividere med nul i '%%='"
@@ -2097,54 +2097,54 @@ msgid "load_ext: library `%s' initialization routine `%s' failed"
 msgstr ""
 "fatalt: extension: bibliotek '%s': kan ikke kalde funktionen '%s' (%s)\n"
 
-#: ext.c:111
+#: ext.c:92
 #, fuzzy
 msgid "make_builtin: missing function name"
 msgstr "extension: mangler funktionsnavn"
 
-#: ext.c:119 ext.c:130
+#: ext.c:100 ext.c:111
 #, fuzzy, c-format
 msgid "make_builtin: can't use gawk built-in `%s' as function name"
 msgstr "extension: kan ikke bruge gawk's indbyggede '%s' som funktionsnavn"
 
-#: ext.c:128
+#: ext.c:109
 #, fuzzy, c-format
 msgid "make_builtin: can't use gawk built-in `%s' as namespace name"
 msgstr "extension: kan ikke bruge gawk's indbyggede '%s' som funktionsnavn"
 
-#: ext.c:145
+#: ext.c:126
 #, fuzzy, c-format
 msgid "make_builtin: can't redefine function `%s'"
 msgstr "extension: kan ikke omdefinere funktion '%s'"
 
-#: ext.c:149
+#: ext.c:130
 #, fuzzy, c-format
 msgid "make_builtin: function `%s' already defined"
 msgstr "extension: funktionen '%s' er allerede defineret"
 
-#: ext.c:153
+#: ext.c:134
 #, fuzzy, c-format
 msgid "make_builtin: function name `%s' previously defined"
 msgstr "extension: funktionsnavnet '%s' er defineret tidligere"
 
-#: ext.c:157
+#: ext.c:138
 #, c-format
 msgid "make_builtin: negative argument count for function `%s'"
 msgstr "make_builtin: negativt argumentantal for funktion '%s'"
 
-#: ext.c:233
+#: ext.c:214
 #, c-format
 msgid "function `%s': argument #%d: attempt to use scalar as an array"
 msgstr ""
 "funktion '%s': argument nummer %d: forsøg på at bruge skalar som et array"
 
-#: ext.c:237
+#: ext.c:218
 #, c-format
 msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr ""
 "funktion '%s': argument nummer %d: forsøg på at bruge array som en skalar"
 
-#: ext.c:251
+#: ext.c:232
 msgid "dynamic loading of library not supported"
 msgstr ""
 
@@ -2343,7 +2343,7 @@ msgstr "%s: lukning mislykkedes (%s)"
 
 #: extension/inplace.c:247
 #, fuzzy, c-format
-msgid "inplace_end: link(`%s', `%s') failed (%s)"
+msgid "inplace::end: link(`%s', `%s') failed (%s)"
 msgstr "datakanalsrensning af '%s' mislykkedes (%s)."
 
 #: extension/inplace.c:257
@@ -2769,12 +2769,12 @@ msgstr ""
 msgid "fflush: cannot flush standard error: %s"
 msgstr ""
 
-#: io.c:1417 io.c:1508 main.c:659 main.c:706
+#: io.c:1417 io.c:1508 main.c:660 main.c:707
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "fejl ved skrivning til standard ud (%s)"
 
-#: io.c:1418 io.c:1521 main.c:661
+#: io.c:1418 io.c:1521 main.c:662
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "fejl ved skrivning til standard fejl (%s)"
@@ -2971,187 +2971,187 @@ msgstr "IPv6-kommunikation understøttes ikke"
 msgid "environment variable `POSIXLY_CORRECT' set: turning on `--posix'"
 msgstr "miljøvariablen 'POSIXLY_CORRECT' sat: aktiverer '--posix'"
 
-#: main.c:337
+#: main.c:338
 msgid "`--posix' overrides `--traditional'"
 msgstr "'--posix' tilsidesætter '--traditional'"
 
-#: main.c:348
+#: main.c:349
 msgid "`--posix'/`--traditional' overrides `--non-decimal-data'"
 msgstr "'--posix'/'--traditional' tilsidesætter '--non-decimal-data'"
 
-#: main.c:352
-#, c-format
-msgid "running %s setuid root may be a security problem"
-msgstr "at køre %s setuid root kan være et sikkerhedsproblem"
-
-#: main.c:356
+#: main.c:354
 #, fuzzy
 msgid "`--posix' overrides `--characters-as-bytes'"
 msgstr "'--posix' tilsidesætter '--binary'"
 
-#: main.c:415
+#: main.c:363
+#, c-format
+msgid "running %s setuid root may be a security problem"
+msgstr "at køre %s setuid root kan være et sikkerhedsproblem"
+
+#: main.c:416
 #, c-format
 msgid "can't set binary mode on stdin (%s)"
 msgstr "kan ikke sætte binær tilstand på standard ind (%s)"
 
-#: main.c:418
+#: main.c:419
 #, c-format
 msgid "can't set binary mode on stdout (%s)"
 msgstr "kan ikke sætte binær tilstand på standard ud (%s)"
 
-#: main.c:420
+#: main.c:421
 #, c-format
 msgid "can't set binary mode on stderr (%s)"
 msgstr "kan ikke sætte binær tilstand på standard fejl (%s)"
 
-#: main.c:482
+#: main.c:483
 msgid "no program text at all!"
 msgstr "ingen programtekst overhovedet!"
 
-#: main.c:576
+#: main.c:577
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"
 msgstr "Brug: %s [flag i POSIX- eller GNU-stil] -f progfil [--] fil ...\n"
 
-#: main.c:578
+#: main.c:579
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"
 msgstr "Brug: %s [flag i POSIX- eller GNU-stil] %cprogram%c fil ...\n"
 
-#: main.c:583
+#: main.c:584
 msgid "POSIX options:\t\tGNU long options: (standard)\n"
 msgstr "POSIX-flag:\t\tlange GNU-flag: (standard)\n"
 
-#: main.c:584
+#: main.c:585
 msgid "\t-f progfile\t\t--file=progfile\n"
 msgstr "\t-f progfil\t\t--file=progfil\n"
 
-#: main.c:585
+#: main.c:586
 msgid "\t-F fs\t\t\t--field-separator=fs\n"
 msgstr "\t-F fs\t\t\t--field-separator=fs\n"
 
-#: main.c:586
+#: main.c:587
 msgid "\t-v var=val\t\t--assign=var=val\n"
 msgstr "\t-v var=værdi\t\t--assign=var=værdi\n"
 
-#: main.c:587
+#: main.c:588
 msgid "Short options:\t\tGNU long options: (extensions)\n"
 msgstr "POSIX-flag:\t\tlange GNU-flag: (udvidelser)\n"
 
-#: main.c:588
+#: main.c:589
 msgid "\t-b\t\t\t--characters-as-bytes\n"
 msgstr "\t-b\t\t\t--characters-as-bytes\n"
 
-#: main.c:589
+#: main.c:590
 msgid "\t-c\t\t\t--traditional\n"
 msgstr "\t-c\t\t\t--traditional\n"
 
-#: main.c:590
+#: main.c:591
 msgid "\t-C\t\t\t--copyright\n"
 msgstr "\t-C\t\t\t--copyright\n"
 
-#: main.c:591
+#: main.c:592
 msgid "\t-d[file]\t\t--dump-variables[=file]\n"
 msgstr "\t-d[fil]\t\t--dump-variables[=fil]\n"
 
-#: main.c:592
+#: main.c:593
 #, fuzzy
 msgid "\t-D[file]\t\t--debug[=file]\n"
 msgstr "\t-p[fil]\t\t--profile[=fil]\n"
 
-#: main.c:593
+#: main.c:594
 msgid "\t-e 'program-text'\t--source='program-text'\n"
 msgstr "\t-e 'programtekst'\t--source='programtekst'\n"
 
-#: main.c:594
+#: main.c:595
 msgid "\t-E file\t\t\t--exec=file\n"
 msgstr "\t-E fil\t\t\t--exec=fil\n"
 
-#: main.c:595
+#: main.c:596
 msgid "\t-g\t\t\t--gen-pot\n"
 msgstr "\t-g\t\t\t--gen-pot\n"
 
-#: main.c:596
+#: main.c:597
 msgid "\t-h\t\t\t--help\n"
 msgstr "\t-h\t\t\t--help\n"
 
-#: main.c:597
+#: main.c:598
 msgid "\t-i includefile\t\t--include=includefile\n"
 msgstr ""
 
-#: main.c:598
+#: main.c:599
 msgid "\t-l library\t\t--load=library\n"
 msgstr ""
 
 #. TRANSLATORS: the "fatal" and "invalid" here are literal
 #. values, they should not be translated. Thanks.
 #.
-#: main.c:603
+#: main.c:604
 #, fuzzy
 msgid "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
 msgstr "\t-L [fatal]\t\t--lint[=fatal]\n"
 
-#: main.c:604
+#: main.c:605
 #, fuzzy
 msgid "\t-M\t\t\t--bignum\n"
 msgstr "\t-g\t\t\t--gen-pot\n"
 
-#: main.c:605
+#: main.c:606
 msgid "\t-N\t\t\t--use-lc-numeric\n"
 msgstr "\t-N\t\t\t--use-lc-numeric\n"
 
-#: main.c:606
+#: main.c:607
 msgid "\t-n\t\t\t--non-decimal-data\n"
 msgstr "\t-n\t\t\t--non-decimal-data\n"
 
-#: main.c:607
+#: main.c:608
 #, fuzzy
 msgid "\t-o[file]\t\t--pretty-print[=file]\n"
 msgstr "\t-p[fil]\t\t--profile[=fil]\n"
 
-#: main.c:608
+#: main.c:609
 msgid "\t-O\t\t\t--optimize\n"
 msgstr "\t-O\t\t\t--optimize\n"
 
-#: main.c:609
+#: main.c:610
 msgid "\t-p[file]\t\t--profile[=file]\n"
 msgstr "\t-p[fil]\t\t--profile[=fil]\n"
 
-#: main.c:610
+#: main.c:611
 msgid "\t-P\t\t\t--posix\n"
 msgstr "\t-P\t\t\t--posix\n"
 
-#: main.c:611
+#: main.c:612
 msgid "\t-r\t\t\t--re-interval\n"
 msgstr "\t-r\t\t\t--re-interval\n"
 
-#: main.c:612
+#: main.c:613
 #, fuzzy
 msgid "\t-s\t\t\t--no-optimize\n"
 msgstr "\t-O\t\t\t--optimize\n"
 
-#: main.c:613
+#: main.c:614
 msgid "\t-S\t\t\t--sandbox\n"
 msgstr "\t-S\t\t\t--sandbox\n"
 
-#: main.c:614
+#: main.c:615
 msgid "\t-t\t\t\t--lint-old\n"
 msgstr "\t-t\t\t\t--lint-old\n"
 
-#: main.c:615
+#: main.c:616
 msgid "\t-V\t\t\t--version\n"
 msgstr "\t-V\t\t\t--version\n"
 
-#: main.c:617
+#: main.c:618
 msgid "\t-W nostalgia\t\t--nostalgia\n"
 msgstr "\t-W nostalgia\t\t--nostalgia\n"
 
-#: main.c:620
+#: main.c:621
 #, fuzzy
 msgid "\t-Y\t\t\t--parsedebug\n"
 msgstr "\t-Y\t\t--parsedebug\n"
 
-#: main.c:623
+#: main.c:624
 msgid "\t-Z locale-name\t\t--locale=locale-name\n"
 msgstr ""
 
@@ -3160,7 +3160,7 @@ msgstr ""
 #. for this application.  Please add _another line_ with the
 #. address for translation bugs.
 #. no-wrap
-#: main.c:632
+#: main.c:633
 #, fuzzy
 msgid ""
 "\n"
@@ -3179,7 +3179,7 @@ msgstr ""
 "\n"
 "Rapportér kommentarer til oversættelsen til <dansk@dansk-gruppen.dk>.\n"
 
-#: main.c:640
+#: main.c:641
 msgid ""
 "gawk is a pattern scanning and processing language.\n"
 "By default it reads standard input and writes standard output.\n"
@@ -3189,7 +3189,7 @@ msgstr ""
 "Almindeligvis læser gawk fra standard ind og skriver til standard ud.\n"
 "\n"
 
-#: main.c:644
+#: main.c:645
 msgid ""
 "Examples:\n"
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
@@ -3199,7 +3199,7 @@ msgstr ""
 "\tgawk '{ sum += $1 }; END { print sum }' fil\n"
 "\tgawk -F: '{ print $1 }' /etc/passwd\n"
 
-#: main.c:676
+#: main.c:677
 #, c-format
 msgid ""
 "Copyright (C) 1989, 1991-%d Free Software Foundation.\n"
@@ -3219,7 +3219,7 @@ msgstr ""
 "enhver senere version.\n"
 "\n"
 
-#: main.c:684
+#: main.c:685
 msgid ""
 "This program is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
@@ -3233,7 +3233,7 @@ msgstr ""
 "General Public License for yderligere information.\n"
 "\n"
 
-#: main.c:690
+#: main.c:691
 msgid ""
 "You should have received a copy of the GNU General Public License\n"
 "along with this program. If not, see http://www.gnu.org/licenses/.\n"
@@ -3241,11 +3241,11 @@ msgstr ""
 "Du bør have fået en kopi af GNU General Public License sammen\n"
 "med dette program. Hvis ikke, så se http://www.gnu.org/licenses/.\n"
 
-#: main.c:731
+#: main.c:732
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "-Ft sætter ikke FS til tab i POSIX-awk"
 
-#: main.c:1128
+#: main.c:1129
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
@@ -3254,66 +3254,71 @@ msgstr ""
 "%s: '%s' argument til '-v' ikke på formen 'var=værdi'\n"
 "\n"
 
-#: main.c:1154
+#: main.c:1155
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "'%s' er ikke et gyldigt variabelnavn"
 
-#: main.c:1157
+#: main.c:1158
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "'%s' er ikke et variabelnavn, leder efter fil '%s=%s'"
 
-#: main.c:1171
+#: main.c:1172
 #, c-format
 msgid "cannot use gawk builtin `%s' as variable name"
 msgstr "kan ikke bruge gawk's indbyggede '%s' som variabelnavn"
 
-#: main.c:1176
+#: main.c:1177
 #, c-format
 msgid "cannot use function `%s' as variable name"
 msgstr "kan ikke bruge funktion '%s' som variabelnavn"
 
-#: main.c:1254
+#: main.c:1255
 msgid "floating point exception"
 msgstr "flydendetalsundtagelse"
 
-#: main.c:1261
+#: main.c:1262
 msgid "fatal error: internal error"
 msgstr "fatal fejl: intern fejl"
 
-#: main.c:1278
+#: main.c:1279
 msgid "fatal error: internal error: segfault"
 msgstr "fatal fejl: intern fejl: segmentfejl"
 
-#: main.c:1291
+#: main.c:1292
 msgid "fatal error: internal error: stack overflow"
 msgstr "fatal fejl: intern fejl: stakoverløb"
 
-#: main.c:1351
+#: main.c:1352
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "ingen fd %d åbnet i forvejen"
 
-#: main.c:1358
+#: main.c:1359
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "kunne ikke i forvejen åbne /dev/null for fd %d"
 
-#: main.c:1572
+#: main.c:1573
 msgid "empty argument to `-e/--source' ignored"
 msgstr "tomt argument til '-e/--source' ignoreret"
 
-#: main.c:1643
+#: main.c:1631 main.c:1636
+#, fuzzy
+msgid "`--profile' overrides `--pretty-print'"
+msgstr "'--posix' tilsidesætter '--traditional'"
+
+#: main.c:1648
 msgid "-M ignored: MPFR/GMP support not compiled in"
 msgstr ""
 
-#: main.c:1668
+#: main.c:1673
 #, c-format
 msgid "%s: option `-W %s' unrecognized, ignored\n"
 msgstr "%s: flaget '-W %s' ukendt, ignoreret\n"
 
-#: main.c:1721
+#: main.c:1726
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: flaget kræver et argument -- %c\n"
@@ -3468,14 +3473,14 @@ msgstr "intern fejl: %s med null vname"
 msgid "internal error: builtin with null fname"
 msgstr "intern fejl: %s med null vname"
 
-#: profile.c:1298
+#: profile.c:1302
 #, c-format
 msgid ""
 "%s# Loaded extensions (-l and/or @load)\n"
 "\n"
 msgstr ""
 
-#: profile.c:1329
+#: profile.c:1333
 #, c-format
 msgid ""
 "\n"
@@ -3483,12 +3488,12 @@ msgid ""
 "\n"
 msgstr ""
 
-#: profile.c:1393
+#: profile.c:1397
 #, c-format
 msgid "\t# gawk profile, created %s\n"
 msgstr "\t# profil til gawk oprettet %s\n"
 
-#: profile.c:1958
+#: profile.c:1962
 #, c-format
 msgid ""
 "\n"
@@ -3497,7 +3502,7 @@ msgstr ""
 "\n"
 "\t# Funktioner, listede alfabetisk\n"
 
-#: profile.c:2019
+#: profile.c:2023
 #, c-format
 msgid "redir2str: unknown redirection type %d"
 msgstr "redir2str: uykendt omdirigeringstype %d"

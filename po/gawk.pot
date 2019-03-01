@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: gawk 4.2.62\n"
+"Project-Id-Version: gawk 4.2.63\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2019-02-11 21:00+0200\n"
+"POT-Creation-Date: 2019-03-01 11:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,8 +37,8 @@ msgid "attempt to use scalar `%s' as an array"
 msgstr ""
 
 #: array.c:400 array.c:567 builtin.c:88 builtin.c:1686 builtin.c:1732
-#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1132 eval.c:1136
-#: eval.c:1511
+#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1149 eval.c:1153
+#: eval.c:1528
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr ""
@@ -99,486 +99,486 @@ msgstr ""
 msgid "sort comparison function `%s' is not defined"
 msgstr ""
 
-#: awkgram.y:274
+#: awkgram.y:275
 #, c-format
 msgid "%s blocks must have an action part"
 msgstr ""
 
-#: awkgram.y:277
+#: awkgram.y:278
 msgid "each rule must have a pattern or an action part"
 msgstr ""
 
-#: awkgram.y:418 awkgram.y:430
+#: awkgram.y:419 awkgram.y:431
 msgid "old awk does not support multiple `BEGIN' or `END' rules"
 msgstr ""
 
-#: awkgram.y:483
+#: awkgram.y:484
 #, c-format
 msgid "`%s' is a built-in function, it cannot be redefined"
 msgstr ""
 
-#: awkgram.y:547
+#: awkgram.y:548
 msgid "regexp constant `//' looks like a C++ comment, but is not"
 msgstr ""
 
-#: awkgram.y:551
+#: awkgram.y:552
 #, c-format
 msgid "regexp constant `/%s/' looks like a C comment, but is not"
 msgstr ""
 
-#: awkgram.y:678
+#: awkgram.y:679
 #, c-format
 msgid "duplicate case values in switch body: %s"
 msgstr ""
 
-#: awkgram.y:699
+#: awkgram.y:700
 msgid "duplicate `default' detected in switch body"
 msgstr ""
 
-#: awkgram.y:1034 awkgram.y:4447
+#: awkgram.y:1035 awkgram.y:4457
 msgid "`break' is not allowed outside a loop or switch"
 msgstr ""
 
-#: awkgram.y:1044 awkgram.y:4439
+#: awkgram.y:1045 awkgram.y:4449
 msgid "`continue' is not allowed outside a loop"
 msgstr ""
 
-#: awkgram.y:1055
+#: awkgram.y:1056
 #, c-format
 msgid "`next' used in %s action"
 msgstr ""
 
-#: awkgram.y:1066
+#: awkgram.y:1067
 #, c-format
 msgid "`nextfile' used in %s action"
 msgstr ""
 
-#: awkgram.y:1094
+#: awkgram.y:1095
 msgid "`return' used outside function context"
 msgstr ""
 
-#: awkgram.y:1164
+#: awkgram.y:1168
 msgid "plain `print' in BEGIN or END rule should probably be `print \"\"'"
 msgstr ""
 
-#: awkgram.y:1230 awkgram.y:1279
+#: awkgram.y:1238 awkgram.y:1287
 msgid "`delete' is not allowed with SYMTAB"
 msgstr ""
 
-#: awkgram.y:1232 awkgram.y:1281
+#: awkgram.y:1240 awkgram.y:1289
 msgid "`delete' is not allowed with FUNCTAB"
 msgstr ""
 
-#: awkgram.y:1266 awkgram.y:1270
+#: awkgram.y:1274 awkgram.y:1278
 msgid "`delete(array)' is a non-portable tawk extension"
 msgstr ""
 
-#: awkgram.y:1406
+#: awkgram.y:1414
 msgid "multistage two-way pipelines don't work"
 msgstr ""
 
-#: awkgram.y:1408
+#: awkgram.y:1416
 msgid "concatenation as I/O `>' redirection target is ambiguous"
 msgstr ""
 
-#: awkgram.y:1612
+#: awkgram.y:1620
 msgid "regular expression on right of assignment"
 msgstr ""
 
-#: awkgram.y:1627 awkgram.y:1640
+#: awkgram.y:1635 awkgram.y:1648
 msgid "regular expression on left of `~' or `!~' operator"
 msgstr ""
 
-#: awkgram.y:1657 awkgram.y:1806
+#: awkgram.y:1665 awkgram.y:1814
 msgid "old awk does not support the keyword `in' except after `for'"
 msgstr ""
 
-#: awkgram.y:1667
+#: awkgram.y:1675
 msgid "regular expression on right of comparison"
 msgstr ""
 
-#: awkgram.y:1786
+#: awkgram.y:1794
 #, c-format
 msgid "non-redirected `getline' invalid inside `%s' rule"
 msgstr ""
 
-#: awkgram.y:1789
+#: awkgram.y:1797
 msgid "non-redirected `getline' undefined inside END action"
 msgstr ""
 
-#: awkgram.y:1808
+#: awkgram.y:1816
 msgid "old awk does not support multidimensional arrays"
 msgstr ""
 
-#: awkgram.y:1911
+#: awkgram.y:1919
 msgid "call of `length' without parentheses is not portable"
 msgstr ""
 
-#: awkgram.y:1985
+#: awkgram.y:1993
 msgid "indirect function calls are a gawk extension"
 msgstr ""
 
-#: awkgram.y:1998
+#: awkgram.y:2006
 #, c-format
 msgid "can not use special variable `%s' for indirect function call"
 msgstr ""
 
-#: awkgram.y:2031
+#: awkgram.y:2039
 #, c-format
 msgid "attempt to use non-function `%s' in function call"
 msgstr ""
 
-#: awkgram.y:2096
+#: awkgram.y:2104
 msgid "invalid subscript expression"
 msgstr ""
 
-#: awkgram.y:2469 awkgram.y:2489 gawkapi.c:273 gawkapi.c:290 msg.c:130
+#: awkgram.y:2477 awkgram.y:2497 gawkapi.c:273 gawkapi.c:290 msg.c:130
 msgid "warning: "
 msgstr ""
 
-#: awkgram.y:2487 gawkapi.c:245 gawkapi.c:288 msg.c:162
+#: awkgram.y:2495 gawkapi.c:245 gawkapi.c:288 msg.c:162
 msgid "fatal: "
 msgstr ""
 
-#: awkgram.y:2540
+#: awkgram.y:2548
 msgid "unexpected newline or end of string"
 msgstr ""
 
-#: awkgram.y:2561
+#: awkgram.y:2569
 msgid ""
 "source files / command-line arguments must contain complete functions or "
 "rules"
 msgstr ""
 
-#: awkgram.y:2841 awkgram.y:2919 awkgram.y:3157 debug.c:536 debug.c:552
+#: awkgram.y:2851 awkgram.y:2929 awkgram.y:3167 debug.c:536 debug.c:552
 #: debug.c:2829 debug.c:5194
 #, c-format
 msgid "can't open source file `%s' for reading (%s)"
 msgstr ""
 
-#: awkgram.y:2842 awkgram.y:2979
+#: awkgram.y:2852 awkgram.y:2989
 #, c-format
 msgid "can't open shared library `%s' for reading (%s)"
 msgstr ""
 
-#: awkgram.y:2844 awkgram.y:2920 awkgram.y:2980 builtin.c:149 debug.c:5345
+#: awkgram.y:2854 awkgram.y:2930 awkgram.y:2990 builtin.c:149 debug.c:5345
 msgid "reason unknown"
 msgstr ""
 
-#: awkgram.y:2853 awkgram.y:2877
+#: awkgram.y:2863 awkgram.y:2887
 #, c-format
 msgid "can't include `%s' and use it as a program file"
 msgstr ""
 
-#: awkgram.y:2866
+#: awkgram.y:2876
 #, c-format
 msgid "already included source file `%s'"
 msgstr ""
 
-#: awkgram.y:2867
+#: awkgram.y:2877
 #, c-format
 msgid "already loaded shared library `%s'"
 msgstr ""
 
-#: awkgram.y:2904
+#: awkgram.y:2914
 msgid "@include is a gawk extension"
 msgstr ""
 
-#: awkgram.y:2910
+#: awkgram.y:2920
 msgid "empty filename after @include"
 msgstr ""
 
-#: awkgram.y:2959
+#: awkgram.y:2969
 msgid "@load is a gawk extension"
 msgstr ""
 
-#: awkgram.y:2966
+#: awkgram.y:2976
 msgid "empty filename after @load"
 msgstr ""
 
-#: awkgram.y:3109
+#: awkgram.y:3119
 msgid "empty program text on command line"
 msgstr ""
 
-#: awkgram.y:3224
+#: awkgram.y:3234
 #, c-format
 msgid "can't read sourcefile `%s' (%s)"
 msgstr ""
 
-#: awkgram.y:3235
+#: awkgram.y:3245
 #, c-format
 msgid "source file `%s' is empty"
 msgstr ""
 
-#: awkgram.y:3294
+#: awkgram.y:3304
 #, c-format
 msgid "PEBKAC error: invalid character '\\%03o' in source code"
 msgstr ""
 
-#: awkgram.y:3521
+#: awkgram.y:3531
 msgid "source file does not end in newline"
 msgstr ""
 
-#: awkgram.y:3642
+#: awkgram.y:3652
 msgid "unterminated regexp ends with `\\' at end of file"
 msgstr ""
 
-#: awkgram.y:3669
+#: awkgram.y:3679
 #, c-format
 msgid "%s: %d: tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr ""
 
-#: awkgram.y:3673
+#: awkgram.y:3683
 #, c-format
 msgid "tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr ""
 
-#: awkgram.y:3686
+#: awkgram.y:3696
 msgid "unterminated regexp"
 msgstr ""
 
-#: awkgram.y:3690
+#: awkgram.y:3700
 msgid "unterminated regexp at end of file"
 msgstr ""
 
-#: awkgram.y:3779
+#: awkgram.y:3789
 msgid "use of `\\ #...' line continuation is not portable"
 msgstr ""
 
-#: awkgram.y:3801
+#: awkgram.y:3811
 msgid "backslash not last character on line"
 msgstr ""
 
-#: awkgram.y:3848 awkgram.y:3850
+#: awkgram.y:3858 awkgram.y:3860
 msgid "multidimensional arrays are a gawk extension"
 msgstr ""
 
-#: awkgram.y:3875
+#: awkgram.y:3885
 msgid "POSIX does not allow operator `**='"
 msgstr ""
 
-#: awkgram.y:3877
+#: awkgram.y:3887
 msgid "old awk does not support operator `**='"
 msgstr ""
 
-#: awkgram.y:3886
+#: awkgram.y:3896
 msgid "POSIX does not allow operator `**'"
 msgstr ""
 
-#: awkgram.y:3888
+#: awkgram.y:3898
 msgid "old awk does not support operator `**'"
 msgstr ""
 
-#: awkgram.y:3923
+#: awkgram.y:3933
 msgid "operator `^=' is not supported in old awk"
 msgstr ""
 
-#: awkgram.y:3931
+#: awkgram.y:3941
 msgid "operator `^' is not supported in old awk"
 msgstr ""
 
-#: awkgram.y:4028 awkgram.y:4050 command.y:1187
+#: awkgram.y:4038 awkgram.y:4060 command.y:1187
 msgid "unterminated string"
 msgstr ""
 
-#: awkgram.y:4038 main.c:1197
+#: awkgram.y:4048 main.c:1198
 msgid "POSIX does not allow physical newlines in string values"
 msgstr ""
 
-#: awkgram.y:4040 node.c:453
+#: awkgram.y:4050 node.c:453
 msgid "backslash string continuation is not portable"
 msgstr ""
 
-#: awkgram.y:4278
+#: awkgram.y:4288
 #, c-format
 msgid "invalid char '%c' in expression"
 msgstr ""
 
-#: awkgram.y:4373
+#: awkgram.y:4383
 #, c-format
 msgid "`%s' is a gawk extension"
 msgstr ""
 
-#: awkgram.y:4378
+#: awkgram.y:4388
 #, c-format
 msgid "POSIX does not allow `%s'"
 msgstr ""
 
-#: awkgram.y:4386
+#: awkgram.y:4396
 #, c-format
 msgid "`%s' is not supported in old awk"
 msgstr ""
 
-#: awkgram.y:4484
+#: awkgram.y:4494
 msgid "`goto' considered harmful!"
 msgstr ""
 
-#: awkgram.y:4553
+#: awkgram.y:4563
 #, c-format
 msgid "%d is invalid as number of arguments for %s"
 msgstr ""
 
-#: awkgram.y:4588
+#: awkgram.y:4598
 #, c-format
 msgid "%s: string literal as last arg of substitute has no effect"
 msgstr ""
 
-#: awkgram.y:4593
+#: awkgram.y:4603
 #, c-format
 msgid "%s third parameter is not a changeable object"
 msgstr ""
 
-#: awkgram.y:4697 awkgram.y:4700
+#: awkgram.y:4707 awkgram.y:4710
 msgid "match: third argument is a gawk extension"
 msgstr ""
 
-#: awkgram.y:4754 awkgram.y:4757
+#: awkgram.y:4764 awkgram.y:4767
 msgid "close: second argument is a gawk extension"
 msgstr ""
 
-#: awkgram.y:4769
+#: awkgram.y:4779
 msgid "use of dcgettext(_\"...\") is incorrect: remove leading underscore"
 msgstr ""
 
-#: awkgram.y:4784
+#: awkgram.y:4794
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
 msgstr ""
 
-#: awkgram.y:4803
+#: awkgram.y:4813
 msgid "index: regexp constant as second argument is not allowed"
 msgstr ""
 
-#: awkgram.y:4856
+#: awkgram.y:4866
 #, c-format
 msgid "function `%s': parameter `%s' shadows global variable"
 msgstr ""
 
-#: awkgram.y:4905 debug.c:4179 debug.c:4222 debug.c:5343
+#: awkgram.y:4915 debug.c:4179 debug.c:4222 debug.c:5343
 #, c-format
 msgid "could not open `%s' for writing (%s)"
 msgstr ""
 
-#: awkgram.y:4906
+#: awkgram.y:4916
 msgid "sending variable list to standard error"
 msgstr ""
 
-#: awkgram.y:4914
+#: awkgram.y:4924
 #, c-format
 msgid "%s: close failed (%s)"
 msgstr ""
 
-#: awkgram.y:4939
+#: awkgram.y:4949
 msgid "shadow_funcs() called twice!"
 msgstr ""
 
-#: awkgram.y:4947
+#: awkgram.y:4957
 msgid "there were shadowed variables."
 msgstr ""
 
-#: awkgram.y:5024
+#: awkgram.y:5034
 #, c-format
 msgid "function name `%s' previously defined"
 msgstr ""
 
-#: awkgram.y:5075
+#: awkgram.y:5085
 #, c-format
 msgid "function `%s': can't use function name as parameter name"
 msgstr ""
 
-#: awkgram.y:5078
+#: awkgram.y:5088
 #, c-format
 msgid "function `%s': can't use special variable `%s' as a function parameter"
 msgstr ""
 
-#: awkgram.y:5082
+#: awkgram.y:5092
 #, c-format
 msgid "function `%s': parameter `%s' cannot contain a namespace"
 msgstr ""
 
-#: awkgram.y:5089
+#: awkgram.y:5099
 #, c-format
 msgid "function `%s': parameter #%d, `%s', duplicates parameter #%d"
 msgstr ""
 
-#: awkgram.y:5178
+#: awkgram.y:5188
 #, c-format
 msgid "function `%s' called but never defined"
 msgstr ""
 
-#: awkgram.y:5182
+#: awkgram.y:5192
 #, c-format
 msgid "function `%s' defined but never called directly"
 msgstr ""
 
-#: awkgram.y:5214
+#: awkgram.y:5224
 #, c-format
 msgid "regexp constant for parameter #%d yields boolean value"
 msgstr ""
 
-#: awkgram.y:5229
+#: awkgram.y:5239
 #, c-format
 msgid ""
 "function `%s' called with space between name and `(',\n"
 "or used as a variable or an array"
 msgstr ""
 
-#: awkgram.y:5444
+#: awkgram.y:5454
 msgid "division by zero attempted"
 msgstr ""
 
-#: awkgram.y:5453
+#: awkgram.y:5463
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr ""
 
-#: awkgram.y:5792
+#: awkgram.y:5802
 msgid ""
 "cannot assign a value to the result of a field post-increment expression"
 msgstr ""
 
-#: awkgram.y:5795
+#: awkgram.y:5805
 #, c-format
 msgid "invalid target of assignment (opcode %s)"
 msgstr ""
 
-#: awkgram.y:6687
+#: awkgram.y:6697
 #, c-format
 msgid "identifier %s: qualified names not allowed in traditional / POSIX mode"
 msgstr ""
 
-#: awkgram.y:6692
+#: awkgram.y:6702
 #, c-format
 msgid "identifier %s: namespace separator is two colons, not one"
 msgstr ""
 
-#: awkgram.y:6698
+#: awkgram.y:6708
 #, c-format
 msgid "qualified identifier `%s' is badly formed"
 msgstr ""
 
-#: awkgram.y:6705
+#: awkgram.y:6715
 #, c-format
 msgid ""
 "identifier `%s': namespace separator can only appear once in a qualified name"
 msgstr ""
 
-#: awkgram.y:6754 awkgram.y:6805
+#: awkgram.y:6764 awkgram.y:6815
 #, c-format
 msgid "using reserved identifier `%s' as a namespace is not allowed"
 msgstr ""
 
-#: awkgram.y:6761 awkgram.y:6771
+#: awkgram.y:6771 awkgram.y:6781
 #, c-format
 msgid ""
 "using reserved identifier `%s' as second component of a qualified name is "
 "not allowed"
 msgstr ""
 
-#: awkgram.y:6789
+#: awkgram.y:6799
 msgid "@namespace is a gawk extension"
 msgstr ""
 
-#: awkgram.y:6796
+#: awkgram.y:6806
 #, c-format
 msgid "namespace name `%s' must meet identifier naming rules"
 msgstr ""
@@ -1918,26 +1918,26 @@ msgstr ""
 msgid "No symbol `%s' in current context"
 msgstr ""
 
-#: eval.c:400
+#: eval.c:401
 #, c-format
 msgid "unknown nodetype %d"
 msgstr ""
 
-#: eval.c:411 eval.c:427
+#: eval.c:412 eval.c:428
 #, c-format
 msgid "unknown opcode %d"
 msgstr ""
 
-#: eval.c:424
+#: eval.c:425
 #, c-format
 msgid "opcode %s not an operator or keyword"
 msgstr ""
 
-#: eval.c:482
+#: eval.c:483
 msgid "buffer overflow in genflags2str"
 msgstr ""
 
-#: eval.c:684
+#: eval.c:685
 #, c-format
 msgid ""
 "\n"
@@ -1945,71 +1945,71 @@ msgid ""
 "\n"
 msgstr ""
 
-#: eval.c:710
+#: eval.c:711
 msgid "`IGNORECASE' is a gawk extension"
 msgstr ""
 
-#: eval.c:731
+#: eval.c:732
 msgid "`BINMODE' is a gawk extension"
 msgstr ""
 
-#: eval.c:788
+#: eval.c:789
 #, c-format
 msgid "BINMODE value `%s' is invalid, treated as 3"
 msgstr ""
 
-#: eval.c:911
+#: eval.c:912
 #, c-format
 msgid "bad `%sFMT' specification `%s'"
 msgstr ""
 
-#: eval.c:979
+#: eval.c:980
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr ""
 
-#: eval.c:1157
+#: eval.c:1174
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr ""
 
-#: eval.c:1158
+#: eval.c:1175
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr ""
 
-#: eval.c:1176
+#: eval.c:1193
 msgid "attempt to field reference from non-numeric value"
 msgstr ""
 
-#: eval.c:1178
+#: eval.c:1195
 msgid "attempt to field reference from null string"
 msgstr ""
 
-#: eval.c:1186
+#: eval.c:1203
 #, c-format
 msgid "attempt to access field %ld"
 msgstr ""
 
-#: eval.c:1195
+#: eval.c:1212
 #, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr ""
 
-#: eval.c:1259
+#: eval.c:1276
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr ""
 
-#: eval.c:1456
+#: eval.c:1473
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr ""
 
-#: eval.c:1549
+#: eval.c:1566
 msgid "division by zero attempted in `/='"
 msgstr ""
 
-#: eval.c:1556
+#: eval.c:1573
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr ""
@@ -2281,7 +2281,7 @@ msgstr ""
 
 #: extension/inplace.c:247
 #, c-format
-msgid "inplace_end: link(`%s', `%s') failed (%s)"
+msgid "inplace::end: link(`%s', `%s') failed (%s)"
 msgstr ""
 
 #: extension/inplace.c:257
@@ -2691,12 +2691,12 @@ msgstr ""
 msgid "fflush: cannot flush standard error: %s"
 msgstr ""
 
-#: io.c:1417 io.c:1508 main.c:659 main.c:706
+#: io.c:1417 io.c:1508 main.c:660 main.c:707
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr ""
 
-#: io.c:1418 io.c:1521 main.c:661
+#: io.c:1418 io.c:1521 main.c:662
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr ""
@@ -2886,180 +2886,180 @@ msgstr ""
 msgid "environment variable `POSIXLY_CORRECT' set: turning on `--posix'"
 msgstr ""
 
-#: main.c:337
+#: main.c:338
 msgid "`--posix' overrides `--traditional'"
 msgstr ""
 
-#: main.c:348
+#: main.c:349
 msgid "`--posix'/`--traditional' overrides `--non-decimal-data'"
 msgstr ""
 
-#: main.c:352
+#: main.c:354
+msgid "`--posix' overrides `--characters-as-bytes'"
+msgstr ""
+
+#: main.c:363
 #, c-format
 msgid "running %s setuid root may be a security problem"
 msgstr ""
 
-#: main.c:356
-msgid "`--posix' overrides `--characters-as-bytes'"
-msgstr ""
-
-#: main.c:415
+#: main.c:416
 #, c-format
 msgid "can't set binary mode on stdin (%s)"
 msgstr ""
 
-#: main.c:418
+#: main.c:419
 #, c-format
 msgid "can't set binary mode on stdout (%s)"
 msgstr ""
 
-#: main.c:420
+#: main.c:421
 #, c-format
 msgid "can't set binary mode on stderr (%s)"
 msgstr ""
 
-#: main.c:482
+#: main.c:483
 msgid "no program text at all!"
 msgstr ""
 
-#: main.c:576
+#: main.c:577
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"
 msgstr ""
 
-#: main.c:578
+#: main.c:579
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"
 msgstr ""
 
-#: main.c:583
+#: main.c:584
 msgid "POSIX options:\t\tGNU long options: (standard)\n"
 msgstr ""
 
-#: main.c:584
+#: main.c:585
 msgid "\t-f progfile\t\t--file=progfile\n"
 msgstr ""
 
-#: main.c:585
+#: main.c:586
 msgid "\t-F fs\t\t\t--field-separator=fs\n"
 msgstr ""
 
-#: main.c:586
+#: main.c:587
 msgid "\t-v var=val\t\t--assign=var=val\n"
 msgstr ""
 
-#: main.c:587
+#: main.c:588
 msgid "Short options:\t\tGNU long options: (extensions)\n"
 msgstr ""
 
-#: main.c:588
+#: main.c:589
 msgid "\t-b\t\t\t--characters-as-bytes\n"
 msgstr ""
 
-#: main.c:589
+#: main.c:590
 msgid "\t-c\t\t\t--traditional\n"
 msgstr ""
 
-#: main.c:590
+#: main.c:591
 msgid "\t-C\t\t\t--copyright\n"
 msgstr ""
 
-#: main.c:591
+#: main.c:592
 msgid "\t-d[file]\t\t--dump-variables[=file]\n"
 msgstr ""
 
-#: main.c:592
+#: main.c:593
 msgid "\t-D[file]\t\t--debug[=file]\n"
 msgstr ""
 
-#: main.c:593
+#: main.c:594
 msgid "\t-e 'program-text'\t--source='program-text'\n"
 msgstr ""
 
-#: main.c:594
+#: main.c:595
 msgid "\t-E file\t\t\t--exec=file\n"
 msgstr ""
 
-#: main.c:595
+#: main.c:596
 msgid "\t-g\t\t\t--gen-pot\n"
 msgstr ""
 
-#: main.c:596
+#: main.c:597
 msgid "\t-h\t\t\t--help\n"
 msgstr ""
 
-#: main.c:597
+#: main.c:598
 msgid "\t-i includefile\t\t--include=includefile\n"
 msgstr ""
 
-#: main.c:598
+#: main.c:599
 msgid "\t-l library\t\t--load=library\n"
 msgstr ""
 
 #. TRANSLATORS: the "fatal" and "invalid" here are literal
 #. values, they should not be translated. Thanks.
 #.
-#: main.c:603
+#: main.c:604
 msgid "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
 msgstr ""
 
-#: main.c:604
+#: main.c:605
 msgid "\t-M\t\t\t--bignum\n"
 msgstr ""
 
-#: main.c:605
+#: main.c:606
 msgid "\t-N\t\t\t--use-lc-numeric\n"
 msgstr ""
 
-#: main.c:606
+#: main.c:607
 msgid "\t-n\t\t\t--non-decimal-data\n"
 msgstr ""
 
-#: main.c:607
+#: main.c:608
 msgid "\t-o[file]\t\t--pretty-print[=file]\n"
 msgstr ""
 
-#: main.c:608
+#: main.c:609
 msgid "\t-O\t\t\t--optimize\n"
 msgstr ""
 
-#: main.c:609
+#: main.c:610
 msgid "\t-p[file]\t\t--profile[=file]\n"
 msgstr ""
 
-#: main.c:610
+#: main.c:611
 msgid "\t-P\t\t\t--posix\n"
 msgstr ""
 
-#: main.c:611
+#: main.c:612
 msgid "\t-r\t\t\t--re-interval\n"
 msgstr ""
 
-#: main.c:612
+#: main.c:613
 msgid "\t-s\t\t\t--no-optimize\n"
 msgstr ""
 
-#: main.c:613
+#: main.c:614
 msgid "\t-S\t\t\t--sandbox\n"
 msgstr ""
 
-#: main.c:614
+#: main.c:615
 msgid "\t-t\t\t\t--lint-old\n"
 msgstr ""
 
-#: main.c:615
+#: main.c:616
 msgid "\t-V\t\t\t--version\n"
 msgstr ""
 
-#: main.c:617
+#: main.c:618
 msgid "\t-W nostalgia\t\t--nostalgia\n"
 msgstr ""
 
-#: main.c:620
+#: main.c:621
 msgid "\t-Y\t\t\t--parsedebug\n"
 msgstr ""
 
-#: main.c:623
+#: main.c:624
 msgid "\t-Z locale-name\t\t--locale=locale-name\n"
 msgstr ""
 
@@ -3068,7 +3068,7 @@ msgstr ""
 #. for this application.  Please add _another line_ with the
 #. address for translation bugs.
 #. no-wrap
-#: main.c:632
+#: main.c:633
 msgid ""
 "\n"
 "To report bugs, see node `Bugs' in `gawk.info'\n"
@@ -3081,21 +3081,21 @@ msgid ""
 "\n"
 msgstr ""
 
-#: main.c:640
+#: main.c:641
 msgid ""
 "gawk is a pattern scanning and processing language.\n"
 "By default it reads standard input and writes standard output.\n"
 "\n"
 msgstr ""
 
-#: main.c:644
+#: main.c:645
 msgid ""
 "Examples:\n"
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
 "\tgawk -F: '{ print $1 }' /etc/passwd\n"
 msgstr ""
 
-#: main.c:676
+#: main.c:677
 #, c-format
 msgid ""
 "Copyright (C) 1989, 1991-%d Free Software Foundation.\n"
@@ -3107,7 +3107,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: main.c:684
+#: main.c:685
 msgid ""
 "This program is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
@@ -3116,83 +3116,87 @@ msgid ""
 "\n"
 msgstr ""
 
-#: main.c:690
+#: main.c:691
 msgid ""
 "You should have received a copy of the GNU General Public License\n"
 "along with this program. If not, see http://www.gnu.org/licenses/.\n"
 msgstr ""
 
-#: main.c:731
+#: main.c:732
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr ""
 
-#: main.c:1128
+#: main.c:1129
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
 "\n"
 msgstr ""
 
-#: main.c:1154
+#: main.c:1155
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr ""
 
-#: main.c:1157
+#: main.c:1158
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr ""
 
-#: main.c:1171
+#: main.c:1172
 #, c-format
 msgid "cannot use gawk builtin `%s' as variable name"
 msgstr ""
 
-#: main.c:1176
+#: main.c:1177
 #, c-format
 msgid "cannot use function `%s' as variable name"
 msgstr ""
 
-#: main.c:1254
+#: main.c:1255
 msgid "floating point exception"
 msgstr ""
 
-#: main.c:1261
+#: main.c:1262
 msgid "fatal error: internal error"
 msgstr ""
 
-#: main.c:1278
+#: main.c:1279
 msgid "fatal error: internal error: segfault"
 msgstr ""
 
-#: main.c:1291
+#: main.c:1292
 msgid "fatal error: internal error: stack overflow"
 msgstr ""
 
-#: main.c:1351
+#: main.c:1352
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr ""
 
-#: main.c:1358
+#: main.c:1359
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr ""
 
-#: main.c:1572
+#: main.c:1573
 msgid "empty argument to `-e/--source' ignored"
 msgstr ""
 
-#: main.c:1643
+#: main.c:1631 main.c:1636
+msgid "`--profile' overrides `--pretty-print'"
+msgstr ""
+
+#: main.c:1648
 msgid "-M ignored: MPFR/GMP support not compiled in"
 msgstr ""
 
-#: main.c:1668
+#: main.c:1673
 #, c-format
 msgid "%s: option `-W %s' unrecognized, ignored\n"
 msgstr ""
 
-#: main.c:1721
+#: main.c:1726
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr ""
@@ -3333,14 +3337,14 @@ msgstr ""
 msgid "internal error: builtin with null fname"
 msgstr ""
 
-#: profile.c:1298
+#: profile.c:1302
 #, c-format
 msgid ""
 "%s# Loaded extensions (-l and/or @load)\n"
 "\n"
 msgstr ""
 
-#: profile.c:1329
+#: profile.c:1333
 #, c-format
 msgid ""
 "\n"
@@ -3348,19 +3352,19 @@ msgid ""
 "\n"
 msgstr ""
 
-#: profile.c:1393
+#: profile.c:1397
 #, c-format
 msgid "\t# gawk profile, created %s\n"
 msgstr ""
 
-#: profile.c:1958
+#: profile.c:1962
 #, c-format
 msgid ""
 "\n"
 "\t# Functions, listed alphabetically\n"
 msgstr ""
 
-#: profile.c:2019
+#: profile.c:2023
 #, c-format
 msgid "redir2str: unknown redirection type %d"
 msgstr ""
