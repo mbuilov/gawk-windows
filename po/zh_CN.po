@@ -5,14 +5,15 @@
 # LI Daobing <lidaobing@gmail.com>, 2007, 2009.
 # Aron Xu <happyaron.xu@gmail.com>, 2010.
 # Tianze Wang <zwpwjwtz@126.com>, 2016.
+# Boyuan Yang <073plan@gmail.com>, 2019.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gawk 4.2.0e\n"
+"Project-Id-Version: gawk 4.2.63\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
 "POT-Creation-Date: 2019-03-01 11:47+0200\n"
-"PO-Revision-Date: 2018-02-05 19:53+0100\n"
-"Last-Translator: Tianze Wang <zwpwjwtz@126.com>\n"
+"PO-Revision-Date: 2019-03-01 14:19-0500\n"
+"Last-Translator: Boyuan Yang <073plan@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
@@ -20,7 +21,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 2.0.2\n"
+"X-Generator: Poedit 2.2.1\n"
 
 #: array.c:247
 #, c-format
@@ -239,7 +240,7 @@ msgstr "无效的下标表达式"
 
 #: awkgram.y:2477 awkgram.y:2497 gawkapi.c:273 gawkapi.c:290 msg.c:130
 msgid "warning: "
-msgstr "警告："
+msgstr "警告:"
 
 #: awkgram.y:2495 gawkapi.c:245 gawkapi.c:288 msg.c:162
 msgid "fatal: "
@@ -250,10 +251,8 @@ msgid "unexpected newline or end of string"
 msgstr "未预期的新行或字符串结束"
 
 #: awkgram.y:2569
-msgid ""
-"source files / command-line arguments must contain complete functions or "
-"rules"
-msgstr ""
+msgid "source files / command-line arguments must contain complete functions or rules"
+msgstr "源代码文件/命令行参数必须包含完整的函数或规则"
 
 #: awkgram.y:2851 awkgram.y:2929 awkgram.y:3167 debug.c:536 debug.c:552
 #: debug.c:2829 debug.c:5194
@@ -387,14 +386,12 @@ msgid "unterminated string"
 msgstr "未结束的字符串"
 
 #: awkgram.y:4048 main.c:1198
-#, fuzzy
 msgid "POSIX does not allow physical newlines in string values"
-msgstr "POSIX 不允许“\\x”转义符"
+msgstr "POSIX 不允许出现在字符串值中的物理换行符"
 
 #: awkgram.y:4050 node.c:453
-#, fuzzy
 msgid "backslash string continuation is not portable"
-msgstr "使用“\\ #...”来续行是不可移植的"
+msgstr "使用反斜杠来续行的可移植性不佳"
 
 #: awkgram.y:4288
 #, c-format
@@ -417,9 +414,8 @@ msgid "`%s' is not supported in old awk"
 msgstr "老 awk 不支持“%s”"
 
 #: awkgram.y:4494
-#, fuzzy
 msgid "`goto' considered harmful!"
-msgstr "“goto”有害！\n"
+msgstr "“goto”有害！"
 
 #: awkgram.y:4563
 #, c-format
@@ -499,9 +495,9 @@ msgid "function `%s': can't use special variable `%s' as a function parameter"
 msgstr "函数“%s”：无法使用特殊变量“%s”作为函数参数"
 
 #: awkgram.y:5092
-#, fuzzy, c-format
+#, c-format
 msgid "function `%s': parameter `%s' cannot contain a namespace"
-msgstr "函数“%s”：参数“%s”掩盖了公共变量"
+msgstr "函数“%s”：参数“%s”不能包含命名空间"
 
 #: awkgram.y:5099
 #, c-format
@@ -542,8 +538,7 @@ msgid "division by zero attempted in `%%'"
 msgstr "在“%%”中试图除 0"
 
 #: awkgram.y:5802
-msgid ""
-"cannot assign a value to the result of a field post-increment expression"
+msgid "cannot assign a value to the result of a field post-increment expression"
 msgstr "无法将值赋给字段后增表达式"
 
 #: awkgram.y:5805
@@ -554,45 +549,41 @@ msgstr "赋值的目标无效（操作码 %s）"
 #: awkgram.y:6697
 #, c-format
 msgid "identifier %s: qualified names not allowed in traditional / POSIX mode"
-msgstr ""
+msgstr "标识符 %s：合格名称不允许在传统 / POSIX 模式下使用"
 
 #: awkgram.y:6702
 #, c-format
 msgid "identifier %s: namespace separator is two colons, not one"
-msgstr ""
+msgstr "标识符 %s：命名空间分隔符是两个冒号而非一个"
 
 #: awkgram.y:6708
 #, c-format
 msgid "qualified identifier `%s' is badly formed"
-msgstr ""
+msgstr "合格标识符“%s”格式出错"
 
 #: awkgram.y:6715
 #, c-format
-msgid ""
-"identifier `%s': namespace separator can only appear once in a qualified name"
-msgstr ""
+msgid "identifier `%s': namespace separator can only appear once in a qualified name"
+msgstr "标识符“%s”：命名空间分隔符仅可在合格名称中出现一次"
 
 #: awkgram.y:6764 awkgram.y:6815
 #, c-format
 msgid "using reserved identifier `%s' as a namespace is not allowed"
-msgstr ""
+msgstr "不允许使用保留标识符“%s”作为命名空间"
 
 #: awkgram.y:6771 awkgram.y:6781
 #, c-format
-msgid ""
-"using reserved identifier `%s' as second component of a qualified name is "
-"not allowed"
-msgstr ""
+msgid "using reserved identifier `%s' as second component of a qualified name is not allowed"
+msgstr "不允许使用保留标识符“%s”作为合格名称的第二部分"
 
 #: awkgram.y:6799
-#, fuzzy
 msgid "@namespace is a gawk extension"
-msgstr "@include 是 gawk 扩展"
+msgstr "@namespace 是 gawk 扩展"
 
 #: awkgram.y:6806
 #, c-format
 msgid "namespace name `%s' must meet identifier naming rules"
-msgstr ""
+msgstr "命名空间名称“%s”必须符合标识符命名规则"
 
 #: builtin.c:143
 #, c-format
@@ -754,14 +745,14 @@ msgid "[s]printf: value %g is out of range for `%%%c' format"
 msgstr "[s]printf：值 %g 对“%%%c”格式来说超出范围"
 
 #: builtin.c:1504
-#, fuzzy, c-format
+#, c-format
 msgid "[s]printf: value %s is out of range for `%%%c' format"
-msgstr "[s]printf：值 %g 对“%%%c”格式来说超出范围"
+msgstr "[s]printf：值 %s 对“%%%c”格式来说超出范围"
 
 #: builtin.c:1529
 #, c-format
 msgid "%%%c format is POSIX standard but not portable to other awks"
-msgstr ""
+msgstr "%%%c 格式符合 POSIX 标准但在其它 awk 实现上兼容性不佳"
 
 #: builtin.c:1629
 #, c-format
@@ -846,8 +837,7 @@ msgstr "substr：开始坐标 %g 超出字符串尾部"
 
 #: builtin.c:1913
 #, c-format
-msgid ""
-"substr: length %g at start index %g exceeds length of first argument (%lu)"
+msgid "substr: length %g at start index %g exceeds length of first argument (%lu)"
 msgstr "substr：在开始坐标 %2$g 下长度 %1$g 超出第一个参数的长度 (%3$lu)"
 
 #: builtin.c:1986
@@ -1070,14 +1060,12 @@ msgid "intdiv: division by zero attempted"
 msgstr "intdiv：试图除0"
 
 #: builtin.c:4046
-#, fuzzy
 msgid "typeof: second argument is not an array"
-msgstr "split：第二个参数不是数组"
+msgstr "typeof：第二个参数不是数组"
 
 #: builtin.c:4082
 #, c-format
-msgid ""
-"typeof detected invalid flags combination `%s'; please file a bug report."
+msgid "typeof detected invalid flags combination `%s'; please file a bug report."
 msgstr "typeof 函数发现一个无效的选项组合“%s”；请向开发者汇报此错误。"
 
 #: builtin.c:4101
@@ -1191,14 +1179,11 @@ msgid "non-zero integer value"
 msgstr "非零整数值"
 
 #: command.y:819
-msgid ""
-"backtrace [N] - print trace of all or N innermost (outermost if N < 0) "
-"frames."
+msgid "backtrace [N] - print trace of all or N innermost (outermost if N < 0) frames."
 msgstr "backtrace [N] - 显示所有或最近 N 层 (若 N < 0，则显示最远 N 层) 调用。"
 
 #: command.y:821
-msgid ""
-"break [[filename:]N|function] - set breakpoint at the specified location."
+msgid "break [[filename:]N|function] - set breakpoint at the specified location."
 msgstr "break [[文件名:]N|函数] - 在指定处设置断点。"
 
 #: command.y:823
@@ -1206,9 +1191,7 @@ msgid "clear [[filename:]N|function] - delete breakpoints previously set."
 msgstr "clear [[文件名:]N|函数] - 删除之前设置的断点。"
 
 #: command.y:825
-msgid ""
-"commands [num] - starts a list of commands to be executed at a "
-"breakpoint(watchpoint) hit."
+msgid "commands [num] - starts a list of commands to be executed at a breakpoint(watchpoint) hit."
 msgstr "commands [编号] - 在断点 (监视点) 处执行一系列命令。"
 
 #: command.y:827
@@ -1272,12 +1255,8 @@ msgid "ignore N COUNT - set ignore-count of breakpoint number N to COUNT."
 msgstr "ignore N 次数 - 设置忽略断点 N 的次数。"
 
 #: command.y:857
-msgid ""
-"info topic - source|sources|variables|functions|break|frame|args|locals|"
-"display|watch."
-msgstr ""
-"info 主题 - 查看 info 信息，主题可以为 source|sources|variables|functions|"
-"break|frame|args|locals|display|watch。"
+msgid "info topic - source|sources|variables|functions|break|frame|args|locals|display|watch."
+msgstr "info 主题 - 查看 info 信息，主题可以为 source|sources|variables|functions|break|frame|args|locals|display|watch。"
 
 #: command.y:859
 msgid "list [-|+|[filename:]lineno|function|range] - list specified line(s)."
@@ -1288,8 +1267,7 @@ msgid "next [COUNT] - step program, proceeding through subroutine calls."
 msgstr "next [次数] - 单步运行程序，并且步过子调用。"
 
 #: command.y:863
-msgid ""
-"nexti [COUNT] - step one instruction, but proceed through subroutine calls."
+msgid "nexti [COUNT] - step one instruction, but proceed through subroutine calls."
 msgstr "nexti [次数] - 单运行一步指令，但步过其子调用。"
 
 #: command.y:865
@@ -1325,8 +1303,7 @@ msgid "set var = value - assign value to a scalar variable."
 msgstr "set 变量 = 值 - 给标量变量赋值。"
 
 #: command.y:883
-msgid ""
-"silent - suspends usual message when stopped at a breakpoint/watchpoint."
+msgid "silent - suspends usual message when stopped at a breakpoint/watchpoint."
 msgstr "silent - 在断点/监视点处中断时，隐藏常规消息。"
 
 #: command.y:885
@@ -1354,9 +1331,7 @@ msgid "undisplay [N] - remove variable(s) from automatic display list."
 msgstr "undisplay [N] - 从自动显示列表中移除指定变量。"
 
 #: command.y:897
-msgid ""
-"until [[filename:]N|function] - execute until program reaches a different "
-"line or line N within current frame."
+msgid "until [[filename:]N|function] - execute until program reaches a different line or line N within current frame."
 msgstr "until [[文件名:]N|函数] - 在当前层中执行，在下一行或第 N 行处暂停。"
 
 #: command.y:899
@@ -1372,12 +1347,8 @@ msgid "watch var - set a watchpoint for a variable."
 msgstr "watch 变量 - 为变量设置监视点。"
 
 #: command.y:905
-msgid ""
-"where [N] - (same as backtrace) print trace of all or N innermost (outermost "
-"if N < 0) frames."
-msgstr ""
-"where [N] - (与backtrace相同) 显示所有或最近 N 层 (若 N < 0，则显示最远 N "
-"层) 调用。"
+msgid "where [N] - (same as backtrace) print trace of all or N innermost (outermost if N < 0) frames."
+msgstr "where [N] - (与backtrace相同) 显示所有或最近 N 层 (若 N < 0，则显示最远 N 层) 调用。"
 
 #: command.y:1016 debug.c:414 gawkapi.c:259 msg.c:139
 #, c-format
@@ -2056,24 +2027,24 @@ msgid "load_ext: received NULL lib_name"
 msgstr "load_ext：收到空 lib_name"
 
 #: ext.c:60
-#, fuzzy, c-format
+#, c-format
 msgid "load_ext: cannot open library `%s' (%s)"
-msgstr "load_ext：无法打开库“%s”(%s)\n"
+msgstr "load_ext：无法打开库“%s”(%s)"
 
 #: ext.c:66
-#, fuzzy, c-format
+#, c-format
 msgid "load_ext: library `%s': does not define `plugin_is_GPL_compatible' (%s)"
-msgstr "load_ext：库“%s”：未定义“plugin_is_GPL_compatible”(%s)\n"
+msgstr "load_ext：库“%s”：未定义“plugin_is_GPL_compatible”(%s)"
 
 #: ext.c:72
-#, fuzzy, c-format
+#, c-format
 msgid "load_ext: library `%s': cannot call function `%s' (%s)"
-msgstr "load_ext：库“%s”：无法调用函数“%s”(%s)\n"
+msgstr "load_ext：库“%s”：无法调用函数“%s”(%s)"
 
 #: ext.c:76
-#, fuzzy, c-format
+#, c-format
 msgid "load_ext: library `%s' initialization routine `%s' failed"
-msgstr "load_ext：库”%s“初始化程序”%s“失败\n"
+msgstr "load_ext：库”%s“初始化程序”%s“失败"
 
 #: ext.c:92
 msgid "make_builtin: missing function name"
@@ -2085,9 +2056,9 @@ msgid "make_builtin: can't use gawk built-in `%s' as function name"
 msgstr "make_builtin：无法使用 gawk 内置的 “%s” 作为函数名"
 
 #: ext.c:109
-#, fuzzy, c-format
+#, c-format
 msgid "make_builtin: can't use gawk built-in `%s' as namespace name"
-msgstr "make_builtin：无法使用 gawk 内置的 “%s” 作为函数名"
+msgstr "make_builtin：无法使用 gawk 内置的 “%s” 作为命名空间名称"
 
 #: ext.c:126
 #, c-format
@@ -2228,99 +2199,95 @@ msgid "fork: PROCINFO is not an array!"
 msgstr "fork：PROCINFO 不是数组"
 
 #: extension/inplace.c:131
-#, fuzzy
 msgid "inplace::begin: in-place editing already active"
-msgstr "inplace_begin：已启用原位编辑"
+msgstr "inplace::begin：已启用原位编辑"
 
 #: extension/inplace.c:134
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: expects 2 arguments but called with %d"
-msgstr "inplace_begin：需要 2 个参数，但调用时传递了 %d 个"
+msgstr "inplace::begin：需要 2 个参数，但调用时传递了 %d 个"
 
 #: extension/inplace.c:137
-#, fuzzy
 msgid "inplace::begin: cannot retrieve 1st argument as a string filename"
-msgstr "inplace_begin：无法将第 1 个参数作为文件名字符串处理"
+msgstr "inplace::begin：无法将第 1 个参数作为文件名字符串处理"
 
 #: extension/inplace.c:145
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: disabling in-place editing for invalid FILENAME `%s'"
-msgstr "inplace_begin：对于无效的文件名“%s”禁用原位编辑"
+msgstr "inplace::begin：对于无效的文件名“%s”禁用原位编辑"
 
 #: extension/inplace.c:152
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: Cannot stat `%s' (%s)"
-msgstr "inplace_begin：无法对“%s”执行 stat (%s)"
+msgstr "inplace::begin：无法对“%s”执行 stat (%s)"
 
 #: extension/inplace.c:159
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: `%s' is not a regular file"
-msgstr "inplace_begin：“%s”不是普通文件"
+msgstr "inplace::begin：“%s”不是普通文件"
 
 #: extension/inplace.c:170
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: mkstemp(`%s') failed (%s)"
-msgstr "inplace_begin：mkstemp(“%s”) 失败 (%s)"
+msgstr "inplace::begin：mkstemp(“%s”) 失败 (%s)"
 
 #: extension/inplace.c:182
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: chmod failed (%s)"
-msgstr "inplace_begin：chmod 失败 (%s)"
+msgstr "inplace::begin：chmod 失败 (%s)"
 
 #: extension/inplace.c:189
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: dup(stdout) failed (%s)"
-msgstr "inplace_begin：dup(stdout) 失败 (%s)"
+msgstr "inplace::begin：dup(stdout) 失败 (%s)"
 
 #: extension/inplace.c:192
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: dup2(%d, stdout) failed (%s)"
-msgstr "inplace_begin：dup2(%d, stdout) 失败 (%s)"
+msgstr "inplace::begin：dup2(%d, stdout) 失败 (%s)"
 
 #: extension/inplace.c:195
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::begin: close(%d) failed (%s)"
-msgstr "inplace_begin：close(%d) 失败 (%s)"
+msgstr "inplace::begin：close(%d) 失败 (%s)"
 
 #: extension/inplace.c:211
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::end: expects 2 arguments but called with %d"
-msgstr "inplace_end：需要 2 个参数，但调用时传递了 %d 个"
+msgstr "inplace::end：需要 2 个参数，但调用时传递了 %d 个"
 
 #: extension/inplace.c:214
-#, fuzzy
 msgid "inplace::end: cannot retrieve 1st argument as a string filename"
-msgstr "inplace_end：无法将第 1 个参数作为文件名字符串处理"
+msgstr "inplace::end：无法将第 1 个参数作为文件名字符串处理"
 
 #: extension/inplace.c:221
-#, fuzzy
 msgid "inplace::end: in-place editing not active"
-msgstr "inplace_end：原位编辑未启用"
+msgstr "inplace::end：原位编辑未启用"
 
 #: extension/inplace.c:227
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::end: dup2(%d, stdout) failed (%s)"
-msgstr "inplace_end：dup2(%d, stdout) 失败 (%s)"
+msgstr "inplace::end：dup2(%d, stdout) 失败 (%s)"
 
 #: extension/inplace.c:230
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::end: close(%d) failed (%s)"
-msgstr "inplace_end：close(%d) 失败 (%s)"
+msgstr "inplace::end：close(%d) 失败 (%s)"
 
 #: extension/inplace.c:234
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::end: fsetpos(stdout) failed (%s)"
-msgstr "inplace_end：fsetpos(stdout) 失败 (%s)"
+msgstr "inplace::end：fsetpos(stdout) 失败 (%s)"
 
 #: extension/inplace.c:247
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::end: link(`%s', `%s') failed (%s)"
-msgstr "inplace_end：link(“%s”, “%s”) 失败 (%s)"
+msgstr "inplace::end：link(“%s”, “%s”) 失败 (%s)"
 
 #: extension/inplace.c:257
-#, fuzzy, c-format
+#, c-format
 msgid "inplace::end: rename(`%s', `%s') failed (%s)"
-msgstr "inplace_end：rename(“%s”, “%s”) failed (%s)"
+msgstr "inplace::end：rename(“%s”, “%s”) failed (%s)"
 
 #: extension/ordchr.c:72
 msgid "ord: called with inappropriate argument(s)"
@@ -2419,11 +2386,11 @@ msgstr "NF 被设置为负值"
 
 #: field.c:403
 msgid "decrementing NF is not portable to many awk versions"
-msgstr ""
+msgstr "减少 NF 的值在许多其他 awk 版本上不受支持"
 
 #: field.c:847
 msgid "accessing fields from an END rule may not be portable"
-msgstr ""
+msgstr "从 END 规则中访问字段的可移植性不佳"
 
 #: field.c:975 field.c:982
 msgid "split: fourth argument is a gawk extension"
@@ -2450,9 +2417,8 @@ msgid "split: cannot use a subarray of fourth arg for second arg"
 msgstr "split：无法将第四个参数的子数组用于第二个参数"
 
 #: field.c:1035
-#, fuzzy
 msgid "split: null string for third arg is a non-standard extension"
-msgstr "split：第三个参数为空字符串，应为 gawk 扩展"
+msgstr "split：第三个参数为空字符串是非标准扩展"
 
 #: field.c:1072
 msgid "patsplit: fourth argument is not an array"
@@ -2521,15 +2487,12 @@ msgid "awk_value_to_node: invalid number type `%d'"
 msgstr "awk_value_to_node：数值类型“%d”无效"
 
 #: gawkapi.c:385
-#, fuzzy
 msgid "add_ext_func: received NULL name_space parameter"
-msgstr "load_ext：收到空 lib_name"
+msgstr "add_ext_func：收到空 name_space 参数"
 
 #: gawkapi.c:523
 #, c-format
-msgid ""
-"node_to_awk_value: detected invalid numeric flags combination `%s'; please "
-"file a bug report."
+msgid "node_to_awk_value: detected invalid numeric flags combination `%s'; please file a bug report."
 msgstr "node_to_awk_value：发现一个无效的选项组合“%s”；请向开发者汇报此错误。"
 
 #: gawkapi.c:551
@@ -2542,9 +2505,7 @@ msgstr "node_to_awk_value：值为空"
 
 #: gawkapi.c:610 gawkapi.c:644 gawkapi.c:671 gawkapi.c:704
 #, c-format
-msgid ""
-"node_to_awk_value detected invalid flags combination `%s'; please file a bug "
-"report."
+msgid "node_to_awk_value detected invalid flags combination `%s'; please file a bug report."
 msgstr "node_to_awk_value 发现了一个无效的选项组合“%s”；请向开发者汇报此错误。"
 
 #: gawkapi.c:1082
@@ -2556,14 +2517,14 @@ msgid "remove_element: received null subscript"
 msgstr "remove_element：下标为空"
 
 #: gawkapi.c:1217
-#, fuzzy, c-format
+#, c-format
 msgid "api_flatten_array_typed: could not convert index %d to %s"
-msgstr "api_flatten_array：无法将索引 %d 转换为 %s\n"
+msgstr "api_flatten_array_typed：无法将索引 %d 转换为 %s"
 
 #: gawkapi.c:1222
-#, fuzzy, c-format
+#, c-format
 msgid "api_flatten_array_typed: could not convert value %d to %s"
-msgstr "api_flatten_array_typed：无法将索引 %d 转换为 %s\n"
+msgstr "api_flatten_array_typed：无法将索引 %d 转换为 %s"
 
 #: gawkapi.c:1318 gawkapi.c:1334
 msgid "api_get_mpfr: MPFR not supported"
@@ -2609,8 +2570,7 @@ msgstr "“%s”重定向中的表达式是空字符串"
 
 #: io.c:796
 #, c-format
-msgid ""
-"filename `%.*s' for `%s' redirection may be result of logical expression"
+msgid "filename `%.*s' for `%s' redirection may be result of logical expression"
 msgstr "“%3$s”重定向中的文件名“%2$.*1$s”可能是逻辑表达式的结果"
 
 #: io.c:844
@@ -2635,8 +2595,7 @@ msgstr "无法为输入打开管道“%s”(%s)"
 
 #: io.c:950
 #, c-format
-msgid ""
-"get_file socket creation not supported on this platform for `%s' with fd %d"
+msgid "get_file socket creation not supported on this platform for `%s' with fd %d"
 msgstr "此平台不支持使用 get_file 创建文件描述符为 %2$d 的套接字“%1$s”"
 
 #: io.c:961
@@ -2655,8 +2614,7 @@ msgid "can't redirect to `%s' (%s)"
 msgstr "无法重定向到“%s”(%s)"
 
 #: io.c:1153
-msgid ""
-"reached system limit for open files: starting to multiplex file descriptors"
+msgid "reached system limit for open files: starting to multiplex file descriptors"
 msgstr "打开的文件数达到系统限制：开始复用文件描述符"
 
 #: io.c:1169
@@ -2825,14 +2783,12 @@ msgid "moving pipe to stdin in child failed (dup: %s)"
 msgstr "在子进程中将管道改为标准输入失败(dup：%s)"
 
 #: io.c:2386 io.c:2655
-#, fuzzy
 msgid "restoring stdout in parent process failed"
-msgstr "在父进程中恢复标准输出失败\n"
+msgstr "在父进程中恢复标准输出失败"
 
 #: io.c:2394
-#, fuzzy
 msgid "restoring stdin in parent process failed"
-msgstr "在父进程中恢复标准输入失败\n"
+msgstr "在父进程中恢复标准输入失败"
 
 #: io.c:2429 io.c:2667 io.c:2682
 #, c-format
@@ -2877,8 +2833,7 @@ msgstr "register_output_parser：指针为空"
 
 #: io.c:3221
 #, c-format
-msgid ""
-"output wrapper `%s' conflicts with previously installed output wrapper `%s'"
+msgid "output wrapper `%s' conflicts with previously installed output wrapper `%s'"
 msgstr "输出解析器“%s”与之前设置的“%s”相冲突"
 
 #: io.c:3228
@@ -2892,9 +2847,7 @@ msgstr "register_output_processor：指针为空"
 
 #: io.c:3278
 #, c-format
-msgid ""
-"two-way processor `%s' conflicts with previously installed two-way processor "
-"`%s'"
+msgid "two-way processor `%s' conflicts with previously installed two-way processor `%s'"
 msgstr "双向处理器“%s”与之前设置的“%s”相冲突"
 
 #: io.c:3287
@@ -3093,13 +3046,12 @@ msgid "\t-W nostalgia\t\t--nostalgia\n"
 msgstr "\t-W nostalgia\t\t--nostalgia\n"
 
 #: main.c:621
-#, fuzzy
 msgid "\t-Y\t\t\t--parsedebug\n"
-msgstr "\t-Y\t\t--parsedebug\n"
+msgstr "\t-Y\t\t\t--parsedebug\n"
 
 #: main.c:624
 msgid "\t-Z locale-name\t\t--locale=locale-name\n"
-msgstr ""
+msgstr "\t-Z locale-name\t\t--locale=locale-name\n"
 
 #. TRANSLATORS: --help output 5 (end)
 #. TRANSLATORS: the placeholder indicates the bug-reporting address
@@ -3107,7 +3059,6 @@ msgstr ""
 #. address for translation bugs.
 #. no-wrap
 #: main.c:633
-#, fuzzy
 msgid ""
 "\n"
 "To report bugs, see node `Bugs' in `gawk.info'\n"
@@ -3120,11 +3071,13 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"提交错误报告请参考“gawk.info”中的“Bugs”页，它位于“Reporting\n"
-"Problems and Bugs”一节。您也可以在\n"
+"提交错误报告请参考“gawk.info”中的“Bugs”页，它位于\n"
+"“Reporting Problems and Bugs”一节。  您也可以在\n"
 "https://www.gnu.org/software/gawk/manual/html_node/Bugs.html\n"
 "中找到相同的信息。\n"
-"请勿在群组 comp.lang.awk 上提交错误报告。\n"
+"请勿在群组 comp.lang.awk 上提交错误报告，\n"
+"\n"
+"也请不要使用网络论坛（如 Stack Overflow）提交错误报告。\n"
 "\n"
 
 #: main.c:641
@@ -3180,9 +3133,7 @@ msgstr ""
 msgid ""
 "You should have received a copy of the GNU General Public License\n"
 "along with this program. If not, see http://www.gnu.org/licenses/.\n"
-msgstr ""
-"你应该收到程序附带的一份 GNU 通用公共许可证(GPL)。如果没有收到，请参看 "
-"http://www.gnu.org/licenses/ 。\n"
+msgstr "你应该收到程序附带的一份 GNU 通用公共许可证(GPL)。如果没有收到，请参看 http://www.gnu.org/licenses/ 。\n"
 
 #: main.c:732
 msgid "-Ft does not set FS to tab in POSIX awk"
@@ -3248,9 +3199,8 @@ msgid "empty argument to `-e/--source' ignored"
 msgstr "“-e/--source”的空参数被忽略"
 
 #: main.c:1631 main.c:1636
-#, fuzzy
 msgid "`--profile' overrides `--pretty-print'"
-msgstr "“--posix”覆盖“--traditional”"
+msgstr "“--posix”覆盖“--pretty-print”"
 
 #: main.c:1648
 msgid "-M ignored: MPFR/GMP support not compiled in"
@@ -3340,9 +3290,7 @@ msgstr "“\\x”转义序列中没有十六进制数"
 
 #: node.c:633
 #, c-format
-msgid ""
-"hex escape \\x%.*s of %d characters probably not interpreted the way you "
-"expect"
+msgid "hex escape \\x%.*s of %d characters probably not interpreted the way you expect"
 msgstr "十六进制转义符 \\x%.*s 表示的 %d 个字符可能不会被如期望情况解释"
 
 #: node.c:648
@@ -3351,9 +3299,7 @@ msgid "escape sequence `\\%c' treated as plain `%c'"
 msgstr "转义序列“\\%c”被当作单纯的“%c”"
 
 #: node.c:784
-msgid ""
-"Invalid multibyte data detected. There may be a mismatch between your data "
-"and your locale."
+msgid "Invalid multibyte data detected. There may be a mismatch between your data and your locale."
 msgstr "检测到了无效的多字节数据。可能你的数据和区域设置不匹配。"
 
 #: posix/gawkmisc.c:177
@@ -3368,7 +3314,7 @@ msgstr "%s %s “%s”：无法设置 close-on-exec：(fcntl F_SETFD：%s)"
 
 #: profile.c:73
 msgid "Program indentation level too deep. Consider refactoring your code"
-msgstr ""
+msgstr "程序缩进等级过深。请考虑重构您的代码"
 
 #: profile.c:110
 #, c-format
@@ -3407,22 +3353,23 @@ msgid "internal error: builtin with null fname"
 msgstr "内部错误：内置操作的 fname 为空"
 
 #: profile.c:1302
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s# Loaded extensions (-l and/or @load)\n"
 "\n"
 msgstr ""
-"\t# 已加载扩展 (-l 和/或 @load)\n"
+"%s# 已加载扩展 (-l 和/或 @load)\n"
 "\n"
 
 #: profile.c:1333
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "# Included files (-i and/or @include)\n"
 "\n"
 msgstr ""
-"\t# 已加载扩展 (-l 和/或 @load)\n"
+"\n"
+"# 包含的文件（-i 和/或 @include）\n"
 "\n"
 
 #: profile.c:1397
@@ -3445,24 +3392,22 @@ msgid "redir2str: unknown redirection type %d"
 msgstr "redir2str：未知重定向类型 %d"
 
 #: re.c:58 re.c:161
-msgid ""
-"behavior of matching a regexp containing NUL characters is not defined by "
-"POSIX"
-msgstr ""
+msgid "behavior of matching a regexp containing NUL characters is not defined by POSIX"
+msgstr "POSIX 未定义匹配包含 NUL 空字符的正则表达式的行为"
 
 #: re.c:125
 msgid "invalid NUL byte in dynamic regexp"
-msgstr ""
+msgstr "动态正则表达式中的无效 NUL 空字节"
 
 #: re.c:172
-#, fuzzy, c-format
+#, c-format
 msgid "regexp escape sequence `\\%c' treated as plain `%c'"
-msgstr "转义序列“\\%c”被当作单纯的“%c”"
+msgstr "正则表达式转义序列“\\%c”被当作单纯的“%c”"
 
 #: re.c:191
 #, c-format
 msgid "regexp escape sequence `\\%c' is not a known regexp operator"
-msgstr ""
+msgstr "正则表达式转义序列“\\%c”不是已知的正则表达式操作符"
 
 #: re.c:650
 #, c-format
@@ -3675,8 +3620,7 @@ msgstr "无法弹出 main 的上下文"
 #~ msgid "extension: cannot open library `%s' (%s)"
 #~ msgstr "extension：无法打开库“%s”(%s)"
 
-#~ msgid ""
-#~ "extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)"
+#~ msgid "extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)"
 #~ msgstr "extension：库“%s”：未定义“plugin_is_GPL_compatible”(%s)"
 
 #~ msgid "extension: library `%s': cannot call function `%s' (%s)"
@@ -3826,8 +3770,7 @@ msgstr "无法弹出 main 的上下文"
 #~ msgid "xor(%lf, %lf): fractional values will be truncated"
 #~ msgstr "xor(%lf, %lf): 小数部分会被截断"
 
-#~ msgid ""
-#~ "for loop: array `%s' changed size from %ld to %ld during loop execution"
+#~ msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
 #~ msgstr "for loop: 数组“%s”在循环执行时大小从 %ld 改变为 %ld"
 
 #~ msgid "`break' outside a loop is not portable"
@@ -3848,9 +3791,7 @@ msgstr "无法弹出 main 的上下文"
 #~ msgid "statement has no effect"
 #~ msgstr "表达式无任何作用"
 
-#~ msgid ""
-#~ "concatenation: side effects in one expression have changed the length of "
-#~ "another!"
+#~ msgid "concatenation: side effects in one expression have changed the length of another!"
 #~ msgstr "concatenation: 一个表达式的额外效应已改变另一个的长度！"
 
 #~ msgid "assignment used in conditional context"
