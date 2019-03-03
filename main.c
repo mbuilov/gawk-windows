@@ -634,7 +634,7 @@ usage(int exitval, FILE *fp)
 which is section `Reporting Problems and Bugs' in the\n\
 printed version.  This same information may be found at\n\
 https://www.gnu.org/software/gawk/manual/html_node/Bugs.html.\n\
-PLEASE do NOT try to report bugs by posting in comp.lang.awk,\n\n\
+PLEASE do NOT try to report bugs by posting in comp.lang.awk,\n\
 or by using a web forum such as Stack Overflow.\n\n"), fp);
 
 	/* ditto */
