@@ -54,7 +54,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH February, 2019
+@set UPDATE-MONTH March, 2019
 @set VERSION 5.0
 @set PATCHLEVEL 0
 
@@ -5368,6 +5368,14 @@ You can combine regular expressions with special characters,
 called @dfn{regular expression operators} or @dfn{metacharacters}, to
 increase the power and versatility of regular expressions.
 
+@menu
+* Regexp Operator Details::     The actual details.
+* Interval Expressions::        Notes on interval expressions.
+@end menu
+
+@node Regexp Operator Details
+@subsection Regexp Operators in @command{awk}
+
 The escape sequences described
 @ifnotinfo
 earlier
@@ -5545,6 +5553,26 @@ Matches @samp{whhhy}, @samp{whhhhy}, or @samp{whhhhhy} only.
 @item wh@{2,@}y
 Matches @samp{whhy}, @samp{whhhy}, and so on.
 @end table
+@end table
+
+@cindex precedence, regexp operators
+@cindex regular expressions, operators, precedence of
+In regular expressions, the @samp{*}, @samp{+}, and @samp{?} operators,
+as well as the braces @samp{@{} and @samp{@}},
+have
+the highest precedence, followed by concatenation, and finally by @samp{|}.
+As in arithmetic, parentheses can change how operators are grouped.
+
+@cindex POSIX @command{awk}, regular expressions and
+@cindex @command{gawk}, regular expressions, precedence
+In POSIX @command{awk} and @command{gawk}, the @samp{*}, @samp{+}, and
+@samp{?} operators stand for themselves when there is nothing in the
+regexp that precedes them.  For example, @code{/+/} matches a literal
+plus sign.  However, many other versions of @command{awk} treat such a
+usage as a syntax error.
+
+@node Interval Expressions
+@subsection Some Notes On Interval Expressions
 
 @cindex POSIX @command{awk}, interval expressions in
 Interval expressions were not traditionally available in @command{awk}.
@@ -5572,26 +5600,14 @@ using a string constant with a regexp operator or function.}
 Finally, when @samp{@{} and @samp{@}} appear in regexp constants
 in a way that cannot be interpreted as an interval expression
 (such as @code{/q@{a@}/}), then they stand for themselves.
-@end table
 
-@cindex precedence, regexp operators
-@cindex regular expressions, operators, precedence of
-In regular expressions, the @samp{*}, @samp{+}, and @samp{?} operators,
-as well as the braces @samp{@{} and @samp{@}},
-have
-the highest precedence, followed by concatenation, and finally by @samp{|}.
-As in arithmetic, parentheses can change how operators are grouped.
+As mentioned, interval expressions were not traditionally available
+in @command{awk}. In March of 2019, Brian Kernighan's
+@command{awk} (finally) acquired them.
 
-@cindex POSIX @command{awk}, regular expressions and
-@cindex @command{gawk}, regular expressions, precedence
-In POSIX @command{awk} and @command{gawk}, the @samp{*}, @samp{+}, and
-@samp{?} operators stand for themselves when there is nothing in the
-regexp that precedes them.  For example, @code{/+/} matches a literal
-plus sign.  However, many other versions of @command{awk} treat such a
-usage as a syntax error.
-
-If @command{gawk} is in compatibility mode (@pxref{Options}), interval
-expressions are not available in regular expressions.
+Nonetheless, because they were not available for
+so many decades, @command{gawk} continues to not supply them
+when in compatibility mode (@pxref{Options}).
 
 @node Bracket Expressions
 @section Using Bracket Expressions
