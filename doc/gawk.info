@@ -30905,17 +30905,16 @@ steps:
   4. A number of the files that come with 'gawk' are maintained by other
      people.  Thus, you should not change them unless it is for a very
      good reason; i.e., changes are not out of the question, but changes
-     to these files are scrutinized extra carefully.  The files are
-     'dfa.c', 'dfa.h', 'getopt.c', 'getopt.h', 'getopt1.c',
-     'getopt_int.h', 'gettext.h', 'regcomp.c', 'regex.c', 'regex.h',
-     'regex_internal.c', 'regex_internal.h', and 'regexec.c'.
+     to these files are scrutinized extra carefully.  These aree all the
+     files the 'support' directory within the 'gawk' distribution.  See
+     there.
 
   5. A number of other files are provided by the GNU Autotools
      (Autoconf, Automake, and GNU 'gettext').  You should not change
      them either, unless it is for a very good reason.  The files are
      'ABOUT-NLS', 'config.guess', 'config.rpath', 'config.sub',
-     'depcomp', 'INSTALL', 'install-sh', 'missing', 'mkinstalldirs',
-     'xalloc.h', and 'ylwrap'.
+     'depcomp', 'INSTALL', 'install-sh', 'missing', 'mkinstalldirs', and
+     'ylwrap'.
 
   6. Be willing to continue to maintain the port.  Non-Unix operating
      systems are supported by volunteers who maintain the code needed to
@@ -31051,7 +31050,8 @@ on; it was really painful.  When the repository is self-contained, using
 
   2. It would certainly help if everyone used the same versions of the
      GNU tools as he does, which in general are the latest released
-     versions of Automake, Autoconf, 'bison', and GNU 'gettext'.
+     versions of Automake, Autoconf, 'bison', GNU 'gettext', and
+     Libtool.
 
      Installing from source is quite easy.  It's how the maintainer
      worked for years (and still works).  He had '/usr/local/bin' at the
@@ -31397,8 +31397,8 @@ C.6 Summary
      the 'xgawk' project, and provide binary compatibility going
      forward.
 
-   * The previous extension mechanism is still supported in version 4.1
-     of 'gawk', but it _will_ be removed in the next major release.
+   * The previous extension mechanism is no longer supported and was
+     removed from the code base with the 4.2 release.
 
 
 File: gawk.info,  Node: Basic Concepts,  Next: Glossary,  Prev: Notes,  Up: Top
@@ -37440,29 +37440,29 @@ Node: Additions1237745
 Node: Accessing The Source1238670
 Node: Adding Code1240107
 Node: New Ports1246326
-Node: Derived Files1250814
-Ref: Derived Files-Footnote-11256460
-Ref: Derived Files-Footnote-21256495
-Ref: Derived Files-Footnote-31257093
-Node: Future Extensions1257207
-Node: Implementation Limitations1257865
-Node: Extension Design1259048
-Node: Old Extension Problems1260192
-Ref: Old Extension Problems-Footnote-11261710
-Node: Extension New Mechanism Goals1261767
-Ref: Extension New Mechanism Goals-Footnote-11265131
-Node: Extension Other Design Decisions1265320
-Node: Extension Future Growth1267433
-Node: Notes summary1268269
-Node: Basic Concepts1269444
-Node: Basic High Level1270125
-Ref: figure-general-flow1270407
-Ref: figure-process-flow1271092
-Ref: Basic High Level-Footnote-11274393
-Node: Basic Data Typing1274578
-Node: Glossary1277906
-Node: Copying1309744
-Node: GNU Free Documentation License1347287
-Node: Index1372407
+Node: Derived Files1250700
+Ref: Derived Files-Footnote-11256360
+Ref: Derived Files-Footnote-21256395
+Ref: Derived Files-Footnote-31256993
+Node: Future Extensions1257107
+Node: Implementation Limitations1257765
+Node: Extension Design1258948
+Node: Old Extension Problems1260092
+Ref: Old Extension Problems-Footnote-11261610
+Node: Extension New Mechanism Goals1261667
+Ref: Extension New Mechanism Goals-Footnote-11265031
+Node: Extension Other Design Decisions1265220
+Node: Extension Future Growth1267333
+Node: Notes summary1268169
+Node: Basic Concepts1269327
+Node: Basic High Level1270008
+Ref: figure-general-flow1270290
+Ref: figure-process-flow1270975
+Ref: Basic High Level-Footnote-11274276
+Node: Basic Data Typing1274461
+Node: Glossary1277789
+Node: Copying1309627
+Node: GNU Free Documentation License1347170
+Node: Index1372290
 
 End Tag Table

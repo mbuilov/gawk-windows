@@ -51,8 +51,8 @@
 @set TIMES *
 @end ifnottex
         
-
-@set xref-automatic-section-title
+@c Let texinfo.tex give us full section titles
+@xrefautomaticsectiontitle on
 
 @c The following information should be updated here only!
 @c This sets the edition of the document, the version of gawk it
@@ -41972,21 +41972,8 @@ A number of the files that come with @command{gawk} are maintained by other
 people.  Thus, you should not change them
 unless it is for a very good reason; i.e., changes are not out of the
 question, but changes to these files are scrutinized extra carefully.
-The files are
-@file{dfa.c},
-@file{dfa.h},
-@file{getopt.c},
-@file{getopt.h},
-@file{getopt1.c},
-@file{getopt_int.h},
-@file{gettext.h},
-@file{regcomp.c},
-@file{regex.c},
-@file{regex.h},
-@file{regex_internal.c},
-@file{regex_internal.h},
-and
-@file{regexec.c}.
+These aree all the files the @file{support} directory
+within the @command{gawk} distribution. See there.
 
 @item
 A number of other files are provided by the GNU
@@ -42002,7 +41989,6 @@ good reason. The files are
 @file{install-sh},
 @file{missing},
 @file{mkinstalldirs},
-@file{xalloc.h},
 and
 @file{ylwrap}.
 
@@ -42171,8 +42157,9 @@ as he does, which in general are the latest released versions of
 Automake,
 Autoconf,
 @command{bison},
+GNU @command{gettext},
 and
-GNU @command{gettext}.
+Libtool.
 
 @ignore
 If it would help if I sent out an ``I just upgraded to version x.y
@@ -42590,8 +42577,8 @@ with the previous extension mechanism, enable features needed by
 the @code{xgawk} project, and provide binary compatibility going forward.
 
 @item
-The previous extension mechanism is still supported in @value{PVERSION} 4.1
-of @command{gawk}, but it @emph{will} be removed in the next major release.
+The previous extension mechanism is no longer supported and was
+removed from the code base with the 4.2 release.
 
 @end itemize
 
