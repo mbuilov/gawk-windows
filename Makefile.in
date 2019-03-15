@@ -1272,7 +1272,7 @@ command.c: command.y
 pc/Makefile.tst: test/Makefile.in
 	test -d pc || mkdir pc
 	cat "$(top_srcdir)"/pc/Makefile.tst.prologue > pc/Makefile.tst
-	awk -f "$(top_srcdir)"/pc/GenMakefileTst.awk test/Makefile.in >> pc/Makefile.tst
+	awk -f "$(top_srcdir)"/pc/GenMakefileTst.awk "$(top_srcdir)"/test/Makefile.in >> pc/Makefile.tst
 
 # This is for my development & testing.
 efence: gawk
