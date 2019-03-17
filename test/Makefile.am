@@ -1898,7 +1898,7 @@ mixed1::
 
 mbprintf5::
 	@echo $@ $(ZOS_FAIL)
-	@case `uname` in \
+	@-case `uname` in \
 	CYGWIN* | MINGW32* | *MS-DOS*) echo this test fails on this system --- skipping $@ ;; \
 	*) \
 	[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; export GAWKLOCALE ; \
