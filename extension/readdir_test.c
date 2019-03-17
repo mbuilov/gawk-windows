@@ -7,10 +7,11 @@
  *
  * Andrew Schorr and Arnold Robbins: further fixes 8/2012.
  * Simplified 11/2012.
+ * Improved 3/2019.
  */
 
 /*
- * Copyright (C) 2012-2014, 2017, 2018 the Free Software Foundation, Inc.
+ * Copyright (C) 2012-2014, 2017, 2018, 2019 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -73,7 +74,7 @@
 
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t ext_id;
-static const char *ext_version = "readdir extension: version 2.0";
+static const char *ext_version = "readdir extension: version 3.0";
 
 static awk_bool_t init_readdir(void);
 static awk_bool_t (*init_func)(void) = init_readdir;
@@ -108,9 +109,9 @@ ftype(struct dirent *entry, const char *dirname)
 	case DT_REG:	return "f";
 	case DT_SOCK:	return "s";
 	default:
-	case DT_UNKNOWN: return "u";
+	case DT_UNKNOWN: break;	// JFS returns 'u', so fall through to stat
 	}
-#else
+#endif
 	char fname[PATH_MAX];
 	struct stat sbuf;
 
@@ -138,7 +139,6 @@ ftype(struct dirent *entry, const char *dirname)
 #endif
 	}
 	return "u";
-#endif
 }
 
 /* get_inode --- get the inode of a file */
