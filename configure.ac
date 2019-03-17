@@ -144,7 +144,7 @@ gnu_gawk_in_ebcdic
  use_ebcdic=yes],
 [use_ebcdic=no])
 AC_MSG_RESULT([$use_ebcdic])
-if test "$use_ebcdic" = yes ]
+if test "$use_ebcdic" = yes
 then
 	ZOS_FAIL='; echo Expect $@ to fail on z/OS.'
 fi
