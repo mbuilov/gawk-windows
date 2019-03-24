@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -1812,8 +1812,8 @@ peek_token (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
   token->word_char = 0;
 #ifdef RE_ENABLE_I18N
   token->mb_partial = 0;
-  if (input->mb_cur_max > 1 &&
-      !re_string_first_byte (input, re_string_cur_idx (input)))
+  if (input->mb_cur_max > 1
+      && !re_string_first_byte (input, re_string_cur_idx (input)))
     {
       token->type = CHARACTER;
       token->mb_partial = 1;
@@ -2000,8 +2000,8 @@ peek_token (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
       token->type = OP_PERIOD;
       break;
     case '^':
-      if (!(syntax & (RE_CONTEXT_INDEP_ANCHORS | RE_CARET_ANCHORS_HERE)) &&
-	  re_string_cur_idx (input) != 0)
+      if (!(syntax & (RE_CONTEXT_INDEP_ANCHORS | RE_CARET_ANCHORS_HERE))
+	  && re_string_cur_idx (input) != 0)
 	{
 	  char prev = re_string_peek_byte (input, -1);
 	  if (!(syntax & RE_NEWLINE_ALT) || prev != '\n')
@@ -2011,8 +2011,8 @@ peek_token (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
       token->opr.ctx_type = LINE_FIRST;
       break;
     case '$':
-      if (!(syntax & RE_CONTEXT_INDEP_ANCHORS) &&
-	  re_string_cur_idx (input) + 1 != re_string_length (input))
+      if (!(syntax & RE_CONTEXT_INDEP_ANCHORS)
+	  && re_string_cur_idx (input) + 1 != re_string_length (input))
 	{
 	  re_token_t next;
 	  re_string_skip_bytes (input, 1);
@@ -2046,8 +2046,8 @@ peek_token_bracket (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
   token->opr.c = c;
 
 #ifdef RE_ENABLE_I18N
-  if (input->mb_cur_max > 1 &&
-      !re_string_first_byte (input, re_string_cur_idx (input)))
+  if (input->mb_cur_max > 1
+      && !re_string_first_byte (input, re_string_cur_idx (input)))
     {
       token->type = CHARACTER;
       return 1;
@@ -2345,8 +2345,8 @@ parse_expression (re_string_t *regexp, regex_t *preg, re_token_t *token,
 	}
       FALLTHROUGH;
     case OP_CLOSE_SUBEXP:
-      if ((token->type == OP_CLOSE_SUBEXP) &&
-	  !(syntax & RE_UNMATCHED_RIGHT_PAREN_ORD))
+      if ((token->type == OP_CLOSE_SUBEXP)
+	  && !(syntax & RE_UNMATCHED_RIGHT_PAREN_ORD))
 	{
 	  *err = REG_ERPAREN;
 	  return NULL;

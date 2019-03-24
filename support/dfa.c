@@ -1,5 +1,5 @@
 /* dfa.c - deterministic extended regexp routines for GNU
-   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2018 Free Software
+   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2019 Free Software
    Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -820,7 +820,7 @@ emptyset (charclass const *s)
 
 static void *
 xpalloc (void *pa, ptrdiff_t *nitems, ptrdiff_t nitems_incr_min,
-	 ptrdiff_t nitems_max, ptrdiff_t item_size)
+         ptrdiff_t nitems_max, ptrdiff_t item_size)
 {
   ptrdiff_t n0 = *nitems;
 
@@ -854,8 +854,8 @@ xpalloc (void *pa, ptrdiff_t *nitems, ptrdiff_t nitems_incr_min,
     *nitems = 0;
   if (n - n0 < nitems_incr_min
       && (INT_ADD_WRAPV (n0, nitems_incr_min, &n)
-	  || (0 <= nitems_max && nitems_max < n)
-	  || INT_MULTIPLY_WRAPV (n, item_size, &nbytes)))
+          || (0 <= nitems_max && nitems_max < n)
+          || INT_MULTIPLY_WRAPV (n, item_size, &nbytes)))
     xalloc_die ();
   pa = xrealloc (pa, nbytes);
   *nitems = n;
@@ -3169,11 +3169,11 @@ build_state (state_num s, struct dfa *d, unsigned char uc)
       if (separate_contexts & possible_contexts & CTX_NEWLINE)
         state_newline = state_index (d, &group, CTX_NEWLINE);
       else
-      state_newline = state;
+        state_newline = state;
       if (separate_contexts & possible_contexts & CTX_LETTER)
         state_letter = state_index (d, &group, CTX_LETTER);
       else
-      state_letter = state;
+        state_letter = state;
 
       /* Reallocate now, to reallocate any newline transition properly.  */
       realloc_trans_if_necessary (d);
