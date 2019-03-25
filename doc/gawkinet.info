@@ -1,12 +1,12 @@
 This is gawkinet.info, produced by makeinfo version 6.5 from
 gawkinet.texi.
 
-This is Edition 1.4 of 'TCP/IP Internetworking with 'gawk'', for the
-4.1.4 (or later) version of the GNU implementation of AWK.
+This is Edition 1.5 of 'TCP/IP Internetworking with 'gawk'', for the
+5.0.0 (or later) version of the GNU implementation of AWK.
 
 
-   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016 Free Software
-Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016, 2019 Free
+Software Foundation, Inc.
 
 
    Permission is granted to copy, distribute and/or modify this document
@@ -29,12 +29,12 @@ END-INFO-DIR-ENTRY
 
    This file documents the networking features in GNU 'awk'.
 
-   This is Edition 1.4 of 'TCP/IP Internetworking with 'gawk'', for the
-4.1.4 (or later) version of the GNU implementation of AWK.
+   This is Edition 1.5 of 'TCP/IP Internetworking with 'gawk'', for the
+5.0.0 (or later) version of the GNU implementation of AWK.
 
 
-   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016 Free Software
-Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016, 2019 Free
+Software Foundation, Inc.
 
 
    Permission is granted to copy, distribute and/or modify this document
@@ -60,12 +60,12 @@ General Introduction
 This file documents the networking features in GNU Awk ('gawk') version
 4.0 and later.
 
-   This is Edition 1.4 of 'TCP/IP Internetworking with 'gawk'', for the
-4.1.4 (or later) version of the GNU implementation of AWK.
+   This is Edition 1.5 of 'TCP/IP Internetworking with 'gawk'', for the
+5.0.0 (or later) version of the GNU implementation of AWK.
 
 
-   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016 Free Software
-Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016, 2019 Free
+Software Foundation, Inc.
 
 
    Permission is granted to copy, distribute and/or modify this document
@@ -610,7 +610,7 @@ tcp, udp    x           0           x           Invalid
 tcp, udp    0           0           0           Invalid
 tcp, udp    0           x           0           Invalid
 
-Table 2.1: /inet Special File Components
+Table 2.1: '/inet' Special File Components
 
    In general, TCP is the preferred mechanism to use.  It is the
 simplest protocol to understand and to use.  Use UDP only if
@@ -1596,7 +1596,7 @@ holds the HTML page contents:
      function HandleGET() {
        # A real HTTP server would treat some parts of the URI as a file name.
        # We take parts of the URI as menu choices and go on accordingly.
-       if(MENU[2] == "AboutServer") {
+       if (MENU[2] == "AboutServer") {
          Document    = "This is not a CGI script.\
            This is an httpd, an HTML file, and a CGI script all \
            in one GAWK script. It needs no separate www-server, \
@@ -1639,7 +1639,7 @@ the set of possible answers:
        } else {
          q = toupper(YouSay)
          gsub("'", "", q)
-         if(q == qold) {
+         if (q == qold) {
            answer = "PLEASE DONT REPEAT YOURSELF !"
          } else {
            if (index(q, "SHUT UP") > 0) {
@@ -1818,12 +1818,12 @@ all would love to see a 'gawk' program win in such an event.  Maybe it
 is up to you to accomplish this?
 
    Some other ideas for useful networked applications:
-   * Read the file 'doc/awkforai.txt' in the 'gawk' distribution.  It
-     was written by Ronald P. Loui (at the time, Associate Professor of
-     Computer Science, at Washington University in St.  Louis,
-     <loui@ai.wustl.edu>) and summarizes why he taught 'gawk' to
-     students of Artificial Intelligence.  Here are some passages from
-     the text:
+   * Read the file 'doc/awkforai.txt' in earlier 'gawk'
+     distributions.(1)  It was written by Ronald P. Loui (at the time,
+     Associate Professor of Computer Science, at Washington University
+     in St.  Louis, <loui@ai.wustl.edu>) and summarizes why he taught
+     'gawk' to students of Artificial Intelligence.  Here are some
+     passages from the text:
 
           The GAWK manual can be consumed in a single lab session and
           the language can be mastered by the next morning by the
@@ -1892,6 +1892,11 @@ is up to you to accomplish this?
      would search a database of previous cases for solutions.  If none
      exists, the database could, for example, consist of all the
      newsgroups, mailing lists and FAQs on the Internet.
+
+   ---------- Footnotes ----------
+
+   (1) The file is no longer distributed with 'gawk', since the
+copyright on the file is not clear.
 
 
 File: gawkinet.info,  Node: Some Applications and Techniques,  Next: Links,  Prev: Using Networking,  Up: Top
@@ -2108,7 +2113,7 @@ changing parameters, and the last one just saves the configuration into
 a file:
 
      function HandleGET() {
-       if(MENU[2] == "AboutServer") {
+       if (MENU[2] == "AboutServer") {
          Document  = "This is a GUI for remote configuration of an\
            embedded system. It is is implemented as one GAWK script."
        } else if (MENU[2] == "ReadConfig") {
@@ -2247,7 +2252,7 @@ it, web robots do it, and sometimes even humans do it.  Since we have a
 tool like GETURL at hand, we can solve this problem with some help from
 the Bourne shell:
 
-     BEGIN { RS = "http://[#%&\\+\\-\\./0-9\\:;\\?A-Z_a-z\\~]*" }
+     BEGIN { RS = "https?://[#%&\\+\\-\\./0-9\\:;\\?A-Z_a-z\\~]*" }
      RT != "" {
         command = ("gawk -v Proxy=MyProxy -f geturl.awk " RT \
                     " > doc" NR ".html")
@@ -2391,7 +2396,7 @@ code for delayed opening of a window with an image.  A more detailed
 explanation follows:
 
      function HandleGET() {
-       if(MENU[2] == "AboutServer") {
+       if (MENU[2] == "AboutServer") {
          Document  = "This is a GUI for a statistical computation.\
            It compares means and variances of two distributions.\
            It is implemented as one GAWK script and uses GNUPLOT."
@@ -4349,58 +4354,59 @@ Index
 
 
 Tag Table:
-Node: Top2022
-Node: Preface5665
-Node: Introduction7040
-Node: Stream Communications8066
-Node: Datagram Communications9240
-Node: The TCP/IP Protocols10870
-Ref: The TCP/IP Protocols-Footnote-111554
-Node: Basic Protocols11711
-Ref: Basic Protocols-Footnote-113756
-Node: Ports13785
-Node: Making Connections15192
-Ref: Making Connections-Footnote-117750
-Ref: Making Connections-Footnote-217797
-Node: Using Networking17978
-Node: Gawk Special Files20301
-Node: Special File Fields22110
-Ref: table-inet-components26003
-Node: Comparing Protocols27312
-Node: File /inet/tcp27846
-Node: File /inet/udp28874
-Ref: File /inet/udp-Footnote-130573
-Node: TCP Connecting30827
-Node: Troubleshooting33173
-Ref: Troubleshooting-Footnote-136232
-Node: Interacting36805
-Node: Setting Up39545
-Node: Email43048
-Node: Web page45380
-Ref: Web page-Footnote-148197
-Node: Primitive Service48395
-Node: Interacting Service51136
-Ref: Interacting Service-Footnote-160303
-Node: CGI Lib60335
-Node: Simple Server67310
-Ref: Simple Server-Footnote-175053
-Node: Caveats75154
-Node: Challenges76299
-Node: Some Applications and Techniques84997
-Node: PANIC87462
-Node: GETURL89186
-Node: REMCONF91819
-Node: URLCHK97314
-Node: WEBGRAB101166
-Node: STATIST105628
-Ref: STATIST-Footnote-1117377
-Node: MAZE117822
-Node: MOBAGWHO124029
-Ref: MOBAGWHO-Footnote-1138047
-Node: STOXPRED138102
-Node: PROTBASE152390
-Node: Links165506
-Node: GNU Free Documentation License168939
-Node: Index194059
+Node: Top2034
+Node: Preface5683
+Node: Introduction7058
+Node: Stream Communications8084
+Node: Datagram Communications9258
+Node: The TCP/IP Protocols10888
+Ref: The TCP/IP Protocols-Footnote-111572
+Node: Basic Protocols11729
+Ref: Basic Protocols-Footnote-113774
+Node: Ports13803
+Node: Making Connections15210
+Ref: Making Connections-Footnote-117768
+Ref: Making Connections-Footnote-217815
+Node: Using Networking17996
+Node: Gawk Special Files20319
+Node: Special File Fields22128
+Ref: table-inet-components26021
+Node: Comparing Protocols27332
+Node: File /inet/tcp27866
+Node: File /inet/udp28894
+Ref: File /inet/udp-Footnote-130593
+Node: TCP Connecting30847
+Node: Troubleshooting33193
+Ref: Troubleshooting-Footnote-136252
+Node: Interacting36825
+Node: Setting Up39565
+Node: Email43068
+Node: Web page45400
+Ref: Web page-Footnote-148217
+Node: Primitive Service48415
+Node: Interacting Service51156
+Ref: Interacting Service-Footnote-160323
+Node: CGI Lib60355
+Node: Simple Server67330
+Ref: Simple Server-Footnote-175075
+Node: Caveats75176
+Node: Challenges76321
+Ref: Challenges-Footnote-185063
+Node: Some Applications and Techniques85164
+Node: PANIC87629
+Node: GETURL89353
+Node: REMCONF91986
+Node: URLCHK97482
+Node: WEBGRAB101334
+Node: STATIST105798
+Ref: STATIST-Footnote-1117548
+Node: MAZE117993
+Node: MOBAGWHO124200
+Ref: MOBAGWHO-Footnote-1138218
+Node: STOXPRED138273
+Node: PROTBASE152561
+Node: Links165677
+Node: GNU Free Documentation License169110
+Node: Index194230
 
 End Tag Table

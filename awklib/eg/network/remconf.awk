@@ -13,7 +13,7 @@ function SetUpServer() {
   if (ConfigFile == "") ConfigFile = "config.asc"
 }
 function HandleGET() {
-  if(MENU[2] == "AboutServer") {
+  if (MENU[2] == "AboutServer") {
     Document  = "This is a GUI for remote configuration of an\
       embedded system. It is is implemented as one GAWK script."
   } else if (MENU[2] == "ReadConfig") {

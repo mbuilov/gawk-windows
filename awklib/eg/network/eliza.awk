@@ -22,7 +22,7 @@ function SetUpServer() {
 function HandleGET() {
   # A real HTTP server would treat some parts of the URI as a file name.
   # We take parts of the URI as menu choices and go on accordingly.
-  if(MENU[2] == "AboutServer") {
+  if (MENU[2] == "AboutServer") {
     Document    = "This is not a CGI script.\
       This is an httpd, an HTML file, and a CGI script all \
       in one GAWK script. It needs no separate www-server, \
@@ -54,7 +54,7 @@ function ElizaSays(YouSay) {
   } else {
     q = toupper(YouSay)
     gsub("'", "", q)
-    if(q == qold) {
+    if (q == qold) {
       answer = "PLEASE DONT REPEAT YOURSELF !"
     } else {
       if (index(q, "SHUT UP") > 0) {

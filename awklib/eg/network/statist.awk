@@ -11,7 +11,7 @@ function SetUpServer() {
   m1=m2=0;    v1=v2=1;    n1=n2=10
 }
 function HandleGET() {
-  if(MENU[2] == "AboutServer") {
+  if (MENU[2] == "AboutServer") {
     Document  = "This is a GUI for a statistical computation.\
       It compares means and variances of two distributions.\
       It is implemented as one GAWK script and uses GNUPLOT."

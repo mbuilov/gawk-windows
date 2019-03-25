@@ -61,18 +61,18 @@
 @c pages, I think this is the right decision.  ADR.
 
 @set TITLE TCP/IP Internetworking with @command{gawk}
-@set EDITION 1.4
-@set UPDATE-MONTH June, 2016
+@set EDITION 1.5
+@set UPDATE-MONTH March, 2019
 @c gawk versions:
-@set VERSION 4.1
-@set PATCHLEVEL 4
+@set VERSION 5.0
+@set PATCHLEVEL 0
 
 @copying
 This is Edition @value{EDITION} of @cite{@value{TITLE}},
 for the @value{VERSION}.@value{PATCHLEVEL} (or later) version of the GNU
 implementation of AWK.
 @sp 2
-Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016
+Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010, 2016, 2019
 Free Software Foundation, Inc.
 @sp 2
 Permission is granted to copy, distribute and/or modify this document
@@ -353,8 +353,8 @@ features on top of the basic communications.
 @node The TCP/IP Protocols, Making Connections, Datagram Communications, Introduction
 @section The Internet Protocols
 
-The Internet Protocol Suite (usually referred to as just TCP/IP)@footnote{
-It should be noted that although the Internet seems to have conquered the
+The Internet Protocol Suite (usually referred to as just TCP/IP)@footnote{It
+should be noted that although the Internet seems to have conquered the
 world, there are other networking protocol suites in existence and in use.}
 consists of a number of different protocols at different levels or ``layers.''
 For our purposes, three protocols provide the fundamental communications
@@ -733,7 +733,7 @@ use only the
 patterns printed in bold letters.
 
 @float Table,table-inet-components
-@caption{/inet Special File Components}
+@caption{@code{/inet} Special File Components}
 @multitable @columnfractions .15 .15 .15 .15 .40
 @headitem @sc{protocol} @tab @sc{local port} @tab @sc{host name}
 @tab @sc{remote port} @tab @sc{Resulting connection-level behavior}
@@ -1899,7 +1899,7 @@ page contents:
 function HandleGET() @{
   # A real HTTP server would treat some parts of the URI as a file name.
   # We take parts of the URI as menu choices and go on accordingly.
-  if(MENU[2] == "AboutServer") @{
+  if (MENU[2] == "AboutServer") @{
     Document    = "This is not a CGI script.\
       This is an httpd, an HTML file, and a CGI script all \
       in one GAWK script. It needs no separate www-server, \
@@ -1946,7 +1946,7 @@ function ElizaSays(YouSay) @{
   @} else @{
     q = toupper(YouSay)
     gsub("'", "", q)
-    if(q == qold) @{
+    if (q == qold) @{
       answer = "PLEASE DONT REPEAT YOURSELF !"
     @} else @{
       if (index(q, "SHUT UP") > 0) @{
@@ -2308,12 +2308,13 @@ program win in such an event. Maybe it is up to you to accomplish this?
 Some other ideas for useful networked applications:
 @itemize @bullet
 @item
-Read the file @file{doc/awkforai.txt} in the @command{gawk} distribution.
-It was written by Ronald P.@: Loui (at the time, Associate Professor of
-Computer Science, at Washington University in St. Louis,
-@email{loui@@ai.wustl.edu}) and summarizes why
-he taught @command{gawk} to students of Artificial Intelligence. Here are
-some passages from the text:
+Read the file @file{doc/awkforai.txt} in earlier @command{gawk}
+distributions.@footnote{The file is no longer distributed with
+@command{gawk}, since the copyright on the file is not clear.}
+It was written by Ronald P.@: Loui (at the time, Associate
+Professor of Computer Science, at Washington University in St. Louis,
+@email{loui@@ai.wustl.edu}) and summarizes why he taught @command{gawk} to
+students of Artificial Intelligence. Here are some passages from the text:
 
 @cindex AI
 @cindex PROLOG
@@ -2622,7 +2623,7 @@ the configuration into a file:
 @smallexample
 @c file eg/network/remconf.awk
 function HandleGET() @{
-  if(MENU[2] == "AboutServer") @{
+  if (MENU[2] == "AboutServer") @{
     Document  = "This is a GUI for remote configuration of an\
       embedded system. It is is implemented as one GAWK script."
   @} else if (MENU[2] == "ReadConfig") @{
@@ -2775,7 +2776,7 @@ some help from the Bourne shell:
 
 @example
 @c file eg/network/webgrab.awk
-BEGIN @{ RS = "http://[#%&\\+\\-\\./0-9\\:;\\?A-Z_a-z\\~]*" @}
+BEGIN @{ RS = "https?://[#%&\\+\\-\\./0-9\\:;\\?A-Z_a-z\\~]*" @}
 RT != "" @{
    command = ("gawk -v Proxy=MyProxy -f geturl.awk " RT \
                " > doc" NR ".html")
@@ -2964,7 +2965,7 @@ A more detailed explanation follows:
 @smallexample
 @c file eg/network/statist.awk
 function HandleGET() @{
-  if(MENU[2] == "AboutServer") @{
+  if (MENU[2] == "AboutServer") @{
     Document  = "This is a GUI for a statistical computation.\
       It compares means and variances of two distributions.\
       It is implemented as one GAWK script and uses GNUPLOT."
