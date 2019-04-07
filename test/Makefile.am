@@ -946,6 +946,8 @@ EXTRA_DIST = \
 	range1.awk \
 	range1.in \
 	range1.ok \
+	range2.awk \
+	range2.ok \
 	readbuf.awk \
 	readbuf.ok \
 	readdir.awk \
@@ -1301,7 +1303,7 @@ BASIC_TESTS = \
 	paramasfunc1 paramasfunc2 paramdup paramres paramtyp paramuninitglobal \
 	parse1 parsefld parseme pcntplus posix2008sub prdupval prec printf0 \
 	printf1 printfchar prmarscl prmreuse prt1eval prtoeval \
-	rand randtest range1 readbuf rebrackloc rebt8b1 rebuild redfilnm regeq \
+	rand randtest range1 range2 readbuf rebrackloc rebt8b1 rebuild redfilnm regeq \
 	regexpbrack regexpbrack2 regexprange regrange reindops reparse resplit \
 	rri1 rs rscompat rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 rstest3 \
 	rstest4 rstest5 rswhite \
@@ -1422,7 +1424,7 @@ CHECK_MPFR = \
 
 # Lists of tests that need particular locales
 NEED_LOCALE_C = \
-	clos1way gsubtst6
+	clos1way gsubtst6 range2
 
 NEED_LOCALE_EN = \
 	backbigs1 backsmalls1 backsmalls2 concat4 dfamb1 ignrcas2 lc_num1 \

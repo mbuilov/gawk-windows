@@ -104,6 +104,12 @@ char casetable[] = {
 	'\170', '\171', '\172', '\173', '\174', '\175', '\176', '\177',
 
 	/* Latin 1: */
+	/*
+	 * 4/2019: This is now overridden; in single byte locales
+	 * we call load_casetable from main and it fills in the values
+	 * based on the current locale. In particular, we want LC_ALL=C
+	 * to work correctly for values >= 0200.
+	 */
 	C('\200'), C('\201'), C('\202'), C('\203'), C('\204'), C('\205'), C('\206'), C('\207'),
 	C('\210'), C('\211'), C('\212'), C('\213'), C('\214'), C('\215'), C('\216'), C('\217'),
 	C('\220'), C('\221'), C('\222'), C('\223'), C('\224'), C('\225'), C('\226'), C('\227'),
@@ -201,18 +207,12 @@ load_casetable(void)
 {
 #if defined(LC_CTYPE)
 	int i;
-	char *cp;
 	static bool loaded = false;
 
 	if (loaded || do_traditional)
 		return;
 
 	loaded = true;
-	cp = setlocale(LC_CTYPE, NULL);
-
-	/* this is not per standard, but it's pretty safe */
-	if (cp == NULL || strcmp(cp, "C") == 0 || strcmp(cp, "POSIX") == 0)
-		return;
 
 #ifndef USE_EBCDIC
 	/* use of isalpha is ok here (see is_alpha in awkgram.y) */
@@ -710,7 +710,7 @@ set_IGNORECASE()
 		warned = true;
 		lintwarn(_("`IGNORECASE' is a gawk extension"));
 	}
-	load_casetable();
+
 	if (do_traditional)
 		IGNORECASE = false;
    	else
