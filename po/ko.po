@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.2.63\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2019-03-15 10:13+0200\n"
+"POT-Creation-Date: 2019-04-10 21:31+0300\n"
 "PO-Revision-Date: 2019-03-04 16:44+0900\n"
 "Last-Translator: Seong-ho Cho <darkcircle.0426@gmail.com>\n"
 "Language-Team: Korean <translation-team-ko@googlegroups.com>\n"
@@ -393,7 +393,7 @@ msgstr "오래된 awk 버전에서는 `^' 연산자를 지원하지 않습니다
 msgid "unterminated string"
 msgstr "끝나지 않은 문자열"
 
-#: awkgram.y:4048 main.c:1198
+#: awkgram.y:4048 main.c:1202
 msgid "POSIX does not allow physical newlines in string values"
 msgstr "POSIX에서는 문자열 값에 물리 개행 문자를 허용하지 않습니다"
 
@@ -2784,12 +2784,12 @@ msgstr "fflush: 표준 출력을 플러싱할 수 없음: %s"
 msgid "fflush: cannot flush standard error: %s"
 msgstr "fflush: 표준 오류를 플러싱할 수 없음: %s"
 
-#: io.c:1417 io.c:1508 main.c:660 main.c:707
+#: io.c:1417 io.c:1508 main.c:664 main.c:711
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "표준 출력으로의 기록 오류(%s)"
 
-#: io.c:1418 io.c:1521 main.c:662
+#: io.c:1418 io.c:1521 main.c:666
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "표준 오류로의 기록 오류(%s)"
@@ -2976,187 +2976,187 @@ msgstr "`RS'의 다중 문자 값은 gawk 확장 기능입니다"
 msgid "IPv6 communication is not supported"
 msgstr "IPv6 통신은 지원하지 않습니다"
 
-#: main.c:331
+#: main.c:335
 msgid "environment variable `POSIXLY_CORRECT' set: turning on `--posix'"
 msgstr "`POSIXLY_CORRECT' 환경 변수 설정: `--posix' 활성화"
 
-#: main.c:338
+#: main.c:342
 msgid "`--posix' overrides `--traditional'"
 msgstr "`--posix' 옵션은 `--traditional' 옵션에 우선합니다"
 
-#: main.c:349
+#: main.c:353
 msgid "`--posix'/`--traditional' overrides `--non-decimal-data'"
 msgstr ""
 "`--posix'/`--traditional' 옵션은 `--non-decimal-data' 옵션에 우선합니다"
 
-#: main.c:354
+#: main.c:358
 msgid "`--posix' overrides `--characters-as-bytes'"
 msgstr "`--posix' 옵션은 `--characters-as-bytes' 옵션에 우선합니다"
 
-#: main.c:363
+#: main.c:367
 #, c-format
 msgid "running %s setuid root may be a security problem"
 msgstr "root 계정으로의 %s 실행은 보안 문제를 야기할 수 있습니다"
 
-#: main.c:416
+#: main.c:420
 #, c-format
 msgid "can't set binary mode on stdin (%s)"
 msgstr "표준 출력에 이진 모드를 설정할 수 없음(%s)"
 
-#: main.c:419
+#: main.c:423
 #, c-format
 msgid "can't set binary mode on stdout (%s)"
 msgstr "표준 출력에 이진 모드를 설정할 수 없음(%s)"
 
-#: main.c:421
+#: main.c:425
 #, c-format
 msgid "can't set binary mode on stderr (%s)"
 msgstr "표준 오류에 이진 모드를 설정할 수 없음(%s)"
 
-#: main.c:483
+#: main.c:487
 msgid "no program text at all!"
 msgstr "어떤 프로그램 구문도 없습니다!"
 
-#: main.c:577
+#: main.c:581
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"
 msgstr ""
 "사용법: %s [<POSIX 또는 GNU 방식 옵션>] -f <프로그램파일> [--] <파일> ...\n"
 
-#: main.c:579
+#: main.c:583
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"
 msgstr ""
 "사용법: %s [<POSIX 또는 GNU 방식 옵션>] [--] %c<프로그램구문>%c <파일> ...\n"
 
-#: main.c:584
+#: main.c:588
 msgid "POSIX options:\t\tGNU long options: (standard)\n"
 msgstr "POSIX 옵션:\t\tGNU 버전 긴 옵션: (표준)\n"
 
-#: main.c:585
+#: main.c:589
 msgid "\t-f progfile\t\t--file=progfile\n"
 msgstr "\t-f <프로그램-파일>\t\t--file=<프로그램-파일>\n"
 
-#: main.c:586
+#: main.c:590
 msgid "\t-F fs\t\t\t--field-separator=fs\n"
 msgstr "\t-F <필드-구분자>\t\t\t--field-separator=<필드-구분자>\n"
 
-#: main.c:587
+#: main.c:591
 msgid "\t-v var=val\t\t--assign=var=val\n"
 msgstr "\t-v <변수>=<값>\t\t--assign=<변수>=<값>\n"
 
-#: main.c:588
+#: main.c:592
 msgid "Short options:\t\tGNU long options: (extensions)\n"
 msgstr "짧은 옵션:\t\tGNU 버전 긴 옵션: (확장 기능)\n"
 
-#: main.c:589
+#: main.c:593
 msgid "\t-b\t\t\t--characters-as-bytes\n"
 msgstr "\t-b\t\t\t--characters-as-bytes\n"
 
-#: main.c:590
+#: main.c:594
 msgid "\t-c\t\t\t--traditional\n"
 msgstr "\t-c\t\t\t--traditional\n"
 
-#: main.c:591
+#: main.c:595
 msgid "\t-C\t\t\t--copyright\n"
 msgstr "\t-C\t\t\t--copyright\n"
 
-#: main.c:592
+#: main.c:596
 msgid "\t-d[file]\t\t--dump-variables[=file]\n"
 msgstr "\t-d[<파일>]\t\t--dump-variables[=<파일>]\n"
 
-#: main.c:593
+#: main.c:597
 msgid "\t-D[file]\t\t--debug[=file]\n"
 msgstr "\t-D[<파일>]\t\t--debug[=<파일>]\n"
 
-#: main.c:594
+#: main.c:598
 msgid "\t-e 'program-text'\t--source='program-text'\n"
 msgstr "\t-e '<프로그램-구문>'\t--source='<프로그램-구문>'\n"
 
-#: main.c:595
+#: main.c:599
 msgid "\t-E file\t\t\t--exec=file\n"
 msgstr "\t-E <파일>\t\t\t--exec=<파일>\n"
 
-#: main.c:596
+#: main.c:600
 msgid "\t-g\t\t\t--gen-pot\n"
 msgstr "\t-g\t\t\t--gen-pot\n"
 
-#: main.c:597
+#: main.c:601
 msgid "\t-h\t\t\t--help\n"
 msgstr "\t-h\t\t\t--help\n"
 
-#: main.c:598
+#: main.c:602
 msgid "\t-i includefile\t\t--include=includefile\n"
 msgstr "\t-i <포함파일>\t\t--include=<포함파일>\n"
 
-#: main.c:599
+#: main.c:603
 msgid "\t-l library\t\t--load=library\n"
 msgstr "\t-l <라이브러리>\t\t--load=<라이브러리>\n"
 
 #. TRANSLATORS: the "fatal" and "invalid" here are literal
 #. values, they should not be translated. Thanks.
 #.
-#: main.c:604
+#: main.c:608
 msgid "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
 msgstr "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
 
-#: main.c:605
+#: main.c:609
 msgid "\t-M\t\t\t--bignum\n"
 msgstr "\t-M\t\t\t--bignum\n"
 
-#: main.c:606
+#: main.c:610
 msgid "\t-N\t\t\t--use-lc-numeric\n"
 msgstr "\t-N\t\t\t--use-lc-numeric\n"
 
-#: main.c:607
+#: main.c:611
 msgid "\t-n\t\t\t--non-decimal-data\n"
 msgstr "\t-n\t\t\t--non-decimal-data\n"
 
-#: main.c:608
+#: main.c:612
 msgid "\t-o[file]\t\t--pretty-print[=file]\n"
 msgstr "\t-o[<파일>]\t\t--pretty-print[=<파일>]\n"
 
-#: main.c:609
+#: main.c:613
 msgid "\t-O\t\t\t--optimize\n"
 msgstr "\t-O\t\t\t--optimize\n"
 
-#: main.c:610
+#: main.c:614
 msgid "\t-p[file]\t\t--profile[=file]\n"
 msgstr "\t-p[<파일>]\t\t--profile[=<파일>]\n"
 
-#: main.c:611
+#: main.c:615
 msgid "\t-P\t\t\t--posix\n"
 msgstr "\t-P\t\t\t--posix\n"
 
-#: main.c:612
+#: main.c:616
 msgid "\t-r\t\t\t--re-interval\n"
 msgstr "\t-r\t\t\t--re-interval\n"
 
-#: main.c:613
+#: main.c:617
 msgid "\t-s\t\t\t--no-optimize\n"
 msgstr "\t-s\t\t\t--no-optimize\n"
 
-#: main.c:614
+#: main.c:618
 msgid "\t-S\t\t\t--sandbox\n"
 msgstr "\t-S\t\t\t--sandbox\n"
 
-#: main.c:615
+#: main.c:619
 msgid "\t-t\t\t\t--lint-old\n"
 msgstr "\t-t\t\t\t--lint-old\n"
 
-#: main.c:616
+#: main.c:620
 msgid "\t-V\t\t\t--version\n"
 msgstr "\t-V\t\t\t--version\n"
 
-#: main.c:618
+#: main.c:622
 msgid "\t-W nostalgia\t\t--nostalgia\n"
 msgstr "\t-W nostalgia\t\t--nostalgia\n"
 
-#: main.c:621
+#: main.c:625
 msgid "\t-Y\t\t\t--parsedebug\n"
 msgstr "\t-Y\t\t\t--parsedebug\n"
 
-#: main.c:624
+#: main.c:628
 msgid "\t-Z locale-name\t\t--locale=locale-name\n"
 msgstr "\t-Z <로캘-이름>\t\t--locale=<로캘-이름>\n"
 
@@ -3165,7 +3165,7 @@ msgstr "\t-Z <로캘-이름>\t\t--locale=<로캘-이름>\n"
 #. for this application.  Please add _another line_ with the
 #. address for translation bugs.
 #. no-wrap
-#: main.c:633
+#: main.c:637
 #, fuzzy
 msgid ""
 "\n"
@@ -3189,7 +3189,7 @@ msgstr ""
 "스택오버플로우같은 사용자 포럼에 오류 정보를 게시하지 마십시오.\n"
 "\n"
 
-#: main.c:641
+#: main.c:645
 msgid ""
 "gawk is a pattern scanning and processing language.\n"
 "By default it reads standard input and writes standard output.\n"
@@ -3199,7 +3199,7 @@ msgstr ""
 "기본적으로 표준 입력을 읽고 표준 출력에 기록합니다.\n"
 "\n"
 
-#: main.c:645
+#: main.c:649
 msgid ""
 "Examples:\n"
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
@@ -3209,7 +3209,7 @@ msgstr ""
 "\tgawk '{ sum += $1 }; END { print sum }' <파일>\n"
 "\tgawk -F: '{ print $1 }' /etc/passwd\n"
 
-#: main.c:677
+#: main.c:681
 #, c-format
 msgid ""
 "Copyright (C) 1989, 1991-%d Free Software Foundation.\n"
@@ -3227,7 +3227,7 @@ msgstr ""
 "자유롭게 수정하고 재배포할 수 있습니다.\n"
 "\n"
 
-#: main.c:685
+#: main.c:689
 msgid ""
 "This program is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
@@ -3240,7 +3240,7 @@ msgstr ""
 "자세한 내용은 GNU 일반 공중 사용 허가서를 참고하십시오.\n"
 "\n"
 
-#: main.c:691
+#: main.c:695
 msgid ""
 "You should have received a copy of the GNU General Public License\n"
 "along with this program. If not, see http://www.gnu.org/licenses/.\n"
@@ -3248,11 +3248,11 @@ msgstr ""
 "이 프로그램과 함께 GNU 일반 공중 사용 허가서를 받으셔야합니다.\n"
 "사용 허가서가 없을 경우 http://www.gnu.org/licenses/ 주소를 참고하십시오.\n"
 
-#: main.c:732
+#: main.c:736
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "-Ft 옵션에 POSIX awk의 탭에 대한 필드 구분자가 없습니다"
 
-#: main.c:1129
+#: main.c:1133
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
@@ -3261,70 +3261,70 @@ msgstr ""
 "%s: `<변수>=<값>' 형식이 아닌 `-v'의 `%s' 인자값\n"
 "\n"
 
-#: main.c:1155
+#: main.c:1159
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "`%s'은(는) 적절한 변수 이름이 아닙니다"
 
-#: main.c:1158
+#: main.c:1162
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "`%s'은(는) 변수 이름이 아닙니다. `%s=%s' 파일을 살펴보는 중"
 
-#: main.c:1172
+#: main.c:1176
 #, c-format
 msgid "cannot use gawk builtin `%s' as variable name"
 msgstr "`%s' gawk 내장 요소를 변수 이름으로 취급할 수 없습니다"
 
-#: main.c:1177
+#: main.c:1181
 #, c-format
 msgid "cannot use function `%s' as variable name"
 msgstr "`%s' 함수를 변수 이름으로 취급할 수 없습니다"
 
-#: main.c:1255
+#: main.c:1259
 msgid "floating point exception"
 msgstr "소숫점 예외"
 
-#: main.c:1262
+#: main.c:1266
 msgid "fatal error: internal error"
 msgstr "치명적 오류: 내부 오류"
 
-#: main.c:1279
+#: main.c:1283
 msgid "fatal error: internal error: segfault"
 msgstr "치명적 오류: 내부 오류: 세그먼테이션 오류"
 
-#: main.c:1292
+#: main.c:1296
 msgid "fatal error: internal error: stack overflow"
 msgstr "치명적 오류: 내부 오류: 스택 오버플로우"
 
-#: main.c:1352
+#: main.c:1356
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "파일 서술자 %d번 미리 열지 않음"
 
-#: main.c:1359
+#: main.c:1363
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "파일 서술자 %d번에 대해 /dev/null을 미리 열 수 없습니다"
 
-#: main.c:1573
+#: main.c:1577
 msgid "empty argument to `-e/--source' ignored"
 msgstr "`-e/--source'의 빈 인자 값 대입은 무시합니다"
 
-#: main.c:1631 main.c:1636
+#: main.c:1635 main.c:1640
 msgid "`--profile' overrides `--pretty-print'"
 msgstr "`--profile' 옵션은 `--pretty-print' 옵션에 우선합니다"
 
-#: main.c:1648
+#: main.c:1652
 msgid "-M ignored: MPFR/GMP support not compiled in"
 msgstr "-M 무시함: MPFR/GMP 기능을 넣어 컴파일하지 않았습니다"
 
-#: main.c:1673
+#: main.c:1677
 #, c-format
 msgid "%s: option `-W %s' unrecognized, ignored\n"
 msgstr "%s: `-W %s' 옵션은 인식할 수 없습니다. 무시함\n"
 
-#: main.c:1726
+#: main.c:1730
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: 옵션에 인자 값이 필요합니다 -- %c\n"
