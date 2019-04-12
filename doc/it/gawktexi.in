@@ -16,11 +16,6 @@
 * awk: (gawk)Avviare Gawk.                     Scansione e processo di testi.
 @end direntry
 
-@c Enable better indexing, requires texindex from Texinfo 6 or later.
-@tex
-\global\usebracesinindexestrue
-@end tex
-
 @ifset FOR_PRINT
 @tex
 \gdef\xrefprintnodename#1{``#1''}
@@ -52,18 +47,18 @@
 @ifnottex
 @set VOLTE *
 @end ifnottex
-        
 
-@set xref-automatic-section-title
+@c Let texinfo.tex give us full section titles
+@xrefautomaticsectiontitle on
 
 @c The following information should be updated here only!
 @c This sets the edition of the document, the version of gawk it
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH Settembre 2018
-@set VERSION 4.2
-@set PATCHLEVEL 1
+@set UPDATE-MONTH Marzo 2019
+@set VERSION 5.0
+@set PATCHLEVEL 0
 
 @c added Italian hyphenation stuff
 @hyphenation{ven-go-no o-met-te-re o-met-ten-do}
@@ -76,7 +71,7 @@
 @set TITLE GAWK: Programmare efficacemente in AWK
 @end ifclear
 @set SUBTITLE Una Guida Utente per GNU Awk
-@set EDITION 4.2
+@set EDITION 5.0
 
 @iftex
 @set DOCUMENT libro
@@ -308,7 +303,7 @@ Some comments on the layout for TeX.
 Tel.: +1-617-542-5942 Fax: +1-617-542-2652 Email: <email>gnu@@gnu.org</email>
 URL: <ulink url="https://www.gnu.org">https://www.gnu.org/</ulink></literallayout>
 
-<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2018
+<literallayout class="normal">Copyright &copy; 1989, 1991, 1992, 1993, 1996&ndash;2005, 2007, 2009&ndash;2019
 Free Software Foundation, Inc.
 All Rights Reserved.
 </literallayout>
@@ -330,7 +325,7 @@ Italian Linux Documentation Project (ILDP)
 Email: <emailildp@@pluto.it
 URL: <ulink url="http://www.pluto.it/ildp">http://www.pluto.it/ildp/</ulink></literallayout>
 
-<literallayout class="normal">Copyright &copy; 2016
+<literallayout class="normal">Copyright &copy; 2016&ndash;2019
 Free Software Foundation, Inc.
 All Rights Reserved.
 </literallayout>
@@ -338,7 +333,7 @@ All Rights Reserved.
 
 @ifnotdocbook
 @iftex
-Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2018 @*
+Copyright @copyright{} 1989, 1991, 1992, 1993, 1996--2005, 2007, 2009--2019 @*
 Free Software Foundation, Inc.
 @end iftex
 @end ifnotdocbook
@@ -557,6 +552,8 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
 * Internazionalizzazione::         Come far s@`{@dotless{i}} che @command{gawk} parli la
                                    vostra lingua.
 * Debugger::                       Il debugger di @command{gawk}.
+* Spazi-dei-nomi::                      Come funzionano gli spazi-dei-nomi
+                                   (@dfn{spazi-dei-nomi}) in @command{gawk}.
 * Calcolo con precisione arbitraria:: Calcolo con precisione arbitraria in
                                    @command{gawk}.
 * Estensioni dinamiche::           Aggiungere nuove funzioni predefinite di
@@ -646,6 +643,8 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
 * Uso di @dfn{regexp}::                 Come usare le espressioni regolari.
 * Sequenze di protezione::              Come scrivere caratteri non stampabili.
 * Operatori di espressioni regolari::   Operatori di espressioni regolari.
+* Dettagli sugli operatori di @dfn{regexp}:: Descrizione dettagliata.
+* Espressioni di intervallo::           Note sulle espressioni di intervallo.
 * Espressioni tra parentesi quadre::    Cosa possono contenere @samp{[...]}.
 * Pi@`u lungo da sinistra::               Quanto @`e lungo il testo individuato.
 * Espressioni regolari calcolate::      Usare @dfn{regexp} dinamiche.
@@ -895,10 +894,11 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
                                         significano.
 * Esempio di funzione::                 Un esempio di definizione di
                                         funzione e spiegazione della stessa.
-* Precisazioni sulle funzioni::         Cose a cui prestare attenzione.
+* Chiamata di una funzione::            Chiamare funzioni definite dall'utente.
 * Chiamare una funzione::               Non usare spazi.
 * Campo di validit@`a variabili::         Variabili locali e globali.
 * Parametri per valore/riferimento::    Passaggio parametri.
+* Precisazioni sulle funzioni::         Cose a cui prestare attenzione.
 * Istruzione return::                   Specificare il valore che una
                                         funzione restituisce.
 * Variabili di tipo dinamico::          Come cambiare tipo a una variabile in
@@ -1033,6 +1033,19 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
 * Supporto per Readline::               Supporto per Readline.
 * Limitazioni::                         Limitazioni.
 * Sommario sul debug::                  Sommario sul debug.
+* Spazio-dei-nomi globale::             Lo spazio-dei-nomi globale in @command{awk}
+                                        standard.
+* Nomi qualificati::                    Come qualificare nomi con uno
+                                        spazio-dei-nomi.
+* Spazio-dei-nomi di default::          Lo spazio-dei-nomi di default.
+* Cambiare lo spazio-dei-nomi::         Come cambiare lo spazio-dei-nomi.
+* Regole per i nomi::                   Regole per assegnare nomi a uno
+                                        spazio-dei-nomi e ai suoi componenti.
+* Gestione interna dei nomi::           Come i nomi sono gestiti internamente.
+* Esempio di spazio-dei-nomi::          Esempio di codice che usa uno spazio-dei-nomi.
+* Spazio-dei-nomi e funzionalit@`a::      Lo spazio-dei-nomi e le altre funzionalit@`a
+                                        di @command{gawk}.
+* Sommario sugli spazi-dei-nomi::       Sommario sugli spazi-dei-nomi.
 * Aritmetica del computer::             Una rapida introduzione alla matematica del
                                         computer.
 * Definizioni matematiche::             Altre cose da sapere.
@@ -1060,8 +1073,8 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
 * Introduzione alle estensioni::        Cos'@`e un'estensione.
 * Licenza delle estensioni::            tipo di licenza delle estensioni.
 * Panoramica sul meccanismo delle estensioni:: Come funziona a grandi linee.
-* Descrizione dell'API delle estensioni:: Una descrizione completa dell'API.
-* Intro funzioni API delle estensioni:: Introduzione alle funzioni dell'API.
+* Descrizione dell'estensione API:: Una descrizione completa dell'API.
+* Intro funzioni estensione API:: Introduzione alle funzioni dell'API.
 * Tipi di dati generali::               I tipi di dati.
 * Funzioni di allocazione memoria::     Funzioni per allocare memoria.
 * Funzioni di costruzione::             Funzioni per creare valori.
@@ -1893,6 +1906,11 @@ di programma in diverse lingue in fase di esecuzione.
 
 @item
 @ref{Debugger}, descrive il debugger di @command{gawk}.
+
+@item
+@ref{Spazi-dei-nomi}, descrive come @command{gawk} permette
+che variabili e/o funzioni con lo stesso nome coesistano
+in distinti spazi-dei-nomi (@dfn{spazi-dei-nomi}).
 
 @item
 @ref{Calcolo con precisione arbitraria},
@@ -2877,7 +2895,7 @@ Molti linguaggi moderni sono interpretati.
 
 La riga che inizia con @samp{#!} lista l'intero @value{FN} di un
 interpretatore
-da richiamare, con degli argomenti facoltativi che saranno passati a
+da richiamare, con degli argomenti opzionali che saranno passati a
 quell'interpretatore sulla riga di comando.  Il sistema operativo quindi
 richiama l'interpretatore con gli argomenti dati e con l'intera lista di
 argomenti con cui era stato invocato il programma.  Il primo argomento nella
@@ -3124,7 +3142,7 @@ Ci@`o come minimo genera un errore di sintassi, e un comportamento confuso nel
 caso peggiore.
 @end itemize
 
-@cindex protezione, nella riga di comando di @command{gawk}, trucchi per
+@cindex protezione, nella riga di comando di @command{gawk}, trucchi per la
 Mischiare apici singoli e doppi @`e difficile.  Occorre utilizzare
 trucchi della shell per gli apici, come questi:
 
@@ -3811,6 +3829,8 @@ il @code{BEGIN} @`e marcato come errore di sintassi.
 @cindex istruzioni multiple
 @cindex @code{;} (punto e virgola), separare istruzioni nelle azioni
 @cindex punto e virgola (@code{;}), separare istruzioni nelle azioni
+@cindex @code{;} (punto e virgola), separare regole
+@cindex punto e virgola (@code{;}), separare regole
 Quando le istruzioni @command{awk} all'interno di una regola sono brevi, si
 potrebbe metterne pi@`u d'una su una riga sola.  Ci@`o @`e possibile separando le
 istruzioni con un punto e virgola (@samp{;}).
@@ -4074,6 +4094,11 @@ Quest'opzione pu@`o essere data pi@`u volte; il programma @command{awk}
 @`e formato dalla concatenazione del contenuto di ogni
 @var{file-sorgente} specificato.
 
+I file specificati dall'opzione @option{-i} sono considerati
+appartenere allo spazio-dei-nomi @samp{"awk" (@@namespace "awk")}
+a inizio programma. @xref{Cambiare lo spazio-dei-nomi}, per ulteriori
+informazioni.
+
 @item -v @var{var}=@var{val}
 @itemx --assign @var{var}=@var{val}
 @cindex @option{-v}, opzione
@@ -4225,9 +4250,10 @@ da un carattere di ritorno a capo (anche se non @`e questo il caso).
 Ci@`o facilita la costruzione del programma completo.
 
 @quotation ATTENZIONE
-Non c'@`e ancora alcuna specifica che imponga che ogni @var{testo-di-programma}
-costituisca un'unit@`a sintattica completa.  P.es., il codice che segue
-funziona a tutt'oggi:
+Prima della @value{PVERSION} 5.0, non era necessario
+che ogni @var{testo-di-programma} costituisse
+un'unit@`a sintattica completa.  P.es., il codice che segue
+funzionava:
 
 @example
 $ @kbd{gawk -e 'BEGIN @{ a = 5 ;' -e 'print a @}'}
@@ -4235,8 +4261,13 @@ $ @kbd{gawk -e 'BEGIN @{ a = 5 ;' -e 'print a @}'}
 @end example
 
 @noindent
-Comunque ci@`o potrebbe cambiare in futuro, e per questo motivo non @`e una
-buona idea utilizzare questa funzionalit@`a.
+Comunque ci@`o non @`e pi@`u possibile.  Se c'@`e qualche @dfn{script}
+che utilizza tale possibilit@`a, @`e necessario modificarlo.
+
+Il motivo di ci@`o @`e che ogni @var{testo-di-programma} @`e considerato
+appartenere allo spazio di nomi @samp{"awk" (@@namespace "awk")}
+a inizio programma. @xref{Cambiare lo spazio-dei-nomi}, per ulteriori
+informazioni.
 @end quotation
 
 @item @option{-E} @var{file}
@@ -4318,6 +4349,11 @@ costituenti l'input del programma principale.  Cos@`{@dotless{i}}, dopo l'elabor
 un argomento @option{-i}, @command{gawk} si aspetta di trovare il codice
 sorgente principale attraverso l'opzione @option{-f} o sulla riga di comando.
 
+I file specificati dall'opzione @option{-i} sono considerati
+appartenere allo spazio-dei-nomi @samp{"awk" (@@namespace "awk")}
+a inizio programma. @xref{Cambiare lo spazio-dei-nomi}, per ulteriori
+informazioni.
+
 @item @option{-l} @var{ext}
 @itemx @option{--load} @var{ext}
 @cindex @option{-l}, opzione
@@ -4395,6 +4431,7 @@ Forza l'uso del carattere di separazione decimale della localizzazione
 quando analizza i dati in input
 (@pxref{Localizzazioni}).
 
+@cindex stampa elegante
 @item @option{-o}[@var{file}]
 @itemx @option{--pretty-print}[@code{=}@var{file}]
 @cindex @option{-o}, opzione
@@ -4430,7 +4467,7 @@ opzione @option{-s} (si veda pi@`u sotto in questa lista).
 @itemx @option{--profile}[@code{=}@var{file}]
 @cindex @option{-p}, opzione
 @cindex @option{--profile}, opzione
-@cindex @command{awk}, profilatura, abilitare la
+@cindex @command{awk}, profilazione, abilitare la
 Abilita la creazione del profilo di esecuzione di programmi @command{awk}
 (@pxref{Profilare}).
 Implicitamente viene forzata l'opzione @option{--no-optimize}.
@@ -4468,7 +4505,8 @@ I ritorni a capo non sono consentiti dopo @samp{?} o @samp{:}
 (@pxref{Espressioni condizionali}).
 
 
-@cindex @code{FS}, variabile, come carattere TAB
+@cindex @code{FS}, variabile, carattere TAB come
+@cindex variabile @code{FS}, carattere TAB come
 @item
 Specificando @samp{-Ft} sulla riga di comando non si imposta il valore
 della variabile @code{FS} a un singolo carattere TAB
@@ -4732,6 +4770,9 @@ l'output di  @var{qualche_comando}, e infile legge
 
 Si pu@`o anche usare @code{"-"} per indicare lo standard input quando si leggono
 i file con @code{getline} (@pxref{Getline file}).
+E si pu@`o perfino usare @code{"-"} con l'opzione @option{-f} per
+leggere il sorgente del programma dallo standard input
+(@pxref{Opzioni}).
 
 In aggiunta, @command{gawk} consente di specificare il
 @value{FN} speciale @file{/dev/stdin}, sia sulla riga di comando che
@@ -5153,6 +5194,11 @@ Le regole usate per trovare un file sorgente, descritte in
 @ref{AWKPATH (Variabile)}, valgono anche per i file
 caricati tramite @code{@@include}.
 
+Infine, i file inclusi con @code{@@include} sono considerati
+appartenere allo spazio-dei-nomi @samp{"awk" (@@namespace "awk")}
+a inizio programma. @xref{Cambiare lo spazio-dei-nomi}, per ulteriori
+informazioni.
+
 @node Caricare librerie condivise
 @section Caricare librerie condivise nel proprio programma
 
@@ -5244,8 +5290,8 @@ in case some option becomes obsolete in a future version of @command{gawk}.
 @cindex funzionalit@`a non documentate
 @cindex Skywalker, Luke
 @cindex Kenobi, Obi-Wan
-@cindex Jedi, Cavalieri
-@cindex Cavalieri Jedi
+@cindex jedi, cavalieri
+@cindex cavalieri jedi
 @quotation
 @i{Usa il codice sorgente, Luke!}
 @author Obi-Wan
@@ -5323,13 +5369,24 @@ programmi erano stati scritti.
 Le funzioni predefinite standard di command{awk}, per esempio
 @code{sin()} o @code{substr()} @emph{non} ammettono questa possibilit@`a.
 
-@`E possibile specificare in @code{printf} un modificatore @samp{P} 
+@`E possibile specificare in @code{printf} un modificatore @samp{P}
 fra le lettere di controllo dei numeri in virgola mobile, per
 utilizzare il risultato fornito dalle funzioni di libreria C
-per i valori NaN [Not a Number] e Infinity [Infinito], invece dei
+per i valori NaN [Non un Numero] e Infinity [Infinito], invece dei
 valori speciali normalmente prodotti da @command{gawk}, come
 descritto in @ref{Problemi virgola mobile POSIX}.
 Questo serve principalmente nella fase di test delle componenti aggiunte.
+
+La funzione predefinita @code{typeof()}
+(@pxref{Funzioni per i tipi})
+accetta un nome di vettore, opzionale, come secondo argomento, il quale,
+se presente sar@`a svuotato degli eventuali contenuti, e riempito con
+alcune informazioni che descrivono l'implementazione interna della
+variabile.  Ci@`o pu@`o essere utile per il debug.  Per ora viene
+restituita una versione formato testo dei flag per le variabili di
+tipo scalare, e il tipo di implementazione interna per i vettori.
+Per quest'interfaccia sono possibili variazioni in futuro, e quindi
+i valori restituiti possono non rimanere fissi.
 
 @end ignore
 
@@ -5435,6 +5492,7 @@ complesse.
 @node Uso di @dfn{regexp}
 @section Uso di espressioni regolari
 
+@cindex criteri di ricerca, espressioni regolari usate come
 @cindex espressioni regolari, come criteri di ricerca
 Un'espressione regolare pu@`o essere usata come modello di ricerca
 racchiudendola tra barre.  L'espressione regolare @`e quindi confrontata
@@ -5769,6 +5827,14 @@ letteramente, quando sono usati in costanti @dfn{regexp}.  Quindi,
 detti @dfn{operatori di espressioni regolari} o @dfn{metacaratteri}, per
 aumentarne il potere e la versatilit@`a.
 
+@menu
+* Dettagli sugli operatori di @dfn{regexp}::     Descrizione dettagliata.
+* Espressioni di intervallo::                    Note sulle espressioni di intervallo.
+@end menu
+
+@node Dettagli sugli operatori di @dfn{regexp}
+@subsection Operatori di @dfn{regexp} in @command{awk}
+
 Le sequenze di protezione descritte
 @ifnotinfo
 prima
@@ -5955,6 +6021,28 @@ Riconosce soltanto @samp{whhhy}, @samp{whhhhy}, o @samp{whhhhhy}.
 @item wh@{2,@}y
 Riconosce @samp{whhy}, @samp{whhhy} e cos@`{@dotless{i}} via.
 @end table
+@end table
+
+@cindex precedenza, operatori @dfn{regexp}
+@cindex espressioni regolari, operatori, precedenza degli
+Nelle espressioni regolari, gli operatori @samp{*}, @samp{+}, e @samp{?},
+come pure le parentesi graffe @samp{@{} e @samp{@}},
+hanno
+la precedenza pi@`u alta, seguite dalla concatenazione, e poi da
+@samp{|}.
+Come nell'algebra, le parentesi possono cambiare il raggruppamento degli
+operatori.
+
+@cindex POSIX @command{awk}, espressioni regolari e
+@cindex @command{gawk}, espressioni regolari, precedenza
+In POSIX @command{awk} e @command{gawk}, gli operatori @samp{*}, @samp{+}
+e @samp{?} rappresentano se stessi quando non c'@`e nulla prima di essi
+nella @dfn{regexp}.  Per esempio, @code{/+/} individua un semplice segno
+pi@`u.  Tuttavia, molte altre versioni di @command{awk} trattano una
+tale notazione come un errore di sintassi.
+
+@node Espressioni di intervallo
+@subsection Alcune note sulle espressioni di intervallo
 
 @cindex POSIX @command{awk}, espressioni di intervallo in
 Le espressioni di intervallo non erano tradizionalmente disponibili in
@@ -5983,34 +6071,23 @@ funzione.}
 Infine, quando @samp{@{} e @samp{@}} appaiono in costanti @dfn{regexp}
 in un modo non interpretabile come espressione di intervallo
 (come in @code{/q@{a@}/}), allora sono prese letteralmente.
-@end table
 
-@cindex precedenza, operatore @dfn{regexp}
-@cindex espressioni regolari, operatori, precedenza di
-Nelle espressioni regolari, gli operatori @samp{*}, @samp{+}, e @samp{?},
-come pure le parentesi graffe @samp{@{} e @samp{@}},
-hanno
-la precedenza pi@`u alta, seguiti dalla concatenazione, e infine da @samp{|}.
-Come nell'algebra, le parentesi possono cambiare il raggruppamento degli
-operatori.
-@cindex POSIX @command{awk}, espressioni regolari e
-@cindex @command{gawk}, espressioni regolari, precedenza
-In POSIX @command{awk} e in @command{gawk}, gli operatori @samp{*},
-@samp{+}, e @samp{?} rappresentano se stessi quando non c'@`e nulla
-nella @dfn{regexp} che li precede.  Per esempio, @code{/+/} individua un
-semplice segno pi@`u.  Comunque, molte altre versioni di @command{awk}
-trattano una simile notazione come un errore di sintassi.
+Come detto sopra, le espressioni di intervallo non erano tradizionalmente
+disponibili in @command{awk}.  Con la versione di Marzo 2019 di
+BWK @command{awk} sono (finalmente) disponibili.
 
-Se @command{gawk} @`e in modalit@`a compatibile (@pxref{Opzioni}), le espressioni
-di intervallo non si possono usare nelle espressioni regolari.
+Ciononostante, non essendo state disponibili per parecchi decenni,
+@command{gawk} continua a non renderle disponibili quando viene
+eseguito in modalit@`a compatibile (@pxref{Opzioni}).
 
 @node Espressioni tra parentesi quadre
 @section Usare espressioni tra parentesi quadre
 @cindex espressioni tra parentesi quadre
 @cindex espressioni tra parentesi quadre, espressioni di intervallo
 @cindex espressioni di intervallo, (@dfn{regexp})
-@cindex elenchi di caratteri in un'espressione regolare
-@cindex caratteri, elenchi di, in un'espressione regolare
+@cindex elenchi di caratteri in espressioni regolari
+@cindex caratteri, elenchi di, in espressioni regolari
+@cindex espressioni regolari, elenchi di caratteri in
 
 Come detto sopra, un'espressione tra parentesi quadre individua qualsiasi
 carattere incluso tra le parentesi quadre aperta e chiusa.
@@ -6117,6 +6194,28 @@ Con le classi di caratteri POSIX si pu@`o scrivere
 @code{/[[:alnum:]]/} per designare i caratteri alfabetici e numerici
 dell'insieme di caratteri in uso.
 
+@ignore
+From eliz@gnu.org  Fri Feb 15 03:38:41 2019
+Date: Fri, 15 Feb 2019 12:38:23 +0200
+From: Eli Zaretskii <eliz@gnu.org>
+To: arnold@skeeve.com
+CC: pengyu.ut@gmail.com, bug-gawk@gnu.org
+Subject: Re: [bug-gawk] Does gawk character classes follow this?
+
+> From: arnold@skeeve.com
+> Date: Fri, 15 Feb 2019 03:01:34 -0700
+> Cc: pengyu.ut@gmail.com, bug-gawk@gnu.org
+> 
+> I get the feeling that there's something really bothering you, but
+> I don't understand what.
+> 
+> Can you clarify, please?
+
+I thought I already did: we cannot be expected to provide a definitive
+description of what the named classes stand for, because the answer
+depends on various factors out of our control.
+@end ignore
+
 @c Thanks to
 @c Date: Tue, 01 Jul 2014 07:39:51 +0200
 @c From: Hermann Peifer <peifer@gmx.eu>
@@ -6130,7 +6229,7 @@ dell'insieme di caratteri ASCII.  Usando una lista di caratteri che esclude
 sono nell'intervallo ASCII.
 
 @quotation NOTA
-Alcune vecchie versioni Unix di @command{awk} 
+Alcune vecchie versioni Unix di @command{awk}
 trattano @code{[:blank:]} come @code{[:space:]}, individuando quindi
 pi@`u caratteri del dovuto.  Caveat Emptor! [Stia in guardia il compratore!].
 @end quotation
@@ -6776,6 +6875,7 @@ Questo @`e il motivo per cui i record sono, per default, righe singole.
 Per usare un diverso carattere come separatore di record
 basta assegnare quel carattere alla variabile predefinita @code{RS}.
 
+@cindex separatore di record, ritorno a capo come
 @cindex ritorno a capo, come separatore di record
 @cindex a capo, come separatore di record
 @cindex @code{RS}, variabile
@@ -6938,6 +7038,7 @@ elaborati.
 @cindex @code{RT}, variabile
 @cindex record, fine dei
 @cindex differenze tra @command{awk} e @command{gawk}, separatori di record
+@cindex differenze tra @command{awk} e @command{gawk}, variabili @code{RS}/@code{RT}
 @cindex espressioni regolari, come separatori di record
 @cindex record, separatori di, espressioni regolari come
 @cindex separatori di record, espressioni regolari come
@@ -7020,6 +7121,9 @@ in cui possono essere presenti dei caratteri di ritorno a capo.
 @`E meglio perci@`o evitare metacaratteri di ancoraggio nel valore di @code{RS}.
 @end quotation
 
+@cindex @command{gawk}, variabile @code{RT} in
+@cindex @code{RT}, variabile
+@cindex variabile @code{RT}
 @cindex differenze tra @command{awk} e @command{gawk}, variabili @code{RS}/@code{RT}
 L'uso di @code{RS} come espressione regolare e la variabile @code{RT} sono
 estensioni @command{gawk}; non sono disponibili in
@@ -7065,8 +7169,10 @@ Capita che recenti versioni di @command{mawk} possano usare i carattere
 @command{mawk} non consente  di includere caratteri @sc{NUL} nelle stringhe.
 (Ci@`o potrebbe cambiare in una versione futura di @command{mawk}.)
 
-@cindex record, trattare un file come un solo
-@cindex trattare un file, come un solo record
+@cindex record, trattare file come un solo
+@cindex trattare un file come un solo record
+@cindex record unico, trattare un file come un
+@cindex unico record, trattare un file come un
 @xref{Funzione readfile} per un modo interessante di leggere
 file interi.  Se si usa  @command{gawk}, si veda
 @ref{Esempio di estensione Readfile} per un'altra opzione.
@@ -7486,7 +7592,7 @@ questo programma @command{awk} estrae e stampa la stringa
 @samp{@bullet{}29@bullet{}Oak@bullet{}St.}.
 
 @cindex separatori di campo, scelta dei
-@cindex espressioni regolari come separatori di campo
+@cindex espressioni regolari, come separatori di campo
 @cindex separatori di campo, espressioni regolari come
 A volte i dati in input contengono caratteri separatori che non
 separano i campi nel modo in cui ci si sarebbe atteso.  Per esempio, il
@@ -7510,6 +7616,7 @@ si possano manipolare con un programma @command{awk} separato.)
 @node Separatori di campo di default
 @subsection Lo spazio vuoto normalmente separa i campi
 
+@cindex separatori di campo, spazi vuoti come
 @cindex spazi vuoti, come separatori di campo
 I campi sono separati normalmente da spazi vuoti
 (spazi, tabulazioni e ritorni a capo), non solo da spazi singoli.  Due spazi
@@ -7711,6 +7818,7 @@ awk -F\\\\ '@dots{}' file @dots{}
 @end example
 
 @noindent
+@cindex separatore di campo, @code{\} (barra inversa) come
 @cindex @code{\} (barra inversa), come separatore di campo
 @cindex barra inversa (@code{\}), come separatore di campo
 Poich@'e @samp{\} @`e usato nella shell per proteggere caratteri, a @command{awk}
@@ -8055,7 +8163,7 @@ schede @`e un'altra storia!)
 @subsection Saltare campi intermedi
 
 A partire dalla @value{PVERSION} 4.2, ogni specifica di una larghezza di campo
-pu@`o essere facoltativamente preceduta da un valore, delimitato da due punti
+pu@`o essere opzionalmente preceduta da un valore, delimitato da due punti
 (@code{:}), che indica il numero di caratteri da saltare prima dell'inizio del campo
 successivo.  Quindi, il programma precedente potrebbe essere riscritto per
 specificare @code{FIELDWIDTHS} in questo modo:
@@ -8325,7 +8433,7 @@ per suddividere normali stringhe (@pxref{Funzioni per stringhe}).
 @cindex @command{gawk}, separazione in campi e
 Come visto sopra, @command{gawk} fornisce tre metodi indipendenti per
 dividere i record in input in campi.  Il meccanismo utilizzato dipende da
-quale delle tre variabili---@code{FS}, @code{FIELDWIDTHS} o 
+quale delle tre variabili---@code{FS}, @code{FIELDWIDTHS} o
 @code{FPAT}---@`e stato definito per ultimo.
 Inoltre, un analizzatore di input che utilizzi l'API (Application
 Programming Interface) pu@`o scegliere di modificare il meccanismo di
@@ -8359,7 +8467,7 @@ else
 Quest'informazione @`e utile se si sta scrivendo una funzione che
 deve cambiare provvisoriamente @code{FS} o @code{FIELDWIDTHS}, leggere alcuni
 record e poi ripristinare le inpostazioni originali.  Si veda
-(@pxref{Funzioni Passwd} per un esempio si una funzione di questo tipo.
+(@pxref{Funzioni Passwd} per un esempio di una funzione di questo tipo.
 
 @node Righe multiple
 @section Record su righe multiple
@@ -8538,6 +8646,7 @@ standard POSIX.)
 
 @cindex @command{gawk}, @code{RT} variabile in
 @cindex @code{RT}, variabile
+@cindex differenze tra @command{awk} e @command{gawk}, variabili @code{RS}/@code{RT}
 Se non @`e eseguito in modalit@`a di compatibilit@`a (@pxref{Opzioni}),
 @command{gawk} imposta @code{RT} al testo di input corrispondente
 al valore specificato da @code{RS}.
@@ -9533,7 +9642,7 @@ print @var{elemento1}, @var{elemento2}, @dots{}
 @end example
 
 @noindent
-L'intera lista di elementi pu@`o facoltativamente essere racchiusa fra
+L'intera lista di elementi pu@`o opzionalmente essere racchiusa fra
 parentesi.  Le parentesi sono obbligatorie se qualche espressione presente
 in uno degli elementi usa l'operatore relazionale @samp{>}, che potrebbe
 essere confuso con una ridirezione dell'output (@pxref{Ridirezione}).
@@ -9839,7 +9948,7 @@ printf @var{formato}, @var{elemento1}, @var{elemento2}, @dots{}
 
 @noindent
 Come nel caso di @code{print}, l'intera lista degli argomenti pu@`o
-facoltativamente essere racchiusa fra
+opzionalmente essere racchiusa fra
 parentesi.  Anche qui, le parentesi sono obbligatorie se l'espressione di
 qualche elemento usa l'operatore
 relazionale @samp{>}, che potrebbe
@@ -9893,7 +10002,7 @@ una @dfn{lettera di controllo del formato}; e dice all'istruzione
 @code{printf} come stampare un elemento.  La lettera di controllo del
 formato specifica che @emph{tipo}
 di valore stampare.  Il resto dello specificatore di formato @`e costituito da
-@dfn{modificatori} facoltativi che controllano @emph{come} stampare il valore,
+@dfn{modificatori} opzionali che controllano @emph{come} stampare il valore,
 per esempio stabilendo la larghezza del campo.  Ecco una lista delle
 lettere di controllo del formato:
 
@@ -9916,7 +10025,7 @@ estremamente non-portabile!
 
 Inoltre, questi formati non sono disponibili su alcun sistema in cui
 la funzione di libreria C @code{printf()} utilizzata da @command{gawk}
-non li supporta.  
+non li supporta.
 Al momento in cui questo libro @`e stato scritto, fra i sistemi su cui
 @`e stato portato @command{gawk}, il solo sistema noto che
 non li supporta @`e OpenVMS.
@@ -9979,7 +10088,7 @@ printf "%4.3f", 1950
 @end example
 
 @noindent
-stampa @samp{1950.000}, con un totale di quattro cifre significative, tre
+stampa @samp{1950.000}, con un minimo di quattro cifre significative, tre
 delle quali vengono dopo il punto decimale.
 (L'espressione @samp{4.3} rappresenta due modificatori,
 introdotti nella prossima @value{SUBSECTION}).
@@ -10051,7 +10160,7 @@ avere valori speciali per rappresentare ``infinito'' (sia positivo che
 negativo) e valori che sono ``non numerici'' (NaN - [Not a Number]).
 
 L'input e l'output di tali valori avviene sotto forma di stringhe di
-testo.  Ci@`o pone dei problemi nel linguaggio @command{awk}, che 
+testo.  Ci@`o pone dei problemi nel linguaggio @command{awk}, che
 esisteva gi@`a prima della definizione dello standard IEEE.  Dettagli
 ulteriori si possono trovare in @ref{Problemi virgola mobile POSIX};
 si prega di fare riferimento a quel testo.
@@ -11088,7 +11197,14 @@ quando chiude una @dfn{pipe}.
 @node Continuazione dopo errori
 @section Abilitare continuazione dopo errori in output
 
-Questa @value{SECTION} descrive una funzionalit@`a specifica di @command{gawk}.
+@ifnotinfo
+Questa
+@end ifnotinfo
+@ifinfo
+Questo
+@end ifinfo
+@value{SECTION} descrive una funzionalit@`a disponibile solo in
+@command{gawk}.
 
 In @command{awk} standard, l'output con @code{print} o @code{printf}
 a un file che non esiste, o qualche altro errore di I/O (come p.es.
@@ -11406,14 +11522,14 @@ In modalit@`a POSIX (@pxref{Opzioni}), @command{gawk} non consente
 caratteri protetti di avanzamento riga.  Altrimenti, il
 comportamento @`e quello descritto sopra.
 
-BKW @command{awk} e Busybox @command{awk}
+BKW @command{awk} e BusyBox @command{awk}
 tolgono la barra inversa, ma lasciano indisturbato il carattere
 di avanzamento riga, che fa quindi parte della stringa:
 
 @example
 $ @kbd{nawk 'BEGIN @{ print "ciao, \}
 > @kbd{mondo" @}'}
-@print{} ciao, 
+@print{} ciao,
 @print{} mondo
 @end example
 
@@ -11692,7 +11808,8 @@ Questa
 @ifinfo
 Questo
 @end ifinfo
-@value{SECTION} descrive una funzionalit@`a specifica di @command{gawk}.
+@value{SECTION} descrive una funzionalit@`a disponibile solo in
+@command{gawk}.
 
 Come visto
 @iftex
@@ -11726,6 +11843,7 @@ sarebbe bello poter avere costanti @dfn{regexp} che sono
 una @dfn{regexp} utile per effettuare dei confronti,
 e non una semplice espressione regolare.
 
+@cindex valori, @dfn{regexp}
 @command{gawk} prevede questa funzionalit@`a.  Un'espressione regolare
 fortemente tipizzata @`e molto simile a un'espressione regolare normale,
 tranne per il fatto di essere preceduta dal simbolo @samp{@@}:
@@ -11941,7 +12059,7 @@ gawk -v 're1=@/pippo|pluto/' '@dots{}' /percorso/al/file1 're2=@/ciao|salve/' /p
 @noindent
 Le costanti @dfn{regexp} fortemente tipizzate sono un'altra
 funzionalit@`a avanzata disponibile
-(@pxref{costanti @dfn{regexp} fortemente tipizzate}).
+(@pxref{Costanti @dfn{regexp} forti}).
 Sono ricordate qui solo per completezza.
 
 @node Conversione
@@ -12564,7 +12682,7 @@ BEGIN  @{
     for (x in pippo)
        print x, pippo[x]
 @end group
-  
+
 @group
     pluto[rand()] = pluto[rand()] + 5
     for (x in pluto)
@@ -12776,7 +12894,7 @@ come valore dell'espressione.
 
 @sidebar Ordine di valutazione degli operatori
 @cindex precedenza
-@cindex operatori, precedenza
+@cindex operatori, precedenza degli
 @cindex portabilit@`a, operatori
 @cindex valutazione, ordine di
 @cindex Marx, Groucho
@@ -13933,6 +14051,8 @@ Appartenenza a un vettore.
 
 @cindex @code{?} (punto interrogativo), operatore @code{?:}
 @cindex punto interrogativo (@code{?}), operatore @code{?:}
+@cindex @code{:} (due punti), operatore @code{?:}
+@cindex due punti (@code{:}), operatore @code{?:}
 @item @code{?:}
 Operatore condizionale.  Questo operatore raggruppa da destra verso sinistra.
 
@@ -14167,7 +14287,7 @@ Il criterio di ricerca vuoto corrisponde a ciascun record in input.
 
 @node @dfn{regexp} come criteri di ricerca
 @subsection Espressioni regolari come criteri di ricerca
-@cindex criteri di ricerca, espressioni come
+@cindex criteri di ricerca, espressioni regolari come
 @cindex espressioni regolari, come criteri di ricerca
 
 Le espressioni regolari sono uno dei primi tipi di criteri di ricerca
@@ -14187,6 +14307,7 @@ END            @{ print personaggi_Disney, "Personaggi Disney visti" @}
 @node Espressioni come criteri di ricerca
 @subsection Espressioni come criteri di ricerca
 @cindex espressioni regolari, come criteri di ricerca
+@cindex criteri di ricerca, espressioni regolari come
 
 Qualsiasi espressione @command{awk} pu@`o essere usata come un criterio di
 ricerca @command{awk}.
@@ -14242,6 +14363,7 @@ viene trovato nel record in input corrente. Quindi, come criterio di ricerca,
 @code{/li/} individua tutti i record che contengono la stringa @samp{li}.
 
 @cindex espressioni booleane, come criteri di ricerca
+@cindex criteri di ricerca, espressioni booleane come
 Anche le espressioni booleane sono frequentemente usate come criteri di
 ricerca.  Se un criterio di ricerca
 individua o no un record in input dipende dalla verifica delle
@@ -14575,7 +14697,14 @@ Analogamente, tali istruzioni non sono valide all'interno di una regola
 @cindex @code{ENDFILE}, criterio di ricerca
 @cindex differenze tra @command{awk} e @command{gawk}, criteri di ricerca @code{BEGINFILE}/@code{ENDFILE}
 
-Questa @value{SECTION} descrive una funzionalit@`a specifica di @command{gawk}.
+@ifnotinfo
+Questa
+@end ifnotinfo
+@ifinfo
+Questo
+@end ifinfo
+@value{SECTION} descrive una funzionalit@`a disponibile solo in
+@command{gawk}.
 
 Due tipi speciali di criterio di ricerca, @code{BEGINFILE} ed @code{ENDFILE},
 forniscono
@@ -14769,7 +14898,7 @@ apici.
 
 @node Panoramica sulle azioni
 @section Azioni
-@c @cindex action, definition of
+@c @cindex action, definizione di
 @c @cindex curly braces
 @c @cindex action, curly braces
 @c @cindex action, separating statements
@@ -14933,7 +15062,7 @@ dell'istruzione.  Se la @var{condizione} @`e vera, viene eseguita la
 parte @var{se-vera-fai}; altrimenti viene
 eseguita la parte @var{se-falsa-fai}.
 La parte @code{else} dell'istruzione @`e
-facoltativa.  La condizione @`e considerata falsa se il suo valore @`e zero o
+opzionale.  La condizione @`e considerata falsa se il suo valore @`e zero o
 la stringa nulla; altrimenti, la condizione @`e vera.
 Si consideri quanto segue:
 
@@ -15207,7 +15336,13 @@ per maggiori informazioni su questa versione del ciclo @code{for}.
 @cindex @code{default}, parola chiave
 @cindex parola chiave @code{default}
 
-Questa @value{SECTION} descrive una funzionalit@`a disponibile solo in
+@ifnotinfo
+Questa
+@end ifnotinfo
+@ifinfo
+Questo
+@end ifinfo
+@value{SECTION} descrive una funzionalit@`a disponibile solo in
 @command{gawk}.
 Se @command{gawk} @`e in modalit@`a compatibile (@pxref{Opzioni}),
 la funzionalit@`a non @`e disponibile.
@@ -15762,7 +15897,7 @@ Una lista di posizioni di colonna, separate da spazi, per dire a
 @command{gawk}
 come dividere campi in input posti su colonne fisse.
 A partire dalla @value{PVERSION} 4.2, ogni lunghezza di campo pu@`o essere
-facoltativamente preceduta da un valore, separato da due punti (@code{:})
+opzionalmente preceduta da un valore, separato da due punti (@code{:})
 che specifica il numero di caratteri da ignorare prima dell'inizio del campo.
 Assegnando un valore a @code{FIELDWIDTHS}, le variabili @code{FS} e
 @code{FPAT}
@@ -15828,8 +15963,8 @@ Un modo semplice per fare questo
 @cindex @code{IGNORECASE}, variabile
 @cindex variabile @code{IGNORECASE}
 @cindex differenze tra @command{awk} e @command{gawk}, variabile @code{IGNORECASE}
-@cindex maiuscolo/minuscolo e confronti tra stringhe
-@cindex maiuscolo/minuscolo e @dfn{regexp}
+@cindex maiuscolo/minuscolo, confronti tra stringhe e
+@cindex maiuscolo/minuscolo, @dfn{regexp} e
 @cindex espressioni regolari, maiuscolo/minuscolo
 @item IGNORECASE #
 Se la variabile @code{IGNORECASE} @`e diversa da zero o dalla stringa nulla,
@@ -15894,7 +16029,6 @@ usavano @code{OFMT} per specificare il formato da usare per convertire
 numeri in stringhe in espressioni generali; questo compito @`e ora svolto
 da @code{CONVFMT}.
 
-@cindex @code{sprintf()}, funzione, variabile @code{OFMT} e
 @cindex funzione @code{sprintf()}, variabile @code{OFMT} e
 @cindex @code{print}, istruzione, variabile @code{OFMT} e
 @cindex istruzione @code{print}, variabile @code{OFMT} e
@@ -16219,7 +16353,8 @@ sono sicuramente sempre disponibili:
 
 @table @code
 @item PROCINFO["argv"]
-@cindex argomenti, riga di comando, @code{PROCINFO["argv"]}
+@cindex argomenti, riga di comando
+@cindex riga di comando, argomenti
 Il vettore @code{PROCINFO["argv"]} contiene tutti gli argomenti della riga di
 comando (dopo che l'eventuale elaborazione di valutazione e ridirezione,
 nelle piattaforme in cui ci@`o debba essere fatto a cura del programma), con
@@ -16301,16 +16436,13 @@ dopo aver finito l'analisi iniziale del programma; questi valori @emph{non}
 vengono pi@`u aggiornati durante l'esecuzione del programma.
 
 @item PROCINFO["platform"]
-@cindex piattaforma di esecuzione, @code{PROCINFO["platform"]}
+@cindex piattaforma di esecuzione
 Quest'elemento restituisce una stringa che indica la piattaforma
 per la quale @command{gawk} @`e stato compilato.  Il valore sar@`a
 uno dei seguenti:
 
 @c nested table
 @table @code
-@item "vms"
-OpenVMS o Vax/VMS.
-
 @item "djgpp"
 @itemx "mingw"
 Microsoft Windows, utilizzando DJGPP o MinGW, rispettivamente.
@@ -16323,6 +16455,9 @@ OS/390.
 
 @item "posix"
 GNU/Linux, Cygwin, Mac OS X, e sistemi Unix tradizionali.
+
+@item "vms"
+OpenVMS o Vax/VMS.
 @end table
 
 @item PROCINFO["pgrpid"]
@@ -16474,7 +16609,7 @@ individuata, oppure zero, se non @`e stata trovata alcuna corrispondenza.
 @cindex @command{gawk}, variabile @code{RT} in
 @cindex @code{RT}, variabile
 @cindex variabile @code{RT}
-@cindex differenze tra @command{awk} e @command{gawk}, variabile @code{RT}
+@cindex differenze tra @command{awk} e @command{gawk}, variabili @code{RS}/@code{RT}
 @item @code{RT #}
 Il testo in input che corrisponde al testo individuato da @code{RS},
 il separatore di record.  Questa variabile viene impostata dopo aver letto
@@ -17157,8 +17292,8 @@ lo converte automaticamente in una stringa.
 @cindex @command{gawk}, variabile @code{IGNORECASE} in
 @cindex maiuscolo/minuscolo, distinzione, indici dei vettori e
 @cindex vettori, ordinamento, variabile @code{IGNORECASE} e
-@cindex @code{IGNORECASE}, variabile, e indici dei vettori
-@cindex variabile @code{IGNORECASE}, e indici dei vettori
+@cindex @code{IGNORECASE}, variabile, indici dei vettori e
+@cindex variabile @code{IGNORECASE}, indici dei vettori e
 Il valore di @code{IGNORECASE} non ha alcun effetto sull'indicizzazione dei
 vettori.  Lo stesso valore di stringa usato per memorizzare un elemento di un
 vettore pu@`o essere usato per richiamarlo.
@@ -17487,7 +17622,13 @@ $ @kbd{nawk -f vediciclo.awk}
 @node Controllare visita
 @subsection Visita di vettori in ordine predefinito con @command{gawk}
 
-Questa @value{SUBSECTION} descrive una funzionalit@`a disponibile solo in
+@ifnotinfo
+Questa
+@end ifnotinfo
+@ifinfo
+Questo
+@end ifinfo
+@value{SUBSECTION} descrive una funzionalit@`a disponibile solo in
 @command{gawk}.
 
 Per default, quando un ciclo @code{for} visita un vettore, l'ordine
@@ -17658,9 +17799,10 @@ dei vettori; si veda @ref{Funzioni di ordinamento di vettori}.
 @section Usare numeri per indicizzare i vettori
 
 @cindex numeri, come indici di vettore
-@cindex vettori, indici numerici di
 @cindex indici di vettori, numeri come
-@cindex @code{CONVFMT}, variabile, e indici di vettore
+@cindex vettori, indici numerici di
+@cindex variabile @code{CONVFMT}, indici di vettore e
+@cindex @code{CONVFMT}, variabile, indici di vettore e
 Un aspetto importante da ricordare riguardo ai vettori @`e che
 @emph{gli indici dei vettori sono sempre stringhe}.
 Quando un valore numerico @`e usato come indice,
@@ -17776,6 +17918,7 @@ Qui, @samp{++} forza @code{righe} a essere di tipo numerico, rendendo
 quindi il ``vecchio valore'' uno zero numerico. Questo viene poi convertito
 in @code{"0"} come l'indice del vettore.
 
+@cindex indici di vettore, stringhe nulle come
 @cindex nulle, stringhe, come indici di vettore
 @cindex stringhe nulle, come indici di vettore
 @cindex angolo buio, indici di vettori
@@ -17826,8 +17969,8 @@ if (4 in pippo)
     print "Questo non verr@`a mai stampato"
 @end example
 
-@cindex nulle, stringhe, ed eliminazione di elementi di un vettore
-@cindex stringhe nulle, ed eliminazione di elementi di un vettore
+@cindex nulle, stringhe, eliminazione di elementi di un vettore e
+@cindex stringhe nulle, eliminazione di elementi di un vettore e
 @`E importante notare che eliminare un elemento @emph{non} @`e la stessa cosa
 che assegnargli un valore nullo (la stringa vuota, @code{""}).
 Per esempio:
@@ -17927,8 +18070,8 @@ molti linguaggi, compreso @command{awk}) per far riferimento a un elemento di
 un vettore multidimensionale chiamato @code{griglia} @`e con
 @code{griglia[@var{x},@var{y}]}.
 
-@cindex @code{SUBSEP}, variabile, e vettori multidimensionali
-@cindex variabile @code{SUBSEP}, e vettori multidimensionali
+@cindex @code{SUBSEP}, variabile, vettori multidimensionali e
+@cindex variabile @code{SUBSEP}, vettori multidimensionali e
 I vettori multidimensionali sono resi disponibili in @command{awk} attraverso
 la concatenazione di pi@`u indici in una stringa;
 @command{awk} converte gli indici in stringhe
@@ -18435,7 +18578,7 @@ funzione @code{atan2()} @`e chiamata con i due argomenti 11 e 10.
 
 La seguente lista descrive tutte le
 funzioni predefinite che hanno a che fare con i numeri.
-I parametri facoltativi sono racchiusi tra parentesi quadre@w{ ([ ]):}
+I parametri opzionali sono racchiusi tra parentesi quadre@w{ ([ ]):}
 
 @c @asis for docbook
 @table @asis
@@ -18503,20 +18646,26 @@ implementano lo standard IEEE 754.
 Inoltre, @command{gawk} stampa un messaggio di avvertimento qualora @code{x}
 sia negativo.
 
+@cindex Beebe, Nelson H.F.@:
 @item @code{rand()}
 @cindexawkfunc{rand}
 @cindex numeri casuali, funzioni @code{rand()}/@code{srand()}
 Restituisce un numero casuale.  I valori di @code{rand()} sono
 uniformemente distribuiti tra zero e uno.
 Il valore potrebbe essere zero ma non @`e mai uno.@footnote{La versione C di
-@code{rand()} in molti sistemi Unix
-produce notoriamente delle sequenze piuttosto mediocri di numeri casuali.
-Tuttavia, non @`e prescritto che un'implementazione di @command{awk}
-debba usare la funzione @code{rand()} del linguaggio C per implementare
-la versione @command{awk} di @code{rand()}.
-In effetti, @command{gawk} usa, per generare numeri casuali,
-la funzione @code{random()} di BSD, che @`e
-notevolmente migliore di @code{rand()}}
+@code{rand()} in molti sistemi Unix genera notoriamente delle sequenze
+piuttosto mediocri di numeri casuali.  Tuttavia, non @`e scritto da nessuna
+parte che un'implementazione di @command{awk} debba necessariamente
+usare la funzione @code{rand()} del linguaggio C per implementare
+la versione @command{awk} di @code{rand()}.  In effetti, @command{gawk}
+ha usato per parecchi anni la funzione @code{random()} di BSD, che @`e
+notevolmente migliore di @code{rand()}, per generare dei numeri casuali.
+Dalla @value{PVERSION} 4.1.4, grazie al contributo di Nelson H.F.@:
+Beebe, @command{gawk} usa l'algoritmo di rimescolamento nella scatola
+di Bayes-Durham, che estende in maniera notevole il periodo dopo il
+quale i numeri si ripetono ed elimina le correlazioni a breve distanza
+e a lunga distanza che potrebbero esistere nel generatore originale
+di numeri casuali.}
 
 Spesso servono dei numeri casuali interi invece che frazionari.
 La seguente funzione definita dall'utente pu@`o essere usata per ottenere
@@ -18641,7 +18790,7 @@ zero.  @`E importante ricordarlo quando si fanno calcoli sugli indici, in
 particolare se si ha familiarit@`a con il linguaggio C.
 @end quotation
 
-Nella lista seguente, i parametri facoltativi sono racchiusi tra parentesi
+Nella lista seguente, i parametri opzionali sono racchiusi tra parentesi
 quadre@w{ ([ ]).}
 Parecchie funzioni operano sostituzioni in una stringa; la spiegazione
 completa di ci@`o @`e contenuta nella descrizione della funzione @code{sub()},
@@ -18914,7 +19063,7 @@ avvertimento a questo riguardo.
 
 @cindex estensioni comuni, @code{length()} applicato a un vettore
 @cindex comuni, estensioni@comma{} @code{length()} applicato a un vettore
-@cindex differenze tra @command{gawk} e @command{awk}
+@cindex differenze tra @command{gawk} e @command{awk}, funzione @code{length()}
 @cindex numero di elementi di un vettore
 @cindex vettore, determinare il numero degli elementi
 In @command{gawk} e in parecchie altre implementazioni @command{awk},
@@ -19780,7 +19929,7 @@ da fare delle sostituzioni.
 @cindex funzioni di input/output
 
 Le seguenti funzioni riguardano l'input/output (I/O).
-I parametri facoltativi sono racchiusi tra parentesi quadre ([ ]):
+I parametri opzionali sono racchiusi tra parentesi quadre ([ ]):
 
 @table @asis
 @item @code{close(}@var{nome_file} [@code{,} @var{come}]@code{)}
@@ -20143,7 +20292,7 @@ non sono previste nello standard POSIX.@footnote{Il comando di utilit@`a GNU
 @command{date} pu@`o fare anche molte delle cose qui descritte.   Pu@`o essere
 preferibile usarlo per semplici operazioni relative a data e ora in semplici
 script della shell.}  Tuttavia, anche versioni recenti di @command{mawk}
-(@pxref{Altre versioni}) prevedono queste funzioni.  I parametri facoltativi
+(@pxref{Altre versioni}) prevedono queste funzioni.  I parametri opzionali
 sono racchiusi tra parentesi quadre ([ ]):
 
 @c @asis for docbook
@@ -20673,7 +20822,7 @@ Partendo nuovamente da @samp{10111001} e spostandolo a sinistra di tre
 bit, si ottiene @samp{11001000}.  La lista seguente descrive
 le funzioni predefinite di @command{gawk} che rendono disponibili
 le operazioni a livello di bit.
-I parametri facoltativi sono racchiusi tra parentesi quadre ([ ]):
+I parametri opzionali sono racchiusi tra parentesi quadre ([ ]):
 
 @cindex @command{gawk}, operazioni a livello di bit in
 @table @asis
@@ -20803,7 +20952,7 @@ $ @kbd{gawk -f testbits.awk}
 @cindex stringhe, conversione
 @cindex numeri, conversione in stringhe
 @cindex conversione da numeri a stringhe
-@cindex numero visto come stringa di bit
+@cindex numeri, visti come stringhe di bit
 La funzione @code{bits2str()} trasforma un numero binario in una stringa.
 Inizializzando @code{maschera} a uno otteniamo
 un valore binario in cui il bit pi@`u a destra @`e impostato a
@@ -20999,7 +21148,7 @@ Questi sono costituiti dalle funzioni descritte nella lista seguente.
 Le descrizioni sono volutamente concise.
 @xref{Internazionalizzazione},
 per un'esposizione completa.
-I parametri facoltativi sono racchiusi tra parentesi quadre ([ ]):
+I parametri opzionali sono racchiusi tra parentesi quadre ([ ]):
 
 @table @asis
 @cindexgawkfunc{bindtextdomain}
@@ -21055,6 +21204,7 @@ ma dipende dall'utente la loro definizione
                                 significano.
 * Esempio di funzione::         Un esempio di definizione di
                                 funzione e spiegazione della stessa.
+* Chiamata di una funzione::    Chiamare funzioni definite dall'utente.
 * Precisazioni sulle funzioni:: Cose a cui prestare attenzione.
 * Istruzione return::           Specificare il valore che una
                                 funzione restituisce.
@@ -21361,7 +21511,7 @@ come stringa di formato.  Sarebbe un errore, perch@'e si suppone che
 e qualche codice a livello utente potrebbe aver modificato in precedenza
 @code{PROCINFO["strftime"]}.
 
-@node Precisazioni sulle funzioni
+@node Chiamata di una funzione
 @subsection Chiamare funzioni definite dall'utente
 
 @cindex funzioni definite dall'utente, chiamare
@@ -21374,7 +21524,8 @@ restituito dalla funzione.
 @menu
 * Chiamare una funzione::               Non usare spazi.
 * Campo di validit@`a variabili::         Variabili locali e globali.
-* Parametri per valore/riferimento::      Passaggio parametri.
+* Parametri per valore/riferimento::    Passaggio parametri.
+* Precisazioni sulle funzioni::         Cose a cui prestare attenzione.
 @end menu
 
 @node Chiamare una funzione
@@ -21629,6 +21780,9 @@ stampa @samp{a[1] = 1, a[2] = due, a[3] = 3}, perch@'e
 @code{cambialo()} memorizza @code{"due"} nel secondo elemento di @code{a}.
 @end quotation
 
+@node Precisazioni sulle funzioni
+@subsubsection Cose a cui prestare attenzione
+
 @cindex indefinite, funzioni
 @cindex funzioni indefinite
 Alcune implementazioni di @command{awk} consentono di chiamare una
@@ -21678,6 +21832,42 @@ o @code{nextfile}
 all'interno di una funzione definita dall'utente.
 @command{gawk} non ha questa limitazione.
 
+@`E possibile chiamare una funzione specificando parametri in pi@`u rispetto
+a quelli che la funzione si aspetta, come p.es.:
+
+@example
+function pippo(p1, p2)
+@{
+    @dots{}
+@}
+
+BEGIN @{
+    pippo(1, 2, 3, 4)
+@}
+@end example
+
+Fare questo, tuttavia, @`e una pratica sconsigliata.  La funzione chiamata
+potrebbe fare qualsiasi cosa con i valori ulteriori che le vengono passati,
+quindi @command{awk} calcola le espressioni richieste, per poi non
+utilizzarle affatto.
+
+@`E inoltre ancora pi@`u importante notare che una simile chiamata di funzione
+pu@`o essere causa di confusione per la persona che potrebbe leggere in
+seguito il programma in questione.@footnote{Questa persona potresti
+anche essere tu, dopo qualche tempo, e a quel punto ti domanderesti
+``cosa stavo pensando?!?''}
+I parametri di una funzione sono generalmente elementi dell'input che
+influenzano l'elaborazione eseguita dalla funzione.  Chiamare una funzione
+con pi@`u parametri del necessario potrebbe comunicare la falsa impressione
+che quei valori siano importanti per la funzione, mentre in realt@`a non
+lo sono affatto.
+
+Poich@'e questa pratica non @`e affatto raccomandabile, @command{gawk}
+manda @emph{sempre} un messaggio di avvertimento quando si trova a
+eseguire una tale chiamata di funzione.  (Se non si vuole ricevere
+il messaggio, occorre modificare il codice!  In fondo, non @`e
+corretto).
+
 @node Istruzione return
 @subsection L'istruzione @code{return}
 @cindex @code{return}, istruzione@comma{} in funzioni definite dall'utente
@@ -21696,7 +21886,7 @@ Questo @`e un esempio:
 @code{return} [@var{espressione}]
 @end display
 
-La parte @var{espressione} @`e facoltativa.
+La parte @var{espressione} @`e opzionale.
 Probabilmente per una svista, POSIX non definisce qual @`e il valore
 restituito, se si omette @var{espressione}.  Tecnicamente parlando, questo
 rende il valore restituito indefinito, e quindi, indeterminato.
@@ -22563,6 +22753,12 @@ Le convenzioni illustrate in questa @value{SECTION} sono esattamente
 quello che indica il termine: convenzioni. Non si @`e obbligati a scrivere
 i propri programmi in questo modo: @`e solo auspicabile che lo si faccia.
 
+A partire dalla @value{PVERSION} 5.0, @command{gawk} fornisce
+un meccanismo efficiente per risolvere i problemi descritti in
+questa sezione: gli spazi-dei-nomi (@dfn{spazi-dei-nomi}).
+Gli spazi-dei-nomi e il loro utilizzo sono descritti in dettaglio
+in @ref{Spazi-dei-nomi}.
+
 @node Funzioni di tipo generale
 @section Programmazione di tipo generale
 
@@ -22976,7 +23172,7 @@ non vi @`e nessun reale motivo per inglobarle come funzioni predefinite
 @c file eg/lib/ord.awk
 # ord.awk --- implementa ord e chr
 
-# Identificatori globali:
+# Identificativi globali:
 #    _ord_:        valori numerici indicizzati da caratteri
 #    _ord_init:    funzione per inizializzare _ord_
 @c endfile
@@ -24668,7 +24864,7 @@ usa queste funzioni.
 @cindex funzioni, libreria di, leggere la lista dei gruppi
 @cindex gruppi, lista dei, leggere la
 @cindex lista dei gruppi, leggere la
-@cindex @code{PROCINFO}, vettore, e appartenenza a gruppi
+@cindex @code{PROCINFO}, vettore, appartenenza a gruppi e
 @cindex @code{getgrent()}, funzione (libreria C)
 @cindex funzione @code{getgrent()} (libreria C)
 @cindex @code{getgrent()}, funzione definita dall'utente
@@ -26086,7 +26282,8 @@ $ @kbd{id}
 @print{} uid=1000(arnold) gid=1000(arnold) groups=1000(arnold),4(adm),7(lp),27(sudo)
 @end example
 
-@cindex @code{PROCINFO}, vettore, e @dfn{process ID} di utente e di gruppo
+@cindex @code{PROCINFO}, vettore, @dfn{process ID} di utente e di gruppo e
+@cindex vettore @code{PROCINFO}, @dfn{process ID} di utente e di gruppo e
 Questa informazione @`e parte di ci@`o che @`e reso disponibile dal vettore
 @code{PROCINFO} di @command{gawk} (@pxref{Variabili predefinite}).
 Comunque, il programma di utilit@`a @command{id} fornisce un output pi@`u
@@ -26768,12 +26965,10 @@ END @{
 @c endfile
 @end example
 
-@c FIXME: Include this?
-@ignore
-This program does not follow our recommended convention of naming
-global variables with a leading capital letter.  Doing that would
-make the program a little easier to follow.
-@end ignore
+Incidentalmente, questo programma non segue la convenzione,
+raccomandabile, di assegnare alle variabili globali un nome
+con la lettera iniziale maiuscola.  Se lo si fosse fatto, il programma
+sarebbe stato un po' pi@`u semplice da comprendere.
 
 @ifset FOR_PRINT
 La logica per scegliere quali righe stampare rappresenta una @dfn{macchina a
@@ -29161,6 +29356,9 @@ Contiene i seguenti capitoli:
 
 @itemize @value{BULLET}
 @item
+@ref{Spazi di nomi}
+
+@item
 @ref{Funzionalit@`a avanzate}
 
 @item
@@ -29357,7 +29555,7 @@ durante un ciclo @code{for}.
 Inoltre, il valore di @code{PROCINFO["sorted_in"]} pu@`o essere un nome di
 funzione.@footnote{Questo @`e il motivo per cui gli ordinamenti predefiniti
 iniziano con il carattere @samp{@@}, che non pu@`o essere usato in un
-identificatore.}
+identificativo.}
 Questo consente di scorrere un vettore sulla base di un qualsiasi criterio
 personalizzato. Gli elementi del vettore vengono ordinati in accordo col valore
 ritornato da questa funzione.  La funzione che fa il confronto dovrebbe essere
@@ -29730,8 +29928,8 @@ valori che esiste in memoria.
 @c Document It And Call It A Feature. Sigh.
 @cindex @command{gawk}, variabile @code{IGNORECASE} in
 @cindex vettori, ordinamento, variabile @code{IGNORECASE} e
-@cindex @code{IGNORECASE}, variabile, e funzioni di ordinamento dei vettori
-@cindex variabile @code{IGNORECASE}, e funzioni di ordinamento dei vettori
+@cindex @code{IGNORECASE}, variabile, funzioni di ordinamento dei vettori e
+@cindex variabile @code{IGNORECASE}, funzioni di ordinamento dei vettori e
 Poich@'e @code{IGNORECASE} influenza i confronti tra stringhe, il valore di
 @code{IGNORECASE} influisce anche sull'ordinamento sia con @code{asort()} che
 con @code{asorti()}.
@@ -29997,7 +30195,8 @@ o @code{getline}.
 @end quotation
 
 @cindex @command{gawk}, vettore @code{PROCINFO} in
-@cindex @code{PROCINFO}, vettore, e comunicazioni attraverso le @dfn{pty}
+@cindex @code{PROCINFO}, vettore, comunicazioni attraverso le @dfn{pty} e
+@cindex vettore @code{PROCINFO}, comunicazioni attraverso le @dfn{pty} e
 Per le comunicazioni bidirezionali si possono anche usare delle pseudo @dfn{tty}
 (@dfn{pty}) al posto delle @dfn{pipe}, se il sistema in uso le prevede.
 Questo vien fatto, a seconda del comando da usare, impostando un elemento
@@ -30052,16 +30251,16 @@ semplice, che pu@`o svolgere tale funzione:
 
 @example
 $ @kbd{cat add.c}
-#include <stdio.h> 
+#include <stdio.h>
 
-int 
-main(void) 
-@{ 
-    int x, y; 
-    while (scanf("%d %d", & x, & y) == 2) 
-        printf("%d\n", x + y); 
-    return 0; 
-@} 
+int
+main(void)
+@{
+    int x, y;
+    while (scanf("%d %d", & x, & y) == 2)
+        printf("%d\n", x + y);
+    return 0;
+@}
 $ @kbd{cc -O add.c -o add}	@ii{Compilazione del programma}
 @end example
 
@@ -30076,13 +30275,13 @@ $ @kbd{echo 1 2 |}
 E il programma andrebbe in stallo, poich@'e, @file{add.c} non chiama a sua
 volta @samp{setlinebuf(stdout)}. Il programma @command{add} si blocca.
 
-Ora, si provi invece con: 
+Ora, si provi invece con:
 
 @example
 $ @kbd{echo 1 2 |}
 > @kbd{gawk -v cmd=add 'BEGIN @{ PROCINFO[cmd, "pty"] = 1 @}}
 > @kbd{                 @{ print |& cmd; cmd |& getline x; print x @}'}
-@print{} 3 
+@print{} 3
 @end example
 
 Usando una @dfn{pty}, @command{gawk} fa s@`{@dotless{i}} che la libreria di I/O
@@ -30303,10 +30502,10 @@ del profilatore di @command{gawk} su questo programma e sui dati (quest'esempio
 dimostra anche che i programmatori di @command{awk} a volte si alzano molto
 presto al mattino per lavorare):
 
-@cindex @code{BEGIN}, criterio di ricerca, e profilatura
-@cindex criterio di ricerca @code{BEGIN}, e profilatura
-@cindex @code{END}, criterio di ricerca, e profilatura
-@cindex criterio di ricerca @code{END}, e profilatura
+@cindex @code{BEGIN}, criterio di ricerca, profilazione e
+@cindex criterio di ricerca @code{BEGIN}, profilazione e
+@cindex @code{END}, criterio di ricerca, profilazione e
+@cindex criterio di ricerca @code{END}, profilazione e
 @example
     # profilo gawk, creato Mon Sep 29 05:16:21 2014
 
@@ -30399,8 +30598,8 @@ o @code{while}) mostra quante volte il test del ciclo @`e stato eseguito.
 istruzione in una regola per determinare quante volte la regola @`e stata
 eseguita.  Se la prima istruzione @`e un ciclo, il conteggio @`e ingannevole.)
 
-@cindex funzioni definite dall'utente, conteggi, in un profilo
-@cindex definite dall'utente, funzioni, conteggi, in un profilo
+@cindex funzioni definite dall'utente, conteggi@comma{} in un profilo
+@cindex definite dall'utente, funzioni, conteggi@comma{} in un profilo
 @item
 Per le funzioni definite dall'utente, il conteggio vicino alla parola chiave
 @code{function} indica quante volte la funzione @`e stata chiamata.
@@ -30542,6 +30741,7 @@ tastiera.  Il segnale @code{INT} @`e generato dalle combinazioni di tasti
 @kbd{Ctrl-c} o @kbd{Ctrl-BREAK}, mentre il segnale
 @code{QUIT} @`e generato dalla combinazione di tasti @kbd{Ctrl-\}.
 
+@cindex stampa elegante
 Infine, @command{gawk} accetta anche un'altra opzione, @option{--pretty-print}.
 Quando viene chiamato in questo modo, @command{gawk} fa una ``stampa elegante''
 del programma nel file @file{awkprof.out}, senza conteggi sull'esecuzione.
@@ -30551,6 +30751,8 @@ Una volta, l'opzione @option{--pretty-print} eseguiva anche il programma.
 Ora non pi@`u.
 @end quotation
 
+@cindex profilazione, differenza rispetto alla stampa elegante
+@cindex stampa elegante, differenza rispetto alla profilazione
 C'@`e una differenza significativa tra l'output creato durante la profilazione,
 e quello creato durante la stampa elegante.  L'output della stampa elegante
 preserva i commenti originali che erano nel programma, anche se la loro
@@ -30572,12 +30774,12 @@ del proprio codice una volta completato lo sviluppo, usando poi il risultato
 come versione finale del programma.
 
 Poich@'e la rappresentazione interna del programma @`e formattata per
-essere aderente al programma @command{awk} in questione, la profilatura
-e la formattazione graziosa (opzione @option{--pretty-print}) disabilitano
+essere aderente al programma @command{awk} in questione, la profilazione
+e la stampa elegante (opzione @option{--pretty-print}) disabilitano
 automaticamente le optimizzazioni di default di @command{gawk}.
 
-La formattazione elegante mantiene anche il formato originale delle
-costanti numeriche; se sono stati usati dei valori ottali o esadecimali
+La profilazione e la stampa elegante mantengono anche il formato originale
+delle costanti numeriche; se sono stati usati dei valori ottali o esadecimali
 nel codice sorgente, questi compariranno nell'output nello stesso
 formato con cui sono stati inseriti.
 
@@ -31152,7 +31354,6 @@ in fase di esecuzione.
 @node Estrazione di stringhe
 @subsection Estrarre stringhe marcate
 @cindex stringhe, estrazione di
-@cindex stringhe marcate, estrazione di
 @cindex @option{--gen-pot}, opzione
 @cindex opzione @option{--gen-pot}
 @cindex opzioni sulla riga di comando, estrazione stringhe
@@ -31224,7 +31425,7 @@ in fase di esecuzione, non @`e in grado di cambiare l'ordine degli argomenti
 nella chiamata a @code{printf}.
 
 Per risolvere questo problema, gli specificatori di formato di @code{printf}
-possono avere un elemento in pi@`u, facoltativo, detto @dfn{specificatore
+possono avere un elemento in pi@`u, opzionale, detto @dfn{specificatore
 posizionale}.  Per esempio:
 
 @example
@@ -31472,15 +31673,36 @@ msgstr "Like, the scoop is"
 
 @cindex Linux
 @cindex GNU/Linux
+@quotation NOTA
+Le istruzione che seguono valgono per un ambiente GNU/Linux con la
+Libreria GNU C.  Fate attenzione!  I passi descritti possono
+variare col tempo, e la descrizione seguente pu@`o non essere accurata
+per tutte le distribuzione GNU/Linux, e la procedura pu@`o essere
+interamente differente per altri sistemi operativi.
+@end quotation
+
 Il passo successivo @`e di creare la directory che contenga il file binario
 con le traduzioni dei messaggi (file .mo [message object]) e
 creare in quella directory il file @file{guide.mo}.
-Si presume che il file in questione debba essere usato nella localizzazione
-@code{en_US.UTF-8}, perch@'e si deve usare un nome di localizzazione che sia
-noto alle routine del comando C @command{gettext}.
-La disposizione delle directory qui utilizzata @`e standard per il comando
-GNU @command{gettext} sui sistemi GNU/Linux.  Altre versioni di
-@command{gettext} possono usare una disposizione differente:
+La directory ha un nome del tipo @file{@var{locale}/LC_MESSAGES}, dove
+@var{locale} @`e un nome di localizzazione noto alle routine C
+di @command{gettext}.
+
+Come sapere quale localizzazione usare?  Le routine C di @command{gettext}
+usano quattro variabili d'ambiente.  Esse sono, nell'ordine:
+@env{$LANGUAGE}, @env{$LC_ALL}, @env{$LANG}, e
+@env{$LC_MESSAGES}.@footnote{Pi@`u o meno... In effetti sembra che quando
+la variabile d'ambiente @env{$LC_ALL} @`e impostata al valore @samp{C},
+non viene effettuata alcuna traduzione.  Vai a capire...}
+Quindi, noi controlliamo il valore di @env{$LANGUAGE}:
+
+@example
+$ @kbd{echo $LANGUAGE}
+@print{} en_US.UTF-8
+@end example
+
+@noindent
+Il passo succesivo @`e creare le directory:
 
 @example
 $ @kbd{mkdir en_US.UTF-8 en_US.UTF-8/LC_MESSAGES}
@@ -31496,7 +31718,7 @@ $ @kbd{mkdir en_US.UTF-8 en_US.UTF-8/LC_MESSAGES}
 @cindex file, @dfn{message object} (.mo), conversione da @dfn{portable object} file
 @cindex @command{msgfmt}, programma di utilit@`a
 @cindex programma di utilit@`a @command{msgfmt}
-Il programma di utilit@`a @command{msgfmt} effettua la conversione dal file
+Il programma di utilit@`a @command{msgfmt} effettua la conversione del file
 leggibile, in formato testo, @file{.po} nel file, in formato binario,
 @file{.mo}.
 Per default, @command{msgfmt} crea un file di nome @file{messages}.
@@ -31601,7 +31823,6 @@ esecuzione.
 @cindex debug dei programmi @command{awk}
 
 @c The original text for this chapter was contributed by Efraim Yawitz.
-@c FIXME: Add more indexing.
 
 Sarebbe bello se i programmi per il calcolatore funzionassero perfettamente la
 prima volta che vengono eseguiti, ma nella vita reale questo accade raramente,
@@ -31651,6 +31872,7 @@ In quel caso, cosa ci si pu@`o aspettare da un tale strumento?  La risposta
 dipende dal linguaggio su cui si effettua il debug, comunque in generale ci si
 pu@`o attendere almeno questo:
 
+@cindex debugger, funzionalit@`a del
 @itemize @value{BULLET}
 @item
 La possibilit@`a di osservare l'esecuzione delle istruzioni di un programma una
@@ -31684,13 +31906,18 @@ l'autore, o anche di un programma scritto da altri).
 @node Terminologia nel debug
 @subsection Concetti fondamentali sul debug
 
+@cindex debugger, terminologia
 Prima di entrare nei dettagli, dobbiamo introdurre diversi
 importanti concetti che valgono per tutti i debugger.
 La seguente lista definisce i termini usati nel resto di
 questo @value{CHAPTER}:
 
 @table @dfn
-@cindex @dfn{stack frame}
+@cindex @dfn{stack} di chiamata (debugger)
+@cindex debugger, @dfn{stack} di chiamata
+@cindex debugger, pila di chiamata
+@cindex @dfn{stack frame} (debugger)
+@cindex debugger, @dfn{stack frame}
 @item Stack frame
 Durante la loro esecuzione i programmi normalmente chiamano delle funzioni.
 Una funzione pu@`o  a sua volta chiamarne un'altra, o pu@`o richiamare se stessa
@@ -31715,8 +31942,10 @@ invocata.  I comandi che stampano la pila delle chiamate stampano anche le
 informazioni su ogni @dfn{stack frame} (come vedremo pi@`u avanti in dettaglio).
 
 @item Punto d'interruzione
-@cindex breakpoint
-@cindex punto d'interruzione
+@cindex @dfn{breakpoint} (debugger)
+@cindex punto d'interruzione (debugger)
+@cindex debugger, @dfn{breakpoint}
+@cindex debugger, punto d'interruzione
 Durante le operazioni di debug, spesso si preferisce lasciare che il programma
 venga eseguito finch@'e non raggiunge un certo punto, e da quel punto in poi si
 continua l'esecuzione un'istruzione alla volta.  Il modo per farlo @`e quello di
@@ -31727,8 +31956,10 @@ programma.  Si possono aggiungere e togliere quanti punti d'interruzione si
 vogliono.
 
 @item Punto d'osservazione
-@cindex @dfn{watchpoint}
-@cindex punto d'osservazione
+@cindex @dfn{watchpoint} (debugger)
+@cindex punto d'interruzione (debugger)
+@cindex debugger, @dfn{watchpoint}
+@cindex debugger, punto d'interruzione
 Un punto d'osservazione @`e simile a un punto d'interruzione.  La differenza @`e
 che i punti d'interruzione sono orientati attorno al codice; fermano il
 programma quando viene raggiunto un certo punto nel codice.  Un punto
@@ -31759,7 +31990,10 @@ Inoltre, poich@'e @command{awk} @`e un linguaggio deliberatamente molto
 conciso, @`e facile perdere di vista tutto ci@`o che avviene ``dentro''
 ogni riga di codice @command{awk}.  Il debugger d@`a l'opportunit@`a di
 guardare le singole istruzioni primitive la cui esecuzione @`e innescata
-dai comandi di alto livello di @command{awk}.
+dai comandi di alto livello di @command{awk}.@footnote{Le ``istruzioni
+primitive'' sono quelle dallo stesso @command{gawk}; il debugger
+non permette di arrivare al livello delle istruzioni hardware della
+macchina.}
 
 @node Esempio di sessione di debug
 @section Esempio di sessione di debug di @command{gawk}
@@ -31767,7 +32001,8 @@ dai comandi di alto livello di @command{awk}.
 @cindex debug, esempio di sessione
 
 Per illustrare l'uso di @command{gawk} come debugger, vediamo un esempio di
-sessione di debug.  Come esempio verr@`a usata l'implementazione @command{awk}
+sessione di debug.  Come esempio verr@`a usata un'implementazione @command{awk}
+(con errori)
 del comando POSIX @command{uniq} descritta in precedenza (@pxref{Programma
 uniq}).
 
@@ -31805,6 +32040,8 @@ programma nella riga di comando al debugger piuttosto che come parte del
 comando @code{run} al prompt del debugger.)
 L'opzione @option{-1} @`e un'opzione per @file{uniq.awk}.
 
+@cindex debugger, prompt
+@cindex prompt del debugger
 Invece di eseguire direttamente il programma sul @file{file_di_input}, come
 @command{gawk} farebbe normalmente, il debugger semplicemente carica
 i file sorgenti del programma, li compila internamente, e poi mostra
@@ -31821,9 +32058,9 @@ stato ancora eseguito nessun codice.
 @node Trovare il bug
 @subsection Trovare il bug
 
-Poniamo di avere un problema usando (una versione difettosa di)
-@file{uniq.awk} nella modalit@`a ``salta-campi'', perch@'e sembra che non
-catturi le righe che dovrebbero essere identiche dopo aver saltato il primo
+Poniamo di avere un problema usando una versione (difettosa) di
+@file{uniq.awk} in modalit@`a ``salta-campi'', perch@'e sembra non
+trovare le righe che sono identiche a condizione di saltare il primo
 campo, come:
 
 @example
@@ -31854,6 +32091,13 @@ ragionevole per un punto d'interruzione in @file{uniq.awk} @`e all'inizio della
 funzione @code{se_sono_uguali()}, che confronta la riga corrente con la precedente.
 Per impostare il punto d'interruzione, usare il comando @code{b} (@dfn{breakpoint}):
 
+@cindex debugger, impostare un punto d'interruzione
+@cindex @code{breakpoint}, comando del debugger
+@cindex comando del debugger, @code{breakpoint}
+@cindex @code{break}, comando del debugger
+@cindex comando del debugger, @code{break}
+@cindex @code{b}, comando del debugger
+@cindex comando del debugger, @code{b}
 @example
 gawk> @kbd{b se_sono_uguali}
 @print{} Breakpoint 1 impostato al file `uniq.awk', riga 63
@@ -31863,6 +32107,9 @@ Il debugger mostra il file e il numero di riga dove si trova il punto
 d'interruzione.  Ora bisogna immettere @samp{r} o @samp{run} e il programma
 viene eseguito fino al primo punto d'interruzione:
 
+@cindex debugger, eseguire il programma
+@cindex comando del debugger, @code{run}
+@cindex @code{run}, comando del debugger
 @example
 gawk> @kbd{r}
 @print{} Partenza del programma:
@@ -31879,6 +32126,11 @@ Prima di tutto, vediamo come siamo arrivati a questo punto.  Sulla riga di
 comando battiamo @samp{bt} (che sta per ``backtrace''), e il debugger risponde
 con un listato degli @dfn{stack frame} correnti:
 
+@cindex debugger, elementi pila, visualizzazione
+@cindex comando del debugger, @code{bt}
+@cindex @code{bt}, comando del debugger
+@cindex comando del debugger, @code{backtrace}
+@cindex @code{backtrace}, comando del debugger
 @example
 gawk> @kbd{bt}
 @print{} #0  se_sono_uguali(n, m, campi_ultima, campi_corrente,
@@ -31900,6 +32152,10 @@ alcune variabili.  Immaginiamo di battere @samp{p n}
 @code{n}, un parametro di @code{se_sono_uguali()}.  In realt@`a, il debugger
 ci d@`a:
 
+@cindex comando del debugger, @code{print}
+@cindex @code{print}, comando del debugger
+@cindex comando del debugger, @code{p}
+@cindex @code{p}, comando del debugger
 @example
 gawk> @kbd{p n}
 @print{} n = untyped variable
@@ -31951,6 +32207,10 @@ ulteriormente, iniziamo a ``scorrere una ad una'' le righe di
 @code{se_sono_uguali()}.  Cominciamo col battere @samp{n} (per ``next''
 [successivo]):
 
+@cindex comando del debugger, @code{n}
+@cindex @code{n}, comando del debugger
+@cindex comando del debugger, @code{next}
+@cindex @code{next}, comando del debugger
 @example
 @group
 gawk> @kbd{n}
@@ -31998,6 +32258,8 @@ del vettore.
 
 Una prima possibilit@`a @`e quella di usare degli indici:
 
+@cindex debugger, stampare singoli elementi di un vettore
+@cindex stampare singoli elementi di un vettore, nel debugger
 @example
 gawk> @kbd{p vettore_ultima[0]}
 @print{} "0" non presente nel vettore `vettore_ultima'
@@ -32015,6 +32277,8 @@ Questo metodo sarebbe piuttosto lento per un vettore con 100 elementi, per cui
 @command{gawk} fornisce una scorciatoia (che fa venire in mente un altro
 linguaggio che non nominiamo):
 
+@cindex debugger, stampare tutti gli elementi di un vettore
+@cindex stampare tutti gli elementi di un vettore, nel debugger
 @example
 gawk> @kbd{p @@vettore_ultima}
 @print{} vettore_ultima["1"] = "awk,"
@@ -32096,6 +32360,8 @@ Ottenere informazioni
 Comandi vari
 @end itemize
 
+@cindex debugger, ripetere dei comandi
+@cindex ripetere dei comandi, nel debugger
 Ciascuna di esse @`e trattata
 @ifnotinfo
 nelle seguenti
@@ -32174,9 +32440,9 @@ comando. Altrimenti, continua l'esecuzione del programma.
 
 @cindex comando del debugger, @code{clear}
 @cindex @code{clear}, comando del debugger
-@cindex cancellare punto d'interruzione da una determinata posizione
-@cindex punto d'interruzione in una determinata posizione, come cancellare
-@cindex breakpoint, come cancellare
+@cindex cancellare punto d'interruzione, in una determinata posizione
+@cindex punto d'interruzione, cancellare in una determinata posizione
+@cindex breakpoint in una determinata posizione, cancellare
 @item @code{clear} [[@var{nome-file}@code{:}]@var{n} | @var{funzione}]
 Senza argomenti, cancella ogni eventuale punto d'interruzione all'istruzione
 successiva
@@ -32218,8 +32484,9 @@ incondizionato).
 @cindex comando del debugger, @code{delete}
 @cindex @code{delete}, comando del debugger
 @cindex @code{d}, comando del debugger (alias per @code{delete})
-@cindex cancellare punto d'interruzione per numero
+@cindex cancellare punto d'interruzione, per numero
 @cindex punto d'interruzione, cancellare per numero
+@cindex breakpoint, cancellare per numero
 @item @code{delete} [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 @itemx @code{d} [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 Cancella i punti d'interruzione specificati o un intervallo di punti
@@ -32320,6 +32587,8 @@ gawk>
 
 @cindex comando del debugger, @code{c} (alias per @code{continue})
 @cindex comando del debugger, @code{continue}
+@cindex continuare esecuzione programma, nel debugger
+@cindex debugger, continuare esecuzione programma
 @cindex @code{continue}, comando del debugger
 @item @code{continue} [@var{contatore}]
 @itemx @code{c} [@var{contatore}]
@@ -32446,6 +32715,17 @@ Valuta @var{istruzioni awk} nel contesto del programma in esecuzione.
 Si pu@`o fare qualsiasi cosa che un programma @command{awk} farebbe: assegnare
 valori a variabili, chiamare funzioni, e cos@`{@dotless{i}} via.
 
+@quotation NOTA
+Non @`e possibile usare @code{eval} per valutare un'espressione che contenga
+una qualsiasi delle seguenti istruzioni:
+@code{exit},
+@code{getline},
+@code{next},
+@code{nextfile},
+o
+@code{return}.
+@end quotation
+
 @item @code{eval} @var{param}, @dots{}
 @itemx @var{istruzioni awk}
 @itemx @code{end}
@@ -32556,7 +32836,6 @@ che hanno chiamato quella in cui ci si trova.  I comandi per far questo sono:
 @cindex comando del debugger, @code{where} (alias per @code{backtrace})
 @cindex @code{backtrace}, comando del debugger
 @cindex @code{bt}, comando del debugger (alias per @code{backtrace})
-@cindex @code{where}, comando del debugger
 @cindex @code{where}, comando del debugger (alias per @code{backtrace})
 @cindex chiamate, @dfn{stack} (pila) delle, mostrare nel debugger
 @cindex @dfn{stack} (pila) delle chiamate, mostrare nel debugger
@@ -32729,7 +33008,7 @@ Salva la cronologia dei comandi nel file @file{./.gawk_history}.
 L'impostazione di default @`e @code{on}.
 
 @item @code{save_options} [@code{on} | @code{off}]
-@cindex salvataggio opzioni debugger
+@cindex salvataggio opzioni, nel debugger
 @cindex debugger, salvataggio opzioni
 Salva le opzioni correnti nel file @file{./.gawkrc} all'uscita.
 L'impostazione di default @`e @code{on}.
@@ -32742,12 +33021,15 @@ Attiva o disattiva il tracciamento delle istruzioni. L'impostazione di default
 @`e @code{off}.
 @end table
 
+@cindex debugger, salvare dei comandi su un file
+@cindex salvare dei comandi su un file, nel debugger
 @item @code{save} @var{nome-file}
 Salva i comandi eseguiti nella sessione corrente nel @value{FN} indicato,
 in modo da poterli ripetere in seguito usando il comando @command{source}.
 
 @item @code{source} @var{nome-file}
 @cindex debugger, leggere comandi da un file
+@cindex leggere comandi da un file, nel debugger
 Esegue comandi contenuti in un file; un errore in un comando non impedisce
 l'esecuzione dei comandi successivi.  In un file di comandi sono consentiti
 i commenti (righe che iniziano con @samp{#}).
@@ -32918,9 +33200,10 @@ familiari.
 
 @node Supporto per Readline
 @section Supporto per Readline
-@cindex completamento dei comandi nel debugger
-@cindex espansione della cronologia, nel debugger
+@cindex completamento dei comandi, nel debugger
 @cindex debugger, completamento dei comandi nel
+@cindex espansione della cronologia, nel debugger
+@cindex debugger, espansione della cronologia
 
 Se @command{gawk} @`e compilato con
 @uref{http://cnswww.cns.cwru.edu/php/chet/readline/readline.html, la libreria
@@ -32960,6 +33243,8 @@ e
 @node Limitazioni
 @section Limitazioni
 
+@cindex debugger, limitazioni
+@cindex limitazioni del debugger
 Si spera che il lettore trovi il debugger di @command{gawk} utile e piacevole
 da usare, ma come accade per ogni programma, specialmente nelle sue prime
 versioni, ha ancora delle limitazioni.  Quelle di cui @`e bene essere al corrente sono:
@@ -33135,6 +33420,521 @@ ma questo pu@`o succedere occasionalmente.
 
 @end itemize
 
+@hyphenation{name-space name-spaces Name-space Name-spaces}
+@node Spazi-dei-nomi
+@chapter Spazi-dei-nomi in @command{gawk}
+
+Questo @value{CHAPTER} descrive una funzionalit@`a disponibile solo in
+@command{gawk}.
+
+@quotation ATTENZIONE
+La funzionalit@`a descritta in questo capitolo @`e nuova.  @`E certamente
+possibile, e perfino probabile, che ci siano degli angoli bui
+(se non dei bug), ancora presenti nell'implementazione.
+Chi ne trovasse, @`e pregato di notificarlo (@xref{Bug}).
+@end quotation
+
+@menu
+* Spazio-dei-nomi globale::             Lo spazio-dei-nomi globale in @command{awk}
+                                        standard.
+* Nomi qualificati::                    Come qualificare nomi con uno
+                                        spazio-dei-nomi.
+* Spazio-dei-nomi di default::          Lo spazio-dei-nomi di default.
+* Cambiare lo spazio-dei-nomi::         Come cambiare lo spazio-dei-nomi.
+* Regole per i nomi::                   Regole per assegnare nomi a uno
+                                        spazio-dei-nomi ai suoi componenti.
+* Gestione interna dei nomi::           Come i nomi sono gestiti internamente.
+* Esempio di spazio-dei-nomi::          Esempio di codice che usa uno spazio-dei-nomi.
+* Spazio-dei-nomi e funzionalit@`a::      Lo spazio-dei-nomi e le altre funzionalit@`a
+                                        di @command{gawk}.
+* Sommario sugli spazi-dei-nomi::      Sommario sugli spazi-dei-nomi.
+@end menu
+
+@node Spazio-dei-nomi globale
+@section Lo spazio-dei-nomi globale in @command{awk} standard
+
+@cindex spazio-dei-nomi, definizione
+@cindex spazio-dei-nomi, globale, in @command{awk} standard
+In @command{awk} standard, esiste un unico @dfn{spazio-dei-nomi} globale.
+Ci@`o significa che @emph{tutti} i nomi di funzione e i nomi di variabili 
+globali devono essere unici.
+Per esempio, due differenti file sorgenti di @command{awk},
+se usati insieme,
+non possono entrambi definire una funzione avente nome
+@code{min()}, o definire una variabile con lo stesso nome,
+usata come scalare in programma e come vettore in un altro.
+
+Questa situazione pu@`o essere accettabile se i programmi sono
+di dimensioni piccole, qualche centinaio di righe, o anche
+qualche migliaio, ma impedisce lo sviluppo di librerie riusabili
+contenenti funzioni di @command{awk}, e pu@`o far s@`{@dotless{i}} che file di
+librerie sviluppate in maniera indipendente fra loro possano
+incidentalmente entrare in conflitto con le variabili globali
+``private'' proprie di un'altra libreria
+(@pxref{Nomi di variabili di libreria}).
+
+@cindex pacchetto, definizione di
+@cindex modulo, definizione di
+Molti altri linguaggi di programmazione risolvono questo problema rendendo
+disponibile qualche tipo di controllo sullo spazio-dei-nomi: un modo per
+poter stabilire che ``questa funzione @`e nello spazio-dei-nomi @var{xxx},
+mentre quella funzione @`e nello spazio-dei-nomi @var{yyy}''.  (Naturalmente,
+in realt@`a c'@`e ancora un unico spazio-dei-nomi, quello composto da
+tutti gli spazi-dei-nomi, ma si spera che ci siano solo pochi spazi-dei-nomi
+in uso da parte di un determinato programma e, quindi, che la probabilit@`a
+di conflitti sia molto minore).
+Queste funzionalit@`a sono talore indicate col nome di
+@dfn{pacchetti} (@dfn{packages}) o @dfn{moduli} (@dfn{modules}).
+
+A partire dalla @value{PVERSION} 5.0, @command{gawk} fornisce un
+meccanismo semplice per mettere funzioni e variabili globali in
+spazi-dei-nomi separati fra loro.
+
+@node Nomi qualificati
+@section Nomi qualificati
+
+@cindex nome qualificato, definizione di
+@cindex qualificato, nome, definizione di
+@cindex spazio-dei-nomi, nomi qualificati
+@cindex @code{::}, spazio-dei-nomi, separatore
+@cindex nome del componente
+@cindex componente, nome del
+Un @dfn{nome qualificato} @`e un identificativo composto
+dal nome di uno spazio-dei-nomi, da un separatore di spazio-dei-nomi
+(i due caratteri @code{::}), e dal nome di un @dfn{componente}.
+Per esempio, ci potrebbe
+essere una funzione di nome @code{posix::getpid()}.  Qui, lo spazio-dei-nomi
+@`e @code{posix} e il nome della funzione all'interno dello the spazio-dei-nomi
+(il componente) @`e @code{getpid()}.  Lo spazio-dei-nomi e i nomi di componente
+sono separati da due caratteri ":".
+In un nome qualificato pu@`o essere presente un unico separatore.
+
+@quotation NOTA
+A differenza di come avviene in C++, la notazione @code{::} @emph{non @`e} un
+operatore.  Non @`e consentito inserire degli spazi di separazione fra il
+nome dello spazio-dei-nomi, la notazione @code{::}, e il nome del componente.
+@end quotation
+
+@cindex nome qualificato, uso del
+@`E necessario usare nomi qualificati, in uno spazio-dei-nomi, per accedere
+a variabili e funzioni in un altro spazio-dei-nomi.  Ci@`o @`e particolarmente
+importante quando si usano nomi di variabile come indici del vettore
+speciale @code{SYMTAB} (@pxref{Variabili auto-assegnate}),
+e quando si effettuano chiamate di funzione indirette
+(@pxref{Chiamate indirette}).
+
+@node Spazio-dei-nomi di default
+@section Lo spazio-dei-nomi di default
+
+@cindex spazio-dei-nomi, default
+@cindex spazio-dei-nomi, @code{awk}
+@cindex @code{awk}, spazio-dei-nomi
+Lo spazio-dei-nomi di default, ovviamente, @`e @code{awk}.
+Tutte le variabili predefinite di @command{awk} e di @command{gawk}
+sono in questo spazio-dei-nomi, e quindi hanno nomi qualificati come
+@code{awk::ARGC}, @code{awk::NF}, e cos@`{@dotless{i}} via.
+
+@cindex nomi in maiuscolo, spazio-dei-nomi dei
+Inoltre, anche se si sta utilizzando uno spazio-dei-nomi differente
+nel file sorgente correntemente in uso
+(@pxref{Cambiare lo spazio-dei-nomi}), @command{gawk}
+assegna tutti gli identificativi senza una qualifica che contengono
+solo lettere maiuscole allo spazio-dei-nomi @code{awk}.  Ci@`o rende
+possibile utilizzare facilmente le variabili globali proprie di
+@command{gawk} da spazi-dei-nomi differenti.
+Ci@`o rende anche pi@`u scorrevole il codice stesso.
+
+@node Cambiare lo spazio-dei-nomi
+@section Come cambiare lo spazio-dei-nomi
+
+@cindex spazio-dei-nomi, cambiare lo
+@cindex @code{@@namespace}, direttiva
+@cindex direttiva @code{@@namespace}
+Per impostare lo spazio-dei-nomi corrente, si usi una direttiva
+@code{@@namespace}
+al livello principale del programma interessato:
+
+@example
+@@namespace "passwd"
+
+BEGIN @{ @dots{} @}
+@dots{}
+@end example
+
+Dopo questa direttiva, tutti gli identificati semplici che non siano composti
+esclusivamente da lettere maiuscole sono assegnati allo
+spazio-dei-nomi @code{passwd}.
+
+@`E possibile cambiare lo spazio-dei-nomi pi@`u volte all'interno di
+un singolo file sorgente, sebbene ci@`o possa essere causa di
+confusione, se lo si fa troppe volte.
+
+@quotation NOTA
+L'assegnamento degli identificativi non qualificati a uno spazio-dei-nomi
+avviene nel momento in cui @command{gawk} analizza il programma, @emph{prima}
+di cominciare a eseguirlo.
+Non c'@`e quindi il concetto di uno spazio-dei-nomi ``corrente'' al momento
+dell'esecuzione del programma.
+Ci@`o va compreso e messo in conto in anticipo.
+@end quotation
+
+@cindex spazio-dei-nomi, implicito
+@cindex implicito, spazio-dei-nomi
+Ogni file sorgente designato dalle opzioni
+@option{-i} e @option{-f} inizia con una direttiva implicita
+@samp{@@namespace "awk"}.  Analogamente, ogni parte di codice
+immesso nella riga di comando, usando l'opzione @option{-e}
+ha la stessa implicita direttiva iniziale
+(@pxref{Opzioni}).
+
+@cindex spazio-dei-nomi corrente, cambiare e ripristinare
+@cindex corrente, spazio-dei-nomi, cambiare e ripristinare
+I file inclusi con la direttiva @code{@@include} (@pxref{Includere file})
+``cambiano'' (@dfn{push}) e ``ripristinano'' (@dfn{pop})
+lo spazio-dei-nomi corrente.  Ossia, ogni @code{@@include} salva
+lo spazio-dei-nomi corrente e inizia con una direttiva implicita
+@samp{@@namespace "awk"} che resta attiva finch@'e non si incontra una
+direttiva esplicita @code{@@namespace}.
+Quando @command{gawk} termina di elaborare il file incluso,
+lo spazio-dei-nomi salvato @`e ripristinato e l'elaborazione prosegue
+da dove era stata sospesa nel file originale.
+
+@cindex @code{@@namespace}, non riguarda @code{BEGIN}@comma{} @code{BEGINFILE}, @code{END}, ed @code{ENDFILE}
+@cindex @code{BEGIN}, regola, ordine di esecuzione non alterato da @code{@@namespace}
+@cindex @code{BEGINFILE}, regola, ordine di esecuzione non alterato da @code{@@namespace}
+@cindex @code{END}, regola, ordine di esecuzione non alterato da @code{@@namespace}
+@cindex @code{ENDFILE}, regola, ordine di esecuzione non alterato da @code{@@namespace}
+L'uso di @code{@@namespace} non ha influenza sull'ordine di esecuzione delle
+regole @code{BEGIN}, @code{BEGINFILE}, @code{END}, e @code{ENDFILE}.
+
+@node Regole per i nomi
+@section Regole per assegnare nomi a uno spazio-dei-nomi e ai suoi componenti
+
+@cindex nomi, regole per assegnare, agli spazi-dei-nomi e ai loro componenti
+@cindex spazio-dei-nomi, nomi, regole per assegnare
+@cindex componenti di uno spazio-dei-nomi, regole per assegnare i nomi
+Alcune regole vanno seguite nell'attribuire i nomi a uno spazio-dei-nomi
+e alle sue componenti.
+
+@itemize @bullet
+@item
+@`E un errore sintattico (@dfn{syntax error})
+usare nomi qualificati
+come nomi di parametri passati a una funzione.
+
+@item
+@`E un errore sintattico (@dfn{syntax error})
+usare una quasiasi parola riservata standard di @command{awk} (come
+@code{if} o @code{for}), o il nome di una qualsiasi funzione predefinita
+(come @code{sin()} o @code{gsub()}) come una qualsiasi delle parti di un nome
+nome qualificato.
+Quindi, il codice seguente produce un errore sintattico:
+
+@example
+@@namespace "example"
+
+function gsub(str, pat, result) @{ @dots{} @}
+@end example
+
+@item
+Fuori dallo spazio-dei-nomi @code{awk}, i nomi delle ulteriori funzioni
+predefinite disponibili in @command{gawk}
+(come @code{gensub()} o @code{strftime()}) @emph{possono}
+essere usate come nomi di componente.
+Lo stesso insieme di nomi pu@`o essere usato come nome di uno
+spazio-dei-nomi, sebbene farlo possa ingenerare confusione.
+
+@item
+Le ulteriori funzioni predefinite disponibili in @command{gawk} possono
+essere chiamate all'esterno dello spazio-dei-nomi @code{awk} utilizzando
+nomi qualificati. Per esempio, @code{awk::systime()}.
+Ecco un esempio abbastanza banale a dimostrazione di questa regola e
+della regola precedente:
+
+@example
+BEGIN @{
+    print "nello spazio-dei-nomi awk, systime() =", systime()
+@}
+
+@@namespace "testing"
+
+function systime()
+@{
+    print "nello spazio-dei-nomi testing, systime() =", awk::systime()
+@}
+
+BEGIN @{
+    systime()
+@}
+@end example
+
+@noindent
+
+Se lo si esegue, l'output prodotto @`e di questo tipo:
+
+@example
+$ @kbd{gawk -f systime.awk}
+@print{} nello spazio-dei-nomi awk, systime() = 1500488503
+@print{} nello spazio-dei-nomi testing, systime() = 1500488503
+@end example
+
+@item
+I nomi delle variabili predefinite di @command{gawk} possono essere usati:
+@code{NF::NR} @`e un nome valido, anche se non sembra una scelta di
+nomi molto utile.
+@end itemize
+
+@node Gestione interna dei nomi
+@section Come i nomi sono gestiti internamente
+
+@cindex nomi, gestione dei
+@cindex @code{awk} spazio-dei-nomi, memoria che contiene i nomi identificativi
+@cindex @code{awk} spazio-dei-nomi, utilizzo per chiamate indirette di funzione
+Per compatibilit@`a all'indietro, tutti gli identificatvi nello spazio-dei-nomi
+@code{awk} sono memorizzati internamente come identificativi senza qualifica
+(ossia, senza il prefisso @samp{awk::}).  Ci@`o ha importanza principalmente
+quando tali identificativi sono usati come indici per i vettori
+@code{SYMTAB}, @code{FUNCTAB}, e @code{PROCINFO["identifiers"]}
+(@pxref{Variabili auto-assegnate}), e quando sono usati per
+chiamate indirette di funzioni (@pxref{Chiamate indirette}).
+
+Nella codifica di programmi, per far riferimento a variabili e funzioni
+appartenenti allo spazio-dei-nomi @code{awk} da un altro spazio-dei-nomi
+@`e tuttavia necessario utilizzare il prefisso @samp{awk::}.
+Per esempio:
+
+@example
+@@namespace "awk"          @ii{Questo @`e lo spazio-dei-nomi di default}
+
+BEGIN @{
+    Titolo = "Il mio rapporto"   @ii{Il nome qualificato @`e} awk::Titolo
+@}
+
+@@namespace "rapporto"    @ii{Adesso lo spazio-dei-nomi @`e} rapporto
+
+function calcola()        @ii{Il nome vero di questa funzione @`e} rapporto::compute()
+@{
+    print awk::Titolo     @ii{Per stampare} SYMTAB["Titolo"]
+    @dots{}
+@}
+@end example
+
+@node Esempio di spazio-dei-nomi
+@section Esempio di codice che usa uno spazio-dei-nomi
+
+@cindex spazio-dei-nomi, esempio di codice
+L'esempio seguente @`e una versione riveduta dell'insieme di
+script sviluppati in @ref{Funzioni Passwd};
+l@`{@dotless{i}} si pu@`o trovare la descrizione del funzionamento del codice.
+
+Questa riformulazione, opera principalmente di Andrew Schorr,
+@`e piuttosto elegante.
+Tutte le funzioni e le variabili di implementazione
+sono nello spazio-dei-nomi @code{passwd}, mentre
+le funzioni principali di interfaccia sono
+definite nello spazio-dei-nomi @code{awk}.
+
+@example
+@c file eg/lib/ns_passwd.awk
+# ns_passwd.awk --- accedere alle informazioni del file delle password
+@c endfile
+@ignore
+@c file eg/lib/ns_passwd.awk
+#
+# Arnold Robbins, arnold@@skeeve.com, Public Domain
+# May 1993
+# Revised October 2000
+# Revised December 2010
+#
+# Reworked for namespaces June 2017, with help from
+# Andrew J.@: Schorr, aschorr@@telemetry-investments.com
+@c endfile
+@end ignore
+@c file eg/lib/ns_passwd.awk
+
+@@namespace "passwd"
+
+BEGIN @{
+    # modificare per adattarlo al sistema in uso
+    Awklib = "/usr/local/libexec/awk/"
+@}
+
+function Init(    oldfs, oldrs, olddol0, pwcat, using_fw, using_fpat)
+@{
+    if (Inizializzato)
+        return
+
+    oldfs = FS
+    oldrs = RS
+    olddol0 = $0
+    using_fw = (PROCINFO["FS"] == "FIELDWIDTHS")
+    using_fpat = (PROCINFO["FS"] == "FPAT")
+    FS = ":"
+    RS = "\n"
+
+    pwcat = Awklib "pwcat"
+    while ((pwcat | getline) > 0) @{
+        Byname[$1] = $0
+        Byuid[$3] = $0
+        Bycount[++Totale] = $0
+    @}
+    close(pwcat)
+    Contatore = 0
+    Inizializzato = 1
+    FS = oldfs
+    if (using_fw)
+        FIELDWIDTHS = FIELDWIDTHS
+    else if (using_fpat)
+        FPAT = FPAT
+    RS = oldrs
+    $0 = olddol0
+@}
+
+function awk::getpwnam(nome)
+@{
+    Init()
+    return Byname[nome]
+@}
+
+function awk::getpwuid(uid)
+@{
+    Init()
+    return Byuid[uid]
+@}
+
+function awk::getpwent()
+@{
+    Init()
+    if (Contatore < Totale)
+        return Bycount[++Contatore]
+    return ""
+@}
+
+function awk::endpwent()
+@{
+    Contatore = 0
+@}
+@c endfile
+@end example
+
+Come si pu@`o vedere, questa versione segue anche la convenzione menzionata in
+@ref{Nomi di variabili di libreria}, secondo la quale i nomi di funzione e
+le variabili globali iniziano con la lettera maiuscola.
+
+Quel che segue @`e un semplice programma di test.  Poich@'e @`e in un file
+separato, gli identificativi non qualificati saranno ricercati
+all'interno dello spazio-dei-nomi @code{awk}:
+
+@example
+BEGIN @{
+    while ((p = getpwent()) != "")
+        print p
+@}
+@end example
+
+@noindent
+
+Ecco cosa succede quando il programma viene eseguito:
+
+@example
+$ @kbd{gawk -f ns_passwd.awk -f testpasswd.awk}
+@print{} root:x:0:0:root:/root:/bin/bash
+@print{} daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+@print{} bin:x:2:2:bin:/bin:/usr/sbin/nologin
+@print{} sys:x:3:3:sys:/dev:/usr/sbin/nologin
+@dots{}
+@end example
+
+@node Spazio-dei-nomi e funzionalit@`a
+@section Lo spazio-dei-nomi e le altre funzionalit@`a di @command{gawk}
+
+@ifnotinfo
+Questa
+@end ifnotinfo
+@ifinfo
+Questo
+@end ifinfo
+@value{SECTION} tratta brevemente di come la funzionalit@`a spazio-dei-nomi
+interagisce con altre importanti funzionalit@`a di @command{gawk}.
+
+@cindex spazio-dei-nomi, interazione con la profilazione
+@cindex spazio-dei-nomi, interazione con la stampa elegante
+@cindex profilazione, interazione con spazio-dei-nomi
+@cindex stampa elegante, interazione con spazio-dei-nomi
+La profilazione e la stampa elegante (@pxref{Profilare}) sono state
+migliorate per trattare gli spazi-dei-nomi e le regole per assegnare nomi in
+uno spazio-dei-nomi @ref{Regole per i nomi}.
+In particolare, l'output tiene insieme le funzioni che appartengono
+allo stesso spazio-dei-nomi, e contiene delle direttive @code{@@namespace}
+davanti alle regole, a seconda delle necessit@`a.
+In questo modo i nomi dei componenti sono degli
+identificativi semplici, senza dover usare dappertutto degli
+identificativi qualificati.
+
+@cindex spazio-dei-nomi, interazioen con il debugger
+@cindex debugger, interazione con lo spazio-dei-nomi
+L'interazione con il debugger (@pxref{Debugging}) non @`e cambiata
+(almeno fino al momento in cui questo libro @`e stato scritto).
+Alcuni campi interni sono stati modificati per tener conto
+degli spazi-dei-nomi, e il comando @code{dump} del debugger
+@`e stato modificato per lo stesso motivo.
+
+@cindex spazio-dei-nomi, interazione con l'estensione API
+@cindex estensione API, interazione con lo spazio-dei-nomi
+@cindex API, estensione, interazione con lo spazio-dei-nomi
+L'estensione API (@pxref{Estensioni dinamiche}) ha sempre previsto
+di avere funzioni in uno spazio-dei-nomi differente, sebbene ci@`o
+non fosse stato ancora implementato.  Tuttavia, le routine di
+ricerca e di aggiornamento dei simbolo non prevedevano l'utilizzo
+di un spazio-dei-nomi.  Questo @`e stato corretto
+(@pxref{Tabella simboli per nome}).
+@xref{Esempio di estensione Inplace}, per un notevole esempio di
+un'estensione che sfrutta uno spazio-dei-nomi condiviso fra del
+codice scritto in C e del codice @command{awk}, che collaborano
+fra loro.
+
+@node Sommario dello Spazio-dei-nomi
+@section Sommario
+
+@itemize @value{BULLET}
+@item
+@command{awk} standard fornisce un unico spazio-dei-nomi per tutti gli
+identificativi globali (scalari, vettori e funzioni).
+Ci@`o pu@`o essere limitante se si vogliono sviluppare librerie di
+funzioni riusabili, o gruppi di funzioni.
+
+@item
+@command{gawk} fornisce degli spazi-dei-nomi multipli, attraverso l'uso di
+nomi qualificati: nomi che consistono nel nome di uno spazio-dei-nomi,
+seguito da un separatore di spazio-dei-nomi (@code{::}), e da un nome di
+componente.  I nomi degli spazi-dei-nomi potrebbero ancora entrare in
+conflitto fra loro, ma questo capita in ogni linguaggio che fornisce
+spazi-dei-nomi, moduli, o pacchetti.
+
+@item
+Lo spazio-dei-nomi di default @`e @command{awk}.  Le regole per gli
+spazi-dei-nomi e per i nomi dei loro componenti sono descritte in
+@ref{Regole per i nomi}.  Le regole sono state progettate
+in modo da far s@`{@dotless{i}} che il codice che usa gli spazi-dei-nomi resti
+semplice da leggere e funzioni in maniera intuitiva, pur rendendo
+disponibile la potenza e la flessibilit@`a necessarie.
+
+@item
+Altre parti di @command{gawk} sono state estese come necessario per
+integrare gli spazi-dei-nomi nel loro funzionamento.
+Questo vale soprattutto per la profilazione / stampa elegante
+(@pxref{Profilare}) e per le funzionalit@`a relative alle
+estensioni (@pxref{Estensioni dinamiche}).
+
+@cindex spazio-dei-nomi, compatibilit@`a all'indietro
+@item
+Complessivamente, la funzionalit@`a spazio-dei-nomi @`e stata progettata e
+implementata avendo come preoccupazione quella di mantenere la compatibilit@`a
+all'indietro.  I programmi che non usano degli spazi-dei-nomi
+non dovrebbero avere alcuna differenza di comportamento quando sono eseguiti
+su una versione di @command{gawk} che abbia la funzionalit@`a spazio-dei-nomi.
+@end itemize
+
 @node Calcolo con precisione arbitraria
 @chapter Calcolo con precisione arbitraria con @command{gawk}
 @cindex precisione arbitraria
@@ -33287,7 +34087,7 @@ variazione dei valori sono mostrati in @ref{table-numeric-ranges} e in
 @headitem Rappresentazione @tab @w{Valore positivo} @w{minimo} @w{diverso da zero} @tab @w{Valore finito} @w{minimo} @tab @w{Valore finito} @w{massimo}
 @end iftex
 @ifnottex
-@headitem Rappresentazione @tab Valore positivo minimo diverso da zero @tab Valore finito minimo @tab Valore finito massimo 
+@headitem Rappresentazione @tab Valore positivo minimo diverso da zero @tab Valore finito minimo @tab Valore finito massimo
 @end ifnottex
 @iftex
 @item @w{Virgola mobile, singola precis.} @tab @math{1,175494 @cdot 10^{-38}} @tab @math{-3,402823 @cdot 10^{38}} @tab @math{3,402823 @cdot 10^{38}}
@@ -34476,7 +35276,7 @@ disponibili
 * Licenza delle estensioni::    Una nota riguardo al tipo di licenza.
 * Panoramica sul meccanismo delle estensioni:: Una panoramica sul meccanismo
                                         delle estensioni.
-* Descrizione dell'API delle estensioni:: Una descrizione completa dell'API.
+* Descrizione dell'estensione API:: Una descrizione completa dell'API.
 * Trovare le estensioni::       Come @command{gawk} trova le estensioni
 				compilate.
 * Esempio di estensione::       Esempio di codice C di un'estensione.
@@ -34681,10 +35481,10 @@ funzionalit@`a utilizzate nell'estensione.  (Discrepanze tra le versioni
 @xref{Versione dell'estensione} per ulteriori dettagli.
 @end itemize
 
-@node Descrizione dell'API delle estensioni
+@node Descrizione dell'estensione API
 @section Una descrizione completa dell'API
-@cindex estensioni, API delle
-@cindex API, delle estensioni
+@cindex estensione, API
+@cindex API, estensione
 
 Il codice sorgente scritto in C o C++ per un'estensione deve includere il
 file di intestazione
@@ -34699,7 +35499,7 @@ Questo
 (non breve) @value{SECTION} descrive l'API in detttaglio.
 
 @menu
-* Intro funzioni API delle estensioni::   Introduzione alle funzioni dell'API.
+* Intro funzioni estensione API::   Introduzione alle funzioni dell'API.
 * Tipi di dati generali::                 I tipi di dati.
 * Funzioni di allocazione memoria::       Funzioni per allocare memoria.
 * Funzioni di costruzione::               Funzioni per creare valori.
@@ -34720,7 +35520,7 @@ Questo
 * Modifiche dalla versione API 1::        Modifiche dalla versione 1 dell'API.
 @end menu
 
-@node Intro funzioni API delle estensioni
+@node Intro funzioni estensione API
 @subsection Introduzione alle funzioni dell'API
 
 L'accesso a funzionalit@`a interne a @command{gawk} @`e effettuato
@@ -34808,9 +35608,12 @@ Alcune osservazioni riguardo all'uso dell'API:
 I seguenti tipi di variabili, macro e/o funzioni sono resi disponibili
 nel file @file{gawkapi.h}.  Perch@'e siano utilizzabili, i rispettivi file di
 intestazione standard indicati devono essere stati specificati @emph{prima}
-di includere @file{gawkapi.h}:
+di includere @file{gawkapi.h}.
+La lista delle macro e dei relativi file di intestazioni @`e contenuta
+in @ref{tabella-intestazioni-standard-api}.
 
-@c FIXME: Make this as a float at some point.
+@float Tabella,tabella-intestazioni-standard-api
+@caption{File di intestazioni standard usati nell'API}
 @multitable {@code{memset()}, @code{memcpy()}} {@code{<sys/types.h>}}
 @headitem Elemento C @tab File d'intestazione
 @item @code{EOF} @tab @code{<stdio.h>}
@@ -34822,6 +35625,7 @@ di includere @file{gawkapi.h}:
 @item @code{size_t} @tab @code{<sys/types.h>}
 @item @code{struct stat} @tab @code{<sys/stat.h>}
 @end multitable
+@end float
 
 Per ragioni di portabilit@`a, specialmente per sistemi
 che non sono interamente aderenti agli standard, occorre assicurarsi di
@@ -34858,7 +35662,7 @@ dall'estensione come in sola lettura.  Le aree di memoria che contengono @emph{t
 e sono gestite da @command{gawk} da quel punto in avanti.
 
 @item
-L'API definisce parecchie semplici @code{struct} che mappano dei valori
+L'API definisce parecchie semplici strutture @code{struct} che mappano dei valori
 come sono visti da @command{awk}.  Un valore pu@`o essere un numero @code{double}
 (in virgola mobile, in doppia precisione), una stringa o un
 vettore (come @`e il caso per i vettori multidimensionali o nella creazione di
@@ -35134,7 +35938,8 @@ a
 
 La varie macro sopra elencate facilitano l'uso degli elementi delle
 @code{union} come se
-fossero campi in una @code{struct}; @`e questa una pratica comunemente adottata
+fossero campi in una struttura @code{struct}; @`e questa una pratica
+comunemente adottata
 nella scrittura di programmi in C.  Questo tipo di codice @`e pi@`u semplice da
 scrivere e da leggere, ma resta una responsabilit@`a @emph{del programmatore}
 assicurarsi che il campo @code{val_type} rifletta correttamente il tipo
@@ -35184,8 +35989,8 @@ di @command{gawk} e riduce il tempo richiesto per creare il valore.
 @node Funzioni di allocazione memoria
 @subsection Funzioni per allocare memoria e macro di servizio
 @cindex allocare memoria per estensioni
-@cindex memoria, allocare per estensioni
 @cindex estensioni, allocare memoria per
+@cindex memoria, allocare per estensioni
 
 L'API fornisce alcune funzioni per effettuare @dfn{allocazioni di memoria}
 che possono essere passate a @command{gawk}, e anche un certo numero di
@@ -35424,14 +36229,14 @@ Le funzioni di estensione sono descritte dal seguente tracciato record:
 @example
 @group
 typedef struct awk_ext_func @{
-@ @ @ @ const char *name;
+@ @ @ @ const char *nome;
 @ @ @ @ awk_value_t *(*const function)(int num_actual_args,
 @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_value_t *risultato,
 @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ struct awk_ext_func *finfo);
 @ @ @ @ const size_t max_expected_args;
 @ @ @ @ const size_t min_required_args;
 @ @ @ @ awk_bool_t suppress_lint;
-@ @ @ @ void *data;        /* puntatore di tipo opaco 
+@ @ @ @ void *data;        /* puntatore di tipo opaco
 @ @ @ @                    a ogni informazione ulteriore */
 @} awk_ext_func_t;
 @end group
@@ -35440,7 +36245,7 @@ typedef struct awk_ext_func @{
 I campi sono:
 
 @table @code
-@item const char *name;
+@item const char *nome;
 Il nome della nuova funzione.
 Il codice sorgente a livello di @command{awk} richiama la funzione usando
 questo nome.
@@ -35511,8 +36316,11 @@ estensione va registrata con @command{gawk} usando questa funzione dell'API:
 @item awk_bool_t add_ext_func(const char *name_space, awk_ext_func_t *func);
 Questa funzione restituisce il valore @dfn{true} se ha successo,
 oppure @dfn{false} in caso contrario.
-Il parametro @code{name_space} non @`e usato per ora; dovrebbe puntare a una
-stringa vuota (@code{""}).  Il puntatore @code{func} @`e l'indirizzo di una
+Il parametro @code{name_space} indica lo spazio-dei-nomi in cui porre
+la funzione (@pxref{Spazi-dei-nomi}).
+Si usi una stringa vuota (@code{""}) o @code{"awk"} per porre la funzione
+nello spazio-dei-nomi @code{awk}, che @`e quello di default.
+Il puntatore @code{func} @`e l'indirizzo di una struttura
 @code{struct} che rappresenta la funzione stessa, come descritto sopra.
 
 @command{gawk} non modifica ci@`o che @`e puntato da @code{func}, ma la
@@ -35657,7 +36465,7 @@ struttura @code{awk_input_parser_t}, simile a questa:
 @example
 @group
 typedef struct awk_input_parser @{
-    const char *name;   /* nome dell'analizzatore */
+    const char *nome;   /* nome dell'analizzatore */
     awk_bool_t (*can_take_file)(const awk_input_buf_t *iobuf);
     awk_bool_t (*take_control_of)(awk_input_buf_t *iobuf);
     awk_const struct awk_input_parser *awk_const next;   /* per uso
@@ -35669,7 +36477,7 @@ typedef struct awk_input_parser @{
 I campi sono:
 
 @table @code
-@item const char *name;
+@item const char *nome;
 Il nome dell'analizzatore di input.  Questa @`e una normale stringa di caratteri
 del linguaggio C.
 
@@ -35702,7 +36510,7 @@ La definizione di una struttura @code{awk_input_buf_t} @`e simile a questa:
 
 @example
 typedef struct awk_input @{
-    const char *name;       /* nome file */
+    const char *nome;       /* nome file */
     int fd;                 /* descrittore di file */
 #define INVALID_HANDLE (-1)
     void *opaque;           /* area dati privata
@@ -35722,7 +36530,7 @@ inizialmente) da @code{@var{XXX}_can_take_file()}, e quelli che sono usati da
 @`e cos@`{@dotless{i}} definito:
 
 @table @code
-@item const char *name;
+@item const char *nome;
 Il nome del file.
 
 @item int fd;
@@ -35787,7 +36595,7 @@ Se @code{fd} @`e ancora diverso da @code{INVALID_HANDLE} dopo la chiamata a
 questa funzione, @command{gawk} invoca la normale chiamata di sistema
 @code{close()}.
 
-Avere una funzione di ``pulizia'' @`e facoltativo.  Se l'analizzatore di input
+Avere una funzione di ``pulizia'' @`e opzionale.  Se l'analizzatore di input
 non ne ha bisogno, basta non impostare questo campo.  In questo caso,
 @command{gawk} invoca la normale chiamata di sistema @code{close()} per il
 descrittore di file, che, quindi, dovrebbe essere valido.
@@ -35963,7 +36771,7 @@ all'analizzatore di input:
 
 @example
 typedef struct awk_output_wrapper @{
-    const char *name;   /* nome del processore */
+    const char *nome;   /* nome del processore */
     awk_bool_t (*can_take_file)(const awk_output_buf_t *outbuf);
     awk_bool_t (*take_control_of)(awk_output_buf_t *outbuf);
     awk_const struct awk_output_wrapper *awk_const next; /* per gawk */
@@ -35973,7 +36781,7 @@ typedef struct awk_output_wrapper @{
 I campi sono i seguenti:
 
 @table @code
-@item const char *name;
+@item const char *nome;
 Questo @`e il nome del processore di output.
 
 @item awk_bool_t (*can_take_file)(const awk_output_buf_t *outbuf);
@@ -36001,8 +36809,8 @@ La struttura @code{awk_output_buf_t} @`e simile a questa:
 
 @example
 typedef struct awk_output_buf @{
-    const char *name;   /* nome del file in output */
-    const char *mode;   /* argomento @dfn{mode} per fopen */
+    const char *nome;   /* nome del file in output */
+    const char *modo;   /* argomento @dfn{mode} per fopen */
     FILE *fp;           /* puntatore stdio file */
     awk_bool_t redirected;  /* @dfn{true} se un processore @`e attivo */
     void *opaque;       /* per uso del processore di output */
@@ -36020,10 +36828,10 @@ campi dati in @code{awk_output_buf_t}.
 I campi dati sono i seguenti:
 
 @table @code
-@item const char *name;
+@item const char *nome;
 Il nome del file in output.
 
-@item const char *mode;
+@item const char *modo;
 La stringa @dfn{mode} (come sarebbe usata nel secondo argomento della
 chiamata di sistema @code{fopen()})
 con cui il file era stato aperto.
@@ -36056,7 +36864,7 @@ appropriate per fare il lavoro richiesto.
 @end table
 
 La funzione @code{@var{XXX}_can_take_file()} dovrebbe decidere in base ai
-campi @code{name} e @code{mode}, e a ogni altro ulteriore indicatore di stato
+campi @code{nome} e @code{modo}, e a ogni altro ulteriore indicatore di stato
 (p.es., valori di variabili @command{awk}) adatto allo scopo.
 
 Quando @command{gawk} chiama @code{@var{XXX}_take_control_of()}, la funzione
@@ -36088,9 +36896,9 @@ Un processore bidirezionale @`e rappresentato dalla struttura seguente:
 
 @example
 typedef struct awk_two_way_processor @{
-    const char *name;   /* nome del processore bidirezionale */
-    awk_bool_t (*can_take_two_way)(const char *name);
-    awk_bool_t (*take_control_of)(const char *name,
+    const char *nome;   /* nome del processore bidirezionale */
+    awk_bool_t (*can_take_two_way)(const char *nome);
+    awk_bool_t (*take_control_of)(const char *nome,
                                   awk_input_buf_t *inbuf,
                                   awk_output_buf_t *outbuf);
     awk_const struct awk_two_way_processor *awk_const next;  /* per gawk */
@@ -36100,16 +36908,16 @@ typedef struct awk_two_way_processor @{
 I campi sono i seguenti:
 
 @table @code
-@item const char *name;
+@item const char *nome;
 Il nome del processore bidirezionale.
 
-@item awk_bool_t (*can_take_two_way)(const char *name);
+@item awk_bool_t (*can_take_two_way)(const char *nome);
 La funzione puntata da questo campo dovrebbe restituire @dfn{true} se
 vuole gestire l'I/O bidirezionale per questo @value{FN}.
 La funzione non dovrebbe modificare alcuno stato (valori di variabili, etc.)
 all'interno di @command{gawk}.
 
-@item awk_bool_t (*take_control_of)(const char *name,
+@item awk_bool_t (*take_control_of)(const char *nome,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_input_buf_t *inbuf,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_output_buf_t *outbuf);
 La funzione puntata da questo campo dovrebbe riempire le strutture
@@ -36447,11 +37255,11 @@ contiene informazioni sui simboli @`e chiamata @dfn{Tabella dei simboli}
 Le funzioni sono le seguenti:
 
 @table @code
-@item awk_bool_t sym_lookup(const char *name,
+@item awk_bool_t sym_lookup(const char *nome,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_valtype_t wanted,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_value_t *risultato);
 Riempie la struttura @code{awk_value_t} puntata da @code{risultato}
-con il valore della variabile il cui nome @`e nella stringa @code{name},
+con il valore della variabile il cui nome @`e nella stringa @code{nome},
 che @`e una normale stringa di caratteri C.
 @code{wanted} indica il tipo di valore atteso.
 La funzione restituisce @dfn{true} se il tipo effettivo della variabile @`e quello
@@ -36460,8 +37268,21 @@ In quest'ultimo caso, @code{risultato>val_type} indica il tipo effettivo
 della variabile
 (@pxref{table-value-types-returned}).
 
-@item awk_bool_t sym_update(const char *name, awk_value_t *valore);
-Aggiorna la variabile il cui nome @`e contenuto nella stringa @code{name},
+@item awk_bool_t sym_lookup_ns(const char *nome,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const char *name_space,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_valtype_t wanted,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_value_t *risultato);
+Simile a @code{sym_lookup()}, ma il parametro @code{name_space} consente di
+specificare a quale spazio-di-nomi appartiene @code{nome}.
+@code{name_space} non pu@`o essere la stringa nulla (@code{NULL}).
+Se vale @code{""} o @code{"awk"}, allora @code{nome} @`e cercato nello
+spazio-di-nomi di default, ossia @code{awk}.
+
+Note that @code{namespace} is a C++ keyword. For interoperability with C++,
+you should avoid using that identifier in C code.
+
+@item awk_bool_t sym_update(const char *nome, awk_value_t *valore);
+Aggiorna la variabile il cui nome @`e contenuto nella stringa @code{nome},
 che @`e una normale stringa di caratteri C.
 La variabile @`e aggiunta alla Tabella dei simboli di @command{gawk},
 se non @`e gi@`a presente.  Restituisce @dfn{true} se tutto @`e andato bene, e
@@ -36737,7 +37558,7 @@ la funzione @code{release_value()}.
 @node Manipolazione di vettori
 @subsection Manipolazione di vettori
 @cindex vettori, manipolazione nelle estensioni
-@cindex estensioni, manipolazione di vettori
+@cindex estensioni, manipolazione di vettori nelle
 
 La struttura di dati primaria@footnote{D'accordo, l'unica struttura di dati.}
 in @command{awk} @`e il vettore associativo
@@ -36988,7 +37809,7 @@ dump_array_and_delete(int nargs, awk_value_t *risultato)
     awk_value_t valore, valore2, valore3;
     awk_flat_array_t *flat_array;
     size_t count;
-    char *name;
+    char *nome;
     int i;
 
     assert(risultato != NULL);
@@ -37010,13 +37831,13 @@ messaggio di errore e si ritorna al chiamante:
     /* trasforma in un vettore piatto il vettore
     passato come argomento e lo stampa */
     if (get_argument(0, AWK_STRING, & value)) @{
-        name = valore.str_value.str;
-        if (sym_lookup(name, AWK_array, & value2))
+        nome = valore.str_value.str;
+        if (sym_lookup(nome, AWK_array, & value2))
             printf("dump_array_and_delete: sym_lookup di %s effettuato\n",
-                   name);
+                   nome);
         else @{
             printf("dump_array_and_delete: sym_lookup di %s non riuscito\n",
-                   name);
+                   nome);
             goto out;
         @}
     @} else @{
@@ -37085,7 +37906,7 @@ visita il vettore appiattito, ed elimina ogni elemento in cui il relativo
 @example
     for (i = 0; i < flat_array->count; i++) @{
         printf("\t%s[\"%.*s\"] = %s\n",
-            name,
+            nome,
             (int) flat_array->elements[i].index.str_value.len,
             flat_array->elements[i].index.str_value.str,
             valrep2str(& flat_array->elements[i].valore));
@@ -37327,13 +38148,13 @@ elemento sia a sua volta un vettore:
 @example
 @@load "subarray"
 
-function dumparray(name, vettore,     i)
+function dumparray(nome, vettore,     i)
 @{
     for (i in vettore)
         if (isarray(vettore[i]))
-            dumparray(name "[\"" i "\"]", vettore[i])
+            dumparray(nome "[\"" i "\"]", vettore[i])
         else
-            printf("%s[\"%s\"] = %s\n", name, i, vettore[i])
+            printf("%s[\"%s\"] = %s\n", nome, i, vettore[i])
 @}
 
 BEGIN @{
@@ -37361,15 +38182,15 @@ La seguente funzione consente alle estensioni di accedere e di manipolare
 delle ridirezioni.
 
 @table @code
-@item awk_bool_t get_file(const char *name,
+@item awk_bool_t get_file(const char *nome,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ size_t name_len,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const char *tipofile,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ int fd,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const awk_input_buf_t **ibufp,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const awk_output_buf_t **obufp);
-Ricerca il file @code{name} nella tabella interna di ridirezione di
+Ricerca il file @code{nome} nella tabella interna di ridirezione di
 @command{gawk}.
-Se @code{name} @`e @code{NULL} o @code{name_len} @`e zero, restituisce
+Se @code{nome} @`e @code{NULL} o @code{name_len} @`e zero, restituisce
 i dati del file in input correntemente aperto il cui nome @`e memorizzato in
 @code{FILENAME}.
 (Questa chiamata non usa l'argomento @code{filetype}, che, quindi, pu@`o essere
@@ -37458,7 +38279,7 @@ insieme contiene informazioni su come @command{gawk} @`e stato invocato.
 
 @node Versione dell'estensione
 @subsubsection Costanti e variabili della versione dell'API
-@cindex API, versione
+@cindex API, versione dell'estensione
 @cindex versione dell'estensione API @command{gawk}
 @cindex estensione @command{gawk}, versione API
 
@@ -37477,7 +38298,8 @@ condizionale, e come elencazione di costanti per facilitare il debug:
 @end float
 
 La versione secondaria aumenta quando nuove funzioni sono aggiunte all'API.
-Tali nuove funzioni sono sempre aggiunte alla fine della @code{struct} dell'API.
+Tali nuove funzioni sono sempre aggiunte alla fine della struttura
+@code{struct} dell'API.
 
 La versione principale aumenta (e la versione secondaria torna a zero) se
 qualche tipo di dati cambia dimensione o si modifica l'ordine dei campi, o se
@@ -37487,7 +38309,7 @@ Pu@`o capitare che un'estensione sia stata compilata con una versione
 dell'API ma caricata da una versione di @command{gawk} che ne usa una
 differente.  Per questo motivo, la versione principale e quella secondaria
 dell'API della versione in uso di @command{gawk} sono incluse nella
-@code{struct} dell'API come costanti intere in sola lettura:
+struttura @code{struct} dell'API come costanti intere in sola lettura:
 
 @table @code
 @item api->major_version
@@ -37528,7 +38350,7 @@ in
 
 L'API include anche informazioni sulle versioni di GMP ed MPFR con cui
 il comando @command{gawk} in esecuzione @`e stato compilato (se disponibile).
-Queste sono incluse nella @code{struct} dell'API come costanti intere
+Queste sono incluse nella struttura @code{struct} dell'API come costanti intere
 in sola lettura:
 
 @table @code
@@ -38179,7 +39001,7 @@ compresa una tabella per tradurre i tipi di file in stringhe:
                        vettore con informazioni da stat */
 
 static int
-fill_stat_array(const char *name, awk_array_t vettore, struct stat *sbuf)
+fill_stat_array(const char *nome, awk_array_t vettore, struct stat *sbuf)
 @{
     char *pmode;    /* @dfn{mode} stampabile */
     const char *type = "unknown";
@@ -38215,7 +39037,7 @@ i vari elementi prendendoli dai valori presenti in @code{struct stat}:
     clear_array(vettore);
 
     /* riempie il vettore */
-    array_set(vettore, "name", make_const_string(name, strlen(name),
+    array_set(vettore, "name", make_const_string(nome, strlen(nome),
                                                & tmp));
     array_set_numeric(vettore, "dev", sbuf->st_dev);
     array_set_numeric(vettore, "ino", sbuf->st_ino);
@@ -38260,14 +39082,14 @@ tutto @`e andato bene:
         char *buf;
         ssize_t linksize;
 
-        if ((buf = read_symlink(name, sbuf->st_size,
+        if ((buf = read_symlink(nome, sbuf->st_size,
                     & linksize)) != NULL)
             array_set(vettore, "linkval",
                       make_malloced_string(buf, linksize, & tmp));
         else
             warning(ext_id, _("stat: non riesco a leggere il \
 collegamento simbolico `%s'"),
-                    name);
+                    nome);
     @}
 
     /* aggiunge il tipo di campo */
@@ -38286,7 +39108,7 @@ collegamento simbolico `%s'"),
 @end example
 
 Del terzo argomento passato a @code{stat()} non si era ancora parlato.
-Questo argomento @`e facoltativo.  Se presente, dice a @code{do_stat()} di
+Questo argomento @`e opzionale.  Se presente, dice a @code{do_stat()} di
 usare la chiamata di sistema @code{stat()} invece della chiamata di sistema
 @code{lstat()}.  Questo avviene attraverso un puntatore a funzione:
 @code{statfunc}.
@@ -38306,7 +39128,7 @@ static awk_value_t *
 do_stat(int nargs, awk_value_t *risultato, struct awk_ext_func *non_usata)
 @{
     awk_value_t file_param, array_param;
-    char *name;
+    char *nome;
     awk_array_t vettore;
     int ret;
     struct stat sbuf;
@@ -38335,7 +39157,7 @@ Poi, ottiene le informazioni relative al file.  Se la funzione chiamata
         statfunc = stat;
     @}
 
-    name = file_param.str_value.str;
+    nome = file_param.str_value.str;
     vettore = array_param.array_cookie;
 
     /* svuota sempre il vettore all'inizio */
@@ -38344,7 +39166,7 @@ Poi, ottiene le informazioni relative al file.  Se la funzione chiamata
     /* chiama stat per il file;
        in caso di errore,
        imposta ERRNO e ritorna */
-    ret = statfunc(name, & sbuf);
+    ret = statfunc(nome, & sbuf);
 @group
     if (ret < 0) @{
         update_ERRNO_int(errno);
@@ -38359,7 +39181,7 @@ impostato da @code{fill_stat_array()}:
 
 @example
 @group
-    ret = fill_stat_array(name, vettore, & sbuf);
+    ret = fill_stat_array(nome, vettore, & sbuf);
 
     return make_number(ret, risultato);
 @}
@@ -38853,7 +39675,7 @@ else
 @subsection Consentire la modifica in loco dei file
 
 @cindex @code{inplace}, estensione
-@cindex estensione @code{inplace}
+@cindex estensione @code{inplace()}
 L'estensione @code{inplace} svolge un lavoro simile a quello
 dell'opzione @option{-i} nel programma di utilit@`a GNU @command{sed},
 che svolge delle funzioni di modifica ``al volo'' su ogni file in input.
@@ -38867,22 +39689,22 @@ l'estensione in maniera corretta:
 @c endfile
 @ignore
 @c file eg/lib/inplace.awk
-# 
+#
 # Copyright (C) 2013, 2017 the Free Software Foundation, Inc.
-# 
+#
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
-# 
+#
 # GAWK is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GAWK is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
@@ -38999,12 +39821,12 @@ L'estensione @code{ordchr} aggiunge due funzioni, di nome
 Questo @`e il modo per caricare l'estensione.
 
 @cindex @code{ord()}, estensione
-@cindex estensione @code{Ord}
+@cindex estensione @code{ord()}
 @item numero = ord(stringa)
 Restituisce il valore numerico del primo carattere in @code{stringa}.
 
 @cindex @code{Chr}, estensione
-@cindex estensione @code{Chr}
+@cindex estensione @code{chr()}
 @item char = chr(number)
 Restituisce una stringa il cui primo carattere @`e quello rappresentato
 da @code{number}.
@@ -39028,7 +39850,7 @@ per esaminare directory.
 L'uso @`e il seguente:
 
 @cindex @code{readdir}, estensione
-@cindex estensione @code{readdir}
+@cindex estensione @code{readdir()}
 @example
 @@load "readdir"
 @end example
@@ -39090,7 +39912,7 @@ a prima vista vagamente divertente.
 Ecco un esempio:
 
 @cindex @code{revoutput}, estensione
-@cindex estensione @code{revoutput}
+@cindex estensione @code{revoutput()}
 @example
 @@load "revoutput"
 
@@ -39113,7 +39935,7 @@ sembrare un programma vagamente divertente.
 Il seguente esempio mostra come usarlo:
 
 @cindex @code{revtwoway}, estensione
-@cindex estensione @code{revtwoway}
+@cindex estensione @code{revtwoway()}
 @example
 @@load "revtwoway"
 
@@ -39275,10 +40097,10 @@ ottenere il tempo di attesa richiesto.
 @node Esempio di estensione API Test
 @subsection Test per la API
 @cindex @code{testext}, estensione
-@cindex estensione @code{testext}
+@cindex estensione @code{testext()}
 
 L'estensione @code{testext} controlla la funzionalit@`a di
-parti dell'API delle estensioni che non sono utilizzate negli altri esempi.
+parti dell'estensione API che non sono utilizzate negli altri esempi.
 Il file @file{extension/testext.c}
 contiene sia il codice C per l'estensione che il codice @command{awk}
 (tra i commenti del codice C) per eseguire i test.  L'ambiente di test
@@ -39544,7 +40366,7 @@ o quello che legge dei semplici byte?
 
 @item
 (Difficile.)
-Come si potrebbero gestire degli insiemi di nomi (@dfn{namespaces})
+Come si potrebbero gestire degli insiemi di nomi (@dfn{spazi-dei-nomi})
 in @command{gawk}, in modo
 che i nomi di funzione presenti in estensioni differenti non siano in conflitto
 tra loro?
@@ -40732,7 +41554,7 @@ sono consentite anche se @`e stata specificata l'opzione @option{--posix} o
 nello standard POSIX.
 
 @item
-Un terzo argomento facoltativo per le funzioni @code{asort()} e @code{asorti()}
+Un terzo argomento opzionale per le funzioni @code{asort()} e @code{asorti()}
 permette di specificare il tipo di ordinamento desiderato
 (@pxref{Funzioni per stringhe}).
 
@@ -40982,7 +41804,7 @@ Il vettore @code{PROCINFO["argv"]}.
 Il numero massimo di cifre esadecimali consentito nelle sequenze di
 protezione @samp{\x} @`e ora limitato a due.
 @xref{Sequenze di protezione}.
-  
+
 @item
 Costanti @dfn{regexp} forti nella forma @samp{@@/@dots{}/}
 (@pxref{Costanti @dfn{regexp} forti}).
@@ -40999,7 +41821,7 @@ La funzione @code{intdiv0()}.
 @end ifset
 
 @item
-La funzione @code{mktime()} ora accetta un secondo argomento facoltativo
+La funzione @code{mktime()} ora accetta un secondo argomento opzionale
 (@pxref{Funzioni di tempo}).
 
 @item
@@ -41527,7 +42349,7 @@ Lo sviluppo dell'estensione API rilasciata per la prima volta con
 Arnold Robbins e Andrew Schorr, con notevoli contributi dal
 resto del team di sviluppo.
 
-@cindex Malmberg, John E.
+@cindex Malmberg, John
 @item
 John Malmberg ha apportato miglioramenti significativi alla versione
 OpenVMS e alla relativa documentazione.
@@ -42588,14 +43410,14 @@ abbreviazioni CRC per simboli pi@`u lunghi di 32 bit.
 Per Alpha e Itanium:
 
 @example
-/name=(as_is,short)
+/nome=(as_is,short)
 /float=ieee/ieee_mode=denorm_results
 @end example
 
 Per VAX:
 
 @example
-/name=(as_is,short)
+/nome=(as_is,short)
 @end example
 
 Le macro da usare al momento della compilazione devono essere definite prima di
@@ -42724,9 +43546,10 @@ per forzare un esame dei parametri in stile Unix, piuttosto che nella modalit@`a
 parametri, per esempio, pi@`u @value{DF} in input) @`e presente, non c'@`e ambiguit@`a,
 e l'opzione @option{--} pu@`o essere omessa.
 
-@cindex exit, codice di ritorno, in VMS
+@cindex codice di ritorno, di @command{gawk}, in VMS
+@cindex exit, codice di ritorno, di @command{gawk}, in VMS
 Il valore di @code{exit} @`e un valore in stile Unix e viene trasformato in
-una condizione VMS all'uscita del programma.
+un codice di ritorno VMS all'uscita del programma.
 
 I bit di severit@`a di VMS saranno impostati a partire dal valore dell'istruzione
 @code{exit}.  Un errore grave @`e indicato da 1, e VMS imposta la condizione
@@ -43224,12 +44047,12 @@ Il progetto sembra essere stato congelato; non ci sono state modifiche nel
 codice sorgente dal 2001 circa.
 
 @cindex Beebe, Nelson H.F.@:
-@cindex @command{pawk} (versione con profilatura di Brian Kernighan @command{awk})
+@cindex @command{pawk} (versione con profilazione di Brian Kernighan @command{awk})
 @cindex codice sorgente, @command{pawk}
 @cindex sorgente, codice, @command{pawk}
 @item @command{pawk}
 Nelson H.F.@: Beebe all'Universit@`a dello Utah ha modificato
-BWK @command{awk} per fornire informazioni di temporizzazione e profilatura.
+BWK @command{awk} per fornire informazioni di temporizzazione e profilazione.
 Questo @`e differente dall'usare @command{gawk} con l'opzione @option{--profile}
 (@pxref{Profilare})
 nel senso che fornisce un profilo basato sul consumo di CPU, non sul
@@ -43281,6 +44104,7 @@ mette a disposizione questa implementazione.  Si possono vedere i singoli file i
 @cindex Go, implementazione di @command{awk}
 @cindex sorgente, @command{goawk}
 @cindex @command{goawk}, sorgente di
+@cindex linguaggio di programmazione, Go
 @item @command{goawk}
 Questo @`e un interpretatore di @command{awk} scritto nel
 @uref{https://golang.org/, Linguaggio di programmazion Go}.
@@ -43752,21 +44576,8 @@ sono mantenuti da terze persone e non dagli sviluppatori di @command{gawk}.
 Quindi, non si dovrebbero cambiare, se non per ragioni molto
 valide; vale a dire, modifiche a questi file non sono impossibili, ma
 le modifiche a questi file saranno controllate con estrema attenzione.
-I file sono
-@file{dfa.c},
-@file{dfa.h},
-@file{getopt.c},
-@file{getopt.h},
-@file{getopt1.c},
-@file{getopt_int.h},
-@file{gettext.h},
-@file{regcomp.c},
-@file{regex.c},
-@file{regex.h},
-@file{regex_internal.c},
-@file{regex_internal.h}
-e
-@file{regexec.c}.
+Questi file sono tutti quelli contenuti nella directory @file{support}
+presente nella distribuzione di @command{gawk}.  Vedere direttamente l@`a.
 
 @item
 Un certo numero di altri file sono prodotti dagli Autotool [comandi di
@@ -43782,7 +44593,6 @@ valide.  I file sono
 @file{install-sh},
 @file{missing},
 @file{mkinstalldirs},
-@file{xalloc.h}
 e
 @file{ylwrap}.
 
@@ -43965,9 +44775,10 @@ Sarebbe sicuramente d'aiuto se tutti usassero le stesse versioni degli Autotool
 GNU che lui usa, che in generale sono le ultime versioni rilasciate di
 Automake,
 Autoconf,
-@command{bison}
+@command{bison},
+GNU @command{gettext}
 e
-GNU @command{gettext}.
+Libtool.
 
 @ignore
 If it would help if I sent out an ``I just upgraded to version x.y
@@ -44367,7 +45178,7 @@ consente a @command{gawk} di identificare l'estensione che lo chiama, se la
 cosa dovesse risultare necessaria.
 
 @item
-Analogamente, l'estensione passa uno ``spazio dei nomi'' a @command{gawk}
+Analogamente, l'estensione passa uno ``spazio-dei-nomi'' a @command{gawk}
 in fase di registrazione di ogni funzione estesa.  Questo @`e fatto in vista di
 un possibile futuro meccanismo per raggruppare funzioni di estensione, e per
 evitare in questo modo possibili conflitti nei nomi di funzione.
@@ -44409,9 +45220,9 @@ funzionalit@`a richieste dal progetto @code{xgawk}, e a fornire una
 compatibilit@`a binaria in futuro.
 
 @item
-Il precedente meccanismo di estensione @`e ancora supportato
-nella @value{PVERSION} 4.1
-di @command{gawk}, ma sar@`a @emph{rimosso} nella prossima versione principale.
+Il precedente meccanismo di estensione non @`e pi@`u supportato
+ed @`e stato rimosso dal codice sorgente nella
+@value{PVERSION} 4.2.
 
 @end itemize
 
