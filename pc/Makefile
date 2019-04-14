@@ -335,6 +335,8 @@ install1:
 	cp doc/*.1 $(prefix)/share/man/man1
 	cp doc/*.info $(prefix)/share/info
 	cp doc/*.png $(prefix)/share/info
+	cp doc/*.txt $(prefix)/share/info
+	rm -f $(prefix)/share/info/awkforai.txt
 
 # install2 is equivalent to install1, but doesn't require cp, sed, etc.
 install2:
