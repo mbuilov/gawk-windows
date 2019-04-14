@@ -6199,17 +6199,14 @@ a program case insensitive without having to edit it.
 
 @c @cindex ISO 8859-1
 @c @cindex ISO Latin-1
-In multibyte locales,
-the equivalences between upper-
-and lowercase characters are tested based on the wide-character values of
-the locale's character set.
-Otherwise, the characters are tested based
-on the ISO-8859-1 (ISO Latin-1)
-character set. This character set is a superset of the traditional 128
-ASCII characters, which also provides a number of characters suitable
-for use with European languages.@footnote{If you don't understand this,
-don't worry about it; it just means that @command{gawk} does
-the right thing.}
+In multibyte locales, the equivalences between upper- and lowercase
+characters are tested based on the wide-character values of the locale's
+character set.  Prior to @value{PVERSION} 5.0, single-byte characters were
+tested based on the ISO-8859-1 (ISO Latin-1) character set.  However, as
+of @value{PVERSION} 5.0, single-byte characters are also tested based on
+the values of the locale's character set.@footnote{If you don't understand
+this, don't worry about it; it just means that @command{gawk} does the
+right thing.}
 
 The value of @code{IGNORECASE} has no effect if @command{gawk} is in
 compatibility mode (@pxref{Options}).
