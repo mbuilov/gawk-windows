@@ -1116,6 +1116,7 @@ extern NODE *Null_field;
 extern NODE **fields_arr;
 extern int sourceline;
 extern char *source;
+extern int errcount;
 extern int (*interpret)(INSTRUCTION *);	/* interpreter routine */
 extern NODE *(*make_number)(double);	/* double instead of AWKNUM on purpose */
 extern NODE *(*str2number)(NODE *);

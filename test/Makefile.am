@@ -1188,6 +1188,8 @@ EXTRA_DIST = \
 	synerr1.ok \
 	synerr2.awk \
 	synerr2.ok \
+	synerr3.awk \
+	synerr3.ok \
 	tailrecurse.awk \
 	tailrecurse.ok \
 	testext.ok \
@@ -1311,7 +1313,7 @@ BASIC_TESTS = \
 	scalar sclforin sclifin setrec0 setrec1 \
 	sigpipe1 sortempty sortglos spacere splitargv splitarr \
 	splitdef splitvar splitwht status-close strcat1 strnum1 strnum2 strtod \
-	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 \
+	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 synerr3 \
 	tailrecurse tradanch trailbs tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs uplus \
 	wideidx wideidx2 widesub widesub2 widesub3 widesub4 wjposer1 \

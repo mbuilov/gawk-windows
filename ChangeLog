@@ -4,6 +4,13 @@
 	* Makefile.am (EXTRA_DIST): Add ChangeLog.1 to the list. Ooops.
 	* CheckList: Updated.
 
+	Fix core dump reported by Steve Kemp <steve@steve.org.uk>:
+
+	* awk.h (errcount): Declare.
+	* awkgram.y (errcount): No longer static.
+	* command.y (dbg_errcount): Renamed from errcount.j
+	* main.c (catchsig, catchsegv): If errcount > 0, just exit,
+	don't abort.  
 2019-04-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Update version to 5.0.0.

@@ -1262,6 +1262,9 @@ catchsig(int sig)
 	        || sig == SIGBUS
 #endif
 	) {
+		if (errcount > 0)	// assume a syntax error corrupted our data structures
+			exit(EXIT_FATAL);
+
 		set_loc(__FILE__, __LINE__);
 		msg(_("fatal error: internal error"));
 		/* fatal won't abort() if not compiled for debugging */
@@ -1279,6 +1282,9 @@ catchsig(int sig)
 static int
 catchsegv(void *fault_address, int serious)
 {
+	if (errcount > 0)	// assume a syntax error corrupted our data structures
+		exit(EXIT_FATAL);
+
 	set_loc(__FILE__, __LINE__);
 	msg(_("fatal error: internal error: segfault"));
 	fflush(NULL);

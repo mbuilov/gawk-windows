@@ -198,7 +198,7 @@ static int continue_allowed;	/* kludge for continue */
 static char *tokstart = NULL;
 static char *tok = NULL;
 static char *tokend;
-static int errcount = 0;
+int errcount = 0;
 
 extern char *source;
 extern int sourceline;

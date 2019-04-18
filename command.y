@@ -44,7 +44,7 @@ static bool want_nodeval = false;
 static int cmd_idx = -1;		/* index of current command in cmd table */
 static int repeat_idx = -1;		/* index of last repeatable command in command table */
 static CMDARG *arg_list = NULL;		/* list of arguments */
-static long errcount = 0;
+static long dbg_errcount = 0;
 static char *lexptr_begin = NULL;
 static bool in_commands = false;
 static int num_dim;
@@ -128,7 +128,7 @@ line
 	: nls
 	| command nls
 	  {
-		if (errcount == 0 && cmd_idx >= 0) {
+		if (dbg_errcount == 0 && cmd_idx >= 0) {
 			Func_cmd cmdfunc;
 			bool terminate = false;
 			CMDARG *args;
@@ -217,7 +217,7 @@ set_want_nodeval
 eval_prologue
 	: D_EVAL set_want_nodeval opt_param_list nls
 	  {
-		if (errcount == 0) {
+		if (dbg_errcount == 0) {
 			/* don't free arg_list;	passed on to statement_list
 			 * non-terminal (empty rule action). See below.
 			 */
@@ -335,7 +335,7 @@ command
 		if ($2 != NULL)
 			num = $2->a_int;
 
-		if (errcount != 0)
+		if (dbg_errcount != 0)
 			;
 		else if (in_commands)
 			yyerror(_("Can't use command `commands' for breakpoint/watchpoint commands"));
@@ -1017,7 +1017,7 @@ yyerror(const char *mesg, ...)
 	vfprintf(out_fp, mesg, args);
 	fprintf(out_fp, "\n");
 	va_end(args);
-	errcount++;
+	dbg_errcount++;
 	repeat_idx = -1;
 }
 
@@ -1039,9 +1039,9 @@ yylex(void)
 
 	yylval = (CMDARG *) NULL;
 
-	if (errcount > 0 && lexptr_begin == NULL) {
+	if (dbg_errcount > 0 && lexptr_begin == NULL) {
 		/* fake a new line */
-		errcount = 0;
+		dbg_errcount = 0;
 		return '\n';
 	}
 
