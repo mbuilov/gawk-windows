@@ -6711,15 +6711,14 @@ un programma insensibile a maiuscolo/minuscolo senza doverlo modificare.
 
 @c @cindex ISO 8859-1
 @c @cindex ISO Latin-1
-In localizzazioni multibyte,
-le equivalenze tra caratteri maiuscoli
+In localizzazioni multibyte, le equivalenze tra caratteri maiuscoli
 e minuscoli sono controllate usando i valori in formato esteso
 dell'insieme di caratteri della localizzazione.
-Per il resto, i caratteri sono controllati usando l'insieme di caratteri
-ISO-8859-1 (ISO Latin-1).
-Questo insieme di caratteri @`e un'estensione del tradizionale insieme con 128
-caratteri ASCII, che include anche molti caratteri adatti
-per le lingue europee.@footnote{Se questo sembra oscuro,
+Prima della @value{PVERSION} 5.0, i caratteri che usano un solo byte
+erano confrontati usando l'insieme di caratteri ISO-8859-1 (ISO Latin-1).
+Tuttavia, a partire dalla @value{PVERSION} 5.0, i caratteri che usano
+un solo byte sono confrontati usando anche i valori dell'insieme di
+caratteri della localizzazione.@footnote{Se questo sembra oscuro,
 non c'@`e ragione di preoccuparsi; significa solo che @command{gawk} fa
 la cosa giusta.}
 
