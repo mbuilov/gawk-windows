@@ -138,6 +138,7 @@ uninstall-recursive: uninstall-so
 EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
 	ChangeLog.0 \
+	ChangeLog.1 \
 	ext_custom.h \
 	fts.3 \
 	m4 \

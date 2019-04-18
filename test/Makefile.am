@@ -27,6 +27,7 @@ EXTRA_DIST = \
 	reg \
 	lib \
 	ChangeLog.0 \
+	ChangeLog.1 \
 	Gentests \
 	Maketests \
 	README \

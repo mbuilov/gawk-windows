@@ -23,7 +23,8 @@
 
 ## process this file with automake to produce Makefile.in
 
-EXTRA_DIST = ChangeLog ChangeLog.0 extract.awk eg $(srcdir)/stamp-eg
+EXTRA_DIST = ChangeLog ChangeLog.0 ChangeLog.1 \
+		extract.awk eg $(srcdir)/stamp-eg
 # With some locales, the script extract.awk fails.
 # So we fix the locale to some sensible value.
 
