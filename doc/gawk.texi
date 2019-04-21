@@ -31721,6 +31721,18 @@ executing, short programs.
 
 @item
 The @command{gawk} debugger only accepts source code supplied with the @option{-f} option.
+If you have a shell script that provides an @command{awk} program as a command
+line parameter, and you need to use the debugger, you can write the script
+to a temporary file, and use that as the program, with the @option{-f} option. This
+might look like this:
+
+@example
+cat << \EOF > /tmp/script.$$
+@dots{}                                  @ii{Your program here}
+EOF
+gawk -D -f /tmp/script.$$
+rm /tmp/script.$$
+@end example
 @end itemize
 
 @ignore
@@ -45178,3 +45190,5 @@ Add a section explaining recursion from ground zero. Probably
 easiest to do it with factorial as the example. Explain that
 recursion needs a stopping condition. Thanks to
 Bill Duncan <bduncan@beachnet.org> for the suggestion.
+
+4/2109: Go through and check @print{} vs. @error{} in examples
