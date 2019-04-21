@@ -7900,10 +7900,20 @@ as the result of a special feature.  When @code{RS} is set to the empty
 string @emph{and} @code{FS} is set to a single character,
 the newline character @emph{always} acts as a field separator.
 This is in addition to whatever field separations result from
-@code{FS}.@footnote{When @code{FS} is the null string (@code{""})
+@code{FS}.
+
+@quotation NOTE
+When @code{FS} is the null string (@code{""})
 or a regexp, this special feature of @code{RS} does not apply.
 It does apply to the default field separator of a single space:
-@samp{FS = @w{" "}}.}
+@samp{FS = @w{" "}}.
+
+Note that language in the POSIX specification implies that
+this special feature should apply when @code{FS} is a regexp.
+However, Unix @command{awk} has never behaved that way, nor has
+@command{gawk}. This is essentially a bug in POSIX.
+@c Noted as of 4/2019; working to get the standard fixed.
+@end NOTE
 
 The original motivation for this special exception was probably to provide
 useful behavior in the default case (i.e., @code{FS} is equal
