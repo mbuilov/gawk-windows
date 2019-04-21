@@ -4250,9 +4250,12 @@ As with @option{-f}, the @option{-e} and @option{-i}
 options may also be used multiple times on the command line.
 
 @cindex @option{-e} option
-If no @option{-f} or @option{-e} option is specified, then @command{gawk}
-uses the first nonoption command-line argument as the text of the
-program source code.
+If no @option{-f} option (or @option{-e} option for @command{gawk})
+is specified, then @command{awk} uses the first nonoption command-line
+argument as the text of the program source code.  Arguments on
+the command line that follow the program text are entered into the
+@code{ARGV} array; @command{awk} does @emph{not} continue to parse the
+command line looking for options.
 
 @cindex @env{POSIXLY_CORRECT} environment variable
 @cindex lint checking, @env{POSIXLY_CORRECT} environment variable
@@ -7913,7 +7916,7 @@ this special feature should apply when @code{FS} is a regexp.
 However, Unix @command{awk} has never behaved that way, nor has
 @command{gawk}. This is essentially a bug in POSIX.
 @c Noted as of 4/2019; working to get the standard fixed.
-@end NOTE
+@end quotation
 
 The original motivation for this special exception was probably to provide
 useful behavior in the default case (i.e., @code{FS} is equal
@@ -40573,6 +40576,13 @@ from POSIX @command{awk}.  More information is available on the
 This is an embeddable @command{awk} interpreter derived from
 @command{mawk}. For more information, see
 @uref{http://repo.hu/projects/libmawk/}.
+
+@cindex source code, embeddable @command{awk} interpreter
+@cindex Neacsu, Mircea
+@item Mircea Neacsu's Embeddable @command{awk}
+Mircea Neacsu has created an embeddable @command{awk}
+interpreter, based on BWK awk. It's available
+at @uref{https://github.com/neacsum/awk}.
 
 @item @code{pawk}
 @cindex source code, @command{pawk} (Python version)

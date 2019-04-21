@@ -46,7 +46,6 @@ unfield(NODE **l, NODE **r)
 		(*l) = dupnode(*r);
 		DEREF(*r);
 	}
-	force_string(*l);
 }
 
 #define UNFIELD(l, r)	unfield(& (l), & (r))
@@ -729,6 +728,8 @@ mod:
 			unref(*lhs);
 			r = POP_SCALAR();
 			UNFIELD(*lhs, r);
+			/* field variables need the string representation: */
+			force_string(*lhs);
 		}
 			break;
 
