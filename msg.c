@@ -46,10 +46,17 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 
 	static bool first = true;
 	static bool add_src_info = false;
+	static long lineno_val = 0;	// Easter Egg
 
 	if (first) {
 		first = false;
 		add_src_info = (getenv("GAWK_MSG_SRC") != NULL);
+		if (! do_traditional) {
+			NODE *n = lookup("LINENO");
+
+			if (n != NULL && n->type == Node_var)
+				lineno_val = get_number_d(n->var_value);
+		}
 	}
 
 	(void) fflush(output_fp);
@@ -67,7 +74,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 		else
 			(void) fprintf(stderr, _("cmd. line:"));
 
-		(void) fprintf(stderr, "%d: ", sourceline);
+		(void) fprintf(stderr, "%d: ", sourceline + lineno_val);
 	}
 
 #ifdef HAVE_MPFR

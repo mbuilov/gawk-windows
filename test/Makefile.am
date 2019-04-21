@@ -27,6 +27,7 @@ EXTRA_DIST = \
 	reg \
 	lib \
 	ChangeLog.0 \
+	ChangeLog.1 \
 	Gentests \
 	Maketests \
 	README \
@@ -366,6 +367,9 @@ EXTRA_DIST = \
 	fsbs.awk \
 	fsbs.in \
 	fsbs.ok \
+	fscaret.awk \
+	fscaret.in \
+	fscaret.ok \
 	fsfwfs.awk \
 	fsfwfs.in \
 	fsfwfs.ok \
@@ -1187,6 +1191,8 @@ EXTRA_DIST = \
 	synerr1.ok \
 	synerr2.awk \
 	synerr2.ok \
+	synerr3.awk \
+	synerr3.ok \
 	tailrecurse.awk \
 	tailrecurse.ok \
 	testext.ok \
@@ -1286,8 +1292,8 @@ BASIC_TESTS = \
 	datanonl defref delargv delarpm2 delarprm delfunc dfamb1 dfastress dynlj \
 	eofsplit eofsrc1 exit2 exitval1 exitval2 exitval3 \
 	fcall_exit fcall_exit2 fldchg fldchgnf fldterm fnamedat fnarray fnarray2 \
-	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsnul1 fsrs fsspcoln \
-	fstabplus funsemnl funsmnam funstack \
+	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fscaret fsnul1 \
+	fsrs fsspcoln fstabplus funsemnl funsmnam funstack \
 	getline getline2 getline3 getline4 getline5 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 gsubtst7 \
 	gsubtst8 \
@@ -1310,7 +1316,7 @@ BASIC_TESTS = \
 	scalar sclforin sclifin setrec0 setrec1 \
 	sigpipe1 sortempty sortglos spacere splitargv splitarr \
 	splitdef splitvar splitwht status-close strcat1 strnum1 strnum2 strtod \
-	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 \
+	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 synerr3 \
 	tailrecurse tradanch trailbs tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs uplus \
 	wideidx wideidx2 widesub widesub2 widesub3 widesub4 wjposer1 \

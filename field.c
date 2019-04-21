@@ -855,6 +855,7 @@ get_field(long requested, Func_ptr *assign)
 		if (! field0_valid) {
 			/* first, parse remainder of input record */
 			if (NF == -1) {
+				in_middle = (parse_high_water != 0);
 				NF = (*parse_field)(UNLIMITED - 1, &parse_extent,
 		    			fields_arr[0]->stlen -
 					(parse_extent - fields_arr[0]->stptr),

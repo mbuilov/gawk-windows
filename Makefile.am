@@ -34,6 +34,7 @@ AM_MAKEFLAGS = 'CFLAGS=$(CFLAGS)' 'LDFLAGS=$(LDFLAGS)'
 # Makefile.am files
 EXTRA_DIST = \
 	ChangeLog.0 \
+	ChangeLog.1 \
 	COPYING \
 	INSTALL \
 	NEWS \

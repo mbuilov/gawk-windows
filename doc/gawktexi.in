@@ -4945,6 +4945,19 @@ returns a textual version of the flags for scalar variables, and the
 array back-end implementation type for arrays. This interface is subject
 to change and may not be stable.
 
+When not in POSIX or compatibility mode, if you set @code{LINENO} to a
+numeric value using the @option{-v} option, @command{gawk} adds that value
+to the real line number for use in error messages.  This is intended for
+use within Bash shell scripts, such that the error message will reflect
+the line number in the shell script, instead of in the @command{awk}
+program. To demonstrate:
+
+@exmaple
+$ @kbd{gawk -v LINENO=10 'BEGIN @{ print("hi" @}'}
+@error{} gawk: cmd. line:11: BEGIN @{ print("hi" @}
+@error{} gawk: cmd. line:11:                    ^ syntax error
+@end example
+
 @end ignore
 
 @node Invoking Summary
