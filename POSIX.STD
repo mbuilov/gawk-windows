@@ -1,11 +1,11 @@
-  Copyright (C) 1992, 1995, 1998, 2001, 2006, 2007, 2010, 2011, 2015
+  Copyright (C) 1992, 1995, 1998, 2001, 2006, 2007, 2010, 2011, 2015, 2019
   Free Software Foundation, Inc.
   
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 --------------------------------------------------------------------------
-Thu Feb 12 08:51:22 IST 2015
+Sun Apr 21 14:27:19 IDT 2019
 ============================
 This file documents several things related to the 2008 POSIX standard
 that I noted after reviewing it.
@@ -42,6 +42,14 @@ that I noted after reviewing it.
 	function foo() { ... }
 
    Gawk enforces this only with --posix.
+
+5. According to POSIX (following the A, K, & W book), when RS = "", then
+   newline is also a separator, "no matter what the value of FS is", implying
+   that this is true even if FS is a regexp.
+
+   In fact, UNIX awk has never behaved that, way; it adds \n to the list
+   for FS = " " or any other single character, and gawk does too. This is
+   essentially a bug in POSIX.
 
 The following things aren't described by POSIX but ought to be:
 
