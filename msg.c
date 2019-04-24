@@ -74,7 +74,7 @@ err(bool isfatal, const char *s, const char *emsg, va_list argp)
 		else
 			(void) fprintf(stderr, _("cmd. line:"));
 
-		(void) fprintf(stderr, "%d: ", sourceline + lineno_val);
+		(void) fprintf(stderr, "%ld: ", sourceline + lineno_val);
 	}
 
 #ifdef HAVE_MPFR
