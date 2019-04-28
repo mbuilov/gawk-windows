@@ -3260,7 +3260,7 @@ tutte le righe di un file, racchiudendole tra doppi apici:
 @end example
 
 @noindent
-In una riga di comando in ambiente MS-Windows lo script di una riga
+In una riga di comando in ambiente MS-Windows lo @dfn{script} di una riga
 mostrato sopra pu@`o essere eseguito immettendo:
 
 @example
@@ -3295,7 +3295,7 @@ barre inverse con @math{2@value{VOLTE}@var{N}} barre inverse
 La stringa cos@`{@dotless{i}} prodotta va racchiusa fra doppi apici.
 @end enumerate
 
-Quindi, per racchiudere fra doppi apici lo script di
+Quindi, per racchiudere fra doppi apici lo @dfn{script} di
 una riga @samp{@{ print "\"" $0 "\"" @}} del precedente esempio, si
 dovrebbe fare cos@`{@dotless{i}}:
 
@@ -4626,9 +4626,13 @@ Come per @option{-f}, le opzioni @option{-e} e @option{-i}
 si possono usare pi@`u volte nella riga di comando.
 
 @cindex @option{-e}, opzione
-Se non sono specificate opzioni @option{-f} o @option{-e}, @command{gawk}
-usa il primo argomento che non @`e un'opzione come testo del
-codice sorgente del programma.
+Se non sono specificate le opzioni @option{-f} o @option{-e},
+@command{gawk} usa il primo argomento diverso da un'opzione,
+presente sulla riga di comando, come testo del codice sorgente
+del programma.  Gli argomenti sulla riga di comando che si trovano
+dopo il testo del programma sono inseriti nel vettore @code{ARGV};
+@command{awk} @emph{non} continua ad analizzare la riga di comando
+alla ricerca di ulteriori opzioni.
 
 @cindex @env{POSIXLY_CORRECT}, variabile d'ambiente
 @cindex @dfn{lint}, controlli, variabile d'ambiente @env{POSIXLY_CORRECT}
@@ -5387,6 +5391,22 @@ restituita una versione formato testo dei flag per le variabili di
 tipo scalare, e il tipo di implementazione interna per i vettori.
 Per quest'interfaccia sono possibili variazioni in futuro, e quindi
 i valori restituiti possono non rimanere fissi.
+
+Se non si @`e in modalit@`a POSIX o in modalit@`a compatibile, impostando
+code{LINENO} a un valore numerico, per mezzo dell'opzione @option{-v},
+@command{gawk} aggiunge il valore specificato al numero di riga del
+programma, nei messaggi di errore.  Ci@`o serve qualora il programma
+sia contenuto in uno @dfn{script} Bash,
+per far s@`{@dotless{i}} che il messaggio di errore
+rispecchi il numero di riga corrispondente nello @dfn{script} Bash, invece
+del numero di riga del programma @command{gawk} vero e proprio.
+Si veda l'esempio seguente:
+
+@example
+$ @kbd{gawk -v LINENO=10 'BEGIN @{ print("hi" @}'}
+@error{} gawk: riga com.:11: BEGIN @{ print("hi" @}
+@error{} gawk: riga com.:11:                    ^ syntax error
+@end example
 
 @end ignore
 
@@ -7933,7 +7953,7 @@ divisi usando il valore @emph{corrente} di @code{FS}!
 @value{DARKCORNER}
 Questo comportamento pu@`o essere di difficile
 identificazione.  Il seguente esempio illustra la differenza
-tra i due metodi. Lo script
+tra i due metodi. Lo @dfn{script}
 
 @example
 sed 1q /etc/passwd | awk '@{ FS = ":" ; print $1 @}'
@@ -8532,11 +8552,23 @@ speciale funzionalit@`a.  Quando @code{RS} @`e impostato alla stringa nulla
 @emph{e} @code{FS} @`e impostato a un solo carattere, il carattere di
 ritorno a capo agisce @emph{sempre} come separatore di campo.
 Questo in aggiunta a tutte le separazioni di campo che risultano da
-@code{FS}.@footnote{Quando @code{FS} @`e la stringa nulla (@code{""}), o
+@code{FS}.
+
+@quotation NOTA
+Quando @code{FS} @`e la stringa nulla (@code{""}), o
 un'espressione regolare, questa particolare funzionalit@`a di @code{RS} non
-viene applicata; si applica al separatore di campo quando @`e costituito da un
-solo spazio:
-@samp{FS = @w{" "}}.}
+viene applicata; si applica al separatore di campo di default,
+che @`e costituito da un solo spazio:
+@samp{FS = @w{" "}}.
+
+Si noti che la formulazione della specifica POSIX implica che
+questa particolare funzionalit@`a dovrebbe valere anche quando
+@code{FS} sia un'espressione regolare.
+Tuttavia, Unix @command{awk} non si @`e mai comportato in questo
+modo, e neppure @command{gawk}.  Questo @`e fondamentalmente
+un errore nella specifica POSIX.
+@c Noted as of 4/2019; working to get the standard fixed.
+@end quotation
 
 La motivazione originale per questa particolare eccezione probabilmente era
 quella di prevedere un comportamento che fosse utile nel caso di default
@@ -9802,7 +9834,7 @@ qualsiasi
 Come detto sopra, un'istruzione @code{print} contiene una lista di elementi
 separati da virgole.  Nell'output, gli elementi sono solitamente separati
 da spazi singoli.  Non @`e detto tuttavia che debba sempre essere cos@`{@dotless{i}}; uno
-spazio singolo @`e semplicemnte il valore di default.  Qualsiasi stringa di
+spazio singolo @`e semplicemente il valore di default.  Qualsiasi stringa di
 caratteri pu@`o essere usata come
 @dfn{separatore di campo in output} impostando la variabile
 predefinita @code{OFS}.  Il valore iniziale di questa variabile @`e
@@ -10594,7 +10626,7 @@ di utilit@`a @command{sort}.
 
 Il prossimo esempio usa la ridirezione per inviare un messaggio alla
 mailing list @code{bug-sistema}.  Questo pu@`o tornare utile se si hanno
-problemi con uno script @command{awk} eseguito periodicamente per la
+problemi con uno @dfn{script} @command{awk} eseguito periodicamente per la
 manutenzione del sistema:
 
 @example
@@ -14903,7 +14935,7 @@ apici.
 @c @cindex action, separating statements
 @cindex azioni
 
-Un programma o script @command{awk} consiste in una serie di
+Un programma o @dfn{script} @command{awk} consiste in una serie di
 regole e definizioni di funzione frammiste tra loro.  (Le funzioni sono
 descritte pi@`u avanti.  @xref{Funzioni definite dall'utente}.)
 Una regola contiene un criterio di ricerca e un'azione; l'uno o l'altra
@@ -20629,7 +20661,8 @@ $ @kbd{date '+Oggi @`e %A, %d %B %Y.'}
 @end example
 
 Ecco la versione @command{gawk} del programma di utilit@`a @command{date}.
-@`E all'interno di uno script di shell per gestire l'opzione @option{-u},
+@`E all'interno di uno @dfn{script} di shell
+per gestire l'opzione @option{-u},
 che richiede che @command{date} sia eseguito come se il fuso orario
 fosse impostato a UTC:
 
@@ -21591,7 +21624,7 @@ BEGIN @{
 @}
 @end example
 
-L'esecuzione di questo script produce quanto segue, perch@'e la stessa
+L'esecuzione di questo @dfn{script} produce quanto segue, perch@'e la stessa
 variabile @code{i} @`e usata sia nelle
 funzioni @code{pippo()} e @code{pluto()} sia a livello della
 regola @code{BEGIN}:
@@ -21635,7 +21668,7 @@ BEGIN @{
 @}
 @end example
 
-L'esecuzione della versione corretta dello script produce il seguente
+L'esecuzione della versione corretta dello @dfn{script} produce il seguente
 output:
 
 @example
@@ -23571,7 +23604,7 @@ le informazioni [@dfn{metadati}] contenute all'inizio di un file di tipo
 $ @kbd{flac-edit -song="Whoope! That's Great" file.flac}
 @end example
 
-@command{flac-edit} genera in output il seguente script, da passare alla
+@command{flac-edit} genera in output il seguente @dfn{script}, da passare alla
 shell (@file{/bin/sh}) per essere eseguito:
 
 @example
@@ -23581,7 +23614,7 @@ LANG=en_US.88591 metaflac --set-tag=TITLE='Whoope! That'"'"'s Great' file.flac
 chmod -w file.flac
 @end example
 
-Si noti la necessit@`a di gestire gli apici nello script da passare alla shell.
+Si noti la necessit@`a di gestire gli apici nello @dfn{script} da passare alla shell.
 La funzione
 @code{shell_quote()} li prepara nel formato richiesto.
 @code{SINGLE} @`e la stringa di un solo
@@ -27636,7 +27669,7 @@ trarre ispirazione dal codice di @file{cut.awk} (@pxref{Programma cut}).
 @cindex etichette per lettera@comma{} stampare
 Ecco un programma ``del mondo-reale''@footnote{``Del mondo-reale'' @`e definito
 come ``un programma effettivamente usato per realizzare qualcosa''.}.
-Questo script legge elenchi di nomi e indirizzi, e genera etichette per
+Questo @dfn{script} legge elenchi di nomi e indirizzi, e genera etichette per
 lettera.  Ogni pagina di etichette contiene 20 etichette, su due file da 10
 etichette l'una.  Gli indirizzi non possono contenere pi@`u di cinque righe di
 dati.  Ogni indirizzo @`e separato dal successivo da una riga bianca.
@@ -27843,7 +27876,7 @@ Il primo problema si pu@`o risolvere usando @code{tolower()} per rimuovere la
 distinzione maiuscolo/minuscolo.  Il secondo problema si pu@`o risolvere usando
 @code{gsub()} per rimuovere i caratteri di interpunzione.  Infine, per
 risolvere il terzo problema si pu@`o usare il programma di utilit@`a
-@command{sort} per elaborare l'output dello script @command{awk}.  Ecco la
+@command{sort} per elaborare l'output dello @dfn{script} @command{awk}.  Ecco la
 nuova versione del programma:
 
 @cindex @code{wordfreq.awk}, programma
@@ -28496,7 +28529,7 @@ il testo del programma @command{awk} che espander@`a il programma dell'utente,
 per il programma originale dell'utente e per il programma espanso.  Questo
 modo di procedere risolve potenziali
 problemi che potrebbero presentarsi se si usassero invece dei file temporanei,
-ma rende lo script un po' pi@`u complicato.
+ma rende lo @dfn{script} un po' pi@`u complicato.
 
 La parte iniziale del programma attiva il tracciamento della shell se il primo
 argomento @`e @samp{debug}.
@@ -28652,7 +28685,7 @@ fi
 
 Il programma @command{awk} che elabora le direttive @code{@@include}
 @`e immagazzinato nella variabile di shell @code{progr_che_espande}.  Ci@`o serve
-a mantenere leggibile lo script.  Questo programma @command{awk} legge
+a mantenere leggibile lo @dfn{script}.  Questo programma @command{awk} legge
 tutto il programma dell'utente, una riga per volta, usando @code{getline}
 (@pxref{Getline}).  I @value{FNS} in input e le istruzioni @code{@@include}
 sono gestiti usando una pila.  Man mano che viene trovata una @code{@@include},
@@ -28859,7 +28892,7 @@ per elaborare le istruzioni @code{@@include} nidificate.
 @item
 Invece di salvare il programma espanso in un file temporaneo, assegnarlo a
 una variabile di shell evita alcuni potenziali problemi di sicurezza.
-Ci@`o per@`o ha lo svantaggio di basare lo script su funzionalit@`a del
+Ci@`o per@`o ha lo svantaggio di basare lo @dfn{script} su funzionalit@`a del
 linguaggio @command{sh}, il che rende pi@`u difficile la comprensione a chi non
 abbia familiarit@`a con il comando
 @command{sh}.
@@ -28876,7 +28909,7 @@ Infine, @command{igawk} dimostra che non @`e sempre necessario aggiungere nuove
 funzionalit@`a a un programma; queste possono spesso essere aggiunte in
 cima.@footnote{@command{gawk}
 @`e in grado di elaborare istruzioni @code{@@include} al suo stesso interno, per
-permettere l'uso di programmi @command{awk} come script Web CGI.}
+permettere l'uso di programmi @command{awk} come @dfn{script} Web CGI.}
 
 
 @node Programma anagram
@@ -29068,7 +29101,7 @@ Barbara A. Field, FAIA, GIT '65 (B. Arch.).
 Ho un paio di copie cartacee di "Effective Awk Programming" da
 anni, ed ora sto leggendo di nuovo la versione Kindle di "The GNU Awk User's
 Guide".  Quando sono arrivato alla sezione 13.3.11, ho riformattato e
-brevemente commentato lo script di firma di Davide Brin per comprenderne il funzionamento.
+brevemente commentato lo @dfn{script} di firma di Davide Brin per comprenderne il funzionamento.
 
 Mi pare che questo possa avere un valore pedagogico come esempio
 (sia pure imperfetto) del significato di spazi bianchi e commenti, e un
@@ -30910,7 +30943,7 @@ proprio @dfn{dominio di testo}.  Questo @`e un nome unico come,
 p.es., @samp{kpilot} o @samp{gawk},
 che identifica l'applicazione.
 Un'applicazione completa pu@`o avere pi@`u componenti: programmi scritti
-in C o C++, come pure script di @command{sh} o di @command{awk}.
+in C o C++, come pure @dfn{script} di @command{sh} o di @command{awk}.
 Tutti i componenti usano lo stesso dominio di testo.
 
 Per andare sul concreto, si supponga di scrivere un'applicazione
@@ -33307,6 +33340,19 @@ eseguire programmi piccoli e che non richiedono molto tempo di esecuzione.
 @item
 Il debugger di @command{gawk} accetta solo codice sorgente fornito con
 l'opzione @option{-f}.
+Se si sta usando uno @dfn{script} di shell che contiene un programma
+@command{awk} che fa parte della riga di comando, e si deve usare il debugge,
+si pu@`o scrivere lo @dfn{script} in un file temporaneo, e quindi usarlo come
+programma, tramite l'opzione @option{-f}.  Ci@`o si potrebbe fare nel modo
+seguente:
+
+@example
+cat << \EOF > /tmp/script.$$
+@dots{}                                  @ii{Qui c'@`e il programma da eseguire}
+EOF
+gawk -D -f /tmp/script.$$
+rm /tmp/script.$$
+@end example
 @end itemize
 
 @ignore
@@ -37768,7 +37814,7 @@ dell'intero vettore da parte del codice in C .  Parte del codice in
 di come utilizzare l'API.
 
 Questa parte del codice sorgente sar@`a descritta un po' per volta.
-Ecco, per iniziare, lo script @command{gawk} che richiama l'estensione di test:
+Ecco, per iniziare, lo @dfn{script} @command{gawk} che richiama l'estensione di test:
 
 @example
 @@load "testext"
@@ -38139,7 +38185,7 @@ dl_load_func(func_table, testarray, "")
 @end ignore
 @end example
 
-Ecco uno script di esempio che carica l'estensione
+Ecco uno @dfn{script} di esempio che carica l'estensione
 e quindi stampa il valore di tutti gli elementi del vettore,
 invocando nuovamente se stessa nel caso che un particolare
 elemento sia a sua volta un vettore:
@@ -38161,7 +38207,7 @@ BEGIN @{
 @}
 @end example
 
-Ecco il risultato dell'esecuzione dello script:
+Ecco il risultato dell'esecuzione dello @dfn{script}:
 
 @example
 $ @kbd{AWKLIBPATH=$PWD gawk -f subarray.awk}
@@ -40373,7 +40419,7 @@ Chi riesce a trovare uno schema di buona qualit@`a @`e pregato di contattare il
 manutentore di @command{gawk}, per metterlo al corrente.
 
 @item
-Si scriva uno script di shell che funga da interfaccia per
+Si scriva uno @dfn{script} di shell che funga da interfaccia per
 l'estensione ``inplace'', vista
 @iftex
 nella
@@ -41424,7 +41470,7 @@ L'opzione @option{--dump-variables} per stampare una lista di tutte le
 variabili globali.
 
 @item
-L'opzione @option{--exec}, da usare in script CGI [Common Gateway Interface].
+L'opzione @option{--exec}, da usare in @dfn{script} CGI [Common Gateway Interface].
 
 @item
 L'opzione della riga di comando @option{--gen-po} e l'uso di un trattino
@@ -41620,7 +41666,7 @@ in un ambiente "protetto"].
 
 @item
 Tutte le opzioni in notazione lunga hanno acquisito opzioni corrispondenti
-in notazione breve, per poter essere usate negli script di shell @samp{#!}.
+in notazione breve, per poter essere usate negli @dfn{script} di shell @samp{#!}.
 @end itemize
 
 @item
@@ -42702,7 +42748,7 @@ generare l'effettivo @file{Makefile} da usare per creare la documentazione.
 @item Makefile.am
 @itemx */Makefile.am
 File usati dal software GNU Automake per generare
-il file @file{Makefile.in} usato da Autoconf e dallo script
+il file @file{Makefile.in} usato da Autoconf e dallo @dfn{script}
 @command{configure}.
 
 @item Makefile.in
@@ -42821,7 +42867,7 @@ Dopo aver estratto la distribuzione di @command{gawk}, posizionarsi con
 @file{gawk-@value{VERSION}.@value{PATCHLEVEL}}.  Come per la maggior parte dei
 programmi GNU, occorre configurare @command{gawk} per il sistema in uso,
 eseguendo il programma @command{configure}.  Questo programma @`e
-uno script della shell Bourne, che @`e stato generato automaticamente
+uno @dfn{script} della shell Bourne, che @`e stato generato automaticamente
 usando il comando GNU Autoconf.
 @ifnotinfo
 (Il software Autoconf @`e
@@ -43672,7 +43718,7 @@ Le istruzioni appena viste vanno ignorate, sebbene @file{vms/gawk.hlp}
 dovrebbe ancora essere reso disponibile in una libreria di aiuto.
 L'albero del codice sorgente dovrebbe essere scompattato in un sottosistema
 contenitore di file, e non nel normale @dfn{filesystem} VMS.
-Occorre accertarsi che i due script, @file{configure} e
+Occorre accertarsi che i due @dfn{script}, @file{configure} e
 @file{vms/posix-cc.sh}, siano eseguibile; si usi @samp{chmod +x} per farlo,
 se necessario.  Poi vanno eseguiti i seguenti due comandi:
 
@@ -43683,7 +43729,7 @@ psx> @kbd{make CC=c89 gawk}
 
 @noindent
 Il primo comando costruisce i file @file{config.h} e @file{Makefile},
-a partire da dei modelli, usando uno script per fare s@`{@dotless{i}} che il
+a partire da dei modelli, usando uno @dfn{script} per fare s@`{@dotless{i}} che il
 compilatore C soddisfi le aspettative di @command{configure}.  Il secondo
 comando compila e collega @command{gawk} chiamando direttamente il
 compilatore C; gli eventuali messaggi di @command{make} che dicono di non
@@ -44133,6 +44179,14 @@ Ulteriori informazioni sono disponibili sulla
 Questo @`e un interprete @command{awk} incorporabile, derivato da
 @command{mawk}. Per ulteriori informazioni, si veda
 @uref{http://repo.hu/projects/libmawk/}.
+
+@cindex codice sorgente, interpretatore @command{awk} incorporabile
+@cindex Neacsu, Mircea
+@item @command{awk} incorporabile di Mircea Neacsu
+@item incorporabile, @command{awk}, di Mircea Neacsu
+Mircea Neacsu ha creato un interpretatore @command{awk}
+incorporabile, basato su BWK @command{awk}.  @`E disponibile
+nel sito @uref{https://github.com/neacsum/awk}.
 
 @item @code{pawk}
 @cindex codice sorgente, @command{pawk} (versione Python)
@@ -45731,7 +45785,7 @@ differenzia dalla altre shell per le sue funzionalit@`a interattive, e per lo
 stile complessivo, che @`e abbastanza simile a quello del linguaggio C.
 La C shell non @`e compatibile all'indietro con la Bourne Shell, e per questo
 motivo un'attenzione speciale @`e necessaria se si convertono alla C shell
-degli script scritti per altre shell Unix, in particolare per ci@`o che
+degli @dfn{script} scritti per altre shell Unix, in particolare per ci@`o che
 concerne la gestione delle variabili di shell.
 Si veda anche ``Bourne Shell''.
 
