@@ -229,7 +229,7 @@ get_actual_argument(NODE *t, int i, bool want_array)
 void
 load_ext(const char *lib_name)
 {
-	fatal(_("dynamic loading of library not supported"));
+	fatal(_("dynamic loading of libraries is not supported"));
 }
 #endif
 
