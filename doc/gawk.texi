@@ -40532,8 +40532,12 @@ command line when compiling @command{gawk} from scratch, including:
 @cindex @option{--disable-extensions} configuration option
 @cindex configuration option, @code{--disable-extensions}
 @item --disable-extensions
-Disable configuring and building the sample extensions in the
-@file{extension} directory. This is useful for cross-compiling.
+Disable the extension mechanism within @command{gawk}. With this
+option, it is not possible to use dynamic extensions.  This also
+disables configuring and building the sample extensions in the
+@file{extension} directory.
+
+This option may be useful for cross-compiling.
 The default action is to dynamically check if the extensions
 can be configured and compiled.
 
