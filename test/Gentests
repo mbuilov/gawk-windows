@@ -94,6 +94,13 @@ BEGIN {
 	next
 }
 
+/^NEED_SANDBOX *=/,/[^\\]$/ {
+	gsub(/(^NEED_SANDBOX *=|\\$)/,"")
+	for (i = 1; i <= NF; i++)
+		sandbox[$i]
+	next
+}
+
 /^GENTESTS_UNUSED *=/,/[^\\]$/ {
 	gsub(/(^GENTESTS_UNUSED *=|\\$)/,"")
 	for (i = 1; i <= NF; i++)
@@ -203,6 +210,10 @@ function generate(x,	s, i, locale_string)
 	if (x in traditional) {
 		s = s " --traditional"
 		delete traditional[x]
+	}
+	if (x in sandbox) {
+		s = s " --sandbox"
+		delete sandbox[x]
 	}
 	if (x in pretty) {
 		s = s " --pretty-print=_$@"

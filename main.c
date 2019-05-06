@@ -749,6 +749,7 @@ init_args(int argc0, int argc, const char *argv0, char **argv)
 {
 	int i, j;
 	NODE *sub, *val;
+	NODE *shadow_node = NULL;
 
 	ARGV_node = install_symbol(estrdup("ARGV", 4), Node_var_array);
 	sub = make_number(0.0);
@@ -756,15 +757,32 @@ init_args(int argc0, int argc, const char *argv0, char **argv)
 	val->flags |= USER_INPUT;
 	assoc_set(ARGV_node, sub, val);
 
+	if (do_sandbox) {
+		shadow_node = make_array();
+		sub = make_string(argv0, strlen(argv0));
+		val = make_number(0.0);
+		assoc_set(shadow_node, sub, val);
+	}
+
+
 	for (i = argc0, j = 1; i < argc; i++, j++) {
 		sub = make_number((AWKNUM) j);
 		val = make_string(argv[i], strlen(argv[i]));
 		val->flags |= USER_INPUT;
 		assoc_set(ARGV_node, sub, val);
+
+		if (do_sandbox) {
+			sub = make_string(argv[i], strlen(argv[i]));
+			val = make_number(0.0);
+			assoc_set(shadow_node, sub, val);
+		}
 	}
 
 	ARGC_node = install_symbol(estrdup("ARGC", 4), Node_var);
 	ARGC_node->var_value = make_number((AWKNUM) j);
+
+	if (do_sandbox)
+		init_argv_array(ARGV_node, shadow_node);
 }
 
 

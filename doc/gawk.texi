@@ -4271,10 +4271,13 @@ representation of the program.
 @cindex @option{-S} option
 @cindex @option{--sandbox} option
 @cindex sandbox mode
+@cindex @code{ARGV} array
 Disable the @code{system()} function,
 input redirections with @code{getline},
 output redirections with @code{print} and @code{printf},
 and dynamic extensions.
+Also, disallow adding filenames to @code{ARGV} that were
+not there when @command{gawk} started running.
 This is particularly useful when you want to run @command{awk} scripts
 from questionable sources and need to make sure the scripts
 can't access your system (other than the specified input @value{DF}).
@@ -39955,7 +39958,7 @@ Anders Wallin helped keep the VMS port going for several years.
 
 @item
 @cindex Gordon, Assaf
-Assaf Gordon contributed the code to implement the
+Assaf Gordon contributed the initial code to implement the
 @option{--sandbox} option.
 
 @item

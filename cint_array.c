@@ -73,6 +73,24 @@ const array_funcs_t cint_array_func = {
 	(afunc_t) 0,
 };
 
+
+static NODE **argv_store(NODE *symbol, NODE *subs);
+
+/* special case for ARGV in sandbox mode */
+const array_funcs_t argv_array_func = {
+	"argv",
+	cint_array_init,
+	is_uinteger,
+	cint_lookup,
+	cint_exists,
+	cint_clear,
+	cint_remove,
+	cint_list,
+	cint_copy,
+	cint_dump,
+	argv_store,
+};
+
 static inline int cint_hash(long k);
 static inline NODE **cint_find(NODE *symbol, long k, int h1);
 
@@ -1230,3 +1248,68 @@ leaf_print(NODE *array, size_t bi, int indent_level)
 			(unsigned long) array->table_size);
 }
 #endif
+
+static NODE *argv_shadow_array = NULL;
+
+/* argv_store --- post assign function for ARGV in sandbox mode */
+
+static NODE **
+argv_store(NODE *symbol, NODE *subs)
+{
+	NODE **val = cint_exists(symbol, subs);
+	NODE *newval = *val;
+	char *cp;
+
+	if (newval->stlen == 0)	// empty strings in ARGV are OK
+		return val;
+
+	if ((cp = strchr(newval->stptr, '=')) == NULL) {
+		if (! in_array(argv_shadow_array, newval))
+			fatal(_("cannot add a new file (%.*s) to ARGV in sandbox mode"),
+				(int) newval->stlen, newval->stptr);
+	} else {
+		// check if it's a valid variable assignment
+		bool badvar = false;
+		char *arg = newval->stptr;
+		char *cp2;
+
+		*cp = '\0';	// temporarily
+
+		if (! is_letter((unsigned char) arg[0]))
+			badvar = true;
+		else
+			for (cp2 = arg+1; *cp2; cp2++)
+				if (! is_identchar((unsigned char) *cp2) && *cp2 != ':') {
+					badvar = true;
+					break;
+				}
+
+		// further checks
+		if (! badvar) {
+			char *cp = strchr(arg, ':');
+			if (cp && (cp[1] != ':' || strchr(cp + 2, ':') != NULL))
+				badvar = true;
+		}
+		*cp = '=';	// restore the '='
+
+		if (badvar && ! in_array(argv_shadow_array, newval))
+			fatal(_("cannot add a new file (%.*s) to ARGV in sandbox mode"),
+				(int) newval->stlen, newval->stptr);
+
+		// otherwise, badvar is false, let it through as variable assignment
+	}
+	return val;
+}
+
+/* init_argv_array --- set up the pointers for ARGV in sandbox mode. A bit hacky. */
+
+void
+init_argv_array(NODE *argv_node, NODE *shadow_node)
+{
+	/* If POSIX simply don't reset the vtable and things work as before */
+	if (! do_sandbox)
+		return;
+
+	argv_node->array_funcs = & argv_array_func;
+	argv_shadow_array = shadow_node;
+}
