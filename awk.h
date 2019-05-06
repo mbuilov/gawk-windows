@@ -1402,6 +1402,7 @@ extern NODE *do_asort(int nargs);
 extern NODE *do_asorti(int nargs);
 extern unsigned long (*hash)(const char *s, size_t len, unsigned long hsize, size_t *code);
 extern void init_env_array(NODE *env_node);
+extern void init_argv_array(NODE *argv_node, NODE *shadow_node);
 /* awkgram.c */
 extern NODE *variable(int location, char *name, NODETYPE type);
 extern int parse_program(INSTRUCTION **pcode, bool from_eval);

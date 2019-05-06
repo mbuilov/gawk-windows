@@ -1067,6 +1067,8 @@ EXTRA_DIST = \
 	rwarray.awk \
 	rwarray.in \
 	rwarray.ok \
+	sandbox1.awk \
+	sandbox1.ok \
 	scalar.awk \
 	scalar.ok \
 	sclforin.awk \
@@ -1354,7 +1356,8 @@ GAWK_EXT_TESTS = \
 	profile7 profile8 profile9 profile10 profile11 profile12 pty1 pty2 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin \
 	rsstart1 rsstart2 rsstart3 rstest6 \
-	shadow shadowbuiltin sortfor sortfor2 sortu sourcesplit split_after_fpat \
+	sandbox1 shadow shadowbuiltin sortfor sortfor2 sortu \
+	sourcesplit split_after_fpat \
 	splitarg4 strftfld strftime strtonum strtonum1 switch2 symtab1 symtab2 \
 	symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9 symtab10 \
 	timeout typedregex1 typedregex2 typedregex3 typedregex4 \
@@ -1413,6 +1416,9 @@ NEED_PRETTY = nsprof1 nsprof2 \
 
 # List of tests that need --re-interval
 NEED_RE_INTERVAL = gsubtst3 reint reint2
+
+# List of tests that need --sandbox
+NEED_SANDBOX = sandbox1
 
 # List of tests that need --traditional
 NEED_TRADITIONAL = litoct tradanch rscompat

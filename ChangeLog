@@ -1,3 +1,16 @@
+2019-05-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	In sandbox mode, disallow assigning filenames that weren't
+	there initially. Thanks to Nolan Woods <nolan_w@sfu.ca> for
+	pointing out the gap.
+
+	* awk.h (init_argv_array): Add declaration.
+	* cint_array.c (argv_store): New vtable for ARGV.
+	(argv_shadow_array): New file static variable
+	(argv_store, init_argv_array): New functions.
+	* main.c (init_args): If in sandbox mode, build shadow array of
+	initial argv values. Call init_argv_array.
+
 2019-05-05         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* ext.c (load_ext): Fix the message in the version for when
