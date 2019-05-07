@@ -285,6 +285,9 @@ END {
 	for (x in traditional)
 		if (!(x in targets))
 			printf "WARNING: --traditional target `%s' is missing.\n", x > "/dev/stderr"
+	for (x in sandbox)
+		if (!(x in targets))
+			printf "WARNING: --sandbox target `%s' is missing.\n", x > "/dev/stderr"
 	for (x in pretty)
 		if (!(x in targets))
 			printf "WARNING: --pretty-print target `%s' is missing.\n", x > "/dev/stderr"
