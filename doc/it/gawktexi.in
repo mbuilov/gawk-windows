@@ -4094,7 +4094,7 @@ Quest'opzione pu@`o essere data pi@`u volte; il programma @command{awk}
 @`e formato dalla concatenazione del contenuto di ogni
 @var{file-sorgente} specificato.
 
-I file specificati dall'opzione @option{-i} sono considerati
+I file specificati dall'opzione @option{-f} sono considerati
 appartenere allo spazio-dei-nomi @samp{"awk" (@@namespace "awk")}
 a inizio programma. @xref{Cambiare lo spazio-dei-nomi}, per ulteriori
 informazioni.
@@ -4555,10 +4555,14 @@ effettuate sulla rappresentazione interna del programma.
 @cindex @option{--sandbox}, opzione
 @cindex sandbox, modalit@`a
 @cindex prova, modalit@`a di
+@cindex @code{ARGV}, vettore
+@cindex vettore @code{ARGV}
 Disabilita la funzione @code{system()},
 la ridirezione dell'input con @code{getline},
 la ridirezione dell'output con @code{print} e @code{printf},
 e le estensioni dinamiche.
+Inoltre, non consente di aggiungere nomi di file ad @code{ARGV} che
+non siano gi@`a presenti all'inizio dell'esecuzione di @command{gawk}.
 @`E particolarmente utile quando si vogliono eseguire @dfn{script} @command{awk}
 da sorgenti dubbie e si vuol essere ricuri che gli @dfn{script} non abbiano
 accesso al sistema (oltre al @value{DF} di input specificato).
@@ -42342,7 +42346,7 @@ di @command{gawk} per parecchi anni.
 
 @item
 @cindex Gordon, Assaf
-Assaf Gordon ha scritto il codice per implementare
+Assaf Gordon ha contribuito il codice iniziale per implementare
 l'opzione @option{--sandbox}.
 
 @item
@@ -43003,9 +43007,14 @@ quando si compila @command{gawk} a partire dai sorgenti, tra cui:
 @cindex @option{--disable-extensions}, opzione di configurazione
 @cindex opzione di configurazione @code{--disable-extensions}
 @item --disable-extensions
-Richiesta di non configurare e generare le estensioni di esempio nella
-directory @file{extension}. Questo @`e utile quando si genera
-@command{gawk} per essere eseguito su un'altra piattaforma.
+Disabilita il meccanismo delle estensioni all'interno di
+@command{gawk}.  Specificando quest'opzione non @`e possibile
+utilizzare estensioni dinamiche.  Inoltre si disabilita la
+configurazione e la generazione delle estensioni di esempio nella
+directory @file{extension}.
+
+Questo @`e utile quando si genera @command{gawk} per essere eseguito
+su un'altra piattaforma.
 L'azione di default @`e di controllare dinamicamente se le estensioni
 possono essere configurate e compilate.
 
