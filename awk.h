@@ -1139,21 +1139,22 @@ extern int do_flags;
 extern SRCFILE *srcfiles; /* source files */
 
 enum do_flag_values {
-	DO_LINT_INVALID	= 0x0001,	/* only warn about invalid */
-	DO_LINT_ALL	= 0x0002,	/* warn about all things */
-	DO_LINT_OLD	= 0x0004,	/* warn about stuff not in V7 awk */
-	DO_TRADITIONAL	= 0x0008,	/* no gnu extensions, add traditional weirdnesses */
-	DO_POSIX	= 0x0010,	/* turn off gnu and unix extensions */
-	DO_INTL		= 0x0020,	/* dump locale-izable strings to stdout */
-	DO_NON_DEC_DATA	= 0x0040,	/* allow octal/hex C style DATA. Use with caution! */
-	DO_INTERVALS	= 0x0080,	/* allow {...,...} in regexps, see resetup() */
-	DO_PRETTY_PRINT	= 0x0100,	/* pretty print the program */
-	DO_DUMP_VARS	= 0x0200,	/* dump all global variables at end */
-	DO_TIDY_MEM	= 0x0400,	/* release vars when done */
-	DO_SANDBOX	= 0x0800,	/* sandbox mode - disable 'system' function & redirections */
-	DO_PROFILE	= 0x1000,	/* profile the program */
-	DO_DEBUG	= 0x2000,	/* debug the program */
-	DO_MPFR		= 0x4000	/* arbitrary-precision floating-point math */
+	DO_LINT_INVALID	   = 0x00001,	/* only warn about invalid */
+	DO_LINT_EXTENSIONS = 0x00002,	/* warn about gawk extensions */
+	DO_LINT_ALL	   = 0x00004,	/* warn about all things */
+	DO_LINT_OLD	   = 0x00008,	/* warn about stuff not in V7 awk */
+	DO_TRADITIONAL	   = 0x00010,	/* no gnu extensions, add traditional weirdnesses */
+	DO_POSIX	   = 0x00020,	/* turn off gnu and unix extensions */
+	DO_INTL		   = 0x00040,	/* dump locale-izable strings to stdout */
+	DO_NON_DEC_DATA	   = 0x00080,	/* allow octal/hex C style DATA. Use with caution! */
+	DO_INTERVALS	   = 0x00100,	/* allow {...,...} in regexps, see resetup() */
+	DO_PRETTY_PRINT	   = 0x00200,	/* pretty print the program */
+	DO_DUMP_VARS	   = 0x00400,	/* dump all global variables at end */
+	DO_TIDY_MEM	   = 0x00800,	/* release vars when done */
+	DO_SANDBOX	   = 0x01000,	/* sandbox mode - disable 'system' function & redirections */
+	DO_PROFILE	   = 0x02000,	/* profile the program */
+	DO_DEBUG	   = 0x04000,	/* debug the program */
+	DO_MPFR		   = 0x08000	/* arbitrary-precision floating-point math */
 };
 
 #define do_traditional      (do_flags & DO_TRADITIONAL)
@@ -1179,6 +1180,7 @@ extern int exit_val;
 #else
 #define do_lint             (do_flags & (DO_LINT_INVALID|DO_LINT_ALL))
 #define do_lint_old         (do_flags & DO_LINT_OLD)
+#define do_lint_extensions  (do_flags & DO_LINT_EXTENSIONS)
 #endif
 extern int gawk_mb_cur_max;
 

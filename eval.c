@@ -706,7 +706,7 @@ set_IGNORECASE()
 {
 	static bool warned = false;
 
-	if ((do_lint || do_traditional) && ! warned) {
+	if ((do_lint_extensions || do_traditional) && ! warned) {
 		warned = true;
 		lintwarn(_("`IGNORECASE' is a gawk extension"));
 	}
@@ -727,7 +727,7 @@ set_BINMODE()
 	char *p;
 	NODE *v = fixtype(BINMODE_node->var_value);
 
-	if ((do_lint || do_traditional) && ! warned) {
+	if ((do_lint_extensions || do_traditional) && ! warned) {
 		warned = true;
 		lintwarn(_("`BINMODE' is a gawk extension"));
 	}
@@ -964,6 +964,8 @@ set_LINT()
 		if (lintlen > 0) {
 			if (lintlen == 7 && strncmp(lintval, "invalid", 7) == 0)
 				do_flags |= DO_LINT_INVALID;
+			else if (lintlen == 6 && strncmp(lintval, "no-ext", 6) == 0)
+				do_flags &= ~DO_LINT_EXTENSIONS;
 			else {
 				do_flags |= DO_LINT_ALL;
 				if (lintlen == 5 && strncmp(lintval, "fatal", 5) == 0)

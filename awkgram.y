@@ -4379,7 +4379,7 @@ retry:
 		}
 
 		if (do_lint) {
-			if ((tokentab[mid].flags & GAWKX) != 0 && (warntab[mid] & GAWKX) == 0) {
+			if (do_lint_extensions && (tokentab[mid].flags & GAWKX) != 0 && (warntab[mid] & GAWKX) == 0) {
 				lintwarn(_("`%s' is a gawk extension"),
 					tokentab[mid].operator);
 				warntab[mid] |= GAWKX;
@@ -4702,7 +4702,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		(void) mk_rexp(arg);
 
 		if (nexp == 3) {	/* 3rd argument there */
-			if (do_lint && ! warned) {
+			if (do_lint_extensions && ! warned) {
 				warned = true;
 				lintwarn(_("match: third argument is a gawk extension"));
 			}
@@ -4759,7 +4759,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	} else if (r->builtin == do_close) {
 		static bool warned = false;
 		if (nexp == 2) {
-			if (do_lint && ! warned) {
+			if (do_lint_extensions && ! warned) {
 				warned = true;
 				lintwarn(_("close: second argument is a gawk extension"));
 			}

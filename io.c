@@ -4075,7 +4075,7 @@ set_RS()
 
 		matchrec = rsrescan;
 
-		if (do_lint && ! warned) {
+		if (do_lint_extensions && ! warned) {
 			lintwarn(_("multicharacter value of `RS' is a gawk extension"));
 			warned = true;
 		}

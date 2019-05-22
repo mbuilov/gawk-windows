@@ -529,7 +529,7 @@ do_length(int nargs)
 
 		if (do_posix)
 			fatal(_("length: received array argument"));
-   		if (do_lint && ! warned) {
+   		if (do_lint_extensions && ! warned) {
 			warned = true;
 			lintwarn(_("`length(array)' is a gawk extension"));
 		}
