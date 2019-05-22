@@ -22,12 +22,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#if 3 <= __GNUC__
-# define _GL_ATTRIBUTE_MALLOC __attribute__ ((__malloc__))
-#else
-# define _GL_ATTRIBUTE_MALLOC
-#endif
-
 struct localeinfo; /* See localeinfo.h.  */
 
 /* Element of a list of strings, at least one of which is known to
@@ -48,7 +42,7 @@ struct dfa;
 /* Allocate a struct dfa.  The struct dfa is completely opaque.
    The returned pointer should be passed directly to free() after
    calling dfafree() on it. */
-extern struct dfa *dfaalloc (void) _GL_ATTRIBUTE_MALLOC;
+extern struct dfa *dfaalloc (void) /* _GL_ATTRIBUTE_MALLOC */;
 
 /* DFA options that can be ORed together, for dfasyntax's 4th arg.  */
 enum

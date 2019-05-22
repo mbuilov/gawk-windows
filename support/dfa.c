@@ -262,6 +262,7 @@ enum
                                    comparisons to END.  */
 
   /* Ordinary character values are terminal symbols that match themselves.  */
+
   /* CSET must come last in the following list of special tokens.  Otherwise,
      the list order matters only for performance.  Related special tokens
      should have nearby values so that code like (t == ANYCHAR || t == MBCSET
@@ -301,9 +302,11 @@ enum
 
   WCHAR,                        /* Only returned by lex.  wctok contains
                                    the wide character representation.  */
+
   ANYCHAR,                      /* ANYCHAR is a terminal symbol that matches
                                    a valid multibyte (or single byte) character.
                                    It is used only if MB_CUR_MAX > 1.  */
+
   BEG,                          /* BEG is an initial symbol that matches the
                                    beginning of input.  */
 
@@ -339,7 +342,6 @@ enum
 
   MBCSET,                       /* MBCSET is similar to CSET, but for
                                    multibyte characters.  */
-
 
   CSET                          /* CSET and (and any value greater) is a
                                    terminal symbol that matches any of a
@@ -2365,6 +2367,7 @@ charclass_context (struct dfa const *dfa, charclass const *c)
 
   return context;
 }
+
 /* Returns the contexts on which the position set S depends.  Each context
    in the set of returned contexts (let's call it SC) may have a different
    follow set than other contexts in SC, and also different from the
@@ -2837,7 +2840,6 @@ dfaanalyze (struct dfa *d, bool searchflag)
       }
 #endif
 
-
   pos.index = 0;
   pos.constraint = NO_CONSTRAINT;
 
@@ -3163,7 +3165,6 @@ build_state (state_num s, struct dfa *d, unsigned char uc)
       /* Find the state(s) corresponding to the union of the follows.  */
       if (possible_contexts & ~separate_contexts)
         state = state_index (d, &group, separate_contexts ^ CTX_ANY);
-
       else
         state = -1;
       if (separate_contexts & possible_contexts & CTX_NEWLINE)

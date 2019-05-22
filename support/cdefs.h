@@ -198,7 +198,7 @@
    `__attribute__' syntax.  All of the ways we use this do fine if
    they are omitted for compilers that don't understand it. */
 #if !defined __GNUC__ || __GNUC__ < 2
-# define __attribute__(arg)	/* Ignore */
+# define __attribute__(xyz)	/* Ignore */
 #endif
 
 /* At some point during the gcc 2.96 development the `malloc' attribute
