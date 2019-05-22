@@ -978,7 +978,7 @@ do_split(int nargs)
 		sep_arr = POP_PARAM();
 		if (sep_arr->type != Node_var_array)
 			fatal(_("split: fourth argument is not an array"));
-		if ((do_lint || do_lint_old) && ! warned) {
+		if ((do_lint_extensions || do_lint_old) && ! warned) {
 			warned = true;
 			lintwarn(_("split: fourth argument is a gawk extension"));
 		}
@@ -1144,7 +1144,7 @@ set_FIELDWIDTHS()
 	bool fatal_error = false;
 	NODE *tmp;
 
-	if (do_lint && ! warned) {
+	if (do_lint_extensions && ! warned) {
 		warned = true;
 		lintwarn(_("`FIELDWIDTHS' is a gawk extension"));
 	}
@@ -1307,7 +1307,7 @@ choose_fs_function:
 
 		set_parser(null_parse_field);
 
-		if (do_lint && ! warned) {
+		if (do_lint_extensions && ! warned) {
 			warned = true;
 			lintwarn(_("null string for `FS' is a gawk extension"));
 		}
@@ -1438,7 +1438,7 @@ set_FPAT()
 	bool remake_re = true;
 	NODE *fpat;
 
-	if (do_lint && ! warned) {
+	if (do_lint_extensions && ! warned) {
 		warned = true;
 		lintwarn(_("`FPAT' is a gawk extension"));
 	}

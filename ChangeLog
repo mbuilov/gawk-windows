@@ -1,3 +1,21 @@
+2019-05-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add --lint=no-ext. Suggest by Mark Krauze <daburashka@ya.ru>.
+
+	* NEWS: Updated.
+	* awk.h (DO_LINT_EXTENSIONS): New enum.
+	(do_lint_extensions): New macro.
+	* awkgram.y (yylex, snode): Use do_lint_extensions instead of
+	do_lint where appropriate.
+	* builtin.c (do_length): Ditto.
+	* eval.c (set_IGNORECASE, set_BINMODE): Ditto.
+	(set_LINT): Revise logic.
+	* field.c (do_split, set_FIELDWIDTHS, chose_fs_function, set_FPAT):
+	Ditto.
+	* io.c (set_RS): Ditto.
+	* main.c (usage): Updated.
+	(parse_args): Revise the code to handle --lint=no-ext.
+
 2019-05-10         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* NEWS: Updated.

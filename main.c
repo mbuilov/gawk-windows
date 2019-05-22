@@ -605,7 +605,7 @@ usage(int exitval, FILE *fp)
 	 * TRANSLATORS: the "fatal" and "invalid" here are literal
 	 * values, they should not be translated. Thanks.
 	 */
-	fputs(_("\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"), fp);
+	fputs(_("\t-L[fatal|invalid|no-ext]\t--lint[=fatal|invalid|no-ext]\n"), fp);
 	fputs(_("\t-M\t\t\t--bignum\n"), fp);
 	fputs(_("\t-N\t\t\t--use-lc-numeric\n"), fp);
 	fputs(_("\t-n\t\t\t--non-decimal-data\n"), fp);
@@ -1622,13 +1622,16 @@ parse_args(int argc, char **argv)
 
 #ifndef NO_LINT
 		case 'L':
-			do_flags |= DO_LINT_ALL;
+			do_flags |= (DO_LINT_ALL|DO_LINT_EXTENSIONS);
 			if (optarg != NULL) {
 				if (strcmp(optarg, "fatal") == 0)
 					lintfunc = r_fatal;
 				else if (strcmp(optarg, "invalid") == 0) {
 					do_flags &= ~DO_LINT_ALL;
 					do_flags |= DO_LINT_INVALID;
+				}
+				else if (strcmp(optarg, "no-ext") == 0) {
+					do_flags &= ~DO_LINT_EXTENSIONS;
 				}
 			}
 			break;
