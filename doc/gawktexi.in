@@ -19530,17 +19530,20 @@ an array or not.  The second is inside the body of a user-defined function
 array or not.
 
 @quotation NOTE
-Using @code{isarray()} at the global level to test
-variables makes no sense. Because you are the one writing the program, you
-are supposed to know if your variables are arrays or not. And in fact,
-due to the way @command{gawk} works, if you pass the name of a variable
-that has not been previously used to @code{isarray()}, @command{gawk}
-ends up turning it into a scalar.
+While you can use @code{isarray()} at the global level to test variables,
+doing so makes no sense. Because @emph{you} are the one writing the
+program, @emph{you} are supposed to know if your variables are arrays
+or not.
 @end quotation
 
 The @code{typeof()} function is general; it allows you to determine
-if a variable or function parameter is a scalar, an array, or a strongly
-typed regexp.
+if a variable or function parameter is a scalar (number, string,
+or strongly typed regexp) or an array.
+
+Normally, passing a variable that has never been used to a built-in
+function causes it to become a scalar variable (unassigned).
+However, @code{isarray()} and @code{typeof()} are different; they do
+not change their arguments from untyped to unassigned.
 
 @node I18N Functions
 @subsection String-Translation Functions
