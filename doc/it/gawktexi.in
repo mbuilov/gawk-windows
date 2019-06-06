@@ -56,9 +56,9 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH Marzo 2019
+@set UPDATE-MONTH Maggio 2019
 @set VERSION 5.0
-@set PATCHLEVEL 0
+@set PATCHLEVEL 1
 
 @c added Italian hyphenation stuff
 @hyphenation{ven-go-no o-met-te-re o-met-ten-do}
@@ -4382,12 +4382,14 @@ Non sono consentiti spazi tra @option{-L} e @var{valore}, se
 viene indicato il @var{valore}.
 Alcuni avvertimenti vengono emessi quando @command{gawk} legge preliminarmente
 il programma.  Altri vengono emessi quando il programma viene eseguito.
-Con l'argomento opzionale @samp{fatal}, gli avvertimenti @dfn{lint} sono considerati
-come errori gravi.  Potrebbe essere una misura drastica, per@`o il suo uso
-incoragger@`a certamente lo sviluppo di programmi @command{awk} pi@`u corretti.
-Con l'argomento opzionale @samp{invalid}, vengono emessi solo gli avvertimenti
-relativi a quello che @`e effettivamente non valido (funzionalit@`a non ancora
-completamente implementata).
+Con l'argomento opzionale @samp{fatal}, gli avvertimenti @dfn{lint} sono
+considerati come errori gravi.  Potrebbe essere una misura drastica, per@`o il
+suo uso incoragger@`a certamente lo sviluppo di programmi @command{awk} pi@`u
+corretti.  Con l'argomento opzionale @samp{invalid}, vengono emessi solo gli
+avvertimenti relativi a quello che @`e effettivamente non valido (funzionalit@`a
+non ancora completamente implementata).  Con un argomento opzionale di
+@samp{no-ext}, gli avvertimenti relativi alle estensioni @command{gawk} sono
+disabilitati.
 
 Alcuni avvertimenti vengono stampati solo una volta, anche se i costrutti dubbi
 per i quali vengono emessi avvisi ricorrono diverse volte nel programma
@@ -21158,17 +21160,21 @@ definita dall'utente (argomento non ancora trattato;
 @`e un vettore oppure no.
 
 @quotation NOTA
-Usare @code{isarray()} a livello globale per controllare le variabili
-non ha alcun senso. Si suppone infatti che chi scrive il programma
-sappia se una variabile @`e un vettore oppure no.  E in
-effetti, per come funziona @command{gawk}, se si passa una variabile
-che non sia stata usata in precedenza a @code{isarray()}, @command{gawk}
-la crea al volo, assegnandole il tipo scalare.
+Anche se si pu@`o usare @code{isarray()} a livello globale per controllare le
+variabili il farlo non ha alcun senso.  Si suppone infatti che chi scrive il
+programma sappia se una variabile @`e un vettore oppure no.
 @end quotation
 
 La funzione @code{typeof()} @`e generale; consente di determinare
-se una variabile o un parametro di funzione @`e uno scalare, un vettore,
-o una @dfn{regexp} fortemente tipizzata.
+se una variabile o un parametro di funzione @`e uno scalare, (numero,
+stringa o @dfn{regexp} fortemente tipizzata), oppure un vettore.
+
+Normalmente, se si passa una variabile che non @`e stata mai usata
+a una funzione predefinita, la variabile stessa viene creata come
+variabile scalare di tipo non ancora assegnato (unassigned).
+Tuttavia, se si chiama @code{isarray()} e @code{typeof()} queste
+funzioni non cambiano gli argomenti che vengono passati loro da
+non ancora tipizzati (untyped) a non ancora assegnati (unassigned).
 
 @node Funzioni di internazionalizzazione
 @subsection Funzioni per tradurre stringhe
