@@ -602,7 +602,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-i includefile\t\t--include=includefile\n"), fp);
 	fputs(_("\t-l library\t\t--load=library\n"), fp);
 	/*
-	 * TRANSLATORS: the "fatal" and "invalid" here are literal
+	 * TRANSLATORS: the "fatal", "invalid" and "no-ext" here are literal
 	 * values, they should not be translated. Thanks.
 	 */
 	fputs(_("\t-L[fatal|invalid|no-ext]\t--lint[=fatal|invalid|no-ext]\n"), fp);
