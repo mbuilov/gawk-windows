@@ -5693,6 +5693,11 @@ containing the alternation operator, @samp{|}.  For example,
 (These are Texinfo formatting control sequences. The @samp{+} is
 explained further on in this list.)
 
+The left or opening parenthesis is always a metacharacter; to match
+one literally, precede it with a backslash. However, the right or
+closing parenthesis is only special when paired with a left parenthesis;
+an unpaired right parenthesis is (silently) treated as a regular character.
+
 @cindex @code{*} (asterisk), @code{*} operator, as regexp operator
 @cindex asterisk (@code{*}), @code{*} operator, as regexp operator
 @item @code{*}
