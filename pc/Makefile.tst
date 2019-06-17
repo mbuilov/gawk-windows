@@ -144,15 +144,16 @@ BASIC_TESTS = \
 	addcomma anchgsub anchor argarray arrayind1 arrayind2 arrayind3 arrayparm \
 	arrayprm2 arrayprm3 arrayref arrymem1 arryref2 arryref3 arryref4 arryref5 \
 	arynasty arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
-	aryprm8 aryprm9 arysubnm aryunasgn asgext awkpath assignnumfield \
+	aryprm8 aryprm9 arysubnm aryunasgn asgext awkpath \
+	assignnumfield assignnumfield2 \
 	back89 backgsub badassign1 badbuild \
 	callparam childin clobber closebad clsflnam compare compare2 \
 	concat1 concat2 concat3 concat4 concat5 convfmt \
 	datanonl defref delargv delarpm2 delarprm delfunc dfamb1 dfastress dynlj \
 	eofsplit eofsrc1 exit2 exitval1 exitval2 exitval3 \
 	fcall_exit fcall_exit2 fldchg fldchgnf fldterm fnamedat fnarray fnarray2 \
-	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsnul1 fsrs fsspcoln \
-	fstabplus funsemnl funsmnam funstack \
+	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fscaret fsnul1 \
+	fsrs fsspcoln fstabplus funsemnl funsmnam funstack \
 	getline getline2 getline3 getline4 getline5 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 gsubtst7 \
 	gsubtst8 \
@@ -175,7 +176,7 @@ BASIC_TESTS = \
 	scalar sclforin sclifin setrec0 setrec1 \
 	sigpipe1 sortempty sortglos spacere splitargv splitarr \
 	splitdef splitvar splitwht status-close strcat1 strnum1 strnum2 strtod \
-	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 \
+	subamp subback subi18n subsepnm subslash substr swaplns synerr1 synerr2 synerr3 \
 	tailrecurse tradanch trailbs tweakfld \
 	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs uplus \
 	wideidx wideidx2 widesub widesub2 widesub3 widesub4 wjposer1 \
@@ -210,7 +211,8 @@ GAWK_EXT_TESTS = \
 	profile7 profile8 profile9 profile10 profile11 profile12 pty1 pty2 \
 	rebuf regnul1 regnul2 regx8bit reginttrad reint reint2 rsgetline rsglstdin \
 	rsstart1 rsstart2 rsstart3 rstest6 \
-	shadow shadowbuiltin sortfor sortfor2 sortu sourcesplit split_after_fpat \
+	sandbox1 shadow shadowbuiltin sortfor sortfor2 sortu \
+	sourcesplit split_after_fpat \
 	splitarg4 strftfld strftime strtonum strtonum1 switch2 symtab1 symtab2 \
 	symtab3 symtab4 symtab5 symtab6 symtab7 symtab8 symtab9 symtab10 \
 	timeout typedregex1 typedregex2 typedregex3 typedregex4 \
@@ -269,6 +271,9 @@ NEED_PRETTY = nsprof1 nsprof2 \
 
 # List of tests that need --re-interval
 NEED_RE_INTERVAL = gsubtst3 reint reint2
+
+# List of tests that need --sandbox
+NEED_SANDBOX = sandbox1
 
 # List of tests that need --traditional
 NEED_TRADITIONAL = litoct tradanch rscompat
@@ -1303,6 +1308,11 @@ assignnumfield:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+assignnumfield2:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 back89:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -1517,6 +1527,11 @@ forsimp:
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 fsbs:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+fscaret:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
@@ -2269,6 +2284,11 @@ synerr2:
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
+synerr3:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
 tailrecurse:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -3011,6 +3031,11 @@ rsstart2:
 rstest6:
 	@echo $@
 	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  < "$(srcdir)"/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+sandbox1:
+	@echo $@
+	@AWKPATH="$(srcdir)" $(AWK) -f $@.awk  --sandbox >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 shadow:
