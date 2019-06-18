@@ -8119,47 +8119,30 @@ input record and split it up into fields.  This is useful if you've
 finished processing the current record, but want to do some special
 processing on the next record @emph{right now}.  For example:
 
+@c 6/2019: Thanks to Mark Krauze <daburashka@ya.ru> for suggested
+@c improvements (the inner while loop).
 @example
 # Remove text between /* and */, inclusive
 @{
-    if ((i = index($0, "/*")) != 0) @{
-        out = substr($0, 1, i - 1)  # leading part of the string
-        rest = substr($0, i + 2)    # ... */ ...
-        j = index(rest, "*/")       # is */ in trailing part?
-        if (j > 0) @{
-            rest = substr(rest, j + 2)  # remove comment
-        @} else @{
-            while (j == 0) @{
-                # get more text
-                if (getline <= 0) @{
-                    print("unexpected EOF or error:", ERRNO) > "/dev/stderr"
-                    exit
-                @}
-                # build up the line using string concatenation
-                rest = rest $0
-                j = index(rest, "*/")   # is */ in trailing part?
-                if (j != 0) @{
-                    rest = substr(rest, j + 2)
-                    break
-                @}
+    while ((start = index($0, "/*")) != 0) @{
+        out = substr($0, 1, start - 1)  # leading part of the string
+        rest = substr($0, start + 2)    # ... */ ...    
+        while ((end = index(rest, "*/")) == 0) @{  # is */ in trailing part?
+            # get more text
+            if (getline <= 0) @{
+                print("unexpected EOF or error:", ERRNO) > "/dev/stderr"
+                exit
             @}
+            # build up the line using string concatenation
+            rest = rest $0
         @}
+        rest = substr(rest, end + 2)  # remove comment
         # build up the output line using string concatenation
         $0 = out rest
     @}
     print $0
 @}
 @end example
-
-@c 8/2014: Here is some sample input:
-@ignore
-mon/*comment*/key
-rab/*commen
-t*/bit
-horse /*comment*/more text
-part 1 /*comment*/part 2 /*comment*/part 3
-no comment
-@end ignore
 
 This @command{awk} program deletes C-style comments (@samp{/* @dots{}
 */}) from the input.
@@ -8172,8 +8155,29 @@ functions
 By replacing the @samp{print $0} with other
 statements, you could perform more complicated processing on the
 decommented input, such as searching for matches of a regular
-expression.  (This program has a subtle problem---it does not work if one
-comment ends and another begins on the same line.)
+expression.
+
+Here is some sample input:
+
+@example
+mon/*comment*/key
+rab/*commen
+t*/bit
+horse /*comment*/more text
+part 1 /*comment*/part 2 /*comment*/part 3
+no comment
+@end example
+
+When run, the output is:
+
+@example
+$ @kbd{awk -f strip_comments.awk example_text}
+@print{} monkey
+@print{} rabbit
+@print{} horse more text
+@print{} part 1 part 2 part 3
+@print{} no comment
+@end example
 
 This form of the @code{getline} command sets @code{NF},
 @code{NR}, @code{FNR}, @code{RT}, and the value of @code{$0}.
