@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.1.0b\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2019-04-12 12:29+0300\n"
+"POT-Creation-Date: 2019-06-18 20:07+0300\n"
 "PO-Revision-Date: 2014-03-22 17:49+0100\n"
 "Last-Translator: Wojciech Polak <polak@gnu.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -40,8 +40,8 @@ msgid "attempt to use scalar `%s' as an array"
 msgstr "próba użycia skalaru `%s' jako tablicy"
 
 #: array.c:400 array.c:567 builtin.c:88 builtin.c:1686 builtin.c:1732
-#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1149 eval.c:1153
-#: eval.c:1528
+#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1151 eval.c:1155
+#: eval.c:1530
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "próba użycia tablicy `%s' w kontekście skalaru"
@@ -248,11 +248,11 @@ msgstr "próba użycia funkcji `%s' jako tablicy"
 msgid "invalid subscript expression"
 msgstr "nieprawidłowe wyrażenie indeksowe"
 
-#: awkgram.y:2477 awkgram.y:2497 gawkapi.c:273 gawkapi.c:290 msg.c:130
+#: awkgram.y:2477 awkgram.y:2497 gawkapi.c:273 gawkapi.c:290 msg.c:137
 msgid "warning: "
 msgstr "ostrzeżenie: "
 
-#: awkgram.y:2495 gawkapi.c:245 gawkapi.c:288 msg.c:162
+#: awkgram.y:2495 gawkapi.c:245 gawkapi.c:288 msg.c:169
 msgid "fatal: "
 msgstr "fatalny błąd: "
 
@@ -401,7 +401,7 @@ msgstr "operator `^' nie jest wspierany w starym awk"
 msgid "unterminated string"
 msgstr "niezakończony łańcuch"
 
-#: awkgram.y:4048 main.c:1202
+#: awkgram.y:4048 main.c:1220
 #, fuzzy
 msgid "POSIX does not allow physical newlines in string values"
 msgstr "POSIX nie zezwala na sekwencję ucieczki `\\x'"
@@ -1131,6 +1131,11 @@ msgstr "option: nieprawidłowy parametr - \"%s\""
 msgid "typeof: unknown argument type `%s'"
 msgstr ""
 
+#: cint_array.c:1268 cint_array.c:1296
+#, c-format
+msgid "cannot add a new file (%.*s) to ARGV in sandbox mode"
+msgstr ""
+
 #: command.y:227
 #, c-format
 msgid "Type (g)awk statement(s). End with the command \"end\"\n"
@@ -1416,7 +1421,7 @@ msgid ""
 "if N < 0) frames."
 msgstr ""
 
-#: command.y:1016 debug.c:414 gawkapi.c:259 msg.c:139
+#: command.y:1016 debug.c:414 gawkapi.c:259 msg.c:146
 #, c-format
 msgid "error: "
 msgstr "błąd: "
@@ -2028,55 +2033,55 @@ msgstr "wartość BINMODE `%s' jest nieprawidłowa, przyjęto ją jako 3"
 msgid "bad `%sFMT' specification `%s'"
 msgstr "zła specyfikacja `%sFMT' `%s'"
 
-#: eval.c:980
+#: eval.c:982
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "wyłączenie `--lint' z powodu przypisania do `LINT'"
 
-#: eval.c:1174
+#: eval.c:1176
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "odwołanie do niezainicjowanego argumentu `%s'"
 
-#: eval.c:1175
+#: eval.c:1177
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "odwołanie do niezainicjowanej zmiennej `%s'"
 
-#: eval.c:1193
+#: eval.c:1195
 msgid "attempt to field reference from non-numeric value"
 msgstr "próba odwołania do pola poprzez nienumeryczną wartość"
 
-#: eval.c:1195
+#: eval.c:1197
 msgid "attempt to field reference from null string"
 msgstr "próba odwołania z zerowego łańcucha"
 
-#: eval.c:1203
+#: eval.c:1205
 #, c-format
 msgid "attempt to access field %ld"
 msgstr "próba dostępu do pola %ld"
 
-#: eval.c:1212
+#: eval.c:1214
 #, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "odwołanie do niezainicjowanego pola `$%ld'"
 
-#: eval.c:1276
+#: eval.c:1278
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr ""
 "funkcja `%s' została wywołana z większą ilością argumentów niż zostało to "
 "zadeklarowane"
 
-#: eval.c:1473
+#: eval.c:1475
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr "unwind_stack: niespodziewany typ `%s'"
 
-#: eval.c:1566
+#: eval.c:1568
 msgid "division by zero attempted in `/='"
 msgstr "próba dzielenia przez zero w `/='"
 
-#: eval.c:1573
+#: eval.c:1575
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "próba dzielenia przez zero w `%%='"
@@ -2160,7 +2165,8 @@ msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr "funkcja `%s': argument #%d: próba użycia tablicy jako skalaru"
 
 #: ext.c:232
-msgid "dynamic loading of library not supported"
+#, fuzzy
+msgid "dynamic loading of libraries is not supported"
 msgstr "dynamiczne ładowanie biblioteki nie jest wspierane"
 
 #: extension/filefuncs.c:442
@@ -2468,89 +2474,89 @@ msgstr ""
 msgid "accessing fields from an END rule may not be portable"
 msgstr ""
 
-#: field.c:975 field.c:982
+#: field.c:976 field.c:983
 msgid "split: fourth argument is a gawk extension"
 msgstr "split: czwarty argument jest rozszerzeniem gawk"
 
-#: field.c:979
+#: field.c:980
 msgid "split: fourth argument is not an array"
 msgstr "split: czwarty argument nie jest tablicą"
 
-#: field.c:989
+#: field.c:990
 msgid "split: second argument is not an array"
 msgstr "split: drugi argument nie jest tablicą"
 
-#: field.c:993
+#: field.c:994
 msgid "split: cannot use the same array for second and fourth args"
 msgstr ""
 "split: nie można użyć tej samej tablicy dla drugiego i czwartego argumentu"
 
-#: field.c:998
+#: field.c:999
 msgid "split: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "split: nie można użyć podtablicy drugiego argumentu dla czwartego argumentu"
 
-#: field.c:1001
+#: field.c:1002
 msgid "split: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "split: nie można użyć podtablicy czwartego argumentu dla drugiego argumentu"
 
-#: field.c:1035
+#: field.c:1036
 #, fuzzy
 msgid "split: null string for third arg is a non-standard extension"
 msgstr "split: zerowy łańcuch dla trzeciego argumentu jest rozszerzeniem gawk"
 
-#: field.c:1072
+#: field.c:1073
 msgid "patsplit: fourth argument is not an array"
 msgstr "patsplit: czwarty argument nie jest tablicą"
 
-#: field.c:1077
+#: field.c:1078
 msgid "patsplit: second argument is not an array"
 msgstr "patsplit: drugi argument nie jest tablicą"
 
-#: field.c:1086
+#: field.c:1087
 msgid "patsplit: third argument must be non-null"
 msgstr "patsplit: trzeci argument nie może być pusty"
 
-#: field.c:1090
+#: field.c:1091
 msgid "patsplit: cannot use the same array for second and fourth args"
 msgstr ""
 "patsplit: nie można użyć tej samej tablicy dla drugiego i czwartego argumentu"
 
-#: field.c:1095
+#: field.c:1096
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "patsplit: nie można użyć podtablicy drugiego argumentu dla czwartego "
 "argumentu"
 
-#: field.c:1098
+#: field.c:1099
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "patsplit: nie można użyć podtablicy czwartego argumentu dla drugiego "
 "argumentu"
 
-#: field.c:1148
+#: field.c:1149
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "`FIELDWIDTHS' jest rozszerzeniem gawk"
 
-#: field.c:1217
+#: field.c:1218
 msgid "`*' must be the last designator in FIELDWIDTHS"
 msgstr ""
 
-#: field.c:1238
+#: field.c:1239
 #, fuzzy, c-format
 msgid "invalid FIELDWIDTHS value, for field %d, near `%s'"
 msgstr "nieprawidłowa wartość FIELDWIDTHS, w pobliżu `%s'"
 
-#: field.c:1311
+#: field.c:1312
 msgid "null string for `FS' is a gawk extension"
 msgstr "zerowy łańcuch dla `FS' jest rozszerzeniem gawk"
 
-#: field.c:1315
+#: field.c:1316
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "stary awk nie wspiera wyrażeń regularnych jako wartości `FS'"
 
-#: field.c:1442
+#: field.c:1443
 msgid "`FPAT' is a gawk extension"
 msgstr "`FPAT' jest rozszerzeniem gawk"
 
@@ -3116,12 +3122,12 @@ msgstr "\t-i plikinclude\t\t--include=plikinclude\n"
 msgid "\t-l library\t\t--load=library\n"
 msgstr "\t-l biblioteka\t\t--load=biblioteka\n"
 
-#. TRANSLATORS: the "fatal" and "invalid" here are literal
+#. TRANSLATORS: the "fatal", "invalid" and "no-ext" here are literal
 #. values, they should not be translated. Thanks.
 #.
 #: main.c:608
 #, fuzzy
-msgid "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
+msgid "\t-L[fatal|invalid|no-ext]\t--lint[=fatal|invalid|no-ext]\n"
 msgstr "\t-L [fatal]\t\t--lint[=fatal]\n"
 
 #: main.c:609
@@ -3276,7 +3282,7 @@ msgstr ""
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "-Ft nie ustawia FS na znak tabulatora w POSIX awk"
 
-#: main.c:1133
+#: main.c:1151
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
@@ -3285,71 +3291,71 @@ msgstr ""
 "%s: argument `%s' dla `-v' nie jest zgodny ze składnią `zmienna=wartość'\n"
 "\n"
 
-#: main.c:1159
+#: main.c:1177
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "`%s' nie jest dozwoloną nazwą zmiennej"
 
-#: main.c:1162
+#: main.c:1180
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "`%s' nie jest nazwą zmiennej, szukanie pliku `%s=%s'"
 
-#: main.c:1176
+#: main.c:1194
 #, c-format
 msgid "cannot use gawk builtin `%s' as variable name"
 msgstr "nie można użyć wbudowanej w gawk `%s' jako nazwy zmiennej"
 
-#: main.c:1181
+#: main.c:1199
 #, c-format
 msgid "cannot use function `%s' as variable name"
 msgstr "nie można użyć funkcji `%s' jako nazwy zmiennej"
 
-#: main.c:1259
+#: main.c:1277
 msgid "floating point exception"
 msgstr "wyjątek zmiennopozycyjny"
 
-#: main.c:1266
+#: main.c:1287
 msgid "fatal error: internal error"
 msgstr "fatalny błąd: wewnętrzny błąd"
 
-#: main.c:1283
+#: main.c:1307
 msgid "fatal error: internal error: segfault"
 msgstr "fatalny błąd: wewnętrzny błąd: błąd segmentacji"
 
-#: main.c:1296
+#: main.c:1320
 msgid "fatal error: internal error: stack overflow"
 msgstr "fatalny błąd: wewnętrzny błąd: przepełnienie stosu"
 
-#: main.c:1356
+#: main.c:1380
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "brak już otwartego fd %d"
 
-#: main.c:1363
+#: main.c:1387
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "nie można otworzyć zawczasu /dev/null dla fd %d"
 
-#: main.c:1577
+#: main.c:1601
 msgid "empty argument to `-e/--source' ignored"
 msgstr "pusty argument dla opcji `-e/--source' został zignorowany"
 
-#: main.c:1635 main.c:1640
+#: main.c:1662 main.c:1667
 #, fuzzy
 msgid "`--profile' overrides `--pretty-print'"
 msgstr "opcja `--posix' zostanie użyta nad `--traditional'"
 
-#: main.c:1652
+#: main.c:1679
 msgid "-M ignored: MPFR/GMP support not compiled in"
 msgstr ""
 
-#: main.c:1677
+#: main.c:1704
 #, c-format
 msgid "%s: option `-W %s' unrecognized, ignored\n"
 msgstr "%s: opcja `-W %s' nierozpoznana i zignorowana\n"
 
-#: main.c:1730
+#: main.c:1757
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: opcja musi mieć argument -- %c\n"
@@ -3406,7 +3412,7 @@ msgstr "%s: argument #%d ułamkowa wartość %Rg zostanie obcięta"
 msgid "%s: argument #%d negative value %Zd is not allowed"
 msgstr "%s: argument #%d ujemna wartość %Zd spowoduje dziwne wyniki"
 
-#: msg.c:68
+#: msg.c:75
 #, c-format
 msgid "cmd. line:"
 msgstr "linia poleceń:"
@@ -3564,41 +3570,41 @@ msgstr ""
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr "komponent regexp `%.*s' powinien być prawdopodobnie `[%.*s]'"
 
-#: support/dfa.c:1015
+#: support/dfa.c:1017
 msgid "unbalanced ["
 msgstr "[ nie do pary"
 
-#: support/dfa.c:1136
+#: support/dfa.c:1138
 msgid "invalid character class"
 msgstr "nieprawidłowa klasa znaku"
 
-#: support/dfa.c:1262
+#: support/dfa.c:1264
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr "składnia klasy znaku to [[:space:]], a nie [:space:]"
 
-#: support/dfa.c:1329
+#: support/dfa.c:1331
 msgid "unfinished \\ escape"
 msgstr "niedokończona sekwencja ucieczki \\"
 
-#: support/dfa.c:1490
+#: support/dfa.c:1492
 #, fuzzy
 msgid "invalid content of \\{\\}"
 msgstr "Nieprawidłowa zawartość \\{\\}"
 
-#: support/dfa.c:1493
+#: support/dfa.c:1495
 #, fuzzy
 msgid "regular expression too big"
 msgstr "Wyrażenie regularne jest zbyt duże"
 
-#: support/dfa.c:1908
+#: support/dfa.c:1910
 msgid "unbalanced ("
 msgstr "( nie do pary"
 
-#: support/dfa.c:2026
+#: support/dfa.c:2028
 msgid "no syntax specified"
 msgstr "nie podano składni"
 
-#: support/dfa.c:2037
+#: support/dfa.c:2039
 msgid "unbalanced )"
 msgstr ") nie do pary"
 
@@ -3727,7 +3733,7 @@ msgstr "Wyrażenie regularne jest zbyt duże"
 msgid "Unmatched ) or \\)"
 msgstr "Niedopasowany znak ) lub \\)"
 
-#: support/regcomp.c:688
+#: support/regcomp.c:676
 msgid "No previous regular expression"
 msgstr "Brak poprzedniego wyrażenia regularnego"
 
