@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.2.63\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2019-04-12 12:29+0300\n"
+"POT-Creation-Date: 2019-06-18 20:07+0300\n"
 "PO-Revision-Date: 2019-03-04 16:44+0900\n"
 "Last-Translator: Seong-ho Cho <darkcircle.0426@gmail.com>\n"
 "Language-Team: Korean <translation-team-ko@googlegroups.com>\n"
@@ -39,8 +39,8 @@ msgid "attempt to use scalar `%s' as an array"
 msgstr "`%s' 스칼라 구조를 배열 구조로 취급하려고 합니다"
 
 #: array.c:400 array.c:567 builtin.c:88 builtin.c:1686 builtin.c:1732
-#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1149 eval.c:1153
-#: eval.c:1528
+#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1151 eval.c:1155
+#: eval.c:1530
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "스칼라 컨텍스트의 `%s' 배열 구조를 취급하려고 합니다"
@@ -242,11 +242,11 @@ msgstr "함수가 아닌 `%s' 이름을 함수 호출 구역 안에서 취급하
 msgid "invalid subscript expression"
 msgstr "잘못된 하위스크립트 연산식"
 
-#: awkgram.y:2477 awkgram.y:2497 gawkapi.c:273 gawkapi.c:290 msg.c:130
+#: awkgram.y:2477 awkgram.y:2497 gawkapi.c:273 gawkapi.c:290 msg.c:137
 msgid "warning: "
 msgstr "경고: "
 
-#: awkgram.y:2495 gawkapi.c:245 gawkapi.c:288 msg.c:162
+#: awkgram.y:2495 gawkapi.c:245 gawkapi.c:288 msg.c:169
 msgid "fatal: "
 msgstr "실패: "
 
@@ -393,7 +393,7 @@ msgstr "오래된 awk 버전에서는 `^' 연산자를 지원하지 않습니다
 msgid "unterminated string"
 msgstr "끝나지 않은 문자열"
 
-#: awkgram.y:4048 main.c:1202
+#: awkgram.y:4048 main.c:1220
 msgid "POSIX does not allow physical newlines in string values"
 msgstr "POSIX에서는 문자열 값에 물리 개행 문자를 허용하지 않습니다"
 
@@ -1105,6 +1105,11 @@ msgstr "typeof: 잘못된 `%s' 인자 형식"
 msgid "typeof: unknown argument type `%s'"
 msgstr "typeof: 알 수 없는 `%s' 인자 형식"
 
+#: cint_array.c:1268 cint_array.c:1296
+#, c-format
+msgid "cannot add a new file (%.*s) to ARGV in sandbox mode"
+msgstr ""
+
 #: command.y:227
 #, c-format
 msgid "Type (g)awk statement(s). End with the command \"end\"\n"
@@ -1413,7 +1418,7 @@ msgstr ""
 "where [N] - (backtrace와 동일) 전체 또는 안쪽 프레임 N개(N이 음수이면 바깥 프"
 "레임 N개) 추적 단계를 출력합니다."
 
-#: command.y:1016 debug.c:414 gawkapi.c:259 msg.c:139
+#: command.y:1016 debug.c:414 gawkapi.c:259 msg.c:146
 #, c-format
 msgid "error: "
 msgstr "오류: "
@@ -2034,53 +2039,53 @@ msgstr "`%s' BINMODE 값이 잘못되어 3값으로 취급합니다"
 msgid "bad `%sFMT' specification `%s'"
 msgstr "잘못된 `%2$s' `%1$sFMT' 정의"
 
-#: eval.c:980
+#: eval.c:982
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "`LINT'에 값을 할당하여 `--lint' 옵션을 끕니다"
 
-#: eval.c:1174
+#: eval.c:1176
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "초기화 하지 않은 `%s' 인자 값으로 참조"
 
-#: eval.c:1175
+#: eval.c:1177
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "초기화 하지 않은 `%s' 값으로 참조"
 
-#: eval.c:1193
+#: eval.c:1195
 msgid "attempt to field reference from non-numeric value"
 msgstr "숫자가 아닌 값으로 필드 참조 시도"
 
-#: eval.c:1195
+#: eval.c:1197
 msgid "attempt to field reference from null string"
 msgstr "null 문자열로 필드 참조 시도"
 
-#: eval.c:1203
+#: eval.c:1205
 #, c-format
 msgid "attempt to access field %ld"
 msgstr "%ld번 필드 접근 시도"
 
-#: eval.c:1212
+#: eval.c:1214
 #, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "초기화하지 않은 `$%ld'번 필드를 참조했습니다"
 
-#: eval.c:1276
+#: eval.c:1278
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr "`%s' 함수를 선언 갯수보다 더 많은 인자 값으로 호출했습니다"
 
-#: eval.c:1473
+#: eval.c:1475
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr "unwind_stack: 예상치 못한 `%s' 형식"
 
-#: eval.c:1566
+#: eval.c:1568
 msgid "division by zero attempted in `/='"
 msgstr "`/=' 연산자로 0으로 나누기를 시도했습니다"
 
-#: eval.c:1573
+#: eval.c:1575
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "`%%=' 연산자로 0으로 나누기를 시도했습니다"
@@ -2164,7 +2169,8 @@ msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr "`%s' 함수: 인자 #%d: 배열을 스칼라 값으로 사용 시도"
 
 #: ext.c:232
-msgid "dynamic loading of library not supported"
+#, fuzzy
+msgid "dynamic loading of libraries is not supported"
 msgstr "라이브러리 동작 불러오기를 지원하지 않습니다"
 
 #: extension/filefuncs.c:442
@@ -2468,88 +2474,88 @@ msgstr "대부분의 awk 버전에 NF 값 감소 코드를 이식할 수 없습�
 msgid "accessing fields from an END rule may not be portable"
 msgstr "END 규칙에서의 필드 접근 코드는 이식 불가능합니다"
 
-#: field.c:975 field.c:982
+#: field.c:976 field.c:983
 msgid "split: fourth argument is a gawk extension"
 msgstr "split: 네번째 인자 대입은 gawk 확장 기능입니다"
 
-#: field.c:979
+#: field.c:980
 msgid "split: fourth argument is not an array"
 msgstr "split: 네번째 인자 값이 배열이 아닙니다"
 
-#: field.c:989
+#: field.c:990
 msgid "split: second argument is not an array"
 msgstr "split: 두번째 인자 값이 배열이 아닙니다"
 
-#: field.c:993
+#: field.c:994
 msgid "split: cannot use the same array for second and fourth args"
 msgstr ""
 "split: 두번째 인자와 네번째 인자 값으로 동일한 배열을 사용할 수 없습니다"
 
-#: field.c:998
+#: field.c:999
 msgid "split: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "split: 네번째 인자에 대한 두번째 인자 값으로 하위 배열을 사용할 수 없습니다"
 
-#: field.c:1001
+#: field.c:1002
 msgid "split: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "split: 두번째 인자에 대한 네번째 인자 값으로 하위 배열을 사용할 수 없습니다"
 
-#: field.c:1035
+#: field.c:1036
 msgid "split: null string for third arg is a non-standard extension"
 msgstr "split: 세번째 null 문자열 인자 값은 비 표준 확장 기능입니다"
 
-#: field.c:1072
+#: field.c:1073
 msgid "patsplit: fourth argument is not an array"
 msgstr "patsplit: 네번째 인자 값은 배열이 아닙니다"
 
-#: field.c:1077
+#: field.c:1078
 msgid "patsplit: second argument is not an array"
 msgstr "patsplit: 두번째 인자 값은 배열이 아닙니다"
 
-#: field.c:1086
+#: field.c:1087
 msgid "patsplit: third argument must be non-null"
 msgstr "patsplit: 세번째 인자 값은 null 값이 아니어야 합니다"
 
-#: field.c:1090
+#: field.c:1091
 msgid "patsplit: cannot use the same array for second and fourth args"
 msgstr ""
 "patsplit: 두번째 인자와 네번째 인자 값으로 동일한 배열을 사용할 수 없습니다"
 
-#: field.c:1095
+#: field.c:1096
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "patsplit: 네번째 인자에 대한 두번째 인자 값으로 하위 배열을 사용할 수 없습니"
 "다"
 
-#: field.c:1098
+#: field.c:1099
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "patsplit: 두번째 인자에 대한 네번째 인자 값으로 하위 배열을 사용할 수 없습니"
 "다"
 
-#: field.c:1148
+#: field.c:1149
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "`FIELDWIDTHS'는 gawk 확장 기능입니다"
 
-#: field.c:1217
+#: field.c:1218
 msgid "`*' must be the last designator in FIELDWIDTHS"
 msgstr "`*'는 FIELDWIDTHS의 마지막 지시자여야합니다"
 
-#: field.c:1238
+#: field.c:1239
 #, c-format
 msgid "invalid FIELDWIDTHS value, for field %d, near `%s'"
 msgstr "%d번째 필드 `%s' 부근에 잘못된 FIELDWIDTHS 값"
 
-#: field.c:1311
+#: field.c:1312
 msgid "null string for `FS' is a gawk extension"
 msgstr "`FS'에 대한 null 문자열 대입은 gawk 확장 기능입니다"
 
-#: field.c:1315
+#: field.c:1316
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "오래된 awk 버전에서는 `FS'의 정규 표현식값 사용을 지원하지 않습니다"
 
-#: field.c:1442
+#: field.c:1443
 msgid "`FPAT' is a gawk extension"
 msgstr "`FPAT'은 gawk 확장 기능입니다"
 
@@ -3093,11 +3099,12 @@ msgstr "\t-i <포함파일>\t\t--include=<포함파일>\n"
 msgid "\t-l library\t\t--load=library\n"
 msgstr "\t-l <라이브러리>\t\t--load=<라이브러리>\n"
 
-#. TRANSLATORS: the "fatal" and "invalid" here are literal
+#. TRANSLATORS: the "fatal", "invalid" and "no-ext" here are literal
 #. values, they should not be translated. Thanks.
 #.
 #: main.c:608
-msgid "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
+#, fuzzy
+msgid "\t-L[fatal|invalid|no-ext]\t--lint[=fatal|invalid|no-ext]\n"
 msgstr "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
 
 #: main.c:609
@@ -3252,7 +3259,7 @@ msgstr ""
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "-Ft 옵션에 POSIX awk의 탭에 대한 필드 구분자가 없습니다"
 
-#: main.c:1133
+#: main.c:1151
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
@@ -3261,70 +3268,70 @@ msgstr ""
 "%s: `<변수>=<값>' 형식이 아닌 `-v'의 `%s' 인자값\n"
 "\n"
 
-#: main.c:1159
+#: main.c:1177
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "`%s'은(는) 적절한 변수 이름이 아닙니다"
 
-#: main.c:1162
+#: main.c:1180
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "`%s'은(는) 변수 이름이 아닙니다. `%s=%s' 파일을 살펴보는 중"
 
-#: main.c:1176
+#: main.c:1194
 #, c-format
 msgid "cannot use gawk builtin `%s' as variable name"
 msgstr "`%s' gawk 내장 요소를 변수 이름으로 취급할 수 없습니다"
 
-#: main.c:1181
+#: main.c:1199
 #, c-format
 msgid "cannot use function `%s' as variable name"
 msgstr "`%s' 함수를 변수 이름으로 취급할 수 없습니다"
 
-#: main.c:1259
+#: main.c:1277
 msgid "floating point exception"
 msgstr "소숫점 예외"
 
-#: main.c:1266
+#: main.c:1287
 msgid "fatal error: internal error"
 msgstr "치명적 오류: 내부 오류"
 
-#: main.c:1283
+#: main.c:1307
 msgid "fatal error: internal error: segfault"
 msgstr "치명적 오류: 내부 오류: 세그먼테이션 오류"
 
-#: main.c:1296
+#: main.c:1320
 msgid "fatal error: internal error: stack overflow"
 msgstr "치명적 오류: 내부 오류: 스택 오버플로우"
 
-#: main.c:1356
+#: main.c:1380
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "파일 서술자 %d번 미리 열지 않음"
 
-#: main.c:1363
+#: main.c:1387
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "파일 서술자 %d번에 대해 /dev/null을 미리 열 수 없습니다"
 
-#: main.c:1577
+#: main.c:1601
 msgid "empty argument to `-e/--source' ignored"
 msgstr "`-e/--source'의 빈 인자 값 대입은 무시합니다"
 
-#: main.c:1635 main.c:1640
+#: main.c:1662 main.c:1667
 msgid "`--profile' overrides `--pretty-print'"
 msgstr "`--profile' 옵션은 `--pretty-print' 옵션에 우선합니다"
 
-#: main.c:1652
+#: main.c:1679
 msgid "-M ignored: MPFR/GMP support not compiled in"
 msgstr "-M 무시함: MPFR/GMP 기능을 넣어 컴파일하지 않았습니다"
 
-#: main.c:1677
+#: main.c:1704
 #, c-format
 msgid "%s: option `-W %s' unrecognized, ignored\n"
 msgstr "%s: `-W %s' 옵션은 인식할 수 없습니다. 무시함\n"
 
-#: main.c:1730
+#: main.c:1757
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: 옵션에 인자 값이 필요합니다 -- %c\n"
@@ -3379,7 +3386,7 @@ msgstr "%s: #%d번째 %Rg 인자 값의 소숫점 아래 값은 자릅니다"
 msgid "%s: argument #%d negative value %Zd is not allowed"
 msgstr "%s: #%d번째 %Zd 인자 값은 허용하지 않습니다"
 
-#: msg.c:68
+#: msg.c:75
 #, c-format
 msgid "cmd. line:"
 msgstr "명령행:"
@@ -3538,39 +3545,39 @@ msgstr ""
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr "정규 표현식의 `%.*s' 구성 요소는 `[%.*s]' 이어야 할 것 같습니다"
 
-#: support/dfa.c:1015
+#: support/dfa.c:1017
 msgid "unbalanced ["
 msgstr "짝이 맞지 않는 [ 괄호"
 
-#: support/dfa.c:1136
+#: support/dfa.c:1138
 msgid "invalid character class"
 msgstr "잘못된 문자 클래스"
 
-#: support/dfa.c:1262
+#: support/dfa.c:1264
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr "문자 클래스 표기 방식은 [:space:]가 아닌 [[:space:]]입니다"
 
-#: support/dfa.c:1329
+#: support/dfa.c:1331
 msgid "unfinished \\ escape"
 msgstr "끝나지 않은 \\ 이스케이프 문자"
 
-#: support/dfa.c:1490
+#: support/dfa.c:1492
 msgid "invalid content of \\{\\}"
 msgstr "잘못된 \\{\\} 내용"
 
-#: support/dfa.c:1493
+#: support/dfa.c:1495
 msgid "regular expression too big"
 msgstr "정규 표현식이 너무 깁니다"
 
-#: support/dfa.c:1908
+#: support/dfa.c:1910
 msgid "unbalanced ("
 msgstr "짝이 맞지 않는 ( 괄호"
 
-#: support/dfa.c:2026
+#: support/dfa.c:2028
 msgid "no syntax specified"
 msgstr "구문을 지정하지 않았습니다"
 
-#: support/dfa.c:2037
+#: support/dfa.c:2039
 msgid "unbalanced )"
 msgstr "짝이 맞지 않는 ) 괄호"
 
@@ -3700,7 +3707,7 @@ msgstr "정규 표현식이 너무 깁니다"
 msgid "Unmatched ) or \\)"
 msgstr "일치하지 않는 ) 또는 \\) 괄호"
 
-#: support/regcomp.c:688
+#: support/regcomp.c:676
 msgid "No previous regular expression"
 msgstr "이전 정규 표현식 없음"
 

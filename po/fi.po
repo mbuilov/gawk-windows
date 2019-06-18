@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.1.62\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2019-04-12 12:29+0300\n"
+"POT-Creation-Date: 2019-06-18 20:07+0300\n"
 "PO-Revision-Date: 2017-08-19 12:18+0300\n"
 "Last-Translator: Jorma Karvonen <karvonen.jorma@gmail.com>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
@@ -39,8 +39,8 @@ msgid "attempt to use scalar `%s' as an array"
 msgstr "yritettiin käyttää skalaaria ”%s” taulukkona"
 
 #: array.c:400 array.c:567 builtin.c:88 builtin.c:1686 builtin.c:1732
-#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1149 eval.c:1153
-#: eval.c:1528
+#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1151 eval.c:1155
+#: eval.c:1530
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "yritettiin käyttää taulukkoa ”%s” skalaarikontekstissa"
@@ -245,11 +245,11 @@ msgstr "yritys käyttää ei-funktio ”%s” funktiokutsussa"
 msgid "invalid subscript expression"
 msgstr "virheellinen indeksointilauseke"
 
-#: awkgram.y:2477 awkgram.y:2497 gawkapi.c:273 gawkapi.c:290 msg.c:130
+#: awkgram.y:2477 awkgram.y:2497 gawkapi.c:273 gawkapi.c:290 msg.c:137
 msgid "warning: "
 msgstr "varoitus: "
 
-#: awkgram.y:2495 gawkapi.c:245 gawkapi.c:288 msg.c:162
+#: awkgram.y:2495 gawkapi.c:245 gawkapi.c:288 msg.c:169
 msgid "fatal: "
 msgstr "tuhoisa: "
 
@@ -395,7 +395,7 @@ msgstr "operaattoria ”^” ei tueta vanhassa awk:ssa"
 msgid "unterminated string"
 msgstr "päättämätön merkkijono"
 
-#: awkgram.y:4048 main.c:1202
+#: awkgram.y:4048 main.c:1220
 #, fuzzy
 msgid "POSIX does not allow physical newlines in string values"
 msgstr "POSIX ei salli ”\\x”-koodinvaihtoja"
@@ -1125,6 +1125,11 @@ msgstr "typeof: virheellinen argumenttityyppi ”%s”"
 msgid "typeof: unknown argument type `%s'"
 msgstr "typeof: virheellinen argumenttityyppi ”%s”"
 
+#: cint_array.c:1268 cint_array.c:1296
+#, c-format
+msgid "cannot add a new file (%.*s) to ARGV in sandbox mode"
+msgstr ""
+
 #: command.y:227
 #, c-format
 msgid "Type (g)awk statement(s). End with the command \"end\"\n"
@@ -1437,7 +1442,7 @@ msgstr ""
 "missä [N] - (sama kuin paluujälki) tulostaa kaikkien tai N-sisimmäisen "
 "(ulommaisen jos N < 0) kehyksen jäljen."
 
-#: command.y:1016 debug.c:414 gawkapi.c:259 msg.c:139
+#: command.y:1016 debug.c:414 gawkapi.c:259 msg.c:146
 #, c-format
 msgid "error: "
 msgstr "virhe: "
@@ -2067,53 +2072,53 @@ msgstr "BINMODE-arvo ”%s” on virheellinen, käsiteltiin arvona 3"
 msgid "bad `%sFMT' specification `%s'"
 msgstr "väärä ”%sFMT”-määritys ”%s”"
 
-#: eval.c:980
+#: eval.c:982
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "käännetään pois ”--lint”-valitsin ”LINT”-sijoituksen vuoksi"
 
-#: eval.c:1174
+#: eval.c:1176
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "viite alustamattomaan argumenttiin ”%s”"
 
-#: eval.c:1175
+#: eval.c:1177
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "viite alustamattomaan muuttujaan ”%s”"
 
-#: eval.c:1193
+#: eval.c:1195
 msgid "attempt to field reference from non-numeric value"
 msgstr "yritettiin kenttäviitettä arvosta, joka ei ole numeerinen"
 
-#: eval.c:1195
+#: eval.c:1197
 msgid "attempt to field reference from null string"
 msgstr "yritettiin kenttäviitettä null-merkkijonosta"
 
-#: eval.c:1203
+#: eval.c:1205
 #, c-format
 msgid "attempt to access field %ld"
 msgstr "yritettiin saantia kenttään %ld"
 
-#: eval.c:1212
+#: eval.c:1214
 #, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "viite alustamattomaan kenttään ”$%ld”"
 
-#: eval.c:1276
+#: eval.c:1278
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr "funktio ”%s” kutsuttiin useammalla argumentilla kuin esiteltiin"
 
-#: eval.c:1473
+#: eval.c:1475
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr "unwind_stack: odottamaton tyyppi ”%s”"
 
-#: eval.c:1566
+#: eval.c:1568
 msgid "division by zero attempted in `/='"
 msgstr "jakoa nollalla yritettiin operaatiossa ”/=”"
 
-#: eval.c:1573
+#: eval.c:1575
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "jakoa nollalla yritettiin operaatiossa ”%%=”"
@@ -2200,7 +2205,8 @@ msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr "funktio ”%s”: argumentti #%d: yritettiin käyttää taulukkoa skalaarina"
 
 #: ext.c:232
-msgid "dynamic loading of library not supported"
+#, fuzzy
+msgid "dynamic loading of libraries is not supported"
 msgstr "kirjaston dynaamista latausta ei tueta"
 
 #: extension/filefuncs.c:442
@@ -2513,92 +2519,92 @@ msgstr ""
 msgid "accessing fields from an END rule may not be portable"
 msgstr ""
 
-#: field.c:975 field.c:982
+#: field.c:976 field.c:983
 msgid "split: fourth argument is a gawk extension"
 msgstr "split: neljäs argumentti on gawk-laajennus"
 
-#: field.c:979
+#: field.c:980
 msgid "split: fourth argument is not an array"
 msgstr "split: neljäs argumentti ei ole taulukko"
 
-#: field.c:989
+#: field.c:990
 msgid "split: second argument is not an array"
 msgstr "split: toinen argumentti ei ole taulukko"
 
-#: field.c:993
+#: field.c:994
 msgid "split: cannot use the same array for second and fourth args"
 msgstr ""
 "split: saman taulukon käyttö toiselle ja neljännelle argumentille epäonnistui"
 
-#: field.c:998
+#: field.c:999
 msgid "split: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "split: toisen argumentin käyttö alitaulukkoa neljännelle argumentille "
 "epäonnistui"
 
-#: field.c:1001
+#: field.c:1002
 msgid "split: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "split: neljännen argumentin käyttö alitaulukkoa toiselle argumentille "
 "epäonnistui"
 
-#: field.c:1035
+#: field.c:1036
 #, fuzzy
 msgid "split: null string for third arg is a non-standard extension"
 msgstr "split: null-merkkijono kolmantena argumenttina on gawk-laajennus"
 
-#: field.c:1072
+#: field.c:1073
 msgid "patsplit: fourth argument is not an array"
 msgstr "patsplit: neljäs argumentti ei ole taulukko"
 
-#: field.c:1077
+#: field.c:1078
 msgid "patsplit: second argument is not an array"
 msgstr "patsplit: toinen argumentti ei ole taulukko"
 
-#: field.c:1086
+#: field.c:1087
 msgid "patsplit: third argument must be non-null"
 msgstr "patsplit: kolmas argumentti ei ole taulukko"
 
-#: field.c:1090
+#: field.c:1091
 msgid "patsplit: cannot use the same array for second and fourth args"
 msgstr ""
 "patsplit: saman taulukon käyttö toiselle ja neljännelle argumentille "
 "epäonnistui"
 
-#: field.c:1095
+#: field.c:1096
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "patsplit: toisen argumentin käyttö alitaulukkkoa neljännelle argumentille "
 "epäonnistui"
 
-#: field.c:1098
+#: field.c:1099
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "patsplit: neljännen argumentin käyttö alitaulukkoa toiselle argumentille "
 "epäonnistui"
 
-#: field.c:1148
+#: field.c:1149
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "”FIELDWIDTHS” on gawk-laajennus"
 
-#: field.c:1217
+#: field.c:1218
 msgid "`*' must be the last designator in FIELDWIDTHS"
 msgstr ""
 
-#: field.c:1238
+#: field.c:1239
 #, c-format
 msgid "invalid FIELDWIDTHS value, for field %d, near `%s'"
 msgstr "virheellinen FIELDWIDTHS-arvo kentälle %d lähellä ”%s”"
 
-#: field.c:1311
+#: field.c:1312
 msgid "null string for `FS' is a gawk extension"
 msgstr "null-merkkijono ”FS”-kenttäerotinmuuttujalle on gawk-laajennus"
 
-#: field.c:1315
+#: field.c:1316
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "vanha awk ei tue regexp-arvoja ”FS”-kenttäerotinmuuttujana"
 
-#: field.c:1442
+#: field.c:1443
 msgid "`FPAT' is a gawk extension"
 msgstr "”FPAT” on gawk-laajennus"
 
@@ -3166,11 +3172,12 @@ msgstr "\t-i include-tiedosto\t\t--include=include-tiedosto\n"
 msgid "\t-l library\t\t--load=library\n"
 msgstr "\t-l kirjasto\t\t--load=kirjasto\n"
 
-#. TRANSLATORS: the "fatal" and "invalid" here are literal
+#. TRANSLATORS: the "fatal", "invalid" and "no-ext" here are literal
 #. values, they should not be translated. Thanks.
 #.
 #: main.c:608
-msgid "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
+#, fuzzy
+msgid "\t-L[fatal|invalid|no-ext]\t--lint[=fatal|invalid|no-ext]\n"
 msgstr "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
 
 #: main.c:609
@@ -3324,7 +3331,7 @@ msgstr ""
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "-Ft ei aseta FS välilehteen POSIX awk:ssa"
 
-#: main.c:1133
+#: main.c:1151
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
@@ -3333,73 +3340,73 @@ msgstr ""
 "%s: ”%s” argumentti valitsimelle ”-v” ei ole ”var=arvo”-muodossa\n"
 "\n"
 
-#: main.c:1159
+#: main.c:1177
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "”%s” ei ole laillinen muuttujanimi"
 
-#: main.c:1162
+#: main.c:1180
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "”%s” ei ole muuttujanimi, etsitään tiedostoa ”%s=%s”"
 
-#: main.c:1176
+#: main.c:1194
 #, c-format
 msgid "cannot use gawk builtin `%s' as variable name"
 msgstr ""
 "gawk-ohjelman sisäisen ”%s”-määrittelyn käyttö muuttujanimenä epäonnistui"
 
-#: main.c:1181
+#: main.c:1199
 #, c-format
 msgid "cannot use function `%s' as variable name"
 msgstr "funktionimen ”%s” käyttö muuttujanimenä epäonnistui"
 
-#: main.c:1259
+#: main.c:1277
 msgid "floating point exception"
 msgstr "liukulukupoikkeus"
 
-#: main.c:1266
+#: main.c:1287
 msgid "fatal error: internal error"
 msgstr "tuhoisa virhe: sisäinen virhe"
 
-#: main.c:1283
+#: main.c:1307
 msgid "fatal error: internal error: segfault"
 msgstr "tuhoisa virhe: sisäinen virhe: segmenttivirhe"
 
-#: main.c:1296
+#: main.c:1320
 msgid "fatal error: internal error: stack overflow"
 msgstr "tuhoisa virhe: sisäinen virhe: pinoylivuoto"
 
-#: main.c:1356
+#: main.c:1380
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "ei avattu uudelleen tiedostomäärittelijää %d"
 
-#: main.c:1363
+#: main.c:1387
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr ""
 "laitteen /dev/null avaaminen uudelleen tiedostomäärittelijälle %d epäonnistui"
 
-#: main.c:1577
+#: main.c:1601
 msgid "empty argument to `-e/--source' ignored"
 msgstr "tyhjä argumentti valitsimelle ”-e/--source” ohitetaan"
 
-#: main.c:1635 main.c:1640
+#: main.c:1662 main.c:1667
 #, fuzzy
 msgid "`--profile' overrides `--pretty-print'"
 msgstr "valitsin ”--posix” korvaa valitsimen ”--traditional”"
 
-#: main.c:1652
+#: main.c:1679
 msgid "-M ignored: MPFR/GMP support not compiled in"
 msgstr "-M ohitettu: MPFR/GMP-tuki ei ole käännetty kohteessa"
 
-#: main.c:1677
+#: main.c:1704
 #, c-format
 msgid "%s: option `-W %s' unrecognized, ignored\n"
 msgstr "%s: valitsin ”-W %s” on tunnistamaton, ohitetaan\n"
 
-#: main.c:1730
+#: main.c:1757
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: valitsin vaatii argumentin -- %c\n"
@@ -3454,7 +3461,7 @@ msgstr "%s: argumentin #%d jaosarvo %Rg typistetään"
 msgid "%s: argument #%d negative value %Zd is not allowed"
 msgstr "%s: argumentin #%d negatiivinen arvo %Zd ei ole sallittu"
 
-#: msg.c:68
+#: msg.c:75
 #, c-format
 msgid "cmd. line:"
 msgstr "komentorivi:"
@@ -3613,39 +3620,39 @@ msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr ""
 "säännöllisen lausekkeen komponentin ”%.*s” pitäisi luultavasti olla ”[%.*s]”"
 
-#: support/dfa.c:1015
+#: support/dfa.c:1017
 msgid "unbalanced ["
 msgstr "pariton ["
 
-#: support/dfa.c:1136
+#: support/dfa.c:1138
 msgid "invalid character class"
 msgstr "virheellinen merkkiluokka"
 
-#: support/dfa.c:1262
+#: support/dfa.c:1264
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr "merkkiluokkasyntaksi on [[:space:]], ei [:space:]"
 
-#: support/dfa.c:1329
+#: support/dfa.c:1331
 msgid "unfinished \\ escape"
 msgstr "päättymätön \\-koodinvaihtomerkki"
 
-#: support/dfa.c:1490
+#: support/dfa.c:1492
 msgid "invalid content of \\{\\}"
 msgstr "virheellinen \\{\\}-sisältö"
 
-#: support/dfa.c:1493
+#: support/dfa.c:1495
 msgid "regular expression too big"
 msgstr "säännöllinen lauseke on liian suuri"
 
-#: support/dfa.c:1908
+#: support/dfa.c:1910
 msgid "unbalanced ("
 msgstr "pariton ("
 
-#: support/dfa.c:2026
+#: support/dfa.c:2028
 msgid "no syntax specified"
 msgstr "syntaksi ei ole määritelty"
 
-#: support/dfa.c:2037
+#: support/dfa.c:2039
 msgid "unbalanced )"
 msgstr "pariton )"
 
@@ -3773,7 +3780,7 @@ msgstr "Säännöllinen lauseke on liian iso"
 msgid "Unmatched ) or \\)"
 msgstr "Pariton ) tai \\)"
 
-#: support/regcomp.c:688
+#: support/regcomp.c:676
 msgid "No previous regular expression"
 msgstr "Ei edellistä säännöllistä lauseketta"
 

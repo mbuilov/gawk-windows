@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.1.3h\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2019-04-12 12:29+0300\n"
+"POT-Creation-Date: 2019-06-18 20:07+0300\n"
 "PO-Revision-Date: 2016-12-18 19:51+0100\n"
 "Last-Translator: Walter Garcia-Fontes <walter.garcia@upf.edu>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -38,8 +38,8 @@ msgid "attempt to use scalar `%s' as an array"
 msgstr "s'ha intentat usar la dada escalar `%s' com a una matriu"
 
 #: array.c:400 array.c:567 builtin.c:88 builtin.c:1686 builtin.c:1732
-#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1149 eval.c:1153
-#: eval.c:1528
+#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1151 eval.c:1155
+#: eval.c:1530
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "s'ha intentat usar la matriu `%s' en un context escalar"
@@ -249,11 +249,11 @@ msgstr "s'ha intentat usar la no-funció «%s» en una crida a funcions"
 msgid "invalid subscript expression"
 msgstr "expressió de subíndex no vàlida"
 
-#: awkgram.y:2477 awkgram.y:2497 gawkapi.c:273 gawkapi.c:290 msg.c:130
+#: awkgram.y:2477 awkgram.y:2497 gawkapi.c:273 gawkapi.c:290 msg.c:137
 msgid "warning: "
 msgstr "advertiment: "
 
-#: awkgram.y:2495 gawkapi.c:245 gawkapi.c:288 msg.c:162
+#: awkgram.y:2495 gawkapi.c:245 gawkapi.c:288 msg.c:169
 msgid "fatal: "
 msgstr "fatal: "
 
@@ -398,7 +398,7 @@ msgstr "l'operador `^' no està suportat en l'antic awk"
 msgid "unterminated string"
 msgstr "cadena sense finalitzar"
 
-#: awkgram.y:4048 main.c:1202
+#: awkgram.y:4048 main.c:1220
 #, fuzzy
 msgid "POSIX does not allow physical newlines in string values"
 msgstr "POSIX no permet seqüències d'escapada `\\x'"
@@ -1138,6 +1138,11 @@ msgstr "opció: paràmetre no vàlid - \"%s\""
 msgid "typeof: unknown argument type `%s'"
 msgstr ""
 
+#: cint_array.c:1268 cint_array.c:1296
+#, c-format
+msgid "cannot add a new file (%.*s) to ARGV in sandbox mode"
+msgstr ""
+
 #: command.y:227
 #, c-format
 msgid "Type (g)awk statement(s). End with the command \"end\"\n"
@@ -1469,7 +1474,7 @@ msgstr ""
 "on [N] - (igual que la traça inversa) imprimeix la traça de tots els N marcs "
 "interiors (exteriors si N < 0)."
 
-#: command.y:1016 debug.c:414 gawkapi.c:259 msg.c:139
+#: command.y:1016 debug.c:414 gawkapi.c:259 msg.c:146
 #, c-format
 msgid "error: "
 msgstr "error: "
@@ -2101,53 +2106,53 @@ msgstr "El valor BINMODE `%s' no és vàlid, es tractarà com 3"
 msgid "bad `%sFMT' specification `%s'"
 msgstr "`%sFMT' especificació errònia `%s'"
 
-#: eval.c:980
+#: eval.c:982
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "desactivant `--lint' degut a una assignació a `LINT'"
 
-#: eval.c:1174
+#: eval.c:1176
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "referència a un argument sense inicialitzar `%s'"
 
-#: eval.c:1175
+#: eval.c:1177
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "referència a una variable sense inicialitzar `%s'"
 
-#: eval.c:1193
+#: eval.c:1195
 msgid "attempt to field reference from non-numeric value"
 msgstr "s'ha intentat una referència de camp a partir d'un valor no numèric"
 
-#: eval.c:1195
+#: eval.c:1197
 msgid "attempt to field reference from null string"
 msgstr "s'ha intentat entrar una referència a partir d'una cadena nul·la"
 
-#: eval.c:1203
+#: eval.c:1205
 #, c-format
 msgid "attempt to access field %ld"
 msgstr "s'ha intentat accedir al camp %ld"
 
-#: eval.c:1212
+#: eval.c:1214
 #, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "referència a una variable sense inicialitzar `$%ld'"
 
-#: eval.c:1276
+#: eval.c:1278
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr "s'ha cridat a la funció `%s' amb més arguments dels declarats"
 
-#: eval.c:1473
+#: eval.c:1475
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr "unwind_stack: tipus no esperat `%s'"
 
-#: eval.c:1566
+#: eval.c:1568
 msgid "division by zero attempted in `/='"
 msgstr "s'ha intentat una divisió per zero en `/='"
 
-#: eval.c:1573
+#: eval.c:1575
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "s'ha intentat una divisió per zero en `%%='"
@@ -2234,7 +2239,8 @@ msgstr ""
 "funció `%s': argument #%d: s'ha intentat usar una matriu com a un escalar"
 
 #: ext.c:232
-msgid "dynamic loading of library not supported"
+#, fuzzy
+msgid "dynamic loading of libraries is not supported"
 msgstr "no està suportada la càrrega dinàmica de la biblioteca"
 
 #: extension/filefuncs.c:442
@@ -2546,87 +2552,87 @@ msgstr ""
 msgid "accessing fields from an END rule may not be portable"
 msgstr ""
 
-#: field.c:975 field.c:982
+#: field.c:976 field.c:983
 msgid "split: fourth argument is a gawk extension"
 msgstr "split: el quart argument és una extensió gawk"
 
-#: field.c:979
+#: field.c:980
 msgid "split: fourth argument is not an array"
 msgstr "split: el quart argument no és una matriu"
 
-#: field.c:989
+#: field.c:990
 msgid "split: second argument is not an array"
 msgstr "split: el segon argument no és una matriu"
 
-#: field.c:993
+#: field.c:994
 msgid "split: cannot use the same array for second and fourth args"
 msgstr ""
 "split: no es pot usar una submatriu de segon argument per a quart argument"
 
-#: field.c:998
+#: field.c:999
 msgid "split: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "split: no es pot usar una submatriu de segon argument per a quart argument"
 
-#: field.c:1001
+#: field.c:1002
 msgid "split: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "split: no est pot usar una submatriu de quart argument per a segon argument"
 
-#: field.c:1035
+#: field.c:1036
 #, fuzzy
 msgid "split: null string for third arg is a non-standard extension"
 msgstr "split: la cadena nul·la per al tercer argument és una extensió de gawk"
 
-#: field.c:1072
+#: field.c:1073
 msgid "patsplit: fourth argument is not an array"
 msgstr "patsplit: el quart argument no és una matriu"
 
-#: field.c:1077
+#: field.c:1078
 msgid "patsplit: second argument is not an array"
 msgstr "patsplit: el tercer argument no és una matriu"
 
-#: field.c:1086
+#: field.c:1087
 msgid "patsplit: third argument must be non-null"
 msgstr "patsplit: el segon argument no és una matriu"
 
-#: field.c:1090
+#: field.c:1091
 msgid "patsplit: cannot use the same array for second and fourth args"
 msgstr ""
 "patsplit: no es pot usar la mateixa matriu per a segon i quart argument"
 
-#: field.c:1095
+#: field.c:1096
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "patsplit: no es pot usar una submatriu de segon argument per a quart argument"
 
-#: field.c:1098
+#: field.c:1099
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "patsplit: no es pot usar una submatriu de quart argument per a segon argument"
 
-#: field.c:1148
+#: field.c:1149
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "`FIELDWIDTHS' és una extensió de gawk"
 
-#: field.c:1217
+#: field.c:1218
 msgid "`*' must be the last designator in FIELDWIDTHS"
 msgstr ""
 
-#: field.c:1238
+#: field.c:1239
 #, fuzzy, c-format
 msgid "invalid FIELDWIDTHS value, for field %d, near `%s'"
 msgstr "valor FIELDWIDTHS no vàlid, a prop de `%s'"
 
-#: field.c:1311
+#: field.c:1312
 msgid "null string for `FS' is a gawk extension"
 msgstr "la cadena nul·la per a `FS' és una extensió de gawk"
 
-#: field.c:1315
+#: field.c:1316
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "l'antic awk no suporta expressions regulars com a valor de `FS'"
 
-#: field.c:1442
+#: field.c:1443
 msgid "`FPAT' is a gawk extension"
 msgstr "`FPAT' és una extensió gawk"
 
@@ -3190,11 +3196,12 @@ msgstr "\t-i includefile\t\t--include=fitxer a incloure\n"
 msgid "\t-l library\t\t--load=library\n"
 msgstr "\t-l library\t\t--load=biblioteca\n"
 
-#. TRANSLATORS: the "fatal" and "invalid" here are literal
+#. TRANSLATORS: the "fatal", "invalid" and "no-ext" here are literal
 #. values, they should not be translated. Thanks.
 #.
 #: main.c:608
-msgid "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
+#, fuzzy
+msgid "\t-L[fatal|invalid|no-ext]\t--lint[=fatal|invalid|no-ext]\n"
 msgstr "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
 
 #: main.c:609
@@ -3346,7 +3353,7 @@ msgstr ""
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "-Ft no permet inicialitzar FS a un tabulador en la versió POSIX de awk"
 
-#: main.c:1133
+#: main.c:1151
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
@@ -3355,72 +3362,72 @@ msgstr ""
 "%s: `%s' l'argument per a `-v' no està en forma `var=valor'\n"
 "\n"
 
-#: main.c:1159
+#: main.c:1177
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "`%s' no és nom legal de variable"
 
-#: main.c:1162
+#: main.c:1180
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "`%s' no és un valor de variable, s'esperava fitxer `%s=%s'"
 
-#: main.c:1176
+#: main.c:1194
 #, c-format
 msgid "cannot use gawk builtin `%s' as variable name"
 msgstr ""
 "no es pot usar el nom de la funció integrada `%s' com a nom de variable"
 
-#: main.c:1181
+#: main.c:1199
 #, c-format
 msgid "cannot use function `%s' as variable name"
 msgstr "no es pot usar el nom de la funció interna `%s' com nom de variable"
 
-#: main.c:1259
+#: main.c:1277
 msgid "floating point exception"
 msgstr "excepció de coma flotant"
 
-#: main.c:1266
+#: main.c:1287
 msgid "fatal error: internal error"
 msgstr "error fatal: error intern"
 
-#: main.c:1283
+#: main.c:1307
 msgid "fatal error: internal error: segfault"
 msgstr "error fatal: error intern: segfault"
 
-#: main.c:1296
+#: main.c:1320
 msgid "fatal error: internal error: stack overflow"
 msgstr "error fatal: error intern: sobreeiximent de pila"
 
-#: main.c:1356
+#: main.c:1380
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "no s'ha pre-obert el descriptor fd per a %d"
 
-#: main.c:1363
+#: main.c:1387
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "no es pot pre-obrir /dev/null per al descriptor fd %d"
 
-#: main.c:1577
+#: main.c:1601
 msgid "empty argument to `-e/--source' ignored"
 msgstr "s'ignonarà l'argument buit de `-e/--source'"
 
-#: main.c:1635 main.c:1640
+#: main.c:1662 main.c:1667
 #, fuzzy
 msgid "`--profile' overrides `--pretty-print'"
 msgstr "`--posix' solapa a `--traditional'"
 
-#: main.c:1652
+#: main.c:1679
 msgid "-M ignored: MPFR/GMP support not compiled in"
 msgstr "-M ignorat: no s'ha compilat el suport MPFR/GMP"
 
-#: main.c:1677
+#: main.c:1704
 #, c-format
 msgid "%s: option `-W %s' unrecognized, ignored\n"
 msgstr "%s: no es reconeix l'opció `-W %s', serà ignorada\n"
 
-#: main.c:1730
+#: main.c:1757
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: l'opció requereix un argument -- %c\n"
@@ -3477,7 +3484,7 @@ msgstr "%s: l'argument #%d amb valor fraccional %Rg serà truncat"
 msgid "%s: argument #%d negative value %Zd is not allowed"
 msgstr "%s: l'argument #%d amb valor negatiu %Zd donarà resultats estranys"
 
-#: msg.c:68
+#: msg.c:75
 #, c-format
 msgid "cmd. line:"
 msgstr "línia cmd.:"
@@ -3636,39 +3643,39 @@ msgstr ""
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr "el component regexp `%.*s' probablement hauria de ser `[%.*s]'"
 
-#: support/dfa.c:1015
+#: support/dfa.c:1017
 msgid "unbalanced ["
 msgstr "[ sense aparellar"
 
-#: support/dfa.c:1136
+#: support/dfa.c:1138
 msgid "invalid character class"
 msgstr "classe no vàlida de caràcters"
 
-#: support/dfa.c:1262
+#: support/dfa.c:1264
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr "la sintaxi de la classe de caràcters és [[:espai:]], no [:espai:]"
 
-#: support/dfa.c:1329
+#: support/dfa.c:1331
 msgid "unfinished \\ escape"
 msgstr "seqüència d'escapada \\ sense finalitzar"
 
-#: support/dfa.c:1490
+#: support/dfa.c:1492
 msgid "invalid content of \\{\\}"
 msgstr "contingut no vàlid de \\{\\}"
 
-#: support/dfa.c:1493
+#: support/dfa.c:1495
 msgid "regular expression too big"
 msgstr "l'expressió regular és massa gran"
 
-#: support/dfa.c:1908
+#: support/dfa.c:1910
 msgid "unbalanced ("
 msgstr "( sense aparellar"
 
-#: support/dfa.c:2026
+#: support/dfa.c:2028
 msgid "no syntax specified"
 msgstr "no s'ha especificat una sintaxi"
 
-#: support/dfa.c:2037
+#: support/dfa.c:2039
 msgid "unbalanced )"
 msgstr ") sense aparellar"
 
@@ -3796,7 +3803,7 @@ msgstr "L'expressió regular és massa gran"
 msgid "Unmatched ) or \\)"
 msgstr ") o \\) desemparellats"
 
-#: support/regcomp.c:688
+#: support/regcomp.c:676
 msgid "No previous regular expression"
 msgstr "No hi ha una expressió regular prèvia"
 

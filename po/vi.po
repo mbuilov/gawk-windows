@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.2.0e\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2019-04-12 12:29+0300\n"
+"POT-Creation-Date: 2019-06-18 20:07+0300\n"
 "PO-Revision-Date: 2018-01-30 08:07+0700\n"
 "Last-Translator: Trần Ngọc Quân <vnwildman@gmail.com>\n"
 "Language-Team: Vietnamese <translation-team-vi@lists.sourceforge.net>\n"
@@ -41,8 +41,8 @@ msgid "attempt to use scalar `%s' as an array"
 msgstr "cố dùng “%s” vô hướng như là mảng"
 
 #: array.c:400 array.c:567 builtin.c:88 builtin.c:1686 builtin.c:1732
-#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1149 eval.c:1153
-#: eval.c:1528
+#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1151 eval.c:1155
+#: eval.c:1530
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "cố gắng dùng mảng “%s” trong một ngữ cảnh vô hướng"
@@ -257,11 +257,11 @@ msgstr "cố gắng dùng không-phải-hàm “%s” trong cú gọi hàm"
 msgid "invalid subscript expression"
 msgstr "biểu thức in thấp không hợp lệ"
 
-#: awkgram.y:2477 awkgram.y:2497 gawkapi.c:273 gawkapi.c:290 msg.c:130
+#: awkgram.y:2477 awkgram.y:2497 gawkapi.c:273 gawkapi.c:290 msg.c:137
 msgid "warning: "
 msgstr "cảnh báo: "
 
-#: awkgram.y:2495 gawkapi.c:245 gawkapi.c:288 msg.c:162
+#: awkgram.y:2495 gawkapi.c:245 gawkapi.c:288 msg.c:169
 msgid "fatal: "
 msgstr "lỗi nghiêm trọng: "
 
@@ -411,7 +411,7 @@ msgstr "awk cũ không hỗ trợ toán tử “^”"
 msgid "unterminated string"
 msgstr "chuỗi không được chấm dứt"
 
-#: awkgram.y:4048 main.c:1202
+#: awkgram.y:4048 main.c:1220
 #, fuzzy
 msgid "POSIX does not allow physical newlines in string values"
 msgstr "POSIX không cho phép thoát chuỗi “\\x”"
@@ -1139,6 +1139,11 @@ msgstr "typeof: tùy chọn không hợp lệ “%s”"
 msgid "typeof: unknown argument type `%s'"
 msgstr "typeof: không biết kiểu tham số “%s”"
 
+#: cint_array.c:1268 cint_array.c:1296
+#, c-format
+msgid "cannot add a new file (%.*s) to ARGV in sandbox mode"
+msgstr ""
+
 #: command.y:227
 #, c-format
 msgid "Type (g)awk statement(s). End with the command \"end\"\n"
@@ -1446,7 +1451,7 @@ msgstr ""
 "where [N] - (giống như backtrace) in vết của tất cả hay N khung trong cùng "
 "nhất (ngoài cùng nhất nếu N < 0)."
 
-#: command.y:1016 debug.c:414 gawkapi.c:259 msg.c:139
+#: command.y:1016 debug.c:414 gawkapi.c:259 msg.c:146
 #, c-format
 msgid "error: "
 msgstr "lỗi: "
@@ -2064,53 +2069,53 @@ msgstr "Giá trị BINMODE (chế độ nhị phân) “%s” không hợp lệ 
 msgid "bad `%sFMT' specification `%s'"
 msgstr "đặc tả “%sFMT” sai “%s”"
 
-#: eval.c:980
+#: eval.c:982
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "đang tắt “--lint” do việc gán cho “LINT”"
 
-#: eval.c:1174
+#: eval.c:1176
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "gặp tham chiếu đến đối số chưa được khởi tạo “%s”"
 
-#: eval.c:1175
+#: eval.c:1177
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "gặp tham chiếu đến biến chưa được khởi tạo “%s”"
 
-#: eval.c:1193
+#: eval.c:1195
 msgid "attempt to field reference from non-numeric value"
 msgstr "cố gắng tham chiếu trường từ giá trị khác thuộc số"
 
-#: eval.c:1195
+#: eval.c:1197
 msgid "attempt to field reference from null string"
 msgstr "cố gắng tham chiếu trường từ chuỗi trống rỗng"
 
-#: eval.c:1203
+#: eval.c:1205
 #, c-format
 msgid "attempt to access field %ld"
 msgstr "cố gắng để truy cập trường %ld"
 
-#: eval.c:1212
+#: eval.c:1214
 #, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "tham chiếu đến trường chưa được khởi tạo “$%ld”"
 
-#: eval.c:1276
+#: eval.c:1278
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr "hàm “%s” được gọi với nhiều số đối số hơn số được khai báo"
 
-#: eval.c:1473
+#: eval.c:1475
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr "unwind_stack: không cần kiểu “%s”"
 
-#: eval.c:1566
+#: eval.c:1568
 msgid "division by zero attempted in `/='"
 msgstr "gặp phép chia cho số không trong “/=”"
 
-#: eval.c:1573
+#: eval.c:1575
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "gặp phép chia cho số không trong “%%=”"
@@ -2197,7 +2202,8 @@ msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr "hàm “%s”: đối số thứ %d: cố gắng dùng mảng như là kiểu vô hướng"
 
 #: ext.c:232
-msgid "dynamic loading of library not supported"
+#, fuzzy
+msgid "dynamic loading of libraries is not supported"
 msgstr "tải động của thư viện không được hỗ trợ"
 
 #: extension/filefuncs.c:442
@@ -2502,95 +2508,95 @@ msgstr ""
 msgid "accessing fields from an END rule may not be portable"
 msgstr ""
 
-#: field.c:975 field.c:982
+#: field.c:976 field.c:983
 msgid "split: fourth argument is a gawk extension"
 msgstr "split (chia tách): đối số thứ tư là phần mở rộng gawk"
 
-#: field.c:979
+#: field.c:980
 msgid "split: fourth argument is not an array"
 msgstr "split (chia tách): đối số thứ tư không phải là mảng"
 
-#: field.c:989
+#: field.c:990
 msgid "split: second argument is not an array"
 msgstr "split: (chia tách) đối số thứ hai không phải là mảng"
 
-#: field.c:993
+#: field.c:994
 msgid "split: cannot use the same array for second and fourth args"
 msgstr ""
 "split (chia tách): không thể sử dụng cùng một mảng có cả đối số thứ hai và "
 "thứ tư"
 
-#: field.c:998
+#: field.c:999
 msgid "split: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "split (phân tách): không thể sử dụng mảng con của tham số thứ hai cho tham "
 "số thứ tư"
 
-#: field.c:1001
+#: field.c:1002
 msgid "split: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "split (phân tách): không thể sử dụng mảng con của tham số thứ tư cho tham số "
 "thứ hai"
 
-#: field.c:1035
+#: field.c:1036
 #, fuzzy
 msgid "split: null string for third arg is a non-standard extension"
 msgstr ""
 "split: (chia tách) chuỗi vô giá trị cho đối số thứ ba là phần mở rộng gawk"
 
-#: field.c:1072
+#: field.c:1073
 msgid "patsplit: fourth argument is not an array"
 msgstr "patsplit: đối số thứ tư không phải là mảng"
 
-#: field.c:1077
+#: field.c:1078
 msgid "patsplit: second argument is not an array"
 msgstr "patsplit: đối số thứ hai không phải là mảng"
 
-#: field.c:1086
+#: field.c:1087
 msgid "patsplit: third argument must be non-null"
 msgstr "patsplit: đối số thứ ba không phải không rỗng"
 
-#: field.c:1090
+#: field.c:1091
 msgid "patsplit: cannot use the same array for second and fourth args"
 msgstr ""
 "patsplit (chương trình chia tách): không thể sử dụng cùng một mảng cho cả "
 "hai đối số thứ hai và thứ tư"
 
-#: field.c:1095
+#: field.c:1096
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "patsplit (chương trình phân tách): không thể sử dụng mảng con của tham số "
 "thứ hai cho tham số thứ tư"
 
-#: field.c:1098
+#: field.c:1099
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "patsplit (chương trình phân tách): không thể sử dụng mảng con của tham số "
 "thứ tư cho tham số thứ hai"
 
-#: field.c:1148
+#: field.c:1149
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "“FIELDWIDTHS” (độ rộng trường) là phần mở rộng gawk"
 
-#: field.c:1217
+#: field.c:1218
 msgid "`*' must be the last designator in FIELDWIDTHS"
 msgstr "“*” phải là bộ định danh cuối cùng trong FIELDWIDTHS"
 
-#: field.c:1238
+#: field.c:1239
 #, c-format
 msgid "invalid FIELDWIDTHS value, for field %d, near `%s'"
 msgstr ""
 "giá trị FIELDWIDTHS (độ rộng trường) không hợp lệ, cho trường %d, gần “%s”"
 
-#: field.c:1311
+#: field.c:1312
 msgid "null string for `FS' is a gawk extension"
 msgstr "chuỗi vô giá trị cho “FS” là phần mở rộng gawk"
 
-#: field.c:1315
+#: field.c:1316
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "awk cũ không hỗ trợ biểu thức chính quy làm giá trị của “FS”"
 
-#: field.c:1442
+#: field.c:1443
 msgid "`FPAT' is a gawk extension"
 msgstr "“FPAT” là phần mở rộng của gawk"
 
@@ -3159,11 +3165,12 @@ msgstr "\t-i includefile\t\t--include=tập-tin-bao-gồm\n"
 msgid "\t-l library\t\t--load=library\n"
 msgstr "\t-l library\t\t--load=thư-viện\n"
 
-#. TRANSLATORS: the "fatal" and "invalid" here are literal
+#. TRANSLATORS: the "fatal", "invalid" and "no-ext" here are literal
 #. values, they should not be translated. Thanks.
 #.
 #: main.c:608
-msgid "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
+#, fuzzy
+msgid "\t-L[fatal|invalid|no-ext]\t--lint[=fatal|invalid|no-ext]\n"
 msgstr "\t-L [fatal|invalid]\t--lint[=fatal|invalid]\n"
 
 #: main.c:609
@@ -3322,7 +3329,7 @@ msgstr ""
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "-Ft không đặt FS (hệ thống tập tin?) vào tab trong awk POSIX"
 
-#: main.c:1133
+#: main.c:1151
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
@@ -3331,71 +3338,71 @@ msgstr ""
 "%s: đối số “%s” cho “-v” không có dạng “biến=giá_trị”\n"
 "\n"
 
-#: main.c:1159
+#: main.c:1177
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "“%s” không phải là tên biến hợp lệ"
 
-#: main.c:1162
+#: main.c:1180
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "“%s” không phải là tên biến; đang tìm tập tin “%s=%s”"
 
-#: main.c:1176
+#: main.c:1194
 #, c-format
 msgid "cannot use gawk builtin `%s' as variable name"
 msgstr "không thể dùng builtin (dựng sẵn) của gawk “%s” như là tên biến"
 
-#: main.c:1181
+#: main.c:1199
 #, c-format
 msgid "cannot use function `%s' as variable name"
 msgstr "không thể dùng hàm “%s” như là tên biến"
 
-#: main.c:1259
+#: main.c:1277
 msgid "floating point exception"
 msgstr "ngoại lệ số thực dấu chấm động"
 
-#: main.c:1266
+#: main.c:1287
 msgid "fatal error: internal error"
 msgstr "lỗi nghiêm trọng: lỗi nội bộ"
 
-#: main.c:1283
+#: main.c:1307
 msgid "fatal error: internal error: segfault"
 msgstr "lỗi nghiêm trọng: lỗi nội bộ: lỗi phân đoạn"
 
-#: main.c:1296
+#: main.c:1320
 msgid "fatal error: internal error: stack overflow"
 msgstr "lỗi nghiêm trọng: lỗi nội bộ: tràn ngăn xếp"
 
-#: main.c:1356
+#: main.c:1380
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "không có fd (bộ mô tả tập tin) %d đã mở trước"
 
-#: main.c:1363
+#: main.c:1387
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "không thể mở trước “/dev/null” cho fd %d"
 
-#: main.c:1577
+#: main.c:1601
 msgid "empty argument to `-e/--source' ignored"
 msgstr "đối số rỗng cho tùy chọn “-e/--source” bị bỏ qua"
 
-#: main.c:1635 main.c:1640
+#: main.c:1662 main.c:1667
 #, fuzzy
 msgid "`--profile' overrides `--pretty-print'"
 msgstr "tùy chọn “--posix” có quyền cao hơn “--traditional” (truyền thống)"
 
-#: main.c:1652
+#: main.c:1679
 msgid "-M ignored: MPFR/GMP support not compiled in"
 msgstr "-M bị bỏ qua: chưa biên dịch phần hỗ trợ MPFR/GMP"
 
-#: main.c:1677
+#: main.c:1704
 #, c-format
 msgid "%s: option `-W %s' unrecognized, ignored\n"
 msgstr "%s: tùy chọn “-W %s” không được nhận diện nên bị bỏ qua\n"
 
-#: main.c:1730
+#: main.c:1757
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: tùy chọn cần đến đối số “-- %c”\n"
@@ -3450,7 +3457,7 @@ msgstr "%s: đối số #%d giá trị phần phân số %Rg sẽ bị cắt c�
 msgid "%s: argument #%d negative value %Zd is not allowed"
 msgstr "%s: đối số #%d có giá trị âm %Zd là không được phép"
 
-#: msg.c:68
+#: msg.c:75
 #, c-format
 msgid "cmd. line:"
 msgstr "dòng lệnh:"
@@ -3611,39 +3618,39 @@ msgstr ""
 "thành phần của biểu thức chính qui (regexp) “%.*s” gần như chắc chắn nên là "
 "“[%.*s]”"
 
-#: support/dfa.c:1015
+#: support/dfa.c:1017
 msgid "unbalanced ["
 msgstr "thiếu dấu ngoặc vuông mở ["
 
-#: support/dfa.c:1136
+#: support/dfa.c:1138
 msgid "invalid character class"
 msgstr "sai lớp ký tự"
 
-#: support/dfa.c:1262
+#: support/dfa.c:1264
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr "cú pháp lớp ký tự là [[:dấu_cách:]], không phải [:dấu_cách:]"
 
-#: support/dfa.c:1329
+#: support/dfa.c:1331
 msgid "unfinished \\ escape"
 msgstr "chưa kết thúc dãy thoát \\"
 
-#: support/dfa.c:1490
+#: support/dfa.c:1492
 msgid "invalid content of \\{\\}"
 msgstr "nội dung của “\\{\\}” không hợp lệ"
 
-#: support/dfa.c:1493
+#: support/dfa.c:1495
 msgid "regular expression too big"
 msgstr "biểu thức chính quy quá lớn"
 
-#: support/dfa.c:1908
+#: support/dfa.c:1910
 msgid "unbalanced ("
 msgstr "thiếu dấu ("
 
-#: support/dfa.c:2026
+#: support/dfa.c:2028
 msgid "no syntax specified"
 msgstr "chưa chỉ rõ cú pháp"
 
-#: support/dfa.c:2037
+#: support/dfa.c:2039
 msgid "unbalanced )"
 msgstr "thiếu dấu )"
 
@@ -3771,7 +3778,7 @@ msgstr "Biểu thức chính quy quá lớn"
 msgid "Unmatched ) or \\)"
 msgstr "Chưa khớp “)” hoặc “\\)”"
 
-#: support/regcomp.c:688
+#: support/regcomp.c:676
 msgid "No previous regular expression"
 msgstr "Không có biểu thức chính quy nằm trước"
 

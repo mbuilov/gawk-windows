@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.2.63\n"
 "Report-Msgid-Bugs-To: bug-gawk@gnu.org\n"
-"POT-Creation-Date: 2019-04-12 12:29+0300\n"
+"POT-Creation-Date: 2019-06-18 20:07+0300\n"
 "PO-Revision-Date: 2019-03-09 21:06+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -41,8 +41,8 @@ msgid "attempt to use scalar `%s' as an array"
 msgstr "försök att använda skalären ”%s” som en vektor"
 
 #: array.c:400 array.c:567 builtin.c:88 builtin.c:1686 builtin.c:1732
-#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1149 eval.c:1153
-#: eval.c:1528
+#: builtin.c:1745 builtin.c:2240 builtin.c:2267 eval.c:1151 eval.c:1155
+#: eval.c:1530
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "försök att använda vektorn ”%s” i skalärsammanhang"
@@ -245,11 +245,11 @@ msgstr "försök att använda en icke-funktion ”%s” i ett funktionsanrop"
 msgid "invalid subscript expression"
 msgstr "ogiltig indexuttryck"
 
-#: awkgram.y:2477 awkgram.y:2497 gawkapi.c:273 gawkapi.c:290 msg.c:130
+#: awkgram.y:2477 awkgram.y:2497 gawkapi.c:273 gawkapi.c:290 msg.c:137
 msgid "warning: "
 msgstr "varning: "
 
-#: awkgram.y:2495 gawkapi.c:245 gawkapi.c:288 msg.c:162
+#: awkgram.y:2495 gawkapi.c:245 gawkapi.c:288 msg.c:169
 msgid "fatal: "
 msgstr "ödesdigert: "
 
@@ -397,7 +397,7 @@ msgstr "operatorn ”^” stöds inte i gamla awk"
 msgid "unterminated string"
 msgstr "oavslutad sträng"
 
-#: awkgram.y:4048 main.c:1202
+#: awkgram.y:4048 main.c:1220
 msgid "POSIX does not allow physical newlines in string values"
 msgstr "POSIX tillåter inte fysiska nyrader i strängvärden"
 
@@ -1122,6 +1122,11 @@ msgstr "typeof: felaktig argumenttyp ”%s”"
 msgid "typeof: unknown argument type `%s'"
 msgstr "typeof: okänd argumenttyp ”%s”"
 
+#: cint_array.c:1268 cint_array.c:1296
+#, c-format
+msgid "cannot add a new file (%.*s) to ARGV in sandbox mode"
+msgstr ""
+
 #: command.y:227
 #, c-format
 msgid "Type (g)awk statement(s). End with the command \"end\"\n"
@@ -1427,7 +1432,7 @@ msgstr ""
 "where [N] — (samma som backtrace) skriv ett spår över alla eller N innersta "
 "(yttersta om N < 0) ramar."
 
-#: command.y:1016 debug.c:414 gawkapi.c:259 msg.c:139
+#: command.y:1016 debug.c:414 gawkapi.c:259 msg.c:146
 #, c-format
 msgid "error: "
 msgstr "fel: "
@@ -2047,53 +2052,53 @@ msgstr "BINMODE-värde ”%s” är ogiltigt, behandlas som 3"
 msgid "bad `%sFMT' specification `%s'"
 msgstr "felaktig ”%sFMT”-specifikation ”%s”"
 
-#: eval.c:980
+#: eval.c:982
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "slår av ”--lint” på grund av en tilldelning till ”LINT”"
 
-#: eval.c:1174
+#: eval.c:1176
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "referens till icke initierat argument ”%s”"
 
-#: eval.c:1175
+#: eval.c:1177
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "referens till icke initierad variabel ”%s”"
 
-#: eval.c:1193
+#: eval.c:1195
 msgid "attempt to field reference from non-numeric value"
 msgstr "försök att fältreferera från ickenumeriskt värde"
 
-#: eval.c:1195
+#: eval.c:1197
 msgid "attempt to field reference from null string"
 msgstr "försök till fältreferens från en tom sträng"
 
-#: eval.c:1203
+#: eval.c:1205
 #, c-format
 msgid "attempt to access field %ld"
 msgstr "försök att komma åt fält nummer %ld"
 
-#: eval.c:1212
+#: eval.c:1214
 #, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "referens till icke initierat fält ”$%ld”"
 
-#: eval.c:1276
+#: eval.c:1278
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr "funktionen ”%s” anropad med fler argument än vad som deklarerats"
 
-#: eval.c:1473
+#: eval.c:1475
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr "unwind_stack: oväntad typ ”%s”"
 
-#: eval.c:1566
+#: eval.c:1568
 msgid "division by zero attempted in `/='"
 msgstr "försökte dividera med noll i ”/=”"
 
-#: eval.c:1573
+#: eval.c:1575
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "försökte dividera med noll i ”%%=”"
@@ -2178,7 +2183,8 @@ msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr "funktionen ”%s”: argument %d: försök att använda vektor som skalär"
 
 #: ext.c:232
-msgid "dynamic loading of library not supported"
+#, fuzzy
+msgid "dynamic loading of libraries is not supported"
 msgstr "dynamisk laddning av bibliotek stödjs inte"
 
 #: extension/filefuncs.c:442
@@ -2480,90 +2486,90 @@ msgstr "dekrementering av NF är inte portabelt till många awk-versioner"
 msgid "accessing fields from an END rule may not be portable"
 msgstr "att komma åt fält från en END-regel är inte med säkerhet portabelt"
 
-#: field.c:975 field.c:982
+#: field.c:976 field.c:983
 msgid "split: fourth argument is a gawk extension"
 msgstr "split: fjärde argumentet är en gawk-utökning"
 
-#: field.c:979
+#: field.c:980
 msgid "split: fourth argument is not an array"
 msgstr "split: fjärde argumentet är inte en vektor"
 
-#: field.c:989
+#: field.c:990
 msgid "split: second argument is not an array"
 msgstr "split: andra argumentet är inte en vektor"
 
-#: field.c:993
+#: field.c:994
 msgid "split: cannot use the same array for second and fourth args"
 msgstr ""
 "split: det går inte att använda samma vektor som andra och fjärde argument"
 
-#: field.c:998
+#: field.c:999
 msgid "split: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "split: det går inte att använda en delvektor av andra argumentet som fjärde "
 "argument"
 
-#: field.c:1001
+#: field.c:1002
 msgid "split: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "split: det går inte att använda en delvektor av fjärde argumentet som andra "
 "argument"
 
-#: field.c:1035
+#: field.c:1036
 msgid "split: null string for third arg is a non-standard extension"
 msgstr "split: tom sträng som tredje argument är en icke-standard-utökning"
 
-#: field.c:1072
+#: field.c:1073
 msgid "patsplit: fourth argument is not an array"
 msgstr "patsplit: fjärde argumentet är inte en vektor"
 
-#: field.c:1077
+#: field.c:1078
 msgid "patsplit: second argument is not an array"
 msgstr "patsplit: andra argumentet är inte en vektor"
 
-#: field.c:1086
+#: field.c:1087
 msgid "patsplit: third argument must be non-null"
 msgstr "patsplit: tredje argumentet får inte vara tomt"
 
-#: field.c:1090
+#: field.c:1091
 msgid "patsplit: cannot use the same array for second and fourth args"
 msgstr ""
 "patsplit: det går inte att använda samma vektor som andra och fjärde argument"
 
-#: field.c:1095
+#: field.c:1096
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
 msgstr ""
 "patsplit: det går inte att använda en delvektor av andra argumentet som "
 "fjärde argument"
 
-#: field.c:1098
+#: field.c:1099
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
 msgstr ""
 "patsplit: det går inte att använda en delvektor av fjärde argumentet som "
 "andra argument"
 
-#: field.c:1148
+#: field.c:1149
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "”FIELDWIDTHS” är en gawk-utökning"
 
-#: field.c:1217
+#: field.c:1218
 msgid "`*' must be the last designator in FIELDWIDTHS"
 msgstr "”*” måste vara den sista beteckningen i FIELDWIDTHS"
 
-#: field.c:1238
+#: field.c:1239
 #, c-format
 msgid "invalid FIELDWIDTHS value, for field %d, near `%s'"
 msgstr "ogiltigt FIELDWITHS-värde, för fält %d, i närheten av ”%s”"
 
-#: field.c:1311
+#: field.c:1312
 msgid "null string for `FS' is a gawk extension"
 msgstr "tom sträng som ”FS” är en gawk-utökning"
 
-#: field.c:1315
+#: field.c:1316
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "gamla awk stöder inte reguljära uttryck som värden på ”FS”"
 
-#: field.c:1442
+#: field.c:1443
 msgid "`FPAT' is a gawk extension"
 msgstr "”FPAT” är en gawk-utökning"
 
@@ -3111,11 +3117,12 @@ msgstr "\t-i inkluderingsfil\t--include=inkluderingsfil\n"
 msgid "\t-l library\t\t--load=library\n"
 msgstr "\t-l bibliotek\t\t--load=bibliotek\n"
 
-#. TRANSLATORS: the "fatal" and "invalid" here are literal
+#. TRANSLATORS: the "fatal", "invalid" and "no-ext" here are literal
 #. values, they should not be translated. Thanks.
 #.
 #: main.c:608
-msgid "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
+#, fuzzy
+msgid "\t-L[fatal|invalid|no-ext]\t--lint[=fatal|invalid|no-ext]\n"
 msgstr "\t-L[fatal|invalid]\t--lint[=fatal|invalid]\n"
 
 #: main.c:609
@@ -3272,77 +3279,77 @@ msgstr ""
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "-Ft sätter inte FS till tab i POSIX-awk"
 
-#: main.c:1133
+#: main.c:1151
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
 "\n"
 msgstr "%s: Argumentet ”%s” till ”-v” är inte på formatet ”var=värde”\n"
 
-#: main.c:1159
+#: main.c:1177
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "”%s” är inte ett giltigt variabelnamn"
 
-#: main.c:1162
+#: main.c:1180
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "”%s” är inte ett variabelnamn, letar efter filen ”%s=%s”"
 
-#: main.c:1176
+#: main.c:1194
 #, c-format
 msgid "cannot use gawk builtin `%s' as variable name"
 msgstr "kan inte använda gawks inbyggda ”%s” som ett funktionsnamn"
 
-#: main.c:1181
+#: main.c:1199
 #, c-format
 msgid "cannot use function `%s' as variable name"
 msgstr "kan inte använda funktionen ”%s” som variabelnamn"
 
-#: main.c:1259
+#: main.c:1277
 msgid "floating point exception"
 msgstr "flyttalsundantag"
 
-#: main.c:1266
+#: main.c:1287
 msgid "fatal error: internal error"
 msgstr "ödesdigert fel: internt fel"
 
-#: main.c:1283
+#: main.c:1307
 msgid "fatal error: internal error: segfault"
 msgstr "ödesdigert fel: internt fel: segmenteringsfel"
 
-#: main.c:1296
+#: main.c:1320
 msgid "fatal error: internal error: stack overflow"
 msgstr "ödesdigert fel: internt fel: stackspill"
 
-#: main.c:1356
+#: main.c:1380
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "ingen föröppnad fd %d"
 
-#: main.c:1363
+#: main.c:1387
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "kunde inte föröppna /dev/null för fd %d"
 
-#: main.c:1577
+#: main.c:1601
 msgid "empty argument to `-e/--source' ignored"
 msgstr "tomt argument till ”-e/--source” ignorerat"
 
-#: main.c:1635 main.c:1640
+#: main.c:1662 main.c:1667
 msgid "`--profile' overrides `--pretty-print'"
 msgstr "”--profile” åsidosätter ”--pretty-print”"
 
-#: main.c:1652
+#: main.c:1679
 msgid "-M ignored: MPFR/GMP support not compiled in"
 msgstr "-M ignoreras: MPFR/GMP-stöd är inte inkompilerat"
 
-#: main.c:1677
+#: main.c:1704
 #, c-format
 msgid "%s: option `-W %s' unrecognized, ignored\n"
 msgstr "%s: flaggan ”-W %s” okänd, ignorerad\n"
 
-#: main.c:1730
+#: main.c:1757
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: flaggan kräver ett argument -- %c\n"
@@ -3397,7 +3404,7 @@ msgstr "%s: argument nr. %d flyttalsvärde %Rg kommer huggas av"
 msgid "%s: argument #%d negative value %Zd is not allowed"
 msgstr "%s: argument nr. %d:s negativa värde %Zd är inte tillåtet"
 
-#: msg.c:68
+#: msg.c:75
 #, c-format
 msgid "cmd. line:"
 msgstr "kommandorad:"
@@ -3559,39 +3566,39 @@ msgstr ""
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr "komponenten ”%.*s” i reguljäruttryck skall förmodligen vara ”[%.*s]”"
 
-#: support/dfa.c:1015
+#: support/dfa.c:1017
 msgid "unbalanced ["
 msgstr "obalanserad ["
 
-#: support/dfa.c:1136
+#: support/dfa.c:1138
 msgid "invalid character class"
 msgstr "ogiltig teckenklass"
 
-#: support/dfa.c:1262
+#: support/dfa.c:1264
 msgid "character class syntax is [[:space:]], not [:space:]"
 msgstr "syntaxen för teckenklass är [[:space:]], inte [:space:]"
 
-#: support/dfa.c:1329
+#: support/dfa.c:1331
 msgid "unfinished \\ escape"
 msgstr "oavslutad \\-följd"
 
-#: support/dfa.c:1490
+#: support/dfa.c:1492
 msgid "invalid content of \\{\\}"
 msgstr "ogiltigt innehåll i \\{\\}"
 
-#: support/dfa.c:1493
+#: support/dfa.c:1495
 msgid "regular expression too big"
 msgstr "reguljärt uttryck för stort"
 
-#: support/dfa.c:1908
+#: support/dfa.c:1910
 msgid "unbalanced ("
 msgstr "obalanserad ("
 
-#: support/dfa.c:2026
+#: support/dfa.c:2028
 msgid "no syntax specified"
 msgstr "ingen syntax angiven"
 
-#: support/dfa.c:2037
+#: support/dfa.c:2039
 msgid "unbalanced )"
 msgstr "obalanserad )"
 
@@ -3719,7 +3726,7 @@ msgstr "Reguljärt uttryck för stort"
 msgid "Unmatched ) or \\)"
 msgstr "Obalanserad ) eller \\)"
 
-#: support/regcomp.c:688
+#: support/regcomp.c:676
 msgid "No previous regular expression"
 msgstr "Inget föregående reguljärt uttryck"
 
