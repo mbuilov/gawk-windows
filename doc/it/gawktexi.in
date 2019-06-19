@@ -56,7 +56,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH Maggio 2019
+@set UPDATE-MONTH Giugno 2019
 @set VERSION 5.0
 @set PATCHLEVEL 1
 
@@ -5986,6 +5986,14 @@ che contengono l'operatore alternativa, @samp{|}.  Per esempio,
 Il significato di @samp{+} @`e
 spiegato pi@`u avanti in questa lista.)
 
+La parentesi sinistra (di apertura) @`e sempre un metacarattere;
+per cercare una corrispondenza letterale con una tale parentesi,
+occorre farla precedere da una barra inversa.  Comunque, la
+parentesi destra (di chiusura), @`e speciale solo se eesiste la
+relativa parentesi sinistra; una parentesi destra senza la
+corrispondente parentesi sinistra @`e considerata (senza dare
+alcun messaggio di avviso) come un normale carattere.
+
 @cindex @code{*} (asterisco), operatore @code{*}, come operatore @dfn{regexp}
 @cindex asterisco (@code{*}), operatore @code{*}, come operatore @dfn{regexp}
 @item @code{*}
@@ -8774,48 +8782,31 @@ finita l'elaborarezione del record corrente, e si vogliono fare delle
 elaborazioni particolari sul record successivo @emph{proprio adesso}.
 Per esempio:
 
+@c 6/2019: Thanks to Mark Krauze <daburashka@ya.ru> for suggested
+@c improvements (the inner while loop).
 @example
 # rimuovere il testo tra /* e */, compresi
 @{
-  if ((i = index($0, "/*")) != 0) @{
-     prima = substr($0, 1, i - 1)  # la parte iniziale della stringa
-     dopo = substr($0, i + 2)    # ... */ ...
-     j = index(dopo, "*/")       # */ @`e nella parte finale?
-     if (j > 0) @{
-         dopo = substr(dopo, j + 2)  # rimozione del commento
-     @} else @{
-         while (j == 0) @{
-           # passa ai record seguenti
-           if (getline <= 0) @{
-             print("Fine file inattesa o errore:", ERRNO) > "/dev/stderr"
-             exit
-          @}
-           # incrementare la riga usando la concatenazione di stringhe
-           dopo = dopo $0
-           j = index(dopo, "*/")   # @`e */ nella parte finale?
-           if (j != 0) @{
-             dopo = substr(dopo, j + 2)
-             break
-           @}
-        @}
+    while ((inizio = index($0, "/*")) != 0) @{
+        prima = substr($0, 1, inizio - 1)  # parte iniziale della stringa
+        dopo = substr($0, inizio + 2)    # ... */ ...    
+        while ((fine = index(dopo, "*/")) == 0) @{  # */ @`e nella parte finale?
+            # passa ai record seguenti
+            if (getline <= 0) @{
+                print("Fine file inattesa o errore:", ERRNO) > "/dev/stderr"
+                exit
+            @}
+            # costruisce la riga usando la concatenazione di stringhe
+            dopo = dopo $0
       @}
-      # incrementare la riga di output usando la concatenazione
+      dopo = substr(dopo, fine + 2)  # rimuove il commento
+      # costruisce la riga di output usando la concatenazione
       # di stringhe
       $0 = prima dopo
   @}
   print $0
 @}
 @end example
-
-@c 8/2014: Here is some sample input:
-@ignore
-mon/*comment*/key
-rab/*commen
-t*/bit
-horse /*comment*/more text
-part 1 /*comment*/part 2 /*comment*/part 3
-no comment
-@end ignore
 
 Questo programma @command{awk} cancella i commenti in stile C
 (@samp{/* @dots{} */}) dall'input.
@@ -8827,9 +8818,28 @@ e le funzioni predefinite @code{index()} e @code{substr()}
 Sostituendo @samp{print $0} con altre
 istruzioni, si possono effettuare elaborazioni pi@`u complesse sull'input
 decommentato, come ricercare corrispondenze di un'espressione regolare.
-(Questo programma ha un piccolo problema: non funziona se c'@`e pi@`u di un
-commento che inizia e finisce
-sulla stessa riga.)
+
+Ecco un esempio di file in input:
+
+@example
+mon/*comment*/key
+rab/*commen
+t*/bit
+horse /*comment*/more text
+part 1 /*comment*/part 2 /*comment*/part 3
+no comment
+@end example
+
+Quando lo si esegue, l'output @`e:
+
+@example
+$ @kbd{awk -f strip_comments.awk example_text}
+@print{} monkey
+@print{} rabbit
+@print{} horse more text
+@print{} part 1 part 2 part 3
+@print{} no comment
+@end example
 
 Questa forma del comando @code{getline} imposta @code{NF},
 @code{NR}, @code{FNR}, @code{RT} e il valore di @code{$0}.
