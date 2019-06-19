@@ -107,7 +107,9 @@ make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 		}
 
 		const char *ok_to_escape;
-		if (do_traditional)
+		if (do_posix)
+			ok_to_escape = "{}()|*+?.^$\\[]/-";
+		else if (do_traditional)
 			ok_to_escape = "()|*+?.^$\\[]/-";
 		else
 			ok_to_escape = "<>`'BywWsS{}()|*+?.^$\\[]/-";
