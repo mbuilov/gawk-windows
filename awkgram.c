@@ -5682,6 +5682,7 @@ get_src_buf()
 		sourcefile->bufsize = l;
 		newfile = true;
 		emalloc(sourcefile->buf, char *, sourcefile->bufsize, "get_src_buf");
+		memset(sourcefile->buf, '\0', sourcefile->bufsize);	// keep valgrind happy
 		lexptr = lexptr_begin = lexeme = sourcefile->buf;
 		savelen = 0;
 		sourceline = 1;
