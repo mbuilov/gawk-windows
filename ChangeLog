@@ -1,3 +1,12 @@
+2019-06-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* config.guess, config.sub: Updated from GNULIB.
+	* awkgram.y (get_src_buf): Set buffers to zero to avoid
+	possible issues with accessing uninitialized memory.
+	Thanks to valgrind, as pointed out by Nadezhda Vyukova
+	<qniva@yandex.ru>.
+	* NEWS, README.git: Fix some typos.
+
 2019-06-19         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* re.c (make_regexp): If do_posix, have {} in ok_to_escape.
@@ -88,7 +97,7 @@
 
 	* awk.h (errcount): Declare.
 	* awkgram.y (errcount): No longer static.
-	* command.y (dbg_errcount): Renamed from errcount.j
+	* command.y (dbg_errcount): Renamed from errcount.
 	* main.c (catchsig, catchsegv): If errcount > 0, just exit,
 	don't abort.  
 
