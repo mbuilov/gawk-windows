@@ -306,7 +306,10 @@ install(const char *name, NODE *parm, NODETYPE type)
 	NODE *n_name;
 	NODE *prev;
 
-	n_name = make_string(name, strlen(name));
+	if (strncmp(name, "awk::", 5) == 0)
+		n_name = make_string(name + 5, strlen(name) - 5);
+	else
+		n_name = make_string(name, strlen(name));
 
 	table = symbol_table;
 

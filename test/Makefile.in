@@ -1041,6 +1041,13 @@ EXTRA_DIST = \
 	noparms.ok \
 	nors.in \
 	nors.ok \
+	nsawk1.awk \
+	nsawk1a.ok \
+	nsawk1b.ok \
+	nsawk1c.ok \
+	nsawk2.awk \
+	nsawk2a.ok \
+	nsawk2b.ok \
 	nsbad.awk \
 	nsbad.ok \
 	nsbad_cmd.ok \
@@ -1612,6 +1619,7 @@ GAWK_EXT_TESTS = \
 	lint lintexp lintindex lintint lintlength lintold lintset lintwarn \
 	manyfiles match1 match2 match3 mbstr1 mbstr2 mixed1 mktime muldimposix \
 	nastyparm negtime next nondec nondec2 nonfatal1 nonfatal2 nonfatal3 \
+	nsawk1a nsawk1b nsawk1c nsawk2a nsawk2b \
 	nsbad nsbad_cmd nsforloop nsfuncrecurse nsindirect1 nsindirect2 nsprof1 nsprof2 \
 	patsplit posix printfbad1 printfbad2 printfbad3 printfbad4 printhuge \
 	procinfs profile0 profile1 profile2 profile3 profile4 profile5 profile6 \
@@ -2489,6 +2497,31 @@ readfile::
 readfile2::
 	@echo $@
 	@$(AWK) -f "$(srcdir)"/$@.awk "$(srcdir)"/$@.awk "$(srcdir)"/readdir.awk > _$@ || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+nsawk1a::
+	@echo $@
+	@$(AWK) -f "$(srcdir)"/nsawk1.awk > _$@ || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+nsawk1b::
+	@echo $@
+	@$(AWK) -v I=fine -f "$(srcdir)"/nsawk1.awk > _$@ || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+nsawk1c::
+	@echo $@
+	@$(AWK) -v awk::I=fine -f "$(srcdir)"/nsawk1.awk > _$@ || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+nsawk2a::
+	@echo $@
+	@$(AWK) -v I=fine -f "$(srcdir)"/nsawk2.awk > _$@ || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+nsawk2b::
+	@echo $@
+	@$(AWK) -v awk::I=fine -f "$(srcdir)"/nsawk2.awk > _$@ || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 include2::
