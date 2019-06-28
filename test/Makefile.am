@@ -566,11 +566,21 @@ EXTRA_DIST = \
 	inplace2.1.bak.ok \
 	inplace2.2.ok \
 	inplace2.2.bak.ok \
+	inplace2bcomp.1.ok \
+	inplace2bcomp.1.orig.ok \
+	inplace2bcomp.2.ok \
+	inplace2bcomp.2.orig.ok \
+	inplace2bcomp.ok \
 	inplace3.ok \
 	inplace3.1.ok \
 	inplace3.1.bak.ok \
 	inplace3.2.ok \
 	inplace3.2.bak.ok \
+	inplace3bcomp.1.ok \
+	inplace3bcomp.1.orig.ok \
+	inplace3bcomp.2.ok \
+	inplace3bcomp.2.orig.ok \
+	inplace3bcomp.ok \
 	inputred.awk \
 	inputred.ok \
 	intarray.awk \
@@ -1393,7 +1403,7 @@ SHLIB_TESTS = \
 	apiterm \
 	filefuncs fnmatch fork fork2 fts functab4 \
 	getfile \
-	inplace1 inplace2 inplace3 \
+	inplace1 inplace2 inplace2bcomp inplace3 inplace3bcomp \
 	ordchr ordchr2 \
 	readdir readdir_test readdir_retest readfile readfile2 revout \
 	revtwoway rwarray \
@@ -2135,6 +2145,17 @@ inplace2::
 	@-$(CMP) "$(srcdir)"/$@.2.ok _$@.2 && rm -f _$@.2
 	@-$(CMP) "$(srcdir)"/$@.2.bak.ok _$@.2.bak && rm -f _$@.2.bak
 
+inplace2bcomp::
+	@echo $@
+	@cp "$(srcdir)"/inplace.1.in _$@.1
+	@cp "$(srcdir)"/inplace.2.in _$@.2
+	@AWKPATH="$(srcdir)"/../awklib/eg/lib $(AWK) -i inplace -v INPLACE_SUFFIX=.orig 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _$@.1 - _$@.2 < "$(srcdir)"/inplace.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+	@-$(CMP) "$(srcdir)"/$@.1.ok _$@.1 && rm -f _$@.1
+	@-$(CMP) "$(srcdir)"/$@.1.orig.ok _$@.1.orig && rm -f _$@.1.orig
+	@-$(CMP) "$(srcdir)"/$@.2.ok _$@.2 && rm -f _$@.2
+	@-$(CMP) "$(srcdir)"/$@.2.orig.ok _$@.2.orig && rm -f _$@.2.orig
+
 inplace3::
 	@echo $@
 	@cp "$(srcdir)"/inplace.1.in _$@.1
@@ -2146,6 +2167,18 @@ inplace3::
 	@-$(CMP) "$(srcdir)"/$@.1.bak.ok _$@.1.bak && rm -f _$@.1.bak
 	@-$(CMP) "$(srcdir)"/$@.2.ok _$@.2 && rm -f _$@.2
 	@-$(CMP) "$(srcdir)"/$@.2.bak.ok _$@.2.bak && rm -f _$@.2.bak
+
+inplace3bcomp::
+	@echo $@
+	@cp "$(srcdir)"/inplace.1.in _$@.1
+	@cp "$(srcdir)"/inplace.2.in _$@.2
+	@AWKPATH="$(srcdir)"/../awklib/eg/lib $(AWK) -i inplace -v INPLACE_SUFFIX=.orig 'BEGIN {print "before"} {gsub(/foo/, "bar"); print} END {print "after"}' _$@.1 - _$@.2 < "$(srcdir)"/inplace.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH="$(srcdir)"/../awklib/eg/lib $(AWK) -i inplace -v INPLACE_SUFFIX=.orig 'BEGIN {print "Before"} {gsub(/bar/, "foo"); print} END {print "After"}' _$@.1 - _$@.2 < "$(srcdir)"/inplace.in >>_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+	@-$(CMP) "$(srcdir)"/$@.1.ok _$@.1 && rm -f _$@.1
+	@-$(CMP) "$(srcdir)"/$@.1.orig.ok _$@.1.orig && rm -f _$@.1.orig
+	@-$(CMP) "$(srcdir)"/$@.2.ok _$@.2 && rm -f _$@.2
+	@-$(CMP) "$(srcdir)"/$@.2.orig.ok _$@.2.orig && rm -f _$@.2.orig
 
 testext::
 	@echo $@
