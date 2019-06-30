@@ -264,7 +264,7 @@ uninitialized_scalar:
 			if (t1 == func_table) {
 				static bool warned = false;
 
-				if (do_lint && ! warned) {
+				if (do_lint_extensions && ! warned) {
 					warned = true;
 					lintwarn(_("FUNCTAB is a gawk extension"));
 				}
@@ -282,7 +282,7 @@ uninitialized_scalar:
 			if (t1 == symbol_table) {
 				static bool warned = false;
 
-				if (do_lint && ! warned) {
+				if (do_lint_extensions && ! warned) {
 					warned = true;
 					lintwarn(_("SYMTAB is a gawk extension"));
 				}
