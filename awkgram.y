@@ -1994,7 +1994,7 @@ func_call
 
 		if (do_traditional || do_posix)
 			yyerror("%s", msg);
-		else if (do_lint && ! warned) {
+		else if (do_lint_extensions && ! warned) {
 			warned = true;
 			lintwarn("%s", msg);
 		}
@@ -3857,7 +3857,7 @@ retry:
 		if (c == '[') {
 			if (do_traditional)
 				fatal(_("multidimensional arrays are a gawk extension"));
-			if (do_lint)
+			if (do_lint_extensions)
 				lintwarn(_("multidimensional arrays are a gawk extension"));
 			yylval = GET_INSTRUCTION(Op_sub_array);
 			lasttok = ']';
