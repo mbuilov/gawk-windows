@@ -39749,7 +39749,7 @@ l'estensione in maniera corretta:
 @ignore
 @c file eg/lib/inplace.awk
 #
-# Copyright (C) 2013, 2017 the Free Software Foundation, Inc.
+# Copyright (C) 2013, 2017, 2019 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -39770,53 +39770,65 @@ l'estensione in maniera corretta:
 #
 # Andrew J. Schorr, aschorr@@telemetry-investments.com
 # January 2013
+#
+# Revised for namespaces
+# Arnold Robbins, arnold@@skeeve.com
+# July 2017
+# June 2019, add backwards compatibility
 @c endfile
 @end ignore
 @c file eg/lib/inplace.awk
 
 @@load "inplace"
 
-# @`E buona cosa impostare INPLACE_SUFFIX in modo da fare
+# @`E buona cosa impostare inplace::suffix in modo da fare
 # una copia di backup.
-# Per esempio, si potrebbe impostare INPLACE_SUFFIX a .bak
+# Per esempio, si potrebbe impostare inplace::suffix a .bak
 # sulla riga di comando, o in una regola BEGIN.
+
+# Prima che fossero introdotti gli spazi di nomi in gawk, quest'estensione
+# usava INPLACE_SUFFIX come variabile per fare delle copie di backup.
+# Questo @`e ancora possibile, in modo che ogni codice che usava la
+# precedente versione di questo @dfn{script} possa continuare a funzionare.
 
 # Per default, ogni file specificato sulla riga di comando
 # verr@`a modificato sovrascrivendo il file originale.
-# Ma @`e possibile evitarlo specificando l'argomento inplace=0
+# Ma @`e possibile evitarlo specificando l'argomento inplace::enable=0
 # davanti al nome del file che non si desidera elaborare in questo modo.
-
 # Si pu@`o poi abilitare di nuovo l'aggiornamento diretto del file
-# sulla riga di comando, specificando inplace=1 prima del file
-# che si vuole modificare direttamente.
+# sulla riga di comando, specificando inplace::enable=1 prima dei file
+# che si vogliono modificare direttamente.
 
-# N.B. La funzione inplace_end() @`e invocata nelle regole
+# N.B. La funzione inplace::end() @`e invocata nelle regole
 # BEGINFILE ed END, in modo che ogni eventuale azione
 # in una regola ENDFILE sar@`a ridiretta come previsto.
+
+@@namespace "inplace"
 @end group
 
 @group
 BEGIN @{
-    inplace = 1         # abilitato per default
+    enable = 1         # abilitato per default
 @}
 @end group
 
 @group
 BEGINFILE @{
-    if (_inplace_filename != "")
-        inplace_end(_inplace_filename, INPLACE_SUFFIX)
-    if (inplace)
-        inplace_begin(_inplace_filename = FILENAME, INPLACE_SUFFIX)
+    sfx = (suffix ? suffix : awk::INPLACE_SUFFIX)
+    if (filename != "")
+        end(filename, sfx)
+    if (enable)
+        begin(filename = FILENAME, sfx)
     else
-        _inplace_filename = ""
+        filename = ""
 @}
 @end group
 
 @group
 
 END @{
-    if (_inplace_filename != "")
-        inplace_end(_inplace_filename, INPLACE_SUFFIX)
+    if (filename != "")
+        end(filename, (suffix ? suffix : awk::INPLACE_SUFFIX))
 @}
 @end group
 @c endfile
