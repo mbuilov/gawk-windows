@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 2012-2018 the Free Software Foundation, Inc.
+ * Copyright (C) 2012-2019 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -546,7 +546,7 @@ typedef struct gawk_api {
 	 * behave in the same way.
 	 *
 	 * For a function parameter, the return is false if the argument
-	 * count is out of range, or if the actual paramater does not match
+	 * count is out of range, or if the actual parameter does not match
 	 * what is specified in wanted. In that case,  result->val_type
 	 * will hold the actual type of what was passed.
 	 *
@@ -585,8 +585,8 @@ typedef struct gawk_api {
 	/* Functions to handle parameters passed to the extension. */
 
 	/*
-	 * Get the count'th paramater, zero-based.
-	 * Returns false if count is out of range, or if actual paramater
+	 * Get the count'th parameter, zero-based.
+	 * Returns false if count is out of range, or if actual parameter
 	 * does not match what is specified in wanted. In that case,
 	 * result->val_type is as described above.
 	 */
