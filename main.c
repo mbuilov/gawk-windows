@@ -364,7 +364,7 @@ main(int argc, char **argv)
 	}
 
 	if (do_lint && os_is_setuid())
-		warning(_("running %s setuid root may be a security problem"), myname);
+		lintwarn(_("running %s setuid root may be a security problem"), myname);
 
 	if (do_debug)	/* Need to register the debugger pre-exec hook before any other */
 		init_debug();

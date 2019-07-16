@@ -415,7 +415,7 @@ pattern
 		static int begin_seen = 0;
 
 		if (do_lint_old && ++begin_seen == 2)
-			warning_ln($1->source_line,
+			lintwarn_ln($1->source_line,
 				_("old awk does not support multiple `BEGIN' or `END' rules"));
 
 		$1->in_rule = rule = BEGIN;
@@ -427,7 +427,7 @@ pattern
 		static int end_seen = 0;
 
 		if (do_lint_old && ++end_seen == 2)
-			warning_ln($1->source_line,
+			lintwarn_ln($1->source_line,
 				_("old awk does not support multiple `BEGIN' or `END' rules"));
 
 		$1->in_rule = rule = END;
@@ -1661,7 +1661,7 @@ exp
 	| exp LEX_IN simple_variable
 	  {
 		if (do_lint_old)
-			warning_ln($2->source_line,
+			lintwarn_ln($2->source_line,
 				_("old awk does not support the keyword `in' except after `for'"));
 		$3->nexti->opcode = Op_push_array;
 		$2->opcode = Op_in_array;
@@ -1810,9 +1810,10 @@ simp_exp
 	| '(' expression_list r_paren LEX_IN simple_variable
 	  {
 		if (do_lint_old) {
+		    /* first one is warning so that second one comes out if warnings are fatal */
 		    warning_ln($4->source_line,
 				_("old awk does not support the keyword `in' except after `for'"));
-		    warning_ln($4->source_line,
+		    lintwarn_ln($4->source_line,
 				_("old awk does not support multidimensional arrays"));
 		}
 		$5->nexti->opcode = Op_push_array;
@@ -3885,7 +3886,7 @@ retry:
 					if (do_lint)
 						lintwarn(_("POSIX does not allow operator `**='"));
 					if (do_lint_old)
-						warning(_("old awk does not support operator `**='"));
+						lintwarn(_("old awk does not support operator `**='"));
 				}
 				yylval = GET_INSTRUCTION(Op_assign_exp);
 				return ASSIGNOP;
@@ -3896,7 +3897,7 @@ retry:
 					if (do_lint)
 						lintwarn(_("POSIX does not allow operator `**'"));
 					if (do_lint_old)
-						warning(_("old awk does not support operator `**'"));
+						lintwarn(_("old awk does not support operator `**'"));
 				}
 				yylval = GET_INSTRUCTION(Op_exp);
 				return lasttok = '^';
@@ -3931,7 +3932,7 @@ retry:
 		if (nextc(true) == '=') {
 			if (do_lint_old && ! did_warn_assgn) {
 				did_warn_assgn = true;
-				warning(_("operator `^=' is not supported in old awk"));
+				lintwarn(_("operator `^=' is not supported in old awk"));
 			}
 			yylval = GET_INSTRUCTION(Op_assign_exp);
 			return lasttok = ASSIGNOP;
@@ -3939,7 +3940,7 @@ retry:
 		pushback();
 		if (do_lint_old && ! did_warn_op) {
 			did_warn_op = true;
-			warning(_("operator `^' is not supported in old awk"));
+			lintwarn(_("operator `^' is not supported in old awk"));
 		}
 		yylval = GET_INSTRUCTION(Op_exp);
 		return lasttok = '^';
@@ -4394,7 +4395,7 @@ retry:
 		if (do_lint_old && (tokentab[mid].flags & NOT_OLD) != 0
 				 && (warntab[mid] & NOT_OLD) == 0
 		) {
-			warning(_("`%s' is not supported in old awk"),
+			lintwarn(_("`%s' is not supported in old awk"),
 					tokentab[mid].operator);
 			warntab[mid] |= NOT_OLD;
 		}

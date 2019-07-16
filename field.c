@@ -1313,7 +1313,7 @@ choose_fs_function:
 		}
 	} else if (fs->stlen > 1) {
 		if (do_lint_old)
-			warning(_("old awk does not support regexps as value of `FS'"));
+			lintwarn(_("old awk does not support regexps as value of `FS'"));
 		set_parser(re_parse_field);
 	} else if (RS_is_null) {
 		/* we know that fs->stlen <= 1 */
