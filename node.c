@@ -552,7 +552,7 @@ parse_escape(const char **string_ptr)
 		case 'b':
 		case 'f':
 		case 'r':
-			warning(_("old awk does not support the `\\%c' escape sequence"), c);
+			lintwarn(_("old awk does not support the `\\%c' escape sequence"), c);
 			break;
 		}
 	}
