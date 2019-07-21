@@ -59,9 +59,9 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH June, 2019
-@set VERSION 5.0
-@set PATCHLEVEL 1
+@set UPDATE-MONTH July, 2019
+@set VERSION 5.1
+@set PATCHLEVEL 0
 
 @set GAWKINETTITLE TCP/IP Internetworking with @command{gawk}
 @ifset FOR_PRINT
@@ -893,14 +893,16 @@ particular records in a file and perform operations upon them.
 * Readline Support::                    Readline support.
 * Limitations::                         Limitations and future plans.
 * Debugging Summary::                   Debugging summary.
-* Global Namespace::                    The global namespace in standard @command{awk}.
+* Global Namespace::                    The global namespace in standard
+                                        @command{awk}.
 * Qualified Names::                     How to qualify names with a namespace.
 * Default Namespace::                   The default namespace.
 * Changing The Namespace::              How to change the namespace.
 * Naming Rules::                        Namespace and Component Naming Rules.
 * Internal Name Management::            How names are stored internally.
 * Namespace Example::                   An example of code using a namespace.
-* Namespace And Features::              Namespaces and other @command{gawk} features.
+* Namespace And Features::              Namespaces and other @command{gawk}
+                                        features.
 * Namespace Summary::                   Summarizing namespaces.
 * Computer Arithmetic::                 A quick intro to computer math.
 * Math Definitions::                    Defining terms used.
@@ -31876,7 +31878,8 @@ please report them (@xref{Bugs}).
 @end quotation
 
 @menu
-* Global Namespace::            The global namespace in standard @command{awk}.
+* Global Namespace::            The global namespace in standard
+                                @command{awk}.
 * Qualified Names::             How to qualify names with a namespace.
 * Default Namespace::           The default namespace.
 * Changing The Namespace::      How to change the namespace.
@@ -39635,6 +39638,10 @@ Version 5.0 added the following features:
 The @code{PROCINFO["platform"]} array element, which allows you
 to write code that takes the operating system / platform into account.
 @end itemize
+
+Version 5.1 was created to release @command{gawk} with a correct
+major version number for the API. This was overlooked for version 5.0,
+unfortunately.
 
 @c XXX ADD MORE STUFF HERE
 @end ifclear
