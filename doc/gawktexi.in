@@ -66,7 +66,7 @@
 @set TITLE GAWK: Effective AWK Programming
 @end ifclear
 @set SUBTITLE A User's Guide for GNU Awk
-@set EDITION 5.0
+@set EDITION 5.1
 
 @iftex
 @set DOCUMENT book
@@ -8434,7 +8434,7 @@ to be portable to all @command{awk} implementations.
 @quotation NOTE
 Unfortunately, @command{gawk} has not been consistent in its treatment
 of a construct like @samp{@w{"echo "} "date" | getline}.
-Most versions, including the current version, treat it at as
+Most versions, including the current version, treat it as
 @samp{@w{("echo "} "date") | getline}.
 (This is also how BWK @command{awk} behaves.)
 Some versions instead treat it as
@@ -10639,7 +10639,7 @@ multiple lines by ending the line with a backslash. For example in C:
 
 int main()
 @{
-    printf "hello, \
+    printf("hello, \
 world\n");
     return 0;
 @}
