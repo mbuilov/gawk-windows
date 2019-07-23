@@ -3468,7 +3468,7 @@ do_and(int nargs)
 	uintmax_t res, uval;
 	AWKNUM val;
 
-	res = ~0;	/* start off with all ones */
+	res = ~(uintmax_t) 0;	/* start off with all ones */
 	if (nargs < 2)
 		fatal(_("and: called with less than two arguments"));
 
@@ -3529,13 +3529,12 @@ do_xor(int nargs)
 	NODE *s1;
 	uintmax_t res, uval;
 	AWKNUM val;
-	int i;
 
 	if (nargs < 2)
 		fatal(_("xor: called with less than two arguments"));
 
-	res = 0;	/* silence compiler warning */
-	for (i = 1; nargs > 0; nargs--, i++) {
+	res = 0;	/* start with all zeroes */
+	for (; nargs > 0; nargs--) {
 		s1 = POP_SCALAR();
 		if (do_lint && (fixtype(s1)->flags & NUMBER) == 0)
 			lintwarn(_("xor: argument %d is non-numeric"), nargs);
@@ -3545,10 +3544,7 @@ do_xor(int nargs)
 			fatal(_("xor: argument %d negative value %g is not allowed"), nargs, val);
 
 		uval = (uintmax_t) val;
-		if (i == 1)
-			res = uval;
-		else
-			res ^= uval;
+		res ^= uval;
 
 		DEREF(s1);
 	}
