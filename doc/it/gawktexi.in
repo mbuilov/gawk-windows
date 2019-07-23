@@ -56,9 +56,9 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH Giugno 2019
-@set VERSION 5.0
-@set PATCHLEVEL 1
+@set UPDATE-MONTH Luglio 2019
+@set VERSION 5.1
+@set PATCHLEVEL 0
 
 @c added Italian hyphenation stuff
 @hyphenation{ven-go-no o-met-te-re o-met-ten-do}
@@ -71,7 +71,7 @@
 @set TITLE GAWK: Programmare efficacemente in AWK
 @end ifclear
 @set SUBTITLE Una Guida Utente per GNU Awk
-@set EDITION 5.0
+@set EDITION 5.1
 
 @iftex
 @set DOCUMENT libro
@@ -1033,8 +1033,8 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
 * Supporto per Readline::               Supporto per Readline.
 * Limitazioni::                         Limitazioni.
 * Sommario sul debug::                  Sommario sul debug.
-* Spazio-dei-nomi globale::             Lo spazio-dei-nomi globale in @command{awk}
-                                        standard.
+* Spazio-dei-nomi globale::             Lo spazio-dei-nomi globale in
+                                        @command{awk} standard.
 * Nomi qualificati::                    Come qualificare nomi con uno
                                         spazio-dei-nomi.
 * Spazio-dei-nomi di default::          Lo spazio-dei-nomi di default.
@@ -1042,9 +1042,9 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
 * Regole per i nomi::                   Regole per assegnare nomi a uno
                                         spazio-dei-nomi e ai suoi componenti.
 * Gestione interna dei nomi::           Come i nomi sono gestiti internamente.
-* Esempio di spazio-dei-nomi::          Esempio di codice che usa uno spazio-dei-nomi.
-* Spazio-dei-nomi e funzionalit@`a::      Lo spazio-dei-nomi e le altre funzionalit@`a
-                                        di @command{gawk}.
+* Esempio di spazio-dei-nomi::  Esempio di codice che usa uno spazio-dei-nomi.
+* Spazio-dei-nomi e funzionalit@`a::      Lo spazio-dei-nomi e le altre
+                                        funzionalit@`a di @command{gawk}.
 * Sommario sugli spazi-dei-nomi::       Sommario sugli spazi-dei-nomi.
 * Aritmetica del computer::             Una rapida introduzione alla matematica del
                                         computer.
@@ -1134,7 +1134,7 @@ Copyright dell'edizione italiana @copyright{} 2016 -- Free Software Foundation, 
 * Esempio di estensione Readfile::      Leggere un intero file in una stringa.
 * Esempio di estensione Time::          Un'interfaccia a @code{gettimeofday()}
                                         e @code{sleep()}.
-* Esempio di estensione API Test::      Test per la API.
+* Esempio di estensione API Test::      Test per l'API.
 * gawkextlib::                          Il progetto @code{gawkextlib}.
 * Sommario delle estensioni::           Sommario delle estensioni.
 * Esercizi sulle estensioni::           Esercizi.
@@ -11512,7 +11512,7 @@ Per esempio in C:
 
 int main()
 @{
-    printf "ciao, \
+    printf("ciao, \
 mondo\n");
     return 0;
 @}
@@ -33494,8 +33494,8 @@ Chi ne trovasse, @`e pregato di notificarlo (@xref{Bug}).
 @end quotation
 
 @menu
-* Spazio-dei-nomi globale::             Lo spazio-dei-nomi globale in @command{awk}
-                                        standard.
+* Spazio-dei-nomi globale::             Lo spazio-dei-nomi globale in
+                                        @command{awk} standard.
 * Nomi qualificati::                    Come qualificare nomi con uno
                                         spazio-dei-nomi.
 * Spazio-dei-nomi di default::          Lo spazio-dei-nomi di default.
@@ -33503,9 +33503,9 @@ Chi ne trovasse, @`e pregato di notificarlo (@xref{Bug}).
 * Regole per i nomi::                   Regole per assegnare nomi a uno
                                         spazio-dei-nomi ai suoi componenti.
 * Gestione interna dei nomi::           Come i nomi sono gestiti internamente.
-* Esempio di spazio-dei-nomi::          Esempio di codice che usa uno spazio-dei-nomi.
-* Spazio-dei-nomi e funzionalit@`a::      Lo spazio-dei-nomi e le altre funzionalit@`a
-                                        di @command{gawk}.
+* Esempio di spazio-dei-nomi::  Esempio di codice che usa uno spazio-dei-nomi.
+* Spazio-dei-nomi e funzionalit@`a::      Lo spazio-dei-nomi e le altre
+                                        funzionalit@`a di @command{gawk}.
 * Sommario sugli spazi-dei-nomi::      Sommario sugli spazi-dei-nomi.
 @end menu
 
@@ -35555,7 +35555,7 @@ Questa
 @ifinfo
 Questo
 @end ifinfo
-(non breve) @value{SECTION} descrive l'API in detttaglio.
+(non breve) @value{SECTION} descrive l'API in dettaglio.
 
 @menu
 * Intro funzioni estensione API::   Introduzione alle funzioni dell'API.
@@ -39407,7 +39407,7 @@ si usa l'estensione API.
 * Esempio di estensione Readfile::      Leggere un intero file in una stringa.
 * Esempio di estensione Time::          Un'interfaccia a @code{gettimeofday()}
                                       e @code{sleep()}.
-* Esempio di estensione API Test::    Test per la API.
+* Esempio di estensione API Test::    Test per l'API.
 @end menu
 
 @node Esempio di estensione funzioni file
@@ -40166,7 +40166,7 @@ ottenere il tempo di attesa richiesto.
 @end table
 
 @node Esempio di estensione API Test
-@subsection Test per la API
+@subsection Test per l'API
 @cindex @code{testext}, estensione
 @cindex estensione @code{testext()}
 
@@ -41987,6 +41987,11 @@ La @value{PVERSION} 5.0 ha aggiunto le seguenti funzionalit@`a:
 L'elemento di vettore @code{PROCINFO["platform"]}, che permette di
 scrivere del codice che tiene conto di piattaforma / sistema operativo.
 @end itemize
+
+La @value{PVERSION} 5.1 @`e stata creata per distribuire @command{gawk} con
+un nuovo numero di versione maggiore per l'API.  Sfortunatamente questo
+dettaglio era stato dimenticato al momento in cui era stata preparata la
+@value{PVERSION} 5.0.
 
 @c XXX ADD MORE STUFF HERE
 @end ifclear

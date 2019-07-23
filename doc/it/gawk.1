@@ -10,6 +10,7 @@
 .\"Aggiornam. a gawk-4.2.0 di A.G. Colombo - revis. M. Curreli - Dicembre 2017
 .\"Aggiornam. a gawk-4.2.1 di A.G. Colombo - revis. M. Curreli - Febbraio 2018
 .\"Aggiornam. a gawk-4.2.2 di A.G. Colombo - revis. M. Curreli - Dicembre 2018
+.\"Aggiornam. a gawk-5.1.0 di A.G. Colombo - Luglio 2019
 
 .ds PX \s-1POSIX\s+1
 .ds UX \s-1UNIX\s+1
@@ -26,7 +27,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Nov 29 2018" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Jul 21 2019" "Free Software Foundation" "Utility Commands"
 .SH NOME
 gawk \- linguaggio per il riconoscimento e il trattamento di espressioni
 regolari
@@ -65,17 +66,17 @@ La riga di comando contiene opzioni per
 stesso, il testo del programma \*(AK (se non è stato fornito con le opzioni
 .B \-f
 o
-.BR \-i ),
+.B \-\^\-include ),
 e valori da rendere disponibili
 nelle variabili \*(AK predefinite
 .B ARGC
 e
-.BR ARGV .
+.B ARGV .
 .PP
 Quando
 .I gawk
 è invocato con l'opzione
-.BR \-\^\-profile ,
+.B \-\^\-profile ,
 inizia a raccogliere statistiche sul comportamento del programma
 durante l'esecuzione.
 .I Gawk
@@ -97,7 +98,9 @@ carica il
 codice sorgente di AWK e poi richiede l'inserimento di comandi di debug.
 .I Gawk
 può analizzare solo il sorgente di un programma AWK fornito tramite l'opzione
-.BR \-f .
+.BR \-f
+e
+.B \-\^\-include .
 Il debugger è documentato in \*(EP.
 .SH FORMATO DELLE OPZIONI
 .PP
@@ -145,6 +148,9 @@ Si possono specificare più opzioni
 .B \-f
 (o
 .BR \-\^\-file ).
+I file letti come specificato da
+.B \-f
+sono trattati come se iniziassero con la direttiva implicita \fB@namespace "awk"\fR.
 .TP
 .PD 0
 .BI \-F " fs"
@@ -263,10 +269,13 @@ Quest'opzione permette di combinare in modo semplice funzioni di libreria
 (usate attraverso i file indicati dalle opzioni
 .B \-f
 e
-.BR \-i )
+.B \-\^\-include )
 con codice sorgente immesso sulla riga di comando.
 È rivolta principalmente a programmi  \*(AK di media e grande dimensione
 usati all'interno di script di shell.
+Ogni argomento specificato da
+.B \-e
+è trattato come se iniziasse con la direttiva implicita \fB@namespace "awk"\fR.
 .TP
 .PD 0
 .BI "\-E " file
@@ -296,7 +305,7 @@ nel programma.  Il programma in sé non viene eseguito.
 Si veda la distribuzione \*(GN
 .I gettext
 per maggiori informazioni sui file
-.BR \&.pot .
+.B \&.pot .
 .TP
 .PD 0
 .B \-h
@@ -319,10 +328,13 @@ Cerca la libreria usando la variabile d'ambiente
 .BR AWKPATH .
 Se la ricerca iniziale non va a buon fine, viene
 fatto un altro tentativo dopo aver aggiunto il suffisso
-.BR \&.awk .
+.B \&.awk .
 Il file verrà caricato solo una volta
 (cioè vengono ignorati i duplicati), e il codice non costituisce
 il sorgente del programma principale.
+I file letti come specificato da
+.B \-\^\-include
+sono trattati come se iniziassero con la direttiva implicita \fB@namespace "awk"\fR.
 .TP
 .PD 0
 .BI "\-l " lib
@@ -334,7 +346,7 @@ Carica un'estensione
 dalla libreria condivisa
 .IR lib .
 Cerca la libreria usando la variabile d'ambiente
-.BR AWKLIBPATH .
+.B AWKLIBPATH .
 Se la ricerca iniziale non va a buon fine, viene
 fatto un altro tentativo dopo aver aggiunto il suffisso della libreria
 condivisa predefinita per la piattaforma.
@@ -357,6 +369,11 @@ Con l'argomento opzionale
 .BR invalid ,
 vengono emessi solo gli avvertimenti relativi a quello che è
 effettivamente non valido (funzionalità non ancora completamente implementata).
+Specificando l'argomento facoltativo
+.BR no-ext ,
+gli avvertimenti riguardo alle estensioni
+.I gawk
+sono disabilitati.
 .TP
 .PD 0
 .B \-M
@@ -366,7 +383,7 @@ effettivamente non valido (funzionalità non ancora completamente implementata).
 Forza il calcolo con precisione arbitraria sui numeri.  Quest'opzione
 non ha effetto se
 .I gawk
-non è compilato per l'uso delle librerie GNU MPFR e MP.
+non è compilato per utilizzare le librerie GNU MPFR e GMP.
 (In tal caso,
 .I gawk
 invia un messaggio di avvertimento.)
@@ -396,7 +413,7 @@ faccia questo quando l'opzione
 il punto come separatore decimale, anche per le localizzazioni in cui
 il carattere di separazione non è il punto.  Quest'opzione ignora il
 comportamento predefinito, senza il rigore draconiano dell'opzione
-.BR \-\^\-posix .
+.B \-\^\-posix .
 .ig
 .\" Quest'opzione è lasciata intenzionalmente non documentata.
 .TP
@@ -423,7 +440,7 @@ Se non viene indicato un
 usa un file di nome
 .B awkprof.out
 nella directory corrente.
-Sottintende
+Quest'opzione attiva anche l'opzione
 .BR \-\^\-no\-optimize .
 .TP
 .PD 0
@@ -449,7 +466,7 @@ Quello predefinito è
 Il profilo contiene il numero di esecuzioni di ogni istruzione sul margine
 sinistro e il conteggio delle chiamate di funzione per ogni funzione definita
 dall'utente.
-Sottindende
+Quest'opzione attiva anche l'opzione
 .BR \-\^\-no\-optimize .
 .TP
 .PD 0
@@ -458,7 +475,7 @@ Sottindende
 .PD
 .B \-\^\-posix
 Quest'opzione attiva la modalità di
-.IR compatibilità ,
+.I compatibilità ,
 con le seguenti restrizioni aggiuntive:
 .RS
 .TP "\w'\(bu'u+1n"
@@ -477,7 +494,7 @@ e
 Non viene riconosciuto il sinonimo
 .B func
 per la parola chiave
-.BR function .
+.B function .
 .TP
 \(bu
 Non si possono usare gli operatori
@@ -507,7 +524,7 @@ mai state disponibili.  Lo standard \*(PX le ha aggiunte, per rendere
 ed
 .I egrep
 coerenti tra di loro.  Sono abilitate in modalità predefinita, però quest'opzione
-rimane per essere usata con l'opzione
+rimane per essere usata insieme all'opzione
 .BR \-\^\-traditional .
 .TP
 .PD 0
@@ -516,7 +533,7 @@ rimane per essere usata con l'opzione
 .PD
 .B \-\^\-no\-optimize
 Disabilita le ottimizzazioni predefinite di
-.I gawk
+.IR gawk
 nella rappresentazione interna del programma.
 .TP
 .PD 0
@@ -580,7 +597,7 @@ per l'elaborazione.  Questo è particolarmente utile per eseguire i programmi
 .BR #! .
 .PP
 Per compatibilità con \*(PX, si può usare l'opzione
-.BR \-W ,
+.B \-W ,
 seguita dal nome di un'opzione lunga.
 .SH ESECUZIONE DEL PROGRAMMA AWK
 .PP
@@ -593,6 +610,8 @@ e definizioni di funzione opzionali.
 \fB@include "\fInome_del_file\fB"
 .br
 \fB@load "\fInome_del_file\fB"
+.br
+\fB@namespace "\fInome\^\fB"
 .br
 \fIcriterio di ricerca\fB	{ \fIistruzioni di azione\fB }\fR
 .br
@@ -624,13 +643,13 @@ Oltre a ciò, le righe che iniziano con
 possono essere usate per includere altri file sorgenti nel programma,
 rendendo l'uso della libreria ancora più facile.  Questo è equivalente
 all'uso dell'opzione
-.BR \-i .
+.B \-\^\-include .
 .PP
 Le righe che iniziano con
 .B @load
 possono essere usate per caricare funzioni di estensione nel programma.  Questo è
 equivalente all'uso dell'opzione
-.BR \-l .
+.B \-\^\-load .
 .PP
 La variabile d'ambiente
 .B AWKPATH
@@ -638,7 +657,7 @@ specifica il percorso lungo il quale cercare i file sorgenti
 indicati con le opzioni
 .B \-f
 e
-.BR \-i .
+.B \-\^\-include .
 Se questa variabile non esiste, il percorso predefinito è
 \fB"/usr/local/share/awk"\fR
 (la directory in questione può variare a seconda di come
@@ -653,7 +672,7 @@ La variabile d'ambiente
 .B AWKLIBPATH
 specifica il percorso lungo il quale cercare i file sorgenti
 indicati con l'opzione
-.BR \-l ,
+.B \-\^\-load .
 Se questa variabile non esiste, il percorso predefinito è
 \fB"/usr/local/lib/gawk"\fR
 (la directory in questione può variare a seconda di come
@@ -857,7 +876,8 @@ Ogni campo nel record in input può essere individuato dalla sua posizione:
 .BR $2 ,
 e così via.
 .B $0
-è l'intero record.
+è l'intero record,
+compresi eventuali spazi bianchi iniziali e finali.
 Non è necessario che i campi siano indicati da costanti:
 .RS
 .PP
@@ -1015,7 +1035,7 @@ Se impostato,
 .I gawk
 suddivide l'input in campi, dove i campi corrispondono
 all'espressione regolare, invece di usare il
-valore della variabile
+valore di
 .B FS
 come separatore di campo.
 Si veda
@@ -1139,7 +1159,7 @@ Gli indici partono dallo zero.
 .TP
 \fBPROCINFO["egid"]\fP
 Il valore della chiamata di sistema
-.IR getegid (2).
+.IR getegid (2) .
 .TP
 \fBPROCINFO["errno"]\fP
 Il valore di
@@ -1150,7 +1170,7 @@ quando
 .TP
 \fBPROCINFO["euid"]\fP
 Il valore della chiamata di sistema
-.IR geteuid (2).
+.IR geteuid (2) .
 .TP
 \fBPROCINFO["FS"]\fP
 \fB"FS"\fP se la separazione in campi con
@@ -1167,7 +1187,7 @@ o \fB"API"\fP se la separazione in campi con l'analizzatore di input API
 .TP
 \fBPROCINFO["gid"]\fP
 Il valore della chiamata di sistema
-.IR getgid (2).
+.IR getgid (2) .
 .TP
 \fBPROCINFO["identifiers"]\fP
 Un sottovettore, avente come indici i nomi di tutti gli identificatori usati
@@ -1191,7 +1211,7 @@ L'identificatore è una funzione predefinita.
 L'identificatore è una funzione di estensione caricata con
 .B @load
 o
-.BR \-l .
+.BR \-\^\-load .
 .TP
 \fB"scalar"\fR
 L'identificatore è uno scalare.
@@ -1206,47 +1226,50 @@ ancora non lo sa).
 L'identificatore è una funzione definita dall'utente.
 .RE
 .TP
+\fBPROCINFO["pgrpid"]\fP
+Il valore dalla chiamata di sistema
+.IR getpgrp (2) .
+.TP
+\fBPROCINFO["pid"]\fP
+Il valore dalla chiamata di sistema
+.IR getpid (2) .
+.TP
 \fBPROCINFO["platform"]\fP
 Una stringa che indica la piattaforma sulla quale
 .I gawk
 è stato compilato.  Può essere una delle alternative seguenti:
 .RS
 .TP
-\fB"vms"\fR
-OpenVMS o Vax/VMS.
-.TP
-\fB"macosx"\fR
-Mac OS X.
-.TP
-\fB"cygwin"\fR, \fB"djgpp"\fR, \fB"mingw"\fR
-Microsoft Windows, avendo compilato in Cygwin, DJGPP, o MinGW, rispettivamente.
+\fB"djgpp"\fR, \fB"mingw"\fR
+Microsoft Windows, compilato tramite DJGPP o MinGW, rispettivamente.
 .TP
 \fB"os2"\fR
 OS/2.
 .TP
 \fB"posix"\fR
-GNU/Linux e i sistemi Unix precedenti.
+GNU/Linux, Cygwin, Mac OS X, e i sistemi Unix precedenti.
+.TP
+\fB"vms"\fR
+OpenVMS o Vax/VMS.
 .RE
 .TP
-\fBPROCINFO["pgrpid"]\fP
-Il process group ID del processo corrente.
-.TP
-\fBPROCINFO["pid"]\fP
-L'ID di processo del processo corrente.
-.TP
 \fBPROCINFO["ppid"]\fP
-Il process ID del "padre" [parent] del processo corrente.
+Il valore della chiamata di sistema
+.IR getppid (2) .
 .TP
 \fBPROCINFO["strftime"]\fP
 La stringa di formato data/ora predefinita per
 .BR strftime() .
+Cambiandone il valore cambia anche il modo con cui
+.B strftime()
+visualizza i valori di data e ora se chiamata senza specificare argomenti.
 .TP
 \fBPROCINFO["uid"]\fP
 Il valore della chiamata di sistema
-.IR getuid (2).
+.IR getuid (2) .
 .TP
 \fBPROCINFO["version"]\fP
-la versione di
+La versione di
 .IR gawk .
 .PP
 I seguenti elementi sono presenti se è disponibile il caricamento delle
@@ -1263,7 +1286,7 @@ compilato in
 .IR gawk\^ :
 .TP
 \fBPROCINFO["gmp_version"]\fP
-La versione della libreria GNU MP usata per il supporto ai numeri
+La versione della libreria GNU GMP usata per il supporto ai numeri
 con precisione arbitraria in
 .IR gawk .
 .TP
@@ -1367,16 +1390,29 @@ devono essere ordinati gli elementi del vettore.
 .B ROUNDMODE
 La modalità di arrotondamento da usare per operazioni sui numeri con precisione
 arbitraria, quella predefinita è \fB"N"\fR (IEEE-754 roundTiesToEven mode).
-Sono accettati i valori
-\fB"N"\fR o \fB"n"\fR per roundTiesToEven,
-\fB"U"\fR o \fB"u"\fR per roundTowardPositive,
-\fB"D"\fR o \fB"d"\fR per roundTowardNegative,
-\fB"Z"\fR o \fB"z"\fR per roundTowardZero
-e, se la versione della libreria GNU MPFR in uso li supporta,
-\fB"A"\fR o \fB"a"\fR per arrotondamento lontano da zero (per eccesso).
+Sono accettati i valori:
+.RS
+.TP
+\fB"A"\fR o \fB"a"\fR
+per arrotondamento lontano da zero (per eccesso).
+Questi valori sono disponibili solo se la versione della libreria GNU MPFR
+supporta gli arrotondamenti lontano da zero.
+.TP "\w'\fB\(dqD\(dq\fR o \fB\(dqd\(dq\fR'u+1n"
+\fB"D"\fR o \fB"d"\fR
+per roundTowardNegative.
+.TP
+\fB"N"\fR o \fB"n"\fR
+per roundTiesToEven.
+.TP
+\fB"U"\fR o \fB"u"\fR
+per roundTowardPositive.
+.TP
+\fB"Z"\fR o \fB"z"\fR
+per roundTowardZero.
+.RE
 .TP
 .B RS
-Il separatore di record in input, normalmente "newline".
+Il separatore di record in input (se non specificato è "newline").
 .TP
 .B RT
 Il terminatore di record.
@@ -1399,8 +1435,8 @@ La lunghezza della stringa trovata da
 oppure \-1 se non ci sono corrispondenze.
 .TP
 .B SUBSEP
-Il carattere usato per separare indici multipli negli elementi di un vettore,
-quello predefinito è \fB"\e034"\fR.
+La stringa usata per separare indici multipli negli elementi di un vettore,
+quella predefinita è \fB"\e034"\fR.
 .TP
 .B SYMTAB
 Un vettore i cui indici sono i nomi di tutti i vettori e le variabili 
@@ -1442,7 +1478,7 @@ Se l'espressione è formata da una lista di espressioni
 l'indice del vettore è una stringa ottenuta concatenando
 i valori (stringa) di ogni espressione, separati dal valore della
 variabile
-.BR SUBSEP .
+.B SUBSEP .
 Questa modalità è usata per simulare vettori multidimensionali.
 Per esempio:
 .PP
@@ -1517,7 +1553,37 @@ si aspetta di trovare un vettore (come nel secondo argomento di
 .BR split() ).
 Si può fare questo creando un elemento nel sottovettore e cancellandolo
 poi con l'istruzione
-.BR delete .
+.B delete .
+.SS Spazi-dei-nomi
+.I Gawk
+fornisce una semplice funzionalità, 
+.I namespace ,
+(spazio-dei-nomi) per ovviare al fatto che tutte le variabili in
+AWK sono globali.
+.PP
+Un
+.I "nome qualificato"
+consiste di due identificativi semplici, congiunti da una coppia di ":"
+.RB ( :: ).
+Il primo dei due identificativi designa lo spazio-dei-nomi (namespace)
+mentre il secondo è il nome della variabile al suo interno.
+Tutti i nomi semplici (non qualificati) sono considerati come appartenenti
+allo spazio-dei-nomi ``corrente''; lo spazio-dei-nomi predefinito ha nome
+.BR awk .
+Comunque, gli identificativi i cui nomi sono composti solo da lettere
+maiuscole, vengono sempre considerati come facenti parte dello spazio-dei-nomi
+.B awk ,
+anche se lo spazio-dei-nomi corrente è diverso da quello predefinito.
+.PP
+Si può cambiare lo spazio-dei-nomi corente tramite la direttiva
+\fB@namespace "\fInome\^\fB"\fR .
+.PP
+I nomi delle funzioni interne predefinite non possono essere usati come
+nomi di uno spazio-dei-nomi.  I nomi di ulteriori funzioni, fornite da
+.I gawk
+possono essere usati come nomi di uno spazio-dei-nomi o come semplici
+identificativi in altri spazi-dei-nomi.
+Per ulteriori dettagli, vedere \*(EP.
 .SS Notazione e conversione delle variabili
 .PP
 Le variabili e i campi
@@ -1535,7 +1601,7 @@ valore di stringa "" (la stringa nulla, o vuota).
 .PP
 Quando una stringa deve essere convertita in un numero, la conversione
 è compiuta con
-.IR strtod (3).
+.IR strtod (3) .
 I numeri sono convertiti a stringhe usando
 .IR sprintf (3)
 col valore di
@@ -1592,7 +1658,7 @@ a
 agli elementi di
 .B ARGV
 di
-.BR ENVIRON ,
+.B ENVIRON ,
 ed agli elementi di un vettore creato da
 .B split()
 o da
@@ -1667,7 +1733,7 @@ costituite da espressioni regolari.  Così,
 .B /a\e52b/
 è equivalente a
 .BR /a\e*b/ .
-.SS "Costanti di tipo Regexp"
+.SS Costanti di tipo Regexp
 Una costante di tipo espressione regolare è una sequenza di caratteri
 racchiusa tra barre (come
 .BR /valore/ ).
@@ -1680,7 +1746,7 @@ all'interno di costanti che sono espressioni regolari
 (p.es.,
 .B "/[\ \et\ef\en\er\ev]/"
 corrisponde a tutti i caratteri non stampabili [bianchi]).
-.TP
+.PP
 .I Gawk
 consente anche di usare costanti formate da espressioni regolari
 .IR "fortemente tipizzate" .
@@ -1722,13 +1788,16 @@ virgola,
 .BR && ,
 o
 .BR || .
-Le istruzioni in righe terminanti con
+Anche le istruzioni in righe terminanti con
 .B do
 o
 .B else
 continuano automaticamente alla riga successiva.
-Negli altri casi, una riga terminante con un  \*(lq\e\*(rq
-continua alla successiva, e il "newline" è ignorato.
+Negli altri casi, un'istruzione può continua sulla riga successiva
+se termina con \*(lq\e\*(rq, nel qual caso il "newline" è ignorato.
+Comunque, un \*(lq\e\*(rq che venga dopo un carattere
+.B #
+non è speciale.
 .PP
 Si possono scrivere più istruzioni sulla stessa riga separandole con
 \*(lq;\*(rq.
@@ -1763,13 +1832,13 @@ Le azioni di tutti i criteri di ricerca
 .B BEGIN
 sono unite insieme, come se tutte le istruzioni fossero
 scritte in un'unica regola
-.BR BEGIN ,
+.B BEGIN ,
 e sono eseguite prima che sia letto qualsiasi input.
 Allo stesso modo, tutte le regole
 .B END
 sono fuse insieme, ed eseguite dopo che tutti i dati in input sono
 terminati o dopo che si è incontrata l'istruzione
-.BR exit .
+.B exit .
 .B BEGIN
 e
 .B END
@@ -1783,11 +1852,11 @@ devono necessariamente essere seguiti dall'indicazione di un'azione
 .B BEGINFILE
 e
 .B ENDFILE
-sono altri criteri speciali il cui contenuto è eseguito
+sono altri criteri speciali le cui azioni sono eseguite
 prima della lettura del primo record di ogni file di input richiamato sulla riga
 di comando, e dopo la lettura dell'ultimo record di ognuno di questi file.
 All'interno della regola
-.B BEGINFILE
+.B BEGINFILE ,
 il valore di
 .B ERRNO
 è una stringa vuota se il file è stato aperto con successo.
@@ -1867,6 +1936,8 @@ Corrisponde alla fine di una stringa.
 Una lista di caratteri: corrisponde a uno qualsiasi dei caratteri
 .IR abc.\|.\|. .
 Si possono includere intervalli di caratteri separandoli con un trattino.
+Per aggiungere alla lista il carattere trattino, inserirlo all'inizio o
+alla fine della lista stessa.
 .TP
 \fB[^\fIabc.\|.\|.\fB]\fR
 Una lista di caratteri negata: corrisponde a qualsiasi carattere eccetto
@@ -2302,7 +2373,7 @@ imposta
 .TP
 \fIcomando\fB | getline \fR[\fIvariabile\fR]
 Esegue
-.I comando
+.IR comando
 dirigendo l'output [del comando] o in
 .B $0
 o in
@@ -2322,33 +2393,36 @@ come sopra, e
 .BR RT .
 I coprocessi sono un'estensione
 .IR gawk .
-.RI (il " comando
+.RI "(Il " comando
 può anche essere un socket.  Vedere la sottosezione
 .BR "Nomi di file speciali" ,
 più avanti.)
 .TP
 .B next
-Cessa l'elaborazione della riga di input corrente.  È letta la successiva,
-e l'elaborazione ricomincia dal primo criterio di ricerca del
+Cessa l'elaborazione della riga di input corrente.
+Legge la successiva riga di input,
+e l'elaborazione ricomincia a partire dal primo criterio di ricerca del
 programma \*(AK.
 Se non ci sono più righe in input,
 .I gawk
-esegue i comandi delle regole
+esegue i comandi di ogni regola
 .BR END ,
 se presenti.
 .TP
 .B "nextfile"
 Cessa l'elaborazione del file di input corrente.  La prossima riga
-sarà letta dal file di input successivo.  Sono aggiornati
+letta proverrà dal file di input successivo.
+Aggiorna
 .B FILENAME
 e
 .BR ARGIND ,
+reimposta
 .B FNR
-è reimpostato a 1, e l'elaborazione riprende dal primo criterio di ricerca
+a 1, e l'elaborazione riprende dal primo criterio di ricerca
 del programma \*(AK.
-Quando non ci sono più righe in input,
+Se non ci sono più righe in input,
 .I gawk
-esegue i comandi delle regole
+esegue i comandi di ogni regola
 .B ENDFILE
 ed
 .BR END ,
@@ -2405,7 +2479,7 @@ e
 .BR printf .
 .TP
 .BI "print .\|.\|. >>" " file"
-Aggiunge righe alla fine di
+Aggiunge l'output alla fine di
 .IR file .
 .TP
 .BI "print .\|.\|. |" " comando"
@@ -2536,7 +2610,7 @@ invece di
 .TP
 .B %%
 Un singolo carattere
-.BR % ;
+.B % ;
 non c'è alcuna conversione di argomenti.
 .PP
 Alcuni ulteriori parametri facoltativi possono comparire fra il
@@ -2648,7 +2722,7 @@ Con i formati
 e
 .BR %X ,
 specifica il numero minimo di
-cifre da stampare.  Per
+cifre da stampare.  Per il formato
 .BR %s ,
 specifica il massimo numero di caratteri
 della stringa che dovrebbero essere stampati.
@@ -2758,7 +2832,9 @@ e
 per richiedere una connessione IPv6.
 Specificando semplicemente
 .B /inet
-usa quello predefinito del sistema (molto probabilmente sarà IPv4).
+usa quello predefinito del sistema (molto probabilmente IPv4).
+Si può usare solo con l'operatore bidirezionale di I/O
+.B |& .
 .TP
 .PD 0
 .BI /inet/udp/ lport / rhost / rport
@@ -3259,7 +3335,7 @@ Se
 Se
 .I format
 è omesso, è assunto un formato equivalente a quello dell'output del comando
-.IR date (1).
+.IR date (1) .
 Il formato predefinito è disponibile in
 .BR PROCINFO["strftime"] .
 Vedere le specifiche per la funzione
@@ -3318,27 +3394,28 @@ XOR bit per bit ai valori degli argomenti della lista degli argomenti.  Gli
 argomenti devono essere almeno due.
 .PP
 .SS Funzioni di tipo
-La funzione seguente va usata per vettori multidimensionali.
-.TP
+Le seguenti funzioni forniscono informazioni relative agli argomenti
+che vengono loro passati.
+.TP \w'\fBisarray(\fIx\fB)\fR'u+1n
 \fBisarray(\fIx\fB)\fR
 Restituisce "Vero" se
 .I x
 è un vettore, altrimenti restituisce "Falso".
 [0 e la stringa nulla significano "Falso". Qualsiasi altro valore sta per "Vero".]
-.PP
-È possibile conoscere il tipo di qualsiasi variabile o elemento di vettore
-con la seguente funzione:
+Questa funzione è destinata principalmente a essere usata con elementi di
+vettori multidimensionali, e con parametri usati da funzioni.
 .TP
 \fBtypeof(\fIx\fB)\fR
-Return a string indicating the type of
+Restituisce una stringa che indica il tipo di
 .IR x .
-The string will be one of
+La stringa sarà una di queste:
 \fB"array"\fP,
 \fB"number"\fP,
 \fB"regexp"\fP,
 \fB"string"\fP,
 \fB"strnum"\fP,
-or
+\fB"unassigned"\fP
+o
 \fB"undefined"\fP.
 .SS Funzioni di internazionalizzazione
 Le seguenti funzioni possono essere usate all'interno di un programma AWK
@@ -3509,9 +3586,10 @@ al posto di
 .BR function .
 anche se questo modo di operare è deprecato.
 .SH CARICARE DINAMICAMENTE NUOVE FUNZIONI
-Si possono aggiungere dinamicamente nuove funzioni predefinite all'interpreter
+Si possono aggiungere dinamicamente nuove funzioni scritte in C o C++
+all'interpreter
 .I gawk
-con l'istruzione
+in esecuzione tramite l'istruzione
 .BR @load .
 Una descrizione dettagliata non è possibile in questa pagina di manuale;
 vedere \*(EP.
@@ -3637,7 +3715,7 @@ assegnazione compariva prima di un nome di file, l'assegnazione sarebbe
 avvenuta 
 .I prima
 di eseguire la regola
-.BR BEGIN .
+.B BEGIN .
 Esistono applicazioni che dipendono da questa \*(lqfunzionalità.\*(rq
 Quando
 .I awk
@@ -3645,8 +3723,8 @@ Quando
 .B \-v
 per assegnare valori alle variabili prima dell'inizio dell'esecuzione è stata aggiunta
 per tener conto delle applicazioni che dipendevano dal precedente comportamento.
-(Questa funzionalità ha ottenuto l'approvazione sia dei Bell Laboratories
-che degli sviluppatori di \*(GN .)
+(Questa funzionalità ha ottenuto l'approvazione sia dagli sviluppatori
+dei Bell Laboratories che dagli sviluppatori di \*(GN .)
 .PP
 Nella scansione degli argomenti,
 .I gawk
@@ -3971,7 +4049,7 @@ può essere usata per fornire una lista di directory che
 .I gawk
 esamina alla ricerca di file coi nomi indicati tramite le opzioni
 .BR \-f ,
-.RB \-\^\-file ,
+.BR \-\^\-file ,
 .B \-i
 e
 .BR \-\^\-include ,
@@ -4002,7 +4080,7 @@ Per le connessioni a un host remoto via socket,
 .B GAWK_SOCK_RETRIES
 controlla il numero di tentativi di lettura, e
 .B GAWK_MSEC_SLEEP
-l'intervallo fra un tentativo di lettura e l'altro.
+l'intervallo fra un tentativo di lettura e quello successivo.
 L'intervallo è in millisecondi.  Su sistemi che non supportano
 .IR usleep (3),
 il valore è arrotondato a un numero intero di secondi.
@@ -4048,7 +4126,7 @@ non-POSIX, questo valore può essere visualizzato come
 .SH INFORMAZIONE SULLA VERSIONE
 Questa pagina man documenta
 .IR gawk ,
-versione 4.2.
+versione 5.1.
 .SH AUTORI
 La versione originale di \*(UX
 .I awk
@@ -4119,8 +4197,12 @@ inviate un messaggio per segnalare l'errore a
 Anche se gli sviluppatori di
 .I gawk
 di tanto in tanto leggono questo forum, inviare qui messaggi di segnalazione
-di errore è una maniera poco affidabile per segnalare errori.  Siete invece
-pregati di usare l'indirizzo di posta elettronica scritto più sopra.
+di errore è una maniera poco affidabile per segnalare errori.
+Analogamente, 
+.B NON
+usare una comunità web (tipo Stack Overflow) per segnalare errori.
+Siete invece pregati di usare gli indirizzi di posta elettronica
+riportati più sopra.
 Veramente!
 .PP
 Se state usando un sistema GNU/Linux o basato sulla distribuzione BSD,
@@ -4157,7 +4239,7 @@ Alfred V. Aho, Brian W. Kernighan, Peter J. Weinberger,
 Addison-Wesley, 1988.  ISBN 0-201-07981-X.
 .PP
 \*(EP,
-Edition 4.2, disponibile con il codice sorgente
+Edizione 5.1, disponibile con il codice sorgente
 .IR gawk .
 La versione originale corrente di questo documento è
 disponibile online a:
@@ -4209,7 +4291,7 @@ Lo ringraziamo.
 .SH COPYING PERMISSIONS
 Copyright \(co 1989, 1991, 1992, 1993, 1994, 1995, 1996,
 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2007, 2009,
-2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018
+2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
 Free Software Foundation, Inc.
 .PP
 Permission is granted to make and distribute verbatim copies of
