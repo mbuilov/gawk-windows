@@ -267,8 +267,8 @@ EXTRA_DIST = \
 	dynlj.awk \
 	dynlj.ok \
 	escapebrace.awk \
-	scapebrace.in \
-	scapebrace.ok \
+	escapebrace.in \
+	escapebrace.ok \
 	eofsplit.awk \
 	eofsplit.ok \
 	eofsrc1a.awk \
