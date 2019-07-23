@@ -3467,20 +3467,19 @@ do_and(int nargs)
 	NODE *s1;
 	uintmax_t res, uval;
 	AWKNUM val;
-	int i;
 
 	res = ~0;	/* start off with all ones */
 	if (nargs < 2)
 		fatal(_("and: called with less than two arguments"));
 
-	for (i = 1; nargs > 0; nargs--, i++) {
+	for (; nargs > 0; nargs--) {
 		s1 = POP_SCALAR();
 		if (do_lint && (fixtype(s1)->flags & NUMBER) == 0)
-			lintwarn(_("and: argument %d is non-numeric"), i);
+			lintwarn(_("and: argument %d is non-numeric"), nargs);
 
 		val = force_number(s1)->numbr;
 		if (val < 0)
-			fatal(_("and: argument %d negative value %g is not allowed"), i, val);
+			fatal(_("and: argument %d negative value %g is not allowed"), nargs, val);
 
 		uval = (uintmax_t) val;
 		res &= uval;
@@ -3499,20 +3498,19 @@ do_or(int nargs)
 	NODE *s1;
 	uintmax_t res, uval;
 	AWKNUM val;
-	int i;
 
 	res = 0;
 	if (nargs < 2)
 		fatal(_("or: called with less than two arguments"));
 
-	for (i = 1; nargs > 0; nargs--, i++) {
+	for (; nargs > 0; nargs--) {
 		s1 = POP_SCALAR();
 		if (do_lint && (fixtype(s1)->flags & NUMBER) == 0)
-			lintwarn(_("or: argument %d is non-numeric"), i);
+			lintwarn(_("or: argument %d is non-numeric"), nargs);
 
 		val = force_number(s1)->numbr;
 		if (val < 0)
-			fatal(_("or: argument %d negative value %g is not allowed"), i, val);
+			fatal(_("or: argument %d negative value %g is not allowed"), nargs, val);
 
 		uval = (uintmax_t) val;
 		res |= uval;
@@ -3540,11 +3538,11 @@ do_xor(int nargs)
 	for (i = 1; nargs > 0; nargs--, i++) {
 		s1 = POP_SCALAR();
 		if (do_lint && (fixtype(s1)->flags & NUMBER) == 0)
-			lintwarn(_("xor: argument %d is non-numeric"), i);
+			lintwarn(_("xor: argument %d is non-numeric"), nargs);
 
 		val = force_number(s1)->numbr;
 		if (val < 0)
-			fatal(_("xor: argument %d negative value %g is not allowed"), i, val);
+			fatal(_("xor: argument %d negative value %g is not allowed"), nargs, val);
 
 		uval = (uintmax_t) val;
 		if (i == 1)

@@ -1,3 +1,14 @@
+2019-07-23         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	Fix reporting of negative arguments for and(), or() and xor().
+	Thanks to Koichi Murase <myoga.murase@gmail.com> for the
+	report.
+
+	* builtin.c (do_and): Use nargs instead of i in the loop to
+	check for non-numeric and negative arguments.
+	(do_or): Ditto.
+	(do_xor): Ditto.
+
 2019-07-23         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Checklist: Updated.
@@ -22,6 +33,7 @@
 
 	* gawkapi.h: Update copyright year, fix some spelling errors.
 
+2019-07-08         Andrew J. Schorr      <aschorr@telemetry-investments.com>
 2019-07-08         Andrew J. Schorr      <aschorr@telemetry-investments.com>
 
 	* gawkapi.h (gawk_api_major_version): Bump from 2 to 3 because the
