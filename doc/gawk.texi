@@ -5064,12 +5064,47 @@ $ @kbd{gawk -v LINENO=10 'BEGIN @{ print("hi" @}'}
 @section Summary
 
 @itemize @value{BULLET}
+
+@c From Neil R. Ormos
 @item
-Use either
-@samp{awk '@var{program}' @var{files}}
-or
-@samp{awk -f @var{program-file} @var{files}}
-to run @command{awk}.
+@command{gawk} parses arguments on the command line, left to right, to
+determine if they should be treated as options or as non-option arguments.
+
+@item
+@command{gawk} recognizes several options which control its operation,
+as described in @ref{Options}.  All options begin with @samp{-}.
+
+@item
+Any argument that is not recognized as an option is treated as a
+non-option argument, even if it begins with @samp{-}.
+
+@itemize @value{MINUS}
+@item
+However, when an option itself requires an argument, and the option is separated
+from that argument on the command line by at least one space, the space 
+is ignored, and the argument is considered to be related to the option.  Thus, in
+the invocation, @samp{gawk -F x}, the @samp{x} is treated as belonging to the
+@option{-F} option, not as a separate non-option argument.
+@end itemize
+
+@item
+Once @command{gawk} finds a non-option argument, it stops looking for
+options. Therefore, all following arguments are also non-option arguments,
+even if they resemble recognized options.
+
+@item
+If no @option{-e} or @option{-f} options are present, @command{gawk}
+expects the program text to be in the first non-option argument.
+
+@item
+All non-option arguments, except program text provided in the first
+non-option argument, are placed in @code{ARGV} as explained in
+@ref{ARGC and ARGV}, and are processed as described in @ref{Other Arguments}.
+@c And I wrote:
+Adjusting @code{ARGC} and @code{ARGV}
+affects how @command{awk} processes input.
+
+@c ----------------------------------------
 
 @item
 The three standard options for all versions of @command{awk} are
@@ -5081,11 +5116,6 @@ Nonoption command-line arguments are usually treated as @value{FN}s,
 unless they have the form @samp{@var{var}=@var{value}}, in which case
 they are taken as variable assignments to be performed at that point
 in processing the input.
-
-@item
-All nonoption command-line arguments, excluding the program text,
-are placed in the @code{ARGV} array.  Adjusting @code{ARGC} and @code{ARGV}
-affects how @command{awk} processes input.
 
 @item
 You can use a single minus sign (@samp{-}) to refer to standard input
