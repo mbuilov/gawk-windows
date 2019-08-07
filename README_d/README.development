@@ -1,0 +1,98 @@
+Wed Aug  7 20:58:29 IDT 2019
+============================
+
+On Thu, Aug 01, 2019 at 11:57:11AM +0430, Saeed Dehqan wrote:
+>
+> How can I develop awk?
+>
+> For example adding a library or improving the speed and GAWK code.
+>
+> Can I add new features and send you a copy to check?
+
+"Andrew J. Schorr" <aschorr@telemetry-investments.com> wrote:
+
+> Hi,
+>
+> On Thu, Aug 01, 2019 at 11:57:11AM +0430, Saeed Dehqan wrote:
+> > How can I develop awk?
+>
+> Thanks for your interest.
+>
+> > For example adding a library or improving the speed and GAWK code.
+>
+> For adding extension libraries, please check out the gawkextlib project here:
+>    http://gawkextlib.sourceforge.net/
+>
+> The core gawk project is hosted here:
+>    https://savannah.gnu.org/projects/gawk/
+> You can check out the git tree like so:
+>    git clone https://git.savannah.gnu.org/git/gawk.git
+> and develop patches that you can submit to this list for review.
+>
+> > Can I add new features and send you a copy to check?
+>
+> There's a very high hurdle for adding new features to core gawk.
+> New extension libraries are definitely welcome.
+>
+> Regards,
+> Andy
+
+Arnold Robbins then expanded on this:
+
+
+| From: arnold@skeeve.com
+| Message-Id: <201908020824.x728OC7I024895@freefriends.org>
+| Date: Fri, 02 Aug 2019 02:24:12 -0600
+| To: saeeddhqan@gmail.com, aschorr@telemetry-investments.com
+| Subject: Re: [bug-gawk] develop gawk
+| Cc: bug-gawk@gnu.org
+| 
+| Hi Saeed.
+| 
+| Andy's answers are all correct, if a bit terse. :-)
+| 
+| Much more detail may found in the gawkworkflow.texi document in
+| the doc/ directory of the gawk distribution.  You should read that
+| document, as well as the section in the gawk manual on contributing
+| to gawk.
+| 
+| Here are the main points, in brief.
+| 
+| 1. Contributors are welcome, there's always stuff to do. I'm very glad
+| that you're interested in contributing!
+| 
+| 2. You need to be willing to sign paperwork assigning copyright in your
+| contributions to the Free Software Foundation.
+| 
+| 3. You should be comfortable using Unix/Linux command line tools and
+| programming in C. You should also be comfortable with Git, although the
+| above-mentioned document does provide a short primer on its use.
+| 
+| 4. As Andy mentioned, new extension libraries are (a) very welcome,
+| and (b) should go into the gawkextlib project, not the gawk distribution.
+| 
+| 5. There is essentially a moratorium on adding new features visible at
+| the language level to gawk.  (With one possible exception.)  If you have
+| ideas for new features, you'll have to work to convince me to add them. :-)
+| 
+| 6. However code improvements and performance improvements are very
+| welcome. There is one branch in particular that has been rather neglected
+| that may offer some nice improvements in memory usage and it'd be great
+| to have someone tackle it.
+| 
+| 7. If you start working on something, the way to submit changes is to
+| mail patches to this list.  I and the other gawk developers will review
+| your patches and either merge them as appropriate or give you feedback
+| about them. (Merging requires that you've signed paperwork.)
+| 
+| 8. Assuming that things work well, then eventually you'll be granted
+| write access to the Git repo.  There is still a review process, but
+| you'll be able to commit your changes yourself instead of my having to
+| do it.
+| 
+| In short, talk to me about what you'd like to work on (or what I'd like
+| you to work on, either way), clone the repo, and dive in!
+| 
+| Much thanks
+| 
+| Arnold
