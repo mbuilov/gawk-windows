@@ -5420,11 +5420,52 @@ $ @kbd{gawk -v LINENO=10 'BEGIN @{ print("hi" @}'}
 @section Sommario
 
 @itemize @value{BULLET}
+
+@c From Neil R. Ormos
 @item
-Per eseguire @command{awk} usare, o
-@samp{awk '@var{programma}' @var{file}}
-o
-@samp{awk -f @var{file-del-programma} @var{file}}.
+@command{gawk} esamina gli argomenti sulla riga dei comandi da sinistra a
+destra per stabilire se vanno trattati come opzioni o come non-opzioni
+(le non-opzioni sono il programma da eseguire e/o i file su cui operare).
+
+@item
+@command{gawk} riconosce parecchie opzioni che ne controllano il modo di
+operare, come descritto in @ref{Opzioni}.  Tutte le opzioni iniziano con
+@samp{-}.
+
+@item
+Ogni argomento esaminato che non viene riconosciuto come un'opzione @`e
+considerato essere un argomento "non-opzione" anche se inizia con @samp{-}.
+
+@itemize @value{MINUS}
+@item
+Tuttavia, quando un'opzione richiede un argomento, e l'opzione @`e separata
+da quell'argomento da almeno uno spazio, lo spazio @`e ignorato, e
+l'argomento @`e considerato essere relativo a quell'opzione.  Quindi, se
+si scrive @samp{gawk -F x}, l'argomento @samp{x} @`e considerato come
+appartenente all'opzione @option{-F}, e non come un argomento "non-opzione"
+separato.
+@end itemize
+
+Dopo che @command{gawk} ha trovato il primo argomento "non-opzione",
+sospende la ricerca di ulteriori opzioni.  Quindi, tutti gli argomenti
+successivi che vengono trovati sono considerati argomenti "non-opzione",
+anche se sono simili a opzioni riconosciute.
+
+@item
+Se non sono state specificate n@'e l'opzione @option{-e} n@'e l'opzione
+@option{-f} @command{gawk} si aspetta che il testo del programma
+sia contenuto nel primo argomento "non-opzione".
+
+@item
+Tutti gli argomenti "non-opzione", tranne il testo del programma
+specificato come primo argomento "non-opzione" sono messi nel vettore
+@code{ARGV} come spiegato in @ref{ARGC e ARGV}, e sono trattati come
+descritto in @ref{Altri argomenti}.
+@c And I wrote:
+Modificando le variabili @code{ARGC} e @code{ARGV}
+si cambia il modo in cui @command{awk} tratta i file in input.
+
+@c ----------------------------------------
 
 @item
 Le tre opzioni standard per tutte le versioni di @command{awk} sono
@@ -5439,15 +5480,9 @@ in quel punto
 nell'elaborazione dell'input.
 
 @item
-Tutti gli argomenti da riga di comando che non sono opzioni, escluso il testo
-del programma, vengono messe nel vettore @code{ARGV}.  Modifiche a @code{ARGC}
-e @code{ARGV} influiscono su come @command{awk} elabora l'input.
-
-@item
 Si pu@`o usare un segno meno a s@'e stante (@samp{-}) per designare lo standard
 input sulla riga di comando.  @command{gawk} consente anche di usare il
 @value{FN} speciale @file{/dev/stdin}.
-
 
 @item
 @command{gawk} tiene conto di diverse variabili d'ambiente;
