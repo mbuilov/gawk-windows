@@ -4317,6 +4317,15 @@ file at all.  (See @ref{Assignment Options}.) In the following example,
 awk -f program.awk file1 count=1 file2
 @end example
 
+@noindent
+As a side point, should you really need to have @command{awk}
+process a file named @file{count=1} (or any file whose name looks like
+a variable assignment), precede the file name with @samp{./}, like so:
+
+@example
+awk -f program.awk file1 ./count=1 file2
+@end example
+
 @cindex @command{gawk}, @code{ARGIND} variable in
 @cindex @code{ARGIND} variable, command-line arguments
 @cindex @code{ARGV} array, indexing into
