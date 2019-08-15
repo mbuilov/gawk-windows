@@ -4693,6 +4693,16 @@ un file.  (Si veda @ref{Opzioni di assegnamento}.)  Nel seguente esempio,
 awk -f programma.awk file1 count=1 file2
 @end example
 
+@noindent
+Incidentalmente, se davvero fosse necessario che @command{awk}
+tratti un file dal nome @file{count=1} (o qualsiasi altro file il cui
+nome assomigli a un assegnamento di variabile), il nome di file in
+questione andr@`a fatto precedere da @samp{./}, come nell'esempio seguente:
+
+@example
+awk -f programma.awk file1 ./count=1 file2
+@end example
+
 @cindex @command{gawk}, variabile @code{ARGIND} in
 @cindex @code{ARGIND}, variabile, argomenti da riga di comando
 @cindex @code{ARGV}, vettore, indicizzare all'interno di
