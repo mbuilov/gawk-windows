@@ -5267,12 +5267,6 @@ make_regnode(int type, NODE *exp)
 			freenode(n);
 			return NULL;
 		}
-		n->re_reg[1] = make_regexp(exp->stptr, exp->stlen, true, true, false);
-		if (n->re_reg[1] == NULL) {
-			refree(n->re_reg[0]);
-			freenode(n);
-			return NULL;
-		}
 		n->re_exp = exp;
 		n->re_flags = CONSTANT;
 	}

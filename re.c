@@ -391,6 +391,16 @@ dfaerror(const char *s)
 	exit(EXIT_FATAL);	/* for DJGPP */
 }
 
+/* re_cache_get --- populate regexp cache if empty */
+
+static inline Regexp *
+re_cache_get(NODE *t)
+{
+	if (t->re_reg[IGNORECASE] == NULL)
+		t->re_reg[IGNORECASE] = make_regexp(t->re_exp->stptr, t->re_exp->stlen, IGNORECASE, t->re_cnt, true);
+	return t->re_reg[IGNORECASE];
+}
+
 /* re_update --- recompile a dynamic regexp */
 
 Regexp *
@@ -399,18 +409,18 @@ re_update(NODE *t)
 	NODE *t1;
 
 	if (t->type == Node_val && (t->flags & REGEX) != 0)
-		return t->typed_re->re_reg[IGNORECASE];
+		return re_cache_get(t->typed_re);
 
 	if ((t->re_flags & CONSTANT) != 0) {
 		/* it's a constant, so just return it as is */
 		assert(t->type == Node_regex);
-		return t->re_reg[IGNORECASE];
+		return re_cache_get(t);
 	}
 	t1 = t->re_exp;
 	if (t->re_text != NULL) {
 		/* if contents haven't changed, just return it */
 		if (cmp_nodes(t->re_text, t1, true) == 0)
-			return t->re_reg[IGNORECASE];
+			return re_cache_get(t);
 		/* things changed, fall through to recompile */
 		unref(t->re_text);
 	}
@@ -420,10 +430,14 @@ re_update(NODE *t)
 	/* text changed */
 
 	/* free old */
-	if (t->re_reg[0] != NULL)
+	if (t->re_reg[0] != NULL) {
 		refree(t->re_reg[0]);
-	if (t->re_reg[1] != NULL)
+		t->re_reg[0] = NULL;
+	}
+	if (t->re_reg[1] != NULL) {
 		refree(t->re_reg[1]);
+		t->re_reg[1] = NULL;
+	}
 	if (t->re_cnt > 0)
 		t->re_cnt++;
 	if (t->re_cnt > 10)
@@ -434,13 +448,7 @@ re_update(NODE *t)
 		unref(t->re_text);
 		t->re_text = dupnode(t1);
 	}
-	/* compile it */
-	t->re_reg[0] = make_regexp(t->re_text->stptr, t->re_text->stlen,
-				false, t->re_cnt, true);
-	t->re_reg[1] = make_regexp(t->re_text->stptr, t->re_text->stlen,
-				true, t->re_cnt, true);
-
-	return t->re_reg[IGNORECASE];
+	return re_cache_get(t);
 }
 
 /* resetup --- choose what kind of regexps we match */

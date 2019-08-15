@@ -1,3 +1,12 @@
+2019-08-15         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	Reduce memory usage by only compiling the IGNORECASE version of
+	regexp when it's actually needed.
+
+	* awkgram.y (make_regnode): Only compile the regular version.
+	* re.c (re_cache_get): New function.
+	(re_update): Use it as appropriate.
+
 2019-07-23         Koichi Murase         <myoga.murase@gmail.com>
 
 	* builtin.c (do_xor): Remove unneeded local variable `i'. Simplify
