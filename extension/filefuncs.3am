@@ -12,6 +12,8 @@ result = stat("/some/path", statdata [, follow])
 flags = or(FTS_PHYSICAL, ...)
 .br
 result = fts(pathlist, flags, filedata)
+.sp
+result = statvfs("/some/path", fsdata)
 .ft R
 .SH DESCRIPTION
 The
@@ -301,6 +303,89 @@ and
 The
 .B fts()
 function returns 0 if there were no errors. Otherwise it returns \-1.
+.SS statvfs()
+The
+.B statvfs()
+function provides a hook into the
+.IR statvfs (2)
+system call on systems that supply this system call.
+It returns zero
+upon success or less than zero upon error.
+In the latter case it updates
+.BR ERRNO .
+.PP
+When the call is successful,
+.B statvfs()
+fills the
+.B fsdata
+array with information retrieved about the filesystem, as follows:
+.TP
+\fBfsdata["bsize"]\fP
+Corresponds to the
+.B bsize
+member in the
+.IR "struct statvfs" .
+.TP
+\fBfsdata["frsize"]\fP
+Corresponds to the
+.I f_frsize
+member in the
+.IR "struct statvfs" .
+.TP
+\fBfsdata["blocks"]\fP
+Corresponds to the
+.I f_blocks
+member in the
+.IR "struct statvfs" .
+.TP
+\fBfsdata["bfree"]\fP
+Corresponds to the
+.I f_bfree
+member in the
+.IR "struct statvfs" .
+.TP
+\fBfsdata["bavail"]\fP
+Corresponds to the
+.I f_bavail
+member in the
+.IR "struct statvfs" .
+.TP
+\fBfsdata["files"]\fP
+Corresponds to the
+.I f_files
+member in the
+.IR "struct statvfs" .
+.TP
+\fBfsdata["ffree"]\fP
+Corresponds to the
+.I f_ffree
+member in the
+.IR "struct statvfs" .
+.TP
+\fBfsdata["favail"]\fP
+Corresponds to the
+.I f_favail
+member in the
+.IR "struct statvfs" .
+.TP
+\fBfsdata["fsid"]\fP
+Corresponds to the
+.I f_fsid
+member in the
+.IR "struct statvfs" .
+This member is not available on all systems.
+.TP
+\fBfsdata["flag"]\fP
+Corresponds to the
+.I f_flag
+member in the
+.IR "struct statvfs" .
+.TP
+\fBfsdata["namemax"]\fP
+Corresponds to the
+.I f_namemax
+member in the
+.IR "struct statvfs" .
 .SH NOTES
 The AWK
 .B fts()
@@ -348,12 +433,13 @@ distribution for an example.
 .PP
 .IR chdir (2),
 .IR fts (3),
-.IR stat (2).
+.IR stat (2),
+.IR statvfs (2).
 .SH AUTHOR
 Arnold Robbins,
 .BR arnold@skeeve.com .
 .SH COPYING PERMISSIONS
-Copyright \(co 2012, 2013, 2018,
+Copyright \(co 2012, 2013, 2018, 2019,
 Free Software Foundation, Inc.
 .PP
 Permission is granted to make and distribute verbatim copies of

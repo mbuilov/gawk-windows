@@ -10,7 +10,7 @@
  */
 
 /*
- * Copyright (C) 2001, 2004, 2005, 2010-2018
+ * Copyright (C) 2001, 2004, 2005, 2010-2019
  * the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
@@ -527,7 +527,7 @@ do_statvfs(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	/* always empty out the array */
 	clear_array(array);
 
-	/* stat the file; if error, set ERRNO and return */
+	/* statvfs the filesystem; if error, set ERRNO and return */
 	ret = statvfs(name, & vfsbuf);
 	if (ret < 0) {
 		update_ERRNO_int(errno);
