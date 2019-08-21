@@ -175,9 +175,11 @@
 #define _GL_GENSYM(prefix) _GL_CONCAT (prefix, _GL_COUNTER)
 
 /* Verify requirement R at compile-time, as an integer constant expression
-   that returns 1.  If R is false, fail at compile-time.  */
+   that returns 1.  If R is false, fail at compile-time, preferably
+   with a diagnostic that includes the string-literal DIAGNOSTIC.  */
 
-#define _GL_VERIFY_TRUE(R) (!!sizeof (_GL_VERIFY_TYPE (R)))
+#define _GL_VERIFY_TRUE(R, DIAGNOSTIC) \
+   (!!sizeof (_GL_VERIFY_TYPE (R, DIAGNOSTIC)))
 
 #ifdef __cplusplus
 # if !GNULIB_defined_struct__gl_verify_type
@@ -187,15 +189,16 @@ template <int w>
   };
 #  define GNULIB_defined_struct__gl_verify_type 1
 # endif
-# define _GL_VERIFY_TYPE(R) _gl_verify_type<(R) ? 1 : -1>
-#elif defined _GL_HAVE__STATIC_ASSERT1
-# define _GL_VERIFY_TYPE(R) \
+# define _GL_VERIFY_TYPE(R, DIAGNOSTIC) \
+    _gl_verify_type<(R) ? 1 : -1>
+#elif defined _GL_HAVE__STATIC_ASSERT
+# define _GL_VERIFY_TYPE(R, DIAGNOSTIC) \
     struct {                                   \
-      _Static_assert (R); \
+      _Static_assert (R, DIAGNOSTIC);          \
       int _gl_dummy;                          \
     }
 #else
-# define _GL_VERIFY_TYPE(R)                                             \
+# define _GL_VERIFY_TYPE(R, DIAGNOSTIC) \
     struct { unsigned int _gl_verify_error_if_negative: (R) ? 1 : -1; }
 #endif
 
@@ -214,7 +217,7 @@ template <int w>
 #else
 # define _GL_VERIFY(R, DIAGNOSTIC, ...)                                \
     extern int (*_GL_GENSYM (_gl_verify_function) (void))	       \
-      [_GL_VERIFY_TRUE (R)]
+      [_GL_VERIFY_TRUE (R, DIAGNOSTIC)]
 #endif
 
 /* _GL_STATIC_ASSERT_H is defined if this code is copied into assert.h.  */
@@ -242,26 +245,30 @@ template <int w>
 /* Verify requirement R at compile-time.  Return the value of the
    expression E.  */
 
-#define verify_expr(R, E) (_GL_VERIFY_TRUE (R) ? (E) : (E))
+#define verify_expr(R, E) \
+   (_GL_VERIFY_TRUE (R, "verify_expr (" #R ", " #E ")") ? (E) : (E))
 
 /* Verify requirement R at compile-time, as a declaration without a
    trailing ';'.  verify (R) acts like static_assert (R) except that
-   it is portable to C11/C++14 and earlier, and its name is shorter
-   and may be more convenient.  */
+   it is portable to C11/C++14 and earlier, it can issue better
+   diagnostics, and its name is shorter and may be more convenient.  */
 
-#ifdef _GL_HAVE__STATIC_ASSERT1
-# define verify(R) _Static_assert (R)
-#else
+#ifdef __PGI
+/* PGI barfs if R is long.  */
 # define verify(R) _GL_VERIFY (R, "verify (...)", -)
+#else
+# define verify(R) _GL_VERIFY (R, "verify (" #R ")", -)
 #endif
 
 #ifndef __has_builtin
 # define __has_builtin(x) 0
 #endif
 
-/* Assume that R always holds.  This lets the compiler optimize
-   accordingly.  R should not have side-effects; it may or may not be
-   evaluated.  Behavior is undefined if R is false.  */
+/* Assume that R always holds.  Behavior is undefined if R is false,
+   fails to evaluate, or has side effects.  Although assuming R can
+   help a compiler generate better code or diagnostics, performance
+   can suffer if R uses hard-to-optimize features such as function
+   calls not inlined by the compiler.  */
 
 #if (__has_builtin (__builtin_unreachable) \
      || 4 < __GNUC__ + (5 <= __GNUC_MINOR__))
