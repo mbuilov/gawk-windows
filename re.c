@@ -438,9 +438,12 @@ re_update(NODE *t)
 		refree(t->re_reg[1]);
 		t->re_reg[1] = NULL;
 	}
-	if (t->re_cnt > 0)
-		t->re_cnt++;
-	if (t->re_cnt > 10)
+	if (t->re_cnt > 0 && ++t->re_cnt > 10)
+		/*
+		 * The regex appears to update frequently, so disable DFA
+		 * matching (which trades off expensive upfront compilation
+		 * overhead for faster subsequent matching).
+		 */
 		t->re_cnt = 0;
 	if (t->re_text == NULL) {
 		/* reset regexp text if needed */
