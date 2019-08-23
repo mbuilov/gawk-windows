@@ -435,12 +435,12 @@ main(int argc, char **argv)
 	init_ext_api();
 
 	/* load extension libs */
-        for (s = srcfiles->next; s != srcfiles; s = s->next) {
-                if (s->stype == SRC_EXTLIB)
+	for (s = srcfiles->next; s != srcfiles; s = s->next) {
+		if (s->stype == SRC_EXTLIB)
 			load_ext(s->fullpath);
 		else if (s->stype != SRC_INC)
 			have_srcfile++;
-        }
+	}
 
 	/* do version check after extensions are loaded to get extension info */
 	if (do_version)
@@ -1694,7 +1694,7 @@ parse_args(int argc, char **argv)
 
 		case 'S':
 			do_flags |= DO_SANDBOX;
-  			break;
+			break;
 
 		case 'V':
 			do_version = true;
