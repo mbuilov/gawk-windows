@@ -1135,7 +1135,7 @@ _
 The \*(FIr\*(FC{\*(FIn\*(FC,\*(FIm\*(FC}\*(FR notation is called an
 \*(FIinterval expression\fP.
 \*(CRNot supported by
-\*(MK or \*(NK.\*(CX
+\*(MK.\*(CX
 .sp .5
 \*(CDIn regular expressions, within character ranges
 (\*(FC[\*(FR...\*(FC]\*(FR),
@@ -1162,9 +1162,6 @@ when finding source files named with the \*(FC\-f\fP and \*(FC\-i\fP
 options.
 The default path is
 \*(FC".:/usr/local/share/awk"\*(FR.
-.\" if this variable does not exist.
-.\" (The actual directory may vary,
-.\" depending upon how \*(GK was built and installed.)
 If a source file name contains a ``/'' character,
 no path search is performed.
 .sp .5
@@ -1186,7 +1183,6 @@ for \*(GK to
 wait for input before returning with an error.
 .sp .5
 If \*(FCPOSIXLY_CORRECT\fP exists
-.\" in the environment,
 then \*(GK
 behaves exactly as if the \*(FC\-\^\-posix\fP option had been given.\*(CB
 .EB "\s+2\f(HBENVIRONMENT VARIABLES (\*(GK\f(HB)\*(FR\s0"
@@ -1333,7 +1329,6 @@ T}
 \*(FCgetline \*(FIv \*(FC< \*(FIfile\*(FR	Set \*(FIv\fP from next record of \*(FIfile\*(FR.
 \*(FIcmd \*(FC| getline\*(FR	Pipe into \*(FCgetline\*(FR; set \*(FC$0\*(FR, \*(FCNF\*(FR.
 \*(FIcmd \*(FC| getline \*(FIv\*(FR	Pipe into \*(FCgetline\*(FR; set \*(FIv\*(FR.
-.\" \*(CB\*(FIcmd \*(FC|& getline\*(FR	Coprocess pipe into \*(FCgetline\*(FR; set \*(FC$0\*(FR, \*(FCNF\*(FR.
 .TE
 .fi
 .in +.2i
@@ -1917,9 +1912,6 @@ Return the bitwise XOR of the arguments.\*(CB
 .br
 Dynamically load the named \*(FIextension\*(FR.
 This adds new built-in functions to \*(GK.
-.\" The extension should use the API defined by the
-.\" \*(FCgawkapi.h\*(FR header file, as documented in
-.\" the full manual.
 The extension is loaded during the parsing of the program.
 See the manual for details.\*(CB
 .in -.2i
@@ -1994,16 +1986,13 @@ to use the current domain.\*(CB
 .ES
 .nf
 \*(CDHost: \*(FCftp.gnu.org\*(FR
-File: \*(FC/gnu/gawk/gawk-5.1.0:tar.gz\fP
+File: \*(FC/gnu/gawk/gawk-5.1.0.tar.gz\fP
 .in +.2i
 .fi
 GNU \*(AK (\*(GK). There may be a later version.
 .in -.2i
 .nf
 .sp .4
-.\" http://www.cs.princeton.edu/~bwk/btl.mirror/
-.\" awk.tar.gz
-.\" .br
 \*(FCgit clone git://github.com/onetrueawk/awk\fP
 .in +.2i
 .fi
