@@ -1065,6 +1065,10 @@ match_re:
 			if (op != Op_match_rec) {
 				decr_sp();
 				DEREF(t1);
+				if (m->type == Node_dynregex) {
+				 	DEREF(m->re_exp);
+					m->re_exp = NULL;
+				}
 			}
 			r = node_Boolean[di];
 			UPREF(r);
