@@ -1,3 +1,12 @@
+2019-08-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Restore a modified version of the change of
+	2016-05-03, which used realloc to shrink the buffer.
+
+	* builtin.c (format_tree): Reduce INITIAL_OUT_SIZE to 64.
+	At the end, call realloc only if there is more
+	than (2 * INITIAL_OUT_SIZE) bytes to give back.
+
 2019-08-23         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* main.c (main): Fix whitespace issues.

@@ -685,7 +685,7 @@ format_tree(
 	int i, nc;
 	bool toofew = false;
 	char *obuf, *obufout;
-	size_t osiz, ofre;
+	size_t osiz, ofre, olen_final;
 	const char *chbuf;
 	const char *s0, *s1;
 	int cs1;
@@ -735,7 +735,7 @@ format_tree(
 	static const char lchbuf[] = "0123456789abcdef";
 	static const char Uchbuf[] = "0123456789ABCDEF";
 
-#define INITIAL_OUT_SIZE	512
+#define INITIAL_OUT_SIZE	64
 	emalloc(obuf, char *, INITIAL_OUT_SIZE, "format_tree");
 	obufout = obuf;
 	osiz = INITIAL_OUT_SIZE;
@@ -1646,7 +1646,11 @@ mpf1:
 			_("too many arguments supplied for format string"));
 	}
 	bchunk(s0, s1 - s0);
-	r = make_str_node(obuf, obufout - obuf, ALREADY_MALLOCED);
+	olen_final = obufout - obuf;
+#define GIVE_BACK_SIZE (INITIAL_OUT_SIZE * 2)
+	if (ofre > GIVE_BACK_SIZE)
+		erealloc(obuf, char *, olen_final + 1, "format_tree");
+	r = make_str_node(obuf, olen_final, ALREADY_MALLOCED);
 	obuf = NULL;
 out:
 	{
