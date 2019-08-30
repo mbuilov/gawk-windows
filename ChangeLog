@@ -1,5 +1,15 @@
 2019-08-30         Andrew J. Schorr      <aschorr@telemetry-investments.com>
 
+	* configure.ac (.developing): Add -DMEMDEBUG to CFLAGS.
+	* awk.h (block_header): If MEMDEBUG is defined, add cnt field
+	to track the number of allocations.
+	(getblock, freeblock): When MEMDEBUG is defined, replace these
+	macros with calls to new functions r_getblock and r_freeblock.
+	* node.c (r_getblock, r_freeblock): New functions that simply
+	use malloc and free when MEMDEBUG is defined.
+
+2019-08-30         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
 	* interpret.h (r_interpret): For Op_match_rec, unref if a
 	dynamic regexp. Fixes another memory issue. See the thread starting
 	at https://lists.gnu.org/archive/html/bug-gawk/2019-08/msg00023.html.

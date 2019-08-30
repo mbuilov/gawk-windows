@@ -1061,6 +1061,9 @@ struct block_item {
 struct block_header {
 	struct block_item *freep;
 	size_t size;
+#ifdef MEMDEBUG
+	long cnt;
+#endif
 };
 
 enum block_id {
@@ -1323,11 +1326,22 @@ DEREF(NODE *r)
 #define get_lhs(n, r)	 (n)->type == Node_var && ! var_uninitialized(n) ? \
 				&((n)->var_value) : r_get_lhs((n), (r))
 
+#ifdef MEMDEBUG
+
+extern void *r_getblock(int id);
+extern void r_freeblock(void *, int id);
+#define getblock(p, id, ty)	(void) (p = r_getblock(id))
+#define freeblock(p, id)	(void) (r_freeblock(p, id))
+
+#else /* MEMDEBUG */
+
 #define getblock(p, id, ty)  (void) ((p = (ty) nextfree[id].freep) ? \
 			(ty) (nextfree[id].freep = ((struct block_item *) p)->freep) \
 			: (p = (ty) more_blocks(id)))
 #define freeblock(p, id)	 (void) (((struct block_item *) p)->freep = nextfree[id].freep, \
 					nextfree[id].freep = (struct block_item *) p)
+
+#endif /* MEMDEBUG */
 
 #define getnode(n)	getblock(n, BLOCK_NODE, NODE *)
 #define freenode(n)	freeblock(n, BLOCK_NODE)

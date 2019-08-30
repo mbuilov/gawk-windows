@@ -111,7 +111,7 @@ AC_MSG_CHECKING([for special development options])
 if test -f $srcdir/.developing
 then
 	# add other debug flags as appropriate, save GAWKDEBUG for emergencies
-	CFLAGS="$CFLAGS -DARRAYDEBUG -DYYDEBUG -DLOCALEDEBUG"
+	CFLAGS="$CFLAGS -DARRAYDEBUG -DYYDEBUG -DLOCALEDEBUG -DMEMDEBUG"
 
 	# turn on compiler warnings if we're doing development
 	# enable debugging using macros also

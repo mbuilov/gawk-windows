@@ -1034,6 +1034,25 @@ struct block_header nextfree[BLOCK_MAX] = {
 #endif
 };
 
+#ifdef MEMDEBUG
+
+void *
+r_getblock(int id)
+{
+	void *res;
+	emalloc(res, void *, nextfree[id].size, "getblock");
+	nextfree[id].cnt++;
+	return res;
+}
+
+void
+r_freeblock(void *p, int id)
+{
+	nextfree[id].cnt--;
+	free(p);
+}
+
+#else
 
 /* more_blocks --- get more blocks of memory and add to the free list;
 	size of a block must be >= sizeof(struct block_item)
@@ -1064,3 +1083,5 @@ more_blocks(int id)
 	nextfree[id].freep = freep->freep;
 	return freep;
 }
+
+#endif
