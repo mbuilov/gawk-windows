@@ -1061,9 +1061,8 @@ struct block_item {
 struct block_header {
 	struct block_item *freep;
 	size_t size;
-#ifdef MEMDEBUG
+	const char *name;
 	long cnt;
-#endif
 };
 
 enum block_id {

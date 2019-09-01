@@ -1026,11 +1026,11 @@ void init_btowc_cache()
 #define BLOCKCHUNK 100
 
 struct block_header nextfree[BLOCK_MAX] = {
-	{ NULL, sizeof(NODE) },
-	{ NULL, sizeof(BUCKET) },
+	{ NULL, sizeof(NODE), "node" },
+	{ NULL, sizeof(BUCKET), "bucket" },
 #ifdef HAVE_MPFR
-	{ NULL, sizeof(mpfr_t) },
-	{ NULL, sizeof(mpz_t) },
+	{ NULL, sizeof(mpfr_t), "mpfr" },
+	{ NULL, sizeof(mpz_t), "mpz" },
 #endif
 };
 
@@ -1081,6 +1081,7 @@ more_blocks(int id)
 		np->freep = next;
 	}
 	nextfree[id].freep = freep->freep;
+	nextfree[id].cnt += BLOCKCHUNK;
 	return freep;
 }
 

@@ -1,3 +1,13 @@
+2019-09-01         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* awk.h (block_header): Add cnt field even when MEMDEBUG is not
+	defined, and add a name field.
+	* node.c (nextfree): Initialize new name field.
+	(more_blocks): Bump nextfree[id].cnt by BLOCKCHUNK.
+	* builtin.c (do_typeof): When the 1st argument is PROCINFO and the
+	2nd arg is provided, return new "count_<blah>" fields containing
+	the memory allocation accounts of the various block types.
+
 2019-08-30         Andrew J. Schorr      <aschorr@telemetry-investments.com>
 
 	* configure.ac (.developing): Add -DMEMDEBUG to CFLAGS.

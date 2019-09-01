@@ -4049,8 +4049,19 @@ do_typeof(int nargs)
 		/* Node_var_array is never UPREF'ed */
 		res = "array";
 		deref = false;
-		if (dbg)
+		if (dbg) {
 			assoc_set(dbg, make_string("array_type", 10), make_string(arg->array_funcs->name, strlen(arg->array_funcs->name)));
+			if (arg == PROCINFO_node) {
+				int i;
+				for (i = 0; i < BLOCK_MAX; i++) {
+					char *p;
+					size_t l = 6 + strlen(nextfree[i].name);
+					emalloc(p, char *, l+1, "do_typeof");
+					sprintf(p, "count_%s", nextfree[i].name);
+					assoc_set(dbg, make_str_node(p, l, ALREADY_MALLOCED), make_number((AWKNUM) (nextfree[i].cnt)));
+				}
+			}
+		}
 		break;
 	case Node_val:
 		switch (fixtype(arg)->flags & (STRING|NUMBER|USER_INPUT|REGEX)) {
