@@ -1786,30 +1786,31 @@ pp_list(int nargs, const char *paren, const char *delim)
 	s = str;
 	if (paren != NULL)
 		*s++ = paren[0];
-	if (nargs > 0) {
-		r = pp_args[nargs];
+
+	for (i = nargs; i > 0; i--) {
+		// argument
+		r = pp_args[i];
 		memcpy(s, r->pp_str, r->pp_len);
 		s += r->pp_len;
-		pp_free(r);
-		for (i = nargs - 1; i > 0; i--) {
-			if (delimlen > 0) {
-				memcpy(s, delim, delimlen);
-				s += delimlen;
-			}
-			if (r->pp_comment != NULL) {
-				check_indent_level();
-				comment = (INSTRUCTION *) r->pp_comment;
-				memcpy(s, comment->memory->stptr, comment->memory->stlen);
-				s += comment->memory->stlen;
-				memcpy(s, tabs, indent_level + 1);
-				s += indent_level + 1;
-			}
-			r = pp_args[i];
-			memcpy(s, r->pp_str, r->pp_len);
-			s += r->pp_len;
-			pp_free(r);
+
+		// delimiter
+		if (i > 1 && delimlen > 0) {
+			memcpy(s, delim, delimlen);
+			s += delimlen;
 		}
+
+		// comment if any
+		if (r->pp_comment != NULL) {
+			check_indent_level();
+			comment = (INSTRUCTION *) r->pp_comment;
+			memcpy(s, comment->memory->stptr, comment->memory->stlen);
+			s += comment->memory->stlen;
+			memcpy(s, tabs, indent_level + 1);
+			s += indent_level + 1;
+		}
+		pp_free(r);
 	}
+
 	if (paren != NULL)
 		*s++ = paren[1];
 	*s = '\0';
@@ -1846,7 +1847,7 @@ pp_concat(int nargs)
 
 	/*
 	 * items are on the stack in reverse order that they
-	 * will be printed to pop them off backwards.
+	 * will be printed so pop them off backwards.
 	 */
 
 	len = -delimlen;
@@ -1887,7 +1888,6 @@ pp_concat(int nargs)
 			memcpy(s, r->pp_str, r->pp_len);
 			s += r->pp_len;
 		}
-		pp_free(r);
 
 		if (i < nargs) {
 			*s++ = ' ';
@@ -1909,7 +1909,10 @@ pp_concat(int nargs)
 		memcpy(s, r->pp_str, r->pp_len);
 		s += r->pp_len;
 	}
-	pp_free(r);
+
+	for (i = nargs; i >= 1; i--) {
+		pp_free(pp_args[i]);
+	}
 
 	*s = '\0';
 	return str;
