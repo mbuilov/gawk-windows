@@ -4055,10 +4055,35 @@ do_typeof(int nargs)
 				int i;
 				for (i = 0; i < BLOCK_MAX; i++) {
 					char *p;
-					size_t l = 6 + strlen(nextfree[i].name);
-					emalloc(p, char *, l+1, "do_typeof");
-					sprintf(p, "count_%s", nextfree[i].name);
-					assoc_set(dbg, make_str_node(p, l, ALREADY_MALLOCED), make_number((AWKNUM) (nextfree[i].cnt)));
+					size_t nl = strlen(nextfree[i].name);
+					/*
+					 * save values before we create new
+					 * array elements so that we have a
+					 * snapshot at a consistent moment in
+					 * time
+					 */
+					long hw = nextfree[i].highwater;
+					long active;
+#ifdef MEMDEBUG
+					active = nextfree[i].active;
+#else
+					active = hw;
+					{
+						struct block_item *ip;
+						for (ip = nextfree[i].freep; ip; ip = ip->freep)
+							active--;
+					}
+#endif
+
+#define SETVAL(X, V) {	\
+	size_t l = nl + sizeof(#X);	\
+	emalloc(p, char *, l+1, "do_typeof");	\
+	sprintf(p, "%s_" #X, nextfree[i].name);	\
+	assoc_set(dbg, make_str_node(p, l, ALREADY_MALLOCED), make_number((AWKNUM) (V)));	\
+}
+					SETVAL(highwater, hw)
+					SETVAL(active, active)
+#undef SETVAL
 				}
 			}
 		}

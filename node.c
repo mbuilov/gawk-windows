@@ -1041,14 +1041,16 @@ r_getblock(int id)
 {
 	void *res;
 	emalloc(res, void *, nextfree[id].size, "getblock");
-	nextfree[id].cnt++;
+	nextfree[id].active++;
+	if (nextfree[id].highwater < nextfree[id].active)
+		nextfree[id].highwater = nextfree[id].active;
 	return res;
 }
 
 void
 r_freeblock(void *p, int id)
 {
-	nextfree[id].cnt--;
+	nextfree[id].active--;
 	free(p);
 }
 
@@ -1081,7 +1083,7 @@ more_blocks(int id)
 		np->freep = next;
 	}
 	nextfree[id].freep = freep->freep;
-	nextfree[id].cnt += BLOCKCHUNK;
+	nextfree[id].highwater += BLOCKCHUNK;
 	return freep;
 }
 

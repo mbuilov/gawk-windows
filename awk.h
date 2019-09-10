@@ -1062,7 +1062,10 @@ struct block_header {
 	struct block_item *freep;
 	size_t size;
 	const char *name;
-	long cnt;
+	long highwater;
+#ifdef MEMDEBUG
+	long active;
+#endif
 };
 
 enum block_id {

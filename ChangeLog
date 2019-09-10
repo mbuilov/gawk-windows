@@ -1,3 +1,16 @@
+2019-09-10         Andrew J. Schorr      <aschorr@telemetry-investments.com>
+
+	* awk.h (block_header): Remove cnt field and replace it with
+	highwater. If MEMDEBUG is defined, add active counter.
+	* node.c (r_getblock): The cnt field was replaced by active. Update
+	highwater as appropriate.
+	(r_freeblock): Decrement the active counter (renamed from cnt).
+	(more_blocks): Bump the highwater counter (renamed from cnt).
+	* builtin.c (do_typeof): When providing PROCINFO debug memory stats,
+	replace count_<blah> with <blah>_active and <blah>_highwater. When
+	MEMDEBUG is not set, we calculate the active value by subtracting the
+	number of elements in the free list from the highwater value.
+
 2019-09-01         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* profile.c (pp_list, pp_concat): Fix use-after-free errors
