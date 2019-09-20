@@ -361,6 +361,7 @@ AC_MSG_CHECKING([for printf %F format])
 AC_RUN_IFELSE([
 AC_LANG_SOURCE([
 #include <stdio.h>
+#include <string.h>
 
 int main()
 {
@@ -389,6 +390,7 @@ AC_MSG_CHECKING([for printf %a format])
 AC_RUN_IFELSE([
 AC_LANG_SOURCE([
 #include <stdio.h>
+#include <string.h>
 
 int main()
 {

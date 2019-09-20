@@ -39,6 +39,8 @@ AC_DEFUN([GAWK_CHECK_READLINE],
 	AC_TRY_RUN(
 dnl source program:
 AC_LANG_SOURCE([[#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
