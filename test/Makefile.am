@@ -719,6 +719,8 @@ EXTRA_DIST = \
 	mpfrstrtonum.awk \
 	mpfrstrtonum.ok \
 	mpfruplus.ok \
+	mpfranswer42.awk \
+	mpfranswer42.ok \
 	mpgforcenum.awk \
 	mpgforcenum.ok \
 	mtchi18n.awk \
@@ -1423,7 +1425,7 @@ NEED_LINT_OLD = lintold
 # List of tests that must be run with -M
 NEED_MPFR = mpfrbigint mpfrbigint2 mpfrexprange mpfrfield mpfrieee mpfrmemok1 \
 	mpfrnegzero mpfrnr mpfrrem mpfrrnd mpfrrndeval mpfrsort mpfrsqrt \
-	mpfrstrtonum mpgforcenum mpfruplus
+	mpfrstrtonum mpgforcenum mpfruplus mpfranswer42
 
 # List of tests that need --non-decimal-data
 NEED_NONDEC = mpfrbigint2 nondec2 intarray forcenum
@@ -2032,6 +2034,11 @@ mpfrsort:
 mpfruplus:
 	@echo $@
 	@$(AWK) -M -f "$(srcdir)"/uplus.awk > _$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
+
+mpfranswer42:
+	@echo $@
+	@$(AWK) -M -f "$(srcdir)"/mpfranswer42.awk > _$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) "$(srcdir)"/$@.ok _$@ && rm -f _$@
 
 mpfrmemok1:
