@@ -37,7 +37,7 @@ BEGIN {
 
 /^@end[ \t]+sidebar[ \t]*$/ {
 	collecting = 0
-	printf "@cindex sidebar, %s\n", title
+	printf "@cindex sidebar @subentry %s\n", title
 	printf "@ifdocbook\n"
 		printf "@docbook\n"
 		printf "<sidebar><title>%s</title>\n", title
