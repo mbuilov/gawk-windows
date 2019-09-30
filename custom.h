@@ -50,6 +50,11 @@
 #ifndef SIZE_MAX
 #define SIZE_MAX __INT32_MAX
 #endif
+#ifndef __VAX
+#ifndef ULLONG_MAX
+#define ULLONG_MAX __UINT64_MAX
+#endif
+#endif
 #endif
 
 /* For QNX, based on submission from Michael Hunter, mphunter@qnx.com */
